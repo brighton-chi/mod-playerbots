@@ -843,6 +843,12 @@ void PlayerbotFactory::InitPet()
             if (onlyWolf && itr->second.family != CREATURE_FAMILY_WOLF)
                 continue;
 
+            // Exclude configured pet families
+            if (std::find(sPlayerbotAIConfig->excludedHunterPetFamilies.begin(),
+                          sPlayerbotAIConfig->excludedHunterPetFamilies.end(),
+                          itr->second.family) != sPlayerbotAIConfig->excludedHunterPetFamilies.end())
+                continue;
+
             ids.push_back(itr->first);
         }
 
