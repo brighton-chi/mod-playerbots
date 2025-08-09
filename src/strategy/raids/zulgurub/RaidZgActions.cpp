@@ -4,48 +4,36 @@
 
 bool MandokirThreateningGazeFreezeAction::Execute(Event event)
 {
-LOG_INFO("bot", "Executing MandokirThreateningGazeFreezeAction for {}", bot->GetName());
+LOG_INFO("playerbots", "Executing MandokirThreateningGazeFreezeAction for {}", bot->GetName());
 
-    botAI->Reset();
-
-    LOG_INFO("bot", "StopMoving called for {}", GetName());
-    bot->StopMoving();
-
-    LOG_INFO("bot", "AttackStop called for {}", GetName());
+    LOG_INFO("playerbots", "AttackStop called for {}", bot->GetName());
     bot->AttackStop();
 
-    LOG_INFO("bot", "SetTarget called for {}", GetName());
-    bot->SetTarget(ObjectGuid::Empty);
-
-    if (bot->IsNonMeleeSpellCast(false))
-    {
-        LOG_INFO("bot", "Interrupting non-melee spell for {}", GetName());
-        bot->InterruptNonMeleeSpells(false);
-    }
-
-    LOG_INFO("bot", "Clearing movement for {}", _owner->GetName());
+    LOG_INFO("playerbots", "Clearing movement for {}", bot->GetName());
     bot->GetMotionMaster()->Clear(false);
 
-    LOG_INFO("bot", "CombatStop called for {}", GetName());
+    LOG_INFO("playerbots", "CombatStop called for {}", bot->GetName());
     bot->CombatStop(true);
 
-    LOG_INFO("bot", "Changing engine to non-combat for {}", GetName());
-    botAI->ChangeEngine(BOT_STATE_NON_COMBAT);
+    LOG_INFO("playerbots", "Strategy changing to passive for {}", bot->GetName());
+    botAI->ChangeStrategy("+passive", BOT_STATE_COMBAT);
 
-    LOG_INFO("bot", "Strategy changing to passive for {}", GetName());
-    botAI->ChangeStrategy("+passive", BOT_STATE_NON_COMBAT);
-
-    LOG_INFO("bot", "Strategy changing to stay for {}", GetName());
-    botAI->ChangeStrategy("+stay", BOT_STATE_NON_COMBAT);
+    LOG_INFO("playerbots", "Strategy changing to stay for {}", bot->GetName());
+    botAI->ChangeStrategy("+stay", BOT_STATE_COMBAT);
     
     return true;
 }
 
 bool MandokirThreateningGazeResumeAction::Execute(Event event)
-{    
-    LOG_INFO("bot", "Strategy changing to active for {}", GetName());
-    botAI->ChangeStrategy("-passive", BOT_STATE_NON_COMBAT);
-    LOG_INFO("bot", "Strategy changing to follow for {}", GetName());
-    botAI->ChangeStrategy("+follow", BOT_STATE_NON_COMBAT);
+{
+    LOG_INFO("playerbots", "[ResumeAction] Executing resume for {}", bot->GetName());
+
+    botAI->ChangeStrategy("-passive", BOT_STATE_COMBAT);
+    LOG_INFO("playerbots", "[ResumeAction] Strategy '-passive' removed for {}", bot->GetName());
+
+    botAI->ChangeStrategy("+follow", BOT_STATE_COMBAT);
+    LOG_INFO("playerbots", "[ResumeAction] Strategy '+follow' added for {}", bot->GetName());
+
     return true;
 }
+
