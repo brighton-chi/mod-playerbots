@@ -7,10 +7,7 @@
 class MandokirThreateningGazeCastTrigger : public Trigger
 {
 public:
-    MandokirThreateningGazeCastTrigger(PlayerbotAI* botAI) : Trigger(botAI, "mandokir threatening gaze cast")
-    {
-        LOG_INFO("playerbots", "[GazeCast] MandokirThreateningGazeCastTrigger constructed for {}", botAI->GetBot()->GetName());
-    }
+    MandokirThreateningGazeCastTrigger(PlayerbotAI* botAI) : Trigger(botAI, "mandokir threatening gaze cast") {}
     bool IsActive() override;
 
     static time_t lastGazeTime;

@@ -34,7 +34,11 @@ bool MandokirThreateningGazeCastTrigger::IsActive()
     if (!target || target->GetGUID() != bot->GetGUID())
         return false;
 
-    MandokirGazeState::lastGazeTimePerBot[bot->GetGUID()] = time(nullptr);
+    if (MandokirGazeState::lastGazeTimePerBot.find(bot->GetGUID()) == MandokirGazeState::lastGazeTimePerBot.end())
+    {
+        MandokirGazeState::lastGazeTimePerBot[bot->GetGUID()] = time(nullptr);
+        LOG_INFO("playerbots", "[CastTrigger] Set gaze time for {}", bot->GetName());
+    }
     return true;
 }
 
@@ -100,5 +104,3 @@ bool MandokirThreateningGazeEndTrigger::IsActive()
 
     return false;
 }
-
-
