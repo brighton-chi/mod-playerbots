@@ -6,7 +6,7 @@ bool MandokirThreateningGazeFreezeAction::Execute(Event event)
 {
 LOG_INFO("playerbots", "Executing MandokirThreateningGazeFreezeAction for {}", bot->GetName());
 
-    //LOG_INFO("playerbots", "Reset called for {}", bot->GetName());    
+    /*//LOG_INFO("playerbots", "Reset called for {}", bot->GetName());    
     botAI->Reset();
 
     //LOG_INFO("playerbots", "AttackStop called for {}", bot->GetName());
@@ -34,7 +34,7 @@ LOG_INFO("playerbots", "Executing MandokirThreateningGazeFreezeAction for {}", b
     botAI->ChangeStrategy("+passive", BOT_STATE_NON_COMBAT);
 
     //  LOG_INFO("playerbots", "Strategy changing to stay for {}", bot->GetName());
-    botAI->ChangeStrategy("+stay", BOT_STATE_NON_COMBAT);
+    botAI->ChangeStrategy("+stay", BOT_STATE_NON_COMBAT); */
     
     return true;
 }

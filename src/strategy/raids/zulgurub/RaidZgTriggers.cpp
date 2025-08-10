@@ -84,7 +84,9 @@ bool MandokirThreateningGazeEndTrigger::IsActive()
         return false;
     }
 
-    time_t elapsed = time(nullptr) - it->second;
+    time_t now = time(nullptr);
+    time_t elapsed = now - it->second;
+    LOG_INFO("playerbots", "[ResumeTrigger] Now: {}, GazeTime: {}, Elapsed: {}", now, it->second, elapsed);
 
     LOG_INFO("playerbots", "[ResumeTrigger] Elapsed time for {}: {}", bot->GetName(), elapsed);
 
