@@ -39,6 +39,8 @@
 #include "raids/eyeofeternity/RaidEoETriggerContext.h"
 #include "raids/icecrown/RaidIccActionContext.h"
 #include "raids/icecrown/RaidIccTriggerContext.h"
+#include "raids/karazhan/RaidKarazhanActionContext.h"
+#include "raids/karazhan/RaidKarazhanTriggerContext.h"
 #include "raids/moltencore/RaidMcActionContext.h"
 #include "raids/moltencore/RaidMcTriggerContext.h"
 #include "raids/naxxramas/RaidNaxxActionContext.h"
@@ -115,6 +117,7 @@ void AiObjectContext::BuildSharedActionContexts(SharedNamedObjectContextList<Act
     actionContexts.Add(new RaidVoAActionContext());
     actionContexts.Add(new RaidUlduarActionContext());
     actionContexts.Add(new RaidIccActionContext());
+    actionContexts.Add(new RaidKarazhanActionContext());
     actionContexts.Add(new WotlkDungeonUKActionContext());
     actionContexts.Add(new WotlkDungeonNexActionContext());
     actionContexts.Add(new WotlkDungeonANActionContext());
@@ -147,6 +150,7 @@ void AiObjectContext::BuildSharedTriggerContexts(SharedNamedObjectContextList<Tr
     triggerContexts.Add(new RaidVoATriggerContext());
     triggerContexts.Add(new RaidUlduarTriggerContext());
     triggerContexts.Add(new RaidIccTriggerContext());
+    triggerContexts.Add(new RaidKarazhanTriggerContext());
     triggerContexts.Add(new WotlkDungeonUKTriggerContext());
     triggerContexts.Add(new WotlkDungeonNexTriggerContext());
     triggerContexts.Add(new WotlkDungeonANTriggerContext());
