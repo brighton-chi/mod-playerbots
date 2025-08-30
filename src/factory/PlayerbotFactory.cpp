@@ -2343,8 +2343,6 @@ void PlayerbotFactory::UpdateTradeSkills()
 
 void PlayerbotFactory::InitSkills()
 {
-    //uint32 maxValue = level * 5; //not used, line marked for removal.
-    bot->UpdateSkillsForLevel();
 
     bot->SetSkill(SKILL_RIDING, 0, 0, 0);
     if (bot->GetLevel() >= sPlayerbotAIConfig->useGroundMountAtMinLevel)
@@ -2517,8 +2515,11 @@ void PlayerbotFactory::InitAvailableSpells()
              i != creatureTemplateContainer->end(); ++i)
         {
             CreatureTemplate const& co = i->second;
-            if (co.trainer_type != TRAINER_TYPE_TRADESKILLS && co.trainer_type != TRAINER_TYPE_CLASS)
-                continue;
+            if (sPlayerbotAIConfig->maintenanceProfession)
+            {
+                if (co.trainer_type != TRAINER_TYPE_TRADESKILLS && co.trainer_type != TRAINER_TYPE_CLASS)
+                    continue;
+            }
 
             if (co.trainer_type == TRAINER_TYPE_CLASS && co.trainer_class != bot->getClass())
                 continue;
