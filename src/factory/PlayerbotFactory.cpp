@@ -2343,7 +2343,6 @@ void PlayerbotFactory::UpdateTradeSkills()
 
 void PlayerbotFactory::InitSkills()
 {
-
     bot->SetSkill(SKILL_RIDING, 0, 0, 0);
     if (bot->GetLevel() >= sPlayerbotAIConfig->useGroundMountAtMinLevel)
         bot->learnSpell(33388);
@@ -2515,11 +2514,8 @@ void PlayerbotFactory::InitAvailableSpells()
              i != creatureTemplateContainer->end(); ++i)
         {
             CreatureTemplate const& co = i->second;
-            if (sPlayerbotAIConfig->maintenanceProfession)
-            {
-                if (co.trainer_type != TRAINER_TYPE_TRADESKILLS && co.trainer_type != TRAINER_TYPE_CLASS)
-                    continue;
-            }
+            if (co.trainer_type != TRAINER_TYPE_TRADESKILLS && co.trainer_type != TRAINER_TYPE_CLASS)
+                continue;
 
             if (co.trainer_type == TRAINER_TYPE_CLASS && co.trainer_class != bot->getClass())
                 continue;
