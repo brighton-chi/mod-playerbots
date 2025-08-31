@@ -11,17 +11,23 @@ bool KarazhanMoroesTrigger::IsActive()
     Unit* robin = AI_VALUE2(Unit*, "find target", "lord robin daris");
     Unit* crispin = AI_VALUE2(Unit*, "find target", "lord crispin ference");
 
-    if (!moroes && !dorothea && !catriona && !keira && !rafe && !robin && !crispin)
-        return false;
+    if ((moroes && moroes->IsAlive()) ||
+        (dorothea && dorothea->IsAlive()) ||
+        (catriona && catriona->IsAlive()) ||
+        (keira && keira->IsAlive()) ||
+        (rafe && rafe->IsAlive()) ||
+        (robin && robin->IsAlive()) ||
+        (crispin && crispin->IsAlive()))
+        return true;
 
-    return true;
+    return false;
 }
 
 bool KarazhanMaidenOfVirtueTrigger::IsActive()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "maiden of virtue");
 
-    if (!boss)
+    if (!boss || !boss->IsAlive())
         return false;
 
     return true;
@@ -31,7 +37,7 @@ bool KarazhanBigBadWolfTrigger::IsActive()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "the big bad wolf");
 
-    if (!boss)
+    if (!boss || !boss->IsAlive())
         return false;
 
     return true;
@@ -42,10 +48,10 @@ bool KarazhanRomuloJulianneTrigger::IsActive()
     Unit* julianne = AI_VALUE2(Unit*, "find target", "julianne");
     Unit* romulo = AI_VALUE2(Unit*, "find target", "romulo");
 
-    if (!julianne || !romulo)
-        return false;
+    if ((julianne && julianne->IsAlive()) || (romulo && romulo->IsAlive()))
+        return true;
 
-    return true;
+    return false;
 }
 
 bool KarazhanWizardOfOzTrigger::IsActive()
@@ -57,17 +63,22 @@ bool KarazhanWizardOfOzTrigger::IsActive()
     Unit* roar = AI_VALUE2(Unit*, "find target", "roar");
     Unit* crone = AI_VALUE2(Unit*, "find target", "the crone");
 
-    if (!dorothee && !strawman && !tinhead && !tito && !roar && !crone)
-        return false;
+    if ((dorothee && dorothee->IsAlive()) ||
+        (strawman && strawman->IsAlive()) ||
+        (tinhead && tinhead->IsAlive()) ||
+        (tito && tito->IsAlive()) ||
+        (roar && roar->IsAlive()) ||
+        (crone && crone->IsAlive()))
+        return true;
 
-    return true;
+    return false;
 }
 
 bool KarazhanTheCuratorTrigger::IsActive()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "the curator");
 
-    if (!boss)
+    if (!boss || !boss->IsAlive())
         return false;
 
     return true;
@@ -77,7 +88,7 @@ bool KarazhanTerestianIllhoofTrigger::IsActive()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "terestian illhoof");
 
-    if (!boss)
+    if (!boss || !boss->IsAlive())
         return false;
 
     return true;
@@ -87,7 +98,7 @@ bool KarazhanShadeOfAranTrigger::IsActive()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "shade of aran");
 
-    if (!boss)
+    if (!boss || !boss->IsAlive())
         return false;
 
     return true;
@@ -97,7 +108,7 @@ bool KarazhanShadeOfAranTrigger::IsActive()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "netherspite");
 
-    if (!boss)
+    if (!boss || !boss->IsAlive())
         return false;
 
     return true;
