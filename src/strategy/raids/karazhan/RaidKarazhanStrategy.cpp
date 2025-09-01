@@ -3,6 +3,11 @@
 void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
         triggers.push_back(new TriggerNode(
+            "karazhan attumen the huntsman", NextAction::array(0,
+            new NextAction("karazhan attumen the huntsman stack behind", ACTION_RAID + 1),
+            nullptr)));
+
+        triggers.push_back(new TriggerNode(
             "karazhan moroes", NextAction::array(0,
             new NextAction("karazhan moroes mark target", ACTION_RAID + 1),
             nullptr)));
@@ -25,7 +30,10 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
         triggers.push_back(new TriggerNode(
             "karazhan wizard of oz", NextAction::array(0,
-            new NextAction("karazhan wizard of oz mark target", ACTION_RAID + 1), nullptr)));
+            new NextAction("karazhan wizard of oz mark target", ACTION_RAID + 1),
+            new NextAction("karazhan wizard of oz fear roar", ACTION_RAID + 2),
+            new NextAction("karazhan wizard of oz scorch strawman", ACTION_RAID + 2),
+            nullptr)));
 
         triggers.push_back(new TriggerNode(
             "karazhan the curator", NextAction::array(0,
@@ -39,7 +47,7 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             new NextAction("karazhan terestian illhoof mark target", ACTION_RAID + 1),
             nullptr)));
 
-    triggers.push_back(new TriggerNode(
+        triggers.push_back(new TriggerNode(
             "karazhan shade of aran", NextAction::array(0,
             new NextAction("karazhan shade of aran arcane explosion", ACTION_EMERGENCY + 1),
             new NextAction("karazhan shade of aran flame wreath", ACTION_EMERGENCY +2),
@@ -56,4 +64,5 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
 void RaidKarazhanStrategy::InitMultipliers(std::vector<Multiplier*>& /*multipliers*/)
 {
+    // No multipliers for this strategy
 }

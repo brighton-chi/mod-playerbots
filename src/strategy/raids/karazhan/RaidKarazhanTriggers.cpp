@@ -1,5 +1,16 @@
 #include "Playerbots.h"
 #include "RaidKarazhanTriggers.h"
+#include "RaidKarazhanHelpers.h"
+#include "RaidKarazhanActions.h"
+
+// #include "Log.h"
+
+bool KarazhanAttumenTheHuntsmanTrigger::IsActive()
+{
+    RaidKarazhanHelpers helpers(botAI);
+    Unit* boss = helpers.GetFirstAliveUnitByEntry(NPC_ATTUMEN_THE_HUNTSMAN);
+    return boss != nullptr;
+}
 
 bool KarazhanMoroesTrigger::IsActive()
 {
@@ -11,16 +22,16 @@ bool KarazhanMoroesTrigger::IsActive()
     Unit* robin = AI_VALUE2(Unit*, "find target", "lord robin daris");
     Unit* crispin = AI_VALUE2(Unit*, "find target", "lord crispin ference");
 
-    if ((moroes && moroes->IsAlive()) ||
-        (dorothea && dorothea->IsAlive()) ||
-        (catriona && catriona->IsAlive()) ||
-        (keira && keira->IsAlive()) ||
-        (rafe && rafe->IsAlive()) ||
-        (robin && robin->IsAlive()) ||
-        (crispin && crispin->IsAlive()))
-        return true;
+    if ((!moroes || !moroes->IsAlive()) &&
+        (!dorothea || !dorothea->IsAlive()) &&
+        (!catriona || !catriona->IsAlive()) &&
+        (!keira || !keira->IsAlive()) &&
+        (!rafe || !rafe->IsAlive()) &&
+        (!robin || !robin->IsAlive()) &&
+        (!crispin || !crispin->IsAlive()))
+        return false;
 
-    return false;
+    return true;
 }
 
 bool KarazhanMaidenOfVirtueTrigger::IsActive()
@@ -48,10 +59,10 @@ bool KarazhanRomuloJulianneTrigger::IsActive()
     Unit* julianne = AI_VALUE2(Unit*, "find target", "julianne");
     Unit* romulo = AI_VALUE2(Unit*, "find target", "romulo");
 
-    if ((julianne && julianne->IsAlive()) || (romulo && romulo->IsAlive()))
-        return true;
+    if (!julianne || !julianne->IsAlive() || !romulo || !romulo->IsAlive())
+        return false;
 
-    return false;
+    return true;
 }
 
 bool KarazhanWizardOfOzTrigger::IsActive()
@@ -63,15 +74,15 @@ bool KarazhanWizardOfOzTrigger::IsActive()
     Unit* roar = AI_VALUE2(Unit*, "find target", "roar");
     Unit* crone = AI_VALUE2(Unit*, "find target", "the crone");
 
-    if ((dorothee && dorothee->IsAlive()) ||
-        (strawman && strawman->IsAlive()) ||
-        (tinhead && tinhead->IsAlive()) ||
-        (tito && tito->IsAlive()) ||
-        (roar && roar->IsAlive()) ||
-        (crone && crone->IsAlive()))
-        return true;
+    if (( !dorothee || !dorothee->IsAlive() ) &&
+        ( !strawman || !strawman->IsAlive() ) &&
+        ( !tinhead || !tinhead->IsAlive() ) &&
+        ( !tito || !tito->IsAlive() ) &&
+        ( !roar || !roar->IsAlive() ) &&
+        ( !crone || !crone->IsAlive() ))
+        return false;
 
-    return false;
+    return true;
 }
 
 bool KarazhanTheCuratorTrigger::IsActive()

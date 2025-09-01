@@ -3,6 +3,13 @@
 
 #include "Trigger.h"
 
+class KarazhanAttumenTheHuntsmanTrigger : public Trigger
+{
+public:
+    KarazhanAttumenTheHuntsmanTrigger(PlayerbotAI* botAI) : Trigger(botAI, "karazhan attumen the huntsman") {}
+    bool IsActive() override;
+};
+
 class KarazhanMoroesTrigger : public Trigger
 {
 public:

@@ -10,6 +10,8 @@ class RaidKarazhanActionContext : public NamedObjectContext<Action>
 public:
     RaidKarazhanActionContext()
     {
+        creators["karazhan attumen the huntsman stack behind"] = &RaidKarazhanActionContext::karazhan_attumen_the_huntsman_stack_behind;
+
         creators["karazhan moroes mark target"] = &RaidKarazhanActionContext::karazhan_moroes_mark_target;
 
         creators["karazhan maiden of virtue position boss"] = &RaidKarazhanActionContext::karazhan_maiden_of_virtue_position_boss;
@@ -18,6 +20,8 @@ public:
         creators["karazhan big bad wolf run away"] = &RaidKarazhanActionContext::karazhan_big_bad_wolf_run_away;
         creators["karazhan romulo julianne mark target"] = &RaidKarazhanActionContext::karazhan_romulo_julianne_mark_target;
         creators["karazhan wizard of oz mark target"] = &RaidKarazhanActionContext::karazhan_wizard_of_oz_mark_target;
+        creators["karazhan wizard of oz fear roar"] = &RaidKarazhanActionContext::karazhan_wizard_of_oz_fear_roar;
+        creators["karazhan wizard of oz scorch strawman"] = &RaidKarazhanActionContext::karazhan_wizard_of_oz_scorch_strawman;
 
         creators["karazhan the curator mark target"] = &RaidKarazhanActionContext::karazhan_the_curator_mark_target;
         creators["karazhan the curator position boss"] = &RaidKarazhanActionContext::karazhan_the_curator_position_boss;
@@ -36,6 +40,8 @@ public:
     }
 
 private:
+    static Action* karazhan_attumen_the_huntsman_stack_behind(PlayerbotAI* ai) { return new KarazhanAttumenTheHuntsmanStackBehindAction(ai); }
+
     static Action* karazhan_moroes_mark_target(PlayerbotAI* ai) { return new KarazhanMoroesMarkTargetAction(ai); }
 
     static Action* karazhan_maiden_of_virtue_position_boss(PlayerbotAI* ai) { return new KarazhanMaidenOfVirtuePositionBossAction(ai); }
@@ -44,6 +50,8 @@ private:
     static Action* karazhan_big_bad_wolf_run_away(PlayerbotAI* ai) { return new KarazhanBigBadWolfRunAwayAction(ai); }
     static Action* karazhan_romulo_julianne_mark_target(PlayerbotAI* ai) { return new KarazhanRomuloJulianneMarkTargetAction(ai); }
     static Action* karazhan_wizard_of_oz_mark_target(PlayerbotAI* ai) { return new KarazhanWizardOfOzMarkTargetAction(ai); }
+    static Action* karazhan_wizard_of_oz_fear_roar(PlayerbotAI* ai) { return new KarazhanWizardOfOzFearRoarAction(ai); }
+    static Action* karazhan_wizard_of_oz_scorch_strawman(PlayerbotAI* ai) { return new KarazhanWizardOfOzScorchStrawmanAction(ai); }
 
     static Action* karazhan_the_curator_mark_target(PlayerbotAI* ai) { return new KarazhanTheCuratorMarkTargetAction(ai); }
     static Action* karazhan_the_curator_position_boss(PlayerbotAI* ai) { return new KarazhanTheCuratorPositionBossAction(ai); }

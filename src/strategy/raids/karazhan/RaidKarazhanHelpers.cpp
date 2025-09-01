@@ -48,7 +48,7 @@ Unit* RaidKarazhanHelpers::GetNearestPlayerInRadius(float radius)
         {
             Player* member = itr->GetSource();
 
-            if (!member || !member->IsAlive() || member == bot || member->IsGameMaster())
+            if (!member || !member->IsAlive() || member == bot)
                 continue;
 
             if (bot->GetExactDist2d(member) < radius)
