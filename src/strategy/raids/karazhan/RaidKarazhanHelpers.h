@@ -20,6 +20,7 @@ public:
     //Position GetPositionToMoveCloserToTarget(Unit* /*target*/);
     //Position GetFlankPosition(Unit* /*target*/, float /*distance*/, bool /*rightFlank*/);
     //Unit* GetNearestUnitByEntryWithinRadius(uint32 /*entry*/, float /*radius*/);
+    std::vector<Unit*> GetSpawnedInfernals() const;
 };
 
 #endif

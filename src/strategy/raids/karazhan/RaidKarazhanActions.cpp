@@ -5,6 +5,7 @@
 #include "WarlockActions.h"
 #include "AiObjectContext.h"
 #include "PlayerbotMgr.h"
+#include "PlayerbotAI.h"
 
 #include "Log.h"
 
@@ -618,3 +619,87 @@ bool KarazhanNetherspiteAvoidVoidZoneAction::Execute(Event event)
 
     return false;
 }*/
+
+bool KarazhanPrinceMalchezaarAvoidInfernalAction::Execute(Event event)
+{
+    RaidKarazhanHelpers helper(botAI);
+    std::vector<Unit*> infernals = helper.GetSpawnedInfernals();
+    const float safeInfernalDistance = 20.0f;
+    const float safeInfernalTankingDistance = 25.0f;
+
+    float safeDistance = botAI->IsMainTank(bot) ? safeInfernalTankingDistance : safeInfernalDistance;
+
+    for (Unit* infernal : infernals)
+    {
+        float distance = bot->GetDistance2d(infernal);
+        if (distance < safeDistance)
+        {
+            bot->AttackStop();
+            bot->InterruptNonMeleeSpells(false);
+            return MoveAway(infernal, safeDistance - distance);
+        }
+    }
+    return false;
+}
+
+// Move >30 yards from Prince Malchezaar, ensuring path and destination are always >20 yards from all Netherspite Infernals
+bool KarazhanPrinceMalchezaarRunAwayFromShadowNovaAction::Execute(Event event)
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "prince malchezaar");
+    if (!boss)
+        return false;
+
+    RaidKarazhanHelpers helper(botAI);
+    std::vector<Unit*> infernals = helper.GetSpawnedInfernals();
+
+    const float safeBossDistance = 30.0f;
+    const float safeInfernalDistance = 20.0f;
+    float currentBossDistance = bot->GetDistance2d(boss);
+
+    if (currentBossDistance < safeBossDistance)
+    {
+        // Try to find a safe straight line path and destination
+        const float stepSize = 2.0f; // yards per sample
+        const int numAngles = 16;
+        for (int i = 0; i < numAngles; ++i)
+        {
+            float angle = (2 * M_PI * i) / numAngles;
+            float dx = cos(angle);
+            float dy = sin(angle);
+
+            bool pathIsSafe = true;
+            for (float dist = stepSize; dist <= safeBossDistance; dist += stepSize)
+            {
+                float x = bot->GetPositionX() + dx * dist;
+                float y = bot->GetPositionY() + dy * dist;
+                for (Unit* infernal : infernals)
+                {
+                    float infernalDist = sqrt(pow(x - infernal->GetPositionX(), 2) + pow(y - infernal->GetPositionY(), 2));
+                    if (infernalDist < safeInfernalDistance)
+                    {
+                        pathIsSafe = false;
+                        break;
+                    }
+                }
+                if (!pathIsSafe)
+                    break;
+            }
+            if (pathIsSafe)
+            {
+                float destX = bot->GetPositionX() + dx * (safeBossDistance - currentBossDistance);
+                float destY = bot->GetPositionY() + dy * (safeBossDistance - currentBossDistance);
+                float destZ = bot->GetPositionZ();
+                bot->AttackStop();
+                bot->InterruptNonMeleeSpells(false);
+                return MoveTo(bot->GetMapId(), destX, destY, destZ, false, false, false, true, MovementPriority::MOVEMENT_COMBAT);
+            }
+        }
+    }
+
+    return false;
+}
+
+bool KarazhanPrinceMalchezaarRunAwayFromShadowNovaAction::isUseful()
+{
+    return bot->HasAura(SPELL_ENFEEBLE);
+}

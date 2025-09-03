@@ -19,6 +19,7 @@ public:
         creators["karazhan terestian illhoof"] = &RaidKarazhanTriggerContext::karazhan_terestian_illhoof;
         creators["karazhan shade of aran"] = &RaidKarazhanTriggerContext::karazhan_shade_of_aran;
         //creators["karazhan netherspite"] = &RaidKarazhanTriggerContext::karazhan_netherspite;
+        creators["karazhan prince malchezaar"] = &RaidKarazhanTriggerContext::karazhan_prince_malchezaar;
     }
 
 private:
@@ -32,6 +33,7 @@ private:
     static Trigger* karazhan_terestian_illhoof(PlayerbotAI* ai) { return new KarazhanTerestianIllhoofTrigger(ai); }
     static Trigger* karazhan_shade_of_aran(PlayerbotAI* ai) { return new KarazhanShadeOfAranTrigger(ai); }
     //static Trigger* karazhan_netherspite(PlayerbotAI* ai) { return new KarazhanNetherspiteTrigger(ai); }
+    static Trigger* karazhan_prince_malchezaar(PlayerbotAI* ai) { return new KarazhanPrinceMalchezaarTrigger(ai); }
 };
 
 #endif

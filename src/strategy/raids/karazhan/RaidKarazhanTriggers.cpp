@@ -124,3 +124,13 @@ bool KarazhanShadeOfAranTrigger::IsActive()
 
     return true;
 }*/
+
+bool KarazhanPrinceMalchezaarTrigger::IsActive()
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "prince malchezaar");
+
+    if (!boss || !boss->IsAlive())
+        return false;
+
+    return true;
+}

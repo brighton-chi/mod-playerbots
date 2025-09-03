@@ -37,6 +37,10 @@ public:
         /*creators["karazhan netherspite soak beams"] = &RaidKarazhanActionContext::karazhan_netherspite_soak_beams;
         creators["karazhan netherspite avoid void zone"] = &RaidKarazhanActionContext::karazhan_netherspite_avoid_void_zone;
         creators["karazhan netherspite banished"] = &RaidKarazhanActionContext::karazhan_netherspite_banished;*/
+
+    
+        creators["karazhan prince malchezaar avoid infernal"] = &RaidKarazhanActionContext::karazhan_prince_malchezaar_avoid_infernal;
+        creators["karazhan prince malchezaar run away from shadow nova"] = &RaidKarazhanActionContext::karazhan_prince_malchezaar_run_away_from_shadow_nova;
     }
 
 private:
@@ -67,6 +71,9 @@ private:
     /*static Action* karazhan_netherspite_soak_beams(PlayerbotAI* ai) { return new KarazhanNetherspiteSoakBeamsAction(ai); }
     static Action* karazhan_netherspite_avoid_void_zone(PlayerbotAI* ai) { return new KarazhanNetherspiteAvoidVoidZoneAction(ai); }
     static Action* karazhan_netherspite_banished(PlayerbotAI* ai) { return new KarazhanNetherspiteBanishedAction(ai); }*/
+
+    static Action* karazhan_prince_malchezaar_avoid_infernal(PlayerbotAI* ai) { return new KarazhanPrinceMalchezaarAvoidInfernalAction(ai); }
+    static Action* karazhan_prince_malchezaar_run_away_from_shadow_nova(PlayerbotAI* ai) { return new KarazhanPrinceMalchezaarRunAwayFromShadowNovaAction(ai); }
 };
 
 #endif

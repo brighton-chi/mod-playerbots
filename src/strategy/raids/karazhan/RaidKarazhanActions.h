@@ -28,7 +28,10 @@ enum KarazhanSpells
     //SPELL_GREEN_DEBUFF              = 38638,
     //SPELL_BLUE_DEBUFF               = 38639,
 
-    //SPELL_BANISH                    = 39833
+    //SPELL_BANISH                    = 39833,
+
+    // Prince Malchezaar
+    SPELL_ENFEEBLE                    = 30843
 };
 
 enum KarazhanNpcs
@@ -46,7 +49,10 @@ enum KarazhanNpcs
     //NPC_VOIDZONE                    = 16697,
     //NPC_RED_PORTAL                  = 17369,
     //NPC_BLUE_PORTAL                 = 17368,
-    //NPC_GREEN_PORTAL                = 17367
+    //NPC_GREEN_PORTAL                = 17367,
+
+    // Prince Malchezaar
+    NPC_NETHERSPITE_INFERNAL        = 17646
 };
 
 const Position KARAZHAN_MAIDEN_OF_VIRTUE_BOSS_POSITION = Position(-10945.881f, -2103.7817f, 92.71163f);
@@ -239,5 +245,22 @@ public:
 
     bool Execute(Event event) override;
 };*/
+
+class KarazhanPrinceMalchezaarAvoidInfernalAction : public AttackAction
+{
+public:
+    KarazhanPrinceMalchezaarAvoidInfernalAction(PlayerbotAI* botAI, std::string const name = "karazhan prince malchezaar avoid infernal") : AttackAction(botAI, name) {}
+
+    bool Execute(Event event) override;
+};
+
+class KarazhanPrinceMalchezaarRunAwayFromShadowNovaAction : public AttackAction
+{
+public:
+    KarazhanPrinceMalchezaarRunAwayFromShadowNovaAction(PlayerbotAI* botAI, std::string const name = "karazhan prince malchezaar run away from shadow nova") : AttackAction(botAI, name) {}
+
+    bool Execute(Event event) override;
+    bool isUseful() override;
+};
 
 #endif

@@ -73,4 +73,11 @@ public:
     bool IsActive() override;
 };*/
 
+class KarazhanPrinceMalchezaarTrigger : public Trigger
+{
+public:
+    KarazhanPrinceMalchezaarTrigger(PlayerbotAI* botAI) : Trigger(botAI, "karazhan prince malchezaar") {}
+    bool IsActive() override;
+};
+
 #endif

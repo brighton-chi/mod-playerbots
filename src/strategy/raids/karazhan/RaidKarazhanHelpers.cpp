@@ -1,5 +1,6 @@
 #include "RaidKarazhanActions.h"
 #include "RaidKarazhanHelpers.h"
+#include "AiObjectContext.h"
 
 void RaidKarazhanHelpers::MarkTargetWithSkull(Unit* target)
 {
@@ -217,3 +218,17 @@ Unit* RaidKarazhanHelpers::GetNearestUnitByEntryWithinRadius(uint32 entry, float
 
     return nullptr;
 }*/
+
+// Returns all spawned infernal units in the encounter
+std::vector<Unit*> RaidKarazhanHelpers::GetSpawnedInfernals() const
+{
+    std::vector<Unit*> infernals;
+    const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
+    for (const auto& npcGuid : npcs)
+    {
+        Unit* unit = botAI->GetUnit(npcGuid);
+        if (unit && unit->GetEntry() == NPC_NETHERSPITE_INFERNAL)
+            infernals.push_back(unit);
+    }
+    return infernals;
+}
