@@ -20,7 +20,6 @@ bool KarazhanAttumenTheHuntsmanStackBehindAction::Execute(Event event)
     float z = boss->GetPositionZ();
     float rx = x + cos(orientation) * distance;
     float ry = y + sin(orientation) * distance;
-    bot->GetName(), rx, ry, z, orientation, distance;
     return MoveTo(bot->GetMapId(), rx, ry, z, false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
 }
 
