@@ -3,6 +3,9 @@
 #include "AiObjectContext.h"
 #include "Position.h"
 #include <algorithm>
+#include <map>
+
+#include "Log.h"
 
 void RaidKarazhanHelpers::MarkTargetWithSkull(Unit* target)
 {
@@ -84,45 +87,7 @@ bool RaidKarazhanHelpers::IsFlameWreathActive()
     return false;
 }
 
-std::vector<Unit*> RaidKarazhanHelpers::GetSpawnedInfernals() const
-{
-    std::vector<Unit*> infernals;
-    const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
-    for (const auto& npcGuid : npcs)
-    {
-        Unit* unit = botAI->GetUnit(npcGuid);
-        if (unit && unit->GetEntry() == NPC_NETHERSPITE_INFERNAL)
-            infernals.push_back(unit);
-    }
-    return infernals;
-}
-
-/* std::vector<Player*> RaidKarazhanHelpers::GetRedBlockers()
-{
-    std::vector<Player*> redBlockers;
-    if (Group* group = bot->GetGroup())
-    {
-        for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
-        {
-            Player* member = itr->GetSource();
-            if (!member || !member->IsAlive())
-                continue;
-
-            // Tank, no nether exhaustion red (38637), and <= 6 stacks of nether portal red (30421)
-            if (botAI->IsTank(member) && !member->HasAura(SPELL_NETHER_EXHAUSTION_RED))
-            {
-                Aura* redBuff = member->GetAura(SPELL_NETHER_PORTAL_RED);
-                if (!redBuff || redBuff->GetStackAmount() <= 6)
-                {
-                    redBlockers.push_back(member);
-                }
-            }
-        }
-    }
-    return redBlockers;
-}*/
-
-/* std::vector<Player*> RaidKarazhanHelpers::GetBlueBlockers()
+std::vector<Player*> RaidKarazhanHelpers::GetBlueBlockers()
 {
     std::vector<Player*> blueBlockers;
     if (Group* group = bot->GetGroup())
@@ -130,27 +95,26 @@ std::vector<Unit*> RaidKarazhanHelpers::GetSpawnedInfernals() const
         for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
         {
             Player* member = itr->GetSource();
-            if (!member || !member->IsAlive())
+            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member))
                 continue;
 
-            // Is DPS, not warrior, not rogue, no nether exhaustion blue (38639), <= 30 stacks of nether portal blue (30423)
+            // Is DPS, not warrior, not rogue, no Nether Exhaustion Blue and <= 30 stacks of Nether Portal Blue buff
             bool isDps = botAI->IsDps(member);
             bool isWarrior = member->getClass() == CLASS_WARRIOR;
             bool isRogue = member->getClass() == CLASS_ROGUE;
-            if (isDps && !isWarrior && !isRogue && !member->HasAura(SPELL_NETHER_EXHAUSTION_BLUE))
+            bool eligible = isDps && !isWarrior && !isRogue && !member->HasAura(SPELL_NETHER_EXHAUSTION_BLUE);
+            Aura* blueBuff = member->GetAura(SPELL_NETHER_PORTAL_BLUE);
+            if (eligible && (!blueBuff || blueBuff->GetStackAmount() <= 30))
             {
-                Aura* blueBuff = member->GetAura(SPELL_NETHER_PORTAL_BLUE);
-                if (!blueBuff || blueBuff->GetStackAmount() <= 30)
-                {
-                    blueBlockers.push_back(member);
-                }
+                blueBlockers.push_back(member);
+                LOG_INFO("playerbots", "%s is eligible for blue beam blocking.", member->GetName().c_str());
             }
         }
     }
     return blueBlockers;
-} */
+}
 
-/*std::vector<Player*> RaidKarazhanHelpers::GetGreenBlockers()
+std::vector<Player*> RaidKarazhanHelpers::GetGreenBlockers()
 {
     std::vector<Player*> greenBlockers;
     if (Group* group = bot->GetGroup())
@@ -158,30 +122,31 @@ std::vector<Unit*> RaidKarazhanHelpers::GetSpawnedInfernals() const
         for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
         {
             Player* member = itr->GetSource();
-            if (!member || !member->IsAlive())
+            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member))
                 continue;
 
-            // (1) Rogue or non-tank Warrior, no aura 38638
-            if ((member->getClass() == CLASS_ROGUE || (member->getClass() == CLASS_WARRIOR && botAI->IsDps(member))) &&
-                !member->HasAura(SPELL_NETHER_EXHAUSTION_GREEN))
+            // (1) Rogue or non-tank Warrior, no Nether Exhaustion Green
+            bool eligibleRogueWarrior = (member->getClass() == CLASS_ROGUE || (member->getClass() == CLASS_WARRIOR && botAI->IsDps(member))) &&
+                !member->HasAura(SPELL_NETHER_EXHAUSTION_GREEN);
+            if (eligibleRogueWarrior)
             {
                 greenBlockers.push_back(member);
+                LOG_INFO("playerbots", "%s is eligible for green beam blocking (rogue/warrior).", member->GetName().c_str());
                 continue;
             }
 
-            // (2) Healer, no aura 38638, and less than 30 stacks of aura 30422
-            if (botAI->IsHeal(member) && !member->HasAura(SPELL_NETHER_EXHAUSTION_GREEN))
+            // (2) Healer, no Nether Exhaustion Green and less than 30 stacks of Nether Portal Blue buff
+            bool eligibleHealer = botAI->IsHeal(member) && !member->HasAura(SPELL_NETHER_EXHAUSTION_GREEN);
+            Aura* greenBuff = member->GetAura(SPELL_NETHER_PORTAL_GREEN);
+            if (eligibleHealer && (!greenBuff || greenBuff->GetStackAmount() < 30))
             {
-                Aura* greenBuff = member->GetAura(SPELL_NETHER_PORTAL_GREEN);
-                if (!greenBuff || greenBuff->GetStackAmount() < 30)
-                {
-                    greenBlockers.push_back(member);
-                }
+                greenBlockers.push_back(member);
+                LOG_INFO("playerbots", "%s is eligible for green beam blocking (healer).", member->GetName().c_str());
             }
         }
     }
     return greenBlockers;
-} */
+}
 
 Position RaidKarazhanHelpers::GetPositionOnBeam(Unit* boss, Unit* portal, float distanceFromBoss)
 {
@@ -294,3 +259,16 @@ Position RaidKarazhanHelpers::GetAvoidBeamPosition(Unit* boss, Unit* portal, flo
 
     return Position(targetX, targetY, targetZ);
 } */
+
+std::vector<Unit*> RaidKarazhanHelpers::GetSpawnedInfernals() const
+{
+    std::vector<Unit*> infernals;
+    const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
+    for (const auto& npcGuid : npcs)
+    {
+        Unit* unit = botAI->GetUnit(npcGuid);
+        if (unit && unit->GetEntry() == NPC_NETHERSPITE_INFERNAL)
+            infernals.push_back(unit);
+    }
+    return infernals;
+}

@@ -236,6 +236,24 @@ public:
     bool isUseful() override;
 };
 
+class KarazhanNetherspiteBlockBlueBeamAction : public AttackAction
+{
+public:
+    KarazhanNetherspiteBlockBlueBeamAction(PlayerbotAI* botAI, std::string const name = "karazhan netherspite block blue beam") : AttackAction(botAI, name) {}
+
+    bool Execute(Event event) override;
+    bool isUseful() override;
+};
+
+class KarazhanNetherspiteBlockGreenBeamAction : public AttackAction
+{
+public:
+    KarazhanNetherspiteBlockGreenBeamAction(PlayerbotAI* botAI, std::string const name = "karazhan netherspite block green beam") : AttackAction(botAI, name) {}
+
+    bool Execute(Event event) override;
+    bool isUseful() override;
+};
+
 /*class KarazhanNetherspiteAvoidVoidZoneAction : public AttackAction
 {
 public:

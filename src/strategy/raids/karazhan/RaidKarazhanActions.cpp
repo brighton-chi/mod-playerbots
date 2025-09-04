@@ -9,7 +9,8 @@
 
 #include "Log.h"
 
-namespace {
+namespace 
+{
     static std::map<ObjectGuid, uint32> beamMoveTimes;
     static std::map<ObjectGuid, bool> lastBeamMoveSideways;
 }
@@ -509,6 +510,7 @@ bool KarazhanNetherspiteBlockRedBeamAction::Execute(Event event)
         {
             beamMoveTimes[botGuid] = time(nullptr);
             lastBeamMoveSideways[botGuid] = false;
+            LOG_INFO("playerbots", "%s is now eligible to block the RED beam.", bot->GetName().c_str());
         }
         if (time(nullptr) - beamMoveTimes[botGuid] >= intervalSecs)
         {
@@ -550,7 +552,8 @@ bool KarazhanNetherspiteBlockRedBeamAction::isUseful()
     static std::map<ObjectGuid, bool> lastBossBanishState;
     bool bossIsBanished = boss && boss->HasAura(SPELL_BANISH);
 
-    if (lastBossBanishState[botGuid] != bossIsBanished) {
+    if (lastBossBanishState[botGuid] != bossIsBanished) 
+    {
         // Boss banish state changed
         if (!bossIsBanished) {
             // Banish ended, reset timer/state
@@ -559,14 +562,14 @@ bool KarazhanNetherspiteBlockRedBeamAction::isUseful()
         }
         lastBossBanishState[botGuid] = bossIsBanished;
     }
-    
+
     if (bossIsBanished)
         return false;
-
+        
     return true;
 }
 
-/*bool KarazhanNetherspiteBlockBlueBeamAction::Execute(Event event)
+bool KarazhanNetherspiteBlockBlueBeamAction::Execute(Event event)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "netherspite");
     Unit* bluePortal = bot->FindNearestCreature(NPC_BLUE_PORTAL, 100.0f);
@@ -577,12 +580,38 @@ bool KarazhanNetherspiteBlockRedBeamAction::isUseful()
     std::vector<Player*> blueBlockers = karazhanHelper.GetBlueBlockers();
     bool isBlueBlocker = std::find(blueBlockers.begin(), blueBlockers.end(), bot) != blueBlockers.end();
     Player* eligibleBlueBlocker = blueBlockers.empty() ? nullptr : blueBlockers.front();
-    Position beamPos = karazhanHelper.GetPositionOnBeam(boss, bluePortal, 18.0f);
+    Position blueBeamPos = karazhanHelper.GetPositionOnBeam(boss, bluePortal, 18.0f);
 
-    if (bot == eligibleBlueBlocker || (isBlueBlocker && bot->GetExactDist2d(beamPos.GetPositionX(), beamPos.GetPositionY()) < 1.5f))
+    // If not eligible, leave beam position
+    if (!isBlueBlocker && bot->GetExactDist2d(blueBeamPos.GetPositionX(), blueBeamPos.GetPositionY()) < 1.5f)
+    {
+        LOG_INFO("playerbots","%s is no longer eligible to block the BLUE beam and is leaving the beam position.", bot->GetName().c_str());
+        // Move sideways 5 yards (perpendicular to beam)
+        float bx = boss->GetPositionX();
+        float by = boss->GetPositionY();
+        float bz = boss->GetPositionZ();
+        float px = bluePortal->GetPositionX();
+        float py = bluePortal->GetPositionY();
+        float dx = px - bx;
+        float dy = py - by;
+        float length = sqrt(dx*dx + dy*dy);
+        if (length == 0.0f)
+            return false;
+        dx /= length;
+        dy /= length;
+        // Perpendicular direction
+        float perpDx = -dy;
+        float perpDy = dx;
+        float sideX = blueBeamPos.GetPositionX() + perpDx * 5.0f;
+        float sideY = blueBeamPos.GetPositionY() + perpDy * 5.0f;
+        float sideZ = blueBeamPos.GetPositionZ();
+        return MoveTo(bot->GetMapId(), sideX, sideY, sideZ, false, false, false, true, MovementPriority::MOVEMENT_COMBAT);
+    }
+
+    if (bot == eligibleBlueBlocker || (isBlueBlocker && bot->GetExactDist2d(blueBeamPos.GetPositionX(), blueBeamPos.GetPositionY()) < 1.5f))
     {
         // Stay at beam position as long as bot is a blue blocker
-        return MoveTo(bot->GetMapId(), beamPos.GetPositionX(), beamPos.GetPositionY(), beamPos.GetPositionZ(), false, false, false, true, MovementPriority::MOVEMENT_COMBAT);
+        return MoveTo(bot->GetMapId(), blueBeamPos.GetPositionX(), blueBeamPos.GetPositionY(), blueBeamPos.GetPositionZ(), false, false, false, true, MovementPriority::MOVEMENT_COMBAT);
     }
     return false;
 }
@@ -591,13 +620,16 @@ bool KarazhanNetherspiteBlockBlueBeamAction::isUseful()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "netherspite");
 
+    if (!boss)
+        return false;
+
     if (boss->HasAura(SPELL_BANISH))
         return false;
 
     return true;
-}*/
+}
 
-/*bool KarazhanNetherspiteBlockGreenBeamAction::Execute(Event event)
+bool KarazhanNetherspiteBlockGreenBeamAction::Execute(Event event)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "netherspite");
     Unit* greenPortal = bot->FindNearestCreature(NPC_GREEN_PORTAL, 100.0f);
@@ -608,12 +640,38 @@ bool KarazhanNetherspiteBlockBlueBeamAction::isUseful()
     std::vector<Player*> greenBlockers = karazhanHelper.GetGreenBlockers();
     bool isGreenBlocker = std::find(greenBlockers.begin(), greenBlockers.end(), bot) != greenBlockers.end();
     Player* eligibleGreenBlocker = greenBlockers.empty() ? nullptr : greenBlockers.front();
-    Position beamPos = karazhanHelper.GetPositionOnBeam(boss, greenPortal, 18.0f);
+    Position greenBeamPos = karazhanHelper.GetPositionOnBeam(boss, greenPortal, 18.0f);
 
-    if (bot == eligibleGreenBlocker || (isGreenBlocker && bot->GetExactDist2d(beamPos.GetPositionX(), beamPos.GetPositionY()) < 1.5f))
+    // If not eligible, leave beam position
+    if (!isGreenBlocker && bot->GetExactDist2d(greenBeamPos.GetPositionX(), greenBeamPos.GetPositionY()) < 1.5f)
+    {
+        LOG_INFO("playerbots","%s is no longer eligible to block the GREEN beam and is leaving the beam position.", bot->GetName().c_str());
+        // Move sideways 5 yards (perpendicular to beam)
+        float bx = boss->GetPositionX();
+        float by = boss->GetPositionY();
+        float bz = boss->GetPositionZ();
+        float px = greenPortal->GetPositionX();
+        float py = greenPortal->GetPositionY();
+        float dx = px - bx;
+        float dy = py - by;
+        float length = sqrt(dx*dx + dy*dy);
+        if (length == 0.0f)
+            return false;
+        dx /= length;
+        dy /= length;
+        // Perpendicular direction
+        float perpDx = -dy;
+        float perpDy = dx;
+        float sideX = greenBeamPos.GetPositionX() + perpDx * 5.0f;
+        float sideY = greenBeamPos.GetPositionY() + perpDy * 5.0f;
+        float sideZ = greenBeamPos.GetPositionZ();
+        return MoveTo(bot->GetMapId(), sideX, sideY, sideZ, false, false, false, true, MovementPriority::MOVEMENT_COMBAT);
+    }
+
+    if (bot == eligibleGreenBlocker || (isGreenBlocker && bot->GetExactDist2d(greenBeamPos.GetPositionX(), greenBeamPos.GetPositionY()) < 1.5f))
     {
         // Stay at beam position as long as bot is a green blocker
-        return MoveTo(bot->GetMapId(), beamPos.GetPositionX(), beamPos.GetPositionY(), beamPos.GetPositionZ(), false, false, false, true, MovementPriority::MOVEMENT_COMBAT);
+        return MoveTo(bot->GetMapId(), greenBeamPos.GetPositionX(), greenBeamPos.GetPositionY(), greenBeamPos.GetPositionZ(), false, false, false, true, MovementPriority::MOVEMENT_COMBAT);
     }
     return false;
 }
@@ -622,11 +680,14 @@ bool KarazhanNetherspiteBlockGreenBeamAction::isUseful()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "netherspite");
 
+    if (!boss)
+        return false;
+
     if (boss->HasAura(SPELL_BANISH))
         return false;
 
     return true;
-}*/
+}
 
 /* bool KarazhanNetherspiteAvoidBeamAction::Execute(Event event)
 {

@@ -35,6 +35,8 @@ public:
         creators["karazhan shade of aran spread ranged"] = &RaidKarazhanActionContext::karazhan_shade_of_aran_spread_ranged;
 
         creators["karazhan netherspite block red beam"] = &RaidKarazhanActionContext::karazhan_netherspite_block_red_beam;
+        creators["karazhan netherspite block blue beam"] = &RaidKarazhanActionContext::karazhan_netherspite_block_blue_beam;
+        creators["karazhan netherspite block green beam"] = &RaidKarazhanActionContext::karazhan_netherspite_block_green_beam;
 
         creators["karazhan prince malchezaar avoid infernal"] = &RaidKarazhanActionContext::karazhan_prince_malchezaar_avoid_infernal;
         creators["karazhan prince malchezaar run away from shadow nova"] = &RaidKarazhanActionContext::karazhan_prince_malchezaar_run_away_from_shadow_nova;
@@ -66,6 +68,8 @@ private:
     static Action* karazhan_shade_of_aran_spread_ranged(PlayerbotAI* ai) { return new KarazhanShadeOfAranSpreadRangedAction(ai); }
 
     static Action* karazhan_netherspite_block_red_beam(PlayerbotAI* ai) { return new KarazhanNetherspiteBlockRedBeamAction(ai); }
+    static Action* karazhan_netherspite_block_blue_beam(PlayerbotAI* ai) { return new KarazhanNetherspiteBlockBlueBeamAction(ai); }
+    static Action* karazhan_netherspite_block_green_beam(PlayerbotAI* ai) { return new KarazhanNetherspiteBlockGreenBeamAction(ai); }
 
     static Action* karazhan_prince_malchezaar_avoid_infernal(PlayerbotAI* ai) { return new KarazhanPrinceMalchezaarAvoidInfernalAction(ai); }
     static Action* karazhan_prince_malchezaar_run_away_from_shadow_nova(PlayerbotAI* ai) { return new KarazhanPrinceMalchezaarRunAwayFromShadowNovaAction(ai); }

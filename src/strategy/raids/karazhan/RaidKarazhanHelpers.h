@@ -15,6 +15,8 @@ public:
     Unit* GetNearestPlayerInRadius(float /*radius*/ = 5.0f);
     bool IsFlameWreathActive();
     Position GetPositionOnBeam(Unit* boss, Unit* portal, float distanceFromBoss);
+    std::vector<Player*> GetBlueBlockers();
+    std::vector<Player*> GetGreenBlockers();
     std::vector<Unit*> GetSpawnedInfernals() const;
 };
 

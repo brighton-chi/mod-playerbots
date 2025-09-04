@@ -58,6 +58,8 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode(
         "karazhan netherspite", NextAction::array(0,
         new NextAction("karazhan netherspite block red beam", ACTION_RAID + 1),
+        new NextAction("karazhan netherspite block blue beam", ACTION_RAID + 1),
+        new NextAction("karazhan netherspite block green beam", ACTION_RAID + 1),
         nullptr)));
 
     triggers.push_back(new TriggerNode(
