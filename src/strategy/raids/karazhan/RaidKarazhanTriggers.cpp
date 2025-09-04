@@ -115,7 +115,7 @@ bool KarazhanShadeOfAranTrigger::IsActive()
     return true;
 }
 
-/*bool KarazhanNetherspiteTrigger::IsActive()
+bool KarazhanNetherspiteTrigger::IsActive()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "netherspite");
 
@@ -123,7 +123,7 @@ bool KarazhanShadeOfAranTrigger::IsActive()
         return false;
 
     return true;
-}*/
+}
 
 bool KarazhanPrinceMalchezaarTrigger::IsActive()
 {

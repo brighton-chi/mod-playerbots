@@ -1,6 +1,8 @@
 #include "RaidKarazhanActions.h"
 #include "RaidKarazhanHelpers.h"
 #include "AiObjectContext.h"
+#include "Position.h"
+#include <algorithm>
 
 void RaidKarazhanHelpers::MarkTargetWithSkull(Unit* target)
 {
@@ -82,144 +84,6 @@ bool RaidKarazhanHelpers::IsFlameWreathActive()
     return false;
 }
 
-/*bool RaidKarazhanHelpers::IsBetween(Unit* first, Unit* second)
-{
-    float bx = first->GetPositionX();
-    float by = first->GetPositionY();
-    float px = second->GetPositionX();
-    float py = second->GetPositionY();
-    float botx = bot->GetPositionX();
-    float boty = bot->GetPositionY();
-
-    // Vector from boss to portal
-    float dx = px - bx;
-    float dy = py - by;
-
-    // Vector from boss to bot
-    float botdx = botx - bx;
-    float botdy = boty - by;
-
-    // Project bot position onto the line segment [boss, portal]
-    float lenSq = dx * dx + dy * dy;
-    float t = (lenSq > 0) ? ((botdx * dx + botdy * dy) / lenSq) : 0.0f;
-    t = std::clamp(t, 0.0f, 1.0f);
-
-    // Closest point on the line segment
-    float closestX = bx + t * dx;
-    float closestY = by + t * dy;
-
-    // Distance from bot to the closest point on the line
-    float dist = std::sqrt((botx - closestX) * (botx - closestX) + (boty - closestY) * (boty - closestY));
-
-    return dist < 1.0f;
-}
-
-Position RaidKarazhanHelpers::GetPositionBetween(Unit* first, Unit* second)
-{
-    float bx = first->GetPositionX();
-    float by = first->GetPositionY();
-    float px = second->GetPositionX();
-    float py = second->GetPositionY();
-    float botx = bot->GetPositionX();
-    float boty = bot->GetPositionY();
-
-    float dx = px - bx;
-    float dy = py - by;
-
-    float botdx = botx - bx;
-    float botdy = boty - by;
-
-    float lenSq = dx * dx + dy * dy;
-    float t = (lenSq > 0) ? ((botdx * dx + botdy * dy) / lenSq) : 0.0f;
-    t = std::clamp(t, 0.0f, 1.0f);
-
-    float closestX = bx + t * dx;
-    float closestY = by + t * dy;
-    float closestZ = bot->GetPositionZ();
-
-    return Position(closestX, closestY, closestZ);
-}
-
-Position RaidKarazhanHelpers::GetPositionToRotateAroundTarget(Unit* target)
-{
-    float bx = target->GetPositionX();
-    float by = target->GetPositionY();
-    float botx = bot->GetPositionX();
-    float boty = bot->GetPositionY();
-    float radius = std::sqrt((botx - bx) * (botx - bx) + (boty - by) * (boty - by));
-    float angle = std::atan2(boty - by, botx - bx);
-
-    constexpr float angleStep = M_PI / 18.0f;
-    float newAngle = angle + angleStep;
-
-    float newX = bx + radius * std::cos(newAngle);
-    float newY = by + radius * std::sin(newAngle);
-    float newZ = bot->GetPositionZ();
-
-    return Position(newX, newY, newZ);
-}
-
-Position RaidKarazhanHelpers::GetPositionToMoveCloserToTarget(Unit* target)
-{
-    constexpr float stopDistance = 10.0f;
-    constexpr float stepDistance = 3.0f;
-
-    float portalX = target->GetPositionX();
-    float portalY = target->GetPositionY();
-    float portalZ = target->GetPositionZ();
-
-    float botX = bot->GetPositionX();
-    float botY = bot->GetPositionY();
-    float botZ = bot->GetPositionZ();
-
-    float dx = portalX - botX;
-    float dy = portalY - botY;
-    float dz = portalZ - botZ;
-    float distance = std::sqrt(dx * dx + dy * dy + dz * dz);
-
-    if (distance > stopDistance)
-    {
-        float moveDist = std::min(stepDistance, distance - stopDistance);
-        float norm = std::sqrt(dx * dx + dy * dy + dz * dz);
-        float stepX = botX + (dx / norm) * moveDist;
-        float stepY = botY + (dy / norm) * moveDist;
-        float stepZ = botZ + (dz / norm) * moveDist;
-
-        return Position(stepX, stepY, stepZ);
-    }
-
-    return Position(bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ());
-}
-
-Position RaidKarazhanHelpers::GetFlankPosition(Unit* target, float distance, bool rightFlank)
-{
-    float angle = target->GetOrientation();
-    // 90 degrees to the left or right
-    angle += rightFlank ? M_PI_2 : -M_PI_2;
-
-    float x = target->GetPositionX() + std::cos(angle) * distance;
-    float y = target->GetPositionY() + std::sin(angle) * distance;
-    float z = target->GetPositionZ();
-
-    return Position(x, y, z);
-}
-
-Unit* RaidKarazhanHelpers::GetNearestUnitByEntryWithinRadius(uint32 entry, float radius)
-{
-    const GuidVector npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
-
-    for (const auto& npcGuid : npcs)
-    {
-        Unit* unit = botAI->GetUnit(npcGuid);
-
-        if (unit && !unit->IsAlive() && unit->GetEntry() == entry && bot->GetExactDist2d(unit) < radius)
-            return unit;
-    }
-
-    return nullptr;
-}*/
-
-// Returns all spawned infernal units in the encounter
 std::vector<Unit*> RaidKarazhanHelpers::GetSpawnedInfernals() const
 {
     std::vector<Unit*> infernals;
@@ -232,3 +96,201 @@ std::vector<Unit*> RaidKarazhanHelpers::GetSpawnedInfernals() const
     }
     return infernals;
 }
+
+/* std::vector<Player*> RaidKarazhanHelpers::GetRedBlockers()
+{
+    std::vector<Player*> redBlockers;
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
+        {
+            Player* member = itr->GetSource();
+            if (!member || !member->IsAlive())
+                continue;
+
+            // Tank, no nether exhaustion red (38637), and <= 6 stacks of nether portal red (30421)
+            if (botAI->IsTank(member) && !member->HasAura(SPELL_NETHER_EXHAUSTION_RED))
+            {
+                Aura* redBuff = member->GetAura(SPELL_NETHER_PORTAL_RED);
+                if (!redBuff || redBuff->GetStackAmount() <= 6)
+                {
+                    redBlockers.push_back(member);
+                }
+            }
+        }
+    }
+    return redBlockers;
+}*/
+
+/* std::vector<Player*> RaidKarazhanHelpers::GetBlueBlockers()
+{
+    std::vector<Player*> blueBlockers;
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
+        {
+            Player* member = itr->GetSource();
+            if (!member || !member->IsAlive())
+                continue;
+
+            // Is DPS, not warrior, not rogue, no nether exhaustion blue (38639), <= 30 stacks of nether portal blue (30423)
+            bool isDps = botAI->IsDps(member);
+            bool isWarrior = member->getClass() == CLASS_WARRIOR;
+            bool isRogue = member->getClass() == CLASS_ROGUE;
+            if (isDps && !isWarrior && !isRogue && !member->HasAura(SPELL_NETHER_EXHAUSTION_BLUE))
+            {
+                Aura* blueBuff = member->GetAura(SPELL_NETHER_PORTAL_BLUE);
+                if (!blueBuff || blueBuff->GetStackAmount() <= 30)
+                {
+                    blueBlockers.push_back(member);
+                }
+            }
+        }
+    }
+    return blueBlockers;
+} */
+
+/*std::vector<Player*> RaidKarazhanHelpers::GetGreenBlockers()
+{
+    std::vector<Player*> greenBlockers;
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
+        {
+            Player* member = itr->GetSource();
+            if (!member || !member->IsAlive())
+                continue;
+
+            // (1) Rogue or non-tank Warrior, no aura 38638
+            if ((member->getClass() == CLASS_ROGUE || (member->getClass() == CLASS_WARRIOR && botAI->IsDps(member))) &&
+                !member->HasAura(SPELL_NETHER_EXHAUSTION_GREEN))
+            {
+                greenBlockers.push_back(member);
+                continue;
+            }
+
+            // (2) Healer, no aura 38638, and less than 30 stacks of aura 30422
+            if (botAI->IsHeal(member) && !member->HasAura(SPELL_NETHER_EXHAUSTION_GREEN))
+            {
+                Aura* greenBuff = member->GetAura(SPELL_NETHER_PORTAL_GREEN);
+                if (!greenBuff || greenBuff->GetStackAmount() < 30)
+                {
+                    greenBlockers.push_back(member);
+                }
+            }
+        }
+    }
+    return greenBlockers;
+} */
+
+Position RaidKarazhanHelpers::GetPositionOnBeam(Unit* boss, Unit* portal, float distanceFromBoss)
+{
+    float bx = boss->GetPositionX();
+    float by = boss->GetPositionY();
+    float bz = boss->GetPositionZ();
+    float px = portal->GetPositionX();
+    float py = portal->GetPositionY();
+
+    float dx = px - bx;
+    float dy = py - by;
+    float length = sqrt(dx*dx + dy*dy);
+    if (length == 0.0f)
+        return Position(bx, by, bz);
+
+    dx /= length;
+    dy /= length;
+
+    float targetX = bx + dx * distanceFromBoss;
+    float targetY = by + dy * distanceFromBoss;
+    float targetZ = bz;
+
+    return Position(targetX, targetY, targetZ);
+}
+
+/* std::tuple<Player*, Player*, Player*> RaidKarazhanHelpers::GetCurrentBeamBlockers()
+{
+    Player* redBlocker = nullptr;
+    Player* greenBlocker = nullptr;
+    Player* blueBlocker = nullptr;
+
+    // Red: first eligible tank
+    std::vector<Player*> redBlockers;
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
+        {
+            Player* member = itr->GetSource();
+            if (!member || !member->IsAlive())
+                continue;
+            PlayerbotAI* memberAI = sPlayerbotsMgr->GetPlayerbotAI(member);
+            if (!memberAI || !memberAI->IsTank(member))
+                continue;
+            if (member->HasAura(SPELL_NETHER_EXHAUSTION_RED))
+                continue;
+            redBlockers.push_back(member);
+        }
+    }
+    if (!redBlockers.empty())
+        redBlocker = redBlockers.front();
+
+    // Green: first eligible healer, rogue, or dps warrior
+    std::vector<Player*> greenBlockers;
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
+        {
+            Player* member = itr->GetSource();
+            if (!member || !member->IsAlive())
+                continue;
+            PlayerbotAI* memberAI = sPlayerbotsMgr->GetPlayerbotAI(member);
+            if (!memberAI)
+                continue;
+            bool isHealer = memberAI->IsHeal(member);
+            bool isRogue = member->getClass() == CLASS_ROGUE;
+            bool isDpsWarrior = member->getClass() == CLASS_WARRIOR && !memberAI->IsTank(member);
+            if (!(isHealer || isRogue || isDpsWarrior))
+                continue;
+            if (member->HasAura(SPELL_NETHER_EXHAUSTION_GREEN))
+                continue;
+            greenBlockers.push_back(member);
+        }
+    }
+    if (!greenBlockers.empty())
+        greenBlocker = greenBlockers.front();
+
+    // Blue: first eligible dps (not warrior/rogue)
+    std::vector<Player*> blueBlockers = GetBlueBlockers();
+    if (!blueBlockers.empty())
+        blueBlocker = blueBlockers.front();
+
+    return std::make_tuple(redBlocker, greenBlocker, blueBlocker);
+}
+
+Position RaidKarazhanHelpers::GetAvoidBeamPosition(Unit* boss, Unit* portal, float minDistance, float maxDistance)
+{
+    // Get position along the beam at minDistance, then offset perpendicular by (maxDistance-minDistance)/2
+    float bx = boss->GetPositionX();
+    float by = boss->GetPositionY();
+    float bz = boss->GetPositionZ();
+    float px = portal->GetPositionX();
+    float py = portal->GetPositionY();
+
+    float dx = px - bx;
+    float dy = py - by;
+    float length = sqrt(dx*dx + dy*dy);
+    if (length == 0.0f)
+        return Position(bx, by, bz);
+    dx /= length;
+    dy /= length;
+
+    // Perpendicular direction
+    float perpDx = -dy;
+    float perpDy = dx;
+    float offset = (maxDistance - minDistance) / 2.0f;
+
+    float targetX = bx + dx * minDistance + perpDx * offset;
+    float targetY = by + dy * minDistance + perpDy * offset;
+    float targetZ = bz;
+
+    return Position(targetX, targetY, targetZ);
+} */

@@ -16,19 +16,19 @@ enum KarazhanSpells
     SPELL_ARCANE_EXPLOSION          = 29973,
 
     // Netherspite
-    //SPELL_RED_BUFF                  = 30421,
-    //SPELL_GREEN_BUFF                = 30422,
-    //SPELL_BLUE_BUFF                 = 30423,
+    SPELL_NETHER_PORTAL_RED                  = 30421,
+    SPELL_NETHER_PORTAL_GREEN                = 30422,
+    SPELL_NETHER_PORTAL_BLUE                 = 30423,
 
     //SPELL_BLUE_CHANNEL              = 30463,
     //SPELL_GREEN_CHANNEL             = 30464,
     //SPELL_RED_CHANNEL               = 30465,
 
-    //SPELL_RED_DEBUFF                = 38637,
-    //SPELL_GREEN_DEBUFF              = 38638,
-    //SPELL_BLUE_DEBUFF               = 38639,
+    SPELL_NETHER_EXHAUSTION_RED                = 38637,
+    SPELL_NETHER_EXHAUSTION_GREEN              = 38638,
+    SPELL_NETHER_EXHAUSTION_BLUE               = 38639,
 
-    //SPELL_BANISH                    = 39833,
+    SPELL_BANISH                    = 39833,
 
     // Prince Malchezaar
     SPELL_ENFEEBLE                    = 30843
@@ -46,10 +46,10 @@ enum KarazhanNpcs
     NPC_CONJURED_ELEMENTAL          = 17167,
 
     // Netherspite
-    //NPC_VOIDZONE                    = 16697,
-    //NPC_RED_PORTAL                  = 17369,
-    //NPC_BLUE_PORTAL                 = 17368,
-    //NPC_GREEN_PORTAL                = 17367,
+    NPC_VOID_ZONE                   = 16697,
+    NPC_RED_PORTAL                  = 17369,
+    NPC_BLUE_PORTAL                 = 17368,
+    NPC_GREEN_PORTAL                = 17367,
 
     // Prince Malchezaar
     NPC_NETHERSPITE_INFERNAL        = 17646
@@ -227,18 +227,16 @@ public:
     bool isUseful() override;
 };
 
-/*class KarazhanNetherspiteSoakBeamsAction : public AttackAction
+class KarazhanNetherspiteBlockRedBeamAction : public AttackAction
 {
 public:
-    KarazhanNetherspiteSoakBeamsAction(PlayerbotAI* botAI, std::string const name = "karazhan netherspite soak beams") : AttackAction(botAI, name) {}
+    KarazhanNetherspiteBlockRedBeamAction(PlayerbotAI* botAI, std::string const name = "karazhan netherspite block red beam") : AttackAction(botAI, name) {}
 
     bool Execute(Event event) override;
-
-private:
-    uint32 lastMoveTime = 0;
+    bool isUseful() override;
 };
 
-class KarazhanNetherspiteAvoidVoidZoneAction : public AttackAction
+/*class KarazhanNetherspiteAvoidVoidZoneAction : public AttackAction
 {
 public:
     KarazhanNetherspiteAvoidVoidZoneAction(PlayerbotAI* botAI, std::string const name = "karazhan netherspite avoid void zone") : AttackAction(botAI, name) {}
