@@ -189,14 +189,23 @@ public:
     bool isUseful() override;
 };
 
-/*class KarazhanNetherspiteAvoidVoidZoneAction : public AttackAction
+class KarazhanNetherspiteAssignedBlockerAvoidVoidZoneAction : public AttackAction
 {
 public:
-    KarazhanNetherspiteAvoidVoidZoneAction(PlayerbotAI* botAI, std::string const name = "karazhan netherspite avoid void zone") : AttackAction(botAI, name) {}
+    KarazhanNetherspiteAssignedBlockerAvoidVoidZoneAction(PlayerbotAI* botAI, std::string const name = "karazhan netherspite assigned blocker avoid void zone") : AttackAction(botAI, name) {}
 
     bool Execute(Event event) override;
     bool isUseful() override;
-};*/
+};
+
+class KarazhanNetherspiteUnassignedBlockerAvoidVoidZoneAction : public AttackAction
+{
+public:
+    KarazhanNetherspiteUnassignedBlockerAvoidVoidZoneAction(PlayerbotAI* botAI, std::string const name = "karazhan netherspite unassigned blocker avoid void zone") : AttackAction(botAI, name) {}
+
+    bool Execute(Event event) override;
+    bool isUseful() override;
+}; 
 
 class KarazhanPrinceMalchezaarAvoidInfernalAction : public AttackAction
 {

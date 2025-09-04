@@ -57,11 +57,12 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode(
         "karazhan netherspite", NextAction::array(0,
-        new NextAction("karazhan netherspite block red beam", ACTION_EMERGENCY + 6),
-        new NextAction("karazhan netherspite block blue beam", ACTION_EMERGENCY + 6),
-        new NextAction("karazhan netherspite block green beam", ACTION_EMERGENCY + 6),
-        new NextAction("karazhan netherspite avoid beam", ACTION_RAID + 1),
-        // new NextAction("karazhan netherspite avoid void zone", ACTION_RAID),
+        new NextAction("karazhan netherspite assigned blocker avoid void zone", ACTION_EMERGENCY + 9),
+        new NextAction("karazhan netherspite block red beam", ACTION_EMERGENCY + 8),
+        new NextAction("karazhan netherspite block blue beam", ACTION_EMERGENCY + 8),
+        new NextAction("karazhan netherspite block green beam", ACTION_EMERGENCY + 8),
+        new NextAction("karazhan netherspite unassigned blocker avoid void zone", ACTION_EMERGENCY + 7),
+        new NextAction("karazhan netherspite avoid beam", ACTION_EMERGENCY + 6),
         nullptr)));
 
     triggers.push_back(new TriggerNode(

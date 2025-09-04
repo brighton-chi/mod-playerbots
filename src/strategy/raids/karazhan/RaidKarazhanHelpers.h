@@ -95,6 +95,7 @@ public:
     std::vector<Player*> GetGreenBlockers();
     std::tuple<Player*, Player*, Player*> GetCurrentBeamBlockers();
     Position GetAvoidBeamPosition(Unit* boss, Unit* portal, float minDistance, float maxDistance);
+    std::vector<Unit*> GetAllVoidZones();
     std::vector<Unit*> GetSpawnedInfernals() const;
 };
 

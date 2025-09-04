@@ -5,8 +5,6 @@
 #include <algorithm>
 #include <map>
 
-#include "Log.h"
-
 void RaidKarazhanHelpers::MarkTargetWithSkull(Unit* target)
 {
     if (!target)
@@ -42,7 +40,6 @@ Unit* RaidKarazhanHelpers::GetFirstAliveUnitByEntry(uint32 entry)
         if (unit && unit->IsAlive() && unit->GetEntry() == entry)
             return unit;
     }
-
     return nullptr;
 }
 
@@ -61,7 +58,6 @@ Unit* RaidKarazhanHelpers::GetNearestPlayerInRadius(float radius)
                 return member;
         }
     }
-
     return nullptr;
 }
 
@@ -83,7 +79,6 @@ bool RaidKarazhanHelpers::IsFlameWreathActive()
                 return true;
         }
     }
-
     return false;
 }
 
@@ -111,7 +106,6 @@ std::vector<Player*> RaidKarazhanHelpers::GetBlueBlockers()
             }
         }
     }
-
     return blueBlockers;
 }
 
@@ -140,7 +134,6 @@ std::vector<Player*> RaidKarazhanHelpers::GetGreenBlockers()
             }
         }
     }
-
     return greenBlockers;
 }
 
@@ -277,8 +270,26 @@ Position RaidKarazhanHelpers::GetAvoidBeamPosition(Unit* boss, Unit* portal, flo
             targetY += perpDy * adjust * sign;
         }
     }
-
     return Position(targetX, targetY, targetZ);
+}
+
+std::vector<Unit*> RaidKarazhanHelpers::GetAllVoidZones()
+{
+    std::vector<Unit*> voidZones;
+    const float radius = 20.0f;
+    const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
+    for (const auto& npcGuid : npcs)
+    {
+        Unit* unit = botAI->GetUnit(npcGuid);
+        if (!unit || unit->GetEntry() != NPC_VOID_ZONE)
+            continue;
+        float dist = bot->GetExactDist2d(unit);
+        if (dist < radius)
+        {
+            voidZones.push_back(unit);
+        }
+    }
+    return voidZones;
 }
 
 std::vector<Unit*> RaidKarazhanHelpers::GetSpawnedInfernals() const
@@ -293,6 +304,5 @@ std::vector<Unit*> RaidKarazhanHelpers::GetSpawnedInfernals() const
         if (unit && unit->GetEntry() == NPC_NETHERSPITE_INFERNAL)
             infernals.push_back(unit);
     }
-
     return infernals;
 }
