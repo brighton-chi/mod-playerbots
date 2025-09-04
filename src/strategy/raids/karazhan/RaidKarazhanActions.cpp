@@ -769,7 +769,6 @@ bool KarazhanNetherspiteAvoidBeamAction::isUseful()
     return boss && !boss->HasAura(SPELL_BANISH);
 }
 
-
 // Assigned blue/green blockers avoid void zones; red blockers will ignore void zones
 bool KarazhanNetherspiteAssignedBlockerAvoidVoidZoneAction::Execute(Event event)
 {
@@ -819,10 +818,13 @@ bool KarazhanNetherspiteAssignedBlockerAvoidVoidZoneAction::Execute(Event event)
     float maxDist = t + 20.0f;
     float step = 0.5f;
 
+    const float minMoveDist = 3.0f;
+    float bossZ = boss->GetPositionZ();
     for (float dist = minDist; dist <= maxDist; dist += step)
     {
         float candidateX = bx + dx * dist;
         float candidateY = by + dy * dist;
+        float candidateZ = bossZ;
         float candidateDistToBoss = sqrt(pow(candidateX - bx, 2) + pow(candidateY - by, 2));
 
         if (candidateDistToBoss < 18.0f)
@@ -840,10 +842,15 @@ bool KarazhanNetherspiteAssignedBlockerAvoidVoidZoneAction::Execute(Event event)
             }
         }
 
-        if (outsideAllVoidZones)
-        {
-            return MoveTo(bot->GetMapId(), candidateX, candidateY, bot->GetPositionZ(), false, false, false, true, MovementPriority::MOVEMENT_FORCED);
-        }
+        if (!outsideAllVoidZones)
+            continue;
+
+        // Only consider candidates at least minMoveDist from current position
+        float moveDist = sqrt(pow(candidateX - bot->GetPositionX(), 2) + pow(candidateY - bot->GetPositionY(), 2));
+        if (moveDist < minMoveDist)
+            continue;
+
+        return MoveTo(bot->GetMapId(), candidateX, candidateY, candidateZ, false, false, false, true, MovementPriority::MOVEMENT_FORCED);
     }
     return false;
 }
@@ -867,10 +874,8 @@ bool KarazhanNetherspiteUnassignedBlockerAvoidVoidZoneAction::Execute(Event even
     RaidKarazhanHelpers karazhanHelper(botAI);
     std::vector<Unit*> voidZones = karazhanHelper.GetAllVoidZones();
     bool inVoidZone = false;
-    for (Unit* voidZone : voidZones)
-    {
-        if (bot->GetExactDist2d(voidZone) < 3.0f)
-        {
+    for (Unit* vz : voidZones) {
+        if (bot->GetExactDist2d(vz) < 3.0f) {
             inVoidZone = true;
             break;
         }
@@ -879,11 +884,10 @@ bool KarazhanNetherspiteUnassignedBlockerAvoidVoidZoneAction::Execute(Event even
         return false;
 
     Unit* boss = AI_VALUE2(Unit*, "find target", "netherspite");
-    struct BeamAvoid {
-        Unit* portal;
-        float minDist;
-        float maxDist;
-    };
+    if (!boss) return false;
+    float bossZ = boss->GetPositionZ();
+
+    struct BeamAvoid { Unit* portal; float minDist, maxDist; };
     std::vector<BeamAvoid> beams;
     Unit* redPortal = bot->FindNearestCreature(NPC_RED_PORTAL, 100.0f);
     Unit* bluePortal = bot->FindNearestCreature(NPC_BLUE_PORTAL, 100.0f);
@@ -895,66 +899,46 @@ bool KarazhanNetherspiteUnassignedBlockerAvoidVoidZoneAction::Execute(Event even
     bool isDpsWarrior = bot->getClass() == CLASS_WARRIOR && botAI->IsDps(bot);
     if (greenPortal && (isHealer || isRogue || isDpsWarrior)) beams.push_back({greenPortal, 3.0f, 10.0f});
 
-    float stepAngle = M_PI / 18.0f;
-    float stepDist = 0.5f;
-    float maxSearchDist = 20.0f;
-    for (float angle = 0; angle < 2 * M_PI; angle += stepAngle)
-    {
-        for (float dist = 3.0f; dist <= maxSearchDist; dist += stepDist)
-        {
-            float candidateX = bot->GetPositionX() + cos(angle) * dist;
-            float candidateY = bot->GetPositionY() + sin(angle) * dist;
-            bool outsideAllVoidZones = true;
-            for (Unit* voidZone : voidZones)
-            {
-                float voidZoneDist = sqrt(pow(candidateX - voidZone->GetPositionX(), 2) + pow(candidateY - voidZone->GetPositionY(), 2));
-                if (voidZoneDist < 3.0f)
-                {
-                    outsideAllVoidZones = false;
-                    break;
-                }
-            }
-            if (!outsideAllVoidZones)
+    const float minMoveDist = 3.0f, maxSearchDist = 20.0f, stepAngle = M_PI/18.0f, stepDist = 0.5f;
+    Position bestCandidate;
+    float bestDist = 0.0f;
+    bool found = false;
+    for (float angle = 0; angle < 2 * M_PI; angle += stepAngle) {
+        for (float dist = 3.0f; dist <= maxSearchDist; dist += stepDist) {
+            float cx = bot->GetPositionX() + cos(angle) * dist;
+            float cy = bot->GetPositionY() + sin(angle) * dist;
+            float cz = bossZ;
+            if (std::any_of(voidZones.begin(), voidZones.end(), [&](Unit* vz){ return Position(cx, cy, cz).GetExactDist2d(vz) < 3.0f; }))
                 continue;
-
-            bool violatesBeam = false;
-            for (const auto& beam : beams)
-            {
-                float bx = boss->GetPositionX();
-                float by = boss->GetPositionY();
-                float px = beam.portal->GetPositionX();
-                float py = beam.portal->GetPositionY();
-                float dx = px - bx;
-                float dy = py - by;
+            bool inBeam = false;
+            for (const auto& beam : beams) {
+                float bx = boss->GetPositionX(), by = boss->GetPositionY();
+                float px = beam.portal->GetPositionX(), py = beam.portal->GetPositionY();
+                float dx = px - bx, dy = py - by;
                 float length = sqrt(dx*dx + dy*dy);
-                if (length == 0.0f)
-                    continue;
-                dx /= length;
-                dy /= length;
-                float canddx = candidateX - bx;
-                float canddy = candidateY - by;
-                float t = (canddx * dx + canddy * dy);
-                float beamDist = sqrt(pow(candidateX - (bx + dx * t), 2) + pow(candidateY - (by + dy * t), 2));
-                if (beamDist < 2.0f)
-                {
-                    if (t > 0.0f && t < length)
-                    {
-                        if (t >= 18.0f)
-                        {
-                            if (t > 18.0f && t < 18.0f + beam.minDist)
-                                violatesBeam = true;
-                            if (t > 18.0f + beam.maxDist)
-                                violatesBeam = true;
-                        }
-                    }
-                }
+                if (length == 0.0f) continue;
+                dx /= length; dy /= length;
+                float botdx = cx - bx, botdy = cy - by;
+                float t = (botdx * dx + botdy * dy);
+                float beamX = bx + dx * t, beamY = by + dy * t;
+                float distToBeam = sqrt(pow(cx - beamX, 2) + pow(cy - beamY, 2));
+                float distToPortal = sqrt(pow(cx - px, 2) + pow(cy - py, 2));
+                if (distToBeam < beam.minDist || distToBeam > beam.maxDist) continue;
+                if (distToPortal < 3.0f) continue;
+                inBeam = true; break;
             }
-            if (violatesBeam)
-                continue;
-
-            return MoveTo(bot->GetMapId(), candidateX, candidateY, bot->GetPositionZ(), false, false, false, true, MovementPriority::MOVEMENT_FORCED);
+            if (inBeam) continue;
+            float moveDist = sqrt(pow(cx - bot->GetPositionX(), 2) + pow(cy - bot->GetPositionY(), 2));
+            if (moveDist < minMoveDist) continue;
+            if (!found || moveDist < bestDist) {
+                bestCandidate = Position(cx, cy, cz);
+                bestDist = moveDist;
+                found = true;
+            }
         }
     }
+    if (found)
+        return MoveTo(bot->GetMapId(), bestCandidate.GetPositionX(), bestCandidate.GetPositionY(), bestCandidate.GetPositionZ(), false, false, false, true, MovementPriority::MOVEMENT_FORCED);
     return false;
 }
 
