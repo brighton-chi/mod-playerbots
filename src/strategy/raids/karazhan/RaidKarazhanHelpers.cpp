@@ -98,19 +98,20 @@ std::vector<Player*> RaidKarazhanHelpers::GetBlueBlockers()
             if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member))
                 continue;
 
-            // Is DPS, not warrior, not rogue, no Nether Exhaustion Blue and <= 30 stacks of Nether Portal Blue buff
+            // Is DPS, not warrior, not rogue, no Nether Exhaustion Blue and <= 30 stacks of Blue Beam debuff
             bool isDps = botAI->IsDps(member);
             bool isWarrior = member->getClass() == CLASS_WARRIOR;
             bool isRogue = member->getClass() == CLASS_ROGUE;
             bool eligible = isDps && !isWarrior && !isRogue && !member->HasAura(SPELL_NETHER_EXHAUSTION_BLUE);
-            Aura* blueBuff = member->GetAura(SPELL_NETHER_PORTAL_BLUE);
+            Aura* blueBuff = member->GetAura(SPELL_BLUE_BEAM_DEBUFF);
+            
             if (eligible && (!blueBuff || blueBuff->GetStackAmount() <= 30))
             {
                 blueBlockers.push_back(member);
-                LOG_INFO("playerbots", "%s is eligible for blue beam blocking.", member->GetName().c_str());
             }
         }
     }
+
     return blueBlockers;
 }
 
@@ -125,26 +126,21 @@ std::vector<Player*> RaidKarazhanHelpers::GetGreenBlockers()
             if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member))
                 continue;
 
+            Aura* greenBuff = member->GetAura(SPELL_GREEN_BEAM_DEBUFF);
             // (1) Rogue or non-tank Warrior, no Nether Exhaustion Green
-            bool eligibleRogueWarrior = (member->getClass() == CLASS_ROGUE || (member->getClass() == CLASS_WARRIOR && botAI->IsDps(member))) &&
-                !member->HasAura(SPELL_NETHER_EXHAUSTION_GREEN);
-            if (eligibleRogueWarrior)
-            {
-                greenBlockers.push_back(member);
-                LOG_INFO("playerbots", "%s is eligible for green beam blocking (rogue/warrior).", member->GetName().c_str());
-                continue;
-            }
+            // (2) Healer, no Nether Exhaustion Green and less than 30 stacks of Green Beam debuff
+            bool eligibleGreen = 
+                ((member->getClass() == CLASS_ROGUE || (member->getClass() == CLASS_WARRIOR && botAI->IsDps(member)))
+                || (botAI->IsHeal(member) && (!greenBuff || greenBuff->GetStackAmount() < 30))) 
+                && !member->HasAura(SPELL_NETHER_EXHAUSTION_GREEN);
 
-            // (2) Healer, no Nether Exhaustion Green and less than 30 stacks of Nether Portal Blue buff
-            bool eligibleHealer = botAI->IsHeal(member) && !member->HasAura(SPELL_NETHER_EXHAUSTION_GREEN);
-            Aura* greenBuff = member->GetAura(SPELL_NETHER_PORTAL_GREEN);
-            if (eligibleHealer && (!greenBuff || greenBuff->GetStackAmount() < 30))
+            if (eligibleGreen)
             {
                 greenBlockers.push_back(member);
-                LOG_INFO("playerbots", "%s is eligible for green beam blocking (healer).", member->GetName().c_str());
             }
         }
     }
+
     return greenBlockers;
 }
 
@@ -172,7 +168,7 @@ Position RaidKarazhanHelpers::GetPositionOnBeam(Unit* boss, Unit* portal, float 
     return Position(targetX, targetY, targetZ);
 }
 
-/* std::tuple<Player*, Player*, Player*> RaidKarazhanHelpers::GetCurrentBeamBlockers()
+std::tuple<Player*, Player*, Player*> RaidKarazhanHelpers::GetCurrentBeamBlockers()
 {
     Player* redBlocker = nullptr;
     Player* greenBlocker = nullptr;
@@ -180,6 +176,7 @@ Position RaidKarazhanHelpers::GetPositionOnBeam(Unit* boss, Unit* portal, float 
 
     // Red: first eligible tank
     std::vector<Player*> redBlockers;
+
     if (Group* group = bot->GetGroup())
     {
         for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
@@ -195,31 +192,12 @@ Position RaidKarazhanHelpers::GetPositionOnBeam(Unit* boss, Unit* portal, float 
             redBlockers.push_back(member);
         }
     }
+
     if (!redBlockers.empty())
         redBlocker = redBlockers.front();
 
     // Green: first eligible healer, rogue, or dps warrior
-    std::vector<Player*> greenBlockers;
-    if (Group* group = bot->GetGroup())
-    {
-        for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
-        {
-            Player* member = itr->GetSource();
-            if (!member || !member->IsAlive())
-                continue;
-            PlayerbotAI* memberAI = sPlayerbotsMgr->GetPlayerbotAI(member);
-            if (!memberAI)
-                continue;
-            bool isHealer = memberAI->IsHeal(member);
-            bool isRogue = member->getClass() == CLASS_ROGUE;
-            bool isDpsWarrior = member->getClass() == CLASS_WARRIOR && !memberAI->IsTank(member);
-            if (!(isHealer || isRogue || isDpsWarrior))
-                continue;
-            if (member->HasAura(SPELL_NETHER_EXHAUSTION_GREEN))
-                continue;
-            greenBlockers.push_back(member);
-        }
-    }
+    std::vector<Player*> greenBlockers = GetGreenBlockers();
     if (!greenBlockers.empty())
         greenBlocker = greenBlockers.front();
 
@@ -233,42 +211,88 @@ Position RaidKarazhanHelpers::GetPositionOnBeam(Unit* boss, Unit* portal, float 
 
 Position RaidKarazhanHelpers::GetAvoidBeamPosition(Unit* boss, Unit* portal, float minDistance, float maxDistance)
 {
-    // Get position along the beam at minDistance, then offset perpendicular by (maxDistance-minDistance)/2
+    // Ensure bot is at least minDistance yards perpendicular from the beam
     float bx = boss->GetPositionX();
     float by = boss->GetPositionY();
     float bz = boss->GetPositionZ();
     float px = portal->GetPositionX();
     float py = portal->GetPositionY();
+    float botx = bot->GetPositionX();
+    float boty = bot->GetPositionY();
 
     float dx = px - bx;
     float dy = py - by;
     float length = sqrt(dx*dx + dy*dy);
+
     if (length == 0.0f)
-        return Position(bx, by, bz);
+        return Position(botx, boty, bz);
+
     dx /= length;
     dy /= length;
 
-    // Perpendicular direction
+    // Vector from boss to bot
+    float botdx = botx - bx;
+    float botdy = boty - by;
+    // Perpendicular distance from bot to beam
+    float perpDist = fabs(-dy * botdx + dx * botdy);
+
+    // Distance from boss
+    float bossDist = sqrt(botdx * botdx + botdy * botdy);
+
+    // If already far enough from beam and boss, stay
+    if (perpDist >= minDistance && bossDist >= 18.0f)
+        return Position(botx, boty, bz);
+
+    // Move bot to minDistance away from beam
     float perpDx = -dy;
     float perpDy = dx;
-    float offset = (maxDistance - minDistance) / 2.0f;
-
-    float targetX = bx + dx * minDistance + perpDx * offset;
-    float targetY = by + dy * minDistance + perpDy * offset;
+    // Determine which side to move to (away from beam)
+    float sign = ((-dy * botdx + dx * botdy) >= 0) ? 1.0f : -1.0f;
+    float targetX = botx + perpDx * (minDistance - perpDist) * sign;
+    float targetY = boty + perpDy * (minDistance - perpDist) * sign;
     float targetZ = bz;
 
+    // Ensure target position is at least 18 yards from boss
+    float tdx = targetX - bx;
+    float tdy = targetY - by;
+    float targetBossDist = sqrt(tdx * tdx + tdy * tdy);
+
+    if (targetBossDist < 18.0f)
+    {
+        // Move further away from boss along the direction from boss to target
+        float dirX = tdx / (targetBossDist > 0.0f ? targetBossDist : 1.0f);
+        float dirY = tdy / (targetBossDist > 0.0f ? targetBossDist : 1.0f);
+        targetX = bx + dirX * 18.0f;
+        targetY = by + dirY * 18.0f;
+        // After boss distance adjustment, re-check perpendicular distance from beam
+        float newBotdx = targetX - bx;
+        float newBotdy = targetY - by;
+        float newPerpDist = fabs(-dy * newBotdx + dx * newBotdy);
+
+        if (newPerpDist < minDistance)
+        {
+            // Move further away from beam along perpendicular direction
+            float adjust = minDistance - newPerpDist;
+            targetX += perpDx * adjust * sign;
+            targetY += perpDy * adjust * sign;
+        }
+    }
+
     return Position(targetX, targetY, targetZ);
-} */
+}
 
 std::vector<Unit*> RaidKarazhanHelpers::GetSpawnedInfernals() const
 {
     std::vector<Unit*> infernals;
     const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
+
     for (const auto& npcGuid : npcs)
     {
         Unit* unit = botAI->GetUnit(npcGuid);
+
         if (unit && unit->GetEntry() == NPC_NETHERSPITE_INFERNAL)
             infernals.push_back(unit);
     }
+
     return infernals;
 }
