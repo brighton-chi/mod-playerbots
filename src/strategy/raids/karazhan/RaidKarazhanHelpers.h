@@ -3,6 +3,7 @@
 
 #include "AiObject.h"
 #include "Playerbots.h"
+#include "MovementActions.h"
 
 enum KarazhanSpells
 {
@@ -94,8 +95,9 @@ public:
     std::vector<Player*> GetBlueBlockers();
     std::vector<Player*> GetGreenBlockers();
     std::tuple<Player*, Player*, Player*> GetCurrentBeamBlockers();
-    Position GetAvoidBeamPosition(Unit* boss, Unit* portal, float minDistance);
     std::vector<Unit*> GetAllVoidZones();
+    bool IsSafePosition (float x, float y, float z,
+         const std::vector<Unit*>& hazards, float hazardRadius);
     std::vector<Unit*> GetSpawnedInfernals() const;
 };
 

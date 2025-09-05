@@ -1,7 +1,9 @@
 #include "RaidKarazhanActions.h"
 #include "RaidKarazhanHelpers.h"
+#include "PlayerbotMgr.h"
 #include "AiObjectContext.h"
 #include "Position.h"
+
 #include <algorithm>
 #include <map>
 
@@ -202,77 +204,6 @@ std::tuple<Player*, Player*, Player*> RaidKarazhanHelpers::GetCurrentBeamBlocker
     return std::make_tuple(redBlocker, greenBlocker, blueBlocker);
 }
 
-Position RaidKarazhanHelpers::GetAvoidBeamPosition(Unit* boss, Unit* portal, float minDistance)
-{
-    // Ensure bot is at least minDistance yards perpendicular from the beam
-    float bx = boss->GetPositionX();
-    float by = boss->GetPositionY();
-    float bz = boss->GetPositionZ();
-    float px = portal->GetPositionX();
-    float py = portal->GetPositionY();
-    float botx = bot->GetPositionX();
-    float boty = bot->GetPositionY();
-
-    float dx = px - bx;
-    float dy = py - by;
-    float length = sqrt(dx*dx + dy*dy);
-
-    if (length == 0.0f)
-        return Position(botx, boty, bz);
-
-    dx /= length;
-    dy /= length;
-
-    // Vector from boss to bot
-    float botdx = botx - bx;
-    float botdy = boty - by;
-    // Perpendicular distance from bot to beam
-    float perpDist = fabs(-dy * botdx + dx * botdy);
-
-    // Distance from boss
-    float bossDist = sqrt(botdx * botdx + botdy * botdy);
-
-    // If already far enough from beam and boss, stay
-    if (perpDist >= minDistance && bossDist >= 18.0f)
-        return Position(botx, boty, bz);
-
-    // Move bot to minDistance away from beam
-    float perpDx = -dy;
-    float perpDy = dx;
-    // Determine which side to move to (away from beam)
-    float sign = ((-dy * botdx + dx * botdy) >= 0) ? 1.0f : -1.0f;
-    float targetX = botx + perpDx * (minDistance - perpDist) * sign;
-    float targetY = boty + perpDy * (minDistance - perpDist) * sign;
-    float targetZ = bz;
-
-    // Ensure target position is at least 18 yards from boss
-    float tdx = targetX - bx;
-    float tdy = targetY - by;
-    float targetBossDist = sqrt(tdx * tdx + tdy * tdy);
-
-    if (targetBossDist < 18.0f)
-    {
-        // Move further away from boss along the direction from boss to target
-        float dirX = tdx / (targetBossDist > 0.0f ? targetBossDist : 1.0f);
-        float dirY = tdy / (targetBossDist > 0.0f ? targetBossDist : 1.0f);
-        targetX = bx + dirX * 18.0f;
-        targetY = by + dirY * 18.0f;
-        // After boss distance adjustment, re-check perpendicular distance from beam
-        float newBotdx = targetX - bx;
-        float newBotdy = targetY - by;
-        float newPerpDist = fabs(-dy * newBotdx + dx * newBotdy);
-
-        if (newPerpDist < minDistance)
-        {
-            // Move further away from beam along perpendicular direction
-            float adjust = minDistance - newPerpDist;
-            targetX += perpDx * adjust * sign;
-            targetY += perpDy * adjust * sign;
-        }
-    }
-    return Position(targetX, targetY, targetZ);
-}
-
 std::vector<Unit*> RaidKarazhanHelpers::GetAllVoidZones()
 {
     std::vector<Unit*> voidZones;
@@ -290,6 +221,19 @@ std::vector<Unit*> RaidKarazhanHelpers::GetAllVoidZones()
         }
     }
     return voidZones;
+}
+
+bool RaidKarazhanHelpers::IsSafePosition(float x, float y, float z,
+    const std::vector<Unit*>& hazards, float hazardRadius)
+{
+    for (Unit* hazard : hazards)
+    {
+        float dist = std::sqrt(std::pow(x - hazard->GetPositionX(), 2) + std::pow(y - hazard->GetPositionY(), 2));
+
+        if (dist < hazardRadius)
+            return false;
+    }
+    return true;
 }
 
 std::vector<Unit*> RaidKarazhanHelpers::GetSpawnedInfernals() const

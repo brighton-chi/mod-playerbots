@@ -180,23 +180,23 @@ public:
     bool isUseful() override;
 };
 
-class KarazhanNetherspiteAvoidBeamAction : public AttackAction
+class KarazhanNetherspiteAvoidBeamandVoidZoneAction : public AttackAction
 {
 public:
-    KarazhanNetherspiteAvoidBeamAction(PlayerbotAI* botAI, std::string const name = "karazhan netherspite avoid beam") : AttackAction(botAI, name) {}
+    KarazhanNetherspiteAvoidBeamandVoidZoneAction(PlayerbotAI* botAI, std::string const name = "karazhan netherspite avoid beam and void zone") : AttackAction(botAI, name) {}
 
     bool Execute(Event event) override;
     bool isUseful() override;
 };
 
-class KarazhanNetherspiteUnassignedBlockerAvoidVoidZoneAction : public AttackAction
+class KarazhanNetherspiteBanishPhaseAvoidVoidZoneAction : public AttackAction
 {
 public:
-    KarazhanNetherspiteUnassignedBlockerAvoidVoidZoneAction(PlayerbotAI* botAI, std::string const name = "karazhan netherspite unassigned blocker avoid void zone") : AttackAction(botAI, name) {}
+    KarazhanNetherspiteBanishPhaseAvoidVoidZoneAction(PlayerbotAI* botAI, std::string const name = "karazhan netherspite banish phase avoid void zone") : AttackAction(botAI, name) {}
 
     bool Execute(Event event) override;
     bool isUseful() override;
-}; 
+};
 
 class KarazhanPrinceMalchezaarAvoidInfernalAction : public AttackAction
 {

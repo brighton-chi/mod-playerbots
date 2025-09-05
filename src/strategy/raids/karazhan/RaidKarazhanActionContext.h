@@ -37,8 +37,8 @@ public:
         creators["karazhan netherspite block red beam"] = &RaidKarazhanActionContext::karazhan_netherspite_block_red_beam;
         creators["karazhan netherspite block blue beam"] = &RaidKarazhanActionContext::karazhan_netherspite_block_blue_beam;
         creators["karazhan netherspite block green beam"] = &RaidKarazhanActionContext::karazhan_netherspite_block_green_beam;
-        creators["karazhan netherspite avoid beam"] = &RaidKarazhanActionContext::karazhan_netherspite_avoid_beam;
-        creators["karazhan netherspite unassigned blocker avoid void zone"] = &RaidKarazhanActionContext::karazhan_netherspite_unassigned_blocker_avoid_void_zone;
+        creators["karazhan netherspite avoid beam and void zone"] = &RaidKarazhanActionContext::karazhan_netherspite_avoid_beam_and_void_zone;
+        creators["karazhan netherspite banish phase avoid void zone"] = &RaidKarazhanActionContext::karazhan_netherspite_banish_phase_avoid_void_zone;
 
         creators["karazhan prince malchezaar avoid infernal"] = &RaidKarazhanActionContext::karazhan_prince_malchezaar_avoid_infernal;
         creators["karazhan prince malchezaar run away from shadow nova"] = &RaidKarazhanActionContext::karazhan_prince_malchezaar_run_away_from_shadow_nova;
@@ -72,8 +72,8 @@ private:
     static Action* karazhan_netherspite_block_red_beam(PlayerbotAI* ai) { return new KarazhanNetherspiteBlockRedBeamAction(ai); }
     static Action* karazhan_netherspite_block_blue_beam(PlayerbotAI* ai) { return new KarazhanNetherspiteBlockBlueBeamAction(ai); }
     static Action* karazhan_netherspite_block_green_beam(PlayerbotAI* ai) { return new KarazhanNetherspiteBlockGreenBeamAction(ai); }
-    static Action* karazhan_netherspite_avoid_beam(PlayerbotAI* ai) { return new KarazhanNetherspiteAvoidBeamAction(ai); }
-    static Action* karazhan_netherspite_unassigned_blocker_avoid_void_zone(PlayerbotAI* ai) { return new KarazhanNetherspiteUnassignedBlockerAvoidVoidZoneAction(ai); }
+    static Action* karazhan_netherspite_avoid_beam_and_void_zone(PlayerbotAI* ai) { return new KarazhanNetherspiteAvoidBeamandVoidZoneAction(ai); }
+    static Action* karazhan_netherspite_banish_phase_avoid_void_zone(PlayerbotAI* ai) { return new KarazhanNetherspiteBanishPhaseAvoidVoidZoneAction(ai); }
 
     static Action* karazhan_prince_malchezaar_avoid_infernal(PlayerbotAI* ai) { return new KarazhanPrinceMalchezaarAvoidInfernalAction(ai); }
     static Action* karazhan_prince_malchezaar_run_away_from_shadow_nova(PlayerbotAI* ai) { return new KarazhanPrinceMalchezaarRunAwayFromShadowNovaAction(ai); }
