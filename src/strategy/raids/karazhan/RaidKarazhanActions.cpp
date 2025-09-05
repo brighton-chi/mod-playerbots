@@ -97,7 +97,7 @@ bool KarazhanMaidenOfVirtuePositionBossAction::Execute(Event event)
         float mY = KARAZHAN_MAIDEN_OF_VIRTUE_BOSS_POSITION.GetPositionY() + (dY / distanceToBossPosition) * maxDistance;
 
         return MoveTo(bot->GetMapId(), mX, mY,
-                      bot->GetPositionZ(), false, false, false, false, MovementPriority::MOVEMENT_FORCED, true,
+                      bot->GetPositionZ(), false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true,
                       false);
     }
     return false;
@@ -143,7 +143,7 @@ bool KarazhanMaidenOfVirtuePositionRangedAction::Execute(Event event)
     if (distance > maxDistance)
         return MoveTo(bot->GetMapId(), KARAZHAN_MAIDEN_OF_VIRTUE_RANGED_POSITION[index].GetPositionX(),
                       KARAZHAN_MAIDEN_OF_VIRTUE_RANGED_POSITION[index].GetPositionY(), bot->GetPositionZ(), false,
-                      false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+                      false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 
     return false;
 }
@@ -172,7 +172,7 @@ bool KarazhanBigBadWolfRunAwayAction::Execute(Event event)
     }
 
     return MoveTo(bot->GetMapId(), target.GetPositionX(), target.GetPositionY(), target.GetPositionZ(), false, false,
-                  false, true, MovementPriority::MOVEMENT_FORCED);
+                  false, true, MovementPriority::MOVEMENT_COMBAT);
 }
 
 bool KarazhanBigBadWolfRunAwayAction::isUseful()
@@ -331,7 +331,7 @@ bool KarazhanTheCuratorPositionBossAction::Execute(Event event)
         float mY = KARAZHAN_THE_CURATOR_BOSS_POSITION.GetPositionY() + (dY / distanceToBossPosition) * maxDistance;
 
         return MoveTo(bot->GetMapId(), mX, mY,
-                      bot->GetPositionZ(), false, false, false, false, MovementPriority::MOVEMENT_FORCED, true,
+                      bot->GetPositionZ(), false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true,
                       false);
     }
 
@@ -603,38 +603,52 @@ bool KarazhanNetherspiteBlockBlueBeamAction::Execute(Event event)
 
     RaidKarazhanHelpers karazhanHelper(botAI);
     std::vector<Player*> blueBlockers = karazhanHelper.GetBlueBlockers();
-    bool isBlueBlocker = std::find(blueBlockers.begin(), blueBlockers.end(), bot) != blueBlockers.end();
-    Player* eligibleBlueBlocker = blueBlockers.empty() ? nullptr : blueBlockers.front();
-    Position blueBeamPos = karazhanHelper.GetPositionOnBeam(boss, bluePortal, 18.0f);
+    Player* assignedBlueBlocker = blueBlockers.empty() ? nullptr : blueBlockers.front();
+    if (bot != assignedBlueBlocker)
+        return false;
 
-    // If not eligible, leave beam position
-    if (!isBlueBlocker && bot->GetExactDist2d(blueBeamPos.GetPositionX(), blueBeamPos.GetPositionY()) < 1.5f)
-    {
-        // Move sideways 5 yards (perpendicular to beam)
-        float bx = boss->GetPositionX();
-        float by = boss->GetPositionY();
-        float bz = boss->GetPositionZ();
-        float px = bluePortal->GetPositionX();
-        float py = bluePortal->GetPositionY();
-        float dx = px - bx;
-        float dy = py - by;
-        float length = sqrt(dx*dx + dy*dy);
-        if (length == 0.0f)
-            return false;
-        dx /= length;
-        dy /= length;
-        // Perpendicular direction
-        float perpDx = -dy;
-        float perpDy = dx;
-        float sideX = blueBeamPos.GetPositionX() + perpDx * 5.0f;
-        float sideY = blueBeamPos.GetPositionY() + perpDy * 5.0f;
-        float sideZ = blueBeamPos.GetPositionZ();
-        return MoveTo(bot->GetMapId(), sideX, sideY, sideZ, false, false, false, true, MovementPriority::MOVEMENT_FORCED);
+    // Unified beam blocking + void zone avoidance
+    std::vector<Unit*> voidZones = karazhanHelper.GetAllVoidZones();
+    float bx = boss->GetPositionX();
+    float by = boss->GetPositionY();
+    float bz = boss->GetPositionZ();
+    float px = bluePortal->GetPositionX();
+    float py = bluePortal->GetPositionY();
+    float dx = px - bx;
+    float dy = py - by;
+    float length = sqrt(dx*dx + dy*dy);
+    if (length == 0.0f)
+        return false;
+    dx /= length;
+    dy /= length;
+
+    // Search for closest position to 18 yards from boss along beam, outside all void zones
+    float bestDist = 100.0f;
+    Position bestPos;
+    bool found = false;
+    for (float dist = 18.0f; dist <= 25.0f; dist += 0.5f) {
+        float candidateX = bx + dx * dist;
+        float candidateY = by + dy * dist;
+        float candidateZ = bz;
+        bool outsideAllVoidZones = true;
+        for (Unit* voidZone : voidZones) {
+            float voidZoneDist = sqrt(pow(candidateX - voidZone->GetPositionX(), 2) + pow(candidateY - voidZone->GetPositionY(), 2));
+            if (voidZoneDist < 4.0f) {
+                outsideAllVoidZones = false;
+                break;
+            }
+        }
+        if (!outsideAllVoidZones)
+            continue;
+        float distToIdeal = fabs(dist - 18.0f);
+        if (!found || distToIdeal < bestDist) {
+            bestDist = distToIdeal;
+            bestPos = Position(candidateX, candidateY, candidateZ);
+            found = true;
+        }
     }
-
-    if (bot == eligibleBlueBlocker)
-    {
-        return MoveTo(bot->GetMapId(), blueBeamPos.GetPositionX(), blueBeamPos.GetPositionY(), blueBeamPos.GetPositionZ(), false, false, false, true, MovementPriority::MOVEMENT_FORCED);
+    if (found) {
+        return MoveTo(bot->GetMapId(), bestPos.GetPositionX(), bestPos.GetPositionY(), bestPos.GetPositionZ(), false, false, false, true, MovementPriority::MOVEMENT_FORCED);
     }
     return false;
 }
@@ -656,38 +670,52 @@ bool KarazhanNetherspiteBlockGreenBeamAction::Execute(Event event)
 
     RaidKarazhanHelpers karazhanHelper(botAI);
     std::vector<Player*> greenBlockers = karazhanHelper.GetGreenBlockers();
-    bool isGreenBlocker = std::find(greenBlockers.begin(), greenBlockers.end(), bot) != greenBlockers.end();
-    Player* eligibleGreenBlocker = greenBlockers.empty() ? nullptr : greenBlockers.front();
-    Position greenBeamPos = karazhanHelper.GetPositionOnBeam(boss, greenPortal, 18.0f);
+    Player* assignedGreenBlocker = greenBlockers.empty() ? nullptr : greenBlockers.front();
+    if (bot != assignedGreenBlocker)
+        return false;
 
-    // If not eligible, leave beam position
-    if (!isGreenBlocker && bot->GetExactDist2d(greenBeamPos.GetPositionX(), greenBeamPos.GetPositionY()) < 1.5f)
-    {
-        // Move sideways 5 yards (perpendicular to beam)
-        float bx = boss->GetPositionX();
-        float by = boss->GetPositionY();
-        float bz = boss->GetPositionZ();
-        float px = greenPortal->GetPositionX();
-        float py = greenPortal->GetPositionY();
-        float dx = px - bx;
-        float dy = py - by;
-        float length = sqrt(dx*dx + dy*dy);
-        if (length == 0.0f)
-            return false;
-        dx /= length;
-        dy /= length;
-        // Perpendicular direction
-        float perpDx = -dy;
-        float perpDy = dx;
-        float sideX = greenBeamPos.GetPositionX() + perpDx * 5.0f;
-        float sideY = greenBeamPos.GetPositionY() + perpDy * 5.0f;
-        float sideZ = greenBeamPos.GetPositionZ();
-        return MoveTo(bot->GetMapId(), sideX, sideY, sideZ, false, false, false, true, MovementPriority::MOVEMENT_FORCED);
+    // Unified beam blocking + void zone avoidance
+    std::vector<Unit*> voidZones = karazhanHelper.GetAllVoidZones();
+    float bx = boss->GetPositionX();
+    float by = boss->GetPositionY();
+    float bz = boss->GetPositionZ();
+    float px = greenPortal->GetPositionX();
+    float py = greenPortal->GetPositionY();
+    float dx = px - bx;
+    float dy = py - by;
+    float length = sqrt(dx*dx + dy*dy);
+    if (length == 0.0f)
+        return false;
+    dx /= length;
+    dy /= length;
+
+    // Search for closest position to 18 yards from boss along beam, outside all void zones
+    float bestDist = 100.0f;
+    Position bestPos;
+    bool found = false;
+    for (float dist = 18.0f; dist <= 25.0f; dist += 0.5f) {
+        float candidateX = bx + dx * dist;
+        float candidateY = by + dy * dist;
+        float candidateZ = bz;
+        bool outsideAllVoidZones = true;
+        for (Unit* voidZone : voidZones) {
+            float voidZoneDist = sqrt(pow(candidateX - voidZone->GetPositionX(), 2) + pow(candidateY - voidZone->GetPositionY(), 2));
+            if (voidZoneDist < 4.0f) {
+                outsideAllVoidZones = false;
+                break;
+            }
+        }
+        if (!outsideAllVoidZones)
+            continue;
+        float distToIdeal = fabs(dist - 18.0f);
+        if (!found || distToIdeal < bestDist) {
+            bestDist = distToIdeal;
+            bestPos = Position(candidateX, candidateY, candidateZ);
+            found = true;
+        }
     }
-
-    if (bot == eligibleGreenBlocker)
-    {
-        return MoveTo(bot->GetMapId(), greenBeamPos.GetPositionX(), greenBeamPos.GetPositionY(), greenBeamPos.GetPositionZ(), false, false, false, true, MovementPriority::MOVEMENT_FORCED);
+    if (found) {
+        return MoveTo(bot->GetMapId(), bestPos.GetPositionX(), bestPos.GetPositionY(), bestPos.GetPositionZ(), false, false, false, true, MovementPriority::MOVEMENT_FORCED);
     }
     return false;
 }
@@ -721,7 +749,7 @@ bool KarazhanNetherspiteAvoidBeamAction::Execute(Event event)
             Position avoidPos = karazhanHelper.GetAvoidBeamPosition(boss, redPortal, minDistance);
             if (avoidPos.GetPositionX() != bot->GetPositionX() || avoidPos.GetPositionY() != bot->GetPositionY() || avoidPos.GetPositionZ() != bot->GetPositionZ()) 
             {
-                return MoveTo(bot->GetMapId(), avoidPos.GetPositionX(), avoidPos.GetPositionY(), avoidPos.GetPositionZ(), false, false, false, true, MovementPriority::MOVEMENT_FORCED);
+                return MoveTo(bot->GetMapId(), avoidPos.GetPositionX(), avoidPos.GetPositionY(), avoidPos.GetPositionZ(), false, false, false, true, MovementPriority::MOVEMENT_COMBAT);
             }
         }
     }
@@ -738,7 +766,7 @@ bool KarazhanNetherspiteAvoidBeamAction::Execute(Event event)
             Position avoidPos = karazhanHelper.GetAvoidBeamPosition(boss, bluePortal, minDistance);
             if (avoidPos.GetPositionX() != bot->GetPositionX() || avoidPos.GetPositionY() != bot->GetPositionY() || avoidPos.GetPositionZ() != bot->GetPositionZ()) 
             {
-                return MoveTo(bot->GetMapId(), avoidPos.GetPositionX(), avoidPos.GetPositionY(), avoidPos.GetPositionZ(), false, false, false, true, MovementPriority::MOVEMENT_FORCED);
+                return MoveTo(bot->GetMapId(), avoidPos.GetPositionX(), avoidPos.GetPositionY(), avoidPos.GetPositionZ(), false, false, false, true, MovementPriority::MOVEMENT_COMBAT);
             }
         }
     }
@@ -754,7 +782,7 @@ bool KarazhanNetherspiteAvoidBeamAction::Execute(Event event)
             Position avoidPos = karazhanHelper.GetAvoidBeamPosition(boss, greenPortal, minDistance);
             if (avoidPos.GetPositionX() != bot->GetPositionX() || avoidPos.GetPositionY() != bot->GetPositionY() || avoidPos.GetPositionZ() != bot->GetPositionZ()) 
             {
-                return MoveTo(bot->GetMapId(), avoidPos.GetPositionX(), avoidPos.GetPositionY(), avoidPos.GetPositionZ(), false, false, false, true, MovementPriority::MOVEMENT_FORCED);
+                return MoveTo(bot->GetMapId(), avoidPos.GetPositionX(), avoidPos.GetPositionY(), avoidPos.GetPositionZ(), false, false, false, true, MovementPriority::MOVEMENT_COMBAT);
             }
         }
     }
@@ -766,105 +794,6 @@ bool KarazhanNetherspiteAvoidBeamAction::isUseful()
     Unit* boss = AI_VALUE2(Unit*, "find target", "netherspite");
 
     return boss && !boss->HasAura(SPELL_BANISH);
-}
-
-// Assigned blue/green blockers avoid void zones; red blockers will ignore void zones
-bool KarazhanNetherspiteAssignedBlockerAvoidVoidZoneAction::Execute(Event event)
-{
-    RaidKarazhanHelpers karazhanHelper(botAI);
-    std::vector<Unit*> voidZones = karazhanHelper.GetAllVoidZones();
-    bool inVoidZone = false;
-    for (Unit* voidZone : voidZones)
-    {
-        if (bot->GetExactDist2d(voidZone) < 4.0f)
-        {
-            inVoidZone = true;
-            break;
-        }
-    }
-    if (!inVoidZone)
-        return false;
-
-    Unit* boss = AI_VALUE2(Unit*, "find target", "netherspite");
-    Unit* portal = nullptr;
-    auto [redBlocker, greenBlocker, blueBlocker] = karazhanHelper.GetCurrentBeamBlockers();
-    if (bot == blueBlocker)
-        portal = bot->FindNearestCreature(NPC_BLUE_PORTAL, 100.0f);
-    else
-        portal = bot->FindNearestCreature(NPC_GREEN_PORTAL, 100.0f);
-    if (!portal)
-        return false;
-
-    float bx = boss->GetPositionX();
-    float by = boss->GetPositionY();
-    float px = portal->GetPositionX();
-    float py = portal->GetPositionY();
-    float dx = px - bx;
-    float dy = py - by;
-    float length = sqrt(dx*dx + dy*dy);
-
-    if (length == 0.0f)
-        return false;
-    dx /= length;
-    dy /= length;
-
-    float botx = bot->GetPositionX();
-    float boty = bot->GetPositionY();
-    float botdx = botx - bx;
-    float botdy = boty - by;
-    float t = (botdx * dx + botdy * dy);
-    float minDist = std::max(18.0f, t - 20.0f);
-    float maxDist = t + 20.0f;
-    float step = 0.5f;
-
-    const float minMoveDist = 3.0f;
-    float bossZ = boss->GetPositionZ();
-    for (float dist = minDist; dist <= maxDist; dist += step)
-    {
-        float candidateX = bx + dx * dist;
-        float candidateY = by + dy * dist;
-        float candidateZ = bossZ;
-        float candidateDistToBoss = sqrt(pow(candidateX - bx, 2) + pow(candidateY - by, 2));
-
-        if (candidateDistToBoss < 18.0f)
-            continue;
-
-        bool outsideAllVoidZones = true;
-        for (Unit* voidZone : voidZones)
-        {
-            float voidZoneDist = sqrt(pow(candidateX - voidZone->GetPositionX(), 2) + pow(candidateY - voidZone->GetPositionY(), 2));
-
-            if (voidZoneDist < 3.0f)
-            {
-                outsideAllVoidZones = false;
-                break;
-            }
-        }
-
-        if (!outsideAllVoidZones)
-            continue;
-
-        // Only consider candidates at least minMoveDist from current position
-        float moveDist = sqrt(pow(candidateX - bot->GetPositionX(), 2) + pow(candidateY - bot->GetPositionY(), 2));
-        if (moveDist < minMoveDist)
-            continue;
-
-        return MoveTo(bot->GetMapId(), candidateX, candidateY, candidateZ, false, false, false, true, MovementPriority::MOVEMENT_FORCED);
-    }
-    return false;
-}
-
-bool KarazhanNetherspiteAssignedBlockerAvoidVoidZoneAction::isUseful()
-{
-    Unit* boss = AI_VALUE2(Unit*, "find target", "netherspite");
-
-    if (!boss || boss->HasAura(SPELL_BANISH))
-        return false;
-
-    RaidKarazhanHelpers karazhanHelper(botAI);
-    auto [redBlocker, greenBlocker, blueBlocker] = karazhanHelper.GetCurrentBeamBlockers();
-
-    return bot == blueBlocker || bot == greenBlocker;
 }
 
 // Bots that are not currently assigned blockers avoid void zones without walking into applicable beams
@@ -937,7 +866,7 @@ bool KarazhanNetherspiteUnassignedBlockerAvoidVoidZoneAction::Execute(Event even
         }
     }
     if (found)
-        return MoveTo(bot->GetMapId(), bestCandidate.GetPositionX(), bestCandidate.GetPositionY(), bestCandidate.GetPositionZ(), false, false, false, true, MovementPriority::MOVEMENT_FORCED);
+        return MoveTo(bot->GetMapId(), bestCandidate.GetPositionX(), bestCandidate.GetPositionY(), bestCandidate.GetPositionZ(), false, false, false, true, MovementPriority::MOVEMENT_COMBAT);
     return false;
 }
 
@@ -1027,7 +956,7 @@ bool KarazhanPrinceMalchezaarRunAwayFromShadowNovaAction::Execute(Event event)
                 float destZ = bot->GetPositionZ();
                 bot->AttackStop();
                 bot->InterruptNonMeleeSpells(false);
-                return MoveTo(bot->GetMapId(), destX, destY, destZ, false, false, false, true, MovementPriority::MOVEMENT_FORCED);
+                return MoveTo(bot->GetMapId(), destX, destY, destZ, false, false, false, true, MovementPriority::MOVEMENT_COMBAT);
             }
         }
     }

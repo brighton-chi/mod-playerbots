@@ -189,15 +189,6 @@ public:
     bool isUseful() override;
 };
 
-class KarazhanNetherspiteAssignedBlockerAvoidVoidZoneAction : public AttackAction
-{
-public:
-    KarazhanNetherspiteAssignedBlockerAvoidVoidZoneAction(PlayerbotAI* botAI, std::string const name = "karazhan netherspite assigned blocker avoid void zone") : AttackAction(botAI, name) {}
-
-    bool Execute(Event event) override;
-    bool isUseful() override;
-};
-
 class KarazhanNetherspiteUnassignedBlockerAvoidVoidZoneAction : public AttackAction
 {
 public:
