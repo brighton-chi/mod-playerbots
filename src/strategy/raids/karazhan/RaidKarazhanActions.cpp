@@ -711,7 +711,6 @@ bool KarazhanNetherspiteAvoidBeamAction::Execute(Event event)
         return false;
 
     float minDistance = 5.0f;
-    float maxDistance = 20.0f;
 
     // (1) All bots except the assigned red blocker avoid the red beam
     if (bot != redBlocker) 
@@ -719,7 +718,7 @@ bool KarazhanNetherspiteAvoidBeamAction::Execute(Event event)
         Unit* redPortal = bot->FindNearestCreature(NPC_RED_PORTAL, 100.0f);
         if (redPortal) 
         {
-            Position avoidPos = karazhanHelper.GetAvoidBeamPosition(boss, redPortal, minDistance, maxDistance);
+            Position avoidPos = karazhanHelper.GetAvoidBeamPosition(boss, redPortal, minDistance);
             if (avoidPos.GetPositionX() != bot->GetPositionX() || avoidPos.GetPositionY() != bot->GetPositionY() || avoidPos.GetPositionZ() != bot->GetPositionZ()) 
             {
                 return MoveTo(bot->GetMapId(), avoidPos.GetPositionX(), avoidPos.GetPositionY(), avoidPos.GetPositionZ(), false, false, false, true, MovementPriority::MOVEMENT_FORCED);
@@ -736,7 +735,7 @@ bool KarazhanNetherspiteAvoidBeamAction::Execute(Event event)
         Unit* bluePortal = bot->FindNearestCreature(NPC_BLUE_PORTAL, 100.0f);
         if (bluePortal) 
         {
-            Position avoidPos = karazhanHelper.GetAvoidBeamPosition(boss, bluePortal, minDistance, maxDistance);
+            Position avoidPos = karazhanHelper.GetAvoidBeamPosition(boss, bluePortal, minDistance);
             if (avoidPos.GetPositionX() != bot->GetPositionX() || avoidPos.GetPositionY() != bot->GetPositionY() || avoidPos.GetPositionZ() != bot->GetPositionZ()) 
             {
                 return MoveTo(bot->GetMapId(), avoidPos.GetPositionX(), avoidPos.GetPositionY(), avoidPos.GetPositionZ(), false, false, false, true, MovementPriority::MOVEMENT_FORCED);
@@ -752,7 +751,7 @@ bool KarazhanNetherspiteAvoidBeamAction::Execute(Event event)
         Unit* greenPortal = bot->FindNearestCreature(NPC_GREEN_PORTAL, 100.0f);
         if (greenPortal) 
         {
-            Position avoidPos = karazhanHelper.GetAvoidBeamPosition(boss, greenPortal, minDistance, maxDistance);
+            Position avoidPos = karazhanHelper.GetAvoidBeamPosition(boss, greenPortal, minDistance);
             if (avoidPos.GetPositionX() != bot->GetPositionX() || avoidPos.GetPositionY() != bot->GetPositionY() || avoidPos.GetPositionZ() != bot->GetPositionZ()) 
             {
                 return MoveTo(bot->GetMapId(), avoidPos.GetPositionX(), avoidPos.GetPositionY(), avoidPos.GetPositionZ(), false, false, false, true, MovementPriority::MOVEMENT_FORCED);
@@ -777,7 +776,7 @@ bool KarazhanNetherspiteAssignedBlockerAvoidVoidZoneAction::Execute(Event event)
     bool inVoidZone = false;
     for (Unit* voidZone : voidZones)
     {
-        if (bot->GetExactDist2d(voidZone) < 3.0f)
+        if (bot->GetExactDist2d(voidZone) < 4.0f)
         {
             inVoidZone = true;
             break;
@@ -875,7 +874,7 @@ bool KarazhanNetherspiteUnassignedBlockerAvoidVoidZoneAction::Execute(Event even
     std::vector<Unit*> voidZones = karazhanHelper.GetAllVoidZones();
     bool inVoidZone = false;
     for (Unit* vz : voidZones) {
-        if (bot->GetExactDist2d(vz) < 3.0f) {
+        if (bot->GetExactDist2d(vz) < 4.0f) {
             inVoidZone = true;
             break;
         }
@@ -892,23 +891,23 @@ bool KarazhanNetherspiteUnassignedBlockerAvoidVoidZoneAction::Execute(Event even
     Unit* redPortal = bot->FindNearestCreature(NPC_RED_PORTAL, 100.0f);
     Unit* bluePortal = bot->FindNearestCreature(NPC_BLUE_PORTAL, 100.0f);
     Unit* greenPortal = bot->FindNearestCreature(NPC_GREEN_PORTAL, 100.0f);
-    if (redPortal) beams.push_back({redPortal, 3.0f, 10.0f});
-    if (bluePortal && botAI->IsDps(bot) && bot->getClass() != CLASS_WARRIOR && bot->getClass() != CLASS_ROGUE) beams.push_back({bluePortal, 3.0f, 10.0f});
+    if (redPortal) beams.push_back({redPortal, 4.0f, 10.0f});
+    if (bluePortal && botAI->IsDps(bot) && bot->getClass() != CLASS_WARRIOR && bot->getClass() != CLASS_ROGUE) beams.push_back({bluePortal, 4.0f, 10.0f});
     bool isHealer = botAI->IsHeal(bot);
     bool isRogue = bot->getClass() == CLASS_ROGUE;
     bool isDpsWarrior = bot->getClass() == CLASS_WARRIOR && botAI->IsDps(bot);
-    if (greenPortal && (isHealer || isRogue || isDpsWarrior)) beams.push_back({greenPortal, 3.0f, 10.0f});
+    if (greenPortal && (isHealer || isRogue || isDpsWarrior)) beams.push_back({greenPortal, 4.0f, 10.0f});
 
     const float minMoveDist = 3.0f, maxSearchDist = 20.0f, stepAngle = M_PI/18.0f, stepDist = 0.5f;
     Position bestCandidate;
     float bestDist = 0.0f;
     bool found = false;
     for (float angle = 0; angle < 2 * M_PI; angle += stepAngle) {
-        for (float dist = 3.0f; dist <= maxSearchDist; dist += stepDist) {
+        for (float dist = 4.0f; dist <= maxSearchDist; dist += stepDist) {
             float cx = bot->GetPositionX() + cos(angle) * dist;
             float cy = bot->GetPositionY() + sin(angle) * dist;
             float cz = bossZ;
-            if (std::any_of(voidZones.begin(), voidZones.end(), [&](Unit* vz){ return Position(cx, cy, cz).GetExactDist2d(vz) < 3.0f; }))
+            if (std::any_of(voidZones.begin(), voidZones.end(), [&](Unit* vz){ return Position(cx, cy, cz).GetExactDist2d(vz) < 4.0f; }))
                 continue;
             bool inBeam = false;
             for (const auto& beam : beams) {
@@ -924,7 +923,7 @@ bool KarazhanNetherspiteUnassignedBlockerAvoidVoidZoneAction::Execute(Event even
                 float distToBeam = sqrt(pow(cx - beamX, 2) + pow(cy - beamY, 2));
                 float distToPortal = sqrt(pow(cx - px, 2) + pow(cy - py, 2));
                 if (distToBeam < beam.minDist || distToBeam > beam.maxDist) continue;
-                if (distToPortal < 3.0f) continue;
+                if (distToPortal < 4.0f) continue;
                 inBeam = true; break;
             }
             if (inBeam) continue;

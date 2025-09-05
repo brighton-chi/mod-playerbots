@@ -202,7 +202,7 @@ std::tuple<Player*, Player*, Player*> RaidKarazhanHelpers::GetCurrentBeamBlocker
     return std::make_tuple(redBlocker, greenBlocker, blueBlocker);
 }
 
-Position RaidKarazhanHelpers::GetAvoidBeamPosition(Unit* boss, Unit* portal, float minDistance, float maxDistance)
+Position RaidKarazhanHelpers::GetAvoidBeamPosition(Unit* boss, Unit* portal, float minDistance)
 {
     // Ensure bot is at least minDistance yards perpendicular from the beam
     float bx = boss->GetPositionX();
@@ -276,7 +276,7 @@ Position RaidKarazhanHelpers::GetAvoidBeamPosition(Unit* boss, Unit* portal, flo
 std::vector<Unit*> RaidKarazhanHelpers::GetAllVoidZones()
 {
     std::vector<Unit*> voidZones;
-    const float radius = 20.0f;
+    const float radius = 15.0f;
     const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
     for (const auto& npcGuid : npcs)
     {
