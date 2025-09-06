@@ -31,10 +31,10 @@ public:
     bool IsActive() override;
 };
 
-class KarazhanRomuloJulianneTrigger : public Trigger
+class KarazhanRomuloAndJulianneTrigger : public Trigger
 {
 public:
-    KarazhanRomuloJulianneTrigger(PlayerbotAI* botAI) : Trigger(botAI, "karazhan romulo julianne") {}
+    KarazhanRomuloAndJulianneTrigger(PlayerbotAI* botAI) : Trigger(botAI, "karazhan romulo and julianne") {}
     bool IsActive() override;
 };
 

@@ -24,8 +24,8 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         nullptr)));
 
     triggers.push_back(new TriggerNode(
-        "karazhan romulo julianne", NextAction::array(0,
-        new NextAction("karazhan romulo julianne mark target", ACTION_RAID),
+        "karazhan romulo and julianne", NextAction::array(0,
+        new NextAction("karazhan romulo and julianne mark target", ACTION_RAID),
         nullptr)));
 
     triggers.push_back(new TriggerNode(
@@ -49,7 +49,8 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode(
         "karazhan shade of aran", NextAction::array(0,
-        new NextAction("karazhan shade of aran flame wreath", ACTION_EMERGENCY + 7),
+        new NextAction("karazhan shade of aran flame wreath stop bot", ACTION_EMERGENCY + 7),
+        new NextAction("karazhan shade of aran flame wreath stop pet", ACTION_EMERGENCY + 7),
         new NextAction("karazhan shade of aran arcane explosion", ACTION_EMERGENCY + 6),
         new NextAction("karazhan shade of aran spread ranged", ACTION_RAID + 1),
         new NextAction("karazhan shade of aran mark target", ACTION_RAID),

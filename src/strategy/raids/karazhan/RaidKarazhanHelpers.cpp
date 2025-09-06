@@ -3,6 +3,7 @@
 #include "PlayerbotMgr.h"
 #include "AiObjectContext.h"
 #include "Position.h"
+#include "Spell.h"
 
 #include <algorithm>
 #include <map>
@@ -81,9 +82,19 @@ bool RaidKarazhanHelpers::IsFlameWreathActive()
                 return true;
         }
     }
+
+    Unit* boss = AI_VALUE2(Unit*, "find target", "shade of aran");
+    if (!boss || !boss->IsAlive())
+        return false;
+
+    Spell* currentSpell = boss->GetCurrentSpell(CURRENT_GENERIC_SPELL);
+    if (currentSpell && currentSpell->m_spellInfo && currentSpell->m_spellInfo->Id == (SPELL_FLAME_WREATH))
+        return true;
+    
     return false;
 }
 
+// Blue beam blockers: non-Rogue/Warrior DPS, no Nether Exhaustion Blue and <30 stacks of Blue Beam debuff
 std::vector<Player*> RaidKarazhanHelpers::GetBlueBlockers()
 {
     std::vector<Player*> blueBlockers;
@@ -95,7 +106,6 @@ std::vector<Player*> RaidKarazhanHelpers::GetBlueBlockers()
             if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member))
                 continue;
 
-            // Is DPS, not warrior, not rogue, no Nether Exhaustion Blue and <= 30 stacks of Blue Beam debuff
             bool isDps = botAI->IsDps(member);
             bool isWarrior = member->getClass() == CLASS_WARRIOR;
             bool isRogue = member->getClass() == CLASS_ROGUE;
@@ -111,6 +121,9 @@ std::vector<Player*> RaidKarazhanHelpers::GetBlueBlockers()
     return blueBlockers;
 }
 
+// Green beam blockers:
+// (1) Rogues and non-tank Warriors, no Nether Exhaustion Green
+// (2) Healers, no Nether Exhaustion Green and <30 stacks of Green Beam debuff
 std::vector<Player*> RaidKarazhanHelpers::GetGreenBlockers()
 {
     std::vector<Player*> greenBlockers;
@@ -123,8 +136,6 @@ std::vector<Player*> RaidKarazhanHelpers::GetGreenBlockers()
                 continue;
 
             Aura* greenBuff = member->GetAura(SPELL_GREEN_BEAM_DEBUFF);
-            // (1) Rogue or non-tank Warrior, no Nether Exhaustion Green
-            // (2) Healer, no Nether Exhaustion Green and less than 30 stacks of Green Beam debuff
             bool eligibleGreen = 
                 ((member->getClass() == CLASS_ROGUE || (member->getClass() == CLASS_WARRIOR && botAI->IsDps(member)))
                 || (botAI->IsHeal(member) && (!greenBuff || greenBuff->GetStackAmount() < 30))) 
@@ -169,7 +180,6 @@ std::tuple<Player*, Player*, Player*> RaidKarazhanHelpers::GetCurrentBeamBlocker
     Player* greenBlocker = nullptr;
     Player* blueBlocker = nullptr;
 
-    // Red: first eligible tank
     std::vector<Player*> redBlockers;
 
     if (Group* group = bot->GetGroup())
@@ -191,12 +201,10 @@ std::tuple<Player*, Player*, Player*> RaidKarazhanHelpers::GetCurrentBeamBlocker
     if (!redBlockers.empty())
         redBlocker = redBlockers.front();
 
-    // Green: first eligible healer, rogue, or dps warrior
     std::vector<Player*> greenBlockers = GetGreenBlockers();
     if (!greenBlockers.empty())
         greenBlocker = greenBlockers.front();
 
-    // Blue: first eligible dps (not warrior/rogue)
     std::vector<Player*> blueBlockers = GetBlueBlockers();
     if (!blueBlockers.empty())
         blueBlocker = blueBlockers.front();

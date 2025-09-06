@@ -51,10 +51,10 @@ private:
     size_t currentIndex = 0;
 };
 
-class KarazhanRomuloJulianneMarkTargetAction : public AttackAction
+class KarazhanRomuloAndJulianneMarkTargetAction : public AttackAction
 {
 public:
-    KarazhanRomuloJulianneMarkTargetAction(PlayerbotAI* botAI, std::string const name = "karazhan romulo julianne mark target") : AttackAction(botAI, name) {}
+    KarazhanRomuloAndJulianneMarkTargetAction(PlayerbotAI* botAI, std::string const name = "karazhan romulo and julianne mark target") : AttackAction(botAI, name) {}
 
     bool Execute(Event event) override;
 };
@@ -127,11 +127,19 @@ public:
     bool isUseful() override;
 };
 
-class KarazhanShadeOfAranFlameWreathAction : public AttackAction
+class KarazhanShadeOfAranFlameWreathStopBotAction : public AttackAction
 {
 public:
-    KarazhanShadeOfAranFlameWreathAction(PlayerbotAI* botAI, std::string const name = "karazhan shade of aran flame wreath") : AttackAction(botAI, name) {}
+    KarazhanShadeOfAranFlameWreathStopBotAction(PlayerbotAI* botAI, std::string const name = "karazhan shade of aran flame wreath stop bot") : AttackAction(botAI, name) {}
 
+    bool Execute(Event event) override;
+    bool isUseful() override;
+};
+
+class KarazhanShadeOfAranFlameWreathStopPetAction : public Action
+{
+public:
+    KarazhanShadeOfAranFlameWreathStopPetAction(PlayerbotAI* botAI, std::string const name = "shade of aran flame wreath stop pet") : Action(botAI, name) {}
     bool Execute(Event event) override;
     bool isUseful() override;
 };
@@ -180,10 +188,10 @@ public:
     bool isUseful() override;
 };
 
-class KarazhanNetherspiteAvoidBeamandVoidZoneAction : public AttackAction
+class KarazhanNetherspiteAvoidBeamAndVoidZoneAction : public AttackAction
 {
 public:
-    KarazhanNetherspiteAvoidBeamandVoidZoneAction(PlayerbotAI* botAI, std::string const name = "karazhan netherspite avoid beam and void zone") : AttackAction(botAI, name) {}
+    KarazhanNetherspiteAvoidBeamAndVoidZoneAction(PlayerbotAI* botAI, std::string const name = "karazhan netherspite avoid beam and void zone") : AttackAction(botAI, name) {}
 
     bool Execute(Event event) override;
     bool isUseful() override;

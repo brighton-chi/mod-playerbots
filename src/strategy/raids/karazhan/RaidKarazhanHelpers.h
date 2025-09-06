@@ -39,8 +39,8 @@ enum KarazhanSpells
 
 enum KarazhanNpcs
 {
-    // Attumen the Huntsman (Mounted)
-    NPC_ATTUMEN_THE_HUNTSMAN        = 16152,
+    // Attumen the Huntsman
+    NPC_ATTUMEN_THE_HUNTSMAN        = 16152, // Mounted ID
 
     // Terestian Illhoof
     NPC_KILREK                      = 17229,

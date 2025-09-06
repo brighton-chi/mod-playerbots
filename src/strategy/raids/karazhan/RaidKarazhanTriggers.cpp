@@ -54,7 +54,7 @@ bool KarazhanBigBadWolfTrigger::IsActive()
     return true;
 }
 
-bool KarazhanRomuloJulianneTrigger::IsActive()
+bool KarazhanRomuloAndJulianneTrigger::IsActive()
 {
     Unit* julianne = AI_VALUE2(Unit*, "find target", "julianne");
     Unit* romulo = AI_VALUE2(Unit*, "find target", "romulo");

@@ -4,6 +4,8 @@
 #include "Timer.h"
 #include "WarlockActions.h"
 #include "AiObjectContext.h"
+#include "Pet.h"
+#include "GenericActions.h"
 #include "PlayerbotMgr.h"
 #include "PlayerbotAI.h"
 
@@ -182,7 +184,7 @@ bool KarazhanBigBadWolfRunAwayAction::isUseful()
     return boss && bot->HasAura(SPELL_LITTLE_RED_RIDING_HOOD);
 }
 
-bool KarazhanRomuloJulianneMarkTargetAction::Execute(Event event)
+bool KarazhanRomuloAndJulianneMarkTargetAction::Execute(Event event)
 {
     Unit* target = nullptr;
     Unit* romulo = AI_VALUE2(Unit*, "find target", "romulo");
@@ -411,7 +413,7 @@ bool KarazhanShadeOfAranArcaneExplosionAction::isUseful()
     return boss && boss->HasUnitState(UNIT_STATE_CASTING) && boss->FindCurrentSpellBySpellId(SPELL_ARCANE_EXPLOSION);
 }
 
-bool KarazhanShadeOfAranFlameWreathAction::Execute(Event event)
+bool KarazhanShadeOfAranFlameWreathStopBotAction::Execute(Event event)
 {
     AI_VALUE(LastMovement&, "last movement").Set(nullptr);
     bot->GetMotionMaster()->Clear();
@@ -422,7 +424,74 @@ bool KarazhanShadeOfAranFlameWreathAction::Execute(Event event)
     return false;
 }
 
-bool KarazhanShadeOfAranFlameWreathAction::isUseful()
+bool KarazhanShadeOfAranFlameWreathStopBotAction::isUseful()
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "shade of aran");
+    RaidKarazhanHelpers karazhanHelper(botAI);
+
+    return boss && karazhanHelper.IsFlameWreathActive();
+}
+
+bool KarazhanShadeOfAranFlameWreathStopPetAction::Execute(Event event)
+{
+    RaidKarazhanHelpers karazhanHelper(botAI);
+
+    std::vector<Creature*> targets;
+    Pet* pet = bot->GetPet();
+    if (pet)
+        targets.push_back(pet);
+
+    for (Unit::ControlSet::const_iterator itr = bot->m_Controlled.begin(); itr != bot->m_Controlled.end(); ++itr)
+    {
+        Creature* creature = dynamic_cast<Creature*>(*itr);
+        if (!creature)
+            continue;
+        if (pet && creature == pet)
+            continue;
+        targets.push_back(creature);
+    }
+
+    if (targets.empty())
+        return false;
+
+    bool flameWreathActive = karazhanHelper.IsFlameWreathActive();
+
+    for (Creature* target : targets)
+    {
+        if (flameWreathActive)
+        {
+            target->SetReactState(REACT_PASSIVE);
+            CharmInfo* charmInfo = target->GetCharmInfo();
+            if (charmInfo)
+                charmInfo->SetPlayerReactState(REACT_PASSIVE);
+
+            target->StopMoving();
+            target->AttackStop();
+            target->GetMotionMaster()->Clear();
+            target->GetMotionMaster()->MoveIdle();
+        }
+        else
+        {
+            int32 stance = sPlayerbotAIConfig->defaultPetStance;
+            ReactStates react = REACT_DEFENSIVE;
+            switch (stance)
+            {
+                case 0: react = REACT_PASSIVE; break;
+                case 1: react = REACT_DEFENSIVE; break;
+                case 2: react = REACT_AGGRESSIVE; break;
+                default: react = REACT_DEFENSIVE; break;
+            }
+            target->SetReactState(react);
+            CharmInfo* charmInfo = target->GetCharmInfo();
+            if (charmInfo)
+                charmInfo->SetPlayerReactState(react);
+        }
+    }
+
+    return true;
+}
+
+bool KarazhanShadeOfAranFlameWreathStopPetAction::isUseful()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "shade of aran");
     RaidKarazhanHelpers karazhanHelper(botAI);
@@ -438,6 +507,18 @@ bool KarazhanShadeOfAranMarkTargetAction::Execute(Event event)
         return false;
 
     RaidKarazhanHelpers karazhanHelper(botAI);
+
+    if (karazhanHelper.IsFlameWreathActive())
+    {
+        if (Group* group = bot->GetGroup())
+        {
+            constexpr uint8_t skullIconId = 7;
+            group->SetTargetIcon(skullIconId, ObjectGuid::Empty, ObjectGuid::Empty);
+        }
+        botAI->Reset();
+        return false;
+    }
+
     Unit* target = karazhanHelper.GetFirstAliveUnitByEntry(NPC_CONJURED_ELEMENTAL);
 
     if (!target || !target->IsAlive()) 
@@ -626,14 +707,17 @@ bool KarazhanNetherspiteBlockBlueBeamAction::Execute(Event event)
     float bestDist = 100.0f;
     Position bestPos;
     bool found = false;
-    for (float dist = 18.0f; dist <= 25.0f; dist += 0.5f) {
+    for (float dist = 18.0f; dist <= 25.0f; dist += 0.5f) 
+    {
         float candidateX = bx + dx * dist;
         float candidateY = by + dy * dist;
         float candidateZ = bz;
         bool outsideAllVoidZones = true;
-        for (Unit* voidZone : voidZones) {
+        for (Unit* voidZone : voidZones) 
+        {
             float voidZoneDist = sqrt(pow(candidateX - voidZone->GetPositionX(), 2) + pow(candidateY - voidZone->GetPositionY(), 2));
-            if (voidZoneDist < 4.0f) {
+            if (voidZoneDist < 4.0f) 
+            {
                 outsideAllVoidZones = false;
                 break;
             }
@@ -641,13 +725,15 @@ bool KarazhanNetherspiteBlockBlueBeamAction::Execute(Event event)
         if (!outsideAllVoidZones)
             continue;
         float distToIdeal = fabs(dist - 18.0f);
-        if (!found || distToIdeal < bestDist) {
+        if (!found || distToIdeal < bestDist) 
+        {
             bestDist = distToIdeal;
             bestPos = Position(candidateX, candidateY, candidateZ);
             found = true;
         }
     }
-    if (found) {
+    if (found) 
+    {
         return MoveTo(bot->GetMapId(), bestPos.GetPositionX(), bestPos.GetPositionY(), bestPos.GetPositionZ(), false, false, false, true, MovementPriority::MOVEMENT_FORCED);
     }
     return false;
@@ -693,14 +779,17 @@ bool KarazhanNetherspiteBlockGreenBeamAction::Execute(Event event)
     float bestDist = 100.0f;
     Position bestPos;
     bool found = false;
-    for (float dist = 18.0f; dist <= 25.0f; dist += 0.5f) {
+    for (float dist = 18.0f; dist <= 25.0f; dist += 0.5f) 
+    {
         float candidateX = bx + dx * dist;
         float candidateY = by + dy * dist;
         float candidateZ = bz;
         bool outsideAllVoidZones = true;
-        for (Unit* voidZone : voidZones) {
+        for (Unit* voidZone : voidZones) 
+        {
             float voidZoneDist = sqrt(pow(candidateX - voidZone->GetPositionX(), 2) + pow(candidateY - voidZone->GetPositionY(), 2));
-            if (voidZoneDist < 4.0f) {
+            if (voidZoneDist < 4.0f) 
+            {
                 outsideAllVoidZones = false;
                 break;
             }
@@ -708,13 +797,15 @@ bool KarazhanNetherspiteBlockGreenBeamAction::Execute(Event event)
         if (!outsideAllVoidZones)
             continue;
         float distToIdeal = fabs(dist - 18.0f);
-        if (!found || distToIdeal < bestDist) {
+        if (!found || distToIdeal < bestDist) 
+        {
             bestDist = distToIdeal;
             bestPos = Position(candidateX, candidateY, candidateZ);
             found = true;
         }
     }
-    if (found) {
+    if (found) 
+    {
         return MoveTo(bot->GetMapId(), bestPos.GetPositionX(), bestPos.GetPositionY(), bestPos.GetPositionZ(), false, false, false, true, MovementPriority::MOVEMENT_FORCED);
     }
     return false;
@@ -728,7 +819,7 @@ bool KarazhanNetherspiteBlockGreenBeamAction::isUseful()
     return boss && greenPortal && !boss->HasAura(SPELL_BANISH);
 }
 
-bool KarazhanNetherspiteAvoidBeamandVoidZoneAction::Execute(Event event)
+bool KarazhanNetherspiteAvoidBeamAndVoidZoneAction::Execute(Event event)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "netherspite");
     RaidKarazhanHelpers karazhanHelper(botAI);
@@ -757,6 +848,7 @@ bool KarazhanNetherspiteAvoidBeamandVoidZoneAction::Execute(Event event)
     bool isRogue = bot->getClass() == CLASS_ROGUE;
     bool isHealer = botAI->IsHeal(bot);
     bool isDpsWarrior = isWarrior && isDps;
+
     if (redPortal) beams.push_back({redPortal, 4.0f, 10.0f});
     if (bluePortal && isDps && !isWarrior && !isRogue) beams.push_back({bluePortal, 4.0f, 10.0f});
     if (greenPortal && (isHealer || isRogue || isDpsWarrior)) beams.push_back({greenPortal, 4.0f, 10.0f});
@@ -825,9 +917,12 @@ bool KarazhanNetherspiteAvoidBeamandVoidZoneAction::Execute(Event event)
                 }
             }
             if (inBeam) continue;
+            // Must move at least minMoveDist
             float moveDist = sqrt(pow(cx - bot->GetPositionX(), 2) + pow(cy - bot->GetPositionY(), 2));
             if (moveDist < minMoveDist) continue;
-            if (!found || moveDist < bestDist) {
+
+            if (!found || moveDist < bestDist) 
+            {
                 bestCandidate = Position(cx, cy, cz);
                 bestDist = moveDist;
                 found = true;
@@ -840,15 +935,20 @@ bool KarazhanNetherspiteAvoidBeamandVoidZoneAction::Execute(Event event)
     return false;
 }
 
-bool KarazhanNetherspiteAvoidBeamandVoidZoneAction::isUseful()
+bool KarazhanNetherspiteAvoidBeamAndVoidZoneAction::isUseful()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "netherspite");
+
     if (!boss || boss->HasAura(SPELL_BANISH))
         return false;
+
     RaidKarazhanHelpers karazhanHelper(botAI);
     auto [redBlocker, greenBlocker, blueBlocker] = karazhanHelper.GetCurrentBeamBlockers();
+
     if (bot == redBlocker || bot == blueBlocker || bot == greenBlocker)
         return false;
+
+    return true;
 }
 
 bool KarazhanNetherspiteBanishPhaseAvoidVoidZoneAction::Execute(Event event)
@@ -878,7 +978,8 @@ bool KarazhanNetherspiteBanishPhaseAvoidVoidZoneAction::isUseful()
     std::vector<Unit*> voidZones = karazhanHelper.GetAllVoidZones();
     for (Unit* vz : voidZones) 
     {
-        if (bot->GetExactDist2d(vz) < 4.0f) {
+        if (bot->GetExactDist2d(vz) < 4.0f) 
+        {
             return true;
         }
     }
