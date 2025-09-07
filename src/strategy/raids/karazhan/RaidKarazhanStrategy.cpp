@@ -4,17 +4,17 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(new TriggerNode(
         "karazhan attumen the huntsman", NextAction::array(0,
-        new NextAction("karazhan attumen the huntsman stack behind", ACTION_RAID),
+        new NextAction("karazhan attumen the huntsman stack behind", ACTION_RAID + 1),
         nullptr)));
 
     triggers.push_back(new TriggerNode(
         "karazhan moroes", NextAction::array(0,
-        new NextAction("karazhan moroes mark target", ACTION_RAID),
+        new NextAction("karazhan moroes mark target", ACTION_RAID + 1),
         nullptr)));
 
     triggers.push_back(new TriggerNode(
         "karazhan maiden of virtue", NextAction::array(0,
-        new NextAction("karazhan maiden of virtue position ranged", ACTION_RAID + 2),
+        new NextAction("karazhan maiden of virtue position ranged", ACTION_RAID + 1),
         new NextAction("karazhan maiden of virtue position boss", ACTION_RAID + 1),
         nullptr)));
 
@@ -25,35 +25,35 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode(
         "karazhan romulo and julianne", NextAction::array(0,
-        new NextAction("karazhan romulo and julianne mark target", ACTION_RAID),
+        new NextAction("karazhan romulo and julianne mark target", ACTION_RAID + 1),
         nullptr)));
 
     triggers.push_back(new TriggerNode(
         "karazhan wizard of oz", NextAction::array(0,
-        new NextAction("karazhan wizard of oz fear roar", ACTION_RAID + 1),
-        new NextAction("karazhan wizard of oz scorch strawman", ACTION_RAID + 1),
-        new NextAction("karazhan wizard of oz mark target", ACTION_RAID),
+        new NextAction("karazhan wizard of oz fear roar", ACTION_RAID + 2),
+        new NextAction("karazhan wizard of oz scorch strawman", ACTION_RAID + 2),
+        new NextAction("karazhan wizard of oz mark target", ACTION_RAID + 1),
         nullptr)));
 
     triggers.push_back(new TriggerNode(
         "karazhan the curator", NextAction::array(0,
         new NextAction("karazhan the curator spread ranged", ACTION_RAID + 2),
-        new NextAction("karazhan the curator position boss", ACTION_RAID + 1),
-        new NextAction("karazhan the curator mark target", ACTION_RAID),
+        new NextAction("karazhan the curator position boss", ACTION_RAID + 2),
+        new NextAction("karazhan the curator mark target", ACTION_RAID + 1),
         nullptr)));
 
     triggers.push_back(new TriggerNode(
         "karazhan terestian illhoof", NextAction::array(0,
-        new NextAction("karazhan terestian illhoof mark target", ACTION_RAID),
+        new NextAction("karazhan terestian illhoof mark target", ACTION_RAID + 1),
         nullptr)));
 
     triggers.push_back(new TriggerNode(
         "karazhan shade of aran", NextAction::array(0,
-        new NextAction("karazhan shade of aran flame wreath stop bot", ACTION_EMERGENCY + 7),
+        new NextAction("karazhan shade of aran flame wreath stop bot", ACTION_EMERGENCY + 8),
         new NextAction("karazhan shade of aran flame wreath stop pet", ACTION_EMERGENCY + 7),
         new NextAction("karazhan shade of aran arcane explosion", ACTION_EMERGENCY + 6),
-        new NextAction("karazhan shade of aran spread ranged", ACTION_RAID + 1),
-        new NextAction("karazhan shade of aran mark target", ACTION_RAID),
+        new NextAction("karazhan shade of aran spread ranged", ACTION_RAID + 2),
+        new NextAction("karazhan shade of aran mark target", ACTION_RAID + 1),
         nullptr)));
 
     triggers.push_back(new TriggerNode(
@@ -68,7 +68,7 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode(
         "karazhan prince malchezaar", NextAction::array(0,
         new NextAction("karazhan prince malchezaar run away from shadow nova", ACTION_EMERGENCY + 6),
-        new NextAction("karazhan prince malchezaar avoid infernal", ACTION_RAID),
+        new NextAction("karazhan prince malchezaar avoid infernal", ACTION_RAID + 1),
         nullptr)));
 }
 

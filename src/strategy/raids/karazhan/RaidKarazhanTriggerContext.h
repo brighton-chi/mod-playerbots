@@ -23,17 +23,17 @@ public:
     }
 
 private:
-    static Trigger* karazhan_attumen_the_huntsman(PlayerbotAI* ai) { return new KarazhanAttumenTheHuntsmanTrigger(ai); }
-    static Trigger* karazhan_moroes(PlayerbotAI* ai) { return new KarazhanMoroesTrigger(ai); }
-    static Trigger* karazhan_maiden_of_virtue(PlayerbotAI* ai) { return new KarazhanMaidenOfVirtueTrigger(ai); }
-    static Trigger* karazhan_big_bad_wolf(PlayerbotAI* ai) { return new KarazhanBigBadWolfTrigger(ai); }
-    static Trigger* karazhan_romulo_and_julianne(PlayerbotAI* ai) { return new KarazhanRomuloAndJulianneTrigger(ai); }
-    static Trigger* karazhan_wizard_of_oz(PlayerbotAI* ai) { return new KarazhanWizardOfOzTrigger(ai); }
-    static Trigger* karazhan_the_curator(PlayerbotAI* ai) { return new KarazhanTheCuratorTrigger(ai); }
-    static Trigger* karazhan_terestian_illhoof(PlayerbotAI* ai) { return new KarazhanTerestianIllhoofTrigger(ai); }
-    static Trigger* karazhan_shade_of_aran(PlayerbotAI* ai) { return new KarazhanShadeOfAranTrigger(ai); }
-    static Trigger* karazhan_netherspite(PlayerbotAI* ai) { return new KarazhanNetherspiteTrigger(ai); }
-    static Trigger* karazhan_prince_malchezaar(PlayerbotAI* ai) { return new KarazhanPrinceMalchezaarTrigger(ai); }
+    static Trigger* karazhan_attumen_the_huntsman(PlayerbotAI* botAI) { return new KarazhanAttumenTheHuntsmanTrigger(botAI); }
+    static Trigger* karazhan_moroes(PlayerbotAI* botAI) { return new KarazhanMoroesTrigger(botAI); }
+    static Trigger* karazhan_maiden_of_virtue(PlayerbotAI* botAI) { return new KarazhanMaidenOfVirtueTrigger(botAI); }
+    static Trigger* karazhan_big_bad_wolf(PlayerbotAI* botAI) { return new KarazhanBigBadWolfTrigger(botAI); }
+    static Trigger* karazhan_romulo_and_julianne(PlayerbotAI* botAI) { return new KarazhanRomuloAndJulianneTrigger(botAI); }
+    static Trigger* karazhan_wizard_of_oz(PlayerbotAI* botAI) { return new KarazhanWizardOfOzTrigger(botAI); }
+    static Trigger* karazhan_the_curator(PlayerbotAI* botAI) { return new KarazhanTheCuratorTrigger(botAI); }
+    static Trigger* karazhan_terestian_illhoof(PlayerbotAI* botAI) { return new KarazhanTerestianIllhoofTrigger(botAI); }
+    static Trigger* karazhan_shade_of_aran(PlayerbotAI* botAI) { return new KarazhanShadeOfAranTrigger(botAI); }
+    static Trigger* karazhan_netherspite(PlayerbotAI* botAI) { return new KarazhanNetherspiteTrigger(botAI); }
+    static Trigger* karazhan_prince_malchezaar(PlayerbotAI* botAI) { return new KarazhanPrinceMalchezaarTrigger(botAI); }
 };
 
 #endif

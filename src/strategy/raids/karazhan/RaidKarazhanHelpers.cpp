@@ -161,6 +161,7 @@ Position RaidKarazhanHelpers::GetPositionOnBeam(Unit* boss, Unit* portal, float 
     float dx = px - bx;
     float dy = py - by;
     float length = sqrt(dx*dx + dy*dy);
+
     if (length == 0.0f)
         return Position(bx, by, bz);
 
@@ -179,7 +180,6 @@ std::tuple<Player*, Player*, Player*> RaidKarazhanHelpers::GetCurrentBeamBlocker
     Player* redBlocker = nullptr;
     Player* greenBlocker = nullptr;
     Player* blueBlocker = nullptr;
-
     std::vector<Player*> redBlockers;
 
     if (Group* group = bot->GetGroup())
@@ -222,6 +222,7 @@ std::vector<Unit*> RaidKarazhanHelpers::GetAllVoidZones()
         Unit* unit = botAI->GetUnit(npcGuid);
         if (!unit || unit->GetEntry() != NPC_VOID_ZONE)
             continue;
+
         float dist = bot->GetExactDist2d(unit);
         if (dist < radius)
         {
