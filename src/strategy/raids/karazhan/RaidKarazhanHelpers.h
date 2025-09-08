@@ -12,7 +12,7 @@ enum KarazhanSpells
 
     // Opera Event
     SPELL_LITTLE_RED_RIDING_HOOD    = 30756,
-    SPELL_FEAR_RANK_3               = 6215,
+    SPELL_FEAR                       = 6215, // Rank 3
 
     // Shade of Aran
     SPELL_FLAME_WREATH              = 29946,

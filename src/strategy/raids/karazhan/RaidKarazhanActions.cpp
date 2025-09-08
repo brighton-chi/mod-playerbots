@@ -35,7 +35,7 @@ bool KarazhanAttumenTheHuntsmanStackBehindAction::isUseful()
 {
     RaidKarazhanHelpers karazhanHelper(botAI);
     Unit* boss = karazhanHelper.GetFirstAliveUnitByEntry(NPC_ATTUMEN_THE_HUNTSMAN);
-    
+
     if (boss && botAI->IsTank(bot) && botAI->HasAggro(boss) && boss->GetVictim() == bot)
         return false;
 
@@ -240,13 +240,10 @@ bool KarazhanWizardOfOzFearRoarAction::Execute(Event event)
         if (!warlockAI)
             continue;
 
-        warlockAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Set(roar);
+        if (!member->HasSpell(SPELL_FEAR))
+            continue;
 
-        CastFearOnCcAction fearAction(warlockAI);
-        if (fearAction.isPossible())
-        {
-            return fearAction.Execute(event);
-        }
+        warlockAI->CastSpell(SPELL_FEAR, roar);
     }
     return false;
 }
@@ -255,7 +252,17 @@ bool KarazhanWizardOfOzFearRoarAction::isUseful()
 {
     Unit* roar = AI_VALUE2(Unit*, "find target", "roar");
 
-    return roar && roar->IsAlive() && !roar->HasAura(SPELL_FEAR_RANK_3);
+    bool isMarkedWithSkull = false;
+    if (roar)
+    {
+        if (Group* group = bot->GetGroup())
+        {
+            constexpr uint8_t skullIconId = 7;
+            ObjectGuid skullGuid = group->GetTargetIcon(skullIconId);
+            isMarkedWithSkull = (skullGuid == roar->GetGUID());
+        }
+    }
+    return roar && roar->IsAlive() && !roar->HasAura(SPELL_FEAR) && !isMarkedWithSkull;
 }
 
 bool KarazhanWizardOfOzScorchStrawmanAction::Execute(Event event)
