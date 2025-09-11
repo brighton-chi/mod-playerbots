@@ -30,7 +30,7 @@ public:
         creators["karazhan terestian illhoof mark target"] = &RaidKarazhanActionContext::karazhan_terestian_illhoof_mark_target;
 
         creators["karazhan shade of aran arcane explosion run away"] = &RaidKarazhanActionContext::karazhan_shade_of_aran_arcane_explosion_run_away;
-        creators["karazhan shade of aran flame wreath stop bot"] = &RaidKarazhanActionContext::karazhan_shade_of_aran_flame_wreath_stop_bot;
+        creators["karazhan shade of aran flame wreath stop movement"] = &RaidKarazhanActionContext::karazhan_shade_of_aran_flame_wreath_stop_movement;
         creators["karazhan shade of aran mark conjured elemental"] = &RaidKarazhanActionContext::karazhan_shade_of_aran_mark_conjured_elemental;
         creators["karazhan shade of aran spread ranged"] = &RaidKarazhanActionContext::karazhan_shade_of_aran_spread_ranged;
 
@@ -66,7 +66,7 @@ private:
     static Action* karazhan_terestian_illhoof_mark_target(PlayerbotAI* botAI) { return new KarazhanTerestianIllhoofMarkTargetAction(botAI); }
 
     static Action* karazhan_shade_of_aran_arcane_explosion_run_away(PlayerbotAI* botAI) { return new KarazhanShadeOfAranArcaneExplosionRunAwayAction(botAI); }
-    static Action* karazhan_shade_of_aran_flame_wreath_stop_bot(PlayerbotAI* botAI) { return new KarazhanShadeOfAranFlameWreathStopBotAction(botAI); }
+    static Action* karazhan_shade_of_aran_flame_wreath_stop_movement(PlayerbotAI* botAI) { return new KarazhanShadeOfAranFlameWreathStopMovementAction(botAI); }
     static Action* karazhan_shade_of_aran_mark_conjured_elemental(PlayerbotAI* botAI) { return new KarazhanShadeOfAranMarkConjuredElementalAction(botAI); }
     static Action* karazhan_shade_of_aran_spread_ranged(PlayerbotAI* botAI) { return new KarazhanShadeOfAranSpreadRangedAction(botAI); }
 

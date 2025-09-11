@@ -118,10 +118,10 @@ public:
     bool isUseful() override;
 };
 
-class KarazhanShadeOfAranFlameWreathStopBotAction : public MovementAction
+class KarazhanShadeOfAranFlameWreathStopMovementAction : public MovementAction
 {
 public:
-    KarazhanShadeOfAranFlameWreathStopBotAction(PlayerbotAI* botAI, std::string const name = "karazhan shade of aran flame wreath stop bot") : MovementAction(botAI, name) {}
+    KarazhanShadeOfAranFlameWreathStopMovementAction(PlayerbotAI* botAI, std::string const name = "karazhan shade of aran flame wreath stop bot") : MovementAction(botAI, name) {}
 
     bool Execute(Event event) override;
 };

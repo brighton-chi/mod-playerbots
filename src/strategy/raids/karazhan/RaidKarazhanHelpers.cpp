@@ -71,7 +71,7 @@ bool RaidKarazhanHelpers::IsFlameWreathActive()
         return false;
 
     Spell* currentSpell = boss->GetCurrentSpell(CURRENT_GENERIC_SPELL);
-    if (currentSpell && currentSpell->m_spellInfo && currentSpell->m_spellInfo->Id == SPELL_FLAME_WREATH_CAST)
+    if (currentSpell && currentSpell->m_spellInfo && currentSpell->m_spellInfo->Id == SPELL_FLAME_WREATH)
     {
         bot->Yell("I will not move when Flame Wreath is cast or the raid blows up.", LANG_UNIVERSAL);
         return true;
@@ -84,7 +84,7 @@ bool RaidKarazhanHelpers::IsFlameWreathActive()
             Player* member = itr->GetSource();
             if (!member || !member->IsAlive())
                 continue;
-            if (member->HasAura(SPELL_FLAME_WREATH_AURA))
+            if (member->HasAura(SPELL_AURA_FLAME_WREATH))
                 return true;
         }
     }

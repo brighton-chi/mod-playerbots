@@ -14,6 +14,44 @@ float KarazhanShadeOfAranMultiplier::GetValue(Action* action)
 
     if (boss && boss->HasUnitState(UNIT_STATE_CASTING) && boss->FindCurrentSpellBySpellId(SPELL_ARCANE_EXPLOSION)) 
     {
+        if (dynamic_cast<CastChargeAction*>(action) ||
+            dynamic_cast<CastInterceptAction*>(action) ||
+            dynamic_cast<CastFeralChargeBearAction*>(action) ||
+            dynamic_cast<CastFeralChargeCatAction*>(action))
+        {
+            return 0.0f;
+        }
+        if (dynamic_cast<MovementAction*>(action) ||
+            dynamic_cast<CastChargeAction*>(action) ||
+            dynamic_cast<CastInterceptAction*>(action) ||
+            dynamic_cast<CastFeralChargeBearAction*>(action) ||
+            dynamic_cast<CastFeralChargeCatAction*>(action))
+        {
+            const float safeDistance = 20.0f;
+            if (bot->GetDistance2d(boss) >= safeDistance)
+            {
+                return 0.0f;
+            }
+        }
+    }
+
+    bool flameWreathActive = boss->HasAura(SPELL_FLAME_WREATH);
+
+    if (!flameWreathActive && bot->GetGroup())
+    {
+        for (GroupReference* itr = bot->GetGroup()->GetFirstMember(); itr != nullptr; itr = itr->next())
+        {
+            Player* member = itr->GetSource();
+            if (member && member->HasAura(SPELL_AURA_FLAME_WREATH))
+            {
+                flameWreathActive = true;
+                break;
+            }
+        }
+    }
+
+    if (flameWreathActive)
+    {
         if (dynamic_cast<MovementAction*>(action) ||
             dynamic_cast<CastChargeAction*>(action) ||
             dynamic_cast<CastInterceptAction*>(action) ||
@@ -23,7 +61,7 @@ float KarazhanShadeOfAranMultiplier::GetValue(Action* action)
             return 0.0f;
         }
     }
-	return 1.0f;
+    return 1.0f;
 }
 
 float KarazhanPrinceMalchezaarMultiplier::GetValue(Action* action)

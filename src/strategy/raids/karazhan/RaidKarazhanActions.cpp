@@ -349,6 +349,7 @@ bool KarazhanShadeOfAranArcaneExplosionRunAwayAction::Execute(Event event)
     {
         return MoveAway(boss, safeDistance - distance);
     }
+    
     return false;
 }
 
@@ -361,29 +362,17 @@ bool KarazhanShadeOfAranArcaneExplosionRunAwayAction::isUseful()
     return boss->HasUnitState(UNIT_STATE_CASTING) && boss->FindCurrentSpellBySpellId(SPELL_ARCANE_EXPLOSION);
 }
 
-bool KarazhanShadeOfAranFlameWreathStopBotAction::Execute(Event event)
+bool KarazhanShadeOfAranFlameWreathStopMovementAction::Execute(Event event)
 {
     RaidKarazhanHelpers karazhanHelper(botAI);
-    static std::map<ObjectGuid, Position> flameWreathPositions;
-    ObjectGuid botGuid = bot->GetGUID();
     if (karazhanHelper.IsFlameWreathActive())
     {
-        if (flameWreathPositions.find(botGuid) == flameWreathPositions.end())
-        {
-            flameWreathPositions[botGuid] = Position(bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ());
-        }
-
         AI_VALUE(LastMovement&, "last movement").Set(nullptr);
         bot->GetMotionMaster()->Clear();
         if (bot->isMoving())
             bot->StopMoving();
 
-        Position& pos = flameWreathPositions[botGuid];
-        return MoveTo(bot->GetMapId(), pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), false, false, false, true, MovementPriority::MOVEMENT_FORCED);
-    }
-    else
-    {
-        flameWreathPositions.erase(botGuid);
+        return true;
     }
     return false;
 }
@@ -392,11 +381,11 @@ bool KarazhanShadeOfAranMarkConjuredElementalAction::Execute(Event event)
 {
     RaidKarazhanHelpers karazhanHelper(botAI);
     Unit* boss = AI_VALUE2(Unit*, "find target", "shade of aran");
-    if (!boss || !boss->IsAlive() || karazhanHelper.IsFlameWreathActive())
+    if (!boss || !boss->IsAlive())
         return false;
 
     Unit* target = karazhanHelper.GetFirstAliveUnitByEntry(NPC_CONJURED_ELEMENTAL);
-    if (!target || target->HasAura(SPELL_WARLOCK_BANISH) || !target->IsAlive())
+    if (!target || !target->IsAlive() || target->HasAura(SPELL_WARLOCK_BANISH))
     {
         return false;
     }

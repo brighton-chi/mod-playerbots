@@ -49,7 +49,7 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode(
         "karazhan shade of aran", NextAction::array(0,
-        new NextAction("karazhan shade of aran flame wreath stop bot", ACTION_EMERGENCY + 7),
+        new NextAction("karazhan shade of aran flame wreath stop movement", ACTION_EMERGENCY + 7),
         new NextAction("karazhan shade of aran arcane explosion run away", ACTION_EMERGENCY + 6),
         new NextAction("karazhan shade of aran spread ranged", ACTION_RAID + 2),
         new NextAction("karazhan shade of aran mark conjured elemental", ACTION_RAID + 1),
