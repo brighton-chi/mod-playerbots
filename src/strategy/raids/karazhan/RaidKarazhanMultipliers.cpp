@@ -64,6 +64,136 @@ float KarazhanShadeOfAranMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+float KarazhanNetherspiteBlueAndGreenBeamMultiplier::GetValue(Action* action)
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "netherspite");
+    if (!boss || !boss->IsAlive())
+        return 1.0f;
+
+    RaidKarazhanHelpers karazhanHelper(botAI);
+    auto [redBlocker /*unused*/, greenBlocker, blueBlocker] = karazhanHelper.GetCurrentBeamBlockers();
+    bool isBlocker = (bot == greenBlocker || bot == blueBlocker);
+    if (isBlocker)
+    {
+        Unit* bluePortal = bot->FindNearestCreature(NPC_BLUE_PORTAL, 150.0f);
+        Unit* greenPortal = bot->FindNearestCreature(NPC_GREEN_PORTAL, 150.0f);
+
+        bool inBeam = false;
+        for (Unit* portal : {bluePortal, greenPortal}) {
+            if (!portal) continue;
+            float bx = boss->GetPositionX(), by = boss->GetPositionY();
+            float px = portal->GetPositionX(), py = portal->GetPositionY();
+            float dx = px - bx, dy = py - by;
+            float length = sqrt(dx*dx + dy*dy);
+            if (length == 0.0f) continue;
+            dx /= length; dy /= length;
+            float botdx = bot->GetPositionX() - bx, botdy = bot->GetPositionY() - by;
+            float t = (botdx * dx + botdy * dy);
+            float beamX = bx + dx * t, beamY = by + dy * t;
+            float distToBeam = sqrt(pow(bot->GetPositionX() - beamX, 2) + pow(bot->GetPositionY() - beamY, 2));
+            if (distToBeam < 5.0f && t > 0.0f && t < length) {
+                inBeam = true;
+                break;
+            }
+        }
+        if (inBeam)
+        {
+            std::vector<Unit*> voidZones = karazhanHelper.GetAllVoidZones();
+            bool inVoidZone = false;
+            for (Unit* vz : voidZones) {
+                if (bot->GetExactDist2d(vz) < 4.0f)
+                {
+                    inVoidZone = true;
+                    break;
+                }
+            }
+            if (!inVoidZone)
+            {
+                if (dynamic_cast<MovementAction*>(action)||
+                    dynamic_cast<CastChargeAction*>(action) ||
+                    dynamic_cast<CastInterceptAction*>(action) ||
+                    dynamic_cast<CastFeralChargeBearAction*>(action) ||
+                    dynamic_cast<CastFeralChargeCatAction*>(action))
+                    return 0.0f;
+            }
+        }
+    }
+    return 1.0f;
+}
+
+float KarazhanNetherspiteRedBeamMultiplier::GetValue(Action* action)
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "netherspite");
+    if (!boss || !boss->IsAlive())
+        return 1.0f;
+
+    RaidKarazhanHelpers karazhanHelper(botAI);
+    auto [redBlocker, greenBlocker /*unused*/, blueBlocker /*unused*/] = karazhanHelper.GetCurrentBeamBlockers();
+
+    // Red beam blocker movement lockout logic
+    // Use same timer logic as BlockRedBeamAction
+    static std::map<ObjectGuid, uint32> beamMoveTimes;
+    static std::map<ObjectGuid, bool> lastBeamMoveSideways;
+    ObjectGuid botGuid = bot->GetGUID();
+    Unit* redPortal = bot->FindNearestCreature(NPC_RED_PORTAL, 150.0f);
+    if (bot == redBlocker && boss && redPortal)
+    {
+        // Get the two assigned positions
+        Position blockingPos = karazhanHelper.GetPositionOnBeam(boss, redPortal, 18.0f);
+        float bx = boss->GetPositionX();
+        float by = boss->GetPositionY();
+        float px = redPortal->GetPositionX();
+        float py = redPortal->GetPositionY();
+        float dx = px - bx;
+        float dy = py - by;
+        float length = sqrt(dx*dx + dy*dy);
+        if (length != 0.0f)
+        {
+            dx /= length;
+            dy /= length;
+            float perpDx = -dy;
+            float perpDy = dx;
+            Position sidewaysPos(blockingPos.GetPositionX() + perpDx * 3.0f,
+                                 blockingPos.GetPositionY() + perpDy * 3.0f,
+                                 blockingPos.GetPositionZ());
+
+            // Timer logic (5 seconds interval)
+            uint32 intervalSecs = 5;
+            if (beamMoveTimes[botGuid] == 0)
+            {
+                beamMoveTimes[botGuid] = time(nullptr);
+                lastBeamMoveSideways[botGuid] = false;
+            }
+            if (time(nullptr) - beamMoveTimes[botGuid] >= intervalSecs)
+            {
+                lastBeamMoveSideways[botGuid] = !lastBeamMoveSideways[botGuid];
+                beamMoveTimes[botGuid] = time(nullptr);
+            }
+
+            // Determine which position bot should be at
+            Position targetPos = lastBeamMoveSideways[botGuid] ? sidewaysPos : blockingPos;
+            float distToTarget = bot->GetExactDist2d(targetPos.GetPositionX(), targetPos.GetPositionY());
+            const float positionTolerance = 1.5f;
+
+            // If bot is at target position, block movement
+            if (distToTarget < positionTolerance)
+            {
+                if (dynamic_cast<MovementAction*>(action) ||
+                    dynamic_cast<CastChargeAction*>(action) ||
+                    dynamic_cast<CastInterceptAction*>(action) ||
+                    dynamic_cast<CastFeralChargeBearAction*>(action) ||
+                    dynamic_cast<CastFeralChargeCatAction*>(action))
+                {
+                    return 0.0f;
+                }
+            }
+            // If timer just triggered, allow movement to switch positions
+            // (i.e., if not at target position, allow movement)
+        }
+    }
+    return 1.0f;
+}
+
 float KarazhanPrinceMalchezaarMultiplier::GetValue(Action* action)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "prince malchezaar");
