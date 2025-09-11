@@ -66,8 +66,8 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode(
         "karazhan prince malchezaar", NextAction::array(0,
-        new NextAction("karazhan prince malchezaar shadow nova run away", ACTION_EMERGENCY + 6),
-        new NextAction("karazhan prince malchezaar avoid infernal", ACTION_RAID + 1),
+        new NextAction("karazhan prince malchezaar non tank avoid hazard", ACTION_EMERGENCY + 6),
+        new NextAction("karazhan prince malchezaar tank avoid hazard", ACTION_EMERGENCY + 6),
         nullptr)));
 }
 

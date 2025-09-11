@@ -1,10 +1,18 @@
 #include "RaidKarazhanMultipliers.h"
 #include "RaidKarazhanActions.h"
 #include "RaidKarazhanHelpers.h"
+#include "AiObjectContext.h"
 #include "DruidBearActions.h"
 #include "DruidCatActions.h"
 #include "WarriorActions.h"
-#include "AiObjectContext.h"
+
+static bool IsChargeAction(Action* action)
+{
+    return dynamic_cast<CastChargeAction*>(action) ||
+           dynamic_cast<CastInterceptAction*>(action) ||
+           dynamic_cast<CastFeralChargeBearAction*>(action) ||
+           dynamic_cast<CastFeralChargeCatAction*>(action);
+}
 
 float KarazhanShadeOfAranMultiplier::GetValue(Action* action)
 {
@@ -14,24 +22,14 @@ float KarazhanShadeOfAranMultiplier::GetValue(Action* action)
 
     if (boss && boss->HasUnitState(UNIT_STATE_CASTING) && boss->FindCurrentSpellBySpellId(SPELL_ARCANE_EXPLOSION)) 
     {
-        if (dynamic_cast<CastChargeAction*>(action) ||
-            dynamic_cast<CastInterceptAction*>(action) ||
-            dynamic_cast<CastFeralChargeBearAction*>(action) ||
-            dynamic_cast<CastFeralChargeCatAction*>(action))
-        {
+        if (IsChargeAction(action))
             return 0.0f;
-        }
-        if (dynamic_cast<MovementAction*>(action) ||
-            dynamic_cast<CastChargeAction*>(action) ||
-            dynamic_cast<CastInterceptAction*>(action) ||
-            dynamic_cast<CastFeralChargeBearAction*>(action) ||
-            dynamic_cast<CastFeralChargeCatAction*>(action))
+
+        if (dynamic_cast<MovementAction*>(action) || IsChargeAction(action))
         {
             const float safeDistance = 20.0f;
             if (bot->GetDistance2d(boss) >= safeDistance)
-            {
                 return 0.0f;
-            }
         }
     }
 
@@ -52,14 +50,8 @@ float KarazhanShadeOfAranMultiplier::GetValue(Action* action)
 
     if (flameWreathActive)
     {
-        if (dynamic_cast<MovementAction*>(action) ||
-            dynamic_cast<CastChargeAction*>(action) ||
-            dynamic_cast<CastInterceptAction*>(action) ||
-            dynamic_cast<CastFeralChargeBearAction*>(action) ||
-            dynamic_cast<CastFeralChargeCatAction*>(action))
-        {
+        if (dynamic_cast<MovementAction*>(action) || IsChargeAction(action))
             return 0.0f;
-        }
     }
     return 1.0f;
 }
@@ -109,11 +101,7 @@ float KarazhanNetherspiteBlueAndGreenBeamMultiplier::GetValue(Action* action)
             }
             if (!inVoidZone)
             {
-                if (dynamic_cast<MovementAction*>(action)||
-                    dynamic_cast<CastChargeAction*>(action) ||
-                    dynamic_cast<CastInterceptAction*>(action) ||
-                    dynamic_cast<CastFeralChargeBearAction*>(action) ||
-                    dynamic_cast<CastFeralChargeCatAction*>(action))
+                if (dynamic_cast<MovementAction*>(action) || IsChargeAction(action))
                     return 0.0f;
             }
         }
@@ -130,15 +118,12 @@ float KarazhanNetherspiteRedBeamMultiplier::GetValue(Action* action)
     RaidKarazhanHelpers karazhanHelper(botAI);
     auto [redBlocker, greenBlocker /*unused*/, blueBlocker /*unused*/] = karazhanHelper.GetCurrentBeamBlockers();
 
-    // Red beam blocker movement lockout logic
-    // Use same timer logic as BlockRedBeamAction
     static std::map<ObjectGuid, uint32> beamMoveTimes;
     static std::map<ObjectGuid, bool> lastBeamMoveSideways;
     ObjectGuid botGuid = bot->GetGUID();
     Unit* redPortal = bot->FindNearestCreature(NPC_RED_PORTAL, 150.0f);
     if (bot == redBlocker && boss && redPortal)
     {
-        // Get the two assigned positions
         Position blockingPos = karazhanHelper.GetPositionOnBeam(boss, redPortal, 18.0f);
         float bx = boss->GetPositionX();
         float by = boss->GetPositionY();
@@ -157,7 +142,6 @@ float KarazhanNetherspiteRedBeamMultiplier::GetValue(Action* action)
                                  blockingPos.GetPositionY() + perpDy * 3.0f,
                                  blockingPos.GetPositionZ());
 
-            // Timer logic (5 seconds interval)
             uint32 intervalSecs = 5;
             if (beamMoveTimes[botGuid] == 0)
             {
@@ -170,25 +154,15 @@ float KarazhanNetherspiteRedBeamMultiplier::GetValue(Action* action)
                 beamMoveTimes[botGuid] = time(nullptr);
             }
 
-            // Determine which position bot should be at
             Position targetPos = lastBeamMoveSideways[botGuid] ? sidewaysPos : blockingPos;
             float distToTarget = bot->GetExactDist2d(targetPos.GetPositionX(), targetPos.GetPositionY());
             const float positionTolerance = 1.5f;
 
-            // If bot is at target position, block movement
             if (distToTarget < positionTolerance)
             {
-                if (dynamic_cast<MovementAction*>(action) ||
-                    dynamic_cast<CastChargeAction*>(action) ||
-                    dynamic_cast<CastInterceptAction*>(action) ||
-                    dynamic_cast<CastFeralChargeBearAction*>(action) ||
-                    dynamic_cast<CastFeralChargeCatAction*>(action))
-                {
+                if (dynamic_cast<MovementAction*>(action) || IsChargeAction(action))
                     return 0.0f;
-                }
             }
-            // If timer just triggered, allow movement to switch positions
-            // (i.e., if not at target position, allow movement)
         }
     }
     return 1.0f;
@@ -202,13 +176,8 @@ float KarazhanPrinceMalchezaarMultiplier::GetValue(Action* action)
 
     if (boss && bot->HasAura(SPELL_ENFEEBLE))
     {
-        if (dynamic_cast<CastChargeAction*>(action) ||
-            dynamic_cast<CastInterceptAction*>(action) ||
-            dynamic_cast<CastFeralChargeBearAction*>(action) ||
-            dynamic_cast<CastFeralChargeCatAction*>(action))
-        {
+        if (IsChargeAction(action))
             return 0.0f;
-        }
     }
     return 1.0f;
 }

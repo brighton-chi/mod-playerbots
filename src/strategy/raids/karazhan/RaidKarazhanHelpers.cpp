@@ -3,8 +3,8 @@
 
 #include "RaidKarazhanHelpers.h"
 #include "RaidKarazhanActions.h"
-#include "PlayerbotMgr.h"
 #include "AiObjectContext.h"
+#include "PlayerbotMgr.h"
 #include "Position.h"
 #include "Spell.h"
 

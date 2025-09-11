@@ -40,8 +40,8 @@ public:
         creators["karazhan netherspite avoid beam and void zone"] = &RaidKarazhanActionContext::karazhan_netherspite_avoid_beam_and_void_zone;
         creators["karazhan netherspite banish phase avoid void zone"] = &RaidKarazhanActionContext::karazhan_netherspite_banish_phase_avoid_void_zone;
 
-        creators["karazhan prince malchezaar avoid infernal"] = &RaidKarazhanActionContext::karazhan_prince_malchezaar_avoid_infernal;
-        creators["karazhan prince malchezaar shadow nova run away"] = &RaidKarazhanActionContext::karazhan_prince_malchezaar_shadow_nova_run_away;
+        creators["karazhan prince malchezaar non tank avoid hazard"] = &RaidKarazhanActionContext::karazhan_prince_malchezaar_non_tank_avoid_hazard;
+        creators["karazhan prince malchezaar tank avoid hazard"] = &RaidKarazhanActionContext::karazhan_prince_malchezaar_tank_avoid_hazard;
     }
 
 private:
@@ -76,8 +76,8 @@ private:
     static Action* karazhan_netherspite_avoid_beam_and_void_zone(PlayerbotAI* botAI) { return new KarazhanNetherspiteAvoidBeamAndVoidZoneAction(botAI); }
     static Action* karazhan_netherspite_banish_phase_avoid_void_zone(PlayerbotAI* botAI) { return new KarazhanNetherspiteBanishPhaseAvoidVoidZoneAction(botAI); }
 
-    static Action* karazhan_prince_malchezaar_avoid_infernal(PlayerbotAI* botAI) { return new KarazhanPrinceMalchezaarAvoidInfernalAction(botAI); }
-    static Action* karazhan_prince_malchezaar_shadow_nova_run_away(PlayerbotAI* botAI) { return new KarazhanPrinceMalchezaarShadowNovaRunAwayAction(botAI); }
+    static Action* karazhan_prince_malchezaar_non_tank_avoid_hazard(PlayerbotAI* botAI) { return new KarazhanPrinceMalchezaarNonTankAvoidHazardAction(botAI); }
+    static Action* karazhan_prince_malchezaar_tank_avoid_hazard(PlayerbotAI* botAI) { return new KarazhanPrinceMalchezaarTankAvoidHazardAction(botAI); }
 };
 
 #endif

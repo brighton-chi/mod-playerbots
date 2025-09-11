@@ -188,18 +188,19 @@ public:
     bool isUseful() override;
 };
 
-class KarazhanPrinceMalchezaarAvoidInfernalAction : public MovementAction
+class KarazhanPrinceMalchezaarNonTankAvoidHazardAction : public MovementAction
 {
 public:
-    KarazhanPrinceMalchezaarAvoidInfernalAction(PlayerbotAI* botAI, std::string const name = "karazhan prince malchezaar avoid infernal") : MovementAction(botAI, name) {}
+    KarazhanPrinceMalchezaarNonTankAvoidHazardAction(PlayerbotAI* botAI, std::string const name = "karazhan prince malchezaar non-tank avoid hazard") : MovementAction(botAI, name) {}
 
     bool Execute(Event event) override;
+    bool isUseful() override;
 };
 
-class KarazhanPrinceMalchezaarShadowNovaRunAwayAction : public MovementAction
+class KarazhanPrinceMalchezaarTankAvoidHazardAction : public MovementAction
 {
 public:
-    KarazhanPrinceMalchezaarShadowNovaRunAwayAction(PlayerbotAI* botAI, std::string const name = "karazhan prince malchezaar shadow nova run away") : MovementAction(botAI, name) {}
+    KarazhanPrinceMalchezaarTankAvoidHazardAction(PlayerbotAI* botAI, std::string const name = "karazhan prince malchezaar tank avoid hazard") : MovementAction(botAI, name) {}
 
     bool Execute(Event event) override;
     bool isUseful() override;

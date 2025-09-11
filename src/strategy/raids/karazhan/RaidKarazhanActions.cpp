@@ -433,7 +433,8 @@ bool KarazhanShadeOfAranSpreadRangedAction::isUseful()
 
     RaidKarazhanHelpers karazhanHelper(botAI);
 
-    return botAI->IsRanged(bot) && !karazhanHelper.IsFlameWreathActive() && !(boss->HasUnitState(UNIT_STATE_CASTING) && boss->FindCurrentSpellBySpellId(SPELL_ARCANE_EXPLOSION));
+    return botAI->IsRanged(bot) && !karazhanHelper.IsFlameWreathActive() && !(boss->HasUnitState(UNIT_STATE_CASTING) 
+           && boss->FindCurrentSpellBySpellId(SPELL_ARCANE_EXPLOSION));
 }
 
 // One tank per phase will dance in and out of the red beam (5 seconds in, 5 seconds out)
@@ -483,7 +484,8 @@ bool KarazhanNetherspiteBlockRedBeamAction::Execute(Event event)
         }
         if (!lastBeamMoveSideways[botGuid]) 
         {
-            return MoveTo(bot->GetMapId(), beamPos.GetPositionX(), beamPos.GetPositionY(), beamPos.GetPositionZ(), false, false, false, true, MovementPriority::MOVEMENT_FORCED);
+            return MoveTo(bot->GetMapId(), beamPos.GetPositionX(), beamPos.GetPositionY(), beamPos.GetPositionZ(), 
+                          false, false, false, true, MovementPriority::MOVEMENT_FORCED);
         } 
         else 
         {
@@ -613,7 +615,8 @@ bool KarazhanNetherspiteBlockBlueBeamAction::Execute(Event event)
         }
         if (found) 
         {
-            return MoveTo(bot->GetMapId(), bestPos.GetPositionX(), bestPos.GetPositionY(), bestPos.GetPositionZ(), false, false, false, true, MovementPriority::MOVEMENT_FORCED);
+            return MoveTo(bot->GetMapId(), bestPos.GetPositionX(), bestPos.GetPositionY(), bestPos.GetPositionZ(),
+                          false, false, false, true, MovementPriority::MOVEMENT_FORCED);
         }
         return false;
     }
@@ -703,7 +706,8 @@ bool KarazhanNetherspiteBlockGreenBeamAction::Execute(Event event)
         }
         if (found) 
         {
-            return MoveTo(bot->GetMapId(), bestPos.GetPositionX(), bestPos.GetPositionY(), bestPos.GetPositionZ(), false, false, false, true, MovementPriority::MOVEMENT_FORCED);
+            return MoveTo(bot->GetMapId(), bestPos.GetPositionX(), bestPos.GetPositionY(), bestPos.GetPositionZ(), 
+                          false, false, false, true, MovementPriority::MOVEMENT_FORCED);
         }
         return false;
     }
@@ -894,88 +898,220 @@ bool KarazhanNetherspiteBanishPhaseAvoidVoidZoneAction::isUseful()
     return false;
 }
 
-bool KarazhanPrinceMalchezaarAvoidInfernalAction::Execute(Event event)
-{
-    Unit* boss = AI_VALUE2(Unit*, "find target", "prince malchezaar");
-    if (!boss)
-        return false;
-
-    RaidKarazhanHelpers karazhanHelper(botAI);
-    std::vector<Unit*> infernals = karazhanHelper.GetSpawnedInfernals();
-
-    const float safeInfernalDistance = 20.0f;
-    const float safeInfernalTankingDistance = 25.0f;
-    float safeDistance = botAI->IsTank(bot) && botAI->HasAggro(boss) && boss->GetVictim() == 
-          bot ? safeInfernalTankingDistance : safeInfernalDistance;
-
-    for (Unit* infernal : infernals)
-    {
-        float distance = bot->GetDistance2d(infernal);
-        if (distance < safeDistance)
-        {
-            bot->AttackStop();
-            bot->InterruptNonMeleeSpells(false);
-            return MoveAway(infernal, safeDistance - distance);
-        }
-    }
-    return false;
-}
-
-// For Enfeebled bots to avoid getting one-shot by Shadow Nova
-bool KarazhanPrinceMalchezaarShadowNovaRunAwayAction::Execute(Event event)
+// For Enfeebled bots to avoid Shadow Nova and all non-tank bots to avoid infernals
+bool KarazhanPrinceMalchezaarNonTankAvoidHazardAction::Execute(Event event)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "prince malchezaar");
     RaidKarazhanHelpers karazhanHelper(botAI);
     std::vector<Unit*> infernals = karazhanHelper.GetSpawnedInfernals();
 
-    const float safeBossDistance = 30.0f;
-    const float safeInfernalDistance = 20.0f;
-    float currentBossDistance = bot->GetDistance2d(boss);
-    if (currentBossDistance < safeBossDistance)
+    const float minSafeBossDistance = 35.0f;
+    const float maxSafeBossDistance = 40.0f;
+    const float safeInfernalDistance = 22.0f;
+    const float stepSize = 0.5f;
+    const int numAngles = 64;
+    float bx = bot->GetPositionX();
+    float by = bot->GetPositionY();
+    float bossX = boss->GetPositionX();
+    float bossY = boss->GetPositionY();
+    float bossZ = boss->GetPositionZ();
+    float bestMoveDist = std::numeric_limits<float>::max();
+    float bestDestX = 0.0f, bestDestY = 0.0f, bestDestZ = bot->GetPositionZ();
+    bool found = false;
+
+    if (bot->HasAura(SPELL_ENFEEBLE))
     {
-        const float stepSize = 0.5f;
-        const int numAngles = 64;
         for (int i = 0; i < numAngles; ++i)
         {
             float angle = (2 * M_PI * i) / numAngles;
             float dx = cos(angle);
             float dy = sin(angle);
-
-            bool pathIsSafe = true;
-            for (float dist = stepSize; dist <= safeBossDistance; dist += stepSize)
+            for (float dist = minSafeBossDistance; dist <= maxSafeBossDistance; dist += stepSize)
             {
-                float x = bot->GetPositionX() + dx * dist;
-                float y = bot->GetPositionY() + dy * dist;
-                for (Unit* infernal : infernals)
+                float x = bossX + dx * dist;
+                float y = bossY + dy * dist;
+                float destZ = bossZ;
+                if (!bot->IsWithinLOS(x, y, destZ))
+                    continue;
+                bool pathSafe = true;
+                for (float checkDist = 0.0f; checkDist <= sqrt(pow(x - bx, 2) + pow(y - by, 2)); checkDist += stepSize)
                 {
-                    float infernalDist = sqrt(pow(x - infernal->GetPositionX(), 2) + pow(y - infernal->GetPositionY(), 2));
-                    if (infernalDist < safeInfernalDistance)
+                    float t = checkDist / sqrt(pow(x - bx, 2) + pow(y - by, 2));
+                    float checkX = bx + (x - bx) * t;
+                    float checkY = by + (y - by) * t;
+                    for (Unit* infernal : infernals)
                     {
-                        pathIsSafe = false;
+                        float infernalDist = sqrt(pow(checkX - infernal->GetPositionX(), 2) + pow(checkY - infernal->GetPositionY(), 2));
+                        if (infernalDist < safeInfernalDistance)
+                        {
+                            pathSafe = false;
+                            break;
+                        }
+                    }
+                    if (!pathSafe)
                         break;
+                }
+                if (!pathSafe)
+                    continue;
+                if (!karazhanHelper.IsSafePosition(x, y, destZ, infernals, safeInfernalDistance))
+                    continue;
+                float moveDist = sqrt(pow(x - bx, 2) + pow(y - by, 2));
+                if (moveDist < bestMoveDist)
+                {
+                    bestMoveDist = moveDist;
+                    bestDestX = x;
+                    bestDestY = y;
+                    bestDestZ = destZ;
+                    found = true;
+                }
+            }
+        }
+        if (found)
+        {
+            bot->AttackStop();
+            bot->InterruptNonMeleeSpells(false);
+            return MoveTo(bot->GetMapId(), bestDestX, bestDestY, bestDestZ, false, false, false, true, MovementPriority::MOVEMENT_FORCED);
+        }
+        return false;
+    }
+
+    if (!bot->HasAura(SPELL_ENFEEBLE))
+    {
+        bool nearInfernal = false;
+        for (Unit* infernal : infernals)
+        {
+            float infernalDist = sqrt(pow(bx - infernal->GetPositionX(), 2) + pow(by - infernal->GetPositionY(), 2));
+            if (infernalDist < safeInfernalDistance)
+            {
+                nearInfernal = true;
+                break;
+            }
+        }
+        if (nearInfernal)
+        {
+            for (int i = 0; i < numAngles; ++i)
+            {
+                float angle = (2 * M_PI * i) / numAngles;
+                float dx = cos(angle);
+                float dy = sin(angle);
+                for (float dist = stepSize; dist <= 35.0f; dist += stepSize)
+                {
+                    float x = bossX + dx * dist;
+                    float y = bossY + dy * dist;
+                    float destZ = bossZ;
+                    if (!bot->IsWithinLOS(x, y, destZ))
+                        continue;
+                    if (!karazhanHelper.IsSafePosition(x, y, destZ, infernals, safeInfernalDistance))
+                        continue;
+                    float moveDist = sqrt(pow(x - bx, 2) + pow(y - by, 2));
+                    if (moveDist < bestMoveDist)
+                    {
+                        bestMoveDist = moveDist;
+                        bestDestX = x;
+                        bestDestY = y;
+                        bestDestZ = destZ;
+                        found = true;
                     }
                 }
-                if (!pathIsSafe)
-                    break;
             }
-            if (pathIsSafe)
+            if (found)
             {
-                float destX = bot->GetPositionX() + dx * (safeBossDistance - currentBossDistance);
-                float destY = bot->GetPositionY() + dy * (safeBossDistance - currentBossDistance);
-                float destZ = bot->GetPositionZ();
                 bot->AttackStop();
                 bot->InterruptNonMeleeSpells(false);
-                if (karazhanHelper.IsSafePosition(destX, destY, destZ, infernals, 20.0f))
-                    return MoveTo(bot->GetMapId(), destX, destY, destZ, false, false, false, true, MovementPriority::MOVEMENT_FORCED);
+                return MoveTo(bot->GetMapId(), bestDestX, bestDestY, bestDestZ, false, false, false, true, MovementPriority::MOVEMENT_FORCED);
             }
         }
     }
     return false;
 }
 
-bool KarazhanPrinceMalchezaarShadowNovaRunAwayAction::isUseful()
+bool KarazhanPrinceMalchezaarNonTankAvoidHazardAction::isUseful()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "prince malchezaar");
+    
+    return boss && !(botAI->IsTank(bot) && botAI->HasAggro(boss) && boss->GetVictim() == bot);
+}
 
-    return boss && bot->HasAura(SPELL_ENFEEBLE);
+// For tank to avoid infernals (with buffer distance)
+bool KarazhanPrinceMalchezaarTankAvoidHazardAction::Execute(Event event)
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "prince malchezaar");
+    RaidKarazhanHelpers karazhanHelper(botAI);
+    std::vector<Unit*> infernals = karazhanHelper.GetSpawnedInfernals();
+
+    const float safeInfernalDistance = 30.0f;
+    const float stepSize = 0.5f;
+    const int numAngles = 64;
+    const float maxSampleDist = 60.0f;
+    float bx = bot->GetPositionX();
+    float by = bot->GetPositionY();
+    float bz = bot->GetPositionZ();
+    float bestMoveDist = std::numeric_limits<float>::max();
+    float bestDestX = bx, bestDestY = by, bestDestZ = bz;
+    bool found = false;
+
+    bool nearInfernal = false;
+    for (Unit* infernal : infernals)
+    {
+        float infernalDist = sqrt(pow(bx - infernal->GetPositionX(), 2) + pow(by - infernal->GetPositionY(), 2));
+        if (infernalDist < safeInfernalDistance)
+        {
+            nearInfernal = true;
+            break;
+        }
+    }
+    if (nearInfernal)
+    {
+        // Sample all positions within LOS and within 50 yards of current position
+        for (int i = 0; i < numAngles; ++i)
+        {
+            float angle = (2 * M_PI * i) / numAngles;
+            float dx = cos(angle);
+            float dy = sin(angle);
+            for (float dist = stepSize; dist <= maxSampleDist; dist += stepSize)
+            {
+                float x = bx + dx * dist;
+                float y = by + dy * dist;
+                float z = bz;
+                if (!bot->IsWithinLOS(x, y, z))
+                    continue;
+                // Only accept positions not within 30 yards of any infernal
+                bool safe = true;
+                for (Unit* infernal : infernals)
+                {
+                    float infernalDist = sqrt(pow(x - infernal->GetPositionX(), 2) + pow(y - infernal->GetPositionY(), 2));
+                    if (infernalDist < safeInfernalDistance)
+                    {
+                        safe = false;
+                        break;
+                    }
+                }
+                if (!safe)
+                    continue;
+                float moveDist = sqrt(pow(x - bx, 2) + pow(y - by, 2));
+                if (moveDist < bestMoveDist)
+                {
+                    bestMoveDist = moveDist;
+                    bestDestX = x;
+                    bestDestY = y;
+                    bestDestZ = z;
+                    found = true;
+                }
+            }
+        }
+        if (found)
+        {
+            bot->AttackStop();
+            bot->InterruptNonMeleeSpells(false);
+            return MoveTo(bot->GetMapId(), bestDestX, bestDestY, bestDestZ, false, false, false, true, MovementPriority::MOVEMENT_FORCED);
+        }
+    }
+    return false;
+}
+
+bool KarazhanPrinceMalchezaarTankAvoidHazardAction::isUseful()
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "prince malchezaar");
+    
+    return boss && botAI->IsTank(bot) && botAI->HasAggro(boss) && boss->GetVictim() == bot;
 }
