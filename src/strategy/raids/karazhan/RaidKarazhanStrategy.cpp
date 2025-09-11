@@ -1,4 +1,5 @@
 #include "RaidKarazhanStrategy.h"
+#include "RaidKarazhanMultipliers.h"
 
 void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
@@ -65,12 +66,13 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode(
         "karazhan prince malchezaar", NextAction::array(0,
-        new NextAction("karazhan prince malchezaar run away from shadow nova", ACTION_EMERGENCY + 6),
+        new NextAction("karazhan prince malchezaar shadow nova run away", ACTION_EMERGENCY + 6),
         new NextAction("karazhan prince malchezaar avoid infernal", ACTION_RAID + 1),
         nullptr)));
 }
 
-void RaidKarazhanStrategy::InitMultipliers(std::vector<Multiplier*>& /*multipliers*/)
+void RaidKarazhanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
-    // No multipliers for this strategy
+    multipliers.push_back(new KarazhanShadeOfAranMultiplier(botAI));
+    multipliers.push_back(new KarazhanPrinceMalchezaarMultiplier(botAI));
 }

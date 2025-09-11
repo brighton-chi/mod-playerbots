@@ -1,12 +1,12 @@
-#include "RaidKarazhanActions.h"
+#include <algorithm>
+#include <map>
+
 #include "RaidKarazhanHelpers.h"
+#include "RaidKarazhanActions.h"
 #include "PlayerbotMgr.h"
 #include "AiObjectContext.h"
 #include "Position.h"
 #include "Spell.h"
-
-#include <algorithm>
-#include <map>
 
 void RaidKarazhanHelpers::MarkTargetWithSkull(Unit* target)
 {

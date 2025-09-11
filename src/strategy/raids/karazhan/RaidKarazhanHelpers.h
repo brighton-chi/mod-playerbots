@@ -3,7 +3,6 @@
 
 #include "AiObject.h"
 #include "Playerbots.h"
-#include "MovementActions.h"
 
 enum KarazhanSpells
 {

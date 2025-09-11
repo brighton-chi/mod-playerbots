@@ -1,14 +1,9 @@
-#include "Playerbots.h"
 #include "RaidKarazhanActions.h"
 #include "RaidKarazhanHelpers.h"
-#include "Timer.h"
-#include "WarlockActions.h"
 #include "AiObjectContext.h"
-#include "Pet.h"
-#include "GenericActions.h"
+#include "Playerbots.h"
 #include "PlayerbotMgr.h"
 #include "PlayerbotAI.h"
-#include "MovementActions.h"
 
 namespace 
 {
@@ -344,8 +339,6 @@ bool KarazhanTerestianIllhoofMarkTargetAction::Execute(Event event)
 bool KarazhanShadeOfAranArcaneExplosionRunAwayAction::Execute(Event event)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "shade of aran");
-    static std::map<ObjectGuid, time_t> arcaneExplosionEndTimes;
-    ObjectGuid botGuid = bot->GetGUID();
     const float safeDistance = 20.0f;
     const float distance = bot->GetDistance2d(boss);
 
@@ -356,39 +349,16 @@ bool KarazhanShadeOfAranArcaneExplosionRunAwayAction::Execute(Event event)
     {
         return MoveAway(boss, safeDistance - distance);
     }
-
-    if (!botAI->HasStrategy("stay", BOT_STATE_COMBAT))
-        botAI->ChangeStrategy("+stay", BOT_STATE_COMBAT);
-
     return false;
 }
 
 bool KarazhanShadeOfAranArcaneExplosionRunAwayAction::isUseful()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "shade of aran");
-    static std::map<ObjectGuid, time_t> arcaneExplosionEndTimes;
-    ObjectGuid botGuid = bot->GetGUID();
     if (!boss || !boss->IsAlive())
         return false;
 
-    if (boss->HasUnitState(UNIT_STATE_CASTING) && boss->FindCurrentSpellBySpellId(SPELL_ARCANE_EXPLOSION))
-    {
-        arcaneExplosionEndTimes[botGuid] = time(nullptr) + 1;
-        return true;
-    }
-
-    if (arcaneExplosionEndTimes.count(botGuid) && arcaneExplosionEndTimes[botGuid] > time(nullptr))
-    {
-        return true;
-    }
-
-    if (arcaneExplosionEndTimes.count(botGuid))
-        arcaneExplosionEndTimes.erase(botGuid);
-
-    if (botAI->HasStrategy("stay", BOT_STATE_COMBAT))
-        botAI->ChangeStrategy("-stay", BOT_STATE_COMBAT);
-
-    return false;
+    return boss->HasUnitState(UNIT_STATE_CASTING) && boss->FindCurrentSpellBySpellId(SPELL_ARCANE_EXPLOSION);
 }
 
 bool KarazhanShadeOfAranFlameWreathStopBotAction::Execute(Event event)
@@ -963,7 +933,7 @@ bool KarazhanPrinceMalchezaarAvoidInfernalAction::Execute(Event event)
 }
 
 // For Enfeebled bots to avoid getting one-shot by Shadow Nova
-bool KarazhanPrinceMalchezaarRunAwayFromShadowNovaAction::Execute(Event event)
+bool KarazhanPrinceMalchezaarShadowNovaRunAwayAction::Execute(Event event)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "prince malchezaar");
     RaidKarazhanHelpers karazhanHelper(botAI);
@@ -1014,7 +984,7 @@ bool KarazhanPrinceMalchezaarRunAwayFromShadowNovaAction::Execute(Event event)
     return false;
 }
 
-bool KarazhanPrinceMalchezaarRunAwayFromShadowNovaAction::isUseful()
+bool KarazhanPrinceMalchezaarShadowNovaRunAwayAction::isUseful()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "prince malchezaar");
 

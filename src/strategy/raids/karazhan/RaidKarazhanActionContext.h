@@ -1,10 +1,8 @@
 #ifndef _PLAYERBOT_RAIDKARAZHANACTIONS_CONTEXT_H
 #define _PLAYERBOT_RAIDKARAZHANACTIONS_CONTEXT_H
 
-#include "Action.h"
-#include "NamedObjectContext.h"
 #include "RaidKarazhanActions.h"
-
+#include "NamedObjectContext.h"
 
 class RaidKarazhanActionContext : public NamedObjectContext<Action>
 {
@@ -43,7 +41,7 @@ public:
         creators["karazhan netherspite banish phase avoid void zone"] = &RaidKarazhanActionContext::karazhan_netherspite_banish_phase_avoid_void_zone;
 
         creators["karazhan prince malchezaar avoid infernal"] = &RaidKarazhanActionContext::karazhan_prince_malchezaar_avoid_infernal;
-        creators["karazhan prince malchezaar run away from shadow nova"] = &RaidKarazhanActionContext::karazhan_prince_malchezaar_run_away_from_shadow_nova;
+        creators["karazhan prince malchezaar shadow nova run away"] = &RaidKarazhanActionContext::karazhan_prince_malchezaar_shadow_nova_run_away;
     }
 
 private:
@@ -79,7 +77,7 @@ private:
     static Action* karazhan_netherspite_banish_phase_avoid_void_zone(PlayerbotAI* botAI) { return new KarazhanNetherspiteBanishPhaseAvoidVoidZoneAction(botAI); }
 
     static Action* karazhan_prince_malchezaar_avoid_infernal(PlayerbotAI* botAI) { return new KarazhanPrinceMalchezaarAvoidInfernalAction(botAI); }
-    static Action* karazhan_prince_malchezaar_run_away_from_shadow_nova(PlayerbotAI* botAI) { return new KarazhanPrinceMalchezaarRunAwayFromShadowNovaAction(botAI); }
+    static Action* karazhan_prince_malchezaar_shadow_nova_run_away(PlayerbotAI* botAI) { return new KarazhanPrinceMalchezaarShadowNovaRunAwayAction(botAI); }
 };
 
 #endif
