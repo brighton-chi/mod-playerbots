@@ -1,11 +1,101 @@
-#ifndef _PLAYERBOT_RAIDGLACTIONS_H
-#define _PLAYERBOT_RAIDGLACTIONS_H
+#ifndef _PLAYERBOT_RAIDGRUULSLAIRACTIONS_H
+#define _PLAYERBOT_RAIDGRUULSLAIRACTIONS_H
 
-/*#include "Action.h"
-#include "MovementActions.h"
-#include "PlayerbotAI.h"
-#include "Playerbots.h"
+#include "Action.h"
 #include "AttackAction.h"
+#include "MovementActions.h"
+
+class HighKingMaulgarAssignRTIPriorityAction : public Action
+{
+public:
+    HighKingMaulgarAssignRTIPriorityAction(PlayerbotAI* botAI, std::string const name = "high king maulgar assign rti priority") : Action(botAI, name) {};
+
+    bool Execute(Event event) override;
+};
+
+class HighKingMaulgarMainTankAction : public MovementAction
+{
+public:
+    HighKingMaulgarMainTankAction(PlayerbotAI* botAI, std::string const name = "high king maulgar main tank") : MovementAction(botAI, name) {};
+
+    bool Execute(Event event) override;
+    bool isUseful();
+};
+
+class HighKingMaulgarFirstOffTankAction : public MovementAction
+{
+public:
+    HighKingMaulgarFirstOffTankAction(PlayerbotAI* botAI, std::string const name = "high king maulgar first off tank") : MovementAction(botAI, name) {};
+
+    bool Execute(Event event) override;
+    bool isUseful();
+};
+
+class HighKingMaulgarBlindeyeTankAction : public MovementAction
+{
+public:
+    HighKingMaulgarBlindeyeTankAction(PlayerbotAI* botAI, std::string const name = "high king maulgar blindeye tank") : MovementAction(botAI, name) {};
+
+    bool Execute(Event event) override;
+    bool isUseful();
+};
+
+class HighKingMaulgarMageTankAction : public AttackAction
+{
+public:
+    HighKingMaulgarMageTankAction(PlayerbotAI* botAI, std::string const name = "high king maulgar mage tank") : AttackAction(botAI, name) {};
+
+    bool Execute(Event event) override;
+    bool isUseful();
+};
+
+class HighKingMaulgarKroshFirehandAvoidBlastWaveAction : public MovementAction
+{
+public:
+    HighKingMaulgarKroshFirehandAvoidBlastWaveAction(PlayerbotAI* botAI, std::string const name = "high king maulgar krosh firehand avoid blast wave") : MovementAction(botAI, name) {};
+
+    bool Execute(Event event) override;
+    bool isUseful();
+};
+
+class HighKingMaulgarSubjugateFelstalkerAction : public AttackAction
+{
+public:
+    HighKingMaulgarSubjugateFelstalkerAction(PlayerbotAI* botAI, std::string const name = "high king maulgar subjugate felstalker") : AttackAction(botAI, name) {};
+
+    bool Execute(Event event) override;
+    bool isUseful();
+};
+
+class HighKingMaulgarControlFelstalkerAction : public AttackAction
+{
+public:
+    HighKingMaulgarControlFelstalkerAction(PlayerbotAI* botAI, std::string const name = "high king maulgar control felstalker") : AttackAction(botAI, name) {};
+
+    bool Execute(Event event) override;
+    bool isUseful();
+};
+
+class HighKingMaulgarAvoidWhirlwindAction : public MovementAction
+{
+public:
+    HighKingMaulgarAvoidWhirlwindAction(PlayerbotAI* botAI, std::string const name = "high king maulgar avoid whirlwind") : MovementAction(botAI, name) {};
+
+    bool Execute(Event event) override;
+    bool isUseful();
+};
+
+class HighKingMaulgarHunterMisdirectionAction : public AttackAction
+{
+public:
+    HighKingMaulgarHunterMisdirectionAction(PlayerbotAI* botAI, std::string const name = "high king maulgar hunter misdirection") : AttackAction(botAI, name) {};
+
+    bool Execute(Event event) override;
+    bool isUseful();
+};
+
+
+/*
 #include "LastMovementValue.h"
 #include "ObjectGuid.h"
 #include "PlayerbotAIConfig.h"
@@ -670,6 +760,5 @@ class IccLichKingAddsAction : public AttackAction
         void HandleVileSpiritMechanics();
 };
 */
-
 
 #endif

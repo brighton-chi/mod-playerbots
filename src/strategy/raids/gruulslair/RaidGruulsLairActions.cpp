@@ -1,4 +1,372 @@
-#include "RaidGlActions.h"
+#include "RaidGruulsLairActions.h"
+#include "RaidGruulsLairHelpers.h"
+#include "PlayerbotAI.h"
+#include "Playerbots.h"
+#include "SpellAuras.h"
+#include "SpellMgr.h"
+#include "Unit.h"
+
+bool HighKingMaulgarAssignRTIPriorityAction::Execute(Event event)
+{
+    Group* group = bot->GetGroup();
+    if (!group) return false;
+
+    // Mark ogres with RTI
+    std::vector<std::pair<std::string, uint8_t>> ogreMarks = 
+    {
+        {"blindeye the seer", 0},    // Star
+        {"olm the summoner", 1},     // Circle
+        {"kiggler the crazed", 2},   // Diamond
+        {"krosh firehand", 3},       // Triangle
+        {"high king maulgar", 5}     // Square
+    };
+
+    for (const auto& [name, icon] : ogreMarks)
+    {
+        Unit* ogre = AI_VALUE2(Unit*, "find target", name);
+        if (ogre && group->GetTargetIcon(icon) != ogre->GetGUID())
+        {
+            group->SetTargetIcon(icon, bot->GetGUID(), ogre->GetGUID());
+        }
+    }
+
+    // Assign RTI priority for each bot role
+    std::vector<std::string> priorities;
+    if (botAI->IsMainTank(bot))
+    {
+        priorities = { "square", "star", "circle", "diamond", "triangle" };
+    }
+    else if (IsBoomkinTank(botAI, bot))
+    {
+        priorities = { "diamond", "star", "circle", "triangle", "square" };
+    }
+    else if (IsMageTank(botAI, bot))
+    {
+        priorities = { "triangle", "star", "circle", "diamond", "square" };
+    }
+    else if (IsWarlockTank(botAI, bot))
+    {
+        priorities = { "circle", "star", "diamond", "triangle", "square" };
+    }
+    else if (IsFirstOffTank(botAI, bot))
+    {
+        priorities = { "circle", "star", "diamond", "square" };
+    }
+    else if (botAI->IsMelee(bot))
+    {
+        priorities = { "star", "circle", "diamond", "square" };
+    }
+    else
+    {
+        priorities = { "star", "circle", "diamond", "triangle", "square" };
+    }
+
+    for (const auto& rti : priorities)
+    {
+        int32 index = -1;
+        if (rti == "star") index = 0;
+        else if (rti == "circle") index = 1;
+        else if (rti == "diamond") index = 2;
+        else if (rti == "triangle") index = 3;
+        else if (rti == "moon") index = 4;
+        else if (rti == "square") index = 5;
+        else if (rti == "cross") index = 6;
+        else if (rti == "skull") index = 7;
+        if (index == -1) continue;
+        ObjectGuid guid = group->GetTargetIcon(index);
+        Unit* target = botAI->GetUnit(guid);
+        if (target && target->IsAlive())
+        {
+            botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set(rti);
+            return true;
+        }
+    }
+    return false;
+}
+
+bool HighKingMaulgarMainTankAction::Execute(Event event)
+{
+    Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
+    if (!maulgar || !maulgar->IsAlive()) return false;
+
+    const TankSpot& spot = GruulsLairTankSpots::Maulgar;
+    const float maxDistance = 3.0f;
+    float distanceToBossPosition = maulgar->GetExactDist2d(spot.x, spot.y);
+
+    if (distanceToBossPosition > maxDistance)
+    {
+        float dX = spot.x - maulgar->GetPositionX();
+        float dY = spot.y - maulgar->GetPositionY();
+        float mX = spot.x + (dX / distanceToBossPosition) * maxDistance;
+        float mY = spot.y + (dY / distanceToBossPosition) * maxDistance;
+        botAI->MoveTo(bot->GetMapId(), mX, mY, spot.z, false, true, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+        float orientation = atan2(maulgar->GetPositionY() - bot->GetPositionY(), maulgar->GetPositionX() - bot->GetPositionX());
+        bot->SetFacingTo(orientation);
+        return true;
+    }
+    float orientation = atan2(maulgar->GetPositionY() - bot->GetPositionY(), maulgar->GetPositionX() - bot->GetPositionX());
+    bot->SetFacingTo(orientation);
+    if (maulgar->GetVictim() != bot)
+        botAI->Attack(maulgar);
+    return true;
+}
+
+bool HighKingMaulgarMainTankAction::isUseful()
+{
+    Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
+
+    return maulgar && maulgar->IsAlive() && botAI->IsMainTank(bot);
+}
+
+bool HighKingMaulgarFirstOffTankAction::Execute(Event event)
+{
+    Unit* olm = AI_VALUE2(Unit*, "find target", "olm the summoner");
+    if (!olm || !olm->IsAlive()) return false;
+
+    const TankSpot& spot = GruulsLairTankSpots::Olm;
+    const float maxDistance = 3.0f;
+    float distanceToBossPosition = olm->GetExactDist2d(spot.x, spot.y);
+
+    if (distanceToBossPosition > maxDistance)
+    {
+        float dX = spot.x - olm->GetPositionX();
+        float dY = spot.y - olm->GetPositionY();
+        float mX = spot.x + (dX / distanceToBossPosition) * maxDistance;
+        float mY = spot.y + (dY / distanceToBossPosition) * maxDistance;
+        botAI->MoveTo(bot->GetMapId(), mX, mY, spot.z, false, true, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+        float orientation = atan2(olm->GetPositionY() - bot->GetPositionY(), olm->GetPositionX() - bot->GetPositionX());
+        bot->SetFacingTo(orientation);
+        return true;
+    }
+    float orientation = atan2(olm->GetPositionY() - bot->GetPositionY(), olm->GetPositionX() - bot->GetPositionX());
+    bot->SetFacingTo(orientation);
+    if (olm->GetVictim() != bot)
+        botAI->Attack(olm);
+    return true;
+}
+
+bool HighKingMaulgarFirstOffTankAction::isUseful()
+{
+    Unit* olm = AI_VALUE2(Unit*, "find target", "olm the summoner");
+
+    return olm && olm->IsAlive() && IsFirstOffTank(botAI, bot);
+}
+
+bool HighKingMaulgarBlindeyeTankAction::Execute(Event event)
+{
+    Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
+    if (!blindeye || !blindeye->IsAlive()) return false;
+
+    const TankSpot& spot = GruulsLairTankSpots::Blindeye;
+    const float maxDistance = 3.0f;
+    float distanceToBossPosition = blindeye->GetExactDist2d(spot.x, spot.y);
+
+    if (distanceToBossPosition > maxDistance)
+    {
+        float dX = spot.x - blindeye->GetPositionX();
+        float dY = spot.y - blindeye->GetPositionY();
+        float mX = spot.x + (dX / distanceToBossPosition) * maxDistance;
+        float mY = spot.y + (dY / distanceToBossPosition) * maxDistance;
+        botAI->MoveTo(bot->GetMapId(), mX, mY, spot.z, false, true, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+        float orientation = atan2(blindeye->GetPositionY() - bot->GetPositionY(), blindeye->GetPositionX() - bot->GetPositionX());
+        bot->SetFacingTo(orientation);
+        return true;
+    }
+    float orientation = atan2(blindeye->GetPositionY() - bot->GetPositionY(), blindeye->GetPositionX() - bot->GetPositionX());
+    bot->SetFacingTo(orientation);
+    if (blindeye->GetVictim() != bot)
+        botAI->Attack(blindeye);
+    return true;
+}
+
+bool HighKingMaulgarBlindeyeTankAction::isUseful()
+{
+    Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
+
+    return blindeye && blindeye->IsAlive() && blindeye->GetVictim() == bot && botAI->IsTank(bot) && !botAI->IsMainTank(bot) && !IsFirstOffTank(botAI, bot);
+}
+
+bool HighKingMaulgarMageTankAction::Execute(Event event)
+{
+    Unit* krosh = AI_VALUE2(Unit*, "find target", "krosh firehand");
+
+    // 1. If Krosh has Spell Shield, cast Spellsteal
+    if (krosh->HasAura(SPELL_SPELL_SHIELD))
+    {
+        botAI->CastSpell(SPELL_SPELLSTEAL, krosh);
+        return true;
+    }
+
+    // 2. If mage does not have Spell Shield, cast Fire Ward on self
+    if (!bot->HasAura(SPELL_SPELL_SHIELD))
+    {
+        botAI->CastSpell(SPELL_FIRE_WARD, bot);
+        return true;
+    }
+
+    return false;
+}
+
+bool HighKingMaulgarMageTankAction::isUseful()
+{
+    Unit* krosh = AI_VALUE2(Unit*, "find target", "krosh firehand");
+
+    return krosh && krosh->IsAlive() && IsMageTank(botAI, bot);
+}
+
+bool HighKingMaulgarKroshFirehandAvoidBlastWaveAction::Execute(Event event)
+{
+    Unit* krosh = AI_VALUE2(Unit*, "find target", "krosh firehand");
+    float safeDistance = 21.0f;
+    if (bot->GetDistance(krosh) < safeDistance)
+    {
+        MoveTo(krosh, safeDistance);
+        return true;
+    }
+}
+
+bool HighKingMaulgarKroshFirehandAvoidBlastWaveAction::isUseful()
+{
+    Unit* krosh = AI_VALUE2(Unit*, "find target", "krosh firehand");
+
+    return krosh && krosh->IsAlive() && bot->GetDistance2d(krosh) < 21.0f;
+}
+
+// Subjugate Olm's Wild Fel Stalkers
+bool HighKingMaulgarSubjugateFelstalkerAction::Execute(Event event)
+{
+    const GuidVector npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
+    for (const auto& npcGuid : npcs)
+    {
+        Unit* felStalker = botAI->GetUnit(npcGuid);
+        if (felStalker && felStalker->GetEntry() == 18847 &&
+            felStalker->IsAlive() && !felStalker->GetCharmerOrOwnerGUID() &&
+            bot->IsWithinDistInMap(felStalker, 30.0f))
+        {
+            botAI->CastSpell(SPELL_SUBJUGATE_DEMON, felStalker);
+            return true;
+        }
+    }
+    return false;
+}
+
+bool HighKingMaulgarSubjugateFelstalkerAction::isUseful()
+{
+    const GuidVector npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
+    for (const auto& npcGuid : npcs)
+    {
+        Unit* felStalker = botAI->GetUnit(npcGuid);
+        if (felStalker && felStalker->GetEntry() == NPC_WILD_FEL_STALKER &&
+            felStalker->IsAlive() && !felStalker->GetCharmerOrOwnerGUID() &&
+            bot->IsWithinDistInMap(felStalker, 30.0f) && IsWarlockTank(botAI, bot))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool HighKingMaulgarControlFelstalkerAction::Execute(Event event)
+{
+    // Get the charmed Fel Stalker
+    Unit* felStalker = bot->GetCharm();
+    if (!felStalker || felStalker->GetEntry() != NPC_WILD_FEL_STALKER || !felStalker->IsAlive())
+        return false;
+
+    // First, dispel party members with SPELL_DARK_DECAY
+    const GuidVector party = AI_VALUE(GuidVector, "party");
+    for (const auto& guid : party)
+    {
+        Unit* member = botAI->GetUnit(guid);
+        if (!member || !member->IsAlive())
+            continue;
+        if (member->HasAura(SPELL_DARK_DECAY) && !felStalker->HasSpellCooldown(SPELL_DETERMINATION))
+        {
+            felStalker->CastSpell(member, SPELL_DETERMINATION, true);
+            felStalker->AddSpellCooldown(SPELL_DETERMINATION, 0, 10 * 1000); // 10s cooldown
+            return true;
+        }
+    }
+
+    Unit* olm = AI_VALUE2(Unit*, "find target", "olm the summoner");
+    if (olm && olm->IsAlive() && !felStalker->HasSpellCooldown(SPELL_THREATEN))
+    {
+        felStalker->CastSpell(olm, SPELL_THREATEN, true);
+        felStalker->AddSpellCooldown(SPELL_THREATEN, 0, 20 * 1000); // 20s cooldown
+        return true;
+    }
+
+    Unit* krosh = AI_VALUE2(Unit*, "find target", "krosh firehand");
+    if (krosh && krosh->IsAlive() && !felStalker->HasSpellCooldown(SPELL_WILD_BITE))
+    {
+        felStalker->CastSpell(krosh, SPELL_WILD_BITE, true);
+        felStalker->AddSpellCooldown(SPELL_WILD_BITE, 0, 5 * 1000); // 5s cooldown
+        return true;
+    }
+
+    Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
+    if (maulgar && maulgar->IsAlive() && !felStalker->HasSpellCooldown(SPELL_WILD_BITE))
+    {
+        felStalker->CastSpell(maulgar, SPELL_WILD_BITE, true);
+        felStalker->AddSpellCooldown(SPELL_WILD_BITE, 0, 5 * 1000); // 5s cooldown
+        return true;
+    }
+
+    return false;
+}
+
+bool HighKingMaulgarControlFelstalkerAction::isUseful()
+{
+    Unit* minion = bot->GetFirstControlled();
+    if (minion && minion->GetEntry() == NPC_WILD_FEL_STALKER && minion->IsAlive())
+    {
+        return true;
+    }
+    return false;
+}
+
+bool HighKingMaulgarAvoidWhirlwindAction::Execute(Event event)
+{
+    Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
+    float safeDistance = 46.0f;
+    if (bot->GetDistance(maulgar) < safeDistance)
+    {
+        MoveTo(maulgar, safeDistance);
+        return true;
+    }
+    return false;
+}
+
+bool HighKingMaulgarAvoidWhirlwindAction::isUseful()
+{
+    Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
+    
+    return maulgar && maulgar->IsAlive() && maulgar->hasUnitState(UNIT_STATE_CASTING) 
+    && maulgar->FindCurrentSpellBySpellId(SPELL_WHIRLWIND) && !botAI->IsMainTank(bot)
+}
+
+bool HighKingMaulgarHunterMisdirectionAction::Execute(Event event)
+{
+    Group* group = bot->GetGroup();
+    if (!group || bot->getClass() != CLASS_HUNTER)
+        return false;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || member == bot) continue;
+        Aura* aura = member->GetAura(SPELL_MISDIRECTION);
+        if (aura && aura->GetCasterGUID() == bot->GetGUID())
+        {
+            Unit* target = member->GetVictim();
+            if (!target) return false;
+            botAI->CastSpell(SPELL_AIMED_SHOT, target);
+            botAI->CastSpell(SPELL_STEADY_SHOT, target);
+            return true;
+        }
+    }
+    return false;
+}
 
 /*
 #include "RaidIccActions.h"

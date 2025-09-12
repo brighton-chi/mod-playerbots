@@ -12,7 +12,7 @@
 #include "RaidAq20Strategy.h"
 #include "RaidIccStrategy.h"
 #include "RaidVoAStrategy.h"
-#include "RaidGlStrategy.h"
+#include "RaidGruulsLairStrategy.h"
 
 class RaidStrategyContext : public NamedObjectContext<Strategy>
 {
