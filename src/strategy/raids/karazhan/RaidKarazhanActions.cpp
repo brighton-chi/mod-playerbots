@@ -844,10 +844,9 @@ bool KarazhanNetherspiteAvoidBeamAndVoidZoneAction::Execute(Event event)
     }
     if (found && karazhanHelper.IsSafePosition(bestCandidate.GetPositionX(), bestCandidate.GetPositionY(), bestCandidate.GetPositionZ(), 
         voidZones, 4.0f))
-    {
+
         return MoveTo(bot->GetMapId(), bestCandidate.GetPositionX(), bestCandidate.GetPositionY(), bestCandidate.GetPositionZ(), 
                false, false, false, true, MovementPriority::MOVEMENT_COMBAT);
-    }
     return false;
 }
 
@@ -873,9 +872,7 @@ bool KarazhanNetherspiteBanishPhaseAvoidVoidZoneAction::Execute(Event event)
     for (Unit* vz : voidZones)
     {
         if (vz->GetEntry() == NPC_VOID_ZONE && bot->GetExactDist2d(vz) < 4.0f)
-        {
             return FleePosition(vz->GetPosition(), 4.0f);
-        }
     }
     return false;
 }
@@ -891,9 +888,7 @@ bool KarazhanNetherspiteBanishPhaseAvoidVoidZoneAction::isUseful()
     for (Unit* vz : voidZones) 
     {
         if (bot->GetExactDist2d(vz) < 4.0f) 
-        {
             return true;
-        }
     }
     return false;
 }
@@ -912,11 +907,12 @@ bool KarazhanPrinceMalchezaarNonTankAvoidHazardAction::Execute(Event event)
     const int numAngles = 64;
     float bx = bot->GetPositionX();
     float by = bot->GetPositionY();
+    float bz = bot->GetPositionZ();
     float bossX = boss->GetPositionX();
     float bossY = boss->GetPositionY();
     float bossZ = boss->GetPositionZ();
     float bestMoveDist = std::numeric_limits<float>::max();
-    float bestDestX = 0.0f, bestDestY = 0.0f, bestDestZ = bot->GetPositionZ();
+    float bestDestX = 0.0f, bestDestY = 0.0f, bestDestZ = bz;
     bool found = false;
 
     if (bot->HasAura(SPELL_ENFEEBLE))
@@ -933,30 +929,9 @@ bool KarazhanPrinceMalchezaarNonTankAvoidHazardAction::Execute(Event event)
                 float destZ = bossZ;
                 if (!bot->IsWithinLOS(x, y, destZ))
                     continue;
-                bool pathSafe = true;
-                for (float checkDist = 0.0f; checkDist <= sqrt(pow(x - bx, 2) + pow(y - by, 2)); checkDist += stepSize)
-                {
-                    float t = checkDist / sqrt(pow(x - bx, 2) + pow(y - by, 2));
-                    float checkX = bx + (x - bx) * t;
-                    float checkY = by + (y - by) * t;
-                    for (Unit* infernal : infernals)
-                    {
-                        float infernalDist = sqrt(pow(checkX - infernal->GetPositionX(), 2) + pow(checkY - infernal->GetPositionY(), 2));
-                        if (infernalDist < safeInfernalDistance)
-                        {
-                            pathSafe = false;
-                            break;
-                        }
-                    }
-                    if (!pathSafe)
-                        break;
-                }
-                if (!pathSafe)
-                    continue;
-                if (!karazhanHelper.IsSafePosition(x, y, destZ, infernals, safeInfernalDistance))
-                    continue;
+                bool pathSafe = karazhanHelper.IsStraightPathSafe(Position(bx, by, bz), Position(x, y, destZ), infernals, safeInfernalDistance, stepSize);
                 float moveDist = sqrt(pow(x - bx, 2) + pow(y - by, 2));
-                if (moveDist < bestMoveDist)
+                if (pathSafe && moveDist < bestMoveDist)
                 {
                     bestMoveDist = moveDist;
                     bestDestX = x;
@@ -970,6 +945,7 @@ bool KarazhanPrinceMalchezaarNonTankAvoidHazardAction::Execute(Event event)
         {
             bot->AttackStop();
             bot->InterruptNonMeleeSpells(false);
+
             return MoveTo(bot->GetMapId(), bestDestX, bestDestY, bestDestZ, false, false, false, true, MovementPriority::MOVEMENT_FORCED);
         }
         return false;
@@ -989,6 +965,10 @@ bool KarazhanPrinceMalchezaarNonTankAvoidHazardAction::Execute(Event event)
         }
         if (nearInfernal)
         {
+            float bestMoveDist = std::numeric_limits<float>::max();
+            float bestDestX = bx, bestDestY = by, bestDestZ = bz;
+            bool found = false;
+            bool usedArc = false;
             for (int i = 0; i < numAngles; ++i)
             {
                 float angle = (2 * M_PI * i) / numAngles;
@@ -1001,16 +981,42 @@ bool KarazhanPrinceMalchezaarNonTankAvoidHazardAction::Execute(Event event)
                     float destZ = bossZ;
                     if (!bot->IsWithinLOS(x, y, destZ))
                         continue;
-                    if (!karazhanHelper.IsSafePosition(x, y, destZ, infernals, safeInfernalDistance))
-                        continue;
+                    bool pathSafe = karazhanHelper.IsStraightPathSafe(Position(bx, by, bz), Position(x, y, destZ), infernals, safeInfernalDistance, stepSize);
                     float moveDist = sqrt(pow(x - bx, 2) + pow(y - by, 2));
-                    if (moveDist < bestMoveDist)
+                    if (pathSafe && moveDist < bestMoveDist)
                     {
                         bestMoveDist = moveDist;
                         bestDestX = x;
                         bestDestY = y;
                         bestDestZ = destZ;
                         found = true;
+                        usedArc = false;
+                    }
+                    if (!pathSafe)
+                    {
+                        Position arcPoint = karazhanHelper.CalculateArcPoint(Position(bx, by, bz), Position(x, y, destZ), Position(bossX, bossY, bossZ));
+                        if (!bot->IsWithinLOS(arcPoint.GetPositionX(), arcPoint.GetPositionY(), arcPoint.GetPositionZ()))
+                            continue;
+                        bool arcSafe = true;
+                        for (Unit* infernal : infernals)
+                        {
+                            float infernalDist = sqrt(pow(arcPoint.GetPositionX() - infernal->GetPositionX(), 2) + pow(arcPoint.GetPositionY() - infernal->GetPositionY(), 2));
+                            if (infernalDist < safeInfernalDistance)
+                            {
+                                arcSafe = false;
+                                break;
+                            }
+                        }
+                        float arcMoveDist = sqrt(pow(arcPoint.GetPositionX() - bx, 2) + pow(arcPoint.GetPositionY() - by, 2));
+                        if (arcSafe && arcMoveDist < bestMoveDist)
+                        {
+                            bestMoveDist = arcMoveDist;
+                            bestDestX = arcPoint.GetPositionX();
+                            bestDestY = arcPoint.GetPositionY();
+                            bestDestZ = arcPoint.GetPositionZ();
+                            found = true;
+                            usedArc = true;
+                        }
                     }
                 }
             }
@@ -1018,7 +1024,8 @@ bool KarazhanPrinceMalchezaarNonTankAvoidHazardAction::Execute(Event event)
             {
                 bot->AttackStop();
                 bot->InterruptNonMeleeSpells(false);
-                return MoveTo(bot->GetMapId(), bestDestX, bestDestY, bestDestZ, false, false, false, true, MovementPriority::MOVEMENT_FORCED);
+
+                return MoveTo(bot->GetMapId(), bestDestX, bestDestY, bestDestZ, false, false, false, true, MovementPriority::MOVEMENT_COMBAT);
             }
         }
     }
@@ -1049,6 +1056,7 @@ bool KarazhanPrinceMalchezaarTankAvoidHazardAction::Execute(Event event)
     float bestMoveDist = std::numeric_limits<float>::max();
     float bestDestX = bx, bestDestY = by, bestDestZ = bz;
     bool found = false;
+    bool usedArc = false;
 
     bool nearInfernal = false;
     for (Unit* infernal : infernals)
@@ -1062,7 +1070,6 @@ bool KarazhanPrinceMalchezaarTankAvoidHazardAction::Execute(Event event)
     }
     if (nearInfernal)
     {
-        // Sample all positions within LOS and within 50 yards of current position
         for (int i = 0; i < numAngles; ++i)
         {
             float angle = (2 * M_PI * i) / numAngles;
@@ -1075,27 +1082,42 @@ bool KarazhanPrinceMalchezaarTankAvoidHazardAction::Execute(Event event)
                 float z = bz;
                 if (!bot->IsWithinLOS(x, y, z))
                     continue;
-                // Only accept positions not within 30 yards of any infernal
-                bool safe = true;
-                for (Unit* infernal : infernals)
-                {
-                    float infernalDist = sqrt(pow(x - infernal->GetPositionX(), 2) + pow(y - infernal->GetPositionY(), 2));
-                    if (infernalDist < safeInfernalDistance)
-                    {
-                        safe = false;
-                        break;
-                    }
-                }
-                if (!safe)
-                    continue;
+                bool safe = karazhanHelper.IsStraightPathSafe(Position(bx, by, bz), Position(x, y, z), infernals, safeInfernalDistance, stepSize);
                 float moveDist = sqrt(pow(x - bx, 2) + pow(y - by, 2));
-                if (moveDist < bestMoveDist)
+                if (safe && moveDist < bestMoveDist)
                 {
                     bestMoveDist = moveDist;
                     bestDestX = x;
                     bestDestY = y;
                     bestDestZ = z;
                     found = true;
+                    usedArc = false;
+                }
+                if (!safe)
+                {
+                    Position arcPoint = karazhanHelper.CalculateArcPoint(Position(bx, by, bz), Position(x, y, z), Position(bx, by, bz));
+                    if (!bot->IsWithinLOS(arcPoint.GetPositionX(), arcPoint.GetPositionY(), arcPoint.GetPositionZ()))
+                        continue;
+                    bool arcSafe = true;
+                    for (Unit* infernal : infernals)
+                    {
+                        float infernalDist = sqrt(pow(arcPoint.GetPositionX() - infernal->GetPositionX(), 2) + pow(arcPoint.GetPositionY() - infernal->GetPositionY(), 2));
+                        if (infernalDist < safeInfernalDistance)
+                        {
+                            arcSafe = false;
+                            break;
+                        }
+                    }
+                    float arcMoveDist = sqrt(pow(arcPoint.GetPositionX() - bx, 2) + pow(arcPoint.GetPositionY() - by, 2));
+                    if (arcSafe && arcMoveDist < bestMoveDist)
+                    {
+                        bestMoveDist = arcMoveDist;
+                        bestDestX = arcPoint.GetPositionX();
+                        bestDestY = arcPoint.GetPositionY();
+                        bestDestZ = arcPoint.GetPositionZ();
+                        found = true;
+                        usedArc = true;
+                    }
                 }
             }
         }
@@ -1103,7 +1125,7 @@ bool KarazhanPrinceMalchezaarTankAvoidHazardAction::Execute(Event event)
         {
             bot->AttackStop();
             bot->InterruptNonMeleeSpells(false);
-            return MoveTo(bot->GetMapId(), bestDestX, bestDestY, bestDestZ, false, false, false, true, MovementPriority::MOVEMENT_FORCED);
+            return MoveTo(bot->GetMapId(), bestDestX, bestDestY, bestDestZ, false, false, false, true, MovementPriority::MOVEMENT_COMBAT);
         }
     }
     return false;
