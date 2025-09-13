@@ -93,21 +93,18 @@ bool HighKingMaulgarMainTankAction::Execute(Event event)
     const float maxDistance = 3.0f;
     float distanceToBossPosition = maulgar->GetExactDist2d(spot.x, spot.y);
 
+    float moveX = spot.x;
+    float moveY = spot.y;
     if (distanceToBossPosition > maxDistance)
     {
         float dX = spot.x - maulgar->GetPositionX();
         float dY = spot.y - maulgar->GetPositionY();
-        float mX = spot.x + (dX / distanceToBossPosition) * maxDistance;
-        float mY = spot.y + (dY / distanceToBossPosition) * maxDistance;
-        botAI->MoveTo(bot->GetMapId(), mX, mY, spot.z, false, true, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
-        float orientation = atan2(maulgar->GetPositionY() - bot->GetPositionY(), maulgar->GetPositionX() - bot->GetPositionX());
-        bot->SetFacingTo(orientation);
-        return true;
+        moveX = spot.x + (dX / distanceToBossPosition) * maxDistance;
+        moveY = spot.y + (dY / distanceToBossPosition) * maxDistance;
     }
+    MoveTo(bot->GetMapId(), moveX, moveY, spot.z, false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
     float orientation = atan2(maulgar->GetPositionY() - bot->GetPositionY(), maulgar->GetPositionX() - bot->GetPositionX());
     bot->SetFacingTo(orientation);
-    if (maulgar->GetVictim() != bot)
-        botAI->Attack(maulgar);
     return true;
 }
 
@@ -133,15 +130,14 @@ bool HighKingMaulgarFirstOffTankAction::Execute(Event event)
         float dY = spot.y - olm->GetPositionY();
         float mX = spot.x + (dX / distanceToBossPosition) * maxDistance;
         float mY = spot.y + (dY / distanceToBossPosition) * maxDistance;
-        botAI->MoveTo(bot->GetMapId(), mX, mY, spot.z, false, true, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+    return MoveTo(bot->GetMapId(), mX, mY, spot.z, false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
         float orientation = atan2(olm->GetPositionY() - bot->GetPositionY(), olm->GetPositionX() - bot->GetPositionX());
         bot->SetFacingTo(orientation);
         return true;
     }
     float orientation = atan2(olm->GetPositionY() - bot->GetPositionY(), olm->GetPositionX() - bot->GetPositionX());
     bot->SetFacingTo(orientation);
-    if (olm->GetVictim() != bot)
-        botAI->Attack(olm);
+
     return true;
 }
 
@@ -167,15 +163,14 @@ bool HighKingMaulgarBlindeyeTankAction::Execute(Event event)
         float dY = spot.y - blindeye->GetPositionY();
         float mX = spot.x + (dX / distanceToBossPosition) * maxDistance;
         float mY = spot.y + (dY / distanceToBossPosition) * maxDistance;
-        botAI->MoveTo(bot->GetMapId(), mX, mY, spot.z, false, true, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+    return MoveTo(bot->GetMapId(), mX, mY, spot.z, false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
         float orientation = atan2(blindeye->GetPositionY() - bot->GetPositionY(), blindeye->GetPositionX() - bot->GetPositionX());
         bot->SetFacingTo(orientation);
         return true;
     }
     float orientation = atan2(blindeye->GetPositionY() - bot->GetPositionY(), blindeye->GetPositionX() - bot->GetPositionX());
     bot->SetFacingTo(orientation);
-    if (blindeye->GetVictim() != bot)
-        botAI->Attack(blindeye);
+
     return true;
 }
 
@@ -223,6 +218,7 @@ bool HighKingMaulgarKroshFirehandAvoidBlastWaveAction::Execute(Event event)
         MoveTo(krosh, safeDistance);
         return true;
     }
+    return false;
 }
 
 bool HighKingMaulgarKroshFirehandAvoidBlastWaveAction::isUseful()
@@ -282,6 +278,9 @@ bool HighKingMaulgarControlFelstalkerAction::Execute(Event event)
             continue;
         if (member->HasAura(SPELL_DARK_DECAY) && !felStalker->HasSpellCooldown(SPELL_DETERMINATION))
         {
+            // Extra safety: check member is not dead and felStalker is alive
+            if (!felStalker->IsAlive() || !member->IsAlive())
+                continue;
             felStalker->CastSpell(member, SPELL_DETERMINATION, true);
             felStalker->AddSpellCooldown(SPELL_DETERMINATION, 0, 10 * 1000); // 10s cooldown
             return true;
@@ -289,7 +288,7 @@ bool HighKingMaulgarControlFelstalkerAction::Execute(Event event)
     }
 
     Unit* olm = AI_VALUE2(Unit*, "find target", "olm the summoner");
-    if (olm && olm->IsAlive() && !felStalker->HasSpellCooldown(SPELL_THREATEN))
+    if (felStalker->IsAlive() && olm && olm->IsAlive() && !felStalker->HasSpellCooldown(SPELL_THREATEN))
     {
         felStalker->CastSpell(olm, SPELL_THREATEN, true);
         felStalker->AddSpellCooldown(SPELL_THREATEN, 0, 20 * 1000); // 20s cooldown
@@ -297,7 +296,7 @@ bool HighKingMaulgarControlFelstalkerAction::Execute(Event event)
     }
 
     Unit* krosh = AI_VALUE2(Unit*, "find target", "krosh firehand");
-    if (krosh && krosh->IsAlive() && !felStalker->HasSpellCooldown(SPELL_WILD_BITE))
+    if (felStalker->IsAlive() && krosh && krosh->IsAlive() && !felStalker->HasSpellCooldown(SPELL_WILD_BITE))
     {
         felStalker->CastSpell(krosh, SPELL_WILD_BITE, true);
         felStalker->AddSpellCooldown(SPELL_WILD_BITE, 0, 5 * 1000); // 5s cooldown
@@ -305,7 +304,7 @@ bool HighKingMaulgarControlFelstalkerAction::Execute(Event event)
     }
 
     Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
-    if (maulgar && maulgar->IsAlive() && !felStalker->HasSpellCooldown(SPELL_WILD_BITE))
+    if (felStalker->IsAlive() && maulgar && maulgar->IsAlive() && !felStalker->HasSpellCooldown(SPELL_WILD_BITE))
     {
         felStalker->CastSpell(maulgar, SPELL_WILD_BITE, true);
         felStalker->AddSpellCooldown(SPELL_WILD_BITE, 0, 5 * 1000); // 5s cooldown
@@ -341,8 +340,8 @@ bool HighKingMaulgarAvoidWhirlwindAction::isUseful()
 {
     Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
     
-    return maulgar && maulgar->IsAlive() && maulgar->hasUnitState(UNIT_STATE_CASTING) 
-    && maulgar->FindCurrentSpellBySpellId(SPELL_WHIRLWIND) && !botAI->IsMainTank(bot)
+    return maulgar && maulgar->IsAlive() && maulgar->HasUnitState(UNIT_STATE_CASTING) 
+    && maulgar->FindCurrentSpellBySpellId(SPELL_WHIRLWIND) && !botAI->IsMainTank(bot);
 }
 
 bool HighKingMaulgarHunterMisdirectionAction::Execute(Event event)
@@ -1646,28 +1645,28 @@ Unit* IccAddsDbsAction::FindPriorityTarget(Unit* boss)
 void IccAddsDbsAction::UpdateSkullMarker(Unit* priorityTarget)
 {
     if (!priorityTarget)
-        return;
+        {
+            Unit* olm = AI_VALUE2(Unit*, "find target", "olm the summoner");
+            if (!olm || !olm->IsAlive()) return false;
 
-    Group* group = bot->GetGroup();
-    if (!group)
-        return;
+            const TankSpot& spot = GruulsLairTankSpots::Olm;
+            const float maxDistance = 3.0f;
+            float distanceToBossPosition = olm->GetExactDist2d(spot.x, spot.y);
 
-    constexpr uint8_t skullIconId = 7;
-
-    // Get current skull target
-    ObjectGuid currentSkull = group->GetTargetIcon(skullIconId);
-    Unit* currentSkullUnit = botAI->GetUnit(currentSkull);
-
-    // Determine if skull marker needs updating
-    bool needsUpdate = !currentSkullUnit || !currentSkullUnit->IsAlive() || currentSkullUnit != priorityTarget;
-
-    // Update if needed
-    if (needsUpdate)
-        group->SetTargetIcon(skullIconId, bot->GetGUID(), priorityTarget->GetGUID());
-}
-
-// Festergut
-bool IccFestergutGroupPositionAction::Execute(Event event)
+            float moveX = spot.x;
+            float moveY = spot.y;
+            if (distanceToBossPosition > maxDistance)
+            {
+                float dX = spot.x - olm->GetPositionX();
+                float dY = spot.y - olm->GetPositionY();
+                moveX = spot.x + (dX / distanceToBossPosition) * maxDistance;
+                moveY = spot.y + (dY / distanceToBossPosition) * maxDistance;
+            }
+            MoveTo(bot->GetMapId(), moveX, moveY, spot.z, false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
+            float orientation = atan2(olm->GetPositionY() - bot->GetPositionY(), olm->GetPositionX() - bot->GetPositionX());
+            bot->SetFacingTo(orientation);
+            return true;
+        }
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "festergut");
     if (!boss)
@@ -2022,28 +2021,28 @@ void IccRotfaceTankPositionAction::MarkBossWithSkull(Unit* boss)
 {
     Group* group = bot->GetGroup();
     if (!group)
-        return;
+        {
+            Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
+            if (!blindeye || !blindeye->IsAlive()) return false;
 
-    constexpr uint8_t skullIconId = 7;
-    ObjectGuid skullGuid = group->GetTargetIcon(skullIconId);
-    if (skullGuid != boss->GetGUID())
-        group->SetTargetIcon(skullIconId, bot->GetGUID(), boss->GetGUID());
-}
+            const TankSpot& spot = GruulsLairTankSpots::Blindeye;
+            const float maxDistance = 3.0f;
+            float distanceToBossPosition = blindeye->GetExactDist2d(spot.x, spot.y);
 
-bool IccRotfaceTankPositionAction::PositionMainTankAndMelee(Unit* boss)
-{
-    bool isBossCasting = false;
-    if (boss && boss->HasUnitState(UNIT_STATE_CASTING) && boss->GetCurrentSpell(SPELL_SLIME_SPRAY))
-        bool isBossCasting = true;
-
-    if (bot->GetExactDist2d(ICC_ROTFACE_CENTER_POSITION) > 7.0f && botAI->HasAggro(boss) && botAI->IsMainTank(bot))
-        MoveTo(bot->GetMapId(), ICC_ROTFACE_CENTER_POSITION.GetPositionX(),
-               ICC_ROTFACE_CENTER_POSITION.GetPositionY(), ICC_ROTFACE_CENTER_POSITION.GetPositionZ(),
-               false, false, false, true, MovementPriority::MOVEMENT_COMBAT);
-
-    if (boss && isBossCasting && !botAI->IsTank(bot))
-    {
-        float x = boss->GetPositionX();
+            float moveX = spot.x;
+            float moveY = spot.y;
+            if (distanceToBossPosition > maxDistance)
+            {
+                float dX = spot.x - blindeye->GetPositionX();
+                float dY = spot.y - blindeye->GetPositionY();
+                moveX = spot.x + (dX / distanceToBossPosition) * maxDistance;
+                moveY = spot.y + (dY / distanceToBossPosition) * maxDistance;
+            }
+            MoveTo(bot->GetMapId(), moveX, moveY, spot.z, false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
+            float orientation = atan2(blindeye->GetPositionY() - bot->GetPositionY(), blindeye->GetPositionX() - bot->GetPositionX());
+            bot->SetFacingTo(orientation);
+            return true;
+        }
         float y = boss->GetPositionY();
         float z = boss->GetPositionZ();
 

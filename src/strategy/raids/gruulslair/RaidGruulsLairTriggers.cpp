@@ -1,4 +1,5 @@
 #include "RaidGruulsLairTriggers.h"
+#include "Playerbots.h"
 
 bool HighKingMaulgarTrigger::IsActive()
 {

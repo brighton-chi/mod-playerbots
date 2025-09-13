@@ -17,7 +17,7 @@ static bool IsChargeAction(Action* action)
 float HighKingMaulgarMultiplier::GetValue(Action* action)
 {
     Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
-    if (maulgar && maulgar->hasUnitState(UNIT_STATE_CASTING) && maulgar->FindCurrentSpellBySpellId(SPELL_WHIRLWIND))
+    if (maulgar && maulgar->HasUnitState(UNIT_STATE_CASTING) && maulgar->FindCurrentSpellBySpellId(SPELL_WHIRLWIND))
     {
         if (IsChargeAction(action))
         {
@@ -925,4 +925,4 @@ float IccLichKingAddsMultiplier::GetValue(Action* action)
     }
 
     return 1.0f;
-}
+} */

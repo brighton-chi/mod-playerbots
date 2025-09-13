@@ -32,7 +32,7 @@ public:
         creators["uld"] = &RaidStrategyContext::uld;
         creators["icc"] = &RaidStrategyContext::icc;
         creators["onyxia"] = &RaidStrategyContext::onyxia;
-        creators["gl"] = &RaidStrategyContext::gl;
+        creators["gruulslair"] = &RaidStrategyContext::gruulslair;
     }
 
 private:
@@ -46,7 +46,7 @@ private:
     static Strategy* uld(PlayerbotAI* botAI) { return new RaidUlduarStrategy(botAI); }
     static Strategy* icc(PlayerbotAI* botAI) { return new RaidIccStrategy(botAI); }
     static Strategy* onyxia(PlayerbotAI* botAI) { return new RaidOnyxiaStrategy(botAI); }
-    static Strategy* gl(PlayerbotAI* botAI) { return new RaidGlStrategy(botAI); }
+    static Strategy* gruulslair(PlayerbotAI* botAI) { return new RaidGruulsLairStrategy(botAI); }
 };
 
 #endif

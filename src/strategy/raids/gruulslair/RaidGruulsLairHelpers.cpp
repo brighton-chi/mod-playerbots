@@ -1,4 +1,5 @@
 #include "RaidGruulsLairHelpers.h"
+#include "AiFactory.h"
 #include "PlayerbotAI.h"
 #include "Group.h"
 #include "GroupReference.h"

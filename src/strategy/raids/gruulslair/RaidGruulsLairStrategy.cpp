@@ -3,7 +3,7 @@
 
 void RaidGruulsLairStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("gruul's lair high king maulgar", NextAction::array(0,
+    triggers.push_back(new TriggerNode("high king maulgar", NextAction::array(0,
         new NextAction("high king maulgar krosh firehand avoid blast wave", ACTION_EMERGENCY + 8),
         new NextAction("high king maulgar avoid whirlwind", ACTION_EMERGENCY + 7),
         new NextAction("high king maulgar mage tank", ACTION_EMERGENCY + 6),
