@@ -27,20 +27,20 @@ enum GruulsLairSpells
 	SPELL_ENSLAVE_DEMON = 11726, // Rank 3
 };
 
-constexpr uint8_t RTI_STAR    = 0;
+/* constexpr uint8_t RTI_STAR    = 0;
 constexpr uint8_t RTI_CIRCLE  = 1;
 constexpr uint8_t RTI_DIAMOND = 2;
 constexpr uint8_t RTI_TRIANGLE= 3;
 constexpr uint8_t RTI_MOON    = 4;
 constexpr uint8_t RTI_SQUARE  = 5;
 constexpr uint8_t RTI_CROSS   = 6;
-constexpr uint8_t RTI_SKULL   = 7;
+constexpr uint8_t RTI_SKULL   = 7; */
 
-bool IsBoomkinTank(PlayerbotAI* botAI, Player* bot);
-bool IsMageTank(PlayerbotAI* botAI, Player* bot);
 bool IsFirstTank(PlayerbotAI* botAI, Player* bot);
 bool IsSecondTank(PlayerbotAI* botAI, Player* bot);
 bool IsThirdTank(PlayerbotAI* botAI, Player* bot);
+bool IsMageTank(PlayerbotAI* botAI, Player* bot);
+bool IsBoomkinTank(PlayerbotAI* botAI, Player* bot);
 
 // Gruul's Lair ogre tanking spots (X, Y, Z)
 struct TankSpot 
