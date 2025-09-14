@@ -81,30 +81,3 @@ bool IsBoomkinTank(PlayerbotAI* botAI, Player* bot)
     }
     return highestHpBoomkin == bot;
 }
-
-bool IsWarlockTank(PlayerbotAI* botAI, Player* bot)
-{
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    Player* highestHpWarlock = nullptr;
-    uint32 highestHp = 0;
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member)
-            continue;
-        if (member->getClass() == CLASS_WARLOCK)
-        {
-            uint32 hp = member->GetMaxHealth();
-            if (!highestHpWarlock || hp > highestHp)
-            {
-                highestHpWarlock = member;
-                highestHp = hp;
-            }
-        }
-    }
-    return highestHpWarlock == bot;
-}
