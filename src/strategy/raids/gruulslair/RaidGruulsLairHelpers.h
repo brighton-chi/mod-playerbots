@@ -36,9 +36,11 @@ constexpr uint8_t RTI_SQUARE  = 5;
 constexpr uint8_t RTI_CROSS   = 6;
 constexpr uint8_t RTI_SKULL   = 7;
 
-bool IsFirstOffTank(PlayerbotAI* botAI, Player* bot);
 bool IsBoomkinTank(PlayerbotAI* botAI, Player* bot);
 bool IsMageTank(PlayerbotAI* botAI, Player* bot);
+bool IsFirstTank(PlayerbotAI* botAI, Player* bot);
+bool IsSecondTank(PlayerbotAI* botAI, Player* bot);
+bool IsThirdTank(PlayerbotAI* botAI, Player* bot);
 
 // Gruul's Lair ogre tanking spots (X, Y, Z)
 struct TankSpot 

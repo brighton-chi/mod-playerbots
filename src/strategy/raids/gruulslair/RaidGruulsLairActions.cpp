@@ -11,7 +11,7 @@
 
 bool HighKingMaulgarDPSPriorityAction::Execute(Event event)
 {
-    if (botAI->IsTank(bot) || IsMageTank(botAI, bot) || botAI->IsHeal(bot))
+    if (IsFirstTank(botAI, bot) || IsSecondTank(botAI, bot) || IsThirdTank(botAI, bot) || IsMageTank(botAI, bot) || botAI->IsHeal(bot))
     return false;
 
     Group* group = bot->GetGroup();
@@ -44,9 +44,9 @@ bool HighKingMaulgarDPSPriorityAction::Execute(Event event)
     return false;
 }
 
-bool HighKingMaulgarMainTankAction::Execute(Event event)
+bool HighKingMaulgarMaulgarTankAction::Execute(Event event)
 {
-    if (!botAI->IsMainTank(bot))
+    if (!IsFirstTank(botAI, bot))
         return false;
         
     Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
@@ -91,9 +91,9 @@ bool HighKingMaulgarMainTankAction::Execute(Event event)
     return false;
 }
 
-bool HighKingMaulgarFirstOffTankAction::Execute(Event event)
+bool HighKingMaulgarOlmTankAction::Execute(Event event)
 {
-    if (!IsFirstOffTank(botAI, bot))
+    if (!IsSecondTank(botAI, bot))
         return false;
 
     Unit* olm = AI_VALUE2(Unit*, "find target", "olm the summoner");
@@ -140,8 +140,7 @@ bool HighKingMaulgarFirstOffTankAction::Execute(Event event)
 
 bool HighKingMaulgarBlindeyeTankAction::Execute(Event event)
 {
-    // Only tanks that are not main tank or first off tank
-    if (!botAI->IsTank(bot) || botAI->IsMainTank(bot) || !IsFirstOffTank(botAI, bot))
+    if (!IsThirdTank(botAI, bot))
         return false;
 
     Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
@@ -193,9 +192,13 @@ bool HighKingMaulgarMageTankAction::Execute(Event event)
     
     Unit* krosh = AI_VALUE2(Unit*, "find target", "krosh firehand");
     if (krosh && krosh->IsAlive()) {
+        float distance = bot->GetDistance2d(krosh);
+        if (distance > 30.0f)
+        {
+            return MoveTo(krosh, 30.0f);
+        }
         // Only switch if not already attacking Krosh
-        if (bot->GetVictim() != krosh)
-            Attack(krosh);
+ 
         // 1. If Krosh has Spell Shield, cast Spellsteal
         if (krosh->HasAura(SPELL_AURA_SPELL_SHIELD))
         {
@@ -208,6 +211,9 @@ bool HighKingMaulgarMageTankAction::Execute(Event event)
             botAI->CastSpell("fire ward", bot);
             return true;
         }
+        if (bot->GetVictim() != krosh)
+            Attack(krosh);
+
         return true;
     }
     // If Krosh is dead, fallback to priority attack logic

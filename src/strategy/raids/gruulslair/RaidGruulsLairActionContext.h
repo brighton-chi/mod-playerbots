@@ -10,8 +10,8 @@ public:
     RaidGruulsLairActionContext()
     {
         creators["high king maulgar dps priority"] = &RaidGruulsLairActionContext::high_king_maulgar_dps_priority;
-        creators["high king maulgar main tank"] = &RaidGruulsLairActionContext::high_king_maulgar_main_tank;
-        creators["high king maulgar first off tank"] = &RaidGruulsLairActionContext::high_king_maulgar_first_off_tank;
+        creators["high king maulgar maulgar tank"] = &RaidGruulsLairActionContext::high_king_maulgar_maulgar_tank;
+        creators["high king maulgar olm tank"] = &RaidGruulsLairActionContext::high_king_maulgar_olm_tank;
         creators["high king maulgar blindeye tank"] = &RaidGruulsLairActionContext::high_king_maulgar_blindeye_tank;
         creators["high king maulgar mage tank"] = &RaidGruulsLairActionContext::high_king_maulgar_mage_tank;
         creators["high king maulgar avoid blast wave"] = &RaidGruulsLairActionContext::high_king_maulgar_avoid_blast_wave;
@@ -22,8 +22,8 @@ public:
 
 private:
     static Action* high_king_maulgar_dps_priority(PlayerbotAI* botAI) { return new HighKingMaulgarDPSPriorityAction(botAI); }
-    static Action* high_king_maulgar_main_tank(PlayerbotAI* botAI) { return new HighKingMaulgarMainTankAction(botAI); }
-    static Action* high_king_maulgar_first_off_tank(PlayerbotAI* botAI) { return new HighKingMaulgarFirstOffTankAction(botAI); }
+    static Action* high_king_maulgar_maulgar_tank(PlayerbotAI* botAI) { return new HighKingMaulgarMaulgarTankAction(botAI); }
+    static Action* high_king_maulgar_olm_tank(PlayerbotAI* botAI) { return new HighKingMaulgarOlmTankAction(botAI); }
     static Action* high_king_maulgar_blindeye_tank(PlayerbotAI* botAI) { return new HighKingMaulgarBlindeyeTankAction(botAI); }
     static Action* high_king_maulgar_mage_tank(PlayerbotAI* botAI) { return new HighKingMaulgarMageTankAction(botAI); }
     static Action* high_king_maulgar_avoid_blast_wave(PlayerbotAI* botAI) { return new HighKingMaulgarAvoidBlastWaveAction(botAI); }

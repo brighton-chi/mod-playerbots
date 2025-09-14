@@ -13,18 +13,18 @@ public:
     bool Execute(Event event) override;
 };
 
-class HighKingMaulgarMainTankAction : public AttackAction
+class HighKingMaulgarMaulgarTankAction : public AttackAction
 {
 public:
-    HighKingMaulgarMainTankAction(PlayerbotAI* botAI, std::string const name = "high king maulgar main tank") : AttackAction(botAI, name) {};
+    HighKingMaulgarMaulgarTankAction(PlayerbotAI* botAI, std::string const name = "high king maulgar maulgar tank") : AttackAction(botAI, name) {};
 
     bool Execute(Event event) override;
 };
 
-class HighKingMaulgarFirstOffTankAction : public AttackAction
+class HighKingMaulgarOlmTankAction : public AttackAction
 {
 public:
-    HighKingMaulgarFirstOffTankAction(PlayerbotAI* botAI, std::string const name = "high king maulgar first off tank") : AttackAction(botAI, name) {};
+    HighKingMaulgarOlmTankAction(PlayerbotAI* botAI, std::string const name = "high king maulgar olm tank") : AttackAction(botAI, name) {};
 
     bool Execute(Event event) override;
 };
