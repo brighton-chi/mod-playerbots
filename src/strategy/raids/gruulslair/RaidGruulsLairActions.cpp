@@ -20,124 +20,80 @@ bool HighKingMaulgarMaulgarTankAction::Execute(Event event)
 
     Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
     if (!maulgar || !maulgar->IsAlive())
+    {
+        LOG_DEBUG("playerbots", "[HighKingMaulgarMaulgarTankAction] Maulgar not found or not alive");
         return false;
-    
+    }
+
+    LOG_DEBUG("playerbots", "[HighKingMaulgarMaulgarTankAction] Maulgar found, GUID: {}", maulgar->GetGUID().ToString().c_str());
+
     ObjectGuid currentIconGuid = group->GetTargetIcon(squareIcon);
     if (currentIconGuid.IsEmpty() || currentIconGuid != maulgar->GetGUID())
     {
+        LOG_DEBUG("playerbots", "[HighKingMaulgarMaulgarTankAction] Bot GUID: {}, Maulgar GUID: {}", bot->GetGUID().ToString().c_str(), maulgar->GetGUID().ToString().c_str());
+        LOG_DEBUG("playerbots", "[HighKingMaulgarMaulgarTankAction] Group state: {}", group ? "Valid" : "Invalid");
+
         group->SetTargetIcon(squareIcon, bot->GetGUID(), maulgar->GetGUID());
+
+        LOG_DEBUG("playerbots", "[HighKingMaulgarMaulgarTankAction] Successfully set square icon for Maulgar");
     }
 
     if (botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != "square" && 
         botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != maulgar)
     {
+        LOG_DEBUG("playerbots", "[HighKingMaulgarMaulgarTankAction] {} is updating RTI to square and setting target to Maulgar", bot->GetName().c_str());
         botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("square");
         botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(maulgar);
-        botAI->DoSpecificAction("attack rti target");
     }
-    
-    if (bot->GetVictim() == maulgar && maulgar->GetVictim() == bot)
+
+    // Check if bot has no target or if target is not Maulgar
+    if (bot->GetVictim() != maulgar)
     {
-        // Use TankSpot for designated coordinates
+        LOG_DEBUG("playerbots", "[HighKingMaulgarMaulgarTankAction] {} is switching target to Maulgar", bot->GetName().c_str());
+        Attack(maulgar);
+        
+        // If we've just switched targets and aren't in melee range, move to basic melee range first
+        if (!bot->IsWithinMeleeRange(maulgar))
+        {
+            LOG_DEBUG("playerbots", "[HighKingMaulgarMaulgarTankAction] {} is moving into initial melee range of Maulgar", bot->GetName().c_str());
+            return MoveTo(maulgar->GetMapId(), maulgar->GetPositionX(), maulgar->GetPositionY(), maulgar->GetPositionZ());
+        }
+    }
+
+    // If we're tanking, prioritize positioning over simply being in melee range
+    if (maulgar->GetVictim() == bot)
+    {
+        LOG_DEBUG("playerbots", "[HighKingMaulgarMaulgarTankAction] {} is tanking Maulgar", bot->GetName().c_str());
         const TankSpot& spot = GruulsLairTankSpots::Maulgar;
         const float maxDistance = 3.0f;
         float distanceToMaulgar = maulgar->GetExactDist2d(spot.x, spot.y);
-
-        float moveX = spot.x;
-        float moveY = spot.y;
+        
+        // If boss is not near the designated spot, move to drag the boss there
         if (distanceToMaulgar > maxDistance)
         {
+            LOG_DEBUG("playerbots", "[HighKingMaulgarMaulgarTankAction] {} is moving to designated tank spot", bot->GetName().c_str());
             float dX = spot.x - maulgar->GetPositionX();
             float dY = spot.y - maulgar->GetPositionY();
-            moveX = spot.x + (dX / distanceToMaulgar) * maxDistance;
-            moveY = spot.y + (dY / distanceToMaulgar) * maxDistance;
-            MoveTo(bot->GetMapId(), moveX, moveY, spot.z, false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
+            float moveX = spot.x + (dX / distanceToMaulgar) * maxDistance;
+            float moveY = spot.y + (dY / distanceToMaulgar) * maxDistance;
+            
+            return MoveTo(bot->GetMapId(), moveX, moveY, spot.z, false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
         }
+        
+        // Boss is in position, maintain facing
         float orientation = atan2(maulgar->GetPositionY() - bot->GetPositionY(), maulgar->GetPositionX() - bot->GetPositionX());
         bot->SetFacingTo(orientation);
-        return true;
+        return false;
     }
+    // We're not tanking yet, but should be in melee range to generate threat
+    else if (!bot->IsWithinMeleeRange(maulgar))
+    {
+        LOG_DEBUG("playerbots", "[HighKingMaulgarMaulgarTankAction] {} is moving into melee range of Maulgar to gain threat", bot->GetName().c_str());
+        return MoveTo(maulgar->GetMapId(), maulgar->GetPositionX(), maulgar->GetPositionY(), maulgar->GetPositionZ());
+    }
+
     return false;
 }
-
-/*{
-    if (!IsFirstTank(botAI, bot))
-        return false;
-
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-    std::vector<std::pair<std::string, int>> priorities = 
-    {
-        {"maulgar", 5}, // Square
-        {"blindeye", 0}, // Star
-        {"olm", 1}, // Circle
-        {"kiggler", 2}, // Diamond
-        // Krosh is 3,  Triangle
-    };
-
-    Unit* maulgar = nullptr;
-    for (const auto& [icon, index] : priorities)
-    {
-        ObjectGuid guid = group->GetTargetIcon(index);
-        Unit* target = botAI->GetUnit(guid);
-
-        if (icon == "maulgar" && target && target->IsAlive())
-        {
-            maulgar = target;
-            group->SetTargetIcon(index, bot->GetGUID(), target->GetGUID());
-        }
-
-        if (target && target->IsAlive())
-        {
-            // Only reprioritize if not already targeting this icon and target
-            std::string currentRti = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
-        
-            Unit* currentVictim = bot->GetVictim();
-            LOG_INFO("playerbots", "Gruul's Lair: {} comparing current RTI '{}' to icon '{}' ({}), current victim: {}, target: {}", 
-                    bot->GetName(), currentRti.c_str(), GetRtiNameFromInternalId(icon).c_str(), icon.c_str(), 
-                    (currentVictim ? currentVictim->GetName() : "none"), 
-                    target->GetName());
-
-            if (currentRti == GetRtiNameFromInternalId(icon) && currentVictim == target)
-                // Already targeting correct icon and target, do nothing
-                return true;
-
-            // Otherwise, set RTI and switch target
-            botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set(GetRtiNameFromInternalId(icon));
-            bot->SetTarget(target->GetGUID());
-            botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(target);
-            bot->Attack(target, true);
-            LOG_INFO("playerbots", "Gruul's Lair: {} direct bot->Attack() command for {}", bot->GetName(), target->GetName());
-            break;
-        }
-        // If not found/alive, continue to next icon
-    }
-    // After targeting loop, handle maulgar special movement
-    if (maulgar && bot->GetVictim() == maulgar && maulgar->GetVictim() == bot)
-    {
-        // Use TankSpot for designated coordinates
-        const TankSpot& spot = GruulsLairTankSpots::Maulgar;
-        const float maxDistance = 3.0f;
-        float distanceToMaulgar = maulgar->GetExactDist2d(spot.x, spot.y);
-
-        float moveX = spot.x;
-        float moveY = spot.y;
-        if (distanceToMaulgar > maxDistance)
-        {
-            float dX = spot.x - maulgar->GetPositionX();
-            float dY = spot.y - maulgar->GetPositionY();
-            moveX = spot.x + (dX / distanceToMaulgar) * maxDistance;
-            moveY = spot.y + (dY / distanceToMaulgar) * maxDistance;
-        }
-        MoveTo(bot->GetMapId(), moveX, moveY, spot.z, false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
-        float orientation = atan2(maulgar->GetPositionY() - bot->GetPositionY(), maulgar->GetPositionX() - bot->GetPositionX());
-        bot->SetFacingTo(orientation);
-        return true;
-    }
-    // No valid target found
-    return false;
-}*/
 
 bool HighKingMaulgarOlmTankAction::Execute(Event event)
 {
@@ -150,73 +106,78 @@ bool HighKingMaulgarOlmTankAction::Execute(Event event)
 
     Unit* olm = AI_VALUE2(Unit*, "find target", "olm the summoner");
     if (!olm || !olm->IsAlive())
+    {
+        LOG_DEBUG("playerbots", "[HighKingMaulgarOlmTankAction] Olm not found or not alive");
         return false;
+    }
+
+    LOG_DEBUG("playerbots", "[HighKingMaulgarOlmTankAction] Olm found, GUID: {}", olm->GetGUID().ToString().c_str());
 
     ObjectGuid currentIconGuid = group->GetTargetIcon(circleIcon);
     if (currentIconGuid.IsEmpty() || currentIconGuid != olm->GetGUID())
     {
+        LOG_DEBUG("playerbots", "[HighKingMaulgarOlmTankAction] Bot GUID: {}, Olm GUID: {}", bot->GetGUID().ToString().c_str(), olm->GetGUID().ToString().c_str());
+        LOG_DEBUG("playerbots", "[HighKingMaulgarOlmTankAction] Group state: {}", group ? "Valid" : "Invalid");
+
         group->SetTargetIcon(circleIcon, bot->GetGUID(), olm->GetGUID());
+
+        LOG_DEBUG("playerbots", "[HighKingMaulgarOlmTankAction] Successfully set circle icon for Olm");
     }
 
-    /* std::vector<std::pair<std::string, std::string>> priorities = 
+    if (botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != "circle" && 
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != olm)
     {
-        {"olm", "circle"},
-        {"blindeye", "star"},
-        {"kiggler", "diamond"},
-        {"maulgar", "square"},
-    };
-
-    Unit* olm = nullptr;
-    for (const auto& [icon, index] : priorities)
-    {
-        ObjectGuid guid = group->GetTargetIcon(index);
-        Unit* target = botAI->GetUnit(guid);
-
-        if (icon == "olm" && target && target->IsAlive())
-        {
-            olm = target;
-        }
-
-        if (target && target->IsAlive())
-        {
-            // Only reprioritize if not already targeting this icon and target
-            std::string currentRti = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
-            if (currentRti == icon && bot->GetVictim() == target)
-            {
-                // Already targeting correct icon and target, do nothing
-                return true;
-            }
-            // Otherwise, set RTI and switch target
-            botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set(icon);
-            bot->SetTarget(target->GetGUID());
-            botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(target);
-            botAI->DoSpecificAction("attack rti target");
-            return true;
-        }
-        // If not found/alive, continue to next icon
+        LOG_DEBUG("playerbots", "[HighKingMaulgarOlmTankAction] {} is updating RTI to circle and setting target to Olm", bot->GetName().c_str());
+        botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("circle");
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(olm);
     }
-    // After targeting loop, handle olm special movement
-    if (olm && bot->GetVictim() == olm && olm->GetVictim() == bot)
+
+    // Check if bot has no target or if target is not Olm
+    if (bot->GetVictim() != olm)
     {
-        // Use TankSpot for designated coordinates
-        const TankSpot& spot = GruulsLairTankSpots::Olm;
+        LOG_DEBUG("playerbots", "[HighKingMaulgarOlmTankAction] {} is switching target to Olm", bot->GetName().c_str());
+        Attack(olm);
+        
+        // If we've just switched targets and aren't in melee range, move to basic melee range first
+        if (!bot->IsWithinMeleeRange(olm))
+        {
+            LOG_DEBUG("playerbots", "[HighKingMaulgarOlmTankAction] {} is moving into initial melee range of Olm", bot->GetName().c_str());
+            return MoveTo(olm->GetMapId(), olm->GetPositionX(), olm->GetPositionY(), olm->GetPositionZ());
+        }
+    }
+
+    // If we're tanking, prioritize positioning over simply being in melee range
+    if (olm->GetVictim() == bot)
+    {
+        LOG_DEBUG("playerbots", "[HighKingMaulgarOlmTankAction] {} is tanking Olm", bot->GetName().c_str());
+        const TankSpot& spot = GruulsLairTankSpots::Maulgar;
         const float maxDistance = 3.0f;
         float distanceToOlm = olm->GetExactDist2d(spot.x, spot.y);
-
-        float moveX = spot.x;
-        float moveY = spot.y;
+        
+        // If boss is not near the designated spot, move to drag the boss there
         if (distanceToOlm > maxDistance)
         {
+            LOG_DEBUG("playerbots", "[HighKingMaulgarOlmTankAction] {} is moving to designated tank spot", bot->GetName().c_str());
             float dX = spot.x - olm->GetPositionX();
             float dY = spot.y - olm->GetPositionY();
-            moveX = spot.x + (dX / distanceToOlm) * maxDistance;
-            moveY = spot.y + (dY / distanceToOlm) * maxDistance;
+            float moveX = spot.x + (dX / distanceToOlm) * maxDistance;
+            float moveY = spot.y + (dY / distanceToOlm) * maxDistance;
+            
+            return MoveTo(bot->GetMapId(), moveX, moveY, spot.z, false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
         }
-        MoveTo(bot->GetMapId(), moveX, moveY, spot.z, false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
+        
+        // Boss is in position, maintain facing
         float orientation = atan2(olm->GetPositionY() - bot->GetPositionY(), olm->GetPositionX() - bot->GetPositionX());
         bot->SetFacingTo(orientation);
-        return true;
-    } */
+        return false;
+    }
+    // We're not tanking yet, but should be in melee range to generate threat
+    else if (!bot->IsWithinMeleeRange(olm))
+    {
+        LOG_DEBUG("playerbots", "[HighKingMaulgarOlmTankAction] {} is moving into melee range of Olm to gain threat", bot->GetName().c_str());
+        return MoveTo(olm->GetMapId(), olm->GetPositionX(), olm->GetPositionY(), olm->GetPositionZ());
+    }
+
     return false;
 }
 
@@ -231,73 +192,78 @@ bool HighKingMaulgarBlindeyeTankAction::Execute(Event event)
 
     Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
     if (!blindeye || !blindeye->IsAlive())
+    {
+        LOG_DEBUG("playerbots", "[HighKingMaulgarBlindeyeTankAction] Blindeye not found or not alive");
         return false;
+    }
+
+    LOG_DEBUG("playerbots", "[HighKingMaulgarBlindeyeTankAction] Blindeye found, GUID: {}", blindeye->GetGUID().ToString().c_str());
 
     ObjectGuid currentIconGuid = group->GetTargetIcon(starIcon);
     if (currentIconGuid.IsEmpty() || currentIconGuid != blindeye->GetGUID())
     {
+        LOG_DEBUG("playerbots", "[HighKingMaulgarBlindeyeTankAction] Bot GUID: {}, Blindeye GUID: {}", bot->GetGUID().ToString().c_str(), blindeye->GetGUID().ToString().c_str());
+        LOG_DEBUG("playerbots", "[HighKingMaulgarBlindeyeTankAction] Group state: {}", group ? "Valid" : "Invalid");
+
         group->SetTargetIcon(starIcon, bot->GetGUID(), blindeye->GetGUID());
+
+        LOG_DEBUG("playerbots", "[HighKingMaulgarBlindeyeTankAction] Successfully set star icon for Blindeye");
     }
 
-    /* std::vector<std::pair<std::string, std::string>> priorities = 
+    if (botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != "star" && 
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != blindeye)
     {
-        {"blindeye", "star"},
-        {"olm", "circle"},
-        {"kiggler", "diamond"},
-        {"maulgar", "square"},
-    };
-
-    Unit* blindeye = nullptr;
-    for (const auto& [icon, index] : priorities)
-    {
-        ObjectGuid guid = group->GetTargetIcon(index);
-        Unit* target = botAI->GetUnit(guid);
-
-        if (icon == "blindeye" && target && target->IsAlive())
-        {
-            blindeye = target;
-        }
-
-        if (target && target->IsAlive())
-        {
-            // Only reprioritize if not already targeting this icon and target
-            std::string currentRti = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
-            if (currentRti == icon && bot->GetVictim() == target)
-            {
-                // Already targeting correct icon and target, do nothing
-                return true;
-            }
-            // Otherwise, set RTI and switch target
-            botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set(icon);
-            bot->SetTarget(target->GetGUID());
-            botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(target);
-            botAI->DoSpecificAction("attack rti target");
-            return true;
-        }
-        // If not found/alive, continue to next icon
+        LOG_DEBUG("playerbots", "[HighKingMaulgarBlindeyeTankAction] {} is updating RTI to star and setting target to Blindeye", bot->GetName().c_str());
+        botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("star");
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(blindeye);
     }
-    // After targeting loop, handle blindeye special movement
-    if (blindeye && bot->GetVictim() == blindeye && blindeye->GetVictim() == bot)
+
+    // Check if bot has no target or if target is not Blindeye
+    if (bot->GetVictim() != blindeye)
     {
-        // Use TankSpot for designated coordinates
+        LOG_DEBUG("playerbots", "[HighKingMaulgarBlindeyeTankAction] {} is switching target to Blindeye", bot->GetName().c_str());
+        Attack(blindeye);
+        
+        // If we've just switched targets and aren't in melee range, move to basic melee range first
+        if (!bot->IsWithinMeleeRange(blindeye))
+        {
+            LOG_DEBUG("playerbots", "[HighKingMaulgarBlindeyeTankAction] {} is moving into initial melee range of Blindeye", bot->GetName().c_str());
+            return MoveTo(blindeye->GetMapId(), blindeye->GetPositionX(), blindeye->GetPositionY(), blindeye->GetPositionZ());
+        }
+    }
+
+    // If we're tanking, prioritize positioning over simply being in melee range
+    if (blindeye->GetVictim() == bot)
+    {
+        LOG_DEBUG("playerbots", "[HighKingMaulgarBlindeyeTankAction] {} is tanking Blindeye", bot->GetName().c_str());
         const TankSpot& spot = GruulsLairTankSpots::Blindeye;
         const float maxDistance = 3.0f;
         float distanceToBlindeye = blindeye->GetExactDist2d(spot.x, spot.y);
-
-        float moveX = spot.x;
-        float moveY = spot.y;
+        
+        // If boss is not near the designated spot, move to drag the boss there
         if (distanceToBlindeye > maxDistance)
         {
+            LOG_DEBUG("playerbots", "[HighKingMaulgarBlindeyeTankAction] {} is moving to designated tank spot", bot->GetName().c_str());
             float dX = spot.x - blindeye->GetPositionX();
             float dY = spot.y - blindeye->GetPositionY();
-            moveX = spot.x + (dX / distanceToBlindeye) * maxDistance;
-            moveY = spot.y + (dY / distanceToBlindeye) * maxDistance;
+            float moveX = spot.x + (dX / distanceToBlindeye) * maxDistance;
+            float moveY = spot.y + (dY / distanceToBlindeye) * maxDistance;
+            
+            return MoveTo(bot->GetMapId(), moveX, moveY, spot.z, false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
         }
-        MoveTo(bot->GetMapId(), moveX, moveY, spot.z, false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
+        
+        // Boss is in position, maintain facing
         float orientation = atan2(blindeye->GetPositionY() - bot->GetPositionY(), blindeye->GetPositionX() - bot->GetPositionX());
         bot->SetFacingTo(orientation);
-        return true;
-    } */
+        return false;
+    }
+    // We're not tanking yet, but should be in melee range to generate threat
+    else if (!bot->IsWithinMeleeRange(blindeye))
+    {
+        LOG_DEBUG("playerbots", "[HighKingMaulgarBlindeyeTankAction] {} is moving into melee range of Blindeye to gain threat", bot->GetName().c_str());
+        return MoveTo(blindeye->GetMapId(), blindeye->GetPositionX(), blindeye->GetPositionY(), blindeye->GetPositionZ());
+    }
+
     return false;
 }
 
@@ -312,53 +278,90 @@ bool HighKingMaulgarMageTankAction::Execute(Event event)
 
     Unit* krosh = AI_VALUE2(Unit*, "find target", "krosh firehand");
     if (!krosh || !krosh->IsAlive())
+    {
+        LOG_DEBUG("playerbots", "[HighKingMaulgarMageTankAction] Krosh not found or not alive");
         return false;
+    }
 
     ObjectGuid currentIconGuid = group->GetTargetIcon(triangleIcon);
     if (currentIconGuid.IsEmpty() || currentIconGuid != krosh->GetGUID())
     {
+        LOG_DEBUG("playerbots", "[HighKingMaulgarMageTankAction] Bot GUID: {}, Krosh GUID: {}", bot->GetGUID().ToString().c_str(), krosh->GetGUID().ToString().c_str());
+        LOG_DEBUG("playerbots", "[HighKingMaulgarMageTankAction] Group state: {}", group ? "Valid" : "Invalid");
+
         group->SetTargetIcon(triangleIcon, bot->GetGUID(), krosh->GetGUID());
+
+        LOG_DEBUG("playerbots", "[HighKingMaulgarMageTankAction] Successfully set triangle icon for Krosh");
     }
 
-    /* std::vector<std::pair<std::string, std::string>> priorities = 
+        if (botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != "triangle" && 
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != krosh)
     {
-        {"krosh", "triangle"},
-        {"blindeye", "star"},
-        {"olm", "circle"},
-        {"kiggler", "diamond"},
-        {"maulgar", "square"},
-    };
+        LOG_DEBUG("playerbots", "[HighKingMaulgarMageTankAction] {} is updating RTI to triangle and setting target to Krosh", bot->GetName().c_str());
+        botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("triangle");
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(krosh);
+    }
 
-    Unit* krosh = nullptr;
-    for (const auto& [icon, index] : priorities)
+    if (bot->GetVictim() != krosh)
     {
-        ObjectGuid guid = group->GetTargetIcon(index);
-        Unit* target = botAI->GetUnit(guid);
+        LOG_DEBUG("playerbots", "[HighKingMaulgarMageTankAction] {} is switching target to Krosh", bot->GetName().c_str());
+        Attack(krosh);
+    }
 
-        if (icon == "krosh" && target && target->IsAlive())
-        {
-            krosh = target;
-        }
+    float const OPTIMAL_RANGED_DISTANCE = 25.0f;
+    float const MIN_RANGE = OPTIMAL_RANGED_DISTANCE - 4.0f;
+    float const MAX_RANGE = OPTIMAL_RANGED_DISTANCE + 4.0f;
 
-        if (target && target->IsAlive())
+    // Too close or too far
+    if (!bot->IsWithinRange(krosh, MIN_RANGE) || bot->IsWithinRange(krosh, MAX_RANGE))
+    {
+        LOG_DEBUG("playerbots", "[HighKingMaulgarMageTankAction] {} is adjusting position to maintain optimal range from Krosh", bot->GetName().c_str());
+
+        // If too close, back away
+        if (bot->IsWithinRange(krosh, MIN_RANGE))
         {
-            // Only reprioritize if not already targeting this icon and target
-            std::string currentRti = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
-            if (currentRti == icon && bot->GetVictim() == target)
+            // Calculate a position at optimal range away from the boss
+            float dx = bot->GetPositionX() - krosh->GetPositionX();
+            float dy = bot->GetPositionY() - krosh->GetPositionY();
+            float dist = std::sqrt(dx*dx + dy*dy);
+            
+            if (dist > 0.1f) // Avoid division by zero
             {
-                // Already targeting correct icon and target, do nothing
-                return true;
+                dx = dx / dist * OPTIMAL_RANGED_DISTANCE;
+                dy = dy / dist * OPTIMAL_RANGED_DISTANCE;
+
+                return MoveTo(krosh->GetMapId(),
+                            krosh->GetPositionX() + dx,
+                            krosh->GetPositionY() + dy,
+                            krosh->GetPositionZ());
             }
-            // Otherwise, set RTI and switch target
-            botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set(icon);
-            bot->SetTarget(target->GetGUID());
-            botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(target);
-            botAI->DoSpecificAction("attack rti target");
-            return true;
         }
-        // If not found/alive, continue to next icon
+        // If too far, move closer
+        else
+        {
+            // Move toward the boss, but stop at optimal distance
+            float dx = krosh->GetPositionX() - bot->GetPositionX();
+            float dy = krosh->GetPositionY() - bot->GetPositionY();
+            float dist = std::sqrt(dx*dx + dy*dy);
+            
+            if (dist > 0.1f) // Avoid division by zero
+            {
+                // Calculate how much to move toward the boss
+                float moveAmount = dist - OPTIMAL_RANGED_DISTANCE;
+                dx = dx / dist * moveAmount;
+                dy = dy / dist * moveAmount;
+                
+                return MoveTo(bot->GetMapId(), 
+                            bot->GetPositionX() + dx, 
+                            bot->GetPositionY() + dy, 
+                            bot->GetPositionZ());
+            }
+        }
     }
-    // After targeting loop, handle triangle special movement if triangle is targeting the bot
+    return false;
+}
+
+/*
     if (krosh && bot->GetVictim() == krosh)
     {
         if (krosh->HasAura(SPELL_AURA_SPELL_SHIELD))
@@ -373,9 +376,9 @@ bool HighKingMaulgarMageTankAction::Execute(Event event)
             return true;
         }
         return true;
-    } */
+    }
     return false;
-}
+} */
 
 bool HighKingMaulgarBoomkinTankAction::Execute(Event event)
 {
@@ -388,81 +391,225 @@ bool HighKingMaulgarBoomkinTankAction::Execute(Event event)
 
     Unit* kiggler = AI_VALUE2(Unit*, "find target", "kiggler the crazed");
     if (!kiggler || !kiggler->IsAlive())
+    {
+        LOG_DEBUG("playerbots", "[HighKingMaulgarBoomkinTankAction] Kiggler not found or not alive");
         return false;
+    }
+
+    LOG_DEBUG("playerbots", "[HighKingMaulgarBoomkinTankAction] Kiggler found, GUID: {}", kiggler->GetGUID().ToString().c_str());
 
     ObjectGuid currentIconGuid = group->GetTargetIcon(diamondIcon);
     if (currentIconGuid.IsEmpty() || currentIconGuid != kiggler->GetGUID())
     {
+        LOG_DEBUG("playerbots", "[HighKingMaulgarBoomkinTankAction] Bot GUID: {}, Kiggler GUID: {}", bot->GetGUID().ToString().c_str(), kiggler->GetGUID().ToString().c_str());
+        LOG_DEBUG("playerbots", "[HighKingMaulgarBoomkinTankAction] Group state: {}", group ? "Valid" : "Invalid");
+
         group->SetTargetIcon(diamondIcon, bot->GetGUID(), kiggler->GetGUID());
+
+        LOG_DEBUG("playerbots", "[HighKingMaulgarBoomkinTankAction] Successfully set diamond icon for Kiggler");
     }
 
     if (botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != "diamond" && 
         botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != kiggler)
     {
+        LOG_DEBUG("playerbots", "[HighKingMaulgarBoomkinTankAction] {} is updating RTI to diamond and setting target to Kiggler", bot->GetName().c_str());
         botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("diamond");
         botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(kiggler);
-        botAI->DoSpecificAction("attack rti target");
-        return true;
+    }
+
+    if (bot->GetVictim() != kiggler)
+    {
+        LOG_DEBUG("playerbots", "[HighKingMaulgarBoomkinTankAction] {} is switching target to Kiggler", bot->GetName().c_str());
+        Attack(kiggler);
+    }
+
+    float const OPTIMAL_RANGED_DISTANCE = 32.5f;
+    float const MIN_RANGE = OPTIMAL_RANGED_DISTANCE - 2.5f;
+    float const MAX_RANGE = OPTIMAL_RANGED_DISTANCE + 2.5f;
+
+    // Too close or too far
+    if (bot->IsWithinRange(kiggler, MIN_RANGE) || !bot->IsWithinRange(kiggler, MAX_RANGE))
+    {
+        LOG_DEBUG("playerbots", "[HighKingMaulgarBoomkinTankAction] {} is adjusting position to maintain optimal range from Kiggler", bot->GetName().c_str());
+        
+        // If too close, back away
+        if (bot->IsWithinRange(kiggler, MIN_RANGE))
+        {
+            // Calculate a position at optimal range away from the boss
+            float dx = bot->GetPositionX() - kiggler->GetPositionX();
+            float dy = bot->GetPositionY() - kiggler->GetPositionY();
+            float dist = std::sqrt(dx*dx + dy*dy);
+            
+            if (dist > 0.1f) // Avoid division by zero
+            {
+                dx = dx / dist * OPTIMAL_RANGED_DISTANCE;
+                dy = dy / dist * OPTIMAL_RANGED_DISTANCE;
+                
+                return MoveTo(kiggler->GetMapId(), 
+                            kiggler->GetPositionX() + dx, 
+                            kiggler->GetPositionY() + dy, 
+                            kiggler->GetPositionZ());
+            }
+        }
+        // If too far, move closer
+        else
+        {
+            // Move toward the boss, but stop at optimal distance
+            float dx = kiggler->GetPositionX() - bot->GetPositionX();
+            float dy = kiggler->GetPositionY() - bot->GetPositionY();
+            float dist = std::sqrt(dx*dx + dy*dy);
+            
+            if (dist > 0.1f) // Avoid division by zero
+            {
+                // Calculate how much to move toward the boss
+                float moveAmount = dist - OPTIMAL_RANGED_DISTANCE;
+                dx = dx / dist * moveAmount;
+                dy = dy / dist * moveAmount;
+                
+                return MoveTo(bot->GetMapId(), 
+                            bot->GetPositionX() + dx, 
+                            bot->GetPositionY() + dy, 
+                            bot->GetPositionZ());
+            }
+        }
     }
     return false;
 }
 
 bool HighKingMaulgarMeleeDPSAction::Execute(Event event)
 {
-    Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
-    Unit* kiggler = AI_VALUE2(Unit*, "find target", "kiggler the crazed");
-    Unit* krosh = AI_VALUE2(Unit*, "find target", "krosh firehand");
-    Unit* olm = AI_VALUE2(Unit*, "find target", "olm the summoner");
-    Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
-
-    if (!botAI->IsMelee(bot) || (IsFirstTank(botAI, bot) && maulgar->IsAlive()) || 
-        (IsSecondTank(botAI, bot) && olm->IsAlive()) || (IsThirdTank(botAI, bot) && blindeye->IsAlive()))
-        return false;
-
     Group* group = bot->GetGroup();
     if (!group)
         return false;
+    
+    LOG_DEBUG("playerbots", "[HighKingMaulgarMeleeDPSAction] {} is executing Melee DPS Action", bot->GetName().c_str());
 
-    if (blindeye && blindeye->IsAlive() && botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != "star" && 
-        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != blindeye)
+    Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
+    Unit* kiggler = AI_VALUE2(Unit*, "find target", "kiggler the crazed");
+    Unit* olm = AI_VALUE2(Unit*, "find target", "olm the summoner");
+    Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
+
+    // Check if this bot should be performing the Melee DPS role
+    if (!botAI->IsMelee(bot) || 
+        (IsFirstTank(botAI, bot) && maulgar && maulgar->IsAlive()) || 
+        (IsSecondTank(botAI, bot) && olm && olm->IsAlive()) || 
+        (IsThirdTank(botAI, bot) && blindeye && blindeye->IsAlive()))
+        return false;
+
+    // Target priority 1: Blindeye
+    if (blindeye && blindeye->IsAlive())
     {
-        botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("star");
-        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(blindeye);
-        botAI->DoSpecificAction("attack rti target");
-        return true;
+        Unit* rtiTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
+        std::string rtiValue = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
+        
+        // Check if we need to update the RTI
+        if (rtiValue != "star" || rtiTarget != blindeye)
+        {
+            LOG_DEBUG("playerbots", "[HighKingMaulgarMeleeDPSAction] {} is updating RTI to star for Blindeye", bot->GetName().c_str());
+            botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("star");
+            botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(blindeye);
+        }
+
+        // Check if we need to switch targets
+        if (bot->GetVictim() != blindeye)
+        {
+            LOG_DEBUG("playerbots", "[HighKingMaulgarMeleeDPSAction] {} is attacking Blindeye", bot->GetName().c_str());
+            Attack(blindeye);  // Don't return immediately
+            // Fall through to the movement check
+        }
+
+        // Check if we need to move closer
+        if (!bot->IsWithinMeleeRange(blindeye))
+        {
+            LOG_DEBUG("playerbots", "[HighKingMaulgarMeleeDPSAction] {} is moving into melee range of Blindeye", bot->GetName().c_str());
+            return MoveTo(blindeye->GetMapId(), blindeye->GetPositionX(), blindeye->GetPositionY(), blindeye->GetPositionZ());
+        }
+        
+        return false;
     }
 
-    if (olm && olm->IsAlive() && botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != "circle" && 
-        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != olm)
+    // Target priority 2: Olm (if Blindeye is dead)
+    if (olm && olm->IsAlive())
     {
-        botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("circle");
-        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(olm);
-        botAI->DoSpecificAction("attack rti target");
-        return true;
+        Unit* rtiTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
+        std::string rtiValue = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
+        
+        // Check if we need to update the RTI
+        if (rtiValue != "circle" || rtiTarget != olm)
+        {
+            LOG_DEBUG("playerbots", "[HighKingMaulgarMeleeDPSAction] {} is updating RTI to circle for Olm", bot->GetName().c_str());
+            botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("circle");
+            botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(olm);
+        }
+
+        // Check if we need to switch targets
+        if (bot->GetVictim() != olm)
+        {
+            LOG_DEBUG("playerbots", "[HighKingMaulgarMeleeDPSAction] {} is attacking Olm", bot->GetName().c_str());
+            return Attack(olm);
+        }
+        
+        return false;
     }
 
-    if (kiggler && kiggler->IsAlive() && botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != "diamond" && 
-        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != kiggler)
+    // Target priority 3: Kiggler (if Blindeye and Olm are dead)
+    if (kiggler && kiggler->IsAlive())
     {
-        botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("diamond");
-        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(kiggler);
-        botAI->DoSpecificAction("attack rti target");
-        return true;
+        Unit* rtiTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
+        std::string rtiValue = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
+        
+        // Check if we need to update the RTI
+        if (rtiValue != "diamond" || rtiTarget != kiggler)
+        {
+            LOG_DEBUG("playerbots", "[HighKingMaulgarMeleeDPSAction] {} is updating RTI to diamond for Kiggler", bot->GetName().c_str());
+            botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("diamond");
+            botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(kiggler);
+        }
+
+        // Check if we need to switch targets
+        if (bot->GetVictim() != kiggler)
+        {
+            LOG_DEBUG("playerbots", "[HighKingMaulgarMeleeDPSAction] {} is attacking Kiggler", bot->GetName().c_str());
+            return Attack(kiggler);
+        }
+
+        return false;
     }
 
-    if (maulgar && maulgar->IsAlive() && botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != "square" && 
-        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != maulgar)
+    // Target priority 4: Maulgar (if all others are dead)
+    if (maulgar && maulgar->IsAlive())
     {
-        botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("square");
-        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(maulgar);
-        botAI->DoSpecificAction("attack rti target");
-        return true;
+        Unit* rtiTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
+        std::string rtiValue = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
+        
+        // Check if we need to update the RTI
+        if (rtiValue != "square" || rtiTarget != maulgar)
+        {
+            LOG_DEBUG("playerbots", "[HighKingMaulgarMeleeDPSAction] {} is updating RTI to square for Maulgar", bot->GetName().c_str());
+            botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("square");
+            botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(maulgar);
+        }
+
+        // Check if we need to switch targets
+        if (bot->GetVictim() != maulgar)
+        {
+            LOG_DEBUG("playerbots", "[HighKingMaulgarMeleeDPSAction] {} is attacking Maulgar", bot->GetName().c_str());
+            return Attack(maulgar);
+        }
+        
+        return false;
     }
+
     return false;
 }
 
 bool HighKingMaulgarRangedDPSAction::Execute(Event event) // Need separate action for Warlock
 {
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    LOG_DEBUG("playerbots", "[HighKingMaulgarRangedDPSAction] {} is executing Ranged DPS Action", bot->GetName().c_str());
 
     Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
     Unit* kiggler = AI_VALUE2(Unit*, "find target", "kiggler the crazed");
@@ -470,60 +617,187 @@ bool HighKingMaulgarRangedDPSAction::Execute(Event event) // Need separate actio
     Unit* olm = AI_VALUE2(Unit*, "find target", "olm the summoner");
     Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
 
-    if (!botAI->IsRanged(bot) || (IsMageTank(botAI, bot) && krosh->IsAlive()) || 
-        (IsBoomkinTank(botAI, bot) && kiggler->IsAlive()) || botAI->IsHeal(bot))
+    // Check if this bot should be performing the Ranged DPS role
+    if (!botAI->IsRanged(bot) || 
+        (IsMageTank(botAI, bot) && krosh && krosh->IsAlive()) || 
+        (IsBoomkinTank(botAI, bot) && kiggler && kiggler->IsAlive()) || 
+        botAI->IsHeal(bot))
         return false;
 
-    Group* group = bot->GetGroup();
-    if (!group)
+    // Define optimal range parameters for ranged DPS
+    float const OPTIMAL_RANGED_DISTANCE = 25.0f;
+    float const MIN_RANGE = OPTIMAL_RANGED_DISTANCE - 4.0f;
+    float const MAX_RANGE = OPTIMAL_RANGED_DISTANCE + 4.0f;
+
+    // Target priority 1: Blindeye
+    if (blindeye && blindeye->IsAlive())
+    {
+        Unit* rtiTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
+        std::string rtiValue = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
+        
+        // Check if we need to update the RTI
+        if (rtiValue != "star" || rtiTarget != blindeye)
+        {
+            LOG_DEBUG("playerbots", "[HighKingMaulgarRangedDPSAction] {} is updating RTI to star for Blindeye", bot->GetName().c_str());
+            botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("star");
+            botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(blindeye);
+        }
+
+        // Check if we need to switch targets
+        if (bot->GetVictim() != blindeye)
+        {
+            LOG_DEBUG("playerbots", "[HighKingMaulgarRangedDPSAction] {} is attacking Blindeye", bot->GetName().c_str());
+            return Attack(blindeye);
+        }
+
+        // Too close or too far
+        if (bot->IsWithinRange(blindeye, MIN_RANGE) || !bot->IsWithinRange(blindeye, MAX_RANGE))
+        {
+            LOG_DEBUG("playerbots", "[HighKingMaulgarRangedDPSAction] {} is adjusting position to maintain optimal range from Blindeye", bot->GetName().c_str());
+            
+            // If too close, back away
+            if (bot->IsWithinRange(blindeye, MIN_RANGE))
+            {
+                // Calculate a position at optimal range away from the boss
+                float dx = bot->GetPositionX() - blindeye->GetPositionX();
+                float dy = bot->GetPositionY() - blindeye->GetPositionY();
+                float dist = std::sqrt(dx*dx + dy*dy);
+                
+                if (dist > 0.1f) // Avoid division by zero
+                {
+                    dx = dx / dist * OPTIMAL_RANGED_DISTANCE;
+                    dy = dy / dist * OPTIMAL_RANGED_DISTANCE;
+                    
+                    return MoveTo(blindeye->GetMapId(), 
+                                blindeye->GetPositionX() + dx, 
+                                blindeye->GetPositionY() + dy, 
+                                blindeye->GetPositionZ());
+                }
+            }
+            // If too far, move closer
+            else
+            {
+                // Move toward the boss, but stop at optimal distance
+                float dx = blindeye->GetPositionX() - bot->GetPositionX();
+                float dy = blindeye->GetPositionY() - bot->GetPositionY();
+                float dist = std::sqrt(dx*dx + dy*dy);
+                
+                if (dist > 0.1f) // Avoid division by zero
+                {
+                    // Calculate how much to move toward the boss
+                    float moveAmount = dist - OPTIMAL_RANGED_DISTANCE;
+                    dx = dx / dist * moveAmount;
+                    dy = dy / dist * moveAmount;
+                    
+                    return MoveTo(bot->GetMapId(), 
+                                bot->GetPositionX() + dx, 
+                                bot->GetPositionY() + dy, 
+                                bot->GetPositionZ());
+                }
+            }
+        }
+
         return false;
-
-    if (blindeye && blindeye->IsAlive() && botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != "star" && 
-        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != blindeye)
-    {
-        botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("star");
-        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(blindeye);
-        botAI->DoSpecificAction("attack rti target");
-        return true;
     }
 
-    if (olm && olm->IsAlive() && botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != "circle" && 
-        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != olm)
+    // Target priority 2: Olm (if Blindeye is dead)
+    if (olm && olm->IsAlive())
     {
-        botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("circle");
-        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(olm);
-        botAI->DoSpecificAction("attack rti target");
-        return true;
-    }
-    
-    if (kiggler && kiggler->IsAlive() && botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != "diamond" && 
-        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != kiggler)
-    {
-        botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("diamond");
-        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(kiggler);
-        botAI->DoSpecificAction("attack rti target");
-        return true;
+        Unit* rtiTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
+        std::string rtiValue = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
+        
+        // Check if we need to update the RTI
+        if (rtiValue != "circle" || rtiTarget != olm)
+        {
+            LOG_DEBUG("playerbots", "[HighKingMaulgarRangedDPSAction] {} is updating RTI to circle for Olm", bot->GetName().c_str());
+            botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("circle");
+            botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(olm);
+        }
+
+        // Check if we need to switch targets
+        if (bot->GetVictim() != olm)
+        {
+            LOG_DEBUG("playerbots", "[HighKingMaulgarRangedDPSAction] {} is attacking Olm", bot->GetName().c_str());
+            Attack(olm);
+        }
+        
+        return false;
     }
 
-    if (krosh && krosh->IsAlive() && botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != "triangle" && 
-        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != krosh)
+    // Target priority 3: Kiggler (if Blindeye and Olm are dead)
+    if (kiggler && kiggler->IsAlive())
     {
-        botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("triangle");
-        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(krosh);
-        botAI->DoSpecificAction("attack rti target");
-        return true;
+        Unit* rtiTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
+        std::string rtiValue = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
+        
+        // Check if we need to update the RTI
+        if (rtiValue != "diamond" || rtiTarget != kiggler)
+        {
+            LOG_DEBUG("playerbots", "[HighKingMaulgarRangedDPSAction] {} is updating RTI to diamond for Kiggler", bot->GetName().c_str());
+            botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("diamond");
+            botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(kiggler);
+        }
+
+        // Check if we need to switch targets
+        if (bot->GetVictim() != kiggler)
+        {
+            LOG_DEBUG("playerbots", "[HighKingMaulgarRangedDPSAction] {} is attacking Kiggler", bot->GetName().c_str());
+            return Attack(kiggler);
+        }
+        
+        return false;
     }
 
-    if (maulgar && maulgar->IsAlive() && botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != "square" && 
-        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != maulgar)
+    // Target priority 4: Krosh (if Blindeye, Olm, and Kiggler are dead)
+    if (krosh && krosh->IsAlive())
     {
-        botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("square");
-        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(maulgar);
-        botAI->DoSpecificAction("attack rti target");
-        return true;
+        Unit* rtiTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
+        std::string rtiValue = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
+        
+        // Check if we need to update the RTI
+        if (rtiValue != "triangle" || rtiTarget != krosh)
+        {
+            LOG_DEBUG("playerbots", "[HighKingMaulgarRangedDPSAction] {} is updating RTI to triangle for Krosh", bot->GetName().c_str());
+            botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("triangle");
+            botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(krosh);
+        }
+
+        // Check if we need to switch targets
+        if (bot->GetVictim() != krosh)
+        {
+            LOG_DEBUG("playerbots", "[HighKingMaulgarRangedDPSAction] {} is attacking Krosh", bot->GetName().c_str());
+            return Attack(krosh);
+        }
+        
+        return false;
     }
+
+    // Target priority 5: Maulgar (if all others are dead)
+    if (maulgar && maulgar->IsAlive())
+    {
+        Unit* rtiTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
+        std::string rtiValue = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
+        
+        // Check if we need to update the RTI
+        if (rtiValue != "square" || rtiTarget != maulgar)
+        {
+            LOG_DEBUG("playerbots", "[HighKingMaulgarRangedDPSAction] {} is updating RTI to square for Maulgar", bot->GetName().c_str());
+            botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("square");
+            botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(maulgar);
+        }
+
+        // Check if we need to switch targets
+        if (bot->GetVictim() != maulgar)
+        {
+            LOG_DEBUG("playerbots", "[HighKingMaulgarRangedDPSAction] {} is attacking Maulgar", bot->GetName().c_str());
+            return Attack(maulgar);
+        }
+        
+        return false;
+    }
+
     return false;
-}
+};
 
 /* bool HighKingMaulgarAvoidBlastWaveAction::Execute(Event event)
 {
