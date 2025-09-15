@@ -12,6 +12,7 @@
 #include "RaidAq20Strategy.h"
 #include "RaidIccStrategy.h"
 #include "RaidVoAStrategy.h"
+#include "RaidKarazhanStrategy.h"
 #include "RaidGruulsLairStrategy.h"
 
 class RaidStrategyContext : public NamedObjectContext<Strategy>
@@ -32,6 +33,7 @@ public:
         creators["uld"] = &RaidStrategyContext::uld;
         creators["icc"] = &RaidStrategyContext::icc;
         creators["onyxia"] = &RaidStrategyContext::onyxia;
+        creators["karazhan"] = &RaidStrategyContext::karazhan;
         creators["gruulslair"] = &RaidStrategyContext::gruulslair;
     }
 
@@ -46,6 +48,7 @@ private:
     static Strategy* uld(PlayerbotAI* botAI) { return new RaidUlduarStrategy(botAI); }
     static Strategy* icc(PlayerbotAI* botAI) { return new RaidIccStrategy(botAI); }
     static Strategy* onyxia(PlayerbotAI* botAI) { return new RaidOnyxiaStrategy(botAI); }
+    static Strategy* karazhan(PlayerbotAI* botAI) { return new RaidKarazhanStrategy(botAI); }
     static Strategy* gruulslair(PlayerbotAI* botAI) { return new RaidGruulsLairStrategy(botAI); }
 };
 

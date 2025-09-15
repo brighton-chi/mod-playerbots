@@ -2349,9 +2349,6 @@ void PlayerbotFactory::UpdateTradeSkills()
 
 void PlayerbotFactory::InitSkills()
 {
-    //uint32 maxValue = level * 5; //not used, line marked for removal.
-    bot->UpdateSkillsForLevel();
-
     bot->SetSkill(SKILL_RIDING, 0, 0, 0);
     if (bot->GetLevel() >= sPlayerbotAIConfig->useGroundMountAtMinLevel)
         bot->learnSpell(33388);
