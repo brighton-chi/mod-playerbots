@@ -17,12 +17,63 @@ bool HighKingMaulgarMaulgarTankAction::Execute(Event event)
     Group* group = bot->GetGroup();
     if (!group)
         return false;
+
+    Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
+    if (!maulgar || !maulgar->IsAlive())
+        return false;
+    
+    ObjectGuid currentIconGuid = group->GetTargetIcon(squareIcon);
+    if (currentIconGuid.IsEmpty() || currentIconGuid != maulgar->GetGUID())
+    {
+        group->SetTargetIcon(squareIcon, bot->GetGUID(), maulgar->GetGUID());
+    }
+
+    if (botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != "square" && 
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != maulgar)
+    {
+        botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("square");
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(maulgar);
+        botAI->DoSpecificAction("attack rti target");
+    }
+    
+    if (bot->GetVictim() == maulgar && maulgar->GetVictim() == bot)
+    {
+        // Use TankSpot for designated coordinates
+        const TankSpot& spot = GruulsLairTankSpots::Maulgar;
+        const float maxDistance = 3.0f;
+        float distanceToMaulgar = maulgar->GetExactDist2d(spot.x, spot.y);
+
+        float moveX = spot.x;
+        float moveY = spot.y;
+        if (distanceToMaulgar > maxDistance)
+        {
+            float dX = spot.x - maulgar->GetPositionX();
+            float dY = spot.y - maulgar->GetPositionY();
+            moveX = spot.x + (dX / distanceToMaulgar) * maxDistance;
+            moveY = spot.y + (dY / distanceToMaulgar) * maxDistance;
+            MoveTo(bot->GetMapId(), moveX, moveY, spot.z, false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
+        }
+        float orientation = atan2(maulgar->GetPositionY() - bot->GetPositionY(), maulgar->GetPositionX() - bot->GetPositionX());
+        bot->SetFacingTo(orientation);
+        return true;
+    }
+    return false;
+}
+
+/*{
+    if (!IsFirstTank(botAI, bot))
+        return false;
+
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
     std::vector<std::pair<std::string, int>> priorities = 
     {
-        {"square", 5},
-        {"star", 0},
-        {"circle", 1},
-        {"diamond", 2},
+        {"maulgar", 5}, // Square
+        {"blindeye", 0}, // Star
+        {"olm", 1}, // Circle
+        {"kiggler", 2}, // Diamond
+        // Krosh is 3,  Triangle
     };
 
     Unit* maulgar = nullptr;
@@ -30,59 +81,41 @@ bool HighKingMaulgarMaulgarTankAction::Execute(Event event)
     {
         ObjectGuid guid = group->GetTargetIcon(index);
         Unit* target = botAI->GetUnit(guid);
-        
-        LOG_INFO("playerbots", "Gruul's Lair: {} checking icon {} (index {})", 
-                 bot->GetName(), icon.c_str(), index);
 
-        if (icon == "square" && target && target->IsAlive())
+        if (icon == "maulgar" && target && target->IsAlive())
         {
             maulgar = target;
-            LOG_INFO("playerbots", "Gruul's Lair: {} found maulgar at icon square: {}", 
-                     bot->GetName(), target->GetName());
+            group->SetTargetIcon(index, bot->GetGUID(), target->GetGUID());
         }
 
         if (target && target->IsAlive())
         {
-            LOG_INFO("playerbots", "Gruul's Lair: {} found alive target {} at icon {}", 
-                     bot->GetName(), target->GetName(), icon.c_str());
-                     
             // Only reprioritize if not already targeting this icon and target
             std::string currentRti = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
         
             Unit* currentVictim = bot->GetVictim();
-            LOG_INFO("playerbots", "Gruul's Lair: {} comparing current RTI '{}' to icon '{}', current victim: {}, target: {}", 
-                    bot->GetName(), currentRti.c_str(), icon.c_str(), 
+            LOG_INFO("playerbots", "Gruul's Lair: {} comparing current RTI '{}' to icon '{}' ({}), current victim: {}, target: {}", 
+                    bot->GetName(), currentRti.c_str(), GetRtiNameFromInternalId(icon).c_str(), icon.c_str(), 
                     (currentVictim ? currentVictim->GetName() : "none"), 
                     target->GetName());
 
-            if (currentRti == icon && currentVictim == target)
-            {
-                LOG_INFO("playerbots", "Gruul's Lair: {} already using correct RTI {} and targeting {}", 
-                         bot->GetName(), icon.c_str(), target->GetName());
+            if (currentRti == GetRtiNameFromInternalId(icon) && currentVictim == target)
                 // Already targeting correct icon and target, do nothing
                 return true;
-            }
+
             // Otherwise, set RTI and switch target
-            LOG_INFO("playerbots", "Gruul's Lair: {} setting RTI to {} and targeting {}", 
-                     bot->GetName(), icon.c_str(), target->GetName());
-            botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set(icon);
+            botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set(GetRtiNameFromInternalId(icon));
             bot->SetTarget(target->GetGUID());
             botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(target);
-            botAI->DoSpecificAction("attack rti target");
-            LOG_INFO("playerbots", "Gruul's Lair: {} executing attack rti target for {}", bot->GetName(), target->GetName());
-            return true;
+            bot->Attack(target, true);
+            LOG_INFO("playerbots", "Gruul's Lair: {} direct bot->Attack() command for {}", bot->GetName(), target->GetName());
+            break;
         }
         // If not found/alive, continue to next icon
     }
     // After targeting loop, handle maulgar special movement
-    LOG_INFO("playerbots", "Gruul's Lair: {} finished icon check, checking for special movement", 
-             bot->GetName());
-             
     if (maulgar && bot->GetVictim() == maulgar && maulgar->GetVictim() == bot)
     {
-        LOG_INFO("playerbots", "Gruul's Lair: {} is tanking Maulgar, positioning at tank spot", 
-                 bot->GetName());
-                 
         // Use TankSpot for designated coordinates
         const TankSpot& spot = GruulsLairTankSpots::Maulgar;
         const float maxDistance = 3.0f;
@@ -104,7 +137,7 @@ bool HighKingMaulgarMaulgarTankAction::Execute(Event event)
     }
     // No valid target found
     return false;
-}
+}*/
 
 bool HighKingMaulgarOlmTankAction::Execute(Event event)
 {
@@ -114,12 +147,23 @@ bool HighKingMaulgarOlmTankAction::Execute(Event event)
     Group* group = bot->GetGroup();
     if (!group)
         return false;
-    std::vector<std::pair<std::string, int>> priorities = 
+
+    Unit* olm = AI_VALUE2(Unit*, "find target", "olm the summoner");
+    if (!olm || !olm->IsAlive())
+        return false;
+
+    ObjectGuid currentIconGuid = group->GetTargetIcon(circleIcon);
+    if (currentIconGuid.IsEmpty() || currentIconGuid != olm->GetGUID())
     {
-        {"circle", 1},
-        {"star", 0},
-        {"diamond", 2},
-        {"square", 5},
+        group->SetTargetIcon(circleIcon, bot->GetGUID(), olm->GetGUID());
+    }
+
+    /* std::vector<std::pair<std::string, std::string>> priorities = 
+    {
+        {"olm", "circle"},
+        {"blindeye", "star"},
+        {"kiggler", "diamond"},
+        {"maulgar", "square"},
     };
 
     Unit* olm = nullptr;
@@ -128,7 +172,7 @@ bool HighKingMaulgarOlmTankAction::Execute(Event event)
         ObjectGuid guid = group->GetTargetIcon(index);
         Unit* target = botAI->GetUnit(guid);
 
-        if (icon == "circle" && target && target->IsAlive())
+        if (icon == "olm" && target && target->IsAlive())
         {
             olm = target;
         }
@@ -172,8 +216,7 @@ bool HighKingMaulgarOlmTankAction::Execute(Event event)
         float orientation = atan2(olm->GetPositionY() - bot->GetPositionY(), olm->GetPositionX() - bot->GetPositionX());
         bot->SetFacingTo(orientation);
         return true;
-    }
-    // No valid target found
+    } */
     return false;
 }
 
@@ -185,12 +228,23 @@ bool HighKingMaulgarBlindeyeTankAction::Execute(Event event)
     Group* group = bot->GetGroup();
     if (!group)
         return false;
-    std::vector<std::pair<std::string, int>> priorities = 
+
+    Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
+    if (!blindeye || !blindeye->IsAlive())
+        return false;
+
+    ObjectGuid currentIconGuid = group->GetTargetIcon(starIcon);
+    if (currentIconGuid.IsEmpty() || currentIconGuid != blindeye->GetGUID())
     {
-        {"star", 0},
-        {"circle", 1},
-        {"diamond", 2},
-        {"square", 5},
+        group->SetTargetIcon(starIcon, bot->GetGUID(), blindeye->GetGUID());
+    }
+
+    /* std::vector<std::pair<std::string, std::string>> priorities = 
+    {
+        {"blindeye", "star"},
+        {"olm", "circle"},
+        {"kiggler", "diamond"},
+        {"maulgar", "square"},
     };
 
     Unit* blindeye = nullptr;
@@ -199,7 +253,7 @@ bool HighKingMaulgarBlindeyeTankAction::Execute(Event event)
         ObjectGuid guid = group->GetTargetIcon(index);
         Unit* target = botAI->GetUnit(guid);
 
-        if (icon == "star" && target && target->IsAlive())
+        if (icon == "blindeye" && target && target->IsAlive())
         {
             blindeye = target;
         }
@@ -243,8 +297,7 @@ bool HighKingMaulgarBlindeyeTankAction::Execute(Event event)
         float orientation = atan2(blindeye->GetPositionY() - bot->GetPositionY(), blindeye->GetPositionX() - bot->GetPositionX());
         bot->SetFacingTo(orientation);
         return true;
-    }
-    // No valid target found
+    } */
     return false;
 }
 
@@ -256,13 +309,24 @@ bool HighKingMaulgarMageTankAction::Execute(Event event)
     Group* group = bot->GetGroup();
     if (!group)
         return false;
-    std::vector<std::pair<std::string, int>> priorities = 
+
+    Unit* krosh = AI_VALUE2(Unit*, "find target", "krosh firehand");
+    if (!krosh || !krosh->IsAlive())
+        return false;
+
+    ObjectGuid currentIconGuid = group->GetTargetIcon(triangleIcon);
+    if (currentIconGuid.IsEmpty() || currentIconGuid != krosh->GetGUID())
     {
-        {"triangle", 3},
-        {"star", 0},
-        {"circle", 1},
-        {"diamond", 2},
-        {"square", 5},
+        group->SetTargetIcon(triangleIcon, bot->GetGUID(), krosh->GetGUID());
+    }
+
+    /* std::vector<std::pair<std::string, std::string>> priorities = 
+    {
+        {"krosh", "triangle"},
+        {"blindeye", "star"},
+        {"olm", "circle"},
+        {"kiggler", "diamond"},
+        {"maulgar", "square"},
     };
 
     Unit* krosh = nullptr;
@@ -271,7 +335,7 @@ bool HighKingMaulgarMageTankAction::Execute(Event event)
         ObjectGuid guid = group->GetTargetIcon(index);
         Unit* target = botAI->GetUnit(guid);
 
-        if (icon == "triangle" && target && target->IsAlive())
+        if (icon == "krosh" && target && target->IsAlive())
         {
             krosh = target;
         }
@@ -309,8 +373,7 @@ bool HighKingMaulgarMageTankAction::Execute(Event event)
             return true;
         }
         return true;
-    }
-    // No valid target found
+    } */
     return false;
 }
 
@@ -319,127 +382,146 @@ bool HighKingMaulgarBoomkinTankAction::Execute(Event event)
     if (!IsBoomkinTank(botAI, bot))
         return false;
 
-    std::vector<std::pair<std::string, int>> priorities = 
-    {
-        {"diamond", 2},
-        {"star", 0},
-        {"circle", 1},
-        {"triangle", 3},
-        {"square", 5}
-    };
-
     Group* group = bot->GetGroup();
     if (!group)
         return false;
-    for (const auto& [icon, index] : priorities)
-    {
-        ObjectGuid guid = group->GetTargetIcon(index);
-        Unit* target = botAI->GetUnit(guid);
 
-        if (target && target->IsAlive())
-        {
-            // Only reprioritize if not already targeting this icon and target
-            std::string currentRti = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
-            if (currentRti == icon && bot->GetVictim() == target)
-            {
-                // Already targeting correct icon and target, do nothing
-                return true;
-            }
-            // Otherwise, set RTI and switch target
-            botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set(icon);
-            bot->SetTarget(target->GetGUID());
-            botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(target);
-            botAI->DoSpecificAction("attack rti target");
-            return true;
-        }
-        // If not found/alive, continue to next icon
+    Unit* kiggler = AI_VALUE2(Unit*, "find target", "kiggler the crazed");
+    if (!kiggler || !kiggler->IsAlive())
+        return false;
+
+    ObjectGuid currentIconGuid = group->GetTargetIcon(diamondIcon);
+    if (currentIconGuid.IsEmpty() || currentIconGuid != kiggler->GetGUID())
+    {
+        group->SetTargetIcon(diamondIcon, bot->GetGUID(), kiggler->GetGUID());
     }
-    // No valid target found
+
+    if (botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != "diamond" && 
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != kiggler)
+    {
+        botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("diamond");
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(kiggler);
+        botAI->DoSpecificAction("attack rti target");
+        return true;
+    }
     return false;
 }
 
 bool HighKingMaulgarMeleeDPSAction::Execute(Event event)
 {
-    if (!botAI->IsMelee(bot) || IsFirstTank(botAI, bot) || IsSecondTank(botAI, bot) || IsThirdTank(botAI, bot))
-        return false;
+    Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
+    Unit* kiggler = AI_VALUE2(Unit*, "find target", "kiggler the crazed");
+    Unit* krosh = AI_VALUE2(Unit*, "find target", "krosh firehand");
+    Unit* olm = AI_VALUE2(Unit*, "find target", "olm the summoner");
+    Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
 
-    std::vector<std::pair<std::string, int>> priorities = {
-        {"star", 0},
-        {"circle", 1},
-        {"diamond", 2},
-        {"square", 5}
-    };
+    if (!botAI->IsMelee(bot) || (IsFirstTank(botAI, bot) && maulgar->IsAlive()) || 
+        (IsSecondTank(botAI, bot) && olm->IsAlive()) || (IsThirdTank(botAI, bot) && blindeye->IsAlive()))
+        return false;
 
     Group* group = bot->GetGroup();
     if (!group)
         return false;
-    for (const auto& [icon, index] : priorities)
-    {
-        ObjectGuid guid = group->GetTargetIcon(index);
-        Unit* target = botAI->GetUnit(guid);
 
-        if (target && target->IsAlive())
-        {
-            // Only reprioritize if not already targeting this icon and target
-            std::string currentRti = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
-            if (currentRti == icon && bot->GetVictim() == target)
-            {
-                // Already targeting correct icon and target, do nothing
-                return true;
-            }
-            // Otherwise, set RTI and switch target
-            botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set(icon);
-            bot->SetTarget(target->GetGUID());
-            botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(target);
-            botAI->DoSpecificAction("attack rti target");
-            return true;
-        }
-        // If not found/alive, continue to next icon
+    if (blindeye && blindeye->IsAlive() && botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != "star" && 
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != blindeye)
+    {
+        botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("star");
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(blindeye);
+        botAI->DoSpecificAction("attack rti target");
+        return true;
     }
-    // No valid target found
+
+    if (olm && olm->IsAlive() && botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != "circle" && 
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != olm)
+    {
+        botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("circle");
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(olm);
+        botAI->DoSpecificAction("attack rti target");
+        return true;
+    }
+
+    if (kiggler && kiggler->IsAlive() && botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != "diamond" && 
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != kiggler)
+    {
+        botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("diamond");
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(kiggler);
+        botAI->DoSpecificAction("attack rti target");
+        return true;
+    }
+
+    if (maulgar && maulgar->IsAlive() && botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != "square" && 
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != maulgar)
+    {
+        botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("square");
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(maulgar);
+        botAI->DoSpecificAction("attack rti target");
+        return true;
+    }
     return false;
 }
 
 bool HighKingMaulgarRangedDPSAction::Execute(Event event) // Need separate action for Warlock
 {
-    if (!botAI->IsRanged(bot) || IsMageTank(botAI, bot) || IsBoomkinTank(botAI, bot) || botAI->IsHeal(bot))
-        return false;
 
-    std::vector<std::pair<std::string, int>> priorities = {
-        {"star", 0},
-        {"circle", 1},
-        {"diamond", 2},
-        {"triangle", 3},
-        {"square", 5}
-    };
+    Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
+    Unit* kiggler = AI_VALUE2(Unit*, "find target", "kiggler the crazed");
+    Unit* krosh = AI_VALUE2(Unit*, "find target", "krosh firehand");
+    Unit* olm = AI_VALUE2(Unit*, "find target", "olm the summoner");
+    Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
+
+    if (!botAI->IsRanged(bot) || (IsMageTank(botAI, bot) && krosh->IsAlive()) || 
+        (IsBoomkinTank(botAI, bot) && kiggler->IsAlive()) || botAI->IsHeal(bot))
+        return false;
 
     Group* group = bot->GetGroup();
     if (!group)
         return false;
-    for (const auto& [icon, index] : priorities)
-    {
-        ObjectGuid guid = group->GetTargetIcon(index);
-        Unit* target = botAI->GetUnit(guid);
 
-        if (target && target->IsAlive())
-        {
-            // Only reprioritize if not already targeting this icon and target
-            std::string currentRti = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
-            if (currentRti == icon && bot->GetVictim() == target)
-            {
-                // Already targeting correct icon and target, do nothing
-                return true;
-            }
-            // Otherwise, set RTI and switch target
-            botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set(icon);
-            bot->SetTarget(target->GetGUID());
-            botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(target);
-            botAI->DoSpecificAction("attack rti target");
-            return true;
-        }
-        // If not found/alive, continue to next icon
+    if (blindeye && blindeye->IsAlive() && botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != "star" && 
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != blindeye)
+    {
+        botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("star");
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(blindeye);
+        botAI->DoSpecificAction("attack rti target");
+        return true;
     }
-    // No valid target found
+
+    if (olm && olm->IsAlive() && botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != "circle" && 
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != olm)
+    {
+        botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("circle");
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(olm);
+        botAI->DoSpecificAction("attack rti target");
+        return true;
+    }
+    
+    if (kiggler && kiggler->IsAlive() && botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != "diamond" && 
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != kiggler)
+    {
+        botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("diamond");
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(kiggler);
+        botAI->DoSpecificAction("attack rti target");
+        return true;
+    }
+
+    if (krosh && krosh->IsAlive() && botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != "triangle" && 
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != krosh)
+    {
+        botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("triangle");
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(krosh);
+        botAI->DoSpecificAction("attack rti target");
+        return true;
+    }
+
+    if (maulgar && maulgar->IsAlive() && botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != "square" && 
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != maulgar)
+    {
+        botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("square");
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(maulgar);
+        botAI->DoSpecificAction("attack rti target");
+        return true;
+    }
     return false;
 }
 

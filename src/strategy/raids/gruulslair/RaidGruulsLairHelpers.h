@@ -3,6 +3,7 @@
 
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
+#include "RtiTargetValue.h"
 
 enum GruulsLairSpells
 {
@@ -27,20 +28,22 @@ enum GruulsLairSpells
 	SPELL_ENSLAVE_DEMON = 11726, // Rank 3
 };
 
-/* constexpr uint8_t RTI_STAR    = 0;
-constexpr uint8_t RTI_CIRCLE  = 1;
-constexpr uint8_t RTI_DIAMOND = 2;
-constexpr uint8_t RTI_TRIANGLE= 3;
-constexpr uint8_t RTI_MOON    = 4;
-constexpr uint8_t RTI_SQUARE  = 5;
-constexpr uint8_t RTI_CROSS   = 6;
-constexpr uint8_t RTI_SKULL   = 7; */
+// Define constants for RTI indexes
+inline constexpr int8 squareIcon = RtiTargetValue::squareIndex;
+inline constexpr int8 starIcon = RtiTargetValue::starIndex;
+inline constexpr int8 circleIcon = RtiTargetValue::circleIndex;
+inline constexpr int8 diamondIcon = RtiTargetValue::diamondIndex;
+inline constexpr int8 triangleIcon = RtiTargetValue::triangleIndex;
+inline constexpr int8 moonIcon = RtiTargetValue::moonIndex;
+inline constexpr int8 crossIcon = RtiTargetValue::crossIndex;
+inline constexpr int8 skullIcon = RtiTargetValue::skullIndex;
 
 bool IsFirstTank(PlayerbotAI* botAI, Player* bot);
 bool IsSecondTank(PlayerbotAI* botAI, Player* bot);
 bool IsThirdTank(PlayerbotAI* botAI, Player* bot);
 bool IsMageTank(PlayerbotAI* botAI, Player* bot);
 bool IsBoomkinTank(PlayerbotAI* botAI, Player* bot);
+std::string GetRtiNameFromInternalId(const std::string& internalId);
 
 // Gruul's Lair ogre tanking spots (X, Y, Z)
 struct TankSpot 
