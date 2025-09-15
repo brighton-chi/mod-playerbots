@@ -150,7 +150,7 @@ bool HighKingMaulgarOlmTankAction::Execute(Event event)
     if (olm->GetVictim() == bot)
     {
         LOG_DEBUG("playerbots", "[HighKingMaulgarOlmTankAction] {} is tanking Olm", bot->GetName().c_str());
-        const TankSpot& spot = GruulsLairTankSpots::Maulgar;
+        const TankSpot& spot = GruulsLairTankSpots::Olm;
         const float maxDistance = 3.0f;
         float distanceToOlm = olm->GetExactDist2d(spot.x, spot.y);
         
@@ -294,12 +294,26 @@ bool HighKingMaulgarMageTankAction::Execute(Event event)
         LOG_DEBUG("playerbots", "[HighKingMaulgarMageTankAction] Successfully set triangle icon for Krosh");
     }
 
-        if (botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != "triangle" && 
+    if (botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != "triangle" && 
         botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != krosh)
     {
         LOG_DEBUG("playerbots", "[HighKingMaulgarMageTankAction] {} is updating RTI to triangle and setting target to Krosh", bot->GetName().c_str());
         botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("triangle");
         botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(krosh);
+    }
+
+    // Check for Spell Shield to steal
+    if (krosh->HasAura(SPELL_AURA_SPELL_SHIELD) && botAI->CanCastSpell(SPELL_SPELLSTEAL, krosh, true))
+    {
+        LOG_DEBUG("playerbots", "[HighKingMaulgarMageTankAction] {} is attempting to Spellsteal from Krosh", bot->GetName().c_str());
+        botAI->CastSpell(SPELL_SPELLSTEAL, krosh);
+    }
+
+    // Apply Fire Ward if we don't have Spell Shield
+    if (!bot->HasAura(SPELL_AURA_SPELL_SHIELD))
+    {
+        LOG_DEBUG("playerbots", "[HighKingMaulgarMageTankAction] {} is applying Fire Ward", bot->GetName().c_str());
+        botAI->CastSpell("fire ward", bot);
     }
 
     if (bot->GetVictim() != krosh)
@@ -308,81 +322,28 @@ bool HighKingMaulgarMageTankAction::Execute(Event event)
         Attack(krosh);
     }
 
-    float const OPTIMAL_RANGED_DISTANCE = 25.0f;
-    float const MIN_RANGE = OPTIMAL_RANGED_DISTANCE - 4.0f;
-    float const MAX_RANGE = OPTIMAL_RANGED_DISTANCE + 4.0f;
+    float const OPTIMAL_RANGED_DISTANCE = 27.0f;
+    float const MIN_RANGE = OPTIMAL_RANGED_DISTANCE - 2.0f;
+    float const MAX_RANGE = OPTIMAL_RANGED_DISTANCE + 2.0f;
 
-    // Too close or too far
-    if (!bot->IsWithinRange(krosh, MIN_RANGE) || bot->IsWithinRange(krosh, MAX_RANGE))
+    // Too close, too far, OR unsafe position
+    if (bot->IsWithinRange(krosh, MIN_RANGE) || !bot->IsWithinRange(krosh, MAX_RANGE) || 
+        !IsPositionSafe(botAI, bot, bot->GetPosition()))
     {
-        LOG_DEBUG("playerbots", "[HighKingMaulgarMageTankAction] {} is adjusting position to maintain optimal range from Krosh", bot->GetName().c_str());
-
-        // If too close, back away
-        if (bot->IsWithinRange(krosh, MIN_RANGE))
-        {
-            // Calculate a position at optimal range away from the boss
-            float dx = bot->GetPositionX() - krosh->GetPositionX();
-            float dy = bot->GetPositionY() - krosh->GetPositionY();
-            float dist = std::sqrt(dx*dx + dy*dy);
-            
-            if (dist > 0.1f) // Avoid division by zero
-            {
-                dx = dx / dist * OPTIMAL_RANGED_DISTANCE;
-                dy = dy / dist * OPTIMAL_RANGED_DISTANCE;
-
-                return MoveTo(krosh->GetMapId(),
-                            krosh->GetPositionX() + dx,
-                            krosh->GetPositionY() + dy,
-                            krosh->GetPositionZ());
-            }
-        }
-        // If too far, move closer
-        else
-        {
-            // Move toward the boss, but stop at optimal distance
-            float dx = krosh->GetPositionX() - bot->GetPositionX();
-            float dy = krosh->GetPositionY() - bot->GetPositionY();
-            float dist = std::sqrt(dx*dx + dy*dy);
-            
-            if (dist > 0.1f) // Avoid division by zero
-            {
-                // Calculate how much to move toward the boss
-                float moveAmount = dist - OPTIMAL_RANGED_DISTANCE;
-                dx = dx / dist * moveAmount;
-                dy = dy / dist * moveAmount;
-                
-                return MoveTo(bot->GetMapId(), 
-                            bot->GetPositionX() + dx, 
-                            bot->GetPositionY() + dy, 
-                            bot->GetPositionZ());
-            }
-        }
+        LOG_DEBUG("playerbots", "[HighKingMaulgarMageTankAction] {} is adjusting position for Krosh while avoiding boss mechanics", bot->GetName().c_str());
+        
+        // Find safe position at optimal ranged distance
+        Position safePos = FindSafePosition(botAI, bot, krosh, OPTIMAL_RANGED_DISTANCE);
+        
+        return MoveTo(krosh->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ);
     }
+
     return false;
 }
 
-/*
-    if (krosh && bot->GetVictim() == krosh)
-    {
-        if (krosh->HasAura(SPELL_AURA_SPELL_SHIELD))
-        {
-            botAI->CastSpell("spellsteal", krosh);
-            return true;
-        }
-
-        if (!bot->HasAura(SPELL_AURA_SPELL_SHIELD))
-        {
-            botAI->CastSpell("fire ward", bot);
-            return true;
-        }
-        return true;
-    }
-    return false;
-} */
-
-bool HighKingMaulgarBoomkinTankAction::Execute(Event event)
+bool HighKingMaulgarMoonkinTankAction::Execute(Event event)
 {
-    if (!IsBoomkinTank(botAI, bot))
+    if (!IsMoonkinTank(botAI, bot))
         return false;
 
     Group* group = bot->GetGroup();
@@ -392,87 +353,53 @@ bool HighKingMaulgarBoomkinTankAction::Execute(Event event)
     Unit* kiggler = AI_VALUE2(Unit*, "find target", "kiggler the crazed");
     if (!kiggler || !kiggler->IsAlive())
     {
-        LOG_DEBUG("playerbots", "[HighKingMaulgarBoomkinTankAction] Kiggler not found or not alive");
+        LOG_DEBUG("playerbots", "[HighKingMaulgarMoonkinTankAction] Kiggler not found or not alive");
         return false;
     }
 
-    LOG_DEBUG("playerbots", "[HighKingMaulgarBoomkinTankAction] Kiggler found, GUID: {}", kiggler->GetGUID().ToString().c_str());
+    LOG_DEBUG("playerbots", "[HighKingMaulgarMoonkinTankAction] Kiggler found, GUID: {}", kiggler->GetGUID().ToString().c_str());
 
     ObjectGuid currentIconGuid = group->GetTargetIcon(diamondIcon);
     if (currentIconGuid.IsEmpty() || currentIconGuid != kiggler->GetGUID())
     {
-        LOG_DEBUG("playerbots", "[HighKingMaulgarBoomkinTankAction] Bot GUID: {}, Kiggler GUID: {}", bot->GetGUID().ToString().c_str(), kiggler->GetGUID().ToString().c_str());
-        LOG_DEBUG("playerbots", "[HighKingMaulgarBoomkinTankAction] Group state: {}", group ? "Valid" : "Invalid");
+        LOG_DEBUG("playerbots", "[HighKingMaulgarMoonkinTankAction] Bot GUID: {}, Kiggler GUID: {}", bot->GetGUID().ToString().c_str(), kiggler->GetGUID().ToString().c_str());
+        LOG_DEBUG("playerbots", "[HighKingMaulgarMoonkinTankAction] Group state: {}", group ? "Valid" : "Invalid");
 
         group->SetTargetIcon(diamondIcon, bot->GetGUID(), kiggler->GetGUID());
 
-        LOG_DEBUG("playerbots", "[HighKingMaulgarBoomkinTankAction] Successfully set diamond icon for Kiggler");
+        LOG_DEBUG("playerbots", "[HighKingMaulgarMoonkinTankAction] Successfully set diamond icon for Kiggler");
     }
 
     if (botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != "diamond" && 
         botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != kiggler)
     {
-        LOG_DEBUG("playerbots", "[HighKingMaulgarBoomkinTankAction] {} is updating RTI to diamond and setting target to Kiggler", bot->GetName().c_str());
+        LOG_DEBUG("playerbots", "[HighKingMaulgarMoonkinTankAction] {} is updating RTI to diamond and setting target to Kiggler", bot->GetName().c_str());
         botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("diamond");
         botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(kiggler);
     }
 
     if (bot->GetVictim() != kiggler)
     {
-        LOG_DEBUG("playerbots", "[HighKingMaulgarBoomkinTankAction] {} is switching target to Kiggler", bot->GetName().c_str());
+        LOG_DEBUG("playerbots", "[HighKingMaulgarMoonkinTankAction] {} is switching target to Kiggler", bot->GetName().c_str());
         Attack(kiggler);
     }
 
-    float const OPTIMAL_RANGED_DISTANCE = 32.5f;
-    float const MIN_RANGE = OPTIMAL_RANGED_DISTANCE - 2.5f;
-    float const MAX_RANGE = OPTIMAL_RANGED_DISTANCE + 2.5f;
+    float const OPTIMAL_RANGED_DISTANCE = 29.0f;
+    float const MIN_RANGE = OPTIMAL_RANGED_DISTANCE - 1.0f;
+    float const MAX_RANGE = OPTIMAL_RANGED_DISTANCE + 1.0f;
 
-    // Too close or too far
-    if (bot->IsWithinRange(kiggler, MIN_RANGE) || !bot->IsWithinRange(kiggler, MAX_RANGE))
+    // Too close, too far, OR unsafe position
+    if (bot->IsWithinRange(kiggler, MIN_RANGE) || !bot->IsWithinRange(kiggler, MAX_RANGE) || 
+        !IsPositionSafe(botAI, bot, bot->GetPosition()))
     {
-        LOG_DEBUG("playerbots", "[HighKingMaulgarBoomkinTankAction] {} is adjusting position to maintain optimal range from Kiggler", bot->GetName().c_str());
+        LOG_DEBUG("playerbots", "[HighKingMaulgarMoonkinTankAction] {} is adjusting position for Kiggler while avoiding boss mechanics", bot->GetName().c_str());
         
-        // If too close, back away
-        if (bot->IsWithinRange(kiggler, MIN_RANGE))
-        {
-            // Calculate a position at optimal range away from the boss
-            float dx = bot->GetPositionX() - kiggler->GetPositionX();
-            float dy = bot->GetPositionY() - kiggler->GetPositionY();
-            float dist = std::sqrt(dx*dx + dy*dy);
-            
-            if (dist > 0.1f) // Avoid division by zero
-            {
-                dx = dx / dist * OPTIMAL_RANGED_DISTANCE;
-                dy = dy / dist * OPTIMAL_RANGED_DISTANCE;
-                
-                return MoveTo(kiggler->GetMapId(), 
-                            kiggler->GetPositionX() + dx, 
-                            kiggler->GetPositionY() + dy, 
-                            kiggler->GetPositionZ());
-            }
-        }
-        // If too far, move closer
-        else
-        {
-            // Move toward the boss, but stop at optimal distance
-            float dx = kiggler->GetPositionX() - bot->GetPositionX();
-            float dy = kiggler->GetPositionY() - bot->GetPositionY();
-            float dist = std::sqrt(dx*dx + dy*dy);
-            
-            if (dist > 0.1f) // Avoid division by zero
-            {
-                // Calculate how much to move toward the boss
-                float moveAmount = dist - OPTIMAL_RANGED_DISTANCE;
-                dx = dx / dist * moveAmount;
-                dy = dy / dist * moveAmount;
-                
-                return MoveTo(bot->GetMapId(), 
-                            bot->GetPositionX() + dx, 
-                            bot->GetPositionY() + dy, 
-                            bot->GetPositionZ());
-            }
-        }
+        // Find safe position at optimal ranged distance
+        Position safePos = FindSafePosition(botAI, bot, kiggler, OPTIMAL_RANGED_DISTANCE);
+        
+        return MoveTo(kiggler->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ);
     }
+
     return false;
 }
 
@@ -485,7 +412,7 @@ bool HighKingMaulgarMeleeDPSAction::Execute(Event event)
     LOG_DEBUG("playerbots", "[HighKingMaulgarMeleeDPSAction] {} is executing Melee DPS Action", bot->GetName().c_str());
 
     Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
-    Unit* kiggler = AI_VALUE2(Unit*, "find target", "kiggler the crazed");
+    // Unit* kiggler = AI_VALUE2(Unit*, "find target", "kiggler the crazed");
     Unit* olm = AI_VALUE2(Unit*, "find target", "olm the summoner");
     Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
 
@@ -496,7 +423,7 @@ bool HighKingMaulgarMeleeDPSAction::Execute(Event event)
         (IsThirdTank(botAI, bot) && blindeye && blindeye->IsAlive()))
         return false;
 
-    // Target priority 1: Blindeye (existing logic - looks good)
+    // Target priority 1: Blindeye
     if (blindeye && blindeye->IsAlive())
     {
         Unit* rtiTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
@@ -568,7 +495,7 @@ bool HighKingMaulgarMeleeDPSAction::Execute(Event event)
         return false;
     }
 
-    // Target priority 3: Kiggler (if Blindeye and Olm are dead)
+    /* Target priority 3: Kiggler (if Blindeye and Olm are dead)
     if (kiggler && kiggler->IsAlive())
     {
         Unit* rtiTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
@@ -602,7 +529,7 @@ bool HighKingMaulgarMeleeDPSAction::Execute(Event event)
         }
 
         return false;
-    }
+    } */
 
     // Target priority 4: Maulgar (if all others are dead)
     if (maulgar && maulgar->IsAlive())
@@ -639,11 +566,11 @@ bool HighKingMaulgarMeleeDPSAction::Execute(Event event)
         
         return false;
     }
-    
+
     return false;
 }
 
-bool HighKingMaulgarRangedDPSAction::Execute(Event event) // Need separate action for Warlock
+bool HighKingMaulgarRangedDPSAction::Execute(Event event)
 {
     Group* group = bot->GetGroup();
     if (!group)
@@ -660,7 +587,7 @@ bool HighKingMaulgarRangedDPSAction::Execute(Event event) // Need separate actio
     // Check if this bot should be performing the Ranged DPS role
     if (!botAI->IsRanged(bot) || 
         (IsMageTank(botAI, bot) && krosh && krosh->IsAlive()) || 
-        (IsBoomkinTank(botAI, bot) && kiggler && kiggler->IsAlive()) || 
+        (IsMoonkinTank(botAI, bot) && kiggler && kiggler->IsAlive()) || 
         botAI->IsHeal(bot))
         return false;
 
@@ -743,44 +670,7 @@ bool HighKingMaulgarRangedDPSAction::Execute(Event event) // Need separate actio
         return false;
     }
 
-    // Target priority 3: Kiggler (if Blindeye and Olm are dead)
-    if (kiggler && kiggler->IsAlive())
-    {
-        Unit* rtiTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
-        std::string rtiValue = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
-        
-        // Check if we need to update the RTI
-        if (rtiValue != "diamond" || rtiTarget != kiggler)
-        {
-            LOG_DEBUG("playerbots", "[HighKingMaulgarRangedDPSAction] {} is updating RTI to diamond for Kiggler", bot->GetName().c_str());
-            botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("diamond");
-            botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(kiggler);
-        }
-
-        // Check if we need to switch targets
-        if (bot->GetVictim() != kiggler)
-        {
-            LOG_DEBUG("playerbots", "[HighKingMaulgarRangedDPSAction] {} is attacking Kiggler", bot->GetName().c_str());
-            Attack(kiggler); // Don't return immediately
-        }
-        
-        // Too close, too far, OR unsafe position
-        if (bot->IsWithinRange(kiggler, MIN_RANGE) || 
-            !bot->IsWithinRange(kiggler, MAX_RANGE) || 
-            !IsPositionSafe(botAI, bot, bot->GetPosition()))
-        {
-            LOG_DEBUG("playerbots", "[HighKingMaulgarRangedDPSAction] {} is adjusting position for Kiggler while avoiding boss mechanics", bot->GetName().c_str());
-            
-            // Find safe position at optimal ranged distance
-            Position safePos = FindSafePosition(botAI, bot, kiggler, OPTIMAL_RANGED_DISTANCE);
-            
-            return MoveTo(kiggler->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ);
-        }
-        
-        return false;
-    }
-
-    // Target priority 4: Krosh (if Blindeye, Olm, and Kiggler are dead)
+    // Target priority 3: Krosh
     if (krosh && krosh->IsAlive())
     {
         Unit* rtiTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
@@ -817,7 +707,44 @@ bool HighKingMaulgarRangedDPSAction::Execute(Event event) // Need separate actio
         return false;
     }
 
-    // Target priority 5: Maulgar (if all others are dead)
+    // Target priority 4: Kiggler
+    if (kiggler && kiggler->IsAlive())
+    {
+        Unit* rtiTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
+        std::string rtiValue = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
+        
+        // Check if we need to update the RTI
+        if (rtiValue != "diamond" || rtiTarget != kiggler)
+        {
+            LOG_DEBUG("playerbots", "[HighKingMaulgarRangedDPSAction] {} is updating RTI to diamond for Kiggler", bot->GetName().c_str());
+            botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("diamond");
+            botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(kiggler);
+        }
+
+        // Check if we need to switch targets
+        if (bot->GetVictim() != kiggler)
+        {
+            LOG_DEBUG("playerbots", "[HighKingMaulgarRangedDPSAction] {} is attacking Kiggler", bot->GetName().c_str());
+            Attack(kiggler); // Don't return immediately
+        }
+        
+        // Too close, too far, OR unsafe position
+        if (bot->IsWithinRange(kiggler, MIN_RANGE) || 
+            !bot->IsWithinRange(kiggler, MAX_RANGE) || 
+            !IsPositionSafe(botAI, bot, bot->GetPosition()))
+        {
+            LOG_DEBUG("playerbots", "[HighKingMaulgarRangedDPSAction] {} is adjusting position for Kiggler while avoiding boss mechanics", bot->GetName().c_str());
+            
+            // Find safe position at optimal ranged distance
+            Position safePos = FindSafePosition(botAI, bot, kiggler, OPTIMAL_RANGED_DISTANCE);
+            
+            return MoveTo(kiggler->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ);
+        }
+        
+        return false;
+    }
+
+    // Target priority 5: Maulgar
     if (maulgar && maulgar->IsAlive())
     {
         Unit* rtiTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
@@ -857,157 +784,492 @@ bool HighKingMaulgarRangedDPSAction::Execute(Event event) // Need separate actio
     return false;
 }
 
-/* bool HighKingMaulgarAvoidBlastWaveAction::Execute(Event event)
+bool HighKingMaulgarHealerAvoidanceAction::Execute(Event event)
 {
-    Unit* krosh = AI_VALUE2(Unit*, "find target", "krosh firehand");
-    float safeDistance = 21.0f;
-    if (bot->GetDistance(krosh) < safeDistance)
+    if (!botAI->IsHeal(bot))
+        return false;
+
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    LOG_DEBUG("playerbots", "[HighKingMaulgarHealerAvoidanceAction] {} is executing Healer Avoidance Action", bot->GetName().c_str());
+
+    // Find Kiggler to check distance
+    Unit* kiggler = AI_VALUE2(Unit*, "find target", "kiggler the crazed");
+    
+    // Check if we need to move because:
+    // 1. We're in an unsafe position (whirlwind or blast wave), OR
+    // 2. We're too close to Kiggler (less than 30 yards)
+    bool needToMove = !IsPositionSafe(botAI, bot, bot->GetPosition());
+    if (kiggler && kiggler->IsAlive())
     {
-        MoveTo(krosh, safeDistance);
-        return true;
+        float distanceToKiggler = bot->GetDistance(kiggler);
+        if (distanceToKiggler < 30.0f)
+        {
+            needToMove = true;
+            LOG_DEBUG("playerbots", "[HighKingMaulgarHealerAvoidanceAction] {} is too close to Kiggler ({} yards), needs to move", 
+                      bot->GetName().c_str(), distanceToKiggler);
+        }
     }
+    
+    if (needToMove)
+    {
+        LOG_DEBUG("playerbots", "[HighKingMaulgarHealerAvoidanceAction] {} is moving to safe position", bot->GetName().c_str());
+        
+        // Calculate the raid center as a reference point
+        float centerX = 0, centerY = 0, centerZ = 0;
+        uint32 count = 0;
+        
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || member == bot) 
+                continue;
+            
+            centerX += member->GetPositionX();
+            centerY += member->GetPositionY();
+            centerZ += member->GetPositionZ();
+            count++;
+        }
+        
+        if (count == 0) // No other alive players
+            return false;
+            
+        centerX /= count;
+        centerY /= count;
+        centerZ /= count;
+        
+        // Find the player closest to center to use as reference
+        Player* centerPlayer = nullptr;
+        float minDistToCenter = 9999.0f;
+        
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || member == bot) 
+                continue;
+            
+            float dist = sqrt(pow(member->GetPositionX() - centerX, 2) + 
+                             pow(member->GetPositionY() - centerY, 2) + 
+                             pow(member->GetPositionZ() - centerZ, 2));
+                             
+            if (dist < minDistToCenter)
+            {
+                minDistToCenter = dist;
+                centerPlayer = member;
+            }
+        }
+        
+        // Use the player closest to center as our reference point
+        if (centerPlayer)
+        {
+            // Find a safe position that's also far enough from Kiggler
+            Position safePos = FindSafePosition(botAI, bot, centerPlayer, 30.0f);
+            
+            // Do an additional check to make sure our safe position is far enough from Kiggler
+            if (kiggler && kiggler->IsAlive())
+            {
+                float safeDistToKiggler = sqrt(pow(safePos.GetPositionX() - kiggler->GetPositionX(), 2) +
+                                             pow(safePos.GetPositionY() - kiggler->GetPositionY(), 2));
+                
+                // If the position isn't far enough from Kiggler, adjust it
+                if (safeDistToKiggler < 31.0f)
+                {
+                    LOG_DEBUG("playerbots", "[HighKingMaulgarHealerAvoidanceAction] Safe position still too close to Kiggler ({} yards), adjusting", 
+                              safeDistToKiggler);
+                    
+                    // Calculate vector from Kiggler to safe position
+                    float dx = safePos.GetPositionX() - kiggler->GetPositionX();
+                    float dy = safePos.GetPositionY() - kiggler->GetPositionY();
+                    
+                    // Normalize and extend to ensure 31+ yard distance
+                    float distance = sqrt(dx*dx + dy*dy);
+                    if (distance < 0.001f) // Avoid division by zero
+                    {
+                        dx = 1.0f;
+                        dy = 0.0f;
+                        distance = 1.0f;
+                    }
+                    
+                    dx /= distance;
+                    dy /= distance;
+                    
+                    float newX = kiggler->GetPositionX() + dx * 30.0f;
+                    float newY = kiggler->GetPositionY() + dy * 30.0f;
+                    
+                    // Keep the same Z coordinate from the original safe position
+                    safePos.m_positionX = newX;
+                    safePos.m_positionY = newY;
+                }
+            }
+            
+            return MoveTo(bot->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ);
+        }
+    }
+    
     return false;
-}
-
-bool HighKingMaulgarAvoidBlastWaveAction::isUseful()
-{
-    Unit* krosh = AI_VALUE2(Unit*, "find target", "krosh firehand");
-
-    return krosh && krosh->IsAlive() && bot->GetDistance2d(krosh) < 21.0f;
 }
 
 bool HighKingMaulgarControlFelstalkerAction::Execute(Event event)
 {
     Unit* charm = bot->GetCharm();
-    if (charm)
+
+    if (charm && charm->IsAlive())
     {
         MotionMaster* mm = charm->GetMotionMaster();
         UnitAI* charmAI = charm->GetAI();
+        
+        // Log the pointer values to check for null
+        LOG_DEBUG("playerbots", "[HighKingMaulgarControlFelstalkerAction] {} charm MotionMaster: {}, UnitAI: {}", 
+                  bot->GetName().c_str(), mm ? "valid" : "NULL", charmAI ? "valid" : "NULL");
+        
         if (!mm || !charmAI)
+        {
+            LOG_DEBUG("playerbots", "[HighKingMaulgarControlFelstalkerAction] {} charm has invalid motion master or AI", 
+                      bot->GetName().c_str());
             return false;
+        }
 
-        Unit* felStalker = AI_VALUE2(Unit*, "find target", "wild fel stalker");
-        if (!felStalker || !felStalker->IsAlive())
+        Unit* olm = nullptr;
+        
+        try 
+        {
+            olm = AI_VALUE2(Unit*, "find target", "olm the summoner");
+            if (olm && !olm->IsAlive()) 
+            {
+                LOG_DEBUG("playerbots", "[HighKingMaulgarControlFelstalkerAction] {} Olm is not alive", 
+                        bot->GetName().c_str());
+                olm = nullptr;
+            }
+        }
+        catch (...) {
+            LOG_DEBUG("playerbots", "[HighKingMaulgarControlFelstalkerAction] {} exception during Olm target finding", 
+                    bot->GetName().c_str());
             return false;
-
-        if (mm->GetMotionSlotType(MOTION_SLOT_ACTIVE) == NULL_MOTION_TYPE)
-        {
-            mm->Clear();
-            mm->MoveChase(felStalker);
-            charmAI->AttackStart(felStalker);
         }
-        Aura* aura = botAI->GetAura("enslave demon", charm);
-        if (!aura)
+        
+        // If Olm is not found or not alive, nothing to do
+        if (!olm)
+        {
+            LOG_DEBUG("playerbots", "[HighKingMaulgarControlFelstalkerAction] {} Olm not found or not alive, nothing for fel stalker to do", 
+                    bot->GetName().c_str());
             return false;
-
-        const GuidVector party = AI_VALUE(GuidVector, "party");
-        for (const auto& guid : party)
-        {
-            Unit* member = botAI->GetUnit(guid);
-            if (!member || !member->IsAlive())
-                continue;
-            if (member->HasAura(SPELL_AURA_DARK_DECAY) && !charm->HasSpellCooldown(SPELL_DETERMINATION))
-            {
-                charm->CastSpell(member, SPELL_DETERMINATION, true);
-                charm->AddSpellCooldown(SPELL_DETERMINATION, 0, 10 * 1000);
-                return true;
-            }
         }
 
-        Unit* olm = AI_VALUE2(Unit*, "find target", "olm the summoner");
-        if (olm && olm->IsAlive())
+        LOG_DEBUG("playerbots", "[HighKingMaulgarControlFelstalkerAction] {} current charm motion state: {}", 
+                bot->GetName().c_str(), mm->GetMotionSlotType(MOTION_SLOT_ACTIVE));
+        
+        // First handle motion/targeting - specifically target Olm
+        if ((mm->GetMotionSlotType(MOTION_SLOT_ACTIVE) == NULL_MOTION_TYPE || charm->GetVictim() != olm) && charm && charm->IsAlive() && olm && olm->IsAlive())
         {
-            if (!charm->HasSpellCooldown(SPELL_THREATEN))
+            // Double-check that all pointers are still valid
+            if (!charm->IsInWorld() || !olm->IsInWorld())
             {
-                charm->CastSpell(olm, SPELL_THREATEN, true);
-                charm->AddSpellCooldown(SPELL_THREATEN, 0, 20 * 1000);
-                return true;
+                LOG_DEBUG("playerbots", "[HighKingMaulgarControlFelstalkerAction] {} charm or olm not in world during targeting", 
+                        bot->GetName().c_str());
+                return false;
             }
-            if (!charm->HasSpellCooldown(SPELL_WILD_BITE))
-            {
-                charm->CastSpell(olm, SPELL_WILD_BITE, true);
-                charm->AddSpellCooldown(SPELL_WILD_BITE, 0, 5 * 1000);
-                return true;
+            
+            LOG_DEBUG("playerbots", "[HighKingMaulgarControlFelstalkerAction] {} directing charm to attack Olm at {:.1f}, {:.1f}, {:.1f}", 
+                    bot->GetName().c_str(), olm->GetPositionX(), olm->GetPositionY(), olm->GetPositionZ());
+            
+            try {
+                // Clear existing movement and target Olm
+                mm->Clear();
+                mm->MoveChase(olm);
+                
+                // Additional safety - check if charmAI is still valid before using it
+                if (charmAI && charm->IsAlive() && olm->IsAlive())
+                {
+                    charmAI->AttackStart(olm);
+                    LOG_DEBUG("playerbots", "[HighKingMaulgarControlFelstalkerAction] {} successfully set charm to attack Olm", 
+                            bot->GetName().c_str());
+                }
+            }
+            catch (...) {
+                LOG_DEBUG("playerbots", "[HighKingMaulgarControlFelstalkerAction] {} exception during attack setup", 
+                        bot->GetName().c_str());
+                return false;
             }
         }
-        else
+
+        /* Check for party members with Dark Decay - keeps crashing, disabling for now
+        try 
         {
-            Unit* krosh = AI_VALUE2(Unit*, "find target", "krosh firehand");
-            if (krosh && krosh->IsAlive() && !charm->HasSpellCooldown(SPELL_WILD_BITE))
+            const GuidVector party = AI_VALUE(GuidVector, "party");
+            for (const auto& guid : party)
             {
-                charm->CastSpell(krosh, SPELL_WILD_BITE, true);
-                charm->AddSpellCooldown(SPELL_WILD_BITE, 0, 5 * 1000);
-                return true;
-            }
-            Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
-            if (maulgar && maulgar->IsAlive() && !charm->HasSpellCooldown(SPELL_WILD_BITE))
-            {
-                charm->CastSpell(maulgar, SPELL_WILD_BITE, true);
-                charm->AddSpellCooldown(SPELL_WILD_BITE, 0, 5 * 1000);
-                return true;
+                // Skip invalid party members
+                if (guid.IsEmpty())
+                    continue;
+                    
+                Unit* member = botAI->GetUnit(guid);
+                if (!member || !member->IsAlive())
+                    continue;
+                    
+                // Extra validation for charm before checking spellcooldown
+                if (!charm || !charm->IsAlive())
+                {
+                    LOG_DEBUG("playerbots", "[HighKingMaulgarControlFelstalkerAction] {} charm became invalid during Dark Decay check", 
+                            bot->GetName().c_str());
+                    return false;
+                }
+                    
+                if (member->HasAura(SPELL_AURA_DARK_DECAY) && !charm->HasSpellCooldown(SPELL_DETERMINATION))
+                {
+                    LOG_DEBUG("playerbots", "[HighKingMaulgarControlFelstalkerAction] {} casting Determination on {} with Dark Decay", 
+                            bot->GetName().c_str(), member->GetName().c_str());
+                            
+                    // Final validation before spell cast
+                    if (charm && charm->IsAlive() && member && member->IsAlive())
+                    {
+                        charm->CastSpell(member, SPELL_DETERMINATION, true);
+                        charm->AddSpellCooldown(SPELL_DETERMINATION, 0, 10 * 1000);
+                        return true;
+                    }
+                }
             }
         }
+        catch (...) {
+            LOG_DEBUG("playerbots", "[HighKingMaulgarControlFelstalkerAction] {} exception during Dark Decay check", 
+                    bot->GetName().c_str());
+            return false;
+        } */
+
+        // Use abilities on Olm with careful null checking
+        if (charm && charm->IsAlive() && olm && olm->IsAlive())
+        {
+            // Extra safety check for distance calculation
+            try {
+                float distanceToOlm = charm->GetDistance(olm);
+                LOG_DEBUG("playerbots", "[HighKingMaulgarControlFelstalkerAction] {} found Olm at distance {:.1f}", 
+                        bot->GetName().c_str(), distanceToOlm);
+                
+                // If we're not in range yet, don't try to cast abilities
+                if (distanceToOlm > 5.0f && !charm->HasSpellCooldown(SPELL_THREATEN))
+                {
+                    LOG_DEBUG("playerbots", "[HighKingMaulgarControlFelstalkerAction] {} casting Threaten on Olm from range", 
+                            bot->GetName().c_str());
+                            
+                    charm->CastSpell(olm, SPELL_THREATEN, true);
+                    charm->AddSpellCooldown(SPELL_THREATEN, 0, 20 * 1000);
+                    return true;
+                }
+                else if (distanceToOlm <= 5.0f)  // Only use melee abilities if in range
+                {
+                    // Try to cast Threaten first
+                    if (!charm->HasSpellCooldown(SPELL_THREATEN))
+                    {
+                        LOG_DEBUG("playerbots", "[HighKingMaulgarControlFelstalkerAction] {} casting Threaten on Olm", 
+                                bot->GetName().c_str());
+                                
+                        charm->CastSpell(olm, SPELL_THREATEN, true);
+                        charm->AddSpellCooldown(SPELL_THREATEN, 0, 20 * 1000);
+                        return true;
+                    }
+                    
+                    // Then try Wild Bite
+                    if (!charm->HasSpellCooldown(SPELL_WILD_BITE))
+                    {
+                        LOG_DEBUG("playerbots", "[HighKingMaulgarControlFelstalkerAction] {} casting Wild Bite on Olm", 
+                                bot->GetName().c_str());
+                                
+                        charm->CastSpell(olm, SPELL_WILD_BITE, true);
+                        charm->AddSpellCooldown(SPELL_WILD_BITE, 0, 5 * 1000);
+                        return true;
+                    }
+                }
+            } 
+            catch (...) {
+                LOG_DEBUG("playerbots", "[HighKingMaulgarControlFelstalkerAction] {} exception during Olm ability logic", 
+                        bot->GetName().c_str());
+                return false;
+            }
+        }
+        
+        // Already targeting Olm and no abilities to cast
+        return false;
     }
-    else
+    else // No existing charm
     {
+        if (bot->getClass() != CLASS_WARLOCK)
+            return false;
+            
         Unit* felStalker = AI_VALUE2(Unit*, "find target", "wild fel stalker");
-        if (felStalker && felStalker->IsAlive() && !felStalker->HasAura(SPELL_ENSLAVE_DEMON))
+
+        if (!felStalker || !felStalker->IsAlive() || felStalker->HasAura(SPELL_ENSLAVE_DEMON))
+            return false;
+        
+        float distance = bot->GetDistance2d(felStalker);
+        if (distance > sPlayerbotAIConfig->spellDistance)
+            return MoveNear(felStalker, sPlayerbotAIConfig->spellDistance, MovementPriority::MOVEMENT_COMBAT);
+                  
+        if (botAI->CanCastSpell("enslave demon", felStalker))
         {
-            if (bot->GetDistance2d(felStalker) > sPlayerbotAIConfig->spellDistance)
-                return MoveNear(felStalker, sPlayerbotAIConfig->spellDistance, MovementPriority::MOVEMENT_COMBAT);
-            else
-                return botAI->CastSpell(SPELL_ENSLAVE_DEMON, felStalker);
+            botAI->CastSpell("enslave demon", felStalker);
+            return true;  // We're casting Enslave Demon, report success
         }
     }
-    return false;
+    
+    return false;  // Default return if no action was taken
 }
 
 bool HighKingMaulgarControlFelstalkerAction::isUseful()
 {
+    Unit* charm = bot->GetCharm();
+    if (charm && charm->IsAlive())
+        return true;
+
     Unit* felStalker = AI_VALUE2(Unit*, "find target", "wild fel stalker");
 
     return felStalker && felStalker->IsAlive() && bot->getClass() == CLASS_WARLOCK;
 }
 
-bool HighKingMaulgarAvoidWhirlwindAction::Execute(Event event)
-{
-    Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
-    float safeDistance = 46.0f;
-    if (bot->GetDistance(maulgar) < safeDistance)
-    {
-        MoveTo(maulgar, safeDistance);
-        return true;
-    }
-    return false;
-}
-
-bool HighKingMaulgarAvoidWhirlwindAction::isUseful()
-{
-    Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
-    
-    return maulgar && maulgar->IsAlive() && maulgar->HasUnitState(UNIT_STATE_CASTING) 
-    && maulgar->FindCurrentSpellBySpellId(SPELL_WHIRLWIND) && !botAI->IsTank(bot);
-}*/
-
-bool HighKingMaulgarHunterMisdirectionAction::Execute(Event event)
+// Misdirection doesn't set a visible aura on the target so I need to figure out if there is another approach
+/* bool HighKingMaulgarHunterMisdirectionAction::Execute(Event event)
 {
     Group* group = bot->GetGroup();
     if (!group || bot->getClass() != CLASS_HUNTER)
         return false;
+    
+    LOG_DEBUG("playerbots", "[HighKingMaulgarHunterMisdirectionAction] {} is executing Hunter Misdirection Action", bot->GetName().c_str());
 
+    // Find all boss targets
+    Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
+    Unit* olm = AI_VALUE2(Unit*, "find target", "olm the summoner");
+    Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
+    Unit* krosh = AI_VALUE2(Unit*, "find target", "krosh firehand");
+    Unit* kiggler = AI_VALUE2(Unit*, "find target", "kiggler the crazed");
+
+    // Check aura abilities
+    LOG_DEBUG("playerbots", "[HighKingMaulgarHunterMisdirectionAction] {} has 'aimed shot': {}, has 'steady shot': {}", 
+              bot->GetName().c_str(), botAI->CanCastSpell("aimed shot", bot) ? "yes" : "no", 
+              botAI->CanCastSpell("steady shot", bot) ? "yes" : "no");
+
+    bool foundMisdirection = false;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
         if (!member || member == bot) continue;
+        
+        // Log member details
+        LOG_DEBUG("playerbots", "[HighKingMaulgarHunterMisdirectionAction] Checking member {} for misdirection", 
+                  member->GetName().c_str());
+
         Aura* aura = member->GetAura(SPELL_AURA_MISDIRECTION);
-        if (aura && aura->GetCasterGUID() == bot->GetGUID())
+        if (!aura) 
         {
-            Unit* target = member->GetVictim();
-            if (!target) return false;
-            botAI->CastSpell("aimed shot", target);
-            botAI->CastSpell("steady shot", target);
+            LOG_DEBUG("playerbots", "[HighKingMaulgarHunterMisdirectionAction] {} does not have aura with ID {}", 
+                      member->GetName().c_str(), SPELL_AURA_MISDIRECTION);
+            continue;
+        }
+
+        if (aura->GetCasterGUID() != bot->GetGUID())
+        {
+            LOG_DEBUG("playerbots", "[HighKingMaulgarHunterMisdirectionAction] {} has misdirection, but from {} not from {}", 
+                      member->GetName().c_str(), aura->GetCasterGUID().ToString().c_str(), bot->GetGUID().ToString().c_str());
+            continue;
+        }
+        
+        foundMisdirection = true;
+        LOG_DEBUG("playerbots", "[HighKingMaulgarHunterMisdirectionAction] Found misdirection on {} from {}", 
+                  member->GetName().c_str(), bot->GetName().c_str());
+        
+        // First tank with Misdirection - should attack Maulgar
+        if (IsFirstTank(botAI, member) && maulgar && maulgar->IsAlive())
+        {
+            LOG_DEBUG("playerbots", "[HighKingMaulgarHunterMisdirectionAction] {} casting shots at Maulgar due to MD on first tank", bot->GetName().c_str());
+            // Force target to Maulgar regardless of current target
+            if (bot->GetTarget() != maulgar->GetGUID())
+                bot->SetTarget(maulgar->GetGUID());
+            
+            // Try Aimed Shot first, but only if the hunter has it
+            if (botAI->CanCastSpell("aimed shot", maulgar))
+                botAI->CastSpell("aimed shot", maulgar);
+                
+            // Always try Steady Shot as a fallback
+            botAI->CastSpell("steady shot", maulgar);
+            return true;
+        }
+        
+        // Second tank with Misdirection - should attack Olm
+        else if (IsSecondTank(botAI, member) && olm && olm->IsAlive())
+        {
+            LOG_DEBUG("playerbots", "[HighKingMaulgarHunterMisdirectionAction] {} casting shots at Olm due to MD on second tank", bot->GetName().c_str());
+            // Force target to Olm regardless of current target
+            if (bot->GetTarget() != olm->GetGUID())
+                bot->SetTarget(olm->GetGUID());
+            
+            // Try Aimed Shot first, but only if the hunter has it
+            if (botAI->CanCastSpell("aimed shot", olm))
+                botAI->CastSpell("aimed shot", olm);
+
+            // Always try Steady Shot as a fallback
+            botAI->CastSpell("steady shot", olm);
+            return true;
+        }
+        
+        // Third tank with Misdirection - should attack Blindeye
+        else if (IsThirdTank(botAI, member) && blindeye && blindeye->IsAlive())
+        {
+            LOG_DEBUG("playerbots", "[HighKingMaulgarHunterMisdirectionAction] {} casting shots at Blindeye due to MD on third tank", bot->GetName().c_str());
+            // Force target to Blindeye regardless of current target
+            if (bot->GetTarget() != blindeye->GetGUID())
+                bot->SetTarget(blindeye->GetGUID());
+            
+            // Try Aimed Shot first, but only if the hunter has it
+            if (botAI->CanCastSpell("aimed shot", blindeye))
+                botAI->CastSpell("aimed shot", blindeye);
+
+            // Always try Steady Shot as a fallback
+            botAI->CastSpell("steady shot", blindeye);
+            return true;
+        }
+        
+        // Mage tank with Misdirection - should attack Krosh
+        else if (IsMageTank(botAI, member) && krosh && krosh->IsAlive())
+        {
+            LOG_DEBUG("playerbots", "[HighKingMaulgarHunterMisdirectionAction] {} casting shots at Krosh due to MD on mage tank", bot->GetName().c_str());
+            // Force target to Krosh regardless of current target
+            if (bot->GetTarget() != krosh->GetGUID())
+                bot->SetTarget(krosh->GetGUID());
+            
+            // Try Aimed Shot first, but only if the hunter has it
+            if (botAI->CanCastSpell("aimed shot", krosh))
+                botAI->CastSpell("aimed shot", krosh);
+
+            // Always try Steady Shot as a fallback
+            botAI->CastSpell("steady shot", krosh);
+            return true;
+        }
+
+        // Moonkin tank with Misdirection - should attack Kiggler
+        else if (IsMoonkinTank(botAI, member) && kiggler && kiggler->IsAlive())
+        {
+            LOG_DEBUG("playerbots", "[HighKingMaulgarHunterMisdirectionAction] {} casting shots at Kiggler due to MD on moonkin tank", bot->GetName().c_str());
+            // Force target to Kiggler regardless of current target
+            if (bot->GetTarget() != kiggler->GetGUID())
+                bot->SetTarget(kiggler->GetGUID());
+            
+            // Try Aimed Shot first, but only if the hunter has it
+            if (botAI->CanCastSpell("aimed shot", kiggler))
+                botAI->CastSpell("aimed shot", kiggler);
+
+            // Always try Steady Shot as a fallback
+            botAI->CastSpell("steady shot", kiggler);
             return true;
         }
     }
+    if (!foundMisdirection)
+    {
+        LOG_DEBUG("playerbots", "[HighKingMaulgarHunterMisdirectionAction] No members have misdirection from {}", 
+                bot->GetName().c_str());
+    }
+    // No player found with Misdirection from this hunter
     return false;
-}
+} */
+
+// bool GruulTheDragonkillerSpreadMeleeAction::Execute(Event event)
+
+// bool GruulTheDragonkillerSpreadRangedAction::Execute(Event event)

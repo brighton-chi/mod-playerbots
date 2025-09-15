@@ -33,14 +33,14 @@ bool IsMageTank(PlayerbotAI* botAI, Player* bot)
     return highestHpMage == bot;
 }
 
-// Returns true if the bot is the balance druid with the highest max HP in the group (boomkin tank)
-bool IsBoomkinTank(PlayerbotAI* botAI, Player* bot)
+// Returns true if the bot is the balance druid with the highest max HP in the group (moonkin tank)
+bool IsMoonkinTank(PlayerbotAI* botAI, Player* bot)
 {
     Group* group = bot->GetGroup();
     if (!group)
         return false;
 
-    Player* highestHpBoomkin = nullptr;
+    Player* highestHpMoonkin = nullptr;
     uint32 highestHp = 0;
 
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
@@ -55,15 +55,15 @@ bool IsBoomkinTank(PlayerbotAI* botAI, Player* bot)
             if (tab == DRUID_TAB_BALANCE)
             {
                 uint32 hp = member->GetMaxHealth();
-                if (!highestHpBoomkin || hp > highestHp)
+                if (!highestHpMoonkin || hp > highestHp)
                 {
-                    highestHpBoomkin = member;
+                    highestHpMoonkin = member;
                     highestHp = hp;
                 }
             }
         }
     }
-    return highestHpBoomkin == bot;
+    return highestHpMoonkin == bot;
 }
 
 bool IsFirstTank(PlayerbotAI* botAI, Player* bot)
@@ -129,7 +129,7 @@ bool IsPositionSafe(PlayerbotAI* botAI, Unit* bot, Position pos)
 {
     // Safety distances
     const float KROSH_SAFE_DISTANCE = 21.0f;
-    const float MAULGAR_WHIRLWIND_DISTANCE = 46.0f;
+    const float MAULGAR_WHIRLWIND_DISTANCE = 10.0f;
     
     bool isSafe = true;
 
@@ -152,8 +152,7 @@ bool IsPositionSafe(PlayerbotAI* botAI, Unit* bot, Position pos)
     Unit* maulgar = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "high king maulgar")->Get();
     
     // Check Maulgar's whirlwind safety (only if he's casting it)
-    if (maulgar && maulgar->IsAlive() && maulgar->HasUnitState(UNIT_STATE_CASTING) && 
-        maulgar->FindCurrentSpellBySpellId(33238)) // Use actual spell ID for Whirlwind
+    if (maulgar && maulgar->IsAlive() && maulgar->HasAura(SPELL_AURA_WHIRLWIND)) // Use actual spell ID for Whirlwind
     {
         float dist = sqrt(pow(pos.GetPositionX() - maulgar->GetPositionX(), 2) + 
                           pow(pos.GetPositionY() - maulgar->GetPositionY(), 2));
@@ -181,9 +180,7 @@ Position FindSafePosition(PlayerbotAI* botAI, Unit* bot, Unit* target, float opt
 
     // If no dangerous bosses are alive, return current position
     bool dangerousKrosh = krosh && krosh->IsAlive();
-    bool dangerousMaulgar = maulgar && maulgar->IsAlive() && 
-                          maulgar->HasUnitState(UNIT_STATE_CASTING) && 
-                          maulgar->FindCurrentSpellBySpellId(33238);
+    bool dangerousMaulgar = maulgar && maulgar->IsAlive() && maulgar->HasAura(SPELL_AURA_WHIRLWIND);
     
     if (!dangerousKrosh && !dangerousMaulgar)
     {

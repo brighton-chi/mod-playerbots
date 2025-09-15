@@ -17,19 +17,9 @@ static bool IsChargeAction(Action* action)
 float HighKingMaulgarMultiplier::GetValue(Action* action)
 {
     Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
-    if (maulgar && maulgar->HasUnitState(UNIT_STATE_CASTING) && maulgar->FindCurrentSpellBySpellId(SPELL_WHIRLWIND))
+    if (maulgar && maulgar->HasAura(SPELL_AURA_WHIRLWIND) && IsChargeAction(action))
     {
-        if (IsChargeAction(action))
-        {
-            Unit* target = AI_VALUE(Unit*, "current target");
-            if (target && target->GetGUID() == maulgar->GetGUID())
-                return 0.0f;
-        }
-        if (dynamic_cast<MovementAction*>(action))
-        {
-            if (bot->GetDistance(maulgar) >= 45.0f)
-                return 0.0f;
-        }
+        return 0.0f;
     }
     Unit* krosh = AI_VALUE2(Unit*, "find target", "krosh firehand");
     Unit* target = AI_VALUE(Unit*, "current target");
