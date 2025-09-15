@@ -86,7 +86,7 @@ public:
 
     bool Execute(Event event) override;
     bool isUseful();
-};
+};*/
 
 class HighKingMaulgarHunterMisdirectionAction : public AttackAction
 {
@@ -94,6 +94,6 @@ public:
     HighKingMaulgarHunterMisdirectionAction(PlayerbotAI* botAI, std::string const name = "high king maulgar hunter misdirection") : AttackAction(botAI, name) {};
 
     bool Execute(Event event) override;
-}; */
+};
 
 #endif

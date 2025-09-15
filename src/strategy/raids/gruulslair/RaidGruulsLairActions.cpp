@@ -496,12 +496,12 @@ bool HighKingMaulgarMeleeDPSAction::Execute(Event event)
         (IsThirdTank(botAI, bot) && blindeye && blindeye->IsAlive()))
         return false;
 
-    // Target priority 1: Blindeye
+    // Target priority 1: Blindeye (existing logic - looks good)
     if (blindeye && blindeye->IsAlive())
     {
         Unit* rtiTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
         std::string rtiValue = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
-        
+    
         // Check if we need to update the RTI
         if (rtiValue != "star" || rtiTarget != blindeye)
         {
@@ -515,16 +515,20 @@ bool HighKingMaulgarMeleeDPSAction::Execute(Event event)
         {
             LOG_DEBUG("playerbots", "[HighKingMaulgarMeleeDPSAction] {} is attacking Blindeye", bot->GetName().c_str());
             Attack(blindeye);  // Don't return immediately
-            // Fall through to the movement check
         }
 
-        // Check if we need to move closer
-        if (!bot->IsWithinMeleeRange(blindeye))
+        // Not in melee range OR unsafe position
+        if (!bot->IsWithinMeleeRange(blindeye) || 
+            !IsPositionSafe(botAI, bot, bot->GetPosition()))
         {
-            LOG_DEBUG("playerbots", "[HighKingMaulgarMeleeDPSAction] {} is moving into melee range of Blindeye", bot->GetName().c_str());
-            return MoveTo(blindeye->GetMapId(), blindeye->GetPositionX(), blindeye->GetPositionY(), blindeye->GetPositionZ());
+            LOG_DEBUG("playerbots", "[HighKingMaulgarMeleeDPSAction] {} is repositioning for Blindeye while avoiding boss mechanics", bot->GetName().c_str());
+            
+            // Find safe position at melee distance
+            Position safePos = FindSafePosition(botAI, bot, blindeye, 5.0f);
+            
+            return MoveTo(blindeye->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ);
         }
-        
+
         return false;
     }
 
@@ -546,9 +550,21 @@ bool HighKingMaulgarMeleeDPSAction::Execute(Event event)
         if (bot->GetVictim() != olm)
         {
             LOG_DEBUG("playerbots", "[HighKingMaulgarMeleeDPSAction] {} is attacking Olm", bot->GetName().c_str());
-            return Attack(olm);
+            Attack(olm); // Don't return immediately
         }
         
+        // Not in melee range OR unsafe position
+        if (!bot->IsWithinMeleeRange(olm) || 
+            !IsPositionSafe(botAI, bot, bot->GetPosition()))
+        {
+            LOG_DEBUG("playerbots", "[HighKingMaulgarMeleeDPSAction] {} is repositioning for Olm while avoiding boss mechanics", bot->GetName().c_str());
+            
+            // Find safe position at melee distance
+            Position safePos = FindSafePosition(botAI, bot, olm, 5.0f);
+            
+            return MoveTo(olm->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ);
+        }
+
         return false;
     }
 
@@ -570,7 +586,19 @@ bool HighKingMaulgarMeleeDPSAction::Execute(Event event)
         if (bot->GetVictim() != kiggler)
         {
             LOG_DEBUG("playerbots", "[HighKingMaulgarMeleeDPSAction] {} is attacking Kiggler", bot->GetName().c_str());
-            return Attack(kiggler);
+            Attack(kiggler); // Don't return immediately
+        }
+
+        // Not in melee range OR unsafe position
+        if (!bot->IsWithinMeleeRange(kiggler) || 
+            !IsPositionSafe(botAI, bot, bot->GetPosition()))
+        {
+            LOG_DEBUG("playerbots", "[HighKingMaulgarMeleeDPSAction] {} is repositioning for Kiggler while avoiding boss mechanics", bot->GetName().c_str());
+            
+            // Find safe position at melee distance
+            Position safePos = FindSafePosition(botAI, bot, kiggler, 5.0f);
+            
+            return MoveTo(kiggler->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ);
         }
 
         return false;
@@ -594,12 +622,24 @@ bool HighKingMaulgarMeleeDPSAction::Execute(Event event)
         if (bot->GetVictim() != maulgar)
         {
             LOG_DEBUG("playerbots", "[HighKingMaulgarMeleeDPSAction] {} is attacking Maulgar", bot->GetName().c_str());
-            return Attack(maulgar);
+            Attack(maulgar); // Don't return immediately
+        }
+        
+        // Not in melee range OR unsafe position
+        if (!bot->IsWithinMeleeRange(maulgar) || 
+            !IsPositionSafe(botAI, bot, bot->GetPosition()))
+        {
+            LOG_DEBUG("playerbots", "[HighKingMaulgarMeleeDPSAction] {} is repositioning for Maulgar while avoiding boss mechanics", bot->GetName().c_str());
+            
+            // Find safe position at melee distance
+            Position safePos = FindSafePosition(botAI, bot, maulgar, 5.0f);
+            
+            return MoveTo(maulgar->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ);
         }
         
         return false;
     }
-
+    
     return false;
 }
 
@@ -647,54 +687,20 @@ bool HighKingMaulgarRangedDPSAction::Execute(Event event) // Need separate actio
         if (bot->GetVictim() != blindeye)
         {
             LOG_DEBUG("playerbots", "[HighKingMaulgarRangedDPSAction] {} is attacking Blindeye", bot->GetName().c_str());
-            return Attack(blindeye);
+            Attack(blindeye); // Don't return immediately
         }
 
-        // Too close or too far
-        if (bot->IsWithinRange(blindeye, MIN_RANGE) || !bot->IsWithinRange(blindeye, MAX_RANGE))
+        // Too close, too far, OR unsafe position
+        if (bot->IsWithinRange(blindeye, MIN_RANGE) || 
+            !bot->IsWithinRange(blindeye, MAX_RANGE) || 
+            !IsPositionSafe(botAI, bot, bot->GetPosition()))
         {
-            LOG_DEBUG("playerbots", "[HighKingMaulgarRangedDPSAction] {} is adjusting position to maintain optimal range from Blindeye", bot->GetName().c_str());
+            LOG_DEBUG("playerbots", "[HighKingMaulgarRangedDPSAction] {} is adjusting position for Blindeye while avoiding boss mechanics", bot->GetName().c_str());
             
-            // If too close, back away
-            if (bot->IsWithinRange(blindeye, MIN_RANGE))
-            {
-                // Calculate a position at optimal range away from the boss
-                float dx = bot->GetPositionX() - blindeye->GetPositionX();
-                float dy = bot->GetPositionY() - blindeye->GetPositionY();
-                float dist = std::sqrt(dx*dx + dy*dy);
-                
-                if (dist > 0.1f) // Avoid division by zero
-                {
-                    dx = dx / dist * OPTIMAL_RANGED_DISTANCE;
-                    dy = dy / dist * OPTIMAL_RANGED_DISTANCE;
-                    
-                    return MoveTo(blindeye->GetMapId(), 
-                                blindeye->GetPositionX() + dx, 
-                                blindeye->GetPositionY() + dy, 
-                                blindeye->GetPositionZ());
-                }
-            }
-            // If too far, move closer
-            else
-            {
-                // Move toward the boss, but stop at optimal distance
-                float dx = blindeye->GetPositionX() - bot->GetPositionX();
-                float dy = blindeye->GetPositionY() - bot->GetPositionY();
-                float dist = std::sqrt(dx*dx + dy*dy);
-                
-                if (dist > 0.1f) // Avoid division by zero
-                {
-                    // Calculate how much to move toward the boss
-                    float moveAmount = dist - OPTIMAL_RANGED_DISTANCE;
-                    dx = dx / dist * moveAmount;
-                    dy = dy / dist * moveAmount;
-                    
-                    return MoveTo(bot->GetMapId(), 
-                                bot->GetPositionX() + dx, 
-                                bot->GetPositionY() + dy, 
-                                bot->GetPositionZ());
-                }
-            }
+            // Find safe position at optimal ranged distance
+            Position safePos = FindSafePosition(botAI, bot, blindeye, OPTIMAL_RANGED_DISTANCE);
+            
+            return MoveTo(blindeye->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ);
         }
 
         return false;
@@ -718,7 +724,20 @@ bool HighKingMaulgarRangedDPSAction::Execute(Event event) // Need separate actio
         if (bot->GetVictim() != olm)
         {
             LOG_DEBUG("playerbots", "[HighKingMaulgarRangedDPSAction] {} is attacking Olm", bot->GetName().c_str());
-            Attack(olm);
+            Attack(olm); // Don't return immediately
+        }
+        
+        // Too close, too far, OR unsafe position
+        if (bot->IsWithinRange(olm, MIN_RANGE) || 
+            !bot->IsWithinRange(olm, MAX_RANGE) || 
+            !IsPositionSafe(botAI, bot, bot->GetPosition()))
+        {
+            LOG_DEBUG("playerbots", "[HighKingMaulgarRangedDPSAction] {} is adjusting position for Olm while avoiding boss mechanics", bot->GetName().c_str());
+            
+            // Find safe position at optimal ranged distance
+            Position safePos = FindSafePosition(botAI, bot, olm, OPTIMAL_RANGED_DISTANCE);
+            
+            return MoveTo(olm->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ);
         }
         
         return false;
@@ -742,7 +761,20 @@ bool HighKingMaulgarRangedDPSAction::Execute(Event event) // Need separate actio
         if (bot->GetVictim() != kiggler)
         {
             LOG_DEBUG("playerbots", "[HighKingMaulgarRangedDPSAction] {} is attacking Kiggler", bot->GetName().c_str());
-            return Attack(kiggler);
+            Attack(kiggler); // Don't return immediately
+        }
+        
+        // Too close, too far, OR unsafe position
+        if (bot->IsWithinRange(kiggler, MIN_RANGE) || 
+            !bot->IsWithinRange(kiggler, MAX_RANGE) || 
+            !IsPositionSafe(botAI, bot, bot->GetPosition()))
+        {
+            LOG_DEBUG("playerbots", "[HighKingMaulgarRangedDPSAction] {} is adjusting position for Kiggler while avoiding boss mechanics", bot->GetName().c_str());
+            
+            // Find safe position at optimal ranged distance
+            Position safePos = FindSafePosition(botAI, bot, kiggler, OPTIMAL_RANGED_DISTANCE);
+            
+            return MoveTo(kiggler->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ);
         }
         
         return false;
@@ -766,7 +798,20 @@ bool HighKingMaulgarRangedDPSAction::Execute(Event event) // Need separate actio
         if (bot->GetVictim() != krosh)
         {
             LOG_DEBUG("playerbots", "[HighKingMaulgarRangedDPSAction] {} is attacking Krosh", bot->GetName().c_str());
-            return Attack(krosh);
+            Attack(krosh); // Don't return immediately
+        }
+        
+        // Too close, too far, OR unsafe position
+        if (bot->IsWithinRange(krosh, MIN_RANGE) || 
+            !bot->IsWithinRange(krosh, MAX_RANGE) || 
+            !IsPositionSafe(botAI, bot, bot->GetPosition()))
+        {
+            LOG_DEBUG("playerbots", "[HighKingMaulgarRangedDPSAction] {} is adjusting position for Krosh while avoiding boss mechanics", bot->GetName().c_str());
+            
+            // Find safe position at optimal ranged distance
+            Position safePos = FindSafePosition(botAI, bot, krosh, OPTIMAL_RANGED_DISTANCE);
+            
+            return MoveTo(krosh->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ);
         }
         
         return false;
@@ -790,14 +835,27 @@ bool HighKingMaulgarRangedDPSAction::Execute(Event event) // Need separate actio
         if (bot->GetVictim() != maulgar)
         {
             LOG_DEBUG("playerbots", "[HighKingMaulgarRangedDPSAction] {} is attacking Maulgar", bot->GetName().c_str());
-            return Attack(maulgar);
+            Attack(maulgar); // Don't return immediately
+        }
+        
+        // Too close, too far, OR unsafe position
+        if (bot->IsWithinRange(maulgar, MIN_RANGE) || 
+            !bot->IsWithinRange(maulgar, MAX_RANGE) || 
+            !IsPositionSafe(botAI, bot, bot->GetPosition()))
+        {
+            LOG_DEBUG("playerbots", "[HighKingMaulgarRangedDPSAction] {} is adjusting position for Maulgar while avoiding boss mechanics", bot->GetName().c_str());
+            
+            // Find safe position at optimal ranged distance
+            Position safePos = FindSafePosition(botAI, bot, maulgar, OPTIMAL_RANGED_DISTANCE);
+            
+            return MoveTo(maulgar->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ);
         }
         
         return false;
     }
 
     return false;
-};
+}
 
 /* bool HighKingMaulgarAvoidBlastWaveAction::Execute(Event event)
 {
@@ -929,7 +987,7 @@ bool HighKingMaulgarAvoidWhirlwindAction::isUseful()
     
     return maulgar && maulgar->IsAlive() && maulgar->HasUnitState(UNIT_STATE_CASTING) 
     && maulgar->FindCurrentSpellBySpellId(SPELL_WHIRLWIND) && !botAI->IsTank(bot);
-}
+}*/
 
 bool HighKingMaulgarHunterMisdirectionAction::Execute(Event event)
 {
@@ -952,4 +1010,4 @@ bool HighKingMaulgarHunterMisdirectionAction::Execute(Event event)
         }
     }
     return false;
-} */
+}

@@ -19,7 +19,7 @@ public:
         //creators["high king maulgar avoid blast wave"] = &RaidGruulsLairActionContext::high_king_maulgar_avoid_blast_wave;
         //creators["high king maulgar control felstalker"] = &RaidGruulsLairActionContext::high_king_maulgar_control_felstalker;
         //creators["high king maulgar avoid whirlwind"] = &RaidGruulsLairActionContext::high_king_maulgar_avoid_whirlwind;
-        //creators["high king maulgar hunter misdirection"] = &RaidGruulsLairActionContext::high_king_maulgar_hunter_misdirection;
+        creators["high king maulgar hunter misdirection"] = &RaidGruulsLairActionContext::high_king_maulgar_hunter_misdirection;
     }
 
 private:
@@ -33,7 +33,7 @@ private:
     //static Action* high_king_maulgar_avoid_blast_wave(PlayerbotAI* botAI) { return new HighKingMaulgarAvoidBlastWaveAction(botAI); }
     //static Action* high_king_maulgar_control_felstalker(PlayerbotAI* botAI) { return new HighKingMaulgarControlFelstalkerAction(botAI); }
     //static Action* high_king_maulgar_avoid_whirlwind(PlayerbotAI* botAI) { return new HighKingMaulgarAvoidWhirlwindAction(botAI); }
-    //static Action* high_king_maulgar_hunter_misdirection(PlayerbotAI* botAI) { return new HighKingMaulgarHunterMisdirectionAction(botAI); }
+    static Action* high_king_maulgar_hunter_misdirection(PlayerbotAI* botAI) { return new HighKingMaulgarHunterMisdirectionAction(botAI); }
 };
 
 #endif

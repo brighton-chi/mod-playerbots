@@ -43,7 +43,8 @@ bool IsSecondTank(PlayerbotAI* botAI, Player* bot);
 bool IsThirdTank(PlayerbotAI* botAI, Player* bot);
 bool IsMageTank(PlayerbotAI* botAI, Player* bot);
 bool IsBoomkinTank(PlayerbotAI* botAI, Player* bot);
-std::string GetRtiNameFromInternalId(const std::string& internalId);
+bool IsPositionSafe(PlayerbotAI* botAI, Unit* bot, Position pos);
+Position FindSafePosition(PlayerbotAI* botAI, Unit* bot, Unit* target, float optimalDistance);
 
 // Gruul's Lair ogre tanking spots (X, Y, Z)
 struct TankSpot 
