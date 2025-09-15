@@ -70,6 +70,8 @@
 #include "raids/onyxia/RaidOnyxiaTriggerContext.h"
 #include "raids/vaultofarchavon/RaidVoAActionContext.h"
 #include "raids/vaultofarchavon/RaidVoATriggerContext.h"
+#include "raids/gruulslair/RaidGruulsLairActionContext.h"
+#include "raids/gruulslair/RaidGruulsLairTriggerContext.h"
 
 SharedNamedObjectContextList<Strategy> AiObjectContext::sharedStrategyContexts;
 SharedNamedObjectContextList<Action> AiObjectContext::sharedActionContexts;
@@ -137,6 +139,7 @@ void AiObjectContext::BuildSharedActionContexts(SharedNamedObjectContextList<Act
     actionContexts.Add(new RaidUlduarActionContext());
     actionContexts.Add(new RaidIccActionContext());
     actionContexts.Add(new RaidKarazhanActionContext());
+    actionContexts.Add(new RaidGruulsLairActionContext());
     actionContexts.Add(new WotlkDungeonUKActionContext());
     actionContexts.Add(new WotlkDungeonNexActionContext());
     actionContexts.Add(new WotlkDungeonANActionContext());
@@ -170,6 +173,7 @@ void AiObjectContext::BuildSharedTriggerContexts(SharedNamedObjectContextList<Tr
     triggerContexts.Add(new RaidUlduarTriggerContext());
     triggerContexts.Add(new RaidIccTriggerContext());
     triggerContexts.Add(new RaidKarazhanTriggerContext());
+    triggerContexts.Add(new RaidGruulsLairTriggerContext());
     triggerContexts.Add(new WotlkDungeonUKTriggerContext());
     triggerContexts.Add(new WotlkDungeonNexTriggerContext());
     triggerContexts.Add(new WotlkDungeonANTriggerContext());
