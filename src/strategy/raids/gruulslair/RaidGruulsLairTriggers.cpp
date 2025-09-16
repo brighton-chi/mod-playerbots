@@ -31,9 +31,9 @@ bool HighKingMaulgarTrigger::IsActive()
     return foundBosses;
 }
 
-/* bool GruulTheDragonkillerTrigger::IsActive()
+bool GruulTheDragonkillerTrigger::IsActive()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
 
     return boss && boss->IsAlive();
-} */
+}

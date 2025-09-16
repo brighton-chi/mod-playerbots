@@ -10,11 +10,11 @@ public:
     virtual float GetValue(Action* action);
 };
 
-/* class GruulTheDragonkillerMultiplier : public Multiplier
+class GruulTheDragonkillerMultiplier : public Multiplier
 {
 public:
     GruulTheDragonkillerMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "gruul the dragonkiller multiplier") {}
     virtual float GetValue(Action* action);
-};*/
+};
 
 #endif

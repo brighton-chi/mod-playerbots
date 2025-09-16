@@ -10,11 +10,11 @@ public:
     bool IsActive() override;
 }; 
 
-/* class GruulTheDragonkillerTrigger : public Trigger
+class GruulTheDragonkillerTrigger : public Trigger
 {
 public:
     GruulTheDragonkillerTrigger(PlayerbotAI* botAI) : Trigger(botAI, "gruul the dragonkiller") {}
     bool IsActive() override;
-}; */
+};
 
 #endif

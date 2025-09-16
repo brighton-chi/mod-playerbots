@@ -1,4 +1,5 @@
 #include "RaidGruulsLairMultipliers.h"
+#include "RaidGruulsLairActions.h"
 #include "RaidGruulsLairHelpers.h"
 #include "DruidBearActions.h"
 #include "DruidCatActions.h"
@@ -33,6 +34,25 @@ float HighKingMaulgarMultiplier::GetValue(Action* action)
         {
             if (IsMageTank(botAI, bot) && krosh->GetVictim() && krosh->GetVictim()->GetGUID() == bot->GetGUID())
                 return 0.0f;
+        }
+    }
+    return 1.0f;
+}
+
+float GruulTheDragonkillerMultiplier::GetValue(Action* action)
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
+    if (!boss) 
+    {
+        return 1.0f;
+    }
+
+    if (bot->HasAura(SPELL_AURA_GROUND_SLAM_1) || bot->HasAura(SPELL_AURA_GROUND_SLAM_2))
+    {
+        if ((dynamic_cast<MovementAction*>(action) && !dynamic_cast<GruulTheDragonkillerShatterSpreadAction*>(action)) ||
+            IsChargeAction(action))
+        {
+            return 0.0f;
         }
     }
     return 1.0f;

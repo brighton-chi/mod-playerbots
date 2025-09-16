@@ -5,7 +5,6 @@
 #include "GroupReference.h"
 #include "Unit.h"
 
-// Returns true if the bot is the mage with the highest max HP in the group (mage tank)
 bool IsMageTank(PlayerbotAI* botAI, Player* bot)
 {
     Group* group = bot->GetGroup();
@@ -33,7 +32,6 @@ bool IsMageTank(PlayerbotAI* botAI, Player* bot)
     return highestHpMage == bot;
 }
 
-// Returns true if the bot is the balance druid with the highest max HP in the group (moonkin tank)
 bool IsMoonkinTank(PlayerbotAI* botAI, Player* bot)
 {
     Group* group = bot->GetGroup();
@@ -77,7 +75,9 @@ bool IsFirstTank(PlayerbotAI* botAI, Player* bot)
         Player* member = ref->GetSource();
         if (!member) continue;
         if (botAI->IsTank(member))
+        {
             return member == bot;
+        }
     }
     return false;
 }
@@ -96,7 +96,9 @@ bool IsSecondTank(PlayerbotAI* botAI, Player* bot)
         if (botAI->IsTank(member))
         {
             if (tankIndex == 1)
+            {
                 return member == bot;
+            }
             ++tankIndex;
         }
     }
@@ -117,7 +119,9 @@ bool IsThirdTank(PlayerbotAI* botAI, Player* bot)
         if (botAI->IsTank(member))
         {
             if (tankIndex == 2)
+            {
                 return member == bot;
+            }
             ++tankIndex;
         }
     }
@@ -174,7 +178,6 @@ Position FindSafePosition(PlayerbotAI* botAI, Unit* bot, Unit* target, float opt
     bestPos.m_positionY = bot->GetPositionY();
     bestPos.m_positionZ = bot->GetPositionZ();
     
-    // Find the dangerous bosses using botAI
     Unit* krosh = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "krosh firehand")->Get();
     Unit* maulgar = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "high king maulgar")->Get();
 
@@ -186,15 +189,15 @@ Position FindSafePosition(PlayerbotAI* botAI, Unit* bot, Unit* target, float opt
     {
         return bestPos;
     }
-    
+
     // Check if current position is safe
     if (IsPositionSafe(botAI, bot, bestPos))
     {
         return bestPos;
     }
-    
+
     // Try to find a safe position in a circle around the target
-    const int NUM_POSITIONS = 16; // Try 16 positions around the circle
+    const int NUM_POSITIONS = 32; // Try 32 positions around the circle
     float bestScore = 99999.0f;
     bool foundSafeSpot = false;
     
