@@ -85,6 +85,14 @@ public:
 
     bool Execute(Event event) override;
 }; */
+class GruulTheDragonkillerPositionBossAction : public MovementAction
+{
+public:
+    GruulTheDragonkillerPositionBossAction(PlayerbotAI* botAI, std::string const name = "gruul the dragonkiller position boss") : MovementAction(botAI, name) {};
+
+    bool Execute(Event event) override;
+    bool isUseful();
+};
 
 class GruulTheDragonkillerSpreadMeleeAction : public MovementAction
 {
@@ -95,10 +103,10 @@ public:
     bool isUseful();
 };
 
-class GruulTheDragonkillerSpreadRangedAction : public AttackAction
+class GruulTheDragonkillerSpreadRangedAction : public MovementAction
 {
 public:
-    GruulTheDragonkillerSpreadRangedAction(PlayerbotAI* botAI, std::string const name = "gruul the dragonkiller spread ranged") : AttackAction(botAI, name) {};
+    GruulTheDragonkillerSpreadRangedAction(PlayerbotAI* botAI, std::string const name = "gruul the dragonkiller spread ranged") : MovementAction(botAI, name) {};
 
     bool Execute(Event event) override;
     bool isUseful();

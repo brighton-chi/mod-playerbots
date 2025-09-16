@@ -20,8 +20,9 @@ void RaidGruulsLairStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     
     triggers.push_back(new TriggerNode("gruul the dragonkiller", NextAction::array(0,
         new NextAction("gruul the dragonkiller shatter spread", ACTION_EMERGENCY + 6),
-        new NextAction("gruul the dragonkiller melee spread", ACTION_RAID + 1),
-        new NextAction("gruul the dragonkiller ranged spread", ACTION_RAID + 1),
+        new NextAction("gruul the dragonkiller position boss", ACTION_RAID + 1),
+        new NextAction("gruul the dragonkiller spread melee", ACTION_RAID + 1),
+        new NextAction("gruul the dragonkiller spread ranged", ACTION_RAID + 1),
         nullptr)));
 }
 
@@ -30,4 +31,3 @@ void RaidGruulsLairStrategy::InitMultipliers(std::vector<Multiplier*>& multiplie
     multipliers.push_back(new HighKingMaulgarMultiplier(botAI));
     multipliers.push_back(new GruulTheDragonkillerMultiplier(botAI));
 }
-

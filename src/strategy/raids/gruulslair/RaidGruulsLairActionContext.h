@@ -9,6 +9,7 @@ class RaidGruulsLairActionContext : public NamedObjectContext<Action>
 public:
     RaidGruulsLairActionContext()
     {
+        // High King Maulgar
         creators["high king maulgar maulgar tank"] = &RaidGruulsLairActionContext::high_king_maulgar_maulgar_tank;
         creators["high king maulgar olm tank"] = &RaidGruulsLairActionContext::high_king_maulgar_olm_tank;
         creators["high king maulgar blindeye tank"] = &RaidGruulsLairActionContext::high_king_maulgar_blindeye_tank;
@@ -19,9 +20,16 @@ public:
         creators["high king maulgar healer avoidance"] = &RaidGruulsLairActionContext::high_king_maulgar_healer_avoidance;
         creators["high king maulgar control felstalker"] = &RaidGruulsLairActionContext::high_king_maulgar_control_felstalker;
         // creators["high king maulgar hunter misdirection"] = &RaidGruulsLairActionContext::high_king_maulgar_hunter_misdirection;
+
+        // Gruul the Dragonkiller
+        creators["gruul the dragonkiller position boss"] = &RaidGruulsLairActionContext::gruul_the_dragonkiller_position_boss;
+        creators["gruul the dragonkiller spread melee"] = &RaidGruulsLairActionContext::gruul_the_dragonkiller_spread_melee;
+        creators["gruul the dragonkiller spread ranged"] = &RaidGruulsLairActionContext::gruul_the_dragonkiller_spread_ranged;
+        creators["gruul the dragonkiller shatter spread"] = &RaidGruulsLairActionContext::gruul_the_dragonkiller_shatter_spread;
     }
 
 private:
+    // High King Maulgar
     static Action* high_king_maulgar_maulgar_tank(PlayerbotAI* botAI) { return new HighKingMaulgarMaulgarTankAction(botAI); }
     static Action* high_king_maulgar_olm_tank(PlayerbotAI* botAI) { return new HighKingMaulgarOlmTankAction(botAI); }
     static Action* high_king_maulgar_blindeye_tank(PlayerbotAI* botAI) { return new HighKingMaulgarBlindeyeTankAction(botAI); }
@@ -32,6 +40,12 @@ private:
     static Action* high_king_maulgar_healer_avoidance(PlayerbotAI* botAI) { return new HighKingMaulgarHealerAvoidanceAction(botAI); }
     static Action* high_king_maulgar_control_felstalker(PlayerbotAI* botAI) { return new HighKingMaulgarControlFelstalkerAction(botAI); }
     // static Action* high_king_maulgar_hunter_misdirection(PlayerbotAI* botAI) { return new HighKingMaulgarHunterMisdirectionAction(botAI); }
+
+    // Gruul the Dragonkiller
+    static Action* gruul_the_dragonkiller_position_boss(PlayerbotAI* botAI) { return new GruulTheDragonkillerPositionBossAction(botAI); }
+    static Action* gruul_the_dragonkiller_spread_melee(PlayerbotAI* botAI) { return new GruulTheDragonkillerSpreadMeleeAction(botAI); }
+    static Action* gruul_the_dragonkiller_spread_ranged(PlayerbotAI* botAI) { return new GruulTheDragonkillerSpreadRangedAction(botAI); }
+    static Action* gruul_the_dragonkiller_shatter_spread(PlayerbotAI* botAI) { return new GruulTheDragonkillerShatterSpreadAction(botAI); }
 };
 
 #endif

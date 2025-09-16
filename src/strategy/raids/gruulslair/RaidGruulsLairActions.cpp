@@ -1271,11 +1271,43 @@ bool HighKingMaulgarControlFelstalkerAction::isUseful()
     return false;
 } */
 
+bool GruulTheDragonkillerPositionBossAction::Execute(Event event)
+{
+    Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
+    
+    const TankSpot& spot = GruulsLairTankSpots::Gruul;
+    const float maxDistance = 3.0f;
+    float distanceToGruul = gruul->GetExactDist2d(spot.x, spot.y);
+    
+    if (distanceToGruul > maxDistance)
+    {
+        float dX = spot.x - gruul->GetPositionX();
+        float dY = spot.y - gruul->GetPositionY();
+        float moveX = spot.x + (dX / distanceToGruul) * maxDistance;
+        float moveY = spot.y + (dY / distanceToGruul) * maxDistance;
+        
+        return MoveTo(bot->GetMapId(), moveX, moveY, spot.z, false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
+    }
+    
+    float orientation = atan2(gruul->GetPositionY() - bot->GetPositionY(), gruul->GetPositionX() - bot->GetPositionX());
+    bot->SetFacingTo(orientation);
+
+    return false;   
+}
+
+bool GruulTheDragonkillerPositionBossAction::isUseful()
+{
+    Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
+
+    return gruul && gruul->IsAlive() && botAI->IsTank(bot) && 
+           botAI->HasAggro(gruul) && gruul->GetVictim() == bot;
+}
+
 bool GruulTheDragonkillerSpreadMeleeAction::Execute(Event event)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
+    Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
 
-    float bossHitboxRadius = 10.0f; // Gruul's hitbox radius
+    float gruulHitboxRadius = 10.0f; // Gruul's hitbox radius
     float minSpreadDistance = 5.0f; // Minimum distance to maintain from other players
     Unit* closestMember = nullptr;
 
@@ -1302,11 +1334,12 @@ bool GruulTheDragonkillerSpreadMeleeAction::Execute(Event event)
     }
 
     // Check if the bot is within the optimal melee range of Gruul
-    float distanceToBoss = bot->GetExactDist2d(boss);
-    if (distanceToBoss > bossHitboxRadius || distanceToBoss < bossHitboxRadius - 1.0f)
+    float distanceToGruul = bot->GetExactDist2d(gruul);
+    if (distanceToGruul > gruulHitboxRadius || distanceToGruul < gruulHitboxRadius - 1.0f)
     {
         // Move to the edge of Gruul's hitbox (10 yards)
-        return MoveTo(boss->GetMapId(), boss->GetPositionX(), boss->GetPositionY(), boss->GetPositionZ(), bossHitboxRadius);
+        return MoveTo(gruul->GetMapId(), gruul->GetPositionX(), gruul->GetPositionY(), 
+               gruul->GetPositionZ(), gruulHitboxRadius);
     }
 
     return false;
@@ -1314,17 +1347,17 @@ bool GruulTheDragonkillerSpreadMeleeAction::Execute(Event event)
 
 bool GruulTheDragonkillerSpreadMeleeAction::isUseful()
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
+    Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
 
     // Don't want tanks to be moving around so spreading is just for melee DPS
-    return boss && boss->IsAlive() && botAI->IsMelee(bot) && !botAI->IsTank(bot);
+    return gruul && gruul->IsAlive() && botAI->IsMelee(bot) && !botAI->IsTank(bot);
 }
 
 bool GruulTheDragonkillerSpreadRangedAction::Execute(Event event)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
+    Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
 
-    float bossRangedRadius = 25.0f; // Minimum distance to maintain from Gruul
+    float gruulRangedRadius = 25.0f; // Minimum distance to maintain from Gruul
     float minSpreadDistance = 10.0f; // Minimum distance to maintain from other players
     Unit* closestMember = nullptr;
 
@@ -1343,23 +1376,23 @@ bool GruulTheDragonkillerSpreadRangedAction::Execute(Event event)
     if (closestMember && bot->GetExactDist2d(closestMember) < minSpreadDistance)
         return MoveAway(closestMember, minSpreadDistance);
 
-    float distanceToBoss = bot->GetExactDist2d(boss);
-    if (distanceToBoss < bossRangedRadius - 5.0f)
-        return MoveTo(boss->GetMapId(), boss->GetPositionX(), boss->GetPositionY(), boss->GetPositionZ(), bossRangedRadius);
+    float distanceToGruul = bot->GetExactDist2d(gruul);
+    if (distanceToGruul < gruulRangedRadius - 5.0f)
+        return MoveTo(gruul->GetMapId(), gruul->GetPositionX(), gruul->GetPositionY(), gruul->GetPositionZ(), gruul);
 
     return false;
 }
 
 bool GruulTheDragonkillerSpreadRangedAction::isUseful()
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
+    Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
 
-    return boss && boss->IsAlive() && botAI->IsRanged(bot);
+    return gruul && gruul->IsAlive() && botAI->IsRanged(bot);
 }
 
 bool GruulTheDragonkillerShatterSpreadAction::Execute(Event event)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
+    Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
 
     float radius = 22.0f; // Actual immunity radius from dbc files is 20 yards; adding buffer
     Unit* closestMember = nullptr;
@@ -1388,8 +1421,8 @@ bool GruulTheDragonkillerShatterSpreadAction::Execute(Event event)
 
 bool GruulTheDragonkillerShatterSpreadAction::isUseful()
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
+    Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
 
-    return boss && boss->IsAlive() && 
+    return gruul && gruul->IsAlive() && 
            (bot->HasAura(SPELL_AURA_GROUND_SLAM_1) || bot->HasAura(SPELL_AURA_GROUND_SLAM_2));
 }

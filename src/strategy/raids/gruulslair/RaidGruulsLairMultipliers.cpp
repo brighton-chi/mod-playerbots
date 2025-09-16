@@ -41,8 +41,8 @@ float HighKingMaulgarMultiplier::GetValue(Action* action)
 
 float GruulTheDragonkillerMultiplier::GetValue(Action* action)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
-    if (!boss) 
+    Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
+    if (!gruul) 
     {
         return 1.0f;
     }

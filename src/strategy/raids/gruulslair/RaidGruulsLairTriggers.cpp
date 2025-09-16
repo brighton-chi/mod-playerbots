@@ -1,6 +1,8 @@
 #include "RaidGruulsLairTriggers.h"
 #include "Playerbots.h"
 
+#include "Log.h"
+
 bool HighKingMaulgarTrigger::IsActive()
 {
     // Store original sight distance
@@ -33,7 +35,14 @@ bool HighKingMaulgarTrigger::IsActive()
 
 bool GruulTheDragonkillerTrigger::IsActive()
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
-
-    return boss && boss->IsAlive();
+    // Log current sight distance
+    LOG_DEBUG("playerbots", "GruulTheDragonkillerTrigger: checking with sight distance {}", 
+              sPlayerbotAIConfig->sightDistance);
+    
+    Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
+    
+    LOG_DEBUG("playerbots", "GruulTheDragonkillerTrigger: boss {} found", 
+              gruul ? "was" : "was NOT");
+    
+    return gruul && gruul->IsAlive();
 }
