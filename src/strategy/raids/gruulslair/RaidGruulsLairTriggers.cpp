@@ -1,15 +1,13 @@
 #include "RaidGruulsLairTriggers.h"
 #include "Playerbots.h"
 
-#include "Log.h"
-
 bool HighKingMaulgarTrigger::IsActive()
 {
     // Store original sight distance
     float originalSightDistance = sPlayerbotAIConfig->sightDistance;
     
     // Temporarily increase sight distance for target detection
-    sPlayerbotAIConfig->sightDistance = 150.0f;
+    sPlayerbotAIConfig->sightDistance = 75.0f; // SETTING TO DEFAULT FOR NOW TO CONFIRM IF NEEDED
     
     // Try to find targets with increased sight
     Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
@@ -35,14 +33,7 @@ bool HighKingMaulgarTrigger::IsActive()
 
 bool GruulTheDragonkillerTrigger::IsActive()
 {
-    // Log current sight distance
-    LOG_DEBUG("playerbots", "GruulTheDragonkillerTrigger: checking with sight distance {}", 
-              sPlayerbotAIConfig->sightDistance);
-    
     Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
-    
-    LOG_DEBUG("playerbots", "GruulTheDragonkillerTrigger: boss {} found", 
-              gruul ? "was" : "was NOT");
     
     return gruul && gruul->IsAlive();
 }

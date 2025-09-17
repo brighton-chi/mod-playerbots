@@ -23,7 +23,7 @@ public:
 
         // Gruul the Dragonkiller
         creators["gruul the dragonkiller position boss"] = &RaidGruulsLairActionContext::gruul_the_dragonkiller_position_boss;
-        creators["gruul the dragonkiller spread melee"] = &RaidGruulsLairActionContext::gruul_the_dragonkiller_spread_melee;
+        // creators["gruul the dragonkiller spread melee"] = &RaidGruulsLairActionContext::gruul_the_dragonkiller_spread_melee;
         creators["gruul the dragonkiller spread ranged"] = &RaidGruulsLairActionContext::gruul_the_dragonkiller_spread_ranged;
         creators["gruul the dragonkiller shatter spread"] = &RaidGruulsLairActionContext::gruul_the_dragonkiller_shatter_spread;
     }
@@ -43,7 +43,7 @@ private:
 
     // Gruul the Dragonkiller
     static Action* gruul_the_dragonkiller_position_boss(PlayerbotAI* botAI) { return new GruulTheDragonkillerPositionBossAction(botAI); }
-    static Action* gruul_the_dragonkiller_spread_melee(PlayerbotAI* botAI) { return new GruulTheDragonkillerSpreadMeleeAction(botAI); }
+    // static Action* gruul_the_dragonkiller_spread_melee(PlayerbotAI* botAI) { return new GruulTheDragonkillerSpreadMeleeAction(botAI); }
     static Action* gruul_the_dragonkiller_spread_ranged(PlayerbotAI* botAI) { return new GruulTheDragonkillerSpreadRangedAction(botAI); }
     static Action* gruul_the_dragonkiller_shatter_spread(PlayerbotAI* botAI) { return new GruulTheDragonkillerShatterSpreadAction(botAI); }
 };
