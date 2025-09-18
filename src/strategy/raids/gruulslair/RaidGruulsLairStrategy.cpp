@@ -1,12 +1,11 @@
 #include "RaidGruulsLairStrategy.h"
 #include "RaidGruulsLairMultipliers.h"
 
-#include "Log.h"
-
 void RaidGruulsLairStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(new TriggerNode("high king maulgar", NextAction::array(0,
         // new NextAction("high king maulgar hunter misdirection", ACTION_RAID + 3),
+        new NextAction("high king maulgar banish felstalker", ACTION_RAID + 3),
         new NextAction("high king maulgar maulgar tank", ACTION_RAID + 2),
         new NextAction("high king maulgar olm tank", ACTION_RAID + 2),
         new NextAction("high king maulgar blindeye tank", ACTION_RAID + 2),
@@ -15,7 +14,7 @@ void RaidGruulsLairStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new NextAction("high king maulgar melee dps", ACTION_RAID + 2),
         new NextAction("high king maulgar ranged dps", ACTION_RAID + 2),
         new NextAction("high king maulgar healer avoidance", ACTION_RAID + 2),
-        new NextAction("high king maulgar control felstalker", ACTION_RAID + 1),
+        // new NextAction("high king maulgar control felstalker", ACTION_RAID + 1),
         nullptr)));
     
     triggers.push_back(new TriggerNode("gruul the dragonkiller", NextAction::array(0,

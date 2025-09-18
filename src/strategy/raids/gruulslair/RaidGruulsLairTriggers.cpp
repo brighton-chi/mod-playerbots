@@ -7,7 +7,7 @@ bool HighKingMaulgarTrigger::IsActive()
     float originalSightDistance = sPlayerbotAIConfig->sightDistance;
     
     // Temporarily increase sight distance for target detection
-    sPlayerbotAIConfig->sightDistance = 75.0f; // SETTING TO DEFAULT FOR NOW TO CONFIRM IF NEEDED
+    sPlayerbotAIConfig->sightDistance = 150.0f;
     
     // Try to find targets with increased sight
     Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");

@@ -18,7 +18,8 @@ public:
         creators["high king maulgar melee dps"] = &RaidGruulsLairActionContext::high_king_maulgar_melee_dps;
         creators["high king maulgar ranged dps"] = &RaidGruulsLairActionContext::high_king_maulgar_ranged_dps;
         creators["high king maulgar healer avoidance"] = &RaidGruulsLairActionContext::high_king_maulgar_healer_avoidance;
-        creators["high king maulgar control felstalker"] = &RaidGruulsLairActionContext::high_king_maulgar_control_felstalker;
+        creators["high king maulgar banish felstalker"] = &RaidGruulsLairActionContext::high_king_maulgar_banish_felstalker;
+        // creators["high king maulgar control felstalker"] = &RaidGruulsLairActionContext::high_king_maulgar_control_felstalker;
         // creators["high king maulgar hunter misdirection"] = &RaidGruulsLairActionContext::high_king_maulgar_hunter_misdirection;
 
         // Gruul the Dragonkiller
@@ -38,7 +39,8 @@ private:
     static Action* high_king_maulgar_melee_dps(PlayerbotAI* botAI) { return new HighKingMaulgarMeleeDPSAction(botAI); }
     static Action* high_king_maulgar_ranged_dps(PlayerbotAI* botAI) { return new HighKingMaulgarRangedDPSAction(botAI); }
     static Action* high_king_maulgar_healer_avoidance(PlayerbotAI* botAI) { return new HighKingMaulgarHealerAvoidanceAction(botAI); }
-    static Action* high_king_maulgar_control_felstalker(PlayerbotAI* botAI) { return new HighKingMaulgarControlFelstalkerAction(botAI); }
+    static Action* high_king_maulgar_banish_felstalker(PlayerbotAI* botAI) { return new HighKingMaulgarBanishFelstalkerAction(botAI); }
+    // static Action* high_king_maulgar_control_felstalker(PlayerbotAI* botAI) { return new HighKingMaulgarControlFelstalkerAction(botAI); }
     // static Action* high_king_maulgar_hunter_misdirection(PlayerbotAI* botAI) { return new HighKingMaulgarHunterMisdirectionAction(botAI); }
 
     // Gruul the Dragonkiller

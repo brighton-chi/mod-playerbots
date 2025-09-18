@@ -18,8 +18,8 @@ enum GruulsLairSpells
 
 	// Wild Fel Stalker
 	// SPELL_DETERMINATION = 33091,
-	SPELL_THREATEN = 33096,
-	SPELL_WILD_BITE = 33086,
+	// SPELL_THREATEN = 33096,
+	// SPELL_WILD_BITE = 33086,
 
 	// Hunter
 	// SPELL_AURA_MISDIRECTION = 35079,
@@ -28,7 +28,7 @@ enum GruulsLairSpells
 	SPELL_SPELLSTEAL = 30449,
 
 	// Warlock
-	SPELL_ENSLAVE_DEMON = 11726, // Rank 3
+	// SPELL_ENSLAVE_DEMON = 11726, // Rank 3
 
 	// Gruul the Dragonkiller
 	SPELL_AURA_GROUND_SLAM_1 = 33525,
