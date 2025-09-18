@@ -1304,13 +1304,9 @@ bool GruulTheDragonkillerPositionBossAction::Execute(Event event)
         delta += 2 * M_PI;
     float orientationDifference = fabs(static_cast<double>(delta));
 
-    LOG_DEBUG("playerbots", "[GruulTheDragonkillerPositionBossAction] {}: Orientation difference: {:.2f}", bot->GetName().c_str(), orientationDifference);
-
-    // Allow a leeway of 30 degrees (converted to radians)
     const float orientationLeeway = 30.0f * M_PI / 180.0f;
     if (orientationDifference > orientationLeeway)
     {
-        LOG_DEBUG("playerbots", "[GruulTheDragonkillerPositionBossAction] {}: Adjusting orientation to: {:.2f}", bot->GetName().c_str(), desiredOrientation);
         bot->SetFacingTo(desiredOrientation);
     }
 
@@ -1334,8 +1330,6 @@ bool GruulTheDragonkillerPositionBossAction::isUseful()
     float movementThreshold = 2.0f;
     Unit* closestMember = nullptr;
 
-    LOG_DEBUG("playerbots", "[GruulTheDragonkillerSpreadMeleeAction] {} is executing. Gruul GUID: {}", bot->GetName().c_str(), gruul->GetGUID().ToString().c_str());
-
     // Get all group members
     GuidVector members = AI_VALUE(GuidVector, "group members");
     for (auto& member : members)
@@ -1351,26 +1345,16 @@ bool GruulTheDragonkillerPositionBossAction::isUseful()
         }
     }
 
-    if (closestMember)
-    {
-        LOG_DEBUG("playerbots", "[GruulTheDragonkillerSpreadMeleeAction] Closest member to {} is at distance {:.2f}", bot->GetName().c_str(), bot->GetExactDist2d(closestMember));
-    }
-
-    // Check if the bot is too close to another player
     if (closestMember && bot->GetExactDist2d(closestMember) < minSpreadDistance - movementThreshold)
     {
-        LOG_DEBUG("playerbots", "[GruulTheDragonkillerSpreadMeleeAction] {} is moving away from closest member", bot->GetName().c_str());
         return MoveAway(closestMember, minSpreadDistance);
     }
 
-    // Check if the bot is within the optimal melee range of Gruul
     float distanceToGruul = bot->GetExactDist2d(gruul);
-    LOG_DEBUG("playerbots", "[GruulTheDragonkillerSpreadMeleeAction] Distance to Gruul: {:.2f}", distanceToGruul);
 
     if (distanceToGruul > gruulMeleeRadius || 
         distanceToGruul < gruulMeleeRadius - 4.0f - movementThreshold)
     {
-        LOG_DEBUG("playerbots", "[GruulTheDragonkillerSpreadMeleeAction] {} is moving to optimal melee range of Gruul", bot->GetName().c_str());
         return MoveTo(gruul->GetMapId(), gruul->GetPositionX(), gruul->GetPositionY(), 
                gruul->GetPositionZ(), gruulMeleeRadius);
     }
@@ -1392,7 +1376,7 @@ bool GruulTheDragonkillerSpreadRangedAction::Execute(Event event)
     if (!group)
         return false;
 
-    static const TankSpot& idealSpot = GruulsLairTankSpots::Gruul; // Use ideal tanking coordinates
+    static const TankSpot& tankSpot = GruulsLairTankSpots::Gruul; // Use ideal tanking coordinates
 
     static std::unordered_map<ObjectGuid, Position> initialPositions;
     // Add a flag to track if the bot has reached its initial position
@@ -1401,8 +1385,8 @@ bool GruulTheDragonkillerSpreadRangedAction::Execute(Event event)
     if (initialPositions.find(bot->GetGUID()) == initialPositions.end())
     {
         // Use the ideal tanking coordinates as the center
-        float centerX = idealSpot.x;
-        float centerY = idealSpot.y;
+        float centerX = tankSpot.x;
+        float centerY = tankSpot.y;
         float centerZ = bot->GetPositionZ();
 
         // Define a range for the radius
@@ -1433,8 +1417,6 @@ bool GruulTheDragonkillerSpreadRangedAction::Execute(Event event)
 
         initialPositions[bot->GetGUID()] = Position(targetX, targetY, centerZ);
         hasReachedInitialPosition[bot->GetGUID()] = false; // Initialize the flag to false;
-
-        LOG_DEBUG("playerbots", "[GruulTheDragonkillerSpreadRangedAction] {} assigned radial position: ({:.2f}, {:.2f}, {:.2f}) with radius {:.2f}", bot->GetName().c_str(), targetX, targetY, centerZ, radius);
     }
 
     Position targetPosition = initialPositions[bot->GetGUID()];
@@ -1442,13 +1424,10 @@ bool GruulTheDragonkillerSpreadRangedAction::Execute(Event event)
    {
         if (!bot->IsWithinDist2d(targetPosition.GetPositionX(), targetPosition.GetPositionY(), 2.0f))
         {
-            LOG_DEBUG("playerbots", "[GruulTheDragonkillerSpreadRangedAction] {} moving to initial position: ({:.2f}, {:.2f}, {:.2f})", bot->GetName().c_str(), targetPosition.GetPositionX(), targetPosition.GetPositionY(), targetPosition.GetPositionZ());
             return MoveTo(bot->GetMapId(), targetPosition.GetPositionX(), targetPosition.GetPositionY(), targetPosition.GetPositionZ());
         }
 
-        // Mark the flag as true once the bot reaches its initial position
         hasReachedInitialPosition[bot->GetGUID()] = true;
-        LOG_DEBUG("playerbots", "[GruulTheDragonkillerSpreadRangedAction] {} reached initial position", bot->GetName().c_str());
     }
 
     float gruulRangedRadius = 25.0f; // Minimum distance to maintain from Gruul
@@ -1456,17 +1435,9 @@ bool GruulTheDragonkillerSpreadRangedAction::Execute(Event event)
     float movementThreshold = 2.0f;
     Unit* closestMember = nullptr;
 
-    LOG_DEBUG("playerbots", "[GruulTheDragonkillerSpreadRangedAction] {} is executing. Ideal Spot: ({:.2f}, {:.2f}, {:.2f})", bot->GetName().c_str(), idealSpot.x, idealSpot.y, idealSpot.z);
-
-    // Add logging to identify the group being iterated
-    LOG_DEBUG("playerbots", "[GruulTheDragonkillerSpreadRangedAction] Iterating through group members for bot: {}", bot->GetName().c_str());
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member)
-        {
-            LOG_DEBUG("playerbots", "[GruulTheDragonkillerSpreadRangedAction] Found group member: {}", member->GetName().c_str());
-        }
 
         if (!member || !member->IsAlive() || member == bot || !botAI->IsRanged(member))
             continue;
@@ -1475,35 +1446,16 @@ bool GruulTheDragonkillerSpreadRangedAction::Execute(Event event)
             closestMember = member;
     }
 
-    if (closestMember)
-    {
-        LOG_DEBUG("playerbots", "[GruulTheDragonkillerSpreadRangedAction] Closest ranged member to {} is at distance {:.2f}", bot->GetName().c_str(), bot->GetExactDist2d(closestMember));
-    }
-
     if (closestMember && bot->GetExactDist2d(closestMember) < minSpreadDistance - movementThreshold)
     {
-        // Add this check before calling MoveAway
-        float dx = bot->GetPositionX() - closestMember->GetPositionX();
-        float dy = bot->GetPositionY() - closestMember->GetPositionY();
-        float moveDistance = sqrt(dx*dx + dy*dy);
-        
-        if (moveDistance < 0.1f) // Avoid calling MoveAway if too close to result in tiny movement
-        {
-            LOG_DEBUG("playerbots", "[GruulTheDragonkillerSpreadRangedAction] {} skipping movement - too close to target", bot->GetName().c_str());
-            return false;
-        }
-        
-        LOG_DEBUG("playerbots", "[GruulTheDragonkillerSpreadRangedAction] {} is moving away from closest ranged member", bot->GetName().c_str());
         return MoveAway(closestMember, minSpreadDistance);
     }
-    
-    float distanceToGruul = bot->GetExactDist2d(idealSpot.x, idealSpot.y);
-    LOG_DEBUG("playerbots", "[GruulTheDragonkillerSpreadRangedAction] Distance to ideal spot: {:.2f}", distanceToGruul);
 
+    float distanceToGruul = bot->GetExactDist2d(tankSpot.x, tankSpot.y);
+    
     if (distanceToGruul < gruulRangedRadius - 3.0f - movementThreshold)
     {
-        LOG_DEBUG("playerbots", "[GruulTheDragonkillerSpreadRangedAction] {} is moving to optimal ranged distance from ideal spot", bot->GetName().c_str());
-        return MoveTo(bot->GetMapId(), idealSpot.x, idealSpot.y, idealSpot.z);
+        return MoveTo(bot->GetMapId(), tankSpot.x, tankSpot.y, tankSpot.z);
     }
 
     return false;
@@ -1520,10 +1472,8 @@ bool GruulTheDragonkillerShatterSpreadAction::Execute(Event event)
 {
     Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
 
-    float radius = 22.0f; // Actual immunity radius from dbc files is 20 yards; adding buffer
+    float radius = 22.0f;
     Unit* closestMember = nullptr;
-
-    LOG_DEBUG("playerbots", "[GruulTheDragonkillerShatterSpreadAction] {} is executing. Gruul GUID: {}", bot->GetName().c_str(), gruul->GetGUID().ToString().c_str());
 
     GuidVector members = AI_VALUE(GuidVector, "group members");
     for (auto& member : members)
@@ -1537,30 +1487,8 @@ bool GruulTheDragonkillerShatterSpreadAction::Execute(Event event)
         {
             closestMember = unit;
         }
-    }
-
-    if (closestMember)
-    {
-        LOG_DEBUG("playerbots", "[GruulTheDragonkillerShatterSpreadAction] Closest member to {} is at distance {:.2f}", bot->GetName().c_str(), bot->GetExactDist2d(closestMember));
-    }
-
-    if (closestMember && bot->GetExactDist2d(closestMember) < radius)
-    {
-        // Add this check before calling MoveAway
-        float dx = bot->GetPositionX() - closestMember->GetPositionX();
-        float dy = bot->GetPositionY() - closestMember->GetPositionY();
-        float moveDistance = sqrt(dx*dx + dy*dy);
-        
-        if (moveDistance < 0.1f) // Avoid calling MoveAway if too close to result in tiny movement
-        {
-            LOG_DEBUG("playerbots", "[GruulTheDragonkillerShatterSpreadAction] {} skipping movement - too close to target", bot->GetName().c_str());
-            return false;
-        }
-        
-        LOG_DEBUG("playerbots", "[GruulTheDragonkillerShatterSpreadAction] {} is moving away from closest member", bot->GetName().c_str());
         return MoveAway(closestMember, 6.0f);
     }
-
     return false;
 }
 
