@@ -5,6 +5,15 @@
 #include "AttackAction.h"
 #include "MovementActions.h"
 
+
+class HighKingMaulgarRemoveTankAssistAction : public Action
+{
+public:
+    HighKingMaulgarRemoveTankAssistAction(PlayerbotAI* botAI, std::string const name = "high king maulgar remove tank assist") : Action(botAI, name) {};
+
+    bool Execute(Event event) override;
+};
+
 class HighKingMaulgarMaulgarTankAction : public AttackAction
 {
 public:
@@ -87,13 +96,13 @@ public:
     bool isUseful();
 }; */
 
-/* class HighKingMaulgarHunterMisdirectionAction : public AttackAction
+class HighKingMaulgarHunterMisdirectionAction : public AttackAction
 {
 public:
     HighKingMaulgarHunterMisdirectionAction(PlayerbotAI* botAI, std::string const name = "high king maulgar hunter misdirection") : AttackAction(botAI, name) {};
 
     bool Execute(Event event) override;
-}; */
+};
 
 class GruulTheDragonkillerPositionBossAction : public MovementAction
 {
@@ -103,15 +112,6 @@ public:
     bool Execute(Event event) override;
     bool isUseful();
 };
-
-/* class GruulTheDragonkillerSpreadMeleeAction : public MovementAction
-{
-public:
-    GruulTheDragonkillerSpreadMeleeAction(PlayerbotAI* botAI, std::string const name = "gruul the dragonkiller spread melee") : MovementAction(botAI, name) {};
-
-    bool Execute(Event event) override;
-    bool isUseful();
-}; */
 
 class GruulTheDragonkillerSpreadRangedAction : public MovementAction
 {

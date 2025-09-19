@@ -9,9 +9,35 @@
 
 #include "Log.h"
 
+bool HighKingMaulgarRemoveTankAssistAction::Execute(Event event)
+{
+    if (!botAI->IsTank(bot))
+        return false;
+
+    Unit* maulgar  = AI_VALUE2(Unit*, "find target", "high king maulgar");
+    Unit* kiggler  = AI_VALUE2(Unit*, "find target", "kiggler the crazed");
+    Unit* krosh    = AI_VALUE2(Unit*, "find target", "krosh firehand");
+    Unit* olm      = AI_VALUE2(Unit*, "find target", "olm the summoner");
+    Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
+
+    bool maulgarEncounterActive = (maulgar  && maulgar->IsInCombat()) ||
+                                  (kiggler  && kiggler->IsInCombat()) ||
+                                  (krosh    && krosh->IsInCombat()) ||
+                                  (olm      && olm->IsInCombat()) ||
+                                  (blindeye && blindeye->IsInCombat());
+
+    if (maulgarEncounterActive && botAI->HasStrategy("tank assist", BOT_STATE_COMBAT))
+    {
+        botAI->ChangeStrategy("-tank assist", BOT_STATE_COMBAT);
+        LOG_DEBUG("playerbots", "[HighKingMaulgarRemoveTankAssistAction] Removed tank assist (council in combat)");
+        return true;
+    }
+    return false;
+}
+
 bool HighKingMaulgarMaulgarTankAction::Execute(Event event)
 {
-    if (!IsFirstTank(botAI, bot))
+    if (!IsMaulgarTank(botAI, bot))
         return false;
 
     Group* group = bot->GetGroup();
@@ -97,7 +123,7 @@ bool HighKingMaulgarMaulgarTankAction::Execute(Event event)
 
 bool HighKingMaulgarOlmTankAction::Execute(Event event)
 {
-    if (!IsSecondTank(botAI, bot))
+    if (!IsOlmTank(botAI, bot))
         return false;
 
     Group* group = bot->GetGroup();
@@ -132,8 +158,7 @@ bool HighKingMaulgarOlmTankAction::Execute(Event event)
         botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(olm);
     }
 
-    // Check if bot has no target or if target is not Olm
-    if (bot->GetVictim() != olm)
+    if (bot->GetVictim() != olm || olm->IsNonMeleeSpellCast(false))
     {
         LOG_DEBUG("playerbots", "[HighKingMaulgarOlmTankAction] {} is switching target to Olm", bot->GetName().c_str());
         Attack(olm);
@@ -146,14 +171,13 @@ bool HighKingMaulgarOlmTankAction::Execute(Event event)
         }
     }
 
-    // If we're tanking, prioritize positioning over simply being in melee range
-    if (olm->GetVictim() == bot)
+    if (olm->GetVictim() == bot && !olm->IsNonMeleeSpellCast(false))
     {
         LOG_DEBUG("playerbots", "[HighKingMaulgarOlmTankAction] {} is tanking Olm", bot->GetName().c_str());
         const TankSpot& spot = GruulsLairTankSpots::Olm;
         const float maxDistance = 3.0f;
         float distanceToOlm = olm->GetExactDist2d(spot.x, spot.y);
-        
+
         // If boss is not near the designated spot, move to drag the boss there
         if (distanceToOlm > maxDistance)
         {
@@ -162,16 +186,14 @@ bool HighKingMaulgarOlmTankAction::Execute(Event event)
             float dY = spot.y - olm->GetPositionY();
             float moveX = spot.x + (dX / distanceToOlm) * maxDistance;
             float moveY = spot.y + (dY / distanceToOlm) * maxDistance;
-            
             return MoveTo(bot->GetMapId(), moveX, moveY, spot.z, false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
         }
-        
+
         // Boss is in position, maintain facing
         float orientation = atan2(olm->GetPositionY() - bot->GetPositionY(), olm->GetPositionX() - bot->GetPositionX());
         bot->SetFacingTo(orientation);
         return false;
     }
-    // We're not tanking yet, but should be in melee range to generate threat
     else if (!bot->IsWithinMeleeRange(olm))
     {
         LOG_DEBUG("playerbots", "[HighKingMaulgarOlmTankAction] {} is moving into melee range of Olm to gain threat", bot->GetName().c_str());
@@ -183,7 +205,7 @@ bool HighKingMaulgarOlmTankAction::Execute(Event event)
 
 bool HighKingMaulgarBlindeyeTankAction::Execute(Event event)
 {
-    if (!IsThirdTank(botAI, bot))
+    if (!IsBlindeyeTank(botAI, bot))
         return false;
 
     Group* group = bot->GetGroup();
@@ -239,7 +261,21 @@ bool HighKingMaulgarBlindeyeTankAction::Execute(Event event)
         const TankSpot& spot = GruulsLairTankSpots::Blindeye;
         const float maxDistance = 3.0f;
         float distanceToBlindeye = blindeye->GetExactDist2d(spot.x, spot.y);
-        
+
+        // Always stay in melee range to maintain aggro
+        if (!bot->IsWithinMeleeRange(blindeye))
+        {
+            LOG_DEBUG("playerbots", "[HighKingMaulgarBlindeyeTankAction] {} is moving into melee range of Blindeye to maintain/gain threat", bot->GetName().c_str());
+            return MoveTo(blindeye->GetMapId(), blindeye->GetPositionX(), blindeye->GetPositionY(), blindeye->GetPositionZ());
+        }
+
+        // If Blindeye is casting, just stay close and keep aggro
+        if (blindeye->IsNonMeleeSpellCast(false))
+        {
+            LOG_DEBUG("playerbots", "[HighKingMaulgarBlindeyeTankAction] Blindeye is casting, staying close to maintain aggro");
+            return false;
+        }
+
         // If boss is not near the designated spot, move to drag the boss there
         if (distanceToBlindeye > maxDistance)
         {
@@ -248,10 +284,9 @@ bool HighKingMaulgarBlindeyeTankAction::Execute(Event event)
             float dY = spot.y - blindeye->GetPositionY();
             float moveX = spot.x + (dX / distanceToBlindeye) * maxDistance;
             float moveY = spot.y + (dY / distanceToBlindeye) * maxDistance;
-            
             return MoveTo(bot->GetMapId(), moveX, moveY, spot.z, false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
         }
-        
+
         // Boss is in position, maintain facing
         float orientation = atan2(blindeye->GetPositionY() - bot->GetPositionY(), blindeye->GetPositionX() - bot->GetPositionX());
         bot->SetFacingTo(orientation);
@@ -418,9 +453,9 @@ bool HighKingMaulgarMeleeDPSAction::Execute(Event event)
 
     // Check if this bot should be performing the Melee DPS role
     if (!botAI->IsMelee(bot) || 
-        (IsFirstTank(botAI, bot) && maulgar && maulgar->IsAlive()) || 
-        (IsSecondTank(botAI, bot) && olm && olm->IsAlive()) || 
-        (IsThirdTank(botAI, bot) && blindeye && blindeye->IsAlive()))
+        (IsMaulgarTank(botAI, bot) && maulgar && maulgar->IsAlive()) || 
+        (IsOlmTank(botAI, bot) && olm && olm->IsAlive()) || 
+        (IsBlindeyeTank(botAI, bot) && blindeye && blindeye->IsAlive()))
         return false;
 
     // Target priority 1: Blindeye
@@ -938,9 +973,9 @@ bool HighKingMaulgarBanishFelstalkerAction::isUseful()
     LOG_DEBUG("playerbots", "[HighKingMaulgarControlFelstalkerAction] Pet pointer: {}, IsAlive: {}, HasEnslave: {}",
     felStalker ? "valid" : "null",
     felStalker && felStalker->IsAlive() ? "yes" : "no",
-    felStalker && felStalker->HasAura(SPELL_ENSLAVE_DEMON) ? "yes" : "no");
+    felStalker && felStalker->HasAura(SPELL_AURA_ENSLAVE_DEMON) ? "yes" : "no");
 
-    if (felStalker && felStalker->IsAlive() && felStalker->HasAura(SPELL_ENSLAVE_DEMON))
+    if (felStalker && felStalker->IsAlive() && felStalker->HasAura(SPELL_AURA_ENSLAVE_DEMON))
     {
         LOG_DEBUG("playerbots", "[HighKingMaulgarControlFelstalkerAction] ReactState: {}", felStalker->GetReactState());
         LOG_DEBUG("playerbots", "[HighKingMaulgarControlFelstalkerAction] Current victim: {}", felStalker->GetVictim() ? felStalker->GetVictim()->GetName() : "none");
@@ -1035,7 +1070,7 @@ bool HighKingMaulgarBanishFelstalkerAction::isUseful()
     LOG_DEBUG("playerbots", "[HighKingMaulgarControlFelstalkerAction] Felstalker pointer: {}, IsAlive: {}, HasEnslave: {}",
         felStalker ? "valid" : "null",
         felStalker && felStalker->IsAlive() ? "yes" : "no",
-        felStalker && felStalker->HasAura(SPELL_ENSLAVE_DEMON) ? "yes" : "no");
+        felStalker && felStalker->HasAura(SPELL_AURA_ENSLAVE_DEMON) ? "yes" : "no");
 
         if (!felStalker)
         {
@@ -1047,7 +1082,7 @@ bool HighKingMaulgarBanishFelstalkerAction::isUseful()
             LOG_DEBUG("playerbots", "[HighKingMaulgarControlFelstalkerAction] Fel stalker is not alive.");
             return false;
         }
-        if (felStalker->HasAura(SPELL_ENSLAVE_DEMON))
+        if (felStalker->HasAura(SPELL_AURA_ENSLAVE_DEMON))
         {
             LOG_DEBUG("playerbots", "[HighKingMaulgarControlFelstalkerAction] Fel stalker is already enslaved.");
             return false;
@@ -1068,7 +1103,7 @@ bool HighKingMaulgarBanishFelstalkerAction::isUseful()
 
             bool castResult = botAI->CastSpell("enslave demon", felStalker);
             LOG_DEBUG("playerbots", "[HighKingMaulgarControlFelstalkerAction] Enslave Demon cast result: {}", castResult ? "success" : "failure");
-            if (felStalker->HasAura(SPELL_ENSLAVE_DEMON))
+            if (felStalker->HasAura(SPELL_AURA_ENSLAVE_DEMON))
             {
                 LOG_DEBUG("playerbots", "[HighKingMaulgarControlFelstalkerAction] Felstalker has Enslave Demon aura after cast.");
                 LOG_DEBUG("playerbots", "[HighKingMaulgarControlFelstalkerAction] bot->GetPet() GUID: {}", bot->GetPet() ? bot->GetPet()->GetGUID().ToString().c_str() : "none");
@@ -1091,150 +1126,108 @@ bool HighKingMaulgarControlFelstalkerAction::isUseful()
     return felStalker && felStalker->IsAlive() && bot->getClass() == CLASS_WARLOCK;
 } */
 
-// Misdirection doesn't set a visible aura on the target so I need to figure out if there is another approach
-// Potentially cast after combat starts but need to prioritize targets
-/* bool HighKingMaulgarHunterMisdirectionAction::Execute(Event event)
+bool HighKingMaulgarHunterMisdirectionAction::Execute(Event event)
 {
     Group* group = bot->GetGroup();
     if (!group || bot->getClass() != CLASS_HUNTER)
         return false;
-    
-    LOG_DEBUG("playerbots", "[HighKingMaulgarHunterMisdirectionAction] {} is executing Hunter Misdirection Action", bot->GetName().c_str());
 
-    // Find all boss targets
-    Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
-    Unit* olm = AI_VALUE2(Unit*, "find target", "olm the summoner");
-    Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
-    Unit* krosh = AI_VALUE2(Unit*, "find target", "krosh firehand");
-    Unit* kiggler = AI_VALUE2(Unit*, "find target", "kiggler the crazed");
-
-    // Check aura abilities
-    LOG_DEBUG("playerbots", "[HighKingMaulgarHunterMisdirectionAction] {} has 'aimed shot': {}, has 'steady shot': {}", 
-              bot->GetName().c_str(), botAI->CanCastSpell("aimed shot", bot) ? "yes" : "no", 
-              botAI->CanCastSpell("steady shot", bot) ? "yes" : "no");
-
-    bool foundMisdirection = false;
+    // Gather all alive hunter members in group order
+    std::vector<Player*> hunters;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member == bot) continue;
-        
-        // Log member details
-        LOG_DEBUG("playerbots", "[HighKingMaulgarHunterMisdirectionAction] Checking member {} for misdirection", 
-                  member->GetName().c_str());
-
-        Aura* aura = member->GetAura(SPELL_AURA_MISDIRECTION);
-        if (!aura) 
-        {
-            LOG_DEBUG("playerbots", "[HighKingMaulgarHunterMisdirectionAction] {} does not have aura with ID {}", 
-                      member->GetName().c_str(), SPELL_AURA_MISDIRECTION);
-            continue;
-        }
-
-        if (aura->GetCasterGUID() != bot->GetGUID())
-        {
-            LOG_DEBUG("playerbots", "[HighKingMaulgarHunterMisdirectionAction] {} has misdirection, but from {} not from {}", 
-                      member->GetName().c_str(), aura->GetCasterGUID().ToString().c_str(), bot->GetGUID().ToString().c_str());
-            continue;
-        }
-        
-        foundMisdirection = true;
-        LOG_DEBUG("playerbots", "[HighKingMaulgarHunterMisdirectionAction] Found misdirection on {} from {}", 
-                  member->GetName().c_str(), bot->GetName().c_str());
-        
-        // First tank with Misdirection - should attack Maulgar
-        if (IsFirstTank(botAI, member) && maulgar && maulgar->IsAlive())
-        {
-            LOG_DEBUG("playerbots", "[HighKingMaulgarHunterMisdirectionAction] {} casting shots at Maulgar due to MD on first tank", bot->GetName().c_str());
-            // Force target to Maulgar regardless of current target
-            if (bot->GetTarget() != maulgar->GetGUID())
-                bot->SetTarget(maulgar->GetGUID());
-            
-            // Try Aimed Shot first, but only if the hunter has it
-            if (botAI->CanCastSpell("aimed shot", maulgar))
-                botAI->CastSpell("aimed shot", maulgar);
-                
-            // Always try Steady Shot as a fallback
-            botAI->CastSpell("steady shot", maulgar);
-            return true;
-        }
-        
-        // Second tank with Misdirection - should attack Olm
-        else if (IsSecondTank(botAI, member) && olm && olm->IsAlive())
-        {
-            LOG_DEBUG("playerbots", "[HighKingMaulgarHunterMisdirectionAction] {} casting shots at Olm due to MD on second tank", bot->GetName().c_str());
-            // Force target to Olm regardless of current target
-            if (bot->GetTarget() != olm->GetGUID())
-                bot->SetTarget(olm->GetGUID());
-            
-            // Try Aimed Shot first, but only if the hunter has it
-            if (botAI->CanCastSpell("aimed shot", olm))
-                botAI->CastSpell("aimed shot", olm);
-
-            // Always try Steady Shot as a fallback
-            botAI->CastSpell("steady shot", olm);
-            return true;
-        }
-        
-        // Third tank with Misdirection - should attack Blindeye
-        else if (IsThirdTank(botAI, member) && blindeye && blindeye->IsAlive())
-        {
-            LOG_DEBUG("playerbots", "[HighKingMaulgarHunterMisdirectionAction] {} casting shots at Blindeye due to MD on third tank", bot->GetName().c_str());
-            // Force target to Blindeye regardless of current target
-            if (bot->GetTarget() != blindeye->GetGUID())
-                bot->SetTarget(blindeye->GetGUID());
-            
-            // Try Aimed Shot first, but only if the hunter has it
-            if (botAI->CanCastSpell("aimed shot", blindeye))
-                botAI->CastSpell("aimed shot", blindeye);
-
-            // Always try Steady Shot as a fallback
-            botAI->CastSpell("steady shot", blindeye);
-            return true;
-        }
-        
-        // Mage tank with Misdirection - should attack Krosh
-        else if (IsMageTank(botAI, member) && krosh && krosh->IsAlive())
-        {
-            LOG_DEBUG("playerbots", "[HighKingMaulgarHunterMisdirectionAction] {} casting shots at Krosh due to MD on mage tank", bot->GetName().c_str());
-            // Force target to Krosh regardless of current target
-            if (bot->GetTarget() != krosh->GetGUID())
-                bot->SetTarget(krosh->GetGUID());
-            
-            // Try Aimed Shot first, but only if the hunter has it
-            if (botAI->CanCastSpell("aimed shot", krosh))
-                botAI->CastSpell("aimed shot", krosh);
-
-            // Always try Steady Shot as a fallback
-            botAI->CastSpell("steady shot", krosh);
-            return true;
-        }
-
-        // Moonkin tank with Misdirection - should attack Kiggler
-        else if (IsMoonkinTank(botAI, member) && kiggler && kiggler->IsAlive())
-        {
-            LOG_DEBUG("playerbots", "[HighKingMaulgarHunterMisdirectionAction] {} casting shots at Kiggler due to MD on moonkin tank", bot->GetName().c_str());
-            // Force target to Kiggler regardless of current target
-            if (bot->GetTarget() != kiggler->GetGUID())
-                bot->SetTarget(kiggler->GetGUID());
-            
-            // Try Aimed Shot first, but only if the hunter has it
-            if (botAI->CanCastSpell("aimed shot", kiggler))
-                botAI->CastSpell("aimed shot", kiggler);
-
-            // Always try Steady Shot as a fallback
-            botAI->CastSpell("steady shot", kiggler);
-            return true;
-        }
+        if (member && member->IsAlive() && member->getClass() == CLASS_HUNTER)
+            hunters.push_back(member);
     }
-    if (!foundMisdirection)
+
+    // Find this bot's index among hunters
+    int hunterIndex = -1;
+    for (size_t i = 0; i < hunters.size(); ++i)
     {
-        LOG_DEBUG("playerbots", "[HighKingMaulgarHunterMisdirectionAction] No members have misdirection from {}", 
-                bot->GetName().c_str());
+        if (hunters[i] == bot)
+        {
+            hunterIndex = static_cast<int>(i);
+            break;
+        }
     }
-    // No player found with Misdirection from this hunter
+    if (hunterIndex == -1 || hunterIndex > 1)
+    {
+        return false;
+    }
+
+    // Find boss units and tanks
+    Unit* kiggler = AI_VALUE2(Unit*, "find target", "kiggler the crazed");
+    Unit* krosh = AI_VALUE2(Unit*, "find target", "krosh firehand");
+
+    Player* moonkinTank = nullptr;
+    Player* mageTank = nullptr;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive())
+            continue;
+        if (IsMoonkinTank(botAI, member)) moonkinTank = member;
+        if (IsMageTank(botAI, member)) mageTank = member;
+    }
+
+    // Logic for each hunter
+    switch (hunterIndex)
+    {
+        case 0: // First hunter
+            if (kiggler && kiggler->GetHealth() > 0.98f * kiggler->GetMaxHealth() && moonkinTank && moonkinTank->IsAlive())
+            {
+                if (botAI->CanCastSpell("misdirection", moonkinTank))
+                {
+                    LOG_DEBUG("playerbots", "[HighKingMaulgarHunterMisdirectionAction] {} casting misdirection on {}", bot->GetName().c_str(), moonkinTank->GetName().c_str());
+                    botAI->CastSpell("misdirection", moonkinTank);
+                }
+                if (bot->HasAura(SPELL_AURA_MISDIRECTION))
+                {
+                    LOG_DEBUG("playerbots", "[HighKingMaulgarHunterMisdirectionAction] {} has misdirection aura, attacking Kiggler", bot->GetName().c_str());
+                    botAI->CastSpell("steady shot", kiggler);
+                    return true;
+                }
+                else
+                {
+                    LOG_DEBUG("playerbots", "[HighKingMaulgarHunterMisdirectionAction] {} does not have misdirection aura, ending action", bot->GetName().c_str());
+                    return false;
+                }
+            }
+            break;
+
+        // Second hunter (index 1)
+        case 1:
+            LOG_DEBUG("playerbots", "[HighKingMaulgarHunterMisdirectionAction] {} is fourth hunter", bot->GetName().c_str());
+            if (krosh && krosh->IsAlive() && krosh->GetHealth() > 0.98f * krosh->GetMaxHealth() && mageTank && mageTank->IsAlive())
+            {
+                if (botAI->CanCastSpell("misdirection", mageTank))
+                {
+                    LOG_DEBUG("playerbots", "[HighKingMaulgarHunterMisdirectionAction] {} casting misdirection on {}", bot->GetName().c_str(), mageTank->GetName().c_str());
+                    botAI->CastSpell("misdirection", mageTank);
+                }
+                if (bot->HasAura(SPELL_AURA_MISDIRECTION))
+                {
+                    LOG_DEBUG("playerbots", "[HighKingMaulgarHunterMisdirectionAction] {} has misdirection aura, attacking Krosh", bot->GetName().c_str());
+                    botAI->CastSpell("steady shot", krosh);
+                    return true;
+                }
+                else
+                {
+                    LOG_DEBUG("playerbots", "[HighKingMaulgarHunterMisdirectionAction] {} does not have misdirection aura, ending action", bot->GetName().c_str());
+                    return false;
+                }
+            }
+            break;
+        default:
+
+            break;
+    }
+
+    LOG_DEBUG("playerbots", "[HighKingMaulgarHunterMisdirectionAction] {} did not meet conditions for misdirection/attack", bot->GetName().c_str());
     return false;
-} */
+}
 
 bool GruulTheDragonkillerPositionBossAction::Execute(Event event)
 {
@@ -1285,55 +1278,6 @@ bool GruulTheDragonkillerPositionBossAction::isUseful()
     return gruul && gruul->IsAlive() && botAI->IsTank(bot) && 
            botAI->HasAggro(gruul) && gruul->GetVictim() == bot;
 }
-
-/* bool GruulTheDragonkillerSpreadMeleeAction::Execute(Event event)
-{
-    Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
-
-    float gruulMeleeRadius = 15.0f; // Gruul's hitbox radius
-    float minSpreadDistance = 5.0f; // Minimum distance to maintain from other players
-    float movementThreshold = 2.0f;
-    Unit* closestMember = nullptr;
-
-    // Get all group members
-    GuidVector members = AI_VALUE(GuidVector, "group members");
-    for (auto& member : members)
-    {
-        Unit* unit = botAI->GetUnit(member);
-        if (!unit || !unit->IsAlive() || unit == bot)
-            continue;
-
-        // Find the closest group member
-        if (!closestMember || bot->GetExactDist2d(unit) < bot->GetExactDist2d(closestMember))
-        {
-            closestMember = unit;
-        }
-    }
-
-    if (closestMember && bot->GetExactDist2d(closestMember) < minSpreadDistance - movementThreshold)
-    {
-        return MoveAway(closestMember, minSpreadDistance);
-    }
-
-    float distanceToGruul = bot->GetExactDist2d(gruul);
-
-    if (distanceToGruul > gruulMeleeRadius || 
-        distanceToGruul < gruulMeleeRadius - 4.0f - movementThreshold)
-    {
-        return MoveTo(gruul->GetMapId(), gruul->GetPositionX(), gruul->GetPositionY(), 
-               gruul->GetPositionZ(), gruulMeleeRadius);
-    }
-
-    return false;
-}
-
-bool GruulTheDragonkillerSpreadMeleeAction::isUseful()
-{
-    Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
-
-    // Don't want tanks to be moving around so spreading is just for melee DPS
-    return gruul && gruul->IsAlive() && botAI->IsMelee(bot) && !botAI->IsTank(bot);
-} */
 
 bool GruulTheDragonkillerSpreadRangedAction::Execute(Event event)
 {

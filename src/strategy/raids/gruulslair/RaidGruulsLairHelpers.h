@@ -22,13 +22,13 @@ enum GruulsLairSpells
 	// SPELL_WILD_BITE = 33086,
 
 	// Hunter
-	// SPELL_AURA_MISDIRECTION = 35079,
+	SPELL_AURA_MISDIRECTION = 34477,
 
 	// Mage
 	SPELL_SPELLSTEAL = 30449,
 
 	// Warlock
-	// SPELL_ENSLAVE_DEMON = 11726, // Rank 3
+	// SPELL_AURA_ENSLAVE_DEMON = 11726, // Rank 3
 
 	// Gruul the Dragonkiller
 	SPELL_AURA_GROUND_SLAM_1 = 33525,
@@ -42,9 +42,9 @@ inline constexpr int8 circleIcon = RtiTargetValue::circleIndex;
 inline constexpr int8 diamondIcon = RtiTargetValue::diamondIndex;
 inline constexpr int8 triangleIcon = RtiTargetValue::triangleIndex;
 
-bool IsFirstTank(PlayerbotAI* botAI, Player* bot);
-bool IsSecondTank(PlayerbotAI* botAI, Player* bot);
-bool IsThirdTank(PlayerbotAI* botAI, Player* bot);
+bool IsMaulgarTank(PlayerbotAI* botAI, Player* bot);
+bool IsOlmTank(PlayerbotAI* botAI, Player* bot);
+bool IsBlindeyeTank(PlayerbotAI* botAI, Player* bot);
 bool IsMageTank(PlayerbotAI* botAI, Player* bot);
 bool IsMoonkinTank(PlayerbotAI* botAI, Player* bot);
 bool IsPositionSafe(PlayerbotAI* botAI, Unit* bot, Position pos);

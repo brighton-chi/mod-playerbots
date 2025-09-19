@@ -64,7 +64,7 @@ bool IsMoonkinTank(PlayerbotAI* botAI, Player* bot)
     return highestHpMoonkin == bot;
 }
 
-bool IsFirstTank(PlayerbotAI* botAI, Player* bot)
+bool IsMaulgarTank(PlayerbotAI* botAI, Player* bot)
 {
     Group* group = bot->GetGroup();
     if (!group || !botAI->IsTank(bot))
@@ -82,7 +82,7 @@ bool IsFirstTank(PlayerbotAI* botAI, Player* bot)
     return false;
 }
 
-bool IsSecondTank(PlayerbotAI* botAI, Player* bot)
+bool IsOlmTank(PlayerbotAI* botAI, Player* bot)
 {
     Group* group = bot->GetGroup();
     if (!group || !botAI->IsTank(bot))
@@ -105,7 +105,7 @@ bool IsSecondTank(PlayerbotAI* botAI, Player* bot)
     return false;
 }
 
-bool IsThirdTank(PlayerbotAI* botAI, Player* bot)
+bool IsBlindeyeTank(PlayerbotAI* botAI, Player* bot)
 {
     Group* group = bot->GetGroup();
     if (!group || !botAI->IsTank(bot))

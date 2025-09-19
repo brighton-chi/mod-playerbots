@@ -8,7 +8,7 @@ class HighKingMaulgarTrigger : public Trigger
 public:
     HighKingMaulgarTrigger(PlayerbotAI* botAI) : Trigger(botAI, "high king maulgar") {}
     bool IsActive() override;
-}; 
+};
 
 class GruulTheDragonkillerTrigger : public Trigger
 {
