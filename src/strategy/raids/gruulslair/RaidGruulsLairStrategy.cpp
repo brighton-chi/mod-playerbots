@@ -15,7 +15,6 @@ void RaidGruulsLairStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new NextAction("high king maulgar melee dps", ACTION_RAID + 2),
         new NextAction("high king maulgar ranged dps", ACTION_RAID + 2),
         new NextAction("high king maulgar healer avoidance", ACTION_RAID + 2),
-        // new NextAction("high king maulgar control felstalker", ACTION_RAID + 1),
         nullptr)));
 
     triggers.push_back(new TriggerNode("gruul the dragonkiller", NextAction::array(0,

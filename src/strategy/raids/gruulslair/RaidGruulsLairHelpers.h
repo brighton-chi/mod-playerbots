@@ -13,22 +13,11 @@ enum GruulsLairSpells
 	// Krosh Firehand
 	SPELL_AURA_SPELL_SHIELD = 33054,
 
-	// Olm the Summoner
-	// SPELL_AURA_DARK_DECAY = 33129,
-
-	// Wild Fel Stalker
-	// SPELL_DETERMINATION = 33091,
-	// SPELL_THREATEN = 33096,
-	// SPELL_WILD_BITE = 33086,
-
 	// Hunter
 	SPELL_AURA_MISDIRECTION = 34477,
 
 	// Mage
 	SPELL_SPELLSTEAL = 30449,
-
-	// Warlock
-	// SPELL_AURA_ENSLAVE_DEMON = 11726, // Rank 3
 
 	// Gruul the Dragonkiller
 	SPELL_AURA_GROUND_SLAM_1 = 33525,
@@ -54,7 +43,7 @@ Position FindSafePosition(PlayerbotAI* botAI, Unit* bot, Unit* target, float opt
 struct TankSpot 
 {
 	float x, y, z;
-	float orientation; // in radians
+	float orientation;
 };
 
 namespace GruulsLairTankSpots 

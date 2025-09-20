@@ -9,7 +9,9 @@ bool IsMageTank(PlayerbotAI* botAI, Player* bot)
 {
     Group* group = bot->GetGroup();
     if (!group)
+    {
         return false;
+    }
 
     Player* highestHpMage = nullptr;
     uint32 highestHp = 0;
@@ -18,7 +20,9 @@ bool IsMageTank(PlayerbotAI* botAI, Player* bot)
     {
         Player* member = ref->GetSource();
         if (!member)
+        {
             continue;
+        }
         if (member->getClass() == CLASS_MAGE)
         {
             uint32 hp = member->GetMaxHealth();
@@ -36,7 +40,9 @@ bool IsMoonkinTank(PlayerbotAI* botAI, Player* bot)
 {
     Group* group = bot->GetGroup();
     if (!group)
+    {
         return false;
+    }
 
     Player* highestHpMoonkin = nullptr;
     uint32 highestHp = 0;
@@ -45,8 +51,10 @@ bool IsMoonkinTank(PlayerbotAI* botAI, Player* bot)
     {
         Player* member = ref->GetSource();
         if (!member)
+        {
             continue;
-        // Check if member is a balance druid (tab == DRUID_TAB_BALANCE)
+        }
+
         if (member->getClass() == CLASS_DRUID)
         {
             int tab = AiFactory::GetPlayerSpecTab(member);
@@ -68,8 +76,9 @@ bool IsMaulgarTank(PlayerbotAI* botAI, Player* bot)
 {
     Group* group = bot->GetGroup();
     if (!group || !botAI->IsTank(bot))
+    {
         return false;
-
+    }
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
@@ -86,8 +95,9 @@ bool IsOlmTank(PlayerbotAI* botAI, Player* bot)
 {
     Group* group = bot->GetGroup();
     if (!group || !botAI->IsTank(bot))
+    {
         return false;
-
+    }
     int tankIndex = 0;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
@@ -109,8 +119,9 @@ bool IsBlindeyeTank(PlayerbotAI* botAI, Player* bot)
 {
     Group* group = bot->GetGroup();
     if (!group || !botAI->IsTank(bot))
+    {
         return false;
-
+    }
     int tankIndex = 0;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
@@ -128,19 +139,13 @@ bool IsBlindeyeTank(PlayerbotAI* botAI, Player* bot)
     return false;
 }
 
-// Helper function to check if a position is safe from all boss mechanics
 bool IsPositionSafe(PlayerbotAI* botAI, Unit* bot, Position pos)
 {
-    // Safety distances
     const float KROSH_SAFE_DISTANCE = 21.0f;
     const float MAULGAR_WHIRLWIND_DISTANCE = 10.0f;
-    
     bool isSafe = true;
 
-    // Find Krosh using botAI
     Unit* krosh = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "krosh firehand")->Get();
-    
-    // Check Krosh's blast wave safety
     if (krosh && krosh->IsAlive())
     {
         float dist = sqrt(pow(pos.GetPositionX() - krosh->GetPositionX(), 2) + 
@@ -148,29 +153,23 @@ bool IsPositionSafe(PlayerbotAI* botAI, Unit* bot, Position pos)
         if (dist < KROSH_SAFE_DISTANCE)
         {
             isSafe = false;
-            LOG_DEBUG("playerbots", "Position unsafe from Krosh - distance: {}", dist);
         }
     }
-
-    // Find Maulgar using botAI
     Unit* maulgar = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "high king maulgar")->Get();
-    
-    // Check Maulgar's whirlwind safety (only if he's casting it)
-    if (maulgar && maulgar->IsAlive() && maulgar->HasAura(SPELL_AURA_WHIRLWIND)) // Use actual spell ID for Whirlwind
+    if (maulgar && maulgar->IsAlive() && maulgar->HasAura(SPELL_AURA_WHIRLWIND))
     {
         float dist = sqrt(pow(pos.GetPositionX() - maulgar->GetPositionX(), 2) + 
                           pow(pos.GetPositionY() - maulgar->GetPositionY(), 2));
+
         if (dist < MAULGAR_WHIRLWIND_DISTANCE)
         {
             isSafe = false;
-            LOG_DEBUG("playerbots", "Position unsafe from Maulgar's Whirlwind - distance: {}", dist);
         }
     }
     
     return isSafe;
 }
 
-// Helper function to find a safe position while still being optimal for target
 Position FindSafePosition(PlayerbotAI* botAI, Unit* bot, Unit* target, float optimalDistance)
 {
     Position bestPos;
@@ -181,7 +180,6 @@ Position FindSafePosition(PlayerbotAI* botAI, Unit* bot, Unit* target, float opt
     Unit* krosh = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "krosh firehand")->Get();
     Unit* maulgar = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "high king maulgar")->Get();
 
-    // If no dangerous bosses are alive, return current position
     bool dangerousKrosh = krosh && krosh->IsAlive();
     bool dangerousMaulgar = maulgar && maulgar->IsAlive() && maulgar->HasAura(SPELL_AURA_WHIRLWIND);
     
@@ -190,14 +188,12 @@ Position FindSafePosition(PlayerbotAI* botAI, Unit* bot, Unit* target, float opt
         return bestPos;
     }
 
-    // Check if current position is safe
     if (IsPositionSafe(botAI, bot, bestPos))
     {
         return bestPos;
     }
 
-    // Try to find a safe position in a circle around the target
-    const int NUM_POSITIONS = 32; // Try 32 positions around the circle
+    const int NUM_POSITIONS = 32;
     float bestScore = 99999.0f;
     bool foundSafeSpot = false;
     
@@ -211,11 +207,9 @@ Position FindSafePosition(PlayerbotAI* botAI, Unit* bot, Unit* target, float opt
         
         if (IsPositionSafe(botAI, bot, candidatePos))
         {
-            // Calculate score based on how far this position is from the bot's current position
             float movementDistance = sqrt(pow(candidatePos.GetPositionX() - bot->GetPositionX(), 2) + 
                                          pow(candidatePos.GetPositionY() - bot->GetPositionY(), 2));
             
-            // Prefer positions that require less movement
             if (movementDistance < bestScore)
             {
                 bestScore = movementDistance;
@@ -224,20 +218,14 @@ Position FindSafePosition(PlayerbotAI* botAI, Unit* bot, Unit* target, float opt
             }
         }
     }
-    
-    // If we found a safe position, use it
+
     if (foundSafeSpot)
     {
-        LOG_DEBUG("playerbots", "Found safe position for {} at ({}, {})", 
-                bot->GetName(), bestPos.GetPositionX(), bestPos.GetPositionY());
         return bestPos;
     }
-    
-    // If no safe positions were found, at least move away from dangerous bosses
-    LOG_DEBUG("playerbots", "No safe position found for {}, attempting escape maneuver", bot->GetName());
-    
-    // Calculate vector away from dangerous bosses
+
     float dx = 0, dy = 0;
+
     if (dangerousKrosh && bot->GetDistance(krosh) < 30.0f)
     {
         dx += bot->GetPositionX() - krosh->GetPositionX();
@@ -249,16 +237,15 @@ Position FindSafePosition(PlayerbotAI* botAI, Unit* bot, Unit* target, float opt
         dx += bot->GetPositionX() - maulgar->GetPositionX();
         dy += bot->GetPositionY() - maulgar->GetPositionY();
     }
-    
-    // Normalize and scale the escape vector
+
     float dist = sqrt(dx*dx + dy*dy);
     if (dist > 0.1f)
     {
-        float escapeDistance = 20.0f; // Move this far away
+        float escapeDistance = 20.0f;
         bestPos.m_positionX = bot->GetPositionX() + (dx/dist) * escapeDistance;
         bestPos.m_positionY = bot->GetPositionY() + (dy/dist) * escapeDistance;
         bestPos.m_positionZ = bot->GetPositionZ();
     }
-    
+
     return bestPos;
 }

@@ -5,7 +5,6 @@
 #include "AttackAction.h"
 #include "MovementActions.h"
 
-
 class HighKingMaulgarRemoveTankAssistAction : public Action
 {
 public:
@@ -86,15 +85,6 @@ public:
     bool Execute(Event event) override;
     bool isUseful();
 };
-
-/* class HighKingMaulgarControlFelstalkerAction : public AttackAction
-{
-public:
-    HighKingMaulgarControlFelstalkerAction(PlayerbotAI* botAI, std::string const name = "high king maulgar control felstalker") : AttackAction(botAI, name) {};
-
-    bool Execute(Event event) override;
-    bool isUseful();
-}; */
 
 class HighKingMaulgarHunterMisdirectionAction : public AttackAction
 {
