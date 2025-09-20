@@ -15,8 +15,6 @@
 #include "PaladinAiObjectContext.h"
 #include "Playerbots.h"
 #include "PriestAiObjectContext.h"
-#include "RaidUlduarActionContext.h"
-#include "RaidUlduarTriggerContext.h"
 #include "RogueAiObjectContext.h"
 #include "ShamanAiObjectContext.h"
 #include "SharedValueContext.h"
@@ -27,51 +25,34 @@
 #include "WarriorAiObjectContext.h"
 #include "WorldPacketActionContext.h"
 #include "WorldPacketTriggerContext.h"
-#include "raids/RaidStrategyContext.h"
-#include "raids/blackwinglair/RaidBwlActionContext.h"
-#include "raids/blackwinglair/RaidBwlTriggerContext.h"
-#include "raids/naxxramas/RaidNaxxActionContext.h"
-#include "raids/naxxramas/RaidNaxxTriggerContext.h"
-#include "raids/icecrown/RaidIccActionContext.h"
-#include "raids/icecrown/RaidIccTriggerContext.h"
-#include "raids/obsidiansanctum/RaidOsActionContext.h"
-#include "raids/obsidiansanctum/RaidOsTriggerContext.h"
-#include "raids/eyeofeternity/RaidEoEActionContext.h"
-#include "raids/vaultofarchavon/RaidVoATriggerContext.h"
-#include "raids/onyxia/RaidOnyxiaActionContext.h"
-#include "raids/onyxia/RaidOnyxiaTriggerContext.h"
-#include "raids/vaultofarchavon/RaidVoAActionContext.h"
-#include "raids/eyeofeternity/RaidEoETriggerContext.h"
-#include "raids/moltencore/RaidMcActionContext.h"
-#include "raids/moltencore/RaidMcTriggerContext.h"
-#include "raids/aq20/RaidAq20ActionContext.h"
-#include "raids/aq20/RaidAq20TriggerContext.h"
-#include "raids/karazhan/RaidKarazhanActionContext.h"
-#include "raids/karazhan/RaidKarazhanTriggerContext.h"
 #include "dungeons/DungeonStrategyContext.h"
 #include "dungeons/wotlk/WotlkDungeonActionContext.h"
 #include "dungeons/wotlk/WotlkDungeonTriggerContext.h"
 #include "raids/RaidStrategyContext.h"
 #include "raids/aq20/RaidAq20ActionContext.h"
 #include "raids/aq20/RaidAq20TriggerContext.h"
-#include "raids/blackwinglair/RaidBwlActionContext.h"
-#include "raids/blackwinglair/RaidBwlTriggerContext.h"
-#include "raids/eyeofeternity/RaidEoEActionContext.h"
-#include "raids/eyeofeternity/RaidEoETriggerContext.h"
-#include "raids/icecrown/RaidIccActionContext.h"
-#include "raids/icecrown/RaidIccTriggerContext.h"
 #include "raids/moltencore/RaidMcActionContext.h"
 #include "raids/moltencore/RaidMcTriggerContext.h"
-#include "raids/naxxramas/RaidNaxxActionContext.h"
-#include "raids/naxxramas/RaidNaxxTriggerContext.h"
-#include "raids/obsidiansanctum/RaidOsActionContext.h"
-#include "raids/obsidiansanctum/RaidOsTriggerContext.h"
-#include "raids/onyxia/RaidOnyxiaActionContext.h"
-#include "raids/onyxia/RaidOnyxiaTriggerContext.h"
-#include "raids/vaultofarchavon/RaidVoAActionContext.h"
-#include "raids/vaultofarchavon/RaidVoATriggerContext.h"
+#include "raids/blackwinglair/RaidBwlActionContext.h"
+#include "raids/blackwinglair/RaidBwlTriggerContext.h"
+#include "raids/karazhan/RaidKarazhanActionContext.h"
+#include "raids/karazhan/RaidKarazhanTriggerContext.h"
 #include "raids/gruulslair/RaidGruulsLairActionContext.h"
 #include "raids/gruulslair/RaidGruulsLairTriggerContext.h"
+#include "raids/naxxramas/RaidNaxxActionContext.h"
+#include "raids/naxxramas/RaidNaxxTriggerContext.h"
+#include "raids/eyeofeternity/RaidEoEActionContext.h"
+#include "raids/eyeofeternity/RaidEoETriggerContext.h"
+#include "raids/vaultofarchavon/RaidVoAActionContext.h"
+#include "raids/vaultofarchavon/RaidVoATriggerContext.h"
+#include "raids/obsidiansanctum/RaidOsActionContext.h"
+#include "raids/obsidiansanctum/RaidOsTriggerContext.h"
+#include "RaidUlduarActionContext.h"
+#include "RaidUlduarTriggerContext.h"
+#include "raids/onyxia/RaidOnyxiaActionContext.h"
+#include "raids/onyxia/RaidOnyxiaTriggerContext.h"
+#include "raids/icecrown/RaidIccActionContext.h"
+#include "raids/icecrown/RaidIccTriggerContext.h"
 
 SharedNamedObjectContextList<Strategy> AiObjectContext::sharedStrategyContexts;
 SharedNamedObjectContextList<Action> AiObjectContext::sharedActionContexts;
@@ -119,8 +100,8 @@ void AiObjectContext::BuildSharedStrategyContexts(SharedNamedObjectContextList<S
     strategyContexts.Add(new MovementStrategyContext());
     strategyContexts.Add(new AssistStrategyContext());
     strategyContexts.Add(new QuestStrategyContext());
-    strategyContexts.Add(new RaidStrategyContext());
     strategyContexts.Add(new DungeonStrategyContext());
+    strategyContexts.Add(new RaidStrategyContext());
 }
 
 void AiObjectContext::BuildSharedActionContexts(SharedNamedObjectContextList<Action>& actionContexts)
@@ -128,18 +109,18 @@ void AiObjectContext::BuildSharedActionContexts(SharedNamedObjectContextList<Act
     actionContexts.Add(new ActionContext());
     actionContexts.Add(new ChatActionContext());
     actionContexts.Add(new WorldPacketActionContext());
+    actionContexts.Add(new RaidAq20ActionContext());
     actionContexts.Add(new RaidMcActionContext());
     actionContexts.Add(new RaidBwlActionContext());
-    actionContexts.Add(new RaidOnyxiaActionContext());
-    actionContexts.Add(new RaidAq20ActionContext());
+    actionContexts.Add(new RaidKarazhanActionContext());
+    actionContexts.Add(new RaidGruulsLairActionContext());
     actionContexts.Add(new RaidNaxxActionContext());
     actionContexts.Add(new RaidOsActionContext());
     actionContexts.Add(new RaidEoEActionContext());
     actionContexts.Add(new RaidVoAActionContext());
     actionContexts.Add(new RaidUlduarActionContext());
+    actionContexts.Add(new RaidOnyxiaActionContext());
     actionContexts.Add(new RaidIccActionContext());
-    actionContexts.Add(new RaidKarazhanActionContext());
-    actionContexts.Add(new RaidGruulsLairActionContext());
     actionContexts.Add(new WotlkDungeonUKActionContext());
     actionContexts.Add(new WotlkDungeonNexActionContext());
     actionContexts.Add(new WotlkDungeonANActionContext());
@@ -162,18 +143,18 @@ void AiObjectContext::BuildSharedTriggerContexts(SharedNamedObjectContextList<Tr
     triggerContexts.Add(new TriggerContext());
     triggerContexts.Add(new ChatTriggerContext());
     triggerContexts.Add(new WorldPacketTriggerContext());
+    triggerContexts.Add(new RaidAq20TriggerContext());
     triggerContexts.Add(new RaidMcTriggerContext());
     triggerContexts.Add(new RaidBwlTriggerContext());
-    triggerContexts.Add(new RaidOnyxiaTriggerContext());
-    triggerContexts.Add(new RaidAq20TriggerContext());
+    triggerContexts.Add(new RaidKarazhanTriggerContext());
+    triggerContexts.Add(new RaidGruulsLairTriggerContext());
     triggerContexts.Add(new RaidNaxxTriggerContext());
     triggerContexts.Add(new RaidOsTriggerContext());
     triggerContexts.Add(new RaidEoETriggerContext());
     triggerContexts.Add(new RaidVoATriggerContext());
     triggerContexts.Add(new RaidUlduarTriggerContext());
+    triggerContexts.Add(new RaidOnyxiaTriggerContext());
     triggerContexts.Add(new RaidIccTriggerContext());
-    triggerContexts.Add(new RaidKarazhanTriggerContext());
-    triggerContexts.Add(new RaidGruulsLairTriggerContext());
     triggerContexts.Add(new WotlkDungeonUKTriggerContext());
     triggerContexts.Add(new WotlkDungeonNexTriggerContext());
     triggerContexts.Add(new WotlkDungeonANTriggerContext());
