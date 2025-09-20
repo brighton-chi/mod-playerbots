@@ -152,12 +152,22 @@ bool KarazhanMaidenOfVirtuePositionRangedAction::isUseful()
 bool KarazhanBigBadWolfRunAwayAction::Execute(Event event)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "the big bad wolf");
-
-    bot->AttackStop();
-    bot->InterruptNonMeleeSpells(false);
+    
+    float maxDist = 0.0f;
+    int bestIndex = 0;
+    for (int i = 0; i < 4; ++i)
+    {
+        float dist = boss->GetExactDist2d(KARAZHAN_BIG_BAD_WOLF_RUN_POSITION[i]);
+        if (dist > maxDist)
+        {
+            maxDist = dist;
+            bestIndex = i;
+        }
+    }
+    currentIndex = bestIndex;
+    Position target = KARAZHAN_BIG_BAD_WOLF_RUN_POSITION[currentIndex];
 
     constexpr float threshold = 1.0f;
-    Position target = KARAZHAN_BIG_BAD_WOLF_RUN_POSITION[currentIndex];
 
     if (bot->GetExactDist2d(target.GetPositionX(), target.GetPositionY()) < threshold)
     {
@@ -222,8 +232,6 @@ bool KarazhanWizardOfOzScorchStrawmanAction::Execute(Event event)
     if (!group)
         return false;
 
-    const std::vector<uint32> scorchSpellIds = {42859, 42858, 10207};
-
     for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
     {
         Player* member = itr->GetSource();
@@ -237,19 +245,10 @@ bool KarazhanWizardOfOzScorchStrawmanAction::Execute(Event event)
         if (!mageAI)
             continue;
 
-        uint32 knownScorchId = 0;
-        for (uint32 spellId : scorchSpellIds)
+        if (mageAI->CanCastSpell("scorch", strawman))
         {
-            if (member->HasSpell(spellId))
-            {
-                knownScorchId = spellId;
-                break;
-            }
+            mageAI->CastSpell("scorch", strawman);
         }
-        if (!knownScorchId)
-            continue;
-
-        mageAI->CastSpell(knownScorchId, strawman);
     }
     return false;
 }
@@ -635,8 +634,8 @@ bool KarazhanNetherspiteBlockBlueBeamAction::isUseful()
     return boss && bluePortal && !boss->HasAura(SPELL_NETHERSPITE_BANISHED);
 }
 
-// Two healers will block the green beam for each phase (swap at 25 debuff stacks
-// OR one rogue or DPS warrior will block the green beam for any entire phase
+// Two healers will block the green beam for each phase (swap at 25 debuff stacks)
+// OR one rogue or DPS warrior will block the green beam for an entire phase (if they begin the phase as the blocker)
 // When avoiding void zones, blocking bots will move along the beam to continue blocking
 bool KarazhanNetherspiteBlockGreenBeamAction::Execute(Event event)
 {

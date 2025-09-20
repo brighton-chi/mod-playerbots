@@ -11,7 +11,6 @@ enum KarazhanSpells
 
     // Opera Event
     SPELL_LITTLE_RED_RIDING_HOOD    = 30756,
-    SPELL_FEAR                      = 6215,  // Rank 3
 
     // Shade of Aran
     SPELL_FLAME_WREATH              = 30004,
@@ -29,9 +28,6 @@ enum KarazhanSpells
 
     // Prince Malchezaar
     SPELL_ENFEEBLE                  = 30843,
-
-    // Nightbane
-    SPELL_CHARRED_EARTH             = 30129
 };
 
 enum KarazhanNpcs
@@ -54,9 +50,6 @@ enum KarazhanNpcs
 
     // Prince Malchezaar
     NPC_NETHERSPITE_INFERNAL        = 17646,
-
-    // Nightbane
-    NPC_RESTLESS_SKELETON           = 17261,
 };
 
 const Position KARAZHAN_MAIDEN_OF_VIRTUE_BOSS_POSITION = Position(-10945.881f, -2103.7817f, 92.71163f);
