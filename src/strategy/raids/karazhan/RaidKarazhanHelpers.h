@@ -52,27 +52,19 @@ enum KarazhanNpcs
     NPC_NETHERSPITE_INFERNAL        = 17646,
 };
 
-const Position KARAZHAN_MAIDEN_OF_VIRTUE_BOSS_POSITION = Position(-10945.881f, -2103.7817f, 92.71163f);
-const Position KARAZHAN_MAIDEN_OF_VIRTUE_RANGED_POSITION[8] =
+struct Position
 {
-    { -10931.178f, -2116.58f, 92.1787f },
-    { -10925.828f, -2102.425f, 92.18016f },
-    { -10933.089f, -2088.5017f, 92.18028f },
-    { -10947.59f, -2082.8147f, 92.18024f },
-    { -10960.912f, -2090.4368f, 92.17964f },
-    { -10966.017f, -2105.288f, 92.17582f },
-    { -10959.242f, -2119.6172f, 92.18062f },
-    { -10944.495f, -2123.857f, 92.18021f },
+    float x;
+    float y;
+    float z;
+    float orientation;
 };
 
-const Position KARAZHAN_BIG_BAD_WOLF_RUN_POSITION[4] = {
-    { -10913.391f, -1773.5083f, 90.47706f },
-    { -10875.456f, -1779.0358f, 90.47706f },
-    { -10872.281f, -1751.6376f, 90.47716f },
-    { -10910.492f, -1747.401f, 90.477165f },
-};
-
-const Position KARAZHAN_THE_CURATOR_BOSS_POSITION = Position(-11139.463f, -1884.6451f, 165.76564f);
+extern const Position KARAZHAN_MAIDEN_OF_VIRTUE_BOSS_POSITION;
+extern const Position KARAZHAN_MAIDEN_OF_VIRTUE_RANGED_POSITION[8];
+extern const Position KARAZHAN_BIG_BAD_WOLF_BOSS_POSITION;
+extern const Position KARAZHAN_BIG_BAD_WOLF_RUN_POSITION[4];
+extern const Position KARAZHAN_THE_CURATOR_BOSS_POSITION;
 
 class RaidKarazhanHelpers : public AiObject
 {
@@ -92,7 +84,8 @@ public:
     bool IsSafePosition (float x, float y, float z,
          const std::vector<Unit*>& hazards, float hazardRadius);
     std::vector<Unit*> GetSpawnedInfernals() const;
-    bool IsStraightPathSafe(const Position& start, const Position& target, const std::vector<Unit*>& hazards, float hazardRadius, float stepSize);
+    bool IsStraightPathSafe(const Position& start, const Position& target, 
+         const std::vector<Unit*>& hazards, float hazardRadius, float stepSize);
     Position CalculateArcPoint(const Position& current, const Position& target, const Position& center);
 };
 

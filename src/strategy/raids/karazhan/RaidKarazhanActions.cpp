@@ -7,6 +7,9 @@
 
 namespace 
 {
+    // Big Bad Wolf
+    static int currentIndex = 0;
+    // Netherspite
     static std::map<ObjectGuid, uint32> beamMoveTimes;
     static std::map<ObjectGuid, bool> lastBeamMoveSideways;
 }
@@ -149,33 +152,70 @@ bool KarazhanMaidenOfVirtuePositionRangedAction::isUseful()
     return boss && botAI->IsRanged(bot);
 }
 
-bool KarazhanBigBadWolfRunAwayAction::Execute(Event event)
+bool KarazhanBigBadWolfPositionBossAction::Execute(Event event)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "the big bad wolf");
-    
-    float maxDist = 0.0f;
-    int bestIndex = 0;
-    for (int i = 0; i < 4; ++i)
-    {
-        float dist = boss->GetExactDist2d(KARAZHAN_BIG_BAD_WOLF_RUN_POSITION[i]);
-        if (dist > maxDist)
-        {
-            maxDist = dist;
-            bestIndex = i;
-        }
-    }
-    currentIndex = bestIndex;
-    Position target = KARAZHAN_BIG_BAD_WOLF_RUN_POSITION[currentIndex];
 
+    const float maxDistance = 3.0f;
+    const float distanceToBossPosition = boss->GetExactDist2d(KARAZHAN_BIG_BAD_WOLF_BOSS_POSITION);
+
+    if (distanceToBossPosition > maxDistance)
+    {
+        float dX = KARAZHAN_BIG_BAD_WOLF_BOSS_POSITION.x - boss->GetPositionX();
+        float dY = KARAZHAN_BIG_BAD_WOLF_BOSS_POSITION.y - boss->GetPositionY();
+
+        float moveX = KARAZHAN_BIG_BAD_WOLF_BOSS_POSITION.x + (dX / distanceToBossPosition) * maxDistance;
+        float moveY = KARAZHAN_BIG_BAD_WOLF_BOSS_POSITION.y + (dY / distanceToBossPosition) * maxDistance;
+
+        float moveDistance = bot->GetExactDist2d(moveX, moveY);
+        if (moveDistance < 0.5f)
+        {
+            return false;
+        }
+
+        return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false, 
+                     MovementPriority::MOVEMENT_COMBAT, true, false);
+    }
+
+    float orientation = KARAZHAN_BIG_BAD_WOLF_BOSS_POSITION.orientation;
+    float currentOrientation = bot->GetOrientation();
+    float delta = orientation - currentOrientation;
+    while (delta > M_PI)
+        delta -= 2 * M_PI;
+    while (delta < -M_PI)
+        delta += 2 * M_PI;
+    float orientationDifference = fabs(static_cast<double>(delta));
+
+    const float orientationLeeway = 15.0f * M_PI / 180.0f;
+    if (orientationDifference > orientationLeeway)
+    {
+        bot->SetFacingTo(orientation);
+    }
+
+    return false;
+}
+
+bool KarazhanBigBadWolfPositionBossAction::isUseful()
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "the big bad wolf");
+
+    return boss && botAI->IsTank(bot) && botAI->HasAggro(boss) && boss->GetVictim() == bot && 
+           !bot->HasAura(SPELL_LITTLE_RED_RIDING_HOOD);
+}
+
+bool KarazhanBigBadWolfRunAwayAction::Execute(Event event)
+{
     constexpr float threshold = 1.0f;
 
-    if (bot->GetExactDist2d(target.GetPositionX(), target.GetPositionY()) < threshold)
+    Position target = KARAZHAN_BIG_BAD_WOLF_RUN_POSITION[currentIndex];
+
+    if (bot->GetExactDist2d(target.x, target.y) < threshold)
     {
         currentIndex = (currentIndex + 1) % 4;
         target = KARAZHAN_BIG_BAD_WOLF_RUN_POSITION[currentIndex];
     }
 
-    return MoveTo(bot->GetMapId(), target.GetPositionX(), target.GetPositionY(), target.GetPositionZ(), false, false,
+    return MoveTo(bot->GetMapId(), target.x, target.y, target.z, false, false,
                   false, true, MovementPriority::MOVEMENT_FORCED);
 }
 
