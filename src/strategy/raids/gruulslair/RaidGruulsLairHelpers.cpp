@@ -1,5 +1,6 @@
 #include "RaidGruulsLairHelpers.h"
 #include "AiFactory.h"
+#include "AiObjectContext.h"
 #include "Group.h"
 #include "GroupReference.h"
 #include "PlayerbotAI.h"
@@ -15,11 +16,11 @@ namespace GruulsLairTankSpots
 
 bool IsAnyOgreBossAlive(PlayerbotAI* botAI)
 {
-    Unit* maulgar = botAI->GetUnit("high king maulgar");
-    Unit* kiggler = botAI->GetUnit("kiggler the crazed");
-    Unit* krosh = botAI->GetUnit("krosh firehand");
-    Unit* olm = botAI->GetUnit("olm the summoner");
-    Unit* blindeye = botAI->GetUnit("blindeye the seer");
+    Unit* maulgar = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "high king maulgar")->Get();
+    Unit* kiggler = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "kiggler the crazed")->Get();
+    Unit* krosh = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "krosh firehand")->Get();
+    Unit* olm = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "olm the summoner")->Get();
+    Unit* blindeye = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "blindeye the seer")->Get();
 
     return (maulgar && maulgar->IsAlive()) ||
            (kiggler && kiggler->IsAlive()) ||

@@ -4,6 +4,7 @@
 #include "Playerbots.h"
 #include "PlayerbotMgr.h"
 #include "PlayerbotAI.h"
+#include "Position.h"
 
 namespace 
 {
@@ -161,35 +162,20 @@ bool KarazhanBigBadWolfPositionBossAction::Execute(Event event)
 
     if (distanceToBossPosition > maxDistance)
     {
-        float dX = KARAZHAN_BIG_BAD_WOLF_BOSS_POSITION.x - boss->GetPositionX();
-        float dY = KARAZHAN_BIG_BAD_WOLF_BOSS_POSITION.y - boss->GetPositionY();
+        float dX = KARAZHAN_BIG_BAD_WOLF_BOSS_POSITION.GetPositionX() - boss->GetPositionX();
+        float dY = KARAZHAN_BIG_BAD_WOLF_BOSS_POSITION.GetPositionY() - boss->GetPositionY();
 
-        float moveX = KARAZHAN_BIG_BAD_WOLF_BOSS_POSITION.x + (dX / distanceToBossPosition) * maxDistance;
-        float moveY = KARAZHAN_BIG_BAD_WOLF_BOSS_POSITION.y + (dY / distanceToBossPosition) * maxDistance;
+        float mX = KARAZHAN_BIG_BAD_WOLF_BOSS_POSITION.GetPositionX() + (dX / distanceToBossPosition) * maxDistance;
+        float mY = KARAZHAN_BIG_BAD_WOLF_BOSS_POSITION.GetPositionY() + (dY / distanceToBossPosition) * maxDistance;
 
-        float moveDistance = bot->GetExactDist2d(moveX, moveY);
+        float moveDistance = bot->GetExactDist2d(mX, mY);
         if (moveDistance < 0.5f)
         {
             return false;
         }
 
-        return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false, 
+        return MoveTo(bot->GetMapId(), mX, mY, bot->GetPositionZ(), false, false, false, false,
                      MovementPriority::MOVEMENT_COMBAT, true, false);
-    }
-
-    float orientation = KARAZHAN_BIG_BAD_WOLF_BOSS_POSITION.orientation;
-    float currentOrientation = bot->GetOrientation();
-    float delta = orientation - currentOrientation;
-    while (delta > M_PI)
-        delta -= 2 * M_PI;
-    while (delta < -M_PI)
-        delta += 2 * M_PI;
-    float orientationDifference = fabs(static_cast<double>(delta));
-
-    const float orientationLeeway = 15.0f * M_PI / 180.0f;
-    if (orientationDifference > orientationLeeway)
-    {
-        bot->SetFacingTo(orientation);
     }
 
     return false;
@@ -209,14 +195,14 @@ bool KarazhanBigBadWolfRunAwayAction::Execute(Event event)
 
     Position target = KARAZHAN_BIG_BAD_WOLF_RUN_POSITION[currentIndex];
 
-    if (bot->GetExactDist2d(target.x, target.y) < threshold)
+    while (bot->GetExactDist2d(target.GetPositionX(), target.GetPositionY()) < threshold)
     {
         currentIndex = (currentIndex + 1) % 4;
         target = KARAZHAN_BIG_BAD_WOLF_RUN_POSITION[currentIndex];
     }
 
-    return MoveTo(bot->GetMapId(), target.x, target.y, target.z, false, false,
-                  false, true, MovementPriority::MOVEMENT_FORCED);
+    return MoveTo(bot->GetMapId(), target.GetPositionX(), target.GetPositionY(), target.GetPositionZ(),
+                  false, false, false, true, MovementPriority::MOVEMENT_FORCED);
 }
 
 bool KarazhanBigBadWolfRunAwayAction::isUseful()
@@ -546,7 +532,8 @@ bool KarazhanNetherspiteBlockRedBeamAction::Execute(Event event)
             float sideY = beamPos.GetPositionY() + perpDy * 3.0f;
             float sideZ = beamPos.GetPositionZ();
 
-            return MoveTo(bot->GetMapId(), sideX, sideY, sideZ, false, false, false, true, MovementPriority::MOVEMENT_FORCED);
+            return MoveTo(bot->GetMapId(), sideX, sideY, sideZ, false, false, false, true, 
+                          MovementPriority::MOVEMENT_FORCED);
         }
     }
     return false;
@@ -634,7 +621,8 @@ bool KarazhanNetherspiteBlockBlueBeamAction::Execute(Event event)
             bool outsideAllVoidZones = true;
             for (Unit* voidZone : voidZones) 
             {
-                float voidZoneDist = sqrt(pow(candidateX - voidZone->GetPositionX(), 2) + pow(candidateY - voidZone->GetPositionY(), 2));
+                float voidZoneDist = sqrt(pow(candidateX - voidZone->GetPositionX(), 2) + 
+                                          pow(candidateY - voidZone->GetPositionY(), 2));
                 if (voidZoneDist < 4.0f) 
                 {
                     outsideAllVoidZones = false;
@@ -725,7 +713,8 @@ bool KarazhanNetherspiteBlockGreenBeamAction::Execute(Event event)
             bool outsideAllVoidZones = true;
             for (Unit* voidZone : voidZones) 
             {
-                float voidZoneDist = sqrt(pow(candidateX - voidZone->GetPositionX(), 2) + pow(candidateY - voidZone->GetPositionY(), 2));
+                float voidZoneDist = sqrt(pow(candidateX - voidZone->GetPositionX(), 2) + 
+                      pow(candidateY - voidZone->GetPositionY(), 2));
                 if (voidZoneDist < 4.0f) 
                 {
                     outsideAllVoidZones = false;
@@ -881,11 +870,12 @@ bool KarazhanNetherspiteAvoidBeamAndVoidZoneAction::Execute(Event event)
             }
         }
     }
-    if (found && karazhanHelper.IsSafePosition(bestCandidate.GetPositionX(), bestCandidate.GetPositionY(), bestCandidate.GetPositionZ(), 
+    if (found && karazhanHelper.IsSafePosition(bestCandidate.GetPositionX(), 
+        bestCandidate.GetPositionY(), bestCandidate.GetPositionZ(), 
         voidZones, 4.0f))
 
-        return MoveTo(bot->GetMapId(), bestCandidate.GetPositionX(), bestCandidate.GetPositionY(), bestCandidate.GetPositionZ(), 
-               false, false, false, true, MovementPriority::MOVEMENT_COMBAT);
+        return MoveTo(bot->GetMapId(), bestCandidate.GetPositionX(), bestCandidate.GetPositionY(), 
+                      bestCandidate.GetPositionZ(), false, false, false, true, MovementPriority::MOVEMENT_COMBAT);
     return false;
 }
 
@@ -968,7 +958,8 @@ bool KarazhanPrinceMalchezaarNonTankAvoidHazardAction::Execute(Event event)
                 float destZ = bossZ;
                 if (!bot->IsWithinLOS(x, y, destZ))
                     continue;
-                bool pathSafe = karazhanHelper.IsStraightPathSafe(Position(bx, by, bz), Position(x, y, destZ), infernals, safeInfernalDistance, stepSize);
+                bool pathSafe = karazhanHelper.IsStraightPathSafe(Position(bx, by, bz), Position(x, y, destZ), 
+                                                                  infernals, safeInfernalDistance, stepSize);
                 float moveDist = sqrt(pow(x - bx, 2) + pow(y - by, 2));
                 if (pathSafe && moveDist < bestMoveDist)
                 {
@@ -985,7 +976,8 @@ bool KarazhanPrinceMalchezaarNonTankAvoidHazardAction::Execute(Event event)
             bot->AttackStop();
             bot->InterruptNonMeleeSpells(false);
 
-            return MoveTo(bot->GetMapId(), bestDestX, bestDestY, bestDestZ, false, false, false, true, MovementPriority::MOVEMENT_FORCED);
+            return MoveTo(bot->GetMapId(), bestDestX, bestDestY, bestDestZ, false, false, false, true, 
+                          MovementPriority::MOVEMENT_FORCED);
         }
         return false;
     }
@@ -1020,7 +1012,8 @@ bool KarazhanPrinceMalchezaarNonTankAvoidHazardAction::Execute(Event event)
                     float destZ = bossZ;
                     if (!bot->IsWithinLOS(x, y, destZ))
                         continue;
-                    bool pathSafe = karazhanHelper.IsStraightPathSafe(Position(bx, by, bz), Position(x, y, destZ), infernals, safeInfernalDistance, stepSize);
+                    bool pathSafe = karazhanHelper.IsStraightPathSafe(Position(bx, by, bz), Position(x, y, destZ), 
+                                                                      infernals, safeInfernalDistance, stepSize);
                     float moveDist = sqrt(pow(x - bx, 2) + pow(y - by, 2));
                     if (pathSafe && moveDist < bestMoveDist)
                     {
@@ -1033,20 +1026,23 @@ bool KarazhanPrinceMalchezaarNonTankAvoidHazardAction::Execute(Event event)
                     }
                     if (!pathSafe)
                     {
-                        Position arcPoint = karazhanHelper.CalculateArcPoint(Position(bx, by, bz), Position(x, y, destZ), Position(bossX, bossY, bossZ));
+                        Position arcPoint = karazhanHelper.CalculateArcPoint(Position(bx, by, bz), Position(x, y, destZ), 
+                                                                             Position(bossX, bossY, bossZ));
                         if (!bot->IsWithinLOS(arcPoint.GetPositionX(), arcPoint.GetPositionY(), arcPoint.GetPositionZ()))
                             continue;
                         bool arcSafe = true;
                         for (Unit* infernal : infernals)
                         {
-                            float infernalDist = sqrt(pow(arcPoint.GetPositionX() - infernal->GetPositionX(), 2) + pow(arcPoint.GetPositionY() - infernal->GetPositionY(), 2));
+                            float infernalDist = sqrt(pow(arcPoint.GetPositionX() - infernal->GetPositionX(), 2) + 
+                                                      pow(arcPoint.GetPositionY() - infernal->GetPositionY(), 2));
                             if (infernalDist < safeInfernalDistance)
                             {
                                 arcSafe = false;
                                 break;
                             }
                         }
-                        float arcMoveDist = sqrt(pow(arcPoint.GetPositionX() - bx, 2) + pow(arcPoint.GetPositionY() - by, 2));
+                        float arcMoveDist = sqrt(pow(arcPoint.GetPositionX() - bx, 2) + 
+                                                 pow(arcPoint.GetPositionY() - by, 2));
                         if (arcSafe && arcMoveDist < bestMoveDist)
                         {
                             bestMoveDist = arcMoveDist;
@@ -1064,7 +1060,8 @@ bool KarazhanPrinceMalchezaarNonTankAvoidHazardAction::Execute(Event event)
                 bot->AttackStop();
                 bot->InterruptNonMeleeSpells(false);
 
-                return MoveTo(bot->GetMapId(), bestDestX, bestDestY, bestDestZ, false, false, false, true, MovementPriority::MOVEMENT_COMBAT);
+                return MoveTo(bot->GetMapId(), bestDestX, bestDestY, bestDestZ, false, false, false, true, 
+                              MovementPriority::MOVEMENT_COMBAT);
             }
         }
     }
@@ -1121,7 +1118,8 @@ bool KarazhanPrinceMalchezaarTankAvoidHazardAction::Execute(Event event)
                 float z = bz;
                 if (!bot->IsWithinLOS(x, y, z))
                     continue;
-                bool safe = karazhanHelper.IsStraightPathSafe(Position(bx, by, bz), Position(x, y, z), infernals, safeInfernalDistance, stepSize);
+                bool safe = karazhanHelper.IsStraightPathSafe(Position(bx, by, bz), Position(x, y, z), 
+                                                              infernals, safeInfernalDistance, stepSize);
                 float moveDist = sqrt(pow(x - bx, 2) + pow(y - by, 2));
                 if (safe && moveDist < bestMoveDist)
                 {
@@ -1134,13 +1132,15 @@ bool KarazhanPrinceMalchezaarTankAvoidHazardAction::Execute(Event event)
                 }
                 if (!safe)
                 {
-                    Position arcPoint = karazhanHelper.CalculateArcPoint(Position(bx, by, bz), Position(x, y, z), Position(bx, by, bz));
+                    Position arcPoint = karazhanHelper.CalculateArcPoint(Position(bx, by, bz), Position(x, y, z), 
+                                                                         Position(bx, by, bz));
                     if (!bot->IsWithinLOS(arcPoint.GetPositionX(), arcPoint.GetPositionY(), arcPoint.GetPositionZ()))
                         continue;
                     bool arcSafe = true;
                     for (Unit* infernal : infernals)
                     {
-                        float infernalDist = sqrt(pow(arcPoint.GetPositionX() - infernal->GetPositionX(), 2) + pow(arcPoint.GetPositionY() - infernal->GetPositionY(), 2));
+                        float infernalDist = sqrt(pow(arcPoint.GetPositionX() - infernal->GetPositionX(), 2) + 
+                                                  pow(arcPoint.GetPositionY() - infernal->GetPositionY(), 2));
                         if (infernalDist < safeInfernalDistance)
                         {
                             arcSafe = false;
@@ -1164,7 +1164,8 @@ bool KarazhanPrinceMalchezaarTankAvoidHazardAction::Execute(Event event)
         {
             bot->AttackStop();
             bot->InterruptNonMeleeSpells(false);
-            return MoveTo(bot->GetMapId(), bestDestX, bestDestY, bestDestZ, false, false, false, true, MovementPriority::MOVEMENT_COMBAT);
+            return MoveTo(bot->GetMapId(), bestDestX, bestDestY, bestDestZ, false, false, false, true, 
+                          MovementPriority::MOVEMENT_COMBAT);
         }
     }
     return false;

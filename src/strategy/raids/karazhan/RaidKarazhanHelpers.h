@@ -3,6 +3,7 @@
 
 #include "AiObject.h"
 #include "Playerbots.h"
+#include "Position.h"
 
 enum KarazhanSpells
 {
@@ -50,14 +51,6 @@ enum KarazhanNpcs
 
     // Prince Malchezaar
     NPC_NETHERSPITE_INFERNAL        = 17646,
-};
-
-struct Position
-{
-    float x;
-    float y;
-    float z;
-    float orientation;
 };
 
 extern const Position KARAZHAN_MAIDEN_OF_VIRTUE_BOSS_POSITION;
