@@ -1,8 +1,8 @@
 #include "RaidGruulsLairHelpers.h"
 #include "AiFactory.h"
-#include "PlayerbotAI.h"
 #include "Group.h"
 #include "GroupReference.h"
+#include "PlayerbotAI.h"
 #include "Unit.h"
 
 namespace GruulsLairTankSpots 
@@ -11,6 +11,21 @@ namespace GruulsLairTankSpots
 	static const TankSpot Olm      = { 99.392f, 192.834f, -10.883f, 6.265f };
 	static const TankSpot Blindeye = { 100.728f, 206.389f, -10.514f, 6.218f };
 	static const TankSpot Gruul    = { 241.238f, 365.025f, -4.220f, 4.071f};
+}
+
+bool IsAnyOgreBossAlive(PlayerbotAI* botAI)
+{
+    Unit* maulgar = botAI->GetUnit("high king maulgar");
+    Unit* kiggler = botAI->GetUnit("kiggler the crazed");
+    Unit* krosh = botAI->GetUnit("krosh firehand");
+    Unit* olm = botAI->GetUnit("olm the summoner");
+    Unit* blindeye = botAI->GetUnit("blindeye the seer");
+
+    return (maulgar && maulgar->IsAlive()) ||
+           (kiggler && kiggler->IsAlive()) ||
+           (krosh && krosh->IsAlive()) ||
+           (olm && olm->IsAlive()) ||
+           (blindeye && blindeye->IsAlive());
 }
 
 bool IsMageTank(PlayerbotAI* botAI, Player* bot)

@@ -4,35 +4,6 @@
 #include "SpellAuras.h"
 #include "Unit.h"
 
-bool HighKingMaulgarRemoveTankAssistAction::Execute(Event event)
-{
-    if (!botAI->IsTank(bot))
-    {
-        return false;
-    }
-
-    Unit* maulgar  = AI_VALUE2(Unit*, "find target", "high king maulgar");
-    Unit* kiggler  = AI_VALUE2(Unit*, "find target", "kiggler the crazed");
-    Unit* krosh    = AI_VALUE2(Unit*, "find target", "krosh firehand");
-    Unit* olm      = AI_VALUE2(Unit*, "find target", "olm the summoner");
-    Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
-
-    bool maulgarEncounterActive = (maulgar  && maulgar->IsInCombat()) ||
-                                  (kiggler  && kiggler->IsInCombat()) ||
-                                  (krosh    && krosh->IsInCombat()) ||
-                                  (olm      && olm->IsInCombat()) ||
-                                  (blindeye && blindeye->IsInCombat());
-
-    if (maulgarEncounterActive && botAI->HasStrategy("tank assist", BOT_STATE_COMBAT))
-    {
-        botAI->ChangeStrategy("-tank assist", BOT_STATE_COMBAT);
-        {
-        return true;
-        }
-    }
-    return false;
-}
-
 bool HighKingMaulgarMaulgarTankAction::Execute(Event event)
 {
     if (!IsMaulgarTank(botAI, bot))
@@ -843,8 +814,17 @@ bool HighKingMaulgarHunterMisdirectionAction::Execute(Event event)
                 return false;
             }
 
-            botAI->CastSpell("steady shot", kiggler);
-            return true;
+            if (botAI->CanCastSpell("silencing shot", kiggler))
+            {
+                botAI->CastSpell("silencing shot", kiggler);
+            }
+
+            if (botAI->CanCastSpell("steady shot", kiggler))
+            {
+                botAI->CastSpell("steady shot", kiggler);
+            }
+            
+            return false;
         }
         break;
 
@@ -855,10 +835,16 @@ bool HighKingMaulgarHunterMisdirectionAction::Execute(Event event)
                     botAI->CastSpell("misdirection", mageTank);
 
                 if (!bot->HasAura(SPELL_AURA_MISDIRECTION))
+                {
                     return false;
+                }
 
-                botAI->CastSpell("steady shot", krosh);
-                return true;
+                if (botAI->CanCastSpell("steady shot", krosh))
+                {
+                    botAI->CastSpell("steady shot", krosh);
+                }
+                
+                return false;
             }
             break;
             
