@@ -1,9 +1,302 @@
 #include "RaidMagsLairActions.h"
 #include "RaidMagsLairHelpers.h"
 #include "ChatHelper.h"
+#include "Creature.h"
 #include "Group.h"
+#include "ObjectAccessor.h"
+#include "ObjectGuid.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
+
+bool MagtheridonHellfireChannelerSouthTankAction::Execute(Event event)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    Creature* channeler = ObjectAccessor::GetSpawnedCreatureByDBGUID(bot->GetMapId(), 43160); // South channeler example
+    if (!channeler || !channeler->IsAlive())
+        return false;
+
+    // Mark with square icon
+    ObjectGuid currentIconGuid = group->GetTargetIcon(squareIcon);
+    if (currentIconGuid.IsEmpty() || currentIconGuid != channeler->GetGUID())
+        group->SetTargetIcon(squareIcon, bot->GetGUID(), channeler->GetGUID());
+
+    // Set RTI value and target
+    if (botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != "square" ||
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != channeler)
+    {
+        botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("square");
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(channeler);
+    }
+
+    if (bot->GetVictim() != channeler)
+    {
+        Attack(channeler);
+
+        if (!bot->IsWithinMeleeRange(channeler))
+            return MoveTo(channeler->GetMapId(), channeler->GetPositionX(), channeler->GetPositionY(), channeler->GetPositionZ());
+    }
+
+    return false;
+}
+
+bool MagtheridonHellfireChannelerSouthTankAction::isUseful()
+{
+    if (!IsSouthTank(botAI, bot))
+        return false;
+
+    Creature* channeler = ObjectAccessor::GetSpawnedCreatureByDBGUID(bot->GetMapId(), 43160); // South
+
+    return channeler && channeler->IsAlive();
+}
+
+bool MagtheridonHellfireChannelerWestTankAction::Execute(Event event)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    Creature* channelerStar = ObjectAccessor::GetSpawnedCreatureByDBGUID(bot->GetMapId(), 43158);      // West
+    Creature* channelerCircle = ObjectAccessor::GetSpawnedCreatureByDBGUID(bot->GetMapId(), 43161);    // Northwest
+
+    if ((!channelerStar || !channelerStar->IsAlive()) && (!channelerCircle || !channelerCircle->IsAlive()))
+        return false;
+
+    // Target selection logic (swap every 5 seconds, or always target the alive one if the other is dead)
+    static uint8 currentTargetIndex = 0;
+    static time_t lastSwapTime = 0;
+    time_t now = time(nullptr);
+
+    if (!channelerStar || !channelerStar->IsAlive())
+        currentTargetIndex = 1;
+    else if (!channelerCircle || !channelerCircle->IsAlive())
+        currentTargetIndex = 0;
+    else if (now - lastSwapTime >= 5)
+    {
+        currentTargetIndex = (currentTargetIndex + 1) % 2;
+        lastSwapTime = now;
+    }
+
+    // Mark both channelers
+    if (channelerStar && channelerStar->IsAlive())
+    {
+        ObjectGuid currentIconGuid = group->GetTargetIcon(starIcon);
+        if (currentIconGuid.IsEmpty() || currentIconGuid != channelerStar->GetGUID())
+            group->SetTargetIcon(starIcon, bot->GetGUID(), channelerStar->GetGUID());
+    }
+    if (channelerCircle && channelerCircle->IsAlive())
+    {
+        ObjectGuid currentIconGuid = group->GetTargetIcon(circleIcon);
+        if (currentIconGuid.IsEmpty() || currentIconGuid != channelerCircle->GetGUID())
+            group->SetTargetIcon(circleIcon, bot->GetGUID(), channelerCircle->GetGUID());
+    }
+
+    // Set RTI and target
+    Creature* currentTarget = (currentTargetIndex == 0) ? channelerStar : channelerCircle;
+    std::string rtiName = (currentTargetIndex == 0) ? "star" : "circle";
+    if (botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != rtiName ||
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != currentTarget)
+    {
+        botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set(rtiName);
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(currentTarget);
+    }
+
+    if (currentTarget && bot->GetVictim() != currentTarget)
+    {
+        Attack(currentTarget);
+
+        if (!bot->IsWithinMeleeRange(currentTarget))
+        {
+            return MoveTo(currentTarget->GetMapId(), currentTarget->GetPositionX(), currentTarget->GetPositionY(), currentTarget->GetPositionZ());
+        }
+    }
+
+    return false;
+}
+
+bool MagtheridonHellfireChannelerWestTankAction::isUseful()
+{
+    if (!IsWestTank(botAI, bot))
+        return false;
+
+    Creature* channelerStar = ObjectAccessor::GetSpawnedCreatureByDBGUID(bot->GetMapId(), 43158);      // West
+    Creature* channelerCircle = ObjectAccessor::GetSpawnedCreatureByDBGUID(bot->GetMapId(), 43161);    // Northwest
+
+    // Check if at least one assigned Channeler is alive
+    if ((channelerStar && channelerStar->IsAlive()) || (channelerCircle && channelerCircle->IsAlive()))
+        return true;
+
+    return false;
+}
+
+bool MagtheridonHellfireChannelerEastTankAction::Execute(Event event)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    Creature* channelerDiamond = ObjectAccessor::GetSpawnedCreatureByDBGUID(bot->GetMapId(), 43159);      // East
+    Creature* channelerTriangle = ObjectAccessor::GetSpawnedCreatureByDBGUID(bot->GetMapId(), 43157);    // Northeast
+
+    if ((!channelerDiamond || !channelerDiamond->IsAlive()) && (!channelerTriangle || !channelerTriangle->IsAlive()))
+        return false;
+
+    // Target selection logic (swap every 5 seconds, or always target the alive one if the other is dead)
+    static uint8 currentTargetIndex = 0;
+    static time_t lastSwapTime = 0;
+    time_t now = time(nullptr);
+
+    if (!channelerDiamond || !channelerDiamond->IsAlive())
+        currentTargetIndex = 1;
+    else if (!channelerTriangle || !channelerTriangle->IsAlive())
+        currentTargetIndex = 0;
+    else if (now - lastSwapTime >= 5)
+    {
+        currentTargetIndex = (currentTargetIndex + 1) % 2;
+        lastSwapTime = now;
+    }
+
+    // Mark both channelers
+    if (channelerDiamond && channelerDiamond->IsAlive())
+    {
+        ObjectGuid currentIconGuid = group->GetTargetIcon(diamondIcon);
+        if (currentIconGuid.IsEmpty() || currentIconGuid != channelerDiamond->GetGUID())
+            group->SetTargetIcon(diamondIcon, bot->GetGUID(), channelerDiamond->GetGUID());
+    }
+    if (channelerTriangle && channelerTriangle->IsAlive())
+    {
+        ObjectGuid currentIconGuid = group->GetTargetIcon(triangleIcon);
+        if (currentIconGuid.IsEmpty() || currentIconGuid != channelerTriangle->GetGUID())
+            group->SetTargetIcon(triangleIcon, bot->GetGUID(), channelerTriangle->GetGUID());
+    }
+
+    // Set RTI and target
+    Creature* currentTarget = (currentTargetIndex == 0) ? channelerDiamond : channelerTriangle;
+    std::string rtiName = (currentTargetIndex == 0) ? "diamond" : "triangle";
+    if (botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != rtiName ||
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != currentTarget)
+    {
+        botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set(rtiName);
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(currentTarget);
+    }
+
+    if (currentTarget && bot->GetVictim() != currentTarget)
+    {
+        Attack(currentTarget);
+
+        if (!bot->IsWithinMeleeRange(currentTarget))
+        {
+            return MoveTo(currentTarget->GetMapId(), currentTarget->GetPositionX(), currentTarget->GetPositionY(), currentTarget->GetPositionZ());
+        }
+    }
+
+    return false;
+}
+
+bool MagtheridonHellfireChannelerEastTankAction::isUseful()
+{
+    if (!IsEastTank(botAI, bot))
+        return false;
+
+    Creature* channelerDiamond = ObjectAccessor::GetSpawnedCreatureByDBGUID(bot->GetMapId(), 43159);      // East
+    Creature* channelerTriangle = ObjectAccessor::GetSpawnedCreatureByDBGUID(bot->GetMapId(), 43157);    // Northeast
+
+    // Check if at least one assigned Channeler is alive
+    if ((channelerDiamond && channelerDiamond->IsAlive()) || (channelerTriangle && channelerTriangle->IsAlive()))
+        return true;
+
+    return false;
+}
+
+bool MagtheridonHellfireChannelerSouthWarlockAction::Execute(Event event)
+{
+    // Implementation for South Warlock action
+    return false;
+}
+
+bool MagtheridonHellfireChannelerSouthWarlockAction::isUseful()
+{
+    return IsSouthWarlock(botAI, bot);
+}
+
+bool MagtheridonHellfireChannelerWestWarlockAction::Execute(Event event)
+{
+    // Implementation for West Warlock action
+    return false;
+}
+
+bool MagtheridonHellfireChannelerWestWarlockAction::isUseful()
+{
+    return IsWestWarlock(botAI, bot);
+}
+
+bool MagtheridonHellfireChannelerEastWarlockAction::Execute(Event event)
+{
+    // Implementation for East Warlock action
+    return false;
+}
+
+bool MagtheridonHellfireChannelerEastWarlockAction::isUseful()
+{
+    return IsEastWarlock(botAI, bot);
+}
+
+bool MagtheridonHellfireChannelerWestHealerAction::Execute(Event event)
+{
+    // Implementation for West Healer action
+    return false;
+}
+
+bool MagtheridonHellfireChannelerWestHealerAction::isUseful()
+{
+    return IsWestHealer(botAI, bot);
+}
+
+bool MagtheridonHellfireChannelerEastHealerAction::Execute(Event event)
+{
+    // Implementation for East Healer action
+    return false;
+}
+
+bool MagtheridonHellfireChannelerEastHealerAction::isUseful()
+{
+    return IsEastHealer(botAI, bot);
+}
+
+bool MagtheridonHellfireChannelerWestHunterAction::Execute(Event event)
+{
+    // Implementation for West Hunter action
+    return false;
+}
+
+bool MagtheridonHellfireChannelerWestHunterAction::isUseful()
+{
+    return IsWestHunter(botAI, bot);
+}
+
+bool MagtheridonHellfireChannelerEastHunterAction::Execute(Event event)
+{
+    // Implementation for East Hunter action
+    return false;
+}
+
+bool MagtheridonHellfireChannelerEastHunterAction::isUseful()
+{
+    return IsEastHunter(botAI, bot);
+}
+
+bool MagtheridonHellfireChannelerDPSPriorityAction::Execute(Event event)
+{
+    // Implementation for DPS Priority action
+    return false;
+}
+
+bool MagtheridonHellfireChannelerDPSPriorityAction::isUseful()
+{
+    return botAI->IsDps(bot);
+}
 
 bool MagtheridonPositionBossAction::Execute(Event event)
 {
@@ -177,8 +470,11 @@ bool MagtheridonSpreadRangedAction::isUseful()
 bool MagtheridonManticronCubeClickerPositionAction::Execute(Event event)
 {
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
-    if (!magtheridon || !magtheridon->IsInCombat())
+    if (!magtheridon || !magtheridon->IsAlive() || !magtheridon->IsInCombat())
+    {
+        cubeTimers.clear();
         return false;
+    }
 
     // Assign ranged DPS to cubes if not already assigned
     Group* group = bot->GetGroup();
