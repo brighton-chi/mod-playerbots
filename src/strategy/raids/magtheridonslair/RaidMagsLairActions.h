@@ -59,24 +59,6 @@ public:
     bool isUseful() override;
 };
 
-class MagtheridonHellfireChannelerWestHealerAction : public AttackAction
-{
-public:
-    MagtheridonHellfireChannelerWestHealerAction(PlayerbotAI* botAI, std::string const name = "magtheridon hellfire channeler west healer") : AttackAction(botAI, name) {};
-
-    bool Execute(Event event) override;
-    bool isUseful() override;
-};
-
-class MagtheridonHellfireChannelerEastHealerAction : public AttackAction
-{
-public:
-    MagtheridonHellfireChannelerEastHealerAction(PlayerbotAI* botAI, std::string const name = "magtheridon hellfire channeler east healer") : AttackAction(botAI, name) {};
-
-    bool Execute(Event event) override;
-    bool isUseful() override;
-};
-
 class MagtheridonHellfireChannelerWestHunterAction : public AttackAction
 {
 public:
@@ -104,6 +86,15 @@ public:
     bool isUseful() override;
 };
 
+class MagtheridonCCBurningAbyssalAction : public AttackAction
+{
+public:
+    MagtheridonCCBurningAbyssalAction(PlayerbotAI* botAI, std::string const name = "magtheridon cc burning abyssal") : AttackAction(botAI, name) {};
+
+    bool Execute(Event event) override;
+    bool isUseful() override;
+};
+
 class MagtheridonPositionBossAction : public MovementAction
 {
 public:
@@ -120,14 +111,6 @@ public:
 
     bool Execute(Event event) override;
     bool isUseful() override;
-};
-
-class MagtheridonManticronCubeClickerPositionAction : public MovementAction
-{
-public:
-    MagtheridonManticronCubeClickerPositionAction(PlayerbotAI* botAI, std::string const name = "magtheridon manticron cube clicker position") : MovementAction(botAI, name) {};
-
-    bool Execute(Event event) override;
 };
 
 class MagtheridonUseManticronCubeAction : public MovementAction

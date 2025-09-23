@@ -9,7 +9,7 @@ class RaidMagsLairStrategy : public Strategy
 public:
     RaidMagsLairStrategy(PlayerbotAI* botAI) : Strategy(botAI) {}
 
-    std::string const getName() override { return "magtheridonslair"; }
+    std::string const getName() override { return "magtheridon"; }
 
     void InitTriggers(std::vector<TriggerNode*>& triggers) override;
     void InitMultipliers(std::vector<Multiplier*>& multipliers) override;

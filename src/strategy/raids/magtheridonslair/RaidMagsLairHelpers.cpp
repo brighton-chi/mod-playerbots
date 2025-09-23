@@ -1,13 +1,32 @@
 #include "RaidMagsLairHelpers.h"
-#include "PlayerbotAI.h"
+#include "Creature.h"
+#include "GameObject.h"
 #include "Group.h"
-#include "ObjectAccessor.h"
+#include "Map.h"
 #include "ObjectGuid.h"
-#include "Timer.h"
+#include "PlayerbotAI.h"
+
+#include "Log.h"
 
 Creature* GetChanneler(Player* bot, uint32 dbGuid)
 {
-    return ObjectAccessor::GetSpawnedCreatureByDBGUID(bot->GetMapId(), dbGuid);
+    Map* map = bot->GetMap();
+    if (!map)
+    {
+        LOG_DEBUG("playerbots", "GetChanneler: map is nullptr (bot={})", bot->GetName());
+        return nullptr;
+    }
+
+    auto bounds = map->GetCreatureBySpawnIdStore().equal_range(dbGuid);
+    if (bounds.first == bounds.second)
+    {
+        LOG_DEBUG("playerbots", "GetChanneler: dbGuid={} not found in GetCreatureBySpawnIdStore (bot={})", dbGuid, bot->GetName());
+        return nullptr;
+    }
+
+    Creature* creature = bounds.first->second;
+    LOG_DEBUG("playerbots", "GetChanneler: dbGuid={} found={} (bot={})", dbGuid, creature ? "yes" : "no", bot->GetName());
+    return creature;
 }
 
 bool IsSouthTank(PlayerbotAI* botAI, Player* bot)
@@ -135,70 +154,6 @@ bool IsEastWarlock(PlayerbotAI* botAI, Player* bot)
     return false;
 }
 
-bool IsWestHealer(PlayerbotAI* botAI, Player* bot)
-{
-    Group* group = bot->GetGroup();
-    if (!group || !botAI->IsHeal(bot, true))
-        return false;
-
-    Player* firstPaladinHealer = nullptr;
-    Player* firstOtherHealer = nullptr;
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member) continue;
-        if (!botAI->IsHeal(member, true)) continue;
-
-        if (member->getClass() == CLASS_PALADIN && !firstPaladinHealer)
-            firstPaladinHealer = member;
-        else if (member->getClass() != CLASS_PALADIN && !firstOtherHealer)
-            firstOtherHealer = member;
-    }
-
-    if (firstPaladinHealer)
-        return bot == firstPaladinHealer;
-    if (firstOtherHealer)
-        return bot == firstOtherHealer;
-    return false;
-}
-
-bool IsEastHealer(PlayerbotAI* botAI, Player* bot)
-{
-    Group* group = bot->GetGroup();
-    if (!group || !botAI->IsHeal(bot, true))
-        return false;
-
-    Player* firstPaladinHealer = nullptr;
-    Player* secondPaladinHealer = nullptr;
-    Player* firstOtherHealer = nullptr;
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member) continue;
-        if (!botAI->IsHeal(member, true)) continue;
-
-        if (member->getClass() == CLASS_PALADIN)
-        {
-            if (!firstPaladinHealer)
-                firstPaladinHealer = member;
-            else if (!secondPaladinHealer)
-                secondPaladinHealer = member;
-        }
-        else if (!firstOtherHealer)
-        {
-            firstOtherHealer = member;
-        }
-    }
-
-    if (secondPaladinHealer)
-        return bot == secondPaladinHealer;
-    if (!firstPaladinHealer && firstOtherHealer)
-        return bot == firstOtherHealer;
-    return false;
-}
-
 bool IsWestHunter(PlayerbotAI* botAI, Player* bot)
 {
     Group* group = bot->GetGroup();
@@ -236,31 +191,114 @@ bool IsEastHunter(PlayerbotAI* botAI, Player* bot)
     return false;
 }
 
-const TankSpot MagtheridonTankSpot = { -7.956f, 45.401f, -0.409f, 4.290f };
+const TankSpot MagtheridonTankSpot = { -46.834f, -17.760f, -0.412f, 3.333f };
 
-const CubePosition manticronCubes[5] = 
+const std::vector<uint32> MANTICRON_CUBE_DB_GUIDS = { 43157, 43158, 43159, 43160, 43161 };
+
+std::vector<CubeInfo> GetAllCubeInfosByDbGuids(Map* map, const std::vector<uint32>& cubeDbGuids)
 {
-    { -8.0f, 18.0f, -0.4f },
-    { 8.0f, 18.0f, -0.4f },
-    { 15.0f, 36.0f, -0.4f },
-    { 0.0f, 45.0f, -0.4f },
-    { -15.0f, 36.0f, -0.4f }
-};
+    std::vector<CubeInfo> cubes;
+    if (!map)
+    {
+        LOG_DEBUG("playerbots", "GetAllCubeInfosByDbGuids: No map provided");
+        return cubes;
+    }
 
-std::map<ObjectGuid, int> cubeAssignments;
-std::map<ObjectGuid, time_t> cubeTimers;
+    for (uint32 dbGuid : cubeDbGuids)
+    {
+        auto bounds = map->GetGameObjectBySpawnIdStore().equal_range(dbGuid);
+        if (bounds.first == bounds.second)
+        {
+            LOG_DEBUG("playerbots", "GetAllCubeInfosByDbGuids: DB GUID {} not found in instance", dbGuid);
+            continue;
+        }
 
-void AssignRangedDpsToCubes(Group* group, PlayerbotAI* botAI)
+        GameObject* go = bounds.first->second;
+        if (!go)
+        {
+            LOG_DEBUG("playerbots", "GetAllCubeInfosByDbGuids: DB GUID {} found but GameObject is nullptr", dbGuid);
+            continue;
+        }
+
+        CubeInfo info;
+        info.guid = go->GetGUID();
+        info.x = go->GetPositionX();
+        info.y = go->GetPositionY();
+        info.z = go->GetPositionZ();
+        LOG_DEBUG("playerbots", "GetAllCubeInfosByDbGuids: Found cube DB GUID {} at ({}, {}, {})", dbGuid, info.x, info.y, info.z);
+        cubes.push_back(info);
+    }
+    LOG_DEBUG("playerbots", "GetAllCubeInfosByDbGuids: Returning {} cubes", cubes.size());
+    return cubes;
+}
+
+std::unordered_map<ObjectGuid, CubeInfo> botToCubeAssignment;
+
+void AssignBotsToCubesByGuidAndCoords(Group* group, const std::vector<CubeInfo>& cubes, PlayerbotAI* botAI)
 {
-    int cubeIndex = 0;
-    for (GroupReference* ref = group->GetFirstMember(); ref && cubeIndex < 5; ref = ref->next())
+    botToCubeAssignment.clear();
+    size_t cubeIndex = 0;
+    std::vector<Player*> candidates;
+
+    // First pass: ranged DPS, excluding warlocks
+    for (GroupReference* ref = group->GetFirstMember(); ref && cubeIndex < cubes.size(); ref = ref->next())
     {
         Player* member = ref->GetSource();
         if (!member || !member->IsAlive())
             continue;
-        if (!botAI->IsRangedDps(member, true))
+        if (!botAI->IsRangedDps(member, true) || member->getClass() == CLASS_WARLOCK)
             continue;
+        candidates.push_back(member);
+    }
 
-        cubeAssignments[member->GetGUID()] = cubeIndex++;
+    // Second pass: add ranged DPS warlocks if needed
+    if (candidates.size() < cubes.size())
+    {
+        for (GroupReference* ref = group->GetFirstMember(); ref && candidates.size() < cubes.size(); ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive())
+                continue;
+            if (!botAI->IsRangedDps(member, true) || member->getClass() != CLASS_WARLOCK)
+                continue;
+            if (std::find(candidates.begin(), candidates.end(), member) == candidates.end())
+                candidates.push_back(member);
+        }
+    }
+
+    // Third pass: add anyone except SouthTank if still not enough
+    if (candidates.size() < cubes.size())
+    {
+        Player* southTank = nullptr;
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive())
+                continue;
+            if (IsSouthTank(botAI, member))
+            {
+                southTank = member;
+                break;
+            }
+        }
+
+        for (GroupReference* ref = group->GetFirstMember(); ref && candidates.size() < cubes.size(); ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive())
+                continue;
+            if (member == southTank)
+                continue;
+            if (std::find(candidates.begin(), candidates.end(), member) == candidates.end())
+                candidates.push_back(member);
+        }
+    }
+
+    // Assign cubes by GUID and coordinates
+    for (Player* member : candidates)
+    {
+        if (cubeIndex >= cubes.size())
+            break;
+        botToCubeAssignment[member->GetGUID()] = cubes[cubeIndex++];
     }
 }

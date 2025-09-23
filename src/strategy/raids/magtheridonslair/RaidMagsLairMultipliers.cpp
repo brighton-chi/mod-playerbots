@@ -1,20 +1,41 @@
 #include "RaidMagsLairMultipliers.h"
 #include "RaidMagsLairActions.h"
+#include "RaidMagsLairHelpers.h"
 #include "AttackAction.h"
+#include "ChooseTargetActions.h"
 #include "GenericSpellActions.h"
 #include "MovementActions.h"
 #include "Playerbots.h"
+#include "WarlockActions.h"
 
 float MagtheridonMultiplier::GetValue(Action* action)
 {
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
-    if (!magtheridon)
+    Unit* channeler = AI_VALUE2(Unit*, "find target", "hellfire channeler");
+    if ((magtheridon && magtheridon->IsAlive()) || (channeler && channeler->IsAlive()))
     {
-        return 1.0f;
+        if (dynamic_cast<TankAssistAction*>(action))
+        {
+            return 0.0f;
+        }
+
+        if (magtheridon && magtheridon->HasUnitState(UNIT_STATE_CASTING) && magtheridon->FindCurrentSpellBySpellId(SPELL_BLAST_NOVA))
+        {
+            if (dynamic_cast<MagtheridonUseManticronCubeAction*>(action))
+            {
+                return 1.0f;
+            }
+
+            return 0.0f;
+        }
     }
-    // Shadow Grasp (Channeling Manticron Cube)
-    if (bot->HasAura(30410) && 
-        (dynamic_cast<MovementAction*>(action) || dynamic_cast<AttackAction*>(action)))
+    if (channeler && channeler->IsAlive() &&
+        (dynamic_cast<CastCurseOfAgonyAction*>(action) ||
+        dynamic_cast<CastCurseOfAgonyOnAttackerAction*>(action) ||
+        dynamic_cast<CastCurseOfDoomAction*>(action) ||
+        dynamic_cast<CastCurseOfWeaknessAction*>(action) ||
+        dynamic_cast<CastCurseOfTheElementsAction*>(action) ||
+        dynamic_cast<CastCurseOfExhaustionAction*>(action)))
     {
         return 0.0f;
     }
