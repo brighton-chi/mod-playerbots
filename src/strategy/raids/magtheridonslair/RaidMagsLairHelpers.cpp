@@ -1,8 +1,14 @@
 #include "RaidMagsLairHelpers.h"
 #include "PlayerbotAI.h"
 #include "Group.h"
+#include "ObjectAccessor.h"
 #include "ObjectGuid.h"
 #include "Timer.h"
+
+Creature* GetChanneler(Player* bot, uint32 dbGuid)
+{
+    return ObjectAccessor::GetSpawnedCreatureByDBGUID(bot->GetMapId(), dbGuid);
+}
 
 bool IsSouthTank(PlayerbotAI* botAI, Player* bot)
 {

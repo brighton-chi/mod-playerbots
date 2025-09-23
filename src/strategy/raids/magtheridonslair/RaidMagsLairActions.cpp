@@ -14,29 +14,29 @@ bool MagtheridonHellfireChannelerSouthTankAction::Execute(Event event)
     if (!group)
         return false;
 
-    Creature* channeler = ObjectAccessor::GetSpawnedCreatureByDBGUID(bot->GetMapId(), 43160); // South channeler example
-    if (!channeler || !channeler->IsAlive())
+    Creature* channelerSquare = GetChanneler(bot, SOUTH_CHANNELER);
+    if (!channelerSquare || !channelerSquare->IsAlive())
         return false;
 
     // Mark with square icon
     ObjectGuid currentIconGuid = group->GetTargetIcon(squareIcon);
-    if (currentIconGuid.IsEmpty() || currentIconGuid != channeler->GetGUID())
-        group->SetTargetIcon(squareIcon, bot->GetGUID(), channeler->GetGUID());
+    if (currentIconGuid.IsEmpty() || currentIconGuid != channelerSquare->GetGUID())
+        group->SetTargetIcon(squareIcon, bot->GetGUID(), channelerSquare->GetGUID());
 
     // Set RTI value and target
     if (botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != "square" ||
-        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != channeler)
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != channelerSquare)
     {
         botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("square");
-        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(channeler);
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(channelerSquare);
     }
 
-    if (bot->GetVictim() != channeler)
+    if (bot->GetVictim() != channelerSquare)
     {
-        Attack(channeler);
+        Attack(channelerSquare);
 
-        if (!bot->IsWithinMeleeRange(channeler))
-            return MoveTo(channeler->GetMapId(), channeler->GetPositionX(), channeler->GetPositionY(), channeler->GetPositionZ());
+        if (!bot->IsWithinMeleeRange(channelerSquare))
+            return MoveTo(channelerSquare->GetMapId(), channelerSquare->GetPositionX(), channelerSquare->GetPositionY(), channelerSquare->GetPositionZ());
     }
 
     return false;
@@ -47,7 +47,7 @@ bool MagtheridonHellfireChannelerSouthTankAction::isUseful()
     if (!IsSouthTank(botAI, bot))
         return false;
 
-    Creature* channeler = ObjectAccessor::GetSpawnedCreatureByDBGUID(bot->GetMapId(), 43160); // South
+    Creature* channeler = GetChanneler(bot, SOUTH_CHANNELER);
 
     return channeler && channeler->IsAlive();
 }
@@ -58,8 +58,8 @@ bool MagtheridonHellfireChannelerWestTankAction::Execute(Event event)
     if (!group)
         return false;
 
-    Creature* channelerStar = ObjectAccessor::GetSpawnedCreatureByDBGUID(bot->GetMapId(), 43158);      // West
-    Creature* channelerCircle = ObjectAccessor::GetSpawnedCreatureByDBGUID(bot->GetMapId(), 43161);    // Northwest
+    Creature* channelerStar = GetChanneler(bot, WEST_CHANNELER);
+    Creature* channelerCircle = GetChanneler(bot, NORTHWEST_CHANNELER);
 
     if ((!channelerStar || !channelerStar->IsAlive()) && (!channelerCircle || !channelerCircle->IsAlive()))
         return false;
@@ -121,8 +121,8 @@ bool MagtheridonHellfireChannelerWestTankAction::isUseful()
     if (!IsWestTank(botAI, bot))
         return false;
 
-    Creature* channelerStar = ObjectAccessor::GetSpawnedCreatureByDBGUID(bot->GetMapId(), 43158);      // West
-    Creature* channelerCircle = ObjectAccessor::GetSpawnedCreatureByDBGUID(bot->GetMapId(), 43161);    // Northwest
+    Creature* channelerStar = GetChanneler(bot, WEST_CHANNELER);
+    Creature* channelerCircle = GetChanneler(bot, NORTHWEST_CHANNELER);
 
     // Check if at least one assigned Channeler is alive
     if ((channelerStar && channelerStar->IsAlive()) || (channelerCircle && channelerCircle->IsAlive()))
@@ -137,8 +137,8 @@ bool MagtheridonHellfireChannelerEastTankAction::Execute(Event event)
     if (!group)
         return false;
 
-    Creature* channelerDiamond = ObjectAccessor::GetSpawnedCreatureByDBGUID(bot->GetMapId(), 43159);      // East
-    Creature* channelerTriangle = ObjectAccessor::GetSpawnedCreatureByDBGUID(bot->GetMapId(), 43157);    // Northeast
+    Creature* channelerDiamond = GetChanneler(bot, EAST_CHANNELER);
+    Creature* channelerTriangle = GetChanneler(bot, NORTHEAST_CHANNELER);
 
     if ((!channelerDiamond || !channelerDiamond->IsAlive()) && (!channelerTriangle || !channelerTriangle->IsAlive()))
         return false;
@@ -200,8 +200,8 @@ bool MagtheridonHellfireChannelerEastTankAction::isUseful()
     if (!IsEastTank(botAI, bot))
         return false;
 
-    Creature* channelerDiamond = ObjectAccessor::GetSpawnedCreatureByDBGUID(bot->GetMapId(), 43159);      // East
-    Creature* channelerTriangle = ObjectAccessor::GetSpawnedCreatureByDBGUID(bot->GetMapId(), 43157);    // Northeast
+    Creature* channelerDiamond = GetChanneler(bot, EAST_CHANNELER);
+    Creature* channelerTriangle = GetChanneler(bot, NORTHEAST_CHANNELER);
 
     // Check if at least one assigned Channeler is alive
     if ((channelerDiamond && channelerDiamond->IsAlive()) || (channelerTriangle && channelerTriangle->IsAlive()))
@@ -212,90 +212,777 @@ bool MagtheridonHellfireChannelerEastTankAction::isUseful()
 
 bool MagtheridonHellfireChannelerSouthWarlockAction::Execute(Event event)
 {
-    // Implementation for South Warlock action
+    Creature* channelerSquare = GetChanneler(bot, SOUTH_CHANNELER);
+
+    std::string rtiName;
+    Unit* rtiTarget = nullptr;
+
+    if (channelerSquare && channelerSquare->IsAlive())
+    {
+        rtiName = "square";
+        rtiTarget = channelerSquare;
+    }
+
+    // Set RTI value and target if needed
+    if (!rtiName.empty() &&
+        (botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != rtiName ||
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != rtiTarget))
+    {
+        botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set(rtiName);
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(rtiTarget);
+    }
+
+    if (channelerSquare && channelerSquare->IsAlive())
+    {
+        if (!channelerSquare->HasAura(SPELL_CURSE_OF_TONGUES) && botAI->CanCastSpell(SPELL_CURSE_OF_TONGUES, channelerSquare, true))
+        {
+            botAI->CastSpell(SPELL_CURSE_OF_TONGUES, channelerSquare);
+            return false;
+        }
+    }
+
+    const GuidVector& npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
+    Unit* abyssal = nullptr;
+    for (const auto& npc : npcs)
+    {
+        Unit* unit = botAI->GetUnit(npc);
+        if (unit && unit->GetEntry() == NPC_BURNING_ABYSSAL)
+        {
+            abyssal = unit;
+            break;
+        }
+    }
+
+    if (abyssal && abyssal->IsAlive() && !abyssal->HasAura(SPELL_BANISH) && botAI->CanCastSpell(SPELL_BANISH, abyssal, true))
+    {
+        botAI->CastSpell(SPELL_BANISH, abyssal);
+        return false;
+    }
+
     return false;
 }
 
 bool MagtheridonHellfireChannelerSouthWarlockAction::isUseful()
 {
-    return IsSouthWarlock(botAI, bot);
+    if (!IsSouthWarlock(botAI, bot))
+        return false;
+
+    Creature* channelerSquare = GetChanneler(bot, SOUTH_CHANNELER);
+    return channelerSquare && channelerSquare->IsAlive();
 }
 
 bool MagtheridonHellfireChannelerWestWarlockAction::Execute(Event event)
 {
-    // Implementation for West Warlock action
-    return false;
+    Creature* channelerStar   = GetChanneler(bot, WEST_CHANNELER);
+    Creature* channelerCircle = GetChanneler(bot, NORTHWEST_CHANNELER);
+
+    std::string rtiName;
+    Unit* rtiTarget = nullptr;
+
+    if (channelerStar && channelerStar->IsAlive())
+    {
+        rtiName = "star";
+        rtiTarget = channelerStar;
+    }
+    else if (channelerCircle && channelerCircle->IsAlive())
+    {
+        rtiName = "circle";
+        rtiTarget = channelerCircle;
+    }
+
+    // Set RTI value and target if needed
+    if (!rtiName.empty() &&
+        (botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != rtiName ||
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != rtiTarget))
+    {
+        botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set(rtiName);
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(rtiTarget);
+    }
+
+    // Prefer star channeler if alive, else circle channeler
+    Creature* moveTarget = nullptr;
+    if (channelerStar && channelerStar->IsAlive())
+        moveTarget = channelerStar;
+    else if (channelerCircle && channelerCircle->IsAlive())
+        moveTarget = channelerCircle;
+
+    // Only move if farther than 30 yards from the alive channeler
+    if (moveTarget && bot->GetExactDist2d(moveTarget) > 30.0f)
+    {
+        return MoveTo(moveTarget->GetMapId(), moveTarget->GetPositionX(), moveTarget->GetPositionY(), moveTarget->GetPositionZ());
+    }
+
+    // Keep Curse of Tongues on both channelers
+    for (Creature* channeler : {channelerStar, channelerCircle})
+    {
+        if (channeler && channeler->IsAlive() &&
+            !channeler->HasAura(SPELL_CURSE_OF_TONGUES) &&
+            botAI->CanCastSpell(SPELL_CURSE_OF_TONGUES, channeler, true))
+        {
+            botAI->CastSpell(SPELL_CURSE_OF_TONGUES, channeler);
+            return false;
+        }
+    }
+
+    const GuidVector& npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
+
+    // Track if we are already banishing an abyssal
+    bool isAlreadyBanishing = false;
+    for (const auto& npc : npcs)
+    {
+        Unit* unit = botAI->GetUnit(npc);
+        if (unit && unit->GetEntry() == NPC_BURNING_ABYSSAL && unit->HasAura(SPELL_BANISH))
+        {
+            isAlreadyBanishing = true;
+            break;
+        }
+    }
+
+    // 1. If not already banishing, banish the first unbanished abyssal
+    if (!isAlreadyBanishing)
+    {
+        for (const auto& npc : npcs)
+        {
+            Unit* unit = botAI->GetUnit(npc);
+            if (unit && unit->GetEntry() == NPC_BURNING_ABYSSAL && !unit->HasAura(SPELL_BANISH))
+            {
+                if (unit->IsAlive() && botAI->CanCastSpell(SPELL_BANISH, unit, true))
+                {
+                    botAI->CastSpell(SPELL_BANISH, unit);
+                    return false;
+                }
+            }
+        }
+    }
+
+    // 2. Fear the first unbanished, unfeared abyssal
+    for (const auto& npc : npcs)
+    {
+        Unit* unit = botAI->GetUnit(npc);
+        if (unit && unit->GetEntry() == NPC_BURNING_ABYSSAL &&
+            !unit->HasAura(SPELL_BANISH) && !unit->HasAura(SPELL_FEAR))
+        {
+            if (unit->IsAlive() && botAI->CanCastSpell(SPELL_FEAR, unit, true))
+            {
+                botAI->CastSpell(SPELL_FEAR, unit);
+                return false;
+            }
+        }
+    }
+
+return false;
 }
 
 bool MagtheridonHellfireChannelerWestWarlockAction::isUseful()
 {
-    return IsWestWarlock(botAI, bot);
+    if (!IsWestWarlock(botAI, bot))
+        return false;
+
+    Creature* channelerStar   = GetChanneler(bot, WEST_CHANNELER);
+    Creature* channelerCircle = GetChanneler(bot, NORTHWEST_CHANNELER);
+
+    // Check if at least one assigned Channeler is alive
+    if ((channelerStar && channelerStar->IsAlive()) || (channelerCircle && channelerCircle->IsAlive()))
+        return true;
+
+    return false;
 }
 
 bool MagtheridonHellfireChannelerEastWarlockAction::Execute(Event event)
 {
-    // Implementation for East Warlock action
+    Creature* channelerDiamond  = GetChanneler(bot, EAST_CHANNELER);
+    Creature* channelerTriangle = GetChanneler(bot, NORTHEAST_CHANNELER);
+
+    // RTI logic: prioritize diamond, then triangle
+    std::string rtiName;
+    Unit* rtiTarget = nullptr;
+    if (channelerDiamond && channelerDiamond->IsAlive())
+    {
+        rtiName = "diamond";
+        rtiTarget = channelerDiamond;
+    }
+    else if (channelerTriangle && channelerTriangle->IsAlive())
+    {
+        rtiName = "triangle";
+        rtiTarget = channelerTriangle;
+    }
+
+    // Set RTI value and target if needed
+    if (!rtiName.empty() &&
+        (botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != rtiName ||
+         botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != rtiTarget))
+    {
+        botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set(rtiName);
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(rtiTarget);
+    }
+
+    // Movement: move to diamond if alive, else triangle, only if farther than 30 yards
+    Creature* moveTarget = nullptr;
+    if (channelerDiamond && channelerDiamond->IsAlive())
+        moveTarget = channelerDiamond;
+    else if (channelerTriangle && channelerTriangle->IsAlive())
+        moveTarget = channelerTriangle;
+
+    if (moveTarget && bot->GetExactDist2d(moveTarget) > 30.0f)
+    {
+        return MoveTo(moveTarget->GetMapId(), moveTarget->GetPositionX(), moveTarget->GetPositionY(), moveTarget->GetPositionZ());
+    }
+
+    // Keep Curse of Tongues on both channelers
+    for (Creature* channeler : {channelerDiamond, channelerTriangle})
+    {
+        if (channeler && channeler->IsAlive() &&
+            !channeler->HasAura(SPELL_CURSE_OF_TONGUES) &&
+            botAI->CanCastSpell(SPELL_CURSE_OF_TONGUES, channeler, true))
+        {
+            botAI->CastSpell(SPELL_CURSE_OF_TONGUES, channeler);
+            return false;
+        }
+    }
+
+    const GuidVector& npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
+
+    // Track if we are already banishing an abyssal (by this bot)
+    bool isAlreadyBanishing = false;
+    for (const auto& npc : npcs)
+    {
+        Unit* unit = botAI->GetUnit(npc);
+        if (unit && unit->GetEntry() == NPC_BURNING_ABYSSAL)
+        {
+            Aura* banishAura = unit->GetAura(SPELL_BANISH, bot->GetGUID());
+            if (banishAura)
+            {
+                isAlreadyBanishing = true;
+                break;
+            }
+        }
+    }
+
+    // 1. If not already banishing, banish the first unbanished abyssal
+    if (!isAlreadyBanishing)
+    {
+        for (const auto& npc : npcs)
+        {
+            Unit* unit = botAI->GetUnit(npc);
+            if (unit && unit->GetEntry() == NPC_BURNING_ABYSSAL && !unit->HasAura(SPELL_BANISH))
+            {
+                if (unit->IsAlive() && botAI->CanCastSpell(SPELL_BANISH, unit, true))
+                {
+                    botAI->CastSpell(SPELL_BANISH, unit);
+                    return false;
+                }
+            }
+        }
+    }
+
+    // 2. Fear the first unbanished, unfeared abyssal
+    for (const auto& npc : npcs)
+    {
+        Unit* unit = botAI->GetUnit(npc);
+        if (unit && unit->GetEntry() == NPC_BURNING_ABYSSAL &&
+            !unit->HasAura(SPELL_BANISH) && !unit->HasAura(SPELL_FEAR))
+        {
+            if (unit->IsAlive() && botAI->CanCastSpell(SPELL_FEAR, unit, true))
+            {
+                botAI->CastSpell(SPELL_FEAR, unit);
+                return false;
+            }
+        }
+    }
+
     return false;
 }
 
 bool MagtheridonHellfireChannelerEastWarlockAction::isUseful()
 {
-    return IsEastWarlock(botAI, bot);
+    if (!IsEastWarlock(botAI, bot))
+        return false;
+
+    Creature* channelerDiamond  = GetChanneler(bot, EAST_CHANNELER);
+    Creature* channelerTriangle = GetChanneler(bot, NORTHEAST_CHANNELER);
+
+    // Check if at least one assigned Channeler is alive
+    if ((channelerDiamond && channelerDiamond->IsAlive()) || (channelerTriangle && channelerTriangle->IsAlive()))
+        return true;
+
+    return false;
 }
 
 bool MagtheridonHellfireChannelerWestHealerAction::Execute(Event event)
 {
-    // Implementation for West Healer action
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    Player* westTank = nullptr;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive())
+            continue;
+        if (IsWestTank(botAI, member))
+        {
+            westTank = member;
+            break;
+        }
+    }
+
+    if (westTank && bot->GetExactDist2d(westTank) > 30.0f)
+    {
+        return MoveTo(westTank->GetMapId(), westTank->GetPositionX(), westTank->GetPositionY(), westTank->GetPositionZ());
+    }
     return false;
 }
 
 bool MagtheridonHellfireChannelerWestHealerAction::isUseful()
 {
-    return IsWestHealer(botAI, bot);
+    if (!IsWestHealer(botAI, bot))
+        return false;
+
+    Creature* channelerStar   = GetChanneler(bot, WEST_CHANNELER);
+    Creature* channelerCircle = GetChanneler(bot, NORTHWEST_CHANNELER);
+
+    // Check if at least one assigned Channeler is alive
+    if ((channelerStar && channelerStar->IsAlive()) || (channelerCircle && channelerCircle->IsAlive()))
+        return true;
+
+    return false;
 }
 
 bool MagtheridonHellfireChannelerEastHealerAction::Execute(Event event)
 {
-    // Implementation for East Healer action
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    Player* eastTank = nullptr;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive())
+            continue;
+        if (IsEastTank(botAI, member))
+        {
+            eastTank = member;
+            break;
+        }
+    }
+
+    if (eastTank && bot->GetExactDist2d(eastTank) > 30.0f)
+    {
+        return MoveTo(eastTank->GetMapId(), eastTank->GetPositionX(), eastTank->GetPositionY(), eastTank->GetPositionZ());
+    }
     return false;
 }
 
 bool MagtheridonHellfireChannelerEastHealerAction::isUseful()
 {
-    return IsEastHealer(botAI, bot);
+    if (!IsEastHealer(botAI, bot))
+        return false;
+
+    Creature* channelerDiamond  = GetChanneler(bot, EAST_CHANNELER);
+    Creature* channelerTriangle = GetChanneler(bot, NORTHEAST_CHANNELER);
+
+    // Check if at least one assigned Channeler is alive
+    if ((channelerDiamond && channelerDiamond->IsAlive()) || (channelerTriangle && channelerTriangle->IsAlive()))
+        return true;
+
+    return false;
 }
 
 bool MagtheridonHellfireChannelerWestHunterAction::Execute(Event event)
 {
-    // Implementation for West Hunter action
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    Player* westTank = nullptr;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive())
+            continue;
+        if (IsWestTank(botAI, member))
+        {
+            westTank = member;
+            break;
+        }
+    }
+
+    Creature* channelerStar   = GetChanneler(bot, WEST_CHANNELER);
+    Creature* channelerCircle = GetChanneler(bot, NORTHWEST_CHANNELER);
+
+    std::string rtiName;
+    Unit* rtiTarget = nullptr;
+
+    if (channelerStar && channelerStar->IsAlive())
+    {
+        rtiName = "star";
+        rtiTarget = channelerStar;
+    }
+    else if (channelerCircle && channelerCircle->IsAlive())
+    {
+        rtiName = "circle";
+        rtiTarget = channelerCircle;
+    }
+
+    // Set RTI value and target if needed
+    if (!rtiName.empty() &&
+        (botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != rtiName ||
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != rtiTarget))
+    {
+        botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set(rtiName);
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(rtiTarget);
+    }
+
+    // Prefer circle channeler if alive, else star channeler
+    Creature* moveTarget = nullptr;
+    if (channelerCircle && channelerCircle->IsAlive())
+        moveTarget = channelerCircle;
+    else if (channelerStar && channelerStar->IsAlive())
+        moveTarget = channelerStar;
+
+    if (moveTarget && bot->GetExactDist2d(moveTarget) > 35.0f)
+    {
+        return MoveTo(moveTarget->GetMapId(), moveTarget->GetPositionX(), moveTarget->GetPositionY(), moveTarget->GetPositionZ());
+    }
+
+    if (channelerCircle && channelerCircle->IsAlive() && westTank && westTank->IsAlive())
+    {
+        if (channelerCircle->GetVictim() != westTank)
+        {
+            if (botAI->CanCastSpell("misdirection", westTank))
+            {
+                botAI->CastSpell("misdirection", westTank);
+            }
+
+            if (!bot->HasAura(SPELL_AURA_MISDIRECTION))
+            {
+                return false;
+            }
+
+            if (botAI->CanCastSpell("steady shot", channelerCircle))
+            {
+                botAI->CastSpell("steady shot", channelerCircle);
+                return false;
+            }
+        }
+    }
+
+    if (channelerStar && channelerStar->IsAlive() && westTank && westTank->IsAlive())
+    {
+        if (channelerStar->GetVictim() != westTank)
+        {
+            if (botAI->CanCastSpell("misdirection", westTank))
+            {
+                botAI->CastSpell("misdirection", westTank);
+            }
+
+            if (!bot->HasAura(SPELL_AURA_MISDIRECTION))
+            {
+                return false;
+            }
+
+            if (botAI->CanCastSpell("steady shot", channelerStar))
+            {
+                botAI->CastSpell("steady shot", channelerStar);
+            }
+        }
+    }
+            
     return false;
 }
 
 bool MagtheridonHellfireChannelerWestHunterAction::isUseful()
 {
-    return IsWestHunter(botAI, bot);
+    if (!IsWestHunter(botAI, bot))
+        return false;
+
+    Creature* channelerStar   = GetChanneler(bot, WEST_CHANNELER);
+    Creature* channelerCircle = GetChanneler(bot, NORTHWEST_CHANNELER);
+
+    // Check if at least one assigned Channeler is alive
+    if ((channelerStar && channelerStar->IsAlive()) || (channelerCircle && channelerCircle->IsAlive()))
+        return true;
+
+    return false;
 }
 
 bool MagtheridonHellfireChannelerEastHunterAction::Execute(Event event)
 {
-    // Implementation for East Hunter action
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    Player* eastTank = nullptr;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive())
+            continue;
+        if (IsEastTank(botAI, member))
+        {
+            eastTank = member;
+            break;
+        }
+    }
+
+    Creature* channelerDiamond  = GetChanneler(bot, EAST_CHANNELER);
+    Creature* channelerTriangle = GetChanneler(bot, NORTHEAST_CHANNELER);
+
+    std::string rtiName;
+    Unit* rtiTarget = nullptr;
+
+    if (channelerDiamond && channelerDiamond->IsAlive())
+    {
+        rtiName = "diamond";
+        rtiTarget = channelerDiamond;
+    }
+    else if (channelerTriangle && channelerTriangle->IsAlive())
+    {
+        rtiName = "triangle";
+        rtiTarget = channelerTriangle;
+    }
+
+    // Set RTI value and target if needed
+    if (!rtiName.empty() &&
+        (botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != rtiName ||
+         botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != rtiTarget))
+    {
+        botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set(rtiName);
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(rtiTarget);
+    }
+
+    // Prefer triangle channeler if alive, else diamond channeler
+    Creature* moveTarget = nullptr;
+    if (channelerTriangle && channelerTriangle->IsAlive())
+        moveTarget = channelerTriangle;
+    else if (channelerDiamond && channelerDiamond->IsAlive())
+        moveTarget = channelerDiamond;
+
+    if (moveTarget && bot->GetExactDist2d(moveTarget) > 35.0f)
+    {
+        return MoveTo(moveTarget->GetMapId(), moveTarget->GetPositionX(), moveTarget->GetPositionY(), moveTarget->GetPositionZ());
+    }
+
+    if (channelerTriangle && channelerTriangle->IsAlive() && eastTank && eastTank->IsAlive())
+    {
+        if (channelerTriangle->GetVictim() != eastTank)
+        {
+            if (botAI->CanCastSpell("misdirection", eastTank))
+            {
+                botAI->CastSpell("misdirection", eastTank);
+            }
+
+            if (!bot->HasAura(SPELL_AURA_MISDIRECTION))
+            {
+                return false;
+            }
+
+            if (botAI->CanCastSpell("steady shot", channelerTriangle))
+            {
+                botAI->CastSpell("steady shot", channelerTriangle);
+                return false;
+            }
+        }
+    }
+
+    if (channelerDiamond && channelerDiamond->IsAlive() && eastTank && eastTank->IsAlive())
+    {
+        if (channelerDiamond->GetVictim() != eastTank)
+        {
+            if (botAI->CanCastSpell("misdirection", eastTank))
+            {
+                botAI->CastSpell("misdirection", eastTank);
+            }
+
+            if (!bot->HasAura(SPELL_AURA_MISDIRECTION))
+            {
+                return false;
+            }
+
+            if (botAI->CanCastSpell("steady shot", channelerDiamond))
+            {
+                botAI->CastSpell("steady shot", channelerDiamond);
+            }
+        }
+    }
+
     return false;
 }
 
 bool MagtheridonHellfireChannelerEastHunterAction::isUseful()
 {
-    return IsEastHunter(botAI, bot);
+    if (!IsEastHunter(botAI, bot))
+        return false;
+
+    Creature* channelerDiamond  = GetChanneler(bot, EAST_CHANNELER);
+    Creature* channelerTriangle = GetChanneler(bot, NORTHEAST_CHANNELER);
+
+    // Check if at least one assigned Channeler is alive
+    if ((channelerDiamond && channelerDiamond->IsAlive()) || (channelerTriangle && channelerTriangle->IsAlive()))
+        return true;
+
+    return false;
 }
 
 bool MagtheridonHellfireChannelerDPSPriorityAction::Execute(Event event)
 {
-    // Implementation for DPS Priority action
+    Group* group = bot->GetGroup();
+    if (!group)
+    {
+        return false;
+    }
+
+    Creature* channelerSquare   = GetChanneler(bot, SOUTH_CHANNELER);
+    Creature* channelerStar     = GetChanneler(bot, WEST_CHANNELER);
+    Creature* channelerCircle   = GetChanneler(bot, NORTHWEST_CHANNELER);
+    Creature* channelerDiamond  = GetChanneler(bot, EAST_CHANNELER);
+    Creature* channelerTriangle = GetChanneler(bot, NORTHEAST_CHANNELER);
+
+    // Target priority 1: South Channeler
+    if (channelerSquare && channelerSquare->IsAlive())
+    {
+        Unit* rtiTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
+        std::string rtiValue = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
+        
+        if (rtiValue != "square" || rtiTarget != channelerSquare)
+        {
+            botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("square");
+            botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(channelerSquare);
+        }
+        if (bot->GetVictim() != channelerSquare)
+        {
+            Attack(channelerSquare);
+        }
+
+        return false;
+    }
+
+    // Target priority 2: West Channeler
+    if (channelerStar && channelerStar->IsAlive())
+    {
+        Unit* rtiTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
+        std::string rtiValue = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
+        
+        if (rtiValue != "star" || rtiTarget != channelerStar)
+        {
+            botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("star");
+            botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(channelerStar);
+        }
+        if (bot->GetVictim() != channelerStar)
+        {
+            Attack(channelerStar);
+        }
+
+        return false;
+    }
+
+    // Target priority 3: Northwest Channeler
+    if (channelerCircle && channelerCircle->IsAlive())
+    {
+        Unit* rtiTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
+        std::string rtiValue = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
+
+        if (rtiValue != "circle" || rtiTarget != channelerCircle)
+        {
+            botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("circle");
+            botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(channelerCircle);
+        }
+        if (bot->GetVictim() != channelerCircle)
+        {
+            Attack(channelerCircle);
+        }
+
+        return false;
+    }
+
+    // Target priority 4: East Channeler
+    if (channelerDiamond && channelerDiamond->IsAlive())
+    {
+        Unit* rtiTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
+        std::string rtiValue = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
+
+        if (rtiValue != "diamond" || rtiTarget != channelerDiamond)
+        {
+            botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("diamond");
+            botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(channelerDiamond);
+        }
+        if (bot->GetVictim() != channelerDiamond)
+        {
+            Attack(channelerDiamond);
+        }
+
+        return false;
+    }
+
+    // Target priority 5: Northeast Channeler
+    if (channelerTriangle && channelerTriangle->IsAlive())
+    {
+        Unit* rtiTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
+        std::string rtiValue = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
+
+        if (rtiValue != "triangle" || rtiTarget != channelerTriangle)
+        {
+            botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("triangle");
+            botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(channelerTriangle);
+        }
+        if (bot->GetVictim() != channelerTriangle)
+        {
+            Attack(channelerTriangle);
+        }
+
+        return false;
+    }
+
+    // Target priority 6: Magtheridon
+    Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
+    if (magtheridon && magtheridon->IsAlive() && magtheridon->IsInCombat())
+    {
+        Unit* rtiTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
+        std::string rtiValue = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
+        
+        if (rtiValue != "cross" || rtiTarget != magtheridon)
+        {
+            botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("cross");
+            botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(magtheridon);
+        }
+        if (bot->GetVictim() != magtheridon)
+        {
+            Attack(magtheridon);
+        }
+    }
+
     return false;
 }
 
 bool MagtheridonHellfireChannelerDPSPriorityAction::isUseful()
 {
-    return botAI->IsDps(bot);
+    Creature* channelerSquare   = GetChanneler(bot, SOUTH_CHANNELER);
+    Creature* channelerStar     = GetChanneler(bot, WEST_CHANNELER);
+    Creature* channelerCircle   = GetChanneler(bot, NORTHWEST_CHANNELER);
+    Creature* channelerDiamond  = GetChanneler(bot, EAST_CHANNELER);
+    Creature* channelerTriangle = GetChanneler(bot, NORTHEAST_CHANNELER);
+
+    if (!botAI->IsDps(bot) ||
+        (IsWestWarlock(botAI, bot) && (!channelerStar || !channelerStar->IsAlive() || 
+         !channelerCircle || !channelerCircle->IsAlive())) ||
+        (IsEastWarlock(botAI, bot) && (!channelerDiamond || !channelerDiamond->IsAlive() || 
+         !channelerTriangle || !channelerTriangle->IsAlive())) ||
+        (IsWestHunter(botAI, bot) && (!channelerStar || !channelerStar->IsAlive() || 
+         !channelerCircle || !channelerCircle->IsAlive())) ||
+        (IsEastHunter(botAI, bot) && (!channelerDiamond || !channelerDiamond->IsAlive() || 
+         !channelerTriangle || !channelerTriangle->IsAlive())))
+        return false;
+    
+    if ((channelerSquare   && channelerSquare->IsAlive())   ||
+        (channelerStar     && channelerStar->IsAlive())     ||
+        (channelerCircle   && channelerCircle->IsAlive())   ||
+        (channelerDiamond  && channelerDiamond->IsAlive())  ||
+        (channelerTriangle && channelerTriangle->IsAlive()))
+        return true;
+
+    return false;
 }
 
 bool MagtheridonPositionBossAction::Execute(Event event)
@@ -462,8 +1149,23 @@ bool MagtheridonSpreadRangedAction::Execute(Event event)
 bool MagtheridonSpreadRangedAction::isUseful()
 {
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
+    if (!magtheridon || !magtheridon->IsInCombat() || !botAI->IsRanged(bot))
+        return false;
 
-    return magtheridon && magtheridon->IsInCombat() && botAI->IsRanged(bot);
+    Creature* channelerSquare   = GetChanneler(bot, 43160); // South
+    Creature* channelerStar     = GetChanneler(bot, 43158); // West
+    Creature* channelerCircle   = GetChanneler(bot, 43161); // Northwest
+    Creature* channelerDiamond  = GetChanneler(bot, 43159); // East
+    Creature* channelerTriangle = GetChanneler(bot, 43157); // Northeast
+
+    if ((channelerSquare   && channelerSquare->IsAlive())   ||
+        (channelerStar     && channelerStar->IsAlive())     ||
+        (channelerCircle   && channelerCircle->IsAlive())   ||
+        (channelerDiamond  && channelerDiamond->IsAlive())  ||
+        (channelerTriangle && channelerTriangle->IsAlive()))
+        return false;
+
+    return true;
 }
 
 // Movement action for clickers to stay near cubes
@@ -476,8 +1178,11 @@ bool MagtheridonManticronCubeClickerPositionAction::Execute(Event event)
         return false;
     }
 
-    // Assign ranged DPS to cubes if not already assigned
     Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    // Assign ranged DPS to cubes if not already assigned
     if (cubeAssignments.empty())
         AssignRangedDpsToCubes(group, botAI);
 
@@ -487,7 +1192,11 @@ bool MagtheridonManticronCubeClickerPositionAction::Execute(Event event)
         return false;
 
     int cubeIndex = it->second;
-    static const CubePosition& cube = manticronCubes[cubeIndex];
+    const size_t cubeCount = sizeof(manticronCubes) / sizeof(manticronCubes[0]);
+    if (cubeIndex < 0 || cubeIndex >= cubeCount)
+        return false;
+
+    const CubePosition& cube = manticronCubes[cubeIndex];
 
     // Timer logic
     time_t now = time(nullptr);
@@ -533,7 +1242,11 @@ bool MagtheridonUseManticronCubeAction::Execute(Event event)
         return false;
 
     int cubeIndex = it->second;
-    static const CubePosition& cube = manticronCubes[cubeIndex];
+    const size_t cubeCount = sizeof(manticronCubes) / sizeof(manticronCubes[0]);
+    if (cubeIndex < 0 || cubeIndex >= cubeCount)
+        return false;
+
+    const CubePosition& cube = manticronCubes[cubeIndex];
 
     // Move to within interaction distance (e.g. 1.5 yards)
     float interactionDistance = 1.5f;
