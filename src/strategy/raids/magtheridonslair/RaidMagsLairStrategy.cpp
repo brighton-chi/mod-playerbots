@@ -14,8 +14,8 @@ void RaidMagsLairStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new NextAction("magtheridon hellfire channeler south warlock", ACTION_RAID + 1),
         new NextAction("magtheridon hellfire channeler west warlock", ACTION_RAID + 1),
         new NextAction("magtheridon hellfire channeler east warlock", ACTION_RAID + 1),
-        new NextAction("magtheridon hellfire channeler west hunter", ACTION_RAID + 1),
-        new NextAction("magtheridon hellfire channeler east hunter", ACTION_RAID + 1),
+        //new NextAction("magtheridon hellfire channeler west hunter", ACTION_RAID + 1),
+        //new NextAction("magtheridon hellfire channeler east hunter", ACTION_RAID + 1),
         new NextAction("magtheridon hellfire channeler dps priority", ACTION_RAID + 1),
         nullptr)));
 }

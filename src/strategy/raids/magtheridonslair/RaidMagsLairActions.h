@@ -59,7 +59,7 @@ public:
     bool isUseful() override;
 };
 
-class MagtheridonHellfireChannelerWestHunterAction : public AttackAction
+/* class MagtheridonHellfireChannelerWestHunterAction : public AttackAction
 {
 public:
     MagtheridonHellfireChannelerWestHunterAction(PlayerbotAI* botAI, std::string const name = "magtheridon hellfire channeler west hunter") : AttackAction(botAI, name) {};
@@ -75,7 +75,7 @@ public:
 
     bool Execute(Event event) override;
     bool isUseful() override;
-};
+}; */
 
 class MagtheridonHellfireChannelerDPSPriorityAction : public AttackAction
 {
