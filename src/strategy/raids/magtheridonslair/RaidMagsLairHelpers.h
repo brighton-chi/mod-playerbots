@@ -15,6 +15,7 @@ enum MagsLairSpells
     SPELL_AURA_SHADOW_CAGE        = 30205,
     SPELL_BLAST_NOVA              = 30616,
     SPELL_AURA_SHADOW_GRASP       = 30410,
+    // SPELL_AURA_MIND_EXHAUSTION    = 44032,
     // SPELL_AURA_DEBRIS             = 30632,
     // SPELL_AURA_CONFLAGRATION      = 30757,
 
@@ -30,6 +31,7 @@ enum MagsLairSpells
 enum MagsLairNPCs
 {
     NPC_BURNING_ABYSSAL = 17454,
+    NPC_HELLFIRE_CHANNELER = 17256,
 };
 
 constexpr uint32 SOUTH_CHANNELER     = 90978;
@@ -48,11 +50,11 @@ inline constexpr int8 crossIcon = RtiTargetValue::crossIndex;
 bool IsSouthTank(PlayerbotAI* botAI, Player* bot);
 bool IsWestTank(PlayerbotAI* botAI, Player* bot);
 bool IsEastTank(PlayerbotAI* botAI, Player* bot);
-bool IsSouthWarlock(PlayerbotAI* botAI, Player* bot);
-bool IsWestWarlock(PlayerbotAI* botAI, Player* bot);
-bool IsEastWarlock(PlayerbotAI* botAI, Player* bot);
-bool IsWestHunter(PlayerbotAI* botAI, Player* bot);
-bool IsEastHunter(PlayerbotAI* botAI, Player* bot);
+//bool IsSouthWarlock(PlayerbotAI* botAI, Player* bot);
+//bool IsWestWarlock(PlayerbotAI* botAI, Player* bot);
+//bool IsEastWarlock(PlayerbotAI* botAI, Player* bot);
+//bool IsWestHunter(PlayerbotAI* botAI, Player* bot);
+//bool IsEastHunter(PlayerbotAI* botAI, Player* bot);
 Creature* GetChanneler(Player* bot, uint32 dbGuid);
 
 struct TankSpot

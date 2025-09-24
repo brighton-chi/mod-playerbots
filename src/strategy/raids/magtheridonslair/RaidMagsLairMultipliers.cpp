@@ -1,23 +1,28 @@
+#include <unordered_map>
+#include <ctime>
+
 #include "RaidMagsLairMultipliers.h"
 #include "RaidMagsLairActions.h"
 #include "RaidMagsLairHelpers.h"
 #include "AttackAction.h"
-#include "ChooseTargetActions.h"
+//#include "ChooseTargetActions.h"
 #include "GenericSpellActions.h"
 #include "MovementActions.h"
 #include "Playerbots.h"
 #include "WarlockActions.h"
 
+static std::unordered_map<uint32, time_t> magtheridonAggroWaitTimers;
+
 float MagtheridonMultiplier::GetValue(Action* action)
 {
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
     Unit* channeler = AI_VALUE2(Unit*, "find target", "hellfire channeler");
-    if ((magtheridon && magtheridon->IsAlive()) || (channeler && channeler->IsAlive()))
+    if ((magtheridon && magtheridon->IsAlive()))
     {
-        if (dynamic_cast<TankAssistAction*>(action))
+        /*if (dynamic_cast<TankAssistAction*>(action))
         {
             return 0.0f;
-        }
+        }*/
 
         if (magtheridon && magtheridon->HasUnitState(UNIT_STATE_CASTING) && magtheridon->FindCurrentSpellBySpellId(SPELL_BLAST_NOVA))
         {
@@ -38,6 +43,29 @@ float MagtheridonMultiplier::GetValue(Action* action)
         dynamic_cast<CastCurseOfExhaustionAction*>(action)))
     {
         return 0.0f;
+    }
+
+    // 1. Detect Shadow Cage just ended and start timer
+    static bool lastShadowCage = false;
+    bool shadowCage = magtheridon && magtheridon->HasAura(SPELL_AURA_SHADOW_CAGE);
+    if (lastShadowCage && !shadowCage)
+    {
+        magtheridonAggroWaitTimers[bot->GetMapId()] = time(nullptr); // or use instance id
+    }
+    lastShadowCage = shadowCage;
+
+    // 2. Block DPS on Magtheridon for X seconds after Shadow Cage ends
+    const int aggroWaitSeconds = 15;
+    auto it = magtheridonAggroWaitTimers.find(bot->GetMapId());
+    if (it != magtheridonAggroWaitTimers.end())
+    {
+        time_t since = time(nullptr) - it->second;
+        if (since < aggroWaitSeconds)
+        {
+            // Only allow tanks to attack
+            if (!botAI->IsTank(bot) && dynamic_cast<AttackAction*>(action))
+                return 0.0f;
+        }
     }
 
     return 1.0f;

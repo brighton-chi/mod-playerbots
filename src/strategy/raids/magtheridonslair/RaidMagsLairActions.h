@@ -32,7 +32,7 @@ public:
     bool isUseful() override;
 };
 
-class MagtheridonHellfireChannelerSouthWarlockAction : public AttackAction
+/*class MagtheridonHellfireChannelerSouthWarlockAction : public AttackAction
 {
 public:
     MagtheridonHellfireChannelerSouthWarlockAction(PlayerbotAI* botAI, std::string const name = "magtheridon hellfire channeler south warlock") : AttackAction(botAI, name) {};
@@ -57,25 +57,16 @@ public:
 
     bool Execute(Event event) override;
     bool isUseful() override;
-};
+};*/
 
-/* class MagtheridonHellfireChannelerWestHunterAction : public AttackAction
+class MagtheridonHellfireChannelerMisdirectionAction : public AttackAction
 {
 public:
-    MagtheridonHellfireChannelerWestHunterAction(PlayerbotAI* botAI, std::string const name = "magtheridon hellfire channeler west hunter") : AttackAction(botAI, name) {};
+    MagtheridonHellfireChannelerMisdirectionAction(PlayerbotAI* botAI, std::string const name = "magtheridon hellfire channeler misdirection") : AttackAction(botAI, name) {};
 
     bool Execute(Event event) override;
     bool isUseful() override;
 };
-
-class MagtheridonHellfireChannelerEastHunterAction : public AttackAction
-{
-public:
-    MagtheridonHellfireChannelerEastHunterAction(PlayerbotAI* botAI, std::string const name = "magtheridon hellfire channeler east hunter") : AttackAction(botAI, name) {};
-
-    bool Execute(Event event) override;
-    bool isUseful() override;
-}; */
 
 class MagtheridonHellfireChannelerDPSPriorityAction : public AttackAction
 {

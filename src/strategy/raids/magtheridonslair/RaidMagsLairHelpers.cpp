@@ -96,7 +96,7 @@ bool IsEastTank(PlayerbotAI* botAI, Player* bot)
     return false;
 }
 
-bool IsSouthWarlock(PlayerbotAI* botAI, Player* bot)
+/* bool IsSouthWarlock(PlayerbotAI* botAI, Player* bot)
 {
     Group* group = bot->GetGroup();
     if (!group || bot->getClass() != CLASS_WARLOCK)
@@ -152,9 +152,9 @@ bool IsEastWarlock(PlayerbotAI* botAI, Player* bot)
         }
     }
     return false;
-}
+} */
 
-bool IsWestHunter(PlayerbotAI* botAI, Player* bot)
+/* bool IsWestHunter(PlayerbotAI* botAI, Player* bot)
 {
     Group* group = bot->GetGroup();
     if (!group || bot->getClass() != CLASS_HUNTER)
@@ -189,9 +189,10 @@ bool IsEastHunter(PlayerbotAI* botAI, Player* bot)
         }
     }
     return false;
-}
+} */
 
-const TankSpot MagtheridonTankSpot = { -46.834f, -17.760f, -0.412f, 3.333f };
+// const TankSpot MagtheridonTankSpot = { -46.834f, -17.760f, -0.412f, 3.333f };
+const TankSpot MagtheridonTankSpot = { -51.681f, 26.805f, -0.408f, 5.528f };
 
 const std::vector<uint32> MANTICRON_CUBE_DB_GUIDS = { 43157, 43158, 43159, 43160, 43161 };
 
@@ -302,3 +303,26 @@ void AssignBotsToCubesByGuidAndCoords(Group* group, const std::vector<CubeInfo>&
         botToCubeAssignment[member->GetGUID()] = cubes[cubeIndex++];
     }
 }
+
+/* bool IsLocationSafe(float x, float y, float z, Map* map)
+{
+    // Check Blaze hazards
+    for (auto* blaze : GetAllGameObjects(map, 181832))
+    {
+        if (blaze->IsSpawned() && blaze->IsAlive())
+        {
+            if (blaze->GetExactDist2d(x, y) < 5.0f)
+                return false;
+        }
+    }
+    // Check Debris hazards
+    for (auto* debris : GetAllCreatures(map, 17474))
+    {
+        if (debris->IsAlive())
+        {
+            if (debris->GetExactDist2d(x, y) < 4.0f)
+                return false;
+        }
+    }
+    return true;
+} */
