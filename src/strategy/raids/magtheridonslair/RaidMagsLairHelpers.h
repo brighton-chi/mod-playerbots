@@ -12,12 +12,16 @@
 enum MagsLairSpells
 {
     // Magtheridon
-    SPELL_AURA_SHADOW_CAGE        = 30205,
+    SPELL_SHADOW_CAGE        = 30205,
     SPELL_BLAST_NOVA              = 30616,
-    SPELL_AURA_SHADOW_GRASP       = 30410,
-    // SPELL_AURA_MIND_EXHAUSTION    = 44032,
-    // SPELL_AURA_DEBRIS             = 30632,
-    // SPELL_AURA_CONFLAGRATION      = 30757,
+    // SPELL_BLAST_NOVA_CHANNEL      = 30613,
+    SPELL_SHADOW_GRASP       = 30410,
+    // SPELL_MIND_EXHAUSTION    = 44032,
+    // SPELL_DEBRIS_TARGET         = 30629,
+    // SPELL_DEBRIS_SPAWN          = 30630,
+    // SPELL_DEBRIS_DAMAGE         = 30631,
+    // SPELL_DEBRIS_VISUAL             = 30632,
+    // SPELL_CONFLAGRATION      = 30757,
 
     // Warlock
     SPELL_BANISH                  = 18647,

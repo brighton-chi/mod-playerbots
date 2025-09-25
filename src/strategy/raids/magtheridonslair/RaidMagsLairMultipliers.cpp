@@ -5,7 +5,6 @@
 #include "RaidMagsLairActions.h"
 #include "RaidMagsLairHelpers.h"
 #include "AttackAction.h"
-//#include "ChooseTargetActions.h"
 #include "GenericSpellActions.h"
 #include "MovementActions.h"
 #include "Playerbots.h"
@@ -17,14 +16,12 @@ float MagtheridonMultiplier::GetValue(Action* action)
 {
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
     Unit* channeler = AI_VALUE2(Unit*, "find target", "hellfire channeler");
-    if ((magtheridon && magtheridon->IsAlive()))
+    if ((magtheridon && magtheridon->IsAlive() && !magtheridon->HasAura(SPELL_SHADOW_CAGE)))
     {
-        /*if (dynamic_cast<TankAssistAction*>(action))
-        {
-            return 0.0f;
-        }*/
-
-        if (magtheridon && magtheridon->HasUnitState(UNIT_STATE_CASTING) && magtheridon->FindCurrentSpellBySpellId(SPELL_BLAST_NOVA))
+        // if (magtheridon && magtheridon->HasUnitState(UNIT_STATE_CASTING) &&
+        //     magtheridon->FindCurrentSpellBySpellId(SPELL_BLAST_NOVA))
+        auto it = botToCubeAssignment.find(bot->GetGUID());
+        if (it != botToCubeAssignment.end())
         {
             if (dynamic_cast<MagtheridonUseManticronCubeAction*>(action))
             {
@@ -47,15 +44,15 @@ float MagtheridonMultiplier::GetValue(Action* action)
 
     // 1. Detect Shadow Cage just ended and start timer
     static bool lastShadowCage = false;
-    bool shadowCage = magtheridon && magtheridon->HasAura(SPELL_AURA_SHADOW_CAGE);
+    bool shadowCage = magtheridon && magtheridon->HasAura(SPELL_SHADOW_CAGE);
     if (lastShadowCage && !shadowCage)
     {
-        magtheridonAggroWaitTimers[bot->GetMapId()] = time(nullptr); // or use instance id
+        magtheridonAggroWaitTimers[bot->GetMapId()] = time(nullptr);
     }
     lastShadowCage = shadowCage;
 
     // 2. Block DPS on Magtheridon for X seconds after Shadow Cage ends
-    const int aggroWaitSeconds = 15;
+    const int aggroWaitSeconds = 10;
     auto it = magtheridonAggroWaitTimers.find(bot->GetMapId());
     if (it != magtheridonAggroWaitTimers.end())
     {

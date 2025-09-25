@@ -13,19 +13,16 @@ Creature* GetChanneler(Player* bot, uint32 dbGuid)
     Map* map = bot->GetMap();
     if (!map)
     {
-        LOG_DEBUG("playerbots", "GetChanneler: map is nullptr (bot={})", bot->GetName());
         return nullptr;
     }
 
     auto bounds = map->GetCreatureBySpawnIdStore().equal_range(dbGuid);
     if (bounds.first == bounds.second)
     {
-        LOG_DEBUG("playerbots", "GetChanneler: dbGuid={} not found in GetCreatureBySpawnIdStore (bot={})", dbGuid, bot->GetName());
         return nullptr;
     }
 
     Creature* creature = bounds.first->second;
-    LOG_DEBUG("playerbots", "GetChanneler: dbGuid={} found={} (bot={})", dbGuid, creature ? "yes" : "no", bot->GetName());
     return creature;
 }
 
@@ -191,8 +188,8 @@ bool IsEastHunter(PlayerbotAI* botAI, Player* bot)
     return false;
 } */
 
-// const TankSpot MagtheridonTankSpot = { -46.834f, -17.760f, -0.412f, 3.333f };
-const TankSpot MagtheridonTankSpot = { -51.681f, 26.805f, -0.408f, 5.528f };
+// const TankSpot MagtheridonTankSpot = { -51.681f, 26.805f, -0.408f, 5.528f };
+const TankSpot MagtheridonTankSpot = { -52.391f, 30.373f, -0.406f, 5.246f };
 
 const std::vector<uint32> MANTICRON_CUBE_DB_GUIDS = { 43157, 43158, 43159, 43160, 43161 };
 
@@ -247,27 +244,12 @@ void AssignBotsToCubesByGuidAndCoords(Group* group, const std::vector<CubeInfo>&
         Player* member = ref->GetSource();
         if (!member || !member->IsAlive())
             continue;
-        if (!botAI->IsRangedDps(member, true) || member->getClass() == CLASS_WARLOCK)
+        if (!botAI->IsRangedDps(member, true))
             continue;
         candidates.push_back(member);
     }
 
-    // Second pass: add ranged DPS warlocks if needed
-    if (candidates.size() < cubes.size())
-    {
-        for (GroupReference* ref = group->GetFirstMember(); ref && candidates.size() < cubes.size(); ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || !member->IsAlive())
-                continue;
-            if (!botAI->IsRangedDps(member, true) || member->getClass() != CLASS_WARLOCK)
-                continue;
-            if (std::find(candidates.begin(), candidates.end(), member) == candidates.end())
-                candidates.push_back(member);
-        }
-    }
-
-    // Third pass: add anyone except SouthTank if still not enough
+    // Second pass: add anyone except SouthTank if still not enough
     if (candidates.size() < cubes.size())
     {
         Player* southTank = nullptr;
@@ -295,11 +277,13 @@ void AssignBotsToCubesByGuidAndCoords(Group* group, const std::vector<CubeInfo>&
         }
     }
 
-    // Assign cubes by GUID and coordinates
+    // Assign cubes by GUID and coordinates to living candidates only
     for (Player* member : candidates)
     {
         if (cubeIndex >= cubes.size())
             break;
+        if (!member || !member->IsAlive())
+            continue;
         botToCubeAssignment[member->GetGUID()] = cubes[cubeIndex++];
     }
 }
