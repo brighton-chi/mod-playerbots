@@ -836,7 +836,7 @@ bool MagtheridonSpreadRangedAction::Execute(Event event)
     static std::unordered_map<ObjectGuid, bool> hasReachedInitialPosition;
 
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
-    if (magtheridon && !magtheridon->HasAura(SPELL_SHADOW_CAGE) && magtheridon->GetHealth() == magtheridon->GetMaxHealth())
+    if (magtheridon && magtheridon->HasAura(SPELL_SHADOW_CAGE))
     {
         initialPositions.clear();
         hasReachedInitialPosition.clear();
@@ -905,17 +905,17 @@ bool MagtheridonSpreadRangedAction::Execute(Event event)
         hasReachedInitialPosition[bot->GetGUID()] = true;
     }
 
-    float magtheridonRangedRadius = 20.0f;
-    float minSpreadDistance = 10.0f;
+    float magtheridonRangedRadius = 15.0f;
+    float minSpreadDistance = 8.0f;
     float movementThreshold = 2.0f;
-    Unit* closestMember = nullptr;
 
+    Unit* closestMember = nullptr;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
 
-        if (!member || !member->IsAlive() || member == bot || !botAI->IsRanged(member))
-            continue;
+        if (!member || !member->IsAlive() || member == bot)
+            continue; // Consider all alive bots except self
 
         if (!closestMember || bot->GetExactDist2d(member) < bot->GetExactDist2d(closestMember))
             closestMember = member;
@@ -967,21 +967,20 @@ bool MagtheridonSpreadRangedAction::isUseful()
             return false;
     }
 
-    // ...existing cube assignment and channeler checks...
-    if (botToCubeAssignment.empty())
+    // Inline cube action exclusion logic
+    auto cubeIt = botToCubeAssignment.find(bot->GetGUID());
+    if (cubeIt != botToCubeAssignment.end())
     {
-        Group* group = bot->GetGroup();
-        if (group)
-        {
-            std::vector<CubeInfo> cubes = GetAllCubeInfosByDbGuids(bot->GetMap(), MANTICRON_CUBE_DB_GUIDS);
-            AssignBotsToCubesByGuidAndCoords(group, cubes, botAI);
-        }
-    }
+        static std::unordered_map<ObjectGuid, time_t> cubeTimers;
+        time_t now = time(nullptr);
+        time_t lastCubeUse = cubeTimers[bot->GetGUID()];
+        bool blastNovaActive = magtheridon->HasUnitState(UNIT_STATE_CASTING) && magtheridon->FindCurrentSpellBySpellId(SPELL_BLAST_NOVA);
 
-    if (botToCubeAssignment.find(bot->GetGUID()) != botToCubeAssignment.end())
-    {
-        LOG_DEBUG("playerbots", "SpreadRangedAction: Disabled for cube clicker (bot={})", bot->GetName());
-        return false;
+        if ((lastCubeUse == 0 || (now - lastCubeUse < 45)) || blastNovaActive)
+        {
+            LOG_DEBUG("playerbots", "SpreadRangedAction: Disabled for cube clicker (bot={}) due to cube action active", bot->GetName());
+            return false;
+        }
     }
 
     Creature* channelerSquare   = GetChanneler(bot, SOUTH_CHANNELER);
@@ -1002,220 +1001,220 @@ bool MagtheridonSpreadRangedAction::isUseful()
     return true;
 }
 
-/* bool MagtheridonUseManticronCubeAction::Execute(Event event)
+bool MagtheridonSpreadHealerAction::Execute(Event event)
 {
-    if (bot->HasAura(SPELL_SHADOW_GRASP))
-    {
-        LOG_DEBUG("playerbots", "CubeAction: {} is channeling the cube, no other actions allowed", bot->GetName());
-        return false; // Prevent other actions
-    }
-    static std::unordered_map<ObjectGuid, time_t> cubeTimers;
-
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
-    if (!magtheridon || !magtheridon->IsAlive())
-    {
-        return false;
-    }
 
-    // 1. Assign bots to cubes if not already assigned
     Group* group = bot->GetGroup();
     if (!group)
+        return false;
+
+    float magtheridonHealerRadius = 15.0f;
+    float minSpreadDistance = 8.0f;
+    float movementThreshold = 2.0f;
+
+    Unit* closestMember = nullptr;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+
+        if (!member || !member->IsAlive() || member == bot)
+            continue;
+
+        if (!closestMember || bot->GetExactDist2d(member) < bot->GetExactDist2d(closestMember))
+            closestMember = member;
+    }
+
+    if (closestMember && bot->GetExactDist2d(closestMember) < minSpreadDistance - movementThreshold)
+    {
+        return MoveAway(closestMember, minSpreadDistance);
+    }
+
+    float magX = magtheridon->GetPositionX();
+    float magY = magtheridon->GetPositionY();
+    float distanceToMagtheridon = bot->GetExactDist2d(magX, magY);
+
+    float destX2 = magX;
+    float destY2 = magY;
+    float destZ2 = bot->GetPositionZ();
+    if ((distanceToMagtheridon < magtheridonHealerRadius - 3.0f - movementThreshold) && 
+        bot->GetMap()->CheckCollisionAndGetValidCoords(bot, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), destX2, destY2, destZ2))
+    {
+        return MoveTo(bot->GetMapId(), destX2, destY2, destZ2);
+    }
+
+    return false;
+}
+
+
+bool MagtheridonSpreadHealerAction::isUseful()
+{
+    Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
+    if (!magtheridon || magtheridon->HasAura(SPELL_SHADOW_CAGE) || !botAI->IsHeal(bot) || bot->HasAura(SPELL_SHADOW_GRASP))
+        return false;
+
+    // Inline cube action exclusion logic
+    auto cubeIt = botToCubeAssignment.find(bot->GetGUID());
+    if (cubeIt != botToCubeAssignment.end())
+    {
+        static std::unordered_map<ObjectGuid, time_t> cubeTimers;
+        time_t now = time(nullptr);
+        time_t lastCubeUse = cubeTimers[bot->GetGUID()];
+        bool blastNovaActive = magtheridon->HasUnitState(UNIT_STATE_CASTING) && magtheridon->FindCurrentSpellBySpellId(SPELL_BLAST_NOVA);
+
+        if ((lastCubeUse == 0 || (now - lastCubeUse < 45)) || blastNovaActive)
+        {
+            LOG_DEBUG("playerbots", "SpreadHealerAction: Disabled for cube clicker (bot={}) due to cube action active", bot->GetName());
+            return false;
+        }
+    }
+
+    Creature* channelerSquare   = GetChanneler(bot, SOUTH_CHANNELER);
+    Creature* channelerStar     = GetChanneler(bot, NORTHWEST_CHANNELER);
+    Creature* channelerCircle   = GetChanneler(bot, WEST_CHANNELER);
+    Creature* channelerDiamond  = GetChanneler(bot, NORTHEAST_CHANNELER);
+    Creature* channelerTriangle = GetChanneler(bot, EAST_CHANNELER);
+
+    if ((channelerSquare   && channelerSquare->IsAlive())   ||
+        (channelerStar     && channelerStar->IsAlive())     ||
+        (channelerCircle   && channelerCircle->IsAlive())   ||
+        (channelerDiamond  && channelerDiamond->IsAlive())  ||
+        (channelerTriangle && channelerTriangle->IsAlive()))
     {
         return false;
     }
 
-    auto it = botToCubeAssignment.find(bot->GetGUID());
-    if (it == botToCubeAssignment.end())
+    return true;
+}
+
+bool MagtheridonUseManticronCubeAction::Execute(Event event)
+{
+    static std::unordered_map<ObjectGuid, time_t> cubeTimers;
+
+    if (botToCubeAssignment.empty())
     {
-        LOG_DEBUG("playerbots", "CubeAction: {} no cube assigned", bot->GetName());
+        Group* group = bot->GetGroup();
+        if (group)
+        {
+            std::vector<CubeInfo> cubes = GetAllCubeInfosByDbGuids(bot->GetMap(), MANTICRON_CUBE_DB_GUIDS);
+            AssignBotsToCubesByGuidAndCoords(group, cubes, botAI);
+            LOG_DEBUG("playerbots", "CubeAction: Assigned bots to cubes (group size={}, cubes={})", group->GetMembersCount(), cubes.size());
+        }
+    }
+
+    if (bot->HasAura(SPELL_SHADOW_GRASP)) 
+    {
+        LOG_DEBUG("playerbots", "CubeAction: Bot {} has SHADOW_GRASP, exiting", bot->GetName());
         return false;
     }
 
-    const CubeInfo& cubeInfo = it->second;
-    LOG_DEBUG("playerbots", "CubeAction: {} assigned cube GUID={} at ({}, {}, {})",
-        bot->GetName(), cubeInfo.guid.ToString(), cubeInfo.x, cubeInfo.y, cubeInfo.z);
-
-    GameObject* cube = botAI->GetGameObject(cubeInfo.guid);
-    if (!cube)
+    Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
+    if (!magtheridon || !magtheridon->IsAlive()) 
     {
-        LOG_DEBUG("playerbots", "CubeAction: {} assigned cube GUID={} not found in map", bot->GetName(), cubeInfo.guid.ToString());
+        LOG_DEBUG("playerbots", "CubeAction: Bot {} cannot find or Magtheridon is dead, exiting", bot->GetName());
         return false;
     }
 
-    // 2. Timer logic: 45s after Shadow Cage ends, move to cube
-    time_t now = time(nullptr);
-    bool shadowCage = magtheridon->HasAura(SPELL_SHADOW_CAGE);
-
-    // Reset timer if Shadow Cage is up
-    if (shadowCage)
+    if (magtheridon->HasAura(SPELL_SHADOW_CAGE)) 
     {
-        LOG_DEBUG("playerbots", "CubeAction: {} Shadow Cage active, resetting timer", bot->GetName());
+        LOG_DEBUG("playerbots", "CubeAction: Bot {} Magtheridon is caged, resetting timer and exiting", bot->GetName());
         cubeTimers[bot->GetGUID()] = 0;
         return false;
     }
 
-    // Start timer if not already started
-    if (cubeTimers[bot->GetGUID()] == 0)
-    {
-        LOG_DEBUG("playerbots", "CubeAction: {} starting 45s timer", bot->GetName());
-        cubeTimers[bot->GetGUID()] = now;
-    }
-
-    // 3. If timer expired, move to safe distance from cube
-    const float safeWaitDistance = 7.0f;
-    const float interactDistance = 1.0f;
-    float botDist = bot->GetExactDist2d(cubeInfo.x, cubeInfo.y);
-
-    LOG_DEBUG("playerbots", "CubeAction: {} timer={}s, botDist={:.2f}",
-        bot->GetName(), now - cubeTimers[bot->GetGUID()], botDist);
-
-    if (now - cubeTimers[bot->GetGUID()] >= 45)
-    {
-        // If too far, move closer to safe wait distance
-        if (botDist > safeWaitDistance)
-        {
-            float angle = atan2(cubeInfo.y - bot->GetPositionY(), cubeInfo.x - bot->GetPositionX());
-            float targetX = cubeInfo.x - cos(angle) * safeWaitDistance;
-            float targetY = cubeInfo.y - sin(angle) * safeWaitDistance;
-            float targetZ = bot->GetPositionZ();
-
-            float destX = targetX, destY = targetY, destZ = targetZ;
-            LOG_DEBUG("playerbots", "CubeAction: {} is moving closer to cube (target=({}, {}, {}))",
-                bot->GetName(), destX, destY, destZ);
-            if (bot->GetMap()->CheckCollisionAndGetValidCoords(bot, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), destX, destY, destZ))
-            {
-                bot->AttackStop();
-                bot->InterruptNonMeleeSpells(false);
-                bool moveResult = MoveTo(bot->GetMapId(), destX, destY, destZ, false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
-                LOG_DEBUG("playerbots", "CubeAction: {} MoveTo result={}", bot->GetName(), moveResult);
-                return moveResult;
-            }
-            else
-                LOG_DEBUG("playerbots", "CubeAction: {} path blocked to safe wait distance", bot->GetName());
-        }
-    }
-
-    // 4. If Magtheridon is casting Blast Nova, move in and use the cube
-    if (magtheridon->HasUnitState(UNIT_STATE_CASTING) && magtheridon->FindCurrentSpellBySpellId(SPELL_BLAST_NOVA))
-    {
-    LOG_DEBUG("playerbots", "CubeAction: {} Magtheridon is casting Blast Nova", bot->GetName());
-    GameObject* cube = botAI->GetGameObject(cubeInfo.guid);
-        if (cube && cube->isSpawned())
-        {
-            float cubeDist = bot->GetExactDist2d(cubeInfo.x, cubeInfo.y);
-
-            LOG_DEBUG("playerbots", "CubeAction: {} checking use range: botPos=({:.3f}, {:.3f}), cubePos=({:.3f}, {:.3f}), cubeDist={:.3f}, interactDistance={:.3f}",
-                bot->GetName(), bot->GetPositionX(), bot->GetPositionY(),
-                cubeInfo.x, cubeInfo.y,
-                cubeDist, interactDistance);
-
-            if (cubeDist > interactDistance)
-            {
-                // Move closer
-                float angle = atan2(cubeInfo.y - bot->GetPositionY(), cubeInfo.x - bot->GetPositionX());
-                float targetX = cubeInfo.x - cos(angle) * interactDistance;
-                float targetY = cubeInfo.y - sin(angle) * interactDistance;
-                float targetZ = bot->GetPositionZ();
-
-                float destX = targetX, destY = targetY, destZ = targetZ;
-                LOG_DEBUG("playerbots", "CubeAction: {} is moving in to interact with cube (target=({}, {}, {}), cubeDist={:.2f}, interactDistance={:.2f})",
-                    bot->GetName(), destX, destY, destZ, cubeDist, interactDistance);
-                    return MoveTo(bot->GetMapId(), destX, destY, destZ, false, false, false, false, MovementPriority::MOVEMENT_FORCED);
-            }
-            else
-            {
-                // Use cube
-                LOG_DEBUG("playerbots", "CubeAction: {} is within interact distance, ready to use cube (cubeDist={:.2f}, interactDistance={:.2f})",
-                    bot->GetName(), cubeDist, interactDistance);
-                LOG_DEBUG("playerbots", "CubeAction: {} cube->isSpawned()={}, Assigned GUID={}, Actual cube GUID={}",
-                    bot->GetName(), cube->isSpawned(), cubeInfo.guid.ToString(), cube->GetGUID().ToString());
-                cube->Use(bot);
-                LOG_DEBUG("playerbots", "CubeAction: {} called cube->Use(bot)", bot->GetName());
-                cubeTimers[bot->GetGUID()] = now;
-                return true;
-            }
-            LOG_DEBUG("playerbots", "CubeAction: {} is in range but cube not usable", bot->GetName());
-        }
-    }
-
-    LOG_DEBUG("playerbots", "CubeAction: {} no action taken", bot->GetName());
-    return false;
-} */
-
-bool MagtheridonUseManticronCubeAction::Execute(Event event)
-{
-    if (bot->HasAura(SPELL_SHADOW_GRASP))
-    {
-        LOG_DEBUG("playerbots", "CubeAction: {} is channeling the cube, no other actions allowed", bot->GetName());
-        return false;
-    }
-
-    Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
-    if (!magtheridon || !magtheridon->IsAlive())
-        return false;
-
     auto it = botToCubeAssignment.find(bot->GetGUID());
-    if (it == botToCubeAssignment.end())
+    if (it == botToCubeAssignment.end()) 
     {
-        LOG_DEBUG("playerbots", "CubeAction: {} no cube assigned", bot->GetName());
+        LOG_DEBUG("playerbots", "CubeAction: Bot {} not assigned to a cube, exiting", bot->GetName());
         return false;
     }
 
     const CubeInfo& cubeInfo = it->second;
     GameObject* cube = botAI->GetGameObject(cubeInfo.guid);
-    if (!cube)
+    if (!cube) 
     {
-        LOG_DEBUG("playerbots", "CubeAction: {} assigned cube GUID={} not found in map", bot->GetName(), cubeInfo.guid.ToString());
+        LOG_DEBUG("playerbots", "CubeAction: Bot {} cannot find assigned cube, exiting", bot->GetName());
         return false;
     }
 
-    // If Magtheridon is still caged, do nothing
-    if (magtheridon->HasAura(SPELL_SHADOW_CAGE))
+    time_t now = time(nullptr);
+    if (cubeTimers[bot->GetGUID()] == 0) 
     {
-        LOG_DEBUG("playerbots", "CubeAction: {} Magtheridon is caged, waiting...", bot->GetName());
-        return true;
+        LOG_DEBUG("playerbots", "CubeAction: Bot {} initializing timer", bot->GetName());
+        cubeTimers[bot->GetGUID()] = now;
     }
 
-    // Move to cube and stand by it, do nothing else
-    float interactDistance = 1.0f;
+    const float safeWaitDistance = 7.0f;
     float cubeDist = bot->GetExactDist2d(cubeInfo.x, cubeInfo.y);
 
-    float forcedUseDistance = 1.5f;
-    if (cubeDist <= forcedUseDistance && magtheridon->HasUnitState(UNIT_STATE_CASTING) && magtheridon->FindCurrentSpellBySpellId(SPELL_BLAST_NOVA))
+    if (now - cubeTimers[bot->GetGUID()] < 45) 
     {
-    LOG_DEBUG("playerbots", "CubeAction: {} forced cube use with leeway (cubeDist={:.3f})", bot->GetName(), cubeDist);
-    bot->StopMoving();
-    cube->Use(bot);
-    return true;
+        LOG_DEBUG("playerbots", "CubeAction: Bot {} waiting for 45s timer, elapsed={}s", bot->GetName(), now - cubeTimers[bot->GetGUID()]);
+        return false;
     }
 
-    if (cubeDist > interactDistance)
+    if (!(magtheridon->HasUnitState(UNIT_STATE_CASTING) && magtheridon->FindCurrentSpellBySpellId(SPELL_BLAST_NOVA))) {
+        LOG_DEBUG("playerbots", "CubeAction: Bot {} entering safe wait area logic, cubeDist={}", bot->GetName(), cubeDist);
+        if (fabs(cubeDist - safeWaitDistance) > 0.5f) {
+            LOG_DEBUG("playerbots", "CubeAction: Bot {} not at safe wait location, searching for safe spot", bot->GetName());
+            // Try up to 12 positions around the cube
+            for (int i = 0; i < 12; ++i)
+            {
+                float angle = i * M_PI / 6.0f; // 12 spots around the circle
+                float targetX = cubeInfo.x + cos(angle) * safeWaitDistance;
+                float targetY = cubeInfo.y + sin(angle) * safeWaitDistance;
+                float targetZ = bot->GetPositionZ();
+
+                if (IsSafeFromMagtheridonHazards(botAI, bot, targetX, targetY, targetZ))
+                {
+                    LOG_DEBUG("playerbots", "CubeAction: Bot {} moving to safe wait spot ({}, {})", bot->GetName(), targetX, targetY);
+                    return MoveTo(bot->GetMapId(), targetX, targetY, targetZ, false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
+                }
+            }
+            // If no safe spot found, fallback to default position
+            float angle = static_cast<float>(rand()) / RAND_MAX * 2.0f * M_PI;
+            float fallbackX = cubeInfo.x + cos(angle) * safeWaitDistance;
+            float fallbackY = cubeInfo.y + sin(angle) * safeWaitDistance;
+            float fallbackZ = bot->GetPositionZ();
+            LOG_DEBUG("playerbots", "CubeAction: Bot {} fallback to wait spot ({}, {})", bot->GetName(), fallbackX, fallbackY);
+            return MoveTo(bot->GetMapId(), fallbackX, fallbackY, fallbackZ, false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
+        }
+        else
+        {
+        LOG_DEBUG("playerbots", "CubeAction: Bot {} at safe wait location, idling", bot->GetName());
+        return true;
+        }
+    }
+
+    LOG_DEBUG("playerbots", "CubeAction: Bot {} entering cube use logic, cubeDist={}", bot->GetName(), cubeDist);
+
+    // 3. If Blast Nova is casting: move to cube and use it
+    const float interactDistance = 1.0f;
+    const float interactDistanceBuffer = 0.5f;
+
+    if (cubeDist > interactDistance) 
     {
+        if (cubeDist <= interactDistance + interactDistanceBuffer) {
+            LOG_DEBUG("playerbots", "CubeAction: Bot {} close enough to use cube, using", bot->GetName());
+            bot->StopMoving();
+            cube->Use(bot);
+            cubeTimers[bot->GetGUID()] = now;
+            return true;
+        }
+        LOG_DEBUG("playerbots", "CubeAction: Bot {} moving to cube at ({}, {})", bot->GetName(), cubeInfo.x, cubeInfo.y);
         float angle = atan2(cubeInfo.y - bot->GetPositionY(), cubeInfo.x - bot->GetPositionX());
         float targetX = cubeInfo.x - cos(angle) * interactDistance;
         float targetY = cubeInfo.y - sin(angle) * interactDistance;
         float targetZ = bot->GetPositionZ();
 
-        float destX = targetX, destY = targetY, destZ = targetZ;
-        LOG_DEBUG("playerbots", "CubeAction: {} moving to standby position at cube (target=({}, {}, {}), cubeDist={:.2f})",
-            bot->GetName(), destX, destY, destZ, cubeDist);
-
-        if (bot->GetMap()->CheckCollisionAndGetValidCoords(bot, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), destX, destY, destZ))
-            return MoveTo(bot->GetMapId(), destX, destY, destZ, false, false, false, false, MovementPriority::MOVEMENT_FORCED);
-        else
-            LOG_DEBUG("playerbots", "CubeAction: {} path blocked to cube standby position", bot->GetName());
-        return true;
+        return MoveTo(bot->GetMapId(), targetX, targetY, targetZ, false, false, false, false, MovementPriority::MOVEMENT_FORCED);
     }
-
-    // If Magtheridon is casting Blast Nova, use the cube
-    if (magtheridon->HasUnitState(UNIT_STATE_CASTING) && magtheridon->FindCurrentSpellBySpellId(SPELL_BLAST_NOVA))
+    else 
     {
-        LOG_DEBUG("playerbots", "CubeAction: {} Magtheridon is casting Blast Nova, using cube!", bot->GetName());
+        LOG_DEBUG("playerbots", "CubeAction: Bot {} at cube, using cube", bot->GetName());
+        bot->StopMoving();
         cube->Use(bot);
+        cubeTimers[bot->GetGUID()] = now;
         return true;
     }
-
-    // Otherwise, just stand by the cube and do nothing
-    LOG_DEBUG("playerbots", "CubeAction: {} standing by cube, waiting for Blast Nova...", bot->GetName());
-    return true;
 }

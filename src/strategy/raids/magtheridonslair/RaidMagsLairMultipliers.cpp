@@ -5,10 +5,14 @@
 #include "RaidMagsLairActions.h"
 #include "RaidMagsLairHelpers.h"
 #include "AttackAction.h"
+#include "DruidBearActions.h"
 #include "GenericSpellActions.h"
 #include "MovementActions.h"
 #include "Playerbots.h"
+#include "RogueActions.h"
+#include "ShamanActions.h"
 #include "WarlockActions.h"
+#include "WarriorActions.h"
 
 static std::unordered_map<uint32, time_t> magtheridonAggroWaitTimers;
 
@@ -16,23 +20,25 @@ float MagtheridonMultiplier::GetValue(Action* action)
 {
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
     Unit* channeler = AI_VALUE2(Unit*, "find target", "hellfire channeler");
-    if ((magtheridon && magtheridon->IsAlive() && !magtheridon->HasAura(SPELL_SHADOW_CAGE)))
+    if (magtheridon && magtheridon->IsAlive() && !magtheridon->HasAura(SPELL_SHADOW_CAGE))
     {
-        // if (magtheridon && magtheridon->HasUnitState(UNIT_STATE_CASTING) &&
-        //     magtheridon->FindCurrentSpellBySpellId(SPELL_BLAST_NOVA))
-        auto it = botToCubeAssignment.find(bot->GetGUID());
-        if (it != botToCubeAssignment.end())
+        if (magtheridon->HasUnitState(UNIT_STATE_CASTING) &&
+            magtheridon->FindCurrentSpellBySpellId(SPELL_BLAST_NOVA))
         {
-            if (dynamic_cast<MagtheridonUseManticronCubeAction*>(action))
+            auto it = botToCubeAssignment.find(bot->GetGUID());
+            if (it != botToCubeAssignment.end())
             {
-                return 1.0f;
+                if (dynamic_cast<MagtheridonUseManticronCubeAction*>(action))
+                {
+                    return 1.0f;
+                }
+                return 0.0f;
             }
-
-            return 0.0f;
         }
     }
-    if (channeler && channeler->IsAlive() &&
-        (dynamic_cast<CastCurseOfAgonyAction*>(action) ||
+
+    if (channeler && channeler->IsAlive() && 
+       (dynamic_cast<CastCurseOfAgonyAction*>(action) ||
         dynamic_cast<CastCurseOfAgonyOnAttackerAction*>(action) ||
         dynamic_cast<CastCurseOfDoomAction*>(action) ||
         dynamic_cast<CastCurseOfWeaknessAction*>(action) ||

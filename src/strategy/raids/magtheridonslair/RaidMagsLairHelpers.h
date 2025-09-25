@@ -57,9 +57,8 @@ bool IsEastTank(PlayerbotAI* botAI, Player* bot);
 //bool IsSouthWarlock(PlayerbotAI* botAI, Player* bot);
 //bool IsWestWarlock(PlayerbotAI* botAI, Player* bot);
 //bool IsEastWarlock(PlayerbotAI* botAI, Player* bot);
-//bool IsWestHunter(PlayerbotAI* botAI, Player* bot);
-//bool IsEastHunter(PlayerbotAI* botAI, Player* bot);
 Creature* GetChanneler(Player* bot, uint32 dbGuid);
+bool IsSafeFromMagtheridonHazards(PlayerbotAI* botAI, Player* bot, float x, float y, float z);
 
 struct TankSpot
 {

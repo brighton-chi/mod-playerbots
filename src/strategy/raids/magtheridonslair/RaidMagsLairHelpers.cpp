@@ -1,4 +1,5 @@
 #include "RaidMagsLairHelpers.h"
+#include "AiObjectContext.h"
 #include "Creature.h"
 #include "GameObject.h"
 #include "Group.h"
@@ -288,25 +289,36 @@ void AssignBotsToCubesByGuidAndCoords(Group* group, const std::vector<CubeInfo>&
     }
 }
 
-/* bool IsLocationSafe(float x, float y, float z, Map* map)
+bool IsSafeFromMagtheridonHazards(PlayerbotAI* botAI, Player* bot, float x, float y, float z)
 {
-    // Check Blaze hazards
-    for (auto* blaze : GetAllGameObjects(map, 181832))
+    // Debris hazards: NPC 17474, 9 yard radius
+    std::vector<Unit*> debrisHazards;
+    const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
+    for (const auto& npcGuid : npcs)
     {
-        if (blaze->IsSpawned() && blaze->IsAlive())
-        {
-            if (blaze->GetExactDist2d(x, y) < 5.0f)
-                return false;
-        }
+        Unit* unit = botAI->GetUnit(npcGuid);
+        if (!unit || unit->GetEntry() != 17474)
+            continue;
+        debrisHazards.push_back(unit);
     }
-    // Check Debris hazards
-    for (auto* debris : GetAllCreatures(map, 17474))
+    for (Unit* hazard : debrisHazards)
     {
-        if (debris->IsAlive())
-        {
-            if (debris->GetExactDist2d(x, y) < 4.0f)
-                return false;
-        }
+        float dist = std::sqrt(std::pow(x - hazard->GetPositionX(), 2) + std::pow(y - hazard->GetPositionY(), 2));
+        if (dist < 9.0f)
+            return false;
     }
+
+    // Conflagration hazards: GameObject 181832, 5 yard radius
+    GuidVector gos = *botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest game objects");
+    for (const auto& goGuid : gos)
+    {
+        GameObject* go = botAI->GetGameObject(goGuid);
+        if (!go || go->GetEntry() != 181832)
+            continue;
+        float dist = std::sqrt(std::pow(x - go->GetPositionX(), 2) + std::pow(y - go->GetPositionY(), 2));
+        if (dist < 5.0f)
+            return false;
+    }
+
     return true;
-} */
+}

@@ -104,6 +104,15 @@ public:
     bool isUseful() override;
 };
 
+class MagtheridonSpreadHealerAction : public MovementAction
+{
+public:
+    MagtheridonSpreadHealerAction(PlayerbotAI* botAI, std::string const name = "magtheridon spread healer") : MovementAction(botAI, name) {};
+
+    bool Execute(Event event) override;
+    bool isUseful() override;
+};
+
 class MagtheridonUseManticronCubeAction : public MovementAction
 {
 public:
