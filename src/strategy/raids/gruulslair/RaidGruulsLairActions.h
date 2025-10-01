@@ -29,18 +29,18 @@ public:
     bool Execute(Event event) override;
 };
 
-class HighKingMaulgarMageTankAction : public AttackAction
+class HighKingMaulgarKroshMageTankAction : public AttackAction
 {
 public:
-    HighKingMaulgarMageTankAction(PlayerbotAI* botAI, std::string const name = "high king maulgar mage tank") : AttackAction(botAI, name) {};
+    HighKingMaulgarKroshMageTankAction(PlayerbotAI* botAI, std::string const name = "high king maulgar krosh mage tank") : AttackAction(botAI, name) {};
 
     bool Execute(Event event) override;
 };
 
-class HighKingMaulgarMoonkinTankAction : public AttackAction
+class HighKingMaulgarKigglerMoonkinTankAction : public AttackAction
 {
 public:
-    HighKingMaulgarMoonkinTankAction(PlayerbotAI* botAI, std::string const name = "high king maulgar moonkin tank") : AttackAction(botAI, name) {};
+    HighKingMaulgarKigglerMoonkinTankAction(PlayerbotAI* botAI, std::string const name = "high king maulgar kiggler moonkin tank") : AttackAction(botAI, name) {};
 
     bool Execute(Event event) override;
 };
@@ -69,13 +69,22 @@ public:
     bool Execute(Event event) override;
 };
 
+class HighKingMaulgarWhirlwindRunAwayAction : public MovementAction
+{
+public:
+    HighKingMaulgarWhirlwindRunAwayAction(PlayerbotAI* botAI, std::string const name = "high king maulgar whirlwind run away") : MovementAction(botAI, name) {};
+
+    bool Execute(Event event) override;
+    bool isUseful() override;
+};
+
 class HighKingMaulgarBanishFelstalkerAction : public AttackAction
 {
 public:
     HighKingMaulgarBanishFelstalkerAction(PlayerbotAI* botAI, std::string const name = "high king maulgar banish felstalker") : AttackAction(botAI, name) {};
 
     bool Execute(Event event) override;
-    bool isUseful();
+    bool isUseful() override;
 };
 
 class HighKingMaulgarHunterMisdirectionAction : public AttackAction
@@ -92,7 +101,7 @@ public:
     GruulTheDragonkillerPositionBossAction(PlayerbotAI* botAI, std::string const name = "gruul the dragonkiller position boss") : MovementAction(botAI, name) {};
 
     bool Execute(Event event) override;
-    bool isUseful();
+    bool isUseful() override;
 };
 
 class GruulTheDragonkillerSpreadRangedAction : public MovementAction
@@ -101,7 +110,7 @@ public:
     GruulTheDragonkillerSpreadRangedAction(PlayerbotAI* botAI, std::string const name = "gruul the dragonkiller spread ranged") : MovementAction(botAI, name) {};
 
     bool Execute(Event event) override;
-    bool isUseful();
+    bool isUseful() override;
 };
 
 class GruulTheDragonkillerShatterSpreadAction : public MovementAction
@@ -110,7 +119,7 @@ public:
     GruulTheDragonkillerShatterSpreadAction(PlayerbotAI* botAI, std::string const name = "gruul the dragonkiller shatter spread") : MovementAction(botAI, name) {};
 
     bool Execute(Event event) override;
-    bool isUseful();
+    bool isUseful() override;
 };
 
 #endif
