@@ -32,33 +32,6 @@ public:
     bool isUseful() override;
 };
 
-/*class MagtheridonHellfireChannelerSouthWarlockAction : public AttackAction
-{
-public:
-    MagtheridonHellfireChannelerSouthWarlockAction(PlayerbotAI* botAI, std::string const name = "magtheridon hellfire channeler south warlock") : AttackAction(botAI, name) {};
-
-    bool Execute(Event event) override;
-    bool isUseful() override;
-};
-
-class MagtheridonHellfireChannelerWestWarlockAction : public AttackAction
-{
-public:
-    MagtheridonHellfireChannelerWestWarlockAction(PlayerbotAI* botAI, std::string const name = "magtheridon hellfire channeler west warlock") : AttackAction(botAI, name) {};
-
-    bool Execute(Event event) override;
-    bool isUseful() override;
-};
-
-class MagtheridonHellfireChannelerEastWarlockAction : public AttackAction
-{
-public:
-    MagtheridonHellfireChannelerEastWarlockAction(PlayerbotAI* botAI, std::string const name = "magtheridon hellfire channeler east warlock") : AttackAction(botAI, name) {};
-
-    bool Execute(Event event) override;
-    bool isUseful() override;
-};*/
-
 class MagtheridonHellfireChannelerMisdirectionAction : public AttackAction
 {
 public:
