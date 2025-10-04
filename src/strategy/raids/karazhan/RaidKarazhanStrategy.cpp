@@ -40,7 +40,7 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         "karazhan the curator", NextAction::array(0,
         new NextAction("karazhan the curator spread ranged", ACTION_RAID + 2),
         new NextAction("karazhan the curator position boss", ACTION_RAID + 2),
-        new NextAction("karazhan the curator mark target", ACTION_RAID + 1),
+        new NextAction("karazhan the curator mark astral flare", ACTION_RAID + 1),
         nullptr)));
 
     triggers.push_back(new TriggerNode(

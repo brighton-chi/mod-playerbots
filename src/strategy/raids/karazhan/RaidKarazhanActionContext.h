@@ -24,7 +24,7 @@ public:
         creators["karazhan wizard of oz mark target"] = &RaidKarazhanActionContext::karazhan_wizard_of_oz_mark_target;
         creators["karazhan wizard of oz scorch strawman"] = &RaidKarazhanActionContext::karazhan_wizard_of_oz_scorch_strawman;
 
-        creators["karazhan the curator mark target"] = &RaidKarazhanActionContext::karazhan_the_curator_mark_target;
+        creators["karazhan the curator mark astral flare"] = &RaidKarazhanActionContext::karazhan_the_curator_mark_astral_flare;
         creators["karazhan the curator position boss"] = &RaidKarazhanActionContext::karazhan_the_curator_position_boss;
         creators["karazhan the curator spread ranged"] = &RaidKarazhanActionContext::karazhan_the_curator_spread_ranged;
 
@@ -61,7 +61,7 @@ private:
     static Action* karazhan_wizard_of_oz_mark_target(PlayerbotAI* botAI) { return new KarazhanWizardOfOzMarkTargetAction(botAI); }
     static Action* karazhan_wizard_of_oz_scorch_strawman(PlayerbotAI* botAI) { return new KarazhanWizardOfOzScorchStrawmanAction(botAI); }
 
-    static Action* karazhan_the_curator_mark_target(PlayerbotAI* botAI) { return new KarazhanTheCuratorMarkTargetAction(botAI); }
+    static Action* karazhan_the_curator_mark_astral_flare(PlayerbotAI* botAI) { return new KarazhanTheCuratorMarkAstralFlareAction(botAI); }
     static Action* karazhan_the_curator_position_boss(PlayerbotAI* botAI) { return new KarazhanTheCuratorPositionBossAction(botAI); }
     static Action* karazhan_the_curator_spread_ranged(PlayerbotAI* botAI) { return new KarazhanTheCuratorSpreadRangedAction(botAI); }
 

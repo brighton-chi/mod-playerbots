@@ -82,14 +82,16 @@ public:
     KarazhanWizardOfOzScorchStrawmanAction(PlayerbotAI* botAI, std::string const name = "karazhan wizard of oz scorch strawman") : Action(botAI, name) {}
 
     bool Execute(Event event) override;
+    bool isUseful() override;
 };
 
-class KarazhanTheCuratorMarkTargetAction : public Action
+class KarazhanTheCuratorMarkAstralFlareAction : public Action
 {
 public:
-    KarazhanTheCuratorMarkTargetAction(PlayerbotAI* botAI, std::string const name = "karazhan the curator mark target") : Action(botAI, name) {}
+    KarazhanTheCuratorMarkAstralFlareAction(PlayerbotAI* botAI, std::string const name = "karazhan the curator mark astral flare") : Action(botAI, name) {}
 
     bool Execute(Event event) override;
+    bool isUseful() override;
 };
 
 class KarazhanTheCuratorPositionBossAction : public MovementAction
@@ -133,6 +135,7 @@ public:
     KarazhanShadeOfAranFlameWreathStopMovementAction(PlayerbotAI* botAI, std::string const name = "karazhan shade of aran flame wreath stop bot") : MovementAction(botAI, name) {}
 
     bool Execute(Event event) override;
+    bool isUseful() override;
 };
 
 class KarazhanShadeOfAranMarkConjuredElementalAction : public Action
@@ -141,6 +144,7 @@ public:
     KarazhanShadeOfAranMarkConjuredElementalAction(PlayerbotAI* botAI, std::string const name = "karazhan shade of aran mark conjured elemental") : Action(botAI, name) {}
 
     bool Execute(Event event) override;
+    bool isUseful() override;
 };
 
 class KarazhanShadeOfAranSpreadRangedAction : public MovementAction

@@ -59,10 +59,10 @@ public:
     bool isUseful() override;
 };
 
-class MagtheridonPositionBossAction : public MovementAction
+class MagtheridonPositionBossAction : public AttackAction
 {
 public:
-    MagtheridonPositionBossAction(PlayerbotAI* botAI, std::string const name = "magtheridon position boss") : MovementAction(botAI, name) {};
+    MagtheridonPositionBossAction(PlayerbotAI* botAI, std::string const name = "magtheridon position boss") : AttackAction(botAI, name) {};
 
     bool Execute(Event event) override;
     bool isUseful() override;

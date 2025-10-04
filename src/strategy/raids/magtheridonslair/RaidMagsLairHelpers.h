@@ -1,7 +1,8 @@
 #ifndef _PLAYERBOT_RAIDMAGSLAIRHELPERS_H
 #define _PLAYERBOT_RAIDMAGSLAIRHELPERS_H
 
-#include <map>
+#include <ctime>
+#include <unordered_map>
 #include <vector>
 
 #include "Group.h"
@@ -9,34 +10,38 @@
 #include "PlayerbotAI.h"
 #include "RtiTargetValue.h"
 
-enum MagsLairSpells
+enum class MagsLairSpells
 {
     // Magtheridon
-    SPELL_SHADOW_CAGE        = 30205,
-    SPELL_BLAST_NOVA              = 30616,
-    // SPELL_BLAST_NOVA_CHANNEL      = 30613,
-    SPELL_SHADOW_GRASP       = 30410,
-    // SPELL_MIND_EXHAUSTION    = 44032,
-    // SPELL_DEBRIS_TARGET         = 30629,
-    // SPELL_DEBRIS_SPAWN          = 30630,
-    // SPELL_DEBRIS_DAMAGE         = 30631,
-    // SPELL_DEBRIS_VISUAL             = 30632,
-    // SPELL_CONFLAGRATION      = 30757,
+    SHADOW_CAGE        = 30205,
+    BLAST_NOVA         = 30616,
+    // BLAST_NOVA_CHANNEL      = 30613,
+    SHADOW_GRASP       = 30410,
+    // MIND_EXHAUSTION = 44032,
+    // DEBRIS_TARGET   = 30629,
+    // DEBRIS_SPAWN    = 30630,
+    // DEBRIS_DAMAGE   = 30631,
+    // DEBRIS_VISUAL   = 30632,
+    // CONFLAGRATION   = 30757,
 
     // Warlock
-    SPELL_BANISH                  = 18647,
-    SPELL_CURSE_OF_TONGUES        = 11719,
-    SPELL_FEAR                    = 6215,
+    BANISH             = 18647,
+    CURSE_OF_TONGUES   = 11719,
+    FEAR               =  6215,
 
     // Hunter
-    SPELL_AURA_MISDIRECTION       = 34477,
+    MISDIRECTION  = 34477,
 };
 
-enum MagsLairNPCs
+enum class MagsLairNPCs
 {
-    NPC_BURNING_ABYSSAL = 17454,
-    NPC_HELLFIRE_CHANNELER = 17256,
+    BURNING_ABYSSAL      = 17454,
+    HELLFIRE_CHANNELER   = 17256,
+    TARGET_TRIGGER       = 17474,
 };
+
+namespace MagsLairHelpers
+{
 
 constexpr uint32 SOUTH_CHANNELER     = 90978;
 constexpr uint32 WEST_CHANNELER      = 90979;
@@ -52,6 +57,8 @@ inline constexpr int8 triangleIcon = RtiTargetValue::triangleIndex;
 inline constexpr int8 crossIcon = RtiTargetValue::crossIndex;
 
 Creature* GetChanneler(Player* bot, uint32 dbGuid);
+void UpdateTransitionTimer(Unit* unit, bool transitionCondition, std::unordered_map<uint32, bool>& lastStateMap, 
+                           std::unordered_map<uint32, time_t>& timerMap);
 bool IsSafeFromMagtheridonHazards(PlayerbotAI* botAI, Player* bot, float x, float y, float z);
 
 struct TankSpot
@@ -59,7 +66,12 @@ struct TankSpot
     float x, y, z, orientation;
 };
 
-extern const TankSpot MagtheridonTankSpot;
+namespace MagsLairTankSpots 
+{
+    extern const TankSpot Magtheridon;
+    extern const TankSpot NWChanneler;
+    extern const TankSpot NEChanneler;
+}
 
 struct CubeInfo
 {
@@ -71,5 +83,9 @@ extern const std::vector<uint32> MANTICRON_CUBE_DB_GUIDS;
 extern std::unordered_map<ObjectGuid, CubeInfo> botToCubeAssignment;
 std::vector<CubeInfo> GetAllCubeInfosByDbGuids(Map* map, const std::vector<uint32>& cubeDbGuids);
 void AssignBotsToCubesByGuidAndCoords(Group* group, const std::vector<CubeInfo>& cubes, PlayerbotAI* botAI);
+extern std::unordered_map<uint32, bool> lastShadowCageState;
+extern std::unordered_map<uint32, bool> lastBlastNovaState;
+
+}
 
 #endif

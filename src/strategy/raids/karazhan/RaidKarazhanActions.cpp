@@ -42,7 +42,7 @@ bool KarazhanAttumenTheHuntsmanStackBehindAction::isUseful()
     RaidKarazhanHelpers karazhanHelper(botAI);
     Unit* boss = karazhanHelper.GetFirstAliveUnitByEntry(NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED);
 
-    return boss && !(botAI->IsTank(bot) && botAI->HasAggro(boss) && boss->GetVictim() == bot);
+    return boss && !botAI->IsMainTank(bot);
 }
 
 bool KarazhanMoroesMarkTargetAction::Execute(Event event)
@@ -67,18 +67,16 @@ bool KarazhanMaidenOfVirtuePositionBossAction::Execute(Event event)
     Unit* boss = AI_VALUE2(Unit*, "find target", "maiden of virtue");
     Unit* healer = nullptr;
 
-    if (Group* group = bot->GetGroup())
+    Group* group = bot->GetGroup();
+    for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
     {
-        for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
+        Player* member = itr->GetSource();
+        if (!member || !member->IsAlive() || !botAI->IsHeal(member) || !member->HasAura(SPELL_REPENTANCE))
         {
-            Player* member = itr->GetSource();
-            if (!member || !member->IsAlive() || !botAI->IsHeal(member) || !member->HasAura(SPELL_REPENTANCE))
-            {
-                continue;
-            }
-            healer = member;
-            break;
+            continue;
         }
+        healer = member;
+        break;
     }
 
     if (healer)
@@ -120,8 +118,9 @@ bool KarazhanMaidenOfVirtuePositionBossAction::Execute(Event event)
 bool KarazhanMaidenOfVirtuePositionBossAction::isUseful()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "maiden of virtue");
+    Group* group = bot->GetGroup();
 
-    return boss && botAI->IsTank(bot) && botAI->HasAggro(boss) && boss->GetVictim() == bot;
+    return boss && botAI->IsMainTank(bot) && boss->GetVictim() == bot && group;
 }
 
 bool KarazhanMaidenOfVirtuePositionRangedAction::Execute(Event event)
@@ -169,8 +168,9 @@ bool KarazhanMaidenOfVirtuePositionRangedAction::Execute(Event event)
 bool KarazhanMaidenOfVirtuePositionRangedAction::isUseful()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "maiden of virtue");
+    Group* group = bot->GetGroup();
 
-    return boss && botAI->IsRanged(bot);
+    return boss && botAI->IsRanged(bot) && group;
 }
 
 bool KarazhanBigBadWolfPositionBossAction::Execute(Event event)
@@ -205,7 +205,7 @@ bool KarazhanBigBadWolfPositionBossAction::isUseful()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "the big bad wolf");
 
-    return boss && botAI->IsTank(bot) && botAI->HasAggro(boss) && boss->GetVictim() == bot && 
+    return boss && botAI->IsMainTank(bot) && boss->GetVictim() == bot &&
            !bot->HasAura(SPELL_LITTLE_RED_RIDING_HOOD);
 }
 
@@ -279,31 +279,35 @@ bool KarazhanWizardOfOzMarkTargetAction::Execute(Event event)
 bool KarazhanWizardOfOzScorchStrawmanAction::Execute(Event event)
 {
     Unit* strawman = AI_VALUE2(Unit*, "find target", "strawman");
-    if (!strawman || !strawman->IsAlive() || bot->getClass() != CLASS_MAGE)
-    {
-        return false;
-    }
-
     if (botAI->CanCastSpell("scorch", strawman))
-    {
         botAI->CastSpell("scorch", strawman);
-    }
 
     return false;
 }
 
-bool KarazhanTheCuratorMarkTargetAction::Execute(Event event)
+bool KarazhanWizardOfOzScorchStrawmanAction::isUseful()
+{
+    Unit* strawman = AI_VALUE2(Unit*, "find target", "strawman");
+
+    return strawman && strawman->IsAlive() && bot->getClass() == CLASS_MAGE;
+}
+
+bool KarazhanTheCuratorMarkAstralFlareAction::Execute(Event event)
 {
     Unit* target = AI_VALUE2(Unit*, "find target", "astral flare");
-    if (!target || !target->IsAlive())
-    {
-        return false;
-    }
-
     RaidKarazhanHelpers karazhanHelper(botAI);
+
     karazhanHelper.MarkTargetWithSkull(target);
 
     return false;
+}
+
+bool KarazhanTheCuratorMarkAstralFlareAction::isUseful()
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "the curator");
+    Unit* target = AI_VALUE2(Unit*, "find target", "astral flare");
+
+    return boss && target && target->IsAlive();
 }
 
 bool KarazhanTheCuratorPositionBossAction::Execute(Event event)
@@ -332,7 +336,7 @@ bool KarazhanTheCuratorPositionBossAction::isUseful()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "the curator");
 
-    return boss && botAI->IsTank(bot) && botAI->HasAggro(boss) && boss->GetVictim() == bot;
+    return boss && botAI->IsMainTank(bot) && boss->GetVictim() == bot;
 }
 
 bool KarazhanTheCuratorSpreadRangedAction::Execute(Event event)
@@ -403,42 +407,47 @@ bool KarazhanShadeOfAranArcaneExplosionRunAwayAction::isUseful()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "shade of aran");
 
-    return boss && boss->IsAlive() && boss->HasUnitState(UNIT_STATE_CASTING) &&
+    return boss && boss->HasUnitState(UNIT_STATE_CASTING) &&
            boss->FindCurrentSpellBySpellId(SPELL_ARCANE_EXPLOSION);
 }
 
 bool KarazhanShadeOfAranFlameWreathStopMovementAction::Execute(Event event)
 {
-    RaidKarazhanHelpers karazhanHelper(botAI);
-    if (karazhanHelper.IsFlameWreathActive())
+    AI_VALUE(LastMovement&, "last movement").Set(nullptr);
+    bot->GetMotionMaster()->Clear();
+    if (bot->isMoving())
     {
-        AI_VALUE(LastMovement&, "last movement").Set(nullptr);
-        bot->GetMotionMaster()->Clear();
-        if (bot->isMoving())
-        {
-            bot->StopMoving();
-        }
-        return true;
+        bot->StopMoving();
     }
-    
-    return false;
+
+    return true;
+}
+
+bool KarazhanShadeOfAranFlameWreathStopMovementAction::isUseful()
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "shade of aran");
+    RaidKarazhanHelpers karazhanHelper(botAI);
+
+    return boss && karazhanHelper.IsFlameWreathActive();
 }
 
 bool KarazhanShadeOfAranMarkConjuredElementalAction::Execute(Event event)
 {
     RaidKarazhanHelpers karazhanHelper(botAI);
-    Unit* boss = AI_VALUE2(Unit*, "find target", "shade of aran");
     Unit* target = karazhanHelper.GetFirstAliveUnitByEntry(NPC_CONJURED_ELEMENTAL);
-
-    if (!boss || !boss->IsAlive() || 
-        !target || !target->IsAlive() || target->HasAura(SPELL_WARLOCK_BANISH))
-    {
-        return false;
-    }
 
     karazhanHelper.MarkTargetWithSkull(target);
 
     return false;
+}
+
+bool KarazhanShadeOfAranMarkConjuredElementalAction::isUseful()
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "shade of aran");
+    RaidKarazhanHelpers karazhanHelper(botAI);
+    Unit* target = karazhanHelper.GetFirstAliveUnitByEntry(NPC_CONJURED_ELEMENTAL);
+
+    return boss && target && target->IsAlive() && !target->HasAura(SPELL_WARLOCK_BANISH);
 }
 
 bool KarazhanShadeOfAranSpreadRangedAction::Execute(Event event)
@@ -478,7 +487,7 @@ bool KarazhanShadeOfAranSpreadRangedAction::isUseful()
     Unit* boss = AI_VALUE2(Unit*, "find target", "shade of aran");
     RaidKarazhanHelpers karazhanHelper(botAI);
 
-    return boss && boss->IsAlive() && botAI->IsRanged(bot) && !karazhanHelper.IsFlameWreathActive() &&
+    return boss && botAI->IsRanged(bot) && !karazhanHelper.IsFlameWreathActive() &&
            !(boss->HasUnitState(UNIT_STATE_CASTING) && boss->FindCurrentSpellBySpellId(SPELL_ARCANE_EXPLOSION));
 }
 
@@ -943,19 +952,11 @@ bool KarazhanNetherspiteAvoidBeamAndVoidZoneAction::Execute(Event event)
 bool KarazhanNetherspiteAvoidBeamAndVoidZoneAction::isUseful()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "netherspite");
-    if (!boss || boss->HasAura(SPELL_NETHERSPITE_BANISHED))
-    {
-        return false;
-    }
-
     RaidKarazhanHelpers karazhanHelper(botAI);
     auto [redBlocker, greenBlocker, blueBlocker] = karazhanHelper.GetCurrentBeamBlockers();
-    if (bot == redBlocker || bot == blueBlocker || bot == greenBlocker)
-    {
-        return false;
-    }
 
-    return true;
+    return boss && !boss->HasAura(SPELL_NETHERSPITE_BANISHED) && bot != redBlocker && 
+           bot != blueBlocker && bot != greenBlocker;
 }
 
 bool KarazhanNetherspiteBanishPhaseAvoidVoidZoneAction::Execute(Event event)
@@ -1135,8 +1136,8 @@ bool KarazhanPrinceMalchezaarNonTankAvoidHazardAction::Execute(Event event)
 bool KarazhanPrinceMalchezaarNonTankAvoidHazardAction::isUseful()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "prince malchezaar");
-    
-    return boss && !(botAI->IsTank(bot) && botAI->HasAggro(boss) && boss->GetVictim() == bot);
+
+    return boss && !(botAI->IsMainTank(bot) && boss->GetVictim() == bot);
 }
 
 bool KarazhanPrinceMalchezaarTankAvoidHazardAction::Execute(Event event)
@@ -1266,6 +1267,6 @@ bool KarazhanPrinceMalchezaarTankAvoidHazardAction::Execute(Event event)
 bool KarazhanPrinceMalchezaarTankAvoidHazardAction::isUseful()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "prince malchezaar");
-    
-    return boss && botAI->IsTank(bot) && botAI->HasAggro(boss) && boss->GetVictim() == bot;
+
+    return boss && botAI->IsMainTank(bot) && boss->GetVictim() == bot;
 }

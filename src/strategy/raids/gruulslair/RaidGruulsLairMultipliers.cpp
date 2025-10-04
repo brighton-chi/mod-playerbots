@@ -9,6 +9,8 @@
 #include "MageActions.h"
 #include "WarriorActions.h"
 
+using namespace GruulsLairHelpers;
+
 static bool IsChargeAction(Action* action)
 {
     return dynamic_cast<CastChargeAction*>(action) ||
@@ -29,7 +31,7 @@ float HighKingMaulgarMultiplier::GetValue(Action* action)
         return 0.0f;
     }
     
-    if (maulgar && maulgar->HasAura(SPELL_WHIRLWIND) &&
+    if (maulgar && maulgar->HasAura(static_cast<uint32>(GruulsLairSpells::WHIRLWIND)) &&
         (!kiggler || !kiggler->IsAlive()) &&
         (!krosh || !krosh->IsAlive()) &&
         (!olm || !olm->IsAlive()) &&
@@ -67,7 +69,8 @@ float GruulTheDragonkillerMultiplier::GetValue(Action* action)
         return 1.0f;
     }
 
-    if (bot->HasAura(SPELL_GROUND_SLAM_1) || bot->HasAura(SPELL_GROUND_SLAM_2))
+    if (bot->HasAura(static_cast<uint32>(GruulsLairSpells::GROUND_SLAM_1)) || 
+        bot->HasAura(static_cast<uint32>(GruulsLairSpells::GROUND_SLAM_2)))
     {
         if ((dynamic_cast<MovementAction*>(action) && !dynamic_cast<GruulTheDragonkillerShatterSpreadAction*>(action)) ||
             IsChargeAction(action))
@@ -88,7 +91,7 @@ float GruulTheDragonkillerMultiplier::GetValue(Action* action)
     while (delta < -M_PI) delta += 2 * M_PI;
     float orientationDifference = fabs(delta);
 
-    if (botAI->IsTank(bot) && botAI->HasAggro(gruul) && gruul->GetVictim() == bot &&
+    if (botAI->IsMainTank(bot) && gruul->GetVictim() == bot &&
         distanceToTankSpot < positionThreshold && orientationDifference < orientationLeeway)
     {
         if (dynamic_cast<MovementAction*>(action))
