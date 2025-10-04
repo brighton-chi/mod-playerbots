@@ -51,9 +51,6 @@ inline constexpr int8 diamondIcon = RtiTargetValue::diamondIndex;
 inline constexpr int8 triangleIcon = RtiTargetValue::triangleIndex;
 inline constexpr int8 crossIcon = RtiTargetValue::crossIndex;
 
-bool IsSouthTank(PlayerbotAI* botAI, Player* bot);
-bool IsWestTank(PlayerbotAI* botAI, Player* bot);
-bool IsEastTank(PlayerbotAI* botAI, Player* bot);
 Creature* GetChanneler(Player* bot, uint32 dbGuid);
 bool IsSafeFromMagtheridonHazards(PlayerbotAI* botAI, Player* bot, float x, float y, float z);
 

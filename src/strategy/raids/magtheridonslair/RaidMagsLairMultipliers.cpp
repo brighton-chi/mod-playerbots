@@ -4,15 +4,9 @@
 #include "RaidMagsLairMultipliers.h"
 #include "RaidMagsLairActions.h"
 #include "RaidMagsLairHelpers.h"
-#include "AttackAction.h"
-#include "DruidBearActions.h"
 #include "GenericSpellActions.h"
-#include "MovementActions.h"
 #include "Playerbots.h"
-#include "RogueActions.h"
-#include "ShamanActions.h"
 #include "WarlockActions.h"
-#include "WarriorActions.h"
 
 static std::unordered_map<uint32, time_t> magtheridonAggroWaitTimers;
 
@@ -32,6 +26,7 @@ float MagtheridonMultiplier::GetValue(Action* action)
                 {
                     return 1.0f;
                 }
+
                 return 0.0f;
             }
         }
@@ -66,8 +61,10 @@ float MagtheridonMultiplier::GetValue(Action* action)
         if (since < aggroWaitSeconds)
         {
             // Only allow tanks to attack
-            if (!botAI->IsTank(bot) && dynamic_cast<AttackAction*>(action))
+            if (!botAI->IsMainTank(bot) && dynamic_cast<AttackAction*>(action))
+            {
                 return 0.0f;
+            }
         }
     }
 

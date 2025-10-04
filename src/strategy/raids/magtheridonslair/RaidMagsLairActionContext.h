@@ -9,12 +9,12 @@ class RaidMagsLairActionContext : public NamedObjectContext<Action>
 public:
     RaidMagsLairActionContext()
     {
-        creators["magtheridon hellfire channeler south tank"] = &RaidMagsLairActionContext::magtheridon_hellfire_channeler_south_tank;
-        creators["magtheridon hellfire channeler west tank"] = &RaidMagsLairActionContext::magtheridon_hellfire_channeler_west_tank;
-        creators["magtheridon hellfire channeler east tank"] = &RaidMagsLairActionContext::magtheridon_hellfire_channeler_east_tank;
+        creators["magtheridon hellfire channeler magtheridon tank"] = &RaidMagsLairActionContext::magtheridon_hellfire_channeler_magtheridon_tank;
+        creators["magtheridon hellfire channeler northwest channeler tank"] = &RaidMagsLairActionContext::magtheridon_hellfire_channeler_nw_channeler_tank;
+        creators["magtheridon hellfire channeler northeast channeler tank"] = &RaidMagsLairActionContext::magtheridon_hellfire_channeler_ne_channeler_tank;
         creators["magtheridon hellfire channeler misdirection"] = &RaidMagsLairActionContext::magtheridon_hellfire_channeler_misdirection;
         creators["magtheridon hellfire channeler dps priority"] = &RaidMagsLairActionContext::magtheridon_hellfire_channeler_dps_priority;
-        creators["magtheridon cc burning abyssal"] = &RaidMagsLairActionContext::magtheridon_cc_burning_abyssal;
+        creators["magtheridon hellfire channeler warlock"] = &RaidMagsLairActionContext::magtheridon_hellfire_channeler_warlock;
         creators["magtheridon position boss"] = &RaidMagsLairActionContext::magtheridon_position_boss;
         creators["magtheridon spread ranged"] = &RaidMagsLairActionContext::magtheridon_spread_ranged;
         creators["magtheridon spread healer"] = &RaidMagsLairActionContext::magtheridon_spread_healer;
@@ -22,12 +22,12 @@ public:
     }
 
 private:
-    static Action* magtheridon_hellfire_channeler_south_tank(PlayerbotAI* botAI) { return new MagtheridonHellfireChannelerSouthTankAction(botAI); }
-    static Action* magtheridon_hellfire_channeler_west_tank(PlayerbotAI* botAI) { return new MagtheridonHellfireChannelerWestTankAction(botAI); }
-    static Action* magtheridon_hellfire_channeler_east_tank(PlayerbotAI* botAI) { return new MagtheridonHellfireChannelerEastTankAction(botAI); }
+    static Action* magtheridon_hellfire_channeler_magtheridon_tank(PlayerbotAI* botAI) { return new MagtheridonHellfireChannelerMagtheridonTankAction(botAI); }
+    static Action* magtheridon_hellfire_channeler_nw_channeler_tank(PlayerbotAI* botAI) { return new MagtheridonHellfireChannelerNWChannelerTankAction(botAI); }
+    static Action* magtheridon_hellfire_channeler_ne_channeler_tank(PlayerbotAI* botAI) { return new MagtheridonHellfireChannelerNEChannelerTankAction(botAI); }
     static Action* magtheridon_hellfire_channeler_misdirection(PlayerbotAI* botAI) { return new MagtheridonHellfireChannelerMisdirectionAction(botAI); }
     static Action* magtheridon_hellfire_channeler_dps_priority(PlayerbotAI* botAI) { return new MagtheridonHellfireChannelerDPSPriorityAction(botAI); }
-    static Action* magtheridon_cc_burning_abyssal(PlayerbotAI* botAI) { return new MagtheridonCCBurningAbyssalAction(botAI); }
+    static Action* magtheridon_hellfire_channeler_warlock(PlayerbotAI* botAI) { return new MagtheridonHellfireChannelerWarlockAction(botAI); }
     static Action* magtheridon_position_boss(PlayerbotAI* botAI) { return new MagtheridonPositionBossAction(botAI); }
     static Action* magtheridon_spread_ranged(PlayerbotAI* botAI) { return new MagtheridonSpreadRangedAction(botAI); }
     static Action* magtheridon_spread_healer(PlayerbotAI* botAI) { return new MagtheridonSpreadHealerAction(botAI); }

@@ -5,28 +5,28 @@
 #include "AttackAction.h"
 #include "MovementActions.h"
 
-class MagtheridonHellfireChannelerSouthTankAction : public AttackAction
+class MagtheridonHellfireChannelerMagtheridonTankAction : public AttackAction
 {
 public:
-    MagtheridonHellfireChannelerSouthTankAction(PlayerbotAI* botAI, std::string const name = "magtheridon hellfire channeler south tank") : AttackAction(botAI, name) {};
+    MagtheridonHellfireChannelerMagtheridonTankAction(PlayerbotAI* botAI, std::string const name = "magtheridon hellfire channeler magtheridon tank") : AttackAction(botAI, name) {};
 
     bool Execute(Event event) override;
     bool isUseful() override;
 };
 
-class MagtheridonHellfireChannelerWestTankAction : public AttackAction
+class MagtheridonHellfireChannelerNWChannelerTankAction : public AttackAction
 {
 public:
-    MagtheridonHellfireChannelerWestTankAction(PlayerbotAI* botAI, std::string const name = "magtheridon hellfire channeler west tank") : AttackAction(botAI, name) {};
+    MagtheridonHellfireChannelerNWChannelerTankAction(PlayerbotAI* botAI, std::string const name = "magtheridon hellfire channeler northwest channeler tank") : AttackAction(botAI, name) {};
 
     bool Execute(Event event) override;
     bool isUseful() override;
 };
 
-class MagtheridonHellfireChannelerEastTankAction : public AttackAction
+class MagtheridonHellfireChannelerNEChannelerTankAction : public AttackAction
 {
 public:
-    MagtheridonHellfireChannelerEastTankAction(PlayerbotAI* botAI, std::string const name = "magtheridon hellfire channeler east tank") : AttackAction(botAI, name) {};
+    MagtheridonHellfireChannelerNEChannelerTankAction(PlayerbotAI* botAI, std::string const name = "magtheridon hellfire channeler northeast channeler tank") : AttackAction(botAI, name) {};
 
     bool Execute(Event event) override;
     bool isUseful() override;
@@ -50,10 +50,10 @@ public:
     bool isUseful() override;
 };
 
-class MagtheridonCCBurningAbyssalAction : public AttackAction
+class MagtheridonHellfireChannelerWarlockAction : public AttackAction
 {
 public:
-    MagtheridonCCBurningAbyssalAction(PlayerbotAI* botAI, std::string const name = "magtheridon cc burning abyssal") : AttackAction(botAI, name) {};
+    MagtheridonHellfireChannelerWarlockAction(PlayerbotAI* botAI, std::string const name = "magtheridon hellfire channeler warlock") : AttackAction(botAI, name) {};
 
     bool Execute(Event event) override;
     bool isUseful() override;
@@ -92,6 +92,7 @@ public:
     MagtheridonUseManticronCubeAction(PlayerbotAI* botAI, std::string const name = "magtheridon use manticron cube") : MovementAction(botAI, name) {};
 
     bool Execute(Event event) override;
+    bool isUseful() override;
 };
 
 #endif
