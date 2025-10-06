@@ -38,6 +38,13 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class KarazhanNetherspiteWaitForDPSMultiplier : public Multiplier
+{
+public:
+    KarazhanNetherspiteWaitForDPSMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "karazhan netherspite wait for dps multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
 class KarazhanPrinceMalchezaarMultiplier : public Multiplier
 {
 public:

@@ -20,6 +20,7 @@ enum class KarazhanSpells
     WARLOCK_BANISH             = 18647,
 
     // Netherspite
+    RED_BEAM_DEBUFF            = 30421,
     GREEN_BEAM_DEBUFF          = 30422,
     BLUE_BEAM_DEBUFF           = 30423,
     NETHER_EXHAUSTION_RED      = 38637,

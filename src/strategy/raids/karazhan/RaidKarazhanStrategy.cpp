@@ -74,8 +74,11 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
 void RaidKarazhanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
+    multipliers.push_back(new KarazhanAttumenTheHuntsmanMultiplier(botAI));
+    multipliers.push_back(new KarazhanBigBadWolfMultiplier(botAI));
     multipliers.push_back(new KarazhanShadeOfAranMultiplier(botAI));
     multipliers.push_back(new KarazhanNetherspiteBlueAndGreenBeamMultiplier(botAI));
     multipliers.push_back(new KarazhanNetherspiteRedBeamMultiplier(botAI));
+    multipliers.push_back(new KarazhanNetherspiteWaitForDPSMultiplier(botAI));
     multipliers.push_back(new KarazhanPrinceMalchezaarMultiplier(botAI));
 }

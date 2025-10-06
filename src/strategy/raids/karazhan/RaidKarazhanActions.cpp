@@ -38,7 +38,7 @@ bool KarazhanAttumenTheHuntsmanStackBehindAction::isUseful()
     RaidKarazhanHelpers karazhanHelper(botAI);
     Unit* boss = karazhanHelper.GetFirstAliveUnitByEntry(static_cast<uint32>(KarazhanNpcs::ATTUMEN_THE_HUNTSMAN_MOUNTED));
 
-    return boss && !botAI->IsMainTank(bot);
+    return boss && !botAI->IsMainTank(bot) && boss->GetVictim() != bot;
 }
 
 bool KarazhanMoroesMarkTargetAction::Execute(Event event)

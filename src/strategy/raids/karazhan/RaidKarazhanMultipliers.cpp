@@ -20,9 +20,9 @@ float KarazhanAttumenTheHuntsmanMultiplier::GetValue(Action* action)
 {
     RaidKarazhanHelpers karazhanHelper(botAI);
     Unit* boss = karazhanHelper.GetFirstAliveUnitByEntry(static_cast<uint32>(KarazhanNpcs::ATTUMEN_THE_HUNTSMAN_MOUNTED));
-    if (boss && !(botAI->IsTank(bot) && botAI->HasAggro(boss) && boss->GetVictim() == bot) &&
-       (dynamic_cast<MovementAction*>(action) &&
-       !dynamic_cast<KarazhanAttumenTheHuntsmanStackBehindAction*>(action)))
+    if (boss && !botAI->IsMainTank(bot) && boss->GetVictim() != bot &&
+       (dynamic_cast<CombatFormationMoveAction*>(action) ||
+       dynamic_cast<FleeAction*>(action)))
     {
         return 0.0f;
     }
@@ -234,6 +234,44 @@ float KarazhanNetherspiteRedBeamMultiplier::GetValue(Action* action)
         }
     }
     
+    return 1.0f;
+}
+
+float KarazhanNetherspiteWaitForDPSMultiplier::GetValue(Action* action)
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "netherspite");
+    if (!boss || !boss->IsAlive())
+    {
+        return 1.0f;
+    }
+
+    bool tankHasRedBeam = false;
+    Group* group = bot->GetGroup();
+    if (group)
+    {
+        for (GroupReference* itr = bot->GetGroup()->GetFirstMember(); itr != nullptr; itr = itr->next())
+        {
+            Player* member = itr->GetSource();
+            if (!member || !member->IsAlive())
+            {
+                continue;
+            }
+            if (botAI->IsTank(member) && member->HasAura(static_cast<uint32>(KarazhanSpells::RED_BEAM_DEBUFF)))
+            {
+                tankHasRedBeam = true;
+                break;
+            }
+        }
+    }
+
+    if (!boss->HasAura(static_cast<uint32>(KarazhanSpells::NETHERSPITE_BANISHED)) && !tankHasRedBeam)
+    {
+        if (!botAI->IsTank(bot) && dynamic_cast<AttackAction*>(action))
+        {
+            return 0.0f;
+        }
+    }
+
     return 1.0f;
 }
 
