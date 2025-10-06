@@ -1,8 +1,7 @@
-#ifndef RAID_GRUULSLAIR_HELPERS_H
-#define RAID_GRUULSLAIR_HELPERS_H
+#ifndef RAID_GRUULSLAIRHELPERS_H
+#define RAID_GRUULSLAIRHELPERS_H
 
 #include "PlayerbotAI.h"
-#include "Playerbots.h"
 #include "RtiTargetValue.h"
 
 enum class GruulsLairSpells

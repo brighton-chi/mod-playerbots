@@ -1,18 +1,16 @@
 #include <ctime>
 #include <unordered_map>
 
-#include "RaidMagsLairActions.h"
-#include "RaidMagsLairHelpers.h"
+#include "RaidMagtheridonActions.h"
+#include "RaidMagtheridonHelpers.h"
 #include "Creature.h"
-#include "Group.h"
 #include "ObjectAccessor.h"
 #include "ObjectGuid.h"
-#include "PlayerbotAI.h"
 #include "Playerbots.h"
 
 #include "Log.h"
 
-using namespace MagsLairHelpers;
+using namespace MagtheridonHelpers;
 static std::unordered_map<uint32, time_t> magtheridonSpreadWaitTimer;
 static std::unordered_map<uint32, time_t> magtheridonBlastNovaTimer;
 
@@ -126,7 +124,7 @@ bool MagtheridonHellfireChannelerNWChannelerTankAction::Execute(Event event)
 
     if (channelerDiamond->GetVictim() == bot && !channelerDiamond->IsNonMeleeSpellCast(false))
     {
-        const TankSpot& spot = MagsLairTankSpots::NWChanneler;
+        const TankSpot& spot = MagtheridonTankSpots::NWChanneler;
         const float maxDistance = 3.0f;
         float distanceToSpot = channelerDiamond->GetExactDist2d(spot.x, spot.y);
         if (distanceToSpot > maxDistance)
@@ -182,7 +180,7 @@ bool MagtheridonHellfireChannelerNEChannelerTankAction::Execute(Event event)
 
     if (channelerTriangle->GetVictim() == bot && !channelerTriangle->IsNonMeleeSpellCast(false))
     {
-        const TankSpot& spot = MagsLairTankSpots::NEChanneler;
+        const TankSpot& spot = MagtheridonTankSpots::NEChanneler;
         const float maxDistance = 3.0f;
         float distanceToSpot = channelerTriangle->GetExactDist2d(spot.x, spot.y);
         if (distanceToSpot > maxDistance)
@@ -253,7 +251,6 @@ bool MagtheridonHellfireChannelerMisdirectionAction::Execute(Event event)
 
     bool actionTaken = false;
 
-    // First hunter: misdirect to magtheridon tank, steady shot star
     if (bot == firstHunter && magtheridonTank && channelerStar && channelerStar->IsAlive())
     {
         if (channelerStar->GetVictim() != magtheridonTank)
@@ -261,7 +258,7 @@ bool MagtheridonHellfireChannelerMisdirectionAction::Execute(Event event)
             if (botAI->CanCastSpell("misdirection", magtheridonTank))
                 botAI->CastSpell("misdirection", magtheridonTank);
 
-            if (!bot->HasAura(static_cast<uint32>(MagsLairSpells::MISDIRECTION)))
+            if (!bot->HasAura(static_cast<uint32>(MagtheridonSpells::MISDIRECTION)))
             {
                 return actionTaken;
             }
@@ -274,7 +271,6 @@ bool MagtheridonHellfireChannelerMisdirectionAction::Execute(Event event)
         }
     }
 
-    // Second hunter: misdirect to magtheridon tank, steady shot circle
     if (bot == secondHunter && magtheridonTank && channelerCircle && channelerCircle->IsAlive())
     {
         if (channelerCircle->GetVictim() != magtheridonTank)
@@ -282,7 +278,7 @@ bool MagtheridonHellfireChannelerMisdirectionAction::Execute(Event event)
             if (botAI->CanCastSpell("misdirection", magtheridonTank))
                 botAI->CastSpell("misdirection", magtheridonTank);
 
-            if (!bot->HasAura(static_cast<uint32>(MagsLairSpells::MISDIRECTION)))
+            if (!bot->HasAura(static_cast<uint32>(MagtheridonSpells::MISDIRECTION)))
             {
                 return actionTaken;
             }
@@ -316,7 +312,6 @@ bool MagtheridonHellfireChannelerDPSPriorityAction::Execute(Event event)
     Creature* channelerDiamond  = GetChanneler(bot, NORTHWEST_CHANNELER);
     Creature* channelerTriangle = GetChanneler(bot, NORTHEAST_CHANNELER);
 
-    // Target priority 1: South Channeler
     if (channelerSquare && channelerSquare->IsAlive())
     {
         Unit* rtiTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
@@ -335,7 +330,6 @@ bool MagtheridonHellfireChannelerDPSPriorityAction::Execute(Event event)
         return false;
     }
 
-    // Target priority 2: West Channeler
     if (channelerStar && channelerStar->IsAlive())
     {
         Unit* rtiTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
@@ -354,7 +348,6 @@ bool MagtheridonHellfireChannelerDPSPriorityAction::Execute(Event event)
         return false;
     }
 
-    // Target priority 3: East Channeler
     if (channelerCircle && channelerCircle->IsAlive())
     {
         Unit* rtiTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
@@ -373,7 +366,6 @@ bool MagtheridonHellfireChannelerDPSPriorityAction::Execute(Event event)
         return false;
     }
 
-    // Target priority 4: Northwest Channeler
     if (channelerDiamond && channelerDiamond->IsAlive())
     {
         Unit* rtiTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
@@ -392,7 +384,6 @@ bool MagtheridonHellfireChannelerDPSPriorityAction::Execute(Event event)
         return false;
     }
 
-    // Target priority 5: Northeast Channeler
     if (channelerTriangle && channelerTriangle->IsAlive())
     {
         Unit* rtiTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
@@ -411,9 +402,8 @@ bool MagtheridonHellfireChannelerDPSPriorityAction::Execute(Event event)
         return false;
     }
 
-    // Target priority 6: Magtheridon
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
-    if (magtheridon && magtheridon->IsAlive() && !magtheridon->HasAura(static_cast<uint32>(MagsLairSpells::SHADOW_CAGE)) &&
+    if (magtheridon && magtheridon->IsAlive() && !magtheridon->HasAura(static_cast<uint32>(MagtheridonSpells::SHADOW_CAGE)) &&
        (!channelerSquare || !channelerSquare->IsAlive()) &&
        (!channelerStar || !channelerStar->IsAlive()) &&
        (!channelerCircle || !channelerCircle->IsAlive()) &&
@@ -457,108 +447,86 @@ bool MagtheridonHellfireChannelerDPSPriorityAction::isUseful()
     }
 
     return channeler && channeler->IsAlive() || 
-           magtheridon && magtheridon->IsAlive() && !magtheridon->HasAura(static_cast<uint32>(MagsLairSpells::SHADOW_CAGE));
+           magtheridon && magtheridon->IsAlive() && !magtheridon->HasAura(static_cast<uint32>(MagtheridonSpells::SHADOW_CAGE));
 }
 
 bool MagtheridonHellfireChannelerWarlockAction::Execute(Event event)
 {
     const GuidVector& npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
 
-    // Track if we are already banishing an abyssal
     bool isAlreadyBanishing = false;
     for (const auto& npc : npcs)
     {
         Unit* unit = botAI->GetUnit(npc);
-        if (unit && unit->GetEntry() == static_cast<uint32>(MagsLairNPCs::BURNING_ABYSSAL) && 
-            unit->HasAura(static_cast<uint32>(MagsLairSpells::BANISH)))
+        if (unit && unit->GetEntry() == static_cast<uint32>(MagtheridonNPCs::BURNING_ABYSSAL) && 
+            unit->HasAura(static_cast<uint32>(MagtheridonSpells::BANISH)))
         {
             isAlreadyBanishing = true;
-            LOG_DEBUG("playerbots", "CCBurningAbyssalAction: Already banishing an abyssal (bot={})", bot->GetName());
             break;
         }
     }
 
-    // Track if we are already fearing an abyssal
     bool isAlreadyFearing = false;
     for (const auto& npc : npcs)
     {
         Unit* unit = botAI->GetUnit(npc);
-        if (unit && unit->GetEntry() == static_cast<uint32>(MagsLairNPCs::BURNING_ABYSSAL) && 
-            unit->HasAura(static_cast<uint32>(MagsLairSpells::FEAR)))
+        if (unit && unit->GetEntry() == static_cast<uint32>(MagtheridonNPCs::BURNING_ABYSSAL) && 
+            unit->HasAura(static_cast<uint32>(MagtheridonSpells::FEAR)))
         {
             isAlreadyFearing = true;
-            LOG_DEBUG("playerbots", "CCBurningAbyssalAction: Already fearing an abyssal (bot={})", bot->GetName());
             break;
         }
     }
 
-    // 1. If not already banishing, banish the first unbanished abyssal
     if (!isAlreadyBanishing)
     {
         for (const auto& npc : npcs)
         {
             Unit* unit = botAI->GetUnit(npc);
-            if (unit && unit->GetEntry() == static_cast<uint32>(MagsLairNPCs::BURNING_ABYSSAL) && 
-                !unit->HasAura(static_cast<uint32>(MagsLairSpells::BANISH)))
+            if (unit && unit->GetEntry() == static_cast<uint32>(MagtheridonNPCs::BURNING_ABYSSAL) && 
+                !unit->HasAura(static_cast<uint32>(MagtheridonSpells::BANISH)))
             {
-                if (unit->IsAlive() && botAI->CanCastSpell(static_cast<uint32>(MagsLairSpells::BANISH), unit, true))
+                if (unit->IsAlive() && botAI->CanCastSpell(static_cast<uint32>(MagtheridonSpells::BANISH), unit, true))
                 {
-                    LOG_DEBUG("playerbots", "CCBurningAbyssalAction: Casting Banish on abyssal (bot={})", bot->GetName());
-                    botAI->CastSpell(static_cast<uint32>(MagsLairSpells::BANISH), unit);
+                    botAI->CastSpell(static_cast<uint32>(MagtheridonSpells::BANISH), unit);
                     return false;
                 }
             }
         }
     }
 
-    // 2. If not already fearing, fear the first unbanished, unfeared abyssal
     if (!isAlreadyFearing)
     {
         for (const auto& npc : npcs)
         {
             Unit* unit = botAI->GetUnit(npc);
-            if (unit && unit->GetEntry() == static_cast<uint32>(MagsLairNPCs::BURNING_ABYSSAL) &&
-                !unit->HasAura(static_cast<uint32>(MagsLairSpells::BANISH)) && !unit->HasAura(static_cast<uint32>(MagsLairSpells::FEAR)))
+            if (unit && unit->GetEntry() == static_cast<uint32>(MagtheridonNPCs::BURNING_ABYSSAL) &&
+                !unit->HasAura(static_cast<uint32>(MagtheridonSpells::BANISH)) && !unit->HasAura(static_cast<uint32>(MagtheridonSpells::FEAR)))
             {
-                if (unit->IsAlive() && botAI->CanCastSpell(static_cast<uint32>(MagsLairSpells::FEAR), unit, true))
+                if (unit->IsAlive() && botAI->CanCastSpell(static_cast<uint32>(MagtheridonSpells::FEAR), unit, true))
                 {
-                    LOG_DEBUG("playerbots", "CCBurningAbyssalAction: Casting Fear on abyssal (bot={})", bot->GetName());
-                    botAI->CastSpell(static_cast<uint32>(MagsLairSpells::FEAR), unit);
+                    botAI->CastSpell(static_cast<uint32>(MagtheridonSpells::FEAR), unit);
                     return false;
                 }
             }
         }
     }
 
-    // 3. Curse of Tongues on any channeler without it
     for (const auto& npc : npcs)
     {
         Unit* unit = botAI->GetUnit(npc);
-        if (unit && unit->IsAlive() && unit->GetEntry() == static_cast<uint32>(MagsLairNPCs::HELLFIRE_CHANNELER))
+        if (unit && unit->IsAlive() && unit->GetEntry() == static_cast<uint32>(MagtheridonNPCs::HELLFIRE_CHANNELER))
         {
-            if (!unit->HasAura(static_cast<uint32>(MagsLairSpells::CURSE_OF_TONGUES)))
+            if (!unit->HasAura(static_cast<uint32>(MagtheridonSpells::CURSE_OF_TONGUES)))
             {
-                if (botAI->CanCastSpell(static_cast<uint32>(MagsLairSpells::CURSE_OF_TONGUES), unit, true))
+                if (botAI->CanCastSpell(static_cast<uint32>(MagtheridonSpells::CURSE_OF_TONGUES), unit, true))
                 {
-                    LOG_DEBUG("playerbots", "CCBurningAbyssalAction: Casting Curse of Tongues on channeler (bot={})", bot->GetName());
-                    botAI->CastSpell(static_cast<uint32>(MagsLairSpells::CURSE_OF_TONGUES), unit);
+                    botAI->CastSpell(static_cast<uint32>(MagtheridonSpells::CURSE_OF_TONGUES), unit);
                     return false;
                 }
             }
-            else
-            {
-                LOG_DEBUG("playerbots", "CCBurningAbyssalAction: Channeler already has Curse of Tongues (bot={}, channeler={})", bot->GetName(), unit->GetName());
-            }
         }
     }
-
-    /* Unit* rtiTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
-    if (rtiTarget && rtiTarget->IsAlive())
-    {
-        LOG_DEBUG("playerbots", "CCBurningAbyssalAction: {} fallback attacking RTI target {}", bot->GetName(), rtiTarget->GetName());
-        Attack(rtiTarget);
-        return false;
-    } */
 
     return false;
 }
@@ -575,8 +543,8 @@ bool MagtheridonHellfireChannelerWarlockAction::isUseful()
     return std::any_of(npcs.begin(), npcs.end(), [&](const ObjectGuid& npc) 
     {
         Unit* unit = botAI->GetUnit(npc);
-        return unit && (unit->GetEntry() == static_cast<uint32>(MagsLairNPCs::BURNING_ABYSSAL) || 
-                        unit->GetEntry() == static_cast<uint32>(MagsLairNPCs::HELLFIRE_CHANNELER));
+        return unit && (unit->GetEntry() == static_cast<uint32>(MagtheridonNPCs::BURNING_ABYSSAL) || 
+                        unit->GetEntry() == static_cast<uint32>(MagtheridonNPCs::HELLFIRE_CHANNELER));
     });
 }
 
@@ -607,7 +575,7 @@ bool MagtheridonPositionBossAction::Execute(Event event)
 
     if (magtheridon->GetVictim() == bot)
     {
-        const TankSpot& spot = MagsLairTankSpots::Magtheridon;
+        const TankSpot& spot = MagtheridonTankSpots::Magtheridon;
         const float maxDistance = 3.0f;
         float distanceToMagtheridon = magtheridon->GetExactDist2d(spot.x, spot.y);
 
@@ -634,7 +602,7 @@ bool MagtheridonPositionBossAction::isUseful()
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
     Group* group = bot->GetGroup();
 
-    return magtheridon && magtheridon->IsAlive() && !magtheridon->HasAura(static_cast<uint32>(MagsLairSpells::SHADOW_CAGE)) && 
+    return magtheridon && magtheridon->IsAlive() && !magtheridon->HasAura(static_cast<uint32>(MagtheridonSpells::SHADOW_CAGE)) && 
            botAI->IsMainTank(bot) && group;
 }
 
@@ -644,7 +612,7 @@ bool MagtheridonSpreadRangedAction::Execute(Event event)
     static std::unordered_map<ObjectGuid, bool> hasReachedInitialPosition;
 
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
-    if (magtheridon && magtheridon->HasAura(static_cast<uint32>(MagsLairSpells::SHADOW_CAGE)))
+    if (magtheridon && magtheridon->HasAura(static_cast<uint32>(MagtheridonSpells::SHADOW_CAGE)))
     {
         initialPositions.clear();
         hasReachedInitialPosition.clear();
@@ -665,10 +633,8 @@ bool MagtheridonSpreadRangedAction::Execute(Event event)
         rangedBots.push_back(member);
     }
 
-    // Assign initial positions if not already done
     if (initialPositions.find(bot->GetGUID()) == initialPositions.end())
     {
-        // Find this bot's index among ranged bots
         size_t botIndex = 0;
         for (size_t i = 0; i < rangedBots.size(); ++i)
         {
@@ -679,14 +645,13 @@ bool MagtheridonSpreadRangedAction::Execute(Event event)
             }
         }
 
-        // Spread evenly in a full circle around the room center
-        float arcRadians = 2.0f * M_PI; // 360 degree arc
+        float arcRadians = 2.0f * M_PI;
         float startAngle = 0.0f;
         float angleStep = rangedBots.size() > 0 ? arcRadians / rangedBots.size() : 0.0f;
         float angle = startAngle + botIndex * angleStep;
 
-        float minRadius = 5.0f;
-        float maxRadius = 20.0f;
+        float minRadius = 1.0f;
+        float maxRadius = 25.0f;
         float radius = minRadius + static_cast<float>(rand()) / RAND_MAX * (maxRadius - minRadius);
 
         float targetX = roomCenterX + radius * cos(angle);
@@ -733,7 +698,6 @@ bool MagtheridonSpreadRangedAction::Execute(Event event)
         return MoveAway(closestMember, minSpreadDistance);
     }
 
-    // Keep distance from Magtheridon (use his current position)
     float magX = magtheridon->GetPositionX();
     float magY = magtheridon->GetPositionY();
     float distanceToMagtheridon = bot->GetExactDist2d(magX, magY);
@@ -755,15 +719,15 @@ bool MagtheridonSpreadRangedAction::isUseful()
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
     if (magtheridon)
     {
-        UpdateTransitionTimer(magtheridon, magtheridon->HasAura(static_cast<uint32>(MagsLairSpells::SHADOW_CAGE)), 
+        UpdateTransitionTimer(magtheridon, magtheridon->HasAura(static_cast<uint32>(MagtheridonSpells::SHADOW_CAGE)), 
                             lastShadowCageState, magtheridonSpreadWaitTimer);
-        UpdateTransitionTimer(magtheridon, magtheridon->HasAura(static_cast<uint32>(MagsLairSpells::SHADOW_CAGE)), 
+        UpdateTransitionTimer(magtheridon, magtheridon->HasAura(static_cast<uint32>(MagtheridonSpells::SHADOW_CAGE)), 
                             lastShadowCageState, magtheridonBlastNovaTimer);
     }
 
     Group* group = bot->GetGroup();
-    if (!group || !magtheridon->IsAlive() || magtheridon->HasAura(static_cast<uint32>(MagsLairSpells::SHADOW_CAGE)) ||
-        !botAI->IsRanged(bot) || bot->HasAura(static_cast<uint32>(MagsLairSpells::SHADOW_GRASP)))
+    if (!group || !magtheridon->IsAlive() || magtheridon->HasAura(static_cast<uint32>(MagtheridonSpells::SHADOW_CAGE)) ||
+        !botAI->IsRanged(bot))
     {
         return false;
     }
@@ -779,17 +743,14 @@ bool MagtheridonSpreadRangedAction::isUseful()
         }
     }
 
-    // Inline cube action exclusion logic
     auto cubeIt = botToCubeAssignment.find(bot->GetGUID());
     if (cubeIt != botToCubeAssignment.end())
     {
         time_t now = time(nullptr);
         time_t lastBlastNova = magtheridonBlastNovaTimer[bot->GetMapId()];
 
-        // Exclude if 47s have passed since lastBlastNova (i.e., during the cube click window)
-        if (now - lastBlastNova >= 47)
+        if (now - lastBlastNova >= 48)
         {
-            LOG_DEBUG("playerbots", "SpreadRangedAction: Disabled for cube clicker (bot={}) during cube click window", bot->GetName());
             return false;
         }
     }
@@ -861,28 +822,24 @@ bool MagtheridonSpreadHealerAction::isUseful()
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
     if (magtheridon)
     {
-        UpdateTransitionTimer(magtheridon, magtheridon->HasAura(static_cast<uint32>(MagsLairSpells::SHADOW_CAGE)), 
+        UpdateTransitionTimer(magtheridon, magtheridon->HasAura(static_cast<uint32>(MagtheridonSpells::SHADOW_CAGE)), 
                             lastShadowCageState, magtheridonBlastNovaTimer);
     }
 
     Group* group = bot->GetGroup();
-    if (!group || !magtheridon->IsAlive() || magtheridon->HasAura(static_cast<uint32>(MagsLairSpells::SHADOW_CAGE)) || 
-        !botAI->IsHeal(bot) || bot->HasAura(static_cast<uint32>(MagsLairSpells::SHADOW_GRASP)))
+    if (!group || !magtheridon->IsAlive() || magtheridon->HasAura(static_cast<uint32>(MagtheridonSpells::SHADOW_CAGE)) || 
+        !botAI->IsHeal(bot))
     {
         return false;
     }
 
-    // Inline cube action exclusion logic
     auto cubeIt = botToCubeAssignment.find(bot->GetGUID());
     if (cubeIt != botToCubeAssignment.end())
     {
         time_t now = time(nullptr);
         time_t lastBlastNova = magtheridonBlastNovaTimer[bot->GetMapId()];
-
-        // Exclude if 47s have passed since lastBlastNova (i.e., during the cube click window)
-        if (now - lastBlastNova >= 47)
+        if (now - lastBlastNova >= 48)
         {
-            LOG_DEBUG("playerbots", "SpreadRangedAction: Disabled for cube clicker (bot={}) during cube click window", bot->GetName());
             return false;
         }
     }
@@ -912,7 +869,6 @@ bool MagtheridonUseManticronCubeAction::Execute(Event event)
     GameObject* cube = botAI->GetGameObject(cubeInfo.guid);
     if (!cube) 
     {
-        LOG_DEBUG("playerbots", "CubeAction: Bot {} cannot find assigned cube, exiting", bot->GetName());
         return false;
     }
 
@@ -920,29 +876,25 @@ bool MagtheridonUseManticronCubeAction::Execute(Event event)
     time_t now = time(nullptr);
     time_t lastBlastNova = magtheridonBlastNovaTimer[bot->GetMapId()];
     bool blastNovaActive = magtheridon->HasUnitState(UNIT_STATE_CASTING) &&
-        magtheridon->FindCurrentSpellBySpellId(static_cast<uint32>(MagsLairSpells::BLAST_NOVA));
+        magtheridon->FindCurrentSpellBySpellId(static_cast<uint32>(MagtheridonSpells::BLAST_NOVA));
 
-    // 1. For the first 47s after activation or last Blast Nova, do nothing
-    if (now - lastBlastNova < 47)
+    if (now - lastBlastNova < 48)
     {
-        LOG_DEBUG("playerbots", "CubeAction: Bot {} idle for first 47s, elapsed={}s", bot->GetName(), now - lastBlastNova);
+        LOG_DEBUG("playerbots", "CubeAction: Bot {} idle for first 48s, elapsed={}s", bot->GetName(), now - lastBlastNova);
         return false;
     }
 
-    // 2. If past 47s but not casting Blast Nova: move to safe wait area around cube
     if (!blastNovaActive) 
     {
         const float safeWaitDistance = 7.0f;
         float cubeDist = bot->GetExactDist2d(cubeInfo.x, cubeInfo.y);
 
-        LOG_DEBUG("playerbots", "CubeAction: Bot {} entering safe wait area logic, cubeDist={}", bot->GetName(), cubeDist);
         if (fabs(cubeDist - safeWaitDistance) > 0.5f) 
         {
             LOG_DEBUG("playerbots", "CubeAction: Bot {} not at safe wait location, searching for safe spot", bot->GetName());
-            // Try up to 12 positions around the cube
             for (int i = 0; i < 12; ++i)
             {
-                float angle = i * M_PI / 6.0f; // 12 spots around the circle
+                float angle = i * M_PI / 6.0f;
                 float targetX = cubeInfo.x + cos(angle) * safeWaitDistance;
                 float targetY = cubeInfo.y + sin(angle) * safeWaitDistance;
                 float targetZ = bot->GetPositionZ();
@@ -950,10 +902,11 @@ bool MagtheridonUseManticronCubeAction::Execute(Event event)
                 if (IsSafeFromMagtheridonHazards(botAI, bot, targetX, targetY, targetZ))
                 {
                     LOG_DEBUG("playerbots", "CubeAction: Bot {} moving to safe wait spot ({}, {})", bot->GetName(), targetX, targetY);
+                    bot->AttackStop();
+                    bot->InterruptNonMeleeSpells(false);
                     return MoveTo(bot->GetMapId(), targetX, targetY, targetZ, false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
                 }
             }
-            // If no safe spot found, fallback to default position
             float angle = static_cast<float>(rand()) / RAND_MAX * 2.0f * M_PI;
             float fallbackX = cubeInfo.x + cos(angle) * safeWaitDistance;
             float fallbackY = cubeInfo.y + sin(angle) * safeWaitDistance;
@@ -968,7 +921,6 @@ bool MagtheridonUseManticronCubeAction::Execute(Event event)
         }
     }
 
-    // 3. If Blast Nova is casting: move to cube and use it
     const float interactDistance = 1.0f;
     const float interactDistanceBuffer = 1.0f;
     float cubeDist = bot->GetExactDist2d(cubeInfo.x, cubeInfo.y);
@@ -981,6 +933,7 @@ bool MagtheridonUseManticronCubeAction::Execute(Event event)
             LOG_DEBUG("playerbots", "CubeAction: Bot {} close enough to use cube, using", bot->GetName());
             bot->StopMoving();
             cube->Use(bot);
+
             return true;
         }
         
@@ -989,6 +942,8 @@ bool MagtheridonUseManticronCubeAction::Execute(Event event)
         float targetX = cubeInfo.x - cos(angle) * interactDistance;
         float targetY = cubeInfo.y - sin(angle) * interactDistance;
         float targetZ = bot->GetPositionZ();
+        bot->AttackStop();
+        bot->InterruptNonMeleeSpells(false);
 
         return MoveTo(bot->GetMapId(), targetX, targetY, targetZ, false, false, false, false, 
                       MovementPriority::MOVEMENT_FORCED);
@@ -1003,21 +958,19 @@ bool MagtheridonUseManticronCubeAction::isUseful()
     if (magtheridon)
     {
         bool blastNovaActive = magtheridon->HasUnitState(UNIT_STATE_CASTING) &&
-        magtheridon->FindCurrentSpellBySpellId(static_cast<uint32>(MagsLairSpells::BLAST_NOVA));
+        magtheridon->FindCurrentSpellBySpellId(static_cast<uint32>(MagtheridonSpells::BLAST_NOVA));
         UpdateTransitionTimer(magtheridon, blastNovaActive, lastBlastNovaState, magtheridonBlastNovaTimer);
 
-        UpdateTransitionTimer(magtheridon, magtheridon->HasAura(static_cast<uint32>(MagsLairSpells::SHADOW_CAGE)), 
+        UpdateTransitionTimer(magtheridon, magtheridon->HasAura(static_cast<uint32>(MagtheridonSpells::SHADOW_CAGE)), 
                               lastShadowCageState, magtheridonBlastNovaTimer);
     }
 
     Group* group = bot->GetGroup();
-    if (!group || !magtheridon->IsAlive() || magtheridon->HasAura(static_cast<uint32>(MagsLairSpells::SHADOW_CAGE)) || 
-        bot->HasAura(static_cast<uint32>(MagsLairSpells::SHADOW_GRASP)))
+    if (!group || !magtheridon->IsAlive() || magtheridon->HasAura(static_cast<uint32>(MagtheridonSpells::SHADOW_CAGE)))
     {
         return false;
     }
 
-    // Reassign if empty OR any assigned bot is dead or missing
     bool needsReassign = botToCubeAssignment.empty();
     if (!needsReassign)
     {

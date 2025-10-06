@@ -6,7 +6,7 @@
 bool KarazhanAttumenTheHuntsmanTrigger::IsActive()
 {
     RaidKarazhanHelpers helpers(botAI);
-    Unit* boss = helpers.GetFirstAliveUnitByEntry(NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED);
+    Unit* boss = helpers.GetFirstAliveUnitByEntry(static_cast<uint32>(KarazhanNpcs::ATTUMEN_THE_HUNTSMAN_MOUNTED));
 
     return boss && boss->IsAlive();
 }

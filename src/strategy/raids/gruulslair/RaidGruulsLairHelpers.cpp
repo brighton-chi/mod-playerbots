@@ -1,9 +1,7 @@
 #include "RaidGruulsLairHelpers.h"
 #include "AiFactory.h"
-#include "AiObjectContext.h"
-#include "Group.h"
 #include "GroupReference.h"
-#include "PlayerbotAI.h"
+#include "Playerbots.h"
 #include "Unit.h"
 
 namespace GruulsLairHelpers

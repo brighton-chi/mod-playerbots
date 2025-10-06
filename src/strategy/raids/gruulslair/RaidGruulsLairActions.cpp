@@ -1,8 +1,7 @@
 #include "RaidGruulsLairActions.h"
 #include "RaidGruulsLairHelpers.h"
 #include "CreatureAI.h"
-#include "Pet.h"
-#include "PlayerbotAI.h"
+#include "Playerbots.h"
 #include "Unit.h"
 
 using namespace GruulsLairHelpers;
@@ -55,6 +54,11 @@ bool HighKingMaulgarMaulgarTankAction::Execute(Event event)
         float orientation = atan2(maulgar->GetPositionY() - bot->GetPositionY(), 
                                   maulgar->GetPositionX() - bot->GetPositionX());
         bot->SetFacingTo(orientation);
+    }
+    else if (!bot->IsWithinMeleeRange(maulgar))
+    {
+        return MoveTo(maulgar->GetMapId(), maulgar->GetPositionX(), 
+                      maulgar->GetPositionY(), maulgar->GetPositionZ());
     }
 
     return false;
@@ -112,6 +116,11 @@ bool HighKingMaulgarOlmTankAction::Execute(Event event)
             return MoveTo(bot->GetMapId(), moveX, moveY, spot.z, false, false, false, false, 
                           MovementPriority::MOVEMENT_COMBAT);
         }
+    }
+    else if (!bot->IsWithinMeleeRange(olm))
+    {
+        return MoveTo(olm->GetMapId(), olm->GetPositionX(), 
+                      olm->GetPositionY(), olm->GetPositionZ());
     }
 
     return false;
@@ -173,6 +182,12 @@ bool HighKingMaulgarBlindeyeTankAction::Execute(Event event)
         float orientation = atan2(blindeye->GetPositionY() - bot->GetPositionY(), 
                                   blindeye->GetPositionX() - bot->GetPositionX());
         bot->SetFacingTo(orientation);
+    }
+    else if (!bot->IsWithinMeleeRange(blindeye))
+    {
+        return MoveTo(blindeye->GetMapId(), blindeye->GetPositionX(), 
+                      blindeye->GetPositionY(), blindeye->GetPositionZ());
+    
     }
 
     return false;

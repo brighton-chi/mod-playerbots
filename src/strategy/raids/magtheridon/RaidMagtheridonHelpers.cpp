@@ -1,15 +1,12 @@
-#include "RaidMagsLairHelpers.h"
-#include "AiObjectContext.h"
+#include "RaidMagtheridonHelpers.h"
 #include "Creature.h"
 #include "GameObject.h"
-#include "Group.h"
+#include "GroupReference.h"
 #include "Map.h"
 #include "ObjectGuid.h"
-#include "PlayerbotAI.h"
+#include "Playerbots.h"
 
-#include "Log.h"
-
-namespace MagsLairHelpers
+namespace MagtheridonHelpers
 {
 
 Creature* GetChanneler(Player* bot, uint32 dbGuid)
@@ -30,7 +27,7 @@ Creature* GetChanneler(Player* bot, uint32 dbGuid)
     return creature;
 }
 
-namespace MagsLairTankSpots
+namespace MagtheridonTankSpots
 {
     const TankSpot Magtheridon = { -52.391f, 30.373f, -0.406f, 5.246f };
     const TankSpot NWChanneler = { -11.764f, 30.818f, -0.411f, 0.0f };
@@ -44,7 +41,6 @@ std::vector<CubeInfo> GetAllCubeInfosByDbGuids(Map* map, const std::vector<uint3
     std::vector<CubeInfo> cubes;
     if (!map)
     {
-        LOG_DEBUG("playerbots", "GetAllCubeInfosByDbGuids: No map provided");
         return cubes;
     }
 
@@ -53,26 +49,21 @@ std::vector<CubeInfo> GetAllCubeInfosByDbGuids(Map* map, const std::vector<uint3
         auto bounds = map->GetGameObjectBySpawnIdStore().equal_range(dbGuid);
         if (bounds.first == bounds.second)
         {
-            LOG_DEBUG("playerbots", "GetAllCubeInfosByDbGuids: DB GUID {} not found in instance", dbGuid);
             continue;
         }
-
         GameObject* go = bounds.first->second;
         if (!go)
         {
-            LOG_DEBUG("playerbots", "GetAllCubeInfosByDbGuids: DB GUID {} found but GameObject is nullptr", dbGuid);
             continue;
         }
-
         CubeInfo info;
         info.guid = go->GetGUID();
         info.x = go->GetPositionX();
         info.y = go->GetPositionY();
         info.z = go->GetPositionZ();
-        LOG_DEBUG("playerbots", "GetAllCubeInfosByDbGuids: Found cube DB GUID {} at ({}, {}, {})", dbGuid, info.x, info.y, info.z);
         cubes.push_back(info);
     }
-    LOG_DEBUG("playerbots", "GetAllCubeInfosByDbGuids: Returning {} cubes", cubes.size());
+
     return cubes;
 }
 
@@ -89,27 +80,23 @@ void AssignBotsToCubesByGuidAndCoords(Group* group, const std::vector<CubeInfo>&
         return;
     }
 
-    // First pass: ranged DPS, excluding warlocks
     for (GroupReference* ref = group->GetFirstMember(); ref && cubeIndex < cubes.size(); ref = ref->next())
     {
         Player* member = ref->GetSource();
         if (!member || !member->IsAlive() || !botAI->IsRangedDps(member, true) || 
-            member->getClass() == CLASS_WARLOCK)
+            member->getClass() == CLASS_WARLOCK || !GET_PLAYERBOT_AI(member))
         {
             continue;
         }
-
         candidates.push_back(member);
     }
-
-    // Second pass: add anyone except Main Tank if still not enough
     if (candidates.size() < cubes.size())
     {
         Player* magtheridonTank = nullptr;
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (!member || !member->IsAlive())
+            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member))
             {
                 continue;
             }
@@ -119,7 +106,6 @@ void AssignBotsToCubesByGuidAndCoords(Group* group, const std::vector<CubeInfo>&
                 break;
             }
         }
-
         for (GroupReference* ref = group->GetFirstMember(); ref && candidates.size() < cubes.size(); ref = ref->next())
         {
             Player* member = ref->GetSource();
@@ -131,7 +117,6 @@ void AssignBotsToCubesByGuidAndCoords(Group* group, const std::vector<CubeInfo>&
                 candidates.push_back(member);
         }
     }
-
     for (Player* member : candidates)
     {
         if (cubeIndex >= cubes.size())
@@ -169,7 +154,7 @@ bool IsSafeFromMagtheridonHazards(PlayerbotAI* botAI, Player* bot, float x, floa
     for (const auto& npcGuid : npcs)
     {
         Unit* unit = botAI->GetUnit(npcGuid);
-        if (!unit || unit->GetEntry() != static_cast<uint32>(MagsLairNPCs::TARGET_TRIGGER))
+        if (!unit || unit->GetEntry() != static_cast<uint32>(MagtheridonNPCs::TARGET_TRIGGER))
         {
             continue;
         }

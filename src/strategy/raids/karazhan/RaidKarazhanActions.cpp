@@ -1,11 +1,7 @@
 #include "RaidKarazhanActions.h"
 #include "RaidKarazhanHelpers.h"
-#include "AiObjectContext.h"
-#include "PlayerbotAI.h"
-#include "PlayerbotMgr.h"
-#include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
-#include "Position.h"
+#include "PlayerbotTextMgr.h"
 
 namespace 
 {
@@ -19,7 +15,7 @@ namespace
 bool KarazhanAttumenTheHuntsmanStackBehindAction::Execute(Event event)
 {
     RaidKarazhanHelpers karazhanHelper(botAI);
-    Unit* boss = karazhanHelper.GetFirstAliveUnitByEntry(NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED);
+    Unit* boss = karazhanHelper.GetFirstAliveUnitByEntry(static_cast<uint32>(KarazhanNpcs::ATTUMEN_THE_HUNTSMAN_MOUNTED));
 
     float distance = 5.0f;
     float orientation = boss->GetOrientation() + M_PI;
@@ -40,7 +36,7 @@ bool KarazhanAttumenTheHuntsmanStackBehindAction::Execute(Event event)
 bool KarazhanAttumenTheHuntsmanStackBehindAction::isUseful()
 {
     RaidKarazhanHelpers karazhanHelper(botAI);
-    Unit* boss = karazhanHelper.GetFirstAliveUnitByEntry(NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED);
+    Unit* boss = karazhanHelper.GetFirstAliveUnitByEntry(static_cast<uint32>(KarazhanNpcs::ATTUMEN_THE_HUNTSMAN_MOUNTED));
 
     return boss && !botAI->IsMainTank(bot);
 }
@@ -71,7 +67,8 @@ bool KarazhanMaidenOfVirtuePositionBossAction::Execute(Event event)
     for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
     {
         Player* member = itr->GetSource();
-        if (!member || !member->IsAlive() || !botAI->IsHeal(member) || !member->HasAura(SPELL_REPENTANCE))
+        if (!member || !member->IsAlive() || !botAI->IsHeal(member) || 
+            !member->HasAura(static_cast<uint32>(KarazhanSpells::REPENTANCE)))
         {
             continue;
         }
@@ -96,7 +93,6 @@ bool KarazhanMaidenOfVirtuePositionBossAction::Execute(Event event)
 
     const float maxDistance = 3.0f;
     const float distanceToBossPosition = boss->GetExactDist2d(KARAZHAN_MAIDEN_OF_VIRTUE_BOSS_POSITION);
-
     if (distanceToBossPosition > maxDistance)
     {
         float dX = KARAZHAN_MAIDEN_OF_VIRTUE_BOSS_POSITION.GetPositionX() - boss->GetPositionX();
@@ -133,15 +129,14 @@ bool KarazhanMaidenOfVirtuePositionRangedAction::Execute(Event event)
     for (const auto& memberGuid : members)
     {
         Unit* member = botAI->GetUnit(memberGuid);
-
         if (!member || !botAI->IsRanged(member->ToPlayer()))
         {
             continue;
         }
-
         if (member == bot)
+        {
             break;
-
+        }
         if (index >= maxIndex)
         {
             index = 0;
@@ -184,10 +179,8 @@ bool KarazhanBigBadWolfPositionBossAction::Execute(Event event)
     {
         float dX = KARAZHAN_BIG_BAD_WOLF_BOSS_POSITION.GetPositionX() - boss->GetPositionX();
         float dY = KARAZHAN_BIG_BAD_WOLF_BOSS_POSITION.GetPositionY() - boss->GetPositionY();
-
         float mX = KARAZHAN_BIG_BAD_WOLF_BOSS_POSITION.GetPositionX() + (dX / distanceToBossPosition) * maxDistance;
         float mY = KARAZHAN_BIG_BAD_WOLF_BOSS_POSITION.GetPositionY() + (dY / distanceToBossPosition) * maxDistance;
-
         float moveDistance = bot->GetExactDist2d(mX, mY);
         if (moveDistance < 0.5f)
         {
@@ -195,7 +188,7 @@ bool KarazhanBigBadWolfPositionBossAction::Execute(Event event)
         }
 
         return MoveTo(bot->GetMapId(), mX, mY, bot->GetPositionZ(), false, false, false, false,
-                     MovementPriority::MOVEMENT_COMBAT, true, false);
+                      MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
     return false;
@@ -206,20 +199,18 @@ bool KarazhanBigBadWolfPositionBossAction::isUseful()
     Unit* boss = AI_VALUE2(Unit*, "find target", "the big bad wolf");
 
     return boss && botAI->IsMainTank(bot) && boss->GetVictim() == bot &&
-           !bot->HasAura(SPELL_LITTLE_RED_RIDING_HOOD);
+           !bot->HasAura(static_cast<uint32>(KarazhanSpells::LITTLE_RED_RIDING_HOOD));
 }
 
 bool KarazhanBigBadWolfRunAwayAction::Execute(Event event)
 {
     constexpr float threshold = 1.0f;
     Position target = KARAZHAN_BIG_BAD_WOLF_RUN_POSITION[currentIndex];
-
     while (bot->GetExactDist2d(target.GetPositionX(), target.GetPositionY()) < threshold)
     {
         currentIndex = (currentIndex + 1) % 4;
         target = KARAZHAN_BIG_BAD_WOLF_RUN_POSITION[currentIndex];
     }
-
     bot->AttackStop();
     bot->InterruptNonMeleeSpells(false);
 
@@ -231,7 +222,7 @@ bool KarazhanBigBadWolfRunAwayAction::isUseful()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "the big bad wolf");
 
-    return boss && bot->HasAura(SPELL_LITTLE_RED_RIDING_HOOD);
+    return boss && bot->HasAura(static_cast<uint32>(KarazhanSpells::LITTLE_RED_RIDING_HOOD));
 }
 
 bool KarazhanRomuloAndJulianneMarkTargetAction::Execute(Event event)
@@ -279,6 +270,7 @@ bool KarazhanWizardOfOzMarkTargetAction::Execute(Event event)
 bool KarazhanWizardOfOzScorchStrawmanAction::Execute(Event event)
 {
     Unit* strawman = AI_VALUE2(Unit*, "find target", "strawman");
+
     if (botAI->CanCastSpell("scorch", strawman))
         botAI->CastSpell("scorch", strawman);
 
@@ -372,10 +364,10 @@ bool KarazhanTerestianIllhoofMarkTargetAction::Execute(Event event)
     }
 
     RaidKarazhanHelpers karazhanHelper(botAI);
-    Unit* target = karazhanHelper.GetFirstAliveUnitByEntry(NPC_DEMON_CHAINS);
+    Unit* target = karazhanHelper.GetFirstAliveUnitByEntry(static_cast<uint32>(KarazhanNpcs::DEMON_CHAINS));
     if (!target || !target->IsAlive()) 
     {
-        target = karazhanHelper.GetFirstAliveUnitByEntry(NPC_KILREK);
+        target = karazhanHelper.GetFirstAliveUnitByEntry(static_cast<uint32>(KarazhanNpcs::KILREK));
         if (!target || !target->IsAlive()) 
         {
             target = boss;
@@ -389,9 +381,9 @@ bool KarazhanTerestianIllhoofMarkTargetAction::Execute(Event event)
 bool KarazhanShadeOfAranArcaneExplosionRunAwayAction::Execute(Event event)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "shade of aran");
+
     const float safeDistance = 20.0f;
     const float distance = bot->GetDistance2d(boss);
-
     if (distance < safeDistance)
     {
         bot->AttackStop();
@@ -408,7 +400,7 @@ bool KarazhanShadeOfAranArcaneExplosionRunAwayAction::isUseful()
     Unit* boss = AI_VALUE2(Unit*, "find target", "shade of aran");
 
     return boss && boss->HasUnitState(UNIT_STATE_CASTING) &&
-           boss->FindCurrentSpellBySpellId(SPELL_ARCANE_EXPLOSION);
+           boss->FindCurrentSpellBySpellId(static_cast<uint32>(KarazhanSpells::ARCANE_EXPLOSION));
 }
 
 bool KarazhanShadeOfAranFlameWreathStopMovementAction::Execute(Event event)
@@ -434,7 +426,7 @@ bool KarazhanShadeOfAranFlameWreathStopMovementAction::isUseful()
 bool KarazhanShadeOfAranMarkConjuredElementalAction::Execute(Event event)
 {
     RaidKarazhanHelpers karazhanHelper(botAI);
-    Unit* target = karazhanHelper.GetFirstAliveUnitByEntry(NPC_CONJURED_ELEMENTAL);
+    Unit* target = karazhanHelper.GetFirstAliveUnitByEntry(static_cast<uint32>(KarazhanNpcs::CONJURED_ELEMENTAL));
 
     karazhanHelper.MarkTargetWithSkull(target);
 
@@ -445,9 +437,9 @@ bool KarazhanShadeOfAranMarkConjuredElementalAction::isUseful()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "shade of aran");
     RaidKarazhanHelpers karazhanHelper(botAI);
-    Unit* target = karazhanHelper.GetFirstAliveUnitByEntry(NPC_CONJURED_ELEMENTAL);
+    Unit* target = karazhanHelper.GetFirstAliveUnitByEntry(static_cast<uint32>(KarazhanNpcs::CONJURED_ELEMENTAL));
 
-    return boss && target && target->IsAlive() && !target->HasAura(SPELL_WARLOCK_BANISH);
+    return boss && target && target->IsAlive() && !target->HasAura(static_cast<uint32>(KarazhanSpells::WARLOCK_BANISH));
 }
 
 bool KarazhanShadeOfAranSpreadRangedAction::Execute(Event event)
@@ -467,7 +459,7 @@ bool KarazhanShadeOfAranSpreadRangedAction::Execute(Event event)
         float tY = boss->GetPositionY() + dY * maxBossDistance;
         {
             return MoveTo(bot->GetMapId(), tX, tY, bot->GetPositionZ(), false, false, false, true,
-                MovementPriority::MOVEMENT_COMBAT);
+                          MovementPriority::MOVEMENT_COMBAT);
         }
     }
 
@@ -488,7 +480,8 @@ bool KarazhanShadeOfAranSpreadRangedAction::isUseful()
     RaidKarazhanHelpers karazhanHelper(botAI);
 
     return boss && botAI->IsRanged(bot) && !karazhanHelper.IsFlameWreathActive() &&
-           !(boss->HasUnitState(UNIT_STATE_CASTING) && boss->FindCurrentSpellBySpellId(SPELL_ARCANE_EXPLOSION));
+           !(boss->HasUnitState(UNIT_STATE_CASTING) && 
+           boss->FindCurrentSpellBySpellId(static_cast<uint32>(KarazhanSpells::ARCANE_EXPLOSION)));
 }
 
 // One tank bot per phase will dance in and out of the red beam (5 seconds in, 5 seconds out)
@@ -496,7 +489,7 @@ bool KarazhanShadeOfAranSpreadRangedAction::isUseful()
 bool KarazhanNetherspiteBlockRedBeamAction::Execute(Event event)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "netherspite");
-    Unit* redPortal = bot->FindNearestCreature(NPC_RED_PORTAL, 150.0f);
+    Unit* redPortal = bot->FindNearestCreature(static_cast<uint32>(KarazhanNpcs::RED_PORTAL), 150.0f);
 
     RaidKarazhanHelpers karazhanHelper(botAI);
     static std::map<ObjectGuid, bool> wasBlockingRedBeam;
@@ -570,12 +563,11 @@ bool KarazhanNetherspiteBlockRedBeamAction::Execute(Event event)
 bool KarazhanNetherspiteBlockRedBeamAction::isUseful()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "netherspite");
-    Unit* redPortal = bot->FindNearestCreature(NPC_RED_PORTAL, 150.0f);
-
+    Unit* redPortal = bot->FindNearestCreature(static_cast<uint32>(KarazhanNpcs::RED_PORTAL), 150.0f);
     ObjectGuid botGuid = bot->GetGUID();
     static std::map<ObjectGuid, bool> lastBossBanishState;
-    bool bossIsBanished = boss && boss->HasAura(SPELL_NETHERSPITE_BANISHED);
 
+    bool bossIsBanished = boss && boss->HasAura(static_cast<uint32>(KarazhanSpells::NETHERSPITE_BANISHED));
     if (lastBossBanishState[botGuid] != bossIsBanished)
     {
         if (!bossIsBanished)
@@ -594,7 +586,7 @@ bool KarazhanNetherspiteBlockRedBeamAction::isUseful()
 bool KarazhanNetherspiteBlockBlueBeamAction::Execute(Event event)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "netherspite");
-    Unit* bluePortal = bot->FindNearestCreature(NPC_BLUE_PORTAL, 150.0f);
+    Unit* bluePortal = bot->FindNearestCreature(static_cast<uint32>(KarazhanNpcs::BLUE_PORTAL), 150.0f);
 
     RaidKarazhanHelpers karazhanHelper(botAI);
     static std::map<ObjectGuid, bool> wasBlockingBlueBeam;
@@ -693,9 +685,9 @@ bool KarazhanNetherspiteBlockBlueBeamAction::Execute(Event event)
 bool KarazhanNetherspiteBlockBlueBeamAction::isUseful()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "netherspite");
-    Unit* bluePortal = bot->FindNearestCreature(NPC_BLUE_PORTAL, 150.0f);
+    Unit* bluePortal = bot->FindNearestCreature(static_cast<uint32>(KarazhanNpcs::BLUE_PORTAL), 150.0f);
 
-    return boss && bluePortal && !boss->HasAura(SPELL_NETHERSPITE_BANISHED);
+    return boss && bluePortal && !boss->HasAura(static_cast<uint32>(KarazhanSpells::NETHERSPITE_BANISHED));
 }
 
 // Two healer bots will block the green beam for each phase (swap at 26 debuff stacks)
@@ -704,7 +696,7 @@ bool KarazhanNetherspiteBlockBlueBeamAction::isUseful()
 bool KarazhanNetherspiteBlockGreenBeamAction::Execute(Event event)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "netherspite");
-    Unit* greenPortal = bot->FindNearestCreature(NPC_GREEN_PORTAL, 150.0f);
+    Unit* greenPortal = bot->FindNearestCreature(static_cast<uint32>(KarazhanNpcs::GREEN_PORTAL), 150.0f);
 
     RaidKarazhanHelpers karazhanHelper(botAI);
     static std::map<ObjectGuid, bool> wasBlockingGreenBeam;
@@ -803,9 +795,9 @@ bool KarazhanNetherspiteBlockGreenBeamAction::Execute(Event event)
 bool KarazhanNetherspiteBlockGreenBeamAction::isUseful()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "netherspite");
-    Unit* greenPortal = bot->FindNearestCreature(NPC_GREEN_PORTAL, 150.0f);
+    Unit* greenPortal = bot->FindNearestCreature(static_cast<uint32>(KarazhanNpcs::GREEN_PORTAL), 150.0f);
 
-    return boss && greenPortal && !boss->HasAura(SPELL_NETHERSPITE_BANISHED);
+    return boss && greenPortal && !boss->HasAura(static_cast<uint32>(KarazhanSpells::NETHERSPITE_BANISHED));
 }
 
 // All bots not currently blocking a beam will avoid beams and void zones
@@ -826,9 +818,9 @@ bool KarazhanNetherspiteAvoidBeamAndVoidZoneAction::Execute(Event event)
     }
     struct BeamAvoid { Unit* portal; float minDist, maxDist; };
     std::vector<BeamAvoid> beams;
-    Unit* redPortal = bot->FindNearestCreature(NPC_RED_PORTAL, 150.0f);
-    Unit* bluePortal = bot->FindNearestCreature(NPC_BLUE_PORTAL, 150.0f);
-    Unit* greenPortal = bot->FindNearestCreature(NPC_GREEN_PORTAL, 150.0f);
+    Unit* redPortal = bot->FindNearestCreature(static_cast<uint32>(KarazhanNpcs::RED_PORTAL), 150.0f);
+    Unit* bluePortal = bot->FindNearestCreature(static_cast<uint32>(KarazhanNpcs::BLUE_PORTAL), 150.0f);
+    Unit* greenPortal = bot->FindNearestCreature(static_cast<uint32>(KarazhanNpcs::GREEN_PORTAL), 150.0f);
     if (redPortal) 
     {
         float bx = boss->GetPositionX(), by = boss->GetPositionY();
@@ -892,7 +884,8 @@ bool KarazhanNetherspiteAvoidBeamAndVoidZoneAction::Execute(Event event)
             float cx = bot->GetPositionX() + cos(angle) * dist;
             float cy = bot->GetPositionY() + sin(angle) * dist;
             float cz = bossZ;
-            if (std::any_of(voidZones.begin(), voidZones.end(), [&](Unit* vz){ return Position(cx, cy, cz).GetExactDist2d(vz) < 4.0f; }))
+            if (std::any_of(voidZones.begin(), voidZones.end(), [&](Unit* vz){ 
+                return Position(cx, cy, cz).GetExactDist2d(vz) < 4.0f; }))
             {
                 continue;
             }
@@ -936,8 +929,7 @@ bool KarazhanNetherspiteAvoidBeamAndVoidZoneAction::Execute(Event event)
         }
     }
     if (found && karazhanHelper.IsSafePosition(bestCandidate.GetPositionX(), 
-        bestCandidate.GetPositionY(), bestCandidate.GetPositionZ(), 
-        voidZones, 4.0f))
+        bestCandidate.GetPositionY(), bestCandidate.GetPositionZ(), voidZones, 4.0f))
     {
         bot->AttackStop();
         bot->InterruptNonMeleeSpells(false);
@@ -955,7 +947,7 @@ bool KarazhanNetherspiteAvoidBeamAndVoidZoneAction::isUseful()
     RaidKarazhanHelpers karazhanHelper(botAI);
     auto [redBlocker, greenBlocker, blueBlocker] = karazhanHelper.GetCurrentBeamBlockers();
 
-    return boss && !boss->HasAura(SPELL_NETHERSPITE_BANISHED) && bot != redBlocker && 
+    return boss && !boss->HasAura(static_cast<uint32>(KarazhanSpells::NETHERSPITE_BANISHED)) && bot != redBlocker && 
            bot != blueBlocker && bot != greenBlocker;
 }
 
@@ -966,7 +958,7 @@ bool KarazhanNetherspiteBanishPhaseAvoidVoidZoneAction::Execute(Event event)
 
     for (Unit* vz : voidZones)
     {
-        if (vz->GetEntry() == NPC_VOID_ZONE && bot->GetExactDist2d(vz) < 4.0f)
+        if (vz->GetEntry() == static_cast<uint32>(KarazhanNpcs::VOID_ZONE) && bot->GetExactDist2d(vz) < 4.0f)
         {
             return FleePosition(vz->GetPosition(), 4.0f);
         }
@@ -978,7 +970,7 @@ bool KarazhanNetherspiteBanishPhaseAvoidVoidZoneAction::Execute(Event event)
 bool KarazhanNetherspiteBanishPhaseAvoidVoidZoneAction::isUseful()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "netherspite");
-    if (!boss || !boss->HasAura(SPELL_NETHERSPITE_BANISHED))
+    if (!boss || !boss->HasAura(static_cast<uint32>(KarazhanSpells::NETHERSPITE_BANISHED)))
     {
         return false;
     }
@@ -1007,6 +999,7 @@ bool KarazhanPrinceMalchezaarNonTankAvoidHazardAction::Execute(Event event)
     const float safeInfernalDistance = 23.0f;
     const float stepSize = 0.5f;
     const int numAngles = 64;
+
     float bx = bot->GetPositionX();
     float by = bot->GetPositionY();
     float bz = bot->GetPositionZ();
@@ -1017,7 +1010,7 @@ bool KarazhanPrinceMalchezaarNonTankAvoidHazardAction::Execute(Event event)
     float bestDestX = 0.0f, bestDestY = 0.0f, bestDestZ = bz;
     bool found = false;
 
-    if (bot->HasAura(SPELL_ENFEEBLE))
+    if (bot->HasAura(static_cast<uint32>(KarazhanSpells::ENFEEBLE)))
     {
         for (int i = 0; i < numAngles; ++i)
         {
@@ -1064,7 +1057,7 @@ bool KarazhanPrinceMalchezaarNonTankAvoidHazardAction::Execute(Event event)
         return false;
     }
 
-    if (!bot->HasAura(SPELL_ENFEEBLE))
+    if (!bot->HasAura(static_cast<uint32>(KarazhanSpells::ENFEEBLE)))
     {
         bool nearInfernal = false;
         for (Unit* infernal : infernals)
@@ -1107,7 +1100,9 @@ bool KarazhanPrinceMalchezaarNonTankAvoidHazardAction::Execute(Event event)
                         }
                     }
                     if (!destSafe)
+                    {
                         continue;
+                    }
                     float moveDist = sqrt(pow(destX - bx, 2) + pow(destY - by, 2));
                     if (moveDist < bestMoveDist)
                     {
@@ -1181,11 +1176,11 @@ bool KarazhanPrinceMalchezaarTankAvoidHazardAction::Execute(Event event)
                 float x = bx + dx * dist;
                 float y = by + dy * dist;
                 float z = bz;
-
                 float destX = x, destY = y, destZ = z;
                 if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, bx, by, bz, destX, destY, destZ, true))
+                {
                     continue;
-
+                }
                 bool destSafe = true;
                 for (Unit* infernal : infernals)
                 {
@@ -1197,10 +1192,11 @@ bool KarazhanPrinceMalchezaarTankAvoidHazardAction::Execute(Event event)
                     }
                 }
                 if (!destSafe)
+                {
                     continue;
-
+                }
                 bool pathSafe = karazhanHelper.IsStraightPathSafe(Position(bx, by, bz), Position(destX, destY, destZ), 
-                                                                 infernals, safeInfernalDistance, stepSize);
+                                                                  infernals, safeInfernalDistance, stepSize);
                 float moveDist = sqrt(pow(destX - bx, 2) + pow(destY - by, 2));
                 if (pathSafe && moveDist < bestMoveDist)
                 {
@@ -1224,11 +1220,11 @@ bool KarazhanPrinceMalchezaarTankAvoidHazardAction::Execute(Event event)
                     float x = bx + dx * dist;
                     float y = by + dy * dist;
                     float z = bz;
-
                     float destX = x, destY = y, destZ = z;
                     if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, bx, by, bz, destX, destY, destZ, true))
+                    {
                         continue;
-
+                    }
                     bool destSafe = true;
                     for (Unit* infernal : infernals)
                     {

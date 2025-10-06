@@ -1,7 +1,7 @@
-#include "RaidMagsLairStrategy.h"
-#include "RaidMagsLairMultipliers.h"
+#include "RaidMagtheridonStrategy.h"
+#include "RaidMagtheridonMultipliers.h"
 
-void RaidMagsLairStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
+void RaidMagtheridonStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(new TriggerNode("magtheridon", NextAction::array(0,
         new NextAction("magtheridon use manticron cube", ACTION_EMERGENCY + 10),
@@ -17,7 +17,7 @@ void RaidMagsLairStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         nullptr)));
 }
 
-void RaidMagsLairStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
+void RaidMagtheridonStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     multipliers.push_back(new MagtheridonMultiplier(botAI));
 }

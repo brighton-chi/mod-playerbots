@@ -7,6 +7,7 @@
 #include "GenericSpellActions.h"
 #include "HunterActions.h"
 #include "MageActions.h"
+#include "Playerbots.h"
 #include "WarriorActions.h"
 
 using namespace GruulsLairHelpers;

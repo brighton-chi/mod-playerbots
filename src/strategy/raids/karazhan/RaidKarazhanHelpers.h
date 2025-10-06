@@ -2,55 +2,55 @@
 #define _PLAYERBOT_RAIDKARAZHANHELPERS_H_
 
 #include "AiObject.h"
-#include "Playerbots.h"
 #include "Position.h"
+#include "Unit.h"
 
-enum KarazhanSpells
+enum class KarazhanSpells
 {
     // Maiden of Virtue
-    SPELL_REPENTANCE                 = 29511,
+    REPENTANCE                 = 29511,
 
     // Opera Event
-    SPELL_LITTLE_RED_RIDING_HOOD     = 30756,
+    LITTLE_RED_RIDING_HOOD     = 30756,
 
     // Shade of Aran
-    SPELL_FLAME_WREATH               = 30004,
-    SPELL_AURA_FLAME_WREATH          = 29946,
-    SPELL_ARCANE_EXPLOSION           = 29973,
-    SPELL_WARLOCK_BANISH             = 18647, // Rank 2
+    FLAME_WREATH_CAST          = 30004,
+    FLAME_WREATH_AURA          = 29946,
+    ARCANE_EXPLOSION           = 29973,
+    WARLOCK_BANISH             = 18647,
 
     // Netherspite
-    SPELL_GREEN_BEAM_DEBUFF          = 30422,
-    SPELL_BLUE_BEAM_DEBUFF           = 30423,
-    SPELL_NETHER_EXHAUSTION_RED      = 38637,
-    SPELL_NETHER_EXHAUSTION_GREEN    = 38638,
-    SPELL_NETHER_EXHAUSTION_BLUE     = 38639,
-    SPELL_NETHERSPITE_BANISHED       = 39833,
+    GREEN_BEAM_DEBUFF          = 30422,
+    BLUE_BEAM_DEBUFF           = 30423,
+    NETHER_EXHAUSTION_RED      = 38637,
+    NETHER_EXHAUSTION_GREEN    = 38638,
+    NETHER_EXHAUSTION_BLUE     = 38639,
+    NETHERSPITE_BANISHED       = 39833,
 
     // Prince Malchezaar
-    SPELL_ENFEEBLE                   = 30843,
+    ENFEEBLE                   = 30843,
 };
 
-enum KarazhanNpcs
+enum class KarazhanNpcs
 {
     // Attumen the Huntsman
-    NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED = 16152,
+    ATTUMEN_THE_HUNTSMAN_MOUNTED = 16152,
 
     // Terestian Illhoof
-    NPC_KILREK                       = 17229,
-    NPC_DEMON_CHAINS                 = 17248,
+    KILREK                       = 17229,
+    DEMON_CHAINS                 = 17248,
 
     // Shade of Aran
-    NPC_CONJURED_ELEMENTAL           = 17167,
+    CONJURED_ELEMENTAL           = 17167,
 
     // Netherspite
-    NPC_VOID_ZONE                    = 16697,
-    NPC_RED_PORTAL                   = 17369,
-    NPC_BLUE_PORTAL                  = 17368,
-    NPC_GREEN_PORTAL                 = 17367,
+    VOID_ZONE                    = 16697,
+    RED_PORTAL                   = 17369,
+    BLUE_PORTAL                  = 17368,
+    GREEN_PORTAL                 = 17367,
 
     // Prince Malchezaar
-    NPC_NETHERSPITE_INFERNAL         = 17646,
+    NETHERSPITE_INFERNAL         = 17646,
 };
 
 extern const Position KARAZHAN_MAIDEN_OF_VIRTUE_BOSS_POSITION;
@@ -75,8 +75,7 @@ public:
     std::vector<Player*> GetGreenBlockers();
     std::tuple<Player*, Player*, Player*> GetCurrentBeamBlockers();
     std::vector<Unit*> GetAllVoidZones();
-    bool IsSafePosition (float x, float y, float z,
-         const std::vector<Unit*>& hazards, float hazardRadius);
+    bool IsSafePosition (float x, float y, float z, const std::vector<Unit*>& hazards, float hazardRadius);
     std::vector<Unit*> GetSpawnedInfernals() const;
     bool IsStraightPathSafe(const Position& start, const Position& target, 
          const std::vector<Unit*>& hazards, float hazardRadius, float stepSize);

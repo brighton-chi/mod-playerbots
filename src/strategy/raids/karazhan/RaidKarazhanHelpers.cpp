@@ -3,10 +3,7 @@
 
 #include "RaidKarazhanHelpers.h"
 #include "RaidKarazhanActions.h"
-#include "AiObjectContext.h"
-#include "PlayerbotMgr.h"
-#include "Position.h"
-#include "Spell.h"
+#include "Playerbots.h"
 
 const Position KARAZHAN_MAIDEN_OF_VIRTUE_BOSS_POSITION = Position(-10945.881f, -2103.782f, 92.712f);
 const Position KARAZHAN_MAIDEN_OF_VIRTUE_RANGED_POSITION[8] =
@@ -108,7 +105,9 @@ bool RaidKarazhanHelpers::IsFlameWreathActive()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "shade of aran");
     Spell* currentSpell = boss ? boss->GetCurrentSpell(CURRENT_GENERIC_SPELL) : nullptr;
-    if (currentSpell && currentSpell->m_spellInfo && currentSpell->m_spellInfo->Id == SPELL_FLAME_WREATH)
+
+    if (currentSpell && currentSpell->m_spellInfo && currentSpell->m_spellInfo->Id == 
+        static_cast<uint32>(KarazhanSpells::FLAME_WREATH_CAST))
     {
         return true;
     }
@@ -122,7 +121,7 @@ bool RaidKarazhanHelpers::IsFlameWreathActive()
             {
                 continue;
             }
-            if (member->HasAura(SPELL_AURA_FLAME_WREATH))
+            if (member->HasAura(static_cast<uint32>(KarazhanSpells::FLAME_WREATH_AURA)))
             {
                 return true;
             }
@@ -142,7 +141,7 @@ std::vector<Player*> RaidKarazhanHelpers::GetRedBlockers()
         {
             Player* member = itr->GetSource();
             if (!member || !member->IsAlive() || !botAI->IsTank(member) || !GET_PLAYERBOT_AI(member) ||
-                member->HasAura(SPELL_NETHER_EXHAUSTION_RED))
+                member->HasAura(static_cast<uint32>(KarazhanSpells::NETHER_EXHAUSTION_RED)))
             {
                 continue;
             }
@@ -169,8 +168,8 @@ std::vector<Player*> RaidKarazhanHelpers::GetBlueBlockers()
             bool isDps = botAI->IsDps(member);
             bool isWarrior = member->getClass() == CLASS_WARRIOR;
             bool isRogue = member->getClass() == CLASS_ROGUE;
-            bool hasExhaustion = member->HasAura(SPELL_NETHER_EXHAUSTION_BLUE);
-            Aura* blueBuff = member->GetAura(SPELL_BLUE_BEAM_DEBUFF);
+            bool hasExhaustion = member->HasAura(static_cast<uint32>(KarazhanSpells::NETHER_EXHAUSTION_BLUE));
+            Aura* blueBuff = member->GetAura(static_cast<uint32>(KarazhanSpells::BLUE_BEAM_DEBUFF));
             bool overStack = blueBuff && blueBuff->GetStackAmount() >= 26;
             if (isDps && !isWarrior && !isRogue && !hasExhaustion && !overStack)
             {
@@ -197,8 +196,8 @@ std::vector<Player*> RaidKarazhanHelpers::GetGreenBlockers()
             {
                 continue;
             }
-            bool hasExhaustion = member->HasAura(SPELL_NETHER_EXHAUSTION_GREEN);
-            Aura* greenBuff = member->GetAura(SPELL_GREEN_BEAM_DEBUFF);
+            bool hasExhaustion = member->HasAura(static_cast<uint32>(KarazhanSpells::NETHER_EXHAUSTION_GREEN));
+            Aura* greenBuff = member->GetAura(static_cast<uint32>(KarazhanSpells::GREEN_BEAM_DEBUFF));
             bool overStack = greenBuff && greenBuff->GetStackAmount() >= 26;
             bool isRogue = member->getClass() == CLASS_ROGUE;
             bool isDpsWarrior = member->getClass() == CLASS_WARRIOR && botAI->IsDps(member);
@@ -330,7 +329,7 @@ std::vector<Unit*> RaidKarazhanHelpers::GetAllVoidZones()
     for (const auto& npcGuid : npcs)
     {
         Unit* unit = botAI->GetUnit(npcGuid);
-        if (!unit || unit->GetEntry() != NPC_VOID_ZONE)
+        if (!unit || unit->GetEntry() != static_cast<uint32>(KarazhanNpcs::VOID_ZONE))
         {
             continue;
         }
@@ -344,8 +343,7 @@ std::vector<Unit*> RaidKarazhanHelpers::GetAllVoidZones()
     return voidZones;
 }
 
-bool RaidKarazhanHelpers::IsSafePosition(float x, float y, float z,
-     const std::vector<Unit*>& hazards, float hazardRadius)
+bool RaidKarazhanHelpers::IsSafePosition(float x, float y, float z, const std::vector<Unit*>& hazards, float hazardRadius)
 {
     for (Unit* hazard : hazards)
     {
@@ -366,7 +364,7 @@ std::vector<Unit*> RaidKarazhanHelpers::GetSpawnedInfernals() const
     for (const auto& npcGuid : npcs)
     {
         Unit* unit = botAI->GetUnit(npcGuid);
-        if (unit && unit->GetEntry() == NPC_NETHERSPITE_INFERNAL)
+        if (unit && unit->GetEntry() == static_cast<uint32>(KarazhanNpcs::NETHERSPITE_INFERNAL))
         {
             infernals.push_back(unit);
         }
@@ -375,7 +373,8 @@ std::vector<Unit*> RaidKarazhanHelpers::GetSpawnedInfernals() const
     return infernals;
 }
 
-bool RaidKarazhanHelpers::IsStraightPathSafe(const Position& start, const Position& target, const std::vector<Unit*>& hazards, float hazardRadius, float stepSize)
+bool RaidKarazhanHelpers::IsStraightPathSafe(const Position& start, const Position& target, const std::vector<Unit*>& hazards, 
+                                             float hazardRadius, float stepSize)
 {
     float sx = start.GetPositionX();
     float sy = start.GetPositionY();

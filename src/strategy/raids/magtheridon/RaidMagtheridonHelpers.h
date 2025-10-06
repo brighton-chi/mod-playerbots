@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_RAIDMAGSLAIRHELPERS_H
-#define _PLAYERBOT_RAIDMAGSLAIRHELPERS_H
+#ifndef _PLAYERBOT_RAIDMAGTHERIDONHELPERS_H
+#define _PLAYERBOT_RAIDMAGTHERIDONHELPERS_H
 
 #include <ctime>
 #include <unordered_map>
@@ -10,19 +10,19 @@
 #include "PlayerbotAI.h"
 #include "RtiTargetValue.h"
 
-enum class MagsLairSpells
+enum class MagtheridonSpells
 {
     // Magtheridon
     SHADOW_CAGE        = 30205,
     BLAST_NOVA         = 30616,
-    // BLAST_NOVA_CHANNEL      = 30613,
-    SHADOW_GRASP       = 30410,
-    // MIND_EXHAUSTION = 44032,
-    // DEBRIS_TARGET   = 30629,
-    // DEBRIS_SPAWN    = 30630,
-    // DEBRIS_DAMAGE   = 30631,
-    // DEBRIS_VISUAL   = 30632,
-    // CONFLAGRATION   = 30757,
+    // BLAST_NOVA_CHANNEL = 30613,
+    // SHADOW_GRASP      = 30410,
+    // MIND_EXHAUSTION   = 44032,
+    // DEBRIS_TARGET     = 30629,
+    // DEBRIS_SPAWN      = 30630,
+    // DEBRIS_DAMAGE     = 30631,
+    // DEBRIS_VISUAL     = 30632,
+    // CONFLAGRATION     = 30757,
 
     // Warlock
     BANISH             = 18647,
@@ -33,14 +33,14 @@ enum class MagsLairSpells
     MISDIRECTION  = 34477,
 };
 
-enum class MagsLairNPCs
+enum class MagtheridonNPCs
 {
     BURNING_ABYSSAL      = 17454,
     HELLFIRE_CHANNELER   = 17256,
     TARGET_TRIGGER       = 17474,
 };
 
-namespace MagsLairHelpers
+namespace MagtheridonHelpers
 {
 
 constexpr uint32 SOUTH_CHANNELER     = 90978;
@@ -66,7 +66,7 @@ struct TankSpot
     float x, y, z, orientation;
 };
 
-namespace MagsLairTankSpots 
+namespace MagtheridonTankSpots 
 {
     extern const TankSpot Magtheridon;
     extern const TankSpot NWChanneler;

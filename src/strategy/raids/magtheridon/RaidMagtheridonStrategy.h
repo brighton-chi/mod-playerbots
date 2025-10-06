@@ -1,13 +1,13 @@
-#ifndef _PLAYERBOT_RAIDMAGSLAIRSTRATEGY_H
-#define _PLAYERBOT_RAIDMAGSLAIRSTRATEGY_H
+#ifndef _PLAYERBOT_RAIDMAGTHERIDONSTRATEGY_H
+#define _PLAYERBOT_RAIDMAGTHERIDONSTRATEGY_H
 
 #include "Strategy.h"
 #include "Multiplier.h"
 
-class RaidMagsLairStrategy : public Strategy
+class RaidMagtheridonStrategy : public Strategy
 {
 public:
-    RaidMagsLairStrategy(PlayerbotAI* botAI) : Strategy(botAI) {}
+    RaidMagtheridonStrategy(PlayerbotAI* botAI) : Strategy(botAI) {}
 
     std::string const getName() override { return "magtheridon"; }
 

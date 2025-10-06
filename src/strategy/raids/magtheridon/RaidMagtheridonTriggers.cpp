@@ -1,6 +1,4 @@
-#include "RaidMagsLairTriggers.h"
-#include "Group.h"
-#include "PlayerbotAI.h"
+#include "RaidMagtheridonTriggers.h"
 #include "Playerbots.h"
 
 bool MagtheridonTrigger::IsActive()

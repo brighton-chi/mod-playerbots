@@ -7,7 +7,7 @@
 #include "RaidBwlStrategy.h"
 #include "RaidKarazhanStrategy.h"
 #include "RaidGruulsLairStrategy.h"
-#include "RaidMagsLairStrategy.h"
+#include "RaidMagtheridonStrategy.h"
 #include "RaidNaxxStrategy.h"
 #include "RaidOsStrategy.h"
 #include "RaidEoEStrategy.h"
@@ -42,7 +42,7 @@ private:
     static Strategy* bwl(PlayerbotAI* botAI) { return new RaidBwlStrategy(botAI); }
     static Strategy* karazhan(PlayerbotAI* botAI) { return new RaidKarazhanStrategy(botAI); }
     static Strategy* gruulslair(PlayerbotAI* botAI) { return new RaidGruulsLairStrategy(botAI); }
-    static Strategy* magtheridon(PlayerbotAI* botAI) { return new RaidMagsLairStrategy(botAI); }
+    static Strategy* magtheridon(PlayerbotAI* botAI) { return new RaidMagtheridonStrategy(botAI); }
     static Strategy* naxx(PlayerbotAI* botAI) { return new RaidNaxxStrategy(botAI); }
     static Strategy* wotlk_os(PlayerbotAI* botAI) { return new RaidOsStrategy(botAI); }
     static Strategy* wotlk_eoe(PlayerbotAI* botAI) { return new RaidEoEStrategy(botAI); }
