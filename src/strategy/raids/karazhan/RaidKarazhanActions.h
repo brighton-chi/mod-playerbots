@@ -2,6 +2,7 @@
 #define _PLAYERBOT_RAIDKARAZHANACTIONS_H
 
 #include "Action.h"
+#include "AttackAction.h"
 #include "MovementActions.h"
 
 class KarazhanAttumenTheHuntsmanStackBehindAction : public MovementAction
@@ -21,10 +22,10 @@ public:
     bool Execute(Event event) override;
 };
 
-class KarazhanMaidenOfVirtuePositionBossAction : public MovementAction
+class KarazhanMaidenOfVirtueMainTankAction : public AttackAction
 {
 public:
-    KarazhanMaidenOfVirtuePositionBossAction(PlayerbotAI* botAI, std::string const name = "karazhan maiden of virtue position boss") : MovementAction(botAI, name) {}
+    KarazhanMaidenOfVirtueMainTankAction(PlayerbotAI* botAI, std::string const name = "karazhan maiden of virtue main tank") : AttackAction(botAI, name) {}
 
     bool Execute(Event event) override;
     bool isUseful() override;
@@ -39,10 +40,10 @@ public:
     bool isUseful() override;
 };
 
-class KarazhanBigBadWolfPositionBossAction : public MovementAction
+class KarazhanBigBadWolfPositionBossAction : public AttackAction
 {
 public:
-    KarazhanBigBadWolfPositionBossAction(PlayerbotAI* botAI, std::string const name = "karazhan big bad wolf position boss") : MovementAction(botAI, name) {}
+    KarazhanBigBadWolfPositionBossAction(PlayerbotAI* botAI, std::string const name = "karazhan big bad wolf position boss") : AttackAction(botAI, name) {}
 
     bool Execute(Event event) override;
     bool isUseful() override;
@@ -94,10 +95,10 @@ public:
     bool isUseful() override;
 };
 
-class KarazhanTheCuratorPositionBossAction : public MovementAction
+class KarazhanTheCuratorPositionBossAction : public AttackAction
 {
 public:
-    KarazhanTheCuratorPositionBossAction(PlayerbotAI* botAI, std::string const name = "karazhan the curator position boss") : MovementAction(botAI, name) {}
+    KarazhanTheCuratorPositionBossAction(PlayerbotAI* botAI, std::string const name = "karazhan the curator position boss") : AttackAction(botAI, name) {}
 
     bool Execute(Event event) override;
     bool isUseful() override;
@@ -210,10 +211,10 @@ public:
     bool isUseful() override;
 };
 
-class KarazhanPrinceMalchezaarTankAvoidHazardAction : public MovementAction
+class KarazhanPrinceMalchezaarMainTankAction : public AttackAction
 {
 public:
-    KarazhanPrinceMalchezaarTankAvoidHazardAction(PlayerbotAI* botAI, std::string const name = "karazhan prince malchezaar tank avoid hazard") : MovementAction(botAI, name) {}
+    KarazhanPrinceMalchezaarMainTankAction(PlayerbotAI* botAI, std::string const name = "karazhan prince malchezaar main tank") : AttackAction(botAI, name) {}
 
     bool Execute(Event event) override;
     bool isUseful() override;

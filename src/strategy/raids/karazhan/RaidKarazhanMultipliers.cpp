@@ -2,6 +2,7 @@
 #include "RaidKarazhanActions.h"
 #include "RaidKarazhanHelpers.h"
 #include "AttackAction.h"
+#include "ChooseTargetActions.h"
 #include "DruidBearActions.h"
 #include "DruidCatActions.h"
 #include "Playerbots.h"
@@ -30,21 +31,18 @@ float KarazhanAttumenTheHuntsmanMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float KarazhanBigBadWolfMultiplier::GetValue(Action* action)
+float KarazhanTheCuratorMultiplier::GetValue(Action* action)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "the big bad wolf");
+    Unit* boss = AI_VALUE2(Unit*, "find target", "the curator");
     if (!boss)
     {
         return 1.0f;
     }
 
-    if (bot->HasAura(static_cast<uint32>(KarazhanSpells::LITTLE_RED_RIDING_HOOD)))
+    if ((botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0)) &&
+        dynamic_cast<TankAssistAction*>(action))
     {
-        if ((dynamic_cast<MovementAction*>(action) && !dynamic_cast<KarazhanBigBadWolfRunAwayAction*>(action)) || 
-            dynamic_cast<AttackAction*>(action))
-        {
-            return 0.0f;
-        }
+        return 0.0f;
     }
 
     return 1.0f;

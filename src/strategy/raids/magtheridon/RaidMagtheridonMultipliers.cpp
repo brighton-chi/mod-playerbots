@@ -57,7 +57,7 @@ float MagtheridonMultiplier::GetValue(Action* action)
         UpdateTransitionTimer(magtheridon, magtheridon->HasAura(static_cast<uint32>(MagtheridonSpells::SHADOW_CAGE)),
                               lastAggroShadowCageState, magtheridonAggroWaitTimer);
 
-        const int aggroWaitSeconds = 10;
+        const int aggroWaitSeconds = 8;
         auto it = magtheridonAggroWaitTimer.find(bot->GetMapId());
         if (it != magtheridonAggroWaitTimer.end())
         {
@@ -70,7 +70,7 @@ float MagtheridonMultiplier::GetValue(Action* action)
                 }
             }
         }
-        
+
         const TankSpot& tankSpot = MagtheridonTankSpots::Magtheridon;
         const float positionThreshold = 3.0f;
         const float orientationLeeway = 30.0f * M_PI / 180.0f;

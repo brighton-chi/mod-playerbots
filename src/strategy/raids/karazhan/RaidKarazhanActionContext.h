@@ -13,7 +13,7 @@ public:
 
         creators["karazhan moroes mark target"] = &RaidKarazhanActionContext::karazhan_moroes_mark_target;
 
-        creators["karazhan maiden of virtue position boss"] = &RaidKarazhanActionContext::karazhan_maiden_of_virtue_position_boss;
+        creators["karazhan maiden of virtue main tank"] = &RaidKarazhanActionContext::karazhan_maiden_of_virtue_main_tank;
         creators["karazhan maiden of virtue position ranged"] = &RaidKarazhanActionContext::karazhan_maiden_of_virtue_position_ranged;
 
         creators["karazhan big bad wolf position boss"] = &RaidKarazhanActionContext::karazhan_big_bad_wolf_position_boss;
@@ -42,7 +42,7 @@ public:
         creators["karazhan netherspite banish phase avoid void zone"] = &RaidKarazhanActionContext::karazhan_netherspite_banish_phase_avoid_void_zone;
 
         creators["karazhan prince malchezaar non tank avoid hazard"] = &RaidKarazhanActionContext::karazhan_prince_malchezaar_non_tank_avoid_hazard;
-        creators["karazhan prince malchezaar tank avoid hazard"] = &RaidKarazhanActionContext::karazhan_prince_malchezaar_tank_avoid_hazard;
+        creators["karazhan prince malchezaar main tank"] = &RaidKarazhanActionContext::karazhan_prince_malchezaar_main_tank;
     }
 
 private:
@@ -50,7 +50,7 @@ private:
 
     static Action* karazhan_moroes_mark_target(PlayerbotAI* botAI) { return new KarazhanMoroesMarkTargetAction(botAI); }
 
-    static Action* karazhan_maiden_of_virtue_position_boss(PlayerbotAI* botAI) { return new KarazhanMaidenOfVirtuePositionBossAction(botAI); }
+    static Action* karazhan_maiden_of_virtue_main_tank(PlayerbotAI* botAI) { return new KarazhanMaidenOfVirtueMainTankAction(botAI); }
     static Action* karazhan_maiden_of_virtue_position_ranged(PlayerbotAI* botAI) { return new KarazhanMaidenOfVirtuePositionRangedAction(botAI); }
 
     static Action* karazhan_big_bad_wolf_position_boss(PlayerbotAI* botAI) { return new KarazhanBigBadWolfPositionBossAction(botAI); }
@@ -79,7 +79,7 @@ private:
     static Action* karazhan_netherspite_banish_phase_avoid_void_zone(PlayerbotAI* botAI) { return new KarazhanNetherspiteBanishPhaseAvoidVoidZoneAction(botAI); }
 
     static Action* karazhan_prince_malchezaar_non_tank_avoid_hazard(PlayerbotAI* botAI) { return new KarazhanPrinceMalchezaarNonTankAvoidHazardAction(botAI); }
-    static Action* karazhan_prince_malchezaar_tank_avoid_hazard(PlayerbotAI* botAI) { return new KarazhanPrinceMalchezaarTankAvoidHazardAction(botAI); }
+    static Action* karazhan_prince_malchezaar_main_tank(PlayerbotAI* botAI) { return new KarazhanPrinceMalchezaarMainTankAction(botAI); }
 };
 
 #endif

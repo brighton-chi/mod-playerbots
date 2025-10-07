@@ -10,10 +10,10 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class KarazhanBigBadWolfMultiplier : public Multiplier
+class KarazhanTheCuratorMultiplier : public Multiplier
 {
 public:
-    KarazhanBigBadWolfMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "karazhan big bad wolf multiplier") {}
+    KarazhanTheCuratorMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "karazhan the curator multiplier") {}
     virtual float GetValue(Action* action);
 };
 

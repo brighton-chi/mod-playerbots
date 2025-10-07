@@ -29,9 +29,10 @@ Creature* GetChanneler(Player* bot, uint32 dbGuid)
 
 namespace MagtheridonTankSpots
 {
-    const TankSpot Magtheridon = { -52.391f, 30.373f, -0.406f, 5.246f };
-    const TankSpot NWChanneler = { -11.764f, 30.818f, -0.411f, 0.0f };
-    const TankSpot NEChanneler = { -12.490f, -26.211f, -0.411f, 0.0f };
+    const TankSpot WaitingForMagtheridon = {  -3.312f,   1.857f, -0.406f, 3.149f };
+    const TankSpot Magtheridon =           {  23.624f,   1.905f, -0.406f, 3.189f };
+    const TankSpot NWChanneler =           { -11.764f,  30.818f, -0.411f,   0.0f };
+    const TankSpot NEChanneler =           { -12.490f, -26.211f, -0.411f,   0.0f };
 }
 
 const std::vector<uint32> MANTICRON_CUBE_DB_GUIDS = { 43157, 43158, 43159, 43160, 43161 };

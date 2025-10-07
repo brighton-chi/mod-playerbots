@@ -5,10 +5,10 @@
 #include "AttackAction.h"
 #include "MovementActions.h"
 
-class MagtheridonHellfireChannelerMagtheridonTankAction : public AttackAction
+class MagtheridonHellfireChannelerMainTankAction : public AttackAction
 {
 public:
-    MagtheridonHellfireChannelerMagtheridonTankAction(PlayerbotAI* botAI, std::string const name = "magtheridon hellfire channeler magtheridon tank") : AttackAction(botAI, name) {};
+    MagtheridonHellfireChannelerMainTankAction(PlayerbotAI* botAI, std::string const name = "magtheridon hellfire channeler main tank") : AttackAction(botAI, name) {};
 
     bool Execute(Event event) override;
     bool isUseful() override;

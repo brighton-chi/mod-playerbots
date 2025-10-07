@@ -16,7 +16,7 @@ enum class MagtheridonSpells
     SHADOW_CAGE        = 30205,
     BLAST_NOVA         = 30616,
     // BLAST_NOVA_CHANNEL = 30613,
-    // SHADOW_GRASP      = 30410,
+    SHADOW_GRASP      = 30410,
     // MIND_EXHAUSTION   = 44032,
     // DEBRIS_TARGET     = 30629,
     // DEBRIS_SPAWN      = 30630,
@@ -68,6 +68,7 @@ struct TankSpot
 
 namespace MagtheridonTankSpots 
 {
+    extern const TankSpot WaitingForMagtheridon;
     extern const TankSpot Magtheridon;
     extern const TankSpot NWChanneler;
     extern const TankSpot NEChanneler;

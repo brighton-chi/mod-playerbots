@@ -9,7 +9,7 @@ class RaidMagtheridonActionContext : public NamedObjectContext<Action>
 public:
     RaidMagtheridonActionContext()
     {
-        creators["magtheridon hellfire channeler magtheridon tank"] = &RaidMagtheridonActionContext::magtheridon_hellfire_channeler_magtheridon_tank;
+        creators["magtheridon hellfire channeler main tank"] = &RaidMagtheridonActionContext::magtheridon_hellfire_channeler_main_tank;
         creators["magtheridon hellfire channeler northwest channeler tank"] = &RaidMagtheridonActionContext::magtheridon_hellfire_channeler_nw_channeler_tank;
         creators["magtheridon hellfire channeler northeast channeler tank"] = &RaidMagtheridonActionContext::magtheridon_hellfire_channeler_ne_channeler_tank;
         creators["magtheridon hellfire channeler misdirection"] = &RaidMagtheridonActionContext::magtheridon_hellfire_channeler_misdirection;
@@ -22,7 +22,7 @@ public:
     }
 
 private:
-    static Action* magtheridon_hellfire_channeler_magtheridon_tank(PlayerbotAI* botAI) { return new MagtheridonHellfireChannelerMagtheridonTankAction(botAI); }
+    static Action* magtheridon_hellfire_channeler_main_tank(PlayerbotAI* botAI) { return new MagtheridonHellfireChannelerMainTankAction(botAI); }
     static Action* magtheridon_hellfire_channeler_nw_channeler_tank(PlayerbotAI* botAI) { return new MagtheridonHellfireChannelerNWChannelerTankAction(botAI); }
     static Action* magtheridon_hellfire_channeler_ne_channeler_tank(PlayerbotAI* botAI) { return new MagtheridonHellfireChannelerNEChannelerTankAction(botAI); }
     static Action* magtheridon_hellfire_channeler_misdirection(PlayerbotAI* botAI) { return new MagtheridonHellfireChannelerMisdirectionAction(botAI); }

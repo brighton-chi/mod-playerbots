@@ -16,7 +16,7 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode(
         "karazhan maiden of virtue", NextAction::array(0,
         new NextAction("karazhan maiden of virtue position ranged", ACTION_RAID + 1),
-        new NextAction("karazhan maiden of virtue position boss", ACTION_RAID + 1),
+        new NextAction("karazhan maiden of virtue main tank", ACTION_RAID + 1),
         nullptr)));
 
     triggers.push_back(new TriggerNode(
@@ -68,14 +68,14 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode(
         "karazhan prince malchezaar", NextAction::array(0,
         new NextAction("karazhan prince malchezaar non tank avoid hazard", ACTION_EMERGENCY + 6),
-        new NextAction("karazhan prince malchezaar tank avoid hazard", ACTION_EMERGENCY + 6),
+        new NextAction("karazhan prince malchezaar main tank", ACTION_EMERGENCY + 6),
         nullptr)));
 }
 
 void RaidKarazhanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     multipliers.push_back(new KarazhanAttumenTheHuntsmanMultiplier(botAI));
-    multipliers.push_back(new KarazhanBigBadWolfMultiplier(botAI));
+    multipliers.push_back(new KarazhanTheCuratorMultiplier(botAI));
     multipliers.push_back(new KarazhanShadeOfAranMultiplier(botAI));
     multipliers.push_back(new KarazhanNetherspiteBlueAndGreenBeamMultiplier(botAI));
     multipliers.push_back(new KarazhanNetherspiteRedBeamMultiplier(botAI));
