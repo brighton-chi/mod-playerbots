@@ -231,34 +231,25 @@ bool MagtheridonHellfireChannelerMisdirectionAction::Execute(Event event)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || member->getClass() != CLASS_HUNTER)
+        if (member && member->IsAlive() && member->getClass() == CLASS_HUNTER && GET_PLAYERBOT_AI(member))
+            hunters.push_back(member);
+    }
+
+    int hunterIndex = -1;
+    for (size_t i = 0; i < hunters.size(); ++i)
+    {
+        if (hunters[i] == bot)
         {
-            continue;
-        }
-        hunters.push_back(member);
-        if (hunters.size() == 2)
-        {
+            hunterIndex = static_cast<int>(i);
             break;
         }
     }
-
-    if (hunters.empty())
-    {
-        return false;
-    }
-
-    Player* firstHunter = hunters[0];
-    Player* secondHunter = hunters[1];
-
+    
     Player* mainTank = nullptr;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive())
-        {
-            continue;
-        }
-        if (botAI->IsMainTank(member))
+        if (member && member->IsAlive() && botAI->IsMainTank(member))
         {
             mainTank = member;
             break;
@@ -269,45 +260,44 @@ bool MagtheridonHellfireChannelerMisdirectionAction::Execute(Event event)
     Creature* channelerCircle = GetChanneler(bot, EAST_CHANNELER);
 
     bool actionTaken = false;
-
-    if (bot == firstHunter && mainTank && channelerStar && channelerStar->IsAlive())
+    switch (hunterIndex)
     {
-        if (channelerStar->GetVictim() != mainTank)
-        {
-            if (botAI->CanCastSpell("misdirection", mainTank))
-                botAI->CastSpell("misdirection", mainTank);
-
-            if (!bot->HasAura(static_cast<uint32>(MagtheridonSpells::MISDIRECTION)))
+        case 0:
+            if (mainTank && channelerStar && channelerStar->IsAlive() && channelerStar->GetVictim() != mainTank)
             {
-                return actionTaken;
-            }
+                if (botAI->CanCastSpell("misdirection", mainTank))
+                    botAI->CastSpell("misdirection", mainTank);
 
-            if (botAI->CanCastSpell("steady shot", channelerStar))
+                if (!bot->HasAura(static_cast<uint32>(MagtheridonSpells::MISDIRECTION)))
+                    return actionTaken;
+
+                if (botAI->CanCastSpell("steady shot", channelerStar))
+                {
+                    botAI->CastSpell("steady shot", channelerStar);
+                    actionTaken = true;
+                }
+            }
+            break;
+
+        case 1:
+            if (mainTank && channelerCircle && channelerCircle->IsAlive() && channelerCircle->GetVictim() != mainTank)
             {
-                botAI->CastSpell("steady shot", channelerStar);
-                actionTaken = true;
-            }
-        }
-    }
+                if (botAI->CanCastSpell("misdirection", mainTank))
+                    botAI->CastSpell("misdirection", mainTank);
 
-    if (bot == secondHunter && mainTank && channelerCircle && channelerCircle->IsAlive())
-    {
-        if (channelerCircle->GetVictim() != mainTank)
-        {
-            if (botAI->CanCastSpell("misdirection", mainTank))
-                botAI->CastSpell("misdirection", mainTank);
+                if (!bot->HasAura(static_cast<uint32>(MagtheridonSpells::MISDIRECTION)))
+                    return actionTaken;
 
-            if (!bot->HasAura(static_cast<uint32>(MagtheridonSpells::MISDIRECTION)))
-            {
-                return actionTaken;
+                if (botAI->CanCastSpell("steady shot", channelerCircle))
+                {
+                    botAI->CastSpell("steady shot", channelerCircle);
+                    actionTaken = true;
+                }
             }
+            break;
 
-            if (botAI->CanCastSpell("steady shot", channelerCircle))
-            {
-                botAI->CastSpell("steady shot", channelerCircle);
-                actionTaken = true;
-            }
-        }
+        default:
+            break;
     }
 
     return actionTaken;
@@ -319,8 +309,8 @@ bool MagtheridonHellfireChannelerMisdirectionAction::isUseful()
     Creature* channelerStar = GetChanneler(bot, WEST_CHANNELER);
     Creature* channelerCircle = GetChanneler(bot, EAST_CHANNELER);
 
-    return group && (channelerStar && channelerStar->IsAlive() || 
-           channelerCircle && channelerCircle->IsAlive());
+    return group && bot->getClass() == CLASS_HUNTER && 
+           (channelerStar && channelerStar->IsAlive() || channelerCircle && channelerCircle->IsAlive());
 }
 
 bool MagtheridonHellfireChannelerDPSPriorityAction::Execute(Event event)
@@ -748,7 +738,7 @@ bool MagtheridonSpreadRangedAction::isUseful()
     if (magtheridon)
     {
         UpdateTransitionTimer(magtheridon, magtheridon->HasAura(static_cast<uint32>(MagtheridonSpells::SHADOW_CAGE)), 
-                            lastShadowCageState, magtheridonBlastNovaTimer);
+                              lastShadowCageState, magtheridonBlastNovaTimer);
     }
 
     Group* group = bot->GetGroup();
@@ -894,7 +884,7 @@ bool MagtheridonSpreadHealerAction::isUseful()
     if (magtheridon)
     {
         UpdateTransitionTimer(magtheridon, magtheridon->HasAura(static_cast<uint32>(MagtheridonSpells::SHADOW_CAGE)), 
-                            lastShadowCageState, magtheridonBlastNovaTimer);
+                              lastShadowCageState, magtheridonBlastNovaTimer);
     }
 
     Group* group = bot->GetGroup();
