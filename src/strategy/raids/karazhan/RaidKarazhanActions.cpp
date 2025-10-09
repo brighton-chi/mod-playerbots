@@ -27,7 +27,7 @@ bool KarazhanAttumenTheHuntsmanStackBehindAction::Execute(Event event)
 
     if (bot->GetExactDist2d(rx, ry) > 1.0f)
     {
-        return MoveTo(bot->GetMapId(), rx, ry, z, false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
+        return MoveTo(bot->GetMapId(), rx, ry, z, false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
     return false;
@@ -92,7 +92,7 @@ bool KarazhanMaidenOfVirtueMainTankAction::Execute(Event event)
             bot->InterruptNonMeleeSpells(false);
 
             return MoveTo(bot->GetMapId(), targetX, targetY, targetZ, false, false, false, false,
-                          MovementPriority::MOVEMENT_COMBAT);
+                          MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
 
@@ -109,7 +109,7 @@ bool KarazhanMaidenOfVirtueMainTankAction::Execute(Event event)
             bot->InterruptNonMeleeSpells(false);
 
             return MoveTo(bot->GetMapId(), mX, mY,
-                          bot->GetPositionZ(), false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
+                          bot->GetPositionZ(), false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
 
@@ -159,7 +159,7 @@ bool KarazhanMaidenOfVirtuePositionRangedAction::Execute(Event event)
 
         return MoveTo(bot->GetMapId(), KARAZHAN_MAIDEN_OF_VIRTUE_RANGED_POSITION[index].GetPositionX(),
                       KARAZHAN_MAIDEN_OF_VIRTUE_RANGED_POSITION[index].GetPositionY(), bot->GetPositionZ(), false,
-                      false, false, false, MovementPriority::MOVEMENT_COMBAT);
+                      false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
     return false;
@@ -200,7 +200,7 @@ bool KarazhanBigBadWolfPositionBossAction::Execute(Event event)
             }
 
             return MoveTo(bot->GetMapId(), mX, mY, bot->GetPositionZ(), false, false, false, false,
-                          MovementPriority::MOVEMENT_COMBAT);
+                          MovementPriority::MOVEMENT_COMBAT, true, false);
         }
 
         float orientation = atan2(boss->GetPositionY() - bot->GetPositionY(), 
@@ -344,7 +344,7 @@ bool KarazhanTheCuratorPositionBossAction::Execute(Event event)
             float mY = KARAZHAN_THE_CURATOR_BOSS_POSITION.GetPositionY() + (dY / distanceToBossPosition) * maxDistance;
             {
                 return MoveTo(bot->GetMapId(), mX, mY, bot->GetPositionZ(), false, false, false, false, 
-                              MovementPriority::MOVEMENT_COMBAT);
+                              MovementPriority::MOVEMENT_COMBAT, true, false);
             }
         }
     }
@@ -487,7 +487,7 @@ bool KarazhanShadeOfAranSpreadRangedAction::Execute(Event event)
         float tY = boss->GetPositionY() + dY * maxBossDistance;
         {
             return MoveTo(bot->GetMapId(), tX, tY, bot->GetPositionZ(), false, false, false, false,
-                          MovementPriority::MOVEMENT_COMBAT);
+                          MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
 
@@ -555,7 +555,7 @@ bool KarazhanNetherspiteBlockRedBeamAction::Execute(Event event)
         if (!lastBeamMoveSideways[botGuid]) 
         {
             return MoveTo(bot->GetMapId(), beamPos.GetPositionX(), beamPos.GetPositionY(), beamPos.GetPositionZ(), 
-                          false, false, false, false, MovementPriority::MOVEMENT_FORCED);
+                          false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
         } 
         else 
         {
@@ -580,7 +580,7 @@ bool KarazhanNetherspiteBlockRedBeamAction::Execute(Event event)
             float sideZ = beamPos.GetPositionZ();
 
             return MoveTo(bot->GetMapId(), sideX, sideY, sideZ, false, false, false, false, 
-                          MovementPriority::MOVEMENT_FORCED);
+                          MovementPriority::MOVEMENT_FORCED, true, false);
         }
     }
 
@@ -700,7 +700,7 @@ bool KarazhanNetherspiteBlockBlueBeamAction::Execute(Event event)
             bot->InterruptNonMeleeSpells(false);
 
             return MoveTo(bot->GetMapId(), bestPos.GetPositionX(), bestPos.GetPositionY(), bestPos.GetPositionZ(),
-                          false, false, false, false, MovementPriority::MOVEMENT_FORCED);
+                          false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
         }
 
         return false;
@@ -810,7 +810,7 @@ bool KarazhanNetherspiteBlockGreenBeamAction::Execute(Event event)
             bot->InterruptNonMeleeSpells(false);
 
             return MoveTo(bot->GetMapId(), bestPos.GetPositionX(), bestPos.GetPositionY(), bestPos.GetPositionZ(), 
-                          false, false, false, false, MovementPriority::MOVEMENT_FORCED);
+                          false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
         }
 
         return false;
@@ -963,7 +963,7 @@ bool KarazhanNetherspiteAvoidBeamAndVoidZoneAction::Execute(Event event)
         bot->InterruptNonMeleeSpells(false);
 
         return MoveTo(bot->GetMapId(), bestCandidate.GetPositionX(), bestCandidate.GetPositionY(), 
-                      bestCandidate.GetPositionZ(), false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
+                      bestCandidate.GetPositionZ(), false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
     }
     
     return false;
@@ -1079,7 +1079,7 @@ bool KarazhanPrinceMalchezaarNonTankAvoidHazardAction::Execute(Event event)
             bot->InterruptNonMeleeSpells(false);
 
             return MoveTo(bot->GetMapId(), bestDestX, bestDestY, bestDestZ, false, false, false, false, 
-                          MovementPriority::MOVEMENT_FORCED);
+                          MovementPriority::MOVEMENT_FORCED, true, false);
         }
 
         return false;
@@ -1148,7 +1148,7 @@ bool KarazhanPrinceMalchezaarNonTankAvoidHazardAction::Execute(Event event)
                 bot->InterruptNonMeleeSpells(false);
 
                 return MoveTo(bot->GetMapId(), bestDestX, bestDestY, bestDestZ, false, false, false, false, 
-                              MovementPriority::MOVEMENT_COMBAT);
+                              MovementPriority::MOVEMENT_COMBAT, true, false);
             }
         }
     }
@@ -1287,7 +1287,7 @@ bool KarazhanPrinceMalchezaarMainTankAction::Execute(Event event)
             bot->InterruptNonMeleeSpells(false);
 
             return MoveTo(bot->GetMapId(), bestDestX, bestDestY, bestDestZ, false, false, false, false, 
-                          MovementPriority::MOVEMENT_COMBAT);
+                          MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
 
