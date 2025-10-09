@@ -8,10 +8,7 @@
 #include "ObjectGuid.h"
 #include "Playerbots.h"
 
-#include "Log.h"
-
 using namespace MagtheridonHelpers;
-// static std::unordered_map<uint32, time_t> magtheridonSpreadWaitTimer;
 static std::unordered_map<uint32, time_t> magtheridonBlastNovaTimer;
 
 bool MagtheridonHellfireChannelerMainTankAction::Execute(Event event)
@@ -48,7 +45,7 @@ bool MagtheridonHellfireChannelerMainTankAction::Execute(Event event)
         if (!bot->IsWithinDist2d(spot.x, spot.y, 2.0f))
         {
             return MoveTo(bot->GetMapId(), spot.x, spot.y, spot.z, false, false, false, false, 
-                          MovementPriority::MOVEMENT_COMBAT);
+                          MovementPriority::MOVEMENT_COMBAT, true, false);
         }
         bot->SetFacingTo(spot.orientation);
         return true;
@@ -149,7 +146,7 @@ bool MagtheridonHellfireChannelerNWChannelerTankAction::Execute(Event event)
             const float moveZ = spot.z;
             {
                 return MoveTo(bot->GetMapId(), moveX, moveY, moveZ, false, false, false, false, 
-                              MovementPriority::MOVEMENT_COMBAT);
+                              MovementPriority::MOVEMENT_COMBAT, true, false);
             }
         }
     }
@@ -211,7 +208,7 @@ bool MagtheridonHellfireChannelerNEChannelerTankAction::Execute(Event event)
             const float moveZ = spot.z;
             {
                 return MoveTo(bot->GetMapId(), moveX, moveY, moveZ, false, false, false, false, 
-                              MovementPriority::MOVEMENT_COMBAT);
+                              MovementPriority::MOVEMENT_COMBAT, true, false);
             }
         }
     }
@@ -609,7 +606,7 @@ bool MagtheridonPositionBossAction::Execute(Event event)
             const float moveZ = spot.z;
             {
                 return MoveTo(bot->GetMapId(), moveX, moveY, moveZ, false, false, false, false, 
-                              MovementPriority::MOVEMENT_COMBAT);
+                              MovementPriority::MOVEMENT_COMBAT, true, false);
             }
         }
 
@@ -974,7 +971,6 @@ bool MagtheridonUseManticronCubeAction::Execute(Event event)
     magtheridon->FindCurrentSpellBySpellId(static_cast<uint32>(MagtheridonSpells::BLAST_NOVA));
     if (now - lastBlastNova < 49)
     {
-        LOG_DEBUG("playerbots", "CubeAction: Bot {} idle for first 49s, elapsed={}s", bot->GetName(), now - lastBlastNova);
         return false;
     }
 
@@ -985,7 +981,6 @@ bool MagtheridonUseManticronCubeAction::Execute(Event event)
 
         if (fabs(cubeDist - safeWaitDistance) > 0.5f) 
         {
-            LOG_DEBUG("playerbots", "CubeAction: Bot {} not at safe wait location, searching for safe spot", bot->GetName());
             for (int i = 0; i < 12; ++i)
             {
                 float angle = i * M_PI / 6.0f;
@@ -995,24 +990,21 @@ bool MagtheridonUseManticronCubeAction::Execute(Event event)
 
                 if (IsSafeFromMagtheridonHazards(botAI, bot, targetX, targetY, targetZ))
                 {
-                    LOG_DEBUG("playerbots", "CubeAction: Bot {} moving to safe wait spot ({}, {})", bot->GetName(), targetX, targetY);
                     bot->AttackStop();
                     bot->InterruptNonMeleeSpells(false);
                     return MoveTo(bot->GetMapId(), targetX, targetY, targetZ, false, false, false, false, 
-                                  MovementPriority::MOVEMENT_COMBAT);
+                                  MovementPriority::MOVEMENT_COMBAT, true, false);
                 }
             }
             float angle = static_cast<float>(rand()) / RAND_MAX * 2.0f * M_PI;
             float fallbackX = cubeInfo.x + cos(angle) * safeWaitDistance;
             float fallbackY = cubeInfo.y + sin(angle) * safeWaitDistance;
             float fallbackZ = bot->GetPositionZ();
-            LOG_DEBUG("playerbots", "CubeAction: Bot {} fallback to wait spot ({}, {})", bot->GetName(), fallbackX, fallbackY);
             return MoveTo(bot->GetMapId(), fallbackX, fallbackY, fallbackZ, false, false, false, false, 
-                          MovementPriority::MOVEMENT_COMBAT);
+                          MovementPriority::MOVEMENT_COMBAT, true, false);
         }
         else
         {
-            LOG_DEBUG("playerbots", "CubeAction: Bot {} at safe wait location, idling", bot->GetName());
             return true;
         }
     }
@@ -1020,13 +1012,11 @@ bool MagtheridonUseManticronCubeAction::Execute(Event event)
     const float interactDistance = 1.0f;
     const float interactDistanceBuffer = 1.0f;
     float cubeDist = bot->GetExactDist2d(cubeInfo.x, cubeInfo.y);
-    LOG_DEBUG("playerbots", "CubeAction: Bot {} entering cube use logic, cubeDist={}", bot->GetName(), cubeDist);
 
     if (cubeDist > interactDistance) 
     {
         if (cubeDist <= interactDistance + interactDistanceBuffer) 
         {
-            LOG_DEBUG("playerbots", "CubeAction: Bot {} close enough to use cube, scheduling use", bot->GetName());
             uint32 delay = urand(200, 1900);
             botAI->AddTimedEvent(
                 [this, cube]
@@ -1039,7 +1029,6 @@ bool MagtheridonUseManticronCubeAction::Execute(Event event)
             return true;
         }
         
-        LOG_DEBUG("playerbots", "CubeAction: Bot {} moving to cube at ({}, {})", bot->GetName(), cubeInfo.x, cubeInfo.y);
         float angle = atan2(cubeInfo.y - bot->GetPositionY(), cubeInfo.x - bot->GetPositionX());
         float targetX = cubeInfo.x - cos(angle) * interactDistance;
         float targetY = cubeInfo.y - sin(angle) * interactDistance;
@@ -1048,7 +1037,7 @@ bool MagtheridonUseManticronCubeAction::Execute(Event event)
         bot->InterruptNonMeleeSpells(false);
 
         return MoveTo(bot->GetMapId(), targetX, targetY, targetZ, false, false, false, false, 
-                      MovementPriority::MOVEMENT_FORCED);
+                      MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
     return false;

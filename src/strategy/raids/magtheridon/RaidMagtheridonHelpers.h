@@ -15,14 +15,7 @@ enum class MagtheridonSpells
     // Magtheridon
     SHADOW_CAGE        = 30205,
     BLAST_NOVA         = 30616,
-    // BLAST_NOVA_CHANNEL = 30613,
     SHADOW_GRASP      = 30410,
-    // MIND_EXHAUSTION   = 44032,
-    // DEBRIS_TARGET     = 30629,
-    // DEBRIS_SPAWN      = 30630,
-    // DEBRIS_DAMAGE     = 30631,
-    // DEBRIS_VISUAL     = 30632,
-    // CONFLAGRATION     = 30757,
 
     // Warlock
     BANISH             = 18647,

@@ -149,7 +149,7 @@ void UpdateTransitionTimer(Unit* unit, bool transitionCondition, std::unordered_
 
 bool IsSafeFromMagtheridonHazards(PlayerbotAI* botAI, Player* bot, float x, float y, float z)
 {
-    // Debris: NPC 17474, 9 yard radius
+    // Debris
     std::vector<Unit*> debrisHazards;
     const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
     for (const auto& npcGuid : npcs)
@@ -170,7 +170,7 @@ bool IsSafeFromMagtheridonHazards(PlayerbotAI* botAI, Player* bot, float x, floa
         }
     }
 
-    // Conflagration: GameObject 181832, 5 yard radius
+    // Conflagration
     GuidVector gos = *botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest game objects");
     for (const auto& goGuid : gos)
     {
