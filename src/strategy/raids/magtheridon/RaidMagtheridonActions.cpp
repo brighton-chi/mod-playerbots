@@ -242,7 +242,7 @@ bool MagtheridonHellfireChannelerMisdirectionAction::Execute(Event event)
         }
     }
 
-    if (hunters.size() < 2)
+    if (hunters.empty())
     {
         return false;
     }
@@ -250,7 +250,7 @@ bool MagtheridonHellfireChannelerMisdirectionAction::Execute(Event event)
     Player* firstHunter = hunters[0];
     Player* secondHunter = hunters[1];
 
-    Player* magtheridonTank = nullptr;
+    Player* mainTank = nullptr;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
@@ -260,7 +260,7 @@ bool MagtheridonHellfireChannelerMisdirectionAction::Execute(Event event)
         }
         if (botAI->IsMainTank(member))
         {
-            magtheridonTank = member;
+            mainTank = member;
             break;
         }
     }
@@ -270,12 +270,12 @@ bool MagtheridonHellfireChannelerMisdirectionAction::Execute(Event event)
 
     bool actionTaken = false;
 
-    if (bot == firstHunter && magtheridonTank && channelerStar && channelerStar->IsAlive())
+    if (bot == firstHunter && mainTank && channelerStar && channelerStar->IsAlive())
     {
-        if (channelerStar->GetVictim() != magtheridonTank)
+        if (channelerStar->GetVictim() != mainTank)
         {
-            if (botAI->CanCastSpell("misdirection", magtheridonTank))
-                botAI->CastSpell("misdirection", magtheridonTank);
+            if (botAI->CanCastSpell("misdirection", mainTank))
+                botAI->CastSpell("misdirection", mainTank);
 
             if (!bot->HasAura(static_cast<uint32>(MagtheridonSpells::MISDIRECTION)))
             {
@@ -290,12 +290,12 @@ bool MagtheridonHellfireChannelerMisdirectionAction::Execute(Event event)
         }
     }
 
-    if (bot == secondHunter && magtheridonTank && channelerCircle && channelerCircle->IsAlive())
+    if (bot == secondHunter && mainTank && channelerCircle && channelerCircle->IsAlive())
     {
-        if (channelerCircle->GetVictim() != magtheridonTank)
+        if (channelerCircle->GetVictim() != mainTank)
         {
-            if (botAI->CanCastSpell("misdirection", magtheridonTank))
-                botAI->CastSpell("misdirection", magtheridonTank);
+            if (botAI->CanCastSpell("misdirection", mainTank))
+                botAI->CastSpell("misdirection", mainTank);
 
             if (!bot->HasAura(static_cast<uint32>(MagtheridonSpells::MISDIRECTION)))
             {
@@ -645,8 +645,6 @@ bool MagtheridonSpreadRangedAction::Execute(Event event)
         hasReachedInitialPosition.clear();
     }
 
-    // const float spreadCenterX = -19.804f;
-    // const float spreadCenterY = 0.708f;
     const float spreadCenterX = -15.585;
     const float spreadCenterY = 1.761f;
 
@@ -749,8 +747,6 @@ bool MagtheridonSpreadRangedAction::isUseful()
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
     if (magtheridon)
     {
-        /* UpdateTransitionTimer(magtheridon, magtheridon->HasAura(static_cast<uint32>(MagtheridonSpells::SHADOW_CAGE)), 
-                            lastShadowCageState, magtheridonSpreadWaitTimer); */
         UpdateTransitionTimer(magtheridon, magtheridon->HasAura(static_cast<uint32>(MagtheridonSpells::SHADOW_CAGE)), 
                             lastShadowCageState, magtheridonBlastNovaTimer);
     }
@@ -761,17 +757,6 @@ bool MagtheridonSpreadRangedAction::isUseful()
     {
         return false;
     }
-
-    /* const int spreadWaitSeconds = 5;
-    auto it = magtheridonSpreadWaitTimer.find(bot->GetMapId());
-    if (it != magtheridonSpreadWaitTimer.end())
-    {
-        time_t since = time(nullptr) - it->second;
-        if (since < spreadWaitSeconds)
-        {
-            return false;
-        }
-    } */
 
     auto cubeIt = botToCubeAssignment.find(bot->GetGUID());
     if (cubeIt != botToCubeAssignment.end())

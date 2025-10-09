@@ -73,13 +73,13 @@ std::unordered_map<ObjectGuid, CubeInfo> botToCubeAssignment;
 void AssignBotsToCubesByGuidAndCoords(Group* group, const std::vector<CubeInfo>& cubes, PlayerbotAI* botAI)
 {
     botToCubeAssignment.clear();
-    size_t cubeIndex = 0;
-    std::vector<Player*> candidates;
-
     if (!group)
     {
         return;
     }
+
+    size_t cubeIndex = 0;
+    std::vector<Player*> candidates;
 
     for (GroupReference* ref = group->GetFirstMember(); ref && cubeIndex < cubes.size(); ref = ref->next())
     {
@@ -90,27 +90,15 @@ void AssignBotsToCubesByGuidAndCoords(Group* group, const std::vector<CubeInfo>&
             continue;
         }
         candidates.push_back(member);
+        if (candidates.size() >= cubes.size()) break;
     }
+
     if (candidates.size() < cubes.size())
     {
-        Player* magtheridonTank = nullptr;
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member))
-            {
-                continue;
-            }
-            if (botAI->IsMainTank(member))
-            {
-                magtheridonTank = member;
-                break;
-            }
-        }
         for (GroupReference* ref = group->GetFirstMember(); ref && candidates.size() < cubes.size(); ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || member == magtheridonTank)
+            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) || botAI->IsTank(member))
             {
                 continue;
             }
@@ -118,6 +106,7 @@ void AssignBotsToCubesByGuidAndCoords(Group* group, const std::vector<CubeInfo>&
                 candidates.push_back(member);
         }
     }
+
     for (Player* member : candidates)
     {
         if (cubeIndex >= cubes.size())
