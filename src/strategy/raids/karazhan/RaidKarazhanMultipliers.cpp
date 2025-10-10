@@ -5,6 +5,8 @@
 #include "ChooseTargetActions.h"
 #include "DruidBearActions.h"
 #include "DruidCatActions.h"
+#include "HunterActions.h"
+#include "MageActions.h"
 #include "Playerbots.h"
 #include "RogueActions.h"
 #include "WarriorActions.h"
@@ -21,9 +23,24 @@ float KarazhanAttumenTheHuntsmanMultiplier::GetValue(Action* action)
 {
     RaidKarazhanHelpers karazhanHelper(botAI);
     Unit* boss = karazhanHelper.GetFirstAliveUnitByEntry(static_cast<uint32>(KarazhanNpcs::ATTUMEN_THE_HUNTSMAN_MOUNTED));
-    if (boss && !botAI->IsMainTank(bot) && boss->GetVictim() != bot &&
-       (dynamic_cast<CombatFormationMoveAction*>(action) ||
-       dynamic_cast<FleeAction*>(action)))
+    if (!boss)
+    {
+        return 1.0f;
+    }
+
+    if (!botAI->IsMainTank(bot) && boss->GetVictim() != bot &&
+        (dynamic_cast<CombatFormationMoveAction*>(action) || 
+         dynamic_cast<FleeAction*>(action) || 
+         dynamic_cast<CastBlinkBackAction*>(action) || 
+         dynamic_cast<CastDisengageAction*>(action)))
+    {
+        return 0.0f;
+    }
+
+    Unit* victim = boss->GetVictim();
+    Player* victimPlayer = victim ? victim->ToPlayer() : nullptr;
+    if (!botAI->IsMainTank(bot) && victimPlayer && !botAI->IsMainTank(victimPlayer) && 
+        (dynamic_cast<AttackAction*>(action) || (!botAI->IsHeal(victimPlayer) && dynamic_cast<CastSpellAction*>(action))))
     {
         return 0.0f;
     }
@@ -243,7 +260,16 @@ float KarazhanNetherspiteWaitForDPSMultiplier::GetValue(Action* action)
         return 1.0f;
     }
 
-    bool tankHasRedBeam = false;
+    Unit* victim = boss->GetVictim();
+    Player* victimPlayer = victim ? victim->ToPlayer() : nullptr;
+    if (!botAI->IsTank(bot) && victimPlayer && !botAI->IsTank(victimPlayer) && 
+        !boss->HasAura(static_cast<uint32>(KarazhanSpells::NETHERSPITE_BANISHED)) &&
+        (dynamic_cast<AttackAction*>(action) || (!botAI->IsHeal(victimPlayer) && dynamic_cast<CastSpellAction*>(action))))
+    {
+        return 0.0f;
+    }
+
+    /* bool tankHasRedBeam = false;
     Group* group = bot->GetGroup();
     if (group)
     {
@@ -268,7 +294,7 @@ float KarazhanNetherspiteWaitForDPSMultiplier::GetValue(Action* action)
         {
             return 0.0f;
         }
-    }
+    } */
 
     return 1.0f;
 }
@@ -293,8 +319,7 @@ float KarazhanPrinceMalchezaarMultiplier::GetValue(Action* action)
     }
 
     if (botAI->IsRanged(bot) && bot->HasAura(static_cast<uint32>(KarazhanSpells::ENFEEBLE)) &&
-        (dynamic_cast<MovementAction*>(action) &&
-        !dynamic_cast<KarazhanPrinceMalchezaarNonTankAvoidHazardAction*>(action)))
+        (dynamic_cast<MovementAction*>(action) && !dynamic_cast<KarazhanPrinceMalchezaarNonTankAvoidHazardAction*>(action)))
     {
         return 0.0f;
     }

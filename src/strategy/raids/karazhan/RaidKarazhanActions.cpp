@@ -12,6 +12,57 @@ namespace
     static std::map<ObjectGuid, bool> lastBeamMoveSideways;
 }
 
+bool KarazhanAttumenTheHuntsmanSplitBossesAction::Execute(Event event)
+{
+    Unit* midnight = AI_VALUE2(Unit*, "find target", "midnight");
+    Unit* attumen = AI_VALUE2(Unit*, "find target", "attumen the huntsman");
+    RaidKarazhanHelpers karazhanHelper(botAI);
+
+    karazhanHelper.MarkTargetWithSkull(midnight);
+    karazhanHelper.MarkTargetWithSquare(attumen);
+
+    if (attumen &&
+        (botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != "square" ||
+         botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != attumen))
+    {
+        botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("square");
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(attumen);
+    }
+
+    if (bot->GetVictim() != attumen)
+    {
+        Attack(attumen);
+    }
+
+    if (attumen->GetVictim() == bot)
+    {
+        Group* group = bot->GetGroup();
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || member == bot || !member->IsAlive())
+            {
+                continue;
+            }
+            if (bot->GetExactDist2d(member) < 8.0f)
+            {
+                MoveAway(member, 10.0f, false);
+            }
+        }
+    }
+
+    return false;
+}
+
+bool KarazhanAttumenTheHuntsmanSplitBossesAction::isUseful()
+{
+    Unit* midnight = AI_VALUE2(Unit*, "find target", "midnight");
+    Unit* attumen = AI_VALUE2(Unit*, "find target", "attumen the huntsman");
+    Group* group = bot->GetGroup();
+
+    return attumen && midnight && group && botAI->IsAssistTankOfIndex(bot, 0);
+}
+
 bool KarazhanAttumenTheHuntsmanStackBehindAction::Execute(Event event)
 {
     RaidKarazhanHelpers karazhanHelper(botAI);
@@ -27,7 +78,7 @@ bool KarazhanAttumenTheHuntsmanStackBehindAction::Execute(Event event)
 
     if (bot->GetExactDist2d(rx, ry) > 1.0f)
     {
-        return MoveTo(bot->GetMapId(), rx, ry, z, false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+        return MoveTo(bot->GetMapId(), rx, ry, z, false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
     return false;

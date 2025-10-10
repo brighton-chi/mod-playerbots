@@ -5,6 +5,15 @@
 #include "AttackAction.h"
 #include "MovementActions.h"
 
+class KarazhanAttumenTheHuntsmanSplitBossesAction : public AttackAction
+{
+public:
+    KarazhanAttumenTheHuntsmanSplitBossesAction(PlayerbotAI* botAI, std::string const name = "karazhan attumen the huntsman split bosses") : AttackAction(botAI, name) {}
+
+    bool Execute(Event event) override;
+    bool isUseful() override;
+};
+
 class KarazhanAttumenTheHuntsmanStackBehindAction : public MovementAction
 {
 public:

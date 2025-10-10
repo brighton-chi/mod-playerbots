@@ -64,7 +64,8 @@ float MagtheridonMultiplier::GetValue(Action* action)
             time_t since = time(nullptr) - it->second;
             if (since < aggroWaitSeconds)
             {
-                if (!botAI->IsMainTank(bot) && dynamic_cast<AttackAction*>(action))
+                if (!botAI->IsMainTank(bot) && 
+                    (dynamic_cast<AttackAction*>(action) || (!botAI->IsHeal(bot) && dynamic_cast<CastSpellAction*>(action))))
                 {
                     return 0.0f;
                 }

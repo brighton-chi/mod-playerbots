@@ -5,10 +5,10 @@
 
 bool KarazhanAttumenTheHuntsmanTrigger::IsActive()
 {
-    RaidKarazhanHelpers helpers(botAI);
-    Unit* boss = helpers.GetFirstAliveUnitByEntry(static_cast<uint32>(KarazhanNpcs::ATTUMEN_THE_HUNTSMAN_MOUNTED));
+    Unit* midnight = AI_VALUE2(Unit*, "find target", "midnight");
+    Unit* attumen = AI_VALUE2(Unit*, "find target", "attumen the huntsman");
 
-    return boss && boss->IsAlive();
+    return attumen && attumen->IsAlive() || midnight && midnight->IsAlive();
 }
 
 bool KarazhanMoroesTrigger::IsActive()
@@ -21,13 +21,13 @@ bool KarazhanMoroesTrigger::IsActive()
     Unit* robin = AI_VALUE2(Unit*, "find target", "lord robin daris");
     Unit* crispin = AI_VALUE2(Unit*, "find target", "lord crispin ference");
 
-    return ((moroes && moroes->IsAlive()) ||
-            (dorothea && dorothea->IsAlive()) ||
-            (catriona && catriona->IsAlive()) ||
-            (keira && keira->IsAlive()) ||
-            (rafe && rafe->IsAlive()) ||
-            (robin && robin->IsAlive()) ||
-            (crispin && crispin->IsAlive()));
+    return moroes && moroes->IsAlive() ||
+           dorothea && dorothea->IsAlive() ||
+           catriona && catriona->IsAlive() ||
+           keira && keira->IsAlive() ||
+           rafe && rafe->IsAlive() ||
+           robin && robin->IsAlive() ||
+           crispin && crispin->IsAlive();
 }
 
 bool KarazhanMaidenOfVirtueTrigger::IsActive()
@@ -61,12 +61,12 @@ bool KarazhanWizardOfOzTrigger::IsActive()
     Unit* tinhead = AI_VALUE2(Unit*, "find target", "tinhead");
     Unit* crone = AI_VALUE2(Unit*, "find target", "the crone");
 
-    return ((dorothee && dorothee->IsAlive()) ||
-            (tito && tito->IsAlive()) ||
-            (roar && roar->IsAlive()) ||
-            (strawman && strawman->IsAlive()) ||
-            (tinhead && tinhead->IsAlive()) ||
-            (crone && crone->IsAlive()));
+    return dorothee && dorothee->IsAlive() ||
+           tito && tito->IsAlive() ||
+           roar && roar->IsAlive() ||
+           strawman && strawman->IsAlive() ||
+           tinhead && tinhead->IsAlive() ||
+           crone && crone->IsAlive();
 }
 
 bool KarazhanTheCuratorTrigger::IsActive()

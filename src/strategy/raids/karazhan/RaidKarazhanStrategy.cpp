@@ -6,6 +6,7 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode(
         "karazhan attumen the huntsman", NextAction::array(0,
         new NextAction("karazhan attumen the huntsman stack behind", ACTION_RAID + 1),
+        new NextAction("karazhan attumen the huntsman split bosses", ACTION_RAID + 1),
         nullptr)));
 
     triggers.push_back(new TriggerNode(

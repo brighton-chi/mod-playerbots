@@ -9,6 +9,7 @@ class RaidKarazhanActionContext : public NamedObjectContext<Action>
 public:
     RaidKarazhanActionContext()
     {
+        creators["karazhan attumen the huntsman split bosses"] = &RaidKarazhanActionContext::karazhan_attumen_the_huntsman_split_bosses;
         creators["karazhan attumen the huntsman stack behind"] = &RaidKarazhanActionContext::karazhan_attumen_the_huntsman_stack_behind;
 
         creators["karazhan moroes mark target"] = &RaidKarazhanActionContext::karazhan_moroes_mark_target;
@@ -46,6 +47,7 @@ public:
     }
 
 private:
+    static Action* karazhan_attumen_the_huntsman_split_bosses(PlayerbotAI* botAI) { return new KarazhanAttumenTheHuntsmanSplitBossesAction(botAI); }
     static Action* karazhan_attumen_the_huntsman_stack_behind(PlayerbotAI* botAI) { return new KarazhanAttumenTheHuntsmanStackBehindAction(botAI); }
 
     static Action* karazhan_moroes_mark_target(PlayerbotAI* botAI) { return new KarazhanMoroesMarkTargetAction(botAI); }

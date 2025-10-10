@@ -4,6 +4,7 @@
 #include "RaidKarazhanHelpers.h"
 #include "RaidKarazhanActions.h"
 #include "Playerbots.h"
+#include "RtiTargetValue.h"
 
 const Position KARAZHAN_MAIDEN_OF_VIRTUE_BOSS_POSITION = Position(-10945.881f, -2103.782f, 92.712f);
 const Position KARAZHAN_MAIDEN_OF_VIRTUE_RANGED_POSITION[8] =
@@ -38,12 +39,31 @@ void RaidKarazhanHelpers::MarkTargetWithSkull(Unit* target)
 
     if (Group* group = bot->GetGroup())
     {
-        constexpr uint8_t skullIconId = 7;
+        constexpr uint8_t skullIconId = RtiTargetValue::skullIndex;
         ObjectGuid skullGuid = group->GetTargetIcon(skullIconId);
 
         if (skullGuid != target->GetGUID())
         {
             group->SetTargetIcon(skullIconId, bot->GetGUID(), target->GetGUID());
+        }
+    }
+}
+
+void RaidKarazhanHelpers::MarkTargetWithSquare(Unit* target)
+{
+    if (!target)
+    {
+        return;
+    }
+
+    if (Group* group = bot->GetGroup())
+    {
+        constexpr uint8_t squareIconId = RtiTargetValue::squareIndex;
+        ObjectGuid squareGuid = group->GetTargetIcon(squareIconId);
+
+        if (squareGuid != target->GetGUID())
+        {
+            group->SetTargetIcon(squareIconId, bot->GetGUID(), target->GetGUID());
         }
     }
 }

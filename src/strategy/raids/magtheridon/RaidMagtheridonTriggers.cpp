@@ -9,8 +9,8 @@ bool MagtheridonTrigger::IsActive()
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
     Unit* channeler = AI_VALUE2(Unit*, "find target", "hellfire channeler");
 
-    bool result = (magtheridon && magtheridon->IsAlive() ||
-                  channeler && channeler->IsAlive());
+    bool result = magtheridon && magtheridon->IsAlive() ||
+                  channeler && channeler->IsAlive();
 
     if (!result)
         sPlayerbotAIConfig->sightDistance = originalSightDistance;

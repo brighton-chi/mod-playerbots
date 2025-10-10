@@ -662,13 +662,13 @@ bool MagtheridonSpreadRangedAction::Execute(Event event)
             }
         }
 
-        float arcRadians = 2.0f * M_PI;
-        float startAngle = 0.0f;
+        const float arcRadians = 2.0f * M_PI;
+        const float startAngle = 0.0f;
         float angleStep = raidMembers.size() > 0 ? arcRadians / raidMembers.size() : 0.0f;
         float angle = startAngle + botIndex * angleStep;
 
-        float minRadius = 1.0f;
-        float maxRadius = 25.0f;
+        const float minRadius = 1.0f;
+        const float maxRadius = 25.0f;
         float radius = minRadius + static_cast<float>(rand()) / RAND_MAX * (maxRadius - minRadius);
 
         float targetX = spreadCenterX + radius * cos(angle);
@@ -808,13 +808,13 @@ bool MagtheridonSpreadHealerAction::Execute(Event event)
             }
         }
 
-        float arcRadians = 2.0f * M_PI;
-        float startAngle = 0.0f;
+        const float arcRadians = 2.0f * M_PI;
+        const float startAngle = 0.0f;
         float angleStep = raidMembers.size() > 0 ? arcRadians / raidMembers.size() : 0.0f;
         float angle = startAngle + botIndex * angleStep;
 
-        float minRadius = 1.0f;
-        float maxRadius = 15.0f;
+        const float minRadius = 1.0f;
+        const float maxRadius = 15.0f;
         float radius = minRadius + static_cast<float>(rand()) / RAND_MAX * (maxRadius - minRadius);
 
         float targetX = spreadCenterX + radius * cos(angle);
