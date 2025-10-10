@@ -3,12 +3,16 @@
 #include "RaidKarazhanHelpers.h"
 #include "AttackAction.h"
 #include "ChooseTargetActions.h"
+#include "DruidActions.h"
 #include "DruidBearActions.h"
 #include "DruidCatActions.h"
+#include "GenericActions.h"
 #include "HunterActions.h"
 #include "MageActions.h"
 #include "Playerbots.h"
+#include "PriestActions.h"
 #include "RogueActions.h"
+#include "ShamanActions.h"
 #include "WarriorActions.h"
 
 static bool IsChargeAction(Action* action)
@@ -323,6 +327,73 @@ float KarazhanPrinceMalchezaarMultiplier::GetValue(Action* action)
     {
         return 0.0f;
     }
+
+    return 1.0f;
+}
+
+float KarazhanNightbaneMultiplier::GetValue(Action* action)
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "nightbane");
+    if (!boss || !boss->IsAlive())
+    {
+        return 1.0f;
+    }
+
+    if (dynamic_cast<CastBlinkBackAction*>(action) || 
+        dynamic_cast<CastDisengageAction*>(action) ||
+        dynamic_cast<CastForceOfNatureAction*>(action) ||
+        dynamic_cast<CastFeralSpiritAction*>(action) ||
+        dynamic_cast<CastFireElementalTotemAction*>(action) ||
+        dynamic_cast<CastSummonWaterElementalAction*>(action) ||
+        dynamic_cast<CastShadowfiendAction*>(action) ||
+        dynamic_cast<PetAttackAction*>(action) ||
+        dynamic_cast<FleeAction*>(action))
+    {
+        return 0.0f;
+    }
+
+    Unit* victim = boss->GetVictim();
+    Player* victimPlayer = victim ? victim->ToPlayer() : nullptr;
+    if (!boss->IsFlying() && !botAI->IsMainTank(bot) && victimPlayer && !botAI->IsMainTank(victimPlayer) && 
+        (dynamic_cast<AttackAction*>(action) || (!botAI->IsHeal(victimPlayer) && dynamic_cast<CastSpellAction*>(action))))
+    {
+        return 0.0f;
+    }
+
+    if ((botAI->IsMainTank(bot) || botAI->IsRanged(bot)) && 
+        dynamic_cast<AvoidAoeAction*>(action))
+    {
+        return 0.0f;
+    }
+
+    if (!boss->IsFlying() && 
+        (botAI->IsRanged(bot) || botAI->IsMainTank(bot)) && 
+         dynamic_cast<CombatFormationMoveAction*>(action))
+    {
+        return 0.0f;
+    }
+
+    /* if (botAI->IsMainTank(bot) && boss && boss->GetVictim() == bot && dynamic_cast<MovementAction*>(action))
+    {
+        const float positionThreshold = 1.0f;
+        const float orientationLeeway = 30.0f * M_PI / 180.0f;
+
+        float distanceToTankSpot = bot->GetExactDist2d(KARAZHAN_NIGHTBANE_FINAL_BOSS_POSITION.GetPositionX(),
+                                                       KARAZHAN_NIGHTBANE_FINAL_BOSS_POSITION.GetPositionY());
+
+        float desiredOrientation = atan2(boss->GetPositionY() - bot->GetPositionY(),
+                                        boss->GetPositionX() - bot->GetPositionX());
+        float currentOrientation = bot->GetOrientation();
+        float delta = desiredOrientation - currentOrientation;
+        while (delta > M_PI) delta -= 2 * M_PI;
+        while (delta < -M_PI) delta += 2 * M_PI;
+        float orientationDifference = fabs(delta);
+
+        if (distanceToTankSpot < positionThreshold && orientationDifference < orientationLeeway)
+        {
+            return 0.0f;
+        }
+    } */
 
     return 1.0f;
 }

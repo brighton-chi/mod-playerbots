@@ -41,10 +41,8 @@ bool HighKingMaulgarMaulgarTankAction::Execute(Event event)
             float dY = spot.y - maulgar->GetPositionY();
             float moveX = spot.x + (dX / distanceToMaulgar) * maxDistance;
             float moveY = spot.y + (dY / distanceToMaulgar) * maxDistance;
-            {
-                return MoveTo(bot->GetMapId(), moveX, moveY, spot.z, false, false, false, false, 
-                              MovementPriority::MOVEMENT_COMBAT);
-            }
+            return MoveTo(bot->GetMapId(), moveX, moveY, spot.z, false, false, false, false, 
+                          MovementPriority::MOVEMENT_COMBAT);
         }
 
         float orientation = atan2(maulgar->GetPositionY() - bot->GetPositionY(), 
@@ -104,10 +102,8 @@ bool HighKingMaulgarOlmTankAction::Execute(Event event)
             float dY = spot.y - olm->GetPositionY();
             float moveX = spot.x + (dX / distanceToOlm) * maxDistance;
             float moveY = spot.y + (dY / distanceToOlm) * maxDistance;
-            {
-                return MoveTo(bot->GetMapId(), moveX, moveY, spot.z, false, false, false, false, 
-                              MovementPriority::MOVEMENT_COMBAT);
-            }
+            return MoveTo(bot->GetMapId(), moveX, moveY, spot.z, false, false, false, false, 
+                          MovementPriority::MOVEMENT_COMBAT);
         }
     }
     else if (!bot->IsWithinMeleeRange(olm))
@@ -162,10 +158,8 @@ bool HighKingMaulgarBlindeyeTankAction::Execute(Event event)
             float dY = spot.y - blindeye->GetPositionY();
             float moveX = spot.x + (dX / distanceToBlindeye) * maxDistance;
             float moveY = spot.y + (dY / distanceToBlindeye) * maxDistance;
-            {
-                return MoveTo(bot->GetMapId(), moveX, moveY, spot.z, false, false, false, false, 
-                              MovementPriority::MOVEMENT_COMBAT);
-            }
+            return MoveTo(bot->GetMapId(), moveX, moveY, spot.z, false, false, false, false, 
+                          MovementPriority::MOVEMENT_COMBAT);
         }
 
         float orientation = atan2(blindeye->GetPositionY() - bot->GetPositionY(), 
@@ -728,8 +722,8 @@ bool HighKingMaulgarHunterMisdirectionAction::Execute(Event event)
         {
             continue;
         }
-        if (botAI->IsAssistTankOfIndex(bot, 0)) olmTank = member;
-        if (botAI->IsAssistTankOfIndex(bot, 1)) blindeyeTank = member;
+        else if (botAI->IsAssistTankOfIndex(bot, 0)) olmTank = member;
+        else if (botAI->IsAssistTankOfIndex(bot, 1)) blindeyeTank = member;
     }
 
     switch (hunterIndex)
@@ -756,7 +750,7 @@ bool HighKingMaulgarHunterMisdirectionAction::Execute(Event event)
                 }
                 botAI->CastSpell("steady shot", olm);
             }
-            break;
+            return true;
 
         case 1:
             botAI->CastSpell("misdirection", blindeyeTank);
@@ -764,7 +758,7 @@ bool HighKingMaulgarHunterMisdirectionAction::Execute(Event event)
             {
                 botAI->CastSpell("steady shot", blindeye);
             }
-            break;
+            return true;
             
         default:
             break;
@@ -815,8 +809,8 @@ bool HighKingMaulgarHunterMisdirectionAction::isUseful()
         {
             continue;
         }
-        if (botAI->IsAssistTankOfIndex(bot, 0)) olmTank = member;
-        if (botAI->IsAssistTankOfIndex(bot, 1)) blindeyeTank = member;
+        else if (botAI->IsAssistTankOfIndex(bot, 0)) olmTank = member;
+        else if (botAI->IsAssistTankOfIndex(bot, 1)) blindeyeTank = member;
     }
 
     switch (hunterIndex)

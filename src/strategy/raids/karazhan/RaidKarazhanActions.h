@@ -229,4 +229,58 @@ public:
     bool isUseful() override;
 };
 
+class KarazhanNightbaneGroundPhasePositionBossAction : public AttackAction
+{
+public:
+    KarazhanNightbaneGroundPhasePositionBossAction(PlayerbotAI* botAI, std::string const name = "karazhan nightbane ground phase position boss") : AttackAction(botAI, name) {}
+
+    bool Execute(Event event) override;
+    bool isUseful() override;
+};
+
+/* class KarazhanNightbaneGroundPhasePositionMeleeAction : public MovementAction
+{
+public:
+    KarazhanNightbaneGroundPhasePositionMeleeAction(PlayerbotAI* botAI, std::string const name = "karazhan nightbane ground phase position melee") : MovementAction(botAI, name) {}
+
+    bool Execute(Event event) override;
+    bool isUseful() override;
+}; */
+
+class KarazhanNightbaneGroundPhasePositionRangedAction : public MovementAction
+{
+public:
+    KarazhanNightbaneGroundPhasePositionRangedAction(PlayerbotAI* botAI, std::string const name = "karazhan nightbane ground phase position ranged") : MovementAction(botAI, name) {}
+
+    bool Execute(Event event) override;
+    bool isUseful() override;
+};
+
+class KarazhanNightbaneCastFearWardAction : public Action
+{
+public:
+    KarazhanNightbaneCastFearWardAction(PlayerbotAI* botAI, std::string const name = "karazhan nightbane cast fear ward") : Action(botAI, name) {}
+
+    bool Execute(Event event) override;
+    bool isUseful() override;
+};
+
+class KarazhanNightbaneFlightPhaseAction : public MovementAction
+{
+public:
+    KarazhanNightbaneFlightPhaseAction(PlayerbotAI* botAI, std::string const name = "karazhan nightbane flight phase") : MovementAction(botAI, name) {}
+
+    bool Execute(Event event) override;
+    bool isUseful() override;
+};
+
+class KarazhanNightbaneResetFlightPhaseTimerAction : public Action
+{
+public:
+    KarazhanNightbaneResetFlightPhaseTimerAction(PlayerbotAI* botAI, std::string const name = "karazhan nightbane reset flight phase timer") : Action(botAI, name) {}
+    
+    bool Execute(Event event) override;
+    bool isUseful() override;
+};
+
 #endif

@@ -44,6 +44,13 @@ public:
 
         creators["karazhan prince malchezaar non tank avoid hazard"] = &RaidKarazhanActionContext::karazhan_prince_malchezaar_non_tank_avoid_hazard;
         creators["karazhan prince malchezaar main tank"] = &RaidKarazhanActionContext::karazhan_prince_malchezaar_main_tank;
+
+        creators["karazhan nightbane ground phase position boss"] = &RaidKarazhanActionContext::karazhan_nightbane_ground_phase_position_boss;
+        // creators["karazhan nightbane ground phase position melee"] = &RaidKarazhanActionContext::karazhan_nightbane_ground_phase_position_melee;
+        creators["karazhan nightbane ground phase position ranged"] = &RaidKarazhanActionContext::karazhan_nightbane_ground_phase_position_ranged;
+        creators["karazhan nightbane cast fear ward"] = &RaidKarazhanActionContext::karazhan_nightbane_cast_fear_ward;
+        creators["karazhan nightbane flight phase"] = &RaidKarazhanActionContext::karazhan_nightbane_flight_phase;
+        creators["karazhan nightbane reset flight phase timer"] = &RaidKarazhanActionContext::karazhan_nightbane_reset_flight_phase_timer;
     }
 
 private:
@@ -82,6 +89,13 @@ private:
 
     static Action* karazhan_prince_malchezaar_non_tank_avoid_hazard(PlayerbotAI* botAI) { return new KarazhanPrinceMalchezaarNonTankAvoidHazardAction(botAI); }
     static Action* karazhan_prince_malchezaar_main_tank(PlayerbotAI* botAI) { return new KarazhanPrinceMalchezaarMainTankAction(botAI); }
+
+    static Action* karazhan_nightbane_ground_phase_position_boss(PlayerbotAI* botAI) { return new KarazhanNightbaneGroundPhasePositionBossAction(botAI); }
+    // static Action* karazhan_nightbane_ground_phase_position_melee(PlayerbotAI* botAI) { return new KarazhanNightbaneGroundPhasePositionMeleeAction(botAI); }
+    static Action* karazhan_nightbane_ground_phase_position_ranged(PlayerbotAI* botAI) { return new KarazhanNightbaneGroundPhasePositionRangedAction(botAI); }
+    static Action* karazhan_nightbane_cast_fear_ward(PlayerbotAI* botAI) { return new KarazhanNightbaneCastFearWardAction(botAI); }
+    static Action* karazhan_nightbane_flight_phase(PlayerbotAI* botAI) { return new KarazhanNightbaneFlightPhaseAction(botAI); }
+    static Action* karazhan_nightbane_reset_flight_phase_timer(PlayerbotAI* botAI) { return new KarazhanNightbaneResetFlightPhaseTimerAction(botAI); }
 };
 
 #endif

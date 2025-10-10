@@ -1,6 +1,3 @@
-#include <ctime>
-#include <unordered_map>
-
 #include "RaidMagtheridonActions.h"
 #include "RaidMagtheridonHelpers.h"
 #include "Creature.h"
@@ -594,10 +591,8 @@ bool MagtheridonPositionBossAction::Execute(Event event)
             float moveX = bot->GetPositionX() + (dX / distanceToSpot) * step;
             float moveY = bot->GetPositionY() + (dY / distanceToSpot) * step;
             const float moveZ = spot.z;
-            {
-                return MoveTo(bot->GetMapId(), moveX, moveY, moveZ, false, false, false, false, 
-                              MovementPriority::MOVEMENT_COMBAT, true, false);
-            }
+            return MoveTo(bot->GetMapId(), moveX, moveY, moveZ, false, false, false, false, 
+                          MovementPriority::MOVEMENT_COMBAT, true, false);
         }
 
         float orientation = atan2(magtheridon->GetPositionY() - bot->GetPositionY(),

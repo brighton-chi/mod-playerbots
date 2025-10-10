@@ -80,4 +80,11 @@ public:
     bool IsActive() override;
 };
 
+class KarazhanNightbaneTrigger : public Trigger
+{
+public:
+    KarazhanNightbaneTrigger(PlayerbotAI* botAI) : Trigger(botAI, "karazhan nightbane") {}
+    bool IsActive() override;
+};
+
 #endif

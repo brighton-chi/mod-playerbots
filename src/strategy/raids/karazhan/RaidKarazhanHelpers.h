@@ -30,6 +30,10 @@ enum class KarazhanSpells
 
     // Prince Malchezaar
     ENFEEBLE                   = 30843,
+
+    // Nightbane
+    CHARRED_EARTH              = 30129,
+    // RAIN_OF_BONES              = 37098,
 };
 
 enum class KarazhanNpcs
@@ -59,14 +63,22 @@ extern const Position KARAZHAN_MAIDEN_OF_VIRTUE_RANGED_POSITION[8];
 extern const Position KARAZHAN_BIG_BAD_WOLF_BOSS_POSITION;
 extern const Position KARAZHAN_BIG_BAD_WOLF_RUN_POSITION[4];
 extern const Position KARAZHAN_THE_CURATOR_BOSS_POSITION;
+extern const Position KARAZHAN_NIGHTBANE_TRANSITION_BOSS_POSITION;
+extern const Position KARAZHAN_NIGHTBANE_FINAL_BOSS_POSITION;
+extern const Position KARAZHAN_NIGHTBANE_RANGED_POSITION_1;
+extern const Position KARAZHAN_NIGHTBANE_RANGED_POSITION_2;
+extern const Position KARAZHAN_NIGHTBANE_RANGED_POSITION_3;
+extern const Position KARAZHAN_NIGHTBANE_FLIGHT_POSITION;
 
 class RaidKarazhanHelpers : public AiObject
 {
 public:
     explicit RaidKarazhanHelpers(PlayerbotAI* botAI) : AiObject(botAI) {}
 
+    void MarkTargetWithIcon(Unit* target, uint8 iconId);
     void MarkTargetWithSkull(Unit* target);
     void MarkTargetWithSquare(Unit* target);
+    void MarkTargetWithMoon(Unit* target);
     Unit* GetFirstAliveUnit(const std::vector<Unit*>& units);
     Unit* GetFirstAliveUnitByEntry(uint32 entry);
     Unit* GetNearestPlayerInRadius(float radius = 5.0f);

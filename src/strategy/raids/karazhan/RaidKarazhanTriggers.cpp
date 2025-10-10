@@ -103,3 +103,10 @@ bool KarazhanPrinceMalchezaarTrigger::IsActive()
 
     return boss && boss->IsAlive();
 }
+
+bool KarazhanNightbaneTrigger::IsActive()
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "nightbane");
+
+    return boss && boss->IsAlive();
+}

@@ -42,12 +42,12 @@ constexpr uint32 NORTHWEST_CHANNELER = 90980;
 constexpr uint32 EAST_CHANNELER      = 90982;
 constexpr uint32 NORTHEAST_CHANNELER = 90981;
 
-inline constexpr int8 squareIcon = RtiTargetValue::squareIndex;
-inline constexpr int8 starIcon = RtiTargetValue::starIndex;
-inline constexpr int8 circleIcon = RtiTargetValue::circleIndex;
-inline constexpr int8 diamondIcon = RtiTargetValue::diamondIndex;
-inline constexpr int8 triangleIcon = RtiTargetValue::triangleIndex;
-inline constexpr int8 crossIcon = RtiTargetValue::crossIndex;
+inline constexpr uint8 squareIcon = RtiTargetValue::squareIndex;
+inline constexpr uint8 starIcon = RtiTargetValue::starIndex;
+inline constexpr uint8 circleIcon = RtiTargetValue::circleIndex;
+inline constexpr uint8 diamondIcon = RtiTargetValue::diamondIndex;
+inline constexpr uint8 triangleIcon = RtiTargetValue::triangleIndex;
+inline constexpr uint8 crossIcon = RtiTargetValue::crossIndex;
 
 Creature* GetChanneler(Player* bot, uint32 dbGuid);
 void UpdateTransitionTimer(Unit* unit, bool transitionCondition, std::unordered_map<uint32, bool>& lastStateMap, 

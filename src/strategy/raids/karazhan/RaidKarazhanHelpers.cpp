@@ -30,42 +30,46 @@ const Position KARAZHAN_BIG_BAD_WOLF_RUN_POSITION[4] =
 
 const Position KARAZHAN_THE_CURATOR_BOSS_POSITION = Position(-11139.463f, -1884.645f, 165.765f);
 
-void RaidKarazhanHelpers::MarkTargetWithSkull(Unit* target)
+const Position KARAZHAN_NIGHTBANE_TRANSITION_BOSS_POSITION = Position(-11131.801f, -1889.302f, 91.473f);
+// const Position KARAZHAN_NIGHTBANE_FINAL_BOSS_POSITION = Position(-11123.325f, -1876.502f, 91.473f);
+const Position KARAZHAN_NIGHTBANE_FINAL_BOSS_POSITION = Position(-11128.311f, -1876.108f, 91.472f);
+// const Position KARAZHAN_NIGHTBANE_RANGED_POSITION_1 = Position(-11087.420f, -1891.869f, 91.473f);
+// const Position KARAZHAN_NIGHTBANE_RANGED_POSITION_1 = Position(-11090.203f, -1890.496f, 91.472f);
+// const Position KARAZHAN_NIGHTBANE_RANGED_POSITION_2 = Position(-11101.143f, -1898.763f, 91.473f);
+// const Position KARAZHAN_NIGHTBANE_RANGED_POSITION_3 = Position(-11101.541f, -1882.508f, 91.473f);
+const Position KARAZHAN_NIGHTBANE_RANGED_POSITION_1 = Position(-11105.588f, -1896.311f, 91.472f);
+const Position KARAZHAN_NIGHTBANE_RANGED_POSITION_2 = Position(-11100.558f, -1881.757f, 91.472f);
+const Position KARAZHAN_NIGHTBANE_RANGED_POSITION_3 = Position(-11114.881f, -1890.591f, 91.472f);
+const Position KARAZHAN_NIGHTBANE_FLIGHT_POSITION = Position(-11152.074f, -1892.548f, 91.473f);
+
+void RaidKarazhanHelpers::MarkTargetWithIcon(Unit* target, uint8 iconId)
 {
     if (!target)
-    {
         return;
-    }
 
     if (Group* group = bot->GetGroup())
     {
-        constexpr uint8_t skullIconId = RtiTargetValue::skullIndex;
-        ObjectGuid skullGuid = group->GetTargetIcon(skullIconId);
-
-        if (skullGuid != target->GetGUID())
+        ObjectGuid currentGuid = group->GetTargetIcon(iconId);
+        if (currentGuid != target->GetGUID())
         {
-            group->SetTargetIcon(skullIconId, bot->GetGUID(), target->GetGUID());
+            group->SetTargetIcon(iconId, bot->GetGUID(), target->GetGUID());
         }
     }
 }
 
+void RaidKarazhanHelpers::MarkTargetWithSkull(Unit* target)
+{
+    MarkTargetWithIcon(target, RtiTargetValue::skullIndex);
+}
+
 void RaidKarazhanHelpers::MarkTargetWithSquare(Unit* target)
 {
-    if (!target)
-    {
-        return;
-    }
+    MarkTargetWithIcon(target, RtiTargetValue::squareIndex);
+}
 
-    if (Group* group = bot->GetGroup())
-    {
-        constexpr uint8_t squareIconId = RtiTargetValue::squareIndex;
-        ObjectGuid squareGuid = group->GetTargetIcon(squareIconId);
-
-        if (squareGuid != target->GetGUID())
-        {
-            group->SetTargetIcon(squareIconId, bot->GetGUID(), target->GetGUID());
-        }
-    }
+void RaidKarazhanHelpers::MarkTargetWithMoon(Unit* target)
+{
+    MarkTargetWithIcon(target, RtiTargetValue::moonIndex);
 }
 
 Unit* RaidKarazhanHelpers::GetFirstAliveUnit(const std::vector<Unit*>& units)

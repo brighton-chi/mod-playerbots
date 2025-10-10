@@ -71,6 +71,16 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new NextAction("karazhan prince malchezaar non tank avoid hazard", ACTION_EMERGENCY + 6),
         new NextAction("karazhan prince malchezaar main tank", ACTION_EMERGENCY + 6),
         nullptr)));
+
+    triggers.push_back(new TriggerNode(
+        "karazhan nightbane", NextAction::array(0,
+        new NextAction("karazhan nightbane reset flight phase timer", ACTION_EMERGENCY + 2),
+        new NextAction("karazhan nightbane ground phase position ranged", ACTION_EMERGENCY + 1),
+        // new NextAction("karazhan nightbane ground phase position melee", ACTION_EMERGENCY + 1),
+        new NextAction("karazhan nightbane cast fear ward", ACTION_RAID + 2),
+        new NextAction("karazhan nightbane flight phase", ACTION_RAID + 1),
+        new NextAction("karazhan nightbane ground phase position boss", ACTION_RAID + 1),
+        nullptr)));
 }
 
 void RaidKarazhanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
@@ -82,4 +92,5 @@ void RaidKarazhanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers
     multipliers.push_back(new KarazhanNetherspiteRedBeamMultiplier(botAI));
     multipliers.push_back(new KarazhanNetherspiteWaitForDPSMultiplier(botAI));
     multipliers.push_back(new KarazhanPrinceMalchezaarMultiplier(botAI));
+    multipliers.push_back(new KarazhanNightbaneMultiplier(botAI));
 }

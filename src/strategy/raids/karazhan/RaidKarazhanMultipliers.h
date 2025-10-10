@@ -52,4 +52,11 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class KarazhanNightbaneMultiplier : public Multiplier
+{
+public:
+    KarazhanNightbaneMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "karazhan nightbane multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
 #endif
