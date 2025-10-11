@@ -265,10 +265,10 @@ public:
     bool isUseful() override;
 };
 
-class KarazhanNightbaneFlightPhaseAction : public MovementAction
+class KarazhanNightbaneFlightPhaseMovementAction : public MovementAction
 {
 public:
-    KarazhanNightbaneFlightPhaseAction(PlayerbotAI* botAI, std::string const name = "karazhan nightbane flight phase") : MovementAction(botAI, name) {}
+    KarazhanNightbaneFlightPhaseMovementAction(PlayerbotAI* botAI, std::string const name = "karazhan nightbane flight phase movement") : MovementAction(botAI, name) {}
 
     bool Execute(Event event) override;
     bool isUseful() override;

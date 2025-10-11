@@ -14,8 +14,9 @@ namespace
     static std::unordered_map<ObjectGuid, bool> lastBeamMoveSideways;
     // Nightbane
     static std::unordered_map<ObjectGuid, int> nightbaneTankStep;
-    static std::unordered_map<ObjectGuid, int> botRangedIndex;
+    static std::unordered_map<ObjectGuid, int> nightbaneRangedStep;
     static std::unordered_map<ObjectGuid, time_t> nightbaneFlightPhaseStart;
+    static std::unordered_map<ObjectGuid, bool> nightbaneRainOfBonesHit;
 }
 
 bool KarazhanAttumenTheHuntsmanSplitBossesAction::Execute(Event event)
@@ -153,7 +154,7 @@ bool KarazhanMaidenOfVirtueMainTankAction::Execute(Event event)
         }
     }
 
-    const float maxDistance = 3.0f;
+    const float maxDistance = 2.0f;
     float distanceToBossPosition = boss->GetExactDist2d(KARAZHAN_MAIDEN_OF_VIRTUE_BOSS_POSITION);
     if (distanceToBossPosition > maxDistance)
     {
@@ -241,7 +242,7 @@ bool KarazhanBigBadWolfPositionBossAction::Execute(Event event)
 
     if (boss->GetVictim() == bot)
     {
-        const float maxDistance = 3.0f;
+        const float maxDistance = 2.0f;
         float distanceToBossPosition = boss->GetExactDist2d(KARAZHAN_BIG_BAD_WOLF_BOSS_POSITION);
 
         if (distanceToBossPosition > maxDistance)
@@ -1380,13 +1381,13 @@ bool KarazhanNightbaneGroundPhasePositionBossAction::Execute(Event event)
             KARAZHAN_NIGHTBANE_FINAL_BOSS_POSITION
         };
         const Position& targetPos = tankPositions[step];
-        const float maxDistance = 1.0f;
+        const float maxDistance = 2.0f;
         float distanceToTarget = bot->GetExactDist2d(targetPos);
 
         if (distanceToTarget > maxDistance)
         {
             return MoveTo(bot->GetMapId(), targetPos.GetPositionX(), targetPos.GetPositionY(), targetPos.GetPositionZ(),
-                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
+                          false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, true);
         }
 
         // Advance to next step if at transition position
@@ -1410,8 +1411,14 @@ bool KarazhanNightbaneGroundPhasePositionBossAction::isUseful()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "nightbane");
     Group* group = bot->GetGroup();
+    ObjectGuid botGuid = bot->GetGUID();
 
-    return group && boss && !boss->IsFlying() && botAI->IsMainTank(bot);
+    bool useful = group && boss && !boss->IsFlying() && botAI->IsMainTank(bot);
+
+    if (!useful && nightbaneTankStep.count(botGuid))
+        nightbaneTankStep[botGuid] = 0;
+
+    return useful;
 }
 
 /* bool KarazhanNightbaneGroundPhasePositionMeleeAction::Execute(Event event)
@@ -1455,7 +1462,7 @@ bool KarazhanNightbaneGroundPhasePositionMeleeAction::isUseful()
 bool KarazhanNightbaneGroundPhasePositionRangedAction::Execute(Event event)
 {
     ObjectGuid botGuid = bot->GetGUID();
-    int index = botRangedIndex.count(botGuid) ? botRangedIndex[botGuid] : 0;
+    int index = nightbaneRangedStep.count(botGuid) ? nightbaneRangedStep[botGuid] : 0;
 
     const Position rangedPositions[3] = 
     {
@@ -1464,14 +1471,14 @@ bool KarazhanNightbaneGroundPhasePositionRangedAction::Execute(Event event)
         KARAZHAN_NIGHTBANE_RANGED_POSITION_3
     };
     const Position& targetPos = rangedPositions[index];
-    const float maxDistance = 1.0f;
+    const float maxDistance = 2.0f;
     float distanceToTarget = bot->GetExactDist2d(targetPos);
 
     // Advance to next spot if bot has charred earth
     if (distanceToTarget <= maxDistance && bot->HasAura(static_cast<uint32>(KarazhanSpells::CHARRED_EARTH)))
     {
         index = (index + 1) % 3;
-        botRangedIndex[botGuid] = index;
+        nightbaneRangedStep[botGuid] = index;
         // Update targetPos and distance for the new index
         const Position& newTargetPos = rangedPositions[index];
         float newDistanceToTarget = bot->GetExactDist2d(newTargetPos);
@@ -1502,8 +1509,14 @@ bool KarazhanNightbaneGroundPhasePositionRangedAction::isUseful()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "nightbane");
     Group* group = bot->GetGroup();
+    ObjectGuid botGuid = bot->GetGUID();
 
-    return group && boss && !boss->IsFlying() && botAI->IsRanged(bot);
+    bool useful = group && boss && !boss->IsFlying() && botAI->IsRanged(bot);
+
+    if (!useful && nightbaneRangedStep.count(botGuid))
+        nightbaneRangedStep[botGuid] = 0;
+
+    return useful;
 }
 
 bool KarazhanNightbaneCastFearWardAction::Execute(Event event)
@@ -1552,21 +1565,18 @@ bool KarazhanNightbaneCastFearWardAction::isUseful()
     return group && boss && bot->getClass() == CLASS_PRIEST && mainTank && botAI->CanCastSpell("fear ward", mainTank);
 }
 
-bool KarazhanNightbaneFlightPhaseAction::Execute(Event event)
+bool KarazhanNightbaneFlightPhaseMovementAction::Execute(Event event)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "nightbane");
     RaidKarazhanHelpers karazhanHelper(botAI);
 
     karazhanHelper.MarkTargetWithMoon(boss);
 
-    if (bot->getClass() == CLASS_HUNTER || bot->getClass() == CLASS_WARLOCK)
+    Pet* pet = bot->GetPet();
+    if (pet && pet->GetReactState() != REACT_PASSIVE)
     {
-        Pet* pet = bot->GetPet();
-        if (pet && pet->GetReactState() != REACT_PASSIVE)
-        {
-            pet->AttackStop();
-            pet->SetReactState(REACT_PASSIVE);
-        }
+        pet->AttackStop();
+        pet->SetReactState(REACT_PASSIVE);
     }
 
     Unit* botTarget = botAI->GetUnit(bot->GetTarget());
@@ -1576,43 +1586,40 @@ bool KarazhanNightbaneFlightPhaseAction::Execute(Event event)
         bot->InterruptNonMeleeSpells(false);
     }
 
-    float destX = KARAZHAN_NIGHTBANE_FLIGHT_POSITION.GetPositionX();
-    float destY = KARAZHAN_NIGHTBANE_FLIGHT_POSITION.GetPositionY();
-    float destZ = KARAZHAN_NIGHTBANE_FLIGHT_POSITION.GetPositionZ();
-    if (bot->GetExactDist2d(destX, destY) > 6.0f)
-    {
-        return MoveTo(bot->GetMapId(), destX, destY, destZ, false, false, false, false, 
-                      MovementPriority::MOVEMENT_COMBAT, true, false);
-    }
-    // If bot has Rain of Bones aura, move 8 yards away from the flight position
-    /* if (bot->HasAura(static_cast<uint32>(KarazhanSpells::RAIN_OF_BONES)))
-    {
-        // Move directly away from the flight position, keeping collision in mind
-        float angle = atan2(bot->GetPositionY() - destY, bot->GetPositionX() - destX);
-        float awayX = destX + cos(angle) * 8.0f;
-        float awayY = destY + sin(angle) * 8.0f;
-        float awayZ = destZ;
+    ObjectGuid botGuid = bot->GetGUID();
+    bool hasRainOfBones = bot->HasAura(static_cast<uint32>(KarazhanSpells::RAIN_OF_BONES));
 
-        bot->GetMap()->CheckCollisionAndGetValidCoords(bot, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), awayX, awayY, awayZ, true);
+    // If bot gets Rain of Bones, set flag
+    if (hasRainOfBones)
+        nightbaneRainOfBonesHit[botGuid] = true;
 
-        if (bot->GetExactDist2d(awayX, awayY) > 2.0f)
-        {
-            return MoveTo(bot->GetMapId(), awayX, awayY, awayZ, false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
-        }
+    float destX, destY, destZ;
+    if (nightbaneRainOfBonesHit[botGuid])
+    {
+        destX = KARAZHAN_NIGHTBANE_FLIGHT_RAIN_OF_BONES_POSITION.GetPositionX();
+        destY = KARAZHAN_NIGHTBANE_FLIGHT_RAIN_OF_BONES_POSITION.GetPositionY();
+        destZ = KARAZHAN_NIGHTBANE_FLIGHT_RAIN_OF_BONES_POSITION.GetPositionZ();
     }
     else
     {
-        // Move to the flight position if more than 2 yards away
-        if (bot->GetExactDist2d(destX, destY) > 2.0f)
-        {
-            return MoveTo(bot->GetMapId(), destX, destY, destZ, false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
-        }
-    } */
+        destX = KARAZHAN_NIGHTBANE_FLIGHT_STACK_POSITION.GetPositionX();
+        destY = KARAZHAN_NIGHTBANE_FLIGHT_STACK_POSITION.GetPositionY();
+        destZ = KARAZHAN_NIGHTBANE_FLIGHT_STACK_POSITION.GetPositionZ();
+    }
+
+    if (bot->GetExactDist2d(destX, destY) > 2.0f)
+    {
+        bot->AttackStop();
+        bot->InterruptNonMeleeSpells(false);
+
+        return MoveTo(bot->GetMapId(), destX, destY, destZ, false, false, false, false,
+                      MovementPriority::MOVEMENT_FORCED, true, false);
+    }
 
     return false;
 }
 
-bool KarazhanNightbaneFlightPhaseAction::isUseful()
+bool KarazhanNightbaneFlightPhaseMovementAction::isUseful()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "nightbane");
     Group* group = bot->GetGroup();
@@ -1640,9 +1647,16 @@ bool KarazhanNightbaneFlightPhaseAction::isUseful()
 bool KarazhanNightbaneResetFlightPhaseTimerAction::Execute(Event event)
 {
     ObjectGuid botGuid = bot->GetGUID();
+
     if (nightbaneFlightPhaseStart.count(botGuid))
     {
         nightbaneFlightPhaseStart.erase(botGuid);
+        return true;
+    }
+
+    if (nightbaneRainOfBonesHit.count(botGuid))
+    {
+        nightbaneRainOfBonesHit.erase(botGuid);
         return true;
     }
 

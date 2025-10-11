@@ -33,7 +33,7 @@ enum class KarazhanSpells
 
     // Nightbane
     CHARRED_EARTH              = 30129,
-    // RAIN_OF_BONES              = 37098,
+    RAIN_OF_BONES              = 37091,
 };
 
 enum class KarazhanNpcs
@@ -68,7 +68,8 @@ extern const Position KARAZHAN_NIGHTBANE_FINAL_BOSS_POSITION;
 extern const Position KARAZHAN_NIGHTBANE_RANGED_POSITION_1;
 extern const Position KARAZHAN_NIGHTBANE_RANGED_POSITION_2;
 extern const Position KARAZHAN_NIGHTBANE_RANGED_POSITION_3;
-extern const Position KARAZHAN_NIGHTBANE_FLIGHT_POSITION;
+extern const Position KARAZHAN_NIGHTBANE_FLIGHT_STACK_POSITION;
+extern const Position KARAZHAN_NIGHTBANE_FLIGHT_RAIN_OF_BONES_POSITION;
 
 class RaidKarazhanHelpers : public AiObject
 {

@@ -49,7 +49,7 @@ public:
         // creators["karazhan nightbane ground phase position melee"] = &RaidKarazhanActionContext::karazhan_nightbane_ground_phase_position_melee;
         creators["karazhan nightbane ground phase position ranged"] = &RaidKarazhanActionContext::karazhan_nightbane_ground_phase_position_ranged;
         creators["karazhan nightbane cast fear ward"] = &RaidKarazhanActionContext::karazhan_nightbane_cast_fear_ward;
-        creators["karazhan nightbane flight phase"] = &RaidKarazhanActionContext::karazhan_nightbane_flight_phase;
+        creators["karazhan nightbane flight phase movement"] = &RaidKarazhanActionContext::karazhan_nightbane_flight_phase_movement;
         creators["karazhan nightbane reset flight phase timer"] = &RaidKarazhanActionContext::karazhan_nightbane_reset_flight_phase_timer;
     }
 
@@ -94,7 +94,7 @@ private:
     // static Action* karazhan_nightbane_ground_phase_position_melee(PlayerbotAI* botAI) { return new KarazhanNightbaneGroundPhasePositionMeleeAction(botAI); }
     static Action* karazhan_nightbane_ground_phase_position_ranged(PlayerbotAI* botAI) { return new KarazhanNightbaneGroundPhasePositionRangedAction(botAI); }
     static Action* karazhan_nightbane_cast_fear_ward(PlayerbotAI* botAI) { return new KarazhanNightbaneCastFearWardAction(botAI); }
-    static Action* karazhan_nightbane_flight_phase(PlayerbotAI* botAI) { return new KarazhanNightbaneFlightPhaseAction(botAI); }
+    static Action* karazhan_nightbane_flight_phase_movement(PlayerbotAI* botAI) { return new KarazhanNightbaneFlightPhaseMovementAction(botAI); }
     static Action* karazhan_nightbane_reset_flight_phase_timer(PlayerbotAI* botAI) { return new KarazhanNightbaneResetFlightPhaseTimerAction(botAI); }
 };
 

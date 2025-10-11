@@ -366,11 +366,18 @@ float KarazhanNightbaneMultiplier::GetValue(Action* action)
         return 0.0f;
     }
 
-    if (!boss->IsFlying() && 
-        (botAI->IsRanged(bot) || botAI->IsMainTank(bot)) && 
-         dynamic_cast<CombatFormationMoveAction*>(action))
+    if (dynamic_cast<CombatFormationMoveAction*>(action))
     {
-        return 0.0f;
+        // Disable for all bots during flight phase
+        if (boss->IsFlying())
+        {
+            return 0.0f;
+        }
+        // Disable for all bots except non-main tank melee during ground phase
+        /* if (!botAI->IsMelee(bot) || botAI->IsMainTank(bot))
+        {
+            return 0.0f;
+        } */
     }
 
     /* if (botAI->IsMainTank(bot) && boss && boss->GetVictim() == bot && dynamic_cast<MovementAction*>(action))
