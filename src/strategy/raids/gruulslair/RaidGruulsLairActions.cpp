@@ -6,6 +6,8 @@
 
 using namespace GruulsLairHelpers;
 
+// High King Maulgar Actions
+
 bool HighKingMaulgarMaulgarTankAction::Execute(Event event)
 {
     Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
@@ -42,7 +44,7 @@ bool HighKingMaulgarMaulgarTankAction::Execute(Event event)
             float moveX = spot.x + (dX / distanceToMaulgar) * maxDistance;
             float moveY = spot.y + (dY / distanceToMaulgar) * maxDistance;
             return MoveTo(bot->GetMapId(), moveX, moveY, spot.z, false, false, false, false, 
-                          MovementPriority::MOVEMENT_COMBAT);
+                          MovementPriority::MOVEMENT_COMBAT, true, false);
         }
 
         float orientation = atan2(maulgar->GetPositionY() - bot->GetPositionY(), 
@@ -56,14 +58,6 @@ bool HighKingMaulgarMaulgarTankAction::Execute(Event event)
     }
 
     return false;
-}
-
-bool HighKingMaulgarMaulgarTankAction::isUseful()
-{
-    Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
-    Group* group = bot->GetGroup();
-
-    return botAI->IsMainTank(bot) && maulgar && maulgar->IsAlive() && group;
 }
 
 bool HighKingMaulgarOlmTankAction::Execute(Event event)
@@ -103,7 +97,7 @@ bool HighKingMaulgarOlmTankAction::Execute(Event event)
             float moveX = spot.x + (dX / distanceToOlm) * maxDistance;
             float moveY = spot.y + (dY / distanceToOlm) * maxDistance;
             return MoveTo(bot->GetMapId(), moveX, moveY, spot.z, false, false, false, false, 
-                          MovementPriority::MOVEMENT_COMBAT);
+                          MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
     else if (!bot->IsWithinMeleeRange(olm))
@@ -113,14 +107,6 @@ bool HighKingMaulgarOlmTankAction::Execute(Event event)
     }
 
     return false;
-}
-
-bool HighKingMaulgarOlmTankAction::isUseful()
-{
-    Unit* olm = AI_VALUE2(Unit*, "find target", "olm the summoner");
-    Group* group = bot->GetGroup();
-
-    return botAI->IsAssistTankOfIndex(bot, 0) && olm && olm->IsAlive() && group;
 }
 
 bool HighKingMaulgarBlindeyeTankAction::Execute(Event event)
@@ -159,7 +145,7 @@ bool HighKingMaulgarBlindeyeTankAction::Execute(Event event)
             float moveX = spot.x + (dX / distanceToBlindeye) * maxDistance;
             float moveY = spot.y + (dY / distanceToBlindeye) * maxDistance;
             return MoveTo(bot->GetMapId(), moveX, moveY, spot.z, false, false, false, false, 
-                          MovementPriority::MOVEMENT_COMBAT);
+                          MovementPriority::MOVEMENT_COMBAT, true, false);
         }
 
         float orientation = atan2(blindeye->GetPositionY() - bot->GetPositionY(), 
@@ -173,14 +159,6 @@ bool HighKingMaulgarBlindeyeTankAction::Execute(Event event)
     }
 
     return false;
-}
-
-bool HighKingMaulgarBlindeyeTankAction::isUseful()
-{
-    Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
-    Group* group = bot->GetGroup();
-
-    return botAI->IsAssistTankOfIndex(bot, 1) && blindeye && blindeye->IsAlive() && group;
 }
 
 bool HighKingMaulgarKroshMageTankAction::Execute(Event event)
@@ -201,12 +179,12 @@ bool HighKingMaulgarKroshMageTankAction::Execute(Event event)
         botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(krosh);
     }
 
-    if (krosh->HasAura(static_cast<uint32>(GruulsLairSpells::SPELL_SHIELD)) && botAI->CanCastSpell("spellsteal", krosh))
+    if (krosh->HasAura(SPELL_SHIELD) && botAI->CanCastSpell("spellsteal", krosh))
     {
         botAI->CastSpell("spellsteal", krosh);
     }
 
-    if (!bot->HasAura(static_cast<uint32>(GruulsLairSpells::SPELL_SHIELD)) && botAI->CanCastSpell("fire ward", bot))
+    if (!bot->HasAura(SPELL_SHIELD) && botAI->CanCastSpell("fire ward", bot))
     {
         botAI->CastSpell("fire ward", bot);
     }
@@ -229,7 +207,7 @@ bool HighKingMaulgarKroshMageTankAction::Execute(Event event)
             if (!bot->IsWithinDist2d(spot.x, spot.y, spotLeeway))
             {
                 return MoveTo(bot->GetMapId(), spot.x, spot.y, spot.z, false, false, false, false, 
-                            MovementPriority::MOVEMENT_COMBAT);
+                            MovementPriority::MOVEMENT_COMBAT, true, false);
             }
 
             float orientation = atan2(krosh->GetPositionY() - bot->GetPositionY(), 
@@ -247,14 +225,6 @@ bool HighKingMaulgarKroshMageTankAction::Execute(Event event)
     }
 
     return false;
-}
-
-bool HighKingMaulgarKroshMageTankAction::isUseful()
-{
-    Unit* krosh = AI_VALUE2(Unit*, "find target", "krosh firehand");
-    Group* group = bot->GetGroup();
-
-    return IsKroshMageTank(botAI, bot) && krosh && krosh->IsAlive() && group;
 }
 
 bool HighKingMaulgarKigglerMoonkinTankAction::Execute(Event event)
@@ -289,15 +259,7 @@ bool HighKingMaulgarKigglerMoonkinTankAction::Execute(Event event)
     return false;
 }
 
-bool HighKingMaulgarKigglerMoonkinTankAction::isUseful()
-{
-    Unit* kiggler = AI_VALUE2(Unit*, "find target", "kiggler the crazed");
-    Group* group = bot->GetGroup();
-
-    return IsKigglerMoonkinTank(botAI, bot) && kiggler && kiggler->IsAlive() && group;
-}
-
-bool HighKingMaulgarMeleeDPSAction::Execute(Event event)
+bool HighKingMaulgarMeleeDPSPriorityAction::Execute(Event event)
 {
     Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
     Unit* kiggler = AI_VALUE2(Unit*, "find target", "kiggler the crazed");
@@ -417,20 +379,7 @@ bool HighKingMaulgarMeleeDPSAction::Execute(Event event)
     return false;
 }
 
-bool HighKingMaulgarMeleeDPSAction::isUseful()
-{
-    Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
-    Unit* kiggler = AI_VALUE2(Unit*, "find target", "kiggler the crazed");
-    Unit* olm = AI_VALUE2(Unit*, "find target", "olm the summoner");
-    Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
-
-    return botAI->IsMelee(bot) &&
-           !(botAI->IsMainTank(bot) && maulgar && maulgar->IsAlive()) &&
-           !(botAI->IsAssistTankOfIndex(bot, 0) && olm && olm->IsAlive()) &&
-           !(botAI->IsAssistTankOfIndex(bot, 1) && blindeye && blindeye->IsAlive());
-}
-
-bool HighKingMaulgarRangedDPSAction::Execute(Event event)
+bool HighKingMaulgarRangedDPSPriorityAction::Execute(Event event)
 {
     Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
     Unit* kiggler = AI_VALUE2(Unit*, "find target", "kiggler the crazed");
@@ -579,19 +528,6 @@ bool HighKingMaulgarRangedDPSAction::Execute(Event event)
     return false;
 }
 
-bool HighKingMaulgarRangedDPSAction::isUseful()
-{
-    Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
-    Unit* kiggler = AI_VALUE2(Unit*, "find target", "kiggler the crazed");
-    Unit* krosh = AI_VALUE2(Unit*, "find target", "krosh firehand");
-    Unit* olm = AI_VALUE2(Unit*, "find target", "olm the summoner");
-    Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
-
-    return botAI->IsRanged(bot) && !botAI->IsHeal(bot) &&
-           !(IsKroshMageTank(botAI, bot) && krosh && krosh->IsAlive()) &&
-           !(IsKigglerMoonkinTank(botAI, bot) && kiggler && kiggler->IsAlive());
-}
-
 bool HighKingMaulgarHealerAvoidanceAction::Execute(Event event)
 {
     const TankSpot& fightCenter = GruulsLairTankSpots::MaulgarRoomCenter;
@@ -621,11 +557,6 @@ bool HighKingMaulgarHealerAvoidanceAction::Execute(Event event)
     }
 
     return false;
-}
-
-bool HighKingMaulgarHealerAvoidanceAction::isUseful()
-{
-    return botAI->IsHeal(bot) && IsAnyOgreBossAlive(botAI);
 }
 
 bool HighKingMaulgarWhirlwindRunAwayAction::Execute(Event event)
@@ -663,13 +594,6 @@ bool HighKingMaulgarWhirlwindRunAwayAction::Execute(Event event)
     return false;
 }
 
-bool HighKingMaulgarWhirlwindRunAwayAction::isUseful()
-{
-    Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
-
-    return maulgar && maulgar->IsAlive() && maulgar->HasAura(static_cast<uint32>(GruulsLairSpells::WHIRLWIND)) && !botAI->IsMainTank(bot);
-}
-
 bool HighKingMaulgarBanishFelstalkerAction::Execute(Event event)
 {
     Unit* felStalker = AI_VALUE2(Unit*, "find target", "wild fel stalker");
@@ -679,14 +603,6 @@ bool HighKingMaulgarBanishFelstalkerAction::Execute(Event event)
     }
 
     return false;
-}
-
-bool HighKingMaulgarBanishFelstalkerAction::isUseful()
-{
-    Unit* felStalker = AI_VALUE2(Unit*, "find target", "wild fel stalker");
-
-    return felStalker && felStalker->IsAlive() && !felStalker->HasAura(static_cast<uint32>(GruulsLairSpells::BANISH)) && 
-           bot->getClass() == CLASS_WARLOCK;
 }
 
 bool HighKingMaulgarHunterMisdirectionAction::Execute(Event event)
@@ -730,7 +646,7 @@ bool HighKingMaulgarHunterMisdirectionAction::Execute(Event event)
     {
         case 0:
             botAI->CastSpell("misdirection", olmTank);
-            if (bot->HasAura(static_cast<uint32>(GruulsLairSpells::MISDIRECTION)))
+            if (bot->HasAura(MISDIRECTION))
             {
                 Pet* pet = bot->GetPet();
                 if (pet && pet->IsAlive() && pet->GetVictim() != blindeye)
@@ -754,7 +670,7 @@ bool HighKingMaulgarHunterMisdirectionAction::Execute(Event event)
 
         case 1:
             botAI->CastSpell("misdirection", blindeyeTank);
-            if (bot->HasAura(static_cast<uint32>(GruulsLairSpells::MISDIRECTION)))
+            if (bot->HasAura(MISDIRECTION))
             {
                 botAI->CastSpell("steady shot", blindeye);
             }
@@ -767,70 +683,9 @@ bool HighKingMaulgarHunterMisdirectionAction::Execute(Event event)
     return false;
 }
 
-bool HighKingMaulgarHunterMisdirectionAction::isUseful()
-{
-    Group* group = bot->GetGroup();
-    if (!group || bot->getClass() != CLASS_HUNTER)
-    {
-        return false;
-    }
+// Gruul the Dragonkiller Actions
 
-    std::vector<Player*> hunters;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (member && member->IsAlive() && member->getClass() == CLASS_HUNTER && GET_PLAYERBOT_AI(member))
-            hunters.push_back(member);
-    }
-
-    int hunterIndex = -1;
-    for (size_t i = 0; i < hunters.size(); ++i)
-    {
-        if (hunters[i] == bot)
-        {
-            hunterIndex = static_cast<int>(i);
-            break;
-        }
-    }
-    if (hunterIndex == -1 || hunterIndex > 1)
-    {
-        return false;
-    }
-
-    Unit* olm = AI_VALUE2(Unit*, "find target", "olm the summoner");
-    Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
-    Player* olmTank = nullptr;
-    Player* blindeyeTank = nullptr;
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || !member->IsAlive())
-        {
-            continue;
-        }
-        else if (botAI->IsAssistTankOfIndex(bot, 0)) olmTank = member;
-        else if (botAI->IsAssistTankOfIndex(bot, 1)) blindeyeTank = member;
-    }
-
-    switch (hunterIndex)
-    {
-        case 0:
-        return olm && olm->IsAlive() && olm->GetHealth() > 0.98f * olm->GetMaxHealth() && 
-               olmTank && olmTank->IsAlive() && botAI->CanCastSpell("misdirection", olmTank);
-
-        case 1:
-        return blindeye && blindeye->IsAlive() && blindeye->GetHealth() > 0.90f * blindeye->GetMaxHealth() && 
-               blindeyeTank && blindeyeTank->IsAlive() && botAI->CanCastSpell("misdirection", blindeyeTank);
-
-        default:
-            break;
-    }
-
-    return false;
-}
-
-bool GruulTheDragonkillerMainTankAction::Execute(Event event)
+bool GruulTheDragonkillerPositionBossAction::Execute(Event event)
 {
     Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
     
@@ -857,7 +712,7 @@ bool GruulTheDragonkillerMainTankAction::Execute(Event event)
             const float moveZ = tankSpot.z;
             {
                 return MoveTo(bot->GetMapId(), moveX, moveY, moveZ, false, false, false, false, 
-                              MovementPriority::MOVEMENT_COMBAT);
+                              MovementPriority::MOVEMENT_COMBAT, true, false);
             }
         }
 
@@ -872,13 +727,6 @@ bool GruulTheDragonkillerMainTankAction::Execute(Event event)
     }
 
     return false;
-}
-
-bool GruulTheDragonkillerMainTankAction::isUseful()
-{
-    Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
-
-    return gruul && gruul->IsAlive() && botAI->IsMainTank(bot);
 }
 
 bool GruulTheDragonkillerSpreadRangedAction::Execute(Event event)
@@ -994,14 +842,6 @@ bool GruulTheDragonkillerSpreadRangedAction::Execute(Event event)
     return false;
 }
 
-bool GruulTheDragonkillerSpreadRangedAction::isUseful()
-{
-    Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
-    Group* group = bot->GetGroup();
-
-    return gruul && gruul->IsAlive() && botAI->IsRanged(bot) && group;
-}
-
 bool GruulTheDragonkillerShatterSpreadAction::Execute(Event event)
 {
     GuidVector members = AI_VALUE(GuidVector, "group members");
@@ -1030,14 +870,4 @@ bool GruulTheDragonkillerShatterSpreadAction::Execute(Event event)
     }
 
     return false;
-}
-
-bool GruulTheDragonkillerShatterSpreadAction::isUseful()
-{
-    Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
-    Group* group = bot->GetGroup();
-
-    return gruul && gruul->IsAlive() && group &&
-           (bot->HasAura(static_cast<uint32>(GruulsLairSpells::GROUND_SLAM_1)) || 
-            bot->HasAura(static_cast<uint32>(GruulsLairSpells::GROUND_SLAM_2)));
 }

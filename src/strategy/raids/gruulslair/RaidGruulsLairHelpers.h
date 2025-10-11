@@ -4,7 +4,7 @@
 #include "PlayerbotAI.h"
 #include "RtiTargetValue.h"
 
-enum class GruulsLairSpells
+enum GruulsLairSpells
 {
 	// High King Maulgar
 	WHIRLWIND  	   = 33238,
@@ -26,11 +26,11 @@ enum class GruulsLairSpells
 namespace GruulsLairHelpers
 {
 
-inline constexpr uint8 squareIcon = RtiTargetValue::squareIndex;
-inline constexpr uint8 starIcon = RtiTargetValue::starIndex;
-inline constexpr uint8 circleIcon = RtiTargetValue::circleIndex;
-inline constexpr uint8 diamondIcon = RtiTargetValue::diamondIndex;
-inline constexpr uint8 triangleIcon = RtiTargetValue::triangleIndex;
+inline constexpr int8 squareIcon = RtiTargetValue::squareIndex;
+inline constexpr int8 starIcon = RtiTargetValue::starIndex;
+inline constexpr int8 circleIcon = RtiTargetValue::circleIndex;
+inline constexpr int8 diamondIcon = RtiTargetValue::diamondIndex;
+inline constexpr int8 triangleIcon = RtiTargetValue::triangleIndex;
 
 bool IsAnyOgreBossAlive(PlayerbotAI* botAI);
 bool IsKroshMageTank(PlayerbotAI* botAI, Player* bot);
