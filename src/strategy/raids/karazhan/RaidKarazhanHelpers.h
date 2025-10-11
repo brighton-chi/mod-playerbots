@@ -5,7 +5,7 @@
 #include "Position.h"
 #include "Unit.h"
 
-enum class KarazhanSpells
+enum KarazhanSpells
 {
     // Maiden of Virtue
     REPENTANCE                 = 29511,
@@ -36,7 +36,7 @@ enum class KarazhanSpells
     RAIN_OF_BONES              = 37091,
 };
 
-enum class KarazhanNpcs
+enum KarazhanNpcs
 {
     // Attumen the Huntsman
     ATTUMEN_THE_HUNTSMAN_MOUNTED = 16152,

@@ -46,7 +46,6 @@ public:
         creators["karazhan prince malchezaar main tank"] = &RaidKarazhanActionContext::karazhan_prince_malchezaar_main_tank;
 
         creators["karazhan nightbane ground phase position boss"] = &RaidKarazhanActionContext::karazhan_nightbane_ground_phase_position_boss;
-        // creators["karazhan nightbane ground phase position melee"] = &RaidKarazhanActionContext::karazhan_nightbane_ground_phase_position_melee;
         creators["karazhan nightbane ground phase position ranged"] = &RaidKarazhanActionContext::karazhan_nightbane_ground_phase_position_ranged;
         creators["karazhan nightbane cast fear ward"] = &RaidKarazhanActionContext::karazhan_nightbane_cast_fear_ward;
         creators["karazhan nightbane flight phase movement"] = &RaidKarazhanActionContext::karazhan_nightbane_flight_phase_movement;
@@ -91,7 +90,6 @@ private:
     static Action* karazhan_prince_malchezaar_main_tank(PlayerbotAI* botAI) { return new KarazhanPrinceMalchezaarMainTankAction(botAI); }
 
     static Action* karazhan_nightbane_ground_phase_position_boss(PlayerbotAI* botAI) { return new KarazhanNightbaneGroundPhasePositionBossAction(botAI); }
-    // static Action* karazhan_nightbane_ground_phase_position_melee(PlayerbotAI* botAI) { return new KarazhanNightbaneGroundPhasePositionMeleeAction(botAI); }
     static Action* karazhan_nightbane_ground_phase_position_ranged(PlayerbotAI* botAI) { return new KarazhanNightbaneGroundPhasePositionRangedAction(botAI); }
     static Action* karazhan_nightbane_cast_fear_ward(PlayerbotAI* botAI) { return new KarazhanNightbaneCastFearWardAction(botAI); }
     static Action* karazhan_nightbane_flight_phase_movement(PlayerbotAI* botAI) { return new KarazhanNightbaneFlightPhaseMovementAction(botAI); }

@@ -76,7 +76,6 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         "karazhan nightbane", NextAction::array(0,
         new NextAction("karazhan nightbane reset flight phase timer", ACTION_EMERGENCY + 2),
         new NextAction("karazhan nightbane ground phase position ranged", ACTION_EMERGENCY + 1),
-        // new NextAction("karazhan nightbane ground phase position melee", ACTION_EMERGENCY + 1),
         new NextAction("karazhan nightbane cast fear ward", ACTION_RAID + 2),
         new NextAction("karazhan nightbane flight phase movement", ACTION_RAID + 1),
         new NextAction("karazhan nightbane ground phase position boss", ACTION_RAID + 1),

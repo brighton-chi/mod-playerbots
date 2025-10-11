@@ -26,7 +26,7 @@ static bool IsChargeAction(Action* action)
 float KarazhanAttumenTheHuntsmanMultiplier::GetValue(Action* action)
 {
     RaidKarazhanHelpers karazhanHelper(botAI);
-    Unit* boss = karazhanHelper.GetFirstAliveUnitByEntry(static_cast<uint32>(KarazhanNpcs::ATTUMEN_THE_HUNTSMAN_MOUNTED));
+    Unit* boss = karazhanHelper.GetFirstAliveUnitByEntry(ATTUMEN_THE_HUNTSMAN_MOUNTED);
     if (!boss)
     {
         return 1.0f;
@@ -78,7 +78,7 @@ float KarazhanShadeOfAranMultiplier::GetValue(Action* action)
     }
 
     if (boss->HasUnitState(UNIT_STATE_CASTING) && 
-        boss->FindCurrentSpellBySpellId(static_cast<uint32>(KarazhanSpells::ARCANE_EXPLOSION))) 
+        boss->FindCurrentSpellBySpellId(ARCANE_EXPLOSION))
     {
         if (IsChargeAction(action))
         {
@@ -95,13 +95,13 @@ float KarazhanShadeOfAranMultiplier::GetValue(Action* action)
         }
     }
 
-    bool flameWreathActive = boss->HasAura(static_cast<uint32>(KarazhanSpells::FLAME_WREATH_CAST));
+    bool flameWreathActive = boss->HasAura(FLAME_WREATH_CAST);
     if (!flameWreathActive && bot->GetGroup())
     {
         for (GroupReference* itr = bot->GetGroup()->GetFirstMember(); itr != nullptr; itr = itr->next())
         {
             Player* member = itr->GetSource();
-            if (member && member->HasAura(static_cast<uint32>(KarazhanSpells::FLAME_WREATH_AURA)))
+            if (member && member->HasAura(FLAME_WREATH_AURA))
             {
                 flameWreathActive = true;
                 break;
@@ -137,8 +137,8 @@ float KarazhanNetherspiteBlueAndGreenBeamMultiplier::GetValue(Action* action)
     bool isBlocker = (bot == greenBlocker || bot == blueBlocker);
     if (isBlocker)
     {
-        Unit* bluePortal = bot->FindNearestCreature(static_cast<uint32>(KarazhanNpcs::BLUE_PORTAL), 150.0f);
-        Unit* greenPortal = bot->FindNearestCreature(static_cast<uint32>(KarazhanNpcs::GREEN_PORTAL), 150.0f);
+        Unit* bluePortal = bot->FindNearestCreature(BLUE_PORTAL, 150.0f);
+        Unit* greenPortal = bot->FindNearestCreature(GREEN_PORTAL, 150.0f);
         bool inBeam = false;
         for (Unit* portal : {bluePortal, greenPortal}) 
         {
@@ -208,7 +208,7 @@ float KarazhanNetherspiteRedBeamMultiplier::GetValue(Action* action)
     static std::map<ObjectGuid, uint32> beamMoveTimes;
     static std::map<ObjectGuid, bool> lastBeamMoveSideways;
     ObjectGuid botGuid = bot->GetGUID();
-    Unit* redPortal = bot->FindNearestCreature(static_cast<uint32>(KarazhanNpcs::RED_PORTAL), 150.0f);
+    Unit* redPortal = bot->FindNearestCreature(RED_PORTAL, 150.0f);
     if (bot == redBlocker && boss && redPortal)
     {
         Position blockingPos = karazhanHelper.GetPositionOnBeam(boss, redPortal, 18.0f);
@@ -267,7 +267,7 @@ float KarazhanNetherspiteWaitForDPSMultiplier::GetValue(Action* action)
     Unit* victim = boss->GetVictim();
     Player* victimPlayer = victim ? victim->ToPlayer() : nullptr;
     if (!botAI->IsTank(bot) && victimPlayer && !botAI->IsTank(victimPlayer) && 
-        !boss->HasAura(static_cast<uint32>(KarazhanSpells::NETHERSPITE_BANISHED)) &&
+        !boss->HasAura(NETHERSPITE_BANISHED) &&
         (dynamic_cast<AttackAction*>(action) || (!botAI->IsHeal(victimPlayer) && dynamic_cast<CastSpellAction*>(action))))
     {
         return 0.0f;
@@ -284,7 +284,7 @@ float KarazhanNetherspiteWaitForDPSMultiplier::GetValue(Action* action)
             {
                 continue;
             }
-            if (botAI->IsTank(member) && member->HasAura(static_cast<uint32>(KarazhanSpells::RED_BEAM_DEBUFF)))
+            if (botAI->IsTank(member) && member->HasAura(RED_BEAM_DEBUFF)
             {
                 tankHasRedBeam = true;
                 break;
@@ -292,7 +292,7 @@ float KarazhanNetherspiteWaitForDPSMultiplier::GetValue(Action* action)
         }
     }
 
-    if (!boss->HasAura(static_cast<uint32>(KarazhanSpells::NETHERSPITE_BANISHED)) && !tankHasRedBeam)
+    if (!boss->HasAura(NETHERSPITE_BANISHED) && !tankHasRedBeam)
     {
         if (!botAI->IsTank(bot) && dynamic_cast<AttackAction*>(action))
         {
@@ -316,13 +316,13 @@ float KarazhanPrinceMalchezaarMultiplier::GetValue(Action* action)
         return 0.0f;
     }
 
-    if (botAI->IsMelee(bot) && bot->HasAura(static_cast<uint32>(KarazhanSpells::ENFEEBLE)) &&
+    if (botAI->IsMelee(bot) && bot->HasAura(ENFEEBLE) &&
         !dynamic_cast<KarazhanPrinceMalchezaarNonTankAvoidHazardAction*>(action))
     {
         return 0.0f;
     }
 
-    if (botAI->IsRanged(bot) && bot->HasAura(static_cast<uint32>(KarazhanSpells::ENFEEBLE)) &&
+    if (botAI->IsRanged(bot) && bot->HasAura(ENFEEBLE) &&
         (dynamic_cast<MovementAction*>(action) && !dynamic_cast<KarazhanPrinceMalchezaarNonTankAvoidHazardAction*>(action)))
     {
         return 0.0f;

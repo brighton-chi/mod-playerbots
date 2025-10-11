@@ -238,15 +238,6 @@ public:
     bool isUseful() override;
 };
 
-/* class KarazhanNightbaneGroundPhasePositionMeleeAction : public MovementAction
-{
-public:
-    KarazhanNightbaneGroundPhasePositionMeleeAction(PlayerbotAI* botAI, std::string const name = "karazhan nightbane ground phase position melee") : MovementAction(botAI, name) {}
-
-    bool Execute(Event event) override;
-    bool isUseful() override;
-}; */
-
 class KarazhanNightbaneGroundPhasePositionRangedAction : public MovementAction
 {
 public:
