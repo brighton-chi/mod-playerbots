@@ -27,12 +27,14 @@ Creature* GetChanneler(Player* bot, uint32 dbGuid)
     return creature;
 }
 
-namespace MagtheridonTankSpots
+namespace MagtheridonsLairLocations
 {
-    const TankSpot WaitingForMagtheridon = {  -3.312f,   1.857f, -0.406f, 3.149f };
-    const TankSpot Magtheridon =           {  23.624f,   1.905f, -0.406f, 3.189f };
-    const TankSpot NWChanneler =           { -11.764f,  30.818f, -0.411f,   0.0f };
-    const TankSpot NEChanneler =           { -12.490f, -26.211f, -0.411f,   0.0f };
+    const Location WaitingForMagtheridonPosition = {  -3.312f,   1.857f, -0.406f, 3.149f };
+    const Location MagtheridonTankPosition =       {  23.624f,   1.905f, -0.406f, 3.189f };
+    const Location NWChannelerTankPosition =       { -11.764f,  30.818f, -0.411f,   0.0f };
+    const Location NEChannelerTankPosition =       { -12.490f, -26.211f, -0.411f,   0.0f };
+    const Location RangedSpreadPosition =          { -14.890f,   1.995f, -0.406f,   0.0f };
+    const Location HealerSpreadPosition =          {  -2.265f,   1.874f, -0.404f,   0.0f };
 }
 
 const std::vector<uint32> MANTICRON_CUBE_DB_GUIDS = { 43157, 43158, 43159, 43160, 43161 };
@@ -124,6 +126,10 @@ void AssignBotsToCubesByGuidAndCoords(Group* group, const std::vector<CubeInfo>&
 
 std::unordered_map<uint32, bool> lastShadowCageState;
 std::unordered_map<uint32, bool> lastBlastNovaState;
+std::unordered_map<uint32, time_t> magtheridonAggroWaitTimer;
+std::unordered_map<uint32, time_t> magtheridonSpreadWaitTimer;
+std::unordered_map<uint32, time_t> magtheridonBlastNovaTimer;
+
 void UpdateTransitionTimer(Unit* unit, bool transitionCondition, std::unordered_map<uint32, bool>& lastStateMap, 
                            std::unordered_map<uint32, time_t>& timerMap)
 {
@@ -177,7 +183,5 @@ bool IsSafeFromMagtheridonHazards(PlayerbotAI* botAI, Player* bot, float x, floa
 
     return true;
 }
-
-std::unordered_map<uint32, time_t> magtheridonBlastNovaTimer;
 
 }

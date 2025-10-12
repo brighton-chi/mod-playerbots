@@ -10,8 +10,6 @@
 #include "WarlockActions.h"
 
 using namespace MagtheridonHelpers;
-static std::unordered_map<uint32, time_t> magtheridonAggroWaitTimer;
-static std::unordered_map<uint32, bool> lastAggroShadowCageState;
 
 float MagtheridonUseManticronCubeMultiplier::GetValue(Action* action)
 {
@@ -35,47 +33,6 @@ float MagtheridonUseManticronCubeMultiplier::GetValue(Action* action)
         }
     }
 
-    /* if (magtheridon)
-    {
-        const TankSpot& tankSpot = MagtheridonTankSpots::Magtheridon;
-        const float positionThreshold = 3.0f;
-        const float orientationLeeway = 30.0f * M_PI / 180.0f;
-
-        float distanceToTankSpot = bot->GetExactDist2d(tankSpot.x, tankSpot.y);
-        float desiredOrientation = atan2(magtheridon->GetPositionY() - bot->GetPositionY(), magtheridon->GetPositionX() - bot->GetPositionX());
-        float currentOrientation = bot->GetOrientation();
-        float delta = desiredOrientation - currentOrientation;
-        while (delta > M_PI) delta -= 2 * M_PI;
-        while (delta < -M_PI) delta += 2 * M_PI;
-        float orientationDifference = fabs(delta);
-
-        if (botAI->IsMainTank(bot) && magtheridon && magtheridon->GetVictim() == bot &&
-            distanceToTankSpot < positionThreshold && orientationDifference < orientationLeeway)
-        {
-            if (dynamic_cast<MovementAction*>(action))
-            {
-                return 0.0f;
-            }
-        }
-    } */
-
-    return 1.0f;
-}
-
-float MagtheridonWarlockCurseMultiplier::GetValue(Action* action)
-{
-    Unit* channeler = AI_VALUE2(Unit*, "find target", "hellfire channeler");
-    if (channeler && channeler->IsAlive() && 
-       (dynamic_cast<CastCurseOfAgonyAction*>(action) ||
-        dynamic_cast<CastCurseOfAgonyOnAttackerAction*>(action) ||
-        dynamic_cast<CastCurseOfDoomAction*>(action) ||
-        dynamic_cast<CastCurseOfWeaknessAction*>(action) ||
-        dynamic_cast<CastCurseOfTheElementsAction*>(action) ||
-        dynamic_cast<CastCurseOfExhaustionAction*>(action)))
-    {
-        return 0.0f;
-    }
-
     return 1.0f;
 }
 
@@ -84,10 +41,7 @@ float MagtheridonWaitToAttackMultiplier::GetValue(Action* action)
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
     if (magtheridon)
     {
-        UpdateTransitionTimer(magtheridon, magtheridon->HasAura(SHADOW_CAGE),
-                            lastAggroShadowCageState, magtheridonAggroWaitTimer);
-
-        const int aggroWaitSeconds = 8;
+        const int aggroWaitSeconds = 10;
         auto it = magtheridonAggroWaitTimer.find(bot->GetMapId());
         if (it != magtheridonAggroWaitTimer.end())
         {

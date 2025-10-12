@@ -19,8 +19,8 @@ public:
         creators["magtheridon position boss"] = &RaidMagtheridonTriggerContext::magtheridon_position_boss;
         creators["magtheridon spread ranged"] = &RaidMagtheridonTriggerContext::magtheridon_spread_ranged;
         creators["magtheridon spread healer"] = &RaidMagtheridonTriggerContext::magtheridon_spread_healer;
-        creators["magtheridon blast nova timer"] = &RaidMagtheridonTriggerContext::magtheridon_blast_nova_timer;
         creators["magtheridon use manticron cube"] = &RaidMagtheridonTriggerContext::magtheridon_use_manticron_cube;
+        creators["magtheridon update transition timer"] = &RaidMagtheridonTriggerContext::magtheridon_update_transition_timer;
     }
 
 private:
@@ -34,8 +34,8 @@ private:
     static Trigger* magtheridon_position_boss(PlayerbotAI* botAI) { return new MagtheridonPositionBossTrigger(botAI); }
     static Trigger* magtheridon_spread_ranged(PlayerbotAI* botAI) { return new MagtheridonSpreadRangedTrigger(botAI); }
     static Trigger* magtheridon_spread_healer(PlayerbotAI* botAI) { return new MagtheridonSpreadHealerTrigger(botAI); }
-    static Trigger* magtheridon_blast_nova_timer(PlayerbotAI* botAI) { return new MagtheridonBlastNovaTimerTrigger(botAI); }
     static Trigger* magtheridon_use_manticron_cube(PlayerbotAI* botAI) { return new MagtheridonUseManticronCubeTrigger(botAI); }
+    static Trigger* magtheridon_update_transition_timer(PlayerbotAI* botAI) { return new MagtheridonUpdateTransitionTimerTrigger(botAI); }
 };
 
 #endif

@@ -6,6 +6,9 @@ void RaidMagtheridonStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("magtheridon use manticron cube", NextAction::array(0,
         new NextAction("magtheridon use manticron cube", ACTION_EMERGENCY + 10), nullptr)));
 
+    triggers.push_back(new TriggerNode("magtheridon update transition timer", NextAction::array(0,
+        new NextAction("magtheridon update transition timer", ACTION_EMERGENCY), nullptr)));
+
     triggers.push_back(new TriggerNode("magtheridon burning abyssal warlock cc", NextAction::array(0,
         new NextAction("magtheridon burning abyssal warlock cc", ACTION_RAID + 3), nullptr)));
 
@@ -37,7 +40,6 @@ void RaidMagtheridonStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 void RaidMagtheridonStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     multipliers.push_back(new MagtheridonUseManticronCubeMultiplier(botAI));
-    multipliers.push_back(new MagtheridonWarlockCurseMultiplier(botAI));
     multipliers.push_back(new MagtheridonWaitToAttackMultiplier(botAI));
     multipliers.push_back(new MagtheridonDisableOffTankAssistMultiplier(botAI));
 }

@@ -98,8 +98,7 @@ bool HighKingMaulgarBanishFelstalkerTrigger::IsActive()
 {
     Unit* felStalker = AI_VALUE2(Unit*, "find target", "wild fel stalker");
 
-    return felStalker && felStalker->IsAlive() && !felStalker->HasAura(BANISH) && 
-           bot->getClass() == CLASS_WARLOCK;
+    return felStalker && felStalker->IsAlive() && bot->getClass() == CLASS_WARLOCK;
 }
 
 bool HighKingMaulgarHunterMisdirectionTrigger::IsActive()

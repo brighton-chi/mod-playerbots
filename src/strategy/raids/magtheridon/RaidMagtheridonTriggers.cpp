@@ -11,9 +11,10 @@ bool MagtheridonSetBotSightTrigger::IsActive()
 
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
     Unit* channeler = AI_VALUE2(Unit*, "find target", "hellfire channeler");
+    Group* group = bot->GetGroup();
 
-    bool result = magtheridon && magtheridon->IsAlive() ||
-                  channeler && channeler->IsAlive();
+    bool result = group && (magtheridon && magtheridon->IsAlive() ||
+                  channeler && channeler->IsAlive());
 
     if (!result)
         sPlayerbotAIConfig->sightDistance = originalSightDistance;
@@ -26,45 +27,52 @@ bool MagtheridonHellfireChannelerMainTankTrigger::IsActive()
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
     Group* group = bot->GetGroup();
 
-    return group && botAI->IsMainTank(bot) && magtheridon && 
+    return magtheridon && group && botAI->IsMainTank(bot) && 
            magtheridon->HasAura(SHADOW_CAGE);
 }
 
 bool MagtheridonHellfireChannelerNWChannelerTankTrigger::IsActive()
 {
+    Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
     Creature* channelerDiamond = GetChanneler(bot, NORTHWEST_CHANNELER);
 
-    return botAI->IsAssistTankOfIndex(bot, 0) && channelerDiamond && channelerDiamond->IsAlive();
+    return magtheridon && botAI->IsAssistTankOfIndex(bot, 0) && 
+           channelerDiamond && channelerDiamond->IsAlive();
 }
 
 bool MagtheridonHellfireChannelerNEChannelerTankTrigger::IsActive()
 {
+    Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
     Creature* channelerTriangle = GetChanneler(bot, NORTHEAST_CHANNELER);
 
-    return botAI->IsAssistTankOfIndex(bot, 1) && channelerTriangle && channelerTriangle->IsAlive();
+    return magtheridon && botAI->IsAssistTankOfIndex(bot, 1) &&
+           channelerTriangle && channelerTriangle->IsAlive();
 }
 
 bool MagtheridonHellfireChannelerMisdirectionTrigger::IsActive()
 {
+    Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
     Group* group = bot->GetGroup();
+
     Creature* channelerStar = GetChanneler(bot, WEST_CHANNELER);
     Creature* channelerCircle = GetChanneler(bot, EAST_CHANNELER);
 
-    return group && bot->getClass() == CLASS_HUNTER && 
+    return magtheridon && group && bot->getClass() == CLASS_HUNTER &&
            (channelerStar && channelerStar->IsAlive() || channelerCircle && channelerCircle->IsAlive());
 }
 
 bool MagtheridonHellfireChannelerDPSPriorityTrigger::IsActive()
 {
+    Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
+    Unit* channeler = AI_VALUE2(Unit*, "find target", "hellfire channeler");
     Group* group = bot->GetGroup();
+    
     Creature* channelerDiamond  = GetChanneler(bot, NORTHWEST_CHANNELER);
     Creature* channelerTriangle = GetChanneler(bot, NORTHEAST_CHANNELER);
-    Unit* channeler = AI_VALUE2(Unit*, "find target", "hellfire channeler");
-    Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
 
-    if (!group || botAI->IsHeal(bot) || botAI->IsMainTank(bot) ||
-        botAI->IsAssistTankOfIndex(bot, 0) && channelerDiamond->IsAlive() ||
-        botAI->IsAssistTankOfIndex(bot, 1) && channelerTriangle->IsAlive())
+    if (!magtheridon || !magtheridon->IsAlive() || !group || botAI->IsHeal(bot) || botAI->IsMainTank(bot) || 
+        botAI->IsAssistTankOfIndex(bot, 0) && channelerDiamond && channelerDiamond->IsAlive() ||
+        botAI->IsAssistTankOfIndex(bot, 1) && channelerTriangle && channelerTriangle->IsAlive())
     {
         return false;
     }
@@ -75,8 +83,9 @@ bool MagtheridonHellfireChannelerDPSPriorityTrigger::IsActive()
 
 bool MagtheridonBurningAbyssalWarlockCCTrigger::IsActive()
 {
+    Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
     Group* group = bot->GetGroup();
-    if (!group || bot->getClass() != CLASS_WARLOCK)
+    if (!magtheridon || !group || bot->getClass() != CLASS_WARLOCK)
     {
         return false;
     }
@@ -101,11 +110,24 @@ bool MagtheridonPositionBossTrigger::IsActive()
 bool MagtheridonSpreadRangedTrigger::IsActive()
 {
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
+    Unit* channeler = AI_VALUE2(Unit*, "find target", "hellfire channeler");
     Group* group = bot->GetGroup();
-    if (!group || !botAI->IsRanged(bot) || botAI->IsHeal(bot) || !magtheridon || 
-        !magtheridon->IsAlive() || magtheridon->HasAura(SHADOW_CAGE))
+
+    if (!group || !magtheridon || !magtheridon->IsAlive() || !botAI->IsRanged(bot) || 
+        botAI->IsHeal(bot) || channeler && channeler->IsAlive())
     {
         return false;
+    }
+
+    const int spreadWaitSeconds = 10;
+    auto it = magtheridonSpreadWaitTimer.find(bot->GetMapId());
+    if (it != magtheridonSpreadWaitTimer.end())
+    {
+        time_t since = time(nullptr) - it->second;
+        if (since < spreadWaitSeconds)
+        {
+            return false;
+        }
     }
 
     auto cubeIt = botToCubeAssignment.find(bot->GetGUID());
@@ -122,12 +144,6 @@ bool MagtheridonSpreadRangedTrigger::IsActive()
                 return false;
             }
         }
-    }
-
-    Unit* channeler = AI_VALUE2(Unit*, "find target", "hellfire channeler");
-    if (channeler && channeler->IsAlive())
-    {
-        return false;
     }
 
     return true;
@@ -136,11 +152,24 @@ bool MagtheridonSpreadRangedTrigger::IsActive()
 bool MagtheridonSpreadHealerTrigger::IsActive()
 {
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
+    Unit* channeler = AI_VALUE2(Unit*, "find target", "hellfire channeler");
     Group* group = bot->GetGroup();
-    if (!group || !magtheridon || !magtheridon->IsAlive() || magtheridon->HasAura(SHADOW_CAGE) || 
-        !botAI->IsHeal(bot))
+
+    if (!group || !magtheridon || !magtheridon->IsAlive() || !botAI->IsHeal(bot) ||
+        channeler && channeler->IsAlive())
     {
         return false;
+    }
+
+    const int spreadWaitSeconds = 10;
+    auto it = magtheridonSpreadWaitTimer.find(bot->GetMapId());
+    if (it != magtheridonSpreadWaitTimer.end())
+    {
+        time_t since = time(nullptr) - it->second;
+        if (since < spreadWaitSeconds)
+        {
+            return false;
+        }
     }
 
     auto cubeIt = botToCubeAssignment.find(bot->GetGUID());
@@ -159,27 +188,7 @@ bool MagtheridonSpreadHealerTrigger::IsActive()
         }
     }
 
-    Unit* channeler = AI_VALUE2(Unit*, "find target", "hellfire channeler");
-    if (channeler && channeler->IsAlive())
-    {
-        return false;
-    }
-
     return true;
-}
-
-bool MagtheridonBlastNovaTimerTrigger::IsActive()
-{
-    Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
-    if (magtheridon)
-    {
-        bool blastNovaActive = magtheridon->HasUnitState(UNIT_STATE_CASTING) &&
-                               magtheridon->FindCurrentSpellBySpellId(BLAST_NOVA);
-        UpdateTransitionTimer(magtheridon, blastNovaActive, lastBlastNovaState, magtheridonBlastNovaTimer);
-        UpdateTransitionTimer(magtheridon, magtheridon->HasAura(SHADOW_CAGE), lastShadowCageState, magtheridonBlastNovaTimer);
-    }
-
-    return false;
 }
 
 bool MagtheridonUseManticronCubeTrigger::IsActive()
@@ -213,4 +222,12 @@ bool MagtheridonUseManticronCubeTrigger::IsActive()
     }
 
     return botToCubeAssignment.find(bot->GetGUID()) != botToCubeAssignment.end();
+}
+
+bool MagtheridonUpdateTransitionTimerTrigger::IsActive()
+{
+    Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
+    Group* group = bot->GetGroup();
+
+    return magtheridon && magtheridon->IsAlive() && group;
 }

@@ -15,7 +15,8 @@ enum MagtheridonSpells
     // Magtheridon
     SHADOW_CAGE        = 30205,
     BLAST_NOVA         = 30616,
-    SHADOW_GRASP      = 30410,
+    SHADOW_GRASP       = 30410,
+    QUAKE              = 30576,
 
     // Warlock
     BANISH             = 18647,
@@ -23,14 +24,14 @@ enum MagtheridonSpells
     FEAR               =  6215,
 
     // Hunter
-    MISDIRECTION  = 34477,
+    MISDIRECTION       = 34477,
 };
 
 enum MagtheridonNPCs
 {
-    BURNING_ABYSSAL      = 17454,
-    HELLFIRE_CHANNELER   = 17256,
-    TARGET_TRIGGER       = 17474,
+    BURNING_ABYSSAL    = 17454,
+    HELLFIRE_CHANNELER = 17256,
+    TARGET_TRIGGER     = 17474,
 };
 
 namespace MagtheridonHelpers
@@ -54,17 +55,19 @@ void UpdateTransitionTimer(Unit* unit, bool transitionCondition, std::unordered_
                            std::unordered_map<uint32, time_t>& timerMap);
 bool IsSafeFromMagtheridonHazards(PlayerbotAI* botAI, Player* bot, float x, float y, float z);
 
-struct TankSpot
+struct Location
 {
     float x, y, z, orientation;
 };
 
-namespace MagtheridonTankSpots 
+namespace MagtheridonsLairLocations 
 {
-    extern const TankSpot WaitingForMagtheridon;
-    extern const TankSpot Magtheridon;
-    extern const TankSpot NWChanneler;
-    extern const TankSpot NEChanneler;
+    extern const Location WaitingForMagtheridonPosition;
+    extern const Location MagtheridonTankPosition;
+    extern const Location NWChannelerTankPosition;
+    extern const Location NEChannelerTankPosition;
+    extern const Location RangedSpreadPosition;
+    extern const Location HealerSpreadPosition;
 }
 
 struct CubeInfo
@@ -80,6 +83,8 @@ void AssignBotsToCubesByGuidAndCoords(Group* group, const std::vector<CubeInfo>&
 extern std::unordered_map<uint32, bool> lastShadowCageState;
 extern std::unordered_map<uint32, bool> lastBlastNovaState;
 extern std::unordered_map<uint32, time_t> magtheridonBlastNovaTimer;
+extern std::unordered_map<uint32, time_t> magtheridonSpreadWaitTimer;
+extern std::unordered_map<uint32, time_t> magtheridonAggroWaitTimer;
 
 }
 

@@ -93,11 +93,11 @@ float GruulTheDragonkillerTankSpotMultiplier::GetValue(Action* action)
         return 1.0f;
     }
 
-    const TankSpot& tankSpot = GruulsLairTankSpots::Gruul;
+    const Location& tankPosition = GruulsLairLocations::GruulTankPosition;
     const float positionThreshold = 3.0f;
     const float orientationLeeway = 30.0f * M_PI / 180.0f;
 
-    float distanceToTankSpot = bot->GetExactDist2d(tankSpot.x, tankSpot.y);
+    float distanceToTankPosition = bot->GetExactDist2d(tankPosition.x, tankPosition.y);
     float desiredOrientation = atan2(gruul->GetPositionY() - bot->GetPositionY(), gruul->GetPositionX() - bot->GetPositionX());
     float currentOrientation = bot->GetOrientation();
     float delta = desiredOrientation - currentOrientation;
@@ -106,9 +106,9 @@ float GruulTheDragonkillerTankSpotMultiplier::GetValue(Action* action)
     float orientationDifference = fabs(delta);
 
     if (botAI->IsMainTank(bot) && gruul->GetVictim() == bot &&
-        distanceToTankSpot < positionThreshold && orientationDifference < orientationLeeway)
+        distanceToTankPosition < positionThreshold && orientationDifference < orientationLeeway)
     {
-        if (dynamic_cast<MovementAction*>(action))
+        if (dynamic_cast<CombatFormationMoveAction*>(action))
         {
             return 0.0f;
         }

@@ -74,17 +74,17 @@ public:
     bool IsActive() override;
 };
 
-class MagtheridonBlastNovaTimerTrigger : public Trigger
-{
-public:
-    MagtheridonBlastNovaTimerTrigger(PlayerbotAI* botAI) : Trigger(botAI, "magtheridon blast nova timer") {};
-    bool IsActive() override;
-};
-
 class MagtheridonUseManticronCubeTrigger : public Trigger
 {
 public:
     MagtheridonUseManticronCubeTrigger(PlayerbotAI* botAI) : Trigger(botAI, "magtheridon use manticron cube") {};
+    bool IsActive() override;
+};
+
+class MagtheridonUpdateTransitionTimerTrigger : public Trigger
+{
+public:
+    MagtheridonUpdateTransitionTimerTrigger(PlayerbotAI* botAI) : Trigger(botAI, "magtheridon update transition timer") {};
     bool IsActive() override;
 };
 

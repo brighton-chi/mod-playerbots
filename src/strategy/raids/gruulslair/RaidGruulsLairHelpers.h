@@ -23,6 +23,8 @@ enum GruulsLairSpells
 	GROUND_SLAM_2  = 39187,
 };
 
+constexpr uint32 WILD_FEL_STALKER = 18847;
+
 namespace GruulsLairHelpers
 {
 
@@ -38,19 +40,19 @@ bool IsKigglerMoonkinTank(PlayerbotAI* botAI, Player* bot);
 bool IsPositionSafe(PlayerbotAI* botAI, Player* bot, Position pos);
 bool FindSafePosition(PlayerbotAI* botAI, Player* bot, Position& outPos);
 
-struct TankSpot 
+struct Location 
 {
 	float x, y, z;
 };
 
-namespace GruulsLairTankSpots 
+namespace GruulsLairLocations 
 {
-    extern const TankSpot Maulgar;
-    extern const TankSpot Olm;
-    extern const TankSpot Blindeye;
-	extern const TankSpot Krosh;
-	extern const TankSpot MaulgarRoomCenter;
-    extern const TankSpot Gruul;
+    extern const Location MaulgarTankPosition;
+    extern const Location OlmTankPosition;
+    extern const Location BlindeyeTankPosition;
+	extern const Location KroshTankPosition;
+	extern const Location MaulgarRoomCenter;
+    extern const Location GruulTankPosition;
 }
 
 }

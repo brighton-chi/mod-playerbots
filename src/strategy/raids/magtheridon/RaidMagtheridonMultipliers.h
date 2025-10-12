@@ -10,13 +10,6 @@ public:
     float GetValue(Action* action) override;
 };
 
-class MagtheridonWarlockCurseMultiplier : public Multiplier
-{
-public:
-    MagtheridonWarlockCurseMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "magtheridon warlock curse multiplier") {}
-    float GetValue(Action* action) override;
-};
-
 class MagtheridonWaitToAttackMultiplier : public Multiplier
 {
 public:

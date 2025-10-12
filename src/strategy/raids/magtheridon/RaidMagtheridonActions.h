@@ -16,7 +16,7 @@ public:
 class MagtheridonHellfireChannelerNWChannelerTankAction : public AttackAction
 {
 public:
-    MagtheridonHellfireChannelerNWChannelerTankAction(PlayerbotAI* botAI, std::string const name = "magtheridon hellfire channeler northwest channeler tank") : AttackAction(botAI, name) {};
+    MagtheridonHellfireChannelerNWChannelerTankAction(PlayerbotAI* botAI, std::string const name = "magtheridon hellfire channeler nw channeler tank") : AttackAction(botAI, name) {};
 
     bool Execute(Event event) override;
 };
@@ -24,7 +24,7 @@ public:
 class MagtheridonHellfireChannelerNEChannelerTankAction : public AttackAction
 {
 public:
-    MagtheridonHellfireChannelerNEChannelerTankAction(PlayerbotAI* botAI, std::string const name = "magtheridon hellfire channeler northeast channeler tank") : AttackAction(botAI, name) {};
+    MagtheridonHellfireChannelerNEChannelerTankAction(PlayerbotAI* botAI, std::string const name = "magtheridon hellfire channeler ne channeler tank") : AttackAction(botAI, name) {};
 
     bool Execute(Event event) override;
 };
@@ -64,6 +64,9 @@ public:
 class MagtheridonSpreadRangedAction : public MovementAction
 {
 public:
+    static std::unordered_map<ObjectGuid, Position> initialPositions;
+    static std::unordered_map<ObjectGuid, bool> hasReachedInitialPosition;
+
     MagtheridonSpreadRangedAction(PlayerbotAI* botAI, std::string const name = "magtheridon spread ranged") : MovementAction(botAI, name) {};
 
     bool Execute(Event event) override;
@@ -72,6 +75,9 @@ public:
 class MagtheridonSpreadHealerAction : public MovementAction
 {
 public:
+    static std::unordered_map<ObjectGuid, Position> initialPositions;
+    static std::unordered_map<ObjectGuid, bool> hasReachedInitialPosition;
+
     MagtheridonSpreadHealerAction(PlayerbotAI* botAI, std::string const name = "magtheridon spread healer") : MovementAction(botAI, name) {};
 
     bool Execute(Event event) override;
@@ -81,6 +87,14 @@ class MagtheridonUseManticronCubeAction : public MovementAction
 {
 public:
     MagtheridonUseManticronCubeAction(PlayerbotAI* botAI, std::string const name = "magtheridon use manticron cube") : MovementAction(botAI, name) {};
+
+    bool Execute(Event event) override;
+};
+
+class MagtheridonUpdateTransitionTimerAction : public Action
+{
+public:
+    MagtheridonUpdateTransitionTimerAction(PlayerbotAI* botAI, std::string const name = "magtheridon update transition timer") : Action(botAI, name) {};
 
     bool Execute(Event event) override;
 };
