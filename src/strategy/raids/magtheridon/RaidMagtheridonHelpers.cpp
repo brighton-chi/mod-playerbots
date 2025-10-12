@@ -144,7 +144,7 @@ bool IsSafeFromMagtheridonHazards(PlayerbotAI* botAI, Player* bot, float x, floa
     for (const auto& npcGuid : npcs)
     {
         Unit* unit = botAI->GetUnit(npcGuid);
-        if (!unit || unit->GetEntry() != static_cast<uint32>(MagtheridonNPCs::TARGET_TRIGGER))
+        if (!unit || unit->GetEntry() != TARGET_TRIGGER)
         {
             continue;
         }
@@ -177,5 +177,7 @@ bool IsSafeFromMagtheridonHazards(PlayerbotAI* botAI, Player* bot, float x, floa
 
     return true;
 }
+
+std::unordered_map<uint32, time_t> magtheridonBlastNovaTimer;
 
 }

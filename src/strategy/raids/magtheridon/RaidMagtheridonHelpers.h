@@ -10,7 +10,7 @@
 #include "PlayerbotAI.h"
 #include "RtiTargetValue.h"
 
-enum class MagtheridonSpells
+enum MagtheridonSpells
 {
     // Magtheridon
     SHADOW_CAGE        = 30205,
@@ -26,7 +26,7 @@ enum class MagtheridonSpells
     MISDIRECTION  = 34477,
 };
 
-enum class MagtheridonNPCs
+enum MagtheridonNPCs
 {
     BURNING_ABYSSAL      = 17454,
     HELLFIRE_CHANNELER   = 17256,
@@ -79,6 +79,7 @@ std::vector<CubeInfo> GetAllCubeInfosByDbGuids(Map* map, const std::vector<uint3
 void AssignBotsToCubesByGuidAndCoords(Group* group, const std::vector<CubeInfo>& cubes, PlayerbotAI* botAI);
 extern std::unordered_map<uint32, bool> lastShadowCageState;
 extern std::unordered_map<uint32, bool> lastBlastNovaState;
+extern std::unordered_map<uint32, time_t> magtheridonBlastNovaTimer;
 
 }
 
