@@ -9,91 +9,103 @@ class RaidKarazhanActionContext : public NamedObjectContext<Action>
 public:
     RaidKarazhanActionContext()
     {
-        creators["karazhan attumen the huntsman split bosses"] = &RaidKarazhanActionContext::karazhan_attumen_the_huntsman_split_bosses;
-        creators["karazhan attumen the huntsman stack behind"] = &RaidKarazhanActionContext::karazhan_attumen_the_huntsman_stack_behind;
+        creators["attumen the huntsman main tank"] = &RaidKarazhanActionContext::attumen_the_huntsman_main_tank;
+        creators["attumen the huntsman split bosses"] = &RaidKarazhanActionContext::attumen_the_huntsman_split_bosses;
+        creators["attumen the huntsman stack behind"] = &RaidKarazhanActionContext::attumen_the_huntsman_stack_behind;
+        creators["attumen the huntsman manage timer"] = &RaidKarazhanActionContext::attumen_the_huntsman_manage_timer;
 
-        creators["karazhan moroes mark target"] = &RaidKarazhanActionContext::karazhan_moroes_mark_target;
+        creators["moroes mark target"] = &RaidKarazhanActionContext::moroes_mark_target;
 
-        creators["karazhan maiden of virtue main tank"] = &RaidKarazhanActionContext::karazhan_maiden_of_virtue_main_tank;
-        creators["karazhan maiden of virtue position ranged"] = &RaidKarazhanActionContext::karazhan_maiden_of_virtue_position_ranged;
+        creators["maiden of virtue main tank movement"] = &RaidKarazhanActionContext::maiden_of_virtue_main_tank_movement;
+        creators["maiden of virtue position ranged"] = &RaidKarazhanActionContext::maiden_of_virtue_position_ranged;
 
-        creators["karazhan big bad wolf position boss"] = &RaidKarazhanActionContext::karazhan_big_bad_wolf_position_boss;
-        creators["karazhan big bad wolf run away"] = &RaidKarazhanActionContext::karazhan_big_bad_wolf_run_away;
+        creators["big bad wolf position boss"] = &RaidKarazhanActionContext::big_bad_wolf_position_boss;
+        creators["big bad wolf run away"] = &RaidKarazhanActionContext::big_bad_wolf_run_away;
 
-        creators["karazhan romulo and julianne mark target"] = &RaidKarazhanActionContext::karazhan_romulo_and_julianne_mark_target;
+        creators["romulo and julianne mark target"] = &RaidKarazhanActionContext::romulo_and_julianne_mark_target;
 
-        creators["karazhan wizard of oz mark target"] = &RaidKarazhanActionContext::karazhan_wizard_of_oz_mark_target;
-        creators["karazhan wizard of oz scorch strawman"] = &RaidKarazhanActionContext::karazhan_wizard_of_oz_scorch_strawman;
+        creators["wizard of oz mark target"] = &RaidKarazhanActionContext::wizard_of_oz_mark_target;
+        creators["wizard of oz scorch strawman"] = &RaidKarazhanActionContext::wizard_of_oz_scorch_strawman;
 
-        creators["karazhan the curator mark astral flare"] = &RaidKarazhanActionContext::karazhan_the_curator_mark_astral_flare;
-        creators["karazhan the curator position boss"] = &RaidKarazhanActionContext::karazhan_the_curator_position_boss;
-        creators["karazhan the curator spread ranged"] = &RaidKarazhanActionContext::karazhan_the_curator_spread_ranged;
+        creators["the curator mark astral flare"] = &RaidKarazhanActionContext::the_curator_mark_astral_flare;
+        creators["the curator position boss"] = &RaidKarazhanActionContext::the_curator_position_boss;
+        creators["the curator spread ranged"] = &RaidKarazhanActionContext::the_curator_spread_ranged;
 
-        creators["karazhan terestian illhoof mark target"] = &RaidKarazhanActionContext::karazhan_terestian_illhoof_mark_target;
+        creators["terestian illhoof mark target"] = &RaidKarazhanActionContext::terestian_illhoof_mark_target;
 
-        creators["karazhan shade of aran arcane explosion run away"] = &RaidKarazhanActionContext::karazhan_shade_of_aran_arcane_explosion_run_away;
-        creators["karazhan shade of aran flame wreath stop movement"] = &RaidKarazhanActionContext::karazhan_shade_of_aran_flame_wreath_stop_movement;
-        creators["karazhan shade of aran mark conjured elemental"] = &RaidKarazhanActionContext::karazhan_shade_of_aran_mark_conjured_elemental;
-        creators["karazhan shade of aran spread ranged"] = &RaidKarazhanActionContext::karazhan_shade_of_aran_spread_ranged;
+        creators["shade of aran arcane explosion run away"] = &RaidKarazhanActionContext::shade_of_aran_arcane_explosion_run_away;
+        creators["shade of aran flame wreath stop movement"] = &RaidKarazhanActionContext::shade_of_aran_flame_wreath_stop_movement;
+        creators["shade of aran mark conjured elemental"] = &RaidKarazhanActionContext::shade_of_aran_mark_conjured_elemental;
+        creators["shade of aran spread ranged"] = &RaidKarazhanActionContext::shade_of_aran_spread_ranged;
 
-        creators["karazhan netherspite block red beam"] = &RaidKarazhanActionContext::karazhan_netherspite_block_red_beam;
-        creators["karazhan netherspite block blue beam"] = &RaidKarazhanActionContext::karazhan_netherspite_block_blue_beam;
-        creators["karazhan netherspite block green beam"] = &RaidKarazhanActionContext::karazhan_netherspite_block_green_beam;
-        creators["karazhan netherspite avoid beam and void zone"] = &RaidKarazhanActionContext::karazhan_netherspite_avoid_beam_and_void_zone;
-        creators["karazhan netherspite banish phase avoid void zone"] = &RaidKarazhanActionContext::karazhan_netherspite_banish_phase_avoid_void_zone;
+        creators["netherspite block red beam"] = &RaidKarazhanActionContext::netherspite_block_red_beam;
+        creators["netherspite block blue beam"] = &RaidKarazhanActionContext::netherspite_block_blue_beam;
+        creators["netherspite block green beam"] = &RaidKarazhanActionContext::netherspite_block_green_beam;
+        creators["netherspite avoid beam and void zone"] = &RaidKarazhanActionContext::netherspite_avoid_beam_and_void_zone;
+        creators["netherspite banish phase avoid void zone"] = &RaidKarazhanActionContext::netherspite_banish_phase_avoid_void_zone;
+        creators["netherspite manage timers"] = &RaidKarazhanActionContext::netherspite_manage_timers;
 
-        creators["karazhan prince malchezaar non tank avoid hazard"] = &RaidKarazhanActionContext::karazhan_prince_malchezaar_non_tank_avoid_hazard;
-        creators["karazhan prince malchezaar main tank"] = &RaidKarazhanActionContext::karazhan_prince_malchezaar_main_tank;
+        creators["prince malchezaar enfeebled avoid hazard"] = &RaidKarazhanActionContext::prince_malchezaar_enfeebled_avoid_hazard;
+        creators["prince malchezaar non tank avoid infernal"] = &RaidKarazhanActionContext::prince_malchezaar_non_tank_avoid_infernal;
+        // creators["prince malchezaar non tank avoid hazard"] = &RaidKarazhanActionContext::prince_malchezaar_non_tank_avoid_hazard;
+        creators["prince malchezaar main tank movement"] = &RaidKarazhanActionContext::prince_malchezaar_main_tank_movement;
 
-        creators["karazhan nightbane ground phase position boss"] = &RaidKarazhanActionContext::karazhan_nightbane_ground_phase_position_boss;
-        creators["karazhan nightbane ground phase position ranged"] = &RaidKarazhanActionContext::karazhan_nightbane_ground_phase_position_ranged;
-        creators["karazhan nightbane cast fear ward"] = &RaidKarazhanActionContext::karazhan_nightbane_cast_fear_ward;
-        creators["karazhan nightbane flight phase movement"] = &RaidKarazhanActionContext::karazhan_nightbane_flight_phase_movement;
-        creators["karazhan nightbane reset flight phase timer"] = &RaidKarazhanActionContext::karazhan_nightbane_reset_flight_phase_timer;
+        creators["nightbane ground phase position boss"] = &RaidKarazhanActionContext::nightbane_ground_phase_position_boss;
+        creators["nightbane ground phase rotate ranged positions"] = &RaidKarazhanActionContext::nightbane_ground_phase_rotate_ranged_positions;
+        creators["nightbane cast fear ward on main tank"] = &RaidKarazhanActionContext::nightbane_cast_fear_ward_on_main_tank;
+        creators["nightbane control pet aggression"] = &RaidKarazhanActionContext::nightbane_control_pet_aggression;
+        creators["nightbane flight phase movement"] = &RaidKarazhanActionContext::nightbane_flight_phase_movement;
+        creators["nightbane manage timers and trackers"] = &RaidKarazhanActionContext::nightbane_manage_timers_and_trackers;
     }
 
 private:
-    static Action* karazhan_attumen_the_huntsman_split_bosses(PlayerbotAI* botAI) { return new KarazhanAttumenTheHuntsmanSplitBossesAction(botAI); }
-    static Action* karazhan_attumen_the_huntsman_stack_behind(PlayerbotAI* botAI) { return new KarazhanAttumenTheHuntsmanStackBehindAction(botAI); }
+    static Action* attumen_the_huntsman_main_tank(PlayerbotAI* botAI) { return new AttumenTheHuntsmanMainTankAction(botAI); }
+    static Action* attumen_the_huntsman_split_bosses(PlayerbotAI* botAI) { return new AttumenTheHuntsmanSplitBossesAction(botAI); }
+    static Action* attumen_the_huntsman_stack_behind(PlayerbotAI* botAI) { return new AttumenTheHuntsmanStackBehindAction(botAI); }
+    static Action* attumen_the_huntsman_manage_timer(PlayerbotAI* botAI) { return new AttumenTheHuntsmanManageTimerAction(botAI); }
 
-    static Action* karazhan_moroes_mark_target(PlayerbotAI* botAI) { return new KarazhanMoroesMarkTargetAction(botAI); }
+    static Action* moroes_mark_target(PlayerbotAI* botAI) { return new MoroesMarkTargetAction(botAI); }
 
-    static Action* karazhan_maiden_of_virtue_main_tank(PlayerbotAI* botAI) { return new KarazhanMaidenOfVirtueMainTankAction(botAI); }
-    static Action* karazhan_maiden_of_virtue_position_ranged(PlayerbotAI* botAI) { return new KarazhanMaidenOfVirtuePositionRangedAction(botAI); }
+    static Action* maiden_of_virtue_main_tank_movement(PlayerbotAI* botAI) { return new MaidenOfVirtueMainTankMovementAction(botAI); }
+    static Action* maiden_of_virtue_position_ranged(PlayerbotAI* botAI) { return new MaidenOfVirtuePositionRangedAction(botAI); }
 
-    static Action* karazhan_big_bad_wolf_position_boss(PlayerbotAI* botAI) { return new KarazhanBigBadWolfPositionBossAction(botAI); }
-    static Action* karazhan_big_bad_wolf_run_away(PlayerbotAI* botAI) { return new KarazhanBigBadWolfRunAwayAction(botAI); }
+    static Action* big_bad_wolf_position_boss(PlayerbotAI* botAI) { return new BigBadWolfPositionBossAction(botAI); }
+    static Action* big_bad_wolf_run_away(PlayerbotAI* botAI) { return new BigBadWolfRunAwayAction(botAI); }
 
-    static Action* karazhan_romulo_and_julianne_mark_target(PlayerbotAI* botAI) { return new KarazhanRomuloAndJulianneMarkTargetAction(botAI); }
+    static Action* romulo_and_julianne_mark_target(PlayerbotAI* botAI) { return new RomuloAndJulianneMarkTargetAction(botAI); }
 
-    static Action* karazhan_wizard_of_oz_mark_target(PlayerbotAI* botAI) { return new KarazhanWizardOfOzMarkTargetAction(botAI); }
-    static Action* karazhan_wizard_of_oz_scorch_strawman(PlayerbotAI* botAI) { return new KarazhanWizardOfOzScorchStrawmanAction(botAI); }
+    static Action* wizard_of_oz_mark_target(PlayerbotAI* botAI) { return new WizardOfOzMarkTargetAction(botAI); }
+    static Action* wizard_of_oz_scorch_strawman(PlayerbotAI* botAI) { return new WizardOfOzScorchStrawmanAction(botAI); }
 
-    static Action* karazhan_the_curator_mark_astral_flare(PlayerbotAI* botAI) { return new KarazhanTheCuratorMarkAstralFlareAction(botAI); }
-    static Action* karazhan_the_curator_position_boss(PlayerbotAI* botAI) { return new KarazhanTheCuratorPositionBossAction(botAI); }
-    static Action* karazhan_the_curator_spread_ranged(PlayerbotAI* botAI) { return new KarazhanTheCuratorSpreadRangedAction(botAI); }
+    static Action* the_curator_mark_astral_flare(PlayerbotAI* botAI) { return new TheCuratorMarkAstralFlareAction(botAI); }
+    static Action* the_curator_position_boss(PlayerbotAI* botAI) { return new TheCuratorPositionBossAction(botAI); }
+    static Action* the_curator_spread_ranged(PlayerbotAI* botAI) { return new TheCuratorSpreadRangedAction(botAI); }
 
-    static Action* karazhan_terestian_illhoof_mark_target(PlayerbotAI* botAI) { return new KarazhanTerestianIllhoofMarkTargetAction(botAI); }
+    static Action* terestian_illhoof_mark_target(PlayerbotAI* botAI) { return new TerestianIllhoofMarkTargetAction(botAI); }
 
-    static Action* karazhan_shade_of_aran_arcane_explosion_run_away(PlayerbotAI* botAI) { return new KarazhanShadeOfAranArcaneExplosionRunAwayAction(botAI); }
-    static Action* karazhan_shade_of_aran_flame_wreath_stop_movement(PlayerbotAI* botAI) { return new KarazhanShadeOfAranFlameWreathStopMovementAction(botAI); }
-    static Action* karazhan_shade_of_aran_mark_conjured_elemental(PlayerbotAI* botAI) { return new KarazhanShadeOfAranMarkConjuredElementalAction(botAI); }
-    static Action* karazhan_shade_of_aran_spread_ranged(PlayerbotAI* botAI) { return new KarazhanShadeOfAranSpreadRangedAction(botAI); }
+    static Action* shade_of_aran_arcane_explosion_run_away(PlayerbotAI* botAI) { return new ShadeOfAranArcaneExplosionRunAwayAction(botAI); }
+    static Action* shade_of_aran_flame_wreath_stop_movement(PlayerbotAI* botAI) { return new ShadeOfAranFlameWreathStopMovementAction(botAI); }
+    static Action* shade_of_aran_mark_conjured_elemental(PlayerbotAI* botAI) { return new ShadeOfAranMarkConjuredElementalAction(botAI); }
+    static Action* shade_of_aran_spread_ranged(PlayerbotAI* botAI) { return new ShadeOfAranSpreadRangedAction(botAI); }
 
-    static Action* karazhan_netherspite_block_red_beam(PlayerbotAI* botAI) { return new KarazhanNetherspiteBlockRedBeamAction(botAI); }
-    static Action* karazhan_netherspite_block_blue_beam(PlayerbotAI* botAI) { return new KarazhanNetherspiteBlockBlueBeamAction(botAI); }
-    static Action* karazhan_netherspite_block_green_beam(PlayerbotAI* botAI) { return new KarazhanNetherspiteBlockGreenBeamAction(botAI); }
-    static Action* karazhan_netherspite_avoid_beam_and_void_zone(PlayerbotAI* botAI) { return new KarazhanNetherspiteAvoidBeamAndVoidZoneAction(botAI); }
-    static Action* karazhan_netherspite_banish_phase_avoid_void_zone(PlayerbotAI* botAI) { return new KarazhanNetherspiteBanishPhaseAvoidVoidZoneAction(botAI); }
+    static Action* netherspite_block_red_beam(PlayerbotAI* botAI) { return new NetherspiteBlockRedBeamAction(botAI); }
+    static Action* netherspite_block_blue_beam(PlayerbotAI* botAI) { return new NetherspiteBlockBlueBeamAction(botAI); }
+    static Action* netherspite_block_green_beam(PlayerbotAI* botAI) { return new NetherspiteBlockGreenBeamAction(botAI); }
+    static Action* netherspite_avoid_beam_and_void_zone(PlayerbotAI* botAI) { return new NetherspiteAvoidBeamAndVoidZoneAction(botAI); }
+    static Action* netherspite_banish_phase_avoid_void_zone(PlayerbotAI* botAI) { return new NetherspiteBanishPhaseAvoidVoidZoneAction(botAI); }
+    static Action* netherspite_manage_timers(PlayerbotAI* botAI) { return new NetherspiteManageTimersAction(botAI); }
 
-    static Action* karazhan_prince_malchezaar_non_tank_avoid_hazard(PlayerbotAI* botAI) { return new KarazhanPrinceMalchezaarNonTankAvoidHazardAction(botAI); }
-    static Action* karazhan_prince_malchezaar_main_tank(PlayerbotAI* botAI) { return new KarazhanPrinceMalchezaarMainTankAction(botAI); }
+    static Action* prince_malchezaar_enfeebled_avoid_hazard(PlayerbotAI* botAI) { return new PrinceMalchezaarEnfeebledAvoidHazardAction(botAI); }
+    static Action* prince_malchezaar_non_tank_avoid_infernal(PlayerbotAI* botAI) { return new PrinceMalchezaarNonTankAvoidInfernalAction(botAI); }
+    // static Action* prince_malchezaar_non_tank_avoid_hazard(PlayerbotAI* botAI) { return new PrinceMalchezaarNonTankAvoidHazardAction(botAI); }
+    static Action* prince_malchezaar_main_tank_movement(PlayerbotAI* botAI) { return new PrinceMalchezaarMainTankMovementAction(botAI); }
 
-    static Action* karazhan_nightbane_ground_phase_position_boss(PlayerbotAI* botAI) { return new KarazhanNightbaneGroundPhasePositionBossAction(botAI); }
-    static Action* karazhan_nightbane_ground_phase_position_ranged(PlayerbotAI* botAI) { return new KarazhanNightbaneGroundPhasePositionRangedAction(botAI); }
-    static Action* karazhan_nightbane_cast_fear_ward(PlayerbotAI* botAI) { return new KarazhanNightbaneCastFearWardAction(botAI); }
-    static Action* karazhan_nightbane_flight_phase_movement(PlayerbotAI* botAI) { return new KarazhanNightbaneFlightPhaseMovementAction(botAI); }
-    static Action* karazhan_nightbane_reset_flight_phase_timer(PlayerbotAI* botAI) { return new KarazhanNightbaneResetFlightPhaseTimerAction(botAI); }
+    static Action* nightbane_ground_phase_position_boss(PlayerbotAI* botAI) { return new NightbaneGroundPhasePositionBossAction(botAI); }
+    static Action* nightbane_ground_phase_rotate_ranged_positions(PlayerbotAI* botAI) { return new NightbaneGroundPhaseRotateRangedPositionsAction(botAI); }
+    static Action* nightbane_cast_fear_ward_on_main_tank(PlayerbotAI* botAI) { return new NightbaneCastFearWardOnMainTankAction(botAI); }
+    static Action* nightbane_control_pet_aggression(PlayerbotAI* botAI) { return new NightbaneControlPetAggressionAction(botAI); }
+    static Action* nightbane_flight_phase_movement(PlayerbotAI* botAI) { return new NightbaneFlightPhaseMovementAction(botAI); }
+    static Action* nightbane_manage_timers_and_trackers(PlayerbotAI* botAI) { return new NightbaneManageTimersAndTrackersAction(botAI); }
 };
 
 #endif

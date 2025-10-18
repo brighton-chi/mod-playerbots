@@ -29,13 +29,12 @@ float HighKingMaulgarDisableTankAssistMultiplier::GetValue(Action* action)
     Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
 
     if (IsAnyOgreBossAlive(botAI) && dynamic_cast<TankAssistAction*>(action))
-    {
         return 0.0f;
-    }
 
     return 1.0f;
 }
 
+// Don't run back in during Whirlwind
 float HighKingMaulgarAvoidWhirlwindMultiplier::GetValue(Action* action)
 {
     Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
@@ -44,7 +43,7 @@ float HighKingMaulgarAvoidWhirlwindMultiplier::GetValue(Action* action)
     Unit* olm = AI_VALUE2(Unit*, "find target", "olm the summoner");
     Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
 
-    if (maulgar && maulgar->HasAura(WHIRLWIND) &&
+    if (maulgar && maulgar->HasAura(SPELL_WHIRLWIND) &&
         (!kiggler || !kiggler->IsAlive()) &&
         (!krosh || !krosh->IsAlive()) &&
         (!olm || !olm->IsAlive()) &&
@@ -52,22 +51,20 @@ float HighKingMaulgarAvoidWhirlwindMultiplier::GetValue(Action* action)
     {
         if (IsChargeAction(action) || (dynamic_cast<MovementAction*>(action) &&
             !dynamic_cast<HighKingMaulgarWhirlwindRunAwayAction*>(action)))
-        {
             return 0.0f;
-        }
     }
 
     return 1.0f;
 }
 
+// Arcane Shot will remove Spell Shield, which the mage tank needs to survive
 float HighKingMaulgarDisableArcaneShotOnKroshMultiplier::GetValue(Action* action)
 {
     Unit* krosh = AI_VALUE2(Unit*, "find target", "krosh firehand");
     Unit* target = AI_VALUE(Unit*, "current target");
+
     if (krosh && target && target->GetGUID() == krosh->GetGUID() && dynamic_cast<CastArcaneShotAction*>(action))
-    {
         return 0.0f;
-    }
 
     return 1.0f;
 }
@@ -78,40 +75,24 @@ float HighKingMaulgarDisableMageTankAOEMultiplier::GetValue(Action* action)
         (dynamic_cast<CastFrostNovaAction*>(action) || dynamic_cast<CastBlizzardAction*>(action) ||
         dynamic_cast<CastConeOfColdAction*>(action) || dynamic_cast<CastFlamestrikeAction*>(action) ||
         dynamic_cast<CastDragonsBreathAction*>(action) || dynamic_cast<CastBlastWaveAction*>(action)))
-    {
         return 0.0f;
-    }
 
     return 1.0f;
 }
 
-float GruulTheDragonkillerTankSpotMultiplier::GetValue(Action* action)
+float GruulTheDragonkillerMainTankMovementMultiplier::GetValue(Action* action)
 {
     Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
     if (!gruul) 
-    {
         return 1.0f;
-    }
 
-    const Location& tankPosition = GruulsLairLocations::GruulTankPosition;
-    const float positionThreshold = 3.0f;
-    const float orientationLeeway = 30.0f * M_PI / 180.0f;
-
-    float distanceToTankPosition = bot->GetExactDist2d(tankPosition.x, tankPosition.y);
-    float desiredOrientation = atan2(gruul->GetPositionY() - bot->GetPositionY(), gruul->GetPositionX() - bot->GetPositionX());
-    float currentOrientation = bot->GetOrientation();
-    float delta = desiredOrientation - currentOrientation;
-    while (delta > M_PI) delta -= 2 * M_PI;
-    while (delta < -M_PI) delta += 2 * M_PI;
-    float orientationDifference = fabs(delta);
-
-    if (botAI->IsMainTank(bot) && gruul->GetVictim() == bot &&
-        distanceToTankPosition < positionThreshold && orientationDifference < orientationLeeway)
+    if (botAI->IsMainTank(bot))
     {
-        if (dynamic_cast<CombatFormationMoveAction*>(action))
-        {
+        if (gruul->GetVictim() == bot && dynamic_cast<CombatFormationMoveAction*>(action))
             return 0.0f;
-        }
+
+        if (dynamic_cast<AvoidAoeAction*>(action))
+            return 0.0f;
     }
 
     return 1.0f;
@@ -121,18 +102,14 @@ float GruulTheDragonkillerGroundSlamMultiplier::GetValue(Action* action)
 {
     Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
     if (!gruul) 
-    {
         return 1.0f;
-    }
 
-    if (bot->HasAura(GROUND_SLAM_1) || 
-        bot->HasAura(GROUND_SLAM_2))
+    if (bot->HasAura(SPELL_GROUND_SLAM_1) || 
+        bot->HasAura(SPELL_GROUND_SLAM_2))
     {
         if ((dynamic_cast<MovementAction*>(action) && !dynamic_cast<GruulTheDragonkillerShatterSpreadAction*>(action)) ||
             IsChargeAction(action))
-        {
             return 0.0f;
-        }
     }
 
     return 1.0f;

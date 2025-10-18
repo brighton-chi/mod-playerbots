@@ -7,38 +7,42 @@
 enum GruulsLairSpells
 {
 	// High King Maulgar
-	WHIRLWIND  	   = 33238,
+	SPELL_WHIRLWIND  	   = 33238,
 
 	// Krosh Firehand
-	SPELL_SHIELD   = 33054,
+	SPELL_SPELL_SHIELD   = 33054,
 
 	// Hunter
-	MISDIRECTION   = 34477,
+	SPELL_MISDIRECTION   = 34477,
 
 	// Warlock
-	BANISH     	   = 18647, // Rank 2
+	SPELL_BANISH     	   = 18647, // Rank 2
 
 	// Gruul the Dragonkiller
-	GROUND_SLAM_1  = 33525,
-	GROUND_SLAM_2  = 39187,
+	SPELL_GROUND_SLAM_1  = 33525,
+	SPELL_GROUND_SLAM_2  = 39187,
 };
 
-constexpr uint32 WILD_FEL_STALKER = 18847;
+enum GruulsLairNPCs
+{
+	NPC_WILD_FEL_STALKER = 18847,
+};
 
 namespace GruulsLairHelpers
 {
 
-inline constexpr int8 squareIcon = RtiTargetValue::squareIndex;
-inline constexpr int8 starIcon = RtiTargetValue::starIndex;
-inline constexpr int8 circleIcon = RtiTargetValue::circleIndex;
-inline constexpr int8 diamondIcon = RtiTargetValue::diamondIndex;
-inline constexpr int8 triangleIcon = RtiTargetValue::triangleIndex;
-
 bool IsAnyOgreBossAlive(PlayerbotAI* botAI);
+void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);
+void MarkTargetWithSquare(Player* bot, Unit* target);
+void MarkTargetWithStar(Player* bot, Unit* target);
+void MarkTargetWithCircle(Player* bot, Unit* target);
+void MarkTargetWithDiamond(Player* bot, Unit* target);
+void MarkTargetWithTriangle(Player* bot, Unit* target);
+void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target);
 bool IsKroshMageTank(PlayerbotAI* botAI, Player* bot);
 bool IsKigglerMoonkinTank(PlayerbotAI* botAI, Player* bot);
 bool IsPositionSafe(PlayerbotAI* botAI, Player* bot, Position pos);
-bool FindSafePosition(PlayerbotAI* botAI, Player* bot, Position& outPos);
+bool TryGetNewSafePosition(PlayerbotAI* botAI, Player* bot, Position& outPos);
 
 struct Location 
 {

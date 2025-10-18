@@ -3,93 +3,189 @@
 
 void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
+    // Attumen the Huntsman
     triggers.push_back(new TriggerNode(
-        "karazhan attumen the huntsman", NextAction::array(0,
-        new NextAction("karazhan attumen the huntsman stack behind", ACTION_RAID + 1),
-        new NextAction("karazhan attumen the huntsman split bosses", ACTION_RAID + 1),
-        nullptr)));
+        "attumen the huntsman main tank",
+        NextAction::array(0, new NextAction("attumen the huntsman main tank", ACTION_RAID + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode(
+        "attumen the huntsman split bosses",
+        NextAction::array(0, new NextAction("attumen the huntsman split bosses", ACTION_RAID + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode(
+        "attumen the huntsman stack behind",
+        NextAction::array(0, new NextAction("attumen the huntsman stack behind", ACTION_RAID + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode(
+        "attumen the huntsman manage timer",
+        NextAction::array(0, new NextAction("attumen the huntsman manage timer", ACTION_RAID + 2), nullptr)
+    ));
 
+    // Moroes
     triggers.push_back(new TriggerNode(
-        "karazhan moroes", NextAction::array(0,
-        new NextAction("karazhan moroes mark target", ACTION_RAID + 1),
-        nullptr)));
+        "moroes mark target",
+        NextAction::array(0, new NextAction("moroes mark target", ACTION_RAID + 1), nullptr)
+    ));
 
+    // Maiden of Virtue
     triggers.push_back(new TriggerNode(
-        "karazhan maiden of virtue", NextAction::array(0,
-        new NextAction("karazhan maiden of virtue position ranged", ACTION_RAID + 1),
-        new NextAction("karazhan maiden of virtue main tank", ACTION_RAID + 1),
-        nullptr)));
+        "maiden of virtue main tank movement",
+        NextAction::array(0, new NextAction("maiden of virtue main tank movement", ACTION_RAID + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode(
+        "maiden of virtue position ranged",
+        NextAction::array(0, new NextAction("maiden of virtue position ranged", ACTION_RAID + 1), nullptr)
+    ));
 
+    // The Big Bad Wolf
     triggers.push_back(new TriggerNode(
-        "karazhan big bad wolf", NextAction::array(0,
-        new NextAction("karazhan big bad wolf run away", ACTION_EMERGENCY + 6),
-        new NextAction("karazhan big bad wolf position boss", ACTION_RAID + 1),
-        nullptr)));
+        "big bad wolf run away",
+        NextAction::array(0, new NextAction("big bad wolf run away", ACTION_EMERGENCY + 6), nullptr)
+    ));
+    triggers.push_back(new TriggerNode(
+        "big bad wolf position boss",
+        NextAction::array(0, new NextAction("big bad wolf position boss", ACTION_RAID + 1), nullptr)
+    ));
 
+    // Romulo and Julianne
     triggers.push_back(new TriggerNode(
-        "karazhan romulo and julianne", NextAction::array(0,
-        new NextAction("karazhan romulo and julianne mark target", ACTION_RAID + 1),
-        nullptr)));
+        "romulo and julianne mark target",
+        NextAction::array(0, new NextAction("romulo and julianne mark target", ACTION_RAID + 1), nullptr)
+    ));
 
+    // The Wizard of Oz
     triggers.push_back(new TriggerNode(
-        "karazhan wizard of oz", NextAction::array(0,
-        new NextAction("karazhan wizard of oz scorch strawman", ACTION_RAID + 2),
-        new NextAction("karazhan wizard of oz mark target", ACTION_RAID + 1),
-        nullptr)));
+        "wizard of oz mark target",
+        NextAction::array(0, new NextAction("wizard of oz mark target", ACTION_RAID + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode(
+        "wizard of oz scorch strawman",
+        NextAction::array(0, new NextAction("wizard of oz scorch strawman", ACTION_RAID + 2), nullptr)
+    ));
 
+    // The Curator
     triggers.push_back(new TriggerNode(
-        "karazhan the curator", NextAction::array(0,
-        new NextAction("karazhan the curator spread ranged", ACTION_RAID + 2),
-        new NextAction("karazhan the curator position boss", ACTION_RAID + 2),
-        new NextAction("karazhan the curator mark astral flare", ACTION_RAID + 1),
-        nullptr)));
+        "the curator mark astral flare",
+        NextAction::array(0, new NextAction("the curator mark astral flare", ACTION_RAID + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode(
+        "the curator position boss",
+        NextAction::array(0, new NextAction("the curator position boss", ACTION_RAID + 2), nullptr)
+    ));
+    triggers.push_back(new TriggerNode(
+        "the curator spread ranged",
+        NextAction::array(0, new NextAction("the curator spread ranged", ACTION_RAID + 2), nullptr)
+    ));
 
+    // Terestian Illhoof
     triggers.push_back(new TriggerNode(
-        "karazhan terestian illhoof", NextAction::array(0,
-        new NextAction("karazhan terestian illhoof mark target", ACTION_RAID + 1),
-        nullptr)));
+        "terestian illhoof mark target",
+        NextAction::array(0, new NextAction("terestian illhoof mark target", ACTION_RAID + 1), nullptr)
+    ));
 
+    // Shade of Aran
     triggers.push_back(new TriggerNode(
-        "karazhan shade of aran", NextAction::array(0,
-        new NextAction("karazhan shade of aran flame wreath stop movement", ACTION_EMERGENCY + 7),
-        new NextAction("karazhan shade of aran arcane explosion run away", ACTION_EMERGENCY + 6),
-        new NextAction("karazhan shade of aran spread ranged", ACTION_RAID + 2),
-        new NextAction("karazhan shade of aran mark conjured elemental", ACTION_RAID + 1),
-        nullptr)));
+        "shade of aran arcane explosion run away",
+        NextAction::array(0, new NextAction("shade of aran arcane explosion run away", ACTION_EMERGENCY + 6), nullptr)
+    ));
+    triggers.push_back(new TriggerNode(
+        "shade of aran flame wreath stop movement",
+        NextAction::array(0, new NextAction("shade of aran flame wreath stop movement", ACTION_EMERGENCY + 7), nullptr)
+    ));
+    triggers.push_back(new TriggerNode(
+        "shade of aran mark conjured elemental",
+        NextAction::array(0, new NextAction("shade of aran mark conjured elemental", ACTION_RAID + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode(
+        "shade of aran spread ranged",
+        NextAction::array(0, new NextAction("shade of aran spread ranged", ACTION_RAID + 2), nullptr)
+    ));
 
+    // Netherspite
     triggers.push_back(new TriggerNode(
-        "karazhan netherspite", NextAction::array(0,
-        new NextAction("karazhan netherspite block red beam", ACTION_EMERGENCY + 8),
-        new NextAction("karazhan netherspite block blue beam", ACTION_EMERGENCY + 8),
-        new NextAction("karazhan netherspite block green beam", ACTION_EMERGENCY + 8),
-        new NextAction("karazhan netherspite avoid beam and void zone", ACTION_EMERGENCY + 7),
-        new NextAction("karazhan netherspite banish phase avoid void zone", ACTION_RAID + 1),
-        nullptr)));
+        "netherspite block red beam",
+        NextAction::array(0, new NextAction("netherspite block red beam", ACTION_EMERGENCY + 8), nullptr)
+    ));
+    triggers.push_back(new TriggerNode(
+        "netherspite block blue beam",
+        NextAction::array(0, new NextAction("netherspite block blue beam", ACTION_EMERGENCY + 8), nullptr)
+    ));
+    triggers.push_back(new TriggerNode(
+        "netherspite block green beam",
+        NextAction::array(0, new NextAction("netherspite block green beam", ACTION_EMERGENCY + 8), nullptr)
+    ));
+    triggers.push_back(new TriggerNode(
+        "netherspite avoid beam and void zone",
+        NextAction::array(0, new NextAction("netherspite avoid beam and void zone", ACTION_EMERGENCY + 7), nullptr)
+    ));
+    triggers.push_back(new TriggerNode(
+        "netherspite banish phase avoid void zone",
+        NextAction::array(0, new NextAction("netherspite banish phase avoid void zone", ACTION_RAID + 1), nullptr)
+    ));
+        triggers.push_back(new TriggerNode(
+        "netherspite manage timers",
+        NextAction::array(0, new NextAction("netherspite manage timers", ACTION_EMERGENCY + 10), nullptr)
+    ));
 
+    // Prince Malchezaar
+    /* triggers.push_back(new TriggerNode(
+        "prince malchezaar non tank avoid hazard",
+        NextAction::array(0, new NextAction("prince malchezaar non tank avoid hazard", ACTION_EMERGENCY + 6), nullptr)
+    )); */
     triggers.push_back(new TriggerNode(
-        "karazhan prince malchezaar", NextAction::array(0,
-        new NextAction("karazhan prince malchezaar non tank avoid hazard", ACTION_EMERGENCY + 6),
-        new NextAction("karazhan prince malchezaar main tank", ACTION_EMERGENCY + 6),
-        nullptr)));
+        "prince malchezaar enfeebled avoid hazard",
+        NextAction::array(0, new NextAction("prince malchezaar enfeebled avoid hazard", ACTION_EMERGENCY + 6), nullptr)
+    ));
+    triggers.push_back(new TriggerNode(
+        "prince malchezaar non tank avoid infernal",
+        NextAction::array(0, new NextAction("prince malchezaar non tank avoid infernal", ACTION_EMERGENCY + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode(
+        "prince malchezaar main tank movement",
+        NextAction::array(0, new NextAction("prince malchezaar main tank movement", ACTION_EMERGENCY + 6), nullptr)
+    ));
 
+    // Nightbane
     triggers.push_back(new TriggerNode(
-        "karazhan nightbane", NextAction::array(0,
-        new NextAction("karazhan nightbane reset flight phase timer", ACTION_EMERGENCY + 2),
-        new NextAction("karazhan nightbane ground phase position ranged", ACTION_EMERGENCY + 1),
-        new NextAction("karazhan nightbane cast fear ward", ACTION_RAID + 2),
-        new NextAction("karazhan nightbane flight phase movement", ACTION_RAID + 1),
-        new NextAction("karazhan nightbane ground phase position boss", ACTION_RAID + 1),
-        nullptr)));
+        "nightbane ground phase position boss",
+        NextAction::array(0, new NextAction("nightbane ground phase position boss", ACTION_RAID + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode(
+        "nightbane ground phase rotate ranged positions",
+        NextAction::array(0, new NextAction("nightbane ground phase rotate ranged positions", ACTION_EMERGENCY + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode(
+        "nightbane cast fear ward on main tank",
+        NextAction::array(0, new NextAction("nightbane cast fear ward on main tank", ACTION_RAID + 2), nullptr)
+    ));
+    triggers.push_back(new TriggerNode(
+        "nightbane control pet aggression",
+        NextAction::array(0, new NextAction("nightbane control pet aggression", ACTION_RAID + 2), nullptr)
+    ));
+    triggers.push_back(new TriggerNode(
+        "nightbane flight phase movement",
+        NextAction::array(0, new NextAction("nightbane flight phase movement", ACTION_RAID + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode(
+        "nightbane manage timers and trackers",
+        NextAction::array(0, new NextAction("nightbane manage timers and trackers", ACTION_EMERGENCY + 10), nullptr)
+    ));
 }
 
 void RaidKarazhanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
-    multipliers.push_back(new KarazhanAttumenTheHuntsmanMultiplier(botAI));
-    multipliers.push_back(new KarazhanTheCuratorMultiplier(botAI));
-    multipliers.push_back(new KarazhanShadeOfAranMultiplier(botAI));
-    multipliers.push_back(new KarazhanNetherspiteBlueAndGreenBeamMultiplier(botAI));
-    multipliers.push_back(new KarazhanNetherspiteRedBeamMultiplier(botAI));
-    multipliers.push_back(new KarazhanNetherspiteWaitForDPSMultiplier(botAI));
-    multipliers.push_back(new KarazhanPrinceMalchezaarMultiplier(botAI));
-    multipliers.push_back(new KarazhanNightbaneMultiplier(botAI));
+    multipliers.push_back(new AttumenTheHuntsmanDisableTankAssistMultiplier(botAI));
+    multipliers.push_back(new AttumenTheHuntsmanStayStackedMultiplier(botAI));
+    multipliers.push_back(new AttumenTheHuntsmanWaitForDPSMultiplier(botAI));
+    multipliers.push_back(new TheCuratorDisableTankAssistMultiplier(botAI));
+    multipliers.push_back(new ShadeOfAranArcaneExplosionDisableChargeMultiplier(botAI));
+    multipliers.push_back(new ShadeOfAranFlameWreathDisableMovementMultiplier(botAI));
+    multipliers.push_back(new NetherspiteKeepBlockingBeamMultiplier(botAI));
+    multipliers.push_back(new NetherspiteWaitForDPSMultiplier(botAI));
+    multipliers.push_back(new PrinceMalchezaarDisableAvoidAoeMultiplier(botAI));
+    multipliers.push_back(new PrinceMalchezaarEnfeebleKeepDistanceMultiplier(botAI));
+    multipliers.push_back(new NightbaneDisablePetsMultiplier(botAI));
+    multipliers.push_back(new NightbaneWaitForDPSMultiplier(botAI));
+    multipliers.push_back(new NightbaneDisableAvoidAoeMultiplier(botAI));
+    multipliers.push_back(new NightbaneDisableMovementMultiplier(botAI));
 }

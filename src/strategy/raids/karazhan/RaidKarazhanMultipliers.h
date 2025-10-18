@@ -3,59 +3,102 @@
 
 #include "Multiplier.h"
 
-class KarazhanAttumenTheHuntsmanMultiplier : public Multiplier
+
+class AttumenTheHuntsmanDisableTankAssistMultiplier : public Multiplier
 {
 public:
-    KarazhanAttumenTheHuntsmanMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "karazhan attumen the huntsman multiplier") {}
+    AttumenTheHuntsmanDisableTankAssistMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "attumen the huntsman disable tank assist multiplier") {}
     virtual float GetValue(Action* action);
 };
 
-class KarazhanTheCuratorMultiplier : public Multiplier
+class AttumenTheHuntsmanStayStackedMultiplier : public Multiplier
 {
 public:
-    KarazhanTheCuratorMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "karazhan the curator multiplier") {}
+    AttumenTheHuntsmanStayStackedMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "attumen the huntsman stay stacked multiplier") {}
     virtual float GetValue(Action* action);
 };
 
-class KarazhanShadeOfAranMultiplier : public Multiplier
+class AttumenTheHuntsmanWaitForDPSMultiplier : public Multiplier
 {
 public:
-    KarazhanShadeOfAranMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "karazhan shade of aran multiplier") {}
+    AttumenTheHuntsmanWaitForDPSMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "attumen the huntsman wait for dps multiplier") {}
     virtual float GetValue(Action* action);
 };
 
-class KarazhanNetherspiteBlueAndGreenBeamMultiplier : public Multiplier
+class TheCuratorDisableTankAssistMultiplier : public Multiplier
 {
 public:
-    KarazhanNetherspiteBlueAndGreenBeamMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "karazhan netherspite blue and green beam multiplier") {}
+    TheCuratorDisableTankAssistMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "the curator disable tank assist multiplier") {}
     virtual float GetValue(Action* action);
 };
 
-class KarazhanNetherspiteRedBeamMultiplier : public Multiplier
+class ShadeOfAranArcaneExplosionDisableChargeMultiplier : public Multiplier
 {
 public:
-    KarazhanNetherspiteRedBeamMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "karazhan netherspite red beam multiplier") {}
+    ShadeOfAranArcaneExplosionDisableChargeMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "shade of aran arcane explosion disable charge multiplier") {}
     virtual float GetValue(Action* action);
 };
 
-class KarazhanNetherspiteWaitForDPSMultiplier : public Multiplier
+class ShadeOfAranFlameWreathDisableMovementMultiplier : public Multiplier
 {
 public:
-    KarazhanNetherspiteWaitForDPSMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "karazhan netherspite wait for dps multiplier") {}
+    ShadeOfAranFlameWreathDisableMovementMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "shade of aran flame wreath disable movement multiplier") {}
     virtual float GetValue(Action* action);
 };
 
-class KarazhanPrinceMalchezaarMultiplier : public Multiplier
+class NetherspiteKeepBlockingBeamMultiplier : public Multiplier
 {
 public:
-    KarazhanPrinceMalchezaarMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "karazhan prince malchezaar multiplier") {}
+    NetherspiteKeepBlockingBeamMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "netherspite keep blocking beam multiplier") {}
     virtual float GetValue(Action* action);
 };
 
-class KarazhanNightbaneMultiplier : public Multiplier
+class NetherspiteWaitForDPSMultiplier : public Multiplier
 {
 public:
-    KarazhanNightbaneMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "karazhan nightbane multiplier") {}
+    NetherspiteWaitForDPSMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "netherspite wait for dps multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
+class PrinceMalchezaarDisableAvoidAoeMultiplier : public Multiplier
+{
+public:
+    PrinceMalchezaarDisableAvoidAoeMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "prince malchezaar disable avoid aoe multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
+class PrinceMalchezaarEnfeebleKeepDistanceMultiplier : public Multiplier
+{
+public:
+    PrinceMalchezaarEnfeebleKeepDistanceMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "prince malchezaar enfeeble keep distance multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
+class NightbaneDisablePetsMultiplier : public Multiplier
+{
+public:
+    NightbaneDisablePetsMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "nightbane disable pets multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
+class NightbaneWaitForDPSMultiplier : public Multiplier
+{
+public:
+    NightbaneWaitForDPSMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "nightbane wait for dps multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
+class NightbaneDisableAvoidAoeMultiplier : public Multiplier
+{
+public:
+    NightbaneDisableAvoidAoeMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "nightbane disable avoid aoe multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
+class NightbaneDisableMovementMultiplier : public Multiplier
+{
+public:
+    NightbaneDisableMovementMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "nightbane disable movement multiplier") {}
     virtual float GetValue(Action* action);
 };
 

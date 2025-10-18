@@ -15,6 +15,8 @@
 #include "ShamanActions.h"
 #include "WarriorActions.h"
 
+using namespace KarazhanHelpers;
+
 static bool IsChargeAction(Action* action)
 {
     return dynamic_cast<CastChargeAction*>(action) ||
@@ -23,85 +25,107 @@ static bool IsChargeAction(Action* action)
            dynamic_cast<CastFeralChargeCatAction*>(action);
 }
 
-float KarazhanAttumenTheHuntsmanMultiplier::GetValue(Action* action)
+float AttumenTheHuntsmanDisableTankAssistMultiplier::GetValue(Action* action)
 {
-    RaidKarazhanHelpers karazhanHelper(botAI);
-    Unit* boss = karazhanHelper.GetFirstAliveUnitByEntry(ATTUMEN_THE_HUNTSMAN_MOUNTED);
-    if (!boss)
-    {
+    Unit* midnight = AI_VALUE2(Unit*, "find target", "midnight");
+    Unit* attumen = AI_VALUE2(Unit*, "find target", "attumen the huntsman");
+    if (!midnight && !attumen)
         return 1.0f;
-    }
 
-    if (!botAI->IsMainTank(bot) && boss->GetVictim() != bot &&
+    if (dynamic_cast<TankAssistAction*>(action))
+        return 0.0f;
+
+    return 1.0f;
+}
+
+float AttumenTheHuntsmanStayStackedMultiplier::GetValue(Action* action)
+{
+    Unit* attumenMounted = GetFirstAliveUnitByEntry(botAI, NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED);
+    if (!attumenMounted || !attumenMounted->IsAlive())
+        return 1.0f;
+
+    if (!botAI->IsMainTank(bot) && attumenMounted->GetVictim() != bot &&
         (dynamic_cast<CombatFormationMoveAction*>(action) || 
          dynamic_cast<FleeAction*>(action) || 
          dynamic_cast<CastBlinkBackAction*>(action) || 
-         dynamic_cast<CastDisengageAction*>(action)))
-    {
+         dynamic_cast<CastDisengageAction*>(action) ||
+         IsChargeAction(action)))
         return 0.0f;
-    }
 
-    Unit* victim = boss->GetVictim();
-    Player* victimPlayer = victim ? victim->ToPlayer() : nullptr;
-    if (!botAI->IsMainTank(bot) && victimPlayer && !botAI->IsMainTank(victimPlayer) && 
-        (dynamic_cast<AttackAction*>(action) || (!botAI->IsHeal(victimPlayer) && dynamic_cast<CastSpellAction*>(action))))
+    return 1.0f;
+}
+
+// Give the main tank 8 seconds to grab aggro when Attumen mounts Midnight
+// It's actually a lot shorter because it takes Attumen a few seconds to aggro after mounting
+float AttumenTheHuntsmanWaitForDPSMultiplier::GetValue(Action* action)
+{
+    Unit* attumenMounted = GetFirstAliveUnitByEntry(botAI, NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED);
+    if (!attumenMounted || !attumenMounted->IsAlive())
+        return 1.0f;
+
+    const uint8 dpsWaitSeconds = 8;
+    auto it = attumenDPSWaitTimer.find(bot->GetMapId());
+    if (it == attumenDPSWaitTimer.end() || (time(nullptr) - it->second) < dpsWaitSeconds)
     {
-        return 0.0f;
+        if (!botAI->IsMainTank(bot) && (dynamic_cast<AttackAction*>(action) || 
+            (!botAI->IsHeal(bot) && dynamic_cast<CastSpellAction*>(action))))
+            return 0.0f;
     }
 
     return 1.0f;
 }
 
-float KarazhanTheCuratorMultiplier::GetValue(Action* action)
+float TheCuratorDisableTankAssistMultiplier::GetValue(Action* action)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "the curator");
-    if (!boss)
-    {
+    Unit* curator = AI_VALUE2(Unit*, "find target", "the curator");
+    if (!curator)
         return 1.0f;
-    }
 
-    if ((botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0)) &&
-        dynamic_cast<TankAssistAction*>(action))
-    {
+    if (dynamic_cast<TankAssistAction*>(action))
         return 0.0f;
-    }
 
     return 1.0f;
 }
 
-float KarazhanShadeOfAranMultiplier::GetValue(Action* action)
+// Don't charge back in when running from Arcane Explosion
+float ShadeOfAranArcaneExplosionDisableChargeMultiplier::GetValue(Action* action)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "shade of aran");
-    if (!boss)
-    {
+    Unit* aran = AI_VALUE2(Unit*, "find target", "shade of aran");
+    if (!aran)
         return 1.0f;
-    }
 
-    if (boss->HasUnitState(UNIT_STATE_CASTING) && 
-        boss->FindCurrentSpellBySpellId(ARCANE_EXPLOSION))
+    if (aran->HasUnitState(UNIT_STATE_CASTING) && 
+        aran->FindCurrentSpellBySpellId(SPELL_ARCANE_EXPLOSION))
     {
         if (IsChargeAction(action))
-        {
             return 0.0f;
-        }
 
         if (dynamic_cast<MovementAction*>(action))
         {
             const float safeDistance = 20.0f;
-            if (bot->GetDistance2d(boss) >= safeDistance)
-            {
+            if (bot->GetDistance2d(aran) >= safeDistance)
                 return 0.0f;
-            }
         }
     }
 
-    bool flameWreathActive = boss->HasAura(FLAME_WREATH_CAST);
-    if (!flameWreathActive && bot->GetGroup())
+    return 1.0f;
+}
+
+// I will not move when Flame Wreath is cast or the raid blows up
+float ShadeOfAranFlameWreathDisableMovementMultiplier::GetValue(Action* action)
+{
+    Unit* aran = AI_VALUE2(Unit*, "find target", "shade of aran");
+    Group* group = bot->GetGroup();
+    if (!aran || !group)
+        return 1.0f;
+
+    bool flameWreathActive = aran->HasAura(SPELL_FLAME_WREATH_CAST);
+    if (!flameWreathActive)
     {
-        for (GroupReference* itr = bot->GetGroup()->GetFirstMember(); itr != nullptr; itr = itr->next())
+        for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
         {
-            Player* member = itr->GetSource();
-            if (member && member->HasAura(FLAME_WREATH_AURA))
+            Player* member = ref->GetSource();
+            if (member && member->HasAura(SPELL_FLAME_WREATH_AURA))
             {
                 flameWreathActive = true;
                 break;
@@ -111,180 +135,86 @@ float KarazhanShadeOfAranMultiplier::GetValue(Action* action)
     if (flameWreathActive)
     {
         if (dynamic_cast<MovementAction*>(action) || IsChargeAction(action))
-        {
             return 0.0f;
-        }
     }
 
     return 1.0f;
 }
 
-float KarazhanNetherspiteBlueAndGreenBeamMultiplier::GetValue(Action* action)
+// Try to rid of the jittering when blocking beams
+float NetherspiteKeepBlockingBeamMultiplier::GetValue(Action* action)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "netherspite");
-    if (!boss || !boss->IsAlive())
-    {
+    Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
+    if (!netherspite || netherspite->HasAura(SPELL_NETHERSPITE_BANISHED))
         return 1.0f;
+
+    auto [redBlocker, greenBlocker, blueBlocker] = GetCurrentBeamBlockers(botAI, bot);
+
+    if (bot == redBlocker)
+    {
+        if (dynamic_cast<CombatFormationMoveAction*>(action))
+            return 0.0f;
     }
 
-    if (dynamic_cast<AvoidAoeAction*>(action) || dynamic_cast<CastKillingSpreeAction*>(action))
+    if (bot == blueBlocker)
     {
-        return 0.0f;
+        if (dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<ReachTargetAction*>(action))
+            return 0.0f;
     }
 
-    RaidKarazhanHelpers karazhanHelper(botAI);
-    auto [redBlocker /*unused*/, greenBlocker, blueBlocker] = karazhanHelper.GetCurrentBeamBlockers();
-    bool isBlocker = (bot == greenBlocker || bot == blueBlocker);
-    if (isBlocker)
+    if (bot == greenBlocker)
     {
-        Unit* bluePortal = bot->FindNearestCreature(BLUE_PORTAL, 150.0f);
-        Unit* greenPortal = bot->FindNearestCreature(GREEN_PORTAL, 150.0f);
-        bool inBeam = false;
-        for (Unit* portal : {bluePortal, greenPortal}) 
-        {
-            if (!portal)
-            {
-                continue;
-            }
-            float bx = boss->GetPositionX(), by = boss->GetPositionY();
-            float px = portal->GetPositionX(), py = portal->GetPositionY();
-            float dx = px - bx, dy = py - by;
-            float length = sqrt(dx*dx + dy*dy);
-            if (length == 0.0f)
-            {
-                continue;
-            }
-            dx /= length; dy /= length;
-            float botdx = bot->GetPositionX() - bx, botdy = bot->GetPositionY() - by;
-            float t = (botdx * dx + botdy * dy);
-            float beamX = bx + dx * t, beamY = by + dy * t;
-            float distToBeam = sqrt(pow(bot->GetPositionX() - beamX, 2) + pow(bot->GetPositionY() - beamY, 2));
-            if (distToBeam < 0.3f && t > 0.0f && t < length) 
-            {
-                inBeam = true;
-                break;
-            }
-        }
-        if (inBeam)
-        {
-            std::vector<Unit*> voidZones = karazhanHelper.GetAllVoidZones();
-            bool inVoidZone = false;
-            for (Unit* vz : voidZones) 
-            {
-                if (bot->GetExactDist2d(vz) < 4.0f)
-                {
-                    inVoidZone = true;
-                    break;
-                }
-            }
-            if (!inVoidZone)
-            {
-                if (dynamic_cast<MovementAction*>(action) || IsChargeAction(action))
-                {
-                    return 0.0f;
-                }
-            }
-        }
+        if (dynamic_cast<CombatFormationMoveAction*>(action) ||
+            dynamic_cast<ReachTargetAction*>(action) ||
+            dynamic_cast<FleeAction*>(action) ||
+            dynamic_cast<CastKillingSpreeAction*>(action) ||
+            IsChargeAction(action))
+            return 0.0f;
     }
 
     return 1.0f;
 }
 
-float KarazhanNetherspiteRedBeamMultiplier::GetValue(Action* action)
+float NetherspiteWaitForDPSMultiplier::GetValue(Action* action)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "netherspite");
-    if (!boss || !boss->IsAlive())
-    {
+    Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
+    if (!netherspite || netherspite->HasAura(SPELL_NETHERSPITE_BANISHED))
         return 1.0f;
-    }
 
-    if (dynamic_cast<AvoidAoeAction*>(action))
+    const uint8 dpsWaitSeconds = 5;
+    auto it = netherspiteDPSWaitTimer.find(bot->GetMapId());
+    if (it != netherspiteDPSWaitTimer.end())
     {
-        return 0.0f;
-    }
-
-    RaidKarazhanHelpers karazhanHelper(botAI);
-    auto [redBlocker, greenBlocker /*unused*/, blueBlocker /*unused*/] = karazhanHelper.GetCurrentBeamBlockers();
-    static std::map<ObjectGuid, uint32> beamMoveTimes;
-    static std::map<ObjectGuid, bool> lastBeamMoveSideways;
-    ObjectGuid botGuid = bot->GetGUID();
-    Unit* redPortal = bot->FindNearestCreature(RED_PORTAL, 150.0f);
-    if (bot == redBlocker && boss && redPortal)
-    {
-        Position blockingPos = karazhanHelper.GetPositionOnBeam(boss, redPortal, 18.0f);
-        float bx = boss->GetPositionX();
-        float by = boss->GetPositionY();
-        float px = redPortal->GetPositionX();
-        float py = redPortal->GetPositionY();
-        float dx = px - bx;
-        float dy = py - by;
-        float length = sqrt(dx*dx + dy*dy);
-        if (length != 0.0f)
+        time_t since = time(nullptr) - it->second;
+        if (since < dpsWaitSeconds)
         {
-            dx /= length;
-            dy /= length;
-            float perpDx = -dy;
-            float perpDy = dx;
-            Position sidewaysPos(blockingPos.GetPositionX() + perpDx * 3.0f,
-                                 blockingPos.GetPositionY() + perpDy * 3.0f,
-                                 blockingPos.GetPositionZ());
-
-            uint32 intervalSecs = 5;
-            if (beamMoveTimes[botGuid] == 0)
-            {
-                beamMoveTimes[botGuid] = time(nullptr);
-                lastBeamMoveSideways[botGuid] = false;
-            }
-            if (time(nullptr) - beamMoveTimes[botGuid] >= intervalSecs)
-            {
-                lastBeamMoveSideways[botGuid] = !lastBeamMoveSideways[botGuid];
-                beamMoveTimes[botGuid] = time(nullptr);
-            }
-            Position targetPos = lastBeamMoveSideways[botGuid] ? sidewaysPos : blockingPos;
-            float distToTarget = bot->GetExactDist2d(targetPos.GetPositionX(), targetPos.GetPositionY());
-            const float positionTolerance = 1.5f;
-            if (distToTarget < positionTolerance)
-            {
-                if (dynamic_cast<MovementAction*>(action) || IsChargeAction(action))
-                {
-                    return 0.0f;
-                }
-            }
+            if (!botAI->IsTank(bot) && (dynamic_cast<AttackAction*>(action) || 
+                (!botAI->IsHeal(bot) && dynamic_cast<CastSpellAction*>(action))))
+                return 0.0f;
         }
     }
-    
-    return 1.0f;
+
+     return 1.0f;
 }
 
-float KarazhanNetherspiteWaitForDPSMultiplier::GetValue(Action* action)
-{
-    Unit* boss = AI_VALUE2(Unit*, "find target", "netherspite");
-    if (!boss || !boss->IsAlive())
-    {
-        return 1.0f;
-    }
-
-    Unit* victim = boss->GetVictim();
+    /* Unit* victim = netherspite->GetVictim();
     Player* victimPlayer = victim ? victim->ToPlayer() : nullptr;
     if (!botAI->IsTank(bot) && victimPlayer && !botAI->IsTank(victimPlayer) && 
-        !boss->HasAura(NETHERSPITE_BANISHED) &&
+        !netherspite->HasAura(SPELL_NETHERSPITE_BANISHED) &&
         (dynamic_cast<AttackAction*>(action) || (!botAI->IsHeal(victimPlayer) && dynamic_cast<CastSpellAction*>(action))))
-    {
-        return 0.0f;
-    }
+        return 0.0f;  */
 
     /* bool tankHasRedBeam = false;
-    Group* group = bot->GetGroup();
-    if (group)
+    if (Group* group = bot->GetGroup())
     {
-        for (GroupReference* itr = bot->GetGroup()->GetFirstMember(); itr != nullptr; itr = itr->next())
+        for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
         {
-            Player* member = itr->GetSource();
+            Player* member = ref->GetSource();
             if (!member || !member->IsAlive())
             {
                 continue;
             }
-            if (botAI->IsTank(member) && member->HasAura(RED_BEAM_DEBUFF)
+            if (botAI->IsTank(member) && member->HasAura(SPELL_RED_BEAM_DEBUFF))
             {
                 tankHasRedBeam = true;
                 break;
@@ -292,115 +222,147 @@ float KarazhanNetherspiteWaitForDPSMultiplier::GetValue(Action* action)
         }
     }
 
-    if (!boss->HasAura(NETHERSPITE_BANISHED) && !tankHasRedBeam)
+    if (!netherspite->HasAura(SPELL_NETHERSPITE_BANISHED) && !tankHasRedBeam)
     {
         if (!botAI->IsTank(bot) && dynamic_cast<AttackAction*>(action))
         {
             return 0.0f;
         }
-    } */
+    }
 
     return 1.0f;
-}
+} */
 
-float KarazhanPrinceMalchezaarMultiplier::GetValue(Action* action)
+// Standard avoid aoe strategy may interfere with scripted infernal avoidance
+float PrinceMalchezaarDisableAvoidAoeMultiplier::GetValue(Action* action)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "prince malchezaar");
-    if (!boss || !boss->IsAlive())
-    {
+    Unit* malchezaar = AI_VALUE2(Unit*, "find target", "prince malchezaar");
+    if (!malchezaar)
         return 1.0f;
-    }
 
     if (dynamic_cast<AvoidAoeAction*>(action))
-    {
         return 0.0f;
-    }
 
-    if (botAI->IsMelee(bot) && bot->HasAura(ENFEEBLE) &&
-        !dynamic_cast<KarazhanPrinceMalchezaarNonTankAvoidHazardAction*>(action))
-    {
-        return 0.0f;
-    }
+    return 1.0f;
+}
 
-    if (botAI->IsRanged(bot) && bot->HasAura(ENFEEBLE) &&
-        (dynamic_cast<MovementAction*>(action) && !dynamic_cast<KarazhanPrinceMalchezaarNonTankAvoidHazardAction*>(action)))
-    {
+// Don't run back into Shadow Nova when Enfeebled
+float PrinceMalchezaarEnfeebleKeepDistanceMultiplier::GetValue(Action* action)
+{
+    Unit* malchezaar = AI_VALUE2(Unit*, "find target", "prince malchezaar");
+    if (!malchezaar)
+        return 1.0f;
+
+    if (botAI->IsMelee(bot) && bot->HasAura(SPELL_ENFEEBLE) &&
+        !dynamic_cast<PrinceMalchezaarEnfeebledAvoidHazardAction*>(action))
         return 0.0f;
+
+    if (botAI->IsRanged(bot) && bot->HasAura(SPELL_ENFEEBLE) &&
+        (dynamic_cast<MovementAction*>(action) && 
+         !dynamic_cast<PrinceMalchezaarEnfeebledAvoidHazardAction*>(action)))
+        return 0.0f;
+
+    return 1.0f;
+}
+
+// Pets tend to run out of bounds and cause skeletons to spawn off the map
+// Or pull adds from inside of the tower through the floor
+float NightbaneDisablePetsMultiplier::GetValue(Action* action)
+{
+    Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
+    if (!nightbane)
+        return 1.0f;
+
+    if (dynamic_cast<CastForceOfNatureAction*>(action) ||
+        dynamic_cast<CastFeralSpiritAction*>(action) ||
+        dynamic_cast<CastFireElementalTotemAction*>(action) ||
+        dynamic_cast<CastFireElementalTotemMeleeAction*>(action) ||
+        dynamic_cast<CastSummonWaterElementalAction*>(action) ||
+        dynamic_cast<CastShadowfiendAction*>(action))
+        return 0.0f;
+
+    if (nightbane->IsFlying() && dynamic_cast<PetAttackAction*>(action))
+        return 0.0f;
+
+    return 1.0f;
+}
+
+// Give the main tank 7 seconds to get aggro during phase transitions
+float NightbaneWaitForDPSMultiplier::GetValue(Action* action)
+{
+    Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
+    if (!nightbane || nightbane->IsFlying())
+        return 1.0f;
+
+    const uint8 dpsWaitSeconds = 7;
+    auto it = nightbaneDPSWaitTimer.find(bot->GetMapId());
+    if (it != nightbaneDPSWaitTimer.end())
+    {
+        time_t since = time(nullptr) - it->second;
+        if (since < dpsWaitSeconds)
+        {
+            if (!botAI->IsMainTank(bot) && (dynamic_cast<AttackAction*>(action) || 
+                (!botAI->IsHeal(bot) && dynamic_cast<CastSpellAction*>(action))))
+                return 0.0f;
+        }
     }
 
     return 1.0f;
 }
 
-float KarazhanNightbaneMultiplier::GetValue(Action* action)
+// The avoid aoe strategy must be disabled for the main tank
+// Or they will spin Nightbane to avoid Charred Earth and wipe the raid
+float NightbaneDisableAvoidAoeMultiplier::GetValue(Action* action)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "nightbane");
-    if (!boss || !boss->IsAlive())
-    {
+    Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
+    if (!nightbane)
         return 1.0f;
-    }
+
+    if ((nightbane->IsFlying() || botAI->IsMainTank(bot)) && 
+        dynamic_cast<AvoidAoeAction*>(action))
+        return 0.0f;
+
+    return 1.0f;
+}
+
+float NightbaneDisableMovementMultiplier::GetValue(Action* action)
+{
+    Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
+    if (!nightbane)
+        return 1.0f;
 
     if (dynamic_cast<CastBlinkBackAction*>(action) || 
-        dynamic_cast<CastDisengageAction*>(action) ||
-        dynamic_cast<CastForceOfNatureAction*>(action) ||
-        dynamic_cast<CastFeralSpiritAction*>(action) ||
-        dynamic_cast<CastFireElementalTotemAction*>(action) ||
-        dynamic_cast<CastSummonWaterElementalAction*>(action) ||
-        dynamic_cast<CastShadowfiendAction*>(action) ||
-        dynamic_cast<PetAttackAction*>(action) ||
+        dynamic_cast<CastDisengageAction*>(action) || 
         dynamic_cast<FleeAction*>(action))
-    {
         return 0.0f;
-    }
 
-    Unit* victim = boss->GetVictim();
-    Player* victimPlayer = victim ? victim->ToPlayer() : nullptr;
-    if (!boss->IsFlying() && !botAI->IsMainTank(bot) && victimPlayer && !botAI->IsMainTank(victimPlayer) && 
-        (dynamic_cast<AttackAction*>(action) || (!botAI->IsHeal(victimPlayer) && dynamic_cast<CastSpellAction*>(action))))
-    {
+    // Allow CombatFormationMoveAction only for melee during the ground phase
+    if (!(botAI->IsMelee(bot) && !nightbane->IsFlying()) && !botAI->IsMainTank(bot) &&
+        dynamic_cast<CombatFormationMoveAction*>(action))
         return 0.0f;
-    }
 
-    if ((botAI->IsMainTank(bot) || botAI->IsRanged(bot)) && 
-        dynamic_cast<AvoidAoeAction*>(action))
-    {
-        return 0.0f;
-    }
+    /* if (botAI->IsMainTank(bot) && nightbane->GetVictim() == bot && !nightbane->IsFlying() &&
+        (dynamic_cast<MovementAction*>(action) && !dynamic_cast<NightbaneGroundPhasePositionBossAction*>(action)))
+        return 0.0f; */
 
-    if (dynamic_cast<CombatFormationMoveAction*>(action))
-    {
-        // Disable for all bots during flight phase
-        if (boss->IsFlying())
-        {
-            return 0.0f;
-        }
-        // Disable for all bots except non-main tank melee during ground phase
-        /* if (!botAI->IsMelee(bot) || botAI->IsMainTank(bot))
-        {
-            return 0.0f;
-        } */
-    }
-
-    /* if (botAI->IsMainTank(bot) && boss && boss->GetVictim() == bot && dynamic_cast<MovementAction*>(action))
-    {
-        const float positionThreshold = 1.0f;
+        /* const float positionThreshold = 1.0f;
         const float orientationLeeway = 30.0f * M_PI / 180.0f;
 
-        float distanceToTankSpot = bot->GetExactDist2d(KARAZHAN_NIGHTBANE_FINAL_BOSS_POSITION.GetPositionX(),
+        float distanceToBossPosition = bot->GetExactDist2d(KARAZHAN_NIGHTBANE_FINAL_BOSS_POSITION.GetPositionX(),
                                                        KARAZHAN_NIGHTBANE_FINAL_BOSS_POSITION.GetPositionY());
 
-        float desiredOrientation = atan2(boss->GetPositionY() - bot->GetPositionY(),
-                                        boss->GetPositionX() - bot->GetPositionX());
+        float desiredOrientation = atan2(nightbane->GetPositionY() - bot->GetPositionY(),
+                                        nightbane->GetPositionX() - bot->GetPositionX());
         float currentOrientation = bot->GetOrientation();
         float delta = desiredOrientation - currentOrientation;
         while (delta > M_PI) delta -= 2 * M_PI;
         while (delta < -M_PI) delta += 2 * M_PI;
         float orientationDifference = fabs(delta);
 
-        if (distanceToTankSpot < positionThreshold && orientationDifference < orientationLeeway)
+        if (distanceToBossPosition < positionThreshold && orientationDifference < orientationLeeway)
         {
             return 0.0f;
-        }
-    } */
+        } */
 
     return 1.0f;
 }

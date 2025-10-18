@@ -6,24 +6,11 @@ using namespace GruulsLairHelpers;
 
 // High King Maulgar Triggers
 
-bool HighKingMaulgarSetBotSightTrigger::IsActive()
-{
-    float originalSightDistance = sPlayerbotAIConfig->sightDistance;
-    sPlayerbotAIConfig->sightDistance = 150.0f;
-
-    bool foundBosses = IsAnyOgreBossAlive(botAI);
-
-    if (!foundBosses)
-        sPlayerbotAIConfig->sightDistance = originalSightDistance;
-
-    return foundBosses;
-}
-
 bool HighKingMaulgarMaulgarTankTrigger::IsActive()
 {
     Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
-    Group* group = bot->GetGroup();
-    return botAI->IsMainTank(bot) && maulgar && maulgar->IsAlive() && group;
+
+    return botAI->IsMainTank(bot) && maulgar && maulgar->IsAlive();
 }
 
 bool HighKingMaulgarOlmTankTrigger::IsActive()
@@ -43,17 +30,15 @@ bool HighKingMaulgarBlindeyeTankTrigger::IsActive()
 bool HighKingMaulgarKroshMageTankTrigger::IsActive()
 {
     Unit* krosh = AI_VALUE2(Unit*, "find target", "krosh firehand");
-    Group* group = bot->GetGroup();
 
-    return IsKroshMageTank(botAI, bot) && krosh && krosh->IsAlive() && group;
+    return IsKroshMageTank(botAI, bot) && krosh && krosh->IsAlive();
 }
 
 bool HighKingMaulgarKigglerMoonkinTankTrigger::IsActive()
 {
     Unit* kiggler = AI_VALUE2(Unit*, "find target", "kiggler the crazed");
-    Group* group = bot->GetGroup();
 
-    return IsKigglerMoonkinTank(botAI, bot) && kiggler && kiggler->IsAlive() && group;
+    return IsKigglerMoonkinTank(botAI, bot) && kiggler && kiggler->IsAlive();
 }
 
 bool HighKingMaulgarMeleeDPSPriorityTrigger::IsActive()
@@ -91,7 +76,8 @@ bool HighKingMaulgarWhirlwindRunAwayTrigger::IsActive()
 {
     Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
 
-    return maulgar && maulgar->IsAlive() && maulgar->HasAura(WHIRLWIND) && !botAI->IsMainTank(bot);
+    return maulgar && maulgar->IsAlive() && maulgar->HasAura(SPELL_WHIRLWIND) && 
+           !botAI->IsMainTank(bot);
 }
 
 bool HighKingMaulgarBanishFelstalkerTrigger::IsActive()
@@ -105,9 +91,7 @@ bool HighKingMaulgarHunterMisdirectionTrigger::IsActive()
 {
     Group* group = bot->GetGroup();
     if (!group || bot->getClass() != CLASS_HUNTER)
-    {
         return false;
-    }
 
     std::vector<Player*> hunters;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
@@ -127,9 +111,7 @@ bool HighKingMaulgarHunterMisdirectionTrigger::IsActive()
         }
     }
     if (hunterIndex == -1 || hunterIndex > 1)
-    {
         return false;
-    }
 
     Unit* olm = AI_VALUE2(Unit*, "find target", "olm the summoner");
     Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
@@ -140,11 +122,9 @@ bool HighKingMaulgarHunterMisdirectionTrigger::IsActive()
     {
         Player* member = ref->GetSource();
         if (!member || !member->IsAlive())
-        {
             continue;
-        }
-        else if (botAI->IsAssistTankOfIndex(bot, 0)) olmTank = member;
-        else if (botAI->IsAssistTankOfIndex(bot, 1)) blindeyeTank = member;
+        else if (botAI->IsAssistTankOfIndex(member, 0)) olmTank = member;
+        else if (botAI->IsAssistTankOfIndex(member, 1)) blindeyeTank = member;
     }
 
     switch (hunterIndex)
@@ -176,17 +156,15 @@ bool GruulTheDragonkillerPositionBossTrigger::IsActive()
 bool GruulTheDragonkillerSpreadRangedTrigger::IsActive()
 {
     Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
-    Group* group = bot->GetGroup();
 
-    return gruul && gruul->IsAlive() && botAI->IsRanged(bot) && group;
+    return gruul && gruul->IsAlive() && botAI->IsRanged(bot);
 }
 
 bool GruulTheDragonkillerShatterSpreadTrigger::IsActive()
 {
     Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
-    Group* group = bot->GetGroup();
 
-    return gruul && gruul->IsAlive() && group &&
-           (bot->HasAura(GROUND_SLAM_1) || 
-            bot->HasAura(GROUND_SLAM_2));
+    return gruul && gruul->IsAlive() &&
+           (bot->HasAura(SPELL_GROUND_SLAM_1) || 
+            bot->HasAura(SPELL_GROUND_SLAM_2));
 }

@@ -8,28 +8,16 @@ using namespace GruulsLairHelpers;
 
 // High King Maulgar Actions
 
+// Main tank on Maulgar
 bool HighKingMaulgarMaulgarTankAction::Execute(Event event)
 {
     Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
-    Group* group = bot->GetGroup();
 
-    ObjectGuid currentIconGuid = group->GetTargetIcon(squareIcon);
-    if (currentIconGuid.IsEmpty() || currentIconGuid != maulgar->GetGUID())
-    {
-        group->SetTargetIcon(squareIcon, bot->GetGUID(), maulgar->GetGUID());
-    }
-
-    if (botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != "square" && 
-        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != maulgar)
-    {
-        botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("square");
-        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(maulgar);
-    }
+    MarkTargetWithSquare(bot, maulgar);
+    SetRtiTarget(botAI, "square", maulgar);
 
     if (bot->GetVictim() != maulgar)
-    {
-        Attack(maulgar);
-    }
+        return Attack(maulgar);
 
     if (maulgar->GetVictim() == bot)
     {
@@ -54,36 +42,23 @@ bool HighKingMaulgarMaulgarTankAction::Execute(Event event)
         bot->SetFacingTo(orientation);
     }
     else if (!bot->IsWithinMeleeRange(maulgar))
-    {
-        return MoveTo(maulgar->GetMapId(), maulgar->GetPositionX(), 
-                      maulgar->GetPositionY(), maulgar->GetPositionZ());
-    }
+        return MoveTo(maulgar->GetMapId(), maulgar->GetPositionX(), maulgar->GetPositionY(), 
+                      maulgar->GetPositionZ(), false, false, false, false, 
+                      MovementPriority::MOVEMENT_COMBAT, true, false);
 
     return false;
 }
 
+// First offtank on Olm
 bool HighKingMaulgarOlmTankAction::Execute(Event event)
 {
     Unit* olm = AI_VALUE2(Unit*, "find target", "olm the summoner");
-    Group* group = bot->GetGroup();
 
-    ObjectGuid currentIconGuid = group->GetTargetIcon(circleIcon);
-    if (currentIconGuid.IsEmpty() || currentIconGuid != olm->GetGUID())
-    {
-        group->SetTargetIcon(circleIcon, bot->GetGUID(), olm->GetGUID());
-    }
-
-    if (botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != "circle" && 
-        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != olm)
-    {
-        botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("circle");
-        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(olm);
-    }
+    MarkTargetWithCircle(bot, olm);
+    SetRtiTarget(botAI, "circle", olm);
 
     if (bot->GetVictim() != olm)
-    {
-        Attack(olm);
-    }
+        return Attack(olm);
 
     if (olm->GetVictim() == bot)
     {
@@ -93,7 +68,7 @@ bool HighKingMaulgarOlmTankAction::Execute(Event event)
 
         float distanceOlmToTankPosition = olm->GetExactDist2d(tankPosition.x, tankPosition.y);
 
-        if (distanceOlmToTankPosition > maxDistance)
+        if (distanceOlmToTankPosition > olmTankLeeway)
         {
             float dX = tankPosition.x - bot->GetPositionX();
             float dY = tankPosition.y - bot->GetPositionY();
@@ -105,36 +80,23 @@ bool HighKingMaulgarOlmTankAction::Execute(Event event)
         }
     }
     else if (!bot->IsWithinMeleeRange(olm))
-    {
-        return MoveTo(olm->GetMapId(), olm->GetPositionX(), 
-                      olm->GetPositionY(), olm->GetPositionZ());
-    }
+        return MoveTo(olm->GetMapId(), olm->GetPositionX(), olm->GetPositionY(), 
+                      olm->GetPositionZ(), false, false, false, false, 
+                      MovementPriority::MOVEMENT_COMBAT, true, false);
 
     return false;
 }
 
+// Second offtank on Blindeye
 bool HighKingMaulgarBlindeyeTankAction::Execute(Event event)
 {
     Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
-    Group* group = bot->GetGroup();
 
-    ObjectGuid currentIconGuid = group->GetTargetIcon(starIcon);
-    if (currentIconGuid.IsEmpty() || currentIconGuid != blindeye->GetGUID())
-    {
-        group->SetTargetIcon(starIcon, bot->GetGUID(), blindeye->GetGUID());
-    }
-
-    if (botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != "star" && 
-        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != blindeye)
-    {
-        botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("star");
-        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(blindeye);
-    }
+    MarkTargetWithStar(bot, blindeye);
+    SetRtiTarget(botAI, "star", blindeye);
 
     if (bot->GetVictim() != blindeye)
-    {
-        Attack(blindeye);
-    }
+        return Attack(blindeye);
 
     if (blindeye->GetVictim() == bot)
     {
@@ -159,46 +121,29 @@ bool HighKingMaulgarBlindeyeTankAction::Execute(Event event)
         bot->SetFacingTo(orientation);
     }
     else if (!bot->IsWithinMeleeRange(blindeye))
-    {
-        return MoveTo(blindeye->GetMapId(), blindeye->GetPositionX(), 
-                      blindeye->GetPositionY(), blindeye->GetPositionZ());
-    }
+        return MoveTo(blindeye->GetMapId(), blindeye->GetPositionX(), blindeye->GetPositionY(), 
+                      blindeye->GetPositionZ(), false, false, false, false, 
+                      MovementPriority::MOVEMENT_COMBAT, true, false);
 
     return false;
 }
 
+// Mage with highest max HP on Krosh
 bool HighKingMaulgarKroshMageTankAction::Execute(Event event)
 {
     Unit* krosh = AI_VALUE2(Unit*, "find target", "krosh firehand");
-    Group* group = bot->GetGroup();
 
-    ObjectGuid currentIconGuid = group->GetTargetIcon(triangleIcon);
-    if (currentIconGuid.IsEmpty() || currentIconGuid != krosh->GetGUID())
-    {
-        group->SetTargetIcon(triangleIcon, bot->GetGUID(), krosh->GetGUID());
-    }
+    MarkTargetWithTriangle(bot, krosh);
+    SetRtiTarget(botAI, "triangle", krosh);
 
-    if (botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != "triangle" && 
-        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != krosh)
-    {
-        botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("triangle");
-        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(krosh);
-    }
-
-    if (krosh->HasAura(SPELL_SHIELD) && botAI->CanCastSpell("spellsteal", krosh))
-    {
+    if (krosh->HasAura(SPELL_SPELL_SHIELD) && botAI->CanCastSpell("spellsteal", krosh))
         botAI->CastSpell("spellsteal", krosh);
-    }
 
-    if (!bot->HasAura(SPELL_SHIELD) && botAI->CanCastSpell("fire ward", bot))
-    {
+    if (!bot->HasAura(SPELL_SPELL_SHIELD) && botAI->CanCastSpell("fire ward", bot))
         botAI->CastSpell("fire ward", bot);
-    }
 
     if (bot->GetVictim() != krosh)
-    {
-        Attack(krosh);
-    }
+        return Attack(krosh);
 
     if (krosh->GetVictim() == bot)
     {
@@ -211,10 +156,8 @@ bool HighKingMaulgarKroshMageTankAction::Execute(Event event)
         if (distanceToKrosh > minDistance && distanceToKrosh < maxDistance)
         {
             if (!bot->IsWithinDist2d(tankPosition.x, tankPosition.y, tankPositionLeeway))
-            {
-                return MoveTo(bot->GetMapId(), tankPosition.x, tankPosition.y, tankPosition.z, false, false, false, false, 
-                              MovementPriority::MOVEMENT_COMBAT, true, false);
-            }
+                return MoveTo(bot->GetMapId(), tankPosition.x, tankPosition.y, tankPosition.z, false, 
+                              false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 
             float orientation = atan2(krosh->GetPositionY() - bot->GetPositionY(), 
                                       krosh->GetPositionX() - bot->GetPositionX());
@@ -223,44 +166,30 @@ bool HighKingMaulgarKroshMageTankAction::Execute(Event event)
         else
         {
             Position safePos;
-            if (FindSafePosition(botAI, bot, safePos))
-            {
-                return MoveTo(krosh->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ);
-            }
+            if (TryGetNewSafePosition(botAI, bot, safePos))
+                return MoveTo(krosh->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ,
+                              false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
 
     return false;
 }
 
+// Moonkin with highest max HP on Kiggler
 bool HighKingMaulgarKigglerMoonkinTankAction::Execute(Event event)
 {
     Unit* kiggler = AI_VALUE2(Unit*, "find target", "kiggler the crazed");
-    Group* group = bot->GetGroup();
 
-    ObjectGuid currentIconGuid = group->GetTargetIcon(diamondIcon);
-    if (currentIconGuid.IsEmpty() || currentIconGuid != kiggler->GetGUID())
-    {
-        group->SetTargetIcon(diamondIcon, bot->GetGUID(), kiggler->GetGUID());
-    }
-
-    if (botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != "diamond" && 
-        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != kiggler)
-    {
-        botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("diamond");
-        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(kiggler);
-    }
+    MarkTargetWithDiamond(bot, kiggler);
+    SetRtiTarget(botAI, "diamond", kiggler);
 
     if (bot->GetVictim() != kiggler)
-    {
-        Attack(kiggler);
-    }
+        return Attack(kiggler);
 
     Position safePos;
-    if (FindSafePosition(botAI, bot, safePos))
-    {
-        return MoveTo(kiggler->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ);
-    }
+    if (TryGetNewSafePosition(botAI, bot, safePos))
+        return MoveTo(kiggler->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ,
+                      false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 
     return false;
 }
@@ -276,26 +205,18 @@ bool HighKingMaulgarMeleeDPSPriorityAction::Execute(Event event)
     if (blindeye && blindeye->IsAlive())
     {
         Position safePos;
-        if (FindSafePosition(botAI, bot, safePos))
+        if (TryGetNewSafePosition(botAI, bot, safePos))
         {
             bot->AttackStop();
             bot->InterruptNonMeleeSpells(false);
-
-            return MoveTo(blindeye->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ);
+            return MoveTo(blindeye->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ,
+                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
 
-        Unit* rtiTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
-        std::string rtiValue = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
-        if (rtiValue != "star" || rtiTarget != blindeye)
-        {
-            botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("star");
-            botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(blindeye);
-        }
+        SetRtiTarget(botAI, "star", blindeye);
 
         if (bot->GetVictim() != blindeye)
-        {
-            Attack(blindeye);
-        }
+            return Attack(blindeye);
 
         return false;
     }
@@ -304,26 +225,18 @@ bool HighKingMaulgarMeleeDPSPriorityAction::Execute(Event event)
     if (olm && olm->IsAlive())
     {
         Position safePos;
-        if (FindSafePosition(botAI, bot, safePos))
+        if (TryGetNewSafePosition(botAI, bot, safePos))
         {
             bot->AttackStop();
             bot->InterruptNonMeleeSpells(false);
-
-            return MoveTo(olm->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ);
+            return MoveTo(olm->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ,
+                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
 
-        Unit* rtiTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
-        std::string rtiValue = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
-        if (rtiValue != "circle" || rtiTarget != olm)
-        {
-            botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("circle");
-            botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(olm);
-        }
+        SetRtiTarget(botAI, "circle", olm);
 
         if (bot->GetVictim() != olm)
-        {
-            Attack(olm);
-        }
+            return Attack(olm);
 
         return false;
     }
@@ -332,26 +245,18 @@ bool HighKingMaulgarMeleeDPSPriorityAction::Execute(Event event)
     if (kiggler && kiggler->IsAlive())
     {
         Position safePos;
-        if (FindSafePosition(botAI, bot, safePos))
+        if (TryGetNewSafePosition(botAI, bot, safePos))
         {
             bot->AttackStop();
             bot->InterruptNonMeleeSpells(false);
-
-            return MoveTo(kiggler->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ);
+            return MoveTo(kiggler->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ,
+                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
 
-        Unit* rtiTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
-        std::string rtiValue = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
-        if (rtiValue != "diamond" || rtiTarget != kiggler)
-        {
-            botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("diamond");
-            botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(kiggler);
-        }
+        SetRtiTarget(botAI, "diamond", kiggler);
 
         if (bot->GetVictim() != kiggler)
-        {
-            Attack(kiggler);
-        }
+            return Attack(kiggler);
 
         return false;
     }
@@ -360,26 +265,18 @@ bool HighKingMaulgarMeleeDPSPriorityAction::Execute(Event event)
     if (maulgar && maulgar->IsAlive())
     {
         Position safePos;
-        if (FindSafePosition(botAI, bot, safePos))
+        if (TryGetNewSafePosition(botAI, bot, safePos))
         {
             bot->AttackStop();
             bot->InterruptNonMeleeSpells(false);
-
-            return MoveTo(maulgar->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ);
+            return MoveTo(maulgar->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ,
+                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
 
-        Unit* rtiTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
-        std::string rtiValue = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
-        if (rtiValue != "square" || rtiTarget != maulgar)
-        {
-            botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("square");
-            botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(maulgar);
-        }
+        SetRtiTarget(botAI, "square", maulgar);
 
         if (bot->GetVictim() != maulgar)
-        {
-            Attack(maulgar);
-        }
+            return Attack(maulgar);
     }
 
     return false;
@@ -397,26 +294,18 @@ bool HighKingMaulgarRangedDPSPriorityAction::Execute(Event event)
     if (blindeye && blindeye->IsAlive())
     {
         Position safePos;
-        if (FindSafePosition(botAI, bot, safePos))
+        if (TryGetNewSafePosition(botAI, bot, safePos))
         {
             bot->AttackStop();
             bot->InterruptNonMeleeSpells(false);
-
-            return MoveTo(blindeye->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ);
+            return MoveTo(blindeye->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ,
+                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
 
-        Unit* rtiTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
-        std::string rtiValue = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
-        if (rtiValue != "star" || rtiTarget != blindeye)
-        {
-            botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("star");
-            botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(blindeye);
-        }
+        SetRtiTarget(botAI, "star", blindeye);
 
         if (bot->GetVictim() != blindeye)
-        {
-            Attack(blindeye);
-        }
+            return Attack(blindeye);
 
         return false;
     }
@@ -425,26 +314,18 @@ bool HighKingMaulgarRangedDPSPriorityAction::Execute(Event event)
     if (olm && olm->IsAlive())
     {
         Position safePos;
-        if (FindSafePosition(botAI, bot, safePos))
+        if (TryGetNewSafePosition(botAI, bot, safePos))
         {
             bot->AttackStop();
             bot->InterruptNonMeleeSpells(false);
-
-            return MoveTo(olm->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ);
+            return MoveTo(olm->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ,
+                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
 
-        Unit* rtiTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
-        std::string rtiValue = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
-        if (rtiValue != "circle" || rtiTarget != olm)
-        {
-            botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("circle");
-            botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(olm);
-        }
+        SetRtiTarget(botAI, "circle", olm);
 
         if (bot->GetVictim() != olm)
-        {
-            Attack(olm);
-        }
+            return Attack(olm);
 
         return false;
     }
@@ -453,26 +334,18 @@ bool HighKingMaulgarRangedDPSPriorityAction::Execute(Event event)
     if (krosh && krosh->IsAlive())
     {
         Position safePos;
-        if (FindSafePosition(botAI, bot, safePos))
+        if (TryGetNewSafePosition(botAI, bot, safePos))
         {
             bot->AttackStop();
             bot->InterruptNonMeleeSpells(false);
-
-            return MoveTo(krosh->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ);
+            return MoveTo(krosh->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ,
+                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
 
-        Unit* rtiTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
-        std::string rtiValue = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
-        if (rtiValue != "triangle" || rtiTarget != krosh)
-        {
-            botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("triangle");
-            botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(krosh);
-        }
+        SetRtiTarget(botAI, "triangle", krosh);
 
         if (bot->GetVictim() != krosh)
-        {
-            Attack(krosh);
-        }
+            return Attack(krosh);
 
         return false;
     }
@@ -481,26 +354,18 @@ bool HighKingMaulgarRangedDPSPriorityAction::Execute(Event event)
     if (kiggler && kiggler->IsAlive())
     {
         Position safePos;
-        if (FindSafePosition(botAI, bot, safePos))
+        if (TryGetNewSafePosition(botAI, bot, safePos))
         {
             bot->AttackStop();
             bot->InterruptNonMeleeSpells(false);
-
-            return MoveTo(kiggler->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ);
+            return MoveTo(kiggler->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ,
+                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
 
-        Unit* rtiTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
-        std::string rtiValue = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
-        if (rtiValue != "diamond" || rtiTarget != kiggler)
-        {
-            botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("diamond");
-            botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(kiggler);
-        }
+        SetRtiTarget(botAI, "diamond", kiggler);
 
         if (bot->GetVictim() != kiggler)
-        {
-            Attack(kiggler);
-        }
+            return Attack(kiggler);
 
         return false;
     }
@@ -509,31 +374,24 @@ bool HighKingMaulgarRangedDPSPriorityAction::Execute(Event event)
     if (maulgar && maulgar->IsAlive())
     {
         Position safePos;
-        if (FindSafePosition(botAI, bot, safePos))
+        if (TryGetNewSafePosition(botAI, bot, safePos))
         {
             bot->AttackStop();
             bot->InterruptNonMeleeSpells(false);
-
-            return MoveTo(maulgar->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ);
+            return MoveTo(maulgar->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ,
+                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
 
-        Unit* rtiTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
-        std::string rtiValue = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
-        if (rtiValue != "square" || rtiTarget != maulgar)
-        {
-            botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("square");
-            botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(maulgar);
-        }
+        SetRtiTarget(botAI, "square", maulgar);
 
         if (bot->GetVictim() != maulgar)
-        {
-            Attack(maulgar);
-        }
+            return Attack(maulgar);
     }
 
     return false;
 }
 
+// Avoid Whirlwind and Blast Wave and generally try to stay near the center of the room
 bool HighKingMaulgarHealerAvoidanceAction::Execute(Event event)
 {
     const Location& fightCenter = GruulsLairLocations::MaulgarRoomCenter;
@@ -549,22 +407,21 @@ bool HighKingMaulgarHealerAvoidanceAction::Execute(Event event)
 
         if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, bot->GetPositionX(), bot->GetPositionY(), 
             bot->GetPositionZ(), destX, destY, destZ))
-        {
             return false;
-        }
 
-        return MoveTo(bot->GetMapId(), destX, destY, destZ);
+        return MoveTo(bot->GetMapId(), destX, destY, destZ, false, false, false, false, 
+                      MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
     Position safePos;
-    if (FindSafePosition(botAI, bot, safePos))
-    {
-        return MoveTo(bot->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ);
-    }
+    if (TryGetNewSafePosition(botAI, bot, safePos))
+        return MoveTo(bot->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ,
+                      false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 
     return false;
 }
 
+// Run away from Maulgar during Whirlwind (logic for after all other ogres are dead)
 bool HighKingMaulgarWhirlwindRunAwayAction::Execute(Event event)
 {
     Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
@@ -582,9 +439,7 @@ bool HighKingMaulgarWhirlwindRunAwayAction::Execute(Event event)
 
         if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, bot->GetPositionX(), bot->GetPositionY(), 
             bot->GetPositionZ(), destX, destY, destZ))
-        {
             return false;
-        }
 
         float destDist = maulgar->GetExactDist2d(destX, destY);
 
@@ -592,8 +447,8 @@ bool HighKingMaulgarWhirlwindRunAwayAction::Execute(Event event)
         {
             bot->AttackStop();
             bot->InterruptNonMeleeSpells(false);
-
-            return MoveTo(maulgar->GetMapId(), destX, destY, destZ);
+            return MoveTo(maulgar->GetMapId(), destX, destY, destZ, false, false, false, false, 
+                          MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
 
@@ -608,17 +463,19 @@ bool HighKingMaulgarBanishFelstalkerAction::Execute(Event event)
     for (const auto& npc : npcs)
     {
         Unit* unit = botAI->GetUnit(npc);
-        if (unit && unit->GetEntry() == WILD_FEL_STALKER && unit->IsAlive())
+        if (unit && unit->GetEntry() == NPC_WILD_FEL_STALKER && unit->IsAlive())
             felStalkers.push_back(unit);
     }
 
     std::vector<Player*> warlocks;
-    Group* group = bot->GetGroup();
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    if (Group* group = bot->GetGroup())
     {
-        Player* member = ref->GetSource();
-        if (member && member->IsAlive() && member->getClass() == CLASS_WARLOCK && GET_PLAYERBOT_AI(member))
-            warlocks.push_back(member);
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (member && member->IsAlive() && member->getClass() == CLASS_WARLOCK && GET_PLAYERBOT_AI(member))
+                warlocks.push_back(member);
+        }
     }
 
     int warlockIndex = -1;
@@ -634,18 +491,21 @@ bool HighKingMaulgarBanishFelstalkerAction::Execute(Event event)
     if (warlockIndex >= 0 && warlockIndex < felStalkers.size())
     {
         Unit* assignedFelStalker = felStalkers[warlockIndex];
-        if (!assignedFelStalker->HasAura(BANISH) && botAI->CanCastSpell(BANISH, assignedFelStalker, true))
-        {
-            return botAI->CastSpell(BANISH, assignedFelStalker);
-        }
+        if (!assignedFelStalker->HasAura(SPELL_BANISH) && botAI->CanCastSpell(SPELL_BANISH, assignedFelStalker, true))
+            return botAI->CastSpell("banish", assignedFelStalker);
     }
 
     return false;
 }
 
+// Hunter 1: Misdirect Olm to first offtank and have pet attack Blindeye
+// Hunter 2: Misdirect Blindeye to second offtank
 bool HighKingMaulgarHunterMisdirectionAction::Execute(Event event)
 {
     Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
     std::vector<Player*> hunters;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
@@ -673,46 +533,40 @@ bool HighKingMaulgarHunterMisdirectionAction::Execute(Event event)
     {
         Player* member = ref->GetSource();
         if (!member || !member->IsAlive())
-        {
             continue;
-        }
-        else if (botAI->IsAssistTankOfIndex(bot, 0)) olmTank = member;
-        else if (botAI->IsAssistTankOfIndex(bot, 1)) blindeyeTank = member;
+        else if (botAI->IsAssistTankOfIndex(member, 0)) olmTank = member;
+        else if (botAI->IsAssistTankOfIndex(member, 1)) blindeyeTank = member;
     }
 
     switch (hunterIndex)
     {
         case 0:
-            botAI->CastSpell("misdirection", olmTank);
-            if (bot->HasAura(MISDIRECTION))
+        botAI->CastSpell("misdirection", olmTank);
+        if (bot->HasAura(SPELL_MISDIRECTION))
+        {
+            Pet* pet = bot->GetPet();
+            if (pet && pet->IsAlive() && pet->GetVictim() != blindeye)
             {
-                Pet* pet = bot->GetPet();
-                if (pet && pet->IsAlive() && pet->GetVictim() != blindeye)
+                pet->ClearUnitState(UNIT_STATE_FOLLOW);
+                pet->AttackStop();
+                pet->SetTarget(blindeye->GetGUID());
+                if (pet->GetCharmInfo())
                 {
-                    pet->ClearUnitState(UNIT_STATE_FOLLOW);
-                    pet->AttackStop();
-                    pet->SetTarget(blindeye->GetGUID());
-                    if (pet->GetCharmInfo())
-                    {
-                        pet->GetCharmInfo()->SetIsCommandAttack(true);
-                        pet->GetCharmInfo()->SetIsAtStay(false);
-                        pet->GetCharmInfo()->SetIsFollowing(false);
-                        pet->GetCharmInfo()->SetIsCommandFollow(false);
-                        pet->GetCharmInfo()->SetIsReturning(false);
-                    }
-                    pet->ToCreature()->AI()->AttackStart(blindeye);
+                    pet->GetCharmInfo()->SetIsCommandAttack(true);
+                    pet->GetCharmInfo()->SetIsAtStay(false);
+                    pet->GetCharmInfo()->SetIsFollowing(false);
+                    pet->GetCharmInfo()->SetIsCommandFollow(false);
+                    pet->GetCharmInfo()->SetIsReturning(false);
                 }
-                botAI->CastSpell("steady shot", olm);
+                pet->ToCreature()->AI()->AttackStart(blindeye);
             }
-            return true;
+            return botAI->CastSpell("steady shot", olm);
+        }
 
         case 1:
-            botAI->CastSpell("misdirection", blindeyeTank);
-            if (bot->HasAura(MISDIRECTION))
-            {
-                botAI->CastSpell("steady shot", blindeye);
-            }
-            return true;
+        botAI->CastSpell("misdirection", blindeyeTank);
+        if (bot->HasAura(SPELL_MISDIRECTION))
+            return botAI->CastSpell("steady shot", blindeye);
             
         default:
             break;
@@ -723,14 +577,13 @@ bool HighKingMaulgarHunterMisdirectionAction::Execute(Event event)
 
 // Gruul the Dragonkiller Actions
 
+// Position in center of the room
 bool GruulTheDragonkillerPositionBossAction::Execute(Event event)
 {
     Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
     
     if (bot->GetVictim() != gruul)
-    {
-        Attack(gruul);
-    }
+        return Attack(gruul);
     
     if (gruul->GetVictim() == bot)
     {
@@ -747,10 +600,8 @@ bool GruulTheDragonkillerPositionBossAction::Execute(Event event)
             float moveX = bot->GetPositionX() + (dX / distanceToTankPosition) * maxDistance;
             float moveY = bot->GetPositionY() + (dY / distanceToTankPosition) * maxDistance;
             const float moveZ = tankPosition.z;
-            {
-                return MoveTo(bot->GetMapId(), moveX, moveY, moveZ, false, false, false, false, 
-                              MovementPriority::MOVEMENT_COMBAT, true, false);
-            }
+            return MoveTo(bot->GetMapId(), moveX, moveY, moveZ, false, false, false, false, 
+                          MovementPriority::MOVEMENT_COMBAT, true, false);
         }
 
         float orientation = atan2(gruul->GetPositionY() - bot->GetPositionY(), 
@@ -758,14 +609,14 @@ bool GruulTheDragonkillerPositionBossAction::Execute(Event event)
         bot->SetFacingTo(orientation);
     }
     else if (!bot->IsWithinMeleeRange(gruul))
-    {
-        return MoveTo(gruul->GetMapId(), gruul->GetPositionX(), 
-                      gruul->GetPositionY(), gruul->GetPositionZ());
-    }
+        return MoveTo(gruul->GetMapId(), gruul->GetPositionX(), gruul->GetPositionY(), gruul->GetPositionZ(), 
+                      false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 
     return false;
 }
 
+// Ranged will take initial positions around the middle of the room, 25-40 yards from center
+// Ranged should spread out 10 yards from each other
 bool GruulTheDragonkillerSpreadRangedAction::Execute(Event event)
 {
     static std::unordered_map<ObjectGuid, Position> initialPositions;
@@ -788,22 +639,23 @@ bool GruulTheDragonkillerSpreadRangedAction::Execute(Event event)
     std::vector<Player*> members;
     Player* closestMember = nullptr;
     float closestDist = std::numeric_limits<float>::max();
-    Group* group = bot->GetGroup();
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    if (Group* group = bot->GetGroup())
     {
-        Player* member = ref->GetSource();
-        if (!member || !member->IsAlive())
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
-            continue;
-        }
-        members.push_back(member);
-        if (member != bot)
-        {
-            float dist = bot->GetExactDist2d(member);
-            if (dist < closestDist)
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive())
+                continue;
+
+            members.push_back(member);
+            if (member != bot)
             {
-                closestDist = dist;
-                closestMember = member;
+                float dist = bot->GetExactDist2d(member);
+                if (dist < closestDist)
+                {
+                    closestDist = dist;
+                    closestMember = member;
+                }
             }
         }
     }
@@ -811,8 +663,8 @@ bool GruulTheDragonkillerSpreadRangedAction::Execute(Event event)
     if (!initialPositions.count(bot->GetGUID()))
     {
         auto it = std::find(members.begin(), members.end(), bot);
-        uint32 botIndex = (it != members.end()) ? std::distance(members.begin(), it) : 0;
-        uint32 count = members.size();
+        uint8 botIndex = (it != members.end()) ? std::distance(members.begin(), it) : 0;
+        uint8 count = members.size();
 
         float angle = 2 * M_PI * botIndex / count;
         float radius = minRadius + static_cast<float>(rand()) / 
@@ -834,11 +686,10 @@ bool GruulTheDragonkillerSpreadRangedAction::Execute(Event event)
             float destZ = targetPosition.GetPositionZ();
             if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, bot->GetPositionX(),
                 bot->GetPositionY(), bot->GetPositionZ(), destX, destY, destZ))
-            {
                 return false;
-            }
 
-            return MoveTo(bot->GetMapId(), destX, destY, destZ);
+            return MoveTo(bot->GetMapId(), destX, destY, destZ, false, false, false, false,
+                          MovementPriority::MOVEMENT_COMBAT, true, false);
         }
 
         hasReachedInitialPosition[bot->GetGUID()] = true;
@@ -848,38 +699,19 @@ bool GruulTheDragonkillerSpreadRangedAction::Execute(Event event)
     const float movementThreshold = 2.0f;
 
     if (closestMember && closestDist < minSpreadDistance - movementThreshold)
-    {
         return FleePosition(Position(closestMember->GetPositionX(), closestMember->GetPositionY(), 
                             closestMember->GetPositionZ()), minSpreadDistance, 0);
-    }
-
-    /* float distanceToTankPosition = bot->GetExactDist2d(tankPosition.x, tankPosition.y);
-    if (distanceToTankPosition < minRadius - movementThreshold)
-    {
-        float angle = atan2(bot->GetPositionY() - tankPosition.y, bot->GetPositionX() - tankPosition.x);
-        float radius = minRadius + static_cast<float>(rand()) / 
-                       static_cast<float>(RAND_MAX) * (maxRadius - minRadius);
-        float destX = tankPosition.x + radius * cos(angle);
-        float destY = tankPosition.y + radius * sin(angle);
-        float destZ = bot->GetPositionZ();
-
-        if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, bot->GetPositionX(),
-            bot->GetPositionY(), bot->GetPositionZ(), destX, destY, destZ))
-        {
-            return false;
-        }
-
-        bot->AttackStop();
-        bot->InterruptNonMeleeSpells(false);
-
-        return MoveTo(bot->GetMapId(), destX, destY, destZ);
-    } */
 
     return false;
 }
 
+// Try to get away from other group members when Ground Slam is cast
 bool GruulTheDragonkillerShatterSpreadAction::Execute(Event event)
 {
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
     GuidVector members = AI_VALUE(GuidVector, "group members");
     Unit* closestMember = nullptr;
     float closestDist = std::numeric_limits<float>::max();
@@ -888,9 +720,8 @@ bool GruulTheDragonkillerShatterSpreadAction::Execute(Event event)
     {
         Unit* unit = botAI->GetUnit(member);
         if (!unit || bot->GetGUID() == member)
-        {
             continue;
-        }
+        
         const float dist = bot->GetExactDist2d(unit);
         if (dist < closestDist)
         {
@@ -900,10 +731,8 @@ bool GruulTheDragonkillerShatterSpreadAction::Execute(Event event)
     }
 
     if (closestMember)
-    {
         return FleePosition(Position(closestMember->GetPositionX(), closestMember->GetPositionY(), 
                             closestMember->GetPositionZ()), 6.0f, 0);
-    }
 
     return false;
 }

@@ -35,71 +35,122 @@ bool IsAnyOgreBossAlive(PlayerbotAI* botAI)
            (blindeye && blindeye->IsAlive());
 }
 
-bool IsKroshMageTank(PlayerbotAI* botAI, Player* bot)
+void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId)
 {
-    Group* group = bot->GetGroup();
-    if (!group)
-    {
-        return false;
-    }
+    if (!target)
+        return;
 
-    Player* highestHpMage = nullptr;
-    uint32 highestHp = 0;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    if (Group* group = bot->GetGroup())
     {
-        Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member))
+        ObjectGuid currentGuid = group->GetTargetIcon(iconId);
+        if (currentGuid != target->GetGUID())
         {
-            continue;
-        }
-        if (member->getClass() == CLASS_MAGE)
-        {
-            uint32 hp = member->GetMaxHealth();
-            if (!highestHpMage || hp > highestHp)
-            {
-                highestHpMage = member;
-                highestHp = hp;
-            }
+            group->SetTargetIcon(iconId, bot->GetGUID(), target->GetGUID());
         }
     }
-
-    return highestHpMage == bot;
 }
 
-bool IsKigglerMoonkinTank(PlayerbotAI* botAI, Player* bot)
+void MarkTargetWithSquare(Player* bot, Unit* target)
 {
-    Group* group = bot->GetGroup();
-    if (!group)
+    MarkTargetWithIcon(bot, target, RtiTargetValue::squareIndex);
+}
+
+void MarkTargetWithStar(Player* bot, Unit* target)
+{
+    MarkTargetWithIcon(bot, target, RtiTargetValue::starIndex);
+}
+
+void MarkTargetWithCircle(Player* bot, Unit* target)
+{
+    MarkTargetWithIcon(bot, target, RtiTargetValue::circleIndex);
+}
+
+void MarkTargetWithDiamond(Player* bot, Unit* target)
+{
+    MarkTargetWithIcon(bot, target, RtiTargetValue::diamondIndex);
+}
+
+void MarkTargetWithTriangle(Player* bot, Unit* target)
+{
+    MarkTargetWithIcon(bot, target, RtiTargetValue::triangleIndex);
+}
+
+void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target)
+{
+    if (!target)
+        return;
+
+    std::string currentRti = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
+    Unit* currentTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
+
+    if (currentRti != rtiName || currentTarget != target)
     {
-        return false;
+        botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set(rtiName);
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(target);
     }
+}
 
-    Player* highestHpMoonkin = nullptr;
+bool IsKroshMageTank(PlayerbotAI* botAI, Player* bot)
+{
+    Player* highestHpMage = nullptr;
     uint32 highestHp = 0;
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    if (Group* group = bot->GetGroup())
     {
-        Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member))
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
-            continue;
-        }
-        if (member->getClass() == CLASS_DRUID)
-        {
-            int tab = AiFactory::GetPlayerSpecTab(member);
-            if (tab == DRUID_TAB_BALANCE)
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member))
+                continue;
+            
+            if (member->getClass() == CLASS_MAGE)
             {
                 uint32 hp = member->GetMaxHealth();
-                if (!highestHpMoonkin || hp > highestHp)
+                if (!highestHpMage || hp > highestHp)
                 {
-                    highestHpMoonkin = member;
+                    highestHpMage = member;
                     highestHp = hp;
                 }
             }
         }
+
+        return highestHpMage == bot;
     }
 
-    return highestHpMoonkin == bot;
+    return false;
+}
+
+bool IsKigglerMoonkinTank(PlayerbotAI* botAI, Player* bot)
+{
+    Player* highestHpMoonkin = nullptr;
+    uint32 highestHp = 0;
+
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member))
+                continue;
+            
+            if (member->getClass() == CLASS_DRUID)
+            {
+                int tab = AiFactory::GetPlayerSpecTab(member);
+                if (tab == DRUID_TAB_BALANCE)
+                {
+                    uint32 hp = member->GetMaxHealth();
+                    if (!highestHpMoonkin || hp > highestHp)
+                    {
+                        highestHpMoonkin = member;
+                        highestHp = hp;
+                    }
+                }
+            }
+        }
+
+        return highestHpMoonkin == bot;
+    }
+
+    return false;
 }
 
 bool IsPositionSafe(PlayerbotAI* botAI, Player* bot, Position pos)
@@ -111,44 +162,37 @@ bool IsPositionSafe(PlayerbotAI* botAI, Player* bot, Position pos)
     Unit* krosh = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "krosh firehand")->Get();
     if (krosh && krosh->IsAlive())
     {
-        float dist = sqrt(pow(pos.GetPositionX() - krosh->GetPositionX(), 2) + 
-                          pow(pos.GetPositionY() - krosh->GetPositionY(), 2));
+        float dist = sqrt(pow(pos.GetPositionX() - krosh->GetPositionX(), 2) + pow(pos.GetPositionY() - krosh->GetPositionY(), 2));
         if (dist < KROSH_SAFE_DISTANCE)
-        {
             isSafe = false;
-        }
     }
 
-    if (botAI->IsRanged(bot))
+    Unit* maulgar = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "high king maulgar")->Get();
+    if (botAI->IsRanged(bot) && maulgar && maulgar->IsAlive())
     {
-        Unit* maulgar = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "high king maulgar")->Get();
-        if (maulgar && maulgar->IsAlive())
-        {
-            float dist = sqrt(pow(pos.GetPositionX() - maulgar->GetPositionX(), 2) + 
-                              pow(pos.GetPositionY() - maulgar->GetPositionY(), 2));
-            if (dist < MAULGAR_SAFE_DISTANCE)
-            {
-                isSafe = false;
-            }
-        }
+        float dist = sqrt(pow(pos.GetPositionX() - maulgar->GetPositionX(), 2) + pow(pos.GetPositionY() - maulgar->GetPositionY(), 2));
+        if (dist < MAULGAR_SAFE_DISTANCE)
+            isSafe = false;
     }
 
     return isSafe;
 }
 
-bool FindSafePosition(PlayerbotAI* botAI, Player* bot, Position& outPos)
+bool TryGetNewSafePosition(PlayerbotAI* botAI, Player* bot, Position& outPos)
 {
     const float SEARCH_RADIUS = 30.0f;
-    const int NUM_POSITIONS = 32;
-    outPos = { bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ() };
+    const uint8 NUM_POSITIONS = 32;
 
+    outPos = { bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ() };
     if (IsPositionSafe(botAI, bot, outPos))
     {
+        outPos = Position();
         return false;
     }
 
     float bestScore = std::numeric_limits<float>::max();
     bool foundSafeSpot = false;
+    Position bestPos;
 
     for (int i = 0; i < NUM_POSITIONS; ++i)
     {
@@ -161,13 +205,10 @@ bool FindSafePosition(PlayerbotAI* botAI, Player* bot, Position& outPos)
         float destX = candidatePos.m_positionX, destY = candidatePos.m_positionY, destZ = candidatePos.m_positionZ;
         if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, bot->GetPositionX(), bot->GetPositionY(),
             bot->GetPositionZ(), destX, destY, destZ, true))
-        {
             continue;
-        }
+
         if (destX != candidatePos.m_positionX || destY != candidatePos.m_positionY)
-        {
             continue;
-        }
 
         candidatePos.m_positionX = destX;
         candidatePos.m_positionY = destY;
@@ -179,13 +220,20 @@ bool FindSafePosition(PlayerbotAI* botAI, Player* bot, Position& outPos)
             if (movementDistance < bestScore)
             {
                 bestScore = movementDistance;
-                outPos = candidatePos;
+                bestPos = candidatePos;
                 foundSafeSpot = true;
             }
         }
     }
 
-    return foundSafeSpot;
+    if (foundSafeSpot)
+    {
+        outPos = bestPos;
+        return true;
+    }
+
+    outPos = Position();
+    return false;
 }
 
 }
