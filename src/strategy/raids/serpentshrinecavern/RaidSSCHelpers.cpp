@@ -1,0 +1,455 @@
+#include <algorithm>
+#include <map>
+
+#include "RaidSSCHelpers.h"
+#include "RaidSSCActions.h"
+#include "Playerbots.h"
+#include "RtiTargetValue.h"
+
+/* 
+// Attumen the Huntsman
+std::unordered_map<uint32, time_t> attumenDPSWaitTimer;
+// Big Bad Wolf
+std::unordered_map<ObjectGuid, uint8> bigBadWolfRunIndex;
+// Netherspite
+std::unordered_map<uint32, time_t> netherspiteDPSWaitTimer;
+std::unordered_map<ObjectGuid, time_t> redBeamMoveTimer;
+std::unordered_map<ObjectGuid, bool> lastBeamMoveSideways;
+// Nightbane
+std::unordered_map<uint32, time_t> nightbaneDPSWaitTimer;
+std::unordered_map<ObjectGuid, uint8> nightbaneTankStep;
+std::unordered_map<ObjectGuid, uint8> nightbaneRangedStep;
+std::unordered_map<uint32, time_t> nightbaneFlightPhaseStartTimer;
+std::unordered_map<ObjectGuid, bool> nightbaneRainOfBonesHit;
+
+const Position KARAZHAN_MAIDEN_OF_VIRTUE_BOSS_POSITION = Position(-10945.881f, -2103.782f, 92.712f);
+const Position KARAZHAN_MAIDEN_OF_VIRTUE_RANGED_POSITION[8] =
+{
+    { -10931.178f, -2116.580f, 92.179f },
+    { -10925.828f, -2102.425f, 92.180f },
+    { -10933.089f, -2088.502f, 92.180f },
+    { -10947.590f, -2082.815f, 92.180f },
+    { -10960.912f, -2090.437f, 92.179f },
+    { -10966.017f, -2105.288f, 92.175f },
+    { -10959.242f, -2119.617f, 92.180f },
+    { -10944.495f, -2123.857f, 92.180f },
+};
+
+const Position KARAZHAN_BIG_BAD_WOLF_BOSS_POSITION = Position(-10913.391f, -1773.508f, 90.477f);
+const Position KARAZHAN_BIG_BAD_WOLF_RUN_POSITION[4] = 
+{
+    { -10875.456f, -1779.036f, 90.477f },
+    { -10872.281f, -1751.638f, 90.477f },
+    { -10910.492f, -1747.401f, 90.477f },    
+    { -10913.391f, -1773.508f, 90.477f },
+};
+
+const Position KARAZHAN_THE_CURATOR_BOSS_POSITION = Position(-11139.463f, -1884.645f, 165.765f);
+
+const Position KARAZHAN_NIGHTBANE_TRANSITION_BOSS_POSITION = Position(-11114.099f, -1890.569f, 91.473f);
+const Position KARAZHAN_NIGHTBANE_FINAL_BOSS_POSITION = Position(-11108.862f, -1878.839f, 91.473f);
+const Position KARAZHAN_NIGHTBANE_RANGED_POSITION_1 = Position(-11091.281f, -1908.577f, 91.473f);
+const Position KARAZHAN_NIGHTBANE_RANGED_POSITION_2 = Position(-11084.612f, -1896.260f, 91.473f);
+const Position KARAZHAN_NIGHTBANE_RANGED_POSITION_3 = Position(-11100.881f, -1894.629f, 91.473f);
+const Position KARAZHAN_NIGHTBANE_FLIGHT_STACK_POSITION = Position(-11152.074f, -1892.548f, 91.473f);
+// const Position KARAZHAN_NIGHTBANE_RAIN_OF_BONES_POSITION = Position(-11159.314f, -1902.819f, 91.472f);
+const Position KARAZHAN_NIGHTBANE_RAIN_OF_BONES_POSITION = Position(-11135.990f, -1884.877f, 91.473f);
+
+namespace KarazhanHelpers
+{
+
+void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId)
+{
+    if (!target)
+        return;
+
+    if (Group* group = bot->GetGroup())
+    {
+        ObjectGuid currentGuid = group->GetTargetIcon(iconId);
+        if (currentGuid != target->GetGUID())
+        {
+            group->SetTargetIcon(iconId, bot->GetGUID(), target->GetGUID());
+        }
+    }
+}
+
+void MarkTargetWithSkull(Player* bot, Unit* target)
+{
+    MarkTargetWithIcon(bot, target, RtiTargetValue::skullIndex);
+}
+
+void MarkTargetWithSquare(Player* bot, Unit* target)
+{
+    MarkTargetWithIcon(bot, target, RtiTargetValue::squareIndex);
+}
+
+void MarkTargetWithMoon(Player* bot, Unit* target)
+{
+    MarkTargetWithIcon(bot, target, RtiTargetValue::moonIndex);
+}
+
+void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target)
+{
+    if (!target)
+        return;
+
+    std::string currentRti = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
+    Unit* currentTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
+
+    if (currentRti != rtiName || currentTarget != target)
+    {
+        botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set(rtiName);
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(target);
+    }
+}
+
+// Only one bot is needed to set/reset mapwide timers
+bool IsMapIDTimerManager(Player* bot)
+{
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (member && member->IsAlive() && GET_PLAYERBOT_AI(member))
+                return member == bot;
+        }
+    }
+
+    return true;
+}
+
+Unit* GetFirstAliveUnit(const std::vector<Unit*>& units)
+{
+    for (Unit* unit : units)
+    {
+        if (unit && unit->IsAlive())
+            return unit;
+    }
+
+    return nullptr;
+}
+
+Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry)
+{
+    const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
+    for (const auto& npcGuid : npcs)
+    {
+        Unit* unit = botAI->GetUnit(npcGuid);
+
+        if (unit && unit->IsAlive() && unit->GetEntry() == entry)
+            return unit;
+    }
+
+    return nullptr;
+}
+
+Unit* GetNearestPlayerInRadius(Player* bot, float radius)
+{
+    Unit* nearestPlayer = nullptr;
+    float nearestDistance = radius;
+    
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+
+            if (!member || !member->IsAlive() || member == bot)
+                continue;
+
+            float distance = bot->GetExactDist2d(member);
+            if (distance < nearestDistance)
+            {
+                nearestDistance = distance;
+                nearestPlayer = member;
+            }
+        }
+    }
+
+    return nearestPlayer;
+}
+
+bool IsFlameWreathActive(PlayerbotAI* botAI, Player* bot)
+{
+    Unit* aran = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "shade of aran")->Get();
+    Spell* currentSpell = aran ? aran->GetCurrentSpell(CURRENT_GENERIC_SPELL) : nullptr;
+
+    if (currentSpell && currentSpell->m_spellInfo && 
+        currentSpell->m_spellInfo->Id == SPELL_FLAME_WREATH_CAST)
+        return true;
+
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive())
+                continue;
+
+            if (member->HasAura(SPELL_FLAME_WREATH_AURA))
+                return true;
+        }
+    }
+
+    return false;
+}
+
+// Red beam blockers: tank bots, no Nether Exhaustion Red
+std::vector<Player*> GetRedBlockers(PlayerbotAI* botAI, Player* bot)
+{
+    std::vector<Player*> redBlockers;
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || !botAI->IsTank(member) || !GET_PLAYERBOT_AI(member) ||
+                member->HasAura(SPELL_NETHER_EXHAUSTION_RED))
+                continue;
+
+            redBlockers.push_back(member);
+        }
+    }
+
+    return redBlockers;
+}
+
+// Blue beam blockers: non-Rogue/Warrior DPS bots, no Nether Exhaustion Blue and <26 stacks of Blue Beam debuff
+std::vector<Player*> GetBlueBlockers(PlayerbotAI* botAI, Player* bot)
+{
+    std::vector<Player*> blueBlockers;
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member))
+                continue;
+
+            bool hasExhaustion = member->HasAura(SPELL_NETHER_EXHAUSTION_BLUE);
+            Aura* blueBuff = member->GetAura(SPELL_BLUE_BEAM_DEBUFF);
+            bool overStack = blueBuff && blueBuff->GetStackAmount() >= 24;
+
+            bool isDps = botAI->IsDps(member);
+            bool isWarrior = member->getClass() == CLASS_WARRIOR;
+            bool isRogue = member->getClass() == CLASS_ROGUE;
+
+            if (isDps && !isWarrior && !isRogue && !hasExhaustion && !overStack)
+            {
+                blueBlockers.push_back(member);
+            }
+        }
+    }
+
+    return blueBlockers;
+}
+
+// Green beam blockers:
+// (1) Rogue and non-tank Warrior bots, no Nether Exhaustion Green
+// (2) Healer bots, no Nether Exhaustion Green and <26 stacks of Green Beam debuff
+std::vector<Player*> GetGreenBlockers(PlayerbotAI* botAI, Player* bot)
+{
+    std::vector<Player*> greenBlockers;
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member))
+                continue;
+
+            bool hasExhaustion = member->HasAura(SPELL_NETHER_EXHAUSTION_GREEN);
+            Aura* greenBuff = member->GetAura(SPELL_GREEN_BEAM_DEBUFF);
+            bool overStack = greenBuff && greenBuff->GetStackAmount() >= 24;
+
+            bool isRogue = member->getClass() == CLASS_ROGUE;
+            bool isDpsWarrior = member->getClass() == CLASS_WARRIOR && botAI->IsDps(member);
+            bool eligibleRogueWarrior = (isRogue || isDpsWarrior) && !hasExhaustion;
+
+            bool isHealer = botAI->IsHeal(member);
+            bool eligibleHealer = isHealer && !hasExhaustion && !overStack;
+            
+            if (eligibleRogueWarrior || eligibleHealer)
+            {
+                greenBlockers.push_back(member);
+            }
+        }
+    }
+
+    return greenBlockers;
+}
+
+Position GetPositionOnBeam(Unit* boss, Unit* portal, float distanceFromBoss)
+{
+    float bx = boss->GetPositionX();
+    float by = boss->GetPositionY();
+    float bz = boss->GetPositionZ();
+    float px = portal->GetPositionX();
+    float py = portal->GetPositionY();
+
+    float dx = px - bx;
+    float dy = py - by;
+    float length = sqrt(dx*dx + dy*dy);
+    if (length == 0.0f)
+        return Position(bx, by, bz);
+
+    dx /= length;
+    dy /= length;
+    float targetX = bx + dx * distanceFromBoss;
+    float targetY = by + dy * distanceFromBoss;
+    float targetZ = bz;
+
+    return Position(targetX, targetY, targetZ);
+}
+
+std::tuple<Player*, Player*, Player*> GetCurrentBeamBlockers(PlayerbotAI* botAI, Player* bot)
+{
+    static ObjectGuid currentRedBlocker;
+    static ObjectGuid currentGreenBlocker;
+    static ObjectGuid currentBlueBlocker;
+
+    Player* redBlocker = nullptr;
+    Player* greenBlocker = nullptr;
+    Player* blueBlocker = nullptr;
+
+    std::vector<Player*> redBlockers = GetRedBlockers(botAI, bot);
+    if (!redBlockers.empty())
+    {
+        auto it = std::find_if(redBlockers.begin(), redBlockers.end(), [](Player* p) 
+        {
+            return p && p->GetGUID() == currentRedBlocker;
+        });
+        if (it != redBlockers.end())
+            redBlocker = *it;
+        else
+            redBlocker = redBlockers.front();
+
+        currentRedBlocker = redBlocker ? redBlocker->GetGUID() : ObjectGuid::Empty;
+    }
+    else
+    {
+        currentRedBlocker = ObjectGuid::Empty;
+        redBlocker = nullptr;
+    }
+
+    std::vector<Player*> greenBlockers = GetGreenBlockers(botAI, bot);
+    if (!greenBlockers.empty())
+    {
+        auto it = std::find_if(greenBlockers.begin(), greenBlockers.end(), [](Player* p) 
+        {
+            return p && p->GetGUID() == currentGreenBlocker;
+        });
+        if (it != greenBlockers.end())
+            greenBlocker = *it;
+        else
+            greenBlocker = greenBlockers.front();
+
+        currentGreenBlocker = greenBlocker ? greenBlocker->GetGUID() : ObjectGuid::Empty;
+    }
+    else
+    {
+        currentGreenBlocker = ObjectGuid::Empty;
+        greenBlocker = nullptr;
+    }
+
+        std::vector<Player*> blueBlockers = GetBlueBlockers(botAI, bot);
+        if (!blueBlockers.empty())
+        {
+            auto it = std::find_if(blueBlockers.begin(), blueBlockers.end(), [](Player* p) 
+            {
+                return p && p->GetGUID() == currentBlueBlocker;
+            });
+            if (it != blueBlockers.end())
+                blueBlocker = *it;
+            else
+                blueBlocker = blueBlockers.front();
+
+            currentBlueBlocker = blueBlocker ? blueBlocker->GetGUID() : ObjectGuid::Empty;
+        }
+        else
+        {
+            currentBlueBlocker = ObjectGuid::Empty;
+            blueBlocker = nullptr;
+        }
+
+    return std::make_tuple(redBlocker, greenBlocker, blueBlocker);
+}
+
+std::vector<Unit*> GetAllVoidZones(PlayerbotAI* botAI, Player* bot)
+{
+    std::vector<Unit*> voidZones;
+    const float radius = 30.0f;
+    const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
+    for (const auto& npcGuid : npcs)
+    {
+        Unit* unit = botAI->GetUnit(npcGuid);
+        if (!unit || unit->GetEntry() != NPC_VOID_ZONE)
+            continue;
+
+        float dist = bot->GetExactDist2d(unit);
+        if (dist < radius)
+            voidZones.push_back(unit);
+
+    }
+
+    return voidZones;
+}
+
+bool IsSafePosition(float x, float y, float z, const std::vector<Unit*>& hazards, float hazardRadius)
+{
+    for (Unit* hazard : hazards)
+    {
+        float dist = std::sqrt(std::pow(x - hazard->GetPositionX(), 2) + std::pow(y - hazard->GetPositionY(), 2));
+        if (dist < hazardRadius)
+            return false;
+    }
+
+    return true;
+}
+
+std::vector<Unit*> GetSpawnedInfernals(PlayerbotAI* botAI)
+{
+    std::vector<Unit*> infernals;
+    const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
+    for (const auto& npcGuid : npcs)
+    {
+        Unit* unit = botAI->GetUnit(npcGuid);
+        if (unit && unit->GetEntry() == NPC_NETHERSPITE_INFERNAL)
+            infernals.push_back(unit);
+    }
+
+    return infernals;
+}
+
+bool IsStraightPathSafe(const Position& start, const Position& target, const std::vector<Unit*>& hazards, 
+                        float hazardRadius, float stepSize)
+{
+    float sx = start.GetPositionX();
+    float sy = start.GetPositionY();
+    float sz = start.GetPositionZ();
+    float tx = target.GetPositionX();
+    float ty = target.GetPositionY();
+    float tz = target.GetPositionZ();
+    float totalDist = std::sqrt(std::pow(tx - sx, 2) + std::pow(ty - sy, 2));
+    if (totalDist == 0.0f)
+        return true;
+    
+    for (float checkDist = 0.0f; checkDist <= totalDist; checkDist += stepSize)
+    {
+        float t = checkDist / totalDist;
+        float checkX = sx + (tx - sx) * t;
+        float checkY = sy + (ty - sy) * t;
+        float checkZ = sz + (tz - sz) * t;
+        for (Unit* hazard : hazards)
+        {
+            float hazardDist = std::sqrt(std::pow(checkX - hazard->GetPositionX(), 2) + std::pow(checkY - hazard->GetPositionY(), 2));
+            if (hazardDist < hazardRadius)
+                return false;
+        }
+    }
+    
+    return true;
+}
+
+} */

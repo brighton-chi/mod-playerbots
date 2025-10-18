@@ -1,6 +1,7 @@
-#include "RaidKarazhanStrategy.h"
-#include "RaidKarazhanMultipliers.h"
+#include "RaidTempestKeepStrategy.h"
+#include "RaidTempestKeepMultipliers.h"
 
+/*
 void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // Attumen the Huntsman
@@ -128,10 +129,6 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     ));
 
     // Prince Malchezaar
-    /* triggers.push_back(new TriggerNode(
-        "prince malchezaar non tank avoid hazard",
-        NextAction::array(0, new NextAction("prince malchezaar non tank avoid hazard", ACTION_EMERGENCY + 6), nullptr)
-    )); */
     triggers.push_back(new TriggerNode(
         "prince malchezaar enfeebled avoid hazard",
         NextAction::array(0, new NextAction("prince malchezaar enfeebled avoid hazard", ACTION_EMERGENCY + 6), nullptr)
@@ -188,4 +185,4 @@ void RaidKarazhanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers
     multipliers.push_back(new NightbaneWaitForDPSMultiplier(botAI));
     multipliers.push_back(new NightbaneDisableAvoidAoeMultiplier(botAI));
     multipliers.push_back(new NightbaneDisableMovementMultiplier(botAI));
-}
+} */
