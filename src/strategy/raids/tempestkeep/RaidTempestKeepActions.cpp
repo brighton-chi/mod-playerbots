@@ -2,10 +2,248 @@
 #include "RaidTempestKeepHelpers.h"
 #include "Playerbots.h"
 
+using namespace TempestKeepHelpers;
+
+// Position in center of room
+bool VoidReaverPositionBossAction::Execute(Event event)
+{
+    Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
+    
+    if (bot->GetVictim() != voidReaver)
+        return Attack(voidReaver);
+    
+    if (voidReaver->GetVictim() == bot)
+    {
+        const Location& tankPosition = TempestKeepLocations::VoidReaverTankPosition;
+        const float maxDistance = 3.0f;
+
+        float dX = tankPosition.x - bot->GetPositionX();
+        float dY = tankPosition.y - bot->GetPositionY();
+        float distanceToTankPosition = bot->GetExactDist2d(tankPosition.x, tankPosition.y);
+
+        if (distanceToTankPosition > maxDistance)
+        {
+            float step = std::min(maxDistance, distanceToTankPosition);
+            float moveX = bot->GetPositionX() + (dX / distanceToTankPosition) * maxDistance;
+            float moveY = bot->GetPositionY() + (dY / distanceToTankPosition) * maxDistance;
+            const float moveZ = tankPosition.z;
+            return MoveTo(bot->GetMapId(), moveX, moveY, moveZ, false, false, false, false, 
+                          MovementPriority::MOVEMENT_COMBAT, true, false);
+        }
+
+        float orientation = atan2(voidReaver->GetPositionY() - bot->GetPositionY(), 
+                                  voidReaver->GetPositionX() - bot->GetPositionX());
+        bot->SetFacingTo(orientation);
+    }
+    else if (!bot->IsWithinMeleeRange(voidReaver))
+        return MoveTo(voidReaver->GetMapId(), voidReaver->GetPositionX(), voidReaver->GetPositionY(), voidReaver->GetPositionZ(), 
+                      false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+
+    return false;
+}
+
+bool VoidReaverSpreadRangedAction::Execute(Event event)
+{
+    static std::unordered_map<ObjectGuid, Position> initialPositions;
+    static std::unordered_map<ObjectGuid, bool> hasReachedInitialPosition;
+
+    Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
+    if (voidReaver && voidReaver->IsAlive() && voidReaver->GetHealth() == voidReaver->GetMaxHealth())
+    {
+        initialPositions.clear();
+        hasReachedInitialPosition.clear();
+    }
+
+    const Location& tankPosition = TempestKeepLocations::VoidReaverTankPosition;
+    const float centerX = tankPosition.x;
+    const float centerY = tankPosition.y;
+    float centerZ = bot->GetPositionZ();
+    const float minRadius = 25.0f;
+    const float maxRadius = 40.0f;
+
+    std::vector<Player*> members;
+    Player* closestMember = nullptr;
+    float closestDist = std::numeric_limits<float>::max();
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive())
+                continue;
+
+            members.push_back(member);
+            if (member != bot)
+            {
+                float dist = bot->GetExactDist2d(member);
+                if (dist < closestDist)
+                {
+                    closestDist = dist;
+                    closestMember = member;
+                }
+            }
+        }
+    }
+
+    if (!initialPositions.count(bot->GetGUID()))
+    {
+        auto it = std::find(members.begin(), members.end(), bot);
+        uint8 botIndex = (it != members.end()) ? std::distance(members.begin(), it) : 0;
+        uint8 count = members.size();
+
+        float angle = 2 * M_PI * botIndex / count;
+        float radius = minRadius + static_cast<float>(rand()) / 
+                       static_cast<float>(RAND_MAX) * (maxRadius - minRadius);
+        float targetX = centerX + radius * cos(angle);
+        float targetY = centerY + radius * sin(angle);
+
+        initialPositions[bot->GetGUID()] = Position(targetX, targetY, centerZ);
+        hasReachedInitialPosition[bot->GetGUID()] = false;
+    }
+
+    Position targetPosition = initialPositions[bot->GetGUID()];
+    if (!hasReachedInitialPosition[bot->GetGUID()])
+    {
+        if (!bot->IsWithinDist2d(targetPosition.GetPositionX(), targetPosition.GetPositionY(), 2.0f))
+        {
+            float destX = targetPosition.GetPositionX();
+            float destY = targetPosition.GetPositionY();
+            float destZ = targetPosition.GetPositionZ();
+            if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, bot->GetPositionX(),
+                bot->GetPositionY(), bot->GetPositionZ(), destX, destY, destZ))
+                return false;
+
+            return MoveTo(bot->GetMapId(), destX, destY, destZ, false, false, false, false,
+                          MovementPriority::MOVEMENT_COMBAT, true, false);
+        }
+
+        hasReachedInitialPosition[bot->GetGUID()] = true;
+    }
+
+    const float minSpreadDistance = 10.0f;
+    const float movementThreshold = 2.0f;
+
+    if (closestMember && closestDist < minSpreadDistance - movementThreshold)
+        return FleePosition(Position(closestMember->GetPositionX(), closestMember->GetPositionY(), 
+                            closestMember->GetPositionZ()), minSpreadDistance, 0);
+
+    return false;
+}
+
+bool VoidReaverArcaneOrbMoveAwayAction::Execute(Event event)
+{
+    Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
+    std::vector<Unit*> arcaneOrbTargets = GetAllArcaneOrbTargets(botAI, bot);
+    if (!voidReaver || arcaneOrbTargets.empty())
+        return false;
+
+    const float safeDistance = 25.0f;
+    if (!IsInArcaneOrbRadius(bot, arcaneOrbTargets, safeDistance))
+        return false;
+
+    // Find a safe position that's away from ALL orbs AND maintains proper distance from Void Reaver
+    const float stepSize = 2.0f;
+    const float maxSearchDist = 40.0f;
+    const uint8 numAngles = 32;
+
+    // Combat range constraints for Void Reaver
+    const float minBossDistance = 25.0f;  // Stay at least 25 yards from boss
+    const float maxBossDistance = 45.0f;
+
+    Position bestPosition;
+    float bestMoveDist = std::numeric_limits<float>::max();
+    bool foundSafeSpot = false;
+
+    for (int i = 0; i < numAngles; ++i)
+    {
+        float angle = (2 * M_PI * i) / numAngles;
+        for (float dist = stepSize; dist <= maxSearchDist; dist += stepSize)
+        {
+            float testX = bot->GetPositionX() + cos(angle) * dist;
+            float testY = bot->GetPositionY() + sin(angle) * dist;
+            float testZ = bot->GetPositionZ();
+
+            // Check distance from Void Reaver
+            float distToBoss = sqrt(pow(testX - voidReaver->GetPositionX(), 2) + 
+                                    pow(testY - voidReaver->GetPositionY(), 2));
+            if (distToBoss < minBossDistance || distToBoss > maxBossDistance)
+                continue;
+
+            // Check if this position is safe from ALL orbs
+            bool safeFromAllOrbs = true;
+            for (Unit* orbTarget : arcaneOrbTargets)
+            {
+                float distToOrb = sqrt(pow(testX - orbTarget->GetPositionX(), 2) + 
+                                       pow(testY - orbTarget->GetPositionY(), 2));
+                if (distToOrb < safeDistance)
+                {
+                    safeFromAllOrbs = false;
+                    break;
+                }
+            }
+
+            if (safeFromAllOrbs)
+            {
+                float moveDist = sqrt(pow(testX - bot->GetPositionX(), 2) + 
+                                      pow(testY - bot->GetPositionY(), 2));
+                
+                if (!foundSafeSpot || moveDist < bestMoveDist)
+                {
+                    bestPosition = Position(testX, testY, testZ);
+                    bestMoveDist = moveDist;
+                    foundSafeSpot = true;
+                }
+            }
+        }
+    }
+
+    if (foundSafeSpot)
+    {
+        LOG_DEBUG("playerbots", "VoidReaverArcaneOrbMoveAwayAction: Bot {} moving to safe position away from all orbs and maintaining boss distance", 
+                  bot->GetName());
+
+        bot->AttackStop();
+        bot->InterruptNonMeleeSpells(false);
+        return MoveTo(bot->GetMapId(), bestPosition.GetPositionX(), bestPosition.GetPositionY(), 
+                      bestPosition.GetPositionZ(), false, false, false, false, 
+                      MovementPriority::MOVEMENT_COMBAT, true, false);
+    }
+
+    return false;
+}
+
+std::vector<Unit*> GetAllArcaneOrbTargets(PlayerbotAI* botAI, Player* bot)
+{
+    std::vector<Unit*> arcaneOrbTargets;
+    const float radius = 50.0f;
+    const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
+    for (const auto& npcGuid : npcs)
+    {
+        Unit* unit = botAI->GetUnit(npcGuid);
+        if (!unit || unit->GetEntry() != NPC_ARCANE_ORB_TARGET)
+            continue;
+
+        float dist = bot->GetExactDist2d(unit);
+        if (dist < radius)
+            arcaneOrbTargets.push_back(unit);
+    }
+
+    return arcaneOrbTargets;
+}
+
+bool IsInArcaneOrbRadius(Player* bot, const std::vector<Unit*>& arcaneOrbTargets, float safeDistance = 25.0f)
+{
+    for (Unit* orbTarget : arcaneOrbTargets)
+    {
+        float distanceToOrb = bot->GetExactDist2d(orbTarget);
+        if (distanceToOrb < safeDistance)
+            return true;
+    }
+
+    return false;
+}
 
 /* #include "PlayerbotTextMgr.h"
-
-using namespace TempestKeepHelpers;
 
 // Attumen the Huntsman
 

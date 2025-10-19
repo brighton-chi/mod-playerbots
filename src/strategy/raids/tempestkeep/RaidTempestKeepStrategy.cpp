@@ -1,6 +1,28 @@
 #include "RaidTempestKeepStrategy.h"
 #include "RaidTempestKeepMultipliers.h"
 
+void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
+{
+    // Void Reaver
+    triggers.push_back(new TriggerNode(
+        "void reaver position boss",
+        NextAction::array(0, new NextAction("void reaver position boss", ACTION_RAID + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode(
+        "void reaver spread ranged",
+        NextAction::array(0, new NextAction("void reaver spread ranged", ACTION_RAID + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode(
+        "void reaver arcane orb move away",
+        NextAction::array(0, new NextAction("void reaver arcane orb move away", ACTION_EMERGENCY + 6), nullptr)
+    ));
+}
+
+void RaidTempestKeepStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
+{
+    // multipliers.push_back(new AttumenTheHuntsmanDisableTankAssistMultiplier(botAI));
+}
+
 /*
 void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {

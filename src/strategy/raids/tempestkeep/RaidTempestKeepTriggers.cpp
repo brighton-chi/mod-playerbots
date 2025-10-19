@@ -3,6 +3,27 @@
 #include "RaidTempestKeepActions.h"
 #include "Playerbots.h"
 
+bool VoidReaverPositionBossAction::IsActive()
+{
+    Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
+
+    return voidReaver && botAI->IsTank(bot) && voidReaver->GetVictim() == bot;
+}
+
+bool VoidReaverSpreadRangedTrigger::IsActive()
+{
+    Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
+
+    return voidReaver && botAI->IsRanged(bot);
+}
+
+bool VoidReaverArcaneOrbMoveAwayTrigger::IsActive()
+{
+    Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
+
+    return voidReaver && !botAI->IsTank(bot);
+}
+
 /*
 using namespace KarazhanHelpers;
 

@@ -8,6 +8,34 @@
 #include "Position.h"
 #include "Unit.h"
 
+enum TempestKeepSpells
+{
+    // Void Reaver
+    SPELL_ARCANE_ORB_TARGET         = 34172,
+    SPELL_ARCANE_ORB_DAMAGE         = 34190, // Effect of "Trigger Missile" from 34172; has 20-yard radius
+};
+
+enum TempestKeepNPCs
+{
+    // Void Reaver
+    NPC_ARCANE_ORB_TARGET                = 19577,
+};
+
+namespace TempestKeepHelpers
+{
+
+struct Location 
+{
+	float x, y, z;
+};
+
+namespace TempestKeepLocations
+{
+    extern const Location VoidReaverTankPosition;
+}
+
+}
+
 /*
 enum KarazhanSpells
 {

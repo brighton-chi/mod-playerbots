@@ -3,6 +3,27 @@
 
 #include "Trigger.h"
 
+class VoidReaverPositionBossTrigger : public Trigger
+{
+public:
+    VoidReaverPositionBossTrigger(PlayerbotAI* botAI) : Trigger(botAI, "void reaver position boss") {}
+    bool IsActive() override;
+};
+
+class VoidReaverSpreadRangedTrigger : public Trigger
+{
+public:
+    VoidReaverSpreadRangedTrigger(PlayerbotAI* botAI) : Trigger(botAI, "void reaver spread ranged") {}
+    bool IsActive() override;
+};
+
+class VoidReaverArcaneOrbMoveAwayTrigger : public Trigger
+{
+public:
+    VoidReaverArcaneOrbMoveAwayTrigger(PlayerbotAI* botAI) : Trigger(botAI, "void reaver arcane orb move away") {}
+    bool IsActive() override;
+};
+
 /*
 class AttumenTheHuntsmanMainTankTrigger : public Trigger
 {

@@ -6,6 +6,17 @@
 #include "Playerbots.h"
 #include "RtiTargetValue.h"
 
+
+namespace TempestKeepHelpers
+{
+
+namespace TempestKeepLocations
+{
+	const Location VoidReaverTankPosition  = { 0.0f, 0.0f, 0.0f }; // Placeholder values
+}
+
+}
+
 /*
 // Attumen the Huntsman
 std::unordered_map<uint32, time_t> attumenDPSWaitTimer;
