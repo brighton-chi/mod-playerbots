@@ -355,7 +355,7 @@ bool TheCuratorMarkAstralFlareAction::Execute(Event event)
 }
 
 // Tank the boss in the center of the hallway near the Guardian's Library
-// Main tank and Assist tank will stay on the boss (Hateful Bolt)
+// Main tank and Assist tank will attack the boss; others will focus on Astral Flares
 bool TheCuratorPositionBossAction::Execute(Event event)
 {
     Unit* curator = AI_VALUE2(Unit*, "find target", "the curator");
@@ -601,6 +601,7 @@ bool NetherspiteBlockBlueBeamAction::Execute(Event event)
         }
         wasBlockingBlueBeam[botGuid] = true;
 
+        float idealDistance = botAI->IsRanged(bot) ? 25.0f : 18.0f;
         std::vector<Unit*> voidZones = GetAllVoidZones(botAI, bot);
         float bx = netherspite->GetPositionX();
         float by = netherspite->GetPositionY();
@@ -618,12 +619,17 @@ bool NetherspiteBlockBlueBeamAction::Execute(Event event)
         float bestDist = 150.0f;
         Position bestPos;
         bool found = false;
+
         for (float dist = 18.0f; dist <= 30.0f; dist += 0.5f) 
         {
             float candidateX = bx + dx * dist;
             float candidateY = by + dy * dist;
             float candidateZ = bz;
             bool outsideAllVoidZones = true;
+
+            float minSearchDist = botAI->IsRanged(bot) ? 20.0f : 15.0f;
+            float maxSearchDist = botAI->IsRanged(bot) ? 30.0f : 25.0f;
+
             for (Unit* voidZone : voidZones) 
             {
                 float voidZoneDist = sqrt(pow(candidateX - voidZone->GetPositionX(), 2) + 
@@ -637,7 +643,7 @@ bool NetherspiteBlockBlueBeamAction::Execute(Event event)
             if (!outsideAllVoidZones)
                 continue;
 
-            float distToIdeal = fabs(dist - 18.0f);
+            float distToIdeal = fabs(dist - idealDistance);
             if (!found || distToIdeal < bestDist) 
             {
                 bestDist = distToIdeal;
@@ -645,6 +651,7 @@ bool NetherspiteBlockBlueBeamAction::Execute(Event event)
                 found = true;
             }
         }
+
         if (found) 
         {
             bot->AttackStop();
@@ -715,13 +722,15 @@ bool NetherspiteBlockGreenBeamAction::Execute(Event event)
         float bestDist = 150.0f;
         Position bestPos;
         bool found = false;
+
         for (float dist = 18.0f; dist <= 30.0f; dist += 0.5f) 
         {
             float candidateX = bx + dx * dist;
             float candidateY = by + dy * dist;
             float candidateZ = bz;
             bool outsideAllVoidZones = true;
-            for (Unit* voidZone : voidZones) 
+
+            for (Unit* voidZone : voidZones)
             {
                 float voidZoneDist = sqrt(pow(candidateX - voidZone->GetPositionX(), 2) + 
                                           pow(candidateY - voidZone->GetPositionY(), 2));
@@ -735,13 +744,14 @@ bool NetherspiteBlockGreenBeamAction::Execute(Event event)
                 continue;
 
             float distToIdeal = fabs(dist - 18.0f);
-            if (!found || distToIdeal < bestDist) 
+            if (!found || distToIdeal < bestDist)
             {
                 bestDist = distToIdeal;
                 bestPos = Position(candidateX, candidateY, candidateZ);
                 found = true;
             }
         }
+
         if (found) 
         {
             bot->AttackStop();
@@ -775,11 +785,13 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event event)
             break;
         }
     }
+
     struct BeamAvoid { Unit* portal; float minDist, maxDist; };
     std::vector<BeamAvoid> beams;
     Unit* redPortal = bot->FindNearestCreature(NPC_RED_PORTAL, 150.0f);
     Unit* bluePortal = bot->FindNearestCreature(NPC_BLUE_PORTAL, 150.0f);
     Unit* greenPortal = bot->FindNearestCreature(NPC_GREEN_PORTAL, 150.0f);
+
     if (redPortal) 
     {
         float bx = netherspite->GetPositionX(), by = netherspite->GetPositionY();
@@ -788,6 +800,7 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event event)
         float length = sqrt(dx*dx + dy*dy);
         beams.push_back({redPortal, 0.0f, length});
     }
+
     if (bluePortal) 
     {
         float bx = netherspite->GetPositionX(), by = netherspite->GetPositionY();
@@ -796,6 +809,7 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event event)
         float length = sqrt(dx*dx + dy*dy);
         beams.push_back({bluePortal, 0.0f, length});
     }
+
     if (greenPortal) 
     {
         float bx = netherspite->GetPositionX(), by = netherspite->GetPositionY();
@@ -805,6 +819,7 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event event)
         beams.push_back({greenPortal, 0.0f, length});
     }
     bool nearBeam = false;
+
     for (const auto& beam : beams)
     {
         float bx = netherspite->GetPositionX(), by = netherspite->GetPositionY();
@@ -880,6 +895,7 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event event)
             }
         }
     }
+
     if (found && IsSafePosition(bestCandidate.GetPositionX(), 
         bestCandidate.GetPositionY(), bestCandidate.GetPositionZ(), voidZones, 4.0f))
     {
@@ -973,6 +989,7 @@ bool PrinceMalchezaarEnfeebledAvoidHazardAction::Execute(Event event)
         float angle = (2 * M_PI * i) / numAngles;
         float dx = cos(angle);
         float dy = sin(angle);
+
         for (float dist = minSafeBossDistance; dist <= maxSafeBossDistance; dist += stepSize)
         {
             float x = malchezaarX + dx * dist;
@@ -989,6 +1006,7 @@ bool PrinceMalchezaarEnfeebledAvoidHazardAction::Execute(Event event)
             bool pathSafe = IsStraightPathSafe(Position(bx, by, bz), Position(destX, destY, destZ2),
                                                infernals, safeInfernalDistance, stepSize);
             float moveDist = sqrt(pow(destX - bx, 2) + pow(destY - by, 2));
+
             if (pathSafe && moveDist < bestMoveDist)
             {
                 bestMoveDist = moveDist;
@@ -999,6 +1017,7 @@ bool PrinceMalchezaarEnfeebledAvoidHazardAction::Execute(Event event)
             }
         }
     }
+
     if (found)
     {
         bot->AttackStop();
@@ -1052,6 +1071,7 @@ bool PrinceMalchezaarNonTankAvoidInfernalAction::Execute(Event event)
             float angle = (2 * M_PI * i) / numAngles;
             float dx = cos(angle);
             float dy = sin(angle);
+
             for (float dist = stepSize; dist <= maxSafeBossDistance; dist += stepSize)
             {
                 float x = malchezaarX + dx * dist;
@@ -1076,6 +1096,7 @@ bool PrinceMalchezaarNonTankAvoidInfernalAction::Execute(Event event)
                     continue;
 
                 float moveDist = sqrt(pow(destX - bx, 2) + pow(destY - by, 2));
+
                 if (moveDist < bestMoveDist)
                 {
                     bestMoveDist = moveDist;
@@ -1086,6 +1107,7 @@ bool PrinceMalchezaarNonTankAvoidInfernalAction::Execute(Event event)
                 }
             }
         }
+
         if (found)
         {
             bot->AttackStop();
@@ -1247,7 +1269,7 @@ bool PrinceMalchezaarMainTankMovementAction::Execute(Event event)
 
     std::vector<Unit*> infernals = GetSpawnedInfernals(botAI);
 
-    const float safeInfernalDistance = 28.0f;
+    const float safeInfernalDistance = 30.0f;
     const float stepSize = 0.5f;
     const uint8 numAngles = 64;
     const float maxSampleDist = 60.0f;
@@ -1277,6 +1299,7 @@ bool PrinceMalchezaarMainTankMovementAction::Execute(Event event)
             float angle = (2 * M_PI * i) / numAngles;
             float dx = cos(angle);
             float dy = sin(angle);
+
             for (float dist = stepSize; dist <= maxSampleDist; dist += stepSize)
             {
                 float x = bx + dx * dist;
@@ -1302,6 +1325,7 @@ bool PrinceMalchezaarMainTankMovementAction::Execute(Event event)
                 bool pathSafe = IsStraightPathSafe(Position(bx, by, bz), Position(destX, destY, destZ),
                      infernals, safeInfernalDistance, stepSize);
                 float moveDist = sqrt(pow(destX - bx, 2) + pow(destY - by, 2));
+
                 if (pathSafe && moveDist < bestMoveDist)
                 {
                     bestMoveDist = moveDist;
@@ -1312,6 +1336,7 @@ bool PrinceMalchezaarMainTankMovementAction::Execute(Event event)
                 }
             }
         }
+
         if (!found)
         {
             for (int i = 0; i < numAngles; ++i)
@@ -1319,6 +1344,7 @@ bool PrinceMalchezaarMainTankMovementAction::Execute(Event event)
                 float angle = (2 * M_PI * i) / numAngles;
                 float dx = cos(angle);
                 float dy = sin(angle);
+
                 for (float dist = stepSize; dist <= maxSampleDist; dist += stepSize)
                 {
                     float x = bx + dx * dist;
@@ -1338,6 +1364,7 @@ bool PrinceMalchezaarMainTankMovementAction::Execute(Event event)
                             break;
                         }
                     }
+
                     float moveDist = sqrt(pow(destX - bx, 2) + pow(destY - by, 2));
                     if (destSafe && moveDist < bestMoveDist)
                     {
@@ -1350,6 +1377,7 @@ bool PrinceMalchezaarMainTankMovementAction::Execute(Event event)
                 }
             }
         }
+
         if (found)
         {
             bot->AttackStop();
@@ -1362,6 +1390,8 @@ bool PrinceMalchezaarMainTankMovementAction::Execute(Event event)
     return false;
 }
 
+// The tank position is near the urn; it's best to pull from Northwest of the urn
+// The tank moves Nightbane into position in two steps to try to get Nightbane to face sideways to the raid
 bool NightbaneGroundPhasePositionBossAction::Execute(Event event)
 {
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
@@ -1406,6 +1436,9 @@ bool NightbaneGroundPhasePositionBossAction::Execute(Event event)
     return false;
 }
 
+// Ranged bots rotate between 3 positions to avoid standing in Charred Earth, which lasts for
+// 30s and has a minimum cooldown of 18s (so there can be 3 active at once)
+// Ranged positions are North of the urn, near the door to the tower
 bool NightbaneGroundPhaseRotateRangedPositionsAction::Execute(Event event)
 {
     ObjectGuid botGuid = bot->GetGUID();
@@ -1472,6 +1505,7 @@ bool NightbaneCastFearWardOnMainTankAction::Execute(Event event)
     return false;
 }
 
+// Put pets on passive during the flight phase so they don't try to chase Nightbane off the map
 bool NightbaneControlPetAggressionAction::Execute(Event event)
 {
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
@@ -1491,6 +1525,10 @@ bool NightbaneControlPetAggressionAction::Execute(Event event)
     return false;
 }
 
+// 1. Stack at the "Flight Stack Position" near Nightbane so he doesn't use Fireball Barrage
+// 2. Once Rain of Bones hits, the whole party moves to a new stack position
+// This action lasts for the first 35 seconds of the flight phase, after which Nightbane
+// transitions to land--the player will need to lead the bots over near the ground phase position
 bool NightbaneFlightPhaseMovementAction::Execute(Event event)
 {
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
@@ -1498,13 +1536,6 @@ bool NightbaneFlightPhaseMovementAction::Execute(Event event)
         return false;
 
     MarkTargetWithMoon(bot, nightbane);
-
-    Pet* pet = bot->GetPet();
-    if (pet && pet->GetReactState() != REACT_PASSIVE)
-    {
-        pet->AttackStop();
-        pet->SetReactState(REACT_PASSIVE);
-    }
 
     Unit* botTarget = botAI->GetUnit(bot->GetTarget());
     if (botTarget && botTarget == nightbane)
@@ -1519,8 +1550,6 @@ bool NightbaneFlightPhaseMovementAction::Execute(Event event)
     if (hasRainOfBones)
         nightbaneRainOfBonesHit[botGuid] = true;
 
-    // 1. Stack at the "Flight Stack Position" near Nightbane so he doesn't use Fireball Barrage
-    // 2. Once Rain of Bones hits, the whole party moves to a new stack position
     float destX, destY, destZ;
     if (nightbaneRainOfBonesHit[botGuid])
     {
@@ -1546,12 +1575,6 @@ bool NightbaneFlightPhaseMovementAction::Execute(Event event)
     return false;
 }
 
-// Does the following (logic does not exactly follow this to avoid repetitiveness):
-// 1. At encounter reset, clear tracking of tank and ranged steps and the DPS wait timer
-// 2. As soon as Nightbane takes any damage, start the DPS wait timer
-//    and clear the flight phase timer and tracking of Rain of Bones
-// 3. When Nightbane takes off, start the flight phase timer and
-//    clear tank and ranged steps and the DPS wait timer
 bool NightbaneManageTimersAndTrackersAction::Execute(Event event)
 {
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
@@ -1561,7 +1584,7 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event event)
     uint32 mapId = nightbane->GetMapId();
     ObjectGuid botGuid = bot->GetGUID();
 
-    // 1. Erase timers/trackers on encounter reset or flight phase
+    // Erase DPS wait timer and tank and ranged position tracking on encounter reset or flight
     if (nightbane->IsFlying() || nightbane->GetHealth() == nightbane->GetMaxHealth())
     {
         if (botAI->IsMainTank(bot) && nightbaneTankStep.count(botGuid))
@@ -1574,7 +1597,7 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event event)
             nightbaneDPSWaitTimer.erase(mapId);
     }
 
-    // 2. Erase flight phase timer and Rain of Bones tracker on ground phase and start DPS wait timer
+    // Erase flight phase timer and Rain of Bones tracker on ground phase and start DPS wait timer
     if (!nightbane->IsFlying())
     {
         if (IsMapIDTimerManager(bot) && nightbaneFlightPhaseStartTimer.count(mapId))
@@ -1587,42 +1610,10 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event event)
             nightbaneDPSWaitTimer[mapId] = time(nullptr);
     }
 
-    // 3. Start flight phase timer at the beginning of flight phase
+    // Start flight phase timer at beginning of flight phase
     if (nightbane->IsFlying() && IsMapIDTimerManager(bot) &&
         !nightbaneFlightPhaseStartTimer.count(mapId))
         nightbaneFlightPhaseStartTimer[mapId] = time(nullptr);
 
     return false;
 }
-
-    /* if (nightbane->IsFlying() || nightbane->GetHealth() == nightbane->GetMaxHealth())
-    {
-        if (botAI->IsMainTank(bot) && nightbaneTankStep.count(botGuid))
-            nightbaneTankStep.erase(botGuid);
-
-        if (botAI->IsRanged(bot) && nightbaneRangedStep.count(botGuid))
-            nightbaneRangedStep.erase(botGuid);
-            
-        if (IsMapIDTimerManager(bot) && nightbaneDPSWaitTimer.count(mapId))
-            nightbaneDPSWaitTimer.erase(mapId);
-    }
-
-    if (nightbane->IsFlying() && IsMapIDTimerManager(bot) &&
-        !nightbaneFlightPhaseStartTimer.count(mapId))
-        nightbaneFlightPhaseStartTimer[mapId] = time(nullptr);
-
-    if (!nightbane->IsFlying())
-    {
-        if (IsMapIDTimerManager(bot) && nightbaneFlightPhaseStartTimer.count(mapId))
-            nightbaneFlightPhaseStartTimer.erase(mapId);
-
-        if (nightbaneRainOfBonesHit.count(botGuid))
-            nightbaneRainOfBonesHit.erase(botGuid);
-    }
-
-    if (!nightbane->IsFlying() && nightbane->GetHealth() < nightbane->GetMaxHealth() && 
-        IsMapIDTimerManager(bot) && !nightbaneDPSWaitTimer.count(mapId))
-        nightbaneDPSWaitTimer[mapId] = time(nullptr);
-
-    return false;
-} */

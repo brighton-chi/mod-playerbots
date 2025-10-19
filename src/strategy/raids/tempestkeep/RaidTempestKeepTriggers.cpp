@@ -3,7 +3,7 @@
 #include "RaidTempestKeepActions.h"
 #include "Playerbots.h"
 
-bool VoidReaverPositionBossAction::IsActive()
+bool VoidReaverPositionBossTrigger::IsActive()
 {
     Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
 

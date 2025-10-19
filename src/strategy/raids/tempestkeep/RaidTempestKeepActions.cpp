@@ -133,12 +133,12 @@ bool VoidReaverSpreadRangedAction::Execute(Event event)
 bool VoidReaverArcaneOrbMoveAwayAction::Execute(Event event)
 {
     Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
-    std::vector<Unit*> arcaneOrbTargets = GetAllArcaneOrbTargets(botAI, bot);
+    std::vector<Unit*> arcaneOrbTargets = GetAllArcaneOrbTargets();
     if (!voidReaver || arcaneOrbTargets.empty())
         return false;
 
     const float safeDistance = 25.0f;
-    if (!IsInArcaneOrbRadius(bot, arcaneOrbTargets, safeDistance))
+    if (!IsInArcaneOrbRadius(arcaneOrbTargets, safeDistance))
         return false;
 
     // Find a safe position that's away from ALL orbs AND maintains proper distance from Void Reaver
@@ -212,7 +212,7 @@ bool VoidReaverArcaneOrbMoveAwayAction::Execute(Event event)
     return false;
 }
 
-std::vector<Unit*> GetAllArcaneOrbTargets(PlayerbotAI* botAI, Player* bot)
+std::vector<Unit*> VoidReaverArcaneOrbMoveAwayAction::GetAllArcaneOrbTargets()
 {
     std::vector<Unit*> arcaneOrbTargets;
     const float radius = 50.0f;
@@ -231,7 +231,7 @@ std::vector<Unit*> GetAllArcaneOrbTargets(PlayerbotAI* botAI, Player* bot)
     return arcaneOrbTargets;
 }
 
-bool IsInArcaneOrbRadius(Player* bot, const std::vector<Unit*>& arcaneOrbTargets, float safeDistance = 25.0f)
+bool VoidReaverArcaneOrbMoveAwayAction::IsInArcaneOrbRadius(const std::vector<Unit*>& arcaneOrbTargets, float safeDistance = 25.0f)
 {
     for (Unit* orbTarget : arcaneOrbTargets)
     {

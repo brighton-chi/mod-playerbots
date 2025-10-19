@@ -56,7 +56,7 @@ float AttumenTheHuntsmanStayStackedMultiplier::GetValue(Action* action)
 }
 
 // Give the main tank 8 seconds to grab aggro when Attumen mounts Midnight
-// It's actually a lot shorter because it takes Attumen a few seconds to aggro after mounting
+// In reality it's a lot shorter because it takes Attumen a few seconds to aggro after mounting
 float AttumenTheHuntsmanWaitForDPSMultiplier::GetValue(Action* action)
 {
     Unit* attumenMounted = GetFirstAliveUnitByEntry(botAI, NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED);
@@ -75,6 +75,7 @@ float AttumenTheHuntsmanWaitForDPSMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+// The assist tank should stay on the boss to be 2nd on aggro and eat Hateful Bolts
 float TheCuratorDisableTankAssistMultiplier::GetValue(Action* action)
 {
     Unit* curator = AI_VALUE2(Unit*, "find target", "the curator");
@@ -120,6 +121,7 @@ float ShadeOfAranFlameWreathDisableMovementMultiplier::GetValue(Action* action)
         return 1.0f;
 
     bool flameWreathActive = aran->HasAura(SPELL_FLAME_WREATH_CAST);
+
     if (!flameWreathActive)
     {
         for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
@@ -132,6 +134,7 @@ float ShadeOfAranFlameWreathDisableMovementMultiplier::GetValue(Action* action)
             }
         }
     }
+
     if (flameWreathActive)
     {
         if (dynamic_cast<MovementAction*>(action) || IsChargeAction(action))
@@ -158,7 +161,8 @@ float NetherspiteKeepBlockingBeamMultiplier::GetValue(Action* action)
 
     if (bot == blueBlocker)
     {
-        if (dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<ReachTargetAction*>(action))
+        if (dynamic_cast<CombatFormationMoveAction*>(action) || 
+            dynamic_cast<ReachTargetAction*>(action))
             return 0.0f;
     }
 
@@ -175,6 +179,7 @@ float NetherspiteKeepBlockingBeamMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+// I'm not sure this is working properly, but I haven't had problems with results
 float NetherspiteWaitForDPSMultiplier::GetValue(Action* action)
 {
     Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
@@ -197,43 +202,7 @@ float NetherspiteWaitForDPSMultiplier::GetValue(Action* action)
      return 1.0f;
 }
 
-    /* Unit* victim = netherspite->GetVictim();
-    Player* victimPlayer = victim ? victim->ToPlayer() : nullptr;
-    if (!botAI->IsTank(bot) && victimPlayer && !botAI->IsTank(victimPlayer) && 
-        !netherspite->HasAura(SPELL_NETHERSPITE_BANISHED) &&
-        (dynamic_cast<AttackAction*>(action) || (!botAI->IsHeal(victimPlayer) && dynamic_cast<CastSpellAction*>(action))))
-        return 0.0f;  */
-
-    /* bool tankHasRedBeam = false;
-    if (Group* group = bot->GetGroup())
-    {
-        for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || !member->IsAlive())
-            {
-                continue;
-            }
-            if (botAI->IsTank(member) && member->HasAura(SPELL_RED_BEAM_DEBUFF))
-            {
-                tankHasRedBeam = true;
-                break;
-            }
-        }
-    }
-
-    if (!netherspite->HasAura(SPELL_NETHERSPITE_BANISHED) && !tankHasRedBeam)
-    {
-        if (!botAI->IsTank(bot) && dynamic_cast<AttackAction*>(action))
-        {
-            return 0.0f;
-        }
-    }
-
-    return 1.0f;
-} */
-
-// Standard avoid aoe strategy may interfere with scripted infernal avoidance
+// Disable standard avoid aoe strategy, which may interfere with scripted avoidance
 float PrinceMalchezaarDisableAvoidAoeMultiplier::GetValue(Action* action)
 {
     Unit* malchezaar = AI_VALUE2(Unit*, "find target", "prince malchezaar");
@@ -267,6 +236,8 @@ float PrinceMalchezaarEnfeebleKeepDistanceMultiplier::GetValue(Action* action)
 
 // Pets tend to run out of bounds and cause skeletons to spawn off the map
 // Or pull adds from inside of the tower through the floor
+// This multiplier DOES NOT impact permanent pets (i.e., Hunter and Warlock pets)
+// Hunter and Warlock pets are addressed in ControlPetAggressionAction
 float NightbaneDisablePetsMultiplier::GetValue(Action* action)
 {
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
@@ -325,6 +296,7 @@ float NightbaneDisableAvoidAoeMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+// Disable some movement actions that conflict with the strategies
 float NightbaneDisableMovementMultiplier::GetValue(Action* action)
 {
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
@@ -336,33 +308,9 @@ float NightbaneDisableMovementMultiplier::GetValue(Action* action)
         dynamic_cast<FleeAction*>(action))
         return 0.0f;
 
-    // Allow CombatFormationMoveAction only for melee during the ground phase
     if (!(botAI->IsMelee(bot) && !nightbane->IsFlying()) && !botAI->IsMainTank(bot) &&
         dynamic_cast<CombatFormationMoveAction*>(action))
         return 0.0f;
-
-    /* if (botAI->IsMainTank(bot) && nightbane->GetVictim() == bot && !nightbane->IsFlying() &&
-        (dynamic_cast<MovementAction*>(action) && !dynamic_cast<NightbaneGroundPhasePositionBossAction*>(action)))
-        return 0.0f; */
-
-        /* const float positionThreshold = 1.0f;
-        const float orientationLeeway = 30.0f * M_PI / 180.0f;
-
-        float distanceToBossPosition = bot->GetExactDist2d(KARAZHAN_NIGHTBANE_FINAL_BOSS_POSITION.GetPositionX(),
-                                                       KARAZHAN_NIGHTBANE_FINAL_BOSS_POSITION.GetPositionY());
-
-        float desiredOrientation = atan2(nightbane->GetPositionY() - bot->GetPositionY(),
-                                        nightbane->GetPositionX() - bot->GetPositionX());
-        float currentOrientation = bot->GetOrientation();
-        float delta = desiredOrientation - currentOrientation;
-        while (delta > M_PI) delta -= 2 * M_PI;
-        while (delta < -M_PI) delta += 2 * M_PI;
-        float orientationDifference = fabs(delta);
-
-        if (distanceToBossPosition < positionThreshold && orientationDifference < orientationLeeway)
-        {
-            return 0.0f;
-        } */
 
     return 1.0f;
 }
