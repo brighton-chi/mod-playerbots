@@ -50,6 +50,7 @@ void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);
 void MarkTargetWithSquare(Player* bot, Unit* target);
 void MarkTargetWithStar(Player* bot, Unit* target);
 void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target);
+std::vector<Unit*> GetAllArcaneOrbTargets(PlayerbotAI* botAI, Player* bot, float radius = 50.0f);
 
 }
 

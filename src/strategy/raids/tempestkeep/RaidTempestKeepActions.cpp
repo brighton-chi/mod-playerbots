@@ -133,7 +133,7 @@ bool VoidReaverSpreadRangedAction::Execute(Event event)
 bool VoidReaverArcaneOrbMoveAwayAction::Execute(Event event)
 {
     Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
-    std::vector<Unit*> arcaneOrbTargets = GetAllArcaneOrbTargets();
+    auto arcaneOrbTargets = GetAllArcaneOrbTargets(botAI, bot);
     if (!voidReaver || arcaneOrbTargets.empty())
         return false;
 
@@ -212,25 +212,6 @@ bool VoidReaverArcaneOrbMoveAwayAction::Execute(Event event)
     return false;
 }
 
-std::vector<Unit*> VoidReaverArcaneOrbMoveAwayAction::GetAllArcaneOrbTargets()
-{
-    std::vector<Unit*> arcaneOrbTargets;
-    const float radius = 50.0f;
-    const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
-    for (const auto& npcGuid : npcs)
-    {
-        Unit* unit = botAI->GetUnit(npcGuid);
-        if (!unit || unit->GetEntry() != NPC_ARCANE_ORB_TARGET)
-            continue;
-
-        float dist = bot->GetExactDist2d(unit);
-        if (dist < radius)
-            arcaneOrbTargets.push_back(unit);
-    }
-
-    return arcaneOrbTargets;
-}
-
 bool VoidReaverArcaneOrbMoveAwayAction::IsInArcaneOrbRadius(const std::vector<Unit*>& arcaneOrbTargets, float safeDistance = 25.0f)
 {
     for (Unit* orbTarget : arcaneOrbTargets)
@@ -243,7 +224,7 @@ bool VoidReaverArcaneOrbMoveAwayAction::IsInArcaneOrbRadius(const std::vector<Un
     return false;
 }
 
-bool HighAstromancerSolarianStackAction::Execute(Event event)
+bool HighAstromancerSolarianStackBotsAction::Execute(Event event)
 {
     Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
     if (!astromancer)
@@ -298,83 +279,96 @@ bool HighAstromancerSolarianMoveAwayFromGroupAction::Execute(Event event)
     return false;
 }
 
-bool HighAstromancerSolarianTargetPriestAddsAction::Execute(Event event)
+bool HighAstromancerSolarianTargetSolariumPriestsAction::Execute(Event event)
 {
-    Unit* priestAdd = AI_VALUE2(Unit*, "find target", "solarium priest");
-    if (!priestAdd)
+    Unit* solariumPriest = AI_VALUE2(Unit*, "find target", "solarium priest");
+    Group* group = bot->GetGroup();
+    if (!solariumPriest || !group)
         return false;
 
-    // Find both priest adds
-    std::vector<Unit*> priestAdds;
+    auto solariumPriests = GetSolariumPriests();
+    auto meleeMembers = GetMeleeBots(group);
+    Unit* targetSolariumPriest = AssignSolariumPriestsToBots(solariumPriests, meleeMembers);
+    if (!targetSolariumPriest)
+        return false;
+
+    auto it = std::find(meleeMembers.begin(), meleeMembers.end(), bot);
+    size_t botIndex = std::distance(meleeMembers.begin(), it);
+    size_t totalMelee = meleeMembers.size();
+    if (botIndex < totalMelee / 2)
+    {
+        MarkTargetWithSquare(bot, targetSolariumPriest);
+        SetRtiTarget(botAI, "square", targetSolariumPriest);
+    }
+    else
+    {
+        MarkTargetWithStar(bot, targetSolariumPriest);
+        SetRtiTarget(botAI, "star", targetSolariumPriest);
+    }
+
+    if (bot->GetVictim() != targetSolariumPriest)
+        return Attack(targetSolariumPriest);
+
+    if (!bot->IsWithinMeleeRange(targetSolariumPriest))
+        return MoveTo(bot->GetMapId(), targetSolariumPriest->GetPositionX(), targetSolariumPriest->GetPositionY(),
+                      targetSolariumPriest->GetPositionZ(), false, false, false, false,
+                      MovementPriority::MOVEMENT_COMBAT, true, false);
+
+    return false;
+}
+
+std::vector<Unit*> HighAstromancerSolarianTargetSolariumPriestsAction::GetSolariumPriests()
+{
+    std::vector<Unit*> solariumPriests;
     const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
     for (const auto& npcGuid : npcs)
     {
         Unit* unit = botAI->GetUnit(npcGuid);
         if (unit && unit->GetEntry() == NPC_SOLARIUM_PRIEST && unit->IsAlive())
-            priestAdds.push_back(unit);
+            solariumPriests.push_back(unit);
     }
 
-    if (priestAdds.size() < 2)
-        return false;
+    return solariumPriests;
+}
 
-    // Get all melee group members and sort them for consistent assignment
+std::vector<Player*> HighAstromancerSolarianTargetSolariumPriestsAction::GetMeleeBots(Group* group)
+{
     std::vector<Player*> meleeMembers;
-    if (Group* group = bot->GetGroup())
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (member && member->IsAlive() && botAI->IsMelee(member))
-                meleeMembers.push_back(member);
-        }
+        Player* member = ref->GetSource();
+        if (member && member->IsAlive() && botAI->IsMelee(member) && GET_PLAYERBOT_AI(member))
+            meleeMembers.push_back(member);
     }
 
-    if (meleeMembers.empty())
-        return false;
-
-    // Sort by GUID for consistent assignment across all bots
-    std::sort(meleeMembers.begin(), meleeMembers.end(), 
+    std::sort(meleeMembers.begin(), meleeMembers.end(),
               [](Player* a, Player* b) { return a->GetGUID() < b->GetGUID(); });
 
+    return meleeMembers;
+}
+
+Unit* HighAstromancerSolarianTargetSolariumPriestsAction::AssignSolariumPriestsToBots(
+    const std::vector<Unit*>& solariumPriests, const std::vector<Player*>& meleeMembers)
+{
+    if (solariumPriests.size() < 2 || meleeMembers.empty())
+        return nullptr;
+
     // Sort priest adds by GUID for consistent targeting
-    std::sort(priestAdds.begin(), priestAdds.end(),
+    std::vector<Unit*> sortedSolariumPriests = solariumPriests;
+    std::sort(sortedSolariumPriests.begin(), sortedSolariumPriests.end(),
               [](Unit* a, Unit* b) { return a->GetGUID() < b->GetGUID(); });
 
-    // Find this bot's index in the melee group
     auto it = std::find(meleeMembers.begin(), meleeMembers.end(), bot);
     if (it == meleeMembers.end())
-        return false;
+        return nullptr;
 
     size_t botIndex = std::distance(meleeMembers.begin(), it);
     size_t totalMelee = meleeMembers.size();
-    
-    // Divide melee bots in half - first half goes to priest 0, second half to priest 1
-    Unit* targetPriestAdd;
+
     if (botIndex < totalMelee / 2)
-    {
-        // Group 1: Attack first priest (marked with square)
-        targetPriestAdd = priestAdds[0];
-        MarkTargetWithSquare(bot, targetPriestAdd);
-        SetRtiTarget(botAI, "square", targetPriestAdd);
-    }
+        return sortedSolariumPriests[0];
     else
-    {
-        // Group 2: Attack second priest (marked with star)
-        targetPriestAdd = priestAdds[1];
-        MarkTargetWithStar(bot, targetPriestAdd);
-        SetRtiTarget(botAI, "star", targetPriestAdd);
-    }
-
-    // Attack the assigned priest
-    if (bot->GetVictim() != targetPriestAdd)
-        return Attack(targetPriestAdd);
-
-    if (!bot->IsWithinMeleeRange(targetPriestAdd))
-        return MoveTo(bot->GetMapId(), targetPriestAdd->GetPositionX(), targetPriestAdd->GetPositionY(),
-                        targetPriestAdd->GetPositionZ(), false, false, false, false,
-                        MovementPriority::MOVEMENT_COMBAT, true, false);
-
-    return false;
+        return sortedSolariumPriests[1];
 }
 
 bool HighAstromancerSolarianTankVoidwalkerAction::Execute(Event event)

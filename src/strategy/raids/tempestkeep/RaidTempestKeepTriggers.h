@@ -3,59 +3,59 @@
 
 #include "Trigger.h"
 
-class VoidReaverPositionBossTrigger : public Trigger
+class VoidReaverBossEngagedByTankTrigger : public Trigger
 {
 public:
-    VoidReaverPositionBossTrigger(PlayerbotAI* botAI) : Trigger(botAI, "void reaver position boss") {}
+    VoidReaverBossEngagedByTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "void reaver boss engaged by tank") {}
     bool IsActive() override;
 };
 
-class VoidReaverSpreadRangedTrigger : public Trigger
+class VoidReaverBossEngagedByRangedTrigger : public Trigger
 {
 public:
-    VoidReaverSpreadRangedTrigger(PlayerbotAI* botAI) : Trigger(botAI, "void reaver spread ranged") {}
+    VoidReaverBossEngagedByRangedTrigger(PlayerbotAI* botAI) : Trigger(botAI, "void reaver boss engaged by ranged") {}
     bool IsActive() override;
 };
 
-class VoidReaverArcaneOrbMoveAwayTrigger : public Trigger
+class VoidReaverArcaneOrbLaunchedTrigger : public Trigger
 {
 public:
-    VoidReaverArcaneOrbMoveAwayTrigger(PlayerbotAI* botAI) : Trigger(botAI, "void reaver arcane orb move away") {}
+    VoidReaverArcaneOrbLaunchedTrigger(PlayerbotAI* botAI) : Trigger(botAI, "void reaver arcane orb launched") {}
     bool IsActive() override;
 };
 
-class HighAstromancerSolarianStackTrigger : public Trigger
+class HighAstromancerSolarianPhase1And2MovementTrigger : public Trigger
 {
 public:
-    HighAstromancerSolarianStackTrigger(PlayerbotAI* botAI) : Trigger(botAI, "high astromancer solarian stack") {}
+    HighAstromancerSolarianPhase1And2MovementTrigger(PlayerbotAI* botAI) : Trigger(botAI, "high astromancer solarian phase 1 and 2 movement") {}
     bool IsActive() override;
 };
 
-class HighAstromancerSolarianMoveAwayFromGroupTrigger : public Trigger
+class HighAstromancerSolarianBotHasWrathOfTheAstromancerTrigger : public Trigger
 {
 public:
-    HighAstromancerSolarianMoveAwayFromGroupTrigger(PlayerbotAI* botAI) : Trigger(botAI, "high astromancer solarian move away from group") {}
+    HighAstromancerSolarianBotHasWrathOfTheAstromancerTrigger(PlayerbotAI* botAI) : Trigger(botAI, "high astromancer solarian bot has wrath of the astromancer") {}
     bool IsActive() override;
 };
 
-class HighAstromancerSolarianTargetPriestAddsTrigger : public Trigger
+class HighAstromancerSolarianSolariumPriestsSpawnedTrigger : public Trigger
 {
 public:
-    HighAstromancerSolarianTargetPriestAddsTrigger(PlayerbotAI* botAI) : Trigger(botAI, "high astromancer solarian target priest adds") {}
+    HighAstromancerSolarianSolariumPriestsSpawnedTrigger(PlayerbotAI* botAI) : Trigger(botAI, "high astromancer solarian solarium priests spawned") {}
     bool IsActive() override;
 };
 
-class HighAstromancerSolarianTankVoidwalkerTrigger : public Trigger
+class HighAstromancerSolarianTransformedIntoVoidwalkerTrigger : public Trigger
 {
 public:
-    HighAstromancerSolarianTankVoidwalkerTrigger(PlayerbotAI* botAI) : Trigger(botAI, "high astromancer solarian tank voidwalker") {}
+    HighAstromancerSolarianTransformedIntoVoidwalkerTrigger(PlayerbotAI* botAI) : Trigger(botAI, "high astromancer solarian transformed into voidwalker") {}
     bool IsActive() override;
 };
 
-class HighAstromancerSolarianCastFearWardOnMainTankTrigger : public Trigger
+class HighAstromancerSolarianCanCastFearWardOnMainTankTrigger : public Trigger
 {
 public:
-    HighAstromancerSolarianCastFearWardOnMainTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "high astromancer solarian cast fear ward on main tank") {}
+    HighAstromancerSolarianCanCastFearWardOnMainTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "high astromancer solarian can cast fear ward on main tank") {}
     bool IsActive() override;
 };
 

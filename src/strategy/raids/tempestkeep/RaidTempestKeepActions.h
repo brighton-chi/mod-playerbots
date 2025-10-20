@@ -29,14 +29,13 @@ public:
     bool Execute(Event event) override;
 
 private:
-    std::vector<Unit*> GetAllArcaneOrbTargets();
     bool IsInArcaneOrbRadius(const std::vector<Unit*>& arcaneOrbTargets, float safeDistance);
 };
 
-class HighAstromancerSolarianStackAction : public MovementAction
+class HighAstromancerSolarianStackBotsAction : public MovementAction
 {
 public:
-    HighAstromancerSolarianStackAction(PlayerbotAI* botAI, std::string const name = "high astromancer solarian stack") : MovementAction(botAI, name) {}
+    HighAstromancerSolarianStackBotsAction(PlayerbotAI* botAI, std::string const name = "high astromancer solarian stack bots") : MovementAction(botAI, name) {}
 
     bool Execute(Event event) override;
 };
@@ -49,12 +48,17 @@ public:
     bool Execute(Event event) override;
 };
 
-class HighAstromancerSolarianTargetPriestAddsAction : public AttackAction
+class HighAstromancerSolarianTargetSolariumPriestsAction : public AttackAction
 {
 public:
-    HighAstromancerSolarianTargetPriestAddsAction(PlayerbotAI* botAI, std::string const name = "high astromancer solarian target priest adds") : AttackAction(botAI, name) {}
+    HighAstromancerSolarianTargetSolariumPriestsAction(PlayerbotAI* botAI, std::string const name = "high astromancer solarian target solarium priests") : AttackAction(botAI, name) {}
 
     bool Execute(Event event) override;
+
+private:
+    std::vector<Unit*> GetSolariumPriests();
+    std::vector<Player*> GetMeleeBots(Group* group);
+    Unit* AssignSolariumPriestsToBots(const std::vector<Unit*>& solariumPriests, const std::vector<Player*>& meleeMembers);
 };
 
 class HighAstromancerSolarianTankVoidwalkerAction : public AttackAction

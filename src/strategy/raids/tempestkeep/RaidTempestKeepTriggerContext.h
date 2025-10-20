@@ -9,25 +9,25 @@ class RaidTempestKeepTriggerContext : public NamedObjectContext<Trigger>
 public:
     RaidTempestKeepTriggerContext()
     {
-        creators["void reaver position boss"] = &RaidTempestKeepTriggerContext::void_reaver_position_boss;
-        creators["void reaver spread ranged"] = &RaidTempestKeepTriggerContext::void_reaver_spread_ranged;
-        creators["void reaver arcane orb move away"] = &RaidTempestKeepTriggerContext::void_reaver_arcane_orb_move_away;
-        creators["high astromancer solarian stack"] = &RaidTempestKeepTriggerContext::high_astromancer_solarian_stack;
-        creators["high astromancer solarian move away from group"] = &RaidTempestKeepTriggerContext::high_astromancer_solarian_move_away_from_group;
-        creators["high astromancer solarian target priest adds"] = &RaidTempestKeepTriggerContext::high_astromancer_solarian_target_priest_adds;
-        creators["high astromancer solarian tank voidwalker"] = &RaidTempestKeepTriggerContext::high_astromancer_solarian_tank_voidwalker;
-        creators["high astromancer solarian cast fear ward on main tank"] = &RaidTempestKeepTriggerContext::high_astromancer_solarian_cast_fear_ward_on_main_tank;
+        creators["void reaver boss engaged by tank"] = &RaidTempestKeepTriggerContext::void_reaver_boss_engaged_by_tank;
+        creators["void reaver boss engaged by ranged"] = &RaidTempestKeepTriggerContext::void_reaver_boss_engaged_by_ranged;
+        creators["void reaver arcane orb launched"] = &RaidTempestKeepTriggerContext::void_reaver_arcane_orb_launched;
+        creators["high astromancer solarian phase 1 and 2 movement"] = &RaidTempestKeepTriggerContext::high_astromancer_solarian_phase_1_and_2_movement;
+        creators["high astromancer solarian bot has wrath of the astromancer"] = &RaidTempestKeepTriggerContext::high_astromancer_solarian_bot_has_wrath_of_the_astromancer;
+        creators["high astromancer solarian solarium priests spawned"] = &RaidTempestKeepTriggerContext::high_astromancer_solarian_solarium_priests_spawned;
+        creators["high astromancer solarian transformed into voidwalker"] = &RaidTempestKeepTriggerContext::high_astromancer_solarian_transformed_into_voidwalker;
+        creators["high astromancer solarian can cast fear ward on main tank"] = &RaidTempestKeepTriggerContext::high_astromancer_solarian_can_cast_fear_ward_on_main_tank;
     }
 
 private:
-    static Trigger* void_reaver_position_boss(PlayerbotAI* botAI) { return new VoidReaverPositionBossTrigger(botAI); }
-    static Trigger* void_reaver_spread_ranged(PlayerbotAI* botAI) { return new VoidReaverSpreadRangedTrigger(botAI); }
-    static Trigger* void_reaver_arcane_orb_move_away(PlayerbotAI* botAI) { return new VoidReaverArcaneOrbMoveAwayTrigger(botAI); }
-    static Trigger* high_astromancer_solarian_stack(PlayerbotAI* botAI) { return new HighAstromancerSolarianStackTrigger(botAI); }
-    static Trigger* high_astromancer_solarian_move_away_from_group(PlayerbotAI* botAI) { return new HighAstromancerSolarianMoveAwayFromGroupTrigger(botAI); }
-    static Trigger* high_astromancer_solarian_target_priest_adds(PlayerbotAI* botAI) { return new HighAstromancerSolarianTargetPriestAddsTrigger(botAI); }
-    static Trigger* high_astromancer_solarian_tank_voidwalker(PlayerbotAI* botAI) { return new HighAstromancerSolarianTankVoidwalkerTrigger(botAI); }
-    static Trigger* high_astromancer_solarian_cast_fear_ward_on_main_tank(PlayerbotAI* botAI) { return new HighAstromancerSolarianCastFearWardOnMainTankTrigger(botAI); }
+    static Trigger* void_reaver_boss_engaged_by_tank(PlayerbotAI* botAI) { return new VoidReaverBossEngagedByTankTrigger(botAI); }
+    static Trigger* void_reaver_boss_engaged_by_ranged(PlayerbotAI* botAI) { return new VoidReaverBossEngagedByRangedTrigger(botAI); }
+    static Trigger* void_reaver_arcane_orb_launched(PlayerbotAI* botAI) { return new VoidReaverArcaneOrbLaunchedTrigger(botAI); }
+    static Trigger* high_astromancer_solarian_phase_1_and_2_movement(PlayerbotAI* botAI) { return new HighAstromancerSolarianPhase1And2MovementTrigger(botAI); }
+    static Trigger* high_astromancer_solarian_bot_has_wrath_of_the_astromancer(PlayerbotAI* botAI) { return new HighAstromancerSolarianBotHasWrathOfTheAstromancerTrigger(botAI); }
+    static Trigger* high_astromancer_solarian_solarium_priests_spawned(PlayerbotAI* botAI) { return new HighAstromancerSolarianSolariumPriestsSpawnedTrigger(botAI); }
+    static Trigger* high_astromancer_solarian_transformed_into_voidwalker(PlayerbotAI* botAI) { return new HighAstromancerSolarianTransformedIntoVoidwalkerTrigger(botAI); }
+    static Trigger* high_astromancer_solarian_can_cast_fear_ward_on_main_tank(PlayerbotAI* botAI) { return new HighAstromancerSolarianCanCastFearWardOnMainTankTrigger(botAI); }
 };
 
 #endif
