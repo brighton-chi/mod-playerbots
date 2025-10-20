@@ -47,7 +47,6 @@ public:
        
         creators["prince malchezaar enfeebled avoid hazard"] = &RaidKarazhanTriggerContext::prince_malchezaar_enfeebled_avoid_hazard;
         creators["prince malchezaar non tank avoid infernal"] = &RaidKarazhanTriggerContext::prince_malchezaar_non_tank_avoid_infernal;
-        // creators["prince malchezaar non tank avoid hazard"] = &RaidKarazhanTriggerContext::prince_malchezaar_non_tank_avoid_hazard;
         creators["prince malchezaar main tank movement"] = &RaidKarazhanTriggerContext::prince_malchezaar_main_tank_movement;
         
         creators["nightbane ground phase position boss"] = &RaidKarazhanTriggerContext::nightbane_ground_phase_position_boss;
@@ -97,7 +96,6 @@ private:
     
     static Trigger* prince_malchezaar_enfeebled_avoid_hazard(PlayerbotAI* botAI) { return new PrinceMalchezaarEnfeebledAvoidHazardTrigger(botAI); }
     static Trigger* prince_malchezaar_non_tank_avoid_infernal(PlayerbotAI* botAI) { return new PrinceMalchezaarNonTankAvoidInfernalTrigger(botAI); }
-    // static Trigger* prince_malchezaar_non_tank_avoid_hazard(PlayerbotAI* botAI) { return new PrinceMalchezaarNonTankAvoidHazardTrigger(botAI); }
     static Trigger* prince_malchezaar_main_tank_movement(PlayerbotAI* botAI) { return new PrinceMalchezaarMainTankMovementTrigger(botAI); }
     
     static Trigger* nightbane_ground_phase_position_boss(PlayerbotAI* botAI) { return new NightbaneGroundPhasePositionBossTrigger(botAI); }

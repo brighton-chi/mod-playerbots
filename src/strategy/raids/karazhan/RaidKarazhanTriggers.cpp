@@ -249,13 +249,6 @@ bool PrinceMalchezaarNonTankAvoidInfernalTrigger::IsActive()
     return malchezaar && !botAI->IsMainTank(bot);
 }
 
-/* bool PrinceMalchezaarNonTankAvoidHazardTrigger::IsActive()
-{
-    Unit* malchezaar = AI_VALUE2(Unit*, "find target", "prince malchezaar");
-
-    return malchezaar && !(botAI->IsMainTank(bot) && malchezaar->GetVictim() != bot);
-} */
-
 bool PrinceMalchezaarMainTankMovementTrigger::IsActive()
 {
     Unit* malchezaar = AI_VALUE2(Unit*, "find target", "prince malchezaar");

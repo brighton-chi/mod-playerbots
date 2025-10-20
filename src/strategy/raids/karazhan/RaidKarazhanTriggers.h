@@ -199,13 +199,6 @@ public:
     bool IsActive() override;
 };
 
-/* class PrinceMalchezaarNonTankAvoidHazardTrigger : public Trigger
-{
-public:
-    PrinceMalchezaarNonTankAvoidHazardTrigger(PlayerbotAI* botAI) : Trigger(botAI, "prince malchezaar non tank avoid hazard") {}
-    bool IsActive() override;
-}; */
-
 class PrinceMalchezaarMainTankMovementTrigger : public Trigger
 {
 public:

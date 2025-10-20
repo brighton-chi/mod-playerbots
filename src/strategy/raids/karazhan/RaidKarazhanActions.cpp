@@ -562,6 +562,29 @@ bool NetherspiteBlockRedBeamAction::Execute(Event event)
     return false;
 }
 
+Position NetherspiteBlockRedBeamAction::GetPositionOnBeam(Unit* boss, Unit* portal, float distanceFromBoss)
+{
+    float bx = boss->GetPositionX();
+    float by = boss->GetPositionY();
+    float bz = boss->GetPositionZ();
+    float px = portal->GetPositionX();
+    float py = portal->GetPositionY();
+
+    float dx = px - bx;
+    float dy = py - by;
+    float length = sqrt(dx*dx + dy*dy);
+    if (length == 0.0f)
+        return Position(bx, by, bz);
+
+    dx /= length;
+    dy /= length;
+    float targetX = bx + dx * distanceFromBoss;
+    float targetY = by + dy * distanceFromBoss;
+    float targetZ = bz;
+
+    return Position(targetX, targetY, targetZ);
+}
+
 // Two non-Rogue/Warrior DPS bots will block the blue beam for each phase (swap at 25 debuff stacks)
 // When avoiding void zones, blocking bots will move along the beam to continue blocking
 bool NetherspiteBlockBlueBeamAction::Execute(Event event)
@@ -623,22 +646,7 @@ bool NetherspiteBlockBlueBeamAction::Execute(Event event)
             float candidateX = bx + dx * dist;
             float candidateY = by + dy * dist;
             float candidateZ = bz;
-            bool outsideAllVoidZones = true;
-
-            float minSearchDist = botAI->IsRanged(bot) ? 20.0f : 15.0f;
-            float maxSearchDist = botAI->IsRanged(bot) ? 30.0f : 25.0f;
-
-            for (Unit* voidZone : voidZones) 
-            {
-                float voidZoneDist = sqrt(pow(candidateX - voidZone->GetPositionX(), 2) + 
-                                          pow(candidateY - voidZone->GetPositionY(), 2));
-                if (voidZoneDist < 4.0f) 
-                {
-                    outsideAllVoidZones = false;
-                    break;
-                }
-            }
-            if (!outsideAllVoidZones)
+            if (!IsSafePosition(candidateX, candidateY, candidateZ, voidZones, 4.0f))
                 continue;
 
             float distToIdeal = fabs(dist - idealDistance);
@@ -726,19 +734,7 @@ bool NetherspiteBlockGreenBeamAction::Execute(Event event)
             float candidateX = bx + dx * dist;
             float candidateY = by + dy * dist;
             float candidateZ = bz;
-            bool outsideAllVoidZones = true;
-
-            for (Unit* voidZone : voidZones)
-            {
-                float voidZoneDist = sqrt(pow(candidateX - voidZone->GetPositionX(), 2) + 
-                                          pow(candidateY - voidZone->GetPositionY(), 2));
-                if (voidZoneDist < 4.0f) 
-                {
-                    outsideAllVoidZones = false;
-                    break;
-                }
-            }
-            if (!outsideAllVoidZones)
+            if (!IsSafePosition(candidateX, candidateY, candidateZ, voidZones, 4.0f))
                 continue;
 
             float distToIdeal = fabs(dist - 18.0f);
@@ -774,17 +770,10 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event event)
 
     auto [redBlocker, greenBlocker, blueBlocker] = GetCurrentBeamBlockers(botAI, bot);
     std::vector<Unit*> voidZones = GetAllVoidZones(botAI, bot);
-    bool nearVoidZone = false;
-    for (Unit* vz : voidZones)
-    {
-        if (bot->GetExactDist2d(vz) < 4.0f)
-        {
-            nearVoidZone = true;
-            break;
-        }
-    }
 
-    struct BeamAvoid { Unit* portal; float minDist, maxDist; };
+    bool nearVoidZone = !IsSafePosition(bot->GetPositionX(), bot->GetPositionY(), 
+                                        bot->GetPositionZ(), voidZones, 4.0f);
+
     std::vector<BeamAvoid> beams;
     Unit* redPortal = bot->FindNearestCreature(NPC_RED_PORTAL, 150.0f);
     Unit* bluePortal = bot->FindNearestCreature(NPC_BLUE_PORTAL, 150.0f);
@@ -816,28 +805,9 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event event)
         float length = sqrt(dx*dx + dy*dy);
         beams.push_back({greenPortal, 0.0f, length});
     }
-    bool nearBeam = false;
 
-    for (const auto& beam : beams)
-    {
-        float bx = netherspite->GetPositionX(), by = netherspite->GetPositionY();
-        float px = beam.portal->GetPositionX(), py = beam.portal->GetPositionY();
-        float dx = px - bx, dy = py - by;
-        float length = sqrt(dx*dx + dy*dy);
-        if (length == 0.0f)
-            continue;
+    bool nearBeam = !IsAwayFromBeams(bot->GetPositionX(), bot->GetPositionY(), beams, netherspite);
 
-        dx /= length; dy /= length;
-        float botdx = bot->GetPositionX() - bx, botdy = bot->GetPositionY() - by;
-        float t = (botdx * dx + botdy * dy);
-        float beamX = bx + dx * t, beamY = by + dy * t;
-        float distToBeam = sqrt(pow(bot->GetPositionX() - beamX, 2) + pow(bot->GetPositionY() - beamY, 2));
-        if (distToBeam < 5.0f && t > beam.minDist && t < beam.maxDist)
-        {
-            nearBeam = true;
-            break;
-        }
-    }
     if (!nearVoidZone && !nearBeam)
         return false;
 
@@ -846,6 +816,7 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event event)
     Position bestCandidate;
     float bestDist = 0.0f;
     bool found = false;
+
     for (float angle = 0; angle < 2 * M_PI; angle += stepAngle)
     {
         for (float dist = 2.0f; dist <= maxSearchDist; dist += stepDist)
@@ -853,32 +824,9 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event event)
             float cx = bot->GetPositionX() + cos(angle) * dist;
             float cy = bot->GetPositionY() + sin(angle) * dist;
             float cz = netherspiteZ;
-            if (std::any_of(voidZones.begin(), voidZones.end(), [&](Unit* vz){ 
-                return Position(cx, cy, cz).GetExactDist2d(vz) < 4.0f; }))
-                continue;
 
-            bool tooCloseToBeam = false;
-            for (const auto& beam : beams)
-            {
-                float bx = netherspite->GetPositionX(), by = netherspite->GetPositionY();
-                float px = beam.portal->GetPositionX(), py = beam.portal->GetPositionY();
-                float dx = px - bx, dy = py - by;
-                float length = sqrt(dx*dx + dy*dy);
-                if (length == 0.0f) 
-                    continue;
-
-                dx /= length; dy /= length;
-                float botdx = cx - bx, botdy = cy - by;
-                float t = (botdx * dx + botdy * dy);
-                float beamX = bx + dx * t, beamY = by + dy * t;
-                float distToBeam = sqrt(pow(cx - beamX, 2) + pow(cy - beamY, 2));
-                if (distToBeam < 5.0f && t > beam.minDist && t < beam.maxDist)
-                {
-                    tooCloseToBeam = true;
-                    break;
-                }
-            }
-            if (tooCloseToBeam)
+            if (!IsSafePosition(cx, cy, cz, voidZones, 4.0f) || 
+                !IsAwayFromBeams(cx, cy, beams, netherspite))
                 continue;
 
             float moveDist = sqrt(pow(cx - bot->GetPositionX(), 2) + pow(cy - bot->GetPositionY(), 2));
@@ -894,16 +842,40 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event event)
         }
     }
 
-    if (found && IsSafePosition(bestCandidate.GetPositionX(), 
-        bestCandidate.GetPositionY(), bestCandidate.GetPositionZ(), voidZones, 4.0f))
+    if (found)
     {
         bot->AttackStop();
         bot->InterruptNonMeleeSpells(true);
         return MoveTo(bot->GetMapId(), bestCandidate.GetPositionX(), bestCandidate.GetPositionY(), 
-                      bestCandidate.GetPositionZ(), false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+                      bestCandidate.GetPositionZ(), false, false, false, false, 
+                      MovementPriority::MOVEMENT_COMBAT, true, false);
     }
     
     return false;
+}
+
+bool NetherspiteAvoidBeamAndVoidZoneAction::IsAwayFromBeams(
+     float x, float y, const std::vector<BeamAvoid>& beams, Unit* netherspite)
+{
+    for (const auto& beam : beams)
+    {
+        float bx = netherspite->GetPositionX(), by = netherspite->GetPositionY();
+        float px = beam.portal->GetPositionX(), py = beam.portal->GetPositionY();
+        float dx = px - bx, dy = py - by;
+        float length = sqrt(dx*dx + dy*dy);
+        if (length == 0.0f) 
+            continue;
+
+        dx /= length; dy /= length;
+        float botdx = x - bx, botdy = y - by;
+        float t = (botdx * dx + botdy * dy);
+        float beamX = bx + dx * t, beamY = by + dy * t;
+        float distToBeam = sqrt(pow(x - beamX, 2) + pow(y - beamY, 2));
+        if (distToBeam < 5.0f && t > beam.minDist && t < beam.maxDist)
+            return false;
+    }
+
+    return true;
 }
 
 bool NetherspiteBanishPhaseAvoidVoidZoneAction::Execute(Event event)
@@ -1027,6 +999,8 @@ bool PrinceMalchezaarEnfeebledAvoidHazardAction::Execute(Event event)
     return false;
 }
 
+// Move away from infernals while staying within range of the boss
+// Prioritize finding a safe path to the new location, but will fallback to just finding a safe location if needed
 bool PrinceMalchezaarNonTankAvoidInfernalAction::Execute(Event event)
 {
     Unit* malchezaar = AI_VALUE2(Unit*, "find target", "prince malchezaar");
@@ -1036,9 +1010,7 @@ bool PrinceMalchezaarNonTankAvoidInfernalAction::Execute(Event event)
     std::vector<Unit*> infernals = GetSpawnedInfernals(botAI);
 
     const float safeInfernalDistance = 23.0f;
-    const float stepSize = 0.5f;
-    const uint8 numAngles = 64;
-    const float maxSafeBossDistance = 60.0f;
+    const float maxSafeBossDistance = 40.0f;
 
     float bx = bot->GetPositionX();
     float by = bot->GetPositionY();
@@ -1058,52 +1030,29 @@ bool PrinceMalchezaarNonTankAvoidInfernalAction::Execute(Event event)
         }
     }
 
-    float bestMoveDist = std::numeric_limits<float>::max();
     float bestDestX = bx, bestDestY = by, bestDestZ = bz;
     bool found = false;
 
     if (nearInfernal)
     {
-        for (int i = 0; i < numAngles; ++i)
+        const float stepSize = 0.5f;
+        const uint8 numAngles = 64;
+
+        // 1. Try to find a safe position with a safe path
+        found = TryFindSafePositionWithSafePath(
+                bot, bx, by, bz, malchezaarX, malchezaarY, malchezaarZ,
+                infernals, safeInfernalDistance, stepSize, numAngles, maxSafeBossDistance,
+                true, // requireSafePath
+                bestDestX, bestDestY, bestDestZ);
+
+        // 2. Fallback: try to find a safe position (ignore path)
+        if (!found)
         {
-            float angle = (2 * M_PI * i) / numAngles;
-            float dx = cos(angle);
-            float dy = sin(angle);
-
-            for (float dist = stepSize; dist <= maxSafeBossDistance; dist += stepSize)
-            {
-                float x = malchezaarX + dx * dist;
-                float y = malchezaarY + dy * dist;
-                float destZ = malchezaarZ;
-                float destX = x, destY = y, destZ2 = destZ;
-                if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, malchezaarX, malchezaarY, malchezaarZ, 
-                    destX, destY, destZ2, true))
-                    continue;
-
-                bool destSafe = true;
-                for (Unit* infernal : infernals)
-                {
-                    float infernalDist = sqrt(pow(destX - infernal->GetPositionX(), 2) + pow(destY - infernal->GetPositionY(), 2));
-                    if (infernalDist < safeInfernalDistance)
-                    {
-                        destSafe = false;
-                        break;
-                    }
-                }
-                if (!destSafe)
-                    continue;
-
-                float moveDist = sqrt(pow(destX - bx, 2) + pow(destY - by, 2));
-
-                if (moveDist < bestMoveDist)
-                {
-                    bestMoveDist = moveDist;
-                    bestDestX = destX;
-                    bestDestY = destY;
-                    bestDestZ = destZ2;
-                    found = true;
-                }
-            }
+            found = TryFindSafePositionWithSafePath(
+                    bot, bx, by, bz, malchezaarX, malchezaarY, malchezaarZ,
+                    infernals, safeInfernalDistance, stepSize, numAngles, maxSafeBossDistance,
+                    false, // don't require safe path
+                    bestDestX, bestDestY, bestDestZ);
         }
 
         if (found)
@@ -1118,144 +1067,8 @@ bool PrinceMalchezaarNonTankAvoidInfernalAction::Execute(Event event)
     return false;
 }
 
-// Avoid infernals and run away from the boss when Enfeebled
-/* bool PrinceMalchezaarNonTankAvoidHazardAction::Execute(Event event)
-{
-    Unit* malchezaar = AI_VALUE2(Unit*, "find target", "prince malchezaar");
-    if (!malchezaar)
-        return false;
-
-    std::vector<Unit*> infernals = GetSpawnedInfernals(botAI);
-
-    const float minSafeBossDistance = 34.0f;
-    const float maxSafeBossDistance = 60.0f;
-    const float safeInfernalDistance = 23.0f;
-    const float stepSize = 0.5f;
-    const uint8 numAngles = 64;
-
-    float bx = bot->GetPositionX();
-    float by = bot->GetPositionY();
-    float bz = bot->GetPositionZ();
-    float malchezaarX = malchezaar->GetPositionX();
-    float malchezaarY = malchezaar->GetPositionY();
-    float malchezaarZ = malchezaar->GetPositionZ();
-    float bestMoveDist = std::numeric_limits<float>::max();
-    float bestDestX = 0.0f, bestDestY = 0.0f, bestDestZ = bz;
-    bool found = false;
-
-    if (bot->HasAura(SPELL_ENFEEBLE))
-    {
-        for (int i = 0; i < numAngles; ++i)
-        {
-            float angle = (2 * M_PI * i) / numAngles;
-            float dx = cos(angle);
-            float dy = sin(angle);
-            for (float dist = minSafeBossDistance; dist <= maxSafeBossDistance; dist += stepSize)
-            {
-                float x = malchezaarX + dx * dist;
-                float y = malchezaarY + dy * dist;
-                float destZ = malchezaarZ;
-                float destX = x, destY = y, destZ2 = destZ;
-                if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, bx, by, bz, destX, destY, destZ2, true))
-                    continue;
-
-                float distFromBoss = sqrt(pow(destX - malchezaarX, 2) + pow(destY - malchezaarY, 2));
-                if (distFromBoss < minSafeBossDistance)
-                    continue;
-
-                bool pathSafe = IsStraightPathSafe(Position(bx, by, bz), Position(destX, destY, destZ2),
-                                                   infernals, safeInfernalDistance, stepSize);
-                float moveDist = sqrt(pow(destX - bx, 2) + pow(destY - by, 2));
-                if (pathSafe && moveDist < bestMoveDist)
-                {
-                    bestMoveDist = moveDist;
-                    bestDestX = destX;
-                    bestDestY = destY;
-                    bestDestZ = destZ2;
-                    found = true;
-                }
-            }
-        }
-        if (found)
-        {
-            bot->AttackStop();
-            bot->InterruptNonMeleeSpells(false);
-            return MoveTo(bot->GetMapId(), bestDestX, bestDestY, bestDestZ, false, false, false, false, 
-                          MovementPriority::MOVEMENT_FORCED, true, false);
-        }
-
-        return false;
-    }
-
-    if (!bot->HasAura(SPELL_ENFEEBLE))
-    {
-        bool nearInfernal = false;
-        for (Unit* infernal : infernals)
-        {
-            float infernalDist = sqrt(pow(bx - infernal->GetPositionX(), 2) + pow(by - infernal->GetPositionY(), 2));
-            if (infernalDist < safeInfernalDistance)
-            {
-                nearInfernal = true;
-                break;
-            }
-        }
-        if (nearInfernal)
-        {
-            float bestMoveDist = std::numeric_limits<float>::max();
-            float bestDestX = bx, bestDestY = by, bestDestZ = bz;
-            bool found = false;
-            for (int i = 0; i < numAngles; ++i)
-            {
-                float angle = (2 * M_PI * i) / numAngles;
-                float dx = cos(angle);
-                float dy = sin(angle);
-                for (float dist = stepSize; dist <= maxSafeBossDistance; dist += stepSize)
-                {
-                    float x = malchezaarX + dx * dist;
-                    float y = malchezaarY + dy * dist;
-                    float destZ = malchezaarZ;
-                    float destX = x, destY = y, destZ2 = destZ;
-                    if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, malchezaarX, malchezaarY, malchezaarZ, 
-                        destX, destY, destZ2, true))
-                        continue;
-
-                    bool destSafe = true;
-                    for (Unit* infernal : infernals)
-                    {
-                        float infernalDist = sqrt(pow(destX - infernal->GetPositionX(), 2) + pow(destY - infernal->GetPositionY(), 2));
-                        if (infernalDist < safeInfernalDistance)
-                        {
-                            destSafe = false;
-                            break;
-                        }
-                    }
-                    if (!destSafe)
-                        continue;
-
-                    float moveDist = sqrt(pow(destX - bx, 2) + pow(destY - by, 2));
-                    if (moveDist < bestMoveDist)
-                    {
-                        bestMoveDist = moveDist;
-                        bestDestX = destX;
-                        bestDestY = destY;
-                        bestDestZ = destZ2;
-                        found = true;
-                    }
-                }
-            }
-            if (found)
-            {
-                bot->AttackStop();
-                bot->InterruptNonMeleeSpells(false);
-                return MoveTo(bot->GetMapId(), bestDestX, bestDestY, bestDestZ, false, false, false, false, 
-                              MovementPriority::MOVEMENT_COMBAT, true, false);
-            }
-        }
-    }
-
-    return false;
-} */
-
+// This is similar to the non-tank avoid infernal action, but the movement is based on the bot's location
+// And the safe distance from infernals is larger to give melee more room to maneuver
 bool PrinceMalchezaarMainTankMovementAction::Execute(Event event)
 {
     Unit* malchezaar = AI_VALUE2(Unit*, "find target", "prince malchezaar");
@@ -1268,9 +1081,8 @@ bool PrinceMalchezaarMainTankMovementAction::Execute(Event event)
     std::vector<Unit*> infernals = GetSpawnedInfernals(botAI);
 
     const float safeInfernalDistance = 30.0f;
-    const float stepSize = 0.5f;
-    const uint8 numAngles = 64;
-    const float maxSampleDist = 60.0f;
+    const float maxSampleDist = 75.0f;
+
     float bx = bot->GetPositionX();
     float by = bot->GetPositionY();
     float bz = bot->GetPositionZ();
@@ -1286,94 +1098,29 @@ bool PrinceMalchezaarMainTankMovementAction::Execute(Event event)
         }
     }
 
-    float bestMoveDist = std::numeric_limits<float>::max();
     float bestDestX = bx, bestDestY = by, bestDestZ = bz;
     bool found = false;
 
     if (nearInfernal)
     {
-        for (int i = 0; i < numAngles; ++i)
-        {
-            float angle = (2 * M_PI * i) / numAngles;
-            float dx = cos(angle);
-            float dy = sin(angle);
+        const float stepSize = 0.5f;
+        const uint8 numAngles = 64;
 
-            for (float dist = stepSize; dist <= maxSampleDist; dist += stepSize)
-            {
-                float x = bx + dx * dist;
-                float y = by + dy * dist;
-                float z = bz;
-                float destX = x, destY = y, destZ = z;
-                if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, bx, by, bz, destX, destY, destZ, true))
-                    continue;
+        // 1. Try to find a safe position with a safe path
+        found = TryFindSafePositionWithSafePath(
+                bot, bx, by, bz, bx, by, bz,
+                infernals, safeInfernalDistance, stepSize, numAngles, maxSampleDist,
+                true, // requireSafePath
+                bestDestX, bestDestY, bestDestZ);
 
-                bool destSafe = true;
-                for (Unit* infernal : infernals)
-                {
-                    float infernalDist = sqrt(pow(destX - infernal->GetPositionX(), 2) + pow(destY - infernal->GetPositionY(), 2));
-                    if (infernalDist < safeInfernalDistance)
-                    {
-                        destSafe = false;
-                        break;
-                    }
-                }
-                if (!destSafe)
-                    continue;
-
-                bool pathSafe = IsStraightPathSafe(Position(bx, by, bz), Position(destX, destY, destZ),
-                     infernals, safeInfernalDistance, stepSize);
-                float moveDist = sqrt(pow(destX - bx, 2) + pow(destY - by, 2));
-
-                if (pathSafe && moveDist < bestMoveDist)
-                {
-                    bestMoveDist = moveDist;
-                    bestDestX = destX;
-                    bestDestY = destY;
-                    bestDestZ = destZ;
-                    found = true;
-                }
-            }
-        }
-
+        // 2. Fallback: try to find a safe position (ignore path)
         if (!found)
         {
-            for (int i = 0; i < numAngles; ++i)
-            {
-                float angle = (2 * M_PI * i) / numAngles;
-                float dx = cos(angle);
-                float dy = sin(angle);
-
-                for (float dist = stepSize; dist <= maxSampleDist; dist += stepSize)
-                {
-                    float x = bx + dx * dist;
-                    float y = by + dy * dist;
-                    float z = bz;
-                    float destX = x, destY = y, destZ = z;
-                    if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, bx, by, bz, destX, destY, destZ, true))
-                        continue;
-
-                    bool destSafe = true;
-                    for (Unit* infernal : infernals)
-                    {
-                        float infernalDist = sqrt(pow(destX - infernal->GetPositionX(), 2) + pow(destY - infernal->GetPositionY(), 2));
-                        if (infernalDist < safeInfernalDistance)
-                        {
-                            destSafe = false;
-                            break;
-                        }
-                    }
-
-                    float moveDist = sqrt(pow(destX - bx, 2) + pow(destY - by, 2));
-                    if (destSafe && moveDist < bestMoveDist)
-                    {
-                        bestMoveDist = moveDist;
-                        bestDestX = destX;
-                        bestDestY = destY;
-                        bestDestZ = destZ;
-                        found = true;
-                    }
-                }
-            }
+            found = TryFindSafePositionWithSafePath(
+                    bot, bx, by, bz, bx, by, bz,
+                    infernals, safeInfernalDistance, stepSize, numAngles, maxSampleDist,
+                    false, // don't require safe path
+                    bestDestX, bestDestY, bestDestZ);
         }
 
         if (found)

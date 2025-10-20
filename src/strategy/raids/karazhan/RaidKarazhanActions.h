@@ -171,6 +171,9 @@ public:
     NetherspiteBlockRedBeamAction(PlayerbotAI* botAI, std::string const name = "netherspite block red beam") : MovementAction(botAI, name) {}
 
     bool Execute(Event event) override;
+
+private:
+    Position GetPositionOnBeam(Unit* boss, Unit* portal, float distanceFromBoss);
 };
 
 class NetherspiteBlockBlueBeamAction : public MovementAction
@@ -195,6 +198,15 @@ public:
     NetherspiteAvoidBeamAndVoidZoneAction(PlayerbotAI* botAI, std::string const name = "netherspite avoid beam and void zone") : MovementAction(botAI, name) {}
 
     bool Execute(Event event) override;
+
+private:
+    struct BeamAvoid 
+    { 
+        Unit* portal; 
+        float minDist, maxDist; 
+    };
+
+    bool IsAwayFromBeams(float x, float y, const std::vector<BeamAvoid>& beams, Unit* netherspite);
 };
 
 class NetherspiteBanishPhaseAvoidVoidZoneAction : public MovementAction
@@ -228,14 +240,6 @@ public:
 
     bool Execute(Event event) override;
 };
-
-/* class PrinceMalchezaarNonTankAvoidHazardAction : public MovementAction
-{
-public:
-    PrinceMalchezaarNonTankAvoidHazardAction(PlayerbotAI* botAI, std::string const name = "prince malchezaar non-tank avoid hazard") : MovementAction(botAI, name) {}
-
-    bool Execute(Event event) override;
-}; */
 
 class PrinceMalchezaarMainTankMovementAction : public AttackAction
 {

@@ -278,29 +278,6 @@ std::vector<Player*> GetGreenBlockers(PlayerbotAI* botAI, Player* bot)
     return greenBlockers;
 }
 
-Position GetPositionOnBeam(Unit* boss, Unit* portal, float distanceFromBoss)
-{
-    float bx = boss->GetPositionX();
-    float by = boss->GetPositionY();
-    float bz = boss->GetPositionZ();
-    float px = portal->GetPositionX();
-    float py = portal->GetPositionY();
-
-    float dx = px - bx;
-    float dy = py - by;
-    float length = sqrt(dx*dx + dy*dy);
-    if (length == 0.0f)
-        return Position(bx, by, bz);
-
-    dx /= length;
-    dy /= length;
-    float targetX = bx + dx * distanceFromBoss;
-    float targetY = by + dy * distanceFromBoss;
-    float targetZ = bz;
-
-    return Position(targetX, targetY, targetZ);
-}
-
 std::tuple<Player*, Player*, Player*> GetCurrentBeamBlockers(PlayerbotAI* botAI, Player* bot)
 {
     static ObjectGuid currentRedBlocker;
@@ -448,6 +425,60 @@ bool IsStraightPathSafe(const Position& start, const Position& target, const std
     }
     
     return true;
+}
+
+bool TryFindSafePositionWithSafePath(
+    Player* bot,
+    float originX, float originY, float originZ,
+    float centerX, float centerY, float centerZ,
+    const std::vector<Unit*>& hazards,
+    float safeDistance,
+    float stepSize,
+    uint8 numAngles,
+    float maxSampleDist,
+    bool requireSafePath,
+    float& bestDestX, float& bestDestY, float& bestDestZ)
+{
+    float bestMoveDist = std::numeric_limits<float>::max();
+    bool found = false;
+
+    for (int i = 0; i < numAngles; ++i)
+    {
+        float angle = (2 * M_PI * i) / numAngles;
+        float dx = cos(angle);
+        float dy = sin(angle);
+
+        for (float dist = stepSize; dist <= maxSampleDist; dist += stepSize)
+        {
+            float x = centerX + dx * dist;
+            float y = centerY + dy * dist;
+            float z = centerZ;
+            float destX = x, destY = y, destZ = z;
+            if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, centerX, centerY, centerZ, destX, destY, destZ, true))
+                continue;
+
+            if (!IsSafePosition(destX, destY, destZ, hazards, safeDistance))
+                continue;
+
+            if (requireSafePath)
+            {
+                if (!IsStraightPathSafe(Position(originX, originY, originZ), Position(destX, destY, destZ),
+                                        hazards, safeDistance, stepSize))
+                    continue;
+            }
+
+            float moveDist = sqrt(pow(destX - originX, 2) + pow(destY - originY, 2));
+            if (moveDist < bestMoveDist)
+            {
+                bestMoveDist = moveDist;
+                bestDestX = destX;
+                bestDestY = destY;
+                bestDestZ = destZ;
+                found = true;
+            }
+        }
+    }
+    return found;
 }
 
 }

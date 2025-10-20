@@ -110,7 +110,6 @@ Unit* GetFirstAliveUnit(const std::vector<Unit*>& units);
 Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry);
 Unit* GetNearestPlayerInRadius(Player* bot, float radius = 5.0f);
 bool IsFlameWreathActive(PlayerbotAI* botAI, Player* bot);
-Position GetPositionOnBeam(Unit* boss, Unit* portal, float distanceFromBoss);
 std::vector<Player*> GetRedBlockers(PlayerbotAI* botAI, Player* bot);
 std::vector<Player*> GetBlueBlockers(PlayerbotAI* botAI, Player* bot);
 std::vector<Player*> GetGreenBlockers(PlayerbotAI* botAI, Player* bot);
@@ -119,7 +118,18 @@ std::vector<Unit*> GetAllVoidZones(PlayerbotAI *botAI, Player* bot);
 bool IsSafePosition (float x, float y, float z, const std::vector<Unit*>& hazards, float hazardRadius);
 std::vector<Unit*> GetSpawnedInfernals(PlayerbotAI* botAI);
 bool IsStraightPathSafe(const Position& start, const Position& target, 
-                        const std::vector<Unit*>& hazards, float hazardRadius, float stepSize);
+    const std::vector<Unit*>& hazards, float hazardRadius, float stepSize);
+bool TryFindSafePositionWithSafePath(
+    Player* bot,
+    float originX, float originY, float originZ,
+    float centerX, float centerY, float centerZ,
+    const std::vector<Unit*>& hazards,
+    float safeDistance,
+    float stepSize,
+    uint8 numAngles,
+    float maxSampleDist,
+    bool requireSafePath,
+    float& bestDestX, float& bestDestY, float& bestDestZ);
 
 }
 
