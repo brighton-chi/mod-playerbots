@@ -158,7 +158,6 @@ bool MaidenOfVirtueMainTankMovementAction::Execute(Event event)
         float targetZ = healer->GetPositionZ();
         {
             bot->AttackStop();
-            bot->InterruptNonMeleeSpells(false);
             return MoveTo(bot->GetMapId(), targetX, targetY, targetZ, false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
@@ -174,7 +173,6 @@ bool MaidenOfVirtueMainTankMovementAction::Execute(Event event)
         float mY = KARAZHAN_MAIDEN_OF_VIRTUE_BOSS_POSITION.GetPositionY() + (dY / distanceToBossPosition) * maxDistance;
         {
             bot->AttackStop();
-            bot->InterruptNonMeleeSpells(false);
             return MoveTo(bot->GetMapId(), mX, mY, bot->GetPositionZ(), false, false, false, false, 
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
@@ -217,7 +215,7 @@ bool MaidenOfVirtuePositionRangedAction::Execute(Event event)
     if (distance > maxDistance)
     {
         bot->AttackStop();
-        bot->InterruptNonMeleeSpells(false);
+        bot->InterruptNonMeleeSpells(true);
         return MoveTo(bot->GetMapId(), KARAZHAN_MAIDEN_OF_VIRTUE_RANGED_POSITION[index].GetPositionX(),
                       KARAZHAN_MAIDEN_OF_VIRTUE_RANGED_POSITION[index].GetPositionY(), bot->GetPositionZ(), false,
                       false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
@@ -284,7 +282,7 @@ bool BigBadWolfRunAwayAction::Execute(Event event)
 
     bigBadWolfRunIndex[botGuid] = index;
     bot->AttackStop();
-    bot->InterruptNonMeleeSpells(false);
+    bot->InterruptNonMeleeSpells(true);
 
     return MoveTo(bot->GetMapId(), target.GetPositionX(), target.GetPositionY(), target.GetPositionZ(),
                   false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
@@ -435,7 +433,7 @@ bool ShadeOfAranArcaneExplosionRunAwayAction::Execute(Event event)
     if (distance < safeDistance)
     {
         bot->AttackStop();
-        bot->InterruptNonMeleeSpells(false);
+        bot->InterruptNonMeleeSpells(true);
         return MoveAway(aran, safeDistance - distance);
     }
 
@@ -655,7 +653,7 @@ bool NetherspiteBlockBlueBeamAction::Execute(Event event)
         if (found) 
         {
             bot->AttackStop();
-            bot->InterruptNonMeleeSpells(false);
+            bot->InterruptNonMeleeSpells(true);
             return MoveTo(bot->GetMapId(), bestPos.GetPositionX(), bestPos.GetPositionY(), bestPos.GetPositionZ(),
                           false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
         }
@@ -755,7 +753,7 @@ bool NetherspiteBlockGreenBeamAction::Execute(Event event)
         if (found) 
         {
             bot->AttackStop();
-            bot->InterruptNonMeleeSpells(false);
+            bot->InterruptNonMeleeSpells(true);
             return MoveTo(bot->GetMapId(), bestPos.GetPositionX(), bestPos.GetPositionY(), bestPos.GetPositionZ(), 
                           false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
         }
@@ -900,7 +898,7 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event event)
         bestCandidate.GetPositionY(), bestCandidate.GetPositionZ(), voidZones, 4.0f))
     {
         bot->AttackStop();
-        bot->InterruptNonMeleeSpells(false);
+        bot->InterruptNonMeleeSpells(true);
         return MoveTo(bot->GetMapId(), bestCandidate.GetPositionX(), bestCandidate.GetPositionY(), 
                       bestCandidate.GetPositionZ(), false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
     }
@@ -1021,7 +1019,7 @@ bool PrinceMalchezaarEnfeebledAvoidHazardAction::Execute(Event event)
     if (found)
     {
         bot->AttackStop();
-        bot->InterruptNonMeleeSpells(false);
+        bot->InterruptNonMeleeSpells(true);
         return MoveTo(bot->GetMapId(), bestDestX, bestDestY, bestDestZ, false, false, false, false, 
                       MovementPriority::MOVEMENT_FORCED, true, false);
     }
@@ -1111,7 +1109,7 @@ bool PrinceMalchezaarNonTankAvoidInfernalAction::Execute(Event event)
         if (found)
         {
             bot->AttackStop();
-            bot->InterruptNonMeleeSpells(false);
+            bot->InterruptNonMeleeSpells(true);
             return MoveTo(bot->GetMapId(), bestDestX, bestDestY, bestDestZ, false, false, false, false, 
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
@@ -1381,7 +1379,6 @@ bool PrinceMalchezaarMainTankMovementAction::Execute(Event event)
         if (found)
         {
             bot->AttackStop();
-            bot->InterruptNonMeleeSpells(false);
             return MoveTo(bot->GetMapId(), bestDestX, bestDestY, bestDestZ, false, false, false, false, 
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
@@ -1464,7 +1461,7 @@ bool NightbaneGroundPhaseRotateRangedPositionsAction::Execute(Event event)
         if (newDistanceToTarget > maxDistance)
         {
             bot->AttackStop();
-            bot->InterruptNonMeleeSpells(false);
+            bot->InterruptNonMeleeSpells(true);
             return MoveTo(bot->GetMapId(), newTargetPos.GetPositionX(), newTargetPos.GetPositionY(), newTargetPos.GetPositionZ(),
                           false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
         }
@@ -1474,7 +1471,7 @@ bool NightbaneGroundPhaseRotateRangedPositionsAction::Execute(Event event)
     if (distanceToTarget > maxDistance)
     {
         bot->AttackStop();
-        bot->InterruptNonMeleeSpells(false);
+        bot->InterruptNonMeleeSpells(true);
         return MoveTo(bot->GetMapId(), targetPos.GetPositionX(), targetPos.GetPositionY(), targetPos.GetPositionZ(),
                       false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
     }
@@ -1541,7 +1538,7 @@ bool NightbaneFlightPhaseMovementAction::Execute(Event event)
     if (botTarget && botTarget == nightbane)
     {
         bot->AttackStop();
-        bot->InterruptNonMeleeSpells(false);
+        bot->InterruptNonMeleeSpells(true);
     }
 
     ObjectGuid botGuid = bot->GetGUID();
@@ -1567,7 +1564,7 @@ bool NightbaneFlightPhaseMovementAction::Execute(Event event)
     if (bot->GetExactDist2d(destX, destY) > 2.0f)
     {
         bot->AttackStop();
-        bot->InterruptNonMeleeSpells(false);
+        bot->InterruptNonMeleeSpells(true);
         return MoveTo(bot->GetMapId(), destX, destY, destZ, false, false, false, false,
                       MovementPriority::MOVEMENT_FORCED, true, false);
     }

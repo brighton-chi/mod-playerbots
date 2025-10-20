@@ -203,7 +203,7 @@ bool VoidReaverArcaneOrbMoveAwayAction::Execute(Event event)
                   bot->GetName());
 
         bot->AttackStop();
-        bot->InterruptNonMeleeSpells(false);
+        bot->InterruptNonMeleeSpells(true);
         return MoveTo(bot->GetMapId(), bestPosition.GetPositionX(), bestPosition.GetPositionY(), 
                       bestPosition.GetPositionZ(), false, false, false, false, 
                       MovementPriority::MOVEMENT_COMBAT, true, false);
@@ -239,6 +239,182 @@ bool VoidReaverArcaneOrbMoveAwayAction::IsInArcaneOrbRadius(const std::vector<Un
         if (distanceToOrb < safeDistance)
             return true;
     }
+
+    return false;
+}
+
+bool HighAstromancerSolarianStackAction::Execute(Event event)
+{
+    Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
+    if (!astromancer)
+        return false;
+
+    const Location& position = TempestKeepLocations::AstromancerStackPosition;
+
+    // Phase 1 & 2 - Ranged
+    if (botAI->IsRanged(bot) && bot->GetExactDist2d(position.x, position.y) > 4.0f)
+    {
+        bot->AttackStop();
+        bot->InterruptNonMeleeSpells(false);
+        return MoveTo(bot->GetMapId(), position.x, position.y, bot->GetPositionZ(), false, false, false, false,
+                      MovementPriority::MOVEMENT_COMBAT, true, false);
+    }
+
+    // Phase 2 - Melee move to Ranged
+    Unit* solariumAgent = AI_VALUE2(Unit*, "find target", "solarium agent");
+    if (solariumAgent && botAI->IsMelee(bot) &&
+        bot->GetExactDist2d(position.x, position.y) > 6.0f)
+    {
+        bot->AttackStop();
+        return MoveTo(bot->GetMapId(), position.x, position.y, bot->GetPositionZ(), false, false, false, false,
+                      MovementPriority::MOVEMENT_COMBAT, true, false);
+    }
+
+    return false;
+}
+
+bool HighAstromancerSolarianMoveAwayFromGroupAction::Execute(Event event)
+{
+    Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
+    if (!astromancer)
+        return false;
+    
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+
+            if (!member || !member->IsAlive() || member == bot)
+                continue;
+
+            float distance = bot->GetExactDist2d(member);
+            if (distance < 10.0f)
+                return FleePosition(Position(member->GetPositionX(), member->GetPositionY(), 
+                                    member->GetPositionZ()), 12.0f, 0);
+        }
+    }
+
+    return false;
+}
+
+bool HighAstromancerSolarianTargetPriestAddsAction::Execute(Event event)
+{
+    Unit* priestAdd = AI_VALUE2(Unit*, "find target", "solarium priest");
+    if (!priestAdd)
+        return false;
+
+    // Find both priest adds
+    std::vector<Unit*> priestAdds;
+    const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
+    for (const auto& npcGuid : npcs)
+    {
+        Unit* unit = botAI->GetUnit(npcGuid);
+        if (unit && unit->GetEntry() == NPC_SOLARIUM_PRIEST && unit->IsAlive())
+            priestAdds.push_back(unit);
+    }
+
+    if (priestAdds.size() < 2)
+        return false;
+
+    // Get all melee group members and sort them for consistent assignment
+    std::vector<Player*> meleeMembers;
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (member && member->IsAlive() && botAI->IsMelee(member))
+                meleeMembers.push_back(member);
+        }
+    }
+
+    if (meleeMembers.empty())
+        return false;
+
+    // Sort by GUID for consistent assignment across all bots
+    std::sort(meleeMembers.begin(), meleeMembers.end(), 
+              [](Player* a, Player* b) { return a->GetGUID() < b->GetGUID(); });
+
+    // Sort priest adds by GUID for consistent targeting
+    std::sort(priestAdds.begin(), priestAdds.end(),
+              [](Unit* a, Unit* b) { return a->GetGUID() < b->GetGUID(); });
+
+    // Find this bot's index in the melee group
+    auto it = std::find(meleeMembers.begin(), meleeMembers.end(), bot);
+    if (it == meleeMembers.end())
+        return false;
+
+    size_t botIndex = std::distance(meleeMembers.begin(), it);
+    size_t totalMelee = meleeMembers.size();
+    
+    // Divide melee bots in half - first half goes to priest 0, second half to priest 1
+    Unit* targetPriestAdd;
+    if (botIndex < totalMelee / 2)
+    {
+        // Group 1: Attack first priest (marked with square)
+        targetPriestAdd = priestAdds[0];
+        MarkTargetWithSquare(bot, targetPriestAdd);
+        SetRtiTarget(botAI, "square", targetPriestAdd);
+    }
+    else
+    {
+        // Group 2: Attack second priest (marked with star)
+        targetPriestAdd = priestAdds[1];
+        MarkTargetWithStar(bot, targetPriestAdd);
+        SetRtiTarget(botAI, "star", targetPriestAdd);
+    }
+
+    // Attack the assigned priest
+    if (bot->GetVictim() != targetPriestAdd)
+        return Attack(targetPriestAdd);
+
+    if (!bot->IsWithinMeleeRange(targetPriestAdd))
+        return MoveTo(bot->GetMapId(), targetPriestAdd->GetPositionX(), targetPriestAdd->GetPositionY(),
+                        targetPriestAdd->GetPositionZ(), false, false, false, false,
+                        MovementPriority::MOVEMENT_COMBAT, true, false);
+
+    return false;
+}
+
+bool HighAstromancerSolarianTankVoidwalkerAction::Execute(Event event)
+{
+    Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
+
+    if (astromancer->GetVictim() != bot)
+    {
+        if (botAI->CanCastSpell("taunt", astromancer))
+            return botAI->CastSpell("taunt", astromancer);
+
+        if (botAI->CanCastSpell("growl", astromancer))
+            return botAI->CastSpell("growl", astromancer);
+
+        if (botAI->CanCastSpell("hand of reckoning", astromancer))
+            return botAI->CastSpell("hand of reckoning", astromancer);
+    }
+
+    return false;
+}
+
+bool HighAstromancerSolarianCastFearWardOnMainTankAction::Execute(Event event)
+{
+    Player* mainTank = nullptr;
+
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (member && botAI->IsMainTank(member))
+            {
+                mainTank = member;
+                break;
+            }
+        }
+    }
+
+    if (mainTank && botAI->CanCastSpell("fear ward", mainTank))
+        return botAI->CastSpell("fear ward", mainTank);
 
     return false;
 }
@@ -1601,13 +1777,6 @@ bool NightbaneFlightPhaseMovementAction::Execute(Event event)
         return false;
 
     MarkTargetWithMoon(bot, nightbane);
-
-    Pet* pet = bot->GetPet();
-    if (pet && pet->GetReactState() != REACT_PASSIVE)
-    {
-        pet->AttackStop();
-        pet->SetReactState(REACT_PASSIVE);
-    }
 
     Unit* botTarget = botAI->GetUnit(bot->GetTarget());
     if (botTarget && botTarget == nightbane)

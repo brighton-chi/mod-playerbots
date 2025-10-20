@@ -33,4 +33,44 @@ private:
     bool IsInArcaneOrbRadius(const std::vector<Unit*>& arcaneOrbTargets, float safeDistance);
 };
 
+class HighAstromancerSolarianStackAction : public MovementAction
+{
+public:
+    HighAstromancerSolarianStackAction(PlayerbotAI* botAI, std::string const name = "high astromancer solarian stack") : MovementAction(botAI, name) {}
+
+    bool Execute(Event event) override;
+};
+
+class HighAstromancerSolarianMoveAwayFromGroupAction : public MovementAction
+{
+public:
+    HighAstromancerSolarianMoveAwayFromGroupAction(PlayerbotAI* botAI, std::string const name = "high astromancer solarian move away from group") : MovementAction(botAI, name) {}
+
+    bool Execute(Event event) override;
+};
+
+class HighAstromancerSolarianTargetPriestAddsAction : public AttackAction
+{
+public:
+    HighAstromancerSolarianTargetPriestAddsAction(PlayerbotAI* botAI, std::string const name = "high astromancer solarian target priest adds") : AttackAction(botAI, name) {}
+
+    bool Execute(Event event) override;
+};
+
+class HighAstromancerSolarianTankVoidwalkerAction : public AttackAction
+{
+public:
+    HighAstromancerSolarianTankVoidwalkerAction(PlayerbotAI* botAI, std::string const name = "high astromancer solarian tank voidwalker") : AttackAction(botAI, name) {}
+
+    bool Execute(Event event) override;
+};
+
+class HighAstromancerSolarianCastFearWardOnMainTankAction : public Action
+{
+public:
+    HighAstromancerSolarianCastFearWardOnMainTankAction(PlayerbotAI* botAI, std::string const name = "high astromancer solarian cast fear ward on main tank") : Action(botAI, name) {}
+
+    bool Execute(Event event) override;
+};
+
 #endif

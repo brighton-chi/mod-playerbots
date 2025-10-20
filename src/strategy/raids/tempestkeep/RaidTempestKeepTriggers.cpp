@@ -24,6 +24,58 @@ bool VoidReaverArcaneOrbMoveAwayTrigger::IsActive()
     return voidReaver && !botAI->IsTank(bot);
 }
 
+bool HighAstromancerSolarianStackTrigger::IsActive()
+{
+    Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
+
+    return astromancer && !astromancer->HasAura(SPELL_SOLARIAN_TRANSFORM);
+}
+
+bool HighAstromancerSolarianMoveAwayFromGroupTrigger::IsActive()
+{
+    Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
+
+    return astromancer && bot->HasAura(SPELL_WRATH_OF_THE_ASTROMANCER);
+}
+
+bool HighAstromancerSolarianTargetPriestAddsTrigger::IsActive()
+{
+    Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
+    Unit* priestAdd = AI_VALUE2(Unit*, "find target", "solarium priest");
+
+    return astromancer && priestAdd && botAI->IsMelee(bot);
+}
+
+bool HighAstromancerSolarianTankVoidwalkerTrigger::IsActive()
+{
+    Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
+
+    return astromancer && astromancer->HasAura(SPELL_SOLARIAN_TRANSFORM) && botAI->IsMainTank(bot);
+}
+
+bool HighAstromancerSolarianCastFearWardOnMainTankTrigger::IsActive()
+{
+    Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
+    Player* mainTank = nullptr;
+
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (member && botAI->IsMainTank(member))
+            {
+                mainTank = member;
+                break;
+            }
+        }
+    }
+
+    return astromancer && astromancer->HasAura(SPELL_SOLARIAN_TRANSFORM) && 
+           bot->getClass() == CLASS_PRIEST && mainTank && !mainTank->HasAura(SPELL_FEAR_WARD) &&
+           botAI->CanCastSpell("fear ward", mainTank);
+}
+
 /*
 using namespace KarazhanHelpers;
 

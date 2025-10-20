@@ -13,6 +13,47 @@ namespace TempestKeepHelpers
 namespace TempestKeepLocations
 {
 	const Location VoidReaverTankPosition  = { 0.0f, 0.0f, 0.0f }; // Placeholder values
+    const Location AstromancerStackPosition = { 0.0f, 0.0f, 0.0f }; // Placeholder values
+}
+
+void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId)
+{
+    if (!target)
+        return;
+
+    if (Group* group = bot->GetGroup())
+    {
+        ObjectGuid currentGuid = group->GetTargetIcon(iconId);
+        if (currentGuid != target->GetGUID())
+        {
+            group->SetTargetIcon(iconId, bot->GetGUID(), target->GetGUID());
+        }
+    }
+}
+
+void MarkTargetWithSquare(Player* bot, Unit* target)
+{
+    MarkTargetWithIcon(bot, target, RtiTargetValue::squareIndex);
+}
+
+void MarkTargetWithStar(Player* bot, Unit* target)
+{
+    MarkTargetWithIcon(bot, target, RtiTargetValue::starIndex);
+}
+
+void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target)
+{
+    if (!target)
+        return;
+
+    std::string currentRti = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
+    Unit* currentTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
+
+    if (currentRti != rtiName || currentTarget != target)
+    {
+        botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set(rtiName);
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(target);
+    }
 }
 
 }

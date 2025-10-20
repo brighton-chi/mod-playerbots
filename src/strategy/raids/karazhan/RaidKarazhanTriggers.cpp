@@ -115,6 +115,8 @@ bool TheCuratorMarkAstralFlareTrigger::IsActive()
     return curator && target && target->IsAlive();
 }
 
+// Inclusion of Assist Tank is because they need to be given the directive to attack
+// Tanks with TankAssistAction disabled will not initiate combat unless ordered to do so
 bool TheCuratorPositionBossTrigger::IsActive()
 {
     Unit* curator = AI_VALUE2(Unit*, "find target", "the curator");
@@ -159,6 +161,7 @@ bool ShadeOfAranFlameWreathStopMovementTrigger::IsActive()
     return aran && IsFlameWreathActive(botAI, bot);
 }
 
+// Exclusion of Banish is so the player may Banish elementals if they wish
 bool ShadeOfAranMarkConjuredElementalTrigger::IsActive()
 {
     Unit* aran = AI_VALUE2(Unit*, "find target", "shade of aran");
