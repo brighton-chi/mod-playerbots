@@ -7,27 +7,30 @@ using namespace KarazhanHelpers;
 
 // Attumen the Huntsman
 
-bool AttumenTheHuntsmanMainTankAction::Execute(Event event)
+// Prioritize Midnight until Attumen is mounted
+bool AttumenTheHuntsmanMarkTargetAction::Execute(Event event)
 {
     Unit* midnight = AI_VALUE2(Unit*, "find target", "midnight");
     Unit* attumenMounted = GetFirstAliveUnitByEntry(botAI, NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED);
-    if (midnight && !attumenMounted)
-    {
-        MarkTargetWithSkull(bot, midnight);
-        SetRtiTarget(botAI, "skull", midnight);
 
-        if (bot->GetVictim() != midnight)
+    if (!botAI->IsAssistTankOfIndex(bot, 0) && midnight && !attumenMounted)
+    {
+        MarkTargetWithStar(bot, midnight);
+        SetRtiTarget(botAI, "star", midnight);
+
+        if (!botAI->IsHeal(bot) && bot->GetVictim() != midnight)
             return Attack(midnight);
     }
 
     if (attumenMounted)
     {
-        MarkTargetWithSkull(bot, attumenMounted);
+        MarkTargetWithStar(bot, attumenMounted);
+        SetRtiTarget(botAI, "star", attumenMounted);
 
-        if (bot->GetVictim() != attumenMounted)
+        if (!botAI->IsHeal(bot) && bot->GetVictim() != attumenMounted)
             return Attack(attumenMounted);
 
-        if (!bot->IsWithinMeleeRange(attumenMounted))
+        if (botAI->IsMainTank(bot) && !bot->IsWithinMeleeRange(attumenMounted))
             return MoveTo(bot->GetMapId(), attumenMounted->GetPositionX(), attumenMounted->GetPositionY(),
                           attumenMounted->GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, false);
@@ -36,7 +39,7 @@ bool AttumenTheHuntsmanMainTankAction::Execute(Event event)
     return false;
 }
 
-// Midnight is the phase 1 target; get Attumen out of the way so he doesn't cleave bots
+// Get Attumen out of the way so he doesn't cleave bots
 bool AttumenTheHuntsmanSplitBossesAction::Execute(Event event)
 {
     Unit* midnight = AI_VALUE2(Unit*, "find target", "midnight");
@@ -67,8 +70,6 @@ bool AttumenTheHuntsmanStackBehindAction::Execute(Event event)
     Unit* attumenMounted = GetFirstAliveUnitByEntry(botAI, NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED);
     if (!attumenMounted)
         return false;
-
-    SetRtiTarget(botAI, "skull", attumenMounted);
 
     const float distance = 3.0f;
     float orientation = attumenMounted->GetOrientation() + M_PI;

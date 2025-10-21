@@ -3,24 +3,24 @@
 
 #include "Trigger.h"
 
-class AttumenTheHuntsmanMainTankTrigger : public Trigger
+class AttumenTheHuntsmanNeedTargetPriorityTrigger : public Trigger
 {
 public:
-    AttumenTheHuntsmanMainTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "attumen the huntsman main tank") {}
+    AttumenTheHuntsmanNeedTargetPriorityTrigger(PlayerbotAI* botAI) : Trigger(botAI, "attumen the huntsman need target priority") {}
     bool IsActive() override;
 };
 
-class AttumenTheHuntsmanSplitBossesTrigger : public Trigger
+class AttumenTheHuntsmanAttumenSpawnedTrigger : public Trigger
 {
 public:
-    AttumenTheHuntsmanSplitBossesTrigger(PlayerbotAI* botAI) : Trigger(botAI, "attumen the huntsman split bosses") {}
+    AttumenTheHuntsmanAttumenSpawnedTrigger(PlayerbotAI* botAI) : Trigger(botAI, "attumen the huntsman attumen spawned") {}
     bool IsActive() override;
 };
 
-class AttumenTheHuntsmanStackBehindTrigger : public Trigger
+class AttumenTheHuntsmanAttumenMountedTrigger : public Trigger
 {
 public:
-    AttumenTheHuntsmanStackBehindTrigger(PlayerbotAI* botAI) : Trigger(botAI, "attumen the huntsman stack behind") {}
+    AttumenTheHuntsmanAttumenMountedTrigger(PlayerbotAI* botAI) : Trigger(botAI, "attumen the huntsman attumen mounted") {}
     bool IsActive() override;
 };
 
@@ -31,10 +31,10 @@ public:
     bool IsActive() override;
 };
 
-class MoroesMarkTargetTrigger : public Trigger
+class MoroesNeedTargetPriorityTrigger : public Trigger
 {
 public:
-    MoroesMarkTargetTrigger(PlayerbotAI* botAI) : Trigger(botAI, "moroes mark target") {}
+    MoroesNeedTargetPriorityTrigger(PlayerbotAI* botAI) : Trigger(botAI, "moroes need target priority") {}
     bool IsActive() override;
 };
 

@@ -9,7 +9,7 @@ class RaidKarazhanActionContext : public NamedObjectContext<Action>
 public:
     RaidKarazhanActionContext()
     {
-        creators["attumen the huntsman main tank"] = &RaidKarazhanActionContext::attumen_the_huntsman_main_tank;
+        creators["attumen the huntsman mark target"] = &RaidKarazhanActionContext::attumen_the_huntsman_mark_target;
         creators["attumen the huntsman split bosses"] = &RaidKarazhanActionContext::attumen_the_huntsman_split_bosses;
         creators["attumen the huntsman stack behind"] = &RaidKarazhanActionContext::attumen_the_huntsman_stack_behind;
         creators["attumen the huntsman manage timer"] = &RaidKarazhanActionContext::attumen_the_huntsman_manage_timer;
@@ -58,7 +58,7 @@ public:
     }
 
 private:
-    static Action* attumen_the_huntsman_main_tank(PlayerbotAI* botAI) { return new AttumenTheHuntsmanMainTankAction(botAI); }
+    static Action* attumen_the_huntsman_mark_target(PlayerbotAI* botAI) { return new AttumenTheHuntsmanMarkTargetAction(botAI); }
     static Action* attumen_the_huntsman_split_bosses(PlayerbotAI* botAI) { return new AttumenTheHuntsmanSplitBossesAction(botAI); }
     static Action* attumen_the_huntsman_stack_behind(PlayerbotAI* botAI) { return new AttumenTheHuntsmanStackBehindAction(botAI); }
     static Action* attumen_the_huntsman_manage_timer(PlayerbotAI* botAI) { return new AttumenTheHuntsmanManageTimerAction(botAI); }

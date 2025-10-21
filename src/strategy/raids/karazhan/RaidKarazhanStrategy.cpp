@@ -5,15 +5,15 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // Attumen the Huntsman
     triggers.push_back(new TriggerNode(
-        "attumen the huntsman main tank",
-        NextAction::array(0, new NextAction("attumen the huntsman main tank", ACTION_RAID + 1), nullptr)
+        "attumen the huntsman need target priority",
+        NextAction::array(0, new NextAction("attumen the huntsman mark target", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode(
-        "attumen the huntsman split bosses",
+        "attumen the huntsman attumen spawned",
         NextAction::array(0, new NextAction("attumen the huntsman split bosses", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode(
-        "attumen the huntsman stack behind",
+        "attumen the huntsman attumen mounted",
         NextAction::array(0, new NextAction("attumen the huntsman stack behind", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode(
@@ -23,7 +23,7 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     // Moroes
     triggers.push_back(new TriggerNode(
-        "moroes mark target",
+        "moroes need target priority",
         NextAction::array(0, new NextAction("moroes mark target", ACTION_RAID + 1), nullptr)
     ));
 

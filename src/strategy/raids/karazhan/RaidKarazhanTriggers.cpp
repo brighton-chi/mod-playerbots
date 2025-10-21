@@ -5,16 +5,16 @@
 
 using namespace KarazhanHelpers;
 
-bool AttumenTheHuntsmanMainTankTrigger::IsActive()
+bool AttumenTheHuntsmanNeedTargetPriorityTrigger::IsActive()
 {
     Unit* midnight = AI_VALUE2(Unit*, "find target", "midnight");
     Unit* attumen = GetFirstAliveUnitByEntry(botAI, NPC_ATTUMEN_THE_HUNTSMAN);
     Unit* attumenMounted = GetFirstAliveUnitByEntry(botAI, NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED);
 
-    return (midnight || attumen || attumenMounted) && botAI->IsMainTank(bot);
+    return midnight || attumen || attumenMounted;
 }
 
-bool AttumenTheHuntsmanSplitBossesTrigger::IsActive()
+bool AttumenTheHuntsmanAttumenSpawnedTrigger::IsActive()
 {
     Unit* midnight = AI_VALUE2(Unit*, "find target", "midnight");
     Unit* attumen = GetFirstAliveUnitByEntry(botAI, NPC_ATTUMEN_THE_HUNTSMAN);
@@ -22,7 +22,7 @@ bool AttumenTheHuntsmanSplitBossesTrigger::IsActive()
     return midnight && attumen && botAI->IsAssistTankOfIndex(bot, 0);
 }
 
-bool AttumenTheHuntsmanStackBehindTrigger::IsActive()
+bool AttumenTheHuntsmanAttumenMountedTrigger::IsActive()
 {
     Unit* attumenMounted = GetFirstAliveUnitByEntry(botAI, NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED);
 
@@ -37,7 +37,7 @@ bool AttumenTheHuntsmanManageTimerTrigger::IsActive()
     return (midnight || attumenMounted) && IsMapIDTimerManager(bot);
 }
 
-bool MoroesMarkTargetTrigger::IsActive()
+bool MoroesNeedTargetPriorityTrigger::IsActive()
 {
     Unit* dorothea = AI_VALUE2(Unit*, "find target", "baroness dorothea millstipe");
     Unit* catriona = AI_VALUE2(Unit*, "find target", "lady catriona von'indi");

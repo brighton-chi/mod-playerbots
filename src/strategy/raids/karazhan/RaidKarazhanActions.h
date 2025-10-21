@@ -5,10 +5,10 @@
 #include "AttackAction.h"
 #include "MovementActions.h"
 
-class AttumenTheHuntsmanMainTankAction : public AttackAction
+class AttumenTheHuntsmanMarkTargetAction : public AttackAction
 {
 public:
-    AttumenTheHuntsmanMainTankAction(PlayerbotAI* botAI, std::string const name = "attumen the huntsman main tank") : AttackAction(botAI, name) {}
+    AttumenTheHuntsmanMarkTargetAction(PlayerbotAI* botAI, std::string const name = "attumen the huntsman mark target") : AttackAction(botAI, name) {}
 
     bool Execute(Event event) override;
 };

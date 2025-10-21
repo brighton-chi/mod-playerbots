@@ -9,13 +9,13 @@ class RaidKarazhanTriggerContext : public NamedObjectContext<Trigger>
 public:
     RaidKarazhanTriggerContext()
     {
-        creators["attumen the huntsman main tank"] = &RaidKarazhanTriggerContext::attumen_the_huntsman_main_tank;
-        creators["attumen the huntsman split bosses"] = &RaidKarazhanTriggerContext::attumen_the_huntsman_split_bosses;
-        creators["attumen the huntsman stack behind"] = &RaidKarazhanTriggerContext::attumen_the_huntsman_stack_behind;
+        creators["attumen the huntsman need target priority"] = &RaidKarazhanTriggerContext::attumen_the_huntsman_need_target_priority;
+        creators["attumen the huntsman attumen spawned"] = &RaidKarazhanTriggerContext::attumen_the_huntsman_attumen_spawned;
+        creators["attumen the huntsman attumen mounted"] = &RaidKarazhanTriggerContext::attumen_the_huntsman_attumen_mounted;
         creators["attumen the huntsman manage timer"] = &RaidKarazhanTriggerContext::attumen_the_huntsman_manage_timer;
-        
-        creators["moroes mark target"] = &RaidKarazhanTriggerContext::moroes_mark_target;
-        
+
+        creators["moroes need target priority"] = &RaidKarazhanTriggerContext::moroes_need_target_priority;
+
         creators["maiden of virtue main tank movement"] = &RaidKarazhanTriggerContext::maiden_of_virtue_main_tank_movement;
         creators["maiden of virtue position ranged"] = &RaidKarazhanTriggerContext::maiden_of_virtue_position_ranged;
         
@@ -58,12 +58,12 @@ public:
     }
 
 private:
-    static Trigger* attumen_the_huntsman_main_tank(PlayerbotAI* botAI) { return new AttumenTheHuntsmanMainTankTrigger(botAI); }
-    static Trigger* attumen_the_huntsman_split_bosses(PlayerbotAI* botAI) { return new AttumenTheHuntsmanSplitBossesTrigger(botAI); }
-    static Trigger* attumen_the_huntsman_stack_behind(PlayerbotAI* botAI) { return new AttumenTheHuntsmanStackBehindTrigger(botAI); }
+    static Trigger* attumen_the_huntsman_need_target_priority(PlayerbotAI* botAI) { return new AttumenTheHuntsmanNeedTargetPriorityTrigger(botAI); }
+    static Trigger* attumen_the_huntsman_attumen_spawned(PlayerbotAI* botAI) { return new AttumenTheHuntsmanAttumenSpawnedTrigger(botAI); }
+    static Trigger* attumen_the_huntsman_attumen_mounted(PlayerbotAI* botAI) { return new AttumenTheHuntsmanAttumenMountedTrigger(botAI); }
     static Trigger* attumen_the_huntsman_manage_timer(PlayerbotAI* botAI) { return new AttumenTheHuntsmanManageTimerTrigger(botAI); }
     
-    static Trigger* moroes_mark_target(PlayerbotAI* botAI) { return new MoroesMarkTargetTrigger(botAI); }
+    static Trigger* moroes_need_target_priority(PlayerbotAI* botAI) { return new MoroesNeedTargetPriorityTrigger(botAI); }
    
     static Trigger* maiden_of_virtue_main_tank_movement(PlayerbotAI* botAI) { return new MaidenOfVirtueMainTankMovementTrigger(botAI); }
     static Trigger* maiden_of_virtue_position_ranged(PlayerbotAI* botAI) { return new MaidenOfVirtuePositionRangedTrigger(botAI); }

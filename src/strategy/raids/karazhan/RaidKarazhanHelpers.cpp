@@ -81,6 +81,11 @@ void MarkTargetWithSquare(Player* bot, Unit* target)
     MarkTargetWithIcon(bot, target, RtiTargetValue::squareIndex);
 }
 
+void MarkTargetWithStar(Player* bot, Unit* target)
+{
+    MarkTargetWithIcon(bot, target, RtiTargetValue::starIndex);
+}
+
 void MarkTargetWithMoon(Player* bot, Unit* target)
 {
     MarkTargetWithIcon(bot, target, RtiTargetValue::moonIndex);

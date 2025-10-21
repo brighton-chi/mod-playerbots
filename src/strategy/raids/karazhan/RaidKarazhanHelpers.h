@@ -102,6 +102,7 @@ namespace KarazhanHelpers
 
 void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);
 void MarkTargetWithSkull(Player* bot, Unit* target);
+void MarkTargetWithStar(Player* bot, Unit* target);
 void MarkTargetWithSquare(Player* bot, Unit* target);
 void MarkTargetWithMoon(Player* bot, Unit* target);
 void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target);
