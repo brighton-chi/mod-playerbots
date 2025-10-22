@@ -33,6 +33,101 @@ bool GreyheartTidecallerMarkWaterElementalTotemAction::Execute(Event event)
 
 // consider if cheat needed for tank resistance
 
+bool HydrossTheUnstableFrostTankAction::Execute(Event event)
+{
+    Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
+    if (!hydross)
+        return false;
+
+    if (!hydross->HasAura(SPELL_CORRUPTION) && !bot->HasAura(SPELL_MARK_OF_HYDROSS_100) && 
+        !bot->HasAura(SPELL_MARK_OF_HYDROSS_250) && !bot->HasAura(SPELL_MARK_OF_HYDROSS_500))
+    {
+        if (bot->GetVictim() != hydross)
+        {
+            const char* taunts[] = { "taunt", "growl", "hand of reckoning" };
+            for (const char* spellName : taunts)
+            {
+                if (botAI->CanCastSpell(spellName, hydross))
+                    return botAI->CastSpell(spellName, hydross);
+            }
+            return Attack(hydross);
+        }
+
+        if (hydross->GetVictim() == bot)
+        {
+            const Location& position = SerpentShrineCavernLocations::HydrossFrostTankPosition;
+            const float maxDistance = 2.0f;
+
+            float distanceToPosition = bot->GetExactDist2d(position.x, position.y);
+
+            if (distanceToPosition > maxDistance)
+            {
+                float dX = position.x - bot->GetPositionX();
+                float dY = position.y - bot->GetPositionY();
+                float dist = sqrt(dX * dX + dY * dY);
+                float moveX = bot->GetPositionX() + (dX / dist) * maxDistance;
+                float moveY = bot->GetPositionY() + (dY / dist) * maxDistance;
+
+                return MoveTo(bot->GetMapId(), moveX, moveY, position.z, false, false, false, false, 
+                            MovementPriority::MOVEMENT_COMBAT, true, false);
+            }
+            else if (!bot->IsWithinMeleeRange(hydross))
+                return MoveTo(hydross->GetMapId(), hydross->GetPositionX(),
+                            hydross->GetPositionY(), hydross->GetPositionZ(),
+                            false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+        }
+    }
+
+    if (!hydross->HasAura(SPELL_CORRUPTION) && 
+        (bot->HasAura(SPELL_MARK_OF_CORRUPTION_100) || bot->HasAura(SPELL_MARK_OF_CORRUPTION_250) ||
+         bot->HasAura(SPELL_MARK_OF_CORRUPTION_500)))
+    {
+        if (hydross->GetVictim() == bot)
+        {
+            const Location& position = SerpentShrineCavernLocations::HydrossNatureTankPosition;
+            const float maxDistance = 2.0f;
+
+            float distanceToPosition = bot->GetExactDist2d(position.x, position.y);
+
+            if (distanceToPosition > maxDistance)
+            {
+                float dX = position.x - bot->GetPositionX();
+                float dY = position.y - bot->GetPositionY();
+                float dist = sqrt(dX * dX + dY * dY);
+                float moveX = bot->GetPositionX() + (dX / dist) * maxDistance;
+                float moveY = bot->GetPositionY() + (dY / dist) * maxDistance;
+
+                return MoveTo(bot->GetMapId(), moveX, moveY, position.z, false, false, false, false, 
+                            MovementPriority::MOVEMENT_COMBAT, true, false);
+            }
+        }
+    }
+
+    if (hydross->HasAura(SPELL_CORRUPTION) && 
+        (bot->HasAura(SPELL_MARK_OF_CORRUPTION_50) || bot->HasAura(SPELL_MARK_OF_CORRUPTION_100) || 
+         bot->HasAura(SPELL_MARK_OF_CORRUPTION_250) || bot->HasAura(SPELL_MARK_OF_CORRUPTION_500)))
+    {
+        const Location& position = SerpentShrineCavernLocations::HydrossFrostTankPosition;
+        const float maxDistance = 2.0f;
+
+        float distanceToPosition = bot->GetExactDist2d(position.x, position.y);
+
+        if (distanceToPosition > maxDistance)
+        {
+            float dX = position.x - bot->GetPositionX();
+            float dY = position.y - bot->GetPositionY();
+            float dist = sqrt(dX * dX + dY * dY);
+            float moveX = bot->GetPositionX() + (dX / dist) * maxDistance;
+            float moveY = bot->GetPositionY() + (dY / dist) * maxDistance;
+
+            return MoveTo(bot->GetMapId(), moveX, moveY, position.z, false, false, false, false, 
+                        MovementPriority::MOVEMENT_COMBAT, true, false);
+        }
+    }
+
+    return false;
+}
+
 bool HydrossTheUnstableFrostTankPositionBossAction::Execute(Event event)
 {
     Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");

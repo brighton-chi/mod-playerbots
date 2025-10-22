@@ -16,6 +16,13 @@ bool GreyheartTidecallerWaterElementalTotemSpawnedTrigger::IsActive()
 
 // Hydross the Unstable <Duke of Currents>
 
+bool HydrossTheUnstableBotIsFrostTankTrigger::IsActive()
+{
+    Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
+
+    return hydross && botAI->IsMainTank(bot);
+}
+
 bool HydrossTheUnstableBossInFrostPhaseTrigger::IsActive()
 {
     Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");

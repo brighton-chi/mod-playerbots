@@ -13,6 +13,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class HydrossTheUnstableFrostTankAction : public AttackAction
+{
+public:
+    HydrossTheUnstableFrostTankAction(PlayerbotAI* botAI, std::string const name = "hydross the unstable frost tank") : AttackAction(botAI, name) {}
+
+    bool Execute(Event event) override;
+};
+
 class HydrossTheUnstableFrostTankPositionBossAction : public AttackAction
 {
 public:
