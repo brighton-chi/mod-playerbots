@@ -268,7 +268,7 @@ bool BigBadWolfPositionBossAction::Execute(Event event)
 }
 
 // Run away, little girl, run away
-bool BigBadWolfRunAwayAction::Execute(Event event)
+bool BigBadWolfRunAwayFromBossAction::Execute(Event event)
 {
     ObjectGuid botGuid = bot->GetGUID();
     const float threshold = 1.0f;
@@ -423,7 +423,7 @@ bool TerestianIllhoofMarkTargetAction::Execute(Event event)
 // Shade of Aran
 
 // Run to the edge of the room to avoid Arcane Explosion
-bool ShadeOfAranArcaneExplosionRunAwayAction::Execute(Event event)
+bool ShadeOfAranRunAwayFromArcaneExplosionAction::Execute(Event event)
 {
     Unit* aran = AI_VALUE2(Unit*, "find target", "shade of aran");
     if (!aran)
@@ -442,7 +442,7 @@ bool ShadeOfAranArcaneExplosionRunAwayAction::Execute(Event event)
 }
 
 // I will not move when Flame Wreath is cast or the raid blows up
-bool ShadeOfAranFlameWreathStopMovementAction::Execute(Event event)
+bool ShadeOfAranStopMovingDuringFlameWreathAction::Execute(Event event)
 {
     AI_VALUE(LastMovement&, "last movement").Set(nullptr);
     bot->GetMotionMaster()->Clear();

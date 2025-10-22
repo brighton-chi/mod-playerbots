@@ -5,6 +5,14 @@
 #include "AttackAction.h"
 #include "MovementActions.h"
 
+class GreyheartTidecallerMarkWaterElementalTotemAction : public Action
+{
+public:
+    GreyheartTidecallerMarkWaterElementalTotemAction(PlayerbotAI* botAI, std::string const name = "greyheart tidecaller mark water elemental totem") : Action(botAI, name) {}
+
+    bool Execute(Event event) override;
+};
+
 class HydrossTheUnstableFrostTankPositionBossAction : public AttackAction
 {
 public:
@@ -41,6 +49,22 @@ class HydrossTheUnstableManageDPSTimerAction : public Action
 {
 public:
     HydrossTheUnstableManageDPSTimerAction(PlayerbotAI* botAI, std::string const name = "hydross the unstable manage dps timer") : Action(botAI, name) {}
+
+    bool Execute(Event event) override;
+};
+
+class HydrossTheUnstableMarkElementalAddsAction : public Action
+{
+public:
+    HydrossTheUnstableMarkElementalAddsAction(PlayerbotAI* botAI, std::string const name = "hydross the unstable mark elemental adds") : Action(botAI, name) {}
+
+    bool Execute(Event event) override;
+};
+
+class HydrossTheUnstableFrostPhaseSpreadOutAction : public MovementAction
+{
+public:
+    HydrossTheUnstableFrostPhaseSpreadOutAction(PlayerbotAI* botAI, std::string const name = "hydross the unstable frost phase spread out") : MovementAction(botAI, name) {}
 
     bool Execute(Event event) override;
 };

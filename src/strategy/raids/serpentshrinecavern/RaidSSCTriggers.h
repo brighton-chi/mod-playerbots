@@ -3,6 +3,13 @@
 
 #include "Trigger.h"
 
+class GreyheartTidecallerWaterElementalTotemSpawnedTrigger : public Trigger
+{
+public:
+    GreyheartTidecallerWaterElementalTotemSpawnedTrigger(PlayerbotAI* botAI) : Trigger(botAI, "greyheart tidecaller water elemental totem spawned") {}
+    bool IsActive() override;
+};
+
 class HydrossTheUnstableBossInFrostPhaseTrigger : public Trigger
 {
 public:
@@ -35,6 +42,20 @@ class HydrossTheUnstableWaitingForDPSTrigger : public Trigger
 {
 public:
     HydrossTheUnstableWaitingForDPSTrigger(PlayerbotAI* botAI) : Trigger(botAI, "hydross the unstable waiting for dps") {}
+    bool IsActive() override;
+};
+
+class HydrossTheUnstableElementalsSpawnedTrigger : public Trigger
+{
+public:
+    HydrossTheUnstableElementalsSpawnedTrigger(PlayerbotAI* botAI) : Trigger(botAI, "hydross the unstable elementals spawned") {}
+    bool IsActive() override;
+};
+
+class HydrossTheUnstableDangerFromWaterTombsTrigger : public Trigger
+{
+public:
+    HydrossTheUnstableDangerFromWaterTombsTrigger(PlayerbotAI* botAI) : Trigger(botAI, "hydross the unstable danger from water tombs") {}
     bool IsActive() override;
 };
 

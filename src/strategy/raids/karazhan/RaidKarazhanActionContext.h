@@ -20,7 +20,7 @@ public:
         creators["maiden of virtue position ranged"] = &RaidKarazhanActionContext::maiden_of_virtue_position_ranged;
 
         creators["big bad wolf position boss"] = &RaidKarazhanActionContext::big_bad_wolf_position_boss;
-        creators["big bad wolf run away"] = &RaidKarazhanActionContext::big_bad_wolf_run_away;
+        creators["big bad wolf run away from boss"] = &RaidKarazhanActionContext::big_bad_wolf_run_away_from_boss;
 
         creators["romulo and julianne mark target"] = &RaidKarazhanActionContext::romulo_and_julianne_mark_target;
 
@@ -33,8 +33,8 @@ public:
 
         creators["terestian illhoof mark target"] = &RaidKarazhanActionContext::terestian_illhoof_mark_target;
 
-        creators["shade of aran arcane explosion run away"] = &RaidKarazhanActionContext::shade_of_aran_arcane_explosion_run_away;
-        creators["shade of aran flame wreath stop movement"] = &RaidKarazhanActionContext::shade_of_aran_flame_wreath_stop_movement;
+        creators["shade of aran run away from arcane explosion"] = &RaidKarazhanActionContext::shade_of_aran_run_away_from_arcane_explosion;
+        creators["shade of aran stop moving during flame wreath"] = &RaidKarazhanActionContext::shade_of_aran_stop_moving_during_flame_wreath;
         creators["shade of aran mark conjured elemental"] = &RaidKarazhanActionContext::shade_of_aran_mark_conjured_elemental;
         creators["shade of aran spread ranged"] = &RaidKarazhanActionContext::shade_of_aran_spread_ranged;
 
@@ -69,7 +69,7 @@ private:
     static Action* maiden_of_virtue_position_ranged(PlayerbotAI* botAI) { return new MaidenOfVirtuePositionRangedAction(botAI); }
 
     static Action* big_bad_wolf_position_boss(PlayerbotAI* botAI) { return new BigBadWolfPositionBossAction(botAI); }
-    static Action* big_bad_wolf_run_away(PlayerbotAI* botAI) { return new BigBadWolfRunAwayAction(botAI); }
+    static Action* big_bad_wolf_run_away_from_boss(PlayerbotAI* botAI) { return new BigBadWolfRunAwayFromBossAction(botAI); }
 
     static Action* romulo_and_julianne_mark_target(PlayerbotAI* botAI) { return new RomuloAndJulianneMarkTargetAction(botAI); }
 
@@ -82,8 +82,8 @@ private:
 
     static Action* terestian_illhoof_mark_target(PlayerbotAI* botAI) { return new TerestianIllhoofMarkTargetAction(botAI); }
 
-    static Action* shade_of_aran_arcane_explosion_run_away(PlayerbotAI* botAI) { return new ShadeOfAranArcaneExplosionRunAwayAction(botAI); }
-    static Action* shade_of_aran_flame_wreath_stop_movement(PlayerbotAI* botAI) { return new ShadeOfAranFlameWreathStopMovementAction(botAI); }
+    static Action* shade_of_aran_run_away_from_arcane_explosion(PlayerbotAI* botAI) { return new ShadeOfAranRunAwayFromArcaneExplosionAction(botAI); }
+    static Action* shade_of_aran_stop_moving_during_flame_wreath(PlayerbotAI* botAI) { return new ShadeOfAranStopMovingDuringFlameWreathAction(botAI); }
     static Action* shade_of_aran_mark_conjured_elemental(PlayerbotAI* botAI) { return new ShadeOfAranMarkConjuredElementalAction(botAI); }
     static Action* shade_of_aran_spread_ranged(PlayerbotAI* botAI) { return new ShadeOfAranSpreadRangedAction(botAI); }
 

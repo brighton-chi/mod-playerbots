@@ -2,7 +2,15 @@
 #include "RaidSSCActions.h"
 #include "RaidSSCHelpers.h"
 #include "ChooseTargetActions.h"
+#include "DruidBearActions.h"
+#include "GenericSpellActions.h"
+#include "PaladinActions.h"
 #include "Playerbots.h"
+#include "WarriorActions.h"
+
+using namespace SerpentShrineCavernHelpers;
+
+// Hydross the Unstable <Duke of Currents>
 
 float HydrossTheUnstableDisableTankAssistMultiplier::GetValue(Action* action)
 {
@@ -10,17 +18,25 @@ float HydrossTheUnstableDisableTankAssistMultiplier::GetValue(Action* action)
     if (!hydross)
         return 1.0f;
 
-    if (botAI->IsMainTank(bot) && !hydross->HasAura(SPELL_CORRUPTION) &&
+    if (botAI->IsMainTank(bot))
+    {
+        if (!hydross->HasAura(SPELL_CORRUPTION) &&
         dynamic_cast<TankAssistAction*>(action))
+        return 0.0f;
+
+        if ((bot->HasAura(SPELL_MARK_OF_HYDROSS_100) || bot->HasAura(SPELL_MARK_OF_HYDROSS_250) ||
+            bot->HasAura(SPELL_MARK_OF_HYDROSS_500)) &&
+            (dynamic_cast<CastTauntAction*>(action) || dynamic_cast<CastGrowlAction*>(action) || 
+            dynamic_cast<CastHandOfReckoningAction*>(action)))
             return 0.0f;
+    }
 
     if (botAI->IsAssistTankOfIndex(bot, 0) && hydross->HasAura(SPELL_CORRUPTION) &&
         dynamic_cast<TankAssistAction*>(action))
-            return 0.0f;
+        return 0.0f;
 
     return 1.0f;
 }
-
 
 float HydrossTheUnstableWaitForDPSMultiplier::GetValue(Action* action)
 {
@@ -40,7 +56,6 @@ float HydrossTheUnstableWaitForDPSMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-// Hydross disable inopportune taunts
 
 // Lurker may need some movement controls during spout
 
@@ -52,7 +67,7 @@ float HydrossTheUnstableWaitForDPSMultiplier::GetValue(Action* action)
 
 /*
 #include "AttackAction.h"
-=
+#include "ChooseTargetActions.h"
 #include "DruidActions.h"
 #include "DruidBearActions.h"
 #include "DruidCatActions.h"

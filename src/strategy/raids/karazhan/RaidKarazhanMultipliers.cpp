@@ -258,14 +258,14 @@ float NightbaneDisablePetsMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-// Give the main tank 7 seconds to get aggro during phase transitions
+// Give the main tank 8 seconds to get aggro during phase transitions
 float NightbaneWaitForDPSMultiplier::GetValue(Action* action)
 {
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
     if (!nightbane || nightbane->IsFlying())
         return 1.0f;
 
-    const uint8 dpsWaitSeconds = 7;
+    const uint8 dpsWaitSeconds = 8;
     auto it = nightbaneDPSWaitTimer.find(bot->GetMapId());
     if (it != nightbaneDPSWaitTimer.end())
     {

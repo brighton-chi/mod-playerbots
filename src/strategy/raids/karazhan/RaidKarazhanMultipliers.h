@@ -3,7 +3,6 @@
 
 #include "Multiplier.h"
 
-
 class AttumenTheHuntsmanDisableTankAssistMultiplier : public Multiplier
 {
 public:

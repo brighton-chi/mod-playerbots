@@ -13,7 +13,7 @@ public:
     std::string const getName() override { return "ssc"; }
 
     void InitTriggers(std::vector<TriggerNode*>& triggerSs) override;
-    // void InitMultipliers(std::vector<Multiplier*>& multipliers) override;
+    void InitMultipliers(std::vector<Multiplier*>& multipliers) override;
 };
 
 #endif

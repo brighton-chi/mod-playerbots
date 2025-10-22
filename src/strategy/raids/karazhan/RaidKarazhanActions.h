@@ -69,10 +69,10 @@ public:
     bool Execute(Event event) override;
 };
 
-class BigBadWolfRunAwayAction : public MovementAction
+class BigBadWolfRunAwayFromBossAction : public MovementAction
 {
 public:
-    BigBadWolfRunAwayAction(PlayerbotAI* botAI, std::string const name = "big bad wolf run away") : MovementAction(botAI, name) {}
+    BigBadWolfRunAwayFromBossAction(PlayerbotAI* botAI, std::string const name = "big bad wolf run away from boss") : MovementAction(botAI, name) {}
 
     bool Execute(Event event) override;
 };
@@ -133,18 +133,18 @@ public:
     bool Execute(Event event) override;
 };
 
-class ShadeOfAranArcaneExplosionRunAwayAction : public MovementAction
+class ShadeOfAranRunAwayFromArcaneExplosionAction : public MovementAction
 {
 public:
-    ShadeOfAranArcaneExplosionRunAwayAction(PlayerbotAI* botAI, std::string const name = "shade of aran arcane explosion run away") : MovementAction(botAI, name) {}
+    ShadeOfAranRunAwayFromArcaneExplosionAction(PlayerbotAI* botAI, std::string const name = "shade of aran run away from arcane explosion") : MovementAction(botAI, name) {}
 
     bool Execute(Event event) override;
 };
 
-class ShadeOfAranFlameWreathStopMovementAction : public MovementAction
+class ShadeOfAranStopMovingDuringFlameWreathAction : public MovementAction
 {
 public:
-    ShadeOfAranFlameWreathStopMovementAction(PlayerbotAI* botAI, std::string const name = "shade of aran flame wreath stop bot") : MovementAction(botAI, name) {}
+    ShadeOfAranStopMovingDuringFlameWreathAction(PlayerbotAI* botAI, std::string const name = "shade of aran stop moving during flame wreath") : MovementAction(botAI, name) {}
 
     bool Execute(Event event) override;
 };

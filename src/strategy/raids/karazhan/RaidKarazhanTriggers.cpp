@@ -50,21 +50,21 @@ bool MoroesNeedTargetPriorityTrigger::IsActive()
     return target && target->IsAlive();
 }
 
-bool MaidenOfVirtueMainTankMovementTrigger::IsActive()
+bool MaidenOfVirtueBossEngagedByMainTankTrigger::IsActive()
 {
     Unit* maiden = AI_VALUE2(Unit*, "find target", "maiden of virtue");
 
     return maiden && botAI->IsMainTank(bot) && maiden->GetVictim() == bot;
 }
 
-bool MaidenOfVirtuePositionRangedTrigger::IsActive()
+bool MaidenOfVirtueBossEngagedByRangedTrigger::IsActive()
 {
     Unit* maiden = AI_VALUE2(Unit*, "find target", "maiden of virtue");
 
     return maiden && botAI->IsRanged(bot);
 }
 
-bool BigBadWolfPositionBossTrigger::IsActive()
+bool BigBadWolfBossEngagedByMainTankTrigger::IsActive()
 {
     Unit* wolf = AI_VALUE2(Unit*, "find target", "the big bad wolf");
 
@@ -72,14 +72,14 @@ bool BigBadWolfPositionBossTrigger::IsActive()
            !bot->HasAura(SPELL_LITTLE_RED_RIDING_HOOD);
 }
 
-bool BigBadWolfRunAwayTrigger::IsActive()
+bool BigBadWolfBossIsChasingLittleRedRidingHoodTrigger::IsActive()
 {
     Unit* wolf = AI_VALUE2(Unit*, "find target", "the big bad wolf");
 
     return wolf && bot->HasAura(SPELL_LITTLE_RED_RIDING_HOOD);
 }
 
-bool RomuloAndJulianneMarkTargetTrigger::IsActive()
+bool RomuloAndJulianneBothBossesRevivedTrigger::IsActive()
 {
     Unit* julianne = AI_VALUE2(Unit*, "find target", "julianne");
     Unit* romulo = AI_VALUE2(Unit*, "find target", "romulo");
@@ -87,7 +87,7 @@ bool RomuloAndJulianneMarkTargetTrigger::IsActive()
     return julianne && romulo && (julianne->IsAlive() || romulo->IsAlive());
 }
 
-bool WizardOfOzMarkTargetTrigger::IsActive()
+bool WizardOfOzNeedTargetPriorityTrigger::IsActive()
 {
     Unit* dorothee = AI_VALUE2(Unit*, "find target", "dorothee");
     Unit* tito = AI_VALUE2(Unit*, "find target", "tito");
@@ -100,14 +100,14 @@ bool WizardOfOzMarkTargetTrigger::IsActive()
     return target && target->IsAlive();
 }
 
-bool WizardOfOzScorchStrawmanTrigger::IsActive()
+bool WizardOfOzStrawmanIsVulnerableToFireTrigger::IsActive()
 {
     Unit* strawman = AI_VALUE2(Unit*, "find target", "strawman");
 
     return strawman && strawman->IsAlive() && bot->getClass() == CLASS_MAGE;
 }
 
-bool TheCuratorMarkAstralFlareTrigger::IsActive()
+bool TheCuratorAstralFlareSpawnedTrigger::IsActive()
 {
     Unit* curator = AI_VALUE2(Unit*, "find target", "the curator");
     Unit* target = AI_VALUE2(Unit*, "find target", "astral flare");
@@ -117,21 +117,21 @@ bool TheCuratorMarkAstralFlareTrigger::IsActive()
 
 // Inclusion of Assist Tank is because they need to be given the directive to attack
 // Tanks with TankAssistAction disabled will not initiate combat unless ordered to do so
-bool TheCuratorPositionBossTrigger::IsActive()
+bool TheCuratorBossEngagedByTanksTrigger::IsActive()
 {
     Unit* curator = AI_VALUE2(Unit*, "find target", "the curator");
 
     return curator && (botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0));
 }
 
-bool TheCuratorSpreadRangedTrigger::IsActive()
+bool TheCuratorBossEngagedByRangedTrigger::IsActive()
 {
     Unit* curator = AI_VALUE2(Unit*, "find target", "the curator");
 
     return curator && botAI->IsRanged(bot);
 }
 
-bool TerestianIllhoofMarkTargetTrigger::IsActive()
+bool TerestianIllhoofNeedTargetPriorityTrigger::IsActive()
 {
     Unit* illhoof = AI_VALUE2(Unit*, "find target", "terestian illhoof");
     Unit* target = GetFirstAliveUnitByEntry(botAI, NPC_DEMON_CHAINS);
@@ -146,7 +146,7 @@ bool TerestianIllhoofMarkTargetTrigger::IsActive()
     return illhoof && target && target->IsAlive();
 }
 
-bool ShadeOfAranArcaneExplosionRunAwayTrigger::IsActive()
+bool ShadeOfAranArcaneExplosionIsCastingTrigger::IsActive()
 {
     Unit* aran = AI_VALUE2(Unit*, "find target", "shade of aran");
 
@@ -154,7 +154,7 @@ bool ShadeOfAranArcaneExplosionRunAwayTrigger::IsActive()
            aran->FindCurrentSpellBySpellId(SPELL_ARCANE_EXPLOSION);
 }
 
-bool ShadeOfAranFlameWreathStopMovementTrigger::IsActive()
+bool ShadeOfAranFlameWreathIsCastingTrigger::IsActive()
 {
     Unit* aran = AI_VALUE2(Unit*, "find target", "shade of aran");
 
@@ -162,7 +162,7 @@ bool ShadeOfAranFlameWreathStopMovementTrigger::IsActive()
 }
 
 // Exclusion of Banish is so the player may Banish elementals if they wish
-bool ShadeOfAranMarkConjuredElementalTrigger::IsActive()
+bool ShadeOfAranConjuredElementalsSummonedTrigger::IsActive()
 {
     Unit* aran = AI_VALUE2(Unit*, "find target", "shade of aran");
     Unit* target = GetFirstAliveUnitByEntry(botAI, NPC_CONJURED_ELEMENTAL);
@@ -170,7 +170,7 @@ bool ShadeOfAranMarkConjuredElementalTrigger::IsActive()
     return aran && target && target->IsAlive() && !target->HasAura(SPELL_WARLOCK_BANISH);
 }
 
-bool ShadeOfAranSpreadRangedTrigger::IsActive()
+bool ShadeOfAranBossEngagedByRangedTrigger::IsActive()
 {
     Unit* aran = AI_VALUE2(Unit*, "find target", "shade of aran");
 
@@ -179,7 +179,7 @@ bool ShadeOfAranSpreadRangedTrigger::IsActive()
            aran->FindCurrentSpellBySpellId(SPELL_ARCANE_EXPLOSION));
 }
 
-bool NetherspiteBlockRedBeamTrigger::IsActive()
+bool NetherspiteRedBeamIsActiveTrigger::IsActive()
 {
     Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
     Unit* redPortal = bot->FindNearestCreature(NPC_RED_PORTAL, 150.0f);
@@ -187,7 +187,7 @@ bool NetherspiteBlockRedBeamTrigger::IsActive()
     return netherspite && redPortal && !netherspite->HasAura(SPELL_NETHERSPITE_BANISHED);
 }
 
-bool NetherspiteBlockBlueBeamTrigger::IsActive()
+bool NetherspiteBlueBeamIsActiveTrigger::IsActive()
 {
     Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
     Unit* bluePortal = bot->FindNearestCreature(NPC_BLUE_PORTAL, 150.0f);
@@ -195,7 +195,7 @@ bool NetherspiteBlockBlueBeamTrigger::IsActive()
     return netherspite && bluePortal && !netherspite->HasAura(SPELL_NETHERSPITE_BANISHED);
 }
 
-bool NetherspiteBlockGreenBeamTrigger::IsActive()
+bool NetherspiteGreenBeamIsActiveTrigger::IsActive()
 {
     Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
     Unit* greenPortal = bot->FindNearestCreature(NPC_GREEN_PORTAL, 150.0f);
@@ -203,7 +203,7 @@ bool NetherspiteBlockGreenBeamTrigger::IsActive()
     return netherspite && greenPortal && !netherspite->HasAura(SPELL_NETHERSPITE_BANISHED);
 }
 
-bool NetherspiteAvoidBeamAndVoidZoneTrigger::IsActive()
+bool NetherspiteBotIsNotBeamBlockerTrigger::IsActive()
 {
     Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
     auto [redBlocker, greenBlocker, blueBlocker] = GetCurrentBeamBlockers(botAI, bot);
@@ -212,7 +212,7 @@ bool NetherspiteAvoidBeamAndVoidZoneTrigger::IsActive()
            bot != blueBlocker && bot != greenBlocker;
 }
 
-bool NetherspiteBanishPhaseAvoidVoidZoneTrigger::IsActive()
+bool NetherspiteBossIsBanishedTrigger::IsActive()
 {
     Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
     if (!netherspite || !netherspite->HasAura(SPELL_NETHERSPITE_BANISHED))
@@ -228,49 +228,49 @@ bool NetherspiteBanishPhaseAvoidVoidZoneTrigger::IsActive()
     return false;
 }
 
-bool NetherspiteManageTimersTrigger::IsActive()
+bool NetherspiteNeedToManageTimersTrigger::IsActive()
 {
     Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
 
     return netherspite;
 }
 
-bool PrinceMalchezaarEnfeebledAvoidHazardTrigger::IsActive()
+bool PrinceMalchezaarBotIsEnfeebledTrigger::IsActive()
 {
     Unit* malchezaar = AI_VALUE2(Unit*, "find target", "prince malchezaar");
 
     return malchezaar && bot->HasAura(SPELL_ENFEEBLE);
 }
 
-bool PrinceMalchezaarNonTankAvoidInfernalTrigger::IsActive()
+bool PrinceMalchezaarInfernalsAreSpawnedTrigger::IsActive()
 {
     Unit* malchezaar = AI_VALUE2(Unit*, "find target", "prince malchezaar");
 
     return malchezaar && !botAI->IsMainTank(bot);
 }
 
-bool PrinceMalchezaarMainTankMovementTrigger::IsActive()
+bool PrinceMalchezaarBossEngagedByMainTankTrigger::IsActive()
 {
     Unit* malchezaar = AI_VALUE2(Unit*, "find target", "prince malchezaar");
 
     return malchezaar && botAI->IsMainTank(bot) && malchezaar->GetVictim() == bot;
 }
 
-bool NightbaneGroundPhasePositionBossTrigger::IsActive()
+bool NightbaneBossEngagedByMainTankTrigger::IsActive()
 {
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
 
     return nightbane && !nightbane->IsFlying() && botAI->IsMainTank(bot);
 }
 
-bool NightbaneGroundPhaseRotateRangedPositionsTrigger::IsActive()
+bool NightbaneRangedPrepareForCharredEarthTrigger::IsActive()
 {
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
 
     return nightbane && !nightbane->IsFlying() && botAI->IsRanged(bot);
 }
 
-bool NightbaneCastFearWardOnMainTankTrigger::IsActive()
+bool NightbaneMainTankIsSusceptibleToFearTrigger::IsActive()
 {
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
     Player* mainTank = nullptr;
@@ -293,7 +293,7 @@ bool NightbaneCastFearWardOnMainTankTrigger::IsActive()
            botAI->CanCastSpell("fear ward", mainTank);
 }
 
-bool NightbaneControlPetAggressionTrigger::IsActive()
+bool NightbanePetsIgnoreColllisionToChaseFlyingBossTrigger::IsActive()
 {
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
     Pet* pet = bot->GetPet();
@@ -301,7 +301,7 @@ bool NightbaneControlPetAggressionTrigger::IsActive()
     return nightbane && pet && pet->IsAlive();
 }
 
-bool NightbaneFlightPhaseMovementTrigger::IsActive()
+bool NightbaneBossIsFlyingTrigger::IsActive()
 {
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
     if (!nightbane || !nightbane->IsFlying())
@@ -314,7 +314,7 @@ bool NightbaneFlightPhaseMovementTrigger::IsActive()
            (now - nightbaneFlightPhaseStartTimer[mapId] < 35);
 }
 
-bool NightbaneManageTimersAndTrackersTrigger::IsActive()
+bool NightbaneNeedToManageTimersAndTrackersTrigger::IsActive()
 {
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
 
