@@ -1,7 +1,216 @@
 #include "RaidSSCActions.h"
 #include "RaidSSCHelpers.h"
 #include "Playerbots.h"
-#include "PlayerbotTextMgr.h"
+
+using namespace SerpentShrineCavernHelpers;
+
+// Hydross the Unstable <Duke of Currents>
+
+// Frost tank action, have it be MT, frost tank position if does not have mark of hydross 100, 250, or 500
+// frost tank moves to nature tank position if has mark of hydross 100 +
+// frost tank taunts hydross if nature tank has mark of corruption 100 +
+
+// Nature tank action, have it be 1st assist tank, nature tank position if does not have mark of corruption 100, 250, or 500
+// nature tank moves to frost tank position if has mark of hydross 100 +
+// nature tank taunts hydross if frost tank has mark of hydross 100 +
+
+// ranged bots need to spread >8 yards if hydross is in water form
+// melee what to do? def need to stay away from tank
+
+// dps mark/prioritize elemental adds with skull
+
+// consider if cheat needed for tank resistance
+
+bool HydrossTheUnstableFrostTankPositionBossAction::Execute(Event event)
+{
+    Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
+    if (!hydross)
+        return false;
+
+    if (bot->GetVictim() != hydross)
+    {
+        const char* taunts[] = { "taunt", "growl", "hand of reckoning" };
+        for (const char* spellName : taunts)
+        {
+            if (bot->CanCastSpell(spellName, hydross))
+                return CastSpell(spellName, hydross);
+        }
+        return Attack(hydross);
+    }
+
+    if (hydross->GetVictim() == bot)
+    {
+        const Location& position = SerpentShrineCavernLocations::HydrossFrostTankPosition;
+        const float maxDistance = 2.0f;
+
+        float distanceToPosition = bot->GetExactDist2d(position.x, position.y);
+
+        if (distanceToPosition > maxDistance)
+        {
+            float dX = position.x - bot->GetPositionX();
+            float dY = position.y - bot->GetPositionY();
+            float dist = sqrt(dX * dX + dY * dY);
+            float moveX = bot->GetPositionX() + (dX / dist) * maxDistance;
+            float moveY = bot->GetPositionY() + (dY / dist) * maxDistance;
+
+            return MoveTo(bot->GetMapId(), moveX, moveY, position.z, false, false, false, false, 
+                          MovementPriority::MOVEMENT_COMBAT, true, false);
+        }
+        else if (!bot->IsWithinMeleeRange(hydross))
+            return MoveTo(hydross->GetMapId(), hydross->GetPositionX(),
+                          hydross->GetPositionY(), hydross->GetPositionZ(),
+                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+    }
+
+    return false;
+}
+
+bool HydrossTheUnstableFrostTankMoveBossToNatureTankAction::Execute(Event event)
+{
+    Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
+    if (!hydross)
+        return false;
+
+    if (hydross->GetVictim() == bot)
+    {
+        const Location& position = SerpentShrineCavernLocations::HydrossNatureTankPosition;
+        const float maxDistance = 2.0f;
+
+        float distanceToPosition = bot->GetExactDist2d(position.x, position.y);
+
+        if (distanceToPosition > maxDistance)
+        {
+            float dX = position.x - bot->GetPositionX();
+            float dY = position.y - bot->GetPositionY();
+            float dist = sqrt(dX * dX + dY * dY);
+            float moveX = bot->GetPositionX() + (dX / dist) * maxDistance;
+            float moveY = bot->GetPositionY() + (dY / dist) * maxDistance;
+
+            return MoveTo(bot->GetMapId(), moveX, moveY, position.z, false, false, false, false, 
+                          MovementPriority::MOVEMENT_COMBAT, true, false);
+        }
+        else if (!bot->IsWithinMeleeRange(hydross))
+            return MoveTo(hydross->GetMapId(), hydross->GetPositionX(),
+                          hydross->GetPositionY(), hydross->GetPositionZ(),
+                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+    }
+
+    return false;
+}
+
+bool HydrossTheUnstableNatureTankPositionBossAction::Execute(Event event)
+{
+    Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
+    if (!hydross)
+        return false;
+
+    if (bot->GetVictim() != hydross)
+    {
+        const char* taunts[] = { "taunt", "growl", "hand of reckoning" };
+        for (const char* spellName : taunts)
+        {
+            if (bot->CanCastSpell(spellName, hydross))
+                return CastSpell(spellName, hydross);
+        }
+        return Attack(hydross);
+    }
+
+    if (hydross->GetVictim() == bot)
+    {
+        const Location& position = SerpentShrineCavernLocations::HydrossNatureTankPosition;
+        const float maxDistance = 2.0f;
+
+        float distanceToPosition = bot->GetExactDist2d(position.x, position.y);
+
+        if (distanceToPosition > maxDistance)
+        {
+            float dX = position.x - bot->GetPositionX();
+            float dY = position.y - bot->GetPositionY();
+            float dist = sqrt(dX * dX + dY * dY);
+            float moveX = bot->GetPositionX() + (dX / dist) * maxDistance;
+            float moveY = bot->GetPositionY() + (dY / dist) * maxDistance;
+
+            return MoveTo(bot->GetMapId(), moveX, moveY, position.z, false, false, false, false, 
+                          MovementPriority::MOVEMENT_COMBAT, true, false);
+        }
+        else if (!bot->IsWithinMeleeRange(hydross))
+            return MoveTo(hydross->GetMapId(), hydross->GetPositionX(),
+                          hydross->GetPositionY(), hydross->GetPositionZ(),
+                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+    }
+
+    return false;
+}
+
+bool HydrossTheUnstableManageDPSTimerAction::Execute(Event event)
+{
+    Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
+    if (!hydross)
+        return false;
+
+    uint32 mapId = hydross->GetMapId();
+
+    if (!hydross->HasAura(SPELL_CORRUPTION) && 
+        (!bot->HasAura(SPELL_MARK_OF_HYDROSS_10) || !bot->HasAura(SPELL_MARK_OF_HYDROSS_25) ||
+        !bot->HasAura(SPELL_MARK_OF_HYDROSS_50) || !bot->HasAura(SPELL_MARK_OF_HYDROSS_100) ||
+        !bot->HasAura(SPELL_MARK_OF_HYDROSS_250) || !bot->HasAura(SPELL_MARK_OF_HYDROSS_500)) ||
+        hydross->HasAura(SPELL_CORRUPTION) && 
+        (!bot->HasAura(SPELL_MARK_OF_CORRUPTION_10) || !bot->HasAura(SPELL_MARK_OF_CORRUPTION_25) ||
+        !bot->HasAura(SPELL_MARK_OF_CORRUPTION_50) || !bot->HasAura(SPELL_MARK_OF_CORRUPTION_100) ||
+        !bot->HasAura(SPELL_MARK_OF_CORRUPTION_250) || !bot->HasAura(SPELL_MARK_OF_CORRUPTION_500)))
+    {
+        if (hydrossAggroWaitTimer.find(mapId) == hydrossAggroWaitTimer.end())
+            hydrossAggroWaitTimer[mapId] = time(nullptr);
+    }
+
+    if (bot->HasAura(SPELL_MARK_OF_HYDROSS_10) || bot->HasAura(SPELL_MARK_OF_CORRUPTION_10))
+    {
+        if (hydrossAggroWaitTimer.find(mapId) != hydrossAggroWaitTimer.end())
+            hydrossAggroWaitTimer.erase(mapId);
+    }
+
+    return false;
+}
+
+// The Lurker Below
+
+// Boss tank with back to pillar?
+// Position melee to be as close as possible to lurker without entering water
+// Spout -- melee stay away from front but keep moving and DPSing?
+// Spout -- ranged run into water
+// Adds--mark targets; cc ? 6 ambushers (caster) have 56k HP, 3 guardians (melee) have 70k
+// Timer action for Spout cast (every 60 seconds); also not sure if spout is channel, if so, need timer for end of channel
+
+
+// Leotheras the Blind
+
+// human form tank position (MT)
+// demon form tank position
+// Use warlock to tank demon form? if so, need helper to assign warlock tank
+// run from whirlwind
+// dps prioritize targets -- inner demon, MC'd party members, leotheras (whatever form is active), leotheras human (final phase)
+
+// timers--hold dps after whirlwind, hold dps after phase change
+
+
+// Fathom-Lord Karathress
+
+// Each tank assigned to specific naga, go to designated position
+// Melee kill order: spitfire totem, fathom lurker/sporebat, tidalvess, sharkkis, karathress
+// Ranged kill order: same but caribdis before karathress
+// hunters misdirect initial pull - caribdis top priority for misdirects
+// consider whether caribdis healing wave needs interrupting (i think can range it)
+// consider whether to put curse of tongues on caribdis
+
+
+// Morogrim Tidewalker
+
+// Phase 1 tank position
+// Phase 2 tank position (in doorway or behind pillar?)
+// Phase 2 dps/heal position by tidewalker
+// necessary to prio murlocs?
+
+// where are graves? do healers need to stay there? move to them if somebody gets graved?
 
 /*
 

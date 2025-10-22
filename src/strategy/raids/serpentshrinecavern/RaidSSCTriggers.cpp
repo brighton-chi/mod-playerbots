@@ -3,6 +3,50 @@
 #include "RaidSSCActions.h"
 #include "Playerbots.h"
 
+// Hydross the Unstable
+
+bool HydrossTheUnstableBossInFrostPhaseTrigger::IsActive()
+{
+    Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
+
+    return hydross && !hydross->HasAura(SPELL_CORRUPTION) && botAI->IsMainTank(bot) && 
+    !bot->HasAura(SPELL_MARK_OF_HYDROSS_100) && !bot->HasAura(SPELL_MARK_OF_HYDROSS_250) &&
+    !bot->HasAura(SPELL_MARK_OF_HYDROSS_500);
+}
+
+bool HydrossTheUnstableBossTransitioningToNaturePhaseTrigger::IsActive()
+{
+    Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
+
+    return hydross && !hydross->HasAura(SPELL_CORRUPTION) && botAI->IsMainTank(bot) && 
+    (bot->HasAura(SPELL_MARK_OF_CORRUPTION_100) || bot->HasAura(SPELL_MARK_OF_CORRUPTION_250) ||
+    bot->HasAura(SPELL_MARK_OF_CORRUPTION_500));
+}
+
+bool HydrossTheUnstableBossInNaturePhaseTrigger::IsActive()
+{
+    Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
+
+    return hydross && hydross->HasAura(SPELL_CORRUPTION) && botAI->IsAssistTankOfIndex(bot, 0) && 
+    !bot->HasAura(SPELL_MARK_OF_CORRUPTION_100) && !bot->HasAura(SPELL_MARK_OF_CORRUPTION_250) &&
+    !bot->HasAura(SPELL_MARK_OF_CORRUPTION_500);
+}
+
+bool HydrossTheUnstableBossTransitioningToFrostPhaseTrigger::IsActive()
+{
+    Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
+
+    return hydross && hydross->HasAura(SPELL_CORRUPTION) && botAI->IsAssistTankOfIndex(bot, 0) && 
+    (bot->HasAura(SPELL_MARK_OF_CORRUPTION_100) || bot->HasAura(SPELL_MARK_OF_CORRUPTION_250) ||
+    bot->HasAura(SPELL_MARK_OF_CORRUPTION_500));
+}
+
+bool HydrossTheUnstableWaitingForDPSTrigger::Execute(Event event)
+{
+    Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
+
+    return hydross && IsMapIDTimerManager(botAI, bot);
+}
 
 /*
 

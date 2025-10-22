@@ -8,6 +8,83 @@
 #include "Position.h"
 #include "Unit.h"
 
+enum SerpentShrineCavernSpells
+{
+    // Hydross the Unstable <Duke of Currents>
+
+    SPELL_MARK_OF_HYDROSS_10 = 38215,
+    SPELL_MARK_OF_HYDROSS_25 = 38216,
+    SPELL_MARK_OF_HYDROSS_50 = 38217,
+    SPELL_MARK_OF_HYDROSS_100 = 38218,
+    SPELL_MARK_OF_HYDROSS_250 = 38231,
+    SPELL_MARK_OF_HYDROSS_500 = 40584,
+    SPELL_MARK_OF_CORRUPTION_10 = 38219,
+    SPELL_MARK_OF_CORRUPTION_25 = 38220,
+    SPELL_MARK_OF_CORRUPTION_50 = 38221,
+    SPELL_MARK_OF_CORRUPTION_100 = 38222,
+    SPELL_MARK_OF_CORRUPTION_250 = 38230,
+    SPELL_MARK_OF_CORRUPTION_500 = 40583,
+    SPELL_CORRUPTION = 37961, // TBD if better to use this aura or NPC ID to identify nature form
+
+    // The Lurker Below
+
+    SPELL_SPOUT = 37433,
+
+    // Leotheras the Blind
+
+    SPELL_WHIRLWIND = 37640,
+    SPELL_WHIRLWIND_CHANNEL = 37641,
+
+    // Morogrim Tidewalker
+
+    SPELL_WATERY_GRAVE = 38049,
+
+}
+
+enum SerpentShrineCavernNPCs
+{
+    // Hydross the Unstable
+    NPC_HYDROSS_FROST_FORM = 21216,
+    NPC_HYDROSS_NATURE_FORM = 21232,
+    NPC_PURE_SPAWN_OF_HYDROSS = 22035,
+    NPC_TAINTED_SPAWN_OF_HYDROSS = 22036,
+
+    // The Lurker Below
+    NPC_COILFANG_AMBUSHER = 21865,
+    NPC_COILFANG_GUARDIAN = 21873,
+
+    // Leotheras the Blind
+    NPC_INNER_DEMON = 21857,
+
+    // Fathom-Lord Karathress
+    NPC_SPITFIRE_TOTEM = 22091,
+    NPC_FATHOM_LURKER = 22119,
+    NPC_FATHOM_SPOREBAT = 22120,
+
+    // Morogrim Tidewalker
+    NPC_TIDEWALKER_LURKER = 21290,
+
+};
+namespace SerpentShrineCavernHelpers
+{
+    struct Location 
+    {
+        float x, y, z;
+    };
+
+    void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);
+    void MarkTargetWithSkull(Player* bot, Unit* target);
+    void MarkTargetWithSquare(Player* bot, Unit* target);
+    void MarkTargetWithStar(Player* bot, Unit* target);
+    void MarkTargetWithCircle(Player* bot, Unit* target);
+    void MarkTargetWithDiamond(Player* bot, Unit* target);
+    void MarkTargetWithTriangle(Player* bot, Unit* target);
+    void MarkTargetWithCross(Player* bot, Unit* target);
+    void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target);
+    bool IsMapIDTimerManager(PlayerbotAI* botAI, Player* bot)
+}
+
+
 /* enum KarazhanSpells
 {
     // Maiden of Virtue

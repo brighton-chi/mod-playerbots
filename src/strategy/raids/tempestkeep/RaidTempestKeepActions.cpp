@@ -4,6 +4,12 @@
 
 using namespace TempestKeepHelpers;
 
+// Al'ar
+
+
+
+// Void Reaver
+
 // Position in center of room
 bool VoidReaverPositionBossAction::Execute(Event event)
 {
@@ -223,6 +229,8 @@ bool VoidReaverArcaneOrbMoveAwayAction::IsInArcaneOrbRadius(const std::vector<Un
 
     return false;
 }
+
+// High Astromancer Solarian
 
 bool HighAstromancerSolarianStackBotsAction::Execute(Event event)
 {

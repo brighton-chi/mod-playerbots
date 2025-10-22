@@ -1,10 +1,58 @@
 #include "RaidSSCMultipliers.h"
 #include "RaidSSCActions.h"
 #include "RaidSSCHelpers.h"
+#include "ChooseTargetActions.h"
+#include "Playerbots.h"
+
+float HydrossTheUnstableDisableTankAssistMultiplier::GetValue(Action* action)
+{
+    Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross");
+    if (!hydross)
+        return 1.0f;
+
+    if (botAI->IsMainTank(bot) && !hydross->HasAura(SPELL_CORRUPTION) &&
+        dynamic_cast<TankAssistAction*>(action))
+            return 0.0f;
+
+    if (botAI->IsAssistTankOfIndex(bot, 0) && hydross->HasAura(SPELL_CORRUPTION) &&
+        dynamic_cast<TankAssistAction*>(action))
+            return 0.0f;
+
+    return 1.0f;
+}
+
+
+float HydrossTheUnstableWaitForDPSMultiplier::GetValue(Action* action)
+{
+    Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross");
+    if (!hydross)
+        return 1.0f;
+
+    const uint8 dpsWaitSeconds = 8;
+    auto it = hydrossDPSWaitTimer.find(bot->GetMapId());
+    if (it == hydrossDPSWaitTimer.end() || (time(nullptr) - it->second) < dpsWaitSeconds)
+    {
+        if (!botAI->IsTank(bot) && (dynamic_cast<AttackAction*>(action) || 
+            (!botAI->IsHeal(bot) && dynamic_cast<CastSpellAction*>(action))))
+            return 0.0f;
+    }
+
+    return 1.0f;
+}
+
+// Hydross disable inopportune taunts
+
+// Lurker may need some movement controls during spout
+
+// Leotheras anything to make healers attack inner demons?
+// Leotheras disable tank assist
+
+// Tidewalker disable tank assist for MT
+
 
 /*
 #include "AttackAction.h"
-#include "ChooseTargetActions.h"
+=
 #include "DruidActions.h"
 #include "DruidBearActions.h"
 #include "DruidCatActions.h"

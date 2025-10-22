@@ -6,6 +6,114 @@
 #include "Playerbots.h"
 #include "RtiTargetValue.h"
 
+namespace SerpentShrineCavernHelpers
+{
+
+namespace SerpentShrineCavernLocations
+{
+	const Location HydrossFrostTankPosition = { 0.0f, 0.0f, 0.0f }; // TODO: fill in
+    const Location HydrossNatureTankPosition = { 0.0f, 0.0f, 0.0f }; // TODO: fill in
+    // Hydross dps locations?
+
+    // Lurker tank location?
+    const Location LurkerCenterOfPoolPosition = { 0.0f, 0.0f, 0.0f }; // TODO: fill in
+
+    const Location KarathressTankPosition = { 0.0f, 0.0f, 0.0f }; // TODO: fill in
+    const Location TidalvessTankPosition = { 0.0f, 0.0f, 0.0f }; // TODO: fill in
+    const Location SharkkisTankPosition = { 0.0f, 0.0f, 0.0f }; // TODO: fill in
+    const Location CaribdisTankPosition = { 0.0f, 0.0f, 0.0f }; // TODO: fill in
+
+    const Location LeotherasHumanFormTankPosition = { 0.0f, 0.0f, 0.0f }; // TODO: fill in
+    const Location LeotherasDemonFormTankPosition = { 0.0f, 0.0f, 0.0f }; // TODO: fill in
+
+    const Location TidewalkerPhase1TankPosition = { 0.0f, 0.0f, 0.0f }; // TODO: fill in
+    const Location TidewalkerPhase2TankPosition = { 0.0f, 0.0f, 0.0f }; // TODO: fill in
+    // Tidewalker offtank position(s) for murlocs?
+    // Tidewalker healer location for graves?
+}
+
+void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId)
+{
+    if (!target)
+        return;
+
+    if (Group* group = bot->GetGroup())
+    {
+        ObjectGuid currentGuid = group->GetTargetIcon(iconId);
+        if (currentGuid != target->GetGUID())
+        {
+            group->SetTargetIcon(iconId, bot->GetGUID(), target->GetGUID());
+        }
+    }
+}
+
+void MarkTargetWithSkull(Player* bot, Unit* target)
+{
+    MarkTargetWithIcon(bot, target, RtiTargetValue::skullIndex);
+}
+
+void MarkTargetWithSquare(Player* bot, Unit* target)
+{
+    MarkTargetWithIcon(bot, target, RtiTargetValue::squareIndex);
+}
+
+void MarkTargetWithStar(Player* bot, Unit* target)
+{
+    MarkTargetWithIcon(bot, target, RtiTargetValue::starIndex);
+}
+
+void MarkTargetWithCircle(Player* bot, Unit* target)
+{
+    MarkTargetWithIcon(bot, target, RtiTargetValue::circleIndex);
+}
+
+void MarkTargetWithDiamond(Player* bot, Unit* target)
+{
+    MarkTargetWithIcon(bot, target, RtiTargetValue::diamondIndex);
+}
+
+void MarkTargetWithTriangle(Player* bot, Unit* target)
+{
+    MarkTargetWithIcon(bot, target, RtiTargetValue::triangleIndex);
+}
+
+void MarkTargetWithCross(Player* bot, Unit* target)
+{
+    MarkTargetWithIcon(bot, target, RtiTargetValue::crossIndex);
+}
+
+void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target)
+{
+    if (!target)
+        return;
+
+    std::string currentRti = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
+    Unit* currentTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
+
+    if (currentRti != rtiName || currentTarget != target)
+    {
+        botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set(rtiName);
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(target);
+    }
+}
+
+bool IsMapIDTimerManager(PlayerbotAI* botAI, Player* bot)
+{
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (member && member->IsAlive() && !botAI->IsTank(member) && GET_PLAYERBOT_AI(member))
+                return member == bot;
+        }
+    }
+
+    return true;
+}
+
+}
+
 /* 
 // Attumen the Huntsman
 std::unordered_map<uint32, time_t> attumenDPSWaitTimer;
