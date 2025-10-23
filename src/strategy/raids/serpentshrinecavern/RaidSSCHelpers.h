@@ -26,7 +26,7 @@ enum SerpentShrineCavernSpells
     SPELL_CORRUPTION = 37961, // TBD if better to use this aura or NPC ID to identify nature form
 
     // The Lurker Below
-    SPELL_SPOUT = 37433,
+    SPELL_SPOUT_VISUAL = 37431,
 
     // Leotheras the Blind
     SPELL_WHIRLWIND = 37640,
@@ -34,6 +34,9 @@ enum SerpentShrineCavernSpells
 
     // Morogrim Tidewalker
     SPELL_WATERY_GRAVE = 38049,
+
+    // Hunter
+    SPELL_MISDIRECTION = 34477,
 };
 
 enum SerpentShrineCavernNPCs
@@ -62,7 +65,10 @@ enum SerpentShrineCavernNPCs
 };
 namespace SerpentShrineCavernHelpers
 {
-    extern std::unordered_map<uint32, time_t> hydrossDPSWaitTimer;
+    // extern std::unordered_map<uint32, time_t> hydrossFrostDPSWaitTimer;
+    // extern std::unordered_map<uint32, time_t> hydrossNatureDPSWaitTimer;
+    extern std::unordered_map<ObjectGuid, time_t> hydrossChangeToFrostPhaseTimer;
+    extern std::unordered_map<ObjectGuid, time_t> hydrossChangeToNaturePhaseTimer;
 
     struct Location 
     {
@@ -88,6 +94,8 @@ namespace SerpentShrineCavernHelpers
 
         extern const Location TidewalkerPhase1TankPosition;
         extern const Location TidewalkerPhase2TankPosition;
+        extern const Location TidewalkerPhase2DPSandHealerPosition;
+        // extern const Location TidewalkerGraveHealerPosition;
         // Tidewalker offtank position(s) for murlocs?
         // Tidewalker healer location for graves?
     }
@@ -103,6 +111,9 @@ namespace SerpentShrineCavernHelpers
     void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target);
     bool IsMapIDTimerManager(PlayerbotAI* botAI, Player* bot);
     Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry);
+
+    bool HasMarkOfHydrossAt100Percent(Player* bot);
+    bool HasMarkOfCorruptionAt100Percent(Player* bot);
 }
 
 #endif

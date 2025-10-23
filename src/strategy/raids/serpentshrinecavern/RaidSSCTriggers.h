@@ -10,31 +10,17 @@ public:
     bool IsActive() override;
 };
 
-class HydrossTheUnstableBossInFrostPhaseTrigger : public Trigger
+class HydrossTheUnstableBotIsFrostTankTrigger : public Trigger
 {
 public:
-    HydrossTheUnstableBossInFrostPhaseTrigger(PlayerbotAI* botAI) : Trigger(botAI, "hydross the unstable boss in frost phase") {}
+    HydrossTheUnstableBotIsFrostTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "hydross the unstable bot is frost tank") {}
     bool IsActive() override;
 };
 
-class HydrossTheUnstableBossTransitioningToNaturePhaseTrigger : public Trigger
+class HydrossTheUnstableBotIsNatureTankTrigger : public Trigger
 {
 public:
-    HydrossTheUnstableBossTransitioningToNaturePhaseTrigger(PlayerbotAI* botAI) : Trigger(botAI, "hydross the unstable boss transitioning to nature phase") {}
-    bool IsActive() override;
-};
-
-class HydrossTheUnstableBossInNaturePhaseTrigger : public Trigger
-{
-public:
-    HydrossTheUnstableBossInNaturePhaseTrigger(PlayerbotAI* botAI) : Trigger(botAI, "hydross the unstable boss in nature phase") {}
-    bool IsActive() override;
-};
-
-class HydrossTheUnstableBossTransitioningToFrostPhaseTrigger : public Trigger
-{
-public:
-    HydrossTheUnstableBossTransitioningToFrostPhaseTrigger(PlayerbotAI* botAI) : Trigger(botAI, "hydross the unstable boss transitioning to frost phase") {}
+    HydrossTheUnstableBotIsNatureTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "hydross the unstable bot is nature tank") {}
     bool IsActive() override;
 };
 
@@ -56,6 +42,27 @@ class HydrossTheUnstableDangerFromWaterTombsTrigger : public Trigger
 {
 public:
     HydrossTheUnstableDangerFromWaterTombsTrigger(PlayerbotAI* botAI) : Trigger(botAI, "hydross the unstable danger from water tombs") {}
+    bool IsActive() override;
+};
+
+class MorogrimTidewalkerPullingBossTrigger : public Trigger
+{
+public:
+    MorogrimTidewalkerPullingBossTrigger(PlayerbotAI* botAI) : Trigger(botAI, "morogrim tidewalker pulling boss") {}
+    bool IsActive() override;
+};
+
+class MorogrimTidewalkerBossEngagedByMainTankTrigger : public Trigger
+{
+public:
+    MorogrimTidewalkerBossEngagedByMainTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "morogrim tidewalker boss engaged by main tank") {}
+    bool IsActive() override;
+};
+
+class MorogrimTidewalkerWaterGlobulesAreIncomingTrigger : public Trigger
+{
+public:
+    MorogrimTidewalkerWaterGlobulesAreIncomingTrigger(PlayerbotAI* botAI) : Trigger(botAI, "morogrim tidewalker water globules are incoming") {}
     bool IsActive() override;
 };
 

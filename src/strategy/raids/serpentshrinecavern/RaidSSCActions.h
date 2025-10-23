@@ -13,42 +13,18 @@ public:
     bool Execute(Event event) override;
 };
 
-class HydrossTheUnstableFrostTankAction : public AttackAction
+class HydrossTheUnstablePositionFrostTankAction : public AttackAction
 {
 public:
-    HydrossTheUnstableFrostTankAction(PlayerbotAI* botAI, std::string const name = "hydross the unstable frost tank") : AttackAction(botAI, name) {}
+    HydrossTheUnstablePositionFrostTankAction(PlayerbotAI* botAI, std::string const name = "hydross the unstable position frost tank") : AttackAction(botAI, name) {}
 
     bool Execute(Event event) override;
 };
 
-class HydrossTheUnstableFrostTankPositionBossAction : public AttackAction
+class HydrossTheUnstablePositionNatureTankAction : public AttackAction
 {
 public:
-    HydrossTheUnstableFrostTankPositionBossAction(PlayerbotAI* botAI, std::string const name = "hydross the unstable frost tank position boss") : AttackAction(botAI, name) {}
-
-    bool Execute(Event event) override;
-};
-
-class HydrossTheUnstableFrostTankMoveBossToNatureTankAction : public MovementAction
-{
-public:
-    HydrossTheUnstableFrostTankMoveBossToNatureTankAction(PlayerbotAI* botAI, std::string const name = "hydross the unstable frost tank move boss to nature tank") : MovementAction(botAI, name) {}
-
-    bool Execute(Event event) override;
-};
-
-class HydrossTheUnstableNatureTankPositionBossAction : public AttackAction
-{
-public:
-    HydrossTheUnstableNatureTankPositionBossAction(PlayerbotAI* botAI, std::string const name = "hydross the unstable nature tank position boss") : AttackAction(botAI, name) {}
-
-    bool Execute(Event event) override;
-};
-
-class HydrossTheUnstableNatureTankMoveBossToFrostTankAction : public MovementAction
-{
-public:
-    HydrossTheUnstableNatureTankMoveBossToFrostTankAction(PlayerbotAI* botAI, std::string const name = "hydross the unstable nature tank move boss to frost tank") : MovementAction(botAI, name) {}
+    HydrossTheUnstablePositionNatureTankAction(PlayerbotAI* botAI, std::string const name = "hydross the unstable position nature tank") : AttackAction(botAI, name) {}
 
     bool Execute(Event event) override;
 };
@@ -74,6 +50,27 @@ class HydrossTheUnstableFrostPhaseSpreadOutAction : public MovementAction
 public:
     HydrossTheUnstableFrostPhaseSpreadOutAction(PlayerbotAI* botAI, std::string const name = "hydross the unstable frost phase spread out") : MovementAction(botAI, name) {}
 
+    bool Execute(Event event) override;
+};
+
+class MorogrimTidewalkerMisdirectBossToMainTankAction : public AttackAction
+{
+public:
+    MorogrimTidewalkerMisdirectBossToMainTankAction(PlayerbotAI* botAI, std::string const name = "morogrim tidewalker misdirect boss to main tank") : AttackAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class MorogrimTidewalkerMoveBossToTankPositionAction : public AttackAction
+{
+public:
+    MorogrimTidewalkerMoveBossToTankPositionAction(PlayerbotAI* botAI, std::string const name = "morogrim tidewalker move boss to tank position") : AttackAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class MorogrimTidewalkerPhase2RepositionDPSAndHealersAction : public MovementAction
+{
+public:
+    MorogrimTidewalkerPhase2RepositionDPSAndHealersAction(PlayerbotAI* botAI, std::string const name = "morogrim tidewalker phase 2 reposition dps and healers") : MovementAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 

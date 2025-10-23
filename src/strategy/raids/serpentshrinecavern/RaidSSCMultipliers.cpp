@@ -3,12 +3,21 @@
 #include "RaidSSCHelpers.h"
 #include "ChooseTargetActions.h"
 #include "DruidBearActions.h"
+#include "DruidCatActions.h"
 #include "GenericSpellActions.h"
 #include "PaladinActions.h"
 #include "Playerbots.h"
 #include "WarriorActions.h"
 
 using namespace SerpentShrineCavernHelpers;
+
+static bool IsChargeAction(Action* action)
+{
+    return dynamic_cast<CastChargeAction*>(action) ||
+           dynamic_cast<CastInterceptAction*>(action) ||
+           dynamic_cast<CastFeralChargeBearAction*>(action) ||
+           dynamic_cast<CastFeralChargeCatAction*>(action);
+}
 
 // Hydross the Unstable <Duke of Currents>
 
@@ -20,33 +29,57 @@ float HydrossTheUnstableDisableTankAssistMultiplier::GetValue(Action* action)
 
     if (botAI->IsMainTank(bot))
     {
-        if (!hydross->HasAura(SPELL_CORRUPTION) &&
-        dynamic_cast<TankAssistAction*>(action))
+        if (dynamic_cast<TankAssistAction*>(action))
         return 0.0f;
 
         if ((bot->HasAura(SPELL_MARK_OF_HYDROSS_100) || bot->HasAura(SPELL_MARK_OF_HYDROSS_250) ||
-            bot->HasAura(SPELL_MARK_OF_HYDROSS_500)) &&
+             bot->HasAura(SPELL_MARK_OF_HYDROSS_500)) &&
             (dynamic_cast<CastTauntAction*>(action) || dynamic_cast<CastGrowlAction*>(action) || 
-            dynamic_cast<CastHandOfReckoningAction*>(action)))
+             dynamic_cast<CastHandOfReckoningAction*>(action)))
+            return 0.0f;
+
+        if (hydross->HasAura(SPELL_CORRUPTION) && 
+            (dynamic_cast<CombatFormationMoveAction*>(action) || IsChargeAction(action)))
             return 0.0f;
     }
 
-    if (botAI->IsAssistTankOfIndex(bot, 0) && hydross->HasAura(SPELL_CORRUPTION) &&
-        dynamic_cast<TankAssistAction*>(action))
-        return 0.0f;
+    if (botAI->IsAssistTankOfIndex(bot, 0))
+    {
+        if (dynamic_cast<TankAssistAction*>(action))
+            return 0.0f;
+
+        if ((bot->HasAura(SPELL_MARK_OF_CORRUPTION_100) || bot->HasAura(SPELL_MARK_OF_CORRUPTION_250) ||
+             bot->HasAura(SPELL_MARK_OF_CORRUPTION_500)) &&
+            (dynamic_cast<CastTauntAction*>(action) || dynamic_cast<CastGrowlAction*>(action) || 
+             dynamic_cast<CastHandOfReckoningAction*>(action)))
+            return 0.0f;
+
+        if (!hydross->HasAura(SPELL_CORRUPTION) && 
+            (dynamic_cast<CombatFormationMoveAction*>(action) || IsChargeAction(action)))
+            return 0.0f;
+    }
 
     return 1.0f;
 }
 
-float HydrossTheUnstableWaitForDPSMultiplier::GetValue(Action* action)
+/* float HydrossTheUnstableWaitForDPSMultiplier::GetValue(Action* action)
 {
     Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross");
     if (!hydross)
         return 1.0f;
 
-    const uint8 dpsWaitSeconds = 8;
-    auto it = hydrossDPSWaitTimer.find(bot->GetMapId());
-    if (it == hydrossDPSWaitTimer.end() || (time(nullptr) - it->second) < dpsWaitSeconds)
+    const uint8 dpsWaitSeconds = 5;
+
+    auto it = hydrossFrostDPSWaitTimer.find(bot->GetMapId());
+    if (it == hydrossFrostDPSWaitTimer.end() || (time(nullptr) - it->second) < dpsWaitSeconds)
+    {
+        if (!botAI->IsTank(bot) && (dynamic_cast<AttackAction*>(action) || 
+            (!botAI->IsHeal(bot) && dynamic_cast<CastSpellAction*>(action))))
+            return 0.0f;
+    }
+
+    auto it = hydrossNatureDPSWaitTimer.find(bot->GetMapId());
+    if (it == hydrossNatureDPSWaitTimer.end() || (time(nullptr) - it->second) < dpsWaitSeconds)
     {
         if (!botAI->IsTank(bot) && (dynamic_cast<AttackAction*>(action) || 
             (!botAI->IsHeal(bot) && dynamic_cast<CastSpellAction*>(action))))
@@ -54,8 +87,7 @@ float HydrossTheUnstableWaitForDPSMultiplier::GetValue(Action* action)
     }
 
     return 1.0f;
-}
-
+} */
 
 // Lurker may need some movement controls during spout
 
@@ -63,6 +95,7 @@ float HydrossTheUnstableWaitForDPSMultiplier::GetValue(Action* action)
 // Leotheras disable tank assist
 
 // Tidewalker disable tank assist for MT
+// Tidewalker disable fleeing (and more?) when stacked in phase 2
 
 
 /*

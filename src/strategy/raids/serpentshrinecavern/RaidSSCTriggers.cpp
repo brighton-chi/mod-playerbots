@@ -23,47 +23,18 @@ bool HydrossTheUnstableBotIsFrostTankTrigger::IsActive()
     return hydross && botAI->IsMainTank(bot);
 }
 
-bool HydrossTheUnstableBossInFrostPhaseTrigger::IsActive()
+bool HydrossTheUnstableBotIsNatureTankTrigger::IsActive()
 {
     Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
 
-    return hydross && !hydross->HasAura(SPELL_CORRUPTION) && botAI->IsMainTank(bot) && 
-    !bot->HasAura(SPELL_MARK_OF_HYDROSS_100) && !bot->HasAura(SPELL_MARK_OF_HYDROSS_250) &&
-    !bot->HasAura(SPELL_MARK_OF_HYDROSS_500);
-}
-
-bool HydrossTheUnstableBossTransitioningToNaturePhaseTrigger::IsActive()
-{
-    Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
-
-    return hydross && !hydross->HasAura(SPELL_CORRUPTION) && botAI->IsMainTank(bot) && 
-    (bot->HasAura(SPELL_MARK_OF_CORRUPTION_100) || bot->HasAura(SPELL_MARK_OF_CORRUPTION_250) ||
-    bot->HasAura(SPELL_MARK_OF_CORRUPTION_500));
-}
-
-bool HydrossTheUnstableBossInNaturePhaseTrigger::IsActive()
-{
-    Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
-
-    return hydross && hydross->HasAura(SPELL_CORRUPTION) && botAI->IsAssistTankOfIndex(bot, 0) && 
-    !bot->HasAura(SPELL_MARK_OF_CORRUPTION_100) && !bot->HasAura(SPELL_MARK_OF_CORRUPTION_250) &&
-    !bot->HasAura(SPELL_MARK_OF_CORRUPTION_500);
-}
-
-bool HydrossTheUnstableBossTransitioningToFrostPhaseTrigger::IsActive()
-{
-    Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
-
-    return hydross && hydross->HasAura(SPELL_CORRUPTION) && botAI->IsAssistTankOfIndex(bot, 0) && 
-    (bot->HasAura(SPELL_MARK_OF_CORRUPTION_100) || bot->HasAura(SPELL_MARK_OF_CORRUPTION_250) ||
-    bot->HasAura(SPELL_MARK_OF_CORRUPTION_500));
+    return hydross && botAI->IsAssistTankOfIndex(bot, 0);
 }
 
 bool HydrossTheUnstableWaitingForDPSTrigger::IsActive()
 {
     Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
 
-    return hydross && IsMapIDTimerManager(botAI, bot);
+    return hydross && (botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0));
 }
 
 bool HydrossTheUnstableElementalsSpawnedTrigger::IsActive()
@@ -83,8 +54,90 @@ bool HydrossTheUnstableDangerFromWaterTombsTrigger::IsActive()
 
 // The Lurker Below
 
+/* bool TheLurkerBelowSpoutIsActiveTrigger::IsActive()
+
+bool TheLurkerBelowAmbushersAndGuardiansSpawnedTrigger::IsActive() */
+
 // Leotheras the Blind
+
+/* bool LeotherasTheBlindHumanFormEngagedByMainTankTrigger::IsActive()
+
+bool LeotherasTheBlindDemonFormEngagedByWarlockTankTrigger::IsActive()
+
+bool LeotherasTheBlindBossChannelingWhirlwindTrigger::IsActive()
+
+bool LeotherasTheBlindDeterminingKillOrderTrigger::IsActive()
+
+bool LeotherasTheBlindNeedToManageTimersTrigger::IsActive() */
 
 // Fathom-Lord Karathress
 
+/* bool FathomLordKarathressBossEngagedByMainTankTrigger::IsActive()
+{
+    Unit* karathress = AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
+
+    return karathress && karathress->IsAlive() >= 25 &&
+           botAI->IsMainTank(bot);
+}
+
+bool FathomLordKarathressSharkkisEngagedByFirstAssistTankTrigger::IsActive()
+{
+    Unit* sharkkis = AI_VALUE2(Unit*, "find target", "fathom-guard sharkkis");
+
+    return sharkkis && sharkkis->IsAlive() &&
+           botAI->IsAssistTankOfIndex(bot, 0);
+}
+
+bool FathomLordKarathressTidalvessEngagedBySecondAssistTankTrigger::IsActive()
+{
+    Unit* tidalvess = AI_VALUE2(Unit*, "find target", "fathom-guard tidalvess");
+
+    return tidalvess && tidalvess->IsAlive() &&
+           botAI->IsAssistTankOfIndex(bot, 1);
+}
+
+bool FathomLordKarathressCaribdisEngagedByThirdAssistTankTrigger::IsActive()
+{
+    Unit* caribdis = AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
+
+    return caribdis && caribdis->IsAlive() &&
+           botAI->IsAssistTankOfIndex(bot, 2);
+}
+
+bool FathomLordKarathressCaribdisTankNeedsHealerTrigger::IsActive()
+
+bool FathomLordKarathressPullingBossTrigger::IsActive()
+{
+    Unit* karathress = AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
+
+    return karathress && karathress->GetHealthPct() > 98 && bot->getClass() == CLASS_HUNTER;
+}
+
+bool FathomLordKarathressDeterminingMeleeDPSKillOrderTrigger::IsActive()
+
+bool FathomLordKarathressDeterminingRangedDPSKillOrderTrigger::IsActive() */
+
 // Morogrim Tidewalker
+
+bool MorogrimTidewalkerPullingBossTrigger::IsActive()
+{
+    Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
+
+    return tidewalker && tidewalker->GetHealthPct() > 95 && bot->getClass() == CLASS_HUNTER;
+}
+
+
+bool MorogrimTidewalkerBossEngagedByMainTankTrigger::IsActive()
+{
+    Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
+
+    return tidewalker && botAI->IsMainTank(bot);
+}
+
+bool MorogrimTidewalkerWaterGlobulesAreIncomingTrigger::IsActive()
+{
+    Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
+
+    return tidewalker && tidewalker->GetHealthPct() < 25 &&
+           !botAI->IsTank(bot);
+}

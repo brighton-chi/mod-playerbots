@@ -9,20 +9,12 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction::array(0, new NextAction("hydross the unstable manage dps timer", ACTION_EMERGENCY + 10), nullptr)
     ));
     triggers.push_back(new TriggerNode(
-        "hydross the unstable boss in frost phase",
-        NextAction::array(0, new NextAction("hydross the unstable frost tank position boss", ACTION_RAID + 1), nullptr)
+        "hydross the unstable bot is frost tank",
+        NextAction::array(0, new NextAction("hydross the unstable position frost tank", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode(
-        "hydross the unstable boss transitioning to nature phase",
-        NextAction::array(0, new NextAction("hydross the unstable frost tank move boss to nature tank", ACTION_RAID + 1), nullptr)
-    ));
-    triggers.push_back(new TriggerNode(
-        "hydross the unstable boss in nature phase",
-        NextAction::array(0, new NextAction("hydross the unstable nature tank position boss", ACTION_RAID + 1), nullptr)
-    ));
-    triggers.push_back(new TriggerNode(
-        "hydross the unstable boss transitioning to frost phase",
-        NextAction::array(0, new NextAction("hydross the unstable nature tank move boss to frost tank", ACTION_RAID + 1), nullptr)
+        "hydross the unstable bot is nature tank",
+        NextAction::array(0, new NextAction("hydross the unstable position nature tank", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode(
         "hydross the unstable elementals spawned",
@@ -36,10 +28,18 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     // Leotheras the Blind
     // Fathom-Lord Karathress
     // Morogrim Tidewalker
+    triggers.push_back(new TriggerNode(
+        "morogrim tidewalker boss engaged by main tank",
+        NextAction::array(0, new NextAction("morogrim tidewalker move boss to tank position", ACTION_RAID + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode(
+        "morogrim tidewalker pulling boss",
+        NextAction::array(0, new NextAction("morogrim tidewalker misdirect boss to main tank", ACTION_RAID + 1), nullptr)
+    ));
 }
 
 void RaidSSCStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     multipliers.push_back(new HydrossTheUnstableDisableTankAssistMultiplier(botAI));
-    multipliers.push_back(new HydrossTheUnstableWaitForDPSMultiplier(botAI));
+    // multipliers.push_back(new HydrossTheUnstableWaitForDPSMultiplier(botAI));
 }

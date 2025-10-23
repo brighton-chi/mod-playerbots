@@ -10,11 +10,11 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class HydrossTheUnstableWaitForDPSMultiplier : public Multiplier
+/* class HydrossTheUnstableWaitForDPSMultiplier : public Multiplier
 {
 public:
     HydrossTheUnstableWaitForDPSMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "hydross the unstable wait for dps") {}
     virtual float GetValue(Action* action);
-};
+}; */
 
 #endif
