@@ -10,6 +10,13 @@ public:
     bool IsActive() override;
 };
 
+class ManaWarpIsAboutToExplodeTrigger : public Trigger
+{
+public:
+    ManaWarpIsAboutToExplodeTrigger(PlayerbotAI* botAI) : Trigger(botAI, "mana warp is about to explode") {}
+    bool IsActive() override;
+};
+
 class AttumenTheHuntsmanNeedTargetPriorityTrigger : public Trigger
 {
 public:

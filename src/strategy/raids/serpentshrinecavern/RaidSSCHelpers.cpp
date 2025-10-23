@@ -9,6 +9,9 @@ namespace SerpentShrineCavernHelpers
     // std::unordered_map<uint32, time_t> hydrossNatureDPSWaitTimer;
     std::unordered_map<ObjectGuid, time_t> hydrossChangeToFrostPhaseTimer;
     std::unordered_map<ObjectGuid, time_t> hydrossChangeToNaturePhaseTimer;
+    std::unordered_map<uint32, time_t> leotherasHumanFormDPSWaitTimer;
+    std::unordered_map<uint32, time_t> leotherasDemonFormDPSWaitTimer;
+    std::unordered_map<uint32, time_t> leotherasFinalPhaseDPSWaitTimer;
 
     namespace SerpentShrineCavernLocations
     {
@@ -29,10 +32,9 @@ namespace SerpentShrineCavernHelpers
 
         const Location TidewalkerPhase1TankPosition = { 410.925f, -741.916f, -7.146f };
         const Location TidewalkerPhase2TankPosition = { 446.571f, -767.155f, -7.144f };
-        const Location TidewalkerPhase2DPSandHealerPosition = { 0f, 0f, 0f };
+        const Location TidewalkerPhase2DPSAndHealerPosition = { 427.494f, -751.716f, -7.146f };
         // const Location TidewalkerGraveHealerPosition = { 388.558f, -723.956f, -11.941f };
         // Tidewalker offtank position(s) for murlocs?
-        // Tidewalker healer location for graves?
     }
 
     void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId)
@@ -85,6 +87,11 @@ namespace SerpentShrineCavernHelpers
         MarkTargetWithIcon(bot, target, RtiTargetValue::crossIndex);
     }
 
+    void MarkTargetWithMoon(Player* bot, Unit* target)
+    {
+        MarkTargetWithIcon(bot, target, RtiTargetValue::moonIndex);
+    }
+
     void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target)
     {
         if (!target)
@@ -129,8 +136,6 @@ namespace SerpentShrineCavernHelpers
         return nullptr;
     }
 
-    // Hydross Marks helpers
-
     bool HasMarkOfHydrossAt100Percent(Player* bot)
     {
         return bot->HasAura(SPELL_MARK_OF_HYDROSS_100) ||
@@ -165,4 +170,63 @@ namespace SerpentShrineCavernHelpers
                bot->HasAura(SPELL_MARK_OF_CORRUPTION_250) ||
                bot->HasAura(SPELL_MARK_OF_CORRUPTION_500);
     } */
+
+    Player* GetLeotherasDemonFormTank(PlayerbotAI* botAI, Player* bot)
+    {
+        Group* group = bot->GetGroup();
+        if (!group)
+            return nullptr;
+
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member))
+                continue;
+
+            if (member->getClass() == CLASS_WARLOCK && GET_PLAYERBOT_AI(member)->HasStrategy("tank", BotState::BOT_STATE_COMBAT))
+                return member;
+        }
+
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member))
+                continue;
+
+            if (GET_PLAYERBOT_AI(member)->IsAssistTankOfIndex(member, 0))
+                return member;
+        }
+
+        return nullptr;
+    }
+
+    Player* GetCaribdisTankHealer(PlayerbotAI* botAI, Player* bot)
+    {
+        Group* group = bot->GetGroup();
+        if (!group)
+            return nullptr;
+
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member))
+                continue;
+
+            if (member->getClass() == CLASS_PALADIN && botAI->IsHeal(member))
+                return member;
+        }
+
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member))
+                continue;
+
+            if (botAI->IsHeal(member))
+                return member;
+        }
+
+        return nullptr;
+    }
+
 }

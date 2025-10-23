@@ -13,6 +13,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class ManaWarpStunCreatureBeforeWarpBreachAction : public AttackAction
+{
+public:
+    ManaWarpStunCreatureBeforeWarpBreachAction(PlayerbotAI* botAI, std::string const name = "mana warp stun creature before warp breach") : AttackAction(botAI, name) {}
+
+    bool Execute(Event event) override;
+};
+
 class AttumenTheHuntsmanMarkTargetAction : public AttackAction
 {
 public:

@@ -444,7 +444,7 @@ bool HighKingMaulgarRunAwayFromWhirlwindAction::Execute(Event event)
         if (destDist >= safeDistance - 0.1f)
         {
             bot->AttackStop();
-            bot->InterruptNonMeleeSpells(false);
+            bot->InterruptNonMeleeSpells(true);
             return MoveTo(maulgar->GetMapId(), destX, destY, destZ, false, false, false, false, 
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }

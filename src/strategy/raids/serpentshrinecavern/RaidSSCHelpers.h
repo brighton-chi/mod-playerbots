@@ -27,6 +27,8 @@ enum SerpentShrineCavernSpells
 
     // The Lurker Below
     SPELL_SPOUT_VISUAL = 37431,
+    SPELL_SPOUT_PERIODIC_1 = 37429,
+    SPELL_SPOUT_PERIODIC_2 = 37430,
 
     // Leotheras the Blind
     SPELL_WHIRLWIND = 37640,
@@ -52,6 +54,8 @@ enum SerpentShrineCavernNPCs
     NPC_COILFANG_GUARDIAN = 21873,
 
     // Leotheras the Blind
+    NPC_LEOTHERAS_THE_BLIND_HUMAN_FORM = 21215,
+    NPC_LEOTHERAS_THE_BLIND_DEMON_FORM = 21285,
     NPC_INNER_DEMON = 21857,
 
     // Fathom-Lord Karathress
@@ -69,6 +73,9 @@ namespace SerpentShrineCavernHelpers
     // extern std::unordered_map<uint32, time_t> hydrossNatureDPSWaitTimer;
     extern std::unordered_map<ObjectGuid, time_t> hydrossChangeToFrostPhaseTimer;
     extern std::unordered_map<ObjectGuid, time_t> hydrossChangeToNaturePhaseTimer;
+    extern std::unordered_map<uint32, time_t> leotherasHumanFormDPSWaitTimer;
+    extern std::unordered_map<uint32, time_t> leotherasDemonFormDPSWaitTimer;
+    extern std::unordered_map<uint32, time_t> leotherasFinalPhaseDPSWaitTimer;
 
     struct Location 
     {
@@ -94,7 +101,7 @@ namespace SerpentShrineCavernHelpers
 
         extern const Location TidewalkerPhase1TankPosition;
         extern const Location TidewalkerPhase2TankPosition;
-        extern const Location TidewalkerPhase2DPSandHealerPosition;
+        extern const Location TidewalkerPhase2DPSAndHealerPosition;
         // extern const Location TidewalkerGraveHealerPosition;
         // Tidewalker offtank position(s) for murlocs?
         // Tidewalker healer location for graves?
@@ -108,12 +115,17 @@ namespace SerpentShrineCavernHelpers
     void MarkTargetWithDiamond(Player* bot, Unit* target);
     void MarkTargetWithTriangle(Player* bot, Unit* target);
     void MarkTargetWithCross(Player* bot, Unit* target);
+    void MarkTargetWithMoon(Player* bot, Unit* target);
     void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target);
     bool IsMapIDTimerManager(PlayerbotAI* botAI, Player* bot);
     Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry);
 
     bool HasMarkOfHydrossAt100Percent(Player* bot);
     bool HasMarkOfCorruptionAt100Percent(Player* bot);
+
+    Player* GetLeotherasDemonFormTank(PlayerbotAI* botAI, Player* bot);
+
+    Player* GetCaribdisTankHealer(PlayerbotAI* botAI, Player* bot);
 }
 
 #endif

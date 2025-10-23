@@ -12,6 +12,14 @@ bool SpectralRetainerNeedTargetPriorityTrigger::IsActive()
     return retainer && botAI->IsDps(bot);
 }
 
+bool ManaWarpIsAboutToExplodeTrigger::IsActive()
+{
+    Unit* manaWarp = AI_VALUE2(Unit*, "find target", "mana warp");
+
+    return manaWarp && manaWarp->GetHealthPct() < 15 && (bot->getClass() == CLASS_ROGUE || 
+           bot->getClass() == CLASS_HUNTER || bot->getClass() == CLASS_PALADIN);
+}
+
 bool AttumenTheHuntsmanNeedTargetPriorityTrigger::IsActive()
 {
     Unit* midnight = AI_VALUE2(Unit*, "find target", "midnight");

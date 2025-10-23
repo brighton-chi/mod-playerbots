@@ -54,29 +54,67 @@ bool HydrossTheUnstableDangerFromWaterTombsTrigger::IsActive()
 
 // The Lurker Below
 
-/* bool TheLurkerBelowSpoutIsActiveTrigger::IsActive()
+bool TheLurkerBelowSpoutIsActiveTrigger::IsActive()
+{
+    Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
 
-bool TheLurkerBelowAmbushersAndGuardiansSpawnedTrigger::IsActive() */
+    return lurker && (lurker->HasAura(SPELL_SPOUT_VISUAL) || 
+           lurker->HasAura(SPELL_SPOUT_PERIODIC_1) || lurker->HasAura(SPELL_SPOUT_PERIODIC_2));
+}
+
+// bool TheLurkerBelowAmbushersAndGuardiansSpawnedTrigger::IsActive()
 
 // Leotheras the Blind
 
-/* bool LeotherasTheBlindHumanFormEngagedByMainTankTrigger::IsActive()
+bool LeotherasTheBlindHumanFormEngagedByMainTankTrigger::IsActive()
+{
+    Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
 
-bool LeotherasTheBlindDemonFormEngagedByWarlockTankTrigger::IsActive()
+    return leotheras && GetFirstAliveUnitByEntry(botAI, NPC_LEOTHERAS_THE_BLIND_HUMAN_FORM) &&
+           botAI->IsMainTank(bot);
+}
+
+bool LeotherasTheBlindDemonFormEngagedByTankTrigger::IsActive()
+{
+    Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
+
+    return leotheras && GetFirstAliveUnitByEntry(botAI, NPC_LEOTHERAS_THE_BLIND_DEMON_FORM) &&
+           (botAI->IsAssistTankOfIndex(bot, 0) || bot->getClass() == CLASS_WARLOCK);
+}
 
 bool LeotherasTheBlindBossChannelingWhirlwindTrigger::IsActive()
+{
+    Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
+
+    return leotheras && (leotheras->HasAura(SPELL_WHIRLWIND) || leotheras->HasAura(SPELL_WHIRLWIND_CHANNEL));
+}
 
 bool LeotherasTheBlindDeterminingKillOrderTrigger::IsActive()
+{
+    Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
+    if (!leotheras)
+            return false;
 
-bool LeotherasTheBlindNeedToManageTimersTrigger::IsActive() */
+    Unit* innerDemon = AI_VALUE2(Unit*, "find target", "inner demon");
+
+    return (GetFirstAliveUnitByEntry(botAI, NPC_LEOTHERAS_THE_BLIND_HUMAN_FORM) && 
+            GetFirstAliveUnitByEntry(botAI, NPC_LEOTHERAS_THE_BLIND_DEMON_FORM)) || innerDemon;
+}
+
+bool LeotherasTheBlindWaitingForDPSTrigger::IsActive()
+{
+    Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
+
+    return leotheras && IsMapIDTimerManager(botAI, bot);
+}
 
 // Fathom-Lord Karathress
 
-/* bool FathomLordKarathressBossEngagedByMainTankTrigger::IsActive()
+bool FathomLordKarathressBossEngagedByMainTankTrigger::IsActive()
 {
     Unit* karathress = AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
 
-    return karathress && karathress->IsAlive() >= 25 &&
+    return karathress && karathress->IsAlive() &&
            botAI->IsMainTank(bot);
 }
 
@@ -104,9 +142,15 @@ bool FathomLordKarathressCaribdisEngagedByThirdAssistTankTrigger::IsActive()
            botAI->IsAssistTankOfIndex(bot, 2);
 }
 
-bool FathomLordKarathressCaribdisTankNeedsHealerTrigger::IsActive()
+bool FathomLordKarathressCaribdisTankNeedsDedicatedHealerTrigger::IsActive()
+{
+    Unit* caribdis = AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
+    Player* caribdisHealer = GetCaribdisTankHealer(botAI, bot);
 
-bool FathomLordKarathressPullingBossTrigger::IsActive()
+    return caribdis && caribdisHealer;
+}
+
+bool FathomLordKarathressPullingBossesTrigger::IsActive()
 {
     Unit* karathress = AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
 
@@ -114,8 +158,18 @@ bool FathomLordKarathressPullingBossTrigger::IsActive()
 }
 
 bool FathomLordKarathressDeterminingMeleeDPSKillOrderTrigger::IsActive()
+{
+    Unit* karathress = AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
 
-bool FathomLordKarathressDeterminingRangedDPSKillOrderTrigger::IsActive() */
+    return karathress && botAI->IsMelee(bot) && botAI->IsDps(bot);
+}
+
+bool FathomLordKarathressDeterminingRangedDPSKillOrderTrigger::IsActive()
+{
+    Unit* karathress = AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
+
+    return karathress && botAI->IsRanged(bot) && botAI->IsDps(bot);
+}
 
 // Morogrim Tidewalker
 
@@ -125,7 +179,6 @@ bool MorogrimTidewalkerPullingBossTrigger::IsActive()
 
     return tidewalker && tidewalker->GetHealthPct() > 95 && bot->getClass() == CLASS_HUNTER;
 }
-
 
 bool MorogrimTidewalkerBossEngagedByMainTankTrigger::IsActive()
 {

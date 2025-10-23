@@ -10,6 +10,7 @@ public:
     RaidKarazhanTriggerContext()
     {
         creators["spectral retainer need target priority"] = &RaidKarazhanTriggerContext::spectral_retainer_need_target_priority;
+        creators["mana warp is about to explode"] = &RaidKarazhanTriggerContext::mana_warp_is_about_to_explode;
 
         creators["attumen the huntsman need target priority"] = &RaidKarazhanTriggerContext::attumen_the_huntsman_need_target_priority;
         creators["attumen the huntsman attumen spawned"] = &RaidKarazhanTriggerContext::attumen_the_huntsman_attumen_spawned;
@@ -61,6 +62,7 @@ public:
 
 private:
     static Trigger* spectral_retainer_need_target_priority(PlayerbotAI* botAI) { return new SpectralRetainerNeedTargetPriorityTrigger(botAI); }
+    static Trigger* mana_warp_is_about_to_explode(PlayerbotAI* botAI) { return new ManaWarpIsAboutToExplodeTrigger(botAI); }
 
     static Trigger* attumen_the_huntsman_need_target_priority(PlayerbotAI* botAI) { return new AttumenTheHuntsmanNeedTargetPriorityTrigger(botAI); }
     static Trigger* attumen_the_huntsman_attumen_spawned(PlayerbotAI* botAI) { return new AttumenTheHuntsmanAttumenSpawnedTrigger(botAI); }

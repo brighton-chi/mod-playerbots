@@ -16,6 +16,24 @@ bool SpectralRetainerMarkTargetAction::Execute(Event event)
     return false;
 }
 
+bool ManaWarpStunCreatureBeforeWarpBreachAction::Execute(Event event)
+{
+    Unit* manaWarp = AI_VALUE2(Unit*, "find target", "mana warp");
+    if (!manaWarp)
+        return false;
+
+    if (botAI->CanCastSpell("kidney shot", manaWarp))
+        return botAI->CastSpell("kidney shot", manaWarp);
+
+    if (botAI->CanCastSpell("hammer of justice", manaWarp))
+        return botAI->CastSpell("hammer of justice", manaWarp);
+
+    if (botAI->CanCastSpell("scatter shot", manaWarp))
+        return botAI->CastSpell("scatter shot", manaWarp);
+
+    return false;
+}
+
 // Attumen the Huntsman
 
 // Prioritize Midnight until Attumen is mounted
