@@ -9,6 +9,8 @@ class RaidKarazhanActionContext : public NamedObjectContext<Action>
 public:
     RaidKarazhanActionContext()
     {
+        creators["spectral retainer mark target"] = &RaidKarazhanActionContext::spectral_retainer_mark_target;
+
         creators["attumen the huntsman mark target"] = &RaidKarazhanActionContext::attumen_the_huntsman_mark_target;
         creators["attumen the huntsman split bosses"] = &RaidKarazhanActionContext::attumen_the_huntsman_split_bosses;
         creators["attumen the huntsman stack behind"] = &RaidKarazhanActionContext::attumen_the_huntsman_stack_behind;
@@ -58,6 +60,8 @@ public:
     }
 
 private:
+    static Action* spectral_retainer_mark_target(PlayerbotAI* botAI) { return new SpectralRetainerMarkTargetAction(botAI); }
+
     static Action* attumen_the_huntsman_mark_target(PlayerbotAI* botAI) { return new AttumenTheHuntsmanMarkTargetAction(botAI); }
     static Action* attumen_the_huntsman_split_bosses(PlayerbotAI* botAI) { return new AttumenTheHuntsmanSplitBossesAction(botAI); }
     static Action* attumen_the_huntsman_stack_behind(PlayerbotAI* botAI) { return new AttumenTheHuntsmanStackBehindAction(botAI); }

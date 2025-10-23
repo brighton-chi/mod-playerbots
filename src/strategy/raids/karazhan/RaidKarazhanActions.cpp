@@ -5,6 +5,17 @@
 
 using namespace KarazhanHelpers;
 
+// Trash
+
+bool SpectralRetainerMarkTargetAction::Execute(Event event)
+{
+    Unit* retainer = AI_VALUE2(Unit*, "find target", "spectral retainer");
+    if (retainer)
+        MarkTargetWithSkull(bot, retainer);
+
+    return false;
+}
+
 // Attumen the Huntsman
 
 // Prioritize Midnight until Attumen is mounted

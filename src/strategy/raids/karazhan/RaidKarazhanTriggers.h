@@ -3,6 +3,13 @@
 
 #include "Trigger.h"
 
+class SpectralRetainerNeedTargetPriorityTrigger : public Trigger
+{
+public:
+    SpectralRetainerNeedTargetPriorityTrigger(PlayerbotAI* botAI) : Trigger(botAI, "spectral retainer need target priority") {}
+    bool IsActive() override;
+};
+
 class AttumenTheHuntsmanNeedTargetPriorityTrigger : public Trigger
 {
 public:

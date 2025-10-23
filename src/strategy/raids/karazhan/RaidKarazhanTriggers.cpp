@@ -5,6 +5,13 @@
 
 using namespace KarazhanHelpers;
 
+bool SpectralRetainerNeedTargetPriorityTrigger::IsActive()
+{
+    Unit* retainer = AI_VALUE2(Unit*, "find target", "spectral retainer");
+
+    return retainer && botAI->IsDps(bot);
+}
+
 bool AttumenTheHuntsmanNeedTargetPriorityTrigger::IsActive()
 {
     Unit* midnight = AI_VALUE2(Unit*, "find target", "midnight");

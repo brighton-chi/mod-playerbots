@@ -9,6 +9,8 @@ class RaidKarazhanTriggerContext : public NamedObjectContext<Trigger>
 public:
     RaidKarazhanTriggerContext()
     {
+        creators["spectral retainer need target priority"] = &RaidKarazhanTriggerContext::spectral_retainer_need_target_priority;
+
         creators["attumen the huntsman need target priority"] = &RaidKarazhanTriggerContext::attumen_the_huntsman_need_target_priority;
         creators["attumen the huntsman attumen spawned"] = &RaidKarazhanTriggerContext::attumen_the_huntsman_attumen_spawned;
         creators["attumen the huntsman attumen mounted"] = &RaidKarazhanTriggerContext::attumen_the_huntsman_attumen_mounted;
@@ -58,6 +60,8 @@ public:
     }
 
 private:
+    static Trigger* spectral_retainer_need_target_priority(PlayerbotAI* botAI) { return new SpectralRetainerNeedTargetPriorityTrigger(botAI); }
+
     static Trigger* attumen_the_huntsman_need_target_priority(PlayerbotAI* botAI) { return new AttumenTheHuntsmanNeedTargetPriorityTrigger(botAI); }
     static Trigger* attumen_the_huntsman_attumen_spawned(PlayerbotAI* botAI) { return new AttumenTheHuntsmanAttumenSpawnedTrigger(botAI); }
     static Trigger* attumen_the_huntsman_attumen_mounted(PlayerbotAI* botAI) { return new AttumenTheHuntsmanAttumenMountedTrigger(botAI); }
