@@ -35,6 +35,7 @@ enum SerpentShrineCavernSpells
     SPELL_WHIRLWIND = 37640,
     SPELL_WHIRLWIND_CHANNEL = 37641,
     SPELL_METAMORPHOSIS = 37673,
+    SPELL_CHAOS_BLAST = 37674,
     SPELL_INSIDIOUS_WHISPER = 37676,
 
     // Morogrim Tidewalker
@@ -46,6 +47,9 @@ enum SerpentShrineCavernSpells
 
 enum SerpentShrineCavernNPCs
 {
+    // Trash Mobs
+    NPC_RANCID_MUSHROOM = 22250,
+
     // Hydross the Unstable
     NPC_HYDROSS_FROST_FORM = 21216,
     NPC_HYDROSS_NATURE_FORM = 21232,
@@ -57,9 +61,8 @@ enum SerpentShrineCavernNPCs
     NPC_COILFANG_GUARDIAN = 21873,
 
     // Leotheras the Blind
-    // Entry ID 21215 is used for both forms of Leotheras until he gets to 15% health
-    // At 15% health, when Leotheras spawns a copy, both copies have entry ID 21875
     NPC_LEOTHERAS_THE_BLIND = 21215,
+    NPC_GREYHEART_SPELLBINDER = 21806,
     NPC_SHADOW_OF_LEOTHERAS = 21875,
     NPC_INNER_DEMON = 21857,
 
@@ -81,7 +84,6 @@ namespace SerpentShrineCavernHelpers
     extern std::unordered_map<uint32, time_t> leotherasHumanFormDPSWaitTimer;
     extern std::unordered_map<uint32, time_t> leotherasDemonFormDPSWaitTimer;
     extern std::unordered_map<uint32, time_t> leotherasFinalPhaseDPSWaitTimer;
-    extern std::unordered_map<ObjectGuid, bool> hasReachedDemonFormTankPosition;
 
     struct Location 
     {
@@ -102,8 +104,8 @@ namespace SerpentShrineCavernHelpers
         extern const Location SharkkisTankPosition;
         extern const Location CaribdisTankPosition;
 
-        extern const Location LeotherasHumanFormTankPosition;
-        extern const Location LeotherasDemonFormTankPosition;
+        // extern const Location LeotherasHumanFormTankPosition;
+        // extern const Location LeotherasDemonFormTankPosition;
 
         extern const Location TidewalkerPhase1TankPosition;
         extern const Location TidewalkerPhase2TankPosition;
@@ -124,11 +126,17 @@ namespace SerpentShrineCavernHelpers
     void MarkTargetWithMoon(Player* bot, Unit* target);
     std::string GetRtiName(uint8 index);
     void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target);
+    Player* GetLeotherasDemonFormTank(PlayerbotAI* botAI, Player* bot);
     bool IsMapIDTimerManager(PlayerbotAI* botAI, Player* bot);
     Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry);
 
     bool HasMarkOfHydrossAt100Percent(Player* bot);
     bool HasMarkOfCorruptionAt100Percent(Player* bot);
+
+    Unit* GetLeotherasHuman(PlayerbotAI* botAI);
+    Unit* GetPhase2LeotherasDemon(PlayerbotAI* botAI);
+    Unit* GetPhase3LeotherasDemon(PlayerbotAI* botAI);
+    Unit* GetActiveLeotherasDemon(PlayerbotAI* botAI);
 
     Player* GetCaribdisTankHealer(PlayerbotAI* botAI, Player* bot);
 }

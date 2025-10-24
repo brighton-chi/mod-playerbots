@@ -14,6 +14,13 @@ bool GreyheartTidecallerWaterElementalTotemSpawnedTrigger::IsActive()
     return totem && botAI->IsDps(bot);
 }
 
+bool RancidMushroomSpawnedTrigger::IsActive()
+{
+    Unit* mushroom = GetFirstAliveUnitByEntry(botAI, NPC_RANCID_MUSHROOM);
+
+    return mushroom;
+}
+
 // Hydross the Unstable <Duke of Currents>
 
 bool HydrossTheUnstableBotIsFrostTankTrigger::IsActive()
@@ -66,66 +73,84 @@ bool TheLurkerBelowSpoutIsActiveTrigger::IsActive()
 
 // Leotheras the Blind
 
-bool LeotherasTheBlindHumanFormEngagedByMainTankTrigger::IsActive()
+bool LeotherasTheBlindBossIsInactiveTrigger::IsActive()
 {
-    Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
+    Unit* spellbinder = AI_VALUE2(Unit*, "find target", "greyheart spellbinder");
 
-    return leotheras && !leotheras->HasAura(SPELL_METAMORPHOSIS) &&
-           !leotheras->HasAura(SPELL_LEOTHERAS_BANISHED) && botAI->IsMainTank(bot);
+    return spellbinder && spellbinder->IsAlive();
 }
 
-bool LeotherasTheBlindDemonFormEngagedByFirstAssistTankTrigger::IsActive()
+/* bool LeotherasTheBlindDemonFormEngagedByMainTankTrigger::IsActive()
 {
-    Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
+    Unit* leotherasDemon = GetActiveLeotherasDemon(botAI);
 
-    return leotheras && leotheras->HasAura(SPELL_METAMORPHOSIS) &&
-           !leotheras->HasAura(SPELL_LEOTHERAS_BANISHED) && botAI->IsAssistTankOfIndex(bot, 0);
+    return leotherasDemon && (botAI->IsMainTank(bot) || (botAI->IsAssistTank(bot) && 
+            leotherasDemon->GetVictim() == bot));
+} */
+bool LeotherasTheBlindEngagedByDemonFormTankTrigger::IsActive()
+{
+    Unit* leotherasDemon = GetActiveLeotherasDemon(botAI);
+    Player* demonFormTank = GetLeotherasDemonFormTank(botAI, bot);
+
+    return leotherasDemon && demonFormTank == bot;
 }
 
 bool LeotherasTheBlindBossEngagedByRangedTrigger::IsActive()
 {
     Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
+    Player* demonFormTank = GetLeotherasDemonFormTank(botAI, bot);
 
-    return leotheras && !leotheras->HasAura(SPELL_LEOTHERAS_BANISHED) && botAI->IsRanged(bot);
+    return botAI->IsRanged(bot) && demonFormTank != bot && 
+           leotheras && !leotheras->HasAura(SPELL_LEOTHERAS_BANISHED);
 }
 
 bool LeotherasTheBlindBossChannelingWhirlwindTrigger::IsActive()
 {
     Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
 
-    return leotheras && (leotheras->HasAura(SPELL_WHIRLWIND) || leotheras->HasAura(SPELL_WHIRLWIND_CHANNEL));
+    return !(botAI->IsTank(bot) && botAI->IsMelee(bot)) && leotheras &&
+           !leotheras->HasAura(SPELL_LEOTHERAS_BANISHED) &&
+           (leotheras->HasAura(SPELL_WHIRLWIND) || leotheras->HasAura(SPELL_WHIRLWIND_CHANNEL));
 }
 
-bool LeotherasTheBlindDemonFormEngagedByMeleeTrigger::IsActive()
+/* bool LeotherasTheBlindDemonFormEngagedByMeleeTrigger::IsActive()
 {
-    Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
+    Unit* leotherasDemon = GetActiveLeotherasDemon(botAI);
 
-    return leotheras && leotheras->HasAura(SPELL_METAMORPHOSIS) && !leotheras->HasAura(SPELL_LEOTHERAS_BANISHED) && 
-           leotheras->GetHealthPct() >= 15 && botAI->IsMelee(bot) && !botAI->IsAssistTankOfIndex(bot, 0) && 
-           leotheras->GetVictim() != bot && !bot->HasAura(SPELL_INSIDIOUS_WHISPER);
-}
+    return leotherasDemon && botAI->IsMelee(bot) && !botAI->IsMainTank(bot);
+} */
 
 bool LeotherasTheBlindInnerDemonHasTakenForm::IsActive()
 {
     Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
-
-    LOG_DEBUG("playerbots", "LeotherasTheBlindInnerDemonHasTakenForm: bot={} aura={} leotheras={}", bot->GetName(), bot->HasAura(SPELL_INSIDIOUS_WHISPER), leotheras ? "found" : "not found");
 
     return leotheras && bot->HasAura(SPELL_INSIDIOUS_WHISPER);
 }
 
 bool LeotherasTheBlindEnteredFinalPhaseTrigger::IsActive()
 {
-    Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
+    Unit* leotherasHuman = GetLeotherasHuman(botAI);
+    Unit* leotherasPhase3Demon = GetPhase3LeotherasDemon(botAI);
+    Player* demonFormTank = GetLeotherasDemonFormTank(botAI, bot);
 
-    return leotheras && leotheras->GetHealthPct() < 15;
+    return leotherasHuman && leotherasPhase3Demon && !botAI->IsHeal(bot) &&
+           demonFormTank != bot;
+}
+
+bool LeotherasTheBlindDemonFormTankNeedsAggro::IsActive()
+{
+    Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
+    Player* demonFormTank = GetLeotherasDemonFormTank(botAI, bot);
+
+    return leotheras && demonFormTank && bot->getClass() == CLASS_HUNTER &&
+           !bot->HasAura(SPELL_INSIDIOUS_WHISPER);
 }
 
 bool LeotherasTheBlindNeedToManageTimersAndTrackersTrigger::IsActive()
 {
     Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
 
-    return leotheras && (IsMapIDTimerManager(botAI, bot) || botAI->IsAssistTankOfIndex(bot, 0));
+    return leotheras && IsMapIDTimerManager(botAI, bot);
 }
 
 // Fathom-Lord Karathress
@@ -174,7 +199,7 @@ bool FathomLordKarathressPullingBossesTrigger::IsActive()
 {
     Unit* karathress = AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
 
-    return karathress && karathress->GetHealthPct() > 98 && bot->getClass() == CLASS_HUNTER;
+    return karathress && karathress->GetHealthPct() > 98.0f && bot->getClass() == CLASS_HUNTER;
 }
 
 bool FathomLordKarathressDeterminingMeleeDPSKillOrderTrigger::IsActive()
@@ -197,7 +222,7 @@ bool MorogrimTidewalkerPullingBossTrigger::IsActive()
 {
     Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
 
-    return tidewalker && tidewalker->GetHealthPct() > 95 && bot->getClass() == CLASS_HUNTER;
+    return tidewalker && tidewalker->GetHealthPct() > 95.0f && bot->getClass() == CLASS_HUNTER;
 }
 
 bool MorogrimTidewalkerBossEngagedByMainTankTrigger::IsActive()
@@ -211,6 +236,8 @@ bool MorogrimTidewalkerWaterGlobulesAreIncomingTrigger::IsActive()
 {
     Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
 
-    return tidewalker && tidewalker->GetHealthPct() < 25 &&
+    return tidewalker && tidewalker->GetHealthPct() < 25.0f &&
            !botAI->IsTank(bot);
 }
+
+// Lady Vashj

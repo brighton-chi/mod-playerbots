@@ -12,12 +12,11 @@ namespace SerpentShrineCavernHelpers
     std::unordered_map<uint32, time_t> leotherasHumanFormDPSWaitTimer;
     std::unordered_map<uint32, time_t> leotherasDemonFormDPSWaitTimer;
     std::unordered_map<uint32, time_t> leotherasFinalPhaseDPSWaitTimer;
-    std::unordered_map<ObjectGuid, bool> hasReachedDemonFormTankPosition;
 
     namespace SerpentShrineCavernLocations
     {
-        const Location HydrossFrostTankPosition = { -244.242f, -378.373f, -0.827f };
-        const Location HydrossNatureTankPosition = { -232.043f, -345.070f, -0.883f };
+        const Location HydrossFrostTankPosition = { -236.669f, -358.352f, -0.828f };
+        const Location HydrossNatureTankPosition = { -225.471f, -327.790f, -3.682f };
         // Hydross dps locations?
 
         // Lurker liquid level -19.881f
@@ -28,8 +27,8 @@ namespace SerpentShrineCavernHelpers
         const Location SharkkisTankPosition = { 521.580f, -546.681f, -7.377f };
         const Location CaribdisTankPosition = { 456.715f, -490.817f, -13.158f };
 
-        const Location LeotherasHumanFormTankPosition = { 347.667f, -424.348f, 28.585f };
-        const Location LeotherasDemonFormTankPosition = { 375.898f, -438.234f, 29.523f };
+        // const Location LeotherasHumanFormTankPosition = { 347.667f, -424.348f, 28.585f };
+        // const Location LeotherasDemonFormTankPosition = { 375.898f, -438.234f, 29.523f };
 
         const Location TidewalkerPhase1TankPosition = { 410.925f, -741.916f, -7.146f };
         const Location TidewalkerPhase2TankPosition = { 446.571f, -767.155f, -7.144f };
@@ -153,6 +152,35 @@ namespace SerpentShrineCavernHelpers
         return nullptr;
     }
 
+    Player* GetLeotherasDemonFormTank(PlayerbotAI* botAI, Player* bot)
+    {
+        Group* group = bot->GetGroup();
+        if (!group)
+            return nullptr;
+
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member))
+                continue;
+
+            if (member->getClass() == CLASS_WARLOCK && GET_PLAYERBOT_AI(member)->HasStrategy("tank", BotState::BOT_STATE_COMBAT))
+                return member;
+        }
+
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member))
+                continue;
+
+            if (GET_PLAYERBOT_AI(member)->IsMainTank(member))
+                return member;
+        }
+
+        return nullptr;
+    }
+
     bool HasMarkOfHydrossAt100Percent(Player* bot)
     {
         return bot->HasAura(SPELL_MARK_OF_HYDROSS_100) ||
@@ -187,6 +215,51 @@ namespace SerpentShrineCavernHelpers
                bot->HasAura(SPELL_MARK_OF_CORRUPTION_250) ||
                bot->HasAura(SPELL_MARK_OF_CORRUPTION_500);
     } */
+
+    Unit* GetLeotherasHuman(PlayerbotAI* botAI)
+    {
+        const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
+        for (const auto& guid : npcs)
+        {
+            Unit* unit = botAI->GetUnit(guid);
+            if (unit && unit->IsAlive() && unit->GetEntry() == NPC_LEOTHERAS_THE_BLIND && 
+                unit->IsInCombat() && !unit->HasAura(SPELL_METAMORPHOSIS))
+                return unit;
+        }
+        return nullptr;
+    }
+
+    Unit* GetPhase2LeotherasDemon(PlayerbotAI* botAI)
+    {
+        const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
+        for (const auto& guid : npcs)
+        {
+            Unit* unit = botAI->GetUnit(guid);
+            if (unit && unit->IsAlive() && unit->GetEntry() == NPC_LEOTHERAS_THE_BLIND && 
+                unit->HasAura(SPELL_METAMORPHOSIS))
+                return unit;
+        }
+        return nullptr;
+    }
+
+    Unit* GetPhase3LeotherasDemon(PlayerbotAI* botAI)
+    {
+        const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
+        for (const auto& guid : npcs)
+        {
+            Unit* unit = botAI->GetUnit(guid);
+            if (unit && unit->IsAlive() && unit->GetEntry() == NPC_SHADOW_OF_LEOTHERAS)
+                return unit;
+        }
+        return nullptr;
+    }
+
+    Unit* GetActiveLeotherasDemon(PlayerbotAI* botAI)
+    {
+        Unit* phase2 = GetPhase2LeotherasDemon(botAI);
+        Unit* phase3 = GetPhase3LeotherasDemon(botAI);
+        return phase2 ? phase2 : phase3;
+    }
 
     Player* GetCaribdisTankHealer(PlayerbotAI* botAI, Player* bot)
     {

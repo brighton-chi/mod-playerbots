@@ -10,6 +10,7 @@ public:
     RaidSSCActionContext()
     {
         creators["greyheart tidecaller mark water elemental totem"] = &RaidSSCActionContext::greyheart_tidecaller_mark_water_elemental_totem;
+        creators["rancid mushroom move away from mushroom spore cloud"] = &RaidSSCActionContext::rancid_mushroom_move_away_from_mushroom_spore_cloud;
 
         creators["hydross the unstable position frost tank"] = &RaidSSCActionContext::hydross_the_unstable_position_frost_tank;
         creators["hydross the unstable position nature tank"] = &RaidSSCActionContext::hydross_the_unstable_position_nature_tank;
@@ -19,13 +20,14 @@ public:
     
         creators["the lurker below run around behind boss"] = &RaidSSCActionContext::the_lurker_below_run_around_behind_boss;
     
-        creators["leotheras the blind human form position boss"] = &RaidSSCActionContext::leotheras_the_blind_human_form_position_boss;
+        creators["leotheras the blind target spellbinders"] = &RaidSSCActionContext::leotheras_the_blind_target_spellbinders;
         creators["leotheras the blind demon form position boss"] = &RaidSSCActionContext::leotheras_the_blind_demon_form_position_boss;
         creators["leotheras the blind position ranged"] = &RaidSSCActionContext::leotheras_the_blind_position_ranged;
         creators["leotheras the blind run away from whirlwind"] = &RaidSSCActionContext::leotheras_the_blind_run_away_from_whirlwind;
-        creators["leotheras the blind demon form position melee"] = &RaidSSCActionContext::leotheras_the_blind_demon_form_position_melee;
+        // creators["leotheras the blind demon form position melee"] = &RaidSSCActionContext::leotheras_the_blind_demon_form_position_melee;
         creators["leotheras the blind mark and attack inner demon"] = &RaidSSCActionContext::leotheras_the_blind_mark_and_attack_inner_demon;
         creators["leotheras the blind final phase assign dps priority"] = &RaidSSCActionContext::leotheras_the_blind_final_phase_assign_dps_priority;
+        creators["leotheras the blind misdirect boss to demon form tank"] = &RaidSSCActionContext::leotheras_the_blind_misdirect_boss_to_demon_form_tank;
         creators["leotheras the blind manage timers and trackers"] = &RaidSSCActionContext::leotheras_the_blind_manage_timers_and_trackers;
     
         creators["fathom-lord karathress main tank position boss"] = &RaidSSCActionContext::fathom_lord_karathress_main_tank_position_boss;
@@ -44,6 +46,7 @@ public:
 
 private:
     static Action* greyheart_tidecaller_mark_water_elemental_totem(PlayerbotAI* botAI) { return new GreyheartTidecallerMarkWaterElementalTotemAction(botAI); }
+    static Action* rancid_mushroom_move_away_from_mushroom_spore_cloud(PlayerbotAI* botAI) { return new RancidMushroomMoveAwayFromMushroomSporeCloudAction(botAI); }
 
     static Action* hydross_the_unstable_position_frost_tank(PlayerbotAI* botAI) { return new HydrossTheUnstablePositionFrostTankAction(botAI); }
     static Action* hydross_the_unstable_position_nature_tank(PlayerbotAI* botAI) { return new HydrossTheUnstablePositionNatureTankAction(botAI); }
@@ -53,12 +56,13 @@ private:
 
     static Action* the_lurker_below_run_around_behind_boss(PlayerbotAI* botAI) { return new TheLurkerBelowRunAroundBehindBossAction(botAI); }
 
-    static Action* leotheras_the_blind_human_form_position_boss(PlayerbotAI* botAI) { return new LeotherasTheBlindHumanFormPositionBossAction(botAI); }
+    static Action* leotheras_the_blind_target_spellbinders(PlayerbotAI* botAI) { return new LeotherasTheBlindTargetSpellbindersAction(botAI); }
     static Action* leotheras_the_blind_demon_form_position_boss(PlayerbotAI* botAI) { return new LeotherasTheBlindDemonFormPositionBossAction(botAI); }
     static Action* leotheras_the_blind_position_ranged(PlayerbotAI* botAI) { return new LeotherasTheBlindPositionRangedAction(botAI); }
     static Action* leotheras_the_blind_run_away_from_whirlwind(PlayerbotAI* botAI) { return new LeotherasTheBlindRunAwayFromWhirlwindAction(botAI); }
-    static Action* leotheras_the_blind_demon_form_position_melee(PlayerbotAI* botAI) { return new LeotherasTheBlindDemonFormPositionMeleeAction(botAI); }
+    // static Action* leotheras_the_blind_demon_form_position_melee(PlayerbotAI* botAI) { return new LeotherasTheBlindDemonFormPositionMeleeAction(botAI); }
     static Action* leotheras_the_blind_mark_and_attack_inner_demon(PlayerbotAI* botAI) { return new LeotherasTheBlindMarkAndAttackInnerDemonAction(botAI); }
+    static Action* leotheras_the_blind_misdirect_boss_to_demon_form_tank(PlayerbotAI* botAI) { return new LeotherasTheBlindMisdirectBossToDemonFormTankAction(botAI); }
     static Action* leotheras_the_blind_final_phase_assign_dps_priority(PlayerbotAI* botAI) { return new LeotherasTheBlindFinalPhaseAssignDPSPriorityAction(botAI); }
     static Action* leotheras_the_blind_manage_timers_and_trackers(PlayerbotAI* botAI) { return new LeotherasTheBlindManageTimersAndTrackersAction(botAI); }
 

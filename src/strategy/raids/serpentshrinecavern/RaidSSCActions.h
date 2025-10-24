@@ -13,6 +13,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class RancidMushroomMoveAwayFromMushroomSporeCloudAction : public MovementAction
+{
+public:
+    RancidMushroomMoveAwayFromMushroomSporeCloudAction(PlayerbotAI* botAI, std::string const name = "rancid mushroom move away from mushroom spore cloud") : MovementAction(botAI, name) {}
+
+    bool Execute(Event event) override;
+};
+
 class HydrossTheUnstablePositionFrostTankAction : public AttackAction
 {
 public:
@@ -61,10 +69,10 @@ public:
     bool Execute(Event event) override;
 };
 
-class LeotherasTheBlindHumanFormPositionBossAction : public AttackAction
+class LeotherasTheBlindTargetSpellbindersAction : public Action
 {
 public:
-    LeotherasTheBlindHumanFormPositionBossAction(PlayerbotAI* botAI, std::string const name = "leotheras the blind human form position boss") : AttackAction(botAI, name) {}
+    LeotherasTheBlindTargetSpellbindersAction(PlayerbotAI* botAI, std::string const name = "leotheras the blind target spellbinders") : Action(botAI, name) {}
 
     bool Execute(Event event) override;
 };
@@ -93,13 +101,13 @@ public:
     bool Execute(Event event) override;
 };
 
-class LeotherasTheBlindDemonFormPositionMeleeAction : public MovementAction
+/* class LeotherasTheBlindDemonFormPositionMeleeAction : public MovementAction
 {
 public:
     LeotherasTheBlindDemonFormPositionMeleeAction(PlayerbotAI* botAI, std::string const name = "leotheras the blind demon form position melee") : MovementAction(botAI, name) {}
 
     bool Execute(Event event) override;
-};
+}; */
 
 class LeotherasTheBlindMarkAndAttackInnerDemonAction : public AttackAction
 {
@@ -113,6 +121,14 @@ class LeotherasTheBlindFinalPhaseAssignDPSPriorityAction : public AttackAction
 {
 public:
     LeotherasTheBlindFinalPhaseAssignDPSPriorityAction(PlayerbotAI* botAI, std::string const name = "leotheras the blind final phase assign dps priority") : AttackAction(botAI, name) {}
+
+    bool Execute(Event event) override;
+};
+
+class LeotherasTheBlindMisdirectBossToDemonFormTankAction : public AttackAction
+{
+public:
+    LeotherasTheBlindMisdirectBossToDemonFormTankAction(PlayerbotAI* botAI, std::string const name = "leotheras the blind misdirect boss to demon form tank") : AttackAction(botAI, name) {}
 
     bool Execute(Event event) override;
 };

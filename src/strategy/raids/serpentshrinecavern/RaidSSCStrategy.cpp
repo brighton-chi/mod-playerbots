@@ -3,10 +3,14 @@
 
 void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    // Trash
+    // Trash Mobs
     triggers.push_back(new TriggerNode(
         "greyheart tidecaller water elemental totem spawned",
         NextAction::array(0, new NextAction("greyheart tidecaller mark water elemental totem", ACTION_RAID + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode(
+        "rancid mushroom spawned",
+        NextAction::array(0, new NextAction("rancid mushroom move away from mushroom spore cloud", ACTION_EMERGENCY + 1), nullptr)
     ));
 
     // Hydross the Unstable <Duke of Currents>
@@ -39,11 +43,11 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     // Leotheras the Blind
     triggers.push_back(new TriggerNode(
-        "leotheras the blind human form engaged by main tank",
-        NextAction::array(0, new NextAction("leotheras the blind human form position boss", ACTION_RAID + 1), nullptr)
+        "leotheras the blind boss is inactive",
+        NextAction::array(0, new NextAction("leotheras the blind target spellbinders", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode(
-        "leotheras the blind demon form engaged by first assist tank",
+        "leotheras the blind demon form engaged by demon form tank",
         NextAction::array(0, new NextAction("leotheras the blind demon form position boss", ACTION_EMERGENCY + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode(
@@ -54,10 +58,10 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         "leotheras the blind boss channeling whirlwind",
         NextAction::array(0, new NextAction("leotheras the blind run away from whirlwind", ACTION_EMERGENCY + 1), nullptr)
     ));
-    triggers.push_back(new TriggerNode(
+    /* triggers.push_back(new TriggerNode(
         "leotheras the blind demon form engaged by melee",
         NextAction::array(0, new NextAction("leotheras the blind demon form position melee", ACTION_EMERGENCY + 1), nullptr)
-    ));
+    )); */
     triggers.push_back(new TriggerNode(
         "leotheras the blind inner demon has taken form",
         NextAction::array(0, new NextAction("leotheras the blind mark and attack inner demon", ACTION_EMERGENCY + 6), nullptr)
@@ -65,6 +69,10 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode(
         "leotheras the blind entered final phase",
         NextAction::array(0, new NextAction("leotheras the blind final phase assign dps priority", ACTION_RAID + 2), nullptr)
+    ));
+    triggers.push_back(new TriggerNode(
+        "leotheras the blind demon form tank needs aggro",
+        NextAction::array(0, new NextAction("leotheras the blind misdirect boss to demon form tank", ACTION_RAID + 3), nullptr)
     ));
     triggers.push_back(new TriggerNode(
         "leotheras the blind need to manage timers and trackers",
@@ -118,6 +126,8 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         "morogrim tidewalker pulling boss",
         NextAction::array(0, new NextAction("morogrim tidewalker misdirect boss to main tank", ACTION_RAID + 1), nullptr)
     ));
+
+    // Lady Vashj
 }
 
 void RaidSSCStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
@@ -125,11 +135,11 @@ void RaidSSCStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new HydrossTheUnstableDisableTankAssistMultiplier(botAI));
     // multipliers.push_back(new HydrossTheUnstableWaitForDPSMultiplier(botAI));
     multipliers.push_back(new TheLurkerBelowStayBehindBossDuringSpoutMultiplier(botAI));
-    multipliers.push_back(new LeotherasTheBlindDisableTankAssistMultiplier(botAI));
     multipliers.push_back(new LeotherasTheBlindAvoidWhirlwindMultiplier(botAI));
-    multipliers.push_back(new LeotherasTheBlindDemonFormDisableMeleeActionsMultiplier(botAI));
+    multipliers.push_back(new LeotherasTheBlindDisableTankActionsMultiplier(botAI));
+    // multipliers.push_back(new LeotherasTheBlindMainTankMaintainDemonFormPositionMultiplier(botAI));
+    // multipliers.push_back(new LeotherasTheBlindDemonFormDisableMeleeActionsMultiplier(botAI));
     multipliers.push_back(new LeotherasTheBlindWaitForDPSMultiplier(botAI));
     multipliers.push_back(new LeotherasTheBlindWaitForBloodlustAndHeroismMultiplier(botAI));
-    multipliers.push_back(new LeotherasTheBlindFocusOnAttackingDuringInnerDemonMultiplier(botAI));
     multipliers.push_back(new FathomLordKarathressDisableTankAssistMultiplier(botAI));
 }

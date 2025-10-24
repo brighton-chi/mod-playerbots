@@ -10,6 +10,13 @@ public:
     bool IsActive() override;
 };
 
+class RancidMushroomSpawnedTrigger : public Trigger
+{
+public:
+    RancidMushroomSpawnedTrigger(PlayerbotAI* botAI) : Trigger(botAI, "rancid mushroom spawned") {}
+    bool IsActive() override;
+};
+
 class HydrossTheUnstableBotIsFrostTankTrigger : public Trigger
 {
 public:
@@ -52,6 +59,13 @@ public:
     bool IsActive() override;
 };
 
+class LeotherasTheBlindBossIsInactiveTrigger : public Trigger
+{
+public:
+    LeotherasTheBlindBossIsInactiveTrigger(PlayerbotAI* botAI) : Trigger(botAI, "leotheras the blind boss is inactive") {}
+    bool IsActive() override;
+};
+
 class LeotherasTheBlindHumanFormEngagedByMainTankTrigger : public Trigger
 {
 public:
@@ -59,10 +73,10 @@ public:
     bool IsActive() override;
 };
 
-class LeotherasTheBlindDemonFormEngagedByFirstAssistTankTrigger : public Trigger
+class LeotherasTheBlindEngagedByDemonFormTankTrigger : public Trigger
 {
 public:
-    LeotherasTheBlindDemonFormEngagedByFirstAssistTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "leotheras the blind demon form engaged by first assist tank") {}
+    LeotherasTheBlindEngagedByDemonFormTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "leotheras the blind engaged by demon form tank") {}
     bool IsActive() override;
 };
 
@@ -80,12 +94,12 @@ public:
     bool IsActive() override;
 };
 
-class LeotherasTheBlindDemonFormEngagedByMeleeTrigger : public Trigger
+/* class LeotherasTheBlindDemonFormEngagedByMeleeTrigger : public Trigger
 {
 public:
     LeotherasTheBlindDemonFormEngagedByMeleeTrigger(PlayerbotAI* botAI) : Trigger(botAI, "leotheras the blind demon form engaged by melee") {}
     bool IsActive() override;
-};
+}; */
 
 class LeotherasTheBlindInnerDemonHasTakenForm : public Trigger
 {
@@ -98,6 +112,13 @@ class LeotherasTheBlindEnteredFinalPhaseTrigger : public Trigger
 {
 public:
     LeotherasTheBlindEnteredFinalPhaseTrigger(PlayerbotAI* botAI) : Trigger(botAI, "leotheras the blind entered final phase") {}
+    bool IsActive() override;
+};
+
+class LeotherasTheBlindDemonFormTankNeedsAggro : public Trigger
+{
+public:
+    LeotherasTheBlindDemonFormTankNeedsAggro(PlayerbotAI* botAI) : Trigger(botAI, "leotheras the blind demon form tank needs aggro") {}
     bool IsActive() override;
 };
 

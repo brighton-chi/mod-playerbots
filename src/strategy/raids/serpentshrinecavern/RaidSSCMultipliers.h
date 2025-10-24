@@ -24,17 +24,24 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class LeotherasTheBlindDisableTankAssistMultiplier : public Multiplier
-{
-public:
-    LeotherasTheBlindDisableTankAssistMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "leotheras the blind disable tank assist") {}
-    virtual float GetValue(Action* action);
-};
-
 class LeotherasTheBlindAvoidWhirlwindMultiplier : public Multiplier
 {
 public:
     LeotherasTheBlindAvoidWhirlwindMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "leotheras the blind avoid whirlwind") {}
+    virtual float GetValue(Action* action);
+};
+
+class LeotherasTheBlindDisableTankActionsMultiplier : public Multiplier
+{
+public:
+    LeotherasTheBlindDisableTankActionsMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "leotheras the blind disable tank actions") {}
+    virtual float GetValue(Action* action);
+};
+
+/* class LeotherasTheBlindMainTankMaintainDemonFormPositionMultiplier : public Multiplier
+{
+public:
+    LeotherasTheBlindMainTankMaintainDemonFormPositionMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "leotheras the blind main tank maintain demon form position") {}
     virtual float GetValue(Action* action);
 };
 
@@ -43,7 +50,7 @@ class LeotherasTheBlindDemonFormDisableMeleeActionsMultiplier : public Multiplie
 public:
     LeotherasTheBlindDemonFormDisableMeleeActionsMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "leotheras the blind demon form disable melee actions") {}
     virtual float GetValue(Action* action);
-};
+}; */
 
 class LeotherasTheBlindWaitForDPSMultiplier : public Multiplier
 {
@@ -56,13 +63,6 @@ class LeotherasTheBlindWaitForBloodlustAndHeroismMultiplier : public Multiplier
 {
 public:
     LeotherasTheBlindWaitForBloodlustAndHeroismMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "leotheras the blind wait for bloodlust and heroism") {}
-    virtual float GetValue(Action* action);
-};
-
-class LeotherasTheBlindFocusOnAttackingDuringInnerDemonMultiplier : public Multiplier
-{
-public:
-    LeotherasTheBlindFocusOnAttackingDuringInnerDemonMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "leotheras the blind focus on attacking during inner demon") {}
     virtual float GetValue(Action* action);
 };
 
