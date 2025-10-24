@@ -417,25 +417,23 @@ bool LeotherasTheBlindHumanFormPositionBossAction::Execute(Event event)
     if (leotheras->GetVictim() == bot)
     {
         const Location& position = SerpentShrineCavernLocations::LeotherasHumanFormTankPosition;
-        const float maxDistance = 1.0f;
-        float distanceToPosition = bot->GetExactDist2d(position.x, position.y);
 
-        if (distanceToPosition > maxDistance)
+        if (bot->GetExactDist2d(position.x, position.y) > 1.0f)
         {
             float dX = position.x - bot->GetPositionX();
             float dY = position.y - bot->GetPositionY();
             float dist = sqrt(dX * dX + dY * dY);
-            float moveX = bot->GetPositionX() + (dX / dist) * maxDistance;
-            float moveY = bot->GetPositionY() + (dY / dist) * maxDistance;
+            float moveX = bot->GetPositionX() + (dX / dist);
+            float moveY = bot->GetPositionY() + (dY / dist);
 
-            return MoveTo(bot->GetMapId(), moveX, moveY, position.z, false, false, false, false,
-                          MovementPriority::MOVEMENT_COMBAT, true, false);
+            return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+                          MovementPriority::MOVEMENT_COMBAT, true, true);
         }
         else if (!bot->IsWithinMeleeRange(leotheras))
         {
             return MoveTo(leotheras->GetMapId(), leotheras->GetPositionX(),
                           leotheras->GetPositionY(), leotheras->GetPositionZ(),
-                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
+                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
 
@@ -454,12 +452,11 @@ bool LeotherasTheBlindDemonFormPositionBossAction::Execute(Event event)
     if (leotheras->GetVictim() == bot)
     {
         const Location& position = SerpentShrineCavernLocations::LeotherasDemonFormTankPosition;
-        const float maxDistance = 5.0f;
         ObjectGuid botGuid = bot->GetGUID();
 
         if (!hasReachedDemonFormTankPosition[botGuid])
         {
-            if (bot->GetExactDist2d(position.x, position.y) > maxDistance)
+            if (bot->GetExactDist2d(position.x, position.y) > 5.0f)
             {
                 return MoveTo(bot->GetMapId(), position.x, position.y, bot->GetPositionZ(), false, false, false, false,
                               MovementPriority::MOVEMENT_FORCED, true, true);
@@ -472,14 +469,10 @@ bool LeotherasTheBlindDemonFormPositionBossAction::Execute(Event event)
         float angle = atan2(leotheras->GetPositionY() - position.y, leotheras->GetPositionX() - position.x);
         float targetX = leotheras->GetPositionX() - maxMeleeRange * cos(angle);
         float targetY = leotheras->GetPositionY() - maxMeleeRange * sin(angle);
-        float targetZ = position.z;
 
-        float currentDist = bot->GetExactDist2d(targetX, targetY);
-
-        const float tolerance = 0.3f;
-        if (currentDist > tolerance)
+        if (bot->GetExactDist2d(targetX, targetY) > 0.3f)
         {
-            return MoveTo(leotheras->GetMapId(), targetX, targetY, targetZ, false, false, false, false,
+            return MoveTo(leotheras->GetMapId(), targetX, targetY, bot->GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_FORCED, true, true);
         }
     }
@@ -539,14 +532,12 @@ bool LeotherasTheBlindDemonFormPositionMeleeAction::Execute(Event event)
     float behindAngle = Position::NormalizeOrientation(leotheras->GetOrientation() + M_PI);
     float targetX = leotheras->GetPositionX() + maxMeleeRange * cos(behindAngle);
     float targetY = leotheras->GetPositionY() + maxMeleeRange * sin(behindAngle);
-    float targetZ = leotheras->GetPositionZ();
 
     float currentDist = bot->GetExactDist2d(targetX, targetY);
 
-    const float tolerance = 0.3f;
-    if (fabs(currentDist - maxMeleeRange) > tolerance)
+    if (fabs(currentDist - maxMeleeRange) > 0.3f)
     {
-        return MoveTo(leotheras->GetMapId(), targetX, targetY, targetZ, false, false, false, false,
+        return MoveTo(leotheras->GetMapId(), targetX, targetY, bot->GetPositionZ(), false, false, false, false,
                       MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
@@ -721,17 +712,14 @@ bool FathomLordKarathressMainTankPositionBossAction::Execute(Event event)
     if (karathress->GetVictim() == bot)
     {
         const Location& position = SerpentShrineCavernLocations::KarathressTankPosition;
-        const float maxDistance = 2.0f;
 
-        float distanceToPosition = bot->GetExactDist2d(position.x, position.y);
-
-        if (distanceToPosition > maxDistance)
+        if (bot->GetExactDist2d(position.x, position.y) > 2.0f)
         {
             float dX = position.x - bot->GetPositionX();
             float dY = position.y - bot->GetPositionY();
             float dist = sqrt(dX * dX + dY * dY);
-            float moveX = bot->GetPositionX() + (dX / dist) * maxDistance;
-            float moveY = bot->GetPositionY() + (dY / dist) * maxDistance;
+            float moveX = bot->GetPositionX() + (dX / dist);
+            float moveY = bot->GetPositionY() + (dY / dist);
             
             return MoveTo(bot->GetMapId(), moveX, moveY, position.z, false, false, false, true, 
                           MovementPriority::MOVEMENT_COMBAT, true, true);
