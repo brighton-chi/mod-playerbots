@@ -70,16 +70,23 @@ bool LeotherasTheBlindHumanFormEngagedByMainTankTrigger::IsActive()
 {
     Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
 
-    return leotheras && GetFirstAliveUnitByEntry(botAI, NPC_LEOTHERAS_THE_BLIND_HUMAN_FORM) &&
-           botAI->IsMainTank(bot);
+    return leotheras && !leotheras->HasAura(SPELL_METAMORPHOSIS) &&
+           !leotheras->HasAura(SPELL_LEOTHERAS_BANISHED) && botAI->IsMainTank(bot);
 }
 
-bool LeotherasTheBlindDemonFormEngagedByTankTrigger::IsActive()
+bool LeotherasTheBlindDemonFormEngagedByFirstAssistTankTrigger::IsActive()
 {
     Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
 
-    return leotheras && GetFirstAliveUnitByEntry(botAI, NPC_LEOTHERAS_THE_BLIND_DEMON_FORM) &&
-           (botAI->IsAssistTankOfIndex(bot, 0) || bot->getClass() == CLASS_WARLOCK);
+    return leotheras && leotheras->HasAura(SPELL_METAMORPHOSIS) &&
+           !leotheras->HasAura(SPELL_LEOTHERAS_BANISHED) && botAI->IsAssistTankOfIndex(bot, 0);
+}
+
+bool LeotherasTheBlindBossEngagedByRangedTrigger::IsActive()
+{
+    Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
+
+    return leotheras && !leotheras->HasAura(SPELL_LEOTHERAS_BANISHED) && botAI->IsRanged(bot);
 }
 
 bool LeotherasTheBlindBossChannelingWhirlwindTrigger::IsActive()
@@ -89,23 +96,36 @@ bool LeotherasTheBlindBossChannelingWhirlwindTrigger::IsActive()
     return leotheras && (leotheras->HasAura(SPELL_WHIRLWIND) || leotheras->HasAura(SPELL_WHIRLWIND_CHANNEL));
 }
 
-bool LeotherasTheBlindDeterminingKillOrderTrigger::IsActive()
+bool LeotherasTheBlindDemonFormEngagedByMeleeTrigger::IsActive()
 {
     Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
-    if (!leotheras)
-            return false;
 
-    Unit* innerDemon = AI_VALUE2(Unit*, "find target", "inner demon");
-
-    return (GetFirstAliveUnitByEntry(botAI, NPC_LEOTHERAS_THE_BLIND_HUMAN_FORM) && 
-            GetFirstAliveUnitByEntry(botAI, NPC_LEOTHERAS_THE_BLIND_DEMON_FORM)) || innerDemon;
+    return leotheras && leotheras->HasAura(SPELL_METAMORPHOSIS) && !leotheras->HasAura(SPELL_LEOTHERAS_BANISHED) && 
+           leotheras->GetHealthPct() >= 15 && botAI->IsMelee(bot) && !botAI->IsAssistTankOfIndex(bot, 0) && 
+           leotheras->GetVictim() != bot && !bot->HasAura(SPELL_INSIDIOUS_WHISPER);
 }
 
-bool LeotherasTheBlindWaitingForDPSTrigger::IsActive()
+bool LeotherasTheBlindInnerDemonHasTakenForm::IsActive()
 {
     Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
 
-    return leotheras && IsMapIDTimerManager(botAI, bot);
+    LOG_DEBUG("playerbots", "LeotherasTheBlindInnerDemonHasTakenForm: bot={} aura={} leotheras={}", bot->GetName(), bot->HasAura(SPELL_INSIDIOUS_WHISPER), leotheras ? "found" : "not found");
+
+    return leotheras && bot->HasAura(SPELL_INSIDIOUS_WHISPER);
+}
+
+bool LeotherasTheBlindEnteredFinalPhaseTrigger::IsActive()
+{
+    Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
+
+    return leotheras && leotheras->GetHealthPct() < 15;
+}
+
+bool LeotherasTheBlindNeedToManageTimersAndTrackersTrigger::IsActive()
+{
+    Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
+
+    return leotheras && (IsMapIDTimerManager(botAI, bot) || botAI->IsAssistTankOfIndex(bot, 0));
 }
 
 // Fathom-Lord Karathress

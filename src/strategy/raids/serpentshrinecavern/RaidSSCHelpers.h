@@ -31,8 +31,11 @@ enum SerpentShrineCavernSpells
     SPELL_SPOUT_PERIODIC_2 = 37430,
 
     // Leotheras the Blind
+    SPELL_LEOTHERAS_BANISHED = 37546,
     SPELL_WHIRLWIND = 37640,
     SPELL_WHIRLWIND_CHANNEL = 37641,
+    SPELL_METAMORPHOSIS = 37673,
+    SPELL_INSIDIOUS_WHISPER = 37676,
 
     // Morogrim Tidewalker
     SPELL_WATERY_GRAVE = 38049,
@@ -54,8 +57,10 @@ enum SerpentShrineCavernNPCs
     NPC_COILFANG_GUARDIAN = 21873,
 
     // Leotheras the Blind
-    NPC_LEOTHERAS_THE_BLIND_HUMAN_FORM = 21215,
-    NPC_LEOTHERAS_THE_BLIND_DEMON_FORM = 21285,
+    // Entry ID 21215 is used for both forms of Leotheras until he gets to 15% health
+    // At 15% health, when Leotheras spawns a copy, both copies have entry ID 21875
+    NPC_LEOTHERAS_THE_BLIND = 21215,
+    NPC_SHADOW_OF_LEOTHERAS = 21875,
     NPC_INNER_DEMON = 21857,
 
     // Fathom-Lord Karathress
@@ -76,6 +81,7 @@ namespace SerpentShrineCavernHelpers
     extern std::unordered_map<uint32, time_t> leotherasHumanFormDPSWaitTimer;
     extern std::unordered_map<uint32, time_t> leotherasDemonFormDPSWaitTimer;
     extern std::unordered_map<uint32, time_t> leotherasFinalPhaseDPSWaitTimer;
+    extern std::unordered_map<ObjectGuid, bool> hasReachedDemonFormTankPosition;
 
     struct Location 
     {
@@ -116,14 +122,13 @@ namespace SerpentShrineCavernHelpers
     void MarkTargetWithTriangle(Player* bot, Unit* target);
     void MarkTargetWithCross(Player* bot, Unit* target);
     void MarkTargetWithMoon(Player* bot, Unit* target);
+    std::string GetRtiName(uint8 index);
     void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target);
     bool IsMapIDTimerManager(PlayerbotAI* botAI, Player* bot);
     Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry);
 
     bool HasMarkOfHydrossAt100Percent(Player* bot);
     bool HasMarkOfCorruptionAt100Percent(Player* bot);
-
-    Player* GetLeotherasDemonFormTank(PlayerbotAI* botAI, Player* bot);
 
     Player* GetCaribdisTankHealer(PlayerbotAI* botAI, Player* bot);
 }

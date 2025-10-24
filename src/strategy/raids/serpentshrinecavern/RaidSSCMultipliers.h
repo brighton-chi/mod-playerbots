@@ -38,6 +38,13 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class LeotherasTheBlindDemonFormDisableMeleeActionsMultiplier : public Multiplier
+{
+public:
+    LeotherasTheBlindDemonFormDisableMeleeActionsMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "leotheras the blind demon form disable melee actions") {}
+    virtual float GetValue(Action* action);
+};
+
 class LeotherasTheBlindWaitForDPSMultiplier : public Multiplier
 {
 public:
@@ -49,6 +56,13 @@ class LeotherasTheBlindWaitForBloodlustAndHeroismMultiplier : public Multiplier
 {
 public:
     LeotherasTheBlindWaitForBloodlustAndHeroismMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "leotheras the blind wait for bloodlust and heroism") {}
+    virtual float GetValue(Action* action);
+};
+
+class LeotherasTheBlindFocusOnAttackingDuringInnerDemonMultiplier : public Multiplier
+{
+public:
+    LeotherasTheBlindFocusOnAttackingDuringInnerDemonMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "leotheras the blind focus on attacking during inner demon") {}
     virtual float GetValue(Action* action);
 };
 

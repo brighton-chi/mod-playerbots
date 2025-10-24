@@ -87,11 +87,11 @@ float TheLurkerBelowStayBehindBossDuringSpoutMultiplier::GetValue(Action* action
 
 float LeotherasTheBlindDisableTankAssistMultiplier::GetValue(Action* action)
 {
-    Unit* leotheras = GetFirstAliveUnitByEntry(botAI, NPC_LEOTHERAS_THE_BLIND_DEMON_FORM);
+    Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
     if (!leotheras)
         return 1.0f;
 
-    if (dynamic_cast<TankAssistAction*>(action))
+    if (leotheras->HasAura(SPELL_METAMORPHOSIS) && dynamic_cast<TankAssistAction*>(action))
         return 0.0f;
 
     return 1.0f;
@@ -111,6 +111,20 @@ float LeotherasTheBlindAvoidWhirlwindMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+float LeotherasTheBlindDemonFormDisableMeleeActionsMultiplier::GetValue(Action* action)
+{
+    Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
+    if (!leotheras || leotheras->HasAura(SPELL_LEOTHERAS_BANISHED) || !leotheras->HasAura(SPELL_METAMORPHOSIS) ||
+        botAI->IsAssistTankOfIndex(bot, 0) || !botAI->IsMelee(bot) || bot->HasAura(SPELL_INSIDIOUS_WHISPER))
+        return 1.0f;
+
+    if ((dynamic_cast<MovementAction*>(action) && !dynamic_cast<LeotherasTheBlindDemonFormPositionMeleeAction*>(action)) ||
+        dynamic_cast<CastKillingSpreeAction*>(action))
+        return 0.0f;
+
+    return 1.0f;
+}
+
 float LeotherasTheBlindWaitForDPSMultiplier::GetValue(Action* action)
 {
     Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
@@ -119,12 +133,11 @@ float LeotherasTheBlindWaitForDPSMultiplier::GetValue(Action* action)
 
     uint32 mapId = leotheras->GetMapId();
 
-    Unit* leotherasHuman = GetFirstAliveUnitByEntry(botAI, NPC_LEOTHERAS_THE_BLIND_HUMAN_FORM);
-    Unit* leotherasDemon = GetFirstAliveUnitByEntry(botAI, NPC_LEOTHERAS_THE_BLIND_DEMON_FORM);
-    Player* demonTank = GetLeotherasDemonFormTank(botAI, bot);
+    Unit* leotherasPhase1 = GetFirstAliveUnitByEntry(botAI, NPC_LEOTHERAS_THE_BLIND);
+    Unit* leotherasPhase2 = GetFirstAliveUnitByEntry(botAI, NPC_SHADOW_OF_LEOTHERAS);
 
-    const uint8 dpsWaitSeconds = 5;
-    if (leotherasHuman && !leotherasDemon)
+    const uint8 dpsWaitSeconds = 8;
+    if (leotherasPhase1 && !leotheras->HasAura(SPELL_METAMORPHOSIS))
     {
         auto it = leotherasHumanFormDPSWaitTimer.find(mapId);
         if (it != leotherasHumanFormDPSWaitTimer.end() && (time(nullptr) - it->second) < dpsWaitSeconds)
@@ -134,22 +147,22 @@ float LeotherasTheBlindWaitForDPSMultiplier::GetValue(Action* action)
                 return 0.0f;
         }
     }
-    else if (leotherasDemon && !leotherasHuman)
+    else if (leotherasPhase1 && leotheras->HasAura(SPELL_METAMORPHOSIS))
     {
         auto it = leotherasDemonFormDPSWaitTimer.find(mapId);
         if (it != leotherasDemonFormDPSWaitTimer.end() && (time(nullptr) - it->second) < dpsWaitSeconds)
         {
-            if (!demonTank && (dynamic_cast<AttackAction*>(action) || 
+            if (!botAI->IsAssistTankOfIndex(bot, 0) && (dynamic_cast<AttackAction*>(action) || 
                 (!botAI->IsHeal(bot) && dynamic_cast<CastSpellAction*>(action))))
                 return 0.0f;
         }
     }
-    else if (leotherasHuman && leotherasDemon)
+    else if (leotherasPhase2)
     {
         auto it = leotherasFinalPhaseDPSWaitTimer.find(mapId);
         if (it != leotherasFinalPhaseDPSWaitTimer.end() && (time(nullptr) - it->second) < dpsWaitSeconds)
         {
-            if (!botAI->IsMainTank(bot) && !demonTank && 
+            if (!botAI->IsMainTank(bot) && !botAI->IsAssistTankOfIndex(bot, 0) && 
                 (dynamic_cast<AttackAction*>(action) || (!botAI->IsHeal(bot) && dynamic_cast<CastSpellAction*>(action))))
                 return 0.0f;
         }
@@ -161,17 +174,28 @@ float LeotherasTheBlindWaitForDPSMultiplier::GetValue(Action* action)
 float LeotherasTheBlindWaitForBloodlustAndHeroismMultiplier::GetValue(Action* action)
 {
     Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
-    if (!leotheras)
+    if (!leotheras || leotheras->GetHealthPct() < 15)
         return 1.0f;
 
-    Unit* leotherasHuman = GetFirstAliveUnitByEntry(botAI, NPC_LEOTHERAS_THE_BLIND_HUMAN_FORM);
-    Unit* leotherasDemon = GetFirstAliveUnitByEntry(botAI, NPC_LEOTHERAS_THE_BLIND_DEMON_FORM);
-    if (!(leotherasHuman && leotherasDemon) && (dynamic_cast<CastHeroismAction*>(action) ||
-        dynamic_cast<CastBloodlustAction*>(action)))
+    if (dynamic_cast<CastHeroismAction*>(action) || dynamic_cast<CastBloodlustAction*>(action))
         return 0.0f;
 
     return 1.0f;
 }
+
+float LeotherasTheBlindFocusOnAttackingDuringInnerDemonMultiplier::GetValue(Action* action)
+{
+    if (!bot->HasAura(SPELL_INSIDIOUS_WHISPER))
+        return 1.0f;
+
+    if (dynamic_cast<CastHealingSpellAction*>(action) || dynamic_cast<FleeAction*>(action) || 
+        dynamic_cast<LeotherasTheBlindPositionRangedAction*>(action))
+        return 0.0f;
+
+    return 1.0f;
+}
+
+// Fathom-Lord Karathress
 
 float FathomLordKarathressDisableTankAssistMultiplier::GetValue(Action* action)
 {

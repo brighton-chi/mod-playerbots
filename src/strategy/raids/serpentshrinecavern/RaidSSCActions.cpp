@@ -1,6 +1,7 @@
 #include "RaidSSCActions.h"
 #include "RaidSSCHelpers.h"
 #include "Playerbots.h"
+#include "RtiTargetValue.h"
 
 using namespace SerpentShrineCavernHelpers;
 
@@ -15,6 +16,8 @@ bool GreyheartTidecallerMarkWaterElementalTotemAction::Execute(Event event)
     MarkTargetWithSkull(bot, waterTotem);
     return false;
 }
+
+// need to get away from mushrooms
 
 // Hydross the Unstable <Duke of Currents>
 
@@ -404,7 +407,7 @@ bool TheLurkerBelowRunAroundBehindBossAction::Execute(Event event)
 
 bool LeotherasTheBlindHumanFormPositionBossAction::Execute(Event event)
 {
-    Unit* leotheras = GetFirstAliveUnitByEntry(botAI, NPC_LEOTHERAS_THE_BLIND_HUMAN_FORM);
+    Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
     if (!leotheras)
         return false;
 
@@ -432,7 +435,7 @@ bool LeotherasTheBlindHumanFormPositionBossAction::Execute(Event event)
         {
             return MoveTo(leotheras->GetMapId(), leotheras->GetPositionX(),
                           leotheras->GetPositionY(), leotheras->GetPositionZ(),
-                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
         }
     }
 
@@ -441,7 +444,7 @@ bool LeotherasTheBlindHumanFormPositionBossAction::Execute(Event event)
 
 bool LeotherasTheBlindDemonFormPositionBossAction::Execute(Event event)
 {
-    Unit* leotheras = GetFirstAliveUnitByEntry(botAI, NPC_LEOTHERAS_THE_BLIND_DEMON_FORM);
+    Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
     if (!leotheras)
         return false;
 
@@ -451,89 +454,59 @@ bool LeotherasTheBlindDemonFormPositionBossAction::Execute(Event event)
     if (leotheras->GetVictim() == bot)
     {
         const Location& position = SerpentShrineCavernLocations::LeotherasDemonFormTankPosition;
-        const float maxDistance = 1.0f;
-        float distanceToPosition = bot->GetExactDist2d(position.x, position.y);
+        const float maxDistance = 5.0f;
+        ObjectGuid botGuid = bot->GetGUID();
 
-        if (distanceToPosition > maxDistance)
+        if (!hasReachedDemonFormTankPosition[botGuid])
         {
-            float dX = position.x - bot->GetPositionX();
-            float dY = position.y - bot->GetPositionY();
-            float dist = sqrt(dX * dX + dY * dY);
-            float moveX = bot->GetPositionX() + (dX / dist) * maxDistance;
-            float moveY = bot->GetPositionY() + (dY / dist) * maxDistance;
-
-            return MoveTo(bot->GetMapId(), moveX, moveY, position.z, false, false, false, false,
-                          MovementPriority::MOVEMENT_COMBAT, true, false);
-        }
-        else if (botAI->IsMelee(bot) && !bot->IsWithinMeleeRange(leotheras))
-        {
-            return MoveTo(leotheras->GetMapId(), leotheras->GetPositionX(),
-                          leotheras->GetPositionY(), leotheras->GetPositionZ(),
-                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
-        }
-        else if (botAI->IsRanged(bot))
-        {
-            float dist = bot->GetExactDist2d(leotheras);
-            if (dist < 12.0f)
+            if (bot->GetExactDist2d(position.x, position.y) > maxDistance)
             {
-                float angle = bot->GetAngle(leotheras);
-                float targetDist = 15.0f;
-                float moveX = leotheras->GetPositionX() + targetDist * cos(angle);
-                float moveY = leotheras->GetPositionY() + targetDist * sin(angle);
-
-                bot->AttackStop();
-                bot->InterruptNonMeleeSpells(true);
-                return MoveTo(leotheras->GetMapId(), moveX, moveY, leotheras->GetPositionZ(),
-                              false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+                return MoveTo(bot->GetMapId(), position.x, position.y, bot->GetPositionZ(), false, false, false, false,
+                              MovementPriority::MOVEMENT_FORCED, true, true);
             }
-            else if (dist > 35.0f)
-            {
-                float angle = bot->GetAngle(leotheras);
-                float targetDist = 30.0f;
-                float moveX = leotheras->GetPositionX() + targetDist * cos(angle);
-                float moveY = leotheras->GetPositionY() + targetDist * sin(angle);
+            else
+                hasReachedDemonFormTankPosition[botGuid] = true;
+        }
 
-                return MoveTo(leotheras->GetMapId(), moveX, moveY, leotheras->GetPositionZ(),
-                              false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
-            }
+        float maxMeleeRange = bot->GetMeleeRange(leotheras);
+        float angle = atan2(leotheras->GetPositionY() - position.y, leotheras->GetPositionX() - position.x);
+        float targetX = leotheras->GetPositionX() - maxMeleeRange * cos(angle);
+        float targetY = leotheras->GetPositionY() - maxMeleeRange * sin(angle);
+        float targetZ = position.z;
+
+        float currentDist = bot->GetExactDist2d(targetX, targetY);
+
+        const float tolerance = 0.3f;
+        if (currentDist > tolerance)
+        {
+            return MoveTo(leotheras->GetMapId(), targetX, targetY, targetZ, false, false, false, false,
+                          MovementPriority::MOVEMENT_FORCED, true, true);
         }
     }
 
     return false;
 }
 
-bool LeotherasTheBlindAssignDPSPriorityAction::Execute(Event event)
+bool LeotherasTheBlindPositionRangedAction::Execute(Event event)
 {
-    Unit* leotherasHuman = GetFirstAliveUnitByEntry(botAI, NPC_LEOTHERAS_THE_BLIND_HUMAN_FORM);
-    Unit* leotherasDemon = GetFirstAliveUnitByEntry(botAI, NPC_LEOTHERAS_THE_BLIND_DEMON_FORM);
-    Unit* innerDemon = AI_VALUE2(Unit*, "find target", "inner demon");
+    Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
+    Group* group = bot->GetGroup();
+    if (!leotheras || !group)
+        return false;
 
-    if (innerDemon)
+    const uint32 minInterval = 500;
+
+    if (bot->GetExactDist(leotheras) < 12.0f)
+        return FleePosition(leotheras->GetPosition(), 15.0f, minInterval);
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
-        MarkTargetWithSquare(bot, innerDemon);
-        SetRtiTarget(botAI, "square", innerDemon);
+        Player* member = ref->GetSource();
+        if (!member || member == bot || !member->IsAlive())
+            continue;
 
-        if (bot->GetVictim() != innerDemon)
-            return Attack(innerDemon);
-    }
-
-    Player* demonTank = GetLeotherasDemonFormTank(botAI, bot);
-    if (leotherasHuman && leotherasDemon)
-    {
-        if (demonTank)
-        {
-            MarkTargetWithCross(bot, leotherasDemon);
-            SetRtiTarget(botAI, "cross", leotherasDemon);
-        }
-
-        if (!demonTank)
-        {
-            MarkTargetWithSquare(bot, leotherasHuman);
-            SetRtiTarget(botAI, "square", leotherasHuman);
-
-            if (!botAI->IsMainTank(bot) && bot->GetVictim() != leotherasHuman)
-                return Attack(leotherasHuman);
-        }
+        if (bot->GetExactDist(member) < 5.0f)
+            return FleePosition(member->GetPosition(), 6.0f, minInterval);
     }
 
     return false;
@@ -543,61 +516,182 @@ bool LeotherasTheBlindRunAwayFromWhirlwindAction::Execute(Event event)
 {
     Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
 
-    const float safeDistance = 15.0f;
+    const float safeDistance = 14.0f;
     float distance = bot->GetExactDist2d(leotheras);
 
     if (distance < safeDistance)
     {
         bot->AttackStop();
         bot->InterruptNonMeleeSpells(true);
-        MoveAway(leotheras, 18.0f, false);
+        MoveAway(leotheras, 15.0f, false);
     }
 
     return false;
 }
 
-bool LeotherasTheBlindManageDPSTimersAction::Execute(Event event)
+bool LeotherasTheBlindDemonFormPositionMeleeAction::Execute(Event event)
+{
+    Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
+    if (!leotheras)
+        return false;
+
+    float maxMeleeRange = bot->GetMeleeRange(leotheras);
+    float behindAngle = Position::NormalizeOrientation(leotheras->GetOrientation() + M_PI);
+    float targetX = leotheras->GetPositionX() + maxMeleeRange * cos(behindAngle);
+    float targetY = leotheras->GetPositionY() + maxMeleeRange * sin(behindAngle);
+    float targetZ = leotheras->GetPositionZ();
+
+    float currentDist = bot->GetExactDist2d(targetX, targetY);
+
+    const float tolerance = 0.3f;
+    if (fabs(currentDist - maxMeleeRange) > tolerance)
+    {
+        return MoveTo(leotheras->GetMapId(), targetX, targetY, targetZ, false, false, false, false,
+                      MovementPriority::MOVEMENT_COMBAT, true, false);
+    }
+
+    return false;
+}
+
+bool LeotherasTheBlindMarkAndAttackInnerDemonAction::Execute(Event event)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+    {
+        LOG_DEBUG("playerbots", "LeotherasTheBlindMarkAndAttackInnerDemonAction: bot={} has no group", bot->GetName());
+        return false;
+    }
+
+    std::vector<uint8> rtiIcons = 
+    {
+        RtiTargetValue::squareIndex,
+        RtiTargetValue::starIndex,
+        RtiTargetValue::circleIndex,
+        RtiTargetValue::diamondIndex,
+        RtiTargetValue::triangleIndex
+    };
+    size_t iconIndex = 0;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref && iconIndex < rtiIcons.size(); ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive() || !member->HasAura(SPELL_INSIDIOUS_WHISPER))
+            continue;
+
+        if (member == bot)
+        {
+            Unit* innerDemon = GetFirstAliveUnitByEntry(botAI, NPC_INNER_DEMON);
+            if (!innerDemon)
+            {
+                LOG_DEBUG("playerbots", "LeotherasTheBlindMarkAndAttackInnerDemonAction: bot={} could not find inner demon", bot->GetName());
+            }
+            else
+            {
+                LOG_DEBUG("playerbots", "LeotherasTheBlindMarkAndAttackInnerDemonAction: bot={} applying mark={} and setting RTI target={}", 
+                        bot->GetName(), GetRtiName(rtiIcons[iconIndex]), GetRtiName(rtiIcons[iconIndex]));
+                MarkTargetWithIcon(bot, innerDemon, rtiIcons[iconIndex]);
+                SetRtiTarget(botAI, GetRtiName(rtiIcons[iconIndex]), innerDemon);
+
+                if (botAI->IsHeal(bot) && !botAI->HasStrategy("healer dps", BOT_STATE_COMBAT))
+                {
+                    LOG_DEBUG("playerbots", "LeotherasTheBlindMarkAndAttackInnerDemonAction: bot={} switching to healer dps strategy", bot->GetName());
+                    botAI->ChangeStrategy("healer dps", BOT_STATE_COMBAT);
+                }
+
+                if (bot->GetVictim() != innerDemon)
+                {
+                    LOG_DEBUG("playerbots", "LeotherasTheBlindMarkAndAttackInnerDemonAction: bot={} attacking inner demon guid={}", bot->GetName(), innerDemon->GetGUID().ToString());
+                    return Attack(innerDemon);
+                }
+                else
+                {
+                    LOG_DEBUG("playerbots", "LeotherasTheBlindMarkAndAttackInnerDemonAction: bot={} already attacking inner demon guid={}", bot->GetName(), innerDemon->GetGUID().ToString());
+                }
+            }
+        }
+        ++iconIndex;
+    }
+
+    LOG_DEBUG("playerbots", "LeotherasTheBlindMarkAndAttackInnerDemonAction: bot={} did not attack any inner demon", bot->GetName());
+    return false;
+}
+
+bool LeotherasTheBlindFinalPhaseAssignDPSPriorityAction::Execute(Event event)
+{
+    Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
+    if (!leotheras)
+        return false;
+
+    Unit* leotherasHuman = (leotheras && !leotheras->HasAura(SPELL_METAMORPHOSIS)) ? leotheras : nullptr;
+    Unit* leotherasDemon = (leotheras && leotheras->HasAura(SPELL_METAMORPHOSIS)) ? leotheras : nullptr;
+
+    if (botAI->IsAssistTankOfIndex(bot, 0))
+    {
+        MarkTargetWithCross(bot, leotherasDemon);
+        SetRtiTarget(botAI, "cross", leotherasDemon);
+    }
+
+    if (!botAI->IsAssistTankOfIndex(bot, 0))
+    {
+        MarkTargetWithSquare(bot, leotherasHuman);
+        SetRtiTarget(botAI, "square", leotherasHuman);
+
+        if (bot->GetVictim() != leotherasHuman)
+            return Attack(leotherasHuman);
+    }
+
+    return false;
+}
+
+bool LeotherasTheBlindManageTimersAndTrackersAction::Execute(Event event)
 {
     Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
     if (!leotheras)
         return false;
 
     uint32 mapId = leotheras->GetMapId();
+    ObjectGuid botGuid = bot->GetGUID();
 
-    Unit* leotherasHuman = GetFirstAliveUnitByEntry(botAI, NPC_LEOTHERAS_THE_BLIND_HUMAN_FORM);
-    Unit* leotherasDemon = GetFirstAliveUnitByEntry(botAI, NPC_LEOTHERAS_THE_BLIND_DEMON_FORM);
-
-    if (leotherasHuman && leotherasHuman->GetHealth() == leotherasHuman->GetMaxHealth())
+    if (IsMapIDTimerManager(botAI, bot))
     {
-        if (leotherasFinalPhaseDPSWaitTimer.find(mapId) != leotherasFinalPhaseDPSWaitTimer.end())
-            leotherasFinalPhaseDPSWaitTimer.erase(mapId);
+        if (leotheras->HasAura(SPELL_LEOTHERAS_BANISHED))
+        {
+            if (leotherasFinalPhaseDPSWaitTimer.find(mapId) != leotherasFinalPhaseDPSWaitTimer.end())
+                leotherasFinalPhaseDPSWaitTimer.erase(mapId);
 
-        if (leotherasHumanFormDPSWaitTimer.find(mapId) != leotherasHumanFormDPSWaitTimer.end())
-            leotherasHumanFormDPSWaitTimer.erase(mapId);
+            if (leotherasHumanFormDPSWaitTimer.find(mapId) != leotherasHumanFormDPSWaitTimer.end())
+                leotherasHumanFormDPSWaitTimer.erase(mapId);
 
-        if (leotherasHumanFormDPSWaitTimer.find(mapId) == leotherasHumanFormDPSWaitTimer.end())
-            leotherasHumanFormDPSWaitTimer[mapId] = time(nullptr);
+            if (leotherasDemonFormDPSWaitTimer.find(mapId) != leotherasDemonFormDPSWaitTimer.end())
+                leotherasDemonFormDPSWaitTimer.erase(mapId);
+        }
+        else if (!leotheras->HasAura(SPELL_METAMORPHOSIS) && leotheras->GetHealthPct() >= 15)
+        {
+            if (leotherasHumanFormDPSWaitTimer.find(mapId) == leotherasHumanFormDPSWaitTimer.end())
+                leotherasHumanFormDPSWaitTimer[mapId] = time(nullptr);
+
+            if (leotherasDemonFormDPSWaitTimer.find(mapId) != leotherasDemonFormDPSWaitTimer.end())
+                leotherasDemonFormDPSWaitTimer.erase(mapId);
+        }
+        else if (leotheras->HasAura(SPELL_METAMORPHOSIS) && leotheras->GetHealthPct() >= 15)
+        {
+            if (leotherasDemonFormDPSWaitTimer.find(mapId) == leotherasDemonFormDPSWaitTimer.end())
+                leotherasDemonFormDPSWaitTimer[mapId] = time(nullptr);
+
+            if (leotherasHumanFormDPSWaitTimer.find(mapId) != leotherasHumanFormDPSWaitTimer.end())
+                leotherasHumanFormDPSWaitTimer.erase(mapId);
+        }
+        else if (leotheras->GetHealthPct() < 15)
+        {
+            if (leotherasFinalPhaseDPSWaitTimer.find(mapId) == leotherasFinalPhaseDPSWaitTimer.end())
+                leotherasFinalPhaseDPSWaitTimer[mapId] = time(nullptr);
+        }
     }
-    else if (leotherasHuman && !leotherasDemon)
-    {
-        if (leotherasHumanFormDPSWaitTimer.find(mapId) == leotherasHumanFormDPSWaitTimer.end())
-            leotherasHumanFormDPSWaitTimer[mapId] = time(nullptr);
 
-        if (leotherasDemonFormDPSWaitTimer.find(mapId) != leotherasDemonFormDPSWaitTimer.end())
-            leotherasDemonFormDPSWaitTimer.erase(mapId);
-    }
-    else if (leotherasDemon && !leotherasHuman)
+    if (botAI->IsAssistTankOfIndex(bot, 0) && leotheras->HasAura(SPELL_LEOTHERAS_BANISHED))
     {
-        if (leotherasDemonFormDPSWaitTimer.find(mapId) == leotherasDemonFormDPSWaitTimer.end())
-            leotherasDemonFormDPSWaitTimer[mapId] = time(nullptr);
-
-        if (leotherasHumanFormDPSWaitTimer.find(mapId) != leotherasHumanFormDPSWaitTimer.end())
-            leotherasHumanFormDPSWaitTimer.erase(mapId);
-    }
-    else if (leotherasHuman && leotherasDemon)
-    {
-        if (leotherasFinalPhaseDPSWaitTimer.find(mapId) == leotherasFinalPhaseDPSWaitTimer.end())
-            leotherasFinalPhaseDPSWaitTimer[mapId] = time(nullptr);
+        if (hasReachedDemonFormTankPosition.find(botGuid) != hasReachedDemonFormTankPosition.end())
+            hasReachedDemonFormTankPosition.erase(botGuid);
     }
 
     return false;

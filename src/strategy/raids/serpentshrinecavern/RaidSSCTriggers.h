@@ -59,17 +59,17 @@ public:
     bool IsActive() override;
 };
 
-class LeotherasTheBlindDemonFormEngagedByTankTrigger : public Trigger
+class LeotherasTheBlindDemonFormEngagedByFirstAssistTankTrigger : public Trigger
 {
 public:
-    LeotherasTheBlindDemonFormEngagedByTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "leotheras the blind demon form engaged by tank") {}
+    LeotherasTheBlindDemonFormEngagedByFirstAssistTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "leotheras the blind demon form engaged by first assist tank") {}
     bool IsActive() override;
 };
 
-class LeotherasTheBlindDeterminingKillOrderTrigger : public Trigger
+class LeotherasTheBlindBossEngagedByRangedTrigger : public Trigger
 {
 public:
-    LeotherasTheBlindDeterminingKillOrderTrigger(PlayerbotAI* botAI) : Trigger(botAI, "leotheras the blind determining kill order") {}
+    LeotherasTheBlindBossEngagedByRangedTrigger(PlayerbotAI* botAI) : Trigger(botAI, "leotheras the blind boss engaged by ranged") {}
     bool IsActive() override;
 };
 
@@ -80,10 +80,31 @@ public:
     bool IsActive() override;
 };
 
-class LeotherasTheBlindWaitingForDPSTrigger : public Trigger
+class LeotherasTheBlindDemonFormEngagedByMeleeTrigger : public Trigger
 {
 public:
-    LeotherasTheBlindWaitingForDPSTrigger(PlayerbotAI* botAI) : Trigger(botAI, "leotheras the blind waiting for dps") {}
+    LeotherasTheBlindDemonFormEngagedByMeleeTrigger(PlayerbotAI* botAI) : Trigger(botAI, "leotheras the blind demon form engaged by melee") {}
+    bool IsActive() override;
+};
+
+class LeotherasTheBlindInnerDemonHasTakenForm : public Trigger
+{
+public:
+    LeotherasTheBlindInnerDemonHasTakenForm(PlayerbotAI* botAI) : Trigger(botAI, "leotheras the blind inner demon has taken form") {}
+    bool IsActive() override;
+};
+
+class LeotherasTheBlindEnteredFinalPhaseTrigger : public Trigger
+{
+public:
+    LeotherasTheBlindEnteredFinalPhaseTrigger(PlayerbotAI* botAI) : Trigger(botAI, "leotheras the blind entered final phase") {}
+    bool IsActive() override;
+};
+
+class LeotherasTheBlindNeedToManageTimersAndTrackersTrigger : public Trigger
+{
+public:
+    LeotherasTheBlindNeedToManageTimersAndTrackersTrigger(PlayerbotAI* botAI) : Trigger(botAI, "leotheras the blind need to manage timers and trackers") {}
     bool IsActive() override;
 };
 

@@ -3,6 +3,12 @@
 
 void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
+    // Trash
+    triggers.push_back(new TriggerNode(
+        "greyheart tidecaller water elemental totem spawned",
+        NextAction::array(0, new NextAction("greyheart tidecaller mark water elemental totem", ACTION_RAID + 1), nullptr)
+    ));
+
     // Hydross the Unstable <Duke of Currents>
     triggers.push_back(new TriggerNode(
         "hydross the unstable waiting for dps",
@@ -24,32 +30,47 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         "hydross the unstable danger from water tombs",
         NextAction::array(0, new NextAction("hydross the unstable frost phase spread out", ACTION_EMERGENCY + 1), nullptr)
     ));
+
     // The Lurker Below
     triggers.push_back(new TriggerNode(
         "the lurker below spout is active",
         NextAction::array(0, new NextAction("the lurker below run around behind boss", ACTION_EMERGENCY + 6), nullptr)
     ));
+
     // Leotheras the Blind
     triggers.push_back(new TriggerNode(
         "leotheras the blind human form engaged by main tank",
         NextAction::array(0, new NextAction("leotheras the blind human form position boss", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode(
-        "leotheras the blind demon form engaged by tank",
-        NextAction::array(0, new NextAction("leotheras the blind demon form position boss", ACTION_RAID + 1), nullptr)
+        "leotheras the blind demon form engaged by first assist tank",
+        NextAction::array(0, new NextAction("leotheras the blind demon form position boss", ACTION_EMERGENCY + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode(
-        "leotheras the blind determining kill order",
-        NextAction::array(0, new NextAction("leotheras the blind assign dps priority", ACTION_RAID + 2), nullptr)
+        "leotheras the blind boss engaged by ranged",
+        NextAction::array(0, new NextAction("leotheras the blind position ranged", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode(
         "leotheras the blind boss channeling whirlwind",
         NextAction::array(0, new NextAction("leotheras the blind run away from whirlwind", ACTION_EMERGENCY + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode(
-        "leotheras the blind waiting for dps",
-        NextAction::array(0, new NextAction("leotheras the blind manage dps timers", ACTION_EMERGENCY + 10), nullptr)
+        "leotheras the blind demon form engaged by melee",
+        NextAction::array(0, new NextAction("leotheras the blind demon form position melee", ACTION_EMERGENCY + 1), nullptr)
     ));
+    triggers.push_back(new TriggerNode(
+        "leotheras the blind inner demon has taken form",
+        NextAction::array(0, new NextAction("leotheras the blind mark and attack inner demon", ACTION_EMERGENCY + 6), nullptr)
+    ));
+    triggers.push_back(new TriggerNode(
+        "leotheras the blind entered final phase",
+        NextAction::array(0, new NextAction("leotheras the blind final phase assign dps priority", ACTION_RAID + 2), nullptr)
+    ));
+    triggers.push_back(new TriggerNode(
+        "leotheras the blind need to manage timers and trackers",
+        NextAction::array(0, new NextAction("leotheras the blind manage timers and trackers", ACTION_EMERGENCY + 10), nullptr)
+    ));
+
     // Fathom-Lord Karathress
     triggers.push_back(new TriggerNode(
         "fathom-lord karathress boss engaged by main tank",
@@ -83,6 +104,7 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         "fathom-lord karathress determining ranged dps kill order",
         NextAction::array(0, new NextAction("fathom-lord karathress assign ranged dps priority", ACTION_RAID + 1), nullptr)
     ));
+
     // Morogrim Tidewalker
     triggers.push_back(new TriggerNode(
         "morogrim tidewalker boss engaged by main tank",
@@ -105,7 +127,9 @@ void RaidSSCStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new TheLurkerBelowStayBehindBossDuringSpoutMultiplier(botAI));
     multipliers.push_back(new LeotherasTheBlindDisableTankAssistMultiplier(botAI));
     multipliers.push_back(new LeotherasTheBlindAvoidWhirlwindMultiplier(botAI));
+    multipliers.push_back(new LeotherasTheBlindDemonFormDisableMeleeActionsMultiplier(botAI));
     multipliers.push_back(new LeotherasTheBlindWaitForDPSMultiplier(botAI));
     multipliers.push_back(new LeotherasTheBlindWaitForBloodlustAndHeroismMultiplier(botAI));
+    multipliers.push_back(new LeotherasTheBlindFocusOnAttackingDuringInnerDemonMultiplier(botAI));
     multipliers.push_back(new FathomLordKarathressDisableTankAssistMultiplier(botAI));
 }

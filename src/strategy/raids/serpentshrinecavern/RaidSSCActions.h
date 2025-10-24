@@ -69,18 +69,18 @@ public:
     bool Execute(Event event) override;
 };
 
-class LeotherasTheBlindDemonFormPositionBossAction : public AttackAction
+class LeotherasTheBlindPositionRangedAction : public MovementAction
 {
 public:
-    LeotherasTheBlindDemonFormPositionBossAction(PlayerbotAI* botAI, std::string const name = "leotheras the blind demon form position boss") : AttackAction(botAI, name) {}
+    LeotherasTheBlindPositionRangedAction(PlayerbotAI* botAI, std::string const name = "leotheras the blind position ranged") : MovementAction(botAI, name) {}
 
     bool Execute(Event event) override;
 };
 
-class LeotherasTheBlindAssignDPSPriorityAction : public AttackAction
+class LeotherasTheBlindDemonFormPositionBossAction : public AttackAction
 {
 public:
-    LeotherasTheBlindAssignDPSPriorityAction(PlayerbotAI* botAI, std::string const name = "leotheras the blind assign dps priority") : AttackAction(botAI, name) {}
+    LeotherasTheBlindDemonFormPositionBossAction(PlayerbotAI* botAI, std::string const name = "leotheras the blind demon form position boss") : AttackAction(botAI, name) {}
 
     bool Execute(Event event) override;
 };
@@ -93,10 +93,34 @@ public:
     bool Execute(Event event) override;
 };
 
-class LeotherasTheBlindManageDPSTimersAction : public Action
+class LeotherasTheBlindDemonFormPositionMeleeAction : public MovementAction
 {
 public:
-    LeotherasTheBlindManageDPSTimersAction(PlayerbotAI* botAI, std::string const name = "leotheras the blind manage dps timers") : Action(botAI, name) {}
+    LeotherasTheBlindDemonFormPositionMeleeAction(PlayerbotAI* botAI, std::string const name = "leotheras the blind demon form position melee") : MovementAction(botAI, name) {}
+
+    bool Execute(Event event) override;
+};
+
+class LeotherasTheBlindMarkAndAttackInnerDemonAction : public AttackAction
+{
+public:
+    LeotherasTheBlindMarkAndAttackInnerDemonAction(PlayerbotAI* botAI, std::string const name = "leotheras the blind mark and attack inner demon") : AttackAction(botAI, name) {}
+
+    bool Execute(Event event) override;
+};
+
+class LeotherasTheBlindFinalPhaseAssignDPSPriorityAction : public AttackAction
+{
+public:
+    LeotherasTheBlindFinalPhaseAssignDPSPriorityAction(PlayerbotAI* botAI, std::string const name = "leotheras the blind final phase assign dps priority") : AttackAction(botAI, name) {}
+
+    bool Execute(Event event) override;
+};
+
+class LeotherasTheBlindManageTimersAndTrackersAction : public Action
+{
+public:
+    LeotherasTheBlindManageTimersAndTrackersAction(PlayerbotAI* botAI, std::string const name = "leotheras the blind manage timers and trackers") : Action(botAI, name) {}
 
     bool Execute(Event event) override;
 };

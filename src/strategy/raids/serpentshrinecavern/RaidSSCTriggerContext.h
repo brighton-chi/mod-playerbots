@@ -16,10 +16,13 @@ public:
         creators["hydross the unstable danger from water tombs"] = &RaidSSCTriggerContext::hydross_the_unstable_danger_from_water_tombs;
         creators["the lurker below spout is active"] = &RaidSSCTriggerContext::the_lurker_below_spout_is_active;
         creators["leotheras the blind human form engaged by main tank"] = &RaidSSCTriggerContext::leotheras_the_blind_human_form_engaged_by_main_tank;
-        creators["leotheras the blind demon form engaged by tank"] = &RaidSSCTriggerContext::leotheras_the_blind_demon_form_engaged_by_tank;
-        creators["leotheras the blind determining kill order"] = &RaidSSCTriggerContext::leotheras_the_blind_determining_kill_order;
+        creators["leotheras the blind demon form engaged by first assist tank"] = &RaidSSCTriggerContext::leotheras_the_blind_demon_form_engaged_by_first_assist_tank;
+        creators["leotheras the blind boss engaged by ranged"] = &RaidSSCTriggerContext::leotheras_the_blind_boss_engaged_by_ranged;
         creators["leotheras the blind boss channeling whirlwind"] = &RaidSSCTriggerContext::leotheras_the_blind_boss_channeling_whirlwind;
-        creators["leotheras the blind waiting for dps"] = &RaidSSCTriggerContext::leotheras_the_blind_waiting_for_dps;
+        creators["leotheras the blind demon form engaged by melee"] = &RaidSSCTriggerContext::leotheras_the_blind_demon_form_engaged_by_melee;
+        creators["leotheras the blind inner demon has taken form"] = &RaidSSCTriggerContext::leotheras_the_blind_inner_demon_has_taken_form;
+        creators["leotheras the blind entered final phase"] = &RaidSSCTriggerContext::leotheras_the_blind_entered_final_phase;
+        creators["leotheras the blind need to manage timers and trackers"] = &RaidSSCTriggerContext::leotheras_the_blind_need_to_manage_timers_and_trackers;
         creators["fathom-lord karathress boss engaged by main tank"] = &RaidSSCTriggerContext::fathom_lord_karathress_boss_engaged_by_main_tank;
         creators["fathom-lord karathress sharkkis engaged by first assist tank"] = &RaidSSCTriggerContext::fathom_lord_karathress_sharkkis_engaged_by_first_assist_tank;
         creators["fathom-lord karathress tidalvess engaged by second assist tank"] = &RaidSSCTriggerContext::fathom_lord_karathress_tidalvess_engaged_by_second_assist_tank;
@@ -41,10 +44,13 @@ private:
     static Trigger* hydross_the_unstable_danger_from_water_tombs(PlayerbotAI* botAI) { return new HydrossTheUnstableDangerFromWaterTombsTrigger(botAI); }
     static Trigger* the_lurker_below_spout_is_active(PlayerbotAI* botAI) { return new TheLurkerBelowSpoutIsActiveTrigger(botAI); }
     static Trigger* leotheras_the_blind_human_form_engaged_by_main_tank(PlayerbotAI* botAI) { return new LeotherasTheBlindHumanFormEngagedByMainTankTrigger(botAI); }
-    static Trigger* leotheras_the_blind_demon_form_engaged_by_tank(PlayerbotAI* botAI) { return new LeotherasTheBlindDemonFormEngagedByTankTrigger(botAI); }
-    static Trigger* leotheras_the_blind_determining_kill_order(PlayerbotAI* botAI) { return new LeotherasTheBlindDeterminingKillOrderTrigger(botAI); }
+    static Trigger* leotheras_the_blind_demon_form_engaged_by_first_assist_tank(PlayerbotAI* botAI) { return new LeotherasTheBlindDemonFormEngagedByFirstAssistTankTrigger(botAI); }
+    static Trigger* leotheras_the_blind_boss_engaged_by_ranged(PlayerbotAI* botAI) { return new LeotherasTheBlindBossEngagedByRangedTrigger(botAI); }
     static Trigger* leotheras_the_blind_boss_channeling_whirlwind(PlayerbotAI* botAI) { return new LeotherasTheBlindBossChannelingWhirlwindTrigger(botAI); }
-    static Trigger* leotheras_the_blind_waiting_for_dps(PlayerbotAI* botAI) { return new LeotherasTheBlindWaitingForDPSTrigger(botAI); }
+    static Trigger* leotheras_the_blind_demon_form_engaged_by_melee(PlayerbotAI* botAI) { return new LeotherasTheBlindDemonFormEngagedByMeleeTrigger(botAI); }
+    static Trigger* leotheras_the_blind_inner_demon_has_taken_form(PlayerbotAI* botAI) { return new LeotherasTheBlindInnerDemonHasTakenForm(botAI); }
+    static Trigger* leotheras_the_blind_entered_final_phase(PlayerbotAI* botAI) { return new LeotherasTheBlindEnteredFinalPhaseTrigger(botAI); }
+    static Trigger* leotheras_the_blind_need_to_manage_timers_and_trackers(PlayerbotAI* botAI) { return new LeotherasTheBlindNeedToManageTimersAndTrackersTrigger(botAI); }
     static Trigger* fathom_lord_karathress_boss_engaged_by_main_tank(PlayerbotAI* botAI) { return new FathomLordKarathressBossEngagedByMainTankTrigger(botAI); }
     static Trigger* fathom_lord_karathress_sharkkis_engaged_by_first_assist_tank(PlayerbotAI* botAI) { return new FathomLordKarathressSharkkisEngagedByFirstAssistTankTrigger(botAI); }
     static Trigger* fathom_lord_karathress_tidalvess_engaged_by_second_assist_tank(PlayerbotAI* botAI) { return new FathomLordKarathressTidalvessEngagedBySecondAssistTankTrigger(botAI); }
