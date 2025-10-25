@@ -15,10 +15,6 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     // Hydross the Unstable <Duke of Currents>
     triggers.push_back(new TriggerNode(
-        "hydross the unstable waiting for dps",
-        NextAction::array(0, new NextAction("hydross the unstable manage dps timer", ACTION_EMERGENCY + 10), nullptr)
-    ));
-    triggers.push_back(new TriggerNode(
         "hydross the unstable bot is frost tank",
         NextAction::array(0, new NextAction("hydross the unstable position frost tank", ACTION_RAID + 1), nullptr)
     ));
@@ -33,6 +29,18 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode(
         "hydross the unstable danger from water tombs",
         NextAction::array(0, new NextAction("hydross the unstable frost phase spread out", ACTION_EMERGENCY + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode(
+        "hydross the unstable tank needs aggro upon phase change",
+        NextAction::array(0, new NextAction("hydross the unstable misdirect boss to tank", ACTION_EMERGENCY + 6), nullptr)
+    ));
+    triggers.push_back(new TriggerNode(
+        "hydross the unstable need to transition before fourth mark",
+        NextAction::array(0, new NextAction("hydross the unstable manage phase change timers", ACTION_EMERGENCY + 10), nullptr)
+    ));
+    triggers.push_back(new TriggerNode(
+        "hydross the unstable waiting for dps",
+        NextAction::array(0, new NextAction("hydross the unstable manage dps timers", ACTION_EMERGENCY + 10), nullptr)
     ));
 
     // The Lurker Below
@@ -132,8 +140,9 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
 void RaidSSCStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
-    multipliers.push_back(new HydrossTheUnstableDisableTankAssistMultiplier(botAI));
-    // multipliers.push_back(new HydrossTheUnstableWaitForDPSMultiplier(botAI));
+    multipliers.push_back(new HydrossTheUnstableDisableTankActionsMultiplier(botAI));
+    multipliers.push_back(new HydrossTheUnstableWaitForDPSMultiplier(botAI));
+    multipliers.push_back(new HydrossTheUnstableControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new TheLurkerBelowStayBehindBossDuringSpoutMultiplier(botAI));
     multipliers.push_back(new LeotherasTheBlindAvoidWhirlwindMultiplier(botAI));
     multipliers.push_back(new LeotherasTheBlindDisableTankActionsMultiplier(botAI));

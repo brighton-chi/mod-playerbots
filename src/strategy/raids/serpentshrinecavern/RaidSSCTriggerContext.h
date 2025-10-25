@@ -14,9 +14,11 @@ public:
 
         creators["hydross the unstable bot is frost tank"] = &RaidSSCTriggerContext::hydross_the_unstable_bot_is_frost_tank;
         creators["hydross the unstable bot is nature tank"] = &RaidSSCTriggerContext::hydross_the_unstable_bot_is_nature_tank;
-        creators["hydross the unstable waiting for dps"] = &RaidSSCTriggerContext::hydross_the_unstable_waiting_for_dps;
         creators["hydross the unstable elementals spawned"] = &RaidSSCTriggerContext::hydross_the_unstable_elementals_spawned;
         creators["hydross the unstable danger from water tombs"] = &RaidSSCTriggerContext::hydross_the_unstable_danger_from_water_tombs;
+        creators["hydross the unstable tank needs aggro upon phase change"] = &RaidSSCTriggerContext::hydross_the_unstable_tank_needs_aggro_upon_phase_change;
+        creators["hydross the unstable need to transition before fourth mark"] = &RaidSSCTriggerContext::hydross_the_unstable_need_to_transition_before_fourth_mark;
+        creators["hydross the unstable waiting for dps"] = &RaidSSCTriggerContext::hydross_the_unstable_waiting_for_dps;
 
         creators["the lurker below spout is active"] = &RaidSSCTriggerContext::the_lurker_below_spout_is_active;
 
@@ -50,9 +52,11 @@ private:
 
     static Trigger* hydross_the_unstable_bot_is_frost_tank(PlayerbotAI* botAI) { return new HydrossTheUnstableBotIsFrostTankTrigger(botAI); }
     static Trigger* hydross_the_unstable_bot_is_nature_tank(PlayerbotAI* botAI) { return new HydrossTheUnstableBotIsNatureTankTrigger(botAI); }
-    static Trigger* hydross_the_unstable_waiting_for_dps(PlayerbotAI* botAI) { return new HydrossTheUnstableWaitingForDPSTrigger(botAI); }
     static Trigger* hydross_the_unstable_elementals_spawned(PlayerbotAI* botAI) { return new HydrossTheUnstableElementalsSpawnedTrigger(botAI); }
     static Trigger* hydross_the_unstable_danger_from_water_tombs(PlayerbotAI* botAI) { return new HydrossTheUnstableDangerFromWaterTombsTrigger(botAI); }
+    static Trigger* hydross_the_unstable_tank_needs_aggro_upon_phase_change(PlayerbotAI* botAI) { return new HydrossTheUnstableTankNeedsAggroUponPhaseChangeTrigger(botAI); }
+    static Trigger* hydross_the_unstable_need_to_transition_before_fourth_mark(PlayerbotAI* botAI) { return new HydrossTheUnstableNeedToTransitionBeforeFourthMarkTrigger(botAI); }
+    static Trigger* hydross_the_unstable_waiting_for_dps(PlayerbotAI* botAI) { return new HydrossTheUnstableWaitingForDPSTrigger(botAI); }
 
     static Trigger* the_lurker_below_spout_is_active(PlayerbotAI* botAI) { return new TheLurkerBelowSpoutIsActiveTrigger(botAI); }
 

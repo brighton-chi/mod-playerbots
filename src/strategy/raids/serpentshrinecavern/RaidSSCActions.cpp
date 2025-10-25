@@ -35,19 +35,6 @@ bool RancidMushroomMoveAwayFromMushroomSporeCloudAction::Execute(Event event)
 
 // Hydross the Unstable <Duke of Currents>
 
-// Frost tank action, have it be MT, frost tank position if does not have mark of hydross 100, 250, or 500
-// frost tank moves to nature tank position if has mark of hydross 100 +
-// frost tank taunts hydross if nature tank has mark of corruption 100 +
-
-// Nature tank action, have it be 1st assist tank, nature tank position if does not have mark of corruption 100, 250, or 500
-// nature tank moves to frost tank position if has mark of hydross 100 +
-// nature tank taunts hydross if frost tank has mark of hydross 100 +
-
-// ranged bots need to spread >8 yards if hydross is in water form
-// melee what to do? def need to stay away from tank
-
-// dps mark/prioritize elemental adds with skull
-
 bool HydrossTheUnstablePositionFrostTankAction::Execute(Event event)
 {
     Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
@@ -58,12 +45,12 @@ bool HydrossTheUnstablePositionFrostTankAction::Execute(Event event)
     {
         if (bot->GetVictim() != hydross)
         {
-            const char* taunts[] = { "taunt", "growl", "hand of reckoning" };
+            /* const char* taunts[] = { "taunt", "growl", "hand of reckoning" };
             for (const char* spellName : taunts)
             {
                 if (botAI->CanCastSpell(spellName, hydross))
                     return botAI->CastSpell(spellName, hydross);
-            }
+            } */
             return Attack(hydross);
         }
 
@@ -96,7 +83,7 @@ bool HydrossTheUnstablePositionFrostTankAction::Execute(Event event)
         ObjectGuid botGuid = bot->GetGUID();
         time_t now = time(nullptr);
 
-        if (now - hydrossChangeToNaturePhaseTimer[botGuid] >= 10)
+        if (now - hydrossChangeToNaturePhaseTimer[botGuid] >= 5)
         {
             const Location& position = SerpentShrineCavernLocations::HydrossNatureTankPosition;
 
@@ -150,12 +137,12 @@ bool HydrossTheUnstablePositionNatureTankAction::Execute(Event event)
     {
         if (bot->GetVictim() != hydross)
         {
-            const char* taunts[] = { "taunt", "growl", "hand of reckoning" };
+            /* const char* taunts[] = { "taunt", "growl", "hand of reckoning" };
             for (const char* spellName : taunts)
             {
                 if (botAI->CanCastSpell(spellName, hydross))
                     return botAI->CastSpell(spellName, hydross);
-            }
+            } */
             return Attack(hydross);
         }
 
@@ -188,7 +175,7 @@ bool HydrossTheUnstablePositionNatureTankAction::Execute(Event event)
         ObjectGuid botGuid = bot->GetGUID();
         time_t now = time(nullptr);
 
-        if (now - hydrossChangeToFrostPhaseTimer[botGuid] >= 10)
+        if (now - hydrossChangeToFrostPhaseTimer[botGuid] >= 5)
         {
             const Location& position = SerpentShrineCavernLocations::HydrossFrostTankPosition;
 
@@ -232,13 +219,131 @@ bool HydrossTheUnstablePositionNatureTankAction::Execute(Event event)
     return false;
 }
 
-bool HydrossTheUnstableManageDPSTimerAction::Execute(Event event)
+bool HydrossTheUnstableMarkElementalAddsAction::Execute(Event event)
+{
+    Unit* waterElemental = AI_VALUE2(Unit*, "find target", "pure spawn of hydross");
+    if (waterElemental)
+        MarkTargetWithSkull(bot, waterElemental);
+
+    Unit* natureElemental = AI_VALUE2(Unit*, "find target", "tainted spawn of hydross");
+    if (natureElemental)
+        MarkTargetWithSkull(bot, natureElemental);
+
+    return false;
+}
+
+bool HydrossTheUnstableFrostPhaseSpreadOutAction::Execute(Event event)
+{
+    Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
+    Group* group = bot->GetGroup();
+    if (!hydross || !group)
+        return false;
+
+    const uint32 minInterval = 500;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || member == bot || !member->IsAlive())
+            continue;
+
+        if (bot->GetExactDist(member) < 6.0f)
+            return FleePosition(member->GetPosition(), 8.0f, minInterval);
+    }
+
+    return false;
+}
+
+bool HydrossTheUnstableMisdirectBossToTankAction::Execute(Event event)
+{
+    Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
+    Group* group = bot->GetGroup();
+    if (!hydross || !group)
+        return false;
+
+    if (TryMisdirectToFrostTank(hydross, group))
+        return true;
+
+    if (TryMisdirectToNatureTank(hydross, group))
+        return true;
+
+    return false;
+}
+
+bool HydrossTheUnstableMisdirectBossToTankAction::TryMisdirectToFrostTank(Unit* hydross, Group* group)
+{
+    Player* frostTank = nullptr;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && member->IsAlive() && botAI->IsMainTank(member))
+        {
+            frostTank = member;
+            break;
+        }
+    }
+
+    Unit* waterElemental = AI_VALUE2(Unit*, "find target", "pure spawn of hydross");
+    if (waterElemental && !hydross->HasAura(SPELL_CORRUPTION) && frostTank)
+    {
+        if (botAI->CanCastSpell("misdirection", frostTank))
+            return botAI->CastSpell("misdirection", frostTank);
+
+        if (!bot->HasAura(SPELL_MISDIRECTION))
+            return false;
+
+        if (botAI->CanCastSpell("steady shot", hydross))
+            return botAI->CastSpell("steady shot", hydross);
+    }
+
+    return false;
+}
+
+bool HydrossTheUnstableMisdirectBossToTankAction::TryMisdirectToNatureTank(Unit* hydross, Group* group)
+{
+    Player* natureTank = nullptr;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && member->IsAlive() && botAI->IsMainTank(member))
+        {
+            natureTank = member;
+            break;
+        }
+    }
+
+    Unit* natureElemental = AI_VALUE2(Unit*, "find target", "tainted spawn of hydross");
+    if (natureElemental && hydross->HasAura(SPELL_CORRUPTION) && natureTank)
+    {
+        if (botAI->CanCastSpell("misdirection", natureTank))
+            return botAI->CastSpell("misdirection", natureTank);
+
+        if (!bot->HasAura(SPELL_MISDIRECTION))
+            return false;
+
+        if (botAI->CanCastSpell("steady shot", hydross))
+            return botAI->CastSpell("steady shot", hydross);
+    }
+
+    return false;
+}
+
+bool HydrossTheUnstableManagePhaseChangeTimersAction::Execute(Event event)
 {
     Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
     if (!hydross)
         return false;
 
     ObjectGuid botGuid = bot->GetGUID();
+
+    if (hydross->GetHealthPct() > 99.0f)
+    {
+        if (hydrossChangeToNaturePhaseTimer.find(botGuid) != hydrossChangeToNaturePhaseTimer.end())
+            hydrossChangeToNaturePhaseTimer.erase(botGuid);
+
+        if (hydrossChangeToFrostPhaseTimer.find(botGuid) != hydrossChangeToFrostPhaseTimer.end())
+            hydrossChangeToFrostPhaseTimer.erase(botGuid);
+    }
 
     if (!hydross->HasAura(SPELL_CORRUPTION))
     {
@@ -263,13 +368,22 @@ bool HydrossTheUnstableManageDPSTimerAction::Execute(Event event)
     return false;
 }
 
-/* bool HydrossTheUnstableManageDPSTimerAction::Execute(Event event)
+bool HydrossTheUnstableManageDPSTimersAction::Execute(Event event)
 {
     Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
     if (!hydross)
         return false;
 
     uint32 mapId = hydross->GetMapId();
+
+    if (hydross->GetHealth() == hydross->GetMaxHealth())
+    {
+        if (hydrossFrostDPSWaitTimer.find(mapId) != hydrossFrostDPSWaitTimer.end())
+            hydrossFrostDPSWaitTimer.erase(mapId);
+
+        if (hydrossNatureDPSWaitTimer.find(mapId) != hydrossNatureDPSWaitTimer.end())
+            hydrossNatureDPSWaitTimer.erase(mapId);
+    }
 
     if (!hydross->HasAura(SPELL_CORRUPTION))
     {
@@ -287,68 +401,6 @@ bool HydrossTheUnstableManageDPSTimerAction::Execute(Event event)
 
         if (hydrossFrostDPSWaitTimer.find(mapId) != hydrossFrostDPSWaitTimer.end())
             hydrossFrostDPSWaitTimer.erase(mapId);
-    }
-
-    return false;
-} */
-
-bool HydrossTheUnstableMarkElementalAddsAction::Execute(Event event)
-{
-    Unit* waterElemental = AI_VALUE2(Unit*, "find target", "pure spawn of hydross");
-    if (waterElemental)
-        MarkTargetWithSkull(bot, waterElemental);
-
-    Unit* natureElemental = AI_VALUE2(Unit*, "find target", "tainted spawn of hydross");
-    if (natureElemental)
-        MarkTargetWithSkull(bot, natureElemental);
-
-    return false;
-}
-
-bool HydrossTheUnstableFrostPhaseSpreadOutAction::Execute(Event event)
-{
-    Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
-    Group* group = bot->GetGroup();
-    if (!hydross || !group)
-        return false;
-
-    std::vector<Player*> tooClose;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || member == bot)
-            continue;
-
-        if (bot->GetExactDist2d(member) < 10.0f)
-            tooClose.push_back(member);
-    }
-
-    if (!tooClose.empty())
-    {
-        // Calculate average position of nearby members
-        float avgX = 0, avgY = 0;
-        for (Player* member : tooClose)
-        {
-            avgX += member->GetPositionX();
-            avgY += member->GetPositionY();
-        }
-        avgX /= tooClose.size();
-        avgY /= tooClose.size();
-
-        // Move away from the average position
-        float dX = bot->GetPositionX() - avgX;
-        float dY = bot->GetPositionY() - avgY;
-        float dist = sqrt(dX * dX + dY * dY);
-        if (dist > 0.1f)
-        {
-            float moveX = bot->GetPositionX() + (dX / dist) * 10.0f;
-            float moveY = bot->GetPositionY() + (dY / dist) * 10.0f;
-
-            bot->AttackStop();
-            bot->InterruptNonMeleeSpells(true);
-            return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-                          MovementPriority::MOVEMENT_COMBAT, true, false);
-        }
     }
 
     return false;

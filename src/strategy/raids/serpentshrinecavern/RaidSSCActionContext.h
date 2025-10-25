@@ -14,9 +14,11 @@ public:
 
         creators["hydross the unstable position frost tank"] = &RaidSSCActionContext::hydross_the_unstable_position_frost_tank;
         creators["hydross the unstable position nature tank"] = &RaidSSCActionContext::hydross_the_unstable_position_nature_tank;
-        creators["hydross the unstable manage dps timer"] = &RaidSSCActionContext::hydross_the_unstable_manage_dps_timer;
         creators["hydross the unstable mark elemental adds"] = &RaidSSCActionContext::hydross_the_unstable_mark_elemental_adds;
         creators["hydross the unstable frost phase spread out"] = &RaidSSCActionContext::hydross_the_unstable_frost_phase_spread_out;
+        creators["hydross the unstable misdirect boss to tank"] = &RaidSSCActionContext::hydross_the_unstable_misdirect_boss_to_tank;
+        creators["hydross the unstable manage phase change timers"] = &RaidSSCActionContext::hydross_the_unstable_manage_phase_change_timers;
+        creators["hydross the unstable manage dps timers"] = &RaidSSCActionContext::hydross_the_unstable_manage_dps_timers;
     
         creators["the lurker below run around behind boss"] = &RaidSSCActionContext::the_lurker_below_run_around_behind_boss;
     
@@ -50,9 +52,11 @@ private:
 
     static Action* hydross_the_unstable_position_frost_tank(PlayerbotAI* botAI) { return new HydrossTheUnstablePositionFrostTankAction(botAI); }
     static Action* hydross_the_unstable_position_nature_tank(PlayerbotAI* botAI) { return new HydrossTheUnstablePositionNatureTankAction(botAI); }
-    static Action* hydross_the_unstable_manage_dps_timer(PlayerbotAI* botAI) { return new HydrossTheUnstableManageDPSTimerAction(botAI); }
     static Action* hydross_the_unstable_mark_elemental_adds(PlayerbotAI* botAI) { return new HydrossTheUnstableMarkElementalAddsAction(botAI); }
     static Action* hydross_the_unstable_frost_phase_spread_out(PlayerbotAI* botAI) { return new HydrossTheUnstableFrostPhaseSpreadOutAction(botAI); }
+    static Action* hydross_the_unstable_misdirect_boss_to_tank(PlayerbotAI* botAI) { return new HydrossTheUnstableMisdirectBossToTankAction(botAI); }
+    static Action* hydross_the_unstable_manage_phase_change_timers(PlayerbotAI* botAI) { return new HydrossTheUnstableManagePhaseChangeTimersAction(botAI); }
+    static Action* hydross_the_unstable_manage_dps_timers(PlayerbotAI* botAI) { return new HydrossTheUnstableManageDPSTimersAction(botAI); }
 
     static Action* the_lurker_below_run_around_behind_boss(PlayerbotAI* botAI) { return new TheLurkerBelowRunAroundBehindBossAction(botAI); }
 

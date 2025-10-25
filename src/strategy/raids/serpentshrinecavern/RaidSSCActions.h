@@ -37,14 +37,6 @@ public:
     bool Execute(Event event) override;
 };
 
-class HydrossTheUnstableManageDPSTimerAction : public Action
-{
-public:
-    HydrossTheUnstableManageDPSTimerAction(PlayerbotAI* botAI, std::string const name = "hydross the unstable manage dps timer") : Action(botAI, name) {}
-
-    bool Execute(Event event) override;
-};
-
 class HydrossTheUnstableMarkElementalAddsAction : public Action
 {
 public:
@@ -57,6 +49,34 @@ class HydrossTheUnstableFrostPhaseSpreadOutAction : public MovementAction
 {
 public:
     HydrossTheUnstableFrostPhaseSpreadOutAction(PlayerbotAI* botAI, std::string const name = "hydross the unstable frost phase spread out") : MovementAction(botAI, name) {}
+
+    bool Execute(Event event) override;
+};
+
+class HydrossTheUnstableMisdirectBossToTankAction : public Action
+{
+public:
+    HydrossTheUnstableMisdirectBossToTankAction(PlayerbotAI* botAI, std::string const name = "hydross the unstable misdirect boss to tank") : Action(botAI, name) {}
+
+    bool Execute(Event event) override;
+
+private:
+    bool TryMisdirectToFrostTank(Unit* hydross, Group* group);
+    bool TryMisdirectToNatureTank(Unit* hydross, Group* group);
+};
+
+class HydrossTheUnstableManagePhaseChangeTimersAction : public Action
+{
+public:
+    HydrossTheUnstableManagePhaseChangeTimersAction(PlayerbotAI* botAI, std::string const name = "hydross the unstable manage phase change timers") : Action(botAI, name) {}
+
+    bool Execute(Event event) override;
+};
+
+class HydrossTheUnstableManageDPSTimersAction : public Action
+{
+public:
+    HydrossTheUnstableManageDPSTimersAction(PlayerbotAI* botAI, std::string const name = "hydross the unstable manage dps timers") : Action(botAI, name) {}
 
     bool Execute(Event event) override;
 };

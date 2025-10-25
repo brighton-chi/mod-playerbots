@@ -31,13 +31,6 @@ public:
     bool IsActive() override;
 };
 
-class HydrossTheUnstableWaitingForDPSTrigger : public Trigger
-{
-public:
-    HydrossTheUnstableWaitingForDPSTrigger(PlayerbotAI* botAI) : Trigger(botAI, "hydross the unstable waiting for dps") {}
-    bool IsActive() override;
-};
-
 class HydrossTheUnstableElementalsSpawnedTrigger : public Trigger
 {
 public:
@@ -49,6 +42,27 @@ class HydrossTheUnstableDangerFromWaterTombsTrigger : public Trigger
 {
 public:
     HydrossTheUnstableDangerFromWaterTombsTrigger(PlayerbotAI* botAI) : Trigger(botAI, "hydross the unstable danger from water tombs") {}
+    bool IsActive() override;
+};
+
+class HydrossTheUnstableTankNeedsAggroUponPhaseChangeTrigger : public Trigger
+{
+public:
+    HydrossTheUnstableTankNeedsAggroUponPhaseChangeTrigger(PlayerbotAI* botAI) : Trigger(botAI, "hydross the unstable tank needs aggro upon phase change") {}
+    bool IsActive() override;
+};
+
+class HydrossTheUnstableNeedToTransitionBeforeFourthMarkTrigger : public Trigger
+{
+public:
+    HydrossTheUnstableNeedToTransitionBeforeFourthMarkTrigger(PlayerbotAI* botAI) : Trigger(botAI, "hydross the unstable need to transition before fourth mark") {}
+    bool IsActive() override;
+};
+
+class HydrossTheUnstableWaitingForDPSTrigger : public Trigger
+{
+public:
+    HydrossTheUnstableWaitingForDPSTrigger(PlayerbotAI* botAI) : Trigger(botAI, "hydross the unstable waiting for dps") {}
     bool IsActive() override;
 };
 

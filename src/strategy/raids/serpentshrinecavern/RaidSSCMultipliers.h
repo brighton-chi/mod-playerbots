@@ -3,19 +3,26 @@
 
 #include "Multiplier.h"
 
-class HydrossTheUnstableDisableTankAssistMultiplier : public Multiplier
+class HydrossTheUnstableDisableTankActionsMultiplier : public Multiplier
 {
 public:
-    HydrossTheUnstableDisableTankAssistMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "hydross the unstable disable tank assist") {}
+    HydrossTheUnstableDisableTankActionsMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "hydross the unstable disable tank actions") {}
     virtual float GetValue(Action* action);
 };
 
-/* class HydrossTheUnstableWaitForDPSMultiplier : public Multiplier
+class HydrossTheUnstableWaitForDPSMultiplier : public Multiplier
 {
 public:
     HydrossTheUnstableWaitForDPSMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "hydross the unstable wait for dps") {}
     virtual float GetValue(Action* action);
-}; */
+};
+
+class HydrossTheUnstableControlMisdirectionMultiplier : public Multiplier
+{
+public:
+    HydrossTheUnstableControlMisdirectionMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "hydross the unstable control misdirection") {}
+    virtual float GetValue(Action* action);
+};
 
 class TheLurkerBelowStayBehindBossDuringSpoutMultiplier : public Multiplier
 {

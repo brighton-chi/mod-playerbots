@@ -5,10 +5,11 @@
 
 namespace SerpentShrineCavernHelpers
 {
-    // std::unordered_map<uint32, time_t> hydrossFrostDPSWaitTimer;
-    // std::unordered_map<uint32, time_t> hydrossNatureDPSWaitTimer;
+    std::unordered_map<uint32, time_t> hydrossFrostDPSWaitTimer;
+    std::unordered_map<uint32, time_t> hydrossNatureDPSWaitTimer;
     std::unordered_map<ObjectGuid, time_t> hydrossChangeToFrostPhaseTimer;
     std::unordered_map<ObjectGuid, time_t> hydrossChangeToNaturePhaseTimer;
+
     std::unordered_map<uint32, time_t> leotherasHumanFormDPSWaitTimer;
     std::unordered_map<uint32, time_t> leotherasDemonFormDPSWaitTimer;
     std::unordered_map<uint32, time_t> leotherasFinalPhaseDPSWaitTimer;

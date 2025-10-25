@@ -37,13 +37,6 @@ bool HydrossTheUnstableBotIsNatureTankTrigger::IsActive()
     return hydross && botAI->IsAssistTankOfIndex(bot, 0);
 }
 
-bool HydrossTheUnstableWaitingForDPSTrigger::IsActive()
-{
-    Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
-
-    return hydross && (botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0));
-}
-
 bool HydrossTheUnstableElementalsSpawnedTrigger::IsActive()
 {
     Unit* waterElemental = AI_VALUE2(Unit*, "find target", "pure spawn of hydross");
@@ -57,6 +50,27 @@ bool HydrossTheUnstableDangerFromWaterTombsTrigger::IsActive()
     Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
 
     return hydross && !hydross->HasAura(SPELL_CORRUPTION) && botAI->IsRanged(bot);
+}
+
+bool HydrossTheUnstableTankNeedsAggroUponPhaseChangeTrigger::IsActive()
+{
+    Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
+
+    return hydross && bot->getClass() == CLASS_HUNTER;
+}
+
+bool HydrossTheUnstableNeedToTransitionBeforeFourthMarkTrigger::IsActive()
+{
+    Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
+
+    return hydross && (botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0));
+}
+
+bool HydrossTheUnstableWaitingForDPSTrigger::IsActive()
+{
+    Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
+
+    return hydross && IsMapIDTimerManager(botAI, bot);
 }
 
 // The Lurker Below

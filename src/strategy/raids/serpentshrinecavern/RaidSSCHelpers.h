@@ -77,10 +77,11 @@ enum SerpentShrineCavernNPCs
 };
 namespace SerpentShrineCavernHelpers
 {
-    // extern std::unordered_map<uint32, time_t> hydrossFrostDPSWaitTimer;
-    // extern std::unordered_map<uint32, time_t> hydrossNatureDPSWaitTimer;
+    extern std::unordered_map<uint32, time_t> hydrossFrostDPSWaitTimer;
+    extern std::unordered_map<uint32, time_t> hydrossNatureDPSWaitTimer;
     extern std::unordered_map<ObjectGuid, time_t> hydrossChangeToFrostPhaseTimer;
     extern std::unordered_map<ObjectGuid, time_t> hydrossChangeToNaturePhaseTimer;
+
     extern std::unordered_map<uint32, time_t> leotherasHumanFormDPSWaitTimer;
     extern std::unordered_map<uint32, time_t> leotherasDemonFormDPSWaitTimer;
     extern std::unordered_map<uint32, time_t> leotherasFinalPhaseDPSWaitTimer;

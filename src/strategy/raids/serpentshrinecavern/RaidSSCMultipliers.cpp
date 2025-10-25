@@ -5,6 +5,7 @@
 #include "DruidBearActions.h"
 #include "DruidCatActions.h"
 #include "GenericSpellActions.h"
+#include "HunterActions.h"
 #include "PaladinActions.h"
 #include "Playerbots.h"
 #include "RogueActions.h"
@@ -24,7 +25,7 @@ static bool IsChargeAction(Action* action)
 
 // Hydross the Unstable <Duke of Currents>
 
-float HydrossTheUnstableDisableTankAssistMultiplier::GetValue(Action* action)
+float HydrossTheUnstableDisableTankActionsMultiplier::GetValue(Action* action)
 {
     Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross");
     if (!hydross)
@@ -33,7 +34,7 @@ float HydrossTheUnstableDisableTankAssistMultiplier::GetValue(Action* action)
     if (botAI->IsMainTank(bot))
     {
         if (dynamic_cast<TankAssistAction*>(action))
-        return 0.0f;
+            return 0.0f;
 
         if ((bot->HasAura(SPELL_MARK_OF_HYDROSS_100) || bot->HasAura(SPELL_MARK_OF_HYDROSS_250) ||
              bot->HasAura(SPELL_MARK_OF_HYDROSS_500)) &&
@@ -51,16 +52,64 @@ float HydrossTheUnstableDisableTankAssistMultiplier::GetValue(Action* action)
         if (dynamic_cast<TankAssistAction*>(action))
             return 0.0f;
 
-        if ((bot->HasAura(SPELL_MARK_OF_CORRUPTION_100) || bot->HasAura(SPELL_MARK_OF_CORRUPTION_250) ||
-             bot->HasAura(SPELL_MARK_OF_CORRUPTION_500)) &&
-            (dynamic_cast<CastTauntAction*>(action) || dynamic_cast<CastGrowlAction*>(action) || 
-             dynamic_cast<CastHandOfReckoningAction*>(action)))
-            return 0.0f;
-
         if (!hydross->HasAura(SPELL_CORRUPTION) && 
             (dynamic_cast<CombatFormationMoveAction*>(action) || IsChargeAction(action)))
             return 0.0f;
     }
+
+    Unit* botTarget = botAI->GetUnit(bot->GetTarget());
+    if (botAI->IsAssistTank(bot) && !botAI->IsAssistTankOfIndex(bot, 0))
+    {
+        if ((hydross->GetVictim() == bot || botTarget && botTarget == hydross) && 
+            dynamic_cast<AttackAction*>(action))
+            return 0.0f;
+    }
+
+    return 1.0f;
+}
+
+float HydrossTheUnstableWaitForDPSMultiplier::GetValue(Action* action)
+{
+    Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
+    if (!hydross)
+        return 1.0f;
+
+    uint32 mapId = hydross->GetMapId();
+    const uint8 dpsWaitSeconds = 5;
+
+    if (hydross && !hydross->HasAura(SPELL_CORRUPTION))
+    {
+        auto it = hydrossFrostDPSWaitTimer.find(mapId);
+        if (it != hydrossFrostDPSWaitTimer.end() && (time(nullptr) - it->second) < dpsWaitSeconds)
+        {
+            if (!botAI->IsMainTank(bot) && (dynamic_cast<AttackAction*>(action) || 
+                (!botAI->IsHeal(bot) && dynamic_cast<CastSpellAction*>(action))))
+                return 0.0f;
+        }
+    }
+
+    if (hydross && hydross->HasAura(SPELL_CORRUPTION))
+    {
+        auto it = hydrossNatureDPSWaitTimer.find(mapId);
+        if (it != hydrossNatureDPSWaitTimer.end() && (time(nullptr) - it->second) < dpsWaitSeconds)
+        {
+            if (!botAI->IsAssistTankOfIndex(bot, 0) && (dynamic_cast<AttackAction*>(action) || 
+                !botAI->IsHeal(bot) && dynamic_cast<CastSpellAction*>(action)))
+                return 0.0f;
+        }
+    }
+
+    return 1.0f;
+}
+
+float HydrossTheUnstableControlMisdirectionMultiplier::GetValue(Action* action)
+{
+    Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
+    if (!hydross)
+        return 1.0f;
+
+    if (dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
+        return 0.0f;
 
     return 1.0f;
 }
