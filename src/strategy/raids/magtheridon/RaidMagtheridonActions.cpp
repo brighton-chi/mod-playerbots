@@ -32,8 +32,10 @@ bool MagtheridonMainTankAttackFirstThreeChannelersAction::Execute(Event event)
     {
         const Location& position = MagtheridonsLairLocations::WaitingForMagtheridonPosition;
         if (!bot->IsWithinDist2d(position.x, position.y, 2.0f))
-            return MoveTo(bot->GetMapId(), position.x, position.y, position.z, false, false, false, false, 
+        {
+            return MoveTo(bot->GetMapId(), position.x, position.y, bot->GetPositionZ(), false, false, false, false, 
                           MovementPriority::MOVEMENT_COMBAT, true, false);
+        }
 
         bot->SetFacingTo(position.orientation);
         return true;
@@ -60,14 +62,7 @@ bool MagtheridonMainTankAttackFirstThreeChannelersAction::Execute(Event event)
     SetRtiTarget(botAI, rtiName, currentTarget);
 
     if (currentTarget && bot->GetVictim() != currentTarget)
-    {
         return Attack(currentTarget);
-
-        if (!bot->IsWithinMeleeRange(currentTarget))
-            return MoveTo(currentTarget->GetMapId(), currentTarget->GetPositionX(), 
-                          currentTarget->GetPositionY(), currentTarget->GetPositionZ(), 
-                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
-    }
 
     return false;
 }
@@ -89,9 +84,7 @@ bool MagtheridonFirstAssistTankAttackNWChannelerAction::Execute(Event event)
         const Location& position = MagtheridonsLairLocations::NWChannelerTankPosition;
         const float maxDistance = 3.0f;
 
-        float distanceToPosition = bot->GetExactDist2d(position.x, position.y);
-
-        if (distanceToPosition > maxDistance)
+        if (bot->GetExactDist2d(position.x, position.y) > maxDistance)
         {
             float dX = position.x - bot->GetPositionX();
             float dY = position.y - bot->GetPositionY();
@@ -99,13 +92,15 @@ bool MagtheridonFirstAssistTankAttackNWChannelerAction::Execute(Event event)
             float moveX = bot->GetPositionX() + (dX / dist) * maxDistance;
             float moveY = bot->GetPositionY() + (dY / dist) * maxDistance;
 
-            return MoveTo(bot->GetMapId(), moveX, moveY, position.z, false, false, false, false, 
+            return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false, 
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
         else if (!bot->IsWithinMeleeRange(channelerDiamond))
+        {
             return MoveTo(channelerDiamond->GetMapId(), channelerDiamond->GetPositionX(), 
-                          channelerDiamond->GetPositionY(), channelerDiamond->GetPositionZ(), 
+                          channelerDiamond->GetPositionY(), bot->GetPositionZ(), 
                           false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+        }
     }
 
     return false;
@@ -128,9 +123,7 @@ bool MagtheridonSecondAssistTankAttackNEChannelerAction::Execute(Event event)
         const Location& position = MagtheridonsLairLocations::NEChannelerTankPosition;
         const float maxDistance = 3.0f;
 
-        float distanceToPosition = bot->GetExactDist2d(position.x, position.y);
-
-        if (distanceToPosition > maxDistance)
+        if (bot->GetExactDist2d(position.x, position.y) > maxDistance)
         {
             float dX = position.x - bot->GetPositionX();
             float dY = position.y - bot->GetPositionY();
@@ -138,13 +131,15 @@ bool MagtheridonSecondAssistTankAttackNEChannelerAction::Execute(Event event)
             float moveX = bot->GetPositionX() + (dX / dist) * maxDistance;
             float moveY = bot->GetPositionY() + (dY / dist) * maxDistance;
 
-            return MoveTo(bot->GetMapId(), moveX, moveY, position.z, false, false, false, false, 
+            return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false, 
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
         else if (!bot->IsWithinMeleeRange(channelerTriangle))
+        {
             return MoveTo(channelerTriangle->GetMapId(), channelerTriangle->GetPositionX(), 
-                          channelerTriangle->GetPositionY(), channelerTriangle->GetPositionZ(), 
+                          channelerTriangle->GetPositionY(), bot->GetPositionZ(), 
                           false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+        }
     }
 
     return false;
@@ -375,9 +370,7 @@ bool MagtheridonMainTankPositionBossAction::Execute(Event event)
         const Location& position = MagtheridonsLairLocations::MagtheridonTankPosition;
         const float maxDistance = 2.0f;
 
-        float distanceToPosition = bot->GetExactDist2d(position.x, position.y);
-
-        if (distanceToPosition > maxDistance)
+        if (bot->GetExactDist2d(position.x, position.y) > maxDistance)
         {
             float dX = position.x - bot->GetPositionX();
             float dY = position.y - bot->GetPositionY();
@@ -385,13 +378,15 @@ bool MagtheridonMainTankPositionBossAction::Execute(Event event)
             float moveX = bot->GetPositionX() + (dX / dist) * maxDistance;
             float moveY = bot->GetPositionY() + (dY / dist) * maxDistance;
             
-            return MoveTo(bot->GetMapId(), moveX, moveY, position.z, false, false, false, true, 
+            return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, true, 
                           MovementPriority::MOVEMENT_COMBAT, true, true);
         }
         else if (!bot->IsWithinMeleeRange(magtheridon))
+        {
             return MoveTo(magtheridon->GetMapId(), magtheridon->GetPositionX(),
-                          magtheridon->GetPositionY(), magtheridon->GetPositionZ(),
+                          magtheridon->GetPositionY(), bot->GetPositionZ(),
                           false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+        }
     }
 
     return false;
@@ -469,6 +464,7 @@ bool MagtheridonSpreadRangedAction::Execute(Event event)
             float destX = targetPosition.GetPositionX();
             float destY = targetPosition.GetPositionY();
             float destZ = targetPosition.GetPositionZ();
+
             if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, bot->GetPositionX(),
                 bot->GetPositionY(), bot->GetPositionZ(), destX, destY, destZ))
                 return false;
@@ -609,12 +605,11 @@ bool MagtheridonUseManticronCubeAction::HandleWaitingPhase(const CubeInfo& cubeI
 bool MagtheridonUseManticronCubeAction::HandleCubeInteraction(const CubeInfo& cubeInfo, GameObject* cube)
 {
     const float interactDistance = 1.0f;
-    const float interactDistanceBuffer = 1.0f;
     float cubeDist = bot->GetExactDist2d(cubeInfo.x, cubeInfo.y);
 
     if (cubeDist > interactDistance) 
     {
-        if (cubeDist <= interactDistance + interactDistanceBuffer) 
+        if (cubeDist <= interactDistance + 1.0f) 
         {
             uint32 delay = urand(200, 1500);
             botAI->AddTimedEvent(
