@@ -23,10 +23,10 @@ namespace SerpentShrineCavernHelpers
         // Lurker liquid level -19.881f
         const Location LurkerCenterOfPoolPosition = { 40.843f, -416.379f, -21.613f };
 
-        const Location KarathressTankPosition = { 469.083f, -543.687f, -7.547f };
-        const Location TidalvessTankPosition = { 522.923f, -497.355f, -13.158f };
-        const Location SharkkisTankPosition = { 521.580f, -546.681f, -7.377f };
-        const Location CaribdisTankPosition = { 456.715f, -490.817f, -13.158f };
+        const Location KarathressTankPosition = { 472.973f, -540.804f, -7.548f };
+        const Location TidalvessTankPosition = { 511.282f, -501.162f, -13.158f };
+        const Location SharkkisTankPosition = { 507.396f, -555.750f, -7.146f };
+        const Location CaribdisTankPosition = { 457.444f, -484.296f, -13.158f };
 
         // const Location LeotherasHumanFormTankPosition = { 347.667f, -424.348f, 28.585f };
         // const Location LeotherasDemonFormTankPosition = { 375.898f, -438.234f, 29.523f };
@@ -262,7 +262,7 @@ namespace SerpentShrineCavernHelpers
         return phase2 ? phase2 : phase3;
     }
 
-    Player* GetCaribdisTankHealer(PlayerbotAI* botAI, Player* bot)
+    Player* GetDedicatedTankHealer(PlayerbotAI* botAI, Player* bot, int tankIndex)
     {
         Group* group = bot->GetGroup();
         if (!group)

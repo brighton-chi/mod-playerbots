@@ -48,6 +48,7 @@ enum SerpentShrineCavernSpells
 enum SerpentShrineCavernNPCs
 {
     // Trash Mobs
+    NPC_WATER_ELEMENTAL_TOTEM = 22236,
     NPC_RANCID_MUSHROOM = 22250,
 
     // Hydross the Unstable
@@ -139,7 +140,7 @@ namespace SerpentShrineCavernHelpers
     Unit* GetPhase3LeotherasDemon(PlayerbotAI* botAI);
     Unit* GetActiveLeotherasDemon(PlayerbotAI* botAI);
 
-    Player* GetCaribdisTankHealer(PlayerbotAI* botAI, Player* bot);
+    Player* GetDedicatedTankHealer(PlayerbotAI* botAI, Player* bot, int tankIndex);
 }
 
 #endif

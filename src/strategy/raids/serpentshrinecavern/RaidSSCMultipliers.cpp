@@ -280,3 +280,15 @@ float FathomLordKarathressDisableTankAssistMultiplier::GetValue(Action* action)
 
     return 1.0f;
 }
+
+float FathomLordKarathressControlMisdirectionMultiplier::GetValue(Action* action)
+{
+    Unit* karathress = AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
+    if (!karathress)
+        return 1.0f;
+
+    if (dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
+        return 0.0f;
+
+    return 1.0f;
+}

@@ -171,10 +171,24 @@ public:
     bool IsActive() override;
 };
 
-class FathomLordKarathressCaribdisTankNeedsDedicatedHealerTrigger : public Trigger
+class FathomLordKarathressNeedDedicatedHealerForKarathressTankTrigger : public Trigger
 {
 public:
-    FathomLordKarathressCaribdisTankNeedsDedicatedHealerTrigger(PlayerbotAI* botAI) : Trigger(botAI, "fathom-lord karathress caribdis tank needs dedicated healer") {}
+    FathomLordKarathressNeedDedicatedHealerForKarathressTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "fathom-lord karathress need dedicated healer for karathress tank") {}
+    bool IsActive() override;
+};
+
+class FathomLordKarathressNeedDedicatedHealerForCaribdisTankTrigger : public Trigger
+{
+public:
+    FathomLordKarathressNeedDedicatedHealerForCaribdisTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "fathom-lord karathress need dedicated healer for caribdis tank") {}
+    bool IsActive() override;
+};
+
+class FathomLordKarathressNeedDedicatedHealerForTidalvessTankTrigger : public Trigger
+{
+public:
+    FathomLordKarathressNeedDedicatedHealerForTidalvessTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "fathom-lord karathress need dedicated healer for tidalvess tank") {}
     bool IsActive() override;
 };
 

@@ -189,10 +189,24 @@ public:
     bool Execute(Event event) override;
 };
 
+class FathomLordKarathressPositionKarathressTankHealerAction : public MovementAction
+{
+public:
+    FathomLordKarathressPositionKarathressTankHealerAction(PlayerbotAI* botAI, std::string const name = "fathom-lord karathress position karathress tank healer") : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 class FathomLordKarathressPositionCaribdisTankHealerAction : public MovementAction
 {
 public:
     FathomLordKarathressPositionCaribdisTankHealerAction(PlayerbotAI* botAI, std::string const name = "fathom-lord karathress position caribdis tank healer") : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class FathomLordKarathressPositionTidalvessTankHealerAction : public MovementAction
+{
+public:
+    FathomLordKarathressPositionTidalvessTankHealerAction(PlayerbotAI* botAI, std::string const name = "fathom-lord karathress position tidalvess tank healer") : MovementAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 

@@ -105,8 +105,16 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction::array(0, new NextAction("fathom-lord karathress third assist tank position caribdis", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode(
-        "fathom-lord karathress caribdis tank needs dedicated healer",
+        "fathom-lord karathress need dedicated healer for karathress tank",
+        NextAction::array(0, new NextAction("fathom-lord karathress position karathress tank healer", ACTION_RAID + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode(
+        "fathom-lord karathress need dedicated healer for caribdis tank",
         NextAction::array(0, new NextAction("fathom-lord karathress position caribdis tank healer", ACTION_RAID + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode(
+        "fathom-lord karathress need dedicated healer for tidalvess tank",
+        NextAction::array(0, new NextAction("fathom-lord karathress position tidalvess tank healer", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode(
         "fathom-lord karathress pulling bosses",
@@ -151,4 +159,5 @@ void RaidSSCStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new LeotherasTheBlindWaitForDPSMultiplier(botAI));
     multipliers.push_back(new LeotherasTheBlindWaitForBloodlustAndHeroismMultiplier(botAI));
     multipliers.push_back(new FathomLordKarathressDisableTankAssistMultiplier(botAI));
+    multipliers.push_back(new FathomLordKarathressControlMisdirectionMultiplier(botAI));
 }

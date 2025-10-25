@@ -36,7 +36,9 @@ public:
         creators["fathom-lord karathress sharkkis engaged by first assist tank"] = &RaidSSCTriggerContext::fathom_lord_karathress_sharkkis_engaged_by_first_assist_tank;
         creators["fathom-lord karathress tidalvess engaged by second assist tank"] = &RaidSSCTriggerContext::fathom_lord_karathress_tidalvess_engaged_by_second_assist_tank;
         creators["fathom-lord karathress caribdis engaged by third assist tank"] = &RaidSSCTriggerContext::fathom_lord_karathress_caribdis_engaged_by_third_assist_tank;
-        creators["fathom-lord karathress caribdis tank needs dedicated healer"] = &RaidSSCTriggerContext::fathom_lord_karathress_caribdis_tank_needs_dedicated_healer;
+        creators["fathom-lord karathress need dedicated healer for karathress tank"] = &RaidSSCTriggerContext::fathom_lord_karathress_need_dedicated_healer_for_karathress_tank;
+        creators["fathom-lord karathress need dedicated healer for caribdis tank"] = &RaidSSCTriggerContext::fathom_lord_karathress_need_dedicated_healer_for_caribdis_tank;
+        creators["fathom-lord karathress need dedicated healer for tidalvess tank"] = &RaidSSCTriggerContext::fathom_lord_karathress_need_dedicated_healer_for_tidalvess_tank;
         creators["fathom-lord karathress pulling bosses"] = &RaidSSCTriggerContext::fathom_lord_karathress_pulling_bosses;
         creators["fathom-lord karathress determining melee dps kill order"] = &RaidSSCTriggerContext::fathom_lord_karathress_determining_melee_dps_kill_order;
         creators["fathom-lord karathress determining ranged dps kill order"] = &RaidSSCTriggerContext::fathom_lord_karathress_determining_ranged_dps_kill_order;
@@ -74,7 +76,9 @@ private:
     static Trigger* fathom_lord_karathress_sharkkis_engaged_by_first_assist_tank(PlayerbotAI* botAI) { return new FathomLordKarathressSharkkisEngagedByFirstAssistTankTrigger(botAI); }
     static Trigger* fathom_lord_karathress_tidalvess_engaged_by_second_assist_tank(PlayerbotAI* botAI) { return new FathomLordKarathressTidalvessEngagedBySecondAssistTankTrigger(botAI); }
     static Trigger* fathom_lord_karathress_caribdis_engaged_by_third_assist_tank(PlayerbotAI* botAI) { return new FathomLordKarathressCaribdisEngagedByThirdAssistTankTrigger(botAI); }
-    static Trigger* fathom_lord_karathress_caribdis_tank_needs_dedicated_healer(PlayerbotAI* botAI) { return new FathomLordKarathressCaribdisTankNeedsDedicatedHealerTrigger(botAI); }
+    static Trigger* fathom_lord_karathress_need_dedicated_healer_for_karathress_tank(PlayerbotAI* botAI) { return new FathomLordKarathressNeedDedicatedHealerForKarathressTankTrigger(botAI); }
+    static Trigger* fathom_lord_karathress_need_dedicated_healer_for_caribdis_tank(PlayerbotAI* botAI) { return new FathomLordKarathressNeedDedicatedHealerForCaribdisTankTrigger(botAI); }
+    static Trigger* fathom_lord_karathress_need_dedicated_healer_for_tidalvess_tank(PlayerbotAI* botAI) { return new FathomLordKarathressNeedDedicatedHealerForTidalvessTankTrigger(botAI); }
     static Trigger* fathom_lord_karathress_pulling_bosses(PlayerbotAI* botAI) { return new FathomLordKarathressPullingBossesTrigger(botAI); }
     static Trigger* fathom_lord_karathress_determining_melee_dps_kill_order(PlayerbotAI* botAI) { return new FathomLordKarathressDeterminingMeleeDPSKillOrderTrigger(botAI); }
     static Trigger* fathom_lord_karathress_determining_ranged_dps_kill_order(PlayerbotAI* botAI) { return new FathomLordKarathressDeterminingRangedDPSKillOrderTrigger(botAI); }

@@ -36,7 +36,9 @@ public:
         creators["fathom-lord karathress first assist tank position sharkkis"] = &RaidSSCActionContext::fathom_lord_karathress_first_assist_tank_position_sharkkis;
         creators["fathom-lord karathress second assist tank position tidalvess"] = &RaidSSCActionContext::fathom_lord_karathress_second_assist_tank_position_tidalvess;
         creators["fathom-lord karathress third assist tank position caribdis"] = &RaidSSCActionContext::fathom_lord_karathress_third_assist_tank_position_caribdis;
+        creators["fathom-lord karathress position karathress tank healer"] = &RaidSSCActionContext::fathom_lord_karathress_position_karathress_tank_healer;
         creators["fathom-lord karathress position caribdis tank healer"] = &RaidSSCActionContext::fathom_lord_karathress_position_caribdis_tank_healer;
+        creators["fathom-lord karathress position tidalvess tank healer"] = &RaidSSCActionContext::fathom_lord_karathress_position_tidalvess_tank_healer;
         creators["fathom-lord karathress misdirect bosses to tanks"] = &RaidSSCActionContext::fathom_lord_karathress_misdirect_bosses_to_tanks;
         creators["fathom-lord karathress assign melee dps priority"] = &RaidSSCActionContext::fathom_lord_karathress_assign_melee_dps_priority;
         creators["fathom-lord karathress assign ranged dps priority"] = &RaidSSCActionContext::fathom_lord_karathress_assign_ranged_dps_priority;
@@ -74,7 +76,9 @@ private:
     static Action* fathom_lord_karathress_first_assist_tank_position_sharkkis(PlayerbotAI* botAI) { return new FathomLordKarathressFirstAssistTankPositionSharkkisAction(botAI); }
     static Action* fathom_lord_karathress_second_assist_tank_position_tidalvess(PlayerbotAI* botAI) { return new FathomLordKarathressSecondAssistTankPositionTidalvessAction(botAI); }
     static Action* fathom_lord_karathress_third_assist_tank_position_caribdis(PlayerbotAI* botAI) { return new FathomLordKarathressThirdAssistTankPositionCaribdisAction(botAI); }
+    static Action* fathom_lord_karathress_position_karathress_tank_healer(PlayerbotAI* botAI) { return new FathomLordKarathressPositionKarathressTankHealerAction(botAI); }
     static Action* fathom_lord_karathress_position_caribdis_tank_healer(PlayerbotAI* botAI) { return new FathomLordKarathressPositionCaribdisTankHealerAction(botAI); }
+    static Action* fathom_lord_karathress_position_tidalvess_tank_healer(PlayerbotAI* botAI) { return new FathomLordKarathressPositionTidalvessTankHealerAction(botAI); }
     static Action* fathom_lord_karathress_misdirect_bosses_to_tanks(PlayerbotAI* botAI) { return new FathomLordKarathressMisdirectBossesToTanksAction(botAI); }
     static Action* fathom_lord_karathress_assign_melee_dps_priority(PlayerbotAI* botAI) { return new FathomLordKarathressAssignMeleeDPSPriorityAction(botAI); }
     static Action* fathom_lord_karathress_assign_ranged_dps_priority(PlayerbotAI* botAI) { return new FathomLordKarathressAssignRangedDPSPriorityAction(botAI); }

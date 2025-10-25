@@ -80,4 +80,11 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class FathomLordKarathressControlMisdirectionMultiplier : public Multiplier
+{
+public:
+    FathomLordKarathressControlMisdirectionMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "fathom-lord karathress control misdirection") {}
+    virtual float GetValue(Action* action);
+};
+
 #endif

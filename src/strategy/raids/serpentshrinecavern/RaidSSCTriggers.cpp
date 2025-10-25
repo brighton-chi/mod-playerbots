@@ -9,7 +9,7 @@ using namespace SerpentShrineCavernHelpers;
 
 bool GreyheartTidecallerWaterElementalTotemSpawnedTrigger::IsActive()
 {
-    Unit* totem = AI_VALUE2(Unit*, "find target", "water elemental totem");
+    Unit* totem = GetFirstAliveUnitByEntry(botAI, NPC_WATER_ELEMENTAL_TOTEM);
 
     return totem && botAI->IsDps(bot);
 }
@@ -201,12 +201,28 @@ bool FathomLordKarathressCaribdisEngagedByThirdAssistTankTrigger::IsActive()
            botAI->IsAssistTankOfIndex(bot, 2);
 }
 
-bool FathomLordKarathressCaribdisTankNeedsDedicatedHealerTrigger::IsActive()
+bool FathomLordKarathressNeedDedicatedHealerForKarathressTankTrigger::IsActive()
+{
+    Unit* karathress = AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
+    Player* karathressHealer = GetDedicatedTankHealer(botAI, bot, 0);
+
+    return karathress && karathressHealer;
+}
+
+bool FathomLordKarathressNeedDedicatedHealerForCaribdisTankTrigger::IsActive()
 {
     Unit* caribdis = AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
-    Player* caribdisHealer = GetCaribdisTankHealer(botAI, bot);
+    Player* caribdisHealer   = GetDedicatedTankHealer(botAI, bot, 1);
 
     return caribdis && caribdisHealer;
+}
+
+bool FathomLordKarathressNeedDedicatedHealerForTidalvessTankTrigger::IsActive()
+{
+    Unit* tidalvess = AI_VALUE2(Unit*, "find target", "fathom-guard tidalvess");
+    Player* tidalvessHealer = GetDedicatedTankHealer(botAI, bot, 2);
+
+    return tidalvess && tidalvessHealer;
 }
 
 bool FathomLordKarathressPullingBossesTrigger::IsActive()
