@@ -95,12 +95,6 @@ bool MagtheridonFirstAssistTankAttackNWChannelerAction::Execute(Event event)
             return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false, 
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
-        else if (!bot->IsWithinMeleeRange(channelerDiamond))
-        {
-            return MoveTo(channelerDiamond->GetMapId(), channelerDiamond->GetPositionX(), 
-                          channelerDiamond->GetPositionY(), bot->GetPositionZ(), 
-                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
-        }
     }
 
     return false;
@@ -133,12 +127,6 @@ bool MagtheridonSecondAssistTankAttackNEChannelerAction::Execute(Event event)
 
             return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false, 
                           MovementPriority::MOVEMENT_COMBAT, true, false);
-        }
-        else if (!bot->IsWithinMeleeRange(channelerTriangle))
-        {
-            return MoveTo(channelerTriangle->GetMapId(), channelerTriangle->GetPositionX(), 
-                          channelerTriangle->GetPositionY(), bot->GetPositionZ(), 
-                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
 
@@ -380,12 +368,6 @@ bool MagtheridonMainTankPositionBossAction::Execute(Event event)
             
             return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, true, 
                           MovementPriority::MOVEMENT_COMBAT, true, true);
-        }
-        else if (!bot->IsWithinMeleeRange(magtheridon))
-        {
-            return MoveTo(magtheridon->GetMapId(), magtheridon->GetPositionX(),
-                          magtheridon->GetPositionY(), bot->GetPositionZ(),
-                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
 
