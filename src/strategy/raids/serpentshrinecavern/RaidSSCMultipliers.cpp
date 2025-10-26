@@ -74,7 +74,7 @@ float HydrossTheUnstableWaitForDPSMultiplier::GetValue(Action* action)
     if (!hydross)
         return 1.0f;
 
-    uint32 mapId = hydross->GetMapId();
+    uint32 mapId = bot->GetMapId();
     const uint8 dpsWaitSeconds = 5;
 
     if (hydross && !hydross->HasAura(SPELL_CORRUPTION))
@@ -203,7 +203,7 @@ float LeotherasTheBlindWaitForDPSMultiplier::GetValue(Action* action)
     if (!leotheras)
         return 1.0f;
 
-    uint32 mapId = leotheras->GetMapId();
+    uint32 mapId = bot->GetMapId();
 
     Unit* leotherasHuman = GetLeotherasHuman(botAI);
     Unit* leotherasPhase2Demon = GetPhase2LeotherasDemon(botAI);
@@ -289,6 +289,24 @@ float FathomLordKarathressControlMisdirectionMultiplier::GetValue(Action* action
 
     if (dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
         return 0.0f;
+
+    return 1.0f;
+}
+
+float FathomLordKarathressWaitForDPSMultiplier::GetValue(Action* action)
+{
+    Unit* karathress = AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
+    if (!karathress)
+        return 1.0f;
+
+    const uint8 dpsWaitSeconds = 8;
+    auto it = karathressDPSWaitTimer.find(bot->GetMapId());
+    if (it == karathressDPSWaitTimer.end() || (time(nullptr) - it->second) < dpsWaitSeconds)
+    {
+        if (!botAI->IsTank(bot) && (dynamic_cast<AttackAction*>(action) ||
+            (!botAI->IsHeal(bot) && dynamic_cast<CastSpellAction*>(action))))
+            return 0.0f;
+    }
 
     return 1.0f;
 }

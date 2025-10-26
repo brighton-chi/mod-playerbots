@@ -87,4 +87,11 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class FathomLordKarathressWaitForDPSMultiplier : public Multiplier
+{
+public:
+    FathomLordKarathressWaitForDPSMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "fathom-lord karathress wait for dps") {}
+    virtual float GetValue(Action* action);
+};
+
 #endif

@@ -129,10 +129,10 @@ public:
     bool Execute(Event event) override;
 }; */
 
-class LeotherasTheBlindMarkAndAttackInnerDemonAction : public AttackAction
+class LeotherasTheBlindInnerDemonCheatAction : public AttackAction
 {
 public:
-    LeotherasTheBlindMarkAndAttackInnerDemonAction(PlayerbotAI* botAI, std::string const name = "leotheras the blind mark and attack inner demon") : AttackAction(botAI, name) {}
+    LeotherasTheBlindInnerDemonCheatAction(PlayerbotAI* botAI, std::string const name = "leotheras the blind inner demon cheat") : AttackAction(botAI, name) {}
 
     bool Execute(Event event) override;
 };
@@ -189,27 +189,6 @@ public:
     bool Execute(Event event) override;
 };
 
-class FathomLordKarathressPositionKarathressTankHealerAction : public MovementAction
-{
-public:
-    FathomLordKarathressPositionKarathressTankHealerAction(PlayerbotAI* botAI, std::string const name = "fathom-lord karathress position karathress tank healer") : MovementAction(botAI, name) {}
-    bool Execute(Event event) override;
-};
-
-class FathomLordKarathressPositionCaribdisTankHealerAction : public MovementAction
-{
-public:
-    FathomLordKarathressPositionCaribdisTankHealerAction(PlayerbotAI* botAI, std::string const name = "fathom-lord karathress position caribdis tank healer") : MovementAction(botAI, name) {}
-    bool Execute(Event event) override;
-};
-
-class FathomLordKarathressPositionTidalvessTankHealerAction : public MovementAction
-{
-public:
-    FathomLordKarathressPositionTidalvessTankHealerAction(PlayerbotAI* botAI, std::string const name = "fathom-lord karathress position tidalvess tank healer") : MovementAction(botAI, name) {}
-    bool Execute(Event event) override;
-};
-
 class FathomLordKarathressMisdirectBossesToTanksAction : public AttackAction
 {
 public:
@@ -217,17 +196,17 @@ public:
     bool Execute(Event event) override;
 };
 
-class FathomLordKarathressAssignMeleeDPSPriorityAction : public AttackAction
+class FathomLordKarathressAssignDPSPriorityAction : public AttackAction
 {
 public:
-    FathomLordKarathressAssignMeleeDPSPriorityAction(PlayerbotAI* botAI, std::string const name = "fathom-lord karathress assign melee dps priority") : AttackAction(botAI, name) {}
+    FathomLordKarathressAssignDPSPriorityAction(PlayerbotAI* botAI, std::string const name = "fathom-lord karathress assign dps priority") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 
-class FathomLordKarathressAssignRangedDPSPriorityAction : public AttackAction
+class FathomLordKarathressManageDPSTimerAction : public Action
 {
 public:
-    FathomLordKarathressAssignRangedDPSPriorityAction(PlayerbotAI* botAI, std::string const name = "fathom-lord karathress assign ranged dps priority") : AttackAction(botAI, name) {}
+    FathomLordKarathressManageDPSTimerAction(PlayerbotAI* botAI, std::string const name = "fathom-lord karathress manage dps timer") : Action(botAI, name) {}
     bool Execute(Event event) override;
 };
 

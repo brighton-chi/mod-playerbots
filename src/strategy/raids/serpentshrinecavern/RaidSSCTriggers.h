@@ -171,27 +171,6 @@ public:
     bool IsActive() override;
 };
 
-class FathomLordKarathressNeedDedicatedHealerForKarathressTankTrigger : public Trigger
-{
-public:
-    FathomLordKarathressNeedDedicatedHealerForKarathressTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "fathom-lord karathress need dedicated healer for karathress tank") {}
-    bool IsActive() override;
-};
-
-class FathomLordKarathressNeedDedicatedHealerForCaribdisTankTrigger : public Trigger
-{
-public:
-    FathomLordKarathressNeedDedicatedHealerForCaribdisTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "fathom-lord karathress need dedicated healer for caribdis tank") {}
-    bool IsActive() override;
-};
-
-class FathomLordKarathressNeedDedicatedHealerForTidalvessTankTrigger : public Trigger
-{
-public:
-    FathomLordKarathressNeedDedicatedHealerForTidalvessTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "fathom-lord karathress need dedicated healer for tidalvess tank") {}
-    bool IsActive() override;
-};
-
 class FathomLordKarathressPullingBossesTrigger : public Trigger
 {
 public:
@@ -199,17 +178,17 @@ public:
     bool IsActive() override;
 };
 
-class FathomLordKarathressDeterminingMeleeDPSKillOrderTrigger : public Trigger
+class FathomLordKarathressDeterminingDPSKillOrderTrigger : public Trigger
 {
 public:
-    FathomLordKarathressDeterminingMeleeDPSKillOrderTrigger(PlayerbotAI* botAI) : Trigger(botAI, "fathom-lord karathress determining melee dps kill order") {}
+    FathomLordKarathressDeterminingDPSKillOrderTrigger(PlayerbotAI* botAI) : Trigger(botAI, "fathom-lord karathress determining dps kill order") {}
     bool IsActive() override;
 };
 
-class FathomLordKarathressDeterminingRangedDPSKillOrderTrigger : public Trigger
+class FathomLordKarathressTanksNeedToEstablishAggroTrigger : public Trigger
 {
 public:
-    FathomLordKarathressDeterminingRangedDPSKillOrderTrigger(PlayerbotAI* botAI) : Trigger(botAI, "fathom-lord karathress determining ranged dps kill order") {}
+    FathomLordKarathressTanksNeedToEstablishAggroTrigger(PlayerbotAI* botAI) : Trigger(botAI, "fathom-lord karathress tanks need to establish aggro") {}
     bool IsActive() override;
 };
 

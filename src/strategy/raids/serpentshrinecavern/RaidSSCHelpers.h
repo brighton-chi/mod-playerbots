@@ -87,6 +87,7 @@ namespace SerpentShrineCavernHelpers
     extern std::unordered_map<uint32, time_t> leotherasDemonFormDPSWaitTimer;
     extern std::unordered_map<uint32, time_t> leotherasFinalPhaseDPSWaitTimer;
 
+    extern std::unordered_map<uint32, time_t> karathressDPSWaitTimer;
     struct Location 
     {
         float x, y, z;
@@ -105,6 +106,7 @@ namespace SerpentShrineCavernHelpers
         extern const Location TidalvessTankPosition;
         extern const Location SharkkisTankPosition;
         extern const Location CaribdisTankPosition;
+        // extern const Location KarathressRoomCenterPosition
 
         // extern const Location LeotherasHumanFormTankPosition;
         // extern const Location LeotherasDemonFormTankPosition;
@@ -126,9 +128,7 @@ namespace SerpentShrineCavernHelpers
     void MarkTargetWithTriangle(Player* bot, Unit* target);
     void MarkTargetWithCross(Player* bot, Unit* target);
     void MarkTargetWithMoon(Player* bot, Unit* target);
-    std::string GetRtiName(uint8 index);
     void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target);
-    Player* GetLeotherasDemonFormTank(PlayerbotAI* botAI, Player* bot);
     bool IsMapIDTimerManager(PlayerbotAI* botAI, Player* bot);
     Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry);
 
@@ -139,8 +139,7 @@ namespace SerpentShrineCavernHelpers
     Unit* GetPhase2LeotherasDemon(PlayerbotAI* botAI);
     Unit* GetPhase3LeotherasDemon(PlayerbotAI* botAI);
     Unit* GetActiveLeotherasDemon(PlayerbotAI* botAI);
-
-    Player* GetDedicatedTankHealer(PlayerbotAI* botAI, Player* bot, int tankIndex);
+    Player* GetLeotherasDemonFormTank(PlayerbotAI* botAI, Player* bot);
 }
 
 #endif

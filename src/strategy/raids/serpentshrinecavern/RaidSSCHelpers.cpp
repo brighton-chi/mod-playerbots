@@ -14,6 +14,8 @@ namespace SerpentShrineCavernHelpers
     std::unordered_map<uint32, time_t> leotherasDemonFormDPSWaitTimer;
     std::unordered_map<uint32, time_t> leotherasFinalPhaseDPSWaitTimer;
 
+    std::unordered_map<uint32, time_t> karathressDPSWaitTimer;
+
     namespace SerpentShrineCavernLocations
     {
         const Location HydrossFrostTankPosition = { -236.669f, -358.352f, -0.828f };
@@ -24,12 +26,15 @@ namespace SerpentShrineCavernHelpers
         const Location LurkerCenterOfPoolPosition = { 40.843f, -416.379f, -21.613f };
 
         const Location KarathressTankPosition = { 472.973f, -540.804f, -7.548f };
+        // const Location KarathressTankPosition = { 477.211f, -532.528f, -7.549f }; // more central
         const Location TidalvessTankPosition = { 511.282f, -501.162f, -13.158f };
+        // const Location TidalvessTankPosition = { 504.935f, -491.730f, -13.158f }; // more central
         const Location SharkkisTankPosition = { 507.396f, -555.750f, -7.146f };
-        const Location CaribdisTankPosition = { 457.444f, -484.296f, -13.158f };
-
-        // const Location LeotherasHumanFormTankPosition = { 347.667f, -424.348f, 28.585f };
-        // const Location LeotherasDemonFormTankPosition = { 375.898f, -438.234f, 29.523f };
+        // const Location SharkkisTankPosition = { 511.821f, -526.269f, -13.158f }; // more central
+        const Location CaribdisTankPosition = { 464.687f, -488.195f, -13.158f };
+        // const Location CaribdisTankPosition = { 455.086f, -459.012f, -13.158f }; // if i want to take her all the way to the corner
+        // const Location KarathressRoomCenterPosition = { 502.570f, -510.805f, -13.158f }; // smack dab
+        // const Location KarathressRoomCenterPosition = { 494.458f, -510.435f, -13.158f }; // middle of the "more centra" positions
 
         const Location TidewalkerPhase1TankPosition = { 410.925f, -741.916f, -7.146f };
         const Location TidewalkerPhase2TankPosition = { 446.571f, -767.155f, -7.144f };
@@ -108,22 +113,6 @@ namespace SerpentShrineCavernHelpers
         }
     }
 
-    std::string GetRtiName(uint8 index)
-    {
-        switch (index)
-        {
-            case RtiTargetValue::squareIndex:   return "square";
-            case RtiTargetValue::starIndex:     return "star";
-            case RtiTargetValue::circleIndex:   return "circle";
-            case RtiTargetValue::diamondIndex:  return "diamond";
-            case RtiTargetValue::triangleIndex: return "triangle";
-            case RtiTargetValue::crossIndex:    return "cross";
-            case RtiTargetValue::moonIndex:     return "moon";
-            case RtiTargetValue::skullIndex:    return "skull";
-            default:                            return "none";
-        }
-    }
-
     bool IsMapIDTimerManager(PlayerbotAI* botAI, Player* bot)
     {
         if (Group* group = bot->GetGroup())
@@ -148,35 +137,6 @@ namespace SerpentShrineCavernHelpers
 
             if (unit && unit->IsAlive() && unit->GetEntry() == entry)
                 return unit;
-        }
-
-        return nullptr;
-    }
-
-    Player* GetLeotherasDemonFormTank(PlayerbotAI* botAI, Player* bot)
-    {
-        Group* group = bot->GetGroup();
-        if (!group)
-            return nullptr;
-
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member))
-                continue;
-
-            if (member->getClass() == CLASS_WARLOCK && GET_PLAYERBOT_AI(member)->HasStrategy("tank", BotState::BOT_STATE_COMBAT))
-                return member;
-        }
-
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member))
-                continue;
-
-            if (GET_PLAYERBOT_AI(member)->IsMainTank(member))
-                return member;
         }
 
         return nullptr;
@@ -262,7 +222,7 @@ namespace SerpentShrineCavernHelpers
         return phase2 ? phase2 : phase3;
     }
 
-    Player* GetDedicatedTankHealer(PlayerbotAI* botAI, Player* bot, int tankIndex)
+    Player* GetLeotherasDemonFormTank(PlayerbotAI* botAI, Player* bot)
     {
         Group* group = bot->GetGroup();
         if (!group)
@@ -274,7 +234,7 @@ namespace SerpentShrineCavernHelpers
             if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member))
                 continue;
 
-            if (member->getClass() == CLASS_PALADIN && botAI->IsHeal(member))
+            if (member->getClass() == CLASS_WARLOCK && GET_PLAYERBOT_AI(member)->HasStrategy("tank", BotState::BOT_STATE_COMBAT))
                 return member;
         }
 
@@ -284,11 +244,12 @@ namespace SerpentShrineCavernHelpers
             if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member))
                 continue;
 
-            if (botAI->IsHeal(member))
+            if (GET_PLAYERBOT_AI(member)->IsMainTank(member))
                 return member;
         }
 
         return nullptr;
     }
+
 
 }

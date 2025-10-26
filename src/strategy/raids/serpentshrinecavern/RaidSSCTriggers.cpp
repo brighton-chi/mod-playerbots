@@ -201,30 +201,6 @@ bool FathomLordKarathressCaribdisEngagedByThirdAssistTankTrigger::IsActive()
            botAI->IsAssistTankOfIndex(bot, 2);
 }
 
-bool FathomLordKarathressNeedDedicatedHealerForKarathressTankTrigger::IsActive()
-{
-    Unit* karathress = AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
-    Player* karathressHealer = GetDedicatedTankHealer(botAI, bot, 0);
-
-    return karathress && karathressHealer;
-}
-
-bool FathomLordKarathressNeedDedicatedHealerForCaribdisTankTrigger::IsActive()
-{
-    Unit* caribdis = AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
-    Player* caribdisHealer   = GetDedicatedTankHealer(botAI, bot, 1);
-
-    return caribdis && caribdisHealer;
-}
-
-bool FathomLordKarathressNeedDedicatedHealerForTidalvessTankTrigger::IsActive()
-{
-    Unit* tidalvess = AI_VALUE2(Unit*, "find target", "fathom-guard tidalvess");
-    Player* tidalvessHealer = GetDedicatedTankHealer(botAI, bot, 2);
-
-    return tidalvess && tidalvessHealer;
-}
-
 bool FathomLordKarathressPullingBossesTrigger::IsActive()
 {
     Unit* karathress = AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
@@ -232,18 +208,24 @@ bool FathomLordKarathressPullingBossesTrigger::IsActive()
     return karathress && karathress->GetHealthPct() > 98.0f && bot->getClass() == CLASS_HUNTER;
 }
 
-bool FathomLordKarathressDeterminingMeleeDPSKillOrderTrigger::IsActive()
+bool FathomLordKarathressDeterminingDPSKillOrderTrigger::IsActive()
 {
     Unit* karathress = AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
+    Unit* sharkkis = AI_VALUE2(Unit*, "find target", "fathom-guard sharkkis");
+    Unit* tidalvess = AI_VALUE2(Unit*, "find target", "fathom-guard tidalvess");
+    Unit* caribdis = AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
 
-    return karathress && botAI->IsMelee(bot) && botAI->IsDps(bot);
+    return karathress && (botAI->IsDps(bot) || 
+           (botAI->IsAssistTankOfIndex(bot, 0) && (!sharkkis || !sharkkis->IsAlive())) ||
+           (botAI->IsAssistTankOfIndex(bot, 1) && (!tidalvess || !tidalvess->IsAlive())) || 
+           (botAI->IsAssistTankOfIndex(bot, 2) && (!caribdis || !caribdis->IsAlive())));
 }
 
-bool FathomLordKarathressDeterminingRangedDPSKillOrderTrigger::IsActive()
+bool FathomLordKarathressTanksNeedToEstablishAggroTrigger::IsActive()
 {
     Unit* karathress = AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
 
-    return karathress && botAI->IsRanged(bot) && botAI->IsDps(bot);
+    return karathress && IsMapIDTimerManager(botAI, bot);
 }
 
 // Morogrim Tidewalker

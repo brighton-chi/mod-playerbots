@@ -72,7 +72,7 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     )); */
     triggers.push_back(new TriggerNode(
         "leotheras the blind inner demon has taken form",
-        NextAction::array(0, new NextAction("leotheras the blind mark and attack inner demon", ACTION_EMERGENCY + 6), nullptr)
+        NextAction::array(0, new NextAction("leotheras the blind inner demon cheat", ACTION_EMERGENCY + 6), nullptr)
     ));
     triggers.push_back(new TriggerNode(
         "leotheras the blind entered final phase",
@@ -105,28 +105,16 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction::array(0, new NextAction("fathom-lord karathress third assist tank position caribdis", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode(
-        "fathom-lord karathress need dedicated healer for karathress tank",
-        NextAction::array(0, new NextAction("fathom-lord karathress position karathress tank healer", ACTION_RAID + 1), nullptr)
-    ));
-    triggers.push_back(new TriggerNode(
-        "fathom-lord karathress need dedicated healer for caribdis tank",
-        NextAction::array(0, new NextAction("fathom-lord karathress position caribdis tank healer", ACTION_RAID + 1), nullptr)
-    ));
-    triggers.push_back(new TriggerNode(
-        "fathom-lord karathress need dedicated healer for tidalvess tank",
-        NextAction::array(0, new NextAction("fathom-lord karathress position tidalvess tank healer", ACTION_RAID + 1), nullptr)
-    ));
-    triggers.push_back(new TriggerNode(
         "fathom-lord karathress pulling bosses",
         NextAction::array(0, new NextAction("fathom-lord karathress misdirect bosses to tanks", ACTION_RAID + 2), nullptr)
     ));
     triggers.push_back(new TriggerNode(
-        "fathom-lord karathress determining melee dps kill order",
-        NextAction::array(0, new NextAction("fathom-lord karathress assign melee dps priority", ACTION_RAID + 1), nullptr)
+        "fathom-lord karathress determining dps kill order",
+        NextAction::array(0, new NextAction("fathom-lord karathress assign dps priority", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode(
-        "fathom-lord karathress determining ranged dps kill order",
-        NextAction::array(0, new NextAction("fathom-lord karathress assign ranged dps priority", ACTION_RAID + 1), nullptr)
+        "fathom-lord karathress tanks need to establish aggro",
+        NextAction::array(0, new NextAction("fathom-lord karathress manage dps timer", ACTION_EMERGENCY + 10), nullptr)
     ));
 
     // Morogrim Tidewalker
@@ -160,4 +148,5 @@ void RaidSSCStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new LeotherasTheBlindWaitForBloodlustAndHeroismMultiplier(botAI));
     multipliers.push_back(new FathomLordKarathressDisableTankAssistMultiplier(botAI));
     multipliers.push_back(new FathomLordKarathressControlMisdirectionMultiplier(botAI));
+    multipliers.push_back(new FathomLordKarathressWaitForDPSMultiplier(botAI));
 }
