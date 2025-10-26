@@ -429,15 +429,14 @@ public:
     static uint32 GetGroupTankNum(Player* player);
     static bool IsAssistTank(Player* player);
     static bool IsAssistTankOfIndex(Player* player, int index);
-    static bool IsHealAssistantOfIndex(Player* player, int index);
-    static bool IsRangedDpsAssistantOfIndex(Player* player, int index);
+    static bool IsAssistHealOfIndex(Player* player, int index);
+    static bool IsAssistRangedDpsOfIndex(Player* player, int index);
     bool HasAggro(Unit* unit);
     static int32 GetAssistTankIndex(Player* player);
     int32 GetGroupSlotIndex(Player* player);
     int32 GetRangedIndex(Player* player);
     int32 GetClassIndex(Player* player, uint8 cls);
     int32 GetRangedDpsIndex(Player* player);
-    int32 GetMeleeIndex(Player* player);
 
     Creature* GetCreature(ObjectGuid guid);
     Unit* GetUnit(ObjectGuid guid);

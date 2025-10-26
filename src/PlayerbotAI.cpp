@@ -1783,38 +1783,42 @@ bool PlayerbotAI::IsCombo(Player* player)
 
 bool PlayerbotAI::IsRangedDps(Player* player, bool bySpec) { return IsRanged(player, bySpec) && IsDps(player, bySpec); }
 
-bool PlayerbotAI::IsHealAssistantOfIndex(Player* player, int index)
+bool PlayerbotAI::IsAssistHealOfIndex(Player* player, int index)
 {
     Group* group = player->GetGroup();
     if (!group)
         return false;
 
     int counter = 0;
-
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
+
         if (!member)
             continue;
 
-        if (IsHeal(member) && group->IsAssistant(member->GetGUID()))
+        if (group->IsAssistant(member->GetGUID()) && IsHeal(member))
         {
             if (index == counter)
                 return player == member;
+
             counter++;
         }
     }
 
+    // If not enough healers marked as Assistants, check regular healers
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
+
         if (!member)
             continue;
 
-        if (IsHeal(member) && !group->IsAssistant(member->GetGUID()))
+        if (!group->IsAssistant(member->GetGUID()) && IsHeal(member))
         {
             if (index == counter)
                 return player == member;
+
             counter++;
         }
     }
@@ -1822,34 +1826,41 @@ bool PlayerbotAI::IsHealAssistantOfIndex(Player* player, int index)
     return false;
 }
 
-bool PlayerbotAI::IsRangedDpsAssistantOfIndex(Player* player, int index)
+bool PlayerbotAI::IsAssistRangedDpsOfIndex(Player* player, int index)
 {
     Group* group = player->GetGroup();
     if (!group)
-    {
         return false;
-    }
 
     int counter = 0;
-
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
 
         if (!member)
-        {
             continue;
-        }
 
-        if (IsRangedDps(member))  // Check if the member is a ranged DPS
+        if (group->IsAssistant(member->GetGUID()) && IsRangedDps(member))
         {
-            bool isAssistant = group->IsAssistant(member->GetGUID());
-
-            // Check the index for both assistant and non-assistant ranges
-            if ((isAssistant && index == counter) || (!isAssistant && index == counter))
-            {
+            if (index == counter)
                 return player == member;
-            }
+
+            counter++;
+        }
+    }
+
+    // If not enough ranged DPS marked as Assistants, check regular ranged DPS
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+
+        if (!member)
+            continue;
+
+        if (!group->IsAssistant(member->GetGUID()) && IsRangedDps(member))
+        {
+            if (index == counter)
+                return player == member;
 
             counter++;
         }
@@ -2019,39 +2030,6 @@ int32 PlayerbotAI::GetRangedDpsIndex(Player* player)
             return counter;
         }
         if (IsRangedDps(member))
-        {
-            counter++;
-        }
-    }
-    return 0;
-}
-
-int32 PlayerbotAI::GetMeleeIndex(Player* player)
-{
-    if (IsRanged(player))
-    {
-        return -1;
-    }
-    Group* group = bot->GetGroup();
-    if (!group)
-    {
-        return -1;
-    }
-    int counter = 0;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-
-        if (!member)
-        {
-            continue;
-        }
-
-        if (player == member)
-        {
-            return counter;
-        }
-        if (!IsRanged(member))
         {
             counter++;
         }
@@ -2319,47 +2297,43 @@ bool PlayerbotAI::IsAssistTankOfIndex(Player* player, int index)
 {
     Group* group = player->GetGroup();
     if (!group)
-    {
         return false;
-    }
+
     int counter = 0;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
 
         if (!member)
-        {
             continue;
-        }
+
 
         if (group->IsAssistant(member->GetGUID()) && IsAssistTank(member))
         {
             if (index == counter)
-            {
                 return player == member;
-            }
+
             counter++;
         }
     }
-    // not enough
+
+    // If not enough healers marked as Assistants, check regular healers
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
 
         if (!member)
-        {
             continue;
-        }
 
         if (!group->IsAssistant(member->GetGUID()) && IsAssistTank(member))
         {
             if (index == counter)
-            {
                 return player == member;
-            }
+
             counter++;
         }
     }
+
     return false;
 }
 
@@ -2386,8 +2360,7 @@ class GameObjectByGuidInRangeCheck
 public:
     GameObjectByGuidInRangeCheck(WorldObject const* obj, ObjectGuid guid, float range)
         : i_obj(obj), i_range(range), i_guid(guid)
-    {
-    }
+
     WorldObject const& GetFocusObject() const { return *i_obj; }
     bool operator()(GameObject* u)
     {

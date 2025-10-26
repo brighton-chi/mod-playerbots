@@ -317,7 +317,7 @@ float FathomLordKarathressCaribdisTankHealerMaintainPositionMultiplier::GetValue
     if (!caribdis || !caribdis->IsAlive())
         return 1.0f;
 
-    if (botAI->IsHealAssistantOfIndex(bot, 0) && dynamic_cast<FleeAction*>(bot))
+    if (botAI->IsAssistHealOfIndex(bot, 0) && dynamic_cast<FleeAction*>(bot))
         return 0.0f;
 
     return 1.0f;
