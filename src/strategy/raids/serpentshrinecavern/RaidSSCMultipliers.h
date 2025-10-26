@@ -94,4 +94,11 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class FathomLordKarathressCaribdisTankHealerMaintainPositionMultiplier : public Multiplier
+{
+public:
+    FathomLordKarathressCaribdisTankHealerMaintainPositionMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "fathom-lord karathress caribdis tank healer maintain position") {}
+    virtual float GetValue(Action* action);
+};
+
 #endif

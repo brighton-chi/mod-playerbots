@@ -109,8 +109,12 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction::array(0, new NextAction("fathom-lord karathress misdirect bosses to tanks", ACTION_RAID + 2), nullptr)
     ));
     triggers.push_back(new TriggerNode(
-        "fathom-lord karathress determining dps kill order",
+        "fathom-lord karathress determining kill order",
         NextAction::array(0, new NextAction("fathom-lord karathress assign dps priority", ACTION_RAID + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode(
+        "fathom-lord karathress caribdis tank needs dedicated healer",
+        NextAction::array(0, new NextAction("fathom-lord karathress position caribdis tank healer", ACTION_EMERGENCY + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode(
         "fathom-lord karathress tanks need to establish aggro",
@@ -149,4 +153,5 @@ void RaidSSCStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new FathomLordKarathressDisableTankAssistMultiplier(botAI));
     multipliers.push_back(new FathomLordKarathressControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new FathomLordKarathressWaitForDPSMultiplier(botAI));
+    multipliers.push_back(new FathomLordKarathressCaribdisTankHealerMaintainPositionMultiplier(botAI));
 }

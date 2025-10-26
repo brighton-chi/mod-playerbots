@@ -203,6 +203,13 @@ public:
     bool Execute(Event event) override;
 };
 
+class FathomLordKarathressPositionCaribdisTankHealerAction : public MovementAction
+{
+public:
+    FathomLordKarathressPositionCaribdisTankHealerAction(PlayerbotAI* botAI, std::string const name = "fathom-lord karathress position caribdis tank healer") : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 class FathomLordKarathressManageDPSTimerAction : public Action
 {
 public:

@@ -1787,31 +1787,34 @@ bool PlayerbotAI::IsHealAssistantOfIndex(Player* player, int index)
 {
     Group* group = player->GetGroup();
     if (!group)
-    {
         return false;
-    }
 
     int counter = 0;
 
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-
         if (!member)
-        {
             continue;
-        }
 
-        if (IsHeal(member))  // Check if the member is a healer
+        if (IsHeal(member) && group->IsAssistant(member->GetGUID()))
         {
-            bool isAssistant = group->IsAssistant(member->GetGUID());
-
-            // Check if the index matches for both assistant and non-assistant healers
-            if ((isAssistant && index == counter) || (!isAssistant && index == counter))
-            {
+            if (index == counter)
                 return player == member;
-            }
+            counter++;
+        }
+    }
 
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member)
+            continue;
+
+        if (IsHeal(member) && !group->IsAssistant(member->GetGUID()))
+        {
+            if (index == counter)
+                return player == member;
             counter++;
         }
     }

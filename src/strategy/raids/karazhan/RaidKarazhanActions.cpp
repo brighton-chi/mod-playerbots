@@ -47,8 +47,11 @@ bool AttumenTheHuntsmanMarkTargetAction::Execute(Event event)
         MarkTargetWithStar(bot, midnight);
         SetRtiTarget(botAI, "star", midnight);
 
-        if (!botAI->IsHeal(bot) && bot->GetVictim() != midnight)
+        if (!botAI->IsHeal(bot) && bot->GetTarget() != midnight->GetGUID())
+        {
+            bot->SetSelection(midnight->GetGUID());
             return Attack(midnight);
+        }
     }
 
     if (attumenMounted)
@@ -56,13 +59,18 @@ bool AttumenTheHuntsmanMarkTargetAction::Execute(Event event)
         MarkTargetWithStar(bot, attumenMounted);
         SetRtiTarget(botAI, "star", attumenMounted);
 
-        if (!botAI->IsHeal(bot) && bot->GetVictim() != attumenMounted)
+        if (!botAI->IsHeal(bot) && bot->GetTarget() != attumenMounted->GetGUID())
+        {
+            bot->SetSelection(attumenMounted->GetGUID());
             return Attack(attumenMounted);
+        }
 
         if (botAI->IsMainTank(bot) && !bot->IsWithinMeleeRange(attumenMounted))
+        {
             return MoveTo(bot->GetMapId(), attumenMounted->GetPositionX(), attumenMounted->GetPositionY(),
                           attumenMounted->GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, false);
+        }
     }
 
     return false;
@@ -108,8 +116,10 @@ bool AttumenTheHuntsmanStackBehindAction::Execute(Event event)
     float ry = y + sin(orientation) * distance;
 
     if (bot->GetExactDist2d(rx, ry) > 2.0f)
+    {
         return MoveTo(bot->GetMapId(), rx, ry, bot->GetPositionZ(), false, false, false, false, 
                       MovementPriority::MOVEMENT_FORCED, true, false);
+    }
 
     return false;
 }

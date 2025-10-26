@@ -1022,6 +1022,19 @@ bool FathomLordKarathressAssignDPSPriorityAction::Execute(Event event)
     return false;
 }
 
+bool FathomLordKarathressPositionCaribdisTankHealerAction::Execute(Event event)
+{
+    Unit* caribdis = AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
+    if (!caribdis)
+        return false;
+
+    float dist = bot->GetExactDist2d(caribdis);
+    if (dist > 15.0f)
+        return FleePosition(caribdis->GetPosition(), 12.0f, 0);
+
+    return false;
+}
+
 bool FathomLordKarathressManageDPSTimerAction::Execute(Event event)
 {
     Unit* karathress = AI_VALUE2(Unit*, "find target", "fathom-lord karathress");

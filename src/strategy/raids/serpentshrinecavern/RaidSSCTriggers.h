@@ -178,10 +178,17 @@ public:
     bool IsActive() override;
 };
 
-class FathomLordKarathressDeterminingDPSKillOrderTrigger : public Trigger
+class FathomLordKarathressDeterminingKillOrderTrigger : public Trigger
 {
 public:
-    FathomLordKarathressDeterminingDPSKillOrderTrigger(PlayerbotAI* botAI) : Trigger(botAI, "fathom-lord karathress determining dps kill order") {}
+    FathomLordKarathressDeterminingKillOrderTrigger(PlayerbotAI* botAI) : Trigger(botAI, "fathom-lord karathress determining kill order") {}
+    bool IsActive() override;
+};
+
+class FathomLordKarathressCaribdisTankNeedsDedicatedHealerTrigger : public Trigger
+{
+public:
+    FathomLordKarathressCaribdisTankNeedsDedicatedHealerTrigger(PlayerbotAI* botAI) : Trigger(botAI, "fathom-lord karathress caribdis tank needs dedicated healer") {}
     bool IsActive() override;
 };
 

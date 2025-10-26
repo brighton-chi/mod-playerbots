@@ -310,3 +310,15 @@ float FathomLordKarathressWaitForDPSMultiplier::GetValue(Action* action)
 
     return 1.0f;
 }
+
+float FathomLordKarathressCaribdisTankHealerMaintainPositionMultiplier::GetValue(Action* action)
+{
+    Unit* caribdis = AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
+    if (!caribdis || !caribdis->IsAlive())
+        return 1.0f;
+
+    if (botAI->IsHealAssistantOfIndex(bot, 0) && dynamic_cast<FleeAction*>(bot))
+        return 0.0f;
+
+    return 1.0f;
+}

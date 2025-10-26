@@ -26,13 +26,11 @@ namespace SerpentShrineCavernHelpers
         const Location LurkerCenterOfPoolPosition = { 40.843f, -416.379f, -21.613f };
 
         const Location KarathressTankPosition = { 472.973f, -540.804f, -7.548f };
-        // const Location KarathressTankPosition = { 477.211f, -532.528f, -7.549f }; // more central
         const Location TidalvessTankPosition = { 511.282f, -501.162f, -13.158f };
-        // const Location TidalvessTankPosition = { 504.935f, -491.730f, -13.158f }; // more central
         const Location SharkkisTankPosition = { 507.396f, -555.750f, -7.146f };
-        // const Location SharkkisTankPosition = { 511.821f, -526.269f, -13.158f }; // more central
-        const Location CaribdisTankPosition = { 464.687f, -488.195f, -13.158f };
-        // const Location CaribdisTankPosition = { 455.086f, -459.012f, -13.158f }; // if i want to take her all the way to the corner
+        // const Location CaribdisTankPosition = { 464.687f, -488.195f, -13.158f }; // can reach from middle but she hits everyone
+        // const Location CaribdisTankPosition = { 450.472f, -483.398f, -13.158f }; // try this if need farther
+        const Location CaribdisTankPosition = { 464.474f, -467.951f, -13.158f }; // or this for near the corner
         // const Location KarathressRoomCenterPosition = { 502.570f, -510.805f, -13.158f }; // smack dab
         // const Location KarathressRoomCenterPosition = { 494.458f, -510.435f, -13.158f }; // middle of the "more centra" positions
 
@@ -250,6 +248,4 @@ namespace SerpentShrineCavernHelpers
 
         return nullptr;
     }
-
-
 }

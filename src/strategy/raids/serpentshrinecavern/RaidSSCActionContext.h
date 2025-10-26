@@ -38,6 +38,7 @@ public:
         creators["fathom-lord karathress third assist tank position caribdis"] = &RaidSSCActionContext::fathom_lord_karathress_third_assist_tank_position_caribdis;
         creators["fathom-lord karathress misdirect bosses to tanks"] = &RaidSSCActionContext::fathom_lord_karathress_misdirect_bosses_to_tanks;
         creators["fathom-lord karathress assign dps priority"] = &RaidSSCActionContext::fathom_lord_karathress_assign_dps_priority;
+        creators["fathom-lord karathress position caribdis tank healer"] = &RaidSSCActionContext::fathom_lord_karathress_position_caribdis_tank_healer;
         creators["fathom-lord karathress manage dps timer"] = &RaidSSCActionContext::fathom_lord_karathress_manage_dps_timer;
 
         creators["morogrim tidewalker misdirect boss to main tank"] = &RaidSSCActionContext::morogrim_tidewalker_misdirect_boss_to_main_tank;
@@ -75,6 +76,7 @@ private:
     static Action* fathom_lord_karathress_third_assist_tank_position_caribdis(PlayerbotAI* botAI) { return new FathomLordKarathressThirdAssistTankPositionCaribdisAction(botAI); }
     static Action* fathom_lord_karathress_misdirect_bosses_to_tanks(PlayerbotAI* botAI) { return new FathomLordKarathressMisdirectBossesToTanksAction(botAI); }
     static Action* fathom_lord_karathress_assign_dps_priority(PlayerbotAI* botAI) { return new FathomLordKarathressAssignDPSPriorityAction(botAI); }
+    static Action* fathom_lord_karathress_position_caribdis_tank_healer(PlayerbotAI* botAI) { return new FathomLordKarathressPositionCaribdisTankHealerAction(botAI); }
     static Action* fathom_lord_karathress_manage_dps_timer(PlayerbotAI* botAI) { return new FathomLordKarathressManageDPSTimerAction(botAI); }
 
     static Action* morogrim_tidewalker_misdirect_boss_to_main_tank(PlayerbotAI* botAI) { return new MorogrimTidewalkerMisdirectBossToMainTankAction(botAI); }
