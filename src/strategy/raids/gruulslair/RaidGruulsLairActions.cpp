@@ -17,10 +17,7 @@ bool HighKingMaulgarMainTankAttackMaulgarAction::Execute(Event event)
     SetRtiTarget(botAI, "square", maulgar);
 
     if (bot->GetVictim() != maulgar)
-    {
-        bot->SetSelection(maulgar->GetGUID());
         return Attack(maulgar);
-    }
 
     if (maulgar->GetVictim() == bot)
     {
@@ -45,9 +42,11 @@ bool HighKingMaulgarMainTankAttackMaulgarAction::Execute(Event event)
         bot->SetFacingTo(orientation);
     }
     else if (!bot->IsWithinMeleeRange(maulgar))
+    {
         return MoveTo(maulgar->GetMapId(), maulgar->GetPositionX(), maulgar->GetPositionY(), 
                       maulgar->GetPositionZ(), false, false, false, false, 
                       MovementPriority::MOVEMENT_COMBAT, true, false);
+    }
 
     return false;
 }
@@ -61,10 +60,7 @@ bool HighKingMaulgarFirstAssistTankAttackOlmAction::Execute(Event event)
     SetRtiTarget(botAI, "circle", olm);
 
     if (bot->GetVictim() != olm)
-    {
-        bot->SetSelection(olm->GetGUID());
         return Attack(olm);
-    }
 
     if (olm->GetVictim() == bot)
     {
@@ -86,9 +82,11 @@ bool HighKingMaulgarFirstAssistTankAttackOlmAction::Execute(Event event)
         }
     }
     else if (!bot->IsWithinMeleeRange(olm))
+    {
         return MoveTo(olm->GetMapId(), olm->GetPositionX(), olm->GetPositionY(), 
                       olm->GetPositionZ(), false, false, false, false, 
                       MovementPriority::MOVEMENT_COMBAT, true, false);
+    }
 
     return false;
 }
@@ -102,10 +100,7 @@ bool HighKingMaulgarSecondAssistTankAttackBlindeyeAction::Execute(Event event)
     SetRtiTarget(botAI, "star", blindeye);
 
     if (bot->GetVictim() != blindeye)
-    {
-        bot->SetSelection(blindeye->GetGUID());
         return Attack(blindeye);
-    }
 
     if (blindeye->GetVictim() == bot)
     {
@@ -130,9 +125,11 @@ bool HighKingMaulgarSecondAssistTankAttackBlindeyeAction::Execute(Event event)
         bot->SetFacingTo(orientation);
     }
     else if (!bot->IsWithinMeleeRange(blindeye))
-        return MoveTo(blindeye->GetMapId(), blindeye->GetPositionX(), blindeye->GetPositionY(), 
-                      blindeye->GetPositionZ(), false, false, false, false, 
+    {
+        return MoveTo(blindeye->GetMapId(), blindeye->GetPositionX(), blindeye->GetPositionY(),
+                      blindeye->GetPositionZ(), false, false, false, false,
                       MovementPriority::MOVEMENT_COMBAT, true, false);
+    }
 
     return false;
 }
@@ -168,8 +165,10 @@ bool HighKingMaulgarMageTankAttackKroshAction::Execute(Event event)
         if (distanceToKrosh > minDistance && distanceToKrosh < maxDistance)
         {
             if (!bot->IsWithinDist2d(tankPosition.x, tankPosition.y, tankPositionLeeway))
+            {
                 return MoveTo(bot->GetMapId(), tankPosition.x, tankPosition.y, tankPosition.z, false, 
                               false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+            }
 
             float orientation = atan2(krosh->GetPositionY() - bot->GetPositionY(), 
                                       krosh->GetPositionX() - bot->GetPositionX());
@@ -179,8 +178,10 @@ bool HighKingMaulgarMageTankAttackKroshAction::Execute(Event event)
         {
             Position safePos;
             if (TryGetNewSafePosition(botAI, bot, safePos))
+            {
                 return MoveTo(krosh->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ,
                               false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+            }
         }
     }
 
@@ -203,8 +204,10 @@ bool HighKingMaulgarMoonkinTankAttackKigglerAction::Execute(Event event)
 
     Position safePos;
     if (TryGetNewSafePosition(botAI, bot, safePos))
+    {
         return MoveTo(kiggler->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ,
                       false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+    }
 
     return false;
 }
@@ -356,8 +359,12 @@ bool HighKingMaulgarHealerFindSafePositionAction::Execute(Event event)
 
     Position safePos;
     if (TryGetNewSafePosition(botAI, bot, safePos))
+    {
+        bot->AttackStop();
+        bot->InterruptNonMeleeSpells(false);
         return MoveTo(bot->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ,
                       false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+    }
 
     return false;
 }
@@ -552,8 +559,10 @@ bool GruulTheDragonkillerMainTankPositionBossAction::Execute(Event event)
         bot->SetFacingTo(orientation);
     }
     else if (!bot->IsWithinMeleeRange(gruul))
+    {
         return MoveTo(gruul->GetMapId(), gruul->GetPositionX(), gruul->GetPositionY(), gruul->GetPositionZ(), 
                       false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+    }
 
     return false;
 }
@@ -628,6 +637,7 @@ bool GruulTheDragonkillerSpreadRangedAction::Execute(Event event)
             float destX = targetPosition.GetPositionX();
             float destY = targetPosition.GetPositionY();
             float destZ = targetPosition.GetPositionZ();
+
             if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, bot->GetPositionX(),
                 bot->GetPositionY(), bot->GetPositionZ(), destX, destY, destZ))
                 return false;
@@ -643,8 +653,10 @@ bool GruulTheDragonkillerSpreadRangedAction::Execute(Event event)
     const float movementThreshold = 2.0f;
 
     if (closestMember && closestDist < minSpreadDistance - movementThreshold)
+    {
         return FleePosition(Position(closestMember->GetPositionX(), closestMember->GetPositionY(), 
                             closestMember->GetPositionZ()), minSpreadDistance, 0);
+    }
 
     return false;
 }
@@ -675,8 +687,10 @@ bool GruulTheDragonkillerShatterSpreadAction::Execute(Event event)
     }
 
     if (closestMember)
+    {
         return FleePosition(Position(closestMember->GetPositionX(), closestMember->GetPositionY(), 
                             closestMember->GetPositionZ()), 6.0f, 0);
+    }
 
     return false;
 }
