@@ -106,12 +106,14 @@ namespace SerpentShrineCavernHelpers
         extern const Location TidalvessTankPosition;
         extern const Location SharkkisTankPosition;
         extern const Location CaribdisTankPosition;
+        extern const Location CaribdisHealerPosition;
         // extern const Location KarathressRoomCenterPosition
 
         // extern const Location LeotherasHumanFormTankPosition;
         // extern const Location LeotherasDemonFormTankPosition;
 
         extern const Location TidewalkerPhase1TankPosition;
+        extern const Location TidewalkerPhaseTransitionWaypoint;
         extern const Location TidewalkerPhase2TankPosition;
         extern const Location TidewalkerPhase2DPSAndHealerPosition;
         // extern const Location TidewalkerGraveHealerPosition;

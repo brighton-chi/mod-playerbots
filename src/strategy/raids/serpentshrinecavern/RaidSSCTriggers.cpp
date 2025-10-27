@@ -256,7 +256,7 @@ bool MorogrimTidewalkerWaterGlobulesAreIncomingTrigger::IsActive()
     Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
 
     return tidewalker && tidewalker->GetHealthPct() < 25.0f &&
-           !botAI->IsTank(bot);
+           botAI->IsRanged(bot);
 }
 
 // Lady Vashj

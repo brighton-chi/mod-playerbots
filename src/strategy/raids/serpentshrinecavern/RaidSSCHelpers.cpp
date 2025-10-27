@@ -27,14 +27,17 @@ namespace SerpentShrineCavernHelpers
 
         const Location KarathressTankPosition = { 472.973f, -540.804f, -7.548f };
         const Location TidalvessTankPosition = { 511.282f, -501.162f, -13.158f };
-        const Location SharkkisTankPosition = { 507.396f, -555.750f, -7.146f };
-        // const Location CaribdisTankPosition = { 464.687f, -488.195f, -13.158f }; // can reach from middle but she hits everyone
+        // const Location SharkkisTankPosition = { 507.396f, -555.750f, -7.146f }; // OG
+        const Location SharkkisTankPosition = { 508.057f, -541.109f, -10.133f };
+        const Location CaribdisTankPosition = { 464.462f, -475.820f, -13.158f };
         // const Location CaribdisTankPosition = { 450.472f, -483.398f, -13.158f }; // try this if need farther
-        const Location CaribdisTankPosition = { 464.474f, -467.951f, -13.158f }; // or this for near the corner
+        // const Location CaribdisTankPosition = { 464.474f, -467.951f, -13.158f }; // or this for near the corner
+        const Location CaribdisHealerPosition = { 466.203f, -503.201f, -13.158f };
         // const Location KarathressRoomCenterPosition = { 502.570f, -510.805f, -13.158f }; // smack dab
         // const Location KarathressRoomCenterPosition = { 494.458f, -510.435f, -13.158f }; // middle of the "more centra" positions
 
         const Location TidewalkerPhase1TankPosition = { 410.925f, -741.916f, -7.146f };
+        const Location TidewalkerPhaseTransitionWaypoint = { 407.035f, -759.479f, -7.168f };
         const Location TidewalkerPhase2TankPosition = { 446.571f, -767.155f, -7.144f };
         const Location TidewalkerPhase2DPSAndHealerPosition = { 427.494f, -751.716f, -7.146f };
         // const Location TidewalkerGraveHealerPosition = { 388.558f, -723.956f, -11.941f };
