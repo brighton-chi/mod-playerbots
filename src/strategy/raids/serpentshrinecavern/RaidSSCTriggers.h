@@ -220,4 +220,11 @@ public:
     bool IsActive() override;
 };
 
+class MorogrimTidewalkerEncounterResetTrigger : public Trigger
+{
+public:
+    MorogrimTidewalkerEncounterResetTrigger(PlayerbotAI* botAI) : Trigger(botAI, "morogrim tidewalker encounter reset") {}
+    bool IsActive() override;
+};
+
 #endif

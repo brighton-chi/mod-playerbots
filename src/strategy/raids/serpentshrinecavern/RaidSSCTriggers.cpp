@@ -259,4 +259,11 @@ bool MorogrimTidewalkerWaterGlobulesAreIncomingTrigger::IsActive()
            botAI->IsRanged(bot);
 }
 
+bool MorogrimTidewalkerEncounterResetTrigger::IsActive()
+{
+    Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
+
+    return tidewalker && tidewalker->GetHealthPct() > 99.0f;
+}
+
 // Lady Vashj

@@ -1104,100 +1104,145 @@ bool MorogrimTidewalkerMoveBossToTankPositionAction::Execute(Event event)
 
     if (tidewalker->GetVictim() == bot)
     {
-        const Location& phase1 = SerpentShrineCavernLocations::TidewalkerPhase1TankPosition;
-        const Location& phase2 = SerpentShrineCavernLocations::TidewalkerPhase2TankPosition;
-        const Location& transition = SerpentShrineCavernLocations::TidewalkerPhaseTransitionWaypoint;
+        if (tidewalker->GetHealthPct() > 26.0f)
+            return MoveToPhase1TankPosition(tidewalker);
+        else
+            return MoveToPhase2TankPosition(tidewalker);
+    }
 
-        const Location& targetPosition = (tidewalker->GetHealthPct() > 26.0f) ? phase1 : phase2;
+    return false;
+}
 
-        // If transitioning from phase 1 to phase 2, use the waypoint
-        if (tidewalker->GetHealthPct() <= 26.0f && bot->GetExactDist2d(phase2.x, phase2.y) > 2.0f)
+bool MorogrimTidewalkerMoveBossToTankPositionAction::MoveToPhase1TankPosition(Unit* tidewalker)
+{
+    const Location& phase1 = SerpentShrineCavernLocations::TidewalkerPhase1TankPosition;
+    const float maxDistance = 2.0f;
+    if (bot->GetExactDist2d(phase1.x, phase1.y) > maxDistance)
+    {
+        float dX = phase1.x - bot->GetPositionX();
+        float dY = phase1.y - bot->GetPositionY();
+        float dist = sqrt(dX * dX + dY * dY);
+        float moveX = bot->GetPositionX() + (dX / dist) * maxDistance;
+        float moveY = bot->GetPositionY() + (dY / dist) * maxDistance;
+
+        return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+                        MovementPriority::MOVEMENT_COMBAT, true, true);
+    }
+    else if (!bot->IsWithinMeleeRange(tidewalker))
+    {
+        return MoveTo(tidewalker->GetMapId(), tidewalker->GetPositionX(),
+                      tidewalker->GetPositionY(), tidewalker->GetPositionZ(),
+                      false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+    }
+
+    return false;
+}
+
+bool MorogrimTidewalkerMoveBossToTankPositionAction::MoveToPhase2TankPosition(Unit* tidewalker)
+{
+    const Location& phase2 = SerpentShrineCavernLocations::TidewalkerPhase2TankPosition;
+    const Location& transition = SerpentShrineCavernLocations::TidewalkerPhaseTransitionWaypoint;
+
+    ObjectGuid botGuid = bot->GetGUID();
+    uint8 step = tidewalkerTankStep.count(botGuid) ? tidewalkerTankStep[botGuid] : 0;
+    const float maxDistance = 2.0f;
+
+    if (step == 0)
+    {
+        if (bot->GetExactDist2d(transition.x, transition.y) > maxDistance)
         {
-            // If not near the transition waypoint, move there first
-            if (bot->GetExactDist2d(transition.x, transition.y) > 2.0f)
-            {
-                float dX = transition.x - bot->GetPositionX();
-                float dY = transition.y - bot->GetPositionY();
-                float dist = sqrt(dX * dX + dY * dY);
-                float moveX = bot->GetPositionX() + (dX / dist);
-                float moveY = bot->GetPositionY() + (dY / dist);
-
-                return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-                              MovementPriority::MOVEMENT_COMBAT, true, true);
-            }
-            // Once at the waypoint, move to phase 2 position
-            else
-            {
-                float dX = phase2.x - bot->GetPositionX();
-                float dY = phase2.y - bot->GetPositionY();
-                float dist = sqrt(dX * dX + dY * dY);
-                float moveX = bot->GetPositionX() + (dX / dist);
-                float moveY = bot->GetPositionY() + (dY / dist);
-
-                return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-                              MovementPriority::MOVEMENT_COMBAT, true, true);
-            }
-        }
-        // Normal movement for phase 1 or if already at phase 2
-        else if (bot->GetExactDist2d(targetPosition.x, targetPosition.y) > 2.0f)
-        {
-            float dX = targetPosition.x - bot->GetPositionX();
-            float dY = targetPosition.y - bot->GetPositionY();
+            float dX = transition.x - bot->GetPositionX();
+            float dY = transition.y - bot->GetPositionY();
             float dist = sqrt(dX * dX + dY * dY);
-            float moveX = bot->GetPositionX() + (dX / dist);
-            float moveY = bot->GetPositionY() + (dY / dist);
+            float moveX = bot->GetPositionX() + (dX / dist) * maxDistance;
+            float moveY = bot->GetPositionY() + (dY / dist) * maxDistance;
 
             return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, true);
         }
-        else if (!bot->IsWithinMeleeRange(tidewalker))
+        else
+            tidewalkerTankStep[botGuid] = 1;
+    }
+
+    if (step == 1)
+    {
+        if (bot->GetExactDist2d(phase2.x, phase2.y) > 2.0f)
         {
-            return MoveTo(tidewalker->GetMapId(), tidewalker->GetPositionX(),
-                          tidewalker->GetPositionY(), tidewalker->GetPositionZ(),
-                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+            float dX = phase2.x - bot->GetPositionX();
+            float dY = phase2.y - bot->GetPositionY();
+            float dist = sqrt(dX * dX + dY * dY);
+            float moveX = bot->GetPositionX() + (dX / dist) * maxDistance;
+            float moveY = bot->GetPositionY() + (dY / dist) * maxDistance;
+
+            return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+                          MovementPriority::MOVEMENT_COMBAT, true, true);
         }
     }
 
     return false;
 }
 
-bool MorogrimTidewalkerPhase2RepositionDPSAndHealersAction::Execute(Event event)
+bool MorogrimTidewalkerPhase2RepositionRangedAction::Execute(Event event)
 {
     Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
     if (!tidewalker)
         return false;
 
-    const Location& phase2 = SerpentShrineCavernLocations::TidewalkerPhase2DPSAndHealerPosition;
+    const Location& phase2 = SerpentShrineCavernLocations::TidewalkerPhase2RangedPosition;
     const Location& transition = SerpentShrineCavernLocations::TidewalkerPhaseTransitionWaypoint;
 
-    // If not near the phase 2 position, use the transition waypoint first
-    if (bot->GetExactDist2d(phase2.x, phase2.y) > 8.0f)
+    ObjectGuid botGuid = bot->GetGUID();
+    uint8 step = tidewalkerRangedStep.count(botGuid) ? tidewalkerRangedStep[botGuid] : 0;
+    const float maxDistance = 2.0f;
+
+    if (step == 0)
     {
-        // If not near the transition waypoint, move there first
-        if (bot->GetExactDist2d(transition.x, transition.y) > 2.0f)
+        if (bot->GetExactDist2d(transition.x, transition.y) > maxDistance)
         {
             float dX = transition.x - bot->GetPositionX();
             float dY = transition.y - bot->GetPositionY();
             float dist = sqrt(dX * dX + dY * dY);
-            float moveX = bot->GetPositionX() + (dX / dist);
-            float moveY = bot->GetPositionY() + (dY / dist);
+            float moveX = bot->GetPositionX() + (dX / dist) * maxDistance;
+            float moveY = bot->GetPositionY() + (dY / dist) * maxDistance;
 
             return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
-        // Once at the waypoint, move to phase 2 position
         else
+            tidewalkerRangedStep[botGuid] = 1;
+    }
+
+    if (step == 1)
+    {
+        if (bot->GetExactDist2d(phase2.x, phase2.y) > maxDistance)
         {
             float dX = phase2.x - bot->GetPositionX();
             float dY = phase2.y - bot->GetPositionY();
             float dist = sqrt(dX * dX + dY * dY);
-            float moveX = bot->GetPositionX() + (dX / dist);
-            float moveY = bot->GetPositionY() + (dY / dist);
+            float moveX = bot->GetPositionX() + (dX / dist) * maxDistance;
+            float moveY = bot->GetPositionY() + (dY / dist) * maxDistance;
 
             return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
+
+    return false;
+}
+
+bool MorogrimTidewalkerResetPhaseTransitionStepsAction::Execute(Event event)
+{
+    Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
+    if (!tidewalker)
+        return false;
+
+    ObjectGuid botGuid = bot->GetGUID();
+
+    if (tidewalkerTankStep.count(botGuid))
+        tidewalkerTankStep.erase(botGuid);
+
+    if (tidewalkerRangedStep.count(botGuid))
+        tidewalkerRangedStep.erase(botGuid);
 
     return false;
 }

@@ -229,12 +229,23 @@ class MorogrimTidewalkerMoveBossToTankPositionAction : public AttackAction
 public:
     MorogrimTidewalkerMoveBossToTankPositionAction(PlayerbotAI* botAI, std::string const name = "morogrim tidewalker move boss to tank position") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
+
+private:
+    bool MoveToPhase1TankPosition(Unit* tidewalker);
+    bool MoveToPhase2TankPosition(Unit* tidewalker);
 };
 
-class MorogrimTidewalkerPhase2RepositionDPSAndHealersAction : public MovementAction
+class MorogrimTidewalkerPhase2RepositionRangedAction : public MovementAction
 {
 public:
-    MorogrimTidewalkerPhase2RepositionDPSAndHealersAction(PlayerbotAI* botAI, std::string const name = "morogrim tidewalker phase 2 reposition dps and healers") : MovementAction(botAI, name) {}
+    MorogrimTidewalkerPhase2RepositionRangedAction(PlayerbotAI* botAI, std::string const name = "morogrim tidewalker phase 2 reposition ranged") : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class MorogrimTidewalkerResetPhaseTransitionStepsAction : public Action
+{
+public:
+    MorogrimTidewalkerResetPhaseTransitionStepsAction(PlayerbotAI* botAI, std::string const name = "morogrim tidewalker reset phase transition steps") : Action(botAI, name) {}
     bool Execute(Event event) override;
 };
 

@@ -43,7 +43,8 @@ public:
 
         creators["morogrim tidewalker misdirect boss to main tank"] = &RaidSSCActionContext::morogrim_tidewalker_misdirect_boss_to_main_tank;
         creators["morogrim tidewalker move boss to tank position"] = &RaidSSCActionContext::morogrim_tidewalker_move_boss_to_tank_position;
-        creators["morogrim tidewalker phase 2 reposition dps and healers"] = &RaidSSCActionContext::morogrim_tidewalker_phase_2_reposition_dps_and_healers;
+        creators["morogrim tidewalker phase 2 reposition ranged"] = &RaidSSCActionContext::morogrim_tidewalker_phase_2_reposition_ranged;
+        creators["morogrim tidewalker reset phase transition steps"] = &RaidSSCActionContext::morogrim_tidewalker_reset_phase_transition_steps;
     }
 
 private:
@@ -81,7 +82,8 @@ private:
 
     static Action* morogrim_tidewalker_misdirect_boss_to_main_tank(PlayerbotAI* botAI) { return new MorogrimTidewalkerMisdirectBossToMainTankAction(botAI); }
     static Action* morogrim_tidewalker_move_boss_to_tank_position(PlayerbotAI* botAI) { return new MorogrimTidewalkerMoveBossToTankPositionAction(botAI); }
-    static Action* morogrim_tidewalker_phase_2_reposition_dps_and_healers(PlayerbotAI* botAI) { return new MorogrimTidewalkerPhase2RepositionDPSAndHealersAction(botAI); }
+    static Action* morogrim_tidewalker_phase_2_reposition_ranged(PlayerbotAI* botAI) { return new MorogrimTidewalkerPhase2RepositionRangedAction(botAI); }
+    static Action* morogrim_tidewalker_reset_phase_transition_steps(PlayerbotAI* botAI) { return new MorogrimTidewalkerResetPhaseTransitionStepsAction(botAI); }
 };
 
 #endif

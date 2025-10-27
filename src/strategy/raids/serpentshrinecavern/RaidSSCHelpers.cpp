@@ -16,6 +16,9 @@ namespace SerpentShrineCavernHelpers
 
     std::unordered_map<uint32, time_t> karathressDPSWaitTimer;
 
+    std::map<ObjectGuid, uint8> tidewalkerTankStep;
+    std::map<ObjectGuid, uint8> tidewalkerRangedStep;
+
     namespace SerpentShrineCavernLocations
     {
         const Location HydrossFrostTankPosition = { -236.669f, -358.352f, -0.828f };
@@ -39,7 +42,7 @@ namespace SerpentShrineCavernHelpers
         const Location TidewalkerPhase1TankPosition = { 410.925f, -741.916f, -7.146f };
         const Location TidewalkerPhaseTransitionWaypoint = { 407.035f, -759.479f, -7.168f };
         const Location TidewalkerPhase2TankPosition = { 446.571f, -767.155f, -7.144f };
-        const Location TidewalkerPhase2DPSAndHealerPosition = { 427.494f, -751.716f, -7.146f };
+        const Location TidewalkerPhase2RangedPosition = { 427.494f, -751.716f, -7.146f };
         // const Location TidewalkerGraveHealerPosition = { 388.558f, -723.956f, -11.941f };
         // Tidewalker offtank position(s) for murlocs?
     }

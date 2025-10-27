@@ -44,6 +44,7 @@ public:
         creators["morogrim tidewalker boss engaged by main tank"] = &RaidSSCTriggerContext::morogrim_tidewalker_boss_engaged_by_main_tank;
         creators["morogrim tidewalker pulling boss"] = &RaidSSCTriggerContext::morogrim_tidewalker_pulling_boss;
         creators["morogrim tidewalker water globules are incoming"] = &RaidSSCTriggerContext::morogrim_tidewalker_water_globules_are_incoming;
+        creators["morogrim tidewalker encounter reset"] = &RaidSSCTriggerContext::morogrim_tidewalker_encounter_reset;
     }
 
 private:
@@ -82,6 +83,7 @@ private:
     static Trigger* morogrim_tidewalker_boss_engaged_by_main_tank(PlayerbotAI* botAI) { return new MorogrimTidewalkerBossEngagedByMainTankTrigger(botAI); }
     static Trigger* morogrim_tidewalker_pulling_boss(PlayerbotAI* botAI) { return new MorogrimTidewalkerPullingBossTrigger(botAI); }
     static Trigger* morogrim_tidewalker_water_globules_are_incoming(PlayerbotAI* botAI) { return new MorogrimTidewalkerWaterGlobulesAreIncomingTrigger(botAI); }
+    static Trigger* morogrim_tidewalker_encounter_reset(PlayerbotAI* botAI) { return new MorogrimTidewalkerEncounterResetTrigger(botAI); }
 };
 
 #endif

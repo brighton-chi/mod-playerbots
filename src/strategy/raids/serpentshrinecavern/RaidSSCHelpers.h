@@ -88,6 +88,10 @@ namespace SerpentShrineCavernHelpers
     extern std::unordered_map<uint32, time_t> leotherasFinalPhaseDPSWaitTimer;
 
     extern std::unordered_map<uint32, time_t> karathressDPSWaitTimer;
+
+    extern std::map<ObjectGuid, uint8> tidewalkerTankStep;
+    extern std::map<ObjectGuid, uint8> tidewalkerRangedStep;
+
     struct Location 
     {
         float x, y, z;
@@ -115,7 +119,7 @@ namespace SerpentShrineCavernHelpers
         extern const Location TidewalkerPhase1TankPosition;
         extern const Location TidewalkerPhaseTransitionWaypoint;
         extern const Location TidewalkerPhase2TankPosition;
-        extern const Location TidewalkerPhase2DPSAndHealerPosition;
+        extern const Location TidewalkerPhase2RangedPosition;
         // extern const Location TidewalkerGraveHealerPosition;
         // Tidewalker offtank position(s) for murlocs?
         // Tidewalker healer location for graves?
