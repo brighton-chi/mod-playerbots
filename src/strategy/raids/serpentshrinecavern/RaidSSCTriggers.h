@@ -59,17 +59,59 @@ public:
     bool IsActive() override;
 };
 
-class HydrossTheUnstableWaitingForDPSTrigger : public Trigger
+class HydrossTheUnstableNeedToManagePhaseChangeAggroResetTrigger : public Trigger
 {
 public:
-    HydrossTheUnstableWaitingForDPSTrigger(PlayerbotAI* botAI) : Trigger(botAI, "hydross the unstable waiting for dps") {}
+    HydrossTheUnstableNeedToManagePhaseChangeAggroResetTrigger(PlayerbotAI* botAI) : Trigger(botAI, "hydross the unstable need to manage phase change aggro reset") {}
     bool IsActive() override;
 };
 
-class TheLurkerBelowSpoutIsActiveTrigger : public Trigger
+/* class TheLurkerBelowSpoutIsActiveTrigger : public Trigger
 {
 public:
     TheLurkerBelowSpoutIsActiveTrigger(PlayerbotAI* botAI) : Trigger(botAI, "the lurker below spout is active") {}
+    bool IsActive() override;
+}; */
+
+class TheLurkerBelowBossIsActiveForMainTankTrigger : public Trigger
+{
+public:
+    TheLurkerBelowBossIsActiveForMainTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "the lurker below boss is active for main tank") {}
+    bool IsActive() override;
+};
+
+class TheLurkerBelowBossIsActiveForOtherMeleeTrigger : public Trigger
+{
+public:
+    TheLurkerBelowBossIsActiveForOtherMeleeTrigger(PlayerbotAI* botAI) : Trigger(botAI, "the lurker below boss is active for other melee dps") {}
+    bool IsActive() override;
+};
+
+class TheLurkerBelowSpoutIsActiveForMeleeTrigger : public Trigger
+{
+public:
+    TheLurkerBelowSpoutIsActiveForMeleeTrigger(PlayerbotAI* botAI) : Trigger(botAI, "the lurker below spout is active for melee") {}
+    bool IsActive() override;
+};
+
+class TheLurkerBelowBossIsActiveForRangedDpsTrigger : public Trigger
+{
+public:
+    TheLurkerBelowBossIsActiveForRangedDpsTrigger(PlayerbotAI* botAI) : Trigger(botAI, "the lurker below boss is active for ranged dps") {}
+    bool IsActive() override;
+};
+
+class TheLurkerBelowBossIsActiveForHealerTrigger : public Trigger
+{
+public:
+    TheLurkerBelowBossIsActiveForHealerTrigger(PlayerbotAI* botAI) : Trigger(botAI, "the lurker below boss is active for healer") {}
+    bool IsActive() override;
+};
+
+class TheLurkerBelowNeedToPrepareTimerForSpoutTrigger : public Trigger
+{
+public:
+    TheLurkerBelowNeedToPrepareTimerForSpoutTrigger(PlayerbotAI* botAI) : Trigger(botAI, "the lurker below need to prepare timer for spout") {}
     bool IsActive() override;
 };
 

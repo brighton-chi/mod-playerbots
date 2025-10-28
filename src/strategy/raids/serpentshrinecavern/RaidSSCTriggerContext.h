@@ -18,9 +18,14 @@ public:
         creators["hydross the unstable danger from water tombs"] = &RaidSSCTriggerContext::hydross_the_unstable_danger_from_water_tombs;
         creators["hydross the unstable tank needs aggro upon phase change"] = &RaidSSCTriggerContext::hydross_the_unstable_tank_needs_aggro_upon_phase_change;
         creators["hydross the unstable need to transition before fourth mark"] = &RaidSSCTriggerContext::hydross_the_unstable_need_to_transition_before_fourth_mark;
-        creators["hydross the unstable waiting for dps"] = &RaidSSCTriggerContext::hydross_the_unstable_waiting_for_dps;
+        creators["hydross the unstable need to manage phase change aggro reset"] = &RaidSSCTriggerContext::hydross_the_unstable_need_to_manage_phase_change_aggro_reset;
 
-        creators["the lurker below spout is active"] = &RaidSSCTriggerContext::the_lurker_below_spout_is_active;
+        creators["the lurker below boss is active for main tank"] = &RaidSSCTriggerContext::the_lurker_below_boss_is_active_for_main_tank;
+        creators["the lurker below boss is active for other melee"] = &RaidSSCTriggerContext::the_lurker_below_boss_is_active_for_other_melee;
+        creators["the lurker below spout is active for melee"] = &RaidSSCTriggerContext::the_lurker_below_spout_is_active_for_melee;
+        creators["the lurker below boss is active for ranged dps"] = &RaidSSCTriggerContext::the_lurker_below_boss_is_active_for_ranged_dps;
+        creators["the lurker below boss is active for healer"] = &RaidSSCTriggerContext::the_lurker_below_boss_is_active_for_healer;
+        creators["the lurker below need to prepare timer for spout"] = &RaidSSCTriggerContext::the_lurker_below_need_to_prepare_timer_for_spout;
 
         creators["leotheras the blind boss is inactive"] = &RaidSSCTriggerContext::leotheras_the_blind_boss_is_inactive;
         creators["leotheras the blind engaged by demon form tank"] = &RaidSSCTriggerContext::leotheras_the_blind_engaged_by_demon_form_tank;
@@ -57,9 +62,14 @@ private:
     static Trigger* hydross_the_unstable_danger_from_water_tombs(PlayerbotAI* botAI) { return new HydrossTheUnstableDangerFromWaterTombsTrigger(botAI); }
     static Trigger* hydross_the_unstable_tank_needs_aggro_upon_phase_change(PlayerbotAI* botAI) { return new HydrossTheUnstableTankNeedsAggroUponPhaseChangeTrigger(botAI); }
     static Trigger* hydross_the_unstable_need_to_transition_before_fourth_mark(PlayerbotAI* botAI) { return new HydrossTheUnstableNeedToTransitionBeforeFourthMarkTrigger(botAI); }
-    static Trigger* hydross_the_unstable_waiting_for_dps(PlayerbotAI* botAI) { return new HydrossTheUnstableWaitingForDPSTrigger(botAI); }
+    static Trigger* hydross_the_unstable_need_to_manage_phase_change_aggro_reset(PlayerbotAI* botAI) { return new HydrossTheUnstableNeedToManagePhaseChangeAggroResetTrigger(botAI); }
 
-    static Trigger* the_lurker_below_spout_is_active(PlayerbotAI* botAI) { return new TheLurkerBelowSpoutIsActiveTrigger(botAI); }
+    static Trigger* the_lurker_below_boss_is_active_for_main_tank(PlayerbotAI* botAI) { return new TheLurkerBelowBossIsActiveForMainTankTrigger(botAI); }
+    static Trigger* the_lurker_below_boss_is_active_for_other_melee(PlayerbotAI* botAI) { return new TheLurkerBelowBossIsActiveForOtherMeleeTrigger(botAI); }
+    static Trigger* the_lurker_below_spout_is_active_for_melee(PlayerbotAI* botAI) { return new TheLurkerBelowSpoutIsActiveForMeleeTrigger(botAI); }
+    static Trigger* the_lurker_below_boss_is_active_for_ranged_dps(PlayerbotAI* botAI) { return new TheLurkerBelowBossIsActiveForRangedDpsTrigger(botAI); }
+    static Trigger* the_lurker_below_boss_is_active_for_healer(PlayerbotAI* botAI) { return new TheLurkerBelowBossIsActiveForHealerTrigger(botAI); }
+    static Trigger* the_lurker_below_need_to_prepare_timer_for_spout(PlayerbotAI* botAI) { return new TheLurkerBelowNeedToPrepareTimerForSpoutTrigger(botAI); }
 
     static Trigger* leotheras_the_blind_boss_is_inactive(PlayerbotAI* botAI) { return new LeotherasTheBlindBossIsInactiveTrigger(botAI); }
     static Trigger* leotheras_the_blind_engaged_by_demon_form_tank(PlayerbotAI* botAI) { return new LeotherasTheBlindEngagedByDemonFormTankTrigger(botAI); }

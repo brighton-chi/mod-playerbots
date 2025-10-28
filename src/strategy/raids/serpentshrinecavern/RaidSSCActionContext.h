@@ -20,8 +20,13 @@ public:
         creators["hydross the unstable manage phase change timers"] = &RaidSSCActionContext::hydross_the_unstable_manage_phase_change_timers;
         creators["hydross the unstable manage dps timers"] = &RaidSSCActionContext::hydross_the_unstable_manage_dps_timers;
     
-        creators["the lurker below run around behind boss"] = &RaidSSCActionContext::the_lurker_below_run_around_behind_boss;
-    
+        creators["the lurker below position main tank"] = &RaidSSCActionContext::the_lurker_below_position_main_tank;
+        creators["the lurker below position other melee"] = &RaidSSCActionContext::the_lurker_below_position_other_melee;
+        creators["the lurker below melee run around behind boss"] = &RaidSSCActionContext::the_lurker_below_melee_run_around_behind_boss;
+        creators["the lurker below position ranged dps"] = &RaidSSCActionContext::the_lurker_below_position_ranged_dps;
+        creators["the lurker below position healer"] = &RaidSSCActionContext::the_lurker_below_position_healer;
+        creators["the lurker below manage spout timer"] = &RaidSSCActionContext::the_lurker_below_manage_spout_timer;
+
         creators["leotheras the blind target spellbinders"] = &RaidSSCActionContext::leotheras_the_blind_target_spellbinders;
         creators["leotheras the blind demon form position boss"] = &RaidSSCActionContext::leotheras_the_blind_demon_form_position_boss;
         creators["leotheras the blind position ranged"] = &RaidSSCActionContext::leotheras_the_blind_position_ranged;
@@ -57,9 +62,14 @@ private:
     static Action* hydross_the_unstable_frost_phase_spread_out(PlayerbotAI* botAI) { return new HydrossTheUnstableFrostPhaseSpreadOutAction(botAI); }
     static Action* hydross_the_unstable_misdirect_boss_to_tank(PlayerbotAI* botAI) { return new HydrossTheUnstableMisdirectBossToTankAction(botAI); }
     static Action* hydross_the_unstable_manage_phase_change_timers(PlayerbotAI* botAI) { return new HydrossTheUnstableManagePhaseChangeTimersAction(botAI); }
-    static Action* hydross_the_unstable_manage_dps_timers(PlayerbotAI* botAI) { return new HydrossTheUnstableManageDPSTimersAction(botAI); }
+    static Action* hydross_the_unstable_manage_dps_timers(PlayerbotAI* botAI) { return new HydrossTheUnstableManageDpsTimersAction(botAI); }
 
-    static Action* the_lurker_below_run_around_behind_boss(PlayerbotAI* botAI) { return new TheLurkerBelowRunAroundBehindBossAction(botAI); }
+    static Action* the_lurker_below_position_main_tank(PlayerbotAI* botAI) { return new TheLurkerBelowPositionMainTankAction(botAI); }
+    static Action* the_lurker_below_position_other_melee(PlayerbotAI* botAI) { return new TheLurkerBelowPositionOtherMeleeAction(botAI); }
+    static Action* the_lurker_below_melee_run_around_behind_boss(PlayerbotAI* botAI) { return new TheLurkerBelowMeleeRunAroundBehindBossAction(botAI); }
+    static Action* the_lurker_below_position_ranged_dps(PlayerbotAI* botAI) { return new TheLurkerBelowPositionRangedDpsAction(botAI); }
+    static Action* the_lurker_below_position_healer(PlayerbotAI* botAI) { return new TheLurkerBelowPositionHealerAction(botAI); }
+    static Action* the_lurker_below_manage_spout_timer(PlayerbotAI* botAI) { return new TheLurkerBelowManageSpoutTimerAction(botAI); }
 
     static Action* leotheras_the_blind_target_spellbinders(PlayerbotAI* botAI) { return new LeotherasTheBlindTargetSpellbindersAction(botAI); }
     static Action* leotheras_the_blind_demon_form_position_boss(PlayerbotAI* botAI) { return new LeotherasTheBlindDemonFormPositionBossAction(botAI); }
@@ -68,7 +78,7 @@ private:
     // static Action* leotheras_the_blind_demon_form_position_melee(PlayerbotAI* botAI) { return new LeotherasTheBlindDemonFormPositionMeleeAction(botAI); }
     static Action* leotheras_the_blind_inner_demon_cheat(PlayerbotAI* botAI) { return new LeotherasTheBlindInnerDemonCheatAction(botAI); }
     static Action* leotheras_the_blind_misdirect_boss_to_demon_form_tank(PlayerbotAI* botAI) { return new LeotherasTheBlindMisdirectBossToDemonFormTankAction(botAI); }
-    static Action* leotheras_the_blind_final_phase_assign_dps_priority(PlayerbotAI* botAI) { return new LeotherasTheBlindFinalPhaseAssignDPSPriorityAction(botAI); }
+    static Action* leotheras_the_blind_final_phase_assign_dps_priority(PlayerbotAI* botAI) { return new LeotherasTheBlindFinalPhaseAssignDpsPriorityAction(botAI); }
     static Action* leotheras_the_blind_manage_timers_and_trackers(PlayerbotAI* botAI) { return new LeotherasTheBlindManageTimersAndTrackersAction(botAI); }
 
     static Action* fathom_lord_karathress_main_tank_position_boss(PlayerbotAI* botAI) { return new FathomLordKarathressMainTankPositionBossAction(botAI); }
@@ -76,9 +86,9 @@ private:
     static Action* fathom_lord_karathress_second_assist_tank_position_tidalvess(PlayerbotAI* botAI) { return new FathomLordKarathressSecondAssistTankPositionTidalvessAction(botAI); }
     static Action* fathom_lord_karathress_third_assist_tank_position_caribdis(PlayerbotAI* botAI) { return new FathomLordKarathressThirdAssistTankPositionCaribdisAction(botAI); }
     static Action* fathom_lord_karathress_misdirect_bosses_to_tanks(PlayerbotAI* botAI) { return new FathomLordKarathressMisdirectBossesToTanksAction(botAI); }
-    static Action* fathom_lord_karathress_assign_dps_priority(PlayerbotAI* botAI) { return new FathomLordKarathressAssignDPSPriorityAction(botAI); }
+    static Action* fathom_lord_karathress_assign_dps_priority(PlayerbotAI* botAI) { return new FathomLordKarathressAssignDpsPriorityAction(botAI); }
     static Action* fathom_lord_karathress_position_caribdis_tank_healer(PlayerbotAI* botAI) { return new FathomLordKarathressPositionCaribdisTankHealerAction(botAI); }
-    static Action* fathom_lord_karathress_manage_dps_timer(PlayerbotAI* botAI) { return new FathomLordKarathressManageDPSTimerAction(botAI); }
+    static Action* fathom_lord_karathress_manage_dps_timer(PlayerbotAI* botAI) { return new FathomLordKarathressManageDpsTimerAction(botAI); }
 
     static Action* morogrim_tidewalker_misdirect_boss_to_main_tank(PlayerbotAI* botAI) { return new MorogrimTidewalkerMisdirectBossToMainTankAction(botAI); }
     static Action* morogrim_tidewalker_move_boss_to_tank_position(PlayerbotAI* botAI) { return new MorogrimTidewalkerMoveBossToTankPositionAction(botAI); }

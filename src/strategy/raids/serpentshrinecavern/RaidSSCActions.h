@@ -73,18 +73,58 @@ public:
     bool Execute(Event event) override;
 };
 
-class HydrossTheUnstableManageDPSTimersAction : public Action
+class HydrossTheUnstableManageDpsTimersAction : public Action
 {
 public:
-    HydrossTheUnstableManageDPSTimersAction(PlayerbotAI* botAI, std::string const name = "hydross the unstable manage dps timers") : Action(botAI, name) {}
+    HydrossTheUnstableManageDpsTimersAction(PlayerbotAI* botAI, std::string const name = "hydross the unstable manage dps timers") : Action(botAI, name) {}
 
     bool Execute(Event event) override;
 };
 
-class TheLurkerBelowRunAroundBehindBossAction : public MovementAction
+class TheLurkerBelowPositionMainTankAction : public AttackAction
 {
 public:
-    TheLurkerBelowRunAroundBehindBossAction(PlayerbotAI* botAI, std::string const name = "the lurker below run around behind boss") : MovementAction(botAI, name) {}
+    TheLurkerBelowPositionMainTankAction(PlayerbotAI* botAI, std::string const name = "the lurker below position main tank") : AttackAction(botAI, name) {}
+
+    bool Execute(Event event) override;
+};
+
+class TheLurkerBelowPositionOtherMeleeAction : public MovementAction
+{
+public:
+    TheLurkerBelowPositionOtherMeleeAction(PlayerbotAI* botAI, std::string const name = "the lurker below position other melee") : MovementAction(botAI, name) {}
+
+    bool Execute(Event event) override;
+};
+
+class TheLurkerBelowMeleeRunAroundBehindBossAction : public MovementAction
+{
+public:
+    TheLurkerBelowMeleeRunAroundBehindBossAction(PlayerbotAI* botAI, std::string const name = "the lurker below melee run around behind boss") : MovementAction(botAI, name) {}
+
+    bool Execute(Event event) override;
+};
+
+class TheLurkerBelowPositionRangedDpsAction : public MovementAction
+{
+public:
+    TheLurkerBelowPositionRangedDpsAction(PlayerbotAI* botAI, std::string const name = "the lurker below position ranged dps") : MovementAction(botAI, name) {}
+
+    bool Execute(Event event) override;
+};
+
+class TheLurkerBelowPositionHealerAction : public MovementAction
+{
+public:
+    TheLurkerBelowPositionHealerAction(PlayerbotAI* botAI, std::string const name = "the lurker below position healer") : MovementAction(botAI, name) {}
+
+    bool Execute(Event event) override;
+};
+
+class TheLurkerBelowManageSpoutTimerAction : public Action
+{
+public:
+    TheLurkerBelowManageSpoutTimerAction(PlayerbotAI* botAI, std::string const name = "the lurker below manage spout timer") : Action(botAI, name) {}
 
     bool Execute(Event event) override;
 };
@@ -137,10 +177,10 @@ public:
     bool Execute(Event event) override;
 };
 
-class LeotherasTheBlindFinalPhaseAssignDPSPriorityAction : public AttackAction
+class LeotherasTheBlindFinalPhaseAssignDpsPriorityAction : public AttackAction
 {
 public:
-    LeotherasTheBlindFinalPhaseAssignDPSPriorityAction(PlayerbotAI* botAI, std::string const name = "leotheras the blind final phase assign dps priority") : AttackAction(botAI, name) {}
+    LeotherasTheBlindFinalPhaseAssignDpsPriorityAction(PlayerbotAI* botAI, std::string const name = "leotheras the blind final phase assign dps priority") : AttackAction(botAI, name) {}
 
     bool Execute(Event event) override;
 };
@@ -196,10 +236,10 @@ public:
     bool Execute(Event event) override;
 };
 
-class FathomLordKarathressAssignDPSPriorityAction : public AttackAction
+class FathomLordKarathressAssignDpsPriorityAction : public AttackAction
 {
 public:
-    FathomLordKarathressAssignDPSPriorityAction(PlayerbotAI* botAI, std::string const name = "fathom-lord karathress assign dps priority") : AttackAction(botAI, name) {}
+    FathomLordKarathressAssignDpsPriorityAction(PlayerbotAI* botAI, std::string const name = "fathom-lord karathress assign dps priority") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 
@@ -210,10 +250,10 @@ public:
     bool Execute(Event event) override;
 };
 
-class FathomLordKarathressManageDPSTimerAction : public Action
+class FathomLordKarathressManageDpsTimerAction : public Action
 {
 public:
-    FathomLordKarathressManageDPSTimerAction(PlayerbotAI* botAI, std::string const name = "fathom-lord karathress manage dps timer") : Action(botAI, name) {}
+    FathomLordKarathressManageDpsTimerAction(PlayerbotAI* botAI, std::string const name = "fathom-lord karathress manage dps timer") : Action(botAI, name) {}
     bool Execute(Event event) override;
 };
 

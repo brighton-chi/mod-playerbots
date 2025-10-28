@@ -66,7 +66,7 @@ bool HydrossTheUnstableNeedToTransitionBeforeFourthMarkTrigger::IsActive()
     return hydross && (botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0));
 }
 
-bool HydrossTheUnstableWaitingForDPSTrigger::IsActive()
+bool HydrossTheUnstableNeedToManagePhaseChangeAggroResetTrigger::IsActive()
 {
     Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
 
@@ -75,15 +75,74 @@ bool HydrossTheUnstableWaitingForDPSTrigger::IsActive()
 
 // The Lurker Below
 
-bool TheLurkerBelowSpoutIsActiveTrigger::IsActive()
+/* bool TheLurkerBelowSpoutIsActiveTrigger::IsActive()
 {
     Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
 
     return lurker && (lurker->HasAura(SPELL_SPOUT_VISUAL) || 
            lurker->HasAura(SPELL_SPOUT_PERIODIC_1) || lurker->HasAura(SPELL_SPOUT_PERIODIC_2));
+} */
+
+bool TheLurkerBelowBossIsActiveForMainTankTrigger::IsActive()
+{
+    Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
+    if (!lurker)
+        return false;
+
+    uint32 mapId = lurker->GetMapId();
+    time_t now = time(nullptr);
+
+    return botAI->IsMainTank(bot) && !lurker->HasAura(SPELL_SUBMERGED) &&
+           (!lurkerSpoutTimer.count(mapId) || lurkerSpoutTimer[mapId] <= now);
 }
 
-// bool TheLurkerBelowAmbushersAndGuardiansSpawnedTrigger::IsActive()
+bool TheLurkerBelowBossIsActiveForOtherMeleeTrigger::IsActive()
+{
+    Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
+    if (!lurker)
+        return false;
+
+    uint32 mapId = lurker->GetMapId();
+    time_t now = time(nullptr);
+
+    return botAI->IsMelee(bot) && !botAI->IsMainTank(bot) && 
+           !lurker->HasAura(SPELL_SUBMERGED) && 
+           (!lurkerSpoutTimer.count(mapId) || lurkerSpoutTimer[mapId] <= now);
+}
+
+bool TheLurkerBelowSpoutIsActiveForMeleeTrigger::IsActive()
+{
+    Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
+    if (!lurker)
+        return false;
+
+    uint32 mapId = lurker->GetMapId();
+    time_t now = time(nullptr);
+
+    return botAI->IsMelee(bot) && 
+           lurkerSpoutTimer.count(mapId) && lurkerSpoutTimer[mapId] > now;
+}
+
+bool TheLurkerBelowBossIsActiveForRangedDpsTrigger::IsActive()
+{
+    Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
+
+    return botAI->IsRanged(bot) && lurker && !lurker->HasAura(SPELL_SUBMERGED);
+}
+
+bool TheLurkerBelowBossIsActiveForHealerTrigger::IsActive()
+{
+    Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
+
+    return botAI->IsHeal(bot) && lurker && !lurker->HasAura(SPELL_SUBMERGED);
+}
+
+bool TheLurkerBelowNeedToPrepareTimerForSpoutTrigger::IsActive()
+{
+    Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
+
+    return lurker && IsMapIDTimerManager(botAI, bot);
+}
 
 // Leotheras the Blind
 
@@ -94,13 +153,6 @@ bool LeotherasTheBlindBossIsInactiveTrigger::IsActive()
     return spellbinder && spellbinder->IsAlive();
 }
 
-/* bool LeotherasTheBlindDemonFormEngagedByMainTankTrigger::IsActive()
-{
-    Unit* leotherasDemon = GetActiveLeotherasDemon(botAI);
-
-    return leotherasDemon && (botAI->IsMainTank(bot) || (botAI->IsAssistTank(bot) && 
-            leotherasDemon->GetVictim() == bot));
-} */
 bool LeotherasTheBlindEngagedByDemonFormTankTrigger::IsActive()
 {
     Unit* leotherasDemon = GetActiveLeotherasDemon(botAI);
@@ -263,7 +315,7 @@ bool MorogrimTidewalkerEncounterResetTrigger::IsActive()
 {
     Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
 
-    return tidewalker && tidewalker->GetHealthPct() > 99.0f;
+    return tidewalker && tidewalker->GetHealth() == tidewalker->GetMaxHealth();
 }
 
 // Lady Vashj

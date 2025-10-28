@@ -6,6 +6,7 @@
 #include "DruidCatActions.h"
 #include "GenericSpellActions.h"
 #include "HunterActions.h"
+#include "MageActions.h"
 #include "PaladinActions.h"
 #include "Playerbots.h"
 #include "RogueActions.h"
@@ -68,7 +69,7 @@ float HydrossTheUnstableDisableTankActionsMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float HydrossTheUnstableWaitForDPSMultiplier::GetValue(Action* action)
+float HydrossTheUnstableWaitForDpsMultiplier::GetValue(Action* action)
 {
     Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
     if (!hydross)
@@ -79,8 +80,8 @@ float HydrossTheUnstableWaitForDPSMultiplier::GetValue(Action* action)
 
     if (hydross && !hydross->HasAura(SPELL_CORRUPTION))
     {
-        auto it = hydrossFrostDPSWaitTimer.find(mapId);
-        if (it != hydrossFrostDPSWaitTimer.end() && (time(nullptr) - it->second) < dpsWaitSeconds)
+        auto it = hydrossFrostDpsWaitTimer.find(mapId);
+        if (it != hydrossFrostDpsWaitTimer.end() && (time(nullptr) - it->second) < dpsWaitSeconds)
         {
             if (!botAI->IsMainTank(bot) && (dynamic_cast<AttackAction*>(action) || 
                 (!botAI->IsHeal(bot) && dynamic_cast<CastSpellAction*>(action))))
@@ -90,8 +91,8 @@ float HydrossTheUnstableWaitForDPSMultiplier::GetValue(Action* action)
 
     if (hydross && hydross->HasAura(SPELL_CORRUPTION))
     {
-        auto it = hydrossNatureDPSWaitTimer.find(mapId);
-        if (it != hydrossNatureDPSWaitTimer.end() && (time(nullptr) - it->second) < dpsWaitSeconds)
+        auto it = hydrossNatureDpsWaitTimer.find(mapId);
+        if (it != hydrossNatureDpsWaitTimer.end() && (time(nullptr) - it->second) < dpsWaitSeconds)
         {
             if (!botAI->IsAssistTankOfIndex(bot, 0) && (dynamic_cast<AttackAction*>(action) || 
                 !botAI->IsHeal(bot) && dynamic_cast<CastSpellAction*>(action)))
@@ -116,17 +117,20 @@ float HydrossTheUnstableControlMisdirectionMultiplier::GetValue(Action* action)
 
 // The Lurker Below
 
-float TheLurkerBelowStayBehindBossDuringSpoutMultiplier::GetValue(Action* action)
+float TheLurkerBelowStayAwayFromSpoutMultiplier::GetValue(Action* action)
 {
     Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
     if (!lurker)
         return 1.0f;
 
-    if (lurker->HasAura(SPELL_SPOUT_VISUAL) || 
-        lurker->HasAura(SPELL_SPOUT_PERIODIC_1) || lurker->HasAura(SPELL_SPOUT_PERIODIC_2))
+    uint32 mapId = lurker->GetMapId();
+    time_t now = time(nullptr);
+
+    if (lurkerSpoutTimer.count(mapId) && lurkerSpoutTimer[mapId] > now)
     {
-        if (dynamic_cast<TankFaceAction*>(action) || IsChargeAction(action) || 
-            dynamic_cast<CastKillingSpreeAction*>(action))
+        if (IsChargeAction(action) || dynamic_cast<CastKillingSpreeAction*>(action) || 
+            dynamic_cast<CastBlinkBackAction*>(action) || dynamic_cast<CastDisengageAction*>(action) ||
+            dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<FleeAction*>(action))
             return 0.0f;
     }
 
@@ -197,7 +201,7 @@ float LeotherasTheBlindDemonFormDisableMeleeActionsMultiplier::GetValue(Action* 
     return 1.0f;
 } */
 
-float LeotherasTheBlindWaitForDPSMultiplier::GetValue(Action* action)
+float LeotherasTheBlindWaitForDpsMultiplier::GetValue(Action* action)
 {
     Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
     if (!leotheras)
@@ -215,8 +219,8 @@ float LeotherasTheBlindWaitForDPSMultiplier::GetValue(Action* action)
     const uint8 dpsWaitSecondsPhase3 = 15;
     if (leotherasHuman && !leotherasHuman->HasAura(SPELL_LEOTHERAS_BANISHED))
     {
-        auto it = leotherasHumanFormDPSWaitTimer.find(mapId);
-        if (it != leotherasHumanFormDPSWaitTimer.end() && (time(nullptr) - it->second) < dpsWaitSecondsPhase1)
+        auto it = leotherasHumanFormDpsWaitTimer.find(mapId);
+        if (it != leotherasHumanFormDpsWaitTimer.end() && (time(nullptr) - it->second) < dpsWaitSecondsPhase1)
         {
             if (!botAI->IsTank(bot) && (dynamic_cast<AttackAction*>(action) || 
                 (!botAI->IsHeal(bot) && dynamic_cast<CastSpellAction*>(action))))
@@ -228,8 +232,8 @@ float LeotherasTheBlindWaitForDPSMultiplier::GetValue(Action* action)
         if (demonFormTank == bot)
             return 1.0f;
 
-        auto it = leotherasDemonFormDPSWaitTimer.find(mapId);
-        if (it != leotherasDemonFormDPSWaitTimer.end() && (time(nullptr) - it->second) < dpsWaitSecondsPhase2)
+        auto it = leotherasDemonFormDpsWaitTimer.find(mapId);
+        if (it != leotherasDemonFormDpsWaitTimer.end() && (time(nullptr) - it->second) < dpsWaitSecondsPhase2)
         {
             if (dynamic_cast<AttackAction*>(action) || 
                 !botAI->IsHeal(bot) && dynamic_cast<CastSpellAction*>(action))
@@ -241,8 +245,8 @@ float LeotherasTheBlindWaitForDPSMultiplier::GetValue(Action* action)
         if (demonFormTank == bot)
             return 1.0f;
 
-        auto it = leotherasFinalPhaseDPSWaitTimer.find(mapId);
-        if (it != leotherasFinalPhaseDPSWaitTimer.end() && (time(nullptr) - it->second) < dpsWaitSecondsPhase3)
+        auto it = leotherasFinalPhaseDpsWaitTimer.find(mapId);
+        if (it != leotherasFinalPhaseDpsWaitTimer.end() && (time(nullptr) - it->second) < dpsWaitSecondsPhase3)
         {
             if (!botAI->IsTank(bot) && (dynamic_cast<AttackAction*>(action) || 
                 (!botAI->IsHeal(bot) && dynamic_cast<CastSpellAction*>(action))))
@@ -253,7 +257,7 @@ float LeotherasTheBlindWaitForDPSMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float LeotherasTheBlindWaitForBloodlustAndHeroismMultiplier::GetValue(Action* action)
+float LeotherasTheBlindDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
 {
     Unit* leotherasHuman = GetLeotherasHuman(botAI);
     Unit* leotherasPhase2Demon = GetPhase2LeotherasDemon(botAI);
@@ -293,15 +297,15 @@ float FathomLordKarathressControlMisdirectionMultiplier::GetValue(Action* action
     return 1.0f;
 }
 
-float FathomLordKarathressWaitForDPSMultiplier::GetValue(Action* action)
+float FathomLordKarathressWaitForDpsMultiplier::GetValue(Action* action)
 {
     Unit* karathress = AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
     if (!karathress)
         return 1.0f;
 
     const uint8 dpsWaitSeconds = 8;
-    auto it = karathressDPSWaitTimer.find(bot->GetMapId());
-    if (it == karathressDPSWaitTimer.end() || (time(nullptr) - it->second) < dpsWaitSeconds)
+    auto it = karathressDpsWaitTimer.find(bot->GetMapId());
+    if (it == karathressDpsWaitTimer.end() || (time(nullptr) - it->second) < dpsWaitSeconds)
     {
         if (!botAI->IsTank(bot) && (dynamic_cast<AttackAction*>(action) ||
             (!botAI->IsHeal(bot) && dynamic_cast<CastSpellAction*>(action))))
@@ -319,6 +323,34 @@ float FathomLordKarathressCaribdisTankHealerMaintainPositionMultiplier::GetValue
 
     if (botAI->IsAssistHealOfIndex(bot, 0) && dynamic_cast<FleeAction*>(bot))
         return 0.0f;
+
+    return 1.0f;
+}
+
+float MorogrimTidewalkerDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
+{
+    Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
+    if (!tidewalker)
+        return 1.0f;
+
+    Unit* murloc = AI_VALUE2(Unit*, "find target", "tidewalker lurker");
+    if (!murloc && (dynamic_cast<CastHeroismAction*>(action) || dynamic_cast<CastBloodlustAction*>(action)))
+        return 0.0f;
+
+    return 1.0f;
+}
+
+float MorogrimTidewalkerDisablePhase2FleeActionMultiplier::GetValue(Action* action)
+{
+    Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
+    if (!tidewalker)
+        return 1.0f;
+
+    if (tidewalker->GetHealthPct() < 25.0f)
+    {
+        if (dynamic_cast<FleeAction*>(action))
+            return 0.0f;
+    }
 
     return 1.0f;
 }

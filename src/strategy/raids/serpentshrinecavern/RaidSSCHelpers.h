@@ -26,9 +26,11 @@ enum SerpentShrineCavernSpells
     SPELL_CORRUPTION = 37961, // TBD if better to use this aura or NPC ID to identify nature form
 
     // The Lurker Below
+    SPELL_SUBMERGED = 28819,
     SPELL_SPOUT_VISUAL = 37431,
-    SPELL_SPOUT_PERIODIC_1 = 37429,
-    SPELL_SPOUT_PERIODIC_2 = 37430,
+    // SPELL_SPOUT_PERIODIC_1 = 37429,
+    // SPELL_SPOUT_PERIODIC_2 = 37430,
+    SPELL_WHIRL = 37363,
 
     // Leotheras the Blind
     SPELL_LEOTHERAS_BANISHED = 37546,
@@ -78,16 +80,18 @@ enum SerpentShrineCavernNPCs
 };
 namespace SerpentShrineCavernHelpers
 {
-    extern std::unordered_map<uint32, time_t> hydrossFrostDPSWaitTimer;
-    extern std::unordered_map<uint32, time_t> hydrossNatureDPSWaitTimer;
+    extern std::unordered_map<uint32, time_t> hydrossFrostDpsWaitTimer;
+    extern std::unordered_map<uint32, time_t> hydrossNatureDpsWaitTimer;
     extern std::unordered_map<ObjectGuid, time_t> hydrossChangeToFrostPhaseTimer;
     extern std::unordered_map<ObjectGuid, time_t> hydrossChangeToNaturePhaseTimer;
 
-    extern std::unordered_map<uint32, time_t> leotherasHumanFormDPSWaitTimer;
-    extern std::unordered_map<uint32, time_t> leotherasDemonFormDPSWaitTimer;
-    extern std::unordered_map<uint32, time_t> leotherasFinalPhaseDPSWaitTimer;
+    extern std::unordered_map<uint32, time_t> lurkerSpoutTimer;
 
-    extern std::unordered_map<uint32, time_t> karathressDPSWaitTimer;
+    extern std::unordered_map<uint32, time_t> leotherasHumanFormDpsWaitTimer;
+    extern std::unordered_map<uint32, time_t> leotherasDemonFormDpsWaitTimer;
+    extern std::unordered_map<uint32, time_t> leotherasFinalPhaseDpsWaitTimer;
+
+    extern std::unordered_map<uint32, time_t> karathressDpsWaitTimer;
 
     extern std::map<ObjectGuid, uint8> tidewalkerTankStep;
     extern std::map<ObjectGuid, uint8> tidewalkerRangedStep;
@@ -105,6 +109,21 @@ namespace SerpentShrineCavernHelpers
 
         // Lurker tank location?
         extern const Location LurkerCenterOfPoolPosition;
+        extern const Location LurkerMainTankPosition;
+        extern const Location LurkerEMeleePosition;
+        extern const Location LurkerWMeleePosition;
+        extern const Location LurkerNWIsletPosition;
+        extern const Location LurkerNWIsletSwimPosition;
+        extern const Location LurkerNEIsletPosition;
+        extern const Location LurkerNEIsletSwimPosition;
+        extern const Location LurkerEIsletPosition;
+        extern const Location LurkerEIsletSwimPosition;
+        extern const Location LurkerSEHealerLandPosition;
+        extern const Location LurkerSEHealerSwimPosition;
+        extern const Location LurkerSWHealerLandPosition;
+        extern const Location LurkerSWHealerSwimPosition;
+        extern const Location LurkerNHealerLandPosition;
+        extern const Location LurkerNHealerSwimPosition;
 
         extern const Location KarathressTankPosition;
         extern const Location TidalvessTankPosition;
@@ -146,6 +165,11 @@ namespace SerpentShrineCavernHelpers
     Unit* GetPhase3LeotherasDemon(PlayerbotAI* botAI);
     Unit* GetActiveLeotherasDemon(PlayerbotAI* botAI);
     Player* GetLeotherasDemonFormTank(PlayerbotAI* botAI, Player* bot);
+
+    std::array<std::vector<Player*>, 3> GetRangedDpsBotGroups(Group* group);
+    std::array<std::vector<Player*>, 3> GetHealerBotGroups(Group* group);
+    std::array<std::vector<Player*>, 2> GetMeleeBotGroups(Group* group);
+    bool IsLurkerCastingSpout(Unit* lurker);
 }
 
 #endif

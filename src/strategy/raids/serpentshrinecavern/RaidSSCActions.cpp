@@ -4,6 +4,7 @@
 #include "RtiTargetValue.h"
 
 using namespace SerpentShrineCavernHelpers;
+using namespace SerpentShrineCavernLocations;
 
 // Trash Mobs
 
@@ -56,15 +57,16 @@ bool HydrossTheUnstablePositionFrostTankAction::Execute(Event event)
 
         if (hydross->GetVictim() == bot)
         {
-            const Location& position = SerpentShrineCavernLocations::HydrossFrostTankPosition;
+            const Location& position = HydrossFrostTankPosition;
 
-            if (bot->GetExactDist2d(position.x, position.y) > 1.0f)
+            if (bot->GetExactDist2d(position.x, position.y) > 0.5f)
             {
                 float dX = position.x - bot->GetPositionX();
                 float dY = position.y - bot->GetPositionY();
                 float dist = sqrt(dX * dX + dY * dY);
-                float moveX = bot->GetPositionX() + (dX / dist);
-                float moveY = bot->GetPositionY() + (dY / dist);
+                float moveDist = std::min(7.0f, dist);
+                float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
+                float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
 
                 return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false,
                               MovementPriority::MOVEMENT_COMBAT, true, false);
@@ -72,8 +74,8 @@ bool HydrossTheUnstablePositionFrostTankAction::Execute(Event event)
             else if (!bot->IsWithinMeleeRange(hydross))
             {
                 return MoveTo(hydross->GetMapId(), hydross->GetPositionX(),
-                            hydross->GetPositionY(), hydross->GetPositionZ(),
-                            false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+                              hydross->GetPositionY(), hydross->GetPositionZ(),
+                              false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
             }
         }
     }
@@ -85,15 +87,16 @@ bool HydrossTheUnstablePositionFrostTankAction::Execute(Event event)
 
         if (now - hydrossChangeToNaturePhaseTimer[botGuid] >= 5)
         {
-            const Location& position = SerpentShrineCavernLocations::HydrossNatureTankPosition;
+            const Location& position = HydrossNatureTankPosition;
 
-            if (bot->GetExactDist2d(position.x, position.y) > 1.0f)
+            if (bot->GetExactDist2d(position.x, position.y) > 0.5f)
             {
                 float dX = position.x - bot->GetPositionX();
                 float dY = position.y - bot->GetPositionY();
                 float dist = sqrt(dX * dX + dY * dY);
-                float moveX = bot->GetPositionX() + (dX / dist);
-                float moveY = bot->GetPositionY() + (dY / dist);
+                float moveDist = std::min(7.0f, dist);
+                float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
+                float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
 
                 return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false,
                             MovementPriority::MOVEMENT_COMBAT, true, false);
@@ -109,15 +112,16 @@ bool HydrossTheUnstablePositionFrostTankAction::Execute(Event event)
 
     if (hydross->HasAura(SPELL_CORRUPTION))
     {
-        const Location& position = SerpentShrineCavernLocations::HydrossFrostTankPosition;
+        const Location& position = HydrossFrostTankPosition;
 
         if (bot->GetExactDist2d(position.x, position.y) > 1.0f)
         {
             float dX = position.x - bot->GetPositionX();
             float dY = position.y - bot->GetPositionY();
             float dist = sqrt(dX * dX + dY * dY);
-            float moveX = bot->GetPositionX() + (dX / dist);
-            float moveY = bot->GetPositionY() + (dY / dist);
+            float moveDist = std::min(7.0f, dist);
+            float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
 
             return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, false);
@@ -148,15 +152,16 @@ bool HydrossTheUnstablePositionNatureTankAction::Execute(Event event)
 
         if (hydross->GetVictim() == bot)
         {
-            const Location& position = SerpentShrineCavernLocations::HydrossNatureTankPosition;
+            const Location& position = HydrossNatureTankPosition;
 
-            if (bot->GetExactDist2d(position.x, position.y) > 1.0f)
+            if (bot->GetExactDist2d(position.x, position.y) > 0.5f)
             {
                 float dX = position.x - bot->GetPositionX();
                 float dY = position.y - bot->GetPositionY();
                 float dist = sqrt(dX * dX + dY * dY);
-                float moveX = bot->GetPositionX() + (dX / dist);
-                float moveY = bot->GetPositionY() + (dY / dist);
+                float moveDist = std::min(7.0f, dist);
+                float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
+                float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
 
                 return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false,
                               MovementPriority::MOVEMENT_COMBAT, true, false);
@@ -177,15 +182,16 @@ bool HydrossTheUnstablePositionNatureTankAction::Execute(Event event)
 
         if (now - hydrossChangeToFrostPhaseTimer[botGuid] >= 5)
         {
-            const Location& position = SerpentShrineCavernLocations::HydrossFrostTankPosition;
+            const Location& position = HydrossFrostTankPosition;
 
-            if (bot->GetExactDist2d(position.x, position.y) > 1.0f)
+            if (bot->GetExactDist2d(position.x, position.y) > 0.5f)
             {
                 float dX = position.x - bot->GetPositionX();
                 float dY = position.y - bot->GetPositionY();
                 float dist = sqrt(dX * dX + dY * dY);
-                float moveX = bot->GetPositionX() + (dX / dist);
-                float moveY = bot->GetPositionY() + (dY / dist);
+                float moveDist = std::min(7.0f, dist);
+                float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
+                float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
 
                 return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false,
                               MovementPriority::MOVEMENT_COMBAT, true, false);
@@ -201,15 +207,16 @@ bool HydrossTheUnstablePositionNatureTankAction::Execute(Event event)
 
     if (!hydross->HasAura(SPELL_CORRUPTION))
     {
-        const Location& position = SerpentShrineCavernLocations::HydrossNatureTankPosition;
+        const Location& position = HydrossNatureTankPosition;
 
         if (bot->GetExactDist2d(position.x, position.y) > 1.0f)
         {
             float dX = position.x - bot->GetPositionX();
             float dY = position.y - bot->GetPositionY();
             float dist = sqrt(dX * dX + dY * dY);
-            float moveX = bot->GetPositionX() + (dX / dist);
-            float moveY = bot->GetPositionY() + (dY / dist);
+            float moveDist = std::min(7.0f, dist);
+            float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
 
             return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, false);
@@ -336,7 +343,7 @@ bool HydrossTheUnstableManagePhaseChangeTimersAction::Execute(Event event)
 
     ObjectGuid botGuid = bot->GetGUID();
 
-    if (hydross->GetHealthPct() > 99.0f)
+    if (hydross->GetHealth() == hydross->GetMaxHealth())
     {
         if (hydrossChangeToNaturePhaseTimer.find(botGuid) != hydrossChangeToNaturePhaseTimer.end())
             hydrossChangeToNaturePhaseTimer.erase(botGuid);
@@ -368,7 +375,7 @@ bool HydrossTheUnstableManagePhaseChangeTimersAction::Execute(Event event)
     return false;
 }
 
-bool HydrossTheUnstableManageDPSTimersAction::Execute(Event event)
+bool HydrossTheUnstableManageDpsTimersAction::Execute(Event event)
 {
     Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
     if (!hydross)
@@ -378,29 +385,29 @@ bool HydrossTheUnstableManageDPSTimersAction::Execute(Event event)
 
     if (hydross->GetHealth() == hydross->GetMaxHealth())
     {
-        if (hydrossFrostDPSWaitTimer.find(mapId) != hydrossFrostDPSWaitTimer.end())
-            hydrossFrostDPSWaitTimer.erase(mapId);
+        if (hydrossFrostDpsWaitTimer.find(mapId) != hydrossFrostDpsWaitTimer.end())
+            hydrossFrostDpsWaitTimer.erase(mapId);
 
-        if (hydrossNatureDPSWaitTimer.find(mapId) != hydrossNatureDPSWaitTimer.end())
-            hydrossNatureDPSWaitTimer.erase(mapId);
+        if (hydrossNatureDpsWaitTimer.find(mapId) != hydrossNatureDpsWaitTimer.end())
+            hydrossNatureDpsWaitTimer.erase(mapId);
     }
 
     if (!hydross->HasAura(SPELL_CORRUPTION))
     {
-        if (hydrossFrostDPSWaitTimer.find(mapId) == hydrossFrostDPSWaitTimer.end())
-            hydrossFrostDPSWaitTimer[mapId] = time(nullptr);
+        if (hydrossFrostDpsWaitTimer.find(mapId) == hydrossFrostDpsWaitTimer.end())
+            hydrossFrostDpsWaitTimer[mapId] = time(nullptr);
 
-        if (hydrossNatureDPSWaitTimer.find(mapId) != hydrossNatureDPSWaitTimer.end())
-            hydrossNatureDPSWaitTimer.erase(mapId);
+        if (hydrossNatureDpsWaitTimer.find(mapId) != hydrossNatureDpsWaitTimer.end())
+            hydrossNatureDpsWaitTimer.erase(mapId);
     }
 
     if (hydross->HasAura(SPELL_CORRUPTION))
     {
-        if (hydrossNatureDPSWaitTimer.find(mapId) == hydrossNatureDPSWaitTimer.end())
-            hydrossNatureDPSWaitTimer[mapId] = time(nullptr);
+        if (hydrossNatureDpsWaitTimer.find(mapId) == hydrossNatureDpsWaitTimer.end())
+            hydrossNatureDpsWaitTimer[mapId] = time(nullptr);
 
-        if (hydrossFrostDPSWaitTimer.find(mapId) != hydrossFrostDPSWaitTimer.end())
-            hydrossFrostDPSWaitTimer.erase(mapId);
+        if (hydrossFrostDpsWaitTimer.find(mapId) != hydrossFrostDpsWaitTimer.end())
+            hydrossFrostDpsWaitTimer.erase(mapId);
     }
 
     return false;
@@ -414,7 +421,67 @@ bool HydrossTheUnstableManageDPSTimersAction::Execute(Event event)
 // Spout -- ranged run into water
 // Adds--mark targets; cc ? 6 ambushers (caster) have 56k HP, 3 guardians (melee) have 70k
 
-bool TheLurkerBelowRunAroundBehindBossAction::Execute(Event event)
+// If I do the run around approach, it needs some work, probably to keep min distance from lurker and tighten the permitted angle
+
+bool TheLurkerBelowPositionMainTankAction::Execute(Event event)
+{
+    Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
+    if (!lurker)
+        return false;
+
+    if (bot->GetVictim() != lurker)
+        return Attack(lurker);
+
+    const Location& position = LurkerMainTankPosition;
+    if (bot->GetExactDist2d(position.x, position.y) > 0.2f)
+    {
+        return MoveTo(bot->GetMapId(), position.x, position.y, position.z, false, false, false, false,
+                      MovementPriority::MOVEMENT_FORCED, true, false);
+    }
+
+    return false;
+}
+
+bool TheLurkerBelowPositionOtherMeleeAction::Execute(Event event)
+{
+    Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
+    Group* group = bot->GetGroup();
+    if (!lurker || !group)
+        return false;
+
+    auto groups = GetMeleeBotGroups(group);
+
+    int8 myGroup = -1;
+    for (int8 i = 0; i < 2; ++i)
+    {
+        for (Player* member : groups[i])
+        {
+            if (member == bot)
+            {
+                myGroup = i;
+                break;
+            }
+        }
+        if (myGroup != -1) break;
+    }
+    if (myGroup == -1)
+        return false;
+
+    // Assign E/W melee positions based on group index
+    const Location* meleePositions[2] = { &LurkerEMeleePosition, &LurkerWMeleePosition };
+    const Location* target = meleePositions[myGroup];
+
+    // Move if not close enough
+    if (bot->GetExactDist2d(target->x, target->y) > 0.2f)
+    {
+        return MoveTo(bot->GetMapId(), target->x, target->y, target->z, false, false, false, false,
+                      MovementPriority::MOVEMENT_FORCED, true, false);
+    }
+
+    return false;
+}
+
+bool TheLurkerBelowMeleeRunAroundBehindBossAction::Execute(Event event)
 {
     Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
     if (!lurker)
@@ -423,31 +490,167 @@ bool TheLurkerBelowRunAroundBehindBossAction::Execute(Event event)
     // Get Lurker's facing direction (orientation)
     float bossFacing = lurker->GetOrientation();
 
-    // Get angle from Lurker to bot
-    float angleToBot = atan2(bot->GetPositionY() - lurker->GetPositionY(),
-                             bot->GetPositionX() - lurker->GetPositionX());
-    float relativeAngle = Position::NormalizeOrientation(angleToBot - bossFacing);
+    // Pick an angle behind Lurker (120-degree arc)
+    float behindAngle = bossFacing + M_PI + ((rand() % 100) / 100.0f - 0.5f) * (M_PI / 3);
 
-    // Check if bot is within 90 degrees to either side behind Lurker (180-degree arc)
-    if (fabs(relativeAngle) <= M_PI / 2)
+    // Random radius between 16 and 20 yards
+    float radius = 16.0f + ((rand() % 400) / 100.0f);
+
+    // Calculate target position on the circle
+    float targetX = lurker->GetPositionX() + radius * cos(behindAngle);
+    float targetY = lurker->GetPositionY() + radius * sin(behindAngle);
+    float targetZ = lurker->GetPositionZ();
+
+    // Only move if not close enough to the circle position
+    if (bot->GetExactDist2d(targetX, targetY) > 1.0f)
     {
-        // Bot is already behind Lurker, do nothing (allow normal actions)
-        return false;
+        if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, lurker->GetPositionX(), lurker->GetPositionY(), 
+                                                            lurker->GetPositionZ(), targetX, targetY, targetZ))
+            return false;
+
+        return MoveTo(lurker->GetMapId(), targetX, targetY, targetZ, false, false, false, false, 
+                      MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
-    // Bot is outside the safe arc, move to a random point behind Lurker
-    float behindAngle = bossFacing + M_PI + ((rand() % 100) / 100.0f - 0.5f) * M_PI;
-    float distance = bot->GetExactDist2d(lurker); // Keep current distance
-    float destX = lurker->GetPositionX() + distance * cos(behindAngle);
-    float destY = lurker->GetPositionY() + distance * sin(behindAngle);
-    float destZ = lurker->GetPositionZ();
+    return false;
+}
 
-    if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, lurker->GetPositionX(), lurker->GetPositionY(), lurker->GetPositionZ(), destX, destY, destZ))
+bool TheLurkerBelowPositionRangedDpsAction::Execute(Event event)
+{
+    Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
+    Group* group = bot->GetGroup();
+    if (!lurker || !group)
         return false;
 
-    bot->AttackStop();
-    bot->InterruptNonMeleeSpells(true);
-    return MoveTo(lurker->GetMapId(), destX, destY, destZ, false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+    auto groups = GetRangedDpsBotGroups(group);
+
+    int8 myGroup = -1;
+    for (int8 i = 0; i < 3; ++i)
+    {
+        for (Player* member : groups[i])
+        {
+            if (member == bot)
+            {
+                myGroup = i;
+                break;
+            }
+        }
+        if (myGroup != -1) break;
+    }
+    if (myGroup == -1)
+        return false;
+
+    const Location* isletPositions[3] = 
+        { &LurkerNEIsletPosition, &LurkerNWIsletPosition, &LurkerEIsletPosition };
+    const Location* swimPositions[3]  = 
+        { &LurkerNEIsletSwimPosition, &LurkerNWIsletSwimPosition, &LurkerEIsletSwimPosition };
+
+    uint32 mapId = lurker->GetMapId();
+    time_t now = time(nullptr);
+
+    // If timer is active, send bot to swim position
+    const Location* target = nullptr;
+    if (lurkerSpoutTimer.count(mapId) && lurkerSpoutTimer[mapId] > now)
+        target = swimPositions[myGroup];
+    else
+        target = isletPositions[myGroup];
+
+    // Move if not close enough
+    if (bot->GetExactDist2d(target->x, target->y) > 0.1f)
+    {
+        /* float dX = target->x - bot->GetPositionX();
+        float dY = target->y - bot->GetPositionY();
+        float dist = sqrt(dX * dX + dY * dY);
+        float moveDist = std::min(3.0f, dist);
+        float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
+        float moveY = bot->GetPositionY() + (dY / dist) * moveDist; */
+
+        bot->AttackStop();
+        bot->InterruptNonMeleeSpells(true);
+        return MoveTo(bot->GetMapId(), target->x, target->y, target->z, false, false, false, true,
+                      MovementPriority::MOVEMENT_FORCED, true, false);
+    }
+
+    return false;
+}
+
+bool TheLurkerBelowPositionHealerAction::Execute(Event event)
+{
+    Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
+    Group* group = bot->GetGroup();
+    if (!lurker || !group)
+        return false;
+
+    auto groups = GetHealerBotGroups(group);
+
+    int8 myGroup = -1;
+    for (int8 i = 0; i < 3; ++i)
+    {
+        for (Player* member : groups[i])
+        {
+            if (member == bot)
+            {
+                myGroup = i;
+                break;
+            }
+        }
+        if (myGroup != -1) break;
+    }
+    if (myGroup == -1)
+        return false;
+
+    const Location* landPositions[3] = 
+        { &LurkerSEHealerLandPosition, &LurkerSWHealerLandPosition, &LurkerNHealerLandPosition };
+    const Location* swimPositions[3]  = 
+        { &LurkerSEHealerSwimPosition, &LurkerSWHealerSwimPosition, &LurkerNHealerSwimPosition };
+
+    uint32 mapId = lurker->GetMapId();
+    time_t now = time(nullptr);
+
+    // If timer is active, send bot to swim position
+    const Location* target = nullptr;
+    if (lurkerSpoutTimer.count(mapId) && lurkerSpoutTimer[mapId] > now)
+        target = swimPositions[myGroup];
+    else
+        target = landPositions[myGroup];
+
+    // Move if not close enough
+    if (bot->GetExactDist2d(target->x, target->y) > 0.1f)
+    {
+        /* float dX = target->x - bot->GetPositionX();
+        float dY = target->y - bot->GetPositionY();
+        float dist = sqrt(dX * dX + dY * dY);
+        float moveDist = std::min(3.0f, dist);
+        float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
+        float moveY = bot->GetPositionY() + (dY / dist) * moveDist; */
+
+        bot->AttackStop();
+        bot->InterruptNonMeleeSpells(true);
+        return MoveTo(bot->GetMapId(), target->x, target->y, target->z, false, false, false, true,
+                      MovementPriority::MOVEMENT_FORCED, true, false);
+    }
+
+    return false;
+}
+
+bool TheLurkerBelowManageSpoutTimerAction::Execute(Event event)
+{
+    Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
+    if (!lurker)
+        return false;
+
+    uint32 mapId = lurker->GetMapId();
+
+    if (IsLurkerCastingSpout(lurker))
+        lurkerSpoutTimer[mapId] = time(nullptr) + 20; // 20 second channel time for Spout
+
+    if (lurkerSpoutTimer.count(mapId) && lurkerSpoutTimer[mapId] <= now)
+        lurkerSpoutTimer.erase(mapId);
+
+    if (lurker->GetHealth() == lurker->GetMaxHealth() && lurkerSpoutTimer.count(mapId))
+        lurkerSpoutTimer.erase(mapId);
+
+    return false;
 }
 
 // Leotheras the Blind
@@ -583,24 +786,14 @@ bool LeotherasTheBlindInnerDemonCheatAction::Execute(Event event)
     Unit* innerDemon = GetFirstAliveUnitByEntry(botAI, NPC_INNER_DEMON);
     if (innerDemon && botAI->HasCheat(BotCheatMask::raid))
     {
-        // Healers and tanks immediately kill their demons
-        if (botAI->IsHeal(bot) || botAI->IsTank(bot))
-        {
-            Unit::DealDamage(bot, innerDemon, innerDemon->GetMaxHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false, true);
-            return true;
-        }
-        // DPS bots immediately deal 50% damage to their demons
-        if (botAI->IsDps(bot) && innerDemon->GetHealthPct() > 60.0f)
-        {
-            Unit::DealDamage(bot, innerDemon, innerDemon->GetMaxHealth() / 2, nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false, true);
-            return true;
-        }
+        Unit::DealDamage(bot, innerDemon, innerDemon->GetMaxHealth() / 10, nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false, true);
+        return true;
     }
 
     return false;
 }
 
-bool LeotherasTheBlindFinalPhaseAssignDPSPriorityAction::Execute(Event event)
+bool LeotherasTheBlindFinalPhaseAssignDpsPriorityAction::Execute(Event event)
 {
     Unit* leotherasHuman = GetLeotherasHuman(botAI);
     Unit* leotherasDemon = GetPhase3LeotherasDemon(botAI);
@@ -615,8 +808,7 @@ bool LeotherasTheBlindFinalPhaseAssignDPSPriorityAction::Execute(Event event)
 
     if (botAI->IsTank(bot) && leotherasHuman->GetVictim() == bot)
     {
-        float dist = leotherasHuman->GetExactDist2d(leotherasDemon);
-        if (dist < 25.0f)
+        if (leotherasHuman->GetExactDist2d(leotherasDemon) < 25.0f)
         {
             float angle = atan2(bot->GetPositionY() - leotherasDemon->GetPositionY(),
                                 bot->GetPositionX() - leotherasDemon->GetPositionX());
@@ -669,41 +861,41 @@ bool LeotherasTheBlindManageTimersAndTrackersAction::Execute(Event event)
 
     if (leotheras && leotheras->HasAura(SPELL_LEOTHERAS_BANISHED))
     {
-        if (leotherasFinalPhaseDPSWaitTimer.find(mapId) != leotherasFinalPhaseDPSWaitTimer.end())
-            leotherasFinalPhaseDPSWaitTimer.erase(mapId);
+        if (leotherasFinalPhaseDpsWaitTimer.find(mapId) != leotherasFinalPhaseDpsWaitTimer.end())
+            leotherasFinalPhaseDpsWaitTimer.erase(mapId);
 
-        if (leotherasHumanFormDPSWaitTimer.find(mapId) != leotherasHumanFormDPSWaitTimer.end())
-            leotherasHumanFormDPSWaitTimer.erase(mapId);
+        if (leotherasHumanFormDpsWaitTimer.find(mapId) != leotherasHumanFormDpsWaitTimer.end())
+            leotherasHumanFormDpsWaitTimer.erase(mapId);
 
-        if (leotherasDemonFormDPSWaitTimer.find(mapId) != leotherasDemonFormDPSWaitTimer.end())
-            leotherasDemonFormDPSWaitTimer.erase(mapId);
+        if (leotherasDemonFormDpsWaitTimer.find(mapId) != leotherasDemonFormDpsWaitTimer.end())
+            leotherasDemonFormDpsWaitTimer.erase(mapId);
     }
     else if (leotherasHuman && !leotherasPhase3Demon)
     {
-        if (leotherasHumanFormDPSWaitTimer.find(mapId) == leotherasHumanFormDPSWaitTimer.end())
-            leotherasHumanFormDPSWaitTimer[mapId] = time(nullptr);
+        if (leotherasHumanFormDpsWaitTimer.find(mapId) == leotherasHumanFormDpsWaitTimer.end())
+            leotherasHumanFormDpsWaitTimer[mapId] = time(nullptr);
 
-        if (leotherasDemonFormDPSWaitTimer.find(mapId) != leotherasDemonFormDPSWaitTimer.end())
-            leotherasDemonFormDPSWaitTimer.erase(mapId);
+        if (leotherasDemonFormDpsWaitTimer.find(mapId) != leotherasDemonFormDpsWaitTimer.end())
+            leotherasDemonFormDpsWaitTimer.erase(mapId);
     }
     else if (leotherasPhase2Demon)
     {
-        if (leotherasDemonFormDPSWaitTimer.find(mapId) == leotherasDemonFormDPSWaitTimer.end())
-            leotherasDemonFormDPSWaitTimer[mapId] = time(nullptr);
+        if (leotherasDemonFormDpsWaitTimer.find(mapId) == leotherasDemonFormDpsWaitTimer.end())
+            leotherasDemonFormDpsWaitTimer[mapId] = time(nullptr);
 
-        if (leotherasHumanFormDPSWaitTimer.find(mapId) != leotherasHumanFormDPSWaitTimer.end())
-            leotherasHumanFormDPSWaitTimer.erase(mapId);
+        if (leotherasHumanFormDpsWaitTimer.find(mapId) != leotherasHumanFormDpsWaitTimer.end())
+            leotherasHumanFormDpsWaitTimer.erase(mapId);
     }
     else if (leotherasHuman && leotherasPhase3Demon)
     {
-        if (leotherasFinalPhaseDPSWaitTimer.find(mapId) == leotherasFinalPhaseDPSWaitTimer.end())
-            leotherasFinalPhaseDPSWaitTimer[mapId] = time(nullptr);
+        if (leotherasFinalPhaseDpsWaitTimer.find(mapId) == leotherasFinalPhaseDpsWaitTimer.end())
+            leotherasFinalPhaseDpsWaitTimer[mapId] = time(nullptr);
 
-        if (leotherasHumanFormDPSWaitTimer.find(mapId) != leotherasHumanFormDPSWaitTimer.end())
-            leotherasHumanFormDPSWaitTimer.erase(mapId);
+        if (leotherasHumanFormDpsWaitTimer.find(mapId) != leotherasHumanFormDpsWaitTimer.end())
+            leotherasHumanFormDpsWaitTimer.erase(mapId);
 
-        if (leotherasDemonFormDPSWaitTimer.find(mapId) != leotherasDemonFormDPSWaitTimer.end())
-            leotherasDemonFormDPSWaitTimer.erase(mapId);
+        if (leotherasDemonFormDpsWaitTimer.find(mapId) != leotherasDemonFormDpsWaitTimer.end())
+            leotherasDemonFormDpsWaitTimer.erase(mapId);
     }
 
     return false;
@@ -732,7 +924,7 @@ bool FathomLordKarathressMainTankPositionBossAction::Execute(Event event)
 
     if (karathress->GetVictim() == bot)
     {
-        const Location& position = SerpentShrineCavernLocations::KarathressTankPosition;
+        const Location& position = KarathressTankPosition;
 
         if (!bot->IsWithinMeleeRange(karathress))
         {
@@ -742,8 +934,15 @@ bool FathomLordKarathressMainTankPositionBossAction::Execute(Event event)
         }
         else if (bot->GetExactDist2d(position.x, position.y) > 2.0f)
         {
-            return MoveTo(bot->GetMapId(), position.x, position.y, position.z, false, false, false, false,
-                          MovementPriority::MOVEMENT_COMBAT, true, true);
+            float dX = position.x - bot->GetPositionX();
+            float dY = position.y - bot->GetPositionY();
+            float dist = sqrt(dX * dX + dY * dY);
+            float moveDist = std::min(4.5f, dist);
+            float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
+
+            return MoveTo(bot->GetMapId(), moveX, moveY, position.z, false, false, false, false,
+                        MovementPriority::MOVEMENT_COMBAT, true, true);
         }
     }
 
@@ -764,7 +963,7 @@ bool FathomLordKarathressFirstAssistTankPositionSharkkisAction::Execute(Event ev
 
     if (sharkkis->GetVictim() == bot)
     {
-        const Location& position = SerpentShrineCavernLocations::SharkkisTankPosition;
+        const Location& position = SharkkisTankPosition;
 
         if (!bot->IsWithinMeleeRange(sharkkis))
         {
@@ -774,8 +973,15 @@ bool FathomLordKarathressFirstAssistTankPositionSharkkisAction::Execute(Event ev
         }
         else if (bot->GetExactDist2d(position.x, position.y) > 2.0f)
         {
-            return MoveTo(bot->GetMapId(), position.x, position.y, position.z, false, false, false, false,
-                          MovementPriority::MOVEMENT_COMBAT, true, false);
+            float dX = position.x - bot->GetPositionX();
+            float dY = position.y - bot->GetPositionY();
+            float dist = sqrt(dX * dX + dY * dY);
+            float moveDist = std::min(7.0f, dist);
+            float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
+
+            return MoveTo(bot->GetMapId(), moveX, moveY, position.z, false, false, false, false,
+                        MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
 
@@ -796,7 +1002,7 @@ bool FathomLordKarathressSecondAssistTankPositionTidalvessAction::Execute(Event 
 
     if (tidalvess->GetVictim() == bot)
     {
-        const Location& position = SerpentShrineCavernLocations::TidalvessTankPosition;
+        const Location& position = TidalvessTankPosition;
 
         if (!bot->IsWithinMeleeRange(tidalvess))
         {
@@ -806,8 +1012,15 @@ bool FathomLordKarathressSecondAssistTankPositionTidalvessAction::Execute(Event 
         }
         else if (bot->GetExactDist2d(position.x, position.y) > 2.0f)
         {
-            return MoveTo(bot->GetMapId(), position.x, position.y, position.z, false, false, false, false,
-                          MovementPriority::MOVEMENT_COMBAT, true, false);
+            float dX = position.x - bot->GetPositionX();
+            float dY = position.y - bot->GetPositionY();
+            float dist = sqrt(dX * dX + dY * dY);
+            float moveDist = std::min(7.0f, dist);
+            float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
+
+            return MoveTo(bot->GetMapId(), moveX, moveY, position.z, false, false, false, false,
+                        MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
 
@@ -828,7 +1041,7 @@ bool FathomLordKarathressThirdAssistTankPositionCaribdisAction::Execute(Event ev
 
     if (caribdis->GetVictim() == bot)
     {
-        const Location& position = SerpentShrineCavernLocations::CaribdisTankPosition;
+        const Location& position = CaribdisTankPosition;
 
         if (!bot->IsWithinMeleeRange(caribdis))
         {
@@ -838,8 +1051,15 @@ bool FathomLordKarathressThirdAssistTankPositionCaribdisAction::Execute(Event ev
         }
         else if (bot->GetExactDist2d(position.x, position.y) > 2.0f)
         {
-            return MoveTo(bot->GetMapId(), position.x, position.y, position.z, false, false, false, false,
-                          MovementPriority::MOVEMENT_COMBAT, true, false);
+            float dX = position.x - bot->GetPositionX();
+            float dY = position.y - bot->GetPositionY();
+            float dist = sqrt(dX * dX + dY * dY);
+            float moveDist = std::min(7.0f, dist);
+            float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
+
+            return MoveTo(bot->GetMapId(), moveX, moveY, position.z, false, false, false, false,
+                        MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
 
@@ -932,7 +1152,7 @@ bool FathomLordKarathressMisdirectBossesToTanksAction::Execute(Event event)
     return false;
 }
 
-bool FathomLordKarathressAssignDPSPriorityAction::Execute(Event event)
+bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event event)
 {
     // Target priority 1: Spitfire Totems
     Unit* totem = GetFirstAliveUnitByEntry(botAI, NPC_SPITFIRE_TOTEM);
@@ -947,7 +1167,19 @@ bool FathomLordKarathressAssignDPSPriorityAction::Execute(Event event)
         return false;
     }
 
-    /* // Target priority 2a: Fathom Sporebat
+    // Target priority 2: Tidalvess
+    Unit* tidalvess = AI_VALUE2(Unit*, "find target", "fathom-guard tidalvess");
+    if (tidalvess && tidalvess->IsAlive())
+    {
+        SetRtiTarget(botAI, "circle", tidalvess);
+
+        if (bot->GetVictim() != tidalvess)
+            Attack(tidalvess);
+
+        return false;
+    }
+    
+    // Target priority 3a: Fathom Sporebat
     Unit* fathomSporebat = AI_VALUE2(Unit*, "find target", "fathom sporebat");
     if (fathomSporebat && fathomSporebat->IsAlive())
     {
@@ -960,7 +1192,7 @@ bool FathomLordKarathressAssignDPSPriorityAction::Execute(Event event)
         return false;
     }
 
-    // Target priority 2b: Fathom Lurker
+    // Target priority 3b: Fathom Lurker
     Unit* fathomLurker = AI_VALUE2(Unit*, "find target", "fathom lurker");
     if (fathomLurker && fathomLurker->IsAlive())
     {
@@ -969,18 +1201,6 @@ bool FathomLordKarathressAssignDPSPriorityAction::Execute(Event event)
 
         if (bot->GetVictim() != fathomLurker)
             Attack(fathomLurker);
-
-        return false;
-    } */
-
-    // Target priority 3: Tidalvess
-    Unit* tidalvess = AI_VALUE2(Unit*, "find target", "fathom-guard tidalvess");
-    if (tidalvess && tidalvess->IsAlive())
-    {
-        SetRtiTarget(botAI, "circle", tidalvess);
-
-        if (bot->GetVictim() != tidalvess)
-            Attack(tidalvess);
 
         return false;
     }
@@ -1035,7 +1255,7 @@ bool FathomLordKarathressPositionCaribdisTankHealerAction::Execute(Event event)
     return false;
 }
 
-bool FathomLordKarathressManageDPSTimerAction::Execute(Event event)
+bool FathomLordKarathressManageDpsTimerAction::Execute(Event event)
 {
     Unit* karathress = AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
     if (!karathress)
@@ -1045,11 +1265,11 @@ bool FathomLordKarathressManageDPSTimerAction::Execute(Event event)
 
     if (karathress && karathress->GetHealth() == karathress->GetMaxHealth())
     {
-        if (karathressDPSWaitTimer.find(mapId) != karathressDPSWaitTimer.end())
-            karathressDPSWaitTimer.erase(mapId);
+        if (karathressDpsWaitTimer.find(mapId) != karathressDpsWaitTimer.end())
+            karathressDpsWaitTimer.erase(mapId);
 
-        if (karathressDPSWaitTimer.find(mapId) == karathressDPSWaitTimer.end())
-            karathressDPSWaitTimer[mapId] = time(nullptr);
+        if (karathressDpsWaitTimer.find(mapId) == karathressDpsWaitTimer.end())
+            karathressDpsWaitTimer[mapId] = time(nullptr);
     }
 
     return false;
@@ -1115,15 +1335,15 @@ bool MorogrimTidewalkerMoveBossToTankPositionAction::Execute(Event event)
 
 bool MorogrimTidewalkerMoveBossToTankPositionAction::MoveToPhase1TankPosition(Unit* tidewalker)
 {
-    const Location& phase1 = SerpentShrineCavernLocations::TidewalkerPhase1TankPosition;
-    const float maxDistance = 2.0f;
-    if (bot->GetExactDist2d(phase1.x, phase1.y) > maxDistance)
+    const Location& phase1 = TidewalkerPhase1TankPosition;
+    if (bot->GetExactDist2d(phase1.x, phase1.y) > 1.0f)
     {
         float dX = phase1.x - bot->GetPositionX();
         float dY = phase1.y - bot->GetPositionY();
         float dist = sqrt(dX * dX + dY * dY);
-        float moveX = bot->GetPositionX() + (dX / dist) * maxDistance;
-        float moveY = bot->GetPositionY() + (dY / dist) * maxDistance;
+        float moveDist = std::min(4.5f, dist);
+        float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
+        float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
 
         return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false,
                         MovementPriority::MOVEMENT_COMBAT, true, true);
@@ -1140,22 +1360,22 @@ bool MorogrimTidewalkerMoveBossToTankPositionAction::MoveToPhase1TankPosition(Un
 
 bool MorogrimTidewalkerMoveBossToTankPositionAction::MoveToPhase2TankPosition(Unit* tidewalker)
 {
-    const Location& phase2 = SerpentShrineCavernLocations::TidewalkerPhase2TankPosition;
-    const Location& transition = SerpentShrineCavernLocations::TidewalkerPhaseTransitionWaypoint;
+    const Location& phase2 = TidewalkerPhase2TankPosition;
+    const Location& transition = TidewalkerPhaseTransitionWaypoint;
 
     ObjectGuid botGuid = bot->GetGUID();
     uint8 step = tidewalkerTankStep.count(botGuid) ? tidewalkerTankStep[botGuid] : 0;
-    const float maxDistance = 2.0f;
 
     if (step == 0)
     {
-        if (bot->GetExactDist2d(transition.x, transition.y) > maxDistance)
+        if (bot->GetExactDist2d(transition.x, transition.y) > 2.0f)
         {
             float dX = transition.x - bot->GetPositionX();
             float dY = transition.y - bot->GetPositionY();
             float dist = sqrt(dX * dX + dY * dY);
-            float moveX = bot->GetPositionX() + (dX / dist) * maxDistance;
-            float moveY = bot->GetPositionY() + (dY / dist) * maxDistance;
+            float moveDist = std::min(4.5f, dist);
+            float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
 
             return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, true);
@@ -1166,13 +1386,14 @@ bool MorogrimTidewalkerMoveBossToTankPositionAction::MoveToPhase2TankPosition(Un
 
     if (step == 1)
     {
-        if (bot->GetExactDist2d(phase2.x, phase2.y) > 2.0f)
+        if (bot->GetExactDist2d(phase2.x, phase2.y) > 1.0f)
         {
             float dX = phase2.x - bot->GetPositionX();
             float dY = phase2.y - bot->GetPositionY();
             float dist = sqrt(dX * dX + dY * dY);
-            float moveX = bot->GetPositionX() + (dX / dist) * maxDistance;
-            float moveY = bot->GetPositionY() + (dY / dist) * maxDistance;
+            float moveDist = std::min(4.5f, dist);
+            float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
 
             return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, true);
@@ -1188,22 +1409,22 @@ bool MorogrimTidewalkerPhase2RepositionRangedAction::Execute(Event event)
     if (!tidewalker)
         return false;
 
-    const Location& phase2 = SerpentShrineCavernLocations::TidewalkerPhase2RangedPosition;
-    const Location& transition = SerpentShrineCavernLocations::TidewalkerPhaseTransitionWaypoint;
+    const Location& phase2 = TidewalkerPhase2RangedPosition;
+    const Location& transition = TidewalkerPhaseTransitionWaypoint;
 
     ObjectGuid botGuid = bot->GetGUID();
     uint8 step = tidewalkerRangedStep.count(botGuid) ? tidewalkerRangedStep[botGuid] : 0;
-    const float maxDistance = 2.0f;
 
     if (step == 0)
     {
-        if (bot->GetExactDist2d(transition.x, transition.y) > maxDistance)
+        if (bot->GetExactDist2d(transition.x, transition.y) > 2.0f)
         {
             float dX = transition.x - bot->GetPositionX();
             float dY = transition.y - bot->GetPositionY();
             float dist = sqrt(dX * dX + dY * dY);
-            float moveX = bot->GetPositionX() + (dX / dist) * maxDistance;
-            float moveY = bot->GetPositionY() + (dY / dist) * maxDistance;
+            float moveDist = std::min(7.0f, dist);
+            float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
 
             return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, false);
@@ -1214,13 +1435,14 @@ bool MorogrimTidewalkerPhase2RepositionRangedAction::Execute(Event event)
 
     if (step == 1)
     {
-        if (bot->GetExactDist2d(phase2.x, phase2.y) > maxDistance)
+        if (bot->GetExactDist2d(phase2.x, phase2.y) > 1.0f)
         {
             float dX = phase2.x - bot->GetPositionX();
             float dY = phase2.y - bot->GetPositionY();
             float dist = sqrt(dX * dX + dY * dY);
-            float moveX = bot->GetPositionX() + (dX / dist) * maxDistance;
-            float moveY = bot->GetPositionY() + (dY / dist) * maxDistance;
+            float moveDist = std::min(7.0f, dist);
+            float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
 
             return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, false);

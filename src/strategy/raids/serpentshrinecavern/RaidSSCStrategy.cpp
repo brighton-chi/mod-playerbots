@@ -30,13 +30,31 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("hydross the unstable need to transition before fourth mark",
         NextAction::array(0, new NextAction("hydross the unstable manage phase change timers", ACTION_EMERGENCY + 10), nullptr)
     ));
-    triggers.push_back(new TriggerNode("hydross the unstable waiting for dps",
+    triggers.push_back(new TriggerNode("hydross the unstable need to manage phase change aggro reset",
         NextAction::array(0, new NextAction("hydross the unstable manage dps timers", ACTION_EMERGENCY + 10), nullptr)
     ));
 
     // The Lurker Below
-    triggers.push_back(new TriggerNode("the lurker below spout is active",
+    /* triggers.push_back(new TriggerNode("the lurker below spout is active",
         NextAction::array(0, new NextAction("the lurker below run around behind boss", ACTION_EMERGENCY + 6), nullptr)
+    )); */
+    triggers.push_back(new TriggerNode("the lurker below boss is active for main tank",
+        NextAction::array(0, new NextAction("the lurker below position main tank", ACTION_RAID + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("the lurker below boss is active for other melee",
+        NextAction::array(0, new NextAction("the lurker below position other melee", ACTION_RAID + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("the lurker below spout is active for melee",
+            NextAction::array(0, new NextAction("the lurker below melee run around behind boss", ACTION_EMERGENCY + 6), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("the lurker below boss is active for ranged dps",
+        NextAction::array(0, new NextAction("the lurker below position ranged dps", ACTION_EMERGENCY + 6), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("the lurker below boss is active for healer",
+        NextAction::array(0, new NextAction("the lurker below position healer", ACTION_EMERGENCY + 6), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("the lurker below need to prepare timer for spout",
+        NextAction::array(0, new NextAction("the lurker below manage spout timer", ACTION_EMERGENCY + 10), nullptr)
     ));
 
     // Leotheras the Blind
@@ -108,23 +126,25 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction::array(0, new NextAction("morogrim tidewalker reset phase transition steps", ACTION_RAID + 2), nullptr)
     ));
 
-    // Lady Vashj
+    // Lady Vashj <Coilfang Matron>
 }
 
 void RaidSSCStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     multipliers.push_back(new HydrossTheUnstableDisableTankActionsMultiplier(botAI));
-    multipliers.push_back(new HydrossTheUnstableWaitForDPSMultiplier(botAI));
+    multipliers.push_back(new HydrossTheUnstableWaitForDpsMultiplier(botAI));
     multipliers.push_back(new HydrossTheUnstableControlMisdirectionMultiplier(botAI));
-    multipliers.push_back(new TheLurkerBelowStayBehindBossDuringSpoutMultiplier(botAI));
+    multipliers.push_back(new TheLurkerBelowStayAwayFromSpoutMultiplier(botAI));
     multipliers.push_back(new LeotherasTheBlindAvoidWhirlwindMultiplier(botAI));
     multipliers.push_back(new LeotherasTheBlindDisableTankActionsMultiplier(botAI));
     // multipliers.push_back(new LeotherasTheBlindMainTankMaintainDemonFormPositionMultiplier(botAI));
     // multipliers.push_back(new LeotherasTheBlindDemonFormDisableMeleeActionsMultiplier(botAI));
-    multipliers.push_back(new LeotherasTheBlindWaitForDPSMultiplier(botAI));
-    multipliers.push_back(new LeotherasTheBlindWaitForBloodlustAndHeroismMultiplier(botAI));
+    multipliers.push_back(new LeotherasTheBlindWaitForDpsMultiplier(botAI));
+    multipliers.push_back(new LeotherasTheBlindDelayBloodlustAndHeroismMultiplier(botAI));
     multipliers.push_back(new FathomLordKarathressDisableTankAssistMultiplier(botAI));
     multipliers.push_back(new FathomLordKarathressControlMisdirectionMultiplier(botAI));
-    multipliers.push_back(new FathomLordKarathressWaitForDPSMultiplier(botAI));
+    multipliers.push_back(new FathomLordKarathressWaitForDpsMultiplier(botAI));
     multipliers.push_back(new FathomLordKarathressCaribdisTankHealerMaintainPositionMultiplier(botAI));
+    multipliers.push_back(new MorogrimTidewalkerDelayBloodlustAndHeroismMultiplier(botAI));
+    multipliers.push_back(new MorogrimTidewalkerDisablePhase2FleeActionMultiplier(botAI));
 }

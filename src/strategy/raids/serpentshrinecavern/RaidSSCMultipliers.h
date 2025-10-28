@@ -10,10 +10,10 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class HydrossTheUnstableWaitForDPSMultiplier : public Multiplier
+class HydrossTheUnstableWaitForDpsMultiplier : public Multiplier
 {
 public:
-    HydrossTheUnstableWaitForDPSMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "hydross the unstable wait for dps") {}
+    HydrossTheUnstableWaitForDpsMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "hydross the unstable wait for dps") {}
     virtual float GetValue(Action* action);
 };
 
@@ -24,10 +24,10 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class TheLurkerBelowStayBehindBossDuringSpoutMultiplier : public Multiplier
+class TheLurkerBelowStayAwayFromSpoutMultiplier : public Multiplier
 {
 public:
-    TheLurkerBelowStayBehindBossDuringSpoutMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "the lurker below stay behind boss during spout") {}
+    TheLurkerBelowStayAwayFromSpoutMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "the lurker below stay away from spout") {}
     virtual float GetValue(Action* action);
 };
 
@@ -59,17 +59,17 @@ public:
     virtual float GetValue(Action* action);
 }; */
 
-class LeotherasTheBlindWaitForDPSMultiplier : public Multiplier
+class LeotherasTheBlindWaitForDpsMultiplier : public Multiplier
 {
 public:
-    LeotherasTheBlindWaitForDPSMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "leotheras the blind wait for dps") {}
+    LeotherasTheBlindWaitForDpsMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "leotheras the blind wait for dps") {}
     virtual float GetValue(Action* action);
 };
 
-class LeotherasTheBlindWaitForBloodlustAndHeroismMultiplier : public Multiplier
+class LeotherasTheBlindDelayBloodlustAndHeroismMultiplier : public Multiplier
 {
 public:
-    LeotherasTheBlindWaitForBloodlustAndHeroismMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "leotheras the blind wait for bloodlust and heroism") {}
+    LeotherasTheBlindDelayBloodlustAndHeroismMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "leotheras the blind delay bloodlust and heroism") {}
     virtual float GetValue(Action* action);
 };
 
@@ -87,10 +87,10 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class FathomLordKarathressWaitForDPSMultiplier : public Multiplier
+class FathomLordKarathressWaitForDpsMultiplier : public Multiplier
 {
 public:
-    FathomLordKarathressWaitForDPSMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "fathom-lord karathress wait for dps") {}
+    FathomLordKarathressWaitForDpsMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "fathom-lord karathress wait for dps") {}
     virtual float GetValue(Action* action);
 };
 
@@ -98,6 +98,20 @@ class FathomLordKarathressCaribdisTankHealerMaintainPositionMultiplier : public 
 {
 public:
     FathomLordKarathressCaribdisTankHealerMaintainPositionMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "fathom-lord karathress caribdis tank healer maintain position") {}
+    virtual float GetValue(Action* action);
+};
+
+class MorogrimTidewalkerDelayBloodlustAndHeroismMultiplier : public Multiplier
+{
+public:
+    MorogrimTidewalkerDelayBloodlustAndHeroismMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "morogrim tidewalker delay bloodlust and heroism") {}
+    virtual float GetValue(Action* action);
+};
+
+class MorogrimTidewalkerDisablePhase2FleeActionMultiplier : public Multiplier
+{
+public:
+    MorogrimTidewalkerDisablePhase2FleeActionMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "morogrim tidewalker disable phase2 flee action") {}
     virtual float GetValue(Action* action);
 };
 
