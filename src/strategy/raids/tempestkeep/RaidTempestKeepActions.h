@@ -1,9 +1,13 @@
 #ifndef _PLAYERBOT_RAIDTEMPESTKEEPACTIONS_H
 #define _PLAYERBOT_RAIDTEMPESTKEEPACTIONS_H
 
+#include "RaidTempestKeepHelpers.h"
 #include "Action.h"
 #include "AttackAction.h"
 #include "MovementActions.h"
+
+using namespace TempestKeepHelpers;
+using namespace TempestKeepLocations;
 
 class VoidReaverPositionBossAction : public AttackAction
 {
@@ -19,6 +23,9 @@ public:
     VoidReaverSpreadRangedAction(PlayerbotAI* botAI, std::string const name = "void reaver spread ranged") : MovementAction(botAI, name) {}
 
     bool Execute(Event event) override;
+
+private:
+    Position GetRangedBotPosition(const TempestKeepHelpers::Location& center, float radius, uint8 botsPerRing, float offsetArc, uint8 botIndex, float botZ);
 };
 
 class VoidReaverArcaneOrbMoveAwayAction : public MovementAction

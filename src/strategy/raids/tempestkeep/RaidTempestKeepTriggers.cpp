@@ -26,12 +26,17 @@ bool VoidReaverArcaneOrbLaunchedTrigger::IsActive()
         return false;
 
     std::vector<Unit*> arcaneOrbTargets = GetAllArcaneOrbTargets(botAI, bot);
+    LOG_DEBUG("playerbots", "VoidReaverArcaneOrbLaunchedTrigger: Bot {} found {} arcane orb targets", bot->GetName(), arcaneOrbTargets.size());
+
     for (Unit* orbTarget : arcaneOrbTargets)
     {
-        if (bot->GetExactDist2d(orbTarget) < 25.0f)
+        float dist = bot->GetExactDist2d(orbTarget);
+        LOG_DEBUG("playerbots", "VoidReaverArcaneOrbLaunchedTrigger: Bot {} distance to orb target {} is {:.2f}", bot->GetName(), orbTarget->GetName(), dist);
+        if (dist < 25.0f)
             return true;
     }
 
+    LOG_DEBUG("playerbots", "VoidReaverArcaneOrbLaunchedTrigger: Bot {} found no orb targets within 25 yards", bot->GetName());
     return false;
 }
 

@@ -3,6 +3,13 @@
 
 #include "Multiplier.h"
 
+class VoidReaverMaintainPositionsMultiplier : public Multiplier
+{
+public:
+    VoidReaverMaintainPositionsMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "void reaver maintain positions multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
 class HighAstromancerSolarianStayStackedMultiplier : public Multiplier
 {
 public:

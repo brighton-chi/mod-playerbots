@@ -3,6 +3,7 @@
 #include "Playerbots.h"
 
 using namespace TempestKeepHelpers;
+using namespace TempestKeepLocations;
 
 // Al'ar
 
@@ -20,76 +21,65 @@ bool VoidReaverPositionBossAction::Execute(Event event)
     
     if (voidReaver->GetVictim() == bot)
     {
-        const Location& tankPosition = TempestKeepLocations::VoidReaverTankPosition;
-        const float maxDistance = 3.0f;
+        const Location& tankPosition = VoidReaverTankPosition;
 
         float dX = tankPosition.x - bot->GetPositionX();
         float dY = tankPosition.y - bot->GetPositionY();
         float distanceToTankPosition = bot->GetExactDist2d(tankPosition.x, tankPosition.y);
 
-        if (distanceToTankPosition > maxDistance)
+        if (distanceToTankPosition > 2.0f)
         {
-            float step = std::min(maxDistance, distanceToTankPosition);
-            float moveX = bot->GetPositionX() + (dX / distanceToTankPosition) * maxDistance;
-            float moveY = bot->GetPositionY() + (dY / distanceToTankPosition) * maxDistance;
+            float stepSize = std::min(4.5f, distanceToTankPosition);
+            float moveX = bot->GetPositionX() + (dX / distanceToTankPosition) * stepSize;
+            float moveY = bot->GetPositionY() + (dY / distanceToTankPosition) * stepSize;
             const float moveZ = tankPosition.z;
             return MoveTo(bot->GetMapId(), moveX, moveY, moveZ, false, false, false, false, 
-                          MovementPriority::MOVEMENT_COMBAT, true, false);
+                          MovementPriority::MOVEMENT_FORCED, true, false);
         }
-
-        float orientation = atan2(voidReaver->GetPositionY() - bot->GetPositionY(), 
-                                  voidReaver->GetPositionX() - bot->GetPositionX());
-        bot->SetFacingTo(orientation);
     }
-    else if (!bot->IsWithinMeleeRange(voidReaver))
-        return MoveTo(voidReaver->GetMapId(), voidReaver->GetPositionX(), voidReaver->GetPositionY(), voidReaver->GetPositionZ(), 
-                      false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 
     return false;
 }
 
-bool VoidReaverSpreadRangedAction::Execute(Event event)
+/* bool VoidReaverSpreadRangedAction::Execute(Event event)
 {
-    static std::unordered_map<ObjectGuid, Position> initialPositions;
-    static std::unordered_map<ObjectGuid, bool> hasReachedInitialPosition;
-
     Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
-    if (voidReaver && voidReaver->IsAlive() && voidReaver->GetHealth() == voidReaver->GetMaxHealth())
+    Group* group = bot->GetGroup();
+    if (!voidReaver || !group)
+        return false;
+
+    if (voidReaver->GetHealth() == voidReaver->GetMaxHealth())
     {
         initialPositions.clear();
         hasReachedInitialPosition.clear();
+        LOG_DEBUG("playerbots", "VoidReaverSpreadRangedAction: Cleared initial positions (Void Reaver at max health)");
     }
-
-    const Location& tankPosition = TempestKeepLocations::VoidReaverTankPosition;
-    const float centerX = tankPosition.x;
-    const float centerY = tankPosition.y;
-    float centerZ = bot->GetPositionZ();
-    const float minRadius = 25.0f;
-    const float maxRadius = 40.0f;
 
     std::vector<Player*> members;
     Player* closestMember = nullptr;
     float closestDist = std::numeric_limits<float>::max();
-    if (Group* group = bot->GetGroup())
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || !member->IsAlive())
-                continue;
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive() || !botAI->IsRanged(member))
+            continue;
 
-            members.push_back(member);
-            if (member != bot)
+        members.push_back(member);
+        if (member != bot)
+        {
+            float dist = bot->GetExactDist2d(member);
+            if (dist < closestDist)
             {
-                float dist = bot->GetExactDist2d(member);
-                if (dist < closestDist)
-                {
-                    closestDist = dist;
-                    closestMember = member;
-                }
+                closestDist = dist;
+                closestMember = member;
             }
         }
     }
+    LOG_DEBUG("playerbots", "VoidReaverSpreadRangedAction: Bot {} found {} alive group members", bot->GetName(), members.size());
+
+    const Location& tankPosition = VoidReaverTankPosition;
+    const float minRadius = 25.0f;
+    const float maxRadius = 35.0f;
 
     if (!initialPositions.count(bot->GetGUID()))
     {
@@ -100,21 +90,217 @@ bool VoidReaverSpreadRangedAction::Execute(Event event)
         float angle = 2 * M_PI * botIndex / count;
         float radius = minRadius + static_cast<float>(rand()) / 
                        static_cast<float>(RAND_MAX) * (maxRadius - minRadius);
-        float targetX = centerX + radius * cos(angle);
-        float targetY = centerY + radius * sin(angle);
+        float targetX = tankPosition.x + radius * cos(angle);
+        float targetY = tankPosition.y + radius * sin(angle);
 
-        initialPositions[bot->GetGUID()] = Position(targetX, targetY, centerZ);
+        initialPositions[bot->GetGUID()] = Position(targetX, targetY, bot->GetPositionZ());
+        hasReachedInitialPosition[bot->GetGUID()] = false;
+
+        LOG_DEBUG("playerbots", "VoidReaverSpreadRangedAction: Bot {} assigned initial position ({}, {}, {}) [angle={}, radius={}]", 
+            bot->GetName(), targetX, targetY, bot->GetPositionZ(), angle, radius);
+    }
+
+    Position targetPosition = initialPositions[bot->GetGUID()];
+    float destX = targetPosition.GetPositionX();
+    float destY = targetPosition.GetPositionY();
+    float destZ = targetPosition.GetPositionZ();
+
+    if (!hasReachedInitialPosition[bot->GetGUID()])
+    {
+        if (!bot->IsWithinDist2d(destX, destY, 2.0f))
+        {
+            LOG_DEBUG("playerbots", "VoidReaverSpreadRangedAction: Bot {} moving to initial position ({}, {}, {})", bot->GetName(), destX, destY, destZ);
+
+            if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, bot->GetPositionX(),
+                bot->GetPositionY(), bot->GetPositionZ(), destX, destY, destZ))
+            {
+                LOG_DEBUG("playerbots", "VoidReaverSpreadRangedAction: Bot {} collision/pathfinding failed for ({}, {}, {})", bot->GetName(), destX, destY, destZ);
+                return false;
+            }
+
+            return MoveTo(bot->GetMapId(), destX, destY, destZ, false, false, false, false,
+                          MovementPriority::MOVEMENT_COMBAT, true, false);
+        }
+
+        LOG_DEBUG("playerbots", "VoidReaverSpreadRangedAction: Bot {} reached initial position ({}, {})", bot->GetName(), destX, destY);
+        hasReachedInitialPosition[bot->GetGUID()] = true;
+    }
+
+    const float minSpreadDistance = 22.0f;
+
+    if (closestMember && closestDist < minSpreadDistance - 2.0f)
+    {
+        LOG_DEBUG("playerbots", "VoidReaverSpreadRangedAction: Bot {} too close to {} (distance {:.2f}), fleeing", 
+            bot->GetName(), closestMember->GetName(), closestDist);
+        return FleePosition(Position(closestMember->GetPositionX(), closestMember->GetPositionY(), 
+                            closestMember->GetPositionZ()), minSpreadDistance, 0);
+    }
+
+    LOG_DEBUG("playerbots", "VoidReaverSpreadRangedAction: Bot {} idle, no movement needed", bot->GetName());
+    return false;
+} */
+
+bool VoidReaverSpreadRangedAction::Execute(Event event)
+{
+    Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
+    Group* group = bot->GetGroup();
+    if (!voidReaver || !group)
+        return false;
+
+    // Only clear positions at the very start of the fight (boss at max health)
+    if (voidReaver->GetHealth() == voidReaver->GetMaxHealth())
+    {
+        initialPositions.clear();
+        hasReachedInitialPosition.clear();
+        LOG_DEBUG("playerbots", "VoidReaverSpreadRangedAction: Cleared initial positions (Void Reaver at max health)");
+    }
+
+    // Assign positions only if not already assigned
+    if (initialPositions.empty())
+    {
+        std::vector<Player*> healers;
+        std::vector<Player*> rangedDps;
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || !botAI->IsRanged(member))
+                continue;
+            if (botAI->IsHeal(member))
+                healers.push_back(member);
+            else
+                rangedDps.push_back(member);
+        }
+
+        const Location& tankPosition = VoidReaverTankPosition;
+        const float radius = 30.0f;
+        const uint8 botsPerRing = 8;
+        const float offsetArc = 1.0f;
+
+        // Assign healer positions first
+        for (size_t i = 0; i < healers.size(); ++i)
+        {
+            Player* healer = healers[i];
+            Position pos = GetRangedBotPosition(tankPosition, radius, healers.size(), 0.0f, i, healer->GetPositionZ());
+            initialPositions[healer->GetGUID()] = pos;
+            hasReachedInitialPosition[healer->GetGUID()] = false;
+            LOG_DEBUG("playerbots", "VoidReaverSpreadRangedAction: Healer {} assigned initial position ({}, {}, {})", 
+                healer->GetName(), pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ());
+        }
+
+        // Assign ranged DPS positions next, offset from healers
+        for (size_t i = 0; i < rangedDps.size(); ++i)
+        {
+            Player* dps = rangedDps[i];
+            Position pos = GetRangedBotPosition(tankPosition, radius, rangedDps.size(), offsetArc, i, dps->GetPositionZ());
+            initialPositions[dps->GetGUID()] = pos;
+            hasReachedInitialPosition[dps->GetGUID()] = false;
+            LOG_DEBUG("playerbots", "VoidReaverSpreadRangedAction: DPS {} assigned initial position ({}, {}, {})", 
+                dps->GetName(), pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ());
+        }
+    }
+
+    // Move bot to its assigned position
+    Position targetPosition = initialPositions[bot->GetGUID()];
+    float destX = targetPosition.GetPositionX();
+    float destY = targetPosition.GetPositionY();
+    float destZ = targetPosition.GetPositionZ();
+
+    if (!bot->IsWithinDist2d(destX, destY, 1.0f))
+    {
+        LOG_DEBUG("playerbots", "VoidReaverSpreadRangedAction: Bot {} moving to initial position ({}, {}, {})", bot->GetName(), destX, destY, destZ);
+
+        return MoveTo(bot->GetMapId(), destX, destY, destZ, false, false, false, false,
+                      MovementPriority::MOVEMENT_FORCED, true, false);
+    }
+
+    return false;
+}
+
+Position VoidReaverSpreadRangedAction::GetRangedBotPosition(const TempestKeepHelpers::Location& center, 
+    float radius, uint8 botsPerRing, float offsetArc, uint8 botIndex, float botZ)
+{
+    float angleOffset = (offsetArc / radius);
+    uint8 ringIndex = botIndex / botsPerRing;
+    uint8 posInRing = botIndex % botsPerRing;
+    float baseAngle = 2 * M_PI * posInRing / botsPerRing;
+    float angle = baseAngle + (ringIndex == 1 ? angleOffset : 0);
+
+    // If overflow, wrap around
+    if (ringIndex > 1)
+    {
+        angle = 2 * M_PI * (botIndex % botsPerRing) / botsPerRing;
+        ringIndex = 0;
+    }
+
+    float targetX = center.x + radius * cos(angle);
+    float targetY = center.y + radius * sin(angle);
+
+    return Position(targetX, targetY, botZ);
+}
+
+/* bool VoidReaverSpreadRangedAction::Execute(Event event)
+{
+    Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
+    Group* group = bot->GetGroup();
+    if (!voidReaver || !group)
+        return false;
+
+    if (voidReaver->GetHealth() == voidReaver->GetMaxHealth())
+    {
+        initialPositions.clear();
+        hasReachedInitialPosition.clear();
+    }
+
+    std::vector<Player*> members;
+    Player* closestMember = nullptr;
+    float closestDist = std::numeric_limits<float>::max();
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive())
+            continue;
+
+        members.push_back(member);
+        if (member != bot)
+        {
+            float dist = bot->GetExactDist2d(member);
+            if (dist < closestDist)
+            {
+                closestDist = dist;
+                closestMember = member;
+            }
+        }
+    }
+
+    const Location& tankPosition = VoidReaverTankPosition;
+    const float minRadius = 25.0f;
+    const float maxRadius = 35.0f;
+
+    if (!initialPositions.count(bot->GetGUID()))
+    {
+        auto it = std::find(members.begin(), members.end(), bot);
+        uint8 botIndex = (it != members.end()) ? std::distance(members.begin(), it) : 0;
+        uint8 count = members.size();
+
+        float angle = 2 * M_PI * botIndex / count;
+        float radius = minRadius + static_cast<float>(rand()) / 
+                       static_cast<float>(RAND_MAX) * (maxRadius - minRadius);
+        float targetX = tankPosition.x + radius * cos(angle);
+        float targetY = tankPosition.y + radius * sin(angle);
+
+        initialPositions[bot->GetGUID()] = Position(targetX, targetY, bot->GetPositionZ());
         hasReachedInitialPosition[bot->GetGUID()] = false;
     }
 
     Position targetPosition = initialPositions[bot->GetGUID()];
+    float destX = targetPosition.GetPositionX();
+    float destY = targetPosition.GetPositionY();
+    float destZ = targetPosition.GetPositionZ();
+
     if (!hasReachedInitialPosition[bot->GetGUID()])
     {
-        if (!bot->IsWithinDist2d(targetPosition.GetPositionX(), targetPosition.GetPositionY(), 2.0f))
+        if (!bot->IsWithinDist2d(destX, destY, 2.0f))
         {
-            float destX = targetPosition.GetPositionX();
-            float destY = targetPosition.GetPositionY();
-            float destZ = targetPosition.GetPositionZ();
             if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, bot->GetPositionX(),
                 bot->GetPositionY(), bot->GetPositionZ(), destX, destY, destZ))
                 return false;
@@ -127,14 +313,13 @@ bool VoidReaverSpreadRangedAction::Execute(Event event)
     }
 
     const float minSpreadDistance = 10.0f;
-    const float movementThreshold = 2.0f;
 
-    if (closestMember && closestDist < minSpreadDistance - movementThreshold)
+    if (closestMember && closestDist < minSpreadDistance - 2.0f)
         return FleePosition(Position(closestMember->GetPositionX(), closestMember->GetPositionY(), 
                             closestMember->GetPositionZ()), minSpreadDistance, 0);
 
     return false;
-}
+} */
 
 bool VoidReaverArcaneOrbMoveAwayAction::Execute(Event event)
 {
@@ -238,7 +423,7 @@ bool HighAstromancerSolarianStackBotsAction::Execute(Event event)
     if (!astromancer)
         return false;
 
-    const Location& position = TempestKeepLocations::AstromancerStackPosition;
+    const Location& position = AstromancerStackPosition;
 
     // Phase 1 & 2 - Ranged
     if (botAI->IsRanged(bot) && bot->GetExactDist2d(position.x, position.y) > 4.0f)

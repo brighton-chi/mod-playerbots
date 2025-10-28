@@ -33,6 +33,9 @@ namespace TempestKeepHelpers
 
     */
 
+    std::unordered_map<ObjectGuid, Position> initialPositions;
+    std::unordered_map<ObjectGuid, bool> hasReachedInitialPosition;
+
     void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId)
     {
         if (!target)

@@ -5,6 +5,22 @@
 #include "MageActions.h"
 #include "Playerbots.h"
 
+float VoidReaverMaintainPositionsMultiplier::GetValue(Action* action)
+{
+    Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
+    if (!voidReaver)
+        return 1.0f;
+
+    if (botAI->IsTank(bot) && dynamic_cast<TankFaceAction*>(action))
+        return 0.0f;
+
+    if (botAI->IsRanged(bot) && (dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<FleeAction*>(action) ||
+         dynamic_cast<CastBlinkBackAction*>(action) || dynamic_cast<CastDisengageAction*>(action)))
+        return 0.0f;
+
+    return 1.0f;
+}
+
 float HighAstromancerSolarianStayStackedMultiplier::GetValue(Action* action)
 {
     Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");

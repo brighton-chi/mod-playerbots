@@ -46,6 +46,9 @@ namespace TempestKeepLocations
     extern const Location AstromancerStackPosition;
 }
 
+extern std::unordered_map<ObjectGuid, Position> initialPositions;
+extern std::unordered_map<ObjectGuid, bool> hasReachedInitialPosition;
+
 void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);
 void MarkTargetWithSquare(Player* bot, Unit* target);
 void MarkTargetWithStar(Player* bot, Unit* target);
