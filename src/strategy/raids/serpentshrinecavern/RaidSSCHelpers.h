@@ -23,10 +23,9 @@ enum SerpentShrineCavernSpells
     SPELL_MARK_OF_CORRUPTION_100 = 38222,
     SPELL_MARK_OF_CORRUPTION_250 = 38230,
     SPELL_MARK_OF_CORRUPTION_500 = 40583,
-    SPELL_CORRUPTION = 37961, // TBD if better to use this aura or NPC ID to identify nature form
+    SPELL_CORRUPTION = 37961,
 
     // The Lurker Below
-    SPELL_SUBMERGED = 28819,
     SPELL_SPOUT_VISUAL = 37431,
     // SPELL_SPOUT_PERIODIC_1 = 37429,
     // SPELL_SPOUT_PERIODIC_2 = 37430,

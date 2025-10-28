@@ -27,40 +27,36 @@ namespace SerpentShrineCavernHelpers
         const Location HydrossNatureTankPosition = { -225.471f, -327.790f, -3.682f };
         // Hydross dps locations?
 
-        // Lurker liquid level -19.881f
-        // try 18 yard ring around center of pool
-        /* const Location LurkerCenterOfPoolPosition = { 40.843f, -416.379f, -21.613f };
-        const Location LurkerTankPosition = { 23.706f, -406.038f, -19.686f };
+        /* const Location LurkerMainTankPosition = { 23.706f, -406.038f, -19.686f };
         const Location LurkerEMeleePosition = { 39.265f, -433.439f, -19.712f };
         const Location LurkerWMeleePosition = { 47.721f, -406.668f, -19.635f };
         const Location LurkerNWIsletPosition = { 77.937f, -384.500f, -19.722f };
-        const Location LurkerNWSwimPosition = { 73.743f, -388.018f, -21.297f };
+        const Location LurkerNWIsletSwimPosition = { 73.743f, -388.018f, -21.297f };
         const Location LurkerNEIsletPosition = { 63.022f, -456.310f, -19.793f };
-        const Location LurkerNESwimPosition = { 60.338f, -451.668f, -21.351f };
+        const Location LurkerNEIsletSwimPosition = { 60.338f, -451.668f, -21.351f };
         const Location LurkerEIsletPosition = { 14.283f, -457.467f, -19.793f };
-        const Location LurkerESwimPosition = { 17.191f, -452.586f, -21.336f };
-        const Location LurkerSEHealerPosition = { 16.237f, -438.098f, -19.551f };
+        const Location LurkerEIsletSwimPosition = { 17.191f, -452.586f, -21.336f };
+        const Location LurkerSEHealerLandPosition = { 16.237f, -438.098f, -19.551f };
         const Location LurkerSEHealerSwimPosition = { 14.637f, -440.707f, -21.359f };
-        const Location LurkerSWHealerPosition = { 37.255f, -387.031f, -19.417f };
+        const Location LurkerSWHealerLandPosition = { 37.255f, -387.031f, -19.417f };
         const Location LurkerSWHealerSwimPosition = { 37.505f, -382.907f, -21.297f };
-        const Location LurkerNHealerPosition = { 66.268f, -418.774f, -19.592f };
-        const Location LurkerNHealerSwimPosition = { 71.255f, -419.223f, -21.281f };
-        const Location LurkerCenterOfPoolPosition = { 40.843f, -416.379f, -21.613f }; */ // z axis not rounded 
+        const Location LurkerNHealerLandPosition = { 66.268f, -418.774f, -19.592f };
+        const Location LurkerNHealerSwimPosition = { 71.255f, -419.223f, -21.281f };*/
         const Location LurkerMainTankPosition = { 23.706f, -406.038f, -19.686f };
         const Location LurkerEMeleePosition = { 39.265f, -433.439f, -19.712f };
         const Location LurkerWMeleePosition = { 47.721f, -406.668f, -19.635f };
         const Location LurkerNWIsletPosition = { 77.937f, -384.500f, -19.722f };
-        const Location LurkerNWIsletSwimPosition = { 73.743f, -388.018f, -21.500f };
+        const Location LurkerNWIsletSwimPosition = { 73.743f, -388.018f, -21.397f };
         const Location LurkerNEIsletPosition = { 63.022f, -456.310f, -19.793f };
-        const Location LurkerNEIsletSwimPosition = { 60.338f, -451.668f, -21.500f };
+        const Location LurkerNEIsletSwimPosition = { 60.338f, -451.668f, -21.451f };
         const Location LurkerEIsletPosition = { 14.283f, -457.467f, -19.793f };
-        const Location LurkerEIsletSwimPosition = { 17.191f, -452.586f, -21.500f };
+        const Location LurkerEIsletSwimPosition = { 17.191f, -452.586f, -21.436f };
         const Location LurkerSEHealerLandPosition = { 16.237f, -438.098f, -19.551f };
-        const Location LurkerSEHealerSwimPosition = { 14.637f, -440.707f, -21.500f };
+        const Location LurkerSEHealerSwimPosition = { 14.637f, -440.707f, -21.459f };
         const Location LurkerSWHealerLandPosition = { 37.255f, -387.031f, -19.417f };
-        const Location LurkerSWHealerSwimPosition = { 37.505f, -382.907f, -21.500f };
+        const Location LurkerSWHealerSwimPosition = { 37.505f, -382.907f, -21.397f };
         const Location LurkerNHealerLandPosition = { 66.268f, -418.774f, -19.592f };
-        const Location LurkerNHealerSwimPosition = { 71.255f, -419.223f, -21.500f };
+        const Location LurkerNHealerSwimPosition = { 71.255f, -419.223f, -21.381f };
 
         const Location KarathressTankPosition = { 472.973f, -540.804f, -7.548f };
         const Location TidalvessTankPosition = { 511.282f, -501.162f, -13.158f };
@@ -373,6 +369,8 @@ namespace SerpentShrineCavernHelpers
             return false;
 
         uint32 spellId = currentSpell->m_spellInfo->Id;
-        return spellId == SPELL_SPOUT_VISUAL;
+        bool isSpout = spellId == SPELL_SPOUT_VISUAL;
+        LOG_DEBUG("playerbots", "IsLurkerCastingSpout: spellId={}, isSpout={}", spellId, isSpout);
+        return isSpout;
     }
 }

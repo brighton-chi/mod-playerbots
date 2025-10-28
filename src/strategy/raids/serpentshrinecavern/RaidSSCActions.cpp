@@ -548,23 +548,29 @@ bool TheLurkerBelowPositionRangedDpsAction::Execute(Event event)
     uint32 mapId = lurker->GetMapId();
     time_t now = time(nullptr);
 
+    // Log timer value
+    LOG_DEBUG("playerbots", "RangedDpsAction: lurkerSpoutTimer[{}]={}, now={}", mapId, lurkerSpoutTimer.count(mapId) ? lurkerSpoutTimer[mapId] : -1, now);
+
     // If timer is active, send bot to swim position
     const Location* target = nullptr;
     if (lurkerSpoutTimer.count(mapId) && lurkerSpoutTimer[mapId] > now)
+    {
         target = swimPositions[myGroup];
+        LOG_DEBUG("playerbots", "RangedDpsAction: Bot {} moving to swim position ({}, {}, {})", bot->GetName(), target->x, target->y, target->z);
+    }
     else
+    {
         target = isletPositions[myGroup];
+        LOG_DEBUG("playerbots", "RangedDpsAction: Bot {} moving to islet position ({}, {}, {})", bot->GetName(), target->x, target->y, target->z);
+    }
+
+    // Log bot's current position
+    LOG_DEBUG("playerbots", "RangedDpsAction: Bot {} current position ({}, {}, {}), swimming={}, inWater={}, underWater={}", 
+    bot->GetName(), bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), bot->isSwimming(), bot->IsInWater(), bot->IsUnderWater());
 
     // Move if not close enough
     if (bot->GetExactDist2d(target->x, target->y) > 0.1f)
     {
-        /* float dX = target->x - bot->GetPositionX();
-        float dY = target->y - bot->GetPositionY();
-        float dist = sqrt(dX * dX + dY * dY);
-        float moveDist = std::min(3.0f, dist);
-        float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
-        float moveY = bot->GetPositionY() + (dY / dist) * moveDist; */
-
         bot->AttackStop();
         bot->InterruptNonMeleeSpells(true);
         return MoveTo(bot->GetMapId(), target->x, target->y, target->z, false, false, false, true,
@@ -607,23 +613,29 @@ bool TheLurkerBelowPositionHealerAction::Execute(Event event)
     uint32 mapId = lurker->GetMapId();
     time_t now = time(nullptr);
 
+    // Log timer value
+    LOG_DEBUG("playerbots", "HealerAction: lurkerSpoutTimer[{}]={}, now={}", mapId, lurkerSpoutTimer.count(mapId) ? lurkerSpoutTimer[mapId] : -1, now);
+
     // If timer is active, send bot to swim position
     const Location* target = nullptr;
     if (lurkerSpoutTimer.count(mapId) && lurkerSpoutTimer[mapId] > now)
+    {
         target = swimPositions[myGroup];
+        LOG_DEBUG("playerbots", "HealerAction: Bot {} moving to swim position ({}, {}, {})", bot->GetName(), target->x, target->y, target->z);
+    }
     else
+    {
         target = landPositions[myGroup];
+        LOG_DEBUG("playerbots", "HealerAction: Bot {} moving to land position ({}, {}, {})", bot->GetName(), target->x, target->y, target->z);
+    }
+
+    // Log bot's current position
+    LOG_DEBUG("playerbots", "HealerAction: Bot {} current position ({}, {}, {}), swimming={}, inWater={}, underWater={}", 
+    bot->GetName(), bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), bot->isSwimming(), bot->IsInWater(), bot->IsUnderWater());
 
     // Move if not close enough
     if (bot->GetExactDist2d(target->x, target->y) > 0.1f)
     {
-        /* float dX = target->x - bot->GetPositionX();
-        float dY = target->y - bot->GetPositionY();
-        float dist = sqrt(dX * dX + dY * dY);
-        float moveDist = std::min(3.0f, dist);
-        float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
-        float moveY = bot->GetPositionY() + (dY / dist) * moveDist; */
-
         bot->AttackStop();
         bot->InterruptNonMeleeSpells(true);
         return MoveTo(bot->GetMapId(), target->x, target->y, target->z, false, false, false, true,
@@ -640,13 +652,24 @@ bool TheLurkerBelowManageSpoutTimerAction::Execute(Event event)
         return false;
 
     uint32 mapId = lurker->GetMapId();
+    time_t now = time(nullptr);
 
-    if (IsLurkerCastingSpout(lurker))
-        lurkerSpoutTimer[mapId] = time(nullptr) + 20; // 20 second channel time for Spout
+    // Log current timer value
+    LOG_DEBUG("playerbots", "SpoutTimerAction: lurkerSpoutTimer[{}]={}, now={}", mapId, lurkerSpoutTimer.count(mapId) ? lurkerSpoutTimer[mapId] : -1, now);
 
-    if (lurkerSpoutTimer.count(mapId) && lurkerSpoutTimer[mapId] <= now)
+    // Set timer if Spout starts
+    if (IsLurkerCastingSpout(lurker) && (!lurkerSpoutTimer.count(mapId) || lurkerSpoutTimer[mapId] <= now)) {
+        lurkerSpoutTimer[mapId] = now + 20; // 20s channel for Spout
+        LOG_DEBUG("playerbots", "SpoutTimerAction: Set lurkerSpoutTimer[{}] to {}", mapId, lurkerSpoutTimer[mapId]);
+    }
+
+    // Erase timer if expired
+    if (lurkerSpoutTimer.count(mapId) && lurkerSpoutTimer[mapId] <= now) {
+        LOG_DEBUG("playerbots", "SpoutTimerAction: Erasing expired lurkerSpoutTimer[{}]", mapId);
         lurkerSpoutTimer.erase(mapId);
+    }
 
+    // Erase timer if boss is at full health
     if (lurker->GetHealth() == lurker->GetMaxHealth() && lurkerSpoutTimer.count(mapId))
         lurkerSpoutTimer.erase(mapId);
 
