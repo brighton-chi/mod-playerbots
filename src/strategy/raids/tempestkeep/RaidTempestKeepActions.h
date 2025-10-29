@@ -9,16 +9,75 @@
 using namespace TempestKeepHelpers;
 using namespace TempestKeepLocations;
 
+class AlarLogDebugInfoAction : public Action
+{
+public:
+    AlarLogDebugInfoAction(PlayerbotAI* botAI, std::string const name = "alar log debug info") : Action(botAI, name) {} 
+
+    bool Execute(Event event) override;
+};
+
+class AlarMisdirectBossToMainTankAction : public AttackAction
+{
+public:
+    AlarMisdirectBossToMainTankAction(PlayerbotAI* botAI, std::string const name = "alar misdirect boss to main tank") : AttackAction(botAI, name) {}
+
+    bool Execute(Event event) override;
+};
+
+class AlarPhase1PositionBossTanksAction : public AttackAction
+{
+public:
+    AlarPhase1PositionBossTanksAction(PlayerbotAI* botAI, std::string const name = "alar phase 1 position boss tanks") : AttackAction(botAI, name) {}
+
+    bool Execute(Event event) override;
+};
+
+class AlarPhase1MeleeDpsFocusOnBossAction : public AttackAction
+{
+public:
+    AlarPhase1MeleeDpsFocusOnBossAction(PlayerbotAI* botAI, std::string const name = "alar phase 1 melee dps focus on boss") : AttackAction(botAI, name) {}
+
+    bool Execute(Event event) override;
+};
+
+class AlarPhase1RangedDpsPrioritizeAddsAction : public AttackAction
+{
+public:
+    AlarPhase1RangedDpsPrioritizeAddsAction(PlayerbotAI* botAI, std::string const name = "alar phase 1 ranged dps prioritize adds") : AttackAction(botAI, name) {}
+
+    bool Execute(Event event) override;
+};
+class AlarPhase1PositionHealerAction : public MovementAction
+{
+public:
+    AlarPhase1PositionHealerAction(PlayerbotAI* botAI, std::string const name = "alar phase 1 position healer") : MovementAction(botAI, name) {}
+
+    bool Execute(Event event) override;
+};
+
+class AlarPhase1AddTankPickUpAddsAction : public AttackAction
+{
+public:
+    AlarPhase1AddTankPickUpAddsAction(PlayerbotAI* botAI, std::string const name = "alar phase 1 add tank pick up adds") : AttackAction(botAI, name) {}
+
+    bool Execute(Event event) override;
+};
+
 class AlarJumpFromPlatformAction : public MovementAction
 {
 public:
     AlarJumpFromPlatformAction(PlayerbotAI* botAI, std::string const name = "alar jump from platform") : MovementAction(botAI, name) {}
+
+    bool Execute(Event event) override;
 };
 
 class AlarManageTimersAndTrackersAction : public Action
 {
 public:
     AlarManageTimersAndTrackersAction(PlayerbotAI* botAI, std::string const name = "alar manage timers and trackers") : Action(botAI, name) {}
+
+    bool Execute(Event event) override;
 };
 
 class VoidReaverPositionBossAction : public AttackAction

@@ -18,10 +18,10 @@ namespace TempestKeepHelpers
         const Location AlarPlatform2 = { 388.751f, 31.7312f, 20.2636f }; // Northwest Platform
         const Location AlarPlatform3 = { 388.791f, -33.1059f, 20.2636f }; // Northeast Platform
         const Location AlarPlatform4 = { 332.723f, -61.159f, 17.9791f }; // East Platform
-        const Location AlarGround1 = { 379.093f, 25.170f, -2.385f }; // Landing point for jumping from West Platform
-        const Location AlarGround2 = { 378.728f, -28.351f, -2.385f }; // Landing point for jumping from Northwest Platform
-        const Location AlarGround3 = { 332.655f, -49.212f, -2.389f }; // Landing point for jumping from Northeast Platform
-        const Location AlarGround4 = { 335.529f, 48.188f, -2.389f }; // Landing point for jumping from East Platform
+        const Location AlarGround1 = { 336.439f, 48.181f, -2.389f }; // Landing point for jumping from West Platform
+        const Location AlarGround2 = { 379.122f, 25.146f, -2.385f }; // Landing point for jumping from Northwest Platform
+        const Location AlarGround3 = { 378.583f, -27.481f, -2.385f }; // Landing point for jumping from Northeast Platform
+        const Location AlarGround4 = { 331.631f, -49.716f, -2.389f }; // Landing point for jumping from East Platform
 
         const Location VoidReaverTankPosition   = { 423.845f,  371.733f, 14.897f }; // middle of room
 
@@ -99,8 +99,58 @@ namespace TempestKeepHelpers
         return true;
     }
 
+    Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry)
+    {
+        const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
+        for (const auto& npcGuid : npcs)
+        {
+            Unit* unit = botAI->GetUnit(npcGuid);
+
+            if (unit && unit->IsAlive() && unit->GetEntry() == entry)
+                return unit;
+        }
+
+        return nullptr;
+    }
+
+    Unit* GetNearestPlayerInRadius(Player* bot, float radius)
+    {
+        Unit* nearestPlayer = nullptr;
+        float nearestDistance = radius;
+        
+        if (Group* group = bot->GetGroup())
+        {
+            for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
+            {
+                Player* member = ref->GetSource();
+
+                if (!member || !member->IsAlive() || member == bot)
+                    continue;
+
+                float distance = bot->GetExactDist2d(member);
+                if (distance < nearestDistance)
+                {
+                    nearestDistance = distance;
+                    nearestPlayer = member;
+                }
+            }
+        }
+
+        return nearestPlayer;
+    }
+
     std::unordered_map<uint32, int8> lastAlarPlatform;
+    std::unordered_map<uint32, bool> postFlameQuillsState;
+    std::unordered_map<uint32, int8> postFlameQuillsAlarPlatform;
+    std::unordered_map<uint32, bool> postQuillsPhase;
     std::unordered_map<uint32, bool> lastRebirthState;
+
+    bool IsAlarAddTank(PlayerbotAI* botAI, Player* bot)
+    {
+        return botAI->IsTank(bot) &&
+               !botAI->IsMainTank(bot) &&
+               !botAI->IsAssistTankOfIndex(bot, 0);
+    }
 
     void UpdateAlarLastPlatform(Unit* alar, uint32 mapId, const std::vector<Location>& platforms)
     {

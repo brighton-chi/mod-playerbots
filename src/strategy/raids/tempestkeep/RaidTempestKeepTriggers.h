@@ -3,6 +3,55 @@
 
 #include "Trigger.h"
 
+class AlarNeedToLogInfoToDevelopBossStrategyTrigger : public Trigger
+{
+public:
+    AlarNeedToLogInfoToDevelopBossStrategyTrigger(PlayerbotAI* botAI) : Trigger(botAI, "alar need to log info to develop boss strategy") {}
+    bool IsActive() override;
+};
+
+class AlarPullingBossTrigger : public Trigger
+{
+public:
+    AlarPullingBossTrigger(PlayerbotAI* botAI) : Trigger(botAI, "alar pulling boss") {}
+    bool IsActive() override;
+};
+
+class AlarTanksNeedToBeAtPlatformsToAggroBossTrigger : public Trigger
+{
+public:
+    AlarTanksNeedToBeAtPlatformsToAggroBossTrigger(PlayerbotAI* botAI) : Trigger(botAI, "alar tanks need to be at platforms to aggro boss") {}
+    bool IsActive() override;
+};
+
+class AlarBossEngagedByMeleeDpsTrigger : public Trigger
+{
+public:
+    AlarBossEngagedByMeleeDpsTrigger(PlayerbotAI* botAI) : Trigger(botAI, "alar boss engaged by melee dps") {}
+    bool IsActive() override;
+};
+
+class AlarBossEngagedByRangedDpsTrigger : public Trigger
+{
+public:
+    AlarBossEngagedByRangedDpsTrigger(PlayerbotAI* botAI) : Trigger(botAI, "alar boss engaged by ranged dps") {}
+    bool IsActive() override;
+};
+
+class AlarBossEngagedByHealerTrigger : public Trigger
+{
+public:
+    AlarBossEngagedByHealerTrigger(PlayerbotAI* botAI) : Trigger(botAI, "alar boss engaged by healer") {}
+    bool IsActive() override;
+};
+
+class AlarNeedTankToPickUpAddsTrigger : public Trigger
+{
+public:
+    AlarNeedTankToPickUpAddsTrigger(PlayerbotAI* botAI) : Trigger(botAI, "alar need tank to pick up adds") {}
+    bool IsActive() override;
+};
+
 class AlarIncomingFlameQuillsTrigger : public Trigger
 {
 public:

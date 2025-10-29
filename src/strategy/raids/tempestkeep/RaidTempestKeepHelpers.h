@@ -8,28 +8,34 @@
 #include "Position.h"
 #include "Unit.h"
 
-enum TempestKeepSpells
-{
-    // Al'ar
-    SPELL_REBIRTH_PHASE2 = 34342,
-
-    // High Astromancer Solarian
-    SPELL_SOLARIAN_TRANSFORM        = 39117,
-    SPELL_WRATH_OF_THE_ASTROMANCER  = 42783,
-
-    // Priest
-    SPELL_FEAR_WARD               =  6346,
-};
-
-enum TempestKeepNPCs
-{
-    // High Astromancer Solarian
-    // NPC_SOLARIUM_AGENT                  = 18925,
-    NPC_SOLARIUM_PRIEST                 = 18806,
-};
-
 namespace TempestKeepHelpers
 {
+    enum TempestKeepSpells
+    {
+        // Al'ar
+        SPELL_FLAME_QUILLS              = 34229, //aura present when actually casting
+        SPELL_REBIRTH_PHASE2 = 34342,
+
+        // High Astromancer Solarian
+        SPELL_SOLARIAN_TRANSFORM        = 39117,
+        SPELL_WRATH_OF_THE_ASTROMANCER  = 42783,
+
+        // Hunter
+        SPELL_MISDIRECTION = 34477,
+
+        // Priest
+        SPELL_FEAR_WARD               =  6346,
+    };
+
+    enum TempestKeepNPCs
+    {
+        // Al'ar
+        NPC_EMBER_OF_ALAR           = 19551,
+
+        // High Astromancer Solarian
+        // NPC_SOLARIUM_AGENT                  = 18925,
+        NPC_SOLARIUM_PRIEST                 = 18806,
+    };
 
     struct Location 
     {
@@ -54,9 +60,10 @@ namespace TempestKeepHelpers
     }
 
     extern std::unordered_map<uint32, int8> lastAlarPlatform;
+    extern std::unordered_map<uint32, bool> postFlameQuillsState;
+    extern std::unordered_map<uint32, int8> postFlameQuillsAlarPlatform;
+    extern std::unordered_map<uint32, bool> postQuillsPhase;
     extern std::unordered_map<uint32, bool> lastRebirthState;
-
-    void UpdateAlarLastPlatform(Unit* alar, uint32 mapId, const std::vector<Location>& platforms);
 
     extern std::unordered_map<ObjectGuid, Position> initialVoidReaverPositions;
     extern std::unordered_map<ObjectGuid, bool> hasReachedInitialVoidReaverPosition;
@@ -66,8 +73,11 @@ namespace TempestKeepHelpers
     void MarkTargetWithStar(Player* bot, Unit* target);
     void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target);
     bool IsMapIDTimerManager(PlayerbotAI* botAI, Player* bot);
+    Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry);
+    Unit* GetNearestPlayerInRadius(Player* bot, float radius);
 
+    void UpdateAlarLastPlatform(Unit* alar, uint32 mapId, const std::vector<Location>& platforms);
+    bool IsAlarAddTank(PlayerbotAI* botAI, Player* bot);
 }
-
 
 #endif

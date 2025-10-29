@@ -5,14 +5,62 @@
 
 using namespace TempestKeepHelpers;
 
-bool AlarIncomingFlameQuillsTrigger::IsActive()
+bool AlarNeedToLogInfoToDevelopBossStrategyTrigger::IsActive()
+{
+    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+
+    return alar && (IsMapIDTimerManager(botAI, bot) || botAI->IsMainTank(bot));
+}
+
+bool AlarPullingBossTrigger::IsActive()
+{
+    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+
+    return alar && alar->GetHealthPct() > 98.0f && bot->getClass() == CLASS_HUNTER;
+}
+
+bool AlarTanksNeedToBeAtPlatformsToAggroBossTrigger::IsActive()
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
     if (!alar)
         return false;
 
-    return alar->GetPositionZ() > 30.0f &&
-           alar->GetHealthPct() < 90.0f;
+    return alar && (botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0));
+}
+
+bool AlarBossEngagedByMeleeDpsTrigger::IsActive()
+{
+    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+
+    return alar && botAI->IsMelee(bot) && !botAI->IsTank(bot);
+}
+
+bool AlarBossEngagedByRangedDpsTrigger::IsActive()
+{
+    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+
+    return alar && botAI->IsRangedDps(bot);
+}
+
+bool AlarBossEngagedByHealerTrigger::IsActive()
+{
+    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+
+    return alar && botAI->IsHeal(bot);
+}
+
+bool AlarNeedTankToPickUpAddsTrigger::IsActive()
+{
+    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+
+    return alar && IsAlarAddTank(botAI, bot);
+}
+
+bool AlarIncomingFlameQuillsTrigger::IsActive()
+{
+    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+
+    return alar && alar->GetPositionZ() > 25.0f && alar->GetHealthPct() < 95.0f;
 }
 
 bool AlarNeedToManageTimersAndTrackersTrigger::IsActive()

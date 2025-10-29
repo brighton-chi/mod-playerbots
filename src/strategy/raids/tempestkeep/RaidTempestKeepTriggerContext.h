@@ -9,6 +9,13 @@ class RaidTempestKeepTriggerContext : public NamedObjectContext<Trigger>
 public:
     RaidTempestKeepTriggerContext()
     {
+        creators["alar need to log info to develop boss strategy"] = &RaidTempestKeepTriggerContext::alar_need_to_log_info_to_develop_boss_strategy;
+        creators["alar pulling boss"] = &RaidTempestKeepTriggerContext::alar_pulling_boss;
+        creators["alar tanks need to be at platforms to aggro boss"] = &RaidTempestKeepTriggerContext::alar_tanks_need_to_be_at_platforms_to_aggro_boss;
+        creators["alar boss engaged by melee dps"] = &RaidTempestKeepTriggerContext::alar_boss_engaged_by_melee_dps;
+        creators["alar boss engaged by ranged dps"] = &RaidTempestKeepTriggerContext::alar_boss_engaged_by_ranged_dps;
+        creators["alar boss engaged by healer"] = &RaidTempestKeepTriggerContext::alar_boss_engaged_by_healer;
+        creators["alar need tank to pick up adds"] = &RaidTempestKeepTriggerContext::alar_need_tank_to_pick_up_adds;
         creators["alar incoming flame quills"] = &RaidTempestKeepTriggerContext::alar_incoming_flame_quills;
         creators["alar need to manage timers and trackers"] = &RaidTempestKeepTriggerContext::alar_need_to_manage_timers_and_trackers;
         creators["void reaver boss engaged by tank"] = &RaidTempestKeepTriggerContext::void_reaver_boss_engaged_by_tank;
@@ -21,6 +28,14 @@ public:
     }
 
 private:
+    static Trigger* alar_need_to_log_info_to_develop_boss_strategy(PlayerbotAI* botAI) { return new AlarNeedToLogInfoToDevelopBossStrategyTrigger(botAI); }
+    static Trigger* alar_pulling_boss(PlayerbotAI* botAI) { return new AlarPullingBossTrigger(botAI); }
+    static Trigger* alar_tanks_need_to_be_at_platforms_to_aggro_boss(PlayerbotAI* botAI) { return new AlarTanksNeedToBeAtPlatformsToAggroBossTrigger(botAI); }
+    static Trigger* alar_boss_engaged_by_melee_dps(PlayerbotAI* botAI) { return new AlarBossEngagedByMeleeDpsTrigger(botAI); }
+    static Trigger* alar_boss_engaged_by_ranged_dps(PlayerbotAI* botAI) { return new AlarBossEngagedByRangedDpsTrigger(botAI); }
+    static Trigger* alar_boss_engaged_by_healer(PlayerbotAI* botAI) { return new AlarBossEngagedByHealerTrigger(botAI); }
+    static Trigger* alar_need_tank_to_pick_up_adds(PlayerbotAI* botAI) { return new AlarNeedTankToPickUpAddsTrigger(botAI); }
+    static Trigger* alar_incoming_flame_quills(PlayerbotAI* botAI) { return new AlarIncomingFlameQuillsTrigger(botAI); }
     static Trigger* alar_need_to_manage_timers_and_trackers(PlayerbotAI* botAI) { return new AlarNeedToManageTimersAndTrackersTrigger(botAI); }
     static Trigger* void_reaver_boss_engaged_by_tank(PlayerbotAI* botAI) { return new VoidReaverBossEngagedByTankTrigger(botAI); }
     static Trigger* void_reaver_boss_engaged_by_ranged(PlayerbotAI* botAI) { return new VoidReaverBossEngagedByRangedTrigger(botAI); }
