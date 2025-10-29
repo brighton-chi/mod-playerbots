@@ -47,11 +47,14 @@ bool AttumenTheHuntsmanMarkTargetAction::Execute(Event event)
         MarkTargetWithStar(bot, midnight);
         SetRtiTarget(botAI, "star", midnight);
 
-        if (!botAI->IsHeal(bot) && bot->GetTarget() != midnight->GetGUID())
+        if (botAI->IsRangedDps(bot) && bot->GetTarget() != midnight->GetGUID())
         {
             bot->SetSelection(midnight->GetGUID());
             return Attack(midnight);
         }
+
+        if (botAI->IsMelee(bot) && bot->GetVictim() != midnight)
+            return Attack(midnight);
     }
 
     if (attumenMounted)
@@ -59,18 +62,14 @@ bool AttumenTheHuntsmanMarkTargetAction::Execute(Event event)
         MarkTargetWithStar(bot, attumenMounted);
         SetRtiTarget(botAI, "star", attumenMounted);
 
-        if (!botAI->IsHeal(bot) && bot->GetTarget() != attumenMounted->GetGUID())
+        if (botAI->IsRangedDps(bot) && bot->GetTarget() != attumenMounted->GetGUID())
         {
             bot->SetSelection(attumenMounted->GetGUID());
             return Attack(attumenMounted);
         }
 
-        if (botAI->IsMainTank(bot) && !bot->IsWithinMeleeRange(attumenMounted))
-        {
-            return MoveTo(bot->GetMapId(), attumenMounted->GetPositionX(), attumenMounted->GetPositionY(),
-                          attumenMounted->GetPositionZ(), false, false, false, false,
-                          MovementPriority::MOVEMENT_COMBAT, true, false);
-        }
+        if (botAI->IsMelee(bot) && bot->GetVictim() != attumenMounted)
+            return Attack(attumenMounted);
     }
 
     return false;
