@@ -28,17 +28,6 @@ private:
     Position GetRangedBotPosition(const TempestKeepHelpers::Location& center, float radius, uint8 botsPerRing, float offsetArc, uint8 botIndex, float botZ);
 };
 
-class VoidReaverArcaneOrbMoveAwayAction : public MovementAction
-{
-public:
-    VoidReaverArcaneOrbMoveAwayAction(PlayerbotAI* botAI, std::string const name = "void reaver arcane orb move away") : MovementAction(botAI, name) {}
-
-    bool Execute(Event event) override;
-
-private:
-    bool IsInArcaneOrbRadius(const std::vector<Unit*>& arcaneOrbTargets, float safeDistance);
-};
-
 class HighAstromancerSolarianStackBotsAction : public MovementAction
 {
 public:

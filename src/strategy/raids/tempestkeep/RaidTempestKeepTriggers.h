@@ -17,13 +17,6 @@ public:
     bool IsActive() override;
 };
 
-class VoidReaverArcaneOrbLaunchedTrigger : public Trigger
-{
-public:
-    VoidReaverArcaneOrbLaunchedTrigger(PlayerbotAI* botAI) : Trigger(botAI, "void reaver arcane orb launched") {}
-    bool IsActive() override;
-};
-
 class HighAstromancerSolarianPhase1And2MovementTrigger : public Trigger
 {
 public:

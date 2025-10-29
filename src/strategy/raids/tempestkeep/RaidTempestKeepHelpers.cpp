@@ -76,22 +76,4 @@ namespace TempestKeepHelpers
         }
     }
 
-    std::vector<Unit*> GetAllArcaneOrbTargets(PlayerbotAI* botAI, Player* bot, float radius)
-    {
-        std::vector<Unit*> arcaneOrbTargets;
-        const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
-        for (const auto& npcGuid : npcs)
-        {
-            Unit* unit = botAI->GetUnit(npcGuid);
-            if (!unit || unit->GetEntry() != NPC_ARCANE_ORB_TARGET)
-                continue;
-
-            float dist = bot->GetExactDist2d(unit);
-            if (dist < radius)
-                arcaneOrbTargets.push_back(unit);
-        }
-
-        return arcaneOrbTargets;
-    }
-
 }
