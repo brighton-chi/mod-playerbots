@@ -9,6 +9,18 @@
 using namespace TempestKeepHelpers;
 using namespace TempestKeepLocations;
 
+class AlarJumpFromPlatformAction : public MovementAction
+{
+public:
+    AlarJumpFromPlatformAction(PlayerbotAI* botAI, std::string const name = "alar jump from platform") : MovementAction(botAI, name) {}
+};
+
+class AlarManageTimersAndTrackersAction : public Action
+{
+public:
+    AlarManageTimersAndTrackersAction(PlayerbotAI* botAI, std::string const name = "alar manage timers and trackers") : Action(botAI, name) {}
+};
+
 class VoidReaverPositionBossAction : public AttackAction
 {
 public:

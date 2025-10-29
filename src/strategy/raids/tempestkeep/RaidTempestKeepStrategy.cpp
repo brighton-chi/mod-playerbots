@@ -3,6 +3,16 @@
 
 void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
+    // Al'ar
+    triggers.push_back(new TriggerNode(
+        "alar incoming flame quills",
+        NextAction::array(0, new NextAction("alar jump from platform", ACTION_EMERGENCY + 9), nullptr)
+    ));
+    triggers.push_back(new TriggerNode(
+        "alar need to manage timers and trackers",
+        NextAction::array(0, new NextAction("alar manage timers and trackers", ACTION_EMERGENCY + 10), nullptr)
+    ));
+
     // Void Reaver
     triggers.push_back(new TriggerNode(
         "void reaver boss engaged by tank",

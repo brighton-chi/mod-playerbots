@@ -9,6 +9,8 @@ class RaidTempestKeepTriggerContext : public NamedObjectContext<Trigger>
 public:
     RaidTempestKeepTriggerContext()
     {
+        creators["alar incoming flame quills"] = &RaidTempestKeepTriggerContext::alar_incoming_flame_quills;
+        creators["alar need to manage timers and trackers"] = &RaidTempestKeepTriggerContext::alar_need_to_manage_timers_and_trackers;
         creators["void reaver boss engaged by tank"] = &RaidTempestKeepTriggerContext::void_reaver_boss_engaged_by_tank;
         creators["void reaver boss engaged by ranged"] = &RaidTempestKeepTriggerContext::void_reaver_boss_engaged_by_ranged;
         creators["high astromancer solarian phase 1 and 2 movement"] = &RaidTempestKeepTriggerContext::high_astromancer_solarian_phase_1_and_2_movement;
@@ -19,6 +21,7 @@ public:
     }
 
 private:
+    static Trigger* alar_need_to_manage_timers_and_trackers(PlayerbotAI* botAI) { return new AlarNeedToManageTimersAndTrackersTrigger(botAI); }
     static Trigger* void_reaver_boss_engaged_by_tank(PlayerbotAI* botAI) { return new VoidReaverBossEngagedByTankTrigger(botAI); }
     static Trigger* void_reaver_boss_engaged_by_ranged(PlayerbotAI* botAI) { return new VoidReaverBossEngagedByRangedTrigger(botAI); }
     static Trigger* high_astromancer_solarian_phase_1_and_2_movement(PlayerbotAI* botAI) { return new HighAstromancerSolarianPhase1And2MovementTrigger(botAI); }

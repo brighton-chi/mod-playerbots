@@ -5,6 +5,23 @@
 
 using namespace TempestKeepHelpers;
 
+bool AlarIncomingFlameQuillsTrigger::IsActive()
+{
+    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+    if (!alar)
+        return false;
+
+    return alar->GetPositionZ() > 30.0f &&
+           alar->GetHealthPct() < 90.0f;
+}
+
+bool AlarNeedToManageTimersAndTrackersTrigger::IsActive()
+{
+    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+
+    return alar && IsMapIDTimerManager(botAI, bot);
+}
+
 bool VoidReaverBossEngagedByTankTrigger::IsActive()
 {
     Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");

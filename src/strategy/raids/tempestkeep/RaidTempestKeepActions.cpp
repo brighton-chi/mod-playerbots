@@ -5,9 +5,145 @@
 using namespace TempestKeepHelpers;
 using namespace TempestKeepLocations;
 
-// Al'ar
+// Al'ar <Phoenix God>
 
+/*
+bool AlarPhase1PositionTanksAction::Execute(Event event)
+{
+    // Check if the event is a timer or boss movement event
+    if (event.GetName() == "alar_platform_rotate")
+    {
+        // Rotate tanks to their next platform
+        for (Player* tank : GetAlarTanks())
+        {
+            int currentIndex = tankPlatformIndex[tank->GetGUID()];
+            int nextIndex = (currentIndex + 2) % 4; // Alternate between assigned platforms
+            tankPlatformIndex[tank->GetGUID()] = nextIndex;
 
+            Location target = alarPlatforms[nextIndex];
+            if (tank->GetExactDist2d(target.x, target.y) > 2.0f)
+            {
+                MoveTo(tank->GetMapId(), target.x, target.y, target.z, false, false, false, false,
+                       MovementPriority::MOVEMENT_COMBAT, true, false);
+            }
+        }
+        return true;
+    }
+
+    // Otherwise, do nothing
+    return false;
+}
+*/
+
+/*
+// Define platform positions (example coordinates)
+std::vector<Location> alarPlatforms = {
+    Location(x1, y1, z1), // Platform 1
+    Location(x2, y2, z2), // Platform 2
+    Location(x3, y3, z3), // Platform 3
+    Location(x4, y4, z4)  // Platform 4
+};
+
+// Tank platform assignment
+std::unordered_map<uint64, int> tankPlatformIndex; // bot GUID -> current platform index
+std::unordered_map<uint64, time_t> lastPlatformSwitchTime; // bot GUID -> last switch time
+
+void UpdateTankPlatform(Player* tank, int tankType) // tankType: 0 for main tank, 1 for assist tank
+{
+    uint64 guid = tank->GetGUID();
+    time_t now = time(nullptr);
+
+    // Initialize at start
+    if (tankPlatformIndex.find(guid) == tankPlatformIndex.end())
+    {
+        tankPlatformIndex[guid] = tankType; // 0 or 1
+        lastPlatformSwitchTime[guid] = now;
+    }
+
+    // Switch every 30 seconds
+    if (now - lastPlatformSwitchTime[guid] >= 30)
+    {
+        // Main tank alternates between 0 and 2, assist between 1 and 3
+        int current = tankPlatformIndex[guid];
+        int next = (current + 2) % 4;
+        tankPlatformIndex[guid] = next;
+        lastPlatformSwitchTime[guid] = now;
+    }
+
+    // Move tank to assigned platform
+    Location target = alarPlatforms[tankPlatformIndex[guid]];
+    if (tank->GetExactDist2d(target.x, target.y) > 2.0f)
+    {
+        MoveTo(tank->GetMapId(), target.x, target.y, target.z, false, false, false, false,
+               MovementPriority::MOVEMENT_COMBAT, true, false);
+    }
+} */
+
+bool AlarJumpFromPlatformAction::Execute(Event event)
+{
+    // Only jump if bot is on a platform (Z > 15.0f)
+    if (bot->GetPositionZ() > 15.0f)
+    {
+        // List of platform and ground pairs
+        std::vector<std::pair<Location, Location>> platformGroundPairs = 
+        {
+            {AlarPlatform1, AlarGround1},
+            {AlarPlatform2, AlarGround2},
+            {AlarPlatform3, AlarGround3},
+            {AlarPlatform4, AlarGround4}
+        };
+
+        // Find nearest platform
+        float minDist = std::numeric_limits<float>::max();
+        size_t nearestIndex = 0;
+        for (size_t i = 0; i < platformGroundPairs.size(); ++i)
+        {
+            float dist = bot->GetExactDist2d(platformGroundPairs[i].first.x, platformGroundPairs[i].first.y);
+            if (dist < minDist)
+            {
+                minDist = dist;
+                nearestIndex = i;
+            }
+        }
+
+        // Jump to corresponding ground location
+        const Location& ground = platformGroundPairs[nearestIndex].second;
+        return JumpTo(bot->GetMapId(), ground.x, ground.y, ground.z, MovementPriority::MOVEMENT_FORCED);
+    }
+
+    return false;
+}
+
+bool AlarManageTimersAndTrackersAction::Execute(Event event)
+{
+    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+    if (!alar)
+        return false;
+
+    uint32 mapId = alar->GetMapId();
+
+    // Reset tracker at the start of the fight (Al'ar at max health)
+    if (alar->GetHealthPct() > 99.5f)
+    {
+        lastRebirthState[mapId] = false;
+        // Optionally reset any other phase 2 timers/flags here
+    }
+
+    bool rebirthActive = alar->HasUnitState(UNIT_STATE_CASTING) &&
+                         alar->FindCurrentSpellBySpellId(SPELL_REBIRTH_PHASE2);
+    bool lastRebirth = lastRebirthState[mapId];
+
+    // Detect transition: finished casting Rebirth (phase 2 begins)
+    if (lastRebirth && !rebirthActive)
+    {
+        // Do your phase change logic here
+        // e.g., phase2StartTime[mapId] = time(nullptr);
+    }
+
+    lastRebirthState[mapId] = rebirthActive;
+
+    return false;
+}
 
 // Void Reaver
 
@@ -51,13 +187,13 @@ bool VoidReaverSpreadRangedAction::Execute(Event event)
     // Only clear positions at the very start of the fight (boss at max health)
     if (voidReaver->GetHealth() == voidReaver->GetMaxHealth())
     {
-        initialPositions.clear();
-        hasReachedInitialPosition.clear();
+        initialVoidReaverPositions.clear();
+        hasReachedInitialVoidReaverPosition.clear();
         LOG_DEBUG("playerbots", "VoidReaverSpreadRangedAction: Cleared initial positions (Void Reaver at max health)");
     }
 
     // Assign positions only if not already assigned
-    if (initialPositions.empty())
+    if (initialVoidReaverPositions.empty())
     {
         std::vector<Player*> healers;
         std::vector<Player*> rangedDps;
@@ -82,8 +218,8 @@ bool VoidReaverSpreadRangedAction::Execute(Event event)
         {
             Player* healer = healers[i];
             Position pos = GetRangedBotPosition(tankPosition, radius, healers.size(), 0.0f, i, healer->GetPositionZ());
-            initialPositions[healer->GetGUID()] = pos;
-            hasReachedInitialPosition[healer->GetGUID()] = false;
+            initialVoidReaverPositions[healer->GetGUID()] = pos;
+            hasReachedInitialVoidReaverPosition[healer->GetGUID()] = false;
             LOG_DEBUG("playerbots", "VoidReaverSpreadRangedAction: Healer {} assigned initial position ({}, {}, {})", 
                 healer->GetName(), pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ());
         }
@@ -93,15 +229,15 @@ bool VoidReaverSpreadRangedAction::Execute(Event event)
         {
             Player* dps = rangedDps[i];
             Position pos = GetRangedBotPosition(tankPosition, radius, rangedDps.size(), offsetArc, i, dps->GetPositionZ());
-            initialPositions[dps->GetGUID()] = pos;
-            hasReachedInitialPosition[dps->GetGUID()] = false;
+            initialVoidReaverPositions[dps->GetGUID()] = pos;
+            hasReachedInitialVoidReaverPosition[dps->GetGUID()] = false;
             LOG_DEBUG("playerbots", "VoidReaverSpreadRangedAction: DPS {} assigned initial position ({}, {}, {})", 
                 dps->GetName(), pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ());
         }
     }
 
     // Move bot to its assigned position
-    Position targetPosition = initialPositions[bot->GetGUID()];
+    Position targetPosition = initialVoidReaverPositions[bot->GetGUID()];
     float destX = targetPosition.GetPositionX();
     float destY = targetPosition.GetPositionY();
     float destZ = targetPosition.GetPositionZ();

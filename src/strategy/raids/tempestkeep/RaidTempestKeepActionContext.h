@@ -9,6 +9,8 @@ class RaidTempestKeepActionContext : public NamedObjectContext<Action>
 public:
     RaidTempestKeepActionContext()
     {
+        creators["alar jump from platform"] = &RaidTempestKeepActionContext::alar_jump_from_platform;
+        creators["alar manage timers and trackers"] = &RaidTempestKeepActionContext::alar_manage_timers_and_trackers;
         creators["void reaver position boss"] = &RaidTempestKeepActionContext::void_reaver_position_boss;
         creators["void reaver spread ranged"] = &RaidTempestKeepActionContext::void_reaver_spread_ranged;
         creators["high astromancer solarian stack bots"] = &RaidTempestKeepActionContext::high_astromancer_solarian_stack_bots;
@@ -19,6 +21,8 @@ public:
     }
 
 private:
+    static Action* alar_jump_from_platform(PlayerbotAI* botAI) { return new AlarJumpFromPlatformAction(botAI); }
+    static Action* alar_manage_timers_and_trackers(PlayerbotAI* botAI) { return new AlarManageTimersAndTrackersAction(botAI); }
     static Action* void_reaver_position_boss(PlayerbotAI* botAI) { return new VoidReaverPositionBossAction(botAI); }
     static Action* void_reaver_spread_ranged(PlayerbotAI* botAI) { return new VoidReaverSpreadRangedAction(botAI); }
     static Action* high_astromancer_solarian_stack_bots(PlayerbotAI* botAI) { return new HighAstromancerSolarianStackBotsAction(botAI); }

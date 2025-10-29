@@ -12,8 +12,20 @@ namespace TempestKeepHelpers
 
     namespace TempestKeepLocations
     {
+        // Al'ar platform coordinates correspond with "OLDWorld Trigger (DO NOT DELETE) NPCs (15384)"
+        const Location AlarRoomCenter = { 331.0f, 0.01f, -2.38f };
+        const Location AlarPlatform1 = { 335.638f, 59.4879f, 17.9319f }; // West Platform
+        const Location AlarPlatform2 = { 388.751f, 31.7312f, 20.2636f }; // Northwest Platform
+        const Location AlarPlatform3 = { 388.791f, -33.1059f, 20.2636f }; // Northeast Platform
+        const Location AlarPlatform4 = { 332.723f, -61.159f, 17.9791f }; // East Platform
+        const Location AlarGround1 = { 379.093f, 25.170f, -2.385f }; // Landing point for jumping from West Platform
+        const Location AlarGround2 = { 378.728f, -28.351f, -2.385f }; // Landing point for jumping from Northwest Platform
+        const Location AlarGround3 = { 332.655f, -49.212f, -2.389f }; // Landing point for jumping from Northeast Platform
+        const Location AlarGround4 = { 335.529f, 48.188f, -2.389f }; // Landing point for jumping from East Platform
+
         const Location VoidReaverTankPosition   = { 423.845f,  371.733f, 14.897f }; // middle of room
-        const Location AstromancerStackPosition = { 448.398f, -346.526f, 16.802f }; // directly from entrance, on platform, <25 yards from boss
+
+        // const Location AstromancerStackPosition = { 448.398f, -346.526f, 16.802f }; // directly from entrance, on platform, <25 yards from boss
     }
 
     /*
@@ -30,11 +42,7 @@ namespace TempestKeepHelpers
         {331.0f, 0.01f, -2.38f, 0.0f}, //middle (p2)
         {332.0f, 0.01f, 43.0f, 0.0f} // dive
     };
-
     */
-
-    std::unordered_map<ObjectGuid, Position> initialPositions;
-    std::unordered_map<ObjectGuid, bool> hasReachedInitialPosition;
 
     void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId)
     {
@@ -75,5 +83,46 @@ namespace TempestKeepHelpers
             botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(target);
         }
     }
+
+    bool IsMapIDTimerManager(PlayerbotAI* botAI, Player* bot)
+    {
+        if (Group* group = bot->GetGroup())
+        {
+            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+            {
+                Player* member = ref->GetSource();
+                if (member && member->IsAlive() && !botAI->IsTank(member) && GET_PLAYERBOT_AI(member))
+                    return member == bot;
+            }
+        }
+
+        return true;
+    }
+
+    std::unordered_map<uint32, int8> lastAlarPlatform;
+    std::unordered_map<uint32, bool> lastRebirthState;
+
+    void UpdateAlarLastPlatform(Unit* alar, uint32 mapId, const std::vector<Location>& platforms)
+    {
+        // Find which platform Al'ar is closest to
+        int8 closestIndex = -1;
+        float minDist = std::numeric_limits<float>::max();
+        for (size_t i = 0; i < platforms.size(); ++i)
+        {
+            float dist = alar->GetExactDist2d(platforms[i].x, platforms[i].y);
+            if (dist < minDist)
+            {
+                minDist = dist;
+                closestIndex = static_cast<int>(i);
+            }
+        }
+
+        // If within threshold (e.g., 5 yards), update last platform
+        if (minDist < 5.0f && closestIndex != -1)
+            lastAlarPlatform[mapId] = closestIndex;
+    }
+
+    std::unordered_map<ObjectGuid, Position> initialVoidReaverPositions;
+    std::unordered_map<ObjectGuid, bool> hasReachedInitialVoidReaverPosition;
 
 }
