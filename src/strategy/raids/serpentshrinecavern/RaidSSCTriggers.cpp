@@ -278,7 +278,7 @@ bool FathomLordKarathressCaribdisTankNeedsDedicatedHealerTrigger::IsActive()
 {
     Unit* caribdis = AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
 
-    return caribdis && caribdis->IsAlive() && botAI->IsAssistHealOfIndex(bot, 0);
+    return caribdis && caribdis->IsAlive() && botAI->IsHealAssistantOfIndex(bot, 0);
 }
 
 bool FathomLordKarathressTanksNeedToEstablishAggroTrigger::IsActive()
