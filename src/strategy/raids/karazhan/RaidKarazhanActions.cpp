@@ -502,32 +502,15 @@ bool ShadeOfAranMarkConjuredElementalAction::Execute(Event event)
 }
 
 
-// Spread out ranged to avoid Blizzard
+// Don't get closer than 10 yards to Aran to avoid counterspell
 bool ShadeOfAranSpreadRangedAction::Execute(Event event)
 {
     Unit* aran = AI_VALUE2(Unit*, "find target", "shade of aran");
     if (!aran)
         return false;
 
-    const float maxBossDistance = 12.0f;
-    float bossDistance = bot->GetExactDist2d(aran);
-    if (bossDistance > maxBossDistance)
-    {
-        float dX = bot->GetPositionX() - aran->GetPositionX();
-        float dY = bot->GetPositionY() - aran->GetPositionY();
-        float length = std::sqrt(dX * dX + dY * dY);
-        dX /= length;
-        dY /= length;
-        float tX = aran->GetPositionX() + dX * maxBossDistance;
-        float tY = aran->GetPositionY() + dY * maxBossDistance;
-        return MoveTo(bot->GetMapId(), tX, tY, bot->GetPositionZ(), false, false, false, false,
-                      MovementPriority::MOVEMENT_COMBAT, true, false);
-    }
-
-    const float minDistance = 5.0f;
-    Unit* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance);
-    if (nearestPlayer)
-        return FleePosition(nearestPlayer->GetPosition(), minDistance);
+    if (aran && bot->GetExactDist2d(aran) < 11.0f)
+        return MoveAway(aran, 12.0f, false);
 
     return false;
 }
@@ -1173,7 +1156,7 @@ bool PrinceMalchezaarMainTankMovementAction::Execute(Event event)
     return false;
 }
 
-// The tank position is near the urn; it's best to pull from Northwest of the urn
+// The tank position is near the Southeastern area of the Master's Terrace
 // The tank moves Nightbane into position in two steps to try to get Nightbane to face sideways to the raid
 bool NightbaneGroundPhasePositionBossAction::Execute(Event event)
 {
@@ -1221,7 +1204,7 @@ bool NightbaneGroundPhasePositionBossAction::Execute(Event event)
 
 // Ranged bots rotate between 3 positions to avoid standing in Charred Earth, which lasts for
 // 30s and has a minimum cooldown of 18s (so there can be 3 active at once)
-// Ranged positions are North of the urn, near the door to the tower
+// Ranged positions are near the Northeastern door to the tower
 bool NightbaneGroundPhaseRotateRangedPositionsAction::Execute(Event event)
 {
     ObjectGuid botGuid = bot->GetGUID();
@@ -1296,10 +1279,10 @@ bool NightbaneControlPetAggressionAction::Execute(Event event)
     if (!nightbane || !pet)
         return false;
 
-    if (!nightbane->IsFlying() && pet->GetReactState() == REACT_PASSIVE)
+    if (nightbane->GetPositionZ() <= 95.0f && pet->GetReactState() == REACT_PASSIVE)
         pet->SetReactState(REACT_DEFENSIVE);
 
-    if (nightbane->IsFlying() && pet->GetReactState() != REACT_PASSIVE)
+    if (nightbane->GetPositionZ() > 95.0f && pet->GetReactState() != REACT_PASSIVE)
     {
         pet->AttackStop();
         pet->SetReactState(REACT_PASSIVE);
@@ -1315,7 +1298,7 @@ bool NightbaneControlPetAggressionAction::Execute(Event event)
 bool NightbaneFlightPhaseMovementAction::Execute(Event event)
 {
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
-    if (!nightbane || !nightbane->IsFlying())
+    if (!nightbane || nightbane->GetPositionZ() <= 95.0f)
         return false;
 
     MarkTargetWithMoon(bot, nightbane);
@@ -1368,7 +1351,7 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event event)
     ObjectGuid botGuid = bot->GetGUID();
 
     // Erase DPS wait timer and tank and ranged position tracking on encounter reset or flight
-    if (nightbane->IsFlying() || nightbane->GetHealth() == nightbane->GetMaxHealth())
+    if (nightbane->GetPositionZ() > 95.0f || nightbane->GetHealth() == nightbane->GetMaxHealth())
     {
         if (botAI->IsMainTank(bot) && nightbaneTankStep.count(botGuid))
             nightbaneTankStep.erase(botGuid);
@@ -1381,7 +1364,7 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event event)
     }
 
     // Erase flight phase timer and Rain of Bones tracker on ground phase and start DPS wait timer
-    if (!nightbane->IsFlying())
+    if (nightbane->GetPositionZ() <= 95.0f)
     {
         if (IsMapIDTimerManager(bot) && nightbaneFlightPhaseStartTimer.count(mapId))
             nightbaneFlightPhaseStartTimer.erase(mapId);
@@ -1394,7 +1377,7 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event event)
     }
 
     // Start flight phase timer at beginning of flight phase
-    if (nightbane->IsFlying() && IsMapIDTimerManager(bot) &&
+    if (nightbane->GetPositionZ() > 95.0f && IsMapIDTimerManager(bot) &&
         !nightbaneFlightPhaseStartTimer.count(mapId))
         nightbaneFlightPhaseStartTimer[mapId] = time(nullptr);
 

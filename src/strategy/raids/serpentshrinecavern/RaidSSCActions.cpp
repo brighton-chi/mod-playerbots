@@ -731,7 +731,6 @@ bool LeotherasTheBlindPositionRangedAction::Execute(Event event)
         return false;
 
     const uint32 minInterval = 500;
-
     if (leotheras && bot->GetExactDist(leotheras) < 10.0f)
         return FleePosition(leotheras->GetPosition(), 12.0f, minInterval);
 

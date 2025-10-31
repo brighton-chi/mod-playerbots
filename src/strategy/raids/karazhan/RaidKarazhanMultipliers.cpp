@@ -252,7 +252,7 @@ float NightbaneDisablePetsMultiplier::GetValue(Action* action)
         dynamic_cast<CastShadowfiendAction*>(action))
         return 0.0f;
 
-    if (nightbane->IsFlying() && dynamic_cast<PetAttackAction*>(action))
+    if (nightbane->GetPositionZ() > 95.0f && dynamic_cast<PetAttackAction*>(action))
         return 0.0f;
 
     return 1.0f;
@@ -262,7 +262,7 @@ float NightbaneDisablePetsMultiplier::GetValue(Action* action)
 float NightbaneWaitForDPSMultiplier::GetValue(Action* action)
 {
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
-    if (!nightbane || nightbane->IsFlying())
+    if (!nightbane || nightbane->GetPositionZ() > 95.0f)
         return 1.0f;
 
     const uint8 dpsWaitSeconds = 8;
@@ -289,7 +289,7 @@ float NightbaneDisableAvoidAoeMultiplier::GetValue(Action* action)
     if (!nightbane)
         return 1.0f;
 
-    if ((nightbane->IsFlying() || botAI->IsMainTank(bot)) && 
+    if ((nightbane->GetPositionZ() > 95.0f || botAI->IsMainTank(bot)) && 
         dynamic_cast<AvoidAoeAction*>(action))
         return 0.0f;
 
@@ -308,7 +308,7 @@ float NightbaneDisableMovementMultiplier::GetValue(Action* action)
         dynamic_cast<FleeAction*>(action))
         return 0.0f;
 
-    if (!(botAI->IsMelee(bot) && !nightbane->IsFlying()) && !botAI->IsMainTank(bot) &&
+    if (!(botAI->IsMelee(bot) && nightbane->GetPositionZ() <= 95.0f) && !botAI->IsMainTank(bot) &&
         dynamic_cast<CombatFormationMoveAction*>(action))
         return 0.0f;
 

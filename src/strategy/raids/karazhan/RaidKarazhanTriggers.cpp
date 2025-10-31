@@ -275,14 +275,14 @@ bool NightbaneBossEngagedByMainTankTrigger::IsActive()
 {
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
 
-    return nightbane && !nightbane->IsFlying() && botAI->IsMainTank(bot);
+    return nightbane && nightbane->GetPositionZ() <= 95.0f && botAI->IsMainTank(bot);
 }
 
 bool NightbaneRangedPrepareForCharredEarthTrigger::IsActive()
 {
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
 
-    return nightbane && !nightbane->IsFlying() && botAI->IsRanged(bot);
+    return nightbane && nightbane->GetPositionZ() <= 95.0f && botAI->IsRanged(bot);
 }
 
 bool NightbaneMainTankIsSusceptibleToFearTrigger::IsActive()
@@ -319,7 +319,7 @@ bool NightbanePetsIgnoreColllisionToChaseFlyingBossTrigger::IsActive()
 bool NightbaneBossIsFlyingTrigger::IsActive()
 {
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
-    if (!nightbane || !nightbane->IsFlying())
+    if (!nightbane || nightbane->GetPositionZ() <= 95.0f)
         return false;
 
     uint32 mapId = nightbane->GetMapId();
