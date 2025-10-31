@@ -38,7 +38,7 @@ bool AlarBossEngagedByMeleeDpsTrigger::IsActive()
 
     uint32 mapId = alar->GetMapId();
 
-    return !isPhase2[mapId] && botAI->IsMelee(bot) && !botAI->IsTank(bot);
+    return !isPhase2[mapId] && alar->GetPositionZ() <= 25.0f && botAI->IsMelee(bot) && !botAI->IsTank(bot);
 }
 
 bool AlarBossEngagedByRangedDpsTrigger::IsActive()

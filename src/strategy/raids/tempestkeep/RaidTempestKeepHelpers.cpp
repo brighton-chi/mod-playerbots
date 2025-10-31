@@ -147,10 +147,10 @@ namespace TempestKeepHelpers
     /*
     std::unordered_map<uint32, bool> postFlameQuillsState;
     std::unordered_map<uint32, int8> postFlameQuillsAlarPlatform;
-    std::unordered_map<uint32, bool> postQuillsPhase;
+    std::unordered_map<uint32, bool> postQuillsPhase; */
     std::map<ObjectGuid, bool> hasReachedMidpoint1To3;
     std::map<ObjectGuid, bool> hasReachedMidpoint2To4;
-    */
+
     bool IsAlarAddTank(PlayerbotAI* botAI, Player* bot)
     {
         return botAI->IsTank(bot) &&

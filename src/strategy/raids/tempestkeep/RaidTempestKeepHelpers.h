@@ -71,10 +71,10 @@ namespace TempestKeepHelpers
     /*
     extern std::unordered_map<uint32, bool> postFlameQuillsState;
     extern std::unordered_map<uint32, int8> postFlameQuillsAlarPlatform;
-    extern std::unordered_map<uint32, bool> postQuillsPhase;
+    extern std::unordered_map<uint32, bool> postQuillsPhase; */
     extern std::map<ObjectGuid, bool> hasReachedMidpoint1To3;
     extern std::map<ObjectGuid, bool> hasReachedMidpoint2To4;
-    */
+
     extern std::unordered_map<ObjectGuid, Position> initialVoidReaverPositions;
     extern std::unordered_map<ObjectGuid, bool> hasReachedInitialVoidReaverPosition;
 

@@ -16,10 +16,10 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         "alar tanks need to be at platforms to aggro boss",
         NextAction::array(0, new NextAction("alar phase 1 position boss tanks", ACTION_RAID + 1), nullptr)
     ));
-    /* triggers.push_back(new TriggerNode(
+    triggers.push_back(new TriggerNode(
         "alar boss engaged by melee dps",
         NextAction::array(0, new NextAction("alar phase 1 melee dps focus on boss", ACTION_RAID + 1), nullptr)
-    )); */
+    ));
     triggers.push_back(new TriggerNode(
         "alar boss engaged by ranged dps",
         NextAction::array(0, new NextAction("alar phase 1 ranged dps prioritize adds", ACTION_RAID + 1), nullptr)
@@ -28,10 +28,10 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         "alar boss engaged by healer",
         NextAction::array(0, new NextAction("alar phase 1 position healer", ACTION_RAID + 1), nullptr)
     ));
-    /* triggers.push_back(new TriggerNode(
+    triggers.push_back(new TriggerNode(
         "alar need tank to pick up adds",
         NextAction::array(0, new NextAction("alar phase 1 add tank pick up adds", ACTION_RAID + 1), nullptr)
-    )); */
+    ));
     triggers.push_back(new TriggerNode(
         "alar incoming flame quills",
         NextAction::array(0, new NextAction("alar jump from platform", ACTION_EMERGENCY + 9), nullptr)

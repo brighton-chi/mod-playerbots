@@ -91,17 +91,11 @@ bool AlarPhase1PositionBossTanksAction::Execute(Event event)
     // Update last platform snapshot if needed
     UpdateAlarLastPlatform(alar, mapId, platforms);
 
-    // Log lastAlarPlatform with timestamp
-    std::time_t now = std::time(nullptr);
-    char timeStr[32];
-    std::strftime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S", std::localtime(&now));
-    LOG_DEBUG("playerbots", "Time: {} | lastAlarPlatform[{}] = {}", timeStr, mapId, lastAlarPlatform[mapId]);
-
     // Identify tanks
     Player* mainTank = botAI->IsMainTank(bot) ? bot : nullptr;
     Player* assistTank = botAI->IsAssistTankOfIndex(bot, 0) ? bot : nullptr;
 
-    // Detect Flame Quills (example condition)
+    // Detect Flame Quills
     bool isFlameQuillsActive = alar->GetPositionZ() > 25.0f && alar->GetHealthPct() < 95.0f;
 
     // Manual override: if Flame Quills is active, set lastAlarPlatform to platform 4 (index 3)
@@ -126,34 +120,44 @@ bool AlarPhase1PositionBossTanksAction::Execute(Event event)
             default: return false;
         }
 
-        LOG_DEBUG("playerbots", "MainTank: {} | Target platform: {} | Target coords: ({}, {}, {}) | Tank coords: ({}, {}, {}) | Dist to target: {:.2f}",
-            mainTank->GetName(), alarPlatform, mtTarget.x, mtTarget.y, mtTarget.z,
-            mainTank->GetPositionX(), mainTank->GetPositionY(), mainTank->GetPositionZ(),
-            mainTank->GetExactDist2d(mtTarget.x, mtTarget.y));
-
-        if (mainTank->GetExactDist2d(mtTarget.x, mtTarget.y) > 2.0f)
+        /* if (mainTank->GetExactDist2d(mtTarget.x, mtTarget.y) > 2.0f)
         {
-            LOG_DEBUG("playerbots", "MainTank {} moving to platform {}", mainTank->GetName(), alarPlatform);
-            // return MoveTo(mainTank->GetMapId(), mtTarget.x, mtTarget.y, mtTarget.z, false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
-            bot->TeleportTo(mainTank->GetMapId(), mtTarget.x, mtTarget.y, mtTarget.z, mainTank->GetOrientation());
+            const Location& midpoint = AlarBalconyCenter;
+            bot->TeleportTo(mainTank->GetMapId(), midpoint.x, midpoint.y, midpoint.z, mainTank->GetOrientation()); // Teleport to midpoint
+            return MoveTo(mainTank->GetMapId(), mtTarget.x, mtTarget.y, mtTarget.z, false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
+            // bot->TeleportTo(mainTank->GetMapId(), mtTarget.x, mtTarget.y, mtTarget.z, mainTank->GetOrientation()); // Teleport direct to platform
             return true;
-        }
+        } */
+        if (mainTank->GetExactDist2d(mtTarget.x, mtTarget.y) > 2.0f && mainTank->GetPositionZ() > 17.0f)
+        {
+            const Location& midpoint = AlarPlatform1To3Midpoint;
+            float distToMidpoint = mainTank->GetExactDist2d(midpoint.x, midpoint.y);
+            float distToTarget = mainTank->GetExactDist2d(mtTarget.x, mtTarget.y);
 
-        LOG_DEBUG("playerbots", "MainTank {} is at platform {} (distance {:.2f})", mainTank->GetName(), alarPlatform, mainTank->GetExactDist2d(mtTarget.x, mtTarget.y));
+            // Only teleport to midpoint if it's closer than the target and not already teleported
+            if (distToMidpoint < distToTarget && !hasReachedMidpoint1To3[mainTank->GetGUID()])
+            {
+                bot->TeleportTo(mainTank->GetMapId(), midpoint.x, midpoint.y, midpoint.z, mainTank->GetOrientation());
+                hasReachedMidpoint1To3[mainTank->GetGUID()] = true;
+                return MoveTo(mainTank->GetMapId(), mtTarget.x, mtTarget.y, mtTarget.z, false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+            }
+            else
+            {
+                // If at target, reset the map for next transition
+                if (distToTarget <= 2.0f)
+                    hasReachedMidpoint1To3.erase(mainTank->GetGUID());
+                return MoveTo(mainTank->GetMapId(), mtTarget.x, mtTarget.y, mtTarget.z, false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+            }
+        }
 
         if (mainTank->GetVictim() != alar && mainTank->GetExactDist2d(alar) <= 5.0f)
         {
-            LOG_DEBUG("playerbots", "MainTank {} is within 5 yards of Al'ar and not tanking. Attempting taunt.", mainTank->GetName());
             const char* taunts[] = { "taunt", "growl", "hand of reckoning" };
             for (const char* spellName : taunts)
             {
                 if (botAI->CanCastSpell(spellName, alar))
-                {
-                    LOG_DEBUG("playerbots", "MainTank {} casting {}", mainTank->GetName(), spellName);
                     return botAI->CastSpell(spellName, alar);
-                }
             }
-            LOG_DEBUG("playerbots", "MainTank {} attacking Al'ar directly.", mainTank->GetName());
             return Attack(alar);
         }
     }
@@ -170,34 +174,44 @@ bool AlarPhase1PositionBossTanksAction::Execute(Event event)
             default: return false;
         }
 
-        LOG_DEBUG("playerbots", "AssistTank: {} | Target platform: {} | Target coords: ({}, {}, {}) | Tank coords: ({}, {}, {}) | Dist to target: {:.2f}",
-            assistTank->GetName(), alarPlatform, atTarget.x, atTarget.y, atTarget.z,
-            assistTank->GetPositionX(), assistTank->GetPositionY(), assistTank->GetPositionZ(),
-            assistTank->GetExactDist2d(atTarget.x, atTarget.y));
-
-        if (assistTank->GetExactDist2d(atTarget.x, atTarget.y) > 2.0f)
+        /* if (assistTank->GetExactDist2d(atTarget.x, atTarget.y) > 2.0f)
         {
-            LOG_DEBUG("playerbots", "AssistTank {} moving to platform {}", assistTank->GetName(), alarPlatform);
-            // return MoveTo(assistTank->GetMapId(), atTarget.x, atTarget.y, atTarget.z, false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
-            bot->TeleportTo(assistTank->GetMapId(), atTarget.x, atTarget.y, atTarget.z, assistTank->GetOrientation());
+            const Location& midpoint = AlarBalconyCenter;
+            bot->TeleportTo(assistTank->GetMapId(), midpoint.x, midpoint.y, midpoint.z, assistTank->GetOrientation()); // Teleport to midpoint
+            return MoveTo(assistTank->GetMapId(), atTarget.x, atTarget.y, atTarget.z, false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
+            // bot->TeleportTo(assistTank->GetMapId(), atTarget.x, atTarget.y, atTarget.z, assistTank->GetOrientation()); // Teleport direct to platform
             return true;
-        }
+        } */
+        if (assistTank->GetExactDist2d(atTarget.x, atTarget.y) > 2.0f && assistTank->GetPositionZ() > 17.0f)
+        {
+            const Location& midpoint = AlarPlatform2To4Midpoint;
+            float distToMidpoint = assistTank->GetExactDist2d(midpoint.x, midpoint.y);
+            float distToTarget = assistTank->GetExactDist2d(atTarget.x, atTarget.y);
 
-        LOG_DEBUG("playerbots", "AssistTank {} is at platform {} (distance {:.2f})", assistTank->GetName(), alarPlatform, assistTank->GetExactDist2d(atTarget.x, atTarget.y));
+            // Only teleport to midpoint if it's closer than the target and not already teleported
+            if (distToMidpoint < distToTarget && !hasReachedMidpoint2To4[assistTank->GetGUID()])
+            {
+                bot->TeleportTo(assistTank->GetMapId(), midpoint.x, midpoint.y, midpoint.z, assistTank->GetOrientation());
+                hasReachedMidpoint2To4[assistTank->GetGUID()] = true;
+                return MoveTo(assistTank->GetMapId(), atTarget.x, atTarget.y, atTarget.z, false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+            }
+            else
+            {
+                // If at target, reset the map for next transition
+                if (distToTarget <= 2.0f)
+                    hasReachedMidpoint2To4.erase(assistTank->GetGUID());
+                return MoveTo(assistTank->GetMapId(), atTarget.x, atTarget.y, atTarget.z, false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+            }
+        }
 
         if (assistTank->GetVictim() != alar && assistTank->GetExactDist2d(alar) <= 5.0f)
         {
-            LOG_DEBUG("playerbots", "AssistTank {} is within 5 yards of Al'ar and not tanking. Attempting taunt.", assistTank->GetName());
             const char* taunts[] = { "taunt", "growl", "hand of reckoning" };
             for (const char* spellName : taunts)
             {
                 if (botAI->CanCastSpell(spellName, alar))
-                {
-                    LOG_DEBUG("playerbots", "AssistTank {} casting {}", assistTank->GetName(), spellName);
                     return botAI->CastSpell(spellName, alar);
-                }
             }
-            LOG_DEBUG("playerbots", "AssistTank {} attacking Al'ar directly.", assistTank->GetName());
             return Attack(alar);
         }
     }
@@ -213,6 +227,18 @@ bool AlarPhase1MeleeDpsFocusOnBossAction::Execute(Event event)
 
     MarkTargetWithStar(bot, alar);
     SetRtiTarget(botAI, "star", alar);
+
+    uint32 mapId = alar->GetMapId();
+    int8 alarPlatform = lastAlarPlatform[mapId];
+
+    // List of platform locations
+    std::vector<Location> platforms = { AlarPlatform1, AlarPlatform2, AlarPlatform3, AlarPlatform4 };
+
+    // Get Al'ar's current platform location
+    const Location& currentPlatform = platforms[alarPlatform];
+
+    if (bot->GetExactDist2d(currentPlatform.x, currentPlatform.y) <= 2.0f)
+        return MoveTo(alar->GetMapId(), currentPlatform.x, currentPlatform.y, currentPlatform.z, false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 
     if (bot->GetVictim() != alar)
         return Attack(alar);
@@ -382,9 +408,26 @@ bool AlarJumpFromPlatformAction::Execute(Event event)
     {
         uint32 mapId = alar->GetMapId();
         int8 alarPlatform = lastAlarPlatform[mapId];
-        const Location& rampBase = (alarPlatform == 0 || alarPlatform == 3) ? AlarSWRampBase : AlarSERampBase;
-        return MoveTo(bot->GetMapId(), rampBase.x, rampBase.y, rampBase.z, false, false, false, false, 
-                    MovementPriority::MOVEMENT_FORCED, true, false);
+        const Location& rampBaseSW = AlarSWRampBase;
+        const Location& rampBaseSE = AlarSERampBase;
+        if (botAI->IsMainTank(bot))
+        {
+            // MT heads to SW ramp
+            return MoveTo(bot->GetMapId(), rampBaseSW.x, rampBaseSW.y, rampBaseSW.z, false, false, false, false, 
+                          MovementPriority::MOVEMENT_FORCED, true, false);
+        }
+        if (botAI->IsAssistTankOfIndex(bot, 0))
+        {
+            // AT0 heads to SE ramp
+            return MoveTo(bot->GetMapId(), rampBaseSE.x, rampBaseSE.y, rampBaseSE.z, false, false, false, false, 
+                          MovementPriority::MOVEMENT_FORCED, true, false);
+        }
+        if (botAI->IsMelee(bot) && botAI->IsDps(bot))
+        {
+            const Location& target = AlarRoomSouthCenter;
+            return MoveTo(bot->GetMapId(), target.x, target.y, target.z, false, false, false, false, 
+                          MovementPriority::MOVEMENT_FORCED, true, false);
+        }
     }
 
     return false;
