@@ -22,6 +22,12 @@ namespace TempestKeepHelpers
         const Location AlarGround2 = { 379.122f, 25.146f, -2.385f }; // Landing point for jumping from Northwest Platform
         const Location AlarGround3 = { 378.583f, -27.481f, -2.385f }; // Landing point for jumping from Northeast Platform
         const Location AlarGround4 = { 331.631f, -49.716f, -2.389f }; // Landing point for jumping from East Platform
+        const Location AlarPlatform1To3Midpoint = { 405.955f, 45.186f, 20.179f }; // midway for platform 1 to 3
+        const Location AlarPlatform2To4Midpoint = { 408.440f, -44.796f, 20.179f }; // midway for platform 2 to 4
+        const Location AlarSERampBase = { 285.600f, -23.579f, -2.389f };
+        const Location AlarSWRampBase = { 286.571f, 21.924f, -2.389f };
+        const Location AlarBalconyCenter = { 426.492f, -2.507f, 20.180f };
+        const Location AlarRoomSouthCenter = { 281.441f, -0.979f, -2.389f };
 
         const Location VoidReaverTankPosition   = { 423.845f,  371.733f, 14.897f }; // middle of room
 
@@ -53,9 +59,7 @@ namespace TempestKeepHelpers
         {
             ObjectGuid currentGuid = group->GetTargetIcon(iconId);
             if (currentGuid != target->GetGUID())
-            {
                 group->SetTargetIcon(iconId, bot->GetGUID(), target->GetGUID());
-            }
         }
     }
 
@@ -105,7 +109,6 @@ namespace TempestKeepHelpers
         for (const auto& npcGuid : npcs)
         {
             Unit* unit = botAI->GetUnit(npcGuid);
-
             if (unit && unit->IsAlive() && unit->GetEntry() == entry)
                 return unit;
         }
@@ -123,7 +126,6 @@ namespace TempestKeepHelpers
             for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
             {
                 Player* member = ref->GetSource();
-
                 if (!member || !member->IsAlive() || member == bot)
                     continue;
 
@@ -140,11 +142,15 @@ namespace TempestKeepHelpers
     }
 
     std::unordered_map<uint32, int8> lastAlarPlatform;
+    std::unordered_map<uint32, bool> lastRebirthState;
+    std::unordered_map<uint32, bool> isPhase2;
+    /*
     std::unordered_map<uint32, bool> postFlameQuillsState;
     std::unordered_map<uint32, int8> postFlameQuillsAlarPlatform;
     std::unordered_map<uint32, bool> postQuillsPhase;
-    std::unordered_map<uint32, bool> lastRebirthState;
-
+    std::map<ObjectGuid, bool> hasReachedMidpoint1To3;
+    std::map<ObjectGuid, bool> hasReachedMidpoint2To4;
+    */
     bool IsAlarAddTank(PlayerbotAI* botAI, Player* bot)
     {
         return botAI->IsTank(bot) &&

@@ -25,28 +25,42 @@ bool AlarTanksNeedToBeAtPlatformsToAggroBossTrigger::IsActive()
     if (!alar)
         return false;
 
-    return alar && (botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0));
+    uint32 mapId = alar->GetMapId();
+
+    return !isPhase2[mapId] && alar->GetPositionZ() <= 25.0f && (botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0));
 }
 
 bool AlarBossEngagedByMeleeDpsTrigger::IsActive()
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+    if (!alar)
+        return false;
 
-    return alar && botAI->IsMelee(bot) && !botAI->IsTank(bot);
+    uint32 mapId = alar->GetMapId();
+
+    return !isPhase2[mapId] && botAI->IsMelee(bot) && !botAI->IsTank(bot);
 }
 
 bool AlarBossEngagedByRangedDpsTrigger::IsActive()
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+    if (!alar)
+        return false;
 
-    return alar && botAI->IsRangedDps(bot);
+    uint32 mapId = alar->GetMapId();
+
+    return !isPhase2[mapId] && botAI->IsRangedDps(bot);
 }
 
 bool AlarBossEngagedByHealerTrigger::IsActive()
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+    if (!alar)
+        return false;
 
-    return alar && botAI->IsHeal(bot);
+    uint32 mapId = alar->GetMapId();
+
+    return !isPhase2[mapId] && botAI->IsHeal(bot);
 }
 
 bool AlarNeedTankToPickUpAddsTrigger::IsActive()
@@ -56,11 +70,15 @@ bool AlarNeedTankToPickUpAddsTrigger::IsActive()
     return alar && IsAlarAddTank(botAI, bot);
 }
 
+// DON'T FORGET THE 95% HEALTH CHECK YOU ADDED WHILE TESTING YOU IDIOT
 bool AlarIncomingFlameQuillsTrigger::IsActive()
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+    if (!alar)
+        return false;
 
-    return alar && alar->GetPositionZ() > 25.0f && alar->GetHealthPct() < 95.0f;
+    uint32 mapId = alar->GetMapId();
+    return !isPhase2[mapId] && alar->GetPositionZ() > 25.0f && alar->GetHealthPct() < 95.0f;
 }
 
 bool AlarNeedToManageTimersAndTrackersTrigger::IsActive()

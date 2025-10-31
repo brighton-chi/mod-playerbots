@@ -86,9 +86,7 @@ namespace SerpentShrineCavernHelpers
         {
             ObjectGuid currentGuid = group->GetTargetIcon(iconId);
             if (currentGuid != target->GetGUID())
-            {
                 group->SetTargetIcon(iconId, bot->GetGUID(), target->GetGUID());
-            }
         }
     }
 
@@ -168,7 +166,6 @@ namespace SerpentShrineCavernHelpers
         for (const auto& npcGuid : npcs)
         {
             Unit* unit = botAI->GetUnit(npcGuid);
-
             if (unit && unit->IsAlive() && unit->GetEntry() == entry)
                 return unit;
         }
@@ -348,7 +345,6 @@ namespace SerpentShrineCavernHelpers
                 continue;
 
             PlayerbotAI* botAI = GET_PLAYERBOT_AI(member);
-            // Exclude main tank
             if (!botAI || !botAI->IsMelee(member) || botAI->IsMainTank(member))
                 continue;
 

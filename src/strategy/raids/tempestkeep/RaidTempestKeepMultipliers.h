@@ -3,6 +3,13 @@
 
 #include "Multiplier.h"
 
+class AlarPhase1StickToTheScriptMultiplier : public Multiplier
+{
+public:
+    AlarPhase1StickToTheScriptMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "alar phase 1 stick to the script multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
 class VoidReaverMaintainPositionsMultiplier : public Multiplier
 {
 public:

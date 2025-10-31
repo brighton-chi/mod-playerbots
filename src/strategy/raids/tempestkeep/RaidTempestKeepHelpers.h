@@ -53,6 +53,12 @@ namespace TempestKeepHelpers
         extern const Location AlarGround2;
         extern const Location AlarGround3;
         extern const Location AlarGround4;
+        extern const Location AlarPlatform1To3Midpoint;
+        extern const Location AlarPlatform2To4Midpoint;
+        extern const Location AlarSERampBase;
+        extern const Location AlarSWRampBase;
+        extern const Location AlarBalconyCenter;
+        extern const Location AlarRoomSouthCenter;
 
         extern const Location VoidReaverTankPosition;
         
@@ -60,11 +66,15 @@ namespace TempestKeepHelpers
     }
 
     extern std::unordered_map<uint32, int8> lastAlarPlatform;
+    extern std::unordered_map<uint32, bool> lastRebirthState;
+    extern std::unordered_map<uint32, bool> isPhase2;
+    /*
     extern std::unordered_map<uint32, bool> postFlameQuillsState;
     extern std::unordered_map<uint32, int8> postFlameQuillsAlarPlatform;
     extern std::unordered_map<uint32, bool> postQuillsPhase;
-    extern std::unordered_map<uint32, bool> lastRebirthState;
-
+    extern std::map<ObjectGuid, bool> hasReachedMidpoint1To3;
+    extern std::map<ObjectGuid, bool> hasReachedMidpoint2To4;
+    */
     extern std::unordered_map<ObjectGuid, Position> initialVoidReaverPositions;
     extern std::unordered_map<ObjectGuid, bool> hasReachedInitialVoidReaverPosition;
 

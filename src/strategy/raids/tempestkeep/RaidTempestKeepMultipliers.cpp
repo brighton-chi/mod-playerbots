@@ -1,9 +1,34 @@
 #include "RaidTempestKeepMultipliers.h"
 #include "RaidTempestKeepActions.h"
 #include "RaidTempestKeepHelpers.h"
+#include "ChooseTargetActions.h"
 #include "HunterActions.h"
 #include "MageActions.h"
 #include "Playerbots.h"
+
+float AlarPhase1StickToTheScriptMultiplier::GetValue(Action* action)
+{
+    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+    if (!alar)
+        return 1.0f;
+
+    uint32 mapId = alar->GetMapId();
+    if (isPhase2[mapId])
+        return 1.0f;
+
+    if (botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0))
+    {
+        if (dynamic_cast<TankAssistAction*>(action))
+            return 0.0f;
+
+        if (dynamic_cast<MovementAction*>(action) && 
+            !(dynamic_cast<AlarPhase1PositionBossTanksAction*>(action) || 
+              dynamic_cast<AlarJumpFromPlatformAction*>(action)))
+           return 0.0f;
+    }
+
+    return 1.0f;
+}
 
 float VoidReaverMaintainPositionsMultiplier::GetValue(Action* action)
 {

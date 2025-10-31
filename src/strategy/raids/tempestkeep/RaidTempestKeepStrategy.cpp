@@ -19,7 +19,7 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     /* triggers.push_back(new TriggerNode(
         "alar boss engaged by melee dps",
         NextAction::array(0, new NextAction("alar phase 1 melee dps focus on boss", ACTION_RAID + 1), nullptr)
-    ));
+    )); */
     triggers.push_back(new TriggerNode(
         "alar boss engaged by ranged dps",
         NextAction::array(0, new NextAction("alar phase 1 ranged dps prioritize adds", ACTION_RAID + 1), nullptr)
@@ -28,7 +28,7 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         "alar boss engaged by healer",
         NextAction::array(0, new NextAction("alar phase 1 position healer", ACTION_RAID + 1), nullptr)
     ));
-    triggers.push_back(new TriggerNode(
+    /* triggers.push_back(new TriggerNode(
         "alar need tank to pick up adds",
         NextAction::array(0, new NextAction("alar phase 1 add tank pick up adds", ACTION_RAID + 1), nullptr)
     )); */
@@ -76,6 +76,7 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
 void RaidTempestKeepStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
+    multipliers.push_back(new AlarPhase1StickToTheScriptMultiplier(botAI));
     multipliers.push_back(new VoidReaverMaintainPositionsMultiplier(botAI));
     multipliers.push_back(new HighAstromancerSolarianStayStackedMultiplier(botAI));
 }

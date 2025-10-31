@@ -66,9 +66,7 @@ namespace KarazhanHelpers
         {
             ObjectGuid currentGuid = group->GetTargetIcon(iconId);
             if (currentGuid != target->GetGUID())
-            {
                 group->SetTargetIcon(iconId, bot->GetGUID(), target->GetGUID());
-            }
         }
     }
 
@@ -140,7 +138,6 @@ namespace KarazhanHelpers
         for (const auto& npcGuid : npcs)
         {
             Unit* unit = botAI->GetUnit(npcGuid);
-
             if (unit && unit->IsAlive() && unit->GetEntry() == entry)
                 return unit;
         }
@@ -158,7 +155,6 @@ namespace KarazhanHelpers
             for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
             {
                 Player* member = ref->GetSource();
-
                 if (!member || !member->IsAlive() || member == bot)
                     continue;
 
@@ -240,9 +236,7 @@ namespace KarazhanHelpers
                 bool isRogue = member->getClass() == CLASS_ROGUE;
 
                 if (isDps && !isWarrior && !isRogue && !hasExhaustion && !overStack)
-                {
                     blueBlockers.push_back(member);
-                }
             }
         }
 
@@ -275,9 +269,7 @@ namespace KarazhanHelpers
                 bool eligibleHealer = isHealer && !hasExhaustion && !overStack;
                 
                 if (eligibleRogueWarrior || eligibleHealer)
-                {
                     greenBlockers.push_back(member);
-                }
             }
         }
 
@@ -371,7 +363,6 @@ namespace KarazhanHelpers
             float dist = bot->GetExactDist2d(unit);
             if (dist < radius)
                 voidZones.push_back(unit);
-
         }
 
         return voidZones;
