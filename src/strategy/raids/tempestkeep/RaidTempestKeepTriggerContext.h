@@ -17,6 +17,7 @@ public:
         creators["alar boss engaged by healer"] = &RaidTempestKeepTriggerContext::alar_boss_engaged_by_healer;
         creators["alar need tank to pick up adds"] = &RaidTempestKeepTriggerContext::alar_need_tank_to_pick_up_adds;
         creators["alar incoming flame quills"] = &RaidTempestKeepTriggerContext::alar_incoming_flame_quills;
+        creators["alar rising from the ashes"] = &RaidTempestKeepTriggerContext::alar_rising_from_the_ashes;
         creators["alar need to manage timers and trackers"] = &RaidTempestKeepTriggerContext::alar_need_to_manage_timers_and_trackers;
         creators["void reaver boss engaged by tank"] = &RaidTempestKeepTriggerContext::void_reaver_boss_engaged_by_tank;
         creators["void reaver boss engaged by ranged"] = &RaidTempestKeepTriggerContext::void_reaver_boss_engaged_by_ranged;
@@ -36,6 +37,7 @@ private:
     static Trigger* alar_boss_engaged_by_healer(PlayerbotAI* botAI) { return new AlarBossEngagedByHealerTrigger(botAI); }
     static Trigger* alar_need_tank_to_pick_up_adds(PlayerbotAI* botAI) { return new AlarNeedTankToPickUpAddsTrigger(botAI); }
     static Trigger* alar_incoming_flame_quills(PlayerbotAI* botAI) { return new AlarIncomingFlameQuillsTrigger(botAI); }
+    static Trigger* alar_rising_from_the_ashes(PlayerbotAI* botAI) { return new AlarRisingFromTheAshesTrigger(botAI); }
     static Trigger* alar_need_to_manage_timers_and_trackers(PlayerbotAI* botAI) { return new AlarNeedToManageTimersAndTrackersTrigger(botAI); }
     static Trigger* void_reaver_boss_engaged_by_tank(PlayerbotAI* botAI) { return new VoidReaverBossEngagedByTankTrigger(botAI); }
     static Trigger* void_reaver_boss_engaged_by_ranged(PlayerbotAI* botAI) { return new VoidReaverBossEngagedByRangedTrigger(botAI); }

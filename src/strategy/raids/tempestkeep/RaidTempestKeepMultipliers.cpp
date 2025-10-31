@@ -27,6 +27,21 @@ float AlarPhase1StickToTheScriptMultiplier::GetValue(Action* action)
            return 0.0f;
     }
 
+    if (dynamic_cast<SetBehindTargetAction*>(action))
+        return 0.0f;
+
+    return 1.0f;
+}
+
+float AlarStayAwayFromRebirthMultiplier::GetValue(Action* action)
+{
+    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+
+    if (alar && alar->GetHealth() == 0.0f &&
+        (dynamic_cast<MovementAction*>(action) && 
+         !dynamic_cast<AlarMoveAwayFromRebirthAction*>(action)))
+        return 0.0f;
+
     return 1.0f;
 }
 

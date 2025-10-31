@@ -13,17 +13,25 @@ namespace TempestKeepHelpers
     namespace TempestKeepLocations
     {
         // Al'ar platform coordinates correspond with "OLDWorld Trigger (DO NOT DELETE) NPCs (15384)"
-        const Location AlarRoomCenter = { 331.0f, 0.01f, -2.38f };
+        const Location AlarRangedCenter = { 346.758f, 3.794f, -2.389f };
         const Location AlarPlatform1 = { 335.638f, 59.4879f, 17.9319f }; // West Platform
         const Location AlarPlatform2 = { 388.751f, 31.7312f, 20.2636f }; // Northwest Platform
         const Location AlarPlatform3 = { 388.791f, -33.1059f, 20.2636f }; // Northeast Platform
         const Location AlarPlatform4 = { 332.723f, -61.159f, 17.9791f }; // East Platform
-        const Location AlarGround1 = { 336.439f, 48.181f, -2.389f }; // Landing point for jumping from West Platform
-        const Location AlarGround2 = { 379.122f, 25.146f, -2.385f }; // Landing point for jumping from Northwest Platform
-        const Location AlarGround3 = { 378.583f, -27.481f, -2.385f }; // Landing point for jumping from Northeast Platform
-        const Location AlarGround4 = { 331.631f, -49.716f, -2.389f }; // Landing point for jumping from East Platform
-        const Location AlarPlatform1To3Midpoint = { 405.955f, 45.186f, 20.179f }; // midway for platform 1 to 3
-        const Location AlarPlatform2To4Midpoint = { 408.440f, -44.796f, 20.179f }; // midway for platform 2 to 4
+        const Location AlarJumpPoint1 = { 335.638f, 59.4879f, 17.9319f }; // West Platform
+        const Location AlarJumpPoint2 = { 388.751f, 31.7312f, 20.2636f }; // Northwest Platform
+        const Location AlarJumpPoint3 = { 388.791f, -33.1059f, 20.2636f }; // Northeast Platform
+        const Location AlarJumpPoint4 = { 332.723f, -61.159f, 17.9791f }; // East Platform */
+        /* const Location AlarPlatform1 = { 333.185f, 74.628f, 19.661f }; // West Platform
+        const Location AlarPlatform2 = { 397.689f, 37.748f, 20.181f }; // Northwest Platform
+        const Location AlarPlatform3 = { 397.992f, -38.835f, 20.181f }; // Northeast Platform
+        const Location AlarPlatform4 = { 331.710f, -72.067f, 19.178f }; // East Platform */
+        const Location AlarBotLandingPoint1 = { 336.439f, 48.181f, -2.389f }; // Landing point for jumping from West Platform
+        const Location AlarBotLandingPoint2 = { 379.122f, 25.146f, -2.385f }; // Landing point for jumping from Northwest Platform
+        const Location AlarBotLandingPoint3 = { 378.583f, -27.481f, -2.385f }; // Landing point for jumping from Northeast Platform
+        const Location AlarBotLandingPoint4 = { 331.631f, -49.716f, -2.389f }; // Landing point for jumping from East Platform
+        const Location AlarPlatform1To3Midpoint = { 424.634f, 12.901f, 20.179f }; // midway for platform 1 to 3
+        const Location AlarPlatform2To4Midpoint = { 426.381f, -15.00f, 20.179f }; // midway for platform 2 to 4
         const Location AlarSERampBase = { 285.600f, -23.579f, -2.389f };
         const Location AlarSWRampBase = { 286.571f, 21.924f, -2.389f };
         const Location AlarBalconyCenter = { 426.492f, -2.507f, 20.180f };
@@ -158,25 +166,31 @@ namespace TempestKeepHelpers
                !botAI->IsAssistTankOfIndex(bot, 0);
     }
 
-    void UpdateAlarLastPlatform(Unit* alar, uint32 mapId, const std::vector<Location>& platforms)
+void UpdateAlarLastPlatform(Unit* alar, uint32 mapId, const std::vector<Location>& platforms)
+{
+    int8 previousIndex = lastAlarPlatform.count(mapId) ? lastAlarPlatform[mapId] : -1;
+    int8 closestIndex = -1;
+    float minDist = std::numeric_limits<float>::max();
+    for (size_t i = 0; i < platforms.size(); ++i)
     {
-        // Find which platform Al'ar is closest to
-        int8 closestIndex = -1;
-        float minDist = std::numeric_limits<float>::max();
-        for (size_t i = 0; i < platforms.size(); ++i)
+        float dist = alar->GetExactDist2d(platforms[i].x, platforms[i].y);
+        if (dist < minDist)
         {
-            float dist = alar->GetExactDist2d(platforms[i].x, platforms[i].y);
-            if (dist < minDist)
-            {
-                minDist = dist;
-                closestIndex = static_cast<int>(i);
-            }
+            minDist = dist;
+            closestIndex = static_cast<int>(i);
         }
-
-        // If within threshold (e.g., 5 yards), update last platform
-        if (minDist < 5.0f && closestIndex != -1)
-            lastAlarPlatform[mapId] = closestIndex;
     }
+
+    if (closestIndex != -1 && closestIndex != previousIndex)
+    {
+        LOG_DEBUG("playerbots", "Al'ar platform switch: {} -> {} (mapId {})", previousIndex, closestIndex, mapId);
+        lastAlarPlatform[mapId] = closestIndex;
+    }
+    else if (closestIndex != -1)
+    {
+        lastAlarPlatform[mapId] = closestIndex;
+    }
+}
 
     std::unordered_map<ObjectGuid, Position> initialVoidReaverPositions;
     std::unordered_map<ObjectGuid, bool> hasReachedInitialVoidReaverPosition;

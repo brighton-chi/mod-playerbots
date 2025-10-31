@@ -17,6 +17,7 @@ public:
         creators["alar phase 1 position healer"] = &RaidTempestKeepActionContext::alar_phase_1_position_healer;
         creators["alar phase 1 add tank pick up adds"] = &RaidTempestKeepActionContext::alar_phase_1_add_tank_pick_up_adds;
         creators["alar jump from platform"] = &RaidTempestKeepActionContext::alar_jump_from_platform;
+        creators["alar move away from rebirth"] = &RaidTempestKeepActionContext::alar_move_away_from_rebirth;
         creators["alar manage timers and trackers"] = &RaidTempestKeepActionContext::alar_manage_timers_and_trackers;
 
         creators["void reaver position boss"] = &RaidTempestKeepActionContext::void_reaver_position_boss;
@@ -38,6 +39,7 @@ private:
     static Action* alar_phase_1_position_healer(PlayerbotAI* botAI) { return new AlarPhase1PositionHealerAction(botAI); }
     static Action* alar_phase_1_add_tank_pick_up_adds(PlayerbotAI* botAI) { return new AlarPhase1AddTankPickUpAddsAction(botAI); }
     static Action* alar_jump_from_platform(PlayerbotAI* botAI) { return new AlarJumpFromPlatformAction(botAI); }
+    static Action* alar_move_away_from_rebirth(PlayerbotAI* botAI) { return new AlarMoveAwayFromRebirthAction(botAI); }
     static Action* alar_manage_timers_and_trackers(PlayerbotAI* botAI) { return new AlarManageTimersAndTrackersAction(botAI); }
 
     static Action* void_reaver_position_boss(PlayerbotAI* botAI) { return new VoidReaverPositionBossAction(botAI); }

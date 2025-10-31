@@ -72,6 +72,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class AlarMoveAwayFromRebirthAction : public MovementAction
+{
+public:
+    AlarMoveAwayFromRebirthAction(PlayerbotAI* botAI, std::string const name = "alar move away from rebirth") : MovementAction(botAI, name) {}
+
+    bool Execute(Event event) override;
+};
+
 class AlarManageTimersAndTrackersAction : public Action
 {
 public:

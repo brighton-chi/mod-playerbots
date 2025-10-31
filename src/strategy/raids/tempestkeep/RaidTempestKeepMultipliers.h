@@ -10,6 +10,13 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class AlarStayAwayFromRebirthMultiplier : public Multiplier
+{
+public:
+    AlarStayAwayFromRebirthMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "alar stay away from rebirth multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
 class VoidReaverMaintainPositionsMultiplier : public Multiplier
 {
 public:

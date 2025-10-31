@@ -15,6 +15,7 @@ namespace TempestKeepHelpers
         // Al'ar
         SPELL_FLAME_QUILLS              = 34229, //aura present when actually casting
         SPELL_REBIRTH_PHASE2 = 34342,
+        SPELL_MELT_ARMOR                = 35410,
 
         // High Astromancer Solarian
         SPELL_SOLARIAN_TRANSFORM        = 39117,
@@ -44,15 +45,19 @@ namespace TempestKeepHelpers
 
     namespace TempestKeepLocations
     {
-        extern const Location AlarRoomCenter;
+        extern const Location AlarRangedCenter;
+        extern const Location AlarJumpPoint1;
+        extern const Location AlarJumpPoint2;
+        extern const Location AlarJumpPoint3;
+        extern const Location AlarJumpPoint4;
         extern const Location AlarPlatform1;
         extern const Location AlarPlatform2;
         extern const Location AlarPlatform3;
         extern const Location AlarPlatform4;
-        extern const Location AlarGround1;
-        extern const Location AlarGround2;
-        extern const Location AlarGround3;
-        extern const Location AlarGround4;
+        extern const Location AlarBotLandingPoint1;
+        extern const Location AlarBotLandingPoint2;
+        extern const Location AlarBotLandingPoint3;
+        extern const Location AlarBotLandingPoint4;
         extern const Location AlarPlatform1To3Midpoint;
         extern const Location AlarPlatform2To4Midpoint;
         extern const Location AlarSERampBase;

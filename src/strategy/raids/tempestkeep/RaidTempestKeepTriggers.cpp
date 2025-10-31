@@ -26,8 +26,9 @@ bool AlarTanksNeedToBeAtPlatformsToAggroBossTrigger::IsActive()
         return false;
 
     uint32 mapId = alar->GetMapId();
+    int8 alarPlatform = lastAlarPlatform[mapId];
 
-    return !isPhase2[mapId] && alar->GetPositionZ() <= 25.0f && (botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0));
+    return !isPhase2[mapId] && (botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0));
 }
 
 bool AlarBossEngagedByMeleeDpsTrigger::IsActive()
@@ -38,7 +39,7 @@ bool AlarBossEngagedByMeleeDpsTrigger::IsActive()
 
     uint32 mapId = alar->GetMapId();
 
-    return !isPhase2[mapId] && alar->GetPositionZ() <= 25.0f && botAI->IsMelee(bot) && !botAI->IsTank(bot);
+    return !isPhase2[mapId] && alar->GetPositionZ() < 22.0f && botAI->IsMelee(bot) && !botAI->IsTank(bot);
 }
 
 bool AlarBossEngagedByRangedDpsTrigger::IsActive()
@@ -78,7 +79,17 @@ bool AlarIncomingFlameQuillsTrigger::IsActive()
         return false;
 
     uint32 mapId = alar->GetMapId();
-    return !isPhase2[mapId] && alar->GetPositionZ() > 25.0f && alar->GetHealthPct() < 95.0f;
+    return !isPhase2[mapId] && alar->GetHealthPct() < 95.0f;
+}
+
+bool AlarRisingFromTheAshesTrigger::IsActive()
+{
+    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+    if (!alar)
+        return false;
+
+    uint32 mapId = alar->GetMapId();
+    return !isPhase2[mapId] && alar->GetHealth() == 0.0f;
 }
 
 bool AlarNeedToManageTimersAndTrackersTrigger::IsActive()

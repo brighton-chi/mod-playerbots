@@ -37,6 +37,10 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction::array(0, new NextAction("alar jump from platform", ACTION_EMERGENCY + 9), nullptr)
     ));
     triggers.push_back(new TriggerNode(
+        "alar rising from the ashes",
+        NextAction::array(0, new NextAction("alar move away from rebirth", ACTION_EMERGENCY + 9), nullptr)
+    ));
+    triggers.push_back(new TriggerNode(
         "alar need to manage timers and trackers",
         NextAction::array(0, new NextAction("alar manage timers and trackers", ACTION_EMERGENCY + 10), nullptr)
     ));
@@ -77,6 +81,7 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 void RaidTempestKeepStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     multipliers.push_back(new AlarPhase1StickToTheScriptMultiplier(botAI));
+    multipliers.push_back(new AlarStayAwayFromRebirthMultiplier(botAI));
     multipliers.push_back(new VoidReaverMaintainPositionsMultiplier(botAI));
     multipliers.push_back(new HighAstromancerSolarianStayStackedMultiplier(botAI));
 }

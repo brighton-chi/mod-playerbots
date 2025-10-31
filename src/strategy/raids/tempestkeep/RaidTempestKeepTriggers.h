@@ -59,6 +59,13 @@ public:
     bool IsActive() override;
 };
 
+class AlarRisingFromTheAshesTrigger : public Trigger
+{
+public:
+    AlarRisingFromTheAshesTrigger(PlayerbotAI* botAI) : Trigger(botAI, "alar rising from the ashes") {}
+    bool IsActive() override;
+};
+
 class AlarNeedToManageTimersAndTrackersTrigger : public Trigger
 {
 public:
