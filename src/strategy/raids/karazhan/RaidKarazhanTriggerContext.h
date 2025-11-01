@@ -35,12 +35,12 @@ public:
         creators["the curator boss engaged by ranged"] = &RaidKarazhanTriggerContext::the_curator_boss_engaged_by_ranged;
 
         creators["terestian illhoof need target priority"] = &RaidKarazhanTriggerContext::terestian_illhoof_need_target_priority;
-        
+
         creators["shade of aran arcane explosion is casting"] = &RaidKarazhanTriggerContext::shade_of_aran_arcane_explosion_is_casting;
         creators["shade of aran flame wreath is casting"] = &RaidKarazhanTriggerContext::shade_of_aran_flame_wreath_is_casting;
         creators["shade of aran conjured elementals summoned"] = &RaidKarazhanTriggerContext::shade_of_aran_conjured_elementals_summoned;
         creators["shade of aran boss engaged by ranged"] = &RaidKarazhanTriggerContext::shade_of_aran_boss_engaged_by_ranged;
-        
+
         creators["netherspite red beam is active"] = &RaidKarazhanTriggerContext::netherspite_red_beam_is_active;
         creators["netherspite blue beam is active"] = &RaidKarazhanTriggerContext::netherspite_blue_beam_is_active;
         creators["netherspite green beam is active"] = &RaidKarazhanTriggerContext::netherspite_green_beam_is_active;
@@ -68,9 +68,9 @@ private:
     static Trigger* attumen_the_huntsman_attumen_spawned(PlayerbotAI* botAI) { return new AttumenTheHuntsmanAttumenSpawnedTrigger(botAI); }
     static Trigger* attumen_the_huntsman_attumen_mounted(PlayerbotAI* botAI) { return new AttumenTheHuntsmanAttumenMountedTrigger(botAI); }
     static Trigger* attumen_the_huntsman_manage_timer(PlayerbotAI* botAI) { return new AttumenTheHuntsmanManageTimerTrigger(botAI); }
-    
+
     static Trigger* moroes_need_target_priority(PlayerbotAI* botAI) { return new MoroesNeedTargetPriorityTrigger(botAI); }
-   
+
     static Trigger* maiden_of_virtue_boss_engaged_by_main_tank(PlayerbotAI* botAI) { return new MaidenOfVirtueBossEngagedByMainTankTrigger(botAI); }
     static Trigger* maiden_of_virtue_boss_engaged_by_ranged(PlayerbotAI* botAI) { return new MaidenOfVirtueBossEngagedByRangedTrigger(botAI); }
 
@@ -87,12 +87,12 @@ private:
     static Trigger* the_curator_boss_engaged_by_ranged(PlayerbotAI* botAI) { return new TheCuratorBossEngagedByRangedTrigger(botAI); }
 
     static Trigger* terestian_illhoof_need_target_priority(PlayerbotAI* botAI) { return new TerestianIllhoofNeedTargetPriorityTrigger(botAI); }
-    
+
     static Trigger* shade_of_aran_arcane_explosion_is_casting(PlayerbotAI* botAI) { return new ShadeOfAranArcaneExplosionIsCastingTrigger(botAI); }
     static Trigger* shade_of_aran_flame_wreath_is_casting(PlayerbotAI* botAI) { return new ShadeOfAranFlameWreathIsCastingTrigger(botAI); }
     static Trigger* shade_of_aran_conjured_elementals_summoned(PlayerbotAI* botAI) { return new ShadeOfAranConjuredElementalsSummonedTrigger(botAI); }
     static Trigger* shade_of_aran_boss_engaged_by_ranged(PlayerbotAI* botAI) { return new ShadeOfAranBossEngagedByRangedTrigger(botAI); }
-    
+
     static Trigger* netherspite_red_beam_is_active(PlayerbotAI* botAI) { return new NetherspiteRedBeamIsActiveTrigger(botAI); }
     static Trigger* netherspite_blue_beam_is_active(PlayerbotAI* botAI) { return new NetherspiteBlueBeamIsActiveTrigger(botAI); }
     static Trigger* netherspite_green_beam_is_active(PlayerbotAI* botAI) { return new NetherspiteGreenBeamIsActiveTrigger(botAI); }

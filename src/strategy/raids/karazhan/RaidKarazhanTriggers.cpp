@@ -16,7 +16,7 @@ bool ManaWarpIsAboutToExplodeTrigger::IsActive()
 {
     Unit* manaWarp = AI_VALUE2(Unit*, "find target", "mana warp");
 
-    return manaWarp && manaWarp->GetHealthPct() < 15 && (bot->getClass() == CLASS_ROGUE || 
+    return manaWarp && manaWarp->GetHealthPct() < 15 && (bot->getClass() == CLASS_ROGUE ||
            bot->getClass() == CLASS_HUNTER || bot->getClass() == CLASS_PALADIN);
 }
 
@@ -151,10 +151,10 @@ bool TerestianIllhoofNeedTargetPriorityTrigger::IsActive()
     Unit* illhoof = AI_VALUE2(Unit*, "find target", "terestian illhoof");
     Unit* target = GetFirstAliveUnitByEntry(botAI, NPC_DEMON_CHAINS);
 
-    if (!target || !target->IsAlive()) 
+    if (!target || !target->IsAlive())
     {
         target = GetFirstAliveUnitByEntry(botAI, NPC_KILREK);
-        if (!target || !target->IsAlive()) 
+        if (!target || !target->IsAlive())
             target = illhoof;
     }
 
@@ -190,8 +190,8 @@ bool ShadeOfAranBossEngagedByRangedTrigger::IsActive()
     Unit* aran = AI_VALUE2(Unit*, "find target", "shade of aran");
 
     return aran && botAI->IsRanged(bot) && !IsFlameWreathActive(botAI, bot) &&
-           !(aran->HasUnitState(UNIT_STATE_CASTING) && 
-           aran->FindCurrentSpellBySpellId(SPELL_ARCANE_EXPLOSION));
+           !(aran->HasUnitState(UNIT_STATE_CASTING) &&
+             aran->FindCurrentSpellBySpellId(SPELL_ARCANE_EXPLOSION));
 }
 
 bool NetherspiteRedBeamIsActiveTrigger::IsActive()
@@ -223,7 +223,7 @@ bool NetherspiteBotIsNotBeamBlockerTrigger::IsActive()
     Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
     auto [redBlocker, greenBlocker, blueBlocker] = GetCurrentBeamBlockers(botAI, bot);
 
-    return netherspite && !netherspite->HasAura(SPELL_NETHERSPITE_BANISHED) && bot != redBlocker && 
+    return netherspite && !netherspite->HasAura(SPELL_NETHERSPITE_BANISHED) && bot != redBlocker &&
            bot != blueBlocker && bot != greenBlocker;
 }
 
@@ -234,7 +234,7 @@ bool NetherspiteBossIsBanishedTrigger::IsActive()
         return false;
 
     std::vector<Unit*> voidZones = GetAllVoidZones(botAI, bot);
-    for (Unit* vz : voidZones) 
+    for (Unit* vz : voidZones)
     {
         if (bot->GetExactDist2d(vz) < 4.0f)
             return true;
@@ -303,7 +303,7 @@ bool NightbaneMainTankIsSusceptibleToFearTrigger::IsActive()
         }
     }
 
-    return nightbane && bot->getClass() == CLASS_PRIEST && 
+    return nightbane && bot->getClass() == CLASS_PRIEST &&
            mainTank && !mainTank->HasAura(SPELL_FEAR_WARD) &&
            botAI->CanCastSpell("fear ward", mainTank);
 }

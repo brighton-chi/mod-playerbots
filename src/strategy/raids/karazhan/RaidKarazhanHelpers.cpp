@@ -37,11 +37,11 @@ namespace KarazhanHelpers
     };
 
     const Position KARAZHAN_BIG_BAD_WOLF_BOSS_POSITION = Position(-10913.391f, -1773.508f, 90.477f);
-    const Position KARAZHAN_BIG_BAD_WOLF_RUN_POSITION[4] = 
+    const Position KARAZHAN_BIG_BAD_WOLF_RUN_POSITION[4] =
     {
         { -10875.456f, -1779.036f, 90.477f },
         { -10872.281f, -1751.638f, 90.477f },
-        { -10910.492f, -1747.401f, 90.477f },    
+        { -10910.492f, -1747.401f, 90.477f },
         { -10913.391f, -1773.508f, 90.477f },
     };
 
@@ -135,7 +135,7 @@ namespace KarazhanHelpers
     Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry)
     {
         const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
-        for (const auto& npcGuid : npcs)
+        for (auto const& npcGuid : npcs)
         {
             Unit* unit = botAI->GetUnit(npcGuid);
             if (unit && unit->IsAlive() && unit->GetEntry() == entry)
@@ -149,7 +149,7 @@ namespace KarazhanHelpers
     {
         Unit* nearestPlayer = nullptr;
         float nearestDistance = radius;
-        
+
         if (Group* group = bot->GetGroup())
         {
             for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
@@ -175,7 +175,7 @@ namespace KarazhanHelpers
         Unit* aran = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "shade of aran")->Get();
         Spell* currentSpell = aran ? aran->GetCurrentSpell(CURRENT_GENERIC_SPELL) : nullptr;
 
-        if (currentSpell && currentSpell->m_spellInfo && 
+        if (currentSpell && currentSpell->m_spellInfo &&
             currentSpell->m_spellInfo->Id == SPELL_FLAME_WREATH_CAST)
             return true;
 
@@ -267,7 +267,7 @@ namespace KarazhanHelpers
 
                 bool isHealer = botAI->IsHeal(member);
                 bool eligibleHealer = isHealer && !hasExhaustion && !overStack;
-                
+
                 if (eligibleRogueWarrior || eligibleHealer)
                     greenBlockers.push_back(member);
             }
@@ -289,7 +289,7 @@ namespace KarazhanHelpers
         std::vector<Player*> redBlockers = GetRedBlockers(botAI, bot);
         if (!redBlockers.empty())
         {
-            auto it = std::find_if(redBlockers.begin(), redBlockers.end(), [](Player* p) 
+            auto it = std::find_if(redBlockers.begin(), redBlockers.end(), [](Player* p)
             {
                 return p && p->GetGUID() == currentRedBlocker;
             });
@@ -309,7 +309,7 @@ namespace KarazhanHelpers
         std::vector<Player*> greenBlockers = GetGreenBlockers(botAI, bot);
         if (!greenBlockers.empty())
         {
-            auto it = std::find_if(greenBlockers.begin(), greenBlockers.end(), [](Player* p) 
+            auto it = std::find_if(greenBlockers.begin(), greenBlockers.end(), [](Player* p)
             {
                 return p && p->GetGUID() == currentGreenBlocker;
             });
@@ -329,7 +329,7 @@ namespace KarazhanHelpers
             std::vector<Player*> blueBlockers = GetBlueBlockers(botAI, bot);
             if (!blueBlockers.empty())
             {
-                auto it = std::find_if(blueBlockers.begin(), blueBlockers.end(), [](Player* p) 
+                auto it = std::find_if(blueBlockers.begin(), blueBlockers.end(), [](Player* p)
                 {
                     return p && p->GetGUID() == currentBlueBlocker;
                 });
@@ -354,7 +354,7 @@ namespace KarazhanHelpers
         std::vector<Unit*> voidZones;
         const float radius = 30.0f;
         const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
-        for (const auto& npcGuid : npcs)
+        for (auto const& npcGuid : npcs)
         {
             Unit* unit = botAI->GetUnit(npcGuid);
             if (!unit || unit->GetEntry() != NPC_VOID_ZONE)
@@ -384,7 +384,7 @@ namespace KarazhanHelpers
     {
         std::vector<Unit*> infernals;
         const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
-        for (const auto& npcGuid : npcs)
+        for (auto const& npcGuid : npcs)
         {
             Unit* unit = botAI->GetUnit(npcGuid);
             if (unit && unit->GetEntry() == NPC_NETHERSPITE_INFERNAL)
@@ -394,7 +394,7 @@ namespace KarazhanHelpers
         return infernals;
     }
 
-    bool IsStraightPathSafe(const Position& start, const Position& target, const std::vector<Unit*>& hazards, 
+    bool IsStraightPathSafe(const Position& start, const Position& target, const std::vector<Unit*>& hazards,
                             float hazardRadius, float stepSize)
     {
         float sx = start.GetPositionX();
@@ -406,7 +406,7 @@ namespace KarazhanHelpers
         float totalDist = std::sqrt(std::pow(tx - sx, 2) + std::pow(ty - sy, 2));
         if (totalDist == 0.0f)
             return true;
-        
+
         for (float checkDist = 0.0f; checkDist <= totalDist; checkDist += stepSize)
         {
             float t = checkDist / totalDist;
@@ -420,7 +420,7 @@ namespace KarazhanHelpers
                     return false;
             }
         }
-        
+
         return true;
     }
 

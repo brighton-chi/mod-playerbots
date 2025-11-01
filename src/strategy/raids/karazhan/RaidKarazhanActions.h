@@ -216,10 +216,10 @@ public:
     bool Execute(Event event) override;
 
 private:
-    struct BeamAvoid 
-    { 
-        Unit* portal; 
-        float minDist, maxDist; 
+    struct BeamAvoid
+    {
+        Unit* portal;
+        float minDist, maxDist;
     };
 
     bool IsAwayFromBeams(float x, float y, const std::vector<BeamAvoid>& beams, Unit* netherspite);

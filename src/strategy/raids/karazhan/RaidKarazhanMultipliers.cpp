@@ -45,9 +45,9 @@ float AttumenTheHuntsmanStayStackedMultiplier::GetValue(Action* action)
         return 1.0f;
 
     if (!botAI->IsMainTank(bot) && attumenMounted->GetVictim() != bot &&
-        (dynamic_cast<CombatFormationMoveAction*>(action) || 
-         dynamic_cast<FleeAction*>(action) || 
-         dynamic_cast<CastBlinkBackAction*>(action) || 
+        (dynamic_cast<CombatFormationMoveAction*>(action) ||
+         dynamic_cast<FleeAction*>(action) ||
+         dynamic_cast<CastBlinkBackAction*>(action) ||
          dynamic_cast<CastDisengageAction*>(action) ||
          IsChargeAction(action)))
         return 0.0f;
@@ -67,7 +67,7 @@ float AttumenTheHuntsmanWaitForDPSMultiplier::GetValue(Action* action)
     auto it = attumenDPSWaitTimer.find(bot->GetMapId());
     if (it == attumenDPSWaitTimer.end() || (time(nullptr) - it->second) < dpsWaitSeconds)
     {
-        if (!botAI->IsMainTank(bot) && (dynamic_cast<AttackAction*>(action) || 
+        if (!botAI->IsMainTank(bot) && (dynamic_cast<AttackAction*>(action) ||
             (!botAI->IsHeal(bot) && dynamic_cast<CastSpellAction*>(action))))
             return 0.0f;
     }
@@ -95,7 +95,7 @@ float ShadeOfAranArcaneExplosionDisableChargeMultiplier::GetValue(Action* action
     if (!aran)
         return 1.0f;
 
-    if (aran->HasUnitState(UNIT_STATE_CASTING) && 
+    if (aran->HasUnitState(UNIT_STATE_CASTING) &&
         aran->FindCurrentSpellBySpellId(SPELL_ARCANE_EXPLOSION))
     {
         if (IsChargeAction(action))
@@ -161,7 +161,7 @@ float NetherspiteKeepBlockingBeamMultiplier::GetValue(Action* action)
 
     if (bot == blueBlocker)
     {
-        if (dynamic_cast<CombatFormationMoveAction*>(action) || 
+        if (dynamic_cast<CombatFormationMoveAction*>(action) ||
             dynamic_cast<ReachTargetAction*>(action))
             return 0.0f;
     }
@@ -193,7 +193,7 @@ float NetherspiteWaitForDPSMultiplier::GetValue(Action* action)
         time_t since = time(nullptr) - it->second;
         if (since < dpsWaitSeconds)
         {
-            if (!botAI->IsTank(bot) && (dynamic_cast<AttackAction*>(action) || 
+            if (!botAI->IsTank(bot) && (dynamic_cast<AttackAction*>(action) ||
                 (!botAI->IsHeal(bot) && dynamic_cast<CastSpellAction*>(action))))
                 return 0.0f;
         }
@@ -227,7 +227,7 @@ float PrinceMalchezaarEnfeebleKeepDistanceMultiplier::GetValue(Action* action)
         return 0.0f;
 
     if (botAI->IsRanged(bot) && bot->HasAura(SPELL_ENFEEBLE) &&
-        (dynamic_cast<MovementAction*>(action) && 
+        (dynamic_cast<MovementAction*>(action) &&
          !dynamic_cast<PrinceMalchezaarEnfeebledAvoidHazardAction*>(action)))
         return 0.0f;
 
@@ -272,7 +272,7 @@ float NightbaneWaitForDPSMultiplier::GetValue(Action* action)
         time_t since = time(nullptr) - it->second;
         if (since < dpsWaitSeconds)
         {
-            if (!botAI->IsMainTank(bot) && (dynamic_cast<AttackAction*>(action) || 
+            if (!botAI->IsMainTank(bot) && (dynamic_cast<AttackAction*>(action) ||
                 (!botAI->IsHeal(bot) && dynamic_cast<CastSpellAction*>(action))))
                 return 0.0f;
         }
@@ -289,7 +289,7 @@ float NightbaneDisableAvoidAoeMultiplier::GetValue(Action* action)
     if (!nightbane)
         return 1.0f;
 
-    if ((nightbane->GetPositionZ() > 95.0f || botAI->IsMainTank(bot)) && 
+    if ((nightbane->GetPositionZ() > 95.0f || botAI->IsMainTank(bot)) &&
         dynamic_cast<AvoidAoeAction*>(action))
         return 0.0f;
 
@@ -303,8 +303,8 @@ float NightbaneDisableMovementMultiplier::GetValue(Action* action)
     if (!nightbane)
         return 1.0f;
 
-    if (dynamic_cast<CastBlinkBackAction*>(action) || 
-        dynamic_cast<CastDisengageAction*>(action) || 
+    if (dynamic_cast<CastBlinkBackAction*>(action) ||
+        dynamic_cast<CastDisengageAction*>(action) ||
         dynamic_cast<FleeAction*>(action))
         return 0.0f;
 
