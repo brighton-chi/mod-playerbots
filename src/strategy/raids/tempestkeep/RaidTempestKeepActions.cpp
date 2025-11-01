@@ -388,7 +388,7 @@ bool AlarPositionHealerAction::Execute(Event event)
             return MoveNear(bot->GetMapId(), groundTarget.x, groundTarget.y, groundTarget.z, 5.0f, MovementPriority::MOVEMENT_COMBAT);
         }
     }
-    
+
     // Stay within 45 yards of the ranged center
     const Location& center = AlarRangedCenter;
     float dist = bot->GetExactDist2d(center.x, center.y);
@@ -425,7 +425,7 @@ bool AlarAddTankPickUpEmbersAction::Execute(Event event)
         {
             const Location& center = AlarRangedCenter;
             if (bot->GetExactDist2d(center.x, center.y) > 5.0f)
-                return MoveTo(bot->GetMapId(), center.x, center.y, bot->GetPositionZ(), false, false, 
+                return MoveTo(bot->GetMapId(), center.x, center.y, bot->GetPositionZ(), false, false,
                               false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
 
@@ -494,19 +494,19 @@ bool AlarJumpFromPlatformAction::Execute(Event event)
     if (botAI->IsMainTank(bot))
     {
         // MT heads to SW ramp
-        return MoveTo(bot->GetMapId(), mtTarget.x, mtTarget.y, mtTarget.z, false, false, false, true, 
+        return MoveTo(bot->GetMapId(), mtTarget.x, mtTarget.y, mtTarget.z, false, false, false, true,
                       MovementPriority::MOVEMENT_FORCED, true, false);
     }
     else if (botAI->IsAssistTankOfIndex(bot, 0))
     {
         // AT0 heads to SE ramp
-        return MoveTo(bot->GetMapId(), atTarget.x, atTarget.y, atTarget.z, false, false, false, true, 
+        return MoveTo(bot->GetMapId(), atTarget.x, atTarget.y, atTarget.z, false, false, false, true,
                       MovementPriority::MOVEMENT_FORCED, true, false);
     }
     else if (botAI->IsMelee(bot) && botAI->IsDps(bot))
     {
         // Melee DPS heads to south center of room to go up either ramp
-        return MoveNear(bot->GetMapId(), meleeTarget.x, meleeTarget.y, meleeTarget.z, 5.0f, 
+        return MoveNear(bot->GetMapId(), meleeTarget.x, meleeTarget.y, meleeTarget.z, 5.0f,
                       MovementPriority::MOVEMENT_FORCED);
     }
 
@@ -633,7 +633,7 @@ bool AlarDiveBombSpreadAction::Execute(Event event)
     if (closestMember)
     {
         const uint32 minInterval = 200;
-        return FleePosition(Position(closestMember->GetPositionX(), closestMember->GetPositionY(), 
+        return FleePosition(Position(closestMember->GetPositionX(), closestMember->GetPositionY(),
                             closestMember->GetPositionZ()), 11.0f, minInterval);
     }
 
@@ -679,10 +679,10 @@ bool AlarManageTimersAndTrackersAction::Execute(Event event)
 bool VoidReaverPositionBossAction::Execute(Event event)
 {
     Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
-    
+
     if (bot->GetVictim() != voidReaver)
         return Attack(voidReaver);
-    
+
     if (voidReaver->GetVictim() == bot)
     {
         const Location& tankPosition = VoidReaverTankPosition;
@@ -697,7 +697,7 @@ bool VoidReaverPositionBossAction::Execute(Event event)
             float moveX = bot->GetPositionX() + (dX / distanceToTankPosition) * stepSize;
             float moveY = bot->GetPositionY() + (dY / distanceToTankPosition) * stepSize;
             const float moveZ = tankPosition.z;
-            return MoveTo(bot->GetMapId(), moveX, moveY, moveZ, false, false, false, false, 
+            return MoveTo(bot->GetMapId(), moveX, moveY, moveZ, false, false, false, false,
                           MovementPriority::MOVEMENT_FORCED, true, false);
         }
     }
@@ -748,7 +748,7 @@ bool VoidReaverSpreadRangedAction::Execute(Event event)
             Position pos = GetRangedBotPosition(tankPosition, radius, healers.size(), 0.0f, i, healer->GetPositionZ());
             initialVoidReaverPositions[healer->GetGUID()] = pos;
             hasReachedInitialVoidReaverPosition[healer->GetGUID()] = false;
-            LOG_DEBUG("playerbots", "VoidReaverSpreadRangedAction: Healer {} assigned initial position ({}, {}, {})", 
+            LOG_DEBUG("playerbots", "VoidReaverSpreadRangedAction: Healer {} assigned initial position ({}, {}, {})",
                 healer->GetName(), pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ());
         }
 
@@ -759,7 +759,7 @@ bool VoidReaverSpreadRangedAction::Execute(Event event)
             Position pos = GetRangedBotPosition(tankPosition, radius, rangedDps.size(), offsetArc, i, dps->GetPositionZ());
             initialVoidReaverPositions[dps->GetGUID()] = pos;
             hasReachedInitialVoidReaverPosition[dps->GetGUID()] = false;
-            LOG_DEBUG("playerbots", "VoidReaverSpreadRangedAction: DPS {} assigned initial position ({}, {}, {})", 
+            LOG_DEBUG("playerbots", "VoidReaverSpreadRangedAction: DPS {} assigned initial position ({}, {}, {})",
                 dps->GetName(), pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ());
         }
     }
@@ -781,7 +781,7 @@ bool VoidReaverSpreadRangedAction::Execute(Event event)
     return false;
 }
 
-Position VoidReaverSpreadRangedAction::GetRangedBotPosition(const TempestKeepHelpers::Location& center, 
+Position VoidReaverSpreadRangedAction::GetRangedBotPosition(const TempestKeepHelpers::Location& center,
     float radius, uint8 botsPerRing, float offsetArc, uint8 botIndex, float botZ)
 {
     float angleOffset = (offsetArc / radius);
@@ -892,7 +892,7 @@ bool HighAstromancerSolarianMoveAwayFromGroupAction::Execute(Event event)
     Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
     if (!astromancer)
         return false;
-    
+
     if (Group* group = bot->GetGroup())
     {
         for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
@@ -904,7 +904,7 @@ bool HighAstromancerSolarianMoveAwayFromGroupAction::Execute(Event event)
 
             float distance = bot->GetExactDist2d(member);
             if (distance < 12.0f)
-                return FleePosition(Position(member->GetPositionX(), member->GetPositionY(), 
+                return FleePosition(Position(member->GetPositionX(), member->GetPositionY(),
                                     member->GetPositionZ()), 15.0f, 0);
         }
     }

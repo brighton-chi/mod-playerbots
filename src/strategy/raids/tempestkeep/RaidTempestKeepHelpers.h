@@ -40,7 +40,7 @@ namespace TempestKeepHelpers
         NPC_SOLARIUM_PRIEST                 = 18806,
     };
 
-    struct Location 
+    struct Location
     {
         float x, y, z;
     };
@@ -65,7 +65,7 @@ namespace TempestKeepHelpers
         extern const Location AlarRoomSouthCenter;
 
         extern const Location VoidReaverTankPosition;
-        
+
         // extern const Location AstromancerStackPosition;
     }
 

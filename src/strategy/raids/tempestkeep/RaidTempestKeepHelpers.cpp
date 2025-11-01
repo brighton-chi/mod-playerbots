@@ -127,7 +127,7 @@ namespace TempestKeepHelpers
     {
         Unit* nearestPlayer = nullptr;
         float nearestDistance = radius;
-        
+
         if (Group* group = bot->GetGroup())
         {
             for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())

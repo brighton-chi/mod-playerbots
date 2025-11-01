@@ -12,7 +12,7 @@ using namespace TempestKeepLocations;
 class AlarLogDebugInfoAction : public Action
 {
 public:
-    AlarLogDebugInfoAction(PlayerbotAI* botAI, std::string const name = "alar log debug info") : Action(botAI, name) {} 
+    AlarLogDebugInfoAction(PlayerbotAI* botAI, std::string const name = "alar log debug info") : Action(botAI, name) {}
 
     bool Execute(Event event) override;
 };

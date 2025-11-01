@@ -20,8 +20,8 @@ float AlarPhase1StickToTheScriptMultiplier::GetValue(Action* action)
         if (bot->IsInCombat() && dynamic_cast<TankAssistAction*>(action))
             return 0.0f;
 
-        if (dynamic_cast<MovementAction*>(action) && 
-            !(dynamic_cast<AlarBossTanksMoveBetweenPlatformsAction*>(action) || 
+        if (dynamic_cast<MovementAction*>(action) &&
+            !(dynamic_cast<AlarBossTanksMoveBetweenPlatformsAction*>(action) ||
               dynamic_cast<AlarJumpFromPlatformAction*>(action)))
            return 0.0f;
     }
@@ -37,7 +37,7 @@ float AlarStayAwayFromRebirthMultiplier::GetValue(Action* action)
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
 
     if (alar && alar->GetHealth() == 0.0f &&
-        (dynamic_cast<MovementAction*>(action) && 
+        (dynamic_cast<MovementAction*>(action) &&
          !dynamic_cast<AlarMoveAwayFromRebirthAction*>(action)))
         return 0.0f;
 
@@ -89,11 +89,11 @@ float HighAstromancerSolarianStayStackedMultiplier::GetValue(Action* action)
     if (!astromancer || astromancer->HasAura(SPELL_SOLARIAN_TRANSFORM))
         return 1.0f;
 
-    if (dynamic_cast<FleeAction*>(action) || dynamic_cast<CastBlinkBackAction*>(action) || 
+    if (dynamic_cast<FleeAction*>(action) || dynamic_cast<CastBlinkBackAction*>(action) ||
         dynamic_cast<CastDisengageAction*>(action))
         return 0.0f;
 
-    if (bot->HasAura(SPELL_WRATH_OF_THE_ASTROMANCER) && 
+    if (bot->HasAura(SPELL_WRATH_OF_THE_ASTROMANCER) &&
         !dynamic_cast<HighAstromancerSolarianMoveAwayFromGroupAction*>(action))
         return 0.0f;
 

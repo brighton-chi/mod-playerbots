@@ -27,7 +27,7 @@ bool AlarEngagedByTanksInPhase1Trigger::IsActive()
 
     uint32 mapId = alar->GetMapId();
 
-    return (botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0)) && 
+    return (botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0)) &&
             alar->GetPositionZ() < 22.0f && !isPhase2[mapId];
 }
 
@@ -169,7 +169,7 @@ bool HighAstromancerSolarianCanCastFearWardOnMainTankTrigger::IsActive()
         }
     }
 
-    return astromancer && astromancer->HasAura(SPELL_SOLARIAN_TRANSFORM) && 
+    return astromancer && astromancer->HasAura(SPELL_SOLARIAN_TRANSFORM) &&
            bot->getClass() == CLASS_PRIEST && mainTank && !mainTank->HasAura(SPELL_FEAR_WARD) &&
            botAI->CanCastSpell("fear ward", mainTank);
 }
