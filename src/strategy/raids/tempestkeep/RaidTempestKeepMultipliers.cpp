@@ -2,27 +2,26 @@
 #include "RaidTempestKeepActions.h"
 #include "RaidTempestKeepHelpers.h"
 #include "ChooseTargetActions.h"
+#include "DruidBearActions.h"
 #include "HunterActions.h"
 #include "MageActions.h"
+#include "PaladinActions.h"
 #include "Playerbots.h"
+#include "WarriorActions.h"
 
 float AlarPhase1StickToTheScriptMultiplier::GetValue(Action* action)
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    if (!alar)
-        return 1.0f;
-
-    uint32 mapId = alar->GetMapId();
-    if (isPhase2[mapId])
+    if (!alar || alar->GetPositionZ() <= 17.0f)
         return 1.0f;
 
     if (botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0))
     {
-        if (dynamic_cast<TankAssistAction*>(action))
+        if (bot->IsInCombat() && dynamic_cast<TankAssistAction*>(action))
             return 0.0f;
 
         if (dynamic_cast<MovementAction*>(action) && 
-            !(dynamic_cast<AlarPhase1PositionBossTanksAction*>(action) || 
+            !(dynamic_cast<AlarBossTanksMoveBetweenPlatformsAction*>(action) || 
               dynamic_cast<AlarJumpFromPlatformAction*>(action)))
            return 0.0f;
     }
@@ -40,6 +39,29 @@ float AlarStayAwayFromRebirthMultiplier::GetValue(Action* action)
     if (alar && alar->GetHealth() == 0.0f &&
         (dynamic_cast<MovementAction*>(action) && 
          !dynamic_cast<AlarMoveAwayFromRebirthAction*>(action)))
+        return 0.0f;
+
+    return 1.0f;
+}
+
+float AlarPhase2NoTankingIfArmorMeltedMultiplier::GetValue(Action* action)
+{
+    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+    if (!alar)
+        return 1.0f;
+
+    if (botAI->IsTank(bot) && bot->HasAura(SPELL_MELT_ARMOR))
+    {
+        if (bot->IsInCombat() && dynamic_cast<TankAssistAction*>(action))
+            return 0.0f;
+
+        if (dynamic_cast<CastTauntAction*>(action) ||
+            dynamic_cast<CastGrowlAction*>(action) ||
+            dynamic_cast<CastHandOfReckoningAction*>(action))
+           return 0.0f;
+    }
+
+    if (dynamic_cast<SetBehindTargetAction*>(action))
         return 0.0f;
 
     return 1.0f;

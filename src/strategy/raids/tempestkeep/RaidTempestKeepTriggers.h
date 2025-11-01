@@ -17,10 +17,10 @@ public:
     bool IsActive() override;
 };
 
-class AlarTanksNeedToBeAtPlatformsToAggroBossTrigger : public Trigger
+class AlarEngagedByTanksInPhase1Trigger : public Trigger
 {
 public:
-    AlarTanksNeedToBeAtPlatformsToAggroBossTrigger(PlayerbotAI* botAI) : Trigger(botAI, "alar tanks need to be at platforms to aggro boss") {}
+    AlarEngagedByTanksInPhase1Trigger(PlayerbotAI* botAI) : Trigger(botAI, "alar engaged by tanks in phase 1") {}
     bool IsActive() override;
 };
 
@@ -45,10 +45,10 @@ public:
     bool IsActive() override;
 };
 
-class AlarNeedTankToPickUpAddsTrigger : public Trigger
+class AlarEmbersOfAlarSpawnedTrigger : public Trigger
 {
 public:
-    AlarNeedTankToPickUpAddsTrigger(PlayerbotAI* botAI) : Trigger(botAI, "alar need tank to pick up adds") {}
+    AlarEmbersOfAlarSpawnedTrigger(PlayerbotAI* botAI) : Trigger(botAI, "alar embers of alar spawned") {}
     bool IsActive() override;
 };
 
@@ -63,6 +63,20 @@ class AlarRisingFromTheAshesTrigger : public Trigger
 {
 public:
     AlarRisingFromTheAshesTrigger(PlayerbotAI* botAI) : Trigger(botAI, "alar rising from the ashes") {}
+    bool IsActive() override;
+};
+
+class AlarEngagedByTanksInPhase2Trigger : public Trigger
+{
+public:
+    AlarEngagedByTanksInPhase2Trigger(PlayerbotAI* botAI) : Trigger(botAI, "alar engaged by tanks in phase 2") {}
+    bool IsActive() override;
+};
+
+class AlarPreparingToDiveBombTrigger : public Trigger
+{
+public:
+    AlarPreparingToDiveBombTrigger(PlayerbotAI* botAI) : Trigger(botAI, "alar preparing to dive bomb") {}
     bool IsActive() override;
 };
 

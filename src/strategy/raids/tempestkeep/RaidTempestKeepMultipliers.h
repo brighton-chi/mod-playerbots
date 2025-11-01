@@ -17,6 +17,13 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class AlarPhase2NoTankingIfArmorMeltedMultiplier : public Multiplier
+{
+public:
+    AlarPhase2NoTankingIfArmorMeltedMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "alar phase 2 no tanking if armor melted multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
 class VoidReaverMaintainPositionsMultiplier : public Multiplier
 {
 public:

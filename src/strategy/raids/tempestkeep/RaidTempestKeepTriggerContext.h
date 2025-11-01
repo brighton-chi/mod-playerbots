@@ -11,13 +11,15 @@ public:
     {
         creators["alar need to log info to develop boss strategy"] = &RaidTempestKeepTriggerContext::alar_need_to_log_info_to_develop_boss_strategy;
         creators["alar pulling boss"] = &RaidTempestKeepTriggerContext::alar_pulling_boss;
-        creators["alar tanks need to be at platforms to aggro boss"] = &RaidTempestKeepTriggerContext::alar_tanks_need_to_be_at_platforms_to_aggro_boss;
+        creators["alar engaged by tanks in phase 1"] = &RaidTempestKeepTriggerContext::alar_engaged_by_tanks_in_phase_1;
         creators["alar boss engaged by melee dps"] = &RaidTempestKeepTriggerContext::alar_boss_engaged_by_melee_dps;
         creators["alar boss engaged by ranged dps"] = &RaidTempestKeepTriggerContext::alar_boss_engaged_by_ranged_dps;
         creators["alar boss engaged by healer"] = &RaidTempestKeepTriggerContext::alar_boss_engaged_by_healer;
-        creators["alar need tank to pick up adds"] = &RaidTempestKeepTriggerContext::alar_need_tank_to_pick_up_adds;
+        creators["alar embers of alar spawned"] = &RaidTempestKeepTriggerContext::alar_embers_of_alar_spawned;
         creators["alar incoming flame quills"] = &RaidTempestKeepTriggerContext::alar_incoming_flame_quills;
         creators["alar rising from the ashes"] = &RaidTempestKeepTriggerContext::alar_rising_from_the_ashes;
+        creators["alar engaged by tanks in phase 2"] = &RaidTempestKeepTriggerContext::alar_engaged_by_tanks_in_phase_2;
+        creators["alar preparing to dive bomb"] = &RaidTempestKeepTriggerContext::alar_preparing_to_dive_bomb;
         creators["alar need to manage timers and trackers"] = &RaidTempestKeepTriggerContext::alar_need_to_manage_timers_and_trackers;
         creators["void reaver boss engaged by tank"] = &RaidTempestKeepTriggerContext::void_reaver_boss_engaged_by_tank;
         creators["void reaver boss engaged by ranged"] = &RaidTempestKeepTriggerContext::void_reaver_boss_engaged_by_ranged;
@@ -31,13 +33,15 @@ public:
 private:
     static Trigger* alar_need_to_log_info_to_develop_boss_strategy(PlayerbotAI* botAI) { return new AlarNeedToLogInfoToDevelopBossStrategyTrigger(botAI); }
     static Trigger* alar_pulling_boss(PlayerbotAI* botAI) { return new AlarPullingBossTrigger(botAI); }
-    static Trigger* alar_tanks_need_to_be_at_platforms_to_aggro_boss(PlayerbotAI* botAI) { return new AlarTanksNeedToBeAtPlatformsToAggroBossTrigger(botAI); }
+    static Trigger* alar_engaged_by_tanks_in_phase_1(PlayerbotAI* botAI) { return new AlarEngagedByTanksInPhase1Trigger(botAI); }
     static Trigger* alar_boss_engaged_by_melee_dps(PlayerbotAI* botAI) { return new AlarBossEngagedByMeleeDpsTrigger(botAI); }
     static Trigger* alar_boss_engaged_by_ranged_dps(PlayerbotAI* botAI) { return new AlarBossEngagedByRangedDpsTrigger(botAI); }
     static Trigger* alar_boss_engaged_by_healer(PlayerbotAI* botAI) { return new AlarBossEngagedByHealerTrigger(botAI); }
-    static Trigger* alar_need_tank_to_pick_up_adds(PlayerbotAI* botAI) { return new AlarNeedTankToPickUpAddsTrigger(botAI); }
+    static Trigger* alar_embers_of_alar_spawned(PlayerbotAI* botAI) { return new AlarEmbersOfAlarSpawnedTrigger(botAI); }
     static Trigger* alar_incoming_flame_quills(PlayerbotAI* botAI) { return new AlarIncomingFlameQuillsTrigger(botAI); }
     static Trigger* alar_rising_from_the_ashes(PlayerbotAI* botAI) { return new AlarRisingFromTheAshesTrigger(botAI); }
+    static Trigger* alar_engaged_by_tanks_in_phase_2(PlayerbotAI* botAI) { return new AlarEngagedByTanksInPhase2Trigger(botAI); }
+    static Trigger* alar_preparing_to_dive_bomb(PlayerbotAI* botAI) { return new AlarPreparingToDiveBombTrigger(botAI); }
     static Trigger* alar_need_to_manage_timers_and_trackers(PlayerbotAI* botAI) { return new AlarNeedToManageTimersAndTrackersTrigger(botAI); }
     static Trigger* void_reaver_boss_engaged_by_tank(PlayerbotAI* botAI) { return new VoidReaverBossEngagedByTankTrigger(botAI); }
     static Trigger* void_reaver_boss_engaged_by_ranged(PlayerbotAI* botAI) { return new VoidReaverBossEngagedByRangedTrigger(botAI); }

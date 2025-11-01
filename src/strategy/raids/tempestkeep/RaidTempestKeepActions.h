@@ -25,41 +25,45 @@ public:
     bool Execute(Event event) override;
 };
 
-class AlarPhase1PositionBossTanksAction : public AttackAction
+class AlarBossTanksMoveBetweenPlatformsAction : public AttackAction
 {
 public:
-    AlarPhase1PositionBossTanksAction(PlayerbotAI* botAI, std::string const name = "alar phase 1 position boss tanks") : AttackAction(botAI, name) {}
+    AlarBossTanksMoveBetweenPlatformsAction(PlayerbotAI* botAI, std::string const name = "alar boss tanks move between platforms") : AttackAction(botAI, name) {}
+
+    bool Execute(Event event) override;
+
+private:
+    bool PositionMainTank(Player* mainTank, Unit* alar, int8 alarPlatform, const std::vector<Location>& platforms);
+    bool PositionAssistTank(Player* assistTank, Unit* alar, int8 alarPlatform, const std::vector<Location>& platforms);
+};
+
+class AlarMeleeDpsFocusOnBossAction : public AttackAction
+{
+public:
+    AlarMeleeDpsFocusOnBossAction(PlayerbotAI* botAI, std::string const name = "alar melee dps focus on boss") : AttackAction(botAI, name) {}
 
     bool Execute(Event event) override;
 };
 
-class AlarPhase1MeleeDpsFocusOnBossAction : public AttackAction
+class AlarRangedDpsPrioritizeAddsAction : public AttackAction
 {
 public:
-    AlarPhase1MeleeDpsFocusOnBossAction(PlayerbotAI* botAI, std::string const name = "alar phase 1 melee dps focus on boss") : AttackAction(botAI, name) {}
+    AlarRangedDpsPrioritizeAddsAction(PlayerbotAI* botAI, std::string const name = "alar ranged dps prioritize adds") : AttackAction(botAI, name) {}
+
+    bool Execute(Event event) override;
+};
+class AlarPositionHealerAction : public MovementAction
+{
+public:
+    AlarPositionHealerAction(PlayerbotAI* botAI, std::string const name = "alar position healer") : MovementAction(botAI, name) {}
 
     bool Execute(Event event) override;
 };
 
-class AlarPhase1RangedDpsPrioritizeAddsAction : public AttackAction
+class AlarAddTankPickUpEmbersAction : public AttackAction
 {
 public:
-    AlarPhase1RangedDpsPrioritizeAddsAction(PlayerbotAI* botAI, std::string const name = "alar phase 1 ranged dps prioritize adds") : AttackAction(botAI, name) {}
-
-    bool Execute(Event event) override;
-};
-class AlarPhase1PositionHealerAction : public MovementAction
-{
-public:
-    AlarPhase1PositionHealerAction(PlayerbotAI* botAI, std::string const name = "alar phase 1 position healer") : MovementAction(botAI, name) {}
-
-    bool Execute(Event event) override;
-};
-
-class AlarPhase1AddTankPickUpAddsAction : public AttackAction
-{
-public:
-    AlarPhase1AddTankPickUpAddsAction(PlayerbotAI* botAI, std::string const name = "alar phase 1 add tank pick up adds") : AttackAction(botAI, name) {}
+    AlarAddTankPickUpEmbersAction(PlayerbotAI* botAI, std::string const name = "alar add tank pick up embers") : AttackAction(botAI, name) {}
 
     bool Execute(Event event) override;
 };
@@ -76,6 +80,22 @@ class AlarMoveAwayFromRebirthAction : public MovementAction
 {
 public:
     AlarMoveAwayFromRebirthAction(PlayerbotAI* botAI, std::string const name = "alar move away from rebirth") : MovementAction(botAI, name) {}
+
+    bool Execute(Event event) override;
+};
+
+class AlarSwapTanksOnBossAction : public AttackAction
+{
+public:
+    AlarSwapTanksOnBossAction(PlayerbotAI* botAI, std::string const name = "alar swap tanks on boss") : AttackAction(botAI, name) {}
+
+    bool Execute(Event event) override;
+};
+
+class AlarDiveBombSpreadAction : public MovementAction
+{
+public:
+    AlarDiveBombSpreadAction(PlayerbotAI* botAI, std::string const name = "alar dive bomb spread") : MovementAction(botAI, name) {}
 
     bool Execute(Event event) override;
 };

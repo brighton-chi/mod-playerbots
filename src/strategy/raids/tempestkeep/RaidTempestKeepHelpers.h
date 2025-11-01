@@ -15,6 +15,8 @@ namespace TempestKeepHelpers
         // Al'ar
         SPELL_FLAME_QUILLS              = 34229, //aura present when actually casting
         SPELL_REBIRTH_PHASE2 = 34342,
+        SPELL_DIVE_BOMB                 = 35181,
+        SPELL_DIVE_BOMB_VISUAL          = 35367,
         SPELL_MELT_ARMOR                = 35410,
 
         // High Astromancer Solarian
@@ -46,42 +48,26 @@ namespace TempestKeepHelpers
     namespace TempestKeepLocations
     {
         extern const Location AlarRangedCenter;
-        extern const Location AlarJumpPoint1;
+        /* extern const Location AlarJumpPoint1;
         extern const Location AlarJumpPoint2;
         extern const Location AlarJumpPoint3;
-        extern const Location AlarJumpPoint4;
+        extern const Location AlarJumpPoint4; */
         extern const Location AlarPlatform1;
         extern const Location AlarPlatform2;
         extern const Location AlarPlatform3;
         extern const Location AlarPlatform4;
-        extern const Location AlarBotLandingPoint1;
-        extern const Location AlarBotLandingPoint2;
-        extern const Location AlarBotLandingPoint3;
-        extern const Location AlarBotLandingPoint4;
-        extern const Location AlarPlatform1To3Midpoint;
-        extern const Location AlarPlatform2To4Midpoint;
+        extern const Location AlarGround1;
+        extern const Location AlarGround2;
+        extern const Location AlarGround3;
+        extern const Location AlarGround4;
         extern const Location AlarSERampBase;
         extern const Location AlarSWRampBase;
-        extern const Location AlarBalconyCenter;
         extern const Location AlarRoomSouthCenter;
 
         extern const Location VoidReaverTankPosition;
         
         // extern const Location AstromancerStackPosition;
     }
-
-    extern std::unordered_map<uint32, int8> lastAlarPlatform;
-    extern std::unordered_map<uint32, bool> lastRebirthState;
-    extern std::unordered_map<uint32, bool> isPhase2;
-    /*
-    extern std::unordered_map<uint32, bool> postFlameQuillsState;
-    extern std::unordered_map<uint32, int8> postFlameQuillsAlarPlatform;
-    extern std::unordered_map<uint32, bool> postQuillsPhase; */
-    extern std::map<ObjectGuid, bool> hasReachedMidpoint1To3;
-    extern std::map<ObjectGuid, bool> hasReachedMidpoint2To4;
-
-    extern std::unordered_map<ObjectGuid, Position> initialVoidReaverPositions;
-    extern std::unordered_map<ObjectGuid, bool> hasReachedInitialVoidReaverPosition;
 
     void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);
     void MarkTargetWithSquare(Player* bot, Unit* target);
@@ -91,8 +77,12 @@ namespace TempestKeepHelpers
     Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry);
     Unit* GetNearestPlayerInRadius(Player* bot, float radius);
 
+    extern std::unordered_map<uint32, int8> lastAlarPlatform;
     void UpdateAlarLastPlatform(Unit* alar, uint32 mapId, const std::vector<Location>& platforms);
     bool IsAlarAddTank(PlayerbotAI* botAI, Player* bot);
+
+    extern std::unordered_map<ObjectGuid, Position> initialVoidReaverPositions;
+    extern std::unordered_map<ObjectGuid, bool> hasReachedInitialVoidReaverPosition;
 }
 
 #endif
