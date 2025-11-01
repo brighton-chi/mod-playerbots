@@ -95,7 +95,7 @@ namespace SerpentShrineCavernHelpers
     extern std::map<ObjectGuid, uint8> tidewalkerTankStep;
     extern std::map<ObjectGuid, uint8> tidewalkerRangedStep;
 
-    struct Location 
+    struct Location
     {
         float x, y, z;
     };

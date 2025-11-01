@@ -19,7 +19,7 @@ public:
         creators["hydross the unstable misdirect boss to tank"] = &RaidSSCActionContext::hydross_the_unstable_misdirect_boss_to_tank;
         creators["hydross the unstable manage phase change timers"] = &RaidSSCActionContext::hydross_the_unstable_manage_phase_change_timers;
         creators["hydross the unstable manage dps timers"] = &RaidSSCActionContext::hydross_the_unstable_manage_dps_timers;
-    
+
         creators["the lurker below position main tank"] = &RaidSSCActionContext::the_lurker_below_position_main_tank;
         creators["the lurker below position other melee"] = &RaidSSCActionContext::the_lurker_below_position_other_melee;
         creators["the lurker below melee run around behind boss"] = &RaidSSCActionContext::the_lurker_below_melee_run_around_behind_boss;
@@ -36,7 +36,7 @@ public:
         creators["leotheras the blind final phase assign dps priority"] = &RaidSSCActionContext::leotheras_the_blind_final_phase_assign_dps_priority;
         creators["leotheras the blind misdirect boss to demon form tank"] = &RaidSSCActionContext::leotheras_the_blind_misdirect_boss_to_demon_form_tank;
         creators["leotheras the blind manage timers and trackers"] = &RaidSSCActionContext::leotheras_the_blind_manage_timers_and_trackers;
-    
+
         creators["fathom-lord karathress main tank position boss"] = &RaidSSCActionContext::fathom_lord_karathress_main_tank_position_boss;
         creators["fathom-lord karathress first assist tank position sharkkis"] = &RaidSSCActionContext::fathom_lord_karathress_first_assist_tank_position_sharkkis;
         creators["fathom-lord karathress second assist tank position tidalvess"] = &RaidSSCActionContext::fathom_lord_karathress_second_assist_tank_position_tidalvess;

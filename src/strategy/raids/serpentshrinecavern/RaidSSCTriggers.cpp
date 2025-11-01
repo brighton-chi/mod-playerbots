@@ -79,7 +79,7 @@ bool HydrossTheUnstableNeedToManagePhaseChangeAggroResetTrigger::IsActive()
 {
     Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
 
-    return lurker && (lurker->HasAura(SPELL_SPOUT_VISUAL) || 
+    return lurker && (lurker->HasAura(SPELL_SPOUT_VISUAL) ||
            lurker->HasAura(SPELL_SPOUT_PERIODIC_1) || lurker->HasAura(SPELL_SPOUT_PERIODIC_2));
 } */
 
@@ -105,8 +105,8 @@ bool TheLurkerBelowBossIsActiveForOtherMeleeTrigger::IsActive()
     uint32 mapId = lurker->GetMapId();
     time_t now = time(nullptr);
 
-    return botAI->IsMelee(bot) && !botAI->IsMainTank(bot) && 
-           lurker->getStandState() != UNIT_STAND_STATE_SUBMERGED && 
+    return botAI->IsMelee(bot) && !botAI->IsMainTank(bot) &&
+           lurker->getStandState() != UNIT_STAND_STATE_SUBMERGED &&
            (!lurkerSpoutTimer.count(mapId) || lurkerSpoutTimer[mapId] <= now);
 }
 
@@ -167,7 +167,7 @@ bool LeotherasTheBlindBossEngagedByRangedTrigger::IsActive()
     Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
     Player* demonFormTank = GetLeotherasDemonFormTank(botAI, bot);
 
-    return botAI->IsRanged(bot) && demonFormTank != bot && 
+    return botAI->IsRanged(bot) && demonFormTank != bot &&
            leotheras && !leotheras->HasAura(SPELL_LEOTHERAS_BANISHED);
 }
 
@@ -268,9 +268,9 @@ bool FathomLordKarathressDeterminingKillOrderTrigger::IsActive()
     Unit* tidalvess = AI_VALUE2(Unit*, "find target", "fathom-guard tidalvess");
     Unit* caribdis = AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
 
-    return karathress && (botAI->IsDps(bot) || 
+    return karathress && (botAI->IsDps(bot) ||
            (botAI->IsAssistTankOfIndex(bot, 0) && (!sharkkis || !sharkkis->IsAlive())) ||
-           (botAI->IsAssistTankOfIndex(bot, 1) && (!tidalvess || !tidalvess->IsAlive())) || 
+           (botAI->IsAssistTankOfIndex(bot, 1) && (!tidalvess || !tidalvess->IsAlive())) ||
            (botAI->IsAssistTankOfIndex(bot, 2) && (!caribdis || !caribdis->IsAlive())));
 }
 

@@ -163,7 +163,7 @@ namespace SerpentShrineCavernHelpers
     Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry)
     {
         const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
-        for (const auto& npcGuid : npcs)
+        for (auto const& npcGuid : npcs)
         {
             Unit* unit = botAI->GetUnit(npcGuid);
             if (unit && unit->IsAlive() && unit->GetEntry() == entry)
@@ -211,10 +211,10 @@ namespace SerpentShrineCavernHelpers
     Unit* GetLeotherasHuman(PlayerbotAI* botAI)
     {
         const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
-        for (const auto& guid : npcs)
+        for (auto const& guid : npcs)
         {
             Unit* unit = botAI->GetUnit(guid);
-            if (unit && unit->IsAlive() && unit->GetEntry() == NPC_LEOTHERAS_THE_BLIND && 
+            if (unit && unit->IsAlive() && unit->GetEntry() == NPC_LEOTHERAS_THE_BLIND &&
                 unit->IsInCombat() && !unit->HasAura(SPELL_METAMORPHOSIS))
                 return unit;
         }
@@ -224,10 +224,10 @@ namespace SerpentShrineCavernHelpers
     Unit* GetPhase2LeotherasDemon(PlayerbotAI* botAI)
     {
         const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
-        for (const auto& guid : npcs)
+        for (auto const& guid : npcs)
         {
             Unit* unit = botAI->GetUnit(guid);
-            if (unit && unit->IsAlive() && unit->GetEntry() == NPC_LEOTHERAS_THE_BLIND && 
+            if (unit && unit->IsAlive() && unit->GetEntry() == NPC_LEOTHERAS_THE_BLIND &&
                 unit->HasAura(SPELL_METAMORPHOSIS))
                 return unit;
         }
@@ -237,7 +237,7 @@ namespace SerpentShrineCavernHelpers
     Unit* GetPhase3LeotherasDemon(PlayerbotAI* botAI)
     {
         const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
-        for (const auto& guid : npcs)
+        for (auto const& guid : npcs)
         {
             Unit* unit = botAI->GetUnit(guid);
             if (unit && unit->IsAlive() && unit->GetEntry() == NPC_SHADOW_OF_LEOTHERAS)

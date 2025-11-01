@@ -504,11 +504,11 @@ bool TheLurkerBelowMeleeRunAroundBehindBossAction::Execute(Event event)
     // Only move if not close enough to the circle position
     if (bot->GetExactDist2d(targetX, targetY) > 1.0f)
     {
-        if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, lurker->GetPositionX(), lurker->GetPositionY(), 
+        if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, lurker->GetPositionX(), lurker->GetPositionY(),
                                                             lurker->GetPositionZ(), targetX, targetY, targetZ))
             return false;
 
-        return MoveTo(lurker->GetMapId(), targetX, targetY, targetZ, false, false, false, false, 
+        return MoveTo(lurker->GetMapId(), targetX, targetY, targetZ, false, false, false, false,
                       MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
@@ -540,9 +540,9 @@ bool TheLurkerBelowPositionRangedDpsAction::Execute(Event event)
     if (myGroup == -1)
         return false;
 
-    const Location* isletPositions[3] = 
+    const Location* isletPositions[3] =
         { &LurkerNEIsletPosition, &LurkerNWIsletPosition, &LurkerEIsletPosition };
-    const Location* swimPositions[3]  = 
+    const Location* swimPositions[3]  =
         { &LurkerNEIsletSwimPosition, &LurkerNWIsletSwimPosition, &LurkerEIsletSwimPosition };
 
     uint32 mapId = lurker->GetMapId();
@@ -565,7 +565,7 @@ bool TheLurkerBelowPositionRangedDpsAction::Execute(Event event)
     }
 
     // Log bot's current position
-    LOG_DEBUG("playerbots", "RangedDpsAction: Bot {} current position ({}, {}, {}), swimming={}, inWater={}, underWater={}", 
+    LOG_DEBUG("playerbots", "RangedDpsAction: Bot {} current position ({}, {}, {}), swimming={}, inWater={}, underWater={}",
     bot->GetName(), bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), bot->isSwimming(), bot->IsInWater(), bot->IsUnderWater());
 
     // Move if not close enough
@@ -605,9 +605,9 @@ bool TheLurkerBelowPositionHealerAction::Execute(Event event)
     if (myGroup == -1)
         return false;
 
-    const Location* landPositions[3] = 
+    const Location* landPositions[3] =
         { &LurkerSEHealerLandPosition, &LurkerSWHealerLandPosition, &LurkerNHealerLandPosition };
-    const Location* swimPositions[3]  = 
+    const Location* swimPositions[3]  =
         { &LurkerSEHealerSwimPosition, &LurkerSWHealerSwimPosition, &LurkerNHealerSwimPosition };
 
     uint32 mapId = lurker->GetMapId();
@@ -630,7 +630,7 @@ bool TheLurkerBelowPositionHealerAction::Execute(Event event)
     }
 
     // Log bot's current position
-    LOG_DEBUG("playerbots", "HealerAction: Bot {} current position ({}, {}, {}), swimming={}, inWater={}, underWater={}", 
+    LOG_DEBUG("playerbots", "HealerAction: Bot {} current position ({}, {}, {}), swimming={}, inWater={}, underWater={}",
     bot->GetName(), bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), bot->isSwimming(), bot->IsInWater(), bot->IsUnderWater());
 
     // Move if not close enough
@@ -1200,7 +1200,7 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event event)
 
         return false;
     }
-    
+
     // Target priority 3a: Fathom Sporebat
     Unit* fathomSporebat = AI_VALUE2(Unit*, "find target", "fathom sporebat");
     if (fathomSporebat && fathomSporebat->IsAlive())

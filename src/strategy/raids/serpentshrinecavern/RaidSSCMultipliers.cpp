@@ -39,11 +39,11 @@ float HydrossTheUnstableDisableTankActionsMultiplier::GetValue(Action* action)
 
         if ((bot->HasAura(SPELL_MARK_OF_HYDROSS_100) || bot->HasAura(SPELL_MARK_OF_HYDROSS_250) ||
              bot->HasAura(SPELL_MARK_OF_HYDROSS_500)) &&
-            (dynamic_cast<CastTauntAction*>(action) || dynamic_cast<CastGrowlAction*>(action) || 
+            (dynamic_cast<CastTauntAction*>(action) || dynamic_cast<CastGrowlAction*>(action) ||
              dynamic_cast<CastHandOfReckoningAction*>(action)))
             return 0.0f;
 
-        if (hydross->HasAura(SPELL_CORRUPTION) && 
+        if (hydross->HasAura(SPELL_CORRUPTION) &&
             (dynamic_cast<CombatFormationMoveAction*>(action) || IsChargeAction(action)))
             return 0.0f;
     }
@@ -53,7 +53,7 @@ float HydrossTheUnstableDisableTankActionsMultiplier::GetValue(Action* action)
         if (dynamic_cast<TankAssistAction*>(action))
             return 0.0f;
 
-        if (!hydross->HasAura(SPELL_CORRUPTION) && 
+        if (!hydross->HasAura(SPELL_CORRUPTION) &&
             (dynamic_cast<CombatFormationMoveAction*>(action) || IsChargeAction(action)))
             return 0.0f;
     }
@@ -61,7 +61,7 @@ float HydrossTheUnstableDisableTankActionsMultiplier::GetValue(Action* action)
     Unit* botTarget = botAI->GetUnit(bot->GetTarget());
     if (botAI->IsAssistTank(bot) && !botAI->IsAssistTankOfIndex(bot, 0))
     {
-        if ((hydross->GetVictim() == bot || botTarget && botTarget == hydross) && 
+        if ((hydross->GetVictim() == bot || botTarget && botTarget == hydross) &&
             dynamic_cast<AttackAction*>(action))
             return 0.0f;
     }
@@ -83,7 +83,7 @@ float HydrossTheUnstableWaitForDpsMultiplier::GetValue(Action* action)
         auto it = hydrossFrostDpsWaitTimer.find(mapId);
         if (it != hydrossFrostDpsWaitTimer.end() && (time(nullptr) - it->second) < dpsWaitSeconds)
         {
-            if (!botAI->IsMainTank(bot) && (dynamic_cast<AttackAction*>(action) || 
+            if (!botAI->IsMainTank(bot) && (dynamic_cast<AttackAction*>(action) ||
                 (!botAI->IsHeal(bot) && dynamic_cast<CastSpellAction*>(action))))
                 return 0.0f;
         }
@@ -94,7 +94,7 @@ float HydrossTheUnstableWaitForDpsMultiplier::GetValue(Action* action)
         auto it = hydrossNatureDpsWaitTimer.find(mapId);
         if (it != hydrossNatureDpsWaitTimer.end() && (time(nullptr) - it->second) < dpsWaitSeconds)
         {
-            if (!botAI->IsAssistTankOfIndex(bot, 0) && (dynamic_cast<AttackAction*>(action) || 
+            if (!botAI->IsAssistTankOfIndex(bot, 0) && (dynamic_cast<AttackAction*>(action) ||
                 !botAI->IsHeal(bot) && dynamic_cast<CastSpellAction*>(action)))
                 return 0.0f;
         }
@@ -128,7 +128,7 @@ float TheLurkerBelowStayAwayFromSpoutMultiplier::GetValue(Action* action)
 
     if (lurkerSpoutTimer.count(mapId) && lurkerSpoutTimer[mapId] > now)
     {
-        if (IsChargeAction(action) || dynamic_cast<CastKillingSpreeAction*>(action) || 
+        if (IsChargeAction(action) || dynamic_cast<CastKillingSpreeAction*>(action) ||
             dynamic_cast<CastBlinkBackAction*>(action) || dynamic_cast<CastDisengageAction*>(action) ||
             dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<FleeAction*>(action))
             return 0.0f;
@@ -163,7 +163,7 @@ float LeotherasTheBlindDisableTankActionsMultiplier::GetValue(Action* action)
     Unit* leotherasDemonPhase2 = GetPhase2LeotherasDemon(botAI);
     Player* demonFormTank = GetLeotherasDemonFormTank(botAI, bot);
 
-    if (botAI->IsTank(bot) && demonFormTank && leotherasDemonPhase2 && 
+    if (botAI->IsTank(bot) && demonFormTank && leotherasDemonPhase2 &&
         leotherasDemonPhase2->GetVictim() != demonFormTank)
         return 0.0f;
 
@@ -189,8 +189,8 @@ float LeotherasTheBlindDisableTankActionsMultiplier::GetValue(Action* action)
 float LeotherasTheBlindDemonFormDisableMeleeActionsMultiplier::GetValue(Action* action)
 {
     Unit* leotherasPhase2Demon = GetPhase2LeotherasDemon(botAI);
-    if (!leotherasPhase2Demon || leotherasPhase2Demon->HasAura(SPELL_LEOTHERAS_BANISHED) || 
-        botAI->IsRanged(bot) || leotherasPhase2Demon->GetVictim() == bot || 
+    if (!leotherasPhase2Demon || leotherasPhase2Demon->HasAura(SPELL_LEOTHERAS_BANISHED) ||
+        botAI->IsRanged(bot) || leotherasPhase2Demon->GetVictim() == bot ||
         botAI->IsMainTank(bot) || bot->HasAura(SPELL_INSIDIOUS_WHISPER))
         return 1.0f;
 
@@ -222,7 +222,7 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValue(Action* action)
         auto it = leotherasHumanFormDpsWaitTimer.find(mapId);
         if (it != leotherasHumanFormDpsWaitTimer.end() && (time(nullptr) - it->second) < dpsWaitSecondsPhase1)
         {
-            if (!botAI->IsTank(bot) && (dynamic_cast<AttackAction*>(action) || 
+            if (!botAI->IsTank(bot) && (dynamic_cast<AttackAction*>(action) ||
                 (!botAI->IsHeal(bot) && dynamic_cast<CastSpellAction*>(action))))
                 return 0.0f;
         }
@@ -235,7 +235,7 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValue(Action* action)
         auto it = leotherasDemonFormDpsWaitTimer.find(mapId);
         if (it != leotherasDemonFormDpsWaitTimer.end() && (time(nullptr) - it->second) < dpsWaitSecondsPhase2)
         {
-            if (dynamic_cast<AttackAction*>(action) || 
+            if (dynamic_cast<AttackAction*>(action) ||
                 !botAI->IsHeal(bot) && dynamic_cast<CastSpellAction*>(action))
                 return 0.0f;
         }
@@ -248,7 +248,7 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValue(Action* action)
         auto it = leotherasFinalPhaseDpsWaitTimer.find(mapId);
         if (it != leotherasFinalPhaseDpsWaitTimer.end() && (time(nullptr) - it->second) < dpsWaitSecondsPhase3)
         {
-            if (!botAI->IsTank(bot) && (dynamic_cast<AttackAction*>(action) || 
+            if (!botAI->IsTank(bot) && (dynamic_cast<AttackAction*>(action) ||
                 (!botAI->IsHeal(bot) && dynamic_cast<CastSpellAction*>(action))))
                 return 0.0f;
         }
