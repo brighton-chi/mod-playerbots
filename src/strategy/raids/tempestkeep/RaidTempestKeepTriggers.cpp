@@ -105,7 +105,7 @@ bool AlarNeedToManageTimersAndTrackersTrigger::IsActive()
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
 
-    return alar && IsMapIDTimerManager(botAI, bot);
+    return alar;
 }
 
 bool VoidReaverBossEngagedByTankTrigger::IsActive()

@@ -3,6 +3,7 @@
 
 #include <ctime>
 #include <unordered_map>
+#include <vector>
 
 #include "AiObject.h"
 #include "Position.h"
@@ -48,24 +49,28 @@ namespace TempestKeepHelpers
     namespace TempestKeepLocations
     {
         extern const Location AlarRangedCenter;
-        /* extern const Location AlarJumpPoint1;
-        extern const Location AlarJumpPoint2;
-        extern const Location AlarJumpPoint3;
-        extern const Location AlarJumpPoint4; */
         extern const Location AlarPlatform1;
         extern const Location AlarPlatform2;
         extern const Location AlarPlatform3;
         extern const Location AlarPlatform4;
-        extern const Location AlarGround1;
-        extern const Location AlarGround2;
-        extern const Location AlarGround3;
-        extern const Location AlarGround4;
         extern const Location AlarMelee1;
         extern const Location AlarMelee2;
         extern const Location AlarMelee3;
         extern const Location AlarMelee4;
+        extern const Location AlarPlatform1To2MidpointA;
+        extern const Location AlarPlatform1To2MidpointB;
+        extern const Location AlarPlatform2To3MidpointA;
+        extern const Location AlarPlatform2To3MidpointB;
+        extern const Location AlarPlatform3To4MidpointA;
+        extern const Location AlarPlatform3To4MidpointB;
+        extern const Location AlarGround1;
+        extern const Location AlarGround2;
+        extern const Location AlarGround3;
+        extern const Location AlarGround4;
         extern const Location AlarSERampBase;
+        extern const Location AlarMidpointToSERamp;
         extern const Location AlarSWRampBase;
+        extern const Location AlarMidpointToSWRamp;
         extern const Location AlarRoomSouthCenter;
 
         extern const Location VoidReaverTankPosition;
@@ -84,6 +89,20 @@ namespace TempestKeepHelpers
     extern std::unordered_map<uint32, int8> lastAlarPlatform;
     extern std::unordered_map<uint32, bool> lastRebirthState;
     extern std::unordered_map<uint32, bool> isPhase2;
+
+    extern std::unordered_map<ObjectGuid, int8> lastMainTankPlatform;
+    extern std::unordered_map<ObjectGuid, int8> lastAssistTankPlatform;
+    extern std::unordered_map<ObjectGuid, int8> lastMeleeTargetPlatform;
+
+    extern std::unordered_map<ObjectGuid, std::vector<bool>> meleeMidpointVisited;
+    extern std::unordered_map<ObjectGuid, std::vector<bool>> mtBalconyMidpointVisited;
+    extern std::unordered_map<ObjectGuid, std::vector<bool>> atBalconyMidpointVisited;
+    extern std::unordered_map<ObjectGuid, bool> mtGroundMidpointVisited;
+    extern std::unordered_map<ObjectGuid, bool> atGroundMidpointVisited;
+
+    extern std::vector<Location> midpoints_1_to_6;
+    extern std::vector<Location> midpoints_6_to_1;
+
     void UpdateAlarLastPlatform(Unit* alar, uint32 mapId, const std::vector<Location>& platforms);
     bool IsAlarAddTank(PlayerbotAI* botAI, Player* bot);
 

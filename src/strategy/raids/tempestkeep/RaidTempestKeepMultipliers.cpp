@@ -20,10 +20,10 @@ float AlarPhase1StickToTheScriptMultiplier::GetValue(Action* action)
         if (bot->IsInCombat() && dynamic_cast<TankAssistAction*>(action))
             return 0.0f;
 
-        if (dynamic_cast<MovementAction*>(action) &&
+        /* if (dynamic_cast<MovementAction*>(action) &&
             !(dynamic_cast<AlarBossTanksMoveBetweenPlatformsAction*>(action) ||
               dynamic_cast<AlarJumpFromPlatformAction*>(action)))
-           return 0.0f;
+           return 0.0f; */
     }
 
     /* if (dynamic_cast<SetBehindTargetAction*>(action))

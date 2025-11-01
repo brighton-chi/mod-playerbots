@@ -18,23 +18,25 @@ namespace TempestKeepHelpers
         const Location AlarPlatform2 = { 388.751f, 31.7312f, 20.2636f }; // Northwest Platform
         const Location AlarPlatform3 = { 388.791f, -33.1059f, 20.2636f }; // Northeast Platform
         const Location AlarPlatform4 = { 332.723f, -61.159f, 17.9791f }; // East Platform
-        /* const Location AlarJumpPoint1 = { 335.638f, 59.4879f, 17.9319f }; // West Platform
-        const Location AlarJumpPoint2 = { 388.751f, 31.7312f, 20.2636f }; // Northwest Platform
-        const Location AlarJumpPoint3 = { 388.791f, -33.1059f, 20.2636f }; // Northeast Platform
-        const Location AlarJumpPoint4 = { 332.723f, -61.159f, 17.9791f }; // East Platform */
         const Location AlarMelee1 = { 333.185f, 74.628f, 19.661f }; // West Platform
         const Location AlarMelee2 = { 397.689f, 37.748f, 20.181f }; // Northwest Platform
-        const Location AlarMelee3 = { 397.992f, -38.835f, 20.181f }; // Northeast Platform
-        const Location AlarMelee4 = { 331.710f, -72.067f, 19.178f }; // East Platform
+        const Location AlarMelee3 = { 397.689f, -37.748f, 20.181f }; // Northeast Platform
+        const Location AlarMelee4 = { 333.185f, -74.628f, 19.661f }; // East Platform
+        const Location AlarPlatform1To2MidpointA = { 362.264f, 83.648f, 19.797f }; // 1st Midpoint between Platform 1 and 2
+        const Location AlarPlatform1To2MidpointB = { 397.760f, 57.362f, 20.179f }; // 2nd Midpoint between Platform 1 and 2
+        const Location AlarPlatform2To3MidpointA = { 419.272f, 28.838f, 20.179f }; // 1st Midpoint between Platform 2 and 3
+        const Location AlarPlatform2To3MidpointB = { 419.272f, -28.838f, 20.179f }; // 2nd Midpoint between Platform 2 and 3
+        const Location AlarPlatform3To4MidpointA = { 397.760f, -57.362f, 20.179f }; // 1st Midpoint between Platform 3 and 4
+        const Location AlarPlatform3To4MidpointB = { 362.264f, -83.648f, 19.797f }; // 2nd Midpoint between Platform 3 and 4
         const Location AlarGround1 = { 336.439f, 48.181f, -2.389f }; // Landing point for jumping from West Platform
         const Location AlarGround2 = { 379.122f, 25.146f, -2.385f }; // Landing point for jumping from Northwest Platform
         const Location AlarGround3 = { 378.583f, -27.481f, -2.385f }; // Landing point for jumping from Northeast Platform
         const Location AlarGround4 = { 331.631f, -49.716f, -2.389f }; // Landing point for jumping from East Platform
-        /* const Location AlarSERampBase = { 285.600f, -23.579f, -2.389f };
-        const Location AlarSWRampBase = { 286.571f, 21.924f, -2.389f }; */
         const Location AlarSERampBase = { 281.064f, -36.590f, -2.389f };
+        const Location AlarMidpointToSERamp = { 337.099f, -6.412f, -2.389f };
         const Location AlarSWRampBase = { 281.064f, 36.590f, -2.389f };
-        const Location AlarRoomSouthCenter = { 281.441f, -0.979f, -2.389f };
+        const Location AlarMidpointToSWRamp = { 337.099f, 6.412f, -2.389f };
+        const Location AlarRoomSouthCenter = { 281.064f, 0.0f, -2.389f };
 
         const Location VoidReaverTankPosition   = { 423.845f,  371.733f, 14.897f }; // middle of room
 
@@ -42,7 +44,7 @@ namespace TempestKeepHelpers
     }
 
     /*
-    // From boss_alar.cpp
+    // From boss_alar.cpp, for reference while I work on this code
     const Position alarPoints[9] =
     {
         {335.638f, 59.4879f, 17.9319f, 4.60f}, //first platform
@@ -151,6 +153,36 @@ namespace TempestKeepHelpers
     std::unordered_map<uint32, int8> lastAlarPlatform;
     std::unordered_map<uint32, bool> lastRebirthState;
     std::unordered_map<uint32, bool> isPhase2;
+
+    std::unordered_map<ObjectGuid, int8> lastMainTankPlatform;
+    std::unordered_map<ObjectGuid, int8> lastAssistTankPlatform;
+    std::unordered_map<ObjectGuid, int8> lastMeleeTargetPlatform;
+
+    std::unordered_map<ObjectGuid, std::vector<bool>> meleeMidpointVisited;
+    std::unordered_map<ObjectGuid, std::vector<bool>> mtBalconyMidpointVisited;
+    std::unordered_map<ObjectGuid, std::vector<bool>> atBalconyMidpointVisited;
+    std::unordered_map<ObjectGuid, bool> mtGroundMidpointVisited;
+    std::unordered_map<ObjectGuid, bool> atGroundMidpointVisited;
+
+    std::vector<Location> midpoints_1_to_6 =
+    {
+        TempestKeepLocations::AlarPlatform1To2MidpointA,
+        TempestKeepLocations::AlarPlatform1To2MidpointB,
+        TempestKeepLocations::AlarPlatform2To3MidpointA,
+        TempestKeepLocations::AlarPlatform2To3MidpointB,
+        TempestKeepLocations::AlarPlatform3To4MidpointA,
+        TempestKeepLocations::AlarPlatform3To4MidpointB
+    };
+
+    std::vector<Location> midpoints_6_to_1 =
+    {
+        TempestKeepLocations::AlarPlatform3To4MidpointB,
+        TempestKeepLocations::AlarPlatform3To4MidpointA,
+        TempestKeepLocations::AlarPlatform2To3MidpointB,
+        TempestKeepLocations::AlarPlatform2To3MidpointA,
+        TempestKeepLocations::AlarPlatform1To2MidpointB,
+        TempestKeepLocations::AlarPlatform1To2MidpointA
+    };
 
     bool IsAlarAddTank(PlayerbotAI* botAI, Player* bot)
     {
