@@ -154,22 +154,21 @@ bool HighAstromancerSolarianTransformedIntoVoidwalkerTrigger::IsActive()
 bool HighAstromancerSolarianCanCastFearWardOnMainTankTrigger::IsActive()
 {
     Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
-    Player* mainTank = nullptr;
+    Group* group = bot->GetGroup();
+    if (!astromancer || !group)
+        return false;
 
-    if (Group* group = bot->GetGroup())
+    Player* mainTank = nullptr;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        Player* member = ref->GetSource();
+        if (member && botAI->IsMainTank(member))
         {
-            Player* member = ref->GetSource();
-            if (member && botAI->IsMainTank(member))
-            {
-                mainTank = member;
-                break;
-            }
+            mainTank = member;
+            break;
         }
     }
 
-    return astromancer && astromancer->HasAura(SPELL_SOLARIAN_TRANSFORM) &&
-           bot->getClass() == CLASS_PRIEST && mainTank && !mainTank->HasAura(SPELL_FEAR_WARD) &&
-           botAI->CanCastSpell("fear ward", mainTank);
+    return astromancer->HasAura(SPELL_SOLARIAN_TRANSFORM) && bot->getClass() == CLASS_PRIEST &&
+           mainTank && !mainTank->HasAura(SPELL_FEAR_WARD) && botAI->CanCastSpell("fear ward", mainTank);
 }

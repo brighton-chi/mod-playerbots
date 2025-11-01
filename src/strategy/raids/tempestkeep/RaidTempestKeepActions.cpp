@@ -159,12 +159,22 @@ bool AlarBossTanksMoveBetweenPlatformsAction::PositionMainTank(Player* mainTank,
 
         if (mainTank->GetExactDist2d(mtTarget.x, mtTarget.y) >= 10.0f)
         {
-            if (mainTank->GetPositionZ() < 13.0f)
+            /* if (mainTank->GetPositionZ() < 13.0f)
                 return MoveTo(bot->GetMapId(), mtTarget.x, mtTarget.y, mtTarget.z, false, false, false, true,
                               MovementPriority::MOVEMENT_FORCED, true, false);
             else
                 bot->TeleportTo(bot->GetMapId(), mtTarget.x, mtTarget.y, mtTarget.z, mainTank->GetOrientation());
-                return true;
+                return true; */
+            float moveDist = std::min(7.0f, mainTank->GetExactDist2d(mtTarget.x, mtTarget.y));
+            float dx = mtTarget.x - mainTank->GetPositionX();
+            float dy = mtTarget.y - mainTank->GetPositionY();
+            float norm = sqrt(dx * dx + dy * dy);
+            float moveX = mainTank->GetPositionX() + (dx / norm) * moveDist;
+            float moveY = mainTank->GetPositionY() + (dy / norm) * moveDist;
+            float moveZ = mainTank->GetPositionZ();
+
+            return MoveTo(bot->GetMapId(), moveX, moveY, moveZ, false, false, false, true,
+                        MovementPriority::MOVEMENT_FORCED, true, false);
         }
 
         if (mainTank->GetVictim() != alar)
@@ -285,15 +295,25 @@ bool AlarMeleeDpsFocusOnBossAction::Execute(Event event)
         std::vector<Location> platforms = { AlarPlatform1, AlarPlatform2, AlarPlatform3, AlarPlatform4 };
         const Location& currentPlatform = platforms[alarPlatform];
 
-        if (bot->GetExactDist2d(currentPlatform.x, currentPlatform.y) > 70.0f)
+        if (bot->GetExactDist2d(currentPlatform.x, currentPlatform.y) >= 10.0f)
         {
             /* if (alarPlatform == 2) // Platform 3; for some reason bots will not move from Platform 2 to Platform 3
                 return JumpTo(mapId, currentPlatform.x, currentPlatform.y, currentPlatform.z, MovementPriority::MOVEMENT_FORCED);
             else
                 return MoveTo(mapId, currentPlatform.x, currentPlatform.y, currentPlatform.z, false, false, false, true,
                        MovementPriority::MOVEMENT_FORCED, true, false); */
-            bot->TeleportTo(mapId, currentPlatform.x, currentPlatform.y, currentPlatform.z, bot->GetOrientation());
-            return true;
+            /* bot->TeleportTo(mapId, currentPlatform.x, currentPlatform.y, currentPlatform.z, bot->GetOrientation());
+            return true; */
+            float moveDist = std::min(7.0f, bot->GetExactDist2d(currentPlatform.x, currentPlatform.y));
+            float dx = currentPlatform.x - bot->GetPositionX();
+            float dy = currentPlatform.y - bot->GetPositionY();
+            float norm = sqrt(dx * dx + dy * dy);
+            float moveX = bot->GetPositionX() + (dx / norm) * moveDist;
+            float moveY = bot->GetPositionY() + (dy / norm) * moveDist;
+            float moveZ = bot->GetPositionZ();
+
+            return MoveTo(mapId, moveX, moveY, moveZ, false, false, false, true,
+                          MovementPriority::MOVEMENT_FORCED, true, false);
         }
     }
 
@@ -329,9 +349,9 @@ bool AlarRangedDpsPrioritizeAddsAction::Execute(Event event)
         }
     }
 
+    uint32 mapId = alar->GetMapId();
     if (!isPhase2[mapId])
     {
-        uint32 mapId = alar->GetMapId();
         int8 alarPlatform = lastAlarPlatform[mapId];
 
         // List of ground locations matching platforms
@@ -372,9 +392,9 @@ bool AlarPositionHealerAction::Execute(Event event)
     if (!alar)
         return false;
 
+    uint32 mapId = alar->GetMapId();
     if (!isPhase2[mapId])
     {
-        uint32 mapId = alar->GetMapId();
         int8 alarPlatform = lastAlarPlatform[mapId];
 
         // List of ground locations matching platforms
@@ -415,18 +435,25 @@ bool AlarAddTankPickUpEmbersAction::Execute(Event event)
     if (!alar)
         return false;
 
+    uint32 mapId = alar->GetMapId();
     Unit* ember = GetFirstAliveUnitByEntry(botAI, NPC_EMBER_OF_ALAR);
     if (ember)
     {
         MarkTargetWithSquare(bot, ember);
         SetRtiTarget(botAI, "square", ember);
 
-        if (ember->GetVictim() == bot)
+        const Location& center = AlarRangedCenter;
+        if (ember->GetVictim() == bot && bot->GetExactDist2d(center.x, center.y) > 5.0f)
         {
-            const Location& center = AlarRangedCenter;
-            if (bot->GetExactDist2d(center.x, center.y) > 5.0f)
-                return MoveTo(bot->GetMapId(), center.x, center.y, bot->GetPositionZ(), false, false,
-                              false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+            float dX = center.x - bot->GetPositionX();
+            float dY = center.y - bot->GetPositionY();
+            float dist = sqrt(dX * dX + dY * dY);
+            float moveDist = std::min(7.0f, dist);
+            float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
+
+            return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+                          MovementPriority::MOVEMENT_COMBAT, true, false);
         }
 
         if (bot->GetVictim() != ember)
@@ -434,7 +461,6 @@ bool AlarAddTankPickUpEmbersAction::Execute(Event event)
     }
     else if (!isPhase2[mapId])
     {
-        uint32 mapId = alar->GetMapId();
         int8 alarPlatform = lastAlarPlatform[mapId];
 
         // List of ground locations matching platforms
@@ -693,9 +719,9 @@ bool VoidReaverPositionBossAction::Execute(Event event)
 
         if (distanceToTankPosition > 2.0f)
         {
-            float stepSize = std::min(4.5f, distanceToTankPosition);
-            float moveX = bot->GetPositionX() + (dX / distanceToTankPosition) * stepSize;
-            float moveY = bot->GetPositionY() + (dY / distanceToTankPosition) * stepSize;
+            float moveDist = std::min(4.5f, distanceToTankPosition);
+            float moveX = bot->GetPositionX() + (dX / distanceToTankPosition) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / distanceToTankPosition) * moveDist;
             const float moveZ = tankPosition.z;
             return MoveTo(bot->GetMapId(), moveX, moveY, moveZ, false, false, false, false,
                           MovementPriority::MOVEMENT_FORCED, true, false);
@@ -738,29 +764,29 @@ bool VoidReaverSpreadRangedAction::Execute(Event event)
 
         const Location& tankPosition = VoidReaverTankPosition;
         const float radius = 30.0f;
-        const uint8 botsPerRing = 8;
         const float offsetArc = 1.0f;
+        const uint8 botsPerRing = 8;
 
-        // Assign healer positions first
-        for (size_t i = 0; i < healers.size(); ++i)
-        {
-            Player* healer = healers[i];
-            Position pos = GetRangedBotPosition(tankPosition, radius, healers.size(), 0.0f, i, healer->GetPositionZ());
-            initialVoidReaverPositions[healer->GetGUID()] = pos;
-            hasReachedInitialVoidReaverPosition[healer->GetGUID()] = false;
-            LOG_DEBUG("playerbots", "VoidReaverSpreadRangedAction: Healer {} assigned initial position ({}, {}, {})",
-                healer->GetName(), pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ());
-        }
+        // Assign all ranged (healers first, then dps) to rings
+        std::vector<Player*> rangedBots = healers;
+        rangedBots.insert(rangedBots.end(), rangedDps.begin(), rangedDps.end());
 
-        // Assign ranged DPS positions next, offset from healers
-        for (size_t i = 0; i < rangedDps.size(); ++i)
+        for (size_t i = 0; i < rangedBots.size(); ++i)
         {
-            Player* dps = rangedDps[i];
-            Position pos = GetRangedBotPosition(tankPosition, radius, rangedDps.size(), offsetArc, i, dps->GetPositionZ());
-            initialVoidReaverPositions[dps->GetGUID()] = pos;
-            hasReachedInitialVoidReaverPosition[dps->GetGUID()] = false;
-            LOG_DEBUG("playerbots", "VoidReaverSpreadRangedAction: DPS {} assigned initial position ({}, {}, {})",
-                dps->GetName(), pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ());
+            Player* ranged = rangedBots[i];
+            uint8 ringIndex = i / botsPerRing;
+            uint8 posInRing = i % botsPerRing;
+            float ringRadius = radius + (ringIndex * offsetArc);
+            float angle = 2 * M_PI * posInRing / botsPerRing;
+
+            float targetX = tankPosition.x + ringRadius * cos(angle);
+            float targetY = tankPosition.y + ringRadius * sin(angle);
+
+            Position pos(targetX, targetY, ranged->GetPositionZ());
+            initialVoidReaverPositions[ranged->GetGUID()] = pos;
+            hasReachedInitialVoidReaverPosition[ranged->GetGUID()] = false;
+            LOG_DEBUG("playerbots", "VoidReaverSpreadRangedAction: {} assigned ring {} position ({}, {}, {})",
+                ranged->GetName(), ringIndex + 1, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ());
         }
     }
 
@@ -814,7 +840,7 @@ Position VoidReaverSpreadRangedAction::GetRangedBotPosition(const TempestKeepHel
     const Location& position = AstromancerStackPosition;
 
     // Phase 1 & 2 - Ranged
-    if (botAI->IsRanged(bot) && bot->GetExactDist2d(position.x, position.y) > 4.0f)
+    if (botAI->IsRanged(bot) && bot->GetExactDist2d(position.x, position.y) >= 4.0f)
     {
         bot->AttackStop();
         bot->InterruptNonMeleeSpells(false);
@@ -825,7 +851,7 @@ Position VoidReaverSpreadRangedAction::GetRangedBotPosition(const TempestKeepHel
     // Phase 2 - Melee move to Ranged
     Unit* solariumAgent = AI_VALUE2(Unit*, "find target", "solarium agent");
     if (solariumAgent && botAI->IsMelee(bot) &&
-        bot->GetExactDist2d(position.x, position.y) > 6.0f)
+        bot->GetExactDist2d(position.x, position.y) >= 6.0f)
     {
         bot->AttackStop();
         return MoveTo(bot->GetMapId(), position.x, position.y, bot->GetPositionZ(), false, false, false, false,
@@ -838,26 +864,26 @@ Position VoidReaverSpreadRangedAction::GetRangedBotPosition(const TempestKeepHel
 bool HighAstromancerSolarianStackBotsAction::Execute(Event event)
 {
     Unit* solariumAgent = AI_VALUE2(Unit*, "find target", "solarium agent");
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
 
     // Phase 2: If any agent is present, all bots stack on first alive group member
     if (solariumAgent)
     {
         Player* stackTarget = nullptr;
-        if (Group* group = bot->GetGroup())
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
-            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+            Player* member = ref->GetSource();
+            if (member && member->IsAlive())
             {
-                Player* member = ref->GetSource();
-                if (member && member->IsAlive())
-                {
-                    stackTarget = member;
-                    break;
-                }
+                stackTarget = member;
+                break;
             }
         }
 
-        if (stackTarget && bot != stackTarget && bot->GetExactDist2d(stackTarget) > 5.0f)
-        {;
+        if (stackTarget && bot != stackTarget && bot->GetExactDist2d(stackTarget) >= 5.0f)
+        {
             return MoveTo(bot->GetMapId(), stackTarget->GetPositionX(), stackTarget->GetPositionY(), stackTarget->GetPositionZ(),
                           false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
@@ -865,7 +891,7 @@ bool HighAstromancerSolarianStackBotsAction::Execute(Event event)
         return false;
     }
 
-    // Phase 1: All ranged stack 25 yards from boss (e.g., north)
+    // Phase 1: All ranged stack 25 yards from boss
     Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
     if (astromancer && botAI->IsRanged(bot))
     {
@@ -875,7 +901,7 @@ bool HighAstromancerSolarianStackBotsAction::Execute(Event event)
         float stackY = astromancer->GetPositionY() + stackDistance * sin(stackAngle);
         float stackZ = astromancer->GetPositionZ();
 
-        if (bot->GetExactDist2d(stackX, stackY) > 3.0f)
+        if (bot->GetExactDist2d(stackX, stackY) >= 3.0f)
         {
             bot->AttackStop();
             bot->InterruptNonMeleeSpells(false);

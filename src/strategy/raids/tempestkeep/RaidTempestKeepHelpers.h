@@ -60,6 +60,10 @@ namespace TempestKeepHelpers
         extern const Location AlarGround2;
         extern const Location AlarGround3;
         extern const Location AlarGround4;
+        extern const Location AlarMelee1;
+        extern const Location AlarMelee2;
+        extern const Location AlarMelee3;
+        extern const Location AlarMelee4;
         extern const Location AlarSERampBase;
         extern const Location AlarSWRampBase;
         extern const Location AlarRoomSouthCenter;
@@ -78,6 +82,8 @@ namespace TempestKeepHelpers
     Unit* GetNearestPlayerInRadius(Player* bot, float radius);
 
     extern std::unordered_map<uint32, int8> lastAlarPlatform;
+    extern std::unordered_map<uint32, bool> lastRebirthState;
+    extern std::unordered_map<uint32, bool> isPhase2;
     void UpdateAlarLastPlatform(Unit* alar, uint32 mapId, const std::vector<Location>& platforms);
     bool IsAlarAddTank(PlayerbotAI* botAI, Player* bot);
 

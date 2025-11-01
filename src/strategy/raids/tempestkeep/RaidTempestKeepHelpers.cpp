@@ -21,11 +21,11 @@ namespace TempestKeepHelpers
         /* const Location AlarJumpPoint1 = { 335.638f, 59.4879f, 17.9319f }; // West Platform
         const Location AlarJumpPoint2 = { 388.751f, 31.7312f, 20.2636f }; // Northwest Platform
         const Location AlarJumpPoint3 = { 388.791f, -33.1059f, 20.2636f }; // Northeast Platform
-        const Location AlarJumpPoint4 = { 332.723f, -61.159f, 17.9791f }; // East Platform
-        const Location AlarPlatform1 = { 333.185f, 74.628f, 19.661f }; // West Platform
-        const Location AlarPlatform2 = { 397.689f, 37.748f, 20.181f }; // Northwest Platform
-        const Location AlarPlatform3 = { 397.992f, -38.835f, 20.181f }; // Northeast Platform
-        const Location AlarPlatform4 = { 331.710f, -72.067f, 19.178f }; // East Platform */
+        const Location AlarJumpPoint4 = { 332.723f, -61.159f, 17.9791f }; // East Platform */
+        const Location AlarMelee1 = { 333.185f, 74.628f, 19.661f }; // West Platform
+        const Location AlarMelee2 = { 397.689f, 37.748f, 20.181f }; // Northwest Platform
+        const Location AlarMelee3 = { 397.992f, -38.835f, 20.181f }; // Northeast Platform
+        const Location AlarMelee4 = { 331.710f, -72.067f, 19.178f }; // East Platform
         const Location AlarGround1 = { 336.439f, 48.181f, -2.389f }; // Landing point for jumping from West Platform
         const Location AlarGround2 = { 379.122f, 25.146f, -2.385f }; // Landing point for jumping from Northwest Platform
         const Location AlarGround3 = { 378.583f, -27.481f, -2.385f }; // Landing point for jumping from Northeast Platform
@@ -149,6 +149,8 @@ namespace TempestKeepHelpers
     }
 
     std::unordered_map<uint32, int8> lastAlarPlatform;
+    std::unordered_map<uint32, bool> lastRebirthState;
+    std::unordered_map<uint32, bool> isPhase2;
 
     bool IsAlarAddTank(PlayerbotAI* botAI, Player* bot)
     {
