@@ -149,10 +149,10 @@ public:
     bool IsActive() override;
 };
 
-class ShadeOfAranBossEngagedByRangedTrigger : public Trigger
+class ShadeOfAranBossUsesCounterspellTrigger : public Trigger
 {
 public:
-    ShadeOfAranBossEngagedByRangedTrigger(PlayerbotAI* botAI) : Trigger(botAI, "shade of aran boss engaged by ranged") {}
+    ShadeOfAranBossUsesCounterspellTrigger(PlayerbotAI* botAI) : Trigger(botAI, "shade of aran boss uses counterspell") {}
     bool IsActive() override;
 };
 

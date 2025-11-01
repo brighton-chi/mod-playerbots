@@ -173,10 +173,10 @@ public:
     bool Execute(Event event) override;
 };
 
-class ShadeOfAranSpreadRangedAction : public MovementAction
+class ShadeOfAranRangedKeepDistanceAction : public MovementAction
 {
 public:
-    ShadeOfAranSpreadRangedAction(PlayerbotAI* botAI, std::string const name = "shade of aran spread ranged") : MovementAction(botAI, name) {}
+    ShadeOfAranRangedKeepDistanceAction(PlayerbotAI* botAI, std::string const name = "shade of aran ranged keep distance") : MovementAction(botAI, name) {}
 
     bool Execute(Event event) override;
 };

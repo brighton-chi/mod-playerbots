@@ -39,7 +39,7 @@ public:
         creators["shade of aran run away from arcane explosion"] = &RaidKarazhanActionContext::shade_of_aran_run_away_from_arcane_explosion;
         creators["shade of aran stop moving during flame wreath"] = &RaidKarazhanActionContext::shade_of_aran_stop_moving_during_flame_wreath;
         creators["shade of aran mark conjured elemental"] = &RaidKarazhanActionContext::shade_of_aran_mark_conjured_elemental;
-        creators["shade of aran spread ranged"] = &RaidKarazhanActionContext::shade_of_aran_spread_ranged;
+        creators["shade of aran ranged keep distance"] = &RaidKarazhanActionContext::shade_of_aran_ranged_keep_distance;
 
         creators["netherspite block red beam"] = &RaidKarazhanActionContext::netherspite_block_red_beam;
         creators["netherspite block blue beam"] = &RaidKarazhanActionContext::netherspite_block_blue_beam;
@@ -91,7 +91,7 @@ private:
     static Action* shade_of_aran_run_away_from_arcane_explosion(PlayerbotAI* botAI) { return new ShadeOfAranRunAwayFromArcaneExplosionAction(botAI); }
     static Action* shade_of_aran_stop_moving_during_flame_wreath(PlayerbotAI* botAI) { return new ShadeOfAranStopMovingDuringFlameWreathAction(botAI); }
     static Action* shade_of_aran_mark_conjured_elemental(PlayerbotAI* botAI) { return new ShadeOfAranMarkConjuredElementalAction(botAI); }
-    static Action* shade_of_aran_spread_ranged(PlayerbotAI* botAI) { return new ShadeOfAranSpreadRangedAction(botAI); }
+    static Action* shade_of_aran_ranged_keep_distance(PlayerbotAI* botAI) { return new ShadeOfAranRangedKeepDistanceAction(botAI); }
 
     static Action* netherspite_block_red_beam(PlayerbotAI* botAI) { return new NetherspiteBlockRedBeamAction(botAI); }
     static Action* netherspite_block_blue_beam(PlayerbotAI* botAI) { return new NetherspiteBlockBlueBeamAction(botAI); }

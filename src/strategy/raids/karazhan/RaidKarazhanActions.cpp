@@ -503,7 +503,7 @@ bool ShadeOfAranMarkConjuredElementalAction::Execute(Event event)
 
 
 // Don't get closer than 10 yards to Aran to avoid counterspell
-bool ShadeOfAranSpreadRangedAction::Execute(Event event)
+bool ShadeOfAranRangedKeepDistanceAction::Execute(Event event)
 {
     Unit* aran = AI_VALUE2(Unit*, "find target", "shade of aran");
     if (!aran)

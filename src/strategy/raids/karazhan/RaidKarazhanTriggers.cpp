@@ -185,7 +185,7 @@ bool ShadeOfAranConjuredElementalsSummonedTrigger::IsActive()
     return aran && target && target->IsAlive() && !target->HasAura(SPELL_WARLOCK_BANISH);
 }
 
-bool ShadeOfAranBossEngagedByRangedTrigger::IsActive()
+bool ShadeOfAranBossUsesCounterspellTrigger::IsActive()
 {
     Unit* aran = AI_VALUE2(Unit*, "find target", "shade of aran");
 
