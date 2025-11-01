@@ -22,10 +22,13 @@ bool AlarPullingBossTrigger::IsActive()
 bool AlarEngagedByTanksInPhase1Trigger::IsActive()
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+    if (!alar)
+        return false;
 
-    return (botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0)) && alar && 
-            alar->GetPositionZ() >= 17.0f && alar->GetPositionZ() < 22.0f &&
-            !(alar->HasAura(SPELL_DIVE_BOMB) || alar->HasAura(SPELL_DIVE_BOMB_VISUAL));
+    uint32 mapId = alar->GetMapId();
+
+    return (botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0)) && 
+            alar->GetPositionZ() < 22.0f && !isPhase2[mapId];
 }
 
 bool AlarBossEngagedByMeleeDpsTrigger::IsActive()
@@ -60,9 +63,13 @@ bool AlarEmbersOfAlarSpawnedTrigger::IsActive()
 bool AlarIncomingFlameQuillsTrigger::IsActive()
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+    if (!alar)
+        return false;
 
-    return alar && alar->GetHealthPct() < 95.0f && alar->GetPositionZ() >= 22.0f &&
-           !(alar->HasAura(SPELL_DIVE_BOMB) || alar->HasAura(SPELL_DIVE_BOMB_VISUAL));
+    uint32 mapId = alar->GetMapId();
+
+    return alar->GetHealthPct() < 95.0f && alar->GetPositionZ() >= 22.0f &&
+           !isPhase2[mapId];
 }
 
 bool AlarRisingFromTheAshesTrigger::IsActive()
@@ -75,15 +82,23 @@ bool AlarRisingFromTheAshesTrigger::IsActive()
 bool AlarEngagedByTanksInPhase2Trigger::IsActive()
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+    if (!alar)
+        return false;
 
-    return (botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0)) && alar && alar->GetPositionZ() < 17.0f;
+    uint32 mapId = alar->GetMapId();
+
+    return (botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0)) && isPhase2[mapId];
 }
 
 bool AlarPreparingToDiveBombTrigger::IsActive()
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+    if (!alar)
+        return false;
 
-    return !botAI->IsTank(bot) && alar && (alar->HasAura(SPELL_DIVE_BOMB) || alar->HasAura(SPELL_DIVE_BOMB_VISUAL));
+    uint32 mapId = alar->GetMapId();
+
+    return alar->GetPositionZ() >= 42.0f && isPhase2[mapId];
 }
 
 bool AlarNeedToManageTimersAndTrackersTrigger::IsActive()

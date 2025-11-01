@@ -26,8 +26,8 @@ float AlarPhase1StickToTheScriptMultiplier::GetValue(Action* action)
            return 0.0f;
     }
 
-    if (dynamic_cast<SetBehindTargetAction*>(action))
-        return 0.0f;
+    /* if (dynamic_cast<SetBehindTargetAction*>(action))
+        return 0.0f; */
 
     return 1.0f;
 }

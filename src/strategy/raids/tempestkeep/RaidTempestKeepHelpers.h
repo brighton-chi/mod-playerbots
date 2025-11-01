@@ -13,10 +13,10 @@ namespace TempestKeepHelpers
     enum TempestKeepSpells
     {
         // Al'ar
-        SPELL_FLAME_QUILLS              = 34229, //aura present when actually casting
+        // SPELL_FLAME_QUILLS              = 34229, //aura present when actually casting
         SPELL_REBIRTH_PHASE2 = 34342,
-        SPELL_DIVE_BOMB                 = 35181,
-        SPELL_DIVE_BOMB_VISUAL          = 35367,
+        // SPELL_DIVE_BOMB                 = 35181,
+        // SPELL_DIVE_BOMB_VISUAL          = 35367,
         SPELL_MELT_ARMOR                = 35410,
 
         // High Astromancer Solarian
