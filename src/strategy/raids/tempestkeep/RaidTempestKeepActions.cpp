@@ -150,8 +150,6 @@ bool AlarBossTanksMoveBetweenPlatformsAction::PositionMainTank(Player* mainTank,
     Location mtTarget;
     std::vector<Location> midpoints;
 
-    int8 fromPlatform = lastMainTankPlatform[mainTank->GetGUID()];
-
     // Determine target and midpoints based on Al'ar's platform
     switch (alarPlatform)
     {
@@ -177,7 +175,6 @@ bool AlarBossTanksMoveBetweenPlatformsAction::PositionMainTank(Player* mainTank,
     // If already at target, update state and attack
     if (mainTank->GetExactDist2d(mtTarget.x, mtTarget.y) < 2.0f)
     {
-        lastMainTankPlatform[mainTank->GetGUID()] = (mtTarget.x == platforms[0].x) ? 0 : 2;
         mtBalconyMidpointVisited[mainTank->GetGUID()].clear();
 
         if (mainTank->GetVictim() != alar)
@@ -207,7 +204,7 @@ bool AlarBossTanksMoveBetweenPlatformsAction::PositionMainTank(Player* mainTank,
                 if (mainTank->GetExactDist2d(wp.x, wp.y) >= 2.0f)
                 {
                     return MoveTo(bot->GetMapId(), wp.x, wp.y, wp.z, false, false, false, true,
-                                  MovementPriority::MOVEMENT_FORCED, true, false);
+                                  MovementPriority::MOVEMENT_FORCED, false, false);
                 }
                 else
                     mtBalconyMidpointVisited[mainTank->GetGUID()][i] = true;
@@ -220,7 +217,7 @@ bool AlarBossTanksMoveBetweenPlatformsAction::PositionMainTank(Player* mainTank,
     if (mainTank->GetExactDist2d(mtTarget.x, mtTarget.y) >= 2.0f)
     {
         return MoveTo(bot->GetMapId(), mtTarget.x, mtTarget.y, mtTarget.z, false, false, false, true,
-                      MovementPriority::MOVEMENT_FORCED, true, false);
+                      MovementPriority::MOVEMENT_FORCED, false, false);
     }
 
     return false;
@@ -266,115 +263,118 @@ bool AlarBossTanksMoveBetweenPlatformsAction::PositionMainTank(Player* mainTank,
 
     return false;
 } */
+// AFTER FLAME QUILL IS PROBLEM, DOESN'T GO TO PLATFORM 4 NECESSARILY
 bool AlarBossTanksMoveBetweenPlatformsAction::PositionAssistTank(Player* assistTank, Unit* alar, int8 alarPlatform, const std::vector<Location>& platforms)
 {
-    if (assistTank && alar)
+    if (!assistTank || !alar)
+        return false;
+
+    if (assistTank->GetPositionZ() < 13.0f)
+        return false;
+
+    int8 fromPlatform = lastAssistTankPlatform[assistTank->GetGUID()];
+    int8 toPlatform = alarPlatform;
+
+    // Special case: if last platform was 2 and Al'ar HP >= 70%, move directly to platform 2
+    if (fromPlatform == 1 && alar->GetHealthPct() >= 70.0f)
     {
-        int8 fromPlatform = lastAssistTankPlatform[assistTank->GetGUID()];
-        int8 toPlatform = alarPlatform;
-
-        // Special case: if last platform was 2 and Al'ar HP >= 70%, move directly to platform 2
-        if (fromPlatform == 1 && alar->GetHealthPct() >= 70.0f)
+        const Location& directTarget = platforms[1]; // Platform 2
+        if (assistTank->GetExactDist2d(directTarget.x, directTarget.y) < 2.0f)
         {
-            const Location& directTarget = platforms[1]; // Platform 2
-            if (assistTank->GetExactDist2d(directTarget.x, directTarget.y) >= 2.0f)
+            lastAssistTankPlatform[assistTank->GetGUID()] = toPlatform;
+            atBalconyMidpointVisited[assistTank->GetGUID()].clear();
+
+            if (assistTank->GetVictim() != alar)
             {
-                return MoveTo(bot->GetMapId(), directTarget.x, directTarget.y, directTarget.z, false, false, false, true,
-                              MovementPriority::MOVEMENT_FORCED, true, false);
+                const char* taunts[] = { "taunt", "growl", "hand of reckoning" };
+                for (const char* spellName : taunts)
+                {
+                    if (botAI->CanCastSpell(spellName, alar))
+                        return botAI->CastSpell(spellName, alar);
+                }
+                return Attack(alar);
             }
-            else
-            {
-                lastAssistTankPlatform[assistTank->GetGUID()] = toPlatform;
-                // Optionally clear visited waypoints if needed
+            return false;
+        }
+        else
+        {
+            if (atBalconyMidpointVisited[assistTank->GetGUID()].size() != 0)
                 atBalconyMidpointVisited[assistTank->GetGUID()].clear();
+            return MoveTo(bot->GetMapId(), directTarget.x, directTarget.y, directTarget.z, false, false, false, true,
+                          MovementPriority::MOVEMENT_FORCED, true, false);
+        }
+    }
+
+    // Assist tank only ever moves between platform 2 and 4
+    Location atTarget;
+    std::vector<Location> midpoints;
+
+    switch (alarPlatform)
+    {
+        case 0: // Al'ar at platform 1
+        case 1: // Al'ar at platform 2
+            atTarget = platforms[1]; // Move/stay at platform 2
+            midpoints.clear(); // No movement if already at 2
+            break;
+        case 2: // Al'ar at platform 3
+            atTarget = platforms[3]; // Move to platform 4
+            midpoints = std::vector<Location>(midpoints_1_to_6.begin() + 2, midpoints_1_to_6.end()); // Forward
+            break;
+        case 3: // Al'ar at platform 4
+            atTarget = platforms[3]; // Stay at platform 4
+            midpoints.clear(); // No movement
+            break;
+        default:
+            return false;
+    }
+
+    // If already at target, update state and attack
+    if (assistTank->GetExactDist2d(atTarget.x, atTarget.y) < 2.0f)
+    {
+        lastAssistTankPlatform[assistTank->GetGUID()] = toPlatform;
+        atBalconyMidpointVisited[assistTank->GetGUID()].clear();
+
+        if (assistTank->GetVictim() != alar)
+        {
+            const char* taunts[] = { "taunt", "growl", "hand of reckoning" };
+            for (const char* spellName : taunts)
+            {
+                if (botAI->CanCastSpell(spellName, alar))
+                    return botAI->CastSpell(spellName, alar);
+            }
+            return Attack(alar);
+        }
+        return false;
+    }
+
+    // If movement is needed, go through midpoints
+    if (!midpoints.empty())
+    {
+        if (atBalconyMidpointVisited[assistTank->GetGUID()].size() != midpoints.size())
+            atBalconyMidpointVisited[assistTank->GetGUID()] = std::vector<bool>(midpoints.size(), false);
+
+        for (size_t i = 0; i < midpoints.size(); ++i)
+        {
+            if (!atBalconyMidpointVisited[assistTank->GetGUID()][i])
+            {
+                const Location& wp = midpoints[i];
+                if (assistTank->GetExactDist2d(wp.x, wp.y) >= 2.0f)
+                {
+                    return MoveTo(bot->GetMapId(), wp.x, wp.y, wp.z, false, false, false, true,
+                                  MovementPriority::MOVEMENT_FORCED, true, false);
+                }
+                else
+                    atBalconyMidpointVisited[assistTank->GetGUID()][i] = true;
+                break;
             }
         }
+    }
 
-        if (assistTank->GetPositionZ() >= 13.0f)
-        {
-            Location atTarget;
-            std::vector<Location> midpoints;
-            bool movingForward = false;
-
-            switch (alarPlatform)
-            {
-                case 0: // Platform 1
-                case 1: // Platform 2
-                    atTarget = platforms[1]; // Platform 2
-                    break;
-                case 2: // Platform 3
-                case 3: // Platform 4
-                    atTarget = platforms[3]; // Platform 4
-                    break;
-                default:
-                    return false;
-            }
-
-            if (assistTank->GetExactDist2d(atTarget.x, atTarget.y) < 2.0f)
-            {
-                lastAssistTankPlatform[assistTank->GetGUID()] = toPlatform;
-                atBalconyMidpointVisited[assistTank->GetGUID()].clear();
-
-                if (assistTank->GetVictim() != alar)
-                {
-                    const char* taunts[] = { "taunt", "growl", "hand of reckoning" };
-                    for (const char* spellName : taunts)
-                    {
-                        if (botAI->CanCastSpell(spellName, alar))
-                            return botAI->CastSpell(spellName, alar);
-                    }
-                    return Attack(alar);
-                }
-                return false;
-            }
-
-            // Select midpoints based on direction
-            if (fromPlatform < toPlatform)
-            {
-                // Forward: use waypoints 3 through 6 (indices 2–5)
-                midpoints = std::vector<Location>(midpoints_1_to_6.begin() + 2, midpoints_1_to_6.end());
-                movingForward = true;
-            }
-            else if (fromPlatform > toPlatform)
-            {
-                // Backward: use waypoints 6 through 3 (indices 2–5, reversed)
-                midpoints = std::vector<Location>(midpoints_6_to_1.begin() + 2, midpoints_6_to_1.end());
-                movingForward = false;
-            }
-
-            // Initialize visited vector if empty
-            if (atBalconyMidpointVisited[assistTank->GetGUID()].size() != midpoints.size())
-                atBalconyMidpointVisited[assistTank->GetGUID()] = std::vector<bool>(midpoints.size(), false);
-
-            // Move through midpoints
-            for (size_t i = 0; i < midpoints.size(); ++i)
-            {
-                if (!atBalconyMidpointVisited[assistTank->GetGUID()][i])
-                {
-                    const Location& wp = midpoints[i];
-                    if (assistTank->GetExactDist2d(wp.x, wp.y) >= 2.0f)
-                    {
-                        return MoveTo(bot->GetMapId(), wp.x, wp.y, wp.z, false, false, false, true,
-                                    MovementPriority::MOVEMENT_FORCED, true, false);
-                    }
-                    else
-                        atBalconyMidpointVisited[assistTank->GetGUID()][i] = true;
-                    break;
-                }
-            }
-
-            // After all midpoints are visited, move to final target
-            if (assistTank->GetExactDist2d(atTarget.x, atTarget.y) >= 2.0f)
-            {
-                return MoveTo(bot->GetMapId(), atTarget.x, atTarget.y, atTarget.z, false, false, false, true,
-                            MovementPriority::MOVEMENT_FORCED, true, false);
-            }
-
-            if (assistTank->GetExactDist2d(atTarget.x, atTarget.y) < 2.0f)
-            {
-                lastAssistTankPlatform[assistTank->GetGUID()] = toPlatform;
-            }
-        }
+    // After all midpoints are visited, move to final target
+    if (assistTank->GetExactDist2d(atTarget.x, atTarget.y) >= 2.0f)
+    {
+        return MoveTo(bot->GetMapId(), atTarget.x, atTarget.y, atTarget.z, false, false, false, true,
+                      MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
     return false;
@@ -394,14 +394,13 @@ bool AlarMeleeDpsFocusOnBossAction::Execute(Event event)
 
     uint32 mapId = alar->GetMapId();
     int8 alarPlatform = lastAlarPlatform[mapId];
-    int8 fromPlatform = lastMeleeTargetPlatform[bot->GetGUID()];
 
     auto& visited = meleeMidpointVisited[bot->GetGUID()];
     if (visited.size() < 9)
         visited.resize(9, false);
 
     // Ramp logic if Z < -2.0f
-    if (bot->GetPositionZ() < -2.0f && alar->GetPositionZ() < 30.0f && !isPhase2[mapId])
+    if (bot->GetPositionZ() < -2.0f && !isPhase2[mapId])
     {
         if (alarPlatform == 3) // Al'ar at platform 4
         {
@@ -411,7 +410,7 @@ bool AlarMeleeDpsFocusOnBossAction::Execute(Event event)
                 if (bot->GetExactDist2d(AlarSERampBase.x, AlarSERampBase.y) >= 2.0f)
                 {
                     return MoveTo(mapId, AlarSERampBase.x, AlarSERampBase.y, AlarSERampBase.z, false, false, false, true,
-                                  MovementPriority::MOVEMENT_FORCED, true, false);
+                                  MovementPriority::MOVEMENT_COMBAT, true, false);
                 }
                 else
                     meleeMidpointVisited[bot->GetGUID()][7] = true;
@@ -420,7 +419,7 @@ bool AlarMeleeDpsFocusOnBossAction::Execute(Event event)
             if (bot->GetExactDist2d(AlarMelee4.x, AlarMelee4.y) >= 2.0f)
             {
                 return MoveTo(mapId, AlarMelee4.x, AlarMelee4.y, AlarMelee4.z, false, false, false, true,
-                              MovementPriority::MOVEMENT_FORCED, true, false);
+                              MovementPriority::MOVEMENT_COMBAT, true, false);
             }
 
             if (bot->GetExactDist2d(AlarMelee4.x, AlarMelee4.y) < 2.0f)
@@ -436,7 +435,7 @@ bool AlarMeleeDpsFocusOnBossAction::Execute(Event event)
                 if (bot->GetExactDist2d(AlarSWRampBase.x, AlarSWRampBase.y) >= 2.0f)
                 {
                     return MoveTo(mapId, AlarSWRampBase.x, AlarSWRampBase.y, AlarSWRampBase.z, false, false, false, true,
-                                  MovementPriority::MOVEMENT_FORCED, true, false);
+                                  MovementPriority::MOVEMENT_COMBAT, true, false);
                 }
                 else
                     meleeMidpointVisited[bot->GetGUID()][8] = true;
@@ -458,16 +457,8 @@ bool AlarMeleeDpsFocusOnBossAction::Execute(Event event)
         // If arrived, clear state
         if (bot->GetExactDist2d(meleeTarget.x, meleeTarget.y) < 2.0f)
         {
-            lastMeleeTargetPlatform[bot->GetGUID()] = alarPlatform;
             meleeMidpointVisited[bot->GetGUID()].clear();
             return false;
-        }
-
-        // Only reset visited vector if target platform changed
-        if (lastMeleeTargetPlatform[bot->GetGUID()] != alarPlatform)
-        {
-            lastMeleeTargetPlatform[bot->GetGUID()] = alarPlatform;
-            meleeMidpointVisited[bot->GetGUID()].clear();
         }
 
         // Determine which midpoints to use based on movement
@@ -491,7 +482,7 @@ bool AlarMeleeDpsFocusOnBossAction::Execute(Event event)
                 if (bot->GetExactDist2d(wp.x, wp.y) >= 2.0f)
                 {
                     return MoveTo(mapId, wp.x, wp.y, wp.z, false, false, false, true,
-                                  MovementPriority::MOVEMENT_FORCED, true, false);
+                                  MovementPriority::MOVEMENT_COMBAT, true, false);
                 }
                 else
                     meleeMidpointVisited[bot->GetGUID()][i] = true;
@@ -503,7 +494,7 @@ bool AlarMeleeDpsFocusOnBossAction::Execute(Event event)
         if (bot->GetExactDist2d(meleeTarget.x, meleeTarget.y) >= 2.0f)
         {
             return MoveTo(mapId, meleeTarget.x, meleeTarget.y, meleeTarget.z, false, false, false, true,
-                          MovementPriority::MOVEMENT_FORCED, true, false);
+                          MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
 
@@ -639,7 +630,7 @@ bool AlarAddTankPickUpEmbersAction::Execute(Event event)
             float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
             float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
 
-            return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+            return MoveTo(bot->GetMapId(), moveX, moveY, center.z, false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
 
@@ -746,7 +737,7 @@ bool AlarJumpFromPlatformAction::Execute(Event event)
         return MoveTo(bot->GetMapId(), atTarget.x, atTarget.y, atTarget.z, false, false, false, true,
                       MovementPriority::MOVEMENT_FORCED, true, false);
     }
-    else if (botAI->IsMelee(bot) && botAI->IsDps(bot) && bot->GetPositionZ() < -2.0f && alar->GetPositionZ() >= 30.0f)
+    else if (botAI->IsMelee(bot) && botAI->IsDps(bot) && bot->GetPositionZ() < -2.0f)
     {
         return MoveTo(bot->GetMapId(), meleeMidpoint.x, meleeMidpoint.y, meleeMidpoint.z, false, false, false, true,
                       MovementPriority::MOVEMENT_FORCED, true, false);
