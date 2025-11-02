@@ -11,13 +11,13 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction::array(0, new NextAction("alar misdirect boss to main tank", ACTION_EMERGENCY + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("alar engaged by tanks in phase 1",
-        NextAction::array(0, new NextAction("alar boss tanks move between platforms", ACTION_EMERGENCY + 1), nullptr)
+        NextAction::array(0, new NextAction("alar boss tanks move between platforms", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("alar boss engaged by melee dps",
-        NextAction::array(0, new NextAction("alar melee dps focus on boss", ACTION_EMERGENCY + 1), nullptr)
+        NextAction::array(0, new NextAction("alar melee dps prioritize adds", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("alar boss engaged by ranged dps",
-        NextAction::array(0, new NextAction("alar ranged dps prioritize adds", ACTION_RAID + 1), nullptr)
+        NextAction::array(0, new NextAction("alar ranged dps prioritize boss", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("alar boss engaged by healer",
         NextAction::array(0, new NextAction("alar position healer", ACTION_RAID + 1), nullptr)
@@ -32,7 +32,7 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction::array(0, new NextAction("alar move away from rebirth", ACTION_EMERGENCY + 9), nullptr)
     ));
     triggers.push_back(new TriggerNode("alar engaged by tanks in phase 2",
-        NextAction::array(0, new NextAction("alar swap tanks on boss", ACTION_EMERGENCY + 1), nullptr)
+        NextAction::array(0, new NextAction("alar swap tanks on boss", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("alar preparing to dive bomb",
         NextAction::array(0, new NextAction("alar dive bomb spread", ACTION_EMERGENCY + 1), nullptr)

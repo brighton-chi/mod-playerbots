@@ -3,16 +3,30 @@
 #include "RaidTempestKeepHelpers.h"
 #include "ChooseTargetActions.h"
 #include "DruidBearActions.h"
+#include "DruidCatActions.h"
 #include "HunterActions.h"
 #include "MageActions.h"
 #include "PaladinActions.h"
 #include "Playerbots.h"
+#include "RogueActions.h"
 #include "WarriorActions.h"
+
+static bool IsChargeAction(Action* action)
+{
+    return dynamic_cast<CastChargeAction*>(action) ||
+           dynamic_cast<CastInterceptAction*>(action) ||
+           dynamic_cast<CastFeralChargeBearAction*>(action) ||
+           dynamic_cast<CastFeralChargeCatAction*>(action);
+}
 
 float AlarPhase1StickToTheScriptMultiplier::GetValue(Action* action)
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    if (!alar || alar->GetPositionZ() <= 17.0f)
+    if (!alar)
+        return 1.0f;
+
+    uint32 mapId = alar->GetMapId();
+    if (isPhase2[mapId])
         return 1.0f;
 
     if (botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0))
@@ -26,8 +40,15 @@ float AlarPhase1StickToTheScriptMultiplier::GetValue(Action* action)
            return 0.0f; */
     }
 
-    if (botAI->IsMelee(bot) && botAI->IsDps(bot) && (dynamic_cast<SetBehindTargetAction*>(action) || dynamic_cast<ReachTargetAction*>(action)))
-        return 0.0f;
+    if (botAI->IsMelee(bot) && botAI->IsDps(bot))
+    {
+        if (IsChargeAction(action) ||
+            dynamic_cast<CastKillingSpreeAction*>(action))
+            return 0.0f;
+    }
+
+    /* if (botAI->IsMelee(bot) && botAI->IsDps(bot) && (dynamic_cast<SetBehindTargetAction*>(action) || dynamic_cast<ReachTargetAction*>(action)))
+        return 0.0f; */
 
     return 1.0f;
 }
@@ -36,7 +57,7 @@ float AlarStayAwayFromRebirthMultiplier::GetValue(Action* action)
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
 
-    if (alar && alar->GetHealth() == 0.0f &&
+    if (alar && alar->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE) &&
         (dynamic_cast<MovementAction*>(action) &&
          !dynamic_cast<AlarMoveAwayFromRebirthAction*>(action)))
         return 0.0f;
@@ -60,9 +81,6 @@ float AlarPhase2NoTankingIfArmorMeltedMultiplier::GetValue(Action* action)
             dynamic_cast<CastHandOfReckoningAction*>(action))
            return 0.0f;
     }
-
-    if (dynamic_cast<SetBehindTargetAction*>(action))
-        return 0.0f;
 
     return 1.0f;
 }

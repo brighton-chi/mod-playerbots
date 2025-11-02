@@ -53,10 +53,6 @@ namespace TempestKeepHelpers
         extern const Location AlarPlatform2;
         extern const Location AlarPlatform3;
         extern const Location AlarPlatform4;
-        extern const Location AlarMelee1;
-        extern const Location AlarMelee2;
-        extern const Location AlarMelee3;
-        extern const Location AlarMelee4;
         extern const Location AlarPlatform1To2MidpointA;
         extern const Location AlarPlatform1To2MidpointB;
         extern const Location AlarPlatform2To3MidpointA;
@@ -90,18 +86,22 @@ namespace TempestKeepHelpers
     extern std::unordered_map<uint32, bool> lastRebirthState;
     extern std::unordered_map<uint32, bool> isPhase2;
 
-    extern std::unordered_map<ObjectGuid, int8> lastMainTankPlatform;
-    extern std::unordered_map<ObjectGuid, int8> lastAssistTankPlatform;
-    extern std::unordered_map<ObjectGuid, int8> lastMeleeTargetPlatform;
+    // extern std::unordered_map<ObjectGuid, int8> lastMainTankPlatform;
+    // extern std::unordered_map<ObjectGuid, int8> lastAssistTankPlatform;
+    extern std::unordered_map<ObjectGuid, bool> mainTankAtPlatform2;
+    extern std::unordered_map<ObjectGuid, bool> assistTankAtPlatform3;
 
-    extern std::unordered_map<ObjectGuid, std::vector<bool>> meleeMidpointVisited;
     extern std::unordered_map<ObjectGuid, std::vector<bool>> mtBalconyMidpointVisited;
     extern std::unordered_map<ObjectGuid, std::vector<bool>> atBalconyMidpointVisited;
-    extern std::unordered_map<ObjectGuid, bool> mtGroundMidpointVisited;
-    extern std::unordered_map<ObjectGuid, bool> atGroundMidpointVisited;
+    // extern std::unordered_map<ObjectGuid, bool> mtGroundMidpointVisited;
+    // extern std::unordered_map<ObjectGuid, bool> atGroundMidpointVisited;
 
-    extern std::vector<Location> midpoints_1_to_6;
-    extern std::vector<Location> midpoints_6_to_1;
+    // extern std::vector<Location> midpoints_1_to_6;
+    // extern std::vector<Location> midpoints_6_to_1;
+    extern std::vector<Location> midpoints_1_to_2;
+    extern std::vector<Location> midpoints_2_to_1;
+    extern std::vector<Location> midpoints_4_to_3;
+    extern std::vector<Location> midpoints_3_to_4;
 
     void UpdateAlarLastPlatform(Unit* alar, uint32 mapId, const std::vector<Location>& platforms);
     bool IsAlarAddTank(PlayerbotAI* botAI, Player* bot);

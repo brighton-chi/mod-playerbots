@@ -37,18 +37,18 @@ private:
     bool PositionAssistTank(Player* assistTank, Unit* alar, int8 alarPlatform, const std::vector<Location>& platforms);
 };
 
-class AlarMeleeDpsFocusOnBossAction : public AttackAction
+class AlarMeleeDpsPrioritizeAddsAction : public AttackAction
 {
 public:
-    AlarMeleeDpsFocusOnBossAction(PlayerbotAI* botAI, std::string const name = "alar melee dps focus on boss") : AttackAction(botAI, name) {}
+    AlarMeleeDpsPrioritizeAddsAction(PlayerbotAI* botAI, std::string const name = "alar melee dps prioritize adds") : AttackAction(botAI, name) {}
 
     bool Execute(Event event) override;
 };
 
-class AlarRangedDpsPrioritizeAddsAction : public AttackAction
+class AlarRangedDpsPrioritizeBossAction : public AttackAction
 {
 public:
-    AlarRangedDpsPrioritizeAddsAction(PlayerbotAI* botAI, std::string const name = "alar ranged dps prioritize adds") : AttackAction(botAI, name) {}
+    AlarRangedDpsPrioritizeBossAction(PlayerbotAI* botAI, std::string const name = "alar ranged dps prioritize boss") : AttackAction(botAI, name) {}
 
     bool Execute(Event event) override;
 };
