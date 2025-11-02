@@ -470,7 +470,7 @@ bool AlarBossTanksMoveBetweenPlatformsAction::PositionAssistTank(Player* assistT
                   MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
-bool AlarMeleeDpsPrioritizeAddsAction::Execute(Event event)
+/* bool AlarMeleeDpsPrioritizeAddsAction::Execute(Event event)
 {
     Unit* ember = GetFirstAliveUnitByEntry(botAI, NPC_EMBER_OF_ALAR);
     if (ember && ember->IsAlive())
@@ -516,12 +516,39 @@ bool AlarMeleeDpsPrioritizeAddsAction::Execute(Event event)
     }
 
     return false;
+}*/
+
+bool AlarMeleeDpsPrioritizeAddsAction::Execute(Event event)
+{
+    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+    if (!alar)
+        return false;
+
+    uint32 mapId = alar->GetMapId();
+    int8 alarPlatform = lastAlarPlatform[mapId];
+
+    // List of platform locations
+    std::vector<Location> platforms = { AlarPlatform1, AlarPlatform2, AlarPlatform3, AlarPlatform4 };
+    const Location& platformTarget = platforms[alarPlatform];
+
+    // Move to Al'ar's platform if not already there
+    if (bot->GetExactDist2d(platformTarget.x, platformTarget.y) > 2.0f)
+    {
+        return MoveTo(bot->GetMapId(), platformTarget.x, platformTarget.y, platformTarget.z, false, false, false, true,
+                      MovementPriority::MOVEMENT_COMBAT, true, false);
+    }
+
+    // Attack Al'ar if on platform
+    if (bot->GetVictim() != alar)
+        return Attack(alar);
+
+    return false;
 }
 
 bool AlarRangedDpsPrioritizeBossAction::Execute(Event event)
 {
     Unit* ember = GetFirstAliveUnitByEntry(botAI, NPC_EMBER_OF_ALAR);
-    if (ember && ember->IsAlive() && ember->GetHealthPct() < 15.0f)
+    if (ember && ember->IsAlive() /*&& ember->GetHealthPct() < 15.0f*/)
     {
         SetRtiTarget(botAI, "square", ember);
 
@@ -533,7 +560,7 @@ bool AlarRangedDpsPrioritizeBossAction::Execute(Event event)
     }
 
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    if (alar && (!ember || !ember->GetHealthPct() >= 15.0f))
+    if (alar && (!ember /*|| !ember->GetHealthPct() >= 15.0f*/))
     {
         MarkTargetWithStar(bot, alar);
         SetRtiTarget(botAI, "star", alar);

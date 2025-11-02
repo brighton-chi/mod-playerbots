@@ -34,8 +34,12 @@ bool AlarEngagedByTanksInPhase1Trigger::IsActive()
 bool AlarBossEngagedByMeleeDpsTrigger::IsActive()
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+    if (!alar)
+        return false;
 
-    return botAI->IsMelee(bot) && !botAI->IsTank(bot) && alar;
+    uint32 mapId = alar->GetMapId();
+
+    return botAI->IsMelee(bot) && !botAI->IsTank(bot) && !isPhase2[mapId];
 }
 
 bool AlarBossEngagedByRangedDpsTrigger::IsActive()

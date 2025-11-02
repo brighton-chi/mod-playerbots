@@ -40,12 +40,12 @@ float AlarPhase1StickToTheScriptMultiplier::GetValue(Action* action)
            return 0.0f; */
     }
 
-    if (botAI->IsMelee(bot) && botAI->IsDps(bot))
+    /* if (botAI->IsMelee(bot) && botAI->IsDps(bot))
     {
         if (IsChargeAction(action) ||
             dynamic_cast<CastKillingSpreeAction*>(action))
             return 0.0f;
-    }
+    } */
 
     /* if (botAI->IsMelee(bot) && botAI->IsDps(bot) && (dynamic_cast<SetBehindTargetAction*>(action) || dynamic_cast<ReachTargetAction*>(action)))
         return 0.0f; */

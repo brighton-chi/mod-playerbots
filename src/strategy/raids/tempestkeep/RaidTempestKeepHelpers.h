@@ -35,6 +35,7 @@ namespace TempestKeepHelpers
     {
         // Al'ar
         NPC_EMBER_OF_ALAR           = 19551,
+        NPC_FLAME_PATCH_ALAR       = 20602,
 
         // High Astromancer Solarian
         // NPC_SOLARIUM_AGENT                  = 18925,
