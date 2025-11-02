@@ -35,7 +35,7 @@ namespace TempestKeepHelpers
     {
         // Al'ar
         NPC_EMBER_OF_ALAR           = 19551,
-        NPC_FLAME_PATCH_ALAR       = 20602,
+        // NPC_FLAME_PATCH_ALAR       = 20602,
 
         // High Astromancer Solarian
         // NPC_SOLARIUM_AGENT                  = 18925,
@@ -96,6 +96,7 @@ namespace TempestKeepHelpers
     extern std::unordered_map<ObjectGuid, std::vector<bool>> atBalconyMidpointVisited;
     // extern std::unordered_map<ObjectGuid, bool> mtGroundMidpointVisited;
     // extern std::unordered_map<ObjectGuid, bool> atGroundMidpointVisited;
+    extern std::unordered_map<ObjectGuid, std::vector<bool>> meleeDpsWaypointVisited;
 
     // extern std::vector<Location> midpoints_1_to_6;
     // extern std::vector<Location> midpoints_6_to_1;

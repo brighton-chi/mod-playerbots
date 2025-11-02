@@ -110,7 +110,7 @@ namespace TempestKeepHelpers
 
     Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry)
     {
-        const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
+        const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
         for (const auto& npcGuid : npcs)
         {
             Unit* unit = botAI->GetUnit(npcGuid);
@@ -159,6 +159,7 @@ namespace TempestKeepHelpers
     std::unordered_map<ObjectGuid, std::vector<bool>> atBalconyMidpointVisited;
     // std::unordered_map<ObjectGuid, bool> mtGroundMidpointVisited;
     // std::unordered_map<ObjectGuid, bool> atGroundMidpointVisited;
+    std::unordered_map<ObjectGuid, std::vector<bool>> meleeDpsWaypointVisited;
 
     /* std::vector<Location> midpoints_1_to_6 =
     {

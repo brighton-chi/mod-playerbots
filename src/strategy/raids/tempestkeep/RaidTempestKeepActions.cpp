@@ -524,23 +524,87 @@ bool AlarMeleeDpsPrioritizeAddsAction::Execute(Event event)
     if (!alar)
         return false;
 
+    // If Al'ar is flying (Flame Quills), move to S of room and hold position
+    if (alar->GetPositionZ() >= 42.0f && bot->GetPositionZ() < -2.0f)
+    {
+        if (bot->GetExactDist2d(AlarRoomSouthCenter.x, AlarRoomSouthCenter.y) >= 2.0f)
+        {
+            LOG_DEBUG("playerbots", "Bot {} moving to South Center during Flame Quills", bot->GetName());
+            return MoveTo(bot->GetMapId(), AlarRoomSouthCenter.x, AlarRoomSouthCenter.y, AlarRoomSouthCenter.z, false, false, false, true,
+                          MovementPriority::MOVEMENT_COMBAT, true, false);
+        }
+        LOG_DEBUG("playerbots", "Bot {} holding position at South Center during Flame Quills", bot->GetName());
+        return true;
+    }
+
     uint32 mapId = alar->GetMapId();
     int8 alarPlatform = lastAlarPlatform[mapId];
 
-    // List of platform locations
     std::vector<Location> platforms = { AlarPlatform1, AlarPlatform2, AlarPlatform3, AlarPlatform4 };
     const Location& platformTarget = platforms[alarPlatform];
 
-    // Move to Al'ar's platform if not already there
-    if (bot->GetExactDist2d(platformTarget.x, platformTarget.y) > 2.0f)
+    std::vector<Location> waypoints;
+    if (alarPlatform == 1)
+        waypoints = { AlarPlatform1To2MidpointA, AlarPlatform1To2MidpointB };
+    else if (alarPlatform == 2)
+        waypoints = { AlarPlatform2To3MidpointA, AlarPlatform2To3MidpointB };
+
+    // Clear waypoint tracker if at target platform (before any movement logic)
+    if (bot->GetExactDist2d(platformTarget.x, platformTarget.y) < 2.0f)
     {
-        return MoveTo(bot->GetMapId(), platformTarget.x, platformTarget.y, platformTarget.z, false, false, false, true,
-                      MovementPriority::MOVEMENT_COMBAT, true, false);
+        LOG_DEBUG("playerbots", "Bot {} reached platform {}. Clearing waypoint tracker.", bot->GetName(), int(alarPlatform + 1));
+        meleeDpsWaypointVisited[bot->GetGUID()].clear();
     }
 
-    // Attack Al'ar if on platform
+    if (!waypoints.empty())
+    {
+        if (meleeDpsWaypointVisited[bot->GetGUID()].empty() && bot->GetExactDist2d(platformTarget.x, platformTarget.y) >= 2.0f)
+        {
+            LOG_DEBUG("playerbots", "Bot {} initializing waypoint tracker for movement to platform {}", bot->GetName(), int(alarPlatform + 1));
+            meleeDpsWaypointVisited[bot->GetGUID()] = std::vector<bool>(waypoints.size(), false);
+        }
+
+        for (size_t i = 0; i < waypoints.size(); ++i)
+        {
+            if (!meleeDpsWaypointVisited[bot->GetGUID()][i])
+            {
+                const Location& wp = waypoints[i];
+                if (bot->GetExactDist2d(wp.x, wp.y) >= 2.0f)
+                {
+                    LOG_DEBUG("playerbots", "Bot {} moving to waypoint {} for platform {}: ({}, {}, {})", bot->GetName(), i + 1, int(alarPlatform + 1), wp.x, wp.y, wp.z);
+                    return MoveTo(bot->GetMapId(), wp.x, wp.y, wp.z, false, false, false, true,
+                                  MovementPriority::MOVEMENT_COMBAT, true, false);
+                }
+                else
+                {
+                    LOG_DEBUG("playerbots", "Bot {} reached waypoint {} for platform {}: ({}, {}, {})", bot->GetName(), i + 1, int(alarPlatform + 1), wp.x, wp.y, wp.z);
+                    meleeDpsWaypointVisited[bot->GetGUID()][i] = true;
+                }
+                break;
+            }
+        }
+        if (bot->GetExactDist2d(platformTarget.x, platformTarget.y) >= 2.0f)
+        {
+            LOG_DEBUG("playerbots", "Bot {} moving to final platform {}: ({}, {}, {})", bot->GetName(), int(alarPlatform + 1), platformTarget.x, platformTarget.y, platformTarget.z);
+            return MoveTo(bot->GetMapId(), platformTarget.x, platformTarget.y, platformTarget.z, false, false, false, true,
+                          MovementPriority::MOVEMENT_COMBAT, true, false);
+        }
+    }
+    else
+    {
+        if (bot->GetExactDist2d(platformTarget.x, platformTarget.y) >= 2.0f)
+        {
+            LOG_DEBUG("playerbots", "Bot {} moving directly to platform {}: ({}, {}, {})", bot->GetName(), int(alarPlatform + 1), platformTarget.x, platformTarget.y, platformTarget.z);
+            return MoveTo(bot->GetMapId(), platformTarget.x, platformTarget.y, platformTarget.z, false, false, false, true,
+                          MovementPriority::MOVEMENT_COMBAT, true, false);
+        }
+    }
+
     if (bot->GetVictim() != alar)
+    {
+        LOG_DEBUG("playerbots", "Bot {} attacking Al'ar on platform {}", bot->GetName(), int(alarPlatform + 1));
         return Attack(alar);
+    }
 
     return false;
 }
@@ -581,8 +645,8 @@ bool AlarRangedDpsPrioritizeBossAction::Execute(Event event)
         std::vector<Location> groundLocations = { AlarGround1, AlarGround2, AlarGround3, AlarGround4 };
         const Location& groundTarget = groundLocations[alarPlatform];
 
-        // Only move if not already within 10 yards
-        if (bot->GetExactDist2d(groundTarget.x, groundTarget.y) > 10.0f)
+        // Only move if not already within 15 yards
+        if (bot->GetExactDist2d(groundTarget.x, groundTarget.y) > 15.0f)
         {
             // Move near the ground target (e.g., 5 yards away for some spread)
             return MoveNear(bot->GetMapId(), groundTarget.x, groundTarget.y, groundTarget.z, 5.0f, MovementPriority::MOVEMENT_COMBAT);
@@ -625,8 +689,8 @@ bool AlarPositionHealerAction::Execute(Event event)
         std::vector<Location> groundLocations = { AlarGround1, AlarGround2, AlarGround3, AlarGround4 };
         const Location& groundTarget = groundLocations[alarPlatform];
 
-        // Only move if not already within 10 yards
-        if (bot->GetExactDist2d(groundTarget.x, groundTarget.y) > 10.0f)
+        // Only move if not already within 15 yards
+        if (bot->GetExactDist2d(groundTarget.x, groundTarget.y) > 15.0f)
         {
             // Move near the ground target (e.g., 5 yards away for some spread)
             return MoveNear(bot->GetMapId(), groundTarget.x, groundTarget.y, groundTarget.z, 5.0f, MovementPriority::MOVEMENT_COMBAT);
@@ -940,11 +1004,8 @@ bool AlarManageTimersAndTrackersAction::Execute(Event event)
             // atGroundMidpointVisited[bot->GetGUID()] = false;
             // lastAssistTankPlatform[bot->GetGUID()] = 1; // Platform 2
         }
-        /* if (botAI->IsMelee(bot) && botAI->IsDps(bot))
-        {
-            meleeMidpointVisited[bot->GetGUID()].clear();
-            lastMeleeTargetPlatform[bot->GetGUID()] = 0; // Platform 1
-        } */
+        if (botAI->IsMelee(bot) && botAI->IsDps(bot))
+            meleeDpsWaypointVisited[bot->GetGUID()].clear();
     }
 
     // Manual override: if Flame Quills is active, set lastAlarPlatform to platform 4 (index 3)

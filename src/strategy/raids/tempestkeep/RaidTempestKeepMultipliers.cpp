@@ -59,7 +59,7 @@ float AlarStayAwayFromRebirthMultiplier::GetValue(Action* action)
 
     if (alar && alar->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE) &&
         (dynamic_cast<MovementAction*>(action) &&
-         !dynamic_cast<AlarMoveAwayFromRebirthAction*>(action)))
+         !(dynamic_cast<AlarMoveAwayFromRebirthAction*>(action) || dynamic_cast<AvoidAoeAction*>(action))))
         return 0.0f;
 
     return 1.0f;
