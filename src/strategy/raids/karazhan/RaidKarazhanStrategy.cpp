@@ -7,8 +7,7 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("spectral retainer need target priority",
         NextAction::array(0, new NextAction("spectral retainer mark target", ACTION_RAID + 1), nullptr)
     ));
-    triggers.push_back(new TriggerNode(
-        "mana warp is about to explode",
+    triggers.push_back(new TriggerNode("mana warp is about to explode",
         NextAction::array(0, new NextAction("mana warp stun creature before warp breach", ACTION_EMERGENCY + 6), nullptr)
     ));
 
@@ -80,14 +79,14 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("shade of aran arcane explosion is casting",
         NextAction::array(0, new NextAction("shade of aran run away from arcane explosion", ACTION_EMERGENCY + 6), nullptr)
     ));
-    triggers.push_back(new TriggerNode("shade of aran flame wreath is casting",
+    triggers.push_back(new TriggerNode("shade of aran flame wreath is active",
         NextAction::array(0, new NextAction("shade of aran stop moving during flame wreath", ACTION_EMERGENCY + 7), nullptr)
     ));
     triggers.push_back(new TriggerNode("shade of aran conjured elementals summoned",
         NextAction::array(0, new NextAction("shade of aran mark conjured elemental", ACTION_RAID + 1), nullptr)
     ));
-    triggers.push_back(new TriggerNode("shade of aran boss uses counterspell",
-        NextAction::array(0, new NextAction("shade of aran ranged keep distance", ACTION_RAID + 2), nullptr)
+    triggers.push_back(new TriggerNode("shade of aran boss uses counterspell and blizzard",
+        NextAction::array(0, new NextAction("shade of aran ranged maintain distance", ACTION_RAID + 2), nullptr)
     ));
 
     // Netherspite

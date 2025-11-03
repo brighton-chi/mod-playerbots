@@ -361,6 +361,7 @@ bool WizardOfOzMarkTargetAction::Execute(Event event)
     Unit* tinhead = AI_VALUE2(Unit*, "find target", "tinhead");
     Unit* crone = AI_VALUE2(Unit*, "find target", "the crone");
     Unit* target = GetFirstAliveUnit({dorothee, tito, roar, strawman, tinhead, crone});
+
     if (target)
         MarkTargetWithSkull(bot, target);
 
@@ -446,10 +447,10 @@ bool TerestianIllhoofMarkTargetAction::Execute(Event event)
     if (!illhoof)
         return false;
 
-    Unit* target = GetFirstAliveUnitByEntry(botAI, NPC_DEMON_CHAINS);
+    Unit* target = AI_VALUE2(Unit*, "find target", "demon chains");
     if (!target || !target->IsAlive())
     {
-        target = GetFirstAliveUnitByEntry(botAI, NPC_KILREK);
+        target = AI_VALUE2(Unit*, "find target", "kil'rek");
         if (!target || !target->IsAlive())
             target = illhoof;
     }
@@ -493,24 +494,36 @@ bool ShadeOfAranStopMovingDuringFlameWreathAction::Execute(Event event)
 // Mark Conjured Elementals with skull so DPS can burn them down
 bool ShadeOfAranMarkConjuredElementalAction::Execute(Event event)
 {
-    Unit* target = GetFirstAliveUnitByEntry(botAI, NPC_CONJURED_ELEMENTAL);
+    Unit* elemental = AI_VALUE2(Unit*, "find target", "conjured elemental");
 
-    if (target)
-        MarkTargetWithSkull(bot, target);
+    if (elemental)
+        MarkTargetWithSkull(bot, elemental);
 
     return false;
 }
 
-
-// Don't get closer than 10 yards to Aran to avoid counterspell
-bool ShadeOfAranRangedKeepDistanceAction::Execute(Event event)
+// Don't get closer than 11 yards to Aran to avoid counterspell
+// Don't get farther than 15 yards from Aran to avoid getting stuck in alcoves
+bool ShadeOfAranRangedMaintainDistanceAction::Execute(Event event)
 {
     Unit* aran = AI_VALUE2(Unit*, "find target", "shade of aran");
     if (!aran)
         return false;
 
-    if (aran && bot->GetExactDist2d(aran) < 11.0f)
-        return MoveAway(aran, 12.0f, false);
+    float dist = bot->GetExactDist2d(aran);
+    if (dist < 11.0f || dist >= 15.0f)
+    {
+        float angle = aran->GetAngle(bot);
+        float x = aran->GetPositionX() + cos(angle) * 13.0f;
+        float y = aran->GetPositionY() + sin(angle) * 13.0f;
+        return MoveTo(aran->GetMapId(), x, y, bot->GetPositionZ(), false, false, false, false,
+                      MovementPriority::MOVEMENT_COMBAT, true, false);
+    }
+
+    const float minDistance = 4.0f;
+    Unit* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance);
+    if (nearestPlayer)
+        return MoveAway(nearestPlayer, 5.0f, false);
 
     return false;
 }
@@ -926,7 +939,7 @@ bool NetherspiteManageTimersAction::Execute(Event event)
         (netherspite->GetHealth() == netherspite->GetMaxHealth() &&
          !netherspite->HasAura(SPELL_GREEN_BEAM_HEAL)))
     {
-        if (IsMapIDTimerManager(bot) && netherspiteDPSWaitTimer.count(mapId))
+        if (IsMapIDTimerManager(botAI, bot) && netherspiteDPSWaitTimer.count(mapId))
             netherspiteDPSWaitTimer.erase(mapId);
 
         if (botAI->IsTank(bot) && redBeamMoveTimer.count(botGuid))
@@ -938,7 +951,7 @@ bool NetherspiteManageTimersAction::Execute(Event event)
 
     if (!netherspite->HasAura(SPELL_NETHERSPITE_BANISHED))
     {
-        if (IsMapIDTimerManager(bot) && !netherspiteDPSWaitTimer.count(mapId))
+        if (IsMapIDTimerManager(botAI, bot) && !netherspiteDPSWaitTimer.count(mapId))
             netherspiteDPSWaitTimer[mapId] = time(nullptr);
 
         if (botAI->IsTank(bot) && bot->HasAura(SPELL_RED_BEAM_DEBUFF) &&
@@ -1359,25 +1372,25 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event event)
         if (botAI->IsRanged(bot) && nightbaneRangedStep.count(botGuid))
             nightbaneRangedStep.erase(botGuid);
 
-        if (IsMapIDTimerManager(bot) && nightbaneDPSWaitTimer.count(mapId))
+        if (IsMapIDTimerManager(botAI, bot) && nightbaneDPSWaitTimer.count(mapId))
             nightbaneDPSWaitTimer.erase(mapId);
     }
 
     // Erase flight phase timer and Rain of Bones tracker on ground phase and start DPS wait timer
     if (nightbane->GetPositionZ() <= 95.0f)
     {
-        if (IsMapIDTimerManager(bot) && nightbaneFlightPhaseStartTimer.count(mapId))
+        if (IsMapIDTimerManager(botAI, bot) && nightbaneFlightPhaseStartTimer.count(mapId))
             nightbaneFlightPhaseStartTimer.erase(mapId);
 
         if (nightbaneRainOfBonesHit.count(botGuid))
             nightbaneRainOfBonesHit.erase(botGuid);
 
-        if (IsMapIDTimerManager(bot) && !nightbaneDPSWaitTimer.count(mapId))
+        if (IsMapIDTimerManager(botAI, bot) && !nightbaneDPSWaitTimer.count(mapId))
             nightbaneDPSWaitTimer[mapId] = time(nullptr);
     }
 
     // Start flight phase timer at beginning of flight phase
-    if (nightbane->GetPositionZ() > 95.0f && IsMapIDTimerManager(bot) &&
+    if (nightbane->GetPositionZ() > 95.0f && IsMapIDTimerManager(botAI, bot) &&
         !nightbaneFlightPhaseStartTimer.count(mapId))
         nightbaneFlightPhaseStartTimer[mapId] = time(nullptr);
 

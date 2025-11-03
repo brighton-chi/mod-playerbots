@@ -37,9 +37,9 @@ public:
         creators["terestian illhoof need target priority"] = &RaidKarazhanTriggerContext::terestian_illhoof_need_target_priority;
 
         creators["shade of aran arcane explosion is casting"] = &RaidKarazhanTriggerContext::shade_of_aran_arcane_explosion_is_casting;
-        creators["shade of aran flame wreath is casting"] = &RaidKarazhanTriggerContext::shade_of_aran_flame_wreath_is_casting;
+        creators["shade of aran flame wreath is active"] = &RaidKarazhanTriggerContext::shade_of_aran_flame_wreath_is_active;
         creators["shade of aran conjured elementals summoned"] = &RaidKarazhanTriggerContext::shade_of_aran_conjured_elementals_summoned;
-        creators["shade of aran boss uses counterspell"] = &RaidKarazhanTriggerContext::shade_of_aran_boss_uses_counterspell;
+        creators["shade of aran boss uses counterspell and blizzard"] = &RaidKarazhanTriggerContext::shade_of_aran_boss_uses_counterspell_and_blizzard;
 
         creators["netherspite red beam is active"] = &RaidKarazhanTriggerContext::netherspite_red_beam_is_active;
         creators["netherspite blue beam is active"] = &RaidKarazhanTriggerContext::netherspite_blue_beam_is_active;
@@ -89,9 +89,9 @@ private:
     static Trigger* terestian_illhoof_need_target_priority(PlayerbotAI* botAI) { return new TerestianIllhoofNeedTargetPriorityTrigger(botAI); }
 
     static Trigger* shade_of_aran_arcane_explosion_is_casting(PlayerbotAI* botAI) { return new ShadeOfAranArcaneExplosionIsCastingTrigger(botAI); }
-    static Trigger* shade_of_aran_flame_wreath_is_casting(PlayerbotAI* botAI) { return new ShadeOfAranFlameWreathIsCastingTrigger(botAI); }
+    static Trigger* shade_of_aran_flame_wreath_is_active(PlayerbotAI* botAI) { return new ShadeOfAranFlameWreathIsActiveTrigger(botAI); }
     static Trigger* shade_of_aran_conjured_elementals_summoned(PlayerbotAI* botAI) { return new ShadeOfAranConjuredElementalsSummonedTrigger(botAI); }
-    static Trigger* shade_of_aran_boss_uses_counterspell(PlayerbotAI* botAI) { return new ShadeOfAranBossUsesCounterspellTrigger(botAI); }
+    static Trigger* shade_of_aran_boss_uses_counterspell_and_blizzard(PlayerbotAI* botAI) { return new ShadeOfAranBossUsesCounterspellAndBlizzardTrigger(botAI); }
 
     static Trigger* netherspite_red_beam_is_active(PlayerbotAI* botAI) { return new NetherspiteRedBeamIsActiveTrigger(botAI); }
     static Trigger* netherspite_blue_beam_is_active(PlayerbotAI* botAI) { return new NetherspiteBlueBeamIsActiveTrigger(botAI); }

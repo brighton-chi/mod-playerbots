@@ -120,24 +120,11 @@ float ShadeOfAranFlameWreathDisableMovementMultiplier::GetValue(Action* action)
     if (!aran || !group)
         return 1.0f;
 
-    bool flameWreathActive = aran->HasAura(SPELL_FLAME_WREATH_CAST);
-
-    if (!flameWreathActive)
+    if (IsFlameWreathActive(botAI, bot))
     {
-        for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (member && member->HasAura(SPELL_FLAME_WREATH_AURA))
-            {
-                flameWreathActive = true;
-                break;
-            }
-        }
-    }
-
-    if (flameWreathActive)
-    {
-        if (dynamic_cast<MovementAction*>(action) || IsChargeAction(action))
+        if (dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<FleeAction*>(action) ||
+            dynamic_cast<CastKillingSpreeAction*>(action) || dynamic_cast<CastBlinkBackAction*>(action) ||
+            dynamic_cast<CastDisengageAction*>(action) || IsChargeAction(action))
             return 0.0f;
     }
 

@@ -106,14 +106,14 @@ namespace KarazhanHelpers
     }
 
     // Only one bot is needed to set/reset mapwide timers
-    bool IsMapIDTimerManager(Player* bot)
+    bool IsMapIDTimerManager(PlayerbotAI* botAI, Player* bot)
     {
         if (Group* group = bot->GetGroup())
         {
             for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
             {
                 Player* member = ref->GetSource();
-                if (member && member->IsAlive() && GET_PLAYERBOT_AI(member))
+                if (member && member->IsAlive() && !botAI->IsMainTank(member) && GET_PLAYERBOT_AI(member))
                     return member == bot;
             }
         }

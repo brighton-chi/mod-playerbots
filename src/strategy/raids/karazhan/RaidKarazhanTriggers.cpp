@@ -49,7 +49,7 @@ bool AttumenTheHuntsmanManageTimerTrigger::IsActive()
     Unit* midnight = AI_VALUE2(Unit*, "find target", "midnight");
     Unit* attumenMounted = GetFirstAliveUnitByEntry(botAI, NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED);
 
-    return (midnight || attumenMounted) && IsMapIDTimerManager(bot);
+    return (midnight || attumenMounted) && IsMapIDTimerManager(botAI, bot);
 }
 
 bool MoroesNeedTargetPriorityTrigger::IsActive()
@@ -149,11 +149,11 @@ bool TheCuratorBossEngagedByRangedTrigger::IsActive()
 bool TerestianIllhoofNeedTargetPriorityTrigger::IsActive()
 {
     Unit* illhoof = AI_VALUE2(Unit*, "find target", "terestian illhoof");
-    Unit* target = GetFirstAliveUnitByEntry(botAI, NPC_DEMON_CHAINS);
+    Unit* target = AI_VALUE2(Unit*, "find target", "demon chains");
 
     if (!target || !target->IsAlive())
     {
-        target = GetFirstAliveUnitByEntry(botAI, NPC_KILREK);
+        Unit* target = AI_VALUE2(Unit*, "find target", "kil'rek");
         if (!target || !target->IsAlive())
             target = illhoof;
     }
@@ -169,7 +169,7 @@ bool ShadeOfAranArcaneExplosionIsCastingTrigger::IsActive()
            aran->FindCurrentSpellBySpellId(SPELL_ARCANE_EXPLOSION);
 }
 
-bool ShadeOfAranFlameWreathIsCastingTrigger::IsActive()
+bool ShadeOfAranFlameWreathIsActiveTrigger::IsActive()
 {
     Unit* aran = AI_VALUE2(Unit*, "find target", "shade of aran");
 
@@ -180,12 +180,13 @@ bool ShadeOfAranFlameWreathIsCastingTrigger::IsActive()
 bool ShadeOfAranConjuredElementalsSummonedTrigger::IsActive()
 {
     Unit* aran = AI_VALUE2(Unit*, "find target", "shade of aran");
-    Unit* target = GetFirstAliveUnitByEntry(botAI, NPC_CONJURED_ELEMENTAL);
+    Unit* elemental = AI_VALUE2(Unit*, "find target", "conjured elemental");
 
-    return aran && target && target->IsAlive() && !target->HasAura(SPELL_WARLOCK_BANISH);
+    return IsMapIDTimerManager(botAI, bot) && elemental && elemental->IsAlive() &&
+           !elemental->HasAura(SPELL_WARLOCK_BANISH);
 }
 
-bool ShadeOfAranBossUsesCounterspellTrigger::IsActive()
+bool ShadeOfAranBossUsesCounterspellAndBlizzardTrigger::IsActive()
 {
     Unit* aran = AI_VALUE2(Unit*, "find target", "shade of aran");
 

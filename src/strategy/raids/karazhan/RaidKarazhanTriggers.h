@@ -135,10 +135,10 @@ public:
     bool IsActive() override;
 };
 
-class ShadeOfAranFlameWreathIsCastingTrigger : public Trigger
+class ShadeOfAranFlameWreathIsActiveTrigger : public Trigger
 {
 public:
-    ShadeOfAranFlameWreathIsCastingTrigger(PlayerbotAI* botAI) : Trigger(botAI, "shade of aran flame wreath is casting") {}
+    ShadeOfAranFlameWreathIsActiveTrigger(PlayerbotAI* botAI) : Trigger(botAI, "shade of aran flame wreath is active") {}
     bool IsActive() override;
 };
 
@@ -149,10 +149,10 @@ public:
     bool IsActive() override;
 };
 
-class ShadeOfAranBossUsesCounterspellTrigger : public Trigger
+class ShadeOfAranBossUsesCounterspellAndBlizzardTrigger : public Trigger
 {
 public:
-    ShadeOfAranBossUsesCounterspellTrigger(PlayerbotAI* botAI) : Trigger(botAI, "shade of aran boss uses counterspell") {}
+    ShadeOfAranBossUsesCounterspellAndBlizzardTrigger(PlayerbotAI* botAI) : Trigger(botAI, "shade of aran boss uses counterspell and blizzard") {}
     bool IsActive() override;
 };
 

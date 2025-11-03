@@ -54,13 +54,6 @@ namespace KarazhanHelpers
         NPC_ATTUMEN_THE_HUNTSMAN         = 15550,
         NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED = 16152,
 
-        // Terestian Illhoof
-        NPC_KILREK                       = 17229,
-        NPC_DEMON_CHAINS                 = 17248,
-
-        // Shade of Aran
-        NPC_CONJURED_ELEMENTAL           = 17167,
-
         // Netherspite
         NPC_VOID_ZONE                    = 16697,
         NPC_GREEN_PORTAL                 = 17367, // "Nether Portal - Serenity <Healing Portal>"
@@ -105,7 +98,7 @@ namespace KarazhanHelpers
     void MarkTargetWithSquare(Player* bot, Unit* target);
     void MarkTargetWithMoon(Player* bot, Unit* target);
     void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target);
-    bool IsMapIDTimerManager(Player* bot);
+    bool IsMapIDTimerManager(PlayerbotAI* botAI, Player* bot);
     Unit* GetFirstAliveUnit(const std::vector<Unit*>& units);
     Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry);
     Unit* GetNearestPlayerInRadius(Player* bot, float radius);
