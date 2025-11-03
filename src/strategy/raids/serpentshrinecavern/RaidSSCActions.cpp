@@ -698,8 +698,11 @@ bool LeotherasTheBlindDemonFormPositionBossAction::Execute(Event event)
     MarkTargetWithSquare(bot, leotherasDemon);
     SetRtiTarget(botAI, "square", leotherasDemon);
 
-    if (bot->GetVictim() != leotherasDemon);
-        Attack(leotherasDemon);
+    if (bot->GetTarget() != leotherasDemon->GetGUID())
+    {
+        bot->SetSelection(leotherasDemon->GetGUID());
+        return Attack(leotherasDemon);
+    }
 
     if (botAI->IsMainTank(bot) && botAI->IsMelee(bot) && leotherasDemon->GetVictim() == bot)
     {
@@ -808,8 +811,15 @@ bool LeotherasTheBlindInnerDemonCheatAction::Execute(Event event)
     Unit* innerDemon = GetFirstAliveUnitByEntry(botAI, NPC_INNER_DEMON);
     if (innerDemon && botAI->HasCheat(BotCheatMask::raid))
     {
-        Unit::DealDamage(bot, innerDemon, innerDemon->GetMaxHealth() / 10, nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false, true);
-        return true;
+        /* Unit::DealDamage(bot, innerDemon, innerDemon->GetMaxHealth() / 20, nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false, true);
+        return true; */
+        if (botAI->IsHeal(bot) || botAI->IsTank(bot) || bot->getClass() == CLASS_HUNTER)
+        {
+            Unit::DealDamage(bot, innerDemon, innerDemon->GetMaxHealth() / 20, nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false, true);
+            return true;
+        }
+        else if (innerDemon->GetHealthPct() >= 60.0f)
+            Unit::DealDamage(bot, innerDemon, innerDemon->GetMaxHealth() / 2, nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false, true);
     }
 
     return false;
@@ -825,8 +835,12 @@ bool LeotherasTheBlindFinalPhaseAssignDpsPriorityAction::Execute(Event event)
     MarkTargetWithSquare(bot, leotherasHuman);
     SetRtiTarget(botAI, "square", leotherasHuman);
 
-    if (bot->GetVictim() != leotherasHuman)
-        Attack(leotherasHuman);
+    if (bot->GetTarget() != leotherasHuman->GetGUID() ||
+        (botAI->IsMelee(bot) && bot->GetVictim() != leotherasHuman))
+    {
+        bot->SetSelection(leotherasHuman->GetGUID());
+        return Attack(leotherasHuman);
+    }
 
     if (botAI->IsTank(bot) && leotherasHuman->GetVictim() == bot)
     {
@@ -1183,8 +1197,11 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event event)
         MarkTargetWithSkull(bot, totem);
         SetRtiTarget(botAI, "skull", totem);
 
-        if (bot->GetVictim() != totem)
-            Attack(totem);
+        if (bot->GetTarget() != totem->GetGUID())
+        {
+            bot->SetSelection(totem->GetGUID());
+            return Attack(totem);
+        }
 
         return false;
     }
@@ -1195,8 +1212,11 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event event)
     {
         SetRtiTarget(botAI, "circle", tidalvess);
 
-        if (bot->GetVictim() != tidalvess)
-            Attack(tidalvess);
+        if (bot->GetTarget() != tidalvess->GetGUID())
+        {
+            bot->SetSelection(tidalvess->GetGUID());
+            return Attack(tidalvess);
+        }
 
         return false;
     }
@@ -1208,8 +1228,11 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event event)
         MarkTargetWithCross(bot, fathomSporebat);
         SetRtiTarget(botAI, "cross", fathomSporebat);
 
-        if (bot->GetVictim() != fathomSporebat)
-            Attack(fathomSporebat);
+        if (bot->GetTarget() != fathomSporebat->GetGUID())
+        {
+            bot->SetSelection(fathomSporebat->GetGUID());
+            return Attack(fathomSporebat);
+        }
 
         return false;
     }
@@ -1221,8 +1244,11 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event event)
         MarkTargetWithSquare(bot, fathomLurker);
         SetRtiTarget(botAI, "square", fathomLurker);
 
-        if (bot->GetVictim() != fathomLurker)
-            Attack(fathomLurker);
+        if (bot->GetTarget() != fathomLurker->GetGUID())
+        {
+            bot->SetSelection(fathomLurker->GetGUID());
+            return Attack(fathomLurker);
+        }
 
         return false;
     }
@@ -1233,8 +1259,11 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event event)
     {
         SetRtiTarget(botAI, "star", sharkkis);
 
-        if (bot->GetVictim() != sharkkis)
-            Attack(sharkkis);
+        if (bot->GetTarget() != sharkkis->GetGUID())
+        {
+            bot->SetSelection(sharkkis->GetGUID());
+            return Attack(sharkkis);
+        }
 
         return false;
     }
@@ -1245,8 +1274,15 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event event)
     {
         SetRtiTarget(botAI, "diamond", caribdis);
 
-        if (bot->GetVictim() != caribdis)
-            Attack(caribdis);
+        float dist = bot->GetExactDist2d(caribdis);
+        if (dist > 35.0f)
+            return FleePosition(caribdis->GetPosition(), 30.0f, 0);
+
+        if (bot->GetTarget() != caribdis->GetGUID())
+        {
+            bot->SetSelection(caribdis->GetGUID());
+            return Attack(caribdis);
+        }
 
         return false;
     }
@@ -1257,8 +1293,11 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event event)
     {
         SetRtiTarget(botAI, "triangle", karathress);
 
-        if (bot->GetVictim() != karathress)
-            Attack(karathress);
+        if (bot->GetTarget() != karathress->GetGUID())
+        {
+            bot->SetSelection(karathress->GetGUID());
+            return Attack(karathress);
+        }
     }
 
     return false;
@@ -1492,3 +1531,5 @@ bool MorogrimTidewalkerResetPhaseTransitionStepsAction::Execute(Event event)
 }
 
 // Lady Vashj <Coilfang Matron>
+
+// Reminder--Shamans need to use grounding totems, at least in MT's group

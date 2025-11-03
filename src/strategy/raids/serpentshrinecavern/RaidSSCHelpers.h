@@ -42,6 +42,9 @@ enum SerpentShrineCavernSpells
     // Morogrim Tidewalker
     SPELL_WATERY_GRAVE = 38049,
 
+    // Lady Vashj <Coilfang Matron>
+    SPELL_STATIC_CHARGE = 38281, // might be 38280 but that might be the cast
+
     // Hunter
     SPELL_MISDIRECTION = 34477,
 };
@@ -52,7 +55,7 @@ enum SerpentShrineCavernNPCs
     NPC_WATER_ELEMENTAL_TOTEM = 22236,
     NPC_RANCID_MUSHROOM = 22250,
 
-    // Hydross the Unstable
+    // Hydross the Unstable <Duke of Currents>
     NPC_HYDROSS_FROST_FORM = 21216,
     NPC_HYDROSS_NATURE_FORM = 21232,
     NPC_PURE_SPAWN_OF_HYDROSS = 22035,
@@ -76,7 +79,21 @@ enum SerpentShrineCavernNPCs
     // Morogrim Tidewalker
     NPC_TIDEWALKER_LURKER = 21290,
 
+    // Lady Vashj <Coilfang Matron>
+    NPC_ENCHANTED_ELEMENTAL = 21958,
+    NPC_TAINTED_ELEMENTAL = 22009,
+    NPC_COILFANG_ELITE = 22055,
+    NPC_COILFANG_STRIDER = 22056,
+    NPC_TOXIC_SPOREBAT = 22140,
+    NPC_SPORE_DROP_TRIGGER = 22207,
 };
+
+enum SerpentShrineCavernItems
+{
+    // Lady Vashj <Coilfang Matron>
+    ITEM_TAINTED_CORE = 31088,
+};
+
 namespace SerpentShrineCavernHelpers
 {
     extern std::unordered_map<uint32, time_t> hydrossFrostDpsWaitTimer;
