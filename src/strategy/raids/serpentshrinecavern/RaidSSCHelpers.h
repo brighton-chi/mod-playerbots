@@ -43,10 +43,24 @@ enum SerpentShrineCavernSpells
     SPELL_WATERY_GRAVE = 38049,
 
     // Lady Vashj <Coilfang Matron>
+    SPELL_PARALYZE = 38132, // from holding Tainted Core
     SPELL_STATIC_CHARGE = 38281, // might be 38280 but that might be the cast
 
     // Hunter
     SPELL_MISDIRECTION = 34477,
+
+    // Mage
+    SPELL_SLOW = 31589,
+
+    // Shaman
+    SPELL_GROUNDING_TOTEM_EFFECT = 8178,
+    SPELL_FROST_SHOCK = 25464,
+
+    // Warlock
+    SPELL_CURSE_OF_EXHAUSTION = 18223,
+
+    // Item
+    SPELL_HEAVY_NETHERWEAVE_NET = 31368,
 };
 
 enum SerpentShrineCavernNPCs
@@ -80,6 +94,7 @@ enum SerpentShrineCavernNPCs
     NPC_TIDEWALKER_LURKER = 21290,
 
     // Lady Vashj <Coilfang Matron>
+    NPC_WORLD_INVISIBLE_TRIGGER = 12999,
     NPC_ENCHANTED_ELEMENTAL = 21958,
     NPC_TAINTED_ELEMENTAL = 22009,
     NPC_COILFANG_ELITE = 22055,
@@ -92,6 +107,9 @@ enum SerpentShrineCavernItems
 {
     // Lady Vashj <Coilfang Matron>
     ITEM_TAINTED_CORE = 31088,
+
+    // Tailoring
+    ITEM_HEAVY_NETHERWEAVE_NET = 24269,
 };
 
 namespace SerpentShrineCavernHelpers
@@ -109,8 +127,11 @@ namespace SerpentShrineCavernHelpers
 
     extern std::unordered_map<uint32, time_t> karathressDpsWaitTimer;
 
-    extern std::map<ObjectGuid, uint8> tidewalkerTankStep;
-    extern std::map<ObjectGuid, uint8> tidewalkerRangedStep;
+    extern std::unordered_map<ObjectGuid, uint8> tidewalkerTankStep;
+    extern std::unordered_map<ObjectGuid, uint8> tidewalkerRangedStep;
+
+    extern std::unordered_map<ObjectGuid, Position> vashjRangedPositions;
+    extern std::unordered_map<ObjectGuid, bool> vashjHasReachedRangedPosition;
 
     struct Location
     {
@@ -157,7 +178,16 @@ namespace SerpentShrineCavernHelpers
         extern const Location TidewalkerPhase2RangedPosition;
         // extern const Location TidewalkerGraveHealerPosition;
         // Tidewalker offtank position(s) for murlocs?
-        // Tidewalker healer location for graves?
+
+        extern const Location VashjRoomCenterPosition;
+        extern const Location VashjNWStairsPosition;
+        extern const Location VashjWStairsPosition;
+        extern const Location VashjSWStairsPosition;
+        extern const Location VashjSSWStairsPosition;
+        extern const Location VashjSEStairsPosition;
+        extern const Location VashjEStairsPosition;
+        extern const Location VashjENEStairsPosition;
+        extern const Location VashjNNEStairsPosition;
     }
 
     void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);
@@ -173,6 +203,11 @@ namespace SerpentShrineCavernHelpers
     bool IsMapIDTimerManager(PlayerbotAI* botAI, Player* bot);
     Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry);
 
+    bool IsLurkerCastingSpout(Unit* lurker);
+    std::array<std::vector<Player*>, 3> GetRangedDpsBotGroups(Group* group);
+    std::array<std::vector<Player*>, 3> GetHealerBotGroups(Group* group);
+    std::array<std::vector<Player*>, 2> GetMeleeBotGroups(Group* group);
+
     bool HasMarkOfHydrossAt100Percent(Player* bot);
     bool HasMarkOfCorruptionAt100Percent(Player* bot);
 
@@ -182,10 +217,27 @@ namespace SerpentShrineCavernHelpers
     Unit* GetActiveLeotherasDemon(PlayerbotAI* botAI);
     Player* GetLeotherasDemonFormTank(PlayerbotAI* botAI, Player* bot);
 
-    std::array<std::vector<Player*>, 3> GetRangedDpsBotGroups(Group* group);
-    std::array<std::vector<Player*>, 3> GetHealerBotGroups(Group* group);
-    std::array<std::vector<Player*>, 2> GetMeleeBotGroups(Group* group);
-    bool IsLurkerCastingSpout(Unit* lurker);
+    bool IsMainTankInSameSubgroup(Player* bot);
+    bool IsLadyVashjInPhase1(PlayerbotAI* botAI);
+    bool IsLadyVashjInPhase2(PlayerbotAI* botAI);
+    bool IsLadyVashjInPhase3(PlayerbotAI* botAI);
+    bool IsMeleeRTIMarker(PlayerbotAI* botAI, Player* bot);
+    bool IsRangedRTIMarker(PlayerbotAI* botAI, Player* bot);
+    std::vector<Player*> GetPhase2AssignedRangedDpsBots(Group* group, PlayerbotAI* botAI);
+    Player* GetFirstTaintedCorePasser(PlayerbotAI* botAI, Player* bot);
+    Player* GetSecondTaintedCorePasser(PlayerbotAI* botAI, Player* bot);
+    Player* GetThirdTaintedCorePasser(PlayerbotAI* botAI, Player* bot);
+
+    struct GeneratorInfo
+    {
+        ObjectGuid guid;
+        float x, y, z;
+    };
+
+    extern const std::vector<uint32> SHIELD_GENERATOR_DB_GUIDS;
+    std::vector<GeneratorInfo> GetAllGeneratorInfosByDbGuids(Map* map, const std::vector<uint32>& generatorDbGuids);
+    Unit* GetNearestActiveShieldGeneratorTrigger(PlayerbotAI* botAI, Unit* reference);
+    const GeneratorInfo* GetNearestGeneratorToBot(Player* bot, const std::vector<GeneratorInfo>& generators);
 }
 
 #endif

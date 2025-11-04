@@ -269,4 +269,81 @@ public:
     bool IsActive() override;
 };
 
+class LadyVashjBossEngagedByMainTankInPhase1Trigger : public Trigger
+{
+public:
+    LadyVashjBossEngagedByMainTankInPhase1Trigger(PlayerbotAI* botAI) : Trigger(botAI, "lady vashj boss engaged by main tank in phase 1") {}
+    bool IsActive() override;
+};
+
+class LadyVashjBossEngagedByRangedInPhase1AndPhase3Trigger : public Trigger
+{
+public:
+    LadyVashjBossEngagedByRangedInPhase1AndPhase3Trigger(PlayerbotAI* botAI) : Trigger(botAI, "lady vashj boss engaged by ranged in phase 1 and phase 3") {}
+    bool IsActive() override;
+};
+
+class LadyVashjCastsShockBlastOnHighestAggroTrigger : public Trigger
+{
+public:
+    LadyVashjCastsShockBlastOnHighestAggroTrigger(PlayerbotAI* botAI) : Trigger(botAI, "lady vashj casts shock blast on highest aggro") {}
+    bool IsActive() override;
+};
+
+class LadyVashjBotHasStaticChargeTrigger : public Trigger
+{
+public:
+    LadyVashjBotHasStaticChargeTrigger(PlayerbotAI* botAI) : Trigger(botAI, "lady vashj bot has static charge") {}
+    bool IsActive() override;
+};
+
+class LadyVashjPullingBossInPhase1AndPhase3Trigger : public Trigger
+{
+public:
+    LadyVashjPullingBossInPhase1AndPhase3Trigger(PlayerbotAI* botAI) : Trigger(botAI, "lady vashj pulling boss in phase 1 and phase 3") {}
+    bool IsActive() override;
+};
+
+class LadyVashjEnchantedElementalsAreMovingToBossTrigger : public Trigger
+{
+public:
+    LadyVashjEnchantedElementalsAreMovingToBossTrigger(PlayerbotAI* botAI) : Trigger(botAI, "lady vashj enchanted elementals are moving to boss") {}
+    bool IsActive() override;
+};
+
+class LadyVashjPlayerNeedsBotSupportToDisableGeneratorsTrigger : public Trigger
+{
+public:
+    LadyVashjPlayerNeedsBotSupportToDisableGeneratorsTrigger(PlayerbotAI* botAI) : Trigger(botAI, "lady vashj player needs bot support to disable generators") {}
+    bool IsActive() override;
+};
+
+class LadyVashjPlayerLootedTaintedCore : public Trigger
+{
+public:
+    LadyVashjPlayerLootedTaintedCore(PlayerbotAI* botAI) : Trigger(botAI, "lady vashj player looted tainted core") {}
+    bool IsActive() override;
+};
+
+class LadyVashjDeterminingPhase2KillOrderTrigger : public Trigger
+{
+public:
+    LadyVashjDeterminingPhase2KillOrderTrigger(PlayerbotAI* botAI) : Trigger(botAI, "lady vashj determining phase 2 kill order") {}
+    bool IsActive() override;
+};
+
+class LadyVashjToxicSporebatsAreSpewingPoisonCloudsTrigger : public Trigger
+{
+public:
+    LadyVashjToxicSporebatsAreSpewingPoisonCloudsTrigger(PlayerbotAI* botAI) : Trigger(botAI, "lady vashj toxic sporebats are spewing poison clouds") {}
+    bool IsActive() override;
+};
+
+class LadyVashjNeedToManageTrackersTrigger : public Trigger
+{
+public:
+    LadyVashjNeedToManageTrackersTrigger(PlayerbotAI* botAI) : Trigger(botAI, "lady vashj need to manage trackers") {}
+    bool IsActive() override;
+};
+
 #endif

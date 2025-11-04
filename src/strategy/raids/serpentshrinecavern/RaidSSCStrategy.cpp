@@ -127,6 +127,39 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     ));
 
     // Lady Vashj <Coilfang Matron>
+    triggers.push_back(new TriggerNode("lady vashj boss engaged by main tank in phase 1",
+        NextAction::array(0, new NextAction("lady vashj phase 1 main tank position boss", ACTION_RAID + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("lady vashj boss engaged by ranged in phase 1 and phase 3",
+        NextAction::array(0, new NextAction("lady vashj phase 1 and phase 3 position ranged", ACTION_RAID + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("lady vashj casts shock blast on highest aggro",
+        NextAction::array(0, new NextAction("lady vashj set grounding totem in main tank group", ACTION_EMERGENCY + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("lady vashj bot has static charge",
+        NextAction::array(0, new NextAction("lady vashj static charge move away from group", ACTION_EMERGENCY + 7), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("lady vashj pulling boss in phase 1 and phase 3",
+        NextAction::array(0, new NextAction("lady vashj misdirect boss to main tank", ACTION_EMERGENCY + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("lady vashj enchanted elementals are moving to boss",
+        NextAction::array(0, new NextAction("lady vashj ranged dps move to phase 2 assigned positions", ACTION_RAID + 2), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("lady vashj player looted tainted core",
+        NextAction::array(0, new NextAction("lady vashj pass the tainted core", ACTION_RAID + 3), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("lady vashj player needs bot support to disable generators",
+        NextAction::array(0, new NextAction("lady vashj assistants follow master in phase 2", ACTION_RAID + 2), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("lady vashj determining phase 2 kill order",
+        NextAction::array(0, new NextAction("lady vashj assign phase 2 dps priority", ACTION_RAID + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("lady vashj toxic sporebats are spewing poison clouds",
+        NextAction::array(0, new NextAction("lady vashj avoid toxic spores", ACTION_EMERGENCY + 6), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("lady vashj need to manage trackers",
+        NextAction::array(0, new NextAction("lady vashj manage trackers", ACTION_EMERGENCY + 10), nullptr)
+    ));
 }
 
 void RaidSSCStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
@@ -147,4 +180,6 @@ void RaidSSCStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new FathomLordKarathressCaribdisTankHealerMaintainPositionMultiplier(botAI));
     multipliers.push_back(new MorogrimTidewalkerDelayBloodlustAndHeroismMultiplier(botAI));
     multipliers.push_back(new MorogrimTidewalkerDisablePhase2FleeActionMultiplier(botAI));
+    multipliers.push_back(new LadyVashjDoNotLootTheTaintedCoreMultiplier(botAI));
+    multipliers.push_back(new LadyVashjCorePassersPrioritizePositioningMultiplier(botAI));
 }

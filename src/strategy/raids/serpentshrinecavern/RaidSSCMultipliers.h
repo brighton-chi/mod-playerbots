@@ -115,4 +115,18 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class LadyVashjDoNotLootTheTaintedCoreMultiplier : public Multiplier
+{
+public:
+    LadyVashjDoNotLootTheTaintedCoreMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "lady vashj do not loot the tainted core") {}
+    virtual float GetValue(Action* action);
+};
+
+class LadyVashjCorePassersPrioritizePositioningMultiplier : public Multiplier
+{
+public:
+    LadyVashjCorePassersPrioritizePositioningMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "lady vashj core passers prioritize positioning") {}
+    virtual float GetValue(Action* action);
+};
+
 #endif

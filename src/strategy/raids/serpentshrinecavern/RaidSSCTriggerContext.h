@@ -50,6 +50,18 @@ public:
         creators["morogrim tidewalker pulling boss"] = &RaidSSCTriggerContext::morogrim_tidewalker_pulling_boss;
         creators["morogrim tidewalker water globules are incoming"] = &RaidSSCTriggerContext::morogrim_tidewalker_water_globules_are_incoming;
         creators["morogrim tidewalker encounter reset"] = &RaidSSCTriggerContext::morogrim_tidewalker_encounter_reset;
+
+        creators["lady vashj boss engaged by main tank in phase 1"] = &RaidSSCTriggerContext::lady_vashj_boss_engaged_by_main_tank_in_phase_1;
+        creators["lady vashj boss engaged by ranged in phase 1 and phase 3"] = &RaidSSCTriggerContext::lady_vashj_boss_engaged_by_ranged_in_phase_1_and_phase_3;
+        creators["lady vashj casts shock blast on highest aggro"] = &RaidSSCTriggerContext::lady_vashj_casts_shock_blast_on_highest_aggro;
+        creators["lady vashj bot has static charge"] = &RaidSSCTriggerContext::lady_vashj_bot_has_static_charge;
+        creators["lady vashj pulling boss in phase 1 and phase 3"] = &RaidSSCTriggerContext::lady_vashj_pulling_boss_in_phase_1_and_phase_3;
+        creators["lady vashj enchanted elementals are moving to boss"] = &RaidSSCTriggerContext::lady_vashj_enchanted_elementals_are_moving_to_boss;
+        creators["lady vashj player needs bot support to disable generators"] = &RaidSSCTriggerContext::lady_vashj_player_needs_bot_support_to_disable_generators;
+        creators["lady vashj player looted tainted core"] = &RaidSSCTriggerContext::lady_vashj_player_looted_tainted_core;
+        creators["lady vashj determining phase 2 kill order"] = &RaidSSCTriggerContext::lady_vashj_determining_phase_2_kill_order;
+        creators["lady vashj toxic sporebats are spewing poison clouds"] = &RaidSSCTriggerContext::lady_vashj_toxic_sporebats_are_spewing_poison_clouds;
+        creators["lady vashj need to manage trackers"] = &RaidSSCTriggerContext::lady_vashj_need_to_manage_trackers;
     }
 
 private:
@@ -94,6 +106,18 @@ private:
     static Trigger* morogrim_tidewalker_pulling_boss(PlayerbotAI* botAI) { return new MorogrimTidewalkerPullingBossTrigger(botAI); }
     static Trigger* morogrim_tidewalker_water_globules_are_incoming(PlayerbotAI* botAI) { return new MorogrimTidewalkerWaterGlobulesAreIncomingTrigger(botAI); }
     static Trigger* morogrim_tidewalker_encounter_reset(PlayerbotAI* botAI) { return new MorogrimTidewalkerEncounterResetTrigger(botAI); }
+
+    static Trigger* lady_vashj_boss_engaged_by_main_tank_in_phase_1(PlayerbotAI* botAI) { return new LadyVashjBossEngagedByMainTankInPhase1Trigger(botAI); }
+    static Trigger* lady_vashj_boss_engaged_by_ranged_in_phase_1_and_phase_3(PlayerbotAI* botAI) { return new LadyVashjBossEngagedByRangedInPhase1AndPhase3Trigger(botAI); }
+    static Trigger* lady_vashj_casts_shock_blast_on_highest_aggro(PlayerbotAI* botAI) { return new LadyVashjCastsShockBlastOnHighestAggroTrigger(botAI); }
+    static Trigger* lady_vashj_bot_has_static_charge(PlayerbotAI* botAI) { return new LadyVashjBotHasStaticChargeTrigger(botAI); }
+    static Trigger* lady_vashj_pulling_boss_in_phase_1_and_phase_3(PlayerbotAI* botAI) { return new LadyVashjPullingBossInPhase1AndPhase3Trigger(botAI); }
+    static Trigger* lady_vashj_enchanted_elementals_are_moving_to_boss(PlayerbotAI* botAI) { return new LadyVashjEnchantedElementalsAreMovingToBossTrigger(botAI); }
+    static Trigger* lady_vashj_player_needs_bot_support_to_disable_generators(PlayerbotAI* botAI) { return new LadyVashjPlayerNeedsBotSupportToDisableGeneratorsTrigger(botAI); }
+    static Trigger* lady_vashj_player_looted_tainted_core(PlayerbotAI* botAI) { return new LadyVashjPlayerLootedTaintedCore(botAI); }
+    static Trigger* lady_vashj_determining_phase_2_kill_order(PlayerbotAI* botAI) { return new LadyVashjDeterminingPhase2KillOrderTrigger(botAI); }
+    static Trigger* lady_vashj_toxic_sporebats_are_spewing_poison_clouds(PlayerbotAI* botAI) { return new LadyVashjToxicSporebatsAreSpewingPoisonCloudsTrigger(botAI); }
+    static Trigger* lady_vashj_need_to_manage_trackers(PlayerbotAI* botAI) { return new LadyVashjNeedToManageTrackersTrigger(botAI); }
 };
 
 #endif

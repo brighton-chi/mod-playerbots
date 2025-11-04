@@ -50,6 +50,18 @@ public:
         creators["morogrim tidewalker move boss to tank position"] = &RaidSSCActionContext::morogrim_tidewalker_move_boss_to_tank_position;
         creators["morogrim tidewalker phase 2 reposition ranged"] = &RaidSSCActionContext::morogrim_tidewalker_phase_2_reposition_ranged;
         creators["morogrim tidewalker reset phase transition steps"] = &RaidSSCActionContext::morogrim_tidewalker_reset_phase_transition_steps;
+
+        creators["lady vashj phase 1 main tank position boss"] = &RaidSSCActionContext::lady_vashj_phase_1_main_tank_position_boss;
+        creators["lady vashj phase 1 and phase 3 position ranged"] = &RaidSSCActionContext::lady_vashj_phase_1_and_phase_3_position_ranged;
+        creators["lady vashj set grounding totem in main tank group"] = &RaidSSCActionContext::lady_vashj_set_grounding_totem_in_main_tank_group;
+        creators["lady vashj static charge move away from group"] = &RaidSSCActionContext::lady_vashj_static_charge_move_away_from_group;
+        creators["lady vashj misdirect boss to main tank"] = &RaidSSCActionContext::lady_vashj_misdirect_boss_to_main_tank;
+        creators["lady vashj ranged dps move to phase 2 assigned positions"] = &RaidSSCActionContext::lady_vashj_ranged_dps_move_to_phase_2_assigned_positions;
+        creators["lady vashj assistants follow master in phase 2"] = &RaidSSCActionContext::lady_vashj_assistants_follow_master_in_phase_2;
+        creators["lady vashj pass the tainted core"] = &RaidSSCActionContext::lady_vashj_pass_the_tainted_core;
+        creators["lady vashj assign phase 2 dps priority"] = &RaidSSCActionContext::lady_vashj_assign_phase_2_dps_priority;
+        creators["lady vashj avoid toxic spores"] = &RaidSSCActionContext::lady_vashj_avoid_toxic_spores;
+        creators["lady vashj manage trackers"] = &RaidSSCActionContext::lady_vashj_manage_trackers;
     }
 
 private:
@@ -94,6 +106,18 @@ private:
     static Action* morogrim_tidewalker_move_boss_to_tank_position(PlayerbotAI* botAI) { return new MorogrimTidewalkerMoveBossToTankPositionAction(botAI); }
     static Action* morogrim_tidewalker_phase_2_reposition_ranged(PlayerbotAI* botAI) { return new MorogrimTidewalkerPhase2RepositionRangedAction(botAI); }
     static Action* morogrim_tidewalker_reset_phase_transition_steps(PlayerbotAI* botAI) { return new MorogrimTidewalkerResetPhaseTransitionStepsAction(botAI); }
+
+    static Action* lady_vashj_phase_1_main_tank_position_boss(PlayerbotAI* botAI) { return new LadyVashjPhase1MainTankPositionBossAction(botAI); }
+    static Action* lady_vashj_phase_1_and_phase_3_position_ranged(PlayerbotAI* botAI) { return new LadyVashjPhase1AndPhase3PositionRangedAction(botAI); }
+    static Action* lady_vashj_set_grounding_totem_in_main_tank_group(PlayerbotAI* botAI) { return new LadyVashjSetGroundingTotemInMainTankGroupAction(botAI); }
+    static Action* lady_vashj_static_charge_move_away_from_group(PlayerbotAI* botAI) { return new LadyVashjStaticChargeMoveAwayFromGroupAction(botAI); }
+    static Action* lady_vashj_misdirect_boss_to_main_tank(PlayerbotAI* botAI) { return new LadyVashjMisdirectBossToMainTankAction(botAI); }
+    static Action* lady_vashj_ranged_dps_move_to_phase_2_assigned_positions(PlayerbotAI* botAI) { return new LadyVashjRangedDpsMoveToPhase2AssignedPositionsAction(botAI); }
+    static Action* lady_vashj_assistants_follow_master_in_phase_2(PlayerbotAI* botAI) { return new LadyVashjAssistantsFollowMasterInPhase2Action(botAI); }
+    static Action* lady_vashj_pass_the_tainted_core(PlayerbotAI* botAI) { return new LadyVashjPassTheTaintedCoreAction(botAI); }
+    static Action* lady_vashj_assign_phase_2_dps_priority(PlayerbotAI* botAI) { return new LadyVashjAssignPhase2DpsPriorityAction(botAI); }
+    static Action* lady_vashj_avoid_toxic_spores(PlayerbotAI* botAI) { return new LadyVashjAvoidToxicSporesAction(botAI); }
+    static Action* lady_vashj_manage_trackers(PlayerbotAI* botAI) { return new LadyVashjManageTrackersAction(botAI); }
 };
 
 #endif

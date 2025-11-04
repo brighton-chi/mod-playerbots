@@ -6,6 +6,7 @@
 #include "DruidCatActions.h"
 #include "GenericSpellActions.h"
 #include "HunterActions.h"
+#include "LootAction.h"
 #include "MageActions.h"
 #include "PaladinActions.h"
 #include "Playerbots.h"
@@ -350,6 +351,43 @@ float MorogrimTidewalkerDisablePhase2FleeActionMultiplier::GetValue(Action* acti
     {
         if (dynamic_cast<FleeAction*>(action))
             return 0.0f;
+    }
+
+    return 1.0f;
+}
+
+float LadyVashjDoNotLootTheTaintedCoreMultiplier::GetValue(Action* action)
+{
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (!vashj)
+        return 1.0f;
+
+    if (dynamic_cast<LootAction*>(action))
+        return 0.0f;
+
+    return 1.0f;
+}
+
+float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* action)
+{
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    Group* group = bot->GetGroup();
+    if (!vashj || !IsLadyVashjInPhase2(botAI) || !group)
+        return 1.0f;
+
+    if (botAI->IsRangedDpsAssistantOfIndex(bot, 0) || botAI->IsHealAssistantOfIndex(bot, 0) ||
+        botAI->IsHealAssistantOfIndex(bot, 1))
+    {
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (member && member->IsAlive() && member->HasAura(SPELL_PARALYZE))
+            {
+                if (dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<FleeAction*>(action) ||
+                    dynamic_cast<CastBlinkBackAction*>(action) || dynamic_cast<CastDisengageAction*>(action))
+                    return 0.0f;
+            }
+        }
     }
 
     return 1.0f;

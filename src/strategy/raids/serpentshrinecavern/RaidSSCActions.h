@@ -289,4 +289,93 @@ public:
     bool Execute(Event event) override;
 };
 
+class LadyVashjPhase1MainTankPositionBossAction : public AttackAction
+{
+public:
+    LadyVashjPhase1MainTankPositionBossAction(PlayerbotAI* botAI, std::string const name = "lady vashj phase 1 main tank position boss") : AttackAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class LadyVashjPhase1AndPhase3PositionRangedAction : public MovementAction
+{
+public:
+    LadyVashjPhase1AndPhase3PositionRangedAction(PlayerbotAI* botAI, std::string const name = "lady vashj phase 1 and phase 3 position ranged") : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class LadyVashjSetGroundingTotemInMainTankGroupAction : public MovementAction
+{
+public:
+    LadyVashjSetGroundingTotemInMainTankGroupAction(PlayerbotAI* botAI, std::string const name = "lady vashj set grounding totem in main tank group") : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class LadyVashjStaticChargeMoveAwayFromGroupAction : public MovementAction
+{
+public:
+    LadyVashjStaticChargeMoveAwayFromGroupAction(PlayerbotAI* botAI, std::string const name = "lady vashj static charge move away from group") : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class LadyVashjMisdirectBossToMainTankAction : public AttackAction
+{
+public:
+    LadyVashjMisdirectBossToMainTankAction(PlayerbotAI* botAI, std::string const name = "lady vashj misdirect boss to main tank") : AttackAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class LadyVashjRangedDpsMoveToPhase2AssignedPositionsAction : public MovementAction
+{
+public:
+    LadyVashjRangedDpsMoveToPhase2AssignedPositionsAction(PlayerbotAI* botAI, std::string const name = "lady vashj ranged dps move to phase 2 assigned positions") : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class LadyVashjAssistantsFollowMasterInPhase2Action : public MovementAction
+{
+public:
+    LadyVashjAssistantsFollowMasterInPhase2Action(PlayerbotAI* botAI, std::string const name = "lady vashj assistants follow master in phase 2") : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class LadyVashjPassTheTaintedCoreAction : public MovementAction
+{
+public:
+    LadyVashjPassTheTaintedCoreAction(PlayerbotAI* botAI, std::string const name = "lady vashj pass the tainted core") : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+
+private:
+    void LineUpFirstCorePasser(Player* master, Unit* closestTrigger);
+    void LineUpSecondCorePasser(Player* firstCorePasser, Unit* closestTrigger);
+    bool IsSecondCorePasserInIntendedPosition(Player* firstCorePasser, Player* secondCorePasser, Unit* closestTrigger);
+    void LineUpThirdCorePasser(Player* secondCorePasser, Unit* closestTrigger);
+    bool CanUseGenerator();
+    bool UseCoreOnNearestGenerator();
+};
+
+class LadyVashjAssignPhase2DpsPriorityAction : public AttackAction
+{
+public:
+    LadyVashjAssignPhase2DpsPriorityAction(PlayerbotAI* botAI, std::string const name = "lady vashj assign phase 2 dps priority") : AttackAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class LadyVashjAvoidToxicSporesAction : public MovementAction
+{
+public:
+    LadyVashjAvoidToxicSporesAction(PlayerbotAI* botAI, std::string const name = "lady vashj avoid toxic spores") : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+
+private:
+    std::vector<Unit*> GetAllSporeDropTriggers(PlayerbotAI* botAI, Player* bot);
+    bool IsSafePosition(float x, float y, float z, const std::vector<Unit*>& hazards, float hazardRadius);
+};
+
+class LadyVashjManageTrackersAction : public Action
+{
+public:
+    LadyVashjManageTrackersAction(PlayerbotAI* botAI, std::string const name = "lady vashj manage trackers") : Action(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 #endif

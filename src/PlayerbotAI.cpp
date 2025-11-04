@@ -1826,31 +1826,34 @@ bool PlayerbotAI::IsRangedDpsAssistantOfIndex(Player* player, int index)
 {
     Group* group = player->GetGroup();
     if (!group)
-    {
         return false;
-    }
 
     int counter = 0;
 
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-
         if (!member)
-        {
             continue;
-        }
 
-        if (IsRangedDps(member))  // Check if the member is a ranged DPS
+        if (IsRangedDps(member) && group->IsAssistant(member->GetGUID()))
         {
-            bool isAssistant = group->IsAssistant(member->GetGUID());
-
-            // Check the index for both assistant and non-assistant ranges
-            if ((isAssistant && index == counter) || (!isAssistant && index == counter))
-            {
+            if (index == counter)
                 return player == member;
-            }
+            counter++;
+        }
+    }
 
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member)
+            continue;
+
+        if (IsRangedDps(member) && !group->IsAssistant(member->GetGUID()))
+        {
+            if (index == counter)
+                return player == member;
             counter++;
         }
     }

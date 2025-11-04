@@ -1,7 +1,10 @@
 #include "RaidSSCActions.h"
 #include "RaidSSCHelpers.h"
+#include "AiFactory.h"
 #include "Playerbots.h"
 #include "RtiTargetValue.h"
+#include "UseItemAction.h"
+#include "VMapMgr2.h"
 
 using namespace SerpentShrineCavernHelpers;
 using namespace SerpentShrineCavernLocations;
@@ -1362,6 +1365,7 @@ bool MorogrimTidewalkerMisdirectBossToMainTankAction::Execute(Event event)
             break;
         }
     }
+
     if (!mainTank)
         return false;
 
@@ -1533,3 +1537,733 @@ bool MorogrimTidewalkerResetPhaseTransitionStepsAction::Execute(Event event)
 // Lady Vashj <Coilfang Matron>
 
 // Reminder--Shamans need to use grounding totems, at least in MT's group
+
+bool LadyVashjPhase1MainTankPositionBossAction::Execute(Event event)
+{
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (!vashj)
+        return false;
+
+    if (bot->GetVictim() != vashj)
+        return Attack(vashj);
+
+    if (vashj->GetVictim() == bot)
+    {
+        const Location& position = VashjRoomCenterPosition;
+
+        if (bot->GetExactDist2d(position.x, position.y) > 2.0f)
+        {
+            float dX = position.x - bot->GetPositionX();
+            float dY = position.y - bot->GetPositionY();
+            float dist = sqrt(dX * dX + dY * dY);
+            float moveDist = std::min(4.5f, dist);
+            float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
+
+            return MoveTo(bot->GetMapId(), moveX, moveY, position.z, false, false, false, false,
+                        MovementPriority::MOVEMENT_COMBAT, true, true);
+        }
+        else if (!bot->IsWithinMeleeRange(vashj))
+        {
+            return MoveTo(vashj->GetMapId(), vashj->GetPositionX(),
+                          vashj->GetPositionY(), vashj->GetPositionZ(),
+                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+        }
+    }
+
+    return false;
+}
+
+bool LadyVashjPhase1AndPhase3PositionRangedAction::Execute(Event event)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    // Center of the room (set these to Vashj's room center coordinates)
+    const Location& center = VashjRoomCenterPosition;
+    const float minSpreadRadius = 20.0f;
+    const float maxSpreadRadius = 30.0f;
+
+    // Collect all ranged and healer bots
+    std::vector<Player*> spreadMembers;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && member->IsAlive() && GET_PLAYERBOT_AI(member))
+        {
+            PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
+            if (memberAI->IsRanged(member))
+                spreadMembers.push_back(member);
+        }
+    }
+
+    // Assign initial positions if not already assigned
+    if (!vashjRangedPositions.count(bot->GetGUID()))
+    {
+        auto it = std::find(spreadMembers.begin(), spreadMembers.end(), bot);
+        uint8 botIndex = (it != spreadMembers.end()) ? std::distance(spreadMembers.begin(), it) : 0;
+        uint8 count = spreadMembers.size();
+
+        float angle = 2 * M_PI * botIndex / count;
+        float radius = minSpreadRadius + static_cast<float>(rand()) / RAND_MAX * (maxSpreadRadius - minSpreadRadius);
+        float targetX = center.x + radius * cos(angle);
+        float targetY = center.y + radius * sin(angle);
+
+        vashjRangedPositions[bot->GetGUID()] = Position(targetX, targetY, center.z);
+        vashjHasReachedRangedPosition[bot->GetGUID()] = false;
+    }
+
+    Position targetPosition = vashjRangedPositions[bot->GetGUID()];
+    if (!vashjHasReachedRangedPosition[bot->GetGUID()])
+    {
+        if (!bot->IsWithinDist2d(targetPosition.GetPositionX(), targetPosition.GetPositionY(), 2.0f))
+        {
+            float destX = targetPosition.GetPositionX();
+            float destY = targetPosition.GetPositionY();
+            float destZ = targetPosition.GetPositionZ();
+
+            if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, bot->GetPositionX(),
+                bot->GetPositionY(), bot->GetPositionZ(), destX, destY, destZ))
+                return false;
+
+            bot->AttackStop();
+            bot->InterruptNonMeleeSpells(false);
+            return MoveTo(bot->GetMapId(), destX, destY, destZ, false, false, false, false,
+                          MovementPriority::MOVEMENT_COMBAT, true, false);
+        }
+        vashjHasReachedRangedPosition[bot->GetGUID()] = true;
+    }
+
+    return false;
+}
+
+bool LadyVashjSetGroundingTotemInMainTankGroupAction::Execute(Event event)
+{
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    Player* mainTank = nullptr;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && member->IsAlive() && botAI->IsMainTank(member))
+        {
+            mainTank = member;
+            break;
+        }
+    }
+
+    if (!mainTank)
+        return false;
+
+    float dist = bot->GetExactDist2d(mainTank);
+    if (dist >= 27.0f)
+    {
+        float angle = atan2(bot->GetPositionY() - mainTank->GetPositionY(),
+                      bot->GetPositionX() - mainTank->GetPositionX());
+        float targetX = mainTank->GetPositionX() + 25.0f * cos(angle);
+        float targetY = mainTank->GetPositionY() + 25.0f * sin(angle);
+
+        return MoveTo(mainTank->GetMapId(), targetX, targetY, mainTank->GetPositionZ(),
+                        false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+    }
+
+    if (!botAI->HasStrategy("grounding totem", BotState::BOT_STATE_COMBAT))
+        botAI->ChangeStrategy("grounding totem", BotState::BOT_STATE_COMBAT);
+
+    if (!bot->HasAura(SPELL_GROUNDING_TOTEM_EFFECT) && botAI->CanCastSpell("grounding totem", bot))
+        return botAI->CastSpell("grounding totem", bot);
+
+    return false;
+}
+
+bool LadyVashjMisdirectBossToMainTankAction::Execute(Event event)
+{
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    Group* group = bot->GetGroup();
+    if (!vashj || !group)
+        return false;
+
+    MarkTargetWithSkull(bot, vashj);
+
+    Player* mainTank = nullptr;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && member->IsAlive() && botAI->IsMainTank(member))
+        {
+            mainTank = member;
+            break;
+        }
+    }
+
+    if (!mainTank)
+        return false;
+
+    if (botAI->CanCastSpell("misdirection", mainTank))
+        return botAI->CastSpell("misdirection", mainTank);
+
+    if (bot->HasAura(SPELL_MISDIRECTION) && botAI->CanCastSpell("steady shot", vashj))
+        return botAI->CastSpell("steady shot", vashj);
+
+    return false;
+}
+
+bool LadyVashjStaticChargeMoveAwayFromGroupAction::Execute(Event event)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+
+        if (!member || !member->IsAlive() || member == bot)
+            continue;
+
+        float distance = bot->GetExactDist2d(member);
+        if (distance < 11.0f)
+            return FleePosition(Position(member->GetPositionX(), member->GetPositionY(),
+                                member->GetPositionZ()), 12.0f, 0);
+    }
+
+    return false;
+}
+
+bool LadyVashjRangedDpsMoveToPhase2AssignedPositionsAction::Execute(Event event)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    const Location positions[8] =
+    {
+        { 65.087f, -878.344f, 41.097f }, // NW
+        { 29.693f, -865.188f, 41.097f }, // W
+        { 9.766f, -869.707f, 41.097f },  // SW
+        { -25.352f, -910.754f, 41.097f },// SSW
+        { -9.504f, -964.514f, 41.097f }, // SE
+        { 29.701f, -982.523f, 41.097f }, // E
+        { 42.143f, -978.813f, 41.097f }, // ENE
+        { 83.647f, -941.901f, 41.097f }  // NNE
+    };
+
+    // First pass: prioritize hunters, non-affliction warlocks, mages, druids
+    std::vector<Player*> prioritized;
+    std::vector<Player*> others;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) || !botAI->IsRangedDps(member))
+            continue;
+
+        uint8 cls = member->getClass();
+        int8 tab = AiFactory::GetPlayerSpecTab(member);
+
+        if (cls == CLASS_HUNTER || cls == CLASS_MAGE || cls == CLASS_DRUID || (cls == CLASS_WARLOCK && tab != 0))
+            prioritized.push_back(member);
+        else
+            others.push_back(member);
+    }
+
+    // Assign positions
+    std::vector<Player*> assigned;
+    assigned.insert(assigned.end(), prioritized.begin(), prioritized.end());
+    assigned.insert(assigned.end(), others.begin(), others.end());
+
+    for (size_t i = 0; i < 8 && i < assigned.size(); ++i)
+    {
+        Player* member = assigned[i];
+        if (member == bot)
+        {
+            const Location& pos = positions[i];
+            if (bot->GetExactDist2d(pos.x, pos.y) > 10.0f)
+                return MoveTo(bot->GetMapId(), pos.x, pos.y, pos.z,
+                              false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+            break;
+        }
+    }
+
+    return false;
+}
+
+bool LadyVashjAssistantsFollowMasterInPhase2Action::Execute(Event event)
+{
+    Player* master = botAI->GetMaster();
+    if (!master || master == bot)
+        return false;
+
+    if (botAI->IsHealAssistantOfIndex(bot, 0) || botAI->IsRangedDpsAssistantOfIndex(bot, 0))
+    {
+        if (bot->GetExactDist2d(master) > 35.0f)
+        {
+            return MoveNear(bot->GetMapId(), master->GetPositionX(), master->GetPositionY(),
+                            master->GetPositionZ(), 30.0f, MovementPriority::MOVEMENT_COMBAT);
+        }
+    }
+
+    if (botAI->IsHealAssistantOfIndex(bot, 1))
+    {
+        const Location& position = VashjRoomCenterPosition;
+        if (bot->GetExactDist2d(position.x, position.y) > 25.0f)
+        {
+            return MoveNear(bot->GetMapId(), position.x, position.y, position.z,
+                            20.0f, MovementPriority::MOVEMENT_COMBAT);
+        }
+    }
+
+    return false;
+}
+
+bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
+{
+    Player* master = botAI->GetMaster();
+    Player* firstCorePasser = GetFirstTaintedCorePasser(botAI, bot);
+    Player* secondCorePasser = GetSecondTaintedCorePasser(botAI, bot);
+    Player* thirdCorePasser = GetThirdTaintedCorePasser(botAI, bot);
+    Unit* closestTrigger = GetNearestActiveShieldGeneratorTrigger(botAI, master);
+    if (!master || !firstCorePasser || !secondCorePasser || !thirdCorePasser || !closestTrigger)
+        return false;
+
+    // Always move bots into position
+    if (botAI->IsRangedDpsAssistantOfIndex(bot, 0))
+        LineUpFirstCorePasser(master, closestTrigger);
+    else if (botAI->IsHealAssistantOfIndex(bot, 0))
+        LineUpSecondCorePasser(firstCorePasser, closestTrigger);
+    else if (botAI->IsHealAssistantOfIndex(bot, 1))
+        LineUpThirdCorePasser(secondCorePasser, closestTrigger);
+
+    Item* item = bot->GetItemByEntry(ITEM_TAINTED_CORE);
+    if (item && botAI->HasItemInInventory(ITEM_TAINTED_CORE))
+    {
+        // First core passer logic
+        if (botAI->IsRangedDpsAssistantOfIndex(bot, 0) &&
+            IsSecondCorePasserInIntendedPosition(firstCorePasser, secondCorePasser, closestTrigger))
+        {
+            float dist = bot->GetExactDist(secondCorePasser);
+            if (dist <= 40.0f && bot->IsWithinLOS(secondCorePasser->GetPositionX(),
+                                                  secondCorePasser->GetPositionY(),
+                                                  secondCorePasser->GetPositionZ()))
+                botAI->ImbueItem(item, secondCorePasser);
+        }
+        // Second core passer logic
+        else if (botAI->IsHealAssistantOfIndex(bot, 0))
+        {
+            if (CanUseGenerator())
+                UseCoreOnNearestGenerator();
+            else if (thirdCorePasser->GetExactDist(closestTrigger) <= 3.0f)
+            {
+                float dist = bot->GetExactDist(thirdCorePasser);
+                if (dist <= 40.0f && bot->IsWithinLOS(thirdCorePasser->GetPositionX(),
+                                                      thirdCorePasser->GetPositionY(),
+                                                      thirdCorePasser->GetPositionZ()))
+                    botAI->ImbueItem(item, thirdCorePasser);
+            }
+        }
+        // Third core passer logic
+        else if (botAI->IsHealAssistantOfIndex(bot, 1))
+        {
+            if (CanUseGenerator())
+                UseCoreOnNearestGenerator();
+        }
+    }
+
+    return false;
+}
+
+void LadyVashjPassTheTaintedCoreAction::LineUpFirstCorePasser(Player* master, Unit* closestTrigger)
+{
+    // Direction vector from master to closest trigger
+    float mx = master->GetPositionX();
+    float my = master->GetPositionY();
+    float mz = master->GetPositionZ();
+
+    float dx = closestTrigger->GetPositionX() - mx;
+    float dy = closestTrigger->GetPositionY() - my;
+    float dz = closestTrigger->GetPositionZ() - mz;
+    float length = std::sqrt(dx*dx + dy*dy + dz*dz);
+    if (length == 0.0f)
+        return;
+    dx /= length; dy /= length; dz /= length;
+
+    // Start at 30 yards from master toward trigger, move closer until LOS to master
+    float masterDist = 30.0f;
+    float targetX = mx, targetY = my, targetZ = mz;
+    bool foundLoS = false;
+
+    for (; masterDist >= 5.0f; masterDist -= 2.0f)
+    {
+        targetX = mx + dx * masterDist;
+        targetY = my + dy * masterDist;
+        float candidateZ = mz + dz * masterDist;
+        float terrainZ = bot->GetMap()->GetHeight(targetX, targetY, candidateZ);
+        targetZ = (terrainZ != VMAP_INVALID_HEIGHT_VALUE) ? terrainZ : candidateZ;
+
+        // Check LOS from bot's current position to master's position
+        if (bot->IsWithinLOS(master->GetPositionX(), master->GetPositionY(), master->GetPositionZ()))
+        {
+            foundLoS = true;
+            break;
+        }
+    }
+
+    if (foundLoS && botAI->CanMove())
+    {
+        bot->AttackStop();
+        bot->InterruptNonMeleeSpells(true);
+        MoveTo(bot->GetMapId(), targetX, targetY, targetZ,
+               false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+    }
+}
+
+void LadyVashjPassTheTaintedCoreAction::LineUpSecondCorePasser(Player* firstCorePasser, Unit* closestTrigger)
+{
+    // Positions
+    float fx = firstCorePasser->GetPositionX();
+    float fy = firstCorePasser->GetPositionY();
+    float fz = firstCorePasser->GetPositionZ();
+
+    // Vector from first core passer to trigger
+    float dx = closestTrigger->GetPositionX() - fx;
+    float dy = closestTrigger->GetPositionY() - fy;
+    float dz = closestTrigger->GetPositionZ() - fz;
+    float distToTrigger = std::sqrt(dx*dx + dy*dy + dz*dz);
+
+    // Normalize direction
+    if (distToTrigger == 0.0f)
+        return;
+    dx /= distToTrigger; dy /= distToTrigger; dz /= distToTrigger;
+
+    float targetX, targetY, targetZ;
+    const float maxDistance = 38.0f;
+
+    if (distToTrigger <= maxDistance)
+    {
+        // Place second core passer within 3 yards of the trigger, but not past the first core passer
+        float moveDist = std::max(distToTrigger - 3.0f, 0.0f);
+        targetX = fx + dx * moveDist;
+        targetY = fy + dy * moveDist;
+        float candidateZ = fz + dz * moveDist;
+        float terrainZ = bot->GetMap()->GetHeight(targetX, targetY, candidateZ);
+        targetZ = (terrainZ != VMAP_INVALID_HEIGHT_VALUE) ? terrainZ : candidateZ;
+    }
+    else
+    {
+        // Place second core passer exactly 38 yards from first core passer toward the trigger
+        targetX = fx + dx * maxDistance;
+        targetY = fy + dy * maxDistance;
+        float candidateZ = fz + dz * maxDistance;
+        float terrainZ = bot->GetMap()->GetHeight(targetX, targetY, candidateZ);
+        targetZ = (terrainZ != VMAP_INVALID_HEIGHT_VALUE) ? terrainZ : candidateZ;
+    }
+
+    if (botAI->CanMove())
+    {
+        bot->AttackStop();
+        bot->InterruptNonMeleeSpells(false);
+        MoveTo(bot->GetMapId(), targetX, targetY, targetZ,
+               false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+    }
+}
+
+bool LadyVashjPassTheTaintedCoreAction::IsSecondCorePasserInIntendedPosition(Player* firstCorePasser, Player* secondCorePasser, Unit* closestTrigger)
+{
+    // Positions
+    float fx = firstCorePasser->GetPositionX();
+    float fy = firstCorePasser->GetPositionY();
+    float fz = firstCorePasser->GetPositionZ();
+
+    // Vector from first core passer to trigger
+    float dx = closestTrigger->GetPositionX() - fx;
+    float dy = closestTrigger->GetPositionY() - fy;
+    float dz = closestTrigger->GetPositionZ() - fz;
+    float distToTrigger = std::sqrt(dx*dx + dy*dy + dz*dz);
+
+    if (distToTrigger == 0.0f)
+        return false;
+    dx /= distToTrigger; dy /= distToTrigger; dz /= distToTrigger;
+
+    // Intended position 1: within 3 yards of the trigger (but not past the first core passer)
+    float moveDist = std::max(distToTrigger - 3.0f, 0.0f);
+    float pos1X = fx + dx * moveDist;
+    float pos1Y = fy + dy * moveDist;
+    float pos1Z = fz + dz * moveDist;
+    float terrainZ1 = bot->GetMap()->GetHeight(pos1X, pos1Y, pos1Z);
+    pos1Z = (terrainZ1 != VMAP_INVALID_HEIGHT_VALUE) ? terrainZ1 : pos1Z;
+
+    // Intended position 2: exactly 38 yards from first core passer toward the trigger
+    float pos2X = fx + dx * 38.0f;
+    float pos2Y = fy + dy * 38.0f;
+    float pos2Z = fz + dz * 38.0f;
+    float terrainZ2 = bot->GetMap()->GetHeight(pos2X, pos2Y, pos2Z);
+    pos2Z = (terrainZ2 != VMAP_INVALID_HEIGHT_VALUE) ? terrainZ2 : pos2Z;
+
+    // Check if secondCorePasser is close to either intended position
+    float dist1 = secondCorePasser->GetExactDist(Position(pos1X, pos1Y, pos1Z));
+    float dist2 = secondCorePasser->GetExactDist(Position(pos2X, pos2Y, pos2Z));
+
+    const float tolerance = 1.0f; // Acceptable range for being "at" the position
+
+    return (dist1 <= tolerance) || (dist2 <= tolerance);
+}
+
+void LadyVashjPassTheTaintedCoreAction::LineUpThirdCorePasser(Player* secondCorePasser, Unit* closestTrigger)
+{
+    // If second passer is already close enough, third passer does nothing
+    if (secondCorePasser->GetExactDist(closestTrigger) <= 3.0f)
+        return;
+
+    // Direction vector from second passer to trigger
+    float sx = secondCorePasser->GetPositionX();
+    float sy = secondCorePasser->GetPositionY();
+    float sz = secondCorePasser->GetPositionZ();
+
+    float tx = closestTrigger->GetPositionX();
+    float ty = closestTrigger->GetPositionY();
+    float tz = closestTrigger->GetPositionZ();
+
+    float dx = tx - sx;
+    float dy = ty - sy;
+    float dz = tz - sz;
+    float length = std::sqrt(dx*dx + dy*dy + dz*dz);
+    if (length == 0.0f)
+        return;
+
+    dx /= length; dy /= length; dz /= length;
+
+    // Move to a point 3 yards from the trigger along the direction vector (from trigger back toward second passer)
+    float targetX = tx - dx * 3.0f;
+    float targetY = ty - dy * 3.0f;
+    float candidateZ = tz - dz * 3.0f;
+    float terrainZ = bot->GetMap()->GetHeight(targetX, targetY, candidateZ);
+    float targetZ = (terrainZ != VMAP_INVALID_HEIGHT_VALUE) ? terrainZ : candidateZ;
+
+    if (botAI->CanMove())
+    {
+        bot->AttackStop();
+        bot->InterruptNonMeleeSpells(false);
+        MoveTo(bot->GetMapId(), targetX, targetY, targetZ,
+               false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+    }
+}
+
+bool LadyVashjPassTheTaintedCoreAction::CanUseGenerator()
+{
+    std::vector<GeneratorInfo> generators = GetAllGeneratorInfosByDbGuids(bot->GetMap(), SHIELD_GENERATOR_DB_GUIDS);
+    const GeneratorInfo* nearestGen = GetNearestGeneratorToBot(bot, generators);
+    if (!nearestGen)
+        return false;
+
+    GameObject* generatorGO = botAI->GetGameObject(nearestGen->guid);
+    if (!generatorGO)
+        return false;
+
+    return bot->GetExactDist(generatorGO) <= 3.0f;
+}
+
+bool LadyVashjPassTheTaintedCoreAction::UseCoreOnNearestGenerator()
+{
+    std::vector<GeneratorInfo> generators = GetAllGeneratorInfosByDbGuids(bot->GetMap(), SHIELD_GENERATOR_DB_GUIDS);
+    const GeneratorInfo* nearestGen = GetNearestGeneratorToBot(bot, generators);
+    if (!nearestGen)
+        return false;
+
+    GameObject* generator = botAI->GetGameObject(nearestGen->guid);
+    if (!generator)
+        return false;
+
+    generator->Use(bot);
+
+    return true;
+}
+
+bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (vashj)
+    {
+        if (IsRangedRTIMarker(botAI, bot))
+            MarkTargetWithMoon(bot, vashj);
+
+        if (bot->GetTarget() == vashj->GetGUID())
+            botAI->Reset();
+    }
+    return false;
+
+    std::vector<Player*> assignedRanged = GetPhase2AssignedRangedDpsBots(group, botAI);
+
+    // Target priority 1 for assigned ranged and melee: Tainted Elemental
+    Unit* taintedElemental = AI_VALUE2(Unit*, "find target", "tainted elemental");
+    if (taintedElemental && taintedElemental->IsAlive() && bot->GetExactDist2d(taintedElemental) < 30.0f
+        && (botAI->IsMelee(bot) || std::find(assignedRanged.begin(), assignedRanged.end(), bot) != assignedRanged.end()))
+    {
+        MarkTargetWithSquare(bot, taintedElemental);
+        SetRtiTarget(botAI, "square", taintedElemental);
+
+        if (bot->GetTarget() != taintedElemental->GetGUID())
+        {
+            bot->SetSelection(taintedElemental->GetGUID());
+            return Attack(taintedElemental);
+        }
+    }
+    return false;
+
+    // Target priority 2 for melee: Coilfang Elite
+    Unit* elite = AI_VALUE2(Unit*, "find target", "coilfang elite");
+    if (elite && elite->IsAlive() && botAI->IsMelee(bot))
+    {
+        MarkTargetWithTriangle(bot, elite);
+        SetRtiTarget(botAI, "triangle", elite);
+
+        if (bot->GetVictim() != elite)
+            return Attack(elite);
+    }
+    return false;
+
+    // Target priority 2 for assigned ranged and target priority 3 for melee: Enchanted Elemental
+    Unit* enchantedElemental = AI_VALUE2(Unit*, "find target", "enchanted elemental");
+    if (enchantedElemental && enchantedElemental->IsAlive() && bot->GetExactDist2d(enchantedElemental) < 30.0f
+        && (botAI->IsMelee(bot) || std::find(assignedRanged.begin(), assignedRanged.end(), bot) != assignedRanged.end()))
+    {
+        MarkTargetWithStar(bot, enchantedElemental);
+        SetRtiTarget(botAI, "star", enchantedElemental);
+
+        if (bot->GetTarget() != enchantedElemental->GetGUID())
+        {
+            bot->SetSelection(enchantedElemental->GetGUID());
+            return Attack(enchantedElemental);
+        }
+    }
+    return false;
+
+    Unit* strider = AI_VALUE2(Unit*, "find target", "coilfang strider");
+    // Target priority for unassigned ranged: Coilfang Strider
+    if (strider && strider->IsAlive() && botAI->IsRangedDps(bot) && !botAI->IsRangedDpsAssistantOfIndex(bot, 0) &&
+        std::find(assignedRanged.begin(), assignedRanged.end(), bot) == assignedRanged.end())
+    {
+        MarkTargetWithCircle(bot, strider);
+        SetRtiTarget(botAI, "circle", strider);
+
+        if (bot->GetExactDist2d(strider) <= 35.0f && bot->GetExactDist2d(strider) > 15.0f &&
+            bot->GetTarget() != strider->GetGUID())
+        {
+            bot->SetSelection(strider->GetGUID());
+            return Attack(strider);
+        }
+
+        if (!strider->HasAura(SPELL_HEAVY_NETHERWEAVE_NET))
+        {
+            Item* net = bot->GetItemByEntry(ITEM_HEAVY_NETHERWEAVE_NET);
+            if (net && botAI->HasItemInInventory(ITEM_HEAVY_NETHERWEAVE_NET) &&
+                botAI->CanCastSpell("heavy netherweave net", strider))
+                return botAI->CastSpell("heavy netherweave net", strider);
+        }
+
+        if (!strider->HasAura(SPELL_FROST_SHOCK) && bot->getClass() == CLASS_SHAMAN &&
+            botAI->CanCastSpell("frost shock", strider))
+            return botAI->CastSpell("frost shock", strider);
+
+        if (!strider->HasAura(SPELL_CURSE_OF_EXHAUSTION) && bot->getClass() == CLASS_WARLOCK &&
+            botAI->CanCastSpell("curse of exhaustion", strider))
+            return botAI->CastSpell("curse of exhaustion", strider);
+
+        if (!strider->HasAura(SPELL_SLOW) && bot->getClass() == CLASS_MAGE &&
+            botAI->CanCastSpell("slow", strider))
+            return botAI->CastSpell("slow", strider);
+    }
+
+    return false;
+}
+
+bool LadyVashjAvoidToxicSporesAction::Execute(Event event)
+{
+    // Get all spore drop triggers within 30 yards
+    std::vector<Unit*> sporeTriggers = GetAllSporeDropTriggers(botAI, bot);
+
+    // If none found, nothing to avoid
+    if (sporeTriggers.empty())
+        return false;
+
+    const float hazardRadius = 13.0f; // Minimum safe distance from a spore trigger
+    const float searchRadius = 30.0f; // How far to search for a safe spot
+    const float step = 2.0f;          // Step size for candidate positions
+
+    // Try positions in a circle around the bot
+    for (float angle = 0; angle < 2 * M_PI; angle += M_PI / 8)
+    {
+        for (float r = hazardRadius + 2.0f; r < searchRadius; r += step)
+        {
+            float x = bot->GetPositionX() + r * cos(angle);
+            float y = bot->GetPositionY() + r * sin(angle);
+            float z = bot->GetPositionZ(); // You may want to use Map::GetHeight for terrain
+
+            if (IsSafePosition(x, y, z, sporeTriggers, hazardRadius))
+            {
+                // Move to the first safe position found
+                return MoveTo(bot->GetMapId(), x, y, z,
+                              false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+            }
+        }
+    }
+
+    // No safe position found
+    return false;
+}
+
+std::vector<Unit*> LadyVashjAvoidToxicSporesAction::GetAllSporeDropTriggers(PlayerbotAI* botAI, Player* bot)
+{
+    std::vector<Unit*> sporeDropTriggers;
+    const float radius = 30.0f;
+    const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
+    for (auto const& npcGuid : npcs)
+    {
+        Unit* unit = botAI->GetUnit(npcGuid);
+        if (!unit || unit->GetEntry() != NPC_SPORE_DROP_TRIGGER)
+            continue;
+
+        float dist = bot->GetExactDist2d(unit);
+        if (dist < radius)
+            sporeDropTriggers.push_back(unit);
+    }
+
+    return sporeDropTriggers;
+}
+
+bool LadyVashjAvoidToxicSporesAction::IsSafePosition(float x, float y, float z, const std::vector<Unit*>& hazards, float hazardRadius)
+{
+    for (Unit* hazard : hazards)
+    {
+        float dist = std::sqrt(std::pow(x - hazard->GetPositionX(), 2) + std::pow(y - hazard->GetPositionY(), 2));
+        if (dist < hazardRadius)
+            return false;
+    }
+
+    return true;
+}
+
+bool LadyVashjManageTrackersAction::Execute(Event event)
+{
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (!vashj)
+        return false;
+
+    if (vashj->GetHealthPct() > 99.5f || IsLadyVashjInPhase2(botAI))
+    {
+        if (!vashjRangedPositions.empty())
+            vashjRangedPositions.clear();
+
+        if (!vashjHasReachedRangedPosition.empty())
+            vashjHasReachedRangedPosition.clear();
+    }
+
+    return false;
+}

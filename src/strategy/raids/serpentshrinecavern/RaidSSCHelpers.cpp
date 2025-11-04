@@ -1,5 +1,6 @@
 #include "RaidSSCHelpers.h"
 #include "RaidSSCActions.h"
+#include "Group.h"
 #include "Playerbots.h"
 #include "RtiTargetValue.h"
 
@@ -18,8 +19,11 @@ namespace SerpentShrineCavernHelpers
 
     std::unordered_map<uint32, time_t> karathressDpsWaitTimer;
 
-    std::map<ObjectGuid, uint8> tidewalkerTankStep;
-    std::map<ObjectGuid, uint8> tidewalkerRangedStep;
+    std::unordered_map<ObjectGuid, uint8> tidewalkerTankStep;
+    std::unordered_map<ObjectGuid, uint8> tidewalkerRangedStep;
+
+    std::unordered_map<ObjectGuid, Position> vashjRangedPositions;
+    std::unordered_map<ObjectGuid, bool> vashjHasReachedRangedPosition;
 
     namespace SerpentShrineCavernLocations
     {
@@ -75,6 +79,16 @@ namespace SerpentShrineCavernHelpers
         const Location TidewalkerPhase2RangedPosition = { 432.595f, -766.288f, -7.145f };
         // const Location TidewalkerGraveHealerPosition = { 388.558f, -723.956f, -11.941f };
         // Tidewalker offtank position(s) for murlocs?
+
+        const Location VashjRoomCenterPosition = { 29.634f, -923.541f, 42.985f };
+        const Location VashjNWStairsPosition = { 65.087f, -878.344f, 41.097f };
+        const Location VashjWStairsPosition = { 29.693f, -865.188f, 41.097f };
+        const Location VashjSWStairsPosition = { 9.766f, -869.707f, 41.097f };
+        const Location VashjSSWStairsPosition = { -25.352f, -910.754f, 41.097f };
+        const Location VashjSEStairsPosition = { -9.504f, -964.514f, 41.097f };
+        const Location VashjEStairsPosition = { 29.701f, -982.523f, 41.097f };
+        const Location VashjENEStairsPosition = { 42.143f, -978.813f, 41.097f };
+        const Location VashjNNEStairsPosition = { 83.647f, -941.901f, 41.097f };
     }
 
     void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId)
@@ -208,6 +222,93 @@ namespace SerpentShrineCavernHelpers
                bot->HasAura(SPELL_MARK_OF_CORRUPTION_500);
     } */
 
+    bool IsLurkerCastingSpout(Unit* lurker)
+    {
+        if (!lurker || !lurker->HasUnitState(UNIT_STATE_CASTING))
+            return false;
+
+        Spell* currentSpell = lurker->GetCurrentSpell(CURRENT_GENERIC_SPELL);
+        if (!currentSpell)
+            return false;
+
+        uint32 spellId = currentSpell->m_spellInfo->Id;
+        bool isSpout = spellId == SPELL_SPOUT_VISUAL;
+        LOG_DEBUG("playerbots", "IsLurkerCastingSpout: spellId={}, isSpout={}", spellId, isSpout);
+        return isSpout;
+    }
+
+    std::array<std::vector<Player*>, 3> GetRangedDpsBotGroups(Group* group)
+    {
+        std::array<std::vector<Player*>, 3> groups;
+        if (!group)
+            return groups;
+
+        int idx = 0;
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive())
+                continue;
+
+            PlayerbotAI* botAI = GET_PLAYERBOT_AI(member);
+            if (!botAI || !botAI->IsRanged(member) || !botAI->IsDps(member))
+                continue;
+
+            groups[idx % 3].push_back(member);
+            idx++;
+        }
+
+        return groups;
+    }
+
+    std::array<std::vector<Player*>, 3> GetHealerBotGroups(Group* group)
+    {
+        std::array<std::vector<Player*>, 3> groups;
+        if (!group)
+            return groups;
+
+        int idx = 0;
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive())
+                continue;
+
+            PlayerbotAI* botAI = GET_PLAYERBOT_AI(member);
+            if (!botAI || !botAI->IsHeal(member))
+                continue;
+
+            groups[idx % 3].push_back(member);
+            idx++;
+        }
+
+        return groups;
+    }
+
+    std::array<std::vector<Player*>, 2> GetMeleeBotGroups(Group* group)
+    {
+        std::array<std::vector<Player*>, 2> groups;
+        if (!group)
+            return groups;
+
+        int idx = 0;
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive())
+                continue;
+
+            PlayerbotAI* botAI = GET_PLAYERBOT_AI(member);
+            if (!botAI || !botAI->IsMelee(member) || botAI->IsMainTank(member))
+                continue;
+
+            groups[idx % 2].push_back(member);
+            idx++;
+        }
+
+        return groups;
+    }
+
     Unit* GetLeotherasHuman(PlayerbotAI* botAI)
     {
         const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
@@ -282,91 +383,244 @@ namespace SerpentShrineCavernHelpers
         return nullptr;
     }
 
-
-    std::array<std::vector<Player*>, 3> GetRangedDpsBotGroups(Group* group)
+    bool IsMainTankInSameSubgroup(Player* bot)
     {
-        std::array<std::vector<Player*>, 3> groups;
-        if (!group)
-            return groups;
-
-        int idx = 0;
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || !member->IsAlive())
-                continue;
-
-            PlayerbotAI* botAI = GET_PLAYERBOT_AI(member);
-            if (!botAI || !botAI->IsRanged(member) || !botAI->IsDps(member))
-                continue;
-
-            groups[idx % 3].push_back(member);
-            idx++;
-        }
-
-        return groups;
-    }
-
-    std::array<std::vector<Player*>, 3> GetHealerBotGroups(Group* group)
-    {
-        std::array<std::vector<Player*>, 3> groups;
-        if (!group)
-            return groups;
-
-        int idx = 0;
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || !member->IsAlive())
-                continue;
-
-            PlayerbotAI* botAI = GET_PLAYERBOT_AI(member);
-            if (!botAI || !botAI->IsHeal(member))
-                continue;
-
-            groups[idx % 3].push_back(member);
-            idx++;
-        }
-
-        return groups;
-    }
-
-    std::array<std::vector<Player*>, 2> GetMeleeBotGroups(Group* group)
-    {
-        std::array<std::vector<Player*>, 2> groups;
-        if (!group)
-            return groups;
-
-        int idx = 0;
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || !member->IsAlive())
-                continue;
-
-            PlayerbotAI* botAI = GET_PLAYERBOT_AI(member);
-            if (!botAI || !botAI->IsMelee(member) || botAI->IsMainTank(member))
-                continue;
-
-            groups[idx % 2].push_back(member);
-            idx++;
-        }
-
-        return groups;
-    }
-
-    bool IsLurkerCastingSpout(Unit* lurker)
-    {
-        if (!lurker || !lurker->HasUnitState(UNIT_STATE_CASTING))
+        Group* group = bot->GetGroup();
+        if (!group || !group->isRaidGroup())
             return false;
 
-        Spell* currentSpell = lurker->GetCurrentSpell(CURRENT_GENERIC_SPELL);
-        if (!currentSpell)
+        uint8 botSubGroup = group->GetMemberGroup(bot->GetGUID());
+        if (botSubGroup >= MAX_RAID_SUBGROUPS)
             return false;
 
-        uint32 spellId = currentSpell->m_spellInfo->Id;
-        bool isSpout = spellId == SPELL_SPOUT_VISUAL;
-        LOG_DEBUG("playerbots", "IsLurkerCastingSpout: spellId={}, isSpout={}", spellId, isSpout);
-        return isSpout;
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || member == bot || !member->IsAlive())
+                continue;
+
+            if (group->GetMemberGroup(member->GetGUID()) != botSubGroup)
+                continue;
+
+            if (PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member))
+            {
+                if (memberAI->IsMainTank(member))
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    bool IsLadyVashjInPhase1(PlayerbotAI* botAI)
+    {
+        Unit* vashj = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "lady vashj")->Get();
+
+        return vashj && vashj->GetHealthPct() > 70.0f;
+    }
+
+    bool IsLadyVashjInPhase2(PlayerbotAI* botAI)
+    {
+        Unit* vashj = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "lady vashj")->Get();
+
+        return vashj && vashj->GetHealthPct() <= 70.0f && vashj->GetHealthPct() > 50.0f;
+    }
+
+    bool IsLadyVashjInPhase3(PlayerbotAI* botAI)
+    {
+        Unit* vashj = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "lady vashj")->Get();
+
+        return vashj && vashj->GetHealthPct() <= 50.0f;
+    }
+
+    bool IsMeleeRTIMarker(PlayerbotAI* botAI, Player* bot)
+    {
+        if (Group* group = bot->GetGroup())
+        {
+            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+            {
+                Player* member = ref->GetSource();
+                if (member && member->IsAlive() && botAI->IsMelee(member) &&
+                    botAI->IsDps(member) && GET_PLAYERBOT_AI(member))
+                    return member == bot;
+            }
+        }
+
+        return true;
+    }
+
+    bool IsRangedRTIMarker(PlayerbotAI* botAI, Player* bot)
+    {
+        if (Group* group = bot->GetGroup())
+        {
+            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+            {
+                Player* member = ref->GetSource();
+                if (member && member->IsAlive() && botAI->IsRangedDps(member) &&
+                    GET_PLAYERBOT_AI(member))
+                    return member == bot;
+            }
+        }
+
+        return true;
+    }
+
+    std::vector<Player*> GetPhase2AssignedRangedDpsBots(Group* group, PlayerbotAI* botAI)
+    {
+        std::vector<Player*> prioritized;
+        std::vector<Player*> others;
+
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) || !botAI->IsRangedDps(member))
+                continue;
+
+            uint8 cls = member->getClass();
+            int8 tab = AiFactory::GetPlayerSpecTab(member);
+
+            if (cls == CLASS_HUNTER || cls == CLASS_MAGE || cls == CLASS_DRUID || (cls == CLASS_WARLOCK && tab != 0))
+                prioritized.push_back(member);
+            else
+                others.push_back(member);
+        }
+
+        std::vector<Player*> assignedRanged;
+        assignedRanged.insert(assignedRanged.end(), prioritized.begin(), prioritized.end());
+        assignedRanged.insert(assignedRanged.end(), others.begin(), others.end());
+
+        // Only return up to 8 bots
+        if (assignedRanged.size() > 8)
+            assignedRanged.resize(8);
+
+        return assignedRanged;
+    }
+
+    Player* GetFirstTaintedCorePasser(PlayerbotAI* botAI, Player* bot)
+    {
+        Group* group = bot->GetGroup();
+        if (!group)
+            return nullptr;
+
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (member && member->IsAlive() || botAI->IsRangedDpsAssistantOfIndex(member, 0))
+                return member;
+        }
+
+        return nullptr;
+    }
+
+    Player* GetSecondTaintedCorePasser(PlayerbotAI* botAI, Player* bot)
+    {
+        Group* group = bot->GetGroup();
+        if (!group)
+            return nullptr;
+
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (member && member->IsAlive() || botAI->IsHealAssistantOfIndex(member, 0))
+                return member;
+        }
+
+        return nullptr;
+    }
+
+    Player* GetThirdTaintedCorePasser(PlayerbotAI* botAI, Player* bot)
+    {
+        Group* group = bot->GetGroup();
+        if (!group)
+            return nullptr;
+
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (member && member->IsAlive() || botAI->IsHealAssistantOfIndex(member, 1))
+                return member;
+        }
+
+        return nullptr;
+    }
+
+    const std::vector<uint32> SHIELD_GENERATOR_DB_GUIDS = { 47482, 47483, 47484, 47485 }; // NW, NE, SE, SW
+    // Entries are 185052 { 52.048f, -901.236f, 44.000f }, 185054 { 52.448f, -944.825f, 44.000f },
+    // 185051 { 7.81f, -945.244f, 44.000f }, 185053 { 7.417f, -901.109f, 44.000f }, respectively
+    // Associated NPCs are
+
+    // Get the positions of all Shield Generators by their database GUIDs
+    std::vector<GeneratorInfo> GetAllGeneratorInfosByDbGuids(Map* map, const std::vector<uint32>& generatorDbGuids)
+    {
+        std::vector<GeneratorInfo> generators;
+        if (!map)
+            return generators;
+
+        for (uint32 dbGuid : generatorDbGuids)
+        {
+            auto bounds = map->GetGameObjectBySpawnIdStore().equal_range(dbGuid);
+            if (bounds.first == bounds.second)
+                continue;
+
+            GameObject* go = bounds.first->second;
+            if (!go)
+                continue;
+
+            GeneratorInfo info;
+            info.guid = go->GetGUID();
+            info.x = go->GetPositionX();
+            info.y = go->GetPositionY();
+            info.z = go->GetPositionZ();
+            generators.push_back(info);
+        }
+
+        return generators;
+    }
+
+    // Returns the nearest active shield generator trigger (NPC_WORLD_INVISIBLE_TRIGGER) to the bot
+    Unit* GetNearestActiveShieldGeneratorTrigger(PlayerbotAI* botAI, Unit* reference)
+    {
+        if (!botAI || !reference)
+            return nullptr;
+
+        const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
+        Unit* nearest = nullptr;
+        float minDist = std::numeric_limits<float>::max();
+
+        for (auto const& npcGuid : npcs)
+        {
+            Unit* unit = botAI->GetUnit(npcGuid);
+            if (unit && unit->GetEntry() == NPC_WORLD_INVISIBLE_TRIGGER && unit->IsAlive())
+            {
+                float dist = reference->GetDistance(unit);
+                if (dist < minDist)
+                {
+                    minDist = dist;
+                    nearest = unit;
+                }
+            }
+        }
+        return nearest;
+    }
+
+    const GeneratorInfo* GetNearestGeneratorToBot(Player* bot, const std::vector<GeneratorInfo>& generators)
+    {
+        if (!bot || generators.empty())
+            return nullptr;
+
+        const GeneratorInfo* nearest = nullptr;
+        float minDist = std::numeric_limits<float>::max();
+
+        for (auto const& gen : generators)
+        {
+            float dist = bot->GetExactDist(gen.x, gen.y, gen.z);
+            if (dist < minDist)
+            {
+                minDist = dist;
+                nearest = &gen;
+            }
+        }
+
+        return nearest;
     }
 }

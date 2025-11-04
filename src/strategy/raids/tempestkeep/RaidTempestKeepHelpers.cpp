@@ -111,7 +111,7 @@ namespace TempestKeepHelpers
     Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry)
     {
         const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
-        for (const auto& npcGuid : npcs)
+        for (auto const& npcGuid : npcs)
         {
             Unit* unit = botAI->GetUnit(npcGuid);
             if (unit && unit->IsAlive() && unit->GetEntry() == entry)

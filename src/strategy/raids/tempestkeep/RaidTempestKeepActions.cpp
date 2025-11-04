@@ -18,7 +18,7 @@ using namespace TempestKeepLocations;
 // Bots other than tanks need to move away from embers before they blow up
 // Need to avoid Al'ar rebirth explosion
 // Phase 2 melt armor taunt logic
-// Phase 2: spread for dive bomb, anything else?
+// Phase 2: spread for dive bomb
 
 // Multipliers:
 // No Tank Assist for MT or AT0 during phase 1 (keep for other ATs)
@@ -1241,24 +1241,21 @@ bool HighAstromancerSolarianStackBotsAction::Execute(Event event)
 
 bool HighAstromancerSolarianMoveAwayFromGroupAction::Execute(Event event)
 {
-    Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
-    if (!astromancer)
+    Group* group = bot->GetGroup();
+    if (!group)
         return false;
 
-    if (Group* group = bot->GetGroup())
+    for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
     {
-        for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
+        Player* member = ref->GetSource();
 
-            if (!member || !member->IsAlive() || member == bot)
-                continue;
+        if (!member || !member->IsAlive() || member == bot)
+            continue;
 
-            float distance = bot->GetExactDist2d(member);
-            if (distance < 12.0f)
-                return FleePosition(Position(member->GetPositionX(), member->GetPositionY(),
-                                    member->GetPositionZ()), 15.0f, 0);
-        }
+        float distance = bot->GetExactDist2d(member);
+        if (distance < 12.0f)
+            return FleePosition(Position(member->GetPositionX(), member->GetPositionY(),
+                                member->GetPositionZ()), 15.0f, 0);
     }
 
     return false;
@@ -1306,7 +1303,7 @@ std::vector<Unit*> HighAstromancerSolarianTargetSolariumPriestsAction::GetSolari
 {
     std::vector<Unit*> solariumPriests;
     const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
-    for (const auto& npcGuid : npcs)
+    for (auto const& npcGuid : npcs)
     {
         Unit* unit = botAI->GetUnit(npcGuid);
         if (unit && unit->GetEntry() == NPC_SOLARIUM_PRIEST && unit->IsAlive())

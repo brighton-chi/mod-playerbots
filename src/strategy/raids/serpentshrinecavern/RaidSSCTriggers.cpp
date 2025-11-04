@@ -1,6 +1,7 @@
 #include "RaidSSCTriggers.h"
 #include "RaidSSCHelpers.h"
 #include "RaidSSCActions.h"
+#include "AiFactory.h"
 #include "Playerbots.h"
 
 using namespace SerpentShrineCavernHelpers;
@@ -319,4 +320,110 @@ bool MorogrimTidewalkerEncounterResetTrigger::IsActive()
     return tidewalker && tidewalker->GetHealth() == tidewalker->GetMaxHealth();
 }
 
-// Lady Vashj
+// Lady Vashj <Coilfang Matron>
+
+bool LadyVashjBossEngagedByMainTankInPhase1Trigger::IsActive()
+{
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+
+    return vashj && IsLadyVashjInPhase1(botAI) && botAI->IsMainTank(bot);
+}
+
+bool LadyVashjBossEngagedByRangedInPhase1AndPhase3Trigger::IsActive()
+{
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+
+    return vashj && (IsLadyVashjInPhase1(botAI) || IsLadyVashjInPhase3(botAI)) &&
+           botAI->IsRanged(bot);
+}
+
+bool LadyVashjCastsShockBlastOnHighestAggroTrigger::IsActive()
+{
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    int8 tab = AiFactory::GetPlayerSpecTab(bot);
+
+    return vashj && (IsLadyVashjInPhase1(botAI) || IsLadyVashjInPhase3(botAI)) &&
+           bot->getClass() == CLASS_SHAMAN && tab == 2;
+}
+
+bool LadyVashjBotHasStaticChargeTrigger::IsActive()
+{
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+
+    return vashj && (IsLadyVashjInPhase1(botAI) || IsLadyVashjInPhase3(botAI)) &&
+           bot->HasAura(SPELL_STATIC_CHARGE);
+}
+
+bool LadyVashjPullingBossInPhase1AndPhase3Trigger::IsActive()
+{
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+
+    return vashj && bot->getClass() == CLASS_HUNTER &&
+           ((vashj->GetHealthPct() <= 100.0f && vashj->GetHealthPct() > 90.0f) ||
+            (!vashj->HasUnitState(UNIT_STATE_ROOT) && vashj->GetHealthPct() <= 50.0f && vashj->GetHealthPct() > 40.0f));
+}
+
+bool LadyVashjEnchantedElementalsAreMovingToBossTrigger::IsActive()
+{
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+
+    return vashj && IsLadyVashjInPhase2(botAI) && botAI->IsRangedDps(bot) &&
+           !botAI->IsRangedDpsAssistantOfIndex(bot, 0);
+}
+
+bool LadyVashjPlayerNeedsBotSupportToDisableGeneratorsTrigger::IsActive()
+{
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+
+    return vashj && IsLadyVashjInPhase2(botAI) &&
+           (botAI->IsHealAssistantOfIndex(bot, 0) || botAI->IsHealAssistantOfIndex(bot, 1) ||
+            botAI->IsRangedDpsAssistantOfIndex(bot, 0));
+}
+
+bool LadyVashjPlayerLootedTaintedCore::IsActive()
+{
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (!vashj || !IsLadyVashjInPhase2(botAI))
+        return false;
+
+    bool isCorePasser = botAI->IsHealAssistantOfIndex(bot, 0) ||
+                        botAI->IsHealAssistantOfIndex(bot, 1) ||
+                        botAI->IsRangedDpsAssistantOfIndex(bot, 0);
+
+    if (!isCorePasser)
+        return false;
+
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && member->IsAlive() && member->HasAura(SPELL_PARALYZE))
+            return true;
+    }
+
+    return false;
+}
+
+bool LadyVashjDeterminingPhase2KillOrderTrigger::IsActive()
+{
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+
+    return vashj && IsLadyVashjInPhase2(botAI) && botAI->IsDps(bot);
+}
+
+bool LadyVashjToxicSporebatsAreSpewingPoisonCloudsTrigger::IsActive()
+{
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+
+    return vashj && IsLadyVashjInPhase3(botAI);
+}
+
+bool LadyVashjNeedToManageTrackersTrigger::IsActive()
+{
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+
+    return vashj && botAI->IsRanged(bot) && (IsLadyVashjInPhase1(botAI) || IsLadyVashjInPhase2(botAI));
+}
