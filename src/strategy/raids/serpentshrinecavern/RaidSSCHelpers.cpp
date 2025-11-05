@@ -501,52 +501,78 @@ namespace SerpentShrineCavernHelpers
         return assignedRanged;
     }
 
-    Player* GetFirstTaintedCorePasser(PlayerbotAI* botAI, Player* bot)
+    Player* GetFirstTaintedCorePasser(Player* master, Group* group, PlayerbotAI* botAI)
     {
-        Group* group = bot->GetGroup();
-        if (!group)
+        if (!master || !group)
             return nullptr;
+
+        Player* closest = nullptr;
+        float minDist = std::numeric_limits<float>::max();
 
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (member && member->IsAlive() && botAI->IsRangedDpsAssistantOfIndex(member, 0))
-                return member;
-        }
+            if (!member || !member->IsAlive() || botAI->IsTank(member) || !GET_PLAYERBOT_AI(member))
+                continue;
 
-        return nullptr;
+            float dist = master->GetExactDist(member);
+            if (dist < minDist)
+            {
+                minDist = dist;
+                closest = member;
+            }
+        }
+        return closest;
     }
 
-    Player* GetSecondTaintedCorePasser(PlayerbotAI* botAI, Player* bot)
+    Player* GetSecondTaintedCorePasser(Unit* closestTrigger, Player* firstPasser, Group* group, PlayerbotAI* botAI)
     {
-        Group* group = bot->GetGroup();
-        if (!group)
+        if (!closestTrigger || !group)
             return nullptr;
+
+        Player* closest = nullptr;
+        float minDist = std::numeric_limits<float>::max();
 
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (member && member->IsAlive() && botAI->IsRangedDpsAssistantOfIndex(member, 1))
-                return member;
-        }
+            if (!member || !member->IsAlive() || member == firstPasser ||
+                botAI->IsTank(member) || !GET_PLAYERBOT_AI(member))
+                continue;
 
-        return nullptr;
+            float dist = closestTrigger->GetExactDist(member);
+            if (dist < minDist)
+            {
+                minDist = dist;
+                closest = member;
+            }
+        }
+        return closest;
     }
 
-    Player* GetThirdTaintedCorePasser(PlayerbotAI* botAI, Player* bot)
+    Player* GetThirdTaintedCorePasser(Player* secondPasser, Group* group, PlayerbotAI* botAI)
     {
-        Group* group = bot->GetGroup();
-        if (!group)
+        if (!secondPasser || !group)
             return nullptr;
+
+        Player* closest = nullptr;
+        float minDist = std::numeric_limits<float>::max();
 
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (member && member->IsAlive() && botAI->IsHealAssistantOfIndex(member, 0))
-                return member;
-        }
+            if (!member || !member->IsAlive() || member == secondPasser ||
+                botAI->IsTank(member) || !GET_PLAYERBOT_AI(member))
+                continue;
 
-        return nullptr;
+            float dist = secondPasser->GetExactDist(member);
+            if (dist < minDist)
+            {
+                minDist = dist;
+                closest = member;
+            }
+        }
+        return closest;
     }
 
     void ScheduleCoreReconcile(PlayerbotAI* botAI, Player* giver, Player* receiver, uint32 coreId, uint32 delayMs)

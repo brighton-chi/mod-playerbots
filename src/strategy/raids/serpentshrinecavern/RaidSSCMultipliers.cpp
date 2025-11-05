@@ -422,11 +422,16 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
     if (!vashj || !IsLadyVashjInPhase2(botAI) || !group)
         return 1.0f;
 
-    /* if (dynamic_cast<FollowAction*>(action))
-        return 0.0f; */
+    Player* master = botAI->GetMaster();
+    if (!master)
+        return 1.0f;
 
-    if (botAI->IsRangedDpsAssistantOfIndex(bot, 0) || botAI->IsHealAssistantOfIndex(bot, 0) ||
-        botAI->IsHealAssistantOfIndex(bot, 1))
+    Unit* closestTrigger = GetNearestActiveShieldGeneratorTriggerByEntry(bot, master);
+    Player* firstCorePasser = GetFirstTaintedCorePasser(master, group, botAI);
+    Player* secondCorePasser = GetSecondTaintedCorePasser(closestTrigger, firstCorePasser, group, botAI);
+    Player* thirdCorePasser = GetThirdTaintedCorePasser(secondCorePasser, group, botAI);
+
+    if (bot == firstCorePasser || bot == secondCorePasser || bot == thirdCorePasser)
     {
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
@@ -449,9 +454,9 @@ float LadyVashjDisableAutomaticTargetingAndMovementModifier::GetValue(Action *ac
         return 1.0f;
 
         if ((dynamic_cast<DpsAssistAction*>(action) || dynamic_cast<TankAssistAction*>(action) ||
-        dynamic_cast<CastDebuffSpellOnAttackerAction*>(action) || dynamic_cast<FollowAction*>(action) ||
-        dynamic_cast<FleeAction*>(action)))
-        return 0.0f;
+             dynamic_cast<CastDebuffSpellOnAttackerAction*>(action) || dynamic_cast<FollowAction*>(action) ||
+             dynamic_cast<FleeAction*>(action)))
+            return 0.0f;
 
     return 1.0f;
 }

@@ -388,18 +388,8 @@ bool LadyVashjPlayerNeedsBotSupportToDisableGeneratorsTrigger::IsActive()
 bool LadyVashjPlayerLootedTaintedCoreTrigger::IsActive()
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    if (!vashj || !IsLadyVashjInPhase2(botAI))
-        return false;
-
-    bool isCorePasser = botAI->IsHealAssistantOfIndex(bot, 0) ||
-                        botAI->IsRangedDpsAssistantOfIndex(bot, 1) ||
-                        botAI->IsRangedDpsAssistantOfIndex(bot, 0);
-
-    if (!isCorePasser)
-        return false;
-
     Group* group = bot->GetGroup();
-    if (!group)
+    if (!vashj || !IsLadyVashjInPhase2(botAI) || !group)
         return false;
 
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())

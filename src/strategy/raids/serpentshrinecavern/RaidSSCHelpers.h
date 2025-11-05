@@ -226,9 +226,9 @@ namespace SerpentShrineCavernHelpers
     bool IsMeleeRTIMarker(PlayerbotAI* botAI, Player* bot);
     bool IsRangedRTIMarker(PlayerbotAI* botAI, Player* bot);
     std::vector<Player*> GetPhase2AssignedRangedDpsBots(Group* group, PlayerbotAI* botAI);
-    Player* GetFirstTaintedCorePasser(PlayerbotAI* botAI, Player* bot);
-    Player* GetSecondTaintedCorePasser(PlayerbotAI* botAI, Player* bot);
-    Player* GetThirdTaintedCorePasser(PlayerbotAI* botAI, Player* bot);
+    Player* GetFirstTaintedCorePasser(Player* master, Group* group, PlayerbotAI* botAI);
+    Player* GetSecondTaintedCorePasser(Unit* closestTrigger, Player* firstPasser, Group* group, PlayerbotAI* botAI);
+    Player* GetThirdTaintedCorePasser(Player* secondPasser, Group* group, PlayerbotAI* botAI);
     void ScheduleCoreReconcile(PlayerbotAI* botAI, Player* giver, Player* receiver, uint32 coreId, uint32 delayMs = 500);
 
     struct GeneratorInfo

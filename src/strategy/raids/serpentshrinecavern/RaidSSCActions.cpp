@@ -1761,7 +1761,7 @@ bool LadyVashjRangedDpsMoveToPhase2AssignedPositionsAction::Execute(Event event)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) || !botAI->IsRangedDps(member) || botAI->IsRangedDpsAssistantOfIndex(member, 0) || botAI->IsRangedDpsAssistantOfIndex(member, 1))
+        if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) || !botAI->IsRangedDps(member))
             continue;
 
         uint8 cls = member->getClass();
@@ -2076,7 +2076,7 @@ bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
 
     Unit* strider = AI_VALUE2(Unit*, "find target", "coilfang strider");
     // Target priority for unassigned ranged: Coilfang Strider
-    if (strider && strider->IsAlive() && botAI->IsRangedDps(bot) && !botAI->IsRangedDpsAssistantOfIndex(bot, 0) && !botAI->IsRangedDpsAssistantOfIndex(bot, 1) &&
+    if (strider && strider->IsAlive() && botAI->IsRangedDps(bot) &&
         std::find(assignedRanged.begin(), assignedRanged.end(), bot) == assignedRanged.end())
     {
         MarkTargetWithCircle(bot, strider);
@@ -2128,49 +2128,51 @@ bool LadyVashjAssistantsFollowMasterInPhase2Action::Execute(Event event)
 bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
 {
     Player* master = botAI->GetMaster();
-    Player* firstCorePasser = GetFirstTaintedCorePasser(botAI, bot);
-    Player* secondCorePasser = GetSecondTaintedCorePasser(botAI, bot);
-    Player* thirdCorePasser = GetThirdTaintedCorePasser(botAI, bot);
+    Group* group = bot->GetGroup();
+    if (!master || !group)
+        return false;
+
     Unit* closestTrigger = GetNearestActiveShieldGeneratorTriggerByEntry(bot, master);
+    Player* firstCorePasser = GetFirstTaintedCorePasser(master, group, botAI);
+    Player* secondCorePasser = GetSecondTaintedCorePasser(closestTrigger, firstCorePasser, group, botAI);
+    Player* thirdCorePasser = GetThirdTaintedCorePasser(secondCorePasser, group, botAI);
 
     if (!master || !firstCorePasser || !secondCorePasser || !thirdCorePasser || !closestTrigger)
         return false;
 
     // Always move bots into position
-    if (botAI->IsRangedDpsAssistantOfIndex(bot, 0)) // First core passer
+    if (bot == firstCorePasser)
         LineUpFirstCorePasser(master, closestTrigger);
-    else if (botAI->IsRangedDpsAssistantOfIndex(bot, 1)) // Second core passer
+    else if (bot == secondCorePasser)
         LineUpSecondCorePasser(firstCorePasser, closestTrigger);
-    else if (botAI->IsHealAssistantOfIndex(bot, 0)) // Third core passer
+    else if (bot == thirdCorePasser)
         LineUpThirdCorePasser(secondCorePasser, closestTrigger);
 
     Item* item = bot->GetItemByEntry(ITEM_TAINTED_CORE);
     if (item && botAI->HasItemInInventory(ITEM_TAINTED_CORE))
     {
         // First core passer logic
-        if (botAI->IsRangedDpsAssistantOfIndex(bot, 0))
+        if (bot == firstCorePasser)
         {
-            if (IsSecondCorePasserInIntendedPosition(firstCorePasser, secondCorePasser, closestTrigger) &&
-                bot->GetExactDist(secondCorePasser) <= 40.0f)
+            if (IsSecondCorePasserInIntendedPosition(firstCorePasser, secondCorePasser, closestTrigger))
             {
                 botAI->ImbueItem(item, secondCorePasser);
                 ScheduleCoreReconcile(botAI, bot, secondCorePasser, ITEM_TAINTED_CORE, 500);
             }
         }
         // Second core passer logic
-        else if (botAI->IsRangedDpsAssistantOfIndex(bot, 1))
+        else if (bot == secondCorePasser)
         {
             if (CanUseGenerator())
                 UseCoreOnNearestGenerator();
-            else if (thirdCorePasser->GetExactDist(closestTrigger) <= 4.0f &&
-                     bot->GetExactDist(thirdCorePasser) <= 40.0f)
+            else if (thirdCorePasser->GetExactDist(closestTrigger) <= 4.0f)
             {
                 botAI->ImbueItem(item, thirdCorePasser);
                 ScheduleCoreReconcile(botAI, bot, thirdCorePasser, ITEM_TAINTED_CORE, 500);
             }
         }
         // Third core passer logic
-        else if (botAI->IsHealAssistantOfIndex(bot, 0) && CanUseGenerator())
+        else if (bot == thirdCorePasser && CanUseGenerator())
             UseCoreOnNearestGenerator();
     }
 
@@ -2215,7 +2217,7 @@ void LadyVashjPassTheTaintedCoreAction::LineUpSecondCorePasser(Player* firstCore
     dx /= distToTrigger; dy /= distToTrigger; dz /= distToTrigger;
 
     float targetX, targetY, targetZ;
-    const float maxDistance = 38.0f;
+    const float maxDistance = 35.0f;
 
     if (distToTrigger <= maxDistance)
     {
@@ -2258,8 +2260,8 @@ bool LadyVashjPassTheTaintedCoreAction::IsSecondCorePasserInIntendedPosition(Pla
     float pos1Y = fy + dy * moveDist;
     const float pos1Z = 42.985f;
 
-    float pos2X = fx + dx * 38.0f;
-    float pos2Y = fy + dy * 38.0f;
+    float pos2X = fx + dx * 35.0f;
+    float pos2Y = fy + dy * 35.0f;
     const float pos2Z = 42.985f;
 
     float dist1 = secondCorePasser->GetExactDist(Position(pos1X, pos1Y, pos1Z));
