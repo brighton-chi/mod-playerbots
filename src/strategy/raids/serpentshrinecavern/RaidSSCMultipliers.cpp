@@ -422,8 +422,8 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
     if (!vashj || !IsLadyVashjInPhase2(botAI) || !group)
         return 1.0f;
 
-    if (dynamic_cast<FollowAction*>(action))
-        return 0.0f;
+    /* if (dynamic_cast<FollowAction*>(action))
+        return 0.0f; */
 
     if (botAI->IsRangedDpsAssistantOfIndex(bot, 0) || botAI->IsHealAssistantOfIndex(bot, 0) ||
         botAI->IsHealAssistantOfIndex(bot, 1))

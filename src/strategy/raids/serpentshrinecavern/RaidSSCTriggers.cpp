@@ -375,20 +375,17 @@ bool LadyVashjDeterminingPhase2KillOrderTrigger::IsActive()
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
 
-    return vashj && IsLadyVashjInPhase2(botAI) && !botAI->IsHeal(bot) && !botAI->IsRangedDpsAssistantOfIndex(bot, 0) &&
-           !botAI->IsRangedDpsAssistantOfIndex(bot, 1);
+    return vashj && IsLadyVashjInPhase2(botAI) && !botAI->IsHeal(bot);
 }
 
 bool LadyVashjPlayerNeedsBotSupportToDisableGeneratorsTrigger::IsActive()
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
 
-    return vashj && IsLadyVashjInPhase2(botAI) &&
-           (botAI->IsRangedDpsAssistantOfIndex(bot, 0) || botAI->IsRangedDpsAssistantOfIndex(bot, 1) ||
-            botAI->IsHealAssistantOfIndex(bot, 0));
+    return vashj && IsLadyVashjInPhase2(botAI) && botAI->IsRangedDpsAssistantOfIndex(bot, 0);
 }
 
-/* bool LadyVashjPlayerLootedTaintedCoreTrigger::IsActive()
+bool LadyVashjPlayerLootedTaintedCoreTrigger::IsActive()
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     if (!vashj || !IsLadyVashjInPhase2(botAI))
@@ -413,8 +410,8 @@ bool LadyVashjPlayerNeedsBotSupportToDisableGeneratorsTrigger::IsActive()
     }
 
     return false;
-} */
-bool LadyVashjPlayerLootedTaintedCoreTrigger::IsActive()
+}
+/* bool LadyVashjPlayerLootedTaintedCoreTrigger::IsActive()
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     Group* group = bot->GetGroup();
@@ -453,7 +450,7 @@ bool LadyVashjPlayerLootedTaintedCoreTrigger::IsActive()
 
     // Keep the trigger active if Paralyze is present, or within 10s of first Paralyze seen
     return foundParalyze || (firstParalyze[0][mapId] && (now - firstParalyze[0][mapId] < 10));
-}
+} */
 
 bool LadyVashjToxicSporebatsAreSpewingPoisonCloudsTrigger::IsActive()
 {

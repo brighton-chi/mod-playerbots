@@ -549,29 +549,25 @@ namespace SerpentShrineCavernHelpers
         return nullptr;
     }
 
-    void ScheduleCoreReconcile(PlayerbotAI* botAI, Player* giver, Player* receiver, uint32 coreId, const std::string& label, uint32 delayMs)
+    void ScheduleCoreReconcile(PlayerbotAI* botAI, Player* giver, Player* receiver, uint32 coreId, uint32 delayMs)
     {
         if (!botAI || !giver || !receiver)
             return;
 
-        botAI->AddTimedEvent([giver, receiver, coreId, label]()
+        botAI->AddTimedEvent([giver, receiver, coreId]()
         {
             if (!giver || !receiver)
                 return;
 
             bool receiverHas = GET_PLAYERBOT_AI(receiver)->HasItemInInventory(coreId);
             bool giverHas = GET_PLAYERBOT_AI(giver)->HasItemInInventory(coreId);
-            LOG_DEBUG("playerbots", "Reconcile ({}): giverHas={}, receiverHas={}", label, giverHas, receiverHas);
 
             // If receiver already has one, remove extra from giver to avoid duplicate
             if (receiverHas)
             {
                 if (giverHas)
                 {
-                    LOG_DEBUG("playerbots", "Receiver already got core; removing one from giver {}", giver->GetName());
                     giver->DestroyItemCount(coreId, 1, true);
-                    bool removedAfter = !GET_PLAYERBOT_AI(giver)->HasItemInInventory(coreId);
-                    LOG_DEBUG("playerbots", "Removed from giver? {}", removedAfter ? "yes" : "no");
                 }
                 return;
             }
@@ -582,15 +578,9 @@ namespace SerpentShrineCavernHelpers
                 ItemPosCountVec dest;
                 uint32 count = 1;
                 int canStore = receiver->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, coreId, count);
-                LOG_DEBUG("playerbots", "Reconcile create: CanStoreNewItem -> {}", canStore);
                 if (canStore == EQUIP_ERR_OK)
                 {
                     receiver->StoreNewItem(dest, coreId, true, Item::GenerateItemRandomPropertyId(coreId));
-                    LOG_DEBUG("playerbots", "Reconcile create: core added to {}", receiver->GetName());
-                }
-                else
-                {
-                    LOG_DEBUG("playerbots", "Reconcile create: receiver {} cannot store core (code {})", receiver->GetName(), canStore);
                 }
                 return;
             }
@@ -601,33 +591,18 @@ namespace SerpentShrineCavernHelpers
                 ItemPosCountVec dest;
                 uint32 count = 1;
                 int canStore = receiver->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, coreId, count);
-                LOG_DEBUG("playerbots", "Manual transfer: CanStoreNewItem -> {}", canStore);
                 if (canStore == EQUIP_ERR_OK)
                 {
                     Item* created = receiver->StoreNewItem(dest, coreId, true, Item::GenerateItemRandomPropertyId(coreId));
                     if (created)
                     {
-                        LOG_DEBUG("playerbots", "Manual transfer: created core on {}", receiver->GetName());
                         giver->DestroyItemCount(coreId, 1, true);
                         bool removedAfter = !GET_PLAYERBOT_AI(giver)->HasItemInInventory(coreId);
                         if (!removedAfter)
                         {
-                            LOG_DEBUG("playerbots", "Manual transfer: failed to remove from giver {}, rolling back", giver->GetName());
                             receiver->DestroyItemCount(coreId, 1, true);
                         }
-                        else
-                        {
-                            LOG_DEBUG("playerbots", "Manual transfer complete {} -> {}", giver->GetName(), receiver->GetName());
-                        }
                     }
-                    else
-                    {
-                        LOG_DEBUG("playerbots", "Manual transfer: StoreNewItem returned null for {}", receiver->GetName());
-                    }
-                }
-                else
-                {
-                    LOG_DEBUG("playerbots", "Manual transfer: receiver cannot store core (code {})", canStore);
                 }
             }
         }, delayMs);

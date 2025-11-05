@@ -148,9 +148,9 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("lady vashj player looted tainted core",
         NextAction::array(0, new NextAction("lady vashj pass the tainted core", ACTION_EMERGENCY + 2), nullptr)
     ));
-    triggers.push_back(new TriggerNode("lady vashj player needs bot support to disable generators",
+    /* triggers.push_back(new TriggerNode("lady vashj player needs bot support to disable generators",
         NextAction::array(0, new NextAction("lady vashj assistants follow master in phase 2", ACTION_EMERGENCY + 1), nullptr)
-    ));
+    )); */
     triggers.push_back(new TriggerNode("lady vashj determining phase 2 kill order",
         NextAction::array(0, new NextAction("lady vashj assign phase 2 dps priority", ACTION_RAID + 1), nullptr)
     ));

@@ -229,7 +229,7 @@ namespace SerpentShrineCavernHelpers
     Player* GetFirstTaintedCorePasser(PlayerbotAI* botAI, Player* bot);
     Player* GetSecondTaintedCorePasser(PlayerbotAI* botAI, Player* bot);
     Player* GetThirdTaintedCorePasser(PlayerbotAI* botAI, Player* bot);
-    void ScheduleCoreReconcile(PlayerbotAI* botAI, Player* giver, Player* receiver, uint32 coreId, const std::string& label = "", uint32 delayMs = 500);
+    void ScheduleCoreReconcile(PlayerbotAI* botAI, Player* giver, Player* receiver, uint32 coreId, uint32 delayMs = 500);
 
     struct GeneratorInfo
     {
