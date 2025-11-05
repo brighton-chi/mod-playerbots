@@ -461,7 +461,8 @@ namespace SerpentShrineCavernHelpers
             {
                 Player* member = ref->GetSource();
                 if (member && member->IsAlive() && botAI->IsRangedDps(member) &&
-                    GET_PLAYERBOT_AI(member) && std::find(assignedRanged.begin(), assignedRanged.end(), member) == assignedRanged.end())
+                    GET_PLAYERBOT_AI(member) && !botAI->IsRangedDpsAssistantOfIndex(member, 0) &&
+                    !botAI->IsRangedDpsAssistantOfIndex(member, 1))
                     return member == bot;
             }
         }

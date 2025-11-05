@@ -318,10 +318,10 @@ public:
     bool IsActive() override;
 };
 
-class LadyVashjPlayerLootedTaintedCore : public Trigger
+class LadyVashjPlayerLootedTaintedCoreTrigger : public Trigger
 {
 public:
-    LadyVashjPlayerLootedTaintedCore(PlayerbotAI* botAI) : Trigger(botAI, "lady vashj player looted tainted core") {}
+    LadyVashjPlayerLootedTaintedCoreTrigger(PlayerbotAI* botAI) : Trigger(botAI, "lady vashj player looted tainted core") {}
     bool IsActive() override;
 };
 

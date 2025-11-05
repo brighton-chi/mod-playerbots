@@ -15,6 +15,8 @@
 #include "WarlockActions.h"
 #include "WarriorActions.h"
 
+#include "FollowActions.h"
+
 using namespace SerpentShrineCavernHelpers;
 
 static bool IsChargeAction(Action* action)
@@ -420,6 +422,9 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
     if (!vashj || !IsLadyVashjInPhase2(botAI) || !group)
         return 1.0f;
 
+    if (dynamic_cast<FollowAction*>(action))
+        return 0.0f;
+
     if (botAI->IsRangedDpsAssistantOfIndex(bot, 0) || botAI->IsHealAssistantOfIndex(bot, 0) ||
         botAI->IsHealAssistantOfIndex(bot, 1))
     {
@@ -433,6 +438,20 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
             }
         }
     }
+
+    return 1.0f;
+}
+
+float LadyVashjDisableAutomaticTargetingAndMovementModifier::GetValue(Action *action)
+{
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (!vashj || !IsLadyVashjInPhase2(botAI))
+        return 1.0f;
+
+        if ((dynamic_cast<DpsAssistAction*>(action) || dynamic_cast<TankAssistAction*>(action) ||
+        dynamic_cast<CastDebuffSpellOnAttackerAction*>(action) || dynamic_cast<FollowAction*>(action) ||
+        dynamic_cast<FleeAction*>(action)))
+        return 0.0f;
 
     return 1.0f;
 }

@@ -185,4 +185,5 @@ void RaidSSCStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     // multipliers.push_back(new LadyVashjPhase2AssignedRangeMaintainPositioningMultiplier(botAI));
     multipliers.push_back(new LadyVashjDoNotLootTheTaintedCoreMultiplier(botAI));
     multipliers.push_back(new LadyVashjCorePassersPrioritizePositioningMultiplier(botAI));
+    multipliers.push_back(new LadyVashjDisableAutomaticTargetingAndMovementModifier(botAI));
 }

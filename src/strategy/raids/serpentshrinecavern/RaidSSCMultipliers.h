@@ -150,4 +150,11 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class LadyVashjDisableAutomaticTargetingAndMovementModifier : public Multiplier
+{
+public:
+    LadyVashjDisableAutomaticTargetingAndMovementModifier(PlayerbotAI* botAI) : Multiplier(botAI, "lady vashj disable automatic targeting and movement") {}
+    virtual float GetValue(Action* action);
+};
+
 #endif

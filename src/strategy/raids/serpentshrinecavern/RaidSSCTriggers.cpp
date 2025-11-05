@@ -388,7 +388,7 @@ bool LadyVashjPlayerNeedsBotSupportToDisableGeneratorsTrigger::IsActive()
             botAI->IsHealAssistantOfIndex(bot, 0));
 }
 
-bool LadyVashjPlayerLootedTaintedCore::IsActive()
+/* bool LadyVashjPlayerLootedTaintedCoreTrigger::IsActive()
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     if (!vashj || !IsLadyVashjInPhase2(botAI))
@@ -413,6 +413,46 @@ bool LadyVashjPlayerLootedTaintedCore::IsActive()
     }
 
     return false;
+} */
+bool LadyVashjPlayerLootedTaintedCoreTrigger::IsActive()
+{
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    Group* group = bot->GetGroup();
+    if (!vashj || !IsLadyVashjInPhase2(botAI) || !group)
+        return false;
+
+    static std::map<uint32, time_t> firstParalyze[1]; // [0] for static storage
+    bool foundParalyze = false;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && member->IsAlive() && member->HasAura(SPELL_PARALYZE))
+        {
+            foundParalyze = true;
+            break;
+        }
+    }
+
+    uint32 mapId = vashj->GetMapId();
+    time_t now = time(nullptr);
+
+    // Start the timer when Paralyze is first found
+    if (foundParalyze && !firstParalyze[0][mapId])
+        firstParalyze[0][mapId] = now;
+
+    // Reset the timer if we leave phase 2 or reset encounter
+    if (!foundParalyze && (now - firstParalyze[0][mapId] > 20))
+        firstParalyze[0][mapId] = 0;
+
+    bool isCorePasser = botAI->IsHealAssistantOfIndex(bot, 0) ||
+                        botAI->IsRangedDpsAssistantOfIndex(bot, 1) ||
+                        botAI->IsRangedDpsAssistantOfIndex(bot, 0);
+
+    if (!isCorePasser)
+        return false;
+
+    // Keep the trigger active if Paralyze is present, or within 10s of first Paralyze seen
+    return foundParalyze || (firstParalyze[0][mapId] && (now - firstParalyze[0][mapId] < 10));
 }
 
 bool LadyVashjToxicSporebatsAreSpewingPoisonCloudsTrigger::IsActive()
@@ -426,5 +466,5 @@ bool LadyVashjNeedToManageTrackersTrigger::IsActive()
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
 
-    return vashj && botAI->IsRanged(bot) && (IsLadyVashjInPhase1(botAI) || IsLadyVashjInPhase2(botAI));
+    return vashj && (IsLadyVashjInPhase1(botAI) || IsLadyVashjInPhase2(botAI));
 }

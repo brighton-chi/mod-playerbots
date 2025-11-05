@@ -115,7 +115,7 @@ private:
     static Trigger* lady_vashj_enchanted_elementals_are_moving_to_boss(PlayerbotAI* botAI) { return new LadyVashjEnchantedElementalsAreMovingToBossTrigger(botAI); }
     static Trigger* lady_vashj_determining_phase_2_kill_order(PlayerbotAI* botAI) { return new LadyVashjDeterminingPhase2KillOrderTrigger(botAI); }
     static Trigger* lady_vashj_player_needs_bot_support_to_disable_generators(PlayerbotAI* botAI) { return new LadyVashjPlayerNeedsBotSupportToDisableGeneratorsTrigger(botAI); }
-    static Trigger* lady_vashj_player_looted_tainted_core(PlayerbotAI* botAI) { return new LadyVashjPlayerLootedTaintedCore(botAI); }
+    static Trigger* lady_vashj_player_looted_tainted_core(PlayerbotAI* botAI) { return new LadyVashjPlayerLootedTaintedCoreTrigger(botAI); }
     static Trigger* lady_vashj_toxic_sporebats_are_spewing_poison_clouds(PlayerbotAI* botAI) { return new LadyVashjToxicSporebatsAreSpewingPoisonCloudsTrigger(botAI); }
     static Trigger* lady_vashj_need_to_manage_trackers(PlayerbotAI* botAI) { return new LadyVashjNeedToManageTrackersTrigger(botAI); }
 };

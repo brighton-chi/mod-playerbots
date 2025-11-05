@@ -44,6 +44,7 @@ enum SerpentShrineCavernSpells
 
     // Lady Vashj <Coilfang Matron>
     SPELL_PARALYZE = 38132, // from holding Tainted Core
+    SPELL_THROW_KEY = 38134,
     SPELL_STATIC_CHARGE = 38280,
 
     // Hunter
