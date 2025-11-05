@@ -57,9 +57,9 @@ public:
         creators["lady vashj static charge move away from group"] = &RaidSSCActionContext::lady_vashj_static_charge_move_away_from_group;
         creators["lady vashj misdirect boss to main tank"] = &RaidSSCActionContext::lady_vashj_misdirect_boss_to_main_tank;
         creators["lady vashj ranged dps move to phase 2 assigned positions"] = &RaidSSCActionContext::lady_vashj_ranged_dps_move_to_phase_2_assigned_positions;
+        creators["lady vashj assign phase 2 dps priority"] = &RaidSSCActionContext::lady_vashj_assign_phase_2_dps_priority;
         creators["lady vashj assistants follow master in phase 2"] = &RaidSSCActionContext::lady_vashj_assistants_follow_master_in_phase_2;
         creators["lady vashj pass the tainted core"] = &RaidSSCActionContext::lady_vashj_pass_the_tainted_core;
-        creators["lady vashj assign phase 2 dps priority"] = &RaidSSCActionContext::lady_vashj_assign_phase_2_dps_priority;
         creators["lady vashj avoid toxic spores"] = &RaidSSCActionContext::lady_vashj_avoid_toxic_spores;
         creators["lady vashj manage trackers"] = &RaidSSCActionContext::lady_vashj_manage_trackers;
     }
@@ -113,9 +113,9 @@ private:
     static Action* lady_vashj_static_charge_move_away_from_group(PlayerbotAI* botAI) { return new LadyVashjStaticChargeMoveAwayFromGroupAction(botAI); }
     static Action* lady_vashj_misdirect_boss_to_main_tank(PlayerbotAI* botAI) { return new LadyVashjMisdirectBossToMainTankAction(botAI); }
     static Action* lady_vashj_ranged_dps_move_to_phase_2_assigned_positions(PlayerbotAI* botAI) { return new LadyVashjRangedDpsMoveToPhase2AssignedPositionsAction(botAI); }
+    static Action* lady_vashj_assign_phase_2_dps_priority(PlayerbotAI* botAI) { return new LadyVashjAssignPhase2DpsPriorityAction(botAI); }
     static Action* lady_vashj_assistants_follow_master_in_phase_2(PlayerbotAI* botAI) { return new LadyVashjAssistantsFollowMasterInPhase2Action(botAI); }
     static Action* lady_vashj_pass_the_tainted_core(PlayerbotAI* botAI) { return new LadyVashjPassTheTaintedCoreAction(botAI); }
-    static Action* lady_vashj_assign_phase_2_dps_priority(PlayerbotAI* botAI) { return new LadyVashjAssignPhase2DpsPriorityAction(botAI); }
     static Action* lady_vashj_avoid_toxic_spores(PlayerbotAI* botAI) { return new LadyVashjAvoidToxicSporesAction(botAI); }
     static Action* lady_vashj_manage_trackers(PlayerbotAI* botAI) { return new LadyVashjManageTrackersAction(botAI); }
 };

@@ -368,7 +368,15 @@ bool LadyVashjEnchantedElementalsAreMovingToBossTrigger::IsActive()
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
 
     return vashj && IsLadyVashjInPhase2(botAI) && botAI->IsRangedDps(bot) &&
-           !botAI->IsRangedDpsAssistantOfIndex(bot, 0);
+           !botAI->IsRangedDpsAssistantOfIndex(bot, 0) && !botAI->IsRangedDpsAssistantOfIndex(bot, 1);
+}
+
+bool LadyVashjDeterminingPhase2KillOrderTrigger::IsActive()
+{
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+
+    return vashj && IsLadyVashjInPhase2(botAI) && !botAI->IsHeal(bot) && !botAI->IsRangedDpsAssistantOfIndex(bot, 0) &&
+           !botAI->IsRangedDpsAssistantOfIndex(bot, 1);
 }
 
 bool LadyVashjPlayerNeedsBotSupportToDisableGeneratorsTrigger::IsActive()
@@ -376,8 +384,8 @@ bool LadyVashjPlayerNeedsBotSupportToDisableGeneratorsTrigger::IsActive()
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
 
     return vashj && IsLadyVashjInPhase2(botAI) &&
-           (botAI->IsHealAssistantOfIndex(bot, 0) || botAI->IsHealAssistantOfIndex(bot, 1) ||
-            botAI->IsRangedDpsAssistantOfIndex(bot, 0));
+           (botAI->IsRangedDpsAssistantOfIndex(bot, 0) || botAI->IsRangedDpsAssistantOfIndex(bot, 1) ||
+            botAI->IsHealAssistantOfIndex(bot, 0));
 }
 
 bool LadyVashjPlayerLootedTaintedCore::IsActive()
@@ -387,7 +395,7 @@ bool LadyVashjPlayerLootedTaintedCore::IsActive()
         return false;
 
     bool isCorePasser = botAI->IsHealAssistantOfIndex(bot, 0) ||
-                        botAI->IsHealAssistantOfIndex(bot, 1) ||
+                        botAI->IsRangedDpsAssistantOfIndex(bot, 1) ||
                         botAI->IsRangedDpsAssistantOfIndex(bot, 0);
 
     if (!isCorePasser)
@@ -405,13 +413,6 @@ bool LadyVashjPlayerLootedTaintedCore::IsActive()
     }
 
     return false;
-}
-
-bool LadyVashjDeterminingPhase2KillOrderTrigger::IsActive()
-{
-    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-
-    return vashj && IsLadyVashjInPhase2(botAI) && botAI->IsDps(bot);
 }
 
 bool LadyVashjToxicSporebatsAreSpewingPoisonCloudsTrigger::IsActive()

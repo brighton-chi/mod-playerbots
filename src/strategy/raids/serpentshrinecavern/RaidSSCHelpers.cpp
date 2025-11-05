@@ -1,5 +1,7 @@
 #include "RaidSSCHelpers.h"
 #include "RaidSSCActions.h"
+#include "AiFactory.h"
+#include "Creature.h"
 #include "Group.h"
 #include "Playerbots.h"
 #include "RtiTargetValue.h"
@@ -80,6 +82,7 @@ namespace SerpentShrineCavernHelpers
         // const Location TidewalkerGraveHealerPosition = { 388.558f, -723.956f, -11.941f };
         // Tidewalker offtank position(s) for murlocs?
 
+        // Room Center to top of stairs is 56-57 yards ish
         const Location VashjRoomCenterPosition = { 29.634f, -923.541f, 42.985f };
         const Location VashjNWStairsPosition = { 65.087f, -878.344f, 41.097f };
         const Location VashjWStairsPosition = { 29.693f, -865.188f, 41.097f };
@@ -453,11 +456,12 @@ namespace SerpentShrineCavernHelpers
     {
         if (Group* group = bot->GetGroup())
         {
+            std::vector<Player*> assignedRanged = GetPhase2AssignedRangedDpsBots(group, botAI);
             for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
             {
                 Player* member = ref->GetSource();
                 if (member && member->IsAlive() && botAI->IsRangedDps(member) &&
-                    GET_PLAYERBOT_AI(member))
+                    GET_PLAYERBOT_AI(member) && std::find(assignedRanged.begin(), assignedRanged.end(), member) == assignedRanged.end())
                     return member == bot;
             }
         }
@@ -505,7 +509,7 @@ namespace SerpentShrineCavernHelpers
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (member && member->IsAlive() || botAI->IsRangedDpsAssistantOfIndex(member, 0))
+            if (member && member->IsAlive() && botAI->IsRangedDpsAssistantOfIndex(member, 0))
                 return member;
         }
 
@@ -521,7 +525,7 @@ namespace SerpentShrineCavernHelpers
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (member && member->IsAlive() || botAI->IsHealAssistantOfIndex(member, 0))
+            if (member && member->IsAlive() && botAI->IsRangedDpsAssistantOfIndex(member, 1))
                 return member;
         }
 
@@ -537,7 +541,7 @@ namespace SerpentShrineCavernHelpers
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (member && member->IsAlive() || botAI->IsHealAssistantOfIndex(member, 1))
+            if (member && member->IsAlive() && botAI->IsHealAssistantOfIndex(member, 0))
                 return member;
         }
 
@@ -547,7 +551,6 @@ namespace SerpentShrineCavernHelpers
     const std::vector<uint32> SHIELD_GENERATOR_DB_GUIDS = { 47482, 47483, 47484, 47485 }; // NW, NE, SE, SW
     // Entries are 185052 { 52.048f, -901.236f, 44.000f }, 185054 { 52.448f, -944.825f, 44.000f },
     // 185051 { 7.81f, -945.244f, 44.000f }, 185053 { 7.417f, -901.109f, 44.000f }, respectively
-    // Associated NPCs are
 
     // Get the positions of all Shield Generators by their database GUIDs
     std::vector<GeneratorInfo> GetAllGeneratorInfosByDbGuids(Map* map, const std::vector<uint32>& generatorDbGuids)
@@ -578,28 +581,35 @@ namespace SerpentShrineCavernHelpers
     }
 
     // Returns the nearest active shield generator trigger (NPC_WORLD_INVISIBLE_TRIGGER) to the bot
-    Unit* GetNearestActiveShieldGeneratorTrigger(PlayerbotAI* botAI, Unit* reference)
+    Unit* GetNearestActiveShieldGeneratorTriggerByEntry(Player* bot, Unit* reference)
     {
-        if (!botAI || !reference)
+        if (!bot || !reference)
             return nullptr;
 
-        const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
-        Unit* nearest = nullptr;
+        Map* map = bot->GetMap();
+        if (!map)
+            return nullptr;
+
+        std::list<Creature*> triggers;
+        float searchRange = 150.0f;
+        reference->GetCreatureListWithEntryInGrid(triggers, NPC_WORLD_INVISIBLE_TRIGGER, searchRange);
+
+        Creature* nearest = nullptr;
         float minDist = std::numeric_limits<float>::max();
 
-        for (auto const& npcGuid : npcs)
+        for (Creature* creature : triggers)
         {
-            Unit* unit = botAI->GetUnit(npcGuid);
-            if (unit && unit->GetEntry() == NPC_WORLD_INVISIBLE_TRIGGER && unit->IsAlive())
+            if (!creature->IsAlive())
+                continue;
+
+            float dist = reference->GetDistance(creature);
+            if (dist < minDist)
             {
-                float dist = reference->GetDistance(unit);
-                if (dist < minDist)
-                {
-                    minDist = dist;
-                    nearest = unit;
-                }
+                minDist = dist;
+                nearest = creature;
             }
         }
+
         return nearest;
     }
 

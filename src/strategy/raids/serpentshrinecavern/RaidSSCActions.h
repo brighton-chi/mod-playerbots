@@ -331,6 +331,13 @@ public:
     bool Execute(Event event) override;
 };
 
+class LadyVashjAssignPhase2DpsPriorityAction : public AttackAction
+{
+public:
+    LadyVashjAssignPhase2DpsPriorityAction(PlayerbotAI* botAI, std::string const name = "lady vashj assign phase 2 dps priority") : AttackAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 class LadyVashjAssistantsFollowMasterInPhase2Action : public MovementAction
 {
 public:
@@ -351,13 +358,6 @@ private:
     void LineUpThirdCorePasser(Player* secondCorePasser, Unit* closestTrigger);
     bool CanUseGenerator();
     bool UseCoreOnNearestGenerator();
-};
-
-class LadyVashjAssignPhase2DpsPriorityAction : public AttackAction
-{
-public:
-    LadyVashjAssignPhase2DpsPriorityAction(PlayerbotAI* botAI, std::string const name = "lady vashj assign phase 2 dps priority") : AttackAction(botAI, name) {}
-    bool Execute(Event event) override;
 };
 
 class LadyVashjAvoidToxicSporesAction : public MovementAction

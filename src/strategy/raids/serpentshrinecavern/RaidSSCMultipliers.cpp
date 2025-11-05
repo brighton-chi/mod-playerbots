@@ -356,6 +356,33 @@ float MorogrimTidewalkerDisablePhase2FleeActionMultiplier::GetValue(Action* acti
     return 1.0f;
 }
 
+float LadyVashjDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
+{
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (!vashj)
+        return 1.0f;
+
+    if (!IsLadyVashjInPhase3(botAI) && (dynamic_cast<CastHeroismAction*>(action) || dynamic_cast<CastBloodlustAction*>(action)))
+        return 0.0f;
+
+    return 1.0f;
+}
+
+float LadyVashjStaticChargeStayAwayFromGroupMultiplier::GetValue(Action* action)
+{
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (!vashj || IsLadyVashjInPhase2(botAI))
+        return 1.0f;
+
+    if (bot->HasAura(SPELL_STATIC_CHARGE))
+    {
+        if (dynamic_cast<MovementAction*>(action) && !dynamic_cast<LadyVashjStaticChargeMoveAwayFromGroupAction*>(action))
+            return 0.0f;
+    }
+
+    return 1.0f;
+}
+
 float LadyVashjDoNotLootTheTaintedCoreMultiplier::GetValue(Action* action)
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
@@ -364,6 +391,24 @@ float LadyVashjDoNotLootTheTaintedCoreMultiplier::GetValue(Action* action)
 
     if (dynamic_cast<LootAction*>(action))
         return 0.0f;
+
+    return 1.0f;
+}
+
+float LadyVashjPhase2AssignedRangeMaintainPositioningMultiplier::GetValue(Action* action)
+{
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    Group* group = bot->GetGroup();
+    if (!vashj || !IsLadyVashjInPhase2(botAI) || !group)
+        return 1.0f;
+
+    std::vector<Player*> assignedRanged = GetPhase2AssignedRangedDpsBots(group, botAI);
+    if (std::find(assignedRanged.begin(), assignedRanged.end(), bot) != assignedRanged.end())
+    {
+        if (dynamic_cast<MovementAction*>(action) &&
+            !(dynamic_cast<LadyVashjRangedDpsMoveToPhase2AssignedPositionsAction*>(action) || dynamic_cast<LadyVashjAssignPhase2DpsPriorityAction*>(action)))
+            return 0.0f;
+    }
 
     return 1.0f;
 }
@@ -383,8 +428,7 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
             Player* member = ref->GetSource();
             if (member && member->IsAlive() && member->HasAura(SPELL_PARALYZE))
             {
-                if (dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<FleeAction*>(action) ||
-                    dynamic_cast<CastBlinkBackAction*>(action) || dynamic_cast<CastDisengageAction*>(action))
+                if (dynamic_cast<MovementAction*>(action) && !dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action))
                     return 0.0f;
             }
         }

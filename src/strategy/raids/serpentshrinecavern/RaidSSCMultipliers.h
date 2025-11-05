@@ -115,6 +115,27 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class LadyVashjDelayBloodlustAndHeroismMultiplier : public Multiplier
+{
+public:
+    LadyVashjDelayBloodlustAndHeroismMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "lady vashj delay bloodlust and heroism") {}
+    virtual float GetValue(Action* action);
+};
+
+class LadyVashjStaticChargeStayAwayFromGroupMultiplier : public Multiplier
+{
+public:
+    LadyVashjStaticChargeStayAwayFromGroupMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "lady vashj static charge stay away from group") {}
+    virtual float GetValue(Action* action);
+};
+
+class LadyVashjPhase2AssignedRangeMaintainPositioningMultiplier : public Multiplier
+{
+public:
+    LadyVashjPhase2AssignedRangeMaintainPositioningMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "lady vashj phase2 assigned range maintain positioning") {}
+    virtual float GetValue(Action* action);
+};
+
 class LadyVashjDoNotLootTheTaintedCoreMultiplier : public Multiplier
 {
 public:

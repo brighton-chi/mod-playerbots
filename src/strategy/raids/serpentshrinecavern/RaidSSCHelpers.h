@@ -44,7 +44,7 @@ enum SerpentShrineCavernSpells
 
     // Lady Vashj <Coilfang Matron>
     SPELL_PARALYZE = 38132, // from holding Tainted Core
-    SPELL_STATIC_CHARGE = 38281, // might be 38280 but that might be the cast
+    SPELL_STATIC_CHARGE = 38280,
 
     // Hunter
     SPELL_MISDIRECTION = 34477,
@@ -94,8 +94,9 @@ enum SerpentShrineCavernNPCs
     NPC_TIDEWALKER_LURKER = 21290,
 
     // Lady Vashj <Coilfang Matron>
-    NPC_WORLD_INVISIBLE_TRIGGER = 12999,
+    NPC_WORLD_INVISIBLE_TRIGGER = 12999, // I THINK this NPC is associated with the shield generator beam
     NPC_ENCHANTED_ELEMENTAL = 21958,
+    NPC_WORLD_TRIGGER_TINY = 21987, // Casts Magic Barrier on Vashj
     NPC_TAINTED_ELEMENTAL = 22009,
     NPC_COILFANG_ELITE = 22055,
     NPC_COILFANG_STRIDER = 22056,
@@ -236,7 +237,7 @@ namespace SerpentShrineCavernHelpers
 
     extern const std::vector<uint32> SHIELD_GENERATOR_DB_GUIDS;
     std::vector<GeneratorInfo> GetAllGeneratorInfosByDbGuids(Map* map, const std::vector<uint32>& generatorDbGuids);
-    Unit* GetNearestActiveShieldGeneratorTrigger(PlayerbotAI* botAI, Unit* reference);
+    Unit* GetNearestActiveShieldGeneratorTriggerByEntry(Player* bot, Unit* reference);
     const GeneratorInfo* GetNearestGeneratorToBot(Player* bot, const std::vector<GeneratorInfo>& generators);
 }
 
