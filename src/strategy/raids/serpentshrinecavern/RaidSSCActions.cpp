@@ -4,6 +4,7 @@
 #include "DestroyItemAction.h"
 #include "Playerbots.h"
 #include "RtiTargetValue.h"
+#include "ServerFacade.h"
 #include "UseItemAction.h"
 
 using namespace SerpentShrineCavernHelpers;
@@ -2185,28 +2186,11 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
                     bot->GetName(), bot->GetGUID().ToString(), item->GetEntry(),
                     secondCorePasser->GetName(), secondCorePasser->GetGUID().ToString());
 
-                LOG_DEBUG("playerbots", "Before pass: {} has core? {}", secondCorePasser->GetName(),
-                    GET_PLAYERBOT_AI(secondCorePasser)->HasItemInInventory(ITEM_TAINTED_CORE) ? "yes" : "no");
-
+                // Visual: queue use so client animation is attempted
                 botAI->ImbueItem(item, secondCorePasser);
 
-                LOG_DEBUG("playerbots", "After pass: {} has core? {}", secondCorePasser->GetName(),
-                    GET_PLAYERBOT_AI(secondCorePasser)->HasItemInInventory(ITEM_TAINTED_CORE) ? "yes" : "no");
-
-                if (!GET_PLAYERBOT_AI(secondCorePasser)->HasItemInInventory(ITEM_TAINTED_CORE) && !botAI->HasItemInInventory(ITEM_TAINTED_CORE))
-                {
-                    ItemPosCountVec dest;
-                    uint32 count = 1;
-                    if (secondCorePasser->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, ITEM_TAINTED_CORE, count) == EQUIP_ERR_OK)
-                    {
-                        secondCorePasser->StoreNewItem(dest, ITEM_TAINTED_CORE, true, Item::GenerateItemRandomPropertyId(ITEM_TAINTED_CORE));
-                        LOG_DEBUG("playerbots", "Core successfully added to {}'s inventory", secondCorePasser->GetName());
-                    }
-                    else
-                    {
-                        LOG_DEBUG("playerbots", "Failed to add core to {}'s inventory", secondCorePasser->GetName());
-                    }
-                }
+                // Schedule reconcile for first->second pass
+                ScheduleCoreReconcile(botAI, bot, secondCorePasser, ITEM_TAINTED_CORE, "first->second", 500);
             }
         }
         // Second core passer logic
@@ -2216,16 +2200,41 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
             float distToThird = thirdCorePasser->GetExactDist(closestTrigger);
             float dist = bot->GetExactDist(thirdCorePasser);
             bool los = bot->IsWithinLOS(thirdCorePasser->GetPositionX(), thirdCorePasser->GetPositionY(), thirdCorePasser->GetPositionZ());
-            LOG_DEBUG("playerbots", "Second core passer: canUseGen={}, distToThird={}, distToThirdCorePasser={}, los={}", canUseGen, distToThird, dist, los);
+
+            // Diagnostic
+            LOG_DEBUG("playerbots", "Second core passer: canUseGen={}, distToTrigger(3D)={}, distToThirdFromBot(3D)={}, los={}",
+            canUseGen, distToThird, dist, los);
+            LOG_DEBUG("playerbots", "Third passer pos: ({}, {}, {}), trigger pos: ({}, {}, {}), bot pos: ({}, {}, {})",
+            thirdCorePasser->GetPositionX(), thirdCorePasser->GetPositionY(), thirdCorePasser->GetPositionZ(),
+            closestTrigger->GetPositionX(), closestTrigger->GetPositionY(), closestTrigger->GetPositionZ(),
+            bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ());
+            LOG_DEBUG("playerbots", "Third passer state: thirdDist2dToTrigger={}, thirdDist2dToBot={}",
+            thirdCorePasser->GetExactDist2d(closestTrigger),
+            thirdCorePasser->GetExactDist2d(bot));
+            // Diagnostic
 
             if (canUseGen)
             {
                 LOG_DEBUG("playerbots", "Using core on nearest generator");
                 UseCoreOnNearestGenerator();
             }
-            else if (distToThird <= 2.0f)
+            else
             {
-                if (dist <= 40.0f && los)
+                bool cond_distToThird = distToThird <= 4.0f;
+                bool cond_distToThirdFromBot = dist <= 40.0f;
+                LOG_DEBUG("playerbots", "Pass conditions: distToTrigger<=4? {}, distToThirdFromBot<=40? {}, los? {}",
+                    cond_distToThird ? "yes" : "no",
+                    cond_distToThirdFromBot ? "yes" : "no",
+                    los ? "yes" : "no");
+
+                if (!cond_distToThird)
+                    LOG_DEBUG("playerbots", "Skipping pass: thirdCorePasser not within trigger leeway (distToThird = {})", distToThird);
+                if (!cond_distToThirdFromBot)
+                    LOG_DEBUG("playerbots", "Skipping pass: second passer not within 40yd of thirdCorePasser (dist = {})", dist);
+                if (!los)
+                    LOG_DEBUG("playerbots", "Skipping pass: no line of sight from second passer to third passer");
+
+                if (cond_distToThird && cond_distToThirdFromBot && los)
                 {
                     LOG_DEBUG("playerbots", "ImbueItem: {} (GUID {}) using item {} on {} (GUID {})",
                         bot->GetName(), bot->GetGUID().ToString(), item->GetEntry(),
@@ -2234,25 +2243,11 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
                     LOG_DEBUG("playerbots", "Before pass: {} has core? {}", thirdCorePasser->GetName(),
                         GET_PLAYERBOT_AI(thirdCorePasser)->HasItemInInventory(ITEM_TAINTED_CORE) ? "yes" : "no");
 
+                    // Visual: queue use so client animation is attempted
                     botAI->ImbueItem(item, thirdCorePasser);
 
-                    LOG_DEBUG("playerbots", "After pass: {} has core? {}", thirdCorePasser->GetName(),
-                        GET_PLAYERBOT_AI(thirdCorePasser)->HasItemInInventory(ITEM_TAINTED_CORE) ? "yes" : "no");
-
-                    if (!GET_PLAYERBOT_AI(thirdCorePasser)->HasItemInInventory(ITEM_TAINTED_CORE))
-                    {
-                        ItemPosCountVec dest;
-                        uint32 count = 1;
-                        if (thirdCorePasser->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, ITEM_TAINTED_CORE, count) == EQUIP_ERR_OK)
-                        {
-                            thirdCorePasser->StoreNewItem(dest, ITEM_TAINTED_CORE, true, Item::GenerateItemRandomPropertyId(ITEM_TAINTED_CORE));
-                            LOG_DEBUG("playerbots", "Core successfully added to {}'s inventory", thirdCorePasser->GetName());
-                        }
-                        else
-                        {
-                            LOG_DEBUG("playerbots", "Failed to add core to {}'s inventory", thirdCorePasser->GetName());
-                        }
-                    }
+                    // Schedule reconcile for second->third pass
+                    ScheduleCoreReconcile(botAI, bot, thirdCorePasser, ITEM_TAINTED_CORE, "second->third", 500);
                 }
             }
         }
@@ -2503,10 +2498,40 @@ bool LadyVashjPassTheTaintedCoreAction::UseCoreOnNearestGenerator()
     float dist = bot->GetExactDist(generator);
     LOG_DEBUG("playerbots", "Using generator guid: {}, dist: {}", nearestGen->guid.ToString(), dist);
 
-    generator->Use(bot);
+    bot->StopMoving();
+    bot->SetSelection(generator->GetGUID());
+    bot->SetFacingToObject(generator);
 
-    LOG_DEBUG("playerbots", "Called Use() on generator");
-    return true;
+    // Try to use the tainted core item on the generator by invoking server use-item handler
+    if (Item* core = bot->GetItemByEntry(ITEM_TAINTED_CORE))
+    {
+        uint8 bagIndex = core->GetBagSlot();
+        uint8 slot = core->GetSlot();
+        uint8 cast_count = 0;
+        uint32 spellId = 0;
+        for (uint8 i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
+            if (core->GetTemplate()->Spells[i].SpellId > 0) { spellId = core->GetTemplate()->Spells[i].SpellId; break; }
+        ObjectGuid item_guid = core->GetGUID();
+        uint32 glyphIndex = 0;
+        uint8 castFlags = 0;
+
+        WorldPacket packet(CMSG_USE_ITEM);
+        packet << bagIndex;
+        packet << slot;
+        packet << cast_count;
+        packet << spellId;
+        packet << item_guid;
+        packet << glyphIndex;
+        packet << castFlags;
+        packet << (uint32)TARGET_FLAG_GAMEOBJECT;
+        packet << generator->GetGUID().WriteAsPacked();
+
+        // Process server-side immediately so GO script runs with item context
+        bot->GetSession()->HandleUseItemOpcode(packet);
+        return true;
+    }
+
+    return false;
 }
 
 bool LadyVashjAvoidToxicSporesAction::Execute(Event event)
