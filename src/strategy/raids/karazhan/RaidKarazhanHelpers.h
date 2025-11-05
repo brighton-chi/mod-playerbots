@@ -50,9 +50,16 @@ namespace KarazhanHelpers
 
     enum KarazhanNPCs
     {
+        // Trash
+        NPC_SPECTRAL_RETAINER            = 16410,
+        NPC_MANA_WARP                    = 16530,
+
         // Attumen the Huntsman
         NPC_ATTUMEN_THE_HUNTSMAN         = 15550,
         NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED = 16152,
+
+        // Shade of Aran
+        NPC_CONJURED_ELEMENTAL           = 17167,
 
         // Netherspite
         NPC_VOID_ZONE                    = 16697,

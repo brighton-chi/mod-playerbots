@@ -9,7 +9,7 @@ using namespace KarazhanHelpers;
 
 bool SpectralRetainerMarkTargetAction::Execute(Event event)
 {
-    Unit* retainer = AI_VALUE2(Unit*, "find target", "spectral retainer");
+    Unit* retainer = GetFirstAliveUnitByEntry(botAI, NPC_SPECTRAL_RETAINER);
     if (retainer)
         MarkTargetWithSkull(bot, retainer);
 
@@ -18,7 +18,7 @@ bool SpectralRetainerMarkTargetAction::Execute(Event event)
 
 bool ManaWarpStunCreatureBeforeWarpBreachAction::Execute(Event event)
 {
-    Unit* manaWarp = AI_VALUE2(Unit*, "find target", "mana warp");
+    Unit* manaWarp = GetFirstAliveUnitByEntry(botAI, NPC_MANA_WARP);
     if (!manaWarp)
         return false;
 
@@ -494,7 +494,7 @@ bool ShadeOfAranStopMovingDuringFlameWreathAction::Execute(Event event)
 // Mark Conjured Elementals with skull so DPS can burn them down
 bool ShadeOfAranMarkConjuredElementalAction::Execute(Event event)
 {
-    Unit* elemental = AI_VALUE2(Unit*, "find target", "conjured elemental");
+    Unit* elemental = GetFirstAliveUnitByEntry(botAI, NPC_CONJURED_ELEMENTAL);
 
     if (elemental)
         MarkTargetWithSkull(bot, elemental);
