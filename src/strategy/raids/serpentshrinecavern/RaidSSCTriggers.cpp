@@ -188,11 +188,11 @@ bool LeotherasTheBlindBossChannelingWhirlwindTrigger::IsActive()
     return leotherasDemon && botAI->IsMelee(bot) && !botAI->IsMainTank(bot);
 } */
 
-bool LeotherasTheBlindInnerDemonHasTakenForm::IsActive()
+bool LeotherasTheBlindInnerDemonCheatTrigger::IsActive()
 {
     Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
 
-    return leotheras && bot->HasAura(SPELL_INSIDIOUS_WHISPER);
+    return leotheras && bot->HasAura(SPELL_INSIDIOUS_WHISPER) && botAI->HasCheat(BotCheatMask::raid);
 }
 
 bool LeotherasTheBlindEnteredFinalPhaseTrigger::IsActive()
@@ -392,6 +392,14 @@ bool LadyVashjPlayerNeedsBotSupportToDisableGeneratorsTrigger::IsActive()
 
     return vashj && IsLadyVashjInPhase2(botAI) &&
            (botAI->IsRangedDpsAssistantOfIndex(bot, 0) || botAI->IsRangedDpsAssistantOfIndex(bot, 1));
+}
+
+bool LadyVashjTaintedElementalCheatTrigger::IsActive()
+{
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+
+    return vashj && IsLadyVashjInPhase2(botAI) && botAI->IsRangedDpsAssistantOfIndex(bot, 0) &&
+           botAI->HasCheat(BotCheatMask::raid);
 }
 
 bool LadyVashjPlayerLootedTaintedCoreTrigger::IsActive()

@@ -358,13 +358,15 @@ float MorogrimTidewalkerDisablePhase2FleeActionMultiplier::GetValue(Action* acti
     return 1.0f;
 }
 
-float LadyVashjDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
+float LadyVashjDelayCooldownsMultiplier::GetValue(Action* action)
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    if (!vashj)
+    if (!vashj || IsLadyVashjInPhase3(botAI))
         return 1.0f;
 
-    if (!IsLadyVashjInPhase3(botAI) && (dynamic_cast<CastHeroismAction*>(action) || dynamic_cast<CastBloodlustAction*>(action)))
+    if (dynamic_cast<CastHeroismAction*>(action) ||
+        dynamic_cast<CastBloodlustAction*>(action) ||
+        dynamic_cast<CastMetamorphosisAction*>(action))
         return 0.0f;
 
     return 1.0f;
@@ -427,7 +429,7 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
 float LadyVashjDisableAutomaticTargetingAndMovementModifier::GetValue(Action *action)
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    if (!vashj || !IsLadyVashjInPhase2(botAI))
+    if (!vashj || !IsLadyVashjInPhase2(botAI) || botAI->IsRangedDpsAssistantOfIndex(bot, 0) || botAI->IsRangedDpsAssistantOfIndex(bot, 1))
         return 1.0f;
 
         if ((dynamic_cast<DpsAssistAction*>(action) || dynamic_cast<TankAssistAction*>(action) ||

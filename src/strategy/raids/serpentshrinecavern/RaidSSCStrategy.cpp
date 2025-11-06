@@ -73,7 +73,7 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     /* triggers.push_back(new TriggerNode("leotheras the blind demon form engaged by melee",
         NextAction::array(0, new NextAction("leotheras the blind demon form position melee", ACTION_EMERGENCY + 1), nullptr)
     )); */
-    triggers.push_back(new TriggerNode("leotheras the blind inner demon has taken form",
+    triggers.push_back(new TriggerNode("leotheras the blind inner demon cheat",
         NextAction::array(0, new NextAction("leotheras the blind inner demon cheat", ACTION_EMERGENCY + 6), nullptr)
     ));
     triggers.push_back(new TriggerNode("leotheras the blind entered final phase",
@@ -145,6 +145,9 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("lady vashj coilfang strider is approaching",
         NextAction::array(0, new NextAction("lady vashj attack and move away from strider", ACTION_EMERGENCY + 2), nullptr)
     ));
+    triggers.push_back(new TriggerNode("lady vashj tainted elemental cheat",
+        NextAction::array(0, new NextAction("lady vashj tainted elemental cheat", ACTION_EMERGENCY + 10), nullptr)
+    ));
     triggers.push_back(new TriggerNode("lady vashj player looted tainted core",
         NextAction::array(0, new NextAction("lady vashj pass the tainted core", ACTION_RAID + 3), nullptr)
     ));
@@ -180,7 +183,7 @@ void RaidSSCStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new FathomLordKarathressCaribdisTankHealerMaintainPositionMultiplier(botAI));
     multipliers.push_back(new MorogrimTidewalkerDelayBloodlustAndHeroismMultiplier(botAI));
     multipliers.push_back(new MorogrimTidewalkerDisablePhase2FleeActionMultiplier(botAI));
-    multipliers.push_back(new LadyVashjDelayBloodlustAndHeroismMultiplier(botAI));
+    multipliers.push_back(new LadyVashjDelayCooldownsMultiplier(botAI));
     multipliers.push_back(new LadyVashjStaticChargeStayAwayFromGroupMultiplier(botAI));
     multipliers.push_back(new LadyVashjDoNotLootTheTaintedCoreMultiplier(botAI));
     multipliers.push_back(new LadyVashjCorePassersPrioritizePositioningMultiplier(botAI));

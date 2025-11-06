@@ -511,7 +511,8 @@ namespace SerpentShrineCavernHelpers
         return nullptr;
     }
 
-    void ScheduleCoreReconcile(PlayerbotAI* botAI, Player* giver, Player* receiver, uint32 coreId, uint32 delayMs)
+    // Crash risk due to raw Player* pointers in lambda capture list; disabled for now
+    /* void ScheduleCoreReconcile(PlayerbotAI* botAI, Player* giver, Player* receiver, uint32 coreId, uint32 delayMs)
     {
         if (!botAI || !giver || !receiver)
             return;
@@ -569,6 +570,44 @@ namespace SerpentShrineCavernHelpers
             }
         }, delayMs);
     }
+    */
+   void ScheduleCoreReconcile(PlayerbotAI* botAI, Player* giver, Player* receiver, uint32 coreId, uint32 delayMs)
+   {
+       if (!botAI)
+           return;
+
+       // Capture GUIDs instead of raw pointers to avoid use-after-free when the event fires.
+       ObjectGuid giverGuid = giver ? giver->GetGUID() : ObjectGuid::Empty;
+       ObjectGuid receiverGuid = receiver ? receiver->GetGUID() : ObjectGuid::Empty;
+
+       botAI->AddTimedEvent([giverGuid, receiverGuid, coreId]() {
+
+           // Resolve players at runtime. Use sObjectAccessor to avoid stale pointers.
+           Player* receiverPlayer = receiverGuid.IsEmpty() ? nullptr : sObjectAccessor->FindPlayer(receiverGuid);
+           Player* giverPlayer    = giverGuid.IsEmpty()    ? nullptr : sObjectAccessor->FindPlayer(giverGuid);
+
+           // Validate pointers / in-world state before calling any Player methods.
+           if (!receiverPlayer || !receiverPlayer->IsInWorld())
+               return;
+
+           // Check whether receiver or giver already have the core (safe access via Player methods).
+           Item* receiverItem = receiverPlayer->GetItemByEntry(coreId);
+           Item* giverItem = (giverPlayer && giverPlayer->IsInWorld()) ? giverPlayer->GetItemByEntry(coreId) : nullptr;
+
+           // If neither has the core, attempt to create/store one into the receiver's inventory.
+           if (!receiverItem && !giverItem)
+           {
+               ItemPosCountVec dest;
+               uint32 count = 1;
+               int canStore = receiverPlayer->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, coreId, count);
+               if (canStore == EQUIP_ERR_OK)
+               {
+                   receiverPlayer->StoreNewItem(dest, coreId, true, Item::GenerateItemRandomPropertyId(coreId));
+               }
+           }
+
+       }, delayMs);
+   }
 
     const std::vector<uint32> SHIELD_GENERATOR_DB_GUIDS = { 47482, 47483, 47484, 47485 }; // NW, NE, SE, SW
     // Entries are 185052 { 52.048f, -901.236f, 44.000f }, 185054 { 52.448f, -944.825f, 44.000f },

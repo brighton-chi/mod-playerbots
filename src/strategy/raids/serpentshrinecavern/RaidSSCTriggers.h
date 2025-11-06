@@ -157,10 +157,10 @@ public:
     bool IsActive() override;
 }; */
 
-class LeotherasTheBlindInnerDemonHasTakenForm : public Trigger
+class LeotherasTheBlindInnerDemonCheatTrigger : public Trigger
 {
 public:
-    LeotherasTheBlindInnerDemonHasTakenForm(PlayerbotAI* botAI) : Trigger(botAI, "leotheras the blind inner demon has taken form") {}
+    LeotherasTheBlindInnerDemonCheatTrigger(PlayerbotAI* botAI) : Trigger(botAI, "leotheras the blind inner demon cheat") {}
     bool IsActive() override;
 };
 
@@ -315,6 +315,13 @@ class LadyVashjPlayerNeedsBotSupportToDisableGeneratorsTrigger : public Trigger
 {
 public:
     LadyVashjPlayerNeedsBotSupportToDisableGeneratorsTrigger(PlayerbotAI* botAI) : Trigger(botAI, "lady vashj player needs bot support to disable generators") {}
+    bool IsActive() override;
+};
+
+class LadyVashjTaintedElementalCheatTrigger : public Trigger
+{
+public:
+    LadyVashjTaintedElementalCheatTrigger(PlayerbotAI* botAI) : Trigger(botAI, "lady vashj tainted elemental cheat") {}
     bool IsActive() override;
 };
 

@@ -345,6 +345,13 @@ public:
     bool Execute(Event event) override;
 };
 
+class LadyVashjTaintedElementalCheatAction : public AttackAction
+{
+public:
+    LadyVashjTaintedElementalCheatAction(PlayerbotAI* botAI, std::string const name = "lady vashj tainted elemental cheat") : AttackAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 class LadyVashjPassTheTaintedCoreAction : public MovementAction
 {
 public:

@@ -32,7 +32,7 @@ public:
         creators["leotheras the blind boss engaged by ranged"] = &RaidSSCTriggerContext::leotheras_the_blind_boss_engaged_by_ranged;
         creators["leotheras the blind boss channeling whirlwind"] = &RaidSSCTriggerContext::leotheras_the_blind_boss_channeling_whirlwind;
         // creators["leotheras the blind demon form engaged by melee"] = &RaidSSCTriggerContext::leotheras_the_blind_demon_form_engaged_by_melee;
-        creators["leotheras the blind inner demon has taken form"] = &RaidSSCTriggerContext::leotheras_the_blind_inner_demon_has_taken_form;
+        creators["leotheras the blind inner demon cheat"] = &RaidSSCTriggerContext::leotheras_the_blind_inner_demon_cheat;
         creators["leotheras the blind entered final phase"] = &RaidSSCTriggerContext::leotheras_the_blind_entered_final_phase;
         creators["leotheras the blind demon form tank needs aggro"] = &RaidSSCTriggerContext::leotheras_the_blind_demon_form_tank_needs_aggro;
         creators["leotheras the blind need to manage timers and trackers"] = &RaidSSCTriggerContext::leotheras_the_blind_need_to_manage_timers_and_trackers;
@@ -59,6 +59,7 @@ public:
         creators["lady vashj coilfang strider is approaching"] = &RaidSSCTriggerContext::lady_vashj_coilfang_strider_is_approaching;
         creators["lady vashj determining phase 2 kill order"] = &RaidSSCTriggerContext::lady_vashj_determining_phase_2_kill_order;
         creators["lady vashj player needs bot support to disable generators"] = &RaidSSCTriggerContext::lady_vashj_player_needs_bot_support_to_disable_generators;
+        creators["lady vashj tainted elemental cheat"] = &RaidSSCTriggerContext::lady_vashj_tainted_elemental_cheat;
         creators["lady vashj player looted tainted core"] = &RaidSSCTriggerContext::lady_vashj_player_looted_tainted_core;
         creators["lady vashj toxic sporebats are spewing poison clouds"] = &RaidSSCTriggerContext::lady_vashj_toxic_sporebats_are_spewing_poison_clouds;
         creators["lady vashj need to manage trackers"] = &RaidSSCTriggerContext::lady_vashj_need_to_manage_trackers;
@@ -88,7 +89,7 @@ private:
     static Trigger* leotheras_the_blind_boss_engaged_by_ranged(PlayerbotAI* botAI) { return new LeotherasTheBlindBossEngagedByRangedTrigger(botAI); }
     static Trigger* leotheras_the_blind_boss_channeling_whirlwind(PlayerbotAI* botAI) { return new LeotherasTheBlindBossChannelingWhirlwindTrigger(botAI); }
     // static Trigger* leotheras_the_blind_demon_form_engaged_by_melee(PlayerbotAI* botAI) { return new LeotherasTheBlindDemonFormEngagedByMeleeTrigger(botAI); }
-    static Trigger* leotheras_the_blind_inner_demon_has_taken_form(PlayerbotAI* botAI) { return new LeotherasTheBlindInnerDemonHasTakenForm(botAI); }
+    static Trigger* leotheras_the_blind_inner_demon_cheat(PlayerbotAI* botAI) { return new LeotherasTheBlindInnerDemonCheatTrigger(botAI); }
     static Trigger* leotheras_the_blind_entered_final_phase(PlayerbotAI* botAI) { return new LeotherasTheBlindEnteredFinalPhaseTrigger(botAI); }
     static Trigger* leotheras_the_blind_demon_form_tank_needs_aggro(PlayerbotAI* botAI) { return new LeotherasTheBlindDemonFormTankNeedsAggro(botAI); }
     static Trigger* leotheras_the_blind_need_to_manage_timers_and_trackers(PlayerbotAI* botAI) { return new LeotherasTheBlindNeedToManageTimersAndTrackersTrigger(botAI); }
@@ -115,6 +116,7 @@ private:
     static Trigger* lady_vashj_coilfang_strider_is_approaching(PlayerbotAI* botAI) { return new LadyVashjCoilfangStriderIsApproachingTrigger(botAI); }
     static Trigger* lady_vashj_determining_phase_2_kill_order(PlayerbotAI* botAI) { return new LadyVashjDeterminingPhase2KillOrderTrigger(botAI); }
     static Trigger* lady_vashj_player_needs_bot_support_to_disable_generators(PlayerbotAI* botAI) { return new LadyVashjPlayerNeedsBotSupportToDisableGeneratorsTrigger(botAI); }
+    static Trigger* lady_vashj_tainted_elemental_cheat(PlayerbotAI* botAI) { return new LadyVashjTaintedElementalCheatTrigger(botAI); }
     static Trigger* lady_vashj_player_looted_tainted_core(PlayerbotAI* botAI) { return new LadyVashjPlayerLootedTaintedCoreTrigger(botAI); }
     static Trigger* lady_vashj_toxic_sporebats_are_spewing_poison_clouds(PlayerbotAI* botAI) { return new LadyVashjToxicSporebatsAreSpewingPoisonCloudsTrigger(botAI); }
     static Trigger* lady_vashj_need_to_manage_trackers(PlayerbotAI* botAI) { return new LadyVashjNeedToManageTrackersTrigger(botAI); }
