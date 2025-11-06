@@ -1605,7 +1605,7 @@ bool LadyVashjPhase1AndPhase3PositionRangedAction::Execute(Event event)
         uint8 botIndex = (it != spreadMembers.end()) ? std::distance(spreadMembers.begin(), it) : 0;
         uint8 count = spreadMembers.size();
 
-        float referenceAngle = 0.0f;
+        float referenceAngle = M_PI / 2.0f; // π/2 radians = north
         const float span = M_PI; // half circle
         const float startAngle = referenceAngle - span / 2.0f;
         float angle;
@@ -1769,8 +1769,8 @@ bool LadyVashjAttackAndMoveAwayFromStriderAction::Execute(Event event)
     if (!strider)
         return false;
 
-    if (bot->GetExactDist2d(strider) < 15.0f)
-        return MoveAway(strider, 20.0f, false);
+    if (bot->GetExactDist2d(strider) < 20.0f)
+        return MoveAway(strider, 25.0f, false);
 
     if (!strider->HasAura(SPELL_HEAVY_NETHERWEAVE_NET))
     {
@@ -1795,7 +1795,9 @@ bool LadyVashjAttackAndMoveAwayFromStriderAction::Execute(Event event)
     return false;
 }
 
-bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
+// Below does targeting OK, and keeps bots from going idle mostly, but it just has too much downtime
+// Too much chasing around
+/* bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     if (!vashj)
@@ -1853,14 +1855,12 @@ bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
         }
     }
 
+    // Mark tainted elemental with skull if found
+    if (tainted)
+        MarkTargetWithSkull(bot, tainted);
+
     // Set priorities
     std::vector<Unit*> targets;
-    /* int8 tab = AiFactory::GetPlayerSpecTab(bot);
-    if (bot->getClass() == CLASS_HUNTER || bot->getClass() == CLASS_SHAMAN && tab == 0 ||
-        bot->getClass() == CLASS_WARLOCK && tab == 0 || bot->getClass() == CLASS_PRIEST && tab == 2)
-    {
-        targets = { tainted, strider, enchanted, elite };
-    } */
     if (botAI->IsRangedDps(bot))
     {
         targets = { tainted, strider, enchanted, elite };
@@ -1889,17 +1889,180 @@ bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
         }
     }
 
-    // If already targeting, do nothing
-    if (context->GetValue<Unit*>("current target")->Get() == target)
+    // If already targeting the same valid target, do nothing
+    Unit* currentTarget = context->GetValue<Unit*>("current target")->Get();
+    if (target && currentTarget == target && IsValidPhase2CombatNpc(currentTarget))
+    {
+        LOG_DEBUG("playerbots", "No action: current target equals chosen target for {}", bot->GetName());
         return false;
+    }
 
     if (target && bot->GetVictim() != target)
+    {
+        LOG_DEBUG("playerbots", "Attacking chosen target {} for {}", target->GetName(), bot->GetName());
         return Attack(target);
+    }
 
     const Location& position = VashjRoomCenterPosition;
-    Unit* currentTarget = AI_VALUE(Unit*, "current target");
-    if (!currentTarget || !currentTarget->IsAlive() || (!botAI->IsHeal(bot) && currentTarget->IsPlayer()))
-        return MoveInside(bot->GetMapId(), position.x, position.y, position.z, 30.0f, MovementPriority::MOVEMENT_COMBAT);
+    bool currentIsValidNpc = IsValidPhase2CombatNpc(currentTarget);
+
+    // If invalid, clear stale target and move back to center if no valid NPCs nearby
+    if (!currentIsValidNpc && !bot->GetVictim())
+    {
+        // Quick check: are there any valid Phase 2 NPCs nearby?
+        GuidVector nearby = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
+        bool anyValidNpc = false;
+        for (auto guid : nearby)
+        {
+            Unit* u = botAI->GetUnit(guid);
+            if (IsValidPhase2CombatNpc(u))
+            {
+                anyValidNpc = true;
+                break;
+            }
+        }
+
+        if (!anyValidNpc)
+        {
+            LOG_DEBUG("playerbots", "Clearing stale target and moving {} back to center", bot->GetName());
+            context->GetValue<Unit*>("current target")->Set(nullptr);
+            bot->SetTarget(ObjectGuid::Empty);
+            bot->SetSelection(ObjectGuid());
+
+            if (!bot->isMoving())
+                return MoveInside(bot->GetMapId(), position.x, position.y, position.z, 30.0f, MovementPriority::MOVEMENT_COMBAT);
+        }
+    }
+
+    return false;
+}
+*/
+bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
+{
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (!vashj)
+        return false;
+
+    if (IsRangedRTIMarker(botAI, bot))
+        MarkTargetWithMoon(bot, vashj);
+
+    if (bot->GetTarget() == vashj->GetGUID())
+    {
+        bot->AttackStop();
+        bot->InterruptNonMeleeSpells(true);
+        bot->SetTarget(ObjectGuid::Empty);
+        bot->SetSelection(ObjectGuid());
+    }
+
+    // Get all nearby hostile NPCs
+    GuidVector attackers = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
+    Unit* target = nullptr;
+    Unit* tainted = nullptr;
+    Unit* enchanted = nullptr;
+    Unit* elite = nullptr;
+    Unit* strider = nullptr;
+
+    // Role-based search / pursue limits (tweak values as needed)
+    const Location& center = VashjRoomCenterPosition;
+    const float maxSearchRange = botAI->IsRangedDps(bot) ? 50.0f : (botAI->IsTank(bot) ? 35.0f : 40.0f);
+    const float maxPursueRange = std::max(10.0f, maxSearchRange - 5.0f); // won't initiate attack beyond this
+
+    for (auto guid : attackers)
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        if (!IsValidPhase2CombatNpc(unit))
+            continue;
+
+        // skip NPCs outside the encounter search radius (prevents chasing far adds/triggers)
+        float distFromCenter = unit->GetExactDist2d(center.x, center.y);
+        if (distFromCenter > maxSearchRange)
+            continue;
+
+        switch (unit->GetEntry())
+        {
+            case NPC_TAINTED_ELEMENTAL:
+                if (!tainted || bot->GetExactDist2d(unit) < bot->GetExactDist2d(tainted))
+                    tainted = unit;
+                break;
+
+            case NPC_ENCHANTED_ELEMENTAL:
+                if (!enchanted || bot->GetExactDist2d(unit) < bot->GetExactDist2d(enchanted))
+                    enchanted = unit;
+                break;
+
+            case NPC_COILFANG_ELITE:
+                if (!elite || bot->GetExactDist2d(unit) < bot->GetExactDist2d(elite))
+                    elite = unit;
+                break;
+
+            case NPC_COILFANG_STRIDER:
+                if (!strider || bot->GetExactDist2d(unit) < bot->GetExactDist2d(strider))
+                    strider = unit;
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    // Mark tainted elemental with skull if found
+    if (tainted)
+        MarkTargetWithSkull(bot, tainted);
+
+    // Set priorities
+    std::vector<Unit*> targets;
+    if (botAI->IsRangedDps(bot))
+        targets = { tainted, strider, enchanted, elite };
+    else if (botAI->IsMelee(bot) && botAI->IsDps(bot))
+        targets = { tainted, enchanted, elite };
+    else if (botAI->IsTank(bot))
+        targets = { elite, enchanted, tainted };
+    else
+        targets = { tainted, enchanted, elite, strider };
+
+    // Pick the first valid target
+    for (Unit* t : targets)
+    {
+        if (t && t->IsAlive())
+        {
+            target = t;
+            break;
+        }
+    }
+
+    // If already targeting the same valid target, do nothing
+    Unit* currentTarget = context->GetValue<Unit*>("current target")->Get();
+    if (target && currentTarget == target && IsValidPhase2CombatNpc(currentTarget))
+    {
+        LOG_DEBUG("playerbots", "No action: current target equals chosen target for {}", bot->GetName());
+        return false;
+    }
+
+    // Only attack if target is within a reasonable pursue distance
+    if (target && bot->GetVictim() != target)
+    {
+        float distToTarget = bot->GetExactDist2d(target);
+        if (distToTarget <= maxPursueRange)
+        {
+            LOG_DEBUG("playerbots", "Attacking chosen target {} for {} (dist={})", target->GetName(), bot->GetName(), distToTarget);
+            return Attack(target);
+        }
+        else
+        {
+            LOG_DEBUG("playerbots", "Skipping attack: {} too far for {} (dist={} > {})", target->GetName(), bot->GetName(), distToTarget, maxPursueRange);
+            target = nullptr;
+        }
+    }
+
+    // Minimal cleanup: clear invalid current target to avoid null==null early-return issues
+    if (currentTarget && (!currentTarget->IsAlive() || !IsValidPhase2CombatNpc(currentTarget)))
+    {
+        LOG_DEBUG("playerbots", "Clearing invalid current target for {}: {}", bot->GetName(),
+                  currentTarget ? currentTarget->GetName() : std::string("null"));
+        context->GetValue<Unit*>("current target")->Set(nullptr);
+        bot->SetTarget(ObjectGuid::Empty);
+        bot->SetSelection(ObjectGuid());
+    }
 
     return false;
 }
@@ -1910,8 +2073,8 @@ bool LadyVashjAssistantsFollowMasterInPhase2Action::Execute(Event event)
     if (!master || master == bot)
         return false;
 
-    if (bot->GetExactDist2d(master) > 20.0f)
-        return MoveTo(master, 20.0f, MovementPriority::MOVEMENT_COMBAT);
+    if (bot->GetExactDist2d(master) > 15.0f)
+        return MoveTo(master, 15.0f, MovementPriority::MOVEMENT_COMBAT);
 
     return false;
 }

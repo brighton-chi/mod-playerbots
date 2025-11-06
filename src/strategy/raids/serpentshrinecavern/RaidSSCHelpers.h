@@ -225,7 +225,7 @@ namespace SerpentShrineCavernHelpers
     bool IsLadyVashjInPhase3(PlayerbotAI* botAI);
     bool IsMeleeRTIMarker(PlayerbotAI* botAI, Player* bot);
     bool IsRangedRTIMarker(PlayerbotAI* botAI, Player* bot);
-    std::vector<Player*> GetPhase2AssignedRangedDpsBots(Group* group, PlayerbotAI* botAI);
+    bool IsValidPhase2CombatNpc(Unit* unit);
     Player* GetFirstTaintedCorePasser(Group* group, PlayerbotAI* botAI);
     Player* GetSecondTaintedCorePasser(Group* group, PlayerbotAI* botAI);
     Player* GetThirdTaintedCorePasser(Group* group, PlayerbotAI* botAI);

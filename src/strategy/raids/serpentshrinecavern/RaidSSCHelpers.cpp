@@ -456,13 +456,11 @@ namespace SerpentShrineCavernHelpers
     {
         if (Group* group = bot->GetGroup())
         {
-            std::vector<Player*> assignedRanged = GetPhase2AssignedRangedDpsBots(group, botAI);
             for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
             {
                 Player* member = ref->GetSource();
                 if (member && member->IsAlive() && botAI->IsRangedDps(member) &&
-                    GET_PLAYERBOT_AI(member) && !botAI->IsRangedDpsAssistantOfIndex(member, 0) &&
-                    !botAI->IsRangedDpsAssistantOfIndex(member, 1))
+                    GET_PLAYERBOT_AI(member))
                     return member == bot;
             }
         }
@@ -470,35 +468,14 @@ namespace SerpentShrineCavernHelpers
         return true;
     }
 
-    std::vector<Player*> GetPhase2AssignedRangedDpsBots(Group* group, PlayerbotAI* botAI)
+    bool IsValidPhase2CombatNpc(Unit* unit)
     {
-        std::vector<Player*> prioritized;
-        std::vector<Player*> others;
+        if (!unit || !unit->IsAlive())
+            return false;
 
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) || !botAI->IsRangedDps(member))
-                continue;
-
-            uint8 cls = member->getClass();
-            int8 tab = AiFactory::GetPlayerSpecTab(member);
-
-            if (cls == CLASS_HUNTER || cls == CLASS_MAGE || cls == CLASS_DRUID || (cls == CLASS_WARLOCK && tab != 0))
-                prioritized.push_back(member);
-            else
-                others.push_back(member);
-        }
-
-        std::vector<Player*> assignedRanged;
-        assignedRanged.insert(assignedRanged.end(), prioritized.begin(), prioritized.end());
-        assignedRanged.insert(assignedRanged.end(), others.begin(), others.end());
-
-        // Only return up to 8 bots
-        if (assignedRanged.size() > 8)
-            assignedRanged.resize(8);
-
-        return assignedRanged;
+        uint32 entry = unit->GetEntry();
+        return entry == NPC_TAINTED_ELEMENTAL || entry == NPC_ENCHANTED_ELEMENTAL ||
+               entry == NPC_COILFANG_ELITE || entry == NPC_COILFANG_STRIDER;
     }
 
     Player* GetFirstTaintedCorePasser(Group* group, PlayerbotAI* botAI)

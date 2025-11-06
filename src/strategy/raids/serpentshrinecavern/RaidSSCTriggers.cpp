@@ -383,7 +383,7 @@ bool LadyVashjDeterminingPhase2KillOrderTrigger::IsActive()
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
 
-    return vashj && IsLadyVashjInPhase2(botAI) && !botAI->IsRangedDpsAssistantOfIndex(bot, 0);
+    return vashj && IsLadyVashjInPhase2(botAI);
 }
 
 bool LadyVashjPlayerNeedsBotSupportToDisableGeneratorsTrigger::IsActive()
@@ -391,32 +391,9 @@ bool LadyVashjPlayerNeedsBotSupportToDisableGeneratorsTrigger::IsActive()
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
 
     return vashj && IsLadyVashjInPhase2(botAI) &&
-           botAI->IsRangedDpsAssistantOfIndex(bot, 0);
+           (botAI->IsRangedDpsAssistantOfIndex(bot, 0) || botAI->IsRangedDpsAssistantOfIndex(bot, 1));
 }
 
-/* bool LadyVashjPlayerLootedTaintedCoreTrigger::IsActive()
-{
-    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    Group* group = bot->GetGroup();
-    if (!vashj || !IsLadyVashjInPhase2(botAI) || !group)
-        return false;
-
-    bool isCorePasser = botAI->IsRangedDpsAssistantOfIndex(bot, 0) ||
-                        botAI->IsRangedDpsAssistantOfIndex(bot, 1) ||
-                        botAI->IsHealAssistantOfIndex(bot, 0);
-
-    if (!isCorePasser)
-        return false;
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (member && member->IsAlive() && member->HasAura(SPELL_PARALYZE))
-            return true;
-    }
-
-    return false;
-} */
 bool LadyVashjPlayerLootedTaintedCoreTrigger::IsActive()
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
