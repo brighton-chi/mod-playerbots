@@ -1581,9 +1581,8 @@ bool LadyVashjPhase1AndPhase3PositionRangedAction::Execute(Event event)
     if (!group)
         return false;
 
-    // Center of the room (set these to Vashj's room center coordinates)
     const Location& center = VashjRoomCenterPosition;
-    const float minSpreadRadius = 28.0f;
+    const float minSpreadRadius = 20.0f;
     const float maxSpreadRadius = 30.0f;
 
     // Collect all ranged and healer bots
@@ -1606,16 +1605,24 @@ bool LadyVashjPhase1AndPhase3PositionRangedAction::Execute(Event event)
         uint8 botIndex = (it != spreadMembers.end()) ? std::distance(spreadMembers.begin(), it) : 0;
         uint8 count = spreadMembers.size();
 
-        float angle = 2 * M_PI * botIndex / count;
-        // Use bot GUID or index to generate a unique "random" radius per bot
-        uint32 botSeed = bot->GetGUID().GetCounter(); // or use botIndex for simplicity
+        float referenceAngle = 0.0f;
+        const float span = M_PI; // half circle
+        const float startAngle = referenceAngle - span / 2.0f;
+        float angle;
+        if (count <= 1)
+            angle = referenceAngle;
+        else
+            angle = startAngle + (float)botIndex / (count - 1) * span;
+
+        // Unique radius per bot (same approach as before)
+        uint32 botSeed = bot->GetGUID().GetCounter();
         float radius = minSpreadRadius + (botSeed % 1000) / 1000.0f * (maxSpreadRadius - minSpreadRadius);
         float targetX = center.x + radius * cos(angle);
         float targetY = center.y + radius * sin(angle);
 
         vashjRangedPositions[bot->GetGUID()] = Position(targetX, targetY, center.z);
         vashjHasReachedRangedPosition[bot->GetGUID()] = false;
-    }
+     }
 
     Position targetPosition = vashjRangedPositions[bot->GetGUID()];
     if (!vashjHasReachedRangedPosition[bot->GetGUID()])
@@ -1690,8 +1697,6 @@ bool LadyVashjMisdirectBossToMainTankAction::Execute(Event event)
     if (!vashj || !group)
         return false;
 
-    MarkTargetWithSkull(bot, vashj);
-
     Player* mainTank = nullptr;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
@@ -1721,75 +1726,71 @@ bool LadyVashjStaticChargeMoveAwayFromGroupAction::Execute(Event event)
     if (!group)
         return false;
 
-    for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
+    // Find main tank with static charge
+    Player* mainTank = nullptr;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
+        if (member && member->IsAlive() && botAI->IsMainTank(member) &&
+            member->HasAura(SPELL_STATIC_CHARGE))
+        {
+            mainTank = member;
+            break;
+        }
+    }
 
-        if (!member || !member->IsAlive() || member == bot)
-            continue;
+    if (mainTank && bot != mainTank)
+    {
+        if (bot->GetExactDist2d(mainTank) < 11.0f)
+            return MoveAway(mainTank, 11.5f, false);
+    }
 
-        float distance = bot->GetExactDist2d(member);
-        if (distance < 11.0f)
-            return MoveAway(member, 11.5f, false);
+    // Otherwise, if bot has static charge, move away from other group members
+    if (!botAI->IsMainTank(bot) && bot->HasAura(SPELL_STATIC_CHARGE))
+    {
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || member == bot)
+                continue;
+
+            float distance = bot->GetExactDist2d(member);
+            if (distance < 11.0f)
+                return MoveAway(member, 11.5f, false);
+        }
     }
 
     return false;
 }
 
-bool LadyVashjRangedDpsMoveToPhase2AssignedPositionsAction::Execute(Event event)
+bool LadyVashjAttackAndMoveAwayFromStriderAction::Execute(Event event)
 {
-    Group* group = bot->GetGroup();
-    if (!group)
+    Unit* strider = GetFirstAliveUnitByEntry(botAI, NPC_COILFANG_STRIDER);
+    if (!strider)
         return false;
 
-    const Location positions[8] =
+    if (bot->GetExactDist2d(strider) < 15.0f)
+        return MoveAway(strider, 20.0f, false);
+
+    if (!strider->HasAura(SPELL_HEAVY_NETHERWEAVE_NET))
     {
-        { 65.087f, -878.344f, 41.097f }, // NW
-        { 29.693f, -865.188f, 41.097f }, // W
-        { 9.766f, -869.707f, 41.097f },  // SW
-        { -25.352f, -910.754f, 41.097f },// SSW
-        { -9.504f, -964.514f, 41.097f }, // SE
-        { 29.701f, -982.523f, 41.097f }, // E
-        { 42.143f, -978.813f, 41.097f }, // ENE
-        { 83.647f, -941.901f, 41.097f }  // NNE
-    };
-
-    // First pass: prioritize hunters, non-affliction warlocks, mages, druids
-    std::vector<Player*> prioritized;
-    std::vector<Player*> others;
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) || !botAI->IsRangedDps(member))
-            continue;
-
-        uint8 cls = member->getClass();
-        int8 tab = AiFactory::GetPlayerSpecTab(member);
-
-        if (cls == CLASS_HUNTER || cls == CLASS_MAGE || cls == CLASS_DRUID || (cls == CLASS_WARLOCK && tab != 0))
-            prioritized.push_back(member);
-        else
-            others.push_back(member);
+        Item* net = bot->GetItemByEntry(ITEM_HEAVY_NETHERWEAVE_NET);
+        if (net && botAI->HasItemInInventory(ITEM_HEAVY_NETHERWEAVE_NET) &&
+            botAI->CanCastSpell("heavy netherweave net", strider))
+            return botAI->CastSpell("heavy netherweave net", strider);
     }
 
-    // Assign positions
-    std::vector<Player*> assigned;
-    assigned.insert(assigned.end(), prioritized.begin(), prioritized.end());
-    assigned.insert(assigned.end(), others.begin(), others.end());
+    if (!strider->HasAura(SPELL_FROST_SHOCK) && bot->getClass() == CLASS_SHAMAN &&
+        botAI->CanCastSpell("frost shock", strider))
+        return botAI->CastSpell("frost shock", strider);
 
-    for (size_t i = 0; i < 8 && i < assigned.size(); ++i)
-    {
-        Player* member = assigned[i];
-        if (member == bot)
-        {
-            const Location& pos = positions[i];
-            if (!bot->GetVictim() && bot->GetExactDist2d(pos.x, pos.y) > 2.0f)
-                return MoveTo(bot->GetMapId(), pos.x, pos.y, pos.z,
-                              false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
-            break;
-        }
-    }
+    if (!strider->HasAura(SPELL_CURSE_OF_EXHAUSTION) && bot->getClass() == CLASS_WARLOCK &&
+        botAI->CanCastSpell("curse of exhaustion", strider))
+        return botAI->CastSpell("curse of exhaustion", strider);
+
+    if (!strider->HasAura(SPELL_SLOW) && bot->getClass() == CLASS_MAGE &&
+        botAI->CanCastSpell("slow", strider))
+        return botAI->CastSpell("slow", strider);
 
     return false;
 }
@@ -1813,7 +1814,6 @@ bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
 
     // Get all nearby hostile NPCs
     GuidVector attackers = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
-
     Unit* target = nullptr;
     Unit* tainted = nullptr;
     Unit* enchanted = nullptr;
@@ -1855,20 +1855,19 @@ bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
 
     // Set priorities
     std::vector<Unit*> targets;
-    int8 tab = AiFactory::GetPlayerSpecTab(bot);
+    /* int8 tab = AiFactory::GetPlayerSpecTab(bot);
     if (bot->getClass() == CLASS_HUNTER || bot->getClass() == CLASS_SHAMAN && tab == 0 ||
         bot->getClass() == CLASS_WARLOCK && tab == 0 || bot->getClass() == CLASS_PRIEST && tab == 2)
     {
         targets = { tainted, strider, enchanted, elite };
-    }
-    else
+    } */
     if (botAI->IsRangedDps(bot))
     {
-        targets = { tainted, enchanted, strider };
+        targets = { tainted, strider, enchanted, elite };
     }
     else if (botAI->IsMelee(bot) && botAI->IsDps(bot))
     {
-        targets = { tainted, elite, enchanted };
+        targets = { tainted, enchanted, elite };
     }
     else if (botAI->IsTank(bot))
     {
@@ -1894,129 +1893,16 @@ bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
     if (context->GetValue<Unit*>("current target")->Get() == target)
         return false;
 
-    // Attack the chosen target
-    if (target)
+    if (target && bot->GetVictim() != target)
         return Attack(target);
 
     const Location& position = VashjRoomCenterPosition;
     Unit* currentTarget = AI_VALUE(Unit*, "current target");
-    if (!currentTarget || !currentTarget->IsAlive())
+    if (!currentTarget || !currentTarget->IsAlive() || (!botAI->IsHeal(bot) && currentTarget->IsPlayer()))
         return MoveInside(bot->GetMapId(), position.x, position.y, position.z, 30.0f, MovementPriority::MOVEMENT_COMBAT);
 
     return false;
 }
-
-    /*
-    // disabled to test Naxx targeting with DPS assist off
-    Unit* taintedElemental = GetFirstAliveUnitByEntry(botAI, NPC_TAINTED_ELEMENTAL);
-    if (taintedElemental && taintedElemental->IsAlive() && botAI->IsRangedDps(bot))
-    {
-        MarkTargetWithSkull(bot, taintedElemental);
-        SetRtiTarget(botAI, "skull", taintedElemental);
-
-        if (!bot->IsWithinRange(taintedElemental, 30.0f))
-            return MoveTo(taintedElemental, 25.0f, MovementPriority::MOVEMENT_COMBAT);
-
-        if (bot->GetTarget() != taintedElemental->GetGUID())
-        {
-            bot->SetSelection(taintedElemental->GetGUID());
-            return Attack(taintedElemental);
-        }
-
-        return false;
-    }
-
-    Unit* enchantedElemental = GetFirstAliveUnitByEntry(botAI, NPC_ENCHANTED_ELEMENTAL);
-    if (enchantedElemental && enchantedElemental->IsAlive() &&
-        ((enchantedElemental->GetExactDist2d(vashj) < 40.0f && botAI->IsRangedDps(bot)) ||
-          enchantedElemental->GetExactDist2d(vashj) < 30.0f && botAI->IsMelee(bot) && !botAI->IsTank(bot)))
-    {
-        Unit* bestEnchanted = nullptr;
-        float minDist = std::numeric_limits<float>::max();
-        const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
-        for (auto const& npcGuid : npcs)
-        {
-            Unit* unit = botAI->GetUnit(npcGuid);
-            if (unit && unit->IsAlive() && unit->GetEntry() == NPC_ENCHANTED_ELEMENTAL)
-            {
-                float dist = unit->GetExactDist2d(vashj);
-                if (dist < minDist)
-                {
-                    minDist = dist;
-                    bestEnchanted = unit;
-                }
-            }
-        }
-        if (bestEnchanted)
-        {
-            MarkTargetWithStar(bot, bestEnchanted);
-            LOG_DEBUG("playerbots", "Marking enchanted elemental {} with star", bestEnchanted->GetName());
-        }
-        else
-            LOG_DEBUG("playerbots", "No enchanted elemental found to mark");
-
-        SetRtiTarget(botAI, "star", enchantedElemental);
-
-        if (bot->GetTarget() != enchantedElemental->GetGUID())
-        {
-            bot->SetSelection(enchantedElemental->GetGUID());
-            return Attack(enchantedElemental);
-        }
-
-        return false;
-    }
-
-    Unit* elite = GetFirstAliveUnitByEntry(botAI, NPC_COILFANG_ELITE);
-    if (elite && elite->IsAlive() && botAI->IsMelee(bot))
-    {
-        if (IsMeleeRTIMarker(botAI, bot))
-            MarkTargetWithTriangle(bot, elite);
-
-        SetRtiTarget(botAI, "triangle", elite);
-
-        if (bot->GetVictim() != elite)
-            return Attack(elite);
-
-        return false;
-    }
-
-    Unit* strider = GetFirstAliveUnitByEntry(botAI, NPC_COILFANG_STRIDER);
-    if (strider && strider->IsAlive() && botAI->IsRangedDps(bot))
-    {
-        if (IsRangedRTIMarker(botAI, bot))
-            MarkTargetWithCircle(bot, strider);
-
-        SetRtiTarget(botAI, "circle", strider);
-
-        if (bot->GetTarget() != strider->GetGUID())
-        {
-            bot->SetSelection(strider->GetGUID());
-            return Attack(strider);
-        }
-
-        if (!strider->HasAura(SPELL_HEAVY_NETHERWEAVE_NET))
-        {
-            Item* net = bot->GetItemByEntry(ITEM_HEAVY_NETHERWEAVE_NET);
-            if (net && botAI->HasItemInInventory(ITEM_HEAVY_NETHERWEAVE_NET) &&
-                botAI->CanCastSpell("heavy netherweave net", strider))
-                return botAI->CastSpell("heavy netherweave net", strider);
-        }
-
-        if (!strider->HasAura(SPELL_FROST_SHOCK) && bot->getClass() == CLASS_SHAMAN &&
-            botAI->CanCastSpell("frost shock", strider))
-            return botAI->CastSpell("frost shock", strider);
-
-        if (!strider->HasAura(SPELL_CURSE_OF_EXHAUSTION) && bot->getClass() == CLASS_WARLOCK &&
-            botAI->CanCastSpell("curse of exhaustion", strider))
-            return botAI->CastSpell("curse of exhaustion", strider);
-
-        if (!strider->HasAura(SPELL_SLOW) && bot->getClass() == CLASS_MAGE &&
-            botAI->CanCastSpell("slow", strider))
-            return botAI->CastSpell("slow", strider);
-    }
-
-    return false;
-} */
 
 bool LadyVashjAssistantsFollowMasterInPhase2Action::Execute(Event event)
 {
@@ -2024,8 +1910,8 @@ bool LadyVashjAssistantsFollowMasterInPhase2Action::Execute(Event event)
     if (!master || master == bot)
         return false;
 
-    if (bot->GetExactDist2d(master) > 32.0f)
-        return MoveTo(master, 30.0f, MovementPriority::MOVEMENT_COMBAT);
+    if (bot->GetExactDist2d(master) > 20.0f)
+        return MoveTo(master, 20.0f, MovementPriority::MOVEMENT_COMBAT);
 
     return false;
 }
@@ -2038,9 +1924,9 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
         return false;
 
     Unit* closestTrigger = GetNearestActiveShieldGeneratorTriggerByEntry(bot, master);
-    Player* firstCorePasser = GetFirstTaintedCorePasser(master, group, botAI);
-    Player* secondCorePasser = GetSecondTaintedCorePasser(closestTrigger, firstCorePasser, group, botAI);
-    Player* thirdCorePasser = GetThirdTaintedCorePasser(secondCorePasser, group, botAI);
+    Player* firstCorePasser = GetFirstTaintedCorePasser(group, botAI);
+    Player* secondCorePasser = GetSecondTaintedCorePasser(group, botAI);
+    Player* thirdCorePasser = GetThirdTaintedCorePasser(group, botAI);
 
     if (!master || !firstCorePasser || !secondCorePasser || !thirdCorePasser || !closestTrigger)
         return false;

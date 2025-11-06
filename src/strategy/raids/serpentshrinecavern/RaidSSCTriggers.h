@@ -304,10 +304,10 @@ public:
     bool IsActive() override;
 };
 
-class LadyVashjEnchantedElementalsAreMovingToBossTrigger : public Trigger
+class LadyVashjCoilfangStriderIsApproachingTrigger : public Trigger
 {
 public:
-    LadyVashjEnchantedElementalsAreMovingToBossTrigger(PlayerbotAI* botAI) : Trigger(botAI, "lady vashj enchanted elementals are moving to boss") {}
+    LadyVashjCoilfangStriderIsApproachingTrigger(PlayerbotAI* botAI) : Trigger(botAI, "lady vashj coilfang strider is approaching") {}
     bool IsActive() override;
 };
 

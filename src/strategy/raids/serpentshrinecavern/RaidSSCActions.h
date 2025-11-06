@@ -324,10 +324,10 @@ public:
     bool Execute(Event event) override;
 };
 
-class LadyVashjRangedDpsMoveToPhase2AssignedPositionsAction : public MovementAction
+class LadyVashjAttackAndMoveAwayFromStriderAction : public AttackAction
 {
 public:
-    LadyVashjRangedDpsMoveToPhase2AssignedPositionsAction(PlayerbotAI* botAI, std::string const name = "lady vashj ranged dps move to phase 2 assigned positions") : MovementAction(botAI, name) {}
+    LadyVashjAttackAndMoveAwayFromStriderAction(PlayerbotAI* botAI, std::string const name = "lady vashj attack and move away from strider") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 

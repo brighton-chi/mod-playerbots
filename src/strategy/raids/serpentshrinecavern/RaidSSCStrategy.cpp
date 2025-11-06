@@ -142,11 +142,11 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("lady vashj pulling boss in phase 1 and phase 3",
         NextAction::array(0, new NextAction("lady vashj misdirect boss to main tank", ACTION_EMERGENCY + 1), nullptr)
     ));
-    /* triggers.push_back(new TriggerNode("lady vashj enchanted elementals are moving to boss",
-        NextAction::array(0, new NextAction("lady vashj ranged dps move to phase 2 assigned positions", ACTION_RAID + 2), nullptr)
-    )); */
+    triggers.push_back(new TriggerNode("lady vashj coilfang strider is approaching",
+        NextAction::array(0, new NextAction("lady vashj attack and move away from strider", ACTION_EMERGENCY + 2), nullptr)
+    ));
     triggers.push_back(new TriggerNode("lady vashj player looted tainted core",
-        NextAction::array(0, new NextAction("lady vashj pass the tainted core", ACTION_EMERGENCY + 2), nullptr)
+        NextAction::array(0, new NextAction("lady vashj pass the tainted core", ACTION_RAID + 3), nullptr)
     ));
     triggers.push_back(new TriggerNode("lady vashj player needs bot support to disable generators",
         NextAction::array(0, new NextAction("lady vashj assistants follow master in phase 2", ACTION_RAID + 2), nullptr)

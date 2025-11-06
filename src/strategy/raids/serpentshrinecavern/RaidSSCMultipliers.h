@@ -129,13 +129,6 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class LadyVashjPhase2AssignedRangeMaintainPositioningMultiplier : public Multiplier
-{
-public:
-    LadyVashjPhase2AssignedRangeMaintainPositioningMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "lady vashj phase2 assigned range maintain positioning") {}
-    virtual float GetValue(Action* action);
-};
-
 class LadyVashjDoNotLootTheTaintedCoreMultiplier : public Multiplier
 {
 public:

@@ -22,14 +22,29 @@ bool ManaWarpStunCreatureBeforeWarpBreachAction::Execute(Event event)
     if (!manaWarp)
         return false;
 
-    if (botAI->CanCastSpell("kidney shot", manaWarp))
-        return botAI->CastSpell("kidney shot", manaWarp);
+    if (botAI->CanCastSpell("bash", manaWarp))
+        return botAI->CastSpell("bash", manaWarp);
+
+    if (botAI->CanCastSpell("concussion blow", manaWarp))
+        return botAI->CastSpell("concussion blow", manaWarp);
 
     if (botAI->CanCastSpell("hammer of justice", manaWarp))
         return botAI->CastSpell("hammer of justice", manaWarp);
 
-    if (botAI->CanCastSpell("scatter shot", manaWarp))
-        return botAI->CastSpell("scatter shot", manaWarp);
+    if (botAI->CanCastSpell("kidney shot", manaWarp))
+        return botAI->CastSpell("kidney shot", manaWarp);
+
+    if (botAI->CanCastSpell("maim", manaWarp))
+        return botAI->CastSpell("maim", manaWarp);
+
+    if (botAI->CanCastSpell("revenge stun", manaWarp))
+        return botAI->CastSpell("revenge stun", manaWarp);
+
+    if (botAI->CanCastSpell("shadowfury", manaWarp))
+        return botAI->CastSpell("shadowfury", manaWarp);
+
+    if (botAI->CanCastSpell("shockwave", manaWarp))
+        return botAI->CastSpell("shockwave", manaWarp);
 
     return false;
 }

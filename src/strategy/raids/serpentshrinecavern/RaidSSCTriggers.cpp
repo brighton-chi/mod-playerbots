@@ -349,9 +349,18 @@ bool LadyVashjCastsShockBlastOnHighestAggroTrigger::IsActive()
 bool LadyVashjBotHasStaticChargeTrigger::IsActive()
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    Group* group = bot->GetGroup();
+    if (!vashj || !group)
+        return false;
 
-    return vashj && (IsLadyVashjInPhase1(botAI) || IsLadyVashjInPhase3(botAI)) &&
-           bot->HasAura(SPELL_STATIC_CHARGE);
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && member->IsAlive() && member->HasAura(SPELL_STATIC_CHARGE))
+            return true;
+    }
+
+    return false;
 }
 
 bool LadyVashjPullingBossInPhase1AndPhase3Trigger::IsActive()
@@ -363,33 +372,40 @@ bool LadyVashjPullingBossInPhase1AndPhase3Trigger::IsActive()
             (!vashj->HasUnitState(UNIT_STATE_ROOT) && vashj->GetHealthPct() <= 50.0f && vashj->GetHealthPct() > 40.0f));
 }
 
-bool LadyVashjEnchantedElementalsAreMovingToBossTrigger::IsActive()
+bool LadyVashjCoilfangStriderIsApproachingTrigger::IsActive()
 {
-    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    Unit* strider = AI_VALUE2(Unit*, "find target", "coilfang strider");
 
-    return vashj && IsLadyVashjInPhase2(botAI) && botAI->IsRangedDps(bot) &&
-           !botAI->IsRangedDpsAssistantOfIndex(bot, 0) && !botAI->IsRangedDpsAssistantOfIndex(bot, 1);
+    return strider && strider->IsAlive() && (IsLadyVashjInPhase2(botAI) || IsLadyVashjInPhase3(botAI));
 }
 
 bool LadyVashjDeterminingPhase2KillOrderTrigger::IsActive()
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
 
-    return vashj && IsLadyVashjInPhase2(botAI);
+    return vashj && IsLadyVashjInPhase2(botAI) && !botAI->IsRangedDpsAssistantOfIndex(bot, 0);
 }
 
 bool LadyVashjPlayerNeedsBotSupportToDisableGeneratorsTrigger::IsActive()
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
 
-    return vashj && IsLadyVashjInPhase2(botAI) && botAI->IsRangedDpsAssistantOfIndex(bot, 0);
+    return vashj && IsLadyVashjInPhase2(botAI) &&
+           botAI->IsRangedDpsAssistantOfIndex(bot, 0);
 }
 
-bool LadyVashjPlayerLootedTaintedCoreTrigger::IsActive()
+/* bool LadyVashjPlayerLootedTaintedCoreTrigger::IsActive()
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     Group* group = bot->GetGroup();
     if (!vashj || !IsLadyVashjInPhase2(botAI) || !group)
+        return false;
+
+    bool isCorePasser = botAI->IsRangedDpsAssistantOfIndex(bot, 0) ||
+                        botAI->IsRangedDpsAssistantOfIndex(bot, 1) ||
+                        botAI->IsHealAssistantOfIndex(bot, 0);
+
+    if (!isCorePasser)
         return false;
 
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
@@ -400,15 +416,26 @@ bool LadyVashjPlayerLootedTaintedCoreTrigger::IsActive()
     }
 
     return false;
-}
-/* bool LadyVashjPlayerLootedTaintedCoreTrigger::IsActive()
+} */
+bool LadyVashjPlayerLootedTaintedCoreTrigger::IsActive()
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     Group* group = bot->GetGroup();
     if (!vashj || !IsLadyVashjInPhase2(botAI) || !group)
         return false;
 
-    static std::map<uint32, time_t> firstParalyze[1]; // [0] for static storage
+    bool isCorePasser = botAI->IsRangedDpsAssistantOfIndex(bot, 0) ||
+                        botAI->IsRangedDpsAssistantOfIndex(bot, 1) ||
+                        botAI->IsHealAssistantOfIndex(bot, 0);
+
+    if (!isCorePasser)
+        return false;
+
+    // remember last time Paralyze was observed so we can tolerate the brief handoff gap
+    static std::map<uint32, time_t> lastParalyzeTime; // mapId -> last seen time
+    uint32 mapId = vashj->GetMapId();
+    time_t now = time(nullptr);
+
     bool foundParalyze = false;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
@@ -416,31 +443,21 @@ bool LadyVashjPlayerLootedTaintedCoreTrigger::IsActive()
         if (member && member->IsAlive() && member->HasAura(SPELL_PARALYZE))
         {
             foundParalyze = true;
+            lastParalyzeTime[mapId] = now;
             break;
         }
     }
 
-    uint32 mapId = vashj->GetMapId();
-    time_t now = time(nullptr);
+    if (foundParalyze)
+        return true;
 
-    // Start the timer when Paralyze is first found
-    if (foundParalyze && !firstParalyze[0][mapId])
-        firstParalyze[0][mapId] = now;
+    // if we recently saw paralyze on this map, keep trigger active for the grace window
+    auto it = lastParalyzeTime.find(mapId);
+    if (it != lastParalyzeTime.end() && (now - it->second) <= 2)
+        return true;
 
-    // Reset the timer if we leave phase 2 or reset encounter
-    if (!foundParalyze && (now - firstParalyze[0][mapId] > 20))
-        firstParalyze[0][mapId] = 0;
-
-    bool isCorePasser = botAI->IsHealAssistantOfIndex(bot, 0) ||
-                        botAI->IsRangedDpsAssistantOfIndex(bot, 1) ||
-                        botAI->IsRangedDpsAssistantOfIndex(bot, 0);
-
-    if (!isCorePasser)
-        return false;
-
-    // Keep the trigger active if Paralyze is present, or within 10s of first Paralyze seen
-    return foundParalyze || (firstParalyze[0][mapId] && (now - firstParalyze[0][mapId] < 10));
-} */
+    return false;
+}
 
 bool LadyVashjToxicSporebatsAreSpewingPoisonCloudsTrigger::IsActive()
 {

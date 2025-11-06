@@ -376,7 +376,7 @@ float LadyVashjStaticChargeStayAwayFromGroupMultiplier::GetValue(Action* action)
     if (!vashj || IsLadyVashjInPhase2(botAI))
         return 1.0f;
 
-    if (bot->HasAura(SPELL_STATIC_CHARGE))
+    if (!botAI->IsMainTank(bot) && bot->HasAura(SPELL_STATIC_CHARGE))
     {
         if (dynamic_cast<MovementAction*>(action) && !dynamic_cast<LadyVashjStaticChargeMoveAwayFromGroupAction*>(action))
             return 0.0f;
@@ -397,24 +397,6 @@ float LadyVashjDoNotLootTheTaintedCoreMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float LadyVashjPhase2AssignedRangeMaintainPositioningMultiplier::GetValue(Action* action)
-{
-    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    Group* group = bot->GetGroup();
-    if (!vashj || !IsLadyVashjInPhase2(botAI) || !group)
-        return 1.0f;
-
-    std::vector<Player*> assignedRanged = GetPhase2AssignedRangedDpsBots(group, botAI);
-    if (std::find(assignedRanged.begin(), assignedRanged.end(), bot) != assignedRanged.end())
-    {
-        if (dynamic_cast<MovementAction*>(action) &&
-            !(dynamic_cast<LadyVashjRangedDpsMoveToPhase2AssignedPositionsAction*>(action) || dynamic_cast<LadyVashjAssignPhase2DpsPriorityAction*>(action)))
-            return 0.0f;
-    }
-
-    return 1.0f;
-}
-
 float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* action)
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
@@ -422,23 +404,18 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
     if (!vashj || !IsLadyVashjInPhase2(botAI) || !group)
         return 1.0f;
 
-    Player* master = botAI->GetMaster();
-    if (!master)
-        return 1.0f;
-
-    Unit* closestTrigger = GetNearestActiveShieldGeneratorTriggerByEntry(bot, master);
-    Player* firstCorePasser = GetFirstTaintedCorePasser(master, group, botAI);
-    Player* secondCorePasser = GetSecondTaintedCorePasser(closestTrigger, firstCorePasser, group, botAI);
-    Player* thirdCorePasser = GetThirdTaintedCorePasser(secondCorePasser, group, botAI);
-
-    if (bot == firstCorePasser || bot == secondCorePasser || bot == thirdCorePasser)
+    if (botAI->IsRangedDpsAssistantOfIndex(bot, 0) ||
+        botAI->IsRangedDpsAssistantOfIndex(bot, 1) ||
+        botAI->IsHealAssistantOfIndex(bot, 0))
     {
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
             if (member && member->IsAlive() && member->HasAura(SPELL_PARALYZE))
             {
-                if (dynamic_cast<MovementAction*>(action) && !dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action))
+                if (dynamic_cast<MovementAction*>(action) &&
+                    !dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action) &&
+                    !dynamic_cast<AttackAction*>(action))
                     return 0.0f;
             }
         }
