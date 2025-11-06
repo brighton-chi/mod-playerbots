@@ -375,7 +375,7 @@ bool LadyVashjDeterminingPhase2KillOrderTrigger::IsActive()
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
 
-    return vashj && IsLadyVashjInPhase2(botAI) && !botAI->IsHeal(bot);
+    return vashj && IsLadyVashjInPhase2(botAI);
 }
 
 bool LadyVashjPlayerNeedsBotSupportToDisableGeneratorsTrigger::IsActive()

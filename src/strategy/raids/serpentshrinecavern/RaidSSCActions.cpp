@@ -1729,8 +1729,8 @@ bool LadyVashjStaticChargeMoveAwayFromGroupAction::Execute(Event event)
             continue;
 
         float distance = bot->GetExactDist2d(member);
-        if (distance < 10.5f)
-            return MoveAway(member, 11.0f, false);
+        if (distance < 11.0f)
+            return MoveAway(member, 11.5f, false);
     }
 
     return false;
@@ -1832,18 +1832,22 @@ bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
                 if (!tainted || bot->GetDistance2d(unit) < bot->GetDistance2d(tainted))
                     tainted = unit;
                 break;
+
             case NPC_ENCHANTED_ELEMENTAL:
                 if (!enchanted || bot->GetDistance2d(unit) < bot->GetDistance2d(enchanted))
                     enchanted = unit;
                 break;
+
             case NPC_COILFANG_ELITE:
                 if (!elite || bot->GetDistance2d(unit) < bot->GetDistance2d(elite))
                     elite = unit;
                 break;
+
             case NPC_COILFANG_STRIDER:
                 if (!strider || bot->GetDistance2d(unit) < bot->GetDistance2d(strider))
                     strider = unit;
                 break;
+
             default:
                 break;
         }
@@ -1851,18 +1855,29 @@ bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
 
     // Set priorities
     std::vector<Unit*> targets;
+    int8 tab = AiFactory::GetPlayerSpecTab(bot);
+    if (bot->getClass() == CLASS_HUNTER || bot->getClass() == CLASS_SHAMAN && tab == 0 ||
+        bot->getClass() == CLASS_WARLOCK && tab == 0 || bot->getClass() == CLASS_PRIEST && tab == 2)
+    {
+        targets = { tainted, strider, enchanted, elite };
+    }
+    else
     if (botAI->IsRangedDps(bot))
     {
         targets = { tainted, enchanted, strider };
     }
-    else if (botAI->IsMelee(bot))
+    else if (botAI->IsMelee(bot) && botAI->IsDps(bot))
     {
-        targets = { tainted, enchanted, elite };
+        targets = { tainted, elite, enchanted };
+    }
+    else if (botAI->IsTank(bot))
+    {
+        targets = { elite, enchanted, tainted };
     }
     else
     {
-        // Default to ranged priorities if not classified
-        targets = { tainted, enchanted, strider };
+        // Default priorities if not classified
+        targets = { tainted, enchanted, elite, strider };
     }
 
     // Pick the first valid target
@@ -1884,8 +1899,9 @@ bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
         return Attack(target);
 
     const Location& position = VashjRoomCenterPosition;
-    if (AI_VALUE(Unit*, "current target") == nullptr)
-        return MoveInside(bot->GetMapId(), position.x, position.y, position.z, 20.0f, MovementPriority::MOVEMENT_COMBAT);
+    Unit* currentTarget = AI_VALUE(Unit*, "current target");
+    if (!currentTarget || !currentTarget->IsAlive())
+        return MoveInside(bot->GetMapId(), position.x, position.y, position.z, 30.0f, MovementPriority::MOVEMENT_COMBAT);
 
     return false;
 }
@@ -2002,124 +2018,13 @@ bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
     return false;
 } */
 
-/* // Old
-bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
-{
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    if (vashj)
-    {
-        if (IsRangedRTIMarker(botAI, bot))
-            MarkTargetWithMoon(bot, vashj);
-
-        if (bot->GetTarget() == vashj->GetGUID())
-        {
-            bot->AttackStop();
-            bot->InterruptNonMeleeSpells(true);
-            bot->SetTarget(ObjectGuid::Empty);
-            bot->SetSelection(ObjectGuid());
-        }
-    }
-
-    std::vector<Player*> assignedRanged = GetPhase2AssignedRangedDpsBots(group, botAI);
-
-    // Target priority 1 for assigned ranged and melee: Tainted Elemental
-    Unit* taintedElemental = AI_VALUE2(Unit*, "find target", "tainted elemental");
-    if (taintedElemental && taintedElemental->IsAlive() && std::find(assignedRanged.begin(), assignedRanged.end(), bot) != assignedRanged.end())
-    {
-        MarkTargetWithSkull(bot, taintedElemental);
-        SetRtiTarget(botAI, "skull", taintedElemental);
-
-        if (!bot->IsWithinRange(taintedElemental, 30.0f))
-            return MoveTo(taintedElemental, 25.0f, MovementPriority::MOVEMENT_COMBAT);
-
-        if (bot->GetTarget() != taintedElemental->GetGUID())
-        {
-            bot->SetSelection(taintedElemental->GetGUID());
-            return Attack(taintedElemental);
-        }
-    }
-    return false;
-
-    // Target priority 2 for melee: Coilfang Elite
-    Unit* elite = AI_VALUE2(Unit*, "find target", "coilfang elite");
-    if (elite && elite->IsAlive() && botAI->IsMelee(bot))
-    {
-        if (IsMeleeRTIMarker(botAI, bot))
-            MarkTargetWithTriangle(bot, elite);
-
-        SetRtiTarget(botAI, "triangle", elite);
-
-        if (bot->GetVictim() != elite)
-            return Attack(elite);
-    }
-    return false;
-
-    // Target priority 2 for assigned ranged and target priority 3 for melee: Enchanted Elemental
-    Unit* enchantedElemental = AI_VALUE2(Unit*, "find target", "enchanted elemental");
-    if (enchantedElemental && enchantedElemental->IsAlive() && bot->GetExactDist2d(enchantedElemental) < 30.0f
-        && (botAI->IsMelee(bot) || std::find(assignedRanged.begin(), assignedRanged.end(), bot) != assignedRanged.end()))
-    {
-        MarkTargetWithStar(bot, enchantedElemental);
-        SetRtiTarget(botAI, "star", enchantedElemental);
-
-        if (bot->GetTarget() != enchantedElemental->GetGUID())
-        {
-            bot->SetSelection(enchantedElemental->GetGUID());
-            return Attack(enchantedElemental);
-        }
-    }
-    return false;
-
-    Unit* strider = AI_VALUE2(Unit*, "find target", "coilfang strider");
-    // Target priority for unassigned ranged: Coilfang Strider
-    if (strider && strider->IsAlive() && botAI->IsRangedDps(bot) &&
-        std::find(assignedRanged.begin(), assignedRanged.end(), bot) == assignedRanged.end())
-    {
-        MarkTargetWithCircle(bot, strider);
-        SetRtiTarget(botAI, "circle", strider);
-
-        if (bot->GetExactDist2d(strider) <= 35.0f && bot->GetExactDist2d(strider) > 15.0f &&
-            bot->GetTarget() != strider->GetGUID())
-        {
-            bot->SetSelection(strider->GetGUID());
-            return Attack(strider);
-        }
-
-        if (!strider->HasAura(SPELL_HEAVY_NETHERWEAVE_NET))
-        {
-            Item* net = bot->GetItemByEntry(ITEM_HEAVY_NETHERWEAVE_NET);
-            if (net && botAI->HasItemInInventory(ITEM_HEAVY_NETHERWEAVE_NET) &&
-                botAI->CanCastSpell("heavy netherweave net", strider))
-                return botAI->CastSpell("heavy netherweave net", strider);
-        }
-
-        if (!strider->HasAura(SPELL_FROST_SHOCK) && bot->getClass() == CLASS_SHAMAN &&
-            botAI->CanCastSpell("frost shock", strider))
-            return botAI->CastSpell("frost shock", strider);
-
-        if (!strider->HasAura(SPELL_CURSE_OF_EXHAUSTION) && bot->getClass() == CLASS_WARLOCK &&
-            botAI->CanCastSpell("curse of exhaustion", strider))
-            return botAI->CastSpell("curse of exhaustion", strider);
-
-        if (!strider->HasAura(SPELL_SLOW) && bot->getClass() == CLASS_MAGE &&
-            botAI->CanCastSpell("slow", strider))
-            return botAI->CastSpell("slow", strider);
-    }
-
-    return false;
-} */
-
 bool LadyVashjAssistantsFollowMasterInPhase2Action::Execute(Event event)
 {
     Player* master = botAI->GetMaster();
     if (!master || master == bot)
         return false;
 
-    if (bot->GetExactDist2d(master) > 35.0f)
+    if (bot->GetExactDist2d(master) > 32.0f)
         return MoveTo(master, 30.0f, MovementPriority::MOVEMENT_COMBAT);
 
     return false;
