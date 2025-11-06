@@ -1769,28 +1769,36 @@ bool LadyVashjAttackAndMoveAwayFromStriderAction::Execute(Event event)
     if (!strider)
         return false;
 
-    if (bot->GetExactDist2d(strider) < 20.0f)
+    if (botAI->HasCheat(BotCheatMask::raid) && botAI->IsTank(bot) && !bot->HasAura(SPELL_FEAR_WARD_CHEAT))
+        bot->AddAura(SPELL_FEAR_WARD_CHEAT, bot);
+
+    // Don't away only if raid cheats are enabled AND bot is a tank
+    if (bot->GetExactDist2d(strider) < 20.0f &&
+        (!botAI->HasCheat(BotCheatMask::raid) || !botAI->IsTank(bot)))
         return MoveAway(strider, 25.0f, false);
 
-    if (!strider->HasAura(SPELL_HEAVY_NETHERWEAVE_NET))
+    if (!botAI->HasCheat(BotCheatMask::raid))
     {
-        Item* net = bot->GetItemByEntry(ITEM_HEAVY_NETHERWEAVE_NET);
-        if (net && botAI->HasItemInInventory(ITEM_HEAVY_NETHERWEAVE_NET) &&
-            botAI->CanCastSpell("heavy netherweave net", strider))
-            return botAI->CastSpell("heavy netherweave net", strider);
+        if (!strider->HasAura(SPELL_HEAVY_NETHERWEAVE_NET))
+        {
+            Item* net = bot->GetItemByEntry(ITEM_HEAVY_NETHERWEAVE_NET);
+            if (net && botAI->HasItemInInventory(ITEM_HEAVY_NETHERWEAVE_NET) &&
+                botAI->CanCastSpell("heavy netherweave net", strider))
+                return botAI->CastSpell("heavy netherweave net", strider);
+        }
+
+        if (!strider->HasAura(SPELL_FROST_SHOCK) && bot->getClass() == CLASS_SHAMAN &&
+            botAI->CanCastSpell("frost shock", strider))
+            return botAI->CastSpell("frost shock", strider);
+
+        if (!strider->HasAura(SPELL_CURSE_OF_EXHAUSTION) && bot->getClass() == CLASS_WARLOCK &&
+            botAI->CanCastSpell("curse of exhaustion", strider))
+            return botAI->CastSpell("curse of exhaustion", strider);
+
+        if (!strider->HasAura(SPELL_SLOW) && bot->getClass() == CLASS_MAGE &&
+            botAI->CanCastSpell("slow", strider))
+            return botAI->CastSpell("slow", strider);
     }
-
-    if (!strider->HasAura(SPELL_FROST_SHOCK) && bot->getClass() == CLASS_SHAMAN &&
-        botAI->CanCastSpell("frost shock", strider))
-        return botAI->CastSpell("frost shock", strider);
-
-    if (!strider->HasAura(SPELL_CURSE_OF_EXHAUSTION) && bot->getClass() == CLASS_WARLOCK &&
-        botAI->CanCastSpell("curse of exhaustion", strider))
-        return botAI->CastSpell("curse of exhaustion", strider);
-
-    if (!strider->HasAura(SPELL_SLOW) && bot->getClass() == CLASS_MAGE &&
-        botAI->CanCastSpell("slow", strider))
-        return botAI->CastSpell("slow", strider);
 
     return false;
 }
@@ -1801,15 +1809,18 @@ bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
     if (!vashj)
         return false;
 
-    if (IsRangedRTIMarker(botAI, bot))
-        MarkTargetWithMoon(bot, vashj);
-
-    if (bot->GetTarget() == vashj->GetGUID())
+    if (IsLadyVashjInPhase2(botAI))
     {
-        bot->AttackStop();
-        bot->InterruptNonMeleeSpells(true);
-        bot->SetTarget(ObjectGuid::Empty);
-        bot->SetSelection(ObjectGuid());
+        if (IsRangedRTIMarker(botAI, bot))
+            MarkTargetWithMoon(bot, vashj);
+
+        if (bot->GetTarget() == vashj->GetGUID())
+        {
+            bot->AttackStop();
+            bot->InterruptNonMeleeSpells(true);
+            bot->SetTarget(ObjectGuid::Empty);
+            bot->SetSelection(ObjectGuid());
+        }
     }
 
     // Get all nearby hostile NPCs
@@ -1863,10 +1874,6 @@ bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
         }
     }
 
-    // Mark tainted elemental with skull if found
-    if (tainted)
-        MarkTargetWithSkull(bot, tainted);
-
     // Set priorities
     std::vector<Unit*> targets;
     if (botAI->IsRangedDps(bot))
@@ -1874,10 +1881,15 @@ bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
     else if (botAI->IsMelee(bot) && botAI->IsDps(bot))
         targets = { tainted, enchanted, elite };
     else if (botAI->IsTank(bot))
-        targets = { elite, enchanted, tainted };
+    {
+        // With raid cheats enabled, main tank should prioritize the strider first.
+        if (botAI->HasCheat(BotCheatMask::raid) && botAI->IsMainTank(bot))
+            targets = { strider, elite, enchanted, tainted };
+        else
+            targets = { elite, enchanted, tainted };
+    }
     else
         targets = { tainted, enchanted, elite, strider };
-
     // Pick the first valid target
     for (Unit* t : targets)
     {
@@ -1922,9 +1934,30 @@ bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
         bot->SetSelection(ObjectGuid());
     }
 
+    if (botAI->HasCheat(BotCheatMask::raid) && !bot->GetVictim())
+    {
+        Player* master = botAI->GetMaster();
+        Player* designatedLooter = GetDesignatedCoreLooter(bot->GetGroup(), master, botAI);
+        if (designatedLooter && designatedLooter == bot)
+            return false;
+
+        const Location& center = VashjRoomCenterPosition;
+        if (bot->GetExactDist2d(center.x, center.y) > 60.0f)
+        {
+            LOG_DEBUG("playerbots", "LadyVashjCheat: teleporting {} back to center ({}, {})", bot->GetName(), center.x, center.y);
+            bot->AttackStop();
+            bot->InterruptNonMeleeSpells(true);
+            bot->TeleportTo(bot->GetMapId(), center.x, center.y, center.z, bot->GetOrientation());
+            // small delay to let server update position/state before next AI tick
+            botAI->SetNextCheckDelay(500);
+            return false;
+        }
+    }
+
     return false;
 }
 
+// Only if cheats are off, intended to support core handling
 bool LadyVashjAssistantsFollowMasterInPhase2Action::Execute(Event event)
 {
     Player* master = botAI->GetMaster();
@@ -1939,7 +1972,6 @@ bool LadyVashjAssistantsFollowMasterInPhase2Action::Execute(Event event)
 
 bool LadyVashjTaintedElementalCheatAction::Execute(Event event)
 {
-    // Find the first tainted elemental (they spawn one at a time)
     Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
     if (!tainted)
     {
@@ -1969,15 +2001,23 @@ bool LadyVashjTaintedElementalCheatAction::Execute(Event event)
     if (!tainted)
     return false;
 
-    // Teleport assistant (bot) to the elemental to reach it reliably
+    // Teleport bot to the elemental
     LOG_DEBUG("playerbots", "TaintedElementalCheat: {} handling {}", bot->GetName(), tainted->GetName());
     bot->AttackStop();
     bot->InterruptNonMeleeSpells(true);
     bot->TeleportTo(tainted->GetMapId(), tainted->GetPositionX(), tainted->GetPositionY(), tainted->GetPositionZ(), tainted->GetOrientation());
 
-    // Finish it off using engine damage so corpse/loot appear
-    if (tainted->IsAlive())
-    Unit::DealDamage(bot, tainted, tainted->GetHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false, true);
+    if (tainted->IsAlive() && bot->GetVictim() != tainted)
+    {
+        if (tainted->GetHealthPct() > 50.0f)
+        {
+            Unit::DealDamage(bot, tainted, tainted->GetMaxHealth() / 2, nullptr,
+                  DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false, true);
+        }
+        MarkTargetWithStar(bot, tainted);
+        SetRtiTarget(botAI, "star", tainted);
+        return Attack(tainted);
+    }
 
     Item* core = bot->GetItemByEntry(ITEM_TAINTED_CORE);
     if (!core)
@@ -2010,44 +2050,12 @@ bool LadyVashjTaintedElementalCheatAction::Execute(Event event)
             LOG_DEBUG("playerbots", "TaintedElementalCheat: {} still has no core after StoreNewItem attempt", bot->GetName());
             return true; // nothing more we can do this tick
         }
+        // Ensure passing system / reconcile helper knows the core exists (defensive).
+        LOG_DEBUG("playerbots", "TaintedElementalCheat: {} granted a tainted core (defensive reconcile)", bot->GetName());
+        ScheduleCoreReconcile(botAI, bot, bot, ITEM_TAINTED_CORE, 500);
     }
 
-    Player* targetPlayer = nullptr;
-    Player* master = botAI->GetMaster();
-    if (master && master->IsAlive() && bot->GetExactDist2d(master) <= 10.0f)
-        targetPlayer = master;
-
-    if (!targetPlayer)
-    {
-        Group* g = bot->GetGroup();
-        if (g)
-        {
-            for (GroupReference* ref = g->GetFirstMember(); ref; ref = ref->next())
-            {
-                Player* member = ref->GetSource();
-                if (!member || member == bot || !member->IsAlive())
-                    continue;
-                if (bot->GetExactDist2d(member) <= 10.0f)
-                {
-                    targetPlayer = member;
-                    break;
-                }
-            }
-        }
-    }
-
-    if (targetPlayer)
-    {
-        LOG_DEBUG("playerbots", "TaintedElementalCheat: imbuing core from {} to {}", bot->GetName(), targetPlayer->GetName());
-        botAI->ImbueItem(core, targetPlayer);
-        ScheduleCoreReconcile(botAI, bot, targetPlayer, ITEM_TAINTED_CORE, 500);
-    }
-    else
-    {
-        LOG_DEBUG("playerbots", "TaintedElementalCheat: no nearby player to receive core; keeping it in {}'s inventory", bot->GetName());
-    }
-
-    return true;
+    return false;
 }
 
 bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
@@ -2057,17 +2065,21 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
     if (!master || !group)
         return false;
 
-    Unit* closestTrigger = GetNearestActiveShieldGeneratorTriggerByEntry(bot, master);
+    Player* designatedMaster = GetDesignatedCoreLooter(group, master, botAI);
+    if (!designatedMaster)
+        return false;
+
+    Unit* closestTrigger = GetNearestActiveShieldGeneratorTriggerByEntry(bot, designatedMaster);
     Player* firstCorePasser = GetFirstTaintedCorePasser(group, botAI);
     Player* secondCorePasser = GetSecondTaintedCorePasser(group, botAI);
     Player* thirdCorePasser = GetThirdTaintedCorePasser(group, botAI);
 
-    if (!master || !firstCorePasser || !secondCorePasser || !thirdCorePasser || !closestTrigger)
+    if (!designatedMaster || !firstCorePasser || !secondCorePasser || !thirdCorePasser || !closestTrigger)
         return false;
 
     // Always move bots into position
     if (bot == firstCorePasser)
-        LineUpFirstCorePasser(master, closestTrigger);
+        LineUpFirstCorePasser(designatedMaster, closestTrigger);
     else if (bot == secondCorePasser)
         LineUpSecondCorePasser(firstCorePasser, closestTrigger);
     else if (bot == thirdCorePasser)
@@ -2104,14 +2116,14 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
     return false;
 }
 
-void LadyVashjPassTheTaintedCoreAction::LineUpFirstCorePasser(Player* master, Unit* closestTrigger)
+void LadyVashjPassTheTaintedCoreAction::LineUpFirstCorePasser(Player* designatedMaster, Unit* closestTrigger)
 {
     const float centerX = VashjRoomCenterPosition.x;
     const float centerY = VashjRoomCenterPosition.y;
     const float radius = 55.0f;
 
-    float mx = master->GetPositionX();
-    float my = master->GetPositionY();
+    float mx = designatedMaster->GetPositionX();
+    float my = designatedMaster->GetPositionY();
     float angle = atan2(my - centerY, mx - centerX);
 
     float targetX = centerX + radius * cos(angle);
@@ -2122,7 +2134,7 @@ void LadyVashjPassTheTaintedCoreAction::LineUpFirstCorePasser(Player* master, Un
     bot->AttackStop();
     bot->InterruptNonMeleeSpells(true);
     MoveTo(bot->GetMapId(), targetX, targetY, targetZ,
-            false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+           false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 void LadyVashjPassTheTaintedCoreAction::LineUpSecondCorePasser(Player* firstCorePasser, Unit* closestTrigger)

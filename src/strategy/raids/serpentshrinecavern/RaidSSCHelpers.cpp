@@ -3,6 +3,7 @@
 #include "AiFactory.h"
 #include "Creature.h"
 #include "Group.h"
+#include "ObjectAccessor.h"
 #include "Playerbots.h"
 #include "RtiTargetValue.h"
 
@@ -478,6 +479,34 @@ namespace SerpentShrineCavernHelpers
                entry == NPC_COILFANG_ELITE || entry == NPC_COILFANG_STRIDER;
     }
 
+    Player* GetDesignatedCoreLooter(Group* group, Player* master, PlayerbotAI* botAI)
+    {
+        // If cheats are off, use the real master.
+        if (!botAI->HasCheat(BotCheatMask::raid))
+            return master;
+
+        // Prefer a melee DPS bot; fall back to a ranged DPS bot; if none found return nullptr.
+        Player* fallback = nullptr;
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || member == master)
+                continue;
+
+            PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
+            if (!memberAI)
+                continue;
+
+            if (memberAI->IsMelee(member) && memberAI->IsDps(member))
+                return member;
+
+            if (!fallback && memberAI->IsRangedDps(member))
+                fallback = member;
+        }
+
+        return fallback; // may be nullptr if no suitable bot present
+    }
+
     Player* GetFirstTaintedCorePasser(Group* group, PlayerbotAI* botAI)
     {
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
@@ -582,9 +611,9 @@ namespace SerpentShrineCavernHelpers
 
        botAI->AddTimedEvent([giverGuid, receiverGuid, coreId]() {
 
-           // Resolve players at runtime. Use sObjectAccessor to avoid stale pointers.
-           Player* receiverPlayer = receiverGuid.IsEmpty() ? nullptr : sObjectAccessor->FindPlayer(receiverGuid);
-           Player* giverPlayer    = giverGuid.IsEmpty()    ? nullptr : sObjectAccessor->FindPlayer(giverGuid);
+           // Resolve players at runtime. Use ObjectAccessor to avoid stale pointers.
+           Player* receiverPlayer = receiverGuid.IsEmpty() ? nullptr : ObjectAccessor::FindPlayer(receiverGuid);
+           Player* giverPlayer    = giverGuid.IsEmpty()    ? nullptr : ObjectAccessor::FindPlayer(giverGuid);
 
            // Validate pointers / in-world state before calling any Player methods.
            if (!receiverPlayer || !receiverPlayer->IsInWorld())

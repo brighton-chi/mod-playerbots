@@ -43,8 +43,9 @@ enum SerpentShrineCavernSpells
     SPELL_WATERY_GRAVE = 38049,
 
     // Lady Vashj <Coilfang Matron>
+    SPELL_FEAR_WARD_CHEAT = 6346,
     SPELL_PARALYZE = 38132, // from holding Tainted Core
-    SPELL_THROW_KEY = 38134,
+    // SPELL_PANIC = 38258,
     SPELL_STATIC_CHARGE = 38280,
 
     // Hunter
@@ -226,10 +227,17 @@ namespace SerpentShrineCavernHelpers
     bool IsMeleeRTIMarker(PlayerbotAI* botAI, Player* bot);
     bool IsRangedRTIMarker(PlayerbotAI* botAI, Player* bot);
     bool IsValidPhase2CombatNpc(Unit* unit);
+    Player* GetDesignatedCoreLooter(Group* group, Player* master, PlayerbotAI* botAI);
     Player* GetFirstTaintedCorePasser(Group* group, PlayerbotAI* botAI);
     Player* GetSecondTaintedCorePasser(Group* group, PlayerbotAI* botAI);
     Player* GetThirdTaintedCorePasser(Group* group, PlayerbotAI* botAI);
+    void LineUpFirstCorePasser(Player* master, Unit* closestTrigger);
+    void LineUpSecondCorePasser(Player* firstCorePasser, Unit* closestTrigger);
+    bool IsSecondCorePasserInIntendedPosition(Player* firstCorePasser, Player* secondCorePasser, Unit* closestTrigger);
+    void LineUpThirdCorePasser(Player* secondCorePasser, Unit* closestTrigger);
     void ScheduleCoreReconcile(PlayerbotAI* botAI, Player* giver, Player* receiver, uint32 coreId, uint32 delayMs = 500);
+    bool CanUseGenerator();
+    bool UseCoreOnNearestGenerator();
 
     struct GeneratorInfo
     {

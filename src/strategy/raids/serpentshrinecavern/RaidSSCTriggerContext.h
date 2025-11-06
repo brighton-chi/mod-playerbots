@@ -57,10 +57,10 @@ public:
         creators["lady vashj bot has static charge"] = &RaidSSCTriggerContext::lady_vashj_bot_has_static_charge;
         creators["lady vashj pulling boss in phase 1 and phase 3"] = &RaidSSCTriggerContext::lady_vashj_pulling_boss_in_phase_1_and_phase_3;
         creators["lady vashj coilfang strider is approaching"] = &RaidSSCTriggerContext::lady_vashj_coilfang_strider_is_approaching;
-        creators["lady vashj determining phase 2 kill order"] = &RaidSSCTriggerContext::lady_vashj_determining_phase_2_kill_order;
+        creators["lady vashj determining kill order of adds"] = &RaidSSCTriggerContext::lady_vashj_determining_kill_order_of_adds;
         creators["lady vashj player needs bot support to disable generators"] = &RaidSSCTriggerContext::lady_vashj_player_needs_bot_support_to_disable_generators;
         creators["lady vashj tainted elemental cheat"] = &RaidSSCTriggerContext::lady_vashj_tainted_elemental_cheat;
-        creators["lady vashj player looted tainted core"] = &RaidSSCTriggerContext::lady_vashj_player_looted_tainted_core;
+        creators["lady vashj tainted core was looted"] = &RaidSSCTriggerContext::lady_vashj_tainted_core_was_looted;
         creators["lady vashj toxic sporebats are spewing poison clouds"] = &RaidSSCTriggerContext::lady_vashj_toxic_sporebats_are_spewing_poison_clouds;
         creators["lady vashj need to manage trackers"] = &RaidSSCTriggerContext::lady_vashj_need_to_manage_trackers;
     }
@@ -114,10 +114,10 @@ private:
     static Trigger* lady_vashj_bot_has_static_charge(PlayerbotAI* botAI) { return new LadyVashjBotHasStaticChargeTrigger(botAI); }
     static Trigger* lady_vashj_pulling_boss_in_phase_1_and_phase_3(PlayerbotAI* botAI) { return new LadyVashjPullingBossInPhase1AndPhase3Trigger(botAI); }
     static Trigger* lady_vashj_coilfang_strider_is_approaching(PlayerbotAI* botAI) { return new LadyVashjCoilfangStriderIsApproachingTrigger(botAI); }
-    static Trigger* lady_vashj_determining_phase_2_kill_order(PlayerbotAI* botAI) { return new LadyVashjDeterminingPhase2KillOrderTrigger(botAI); }
+    static Trigger* lady_vashj_determining_kill_order_of_adds(PlayerbotAI* botAI) { return new LadyVashjDeterminingKillOrderOfAddsTrigger(botAI); }
     static Trigger* lady_vashj_player_needs_bot_support_to_disable_generators(PlayerbotAI* botAI) { return new LadyVashjPlayerNeedsBotSupportToDisableGeneratorsTrigger(botAI); }
     static Trigger* lady_vashj_tainted_elemental_cheat(PlayerbotAI* botAI) { return new LadyVashjTaintedElementalCheatTrigger(botAI); }
-    static Trigger* lady_vashj_player_looted_tainted_core(PlayerbotAI* botAI) { return new LadyVashjPlayerLootedTaintedCoreTrigger(botAI); }
+    static Trigger* lady_vashj_tainted_core_was_looted(PlayerbotAI* botAI) { return new LadyVashjTaintedCoreWasLootedTrigger(botAI); }
     static Trigger* lady_vashj_toxic_sporebats_are_spewing_poison_clouds(PlayerbotAI* botAI) { return new LadyVashjToxicSporebatsAreSpewingPoisonCloudsTrigger(botAI); }
     static Trigger* lady_vashj_need_to_manage_trackers(PlayerbotAI* botAI) { return new LadyVashjNeedToManageTrackersTrigger(botAI); }
 };

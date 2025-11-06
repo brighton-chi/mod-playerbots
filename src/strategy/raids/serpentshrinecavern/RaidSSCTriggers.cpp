@@ -379,30 +379,36 @@ bool LadyVashjCoilfangStriderIsApproachingTrigger::IsActive()
     return strider && strider->IsAlive() && (IsLadyVashjInPhase2(botAI) || IsLadyVashjInPhase3(botAI));
 }
 
-bool LadyVashjDeterminingPhase2KillOrderTrigger::IsActive()
+bool LadyVashjDeterminingKillOrderOfAddsTrigger::IsActive()
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
 
-    return vashj && IsLadyVashjInPhase2(botAI);
+    return vashj && (IsLadyVashjInPhase2(botAI) || IsLadyVashjInPhase3(botAI));
 }
 
 bool LadyVashjPlayerNeedsBotSupportToDisableGeneratorsTrigger::IsActive()
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
 
-    return vashj && IsLadyVashjInPhase2(botAI) &&
+    return vashj && IsLadyVashjInPhase2(botAI) && !botAI->HasCheat(BotCheatMask::raid) &&
            (botAI->IsRangedDpsAssistantOfIndex(bot, 0) || botAI->IsRangedDpsAssistantOfIndex(bot, 1));
 }
 
 bool LadyVashjTaintedElementalCheatTrigger::IsActive()
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (!vashj || !IsLadyVashjInPhase2(botAI) || !botAI->HasCheat(BotCheatMask::raid))
+        return false;
 
-    return vashj && IsLadyVashjInPhase2(botAI) && botAI->IsRangedDpsAssistantOfIndex(bot, 0) &&
-           botAI->HasCheat(BotCheatMask::raid);
+    Group* group = bot->GetGroup();
+    Player* master = botAI->GetMaster();
+    Player* designatedLooter = GetDesignatedCoreLooter(group, master, botAI);
+
+    // Active only if this bot is the designated core looter (cheat mode) and in phase2.
+    return designatedLooter && designatedLooter == bot;
 }
 
-bool LadyVashjPlayerLootedTaintedCoreTrigger::IsActive()
+bool LadyVashjTaintedCoreWasLootedTrigger::IsActive()
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     Group* group = bot->GetGroup();

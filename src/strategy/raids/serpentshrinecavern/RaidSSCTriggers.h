@@ -325,17 +325,17 @@ public:
     bool IsActive() override;
 };
 
-class LadyVashjPlayerLootedTaintedCoreTrigger : public Trigger
+class LadyVashjTaintedCoreWasLootedTrigger : public Trigger
 {
 public:
-    LadyVashjPlayerLootedTaintedCoreTrigger(PlayerbotAI* botAI) : Trigger(botAI, "lady vashj player looted tainted core") {}
+    LadyVashjTaintedCoreWasLootedTrigger(PlayerbotAI* botAI) : Trigger(botAI, "lady vashj tainted core was looted") {}
     bool IsActive() override;
 };
 
-class LadyVashjDeterminingPhase2KillOrderTrigger : public Trigger
+class LadyVashjDeterminingKillOrderOfAddsTrigger : public Trigger
 {
 public:
-    LadyVashjDeterminingPhase2KillOrderTrigger(PlayerbotAI* botAI) : Trigger(botAI, "lady vashj determining phase 2 kill order") {}
+LadyVashjDeterminingKillOrderOfAddsTrigger(PlayerbotAI* botAI) : Trigger(botAI, "lady vashj determining kill order of adds") {}
     bool IsActive() override;
 };
 
