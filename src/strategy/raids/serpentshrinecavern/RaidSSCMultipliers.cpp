@@ -451,6 +451,9 @@ float LadyVashjDisableAutomaticTargetingAndMovementModifier::GetValue(Action *ac
          dynamic_cast<FollowAction*>(action) || dynamic_cast<FleeAction*>(action)))
         return 0.0f;
 
+    if (!botAI->IsHeal(bot) && dynamic_cast<CastHealingSpellAction*>(action))
+        return 0.0f;
+
     Unit* enchanted = AI_VALUE2(Unit*, "find target", "enchanted elemental");
     if (enchanted && enchanted->IsAlive() && bot->GetVictim() == enchanted &&
         dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))

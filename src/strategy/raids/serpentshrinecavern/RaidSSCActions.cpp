@@ -1871,6 +1871,10 @@ bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
                     strider = unit;
                 break;
 
+            case NPC_LADY_VASHJ:
+                vashj = unit;
+                break;
+
             default:
                 break;
         }
@@ -1878,25 +1882,36 @@ bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
 
     // Set priorities
     std::vector<Unit*> targets;
-    if (botAI->IsRangedDps(bot))
+    if (IsLadyVashjInPhase2(botAI))
     {
-        if (bot->getClass() == CLASS_HUNTER || bot->getClass() == CLASS_MAGE)
-            targets = { tainted, enchanted, strider, elite };
+        if (botAI->IsRangedDps(bot))
+        {
+            // uint8 tab = AiFactory::GetPlayerSpecTab(bot);
+            if (bot->getClass() == CLASS_HUNTER || bot->getClass() == CLASS_MAGE)
+                targets = { tainted, enchanted, strider, elite };
+            else
+                targets = { tainted, strider, elite, enchanted };
+        }
+        else if (botAI->IsMelee(bot) && botAI->IsDps(bot))
+            targets = { tainted, enchanted, elite };
+        else if (botAI->IsTank(bot))
+        {
+            // With raid cheats enabled, main tank should prioritize the strider first.
+            if (botAI->HasCheat(BotCheatMask::raid) && botAI->IsMainTank(bot))
+                targets = { strider, enchanted, tainted };
+            else
+                targets = { elite, enchanted, tainted };
+        }
         else
-            targets = { tainted, strider, enchanted, elite };
+            targets = { tainted, enchanted, elite, strider };
     }
-    else if (botAI->IsMelee(bot) && botAI->IsDps(bot))
-        targets = { tainted, enchanted, elite };
-    else if (botAI->IsTank(bot))
+    if (IsLadyVashjInPhase3(botAI))
     {
-        // With raid cheats enabled, main tank should prioritize the strider first.
-        if (botAI->HasCheat(BotCheatMask::raid) && botAI->IsMainTank(bot))
-            targets = { strider, enchanted, tainted };
+        if (botAI->IsMainTank(bot))
+            targets = { vashj };
         else
-            targets = { elite, enchanted, tainted };
+            targets = { enchanted, strider, elite, vashj };
     }
-    else
-        targets = { tainted, enchanted, elite, strider };
     // Pick the first valid target
     for (Unit* t : targets)
     {
