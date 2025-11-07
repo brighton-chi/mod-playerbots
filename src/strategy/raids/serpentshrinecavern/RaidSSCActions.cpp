@@ -1907,8 +1907,21 @@ bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
     }
     if (IsLadyVashjInPhase3(botAI))
     {
-        if (botAI->IsMainTank(bot))
-            targets = { vashj };
+        if (botAI->IsTank(bot))
+        {
+            // With raid cheats enabled, main tank should prioritize the strider first.
+            if (botAI->IsMainTank(bot))
+            {
+                if (botAI->HasCheat(BotCheatMask::raid))
+                    targets = { strider, enchanted, vashj };
+                if (!botAI->HasCheat(BotCheatMask::raid))
+                    targets = { elite, enchanted, vashj };
+            }
+            if (botAI->IsAssistTankOfIndex(bot, 0))
+                targets = { vashj };
+            else
+                targets = { elite, enchanted, vashj };
+        }
         else
             targets = { enchanted, strider, elite, vashj };
     }

@@ -441,23 +441,48 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
 float LadyVashjDisableAutomaticTargetingAndMovementModifier::GetValue(Action *action)
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    if (!vashj || !IsLadyVashjInPhase2(botAI) /* || botAI->IsRangedDpsAssistantOfIndex(bot, 0) || botAI->IsRangedDpsAssistantOfIndex(bot, 1)*/)
+    if (!vashj)
         return 1.0f;
 
-    /* if (botAI->IsMainTank(bot) && dynamic_cast<TankAssistAction*>(action))
-        return 0.0f; */
+    if (IsLadyVashjInPhase2(botAI))
+    {
+        if ((dynamic_cast<DpsAssistAction*>(action) ||
+            dynamic_cast<FollowAction*>(action) || dynamic_cast<FleeAction*>(action)))
+            return 0.0f;
 
-    if ((dynamic_cast<DpsAssistAction*>(action) ||
-         dynamic_cast<FollowAction*>(action) || dynamic_cast<FleeAction*>(action)))
-        return 0.0f;
+        if (!botAI->IsHeal(bot) && dynamic_cast<CastHealingSpellAction*>(action))
+            return 0.0f;
 
-    if (!botAI->IsHeal(bot) && dynamic_cast<CastHealingSpellAction*>(action))
-        return 0.0f;
+        Unit* enchanted = AI_VALUE2(Unit*, "find target", "enchanted elemental");
+        if (enchanted && enchanted->IsAlive() && bot->GetVictim() == enchanted &&
+            dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
+            return 0.0f;
+    }
 
-    Unit* enchanted = AI_VALUE2(Unit*, "find target", "enchanted elemental");
-    if (enchanted && enchanted->IsAlive() && bot->GetVictim() == enchanted &&
-        dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
-        return 0.0f;
+    if (IsLadyVashjInPhase3(botAI))
+    {
+        Unit* strider = AI_VALUE2(Unit*, "find target", "coilfang strider");
+        Unit* elite = AI_VALUE2(Unit*, "find target", "coilfang elite");
+        Unit* enchanted = AI_VALUE2(Unit*, "find target", "enchanted elemental");
+
+        if ((strider && strider->IsAlive()) ||
+            (elite && elite->IsAlive()) ||
+            (enchanted && enchanted->IsAlive()))
+        {
+            if (botAI->IsMainTank(bot) && dynamic_cast<TankAssistAction*>(action))
+                return 0.0f;
+
+            if (dynamic_cast<DpsAssistAction*>(action) ||
+                dynamic_cast<FollowAction*>(action))
+                return 0.0f;
+
+            if (!botAI->IsHeal(bot) && dynamic_cast<CastHealingSpellAction*>(action))
+                return 0.0f;
+
+            if (bot->GetVictim() == enchanted && dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
+                return 0.0f;
+        }
+    }
 
     return 1.0f;
 }
