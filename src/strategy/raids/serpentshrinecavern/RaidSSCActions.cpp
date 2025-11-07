@@ -704,7 +704,7 @@ bool LeotherasTheBlindDemonFormPositionBossAction::Execute(Event event)
 
     if (bot->GetVictim() != leotherasDemon)
     {
-        bot->SetSelection(leotherasDemon->GetGUID());
+        bot->SetTarget(leotherasDemon->GetGUID());
         return Attack(leotherasDemon);
     }
 
@@ -843,7 +843,6 @@ bool LeotherasTheBlindFinalPhaseAssignDpsPriorityAction::Execute(Event event)
         (botAI->IsMelee(bot) && bot->GetVictim() != leotherasHuman))
     {
         bot->SetTarget(leotherasHuman->GetGUID());
-        bot->SetSelection(leotherasHuman->GetGUID());
         return Attack(leotherasHuman);
     }
 
@@ -1205,7 +1204,6 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event event)
         if (bot->GetTarget() != totem->GetGUID())
         {
             bot->SetTarget(totem->GetGUID());
-            bot->SetSelection(totem->GetGUID());
             return Attack(totem);
         }
 
@@ -1221,7 +1219,6 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event event)
         if (bot->GetTarget() != tidalvess->GetGUID())
         {
             bot->SetTarget(tidalvess->GetGUID());
-            bot->SetSelection(tidalvess->GetGUID());
             return Attack(tidalvess);
         }
 
@@ -1238,7 +1235,6 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event event)
         if (bot->GetTarget() != fathomSporebat->GetGUID())
         {
             bot->SetTarget(fathomSporebat->GetGUID());
-            bot->SetSelection(fathomSporebat->GetGUID());
             return Attack(fathomSporebat);
         }
 
@@ -1255,7 +1251,6 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event event)
         if (bot->GetTarget() != fathomLurker->GetGUID())
         {
             bot->SetTarget(fathomLurker->GetGUID());
-            bot->SetSelection(fathomLurker->GetGUID());
             return Attack(fathomLurker);
         }
 
@@ -1271,7 +1266,6 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event event)
         if (bot->GetTarget() != sharkkis->GetGUID())
         {
             bot->SetTarget(sharkkis->GetGUID());
-            bot->SetSelection(sharkkis->GetGUID());
             return Attack(sharkkis);
         }
 
@@ -1291,7 +1285,6 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event event)
         if (bot->GetTarget() != caribdis->GetGUID())
         {
             bot->SetTarget(caribdis->GetGUID());
-            bot->SetSelection(caribdis->GetGUID());
             return Attack(caribdis);
         }
 
@@ -1307,7 +1300,6 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event event)
         if (bot->GetTarget() != karathress->GetGUID())
         {
             bot->SetTarget(karathress->GetGUID());
-            bot->SetSelection(karathress->GetGUID());
             return Attack(karathress);
         }
     }
@@ -1773,12 +1765,19 @@ bool LadyVashjStaticChargeMoveAwayFromGroupAction::Execute(Event event)
 
 bool LadyVashjAttackAndMoveAwayFromStriderAction::Execute(Event event)
 {
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     Unit* strider = GetFirstAliveUnitByEntry(botAI, NPC_COILFANG_STRIDER);
-    if (!strider)
+    if (!vashj || !strider)
         return false;
 
-    if (botAI->HasCheat(BotCheatMask::raid) && botAI->IsTank(bot) && !bot->HasAura(SPELL_FEAR_WARD_CHEAT))
-        bot->AddAura(SPELL_FEAR_WARD_CHEAT, bot);
+    if (botAI->HasCheat(BotCheatMask::raid) && botAI->IsTank(bot))
+    {
+        if (!bot->HasAura(SPELL_FEAR_WARD_CHEAT))
+            bot->AddAura(SPELL_FEAR_WARD_CHEAT, bot);
+
+        if (bot->GetVictim() == strider && bot->GetExactDist2d(vashj) < 30.0f)
+            return MoveAway(vashj, 32.0f, false);
+    }
 
     // Don't move away only if raid cheats are enabled AND bot is a tank
     if (bot->GetExactDist2d(strider) < 13.0f &&
@@ -1811,25 +1810,19 @@ bool LadyVashjAttackAndMoveAwayFromStriderAction::Execute(Event event)
     return false;
 }
 
-/* bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
+bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     if (!vashj)
         return false;
 
-    if (IsLadyVashjInPhase2(botAI))
+    if (IsLadyVashjInPhase2(botAI) && bot->GetVictim() == vashj)
     {
-        if (IsRangedRTIMarker(botAI, bot))
-            MarkTargetWithMoon(bot, vashj);
-
-        if (bot->GetVictim() == vashj)
-        {
-            bot->AttackStop();
-            bot->InterruptNonMeleeSpells(true);
-            bot->SetTarget(ObjectGuid::Empty);
-            bot->SetSelection(ObjectGuid());
-            return false;
-        }
+        LOG_DEBUG("playerbots", "Phase2DpsPriorityAction: Stopping attack {} due to Vashj still being victim", bot->GetName());
+        bot->AttackStop();
+        bot->InterruptNonMeleeSpells(true);
+        bot->SetTarget(ObjectGuid::Empty);
+        bot->SetSelection(ObjectGuid());
     }
 
     // Get all nearby hostile NPCs
@@ -1848,7 +1841,7 @@ bool LadyVashjAttackAndMoveAwayFromStriderAction::Execute(Event event)
     for (auto guid : attackers)
     {
         Unit* unit = botAI->GetUnit(guid);
-        if (!IsValidPhase2CombatNpc(unit))
+        if (!IsValidPhase2CombatNpc(unit, botAI))
             continue;
 
         // skip NPCs outside the encounter search radius (prevents chasing far adds/triggers)
@@ -1885,10 +1878,9 @@ bool LadyVashjAttackAndMoveAwayFromStriderAction::Execute(Event event)
 
     // Set priorities
     std::vector<Unit*> targets;
-    uint8 tab = AiFactory::GetPlayerSpecTab(bot);
     if (botAI->IsRangedDps(bot))
     {
-        if (bot->getClass() == CLASS_HUNTER || (bot->getClass() == CLASS_WARLOCK && tab != 0))
+        if (bot->getClass() == CLASS_HUNTER || bot->getClass() == CLASS_MAGE)
             targets = { tainted, enchanted, strider, elite };
         else
             targets = { tainted, strider, enchanted, elite };
@@ -1911,27 +1903,32 @@ bool LadyVashjAttackAndMoveAwayFromStriderAction::Execute(Event event)
         if (t && t->IsAlive())
         {
             target = t;
+            LOG_DEBUG("playerbots", "Phase2DpsPriorityAction: Picked target {} (entry: {}) for {}", t->GetName(), t->GetEntry(), bot->GetName());
             break;
         }
     }
 
     // If already targeting the same valid target, do nothing
     Unit* currentTarget = context->GetValue<Unit*>("current target")->Get();
-    if (target && currentTarget == target && IsValidPhase2CombatNpc(currentTarget))
+    if (target && currentTarget == target && IsValidPhase2CombatNpc(currentTarget, botAI))
     {
-        LOG_DEBUG("playerbots", "No action: current target equals chosen target for {}", bot->GetName());
+        LOG_DEBUG("playerbots", "No action: current target equals chosen target for {} (target entry: {}, is player: {})",
+            bot->GetName(),
+            currentTarget ? currentTarget->GetEntry() : 0,
+            currentTarget ? currentTarget->IsPlayer() : false);
         return false;
     }
 
+    // Wonder if combine target and victim conditions?
     if (target && bot->GetExactDist2d(target) <= maxPursueRange && bot->GetTarget() != target->GetGUID())
     {
-        bot->SetSelection(target->GetGUID());
+        bot->SetTarget(target->GetGUID());
         LOG_DEBUG("playerbots", "Attacking chosen target {} for {} (dist={})", target->GetName(), bot->GetName(), bot->GetExactDist2d(target));
         return Attack(target);
     }
 
     // Minimal cleanup: clear invalid current target to avoid null==null early-return issues
-    if (currentTarget && (!currentTarget->IsAlive() || !IsValidPhase2CombatNpc(currentTarget)))
+    if (currentTarget && (!currentTarget->IsAlive() || !IsValidPhase2CombatNpc(currentTarget, botAI)))
     {
         LOG_DEBUG("playerbots", "Clearing invalid current target for {}: {}", bot->GetName(),
                   currentTarget ? currentTarget->GetName() : std::string("null"));
@@ -1948,13 +1945,13 @@ bool LadyVashjAttackAndMoveAwayFromStriderAction::Execute(Event event)
             return false;
 
         const Location& center = VashjRoomCenterPosition;
-        if (bot->GetExactDist2d(center.x, center.y) > 60.0f)
+        if (bot->GetExactDist2d(center.x, center.y) > 35.0f)
         {
-            LOG_DEBUG("playerbots", "LadyVashjCheat: teleporting {} back to center ({}, {})", bot->GetName(), center.x, center.y);
+            LOG_DEBUG("playerbots", "LadyVashjCheat: teleporting/moving {} back to center ({}, {})", bot->GetName(), center.x, center.y);
             bot->AttackStop();
             bot->InterruptNonMeleeSpells(true);
 
-            if (botAI->HasCheat(BotCheatMask::raid))
+            /* if (botAI->HasCheat(BotCheatMask::raid))
             {
                 bot->TeleportTo(bot->GetMapId(), center.x, center.y, center.z, bot->GetOrientation());
                 return false;
@@ -1962,13 +1959,16 @@ bool LadyVashjAttackAndMoveAwayFromStriderAction::Execute(Event event)
             else
             {
                 return MoveTo(bot->GetMapId(), center.x, center.y, center.z, false, false, false, true,
-                            MovementPriority::MOVEMENT_COMBAT, true, false);
-            }
+                              MovementPriority::MOVEMENT_COMBAT, true, false);
+            } */
+            return MoveInside(bot->GetMapId(), center.x, center.y, center.z, 30.0f,
+                              MovementPriority::MOVEMENT_COMBAT);
         }
     }
-
+    LOG_DEBUG("playerbots", "Phase2DpsPriorityAction: End of action for {}", bot->GetName());
     return false;
-} */
+}
+/*
 bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
@@ -2022,7 +2022,6 @@ bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
             {
                 LOG_DEBUG("playerbots", "Phase2DpsPriorityAction: Attacking strider for {}", bot->GetName());
                 bot->SetTarget(strider->GetGUID());
-                bot->SetSelection(strider->GetGUID());
                 return Attack(strider);
             }
             LOG_DEBUG("playerbots", "Phase2DpsPriorityAction: Already targeting strider for {}", bot->GetName());
@@ -2046,7 +2045,6 @@ bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
             {
                 LOG_DEBUG("playerbots", "Phase2DpsPriorityAction: Attacking elite for {}", bot->GetName());
                 bot->SetTarget(elite->GetGUID());
-                bot->SetSelection(elite->GetGUID());
                 return Attack(elite);
             }
             LOG_DEBUG("playerbots", "Phase2DpsPriorityAction: Already targeting elite for {}", bot->GetName());
@@ -2060,7 +2058,6 @@ bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
     {
         LOG_DEBUG("playerbots", "Phase2DpsPriorityAction: Attacking enchanted elemental for {}", bot->GetName());
         bot->SetTarget(enchanted->GetGUID());
-        bot->SetSelection(enchanted->GetGUID());
         return Attack(enchanted);
     }
     LOG_DEBUG("playerbots", "Phase2DpsPriorityAction: Passed enchanted elemental block for {}", bot->GetName());
@@ -2096,7 +2093,7 @@ bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
     LOG_DEBUG("playerbots", "Phase2DpsPriorityAction: End of action for {}", bot->GetName());
 
     return false;
-}
+} */
 
 // Only if cheats are off, intended to support core handling
 bool LadyVashjAssistantsFollowMasterInPhase2Action::Execute(Event event)

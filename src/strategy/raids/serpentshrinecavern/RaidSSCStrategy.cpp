@@ -149,7 +149,7 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction::array(0, new NextAction("lady vashj tainted elemental cheat", ACTION_EMERGENCY + 10), nullptr)
     ));
     triggers.push_back(new TriggerNode("lady vashj tainted core was looted",
-        NextAction::array(0, new NextAction("lady vashj pass the tainted core", ACTION_RAID + 3), nullptr)
+        NextAction::array(0, new NextAction("lady vashj pass the tainted core", ACTION_EMERGENCY + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("lady vashj player needs bot support to disable generators",
         NextAction::array(0, new NextAction("lady vashj assistants follow master in phase 2", ACTION_RAID + 2), nullptr)

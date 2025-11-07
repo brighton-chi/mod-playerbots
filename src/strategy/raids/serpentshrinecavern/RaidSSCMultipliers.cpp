@@ -370,8 +370,8 @@ float LadyVashjDelayCooldownsMultiplier::GetValue(Action* action)
         dynamic_cast<CastBloodlustAction*>(action)))
         return 0.0f;
 
-    if (IsLadyVashjInPhase1(botAI) && dynamic_cast<CastMetamorphosisAction*>(action))
-        return 0.0f;
+    /* if (IsLadyVashjInPhase1(botAI) && dynamic_cast<CastMetamorphosisAction*>(action))
+        return 0.0f; */
 
     return 1.0f;
 }
@@ -444,17 +444,17 @@ float LadyVashjDisableAutomaticTargetingAndMovementModifier::GetValue(Action *ac
     if (!vashj || !IsLadyVashjInPhase2(botAI) /* || botAI->IsRangedDpsAssistantOfIndex(bot, 0) || botAI->IsRangedDpsAssistantOfIndex(bot, 1)*/)
         return 1.0f;
 
-    if (botAI->IsMainTank(bot) && dynamic_cast<TankAssistAction*>(action))
-        return 0.0f;
+    /* if (botAI->IsMainTank(bot) && dynamic_cast<TankAssistAction*>(action))
+        return 0.0f; */
 
-    if ((/* dynamic_cast<DpsAssistAction*>(action) || */
+    if ((dynamic_cast<DpsAssistAction*>(action) ||
          dynamic_cast<FollowAction*>(action) || dynamic_cast<FleeAction*>(action)))
         return 0.0f;
 
-    /* Unit* enchanted = AI_VALUE2(Unit*, "find target", "enchanted elemental");
+    Unit* enchanted = AI_VALUE2(Unit*, "find target", "enchanted elemental");
     if (enchanted && enchanted->IsAlive() && bot->GetVictim() == enchanted &&
-        (dynamic_cast<CastDebuffSpellOnAttackerAction*>(action) || dynamic_cast<DpsAssistAction*>(action)))
-        return 0.0f; */
+        dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
+        return 0.0f;
 
     return 1.0f;
 }

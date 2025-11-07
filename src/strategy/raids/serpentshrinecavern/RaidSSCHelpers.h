@@ -97,7 +97,8 @@ enum SerpentShrineCavernNPCs
     NPC_TIDEWALKER_LURKER = 21290,
 
     // Lady Vashj <Coilfang Matron>
-    NPC_WORLD_INVISIBLE_TRIGGER = 12999, // I THINK this NPC is associated with the shield generator beam
+    NPC_WORLD_INVISIBLE_TRIGGER = 12999, // Casts the beam for the shield generator
+    NPC_LADY_VASHJ = 21212,
     NPC_ENCHANTED_ELEMENTAL = 21958,
     NPC_WORLD_TRIGGER_TINY = 21987, // Casts Magic Barrier on Vashj
     NPC_TAINTED_ELEMENTAL = 22009,
@@ -227,7 +228,7 @@ namespace SerpentShrineCavernHelpers
     bool IsLadyVashjInPhase3(PlayerbotAI* botAI);
     bool IsMeleeRTIMarker(PlayerbotAI* botAI, Player* bot);
     bool IsRangedRTIMarker(PlayerbotAI* botAI, Player* bot);
-    bool IsValidPhase2CombatNpc(Unit* unit);
+    bool IsValidPhase2CombatNpc(Unit* unit, PlayerbotAI* botAI);
     Player* GetDesignatedCoreLooter(Group* group, Player* master, PlayerbotAI* botAI);
     Player* GetFirstTaintedCorePasser(Group* group, PlayerbotAI* botAI);
     Player* GetSecondTaintedCorePasser(Group* group, PlayerbotAI* botAI);

@@ -478,14 +478,26 @@ namespace SerpentShrineCavernHelpers
         return true;
     }
 
-    bool IsValidPhase2CombatNpc(Unit* unit)
+    bool IsValidPhase2CombatNpc(Unit* unit, PlayerbotAI* botAI)
     {
         if (!unit || !unit->IsAlive())
             return false;
 
         uint32 entry = unit->GetEntry();
-        return entry == NPC_TAINTED_ELEMENTAL || entry == NPC_ENCHANTED_ELEMENTAL ||
-               entry == NPC_COILFANG_ELITE || entry == NPC_COILFANG_STRIDER;
+
+        if (IsLadyVashjInPhase2(botAI))
+        {
+            return entry == NPC_TAINTED_ELEMENTAL || entry == NPC_ENCHANTED_ELEMENTAL ||
+                   entry == NPC_COILFANG_ELITE || entry == NPC_COILFANG_STRIDER;
+        }
+        else if (IsLadyVashjInPhase3(botAI))
+        {
+            return entry == NPC_TAINTED_ELEMENTAL || entry == NPC_ENCHANTED_ELEMENTAL ||
+                   entry == NPC_COILFANG_ELITE || entry == NPC_COILFANG_STRIDER ||
+                   entry == NPC_LADY_VASHJ;
+        }
+
+        return false;
     }
 
     Player* GetDesignatedCoreLooter(Group* group, Player* master, PlayerbotAI* botAI)
