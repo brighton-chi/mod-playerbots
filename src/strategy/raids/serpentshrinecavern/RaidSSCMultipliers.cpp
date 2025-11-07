@@ -403,12 +403,12 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     Group* group = bot->GetGroup();
-    if (!vashj || !IsLadyVashjInPhase2(botAI) || !group)
+    if (!vashj || !IsLadyVashjInPhase2(botAI)|| !group)
         return 1.0f;
 
-    if (botAI->IsRangedDpsAssistantOfIndex(bot, 0) ||
-        botAI->IsRangedDpsAssistantOfIndex(bot, 1) ||
-        botAI->IsHealAssistantOfIndex(bot, 0))
+    if (bot == GetFirstTaintedCorePasser(group, botAI) ||
+        bot == GetSecondTaintedCorePasser(group, botAI) ||
+        bot == GetThirdTaintedCorePasser(group, botAI))
     {
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
@@ -421,6 +421,14 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
                     return 0.0f;
             }
         }
+    }
+
+    Player* master = botAI->GetMaster();
+    if (master && bot == GetDesignatedCoreLooter(group, master, botAI) && bot->HasAura(SPELL_PARALYZE))
+    {
+        if (!dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action) &&
+            !dynamic_cast<AttackAction*>(action))
+            return 0.0f;
     }
 
     return 1.0f;

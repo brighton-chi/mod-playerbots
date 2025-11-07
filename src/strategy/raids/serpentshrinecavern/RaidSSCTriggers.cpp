@@ -404,22 +404,21 @@ bool LadyVashjTaintedElementalCheatTrigger::IsActive()
     Player* master = botAI->GetMaster();
     Player* designatedLooter = GetDesignatedCoreLooter(group, master, botAI);
 
-    // Active only if this bot is the designated core looter (cheat mode) and in phase2.
-    return designatedLooter && designatedLooter == bot;
+    return (designatedLooter && designatedLooter == bot) || botAI->IsHealAssistantOfIndex(bot, 1);
 }
 
 bool LadyVashjTaintedCoreWasLootedTrigger::IsActive()
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    Player* master = botAI->GetMaster();
     Group* group = bot->GetGroup();
-    if (!vashj || !IsLadyVashjInPhase2(botAI) || !group)
+    if (!vashj || !IsLadyVashjInPhase2(botAI) || !master || !group)
         return false;
 
-    bool isCorePasser = botAI->IsRangedDpsAssistantOfIndex(bot, 0) ||
-                        botAI->IsRangedDpsAssistantOfIndex(bot, 1) ||
-                        botAI->IsHealAssistantOfIndex(bot, 0);
-
-    if (!isCorePasser)
+    if (bot != GetFirstTaintedCorePasser(group, botAI) &&
+        bot != GetSecondTaintedCorePasser(group, botAI) &&
+        bot != GetThirdTaintedCorePasser(group, botAI) &&
+        bot != GetDesignatedCoreLooter(group, master, botAI))
         return false;
 
     // remember last time Paralyze was observed so we can tolerate the brief handoff gap

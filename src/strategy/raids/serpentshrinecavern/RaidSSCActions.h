@@ -350,6 +350,9 @@ class LadyVashjTaintedElementalCheatAction : public AttackAction
 public:
     LadyVashjTaintedElementalCheatAction(PlayerbotAI* botAI, std::string const name = "lady vashj tainted elemental cheat") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
+
+private:
+    ObjectGuid lastTaintedGuid;
 };
 
 class LadyVashjPassTheTaintedCoreAction : public MovementAction
@@ -361,6 +364,7 @@ public:
 private:
     void LineUpFirstCorePasser(Player* master, Unit* closestTrigger);
     void LineUpSecondCorePasser(Player* firstCorePasser, Unit* closestTrigger);
+    bool IsFirstCorePasserInIntendedPosition(Player* designatedMaster, Player* firstCorePasser, Unit* closestTrigger);
     bool IsSecondCorePasserInIntendedPosition(Player* firstCorePasser, Player* secondCorePasser, Unit* closestTrigger);
     void LineUpThirdCorePasser(Player* secondCorePasser, Unit* closestTrigger);
     bool CanUseGenerator();

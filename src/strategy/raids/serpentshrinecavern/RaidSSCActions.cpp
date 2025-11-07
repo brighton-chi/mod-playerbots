@@ -1773,9 +1773,9 @@ bool LadyVashjAttackAndMoveAwayFromStriderAction::Execute(Event event)
         bot->AddAura(SPELL_FEAR_WARD_CHEAT, bot);
 
     // Don't away only if raid cheats are enabled AND bot is a tank
-    if (bot->GetExactDist2d(strider) < 20.0f &&
+    if (bot->GetExactDist2d(strider) < 15.0f &&
         (!botAI->HasCheat(BotCheatMask::raid) || !botAI->IsTank(bot)))
-        return MoveAway(strider, 25.0f, false);
+        return MoveAway(strider, 20.0f, false);
 
     if (!botAI->HasCheat(BotCheatMask::raid))
     {
@@ -1833,7 +1833,7 @@ bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
 
     // Role-based search / pursue limits (tweak values as needed)
     const Location& center = VashjRoomCenterPosition;
-    const float maxSearchRange = botAI->IsRangedDps(bot) ? 60.0f : (botAI->IsMelee(bot) ? 50.0f : 40.0f);
+    const float maxSearchRange = botAI->IsRangedDps(bot) ? 60.0f : (botAI->IsMelee(bot) ? 55.0f : 40.0f);
     const float maxPursueRange = maxSearchRange - 5.0f; // won't initiate attack beyond this
 
     for (auto guid : attackers)
@@ -1884,7 +1884,7 @@ bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
     {
         // With raid cheats enabled, main tank should prioritize the strider first.
         if (botAI->HasCheat(BotCheatMask::raid) && botAI->IsMainTank(bot))
-            targets = { strider, elite, enchanted, tainted };
+            targets = { strider, enchanted, tainted };
         else
             targets = { elite, enchanted, tainted };
     }
@@ -1908,20 +1908,11 @@ bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
         return false;
     }
 
-    // Only attack if target is within a reasonable pursue distance
-    if (target && bot->GetVictim() != target)
+    if (target && bot->GetExactDist2d(target) <= maxPursueRange && bot->GetTarget() != target->GetGUID())
     {
-        float distToTarget = bot->GetExactDist2d(target);
-        if (distToTarget <= maxPursueRange)
-        {
-            LOG_DEBUG("playerbots", "Attacking chosen target {} for {} (dist={})", target->GetName(), bot->GetName(), distToTarget);
-            return Attack(target);
-        }
-        else
-        {
-            LOG_DEBUG("playerbots", "Skipping attack: {} too far for {} (dist={} > {})", target->GetName(), bot->GetName(), distToTarget, maxPursueRange);
-            target = nullptr;
-        }
+        bot->SetSelection(target->GetGUID());
+        LOG_DEBUG("playerbots", "Attacking chosen target {} for {} (dist={})", target->GetName(), bot->GetName(), bot->GetExactDist2d(target));
+        return Attack(target);
     }
 
     // Minimal cleanup: clear invalid current target to avoid null==null early-return issues
@@ -1938,7 +1929,7 @@ bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
     {
         Player* master = botAI->GetMaster();
         Player* designatedLooter = GetDesignatedCoreLooter(bot->GetGroup(), master, botAI);
-        if (designatedLooter && designatedLooter == bot)
+        if ((designatedLooter && designatedLooter == bot) || botAI->IsHealAssistantOfIndex(bot, 1))
             return false;
 
         const Location& center = VashjRoomCenterPosition;
@@ -1972,7 +1963,23 @@ bool LadyVashjAssistantsFollowMasterInPhase2Action::Execute(Event event)
 
 bool LadyVashjTaintedElementalCheatAction::Execute(Event event)
 {
+    Group* group = bot->GetGroup();
+    Player* master = botAI->GetMaster();
+    if (!group || !master)
+        return false;
+
     Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
+
+    /*
+    // Debug: trace tick state for this action
+    Item* coreCheck = bot->GetItemByEntry(ITEM_TAINTED_CORE);
+    LOG_DEBUG("playerbots", "TaintedElementalCheat: tick for {}: tainted={} alive={} victim={} hasCore={}",
+            bot->GetName(),
+            tainted ? tainted->GetGUID().ToString() : std::string("none"),
+            tainted ? (tainted->IsAlive() ? "yes" : "no") : std::string("n/a"),
+            bot->GetVictim() ? bot->GetVictim()->GetGUID().ToString() : std::string("none"),
+            coreCheck ? "yes" : "no");
+
     if (!tainted)
     {
         Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
@@ -1997,62 +2004,49 @@ bool LadyVashjTaintedElementalCheatAction::Execute(Event event)
             }
         }
     }
+    */
 
-    if (!tainted)
-    return false;
+    Item* coreCheck = bot->GetItemByEntry(ITEM_TAINTED_CORE);
 
-    // Teleport bot to the elemental
-    LOG_DEBUG("playerbots", "TaintedElementalCheat: {} handling {}", bot->GetName(), tainted->GetName());
-    bot->AttackStop();
-    bot->InterruptNonMeleeSpells(true);
-    bot->TeleportTo(tainted->GetMapId(), tainted->GetPositionX(), tainted->GetPositionY(), tainted->GetPositionZ(), tainted->GetOrientation());
-
-    if (tainted->IsAlive() && bot->GetVictim() != tainted)
+    // Check for despawn even if tainted is nullptr
+    if (bot == GetDesignatedCoreLooter(group, master, botAI) && lastTaintedGuid && !botAI->GetUnit(lastTaintedGuid) && !coreCheck)
     {
-        if (tainted->GetHealthPct() > 50.0f)
-        {
-            Unit::DealDamage(bot, tainted, tainted->GetMaxHealth() / 2, nullptr,
-                  DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false, true);
-        }
-        MarkTargetWithStar(bot, tainted);
-        SetRtiTarget(botAI, "star", tainted);
-        return Attack(tainted);
-    }
-
-    Item* core = bot->GetItemByEntry(ITEM_TAINTED_CORE);
-    if (!core)
-    {
-        LOG_DEBUG("playerbots", "TaintedElementalCheat: {} did not find a core after looting, granting directly", bot->GetName());
-
-        // Use the same pattern as ScheduleCoreReconcile / helper: CanStoreNewItem + StoreNewItem
+        LOG_DEBUG("playerbots", "TaintedElementalCheat: Elemental despawned, treating as dead for core logic");
         ItemPosCountVec dest;
         uint32 count = 1;
         int canStore = bot->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, ITEM_TAINTED_CORE, count);
+        LOG_DEBUG("playerbots", "TaintedElementalCheat: {} CanStoreNewItem -> {}", bot->GetName(), canStore);
+
         if (canStore == EQUIP_ERR_OK)
         {
             Item* created = bot->StoreNewItem(dest, ITEM_TAINTED_CORE, true, Item::GenerateItemRandomPropertyId(ITEM_TAINTED_CORE));
             if (created)
-                core = created;
-            else
-                LOG_DEBUG("playerbots", "TaintedElementalCheat: {} StoreNewItem returned null for core", bot->GetName());
+            {
+                LOG_DEBUG("playerbots", "TaintedElementalCheat: {} created core (guid={})", bot->GetName(), created->GetGUID().ToString());
+                ScheduleCoreReconcile(botAI, bot, bot, ITEM_TAINTED_CORE, 500);
+            }
         }
-        else
-        {
-            LOG_DEBUG("playerbots", "TaintedElementalCheat: {} cannot store core in inventory (err={})", bot->GetName(), canStore);
-        }
+        lastTaintedGuid = ObjectGuid::Empty;
+        return true;
+    }
 
-        // Re-fetch the item pointer after attempting to add it if StoreNewItem path didn't set core
-        if (!core)
-            core = bot->GetItemByEntry(ITEM_TAINTED_CORE);
+    if (!tainted)
+    return false;
 
-        if (!core)
-        {
-            LOG_DEBUG("playerbots", "TaintedElementalCheat: {} still has no core after StoreNewItem attempt", bot->GetName());
-            return true; // nothing more we can do this tick
-        }
-        // Ensure passing system / reconcile helper knows the core exists (defensive).
-        LOG_DEBUG("playerbots", "TaintedElementalCheat: {} granted a tainted core (defensive reconcile)", bot->GetName());
-        ScheduleCoreReconcile(botAI, bot, bot, ITEM_TAINTED_CORE, 500);
+    lastTaintedGuid = tainted->GetGUID();
+    if (bot->GetExactDist2d(tainted) > 10.0f)
+    {
+        bot->AttackStop();
+        bot->InterruptNonMeleeSpells(true);
+        bot->TeleportTo(tainted->GetMapId(), tainted->GetPositionX(), tainted->GetPositionY(), tainted->GetPositionZ(), tainted->GetOrientation());
+    }
+
+    if (bot == GetDesignatedCoreLooter(group, master, botAI) && bot->GetVictim() != tainted)
+    {
+        MarkTargetWithStar(bot, tainted);
+        SetRtiTarget(botAI, "star", tainted);
+
+        return Attack(tainted);
     }
 
     return false;
@@ -2069,15 +2063,14 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
     if (!designatedMaster)
         return false;
 
-    Unit* closestTrigger = GetNearestActiveShieldGeneratorTriggerByEntry(bot, designatedMaster);
     Player* firstCorePasser = GetFirstTaintedCorePasser(group, botAI);
     Player* secondCorePasser = GetSecondTaintedCorePasser(group, botAI);
     Player* thirdCorePasser = GetThirdTaintedCorePasser(group, botAI);
+    Unit* closestTrigger = GetNearestActiveShieldGeneratorTriggerByEntry(bot, designatedMaster);
 
-    if (!designatedMaster || !firstCorePasser || !secondCorePasser || !thirdCorePasser || !closestTrigger)
+    if (!firstCorePasser || !secondCorePasser || !thirdCorePasser || !closestTrigger)
         return false;
 
-    // Always move bots into position
     if (bot == firstCorePasser)
         LineUpFirstCorePasser(designatedMaster, closestTrigger);
     else if (bot == secondCorePasser)
@@ -2088,8 +2081,17 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
     Item* item = bot->GetItemByEntry(ITEM_TAINTED_CORE);
     if (item && botAI->HasItemInInventory(ITEM_TAINTED_CORE))
     {
+        // Designated core looter logic--applicable only if cheat mode is on and thus looter is a bot
+        if (bot == designatedMaster)
+        {
+            if (IsFirstCorePasserInIntendedPosition(designatedMaster, firstCorePasser, closestTrigger))
+            {
+                botAI->ImbueItem(item, firstCorePasser);
+                ScheduleCoreReconcile(botAI, bot, firstCorePasser, ITEM_TAINTED_CORE, 500);
+            }
+        }
         // First core passer logic
-        if (bot == firstCorePasser)
+        else if (bot == firstCorePasser)
         {
             if (IsSecondCorePasserInIntendedPosition(firstCorePasser, secondCorePasser, closestTrigger))
             {
@@ -2130,7 +2132,7 @@ void LadyVashjPassTheTaintedCoreAction::LineUpFirstCorePasser(Player* designated
     float targetY = centerY + radius * sin(angle);
     float targetZ = 41.097f;
 
-    bot->Yell("I'm moving into position to receive the tainted core!", LANG_UNIVERSAL); // If PR'd, will need to use DB
+    bot->Yell("I'm moving into position to receive the Tainted Core!", LANG_UNIVERSAL); // If PR'd, will need to use DB
     bot->AttackStop();
     bot->InterruptNonMeleeSpells(true);
     MoveTo(bot->GetMapId(), targetX, targetY, targetZ,
@@ -2174,6 +2176,25 @@ void LadyVashjPassTheTaintedCoreAction::LineUpSecondCorePasser(Player* firstCore
     bot->InterruptNonMeleeSpells(false);
     MoveTo(bot->GetMapId(), targetX, targetY, targetZ,
            false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+}
+
+bool LadyVashjPassTheTaintedCoreAction::IsFirstCorePasserInIntendedPosition(Player* designatedMaster, Player* firstCorePasser, Unit* closestTrigger)
+{
+    const float centerX = VashjRoomCenterPosition.x;
+    const float centerY = VashjRoomCenterPosition.y;
+    const float radius = 55.0f;
+
+    float mx = designatedMaster->GetPositionX();
+    float my = designatedMaster->GetPositionY();
+    float angle = atan2(my - centerY, mx - centerX);
+
+    float targetX = centerX + radius * cos(angle);
+    float targetY = centerY + radius * sin(angle);
+    float targetZ = 41.097f;
+
+    float dist = firstCorePasser->GetExactDist(Position(targetX, targetY, targetZ));
+
+    return dist <= 2.0f;
 }
 
 bool LadyVashjPassTheTaintedCoreAction::IsSecondCorePasserInIntendedPosition(Player* firstCorePasser, Player* secondCorePasser, Unit* closestTrigger)
