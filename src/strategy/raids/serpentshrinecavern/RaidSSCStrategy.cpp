@@ -127,11 +127,11 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     ));
 
     // Lady Vashj <Coilfang Matron>
-    triggers.push_back(new TriggerNode("lady vashj boss engaged by main tank in phase 1",
-        NextAction::array(0, new NextAction("lady vashj phase 1 main tank position boss", ACTION_RAID + 1), nullptr)
+    triggers.push_back(new TriggerNode("lady vashj boss engaged by main tank",
+        NextAction::array(0, new NextAction("lady vashj main tank position boss", ACTION_RAID + 1), nullptr)
     ));
-    triggers.push_back(new TriggerNode("lady vashj boss engaged by ranged in phase 1 and phase 3",
-        NextAction::array(0, new NextAction("lady vashj phase 1 and phase 3 position ranged", ACTION_RAID + 1), nullptr)
+    triggers.push_back(new TriggerNode("lady vashj boss engaged by ranged in phase 1",
+        NextAction::array(0, new NextAction("lady vashj phase 1 position ranged", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("lady vashj casts shock blast on highest aggro",
         NextAction::array(0, new NextAction("lady vashj set grounding totem in main tank group", ACTION_EMERGENCY + 1), nullptr)
@@ -157,9 +157,9 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("lady vashj determining kill order of adds",
         NextAction::array(0, new NextAction("lady vashj assign phase 2 dps priority", ACTION_RAID + 1), nullptr)
     ));
-    triggers.push_back(new TriggerNode("lady vashj toxic sporebats are spewing poison clouds",
+    /* triggers.push_back(new TriggerNode("lady vashj toxic sporebats are spewing poison clouds",
         NextAction::array(0, new NextAction("lady vashj avoid toxic spores", ACTION_EMERGENCY + 6), nullptr)
-    ));
+    )); */
     triggers.push_back(new TriggerNode("lady vashj need to manage trackers",
         NextAction::array(0, new NextAction("lady vashj manage trackers", ACTION_EMERGENCY + 10), nullptr)
     ));

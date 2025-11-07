@@ -322,19 +322,18 @@ bool MorogrimTidewalkerEncounterResetTrigger::IsActive()
 
 // Lady Vashj <Coilfang Matron>
 
-bool LadyVashjBossEngagedByMainTankInPhase1Trigger::IsActive()
+bool LadyVashjBossEngagedByMainTankTrigger::IsActive()
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
 
-    return vashj && IsLadyVashjInPhase1(botAI) && botAI->IsMainTank(bot);
+    return vashj && (IsLadyVashjInPhase1(botAI) || IsLadyVashjInPhase3(botAI)) && botAI->IsMainTank(bot);
 }
 
-bool LadyVashjBossEngagedByRangedInPhase1AndPhase3Trigger::IsActive()
+bool LadyVashjBossEngagedByRangedInPhase1Trigger::IsActive()
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
 
-    return vashj && (IsLadyVashjInPhase1(botAI) || IsLadyVashjInPhase3(botAI)) &&
-           botAI->IsRanged(bot);
+    return vashj && IsLadyVashjInPhase1(botAI) && botAI->IsRanged(bot);
 }
 
 bool LadyVashjCastsShockBlastOnHighestAggroTrigger::IsActive()

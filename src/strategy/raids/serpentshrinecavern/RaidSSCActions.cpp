@@ -1539,7 +1539,7 @@ bool MorogrimTidewalkerResetPhaseTransitionStepsAction::Execute(Event event)
 
 // Reminder--Shamans need to use grounding totems, at least in MT's group
 
-bool LadyVashjPhase1MainTankPositionBossAction::Execute(Event event)
+bool LadyVashjMainTankPositionBossAction::Execute(Event event)
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     if (!vashj)
@@ -1550,32 +1550,44 @@ bool LadyVashjPhase1MainTankPositionBossAction::Execute(Event event)
 
     if (vashj->GetVictim() == bot)
     {
-        const Location& position = VashjRoomCenterPosition;
-
-        if (bot->GetExactDist2d(position.x, position.y) > 2.0f)
+        if (IsLadyVashjInPhase1(botAI))
         {
-            float dX = position.x - bot->GetPositionX();
-            float dY = position.y - bot->GetPositionY();
-            float dist = sqrt(dX * dX + dY * dY);
-            float moveDist = std::min(4.5f, dist);
-            float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
-            float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
+            const Location& position = VashjRoomCenterPosition;
 
-            return MoveTo(bot->GetMapId(), moveX, moveY, position.z, false, false, false, false,
-                        MovementPriority::MOVEMENT_COMBAT, true, true);
+            if (bot->GetExactDist2d(position.x, position.y) > 2.0f)
+            {
+                float dX = position.x - bot->GetPositionX();
+                float dY = position.y - bot->GetPositionY();
+                float dist = sqrt(dX * dX + dY * dY);
+                float moveDist = std::min(4.5f, dist);
+                float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
+                float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
+
+                return MoveTo(bot->GetMapId(), moveX, moveY, position.z, false, false, false, false,
+                            MovementPriority::MOVEMENT_COMBAT, true, true);
+            }
+            else if (!bot->IsWithinMeleeRange(vashj))
+            {
+                return MoveTo(vashj->GetMapId(), vashj->GetPositionX(),
+                            vashj->GetPositionY(), vashj->GetPositionZ(),
+                            false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+            }
         }
-        else if (!bot->IsWithinMeleeRange(vashj))
+
+        if (IsLadyVashjInPhase3(botAI))
         {
-            return MoveTo(vashj->GetMapId(), vashj->GetPositionX(),
-                          vashj->GetPositionY(), vashj->GetPositionZ(),
-                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+            Unit* enchanted = AI_VALUE2(Unit*, "find target", "enchanted elemental");
+            if (enchanted && bot->GetExactDist2d(enchanted) < 10.0f)
+            {
+                return MoveAway(enchanted, 10.0f, false);
+            }
         }
     }
 
     return false;
 }
 
-bool LadyVashjPhase1AndPhase3PositionRangedAction::Execute(Event event)
+bool LadyVashjPhase1PositionRangedAction::Execute(Event event)
 {
     Group* group = bot->GetGroup();
     if (!group)
@@ -1816,15 +1828,6 @@ bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
     if (!vashj)
         return false;
 
-    if (IsLadyVashjInPhase2(botAI) && bot->GetVictim() == vashj)
-    {
-        LOG_DEBUG("playerbots", "Phase2DpsPriorityAction: Stopping attack {} due to Vashj still being victim", bot->GetName());
-        bot->AttackStop();
-        bot->InterruptNonMeleeSpells(true);
-        bot->SetTarget(ObjectGuid::Empty);
-        bot->SetSelection(ObjectGuid());
-    }
-
     // Get all nearby hostile NPCs
     GuidVector attackers = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
     Unit* target = nullptr;
@@ -1832,6 +1835,22 @@ bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
     Unit* enchanted = nullptr;
     Unit* elite = nullptr;
     Unit* strider = nullptr;
+    Unit* sporebat = nullptr;
+
+    LOG_DEBUG("playerbots", "Vashj DPS Priority: enchanted={} elite={} strider={}",
+        enchanted && enchanted->IsAlive(),
+        elite && elite->IsAlive(),
+        strider && strider->IsAlive());
+
+    if (bot->GetVictim() == vashj && (IsLadyVashjInPhase2(botAI) || (IsLadyVashjInPhase3(botAI) &&
+        (enchanted && enchanted->IsAlive() || elite && elite->IsAlive() || strider && strider->IsAlive()))))
+    {
+        LOG_DEBUG("playerbots", "Phase2DpsPriorityAction: Stopping attack {} due to Vashj still being victim", bot->GetName());
+        bot->AttackStop();
+        bot->InterruptNonMeleeSpells(true);
+        bot->SetTarget(ObjectGuid::Empty);
+        bot->SetSelection(ObjectGuid());
+    }
 
     // Role-based search / pursue limits
     const Location& center = VashjRoomCenterPosition;
@@ -1846,7 +1865,7 @@ bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
 
         // skip NPCs outside the encounter search radius (prevents chasing far adds/triggers)
         float distFromCenter = unit->GetExactDist2d(center.x, center.y);
-        if (distFromCenter > maxSearchRange)
+        if (IsLadyVashjInPhase2(botAI) && distFromCenter > maxSearchRange)
             continue;
 
         switch (unit->GetEntry())
@@ -1871,6 +1890,11 @@ bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
                     strider = unit;
                 break;
 
+            case NPC_TOXIC_SPOREBAT:
+                if (!sporebat || unit->GetHealthPct() < sporebat->GetHealthPct())
+                    sporebat = unit;
+                break;
+
             case NPC_LADY_VASHJ:
                 vashj = unit;
                 break;
@@ -1880,11 +1904,16 @@ bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
         }
     }
 
+    if (sporebat)
+    LOG_DEBUG("playerbots", "Found sporebat: pos=({}, {}, {}), dist2d={}, dist3d={}",
+        sporebat->GetPositionX(), sporebat->GetPositionY(), sporebat->GetPositionZ(),
+        bot->GetExactDist2d(sporebat), bot->GetDistance(sporebat));
+
     // Set priorities
     std::vector<Unit*> targets;
     if (IsLadyVashjInPhase2(botAI))
     {
-        if (botAI->IsRangedDps(bot))
+        if (botAI->IsRanged(bot))
         {
             // uint8 tab = AiFactory::GetPlayerSpecTab(bot);
             if (bot->getClass() == CLASS_HUNTER || bot->getClass() == CLASS_MAGE)
@@ -1896,8 +1925,8 @@ bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
             targets = { tainted, enchanted, elite };
         else if (botAI->IsTank(bot))
         {
-            // With raid cheats enabled, main tank should prioritize the strider first.
-            if (botAI->HasCheat(BotCheatMask::raid) && botAI->IsMainTank(bot))
+            // With raid cheats enabled, first assist tank should prioritize the strider first.
+            if (botAI->HasCheat(BotCheatMask::raid) && botAI->IsAssistTankOfIndex(bot, 0))
                 targets = { strider, enchanted, tainted };
             else
                 targets = { elite, enchanted, tainted };
@@ -1905,26 +1934,36 @@ bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
         else
             targets = { tainted, enchanted, elite, strider };
     }
+
     if (IsLadyVashjInPhase3(botAI))
     {
         if (botAI->IsTank(bot))
         {
-            // With raid cheats enabled, main tank should prioritize the strider first.
             if (botAI->IsMainTank(bot))
+                targets = { vashj };
+            else if (botAI->IsAssistTankOfIndex(bot, 0))
             {
                 if (botAI->HasCheat(BotCheatMask::raid))
                     targets = { strider, enchanted, vashj };
                 if (!botAI->HasCheat(BotCheatMask::raid))
                     targets = { elite, enchanted, vashj };
             }
-            if (botAI->IsAssistTankOfIndex(bot, 0))
-                targets = { vashj };
             else
                 targets = { elite, enchanted, vashj };
         }
+        if (botAI->IsRanged(bot))
+        {
+            if (bot->getClass() == CLASS_HUNTER)
+                targets = { enchanted, sporebat, strider, elite, vashj };
+            else
+                targets = { enchanted, strider, elite, vashj };
+        }
+        if (botAI->IsMelee(bot) && botAI->IsDps(bot))
+            targets = { enchanted, elite, vashj };
         else
-            targets = { enchanted, strider, elite, vashj };
+            targets = { enchanted, elite, strider, vashj };
     }
+
     // Pick the first valid target
     for (Unit* t : targets)
     {
@@ -1996,132 +2035,6 @@ bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
     LOG_DEBUG("playerbots", "Phase2DpsPriorityAction: End of action for {}", bot->GetName());
     return false;
 }
-/*
-bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
-{
-    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    Group* group = bot->GetGroup();
-    if (!vashj || !group)
-    {
-        LOG_DEBUG("playerbots", "Phase2DpsPriorityAction: vashj or group missing for {}", bot->GetName());
-        return false;
-    }
-
-    if (IsLadyVashjInPhase2(botAI))
-    {
-        LOG_DEBUG("playerbots", "Phase2DpsPriorityAction: In phase 2 for {}", bot->GetName());
-
-        if (IsRangedRTIMarker(botAI, bot))
-            MarkTargetWithMoon(bot, vashj);
-
-        bool isVictim = bot->GetVictim() == vashj;
-        bool isTarget = bot->GetTarget() == vashj->GetGUID();
-        bool isSelection = (bot->GetSelectedUnit() && bot->GetSelectedUnit()->GetGUID() == vashj->GetGUID());
-
-        LOG_DEBUG("playerbots", "Phase2DpsPriorityAction for {}: isVictim={}, isTarget={}, isSelection={}",
-            bot->GetName(), isVictim ? "true" : "false", isTarget ? "true" : "false", isSelection ? "true" : "false");
-
-        if (isVictim || isTarget || isSelection)
-        {
-            LOG_DEBUG("playerbots", "Phase2DpsPriorityAction: Resetting bot {} due to targeting Vashj", bot->GetName());
-            botAI->Reset();
-            return false;
-        }
-    }
-    LOG_DEBUG("playerbots", "Phase2DpsPriorityAction: Passed phase 2 block for {}", bot->GetName());
-
-    Unit* strider = AI_VALUE2(Unit*, "find target", "coilfang strider");
-    if (strider && strider->IsAlive())
-    {
-        LOG_DEBUG("playerbots", "Phase2DpsPriorityAction: Found strider for {}", bot->GetName());
-        uint8 tab = AiFactory::GetPlayerSpecTab(bot);
-        if ((botAI->HasCheat(BotCheatMask::raid) && botAI->IsMainTank(bot)) ||
-            (botAI->IsRangedDps(bot) &&
-            bot->getClass() != CLASS_HUNTER &&
-            (bot->getClass() != CLASS_WARLOCK || tab == 0) &&
-            (bot->getClass() != CLASS_MAGE || tab == 2)))
-        {
-            if (IsRangedRTIMarker(botAI, bot))
-                MarkTargetWithCircle(bot, strider);
-
-            SetRtiTarget(botAI, "circle", strider);
-
-            if (bot->GetTarget() != strider->GetGUID())
-            {
-                LOG_DEBUG("playerbots", "Phase2DpsPriorityAction: Attacking strider for {}", bot->GetName());
-                bot->SetTarget(strider->GetGUID());
-                return Attack(strider);
-            }
-            LOG_DEBUG("playerbots", "Phase2DpsPriorityAction: Already targeting strider for {}", bot->GetName());
-            return false;
-        }
-    }
-    LOG_DEBUG("playerbots", "Phase2DpsPriorityAction: Passed strider block for {}", bot->GetName());
-
-    Unit* elite = AI_VALUE2(Unit*, "find target", "coilfang elite");
-    if (elite && elite->IsAlive())
-    {
-        LOG_DEBUG("playerbots", "Phase2DpsPriorityAction: Found elite for {}", bot->GetName());
-        if (botAI->IsMelee(bot) && !botAI->IsMainTank(bot))
-        {
-            if (IsMeleeRTIMarker(botAI, bot))
-                MarkTargetWithTriangle(bot, elite);
-
-            SetRtiTarget(botAI, "triangle", elite);
-
-            if (bot->GetTarget() != elite->GetGUID())
-            {
-                LOG_DEBUG("playerbots", "Phase2DpsPriorityAction: Attacking elite for {}", bot->GetName());
-                bot->SetTarget(elite->GetGUID());
-                return Attack(elite);
-            }
-            LOG_DEBUG("playerbots", "Phase2DpsPriorityAction: Already targeting elite for {}", bot->GetName());
-            return false;
-        }
-    }
-    LOG_DEBUG("playerbots", "Phase2DpsPriorityAction: Passed elite block for {}", bot->GetName());
-
-    Unit* enchanted = AI_VALUE2(Unit*, "find target", "enchanted elemental");
-    if (enchanted && enchanted->IsAlive() && bot->GetVictim() != enchanted)
-    {
-        LOG_DEBUG("playerbots", "Phase2DpsPriorityAction: Attacking enchanted elemental for {}", bot->GetName());
-        bot->SetTarget(enchanted->GetGUID());
-        return Attack(enchanted);
-    }
-    LOG_DEBUG("playerbots", "Phase2DpsPriorityAction: Passed enchanted elemental block for {}", bot->GetName());
-
-    if (!bot->GetVictim())
-    {
-        LOG_DEBUG("playerbots", "Phase2DpsPriorityAction: No victim, checking movement for {}", bot->GetName());
-        Player* master = botAI->GetMaster();
-        Player* designatedLooter = GetDesignatedCoreLooter(bot->GetGroup(), master, botAI);
-        Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
-        if (designatedLooter && designatedLooter == bot && tainted && designatedLooter->GetExactDist2d(tainted) < 10.0f)
-            return false;
-
-        const Location& center = VashjRoomCenterPosition;
-        if (bot->GetExactDist2d(center.x, center.y) > 55.0f)
-        {
-            LOG_DEBUG("playerbots", "Phase2DpsPriorityAction: Moving bot {} to center", bot->GetName());
-            bot->AttackStop();
-            bot->InterruptNonMeleeSpells(true);
-
-            if (botAI->HasCheat(BotCheatMask::raid))
-            {
-                bot->TeleportTo(bot->GetMapId(), center.x, center.y, center.z, bot->GetOrientation());
-                return false;
-            }
-            else
-            {
-                return MoveTo(bot->GetMapId(), center.x, center.y, center.z, false, false, false, true,
-                            MovementPriority::MOVEMENT_COMBAT, true, false);
-            }
-        }
-    }
-    LOG_DEBUG("playerbots", "Phase2DpsPriorityAction: End of action for {}", bot->GetName());
-
-    return false;
-} */
 
 // Only if cheats are off, intended to support core handling
 bool LadyVashjAssistantsFollowMasterInPhase2Action::Execute(Event event)
@@ -2491,36 +2404,56 @@ bool LadyVashjPassTheTaintedCoreAction::UseCoreOnNearestGenerator()
 
 bool LadyVashjAvoidToxicSporesAction::Execute(Event event)
 {
-    // Get all spore drop triggers within 30 yards
-    std::vector<Unit*> sporeTriggers = GetAllSporeDropTriggers(botAI, bot);
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (!vashj)
+        return false;
 
-    // If none found, nothing to avoid
+    std::vector<Unit*> sporeTriggers = GetAllSporeDropTriggers(botAI, bot);
     if (sporeTriggers.empty())
         return false;
 
-    const float hazardRadius = 13.0f; // Minimum safe distance from a spore trigger
-    const float searchRadius = 30.0f; // How far to search for a safe spot
-    const float step = 2.0f;          // Step size for candidate positions
+    const float hazardRadius = 10.0f;
+    const float searchRadius = 30.0f;
+    const float step = 1.0f;
 
-    // Try positions in a circle around the bot
+    float closestDist = std::numeric_limits<float>::max();
+    float bestX = 0.0f, bestY = 0.0f, bestZ = 0.0f;
+
+    const float centerX = VashjRoomCenterPosition.x;
+    const float centerY = VashjRoomCenterPosition.y;
+
     for (float angle = 0; angle < 2 * M_PI; angle += M_PI / 8)
     {
         for (float r = hazardRadius + 2.0f; r < searchRadius; r += step)
         {
             float x = bot->GetPositionX() + r * cos(angle);
             float y = bot->GetPositionY() + r * sin(angle);
-            float z = bot->GetPositionZ(); // You may want to use Map::GetHeight for terrain
+            float z = bot->GetPositionZ();
+
+            float distFromCenter = std::sqrt((x - centerX) * (x - centerX) + (y - centerY) * (y - centerY));
+            if ((distFromCenter > 50.0f && botAI->IsTank(bot) && vashj->GetVictim() == bot) || distFromCenter > 75.0f)
+                continue;
 
             if (IsSafePosition(x, y, z, sporeTriggers, hazardRadius))
             {
-                // Move to the first safe position found
-                return MoveTo(bot->GetMapId(), x, y, z,
-                              false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+                float distToCenter = distFromCenter;
+                if (distToCenter < closestDist)
+                {
+                    closestDist = distToCenter;
+                    bestX = x;
+                    bestY = y;
+                    bestZ = z;
+                }
             }
         }
     }
 
-    // No safe position found
+    if (closestDist < std::numeric_limits<float>::max())
+    {
+        return MoveTo(bot->GetMapId(), bestX, bestY, bestZ,
+                      false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+    }
+
     return false;
 }
 

@@ -51,8 +51,8 @@ public:
         creators["morogrim tidewalker water globules are incoming"] = &RaidSSCTriggerContext::morogrim_tidewalker_water_globules_are_incoming;
         creators["morogrim tidewalker encounter reset"] = &RaidSSCTriggerContext::morogrim_tidewalker_encounter_reset;
 
-        creators["lady vashj boss engaged by main tank in phase 1"] = &RaidSSCTriggerContext::lady_vashj_boss_engaged_by_main_tank_in_phase_1;
-        creators["lady vashj boss engaged by ranged in phase 1 and phase 3"] = &RaidSSCTriggerContext::lady_vashj_boss_engaged_by_ranged_in_phase_1_and_phase_3;
+        creators["lady vashj boss engaged by main tank"] = &RaidSSCTriggerContext::lady_vashj_boss_engaged_by_main_tank;
+        creators["lady vashj boss engaged by ranged in phase 1"] = &RaidSSCTriggerContext::lady_vashj_boss_engaged_by_ranged_in_phase_1;
         creators["lady vashj casts shock blast on highest aggro"] = &RaidSSCTriggerContext::lady_vashj_casts_shock_blast_on_highest_aggro;
         creators["lady vashj bot has static charge"] = &RaidSSCTriggerContext::lady_vashj_bot_has_static_charge;
         creators["lady vashj pulling boss in phase 1 and phase 3"] = &RaidSSCTriggerContext::lady_vashj_pulling_boss_in_phase_1_and_phase_3;
@@ -108,8 +108,8 @@ private:
     static Trigger* morogrim_tidewalker_water_globules_are_incoming(PlayerbotAI* botAI) { return new MorogrimTidewalkerWaterGlobulesAreIncomingTrigger(botAI); }
     static Trigger* morogrim_tidewalker_encounter_reset(PlayerbotAI* botAI) { return new MorogrimTidewalkerEncounterResetTrigger(botAI); }
 
-    static Trigger* lady_vashj_boss_engaged_by_main_tank_in_phase_1(PlayerbotAI* botAI) { return new LadyVashjBossEngagedByMainTankInPhase1Trigger(botAI); }
-    static Trigger* lady_vashj_boss_engaged_by_ranged_in_phase_1_and_phase_3(PlayerbotAI* botAI) { return new LadyVashjBossEngagedByRangedInPhase1AndPhase3Trigger(botAI); }
+    static Trigger* lady_vashj_boss_engaged_by_main_tank(PlayerbotAI* botAI) { return new LadyVashjBossEngagedByMainTankTrigger(botAI); }
+    static Trigger* lady_vashj_boss_engaged_by_ranged_in_phase_1(PlayerbotAI* botAI) { return new LadyVashjBossEngagedByRangedInPhase1Trigger(botAI); }
     static Trigger* lady_vashj_casts_shock_blast_on_highest_aggro(PlayerbotAI* botAI) { return new LadyVashjCastsShockBlastOnHighestAggroTrigger(botAI); }
     static Trigger* lady_vashj_bot_has_static_charge(PlayerbotAI* botAI) { return new LadyVashjBotHasStaticChargeTrigger(botAI); }
     static Trigger* lady_vashj_pulling_boss_in_phase_1_and_phase_3(PlayerbotAI* botAI) { return new LadyVashjPullingBossInPhase1AndPhase3Trigger(botAI); }

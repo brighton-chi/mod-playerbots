@@ -289,17 +289,17 @@ public:
     bool Execute(Event event) override;
 };
 
-class LadyVashjPhase1MainTankPositionBossAction : public AttackAction
+class LadyVashjMainTankPositionBossAction : public AttackAction
 {
 public:
-    LadyVashjPhase1MainTankPositionBossAction(PlayerbotAI* botAI, std::string const name = "lady vashj phase 1 main tank position boss") : AttackAction(botAI, name) {}
+    LadyVashjMainTankPositionBossAction(PlayerbotAI* botAI, std::string const name = "lady vashj main tank position boss") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 
-class LadyVashjPhase1AndPhase3PositionRangedAction : public MovementAction
+class LadyVashjPhase1PositionRangedAction : public MovementAction
 {
 public:
-    LadyVashjPhase1AndPhase3PositionRangedAction(PlayerbotAI* botAI, std::string const name = "lady vashj phase 1 and phase 3 position ranged") : MovementAction(botAI, name) {}
+    LadyVashjPhase1PositionRangedAction(PlayerbotAI* botAI, std::string const name = "lady vashj phase 1 position ranged") : MovementAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 

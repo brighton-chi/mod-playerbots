@@ -269,17 +269,17 @@ public:
     bool IsActive() override;
 };
 
-class LadyVashjBossEngagedByMainTankInPhase1Trigger : public Trigger
+class LadyVashjBossEngagedByMainTankTrigger : public Trigger
 {
 public:
-    LadyVashjBossEngagedByMainTankInPhase1Trigger(PlayerbotAI* botAI) : Trigger(botAI, "lady vashj boss engaged by main tank in phase 1") {}
+    LadyVashjBossEngagedByMainTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "lady vashj boss engaged by main tank") {}
     bool IsActive() override;
 };
 
-class LadyVashjBossEngagedByRangedInPhase1AndPhase3Trigger : public Trigger
+class LadyVashjBossEngagedByRangedInPhase1Trigger : public Trigger
 {
 public:
-    LadyVashjBossEngagedByRangedInPhase1AndPhase3Trigger(PlayerbotAI* botAI) : Trigger(botAI, "lady vashj boss engaged by ranged in phase 1 and phase 3") {}
+    LadyVashjBossEngagedByRangedInPhase1Trigger(PlayerbotAI* botAI) : Trigger(botAI, "lady vashj boss engaged by ranged in phase 1") {}
     bool IsActive() override;
 };
 

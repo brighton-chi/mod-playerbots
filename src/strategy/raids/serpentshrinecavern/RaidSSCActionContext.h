@@ -51,8 +51,8 @@ public:
         creators["morogrim tidewalker phase 2 reposition ranged"] = &RaidSSCActionContext::morogrim_tidewalker_phase_2_reposition_ranged;
         creators["morogrim tidewalker reset phase transition steps"] = &RaidSSCActionContext::morogrim_tidewalker_reset_phase_transition_steps;
 
-        creators["lady vashj phase 1 main tank position boss"] = &RaidSSCActionContext::lady_vashj_phase_1_main_tank_position_boss;
-        creators["lady vashj phase 1 and phase 3 position ranged"] = &RaidSSCActionContext::lady_vashj_phase_1_and_phase_3_position_ranged;
+        creators["lady vashj main tank position boss"] = &RaidSSCActionContext::lady_vashj_main_tank_position_boss;
+        creators["lady vashj phase 1 position ranged"] = &RaidSSCActionContext::lady_vashj_phase_1_position_ranged;
         creators["lady vashj set grounding totem in main tank group"] = &RaidSSCActionContext::lady_vashj_set_grounding_totem_in_main_tank_group;
         creators["lady vashj static charge move away from group"] = &RaidSSCActionContext::lady_vashj_static_charge_move_away_from_group;
         creators["lady vashj misdirect boss to main tank"] = &RaidSSCActionContext::lady_vashj_misdirect_boss_to_main_tank;
@@ -108,8 +108,8 @@ private:
     static Action* morogrim_tidewalker_phase_2_reposition_ranged(PlayerbotAI* botAI) { return new MorogrimTidewalkerPhase2RepositionRangedAction(botAI); }
     static Action* morogrim_tidewalker_reset_phase_transition_steps(PlayerbotAI* botAI) { return new MorogrimTidewalkerResetPhaseTransitionStepsAction(botAI); }
 
-    static Action* lady_vashj_phase_1_main_tank_position_boss(PlayerbotAI* botAI) { return new LadyVashjPhase1MainTankPositionBossAction(botAI); }
-    static Action* lady_vashj_phase_1_and_phase_3_position_ranged(PlayerbotAI* botAI) { return new LadyVashjPhase1AndPhase3PositionRangedAction(botAI); }
+    static Action* lady_vashj_main_tank_position_boss(PlayerbotAI* botAI) { return new LadyVashjMainTankPositionBossAction(botAI); }
+    static Action* lady_vashj_phase_1_position_ranged(PlayerbotAI* botAI) { return new LadyVashjPhase1PositionRangedAction(botAI); }
     static Action* lady_vashj_set_grounding_totem_in_main_tank_group(PlayerbotAI* botAI) { return new LadyVashjSetGroundingTotemInMainTankGroupAction(botAI); }
     static Action* lady_vashj_static_charge_move_away_from_group(PlayerbotAI* botAI) { return new LadyVashjStaticChargeMoveAwayFromGroupAction(botAI); }
     static Action* lady_vashj_misdirect_boss_to_main_tank(PlayerbotAI* botAI) { return new LadyVashjMisdirectBossToMainTankAction(botAI); }
