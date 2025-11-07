@@ -45,6 +45,7 @@ enum SerpentShrineCavernSpells
     // Lady Vashj <Coilfang Matron>
     SPELL_FEAR_WARD_CHEAT = 6346,
     SPELL_PARALYZE = 38132, // from holding Tainted Core
+    SPELL_POISON_BOLT = 38253,
     // SPELL_PANIC = 38258,
     SPELL_STATIC_CHARGE = 38280,
 

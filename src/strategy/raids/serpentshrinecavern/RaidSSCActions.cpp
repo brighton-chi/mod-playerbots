@@ -702,7 +702,7 @@ bool LeotherasTheBlindDemonFormPositionBossAction::Execute(Event event)
     MarkTargetWithSquare(bot, leotherasDemon);
     SetRtiTarget(botAI, "square", leotherasDemon);
 
-    if (bot->GetTarget() != leotherasDemon->GetGUID())
+    if (bot->GetVictim() != leotherasDemon)
     {
         bot->SetSelection(leotherasDemon->GetGUID());
         return Attack(leotherasDemon);
@@ -842,6 +842,7 @@ bool LeotherasTheBlindFinalPhaseAssignDpsPriorityAction::Execute(Event event)
     if (bot->GetTarget() != leotherasHuman->GetGUID() ||
         (botAI->IsMelee(bot) && bot->GetVictim() != leotherasHuman))
     {
+        bot->SetTarget(leotherasHuman->GetGUID());
         bot->SetSelection(leotherasHuman->GetGUID());
         return Attack(leotherasHuman);
     }
@@ -1203,6 +1204,7 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event event)
 
         if (bot->GetTarget() != totem->GetGUID())
         {
+            bot->SetTarget(totem->GetGUID());
             bot->SetSelection(totem->GetGUID());
             return Attack(totem);
         }
@@ -1218,6 +1220,7 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event event)
 
         if (bot->GetTarget() != tidalvess->GetGUID())
         {
+            bot->SetTarget(tidalvess->GetGUID());
             bot->SetSelection(tidalvess->GetGUID());
             return Attack(tidalvess);
         }
@@ -1234,6 +1237,7 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event event)
 
         if (bot->GetTarget() != fathomSporebat->GetGUID())
         {
+            bot->SetTarget(fathomSporebat->GetGUID());
             bot->SetSelection(fathomSporebat->GetGUID());
             return Attack(fathomSporebat);
         }
@@ -1250,6 +1254,7 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event event)
 
         if (bot->GetTarget() != fathomLurker->GetGUID())
         {
+            bot->SetTarget(fathomLurker->GetGUID());
             bot->SetSelection(fathomLurker->GetGUID());
             return Attack(fathomLurker);
         }
@@ -1265,6 +1270,7 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event event)
 
         if (bot->GetTarget() != sharkkis->GetGUID())
         {
+            bot->SetTarget(sharkkis->GetGUID());
             bot->SetSelection(sharkkis->GetGUID());
             return Attack(sharkkis);
         }
@@ -1284,6 +1290,7 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event event)
 
         if (bot->GetTarget() != caribdis->GetGUID())
         {
+            bot->SetTarget(caribdis->GetGUID());
             bot->SetSelection(caribdis->GetGUID());
             return Attack(caribdis);
         }
@@ -1299,6 +1306,7 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event event)
 
         if (bot->GetTarget() != karathress->GetGUID())
         {
+            bot->SetTarget(karathress->GetGUID());
             bot->SetSelection(karathress->GetGUID());
             return Attack(karathress);
         }
@@ -1772,10 +1780,10 @@ bool LadyVashjAttackAndMoveAwayFromStriderAction::Execute(Event event)
     if (botAI->HasCheat(BotCheatMask::raid) && botAI->IsTank(bot) && !bot->HasAura(SPELL_FEAR_WARD_CHEAT))
         bot->AddAura(SPELL_FEAR_WARD_CHEAT, bot);
 
-    // Don't away only if raid cheats are enabled AND bot is a tank
-    if (bot->GetExactDist2d(strider) < 15.0f &&
+    // Don't move away only if raid cheats are enabled AND bot is a tank
+    if (bot->GetExactDist2d(strider) < 13.0f &&
         (!botAI->HasCheat(BotCheatMask::raid) || !botAI->IsTank(bot)))
-        return MoveAway(strider, 20.0f, false);
+        return MoveAway(strider, 15.0f, false);
 
     if (!botAI->HasCheat(BotCheatMask::raid))
     {
@@ -1803,7 +1811,7 @@ bool LadyVashjAttackAndMoveAwayFromStriderAction::Execute(Event event)
     return false;
 }
 
-bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
+/* bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     if (!vashj)
@@ -1814,12 +1822,13 @@ bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
         if (IsRangedRTIMarker(botAI, bot))
             MarkTargetWithMoon(bot, vashj);
 
-        if (bot->GetTarget() == vashj->GetGUID())
+        if (bot->GetVictim() == vashj)
         {
             bot->AttackStop();
             bot->InterruptNonMeleeSpells(true);
             bot->SetTarget(ObjectGuid::Empty);
             bot->SetSelection(ObjectGuid());
+            return false;
         }
     }
 
@@ -1831,7 +1840,7 @@ bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
     Unit* elite = nullptr;
     Unit* strider = nullptr;
 
-    // Role-based search / pursue limits (tweak values as needed)
+    // Role-based search / pursue limits
     const Location& center = VashjRoomCenterPosition;
     const float maxSearchRange = botAI->IsRangedDps(bot) ? 60.0f : (botAI->IsMelee(bot) ? 55.0f : 40.0f);
     const float maxPursueRange = maxSearchRange - 5.0f; // won't initiate attack beyond this
@@ -1855,17 +1864,17 @@ bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
                 break;
 
             case NPC_ENCHANTED_ELEMENTAL:
-                if (!enchanted || bot->GetExactDist2d(unit) < bot->GetExactDist2d(enchanted))
+                if (!enchanted || vashj->GetExactDist2d(unit) < vashj->GetExactDist2d(enchanted))
                     enchanted = unit;
                 break;
 
             case NPC_COILFANG_ELITE:
-                if (!elite || bot->GetExactDist2d(unit) < bot->GetExactDist2d(elite))
+                if (!elite || unit->GetHealthPct() < elite->GetHealthPct())
                     elite = unit;
                 break;
 
             case NPC_COILFANG_STRIDER:
-                if (!strider || bot->GetExactDist2d(unit) < bot->GetExactDist2d(strider))
+                if (!strider || unit->GetHealthPct() < strider->GetHealthPct())
                     strider = unit;
                 break;
 
@@ -1876,8 +1885,14 @@ bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
 
     // Set priorities
     std::vector<Unit*> targets;
+    uint8 tab = AiFactory::GetPlayerSpecTab(bot);
     if (botAI->IsRangedDps(bot))
-        targets = { tainted, strider, enchanted, elite };
+    {
+        if (bot->getClass() == CLASS_HUNTER || (bot->getClass() == CLASS_WARLOCK && tab != 0))
+            targets = { tainted, enchanted, strider, elite };
+        else
+            targets = { tainted, strider, enchanted, elite };
+    }
     else if (botAI->IsMelee(bot) && botAI->IsDps(bot))
         targets = { tainted, enchanted, elite };
     else if (botAI->IsTank(bot))
@@ -1929,7 +1944,7 @@ bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
     {
         Player* master = botAI->GetMaster();
         Player* designatedLooter = GetDesignatedCoreLooter(bot->GetGroup(), master, botAI);
-        if ((designatedLooter && designatedLooter == bot) || botAI->IsHealAssistantOfIndex(bot, 1))
+        if (designatedLooter && designatedLooter == bot && tainted && designatedLooter->GetExactDist2d(tainted) < 10.0f)
             return false;
 
         const Location& center = VashjRoomCenterPosition;
@@ -1938,12 +1953,147 @@ bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
             LOG_DEBUG("playerbots", "LadyVashjCheat: teleporting {} back to center ({}, {})", bot->GetName(), center.x, center.y);
             bot->AttackStop();
             bot->InterruptNonMeleeSpells(true);
-            bot->TeleportTo(bot->GetMapId(), center.x, center.y, center.z, bot->GetOrientation());
-            // small delay to let server update position/state before next AI tick
-            botAI->SetNextCheckDelay(500);
+
+            if (botAI->HasCheat(BotCheatMask::raid))
+            {
+                bot->TeleportTo(bot->GetMapId(), center.x, center.y, center.z, bot->GetOrientation());
+                return false;
+            }
+            else
+            {
+                return MoveTo(bot->GetMapId(), center.x, center.y, center.z, false, false, false, true,
+                            MovementPriority::MOVEMENT_COMBAT, true, false);
+            }
+        }
+    }
+
+    return false;
+} */
+bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
+{
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    Group* group = bot->GetGroup();
+    if (!vashj || !group)
+    {
+        LOG_DEBUG("playerbots", "Phase2DpsPriorityAction: vashj or group missing for {}", bot->GetName());
+        return false;
+    }
+
+    if (IsLadyVashjInPhase2(botAI))
+    {
+        LOG_DEBUG("playerbots", "Phase2DpsPriorityAction: In phase 2 for {}", bot->GetName());
+
+        if (IsRangedRTIMarker(botAI, bot))
+            MarkTargetWithMoon(bot, vashj);
+
+        bool isVictim = bot->GetVictim() == vashj;
+        bool isTarget = bot->GetTarget() == vashj->GetGUID();
+        bool isSelection = (bot->GetSelectedUnit() && bot->GetSelectedUnit()->GetGUID() == vashj->GetGUID());
+
+        LOG_DEBUG("playerbots", "Phase2DpsPriorityAction for {}: isVictim={}, isTarget={}, isSelection={}",
+            bot->GetName(), isVictim ? "true" : "false", isTarget ? "true" : "false", isSelection ? "true" : "false");
+
+        if (isVictim || isTarget || isSelection)
+        {
+            LOG_DEBUG("playerbots", "Phase2DpsPriorityAction: Resetting bot {} due to targeting Vashj", bot->GetName());
+            botAI->Reset();
             return false;
         }
     }
+    LOG_DEBUG("playerbots", "Phase2DpsPriorityAction: Passed phase 2 block for {}", bot->GetName());
+
+    Unit* strider = AI_VALUE2(Unit*, "find target", "coilfang strider");
+    if (strider && strider->IsAlive())
+    {
+        LOG_DEBUG("playerbots", "Phase2DpsPriorityAction: Found strider for {}", bot->GetName());
+        uint8 tab = AiFactory::GetPlayerSpecTab(bot);
+        if ((botAI->HasCheat(BotCheatMask::raid) && botAI->IsMainTank(bot)) ||
+            (botAI->IsRangedDps(bot) &&
+            bot->getClass() != CLASS_HUNTER &&
+            (bot->getClass() != CLASS_WARLOCK || tab == 0) &&
+            (bot->getClass() != CLASS_MAGE || tab == 2)))
+        {
+            if (IsRangedRTIMarker(botAI, bot))
+                MarkTargetWithCircle(bot, strider);
+
+            SetRtiTarget(botAI, "circle", strider);
+
+            if (bot->GetTarget() != strider->GetGUID())
+            {
+                LOG_DEBUG("playerbots", "Phase2DpsPriorityAction: Attacking strider for {}", bot->GetName());
+                bot->SetTarget(strider->GetGUID());
+                bot->SetSelection(strider->GetGUID());
+                return Attack(strider);
+            }
+            LOG_DEBUG("playerbots", "Phase2DpsPriorityAction: Already targeting strider for {}", bot->GetName());
+            return false;
+        }
+    }
+    LOG_DEBUG("playerbots", "Phase2DpsPriorityAction: Passed strider block for {}", bot->GetName());
+
+    Unit* elite = AI_VALUE2(Unit*, "find target", "coilfang elite");
+    if (elite && elite->IsAlive())
+    {
+        LOG_DEBUG("playerbots", "Phase2DpsPriorityAction: Found elite for {}", bot->GetName());
+        if (botAI->IsMelee(bot) && !botAI->IsMainTank(bot))
+        {
+            if (IsMeleeRTIMarker(botAI, bot))
+                MarkTargetWithTriangle(bot, elite);
+
+            SetRtiTarget(botAI, "triangle", elite);
+
+            if (bot->GetTarget() != elite->GetGUID())
+            {
+                LOG_DEBUG("playerbots", "Phase2DpsPriorityAction: Attacking elite for {}", bot->GetName());
+                bot->SetTarget(elite->GetGUID());
+                bot->SetSelection(elite->GetGUID());
+                return Attack(elite);
+            }
+            LOG_DEBUG("playerbots", "Phase2DpsPriorityAction: Already targeting elite for {}", bot->GetName());
+            return false;
+        }
+    }
+    LOG_DEBUG("playerbots", "Phase2DpsPriorityAction: Passed elite block for {}", bot->GetName());
+
+    Unit* enchanted = AI_VALUE2(Unit*, "find target", "enchanted elemental");
+    if (enchanted && enchanted->IsAlive() && bot->GetVictim() != enchanted)
+    {
+        LOG_DEBUG("playerbots", "Phase2DpsPriorityAction: Attacking enchanted elemental for {}", bot->GetName());
+        bot->SetTarget(enchanted->GetGUID());
+        bot->SetSelection(enchanted->GetGUID());
+        return Attack(enchanted);
+    }
+    LOG_DEBUG("playerbots", "Phase2DpsPriorityAction: Passed enchanted elemental block for {}", bot->GetName());
+
+    if (!bot->GetVictim())
+    {
+        LOG_DEBUG("playerbots", "Phase2DpsPriorityAction: No victim, checking movement for {}", bot->GetName());
+        Player* master = botAI->GetMaster();
+        Player* designatedLooter = GetDesignatedCoreLooter(bot->GetGroup(), master, botAI);
+        Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
+        if (designatedLooter && designatedLooter == bot && tainted && designatedLooter->GetExactDist2d(tainted) < 10.0f)
+            return false;
+
+        const Location& center = VashjRoomCenterPosition;
+        if (bot->GetExactDist2d(center.x, center.y) > 55.0f)
+        {
+            LOG_DEBUG("playerbots", "Phase2DpsPriorityAction: Moving bot {} to center", bot->GetName());
+            bot->AttackStop();
+            bot->InterruptNonMeleeSpells(true);
+
+            if (botAI->HasCheat(BotCheatMask::raid))
+            {
+                bot->TeleportTo(bot->GetMapId(), center.x, center.y, center.z, bot->GetOrientation());
+                return false;
+            }
+            else
+            {
+                return MoveTo(bot->GetMapId(), center.x, center.y, center.z, false, false, false, true,
+                            MovementPriority::MOVEMENT_COMBAT, true, false);
+            }
+        }
+    }
+    LOG_DEBUG("playerbots", "Phase2DpsPriorityAction: End of action for {}", bot->GetName());
 
     return false;
 }
@@ -1963,11 +2113,6 @@ bool LadyVashjAssistantsFollowMasterInPhase2Action::Execute(Event event)
 
 bool LadyVashjTaintedElementalCheatAction::Execute(Event event)
 {
-    Group* group = bot->GetGroup();
-    Player* master = botAI->GetMaster();
-    if (!group || !master)
-        return false;
-
     Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
 
     /*
@@ -2009,7 +2154,7 @@ bool LadyVashjTaintedElementalCheatAction::Execute(Event event)
     Item* coreCheck = bot->GetItemByEntry(ITEM_TAINTED_CORE);
 
     // Check for despawn even if tainted is nullptr
-    if (bot == GetDesignatedCoreLooter(group, master, botAI) && lastTaintedGuid && !botAI->GetUnit(lastTaintedGuid) && !coreCheck)
+    if (lastTaintedGuid && !botAI->GetUnit(lastTaintedGuid) && !coreCheck)
     {
         LOG_DEBUG("playerbots", "TaintedElementalCheat: Elemental despawned, treating as dead for core logic");
         ItemPosCountVec dest;
@@ -2034,19 +2179,25 @@ bool LadyVashjTaintedElementalCheatAction::Execute(Event event)
     return false;
 
     lastTaintedGuid = tainted->GetGUID();
-    if (bot->GetExactDist2d(tainted) > 10.0f)
+    if (bot->GetExactDist2d(tainted) >= 10.0f)
     {
         bot->AttackStop();
         bot->InterruptNonMeleeSpells(true);
         bot->TeleportTo(tainted->GetMapId(), tainted->GetPositionX(), tainted->GetPositionY(), tainted->GetPositionZ(), tainted->GetOrientation());
     }
 
-    if (bot == GetDesignatedCoreLooter(group, master, botAI) && bot->GetVictim() != tainted)
+    if (bot->GetVictim() != tainted)
     {
         MarkTargetWithStar(bot, tainted);
         SetRtiTarget(botAI, "star", tainted);
 
         return Attack(tainted);
+    }
+
+    if (bot->GetExactDist2d(tainted) < 10.0f)
+    {
+        bot->SetFullHealth();
+        bot->RemoveAura(SPELL_POISON_BOLT);
     }
 
     return false;

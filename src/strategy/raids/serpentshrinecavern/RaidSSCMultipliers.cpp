@@ -16,6 +16,7 @@
 #include "WarriorActions.h"
 
 #include "FollowActions.h"
+#include "WipeAction.h"
 
 using namespace SerpentShrineCavernHelpers;
 
@@ -361,12 +362,15 @@ float MorogrimTidewalkerDisablePhase2FleeActionMultiplier::GetValue(Action* acti
 float LadyVashjDelayCooldownsMultiplier::GetValue(Action* action)
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    if (!vashj || IsLadyVashjInPhase3(botAI))
+    if (!vashj)
         return 1.0f;
 
-    if (dynamic_cast<CastHeroismAction*>(action) ||
-        dynamic_cast<CastBloodlustAction*>(action) ||
-        dynamic_cast<CastMetamorphosisAction*>(action))
+    if (!IsLadyVashjInPhase3(botAI) &&
+        (dynamic_cast<CastHeroismAction*>(action) ||
+        dynamic_cast<CastBloodlustAction*>(action)))
+        return 0.0f;
+
+    if (IsLadyVashjInPhase1(botAI) && dynamic_cast<CastMetamorphosisAction*>(action))
         return 0.0f;
 
     return 1.0f;
@@ -403,7 +407,7 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     Group* group = bot->GetGroup();
-    if (!vashj || !IsLadyVashjInPhase2(botAI)|| !group)
+    if (!vashj || !IsLadyVashjInPhase2(botAI)|| !group || dynamic_cast<WipeAction*>(action))
         return 1.0f;
 
     if (bot == GetFirstTaintedCorePasser(group, botAI) ||
@@ -440,10 +444,17 @@ float LadyVashjDisableAutomaticTargetingAndMovementModifier::GetValue(Action *ac
     if (!vashj || !IsLadyVashjInPhase2(botAI) /* || botAI->IsRangedDpsAssistantOfIndex(bot, 0) || botAI->IsRangedDpsAssistantOfIndex(bot, 1)*/)
         return 1.0f;
 
-        if ((dynamic_cast<DpsAssistAction*>(action) || dynamic_cast<TankAssistAction*>(action) ||
-             dynamic_cast<CastDebuffSpellOnAttackerAction*>(action) || dynamic_cast<FollowAction*>(action) ||
-             dynamic_cast<FleeAction*>(action)))
-            return 0.0f;
+    if (botAI->IsMainTank(bot) && dynamic_cast<TankAssistAction*>(action))
+        return 0.0f;
+
+    if ((/* dynamic_cast<DpsAssistAction*>(action) || */
+         dynamic_cast<FollowAction*>(action) || dynamic_cast<FleeAction*>(action)))
+        return 0.0f;
+
+    /* Unit* enchanted = AI_VALUE2(Unit*, "find target", "enchanted elemental");
+    if (enchanted && enchanted->IsAlive() && bot->GetVictim() == enchanted &&
+        (dynamic_cast<CastDebuffSpellOnAttackerAction*>(action) || dynamic_cast<DpsAssistAction*>(action)))
+        return 0.0f; */
 
     return 1.0f;
 }

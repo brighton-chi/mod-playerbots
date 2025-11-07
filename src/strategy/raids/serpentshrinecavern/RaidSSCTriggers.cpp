@@ -404,7 +404,7 @@ bool LadyVashjTaintedElementalCheatTrigger::IsActive()
     Player* master = botAI->GetMaster();
     Player* designatedLooter = GetDesignatedCoreLooter(group, master, botAI);
 
-    return (designatedLooter && designatedLooter == bot) || botAI->IsHealAssistantOfIndex(bot, 1);
+    return (designatedLooter && designatedLooter == bot);
 }
 
 bool LadyVashjTaintedCoreWasLootedTrigger::IsActive()

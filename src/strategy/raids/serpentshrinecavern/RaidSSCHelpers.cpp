@@ -419,22 +419,31 @@ namespace SerpentShrineCavernHelpers
     bool IsLadyVashjInPhase1(PlayerbotAI* botAI)
     {
         Unit* vashj = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "lady vashj")->Get();
+        if (!vashj)
+            return false;
 
-        return vashj && vashj->GetHealthPct() > 70.0f;
+        Creature* vashjCreature = vashj->ToCreature();
+        return vashjCreature && vashjCreature->GetHealthPct() > 70.0f && vashjCreature->GetReactState() != REACT_PASSIVE;
     }
 
     bool IsLadyVashjInPhase2(PlayerbotAI* botAI)
     {
         Unit* vashj = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "lady vashj")->Get();
+        if (!vashj)
+            return false;
 
-        return vashj && vashj->GetHealthPct() <= 70.0f && vashj->GetHealthPct() > 50.0f;
+        Creature* vashjCreature = vashj->ToCreature();
+        return vashjCreature && vashjCreature->GetReactState() == REACT_PASSIVE;
     }
 
     bool IsLadyVashjInPhase3(PlayerbotAI* botAI)
     {
         Unit* vashj = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "lady vashj")->Get();
+        if (!vashj)
+            return false;
 
-        return vashj && vashj->GetHealthPct() <= 50.0f;
+        Creature* vashjCreature = vashj->ToCreature();
+        return vashjCreature && vashjCreature->GetHealthPct() <= 50.0f && vashjCreature->GetReactState() != REACT_PASSIVE;
     }
 
     bool IsMeleeRTIMarker(PlayerbotAI* botAI, Player* bot)
@@ -460,7 +469,7 @@ namespace SerpentShrineCavernHelpers
             for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
             {
                 Player* member = ref->GetSource();
-                if (member && member->IsAlive() && botAI->IsRangedDps(member) &&
+                if (member && member->IsAlive() && member->getClass() == CLASS_HUNTER &&
                     GET_PLAYERBOT_AI(member))
                     return member == bot;
             }
