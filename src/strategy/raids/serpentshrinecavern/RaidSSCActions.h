@@ -377,9 +377,21 @@ public:
     LadyVashjAvoidToxicSporesAction(PlayerbotAI* botAI, std::string const name = "lady vashj avoid toxic spores") : MovementAction(botAI, name) {}
     bool Execute(Event event) override;
 
+    /* static constexpr float HAZARD_RADIUS = 10.0f;
+    static constexpr float STEP_SIZE = 1.0f;
+    static constexpr uint8 NUM_ANGLES = 16;
+    static constexpr float MAX_SAMPLE_DIST = 30.0f; */
+    static constexpr float HAZARD_RADIUS = 13.0f;
+    static constexpr float STEP_SIZE = 1.0f;
+    static constexpr float MAX_SAMPLE_DIST = 30.0f;
+    static constexpr uint32 MAX_NODES = 500;
+
 private:
     std::vector<Unit*> GetAllSporeDropTriggers(PlayerbotAI* botAI, Player* bot);
-    bool IsSafePosition(float x, float y, float z, const std::vector<Unit*>& hazards, float hazardRadius);
+    /* bool IsStraightPathSafe(const Position& start, const Position& target, const std::vector<Unit*>& hazards);
+    bool TryFindSafePositionWithSafePath(
+            Player* bot, const std::vector<Unit*>& hazards, bool requireSafePath, float& bestDestX, float& bestDestY, float& bestDestZ); */
+    bool FindBestSafePositionBFS(Player* bot, const std::vector<Unit*>& hazards, float& bestX, float& bestY, float& bestZ);
 };
 
 class LadyVashjManageTrackersAction : public Action

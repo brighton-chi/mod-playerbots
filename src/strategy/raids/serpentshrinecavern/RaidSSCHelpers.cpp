@@ -561,66 +561,6 @@ namespace SerpentShrineCavernHelpers
         return nullptr;
     }
 
-    // Crash risk due to raw Player* pointers in lambda capture list; disabled for now
-    /* void ScheduleCoreReconcile(PlayerbotAI* botAI, Player* giver, Player* receiver, uint32 coreId, uint32 delayMs)
-    {
-        if (!botAI || !giver || !receiver)
-            return;
-
-        botAI->AddTimedEvent([giver, receiver, coreId]()
-        {
-            if (!giver || !receiver)
-                return;
-
-            bool receiverHas = GET_PLAYERBOT_AI(receiver)->HasItemInInventory(coreId);
-            bool giverHas = GET_PLAYERBOT_AI(giver)->HasItemInInventory(coreId);
-
-            // If receiver already has one, remove extra from giver to avoid duplicate
-            if (receiverHas)
-            {
-                if (giverHas)
-                {
-                    giver->DestroyItemCount(coreId, 1, true);
-                }
-                return;
-            }
-
-            // If server consumed giver but didn't grant receiver -> create receiver item
-            if (!receiverHas && !giverHas)
-            {
-                ItemPosCountVec dest;
-                uint32 count = 1;
-                int canStore = receiver->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, coreId, count);
-                if (canStore == EQUIP_ERR_OK)
-                {
-                    receiver->StoreNewItem(dest, coreId, true, Item::GenerateItemRandomPropertyId(coreId));
-                }
-                return;
-            }
-
-            // Server didn't process -> perform manual transfer (create then remove)
-            if (!receiverHas && giverHas)
-            {
-                ItemPosCountVec dest;
-                uint32 count = 1;
-                int canStore = receiver->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, coreId, count);
-                if (canStore == EQUIP_ERR_OK)
-                {
-                    Item* created = receiver->StoreNewItem(dest, coreId, true, Item::GenerateItemRandomPropertyId(coreId));
-                    if (created)
-                    {
-                        giver->DestroyItemCount(coreId, 1, true);
-                        bool removedAfter = !GET_PLAYERBOT_AI(giver)->HasItemInInventory(coreId);
-                        if (!removedAfter)
-                        {
-                            receiver->DestroyItemCount(coreId, 1, true);
-                        }
-                    }
-                }
-            }
-        }, delayMs);
-    }
-    */
    void ScheduleCoreReconcile(PlayerbotAI* botAI, Player* giver, Player* receiver, uint32 coreId, uint32 delayMs)
    {
        if (!botAI)

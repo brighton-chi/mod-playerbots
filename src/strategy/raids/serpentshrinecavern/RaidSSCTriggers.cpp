@@ -421,7 +421,7 @@ bool LadyVashjTaintedCoreWasLootedTrigger::IsActive()
         return false;
 
     // remember last time Paralyze was observed so we can tolerate the brief handoff gap
-    static std::map<uint32, time_t> lastParalyzeTime; // mapId -> last seen time
+    static std::map<uint32, time_t> lastParalyzeTime;
     uint32 mapId = vashj->GetMapId();
     time_t now = time(nullptr);
 
@@ -437,12 +437,13 @@ bool LadyVashjTaintedCoreWasLootedTrigger::IsActive()
         }
     }
 
-    if (foundParalyze)
+    Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
+    if (foundParalyze || tainted)
         return true;
 
     // if we recently saw paralyze on this map, keep trigger active for the grace window
     auto it = lastParalyzeTime.find(mapId);
-    if (it != lastParalyzeTime.end() && (now - it->second) <= 2)
+    if (it != lastParalyzeTime.end() && (now - it->second) <= 3)
         return true;
 
     return false;

@@ -410,7 +410,6 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
     if (!vashj || !IsLadyVashjInPhase2(botAI)|| !group || dynamic_cast<WipeAction*>(action))
         return 1.0f;
 
-    Item* item = bot->GetItemByEntry(ITEM_TAINTED_CORE);
     if (bot == GetFirstTaintedCorePasser(group, botAI) ||
         bot == GetSecondTaintedCorePasser(group, botAI) ||
         bot == GetThirdTaintedCorePasser(group, botAI))
@@ -418,8 +417,7 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if ((member && member->IsAlive() && member->HasAura(SPELL_PARALYZE)) ||
-                (item && botAI->HasItemInInventory(ITEM_TAINTED_CORE)))
+            if (member && member->IsAlive() && member->HasAura(SPELL_PARALYZE))
             {
                 if (dynamic_cast<MovementAction*>(action) &&
                     !dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action) &&
@@ -430,10 +428,10 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
     }
 
     Player* master = botAI->GetMaster();
-    if (master && bot == GetDesignatedCoreLooter(group, master, botAI) &&
-        botAI->HasItemInInventory(ITEM_TAINTED_CORE))
+    if (master && bot == GetDesignatedCoreLooter(group, master, botAI) && bot->HasAura(SPELL_PARALYZE))
     {
-        if (!dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action) &&
+        if (dynamic_cast<MovementAction*>(action) &&
+            !dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action) &&
             !dynamic_cast<AttackAction*>(action))
             return 0.0f;
     }
@@ -473,9 +471,6 @@ float LadyVashjDisableAutomaticTargetingAndMovementModifier::GetValue(Action *ac
         Unit* strider = AI_VALUE2(Unit*, "find target", "coilfang strider");
         Unit* elite = AI_VALUE2(Unit*, "find target", "coilfang elite");
         Unit* enchanted = AI_VALUE2(Unit*, "find target", "enchanted elemental");
-
-        LOG_DEBUG("playerbots", "Phase3: strider={} elite={} enchanted={}",
-        strider && strider->IsAlive(), elite && elite->IsAlive(), enchanted && enchanted->IsAlive());
 
         if ((strider && strider->IsAlive()) ||
             (elite && elite->IsAlive()) ||

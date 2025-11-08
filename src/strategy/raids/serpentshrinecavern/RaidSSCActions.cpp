@@ -1,3 +1,6 @@
+#include <queue>
+#include <set>
+
 #include "RaidSSCActions.h"
 #include "RaidSSCHelpers.h"
 #include "AiFactory.h"
@@ -1342,13 +1345,6 @@ bool FathomLordKarathressManageDpsTimerAction::Execute(Event event)
 
 // Morogrim Tidewalker
 
-// Phase 1 tank position
-// Phase 2 tank position (in doorway or behind pillar?)
-// Phase 2 dps/heal position by tidewalker
-// necessary to prio murlocs?
-
-// where are graves? do healers need to stay there? move to them if somebody gets graved?
-
 bool MorogrimTidewalkerMisdirectBossToMainTankAction::Execute(Event event)
 {
     Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
@@ -1792,9 +1788,9 @@ bool LadyVashjAttackAndMoveAwayFromStriderAction::Execute(Event event)
     }
 
     // Don't move away only if raid cheats are enabled AND bot is a tank
-    if (bot->GetExactDist2d(strider) < 13.0f &&
+    if (bot->GetExactDist2d(strider) < 15.0f &&
         (!botAI->HasCheat(BotCheatMask::raid) || !botAI->IsTank(bot)))
-        return MoveAway(strider, 15.0f, false);
+        return MoveAway(strider, 16.0f, false);
 
     if (!botAI->HasCheat(BotCheatMask::raid))
     {
@@ -1836,11 +1832,6 @@ bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
     Unit* elite = nullptr;
     Unit* strider = nullptr;
     Unit* sporebat = nullptr;
-
-    LOG_DEBUG("playerbots", "Vashj DPS Priority: enchanted={} elite={} strider={}",
-        enchanted && enchanted->IsAlive(),
-        elite && elite->IsAlive(),
-        strider && strider->IsAlive());
 
     if (bot->GetVictim() == vashj && (IsLadyVashjInPhase2(botAI) || (IsLadyVashjInPhase3(botAI) &&
         (enchanted && enchanted->IsAlive() || elite && elite->IsAlive() || strider && strider->IsAlive()))))
@@ -1903,11 +1894,6 @@ bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
                 break;
         }
     }
-
-    if (sporebat)
-    LOG_DEBUG("playerbots", "Found sporebat: pos=({}, {}, {}), dist2d={}, dist3d={}",
-        sporebat->GetPositionX(), sporebat->GetPositionY(), sporebat->GetPositionZ(),
-        bot->GetExactDist2d(sporebat), bot->GetDistance(sporebat));
 
     // Set priorities
     std::vector<Unit*> targets;
@@ -2221,7 +2207,6 @@ void LadyVashjPassTheTaintedCoreAction::LineUpFirstCorePasser(Player* designated
     float targetY = centerY + radius * sin(angle);
     float targetZ = 41.097f;
 
-    bot->Yell("I'm moving into position to receive the Tainted Core!", LANG_UNIVERSAL); // If PR'd, will need to use DB
     bot->AttackStop();
     bot->InterruptNonMeleeSpells(true);
     MoveTo(bot->GetMapId(), targetX, targetY, targetZ,
@@ -2403,52 +2388,47 @@ bool LadyVashjPassTheTaintedCoreAction::UseCoreOnNearestGenerator()
 }
 
 bool LadyVashjAvoidToxicSporesAction::Execute(Event event)
+/* {
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (!vashj)
+        return false;
+
+    auto sporeTriggers = GetAllSporeDropTriggers(botAI, bot);
+    if (sporeTriggers.empty())
+        return false;
+
+    float bestX = 0.0f, bestY = 0.0f, bestZ = 0.0f;
+    bool found = false;
+
+    // Try with safe path, then fallback to just safe position
+    for (bool requireSafePath : {true, false})
+    {
+        found = TryFindSafePositionWithSafePath(bot, sporeTriggers, requireSafePath, bestX, bestY, bestZ);
+        if (found)
+            break;
+    }
+
+    if (found)
+    {
+        return MoveTo(bot->GetMapId(), bestX, bestY, bestZ,
+                      false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+    }
+
+    return false;
+} */
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     if (!vashj)
         return false;
 
-    std::vector<Unit*> sporeTriggers = GetAllSporeDropTriggers(botAI, bot);
+    auto sporeTriggers = GetAllSporeDropTriggers(botAI, bot);
     if (sporeTriggers.empty())
         return false;
 
-    const float hazardRadius = 10.0f;
-    const float searchRadius = 30.0f;
-    const float step = 1.0f;
-
-    float closestDist = std::numeric_limits<float>::max();
     float bestX = 0.0f, bestY = 0.0f, bestZ = 0.0f;
+    bool found = FindBestSafePositionBFS(bot, sporeTriggers, bestX, bestY, bestZ);
 
-    const float centerX = VashjRoomCenterPosition.x;
-    const float centerY = VashjRoomCenterPosition.y;
-
-    for (float angle = 0; angle < 2 * M_PI; angle += M_PI / 8)
-    {
-        for (float r = hazardRadius + 2.0f; r < searchRadius; r += step)
-        {
-            float x = bot->GetPositionX() + r * cos(angle);
-            float y = bot->GetPositionY() + r * sin(angle);
-            float z = bot->GetPositionZ();
-
-            float distFromCenter = std::sqrt((x - centerX) * (x - centerX) + (y - centerY) * (y - centerY));
-            if ((distFromCenter > 50.0f && botAI->IsTank(bot) && vashj->GetVictim() == bot) || distFromCenter > 75.0f)
-                continue;
-
-            if (IsSafePosition(x, y, z, sporeTriggers, hazardRadius))
-            {
-                float distToCenter = distFromCenter;
-                if (distToCenter < closestDist)
-                {
-                    closestDist = distToCenter;
-                    bestX = x;
-                    bestY = y;
-                    bestZ = z;
-                }
-            }
-        }
-    }
-
-    if (closestDist < std::numeric_limits<float>::max())
+    if (found)
     {
         return MoveTo(bot->GetMapId(), bestX, bestY, bestZ,
                       false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
@@ -2460,32 +2440,174 @@ bool LadyVashjAvoidToxicSporesAction::Execute(Event event)
 std::vector<Unit*> LadyVashjAvoidToxicSporesAction::GetAllSporeDropTriggers(PlayerbotAI* botAI, Player* bot)
 {
     std::vector<Unit*> sporeDropTriggers;
-    const float radius = 30.0f;
     const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
     for (auto const& npcGuid : npcs)
     {
         Unit* unit = botAI->GetUnit(npcGuid);
-        if (!unit || unit->GetEntry() != NPC_SPORE_DROP_TRIGGER)
-            continue;
-
-        float dist = bot->GetExactDist2d(unit);
-        if (dist < radius)
+        if (unit && unit->GetEntry() == NPC_SPORE_DROP_TRIGGER && bot->GetExactDist2d(unit) < MAX_SAMPLE_DIST)
             sporeDropTriggers.push_back(unit);
     }
 
     return sporeDropTriggers;
 }
 
-bool LadyVashjAvoidToxicSporesAction::IsSafePosition(float x, float y, float z, const std::vector<Unit*>& hazards, float hazardRadius)
+/* bool LadyVashjAvoidToxicSporesAction::IsStraightPathSafe(
+    const Position& start, const Position& target, const std::vector<Unit*>& hazards)
 {
-    for (Unit* hazard : hazards)
+    float sx = start.GetPositionX(), sy = start.GetPositionY();
+    float tx = target.GetPositionX(), ty = target.GetPositionY();
+    float totalDist = std::hypot(tx - sx, ty - sy);
+
+    if (totalDist == 0.0f)
+        return true;
+
+    for (float checkDist = 0.0f; checkDist <= totalDist; checkDist += STEP_SIZE)
     {
-        float dist = std::sqrt(std::pow(x - hazard->GetPositionX(), 2) + std::pow(y - hazard->GetPositionY(), 2));
-        if (dist < hazardRadius)
-            return false;
+        float t = checkDist / totalDist;
+        float checkX = sx + (tx - sx) * t;
+        float checkY = sy + (ty - sy) * t;
+
+        for (auto* hazard : hazards)
+        {
+            float hazardDist = std::hypot(checkX - hazard->GetPositionX(), checkY - hazard->GetPositionY());
+            if (hazardDist < HAZARD_RADIUS)
+                return false;
+        }
     }
 
     return true;
+}
+
+bool LadyVashjAvoidToxicSporesAction::TryFindSafePositionWithSafePath(
+    Player* bot, const std::vector<Unit*>& hazards, bool requireSafePath, float& bestDestX, float& bestDestY, float& bestDestZ)
+{
+    float originX = bot->GetPositionX(), originY = bot->GetPositionY(), originZ = bot->GetPositionZ();
+    float bestMoveDist = std::numeric_limits<float>::max();
+    bool found = false;
+
+    for (int i = 0; i < NUM_ANGLES; ++i)
+    {
+        float angle = (2 * M_PI * i) / NUM_ANGLES;
+        float dx = cos(angle), dy = sin(angle);
+
+        for (float dist = STEP_SIZE; dist <= MAX_SAMPLE_DIST; dist += STEP_SIZE)
+        {
+            float destX = originX + dx * dist, destY = originY + dy * dist, destZ = originZ;
+
+            if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, originX, originY, originZ, destX, destY, destZ, true))
+                continue;
+
+            // Inline safe position check
+            bool safe = true;
+            for (auto* hazard : hazards)
+            {
+                float distToHazard = std::hypot(destX - hazard->GetPositionX(), destY - hazard->GetPositionY());
+                if (distToHazard < HAZARD_RADIUS)
+                {
+                    safe = false;
+                    break;
+                }
+            }
+            if (!safe)
+                continue;
+
+            if (requireSafePath &&
+                !IsStraightPathSafe(Position(originX, originY, originZ), Position(destX, destY, destZ), hazards))
+                continue;
+
+            float moveDist = std::hypot(destX - originX, destY - originY);
+            if (moveDist < bestMoveDist)
+            {
+                bestMoveDist = moveDist;
+                bestDestX = destX;
+                bestDestY = destY;
+                bestDestZ = destZ;
+                found = true;
+            }
+        }
+    }
+
+    return found;
+} */
+
+bool LadyVashjAvoidToxicSporesAction::FindBestSafePositionBFS(
+    Player* bot, const std::vector<Unit*>& hazards, float& bestX, float& bestY, float& bestZ)
+{
+    struct Node
+    {
+        float x, y, z, dist;
+    };
+
+    auto hash = [](float x, float y)
+    {
+        return std::make_pair(int(x * 10), int(y * 10));
+    };
+
+    std::queue<Node> q;
+    std::set<std::pair<int, int>> visited;
+
+    float startX = bot->GetPositionX();
+    float startY = bot->GetPositionY();
+    float startZ = bot->GetPositionZ();
+
+    q.push({startX, startY, startZ, 0.0f});
+    visited.insert(hash(startX, startY));
+
+    Node best = {startX, startY, startZ, 0.0f};
+    float bestScore = -1.0f;
+
+    int nodes = 0;
+    while (!q.empty() && nodes < MAX_NODES)
+    {
+        Node node = q.front(); q.pop();
+        ++nodes;
+
+        // Check if this node is safe
+        bool safe = true;
+        float minHazardDist = 9999.0f;
+        for (auto* hazard : hazards)
+        {
+            float d = std::hypot(node.x - hazard->GetPositionX(), node.y - hazard->GetPositionY());
+            if (d < HAZARD_RADIUS)
+            {
+                safe = false;
+                break;
+            }
+            minHazardDist = std::min(minHazardDist, d);
+        }
+        if (!safe)
+            continue;
+
+        // Score: prefer farther from hazards, but not too far from start
+        float score = minHazardDist - node.dist * 0.1f;
+        if (score > bestScore)
+        {
+            bestScore = score;
+            bestX = node.x;
+            bestY = node.y;
+            bestZ = node.z;
+        }
+
+        // Explore neighbors (8 directions)
+        for (float angle = 0; angle < 2 * M_PI; angle += M_PI / 4)
+        {
+            float nx = node.x + STEP_SIZE * cos(angle);
+            float ny = node.y + STEP_SIZE * sin(angle);
+            float nz = node.z;
+            float ndist = std::hypot(nx - startX, ny - startY);
+            if (ndist > MAX_SAMPLE_DIST)
+                continue;
+            if (visited.count(hash(nx, ny)))
+                continue;
+            float tx = nx, ty = ny, tz = nz;
+            if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, node.x, node.y, node.z, tx, ty, tz, true))
+                continue;
+            q.push({tx, ty, tz, ndist});
+            visited.insert(hash(tx, ty));
+        }
+    }
+
+    return bestScore > 0.0f;
 }
 
 bool LadyVashjManageTrackersAction::Execute(Event event)
