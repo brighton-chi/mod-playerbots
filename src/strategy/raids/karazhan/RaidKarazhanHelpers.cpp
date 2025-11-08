@@ -172,6 +172,10 @@ namespace KarazhanHelpers
 
     bool IsFlameWreathActive(PlayerbotAI* botAI, Player* bot)
     {
+        Group* group = bot->GetGroup();
+        if (!group)
+            return false;
+
         Unit* aran = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "shade of aran")->Get();
         Spell* currentSpell = aran ? aran->GetCurrentSpell(CURRENT_GENERIC_SPELL) : nullptr;
 
@@ -179,17 +183,14 @@ namespace KarazhanHelpers
             currentSpell->m_spellInfo->Id == SPELL_FLAME_WREATH_CAST)
             return true;
 
-        if (Group* group = bot->GetGroup())
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
-            for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
-            {
-                Player* member = ref->GetSource();
-                if (!member || !member->IsAlive())
-                    continue;
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive())
+                continue;
 
-                if (member->HasAura(SPELL_FLAME_WREATH_AURA))
-                    return true;
-            }
+            if (member->HasAura(SPELL_FLAME_WREATH_AURA))
+                return true;
         }
 
         return false;
@@ -201,7 +202,7 @@ namespace KarazhanHelpers
         std::vector<Player*> redBlockers;
         if (Group* group = bot->GetGroup())
         {
-            for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
+            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
             {
                 Player* member = ref->GetSource();
                 if (!member || !member->IsAlive() || !botAI->IsTank(member) || !GET_PLAYERBOT_AI(member) ||
@@ -221,7 +222,7 @@ namespace KarazhanHelpers
         std::vector<Player*> blueBlockers;
         if (Group* group = bot->GetGroup())
         {
-            for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
+            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
             {
                 Player* member = ref->GetSource();
                 if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member))
@@ -251,7 +252,7 @@ namespace KarazhanHelpers
         std::vector<Player*> greenBlockers;
         if (Group* group = bot->GetGroup())
         {
-            for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
+            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
             {
                 Player* member = ref->GetSource();
                 if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member))
@@ -293,6 +294,7 @@ namespace KarazhanHelpers
             {
                 return p && p->GetGUID() == currentRedBlocker;
             });
+
             if (it != redBlockers.end())
                 redBlocker = *it;
             else
@@ -313,6 +315,7 @@ namespace KarazhanHelpers
             {
                 return p && p->GetGUID() == currentGreenBlocker;
             });
+
             if (it != greenBlockers.end())
                 greenBlocker = *it;
             else
@@ -333,6 +336,7 @@ namespace KarazhanHelpers
                 {
                     return p && p->GetGUID() == currentBlueBlocker;
                 });
+
                 if (it != blueBlockers.end())
                     blueBlocker = *it;
                 else
@@ -372,7 +376,8 @@ namespace KarazhanHelpers
     {
         for (Unit* hazard : hazards)
         {
-            float dist = std::sqrt(std::pow(x - hazard->GetPositionX(), 2) + std::pow(y - hazard->GetPositionY(), 2));
+            float dist = std::sqrt(std::pow(x - hazard->GetPositionX(), 2) +
+                                   std::pow(y - hazard->GetPositionY(), 2));
             if (dist < hazardRadius)
                 return false;
         }
@@ -415,7 +420,8 @@ namespace KarazhanHelpers
             float checkZ = sz + (tz - sz) * t;
             for (Unit* hazard : hazards)
             {
-                float hazardDist = std::sqrt(std::pow(checkX - hazard->GetPositionX(), 2) + std::pow(checkY - hazard->GetPositionY(), 2));
+                float hazardDist = std::sqrt(std::pow(checkX - hazard->GetPositionX(), 2) +
+                                             std::pow(checkY - hazard->GetPositionY(), 2));
                 if (hazardDist < hazardRadius)
                     return false;
             }
@@ -426,15 +432,9 @@ namespace KarazhanHelpers
 
     bool TryFindSafePositionWithSafePath(
         Player* bot,
-        float originX, float originY, float originZ,
-        float centerX, float centerY, float centerZ,
-        const std::vector<Unit*>& hazards,
-        float safeDistance,
-        float stepSize,
-        uint8 numAngles,
-        float maxSampleDist,
-        bool requireSafePath,
-        float& bestDestX, float& bestDestY, float& bestDestZ)
+        float originX, float originY, float originZ, float centerX, float centerY, float centerZ,
+        const std::vector<Unit*>& hazards, float safeDistance, float stepSize, uint8 numAngles,
+        float maxSampleDist, bool requireSafePath, float& bestDestX, float& bestDestY, float& bestDestZ)
     {
         float bestMoveDist = std::numeric_limits<float>::max();
         bool found = false;
@@ -451,7 +451,8 @@ namespace KarazhanHelpers
                 float y = centerY + dy * dist;
                 float z = centerZ;
                 float destX = x, destY = y, destZ = z;
-                if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, centerX, centerY, centerZ, destX, destY, destZ, true))
+                if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, centerX, centerY, centerZ,
+                                                                    destX, destY, destZ, true))
                     continue;
 
                 if (!IsSafePosition(destX, destY, destZ, hazards, safeDistance))
@@ -475,6 +476,7 @@ namespace KarazhanHelpers
                 }
             }
         }
+
         return found;
     }
 }

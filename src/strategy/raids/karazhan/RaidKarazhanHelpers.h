@@ -13,39 +13,39 @@ namespace KarazhanHelpers
     enum KarazhanSpells
     {
         // Maiden of Virtue
-        SPELL_REPENTANCE              = 29511,
+        SPELL_REPENTANCE                 = 29511,
 
         // Opera Event
-        SPELL_LITTLE_RED_RIDING_HOOD  = 30756,
+        SPELL_LITTLE_RED_RIDING_HOOD     = 30756,
 
         // Shade of Aran
-        SPELL_FLAME_WREATH_CAST       = 30004,
-        SPELL_FLAME_WREATH_AURA       = 29946,
-        SPELL_ARCANE_EXPLOSION        = 29973,
+        SPELL_FLAME_WREATH_CAST          = 30004,
+        SPELL_FLAME_WREATH_AURA          = 29946,
+        SPELL_ARCANE_EXPLOSION           = 29973,
 
         // Netherspite
-        SPELL_RED_BEAM_DEBUFF         = 30421, // "Nether Portal - Perseverance" (player aura)
-        SPELL_GREEN_BEAM_DEBUFF       = 30422, // "Nether Portal - Serenity" (player aura)
-        SPELL_BLUE_BEAM_DEBUFF        = 30423, // "Nether Portal - Dominance" (player aura)
-        SPELL_GREEN_BEAM_HEAL         = 30467, // "Nether Portal - Serenity" (Netherspite aura)
-        SPELL_NETHER_EXHAUSTION_RED   = 38637,
-        SPELL_NETHER_EXHAUSTION_GREEN = 38638,
-        SPELL_NETHER_EXHAUSTION_BLUE  = 38639,
-        SPELL_NETHERSPITE_BANISHED    = 39833, // "Vortex Shade Black"
+        SPELL_RED_BEAM_DEBUFF            = 30421, // "Nether Portal - Perseverance" (player aura)
+        SPELL_GREEN_BEAM_DEBUFF          = 30422, // "Nether Portal - Serenity" (player aura)
+        SPELL_BLUE_BEAM_DEBUFF           = 30423, // "Nether Portal - Dominance" (player aura)
+        SPELL_GREEN_BEAM_HEAL            = 30467, // "Nether Portal - Serenity" (Netherspite aura)
+        SPELL_NETHER_EXHAUSTION_RED      = 38637,
+        SPELL_NETHER_EXHAUSTION_GREEN    = 38638,
+        SPELL_NETHER_EXHAUSTION_BLUE     = 38639,
+        SPELL_NETHERSPITE_BANISHED       = 39833, // "Vortex Shade Black"
 
         // Prince Malchezaar
-        SPELL_ENFEEBLE                = 30843,
+        SPELL_ENFEEBLE                   = 30843,
 
         // Nightbane
-        SPELL_CHARRED_EARTH           = 30129,
-        SPELL_BELLOWING_ROAR          = 36922,
-        SPELL_RAIN_OF_BONES           = 37091,
+        SPELL_CHARRED_EARTH              = 30129,
+        SPELL_BELLOWING_ROAR             = 36922,
+        SPELL_RAIN_OF_BONES              = 37091,
 
         // Warlock
-        SPELL_WARLOCK_BANISH          = 18647,
+        SPELL_WARLOCK_BANISH             = 18647,
 
         // Priest
-        SPELL_FEAR_WARD               =  6346,
+        SPELL_FEAR_WARD                  =  6346,
     };
 
     enum KarazhanNPCs
@@ -119,16 +119,9 @@ namespace KarazhanHelpers
     std::vector<Unit*> GetSpawnedInfernals(PlayerbotAI* botAI);
     bool IsStraightPathSafe(const Position& start, const Position& target,
         const std::vector<Unit*>& hazards, float hazardRadius, float stepSize);
-    bool TryFindSafePositionWithSafePath(
-        Player* bot,
-        float originX, float originY, float originZ,
-        float centerX, float centerY, float centerZ,
-        const std::vector<Unit*>& hazards,
-        float safeDistance,
-        float stepSize,
-        uint8 numAngles,
-        float maxSampleDist,
-        bool requireSafePath,
+    bool TryFindSafePositionWithSafePath( Player* bot, float originX, float originY, float originZ,
+        float centerX, float centerY, float centerZ, const std::vector<Unit*>& hazards,
+        float safeDistance, float stepSize, uint8 numAngles, float maxSampleDist, bool requireSafePath,
         float& bestDestX, float& bestDestY, float& bestDestZ);
 }
 

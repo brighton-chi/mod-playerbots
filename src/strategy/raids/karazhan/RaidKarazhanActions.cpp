@@ -64,7 +64,7 @@ bool AttumenTheHuntsmanMarkTargetAction::Execute(Event event)
 
         if (botAI->IsRangedDps(bot) && bot->GetTarget() != midnight->GetGUID())
         {
-            bot->SetSelection(midnight->GetGUID());
+            bot->SetTarget(midnight->GetGUID());
             return Attack(midnight);
         }
 
@@ -79,7 +79,7 @@ bool AttumenTheHuntsmanMarkTargetAction::Execute(Event event)
 
         if (botAI->IsRangedDps(bot) && bot->GetTarget() != attumenMounted->GetGUID())
         {
-            bot->SetSelection(attumenMounted->GetGUID());
+            bot->SetTarget(attumenMounted->GetGUID());
             return Attack(attumenMounted);
         }
 
@@ -122,12 +122,12 @@ bool AttumenTheHuntsmanStackBehindAction::Execute(Event event)
     if (!attumenMounted)
         return false;
 
-    const float distance = 3.0f;
+    const float distanceBehind = 3.0f;
     float orientation = attumenMounted->GetOrientation() + M_PI;
     float x = attumenMounted->GetPositionX();
     float y = attumenMounted->GetPositionY();
-    float rx = x + cos(orientation) * distance;
-    float ry = y + sin(orientation) * distance;
+    float rx = x + cos(orientation) * distanceBehind;
+    float ry = y + sin(orientation) * distanceBehind;
 
     if (bot->GetExactDist2d(rx, ry) > 2.0f)
     {
@@ -183,25 +183,23 @@ bool MoroesMarkTargetAction::Execute(Event event)
 bool MaidenOfVirtueMainTankMovementAction::Execute(Event event)
 {
     Unit* maiden = AI_VALUE2(Unit*, "find target", "maiden of virtue");
-    Unit* healer = nullptr;
-    if (!maiden)
+    Group* group = bot->GetGroup();
+    if (!maiden || !group)
         return false;
 
     if (bot->GetVictim() != maiden)
         return Attack(maiden);
 
-    if (Group* group = bot->GetGroup())
+    Unit* healer = nullptr;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
-        for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || !botAI->IsHeal(member) ||
-                !member->HasAura(SPELL_REPENTANCE))
-                continue;
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive() || !botAI->IsHeal(member) ||
+            !member->HasAura(SPELL_REPENTANCE))
+            continue;
 
-            healer = member;
-            break;
-        }
+        healer = member;
+        break;
     }
 
     if (healer)
@@ -211,7 +209,6 @@ bool MaidenOfVirtueMainTankMovementAction::Execute(Event event)
         float targetY = healer->GetPositionY() + sin(angle) * 6.0f;
         float targetZ = healer->GetPositionZ();
         {
-            bot->AttackStop();
             return MoveTo(bot->GetMapId(), targetX, targetY, targetZ, false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
@@ -226,7 +223,6 @@ bool MaidenOfVirtueMainTankMovementAction::Execute(Event event)
         float mX = KARAZHAN_MAIDEN_OF_VIRTUE_BOSS_POSITION.GetPositionX() + (dX / distanceToBossPosition) * maxDistance;
         float mY = KARAZHAN_MAIDEN_OF_VIRTUE_BOSS_POSITION.GetPositionY() + (dY / distanceToBossPosition) * maxDistance;
         {
-            bot->AttackStop();
             return MoveTo(bot->GetMapId(), mX, mY, bot->GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
@@ -245,12 +241,10 @@ bool MaidenOfVirtuePositionRangedAction::Execute(Event event)
     const uint8 maxIndex = 7;
     uint8 index = 0;
 
-    const GuidVector members = AI_VALUE(GuidVector, "group members");
-
-    for (auto const& memberGuid : members)
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
-        Unit* member = botAI->GetUnit(memberGuid);
-        if (!member || !botAI->IsRanged(member->ToPlayer()))
+        Player* member = ref->GetSource();
+        if (!member || !botAI->IsRanged(member))
             continue;
 
         if (member == bot)
@@ -264,9 +258,7 @@ bool MaidenOfVirtuePositionRangedAction::Execute(Event event)
         index++;
     }
 
-    float distance = bot->GetExactDist2d(KARAZHAN_MAIDEN_OF_VIRTUE_RANGED_POSITION[index]);
-    const float maxDistance = 2.0f;
-    if (distance > maxDistance)
+    if (bot->GetExactDist2d(KARAZHAN_MAIDEN_OF_VIRTUE_RANGED_POSITION[index]) > 2.0f)
     {
         bot->AttackStop();
         bot->InterruptNonMeleeSpells(true);
@@ -301,21 +293,16 @@ bool BigBadWolfPositionBossAction::Execute(Event event)
             float dY = KARAZHAN_BIG_BAD_WOLF_BOSS_POSITION.GetPositionY() - wolf->GetPositionY();
             float mX = KARAZHAN_BIG_BAD_WOLF_BOSS_POSITION.GetPositionX() + (dX / distanceToBossPosition) * maxDistance;
             float mY = KARAZHAN_BIG_BAD_WOLF_BOSS_POSITION.GetPositionY() + (dY / distanceToBossPosition) * maxDistance;
-            float moveDistance = bot->GetExactDist2d(mX, mY);
-            if (moveDistance < 0.5f)
-                return false;
 
             return MoveTo(bot->GetMapId(), mX, mY, bot->GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
-
-        float orientation = atan2(wolf->GetPositionY() - bot->GetPositionY(),
-                            wolf->GetPositionX() - bot->GetPositionX());
-        bot->SetFacingTo(orientation);
     }
     else if (!bot->IsWithinMeleeRange(wolf))
+    {
         return MoveTo(bot->GetMapId(), wolf->GetPositionX(), wolf->GetPositionY(), wolf->GetPositionZ(),
                       false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+    }
 
     return false;
 }
@@ -324,11 +311,10 @@ bool BigBadWolfPositionBossAction::Execute(Event event)
 bool BigBadWolfRunAwayFromBossAction::Execute(Event event)
 {
     ObjectGuid botGuid = bot->GetGUID();
-    const float threshold = 1.0f;
     uint8 index = bigBadWolfRunIndex.count(botGuid) ? bigBadWolfRunIndex[botGuid] : 0;
     Position target = KARAZHAN_BIG_BAD_WOLF_RUN_POSITION[index];
 
-    while (bot->GetExactDist2d(target.GetPositionX(), target.GetPositionY()) < threshold)
+    while (bot->GetExactDist2d(target.GetPositionX(), target.GetPositionY()) < 1.0f)
     {
         index = (index + 1) % 4;
         target = KARAZHAN_BIG_BAD_WOLF_RUN_POSITION[index];
@@ -347,13 +333,13 @@ bool BigBadWolfRunAwayFromBossAction::Execute(Event event)
 // Keep the couple within 10% HP of each other
 bool RomuloAndJulianneMarkTargetAction::Execute(Event event)
 {
-    Unit* target = nullptr;
     Unit* romulo = AI_VALUE2(Unit*, "find target", "romulo");
     Unit* julianne = AI_VALUE2(Unit*, "find target", "julianne");
     if (!romulo || !julianne)
         return false;
 
-    const uint8 maxPctDifference = 10;
+    Unit* target = nullptr;
+    const float maxPctDifference = 10.0f;
     if (julianne->GetHealthPct() + maxPctDifference < romulo->GetHealthPct() || julianne->GetHealthPct() < 1.0f)
         target = romulo;
     else if (romulo->GetHealthPct() + maxPctDifference < julianne->GetHealthPct() || romulo->GetHealthPct() < 1.0f)
@@ -429,6 +415,7 @@ bool TheCuratorPositionBossAction::Execute(Event event)
             float dY = KARAZHAN_THE_CURATOR_BOSS_POSITION.GetPositionY() - curator->GetPositionY();
             float mX = KARAZHAN_THE_CURATOR_BOSS_POSITION.GetPositionX() + (dX / distanceToBossPosition) * maxDistance;
             float mY = KARAZHAN_THE_CURATOR_BOSS_POSITION.GetPositionY() + (dY / distanceToBossPosition) * maxDistance;
+
             return MoveTo(bot->GetMapId(), mX, mY, bot->GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
@@ -446,7 +433,7 @@ bool TheCuratorSpreadRangedAction::Execute(Event event)
     if (nearestPlayer)
     {
         bot->AttackStop();
-        bot->InterruptNonMeleeSpells(false);
+        bot->InterruptNonMeleeSpells(true);
         return FleePosition(nearestPlayer->GetPosition(), minDistance);
     }
 
@@ -469,6 +456,7 @@ bool TerestianIllhoofMarkTargetAction::Execute(Event event)
         if (!target || !target->IsAlive())
             target = illhoof;
     }
+
     MarkTargetWithSkull(bot, target);
 
     return false;
@@ -499,11 +487,15 @@ bool ShadeOfAranRunAwayFromArcaneExplosionAction::Execute(Event event)
 bool ShadeOfAranStopMovingDuringFlameWreathAction::Execute(Event event)
 {
     AI_VALUE(LastMovement&, "last movement").Set(nullptr);
-    bot->GetMotionMaster()->Clear();
-    if (bot->isMoving())
-        bot->StopMoving();
 
-    return true;
+    if (bot->isMoving())
+    {
+        bot->GetMotionMaster()->Clear();
+        bot->StopMoving();
+        return true;
+    }
+
+    return false;
 }
 
 // Mark Conjured Elementals with skull so DPS can burn them down
@@ -522,23 +514,56 @@ bool ShadeOfAranMarkConjuredElementalAction::Execute(Event event)
 bool ShadeOfAranRangedMaintainDistanceAction::Execute(Event event)
 {
     Unit* aran = AI_VALUE2(Unit*, "find target", "shade of aran");
-    if (!aran)
+    Group* group = bot->GetGroup();
+    if (!aran || !group)
         return false;
 
-    float dist = bot->GetExactDist2d(aran);
-    if (dist < 11.0f || dist >= 15.0f)
+    const float minDist = 11.0f;
+    const float maxDist = 15.0f;
+    const float ringIncrement = M_PI / 8;
+    const float distIncrement = 0.5f;
+
+    float bestX = 0, bestY = 0, bestMoveDist = std::numeric_limits<float>::max();
+    bool found = false;
+
+    for (float dist = minDist; dist <= maxDist; dist += distIncrement)
     {
-        float angle = aran->GetAngle(bot);
-        float x = aran->GetPositionX() + cos(angle) * 13.0f;
-        float y = aran->GetPositionY() + sin(angle) * 13.0f;
-        return MoveTo(aran->GetMapId(), x, y, bot->GetPositionZ(), false, false, false, false,
-                      MovementPriority::MOVEMENT_COMBAT, true, false);
+        for (float angle = 0; angle < 2 * M_PI; angle += ringIncrement)
+        {
+            float x = aran->GetPositionX() + cos(angle) * dist;
+            float y = aran->GetPositionY() + sin(angle) * dist;
+
+            bool tooClose = false;
+            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+            {
+                Player* member = ref->GetSource();
+                if (!member || member == bot || !member->IsAlive())
+                    continue;
+                if (member->GetExactDist2d(x, y) < 3.0f)
+                {
+                    tooClose = true;
+                    break;
+                }
+            }
+            if (tooClose)
+                continue;
+
+            float moveDist = bot->GetExactDist2d(x, y);
+            if (moveDist < bestMoveDist)
+            {
+                bestMoveDist = moveDist;
+                bestX = x;
+                bestY = y;
+                found = true;
+            }
+        }
     }
 
-    const float minDistance = 4.0f;
-    Unit* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance);
-    if (nearestPlayer)
-        return MoveAway(nearestPlayer, 5.0f, false);
+    if (found && bestMoveDist > 0.5f)
+    {
+        return MoveTo(aran->GetMapId(), bestX, bestY, bot->GetPositionZ(), false, false, false, false,
+                      MovementPriority::MOVEMENT_COMBAT, true, false);
+    }
 
     return false;
 }
@@ -991,7 +1016,7 @@ bool PrinceMalchezaarEnfeebledAvoidHazardAction::Execute(Event event)
     const float minSafeBossDistance = 34.0f;
     const float maxSafeBossDistance = 60.0f;
     const float safeInfernalDistance = 23.0f;
-    const float stepSize = 0.5f;
+    const float distIncrement = 0.5f;
     const uint8 numAngles = 64;
 
     float bx = bot->GetPositionX();
@@ -1010,7 +1035,7 @@ bool PrinceMalchezaarEnfeebledAvoidHazardAction::Execute(Event event)
         float dx = cos(angle);
         float dy = sin(angle);
 
-        for (float dist = minSafeBossDistance; dist <= maxSafeBossDistance; dist += stepSize)
+        for (float dist = minSafeBossDistance; dist <= maxSafeBossDistance; dist += distIncrement)
         {
             float x = malchezaarX + dx * dist;
             float y = malchezaarY + dy * dist;
@@ -1024,7 +1049,7 @@ bool PrinceMalchezaarEnfeebledAvoidHazardAction::Execute(Event event)
                 continue;
 
             bool pathSafe = IsStraightPathSafe(Position(bx, by, bz), Position(destX, destY, destZ2),
-                                               infernals, safeInfernalDistance, stepSize);
+                                               infernals, safeInfernalDistance, distIncrement);
             float moveDist = sqrt(pow(destX - bx, 2) + pow(destY - by, 2));
 
             if (pathSafe && moveDist < bestMoveDist)
@@ -1060,7 +1085,7 @@ bool PrinceMalchezaarNonTankAvoidInfernalAction::Execute(Event event)
     std::vector<Unit*> infernals = GetSpawnedInfernals(botAI);
 
     const float safeInfernalDistance = 23.0f;
-    const float maxSafeBossDistance = 40.0f;
+    const float maxSafeBossDistance = 35.0f;
 
     float bx = bot->GetPositionX();
     float by = bot->GetPositionY();
@@ -1072,7 +1097,8 @@ bool PrinceMalchezaarNonTankAvoidInfernalAction::Execute(Event event)
     bool nearInfernal = false;
     for (Unit* infernal : infernals)
     {
-        float infernalDist = sqrt(pow(bx - infernal->GetPositionX(), 2) + pow(by - infernal->GetPositionY(), 2));
+        float infernalDist = sqrt(pow(bx - infernal->GetPositionX(), 2) +
+                                  pow(by - infernal->GetPositionY(), 2));
         if (infernalDist < safeInfernalDistance)
         {
             nearInfernal = true;
@@ -1085,24 +1111,20 @@ bool PrinceMalchezaarNonTankAvoidInfernalAction::Execute(Event event)
 
     if (nearInfernal)
     {
-        const float stepSize = 0.5f;
+        const float distIncrement = 0.5f;
         const uint8 numAngles = 64;
 
         // 1. Try to find a safe position with a safe path
-        found = TryFindSafePositionWithSafePath(
-                bot, bx, by, bz, malchezaarX, malchezaarY, malchezaarZ,
-                infernals, safeInfernalDistance, stepSize, numAngles, maxSafeBossDistance,
-                true, // requireSafePath
-                bestDestX, bestDestY, bestDestZ);
+        found = TryFindSafePositionWithSafePath(bot, bx, by, bz, malchezaarX, malchezaarY, malchezaarZ,
+                infernals, safeInfernalDistance, distIncrement, numAngles, maxSafeBossDistance,
+                true, bestDestX, bestDestY, bestDestZ);
 
-        // 2. Fallback: try to find a safe position (ignore path)
+        // 2. Fallback: try to find a safe position (ignore path safety)
         if (!found)
         {
-            found = TryFindSafePositionWithSafePath(
-                    bot, bx, by, bz, malchezaarX, malchezaarY, malchezaarZ,
-                    infernals, safeInfernalDistance, stepSize, numAngles, maxSafeBossDistance,
-                    false, // don't require safe path
-                    bestDestX, bestDestY, bestDestZ);
+            found = TryFindSafePositionWithSafePath(bot, bx, by, bz, malchezaarX, malchezaarY, malchezaarZ,
+                    infernals, safeInfernalDistance, distIncrement, numAngles, maxSafeBossDistance,
+                    false, bestDestX, bestDestY, bestDestZ);
         }
 
         if (found)
@@ -1110,7 +1132,7 @@ bool PrinceMalchezaarNonTankAvoidInfernalAction::Execute(Event event)
             bot->AttackStop();
             bot->InterruptNonMeleeSpells(true);
             return MoveTo(bot->GetMapId(), bestDestX, bestDestY, bestDestZ, false, false, false, false,
-                          MovementPriority::MOVEMENT_COMBAT, true, false);
+                          MovementPriority::MOVEMENT_FORCED, true, false);
         }
     }
 
@@ -1140,7 +1162,8 @@ bool PrinceMalchezaarMainTankMovementAction::Execute(Event event)
     bool nearInfernal = false;
     for (Unit* infernal : infernals)
     {
-        float infernalDist = sqrt(pow(bx - infernal->GetPositionX(), 2) + pow(by - infernal->GetPositionY(), 2));
+        float infernalDist = sqrt(pow(bx - infernal->GetPositionX(), 2) +
+                                  pow(by - infernal->GetPositionY(), 2));
         if (infernalDist < safeInfernalDistance)
         {
             nearInfernal = true;
@@ -1153,31 +1176,27 @@ bool PrinceMalchezaarMainTankMovementAction::Execute(Event event)
 
     if (nearInfernal)
     {
-        const float stepSize = 0.5f;
+        const float distIncrement = 0.5f;
         const uint8 numAngles = 64;
 
         // 1. Try to find a safe position with a safe path
-        found = TryFindSafePositionWithSafePath(
-                bot, bx, by, bz, bx, by, bz,
-                infernals, safeInfernalDistance, stepSize, numAngles, maxSampleDist,
-                true, // requireSafePath
-                bestDestX, bestDestY, bestDestZ);
+        found = TryFindSafePositionWithSafePath( bot, bx, by, bz, bx, by, bz,
+                infernals, safeInfernalDistance, distIncrement, numAngles, maxSampleDist,
+                true, bestDestX, bestDestY, bestDestZ);
 
-        // 2. Fallback: try to find a safe position (ignore path)
+        // 2. Fallback: try to find a safe position (ignore path safety)
         if (!found)
         {
-            found = TryFindSafePositionWithSafePath(
-                    bot, bx, by, bz, bx, by, bz,
-                    infernals, safeInfernalDistance, stepSize, numAngles, maxSampleDist,
-                    false, // don't require safe path
-                    bestDestX, bestDestY, bestDestZ);
+            found = TryFindSafePositionWithSafePath( bot, bx, by, bz, bx, by, bz,
+                    infernals, safeInfernalDistance, distIncrement, numAngles, maxSampleDist,
+                    false, bestDestX, bestDestY, bestDestZ);
         }
 
         if (found)
         {
             bot->AttackStop();
             return MoveTo(bot->GetMapId(), bestDestX, bestDestY, bestDestZ, false, false, false, false,
-                          MovementPriority::MOVEMENT_COMBAT, true, false);
+                          MovementPriority::MOVEMENT_FORCED, true, false);
         }
     }
 
@@ -1223,9 +1242,11 @@ bool NightbaneGroundPhasePositionBossAction::Execute(Event event)
         bot->SetFacingTo(orientation);
     }
     else if (!bot->IsWithinMeleeRange(nightbane))
+    {
         return MoveTo(nightbane->GetMapId(), nightbane->GetPositionX(), nightbane->GetPositionY(),
                       nightbane->GetPositionZ(), false, false, false, false,
                       MovementPriority::MOVEMENT_COMBAT, true, false);
+    }
 
     return false;
 }
@@ -1278,18 +1299,18 @@ bool NightbaneGroundPhaseRotateRangedPositionsAction::Execute(Event event)
 
 bool NightbaneCastFearWardOnMainTankAction::Execute(Event event)
 {
-    Player* mainTank = nullptr;
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
 
-    if (Group* group = bot->GetGroup())
+    Player* mainTank = nullptr;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        Player* member = ref->GetSource();
+        if (member && botAI->IsMainTank(member))
         {
-            Player* member = ref->GetSource();
-            if (member && botAI->IsMainTank(member))
-            {
-                mainTank = member;
-                break;
-            }
+            mainTank = member;
+            break;
         }
     }
 

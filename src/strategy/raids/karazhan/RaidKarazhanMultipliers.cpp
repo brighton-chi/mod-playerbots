@@ -29,6 +29,7 @@ float AttumenTheHuntsmanDisableTankAssistMultiplier::GetValue(Action* action)
 {
     Unit* midnight = AI_VALUE2(Unit*, "find target", "midnight");
     Unit* attumen = AI_VALUE2(Unit*, "find target", "attumen the huntsman");
+
     if (!midnight && !attumen)
         return 1.0f;
 
@@ -67,8 +68,8 @@ float AttumenTheHuntsmanWaitForDPSMultiplier::GetValue(Action* action)
     auto it = attumenDPSWaitTimer.find(bot->GetMapId());
     if (it == attumenDPSWaitTimer.end() || (time(nullptr) - it->second) < dpsWaitSeconds)
     {
-        if (!botAI->IsMainTank(bot) && (dynamic_cast<AttackAction*>(action) ||
-            (!botAI->IsHeal(bot) && dynamic_cast<CastSpellAction*>(action))))
+        if ((!botAI->IsMainTank(bot) && dynamic_cast<AttackAction*>(action)) ||
+            (dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<CastHealingSpellAction*>(action)))
             return 0.0f;
     }
 
@@ -122,9 +123,9 @@ float ShadeOfAranFlameWreathDisableMovementMultiplier::GetValue(Action* action)
 
     if (IsFlameWreathActive(botAI, bot))
     {
-        if (dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<FleeAction*>(action) ||
-            dynamic_cast<CastKillingSpreeAction*>(action) || dynamic_cast<CastBlinkBackAction*>(action) ||
-            dynamic_cast<CastDisengageAction*>(action) || IsChargeAction(action))
+        if (dynamic_cast<MovementAction*>(action) || dynamic_cast<CastKillingSpreeAction*>(action) ||
+            dynamic_cast<CastBlinkBackAction*>(action) || dynamic_cast<CastDisengageAction*>(action) ||
+            IsChargeAction(action))
             return 0.0f;
     }
 
@@ -166,7 +167,6 @@ float NetherspiteKeepBlockingBeamMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-// I'm not sure this is working properly, but I haven't had problems with results
 float NetherspiteWaitForDPSMultiplier::GetValue(Action* action)
 {
     Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
@@ -175,15 +175,11 @@ float NetherspiteWaitForDPSMultiplier::GetValue(Action* action)
 
     const uint8 dpsWaitSeconds = 5;
     auto it = netherspiteDPSWaitTimer.find(bot->GetMapId());
-    if (it != netherspiteDPSWaitTimer.end())
+    if (it == netherspiteDPSWaitTimer.end() || (time(nullptr) - it->second) < dpsWaitSeconds)
     {
-        time_t since = time(nullptr) - it->second;
-        if (since < dpsWaitSeconds)
-        {
-            if (!botAI->IsTank(bot) && (dynamic_cast<AttackAction*>(action) ||
-                (!botAI->IsHeal(bot) && dynamic_cast<CastSpellAction*>(action))))
-                return 0.0f;
-        }
+        if ((!botAI->IsTank(bot) && dynamic_cast<AttackAction*>(action)) ||
+            (dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<CastHealingSpellAction*>(action)))
+            return 0.0f;
     }
 
      return 1.0f;
@@ -254,15 +250,11 @@ float NightbaneWaitForDPSMultiplier::GetValue(Action* action)
 
     const uint8 dpsWaitSeconds = 8;
     auto it = nightbaneDPSWaitTimer.find(bot->GetMapId());
-    if (it != nightbaneDPSWaitTimer.end())
+    if (it == nightbaneDPSWaitTimer.end() || (time(nullptr) - it->second) < dpsWaitSeconds)
     {
-        time_t since = time(nullptr) - it->second;
-        if (since < dpsWaitSeconds)
-        {
-            if (!botAI->IsMainTank(bot) && (dynamic_cast<AttackAction*>(action) ||
-                (!botAI->IsHeal(bot) && dynamic_cast<CastSpellAction*>(action))))
-                return 0.0f;
-        }
+        if ((!botAI->IsMainTank(bot) && dynamic_cast<AttackAction*>(action)) ||
+            (dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<CastHealingSpellAction*>(action)))
+            return 0.0f;
     }
 
     return 1.0f;
@@ -295,6 +287,8 @@ float NightbaneDisableMovementMultiplier::GetValue(Action* action)
         dynamic_cast<FleeAction*>(action))
         return 0.0f;
 
+    // Disable CombatFormationMoveAction for all bots except:
+    // (1) main tank and (2) only during the ground phase, other melee
     if (!(botAI->IsMelee(bot) && nightbane->GetPositionZ() <= 95.0f) && !botAI->IsMainTank(bot) &&
         dynamic_cast<CombatFormationMoveAction*>(action))
         return 0.0f;

@@ -9,7 +9,7 @@ bool SpectralRetainerNeedTargetPriorityTrigger::IsActive()
 {
     Unit* retainer = AI_VALUE2(Unit*, "find target", "spectral retainer");
 
-    return retainer && botAI->IsDps(bot);
+    return retainer && IsMapIDTimerManager(botAI, bot);
 }
 
 bool ManaWarpIsAboutToExplodeTrigger::IsActive()
@@ -41,7 +41,8 @@ bool AttumenTheHuntsmanAttumenMountedTrigger::IsActive()
 {
     Unit* attumenMounted = GetFirstAliveUnitByEntry(botAI, NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED);
 
-    return attumenMounted && !botAI->IsMainTank(bot) && attumenMounted->GetVictim() != bot;
+    return attumenMounted && !botAI->IsMainTank(bot) && !botAI->IsHeal(bot) &&
+           attumenMounted->GetVictim() != bot;
 }
 
 bool AttumenTheHuntsmanManageTimerTrigger::IsActive()
@@ -62,7 +63,7 @@ bool MoroesNeedTargetPriorityTrigger::IsActive()
     Unit* crispin = AI_VALUE2(Unit*, "find target", "lord crispin ference");
     Unit* target = dorothea ? dorothea : (catriona ? catriona : (keira ? keira : (rafe ? rafe : (robin ? robin : crispin))));
 
-    return target && target->IsAlive();
+    return target && target->IsAlive() && IsMapIDTimerManager(botAI, bot);
 }
 
 bool MaidenOfVirtueBossEngagedByMainTankTrigger::IsActive()
@@ -99,7 +100,7 @@ bool RomuloAndJulianneBothBossesRevivedTrigger::IsActive()
     Unit* julianne = AI_VALUE2(Unit*, "find target", "julianne");
     Unit* romulo = AI_VALUE2(Unit*, "find target", "romulo");
 
-    return julianne && romulo && (julianne->IsAlive() || romulo->IsAlive());
+    return julianne && romulo && (julianne->IsAlive() || romulo->IsAlive()) && IsMapIDTimerManager(botAI, bot);
 }
 
 bool WizardOfOzNeedTargetPriorityTrigger::IsActive()
@@ -127,11 +128,9 @@ bool TheCuratorAstralFlareSpawnedTrigger::IsActive()
     Unit* curator = AI_VALUE2(Unit*, "find target", "the curator");
     Unit* target = AI_VALUE2(Unit*, "find target", "astral flare");
 
-    return curator && target && target->IsAlive();
+    return curator && target && IsMapIDTimerManager(botAI, bot);
 }
 
-// Inclusion of Assist Tank is because they need to be given the directive to attack
-// Tanks with TankAssistAction disabled will not initiate combat unless ordered to do so
 bool TheCuratorBossEngagedByTanksTrigger::IsActive()
 {
     Unit* curator = AI_VALUE2(Unit*, "find target", "the curator");
@@ -158,7 +157,7 @@ bool TerestianIllhoofNeedTargetPriorityTrigger::IsActive()
             target = illhoof;
     }
 
-    return illhoof && target && target->IsAlive();
+    return illhoof && target && IsMapIDTimerManager(botAI, bot);
 }
 
 bool ShadeOfAranArcaneExplosionIsCastingTrigger::IsActive()
@@ -166,7 +165,8 @@ bool ShadeOfAranArcaneExplosionIsCastingTrigger::IsActive()
     Unit* aran = AI_VALUE2(Unit*, "find target", "shade of aran");
 
     return aran && aran->HasUnitState(UNIT_STATE_CASTING) &&
-           aran->FindCurrentSpellBySpellId(SPELL_ARCANE_EXPLOSION);
+           aran->FindCurrentSpellBySpellId(SPELL_ARCANE_EXPLOSION) &&
+           !IsFlameWreathActive(botAI, bot);
 }
 
 bool ShadeOfAranFlameWreathIsActiveTrigger::IsActive()
@@ -272,6 +272,7 @@ bool PrinceMalchezaarBossEngagedByMainTankTrigger::IsActive()
     return malchezaar && botAI->IsMainTank(bot) && malchezaar->GetVictim() == bot;
 }
 
+// Z-axis of 95 yards is used to determine if Nightbane is flying
 bool NightbaneBossEngagedByMainTankTrigger::IsActive()
 {
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
@@ -289,24 +290,23 @@ bool NightbaneRangedPrepareForCharredEarthTrigger::IsActive()
 bool NightbaneMainTankIsSusceptibleToFearTrigger::IsActive()
 {
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
-    Player* mainTank = nullptr;
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
 
-    if (Group* group = bot->GetGroup())
+    Player* mainTank = nullptr;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        Player* member = ref->GetSource();
+        if (member && botAI->IsMainTank(member))
         {
-            Player* member = ref->GetSource();
-            if (member && botAI->IsMainTank(member))
-            {
-                mainTank = member;
-                break;
-            }
+            mainTank = member;
+            break;
         }
     }
 
-    return nightbane && bot->getClass() == CLASS_PRIEST &&
-           mainTank && !mainTank->HasAura(SPELL_FEAR_WARD) &&
-           botAI->CanCastSpell("fear ward", mainTank);
+    return nightbane && bot->getClass() == CLASS_PRIEST && mainTank &&
+           !mainTank->HasAura(SPELL_FEAR_WARD) && botAI->CanCastSpell("fear ward", mainTank);
 }
 
 bool NightbanePetsIgnoreColllisionToChaseFlyingBossTrigger::IsActive()
