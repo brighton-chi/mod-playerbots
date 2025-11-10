@@ -17,8 +17,8 @@ public:
         creators["hydross the unstable elementals spawned"] = &RaidSSCTriggerContext::hydross_the_unstable_elementals_spawned;
         creators["hydross the unstable danger from water tombs"] = &RaidSSCTriggerContext::hydross_the_unstable_danger_from_water_tombs;
         creators["hydross the unstable tank needs aggro upon phase change"] = &RaidSSCTriggerContext::hydross_the_unstable_tank_needs_aggro_upon_phase_change;
-        creators["hydross the unstable need to transition before fourth mark"] = &RaidSSCTriggerContext::hydross_the_unstable_need_to_transition_before_fourth_mark;
-        creators["hydross the unstable need to manage phase change aggro reset"] = &RaidSSCTriggerContext::hydross_the_unstable_need_to_manage_phase_change_aggro_reset;
+        creators["hydross the unstable aggro resets upon phase change"] = &RaidSSCTriggerContext::hydross_the_unstable_aggro_resets_upon_phase_change;
+        creators["hydross the unstable need to manage timers"] = &RaidSSCTriggerContext::hydross_the_unstable_need_to_manage_timers;
 
         creators["the lurker below boss is active for main tank"] = &RaidSSCTriggerContext::the_lurker_below_boss_is_active_for_main_tank;
         creators["the lurker below boss is active for other melee"] = &RaidSSCTriggerContext::the_lurker_below_boss_is_active_for_other_melee;
@@ -74,8 +74,8 @@ private:
     static Trigger* hydross_the_unstable_elementals_spawned(PlayerbotAI* botAI) { return new HydrossTheUnstableElementalsSpawnedTrigger(botAI); }
     static Trigger* hydross_the_unstable_danger_from_water_tombs(PlayerbotAI* botAI) { return new HydrossTheUnstableDangerFromWaterTombsTrigger(botAI); }
     static Trigger* hydross_the_unstable_tank_needs_aggro_upon_phase_change(PlayerbotAI* botAI) { return new HydrossTheUnstableTankNeedsAggroUponPhaseChangeTrigger(botAI); }
-    static Trigger* hydross_the_unstable_need_to_transition_before_fourth_mark(PlayerbotAI* botAI) { return new HydrossTheUnstableNeedToTransitionBeforeFourthMarkTrigger(botAI); }
-    static Trigger* hydross_the_unstable_need_to_manage_phase_change_aggro_reset(PlayerbotAI* botAI) { return new HydrossTheUnstableNeedToManagePhaseChangeAggroResetTrigger(botAI); }
+    static Trigger* hydross_the_unstable_aggro_resets_upon_phase_change(PlayerbotAI* botAI) { return new HydrossTheUnstableAggroResetsUponPhaseChangeTrigger(botAI); }
+    static Trigger* hydross_the_unstable_need_to_manage_timers(PlayerbotAI* botAI) { return new HydrossTheUnstableNeedToManageTimersTrigger(botAI); }
 
     static Trigger* the_lurker_below_boss_is_active_for_main_tank(PlayerbotAI* botAI) { return new TheLurkerBelowBossIsActiveForMainTankTrigger(botAI); }
     static Trigger* the_lurker_below_boss_is_active_for_other_melee(PlayerbotAI* botAI) { return new TheLurkerBelowBossIsActiveForOtherMeleeTrigger(botAI); }

@@ -52,26 +52,26 @@ public:
     bool IsActive() override;
 };
 
-class HydrossTheUnstableNeedToTransitionBeforeFourthMarkTrigger : public Trigger
+class HydrossTheUnstableAggroResetsUponPhaseChangeTrigger : public Trigger
 {
 public:
-    HydrossTheUnstableNeedToTransitionBeforeFourthMarkTrigger(PlayerbotAI* botAI) : Trigger(botAI, "hydross the unstable need to transition before fourth mark") {}
+    HydrossTheUnstableAggroResetsUponPhaseChangeTrigger(PlayerbotAI* botAI) : Trigger(botAI, "hydross the unstable aggro resets upon phase change") {}
     bool IsActive() override;
 };
 
-class HydrossTheUnstableNeedToManagePhaseChangeAggroResetTrigger : public Trigger
+class HydrossTheUnstableNeedToManageTimersTrigger : public Trigger
 {
 public:
-    HydrossTheUnstableNeedToManagePhaseChangeAggroResetTrigger(PlayerbotAI* botAI) : Trigger(botAI, "hydross the unstable need to manage phase change aggro reset") {}
+    HydrossTheUnstableNeedToManageTimersTrigger(PlayerbotAI* botAI) : Trigger(botAI, "hydross the unstable need to manage timers") {}
     bool IsActive() override;
 };
 
-/* class TheLurkerBelowSpoutIsActiveTrigger : public Trigger
+class TheLurkerBelowSpoutIsActiveTrigger : public Trigger
 {
 public:
     TheLurkerBelowSpoutIsActiveTrigger(PlayerbotAI* botAI) : Trigger(botAI, "the lurker below spout is active") {}
     bool IsActive() override;
-}; */
+};
 
 class TheLurkerBelowBossIsActiveForMainTankTrigger : public Trigger
 {

@@ -43,7 +43,7 @@ bool HydrossTheUnstableElementalsSpawnedTrigger::IsActive()
     Unit* waterElemental = AI_VALUE2(Unit*, "find target", "pure spawn of hydross");
     Unit* natureElemental = AI_VALUE2(Unit*, "find target", "tainted spawn of hydross");
 
-    return botAI->IsDps(bot) && (waterElemental || natureElemental);
+    return IsMapIDTimerManager(botAI, bot) && (waterElemental || natureElemental);
 }
 
 bool HydrossTheUnstableDangerFromWaterTombsTrigger::IsActive()
@@ -60,14 +60,14 @@ bool HydrossTheUnstableTankNeedsAggroUponPhaseChangeTrigger::IsActive()
     return hydross && bot->getClass() == CLASS_HUNTER;
 }
 
-bool HydrossTheUnstableNeedToTransitionBeforeFourthMarkTrigger::IsActive()
+bool HydrossTheUnstableAggroResetsUponPhaseChangeTrigger::IsActive()
 {
     Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
 
-    return hydross && (botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0));
+    return hydross && botAI->IsDps(bot) && bot->getClass() != CLASS_HUNTER;
 }
 
-bool HydrossTheUnstableNeedToManagePhaseChangeAggroResetTrigger::IsActive()
+bool HydrossTheUnstableNeedToManageTimersTrigger::IsActive()
 {
     Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
 
@@ -76,13 +76,13 @@ bool HydrossTheUnstableNeedToManagePhaseChangeAggroResetTrigger::IsActive()
 
 // The Lurker Below
 
-/* bool TheLurkerBelowSpoutIsActiveTrigger::IsActive()
+bool TheLurkerBelowSpoutIsActiveTrigger::IsActive()
 {
     Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
 
     return lurker && (lurker->HasAura(SPELL_SPOUT_VISUAL) ||
            lurker->HasAura(SPELL_SPOUT_PERIODIC_1) || lurker->HasAura(SPELL_SPOUT_PERIODIC_2));
-} */
+}
 
 bool TheLurkerBelowBossIsActiveForMainTankTrigger::IsActive()
 {
@@ -111,7 +111,7 @@ bool TheLurkerBelowBossIsActiveForOtherMeleeTrigger::IsActive()
            (!lurkerSpoutTimer.count(mapId) || lurkerSpoutTimer[mapId] <= now);
 }
 
-// Temp making this for all bots
+// Apply this to all bots if need to run around with all due to water issues
 bool TheLurkerBelowSpoutIsActiveForMeleeTrigger::IsActive()
 {
     Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
@@ -121,7 +121,7 @@ bool TheLurkerBelowSpoutIsActiveForMeleeTrigger::IsActive()
     uint32 mapId = lurker->GetMapId();
     time_t now = time(nullptr);
 
-    return /* botAI->IsMelee(bot) && */
+    return botAI->IsMelee(bot) &&
            lurkerSpoutTimer.count(mapId) && lurkerSpoutTimer[mapId] > now;
 }
 

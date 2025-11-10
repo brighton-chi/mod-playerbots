@@ -65,18 +65,18 @@ private:
     bool TryMisdirectToNatureTank(Unit* hydross, Group* group);
 };
 
-class HydrossTheUnstableManagePhaseChangeTimersAction : public Action
+class HydrossTheUnstableStopDpsUponPhaseChangeAction : public Action
 {
 public:
-    HydrossTheUnstableManagePhaseChangeTimersAction(PlayerbotAI* botAI, std::string const name = "hydross the unstable manage phase change timers") : Action(botAI, name) {}
+    HydrossTheUnstableStopDpsUponPhaseChangeAction(PlayerbotAI* botAI, std::string const name = "hydross the unstable stop dps upon phase change") : Action(botAI, name) {}
 
     bool Execute(Event event) override;
 };
 
-class HydrossTheUnstableManageDpsTimersAction : public Action
+class HydrossTheUnstableManageTimersAction : public Action
 {
 public:
-    HydrossTheUnstableManageDpsTimersAction(PlayerbotAI* botAI, std::string const name = "hydross the unstable manage dps timers") : Action(botAI, name) {}
+    HydrossTheUnstableManageTimersAction(PlayerbotAI* botAI, std::string const name = "hydross the unstable manage timers") : Action(botAI, name) {}
 
     bool Execute(Event event) override;
 };

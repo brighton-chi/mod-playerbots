@@ -27,17 +27,17 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("hydross the unstable tank needs aggro upon phase change",
         NextAction::array(0, new NextAction("hydross the unstable misdirect boss to tank", ACTION_EMERGENCY + 6), nullptr)
     ));
-    triggers.push_back(new TriggerNode("hydross the unstable need to transition before fourth mark",
-        NextAction::array(0, new NextAction("hydross the unstable manage phase change timers", ACTION_EMERGENCY + 10), nullptr)
+    triggers.push_back(new TriggerNode("hydross the unstable aggro resets upon phase change",
+        NextAction::array(0, new NextAction("hydross the unstable stop dps upon phase change", ACTION_EMERGENCY + 9), nullptr)
     ));
-    triggers.push_back(new TriggerNode("hydross the unstable need to manage phase change aggro reset",
-        NextAction::array(0, new NextAction("hydross the unstable manage dps timers", ACTION_EMERGENCY + 10), nullptr)
+    triggers.push_back(new TriggerNode("hydross the unstable need to manage timers",
+        NextAction::array(0, new NextAction("hydross the unstable manage timers", ACTION_EMERGENCY + 10), nullptr)
     ));
 
     // The Lurker Below
-    /* triggers.push_back(new TriggerNode("the lurker below spout is active",
+    triggers.push_back(new TriggerNode("the lurker below spout is active",
         NextAction::array(0, new NextAction("the lurker below run around behind boss", ACTION_EMERGENCY + 6), nullptr)
-    )); */
+    ));
     triggers.push_back(new TriggerNode("the lurker below boss is active for main tank",
         NextAction::array(0, new NextAction("the lurker below position main tank", ACTION_RAID + 1), nullptr)
     ));
@@ -45,14 +45,14 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction::array(0, new NextAction("the lurker below position other melee", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("the lurker below spout is active for melee",
-            NextAction::array(0, new NextAction("the lurker below melee run around behind boss", ACTION_EMERGENCY + 6), nullptr)
+        NextAction::array(0, new NextAction("the lurker below melee run around behind boss", ACTION_EMERGENCY + 6), nullptr)
     ));
-    /*triggers.push_back(new TriggerNode("the lurker below boss is active for ranged dps",
+    triggers.push_back(new TriggerNode("the lurker below boss is active for ranged dps",
         NextAction::array(0, new NextAction("the lurker below position ranged dps", ACTION_EMERGENCY + 6), nullptr)
     ));
     triggers.push_back(new TriggerNode("the lurker below boss is active for healer",
         NextAction::array(0, new NextAction("the lurker below position healer", ACTION_EMERGENCY + 6), nullptr)
-    )); */
+    ));
     triggers.push_back(new TriggerNode("the lurker below need to prepare timer for spout",
         NextAction::array(0, new NextAction("the lurker below manage spout timer", ACTION_EMERGENCY + 10), nullptr)
     ));
@@ -157,9 +157,10 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("lady vashj determining kill order of adds",
         NextAction::array(0, new NextAction("lady vashj assign phase 2 dps priority", ACTION_RAID + 1), nullptr)
     ));
-    /* triggers.push_back(new TriggerNode("lady vashj toxic sporebats are spewing poison clouds",
+    // Did I do Vashj with this disabled??? Will try enabling next time
+    triggers.push_back(new TriggerNode("lady vashj toxic sporebats are spewing poison clouds",
         NextAction::array(0, new NextAction("lady vashj avoid toxic spores", ACTION_EMERGENCY + 6), nullptr)
-    )); */
+    ));
     triggers.push_back(new TriggerNode("lady vashj need to manage trackers",
         NextAction::array(0, new NextAction("lady vashj manage trackers", ACTION_EMERGENCY + 10), nullptr)
     ));

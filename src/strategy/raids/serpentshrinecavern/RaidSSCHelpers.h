@@ -27,8 +27,8 @@ enum SerpentShrineCavernSpells
 
     // The Lurker Below
     SPELL_SPOUT_VISUAL = 37431,
-    // SPELL_SPOUT_PERIODIC_1 = 37429,
-    // SPELL_SPOUT_PERIODIC_2 = 37430,
+    SPELL_SPOUT_PERIODIC_1 = 37429,
+    SPELL_SPOUT_PERIODIC_2 = 37430,
     SPELL_WHIRL = 37363,
 
     // Leotheras the Blind
@@ -121,8 +121,8 @@ namespace SerpentShrineCavernHelpers
 {
     extern std::unordered_map<uint32, time_t> hydrossFrostDpsWaitTimer;
     extern std::unordered_map<uint32, time_t> hydrossNatureDpsWaitTimer;
-    extern std::unordered_map<ObjectGuid, time_t> hydrossChangeToFrostPhaseTimer;
-    extern std::unordered_map<ObjectGuid, time_t> hydrossChangeToNaturePhaseTimer;
+    extern std::unordered_map<uint32, time_t> hydrossChangeToFrostPhaseTimer;
+    extern std::unordered_map<uint32, time_t> hydrossChangeToNaturePhaseTimer;
 
     extern std::unordered_map<uint32, time_t> lurkerSpoutTimer;
 
