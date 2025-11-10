@@ -156,10 +156,13 @@ namespace SerpentShrineCavernHelpers
         extern const Location LurkerWMeleePosition;
         extern const Location LurkerNWIsletPosition;
         extern const Location LurkerNWIsletSwimPosition;
+        // extern const Location LurkerNWRangedDpsPosition;
         extern const Location LurkerNEIsletPosition;
         extern const Location LurkerNEIsletSwimPosition;
+        // extern const Location LurkerNERangedDpsPosition;
         extern const Location LurkerEIsletPosition;
         extern const Location LurkerEIsletSwimPosition;
+        // extern const Location LurkerERangedDpsPosition;
         extern const Location LurkerSEHealerLandPosition;
         extern const Location LurkerSEHealerSwimPosition;
         extern const Location LurkerSWHealerLandPosition;
