@@ -193,12 +193,14 @@ bool LeotherasTheBlindBossChannelingWhirlwindTrigger::IsActive()
            (leotheras->HasAura(SPELL_WHIRLWIND) || leotheras->HasAura(SPELL_WHIRLWIND_CHANNEL));
 }
 
-/* bool LeotherasTheBlindDemonFormEngagedByMeleeTrigger::IsActive()
+bool LeotherasTheBlindDemonFormEngagedByMeleeWithoutWarlockTankTrigger::IsActive()
 {
     Unit* leotherasDemon = GetActiveLeotherasDemon(botAI);
+    Player* demonFormTank = GetLeotherasDemonFormTank(botAI, bot);
 
-    return leotherasDemon && botAI->IsMelee(bot) && !botAI->IsMainTank(bot);
-} */
+    return leotherasDemon && botAI->IsMelee(bot) && !botAI->IsMainTank(bot) &&
+           demonFormTank && demonFormTank->getClass() != CLASS_WARLOCK;
+}
 
 bool LeotherasTheBlindInnerDemonCheatTrigger::IsActive()
 {

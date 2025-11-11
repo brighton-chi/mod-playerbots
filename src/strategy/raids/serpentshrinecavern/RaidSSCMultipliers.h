@@ -45,7 +45,7 @@ public:
     virtual float GetValue(Action* action);
 };
 
-/* class LeotherasTheBlindMainTankMaintainDemonFormPositionMultiplier : public Multiplier
+class LeotherasTheBlindMainTankMaintainDemonFormPositionMultiplier : public Multiplier
 {
 public:
     LeotherasTheBlindMainTankMaintainDemonFormPositionMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "leotheras the blind main tank maintain demon form position") {}
@@ -57,7 +57,7 @@ class LeotherasTheBlindDemonFormDisableMeleeActionsMultiplier : public Multiplie
 public:
     LeotherasTheBlindDemonFormDisableMeleeActionsMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "leotheras the blind demon form disable melee actions") {}
     virtual float GetValue(Action* action);
-}; */
+};
 
 class LeotherasTheBlindWaitForDpsMultiplier : public Multiplier
 {

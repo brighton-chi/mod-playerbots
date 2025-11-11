@@ -150,12 +150,12 @@ public:
     bool IsActive() override;
 };
 
-/* class LeotherasTheBlindDemonFormEngagedByMeleeTrigger : public Trigger
+class LeotherasTheBlindDemonFormEngagedByMeleeWithoutWarlockTankTrigger : public Trigger
 {
 public:
-    LeotherasTheBlindDemonFormEngagedByMeleeTrigger(PlayerbotAI* botAI) : Trigger(botAI, "leotheras the blind demon form engaged by melee") {}
+    LeotherasTheBlindDemonFormEngagedByMeleeWithoutWarlockTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "leotheras the blind demon form engaged by melee without warlock tank") {}
     bool IsActive() override;
-}; */
+};
 
 class LeotherasTheBlindInnerDemonCheatTrigger : public Trigger
 {

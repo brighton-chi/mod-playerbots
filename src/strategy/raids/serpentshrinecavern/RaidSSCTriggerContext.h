@@ -31,7 +31,7 @@ public:
         creators["leotheras the blind engaged by demon form tank"] = &RaidSSCTriggerContext::leotheras_the_blind_engaged_by_demon_form_tank;
         creators["leotheras the blind boss engaged by ranged"] = &RaidSSCTriggerContext::leotheras_the_blind_boss_engaged_by_ranged;
         creators["leotheras the blind boss channeling whirlwind"] = &RaidSSCTriggerContext::leotheras_the_blind_boss_channeling_whirlwind;
-        // creators["leotheras the blind demon form engaged by melee"] = &RaidSSCTriggerContext::leotheras_the_blind_demon_form_engaged_by_melee;
+        creators["leotheras the blind demon form engaged by melee without warlock tank"] = &RaidSSCTriggerContext::leotheras_the_blind_demon_form_engaged_by_melee_without_warlock_tank;
         creators["leotheras the blind inner demon cheat"] = &RaidSSCTriggerContext::leotheras_the_blind_inner_demon_cheat;
         creators["leotheras the blind entered final phase"] = &RaidSSCTriggerContext::leotheras_the_blind_entered_final_phase;
         creators["leotheras the blind demon form tank needs aggro"] = &RaidSSCTriggerContext::leotheras_the_blind_demon_form_tank_needs_aggro;
@@ -88,7 +88,7 @@ private:
     static Trigger* leotheras_the_blind_engaged_by_demon_form_tank(PlayerbotAI* botAI) { return new LeotherasTheBlindEngagedByDemonFormTankTrigger(botAI); }
     static Trigger* leotheras_the_blind_boss_engaged_by_ranged(PlayerbotAI* botAI) { return new LeotherasTheBlindBossEngagedByRangedTrigger(botAI); }
     static Trigger* leotheras_the_blind_boss_channeling_whirlwind(PlayerbotAI* botAI) { return new LeotherasTheBlindBossChannelingWhirlwindTrigger(botAI); }
-    // static Trigger* leotheras_the_blind_demon_form_engaged_by_melee(PlayerbotAI* botAI) { return new LeotherasTheBlindDemonFormEngagedByMeleeTrigger(botAI); }
+    static Trigger* leotheras_the_blind_demon_form_engaged_by_melee_without_warlock_tank(PlayerbotAI* botAI) { return new LeotherasTheBlindDemonFormEngagedByMeleeWithoutWarlockTankTrigger(botAI); }
     static Trigger* leotheras_the_blind_inner_demon_cheat(PlayerbotAI* botAI) { return new LeotherasTheBlindInnerDemonCheatTrigger(botAI); }
     static Trigger* leotheras_the_blind_entered_final_phase(PlayerbotAI* botAI) { return new LeotherasTheBlindEnteredFinalPhaseTrigger(botAI); }
     static Trigger* leotheras_the_blind_demon_form_tank_needs_aggro(PlayerbotAI* botAI) { return new LeotherasTheBlindDemonFormTankNeedsAggro(botAI); }

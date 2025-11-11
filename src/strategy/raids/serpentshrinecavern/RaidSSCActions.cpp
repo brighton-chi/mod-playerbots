@@ -755,7 +755,9 @@ bool LeotherasTheBlindRunAwayFromWhirlwindAction::Execute(Event event)
     return false;
 }
 
-/* bool LeotherasTheBlindDemonFormPositionMeleeAction::Execute(Event event)
+// Applies only if there is no Warlock tank
+// Try to keep maximum melee distance to avoid Chaos Blast
+bool LeotherasTheBlindDemonFormPositionMeleeAction::Execute(Event event)
 {
     Unit* leotherasPhase2Demon = GetPhase2LeotherasDemon(botAI);
     Unit* leotherasPhase3Demon = GetPhase3LeotherasDemon(botAI);
@@ -787,7 +789,7 @@ bool LeotherasTheBlindRunAwayFromWhirlwindAction::Execute(Event event)
     }
 
     return false;
-} */
+}
 
 bool LeotherasTheBlindInnerDemonCheatAction::Execute(Event event)
 {
@@ -1068,13 +1070,8 @@ bool FathomLordKarathressThirdAssistTankPositionCaribdisAction::Execute(Event ev
     {
         const Location& position = CaribdisTankPosition;
 
-        if (!bot->IsWithinMeleeRange(caribdis))
-        {
-            return MoveTo(caribdis->GetMapId(), caribdis->GetPositionX(),
-                          caribdis->GetPositionY(), caribdis->GetPositionZ(),
-                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
-        }
-        else if (bot->GetExactDist2d(position.x, position.y) > 2.0f)
+        // Distance check first for Caribdis due to need to move her ASAP
+        if (bot->GetExactDist2d(position.x, position.y) > 2.0f)
         {
             float dX = position.x - bot->GetPositionX();
             float dY = position.y - bot->GetPositionY();
@@ -1085,6 +1082,12 @@ bool FathomLordKarathressThirdAssistTankPositionCaribdisAction::Execute(Event ev
 
             return MoveTo(bot->GetMapId(), moveX, moveY, position.z, false, false, false, false,
                         MovementPriority::MOVEMENT_COMBAT, true, false);
+        }
+        else if (!bot->IsWithinMeleeRange(caribdis))
+        {
+            return MoveTo(caribdis->GetMapId(), caribdis->GetPositionX(),
+                          caribdis->GetPositionY(), caribdis->GetPositionZ(),
+                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
 
@@ -1210,39 +1213,7 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event event)
         return false;
     }
 
-    // Target priority 3a: Fathom Sporebat
-    Unit* fathomSporebat = AI_VALUE2(Unit*, "find target", "fathom sporebat");
-    if (fathomSporebat && fathomSporebat->IsAlive())
-    {
-        MarkTargetWithCross(bot, fathomSporebat);
-        SetRtiTarget(botAI, "cross", fathomSporebat);
-
-        if (bot->GetTarget() != fathomSporebat->GetGUID())
-        {
-            bot->SetTarget(fathomSporebat->GetGUID());
-            return Attack(fathomSporebat);
-        }
-
-        return false;
-    }
-
-    // Target priority 3b: Fathom Lurker
-    Unit* fathomLurker = AI_VALUE2(Unit*, "find target", "fathom lurker");
-    if (fathomLurker && fathomLurker->IsAlive())
-    {
-        MarkTargetWithSquare(bot, fathomLurker);
-        SetRtiTarget(botAI, "square", fathomLurker);
-
-        if (bot->GetTarget() != fathomLurker->GetGUID())
-        {
-            bot->SetTarget(fathomLurker->GetGUID());
-            return Attack(fathomLurker);
-        }
-
-        return false;
-    }
-
-    // Target priority 4: Sharkkis
+    // Target priority 3: Sharkkis
     Unit* sharkkis = AI_VALUE2(Unit*, "find target", "fathom-guard sharkkis");
     if (sharkkis && sharkkis->IsAlive())
     {
@@ -1257,20 +1228,51 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event event)
         return false;
     }
 
-    // Target priority 5a: Caribdis
+    // Target priority 4a: Caribdis for ranged
     Unit* caribdis = AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
     if (botAI->IsRanged(bot) && caribdis && caribdis->IsAlive())
     {
         SetRtiTarget(botAI, "diamond", caribdis);
 
         float dist = bot->GetExactDist2d(caribdis);
-        if (dist > 35.0f)
-            return FleePosition(caribdis->GetPosition(), 30.0f, 0);
+        if (dist > 30.0f)
+            return FleePosition(caribdis->GetPosition(), 28.0f, 0);
 
         if (bot->GetTarget() != caribdis->GetGUID())
         {
             bot->SetTarget(caribdis->GetGUID());
             return Attack(caribdis);
+        }
+
+        return false;
+    }
+
+    // Target priority 4b: Sharkkis pets for melee
+    Unit* fathomSporebat = AI_VALUE2(Unit*, "find target", "fathom sporebat");
+    if (fathomSporebat && fathomSporebat->IsAlive() && botAI->IsMelee(bot))
+    {
+        MarkTargetWithCross(bot, fathomSporebat);
+        SetRtiTarget(botAI, "cross", fathomSporebat);
+
+        if (bot->GetTarget() != fathomSporebat->GetGUID())
+        {
+            bot->SetTarget(fathomSporebat->GetGUID());
+            return Attack(fathomSporebat);
+        }
+
+        return false;
+    }
+
+    Unit* fathomLurker = AI_VALUE2(Unit*, "find target", "fathom lurker");
+    if (fathomLurker && fathomLurker->IsAlive() && botAI->IsMelee(bot))
+    {
+        MarkTargetWithSquare(bot, fathomLurker);
+        SetRtiTarget(botAI, "square", fathomLurker);
+
+        if (bot->GetTarget() != fathomLurker->GetGUID())
+        {
+            bot->SetTarget(fathomLurker->GetGUID());
+            return Attack(fathomLurker);
         }
 
         return false;
@@ -1298,9 +1300,23 @@ bool FathomLordKarathressPositionCaribdisTankHealerAction::Execute(Event event)
     if (!caribdis)
         return false;
 
+    /* const Location& position = CaribdisHealerPosition;
+
+    if (bot->GetExactDist2d(position.x, position.y) > 2.0f)
+    {
+        float dX = position.x - bot->GetPositionX();
+        float dY = position.y - bot->GetPositionY();
+        float dist = sqrt(dX * dX + dY * dY);
+        float moveDist = std::min(7.0f, dist);
+        float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
+        float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
+
+        return MoveTo(bot->GetMapId(), moveX, moveY, position.z, false, false, false, false,
+                    MovementPriority::MOVEMENT_COMBAT, true, false);
+    } */
     float dist = bot->GetExactDist2d(caribdis);
-    if (dist > 15.0f)
-        return FleePosition(caribdis->GetPosition(), 12.0f, 0);
+    if (dist > 20.0f)
+        return FleePosition(caribdis->GetPosition(), 18.0f, 0);
 
     return false;
 }

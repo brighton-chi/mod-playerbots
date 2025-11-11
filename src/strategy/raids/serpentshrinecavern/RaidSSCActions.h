@@ -161,13 +161,13 @@ public:
     bool Execute(Event event) override;
 };
 
-/* class LeotherasTheBlindDemonFormPositionMeleeAction : public MovementAction
+class LeotherasTheBlindDemonFormPositionMeleeAction : public MovementAction
 {
 public:
     LeotherasTheBlindDemonFormPositionMeleeAction(PlayerbotAI* botAI, std::string const name = "leotheras the blind demon form position melee") : MovementAction(botAI, name) {}
 
     bool Execute(Event event) override;
-}; */
+};
 
 class LeotherasTheBlindInnerDemonCheatAction : public AttackAction
 {
