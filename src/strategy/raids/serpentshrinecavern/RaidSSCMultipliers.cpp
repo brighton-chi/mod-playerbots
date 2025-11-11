@@ -168,17 +168,16 @@ float LeotherasTheBlindAvoidWhirlwindMultiplier::GetValue(Action* action)
 float LeotherasTheBlindDisableTankActionsMultiplier::GetValue(Action* action)
 {
     Unit* leotherasDemon = GetActiveLeotherasDemon(botAI);
-    if (!leotherasDemon)
+    if (!leotherasDemon || dynamic_cast<LeotherasTheBlindInnerDemonCheatAction*>(action) ||
+        dynamic_cast<WipeAction*>(action))
         return 1.0f;
+
+    if (dynamic_cast<TankAssistAction*>(action) || dynamic_cast<CastShadowWardAction*>(action))
+        return 0.0f;
 
     Unit* leotherasDemonPhase2 = GetPhase2LeotherasDemon(botAI);
     Player* demonFormTank = GetLeotherasDemonFormTank(botAI, bot);
-
-    if (botAI->IsTank(bot) && demonFormTank && leotherasDemonPhase2 &&
-        leotherasDemonPhase2->GetVictim() != demonFormTank)
-        return 0.0f;
-
-    if (dynamic_cast<TankAssistAction*>(action) || dynamic_cast<CastShadowWardAction*>(action))
+    if (botAI->IsTank(bot) && bot != demonFormTank && leotherasDemonPhase2)
         return 0.0f;
 
     return 1.0f;
@@ -218,15 +217,12 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValue(Action* action)
     if (!leotheras)
         return 1.0f;
 
-    uint32 mapId = bot->GetMapId();
-
-    Unit* leotherasHuman = GetLeotherasHuman(botAI);
-    Unit* leotherasPhase2Demon = GetPhase2LeotherasDemon(botAI);
-    Unit* leotherasPhase3Demon = GetPhase3LeotherasDemon(botAI);
-    Player* demonFormTank = GetLeotherasDemonFormTank(botAI, bot);
+    uint32 mapId = leotheras->GetMapId();
 
     const uint8 dpsWaitSecondsPhase1 = 5;
-    if (leotherasHuman && !leotherasHuman->HasAura(SPELL_LEOTHERAS_BANISHED))
+    Unit* leotherasHuman = GetLeotherasHuman(botAI);
+    Unit* leotherasPhase3Demon = GetPhase3LeotherasDemon(botAI);
+    if (leotherasHuman && !leotherasHuman->HasAura(SPELL_LEOTHERAS_BANISHED) && !leotherasPhase3Demon)
     {
         auto it = leotherasHumanFormDpsWaitTimer.find(mapId);
         if (it == leotherasHumanFormDpsWaitTimer.end() || (time(nullptr) - it->second) < dpsWaitSecondsPhase1)
@@ -238,6 +234,8 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValue(Action* action)
     }
 
     const uint8 dpsWaitSecondsPhase2 = 10;
+    Unit* leotherasPhase2Demon = GetPhase2LeotherasDemon(botAI);
+    Player* demonFormTank = GetLeotherasDemonFormTank(botAI, bot);
     if (leotherasPhase2Demon)
     {
         if (demonFormTank == bot)
@@ -252,7 +250,7 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValue(Action* action)
         }
     }
 
-    const uint8 dpsWaitSecondsPhase3 = 15;
+    const uint8 dpsWaitSecondsPhase3 = 12;
     if (leotherasPhase3Demon)
     {
         if (demonFormTank == bot)
@@ -274,10 +272,10 @@ float LeotherasTheBlindDelayBloodlustAndHeroismMultiplier::GetValue(Action* acti
 {
     Unit* leotherasHuman = GetLeotherasHuman(botAI);
     Unit* leotherasPhase2Demon = GetPhase2LeotherasDemon(botAI);
-    Unit* leotherasPhase3Demon = GetPhase3LeotherasDemon(botAI);
     if (!leotherasHuman && !leotherasPhase2Demon)
         return 1.0f;
 
+    Unit* leotherasPhase3Demon = GetPhase3LeotherasDemon(botAI);
     if (!leotherasPhase3Demon && (dynamic_cast<CastHeroismAction*>(action) || dynamic_cast<CastBloodlustAction*>(action)))
         return 0.0f;
 

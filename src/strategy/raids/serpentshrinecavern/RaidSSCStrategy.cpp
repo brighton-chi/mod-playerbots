@@ -61,8 +61,8 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("leotheras the blind boss is inactive",
         NextAction::array(0, new NextAction("leotheras the blind target spellbinders", ACTION_RAID + 1), nullptr)
     ));
-    triggers.push_back(new TriggerNode("leotheras the blind demon form engaged by demon form tank",
-        NextAction::array(0, new NextAction("leotheras the blind demon form position boss", ACTION_EMERGENCY + 1), nullptr)
+    triggers.push_back(new TriggerNode("leotheras the blind engaged by demon form tank",
+        NextAction::array(0, new NextAction("leotheras the blind demon form tank attack boss", ACTION_EMERGENCY + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("leotheras the blind boss engaged by ranged",
         NextAction::array(0, new NextAction("leotheras the blind position ranged", ACTION_RAID + 1), nullptr)

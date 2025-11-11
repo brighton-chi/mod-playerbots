@@ -145,10 +145,10 @@ public:
     bool Execute(Event event) override;
 };
 
-class LeotherasTheBlindDemonFormPositionBossAction : public AttackAction
+class LeotherasTheBlindDemonFormTankAttackBossAction : public AttackAction
 {
 public:
-    LeotherasTheBlindDemonFormPositionBossAction(PlayerbotAI* botAI, std::string const name = "leotheras the blind demon form position boss") : AttackAction(botAI, name) {}
+    LeotherasTheBlindDemonFormTankAttackBossAction(PlayerbotAI* botAI, std::string const name = "leotheras the blind demon form tank attack boss") : AttackAction(botAI, name) {}
 
     bool Execute(Event event) override;
 };

@@ -28,7 +28,7 @@ public:
         creators["the lurker below manage spout timer"] = &RaidSSCActionContext::the_lurker_below_manage_spout_timer;
 
         creators["leotheras the blind target spellbinders"] = &RaidSSCActionContext::leotheras_the_blind_target_spellbinders;
-        creators["leotheras the blind demon form position boss"] = &RaidSSCActionContext::leotheras_the_blind_demon_form_position_boss;
+        creators["leotheras the blind demon form tank attack boss"] = &RaidSSCActionContext::leotheras_the_blind_demon_form_tank_attack_boss;
         creators["leotheras the blind position ranged"] = &RaidSSCActionContext::leotheras_the_blind_position_ranged;
         creators["leotheras the blind run away from whirlwind"] = &RaidSSCActionContext::leotheras_the_blind_run_away_from_whirlwind;
         // creators["leotheras the blind demon form position melee"] = &RaidSSCActionContext::leotheras_the_blind_demon_form_position_melee;
@@ -85,7 +85,7 @@ private:
     static Action* the_lurker_below_manage_spout_timer(PlayerbotAI* botAI) { return new TheLurkerBelowManageSpoutTimerAction(botAI); }
 
     static Action* leotheras_the_blind_target_spellbinders(PlayerbotAI* botAI) { return new LeotherasTheBlindTargetSpellbindersAction(botAI); }
-    static Action* leotheras_the_blind_demon_form_position_boss(PlayerbotAI* botAI) { return new LeotherasTheBlindDemonFormPositionBossAction(botAI); }
+    static Action* leotheras_the_blind_demon_form_tank_attack_boss(PlayerbotAI* botAI) { return new LeotherasTheBlindDemonFormTankAttackBossAction(botAI); }
     static Action* leotheras_the_blind_position_ranged(PlayerbotAI* botAI) { return new LeotherasTheBlindPositionRangedAction(botAI); }
     static Action* leotheras_the_blind_run_away_from_whirlwind(PlayerbotAI* botAI) { return new LeotherasTheBlindRunAwayFromWhirlwindAction(botAI); }
     // static Action* leotheras_the_blind_demon_form_position_melee(PlayerbotAI* botAI) { return new LeotherasTheBlindDemonFormPositionMeleeAction(botAI); }

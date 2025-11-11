@@ -672,7 +672,7 @@ bool LeotherasTheBlindTargetSpellbindersAction::Execute(Event event)
     return false;
 }
 
-bool LeotherasTheBlindDemonFormPositionBossAction::Execute(Event event)
+bool LeotherasTheBlindDemonFormTankAttackBossAction::Execute(Event event)
 {
     Unit* leotherasDemon = GetActiveLeotherasDemon(botAI);
     if (!leotherasDemon)
@@ -794,9 +794,10 @@ bool LeotherasTheBlindInnerDemonCheatAction::Execute(Event event)
     Unit* innerDemon = GetFirstAliveUnitByEntry(botAI, NPC_INNER_DEMON);
     if (innerDemon)
     {
+        uint8 tab = AiFactory::GetPlayerSpecTab(bot);
         /* Unit::DealDamage(bot, innerDemon, innerDemon->GetMaxHealth() / 20, nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false, true);
         return true; */
-        if (botAI->IsHeal(bot) || botAI->IsTank(bot) || bot->getClass() == CLASS_HUNTER)
+        if (botAI->IsHeal(bot) || botAI->IsTank(bot) || bot->getClass() == CLASS_HUNTER || (bot->getClass() == CLASS_WARLOCK && tab == 0))
         {
             Unit::DealDamage(bot, innerDemon, innerDemon->GetMaxHealth() / 20, nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false, true);
             return true;
@@ -815,11 +816,10 @@ bool LeotherasTheBlindFinalPhaseAssignDpsPriorityAction::Execute(Event event)
     if (!leotherasHuman || !leotherasDemon)
         return false;
 
-    MarkTargetWithSquare(bot, leotherasHuman);
-    SetRtiTarget(botAI, "square", leotherasHuman);
+    MarkTargetWithStar(bot, leotherasHuman);
+    SetRtiTarget(botAI, "star", leotherasHuman);
 
-    if (bot->GetTarget() != leotherasHuman->GetGUID() ||
-        (botAI->IsMelee(bot) && bot->GetVictim() != leotherasHuman))
+    if (bot->GetVictim() != leotherasHuman)
     {
         bot->SetTarget(leotherasHuman->GetGUID());
         return Attack(leotherasHuman);
@@ -872,7 +872,7 @@ bool LeotherasTheBlindManageTimersAndTrackersAction::Execute(Event event)
         return false;
 
     uint32 mapId = leotheras->GetMapId();
-    ObjectGuid botGuid = bot->GetGUID();
+    const time_t now = time(nullptr);
 
     Unit* leotherasHuman = GetLeotherasHuman(botAI);
     Unit* leotherasPhase2Demon = GetPhase2LeotherasDemon(botAI);
@@ -880,35 +880,41 @@ bool LeotherasTheBlindManageTimersAndTrackersAction::Execute(Event event)
 
     if (leotheras && leotheras->HasAura(SPELL_LEOTHERAS_BANISHED))
     {
-        if (leotherasFinalPhaseDpsWaitTimer.find(mapId) != leotherasFinalPhaseDpsWaitTimer.end())
-            leotherasFinalPhaseDpsWaitTimer.erase(mapId);
-
         if (leotherasHumanFormDpsWaitTimer.find(mapId) != leotherasHumanFormDpsWaitTimer.end())
             leotherasHumanFormDpsWaitTimer.erase(mapId);
 
         if (leotherasDemonFormDpsWaitTimer.find(mapId) != leotherasDemonFormDpsWaitTimer.end())
             leotherasDemonFormDpsWaitTimer.erase(mapId);
+
+        if (leotherasFinalPhaseDpsWaitTimer.find(mapId) != leotherasFinalPhaseDpsWaitTimer.end())
+            leotherasFinalPhaseDpsWaitTimer.erase(mapId);
     }
     else if (leotherasHuman && !leotherasPhase3Demon)
     {
         if (leotherasHumanFormDpsWaitTimer.find(mapId) == leotherasHumanFormDpsWaitTimer.end())
-            leotherasHumanFormDpsWaitTimer[mapId] = time(nullptr);
+            leotherasHumanFormDpsWaitTimer[mapId] = now;
 
         if (leotherasDemonFormDpsWaitTimer.find(mapId) != leotherasDemonFormDpsWaitTimer.end())
             leotherasDemonFormDpsWaitTimer.erase(mapId);
+
+        if (leotherasFinalPhaseDpsWaitTimer.find(mapId) != leotherasFinalPhaseDpsWaitTimer.end())
+            leotherasFinalPhaseDpsWaitTimer.erase(mapId);
     }
     else if (leotherasPhase2Demon)
     {
         if (leotherasDemonFormDpsWaitTimer.find(mapId) == leotherasDemonFormDpsWaitTimer.end())
-            leotherasDemonFormDpsWaitTimer[mapId] = time(nullptr);
+            leotherasDemonFormDpsWaitTimer[mapId] = now;
 
         if (leotherasHumanFormDpsWaitTimer.find(mapId) != leotherasHumanFormDpsWaitTimer.end())
             leotherasHumanFormDpsWaitTimer.erase(mapId);
+
+        if (leotherasFinalPhaseDpsWaitTimer.find(mapId) != leotherasFinalPhaseDpsWaitTimer.end())
+            leotherasFinalPhaseDpsWaitTimer.erase(mapId);
     }
     else if (leotherasHuman && leotherasPhase3Demon)
     {
         if (leotherasFinalPhaseDpsWaitTimer.find(mapId) == leotherasFinalPhaseDpsWaitTimer.end())
-            leotherasFinalPhaseDpsWaitTimer[mapId] = time(nullptr);
+            leotherasFinalPhaseDpsWaitTimer[mapId] = now;
 
         if (leotherasHumanFormDpsWaitTimer.find(mapId) != leotherasHumanFormDpsWaitTimer.end())
             leotherasHumanFormDpsWaitTimer.erase(mapId);

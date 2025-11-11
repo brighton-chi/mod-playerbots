@@ -367,6 +367,8 @@ namespace SerpentShrineCavernHelpers
         if (!group)
             return nullptr;
 
+        Player* mainTankCandidate = nullptr;
+
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
@@ -375,19 +377,12 @@ namespace SerpentShrineCavernHelpers
 
             if (member->getClass() == CLASS_WARLOCK && GET_PLAYERBOT_AI(member)->HasStrategy("tank", BotState::BOT_STATE_COMBAT))
                 return member;
+
+            if (!mainTankCandidate && GET_PLAYERBOT_AI(member)->IsMainTank(member))
+                mainTankCandidate = member;
         }
 
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member))
-                continue;
-
-            if (GET_PLAYERBOT_AI(member)->IsMainTank(member))
-                return member;
-        }
-
-        return nullptr;
+        return mainTankCandidate;
     }
 
     bool IsMainTankInSameSubgroup(Player* bot)
