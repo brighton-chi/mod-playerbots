@@ -216,7 +216,7 @@ namespace KarazhanHelpers
         return redBlockers;
     }
 
-    // Blue beam blockers: non-Rogue/Warrior DPS bots, no Nether Exhaustion Blue and <26 stacks of Blue Beam debuff
+    // Blue beam blockers: non-Rogue/Warrior DPS bots, no Nether Exhaustion Blue and <24 stacks of Blue Beam debuff
     std::vector<Player*> GetBlueBlockers(PlayerbotAI* botAI, Player* bot)
     {
         std::vector<Player*> blueBlockers;
@@ -245,8 +245,8 @@ namespace KarazhanHelpers
     }
 
     // Green beam blockers:
-    // (1) Rogue and non-tank Warrior bots, no Nether Exhaustion Green
-    // (2) Healer bots, no Nether Exhaustion Green and <26 stacks of Green Beam debuff
+    // (1) Prioritize Rogues and non-tank Warrior bots, no Nether Exhaustion Green
+    // (2) Then assign Healer bots, no Nether Exhaustion Green and <24 stacks of Green Beam debuff
     std::vector<Player*> GetGreenBlockers(PlayerbotAI* botAI, Player* bot)
     {
         std::vector<Player*> greenBlockers;
@@ -259,17 +259,27 @@ namespace KarazhanHelpers
                     continue;
 
                 bool hasExhaustion = member->HasAura(SPELL_NETHER_EXHAUSTION_GREEN);
-                Aura* greenBuff = member->GetAura(SPELL_GREEN_BEAM_DEBUFF);
-                bool overStack = greenBuff && greenBuff->GetStackAmount() >= 24;
-
                 bool isRogue = member->getClass() == CLASS_ROGUE;
                 bool isDpsWarrior = member->getClass() == CLASS_WARRIOR && botAI->IsDps(member);
                 bool eligibleRogueWarrior = (isRogue || isDpsWarrior) && !hasExhaustion;
 
+                if (eligibleRogueWarrior)
+                    greenBlockers.push_back(member);
+            }
+
+            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+            {
+                Player* member = ref->GetSource();
+                if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member))
+                    continue;
+
+                bool hasExhaustion = member->HasAura(SPELL_NETHER_EXHAUSTION_GREEN);
+                Aura* greenBuff = member->GetAura(SPELL_GREEN_BEAM_DEBUFF);
+                bool overStack = greenBuff && greenBuff->GetStackAmount() >= 24;
                 bool isHealer = botAI->IsHeal(member);
                 bool eligibleHealer = isHealer && !hasExhaustion && !overStack;
 
-                if (eligibleRogueWarrior || eligibleHealer)
+                if (eligibleHealer)
                     greenBlockers.push_back(member);
             }
         }
