@@ -54,13 +54,13 @@ namespace SerpentShrineCavernHelpers
         const Location LurkerWMeleePosition = { 47.721f, -406.668f, -19.635f };
         const Location LurkerNWIsletPosition = { 77.937f, -384.500f, -19.722f };
         const Location LurkerNWIsletSwimPosition = { 73.743f, -388.018f, -21.397f };
-        // const Location LurkerNWRangedDpsPosition = { 58.372f, -393.667f, -19.526f };
+        const Location LurkerNWRangedDpsPosition = { 58.372f, -393.667f, -19.526f };
         const Location LurkerNEIsletPosition = { 63.022f, -456.310f, -19.793f };
         const Location LurkerNEIsletSwimPosition = { 60.338f, -451.668f, -21.451f };
-        // const Location LurkerNERangedDpsPosition = { 60.666f, -440.899f, -19.575f };
+        const Location LurkerNERangedDpsPosition = { 60.666f, -440.899f, -19.575f };
         const Location LurkerEIsletPosition = { 14.283f, -457.467f, -19.793f };
         const Location LurkerEIsletSwimPosition = { 17.191f, -452.586f, -21.436f };
-        // const Location LurkerERangedDpsPosition = { 38.457f, -417.324f, -18.917f };
+        const Location LurkerERangedDpsPosition = { 38.457f, -417.324f, -18.917f };
         const Location LurkerSEHealerLandPosition = { 16.237f, -438.098f, -19.551f };
         const Location LurkerSEHealerSwimPosition = { 14.637f, -440.707f, -21.459f };
         const Location LurkerSWHealerLandPosition = { 37.255f, -387.031f, -19.417f };

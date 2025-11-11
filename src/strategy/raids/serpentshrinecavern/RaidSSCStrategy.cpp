@@ -48,10 +48,10 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction::array(0, new NextAction("the lurker below melee run around behind boss", ACTION_EMERGENCY + 6), nullptr)
     ));
     triggers.push_back(new TriggerNode("the lurker below boss is active for ranged dps",
-        NextAction::array(0, new NextAction("the lurker below position ranged dps", ACTION_EMERGENCY + 6), nullptr)
+        NextAction::array(0, new NextAction("the lurker below position ranged dps", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("the lurker below boss is active for healer",
-        NextAction::array(0, new NextAction("the lurker below position healer", ACTION_EMERGENCY + 6), nullptr)
+        NextAction::array(0, new NextAction("the lurker below position healer", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("the lurker below need to prepare timer for spout",
         NextAction::array(0, new NextAction("the lurker below manage spout timer", ACTION_EMERGENCY + 10), nullptr)
