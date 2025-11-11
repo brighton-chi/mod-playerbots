@@ -87,6 +87,13 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class FathomLordKarathressDisableAoeMultiplier : public Multiplier
+{
+public:
+    FathomLordKarathressDisableAoeMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "fathom-lord karathress disable aoe") {}
+    virtual float GetValue(Action* action);
+};
+
 class FathomLordKarathressControlMisdirectionMultiplier : public Multiplier
 {
 public:

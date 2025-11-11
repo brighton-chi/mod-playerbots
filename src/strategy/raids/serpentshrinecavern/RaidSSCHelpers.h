@@ -175,6 +175,7 @@ namespace SerpentShrineCavernHelpers
         extern const Location SharkkisTankPosition;
         extern const Location CaribdisTankPosition;
         extern const Location CaribdisHealerPosition;
+        extern const Location CaribdisRangedDpsPosition;
         // extern const Location KarathressRoomCenterPosition
 
         // extern const Location LeotherasHumanFormTankPosition;

@@ -63,7 +63,6 @@ bool HydrossTheUnstablePositionFrostTankAction::Execute(Event event)
         if (hydross->GetVictim() == bot)
         {
             const Location& position = HydrossFrostTankPosition;
-
             if (bot->GetExactDist2d(position.x, position.y) > 2.0f)
             {
                 float dX = position.x - bot->GetPositionX();
@@ -94,7 +93,6 @@ bool HydrossTheUnstablePositionFrostTankAction::Execute(Event event)
         if (it != hydrossChangeToNaturePhaseTimer.end() && (now - it->second) >= 5)
         {
             const Location& position = HydrossNatureTankPosition;
-
             if (bot->GetExactDist2d(position.x, position.y) > 2.0f)
             {
                 float dX = position.x - bot->GetPositionX();
@@ -119,7 +117,6 @@ bool HydrossTheUnstablePositionFrostTankAction::Execute(Event event)
     if (hydross->HasAura(SPELL_CORRUPTION))
     {
         const Location& position = HydrossFrostTankPosition;
-
         if (bot->GetExactDist2d(position.x, position.y) > 3.0f)
         {
             float dX = position.x - bot->GetPositionX();
@@ -160,7 +157,6 @@ bool HydrossTheUnstablePositionNatureTankAction::Execute(Event event)
         if (hydross->GetVictim() == bot)
         {
             const Location& position = HydrossNatureTankPosition;
-
             if (bot->GetExactDist2d(position.x, position.y) > 2.0f)
             {
                 float dX = position.x - bot->GetPositionX();
@@ -191,7 +187,6 @@ bool HydrossTheUnstablePositionNatureTankAction::Execute(Event event)
         if (it != hydrossChangeToFrostPhaseTimer.end() && (now - it->second) >= 5)
         {
             const Location& position = HydrossFrostTankPosition;
-
             if (bot->GetExactDist2d(position.x, position.y) > 2.0f)
             {
                 float dX = position.x - bot->GetPositionX();
@@ -216,7 +211,6 @@ bool HydrossTheUnstablePositionNatureTankAction::Execute(Event event)
     if (!hydross->HasAura(SPELL_CORRUPTION))
     {
         const Location& position = HydrossNatureTankPosition;
-
         if (bot->GetExactDist2d(position.x, position.y) > 3.0f)
         {
             float dX = position.x - bot->GetPositionX();
@@ -952,12 +946,11 @@ bool FathomLordKarathressMainTankPositionBossAction::Execute(Event event)
     if (karathress->GetVictim() == bot)
     {
         const Location& position = KarathressTankPosition;
-
         if (!bot->IsWithinMeleeRange(karathress))
         {
             return MoveTo(karathress->GetMapId(), karathress->GetPositionX(),
                           karathress->GetPositionY(), karathress->GetPositionZ(),
-                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+                          false, false, false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
         else if (bot->GetExactDist2d(position.x, position.y) > 2.0f)
         {
@@ -968,8 +961,8 @@ bool FathomLordKarathressMainTankPositionBossAction::Execute(Event event)
             float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
             float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
 
-            return MoveTo(bot->GetMapId(), moveX, moveY, position.z, false, false, false, false,
-                        MovementPriority::MOVEMENT_COMBAT, true, true);
+            return MoveTo(bot->GetMapId(), moveX, moveY, position.z, false, false, false, true,
+                          MovementPriority::MOVEMENT_COMBAT, true, true);
         }
     }
 
@@ -991,12 +984,11 @@ bool FathomLordKarathressFirstAssistTankPositionSharkkisAction::Execute(Event ev
     if (sharkkis->GetVictim() == bot)
     {
         const Location& position = SharkkisTankPosition;
-
         if (!bot->IsWithinMeleeRange(sharkkis))
         {
             return MoveTo(sharkkis->GetMapId(), sharkkis->GetPositionX(),
                           sharkkis->GetPositionY(), sharkkis->GetPositionZ(),
-                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+                          false, false, false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
         else if (bot->GetExactDist2d(position.x, position.y) > 2.0f)
         {
@@ -1007,8 +999,8 @@ bool FathomLordKarathressFirstAssistTankPositionSharkkisAction::Execute(Event ev
             float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
             float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
 
-            return MoveTo(bot->GetMapId(), moveX, moveY, position.z, false, false, false, false,
-                        MovementPriority::MOVEMENT_COMBAT, true, false);
+            return MoveTo(bot->GetMapId(), moveX, moveY, position.z, false, false, false, true,
+                          MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
 
@@ -1030,12 +1022,11 @@ bool FathomLordKarathressSecondAssistTankPositionTidalvessAction::Execute(Event 
     if (tidalvess->GetVictim() == bot)
     {
         const Location& position = TidalvessTankPosition;
-
         if (!bot->IsWithinMeleeRange(tidalvess))
         {
             return MoveTo(tidalvess->GetMapId(), tidalvess->GetPositionX(),
                           tidalvess->GetPositionY(), tidalvess->GetPositionZ(),
-                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+                          false, false, false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
         else if (bot->GetExactDist2d(position.x, position.y) > 2.0f)
         {
@@ -1046,8 +1037,8 @@ bool FathomLordKarathressSecondAssistTankPositionTidalvessAction::Execute(Event 
             float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
             float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
 
-            return MoveTo(bot->GetMapId(), moveX, moveY, position.z, false, false, false, false,
-                        MovementPriority::MOVEMENT_COMBAT, true, false);
+            return MoveTo(bot->GetMapId(), moveX, moveY, position.z, false, false, false, true,
+                            MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
 
@@ -1069,7 +1060,6 @@ bool FathomLordKarathressThirdAssistTankPositionCaribdisAction::Execute(Event ev
     if (caribdis->GetVictim() == bot)
     {
         const Location& position = CaribdisTankPosition;
-
         // Distance to tank position check first for Caribdis due to need to move her ASAP
         if (bot->GetExactDist2d(position.x, position.y) > 2.0f)
         {
@@ -1080,14 +1070,14 @@ bool FathomLordKarathressThirdAssistTankPositionCaribdisAction::Execute(Event ev
             float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
             float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
 
-            return MoveTo(bot->GetMapId(), moveX, moveY, position.z, false, false, false, false,
-                        MovementPriority::MOVEMENT_COMBAT, true, false);
+            return MoveTo(bot->GetMapId(), moveX, moveY, position.z, false, false, false, true,
+                          MovementPriority::MOVEMENT_COMBAT, true, false);
         }
         else if (!bot->IsWithinMeleeRange(caribdis))
         {
             return MoveTo(caribdis->GetMapId(), caribdis->GetPositionX(),
                           caribdis->GetPositionY(), caribdis->GetPositionZ(),
-                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+                          false, false, false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
 
@@ -1143,11 +1133,11 @@ bool FathomLordKarathressMisdirectBossesToTanksAction::Execute(Event event)
     }
     else if (hunterIndex == 1)
     {
-        bossTarget = AI_VALUE2(Unit*, "find target", "fathom-guard sharkkis");
+        bossTarget = AI_VALUE2(Unit*, "find target", "fathom-guard tidalvess");
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (member && member->IsAlive() && GET_PLAYERBOT_AI(member)->IsAssistTankOfIndex(member, 0))
+            if (member && member->IsAlive() && GET_PLAYERBOT_AI(member)->IsAssistTankOfIndex(member, 1))
             {
                 tankTarget = member;
                 break;
@@ -1156,11 +1146,11 @@ bool FathomLordKarathressMisdirectBossesToTanksAction::Execute(Event event)
     }
     else if (hunterIndex == 2)
     {
-        bossTarget = AI_VALUE2(Unit*, "find target", "fathom-guard tidalvess");
+        bossTarget = AI_VALUE2(Unit*, "find target", "fathom-guard sharkkis");
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (member && member->IsAlive() && GET_PLAYERBOT_AI(member)->IsAssistTankOfIndex(member, 1))
+            if (member && member->IsAlive() && GET_PLAYERBOT_AI(member)->IsAssistTankOfIndex(member, 0))
             {
                 tankTarget = member;
                 break;
@@ -1182,9 +1172,9 @@ bool FathomLordKarathressMisdirectBossesToTanksAction::Execute(Event event)
 
 bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event event)
 {
-    // Target priority 1: Spitfire Totems
+    // Target priority 1: Spitfire Totems for melee
     Unit* totem = GetFirstAliveUnitByEntry(botAI, NPC_SPITFIRE_TOTEM);
-    if (totem)
+    if (totem && botAI->IsMelee(bot) && botAI->IsDps(bot))
     {
         MarkTargetWithSkull(bot, totem);
         SetRtiTarget(botAI, "skull", totem);
@@ -1198,7 +1188,7 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event event)
         return false;
     }
 
-    // Target priority 2: Tidalvess
+    // Target priority 2: Tidalvess for all dps
     Unit* tidalvess = AI_VALUE2(Unit*, "find target", "fathom-guard tidalvess");
     if (tidalvess && tidalvess->IsAlive())
     {
@@ -1213,7 +1203,36 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event event)
         return false;
     }
 
-    // Target priority 3: Sharkkis
+    // Target priority 3a: Caribdis for ranged
+    Unit* caribdis = AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
+    if (botAI->IsRangedDps(bot) && caribdis && caribdis->IsAlive())
+    {
+        SetRtiTarget(botAI, "diamond", caribdis);
+
+        const Location& position = CaribdisRangedDpsPosition;
+        if (bot->GetExactDist2d(position.x, position.y) > 2.0f)
+        {
+            float dX = position.x - bot->GetPositionX();
+            float dY = position.y - bot->GetPositionY();
+            float dist = sqrt(dX * dX + dY * dY);
+            float moveDist = std::min(7.0f, dist);
+            float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
+
+            return MoveTo(bot->GetMapId(), moveX, moveY, position.z, false, false, false, true,
+                        MovementPriority::MOVEMENT_COMBAT, true, false);
+        }
+
+        if (bot->GetTarget() != caribdis->GetGUID())
+        {
+            bot->SetTarget(caribdis->GetGUID());
+            return Attack(caribdis);
+        }
+
+        return false;
+    }
+
+    // Target priority 3b: Sharkkis for melee (and ranged if Caribdis down first)
     Unit* sharkkis = AI_VALUE2(Unit*, "find target", "fathom-guard sharkkis");
     if (sharkkis && sharkkis->IsAlive())
     {
@@ -1228,26 +1247,7 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event event)
         return false;
     }
 
-    // Target priority 4a: Caribdis for ranged
-    Unit* caribdis = AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
-    if (botAI->IsRanged(bot) && caribdis && caribdis->IsAlive())
-    {
-        SetRtiTarget(botAI, "diamond", caribdis);
-
-        float dist = bot->GetExactDist2d(caribdis);
-        if (dist > 30.0f)
-            return FleePosition(caribdis->GetPosition(), 28.0f, 0);
-
-        if (bot->GetTarget() != caribdis->GetGUID())
-        {
-            bot->SetTarget(caribdis->GetGUID());
-            return Attack(caribdis);
-        }
-
-        return false;
-    }
-
-    // Target priority 4b: Sharkkis pets for melee
+    // Target priority 4: Sharkkis pets for all dps
     Unit* fathomSporebat = AI_VALUE2(Unit*, "find target", "fathom sporebat");
     if (fathomSporebat && fathomSporebat->IsAlive() && botAI->IsMelee(bot))
     {
@@ -1278,7 +1278,7 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event event)
         return false;
     }
 
-    // Target priority 5: Karathress
+    // Target priority 5: Karathress for all dps
     Unit* karathress = AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
     if (karathress && karathress->IsAlive())
     {
@@ -1300,8 +1300,7 @@ bool FathomLordKarathressPositionCaribdisTankHealerAction::Execute(Event event)
     if (!caribdis)
         return false;
 
-    /* const Location& position = CaribdisHealerPosition;
-
+    const Location& position = CaribdisHealerPosition;
     if (bot->GetExactDist2d(position.x, position.y) > 2.0f)
     {
         float dX = position.x - bot->GetPositionX();
@@ -1311,12 +1310,9 @@ bool FathomLordKarathressPositionCaribdisTankHealerAction::Execute(Event event)
         float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
         float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
 
-        return MoveTo(bot->GetMapId(), moveX, moveY, position.z, false, false, false, false,
+        return MoveTo(bot->GetMapId(), moveX, moveY, position.z, false, false, false, true,
                     MovementPriority::MOVEMENT_COMBAT, true, false);
-    } */
-    float dist = bot->GetExactDist2d(caribdis);
-    if (dist > 20.0f)
-        return FleePosition(caribdis->GetPosition(), 18.0f, 0);
+    }
 
     return false;
 }
@@ -1548,7 +1544,6 @@ bool LadyVashjMainTankPositionBossAction::Execute(Event event)
         if (IsLadyVashjInPhase1(botAI))
         {
             const Location& position = VashjRoomCenterPosition;
-
             if (bot->GetExactDist2d(position.x, position.y) > 2.0f)
             {
                 float dX = position.x - bot->GetPositionX();

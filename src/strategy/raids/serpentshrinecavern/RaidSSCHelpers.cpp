@@ -68,7 +68,8 @@ namespace SerpentShrineCavernHelpers
         const Location LurkerNHealerLandPosition = { 66.268f, -418.774f, -19.592f };
         const Location LurkerNHealerSwimPosition = { 71.255f, -419.223f, -21.381f };
 
-        const Location KarathressTankPosition = { 472.973f, -540.804f, -7.548f };
+        // const Location KarathressTankPosition = { 472.973f, -540.804f, -7.548f };
+        const Location KarathressTankPosition = { 474.403f, -531.118f, -7.548f }; // above works but maybe LoS issues, trying this one
         const Location TidalvessTankPosition = { 511.282f, -501.162f, -13.158f };
         // const Location SharkkisTankPosition = { 507.396f, -555.750f, -7.146f }; // OG
         const Location SharkkisTankPosition = { 508.057f, -541.109f, -10.133f };
@@ -76,6 +77,7 @@ namespace SerpentShrineCavernHelpers
         // const Location CaribdisTankPosition = { 450.472f, -483.398f, -13.158f }; // try this if need farther
         // const Location CaribdisTankPosition = { 464.474f, -467.951f, -13.158f }; // or this for near the corner
         const Location CaribdisHealerPosition = { 466.203f, -503.201f, -13.158f };
+        const Location CaribdisRangedDpsPosition = { 463.197f, -501.190f, -13.158f };
         // const Location KarathressRoomCenterPosition = { 502.570f, -510.805f, -13.158f }; // smack dab
         // const Location KarathressRoomCenterPosition = { 494.458f, -510.435f, -13.158f }; // middle of the "more centra" positions
 

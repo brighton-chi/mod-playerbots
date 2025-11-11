@@ -316,6 +316,18 @@ float FathomLordKarathressDisableTankAssistMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+float FathomLordKarathressDisableAoeMultiplier::GetValue(Action* action)
+{
+    Unit* karathress = AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
+    if (!karathress)
+        return 1.0f;
+
+    if (dynamic_cast<DpsAoeAction*>(action))
+        return 0.0f;
+
+    return 1.0f;
+}
+
 float FathomLordKarathressControlMisdirectionMultiplier::GetValue(Action* action)
 {
     Unit* karathress = AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
@@ -333,7 +345,6 @@ float FathomLordKarathressWaitForDpsMultiplier::GetValue(Action* action)
     Unit* karathress = AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
     if (!karathress)
         return 1.0f;
-
 
     uint32 mapId = karathress->GetMapId();
     time_t now = time(nullptr);
