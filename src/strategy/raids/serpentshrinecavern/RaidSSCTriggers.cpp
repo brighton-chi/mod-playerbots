@@ -71,7 +71,7 @@ bool HydrossTheUnstableNeedToManageTimersTrigger::IsActive()
 {
     Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
 
-    return hydross && IsMapIDTimerManager(botAI, bot);
+    return hydross && !botAI->IsTank(bot);
 }
 
 // The Lurker Below

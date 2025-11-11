@@ -357,26 +357,29 @@ bool HydrossTheUnstableStopDpsUponPhaseChangeAction::Execute(Event event)
 
     uint32 mapId = hydross->GetMapId();
     const time_t now = time(nullptr);
-    const int phaseStopSeconds = 6;
-    const int dpsStopSeconds = 5;
+    const int phaseEndStopSeconds = 6;
+    const int phaseStartStopSeconds = 5;
 
-    // Check all relevant timers first, then call AttackStop/Interrupt once if any require it.
     bool shouldStopDps = false;
 
+    // 6 seconds after marks hit 100% in nature phase, stop DPS until transition into frost phase
     auto itNature = hydrossChangeToNaturePhaseTimer.find(mapId);
-    if (itNature != hydrossChangeToNaturePhaseTimer.end() && (now - itNature->second) >= phaseStopSeconds)
+    if (itNature != hydrossChangeToNaturePhaseTimer.end() && (now - itNature->second) >= phaseEndStopSeconds)
         shouldStopDps = true;
 
-    auto itFrost = hydrossChangeToFrostPhaseTimer.find(mapId);
-    if (itFrost != hydrossChangeToFrostPhaseTimer.end() && (now - itFrost->second) >= phaseStopSeconds)
-        shouldStopDps = true;
-
+    // Keep DPS stopped for 5 seconds after transition into frost phase
     auto itFrostDps = hydrossFrostDpsWaitTimer.find(mapId);
-    if (itFrostDps != hydrossFrostDpsWaitTimer.end() && (now - itFrostDps->second) < dpsStopSeconds)
+    if (itFrostDps != hydrossFrostDpsWaitTimer.end() && (now - itFrostDps->second) < phaseStartStopSeconds)
         shouldStopDps = true;
 
+    // 6 seconds after marks hit 100% in frost phase, stop DPS until transition into nature phase
+    auto itFrost = hydrossChangeToFrostPhaseTimer.find(mapId);
+    if (itFrost != hydrossChangeToFrostPhaseTimer.end() && (now - itFrost->second) >= phaseEndStopSeconds)
+        shouldStopDps = true;
+
+    // Keep DPS stopped for 5 seconds after transition into nature phase
     auto itNatureDps = hydrossNatureDpsWaitTimer.find(mapId);
-    if (itNatureDps != hydrossNatureDpsWaitTimer.end() && (now - itNatureDps->second) < dpsStopSeconds)
+    if (itNatureDps != hydrossNatureDpsWaitTimer.end() && (now - itNatureDps->second) < phaseStartStopSeconds)
         shouldStopDps = true;
 
     if (shouldStopDps)
@@ -396,52 +399,53 @@ bool HydrossTheUnstableManageTimersAction::Execute(Event event)
         return false;
 
     uint32 mapId = hydross->GetMapId();
+    const time_t now = time(nullptr);
 
     if (hydross->GetHealth() == hydross->GetMaxHealth())
     {
-        if (hydrossFrostDpsWaitTimer.find(mapId) != hydrossFrostDpsWaitTimer.end())
+        if (hydrossFrostDpsWaitTimer.count(mapId))
             hydrossFrostDpsWaitTimer.erase(mapId);
 
-        if (hydrossNatureDpsWaitTimer.find(mapId) != hydrossNatureDpsWaitTimer.end())
+        if (hydrossNatureDpsWaitTimer.count(mapId))
             hydrossNatureDpsWaitTimer.erase(mapId);
 
-        if (hydrossChangeToFrostPhaseTimer.find(mapId) != hydrossChangeToFrostPhaseTimer.end())
+        if (hydrossChangeToFrostPhaseTimer.count(mapId))
             hydrossChangeToFrostPhaseTimer.erase(mapId);
 
-        if (hydrossChangeToNaturePhaseTimer.find(mapId) != hydrossChangeToNaturePhaseTimer.end())
+        if (hydrossChangeToNaturePhaseTimer.count(mapId))
             hydrossChangeToNaturePhaseTimer.erase(mapId);
     }
 
     if (!hydross->HasAura(SPELL_CORRUPTION))
     {
-        if (hydrossFrostDpsWaitTimer.find(mapId) == hydrossFrostDpsWaitTimer.end())
-            hydrossFrostDpsWaitTimer[mapId] = time(nullptr);
+        if (hydrossFrostDpsWaitTimer.count(mapId) == 0)
+            hydrossFrostDpsWaitTimer[mapId] = now;
 
-        if (hydrossNatureDpsWaitTimer.find(mapId) != hydrossNatureDpsWaitTimer.end())
+        if (hydrossNatureDpsWaitTimer.count(mapId))
             hydrossNatureDpsWaitTimer.erase(mapId);
 
-        if (hydrossChangeToFrostPhaseTimer.find(mapId) != hydrossChangeToFrostPhaseTimer.end())
+        if (hydrossChangeToFrostPhaseTimer.count(mapId))
             hydrossChangeToFrostPhaseTimer.erase(mapId);
 
         if (HasMarkOfHydrossAt100Percent(bot) &&
-            hydrossChangeToNaturePhaseTimer.find(mapId) == hydrossChangeToNaturePhaseTimer.end())
-            hydrossChangeToNaturePhaseTimer[mapId] = time(nullptr);
+            hydrossChangeToNaturePhaseTimer.count(mapId) == 0)
+            hydrossChangeToNaturePhaseTimer[mapId] = now;
     }
 
     if (hydross->HasAura(SPELL_CORRUPTION))
     {
-        if (hydrossNatureDpsWaitTimer.find(mapId) == hydrossNatureDpsWaitTimer.end())
-            hydrossNatureDpsWaitTimer[mapId] = time(nullptr);
+        if (hydrossNatureDpsWaitTimer.count(mapId) == 0)
+            hydrossNatureDpsWaitTimer[mapId] = now;
 
-        if (hydrossFrostDpsWaitTimer.find(mapId) != hydrossFrostDpsWaitTimer.end())
+        if (hydrossFrostDpsWaitTimer.count(mapId))
             hydrossFrostDpsWaitTimer.erase(mapId);
 
-        if (hydrossChangeToNaturePhaseTimer.find(mapId) != hydrossChangeToNaturePhaseTimer.end())
+        if (hydrossChangeToNaturePhaseTimer.count(mapId))
             hydrossChangeToNaturePhaseTimer.erase(mapId);
 
         if (HasMarkOfCorruptionAt100Percent(bot) &&
-            hydrossChangeToFrostPhaseTimer.find(mapId) == hydrossChangeToFrostPhaseTimer.end())
-            hydrossChangeToFrostPhaseTimer[mapId] = time(nullptr);
+            hydrossChangeToFrostPhaseTimer.count(mapId) == 0)
+            hydrossChangeToFrostPhaseTimer[mapId] = now;
     }
 
     return false;
@@ -641,7 +645,7 @@ bool TheLurkerBelowManageSpoutTimerAction::Execute(Event event)
     LOG_DEBUG("playerbots", "SpoutTimerAction: lurkerSpoutTimer[{}]={}, now={}", mapId, lurkerSpoutTimer.count(mapId) ? lurkerSpoutTimer[mapId] : -1, now);
 
     // Set timer if Spout starts
-    if (IsLurkerCastingSpout(lurker) && (!lurkerSpoutTimer.count(mapId) || lurkerSpoutTimer[mapId] <= now)) {
+    if (IsLurkerCastingSpout(lurker) && (lurkerSpoutTimer.count(mapId) == 0 || lurkerSpoutTimer[mapId] <= now)) {
         lurkerSpoutTimer[mapId] = now + 20; // 20s channel for Spout
         LOG_DEBUG("playerbots", "SpoutTimerAction: Set lurkerSpoutTimer[{}] to {}", mapId, lurkerSpoutTimer[mapId]);
     }
@@ -804,8 +808,8 @@ bool LeotherasTheBlindInnerDemonCheatAction::Execute(Event event)
             Unit::DealDamage(bot, innerDemon, innerDemon->GetMaxHealth() / 20, nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false, true);
             return true;
         }
-        else if (innerDemon->GetHealthPct() >= 60.0f)
-            Unit::DealDamage(bot, innerDemon, innerDemon->GetMaxHealth() / 2, nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false, true);
+        /* else if (innerDemon->GetHealthPct() >= 60.0f)
+            Unit::DealDamage(bot, innerDemon, innerDemon->GetMaxHealth() / 2, nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false, true); */ // test if other DPS can handle it
     }
 
     return false;
@@ -882,46 +886,46 @@ bool LeotherasTheBlindManageTimersAndTrackersAction::Execute(Event event)
 
     if (leotheras && leotheras->HasAura(SPELL_LEOTHERAS_BANISHED))
     {
-        if (leotherasHumanFormDpsWaitTimer.find(mapId) != leotherasHumanFormDpsWaitTimer.end())
+        if (leotherasHumanFormDpsWaitTimer.count(mapId))
             leotherasHumanFormDpsWaitTimer.erase(mapId);
 
-        if (leotherasDemonFormDpsWaitTimer.find(mapId) != leotherasDemonFormDpsWaitTimer.end())
+        if (leotherasDemonFormDpsWaitTimer.count(mapId))
             leotherasDemonFormDpsWaitTimer.erase(mapId);
 
-        if (leotherasFinalPhaseDpsWaitTimer.find(mapId) != leotherasFinalPhaseDpsWaitTimer.end())
+        if (leotherasFinalPhaseDpsWaitTimer.count(mapId))
             leotherasFinalPhaseDpsWaitTimer.erase(mapId);
     }
     else if (leotherasHuman && !leotherasPhase3Demon)
     {
-        if (leotherasHumanFormDpsWaitTimer.find(mapId) == leotherasHumanFormDpsWaitTimer.end())
+        if (leotherasHumanFormDpsWaitTimer.count(mapId) == 0)
             leotherasHumanFormDpsWaitTimer[mapId] = now;
 
-        if (leotherasDemonFormDpsWaitTimer.find(mapId) != leotherasDemonFormDpsWaitTimer.end())
+        if (leotherasDemonFormDpsWaitTimer.count(mapId))
             leotherasDemonFormDpsWaitTimer.erase(mapId);
 
-        if (leotherasFinalPhaseDpsWaitTimer.find(mapId) != leotherasFinalPhaseDpsWaitTimer.end())
+        if (leotherasFinalPhaseDpsWaitTimer.count(mapId))
             leotherasFinalPhaseDpsWaitTimer.erase(mapId);
     }
     else if (leotherasPhase2Demon)
     {
-        if (leotherasDemonFormDpsWaitTimer.find(mapId) == leotherasDemonFormDpsWaitTimer.end())
+        if (leotherasDemonFormDpsWaitTimer.count(mapId) == 0)
             leotherasDemonFormDpsWaitTimer[mapId] = now;
 
-        if (leotherasHumanFormDpsWaitTimer.find(mapId) != leotherasHumanFormDpsWaitTimer.end())
+        if (leotherasHumanFormDpsWaitTimer.count(mapId))
             leotherasHumanFormDpsWaitTimer.erase(mapId);
 
-        if (leotherasFinalPhaseDpsWaitTimer.find(mapId) != leotherasFinalPhaseDpsWaitTimer.end())
+        if (leotherasFinalPhaseDpsWaitTimer.count(mapId))
             leotherasFinalPhaseDpsWaitTimer.erase(mapId);
     }
     else if (leotherasHuman && leotherasPhase3Demon)
     {
-        if (leotherasFinalPhaseDpsWaitTimer.find(mapId) == leotherasFinalPhaseDpsWaitTimer.end())
+        if (leotherasFinalPhaseDpsWaitTimer.count(mapId) == 0)
             leotherasFinalPhaseDpsWaitTimer[mapId] = now;
 
-        if (leotherasHumanFormDpsWaitTimer.find(mapId) != leotherasHumanFormDpsWaitTimer.end())
+        if (leotherasHumanFormDpsWaitTimer.count(mapId))
             leotherasHumanFormDpsWaitTimer.erase(mapId);
 
-        if (leotherasDemonFormDpsWaitTimer.find(mapId) != leotherasDemonFormDpsWaitTimer.end())
+        if (leotherasDemonFormDpsWaitTimer.count(mapId))
             leotherasDemonFormDpsWaitTimer.erase(mapId);
     }
 
@@ -930,10 +934,6 @@ bool LeotherasTheBlindManageTimersAndTrackersAction::Execute(Event event)
 
 // Fathom-Lord Karathress
 
-// Each tank assigned to specific naga, go to designated position
-// Melee kill order: spitfire totem, fathom lurker/sporebat, tidalvess, sharkkis, karathress
-// Ranged kill order: same but caribdis before karathress
-// hunters misdirect initial pull - caribdis top priority for misdirects
 // consider whether caribdis healing wave needs interrupting (can it be ranged? seems not)
 // consider whether to put curse of tongues on caribdis
 
@@ -1070,7 +1070,7 @@ bool FathomLordKarathressThirdAssistTankPositionCaribdisAction::Execute(Event ev
     {
         const Location& position = CaribdisTankPosition;
 
-        // Distance check first for Caribdis due to need to move her ASAP
+        // Distance to tank position check first for Caribdis due to need to move her ASAP
         if (bot->GetExactDist2d(position.x, position.y) > 2.0f)
         {
             float dX = position.x - bot->GetPositionX();
@@ -1278,7 +1278,7 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event event)
         return false;
     }
 
-    // Target priority 5b: Karathress
+    // Target priority 5: Karathress
     Unit* karathress = AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
     if (karathress && karathress->IsAlive())
     {
@@ -1328,16 +1328,17 @@ bool FathomLordKarathressManageDpsTimerAction::Execute(Event event)
         return false;
 
     uint32 mapId = karathress->GetMapId();
+    const time_t now = time(nullptr);
 
     if (karathress->GetHealth() == karathress->GetMaxHealth())
     {
-        if (karathressDpsWaitTimer.find(mapId) != karathressDpsWaitTimer.end())
+        if (karathressDpsWaitTimer.count(mapId))
             karathressDpsWaitTimer.erase(mapId);
     }
     else
     {
-        if (karathressDpsWaitTimer.find(mapId) == karathressDpsWaitTimer.end())
-            karathressDpsWaitTimer[mapId] = time(nullptr);
+        if (karathressDpsWaitTimer.count(mapId) == 0)
+            karathressDpsWaitTimer[mapId] = now;
     }
 
     return false;
@@ -1532,8 +1533,6 @@ bool MorogrimTidewalkerResetPhaseTransitionStepsAction::Execute(Event event)
 }
 
 // Lady Vashj <Coilfang Matron>
-
-// Reminder--Shamans need to use grounding totems, at least in MT's group
 
 bool LadyVashjMainTankPositionBossAction::Execute(Event event)
 {
