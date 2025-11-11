@@ -168,6 +168,7 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
 void RaidSSCStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
+    multipliers.push_back(new ColossusRagerDoNotUseBloodlustOrHeroismMultiplier(botAI));
     multipliers.push_back(new HydrossTheUnstableDisableTankActionsMultiplier(botAI));
     multipliers.push_back(new HydrossTheUnstableWaitForDpsMultiplier(botAI));
     multipliers.push_back(new HydrossTheUnstableControlMisdirectionMultiplier(botAI));

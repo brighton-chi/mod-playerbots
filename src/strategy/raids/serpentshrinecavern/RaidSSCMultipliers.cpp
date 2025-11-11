@@ -27,6 +27,18 @@ static bool IsChargeAction(Action* action)
            dynamic_cast<CastFeralChargeCatAction*>(action);
 }
 
+// Trash
+
+float ColossusRagerDoNotUseBloodlustOrHeroismMultiplier::GetValue(Action* action)
+{
+    Unit* rager = AI_VALUE2(Unit*, "find target", "colossus rager");
+
+    if (rager && (dynamic_cast<CastHeroismAction*>(action) || dynamic_cast<CastBloodlustAction*>(action)))
+        return 0.0f;
+
+    return 1.0f;
+}
+
 // Hydross the Unstable <Duke of Currents>
 
 float HydrossTheUnstableDisableTankActionsMultiplier::GetValue(Action* action)
@@ -70,6 +82,7 @@ float HydrossTheUnstableWaitForDpsMultiplier::GetValue(Action* action)
         return 1.0f;
 
     uint32 mapId = hydross->GetMapId();
+    time_t now = time(nullptr);
     const uint8 dpsWaitSeconds = 5;
     const uint8 phaseChangeWaitSeconds = 6;
 
@@ -79,10 +92,10 @@ float HydrossTheUnstableWaitForDpsMultiplier::GetValue(Action* action)
         auto itPhase = hydrossChangeToFrostPhaseTimer.find(mapId);
 
         bool justChanged = (itDps == hydrossFrostDpsWaitTimer.end() ||
-                            (time(nullptr) - itDps->second) < dpsWaitSeconds);
+                            (now - itDps->second) < dpsWaitSeconds);
 
         bool aboutToChange = (itPhase != hydrossChangeToFrostPhaseTimer.end() &&
-                              (time(nullptr) - itPhase->second) > phaseChangeWaitSeconds);
+                              (now - itPhase->second) > phaseChangeWaitSeconds);
 
         if (justChanged || aboutToChange)
         {
@@ -224,6 +237,7 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValue(Action* action)
         return 1.0f;
 
     uint32 mapId = leotheras->GetMapId();
+    time_t now = time(nullptr);
 
     const uint8 dpsWaitSecondsPhase1 = 5;
     Unit* leotherasHuman = GetLeotherasHuman(botAI);
@@ -231,7 +245,7 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValue(Action* action)
     if (leotherasHuman && !leotherasHuman->HasAura(SPELL_LEOTHERAS_BANISHED) && !leotherasPhase3Demon)
     {
         auto it = leotherasHumanFormDpsWaitTimer.find(mapId);
-        if (it == leotherasHumanFormDpsWaitTimer.end() || (time(nullptr) - it->second) < dpsWaitSecondsPhase1)
+        if (it == leotherasHumanFormDpsWaitTimer.end() || (now - it->second) < dpsWaitSecondsPhase1)
         {
             if ((!botAI->IsTank(bot) && dynamic_cast<AttackAction*>(action)) ||
                 (dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<CastHealingSpellAction*>(action)))
@@ -248,7 +262,7 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValue(Action* action)
             return 1.0f;
 
         auto it = leotherasDemonFormDpsWaitTimer.find(mapId);
-        if (it == leotherasDemonFormDpsWaitTimer.end() || (time(nullptr) - it->second) < dpsWaitSecondsPhase2)
+        if (it == leotherasDemonFormDpsWaitTimer.end() || (now - it->second) < dpsWaitSecondsPhase2)
         {
             if (dynamic_cast<AttackAction*>(action) ||
                 (dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<CastHealingSpellAction*>(action)))
@@ -263,7 +277,7 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValue(Action* action)
             return 1.0f;
 
         auto it = leotherasFinalPhaseDpsWaitTimer.find(mapId);
-        if (it == leotherasFinalPhaseDpsWaitTimer.end() || (time(nullptr) - it->second) < dpsWaitSecondsPhase3)
+        if (it == leotherasFinalPhaseDpsWaitTimer.end() || (now - it->second) < dpsWaitSecondsPhase3)
         {
             if ((!botAI->IsTank(bot) && dynamic_cast<AttackAction*>(action)) ||
                 (dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<CastHealingSpellAction*>(action)))
@@ -293,7 +307,7 @@ float LeotherasTheBlindDelayBloodlustAndHeroismMultiplier::GetValue(Action* acti
 float FathomLordKarathressDisableTankAssistMultiplier::GetValue(Action* action)
 {
     Unit* karathress = AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
-    if (!karathress || botAI->IsAssistTankOfIndex(bot, 0)) // Need this for Sharkkis pets?
+    if (!karathress)
         return 1.0f;
 
     if (dynamic_cast<TankAssistAction*>(action))
@@ -320,9 +334,13 @@ float FathomLordKarathressWaitForDpsMultiplier::GetValue(Action* action)
     if (!karathress)
         return 1.0f;
 
+
+    uint32 mapId = karathress->GetMapId();
+    time_t now = time(nullptr);
     const uint8 dpsWaitSeconds = 8;
-    auto it = karathressDpsWaitTimer.find(bot->GetMapId());
-    if (it == karathressDpsWaitTimer.end() || (time(nullptr) - it->second) < dpsWaitSeconds)
+
+    auto it = karathressDpsWaitTimer.find(mapId);
+    if (it == karathressDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
     {
         if ((!botAI->IsTank(bot) && dynamic_cast<AttackAction*>(action)) ||
             (dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<CastHealingSpellAction*>(action)))

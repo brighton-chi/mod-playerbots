@@ -1329,11 +1329,13 @@ bool FathomLordKarathressManageDpsTimerAction::Execute(Event event)
 
     uint32 mapId = karathress->GetMapId();
 
-    if (karathress && karathress->GetHealth() == karathress->GetMaxHealth())
+    if (karathress->GetHealth() == karathress->GetMaxHealth())
     {
         if (karathressDpsWaitTimer.find(mapId) != karathressDpsWaitTimer.end())
             karathressDpsWaitTimer.erase(mapId);
-
+    }
+    else
+    {
         if (karathressDpsWaitTimer.find(mapId) == karathressDpsWaitTimer.end())
             karathressDpsWaitTimer[mapId] = time(nullptr);
     }

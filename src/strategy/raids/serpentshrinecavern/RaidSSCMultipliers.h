@@ -3,6 +3,13 @@
 
 #include "Multiplier.h"
 
+class ColossusRagerDoNotUseBloodlustOrHeroismMultiplier : public Multiplier
+{
+public:
+    ColossusRagerDoNotUseBloodlustOrHeroismMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "colossus rager do not use bloodlust or heroism") {}
+    virtual float GetValue(Action* action);
+};
+
 class HydrossTheUnstableDisableTankActionsMultiplier : public Multiplier
 {
 public:
