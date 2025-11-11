@@ -57,16 +57,19 @@ float AttumenTheHuntsmanStayStackedMultiplier::GetValue(Action* action)
 }
 
 // Give the main tank 8 seconds to grab aggro when Attumen mounts Midnight
-// In reality it's a lot shorter because it takes Attumen a few seconds to aggro after mounting
+// In reality it's shorter because it takes Attumen a few seconds to aggro after mounting
 float AttumenTheHuntsmanWaitForDPSMultiplier::GetValue(Action* action)
 {
     Unit* attumenMounted = GetFirstAliveUnitByEntry(botAI, NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED);
     if (!attumenMounted || !attumenMounted->IsAlive())
         return 1.0f;
 
+    uint32 mapId = attumenMounted->GetMapId();
+    time_t now = time(nullptr);
     const uint8 dpsWaitSeconds = 8;
-    auto it = attumenDPSWaitTimer.find(bot->GetMapId());
-    if (it == attumenDPSWaitTimer.end() || (time(nullptr) - it->second) < dpsWaitSeconds)
+
+    auto it = attumenDPSWaitTimer.find(mapId);
+    if (it == attumenDPSWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
     {
         if ((!botAI->IsMainTank(bot) && dynamic_cast<AttackAction*>(action)) ||
             (dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<CastHealingSpellAction*>(action)))
@@ -173,9 +176,12 @@ float NetherspiteWaitForDPSMultiplier::GetValue(Action* action)
     if (!netherspite || netherspite->HasAura(SPELL_NETHERSPITE_BANISHED))
         return 1.0f;
 
+    uint32 mapId = netherspite->GetMapId();
+    time_t now = time(nullptr);
     const uint8 dpsWaitSeconds = 5;
-    auto it = netherspiteDPSWaitTimer.find(bot->GetMapId());
-    if (it == netherspiteDPSWaitTimer.end() || (time(nullptr) - it->second) < dpsWaitSeconds)
+
+    auto it = netherspiteDPSWaitTimer.find(mapId);
+    if (it == netherspiteDPSWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
     {
         if ((!botAI->IsTank(bot) && dynamic_cast<AttackAction*>(action)) ||
             (dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<CastHealingSpellAction*>(action)))
@@ -248,9 +254,12 @@ float NightbaneWaitForDPSMultiplier::GetValue(Action* action)
     if (!nightbane || nightbane->GetPositionZ() > 95.0f)
         return 1.0f;
 
+    uint32 mapId = nightbane->GetMapId();
+    time_t now = time(nullptr);
     const uint8 dpsWaitSeconds = 8;
-    auto it = nightbaneDPSWaitTimer.find(bot->GetMapId());
-    if (it == nightbaneDPSWaitTimer.end() || (time(nullptr) - it->second) < dpsWaitSeconds)
+
+    auto it = nightbaneDPSWaitTimer.find(mapId);
+    if (it == nightbaneDPSWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
     {
         if ((!botAI->IsMainTank(bot) && dynamic_cast<AttackAction*>(action)) ||
             (dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<CastHealingSpellAction*>(action)))

@@ -143,16 +143,17 @@ bool AttumenTheHuntsmanManageTimerAction::Execute(Event event)
 {
     Unit* midnight = AI_VALUE2(Unit*, "find target", "midnight");
     Unit* attumenMounted = GetFirstAliveUnitByEntry(botAI, NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED);
-    if (!midnight || !attumenMounted)
+    if (!midnight && !attumenMounted)
         return false;
 
     uint32 mapId = midnight ? midnight->GetMapId() : attumenMounted->GetMapId();
+    time_t now = time(nullptr);
 
     if (midnight && !attumenMounted && attumenDPSWaitTimer.count(mapId))
         attumenDPSWaitTimer.erase(mapId);
 
     if (attumenMounted && !attumenDPSWaitTimer.count(mapId))
-        attumenDPSWaitTimer[mapId] = time(nullptr);
+        attumenDPSWaitTimer[mapId] = now;
 
     return false;
 }
@@ -974,6 +975,7 @@ bool NetherspiteManageTimersAction::Execute(Event event)
 
     uint32 mapId = netherspite->GetMapId();
     ObjectGuid botGuid = bot->GetGUID();
+    time_t now = time(nullptr);
 
     if (netherspite->HasAura(SPELL_NETHERSPITE_BANISHED) ||
         (netherspite->GetHealth() == netherspite->GetMaxHealth() &&
@@ -988,16 +990,15 @@ bool NetherspiteManageTimersAction::Execute(Event event)
             lastBeamMoveSideways.erase(botGuid);
         }
     }
-
-    if (!netherspite->HasAura(SPELL_NETHERSPITE_BANISHED))
+    else if (!netherspite->HasAura(SPELL_NETHERSPITE_BANISHED))
     {
         if (IsMapIDTimerManager(botAI, bot) && !netherspiteDPSWaitTimer.count(mapId))
-            netherspiteDPSWaitTimer[mapId] = time(nullptr);
+            netherspiteDPSWaitTimer[mapId] = now;
 
         if (botAI->IsTank(bot) && bot->HasAura(SPELL_RED_BEAM_DEBUFF) &&
             !redBeamMoveTimer.count(botGuid))
         {
-            redBeamMoveTimer[botGuid] = time(nullptr);
+            redBeamMoveTimer[botGuid] = now;
             lastBeamMoveSideways[botGuid] = false;
         }
     }
@@ -1398,6 +1399,7 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event event)
 
     uint32 mapId = nightbane->GetMapId();
     ObjectGuid botGuid = bot->GetGUID();
+    time_t now = time(nullptr);
 
     // Erase DPS wait timer and tank and ranged position tracking on encounter reset or flight
     if (nightbane->GetPositionZ() > 95.0f || nightbane->GetHealth() == nightbane->GetMaxHealth())
@@ -1411,9 +1413,8 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event event)
         if (IsMapIDTimerManager(botAI, bot) && nightbaneDPSWaitTimer.count(mapId))
             nightbaneDPSWaitTimer.erase(mapId);
     }
-
     // Erase flight phase timer and Rain of Bones tracker on ground phase and start DPS wait timer
-    if (nightbane->GetPositionZ() <= 95.0f)
+    else if (nightbane->GetPositionZ() <= 95.0f)
     {
         if (IsMapIDTimerManager(botAI, bot) && nightbaneFlightPhaseStartTimer.count(mapId))
             nightbaneFlightPhaseStartTimer.erase(mapId);
@@ -1422,13 +1423,13 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event event)
             nightbaneRainOfBonesHit.erase(botGuid);
 
         if (IsMapIDTimerManager(botAI, bot) && !nightbaneDPSWaitTimer.count(mapId))
-            nightbaneDPSWaitTimer[mapId] = time(nullptr);
+            nightbaneDPSWaitTimer[mapId] = now;
     }
 
     // Start flight phase timer at beginning of flight phase
     if (nightbane->GetPositionZ() > 95.0f && IsMapIDTimerManager(botAI, bot) &&
         !nightbaneFlightPhaseStartTimer.count(mapId))
-        nightbaneFlightPhaseStartTimer[mapId] = time(nullptr);
+        nightbaneFlightPhaseStartTimer[mapId] = now;
 
     return false;
 }
