@@ -229,7 +229,7 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValue(Action* action)
     if (leotherasHuman && !leotherasHuman->HasAura(SPELL_LEOTHERAS_BANISHED))
     {
         auto it = leotherasHumanFormDpsWaitTimer.find(mapId);
-        if (it != leotherasHumanFormDpsWaitTimer.end() || (time(nullptr) - it->second) < dpsWaitSecondsPhase1)
+        if (it == leotherasHumanFormDpsWaitTimer.end() || (time(nullptr) - it->second) < dpsWaitSecondsPhase1)
         {
             if ((!botAI->IsTank(bot) && dynamic_cast<AttackAction*>(action)) ||
                 (dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<CastHealingSpellAction*>(action)))
@@ -244,7 +244,7 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValue(Action* action)
             return 1.0f;
 
         auto it = leotherasDemonFormDpsWaitTimer.find(mapId);
-        if (it != leotherasDemonFormDpsWaitTimer.end() || (time(nullptr) - it->second) < dpsWaitSecondsPhase2)
+        if (it == leotherasDemonFormDpsWaitTimer.end() || (time(nullptr) - it->second) < dpsWaitSecondsPhase2)
         {
             if (dynamic_cast<AttackAction*>(action) ||
                 (dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<CastHealingSpellAction*>(action)))
@@ -259,7 +259,7 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValue(Action* action)
             return 1.0f;
 
         auto it = leotherasFinalPhaseDpsWaitTimer.find(mapId);
-        if (it != leotherasFinalPhaseDpsWaitTimer.end() || (time(nullptr) - it->second) < dpsWaitSecondsPhase3)
+        if (it == leotherasFinalPhaseDpsWaitTimer.end() || (time(nullptr) - it->second) < dpsWaitSecondsPhase3)
         {
             if ((!botAI->IsTank(bot) && dynamic_cast<AttackAction*>(action)) ||
                 (dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<CastHealingSpellAction*>(action)))
