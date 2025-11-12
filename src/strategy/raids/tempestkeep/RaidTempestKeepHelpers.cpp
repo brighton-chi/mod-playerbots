@@ -10,33 +10,33 @@
 namespace TempestKeepHelpers
 {
 
-    namespace TempestKeepLocations
+    namespace TempestKeepPositions
     {
         // Al'ar platform coordinates correspond with "OLDWorld Trigger (DO NOT DELETE) NPCs (15384)"
-        const Location AlarRangedCenter = { 346.758f, 3.794f, -2.389f };
-        const Location AlarPlatform1 = { 335.638f, 59.4879f, 17.9319f }; // West Platform
-        const Location AlarPlatform2 = { 388.751f, 31.7312f, 20.2636f }; // Northwest Platform
-        const Location AlarPlatform3 = { 388.791f, -33.1059f, 20.2636f }; // Northeast Platform
-        const Location AlarPlatform4 = { 332.723f, -61.159f, 17.9791f }; // East Platform
-        const Location AlarPlatform1To2MidpointA = { 362.264f, 83.648f, 19.797f }; // 1st Midpoint between Platform 1 and 2
-        const Location AlarPlatform1To2MidpointB = { 397.760f, 57.362f, 20.179f }; // 2nd Midpoint between Platform 1 and 2
-        const Location AlarPlatform2To3MidpointA = { 419.272f, 28.838f, 20.179f }; // 1st Midpoint between Platform 2 and 3
-        const Location AlarPlatform2To3MidpointB = { 419.272f, -28.838f, 20.179f }; // 2nd Midpoint between Platform 2 and 3
-        const Location AlarPlatform3To4MidpointA = { 397.760f, -57.362f, 20.179f }; // 1st Midpoint between Platform 3 and 4
-        const Location AlarPlatform3To4MidpointB = { 362.264f, -83.648f, 19.797f }; // 2nd Midpoint between Platform 3 and 4
-        const Location AlarGround1 = { 336.439f, 48.181f, -2.389f }; // Landing point for jumping from West Platform
-        const Location AlarGround2 = { 379.122f, 25.146f, -2.385f }; // Landing point for jumping from Northwest Platform
-        const Location AlarGround3 = { 378.583f, -27.481f, -2.385f }; // Landing point for jumping from Northeast Platform
-        const Location AlarGround4 = { 331.631f, -49.716f, -2.389f }; // Landing point for jumping from East Platform
-        const Location AlarSERampBase = { 281.064f, -36.590f, -2.389f };
-        const Location AlarMidpointToSERamp = { 337.099f, -6.412f, -2.389f };
-        const Location AlarSWRampBase = { 281.064f, 36.590f, -2.389f };
-        const Location AlarMidpointToSWRamp = { 337.099f, 6.412f, -2.389f };
-        const Location AlarRoomSouthCenter = { 281.064f, 0.0f, -2.389f };
+        const Position AlarRangedCenter(346.758f, 3.794f, -2.389f);
+        const Position AlarPlatform1(335.638f, 59.4879f, 17.9319f); // West Platform
+        const Position AlarPlatform2(388.751f, 31.7312f, 20.2636f); // Northwest Platform
+        const Position AlarPlatform3(388.791f, -33.1059f, 20.2636f); // Northeast Platform
+        const Position AlarPlatform4(332.723f, -61.159f, 17.9791f); // East Platform
+        const Position AlarPlatform1To2MidpointA(362.264f, 83.648f, 19.797f); // 1st Midpoint between Platform 1 and 2
+        const Position AlarPlatform1To2MidpointB(397.760f, 57.362f, 20.179f); // 2nd Midpoint between Platform 1 and 2
+        const Position AlarPlatform2To3MidpointA(419.272f, 28.838f, 20.179f); // 1st Midpoint between Platform 2 and 3
+        const Position AlarPlatform2To3MidpointB(419.272f, -28.838f, 20.179f); // 2nd Midpoint between Platform 2 and 3
+        const Position AlarPlatform3To4MidpointA(397.760f, -57.362f, 20.179f); // 1st Midpoint between Platform 3 and 4
+        const Position AlarPlatform3To4MidpointB(362.264f, -83.648f, 19.797f); // 2nd Midpoint between Platform 3 and 4
+        const Position AlarGround1(336.439f, 48.181f, -2.389f); // Landing point for jumping from West Platform
+        const Position AlarGround2(379.122f, 25.146f, -2.385f); // Landing point for jumping from Northwest Platform
+        const Position AlarGround3(378.583f, -27.481f, -2.385f); // Landing point for jumping from Northeast Platform
+        const Position AlarGround4(331.631f, -49.716f, -2.389f); // Landing point for jumping from East Platform
+        const Position AlarSERampBase(281.064f, -36.590f, -2.389f);
+        const Position AlarMidpointToSERamp(337.099f, -6.412f, -2.389f);
+        const Position AlarSWRampBase(281.064f, 36.590f, -2.389f);
+        const Position AlarMidpointToSWRamp(337.099f, 6.412f, -2.389f);
+        const Position AlarRoomSouthCenter(281.064f, 0.0f, -2.389f);
 
-        const Location VoidReaverTankPosition   = { 423.845f,  371.733f, 14.897f }; // middle of room
+        const Position VoidReaverTankPosition(423.845f,  371.733f, 14.897f); // middle of room
 
-        // const Location AstromancerStackPosition = { 448.398f, -346.526f, 16.802f }; // directly from entrance, on platform, <25 yards from boss
+        // const Position AstromancerStackPosition = { 448.398f, -346.526f, 16.802f }; // directly from entrance, on platform, <25 yards from boss
     }
 
     /*
@@ -161,47 +161,47 @@ namespace TempestKeepHelpers
     // std::unordered_map<ObjectGuid, bool> atGroundMidpointVisited;
     std::unordered_map<ObjectGuid, std::vector<bool>> meleeDpsWaypointVisited;
 
-    /* std::vector<Location> midpoints_1_to_6 =
+    /* std::vector<Position> midpoints_1_to_6 =
     {
-        TempestKeepLocations::AlarPlatform1To2MidpointA,
-        TempestKeepLocations::AlarPlatform1To2MidpointB,
-        TempestKeepLocations::AlarPlatform2To3MidpointA,
-        TempestKeepLocations::AlarPlatform2To3MidpointB,
-        TempestKeepLocations::AlarPlatform3To4MidpointA,
-        TempestKeepLocations::AlarPlatform3To4MidpointB
+        TempestKeepPositions::AlarPlatform1To2MidpointA,
+        TempestKeepPositions::AlarPlatform1To2MidpointB,
+        TempestKeepPositions::AlarPlatform2To3MidpointA,
+        TempestKeepPositions::AlarPlatform2To3MidpointB,
+        TempestKeepPositions::AlarPlatform3To4MidpointA,
+        TempestKeepPositions::AlarPlatform3To4MidpointB
     };
 
-    std::vector<Location> midpoints_6_to_1 =
+    std::vector<Position> midpoints_6_to_1 =
     {
-        TempestKeepLocations::AlarPlatform3To4MidpointB,
-        TempestKeepLocations::AlarPlatform3To4MidpointA,
-        TempestKeepLocations::AlarPlatform2To3MidpointB,
-        TempestKeepLocations::AlarPlatform2To3MidpointA,
-        TempestKeepLocations::AlarPlatform1To2MidpointB,
-        TempestKeepLocations::AlarPlatform1To2MidpointA
+        TempestKeepPositions::AlarPlatform3To4MidpointB,
+        TempestKeepPositions::AlarPlatform3To4MidpointA,
+        TempestKeepPositions::AlarPlatform2To3MidpointB,
+        TempestKeepPositions::AlarPlatform2To3MidpointA,
+        TempestKeepPositions::AlarPlatform1To2MidpointB,
+        TempestKeepPositions::AlarPlatform1To2MidpointA
     }; */
-    std::vector<Location> midpoints_1_to_2 =
+    std::vector<Position> midpoints_1_to_2 =
     {
-        TempestKeepLocations::AlarPlatform1To2MidpointA,
-        TempestKeepLocations::AlarPlatform1To2MidpointB,
+        TempestKeepPositions::AlarPlatform1To2MidpointA,
+        TempestKeepPositions::AlarPlatform1To2MidpointB,
     };
 
-    std::vector<Location> midpoints_2_to_1 =
+    std::vector<Position> midpoints_2_to_1 =
     {
-        TempestKeepLocations::AlarPlatform1To2MidpointB,
-        TempestKeepLocations::AlarPlatform1To2MidpointA
+        TempestKeepPositions::AlarPlatform1To2MidpointB,
+        TempestKeepPositions::AlarPlatform1To2MidpointA
     };
 
-    std::vector<Location> midpoints_4_to_3 =
+    std::vector<Position> midpoints_4_to_3 =
     {
-        TempestKeepLocations::AlarPlatform3To4MidpointA,
-        TempestKeepLocations::AlarPlatform3To4MidpointB
+        TempestKeepPositions::AlarPlatform3To4MidpointA,
+        TempestKeepPositions::AlarPlatform3To4MidpointB
     };
 
-    std::vector<Location> midpoints_3_to_4 =
+    std::vector<Position> midpoints_3_to_4 =
     {
-        TempestKeepLocations::AlarPlatform3To4MidpointB,
-        TempestKeepLocations::AlarPlatform3To4MidpointA,
+        TempestKeepPositions::AlarPlatform3To4MidpointB,
+        TempestKeepPositions::AlarPlatform3To4MidpointA,
     };
 
     bool IsAlarAddTank(PlayerbotAI* botAI, Player* bot)
@@ -211,14 +211,14 @@ namespace TempestKeepHelpers
                !botAI->IsAssistTankOfIndex(bot, 0);
     }
 
-    void UpdateAlarLastPlatform(Unit* alar, uint32 mapId, const std::vector<Location>& platforms)
+    void UpdateAlarLastPlatform(Unit* alar, uint32 mapId, const std::vector<Position>& platforms)
     {
         int8 previousIndex = lastAlarPlatform.count(mapId) ? lastAlarPlatform[mapId] : -1;
         int8 closestIndex = -1;
         float minDist = std::numeric_limits<float>::max();
         for (size_t i = 0; i < platforms.size(); ++i)
         {
-            float dist = alar->GetExactDist2d(platforms[i].x, platforms[i].y);
+            float dist = alar->GetExactDist2d(platforms[i].GetPositionX(), platforms[i].GetPositionY());
             if (dist < minDist)
             {
                 minDist = dist;

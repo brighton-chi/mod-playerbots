@@ -42,37 +42,32 @@ namespace TempestKeepHelpers
         NPC_SOLARIUM_PRIEST                 = 18806,
     };
 
-    struct Location
+    namespace TempestKeepPositions
     {
-        float x, y, z;
-    };
+        extern const Position AlarRangedCenter;
+        extern const Position AlarPlatform1;
+        extern const Position AlarPlatform2;
+        extern const Position AlarPlatform3;
+        extern const Position AlarPlatform4;
+        extern const Position AlarPlatform1To2MidpointA;
+        extern const Position AlarPlatform1To2MidpointB;
+        extern const Position AlarPlatform2To3MidpointA;
+        extern const Position AlarPlatform2To3MidpointB;
+        extern const Position AlarPlatform3To4MidpointA;
+        extern const Position AlarPlatform3To4MidpointB;
+        extern const Position AlarGround1;
+        extern const Position AlarGround2;
+        extern const Position AlarGround3;
+        extern const Position AlarGround4;
+        extern const Position AlarSERampBase;
+        extern const Position AlarMidpointToSERamp;
+        extern const Position AlarSWRampBase;
+        extern const Position AlarMidpointToSWRamp;
+        extern const Position AlarRoomSouthCenter;
 
-    namespace TempestKeepLocations
-    {
-        extern const Location AlarRangedCenter;
-        extern const Location AlarPlatform1;
-        extern const Location AlarPlatform2;
-        extern const Location AlarPlatform3;
-        extern const Location AlarPlatform4;
-        extern const Location AlarPlatform1To2MidpointA;
-        extern const Location AlarPlatform1To2MidpointB;
-        extern const Location AlarPlatform2To3MidpointA;
-        extern const Location AlarPlatform2To3MidpointB;
-        extern const Location AlarPlatform3To4MidpointA;
-        extern const Location AlarPlatform3To4MidpointB;
-        extern const Location AlarGround1;
-        extern const Location AlarGround2;
-        extern const Location AlarGround3;
-        extern const Location AlarGround4;
-        extern const Location AlarSERampBase;
-        extern const Location AlarMidpointToSERamp;
-        extern const Location AlarSWRampBase;
-        extern const Location AlarMidpointToSWRamp;
-        extern const Location AlarRoomSouthCenter;
+        extern const Position VoidReaverTankPosition;
 
-        extern const Location VoidReaverTankPosition;
-
-        // extern const Location AstromancerStackPosition;
+        // extern const Position AstromancerStackPosition;
     }
 
     void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);
@@ -98,14 +93,14 @@ namespace TempestKeepHelpers
     // extern std::unordered_map<ObjectGuid, bool> atGroundMidpointVisited;
     extern std::unordered_map<ObjectGuid, std::vector<bool>> meleeDpsWaypointVisited;
 
-    // extern std::vector<Location> midpoints_1_to_6;
-    // extern std::vector<Location> midpoints_6_to_1;
-    extern std::vector<Location> midpoints_1_to_2;
-    extern std::vector<Location> midpoints_2_to_1;
-    extern std::vector<Location> midpoints_4_to_3;
-    extern std::vector<Location> midpoints_3_to_4;
+    // extern std::vector<Position> midpoints_1_to_6;
+    // extern std::vector<Position> midpoints_6_to_1;
+    extern std::vector<Position> midpoints_1_to_2;
+    extern std::vector<Position> midpoints_2_to_1;
+    extern std::vector<Position> midpoints_4_to_3;
+    extern std::vector<Position> midpoints_3_to_4;
 
-    void UpdateAlarLastPlatform(Unit* alar, uint32 mapId, const std::vector<Location>& platforms);
+    void UpdateAlarLastPlatform(Unit* alar, uint32 mapId, const std::vector<Position>& platforms);
     bool IsAlarAddTank(PlayerbotAI* botAI, Player* bot);
 
     extern std::unordered_map<ObjectGuid, Position> initialVoidReaverPositions;

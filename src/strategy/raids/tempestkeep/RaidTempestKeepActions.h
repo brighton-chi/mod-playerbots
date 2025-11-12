@@ -7,7 +7,7 @@
 #include "MovementActions.h"
 
 using namespace TempestKeepHelpers;
-using namespace TempestKeepLocations;
+using namespace TempestKeepPositions;
 
 class AlarLogDebugInfoAction : public Action
 {
@@ -33,8 +33,8 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool PositionMainTank(Player* mainTank, Unit* alar, int8 alarPlatform, const std::vector<Location>& platforms);
-    bool PositionAssistTank(Player* assistTank, Unit* alar, int8 alarPlatform, const std::vector<Location>& platforms);
+    bool PositionMainTank(Player* mainTank, Unit* alar, int8 alarPlatform, const std::vector<Position>& platforms);
+    bool PositionAssistTank(Player* assistTank, Unit* alar, int8 alarPlatform, const std::vector<Position>& platforms);
 };
 
 class AlarMeleeDpsPrioritizeAddsAction : public AttackAction
@@ -124,7 +124,7 @@ public:
     bool Execute(Event event) override;
 
 private:
-    Position GetRangedBotPosition(const TempestKeepHelpers::Location& center, float radius, uint8 botsPerRing, float offsetArc, uint8 botIndex, float botZ);
+    Position GetRangedBotPosition(const Position& center, float radius, uint8 botsPerRing, float offsetArc, uint8 botIndex, float botZ);
 };
 
 class HighAstromancerSolarianStackBotsAction : public MovementAction

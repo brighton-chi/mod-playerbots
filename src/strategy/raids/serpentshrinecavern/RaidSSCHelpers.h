@@ -144,9 +144,8 @@ namespace SerpentShrineCavernHelpers
     {
         extern const Position HydrossFrostTankPosition;
         extern const Position HydrossNatureTankPosition;
-        // Hydross dps locations?
+        // Hydross dps positions?
 
-        // Lurker tank location?
         extern const Position LurkerCenterOfPoolPosition;
         extern const Position LurkerMainTankPosition;
         extern const Position LurkerEMeleePosition;
