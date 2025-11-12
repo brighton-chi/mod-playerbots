@@ -23,38 +23,41 @@ namespace KarazhanHelpers
     std::unordered_map<uint32, time_t> nightbaneFlightPhaseStartTimer;
     std::unordered_map<ObjectGuid, bool> nightbaneRainOfBonesHit;
 
-    const Position KARAZHAN_MAIDEN_OF_VIRTUE_BOSS_POSITION = Position(-10945.881f, -2103.782f, 92.712f);
-    const Position KARAZHAN_MAIDEN_OF_VIRTUE_RANGED_POSITION[8] =
+    namespace KarazhanPositions
     {
-        { -10931.178f, -2116.580f, 92.179f },
-        { -10925.828f, -2102.425f, 92.180f },
-        { -10933.089f, -2088.502f, 92.180f },
-        { -10947.590f, -2082.815f, 92.180f },
-        { -10960.912f, -2090.437f, 92.179f },
-        { -10966.017f, -2105.288f, 92.175f },
-        { -10959.242f, -2119.617f, 92.180f },
-        { -10944.495f, -2123.857f, 92.180f },
-    };
+        const Position MaidenOfVirtueBossPosition = { -10945.881f, -2103.782f, 92.712f };
+        const Position MaidenOfVirtueRangedPosition[8] =
+        {
+            { -10931.178f, -2116.580f, 92.179f },
+            { -10925.828f, -2102.425f, 92.180f },
+            { -10933.089f, -2088.502f, 92.180f },
+            { -10947.590f, -2082.815f, 92.180f },
+            { -10960.912f, -2090.437f, 92.179f },
+            { -10966.017f, -2105.288f, 92.175f },
+            { -10959.242f, -2119.617f, 92.180f },
+            { -10944.495f, -2123.857f, 92.180f },
+        };
 
-    const Position KARAZHAN_BIG_BAD_WOLF_BOSS_POSITION = Position(-10913.391f, -1773.508f, 90.477f);
-    const Position KARAZHAN_BIG_BAD_WOLF_RUN_POSITION[4] =
-    {
-        { -10875.456f, -1779.036f, 90.477f },
-        { -10872.281f, -1751.638f, 90.477f },
-        { -10910.492f, -1747.401f, 90.477f },
-        { -10913.391f, -1773.508f, 90.477f },
-    };
+        const Position BigBadWolfBossPosition = { -10913.391f, -1773.508f, 90.477f };
+        const Position BigBadWolfRunPosition[4] =
+        {
+            { -10875.456f, -1779.036f, 90.477f },
+            { -10872.281f, -1751.638f, 90.477f },
+            { -10910.492f, -1747.401f, 90.477f },
+            { -10913.391f, -1773.508f, 90.477f },
+        };
 
-    const Position KARAZHAN_THE_CURATOR_BOSS_POSITION = Position(-11139.463f, -1884.645f, 165.765f);
+        const Position TheCuratorBossPosition = { -11139.463f, -1884.645f, 165.765f };
 
-    const Position KARAZHAN_NIGHTBANE_TRANSITION_BOSS_POSITION = Position(-11160.646f, -1932.773f, 91.473f); // near some ribs
-    // const Position KARAZHAN_NIGHTBANE_FINAL_BOSS_POSITION = Position(-11173.391f, -1941.177f, 91.473f);
-    const Position KARAZHAN_NIGHTBANE_FINAL_BOSS_POSITION = Position(-11173.530f, -1940.707f, 91.473f);
-    const Position KARAZHAN_NIGHTBANE_RANGED_POSITION_1 = Position(-11145.949f, -1970.927f, 91.473f);
-    const Position KARAZHAN_NIGHTBANE_RANGED_POSITION_2 = Position(-11143.594f, -1954.981f, 91.473f);
-    const Position KARAZHAN_NIGHTBANE_RANGED_POSITION_3 = Position(-11159.778f, -1961.031f, 91.473f);
-    const Position KARAZHAN_NIGHTBANE_FLIGHT_STACK_POSITION = Position(-11159.555f, -1893.526f, 91.473f); // Broken Barrel
-    const Position KARAZHAN_NIGHTBANE_RAIN_OF_BONES_POSITION = Position(-11165.233f, -1911.123f, 91.473f);
+        const Position NightbaneTransitionBossPosition = { -11160.646f, -1932.773f, 91.473f }; // near some ribs
+        // const Position NightbaneFinalBossPosition = { -11173.391f, -1941.177f, 91.473f };
+        const Position NightbaneFinalBossPosition = { -11173.530f, -1940.707f, 91.473f };
+        const Position NightbaneRangedPosition1 = { -11145.949f, -1970.927f, 91.473f };
+        const Position NightbaneRangedPosition2 = { -11143.594f, -1954.981f, 91.473f };
+        const Position NightbaneRangedPosition3 = { -11159.778f, -1961.031f, 91.473f };
+        const Position NightbaneFlightStackPosition = { -11159.555f, -1893.526f, 91.473f }; // Broken Barrel
+        const Position NightbaneRainOfBonesPosition = { -11165.233f, -1911.123f, 91.473f };
+    }
 
 
     void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId)

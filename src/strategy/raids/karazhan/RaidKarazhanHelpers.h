@@ -86,18 +86,21 @@ namespace KarazhanHelpers
     extern std::unordered_map<uint32, time_t> nightbaneFlightPhaseStartTimer;
     extern std::unordered_map<ObjectGuid, bool> nightbaneRainOfBonesHit;
 
-    extern const Position KARAZHAN_MAIDEN_OF_VIRTUE_BOSS_POSITION;
-    extern const Position KARAZHAN_MAIDEN_OF_VIRTUE_RANGED_POSITION[8];
-    extern const Position KARAZHAN_BIG_BAD_WOLF_BOSS_POSITION;
-    extern const Position KARAZHAN_BIG_BAD_WOLF_RUN_POSITION[4];
-    extern const Position KARAZHAN_THE_CURATOR_BOSS_POSITION;
-    extern const Position KARAZHAN_NIGHTBANE_TRANSITION_BOSS_POSITION;
-    extern const Position KARAZHAN_NIGHTBANE_FINAL_BOSS_POSITION;
-    extern const Position KARAZHAN_NIGHTBANE_RANGED_POSITION_1;
-    extern const Position KARAZHAN_NIGHTBANE_RANGED_POSITION_2;
-    extern const Position KARAZHAN_NIGHTBANE_RANGED_POSITION_3;
-    extern const Position KARAZHAN_NIGHTBANE_FLIGHT_STACK_POSITION;
-    extern const Position KARAZHAN_NIGHTBANE_RAIN_OF_BONES_POSITION;
+    namespace KarazhanPositions
+    {
+        extern const Position MaidenOfVirtueBossPosition;
+        extern const Position MaidenOfVirtueRangedPosition[8];
+        extern const Position BigBadWolfBossPosition;
+        extern const Position BigBadWolfRunPosition[4];
+        extern const Position TheCuratorBossPosition;
+        extern const Position NightbaneTransitionBossPosition;
+        extern const Position NightbaneFinalBossPosition;
+        extern const Position NightbaneRangedPosition1;
+        extern const Position NightbaneRangedPosition2;
+        extern const Position NightbaneRangedPosition3;
+        extern const Position NightbaneFlightStackPosition;
+        extern const Position NightbaneRainOfBonesPosition;
+    }
 
     void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);
     void MarkTargetWithSkull(Player* bot, Unit* target);
