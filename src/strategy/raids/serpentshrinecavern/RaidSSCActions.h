@@ -377,27 +377,10 @@ public:
     LadyVashjAvoidToxicSporesAction(PlayerbotAI* botAI, std::string const name = "lady vashj avoid toxic spores") : MovementAction(botAI, name) {}
     bool Execute(Event event) override;
 
-    /* static constexpr float HAZARD_RADIUS = 10.0f;
-    static constexpr float STEP_SIZE = 1.0f;
-    static constexpr uint8 NUM_ANGLES = 16;
-    static constexpr float MAX_SAMPLE_DIST = 30.0f; */
-    static constexpr float HAZARD_RADIUS = 10.0f;
-    static constexpr float STEP_SIZE = 1.0f;
-    static constexpr float MAX_SAMPLE_DIST = 30.0f;
-    static constexpr uint32 MAX_NODES = 500;
-
 private:
     std::vector<Unit*> GetAllSporeDropTriggers(PlayerbotAI* botAI, Player* bot);
-    Position FindSafestNearbyPosition(
-        const std::vector<Unit*>& spores,
-        const Position& arenaCenter,
-        float maxRadius,
-        float hazardRadius);
-    bool IsPathSafeFromSpores(
-        const Position& start,
-        const Position& end,
-        const std::vector<Unit*>& spores,
-        float hazardRadius);
+    Position FindSafestNearbyPosition(const std::vector<Unit*>& spores, const Position& position, float maxRadius, float hazardRadius);
+    bool IsPathSafeFromSpores(const Position& start, const Position& end, const std::vector<Unit*>& spores, float hazardRadius);
 };
 
 class LadyVashjUseFreeActionAbilitiesAction : public Action

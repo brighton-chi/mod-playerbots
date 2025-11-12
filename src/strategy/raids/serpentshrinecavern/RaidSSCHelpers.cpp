@@ -28,76 +28,75 @@ namespace SerpentShrineCavernHelpers
     std::unordered_map<ObjectGuid, Position> vashjRangedPositions;
     std::unordered_map<ObjectGuid, bool> vashjHasReachedRangedPosition;
 
-    namespace SerpentShrineCavernLocations
+    namespace SerpentShrineCavernPositions
     {
-        const Location HydrossFrostTankPosition = { -236.669f, -358.352f, -0.828f };
-        const Location HydrossNatureTankPosition = { -225.471f, -327.790f, -3.682f };
+        const Position HydrossFrostTankPosition(-236.669f, -358.352f, -0.828f);
+        const Position HydrossNatureTankPosition(-225.471f, -327.790f, -3.682f);
         // Hydross dps locations?
 
-        /* const Location LurkerMainTankPosition = { 23.706f, -406.038f, -19.686f };
-        const Location LurkerEMeleePosition = { 39.265f, -433.439f, -19.712f };
-        const Location LurkerWMeleePosition = { 47.721f, -406.668f, -19.635f };
-        const Location LurkerNWIsletPosition = { 77.937f, -384.500f, -19.722f };
-        const Location LurkerNWIsletSwimPosition = { 73.743f, -388.018f, -21.297f };
-        const Location LurkerNEIsletPosition = { 63.022f, -456.310f, -19.793f };
-        const Location LurkerNEIsletSwimPosition = { 60.338f, -451.668f, -21.351f };
-        const Location LurkerEIsletPosition = { 14.283f, -457.467f, -19.793f };
-        const Location LurkerEIsletSwimPosition = { 17.191f, -452.586f, -21.336f };
-        const Location LurkerSEHealerLandPosition = { 16.237f, -438.098f, -19.551f };
-        const Location LurkerSEHealerSwimPosition = { 14.637f, -440.707f, -21.359f };
-        const Location LurkerSWHealerLandPosition = { 37.255f, -387.031f, -19.417f };
-        const Location LurkerSWHealerSwimPosition = { 37.505f, -382.907f, -21.297f };
-        const Location LurkerNHealerLandPosition = { 66.268f, -418.774f, -19.592f };
-        const Location LurkerNHealerSwimPosition = { 71.255f, -419.223f, -21.281f };*/
-        const Location LurkerMainTankPosition = { 23.706f, -406.038f, -19.686f };
-        const Location LurkerEMeleePosition = { 36.815f, -432.585f, -19.339f };
-        const Location LurkerWMeleePosition = { 47.721f, -406.668f, -19.635f };
-        const Location LurkerNWIsletPosition = { 77.937f, -384.500f, -19.722f };
-        const Location LurkerNWIsletSwimPosition = { 73.743f, -388.018f, -21.397f };
-        const Location LurkerNWRangedDpsPosition = { 58.372f, -393.667f, -19.526f };
-        const Location LurkerNEIsletPosition = { 63.022f, -456.310f, -19.793f };
-        const Location LurkerNEIsletSwimPosition = { 60.338f, -451.668f, -21.451f };
-        const Location LurkerNERangedDpsPosition = { 60.666f, -440.899f, -19.575f };
-        const Location LurkerEIsletPosition = { 14.283f, -457.467f, -19.793f };
-        const Location LurkerEIsletSwimPosition = { 17.191f, -452.586f, -21.436f };
-        const Location LurkerERangedDpsPosition = { 38.457f, -417.324f, -18.917f };
-        const Location LurkerSEHealerLandPosition = { 16.237f, -438.098f, -19.551f };
-        const Location LurkerSEHealerSwimPosition = { 14.637f, -440.707f, -21.459f };
-        const Location LurkerSWHealerLandPosition = { 37.255f, -387.031f, -19.417f };
-        const Location LurkerSWHealerSwimPosition = { 37.505f, -382.907f, -21.397f };
-        const Location LurkerNHealerLandPosition = { 66.268f, -418.774f, -19.592f };
-        const Location LurkerNHealerSwimPosition = { 71.255f, -419.223f, -21.381f };
+        /* const Position LurkerMainTankPosition(23.706f, -406.038f, -19.686f);
+        const Position LurkerEMeleePosition(39.265f, -433.439f, -19.712f);
+        const Position LurkerWMeleePosition(47.721f, -406.668f, -19.635f);
+        const Position LurkerNWIsletPosition(77.937f, -384.500f, -19.722f);
+        const Position LurkerNWIsletSwimPosition(73.743f, -388.018f, -21.297f);
+        const Position LurkerNEIsletPosition(63.022f, -456.310f, -19.793f);
+        const Position LurkerNEIsletSwimPosition(60.338f, -451.668f, -21.351f);
+        const Position LurkerEIsletPosition(14.283f, -457.467f, -19.793f);
+        const Position LurkerEIsletSwimPosition(17.191f, -452.586f, -21.336f);
+        const Position LurkerSEHealerLandPosition(16.237f, -438.098f, -19.551f);
+        const Position LurkerSEHealerSwimPosition(14.637f, -440.707f, -21.359f);
+        const Position LurkerSWHealerLandPosition(37.255f, -387.031f, -19.417f);
+        const Position LurkerSWHealerSwimPosition(37.505f, -382.907f, -21.297f);
+        const Position LurkerNHealerLandPosition(66.268f, -418.774f, -19.592f);
+        const Position LurkerNHealerSwimPosition(71.255f, -419.223f, -21.281f);*/
+        const Position LurkerMainTankPosition(23.706f, -406.038f, -19.686f);
+        const Position LurkerEMeleePosition(36.815f, -432.585f, -19.339f);
+        const Position LurkerWMeleePosition(47.721f, -406.668f, -19.635f);
+        const Position LurkerNWIsletPosition(77.937f, -384.500f, -19.722f);
+        const Position LurkerNWIsletSwimPosition(73.743f, -388.018f, -21.397f);
+        const Position LurkerNWRangedDpsPosition(58.372f, -393.667f, -19.526f);
+        const Position LurkerNEIsletPosition(63.022f, -456.310f, -19.793f);
+        const Position LurkerNEIsletSwimPosition(60.338f, -451.668f, -21.451f);
+        const Position LurkerNERangedDpsPosition(60.666f, -440.899f, -19.575f);
+        const Position LurkerEIsletPosition(14.283f, -457.467f, -19.793f);
+        const Position LurkerEIsletSwimPosition(17.191f, -452.586f, -21.436f);
+        const Position LurkerERangedDpsPosition(38.457f, -417.324f, -18.917f);
+        const Position LurkerSEHealerLandPosition(16.237f, -438.098f, -19.551f);
+        const Position LurkerSEHealerSwimPosition(14.637f, -440.707f, -21.459f);
+        const Position LurkerSWHealerLandPosition(37.255f, -387.031f, -19.417f);
+        const Position LurkerSWHealerSwimPosition(37.505f, -382.907f, -21.397f);
+        const Position LurkerNHealerLandPosition(66.268f, -418.774f, -19.592f);
+        const Position LurkerNHealerSwimPosition(71.255f, -419.223f, -21.381f);
 
-        // const Location KarathressTankPosition = { 472.973f, -540.804f, -7.548f };
-        const Location KarathressTankPosition = { 474.403f, -531.118f, -7.548f }; // above works but maybe LoS issues, trying this one
-        const Location TidalvessTankPosition = { 511.282f, -501.162f, -13.158f };
-        // const Location SharkkisTankPosition = { 507.396f, -555.750f, -7.146f }; // OG
-        const Location SharkkisTankPosition = { 508.057f, -541.109f, -10.133f };
-        const Location CaribdisTankPosition = { 464.462f, -475.820f, -13.158f };
-        // const Location CaribdisTankPosition = { 450.472f, -483.398f, -13.158f }; // try this if need farther
-        // const Location CaribdisTankPosition = { 464.474f, -467.951f, -13.158f }; // or this for near the corner
-        const Location CaribdisHealerPosition = { 466.203f, -503.201f, -13.158f };
-        const Location CaribdisRangedDpsPosition = { 463.197f, -501.190f, -13.158f };
-        // const Location KarathressRoomCenterPosition = { 502.570f, -510.805f, -13.158f }; // smack dab
-        // const Location KarathressRoomCenterPosition = { 494.458f, -510.435f, -13.158f }; // middle of the "more centra" positions
+        // const Position KarathressTankPosition(472.973f, -540.804f, -7.548f);
+        const Position KarathressTankPosition(474.403f, -531.118f, -7.548f); // above works but maybe LoS issues, trying this one
+        const Position TidalvessTankPosition(511.282f, -501.162f, -13.158f);
+        // const Position SharkkisTankPosition(507.396f, -555.750f, -7.146f); // OG
+        const Position SharkkisTankPosition(508.057f, -541.109f, -10.133f);
+        const Position CaribdisTankPosition(464.462f, -475.820f, -13.158f);
+        // const Position CaribdisTankPosition(450.472f, -483.398f, -13.158f); // try this if need farther
+        // const Position CaribdisTankPosition(464.474f, -467.951f, -13.158f); // or this for near the corner
+        const Position CaribdisHealerPosition(466.203f, -503.201f, -13.158f);
+        const Position CaribdisRangedDpsPosition(463.197f, -501.190f, -13.158f);
+        // const Position KarathressRoomCenterPosition(502.570f, -510.805f, -13.158f); // smack dab
+        // const Position KarathressRoomCenterPosition(494.458f, -510.435f, -13.158f); // middle of the "more centra" positions
 
-        const Location TidewalkerPhase1TankPosition = { 410.925f, -741.916f, -7.146f };
-        const Location TidewalkerPhaseTransitionWaypoint = { 407.035f, -759.479f, -7.168f };
-        const Location TidewalkerPhase2TankPosition = { 446.571f, -767.155f, -7.144f };
-        const Location TidewalkerPhase2RangedPosition = { 432.595f, -766.288f, -7.145f };
-        // const Location TidewalkerGraveHealerPosition = { 388.558f, -723.956f, -11.941f };
-        // Tidewalker offtank position(s) for murlocs?
+        const Position TidewalkerPhase1TankPosition(410.925f, -741.916f, -7.146f);
+        const Position TidewalkerPhaseTransitionWaypoint(407.035f, -759.479f, -7.168f);
+        const Position TidewalkerPhase2TankPosition(446.571f, -767.155f, -7.144f);
+        const Position TidewalkerPhase2RangedPosition(432.595f, -766.288f, -7.145f);
+        // const Position TidewalkerGraveHealerPosition(388.558f, -723.956f, -11.941f);
 
         // Room Center to top of stairs is 56-57 yards ish
-        const Location VashjPlatformCenterPosition = { 29.634f, -923.541f, 42.985f };
-        const Location VashjNWStairsPosition = { 65.087f, -878.344f, 41.097f };
-        const Location VashjWStairsPosition = { 29.693f, -865.188f, 41.097f };
-        const Location VashjSWStairsPosition = { 9.766f, -869.707f, 41.097f };
-        const Location VashjSSWStairsPosition = { -25.352f, -910.754f, 41.097f };
-        const Location VashjSEStairsPosition = { -9.504f, -964.514f, 41.097f };
-        const Location VashjEStairsPosition = { 29.701f, -982.523f, 41.097f };
-        const Location VashjENEStairsPosition = { 42.143f, -978.813f, 41.097f };
-        const Location VashjNNEStairsPosition = { 83.647f, -941.901f, 41.097f };
+        const Position VashjPlatformCenterPosition(29.634f, -923.541f, 42.985f);
+        const Position VashjNWStairsPosition(65.087f, -878.344f, 41.097f);
+        const Position VashjWStairsPosition(29.693f, -865.188f, 41.097f);
+        const Position VashjSWStairsPosition(9.766f, -869.707f, 41.097f);
+        const Position VashjSSWStairsPosition(-25.352f, -910.754f, 41.097f);
+        const Position VashjSEStairsPosition(-9.504f, -964.514f, 41.097f);
+        const Position VashjEStairsPosition(29.701f, -982.523f, 41.097f);
+        const Position VashjENEStairsPosition(42.143f, -978.813f, 41.097f);
+        const Position VashjNNEStairsPosition(83.647f, -941.901f, 41.097f);
     }
 
     void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId)

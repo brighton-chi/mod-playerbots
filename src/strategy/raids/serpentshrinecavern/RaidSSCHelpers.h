@@ -140,65 +140,59 @@ namespace SerpentShrineCavernHelpers
     extern std::unordered_map<ObjectGuid, Position> vashjRangedPositions;
     extern std::unordered_map<ObjectGuid, bool> vashjHasReachedRangedPosition;
 
-    struct Location
+    namespace SerpentShrineCavernPositions
     {
-        float x, y, z;
-    };
-
-    namespace SerpentShrineCavernLocations
-    {
-        extern const Location HydrossFrostTankPosition;
-        extern const Location HydrossNatureTankPosition;
+        extern const Position HydrossFrostTankPosition;
+        extern const Position HydrossNatureTankPosition;
         // Hydross dps locations?
 
         // Lurker tank location?
-        extern const Location LurkerCenterOfPoolPosition;
-        extern const Location LurkerMainTankPosition;
-        extern const Location LurkerEMeleePosition;
-        extern const Location LurkerWMeleePosition;
-        extern const Location LurkerNWIsletPosition;
-        extern const Location LurkerNWIsletSwimPosition;
-        extern const Location LurkerNWRangedDpsPosition;
-        extern const Location LurkerNEIsletPosition;
-        extern const Location LurkerNEIsletSwimPosition;
-        extern const Location LurkerNERangedDpsPosition;
-        extern const Location LurkerEIsletPosition;
-        extern const Location LurkerEIsletSwimPosition;
-        extern const Location LurkerERangedDpsPosition;
-        extern const Location LurkerSEHealerLandPosition;
-        extern const Location LurkerSEHealerSwimPosition;
-        extern const Location LurkerSWHealerLandPosition;
-        extern const Location LurkerSWHealerSwimPosition;
-        extern const Location LurkerNHealerLandPosition;
-        extern const Location LurkerNHealerSwimPosition;
+        extern const Position LurkerCenterOfPoolPosition;
+        extern const Position LurkerMainTankPosition;
+        extern const Position LurkerEMeleePosition;
+        extern const Position LurkerWMeleePosition;
+        extern const Position LurkerNWIsletPosition;
+        extern const Position LurkerNWIsletSwimPosition;
+        extern const Position LurkerNWRangedDpsPosition;
+        extern const Position LurkerNEIsletPosition;
+        extern const Position LurkerNEIsletSwimPosition;
+        extern const Position LurkerNERangedDpsPosition;
+        extern const Position LurkerEIsletPosition;
+        extern const Position LurkerEIsletSwimPosition;
+        extern const Position LurkerERangedDpsPosition;
+        extern const Position LurkerSEHealerLandPosition;
+        extern const Position LurkerSEHealerSwimPosition;
+        extern const Position LurkerSWHealerLandPosition;
+        extern const Position LurkerSWHealerSwimPosition;
+        extern const Position LurkerNHealerLandPosition;
+        extern const Position LurkerNHealerSwimPosition;
 
-        extern const Location KarathressTankPosition;
-        extern const Location TidalvessTankPosition;
-        extern const Location SharkkisTankPosition;
-        extern const Location CaribdisTankPosition;
-        extern const Location CaribdisHealerPosition;
-        extern const Location CaribdisRangedDpsPosition;
-        // extern const Location KarathressRoomCenterPosition
+        extern const Position KarathressTankPosition;
+        extern const Position TidalvessTankPosition;
+        extern const Position SharkkisTankPosition;
+        extern const Position CaribdisTankPosition;
+        extern const Position CaribdisHealerPosition;
+        extern const Position CaribdisRangedDpsPosition;
+        // extern const Position KarathressRoomCenterPosition
 
-        // extern const Location LeotherasHumanFormTankPosition;
-        // extern const Location LeotherasDemonFormTankPosition;
+        // extern const Position LeotherasHumanFormTankPosition;
+        // extern const Position LeotherasDemonFormTankPosition;
 
-        extern const Location TidewalkerPhase1TankPosition;
-        extern const Location TidewalkerPhaseTransitionWaypoint;
-        extern const Location TidewalkerPhase2TankPosition;
-        extern const Location TidewalkerPhase2RangedPosition;
-        // extern const Location TidewalkerGraveHealerPosition;
-        // Tidewalker offtank position(s) for murlocs?
+        extern const Position TidewalkerPhase1TankPosition;
+        extern const Position TidewalkerPhaseTransitionWaypoint;
+        extern const Position TidewalkerPhase2TankPosition;
+        extern const Position TidewalkerPhase2RangedPosition;
+        // extern const Position TidewalkerGraveHealerPosition;
 
-        extern const Location VashjPlatformCenterPosition;
-        extern const Location VashjNWStairsPosition;
-        extern const Location VashjWStairsPosition;
-        extern const Location VashjSWStairsPosition;
-        extern const Location VashjSSWStairsPosition;
-        extern const Location VashjSEStairsPosition;
-        extern const Location VashjEStairsPosition;
-        extern const Location VashjENEStairsPosition;
-        extern const Location VashjNNEStairsPosition;
+        extern const Position VashjPlatformCenterPosition;
+        extern const Position VashjNWStairsPosition;
+        extern const Position VashjWStairsPosition;
+        extern const Position VashjSWStairsPosition;
+        extern const Position VashjSSWStairsPosition;
+        extern const Position VashjSEStairsPosition;
+        extern const Position VashjEStairsPosition;
+        extern const Position VashjENEStairsPosition;
+        extern const Position VashjNNEStairsPosition;
     }
 
     void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);
