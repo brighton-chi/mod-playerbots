@@ -89,7 +89,7 @@ namespace SerpentShrineCavernHelpers
         // Tidewalker offtank position(s) for murlocs?
 
         // Room Center to top of stairs is 56-57 yards ish
-        const Location VashjRoomCenterPosition = { 29.634f, -923.541f, 42.985f };
+        const Location VashjPlatformCenterPosition = { 29.634f, -923.541f, 42.985f };
         const Location VashjNWStairsPosition = { 65.087f, -878.344f, 41.097f };
         const Location VashjWStairsPosition = { 29.693f, -865.188f, 41.097f };
         const Location VashjSWStairsPosition = { 9.766f, -869.707f, 41.097f };

@@ -473,9 +473,7 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
     Player* master = botAI->GetMaster();
     if (master && bot == GetDesignatedCoreLooter(group, master, botAI) && bot->HasAura(SPELL_PARALYZE))
     {
-        if (dynamic_cast<MovementAction*>(action) &&
-            !dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action) &&
-            !dynamic_cast<AttackAction*>(action))
+        if (!dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action))
             return 0.0f;
     }
 

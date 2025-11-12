@@ -48,6 +48,8 @@ enum SerpentShrineCavernSpells
     SPELL_POISON_BOLT = 38253,
     // SPELL_PANIC = 38258,
     SPELL_STATIC_CHARGE = 38280,
+    SPELL_ENTANGLE = 38316,
+    SPELL_TOXIC_SPORES = 38574,
 
     // Hunter
     SPELL_MISDIRECTION = 34477,
@@ -188,7 +190,7 @@ namespace SerpentShrineCavernHelpers
         // extern const Location TidewalkerGraveHealerPosition;
         // Tidewalker offtank position(s) for murlocs?
 
-        extern const Location VashjRoomCenterPosition;
+        extern const Location VashjPlatformCenterPosition;
         extern const Location VashjNWStairsPosition;
         extern const Location VashjWStairsPosition;
         extern const Location VashjSWStairsPosition;

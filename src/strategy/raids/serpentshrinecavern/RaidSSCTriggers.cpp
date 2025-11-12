@@ -376,6 +376,23 @@ bool LadyVashjBotHasStaticChargeTrigger::IsActive()
     return false;
 }
 
+bool LadyVashjBotIsEntangledInToxicSporesOrStaticChargeTrigger::IsActive()
+{
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    Group* group = bot->GetGroup();
+    if (!vashj || !group || IsLadyVashjInPhase2(botAI))
+        return false;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && member->IsAlive() && member->HasAura(SPELL_ENTANGLE) && member->HasAura(SPELL_TOXIC_SPORES))
+            return true;
+    }
+
+    return false;
+}
+
 bool LadyVashjPullingBossInPhase1AndPhase3Trigger::IsActive()
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");

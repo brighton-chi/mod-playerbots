@@ -157,9 +157,11 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("lady vashj determining kill order of adds",
         NextAction::array(0, new NextAction("lady vashj assign phase 2 dps priority", ACTION_RAID + 1), nullptr)
     ));
-    // Did I do Vashj with this disabled??? Will try enabling next time
     triggers.push_back(new TriggerNode("lady vashj toxic sporebats are spewing poison clouds",
         NextAction::array(0, new NextAction("lady vashj avoid toxic spores", ACTION_EMERGENCY + 6), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("lady vashj bot is entangled in toxic spores or static charge",
+        NextAction::array(0, new NextAction("lady vashj use free action abilities", ACTION_EMERGENCY + 7), nullptr)
     ));
     triggers.push_back(new TriggerNode("lady vashj need to manage trackers",
         NextAction::array(0, new NextAction("lady vashj manage trackers", ACTION_EMERGENCY + 10), nullptr)

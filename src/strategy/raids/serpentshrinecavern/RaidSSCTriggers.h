@@ -346,6 +346,13 @@ public:
     bool IsActive() override;
 };
 
+class LadyVashjBotIsEntangledInToxicSporesOrStaticChargeTrigger : public Trigger
+{
+public:
+    LadyVashjBotIsEntangledInToxicSporesOrStaticChargeTrigger(PlayerbotAI* botAI) : Trigger(botAI, "lady vashj bot is entangled in toxic spores or static charge") {}
+    bool IsActive() override;
+};
+
 class LadyVashjNeedToManageTrackersTrigger : public Trigger
 {
 public:

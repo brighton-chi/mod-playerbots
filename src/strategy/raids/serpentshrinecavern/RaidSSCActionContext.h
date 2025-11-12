@@ -62,6 +62,7 @@ public:
         creators["lady vashj tainted elemental cheat"] = &RaidSSCActionContext::lady_vashj_tainted_elemental_cheat;
         creators["lady vashj pass the tainted core"] = &RaidSSCActionContext::lady_vashj_pass_the_tainted_core;
         creators["lady vashj avoid toxic spores"] = &RaidSSCActionContext::lady_vashj_avoid_toxic_spores;
+        creators["lady vashj use free action abilities"] = &RaidSSCActionContext::lady_vashj_use_free_action_abilities;
         creators["lady vashj manage trackers"] = &RaidSSCActionContext::lady_vashj_manage_trackers;
     }
 
@@ -119,6 +120,7 @@ private:
     static Action* lady_vashj_tainted_elemental_cheat(PlayerbotAI* botAI) { return new LadyVashjTaintedElementalCheatAction(botAI); }
     static Action* lady_vashj_pass_the_tainted_core(PlayerbotAI* botAI) { return new LadyVashjPassTheTaintedCoreAction(botAI); }
     static Action* lady_vashj_avoid_toxic_spores(PlayerbotAI* botAI) { return new LadyVashjAvoidToxicSporesAction(botAI); }
+    static Action* lady_vashj_use_free_action_abilities(PlayerbotAI* botAI) { return new LadyVashjUseFreeActionAbilitiesAction(botAI); }
     static Action* lady_vashj_manage_trackers(PlayerbotAI* botAI) { return new LadyVashjManageTrackersAction(botAI); }
 };
 

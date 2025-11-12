@@ -381,17 +381,30 @@ public:
     static constexpr float STEP_SIZE = 1.0f;
     static constexpr uint8 NUM_ANGLES = 16;
     static constexpr float MAX_SAMPLE_DIST = 30.0f; */
-    static constexpr float HAZARD_RADIUS = 13.0f;
+    static constexpr float HAZARD_RADIUS = 10.0f;
     static constexpr float STEP_SIZE = 1.0f;
     static constexpr float MAX_SAMPLE_DIST = 30.0f;
     static constexpr uint32 MAX_NODES = 500;
 
 private:
     std::vector<Unit*> GetAllSporeDropTriggers(PlayerbotAI* botAI, Player* bot);
-    /* bool IsStraightPathSafe(const Position& start, const Position& target, const std::vector<Unit*>& hazards);
-    bool TryFindSafePositionWithSafePath(
-            Player* bot, const std::vector<Unit*>& hazards, bool requireSafePath, float& bestDestX, float& bestDestY, float& bestDestZ); */
-    bool FindBestSafePositionBFS(Player* bot, const std::vector<Unit*>& hazards, float& bestX, float& bestY, float& bestZ);
+    Position FindSafestNearbyPosition(
+        const std::vector<Unit*>& spores,
+        const Position& arenaCenter,
+        float maxRadius,
+        float hazardRadius);
+    bool IsPathSafeFromSpores(
+        const Position& start,
+        const Position& end,
+        const std::vector<Unit*>& spores,
+        float hazardRadius);
+};
+
+class LadyVashjUseFreeActionAbilitiesAction : public Action
+{
+public:
+    LadyVashjUseFreeActionAbilitiesAction(PlayerbotAI* botAI, std::string const name = "lady vashj use free action abilities") : Action(botAI, name) {}
+    bool Execute(Event event) override;
 };
 
 class LadyVashjManageTrackersAction : public Action
