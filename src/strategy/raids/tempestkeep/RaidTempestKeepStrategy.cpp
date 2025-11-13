@@ -5,7 +5,7 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // Trash
     triggers.push_back(new TriggerNode("crimson hand centurion casts arcane volley",
-        NextAction::array(0. new NextAction("crimson hand centurion cast polymorph", ACTION_RAID + 1), nullptr)
+        NextAction::array(0, new NextAction("crimson hand centurion cast polymorph", ACTION_RAID + 1), nullptr)
     ));
 
     // Al'ar

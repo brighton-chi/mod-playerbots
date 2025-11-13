@@ -83,6 +83,9 @@ namespace TempestKeepHelpers
     void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);
     void MarkTargetWithSquare(Player* bot, Unit* target);
     void MarkTargetWithStar(Player* bot, Unit* target);
+    void MarkTargetWithCircle(Player* bot, Unit* target);
+    void MarkTargetWithTriangle(Player* bot, Unit* target);
+    void MarkTargetWithDiamond(Player* bot, Unit* target);
     void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target);
     bool IsMapIDTimerManager(PlayerbotAI* botAI, Player* bot);
     Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry);

@@ -410,14 +410,14 @@ bool TheCuratorPositionBossAction::Execute(Event event)
     if (curator->GetVictim() == bot)
     {
         const float maxDistance = 3.0f;
-        float distanceToBossPosition = curator->GetExactDist2d(CuratorBossPosition);
+        float distanceToBossPosition = curator->GetExactDist2d(TheCuratorBossPosition);
 
         if (distanceToBossPosition > maxDistance)
         {
-            float dX = CuratorBossPosition.GetPositionX() - curator->GetPositionX();
-            float dY = CuratorBossPosition.GetPositionY() - curator->GetPositionY();
-            float mX = CuratorBossPosition.GetPositionX() + (dX / distanceToBossPosition) * maxDistance;
-            float mY = CuratorBossPosition.GetPositionY() + (dY / distanceToBossPosition) * maxDistance;
+            float dX = TheCuratorBossPosition.GetPositionX() - curator->GetPositionX();
+            float dY = TheCuratorBossPosition.GetPositionY() - curator->GetPositionY();
+            float mX = TheCuratorBossPosition.GetPositionX() + (dX / distanceToBossPosition) * maxDistance;
+            float mY = TheCuratorBossPosition.GetPositionY() + (dY / distanceToBossPosition) * maxDistance;
 
             return MoveTo(bot->GetMapId(), mX, mY, bot->GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, false);

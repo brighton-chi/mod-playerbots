@@ -205,7 +205,7 @@ namespace TempestKeepHelpers
         if (!group)
             return nullptr;
 
-        Player* mainTankCandidate = nullptr;
+        Player* meleeTankCandidate = nullptr;
 
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {

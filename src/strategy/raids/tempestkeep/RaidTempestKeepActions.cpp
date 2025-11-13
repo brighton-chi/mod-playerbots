@@ -1511,15 +1511,15 @@ bool KaelthasSunstriderWarlockTankPositionCapernianAction::Execute(Event event)
     if (capernian->GetVictim() == bot)
     {
         const Position& position = CapernianTankPosition;
-        float distanceToCapernian = capernian->GetExactDist2d(position.x, position.y);
+        float distanceToCapernian = capernian->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
         const float minDistance = 30.5f;
         const float maxDistance = 34.0f;
 
         if (distanceToCapernian > minDistance && distanceToCapernian < maxDistance)
         {
-            if (!bot->IsWithinDist2d(position.x, position.y, 1.0f))
+            if (!bot->IsWithinDist2d(position.GetPositionX(), position.GetPositionY(), 1.0f))
             {
-                return MoveTo(bot->GetMapId(), position.x, position.y, position.z, false,
+                return MoveTo(bot->GetMapId(), position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(), false,
                                 false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
             }
 
