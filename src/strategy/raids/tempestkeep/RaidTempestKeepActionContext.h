@@ -9,6 +9,7 @@ class RaidTempestKeepActionContext : public NamedObjectContext<Action>
 public:
     RaidTempestKeepActionContext()
     {
+        creators["crimson hand centurion cast polymorph"] = &RaidTempestKeepActionContext::crimson_hand_centurion_cast_polymorph;
         creators["alar log debug info"] = &RaidTempestKeepActionContext::alar_log_debug_info;
         creators["alar misdirect boss to main tank"] = &RaidTempestKeepActionContext::alar_misdirect_boss_to_main_tank;
         creators["alar boss tanks move between platforms"] = &RaidTempestKeepActionContext::alar_boss_tanks_move_between_platforms;
@@ -33,6 +34,7 @@ public:
     }
 
 private:
+    static Action* crimson_hand_centurion_cast_polymorph(PlayerbotAI* botAI) { return new CrimsonHandCenturionCastPolymorphAction(botAI); }
     static Action* alar_log_debug_info(PlayerbotAI* botAI) { return new AlarLogDebugInfoAction(botAI); }
     static Action* alar_misdirect_boss_to_main_tank(PlayerbotAI* botAI) { return new AlarMisdirectBossToMainTankAction(botAI); }
     static Action* alar_boss_tanks_move_between_platforms(PlayerbotAI* botAI) { return new AlarBossTanksMoveBetweenPlatformsAction(botAI); }

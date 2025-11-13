@@ -3,6 +3,13 @@
 
 #include "Trigger.h"
 
+class CrimsonHandCenturionCastsArcaneVolleyTrigger : public Trigger
+{
+public:
+    CrimsonHandCenturionCastsArcaneVolleyTrigger(PlayerbotAI* botAI) : Trigger(botAI, "crimson hand centurion casts arcane volley") {}
+    bool IsActive() override;
+};
+
 class AlarNeedToLogInfoToDevelopBossStrategyTrigger : public Trigger
 {
 public:

@@ -5,6 +5,13 @@
 
 using namespace TempestKeepHelpers;
 
+bool CrimsonHandCenturionCastsArcaneVolleyTrigger::IsActive()
+{
+    Unit* centurion = AI_VALUE2(Unit*, "find target", "crimson hand centurion");
+
+    return centurion && centurion->IsAlive() && bot->getClass() == CLASS_MAGE;
+}
+
 bool AlarNeedToLogInfoToDevelopBossStrategyTrigger::IsActive()
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");

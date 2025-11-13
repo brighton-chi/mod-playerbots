@@ -9,6 +9,14 @@
 using namespace TempestKeepHelpers;
 using namespace TempestKeepPositions;
 
+class CrimsonHandCenturionCastPolymorphAction : public Action
+{
+public:
+    CrimsonHandCenturionCastPolymorphAction(PlayerbotAI* botAI, std::string const name = "crimson hand centurion cast polymorph") : Action(botAI, name) {}
+
+    bool Execute(Event event) override;
+};
+
 class AlarLogDebugInfoAction : public Action
 {
 public:

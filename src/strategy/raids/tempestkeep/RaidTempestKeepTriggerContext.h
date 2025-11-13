@@ -9,6 +9,7 @@ class RaidTempestKeepTriggerContext : public NamedObjectContext<Trigger>
 public:
     RaidTempestKeepTriggerContext()
     {
+        creators["crimson hand centurion casts arcane volley"] = &RaidTempestKeepTriggerContext::crimson_hand_centurion_casts_arcane_volley;
         creators["alar need to log info to develop boss strategy"] = &RaidTempestKeepTriggerContext::alar_need_to_log_info_to_develop_boss_strategy;
         creators["alar pulling boss"] = &RaidTempestKeepTriggerContext::alar_pulling_boss;
         creators["alar engaged by tanks in phase 1"] = &RaidTempestKeepTriggerContext::alar_engaged_by_tanks_in_phase_1;
@@ -31,6 +32,7 @@ public:
     }
 
 private:
+    static Trigger* crimson_hand_centurion_casts_arcane_volley(PlayerbotAI* botAI) { return new CrimsonHandCenturionCastsArcaneVolleyTrigger(botAI); }
     static Trigger* alar_need_to_log_info_to_develop_boss_strategy(PlayerbotAI* botAI) { return new AlarNeedToLogInfoToDevelopBossStrategyTrigger(botAI); }
     static Trigger* alar_pulling_boss(PlayerbotAI* botAI) { return new AlarPullingBossTrigger(botAI); }
     static Trigger* alar_engaged_by_tanks_in_phase_1(PlayerbotAI* botAI) { return new AlarEngagedByTanksInPhase1Trigger(botAI); }

@@ -8,6 +8,22 @@
 using namespace TempestKeepHelpers;
 using namespace TempestKeepPositions;
 
+// Trash
+
+bool CrimsonHandCenturionCastPolymorphAction::Execute(Event event)
+{
+    Unit* centurion = AI_VALUE2(Unit*, "find target", "crimson hand centurion");
+    if (!centurion)
+        return false;
+
+    if (centurion->GetHealth() == centurion->GetMaxHealth() && !centurion->HasAura(SPELL_POLYMORPH))
+        return botAI->CastSpell("polymorph", target);
+    else if (botAI->CanCastSpell("polymorph", target))
+        return botAI->CastSpell("polymorph", target);
+
+    return false;
+}
+
 // Al'ar <Phoenix God>
 
 // To-Do:
