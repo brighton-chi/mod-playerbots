@@ -8,7 +8,6 @@
 #include "Playerbots.h"
 #include "RtiTargetValue.h"
 #include "ServerFacade.h"
-#include "UseItemAction.h"
 
 #include "unordered_map" // For testing of Lurker water issues
 #include "Transport.h" // For testing of Lurker water issues
@@ -2660,6 +2659,36 @@ bool LadyVashjManageTrackersAction::Execute(Event event)
 
         if (!vashjHasReachedRangedPosition.empty())
             vashjHasReachedRangedPosition.clear();
+    }
+
+    return false;
+}
+
+bool LadyVashjCheatToTestAction::Execute(Event event)
+{
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (!vashj)
+        return false;
+
+    bot->SetFullHealth();
+
+    if (botAI->IsTank(bot))
+    {
+        Unit* enchanted = AI_VALUE2(Unit*, "find target", "enchanted elemental");
+        if (enchanted && enchanted->IsAlive())
+        {
+            Unit::DealDamage(bot, enchanted, enchanted->GetMaxHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false, true);
+        }
+        Unit* strider = AI_VALUE2(Unit*, "find target", "coilfang strider");
+        if (strider && strider->IsAlive())
+        {
+            Unit::DealDamage(bot, strider, strider->GetMaxHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false, true);
+        }
+        Unit* elite = AI_VALUE2(Unit*, "find target", "coilfang elite");
+        if (elite && elite->IsAlive())
+        {
+            Unit::DealDamage(bot, elite, elite->GetMaxHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false, true);
+        }
     }
 
     return false;

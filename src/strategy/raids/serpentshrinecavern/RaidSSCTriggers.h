@@ -360,4 +360,11 @@ public:
     bool IsActive() override;
 };
 
+class LadyVashjCheatToTestTrigger : public Trigger
+{
+public:
+    LadyVashjCheatToTestTrigger(PlayerbotAI* botAI) : Trigger(botAI, "lady vashj cheat to test") {}
+    bool IsActive() override;
+};
+
 #endif

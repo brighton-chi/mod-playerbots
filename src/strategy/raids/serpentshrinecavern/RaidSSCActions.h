@@ -397,4 +397,11 @@ public:
     bool Execute(Event event) override;
 };
 
+class LadyVashjCheatToTestAction : public AttackAction
+{
+public:
+    LadyVashjCheatToTestAction(PlayerbotAI* botAI, std::string const name = "lady vashj cheat to test") : AttackAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 #endif

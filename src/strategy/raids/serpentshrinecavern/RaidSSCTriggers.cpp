@@ -493,3 +493,10 @@ bool LadyVashjNeedToManageTrackersTrigger::IsActive()
 
     return vashj && (IsLadyVashjInPhase1(botAI) || IsLadyVashjInPhase2(botAI));
 }
+
+bool LadyVashjCheatToTestTrigger::IsActive()
+{
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+
+    return vashj;
+}
