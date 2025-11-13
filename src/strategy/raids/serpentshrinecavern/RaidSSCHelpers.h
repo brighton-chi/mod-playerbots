@@ -150,21 +150,21 @@ namespace SerpentShrineCavernHelpers
         extern const Position LurkerMainTankPosition;
         extern const Position LurkerEMeleePosition;
         extern const Position LurkerWMeleePosition;
-        extern const Position LurkerNWIsletPosition;
-        extern const Position LurkerNWIsletSwimPosition;
+        // extern const Position LurkerNWIsletPosition;
+        // extern const Position LurkerNWIsletSwimPosition;
         extern const Position LurkerNWRangedDpsPosition;
-        extern const Position LurkerNEIsletPosition;
-        extern const Position LurkerNEIsletSwimPosition;
+        // extern const Position LurkerNEIsletPosition;
+        // extern const Position LurkerNEIsletSwimPosition;
         extern const Position LurkerNERangedDpsPosition;
-        extern const Position LurkerEIsletPosition;
-        extern const Position LurkerEIsletSwimPosition;
+        // extern const Position LurkerEIsletPosition;
+        // extern const Position LurkerEIsletSwimPosition;
         extern const Position LurkerERangedDpsPosition;
         extern const Position LurkerSEHealerLandPosition;
-        extern const Position LurkerSEHealerSwimPosition;
+        // extern const Position LurkerSEHealerSwimPosition;
         extern const Position LurkerSWHealerLandPosition;
-        extern const Position LurkerSWHealerSwimPosition;
+        // extern const Position LurkerSWHealerSwimPosition;
         extern const Position LurkerNHealerLandPosition;
-        extern const Position LurkerNHealerSwimPosition;
+        // extern const Position LurkerNHealerSwimPosition;
 
         extern const Position KarathressTankPosition;
         extern const Position TidalvessTankPosition;
@@ -172,16 +172,11 @@ namespace SerpentShrineCavernHelpers
         extern const Position CaribdisTankPosition;
         extern const Position CaribdisHealerPosition;
         extern const Position CaribdisRangedDpsPosition;
-        // extern const Position KarathressRoomCenterPosition
-
-        // extern const Position LeotherasHumanFormTankPosition;
-        // extern const Position LeotherasDemonFormTankPosition;
 
         extern const Position TidewalkerPhase1TankPosition;
         extern const Position TidewalkerPhaseTransitionWaypoint;
         extern const Position TidewalkerPhase2TankPosition;
         extern const Position TidewalkerPhase2RangedPosition;
-        // extern const Position TidewalkerGraveHealerPosition;
 
         extern const Position VashjPlatformCenterPosition;
         extern const Position VashjNWStairsPosition;

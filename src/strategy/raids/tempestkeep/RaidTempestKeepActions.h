@@ -17,14 +17,6 @@ public:
     bool Execute(Event event) override;
 };
 
-class AlarLogDebugInfoAction : public Action
-{
-public:
-    AlarLogDebugInfoAction(PlayerbotAI* botAI, std::string const name = "alar log debug info") : Action(botAI, name) {}
-
-    bool Execute(Event event) override;
-};
-
 class AlarMisdirectBossToMainTankAction : public AttackAction
 {
 public:
@@ -60,6 +52,7 @@ public:
 
     bool Execute(Event event) override;
 };
+
 class AlarPositionHealerAction : public MovementAction
 {
 public:
@@ -176,6 +169,54 @@ class HighAstromancerSolarianCastFearWardOnMainTankAction : public Action
 {
 public:
     HighAstromancerSolarianCastFearWardOnMainTankAction(PlayerbotAI* botAI, std::string const name = "high astromancer solarian cast fear ward on main tank") : Action(botAI, name) {}
+
+    bool Execute(Event event) override;
+};
+
+class KaelthasSunstriderSecondAssistTankPositionThaladredAction : public AttackAction
+{
+public:
+    KaelthasSunstriderSecondAssistTankPositionThaladredAction(PlayerbotAI* botAI, std::string const name = "kaelthas sunstrider second assist tank position thaladred") : AttackAction(botAI, name) {}
+
+    bool Execute(Event event) override;
+};
+
+class KaelthasSunstriderRunAwayFromThaladredAction : public MovementAction
+{
+public:
+    KaelthasSunstriderRunAwayFromThaladredAction(PlayerbotAI* botAI, std::string const name = "kaelthas sunstrider run away from thaladred") : MovementAction(botAI, name) {}
+
+    bool Execute(Event event) override;
+};
+
+class KaelthasSunstriderMainTankPositionSanguinarAction : public AttackAction
+{
+public:
+    KaelthasSunstriderMainTankPositionSanguinarAction(PlayerbotAI* botAI, std::string const name = "kaelthas sunstrider main tank position sanguinar") : AttackAction(botAI, name) {}
+
+    bool Execute(Event event) override;
+};
+
+class KaelthasSunstriderCastFearWardOnSanguinarTankAction : public Action
+{
+public:
+    KaelthasSunstriderCastFearWardOnSanguinarTankAction(PlayerbotAI* botAI, std::string const name = "kaelthas sunstrider cast fear ward on sanguinar tank") : Action(botAI, name) {}
+
+    bool Execute(Event event) override;
+};
+
+class KaelthasSunstriderWarlockTankPositionCapernianAction : public AttackAction
+{
+public:
+    KaelthasSunstriderWarlockTankPositionCapernianAction(PlayerbotAI* botAI, std::string const name = "kaelthas sunstrider warlock tank position capernian") : AttackAction(botAI, name) {}
+
+    bool Execute(Event event) override;
+};
+
+class KaelthasSunstriderFirstAssistTankPositionTelonicusAction : public AttackAction
+{
+public:
+    KaelthasSunstriderFirstAssistTankPositionTelonicusAction(PlayerbotAI* botAI, std::string const name = "kaelthas sunstrider first assist tank position telonicus") : AttackAction(botAI, name) {}
 
     bool Execute(Event event) override;
 };

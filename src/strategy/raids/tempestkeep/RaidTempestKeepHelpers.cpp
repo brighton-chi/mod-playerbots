@@ -37,6 +37,11 @@ namespace TempestKeepHelpers
         const Position VoidReaverTankPosition(423.845f,  371.733f, 14.897f); // middle of room
 
         // const Position AstromancerStackPosition = { 448.398f, -346.526f, 16.802f }; // directly from entrance, on platform, <25 yards from boss
+
+        const Position ThaladredTankPosition = { 0.0f, 0.0f, 0.0f };
+        const Position SanguinarTankPosition = { 0.0f, 0.0f, 0.0f };
+        const Position CapernianTankPosition = { 0.0f, 0.0f, 0.0f };
+        const Position TelonicusTankPosition = { 0.0f, 0.0f, 0.0f };
     }
 
     /*
@@ -76,6 +81,21 @@ namespace TempestKeepHelpers
     void MarkTargetWithStar(Player* bot, Unit* target)
     {
         MarkTargetWithIcon(bot, target, RtiTargetValue::starIndex);
+    }
+
+    void MarkTargetWithCircle(Player* bot, Unit* target)
+    {
+        MarkTargetWithIcon(bot, target, RtiTargetValue::circleIndex);
+    }
+
+    void MarkTargetWithTriangle(Player* bot, Unit* target)
+    {
+        MarkTargetWithIcon(bot, target, RtiTargetValue::triangleIndex);
+    }
+
+    void MarkTargetWithDiamond(Player* bot, Unit* target)
+    {
+        MarkTargetWithIcon(bot, target, RtiTargetValue::diamondIndex);
     }
 
     void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target)
@@ -146,64 +166,6 @@ namespace TempestKeepHelpers
         return nearestPlayer;
     }
 
-    std::unordered_map<uint32, int8> lastAlarPlatform;
-    std::unordered_map<uint32, bool> lastRebirthState;
-    std::unordered_map<uint32, bool> isPhase2;
-
-    // std::unordered_map<ObjectGuid, int8> lastMainTankPlatform;
-    // std::unordered_map<ObjectGuid, int8> lastAssistTankPlatform;
-    std::unordered_map<ObjectGuid, bool> mainTankAtPlatform2;
-    std::unordered_map<ObjectGuid, bool> assistTankAtPlatform3;
-
-    std::unordered_map<ObjectGuid, std::vector<bool>> mtBalconyMidpointVisited;
-    std::unordered_map<ObjectGuid, std::vector<bool>> atBalconyMidpointVisited;
-    // std::unordered_map<ObjectGuid, bool> mtGroundMidpointVisited;
-    // std::unordered_map<ObjectGuid, bool> atGroundMidpointVisited;
-    std::unordered_map<ObjectGuid, std::vector<bool>> meleeDpsWaypointVisited;
-
-    /* std::vector<Position> midpoints_1_to_6 =
-    {
-        TempestKeepPositions::AlarPlatform1To2MidpointA,
-        TempestKeepPositions::AlarPlatform1To2MidpointB,
-        TempestKeepPositions::AlarPlatform2To3MidpointA,
-        TempestKeepPositions::AlarPlatform2To3MidpointB,
-        TempestKeepPositions::AlarPlatform3To4MidpointA,
-        TempestKeepPositions::AlarPlatform3To4MidpointB
-    };
-
-    std::vector<Position> midpoints_6_to_1 =
-    {
-        TempestKeepPositions::AlarPlatform3To4MidpointB,
-        TempestKeepPositions::AlarPlatform3To4MidpointA,
-        TempestKeepPositions::AlarPlatform2To3MidpointB,
-        TempestKeepPositions::AlarPlatform2To3MidpointA,
-        TempestKeepPositions::AlarPlatform1To2MidpointB,
-        TempestKeepPositions::AlarPlatform1To2MidpointA
-    }; */
-    std::vector<Position> midpoints_1_to_2 =
-    {
-        TempestKeepPositions::AlarPlatform1To2MidpointA,
-        TempestKeepPositions::AlarPlatform1To2MidpointB,
-    };
-
-    std::vector<Position> midpoints_2_to_1 =
-    {
-        TempestKeepPositions::AlarPlatform1To2MidpointB,
-        TempestKeepPositions::AlarPlatform1To2MidpointA
-    };
-
-    std::vector<Position> midpoints_4_to_3 =
-    {
-        TempestKeepPositions::AlarPlatform3To4MidpointA,
-        TempestKeepPositions::AlarPlatform3To4MidpointB
-    };
-
-    std::vector<Position> midpoints_3_to_4 =
-    {
-        TempestKeepPositions::AlarPlatform3To4MidpointB,
-        TempestKeepPositions::AlarPlatform3To4MidpointA,
-    };
-
     bool IsAlarAddTank(PlayerbotAI* botAI, Player* bot)
     {
         return botAI->IsTank(bot) &&
@@ -236,6 +198,81 @@ namespace TempestKeepHelpers
             lastAlarPlatform[mapId] = closestIndex;
         }
     }
+
+    Player* GetCapernianTank(PlayerbotAI* botAI, Player* bot)
+    {
+        Group* group = bot->GetGroup();
+        if (!group)
+            return nullptr;
+
+        Player* mainTankCandidate = nullptr;
+
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member))
+                continue;
+
+            if (member->getClass() == CLASS_WARLOCK && GET_PLAYERBOT_AI(member)->HasStrategy("tank", BotState::BOT_STATE_COMBAT))
+                return member;
+
+            if (!meleeTankCandidate && GET_PLAYERBOT_AI(member)->IsAssistTankOfIndex(member, 2))
+                meleeTankCandidate = member;
+        }
+
+        return meleeTankCandidate;
+    }
+
+    std::unordered_map<uint32, int8> lastAlarPlatform;
+    std::unordered_map<uint32, bool> lastRebirthState;
+    std::unordered_map<uint32, bool> isPhase2;
+    // std::unordered_map<ObjectGuid, int8> lastMainTankPlatform;
+    // std::unordered_map<ObjectGuid, int8> lastAssistTankPlatform;
+    std::unordered_map<ObjectGuid, bool> mainTankAtPlatform2;
+    std::unordered_map<ObjectGuid, bool> assistTankAtPlatform3;
+    std::unordered_map<ObjectGuid, std::vector<bool>> mtBalconyMidpointVisited;
+    std::unordered_map<ObjectGuid, std::vector<bool>> atBalconyMidpointVisited;
+    // std::unordered_map<ObjectGuid, bool> mtGroundMidpointVisited;
+    // std::unordered_map<ObjectGuid, bool> atGroundMidpointVisited;
+    std::unordered_map<ObjectGuid, std::vector<bool>> meleeDpsWaypointVisited;
+    /* std::vector<Position> midpoints_1_to_6 =
+    {
+        TempestKeepPositions::AlarPlatform1To2MidpointA,
+        TempestKeepPositions::AlarPlatform1To2MidpointB,
+        TempestKeepPositions::AlarPlatform2To3MidpointA,
+        TempestKeepPositions::AlarPlatform2To3MidpointB,
+        TempestKeepPositions::AlarPlatform3To4MidpointA,
+        TempestKeepPositions::AlarPlatform3To4MidpointB
+    };
+    std::vector<Position> midpoints_6_to_1 =
+    {
+        TempestKeepPositions::AlarPlatform3To4MidpointB,
+        TempestKeepPositions::AlarPlatform3To4MidpointA,
+        TempestKeepPositions::AlarPlatform2To3MidpointB,
+        TempestKeepPositions::AlarPlatform2To3MidpointA,
+        TempestKeepPositions::AlarPlatform1To2MidpointB,
+        TempestKeepPositions::AlarPlatform1To2MidpointA
+    }; */
+    std::vector<Position> midpoints_1_to_2 =
+    {
+        TempestKeepPositions::AlarPlatform1To2MidpointA,
+        TempestKeepPositions::AlarPlatform1To2MidpointB,
+    };
+    std::vector<Position> midpoints_2_to_1 =
+    {
+        TempestKeepPositions::AlarPlatform1To2MidpointB,
+        TempestKeepPositions::AlarPlatform1To2MidpointA
+    };
+    std::vector<Position> midpoints_4_to_3 =
+    {
+        TempestKeepPositions::AlarPlatform3To4MidpointA,
+        TempestKeepPositions::AlarPlatform3To4MidpointB
+    };
+    std::vector<Position> midpoints_3_to_4 =
+    {
+        TempestKeepPositions::AlarPlatform3To4MidpointB,
+        TempestKeepPositions::AlarPlatform3To4MidpointA,
+    };
 
     std::unordered_map<ObjectGuid, Position> initialVoidReaverPositions;
     std::unordered_map<ObjectGuid, bool> hasReachedInitialVoidReaverPosition;

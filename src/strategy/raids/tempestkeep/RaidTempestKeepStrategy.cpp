@@ -7,10 +7,8 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("crimson hand centurion casts arcane volley",
         NextAction::array(0. new NextAction("crimson hand centurion cast polymorph", ACTION_RAID + 1), nullptr)
     ));
+
     // Al'ar
-    triggers.push_back(new TriggerNode("alar need to log info to develop boss strategy",
-        NextAction::array(0, new NextAction("alar log debug info", ACTION_EMERGENCY + 11), nullptr)
-    ));
     triggers.push_back(new TriggerNode("alar pulling boss",
         NextAction::array(0, new NextAction("alar misdirect boss to main tank", ACTION_EMERGENCY + 1), nullptr)
     ));
@@ -66,8 +64,28 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("high astromancer solarian transformed into voidwalker",
         NextAction::array(0, new NextAction("high astromancer solarian tank voidwalker", ACTION_EMERGENCY + 1), nullptr)
     ));
-    triggers.push_back(new TriggerNode("high astromancer solarian can cast fear ward on main tank",
+    triggers.push_back(new TriggerNode("high astromancer solarian boss casts psychic scream",
         NextAction::array(0, new NextAction("high astromancer solarian cast fear ward on main tank", ACTION_RAID + 2), nullptr)
+    ));
+
+    // Kael'thas Sunstrider <Lord of the Blood Elves>
+    triggers.push_back(new TriggerNode("kaelthas sunstrider thaladred engaged by second assist tank",
+        NextAction::array(0, new NextAction("kaelthas sunstrider second assist tank position thaladred", ACTION_RAID + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("kaelthas sunstrider thaladred is fixated on bot",
+        NextAction::array(0, new NextAction("kaelthas sunstrider run away from thaladred", ACTION_EMERGENCY + 6), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("kaelthas sunstrider sanguinar engaged by main tank",
+        NextAction::array(0, new NextAction("kaelthas sunstrider main tank position sanguinar", ACTION_RAID + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("kaelthas sunstrider sanguinar casts bellowing roar",
+        NextAction::array(0, new NextAction("kaelthas sunstrider cast fear ward on sanguinar tank", ACTION_RAID + 2), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("kaelthas sunstrider capernian engaged by warlock tank",
+        NextAction::array(0, new NextAction("kaelthas sunstrider warlock tank position capernian", ACTION_RAID + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("kaelthas sunstrider telonicus engaged by first assist tank",
+        NextAction::array(0, new NextAction("kaelthas sunstrider first assist tank position telonicus", ACTION_RAID + 1), nullptr)
     ));
 }
 

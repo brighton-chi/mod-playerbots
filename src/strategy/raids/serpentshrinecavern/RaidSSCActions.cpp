@@ -447,14 +447,6 @@ bool HydrossTheUnstableManageTimersAction::Execute(Event event)
 
 // The Lurker Below
 
-// Position melee to be as close as possible to lurker without entering water
-// try to enter water before whirl?
-// Spout -- melee stay away from front but keep moving and DPSing?
-// Spout -- ranged run into water
-// Adds--mark targets; cc ? 6 ambushers (caster) have 56k HP, 3 guardians (melee) have 70k
-
-// If I do the run around approach, it needs some work, probably to keep min distance from lurker and tighten the permitted angle
-
 bool TheLurkerBelowPositionMainTankAction::Execute(Event event)
 {
     Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
@@ -546,7 +538,6 @@ bool TheLurkerBelowMeleeRunAroundBehindBossAction::Execute(Event event)
 
     return false;
 }
-
 
 bool TheLurkerBelowPositionRangedDpsAction::Execute(Event event)
 {
@@ -927,9 +918,6 @@ bool LeotherasTheBlindManageTimersAndTrackersAction::Execute(Event event)
 }
 
 // Fathom-Lord Karathress
-
-// consider whether caribdis healing wave needs interrupting (can it be ranged? seems not)
-// consider whether to put curse of tongues on caribdis
 
 bool FathomLordKarathressMainTankPositionBossAction::Execute(Event event)
 {
@@ -1616,13 +1604,11 @@ bool LadyVashjPhase1PositionRangedAction::Execute(Event event)
         else
             angle = startAngle + (float)botIndex / (count - 1) * span;
 
-        // Unique radius per bot (same approach as before)
         uint32 botSeed = bot->GetGUID().GetCounter();
         float radius = minSpreadRadius + (botSeed % 1000) / 1000.0f * (maxSpreadRadius - minSpreadRadius);
-    float targetX = center.GetPositionX() + radius * cos(angle);
-    float targetY = center.GetPositionY() + radius * sin(angle);
-
-    vashjRangedPositions[bot->GetGUID()] = Position(targetX, targetY, center.GetPositionZ());
+        float targetX = center.GetPositionX() + radius * cos(angle);
+        float targetY = center.GetPositionY() + radius * sin(angle);
+        vashjRangedPositions[bot->GetGUID()] = Position(targetX, targetY, center.GetPositionZ());
         vashjHasReachedRangedPosition[bot->GetGUID()] = false;
      }
 

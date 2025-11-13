@@ -10,7 +10,7 @@ public:
     RaidTempestKeepActionContext()
     {
         creators["crimson hand centurion cast polymorph"] = &RaidTempestKeepActionContext::crimson_hand_centurion_cast_polymorph;
-        creators["alar log debug info"] = &RaidTempestKeepActionContext::alar_log_debug_info;
+
         creators["alar misdirect boss to main tank"] = &RaidTempestKeepActionContext::alar_misdirect_boss_to_main_tank;
         creators["alar boss tanks move between platforms"] = &RaidTempestKeepActionContext::alar_boss_tanks_move_between_platforms;
         creators["alar melee dps prioritize adds"] = &RaidTempestKeepActionContext::alar_melee_dps_prioritize_adds;
@@ -31,11 +31,18 @@ public:
         creators["high astromancer solarian target solarium priests"] = &RaidTempestKeepActionContext::high_astromancer_solarian_target_solarium_priests;
         creators["high astromancer solarian tank voidwalker"] = &RaidTempestKeepActionContext::high_astromancer_solarian_tank_voidwalker;
         creators["high astromancer solarian cast fear ward on main tank"] = &RaidTempestKeepActionContext::high_astromancer_solarian_cast_fear_ward_on_main_tank;
+
+        creators["kaelthas sunstrider second assist tank position thaladred"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_second_assist_tank_position_thaladred;
+        creators["kaelthas sunstrider run away from thaladred"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_run_away_from_thaladred;
+        creators["kaelthas sunstrider main tank position sanguinar"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_main_tank_position_sanguinar;
+        creators["kaelthas sunstrider cast fear ward on sanguinar tank"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_cast_fear_ward_on_sanguinar_tank;
+        creators["kaelthas sunstrider warlock tank position capernian"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_warlock_tank_position_capernian;
+        creators["kaelthas sunstrider first assist tank position telonicus"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_first_assist_tank_position_telonicus;
     }
 
 private:
     static Action* crimson_hand_centurion_cast_polymorph(PlayerbotAI* botAI) { return new CrimsonHandCenturionCastPolymorphAction(botAI); }
-    static Action* alar_log_debug_info(PlayerbotAI* botAI) { return new AlarLogDebugInfoAction(botAI); }
+
     static Action* alar_misdirect_boss_to_main_tank(PlayerbotAI* botAI) { return new AlarMisdirectBossToMainTankAction(botAI); }
     static Action* alar_boss_tanks_move_between_platforms(PlayerbotAI* botAI) { return new AlarBossTanksMoveBetweenPlatformsAction(botAI); }
     static Action* alar_melee_dps_prioritize_adds(PlayerbotAI* botAI) { return new AlarMeleeDpsPrioritizeAddsAction(botAI); }
@@ -56,6 +63,13 @@ private:
     static Action* high_astromancer_solarian_target_solarium_priests(PlayerbotAI* botAI) { return new HighAstromancerSolarianTargetSolariumPriestsAction(botAI); }
     static Action* high_astromancer_solarian_tank_voidwalker(PlayerbotAI* botAI) { return new HighAstromancerSolarianTankVoidwalkerAction(botAI); }
     static Action* high_astromancer_solarian_cast_fear_ward_on_main_tank(PlayerbotAI* botAI) { return new HighAstromancerSolarianCastFearWardOnMainTankAction(botAI); }
+
+    static Action* kaelthas_sunstrider_second_assist_tank_position_thaladred(PlayerbotAI* botAI) { return new KaelthasSunstriderSecondAssistTankPositionThaladredAction(botAI); }
+    static Action* kaelthas_sunstrider_run_away_from_thaladred(PlayerbotAI* botAI) { return new KaelthasSunstriderRunAwayFromThaladredAction(botAI); }
+    static Action* kaelthas_sunstrider_main_tank_position_sanguinar(PlayerbotAI* botAI) { return new KaelthasSunstriderMainTankPositionSanguinarAction(botAI); }
+    static Action* kaelthas_sunstrider_cast_fear_ward_on_sanguinar_tank(PlayerbotAI* botAI) { return new KaelthasSunstriderCastFearWardOnSanguinarTankAction(botAI); }
+    static Action* kaelthas_sunstrider_warlock_tank_position_capernian(PlayerbotAI* botAI) { return new KaelthasSunstriderWarlockTankPositionCapernianAction(botAI); }
+    static Action* kaelthas_sunstrider_first_assist_tank_position_telonicus(PlayerbotAI* botAI) { return new KaelthasSunstriderFirstAssistTankPositionTelonicusAction(botAI); }
 };
 
 #endif

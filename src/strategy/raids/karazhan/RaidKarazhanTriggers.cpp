@@ -291,7 +291,7 @@ bool NightbaneMainTankIsSusceptibleToFearTrigger::IsActive()
 {
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
     Group* group = bot->GetGroup();
-    if (!group)
+    if (!nightbane || !group)
         return false;
 
     Player* mainTank = nullptr;
@@ -305,7 +305,7 @@ bool NightbaneMainTankIsSusceptibleToFearTrigger::IsActive()
         }
     }
 
-    return nightbane && bot->getClass() == CLASS_PRIEST && mainTank &&
+    return bot->getClass() == CLASS_PRIEST && mainTank &&
            !mainTank->HasAura(SPELL_FEAR_WARD) && botAI->CanCastSpell("fear ward", mainTank);
 }
 

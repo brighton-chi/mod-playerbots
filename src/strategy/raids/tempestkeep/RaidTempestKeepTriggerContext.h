@@ -10,7 +10,6 @@ public:
     RaidTempestKeepTriggerContext()
     {
         creators["crimson hand centurion casts arcane volley"] = &RaidTempestKeepTriggerContext::crimson_hand_centurion_casts_arcane_volley;
-        creators["alar need to log info to develop boss strategy"] = &RaidTempestKeepTriggerContext::alar_need_to_log_info_to_develop_boss_strategy;
         creators["alar pulling boss"] = &RaidTempestKeepTriggerContext::alar_pulling_boss;
         creators["alar engaged by tanks in phase 1"] = &RaidTempestKeepTriggerContext::alar_engaged_by_tanks_in_phase_1;
         creators["alar boss engaged by melee dps"] = &RaidTempestKeepTriggerContext::alar_boss_engaged_by_melee_dps;
@@ -28,12 +27,17 @@ public:
         creators["high astromancer solarian bot has wrath of the astromancer"] = &RaidTempestKeepTriggerContext::high_astromancer_solarian_bot_has_wrath_of_the_astromancer;
         creators["high astromancer solarian solarium priests spawned"] = &RaidTempestKeepTriggerContext::high_astromancer_solarian_solarium_priests_spawned;
         creators["high astromancer solarian transformed into voidwalker"] = &RaidTempestKeepTriggerContext::high_astromancer_solarian_transformed_into_voidwalker;
-        creators["high astromancer solarian can cast fear ward on main tank"] = &RaidTempestKeepTriggerContext::high_astromancer_solarian_can_cast_fear_ward_on_main_tank;
+        creators["high astromancer solarian boss casts psychic scream"] = &RaidTempestKeepTriggerContext::high_astromancer_solarian_boss_casts_psychic_scream;
+        creators["kaelthas sunstrider thaladred engaged by second assist tank"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_thaladred_engaged_by_second_assist_tank;
+        creators["kaelthas sunstrider thaladred is fixated on bot"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_thaladred_is_fixated_on_bot;
+        creators["kaelthas sunstrider sanguinar engaged by main tank"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_sanguinar_engaged_by_main_tank;
+        creators["kaelthas sunstrider sanguinar casts bellowing roar"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_sanguinar_casts_bellowing_roar;
+        creators["kaelthas sunstrider capernian engaged by warlock tank"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_capernian_engaged_by_warlock_tank;
+        creators["kaelthas sunstrider telonicus engaged by first assist tank"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_telonicus_engaged_by_first_assist_tank;
     }
 
 private:
     static Trigger* crimson_hand_centurion_casts_arcane_volley(PlayerbotAI* botAI) { return new CrimsonHandCenturionCastsArcaneVolleyTrigger(botAI); }
-    static Trigger* alar_need_to_log_info_to_develop_boss_strategy(PlayerbotAI* botAI) { return new AlarNeedToLogInfoToDevelopBossStrategyTrigger(botAI); }
     static Trigger* alar_pulling_boss(PlayerbotAI* botAI) { return new AlarPullingBossTrigger(botAI); }
     static Trigger* alar_engaged_by_tanks_in_phase_1(PlayerbotAI* botAI) { return new AlarEngagedByTanksInPhase1Trigger(botAI); }
     static Trigger* alar_boss_engaged_by_melee_dps(PlayerbotAI* botAI) { return new AlarBossEngagedByMeleeDpsTrigger(botAI); }
@@ -51,7 +55,13 @@ private:
     static Trigger* high_astromancer_solarian_bot_has_wrath_of_the_astromancer(PlayerbotAI* botAI) { return new HighAstromancerSolarianBotHasWrathOfTheAstromancerTrigger(botAI); }
     static Trigger* high_astromancer_solarian_solarium_priests_spawned(PlayerbotAI* botAI) { return new HighAstromancerSolarianSolariumPriestsSpawnedTrigger(botAI); }
     static Trigger* high_astromancer_solarian_transformed_into_voidwalker(PlayerbotAI* botAI) { return new HighAstromancerSolarianTransformedIntoVoidwalkerTrigger(botAI); }
-    static Trigger* high_astromancer_solarian_can_cast_fear_ward_on_main_tank(PlayerbotAI* botAI) { return new HighAstromancerSolarianCanCastFearWardOnMainTankTrigger(botAI); }
+    static Trigger* high_astromancer_solarian_boss_casts_psychic_scream(PlayerbotAI* botAI) { return new HighAstromancerSolarianBossCastsPsychicScreamTrigger(botAI); }
+    static Trigger* kaelthas_sunstrider_thaladred_engaged_by_second_assist_tank(PlayerbotAI* botAI) { return new KaelthasSunstriderThaladredEngagedBySecondAssistTankTrigger(botAI); }
+    static Trigger* kaelthas_sunstrider_thaladred_is_fixated_on_bot(PlayerbotAI* botAI) { return new KaelthasSunstriderThaladredIsFixatedOnBotTrigger(botAI); }
+    static Trigger* kaelthas_sunstrider_sanguinar_engaged_by_main_tank(PlayerbotAI* botAI) { return new KaelthasSunstriderSanguinarEngagedByMainTankTrigger(botAI); }
+    static Trigger* kaelthas_sunstrider_sanguinar_casts_bellowing_roar(PlayerbotAI* botAI) { return new KaelthasSunstriderSanguinarCastsBellowingRoarTrigger(botAI); }
+    static Trigger* kaelthas_sunstrider_capernian_engaged_by_warlock_tank(PlayerbotAI* botAI) { return new KaelthasSunstriderCapernianEngagedByWarlockTankTrigger(botAI); }
+    static Trigger* kaelthas_sunstrider_telonicus_engaged_by_first_assist_tank(PlayerbotAI* botAI) { return new KaelthasSunstriderTelonicusEngagedByFirstAssistTankTrigger(botAI); }
 };
 
 #endif

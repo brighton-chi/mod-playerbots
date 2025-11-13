@@ -10,13 +10,6 @@ public:
     bool IsActive() override;
 };
 
-class AlarNeedToLogInfoToDevelopBossStrategyTrigger : public Trigger
-{
-public:
-    AlarNeedToLogInfoToDevelopBossStrategyTrigger(PlayerbotAI* botAI) : Trigger(botAI, "alar need to log info to develop boss strategy") {}
-    bool IsActive() override;
-};
-
 class AlarPullingBossTrigger : public Trigger
 {
 public:
@@ -136,10 +129,52 @@ public:
     bool IsActive() override;
 };
 
-class HighAstromancerSolarianCanCastFearWardOnMainTankTrigger : public Trigger
+class HighAstromancerSolarianBossCastsPsychicScreamTrigger : public Trigger
 {
 public:
-    HighAstromancerSolarianCanCastFearWardOnMainTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "high astromancer solarian can cast fear ward on main tank") {}
+    HighAstromancerSolarianBossCastsPsychicScreamTrigger(PlayerbotAI* botAI) : Trigger(botAI, "high astromancer solarian boss casts psychic scream") {}
+    bool IsActive() override;
+};
+
+class KaelthasSunstriderThaladredEngagedBySecondAssistTankTrigger : public Trigger
+{
+public:
+    KaelthasSunstriderThaladredEngagedBySecondAssistTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider thaladred engaged by second assist tank") {}
+    bool IsActive() override;
+};
+
+class KaelthasSunstriderThaladredIsFixatedOnBotTrigger : public Trigger
+{
+public:
+    KaelthasSunstriderThaladredIsFixatedOnBotTrigger(PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider thaladred is fixated on bot") {}
+    bool IsActive() override;
+};
+
+class KaelthasSunstriderSanguinarEngagedByMainTankTrigger : public Trigger
+{
+public:
+    KaelthasSunstriderSanguinarEngagedByMainTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider sanguinar engaged by main tank") {}
+    bool IsActive() override;
+};
+
+class KaelthasSunstriderSanguinarCastsBellowingRoarTrigger : public Trigger
+{
+public:
+    KaelthasSunstriderSanguinarCastsBellowingRoarTrigger(PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider sanguinar casts bellowing roar") {}
+    bool IsActive() override;
+};
+
+class KaelthasSunstriderCapernianEngagedByWarlockTankTrigger : public Trigger
+{
+public:
+    KaelthasSunstriderCapernianEngagedByWarlockTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider capernian engaged by warlock tank") {}
+    bool IsActive() override;
+};
+
+class KaelthasSunstriderTelonicusEngagedByFirstAssistTankTrigger : public Trigger
+{
+public:
+    KaelthasSunstriderTelonicusEngagedByFirstAssistTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider telonicus engaged by first assist tank") {}
     bool IsActive() override;
 };
 

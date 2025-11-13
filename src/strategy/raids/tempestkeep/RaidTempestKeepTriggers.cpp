@@ -162,7 +162,7 @@ bool HighAstromancerSolarianTransformedIntoVoidwalkerTrigger::IsActive()
     return astromancer && astromancer->HasAura(SPELL_SOLARIAN_TRANSFORM) && botAI->IsMainTank(bot);
 }
 
-bool HighAstromancerSolarianCanCastFearWardOnMainTankTrigger::IsActive()
+bool HighAstromancerSolarianBossCastsPsychicScreamTrigger::IsActive()
 {
     Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
     Group* group = bot->GetGroup();
@@ -182,4 +182,62 @@ bool HighAstromancerSolarianCanCastFearWardOnMainTankTrigger::IsActive()
 
     return astromancer->HasAura(SPELL_SOLARIAN_TRANSFORM) && bot->getClass() == CLASS_PRIEST &&
            mainTank && !mainTank->HasAura(SPELL_FEAR_WARD) && botAI->CanCastSpell("fear ward", mainTank);
+}
+
+bool KaelthasSunstriderThaladredEngagedBySecondAssistTankTrigger::IsActive()
+{
+    Unit* thaladred = AI_VALUE2(Unit*, "find target", "thaladred the darkener");
+
+    return thaladred && botAI->IsAssistTankOfIndex(bot, 1);
+}
+
+bool KaelthasSunstriderThaladredIsFixatedOnBotTrigger::IsActive()
+{
+    Unit* thaladred = AI_VALUE2(Unit*, "find target", "thaladrad the darkener");
+
+    return !botAI->IsTank(bot) && thaladred && thaladred->GetVictim() == bot;
+}
+
+bool KaelthasSunstriderSanguinarEngagedByMainTankTrigger::IsActive()
+{
+    Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
+
+    return sanguinar && botAI->IsMainTank(bot);
+}
+
+bool KaelthasSunstriderSanguinarCastsBellowingRoarTrigger::IsActive()
+{
+    Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
+    Group* group = bot->GetGroup();
+    if (!sanguinar || !group)
+        return false;
+
+    Player* mainTank = nullptr;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && botAI->IsMainTank(member))
+        {
+            mainTank = member;
+            break;
+        }
+    }
+
+    return bot->getClass() == CLASS_PRIEST && mainTank &&
+           !mainTank->HasAura(SPELL_FEAR_WARD) && botAI->CanCastSpell("fear ward", mainTank);
+}
+
+bool KaelthasSunstriderCapernianEngagedByWarlockTankTrigger::IsActive()
+{
+    Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
+    Player* capernianTank = GetCapernianTank(botAI, bot);
+
+    return capernian && capernianTank && bot == capernianTank;
+}
+
+bool KaelthasSunstriderTelonicusEngagedByFirstAssistTankTrigger::IsActive()
+{
+    Unit* telonicus = AI_VALUE2(Unit*, "find target", "master engineer telonicus");
+
+    return telonicus && botAI->IsAssistTankOfIndex(bot, 0);
 }

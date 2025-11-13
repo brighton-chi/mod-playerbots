@@ -27,6 +27,11 @@ namespace TempestKeepHelpers
         // Hunter
         SPELL_MISDIRECTION = 34477,
 
+        // Mage
+        SPELL_POLYMORPH_SHEEP = 12826,
+        SPELL_POLYMORPH_TURTLE = 28271,
+        SPELL_POLYMORPH_PIG = 28272,
+
         // Priest
         SPELL_FEAR_WARD               =  6346,
     };
@@ -68,6 +73,11 @@ namespace TempestKeepHelpers
         extern const Position VoidReaverTankPosition;
 
         // extern const Position AstromancerStackPosition;
+
+        extern const Position ThaladredTankPosition;
+        extern const Position SanguinarTankPosition;
+        extern const Position CapernianTankPosition;
+        extern const Position TelonicusTankPosition;
     }
 
     void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);
@@ -78,30 +88,29 @@ namespace TempestKeepHelpers
     Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry);
     Unit* GetNearestPlayerInRadius(Player* bot, float radius);
 
+    void UpdateAlarLastPlatform(Unit* alar, uint32 mapId, const std::vector<Position>& platforms);
+    bool IsAlarAddTank(PlayerbotAI* botAI, Player* bot);
+
+    Player* GetCapernianTank(PlayerbotAI* botAI, Player* bot);
+
     extern std::unordered_map<uint32, int8> lastAlarPlatform;
     extern std::unordered_map<uint32, bool> lastRebirthState;
     extern std::unordered_map<uint32, bool> isPhase2;
-
     // extern std::unordered_map<ObjectGuid, int8> lastMainTankPlatform;
     // extern std::unordered_map<ObjectGuid, int8> lastAssistTankPlatform;
     extern std::unordered_map<ObjectGuid, bool> mainTankAtPlatform2;
     extern std::unordered_map<ObjectGuid, bool> assistTankAtPlatform3;
-
     extern std::unordered_map<ObjectGuid, std::vector<bool>> mtBalconyMidpointVisited;
     extern std::unordered_map<ObjectGuid, std::vector<bool>> atBalconyMidpointVisited;
     // extern std::unordered_map<ObjectGuid, bool> mtGroundMidpointVisited;
     // extern std::unordered_map<ObjectGuid, bool> atGroundMidpointVisited;
     extern std::unordered_map<ObjectGuid, std::vector<bool>> meleeDpsWaypointVisited;
-
     // extern std::vector<Position> midpoints_1_to_6;
     // extern std::vector<Position> midpoints_6_to_1;
     extern std::vector<Position> midpoints_1_to_2;
     extern std::vector<Position> midpoints_2_to_1;
     extern std::vector<Position> midpoints_4_to_3;
     extern std::vector<Position> midpoints_3_to_4;
-
-    void UpdateAlarLastPlatform(Unit* alar, uint32 mapId, const std::vector<Position>& platforms);
-    bool IsAlarAddTank(PlayerbotAI* botAI, Player* bot);
 
     extern std::unordered_map<ObjectGuid, Position> initialVoidReaverPositions;
     extern std::unordered_map<ObjectGuid, bool> hasReachedInitialVoidReaverPosition;

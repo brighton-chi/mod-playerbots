@@ -16,53 +16,18 @@ bool CrimsonHandCenturionCastPolymorphAction::Execute(Event event)
     if (!centurion)
         return false;
 
-    if (centurion->GetHealth() == centurion->GetMaxHealth() && !centurion->HasAura(SPELL_POLYMORPH))
-        return botAI->CastSpell("polymorph", target);
-    else if (botAI->CanCastSpell("polymorph", target))
-        return botAI->CastSpell("polymorph", target);
+    if (centurion->GetHealth() == centurion->GetMaxHealth() &&
+        !centurion->HasAura(SPELL_POLYMORPH_SHEEP) &&
+        !centurion->HasAura(SPELL_POLYMORPH_TURTLE) &&
+        !centurion->HasAura(SPELL_POLYMORPH_PIG))
+        return botAI->CastSpell("polymorph", centurion);
+    else if (botAI->CanCastSpell("polymorph", centurion))
+        return botAI->CastSpell("polymorph", centurion);
 
     return false;
 }
 
 // Al'ar <Phoenix God>
-
-// To-Do:
-// Tanks need to taunt Al'ar at their positions
-// Ranged need to stay within a radius of the room center
-// How to end flame quill action? Is it necessary? Flying to quills and at next platform is 20s
-// Build out state tracker for rebirth to cleanly split off phase 1 logic
-// Bots other than tanks need to move away from embers before they blow up
-// Need to avoid Al'ar rebirth explosion
-// Phase 2 melt armor taunt logic
-// Phase 2: spread for dive bomb
-
-// Multipliers:
-// No Tank Assist for MT or AT0 during phase 1 (keep for other ATs)
-// For anybody doing the flame quill jump, everything else should be disabled
-
-bool AlarLogDebugInfoAction::Execute(Event event)
-{
-    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    if (!alar)
-        return false;
-
-    std::ostringstream auraList;
-    for (auto const& pair : alar->GetAppliedAuras())
-    {
-        if (pair.second && pair.second->GetBase())
-            auraList << pair.second->GetBase()->GetId() << " ";
-    }
-
-    std::time_t now = std::time(nullptr);
-    char timeStr[32];
-    std::strftime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S", std::localtime(&now));
-
-    LOG_DEBUG("playerbots", "Time: {} | Al'ar coords: ({}, {}, {}) | Health: {} ({:.1f}%) | Auras: {}",
-        timeStr, alar->GetPositionX(), alar->GetPositionY(), alar->GetPositionZ(),
-        alar->GetHealth(), alar->GetHealthPct(), auraList.str());
-
-    return false;
-}
 
 bool AlarMisdirectBossToMainTankAction::Execute(Event event)
 {
@@ -1406,6 +1371,202 @@ bool HighAstromancerSolarianCastFearWardOnMainTankAction::Execute(Event event)
 
     if (mainTank && botAI->CanCastSpell("fear ward", mainTank))
         return botAI->CastSpell("fear ward", mainTank);
+
+    return false;
+}
+
+// Kael'thas Sunstrider <Lord of the Blood Elves>
+
+bool KaelthasSunstriderSecondAssistTankPositionThaladredAction::Execute(Event event)
+{
+    Unit* thaladred = AI_VALUE2(Unit*, "find target", "thaladred the darkener");
+    if (!thaladred)
+        return false;
+
+    MarkTargetWithSquare(bot, thaladred);
+    SetRtiTarget(botAI, "square", thaladred);
+
+    if (bot->GetVictim() != thaladred)
+        return Attack(thaladred);
+
+    if (thaladred->GetVictim() == bot)
+    {
+        const Position& position = ThaladredTankPosition;
+        if (!bot->IsWithinMeleeRange(thaladred))
+        {
+            return MoveTo(thaladred->GetMapId(), thaladred->GetPositionX(),
+                          thaladred->GetPositionY(), thaladred->GetPositionZ(),
+                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+        }
+        else if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
+        {
+            float dX = position.GetPositionX() - bot->GetPositionX();
+            float dY = position.GetPositionY() - bot->GetPositionY();
+            float dist = sqrt(dX * dX + dY * dY);
+            float moveDist = std::min(7.0f, dist);
+            float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
+
+            return MoveTo(bot->GetMapId(), moveX, moveY, position.GetPositionZ(), false, false, false, false,
+                            MovementPriority::MOVEMENT_COMBAT, true, false);
+        }
+    }
+
+    return false;
+}
+
+bool KaelthasSunstriderRunAwayFromThaladredAction::Execute(Event event)
+{
+    Unit* thaladred = AI_VALUE2(Unit*, "find target", "thaladred the darkener");
+    if (!thaladred)
+        return false;
+
+    if (thaladred->GetVictim() == bot)
+    {
+        bot->AttackStop();
+        bot->InterruptNonMeleeSpells(true);
+        return MoveAway(thaladred, 20.0f, false);
+    }
+
+    return false;
+}
+
+bool KaelthasSunstriderMainTankPositionSanguinarAction::Execute(Event event)
+{
+    Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
+    if (!sanguinar)
+        return false;
+
+    MarkTargetWithStar(bot, sanguinar);
+    SetRtiTarget(botAI, "star", sanguinar);
+
+    if (bot->GetVictim() != sanguinar)
+        return Attack(sanguinar);
+
+    if (sanguinar->GetVictim() == bot)
+    {
+        const Position& position = SanguinarTankPosition;
+        if (!bot->IsWithinMeleeRange(sanguinar))
+        {
+            return MoveTo(sanguinar->GetMapId(), sanguinar->GetPositionX(),
+                          sanguinar->GetPositionY(), sanguinar->GetPositionZ(),
+                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+        }
+        else if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
+        {
+            float dX = position.GetPositionX() - bot->GetPositionX();
+            float dY = position.GetPositionY() - bot->GetPositionY();
+            float dist = sqrt(dX * dX + dY * dY);
+            float moveDist = std::min(7.0f, dist);
+            float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
+
+            return MoveTo(bot->GetMapId(), moveX, moveY, position.GetPositionZ(), false, false, false, false,
+                            MovementPriority::MOVEMENT_COMBAT, true, false);
+        }
+    }
+
+    return false;
+}
+
+bool KaelthasSunstriderCastFearWardOnSanguinarTankAction::Execute(Event event)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    Player* mainTank = nullptr;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && botAI->IsMainTank(member))
+        {
+            mainTank = member;
+            break;
+        }
+    }
+
+    if (mainTank && botAI->CanCastSpell("fear ward", mainTank))
+        return botAI->CastSpell("fear ward", mainTank);
+
+    return false;
+}
+
+// NEED TO ADD METHOD FOR MELEE TO STAY AWAY COMPLETELY AND OTHER BOTS TO STAY AWAY 30+ YARDS
+bool KaelthasSunstriderWarlockTankPositionCapernianAction::Execute(Event event)
+{
+    Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
+    if (!capernian)
+        return false;
+
+    MarkTargetWithCircle(bot, capernian);
+    SetRtiTarget(botAI, "circle", capernian);
+
+    if (bot->GetTarget() != capernian->GetGUID())
+    {
+        bot->SetTarget(capernian->GetGUID());
+        return Attack(capernian);
+    }
+
+    if (capernian->GetVictim() == bot)
+    {
+        const Position& position = CapernianTankPosition;
+        float distanceToCapernian = capernian->GetExactDist2d(position.x, position.y);
+        const float minDistance = 30.5f;
+        const float maxDistance = 34.0f;
+
+        if (distanceToCapernian > minDistance && distanceToCapernian < maxDistance)
+        {
+            if (!bot->IsWithinDist2d(position.x, position.y, 1.0f))
+            {
+                return MoveTo(bot->GetMapId(), position.x, position.y, position.z, false,
+                                false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+            }
+
+            float orientation = atan2(capernian->GetPositionY() - bot->GetPositionY(),
+                                        capernian->GetPositionX() - bot->GetPositionX());
+            bot->SetFacingTo(orientation);
+        }
+    }
+
+    return false;
+}
+
+// NEED TO ADD METHOD FOR MELEE TO STAY AWAY COMPLETELY AND OTHER BOTS TO STAY AWAY 30+ YARDS
+bool KaelthasSunstriderFirstAssistTankPositionTelonicusAction::Execute(Event event)
+{
+    Unit* telonicus = AI_VALUE2(Unit*, "find target", "master engineer telonicus");
+    if (!telonicus)
+        return false;
+
+    MarkTargetWithTriangle(bot, telonicus);
+    SetRtiTarget(botAI, "triangle", telonicus);
+
+    if (bot->GetVictim() != telonicus)
+        return Attack(telonicus);
+
+    if (telonicus->GetVictim() == bot)
+    {
+        const Position& position = TelonicusTankPosition;
+        if (!bot->IsWithinMeleeRange(telonicus))
+        {
+            return MoveTo(telonicus->GetMapId(), telonicus->GetPositionX(),
+                          telonicus->GetPositionY(), telonicus->GetPositionZ(),
+                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+        }
+        else if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
+        {
+            float dX = position.GetPositionX() - bot->GetPositionX();
+            float dY = position.GetPositionY() - bot->GetPositionY();
+            float dist = sqrt(dX * dX + dY * dY);
+            float moveDist = std::min(7.0f, dist);
+            float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
+
+            return MoveTo(bot->GetMapId(), moveX, moveY, position.GetPositionZ(), false, false, false, false,
+                            MovementPriority::MOVEMENT_COMBAT, true, false);
+        }
+    }
 
     return false;
 }
