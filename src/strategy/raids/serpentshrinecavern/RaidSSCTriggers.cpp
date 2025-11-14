@@ -1,16 +1,10 @@
-#include <chrono>
-#include <ctime>
-#include <cstdio>
-#include "LootObjectStack.h"
-#include "LootObjectStack.h"
-#include "LootAction.h"
-#include "ObjectAccessor.h"
-#include "Corpse.h"// debugging only
-
 #include "RaidSSCTriggers.h"
 #include "RaidSSCHelpers.h"
 #include "RaidSSCActions.h"
 #include "AiFactory.h"
+#include "Corpse.h"
+#include "LootObjectStack.h"
+#include "ObjectAccessor.h"
 #include "Playerbots.h"
 
 using namespace SerpentShrineCavernHelpers;
@@ -433,11 +427,42 @@ bool LadyVashjPlayerNeedsBotSupportToDisableGeneratorsTrigger::IsActive()
            (botAI->IsRangedDpsAssistantOfIndex(bot, 0) || botAI->IsRangedDpsAssistantOfIndex(bot, 1));
 }
 
-/* bool LadyVashjTaintedElementalCheatTrigger::IsActive()
+bool LadyVashjTaintedElementalCheatTrigger::IsActive()
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
-    if (!vashj || !tainted || !botAI->HasCheat(BotCheatMask::raid))
+    if (!vashj || !botAI->HasCheat(BotCheatMask::raid))
+        return false;
+
+    // accept either a live tainted unit OR a dead Creature object of the tainted entry
+    bool taintedPresent = false;
+
+    // live unit check (fast path)
+    Unit* taintedUnit = AI_VALUE2(Unit*, "find target", "tainted elemental");
+    if (taintedUnit)
+        taintedPresent = true;
+    else
+    {
+        // scan the nearest visible object GUIDs for a dead Creature of the tainted entry
+        GuidVector corpses = context->GetValue<GuidVector>("nearest corpses")->Get();
+        for (auto const& guid : corpses)
+        {
+            LootObject loot(bot, guid);
+            WorldObject* obj = loot.GetWorldObject(bot);
+            if (!obj)
+                continue;
+
+            if (Creature* cr = obj->ToCreature())
+            {
+                if (cr->GetEntry() == NPC_TAINTED_ELEMENTAL && !cr->IsAlive())
+                {
+                    taintedPresent = true;
+                    break;
+                }
+            }
+        }
+    }
+
+    if (!taintedPresent)
         return false;
 
     Group* group = bot->GetGroup();
@@ -449,114 +474,6 @@ bool LadyVashjPlayerNeedsBotSupportToDisableGeneratorsTrigger::IsActive()
 
     return (designatedLooter && designatedLooter == bot &&
             !bot->HasItemCount(ITEM_TAINTED_CORE, 1, false));
-} */
-// Logging version of action below:
-bool LadyVashjTaintedElementalCheatTrigger::IsActive()
-{
-    // short high-res timestamp for logs (optional)
-    auto now = std::chrono::system_clock::now();
-    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()) % 1000;
-    std::time_t tt = std::chrono::system_clock::to_time_t(now);
-    char tbuf[64];
-    std::strftime(tbuf, sizeof(tbuf), "%F %T", std::localtime(&tt));
-    char timestr[80];
-    std::snprintf(timestr, sizeof(timestr), "%s.%03d", tbuf, static_cast<int>(ms.count()));
-
-    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    if (!vashj || !botAI->HasCheat(BotCheatMask::raid))
-    {
-        LOG_DEBUG("playerbots", "{} inactive (no Vashj or no raid cheat)", timestr);
-        return false;
-    }
-
-    // check for live tainted elemental first
-    Unit* taintedUnit = AI_VALUE2(Unit*, "find target", "tainted elemental");
-    if (taintedUnit)
-    {
-        LOG_DEBUG("playerbots", "{} live tainted found guid={} entry={} hp={}/{} alive={}",
-                  timestr, taintedUnit->GetGUID().ToString(), taintedUnit->GetEntry(),
-                  taintedUnit->GetHealth(), taintedUnit->GetMaxHealth(), taintedUnit->IsAlive());
-    }
-
-    // if no live unit, scan visible corpses for tainted elemental corpse
-    bool taintedCorpseFound = false;
-    if (!taintedUnit)
-    {
-        GuidVector corpses = context->GetValue<GuidVector>("nearest corpses")->Get();
-        LOG_DEBUG("playerbots", "{} nearest corpses count = {}", timestr, corpses.size());
-        for (auto const& g : corpses)
-        {
-            LootObject loot(bot, g);
-            WorldObject* obj = loot.GetWorldObject(bot);
-            if (!obj)
-            {
-                LOG_DEBUG("playerbots", "{} nearest corpse guid={} worldobj=NULL", timestr, g.ToString());
-                continue;
-            }
-
-            // Corpse object (preferred)
-            if (Corpse* c = obj->ToCorpse())
-            {
-                LOG_DEBUG("playerbots", "{} nearest obj: CORPSE guid={} entry={} owner={}",
-                          timestr, g.ToString(), c->GetEntry(), c->GetOwnerGUID().ToString());
-                if (c->GetEntry() == NPC_TAINTED_ELEMENTAL)
-                {
-                    taintedCorpseFound = true;
-                    LOG_DEBUG("playerbots", "{} found tainted CORPSE guid={} entry={}", timestr, g.ToString(), c->GetEntry());
-                    break;
-                }
-                continue;
-            }
-
-            // Still exposed as a Creature (conversion to Corpse delayed)
-            if (Creature* cr = obj->ToCreature())
-            {
-                LOG_DEBUG("playerbots", "{} nearest obj: CREATURE guid={} entry={} hp={}/{} alive={} guid_low={} flags=0x{:X} dynflags=0x{:X}",
-                          timestr, g.ToString(), cr->GetEntry(), cr->GetHealth(), cr->GetMaxHealth(), cr->IsAlive(),
-                          cr->GetGUID().GetCounter(),
-                          cr->GetUInt32Value(UNIT_FIELD_FLAGS), cr->GetUInt32Value(UNIT_DYNAMIC_FLAGS));
-                if (cr->GetEntry() == NPC_TAINTED_ELEMENTAL && !cr->IsAlive())
-                {
-                    taintedCorpseFound = true;
-                    LOG_DEBUG("playerbots", "{} treating dead CREATURE as tainted corpse guid={} entry={}", timestr, g.ToString(), cr->GetEntry());
-                    break;
-                }
-                continue;
-            }
-
-            // Other object types (GameObject, Transport, etc.) — log presence
-            LOG_DEBUG("playerbots", "{} nearest obj: OTHER guid={} (not corpse/creature)", timestr, g.ToString());
-        }
-    }
-
-    // nothing relevant visible?
-    if (!taintedUnit && !taintedCorpseFound)
-    {
-        LOG_DEBUG("playerbots", "{} no live tainted and no tainted corpse visible", timestr);
-        return false;
-    }
-
-    // group/master/designated looter checks
-    Group* group = bot->GetGroup();
-    Player* master = botAI->GetMaster();
-    if (!group || !master)
-    {
-        LOG_DEBUG("playerbots", "{} inactive (no group/master)", timestr);
-        return false;
-    }
-
-    Player* designatedLooter = GetDesignatedCoreLooter(group, master, botAI);
-    bool active = (designatedLooter && designatedLooter == bot &&
-                   !bot->HasItemCount(ITEM_TAINTED_CORE, 1, false));
-
-    LOG_DEBUG("playerbots", "{} final decision designated={} bot={} has_core={} -> active={}",
-              timestr,
-              (designatedLooter ? designatedLooter->GetName() : std::string("none")),
-              bot->GetName(),
-              bot->HasItemCount(ITEM_TAINTED_CORE, 1, false),
-              active);
-
-    return active;
 }
 
 bool LadyVashjTaintedCoreWasLootedTrigger::IsActive()
@@ -564,14 +481,48 @@ bool LadyVashjTaintedCoreWasLootedTrigger::IsActive()
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     Player* master = botAI->GetMaster();
     Group* group = bot->GetGroup();
+
     if (!vashj || !IsLadyVashjInPhase2(botAI) || !master || !group)
         return false;
 
-    if (bot != GetFirstTaintedCorePasser(group, botAI) &&
-        bot != GetSecondTaintedCorePasser(group, botAI) &&
-        bot != GetThirdTaintedCorePasser(group, botAI) &&
-        bot != GetDesignatedCoreLooter(group, master, botAI))
-        return false;
+    Player* looter = GetDesignatedCoreLooter(group, master, botAI);
+    Player* firstCorePasser = GetFirstTaintedCorePasser(group, botAI);
+    Player* secondCorePasser = GetSecondTaintedCorePasser(group, botAI);
+    Player* thirdCorePasser = GetThirdTaintedCorePasser(group, botAI);
+
+    LOG_DEBUG("playerbots", "LadyVashjTaintedCoreWasLootedTrigger: role check for bot={} first={} second={} third={} looter={}",
+              bot->GetName(), bot == firstCorePasser, bot == secondCorePasser, bot == thirdCorePasser, bot == looter);
+
+    auto hasCore = [](Player* p) -> bool { return p && p->HasItemCount(ITEM_TAINTED_CORE, 1, false); };
+
+    if (bot == looter)
+    {
+        if (hasCore(firstCorePasser) || hasCore(secondCorePasser) || hasCore(thirdCorePasser))
+        {
+            LOG_DEBUG("playerbots", "LadyVashjTaintedCoreWasLootedTrigger: designated looter={} exempt because a passer has core (first={} second={} third={})",
+                      bot->GetName(),
+                      hasCore(firstCorePasser), hasCore(secondCorePasser), hasCore(thirdCorePasser));
+            return false;
+        }
+    }
+    else if (bot == firstCorePasser)
+    {
+        if (hasCore(secondCorePasser) || hasCore(thirdCorePasser))
+        {
+            LOG_DEBUG("playerbots", "LadyVashjTaintedCoreWasLootedTrigger: first passer={} exempt because second/third have core (second={} third={})",
+                      bot->GetName(), hasCore(secondCorePasser), hasCore(thirdCorePasser));
+            return false;
+        }
+    }
+    else if (bot == secondCorePasser)
+    {
+        if (hasCore(thirdCorePasser))
+        {
+            LOG_DEBUG("playerbots", "LadyVashjTaintedCoreWasLootedTrigger: second passer={} exempt because third has core (third={})",
+                      bot->GetName(), hasCore(thirdCorePasser));
+            return false;
+        }
+    }
 
     // remember last time Paralyze was observed so we can tolerate the brief handoff gap
     static std::map<uint32, time_t> lastParalyzeTime;
@@ -582,23 +533,49 @@ bool LadyVashjTaintedCoreWasLootedTrigger::IsActive()
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member && member->IsAlive() && member->HasAura(SPELL_PARALYZE))
+        if (!member)
+            continue;
+
+        bool alive = member->IsAlive();
+        bool hasParalyze = member->HasAura(SPELL_PARALYZE);
+        LOG_DEBUG("playerbots", "LadyVashjTaintedCoreWasLootedTrigger: member={} alive={} paralyze={}", member->GetName(), alive, hasParalyze);
+        if (alive && hasParalyze)
         {
             foundParalyze = true;
             lastParalyzeTime[mapId] = now;
+            LOG_DEBUG("playerbots", "LadyVashjTaintedCoreWasLootedTrigger: observed paralyze on member={}, setting lastParalyzeTime[mapId]={}", member->GetName(), now);
             break;
         }
     }
 
     Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
+    LOG_DEBUG("playerbots", "LadyVashjTaintedCoreWasLootedTrigger: foundParalyze={} taintedPresent={} taintedName={}",
+              foundParalyze, tainted ? "true" : "false", tainted ? tainted->GetName() : "null");
+
     if (foundParalyze || tainted)
+    {
+        LOG_DEBUG("playerbots", "LadyVashjTaintedCoreWasLootedTrigger: returning true due to foundParalyze/tainted");
         return true;
+    }
 
     // if we recently saw paralyze on this map, keep trigger active for the grace window
     auto it = lastParalyzeTime.find(mapId);
-    if (it != lastParalyzeTime.end() && (now - it->second) <= 3)
-        return true;
+    if (it != lastParalyzeTime.end())
+    {
+        time_t last = it->second;
+        LOG_DEBUG("playerbots", "LadyVashjTaintedCoreWasLootedTrigger: lastParalyzeTime for map={} = {} (now={}), age={}s", mapId, last, now, (now - last));
+        if ((now - last) <= 3)
+        {
+            LOG_DEBUG("playerbots", "LadyVashjTaintedCoreWasLootedTrigger: returning true due to grace window");
+            return true;
+        }
+    }
+    else
+    {
+        LOG_DEBUG("playerbots", "LadyVashjTaintedCoreWasLootedTrigger: no lastParalyzeTime for map={}", mapId);
+    }
 
+    LOG_DEBUG("playerbots", "LadyVashjTaintedCoreWasLootedTrigger: returning false - no paralyze, no tainted, no recent paralyze");
     return false;
 }
 

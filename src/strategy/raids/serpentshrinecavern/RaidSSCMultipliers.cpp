@@ -438,7 +438,7 @@ float LadyVashjStaticChargeStayAwayFromGroupMultiplier::GetValue(Action* action)
 float LadyVashjDoNotLootTheTaintedCoreMultiplier::GetValue(Action* action)
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    if (!vashj)
+    if (!vashj || !botAI->HasCheat(BotCheatMask::raid))
         return 1.0f;
 
     if (dynamic_cast<LootAction*>(action))
@@ -452,7 +452,8 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     Group* group = bot->GetGroup();
     if (!vashj || !IsLadyVashjInPhase2(botAI)|| !group || dynamic_cast<WipeAction*>(action) ||
-        dynamic_cast<DestroyItemAction*>(action))
+        dynamic_cast<DestroyItemAction*>(action) || dynamic_cast<StoreLootAction*>(action) ||
+        dynamic_cast<LadyVashjCheatToTestAction*>(action))
         return 1.0f;
 
     if (bot == GetFirstTaintedCorePasser(group, botAI) ||
@@ -465,9 +466,8 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
             if (member && member->IsAlive() && (member->HasAura(SPELL_PARALYZE) ||
                 member->HasItemCount(ITEM_TAINTED_CORE, 1, false)))
             {
-                if (!dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action) &&
-                    !dynamic_cast<AttackAction*>(action) &&
-                    !dynamic_cast<CastSpellAction*>(action))
+                if (dynamic_cast<MovementAction*>(action) &&
+                    !dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action))
                     return 0.0f;
             }
         }
@@ -477,7 +477,8 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
     if (master && bot == GetDesignatedCoreLooter(group, master, botAI) && (bot->HasAura(SPELL_PARALYZE) ||
         bot->HasItemCount(ITEM_TAINTED_CORE, 1, false)))
     {
-        if (!dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action))
+        if (dynamic_cast<MovementAction*>(action) &&
+            !dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action))
             return 0.0f;
     }
 

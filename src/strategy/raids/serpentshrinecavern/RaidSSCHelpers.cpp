@@ -481,7 +481,7 @@ namespace SerpentShrineCavernHelpers
                 fallback = member;
         }
 
-        return fallback; // may be nullptr if no suitable bot present
+        return fallback ? fallback : master; // may be nullptr if no suitable bot present
     }
 
     Player* GetFirstTaintedCorePasser(Group* group, PlayerbotAI* botAI)
@@ -519,15 +519,12 @@ namespace SerpentShrineCavernHelpers
 
    void ScheduleCoreReconcile(PlayerbotAI* botAI, Player* giver, Player* receiver, uint32 coreId, uint32 delayMs)
    {
-       if (!botAI)
-           return;
-
        // Capture GUIDs instead of raw pointers to avoid use-after-free when the event fires.
        ObjectGuid giverGuid = giver ? giver->GetGUID() : ObjectGuid::Empty;
        ObjectGuid receiverGuid = receiver ? receiver->GetGUID() : ObjectGuid::Empty;
 
-       botAI->AddTimedEvent([giverGuid, receiverGuid, coreId]() {
-
+       botAI->AddTimedEvent([giverGuid, receiverGuid, coreId]()
+       {
            // Resolve players at runtime. Use ObjectAccessor to avoid stale pointers.
            Player* receiverPlayer = receiverGuid.IsEmpty() ? nullptr : ObjectAccessor::FindPlayer(receiverGuid);
            Player* giverPlayer    = giverGuid.IsEmpty()    ? nullptr : ObjectAccessor::FindPlayer(giverGuid);
@@ -556,7 +553,7 @@ namespace SerpentShrineCavernHelpers
    }
 
     const std::vector<uint32> SHIELD_GENERATOR_DB_GUIDS = { 47482, 47483, 47484, 47485 }; // NW, NE, SE, SW
-    // Entries are 185052 { 52.048f, -901.236f, 44.000f }, 185054 { 52.448f, -944.825f, 44.000f },
+    // Entries: 185052 { 52.048f, -901.236f, 44.000f }, 185054 { 52.448f, -944.825f, 44.000f },
     // 185051 { 7.81f, -945.244f, 44.000f }, 185053 { 7.417f, -901.109f, 44.000f }, respectively
 
     // Get the positions of all Shield Generators by their database GUIDs
@@ -640,5 +637,4 @@ namespace SerpentShrineCavernHelpers
 
         return nearest;
     }
-
 }
