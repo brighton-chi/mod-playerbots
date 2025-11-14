@@ -147,7 +147,7 @@ bool AttumenTheHuntsmanManageTimerAction::Execute(Event event)
     if (!midnight && !attumenMounted)
         return false;
 
-    uint32 mapId = midnight ? midnight->GetMapId() : attumenMounted->GetMapId();
+    const uint32 mapId = midnight ? midnight->GetMapId() : attumenMounted->GetMapId();
     const time_t now = std::time(nullptr);
 
     if (midnight && !attumenMounted && attumenDPSWaitTimer.count(mapId))
@@ -312,7 +312,7 @@ bool BigBadWolfPositionBossAction::Execute(Event event)
 // Run away, little girl, run away
 bool BigBadWolfRunAwayFromBossAction::Execute(Event event)
 {
-    ObjectGuid botGuid = bot->GetGUID();
+    const ObjectGuid botGuid = bot->GetGUID();
     uint8 index = bigBadWolfRunIndex.count(botGuid) ? bigBadWolfRunIndex[botGuid] : 0;
 
     Position target = BigBadWolfRunPosition[index];
@@ -582,11 +582,12 @@ bool NetherspiteBlockRedBeamAction::Execute(Event event)
     if (!netherspite || !redPortal)
         return false;
 
-    static std::map<ObjectGuid, bool> wasBlockingRedBeam;
-    ObjectGuid botGuid = bot->GetGUID();
+    const ObjectGuid botGuid = bot->GetGUID();
     auto [redBlocker, greenBlocker, blueBlocker] = GetCurrentBeamBlockers(botAI, bot);
     bool isBlockingNow = (bot == redBlocker);
-    bool wasBlocking = wasBlockingRedBeam[botGuid];
+
+    auto it = _wasBlockingRedBeam.find(botGuid);
+    bool wasBlocking = (it != _wasBlockingRedBeam.end()) ? it->second : false;
 
     Position beamPos = GetPositionOnBeam(netherspite, redPortal, 18.0f);
 
@@ -600,7 +601,7 @@ bool NetherspiteBlockRedBeamAction::Execute(Event event)
                 "netherspite_beam_blocking_red", "%player is moving to block the red beam!", ph);
             bot->Yell(text, LANG_UNIVERSAL);
         }
-        wasBlockingRedBeam[botGuid] = true;
+        _wasBlockingRedBeam[botGuid] = true;
 
         const uint8 intervalSecs = 5;
         if (std::time(nullptr) - redBeamMoveTimer[botGuid] >= intervalSecs)
@@ -636,7 +637,7 @@ bool NetherspiteBlockRedBeamAction::Execute(Event event)
         }
     }
 
-    wasBlockingRedBeam[botGuid] = false;
+    _wasBlockingRedBeam[botGuid] = false;
     return false;
 }
 
@@ -672,11 +673,12 @@ bool NetherspiteBlockBlueBeamAction::Execute(Event event)
     if (!netherspite || !bluePortal)
         return false;
 
-    static std::map<ObjectGuid, bool> wasBlockingBlueBeam;
-    ObjectGuid botGuid = bot->GetGUID();
+    const ObjectGuid botGuid = bot->GetGUID();
     auto [redBlocker, greenBlocker, blueBlocker] = GetCurrentBeamBlockers(botAI, bot);
     bool isBlockingNow = (bot == blueBlocker);
-    bool wasBlocking = wasBlockingBlueBeam[botGuid];
+
+    auto it = _wasBlockingBlueBeam.find(botGuid);
+    bool wasBlocking = (it != _wasBlockingBlueBeam.end()) ? it->second : false;
 
     if (wasBlocking && !isBlockingNow)
     {
@@ -685,7 +687,7 @@ bool NetherspiteBlockBlueBeamAction::Execute(Event event)
         std::string text = sPlayerbotTextMgr->GetBotTextOrDefault(
             "netherspite_beam_leaving_blue", "%player is leaving the blue beam--next blocker up!", ph);
         bot->Yell(text, LANG_UNIVERSAL);
-        wasBlockingBlueBeam[botGuid] = false;
+        _wasBlockingBlueBeam[botGuid] = false;
     }
 
     if (isBlockingNow)
@@ -698,7 +700,7 @@ bool NetherspiteBlockBlueBeamAction::Execute(Event event)
                 "netherspite_beam_blocking_blue", "%player is moving to block the blue beam!", ph);
             bot->Yell(text, LANG_UNIVERSAL);
         }
-        wasBlockingBlueBeam[botGuid] = true;
+        _wasBlockingBlueBeam[botGuid] = true;
 
         float idealDistance = botAI->IsRanged(bot) ? 25.0f : 18.0f;
         std::vector<Unit*> voidZones = GetAllVoidZones(botAI, bot);
@@ -747,7 +749,7 @@ bool NetherspiteBlockBlueBeamAction::Execute(Event event)
         return false;
     }
 
-    wasBlockingBlueBeam[botGuid] = false;
+    _wasBlockingBlueBeam[botGuid] = false;
     return false;
 }
 
@@ -761,11 +763,12 @@ bool NetherspiteBlockGreenBeamAction::Execute(Event event)
     if (!netherspite || !greenPortal)
         return false;
 
-    static std::map<ObjectGuid, bool> wasBlockingGreenBeam;
-    ObjectGuid botGuid = bot->GetGUID();
+    const ObjectGuid botGuid = bot->GetGUID();
     auto [redBlocker, greenBlocker, blueBlocker] = GetCurrentBeamBlockers(botAI, bot);
     bool isBlockingNow = (bot == greenBlocker);
-    bool wasBlocking = wasBlockingGreenBeam[botGuid];
+
+    auto it = _wasBlockingGreenBeam.find(botGuid);
+    bool wasBlocking = (it != _wasBlockingGreenBeam.end()) ? it->second : false;
 
     if (wasBlocking && !isBlockingNow)
     {
@@ -774,7 +777,7 @@ bool NetherspiteBlockGreenBeamAction::Execute(Event event)
         std::string text = sPlayerbotTextMgr->GetBotTextOrDefault(
             "netherspite_beam_leaving_green", "%player is leaving the green beam--next blocker up!", ph);
         bot->Yell(text, LANG_UNIVERSAL);
-        wasBlockingGreenBeam[botGuid] = false;
+        _wasBlockingGreenBeam[botGuid] = false;
     }
 
     if (isBlockingNow)
@@ -787,7 +790,7 @@ bool NetherspiteBlockGreenBeamAction::Execute(Event event)
                 "netherspite_beam_blocking_green", "%player is moving to block the green beam!", ph);
             bot->Yell(text, LANG_UNIVERSAL);
         }
-        wasBlockingGreenBeam[botGuid] = true;
+        _wasBlockingGreenBeam[botGuid] = true;
 
         std::vector<Unit*> voidZones = GetAllVoidZones(botAI, bot);
         float bx = netherspite->GetPositionX();
@@ -835,7 +838,7 @@ bool NetherspiteBlockGreenBeamAction::Execute(Event event)
         return false;
     }
 
-    wasBlockingGreenBeam[botGuid] = false;
+    _wasBlockingGreenBeam[botGuid] = false;
     return false;
 }
 
@@ -975,8 +978,8 @@ bool NetherspiteManageTimersAction::Execute(Event event)
     if (!netherspite)
         return false;
 
-    uint32 mapId = netherspite->GetMapId();
-    ObjectGuid botGuid = bot->GetGUID();
+    const uint32 mapId = netherspite->GetMapId();
+    const ObjectGuid botGuid = bot->GetGUID();
     const time_t now = std::time(nullptr);
 
     if (netherspite->HasAura(SPELL_NETHERSPITE_BANISHED) ||
@@ -1219,7 +1222,7 @@ bool NightbaneGroundPhasePositionBossAction::Execute(Event event)
     if (bot->GetVictim() != nightbane)
         return Attack(nightbane);
 
-    ObjectGuid botGuid = bot->GetGUID();
+    const ObjectGuid botGuid = bot->GetGUID();
     uint8 step = nightbaneTankStep.count(botGuid) ? nightbaneTankStep[botGuid] : 0;
 
     if (nightbane->GetVictim() == bot)
@@ -1259,7 +1262,7 @@ bool NightbaneGroundPhasePositionBossAction::Execute(Event event)
 // Ranged positions are near the Northeastern door to the tower
 bool NightbaneGroundPhaseRotateRangedPositionsAction::Execute(Event event)
 {
-    ObjectGuid botGuid = bot->GetGUID();
+    const ObjectGuid botGuid = bot->GetGUID();
     uint8 index = nightbaneRangedStep.count(botGuid) ? nightbaneRangedStep[botGuid] : 0;
 
     const Position rangedPositions[3] =
@@ -1362,7 +1365,7 @@ bool NightbaneFlightPhaseMovementAction::Execute(Event event)
         bot->InterruptNonMeleeSpells(true);
     }
 
-    ObjectGuid botGuid = bot->GetGUID();
+    const ObjectGuid botGuid = bot->GetGUID();
     bool hasRainOfBones = bot->HasAura(SPELL_RAIN_OF_BONES);
 
     if (hasRainOfBones)
@@ -1399,8 +1402,8 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event event)
     if (!nightbane)
         return false;
 
-    uint32 mapId = nightbane->GetMapId();
-    ObjectGuid botGuid = bot->GetGUID();
+    const uint32 mapId = nightbane->GetMapId();
+    const ObjectGuid botGuid = bot->GetGUID();
     const time_t now = std::time(nullptr);
 
     // Erase DPS wait timer and tank and ranged position tracking on encounter reset or flight

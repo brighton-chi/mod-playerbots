@@ -1410,7 +1410,7 @@ bool MorogrimTidewalkerMoveBossToTankPositionAction::MoveToPhase2TankPosition(Un
     const Position& phase2 = TidewalkerPhase2TankPosition;
     const Position& transition = TidewalkerPhaseTransitionWaypoint;
 
-    ObjectGuid botGuid = bot->GetGUID();
+    const botGuid = bot->GetGUID();
     uint8 step = tidewalkerTankStep.count(botGuid) ? tidewalkerTankStep[botGuid] : 0;
 
     if (step == 0)
@@ -1459,7 +1459,7 @@ bool MorogrimTidewalkerPhase2RepositionRangedAction::Execute(Event event)
     const Position& phase2 = TidewalkerPhase2RangedPosition;
     const Position& transition = TidewalkerPhaseTransitionWaypoint;
 
-    ObjectGuid botGuid = bot->GetGUID();
+    const ObjectGuid botGuid = bot->GetGUID();
     uint8 step = tidewalkerRangedStep.count(botGuid) ? tidewalkerRangedStep[botGuid] : 0;
 
     if (step == 0)
@@ -1505,7 +1505,7 @@ bool MorogrimTidewalkerResetPhaseTransitionStepsAction::Execute(Event event)
     if (!tidewalker)
         return false;
 
-    ObjectGuid botGuid = bot->GetGUID();
+    const ObjectGuid botGuid = bot->GetGUID();
 
     if (tidewalkerTankStep.count(botGuid))
         tidewalkerTankStep.erase(botGuid);
@@ -2152,8 +2152,8 @@ bool LadyVashjLootTaintedCoreAction::Execute(Event)
         }
 
         // Schedule autostore attempt + reconcile fallback
-        ObjectGuid botGuid = bot->GetGUID();
-        ObjectGuid corpseGuid = guid;
+        const ObjectGuid botGuid = bot->GetGUID();
+        const ObjectGuid corpseGuid = guid;
         const uint8 guessedIndex = 0; // best-effort guess (most single-item corpses use index 0)
 
         botAI->AddTimedEvent([this, botGuid, corpseGuid, guessedIndex]()
@@ -2537,13 +2537,13 @@ void LadyVashjPassTheTaintedCoreAction::ScheduleStoreCoreAfterImbue(PlayerbotAI*
 
     const uint32 delayMs = 1500;
 
-    ObjectGuid giverGuid    = giver ? giver->GetGUID() : ObjectGuid::Empty;
-    ObjectGuid receiverGuid = receiver->GetGUID();
+    const ObjectGuid giverGuid    = giver ? giver->GetGUID() : ObjectGuid::Empty;
+    const ObjectGuid receiverGuid = receiver->GetGUID();
 
     LOG_DEBUG("playerbots", "ScheduleStoreCoreAfterImbue: scheduling create for {} in {} ms (giver={})",
               receiver ? receiver->GetName() : "null", delayMs, giver ? giver->GetName() : "null");
 
-    botAI->AddTimedEvent([botAI, giverGuid, receiverGuid]() mutable
+    botAI->AddTimedEvent([botAI, giverGuid, receiverGuid]()
     {
         LOG_DEBUG("playerbots", "ScheduleStoreCoreAfterImbue: timed lambda firing for receiverGuid={} giverGuid={}",
                 receiverGuid.ToString(), giverGuid.ToString());
@@ -2603,8 +2603,10 @@ void LadyVashjPassTheTaintedCoreAction::ScheduleStoreCoreAfterImbue(PlayerbotAI*
         {
             Item* created = receiverPlayer->StoreNewItem(dest, ITEM_TAINTED_CORE, true, Item::GenerateItemRandomPropertyId(ITEM_TAINTED_CORE));
             if (created && giverPlayer)
+            {
                 LOG_DEBUG("playerbots", "ScheduleStoreCoreAfterImbue: created core for {} (guid={})", receiverPlayer->GetName(), created->GetGUID().ToString());
                 lastImbueAttempt.erase(giverPlayer->GetGUID());
+            }
         }
         else
         {
@@ -2661,7 +2663,7 @@ bool LadyVashjPassTheTaintedCoreAction::UseCoreOnNearestGenerator()
         uint32 spellId = 0;
         for (uint8 i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
             if (core->GetTemplate()->Spells[i].SpellId > 0) { spellId = core->GetTemplate()->Spells[i].SpellId; break; }
-        ObjectGuid item_guid = core->GetGUID();
+        const ObjectGuid item_guid = core->GetGUID();
         uint32 glyphIndex = 0;
         uint8 castFlags = 0;
 

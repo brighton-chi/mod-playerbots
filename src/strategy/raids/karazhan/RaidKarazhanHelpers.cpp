@@ -302,9 +302,9 @@ namespace KarazhanHelpers
         std::vector<Player*> redBlockers = GetRedBlockers(botAI, bot);
         if (!redBlockers.empty())
         {
-            auto it = std::find_if(redBlockers.begin(), redBlockers.end(), [](Player* p)
+            auto it = std::find_if(redBlockers.begin(), redBlockers.end(), [](Player* player)
             {
-                return p && p->GetGUID() == currentRedBlocker;
+                return player && player->GetGUID() == currentRedBlocker;
             });
 
             if (it != redBlockers.end())
@@ -323,9 +323,9 @@ namespace KarazhanHelpers
         std::vector<Player*> greenBlockers = GetGreenBlockers(botAI, bot);
         if (!greenBlockers.empty())
         {
-            auto it = std::find_if(greenBlockers.begin(), greenBlockers.end(), [](Player* p)
+            auto it = std::find_if(greenBlockers.begin(), greenBlockers.end(), [](Player* player)
             {
-                return p && p->GetGUID() == currentGreenBlocker;
+                return player && player->GetGUID() == currentGreenBlocker;
             });
 
             if (it != greenBlockers.end())
@@ -344,9 +344,9 @@ namespace KarazhanHelpers
             std::vector<Player*> blueBlockers = GetBlueBlockers(botAI, bot);
             if (!blueBlockers.empty())
             {
-                auto it = std::find_if(blueBlockers.begin(), blueBlockers.end(), [](Player* p)
+                auto it = std::find_if(blueBlockers.begin(), blueBlockers.end(), [](Player* player)
                 {
-                    return p && p->GetGUID() == currentBlueBlocker;
+                    return player && player->GetGUID() == currentBlueBlocker;
                 });
 
                 if (it != blueBlockers.end())

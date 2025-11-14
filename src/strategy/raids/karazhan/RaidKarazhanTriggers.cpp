@@ -323,8 +323,8 @@ bool NightbaneBossIsFlyingTrigger::IsActive()
     if (!nightbane || nightbane->GetPositionZ() <= 95.0f)
         return false;
 
-    uint32 mapId = nightbane->GetMapId();
-    time_t now = std::time(nullptr);
+    const uint32 mapId = nightbane->GetMapId();
+    const time_t now = std::time(nullptr);
 
     return nightbaneFlightPhaseStartTimer.find(mapId) != nightbaneFlightPhaseStartTimer.end() &&
            (now - nightbaneFlightPhaseStartTimer[mapId] < 35);

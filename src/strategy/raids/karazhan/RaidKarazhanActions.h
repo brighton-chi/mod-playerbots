@@ -190,6 +190,7 @@ public:
 
 private:
     Position GetPositionOnBeam(Unit* boss, Unit* portal, float distanceFromBoss);
+    std::unordered_map<ObjectGuid, bool> _wasBlockingRedBeam;
 };
 
 class NetherspiteBlockBlueBeamAction : public MovementAction
@@ -198,6 +199,9 @@ public:
     NetherspiteBlockBlueBeamAction(PlayerbotAI* botAI, std::string const name = "netherspite block blue beam") : MovementAction(botAI, name) {}
 
     bool Execute(Event event) override;
+
+private:
+    std::unordered_map<ObjectGuid, bool> _wasBlockingBlueBeam;
 };
 
 class NetherspiteBlockGreenBeamAction : public MovementAction
@@ -206,6 +210,9 @@ public:
     NetherspiteBlockGreenBeamAction(PlayerbotAI* botAI, std::string const name = "netherspite block green beam") : MovementAction(botAI, name) {}
 
     bool Execute(Event event) override;
+
+private:
+    std::unordered_map<ObjectGuid, bool> _wasBlockingGreenBeam;
 };
 
 class NetherspiteAvoidBeamAndVoidZoneAction : public MovementAction

@@ -64,8 +64,8 @@ float AttumenTheHuntsmanWaitForDPSMultiplier::GetValue(Action* action)
     if (!attumenMounted || !attumenMounted->IsAlive())
         return 1.0f;
 
-    uint32 mapId = attumenMounted->GetMapId();
-    time_t now = std::time(nullptr);
+    const uint32 mapId = attumenMounted->GetMapId();
+    const time_t now = std::time(nullptr);
     const uint8 dpsWaitSeconds = 8;
 
     auto it = attumenDPSWaitTimer.find(mapId);
@@ -176,8 +176,8 @@ float NetherspiteWaitForDPSMultiplier::GetValue(Action* action)
     if (!netherspite || netherspite->HasAura(SPELL_NETHERSPITE_BANISHED))
         return 1.0f;
 
-    uint32 mapId = netherspite->GetMapId();
-    time_t now = std::time(nullptr);
+    const uint32 mapId = netherspite->GetMapId();
+    const time_t now = std::time(nullptr);
     const uint8 dpsWaitSeconds = 5;
 
     auto it = netherspiteDPSWaitTimer.find(mapId);
@@ -254,8 +254,8 @@ float NightbaneWaitForDPSMultiplier::GetValue(Action* action)
     if (!nightbane || nightbane->GetPositionZ() > 95.0f)
         return 1.0f;
 
-    uint32 mapId = nightbane->GetMapId();
-    time_t now = std::time(nullptr);
+    const uint32 mapId = nightbane->GetMapId();
+    const time_t now = std::time(nullptr);
     const uint8 dpsWaitSeconds = 8;
 
     auto it = nightbaneDPSWaitTimer.find(mapId);

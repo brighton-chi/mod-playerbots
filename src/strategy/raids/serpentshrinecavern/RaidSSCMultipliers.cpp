@@ -451,50 +451,50 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     Group* group = bot->GetGroup();
-    if (!vashj || !IsLadyVashjInPhase2(botAI)|| !group || dynamic_cast<WipeAction*>(action) ||
+    Player* master = botAI->GetMaster();
+    if (!vashj || !IsLadyVashjInPhase2(botAI)|| !group || !master || dynamic_cast<WipeAction*>(action) ||
         dynamic_cast<DestroyItemAction*>(action) || dynamic_cast<StoreLootAction*>(action) ||
         dynamic_cast<LadyVashjCheatToTestAction*>(action))
         return 1.0f;
 
-    if (bot == GetFirstTaintedCorePasser(group, botAI) ||
-        bot == GetSecondTaintedCorePasser(group, botAI) ||
-        bot == GetThirdTaintedCorePasser(group, botAI))
+    // only interested when this bot is one of the 3 passers
+    Player* designatedLooter = GetDesignatedCoreLooter(group, master, botAI);
+    Player* firstCore = GetFirstTaintedCorePasser(group, botAI);
+    Player* secondCore = GetSecondTaintedCorePasser(group, botAI);
+    Player* thirdCore = GetThirdTaintedCorePasser(group, botAI);
+
+    if (bot == firstCore || bot == secondCore || bot == thirdCore || bot == designatedLooter)
     {
+        auto hasCore = [](Player* p) { return p && p->HasItemCount(ITEM_TAINTED_CORE, 1, false); };
+
+        if (bot == designatedLooter && (hasCore(firstCore) || hasCore(secondCore) || hasCore(thirdCore)))
+            return 1.0f;
+        else if (bot == firstCore && (hasCore(secondCore) || hasCore(thirdCore)))
+            return 1.0f;
+        else if (bot == secondCore && hasCore(thirdCore))
+            return 1.0f;
+
+        const time_t now = std::time(nullptr);
+
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (member && member->IsAlive() && (member->HasAura(SPELL_PARALYZE) ||
-                member->HasItemCount(ITEM_TAINTED_CORE, 1, false)))
+            if (!member || !member->IsAlive())
+                continue;
+
+            bool recentlyParalyzed = false;
+            auto it = lastParalyzeTime.find(member->GetGUID());
+
+            if (it != lastParalyzeTime.end() && (now - it->second) <= 3)
+                recentlyParalyzed = true;
+
+            if (member->HasAura(SPELL_PARALYZE) || recentlyParalyzed || member->HasItemCount(ITEM_TAINTED_CORE, 1, false))
             {
                 if (dynamic_cast<MovementAction*>(action) &&
                     !dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action))
                     return 0.0f;
             }
         }
-    }
-
-    Player* master = botAI->GetMaster();
-    /* if (master && bot == GetDesignatedCoreLooter(group, master, botAI) && (bot->HasAura(SPELL_PARALYZE) ||
-        bot->HasItemCount(ITEM_TAINTED_CORE, 1, false)))
-    {
-        if (dynamic_cast<MovementAction*>(action) &&
-            !dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action))
-            return 0.0f;
-    } */
-    // Alternative that disables Killing Spree
-    if (master && bot == GetDesignatedCoreLooter(group, master, botAI))
-    {
-        if (bot->HasAura(SPELL_PARALYZE) ||
-            bot->HasItemCount(ITEM_TAINTED_CORE, 1, false))
-        {
-            if (dynamic_cast<MovementAction*>(action) &&
-                !dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action))
-                return 0.0f;
-        }
-        Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
-        // Killing Spree gets Rogues out of position and just barely too far to pass the core
-        if (tainted && dynamic_cast<CastKillingSpreeAction*>(action))
-            return 0.0f;
     }
 
     return 1.0f;
