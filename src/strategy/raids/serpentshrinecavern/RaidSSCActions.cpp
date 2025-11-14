@@ -1,20 +1,15 @@
-#include <queue>
-#include <set>
 #include <unordered_map>
 #include <ctime>
 
 #include "RaidSSCActions.h"
 #include "RaidSSCHelpers.h"
 #include "AiFactory.h"
-#include "DestroyItemAction.h"
+#include "Corpse.h"
+#include "LootAction.h"
+#include "LootObjectStack.h"
+#include "ObjectAccessor.h"
 #include "Playerbots.h"
 #include "RtiTargetValue.h"
-#include "ServerFacade.h"
-
-#include "LootObjectStack.h"
-#include "LootAction.h"
-#include "ObjectAccessor.h"
-#include "Corpse.h"
 
 #include <chrono> // For testing purposes
 
@@ -2132,125 +2127,68 @@ bool LadyVashjLootTaintedCoreAction::Execute(Event)
         }
 
         LOG_DEBUG("playerbots", "LadyVashjLootTaintedCoreAction: in range of target {}, invoking OpenLootAction", guid.ToString());
+
+        // Invoke OpenLootAction to request the server's StoreLoot packet for this corpse.
+        // We'll attempt a forced autostore from SSC (without modifying LootAction) by
+        // scheduling a short-timer to send CMSG_AUTOSTORE_LOOT_ITEM (index 0) once the
+        // server has had time to send the StoreLoot packet.
+        OpenLootAction open(botAI);
+        bool opened = open.Execute(Event());
+        LOG_DEBUG("playerbots", "LadyVashjLootTaintedCoreAction: OpenLootAction returned {}", opened);
+
+        // If OpenLootAction failed, nothing more to do for this corpse
+        if (!opened)
+            return opened;
+
+        // If anyone in the group already has the core, skip creating a duplicate
+        if (Group* group = bot->GetGroup())
         {
-            // Invoke OpenLootAction to request the server's StoreLoot packet for this corpse.
-            // We'll attempt a forced autostore from SSC (without modifying LootAction) by
-            // scheduling a short-timer to send CMSG_AUTOSTORE_LOOT_ITEM (index 0) once the
-            // server has had time to send the StoreLoot packet.
-            OpenLootAction open(botAI);
-            bool opened = open.Execute(Event());
-            LOG_DEBUG("playerbots", "LadyVashjLootTaintedCoreAction: OpenLootAction returned {}", opened);
-
-            // If OpenLootAction reported success, verify bot actually received the core.
-            if (opened)
+            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
             {
-                if (bot->HasItemCount(ITEM_TAINTED_CORE, 1, false))
-                {
-                    LOG_DEBUG("playerbots", "LadyVashjLootTaintedCoreAction: item tainted core received successfully by bot {}", bot->GetName());
+                Player* member = ref->GetSource();
+                if (member && member->HasItemCount(ITEM_TAINTED_CORE, 1, false))
                     return true;
-                }
+            }
+        }
 
-                LOG_DEBUG("playerbots", "LadyVashjLootTaintedCoreAction: item tainted core NOT received, attempting SSC autostore for guid {}", guid.ToString());
+        // Schedule autostore attempt + reconcile fallback
+        ObjectGuid botGuid = bot->GetGUID();
+        ObjectGuid corpseGuid = guid;
+        const uint8 guessedIndex = 0; // best-effort guess (most single-item corpses use index 0)
 
-                // If anyone in the group already has the core, skip creating a duplicate
-                bool someoneHasCore = false;
-                if (Group* group = bot->GetGroup())
+        botAI->AddTimedEvent([this, botGuid, corpseGuid, guessedIndex]()
+        {
+            Player* receiver = botGuid.IsEmpty() ? nullptr : ObjectAccessor::FindPlayer(botGuid);
+            if (!receiver || !receiver->IsInWorld())
+                return;
+
+            // Double-check someone else didn't obtain the core in the meantime
+            if (Group* group = receiver->GetGroup())
+            {
+                for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
                 {
-                    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-                    {
-                        Player* member = ref->GetSource();
-                        if (!member)
-                            continue;
-                        if (member->HasItemCount(ITEM_TAINTED_CORE, 1, false))
-                        {
-                            someoneHasCore = true;
-                            break;
-                        }
-                    }
+                    Player* member = ref->GetSource();
+                    if (member && member->HasItemCount(ITEM_TAINTED_CORE, 1, false))
+                        return;
                 }
-
-                if (someoneHasCore)
-                {
-                    LOG_DEBUG("playerbots", "LadyVashjLootTaintedCoreAction: someone in group already has the tainted core, skipping create");
-                    return true;
-                }
-
-                // Deduplicate/autostore-attempt throttling: remember recent autostore attempts per corpse
-                static std::unordered_map<ObjectGuid, time_t> s_sscAutostoreAttempts;
-                const time_t now = time(nullptr);
-                const time_t attemptExpirySeconds = 10;
-                auto itAttempt = s_sscAutostoreAttempts.find(guid);
-                if (itAttempt != s_sscAutostoreAttempts.end() && (now - itAttempt->second) < attemptExpirySeconds)
-                {
-                    LOG_DEBUG("playerbots", "LadyVashjLootTaintedCoreAction: recent SSC autostore attempt exists for corpse {}, skipping new attempt", guid.ToString());
-                    return true;
-                }
-
-                // record attempt timestamp
-                s_sscAutostoreAttempts[guid] = now;
-
-                // Schedule a short delayed attempt to send an autostore opcode from SSC.
-                // We send index 0 — best-effort; log the guessed index for easier debugging.
-                ObjectGuid botGuid = bot->GetGUID();
-                ObjectGuid corpseGuid = guid;
-                const uint8 guessedIndex = 0; // best-effort guess (most single-item corpses use index 0)
-
-                botAI->AddTimedEvent([this, botGuid, corpseGuid, guessedIndex]() {
-                    Player* receiver = botGuid.IsEmpty() ? nullptr : ObjectAccessor::FindPlayer(botGuid);
-                    if (!receiver || !receiver->IsInWorld())
-                        return;
-
-                    // Double-check someone else didn't obtain the core in the meantime
-                    if (Group* group = receiver->GetGroup())
-                    {
-                        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-                        {
-                            Player* member = ref->GetSource();
-                            if (!member)
-                                continue;
-                            if (member->HasItemCount(ITEM_TAINTED_CORE, 1, false))
-                                return;
-                        }
-                    }
-
-                    if (receiver->HasItemCount(ITEM_TAINTED_CORE, 1, false))
-                        return;
-
-                    // Set the loot GUID so server treats the following autostore as targeted to this corpse
-                    receiver->SetLootGUID(corpseGuid);
-
-                    LOG_DEBUG("playerbots", "LadyVashjLootTaintedCoreAction: SSC autostore sending CMSG_AUTOSTORE_LOOT_ITEM guessedIndex={} for bot={} corpse={}", guessedIndex, receiver->GetName(), corpseGuid.ToString());
-
-                    WorldPacket* packet = new WorldPacket(CMSG_AUTOSTORE_LOOT_ITEM, 1);
-                    *packet << guessedIndex;
-                    receiver->GetSession()->QueuePacket(packet);
-                    return;
-                }, 200);
-
-                // Schedule reconcile fallback if autostore doesn't deliver the item. Also log outcome.
-                botAI->AddTimedEvent([this, botGuid, guid]() {
-                    Player* receiver = botGuid.IsEmpty() ? nullptr : ObjectAccessor::FindPlayer(botGuid);
-                    if (!receiver || !receiver->IsInWorld())
-                        return;
-                    if (receiver->HasItemCount(ITEM_TAINTED_CORE, 1, false))
-                    {
-                        LOG_DEBUG("playerbots", "LadyVashjLootTaintedCoreAction: SSC autostore succeeded for bot={} corpse={}, skipping reconcile", receiver->GetName(), guid.ToString());
-                        return;
-                    }
-
-                    LOG_DEBUG("playerbots", "LadyVashjLootTaintedCoreAction: SSC autostore did not deliver, running reconcile for bot={} corpse={}", receiver->GetName(), guid.ToString());
-                    // Restore the previous reconcile fallback to guarantee delivery
-                    ScheduleCoreReconcile(this->botAI, receiver, receiver, ITEM_TAINTED_CORE, 500);
-
-                    // clear the attempt record so future interactions can retry
-                    s_sscAutostoreAttempts.erase(guid);
-                }, 900);
-
-                return true; // keep action active so the bot will retry later
             }
 
-            return opened;
-        }
+            // Ensure we still don't already have it.
+            if (receiver->HasItemCount(ITEM_TAINTED_CORE, 1, false))
+                return;
+
+            // Set the loot GUID so server treats the following autostore as targeted to this corpse
+            receiver->SetLootGUID(corpseGuid);
+
+            LOG_DEBUG("playerbots", "LadyVashjLootTaintedCoreAction: SSC autostore sending CMSG_AUTOSTORE_LOOT_ITEM guessedIndex={} for bot={} corpse={}",
+                      guessedIndex, receiver->GetName(), corpseGuid.ToString());
+
+            WorldPacket* packet = new WorldPacket(CMSG_AUTOSTORE_LOOT_ITEM, 1);
+            *packet << guessedIndex;
+            receiver->GetSession()->QueuePacket(packet);
+        }, 600);
+
+        return true;
     }
 
     LOG_DEBUG("playerbots", "LadyVashjLootTaintedCoreAction: no matching dead tainted target found, returning false");
