@@ -451,7 +451,8 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     Group* group = bot->GetGroup();
-    if (!vashj || !IsLadyVashjInPhase2(botAI)|| !group || dynamic_cast<WipeAction*>(action) || dynamic_cast<DestroyItemAction*>(action))
+    if (!vashj || !IsLadyVashjInPhase2(botAI)|| !group || dynamic_cast<WipeAction*>(action) ||
+        dynamic_cast<DestroyItemAction*>(action))
         return 1.0f;
 
     if (bot == GetFirstTaintedCorePasser(group, botAI) ||
@@ -461,8 +462,8 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (member && member->IsAlive() && (member->HasAura(SPELL_PARALYZE) || member->GetItemByEntry(ITEM_TAINTED_CORE) ||
-                member->HasItemCount(ITEM_TAINTED_CORE, 1, true)))
+            if (member && member->IsAlive() && (member->HasAura(SPELL_PARALYZE) ||
+                member->HasItemCount(ITEM_TAINTED_CORE, 1, false)))
             {
                 if (!dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action) &&
                     !dynamic_cast<AttackAction*>(action) &&
@@ -473,10 +474,10 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
     }
 
     Player* master = botAI->GetMaster();
-    if (master && bot == GetDesignatedCoreLooter(group, master, botAI) && (bot->HasAura(SPELL_PARALYZE) || bot->GetItemByEntry(ITEM_TAINTED_CORE) ||
-        bot->HasItemCount(ITEM_TAINTED_CORE, 1, true)))
+    if (master && bot == GetDesignatedCoreLooter(group, master, botAI) && (bot->HasAura(SPELL_PARALYZE) ||
+        bot->HasItemCount(ITEM_TAINTED_CORE, 1, false)))
     {
-        if (!dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action) && !dynamic_cast<LadyVashjTaintedElementalCheatAction*>(action))
+        if (!dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action))
             return 0.0f;
     }
 

@@ -59,7 +59,8 @@ public:
         creators["lady vashj attack and move away from strider"] = &RaidSSCActionContext::lady_vashj_attack_and_move_away_from_strider;
         creators["lady vashj assign phase 2 dps priority"] = &RaidSSCActionContext::lady_vashj_assign_phase_2_dps_priority;
         creators["lady vashj assistants follow master in phase 2"] = &RaidSSCActionContext::lady_vashj_assistants_follow_master_in_phase_2;
-        creators["lady vashj tainted elemental cheat"] = &RaidSSCActionContext::lady_vashj_tainted_elemental_cheat;
+        creators["lady vashj loot tainted core"] = &RaidSSCActionContext::lady_vashj_loot_tainted_core;
+        creators["lady vashj teleport to tainted elemental"] = &RaidSSCActionContext::lady_vashj_teleport_to_tainted_elemental;
         creators["lady vashj pass the tainted core"] = &RaidSSCActionContext::lady_vashj_pass_the_tainted_core;
         creators["lady vashj avoid toxic spores"] = &RaidSSCActionContext::lady_vashj_avoid_toxic_spores;
         creators["lady vashj use free action abilities"] = &RaidSSCActionContext::lady_vashj_use_free_action_abilities;
@@ -118,7 +119,8 @@ private:
     static Action* lady_vashj_attack_and_move_away_from_strider(PlayerbotAI* botAI) { return new LadyVashjAttackAndMoveAwayFromStriderAction(botAI); }
     static Action* lady_vashj_assign_phase_2_dps_priority(PlayerbotAI* botAI) { return new LadyVashjAssignPhase2DpsPriorityAction(botAI); }
     static Action* lady_vashj_assistants_follow_master_in_phase_2(PlayerbotAI* botAI) { return new LadyVashjAssistantsFollowMasterInPhase2Action(botAI); }
-    static Action* lady_vashj_tainted_elemental_cheat(PlayerbotAI* botAI) { return new LadyVashjTaintedElementalCheatAction(botAI); }
+    static Action* lady_vashj_teleport_to_tainted_elemental(PlayerbotAI* botAI) { return new LadyVashjTeleportToTaintedElementalAction(botAI); }
+    static Action* lady_vashj_loot_tainted_core(PlayerbotAI* botAI) { return new LadyVashjLootTaintedCoreAction(botAI); }
     static Action* lady_vashj_pass_the_tainted_core(PlayerbotAI* botAI) { return new LadyVashjPassTheTaintedCoreAction(botAI); }
     static Action* lady_vashj_avoid_toxic_spores(PlayerbotAI* botAI) { return new LadyVashjAvoidToxicSporesAction(botAI); }
     static Action* lady_vashj_use_free_action_abilities(PlayerbotAI* botAI) { return new LadyVashjUseFreeActionAbilitiesAction(botAI); }

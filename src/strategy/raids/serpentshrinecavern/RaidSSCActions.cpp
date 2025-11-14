@@ -9,6 +9,11 @@
 #include "RtiTargetValue.h"
 #include "ServerFacade.h"
 
+#include "LootObjectStack.h"
+#include "LootObjectStack.h"
+#include "LootAction.h"
+#include "ObjectAccessor.h"
+#include "Corpse.h"
 #include "unordered_map" // For testing of Lurker water issues
 #include "Transport.h" // For testing of Lurker water issues
 
@@ -2014,47 +2019,13 @@ bool LadyVashjAssistantsFollowMasterInPhase2Action::Execute(Event event)
     return false;
 }
 
-bool LadyVashjTaintedElementalCheatAction::Execute(Event event)
+bool LadyVashjTeleportToTaintedElementalAction::Execute(Event event)
 {
     Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
-
-    /*
-    // Debug: trace tick state for this action
-    Item* coreCheck = bot->GetItemByEntry(ITEM_TAINTED_CORE);
-    LOG_DEBUG("playerbots", "TaintedElementalCheat: tick for {}: tainted={} alive={} victim={} hasCore={}",
-            bot->GetName(),
-            tainted ? tainted->GetGUID().ToString() : std::string("none"),
-            tainted ? (tainted->IsAlive() ? "yes" : "no") : std::string("n/a"),
-            bot->GetVictim() ? bot->GetVictim()->GetGUID().ToString() : std::string("none"),
-            coreCheck ? "yes" : "no");
-
     if (!tainted)
-    {
-        Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-        Unit* reference = vashj ? vashj : bot;
-        if (reference)
-        {
-            std::list<Creature*> list;
-            const float searchRange = 150.0f;
-            reference->GetCreatureListWithEntryInGrid(list, NPC_TAINTED_ELEMENTAL, searchRange);
+        return false;
 
-            float minDist = std::numeric_limits<float>::max();
-            for (Creature* c : list)
-            {
-                if (!c || !c->IsAlive())
-                    continue;
-                float d = reference->GetDistance(c);
-                if (d < minDist)
-                {
-                    minDist = d;
-                    tainted = c;
-                }
-            }
-        }
-    }
-    */
-
-    Item* coreCheck = bot->GetItemByEntry(ITEM_TAINTED_CORE);
+    /* Item* coreCheck = bot->GetItemByEntry(ITEM_TAINTED_CORE);
 
     // Check for despawn even if tainted is nullptr
     if (lastTaintedGuid && !botAI->GetUnit(lastTaintedGuid) && !coreCheck)
@@ -2076,10 +2047,7 @@ bool LadyVashjTaintedElementalCheatAction::Execute(Event event)
         }
         lastTaintedGuid = ObjectGuid::Empty;
         return true;
-    }
-
-    if (!tainted)
-    return false;
+    } */
 
     lastTaintedGuid = tainted->GetGUID();
     if (bot->GetExactDist2d(tainted) >= 10.0f)
@@ -2103,6 +2071,74 @@ bool LadyVashjTaintedElementalCheatAction::Execute(Event event)
         bot->RemoveAura(SPELL_POISON_BOLT);
     }
 
+    return false;
+}
+
+bool LadyVashjLootTaintedCoreAction::Execute(Event)
+{
+    LOG_DEBUG("playerbots", "LadyVashjLootTaintedCoreAction: Execute start for bot {}", bot->GetName());
+
+    // get nearby corpses (context value provided by playerbots)
+    GuidVector corpses = context->GetValue<GuidVector>("nearest corpses")->Get();
+    const float maxLootRange = sPlayerbotAIConfig->lootDistance;
+
+    for (GuidVector::iterator i = corpses.begin(); i != corpses.end(); ++i)
+    {
+        ObjectGuid guid = *i;
+        LOG_DEBUG("playerbots", "LadyVashjLootTaintedCoreAction: inspecting corpse guid {}", guid.ToString());
+
+        // build a LootObject for this bot and set as loot target so OpenLootAction will run
+        LootObject loot(bot, guid);
+        if (!loot.IsLootPossible(bot))
+            continue;
+
+        // get the world object for the loot and cast to corpse
+        WorldObject* corpseObject = loot.GetWorldObject(bot);
+        if (!corpseObject)
+        {
+            LOG_DEBUG("playerbots", "LadyVashjLootTaintedCoreAction: no world object for corpse {}", guid.ToString());
+            continue;
+        }
+
+        Corpse* corpse = corpseObject->ToCorpse();
+        if (!corpse)
+        {
+            LOG_DEBUG("playerbots", "LadyVashjLootTaintedCoreAction: world object is not a corpse {}", guid.ToString());
+            continue;
+        }
+
+        if (corpse->GetEntry() != NPC_TAINTED_ELEMENTAL)
+        {
+            LOG_DEBUG("playerbots", "LadyVashjLootTaintedCoreAction: corpse {} is not tainted elemental (entry={})", guid.ToString(), corpse->GetEntry());
+            continue;
+        }
+
+        LOG_DEBUG("playerbots", "LadyVashjLootTaintedCoreAction: found tainted elemental corpse {}", guid.ToString());
+
+        // set the loot target so OpenLootAction will operate on this corpse
+        context->GetValue<LootObject>("loot target")->Set(loot);
+
+        float dist = bot->GetDistance(corpseObject);
+        LOG_DEBUG("playerbots", "LadyVashjLootTaintedCoreAction: corpse {} dist={}", guid.ToString(), dist);
+
+        // If out of loot range, move into range first; MovementAction::MoveTo returns true when movement is started.
+        if (dist > maxLootRange)
+        {
+            LOG_DEBUG("playerbots", "LadyVashjLootTaintedCoreAction: moving to corpse {} (dist={} > maxLootRange={})", guid.ToString(), dist, maxLootRange);
+            return MoveTo(corpseObject, 2.0f, MovementPriority::MOVEMENT_FORCED);
+        }
+
+        // In range: force open/loot using the OpenLootAction (reuses existing loot logic regardless of freeMethodLoot)
+        LOG_DEBUG("playerbots", "LadyVashjLootTaintedCoreAction: in range of corpse {}, invoking OpenLootAction", guid.ToString());
+        {
+            OpenLootAction open(botAI);
+            bool opened = open.Execute(Event());
+            LOG_DEBUG("playerbots", "LadyVashjLootTaintedCoreAction: OpenLootAction returned {}", opened);
+            return opened;
+        }
+    }
+
+    LOG_DEBUG("playerbots", "LadyVashjLootTaintedCoreAction: no matching corpse found, returning false");
     return false;
 }
 
@@ -2454,7 +2490,6 @@ bool LadyVashjPassTheTaintedCoreAction::UseCoreOnNearestGenerator()
     return false;
 } */
 
-// Sonnet proposal
 bool LadyVashjAvoidToxicSporesAction::Execute(Event event)
 {
     // Get all spore triggers

@@ -146,7 +146,10 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction::array(0, new NextAction("lady vashj attack and move away from strider", ACTION_EMERGENCY + 2), nullptr)
     ));
     triggers.push_back(new TriggerNode("lady vashj tainted elemental cheat",
-        NextAction::array(0, new NextAction("lady vashj tainted elemental cheat", ACTION_EMERGENCY + 10), nullptr)
+        NextAction::array(0,
+            new NextAction("lady vashj teleport to tainted elemental", ACTION_EMERGENCY + 10),
+            new NextAction("lady vashj loot tainted core", ACTION_EMERGENCY + 10),
+            nullptr)
     ));
     triggers.push_back(new TriggerNode("lady vashj tainted core was looted",
         NextAction::array(0, new NextAction("lady vashj pass the tainted core", ACTION_EMERGENCY + 1), nullptr)
@@ -191,7 +194,7 @@ void RaidSSCStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new MorogrimTidewalkerDisablePhase2FleeActionMultiplier(botAI));
     multipliers.push_back(new LadyVashjDelayCooldownsMultiplier(botAI));
     multipliers.push_back(new LadyVashjStaticChargeStayAwayFromGroupMultiplier(botAI));
-    multipliers.push_back(new LadyVashjDoNotLootTheTaintedCoreMultiplier(botAI));
+    // multipliers.push_back(new LadyVashjDoNotLootTheTaintedCoreMultiplier(botAI));
     multipliers.push_back(new LadyVashjCorePassersPrioritizePositioningMultiplier(botAI));
     multipliers.push_back(new LadyVashjDisableAutomaticTargetingAndMovementModifier(botAI));
 }

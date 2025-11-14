@@ -345,14 +345,21 @@ public:
     bool Execute(Event event) override;
 };
 
-class LadyVashjTaintedElementalCheatAction : public AttackAction
+class LadyVashjTeleportToTaintedElementalAction : public AttackAction
 {
 public:
-    LadyVashjTaintedElementalCheatAction(PlayerbotAI* botAI, std::string const name = "lady vashj tainted elemental cheat") : AttackAction(botAI, name) {}
+    LadyVashjTeleportToTaintedElementalAction(PlayerbotAI* botAI, std::string const name = "lady vashj teleport to tainted elemental") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
 
 private:
     ObjectGuid lastTaintedGuid;
+};
+
+class LadyVashjLootTaintedCoreAction : public MovementAction
+{
+public:
+    LadyVashjLootTaintedCoreAction(PlayerbotAI* ai, std::string const name = "lady vashj loot tainted core") : MovementAction(ai, name) {}
+    bool Execute(Event event) override;
 };
 
 class LadyVashjPassTheTaintedCoreAction : public MovementAction
