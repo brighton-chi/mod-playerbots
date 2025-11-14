@@ -9,7 +9,6 @@
 
 namespace TempestKeepHelpers
 {
-
     namespace TempestKeepPositions
     {
         // Al'ar platform coordinates correspond with "OLDWorld Trigger (DO NOT DELETE) NPCs (15384)"
@@ -276,5 +275,4 @@ namespace TempestKeepHelpers
 
     std::unordered_map<ObjectGuid, Position> initialVoidReaverPositions;
     std::unordered_map<ObjectGuid, bool> hasReachedInitialVoidReaverPosition;
-
 }

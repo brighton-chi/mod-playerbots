@@ -173,10 +173,10 @@ public:
     bool Execute(Event event) override;
 };
 
-class KaelthasSunstriderSecondAssistTankPositionThaladredAction : public AttackAction
+class KaelthasSunstriderLogForTestingAction : public Action
 {
 public:
-    KaelthasSunstriderSecondAssistTankPositionThaladredAction(PlayerbotAI* botAI, std::string const name = "kaelthas sunstrider second assist tank position thaladred") : AttackAction(botAI, name) {}
+    KaelthasSunstriderLogForTestingAction(PlayerbotAI* botAI, std::string const name = "kaelthas sunstrider log for testing") : Action(botAI, name) {}
 
     bool Execute(Event event) override;
 };

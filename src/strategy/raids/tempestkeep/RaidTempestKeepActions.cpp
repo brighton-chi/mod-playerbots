@@ -1377,39 +1377,24 @@ bool HighAstromancerSolarianCastFearWardOnMainTankAction::Execute(Event event)
 
 // Kael'thas Sunstrider <Lord of the Blood Elves>
 
-bool KaelthasSunstriderSecondAssistTankPositionThaladredAction::Execute(Event event)
+bool KaelthasSunstriderLogForTestingAction::Execute(Event event)
 {
-    Unit* thaladred = AI_VALUE2(Unit*, "find target", "thaladred the darkener");
-    if (!thaladred)
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    if (!kaelthas)
         return false;
 
-    MarkTargetWithSquare(bot, thaladred);
-    SetRtiTarget(botAI, "square", thaladred);
-
-    if (bot->GetVictim() != thaladred)
-        return Attack(thaladred);
-
-    if (thaladred->GetVictim() == bot)
+    static std::unordered_map<uint32, std::chrono::steady_clock::time_point> kaelthasFightStart;
+    uint32 mapId = kaelthas->GetMapId();
+    auto now = std::chrono::steady_clock::now();
+    if (kaelthasFightStart.find(mapId) == kaelthasFightStart.end())
     {
-        const Position& position = ThaladredTankPosition;
-        if (!bot->IsWithinMeleeRange(thaladred))
-        {
-            return MoveTo(thaladred->GetMapId(), thaladred->GetPositionX(),
-                          thaladred->GetPositionY(), thaladred->GetPositionZ(),
-                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
-        }
-        else if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
-        {
-            float dX = position.GetPositionX() - bot->GetPositionX();
-            float dY = position.GetPositionY() - bot->GetPositionY();
-            float dist = sqrt(dX * dX + dY * dY);
-            float moveDist = std::min(7.0f, dist);
-            float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
-            float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
-
-            return MoveTo(bot->GetMapId(), moveX, moveY, position.GetPositionZ(), false, false, false, false,
-                            MovementPriority::MOVEMENT_COMBAT, true, false);
-        }
+        kaelthasFightStart[mapId] = now;
+        LOG_DEBUG("playerbots", "KaelthasSunstriderLogForTestingAction: Kael'thas fight START on map={} at steady_clock", mapId);
+    }
+    else
+    {
+        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - kaelthasFightStart[mapId]).count();
+        LOG_DEBUG("playerbots", "KaelthasSunstriderLogForTestingAction: Kael'thas fight elapsed_ms={} on map={}", elapsed, mapId);
     }
 
     return false;

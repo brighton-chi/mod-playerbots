@@ -28,7 +28,7 @@ public:
         creators["high astromancer solarian solarium priests spawned"] = &RaidTempestKeepTriggerContext::high_astromancer_solarian_solarium_priests_spawned;
         creators["high astromancer solarian transformed into voidwalker"] = &RaidTempestKeepTriggerContext::high_astromancer_solarian_transformed_into_voidwalker;
         creators["high astromancer solarian boss casts psychic scream"] = &RaidTempestKeepTriggerContext::high_astromancer_solarian_boss_casts_psychic_scream;
-        creators["kaelthas sunstrider thaladred engaged by second assist tank"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_thaladred_engaged_by_second_assist_tank;
+        creators["kaelthas sunstrider need to test strategies on boss"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_need_to_test_strategies_on_boss;
         creators["kaelthas sunstrider thaladred is fixated on bot"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_thaladred_is_fixated_on_bot;
         creators["kaelthas sunstrider sanguinar engaged by main tank"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_sanguinar_engaged_by_main_tank;
         creators["kaelthas sunstrider sanguinar casts bellowing roar"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_sanguinar_casts_bellowing_roar;
@@ -56,7 +56,7 @@ private:
     static Trigger* high_astromancer_solarian_solarium_priests_spawned(PlayerbotAI* botAI) { return new HighAstromancerSolarianSolariumPriestsSpawnedTrigger(botAI); }
     static Trigger* high_astromancer_solarian_transformed_into_voidwalker(PlayerbotAI* botAI) { return new HighAstromancerSolarianTransformedIntoVoidwalkerTrigger(botAI); }
     static Trigger* high_astromancer_solarian_boss_casts_psychic_scream(PlayerbotAI* botAI) { return new HighAstromancerSolarianBossCastsPsychicScreamTrigger(botAI); }
-    static Trigger* kaelthas_sunstrider_thaladred_engaged_by_second_assist_tank(PlayerbotAI* botAI) { return new KaelthasSunstriderThaladredEngagedBySecondAssistTankTrigger(botAI); }
+    static Trigger* kaelthas_sunstrider_need_to_test_strategies_on_boss(PlayerbotAI* botAI) { return new KaelthasSunstriderNeedToTestStrategiesOnBossTrigger(botAI); }
     static Trigger* kaelthas_sunstrider_thaladred_is_fixated_on_bot(PlayerbotAI* botAI) { return new KaelthasSunstriderThaladredIsFixatedOnBotTrigger(botAI); }
     static Trigger* kaelthas_sunstrider_sanguinar_engaged_by_main_tank(PlayerbotAI* botAI) { return new KaelthasSunstriderSanguinarEngagedByMainTankTrigger(botAI); }
     static Trigger* kaelthas_sunstrider_sanguinar_casts_bellowing_roar(PlayerbotAI* botAI) { return new KaelthasSunstriderSanguinarCastsBellowingRoarTrigger(botAI); }

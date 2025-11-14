@@ -136,10 +136,10 @@ public:
     bool IsActive() override;
 };
 
-class KaelthasSunstriderThaladredEngagedBySecondAssistTankTrigger : public Trigger
+class KaelthasSunstriderNeedToTestStrategiesOnBossTrigger : public Trigger
 {
 public:
-    KaelthasSunstriderThaladredEngagedBySecondAssistTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider thaladred engaged by second assist tank") {}
+    KaelthasSunstriderNeedToTestStrategiesOnBossTrigger(PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider need to test strategies on boss") {}
     bool IsActive() override;
 };
 

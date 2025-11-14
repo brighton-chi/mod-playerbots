@@ -32,7 +32,7 @@ public:
         creators["high astromancer solarian tank voidwalker"] = &RaidTempestKeepActionContext::high_astromancer_solarian_tank_voidwalker;
         creators["high astromancer solarian cast fear ward on main tank"] = &RaidTempestKeepActionContext::high_astromancer_solarian_cast_fear_ward_on_main_tank;
 
-        creators["kaelthas sunstrider second assist tank position thaladred"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_second_assist_tank_position_thaladred;
+        creators["kaelthas sunstrider log for testing"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_log_for_testing;
         creators["kaelthas sunstrider run away from thaladred"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_run_away_from_thaladred;
         creators["kaelthas sunstrider main tank position sanguinar"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_main_tank_position_sanguinar;
         creators["kaelthas sunstrider cast fear ward on sanguinar tank"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_cast_fear_ward_on_sanguinar_tank;
@@ -64,7 +64,7 @@ private:
     static Action* high_astromancer_solarian_tank_voidwalker(PlayerbotAI* botAI) { return new HighAstromancerSolarianTankVoidwalkerAction(botAI); }
     static Action* high_astromancer_solarian_cast_fear_ward_on_main_tank(PlayerbotAI* botAI) { return new HighAstromancerSolarianCastFearWardOnMainTankAction(botAI); }
 
-    static Action* kaelthas_sunstrider_second_assist_tank_position_thaladred(PlayerbotAI* botAI) { return new KaelthasSunstriderSecondAssistTankPositionThaladredAction(botAI); }
+    static Action* kaelthas_sunstrider_log_for_testing(PlayerbotAI* botAI) { return new KaelthasSunstriderLogForTestingAction(botAI); }
     static Action* kaelthas_sunstrider_run_away_from_thaladred(PlayerbotAI* botAI) { return new KaelthasSunstriderRunAwayFromThaladredAction(botAI); }
     static Action* kaelthas_sunstrider_main_tank_position_sanguinar(PlayerbotAI* botAI) { return new KaelthasSunstriderMainTankPositionSanguinarAction(botAI); }
     static Action* kaelthas_sunstrider_cast_fear_ward_on_sanguinar_tank(PlayerbotAI* botAI) { return new KaelthasSunstriderCastFearWardOnSanguinarTankAction(botAI); }

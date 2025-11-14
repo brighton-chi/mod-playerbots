@@ -177,11 +177,11 @@ bool HighAstromancerSolarianBossCastsPsychicScreamTrigger::IsActive()
            mainTank && !mainTank->HasAura(SPELL_FEAR_WARD) && botAI->CanCastSpell("fear ward", mainTank);
 }
 
-bool KaelthasSunstriderThaladredEngagedBySecondAssistTankTrigger::IsActive()
+bool KaelthasSunstriderNeedToTestStrategiesOnBossTrigger::IsActive()
 {
-    Unit* thaladred = AI_VALUE2(Unit*, "find target", "thaladred the darkener");
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
 
-    return thaladred && botAI->IsAssistTankOfIndex(bot, 1);
+    return kaelthas && IsMapIDTimerManager(botAI, bot);
 }
 
 bool KaelthasSunstriderThaladredIsFixatedOnBotTrigger::IsActive()
