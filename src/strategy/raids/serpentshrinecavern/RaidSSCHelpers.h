@@ -220,20 +220,11 @@ namespace SerpentShrineCavernHelpers
     bool IsLadyVashjInPhase1(PlayerbotAI* botAI);
     bool IsLadyVashjInPhase2(PlayerbotAI* botAI);
     bool IsLadyVashjInPhase3(PlayerbotAI* botAI);
-    bool IsMeleeRTIMarker(PlayerbotAI* botAI, Player* bot);
-    bool IsRangedRTIMarker(PlayerbotAI* botAI, Player* bot);
     bool IsValidPhase2CombatNpc(Unit* unit, PlayerbotAI* botAI);
     Player* GetDesignatedCoreLooter(Group* group, Player* master, PlayerbotAI* botAI);
     Player* GetFirstTaintedCorePasser(Group* group, PlayerbotAI* botAI);
     Player* GetSecondTaintedCorePasser(Group* group, PlayerbotAI* botAI);
     Player* GetThirdTaintedCorePasser(Group* group, PlayerbotAI* botAI);
-    void LineUpFirstCorePasser(Player* master, Unit* closestTrigger);
-    void LineUpSecondCorePasser(Player* firstCorePasser, Unit* closestTrigger);
-    bool IsSecondCorePasserInIntendedPosition(Player* firstCorePasser, Player* secondCorePasser, Unit* closestTrigger);
-    void LineUpThirdCorePasser(Player* secondCorePasser, Unit* closestTrigger);
-    void ScheduleCoreReconcile(PlayerbotAI* botAI, Player* giver, Player* receiver, uint32 coreId, uint32 delayMs = 500);
-    bool CanUseGenerator();
-    bool UseCoreOnNearestGenerator();
 
     struct GeneratorInfo
     {

@@ -358,7 +358,7 @@ private:
 class LadyVashjLootTaintedCoreAction : public MovementAction
 {
 public:
-    LadyVashjLootTaintedCoreAction(PlayerbotAI* ai, std::string const name = "lady vashj loot tainted core") : MovementAction(ai, name) {}
+    LadyVashjLootTaintedCoreAction(PlayerbotAI* botAI, std::string const name = "lady vashj loot tainted core") : MovementAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 
@@ -374,6 +374,7 @@ private:
     bool IsFirstCorePasserInIntendedPosition(Player* designatedMaster, Player* firstCorePasser, Unit* closestTrigger);
     bool IsSecondCorePasserInIntendedPosition(Player* firstCorePasser, Player* secondCorePasser, Unit* closestTrigger);
     void LineUpThirdCorePasser(Player* secondCorePasser, Unit* closestTrigger);
+    void ScheduleStoreCoreAfterImbue(PlayerbotAI* botAI, Player* giver, Player* receiver, uint32 reconcileDelayMs);
     bool CanUseGenerator();
     bool UseCoreOnNearestGenerator();
 };

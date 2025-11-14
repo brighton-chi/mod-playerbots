@@ -474,11 +474,26 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
     }
 
     Player* master = botAI->GetMaster();
-    if (master && bot == GetDesignatedCoreLooter(group, master, botAI) && (bot->HasAura(SPELL_PARALYZE) ||
+    /* if (master && bot == GetDesignatedCoreLooter(group, master, botAI) && (bot->HasAura(SPELL_PARALYZE) ||
         bot->HasItemCount(ITEM_TAINTED_CORE, 1, false)))
     {
         if (dynamic_cast<MovementAction*>(action) &&
             !dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action))
+            return 0.0f;
+    } */
+    // Alternative that disables Killing Spree
+    if (master && bot == GetDesignatedCoreLooter(group, master, botAI))
+    {
+        if (bot->HasAura(SPELL_PARALYZE) ||
+            bot->HasItemCount(ITEM_TAINTED_CORE, 1, false))
+        {
+            if (dynamic_cast<MovementAction*>(action) &&
+                !dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action))
+                return 0.0f;
+        }
+        Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
+        // Killing Spree gets Rogues out of position and just barely too far to pass the core
+        if (tainted && dynamic_cast<CastKillingSpreeAction*>(action))
             return 0.0f;
     }
 

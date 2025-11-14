@@ -485,17 +485,17 @@ bool LadyVashjTaintedCoreWasLootedTrigger::IsActive()
     if (!vashj || !IsLadyVashjInPhase2(botAI) || !master || !group)
         return false;
 
-    Player* looter = GetDesignatedCoreLooter(group, master, botAI);
+    Player* designatedLooter = GetDesignatedCoreLooter(group, master, botAI);
     Player* firstCorePasser = GetFirstTaintedCorePasser(group, botAI);
     Player* secondCorePasser = GetSecondTaintedCorePasser(group, botAI);
     Player* thirdCorePasser = GetThirdTaintedCorePasser(group, botAI);
 
     LOG_DEBUG("playerbots", "LadyVashjTaintedCoreWasLootedTrigger: role check for bot={} first={} second={} third={} looter={}",
-              bot->GetName(), bot == firstCorePasser, bot == secondCorePasser, bot == thirdCorePasser, bot == looter);
+              bot->GetName(), bot == firstCorePasser, bot == secondCorePasser, bot == thirdCorePasser, bot == designatedLooter);
 
     auto hasCore = [](Player* p) -> bool { return p && p->HasItemCount(ITEM_TAINTED_CORE, 1, false); };
 
-    if (bot == looter)
+    if (bot == designatedLooter)
     {
         if (hasCore(firstCorePasser) || hasCore(secondCorePasser) || hasCore(thirdCorePasser))
         {

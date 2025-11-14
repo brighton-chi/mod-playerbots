@@ -402,38 +402,6 @@ namespace SerpentShrineCavernHelpers
         return vashjCreature && vashjCreature->GetHealthPct() <= 50.0f && vashjCreature->GetReactState() != REACT_PASSIVE;
     }
 
-    bool IsMeleeRTIMarker(PlayerbotAI* botAI, Player* bot)
-    {
-        if (Group* group = bot->GetGroup())
-        {
-            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-            {
-                Player* member = ref->GetSource();
-                if (member && member->IsAlive() && botAI->IsMelee(member) &&
-                    botAI->IsDps(member) && GET_PLAYERBOT_AI(member))
-                    return member == bot;
-            }
-        }
-
-        return true;
-    }
-
-    bool IsRangedRTIMarker(PlayerbotAI* botAI, Player* bot)
-    {
-        if (Group* group = bot->GetGroup())
-        {
-            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-            {
-                Player* member = ref->GetSource();
-                if (member && member->IsAlive() && member->getClass() == CLASS_HUNTER &&
-                    GET_PLAYERBOT_AI(member))
-                    return member == bot;
-            }
-        }
-
-        return true;
-    }
-
     bool IsValidPhase2CombatNpc(Unit* unit, PlayerbotAI* botAI)
     {
         if (!unit || !unit->IsAlive())
@@ -481,76 +449,103 @@ namespace SerpentShrineCavernHelpers
                 fallback = member;
         }
 
-        return fallback ? fallback : master; // may be nullptr if no suitable bot present
+        return fallback ? fallback : master;
     }
 
     Player* GetFirstTaintedCorePasser(Group* group, PlayerbotAI* botAI)
     {
+        Player* designatedLooter = GetDesignatedCoreLooter(group, botAI->GetMaster(), botAI);
+
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (member && member->IsAlive() && botAI->IsRangedDpsAssistantOfIndex(member, 0))
+            if (!member || !member->IsAlive() || member == designatedLooter)
+                continue;
+
+            PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
+            if (!memberAI) // skip humans
+                continue;
+
+            if (memberAI->IsRangedDpsAssistantOfIndex(member, 0))
                 return member;
         }
+
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) ||
+                botAI->IsTank(member) || member == designatedLooter)
+                continue;
+            return member;
+        }
+
         return nullptr;
     }
 
     Player* GetSecondTaintedCorePasser(Group* group, PlayerbotAI* botAI)
     {
+        Player* designatedLooter = GetDesignatedCoreLooter(group, botAI->GetMaster(), botAI);
+        Player* firstCorePasser = GetFirstTaintedCorePasser(group, botAI);
+
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (member && member->IsAlive() && botAI->IsRangedDpsAssistantOfIndex(member, 1))
+            if (!member || !member->IsAlive() || member == designatedLooter ||
+                member == firstCorePasser)
+                continue;
+
+            PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
+            if (!memberAI)
+                continue;
+
+            if (memberAI->IsHealAssistantOfIndex(member, 0))
                 return member;
         }
+
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) || botAI->IsTank(member) ||
+                member == designatedLooter || member == firstCorePasser)
+                continue;
+            return member;
+        }
+
         return nullptr;
     }
 
     Player* GetThirdTaintedCorePasser(Group* group, PlayerbotAI* botAI)
     {
+        Player* designatedLooter = GetDesignatedCoreLooter(group, botAI->GetMaster(), botAI);
+        Player* firstCorePasser = GetFirstTaintedCorePasser(group, botAI);
+        Player* secondCorePasser = GetSecondTaintedCorePasser(group, botAI);
+
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (member && member->IsAlive() && botAI->IsHealAssistantOfIndex(member, 0))
+            if (!member || !member->IsAlive() || member == designatedLooter ||
+                member == firstCorePasser || member == secondCorePasser)
+                continue;
+
+            PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
+            if (!memberAI)
+                continue;
+
+            if (memberAI->IsHealAssistantOfIndex(member, 1))
                 return member;
         }
+
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) || botAI->IsTank(member) ||
+                member == designatedLooter || member == firstCorePasser || member == secondCorePasser)
+                continue;
+            return member;
+        }
+
         return nullptr;
     }
-
-   void ScheduleCoreReconcile(PlayerbotAI* botAI, Player* giver, Player* receiver, uint32 coreId, uint32 delayMs)
-   {
-       // Capture GUIDs instead of raw pointers to avoid use-after-free when the event fires.
-       ObjectGuid giverGuid = giver ? giver->GetGUID() : ObjectGuid::Empty;
-       ObjectGuid receiverGuid = receiver ? receiver->GetGUID() : ObjectGuid::Empty;
-
-       botAI->AddTimedEvent([giverGuid, receiverGuid, coreId]()
-       {
-           // Resolve players at runtime. Use ObjectAccessor to avoid stale pointers.
-           Player* receiverPlayer = receiverGuid.IsEmpty() ? nullptr : ObjectAccessor::FindPlayer(receiverGuid);
-           Player* giverPlayer    = giverGuid.IsEmpty()    ? nullptr : ObjectAccessor::FindPlayer(giverGuid);
-
-           // Validate pointers / in-world state before calling any Player methods.
-           if (!receiverPlayer || !receiverPlayer->IsInWorld())
-               return;
-
-           // Check whether receiver or giver already have the core (safe access via Player methods).
-           Item* receiverItem = receiverPlayer->GetItemByEntry(coreId);
-           Item* giverItem = (giverPlayer && giverPlayer->IsInWorld()) ? giverPlayer->GetItemByEntry(coreId) : nullptr;
-
-           // If neither has the core, attempt to create/store one into the receiver's inventory.
-           if (!receiverItem && !giverItem)
-           {
-               ItemPosCountVec dest;
-               uint32 count = 1;
-               int canStore = receiverPlayer->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, coreId, count);
-               if (canStore == EQUIP_ERR_OK)
-               {
-                   receiverPlayer->StoreNewItem(dest, coreId, true, Item::GenerateItemRandomPropertyId(coreId));
-               }
-           }
-
-       }, delayMs);
-   }
 
     const std::vector<uint32> SHIELD_GENERATOR_DB_GUIDS = { 47482, 47483, 47484, 47485 }; // NW, NE, SE, SW
     // Entries: 185052 { 52.048f, -901.236f, 44.000f }, 185054 { 52.448f, -944.825f, 44.000f },
