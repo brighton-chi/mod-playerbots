@@ -94,7 +94,7 @@ bool TheLurkerBelowBossIsActiveForMainTankTrigger::IsActive()
         return false;
 
     uint32 mapId = lurker->GetMapId();
-    time_t now = time(nullptr);
+    time_t now = std::time(nullptr);
 
     return botAI->IsMainTank(bot) && lurker->getStandState() != UNIT_STAND_STATE_SUBMERGED &&
            (!lurkerSpoutTimer.count(mapId) || lurkerSpoutTimer[mapId] <= now);
@@ -107,7 +107,7 @@ bool TheLurkerBelowBossIsActiveForOtherMeleeTrigger::IsActive()
         return false;
 
     uint32 mapId = lurker->GetMapId();
-    time_t now = time(nullptr);
+    time_t now = std::time(nullptr);
 
     return botAI->IsMelee(bot) && !botAI->IsMainTank(bot) &&
            lurker->getStandState() != UNIT_STAND_STATE_SUBMERGED &&
@@ -122,7 +122,7 @@ bool TheLurkerBelowSpoutIsActiveForMeleeTrigger::IsActive()
         return false;
 
     uint32 mapId = lurker->GetMapId();
-    time_t now = time(nullptr);
+    time_t now = std::time(nullptr);
 
     return /* botAI->IsMelee(bot) && */
            lurkerSpoutTimer.count(mapId) && lurkerSpoutTimer[mapId] > now;
@@ -135,7 +135,7 @@ bool TheLurkerBelowBossIsActiveForRangedDpsTrigger::IsActive()
         return false;
 
     uint32 mapId = lurker->GetMapId();
-    time_t now = time(nullptr);
+    time_t now = std::time(nullptr);
 
     return botAI->IsRangedDps(bot) && lurker->getStandState() != UNIT_STAND_STATE_SUBMERGED &&
            (!lurkerSpoutTimer.count(mapId) || lurkerSpoutTimer[mapId] <= now);
@@ -148,7 +148,7 @@ bool TheLurkerBelowBossIsActiveForHealerTrigger::IsActive()
         return false;
 
     uint32 mapId = lurker->GetMapId();
-    time_t now = time(nullptr);
+    time_t now = std::time(nullptr);
 
     return botAI->IsHeal(bot) && lurker->getStandState() != UNIT_STAND_STATE_SUBMERGED &&
            (!lurkerSpoutTimer.count(mapId) || lurkerSpoutTimer[mapId] <= now);
@@ -443,7 +443,7 @@ bool LadyVashjTaintedElementalCheatTrigger::IsActive()
     else
     {
         // scan the nearest visible object GUIDs for a dead Creature of the tainted entry
-        GuidVector corpses = context->GetValue<GuidVector>("nearest corpses")->Get();
+        GuidVector corpses = AI_VALUE(GuidVector, "nearest corpses");
         for (auto const& guid : corpses)
         {
             LootObject loot(bot, guid);
@@ -527,7 +527,7 @@ bool LadyVashjTaintedCoreWasLootedTrigger::IsActive()
     // remember last time Paralyze was observed so we can tolerate the brief handoff gap
     static std::map<uint32, time_t> lastParalyzeTime;
     uint32 mapId = vashj->GetMapId();
-    time_t now = time(nullptr);
+    time_t now = std::time(nullptr);
 
     bool foundParalyze = false;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())

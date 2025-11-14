@@ -371,10 +371,10 @@ public:
 private:
     void LineUpFirstCorePasser(Player* master, Unit* closestTrigger);
     void LineUpSecondCorePasser(Player* firstCorePasser, Unit* closestTrigger);
-    bool IsFirstCorePasserInIntendedPosition(Player* designatedMaster, Player* firstCorePasser, Unit* closestTrigger);
+    bool IsFirstCorePasserInIntendedPosition(Player* designatedLooter, Player* firstCorePasser, Unit* closestTrigger);
     bool IsSecondCorePasserInIntendedPosition(Player* firstCorePasser, Player* secondCorePasser, Unit* closestTrigger);
     void LineUpThirdCorePasser(Player* secondCorePasser, Unit* closestTrigger);
-    void ScheduleStoreCoreAfterImbue(PlayerbotAI* botAI, Player* giver, Player* receiver, uint32 reconcileDelayMs);
+    void ScheduleStoreCoreAfterImbue(PlayerbotAI* botAI, Player* giver, Player* receiver);
     bool CanUseGenerator();
     bool UseCoreOnNearestGenerator();
 };

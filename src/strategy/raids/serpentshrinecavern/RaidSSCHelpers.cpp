@@ -27,6 +27,7 @@ namespace SerpentShrineCavernHelpers
 
     std::unordered_map<ObjectGuid, Position> vashjRangedPositions;
     std::unordered_map<ObjectGuid, bool> vashjHasReachedRangedPosition;
+    std::unordered_map<ObjectGuid, time_t> lastImbueAttempt;
 
     namespace SerpentShrineCavernPositions
     {

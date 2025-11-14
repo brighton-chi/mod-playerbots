@@ -139,6 +139,7 @@ namespace SerpentShrineCavernHelpers
 
     extern std::unordered_map<ObjectGuid, Position> vashjRangedPositions;
     extern std::unordered_map<ObjectGuid, bool> vashjHasReachedRangedPosition;
+    extern std::unordered_map<ObjectGuid, time_t> lastImbueAttempt;
 
     namespace SerpentShrineCavernPositions
     {

@@ -83,7 +83,7 @@ float HydrossTheUnstableWaitForDpsMultiplier::GetValue(Action* action)
         return 1.0f;
 
     uint32 mapId = hydross->GetMapId();
-    time_t now = time(nullptr);
+    time_t now = std::time(nullptr);
     const uint8 dpsWaitSeconds = 5;
     const uint8 phaseChangeWaitSeconds = 6;
 
@@ -112,10 +112,10 @@ float HydrossTheUnstableWaitForDpsMultiplier::GetValue(Action* action)
         auto itPhase = hydrossChangeToNaturePhaseTimer.find(mapId);
 
         bool justChanged = (itDps == hydrossNatureDpsWaitTimer.end() ||
-                            (time(nullptr) - itDps->second) < dpsWaitSeconds);
+                            (std::time(nullptr) - itDps->second) < dpsWaitSeconds);
 
         bool aboutToChange = (itPhase != hydrossChangeToNaturePhaseTimer.end() &&
-                              (time(nullptr) - itPhase->second) > phaseChangeWaitSeconds);
+                              (std::time(nullptr) - itPhase->second) > phaseChangeWaitSeconds);
 
         if (justChanged || aboutToChange)
         {
@@ -149,7 +149,7 @@ float TheLurkerBelowStayAwayFromSpoutMultiplier::GetValue(Action* action)
         return 1.0f;
 
     uint32 mapId = lurker->GetMapId();
-    time_t now = time(nullptr);
+    time_t now = std::time(nullptr);
 
     if (lurkerSpoutTimer.count(mapId) && lurkerSpoutTimer[mapId] > now)
     {
@@ -238,7 +238,7 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValue(Action* action)
         return 1.0f;
 
     uint32 mapId = leotheras->GetMapId();
-    time_t now = time(nullptr);
+    time_t now = std::time(nullptr);
 
     const uint8 dpsWaitSecondsPhase1 = 5;
     Unit* leotherasHuman = GetLeotherasHuman(botAI);
@@ -348,7 +348,7 @@ float FathomLordKarathressWaitForDpsMultiplier::GetValue(Action* action)
         return 1.0f;
 
     uint32 mapId = karathress->GetMapId();
-    time_t now = time(nullptr);
+    time_t now = std::time(nullptr);
     const uint8 dpsWaitSeconds = 8;
 
     auto it = karathressDpsWaitTimer.find(mapId);
