@@ -59,7 +59,6 @@ namespace KarazhanHelpers
         const Position NightbaneRainOfBonesPosition = { -11165.233f, -1911.123f, 91.473f };
     }
 
-
     void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId)
     {
         if (!target)

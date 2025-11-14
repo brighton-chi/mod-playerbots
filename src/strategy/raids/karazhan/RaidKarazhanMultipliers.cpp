@@ -65,7 +65,7 @@ float AttumenTheHuntsmanWaitForDPSMultiplier::GetValue(Action* action)
         return 1.0f;
 
     uint32 mapId = attumenMounted->GetMapId();
-    time_t now = time(nullptr);
+    time_t now = std::time(nullptr);
     const uint8 dpsWaitSeconds = 8;
 
     auto it = attumenDPSWaitTimer.find(mapId);
@@ -177,7 +177,7 @@ float NetherspiteWaitForDPSMultiplier::GetValue(Action* action)
         return 1.0f;
 
     uint32 mapId = netherspite->GetMapId();
-    time_t now = time(nullptr);
+    time_t now = std::time(nullptr);
     const uint8 dpsWaitSeconds = 5;
 
     auto it = netherspiteDPSWaitTimer.find(mapId);
@@ -255,7 +255,7 @@ float NightbaneWaitForDPSMultiplier::GetValue(Action* action)
         return 1.0f;
 
     uint32 mapId = nightbane->GetMapId();
-    time_t now = time(nullptr);
+    time_t now = std::time(nullptr);
     const uint8 dpsWaitSeconds = 8;
 
     auto it = nightbaneDPSWaitTimer.find(mapId);

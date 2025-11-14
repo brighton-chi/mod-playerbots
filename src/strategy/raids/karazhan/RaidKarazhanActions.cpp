@@ -148,7 +148,7 @@ bool AttumenTheHuntsmanManageTimerAction::Execute(Event event)
         return false;
 
     uint32 mapId = midnight ? midnight->GetMapId() : attumenMounted->GetMapId();
-    const time_t now = time(nullptr);
+    const time_t now = std::time(nullptr);
 
     if (midnight && !attumenMounted && attumenDPSWaitTimer.count(mapId))
         attumenDPSWaitTimer.erase(mapId);
@@ -603,10 +603,10 @@ bool NetherspiteBlockRedBeamAction::Execute(Event event)
         wasBlockingRedBeam[botGuid] = true;
 
         const uint8 intervalSecs = 5;
-        if (time(nullptr) - redBeamMoveTimer[botGuid] >= intervalSecs)
+        if (std::time(nullptr) - redBeamMoveTimer[botGuid] >= intervalSecs)
         {
             lastBeamMoveSideways[botGuid] = !lastBeamMoveSideways[botGuid];
-            redBeamMoveTimer[botGuid] = time(nullptr);
+            redBeamMoveTimer[botGuid] = std::time(nullptr);
         }
         if (!lastBeamMoveSideways[botGuid])
             return MoveTo(bot->GetMapId(), beamPos.GetPositionX(), beamPos.GetPositionY(), beamPos.GetPositionZ(),
@@ -977,7 +977,7 @@ bool NetherspiteManageTimersAction::Execute(Event event)
 
     uint32 mapId = netherspite->GetMapId();
     ObjectGuid botGuid = bot->GetGUID();
-    const time_t now = time(nullptr);
+    const time_t now = std::time(nullptr);
 
     if (netherspite->HasAura(SPELL_NETHERSPITE_BANISHED) ||
         (netherspite->GetHealth() == netherspite->GetMaxHealth() &&
@@ -1401,7 +1401,7 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event event)
 
     uint32 mapId = nightbane->GetMapId();
     ObjectGuid botGuid = bot->GetGUID();
-    const time_t now = time(nullptr);
+    const time_t now = std::time(nullptr);
 
     // Erase DPS wait timer and tank and ranged position tracking on encounter reset or flight
     if (nightbane->GetPositionZ() > 95.0f || nightbane->GetHealth() == nightbane->GetMaxHealth())
