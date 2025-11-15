@@ -2021,30 +2021,6 @@ bool LadyVashjTeleportToTaintedElementalAction::Execute(Event event)
     if (!tainted)
         return false;
 
-    /* Item* coreCheck = bot->GetItemByEntry(ITEM_TAINTED_CORE);
-
-    // Check for despawn even if tainted is nullptr
-    if (lastTaintedGuid && !botAI->GetUnit(lastTaintedGuid) && !coreCheck)
-    {
-        LOG_DEBUG("playerbots", "TaintedElementalCheat: Elemental despawned, treating as dead for core logic");
-        ItemPosCountVec dest;
-        uint32 count = 1;
-        int canStore = bot->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, ITEM_TAINTED_CORE, count);
-        LOG_DEBUG("playerbots", "TaintedElementalCheat: {} CanStoreNewItem -> {}", bot->GetName(), canStore);
-
-        if (canStore == EQUIP_ERR_OK)
-        {
-            Item* created = bot->StoreNewItem(dest, ITEM_TAINTED_CORE, true, Item::GenerateItemRandomPropertyId(ITEM_TAINTED_CORE));
-            if (created)
-            {
-                LOG_DEBUG("playerbots", "TaintedElementalCheat: {} created core (guid={})", bot->GetName(), created->GetGUID().ToString());
-                ScheduleCoreReconcile(botAI, bot, bot, 500);
-            }
-        }
-        lastTaintedGuid = ObjectGuid::Empty;
-        return true;
-    } */
-
     lastTaintedGuid = tainted->GetGUID();
     if (bot->GetExactDist2d(tainted) >= 10.0f)
     {
@@ -2280,9 +2256,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
                         if (IsFirstCorePasserInIntendedPosition(designatedLooter, firstCorePasser, closestTrigger))
                         {
                             botAI->ImbueItem(item, firstCorePasser);
-                            lastImbueAttempt[giverGuid] = now;
-                            imbuePending.insert(giverGuid);
-                            LOG_DEBUG("playerbots", "LadyVashjPassTheTaintedCoreAction: ImbueItem queued from {} -> {}", bot->GetName(), firstCorePasser->GetName());
+                            LOG_DEBUG("playerbots", "LadyVashjPassTheTaintedCoreAction: Imbue visual sent from {} -> {}", bot->GetName(), firstCorePasser->GetName());
                             imbueQueued = true;
                         }
                         else
@@ -2332,9 +2306,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
                         if (IsSecondCorePasserInIntendedPosition(firstCorePasser, secondCorePasser, closestTrigger))
                         {
                             botAI->ImbueItem(item, secondCorePasser);
-                            lastImbueAttempt[giverGuid] = now;
-                            imbuePending.insert(giverGuid);
-                            LOG_DEBUG("playerbots", "LadyVashjPassTheTaintedCoreAction: ImbueItem queued from {} -> {}", bot->GetName(), secondCorePasser->GetName());
+                            LOG_DEBUG("playerbots", "LadyVashjPassTheTaintedCoreAction: Imbue visual sent from {} -> {}", bot->GetName(), secondCorePasser->GetName());
                             imbueQueued = true;
                         }
                         else
@@ -2387,9 +2359,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
                         if (IsThirdCorePasserInIntendedPosition(secondCorePasser, thirdCorePasser, closestTrigger))
                         {
                             botAI->ImbueItem(item, thirdCorePasser);
-                            lastImbueAttempt[giverGuid] = now;
-                            imbuePending.insert(giverGuid);
-                            LOG_DEBUG("playerbots", "LadyVashjPassTheTaintedCoreAction: ImbueItem queued from {} -> {}", bot->GetName(), thirdCorePasser->GetName());
+                            LOG_DEBUG("playerbots", "LadyVashjPassTheTaintedCoreAction: Imbue visual sent from {} -> {}", bot->GetName(), thirdCorePasser->GetName());
                             imbueQueued = true;
                         }
                         else
@@ -2438,9 +2408,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
                         if (IsFourthCorePasserInIntendedPosition(thirdCorePasser, fourthCorePasser, closestTrigger))
                         {
                             botAI->ImbueItem(item, fourthCorePasser);
-                            lastImbueAttempt[giverGuid] = now;
-                            imbuePending.insert(giverGuid);
-                            LOG_DEBUG("playerbots", "LadyVashjPassTheTaintedCoreAction: ImbueItem queued from {} -> {}", bot->GetName(), fourthCorePasser->GetName());
+                            LOG_DEBUG("playerbots", "LadyVashjPassTheTaintedCoreAction: Imbue visual sent from {} -> {}", bot->GetName(), fourthCorePasser->GetName());
                             imbueQueued = true;
                         }
                         else
@@ -2807,10 +2775,21 @@ void LadyVashjPassTheTaintedCoreAction::ScheduleStoreCoreAfterImbue(PlayerbotAI*
     if (!receiver)
         return;
 
-    const uint32 delayMs = 1000;
+    // Give the client-side visual time to play and avoid races with other bots
+    const uint32 delayMs = 1500;
 
     const ObjectGuid giverGuid    = giver ? giver->GetGUID() : ObjectGuid::Empty;
     const ObjectGuid receiverGuid = receiver->GetGUID();
+
+    // Reserve pending state now so other bots skip issuing duplicate visuals while fallback is scheduled
+    if (!giverGuid.IsEmpty())
+    {
+        if (!imbuePending.count(giverGuid))
+        {
+            imbuePending.insert(giverGuid);
+            LOG_DEBUG("playerbots", "ScheduleStoreCoreAfterImbue: set imbuePending for giver={} (scheduling fallback)", giverGuid.ToString());
+        }
+    }
 
     LOG_DEBUG("playerbots", "ScheduleStoreCoreAfterImbue: scheduling create for {} in {} ms (giver={})",
               receiver ? receiver->GetName() : "null", delayMs, giver ? giver->GetName() : "null");
@@ -2889,6 +2868,10 @@ void LadyVashjPassTheTaintedCoreAction::ScheduleStoreCoreAfterImbue(PlayerbotAI*
             if (created && giverPlayer)
             {
                 LOG_DEBUG("playerbots", "ScheduleStoreCoreAfterImbue: created core for {} (guid={})", receiverPlayer->GetName(), created->GetGUID().ToString());
+                // start cooldown only after actual store succeeded
+                time_t now = std::time(nullptr);
+                lastImbueAttempt[giverGuid] = now;
+                LOG_DEBUG("playerbots", "ScheduleStoreCoreAfterImbue: lastImbueAttempt[{}] set to {}", giverGuid.ToString(), now);
                 intendedLineup.erase(receiverGuid);
                 intendedLineup.erase(giverGuid);
                 imbuePending.erase(giverGuid);
