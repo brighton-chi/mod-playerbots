@@ -8,6 +8,8 @@ using namespace KarazhanPositions;
 
 // Trash
 
+// Retainers can be buried in giant packs of mobs
+// They need to be prioritized because they will MC players
 bool SpectralRetainerMarkTargetAction::Execute(Event event)
 {
     Unit* retainer = GetFirstAliveUnitByEntry(botAI, NPC_SPECTRAL_RETAINER);
@@ -17,6 +19,8 @@ bool SpectralRetainerMarkTargetAction::Execute(Event event)
     return false;
 }
 
+// Mana Warps blow up when they die for massive raid damage
+// But they cannot cast the ability if they are stunned
 bool ManaWarpStunCreatureBeforeWarpBreachAction::Execute(Event event)
 {
     Unit* manaWarp = GetFirstAliveUnitByEntry(botAI, NPC_MANA_WARP);
@@ -91,7 +95,7 @@ bool AttumenTheHuntsmanMarkTargetAction::Execute(Event event)
     return false;
 }
 
-// Get Attumen out of the way so he doesn't cleave bots
+// Off tank should move Attumen out of the way so he doesn't cleave bots
 bool AttumenTheHuntsmanSplitBossesAction::Execute(Event event)
 {
     Unit* midnight = AI_VALUE2(Unit*, "find target", "midnight");
@@ -132,14 +136,14 @@ bool AttumenTheHuntsmanStackBehindAction::Execute(Event event)
 
     if (bot->GetExactDist2d(rx, ry) > 2.0f)
     {
-        return MoveTo(bot->GetMapId(), rx, ry, bot->GetPositionZ(), false, false, false, false,
+        return MoveTo(bot->GetMapId(), rx, ry, attumenMounted->GetPositionZ(), false, false, false, false,
                       MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
     return false;
 }
 
-// Reset timer for AttumenTheHuntsmanWaitForDPSMultiplier
+// Reset timer for bots to pause DPS when Attumen mounts Midnight
 bool AttumenTheHuntsmanManageTimerAction::Execute(Event event)
 {
     Unit* midnight = AI_VALUE2(Unit*, "find target", "midnight");
@@ -150,11 +154,11 @@ bool AttumenTheHuntsmanManageTimerAction::Execute(Event event)
     const uint32 mapId = midnight ? midnight->GetMapId() : attumenMounted->GetMapId();
     const time_t now = std::time(nullptr);
 
-    if (midnight && !attumenMounted && attumenDPSWaitTimer.count(mapId))
-        attumenDPSWaitTimer.erase(mapId);
+    if (midnight && !attumenMounted && attumenDpsWaitTimer.count(mapId))
+        attumenDpsWaitTimer.erase(mapId);
 
-    if (attumenMounted && attumenDPSWaitTimer.count(mapId) == 0)
-        attumenDPSWaitTimer[mapId] = now;
+    if (attumenMounted && attumenDpsWaitTimer.count(mapId) == 0)
+        attumenDpsWaitTimer[mapId] = now;
 
     return false;
 }
@@ -348,7 +352,8 @@ bool RomuloAndJulianneMarkTargetAction::Execute(Event event)
     else if (romulo->GetHealthPct() + maxPctDifference < julianne->GetHealthPct() || romulo->GetHealthPct() < 1.0f)
         target = julianne;
 
-    MarkTargetWithSkull(bot, target);
+    if (target)
+        MarkTargetWithSkull(bot, target);
 
     return false;
 }
@@ -397,7 +402,7 @@ bool TheCuratorMarkAstralFlareAction::Execute(Event event)
 }
 
 // Tank the boss in the center of the hallway near the Guardian's Library
-// Main tank and Assist tank will attack the boss; others will focus on Astral Flares
+// Main tank and off tank will attack the boss; others will focus on Astral Flares
 bool TheCuratorPositionBossAction::Execute(Event event)
 {
     Unit* curator = AI_VALUE2(Unit*, "find target", "the curator");
@@ -460,7 +465,8 @@ bool TerestianIllhoofMarkTargetAction::Execute(Event event)
             target = illhoof;
     }
 
-    MarkTargetWithSkull(bot, target);
+    if (target)
+        MarkTargetWithSkull(bot, target);
 
     return false;
 }
@@ -574,7 +580,7 @@ bool ShadeOfAranRangedMaintainDistanceAction::Execute(Event event)
 // Netherspite
 
 // One tank bot per phase will dance in and out of the red beam (5 seconds in, 5 seconds out)
-// Tank bots will ignore void zones--their positioning is too important
+// Tank bots will ignore void zones--their positioning is too important to risk losing beam control
 bool NetherspiteBlockRedBeamAction::Execute(Event event)
 {
     Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
@@ -944,6 +950,7 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::IsAwayFromBeams(
         float px = beam.portal->GetPositionX(), py = beam.portal->GetPositionY();
         float dx = px - bx, dy = py - by;
         float length = sqrt(dx*dx + dy*dy);
+
         if (length == 0.0f)
             continue;
 
@@ -952,6 +959,7 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::IsAwayFromBeams(
         float t = (botdx * dx + botdy * dy);
         float beamX = bx + dx * t, beamY = by + dy * t;
         float distToBeam = sqrt(pow(x - beamX, 2) + pow(y - beamY, 2));
+
         if (distToBeam < 5.0f && t > beam.minDist && t < beam.maxDist)
             return false;
     }
@@ -982,12 +990,14 @@ bool NetherspiteManageTimersAction::Execute(Event event)
     const ObjectGuid botGuid = bot->GetGUID();
     const time_t now = std::time(nullptr);
 
+    // DpsWaitTimer is for pausing DPS during phase transitions
+    // redBeamMoveTimer and lastBeamMoveSideways are for tank dancing in/out of the red beam
     if (netherspite->HasAura(SPELL_NETHERSPITE_BANISHED) ||
         (netherspite->GetHealth() == netherspite->GetMaxHealth() &&
          !netherspite->HasAura(SPELL_GREEN_BEAM_HEAL)))
     {
-        if (IsMapIDTimerManager(botAI, bot) && netherspiteDPSWaitTimer.count(mapId))
-            netherspiteDPSWaitTimer.erase(mapId);
+        if (IsMapIDTimerManager(botAI, bot) && netherspiteDpsWaitTimer.count(mapId))
+            netherspiteDpsWaitTimer.erase(mapId);
 
         if (botAI->IsTank(bot) && redBeamMoveTimer.count(botGuid))
         {
@@ -997,8 +1007,8 @@ bool NetherspiteManageTimersAction::Execute(Event event)
     }
     else if (!netherspite->HasAura(SPELL_NETHERSPITE_BANISHED))
     {
-        if (IsMapIDTimerManager(botAI, bot) && netherspiteDPSWaitTimer.count(mapId) == 0)
-            netherspiteDPSWaitTimer[mapId] = now;
+        if (IsMapIDTimerManager(botAI, bot) && netherspiteDpsWaitTimer.count(mapId) == 0)
+            netherspiteDpsWaitTimer[mapId] = now;
 
         if (botAI->IsTank(bot) && bot->HasAura(SPELL_RED_BEAM_DEBUFF) &&
             !redBeamMoveTimer.count(botGuid))
@@ -1011,6 +1021,8 @@ bool NetherspiteManageTimersAction::Execute(Event event)
     return false;
 }
 
+// Move away from the boss to avoid Shadow Nova when Enfeebled
+// Do not cross within Infernal Hellfire radius while doing so
 bool PrinceMalchezaarEnfeebledAvoidHazardAction::Execute(Event event)
 {
     Unit* malchezaar = AI_VALUE2(Unit*, "find target", "prince malchezaar");
@@ -1303,6 +1315,7 @@ bool NightbaneGroundPhaseRotateRangedPositionsAction::Execute(Event event)
     return false;
 }
 
+// For countering Bellowing Roars during the ground phase
 bool NightbaneCastFearWardOnMainTankAction::Execute(Event event)
 {
     Group* group = bot->GetGroup();
@@ -1348,8 +1361,8 @@ bool NightbaneControlPetAggressionAction::Execute(Event event)
 
 // 1. Stack at the "Flight Stack Position" near Nightbane so he doesn't use Fireball Barrage
 // 2. Once Rain of Bones hits, the whole party moves to a new stack position
-// This action lasts for the first 35 seconds of the flight phase, after which Nightbane
-// transitions to land--the player will need to lead the bots over near the ground phase position
+// This action lasts for the first 35 seconds of the flight phase, after which Nightbane gets
+// ready to land, and the player will need to lead the bots over near the ground phase position
 bool NightbaneFlightPhaseMovementAction::Execute(Event event)
 {
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
@@ -1415,8 +1428,8 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event event)
         if (botAI->IsRanged(bot) && nightbaneRangedStep.count(botGuid))
             nightbaneRangedStep.erase(botGuid);
 
-        if (IsMapIDTimerManager(botAI, bot) && nightbaneDPSWaitTimer.count(mapId))
-            nightbaneDPSWaitTimer.erase(mapId);
+        if (IsMapIDTimerManager(botAI, bot) && nightbaneDpsWaitTimer.count(mapId))
+            nightbaneDpsWaitTimer.erase(mapId);
     }
     // Erase flight phase timer and Rain of Bones tracker on ground phase and start DPS wait timer
     else if (nightbane->GetPositionZ() <= 95.0f)
@@ -1427,8 +1440,8 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event event)
         if (nightbaneRainOfBonesHit.count(botGuid))
             nightbaneRainOfBonesHit.erase(botGuid);
 
-        if (IsMapIDTimerManager(botAI, bot) && nightbaneDPSWaitTimer.count(mapId) == 0)
-            nightbaneDPSWaitTimer[mapId] = now;
+        if (IsMapIDTimerManager(botAI, bot) && nightbaneDpsWaitTimer.count(mapId) == 0)
+            nightbaneDpsWaitTimer[mapId] = now;
     }
 
     // Start flight phase timer at beginning of flight phase

@@ -145,16 +145,16 @@ void RaidKarazhanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers
 {
     multipliers.push_back(new AttumenTheHuntsmanDisableTankAssistMultiplier(botAI));
     multipliers.push_back(new AttumenTheHuntsmanStayStackedMultiplier(botAI));
-    multipliers.push_back(new AttumenTheHuntsmanWaitForDPSMultiplier(botAI));
+    multipliers.push_back(new AttumenTheHuntsmanWaitForDpsMultiplier(botAI));
     multipliers.push_back(new TheCuratorDisableTankAssistMultiplier(botAI));
     multipliers.push_back(new ShadeOfAranArcaneExplosionDisableChargeMultiplier(botAI));
     multipliers.push_back(new ShadeOfAranFlameWreathDisableMovementMultiplier(botAI));
     multipliers.push_back(new NetherspiteKeepBlockingBeamMultiplier(botAI));
-    multipliers.push_back(new NetherspiteWaitForDPSMultiplier(botAI));
+    multipliers.push_back(new NetherspiteWaitForDpsMultiplier(botAI));
     multipliers.push_back(new PrinceMalchezaarDisableAvoidAoeMultiplier(botAI));
     multipliers.push_back(new PrinceMalchezaarEnfeebleKeepDistanceMultiplier(botAI));
     multipliers.push_back(new NightbaneDisablePetsMultiplier(botAI));
-    multipliers.push_back(new NightbaneWaitForDPSMultiplier(botAI));
+    multipliers.push_back(new NightbaneWaitForDpsMultiplier(botAI));
     multipliers.push_back(new NightbaneDisableAvoidAoeMultiplier(botAI));
     multipliers.push_back(new NightbaneDisableMovementMultiplier(botAI));
 }

@@ -17,10 +17,10 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class AttumenTheHuntsmanWaitForDPSMultiplier : public Multiplier
+class AttumenTheHuntsmanWaitForDpsMultiplier : public Multiplier
 {
 public:
-    AttumenTheHuntsmanWaitForDPSMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "attumen the huntsman wait for dps multiplier") {}
+    AttumenTheHuntsmanWaitForDpsMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "attumen the huntsman wait for dps multiplier") {}
     virtual float GetValue(Action* action);
 };
 
@@ -52,10 +52,10 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class NetherspiteWaitForDPSMultiplier : public Multiplier
+class NetherspiteWaitForDpsMultiplier : public Multiplier
 {
 public:
-    NetherspiteWaitForDPSMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "netherspite wait for dps multiplier") {}
+    NetherspiteWaitForDpsMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "netherspite wait for dps multiplier") {}
     virtual float GetValue(Action* action);
 };
 
@@ -80,10 +80,10 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class NightbaneWaitForDPSMultiplier : public Multiplier
+class NightbaneWaitForDpsMultiplier : public Multiplier
 {
 public:
-    NightbaneWaitForDPSMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "nightbane wait for dps multiplier") {}
+    NightbaneWaitForDpsMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "nightbane wait for dps multiplier") {}
     virtual float GetValue(Action* action);
 };
 

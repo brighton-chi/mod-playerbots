@@ -25,6 +25,7 @@ static bool IsChargeAction(Action* action)
            dynamic_cast<CastFeralChargeCatAction*>(action);
 }
 
+// Keep tanks from jumping back and forth between Attumen and Midnight
 float AttumenTheHuntsmanDisableTankAssistMultiplier::GetValue(Action* action)
 {
     Unit* midnight = AI_VALUE2(Unit*, "find target", "midnight");
@@ -39,6 +40,7 @@ float AttumenTheHuntsmanDisableTankAssistMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+// Try to get rid of jittering when bots are stacked behind Attumen
 float AttumenTheHuntsmanStayStackedMultiplier::GetValue(Action* action)
 {
     Unit* attumenMounted = GetFirstAliveUnitByEntry(botAI, NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED);
@@ -58,7 +60,7 @@ float AttumenTheHuntsmanStayStackedMultiplier::GetValue(Action* action)
 
 // Give the main tank 8 seconds to grab aggro when Attumen mounts Midnight
 // In reality it's shorter because it takes Attumen a few seconds to aggro after mounting
-float AttumenTheHuntsmanWaitForDPSMultiplier::GetValue(Action* action)
+float AttumenTheHuntsmanWaitForDpsMultiplier::GetValue(Action* action)
 {
     Unit* attumenMounted = GetFirstAliveUnitByEntry(botAI, NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED);
     if (!attumenMounted || !attumenMounted->IsAlive())
@@ -68,8 +70,8 @@ float AttumenTheHuntsmanWaitForDPSMultiplier::GetValue(Action* action)
     const time_t now = std::time(nullptr);
     const uint8 dpsWaitSeconds = 8;
 
-    auto it = attumenDPSWaitTimer.find(mapId);
-    if (it == attumenDPSWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
+    auto it = attumenDpsWaitTimer.find(mapId);
+    if (it == attumenDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
     {
         if ((!botAI->IsMainTank(bot) && dynamic_cast<AttackAction*>(action)) ||
             (dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<CastHealingSpellAction*>(action)))
@@ -79,7 +81,7 @@ float AttumenTheHuntsmanWaitForDPSMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-// The assist tank should stay on the boss to be 2nd on aggro and eat Hateful Bolts
+// The assist tank should stay on the boss to be 2nd on aggro and tank Hateful Bolts
 float TheCuratorDisableTankAssistMultiplier::GetValue(Action* action)
 {
     Unit* curator = AI_VALUE2(Unit*, "find target", "the curator");
@@ -170,7 +172,8 @@ float NetherspiteKeepBlockingBeamMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float NetherspiteWaitForDPSMultiplier::GetValue(Action* action)
+// Give tanks 5 seconds to get aggro during phase transitions
+float NetherspiteWaitForDpsMultiplier::GetValue(Action* action)
 {
     Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
     if (!netherspite || netherspite->HasAura(SPELL_NETHERSPITE_BANISHED))
@@ -180,8 +183,8 @@ float NetherspiteWaitForDPSMultiplier::GetValue(Action* action)
     const time_t now = std::time(nullptr);
     const uint8 dpsWaitSeconds = 5;
 
-    auto it = netherspiteDPSWaitTimer.find(mapId);
-    if (it == netherspiteDPSWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
+    auto it = netherspiteDpsWaitTimer.find(mapId);
+    if (it == netherspiteDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
     {
         if ((!botAI->IsTank(bot) && dynamic_cast<AttackAction*>(action)) ||
             (dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<CastHealingSpellAction*>(action)))
@@ -191,7 +194,7 @@ float NetherspiteWaitForDPSMultiplier::GetValue(Action* action)
      return 1.0f;
 }
 
-// Disable standard avoid aoe strategy, which may interfere with scripted avoidance
+// Disable standard "avoid aoe" strategy, which may interfere with scripted avoidance
 float PrinceMalchezaarDisableAvoidAoeMultiplier::GetValue(Action* action)
 {
     Unit* malchezaar = AI_VALUE2(Unit*, "find target", "prince malchezaar");
@@ -211,12 +214,7 @@ float PrinceMalchezaarEnfeebleKeepDistanceMultiplier::GetValue(Action* action)
     if (!malchezaar)
         return 1.0f;
 
-    if (botAI->IsMelee(bot) && bot->HasAura(SPELL_ENFEEBLE) &&
-        !dynamic_cast<PrinceMalchezaarEnfeebledAvoidHazardAction*>(action))
-        return 0.0f;
-
-    if (botAI->IsRanged(bot) && bot->HasAura(SPELL_ENFEEBLE) &&
-        (dynamic_cast<MovementAction*>(action) &&
+    if (bot->HasAura(SPELL_ENFEEBLE) && (dynamic_cast<MovementAction*>(action) &&
          !dynamic_cast<PrinceMalchezaarEnfeebledAvoidHazardAction*>(action)))
         return 0.0f;
 
@@ -224,8 +222,8 @@ float PrinceMalchezaarEnfeebleKeepDistanceMultiplier::GetValue(Action* action)
 }
 
 // Pets tend to run out of bounds and cause skeletons to spawn off the map
-// Or pull adds from inside of the tower through the floor
-// This multiplier DOES NOT impact permanent pets (i.e., Hunter and Warlock pets)
+// Pets also tend to pull adds from inside of the tower through the floor
+// This multiplier DOES NOT impact Hunter and Warlock pets
 // Hunter and Warlock pets are addressed in ControlPetAggressionAction
 float NightbaneDisablePetsMultiplier::GetValue(Action* action)
 {
@@ -248,7 +246,7 @@ float NightbaneDisablePetsMultiplier::GetValue(Action* action)
 }
 
 // Give the main tank 8 seconds to get aggro during phase transitions
-float NightbaneWaitForDPSMultiplier::GetValue(Action* action)
+float NightbaneWaitForDpsMultiplier::GetValue(Action* action)
 {
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
     if (!nightbane || nightbane->GetPositionZ() > 95.0f)
@@ -258,8 +256,8 @@ float NightbaneWaitForDPSMultiplier::GetValue(Action* action)
     const time_t now = std::time(nullptr);
     const uint8 dpsWaitSeconds = 8;
 
-    auto it = nightbaneDPSWaitTimer.find(mapId);
-    if (it == nightbaneDPSWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
+    auto it = nightbaneDpsWaitTimer.find(mapId);
+    if (it == nightbaneDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
     {
         if ((!botAI->IsMainTank(bot) && dynamic_cast<AttackAction*>(action)) ||
             (dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<CastHealingSpellAction*>(action)))
@@ -269,8 +267,8 @@ float NightbaneWaitForDPSMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-// The avoid aoe strategy must be disabled for the main tank
-// Or they will spin Nightbane to avoid Charred Earth and wipe the raid
+// The "avoid aoe" strategy must be disabled for the main tank
+// Otherwise, the main tank will spin Nightbane to avoid Charred Earth and wipe the raid
 float NightbaneDisableAvoidAoeMultiplier::GetValue(Action* action)
 {
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");

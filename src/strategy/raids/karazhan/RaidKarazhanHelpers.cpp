@@ -9,15 +9,15 @@
 namespace KarazhanHelpers
 {
     // Attumen the Huntsman
-    std::unordered_map<uint32, time_t> attumenDPSWaitTimer;
+    std::unordered_map<uint32, time_t> attumenDpsWaitTimer;
     // Big Bad Wolf
     std::unordered_map<ObjectGuid, uint8> bigBadWolfRunIndex;
     // Netherspite
-    std::unordered_map<uint32, time_t> netherspiteDPSWaitTimer;
+    std::unordered_map<uint32, time_t> netherspiteDpsWaitTimer;
     std::unordered_map<ObjectGuid, time_t> redBeamMoveTimer;
     std::unordered_map<ObjectGuid, bool> lastBeamMoveSideways;
     // Nightbane
-    std::unordered_map<uint32, time_t> nightbaneDPSWaitTimer;
+    std::unordered_map<uint32, time_t> nightbaneDpsWaitTimer;
     std::unordered_map<ObjectGuid, uint8> nightbaneTankStep;
     std::unordered_map<ObjectGuid, uint8> nightbaneRangedStep;
     std::unordered_map<uint32, time_t> nightbaneFlightPhaseStartTimer;
