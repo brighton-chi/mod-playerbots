@@ -369,11 +369,14 @@ public:
     bool Execute(Event event) override;
 
 private:
-    void LineUpFirstCorePasser(Player* master, Unit* closestTrigger);
-    void LineUpSecondCorePasser(Player* firstCorePasser, Unit* closestTrigger);
+    bool LineUpFirstCorePasser(Player* designatedLooter, Unit* closestTrigger);
+    bool LineUpSecondCorePasser(Player* firstCorePasser, Unit* closestTrigger);
+    bool LineUpThirdCorePasser(Player* secondCorePasser, Unit* closestTrigger);
+    bool LineUpFourthCorePasser(Player* thirdCorePasser, Unit* closestTrigger);
     bool IsFirstCorePasserInIntendedPosition(Player* designatedLooter, Player* firstCorePasser, Unit* closestTrigger);
     bool IsSecondCorePasserInIntendedPosition(Player* firstCorePasser, Player* secondCorePasser, Unit* closestTrigger);
-    void LineUpThirdCorePasser(Player* secondCorePasser, Unit* closestTrigger);
+    bool IsThirdCorePasserInIntendedPosition(Player* secondCorePasser, Player* thirdCorePasser, Unit* closestTrigger);
+    bool IsFourthCorePasserInIntendedPosition(Player* thirdCorePasser, Player* fourthCorePasser, Unit* closestTrigger);
     void ScheduleStoreCoreAfterImbue(PlayerbotAI* botAI, Player* giver, Player* receiver);
     bool CanUseGenerator();
     bool UseCoreOnNearestGenerator();

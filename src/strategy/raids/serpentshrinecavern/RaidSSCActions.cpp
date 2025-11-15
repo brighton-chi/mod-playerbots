@@ -1410,7 +1410,7 @@ bool MorogrimTidewalkerMoveBossToTankPositionAction::MoveToPhase2TankPosition(Un
     const Position& phase2 = TidewalkerPhase2TankPosition;
     const Position& transition = TidewalkerPhaseTransitionWaypoint;
 
-    const botGuid = bot->GetGUID();
+    const ObjectGuid botGuid = bot->GetGUID();
     uint8 step = tidewalkerTankStep.count(botGuid) ? tidewalkerTankStep[botGuid] : 0;
 
     if (step == 0)
@@ -2088,26 +2088,26 @@ bool LadyVashjLootTaintedCoreAction::Execute(Event)
             continue;
         }
 
-        WorldObject* obj = loot.GetWorldObject(bot);
-        if (!obj)
+        WorldObject* object = loot.GetWorldObject(bot);
+        if (!object)
         {
             LOG_DEBUG("playerbots", "LadyVashjLootTaintedCoreAction: no world object for guid {}", guid.ToString());
             continue;
         }
 
         // Expect the dead tainted elemental to be exposed as a Creature object
-        Creature* cr = obj->ToCreature();
-        if (!cr)
+        Creature* creature = object->ToCreature();
+        if (!creature)
         {
             LOG_DEBUG("playerbots", "LadyVashjLootTaintedCoreAction: world object for guid {} is not a creature, skipping", guid.ToString());
             continue;
         }
 
         LOG_DEBUG("playerbots", "LadyVashjLootTaintedCoreAction: found CREATURE guid={} entry={} hp={}/{} alive={}",
-                  guid.ToString(), cr->GetEntry(), cr->GetHealth(), cr->GetMaxHealth(), cr->IsAlive());
+                  guid.ToString(), creature->GetEntry(), creature->GetHealth(), creature->GetMaxHealth(), creature->IsAlive());
 
         // Only consider dead tainted elemental creatures
-        if (cr->GetEntry() != NPC_TAINTED_ELEMENTAL || cr->IsAlive())
+        if (creature->GetEntry() != NPC_TAINTED_ELEMENTAL || creature->IsAlive())
         {
             LOG_DEBUG("playerbots", "LadyVashjLootTaintedCoreAction: creature {} is not a dead tainted elemental, skipping", guid.ToString());
             continue;
@@ -2117,13 +2117,13 @@ bool LadyVashjLootTaintedCoreAction::Execute(Event)
 
         context->GetValue<LootObject>("loot target")->Set(loot);
 
-        float dist = bot->GetDistance(obj);
+        float dist = bot->GetDistance(object);
         LOG_DEBUG("playerbots", "LadyVashjLootTaintedCoreAction: target {} dist={}", guid.ToString(), dist);
 
         if (dist > maxLootRange)
         {
             LOG_DEBUG("playerbots", "LadyVashjLootTaintedCoreAction: moving to target {} (dist={} > maxLootRange={})", guid.ToString(), dist, maxLootRange);
-            return MoveTo(obj, 2.0f, MovementPriority::MOVEMENT_FORCED);
+            return MoveTo(object, 2.0f, MovementPriority::MOVEMENT_FORCED);
         }
 
         LOG_DEBUG("playerbots", "LadyVashjLootTaintedCoreAction: in range of target {}, invoking OpenLootAction", guid.ToString());
@@ -2209,26 +2209,42 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
     Player* firstCorePasser = GetFirstTaintedCorePasser(group, botAI);
     Player* secondCorePasser = GetSecondTaintedCorePasser(group, botAI);
     Player* thirdCorePasser = GetThirdTaintedCorePasser(group, botAI);
+    Player* fourthCorePasser = GetFourthTaintedCorePasser(group, botAI);
     Unit* closestTrigger = GetNearestActiveShieldGeneratorTriggerByEntry(bot, designatedLooter);
 
-    LOG_DEBUG("playerbots", "LadyVashjPassTheTaintedCoreAction: roles - designatedLooter={} first={} second={} third={} closestTrigger={}",
+    LOG_DEBUG("playerbots", "LadyVashjPassTheTaintedCoreAction: roles - designatedLooter={} first={} second={} third={} fourth={} closestTrigger={}",
               designatedLooter ? designatedLooter->GetName() : "null",
               firstCorePasser ? firstCorePasser->GetName() : "null",
               secondCorePasser ? secondCorePasser->GetName() : "null",
               thirdCorePasser ? thirdCorePasser->GetName() : "null",
+              fourthCorePasser ? fourthCorePasser->GetName() : "null",
               closestTrigger ? std::to_string(closestTrigger->GetEntry()) : std::string("null"));
 
-    if (!firstCorePasser || !secondCorePasser || !thirdCorePasser || !closestTrigger)
+    if (!firstCorePasser || !secondCorePasser || !thirdCorePasser || !fourthCorePasser || !closestTrigger)
         return false;
 
     // If this bot currently holds the core, don't perform any lineup/movement logic.
     // Still allow passing/using the core below.
     if (bot == firstCorePasser && !botAI->HasItemInInventory(ITEM_TAINTED_CORE))
-        LineUpFirstCorePasser(designatedLooter, closestTrigger);
+    {
+        if (LineUpFirstCorePasser(designatedLooter, closestTrigger))
+            return true;
+    }
     else if (bot == secondCorePasser && !botAI->HasItemInInventory(ITEM_TAINTED_CORE))
-        LineUpSecondCorePasser(firstCorePasser, closestTrigger);
+    {
+        if (LineUpSecondCorePasser(firstCorePasser, closestTrigger))
+            return true;
+    }
     else if (bot == thirdCorePasser && !botAI->HasItemInInventory(ITEM_TAINTED_CORE))
-        LineUpThirdCorePasser(secondCorePasser, closestTrigger);
+    {
+        if (LineUpThirdCorePasser(secondCorePasser, closestTrigger))
+            return true;
+    }
+    else if (bot == fourthCorePasser && !botAI->HasItemInInventory(ITEM_TAINTED_CORE))
+    {
+        if (LineUpFourthCorePasser(thirdCorePasser, closestTrigger))
+            return true;
+    }
 
     Item* item = bot->GetItemByEntry(ITEM_TAINTED_CORE);
     bool hasInInventory = botAI->HasItemInInventory(ITEM_TAINTED_CORE);
@@ -2248,32 +2264,49 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
 
                 const ObjectGuid giverGuid = bot->GetGUID();
                 const time_t now = std::time(nullptr);
-                auto it = lastImbueAttempt.find(giverGuid);
-                bool imbueQueued = false;
 
-                if (it == lastImbueAttempt.end() || (now - it->second) >= 3)
+                // Prevent duplicate imbue requests while a previous imbue is still pending/fallback
+                if (imbuePending.count(giverGuid))
                 {
-                    botAI->ImbueItem(item, firstCorePasser);
-                    lastImbueAttempt[giverGuid] = now;
-                    LOG_DEBUG("playerbots", "LadyVashjPassTheTaintedCoreAction: ImbueItem queued from {} -> {}", bot->GetName(), firstCorePasser->GetName());
-                    imbueQueued = true;
+                    LOG_DEBUG("playerbots", "LadyVashjPassTheTaintedCoreAction: imbue already pending for giver {}, skipping", bot->GetName());
                 }
                 else
                 {
-                    LOG_DEBUG("playerbots", "LadyVashjPassTheTaintedCoreAction: skipping Imbue visual for {} (cooldown={}s)", bot->GetName(), now - it->second);
-                }
+                   auto it = lastImbueAttempt.find(giverGuid);
+                   bool imbueQueued = false;
 
-                // guaranteed fallback to create/store the core after delay
-                ScheduleStoreCoreAfterImbue(botAI, bot, firstCorePasser);
-                if (imbueQueued)
-                    return true;
+                    if (it == lastImbueAttempt.end() || (now - it->second) >= 2)
+                    {
+                        if (IsFirstCorePasserInIntendedPosition(designatedLooter, firstCorePasser, closestTrigger))
+                        {
+                            botAI->ImbueItem(item, firstCorePasser);
+                            lastImbueAttempt[giverGuid] = now;
+                            imbuePending.insert(giverGuid);
+                            LOG_DEBUG("playerbots", "LadyVashjPassTheTaintedCoreAction: ImbueItem queued from {} -> {}", bot->GetName(), firstCorePasser->GetName());
+                            imbueQueued = true;
+                        }
+                        else
+                        {
+                            LOG_DEBUG("playerbots", "LadyVashjPassTheTaintedCoreAction: sanity check failed - receiver not in position, skipping visual and not starting cooldown");
+                        }
+                    }
+                    else
+                    {
+                        LOG_DEBUG("playerbots", "LadyVashjPassTheTaintedCoreAction: skipping Imbue visual for {} (cooldown={}s)", bot->GetName(), now - it->second);
+                    }
+
+                    // guaranteed fallback to create/store the core after delay
+                    ScheduleStoreCoreAfterImbue(botAI, bot, firstCorePasser);
+                    if (imbueQueued)
+                        return true;
+                }
             }
             else
             {
                 LOG_DEBUG("playerbots", "LadyVashjPassTheTaintedCoreAction: first passer NOT in position yet for designated looter {}", bot->GetName());
             }
         }
-        // First core passer logic
+        // First core passer logic (passes to second)
         else if (bot == firstCorePasser)
         {
             LOG_DEBUG("playerbots", "LadyVashjPassTheTaintedCoreAction: first passer {} holding core; checking second passer position", bot->GetName());
@@ -2284,31 +2317,47 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
 
                 const ObjectGuid giverGuid = bot->GetGUID();
                 const time_t now = std::time(nullptr);
-                auto it = lastImbueAttempt.find(giverGuid);
-                bool imbueQueued = false;
 
-                if (it == lastImbueAttempt.end() || (now - it->second) >= 3)
+                if (imbuePending.count(giverGuid))
                 {
-                    botAI->ImbueItem(item, secondCorePasser);
-                    lastImbueAttempt[giverGuid] = now;
-                    LOG_DEBUG("playerbots", "LadyVashjPassTheTaintedCoreAction: ImbueItem queued from {} -> {}", bot->GetName(), secondCorePasser->GetName());
-                    imbueQueued = true;
+                    LOG_DEBUG("playerbots", "LadyVashjPassTheTaintedCoreAction: imbue already pending for giver {}, skipping", bot->GetName());
                 }
                 else
                 {
-                    LOG_DEBUG("playerbots", "LadyVashjPassTheTaintedCoreAction: skipping Imbue visual for {} (cooldown={}s)", bot->GetName(), now - it->second);
-                }
+                    auto it = lastImbueAttempt.find(giverGuid);
+                    bool imbueQueued = false;
 
-                ScheduleStoreCoreAfterImbue(botAI, bot, secondCorePasser);
-                if (imbueQueued)
-                    return true;
+                    if (it == lastImbueAttempt.end() || (now - it->second) >= 2)
+                    {
+                        if (IsSecondCorePasserInIntendedPosition(firstCorePasser, secondCorePasser, closestTrigger))
+                        {
+                            botAI->ImbueItem(item, secondCorePasser);
+                            lastImbueAttempt[giverGuid] = now;
+                            imbuePending.insert(giverGuid);
+                            LOG_DEBUG("playerbots", "LadyVashjPassTheTaintedCoreAction: ImbueItem queued from {} -> {}", bot->GetName(), secondCorePasser->GetName());
+                            imbueQueued = true;
+                        }
+                        else
+                        {
+                            LOG_DEBUG("playerbots", "LadyVashjPassTheTaintedCoreAction: sanity check failed - second not in position, skipping visual");
+                        }
+                    }
+                    else
+                    {
+                        LOG_DEBUG("playerbots", "LadyVashjPassTheTaintedCoreAction: skipping Imbue visual for {} (cooldown={}s)", bot->GetName(), now - it->second);
+                    }
+
+                    ScheduleStoreCoreAfterImbue(botAI, bot, secondCorePasser);
+                    if (imbueQueued)
+                        return true;
+                }
             }
             else
             {
                 LOG_DEBUG("playerbots", "LadyVashjPassTheTaintedCoreAction: second passer NOT in position yet for first passer {}", bot->GetName());
             }
         }
-        // Second core passer logic
+        // Second core passer logic (use core or pass to third)
         else if (bot == secondCorePasser)
         {
             LOG_DEBUG("playerbots", "LadyVashjPassTheTaintedCoreAction: second passer {} holding core; canUseGenerator={} thirdDistToTrigger={}",
@@ -2319,37 +2368,105 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
                 LOG_DEBUG("playerbots", "LadyVashjPassTheTaintedCoreAction: second passer using generator now: {}", bot->GetName());
                 UseCoreOnNearestGenerator();
             }
-            else if (thirdCorePasser && thirdCorePasser->GetExactDist(closestTrigger) <= 4.0f)
+            else if (thirdCorePasser->GetExactDist2d(closestTrigger) <= 3.0f)
             {
                 const ObjectGuid giverGuid = bot->GetGUID();
                 const time_t now = std::time(nullptr);
-                auto it = lastImbueAttempt.find(giverGuid);
-                bool imbueQueued = false;
 
-                if (it == lastImbueAttempt.end() || (now - it->second) >= 3)
+                if (imbuePending.count(giverGuid))
                 {
-                    botAI->ImbueItem(item, thirdCorePasser);
-                    lastImbueAttempt[giverGuid] = now;
-                    LOG_DEBUG("playerbots", "LadyVashjPassTheTaintedCoreAction: ImbueItem queued from {} -> {}", bot->GetName(), thirdCorePasser->GetName());
-                    imbueQueued = true;
+                    LOG_DEBUG("playerbots", "LadyVashjPassTheTaintedCoreAction: imbue already pending for giver {}, skipping", bot->GetName());
                 }
                 else
                 {
-                    LOG_DEBUG("playerbots", "LadyVashjPassTheTaintedCoreAction: skipping Imbue visual for {} (cooldown={}s)", bot->GetName(), now - it->second);
-                }
+                    auto it = lastImbueAttempt.find(giverGuid);
+                    bool imbueQueued = false;
 
-                ScheduleStoreCoreAfterImbue(botAI, bot, thirdCorePasser);
-                if (imbueQueued)
-                    return true;
+                    if (it == lastImbueAttempt.end() || (now - it->second) >= 2)
+                    {
+                        if (IsThirdCorePasserInIntendedPosition(secondCorePasser, thirdCorePasser, closestTrigger))
+                        {
+                            botAI->ImbueItem(item, thirdCorePasser);
+                            lastImbueAttempt[giverGuid] = now;
+                            imbuePending.insert(giverGuid);
+                            LOG_DEBUG("playerbots", "LadyVashjPassTheTaintedCoreAction: ImbueItem queued from {} -> {}", bot->GetName(), thirdCorePasser->GetName());
+                            imbueQueued = true;
+                        }
+                        else
+                        {
+                            LOG_DEBUG("playerbots", "LadyVashjPassTheTaintedCoreAction: sanity check failed - third not in position, skipping visual");
+                        }
+                    }
+                    else
+                    {
+                        LOG_DEBUG("playerbots", "LadyVashjPassTheTaintedCoreAction: skipping Imbue visual for {} (cooldown={}s)", bot->GetName(), now - it->second);
+                    }
+
+                    ScheduleStoreCoreAfterImbue(botAI, bot, thirdCorePasser);
+                    if (imbueQueued)
+                        return true;
+                }
             }
         }
-        // Third core passer logic
+        // Third core passer logic (use core or pass to fourth)
         else if (bot == thirdCorePasser)
         {
-            LOG_DEBUG("playerbots", "LadyVashjPassTheTaintedCoreAction: third passer {} holding core; canUseGenerator={}", bot->GetName(), CanUseGenerator());
+            LOG_DEBUG("playerbots", "LadyVashjPassTheTaintedCoreAction: third passer {} holding core; canUseGenerator={} fourthDistToTrigger={}",
+                      bot->GetName(), CanUseGenerator(), fourthCorePasser ? fourthCorePasser->GetExactDist(closestTrigger) : -1.0f);
+
             if (CanUseGenerator())
             {
                 LOG_DEBUG("playerbots", "LadyVashjPassTheTaintedCoreAction: third passer using generator now: {}", bot->GetName());
+                UseCoreOnNearestGenerator();
+            }
+            else if (fourthCorePasser->GetExactDist2d(closestTrigger) <= 3.0f)
+            {
+                const ObjectGuid giverGuid = bot->GetGUID();
+                const time_t now = std::time(nullptr);
+
+                if (imbuePending.count(giverGuid))
+                {
+                    LOG_DEBUG("playerbots", "LadyVashjPassTheTaintedCoreAction: imbue already pending for giver {}, skipping", bot->GetName());
+                }
+                else
+                {
+                    auto it = lastImbueAttempt.find(giverGuid);
+                    bool imbueQueued = false;
+
+                    if (it == lastImbueAttempt.end() || (now - it->second) >= 2)
+                    {
+                        if (IsFourthCorePasserInIntendedPosition(thirdCorePasser, fourthCorePasser, closestTrigger))
+                        {
+                            botAI->ImbueItem(item, fourthCorePasser);
+                            lastImbueAttempt[giverGuid] = now;
+                            imbuePending.insert(giverGuid);
+                            LOG_DEBUG("playerbots", "LadyVashjPassTheTaintedCoreAction: ImbueItem queued from {} -> {}", bot->GetName(), fourthCorePasser->GetName());
+                            imbueQueued = true;
+                        }
+                        else
+                        {
+                            LOG_DEBUG("playerbots", "LadyVashjPassTheTaintedCoreAction: sanity check failed - fourth not in position, skipping visual");
+                        }
+                    }
+                    else
+                    {
+                        LOG_DEBUG("playerbots", "LadyVashjPassTheTaintedCoreAction: skipping Imbue visual for {} (cooldown={}s)", bot->GetName(), now - it->second);
+                    }
+
+                    ScheduleStoreCoreAfterImbue(botAI, bot, fourthCorePasser);
+                    if (imbueQueued)
+                        return true;
+                }
+
+            }
+        }
+        // Fourth core passer logic (should always be close enough to use core)
+        else if (bot == fourthCorePasser)
+        {
+            LOG_DEBUG("playerbots", "LadyVashjPassTheTaintedCoreAction: fourth passer {} holding core; canUseGenerator={}", bot->GetName(), CanUseGenerator());
+            if (CanUseGenerator())
+            {
+                LOG_DEBUG("playerbots", "LadyVashjPassTheTaintedCoreAction: fourth passer using generator now: {}", bot->GetName());
                 UseCoreOnNearestGenerator();
             }
         }
@@ -2358,7 +2475,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
     return false;
 }
 
-void LadyVashjPassTheTaintedCoreAction::LineUpFirstCorePasser(Player* designatedLooter, Unit* closestTrigger)
+bool LadyVashjPassTheTaintedCoreAction::LineUpFirstCorePasser(Player* designatedLooter, Unit* closestTrigger)
 {
     const float centerX = VashjPlatformCenterPosition.GetPositionX();
     const float centerY = VashjPlatformCenterPosition.GetPositionY();
@@ -2370,38 +2487,38 @@ void LadyVashjPassTheTaintedCoreAction::LineUpFirstCorePasser(Player* designated
 
     float targetX = centerX + radius * cos(angle);
     float targetY = centerY + radius * sin(angle);
-    float targetZ = 41.097f;
+    const float targetZ = 41.097f;
+
+    intendedLineup[bot->GetGUID()] = Position(targetX, targetY, targetZ);
 
     LOG_DEBUG("playerbots", "LineUpFirstCorePasser: designatedLooter={} targetPos=({}, {}, {})", designatedLooter->GetName(), targetX, targetY, targetZ);
 
     bot->AttackStop();
     bot->InterruptNonMeleeSpells(true);
-    MoveTo(bot->GetMapId(), targetX, targetY, targetZ,
-           false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+    return MoveTo(bot->GetMapId(), targetX, targetY, targetZ,
+           false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
-void LadyVashjPassTheTaintedCoreAction::LineUpSecondCorePasser(Player* firstCorePasser, Unit* closestTrigger)
+bool LadyVashjPassTheTaintedCoreAction::LineUpSecondCorePasser(Player* firstCorePasser, Unit* closestTrigger)
 {
     float fx = firstCorePasser->GetPositionX();
     float fy = firstCorePasser->GetPositionY();
-    float fz = firstCorePasser->GetPositionZ();
 
     float dx = closestTrigger->GetPositionX() - fx;
     float dy = closestTrigger->GetPositionY() - fy;
-    float dz = closestTrigger->GetPositionZ() - fz;
-    float distToTrigger = std::sqrt(dx*dx + dy*dy + dz*dz);
+    float distToTrigger = std::sqrt(dx*dx + dy*dy);
 
     LOG_DEBUG("playerbots", "LineUpSecondCorePasser: firstCorePasser={} closestTriggerEntry={} distToTrigger={}", firstCorePasser->GetName(), closestTrigger->GetEntry(), distToTrigger);
 
     if (distToTrigger == 0.0f)
-        return;
+        return false;
 
-    dx /= distToTrigger; dy /= distToTrigger; dz /= distToTrigger;
+    dx /= distToTrigger; dy /= distToTrigger;
 
     float targetX, targetY, targetZ; // Target is on a line between firstCorePasser and closestTrigger
     const float thresholdDist = 42.0f; // if firstCorePasser is within this distance of the closestTrigger, go to nearTriggerDist short of the closestTrigger
     const float nearTriggerDist = 2.0f;
-    const float farDistance = 39.0f;  // if firstCorePasser is not thresholdDist yards from the closestTrigger, go to farDistance from the firstCorePasser
+    const float farDistance = 38.0f;  // if firstCorePasser is not thresholdDist yards from the closestTrigger, go to farDistance from the firstCorePasser
 
     if (distToTrigger <= thresholdDist)
     {
@@ -2417,16 +2534,137 @@ void LadyVashjPassTheTaintedCoreAction::LineUpSecondCorePasser(Player* firstCore
         targetZ = 42.985f;
     }
 
+    intendedLineup[bot->GetGUID()] = Position(targetX, targetY, targetZ);
+
     LOG_DEBUG("playerbots", "LineUpSecondCorePasser: moving bot={} to ({}, {}, {})", bot->GetName(), targetX, targetY, targetZ);
 
     bot->AttackStop();
     bot->InterruptNonMeleeSpells(false);
-    MoveTo(bot->GetMapId(), targetX, targetY, targetZ,
-           false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+    return MoveTo(bot->GetMapId(), targetX, targetY, targetZ,
+           false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
+}
+
+bool LadyVashjPassTheTaintedCoreAction::LineUpThirdCorePasser(Player* secondCorePasser, Unit* closestTrigger)
+{
+    if (!secondCorePasser->HasItemCount(ITEM_TAINTED_CORE, 1, false))
+    {
+        LOG_DEBUG("playerbots", "LineUpThirdCorePasser: secondCorePasser {} does not hold tainted core, no move needed",
+                  secondCorePasser ? secondCorePasser->GetName() : "null");
+        return false;
+    }
+
+    if (secondCorePasser->GetExactDist2d(closestTrigger) <= 2.0f)
+    {
+        LOG_DEBUG("playerbots", "LineUpThirdCorePasser: secondCorePasser already near trigger, no move needed");
+        return false;
+    }
+
+    float sx = secondCorePasser->GetPositionX();
+    float sy = secondCorePasser->GetPositionY();
+
+    float dx = closestTrigger->GetPositionX() - sx;
+    float dy = closestTrigger->GetPositionY() - sy;
+    float distToTrigger = std::sqrt(dx*dx + dy*dy);
+
+    LOG_DEBUG("playerbots", "LineUpThirdCorePasser: secondCorePasser={} closestTriggerEntry={} distToTrigger={}", secondCorePasser->GetName(), closestTrigger->GetEntry(), distToTrigger);
+
+    if (distToTrigger == 0.0f)
+        return false;
+
+    dx /= distToTrigger; dy /= distToTrigger;
+
+    float targetX, targetY, targetZ;
+    const float thresholdDist = 42.0f;
+    const float nearTriggerDist = 2.0f;
+    const float farDistance = 38.0f;
+
+    if (distToTrigger <= thresholdDist)
+    {
+        float moveDist = std::max(distToTrigger - nearTriggerDist, 0.0f);
+        targetX = sx + dx * moveDist;
+        targetY = sy + dy * moveDist;
+        targetZ = 42.985f;
+    }
+    else
+    {
+        targetX = sx + dx * farDistance;
+        targetY = sy + dy * farDistance;
+        targetZ = 42.985f;
+    }
+
+    intendedLineup[bot->GetGUID()] = Position(targetX, targetY, targetZ);
+
+    LOG_DEBUG("playerbots", "LineUpThirdCorePasser: moving bot={} to ({}, {}, {})", bot->GetName(), targetX, targetY, targetZ);
+
+    bot->AttackStop();
+    bot->InterruptNonMeleeSpells(false);
+    return MoveTo(bot->GetMapId(), targetX, targetY, targetZ,
+           false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
+}
+
+bool LadyVashjPassTheTaintedCoreAction::LineUpFourthCorePasser(Player* thirdCorePasser, Unit* closestTrigger)
+{
+    if (!thirdCorePasser->HasItemCount(ITEM_TAINTED_CORE, 1, false))
+    {
+        LOG_DEBUG("playerbots", "LineUpFourthCorePasser: thirdCorePasser {} does not hold tainted core, no move needed",
+                  thirdCorePasser ? thirdCorePasser->GetName() : "null");
+        return false;
+    }
+
+    if (thirdCorePasser->GetExactDist2d(closestTrigger) <= 2.0f)
+    {
+        LOG_DEBUG("playerbots", "LineUpFourthCorePasser: thirdCorePasser already near trigger, no move needed");
+        return false;
+    }
+
+    float sx = thirdCorePasser->GetPositionX();
+    float sy = thirdCorePasser->GetPositionY();
+
+    float tx = closestTrigger->GetPositionX();
+    float ty = closestTrigger->GetPositionY();
+
+    float dx = tx - sx;
+    float dy = ty - sy;
+    float length = std::sqrt(dx*dx + dy*dy);
+
+    if (length == 0.0f)
+    {
+        LOG_DEBUG("playerbots", "LineUpFourthCorePasser: length==0, aborting");
+        return false;
+    }
+
+    dx /= length; dy /= length;
+
+    float targetX = tx - dx * 2.0f;
+    float targetY = ty - dy * 2.0f;
+    const float targetZ = 42.985f;
+
+    intendedLineup[bot->GetGUID()] = Position(targetX, targetY, targetZ);
+
+    LOG_DEBUG("playerbots", "LineUpFourthCorePasser: moving bot={} to ({}, {}, {}) to line up behind thirdCorePasser={}", bot->GetName(), targetX, targetY, targetZ, thirdCorePasser->GetName());
+
+    bot->AttackStop();
+    bot->InterruptNonMeleeSpells(false);
+    return MoveTo(bot->GetMapId(), targetX, targetY, targetZ,
+           false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 bool LadyVashjPassTheTaintedCoreAction::IsFirstCorePasserInIntendedPosition(Player* designatedLooter, Player* firstCorePasser, Unit* closestTrigger)
 {
+    // Prefer snapshot if present
+    auto itSnap = intendedLineup.find(firstCorePasser->GetGUID());
+    if (itSnap != intendedLineup.end())
+    {
+        float dist2d = firstCorePasser->GetExactDist2d(itSnap->second.GetPositionX(), itSnap->second.GetPositionY());
+        LOG_DEBUG("playerbots", "IsFirstCorePasserInIntendedPosition: using snapshot for {} dist2d={}", firstCorePasser->GetName(), dist2d);
+        if (dist2d <= 1.0f)
+        {
+            intendedLineup.erase(itSnap);
+            return true;
+        }
+        return false;
+    }
+
     const float centerX = VashjPlatformCenterPosition.GetPositionX();
     const float centerY = VashjPlatformCenterPosition.GetPositionY();
     const float radius = 57.5f;
@@ -2437,25 +2675,37 @@ bool LadyVashjPassTheTaintedCoreAction::IsFirstCorePasserInIntendedPosition(Play
 
     float targetX = centerX + radius * cos(angle);
     float targetY = centerY + radius * sin(angle);
-    float targetZ = 41.097f;
 
-    float dist = firstCorePasser->GetExactDist(Position(targetX, targetY, targetZ));
+    float dist = firstCorePasser->GetExactDist2d(Position(targetX, targetY));
 
     LOG_DEBUG("playerbots", "IsFirstCorePasserInIntendedPosition: designatedLooter={} firstCorePasser={} dist={}", designatedLooter->GetName(), firstCorePasser->GetName(), dist);
 
-    return dist <= 2.0f;
+    return dist <= 1.0f;
 }
 
 bool LadyVashjPassTheTaintedCoreAction::IsSecondCorePasserInIntendedPosition(Player* firstCorePasser, Player* secondCorePasser, Unit* closestTrigger)
 {
+    // Prefer snapshot if present
+    auto itSnap = intendedLineup.find(secondCorePasser->GetGUID());
+    if (itSnap != intendedLineup.end())
+    {
+        float dist2d = secondCorePasser->GetExactDist2d(itSnap->second.GetPositionX(), itSnap->second.GetPositionY());
+        LOG_DEBUG("playerbots", "IsSecondCorePasserInIntendedPosition: using snapshot for {} dist2d={}", secondCorePasser->GetName(), dist2d);
+        if (dist2d <= 1.0f)
+        {
+            intendedLineup.erase(itSnap);
+            return true;
+        }
+        return false;
+    }
+
+    // Fallback: legacy computation (horizontal only)
     float fx = firstCorePasser->GetPositionX();
     float fy = firstCorePasser->GetPositionY();
-    float fz = firstCorePasser->GetPositionZ();
 
     float dx = closestTrigger->GetPositionX() - fx;
     float dy = closestTrigger->GetPositionY() - fy;
-    float dz = closestTrigger->GetPositionZ() - fz;
-    float distToTrigger = std::sqrt(dx*dx + dy*dy + dz*dz);
+    float distToTrigger = std::sqrt(dx*dx + dy*dy);
 
     if (distToTrigger == 0.0f)
     {
@@ -2463,71 +2713,93 @@ bool LadyVashjPassTheTaintedCoreAction::IsSecondCorePasserInIntendedPosition(Pla
         return false;
     }
 
-    dx /= distToTrigger; dy /= distToTrigger; dz /= distToTrigger;
+    dx /= distToTrigger; dy /= distToTrigger;
 
     float moveDist = std::max(distToTrigger - 2.0f, 0.0f);
     float pos1X = fx + dx * moveDist;
     float pos1Y = fy + dy * moveDist;
-    const float pos1Z = 42.985f;
 
-    float pos2X = fx + dx * 39.0f;
-    float pos2Y = fy + dy * 39.0f;
-    const float pos2Z = 42.985f;
+    float pos2X = fx + dx * 38.0f;
+    float pos2Y = fy + dy * 38.0f;
 
-    float dist1 = secondCorePasser->GetExactDist(Position(pos1X, pos1Y, pos1Z));
-    float dist2 = secondCorePasser->GetExactDist(Position(pos2X, pos2Y, pos2Z));
+    float dist1 = secondCorePasser->GetExactDist2d(Position(pos1X, pos1Y));
+    float dist2 = secondCorePasser->GetExactDist2d(Position(pos2X, pos2Y));
 
     LOG_DEBUG("playerbots", "IsSecondCorePasserInIntendedPosition: secondCorePasser={} dist1={} dist2={}", secondCorePasser->GetName(), dist1, dist2);
 
-    return dist1 <= 2.0f || dist2 <= 0.5f;
+    // movement arrival should be tight (1.0f) but acceptance for passing is broader (pos1=2.0, pos2=1.0)
+    return dist1 <= 2.0f || dist2 <= 1.0f;
 }
 
-void LadyVashjPassTheTaintedCoreAction::LineUpThirdCorePasser(Player* secondCorePasser, Unit* closestTrigger)
+bool LadyVashjPassTheTaintedCoreAction::IsThirdCorePasserInIntendedPosition(Player* secondCorePasser, Player* thirdCorePasser, Unit* closestTrigger)
 {
-    if (!secondCorePasser->HasItemCount(ITEM_TAINTED_CORE, 1, false))
+    // Prefer snapshot if present
+    auto itSnap = intendedLineup.find(thirdCorePasser->GetGUID());
+    if (itSnap != intendedLineup.end())
     {
-        LOG_DEBUG("playerbots", "LineUpThirdCorePasser: secondCorePasser {} does not hold tainted core, no move needed",
-                  secondCorePasser ? secondCorePasser->GetName() : "null");
-        return;
+        float dist2d = thirdCorePasser->GetExactDist2d(itSnap->second.GetPositionX(), itSnap->second.GetPositionY());
+        LOG_DEBUG("playerbots", "IsThirdCorePasserInIntendedPosition: using snapshot for {} dist2d={}", thirdCorePasser->GetName(), dist2d);
+        if (dist2d <= 1.0f)
+        {
+            intendedLineup.erase(itSnap);
+            return true;
+        }
+        return false;
     }
 
-    if (secondCorePasser->GetExactDist(closestTrigger) <= 4.0f)
-    {
-        LOG_DEBUG("playerbots", "LineUpThirdCorePasser: secondCorePasser already near trigger, no move needed");
-        return;
-    }
-
+    // Fallback: legacy computation (horizontal only)
     float sx = secondCorePasser->GetPositionX();
     float sy = secondCorePasser->GetPositionY();
-    float sz = secondCorePasser->GetPositionZ();
 
-    float tx = closestTrigger->GetPositionX();
-    float ty = closestTrigger->GetPositionY();
-    float tz = closestTrigger->GetPositionZ();
+    float dx = closestTrigger->GetPositionX() - sx;
+    float dy = closestTrigger->GetPositionY() - sy;
+    float distToTrigger = std::sqrt(dx*dx + dy*dy);
 
-    float dx = tx - sx;
-    float dy = ty - sy;
-    float dz = tz - sz;
-    float length = std::sqrt(dx*dx + dy*dy + dz*dz);
-
-    if (length == 0.0f)
+    if (distToTrigger == 0.0f)
     {
-        LOG_DEBUG("playerbots", "LineUpThirdCorePasser: length==0, aborting");
-        return;
+        LOG_DEBUG("playerbots", "IsThirdCorePasserInIntendedPosition: distToTrigger == 0 (secondCorePasser={})", secondCorePasser->GetName());
+        return false;
     }
 
-    dx /= length; dy /= length; dz /= length;
+    dx /= distToTrigger; dy /= distToTrigger;
 
-    float targetX = tx - dx * 2.0f;
-    float targetY = ty - dy * 2.0f;
-    const float targetZ = 42.985f;
+    float moveDist = std::max(distToTrigger - 2.0f, 0.0f);
+    float pos1X = sx + dx * moveDist;
+    float pos1Y = sy + dy * moveDist;
 
-    LOG_DEBUG("playerbots", "LineUpThirdCorePasser: moving bot={} to ({}, {}, {}) to line up behind secondCorePasser={}", bot->GetName(), targetX, targetY, targetZ, secondCorePasser->GetName());
+    // use 38.0f to place the far staging point within core use range (40y)
+    float pos2X = sx + dx * 38.0f;
+    float pos2Y = sy + dy * 38.0f;
 
-    bot->AttackStop();
-    bot->InterruptNonMeleeSpells(false);
-    MoveTo(bot->GetMapId(), targetX, targetY, targetZ,
-            false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+    float dist1 = thirdCorePasser->GetExactDist2d(Position(pos1X, pos1Y));
+    float dist2 = thirdCorePasser->GetExactDist2d(Position(pos2X, pos2Y));
+
+    LOG_DEBUG("playerbots", "IsThirdCorePasserInIntendedPosition: thirdCorePasser={} dist1_2d={} dist2_2d={}", thirdCorePasser->GetName(), dist1, dist2);
+
+    // movement arrival should be tight (1.0f) but acceptance for passing is broader (pos1=2.0, pos2=1.0)
+    return dist1 <= 2.0f || dist2 <= 1.0f;
+}
+
+bool LadyVashjPassTheTaintedCoreAction::IsFourthCorePasserInIntendedPosition(Player* thirdCorePasser, Player* fourthCorePasser, Unit* closestTrigger)
+{
+    // Prefer snapshot if present
+    auto itSnap = intendedLineup.find(fourthCorePasser->GetGUID());
+    if (itSnap != intendedLineup.end())
+    {
+        float dist2d = fourthCorePasser->GetExactDist2d(itSnap->second.GetPositionX(), itSnap->second.GetPositionY());
+        LOG_DEBUG("playerbots", "IsFourthCorePasserInIntendedPosition: using snapshot for {} dist2d={}", fourthCorePasser->GetName(), dist2d);
+        if (dist2d <= 1.0f)
+        {
+            intendedLineup.erase(itSnap);
+            return true;
+        }
+        return false;
+    }
+
+    // Fallback: simple proximity to trigger (same logic used at pass time)
+    float distToTrigger2d = fourthCorePasser->GetExactDist2d(closestTrigger);
+    LOG_DEBUG("playerbots", "IsFourthCorePasserInIntendedPosition: fallback check fourthCorePasser={} distToTrigger2d={}", fourthCorePasser->GetName(), distToTrigger2d);
+    return distToTrigger2d <= 3.0f;
 }
 
 void LadyVashjPassTheTaintedCoreAction::ScheduleStoreCoreAfterImbue(PlayerbotAI* botAI, Player* giver, Player* receiver)
@@ -2535,7 +2807,7 @@ void LadyVashjPassTheTaintedCoreAction::ScheduleStoreCoreAfterImbue(PlayerbotAI*
     if (!receiver)
         return;
 
-    const uint32 delayMs = 1500;
+    const uint32 delayMs = 1000;
 
     const ObjectGuid giverGuid    = giver ? giver->GetGUID() : ObjectGuid::Empty;
     const ObjectGuid receiverGuid = receiver->GetGUID();
@@ -2554,6 +2826,9 @@ void LadyVashjPassTheTaintedCoreAction::ScheduleStoreCoreAfterImbue(PlayerbotAI*
         if (!receiverPlayer)
         {
             LOG_DEBUG("playerbots", "ScheduleStoreCoreAfterImbue: receiver not found (nil)");
+            intendedLineup.erase(receiverGuid);
+            intendedLineup.erase(giverGuid);
+            imbuePending.erase(giverGuid);
             return;
         }
         LOG_DEBUG("playerbots", "ScheduleStoreCoreAfterImbue: resolved receiver name={} guid={} mapId={}",
@@ -2562,6 +2837,9 @@ void LadyVashjPassTheTaintedCoreAction::ScheduleStoreCoreAfterImbue(PlayerbotAI*
         if (!receiverPlayer->IsInWorld())
         {
             LOG_DEBUG("playerbots", "ScheduleStoreCoreAfterImbue: receiver found but not in world (name={})", receiverPlayer->GetName());
+            intendedLineup.erase(receiverGuid);
+            intendedLineup.erase(giverGuid);
+            imbuePending.erase(giverGuid);
             return;
         }
 
@@ -2581,6 +2859,9 @@ void LadyVashjPassTheTaintedCoreAction::ScheduleStoreCoreAfterImbue(PlayerbotAI*
                 if (member->HasItemCount(ITEM_TAINTED_CORE, 1, false))
                 {
                     LOG_DEBUG("playerbots", "ScheduleStoreCoreAfterImbue: abort - group member {} already has core", member->GetName());
+                    intendedLineup.erase(receiverGuid);
+                    intendedLineup.erase(giverGuid);
+                    imbuePending.erase(giverGuid);
                     return;
                 }
             }
@@ -2589,6 +2870,9 @@ void LadyVashjPassTheTaintedCoreAction::ScheduleStoreCoreAfterImbue(PlayerbotAI*
         if (receiverPlayer->HasItemCount(ITEM_TAINTED_CORE, 1, false))
         {
             LOG_DEBUG("playerbots", "ScheduleStoreCoreAfterImbue: abort - receiver already has core (name={})", receiverPlayer->GetName());
+            intendedLineup.erase(receiverGuid);
+            intendedLineup.erase(giverGuid);
+            imbuePending.erase(giverGuid);
             return;
         }
 
@@ -2605,12 +2889,17 @@ void LadyVashjPassTheTaintedCoreAction::ScheduleStoreCoreAfterImbue(PlayerbotAI*
             if (created && giverPlayer)
             {
                 LOG_DEBUG("playerbots", "ScheduleStoreCoreAfterImbue: created core for {} (guid={})", receiverPlayer->GetName(), created->GetGUID().ToString());
-                lastImbueAttempt.erase(giverPlayer->GetGUID());
+                intendedLineup.erase(receiverGuid);
+                intendedLineup.erase(giverGuid);
+                imbuePending.erase(giverGuid);
             }
         }
         else
         {
             LOG_DEBUG("playerbots", "ScheduleStoreCoreAfterImbue: cannot store core for {} (CanStoreNewItem -> {})", receiverPlayer->GetName(), canStore);
+            intendedLineup.erase(receiverGuid);
+            intendedLineup.erase(giverGuid);
+            imbuePending.erase(giverGuid);
         }
     }, delayMs);
 }
@@ -2633,9 +2922,9 @@ bool LadyVashjPassTheTaintedCoreAction::CanUseGenerator()
         return false;
     }
 
-    float dist = bot->GetExactDist(generator);
+    float dist = bot->GetExactDist2d(generator);
     LOG_DEBUG("playerbots", "CanUseGenerator: nearest generator guid={} dist={} bot={}", nearestGen->guid.ToString(), dist, bot->GetName());
-    return dist <= 4.0f;
+    return dist <= 3.0f;
 }
 
 bool LadyVashjPassTheTaintedCoreAction::UseCoreOnNearestGenerator()
@@ -2657,15 +2946,15 @@ bool LadyVashjPassTheTaintedCoreAction::UseCoreOnNearestGenerator()
 
     if (Item* core = bot->GetItemByEntry(ITEM_TAINTED_CORE))
     {
-        uint8 bagIndex = core->GetBagSlot();
-        uint8 slot = core->GetSlot();
-        uint8 cast_count = 0;
+        const uint8 bagIndex = core->GetBagSlot();
+        const uint8 slot = core->GetSlot();
+        const uint8 cast_count = 0;
         uint32 spellId = 0;
         for (uint8 i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
             if (core->GetTemplate()->Spells[i].SpellId > 0) { spellId = core->GetTemplate()->Spells[i].SpellId; break; }
         const ObjectGuid item_guid = core->GetGUID();
-        uint32 glyphIndex = 0;
-        uint8 castFlags = 0;
+        const uint32 glyphIndex = 0;
+        const uint8 castFlags = 0;
 
         LOG_DEBUG("playerbots", "UseCoreOnNearestGenerator: using core for bot={} item_guid={} bag={} slot={} spellId={} generator={}",
                   bot->GetName(), item_guid.ToString(), bagIndex, slot, spellId, generator->GetGUID().ToString());
@@ -3042,7 +3331,7 @@ bool LadyVashjManageTrackersAction::Execute(Event event)
     if (!vashj)
         return false;
 
-    if (vashj->GetHealth() == vashj->GetMaxHealth() || IsLadyVashjInPhase2(botAI))
+    if (vashj->GetHealth() == vashj->GetMaxHealth())
     {
         if (!vashjRangedPositions.empty())
             vashjRangedPositions.clear();
@@ -3051,7 +3340,20 @@ bool LadyVashjManageTrackersAction::Execute(Event event)
             vashjHasReachedRangedPosition.clear();
 
         if (!lastImbueAttempt.empty())
+        {
             lastImbueAttempt.clear();
+            LOG_DEBUG("playerbots", "LadyVashjManageTrackersAction: cleared lastImbueAttempt on boss reset");
+        }
+        if (!imbuePending.empty())
+        {
+            imbuePending.clear();
+            LOG_DEBUG("playerbots", "LadyVashjManageTrackersAction: cleared imbuePending on boss reset");
+        }
+        if (!intendedLineup.empty())
+        {
+            intendedLineup.clear();
+            LOG_DEBUG("playerbots", "LadyVashjManageTrackersAction: cleared intendedLineup on boss reset");
+        }
     }
 
     return false;

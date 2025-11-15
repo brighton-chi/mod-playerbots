@@ -457,23 +457,29 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
         dynamic_cast<LadyVashjCheatToTestAction*>(action))
         return 1.0f;
 
-    // only interested when this bot is one of the 3 passers
     Player* designatedLooter = GetDesignatedCoreLooter(group, master, botAI);
-    Player* firstCore = GetFirstTaintedCorePasser(group, botAI);
-    Player* secondCore = GetSecondTaintedCorePasser(group, botAI);
-    Player* thirdCore = GetThirdTaintedCorePasser(group, botAI);
+    Player* firstCorePasser = GetFirstTaintedCorePasser(group, botAI);
+    Player* secondCorePasser = GetSecondTaintedCorePasser(group, botAI);
+    Player* thirdCorePasser = GetThirdTaintedCorePasser(group, botAI);
+    Player* fourthCorePasser = GetFourthTaintedCorePasser(group, botAI);
 
-    if (bot == firstCore || bot == secondCore || bot == thirdCore || bot == designatedLooter)
+    if (bot == firstCorePasser || bot == secondCorePasser || bot == thirdCorePasser ||
+        bot == fourthCorePasser || bot == designatedLooter)
     {
-        auto hasCore = [](Player* p) { return p && p->HasItemCount(ITEM_TAINTED_CORE, 1, false); };
+        auto hasCore = [](Player* player) { return player && player->HasItemCount(ITEM_TAINTED_CORE, 1, false); };
 
-        if (bot == designatedLooter && (hasCore(firstCore) || hasCore(secondCore) || hasCore(thirdCore)))
+        if (bot == designatedLooter && (hasCore(firstCorePasser) || hasCore(secondCorePasser) ||
+            hasCore(thirdCorePasser) || hasCore(fourthCorePasser)))
             return 1.0f;
-        else if (bot == firstCore && (hasCore(secondCore) || hasCore(thirdCore)))
+        else if (bot == firstCorePasser && (hasCore(secondCorePasser) || hasCore(thirdCorePasser) ||
+            hasCore(fourthCorePasser)))
             return 1.0f;
-        else if (bot == secondCore && hasCore(thirdCore))
+        else if (bot == secondCorePasser && (hasCore(thirdCorePasser) || hasCore(fourthCorePasser)))
+            return 1.0f;
+        else if (bot == thirdCorePasser && hasCore(fourthCorePasser))
             return 1.0f;
 
+        const uint32 mapId = vashj->GetMapId();
         const time_t now = std::time(nullptr);
 
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
@@ -483,7 +489,7 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
                 continue;
 
             bool recentlyParalyzed = false;
-            auto it = lastParalyzeTime.find(member->GetGUID());
+            auto it = lastParalyzeTime.find(mapId);
 
             if (it != lastParalyzeTime.end() && (now - it->second) <= 3)
                 recentlyParalyzed = true;

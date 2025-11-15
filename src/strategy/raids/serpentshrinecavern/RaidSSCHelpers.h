@@ -139,7 +139,10 @@ namespace SerpentShrineCavernHelpers
 
     extern std::unordered_map<ObjectGuid, Position> vashjRangedPositions;
     extern std::unordered_map<ObjectGuid, bool> vashjHasReachedRangedPosition;
+    extern std::unordered_map<ObjectGuid, Position> intendedLineup;
     extern std::unordered_map<ObjectGuid, time_t> lastImbueAttempt;
+    extern std::unordered_map<uint32, time_t> lastParalyzeTime;
+    extern std::unordered_set<ObjectGuid> imbuePending;
 
     namespace SerpentShrineCavernPositions
     {
@@ -226,6 +229,7 @@ namespace SerpentShrineCavernHelpers
     Player* GetFirstTaintedCorePasser(Group* group, PlayerbotAI* botAI);
     Player* GetSecondTaintedCorePasser(Group* group, PlayerbotAI* botAI);
     Player* GetThirdTaintedCorePasser(Group* group, PlayerbotAI* botAI);
+    Player* GetFourthTaintedCorePasser(Group* group, PlayerbotAI* botAI);
 
     struct GeneratorInfo
     {

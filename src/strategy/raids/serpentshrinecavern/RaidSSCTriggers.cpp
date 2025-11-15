@@ -489,43 +489,52 @@ bool LadyVashjTaintedCoreWasLootedTrigger::IsActive()
     Player* firstCorePasser = GetFirstTaintedCorePasser(group, botAI);
     Player* secondCorePasser = GetSecondTaintedCorePasser(group, botAI);
     Player* thirdCorePasser = GetThirdTaintedCorePasser(group, botAI);
+    Player* fourthCorePasser = GetFourthTaintedCorePasser(group, botAI);
 
-    LOG_DEBUG("playerbots", "LadyVashjTaintedCoreWasLootedTrigger: role check for bot={} first={} second={} third={} looter={}",
-              bot->GetName(), bot == firstCorePasser, bot == secondCorePasser, bot == thirdCorePasser, bot == designatedLooter);
+    LOG_DEBUG("playerbots", "LadyVashjTaintedCoreWasLootedTrigger: role check for bot={} first={} second={} third={} fourth={} looter={}",
+              bot->GetName(), bot == firstCorePasser, bot == secondCorePasser, bot == thirdCorePasser, bot == fourthCorePasser, bot == designatedLooter);
 
     auto hasCore = [](Player* p) -> bool { return p && p->HasItemCount(ITEM_TAINTED_CORE, 1, false); };
 
     if (bot == designatedLooter)
     {
-        if (hasCore(firstCorePasser) || hasCore(secondCorePasser) || hasCore(thirdCorePasser))
+        if (hasCore(firstCorePasser) || hasCore(secondCorePasser) || hasCore(thirdCorePasser) || hasCore(fourthCorePasser))
         {
-            LOG_DEBUG("playerbots", "LadyVashjTaintedCoreWasLootedTrigger: designated looter={} exempt because a passer has core (first={} second={} third={})",
+            LOG_DEBUG("playerbots", "LadyVashjTaintedCoreWasLootedTrigger: designated looter={} exempt because a passer has core (first={} second={} third={} fourth={})",
                       bot->GetName(),
-                      hasCore(firstCorePasser), hasCore(secondCorePasser), hasCore(thirdCorePasser));
+                      hasCore(firstCorePasser), hasCore(secondCorePasser), hasCore(thirdCorePasser), hasCore(fourthCorePasser));
             return false;
         }
     }
     else if (bot == firstCorePasser)
     {
-        if (hasCore(secondCorePasser) || hasCore(thirdCorePasser))
+        if (hasCore(secondCorePasser) || hasCore(thirdCorePasser) || hasCore(fourthCorePasser))
         {
-            LOG_DEBUG("playerbots", "LadyVashjTaintedCoreWasLootedTrigger: first passer={} exempt because second/third have core (second={} third={})",
-                      bot->GetName(), hasCore(secondCorePasser), hasCore(thirdCorePasser));
+            LOG_DEBUG("playerbots", "LadyVashjTaintedCoreWasLootedTrigger: first passer={} exempt because second/third/fourth have core (second={} third={} fourth={})",
+                      bot->GetName(), hasCore(secondCorePasser), hasCore(thirdCorePasser), hasCore(fourthCorePasser));
             return false;
         }
     }
     else if (bot == secondCorePasser)
     {
-        if (hasCore(thirdCorePasser))
+        if (hasCore(thirdCorePasser) || hasCore(fourthCorePasser))
         {
-            LOG_DEBUG("playerbots", "LadyVashjTaintedCoreWasLootedTrigger: second passer={} exempt because third has core (third={})",
-                      bot->GetName(), hasCore(thirdCorePasser));
+            LOG_DEBUG("playerbots", "LadyVashjTaintedCoreWasLootedTrigger: second passer={} exempt because third/fourth have core (third={} fourth={})",
+                      bot->GetName(), hasCore(thirdCorePasser), hasCore(fourthCorePasser));
+            return false;
+        }
+    }
+    else if (bot == thirdCorePasser)
+    {
+        if (hasCore(fourthCorePasser))
+        {
+            LOG_DEBUG("playerbots", "LadyVashjTaintedCoreWasLootedTrigger: third passer={} exempt because fourth has core (fourth={})",
+                      bot->GetName(), hasCore(fourthCorePasser));
             return false;
         }
     }
 
     // remember last time Paralyze was observed so we can tolerate the brief handoff gap
-    static std::map<uint32, time_t> lastParalyzeTime;
     uint32 mapId = vashj->GetMapId();
     time_t now = std::time(nullptr);
 

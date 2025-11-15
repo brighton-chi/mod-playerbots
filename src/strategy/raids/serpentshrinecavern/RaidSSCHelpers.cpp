@@ -27,7 +27,10 @@ namespace SerpentShrineCavernHelpers
 
     std::unordered_map<ObjectGuid, Position> vashjRangedPositions;
     std::unordered_map<ObjectGuid, bool> vashjHasReachedRangedPosition;
+    std::unordered_map<ObjectGuid, Position> intendedLineup;
     std::unordered_map<ObjectGuid, time_t> lastImbueAttempt;
+    std::unordered_map<uint32, time_t> lastParalyzeTime;
+    std::unordered_set<ObjectGuid> imbuePending;
 
     namespace SerpentShrineCavernPositions
     {
@@ -541,6 +544,41 @@ namespace SerpentShrineCavernHelpers
             Player* member = ref->GetSource();
             if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) || botAI->IsTank(member) ||
                 member == designatedLooter || member == firstCorePasser || member == secondCorePasser)
+                continue;
+            return member;
+        }
+
+        return nullptr;
+    }
+
+    Player* GetFourthTaintedCorePasser(Group* group, PlayerbotAI* botAI)
+    {
+        Player* designatedLooter = GetDesignatedCoreLooter(group, botAI->GetMaster(), botAI);
+        Player* firstCorePasser = GetFirstTaintedCorePasser(group, botAI);
+        Player* secondCorePasser = GetSecondTaintedCorePasser(group, botAI);
+        Player* thirdCorePasser = GetThirdTaintedCorePasser(group, botAI);
+
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || member == designatedLooter ||
+                member == firstCorePasser || member == secondCorePasser || member == thirdCorePasser)
+                continue;
+
+            PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
+            if (!memberAI)
+                continue;
+
+            if (memberAI->IsHealAssistantOfIndex(member, 2))
+                return member;
+        }
+
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) || botAI->IsTank(member) ||
+                member == designatedLooter || member == firstCorePasser || member == secondCorePasser ||
+                member == thirdCorePasser)
                 continue;
             return member;
         }

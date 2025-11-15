@@ -195,6 +195,6 @@ void RaidSSCStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new LadyVashjDelayCooldownsMultiplier(botAI));
     multipliers.push_back(new LadyVashjStaticChargeStayAwayFromGroupMultiplier(botAI));
     multipliers.push_back(new LadyVashjDoNotLootTheTaintedCoreMultiplier(botAI));
-    multipliers.push_back(new LadyVashjCorePassersPrioritizePositioningMultiplier(botAI));
+    // multipliers.push_back(new LadyVashjCorePassersPrioritizePositioningMultiplier(botAI));
     multipliers.push_back(new LadyVashjDisableAutomaticTargetingAndMovementModifier(botAI));
 }
