@@ -1,6 +1,3 @@
-#include <algorithm>
-#include <map>
-
 #include "RaidKarazhanHelpers.h"
 #include "RaidKarazhanActions.h"
 #include "Playerbots.h"
@@ -50,7 +47,6 @@ namespace KarazhanHelpers
         const Position TheCuratorBossPosition = { -11139.463f, -1884.645f, 165.765f };
 
         const Position NightbaneTransitionBossPosition = { -11160.646f, -1932.773f, 91.473f }; // near some ribs
-        // const Position NightbaneFinalBossPosition = { -11173.391f, -1941.177f, 91.473f };
         const Position NightbaneFinalBossPosition = { -11173.530f, -1940.707f, 91.473f };
         const Position NightbaneRangedPosition1 = { -11145.949f, -1970.927f, 91.473f };
         const Position NightbaneRangedPosition2 = { -11143.594f, -1954.981f, 91.473f };
@@ -341,26 +337,26 @@ namespace KarazhanHelpers
             greenBlocker = nullptr;
         }
 
-            std::vector<Player*> blueBlockers = GetBlueBlockers(botAI, bot);
-            if (!blueBlockers.empty())
+        std::vector<Player*> blueBlockers = GetBlueBlockers(botAI, bot);
+        if (!blueBlockers.empty())
+        {
+            auto it = std::find_if(blueBlockers.begin(), blueBlockers.end(), [](Player* player)
             {
-                auto it = std::find_if(blueBlockers.begin(), blueBlockers.end(), [](Player* player)
-                {
-                    return player && player->GetGUID() == currentBlueBlocker;
-                });
+                return player && player->GetGUID() == currentBlueBlocker;
+            });
 
-                if (it != blueBlockers.end())
-                    blueBlocker = *it;
-                else
-                    blueBlocker = blueBlockers.front();
-
-                currentBlueBlocker = blueBlocker ? blueBlocker->GetGUID() : ObjectGuid::Empty;
-            }
+            if (it != blueBlockers.end())
+                blueBlocker = *it;
             else
-            {
-                currentBlueBlocker = ObjectGuid::Empty;
-                blueBlocker = nullptr;
-            }
+                blueBlocker = blueBlockers.front();
+
+            currentBlueBlocker = blueBlocker ? blueBlocker->GetGUID() : ObjectGuid::Empty;
+        }
+        else
+        {
+            currentBlueBlocker = ObjectGuid::Empty;
+            blueBlocker = nullptr;
+        }
 
         return std::make_tuple(redBlocker, greenBlocker, blueBlocker);
     }
@@ -420,7 +416,10 @@ namespace KarazhanHelpers
         float tx = target.GetPositionX();
         float ty = target.GetPositionY();
         float tz = target.GetPositionZ();
-        float totalDist = std::sqrt(std::pow(tx - sx, 2) + std::pow(ty - sy, 2));
+
+        const float dxTotal = tx - sx;
+        const float dyTotal = ty - sy;
+        const float totalDist = std::sqrt(dxTotal*dxTotal + dyTotal*dyTotal);
         if (totalDist == 0.0f)
             return true;
 
@@ -432,9 +431,9 @@ namespace KarazhanHelpers
             float checkZ = sz + (tz - sz) * t;
             for (Unit* hazard : hazards)
             {
-                float hazardDist = std::sqrt(std::pow(checkX - hazard->GetPositionX(), 2) +
-                                             std::pow(checkY - hazard->GetPositionY(), 2));
-                if (hazardDist < hazardRadius)
+                const float hx = checkX - hazard->GetPositionX();
+                const float hy = checkY - hazard->GetPositionY();
+                if ((hx*hx + hy*hy) < hazardRadius * hazardRadius)
                     return false;
             }
         }
@@ -453,7 +452,7 @@ namespace KarazhanHelpers
 
         for (int i = 0; i < numAngles; ++i)
         {
-            float angle = (2 * M_PI * i) / numAngles;
+            float angle = (2.0f * M_PI * i) / numAngles;
             float dx = cos(angle);
             float dy = sin(angle);
 
@@ -477,7 +476,9 @@ namespace KarazhanHelpers
                         continue;
                 }
 
-                float moveDist = sqrt(pow(destX - originX, 2) + pow(destY - originY, 2));
+                const float mdx = destX - originX;
+                const float mdy = destY - originY;
+                float moveDist = std::sqrt(mdx*mdx + mdy*mdy);
                 if (moveDist < bestMoveDist)
                 {
                     bestMoveDist = moveDist;

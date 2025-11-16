@@ -31,17 +31,17 @@ public:
     bool IsActive() override;
 };
 
-class AttumenTheHuntsmanAttumenMountedTrigger : public Trigger
+class AttumenTheHuntsmanAttumenIsMountedTrigger : public Trigger
 {
 public:
-    AttumenTheHuntsmanAttumenMountedTrigger(PlayerbotAI* botAI) : Trigger(botAI, "attumen the huntsman attumen mounted") {}
+    AttumenTheHuntsmanAttumenIsMountedTrigger(PlayerbotAI* botAI) : Trigger(botAI, "attumen the huntsman attumen is mounted") {}
     bool IsActive() override;
 };
 
-class AttumenTheHuntsmanManageTimerTrigger : public Trigger
+class AttumenTheHuntsmanBossWipesAggroWhenMountingTrigger : public Trigger
 {
 public:
-    AttumenTheHuntsmanManageTimerTrigger(PlayerbotAI* botAI) : Trigger(botAI, "attumen the huntsman manage timer") {}
+    AttumenTheHuntsmanBossWipesAggroWhenMountingTrigger(PlayerbotAI* botAI) : Trigger(botAI, "attumen the huntsman boss wipes aggro when mounting") {}
     bool IsActive() override;
 };
 
@@ -52,24 +52,24 @@ public:
     bool IsActive() override;
 };
 
-class MaidenOfVirtueBossEngagedByMainTankTrigger : public Trigger
+class MaidenOfVirtueHealersAreStunnedByRepentanceTrigger : public Trigger
 {
 public:
-    MaidenOfVirtueBossEngagedByMainTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "maiden of virtue boss engaged by main tank") {}
+    MaidenOfVirtueHealersAreStunnedByRepentanceTrigger(PlayerbotAI* botAI) : Trigger(botAI, "maiden of virtue healers are stunned by repentance") {}
     bool IsActive() override;
 };
 
-class MaidenOfVirtueBossEngagedByRangedTrigger : public Trigger
+class MaidenOfVirtueHolyWrathDealsChainDamageTrigger : public Trigger
 {
 public:
-    MaidenOfVirtueBossEngagedByRangedTrigger(PlayerbotAI* botAI) : Trigger(botAI, "maiden of virtue boss engaged by ranged") {}
+    MaidenOfVirtueHolyWrathDealsChainDamageTrigger(PlayerbotAI* botAI) : Trigger(botAI, "maiden of virtue holy wrath deals chain damage") {}
     bool IsActive() override;
 };
 
-class BigBadWolfBossEngagedByMainTankTrigger : public Trigger
+class BigBadWolfBossEngagedByTankTrigger : public Trigger
 {
 public:
-    BigBadWolfBossEngagedByMainTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "big bad wolf boss engaged by main tank") {}
+    BigBadWolfBossEngagedByTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "big bad wolf boss engaged by tank") {}
     bool IsActive() override;
 };
 
@@ -114,10 +114,10 @@ public:
     bool IsActive() override;
 };
 
-class TheCuratorBossEngagedByRangedTrigger : public Trigger
+class TheCuratorBossAstralFlaresCastArcingSearTrigger : public Trigger
 {
 public:
-    TheCuratorBossEngagedByRangedTrigger(PlayerbotAI* botAI) : Trigger(botAI, "the curator boss engaged by ranged") {}
+    TheCuratorBossAstralFlaresCastArcingSearTrigger(PlayerbotAI* botAI) : Trigger(botAI, "the curator astral flares cast arcing sear") {}
     bool IsActive() override;
 };
 
@@ -191,10 +191,10 @@ public:
     bool IsActive() override;
 };
 
-class NetherspiteNeedToManageTimersTrigger : public Trigger
+class NetherspiteNeedToManageTimersAndTrackersTrigger : public Trigger
 {
 public:
-    NetherspiteNeedToManageTimersTrigger(PlayerbotAI* botAI) : Trigger(botAI, "netherspite need to manage timers") {}
+    NetherspiteNeedToManageTimersAndTrackersTrigger(PlayerbotAI* botAI) : Trigger(botAI, "netherspite need to manage timers and trackers") {}
     bool IsActive() override;
 };
 
@@ -226,10 +226,10 @@ public:
     bool IsActive() override;
 };
 
-class NightbaneRangedPrepareForCharredEarthTrigger : public Trigger
+class NightbaneRangedBotsAreInCharredEarthTrigger : public Trigger
 {
 public:
-    NightbaneRangedPrepareForCharredEarthTrigger(PlayerbotAI* botAI) : Trigger(botAI, "nightbane ranged prepare for charred earth") {}
+NightbaneRangedBotsAreInCharredEarthTrigger(PlayerbotAI* botAI) : Trigger(botAI, "nightbane ranged bots are in charred earth") {}
     bool IsActive() override;
 };
 

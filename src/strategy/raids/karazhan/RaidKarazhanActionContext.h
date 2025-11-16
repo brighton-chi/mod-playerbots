@@ -15,11 +15,11 @@ public:
         creators["attumen the huntsman mark target"] = &RaidKarazhanActionContext::attumen_the_huntsman_mark_target;
         creators["attumen the huntsman split bosses"] = &RaidKarazhanActionContext::attumen_the_huntsman_split_bosses;
         creators["attumen the huntsman stack behind"] = &RaidKarazhanActionContext::attumen_the_huntsman_stack_behind;
-        creators["attumen the huntsman manage timer"] = &RaidKarazhanActionContext::attumen_the_huntsman_manage_timer;
+        creators["attumen the huntsman manage dps timer"] = &RaidKarazhanActionContext::attumen_the_huntsman_manage_dps_timer;
 
         creators["moroes mark target"] = &RaidKarazhanActionContext::moroes_mark_target;
 
-        creators["maiden of virtue main tank movement"] = &RaidKarazhanActionContext::maiden_of_virtue_main_tank_movement;
+        creators["maiden of virtue move boss to healer"] = &RaidKarazhanActionContext::maiden_of_virtue_move_boss_to_healer;
         creators["maiden of virtue position ranged"] = &RaidKarazhanActionContext::maiden_of_virtue_position_ranged;
 
         creators["big bad wolf position boss"] = &RaidKarazhanActionContext::big_bad_wolf_position_boss;
@@ -46,7 +46,7 @@ public:
         creators["netherspite block green beam"] = &RaidKarazhanActionContext::netherspite_block_green_beam;
         creators["netherspite avoid beam and void zone"] = &RaidKarazhanActionContext::netherspite_avoid_beam_and_void_zone;
         creators["netherspite banish phase avoid void zone"] = &RaidKarazhanActionContext::netherspite_banish_phase_avoid_void_zone;
-        creators["netherspite manage timers"] = &RaidKarazhanActionContext::netherspite_manage_timers;
+        creators["netherspite manage timers and trackers"] = &RaidKarazhanActionContext::netherspite_manage_timers_and_trackers;
 
         creators["prince malchezaar enfeebled avoid hazard"] = &RaidKarazhanActionContext::prince_malchezaar_enfeebled_avoid_hazard;
         creators["prince malchezaar non tank avoid infernal"] = &RaidKarazhanActionContext::prince_malchezaar_non_tank_avoid_infernal;
@@ -67,11 +67,11 @@ private:
     static Action* attumen_the_huntsman_mark_target(PlayerbotAI* botAI) { return new AttumenTheHuntsmanMarkTargetAction(botAI); }
     static Action* attumen_the_huntsman_split_bosses(PlayerbotAI* botAI) { return new AttumenTheHuntsmanSplitBossesAction(botAI); }
     static Action* attumen_the_huntsman_stack_behind(PlayerbotAI* botAI) { return new AttumenTheHuntsmanStackBehindAction(botAI); }
-    static Action* attumen_the_huntsman_manage_timer(PlayerbotAI* botAI) { return new AttumenTheHuntsmanManageTimerAction(botAI); }
+    static Action* attumen_the_huntsman_manage_dps_timer(PlayerbotAI* botAI) { return new AttumenTheHuntsmanManageDpsTimerAction(botAI); }
 
     static Action* moroes_mark_target(PlayerbotAI* botAI) { return new MoroesMarkTargetAction(botAI); }
 
-    static Action* maiden_of_virtue_main_tank_movement(PlayerbotAI* botAI) { return new MaidenOfVirtueMainTankMovementAction(botAI); }
+    static Action* maiden_of_virtue_move_boss_to_healer(PlayerbotAI* botAI) { return new MaidenOfVirtueMoveBossToHealerAction(botAI); }
     static Action* maiden_of_virtue_position_ranged(PlayerbotAI* botAI) { return new MaidenOfVirtuePositionRangedAction(botAI); }
 
     static Action* big_bad_wolf_position_boss(PlayerbotAI* botAI) { return new BigBadWolfPositionBossAction(botAI); }
@@ -98,7 +98,7 @@ private:
     static Action* netherspite_block_green_beam(PlayerbotAI* botAI) { return new NetherspiteBlockGreenBeamAction(botAI); }
     static Action* netherspite_avoid_beam_and_void_zone(PlayerbotAI* botAI) { return new NetherspiteAvoidBeamAndVoidZoneAction(botAI); }
     static Action* netherspite_banish_phase_avoid_void_zone(PlayerbotAI* botAI) { return new NetherspiteBanishPhaseAvoidVoidZoneAction(botAI); }
-    static Action* netherspite_manage_timers(PlayerbotAI* botAI) { return new NetherspiteManageTimersAction(botAI); }
+    static Action* netherspite_manage_timers_and_trackers(PlayerbotAI* botAI) { return new NetherspiteManageTimersAndTrackersAction(botAI); }
 
     static Action* prince_malchezaar_enfeebled_avoid_hazard(PlayerbotAI* botAI) { return new PrinceMalchezaarEnfeebledAvoidHazardAction(botAI); }
     static Action* prince_malchezaar_non_tank_avoid_infernal(PlayerbotAI* botAI) { return new PrinceMalchezaarNonTankAvoidInfernalAction(botAI); }

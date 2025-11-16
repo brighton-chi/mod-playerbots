@@ -18,11 +18,11 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("attumen the huntsman attumen spawned",
         NextAction::array(0, new NextAction("attumen the huntsman split bosses", ACTION_RAID + 1), nullptr)
     ));
-    triggers.push_back(new TriggerNode("attumen the huntsman attumen mounted",
+    triggers.push_back(new TriggerNode("attumen the huntsman attumen is mounted",
         NextAction::array(0, new NextAction("attumen the huntsman stack behind", ACTION_RAID + 1), nullptr)
     ));
-    triggers.push_back(new TriggerNode("attumen the huntsman manage timer",
-        NextAction::array(0, new NextAction("attumen the huntsman manage timer", ACTION_RAID + 2), nullptr)
+    triggers.push_back(new TriggerNode("attumen the huntsman boss wipes aggro when mounting",
+        NextAction::array(0, new NextAction("attumen the huntsman manage dps timer", ACTION_RAID + 2), nullptr)
     ));
 
     // Moroes
@@ -31,10 +31,10 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     ));
 
     // Maiden of Virtue
-    triggers.push_back(new TriggerNode("maiden of virtue boss engaged by main tank",
-        NextAction::array(0, new NextAction("maiden of virtue main tank movement", ACTION_RAID + 1), nullptr)
+    triggers.push_back(new TriggerNode("maiden of virtue healers are stunned by repentance",
+        NextAction::array(0, new NextAction("maiden of virtue move boss to healer", ACTION_RAID + 1), nullptr)
     ));
-    triggers.push_back(new TriggerNode("maiden of virtue boss engaged by ranged",
+    triggers.push_back(new TriggerNode("maiden of virtue holy wrath deals chain damage",
         NextAction::array(0, new NextAction("maiden of virtue position ranged", ACTION_RAID + 1), nullptr)
     ));
 
@@ -42,7 +42,7 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("big bad wolf boss is chasing little red riding hood",
         NextAction::array(0, new NextAction("big bad wolf run away from boss", ACTION_EMERGENCY + 6), nullptr)
     ));
-    triggers.push_back(new TriggerNode("big bad wolf boss engaged by main tank",
+    triggers.push_back(new TriggerNode("big bad wolf boss engaged by tank",
         NextAction::array(0, new NextAction("big bad wolf position boss", ACTION_RAID + 1), nullptr)
     ));
 
@@ -66,7 +66,7 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("the curator boss engaged by tanks",
         NextAction::array(0, new NextAction("the curator position boss", ACTION_RAID + 2), nullptr)
     ));
-    triggers.push_back(new TriggerNode("the curator boss engaged by ranged",
+    triggers.push_back(new TriggerNode("the curator astral flares cast arcing sear",
         NextAction::array(0, new NextAction("the curator spread ranged", ACTION_RAID + 2), nullptr)
     ));
 
@@ -105,8 +105,8 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("netherspite boss is banished",
         NextAction::array(0, new NextAction("netherspite banish phase avoid void zone", ACTION_RAID + 1), nullptr)
     ));
-    triggers.push_back(new TriggerNode("netherspite need to manage timers",
-        NextAction::array(0, new NextAction("netherspite manage timers", ACTION_EMERGENCY + 10), nullptr)
+    triggers.push_back(new TriggerNode("netherspite need to manage timers and trackers",
+        NextAction::array(0, new NextAction("netherspite manage timers and trackers", ACTION_EMERGENCY + 10), nullptr)
     ));
 
     // Prince Malchezaar
@@ -124,7 +124,7 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("nightbane boss engaged by main tank",
         NextAction::array(0, new NextAction("nightbane ground phase position boss", ACTION_RAID + 1), nullptr)
     ));
-    triggers.push_back(new TriggerNode("nightbane ranged prepare for charred earth",
+    triggers.push_back(new TriggerNode("nightbane ranged bots are in charred earth",
         NextAction::array(0, new NextAction("nightbane ground phase rotate ranged positions", ACTION_EMERGENCY + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("nightbane main tank is susceptible to fear",

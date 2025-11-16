@@ -45,10 +45,10 @@ public:
     bool Execute(Event event) override;
 };
 
-class AttumenTheHuntsmanManageTimerAction : public Action
+class AttumenTheHuntsmanManageDpsTimerAction : public Action
 {
 public:
-    AttumenTheHuntsmanManageTimerAction(PlayerbotAI* botAI, std::string const name = "attumen the huntsman manage timer") : Action(botAI, name) {}
+    AttumenTheHuntsmanManageDpsTimerAction(PlayerbotAI* botAI, std::string const name = "attumen the huntsman manage dps timer") : Action(botAI, name) {}
 
     bool Execute(Event event) override;
 };
@@ -61,10 +61,10 @@ public:
     bool Execute(Event event) override;
 };
 
-class MaidenOfVirtueMainTankMovementAction : public AttackAction
+class MaidenOfVirtueMoveBossToHealerAction : public AttackAction
 {
 public:
-    MaidenOfVirtueMainTankMovementAction(PlayerbotAI* botAI, std::string const name = "maiden of virtue main tank movement") : AttackAction(botAI, name) {}
+    MaidenOfVirtueMoveBossToHealerAction(PlayerbotAI* botAI, std::string const name = "maiden of virtue move boss to healer") : AttackAction(botAI, name) {}
 
     bool Execute(Event event) override;
 };
@@ -240,10 +240,10 @@ public:
     bool Execute(Event event) override;
 };
 
-class NetherspiteManageTimersAction : public Action
+class NetherspiteManageTimersAndTrackersAction : public Action
 {
 public:
-    NetherspiteManageTimersAction(PlayerbotAI* botAI, std::string const name = "netherspite manage timers") : Action(botAI, name) {}
+    NetherspiteManageTimersAndTrackersAction(PlayerbotAI* botAI, std::string const name = "netherspite manage timers and trackers") : Action(botAI, name) {}
 
     bool Execute(Event event) override;
 };

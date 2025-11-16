@@ -13,6 +13,7 @@ using namespace KarazhanPositions;
 bool SpectralRetainerMarkTargetAction::Execute(Event event)
 {
     Unit* retainer = GetFirstAliveUnitByEntry(botAI, NPC_SPECTRAL_RETAINER);
+
     if (retainer)
         MarkTargetWithSkull(bot, retainer);
 
@@ -27,29 +28,23 @@ bool ManaWarpStunCreatureBeforeWarpBreachAction::Execute(Event event)
     if (!manaWarp)
         return false;
 
-    if (botAI->CanCastSpell("bash", manaWarp))
-        return botAI->CastSpell("bash", manaWarp);
+    static const std::array<const char*, 8> spells =
+    {
+        "bash",
+        "concussion blow",
+        "hammer of justice",
+        "kidney shot",
+        "maim",
+        "revenge stun",
+        "shadowfury",
+        "shockwave"
+    };
 
-    if (botAI->CanCastSpell("concussion blow", manaWarp))
-        return botAI->CastSpell("concussion blow", manaWarp);
-
-    if (botAI->CanCastSpell("hammer of justice", manaWarp))
-        return botAI->CastSpell("hammer of justice", manaWarp);
-
-    if (botAI->CanCastSpell("kidney shot", manaWarp))
-        return botAI->CastSpell("kidney shot", manaWarp);
-
-    if (botAI->CanCastSpell("maim", manaWarp))
-        return botAI->CastSpell("maim", manaWarp);
-
-    if (botAI->CanCastSpell("revenge stun", manaWarp))
-        return botAI->CastSpell("revenge stun", manaWarp);
-
-    if (botAI->CanCastSpell("shadowfury", manaWarp))
-        return botAI->CastSpell("shadowfury", manaWarp);
-
-    if (botAI->CanCastSpell("shockwave", manaWarp))
-        return botAI->CastSpell("shockwave", manaWarp);
+    for (const char* spell : spells)
+    {
+        if (botAI->CanCastSpell(spell, manaWarp))
+            return botAI->CastSpell(spell, manaWarp);
+    }
 
     return false;
 }
@@ -144,7 +139,7 @@ bool AttumenTheHuntsmanStackBehindAction::Execute(Event event)
 }
 
 // Reset timer for bots to pause DPS when Attumen mounts Midnight
-bool AttumenTheHuntsmanManageTimerAction::Execute(Event event)
+bool AttumenTheHuntsmanManageDpsTimerAction::Execute(Event event)
 {
     Unit* midnight = AI_VALUE2(Unit*, "find target", "midnight");
     Unit* attumenMounted = GetFirstAliveUnitByEntry(botAI, NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED);
@@ -186,7 +181,7 @@ bool MoroesMarkTargetAction::Execute(Event event)
 
 // Tank the boss in the center of the room
 // Move to healers after Repentenace to break the stun
-bool MaidenOfVirtueMainTankMovementAction::Execute(Event event)
+bool MaidenOfVirtueMoveBossToHealerAction::Execute(Event event)
 {
     Unit* maiden = AI_VALUE2(Unit*, "find target", "maiden of virtue");
     Group* group = bot->GetGroup();
@@ -347,10 +342,13 @@ bool RomuloAndJulianneMarkTargetAction::Execute(Event event)
 
     Unit* target = nullptr;
     const float maxPctDifference = 10.0f;
+
     if (julianne->GetHealthPct() + maxPctDifference < romulo->GetHealthPct() || julianne->GetHealthPct() < 1.0f)
         target = romulo;
     else if (romulo->GetHealthPct() + maxPctDifference < julianne->GetHealthPct() || romulo->GetHealthPct() < 1.0f)
         target = julianne;
+    else
+        target = (romulo->GetHealthPct() >= julianne->GetHealthPct()) ? romulo : julianne;
 
     if (target)
         MarkTargetWithSkull(bot, target);
@@ -601,10 +599,9 @@ bool NetherspiteBlockRedBeamAction::Execute(Event event)
     {
         if (!wasBlocking)
         {
-            std::map<std::string, std::string> ph;
-            ph["%player"] = bot->GetName();
+            std::map<std::string, std::string> placeholders{{"%player", bot->GetName()}};
             std::string text = sPlayerbotTextMgr->GetBotTextOrDefault(
-                "netherspite_beam_blocking_red", "%player is moving to block the red beam!", ph);
+                "netherspite_beam_blocking_red", "%player is moving to block the red beam!", placeholders);
             bot->Yell(text, LANG_UNIVERSAL);
         }
         _wasBlockingRedBeam[botGuid] = true;
@@ -688,10 +685,9 @@ bool NetherspiteBlockBlueBeamAction::Execute(Event event)
 
     if (wasBlocking && !isBlockingNow)
     {
-        std::map<std::string, std::string> ph;
-        ph["%player"] = bot->GetName();
+        std::map<std::string, std::string> placeholders{{"%player", bot->GetName()}};
         std::string text = sPlayerbotTextMgr->GetBotTextOrDefault(
-            "netherspite_beam_leaving_blue", "%player is leaving the blue beam--next blocker up!", ph);
+            "netherspite_beam_leaving_blue", "%player is leaving the blue beam--next blocker up!", placeholders);
         bot->Yell(text, LANG_UNIVERSAL);
         _wasBlockingBlueBeam[botGuid] = false;
     }
@@ -700,10 +696,9 @@ bool NetherspiteBlockBlueBeamAction::Execute(Event event)
     {
         if (!wasBlocking)
         {
-            std::map<std::string, std::string> ph;
-            ph["%player"] = bot->GetName();
+            std::map<std::string, std::string> placeholders{{"%player", bot->GetName()}};
             std::string text = sPlayerbotTextMgr->GetBotTextOrDefault(
-                "netherspite_beam_blocking_blue", "%player is moving to block the blue beam!", ph);
+                "netherspite_beam_blocking_blue", "%player is moving to block the blue beam!", placeholders);
             bot->Yell(text, LANG_UNIVERSAL);
         }
         _wasBlockingBlueBeam[botGuid] = true;
@@ -778,10 +773,9 @@ bool NetherspiteBlockGreenBeamAction::Execute(Event event)
 
     if (wasBlocking && !isBlockingNow)
     {
-        std::map<std::string, std::string> ph;
-        ph["%player"] = bot->GetName();
+        std::map<std::string, std::string> placeholders{{"%player", bot->GetName()}};
         std::string text = sPlayerbotTextMgr->GetBotTextOrDefault(
-            "netherspite_beam_leaving_green", "%player is leaving the green beam--next blocker up!", ph);
+            "netherspite_beam_leaving_green", "%player is leaving the green beam--next blocker up!", placeholders);
         bot->Yell(text, LANG_UNIVERSAL);
         _wasBlockingGreenBeam[botGuid] = false;
     }
@@ -790,10 +784,9 @@ bool NetherspiteBlockGreenBeamAction::Execute(Event event)
     {
         if (!wasBlocking)
         {
-            std::map<std::string, std::string> ph;
-            ph["%player"] = bot->GetName();
+            std::map<std::string, std::string> placeholders{{"%player", bot->GetName()}};
             std::string text = sPlayerbotTextMgr->GetBotTextOrDefault(
-                "netherspite_beam_blocking_green", "%player is moving to block the green beam!", ph);
+                "netherspite_beam_blocking_green", "%player is moving to block the green beam!", placeholders);
             bot->Yell(text, LANG_UNIVERSAL);
         }
         _wasBlockingGreenBeam[botGuid] = true;
@@ -898,32 +891,40 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event event)
     if (!nearVoidZone && !nearBeam)
         return false;
 
-    const float minMoveDist = 2.0f, maxSearchDist = 30.0f, stepAngle = M_PI/18.0f, stepDist = 0.5f;
+    // use squared distances to avoid pow/sqrt
+    const float minMoveDist = 2.0f;
+    const float minMoveDistSq = minMoveDist * minMoveDist;
+    const float maxSearchDist = 30.0f, stepAngle = M_PI/18.0f, stepDist = 0.5f;
     float netherspiteZ = netherspite->GetPositionZ();
     Position bestCandidate;
-    float bestDist = 0.0f;
+    float bestDistSq = std::numeric_limits<float>::max();
     bool found = false;
+
+    const float botX = bot->GetPositionX();
+    const float botY = bot->GetPositionY();
 
     for (float angle = 0; angle < 2 * M_PI; angle += stepAngle)
     {
         for (float dist = 2.0f; dist <= maxSearchDist; dist += stepDist)
         {
-            float cx = bot->GetPositionX() + cos(angle) * dist;
-            float cy = bot->GetPositionY() + sin(angle) * dist;
+            float cx = botX + cos(angle) * dist;
+            float cy = botY + sin(angle) * dist;
             float cz = netherspiteZ;
 
             if (!IsSafePosition(cx, cy, cz, voidZones, 4.0f) ||
                 !IsAwayFromBeams(cx, cy, beams, netherspite))
                 continue;
 
-            float moveDist = sqrt(pow(cx - bot->GetPositionX(), 2) + pow(cy - bot->GetPositionY(), 2));
-            if (moveDist < minMoveDist)
+            float dx = cx - botX;
+            float dy = cy - botY;
+            float moveDistSq = dx*dx + dy*dy;
+            if (moveDistSq < minMoveDistSq)
                 continue;
 
-            if (!found || moveDist < bestDist)
+            if (!found || moveDistSq < bestDistSq)
             {
                 bestCandidate = Position(cx, cy, cz);
-                bestDist = moveDist;
+                bestDistSq = moveDistSq;
                 found = true;
             }
         }
@@ -934,8 +935,8 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event event)
         bot->AttackStop();
         bot->InterruptNonMeleeSpells(true);
         return MoveTo(bot->GetMapId(), bestCandidate.GetPositionX(), bestCandidate.GetPositionY(),
-                      bestCandidate.GetPositionZ(), false, false, false, false,
-                      MovementPriority::MOVEMENT_COMBAT, true, false);
+                        bestCandidate.GetPositionZ(), false, false, false, false,
+                        MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
     return false;
@@ -980,7 +981,7 @@ bool NetherspiteBanishPhaseAvoidVoidZoneAction::Execute(Event event)
     return false;
 }
 
-bool NetherspiteManageTimersAction::Execute(Event event)
+bool NetherspiteManageTimersAndTrackersAction::Execute(Event event)
 {
     Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
     if (!netherspite)
@@ -1032,8 +1033,10 @@ bool PrinceMalchezaarEnfeebledAvoidHazardAction::Execute(Event event)
     std::vector<Unit*> infernals = GetSpawnedInfernals(botAI);
 
     const float minSafeBossDistance = 34.0f;
+    const float minSafeBossDistanceSq = minSafeBossDistance * minSafeBossDistance;
     const float maxSafeBossDistance = 60.0f;
     const float safeInfernalDistance = 23.0f;
+    const float safeInfernalDistanceSq = safeInfernalDistance * safeInfernalDistance;
     const float distIncrement = 0.5f;
     const uint8 numAngles = 64;
 
@@ -1043,7 +1046,7 @@ bool PrinceMalchezaarEnfeebledAvoidHazardAction::Execute(Event event)
     float malchezaarX = malchezaar->GetPositionX();
     float malchezaarY = malchezaar->GetPositionY();
     float malchezaarZ = malchezaar->GetPositionZ();
-    float bestMoveDist = std::numeric_limits<float>::max();
+    float bestMoveDistSq = std::numeric_limits<float>::max();
     float bestDestX = 0.0f, bestDestY = 0.0f, bestDestZ = bz;
     bool found = false;
 
@@ -1062,17 +1065,21 @@ bool PrinceMalchezaarEnfeebledAvoidHazardAction::Execute(Event event)
             if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, bx, by, bz, destX, destY, destZ2, true))
                 continue;
 
-            float distFromBoss = sqrt(pow(destX - malchezaarX, 2) + pow(destY - malchezaarY, 2));
-            if (distFromBoss < minSafeBossDistance)
+            float ddx = destX - malchezaarX;
+            float ddy = destY - malchezaarY;
+            float distFromBossSq = ddx*ddx + ddy*ddy;
+            if (distFromBossSq < minSafeBossDistanceSq)
                 continue;
 
             bool pathSafe = IsStraightPathSafe(Position(bx, by, bz), Position(destX, destY, destZ2),
                                                infernals, safeInfernalDistance, distIncrement);
-            float moveDist = sqrt(pow(destX - bx, 2) + pow(destY - by, 2));
+            float mdx = destX - bx;
+            float mdy = destY - by;
+            float moveDistSq = mdx*mdx + mdy*mdy;
 
-            if (pathSafe && moveDist < bestMoveDist)
+            if (pathSafe && moveDistSq < bestMoveDistSq)
             {
-                bestMoveDist = moveDist;
+                bestMoveDistSq = moveDistSq;
                 bestDestX = destX;
                 bestDestY = destY;
                 bestDestZ = destZ2;
@@ -1103,6 +1110,7 @@ bool PrinceMalchezaarNonTankAvoidInfernalAction::Execute(Event event)
     std::vector<Unit*> infernals = GetSpawnedInfernals(botAI);
 
     const float safeInfernalDistance = 23.0f;
+    const float safeInfernalDistanceSq = safeInfernalDistance * safeInfernalDistance;
     const float maxSafeBossDistance = 35.0f;
 
     float bx = bot->GetPositionX();
@@ -1115,9 +1123,10 @@ bool PrinceMalchezaarNonTankAvoidInfernalAction::Execute(Event event)
     bool nearInfernal = false;
     for (Unit* infernal : infernals)
     {
-        float infernalDist = sqrt(pow(bx - infernal->GetPositionX(), 2) +
-                                  pow(by - infernal->GetPositionY(), 2));
-        if (infernalDist < safeInfernalDistance)
+        float dx = bx - infernal->GetPositionX();
+        float dy = by - infernal->GetPositionY();
+        float infernalDistSq = dx*dx + dy*dy;
+        if (infernalDistSq < safeInfernalDistanceSq)
         {
             nearInfernal = true;
             break;
@@ -1171,6 +1180,7 @@ bool PrinceMalchezaarMainTankMovementAction::Execute(Event event)
     std::vector<Unit*> infernals = GetSpawnedInfernals(botAI);
 
     const float safeInfernalDistance = 30.0f;
+    const float safeInfernalDistanceSq = safeInfernalDistance * safeInfernalDistance;
     const float maxSampleDist = 75.0f;
 
     float bx = bot->GetPositionX();
@@ -1180,9 +1190,10 @@ bool PrinceMalchezaarMainTankMovementAction::Execute(Event event)
     bool nearInfernal = false;
     for (Unit* infernal : infernals)
     {
-        float infernalDist = sqrt(pow(bx - infernal->GetPositionX(), 2) +
-                                  pow(by - infernal->GetPositionY(), 2));
-        if (infernalDist < safeInfernalDistance)
+        float dx = bx - infernal->GetPositionX();
+        float dy = by - infernal->GetPositionY();
+        float infernalDistSq = dx*dx + dy*dy;
+        if (infernalDistSq < safeInfernalDistanceSq)
         {
             nearInfernal = true;
             break;
@@ -1270,7 +1281,7 @@ bool NightbaneGroundPhasePositionBossAction::Execute(Event event)
 }
 
 // Ranged bots rotate between 3 positions to avoid standing in Charred Earth, which lasts for
-// 30s and has a minimum cooldown of 18s (so there can be 3 active at once)
+// 30s and has a minimum cooldown of 18s (so there can be 2 active at once)
 // Ranged positions are near the Northeastern door to the tower
 bool NightbaneGroundPhaseRotateRangedPositionsAction::Execute(Event event)
 {
