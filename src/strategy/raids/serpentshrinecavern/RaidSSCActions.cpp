@@ -447,6 +447,37 @@ bool HydrossTheUnstableManageTimersAction::Execute(Event event)
 
 // The Lurker Below
 
+// Limit to melee if IsInWater() issue is resolved
+bool TheLurkerBelowRunAroundBehindBossAction::Execute(Event event)
+{
+    Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
+    if (!lurker)
+        return false;
+
+    // Get Lurker's facing direction (orientation)
+    float bossFacing = lurker->GetOrientation();
+
+    // Pick an angle behind Lurker (120-degree arc)
+    float behindAngle = bossFacing + M_PI + ((rand() % 100) / 100.0f - 0.5f) * (M_PI / 3);
+
+    // Random radius between 23 and 27 yards
+    float radius = 23.0f + ((rand() % 500) / 100.0f);
+
+    // Calculate target position on the circle
+    float targetX = lurker->GetPositionX() + radius * cos(behindAngle);
+    float targetY = lurker->GetPositionY() + radius * sin(behindAngle);
+
+    // Only move if not close enough to the circle position
+    if (bot->GetExactDist2d(targetX, targetY) > 1.0f)
+    {
+        InterruptNonMeleeSpells(true);
+        return MoveTo(lurker->GetMapId(), targetX, targetY, lurker->GetPositionZ(), false, false, false, false,
+                      MovementPriority::MOVEMENT_FORCED, true, false);
+    }
+
+    return false;
+}
+
 bool TheLurkerBelowPositionMainTankAction::Execute(Event event)
 {
     Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
@@ -466,7 +497,83 @@ bool TheLurkerBelowPositionMainTankAction::Execute(Event event)
     return false;
 }
 
-bool TheLurkerBelowPositionOtherMeleeAction::Execute(Event event)
+bool TheLurkerBelowSpreadRangedAction::Execute(Event event)
+{
+    Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
+    Group* group = bot->GetGroup();
+    if (!lurker || !group)
+        return false;
+
+    const float minRadius = 25.0f;
+    const float maxRadius = 27.0f;
+    const float returnThreshold = 2.0f;
+    const float referenceOrientation = 2.262f;
+
+    // Clear assignments on boss reset
+    if (lurker->GetHealth() == lurker->GetMaxHealth())
+        lurkerRangedPositions.clear();
+
+    // collect ranged group members (deterministic ordering)
+    std::vector<Player*> rangedMembers;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive() || !botAI->IsRanged(member))
+            continue;
+        rangedMembers.push_back(member);
+    }
+
+    if (rangedMembers.empty())
+        return false;
+
+    const ObjectGuid guid = bot->GetGUID();
+
+    // assign angle by index (even spacing) and randomize radius
+    auto it = lurkerRangedPositions.find(guid);
+    if (it == lurkerRangedPositions.end())
+    {
+        auto findIt = std::find(rangedMembers.begin(), rangedMembers.end(), bot);
+        size_t botIndex = (findIt != rangedMembers.end()) ? std::distance(rangedMembers.begin(), findIt) : 0;
+        size_t count = rangedMembers.size();
+        if (count == 0)
+            return false;
+
+        // spread 180° arc centered on referenceOrientation
+        const float arcSpan = M_PI; // 180°
+        float startAngle = referenceOrientation - arcSpan / 2.0f;
+
+        float angle;
+        if (count == 1)
+            angle = referenceOrientation; // single bot: center of arc
+        else
+            angle = startAngle + (static_cast<float>(botIndex) / (count - 1)) * arcSpan;
+
+        float radius = minRadius + static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * (maxRadius - minRadius);
+
+        float tx = lurker->GetPositionX() + radius * cos(angle);
+        float ty = lurker->GetPositionY() + radius * sin(angle);
+        float tz = lurker->GetPositionZ();
+
+        lurkerRangedPositions.emplace(guid, Position(tx, ty, tz));
+        it = lurkerRangedPositions.find(guid);
+    }
+
+    if (it == lurkerRangedPositions.end())
+        return false;
+
+    const Position& target = it->second;
+
+    // Only issue MoveTo when farther than threshold (no reached-map state)
+    if (!bot->IsWithinDist2d(target.GetPositionX(), target.GetPositionY(), returnThreshold))
+    {
+        return MoveTo(bot->GetMapId(), target.GetPositionX(), target.GetPositionY(), target.GetPositionZ(), false, false, false, false,
+                      MovementPriority::MOVEMENT_COMBAT, true, false);
+    }
+
+    return false;
+}
+
+/* bool TheLurkerBelowPositionOtherMeleeAction::Execute(Event event)
 {
     Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
     Group* group = bot->GetGroup();
@@ -499,40 +606,6 @@ bool TheLurkerBelowPositionOtherMeleeAction::Execute(Event event)
     if (bot->GetExactDist2d(target->GetPositionX(), target->GetPositionY()) > 0.2f)
     {
         return MoveTo(bot->GetMapId(), target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), false, false, false, false,
-                      MovementPriority::MOVEMENT_FORCED, true, false);
-    }
-
-    return false;
-}
-
-bool TheLurkerBelowMeleeRunAroundBehindBossAction::Execute(Event event)
-{
-    Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
-    if (!lurker)
-        return false;
-
-    // Get Lurker's facing direction (orientation)
-    float bossFacing = lurker->GetOrientation();
-
-    // Pick an angle behind Lurker (120-degree arc)
-    float behindAngle = bossFacing + M_PI + ((rand() % 100) / 100.0f - 0.5f) * (M_PI / 3);
-
-    // Random radius between 20 and 25 yards
-    float radius = 20.0f + ((rand() % 500) / 100.0f);
-
-    // Calculate target position on the circle
-    float targetX = lurker->GetPositionX() + radius * cos(behindAngle);
-    float targetY = lurker->GetPositionY() + radius * sin(behindAngle);
-    float targetZ = lurker->GetPositionZ();
-
-    // Only move if not close enough to the circle position
-    if (bot->GetExactDist2d(targetX, targetY) > 1.0f)
-    {
-        if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, lurker->GetPositionX(), lurker->GetPositionY(),
-                                                            lurker->GetPositionZ(), targetX, targetY, targetZ))
-            return false;
-
-        return MoveTo(lurker->GetMapId(), targetX, targetY, targetZ, false, false, false, false,
                       MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
@@ -615,7 +688,7 @@ bool TheLurkerBelowPositionHealerAction::Execute(Event event)
     }
 
     return false;
-}
+} */
 
 bool TheLurkerBelowManageSpoutTimerAction::Execute(Event event)
 {
@@ -1161,7 +1234,7 @@ bool FathomLordKarathressMisdirectBossesToTanksAction::Execute(Event event)
 bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event event)
 {
     // Target priority 1: Spitfire Totems for melee
-    Unit* totem = GetFirstAliveUnitByEntry(botAI, NPC_SPITFIRE_TOTEM);
+    Unit* totem = AI_VALUE2(Unit*, "find target", "spitfire totem");
     if (totem && botAI->IsMelee(bot) && botAI->IsDps(bot))
     {
         MarkTargetWithSkull(bot, totem);
@@ -1428,7 +1501,7 @@ bool MorogrimTidewalkerMoveBossToTankPositionAction::MoveToPhase2TankPosition(Un
                           MovementPriority::MOVEMENT_COMBAT, true, true);
         }
         else
-            tidewalkerTankStep[botGuid] = 1;
+            tidewalkerTankStep.emplace(botGuid, 1);
     }
 
     if (step == 1)
@@ -1477,7 +1550,7 @@ bool MorogrimTidewalkerPhase2RepositionRangedAction::Execute(Event event)
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
         else
-            tidewalkerRangedStep[botGuid] = 1;
+            tidewalkerRangedStep.emplace(botGuid, 1);
     }
 
     if (step == 1)
@@ -1608,8 +1681,8 @@ bool LadyVashjPhase1PositionRangedAction::Execute(Event event)
         float radius = minSpreadRadius + (botSeed % 1000) / 1000.0f * (maxSpreadRadius - minSpreadRadius);
         float targetX = center.GetPositionX() + radius * cos(angle);
         float targetY = center.GetPositionY() + radius * sin(angle);
-        vashjRangedPositions[bot->GetGUID()] = Position(targetX, targetY, center.GetPositionZ());
-        vashjHasReachedRangedPosition[bot->GetGUID()] = false;
+        vashjRangedPositions.emplace(bot->GetGUID(), Position(targetX, targetY, center.GetPositionZ()));
+        vashjHasReachedRangedPosition.emplace(bot->GetGUID(), false);
      }
 
     Position targetPosition = vashjRangedPositions[bot->GetGUID()];
@@ -1621,12 +1694,6 @@ bool LadyVashjPhase1PositionRangedAction::Execute(Event event)
             float destY = targetPosition.GetPositionY();
             float destZ = targetPosition.GetPositionZ();
 
-            if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, bot->GetPositionX(),
-                bot->GetPositionY(), bot->GetPositionZ(), destX, destY, destZ))
-                return false;
-
-            bot->AttackStop();
-            bot->InterruptNonMeleeSpells(false);
             return MoveTo(bot->GetMapId(), destX, destY, destZ, false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
@@ -2457,7 +2524,7 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpFirstCorePasser(Player* designated
     float targetY = centerY + radius * sin(angle);
     const float targetZ = 41.097f;
 
-    intendedLineup[bot->GetGUID()] = Position(targetX, targetY, targetZ);
+    intendedLineup.emplace(bot->GetGUID(), Position(targetX, targetY, targetZ));
 
     LOG_DEBUG("playerbots", "LineUpFirstCorePasser: designatedLooter={} targetPos=({}, {}, {})", designatedLooter->GetName(), targetX, targetY, targetZ);
 

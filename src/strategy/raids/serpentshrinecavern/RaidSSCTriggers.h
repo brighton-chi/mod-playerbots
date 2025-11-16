@@ -80,17 +80,17 @@ public:
     bool IsActive() override;
 };
 
-class TheLurkerBelowBossIsActiveForOtherMeleeTrigger : public Trigger
+class TheLurkerBelowBossCastsGeyserTrigger : public Trigger
 {
 public:
-    TheLurkerBelowBossIsActiveForOtherMeleeTrigger(PlayerbotAI* botAI) : Trigger(botAI, "the lurker below boss is active for other melee dps") {}
+    TheLurkerBelowBossCastsGeyserTrigger(PlayerbotAI* botAI) : Trigger(botAI, "the lurker below boss casts geyser") {}
     bool IsActive() override;
 };
 
-class TheLurkerBelowSpoutIsActiveForMeleeTrigger : public Trigger
+/* class TheLurkerBelowBossIsActiveForOtherMeleeTrigger : public Trigger
 {
 public:
-    TheLurkerBelowSpoutIsActiveForMeleeTrigger(PlayerbotAI* botAI) : Trigger(botAI, "the lurker below spout is active for melee") {}
+    TheLurkerBelowBossIsActiveForOtherMeleeTrigger(PlayerbotAI* botAI) : Trigger(botAI, "the lurker below boss is active for other melee dps") {}
     bool IsActive() override;
 };
 
@@ -106,7 +106,7 @@ class TheLurkerBelowBossIsActiveForHealerTrigger : public Trigger
 public:
     TheLurkerBelowBossIsActiveForHealerTrigger(PlayerbotAI* botAI) : Trigger(botAI, "the lurker below boss is active for healer") {}
     bool IsActive() override;
-};
+}; */
 
 class TheLurkerBelowNeedToPrepareTimerForSpoutTrigger : public Trigger
 {

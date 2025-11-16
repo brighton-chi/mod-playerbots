@@ -81,6 +81,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class TheLurkerBelowRunAroundBehindBossAction : public MovementAction
+{
+public:
+    TheLurkerBelowRunAroundBehindBossAction(PlayerbotAI* botAI, std::string const name = "the lurker below run around behind boss") : MovementAction(botAI, name) {}
+
+    bool Execute(Event event) override;
+};
+
 class TheLurkerBelowPositionMainTankAction : public AttackAction
 {
 public:
@@ -89,18 +97,18 @@ public:
     bool Execute(Event event) override;
 };
 
-class TheLurkerBelowPositionOtherMeleeAction : public MovementAction
+class TheLurkerBelowSpreadRangedAction : public MovementAction
 {
 public:
-    TheLurkerBelowPositionOtherMeleeAction(PlayerbotAI* botAI, std::string const name = "the lurker below position other melee") : MovementAction(botAI, name) {}
+    TheLurkerBelowSpreadRangedAction(PlayerbotAI* botAI, std::string const name = "the lurker below spread ranged") : MovementAction(botAI, name) {}
 
     bool Execute(Event event) override;
 };
 
-class TheLurkerBelowMeleeRunAroundBehindBossAction : public MovementAction
+/* class TheLurkerBelowPositionOtherMeleeAction : public MovementAction
 {
 public:
-    TheLurkerBelowMeleeRunAroundBehindBossAction(PlayerbotAI* botAI, std::string const name = "the lurker below melee run around behind boss") : MovementAction(botAI, name) {}
+    TheLurkerBelowPositionOtherMeleeAction(PlayerbotAI* botAI, std::string const name = "the lurker below position other melee") : MovementAction(botAI, name) {}
 
     bool Execute(Event event) override;
 };
@@ -119,7 +127,7 @@ public:
     TheLurkerBelowPositionHealerAction(PlayerbotAI* botAI, std::string const name = "the lurker below position healer") : MovementAction(botAI, name) {}
 
     bool Execute(Event event) override;
-};
+}; */
 
 class TheLurkerBelowManageSpoutTimerAction : public Action
 {

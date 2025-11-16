@@ -31,18 +31,16 @@ namespace SerpentShrineCavernHelpers
         SPELL_SPOUT_VISUAL = 37431,
         SPELL_SPOUT_PERIODIC_1 = 37429,
         SPELL_SPOUT_PERIODIC_2 = 37430,
-        SPELL_WHIRL = 37363,
 
         // Leotheras the Blind
         SPELL_LEOTHERAS_BANISHED = 37546,
         SPELL_WHIRLWIND = 37640,
         SPELL_WHIRLWIND_CHANNEL = 37641,
         SPELL_METAMORPHOSIS = 37673,
-        SPELL_CHAOS_BLAST = 37674,
         SPELL_INSIDIOUS_WHISPER = 37676,
 
         // Morogrim Tidewalker
-        SPELL_WATERY_GRAVE = 38049,
+        // SPELL_WATERY_GRAVE = 38049,
 
         // Lady Vashj <Coilfang Matron>
         SPELL_FEAR_WARD_CHEAT = 6346,
@@ -82,10 +80,6 @@ namespace SerpentShrineCavernHelpers
         NPC_PURE_SPAWN_OF_HYDROSS = 22035,
         NPC_TAINTED_SPAWN_OF_HYDROSS = 22036,
 
-        // The Lurker Below
-        NPC_COILFANG_AMBUSHER = 21865,
-        NPC_COILFANG_GUARDIAN = 21873,
-
         // Leotheras the Blind
         NPC_LEOTHERAS_THE_BLIND = 21215,
         NPC_GREYHEART_SPELLBINDER = 21806,
@@ -93,18 +87,12 @@ namespace SerpentShrineCavernHelpers
         NPC_INNER_DEMON = 21857,
 
         // Fathom-Lord Karathress
-        NPC_SPITFIRE_TOTEM = 22091,
-        NPC_FATHOM_LURKER = 22119,
-        NPC_FATHOM_SPOREBAT = 22120,
-
-        // Morogrim Tidewalker
-        NPC_TIDEWALKER_LURKER = 21290,
+        // NPC_SPITFIRE_TOTEM = 22091,
 
         // Lady Vashj <Coilfang Matron>
         NPC_WORLD_INVISIBLE_TRIGGER = 12999, // Casts the beam for the shield generator
         NPC_LADY_VASHJ = 21212,
         NPC_ENCHANTED_ELEMENTAL = 21958,
-        NPC_WORLD_TRIGGER_TINY = 21987, // Casts Magic Barrier on Vashj
         NPC_TAINTED_ELEMENTAL = 22009,
         NPC_COILFANG_ELITE = 22055,
         NPC_COILFANG_STRIDER = 22056,
@@ -127,6 +115,7 @@ namespace SerpentShrineCavernHelpers
     extern std::unordered_map<uint32, time_t> hydrossChangeToNaturePhaseTimer;
 
     extern std::unordered_map<uint32, time_t> lurkerSpoutTimer;
+    extern std::unordered_map<ObjectGuid, Position> lurkerRangedPositions;
 
     extern std::unordered_map<uint32, time_t> leotherasHumanFormDpsWaitTimer;
     extern std::unordered_map<uint32, time_t> leotherasDemonFormDpsWaitTimer;
@@ -150,25 +139,24 @@ namespace SerpentShrineCavernHelpers
         extern const Position HydrossNatureTankPosition;
         // Hydross dps positions?
 
-        extern const Position LurkerCenterOfPoolPosition;
         extern const Position LurkerMainTankPosition;
-        extern const Position LurkerEMeleePosition;
+        /* extern const Position LurkerEMeleePosition;
         extern const Position LurkerWMeleePosition;
-        // extern const Position LurkerNWIsletPosition;
-        // extern const Position LurkerNWIsletSwimPosition;
+        extern const Position LurkerNWIsletPosition;
+        extern const Position LurkerNWIsletSwimPosition;
         extern const Position LurkerNWRangedDpsPosition;
-        // extern const Position LurkerNEIsletPosition;
-        // extern const Position LurkerNEIsletSwimPosition;
+        extern const Position LurkerNEIsletPosition;
+        extern const Position LurkerNEIsletSwimPosition;
         extern const Position LurkerNERangedDpsPosition;
-        // extern const Position LurkerEIsletPosition;
-        // extern const Position LurkerEIsletSwimPosition;
+        extern const Position LurkerEIsletPosition;
+        extern const Position LurkerEIsletSwimPosition;
         extern const Position LurkerERangedDpsPosition;
         extern const Position LurkerSEHealerLandPosition;
-        // extern const Position LurkerSEHealerSwimPosition;
+        extern const Position LurkerSEHealerSwimPosition;
         extern const Position LurkerSWHealerLandPosition;
-        // extern const Position LurkerSWHealerSwimPosition;
+        extern const Position LurkerSWHealerSwimPosition;
         extern const Position LurkerNHealerLandPosition;
-        // extern const Position LurkerNHealerSwimPosition;
+        extern const Position LurkerNHealerSwimPosition; */
 
         extern const Position KarathressTankPosition;
         extern const Position TidalvessTankPosition;
@@ -183,14 +171,14 @@ namespace SerpentShrineCavernHelpers
         extern const Position TidewalkerPhase2RangedPosition;
 
         extern const Position VashjPlatformCenterPosition;
-        extern const Position VashjNWStairsPosition;
+        /* extern const Position VashjNWStairsPosition;
         extern const Position VashjWStairsPosition;
         extern const Position VashjSWStairsPosition;
         extern const Position VashjSSWStairsPosition;
         extern const Position VashjSEStairsPosition;
         extern const Position VashjEStairsPosition;
         extern const Position VashjENEStairsPosition;
-        extern const Position VashjNNEStairsPosition;
+        extern const Position VashjNNEStairsPosition; */
     }
 
     void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);

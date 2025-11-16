@@ -20,11 +20,12 @@ public:
         creators["hydross the unstable stop dps upon phase change"] = &RaidSSCActionContext::hydross_the_unstable_stop_dps_upon_phase_change;
         creators["hydross the unstable manage timers"] = &RaidSSCActionContext::hydross_the_unstable_manage_timers;
 
+        creators["the lurker below run around behind boss"] = &RaidSSCActionContext::the_lurker_below_run_around_behind_boss;
         creators["the lurker below position main tank"] = &RaidSSCActionContext::the_lurker_below_position_main_tank;
-        creators["the lurker below position other melee"] = &RaidSSCActionContext::the_lurker_below_position_other_melee;
-        creators["the lurker below melee run around behind boss"] = &RaidSSCActionContext::the_lurker_below_melee_run_around_behind_boss;
-        creators["the lurker below position ranged dps"] = &RaidSSCActionContext::the_lurker_below_position_ranged_dps;
-        creators["the lurker below position healer"] = &RaidSSCActionContext::the_lurker_below_position_healer;
+        creators["the lurker below spread ranged"] = &RaidSSCActionContext::the_lurker_below_spread_ranged;
+        // creators["the lurker below position other melee"] = &RaidSSCActionContext::the_lurker_below_position_other_melee;
+        // creators["the lurker below position ranged dps"] = &RaidSSCActionContext::the_lurker_below_position_ranged_dps;
+        // creators["the lurker below position healer"] = &RaidSSCActionContext::the_lurker_below_position_healer;
         creators["the lurker below manage spout timer"] = &RaidSSCActionContext::the_lurker_below_manage_spout_timer;
 
         creators["leotheras the blind target spellbinders"] = &RaidSSCActionContext::leotheras_the_blind_target_spellbinders;
@@ -80,11 +81,12 @@ private:
     static Action* hydross_the_unstable_stop_dps_upon_phase_change(PlayerbotAI* botAI) { return new HydrossTheUnstableStopDpsUponPhaseChangeAction(botAI); }
     static Action* hydross_the_unstable_manage_timers(PlayerbotAI* botAI) { return new HydrossTheUnstableManageTimersAction(botAI); }
 
+    static Action* the_lurker_below_run_around_behind_boss(PlayerbotAI* botAI) { return new TheLurkerBelowRunAroundBehindBossAction(botAI); }
     static Action* the_lurker_below_position_main_tank(PlayerbotAI* botAI) { return new TheLurkerBelowPositionMainTankAction(botAI); }
-    static Action* the_lurker_below_position_other_melee(PlayerbotAI* botAI) { return new TheLurkerBelowPositionOtherMeleeAction(botAI); }
-    static Action* the_lurker_below_melee_run_around_behind_boss(PlayerbotAI* botAI) { return new TheLurkerBelowMeleeRunAroundBehindBossAction(botAI); }
-    static Action* the_lurker_below_position_ranged_dps(PlayerbotAI* botAI) { return new TheLurkerBelowPositionRangedDpsAction(botAI); }
-    static Action* the_lurker_below_position_healer(PlayerbotAI* botAI) { return new TheLurkerBelowPositionHealerAction(botAI); }
+    static Action* the_lurker_below_spread_ranged(PlayerbotAI* botAI) { return new TheLurkerBelowSpreadRangedAction(botAI); }
+    // static Action* the_lurker_below_position_other_melee(PlayerbotAI* botAI) { return new TheLurkerBelowPositionOtherMeleeAction(botAI); }
+    // static Action* the_lurker_below_position_ranged_dps(PlayerbotAI* botAI) { return new TheLurkerBelowPositionRangedDpsAction(botAI); }
+    // static Action* the_lurker_below_position_healer(PlayerbotAI* botAI) { return new TheLurkerBelowPositionHealerAction(botAI); }
     static Action* the_lurker_below_manage_spout_timer(PlayerbotAI* botAI) { return new TheLurkerBelowManageSpoutTimerAction(botAI); }
 
     static Action* leotheras_the_blind_target_spellbinders(PlayerbotAI* botAI) { return new LeotherasTheBlindTargetSpellbindersAction(botAI); }

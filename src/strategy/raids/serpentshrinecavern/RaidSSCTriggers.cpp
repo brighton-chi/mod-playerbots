@@ -79,12 +79,18 @@ bool HydrossTheUnstableNeedToManageTimersTrigger::IsActive()
 
 // The Lurker Below
 
+// Apply this to all bots if need to run around with all due to water issues
 bool TheLurkerBelowSpoutIsActiveTrigger::IsActive()
 {
     Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
+    if (!lurker)
+        return false;
 
-    return lurker && (lurker->HasAura(SPELL_SPOUT_VISUAL) ||
-           lurker->HasAura(SPELL_SPOUT_PERIODIC_1) || lurker->HasAura(SPELL_SPOUT_PERIODIC_2));
+    uint32 mapId = lurker->GetMapId();
+    time_t now = std::time(nullptr);
+
+    return /* botAI->IsMelee(bot) && */
+           lurkerSpoutTimer.count(mapId) && lurkerSpoutTimer[mapId] > now;
 }
 
 bool TheLurkerBelowBossIsActiveForMainTankTrigger::IsActive()
@@ -100,7 +106,20 @@ bool TheLurkerBelowBossIsActiveForMainTankTrigger::IsActive()
            (!lurkerSpoutTimer.count(mapId) || lurkerSpoutTimer[mapId] <= now);
 }
 
-bool TheLurkerBelowBossIsActiveForOtherMeleeTrigger::IsActive()
+bool TheLurkerBelowBossCastsGeyserTrigger::IsActive()
+{
+    Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
+    if (!lurker)
+        return false;
+
+    uint32 mapId = lurker->GetMapId();
+    time_t now = std::time(nullptr);
+
+    return botAI->IsRanged(bot) && lurker->getStandState() != UNIT_STAND_STATE_SUBMERGED &&
+           (!lurkerSpoutTimer.count(mapId) || lurkerSpoutTimer[mapId] <= now);
+}
+
+/* bool TheLurkerBelowBossIsActiveForOtherMeleeTrigger::IsActive()
 {
     Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
     if (!lurker)
@@ -112,20 +131,6 @@ bool TheLurkerBelowBossIsActiveForOtherMeleeTrigger::IsActive()
     return botAI->IsMelee(bot) && !botAI->IsMainTank(bot) &&
            lurker->getStandState() != UNIT_STAND_STATE_SUBMERGED &&
            (!lurkerSpoutTimer.count(mapId) || lurkerSpoutTimer[mapId] <= now);
-}
-
-// Apply this to all bots if need to run around with all due to water issues
-bool TheLurkerBelowSpoutIsActiveForMeleeTrigger::IsActive()
-{
-    Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
-    if (!lurker)
-        return false;
-
-    uint32 mapId = lurker->GetMapId();
-    time_t now = std::time(nullptr);
-
-    return /* botAI->IsMelee(bot) && */
-           lurkerSpoutTimer.count(mapId) && lurkerSpoutTimer[mapId] > now;
 }
 
 bool TheLurkerBelowBossIsActiveForRangedDpsTrigger::IsActive()
@@ -152,7 +157,7 @@ bool TheLurkerBelowBossIsActiveForHealerTrigger::IsActive()
 
     return botAI->IsHeal(bot) && lurker->getStandState() != UNIT_STAND_STATE_SUBMERGED &&
            (!lurkerSpoutTimer.count(mapId) || lurkerSpoutTimer[mapId] <= now);
-}
+} */
 
 bool TheLurkerBelowNeedToPrepareTimerForSpoutTrigger::IsActive()
 {
