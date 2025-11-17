@@ -553,21 +553,24 @@ float LadyVashjDisableAutomaticTargetingAndMovementModifier::GetValue(Action *ac
 
     if (IsLadyVashjInPhase3(botAI))
     {
-        if (dynamic_cast<DpsAssistAction*>(action) || dynamic_cast<TankAssistAction*>(action))
+        if (dynamic_cast<DpsAssistAction*>(action) || dynamic_cast<TankAssistAction*>(action) ||
+            dynamic_cast<FollowAction*>(action) || dynamic_cast<FleeAction*>(action))
             return 0.0f;
 
         Unit* strider = AI_VALUE2(Unit*, "find target", "coilfang strider");
         Unit* elite = AI_VALUE2(Unit*, "find target", "coilfang elite");
         Unit* enchanted = AI_VALUE2(Unit*, "find target", "enchanted elemental");
 
-        if ((strider && strider->IsAlive()) ||
-            (elite && elite->IsAlive()) ||
-            (enchanted && enchanted->IsAlive()))
+        if (enchanted && enchanted->IsAlive())
         {
-            if (!botAI->IsHeal(bot) && dynamic_cast<CastHealingSpellAction*>(action))
-                return 0.0f;
-
             if (bot->GetVictim() == enchanted && dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
+                return 0.0f;
+        }
+
+        if ((!enchanted || !enchanted->IsAlive()) && (!strider || !strider->IsAlive()) &&
+            (!elite || !elite->IsAlive()))
+        {
+            if (dynamic_cast<SetBehindTargetAction*>(action) || dynamic_cast<TankFaceAction*>(action))
                 return 0.0f;
         }
     }

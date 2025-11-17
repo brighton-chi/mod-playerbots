@@ -634,7 +634,7 @@ bool LadyVashjTaintedCoreWasLootedTrigger::IsActive()
     LOG_DEBUG("playerbots", "LadyVashjTaintedCoreWasLootedTrigger: taintedPresent={} taintedName={}",
               tainted ? "true" : "false", tainted ? tainted->GetName() : "null");
 
-    if (tainted)
+    if (tainted && designatedLooter->GetExactDist2d(tainted) < 5.0f)
     {
         LOG_DEBUG("playerbots", "LadyVashjTaintedCoreWasLootedTrigger: returning true due to tainted present");
         return true;
