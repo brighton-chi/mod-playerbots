@@ -8,15 +8,19 @@ using namespace TempestKeepHelpers;
 bool CrimsonHandCenturionCastsArcaneVolleyTrigger::IsActive()
 {
     Unit* centurion = AI_VALUE2(Unit*, "find target", "crimson hand centurion");
+    if (!centurion)
+        return false;
 
-    return centurion && centurion->IsAlive() && bot->getClass() == CLASS_MAGE;
+    return centurion->IsAlive() && bot->getClass() == CLASS_MAGE;
 }
 
 bool AlarPullingBossTrigger::IsActive()
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+    if (!alar)
+        return false;
 
-    return alar && alar->GetHealthPct() > 98.0f && bot->getClass() == CLASS_HUNTER;
+    return alar->GetHealthPct() > 98.0f && bot->getClass() == CLASS_HUNTER;
 }
 
 bool AlarEngagedByTanksInPhase1Trigger::IsActive()
@@ -45,25 +49,30 @@ bool AlarBossEngagedByMeleeDpsTrigger::IsActive()
 bool AlarBossEngagedByRangedDpsTrigger::IsActive()
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+    if (!alar)
+        return false;
 
-    return botAI->IsRangedDps(bot) && alar;
+    return botAI->IsRangedDps(bot);
 }
 
 bool AlarBossEngagedByHealerTrigger::IsActive()
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+    if (!alar)
+        return false;
 
-    return botAI->IsHeal(bot) && alar;
+    return botAI->IsHeal(bot);
 }
 
 bool AlarEmbersOfAlarSpawnedTrigger::IsActive()
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+    if (!alar)
+        return false;
 
-    return alar && IsAlarAddTank(botAI, bot);
+    return IsAlarAddTank(botAI, bot);
 }
 
-// DON'T FORGET THE 95% HEALTH CHECK YOU ADDED WHILE TESTING YOU IDIOT
 bool AlarIncomingFlameQuillsTrigger::IsActive()
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
@@ -79,8 +88,10 @@ bool AlarIncomingFlameQuillsTrigger::IsActive()
 bool AlarRisingFromTheAshesTrigger::IsActive()
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+    if (!alar)
+        return false;
 
-    return alar && alar->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE);
+    return alar->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE);
 }
 
 bool AlarEngagedByTanksInPhase2Trigger::IsActive()
@@ -109,50 +120,63 @@ bool AlarNeedToManageTimersAndTrackersTrigger::IsActive()
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
 
-    return alar;
+    return alar != nullptr;
 }
 
 bool VoidReaverBossEngagedByTankTrigger::IsActive()
 {
     Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
+    if (!voidReaver)
+        return false;
 
-    return voidReaver && botAI->IsTank(bot) && voidReaver->GetVictim() == bot;
+    return botAI->IsTank(bot) && voidReaver->GetVictim() == bot;
 }
 
 bool VoidReaverBossEngagedByRangedTrigger::IsActive()
 {
     Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
+    if (!voidReaver)
+        return false;
 
-    return voidReaver && botAI->IsRanged(bot);
+    return botAI->IsRanged(bot);
 }
 
 bool HighAstromancerSolarianPhase1And2MovementTrigger::IsActive()
 {
     Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
+    if (!astromancer)
+        return false;
 
-    return astromancer && !astromancer->HasAura(SPELL_SOLARIAN_TRANSFORM);
+    return !astromancer->HasAura(SPELL_SOLARIAN_TRANSFORM);
 }
 
 bool HighAstromancerSolarianBotHasWrathOfTheAstromancerTrigger::IsActive()
 {
     Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
+    if (!astromancer)
+        return false;
 
-    return astromancer && bot->HasAura(SPELL_WRATH_OF_THE_ASTROMANCER);
+    return bot->HasAura(SPELL_WRATH_OF_THE_ASTROMANCER);
 }
 
 bool HighAstromancerSolarianSolariumPriestsSpawnedTrigger::IsActive()
 {
     Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
+    if (!astromancer)
+        return false;
+
     Unit* solariumPriest = AI_VALUE2(Unit*, "find target", "solarium priest");
 
-    return astromancer && solariumPriest && botAI->IsMelee(bot);
+    return solariumPriest && botAI->IsMelee(bot);
 }
 
 bool HighAstromancerSolarianTransformedIntoVoidwalkerTrigger::IsActive()
 {
     Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
+    if (!astromancer)
+        return false;
 
-    return astromancer && astromancer->HasAura(SPELL_SOLARIAN_TRANSFORM) && botAI->IsMainTank(bot);
+    return astromancer->HasAura(SPELL_SOLARIAN_TRANSFORM) && botAI->IsMainTank(bot);
 }
 
 bool HighAstromancerSolarianBossCastsPsychicScreamTrigger::IsActive()
@@ -180,22 +204,28 @@ bool HighAstromancerSolarianBossCastsPsychicScreamTrigger::IsActive()
 bool KaelthasSunstriderNeedToTestStrategiesOnBossTrigger::IsActive()
 {
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    if (!kaelthas)
+        return false;
 
-    return kaelthas && IsMapIDTimerManager(botAI, bot);
+    return IsMapIDTimerManager(botAI, bot);
 }
 
 bool KaelthasSunstriderThaladredIsFixatedOnBotTrigger::IsActive()
 {
     Unit* thaladred = AI_VALUE2(Unit*, "find target", "thaladrad the darkener");
+    if (!thaladred)
+        return false;
 
-    return !botAI->IsTank(bot) && thaladred && thaladred->GetVictim() == bot;
+    return thaladred->IsAlive() && !botAI->IsTank(bot) && thaladred->GetVictim() == bot;
 }
 
 bool KaelthasSunstriderSanguinarEngagedByMainTankTrigger::IsActive()
 {
     Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
+    if (!sanguinar)
+        return false;
 
-    return sanguinar && botAI->IsMainTank(bot);
+    return sanguinar->IsAlive() && botAI->IsMainTank(bot);
 }
 
 bool KaelthasSunstriderSanguinarCastsBellowingRoarTrigger::IsActive()
@@ -216,21 +246,26 @@ bool KaelthasSunstriderSanguinarCastsBellowingRoarTrigger::IsActive()
         }
     }
 
-    return bot->getClass() == CLASS_PRIEST && mainTank &&
+    return sanguinar->IsAlive() && bot->getClass() == CLASS_PRIEST && mainTank &&
            !mainTank->HasAura(SPELL_FEAR_WARD) && botAI->CanCastSpell("fear ward", mainTank);
 }
 
 bool KaelthasSunstriderCapernianEngagedByWarlockTankTrigger::IsActive()
 {
     Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
+    if (!capernian)
+        return false;
+
     Player* capernianTank = GetCapernianTank(botAI, bot);
 
-    return capernian && capernianTank && bot == capernianTank;
+    return capernian->IsAlive() && capernianTank && bot == capernianTank;
 }
 
 bool KaelthasSunstriderTelonicusEngagedByFirstAssistTankTrigger::IsActive()
 {
     Unit* telonicus = AI_VALUE2(Unit*, "find target", "master engineer telonicus");
+    if (!telonicus)
+        return false;
 
-    return telonicus && botAI->IsAssistTankOfIndex(bot, 0);
+    return telonicus->IsAlive() && botAI->IsAssistTankOfIndex(bot, 0);
 }

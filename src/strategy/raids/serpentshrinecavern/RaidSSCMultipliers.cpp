@@ -33,8 +33,10 @@ static bool IsChargeAction(Action* action)
 float ColossusRagerDoNotUseBloodlustOrHeroismMultiplier::GetValue(Action* action)
 {
     Unit* rager = AI_VALUE2(Unit*, "find target", "colossus rager");
+    if (!rager)
+        return 1.0f;
 
-    if (rager && (dynamic_cast<CastHeroismAction*>(action) || dynamic_cast<CastBloodlustAction*>(action)))
+    if (dynamic_cast<CastHeroismAction*>(action) || dynamic_cast<CastBloodlustAction*>(action))
         return 0.0f;
 
     return 1.0f;
@@ -87,7 +89,7 @@ float HydrossTheUnstableWaitForDpsMultiplier::GetValue(Action* action)
     const uint8 dpsWaitSeconds = 5;
     const uint8 phaseChangeWaitSeconds = 6;
 
-    if (hydross && !hydross->HasAura(SPELL_CORRUPTION))
+    if (!hydross->HasAura(SPELL_CORRUPTION))
     {
         auto itDps = hydrossFrostDpsWaitTimer.find(mapId);
         auto itPhase = hydrossChangeToFrostPhaseTimer.find(mapId);
@@ -106,7 +108,7 @@ float HydrossTheUnstableWaitForDpsMultiplier::GetValue(Action* action)
         }
     }
 
-    if (hydross && hydross->HasAura(SPELL_CORRUPTION))
+    if (hydross->HasAura(SPELL_CORRUPTION))
     {
         auto itDps = hydrossNatureDpsWaitTimer.find(mapId);
         auto itPhase = hydrossChangeToNaturePhaseTimer.find(mapId);
@@ -167,8 +169,10 @@ float TheLurkerBelowStayAwayFromSpoutMultiplier::GetValue(Action* action)
 float LeotherasTheBlindAvoidWhirlwindMultiplier::GetValue(Action* action)
 {
     Unit* leotherasHuman = GetLeotherasHuman(botAI);
+    if (!leotherasHuman)
+        return 1.0f;
 
-    if (leotherasHuman && !leotherasHuman->HasAura(SPELL_LEOTHERAS_BANISHED) &&
+    if (!leotherasHuman->HasAura(SPELL_LEOTHERAS_BANISHED) &&
         (leotherasHuman->HasAura(SPELL_WHIRLWIND) || leotherasHuman->HasAura(SPELL_WHIRLWIND_CHANNEL)))
     {
         if (IsChargeAction(action) || (!botAI->IsTank(bot) && dynamic_cast<MovementAction*>(action) &&
@@ -200,6 +204,10 @@ float LeotherasTheBlindDisableTankActionsMultiplier::GetValue(Action* action)
 //
 float LeotherasTheBlindMainTankMaintainDemonFormPositionMultiplier::GetValue(Action* action)
 {
+    Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
+    if (!leotheras)
+        return 1.0f;
+
     Unit* leotherasDemon = GetActiveLeotherasDemon(botAI);
     Player* demonFormTank = GetLeotherasDemonFormTank(botAI, bot);
     if (!leotherasDemon || (demonFormTank && demonFormTank->getClass() != CLASS_WARLOCK))
@@ -215,6 +223,10 @@ float LeotherasTheBlindMainTankMaintainDemonFormPositionMultiplier::GetValue(Act
 // Applies only if there is no Warlock tank
 float LeotherasTheBlindDemonFormDisableMeleeActionsMultiplier::GetValue(Action* action)
 {
+    Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
+    if (!leotheras)
+        return 1.0f;
+
     Unit* leotherasPhase2Demon = GetPhase2LeotherasDemon(botAI);
     Player* demonFormTank = GetLeotherasDemonFormTank(botAI, bot);
     if (!leotherasPhase2Demon || leotherasPhase2Demon->HasAura(SPELL_LEOTHERAS_BANISHED) ||
@@ -291,9 +303,8 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValue(Action* action)
 
 float LeotherasTheBlindDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
 {
-    Unit* leotherasHuman = GetLeotherasHuman(botAI);
-    Unit* leotherasPhase2Demon = GetPhase2LeotherasDemon(botAI);
-    if (!leotherasHuman && !leotherasPhase2Demon)
+    Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
+    if (!leotheras)
         return 1.0f;
 
     Unit* leotherasPhase3Demon = GetPhase3LeotherasDemon(botAI);
@@ -428,7 +439,8 @@ float LadyVashjStaticChargeStayAwayFromGroupMultiplier::GetValue(Action* action)
 
     if (!botAI->IsMainTank(bot) && bot->HasAura(SPELL_STATIC_CHARGE))
     {
-        if (dynamic_cast<MovementAction*>(action) && !dynamic_cast<LadyVashjStaticChargeMoveAwayFromGroupAction*>(action))
+        if (dynamic_cast<MovementAction*>(action) &&
+            !dynamic_cast<LadyVashjStaticChargeMoveAwayFromGroupAction*>(action))
             return 0.0f;
     }
 
@@ -450,9 +462,12 @@ float LadyVashjDoNotLootTheTaintedCoreMultiplier::GetValue(Action* action)
 float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* action)
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (!vashj)
+        return 1.0f;
+
     Group* group = bot->GetGroup();
     Player* master = botAI->GetMaster();
-    if (!vashj || !IsLadyVashjInPhase2(botAI)|| !group || !master || dynamic_cast<WipeAction*>(action) ||
+    if (!IsLadyVashjInPhase2(botAI) || !group || !master || dynamic_cast<WipeAction*>(action) ||
         dynamic_cast<DestroyItemAction*>(action) || dynamic_cast<StoreLootAction*>(action) ||
         dynamic_cast<LadyVashjCheatToTestAction*>(action))
         return 1.0f;

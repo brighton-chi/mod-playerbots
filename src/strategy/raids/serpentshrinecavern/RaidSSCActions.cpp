@@ -397,53 +397,39 @@ bool HydrossTheUnstableManageTimersAction::Execute(Event event)
 
     if (hydross->GetHealth() == hydross->GetMaxHealth())
     {
-        if (hydrossFrostDpsWaitTimer.count(mapId))
-            hydrossFrostDpsWaitTimer.erase(mapId);
-
-        if (hydrossNatureDpsWaitTimer.count(mapId))
-            hydrossNatureDpsWaitTimer.erase(mapId);
-
-        if (hydrossChangeToFrostPhaseTimer.count(mapId))
-            hydrossChangeToFrostPhaseTimer.erase(mapId);
-
-        if (hydrossChangeToNaturePhaseTimer.count(mapId))
-            hydrossChangeToNaturePhaseTimer.erase(mapId);
+        hydrossFrostDpsWaitTimer.erase(mapId);
+        hydrossNatureDpsWaitTimer.erase(mapId);
+        hydrossChangeToFrostPhaseTimer.erase(mapId);
+        hydrossChangeToNaturePhaseTimer.erase(mapId);
     }
 
     if (!hydross->HasAura(SPELL_CORRUPTION))
     {
         if (hydrossFrostDpsWaitTimer.count(mapId) == 0)
-            hydrossFrostDpsWaitTimer[mapId] = now;
+            hydrossFrostDpsWaitTimer.emplace(mapId, now);
 
-        if (hydrossNatureDpsWaitTimer.count(mapId))
-            hydrossNatureDpsWaitTimer.erase(mapId);
+        hydrossNatureDpsWaitTimer.erase(mapId);
+        hydrossChangeToFrostPhaseTimer.erase(mapId);
 
-        if (hydrossChangeToFrostPhaseTimer.count(mapId))
-            hydrossChangeToFrostPhaseTimer.erase(mapId);
-
-        if (HasMarkOfHydrossAt100Percent(bot) &&
-            hydrossChangeToNaturePhaseTimer.count(mapId) == 0)
-            hydrossChangeToNaturePhaseTimer[mapId] = now;
+        if (HasMarkOfHydrossAt100Percent(bot) && hydrossChangeToNaturePhaseTimer.count(mapId) == 0)
+            hydrossChangeToNaturePhaseTimer.emplace(mapId, now);
     }
 
     if (hydross->HasAura(SPELL_CORRUPTION))
     {
         if (hydrossNatureDpsWaitTimer.count(mapId) == 0)
-            hydrossNatureDpsWaitTimer[mapId] = now;
+            hydrossNatureDpsWaitTimer.emplace(mapId, now);
 
-        if (hydrossFrostDpsWaitTimer.count(mapId))
-            hydrossFrostDpsWaitTimer.erase(mapId);
+        hydrossFrostDpsWaitTimer.erase(mapId);
+        hydrossChangeToNaturePhaseTimer.erase(mapId);
 
-        if (hydrossChangeToNaturePhaseTimer.count(mapId))
-            hydrossChangeToNaturePhaseTimer.erase(mapId);
-
-        if (HasMarkOfCorruptionAt100Percent(bot) &&
-            hydrossChangeToFrostPhaseTimer.count(mapId) == 0)
-            hydrossChangeToFrostPhaseTimer[mapId] = now;
+        if (HasMarkOfCorruptionAt100Percent(bot) && hydrossChangeToFrostPhaseTimer.count(mapId) == 0)
+            hydrossChangeToFrostPhaseTimer.emplace(mapId, now);
     }
 
     return false;
 }
+
 
 // The Lurker Below
 
@@ -699,24 +685,17 @@ bool TheLurkerBelowManageSpoutTimerAction::Execute(Event event)
     uint32 mapId = lurker->GetMapId();
     const time_t now = std::time(nullptr);
 
-    // Log current timer value
-    LOG_DEBUG("playerbots", "SpoutTimerAction: lurkerSpoutTimer[{}]={}, now={}", mapId, lurkerSpoutTimer.count(mapId) ? lurkerSpoutTimer[mapId] : -1, now);
-
-    // Set timer if Spout starts
-    if (IsLurkerCastingSpout(lurker) && (lurkerSpoutTimer.count(mapId) == 0 || lurkerSpoutTimer[mapId] <= now)) {
-        lurkerSpoutTimer[mapId] = now + 20; // 20s channel for Spout
-        LOG_DEBUG("playerbots", "SpoutTimerAction: Set lurkerSpoutTimer[{}] to {}", mapId, lurkerSpoutTimer[mapId]);
+    if (lurker->GetHealth() == lurker->GetMaxHealth())
+    {
+        lurkerSpoutTimer.erase(mapId);
+        return false;
     }
 
-    // Erase timer if expired
-    if (lurkerSpoutTimer.count(mapId) && lurkerSpoutTimer[mapId] <= now) {
-        LOG_DEBUG("playerbots", "SpoutTimerAction: Erasing expired lurkerSpoutTimer[{}]", mapId);
+    if (lurkerSpoutTimer.count(mapId) && lurkerSpoutTimer[mapId] <= now)
         lurkerSpoutTimer.erase(mapId);
-    }
 
-    // Erase timer if boss is at full health
-    if (lurker->GetHealth() == lurker->GetMaxHealth() && lurkerSpoutTimer.count(mapId))
-        lurkerSpoutTimer.erase(mapId);
+    if (IsLurkerCastingSpout(lurker) && lurkerSpoutTimer.count(mapId) == 0)
+        lurkerSpoutTimer.emplace(mapId, now + 20); // 20s channel
 
     return false;
 }
@@ -938,53 +917,46 @@ bool LeotherasTheBlindManageTimersAndTrackersAction::Execute(Event event)
     uint32 mapId = leotheras->GetMapId();
     const time_t now = std::time(nullptr);
 
-    Unit* leotherasHuman = GetLeotherasHuman(botAI);
-    Unit* leotherasPhase2Demon = GetPhase2LeotherasDemon(botAI);
-    Unit* leotherasPhase3Demon = GetPhase3LeotherasDemon(botAI);
-
-    if (leotheras && leotheras->HasAura(SPELL_LEOTHERAS_BANISHED))
+    // Encounter start/reset: clear all timers
+    if (leotheras->HasAura(SPELL_LEOTHERAS_BANISHED))
     {
-        if (leotherasHumanFormDpsWaitTimer.count(mapId))
-            leotherasHumanFormDpsWaitTimer.erase(mapId);
+        leotherasHumanFormDpsWaitTimer.erase(mapId);
+        leotherasDemonFormDpsWaitTimer.erase(mapId);
+        leotherasFinalPhaseDpsWaitTimer.erase(mapId);
 
-        if (leotherasDemonFormDpsWaitTimer.count(mapId))
-            leotherasDemonFormDpsWaitTimer.erase(mapId);
-
-        if (leotherasFinalPhaseDpsWaitTimer.count(mapId))
-            leotherasFinalPhaseDpsWaitTimer.erase(mapId);
+        return false;
     }
-    else if (leotherasHuman && !leotherasPhase3Demon)
+
+    Unit* leotherasHuman = GetLeotherasHuman(botAI);
+    Unit* leotherasPhase3Demon = GetPhase3LeotherasDemon(botAI);
+    if (leotherasHuman && !leotherasPhase3Demon)
     {
         if (leotherasHumanFormDpsWaitTimer.count(mapId) == 0)
-            leotherasHumanFormDpsWaitTimer[mapId] = now;
+            leotherasHumanFormDpsWaitTimer.emplace(mapId, now);
 
-        if (leotherasDemonFormDpsWaitTimer.count(mapId))
-            leotherasDemonFormDpsWaitTimer.erase(mapId);
+        leotherasDemonFormDpsWaitTimer.erase(mapId);
 
-        if (leotherasFinalPhaseDpsWaitTimer.count(mapId))
-            leotherasFinalPhaseDpsWaitTimer.erase(mapId);
+        return false;
     }
-    else if (leotherasPhase2Demon)
+
+    Unit* leotherasPhase2Demon = GetPhase2LeotherasDemon(botAI);
+    if (leotherasPhase2Demon)
     {
         if (leotherasDemonFormDpsWaitTimer.count(mapId) == 0)
-            leotherasDemonFormDpsWaitTimer[mapId] = now;
+            leotherasDemonFormDpsWaitTimer.emplace(mapId, now);
 
-        if (leotherasHumanFormDpsWaitTimer.count(mapId))
-            leotherasHumanFormDpsWaitTimer.erase(mapId);
+        leotherasHumanFormDpsWaitTimer.erase(mapId);
 
-        if (leotherasFinalPhaseDpsWaitTimer.count(mapId))
-            leotherasFinalPhaseDpsWaitTimer.erase(mapId);
+        return false;
     }
-    else if (leotherasHuman && leotherasPhase3Demon)
+
+    if (leotherasHuman && leotherasPhase3Demon)
     {
         if (leotherasFinalPhaseDpsWaitTimer.count(mapId) == 0)
-            leotherasFinalPhaseDpsWaitTimer[mapId] = now;
+            leotherasFinalPhaseDpsWaitTimer.emplace(mapId, now);
 
-        if (leotherasHumanFormDpsWaitTimer.count(mapId))
-            leotherasHumanFormDpsWaitTimer.erase(mapId);
-
-        if (leotherasDemonFormDpsWaitTimer.count(mapId))
-            leotherasDemonFormDpsWaitTimer.erase(mapId);
+        leotherasHumanFormDpsWaitTimer.erase(mapId);
+        leotherasDemonFormDpsWaitTimer.erase(mapId);
     }
 
     return false;
@@ -1388,15 +1360,7 @@ bool FathomLordKarathressManageDpsTimerAction::Execute(Event event)
     const time_t now = std::time(nullptr);
 
     if (karathress->GetHealth() == karathress->GetMaxHealth())
-    {
-        if (karathressDpsWaitTimer.count(mapId))
-            karathressDpsWaitTimer.erase(mapId);
-    }
-    else
-    {
-        if (karathressDpsWaitTimer.count(mapId) == 0)
-            karathressDpsWaitTimer[mapId] = now;
-    }
+        karathressDpsWaitTimer.insert_or_assign(mapId, now);
 
     return false;
 }
@@ -1580,11 +1544,11 @@ bool MorogrimTidewalkerResetPhaseTransitionStepsAction::Execute(Event event)
 
     const ObjectGuid botGuid = bot->GetGUID();
 
-    if (tidewalkerTankStep.count(botGuid))
+    if (tidewalker->GetHealth() == tidewalker->GetMaxHealth())
+    {
         tidewalkerTankStep.erase(botGuid);
-
-    if (tidewalkerRangedStep.count(botGuid))
         tidewalkerRangedStep.erase(botGuid);
+    }
 
     return false;
 }
@@ -3381,30 +3345,11 @@ bool LadyVashjManageTrackersAction::Execute(Event event)
     if (!vashj)
         return false;
 
-    if (vashj->GetHealth() == vashj->GetMaxHealth())
-    {
-        if (!vashjRangedPositions.empty())
-            vashjRangedPositions.clear();
-
-        if (!vashjHasReachedRangedPosition.empty())
-            vashjHasReachedRangedPosition.clear();
-
-        if (!lastImbueAttempt.empty())
-        {
-            lastImbueAttempt.clear();
-            LOG_DEBUG("playerbots", "LadyVashjManageTrackersAction: cleared lastImbueAttempt on boss reset");
-        }
-        if (!imbuePending.empty())
-        {
-            imbuePending.clear();
-            LOG_DEBUG("playerbots", "LadyVashjManageTrackersAction: cleared imbuePending on boss reset");
-        }
-        if (!intendedLineup.empty())
-        {
-            intendedLineup.clear();
-            LOG_DEBUG("playerbots", "LadyVashjManageTrackersAction: cleared intendedLineup on boss reset");
-        }
-    }
+    vashjRangedPositions.clear();
+    vashjHasReachedRangedPosition.clear();
+    lastImbueAttempt.clear();
+    imbuePending.clear();
+    intendedLineup.clear();
 
     return false;
 }

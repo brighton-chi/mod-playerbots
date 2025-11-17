@@ -1229,13 +1229,12 @@ bool HighAstromancerSolarianMoveAwayFromGroupAction::Execute(Event event)
     for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
     {
         Player* member = ref->GetSource();
-
         if (!member || !member->IsAlive() || member == bot)
             continue;
 
         float distance = bot->GetExactDist2d(member);
-        if (distance < 12.0f)
-            return MoveAway(member, 15.0f, false);
+        if (distance < 10.0f)
+            return MoveAway(member, 10.5f, false);
     }
 
     return false;

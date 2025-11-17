@@ -56,8 +56,10 @@ float AlarPhase1StickToTheScriptMultiplier::GetValue(Action* action)
 float AlarStayAwayFromRebirthMultiplier::GetValue(Action* action)
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+    if (!alar)
+        return 1.0f;
 
-    if (alar && alar->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE) &&
+    if (alar->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE) &&
         (dynamic_cast<MovementAction*>(action) &&
          !(dynamic_cast<AlarMoveAwayFromRebirthAction*>(action) || dynamic_cast<AvoidAoeAction*>(action))))
         return 0.0f;
@@ -91,12 +93,18 @@ float VoidReaverMaintainPositionsMultiplier::GetValue(Action* action)
     if (!voidReaver)
         return 1.0f;
 
-    if (botAI->IsTank(bot) && dynamic_cast<TankFaceAction*>(action))
+    if (botAI->IsTank(bot))
+    {
+        dynamic_cast<TankFaceAction*>(action);
         return 0.0f;
+    }
 
-    if (botAI->IsRanged(bot) && (dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<FleeAction*>(action) ||
-         dynamic_cast<CastBlinkBackAction*>(action) || dynamic_cast<CastDisengageAction*>(action)))
-        return 0.0f;
+    if (botAI->IsRanged(bot))
+    {
+        if (dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<FleeAction*>(action) ||
+            dynamic_cast<CastBlinkBackAction*>(action) || dynamic_cast<CastDisengageAction*>(action))
+            return 0.0f;
+    }
 
     return 1.0f;
 }
@@ -111,9 +119,12 @@ float HighAstromancerSolarianStayStackedMultiplier::GetValue(Action* action)
         dynamic_cast<CastDisengageAction*>(action))
         return 0.0f;
 
-    if (bot->HasAura(SPELL_WRATH_OF_THE_ASTROMANCER) &&
-        !dynamic_cast<HighAstromancerSolarianMoveAwayFromGroupAction*>(action))
-        return 0.0f;
+    if (bot->HasAura(SPELL_WRATH_OF_THE_ASTROMANCER))
+    {
+        if (dynamic_cast<MovementAction*>(action) &&
+            !dynamic_cast<HighAstromancerSolarianMoveAwayFromGroupAction*>(action))
+            return 0.0f;
+    }
 
     return 1.0f;
 }
