@@ -340,10 +340,17 @@ public:
     bool Execute(Event event) override;
 };
 
-class LadyVashjAttackAndMoveAwayFromStriderAction : public AttackAction
+class LadyVashjMisdirectStriderToFirstAssistTankAction : public AttackAction
 {
 public:
-    LadyVashjAttackAndMoveAwayFromStriderAction(PlayerbotAI* botAI, std::string const name = "lady vashj attack and move away from strider") : AttackAction(botAI, name) {}
+    LadyVashjMisdirectStriderToFirstAssistTankAction(PlayerbotAI* botAI, std::string const name = "lady vashj misdirect strider to first assist tank") : AttackAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class LadyVashjTankAttackAndMoveAwayStriderAction : public AttackAction
+{
+public:
+    LadyVashjTankAttackAndMoveAwayStriderAction(PlayerbotAI* botAI, std::string const name = "lady vashj tank attack and move away strider") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 

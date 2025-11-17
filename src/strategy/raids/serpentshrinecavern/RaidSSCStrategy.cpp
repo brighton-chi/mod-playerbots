@@ -146,13 +146,14 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction::array(0, new NextAction("lady vashj misdirect boss to main tank", ACTION_EMERGENCY + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("lady vashj coilfang strider is approaching",
-        NextAction::array(0, new NextAction("lady vashj attack and move away from strider", ACTION_EMERGENCY + 2), nullptr)
+        NextAction::array(0,
+            new NextAction("lady vashj misdirect strider to first assist tank", ACTION_EMERGENCY + 1),
+            new NextAction("lady vashj tank attack and move away strider", ACTION_EMERGENCY + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("lady vashj tainted elemental cheat",
         NextAction::array(0,
             new NextAction("lady vashj teleport to tainted elemental", ACTION_EMERGENCY + 10),
-            new NextAction("lady vashj loot tainted core", ACTION_EMERGENCY + 10),
-            nullptr)
+            new NextAction("lady vashj loot tainted core", ACTION_EMERGENCY + 10), nullptr)
     ));
     triggers.push_back(new TriggerNode("lady vashj tainted core was looted",
         NextAction::array(0, new NextAction("lady vashj pass the tainted core", ACTION_EMERGENCY + 1), nullptr)

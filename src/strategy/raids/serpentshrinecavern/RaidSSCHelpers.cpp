@@ -429,6 +429,37 @@ namespace SerpentShrineCavernHelpers
         return false;
     }
 
+    bool AnyRecentParalyze(Group* group, uint32 mapId, uint32 graceSeconds)
+    {
+        const time_t now = std::time(nullptr);
+
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member)
+                continue;
+
+            if (member->IsAlive() && member->HasAura(SPELL_PARALYZE))
+            {
+                lastParalyzeTime[mapId] = now;
+                LOG_DEBUG("playerbots", "AnyRecentParalyze: observed paralyze on member={}, setting lastParalyzeTime[mapId]={}", member->GetName(), now);
+                return true;
+            }
+        }
+
+        auto it = lastParalyzeTime.find(mapId);
+        if (it != lastParalyzeTime.end())
+        {
+            if ((now - it->second) <= static_cast<time_t>(graceSeconds))
+            {
+                LOG_DEBUG("playerbots", "AnyRecentParalyze: recent paralyze for map={} age={}s", mapId, (now - it->second));
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     Player* GetDesignatedCoreLooter(Group* group, Player* master, PlayerbotAI* botAI)
     {
         // If cheats are off, use the real master.
@@ -468,10 +499,10 @@ namespace SerpentShrineCavernHelpers
                 continue;
 
             PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
-            if (!memberAI) // skip humans
+            if (!memberAI)
                 continue;
 
-            if (memberAI->IsRangedDpsAssistantOfIndex(member, 0))
+            if (memberAI->IsHealAssistantOfIndex(member, 0))
                 return member;
         }
 
@@ -503,7 +534,7 @@ namespace SerpentShrineCavernHelpers
             if (!memberAI)
                 continue;
 
-            if (memberAI->IsHealAssistantOfIndex(member, 0))
+            if (memberAI->IsHealAssistantOfIndex(member, 1))
                 return member;
         }
 
@@ -536,7 +567,7 @@ namespace SerpentShrineCavernHelpers
             if (!memberAI)
                 continue;
 
-            if (memberAI->IsHealAssistantOfIndex(member, 1))
+            if (memberAI->IsHealAssistantOfIndex(member, 2))
                 return member;
         }
 
@@ -570,7 +601,7 @@ namespace SerpentShrineCavernHelpers
             if (!memberAI)
                 continue;
 
-            if (memberAI->IsHealAssistantOfIndex(member, 2))
+            if (memberAI->IsRangedDpsAssistantOfIndex(member, 0))
                 return member;
         }
 

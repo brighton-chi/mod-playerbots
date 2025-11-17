@@ -622,54 +622,22 @@ bool LadyVashjTaintedCoreWasLootedTrigger::IsActive()
         }
     }
 
-    // remember last time Paralyze was observed so we can tolerate the brief handoff gap
+    // Use helper: checks current paralyze on group and recent paralyze on this map (default grace = 3s)
     uint32 mapId = vashj->GetMapId();
-    time_t now = std::time(nullptr);
-
-    bool foundParalyze = false;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    if (AnyRecentParalyze(group, mapId))
     {
-        Player* member = ref->GetSource();
-        if (!member)
-            continue;
-
-        bool alive = member->IsAlive();
-        bool hasParalyze = member->HasAura(SPELL_PARALYZE);
-        LOG_DEBUG("playerbots", "LadyVashjTaintedCoreWasLootedTrigger: member={} alive={} paralyze={}", member->GetName(), alive, hasParalyze);
-        if (alive && hasParalyze)
-        {
-            foundParalyze = true;
-            lastParalyzeTime[mapId] = now;
-            LOG_DEBUG("playerbots", "LadyVashjTaintedCoreWasLootedTrigger: observed paralyze on member={}, setting lastParalyzeTime[mapId]={}", member->GetName(), now);
-            break;
-        }
-    }
-
-    Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
-    LOG_DEBUG("playerbots", "LadyVashjTaintedCoreWasLootedTrigger: foundParalyze={} taintedPresent={} taintedName={}",
-              foundParalyze, tainted ? "true" : "false", tainted ? tainted->GetName() : "null");
-
-    if (foundParalyze || tainted)
-    {
-        LOG_DEBUG("playerbots", "LadyVashjTaintedCoreWasLootedTrigger: returning true due to foundParalyze/tainted");
+        LOG_DEBUG("playerbots", "LadyVashjTaintedCoreWasLootedTrigger: returning true due to foundParalyze (via AnyRecentParalyze)");
         return true;
     }
 
-    // if we recently saw paralyze on this map, keep trigger active for the grace window
-    auto it = lastParalyzeTime.find(mapId);
-    if (it != lastParalyzeTime.end())
+    Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
+    LOG_DEBUG("playerbots", "LadyVashjTaintedCoreWasLootedTrigger: taintedPresent={} taintedName={}",
+              tainted ? "true" : "false", tainted ? tainted->GetName() : "null");
+
+    if (tainted)
     {
-        time_t last = it->second;
-        LOG_DEBUG("playerbots", "LadyVashjTaintedCoreWasLootedTrigger: lastParalyzeTime for map={} = {} (now={}), age={}s", mapId, last, now, (now - last));
-        if ((now - last) <= 3)
-        {
-            LOG_DEBUG("playerbots", "LadyVashjTaintedCoreWasLootedTrigger: returning true due to grace window");
-            return true;
-        }
-    }
-    else
-    {
-        LOG_DEBUG("playerbots", "LadyVashjTaintedCoreWasLootedTrigger: no lastParalyzeTime for map={}", mapId);
+        LOG_DEBUG("playerbots", "LadyVashjTaintedCoreWasLootedTrigger: returning true due to tainted present");
+        return true;
     }
 
     LOG_DEBUG("playerbots", "LadyVashjTaintedCoreWasLootedTrigger: returning false - no paralyze, no tainted, no recent paralyze");

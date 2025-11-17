@@ -481,8 +481,8 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
     Player* thirdCorePasser = GetThirdTaintedCorePasser(group, botAI);
     Player* fourthCorePasser = GetFourthTaintedCorePasser(group, botAI);
 
-    if (bot == firstCorePasser || bot == secondCorePasser || bot == thirdCorePasser ||
-        bot == fourthCorePasser || bot == designatedLooter)
+    if (bot == designatedLooter || bot == firstCorePasser || bot == secondCorePasser ||
+        bot == thirdCorePasser || bot == fourthCorePasser)
     {
         auto hasCore = [](Player* player) { return player && player->HasItemCount(ITEM_TAINTED_CORE, 1, false); };
 
@@ -498,7 +498,8 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
             return 1.0f;
 
         const uint32 mapId = vashj->GetMapId();
-        const time_t now = std::time(nullptr);
+        // query helper once for recent paralyze (default grace = 3s)
+        bool recentParalyze = AnyRecentParalyze(group, mapId);
 
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
@@ -506,13 +507,9 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
             if (!member || !member->IsAlive())
                 continue;
 
-            bool recentlyParalyzed = false;
-            auto it = lastParalyzeTime.find(mapId);
-
-            if (it != lastParalyzeTime.end() && (now - it->second) <= 3)
-                recentlyParalyzed = true;
-
-            if (member->HasAura(SPELL_PARALYZE) || recentlyParalyzed || member->HasItemCount(ITEM_TAINTED_CORE, 1, false))
+            // if any recent paralyze (or the member currently has paralyze),
+            // movement actions (except the pass-the-core action) should be deprioritized.
+            if (recentParalyze || member->HasAura(SPELL_PARALYZE))
             {
                 if (dynamic_cast<MovementAction*>(action) &&
                     !dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action))

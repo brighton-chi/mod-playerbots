@@ -58,7 +58,8 @@ public:
         creators["lady vashj set grounding totem in main tank group"] = &RaidSSCActionContext::lady_vashj_set_grounding_totem_in_main_tank_group;
         creators["lady vashj static charge move away from group"] = &RaidSSCActionContext::lady_vashj_static_charge_move_away_from_group;
         creators["lady vashj misdirect boss to main tank"] = &RaidSSCActionContext::lady_vashj_misdirect_boss_to_main_tank;
-        creators["lady vashj attack and move away from strider"] = &RaidSSCActionContext::lady_vashj_attack_and_move_away_from_strider;
+        creators["lady vashj misdirect strider to first assist tank"] = &RaidSSCActionContext::lady_vashj_misdirect_strider_to_first_assist_tank;
+        creators["lady vashj tank attack and move away strider"] = &RaidSSCActionContext::lady_vashj_tank_attack_and_move_away_strider;
         creators["lady vashj assign phase 2 dps priority"] = &RaidSSCActionContext::lady_vashj_assign_phase_2_dps_priority;
         creators["lady vashj assistants follow master in phase 2"] = &RaidSSCActionContext::lady_vashj_assistants_follow_master_in_phase_2;
         creators["lady vashj loot tainted core"] = &RaidSSCActionContext::lady_vashj_loot_tainted_core;
@@ -121,7 +122,8 @@ private:
     static Action* lady_vashj_set_grounding_totem_in_main_tank_group(PlayerbotAI* botAI) { return new LadyVashjSetGroundingTotemInMainTankGroupAction(botAI); }
     static Action* lady_vashj_static_charge_move_away_from_group(PlayerbotAI* botAI) { return new LadyVashjStaticChargeMoveAwayFromGroupAction(botAI); }
     static Action* lady_vashj_misdirect_boss_to_main_tank(PlayerbotAI* botAI) { return new LadyVashjMisdirectBossToMainTankAction(botAI); }
-    static Action* lady_vashj_attack_and_move_away_from_strider(PlayerbotAI* botAI) { return new LadyVashjAttackAndMoveAwayFromStriderAction(botAI); }
+    static Action* lady_vashj_misdirect_strider_to_first_assist_tank(PlayerbotAI* botAI) { return new LadyVashjMisdirectStriderToFirstAssistTankAction(botAI); }
+    static Action* lady_vashj_tank_attack_and_move_away_strider(PlayerbotAI* botAI) { return new LadyVashjTankAttackAndMoveAwayStriderAction(botAI); }
     static Action* lady_vashj_assign_phase_2_dps_priority(PlayerbotAI* botAI) { return new LadyVashjAssignPhase2DpsPriorityAction(botAI); }
     static Action* lady_vashj_assistants_follow_master_in_phase_2(PlayerbotAI* botAI) { return new LadyVashjAssistantsFollowMasterInPhase2Action(botAI); }
     static Action* lady_vashj_teleport_to_tainted_elemental(PlayerbotAI* botAI) { return new LadyVashjTeleportToTaintedElementalAction(botAI); }

@@ -1865,7 +1865,7 @@ bool LadyVashjStaticChargeMoveAwayFromGroupAction::Execute(Event event)
     if (!group)
         return false;
 
-    // Find main tank with static charge
+    // If the main tank has Static Charge, other group members should move away
     Player* mainTank = nullptr;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
@@ -1884,7 +1884,7 @@ bool LadyVashjStaticChargeMoveAwayFromGroupAction::Execute(Event event)
             return MoveAway(mainTank, 11.5f, false);
     }
 
-    // Otherwise, if bot has static charge, move away from other group members
+    // If any other bot has static charge, it should move away from other group members
     if (!botAI->IsMainTank(bot) && bot->HasAura(SPELL_STATIC_CHARGE))
     {
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
@@ -1902,11 +1902,42 @@ bool LadyVashjStaticChargeMoveAwayFromGroupAction::Execute(Event event)
     return false;
 }
 
-bool LadyVashjAttackAndMoveAwayFromStriderAction::Execute(Event event)
+bool LadyVashjMisdirectStriderToFirstAssistTankAction::Execute(Event event)
+{
+    Unit* strider = GetFirstAliveUnitByEntry(botAI, NPC_COILFANG_STRIDER);
+    Group* group = bot->GetGroup();
+    if (!strider || !group || bot->getClass() != CLASS_HUNTER)
+        return false;
+
+    Player* firstAssistTank = nullptr;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && member->IsAlive() && botAI->IsAssistTankOfIndex(member, 0))
+        {
+            firstAssistTank = member;
+            break;
+        }
+    }
+
+    if (!firstAssistTank || strider->GetVictim() == firstAssistTank)
+        return false;
+
+    if (botAI->CanCastSpell("misdirection", firstAssistTank))
+        return botAI->CastSpell("misdirection", firstAssistTank);
+
+    if (bot->HasAura(SPELL_MISDIRECTION) && botAI->CanCastSpell("steady shot", strider))
+        return botAI->CastSpell("steady shot", strider);
+
+    return false;
+}
+
+bool LadyVashjTankAttackAndMoveAwayStriderAction::Execute(Event event)
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     Unit* strider = GetFirstAliveUnitByEntry(botAI, NPC_COILFANG_STRIDER);
-    if (!vashj || !strider)
+    Group* group = bot->GetGroup();
+    if (!vashj || !strider || !group)
         return false;
 
     if (botAI->HasCheat(BotCheatMask::raid) && botAI->IsTank(bot))
@@ -1925,20 +1956,16 @@ bool LadyVashjAttackAndMoveAwayFromStriderAction::Execute(Event event)
             if (bot->GetExactDist2d(vashj) < 20.0f)
                 return MoveAway(vashj, 20.0f, false);
 
-            Group* group = bot->GetGroup();
-            if (!group)
-                return false;
-
             Player* firstCorePasser  = GetFirstTaintedCorePasser(group, botAI);
             Player* secondCorePasser = GetSecondTaintedCorePasser(group, botAI);
 
             // Try this with just first two passers for now since last two are rarely needed
             for (Player* passer : { firstCorePasser, secondCorePasser })
             {
-                if (passer && passer != bot && bot->GetExactDist2d(passer) < 20.0f)
+                if (passer && passer != bot && strider->GetExactDist2d(passer) < 15.0f)
                 {
-                    LOG_DEBUG("playerbots", "AttackAndMoveAwayFromStriderAction: moving away from core passer {} for bot={}", passer->GetName(), bot->GetName());
-                    return MoveAway(passer, 20.0f, false);
+                    LOG_DEBUG("playerbots", "AttackAndMoveAwayFromStriderAction: trying to move strider from core passer {} for tank bot={}", passer->GetName(), bot->GetName());
+                    return MoveAway(strider, 30.0f, false);
                 }
             }
         }
@@ -1946,7 +1973,7 @@ bool LadyVashjAttackAndMoveAwayFromStriderAction::Execute(Event event)
         return false;
     }
 
-    // Don't move away only if raid cheats are enabled AND bot is a tank - I need to fix this shitty logic later
+    // Don't move away only if raid cheats are enabled AND bot is a tank [need to clean up this logic]
     if (bot->GetExactDist2d(strider) < 15.0f &&
         (!botAI->HasCheat(BotCheatMask::raid) || !botAI->IsTank(bot)))
         return MoveAway(strider, 16.0f, false);
@@ -2149,17 +2176,24 @@ bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
         bot->SetSelection(ObjectGuid());
     }
 
-    if (botAI->HasCheat(BotCheatMask::raid) && !bot->GetVictim())
+    if (!bot->GetVictim())
     {
         Player* master = botAI->GetMaster();
         Player* designatedLooter = GetDesignatedCoreLooter(bot->GetGroup(), master, botAI);
-        if (designatedLooter && designatedLooter == bot && tainted && designatedLooter->GetExactDist2d(tainted) < 10.0f)
+        Player* firstCorePasser = GetFirstTaintedCorePasser(bot->GetGroup(), botAI);
+        // A bot will not move back to the middle if:
+        // (1) The designated looter is within 10 yards of a tainted elemental, and the bot is
+        //     either the designated looter or the first core passer, or
+        // (2) It has the Paralyze aura
+        if (designatedLooter && tainted && designatedLooter->GetExactDist2d(tainted) < 10.0f &&
+            (designatedLooter == bot || (firstCorePasser && firstCorePasser == bot)) ||
+            bot->HasAura(SPELL_PARALYZE))
             return false;
 
         const Position& center = VashjPlatformCenterPosition;
         if (bot->GetExactDist2d(center.GetPositionX(), center.GetPositionY()) > 35.0f)
         {
-            LOG_DEBUG("playerbots", "LadyVashjCheat: teleporting/moving {} back to center ({}, {})", bot->GetName(), center.GetPositionX(), center.GetPositionY());
+            LOG_DEBUG("playerbots", "LadyVashjCheat: moving bot {} back to center ({}, {})", bot->GetName(), center.GetPositionX(), center.GetPositionY());
             bot->AttackStop();
             bot->InterruptNonMeleeSpells(true);
 
@@ -2378,8 +2412,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
     if (!firstCorePasser || !secondCorePasser || !thirdCorePasser || !fourthCorePasser || !closestTrigger)
         return false;
 
-    // If this bot currently holds the core, don't perform any lineup/movement logic.
-    // Still allow passing/using the core below.
+    // Passer order: HealAssistantOfIndex 0, 1, 2, then RangedDpsAssistantOfIndex 0
     if (bot == firstCorePasser && !botAI->HasItemInInventory(ITEM_TAINTED_CORE))
     {
         if (LineUpFirstCorePasser(designatedLooter, closestTrigger))
