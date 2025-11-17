@@ -36,8 +36,11 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("alar engaged by tanks in phase 2",
         NextAction::array(0, new NextAction("alar swap tanks on boss", ACTION_RAID + 1), nullptr)
     ));
-    triggers.push_back(new TriggerNode("alar preparing to dive bomb",
+    triggers.push_back(new TriggerNode("alar boss is preparing to dive bomb",
         NextAction::array(0, new NextAction("alar dive bomb spread", ACTION_EMERGENCY + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("alar phase 2 encounter is at room center",
+        NextAction::array(0, new NextAction("alar return to room center", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("alar need to manage timers and trackers",
         NextAction::array(0, new NextAction("alar manage timers and trackers", ACTION_EMERGENCY + 10), nullptr)
@@ -47,8 +50,11 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("void reaver boss engaged by tank",
         NextAction::array(0, new NextAction("void reaver position boss", ACTION_RAID + 1), nullptr)
     ));
-    triggers.push_back(new TriggerNode("void reaver boss engaged by ranged",
+    triggers.push_back(new TriggerNode("void reaver boss launches arcane orbs",
         NextAction::array(0, new NextAction("void reaver spread ranged", ACTION_RAID + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("void reaver tanks lost aggro",
+        NextAction::array(0, new NextAction("void reaver use aggro dump ability", ACTION_EMERGENCY + 6), nullptr)
     ));
 
     // High Astromancer Solarian
@@ -94,7 +100,7 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
 void RaidTempestKeepStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
-    multipliers.push_back(new AlarPhase1StickToTheScriptMultiplier(botAI));
+    multipliers.push_back(new AlarDisableTankAssistMultiplier(botAI));
     multipliers.push_back(new AlarStayAwayFromRebirthMultiplier(botAI));
     multipliers.push_back(new AlarPhase2NoTankingIfArmorMeltedMultiplier(botAI));
     multipliers.push_back(new VoidReaverMaintainPositionsMultiplier(botAI));

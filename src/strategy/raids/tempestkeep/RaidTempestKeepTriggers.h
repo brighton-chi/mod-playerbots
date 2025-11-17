@@ -73,10 +73,17 @@ public:
     bool IsActive() override;
 };
 
-class AlarPreparingToDiveBombTrigger : public Trigger
+class AlarBossIsPreparingToDiveBombTrigger : public Trigger
 {
 public:
-    AlarPreparingToDiveBombTrigger(PlayerbotAI* botAI) : Trigger(botAI, "alar preparing to dive bomb") {}
+    AlarBossIsPreparingToDiveBombTrigger(PlayerbotAI* botAI) : Trigger(botAI, "alar boss is preparing to dive bomb") {}
+    bool IsActive() override;
+};
+
+class AlarPhase2EncounterIsAtRoomCenterTrigger : public Trigger
+{
+public:
+    AlarPhase2EncounterIsAtRoomCenterTrigger(PlayerbotAI* botAI) : Trigger(botAI, "alar phase 2 encounter is at room center") {}
     bool IsActive() override;
 };
 
@@ -94,10 +101,17 @@ public:
     bool IsActive() override;
 };
 
-class VoidReaverBossEngagedByRangedTrigger : public Trigger
+class VoidReaverBossLaunchesArcaneOrbsTrigger : public Trigger
 {
 public:
-    VoidReaverBossEngagedByRangedTrigger(PlayerbotAI* botAI) : Trigger(botAI, "void reaver boss engaged by ranged") {}
+    VoidReaverBossLaunchesArcaneOrbsTrigger(PlayerbotAI* botAI) : Trigger(botAI, "void reaver boss launches arcane orbs") {}
+    bool IsActive() override;
+};
+
+class VoidReaverTanksLostAggroTrigger : public Trigger
+{
+public:
+    VoidReaverTanksLostAggroTrigger(PlayerbotAI* botAI) : Trigger(botAI, "void reaver tanks lost aggro") {}
     bool IsActive() override;
 };
 

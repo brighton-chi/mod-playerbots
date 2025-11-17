@@ -93,6 +93,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class AlarReturnToRoomCenterAction : public MovementAction
+{
+public:
+    AlarReturnToRoomCenterAction(PlayerbotAI* botAI, std::string const name = "alar return to room center") : MovementAction(botAI, name) {}
+
+    bool Execute(Event event) override;
+};
+
 class AlarDiveBombSpreadAction : public MovementAction
 {
 public:
@@ -126,6 +134,14 @@ public:
 
 private:
     Position GetRangedBotPosition(const Position& center, float radius, uint8 botsPerRing, float offsetArc, uint8 botIndex, float botZ);
+};
+
+class VoidReaverUseAggroDumpAbilityAction : public Action
+{
+public:
+    VoidReaverUseAggroDumpAbilityAction(PlayerbotAI* botAI, std::string const name = "void reaver use aggro dump ability") : Action(botAI, name) {}
+
+    bool Execute(Event event) override;
 };
 
 class HighAstromancerSolarianStackBotsAction : public MovementAction

@@ -47,8 +47,21 @@ namespace TempestKeepHelpers
         NPC_SOLARIUM_PRIEST                 = 18806,
     };
 
+    enum TempestKeepItems
+    {
+        // Kael'thas Sunstrider
+        ITEM_WARP_SLICER = 30311,
+        ITEM_INFINITY_BLADE = 30312,
+        ITEM_STAFF_OF_DISINTEGRATION = 30313,
+        ITEM_PHASESHIFT_BULWARK = 30314,
+        ITEM_DEVASTATION = 30316,
+        ITEM_COSMIC_INFUSER = 30317,
+        ITEM_NETHERSTRAND_LONGBOW = 30318,
+    };
+
     namespace TempestKeepPositions
     {
+        extern const Position AlarRoomCenter;
         extern const Position AlarRangedCenter;
         extern const Position AlarPlatform1;
         extern const Position AlarPlatform2;
@@ -58,26 +71,30 @@ namespace TempestKeepHelpers
         extern const Position AlarPlatform1To2MidpointB;
         extern const Position AlarPlatform2To3MidpointA;
         extern const Position AlarPlatform2To3MidpointB;
-        extern const Position AlarPlatform3To4MidpointA;
-        extern const Position AlarPlatform3To4MidpointB;
+        // extern const Position AlarPlatform3To4MidpointA;
+        // extern const Position AlarPlatform3To4MidpointB;
         extern const Position AlarGround1;
         extern const Position AlarGround2;
         extern const Position AlarGround3;
         extern const Position AlarGround4;
         extern const Position AlarSERampBase;
-        extern const Position AlarMidpointToSERamp;
+        // extern const Position AlarMidpointToSERamp;
         extern const Position AlarSWRampBase;
-        extern const Position AlarMidpointToSWRamp;
+        // extern const Position AlarMidpointToSWRamp;
         extern const Position AlarRoomSouthCenter;
 
         extern const Position VoidReaverTankPosition;
 
         // extern const Position AstromancerStackPosition;
 
-        extern const Position ThaladredTankPosition;
+        extern const Position ThaladredFinalPosition;
         extern const Position SanguinarTankPosition;
-        extern const Position CapernianTankPosition;
+        // extern const Position CapernianTankPosition;
         extern const Position TelonicusTankPosition;
+        extern const Position KaelthasWeaponStackPosition;
+        extern const Position KaelthasAxeTankPosition;
+        extern const Position KaelthasBowTankPosition;
+        extern const Position KaelthasTankPosition;
     }
 
     void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);
@@ -94,7 +111,9 @@ namespace TempestKeepHelpers
     void UpdateAlarLastPlatform(Unit* alar, uint32 mapId, const std::vector<Position>& platforms);
     bool IsAlarAddTank(PlayerbotAI* botAI, Player* bot);
 
+    // bool IsAnyAdvisorActiveAndAlive(PlayerbotAI* botAI);
     Player* GetCapernianTank(PlayerbotAI* botAI, Player* bot);
+    bool IsKaelthasInPhase2(PlayerbotAI* botAI);
 
     extern std::unordered_map<uint32, int8> lastAlarPlatform;
     extern std::unordered_map<uint32, bool> lastRebirthState;
@@ -108,12 +127,12 @@ namespace TempestKeepHelpers
     // extern std::unordered_map<ObjectGuid, bool> mtGroundMidpointVisited;
     // extern std::unordered_map<ObjectGuid, bool> atGroundMidpointVisited;
     extern std::unordered_map<ObjectGuid, std::vector<bool>> meleeDpsWaypointVisited;
-    // extern std::vector<Position> midpoints_1_to_6;
-    // extern std::vector<Position> midpoints_6_to_1;
+    /* extern std::vector<Position> midpoints_1_to_6;
+    extern std::vector<Position> midpoints_6_to_1;
     extern std::vector<Position> midpoints_1_to_2;
     extern std::vector<Position> midpoints_2_to_1;
     extern std::vector<Position> midpoints_4_to_3;
-    extern std::vector<Position> midpoints_3_to_4;
+    extern std::vector<Position> midpoints_3_to_4; */
 
     extern std::unordered_map<ObjectGuid, Position> initialVoidReaverPositions;
     extern std::unordered_map<ObjectGuid, bool> hasReachedInitialVoidReaverPosition;

@@ -52,7 +52,7 @@ float HydrossTheUnstableDisableTankActionsMultiplier::GetValue(Action* action)
 
     if (botAI->IsMainTank(bot))
     {
-        if (dynamic_cast<TankAssistAction*>(action) || dynamic_cast<TankFaceAction*>(action) ||
+        if (dynamic_cast<TankAssistAction*>(action) ||
             dynamic_cast<CombatFormationMoveAction*>(action))
             return 0.0f;
 
@@ -65,8 +65,9 @@ float HydrossTheUnstableDisableTankActionsMultiplier::GetValue(Action* action)
 
     if (botAI->IsAssistTankOfIndex(bot, 0))
     {
-        if (dynamic_cast<TankAssistAction*>(action) || dynamic_cast<TankFaceAction*>(action) ||
+        if (dynamic_cast<TankAssistAction*>(action) ||
             dynamic_cast<CombatFormationMoveAction*>(action))
+            return 0.0f;
 
         if (!hydross->HasAura(SPELL_CORRUPTION))
         {
@@ -530,12 +531,6 @@ float LadyVashjDisableAutomaticTargetingAndMovementModifier::GetValue(Action *ac
     if (dynamic_cast<AvoidAoeAction*>(action))
         return 0.0f;
 
-    if (IsLadyVashjInPhase1(botAI))
-    {
-        if (dynamic_cast<TankFaceAction*>(action))
-            return 0.0f;
-    }
-
     if (IsLadyVashjInPhase2(botAI))
     {
         if (dynamic_cast<DpsAssistAction*>(action) || dynamic_cast<TankAssistAction*>(action) ||
@@ -570,7 +565,7 @@ float LadyVashjDisableAutomaticTargetingAndMovementModifier::GetValue(Action *ac
         if ((!enchanted || !enchanted->IsAlive()) && (!strider || !strider->IsAlive()) &&
             (!elite || !elite->IsAlive()))
         {
-            if (dynamic_cast<SetBehindTargetAction*>(action) || dynamic_cast<TankFaceAction*>(action))
+            if (dynamic_cast<SetBehindTargetAction*>(action))
                 return 0.0f;
         }
     }

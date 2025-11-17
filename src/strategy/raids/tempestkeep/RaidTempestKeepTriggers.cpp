@@ -29,7 +29,7 @@ bool AlarEngagedByTanksInPhase1Trigger::IsActive()
     if (!alar)
         return false;
 
-    uint32 mapId = alar->GetMapId();
+    const uint32 mapId = alar->GetMapId();
 
     return (botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0)) &&
             !isPhase2[mapId];
@@ -41,7 +41,7 @@ bool AlarBossEngagedByMeleeDpsTrigger::IsActive()
     if (!alar)
         return false;
 
-    uint32 mapId = alar->GetMapId();
+    const uint32 mapId = alar->GetMapId();
 
     return botAI->IsMelee(bot) && !botAI->IsTank(bot) && !isPhase2[mapId];
 }
@@ -61,7 +61,9 @@ bool AlarBossEngagedByHealerTrigger::IsActive()
     if (!alar)
         return false;
 
-    return botAI->IsHeal(bot);
+    const uint32 mapId = alar->GetMapId();
+
+    return !isPhase2[mapId] && botAI->IsHeal(bot);
 }
 
 bool AlarEmbersOfAlarSpawnedTrigger::IsActive()
@@ -79,7 +81,7 @@ bool AlarIncomingFlameQuillsTrigger::IsActive()
     if (!alar)
         return false;
 
-    uint32 mapId = alar->GetMapId();
+    const uint32 mapId = alar->GetMapId();
 
     return alar->GetHealthPct() < 95.0f && alar->GetPositionZ() >= 22.0f &&
            bot->GetPositionZ() >= 17.0f && !isPhase2[mapId];
@@ -100,18 +102,29 @@ bool AlarEngagedByTanksInPhase2Trigger::IsActive()
     if (!alar)
         return false;
 
-    uint32 mapId = alar->GetMapId();
+    const uint32 mapId = alar->GetMapId();
 
     return (botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0)) && isPhase2[mapId];
 }
 
-bool AlarPreparingToDiveBombTrigger::IsActive()
+bool AlarPhase2EncounterIsAtRoomCenterTrigger::IsActive()
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
     if (!alar)
         return false;
 
-    uint32 mapId = alar->GetMapId();
+    const uint32 mapId = alar->GetMapId();
+
+    return alar->GetPositionZ() < 42.0f && isPhase2[mapId] && !bot->GetVictim();
+}
+
+bool AlarBossIsPreparingToDiveBombTrigger::IsActive()
+{
+    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+    if (!alar)
+        return false;
+
+    const uint32 mapId = alar->GetMapId();
 
     return alar->GetPositionZ() >= 42.0f && isPhase2[mapId];
 }
@@ -132,13 +145,22 @@ bool VoidReaverBossEngagedByTankTrigger::IsActive()
     return botAI->IsTank(bot) && voidReaver->GetVictim() == bot;
 }
 
-bool VoidReaverBossEngagedByRangedTrigger::IsActive()
+bool VoidReaverBossLaunchesArcaneOrbsTrigger::IsActive()
 {
     Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
     if (!voidReaver)
         return false;
 
     return botAI->IsRanged(bot);
+}
+
+bool VoidReaverTanksLostAggroTrigger::IsActive()
+{
+    Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
+    if (!voidReaver)
+        return false;
+
+    return !botAI->IsTank(bot) && voidReaver->GetVictim() == bot;
 }
 
 bool HighAstromancerSolarianPhase1And2MovementTrigger::IsActive()

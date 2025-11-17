@@ -19,36 +19,17 @@ static bool IsChargeAction(Action* action)
            dynamic_cast<CastFeralChargeCatAction*>(action);
 }
 
-float AlarPhase1StickToTheScriptMultiplier::GetValue(Action* action)
+float AlarDisableTankAssistMultiplier::GetValue(Action* action)
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
     if (!alar)
-        return 1.0f;
-
-    uint32 mapId = alar->GetMapId();
-    if (isPhase2[mapId])
         return 1.0f;
 
     if (botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0))
     {
         if (bot->IsInCombat() && dynamic_cast<TankAssistAction*>(action))
             return 0.0f;
-
-        /* if (dynamic_cast<MovementAction*>(action) &&
-            !(dynamic_cast<AlarBossTanksMoveBetweenPlatformsAction*>(action) ||
-              dynamic_cast<AlarJumpFromPlatformAction*>(action)))
-           return 0.0f; */
     }
-
-    /* if (botAI->IsMelee(bot) && botAI->IsDps(bot))
-    {
-        if (IsChargeAction(action) ||
-            dynamic_cast<CastKillingSpreeAction*>(action))
-            return 0.0f;
-    } */
-
-    /* if (botAI->IsMelee(bot) && botAI->IsDps(bot) && (dynamic_cast<SetBehindTargetAction*>(action) || dynamic_cast<ReachTargetAction*>(action)))
-        return 0.0f; */
 
     return 1.0f;
 }
@@ -75,9 +56,6 @@ float AlarPhase2NoTankingIfArmorMeltedMultiplier::GetValue(Action* action)
 
     if (botAI->IsTank(bot) && bot->HasAura(SPELL_MELT_ARMOR))
     {
-        if (bot->IsInCombat() && dynamic_cast<TankAssistAction*>(action))
-            return 0.0f;
-
         if (dynamic_cast<CastTauntAction*>(action) ||
             dynamic_cast<CastGrowlAction*>(action) ||
             dynamic_cast<CastHandOfReckoningAction*>(action))
@@ -92,12 +70,6 @@ float VoidReaverMaintainPositionsMultiplier::GetValue(Action* action)
     Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
     if (!voidReaver)
         return 1.0f;
-
-    if (botAI->IsTank(bot))
-    {
-        dynamic_cast<TankFaceAction*>(action);
-        return 0.0f;
-    }
 
     if (botAI->IsRanged(bot))
     {

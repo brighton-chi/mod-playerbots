@@ -12,35 +12,40 @@ namespace TempestKeepHelpers
     namespace TempestKeepPositions
     {
         // Al'ar platform coordinates correspond with "OLDWorld Trigger (DO NOT DELETE) NPCs (15384)"
-        const Position AlarRangedCenter(346.758f, 3.794f, -2.389f);
-        const Position AlarPlatform1(335.638f, 59.4879f, 17.9319f); // West Platform
-        const Position AlarPlatform2(388.751f, 31.7312f, 20.2636f); // Northwest Platform
-        const Position AlarPlatform3(388.791f, -33.1059f, 20.2636f); // Northeast Platform
-        const Position AlarPlatform4(332.723f, -61.159f, 17.9791f); // East Platform
-        const Position AlarPlatform1To2MidpointA(362.264f, 83.648f, 19.797f); // 1st Midpoint between Platform 1 and 2
-        const Position AlarPlatform1To2MidpointB(397.760f, 57.362f, 20.179f); // 2nd Midpoint between Platform 1 and 2
-        const Position AlarPlatform2To3MidpointA(419.272f, 28.838f, 20.179f); // 1st Midpoint between Platform 2 and 3
-        const Position AlarPlatform2To3MidpointB(419.272f, -28.838f, 20.179f); // 2nd Midpoint between Platform 2 and 3
-        const Position AlarPlatform3To4MidpointA(397.760f, -57.362f, 20.179f); // 1st Midpoint between Platform 3 and 4
-        const Position AlarPlatform3To4MidpointB(362.264f, -83.648f, 19.797f); // 2nd Midpoint between Platform 3 and 4
-        const Position AlarGround1(336.439f, 48.181f, -2.389f); // Landing point for jumping from West Platform
-        const Position AlarGround2(379.122f, 25.146f, -2.385f); // Landing point for jumping from Northwest Platform
-        const Position AlarGround3(378.583f, -27.481f, -2.385f); // Landing point for jumping from Northeast Platform
-        const Position AlarGround4(331.631f, -49.716f, -2.389f); // Landing point for jumping from East Platform
-        const Position AlarSERampBase(281.064f, -36.590f, -2.389f);
-        const Position AlarMidpointToSERamp(337.099f, -6.412f, -2.389f);
-        const Position AlarSWRampBase(281.064f, 36.590f, -2.389f);
-        const Position AlarMidpointToSWRamp(337.099f, 6.412f, -2.389f);
-        const Position AlarRoomSouthCenter(281.064f, 0.0f, -2.389f);
+        const Position AlarRoomCenter = { 330.611f, -2.540f, -2.389f };
+        const Position AlarRangedCenter = { 346.758f, 3.794f, -2.389f };
+        const Position AlarPlatform1 = { 335.638f, 59.4879f, 17.9319f }; // West Platform
+        const Position AlarPlatform2 = { 388.751f, 31.7312f, 20.2636f }; // Northwest Platform
+        const Position AlarPlatform3 = { 388.791f, -33.1059f, 20.2636f }; // Northeast Platform
+        const Position AlarPlatform4 = { 332.723f, -61.159f, 17.9791f }; // East Platform
+        const Position AlarPlatform1To2MidpointA = { 362.264f, 83.648f, 19.797f }; // 1st Midpoint between Platform 1 and 2
+        const Position AlarPlatform1To2MidpointB = { 397.760f, 57.362f, 20.179f }; // 2nd Midpoint between Platform 1 and 2
+        const Position AlarPlatform2To3MidpointA = { 419.272f, 28.838f, 20.179f }; // 1st Midpoint between Platform 2 and 3
+        const Position AlarPlatform2To3MidpointB = { 419.272f, -28.838f, 20.179f }; // 2nd Midpoint between Platform 2 and 3
+        // const Position AlarPlatform3To4MidpointA = { 397.760f, -57.362f, 20.179f }; // 1st Midpoint between Platform 3 and 4
+        // const Position AlarPlatform3To4MidpointB = { 362.264f, -83.648f, 19.797f }; // 2nd Midpoint between Platform 3 and 4
+        const Position AlarGround1 = { 336.439f, 48.181f, -2.389f }; // Landing point for jumping from West Platform
+        const Position AlarGround2 = { 379.122f, 25.146f, -2.385f }; // Landing point for jumping from Northwest Platform
+        const Position AlarGround3 = { 378.583f, -27.481f, -2.385f }; // Landing point for jumping from Northeast Platform
+        const Position AlarGround4 = { 331.631f, -49.716f, -2.389f }; // Landing point for jumping from East Platform
+        const Position AlarSERampBase = { 281.064f, -36.590f, -2.389f };
+        // const Position AlarMidpointToSERamp = { 337.099f, -6.412f, -2.389f };
+        const Position AlarSWRampBase = { 281.064f, 36.590f, -2.389f };
+        // const Position AlarMidpointToSWRamp = { 337.099f, 6.412f, -2.389f };
+        const Position AlarRoomSouthCenter = { 281.064f, 0.0f, -2.389f };
 
-        const Position VoidReaverTankPosition(423.845f,  371.733f, 14.897f); // middle of room
+        const Position VoidReaverTankPosition = { 423.845f, 371.733f, 14.897f }; // middle of room
 
         // const Position AstromancerStackPosition = { 448.398f, -346.526f, 16.802f }; // directly from entrance, on platform, <25 yards from boss
 
-        const Position ThaladredTankPosition = { 0.0f, 0.0f, 0.0f };
-        const Position SanguinarTankPosition = { 0.0f, 0.0f, 0.0f };
-        const Position CapernianTankPosition = { 0.0f, 0.0f, 0.0f };
-        const Position TelonicusTankPosition = { 0.0f, 0.0f, 0.0f };
+        const Position ThaladredFinalPosition = { 732.947f, -0.566f, 46.821f };
+        const Position SanguinarTankPosition = { 775.478f, 39.888f, 46.780f };
+        // const Position CapernianTankPosition = { 0.0f, 0.0f, 0.0f };
+        const Position TelonicusTankPosition = { 773.717f, 44.091f, 46.780f };
+        const Position KaelthasWeaponStackPosition = { 775.296f, -0.822f, 48.729f };
+        const Position KaelthasAxeTankPosition = { 775.621f, 20.717f, 48.729f };
+        const Position KaelthasBowTankPosition = { 777.713f, -28.857f, 48.729f };
+        const Position KaelthasTankPosition = { 799.390f, -0.837f, 48.729f };
     }
 
     /*
@@ -198,6 +203,28 @@ namespace TempestKeepHelpers
         }
     }
 
+    /* bool IsAnyAdvisorActiveAndAlive(PlayerbotAI* botAI)
+    {
+        const char* advisorNames[] =
+        {
+            "thaladred the darkener",
+            "lord sanguinar",
+            "grand astromancer capernian",
+            "master engineer telonicus",
+        };
+
+        for (const char* name : advisorNames)
+        {
+            Unit* advisor = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", name)->Get();
+            if (!advisor || !advisor->IsAlive())
+                continue;
+
+            return true;
+        }
+
+        return false;
+    } */
+
     Player* GetCapernianTank(PlayerbotAI* botAI, Player* bot)
     {
         Group* group = bot->GetGroup();
@@ -220,6 +247,31 @@ namespace TempestKeepHelpers
         }
 
         return meleeTankCandidate;
+    }
+
+    bool IsKaelthasInPhase2(PlayerbotAI* botAI)
+    {
+        const char* weaponNames[] =
+        {
+            "staff of disintegration",
+            "cosmic infuser",
+            "infinity blade",
+            "warp slicer",
+            "phaseshift bulwark",
+            "netherstrand longbow",
+            "devastation",
+        };
+
+        for (const char* name : weaponNames)
+        {
+            Unit* weapon = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", name)->Get();
+            if (!weapon || !weapon->IsAlive())
+                continue;
+
+            return true;
+        }
+
+        return false;
     }
 
     std::unordered_map<uint32, int8> lastAlarPlatform;
@@ -251,7 +303,7 @@ namespace TempestKeepHelpers
         TempestKeepPositions::AlarPlatform2To3MidpointA,
         TempestKeepPositions::AlarPlatform1To2MidpointB,
         TempestKeepPositions::AlarPlatform1To2MidpointA
-    }; */
+    };
     std::vector<Position> midpoints_1_to_2 =
     {
         TempestKeepPositions::AlarPlatform1To2MidpointA,
@@ -271,7 +323,7 @@ namespace TempestKeepHelpers
     {
         TempestKeepPositions::AlarPlatform3To4MidpointB,
         TempestKeepPositions::AlarPlatform3To4MidpointA,
-    };
+    };*/
 
     std::unordered_map<ObjectGuid, Position> initialVoidReaverPositions;
     std::unordered_map<ObjectGuid, bool> hasReachedInitialVoidReaverPosition;

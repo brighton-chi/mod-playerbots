@@ -20,11 +20,13 @@ public:
         creators["alar jump from platform"] = &RaidTempestKeepActionContext::alar_jump_from_platform;
         creators["alar move away from rebirth"] = &RaidTempestKeepActionContext::alar_move_away_from_rebirth;
         creators["alar swap tanks on boss"] = &RaidTempestKeepActionContext::alar_swap_tanks_on_boss;
+        creators["alar return to room center"] = &RaidTempestKeepActionContext::alar_return_to_room_center;
         creators["alar dive bomb spread"] = &RaidTempestKeepActionContext::alar_dive_bomb_spread;
         creators["alar manage timers and trackers"] = &RaidTempestKeepActionContext::alar_manage_timers_and_trackers;
 
         creators["void reaver position boss"] = &RaidTempestKeepActionContext::void_reaver_position_boss;
         creators["void reaver spread ranged"] = &RaidTempestKeepActionContext::void_reaver_spread_ranged;
+        creators["void reaver use aggro dump ability"] = &RaidTempestKeepActionContext::void_reaver_use_aggro_dump_ability;
 
         creators["high astromancer solarian stack bots"] = &RaidTempestKeepActionContext::high_astromancer_solarian_stack_bots;
         creators["high astromancer solarian move away from group"] = &RaidTempestKeepActionContext::high_astromancer_solarian_move_away_from_group;
@@ -53,11 +55,13 @@ private:
     static Action* alar_jump_from_platform(PlayerbotAI* botAI) { return new AlarJumpFromPlatformAction(botAI); }
     static Action* alar_move_away_from_rebirth(PlayerbotAI* botAI) { return new AlarMoveAwayFromRebirthAction(botAI); }
     static Action* alar_swap_tanks_on_boss(PlayerbotAI* botAI) { return new AlarSwapTanksOnBossAction(botAI); }
+    static Action* alar_return_to_room_center(PlayerbotAI* botAI) { return new AlarReturnToRoomCenterAction(botAI); }
     static Action* alar_dive_bomb_spread(PlayerbotAI* botAI) { return new AlarDiveBombSpreadAction(botAI); }
     static Action* alar_manage_timers_and_trackers(PlayerbotAI* botAI) { return new AlarManageTimersAndTrackersAction(botAI); }
 
     static Action* void_reaver_position_boss(PlayerbotAI* botAI) { return new VoidReaverPositionBossAction(botAI); }
     static Action* void_reaver_spread_ranged(PlayerbotAI* botAI) { return new VoidReaverSpreadRangedAction(botAI); }
+    static Action* void_reaver_use_aggro_dump_ability(PlayerbotAI* botAI) { return new VoidReaverUseAggroDumpAbilityAction(botAI); }
 
     static Action* high_astromancer_solarian_stack_bots(PlayerbotAI* botAI) { return new HighAstromancerSolarianStackBotsAction(botAI); }
     static Action* high_astromancer_solarian_move_away_from_group(PlayerbotAI* botAI) { return new HighAstromancerSolarianMoveAwayFromGroupAction(botAI); }

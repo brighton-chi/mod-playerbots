@@ -62,7 +62,7 @@ bool AlarBossTanksMoveBetweenPlatformsAction::Execute(Event event)
     if (!alar)
         return false;
 
-    uint32 mapId = alar->GetMapId();
+    const uint32 mapId = alar->GetMapId();
 
     // List of platforms
     std::vector<Position> platforms = { AlarPlatform1, AlarPlatform2, AlarPlatform3, AlarPlatform4 };
@@ -100,7 +100,7 @@ bool AlarBossTanksMoveBetweenPlatformsAction::Execute(Event event)
         if (mainTank->GetExactDist2d(mtTarget.GetPositionX(), mtTarget.GetPositionY()) > 10.0f && mainTank->GetPositionZ() >= 17.0f)
         {
             // Teleport directly to platform
-            uint32 mapId = alar->GetMapId();
+            const uint32 mapId = alar->GetMapId();
             bot->TeleportTo(mapId, mtTarget.GetPositionX(), mtTarget.GetPositionY(), mtTarget.GetPositionZ(), mainTank->GetOrientation());
             return true;
         }
@@ -286,7 +286,7 @@ bool AlarBossTanksMoveBetweenPlatformsAction::PositionMainTank(Player* mainTank,
 
         if (assistTank->GetExactDist2d(atTarget.GetPositionX(), atTarget.GetPositionY()) > 10.0f && assistTank->GetPositionZ() >= 17.0f)
         {
-            uint32 mapId = alar->GetMapId();
+            const uint32 mapId = alar->GetMapId();
             bot->TeleportTo(mapId, atTarget.GetPositionX(), atTarget.GetPositionY(), atTarget.GetPositionZ(), assistTank->GetOrientation());
             return true;
         }
@@ -470,7 +470,7 @@ bool AlarBossTanksMoveBetweenPlatformsAction::PositionAssistTank(Player* assistT
     }
 
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    uint32 mapId = alar->GetMapId();
+    const uint32 mapId = alar->GetMapId();
     if (alar && isPhase2[mapId])
     {
         SetRtiTarget(botAI, "star", alar);
@@ -518,7 +518,7 @@ bool AlarMeleeDpsPrioritizeAddsAction::Execute(Event event)
         return true;
     }
 
-    uint32 mapId = alar->GetMapId();
+    const uint32 mapId = alar->GetMapId();
     int8 alarPlatform = lastAlarPlatform[mapId];
 
     std::vector<Position> platforms = { AlarPlatform1, AlarPlatform2, AlarPlatform3, AlarPlatform4 };
@@ -617,7 +617,7 @@ bool AlarRangedDpsPrioritizeBossAction::Execute(Event event)
         }
     }
 
-    uint32 mapId = alar->GetMapId();
+    const uint32 mapId = alar->GetMapId();
     if (!isPhase2[mapId])
     {
         int8 alarPlatform = lastAlarPlatform[mapId];
@@ -633,24 +633,6 @@ bool AlarRangedDpsPrioritizeBossAction::Execute(Event event)
             return MoveNear(bot->GetMapId(), groundTarget.GetPositionX(), groundTarget.GetPositionY(), groundTarget.GetPositionZ(), 5.0f, MovementPriority::MOVEMENT_COMBAT);
         }
     }
-
-    /*
-    // Stay within 45 yards of the ranged center
-    const Position& center = AlarRangedCenter;
-    float dist = bot->GetExactDist2d(center.GetPositionX(), center.GetPositionY());
-    if (isPhase2[mapId] && dist > 45.0f)
-    {
-        // Calculate direction vector from center to bot
-        float dx = bot->GetPositionX() - center.GetPositionX();
-        float dy = bot->GetPositionY() - center.GetPositionY();
-        float scale = 40.0f / dist; // scale to 40 yards
-
-        // New target position at 40 yards from center, in the direction of the bot
-        float targetX = center.GetPositionX() + dx * scale;
-        float targetY = center.GetPositionY() + dy * scale;
-
-        return MoveNear(bot->GetMapId(), targetX, targetY, bot->GetPositionZ(), 5.0f, MovementPriority::MOVEMENT_COMBAT);
-    } */
 
     return false;
 }
@@ -661,40 +643,19 @@ bool AlarPositionHealerAction::Execute(Event event)
     if (!alar)
         return false;
 
-    uint32 mapId = alar->GetMapId();
-    if (!isPhase2[mapId])
+    const uint32 mapId = alar->GetMapId();
+    int8 alarPlatform = lastAlarPlatform[mapId];
+
+    // List of ground positions matching platforms
+    std::vector<Position> groundPositions = { AlarGround1, AlarGround2, AlarGround3, AlarGround4 };
+    const Position& groundTarget = groundPositions[alarPlatform];
+
+    // Only move if not already within 15 yards
+    if (bot->GetExactDist2d(groundTarget.GetPositionX(), groundTarget.GetPositionY()) > 15.0f)
     {
-        int8 alarPlatform = lastAlarPlatform[mapId];
-
-        // List of ground positions matching platforms
-        std::vector<Position> groundPositions = { AlarGround1, AlarGround2, AlarGround3, AlarGround4 };
-        const Position& groundTarget = groundPositions[alarPlatform];
-
-        // Only move if not already within 15 yards
-        if (bot->GetExactDist2d(groundTarget.GetPositionX(), groundTarget.GetPositionY()) > 15.0f)
-        {
-            // Move near the ground target (e.g., 5 yards away for some spread)
-            return MoveNear(bot->GetMapId(), groundTarget.GetPositionX(), groundTarget.GetPositionY(), groundTarget.GetPositionZ(), 5.0f, MovementPriority::MOVEMENT_COMBAT);
-        }
+        // Move near the ground target (e.g., 5 yards away for some spread)
+        return MoveNear(bot->GetMapId(), groundTarget.GetPositionX(), groundTarget.GetPositionY(), groundTarget.GetPositionZ(), 5.0f, MovementPriority::MOVEMENT_COMBAT);
     }
-
-    /*
-    // Stay within 45 yards of the ranged center
-    const Position& center = AlarRangedCenter;
-    float dist = bot->GetExactDist2d(center.GetPositionX(), center.GetPositionY());
-    if (isPhase2[mapId] && dist > 45.0f)
-    {
-        // Calculate direction vector from center to bot
-        float dx = bot->GetPositionX() - center.GetPositionX();
-        float dy = bot->GetPositionY() - center.GetPositionY();
-        float scale = 40.0f / dist; // scale to 40 yards
-
-        // New target position at 40 yards from center, in the direction of the bot
-        float targetX = center.GetPositionX() + dx * scale;
-        float targetY = center.GetPositionY() + dy * scale;
-
-        return MoveTo(bot->GetMapId(), targetX, targetY, bot->GetPositionZ(), false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
-    } */
 
     return false;
 }
@@ -705,7 +666,7 @@ bool AlarAddTankPickUpEmbersAction::Execute(Event event)
     if (!alar)
         return false;
 
-    uint32 mapId = alar->GetMapId();
+    const uint32 mapId = alar->GetMapId();
     Unit* ember = GetFirstAliveUnitByEntry(botAI, NPC_EMBER_OF_ALAR);
     if (ember)
     {
@@ -776,7 +737,7 @@ bool AlarJumpFromPlatformAction::Execute(Event event)
             }
         }
 
-        // Jump to corresponding landing poisition
+    // Jump to corresponding landing poisition
     const Position& ground = platformGroundPairs[nearestIndex].second;
     return JumpTo(bot->GetMapId(), ground.GetPositionX(), ground.GetPositionY(), ground.GetPositionZ(), MovementPriority::MOVEMENT_FORCED);
     }
@@ -874,12 +835,6 @@ bool AlarSwapTanksOnBossAction::Execute(Event event)
     if (!alar || !group)
         return false;
 
-    if (bot->GetVictim() != alar)
-    {
-        SetRtiTarget(botAI, "star", alar);
-        return Attack(alar);
-    }
-
     Player* mainTank = nullptr;
     Player* assistTank = nullptr;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
@@ -887,8 +842,10 @@ bool AlarSwapTanksOnBossAction::Execute(Event event)
         Player* member = ref->GetSource();
         if (!member)
             continue;
+
         if (botAI->IsMainTank(member))
             mainTank = member;
+
         if (botAI->IsAssistTankOfIndex(member, 0))
             assistTank = member;
     }
@@ -915,6 +872,24 @@ bool AlarSwapTanksOnBossAction::Execute(Event event)
         }
     }
 
+    if (bot->GetVictim() != alar)
+    {
+        SetRtiTarget(botAI, "star", alar);
+        return Attack(alar);
+    }
+
+    return false;
+}
+
+bool AlarReturnToRoomCenterAction::Execute(Event event)
+{
+    const Position& center = AlarRoomCenter;
+    if (bot->GetExactDist2d(center.GetPositionX(), center.GetPositionY()) > 35.0f)
+    {
+        return MoveInside(bot->GetMapId(), center.GetPositionX(), center.GetPositionY(), center.GetPositionZ(), 25.0f,
+                          MovementPriority::MOVEMENT_COMBAT);
+    }
+
     return false;
 }
 
@@ -934,7 +909,7 @@ bool AlarDiveBombSpreadAction::Execute(Event event)
         if (!unit || bot->GetGUID() == member)
             continue;
 
-        const float dist = bot->GetExactDist2d(unit);
+        float dist = bot->GetExactDist2d(unit);
         if (dist < closestDist)
         {
             closestDist = dist;
@@ -958,7 +933,7 @@ bool AlarManageTimersAndTrackersAction::Execute(Event event)
     if (!alar)
         return false;
 
-    uint32 mapId = alar->GetMapId();
+    const uint32 mapId = alar->GetMapId();
 
     // Reset tracker at the start of the fight (Al'ar at max health)
     if (IsMapIDTimerManager(botAI, bot) && alar->GetHealthPct() > 99.5f && alar->GetPositionZ() >= 17.0f)
@@ -1136,37 +1111,57 @@ Position VoidReaverSpreadRangedAction::GetRangedBotPosition(const Position& cent
     return Position(targetX, targetY, botZ);
 }
 
-// High Astromancer Solarian
-
-/* bool HighAstromancerSolarianStackBotsAction::Execute(Event event)
+bool VoidReaverUseAggroDumpAbilityAction::Execute(Event event)
 {
-    Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
-    if (!astromancer)
+    Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
+    if (!voidReaver)
         return false;
 
-    const Position& position = AstromancerStackPosition;
-
-    // Phase 1 & 2 - Ranged
-    if (botAI->IsRanged(bot) && bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) >= 4.0f)
+    if (bot->getClass() == CLASS_WARLOCK)
     {
         bot->AttackStop();
-        bot->InterruptNonMeleeSpells(false);
-        return MoveTo(bot->GetMapId(), position.GetPositionX(), position.GetPositionY(), bot->GetPositionZ(), false, false, false, false,
-                      MovementPriority::MOVEMENT_COMBAT, true, false);
+        bot->InterruptNonMeleeSpells(true);
+
+        if (botAI->CanCastSpell("soulshatter", bot))
+            return botAI->CastSpell("soulshatter", bot);
     }
-
-    // Phase 2 - Melee move to Ranged
-    Unit* solariumAgent = AI_VALUE2(Unit*, "find target", "solarium agent");
-    if (solariumAgent && botAI->IsMelee(bot) &&
-        bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) >= 6.0f)
+    else if (bot->getClass() == CLASS_MAGE)
     {
         bot->AttackStop();
-        return MoveTo(bot->GetMapId(), position.GetPositionX(), position.GetPositionY(), bot->GetPositionZ(), false, false, false, false,
-                      MovementPriority::MOVEMENT_COMBAT, true, false);
+        bot->InterruptNonMeleeSpells(true);
+
+        if (botAI->CanCastSpell("ice block", bot))
+            return botAI->CastSpell("ice block", bot);
+    }
+    else if (bot->getClass() == CLASS_PRIEST)
+    {
+        bot->AttackStop();
+        bot->InterruptNonMeleeSpells(true);
+
+        if (botAI->CanCastSpell("fade", bot))
+            return botAI->CastSpell("fade", bot);
+    }
+    else if (bot->getClass() == CLASS_HUNTER)
+    {
+        bot->AttackStop();
+        bot->InterruptNonMeleeSpells(true);
+
+        if (botAI->CanCastSpell("feign death", bot))
+            return botAI->CastSpell("feign death", bot);
+    }
+    else if (bot->getClass() == CLASS_PALADIN)
+    {
+        bot->AttackStop();
+        bot->InterruptNonMeleeSpells(true);
+
+        if (botAI->CanCastSpell("divine protection", bot))
+            return botAI->CastSpell("divine protection", bot);
     }
 
     return false;
-} */
+}
+
+// High Astromancer Solarian
 
 bool HighAstromancerSolarianStackBotsAction::Execute(Event event)
 {
@@ -1383,7 +1378,7 @@ bool KaelthasSunstriderLogForTestingAction::Execute(Event event)
         return false;
 
     static std::unordered_map<uint32, std::chrono::steady_clock::time_point> kaelthasFightStart;
-    uint32 mapId = kaelthas->GetMapId();
+    const uint32 mapId = kaelthas->GetMapId();
     auto now = std::chrono::steady_clock::now();
     if (kaelthasFightStart.find(mapId) == kaelthasFightStart.end())
     {
@@ -1494,25 +1489,37 @@ bool KaelthasSunstriderWarlockTankPositionCapernianAction::Execute(Event event)
 
     if (capernian->GetVictim() == bot)
     {
-        const Position& position = CapernianTankPosition;
-        float distanceToCapernian = capernian->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
-        const float minDistance = 30.5f;
+        const float minDistance = 31.0f;
         const float maxDistance = 34.0f;
 
-        if (distanceToCapernian > minDistance && distanceToCapernian < maxDistance)
+        // current 2D distance to boss
+        float currentDist = bot->GetExactDist2d(capernian);
+        if (currentDist < minDistance || currentDist > maxDistance)
         {
-            if (!bot->IsWithinDist2d(position.GetPositionX(), position.GetPositionY(), 1.0f))
-            {
-                return MoveTo(bot->GetMapId(), position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(), false,
-                                false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
-            }
+            // move to nearest boundary of allowed range
+            float desiredDist = (currentDist < minDistance) ? minDistance : maxDistance;
 
-            float orientation = atan2(capernian->GetPositionY() - bot->GetPositionY(),
-                                        capernian->GetPositionX() - bot->GetPositionX());
-            bot->SetFacingTo(orientation);
+            float dx = bot->GetPositionX() - capernian->GetPositionX();
+            float dy = bot->GetPositionY() - capernian->GetPositionY();
+            float distXY = bot->GetExactDist2d(capernian);
+
+            if (distXY == 0.0f)
+                return false;
+
+            dx /= distXY;
+            dy /= distXY;
+
+            float targetX = capernian->GetPositionX() + dx * desiredDist;
+            float targetY = capernian->GetPositionY() + dy * desiredDist;
+
+            if (!bot->IsWithinDist2d(targetX, targetY, 1.0f))
+                return MoveTo(bot->GetMapId(), targetX, targetY, capernian->GetPositionZ(), false, false, false, false,
+                              MovementPriority::MOVEMENT_COMBAT, true, false);
         }
+        float orientation = atan2(capernian->GetPositionY() - bot->GetPositionY(),
+                                  capernian->GetPositionX() - bot->GetPositionX());
+        bot->SetFacingTo(orientation);
     }
-
     return false;
 }
 
