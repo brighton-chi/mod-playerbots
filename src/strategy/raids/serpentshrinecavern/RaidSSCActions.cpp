@@ -18,6 +18,134 @@ using namespace SerpentShrineCavernPositions;
 
 // Trash Mobs
 
+bool FollowMasterOutOfToxicPoolAction::Execute(Event event)
+{
+    /* Player* master = botAI->GetMaster();
+    if (!master)
+        return false;
+
+    if (bot->GetExactDist2d(master) > 2.0f)
+    {
+        bot->AttackStop();
+        bot->InterruptNonMeleeSpells(true);
+        return MoveTo(master->GetMapId(), master->GetPositionX(),
+                      master->GetPositionY(), master->GetPositionZ(),
+                      false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
+    }
+
+    return false; */
+    LOG_DEBUG("playerbots", "AvoidToxicPoolOnAuraAction: entered for bot={}", bot->GetName());
+
+    // Aura is provided by trigger; defend in-depth in case it fires incorrectly
+    Aura* aura = bot->GetAura(SPELL_TOXIC_POOL);
+    if (!aura)
+    {
+        LOG_DEBUG("playerbots", "AvoidToxicPoolOnAuraAction: no toxic aura on bot={}", bot->GetName());
+        return false;
+    }
+
+    // Find the dynamic object that created the pool
+    DynamicObject* dyn = aura->GetDynobjOwner();
+    if (!dyn)
+    {
+        LOG_DEBUG("playerbots", "AvoidToxicPoolOnAuraAction: aura present but dynobj owner is null for bot={}", bot->GetName());
+        return false;
+    }
+
+    // Gather info for logs and behavior
+    ObjectGuid dynGuid = dyn->GetGUID();
+    uint32 dynSpellId = dyn->GetSpellId();
+    const SpellInfo* sInfo = sSpellMgr->GetSpellInfo(dynSpellId);
+
+    // Try using the dyn object's radius, fall back to spell info if needed
+    float radius = 0.0f;
+    if (dyn->GetRadius() > 0.0f)
+        radius = dyn->GetRadius();
+    else if (sInfo)
+    {
+        for (int e = 0; e < MAX_SPELL_EFFECTS; ++e)
+        {
+            if (sInfo->Effects[e].Effect == SPELL_EFFECT_SCHOOL_DAMAGE ||
+                (sInfo->Effects[e].Effect == SPELL_EFFECT_APPLY_AURA &&
+                 sInfo->Effects[e].ApplyAuraName == SPELL_AURA_PERIODIC_DAMAGE))
+            {
+                radius = sInfo->Effects[e].CalcRadius();
+                break;
+            }
+        }
+    }
+
+    LOG_DEBUG("playerbots", "AvoidToxicPoolOnAuraAction: dynGuid={} spellId={} radius={} botPos=({}, {}) dynPos=({}, {}) for bot={}",
+              dynGuid.ToString(), dynSpellId, radius,
+              bot->GetPositionX(), bot->GetPositionY(),
+              dyn->GetPositionX(), dyn->GetPositionY(), bot->GetName());
+
+    if (radius <= 0.0f)
+    {
+        LOG_DEBUG("playerbots", "AvoidToxicPoolOnAuraAction: cannot determine radius for dynGuid={}, abort fallback for bot={}", dynGuid.ToString(), bot->GetName());
+        return false;
+    }
+
+    // Compute XY vector to edge point
+    const float buffer = 3.0f;          // safety buffer to be placed outside pool
+    const float centerThreshold = 1.0f; // treat dist <= radius + this as "in pool"
+    float dx = bot->GetPositionX() - dyn->GetPositionX();
+    float dy = bot->GetPositionY() - dyn->GetPositionY();
+    float distSq = dx * dx + dy * dy;
+    float insideThresh = radius + centerThreshold;
+
+    // If not inside or near the radius, nothing to do
+    if (distSq > insideThresh * insideThresh)
+    {
+        LOG_DEBUG("playerbots", "AvoidToxicPoolOnAuraAction: bot is outside threshold (dist2={} thresh2={}): no move. bot={}", distSq, insideThresh * insideThresh, bot->GetName());
+        return false;
+    }
+
+    float dist = std::sqrt(distSq);
+    float safeDist = radius + buffer;
+    float moveX, moveY;
+
+    if (dist < 0.001f)
+    {
+        // at center -> random outward direction
+        float angle = frand(0.0f, static_cast<float>(M_PI * 2.0));
+        moveX = dyn->GetPositionX() + cosf(angle) * safeDist;
+        moveY = dyn->GetPositionY() + sinf(angle) * safeDist;
+    }
+    else
+    {
+        moveX = dyn->GetPositionX() + (dx / dist) * safeDist;
+        moveY = dyn->GetPositionY() + (dy / dist) * safeDist;
+    }
+
+    LOG_DEBUG("playerbots", "AvoidToxicPoolOnAuraAction: computed move target (x={}, y={}) safeDist={} for bot={} (dist={})",
+              moveX, moveY, safeDist, bot->GetName(), dist);
+
+    // Attempt to stop any combat and move out
+    bot->AttackStop();
+    bot->InterruptNonMeleeSpells(true);
+
+    bool moved = MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, true,
+                        MovementPriority::MOVEMENT_FORCED, true, false);
+
+    if (moved)
+    {
+        LOG_DEBUG("playerbots", "AvoidToxicPoolOnAuraAction: MoveTo issued for bot={} to ({}, {})", bot->GetName(), moveX, moveY);
+        return true;
+    }
+
+    // Fallback to FleePosition if MoveTo fails
+    Position centerPos(dyn->GetPositionX(), dyn->GetPositionY(), dyn->GetPositionZ());
+    if (FleePosition(centerPos, radius))
+    {
+        LOG_DEBUG("playerbots", "AvoidToxicPoolOnAuraAction: FleePosition fallback used for bot={}", bot->GetName());
+        return true;
+    }
+
+    LOG_DEBUG("playerbots", "AvoidToxicPoolOnAuraAction: movement/fallback failed for bot={}", bot->GetName());
+    return false;
+}
+
 bool GreyheartTidecallerMarkWaterElementalTotemAction::Execute(Event event)
 {
     Unit* totem = GetFirstAliveUnitByEntry(botAI, NPC_WATER_ELEMENTAL_TOTEM);
@@ -86,7 +214,7 @@ bool HydrossTheUnstablePositionFrostTankAction::Execute(Event event)
 
     if (!hydross->HasAura(SPELL_CORRUPTION) && HasMarkOfHydrossAt100Percent(bot) && hydross->GetVictim() == bot)
     {
-        uint32 mapId = hydross->GetMapId();
+        const uint32 mapId = hydross->GetMapId();
         const time_t now = std::time(nullptr);
         auto it = hydrossChangeToNaturePhaseTimer.find(mapId);
 
@@ -180,7 +308,7 @@ bool HydrossTheUnstablePositionNatureTankAction::Execute(Event event)
 
     if (hydross->HasAura(SPELL_CORRUPTION) && HasMarkOfCorruptionAt100Percent(bot) && hydross->GetVictim() == bot)
     {
-        uint32 mapId = hydross->GetMapId();
+        const uint32 mapId = hydross->GetMapId();
         const time_t now = std::time(nullptr);
         auto it = hydrossChangeToFrostPhaseTimer.find(mapId);
 
@@ -349,7 +477,7 @@ bool HydrossTheUnstableStopDpsUponPhaseChangeAction::Execute(Event event)
     if (!hydross)
         return false;
 
-    uint32 mapId = hydross->GetMapId();
+    const uint32 mapId = hydross->GetMapId();
     const time_t now = std::time(nullptr);
     const int phaseEndStopSeconds = 6;
     const int phaseStartStopSeconds = 5;
@@ -392,7 +520,7 @@ bool HydrossTheUnstableManageTimersAction::Execute(Event event)
     if (!hydross)
         return false;
 
-    uint32 mapId = hydross->GetMapId();
+    const uint32 mapId = hydross->GetMapId();
     const time_t now = std::time(nullptr);
 
     if (hydross->GetHealth() == hydross->GetMaxHealth())
@@ -405,26 +533,22 @@ bool HydrossTheUnstableManageTimersAction::Execute(Event event)
 
     if (!hydross->HasAura(SPELL_CORRUPTION))
     {
-        if (hydrossFrostDpsWaitTimer.count(mapId) == 0)
-            hydrossFrostDpsWaitTimer.emplace(mapId, now);
-
+        hydrossFrostDpsWaitTimer.try_emplace(mapId, now);
         hydrossNatureDpsWaitTimer.erase(mapId);
         hydrossChangeToFrostPhaseTimer.erase(mapId);
 
-        if (HasMarkOfHydrossAt100Percent(bot) && hydrossChangeToNaturePhaseTimer.count(mapId) == 0)
-            hydrossChangeToNaturePhaseTimer.emplace(mapId, now);
+        if (HasMarkOfHydrossAt100Percent(bot))
+            hydrossChangeToNaturePhaseTimer.try_emplace(mapId, now);
     }
 
     if (hydross->HasAura(SPELL_CORRUPTION))
     {
-        if (hydrossNatureDpsWaitTimer.count(mapId) == 0)
-            hydrossNatureDpsWaitTimer.emplace(mapId, now);
-
+        hydrossNatureDpsWaitTimer.try_emplace(mapId, now);
         hydrossFrostDpsWaitTimer.erase(mapId);
         hydrossChangeToNaturePhaseTimer.erase(mapId);
 
-        if (HasMarkOfCorruptionAt100Percent(bot) && hydrossChangeToFrostPhaseTimer.count(mapId) == 0)
-            hydrossChangeToFrostPhaseTimer.emplace(mapId, now);
+        if (HasMarkOfCorruptionAt100Percent(bot))
+            hydrossChangeToFrostPhaseTimer.try_emplace(mapId, now);
     }
 
     return false;
@@ -456,7 +580,7 @@ bool TheLurkerBelowRunAroundBehindBossAction::Execute(Event event)
     // Only move if not close enough to the circle position
     if (bot->GetExactDist2d(targetX, targetY) > 1.0f)
     {
-        InterruptNonMeleeSpells(true);
+        bot->InterruptNonMeleeSpells(true);
         return MoveTo(lurker->GetMapId(), targetX, targetY, lurker->GetPositionZ(), false, false, false, false,
                       MovementPriority::MOVEMENT_FORCED, true, false);
     }
@@ -682,7 +806,7 @@ bool TheLurkerBelowManageSpoutTimerAction::Execute(Event event)
     if (!lurker)
         return false;
 
-    uint32 mapId = lurker->GetMapId();
+    const uint32 mapId = lurker->GetMapId();
     const time_t now = std::time(nullptr);
 
     if (lurker->GetHealth() == lurker->GetMaxHealth())
@@ -691,10 +815,14 @@ bool TheLurkerBelowManageSpoutTimerAction::Execute(Event event)
         return false;
     }
 
-    if (lurkerSpoutTimer.count(mapId) && lurkerSpoutTimer[mapId] <= now)
-        lurkerSpoutTimer.erase(mapId);
+    auto it = lurkerSpoutTimer.find(mapId);
+    if (it != lurkerSpoutTimer.end() && it->second <= now)
+    {
+        lurkerSpoutTimer.erase(it);
+        it = lurkerSpoutTimer.end();
+    }
 
-    if (IsLurkerCastingSpout(lurker) && lurkerSpoutTimer.count(mapId) == 0)
+    if (IsLurkerCastingSpout(lurker) && it == lurkerSpoutTimer.end())
         lurkerSpoutTimer.emplace(mapId, now + 20); // 20s channel
 
     return false;
@@ -914,7 +1042,7 @@ bool LeotherasTheBlindManageTimersAndTrackersAction::Execute(Event event)
     if (!leotheras)
         return false;
 
-    uint32 mapId = leotheras->GetMapId();
+    const uint32 mapId = leotheras->GetMapId();
     const time_t now = std::time(nullptr);
 
     // Encounter start/reset: clear all timers
@@ -931,30 +1059,22 @@ bool LeotherasTheBlindManageTimersAndTrackersAction::Execute(Event event)
     Unit* leotherasPhase3Demon = GetPhase3LeotherasDemon(botAI);
     if (leotherasHuman && !leotherasPhase3Demon)
     {
-        if (leotherasHumanFormDpsWaitTimer.count(mapId) == 0)
-            leotherasHumanFormDpsWaitTimer.emplace(mapId, now);
-
+        leotherasHumanFormDpsWaitTimer.try_emplace(mapId, now);
         leotherasDemonFormDpsWaitTimer.erase(mapId);
-
         return false;
     }
 
     Unit* leotherasPhase2Demon = GetPhase2LeotherasDemon(botAI);
     if (leotherasPhase2Demon)
     {
-        if (leotherasDemonFormDpsWaitTimer.count(mapId) == 0)
-            leotherasDemonFormDpsWaitTimer.emplace(mapId, now);
-
+        leotherasDemonFormDpsWaitTimer.try_emplace(mapId, now);
         leotherasHumanFormDpsWaitTimer.erase(mapId);
-
         return false;
     }
 
     if (leotherasHuman && leotherasPhase3Demon)
     {
-        if (leotherasFinalPhaseDpsWaitTimer.count(mapId) == 0)
-            leotherasFinalPhaseDpsWaitTimer.emplace(mapId, now);
-
+        leotherasFinalPhaseDpsWaitTimer.try_emplace(mapId, now);
         leotherasHumanFormDpsWaitTimer.erase(mapId);
         leotherasDemonFormDpsWaitTimer.erase(mapId);
     }
@@ -1206,7 +1326,7 @@ bool FathomLordKarathressMisdirectBossesToTanksAction::Execute(Event event)
 bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event event)
 {
     // Target priority 1: Spitfire Totems for melee
-    Unit* totem = AI_VALUE2(Unit*, "find target", "spitfire totem");
+    Unit* totem = GetFirstAliveUnitByEntry(botAI, NPC_SPITFIRE_TOTEM);
     if (totem && botAI->IsMelee(bot) && botAI->IsDps(bot))
     {
         MarkTargetWithSkull(bot, totem);
@@ -1356,7 +1476,7 @@ bool FathomLordKarathressManageDpsTimerAction::Execute(Event event)
     if (!karathress)
         return false;
 
-    uint32 mapId = karathress->GetMapId();
+    const uint32 mapId = karathress->GetMapId();
     const time_t now = std::time(nullptr);
 
     if (karathress->GetHealth() == karathress->GetMaxHealth())
@@ -1794,11 +1914,39 @@ bool LadyVashjAttackAndMoveAwayFromStriderAction::Execute(Event event)
         if (!bot->HasAura(SPELL_FEAR_WARD_CHEAT))
             bot->AddAura(SPELL_FEAR_WARD_CHEAT, bot);
 
-        if (bot->GetVictim() == strider && bot->GetExactDist2d(vashj) < 30.0f)
-            return MoveAway(vashj, 32.0f, false);
+        if (botAI->IsAssistTankOfIndex(bot, 0) && bot->GetVictim() != strider)
+        {
+            LOG_DEBUG("playerbots", "AttackAndMoveAwayFromStriderAction: Tanking strider");
+            return Attack(strider);
+        }
+
+        if (strider->GetVictim() == bot)
+        {
+            if (bot->GetExactDist2d(vashj) < 20.0f)
+                return MoveAway(vashj, 20.0f, false);
+
+            Group* group = bot->GetGroup();
+            if (!group)
+                return false;
+
+            Player* firstCorePasser  = GetFirstTaintedCorePasser(group, botAI);
+            Player* secondCorePasser = GetSecondTaintedCorePasser(group, botAI);
+
+            // Try this with just first two passers for now since last two are rarely needed
+            for (Player* passer : { firstCorePasser, secondCorePasser })
+            {
+                if (passer && passer != bot && bot->GetExactDist2d(passer) < 20.0f)
+                {
+                    LOG_DEBUG("playerbots", "AttackAndMoveAwayFromStriderAction: moving away from core passer {} for bot={}", passer->GetName(), bot->GetName());
+                    return MoveAway(passer, 20.0f, false);
+                }
+            }
+        }
+
+        return false;
     }
 
-    // Don't move away only if raid cheats are enabled AND bot is a tank
+    // Don't move away only if raid cheats are enabled AND bot is a tank - I need to fix this shitty logic later
     if (bot->GetExactDist2d(strider) < 15.0f &&
         (!botAI->HasCheat(BotCheatMask::raid) || !botAI->IsTank(bot)))
         return MoveAway(strider, 16.0f, false);
@@ -1942,7 +2090,7 @@ bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
             {
                 if (botAI->HasCheat(BotCheatMask::raid))
                     targets = { strider, enchanted, vashj };
-                if (!botAI->HasCheat(BotCheatMask::raid))
+                else
                     targets = { elite, enchanted, vashj };
             }
             else
@@ -2494,8 +2642,16 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpFirstCorePasser(Player* designated
 
     bot->AttackStop();
     bot->InterruptNonMeleeSpells(true);
-    return MoveTo(bot->GetMapId(), targetX, targetY, targetZ,
-           false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
+    bool moved = MoveTo(bot->GetMapId(), targetX, targetY, targetZ,
+                       false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
+
+    LOG_DEBUG("playerbots", "LineUpFirstCorePasser: MoveTo returned {} for bot={} target=({}, {}) mapId={}",
+              moved ? "true" : "false", bot->GetName(), targetX, targetY, bot->GetMapId());
+
+    if (moved)
+        return true;
+
+    return false;
 }
 
 bool LadyVashjPassTheTaintedCoreAction::LineUpSecondCorePasser(Player* firstCorePasser, Unit* closestTrigger)
@@ -2539,8 +2695,16 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpSecondCorePasser(Player* firstCore
 
     bot->AttackStop();
     bot->InterruptNonMeleeSpells(false);
-    return MoveTo(bot->GetMapId(), targetX, targetY, targetZ,
-           false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
+    bool moved = MoveTo(bot->GetMapId(), targetX, targetY, targetZ,
+                       false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
+
+    LOG_DEBUG("playerbots", "LineUpFirstCorePasser: MoveTo returned {} for bot={} target=({}, {}) mapId={}",
+              moved ? "true" : "false", bot->GetName(), targetX, targetY, bot->GetMapId());
+
+    if (moved)
+        return true;
+
+    return false;
 }
 
 bool LadyVashjPassTheTaintedCoreAction::LineUpThirdCorePasser(Player* secondCorePasser, Unit* closestTrigger)
@@ -2597,8 +2761,16 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpThirdCorePasser(Player* secondCore
 
     bot->AttackStop();
     bot->InterruptNonMeleeSpells(false);
-    return MoveTo(bot->GetMapId(), targetX, targetY, targetZ,
-           false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
+    bool moved = MoveTo(bot->GetMapId(), targetX, targetY, targetZ,
+                       false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
+
+    LOG_DEBUG("playerbots", "LineUpFirstCorePasser: MoveTo returned {} for bot={} target=({}, {}) mapId={}",
+              moved ? "true" : "false", bot->GetName(), targetX, targetY, bot->GetMapId());
+
+    if (moved)
+        return true;
+
+    return false;
 }
 
 bool LadyVashjPassTheTaintedCoreAction::LineUpFourthCorePasser(Player* thirdCorePasser, Unit* closestTrigger)
@@ -2644,8 +2816,16 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpFourthCorePasser(Player* thirdCore
 
     bot->AttackStop();
     bot->InterruptNonMeleeSpells(false);
-    return MoveTo(bot->GetMapId(), targetX, targetY, targetZ,
-           false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
+    bool moved = MoveTo(bot->GetMapId(), targetX, targetY, targetZ,
+                       false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
+
+    LOG_DEBUG("playerbots", "LineUpFirstCorePasser: MoveTo returned {} for bot={} target=({}, {}) mapId={}",
+              moved ? "true" : "false", bot->GetName(), targetX, targetY, bot->GetMapId());
+
+    if (moved)
+        return true;
+
+    return false;
 }
 
 bool LadyVashjPassTheTaintedCoreAction::IsFirstCorePasserInIntendedPosition(Player* designatedLooter, Player* firstCorePasser, Unit* closestTrigger)
@@ -2997,6 +3177,18 @@ bool LadyVashjPassTheTaintedCoreAction::UseCoreOnNearestGenerator()
     return false;
 }
 
+bool LadyVashjDestroyTaintedCoreAction::Execute(Event event)
+{
+    if (Item* core = bot->GetItemByEntry(ITEM_TAINTED_CORE))
+    {
+        LOG_DEBUG("playerbots", "LadyVashjDestroyTaintedCoreAction: destroying own tainted core for bot={}", bot->GetName());
+        bot->DestroyItem(core->GetBagSlot(), core->GetSlot(), true);
+        return true;
+    }
+
+    return false;
+}
+
 /* bool LadyVashjAvoidToxicSporesAction::Execute(Event event)
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
@@ -3234,47 +3426,6 @@ std::vector<Unit*> LadyVashjAvoidToxicSporesAction::GetAllSporeDropTriggers(Play
     return sporeDropTriggers;
 }
 
-// Prelog version
-/* bool LadyVashjUseFreeActionAbilitiesAction::Execute(Event event)
-{
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    if (bot->HasAura(SPELL_ENTANGLE) &&
-        (bot->HasAura(SPELL_TOXIC_SPORES) || bot->HasAura(SPELL_STATIC_CHARGE)))
-    {
-        if (bot->getClass() == CLASS_ROGUE && botAI->CanCastSpell("cloak of shadows", bot))
-            return botAI->CastSpell("cloak of shadows", bot);
-    }
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || !member->IsAlive())
-            continue;
-
-        if (!member->HasAura(SPELL_ENTANGLE))
-            continue;
-
-        // Priority 1: member entangled + static charge -> freedom
-        if (member->HasAura(SPELL_STATIC_CHARGE))
-        {
-            if (bot->getClass() == CLASS_PALADIN && botAI->CanCastSpell("hand of freedom", member))
-                return botAI->CastSpell("hand of freedom", member);
-            continue;
-        }
-
-        // Priority 2: main tank entangled + toxic spores -> freedom
-        if (member->HasAura(SPELL_TOXIC_SPORES) && botAI->IsMainTank(member))
-        {
-            if (bot->getClass() == CLASS_PALADIN && botAI->CanCastSpell("hand of freedom", member))
-                return botAI->CastSpell("hand of freedom", member);
-        }
-    }
-
-    return false;
-} */
 bool LadyVashjUseFreeActionAbilitiesAction::Execute(Event event)
 {
     Group* group = bot->GetGroup();
@@ -3361,7 +3512,7 @@ bool LadyVashjCheatToTestAction::Execute(Event event)
         return false;
 
     static std::unordered_map<uint32, std::chrono::steady_clock::time_point> vashjFightStart;
-    uint32 mapId = vashj->GetMapId();
+    const uint32 mapId = vashj->GetMapId();
     auto now = std::chrono::steady_clock::now();
     if (vashjFightStart.find(mapId) == vashjFightStart.end())
     {

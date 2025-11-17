@@ -4,11 +4,14 @@
 void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // Trash Mobs
+    triggers.push_back(new TriggerNode("bot is standing in toxic pool",
+        NextAction::array(0, new NextAction("follow master out of toxic pool", ACTION_EMERGENCY + 10), nullptr)
+    ));
     triggers.push_back(new TriggerNode("greyheart tidecaller water elemental totem spawned",
         NextAction::array(0, new NextAction("greyheart tidecaller mark water elemental totem", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("rancid mushroom spawned",
-        NextAction::array(0, new NextAction("rancid mushroom move away from mushroom spore cloud", ACTION_EMERGENCY + 1), nullptr)
+        NextAction::array(0, new NextAction("rancid mushroom move away from mushroom spore cloud", ACTION_EMERGENCY + 10), nullptr)
     ));
 
     // Hydross the Unstable <Duke of Currents>
@@ -153,6 +156,9 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     ));
     triggers.push_back(new TriggerNode("lady vashj tainted core was looted",
         NextAction::array(0, new NextAction("lady vashj pass the tainted core", ACTION_EMERGENCY + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("lady vashj core handler is dead",
+        NextAction::array(0, new NextAction("lady vashj destroy tainted core", ACTION_EMERGENCY + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("lady vashj player needs bot support to disable generators",
         NextAction::array(0, new NextAction("lady vashj assistants follow master in phase 2", ACTION_RAID + 2), nullptr)

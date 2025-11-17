@@ -9,6 +9,7 @@ class RaidSSCActionContext : public NamedObjectContext<Action>
 public:
     RaidSSCActionContext()
     {
+        creators["follow master out of toxic pool"] = &RaidSSCActionContext::follow_master_out_of_toxic_pool;
         creators["greyheart tidecaller mark water elemental totem"] = &RaidSSCActionContext::greyheart_tidecaller_mark_water_elemental_totem;
         creators["rancid mushroom move away from mushroom spore cloud"] = &RaidSSCActionContext::rancid_mushroom_move_away_from_mushroom_spore_cloud;
 
@@ -63,6 +64,7 @@ public:
         creators["lady vashj loot tainted core"] = &RaidSSCActionContext::lady_vashj_loot_tainted_core;
         creators["lady vashj teleport to tainted elemental"] = &RaidSSCActionContext::lady_vashj_teleport_to_tainted_elemental;
         creators["lady vashj pass the tainted core"] = &RaidSSCActionContext::lady_vashj_pass_the_tainted_core;
+        creators["lady vashj destroy tainted core"] = &RaidSSCActionContext::lady_vashj_destroy_tainted_core;
         creators["lady vashj avoid toxic spores"] = &RaidSSCActionContext::lady_vashj_avoid_toxic_spores;
         creators["lady vashj use free action abilities"] = &RaidSSCActionContext::lady_vashj_use_free_action_abilities;
         creators["lady vashj manage trackers"] = &RaidSSCActionContext::lady_vashj_manage_trackers;
@@ -70,6 +72,7 @@ public:
     }
 
 private:
+    static Action* follow_master_out_of_toxic_pool(PlayerbotAI* botAI) { return new FollowMasterOutOfToxicPoolAction(botAI); }
     static Action* greyheart_tidecaller_mark_water_elemental_totem(PlayerbotAI* botAI) { return new GreyheartTidecallerMarkWaterElementalTotemAction(botAI); }
     static Action* rancid_mushroom_move_away_from_mushroom_spore_cloud(PlayerbotAI* botAI) { return new RancidMushroomMoveAwayFromMushroomSporeCloudAction(botAI); }
 
@@ -124,6 +127,7 @@ private:
     static Action* lady_vashj_teleport_to_tainted_elemental(PlayerbotAI* botAI) { return new LadyVashjTeleportToTaintedElementalAction(botAI); }
     static Action* lady_vashj_loot_tainted_core(PlayerbotAI* botAI) { return new LadyVashjLootTaintedCoreAction(botAI); }
     static Action* lady_vashj_pass_the_tainted_core(PlayerbotAI* botAI) { return new LadyVashjPassTheTaintedCoreAction(botAI); }
+    static Action* lady_vashj_destroy_tainted_core(PlayerbotAI* botAI) { return new LadyVashjDestroyTaintedCoreAction(botAI); }
     static Action* lady_vashj_avoid_toxic_spores(PlayerbotAI* botAI) { return new LadyVashjAvoidToxicSporesAction(botAI); }
     static Action* lady_vashj_use_free_action_abilities(PlayerbotAI* botAI) { return new LadyVashjUseFreeActionAbilitiesAction(botAI); }
     static Action* lady_vashj_manage_trackers(PlayerbotAI* botAI) { return new LadyVashjManageTrackersAction(botAI); }

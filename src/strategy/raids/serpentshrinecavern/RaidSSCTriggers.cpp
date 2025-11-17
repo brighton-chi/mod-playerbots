@@ -11,6 +11,11 @@ using namespace SerpentShrineCavernHelpers;
 
 // Trash Mobs
 
+bool BotIsStandingInToxicPoolTrigger::IsActive()
+{
+    return bot->HasAura(SPELL_TOXIC_POOL);
+}
+
 bool GreyheartTidecallerWaterElementalTotemSpawnedTrigger::IsActive()
 {
     Unit* totem = GetFirstAliveUnitByEntry(botAI, NPC_WATER_ELEMENTAL_TOTEM);
@@ -102,11 +107,11 @@ bool TheLurkerBelowSpoutIsActiveTrigger::IsActive()
     if (!lurker)
         return false;
 
-    uint32 mapId = lurker->GetMapId();
-    time_t now = std::time(nullptr);
+    const uint32 mapId = lurker->GetMapId();
+    const time_t now = std::time(nullptr);
 
-    return /* botAI->IsMelee(bot) && */
-           lurkerSpoutTimer.count(mapId) && lurkerSpoutTimer[mapId] > now;
+    auto it = lurkerSpoutTimer.find(mapId);
+    return it != lurkerSpoutTimer.end() && it->second > now;
 }
 
 bool TheLurkerBelowBossIsActiveForMainTankTrigger::IsActive()
@@ -115,11 +120,12 @@ bool TheLurkerBelowBossIsActiveForMainTankTrigger::IsActive()
     if (!lurker)
         return false;
 
-    uint32 mapId = lurker->GetMapId();
-    time_t now = std::time(nullptr);
+    const uint32 mapId = lurker->GetMapId();
+    const time_t now = std::time(nullptr);
 
+    auto it = lurkerSpoutTimer.find(mapId);
     return botAI->IsMainTank(bot) && lurker->getStandState() != UNIT_STAND_STATE_SUBMERGED &&
-           (!lurkerSpoutTimer.count(mapId) || lurkerSpoutTimer[mapId] <= now);
+           (it == lurkerSpoutTimer.end() || it->second <= now);
 }
 
 bool TheLurkerBelowBossCastsGeyserTrigger::IsActive()
@@ -128,11 +134,12 @@ bool TheLurkerBelowBossCastsGeyserTrigger::IsActive()
     if (!lurker)
         return false;
 
-    uint32 mapId = lurker->GetMapId();
-    time_t now = std::time(nullptr);
+    const uint32 mapId = lurker->GetMapId();
+    const time_t now = std::time(nullptr);
 
+    auto it = lurkerSpoutTimer.find(mapId);
     return botAI->IsRanged(bot) && lurker->getStandState() != UNIT_STAND_STATE_SUBMERGED &&
-           (!lurkerSpoutTimer.count(mapId) || lurkerSpoutTimer[mapId] <= now);
+           (it == lurkerSpoutTimer.end() || it->second <= now);
 }
 
 /* bool TheLurkerBelowBossIsActiveForOtherMeleeTrigger::IsActive()
@@ -141,12 +148,13 @@ bool TheLurkerBelowBossCastsGeyserTrigger::IsActive()
     if (!lurker)
         return false;
 
-    uint32 mapId = lurker->GetMapId();
-    time_t now = std::time(nullptr);
+    const uint32 mapId = lurker->GetMapId();
+    const time_t now = std::time(nullptr);
 
+    auto it = lurkerSpoutTimer.find(mapId);
     return botAI->IsMelee(bot) && !botAI->IsMainTank(bot) &&
            lurker->getStandState() != UNIT_STAND_STATE_SUBMERGED &&
-           (!lurkerSpoutTimer.count(mapId) || lurkerSpoutTimer[mapId] <= now);
+           (it == lurkerSpoutTimer.end() || it->second <= now);
 }
 
 bool TheLurkerBelowBossIsActiveForRangedDpsTrigger::IsActive()
@@ -155,11 +163,12 @@ bool TheLurkerBelowBossIsActiveForRangedDpsTrigger::IsActive()
     if (!lurker)
         return false;
 
-    uint32 mapId = lurker->GetMapId();
-    time_t now = std::time(nullptr);
+    const uint32 mapId = lurker->GetMapId();
+    const time_t now = std::time(nullptr);
 
+    auto it = lurkerSpoutTimer.find(mapId);
     return botAI->IsRangedDps(bot) && lurker->getStandState() != UNIT_STAND_STATE_SUBMERGED &&
-           (!lurkerSpoutTimer.count(mapId) || lurkerSpoutTimer[mapId] <= now);
+           (it == lurkerSpoutTimer.end() || it->second <= now);
 }
 
 bool TheLurkerBelowBossIsActiveForHealerTrigger::IsActive()
@@ -168,11 +177,12 @@ bool TheLurkerBelowBossIsActiveForHealerTrigger::IsActive()
     if (!lurker)
         return false;
 
-    uint32 mapId = lurker->GetMapId();
-    time_t now = std::time(nullptr);
+    const uint32 mapId = lurker->GetMapId();
+    const time_t now = std::time(nullptr);
 
+    auto it = lurkerSpoutTimer.find(mapId);
     return botAI->IsHeal(bot) && lurker->getStandState() != UNIT_STAND_STATE_SUBMERGED &&
-           (!lurkerSpoutTimer.count(mapId) || lurkerSpoutTimer[mapId] <= now);
+           (it == lurkerSpoutTimer.end() || it->second <= now);
 } */
 
 bool TheLurkerBelowNeedToPrepareTimerForSpoutTrigger::IsActive()
@@ -663,6 +673,36 @@ bool LadyVashjTaintedCoreWasLootedTrigger::IsActive()
     }
 
     LOG_DEBUG("playerbots", "LadyVashjTaintedCoreWasLootedTrigger: returning false - no paralyze, no tainted, no recent paralyze");
+    return false;
+}
+
+bool LadyVashjCoreHandlerIsDeadTrigger::IsActive()
+{
+    Player* master = botAI->GetMaster();
+    Group* group = bot->GetGroup();
+    if (!master || !group)
+        return false;
+
+    Player* coreHandlers[] =
+    {
+        GetDesignatedCoreLooter(group, master, botAI),
+        GetFirstTaintedCorePasser(group, botAI),
+        GetSecondTaintedCorePasser(group, botAI),
+        GetThirdTaintedCorePasser(group, botAI),
+        GetFourthTaintedCorePasser(group, botAI)
+    };
+
+    if (bot->HasItemCount(ITEM_TAINTED_CORE, 1, false))
+    {
+        for (Player* coreHandler : coreHandlers)
+        {
+            // if a core handler dies, it is no longer a core handler
+            if (coreHandler && bot == coreHandler)
+                return false;
+        }
+        return true;
+    }
+
     return false;
 }
 

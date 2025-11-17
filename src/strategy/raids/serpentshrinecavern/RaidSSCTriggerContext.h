@@ -9,6 +9,7 @@ class RaidSSCTriggerContext : public NamedObjectContext<Trigger>
 public:
     RaidSSCTriggerContext()
     {
+        creators["bot is standing in toxic pool"] = &RaidSSCTriggerContext::bot_is_standing_in_toxic_pool;
         creators["greyheart tidecaller water elemental totem spawned"] = &RaidSSCTriggerContext::greyheart_tidecaller_water_elemental_totem_spawned;
         creators["rancid mushroom spawned"] = &RaidSSCTriggerContext::rancid_mushroom_spawned;
 
@@ -62,6 +63,7 @@ public:
         creators["lady vashj player needs bot support to disable generators"] = &RaidSSCTriggerContext::lady_vashj_player_needs_bot_support_to_disable_generators;
         creators["lady vashj tainted elemental cheat"] = &RaidSSCTriggerContext::lady_vashj_tainted_elemental_cheat;
         creators["lady vashj tainted core was looted"] = &RaidSSCTriggerContext::lady_vashj_tainted_core_was_looted;
+        creators["lady vashj core handler is dead"] = &RaidSSCTriggerContext::lady_vashj_core_handler_is_dead;
         creators["lady vashj toxic sporebats are spewing poison clouds"] = &RaidSSCTriggerContext::lady_vashj_toxic_sporebats_are_spewing_poison_clouds;
         creators["lady vashj bot is entangled in toxic spores or static charge"] = &RaidSSCTriggerContext::lady_vashj_bot_is_entangled_in_toxic_spores_or_static_charge;
         creators["lady vashj need to manage trackers"] = &RaidSSCTriggerContext::lady_vashj_need_to_manage_trackers;
@@ -69,6 +71,7 @@ public:
     }
 
 private:
+    static Trigger* bot_is_standing_in_toxic_pool(PlayerbotAI* botAI) { return new BotIsStandingInToxicPoolTrigger(botAI); }
     static Trigger* greyheart_tidecaller_water_elemental_totem_spawned(PlayerbotAI* botAI) { return new GreyheartTidecallerWaterElementalTotemSpawnedTrigger(botAI); }
     static Trigger* rancid_mushroom_spawned(PlayerbotAI* botAI) { return new RancidMushroomSpawnedTrigger(botAI); }
 
@@ -122,6 +125,7 @@ private:
     static Trigger* lady_vashj_player_needs_bot_support_to_disable_generators(PlayerbotAI* botAI) { return new LadyVashjPlayerNeedsBotSupportToDisableGeneratorsTrigger(botAI); }
     static Trigger* lady_vashj_tainted_elemental_cheat(PlayerbotAI* botAI) { return new LadyVashjTaintedElementalCheatTrigger(botAI); }
     static Trigger* lady_vashj_tainted_core_was_looted(PlayerbotAI* botAI) { return new LadyVashjTaintedCoreWasLootedTrigger(botAI); }
+    static Trigger* lady_vashj_core_handler_is_dead(PlayerbotAI* botAI) { return new LadyVashjCoreHandlerIsDeadTrigger(botAI); }
     static Trigger* lady_vashj_toxic_sporebats_are_spewing_poison_clouds(PlayerbotAI* botAI) { return new LadyVashjToxicSporebatsAreSpewingPoisonCloudsTrigger(botAI); }
     static Trigger* lady_vashj_bot_is_entangled_in_toxic_spores_or_static_charge(PlayerbotAI* botAI) { return new LadyVashjBotIsEntangledInToxicSporesOrStaticChargeTrigger(botAI); }
     static Trigger* lady_vashj_need_to_manage_trackers(PlayerbotAI* botAI) { return new LadyVashjNeedToManageTrackersTrigger(botAI); }

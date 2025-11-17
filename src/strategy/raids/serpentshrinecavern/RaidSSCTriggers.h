@@ -3,6 +3,13 @@
 
 #include "Trigger.h"
 
+class BotIsStandingInToxicPoolTrigger : public Trigger
+{
+public:
+    BotIsStandingInToxicPoolTrigger(PlayerbotAI* botAI) : Trigger(botAI, "bot is standing in toxic pool") {}
+    bool IsActive() override;
+};
+
 class GreyheartTidecallerWaterElementalTotemSpawnedTrigger : public Trigger
 {
 public:
@@ -311,6 +318,13 @@ public:
     bool IsActive() override;
 };
 
+class LadyVashjDeterminingKillOrderOfAddsTrigger : public Trigger
+{
+public:
+LadyVashjDeterminingKillOrderOfAddsTrigger(PlayerbotAI* botAI) : Trigger(botAI, "lady vashj determining kill order of adds") {}
+    bool IsActive() override;
+};
+
 class LadyVashjPlayerNeedsBotSupportToDisableGeneratorsTrigger : public Trigger
 {
 public:
@@ -332,10 +346,10 @@ public:
     bool IsActive() override;
 };
 
-class LadyVashjDeterminingKillOrderOfAddsTrigger : public Trigger
+class LadyVashjCoreHandlerIsDeadTrigger : public Trigger
 {
 public:
-LadyVashjDeterminingKillOrderOfAddsTrigger(PlayerbotAI* botAI) : Trigger(botAI, "lady vashj determining kill order of adds") {}
+    LadyVashjCoreHandlerIsDeadTrigger(PlayerbotAI* botAI) : Trigger(botAI, "lady vashj core handler is dead") {}
     bool IsActive() override;
 };
 

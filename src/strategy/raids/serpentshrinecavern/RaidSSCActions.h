@@ -5,6 +5,14 @@
 #include "AttackAction.h"
 #include "MovementActions.h"
 
+class FollowMasterOutOfToxicPoolAction : public MovementAction
+{
+public:
+    FollowMasterOutOfToxicPoolAction(PlayerbotAI* botAI, std::string const name = "follow master out of toxic pool") : MovementAction(botAI, name) {}
+
+    bool Execute(Event event) override;
+};
+
 class GreyheartTidecallerMarkWaterElementalTotemAction : public Action
 {
 public:
@@ -388,6 +396,13 @@ private:
     void ScheduleStoreCoreAfterImbue(PlayerbotAI* botAI, Player* giver, Player* receiver);
     bool CanUseGenerator();
     bool UseCoreOnNearestGenerator();
+};
+
+class LadyVashjDestroyTaintedCoreAction : public Action
+{
+public:
+    LadyVashjDestroyTaintedCoreAction(PlayerbotAI* botAI, std::string const name = "lady vashj destroy tainted core") : Action(botAI, name) {}
+    bool Execute(Event event) override;
 };
 
 class LadyVashjAvoidToxicSporesAction : public MovementAction

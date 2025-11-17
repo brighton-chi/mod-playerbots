@@ -12,6 +12,10 @@ namespace SerpentShrineCavernHelpers
 {
     enum SerpentShrineCavernSpells
     {
+        // Trash Mob
+        SPELL_TOXIC_POOL = 38718,
+        // SPELL_ACID_GEYSER = 38971,
+
         // Hydross the Unstable <Duke of Currents>
         SPELL_MARK_OF_HYDROSS_10 = 38215,
         SPELL_MARK_OF_HYDROSS_25 = 38216,
@@ -87,7 +91,7 @@ namespace SerpentShrineCavernHelpers
         NPC_INNER_DEMON = 21857,
 
         // Fathom-Lord Karathress
-        // NPC_SPITFIRE_TOTEM = 22091,
+        NPC_SPITFIRE_TOTEM = 22091,
 
         // Lady Vashj <Coilfang Matron>
         NPC_WORLD_INVISIBLE_TRIGGER = 12999, // Casts the beam for the shield generator

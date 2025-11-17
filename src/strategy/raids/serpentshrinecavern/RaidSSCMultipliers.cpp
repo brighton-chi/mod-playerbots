@@ -84,8 +84,8 @@ float HydrossTheUnstableWaitForDpsMultiplier::GetValue(Action* action)
     if (!hydross)
         return 1.0f;
 
-    uint32 mapId = hydross->GetMapId();
-    time_t now = std::time(nullptr);
+    const uint32 mapId = hydross->GetMapId();
+    const time_t now = std::time(nullptr);
     const uint8 dpsWaitSeconds = 5;
     const uint8 phaseChangeWaitSeconds = 6;
 
@@ -150,10 +150,11 @@ float TheLurkerBelowStayAwayFromSpoutMultiplier::GetValue(Action* action)
     if (!lurker)
         return 1.0f;
 
-    uint32 mapId = lurker->GetMapId();
-    time_t now = std::time(nullptr);
+    const uint32 mapId = lurker->GetMapId();
+    const time_t now = std::time(nullptr);
 
-    if (lurkerSpoutTimer.count(mapId) && lurkerSpoutTimer[mapId] > now)
+    auto it = lurkerSpoutTimer.find(mapId);
+    if (it != lurkerSpoutTimer.end() && it->second > now)
     {
         if (IsChargeAction(action) || dynamic_cast<CastKillingSpreeAction*>(action) ||
             dynamic_cast<CastBlinkBackAction*>(action) || dynamic_cast<CastDisengageAction*>(action) ||
@@ -249,8 +250,8 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValue(Action* action)
     if (!leotheras)
         return 1.0f;
 
-    uint32 mapId = leotheras->GetMapId();
-    time_t now = std::time(nullptr);
+    const uint32 mapId = leotheras->GetMapId();
+    const time_t now = std::time(nullptr);
 
     const uint8 dpsWaitSecondsPhase1 = 5;
     Unit* leotherasHuman = GetLeotherasHuman(botAI);
@@ -358,8 +359,8 @@ float FathomLordKarathressWaitForDpsMultiplier::GetValue(Action* action)
     if (!karathress)
         return 1.0f;
 
-    uint32 mapId = karathress->GetMapId();
-    time_t now = std::time(nullptr);
+    const uint32 mapId = karathress->GetMapId();
+    const time_t now = std::time(nullptr);
     const uint8 dpsWaitSeconds = 8;
 
     auto it = karathressDpsWaitTimer.find(mapId);
@@ -439,8 +440,10 @@ float LadyVashjStaticChargeStayAwayFromGroupMultiplier::GetValue(Action* action)
 
     if (!botAI->IsMainTank(bot) && bot->HasAura(SPELL_STATIC_CHARGE))
     {
-        if (dynamic_cast<MovementAction*>(action) &&
-            !dynamic_cast<LadyVashjStaticChargeMoveAwayFromGroupAction*>(action))
+        if ((dynamic_cast<MovementAction*>(action) &&
+            !dynamic_cast<LadyVashjStaticChargeMoveAwayFromGroupAction*>(action)) ||
+            dynamic_cast<CastKillingSpreeAction*>(action) ||
+            IsChargeAction(action))
             return 0.0f;
     }
 
@@ -467,9 +470,9 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
 
     Group* group = bot->GetGroup();
     Player* master = botAI->GetMaster();
-    if (!IsLadyVashjInPhase2(botAI) || !group || !master || dynamic_cast<WipeAction*>(action) ||
+    if (!IsLadyVashjInPhase2(botAI) || !group || !master /* || dynamic_cast<WipeAction*>(action) ||
         dynamic_cast<DestroyItemAction*>(action) || dynamic_cast<StoreLootAction*>(action) ||
-        dynamic_cast<LadyVashjCheatToTestAction*>(action))
+        dynamic_cast<LadyVashjCheatToTestAction*>(action) */)
         return 1.0f;
 
     Player* designatedLooter = GetDesignatedCoreLooter(group, master, botAI);
@@ -529,6 +532,12 @@ float LadyVashjDisableAutomaticTargetingAndMovementModifier::GetValue(Action *ac
 
     if (dynamic_cast<AvoidAoeAction*>(action))
         return 0.0f;
+
+    if (IsLadyVashjInPhase1(botAI))
+    {
+        if (dynamic_cast<TankFaceAction*>(action))
+            return 0.0f;
+    }
 
     if (IsLadyVashjInPhase2(botAI))
     {
