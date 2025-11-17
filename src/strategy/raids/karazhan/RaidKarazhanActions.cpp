@@ -149,11 +149,11 @@ bool AttumenTheHuntsmanManageDpsTimerAction::Execute(Event event)
     const uint32 mapId = midnight ? midnight->GetMapId() : attumenMounted->GetMapId();
     const time_t now = std::time(nullptr);
 
-    if (midnight && !attumenMounted && attumenDpsWaitTimer.count(mapId))
+    if (midnight && midnight->GetHealth() == midnight->GetMaxHealth())
         attumenDpsWaitTimer.erase(mapId);
 
-    if (attumenMounted && attumenDpsWaitTimer.count(mapId) == 0)
-        attumenDpsWaitTimer[mapId] = now;
+    if (attumenMounted)
+        attumenDpsWaitTimer.emplace(mapId, now);
 
     return false;
 }
@@ -993,14 +993,24 @@ bool NetherspiteManageTimersAndTrackersAction::Execute(Event event)
 
     // DpsWaitTimer is for pausing DPS during phase transitions
     // redBeamMoveTimer and lastBeamMoveSideways are for tank dancing in/out of the red beam
-    if (netherspite->HasAura(SPELL_NETHERSPITE_BANISHED) ||
-        (netherspite->GetHealth() == netherspite->GetMaxHealth() &&
-         !netherspite->HasAura(SPELL_GREEN_BEAM_HEAL)))
+    if (netherspite->GetHealth() == netherspite->GetMaxHealth() &&
+        !netherspite->HasAura(SPELL_GREEN_BEAM_HEAL))
     {
-        if (IsMapIDTimerManager(botAI, bot) && netherspiteDpsWaitTimer.count(mapId))
+        if (IsMapIDTimerManager(botAI, bot))
+            netherspiteDpsWaitTimer.insert_or_assign(mapId, now);
+
+        if (botAI->IsTank(bot) && !bot->HasAura(SPELL_RED_BEAM_DEBUFF))
+        {
+            redBeamMoveTimer.erase(botGuid);
+            lastBeamMoveSideways.erase(botGuid);
+        }
+    }
+    else if (netherspite->HasAura(SPELL_NETHERSPITE_BANISHED))
+    {
+        if (IsMapIDTimerManager(botAI, bot))
             netherspiteDpsWaitTimer.erase(mapId);
 
-        if (botAI->IsTank(bot) && redBeamMoveTimer.count(botGuid))
+        if (botAI->IsTank(bot))
         {
             redBeamMoveTimer.erase(botGuid);
             lastBeamMoveSideways.erase(botGuid);
@@ -1008,14 +1018,13 @@ bool NetherspiteManageTimersAndTrackersAction::Execute(Event event)
     }
     else if (!netherspite->HasAura(SPELL_NETHERSPITE_BANISHED))
     {
-        if (IsMapIDTimerManager(botAI, bot) && netherspiteDpsWaitTimer.count(mapId) == 0)
-            netherspiteDpsWaitTimer[mapId] = now;
+        if (IsMapIDTimerManager(botAI, bot))
+            netherspiteDpsWaitTimer.emplace(mapId, now);
 
-        if (botAI->IsTank(bot) && bot->HasAura(SPELL_RED_BEAM_DEBUFF) &&
-            !redBeamMoveTimer.count(botGuid))
+        if (botAI->IsTank(bot) && bot->HasAura(SPELL_RED_BEAM_DEBUFF))
         {
-            redBeamMoveTimer[botGuid] = now;
-            lastBeamMoveSideways[botGuid] = false;
+            redBeamMoveTimer.emplace(botGuid, now);
+            lastBeamMoveSideways.emplace(botGuid, false);
         }
     }
 
@@ -1430,35 +1439,45 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event event)
     const ObjectGuid botGuid = bot->GetGUID();
     const time_t now = std::time(nullptr);
 
-    // Erase DPS wait timer and tank and ranged position tracking on encounter reset or flight
-    if (nightbane->GetPositionZ() > 95.0f || nightbane->GetHealth() == nightbane->GetMaxHealth())
+    // Erase DPS wait timer and tank and ranged position tracking on encounter reset
+    if (nightbane->GetHealth() == nightbane->GetMaxHealth())
     {
-        if (botAI->IsMainTank(bot) && nightbaneTankStep.count(botGuid))
+        if (botAI->IsMainTank(bot))
             nightbaneTankStep.erase(botGuid);
 
-        if (botAI->IsRanged(bot) && nightbaneRangedStep.count(botGuid))
+        if (botAI->IsRanged(bot))
             nightbaneRangedStep.erase(botGuid);
 
-        if (IsMapIDTimerManager(botAI, bot) && nightbaneDpsWaitTimer.count(mapId))
+        if (IsMapIDTimerManager(botAI, bot))
             nightbaneDpsWaitTimer.erase(mapId);
     }
     // Erase flight phase timer and Rain of Bones tracker on ground phase and start DPS wait timer
     else if (nightbane->GetPositionZ() <= 95.0f)
     {
-        if (IsMapIDTimerManager(botAI, bot) && nightbaneFlightPhaseStartTimer.count(mapId))
+        nightbaneRainOfBonesHit.erase(botGuid);
+
+        if (IsMapIDTimerManager(botAI, bot))
+        {
             nightbaneFlightPhaseStartTimer.erase(mapId);
-
-        if (nightbaneRainOfBonesHit.count(botGuid))
-            nightbaneRainOfBonesHit.erase(botGuid);
-
-        if (IsMapIDTimerManager(botAI, bot) && nightbaneDpsWaitTimer.count(mapId) == 0)
-            nightbaneDpsWaitTimer[mapId] = now;
+            nightbaneDpsWaitTimer.emplace(mapId, now);
+        }
     }
+    // Erase DPS wait timer and tank and ranged position tracking and start flight phase timer
+    // at beginning of flight phase
+    else if (nightbane->GetPositionZ() > 95.0f)
+    {
+        if (botAI->IsMainTank(bot))
+            nightbaneTankStep.erase(botGuid);
 
-    // Start flight phase timer at beginning of flight phase
-    if (nightbane->GetPositionZ() > 95.0f && IsMapIDTimerManager(botAI, bot) &&
-        nightbaneFlightPhaseStartTimer.count(mapId) == 0)
-        nightbaneFlightPhaseStartTimer[mapId] = now;
+        if (botAI->IsRanged(bot))
+            nightbaneRangedStep.erase(botGuid);
+
+        if (IsMapIDTimerManager(botAI, bot))
+        {
+            nightbaneDpsWaitTimer.erase(mapId);
+            nightbaneFlightPhaseStartTimer.emplace(mapId, now);
+        }
+    }
 
     return false;
 }
