@@ -87,6 +87,9 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kaelthas sunstrider telonicus engaged by first assist tank",
         NextAction::array(0, new NextAction("kaelthas sunstrider first assist tank position telonicus", ACTION_RAID + 1), nullptr)
     ));
+    triggers.push_back(new TriggerNode("kaelthas sunstrider cheat to test",
+        NextAction::array(0, new NextAction("kaelthas sunstrider cheat to test", ACTION_EMERGENCY + 10), nullptr)
+    ));
 }
 
 void RaidTempestKeepStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)

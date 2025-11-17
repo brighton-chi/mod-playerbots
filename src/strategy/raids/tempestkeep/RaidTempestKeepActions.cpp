@@ -1554,3 +1554,28 @@ bool KaelthasSunstriderFirstAssistTankPositionTelonicusAction::Execute(Event eve
 
     return false;
 }
+
+bool KaelthasSunstriderCheatToTestAction::Execute(Event event)
+{
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    if (!kaelthas)
+        return false;
+
+    /* static std::unordered_map<uint32, std::chrono::steady_clock::time_point> kaelthasFightStart;
+    uint32 mapId = vashj->GetMapId();
+    auto now = std::chrono::steady_clock::now();
+    if (kaelthas.find(mapId) == kaelthas.end())
+    {
+        kaelthas[mapId] = now;
+        LOG_DEBUG("playerbots", "KaelthasSunstriderCheatToTestAction: Kael'thas fight START on map={} at steady_clock", mapId);
+    }
+    else
+    {
+        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - kaelthasFightStart[mapId]).count();
+        LOG_DEBUG("playerbots", "KaelthasSunstriderCheatToTestAction: Kael'thas fight elapsed_ms={} on map={}", elapsed, mapId);
+    } */
+
+    bot->SetFullHealth();
+
+    return false;
+}

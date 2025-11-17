@@ -221,4 +221,12 @@ public:
     bool Execute(Event event) override;
 };
 
+class KaelthasSunstriderCheatToTestAction : public Action
+{
+public:
+    KaelthasSunstriderCheatToTestAction(PlayerbotAI* botAI, std::string const name = "kaelthas sunstrider cheat to test") : Action(botAI, name) {}
+
+    bool Execute(Event event) override;
+};
+
 #endif

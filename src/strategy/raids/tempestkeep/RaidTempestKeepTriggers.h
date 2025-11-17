@@ -178,4 +178,11 @@ public:
     bool IsActive() override;
 };
 
+class KaelthasSunstriderCheatToTestTrigger : public Trigger
+{
+public:
+    KaelthasSunstriderCheatToTestTrigger(PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider cheat to test") {}
+    bool IsActive() override;
+};
+
 #endif

@@ -269,3 +269,10 @@ bool KaelthasSunstriderTelonicusEngagedByFirstAssistTankTrigger::IsActive()
 
     return telonicus->IsAlive() && botAI->IsAssistTankOfIndex(bot, 0);
 }
+
+bool KaelthasSunstriderCheatToTestTrigger::IsActive()
+{
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+
+    return kaelthas != nullptr;
+}

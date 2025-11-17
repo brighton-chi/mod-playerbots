@@ -38,6 +38,7 @@ public:
         creators["kaelthas sunstrider cast fear ward on sanguinar tank"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_cast_fear_ward_on_sanguinar_tank;
         creators["kaelthas sunstrider warlock tank position capernian"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_warlock_tank_position_capernian;
         creators["kaelthas sunstrider first assist tank position telonicus"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_first_assist_tank_position_telonicus;
+        creators["kaelthas sunstrider cheat to test"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_cheat_to_test;
     }
 
 private:
@@ -70,6 +71,7 @@ private:
     static Action* kaelthas_sunstrider_cast_fear_ward_on_sanguinar_tank(PlayerbotAI* botAI) { return new KaelthasSunstriderCastFearWardOnSanguinarTankAction(botAI); }
     static Action* kaelthas_sunstrider_warlock_tank_position_capernian(PlayerbotAI* botAI) { return new KaelthasSunstriderWarlockTankPositionCapernianAction(botAI); }
     static Action* kaelthas_sunstrider_first_assist_tank_position_telonicus(PlayerbotAI* botAI) { return new KaelthasSunstriderFirstAssistTankPositionTelonicusAction(botAI); }
+    static Action* kaelthas_sunstrider_cheat_to_test(PlayerbotAI* botAI) { return new KaelthasSunstriderCheatToTestAction(botAI); }
 };
 
 #endif
