@@ -4,9 +4,6 @@
 void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // Trash
-    triggers.push_back(new TriggerNode("spectral retainer need target priority",
-        NextAction::array(0, new NextAction("spectral retainer mark target", ACTION_RAID + 1), nullptr)
-    ));
     triggers.push_back(new TriggerNode("mana warp is about to explode",
         NextAction::array(0, new NextAction("mana warp stun creature before warp breach", ACTION_EMERGENCY + 6), nullptr)
     ));

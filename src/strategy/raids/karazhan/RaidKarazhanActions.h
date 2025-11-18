@@ -5,14 +5,6 @@
 #include "AttackAction.h"
 #include "MovementActions.h"
 
-class SpectralRetainerMarkTargetAction : public Action
-{
-public:
-    SpectralRetainerMarkTargetAction(PlayerbotAI* botAI, std::string const name = "spectral retainer mark target") : Action(botAI, name) {}
-
-    bool Execute(Event event) override;
-};
-
 class ManaWarpStunCreatureBeforeWarpBreachAction : public AttackAction
 {
 public:

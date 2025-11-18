@@ -8,18 +8,6 @@ using namespace KarazhanPositions;
 
 // Trash
 
-// Retainers can be buried in giant packs of mobs
-// They need to be prioritized because they will MC players
-bool SpectralRetainerMarkTargetAction::Execute(Event event)
-{
-    Unit* retainer = GetFirstAliveUnitByEntry(botAI, NPC_SPECTRAL_RETAINER);
-
-    if (retainer)
-        MarkTargetWithSkull(bot, retainer);
-
-    return false;
-}
-
 // Mana Warps blow up when they die for massive raid damage
 // But they cannot cast the ability if they are stunned
 bool ManaWarpStunCreatureBeforeWarpBreachAction::Execute(Event event)

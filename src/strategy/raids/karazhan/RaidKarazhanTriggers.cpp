@@ -5,15 +5,6 @@
 
 using namespace KarazhanHelpers;
 
-bool SpectralRetainerNeedTargetPriorityTrigger::IsActive()
-{
-    Unit* retainer = AI_VALUE2(Unit*, "find target", "spectral retainer");
-    if (!retainer)
-        return false;
-
-    return IsMapIDTimerManager(botAI, bot);
-}
-
 bool ManaWarpIsAboutToExplodeTrigger::IsActive()
 {
     Unit* manaWarp = AI_VALUE2(Unit*, "find target", "mana warp");

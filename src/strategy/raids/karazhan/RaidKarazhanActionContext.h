@@ -9,7 +9,6 @@ class RaidKarazhanActionContext : public NamedObjectContext<Action>
 public:
     RaidKarazhanActionContext()
     {
-        creators["spectral retainer mark target"] = &RaidKarazhanActionContext::spectral_retainer_mark_target;
         creators["mana warp stun creature before warp breach"] = &RaidKarazhanActionContext::mana_warp_stun_creature_before_warp_breach;
 
         creators["attumen the huntsman mark target"] = &RaidKarazhanActionContext::attumen_the_huntsman_mark_target;
@@ -61,7 +60,6 @@ public:
     }
 
 private:
-    static Action* spectral_retainer_mark_target(PlayerbotAI* botAI) { return new SpectralRetainerMarkTargetAction(botAI); }
     static Action* mana_warp_stun_creature_before_warp_breach(PlayerbotAI* botAI) { return new ManaWarpStunCreatureBeforeWarpBreachAction(botAI); }
 
     static Action* attumen_the_huntsman_mark_target(PlayerbotAI* botAI) { return new AttumenTheHuntsmanMarkTargetAction(botAI); }
