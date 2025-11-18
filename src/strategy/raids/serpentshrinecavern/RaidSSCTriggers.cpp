@@ -504,16 +504,6 @@ bool LadyVashjDeterminingKillOrderOfAddsTrigger::IsActive()
     return (IsLadyVashjInPhase2(botAI) || IsLadyVashjInPhase3(botAI));
 }
 
-bool LadyVashjPlayerNeedsBotSupportToDisableGeneratorsTrigger::IsActive()
-{
-    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    if (!vashj)
-        return false;
-
-    return IsLadyVashjInPhase2(botAI) && !botAI->HasCheat(BotCheatMask::raid) &&
-           (botAI->IsRangedDpsAssistantOfIndex(bot, 0) || botAI->IsRangedDpsAssistantOfIndex(bot, 1));
-}
-
 bool LadyVashjTaintedElementalCheatTrigger::IsActive()
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");

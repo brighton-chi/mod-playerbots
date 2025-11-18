@@ -2219,19 +2219,6 @@ bool LadyVashjAssignPhase2DpsPriorityAction::Execute(Event event)
     return false;
 }
 
-// Only if cheats are off, intended to support core handling
-bool LadyVashjAssistantsFollowMasterInPhase2Action::Execute(Event event)
-{
-    Player* master = botAI->GetMaster();
-    if (!master || master == bot)
-        return false;
-
-    if (bot->GetExactDist2d(master) > 18.0f)
-        return MoveTo(master, 15.0f, MovementPriority::MOVEMENT_COMBAT);
-
-    return false;
-}
-
 bool LadyVashjTeleportToTaintedElementalAction::Execute(Event event)
 {
     Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");

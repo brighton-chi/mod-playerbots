@@ -325,13 +325,6 @@ LadyVashjDeterminingKillOrderOfAddsTrigger(PlayerbotAI* botAI) : Trigger(botAI, 
     bool IsActive() override;
 };
 
-class LadyVashjPlayerNeedsBotSupportToDisableGeneratorsTrigger : public Trigger
-{
-public:
-    LadyVashjPlayerNeedsBotSupportToDisableGeneratorsTrigger(PlayerbotAI* botAI) : Trigger(botAI, "lady vashj player needs bot support to disable generators") {}
-    bool IsActive() override;
-};
-
 class LadyVashjTaintedElementalCheatTrigger : public Trigger
 {
 public:

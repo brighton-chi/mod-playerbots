@@ -61,7 +61,6 @@ public:
         creators["lady vashj misdirect strider to first assist tank"] = &RaidSSCActionContext::lady_vashj_misdirect_strider_to_first_assist_tank;
         creators["lady vashj tank attack and move away strider"] = &RaidSSCActionContext::lady_vashj_tank_attack_and_move_away_strider;
         creators["lady vashj assign phase 2 dps priority"] = &RaidSSCActionContext::lady_vashj_assign_phase_2_dps_priority;
-        creators["lady vashj assistants follow master in phase 2"] = &RaidSSCActionContext::lady_vashj_assistants_follow_master_in_phase_2;
         creators["lady vashj loot tainted core"] = &RaidSSCActionContext::lady_vashj_loot_tainted_core;
         creators["lady vashj teleport to tainted elemental"] = &RaidSSCActionContext::lady_vashj_teleport_to_tainted_elemental;
         creators["lady vashj pass the tainted core"] = &RaidSSCActionContext::lady_vashj_pass_the_tainted_core;
@@ -125,7 +124,6 @@ private:
     static Action* lady_vashj_misdirect_strider_to_first_assist_tank(PlayerbotAI* botAI) { return new LadyVashjMisdirectStriderToFirstAssistTankAction(botAI); }
     static Action* lady_vashj_tank_attack_and_move_away_strider(PlayerbotAI* botAI) { return new LadyVashjTankAttackAndMoveAwayStriderAction(botAI); }
     static Action* lady_vashj_assign_phase_2_dps_priority(PlayerbotAI* botAI) { return new LadyVashjAssignPhase2DpsPriorityAction(botAI); }
-    static Action* lady_vashj_assistants_follow_master_in_phase_2(PlayerbotAI* botAI) { return new LadyVashjAssistantsFollowMasterInPhase2Action(botAI); }
     static Action* lady_vashj_teleport_to_tainted_elemental(PlayerbotAI* botAI) { return new LadyVashjTeleportToTaintedElementalAction(botAI); }
     static Action* lady_vashj_loot_tainted_core(PlayerbotAI* botAI) { return new LadyVashjLootTaintedCoreAction(botAI); }
     static Action* lady_vashj_pass_the_tainted_core(PlayerbotAI* botAI) { return new LadyVashjPassTheTaintedCoreAction(botAI); }

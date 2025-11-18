@@ -60,7 +60,6 @@ public:
         creators["lady vashj pulling boss in phase 1 and phase 3"] = &RaidSSCTriggerContext::lady_vashj_pulling_boss_in_phase_1_and_phase_3;
         creators["lady vashj coilfang strider is approaching"] = &RaidSSCTriggerContext::lady_vashj_coilfang_strider_is_approaching;
         creators["lady vashj determining kill order of adds"] = &RaidSSCTriggerContext::lady_vashj_determining_kill_order_of_adds;
-        creators["lady vashj player needs bot support to disable generators"] = &RaidSSCTriggerContext::lady_vashj_player_needs_bot_support_to_disable_generators;
         creators["lady vashj tainted elemental cheat"] = &RaidSSCTriggerContext::lady_vashj_tainted_elemental_cheat;
         creators["lady vashj tainted core was looted"] = &RaidSSCTriggerContext::lady_vashj_tainted_core_was_looted;
         creators["lady vashj core handler is dead"] = &RaidSSCTriggerContext::lady_vashj_core_handler_is_dead;
@@ -122,7 +121,6 @@ private:
     static Trigger* lady_vashj_pulling_boss_in_phase_1_and_phase_3(PlayerbotAI* botAI) { return new LadyVashjPullingBossInPhase1AndPhase3Trigger(botAI); }
     static Trigger* lady_vashj_coilfang_strider_is_approaching(PlayerbotAI* botAI) { return new LadyVashjCoilfangStriderIsApproachingTrigger(botAI); }
     static Trigger* lady_vashj_determining_kill_order_of_adds(PlayerbotAI* botAI) { return new LadyVashjDeterminingKillOrderOfAddsTrigger(botAI); }
-    static Trigger* lady_vashj_player_needs_bot_support_to_disable_generators(PlayerbotAI* botAI) { return new LadyVashjPlayerNeedsBotSupportToDisableGeneratorsTrigger(botAI); }
     static Trigger* lady_vashj_tainted_elemental_cheat(PlayerbotAI* botAI) { return new LadyVashjTaintedElementalCheatTrigger(botAI); }
     static Trigger* lady_vashj_tainted_core_was_looted(PlayerbotAI* botAI) { return new LadyVashjTaintedCoreWasLootedTrigger(botAI); }
     static Trigger* lady_vashj_core_handler_is_dead(PlayerbotAI* botAI) { return new LadyVashjCoreHandlerIsDeadTrigger(botAI); }

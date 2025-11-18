@@ -361,13 +361,6 @@ public:
     bool Execute(Event event) override;
 };
 
-class LadyVashjAssistantsFollowMasterInPhase2Action : public MovementAction
-{
-public:
-    LadyVashjAssistantsFollowMasterInPhase2Action(PlayerbotAI* botAI, std::string const name = "lady vashj assistants follow master in phase 2") : MovementAction(botAI, name) {}
-    bool Execute(Event event) override;
-};
-
 class LadyVashjTeleportToTaintedElementalAction : public AttackAction
 {
 public:
