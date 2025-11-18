@@ -211,6 +211,31 @@ namespace TempestKeepHelpers
         return false;
     }
 
+    bool AreAllAdvisorsActive(PlayerbotAI* botAI)
+    {
+        const char* advisorNames[] =
+        {
+            "thaladred the darkener",
+            "grand astromancer capernian",
+            "master engineer telonicus",
+            "lord sanguinar"
+        };
+
+        for (const char* name : advisorNames)
+        {
+            Unit* advisor = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", name)->Get();
+            Creature* advisorCreature = advisor ? advisor->ToCreature() : nullptr;
+            if (!advisorCreature || !advisorCreature->IsAlive() ||
+                advisorCreature->GetReactState() != REACT_AGGRESSIVE ||
+                advisorCreature->HasAura(SPELL_PERMANENT_FEIGN_DEATH))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     Player* GetCapernianTank(PlayerbotAI* botAI, Player* bot)
     {
         Group* group = bot->GetGroup();
@@ -237,24 +262,22 @@ namespace TempestKeepHelpers
 
     bool IsAnyLegendaryWeaponAlive(PlayerbotAI* botAI)
     {
-        const std::pair<const char*, uint32> weapons[] =
+        const char* weaponNames[] =
         {
-            {"staff of disintegration", NPC_STAFF_OF_DISINTEGRATION},
-            {"cosmic infuser", NPC_COSMIC_INFUSER},
-            {"infinity blade", NPC_INFINITY_BLADES},
-            {"warp slicer", NPC_WARP_SLICER},
-            {"phaseshift bulwark", NPC_PHASESHIFT_BULWARK},
-            {"netherstrand longbow", NPC_NETHERSTRAND_LONGBOW},
-            {"devastation", NPC_DEVASTATION},
+            "staff of disintegration",
+            "cosmic infuser",
+            "infinity blade",
+            "warp slicer",
+            "phaseshift bulwark",
+            "netherstrand longbow",
+            "devastation"
         };
 
-        for (const auto& [name, entry] : weapons)
+        for (const char* name : weaponNames)
         {
             Unit* weapon = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", name)->Get();
-            if (!weapon || !weapon->IsAlive())
-                continue;
-
-            return true;
+            if (weapon && weapon->IsAlive())
+                return true;
         }
 
         return false;
@@ -264,13 +287,13 @@ namespace TempestKeepHelpers
     {
         const std::pair<const char*, uint32> weapons[] =
         {
-            {"staff of disintegration", NPC_STAFF_OF_DISINTEGRATION},
-            {"cosmic infuser", NPC_COSMIC_INFUSER},
-            {"infinity blade", NPC_INFINITY_BLADES},
-            {"warp slicer", NPC_WARP_SLICER},
-            {"phaseshift bulwark", NPC_PHASESHIFT_BULWARK},
-            {"netherstrand longbow", NPC_NETHERSTRAND_LONGBOW},
-            {"devastation", NPC_DEVASTATION},
+            { "staff of disintegration", NPC_STAFF_OF_DISINTEGRATION },
+            { "cosmic infuser", NPC_COSMIC_INFUSER },
+            { "infinity blade", NPC_INFINITY_BLADES },
+            { "warp slicer", NPC_WARP_SLICER },
+            { "phaseshift bulwark", NPC_PHASESHIFT_BULWARK },
+            { "netherstrand longbow", NPC_NETHERSTRAND_LONGBOW },
+            { "devastation", NPC_DEVASTATION },
         };
 
         for (const auto& [name, entry] : weapons)

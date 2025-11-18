@@ -184,24 +184,8 @@ float KaelthasSunstriderDelayBloodlustAndHeroismMultiplier::GetValue(Action* act
     if (!kaelthas->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE))
         return 1.0f;
 
-    const char* advisorNames[] =
-    {
-        "grand astromancer capernian",
-        "master engineer telonicus"
-    };
-
-    // Check if 2 advisors are alive and active (sufficient to ensure phase 3)
-    for (const char* name : advisorNames)
-    {
-        Unit* advisor = AI_VALUE2(Unit*, "find target", name);
-        Creature* advisorCreature = advisor ? advisor->ToCreature() : nullptr;
-        if (!advisorCreature || !advisorCreature->IsAlive() ||
-            advisorCreature->GetReactState() != REACT_AGGRESSIVE ||
-            advisorCreature->HasAura(SPELL_PERMANENT_FEIGN_DEATH))
-        {
-            return 0.0f; // Not more than one advisor is active, delay bloodlust/heroism
-        }
-    }
+    if (!AreAllAdvisorsActive(botAI))
+        return 0.0f;
 
     return 1.0f;
 }

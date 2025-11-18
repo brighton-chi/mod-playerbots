@@ -133,6 +133,7 @@ namespace TempestKeepHelpers
     bool IsAlarAddTank(PlayerbotAI* botAI, Player* bot);
 
     bool IsAnyTankableAdvisorActive(PlayerbotAI* botAI);
+    bool AreAllAdvisorsActive(PlayerbotAI* botAI);
     Player* GetCapernianTank(PlayerbotAI* botAI, Player* bot);
     bool IsAnyLegendaryWeaponAlive(PlayerbotAI* botAI);
     bool AreAllLegendaryWeaponsDead(PlayerbotAI* botAI, Player* bot);

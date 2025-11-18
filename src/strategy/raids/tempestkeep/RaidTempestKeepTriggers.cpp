@@ -352,6 +352,41 @@ bool KaelthasSunstriderNetherstrandLongbowFiresMultiShotTrigger::IsActive()
     return longbowTank && longbowTank == bot;
 }
 
+bool KaelthasSunstriderLegendaryWeaponsAreDeadAndLootableTrigger::IsActive()
+{
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    if (!kaelthas)
+        return false;
+
+    return AreAllLegendaryWeaponsDead(botAI, bot);
+}
+
+bool KaelthasSunstriderLegendaryWeaponsAreEquippedTrigger::IsActive()
+{
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    if (!kaelthas)
+        return false;
+
+    return bot->HasItemCount(ITEM_STAFF_OF_DISINTEGRATION, 1, false) ||
+           bot->HasItemCount(ITEM_NETHERSTRAND_LONGBOW, 1, false) ||
+           bot->HasItemCount(ITEM_PHASESHIFT_BULWARK, 1, false);
+}
+
+bool KaelthasSunstriderDeterminingPhase3KillOrderTrigger::IsActive()
+{
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    if (!kaelthas)
+        return false;
+
+    Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
+    Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
+    Player* capernianTank = GetCapernianTank(botAI, bot);
+
+    return (botAI->IsDps(bot) && AreAllAdvisorsActive(botAI) ||
+            botAI->IsMainTank(bot) && (!sanguinar || !sanguinar->IsAlive()) ||
+            capernianTank && bot == capernianTank && (!capernian || !capernian->IsAlive()));
+}
+
 // phase 3 kill order
 
 // phase 2 looting weapons

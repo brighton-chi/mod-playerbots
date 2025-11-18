@@ -97,7 +97,7 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction::array(0, new NextAction("kaelthas sunstrider first assist tank position telonicus", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("kaelthas sunstrider pulling tankable advisors",
-        NextAction::array(0, new NextAction("kaelthas sunstrider misdirect advisors to tanks", ACTION_EMERGENCY + 1), nullptr)
+        NextAction::array(0, new NextAction("kaelthas sunstrider misdirect advisors to tanks", ACTION_EMERGENCY + 2), nullptr)
     ));
     triggers.push_back(new TriggerNode("kaelthas sunstrider waiting for tanks to get aggro on advisors",
         NextAction::array(0, new NextAction("kaelthas sunstrider manage advisor dps timer", ACTION_EMERGENCY + 10), nullptr)
@@ -110,6 +110,15 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     ));
     triggers.push_back(new TriggerNode("kaelthas sunstrider netherstrand longbow fires multishot",
         NextAction::array(0, new NextAction("kaelthas sunstrider hunter turn away netherstrand longbow", ACTION_RAID + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("kaelthas sunstrider legendary weapons are dead and lootable",
+        NextAction::array(0, new NextAction("kaelthas sunstrider loot legendary weapons", ACTION_RAID + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("kaelthas sunstrider legendary weapons are equipped",
+        NextAction::array(0, new NextAction("kaelthas sunstrider use legendary weapons", ACTION_EMERGENCY + 6), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("kaelthas sunstrider determining phase 3 kill order",
+        NextAction::array(0, new NextAction("kaelthas sunstrider assign dps priority", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("kaelthas sunstrider cheat to test",
         NextAction::array(0, new NextAction("kaelthas sunstrider cheat to test", ACTION_EMERGENCY + 10), nullptr)

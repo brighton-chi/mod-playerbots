@@ -234,6 +234,27 @@ public:
     bool IsActive() override;
 };
 
+class KaelthasSunstriderLegendaryWeaponsAreDeadAndLootableTrigger : public Trigger
+{
+public:
+    KaelthasSunstriderLegendaryWeaponsAreDeadAndLootableTrigger(PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider legendary weapons are dead and lootable") {}
+    bool IsActive() override;
+};
+
+class KaelthasSunstriderLegendaryWeaponsAreEquippedTrigger : public Trigger
+{
+public:
+    KaelthasSunstriderLegendaryWeaponsAreEquippedTrigger(PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider legendary weapons are equipped") {}
+    bool IsActive() override;
+};
+
+class KaelthasSunstriderDeterminingPhase3KillOrderTrigger : public Trigger
+{
+public:
+    KaelthasSunstriderDeterminingPhase3KillOrderTrigger(PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider determining phase 3 kill order") {}
+    bool IsActive() override;
+};
+
 class KaelthasSunstriderCheatToTestTrigger : public Trigger
 {
 public:

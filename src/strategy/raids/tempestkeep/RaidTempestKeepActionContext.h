@@ -46,6 +46,9 @@ public:
         creators["kaelthas sunstrider group up legendary weapons"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_group_up_legendary_weapons;
         creators["kaelthas sunstrider main tank move devastation away"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_main_tank_move_devastation_away;
         creators["kaelthas sunstrider hunter turn away netherstrand longbow"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_hunter_turn_away_netherstrand_longbow;
+        creators["kaelthas sunstrider loot legendary weapons"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_loot_legendary_weapons;
+        creators["kaelthas sunstrider use legendary weapons"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_use_legendary_weapons;
+        creators["kaelthas sunstrider assign dps priority"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_assign_dps_priority;
         creators["kaelthas sunstrider cheat to test"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_cheat_to_test;
     }
 
@@ -87,6 +90,9 @@ private:
     static Action* kaelthas_sunstrider_group_up_legendary_weapons(PlayerbotAI* botAI) { return new KaelthasSunstriderGroupUpLegendaryWeaponsAction(botAI); }
     static Action* kaelthas_sunstrider_main_tank_move_devastation_away(PlayerbotAI* botAI) { return new KaelthasSunstriderMoveDevastationAwayAction(botAI); }
     static Action* kaelthas_sunstrider_hunter_turn_away_netherstrand_longbow(PlayerbotAI* botAI) { return new KaelthasSunstriderHunterTurnAwayNetherstrandLongbowAction(botAI); }
+    static Action* kaelthas_sunstrider_loot_legendary_weapons(PlayerbotAI* botAI) { return new KaelthasSunstriderLootLegendaryWeaponsAction(botAI); }
+    static Action* kaelthas_sunstrider_use_legendary_weapons(PlayerbotAI* botAI) { return new KaelthasSunstriderUseLegendaryWeaponsAction(botAI); }
+    static Action* kaelthas_sunstrider_assign_dps_priority(PlayerbotAI* botAI) { return new KaelthasSunstriderPhase3AssignDpsPriorityAction(botAI); }
     static Action* kaelthas_sunstrider_cheat_to_test(PlayerbotAI* botAI) { return new KaelthasSunstriderCheatToTestAction(botAI); }
 };
 

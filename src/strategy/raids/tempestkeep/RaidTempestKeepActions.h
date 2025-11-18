@@ -255,6 +255,37 @@ public:
     bool Execute(Event event) override;
 };
 
+class KaelthasSunstriderLootLegendaryWeaponsAction : public Action
+{
+public:
+    KaelthasSunstriderLootLegendaryWeaponsAction(PlayerbotAI* botAI) : Action(botAI, "kaelthas sunstrider loot legendary weapons") {}
+    bool Execute(Event event) override;
+
+private:
+    bool ShouldBotLootWeapon(uint32 weaponEntry);
+    bool LootWeapon(uint32 weaponEntry, uint32 itemId, const char* weaponName);
+};
+
+class KaelthasSunstriderUseLegendaryWeaponsAction : public Action
+{
+public:
+    KaelthasSunstriderUseLegendaryWeaponsAction(PlayerbotAI* botAI) : Action(botAI, "kaelthas sunstrider use legendary weapons") {}
+    bool Execute(Event event) override;
+
+private:
+    bool UsePhaseshiftBulwark();
+    bool UseStaffOfDisintegration();
+    bool UseNetherstrandLongbow();
+    bool UseEquippedItemWithPacket(Item* item);
+};
+
+class KaelthasSunstriderPhase3AssignDpsPriorityAction : public AttackAction
+{
+public:
+    KaelthasSunstriderPhase3AssignDpsPriorityAction(PlayerbotAI* botAI, std::string const name = "kaelthas sunstrider phase 3 assign dps priority") : AttackAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 class KaelthasSunstriderCheatToTestAction : public Action
 {
 public:

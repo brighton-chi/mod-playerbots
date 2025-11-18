@@ -3,6 +3,7 @@
 
 #include "RaidTempestKeepActions.h"
 #include "RaidTempestKeepHelpers.h"
+#include "ObjectAccessor.h"
 #include "Playerbots.h"
 
 using namespace TempestKeepHelpers;
@@ -1773,8 +1774,8 @@ bool KaelthasSunstriderMoveDevastationAwayAction::Execute(Event event)
     if (!devastation || !devastation->IsAlive())
         return false;
 
-    MarkTargetWithStar(bot, devastation);
-    SetRtiTarget(botAI, "star", devastation);
+    MarkTargetWithDiamond(bot, devastation);
+    SetRtiTarget(botAI, "diamond", devastation);
 
     if (bot->GetVictim() != devastation)
         return Attack(devastation);
@@ -1811,8 +1812,8 @@ bool KaelthasSunstriderHunterTurnAwayNetherstrandLongbowAction::Execute(Event ev
     if (!longbow || !longbow->IsAlive())
         return false;
 
-    MarkTargetWithCircle(bot, longbow);
-    SetRtiTarget(botAI, "circle", longbow);
+    MarkTargetWithCross(bot, longbow);
+    SetRtiTarget(botAI, "cross", longbow);
 
     if (bot->GetVictim() != longbow)
         return Attack(longbow);
@@ -1836,6 +1837,368 @@ bool KaelthasSunstriderHunterTurnAwayNetherstrandLongbowAction::Execute(Event ev
 
     return false;
 }
+
+bool KaelthasSunstriderLootLegendaryWeaponsAction::Execute(Event event)
+{
+    struct WeaponInfo {
+        uint32 npcEntry;
+        uint32 itemId;
+        const char* name;
+    };
+
+    const WeaponInfo weapons[] =
+    {
+        { NPC_NETHERSTRAND_LONGBOW, ITEM_NETHERSTRAND_LONGBOW, "netherstrand longbow" },
+        { NPC_COSMIC_INFUSER, ITEM_COSMIC_INFUSER, "cosmic infuser" },
+        { NPC_DEVASTATION, ITEM_DEVASTATION, "devastation" },
+        { NPC_INFINITY_BLADES, ITEM_INFINITY_BLADE, "infinity blade" },
+        { NPC_WARP_SLICER, ITEM_WARP_SLICER, "warp slicer" },
+        { NPC_STAFF_OF_DISINTEGRATION, ITEM_STAFF_OF_DISINTEGRATION, "staff of disintegration" },
+        { NPC_PHASESHIFT_BULWARK, ITEM_PHASESHIFT_BULWARK, "phaseshift bulwark" }
+    };
+
+    for (const auto& weapon : weapons)
+    {
+        if (ShouldBotLootWeapon(weapon.npcEntry))
+        {
+            if (bot->HasItemCount(weapon.itemId, 1, false))
+            {
+                LOG_DEBUG("playerbots", "KaelthasSunstriderLootLegendaryWeaponsAction: {} already has {} (itemId={}), skipping",
+                          bot->GetName(), weapon.name, weapon.itemId);
+                continue;
+            }
+
+            return LootWeapon(weapon.npcEntry, weapon.itemId, weapon.name); // Pass itemId here
+        }
+    }
+
+    return false;
+}
+
+bool KaelthasSunstriderLootLegendaryWeaponsAction::ShouldBotLootWeapon(uint32 weaponEntry)
+{
+    uint8 tab = AiFactory::GetPlayerSpecTab(bot);
+
+    switch (weaponEntry)
+    {
+        case NPC_NETHERSTRAND_LONGBOW:
+            return bot->getClass() == CLASS_HUNTER;
+
+        case NPC_COSMIC_INFUSER:
+            return botAI->IsHeal(bot);
+
+        case NPC_DEVASTATION:
+            return (bot->getClass() == CLASS_WARRIOR && tab == 0) ||
+                   (botAI->IsDps(bot) && (bot->getClass() == CLASS_PALADIN || bot->getClass() == CLASS_DEATH_KNIGHT));
+
+        case NPC_INFINITY_BLADES:
+            return bot->getClass() == CLASS_ROGUE ||
+                   bot->getClass() == CLASS_HUNTER ||
+                   (bot->getClass() == CLASS_WARRIOR && tab != 0) ||
+                   (bot->getClass() == CLASS_SHAMAN && tab == 1);
+
+        case NPC_WARP_SLICER:
+            return bot->getClass() == CLASS_ROGUE ||
+                   (bot->getClass() == CLASS_WARRIOR && tab == 1);
+
+        case NPC_STAFF_OF_DISINTEGRATION:
+            return (botAI->IsRangedDps(bot) && bot->getClass() != CLASS_HUNTER) ||
+                   (bot->getClass() == CLASS_DRUID && tab == 1);
+
+        case NPC_PHASESHIFT_BULWARK:
+            return botAI->IsTank(bot) &&
+                   (bot->getClass() == CLASS_PALADIN || bot->getClass() == CLASS_WARRIOR || bot->getClass() == CLASS_DEATH_KNIGHT);
+
+        default:
+            return false;
+    }
+}
+
+bool KaelthasSunstriderLootLegendaryWeaponsAction::LootWeapon(uint32 weaponEntry, uint32 itemId, const char* weaponName)
+{
+    LOG_DEBUG("playerbots", "KaelthasSunstriderLootLegendaryWeaponsAction: Execute start for bot {} (weaponEntry={})", bot->GetName(), weaponEntry);
+
+    GuidVector corpses = context->GetValue<GuidVector>("nearest corpses")->Get();
+    const float maxLootRange = sPlayerbotAIConfig->lootDistance;
+
+    for (auto const& guid : corpses)
+    {
+        LOG_DEBUG("playerbots", "KaelthasSunstriderLootLegendaryWeaponsAction: inspecting guid {}", guid.ToString());
+
+        LootObject loot(bot, guid);
+        if (!loot.IsLootPossible(bot))
+        {
+            LOG_DEBUG("playerbots", "KaelthasSunstriderLootLegendaryWeaponsAction: loot not possible on guid {}", guid.ToString());
+            continue;
+        }
+
+        WorldObject* object = loot.GetWorldObject(bot);
+        if (!object)
+        {
+            LOG_DEBUG("playerbots", "KaelthasSunstriderLootLegendaryWeaponsAction: no world object for guid {}", guid.ToString());
+            continue;
+        }
+
+        Creature* creature = object->ToCreature();
+        if (!creature)
+        {
+            LOG_DEBUG("playerbots", "KaelthasSunstriderLootLegendaryWeaponsAction: world object for guid {} is not a creature, skipping", guid.ToString());
+            continue;
+        }
+
+        LOG_DEBUG("playerbots", "KaelthasSunstriderLootLegendaryWeaponsAction: found CREATURE guid={} entry={} hp={}/{} alive={}",
+                  guid.ToString(), creature->GetEntry(), creature->GetHealth(), creature->GetMaxHealth(), creature->IsAlive());
+
+        // Only consider the specific dead weapon
+        if (creature->GetEntry() != weaponEntry || creature->IsAlive())
+        {
+            LOG_DEBUG("playerbots", "KaelthasSunstriderLootLegendaryWeaponsAction: creature {} is not the target weapon or is alive, skipping", guid.ToString());
+            continue;
+        }
+
+        LOG_DEBUG("playerbots", "KaelthasSunstriderLootLegendaryWeaponsAction: found dead {} target {}", weaponName, guid.ToString());
+
+        context->GetValue<LootObject>("loot target")->Set(loot);
+
+        float dist = bot->GetDistance(object);
+        LOG_DEBUG("playerbots", "KaelthasSunstriderLootLegendaryWeaponsAction: target {} dist={}", guid.ToString(), dist);
+
+        if (dist > maxLootRange)
+        {
+            LOG_DEBUG("playerbots", "KaelthasSunstriderLootLegendaryWeaponsAction: moving to target {} (dist={} > maxLootRange={})", guid.ToString(), dist, maxLootRange);
+            return MoveTo(object, 2.0f, MovementPriority::MOVEMENT_FORCED);
+        }
+
+        LOG_DEBUG("playerbots", "KaelthasSunstriderLootLegendaryWeaponsAction: in range of target {}, invoking OpenLootAction", guid.ToString());
+
+        OpenLootAction open(botAI);
+        bool opened = open.Execute(Event());
+        LOG_DEBUG("playerbots", "KaelthasSunstriderLootLegendaryWeaponsAction: OpenLootAction returned {}", opened);
+
+        if (!opened)
+            return opened;
+
+        // Schedule autostore attempt
+        const ObjectGuid botGuid = bot->GetGUID();
+        const ObjectGuid corpseGuid = guid;
+        const uint8 guessedIndex = 0;
+
+        botAI->AddTimedEvent([this, botGuid, corpseGuid, guessedIndex, itemId, weaponName]()
+        {
+            Player* receiver = botGuid.IsEmpty() ? nullptr : ObjectAccessor::FindPlayer(botGuid);
+            if (!receiver || !receiver->IsInWorld())
+                return;
+
+            // Double-check this bot doesn't already have the weapon
+            if (receiver->HasItemCount(itemId, 1, false))
+                return;
+
+            receiver->SetLootGUID(corpseGuid);
+
+            LOG_DEBUG("playerbots", "KaelthasSunstriderLootLegendaryWeaponsAction: sending CMSG_AUTOSTORE_LOOT_ITEM guessedIndex={} for bot={} corpse={} weapon={}",
+                      guessedIndex, receiver->GetName(), corpseGuid.ToString(), weaponName);
+
+            WorldPacket* packet = new WorldPacket(CMSG_AUTOSTORE_LOOT_ITEM, 1);
+            *packet << guessedIndex;
+            receiver->GetSession()->QueuePacket(packet);
+        }, 600);
+
+        return true;
+    }
+
+    LOG_DEBUG("playerbots", "KaelthasSunstriderLootLegendaryWeaponsAction: no matching dead {} found, returning false", weaponName);
+    return false;
+}
+
+bool KaelthasSunstriderUseLegendaryWeaponsAction::Execute(Event event)
+{
+    // Check and use Phaseshift Bulwark
+    if (UsePhaseshiftBulwark())
+        return true;
+
+    // Check and use Staff of Disintegration
+    if (UseStaffOfDisintegration())
+        return true;
+
+    // Check and use Netherstrand Longbow
+    if (UseNetherstrandLongbow())
+        return true;
+
+    return false;
+}
+
+bool KaelthasSunstriderUseLegendaryWeaponsAction::UsePhaseshiftBulwark()
+{
+    // Get equipped off-hand (shield slot)
+    Item* offHand = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
+    if (!offHand || offHand->GetEntry() != ITEM_PHASESHIFT_BULWARK)
+        return false;
+
+    // Find Kael'thas
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    if (!kaelthas)
+        return false;
+
+    // Only use if Kael'thas is casting Pyroblast
+    if (!kaelthas->HasUnitState(UNIT_STATE_CASTING))
+        return false;
+
+    Spell* currentSpell = kaelthas->GetCurrentSpell(CURRENT_GENERIC_SPELL);
+    if (!currentSpell || currentSpell->m_spellInfo->Id != SPELL_KAELTHAS_PYROBLAST)
+        return false;
+
+    // Only use if bot is the target of the Pyroblast
+    Unit* pyroblastTarget = currentSpell->m_targets.GetUnitTarget();
+    if (pyroblastTarget != bot)
+        return false;
+
+    LOG_DEBUG("playerbots", "KaelthasSunstriderUseLegendaryWeaponsAction: {} using Phaseshift Bulwark to block Pyroblast", bot->GetName());
+
+    return UseEquippedItemWithPacket(offHand);
+}
+
+bool KaelthasSunstriderUseLegendaryWeaponsAction::UseStaffOfDisintegration()
+{
+    // Get equipped main hand weapon
+    Item* mainHand = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+    if (!mainHand || mainHand->GetEntry() != ITEM_STAFF_OF_DISINTEGRATION)
+        return false;
+
+    // Only use if bot doesn't have the protection aura
+    if (bot->HasAura(SPELL_MENTAL_PROTECTION_FIELD))
+        return false;
+
+    LOG_DEBUG("playerbots", "KaelthasSunstriderUseLegendaryWeaponsAction: {} using equipped Staff of Disintegration", bot->GetName());
+
+    return UseEquippedItemWithPacket(mainHand);
+}
+
+bool KaelthasSunstriderUseLegendaryWeaponsAction::UseNetherstrandLongbow()
+{
+    // Get equipped ranged weapon
+    Item* ranged = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_RANGED);
+    if (!ranged || ranged->GetEntry() != ITEM_NETHERSTRAND_LONGBOW)
+        return false;
+
+    // Only use if bot doesn't have nether spikes
+    if (bot->HasItemCount(ITEM_BUNDLE_OF_NETHER_SPIKES, 1, false))
+        return false;
+
+    LOG_DEBUG("playerbots", "KaelthasSunstriderUseLegendaryWeaponsAction: {} using Netherstrand Longbow to create nether spikes", bot->GetName());
+
+    return UseEquippedItemWithPacket(ranged);
+}
+
+bool KaelthasSunstriderUseLegendaryWeaponsAction::UseEquippedItemWithPacket(Item* item)
+{
+    if (!item)
+        return false;
+
+    if (bot->CanUseItem(item) != EQUIP_ERR_OK)
+        return false;
+
+    if (bot->IsNonMeleeSpellCast(true))
+        return false;
+
+    uint8 bagIndex = item->GetBagSlot();
+    uint8 slot = item->GetSlot();
+    uint8 cast_count = 1;
+    ObjectGuid item_guid = item->GetGUID();
+    uint32 glyphIndex = 0;
+    uint8 castFlags = 0;
+    uint32 spellId = 0;
+
+    // Find the on-use spell
+    for (uint8 i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
+    {
+        if (item->GetTemplate()->Spells[i].SpellId > 0 &&
+            item->GetTemplate()->Spells[i].SpellTrigger == ITEM_SPELLTRIGGER_ON_USE)
+        {
+            spellId = item->GetTemplate()->Spells[i].SpellId;
+            break;
+        }
+    }
+
+    if (!spellId)
+        return false;
+
+    WorldPacket packet(CMSG_USE_ITEM);
+    packet << bagIndex << slot << cast_count << spellId << item_guid << glyphIndex << castFlags;
+
+    uint32 targetFlag = TARGET_FLAG_SELF;
+    packet << targetFlag << bot->GetPackGUID();
+
+    bot->GetSession()->HandleUseItemOpcode(packet);
+    return true;
+}
+
+bool KaelthasSunstriderPhase3AssignDpsPriorityAction::Execute(Event event)
+{
+    // Target priority 1: Thaladred for ranged
+    Unit* thaladred = AI_VALUE2(Unit*, "find target", "thaladrad the darkener");
+    if (thaladred && botAI->IsRangedDps(bot))
+    {
+        MarkTargetWithSquare(bot, thaladred);
+        SetRtiTarget(botAI, "square", thaladred);
+
+        if (bot->GetTarget() != thaladred->GetGUID())
+        {
+            bot->SetTarget(thaladred->GetGUID());
+            return Attack(thaladred);
+        }
+
+        return false;
+    }
+
+    // Target priority 2: Capernian for ranged
+    Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
+    if (capernian && botAI->IsRangedDps(bot))
+    {
+        MarkTargetWithCircle(bot, capernian);
+        SetRtiTarget(botAI, "circle", capernian);
+
+        if (bot->GetTarget() != capernian->GetGUID())
+        {
+            bot->SetTarget(capernian->GetGUID());
+            return Attack(capernian);
+        }
+
+        return false;
+    }
+
+    // Target priority 3: Sanguinar for all dps
+    Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
+    if (sanguinar && sanguinar->IsAlive())
+    {
+        MarkTargetWithStar(bot, sanguinar);
+        SetRtiTarget(botAI, "star", sanguinar);
+
+        if (bot->GetTarget() != sanguinar->GetGUID())
+        {
+            bot->SetTarget(sanguinar->GetGUID());
+            return Attack(sanguinar);
+        }
+
+        return false;
+    }
+
+    // Target priority 4: Telonicus for ranged
+    Unit* telonicus = AI_VALUE2(Unit*, "find target", "master engineer telonicus");
+    if (telonicus && telonicus->IsAlive())
+    {
+        MarkTargetWithTriangle(bot, telonicus);
+        SetRtiTarget(botAI, "triangle", telonicus);
+
+        if (bot->GetTarget() != telonicus->GetGUID())
+        {
+            bot->SetTarget(telonicus->GetGUID());
+            return Attack(telonicus);
+        }
+    }
+
+    return false;
+}
+
 
 bool KaelthasSunstriderCheatToTestAction::Execute(Event event)
 {
