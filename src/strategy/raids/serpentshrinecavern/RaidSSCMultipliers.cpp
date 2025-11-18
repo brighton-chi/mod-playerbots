@@ -85,6 +85,9 @@ float HydrossTheUnstableWaitForDpsMultiplier::GetValue(Action* action)
     if (!hydross)
         return 1.0f;
 
+    if (dynamic_cast<HydrossTheUnstableMisdirectBossToTankAction*>(action))
+        return 1.0f;
+
     const uint32 mapId = hydross->GetMapId();
     const time_t now = std::time(nullptr);
     const uint8 dpsWaitSeconds = 5;
@@ -251,6 +254,9 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValue(Action* action)
     if (!leotheras)
         return 1.0f;
 
+    if (dynamic_cast<LeotherasTheBlindMisdirectBossToDemonFormTankAction*>(action))
+        return 1.0f;
+
     const uint32 mapId = leotheras->GetMapId();
     const time_t now = std::time(nullptr);
 
@@ -358,6 +364,9 @@ float FathomLordKarathressWaitForDpsMultiplier::GetValue(Action* action)
 {
     Unit* karathress = AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
     if (!karathress)
+        return 1.0f;
+
+    if (dynamic_cast<FathomLordKarathressMisdirectBossesToTanksAction*>(action))
         return 1.0f;
 
     const uint32 mapId = karathress->GetMapId();
