@@ -365,7 +365,7 @@ bool NightbaneMainTankIsSusceptibleToFearTrigger::IsActive()
            !mainTank->HasAura(SPELL_FEAR_WARD) && botAI->CanCastSpell("fear ward", mainTank);
 }
 
-bool NightbanePetsIgnoreColllisionToChaseFlyingBossTrigger::IsActive()
+bool NightbanePetsIgnoreCollisionToChaseFlyingBossTrigger::IsActive()
 {
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
     if (!nightbane)

@@ -1058,7 +1058,8 @@ bool PrinceMalchezaarEnfeebledAvoidHazardAction::Execute(Event event)
             float x = malchezaarX + dx * dist;
             float y = malchezaarY + dy * dist;
             float destZ = malchezaarZ;
-            float destX = x, destY = y, destZ2 = destZ;
+            float destX = x, destY = y;
+            float destZ2 = destZ;
             if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, bx, by, bz, destX, destY, destZ2, true))
                 continue;
 

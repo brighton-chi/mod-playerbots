@@ -105,7 +105,7 @@ private:
     static Trigger* nightbane_boss_engaged_by_main_tank(PlayerbotAI* botAI) { return new NightbaneBossEngagedByMainTankTrigger(botAI); }
     static Trigger* nightbane_ranged_bots_are_in_charred_earth(PlayerbotAI* botAI) { return new NightbaneRangedBotsAreInCharredEarthTrigger(botAI); }
     static Trigger* nightbane_main_tank_is_susceptible_to_fear(PlayerbotAI* botAI) { return new NightbaneMainTankIsSusceptibleToFearTrigger(botAI); }
-    static Trigger* nightbane_pets_ignore_collision_to_chase_flying_boss(PlayerbotAI* botAI) { return new NightbanePetsIgnoreColllisionToChaseFlyingBossTrigger(botAI); }
+    static Trigger* nightbane_pets_ignore_collision_to_chase_flying_boss(PlayerbotAI* botAI) { return new NightbanePetsIgnoreCollisionToChaseFlyingBossTrigger(botAI); }
     static Trigger* nightbane_boss_is_flying(PlayerbotAI* botAI) { return new NightbaneBossIsFlyingTrigger(botAI); }
     static Trigger* nightbane_need_to_manage_timers_and_trackers(PlayerbotAI* botAI) { return new NightbaneNeedToManageTimersAndTrackersTrigger(botAI); }
 };

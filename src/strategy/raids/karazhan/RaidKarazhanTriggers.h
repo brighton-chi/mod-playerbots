@@ -233,10 +233,10 @@ public:
     bool IsActive() override;
 };
 
-class NightbanePetsIgnoreColllisionToChaseFlyingBossTrigger : public Trigger
+class NightbanePetsIgnoreCollisionToChaseFlyingBossTrigger : public Trigger
 {
 public:
-    NightbanePetsIgnoreColllisionToChaseFlyingBossTrigger(PlayerbotAI* botAI) : Trigger(botAI, "nightbane pets ignore collision to chase flying boss") {}
+    NightbanePetsIgnoreCollisionToChaseFlyingBossTrigger(PlayerbotAI* botAI) : Trigger(botAI, "nightbane pets ignore collision to chase flying boss") {}
     bool IsActive() override;
 };
 
