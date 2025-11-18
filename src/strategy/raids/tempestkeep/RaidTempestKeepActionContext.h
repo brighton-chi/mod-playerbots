@@ -35,11 +35,17 @@ public:
         creators["high astromancer solarian cast fear ward on main tank"] = &RaidTempestKeepActionContext::high_astromancer_solarian_cast_fear_ward_on_main_tank;
 
         creators["kaelthas sunstrider log for testing"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_log_for_testing;
-        creators["kaelthas sunstrider run away from thaladred"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_run_away_from_thaladred;
+        creators["kaelthas sunstrider kite thaladred"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_kite_thaladred;
         creators["kaelthas sunstrider main tank position sanguinar"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_main_tank_position_sanguinar;
         creators["kaelthas sunstrider cast fear ward on sanguinar tank"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_cast_fear_ward_on_sanguinar_tank;
         creators["kaelthas sunstrider warlock tank position capernian"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_warlock_tank_position_capernian;
+        creators["kaelthas sunstrider move away from capernian"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_move_away_from_capernian;
         creators["kaelthas sunstrider first assist tank position telonicus"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_first_assist_tank_position_telonicus;
+        creators["kaelthas sunstrider misdirect advisors to tanks"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_misdirect_advisors_to_tanks;
+        creators["kaelthas sunstrider manage advisor dps timer"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_manage_advisor_dps_timer;
+        creators["kaelthas sunstrider group up legendary weapons"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_group_up_legendary_weapons;
+        creators["kaelthas sunstrider main tank move devastation away"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_main_tank_move_devastation_away;
+        creators["kaelthas sunstrider hunter turn away netherstrand longbow"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_hunter_turn_away_netherstrand_longbow;
         creators["kaelthas sunstrider cheat to test"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_cheat_to_test;
     }
 
@@ -70,11 +76,17 @@ private:
     static Action* high_astromancer_solarian_cast_fear_ward_on_main_tank(PlayerbotAI* botAI) { return new HighAstromancerSolarianCastFearWardOnMainTankAction(botAI); }
 
     static Action* kaelthas_sunstrider_log_for_testing(PlayerbotAI* botAI) { return new KaelthasSunstriderLogForTestingAction(botAI); }
-    static Action* kaelthas_sunstrider_run_away_from_thaladred(PlayerbotAI* botAI) { return new KaelthasSunstriderRunAwayFromThaladredAction(botAI); }
+    static Action* kaelthas_sunstrider_kite_thaladred(PlayerbotAI* botAI) { return new KaelthasSunstriderKiteThaladredAction(botAI); }
     static Action* kaelthas_sunstrider_main_tank_position_sanguinar(PlayerbotAI* botAI) { return new KaelthasSunstriderMainTankPositionSanguinarAction(botAI); }
     static Action* kaelthas_sunstrider_cast_fear_ward_on_sanguinar_tank(PlayerbotAI* botAI) { return new KaelthasSunstriderCastFearWardOnSanguinarTankAction(botAI); }
     static Action* kaelthas_sunstrider_warlock_tank_position_capernian(PlayerbotAI* botAI) { return new KaelthasSunstriderWarlockTankPositionCapernianAction(botAI); }
+    static Action* kaelthas_sunstrider_move_away_from_capernian(PlayerbotAI* botAI) { return new KaelthasSunstriderMoveAwayFromCapernianAction(botAI); }
     static Action* kaelthas_sunstrider_first_assist_tank_position_telonicus(PlayerbotAI* botAI) { return new KaelthasSunstriderFirstAssistTankPositionTelonicusAction(botAI); }
+    static Action* kaelthas_sunstrider_misdirect_advisors_to_tanks(PlayerbotAI* botAI) { return new KaelthasSunstriderMisdirectAdvisorsToTanksAction(botAI); }
+    static Action* kaelthas_sunstrider_manage_advisor_dps_timer(PlayerbotAI* botAI) { return new KaelthasSunstriderManageAdvisorDpsTimerAction(botAI); }
+    static Action* kaelthas_sunstrider_group_up_legendary_weapons(PlayerbotAI* botAI) { return new KaelthasSunstriderGroupUpLegendaryWeaponsAction(botAI); }
+    static Action* kaelthas_sunstrider_main_tank_move_devastation_away(PlayerbotAI* botAI) { return new KaelthasSunstriderMoveDevastationAwayAction(botAI); }
+    static Action* kaelthas_sunstrider_hunter_turn_away_netherstrand_longbow(PlayerbotAI* botAI) { return new KaelthasSunstriderHunterTurnAwayNetherstrandLongbowAction(botAI); }
     static Action* kaelthas_sunstrider_cheat_to_test(PlayerbotAI* botAI) { return new KaelthasSunstriderCheatToTestAction(botAI); }
 };
 

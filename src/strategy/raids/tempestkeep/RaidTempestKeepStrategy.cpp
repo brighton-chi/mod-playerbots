@@ -79,7 +79,7 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction::array(0, new NextAction("kaelthas sunstrider log for testing", ACTION_EMERGENCY + 10), nullptr)
     ));
     triggers.push_back(new TriggerNode("kaelthas sunstrider thaladred is fixated on bot",
-        NextAction::array(0, new NextAction("kaelthas sunstrider run away from thaladred", ACTION_EMERGENCY + 6), nullptr)
+        NextAction::array(0, new NextAction("kaelthas sunstrider kite thaladred", ACTION_EMERGENCY + 6), nullptr)
     ));
     triggers.push_back(new TriggerNode("kaelthas sunstrider sanguinar engaged by main tank",
         NextAction::array(0, new NextAction("kaelthas sunstrider main tank position sanguinar", ACTION_RAID + 1), nullptr)
@@ -90,8 +90,26 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kaelthas sunstrider capernian engaged by warlock tank",
         NextAction::array(0, new NextAction("kaelthas sunstrider warlock tank position capernian", ACTION_RAID + 1), nullptr)
     ));
+    triggers.push_back(new TriggerNode("kaelthas sunstrider capernian casts arcane burst",
+        NextAction::array(0, new NextAction("kaelthas sunstrider move away from capernian", ACTION_RAID + 3), nullptr)
+    ));
     triggers.push_back(new TriggerNode("kaelthas sunstrider telonicus engaged by first assist tank",
         NextAction::array(0, new NextAction("kaelthas sunstrider first assist tank position telonicus", ACTION_RAID + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("kaelthas sunstrider pulling tankable advisors",
+        NextAction::array(0, new NextAction("kaelthas sunstrider misdirect advisors to tanks", ACTION_EMERGENCY + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("kaelthas sunstrider waiting for tanks to get aggro on advisors",
+        NextAction::array(0, new NextAction("kaelthas sunstrider manage advisor dps timer", ACTION_EMERGENCY + 10), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("kaelthas sunstrider legendary weapons are alive",
+        NextAction::array(0, new NextAction("kaelthas sunstrider group up legendary weapons", ACTION_RAID + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("kaelthas sunstrider devastation channels whirlwind",
+        NextAction::array(0, new NextAction("kaelthas sunstrider main tank move devastation away", ACTION_RAID + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("kaelthas sunstrider netherstrand longbow fires multishot",
+        NextAction::array(0, new NextAction("kaelthas sunstrider hunter turn away netherstrand longbow", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("kaelthas sunstrider cheat to test",
         NextAction::array(0, new NextAction("kaelthas sunstrider cheat to test", ACTION_EMERGENCY + 10), nullptr)
@@ -105,4 +123,7 @@ void RaidTempestKeepStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new AlarPhase2NoTankingIfArmorMeltedMultiplier(botAI));
     multipliers.push_back(new VoidReaverMaintainPositionsMultiplier(botAI));
     multipliers.push_back(new HighAstromancerSolarianStayStackedMultiplier(botAI));
+    multipliers.push_back(new KaelthasSunstriderWaitForDpsMultiplier(botAI));
+    multipliers.push_back(new KaelthasSunstriderDisableTankAssistMultiplier(botAI));
+    multipliers.push_back(new KaelthasSunstriderDelayBloodlustAndHeroismMultiplier(botAI));
 }

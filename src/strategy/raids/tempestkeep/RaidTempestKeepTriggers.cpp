@@ -11,7 +11,7 @@ bool CrimsonHandCenturionCastsArcaneVolleyTrigger::IsActive()
     if (!centurion)
         return false;
 
-    return centurion->IsAlive() && bot->getClass() == CLASS_MAGE;
+    return centurion->IsAlive() && bot->getClass() == CLASS_MAGE && centurion->HasAura(SPELL_ARCANE_FLURRY);
 }
 
 bool AlarPullingBossTrigger::IsActive()
@@ -283,6 +283,15 @@ bool KaelthasSunstriderCapernianEngagedByWarlockTankTrigger::IsActive()
     return capernian->IsAlive() && capernianTank && bot == capernianTank;
 }
 
+bool KaelthasSunstriderCapernianCastsArcaneBurstTrigger::IsActive()
+{
+    Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
+    if (!capernian)
+        return false;
+
+    return capernian->IsAlive();
+}
+
 bool KaelthasSunstriderTelonicusEngagedByFirstAssistTankTrigger::IsActive()
 {
     Unit* telonicus = AI_VALUE2(Unit*, "find target", "master engineer telonicus");
@@ -291,6 +300,71 @@ bool KaelthasSunstriderTelonicusEngagedByFirstAssistTankTrigger::IsActive()
 
     return telonicus->IsAlive() && botAI->IsAssistTankOfIndex(bot, 0);
 }
+
+bool KaelthasSunstriderPullingTankableAdvisorsTrigger::IsActive()
+{
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    if (!kaelthas)
+        return false;
+
+    return bot->getClass() == CLASS_HUNTER && IsAnyTankableAdvisorActive(botAI);
+}
+
+bool KaelthasSunstriderWaitingForTanksToGetAggroOnAdvisorsTrigger::IsActive()
+{
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    if (!kaelthas)
+        return false;
+
+    return IsMapIDTimerManager(botAI, bot);
+}
+
+bool KaelthasSunstriderLegendaryWeaponsAreAliveTrigger::IsActive()
+{
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    if (!kaelthas)
+        return false;
+
+    Player* longbowTank = GetNetherstrandLongbowTank(botAI, bot);
+    if (longbowTank && longbowTank == bot)
+        return false;
+
+    return IsAnyLegendaryWeaponAlive(botAI) && !botAI->IsMainTank(bot);
+}
+
+bool KaelthasSunstriderDevastationChannelsWhirlwindTrigger::IsActive()
+{
+    Unit* devastation = AI_VALUE2(Unit*, "find target", "devastation");
+    if (!devastation)
+        return false;
+
+    return devastation->IsAlive() && botAI->IsMainTank(bot);
+}
+
+bool KaelthasSunstriderNetherstrandLongbowFiresMultiShotTrigger::IsActive()
+{
+    Unit* longbow = AI_VALUE2(Unit*, "find target", "netherstrand longbow");
+    if (!longbow || !longbow->IsAlive())
+        return false;
+
+    Player* longbowTank = GetNetherstrandLongbowTank(botAI, bot);
+
+    return longbowTank && longbowTank == bot;
+}
+
+// phase 3 kill order
+
+// phase 2 looting weapons
+
+// phase 3 and onward using weapons
+
+// phase 4 onward break MC (use weak abilities)
+
+// phase 4 round up phoenixes
+
+// phase 4 kill eggs
+
+// phase 5 spread in air
 
 bool KaelthasSunstriderCheatToTestTrigger::IsActive()
 {

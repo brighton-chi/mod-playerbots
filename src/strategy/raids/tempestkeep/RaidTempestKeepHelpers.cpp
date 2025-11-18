@@ -3,9 +3,9 @@
 
 #include "RaidTempestKeepHelpers.h"
 #include "RaidTempestKeepActions.h"
+#include "LootObjectStack.h"
 #include "Playerbots.h"
 #include "RtiTargetValue.h"
-
 
 namespace TempestKeepHelpers
 {
@@ -36,9 +36,9 @@ namespace TempestKeepHelpers
 
         const Position VoidReaverTankPosition = { 423.845f, 371.733f, 14.897f }; // middle of room
 
-        // const Position AstromancerStackPosition = { 448.398f, -346.526f, 16.802f }; // directly from entrance, on platform, <25 yards from boss
-
-        const Position ThaladredFinalPosition = { 732.947f, -0.566f, 46.821f };
+        const Position ThaladredRelayPoint1 = { 0.0f, 0.0f, 0.0f };
+        const Position ThaladredRelayPoint2 = { 0.0f, 0.0f, 0.0f };
+        const Position ThaladredFinalPosition = { 0.0f, 0.0f, 0.0f };
         const Position SanguinarTankPosition = { 775.478f, 39.888f, 46.780f };
         // const Position CapernianTankPosition = { 0.0f, 0.0f, 0.0f };
         const Position TelonicusTankPosition = { 773.717f, 44.091f, 46.780f };
@@ -47,22 +47,6 @@ namespace TempestKeepHelpers
         const Position KaelthasBowTankPosition = { 777.713f, -28.857f, 48.729f };
         const Position KaelthasTankPosition = { 799.390f, -0.837f, 48.729f };
     }
-
-    /*
-    // From boss_alar.cpp, for reference while I work on this code
-    const Position alarPoints[9] =
-    {
-        {335.638f, 59.4879f, 17.9319f, 4.60f}, //first platform
-        {388.751007f, 31.731199f, 20.263599f, 1.61f},
-        {388.790985f, -33.105900f, 20.263599f, 0.52f},
-        {332.722992f, -61.159f, 17.979099f, 5.71f},
-        {258.959015f, -38.687099f, 20.262899f, 5.21f}, //pre-nerf only
-        {259.2277997, 35.879002f, 20.263f, 4.81f}, //pre-nerf only
-        {332.0f, 0.01f, 43.0f, 0.0f}, //quill
-        {331.0f, 0.01f, -2.38f, 0.0f}, //middle (p2)
-        {332.0f, 0.01f, 43.0f, 0.0f} // dive
-    };
-    */
 
     void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId)
     {
@@ -203,27 +187,29 @@ namespace TempestKeepHelpers
         }
     }
 
-    /* bool IsAnyAdvisorActiveAndAlive(PlayerbotAI* botAI)
+    bool IsAnyTankableAdvisorActive(PlayerbotAI* botAI)
     {
         const char* advisorNames[] =
         {
-            "thaladred the darkener",
-            "lord sanguinar",
             "grand astromancer capernian",
             "master engineer telonicus",
+            "lord sanguinar"
         };
 
         for (const char* name : advisorNames)
         {
             Unit* advisor = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", name)->Get();
-            if (!advisor || !advisor->IsAlive())
-                continue;
-
-            return true;
+            Creature* advisorCreature = advisor ? advisor->ToCreature() : nullptr;
+            if (advisorCreature && advisorCreature->IsAlive() &&
+                advisorCreature->GetReactState() == REACT_AGGRESSIVE &&
+                !advisorCreature->HasAura(SPELL_PERMANENT_FEIGN_DEATH))
+            {
+                return true;
+            }
         }
 
         return false;
-    } */
+    }
 
     Player* GetCapernianTank(PlayerbotAI* botAI, Player* bot)
     {
@@ -249,20 +235,20 @@ namespace TempestKeepHelpers
         return meleeTankCandidate;
     }
 
-    bool IsKaelthasInPhase2(PlayerbotAI* botAI)
+    bool IsAnyLegendaryWeaponAlive(PlayerbotAI* botAI)
     {
-        const char* weaponNames[] =
+        const std::pair<const char*, uint32> weapons[] =
         {
-            "staff of disintegration",
-            "cosmic infuser",
-            "infinity blade",
-            "warp slicer",
-            "phaseshift bulwark",
-            "netherstrand longbow",
-            "devastation",
+            {"staff of disintegration", NPC_STAFF_OF_DISINTEGRATION},
+            {"cosmic infuser", NPC_COSMIC_INFUSER},
+            {"infinity blade", NPC_INFINITY_BLADES},
+            {"warp slicer", NPC_WARP_SLICER},
+            {"phaseshift bulwark", NPC_PHASESHIFT_BULWARK},
+            {"netherstrand longbow", NPC_NETHERSTRAND_LONGBOW},
+            {"devastation", NPC_DEVASTATION},
         };
 
-        for (const char* name : weaponNames)
+        for (const auto& [name, entry] : weapons)
         {
             Unit* weapon = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", name)->Get();
             if (!weapon || !weapon->IsAlive())
@@ -272,6 +258,74 @@ namespace TempestKeepHelpers
         }
 
         return false;
+    }
+
+    bool AreAllLegendaryWeaponsDead(PlayerbotAI* botAI, Player* bot)
+    {
+        const std::pair<const char*, uint32> weapons[] =
+        {
+            {"staff of disintegration", NPC_STAFF_OF_DISINTEGRATION},
+            {"cosmic infuser", NPC_COSMIC_INFUSER},
+            {"infinity blade", NPC_INFINITY_BLADES},
+            {"warp slicer", NPC_WARP_SLICER},
+            {"phaseshift bulwark", NPC_PHASESHIFT_BULWARK},
+            {"netherstrand longbow", NPC_NETHERSTRAND_LONGBOW},
+            {"devastation", NPC_DEVASTATION},
+        };
+
+        for (const auto& [name, entry] : weapons)
+        {
+            // Check if weapon is alive via "find target"
+            Unit* weapon = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", name)->Get();
+            if (weapon && weapon->IsAlive())
+                return false; // Found an alive weapon
+
+            // Must find it as a dead corpse
+            bool foundDeadCorpse = false;
+            GuidVector corpses = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest corpses")->Get();
+            for (auto const& guid : corpses)
+            {
+                LootObject loot(bot, guid);
+                WorldObject* obj = loot.GetWorldObject(bot);
+                if (!obj)
+                    continue;
+
+                if (Creature* cr = obj->ToCreature())
+                {
+                    if (cr->GetEntry() == entry && !cr->IsAlive())
+                    {
+                        foundDeadCorpse = true;
+                        break;
+                    }
+                }
+            }
+
+            // If weapon not found as a dead corpse, return false
+            if (!foundDeadCorpse)
+                return false;
+        }
+
+        // All weapons confirmed as dead corpses
+        return true;
+    }
+
+    Player* GetNetherstrandLongbowTank(PlayerbotAI* botAI, Player* bot)
+    {
+        Group* group = bot->GetGroup();
+        if (!group)
+            return nullptr;
+
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) ||
+                member->getClass() != CLASS_HUNTER)
+                continue;
+
+            return member;
+        }
+
+        return nullptr;
     }
 
     std::unordered_map<uint32, int8> lastAlarPlatform;
@@ -327,4 +381,7 @@ namespace TempestKeepHelpers
 
     std::unordered_map<ObjectGuid, Position> initialVoidReaverPositions;
     std::unordered_map<ObjectGuid, bool> hasReachedInitialVoidReaverPosition;
+
+    std::unordered_map<uint32, uint8> thaladredRelayPhase;
+    std::unordered_map<uint32, time_t> advisorDpsWaitTimer;
 }

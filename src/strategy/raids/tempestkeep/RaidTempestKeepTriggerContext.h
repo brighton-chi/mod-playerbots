@@ -40,6 +40,11 @@ public:
         creators["kaelthas sunstrider sanguinar casts bellowing roar"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_sanguinar_casts_bellowing_roar;
         creators["kaelthas sunstrider capernian engaged by warlock tank"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_capernian_engaged_by_warlock_tank;
         creators["kaelthas sunstrider telonicus engaged by first assist tank"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_telonicus_engaged_by_first_assist_tank;
+        creators["kaelthas sunstrider pulling tankable advisors"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_pulling_tankable_advisors;
+        creators["kaelthas sunstrider waiting for tanks to get aggro on advisors"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_waiting_for_tanks_to_get_aggro_on_advisors;
+        creators["kaelthas sunstrider legendary weapons are alive"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_legendary_weapons_are_alive;
+        creators["kaelthas sunstrider devastation channels whirlwind"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_devastation_channels_whirlwind;
+        creators["kaelthas sunstrider netherstrand longbow fires multishot"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_netherstrand_longbow_fires_multishot;
         creators["kaelthas sunstrider cheat to test"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_cheat_to_test;
     }
 
@@ -75,6 +80,11 @@ private:
     static Trigger* kaelthas_sunstrider_sanguinar_casts_bellowing_roar(PlayerbotAI* botAI) { return new KaelthasSunstriderSanguinarCastsBellowingRoarTrigger(botAI); }
     static Trigger* kaelthas_sunstrider_capernian_engaged_by_warlock_tank(PlayerbotAI* botAI) { return new KaelthasSunstriderCapernianEngagedByWarlockTankTrigger(botAI); }
     static Trigger* kaelthas_sunstrider_telonicus_engaged_by_first_assist_tank(PlayerbotAI* botAI) { return new KaelthasSunstriderTelonicusEngagedByFirstAssistTankTrigger(botAI); }
+    static Trigger* kaelthas_sunstrider_pulling_tankable_advisors(PlayerbotAI* botAI) { return new KaelthasSunstriderPullingTankableAdvisorsTrigger(botAI); }
+    static Trigger* kaelthas_sunstrider_waiting_for_tanks_to_get_aggro_on_advisors(PlayerbotAI* botAI) { return new KaelthasSunstriderWaitingForTanksToGetAggroOnAdvisorsTrigger(botAI); }
+    static Trigger* kaelthas_sunstrider_legendary_weapons_are_alive(PlayerbotAI* botAI) { return new KaelthasSunstriderLegendaryWeaponsAreAliveTrigger(botAI); }
+    static Trigger* kaelthas_sunstrider_devastation_channels_whirlwind(PlayerbotAI* botAI) { return new KaelthasSunstriderDevastationChannelsWhirlwindTrigger(botAI); }
+    static Trigger* kaelthas_sunstrider_netherstrand_longbow_fires_multishot(PlayerbotAI* botAI) { return new KaelthasSunstriderNetherstrandLongbowFiresMultiShotTrigger(botAI); }
     static Trigger* kaelthas_sunstrider_cheat_to_test(PlayerbotAI* botAI) { return new KaelthasSunstriderCheatToTestTrigger(botAI); }
 };
 

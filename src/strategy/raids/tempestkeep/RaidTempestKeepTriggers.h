@@ -185,10 +185,52 @@ public:
     bool IsActive() override;
 };
 
+class KaelthasSunstriderCapernianCastsArcaneBurstTrigger : public Trigger
+{
+public:
+    KaelthasSunstriderCapernianCastsArcaneBurstTrigger(PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider capernian casts arcane burst") {}
+    bool IsActive() override;
+};
+
 class KaelthasSunstriderTelonicusEngagedByFirstAssistTankTrigger : public Trigger
 {
 public:
     KaelthasSunstriderTelonicusEngagedByFirstAssistTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider telonicus engaged by first assist tank") {}
+    bool IsActive() override;
+};
+
+class KaelthasSunstriderPullingTankableAdvisorsTrigger : public Trigger
+{
+public:
+    KaelthasSunstriderPullingTankableAdvisorsTrigger(PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider pulling tankable advisors") {}
+    bool IsActive() override;
+};
+
+class KaelthasSunstriderWaitingForTanksToGetAggroOnAdvisorsTrigger : public Trigger
+{
+public:
+    KaelthasSunstriderWaitingForTanksToGetAggroOnAdvisorsTrigger(PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider waiting for tanks to get aggro on advisors") {}
+    bool IsActive() override;
+};
+
+class KaelthasSunstriderLegendaryWeaponsAreAliveTrigger : public Trigger
+{
+public:
+    KaelthasSunstriderLegendaryWeaponsAreAliveTrigger(PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider legendary weapons are alive") {}
+    bool IsActive() override;
+};
+
+class KaelthasSunstriderDevastationChannelsWhirlwindTrigger : public Trigger
+{
+public:
+    KaelthasSunstriderDevastationChannelsWhirlwindTrigger(PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider devastation channels whirlwind") {}
+    bool IsActive() override;
+};
+
+class KaelthasSunstriderNetherstrandLongbowFiresMultiShotTrigger : public Trigger
+{
+public:
+    KaelthasSunstriderNetherstrandLongbowFiresMultiShotTrigger(PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider netherstrand longbow fires multishot") {}
     bool IsActive() override;
 };
 

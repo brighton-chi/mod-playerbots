@@ -38,4 +38,25 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class KaelthasSunstriderWaitForDpsMultiplier : public Multiplier
+{
+public:
+    KaelthasSunstriderWaitForDpsMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "kaelthas sunstrider wait for dps multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
+class KaelthasSunstriderDisableTankAssistMultiplier : public Multiplier
+{
+public:
+    KaelthasSunstriderDisableTankAssistMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "kaelthas sunstrider disable tank assist multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
+class KaelthasSunstriderDelayBloodlustAndHeroismMultiplier : public Multiplier
+{
+public:
+    KaelthasSunstriderDelayBloodlustAndHeroismMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "kaelthas sunstrider delay bloodlust and heroism multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
 #endif

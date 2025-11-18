@@ -13,6 +13,9 @@ namespace TempestKeepHelpers
 {
     enum TempestKeepSpells
     {
+        // Trash
+        SPELL_ARCANE_FLURRY           = 37270,
+
         // Al'ar
         // SPELL_FLAME_QUILLS              = 34229, //aura present when actually casting
         SPELL_REBIRTH_PHASE2 = 34342,
@@ -23,6 +26,13 @@ namespace TempestKeepHelpers
         // High Astromancer Solarian
         SPELL_SOLARIAN_TRANSFORM        = 39117,
         SPELL_WRATH_OF_THE_ASTROMANCER  = 42783,
+
+        // Kael'thas Sunstrider
+        SPELL_PERMANENT_FEIGN_DEATH = 29266,
+        SPELL_MENTAL_PROTECTION_FIELD = 36480, // Staff of Disintegration
+        SPELL_ARCANE_BARRIER = 36481,          // Phaseshift Bulwark
+        SPELL_KAELTHAS_PYROBLAST = 36819,
+        SPELL_STAFF_FROSTBOLT = 36990,
 
         // Hunter
         SPELL_MISDIRECTION = 34477,
@@ -43,8 +53,18 @@ namespace TempestKeepHelpers
         // NPC_FLAME_PATCH_ALAR       = 20602,
 
         // High Astromancer Solarian
-        // NPC_SOLARIUM_AGENT                  = 18925,
         NPC_SOLARIUM_PRIEST                 = 18806,
+
+        // Kael'thas Sunstrider
+        NPC_NETHERSTRAND_LONGBOW        = 21268,
+        NPC_DEVASTATION            = 21269,
+        NPC_COSMIC_INFUSER          = 21270,
+        NPC_INFINITY_BLADES      = 21271, // Item is singular, but NPC is plural
+        NPC_WARP_SLICER = 21272,
+        NPC_PHASESHIFT_BULWARK      = 21273,
+        NPC_STAFF_OF_DISINTEGRATION = 21274,
+        NPC_NETHER_VAPOR           = 21002, // 8 yard aura
+        NPC_PHOENIX_EGG = 21364,
     };
 
     enum TempestKeepItems
@@ -57,6 +77,7 @@ namespace TempestKeepHelpers
         ITEM_DEVASTATION = 30316,
         ITEM_COSMIC_INFUSER = 30317,
         ITEM_NETHERSTRAND_LONGBOW = 30318,
+        ITEM_BUNDLE_OF_NETHER_SPIKES = 30320,
     };
 
     namespace TempestKeepPositions
@@ -85,8 +106,8 @@ namespace TempestKeepHelpers
 
         extern const Position VoidReaverTankPosition;
 
-        // extern const Position AstromancerStackPosition;
-
+        extern const Position ThaladredRelayPoint1;
+        extern const Position ThaladredRelayPoint2;
         extern const Position ThaladredFinalPosition;
         extern const Position SanguinarTankPosition;
         // extern const Position CapernianTankPosition;
@@ -111,9 +132,11 @@ namespace TempestKeepHelpers
     void UpdateAlarLastPlatform(Unit* alar, uint32 mapId, const std::vector<Position>& platforms);
     bool IsAlarAddTank(PlayerbotAI* botAI, Player* bot);
 
-    // bool IsAnyAdvisorActiveAndAlive(PlayerbotAI* botAI);
+    bool IsAnyTankableAdvisorActive(PlayerbotAI* botAI);
     Player* GetCapernianTank(PlayerbotAI* botAI, Player* bot);
-    bool IsKaelthasInPhase2(PlayerbotAI* botAI);
+    bool IsAnyLegendaryWeaponAlive(PlayerbotAI* botAI);
+    bool AreAllLegendaryWeaponsDead(PlayerbotAI* botAI, Player* bot);
+    Player* GetNetherstrandLongbowTank(PlayerbotAI* botAI, Player* bot);
 
     extern std::unordered_map<uint32, int8> lastAlarPlatform;
     extern std::unordered_map<uint32, bool> lastRebirthState;
@@ -136,6 +159,9 @@ namespace TempestKeepHelpers
 
     extern std::unordered_map<ObjectGuid, Position> initialVoidReaverPositions;
     extern std::unordered_map<ObjectGuid, bool> hasReachedInitialVoidReaverPosition;
+
+    extern std::unordered_map<uint32, uint8> thaladredRelayPhase;
+    extern std::unordered_map<uint32, time_t> advisorDpsWaitTimer;
 }
 
 #endif
