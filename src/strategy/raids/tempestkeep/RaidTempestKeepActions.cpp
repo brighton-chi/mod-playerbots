@@ -3,8 +3,12 @@
 
 #include "RaidTempestKeepActions.h"
 #include "RaidTempestKeepHelpers.h"
+#include "AiFactory.h"
+#include "LootAction.h"
+#include "LootObjectStack.h"
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
+#include "SharedDefines.h"
 
 using namespace TempestKeepHelpers;
 using namespace TempestKeepPositions;
@@ -1398,56 +1402,75 @@ bool KaelthasSunstriderLogForTestingAction::Execute(Event event)
 bool KaelthasSunstriderKiteThaladredAction::Execute(Event event)
 {
     Unit* thaladred = AI_VALUE2(Unit*, "find target", "thaladred the darkener");
-    Group* group = bot->GetGroup();
-    if (!thaladred || !group)
+    if (!thaladred)
+        return false;
+
+    Creature* thaladredCreature = thaladred->ToCreature();
+    if (!thaladredCreature)
         return false;
 
     const uint32 mapId = thaladred->GetMapId();
 
-    // Reset phase tracker at phase 1 or 3 start (Thaladred at max health)
-    if (thaladred->GetHealth() == thaladred->GetMaxHealth())
+    // Reset phase tracker when Thaladred is not aggressive (phase 1 start only)
+    if (thaladredCreature->GetReactState() != REACT_AGGRESSIVE)
     {
-        thaladredRelayPhase[mapId] = 0; // Start at phase 0
-        LOG_DEBUG("playerbots", "KaelthasSunstriderKiteThaladredAction: Relay point reached reset");
+        thaladredRelayPhase[mapId] = 0;
+        LOG_DEBUG("playerbots", "KaelthasSunstriderKiteThaladredAction: Thaladred not aggressive, relay phase reset to 0");
+        return false;
     }
 
-    // Update phase based on Thaladred's position (10-yard buffer)
-    const float phaseBuffer = 10.0f;
+    // Update phase based on Thaladred's position (15-yard buffer)
+    const float phaseBuffer = 15.0f;
     uint8& relayPhase = thaladredRelayPhase[mapId];
 
-    const Position& relayPoint1 = ThaladredRelayPoint1;
-    const Position& relayPoint2 = ThaladredRelayPoint2;
+    const Position& relayPoint = ThaladredRelayPoint;
     const Position& finalPosition = ThaladredFinalPosition;
 
-    if (relayPhase == 0 && thaladred->GetExactDist2d(relayPoint1.GetPositionX(), relayPoint1.GetPositionY()) <= phaseBuffer)
+    if (relayPhase == 0 && thaladred->GetExactDist2d(relayPoint.GetPositionX(), relayPoint.GetPositionY()) <= phaseBuffer)
     {
         relayPhase = 1;
-        LOG_DEBUG("playerbots", "KaelthasSunstriderKiteThaladredAction: Thaladred reached Relay Point 1, advancing from Relay Phase 0 to 1");
+        LOG_DEBUG("playerbots", "KaelthasSunstriderKiteThaladredAction: Thaladred reached Relay Point, advancing from phase 0 to 1");
     }
-    else if (relayPhase == 1 && thaladred->GetExactDist2d(relayPoint2.GetPositionX(), relayPoint2.GetPositionY()) <= phaseBuffer)
+    else if (relayPhase == 1 && thaladred->GetExactDist2d(finalPosition.GetPositionX(), finalPosition.GetPositionY()) <= phaseBuffer)
     {
         relayPhase = 2;
-        LOG_DEBUG("playerbots", "KaelthasSunstriderKiteThaladredAction: Thaladred reached Relay Point 2, advancing from Relay Phase 1 to 2");
-    }
-    else if (relayPhase == 2 && thaladred->GetExactDist2d(finalPosition.GetPositionX(), finalPosition.GetPositionY()) <= phaseBuffer)
-    {
-        relayPhase = 3;
-        LOG_DEBUG("playerbots", "KaelthasSunstriderKiteThaladredAction: Thaladred reached Final Position, advancing from Relay Phase 2 to 3");
+        LOG_DEBUG("playerbots", "KaelthasSunstriderKiteThaladredAction: Thaladred reached Final Position, advancing from phase 1 to 2");
     }
 
-    // If bot is fixated, run to target position based on current phase
+    // If bot is fixated, handle movement based on current phase
     if (thaladred->GetVictim() == bot)
     {
-        Position targetPos = GetTargetPosition(relayPhase);
-
         bot->AttackStop();
         bot->InterruptNonMeleeSpells(true);
 
-        LOG_DEBUG("playerbots", "KaelthasSunstriderKiteThaladredAction: Bot {} fixated, moving to phase {} target ({}, {}, {})",
-                    bot->GetName(), int(relayPhase), targetPos.GetPositionX(), targetPos.GetPositionY(), targetPos.GetPositionZ());
+        if (relayPhase == 0)
+        {
+            // Phase 0: Run to relay point
+            LOG_DEBUG("playerbots", "KaelthasSunstriderKiteThaladredAction: Bot {} fixated, moving to relay point ({}, {}, {})",
+                      bot->GetName(), relayPoint.GetPositionX(), relayPoint.GetPositionY(), relayPoint.GetPositionZ());
 
-        return MoveTo(bot->GetMapId(), targetPos.GetPositionX(), targetPos.GetPositionY(), targetPos.GetPositionZ(),
-                        false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
+            return MoveTo(bot->GetMapId(), relayPoint.GetPositionX(), relayPoint.GetPositionY(), relayPoint.GetPositionZ(),
+                          false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
+        }
+        else if (relayPhase == 1)
+        {
+            // Phase 1: Run to final position
+            LOG_DEBUG("playerbots", "KaelthasSunstriderKiteThaladredAction: Bot {} fixated, moving to final position ({}, {}, {})",
+                      bot->GetName(), finalPosition.GetPositionX(), finalPosition.GetPositionY(), finalPosition.GetPositionZ());
+
+            return MoveTo(bot->GetMapId(), finalPosition.GetPositionX(), finalPosition.GetPositionY(), finalPosition.GetPositionZ(),
+                          false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
+        }
+        else if (!botAI->IsTank(bot) && botAI->IsMelee(bot)) // relayPhase == 2
+        {
+            // Phase 2: Use standard MoveAway if Thaladred gets too close
+            if (bot->GetExactDist2d(thaladred) < 20.0f)
+            {
+                LOG_DEBUG("playerbots", "KaelthasSunstriderKiteThaladredAction: Bot {} at final position, Thaladred too close, moving away",
+                          bot->GetName());
+                return MoveAway(thaladred, 40.0f, false);
+            }
+        }
     }
 
     return false;
@@ -1455,15 +1478,14 @@ bool KaelthasSunstriderKiteThaladredAction::Execute(Event event)
 
 Position KaelthasSunstriderKiteThaladredAction::GetTargetPosition(uint8 relayPhase)
 {
-    // Return next relay point based on current phase
+    // This method is no longer needed but keep for potential future use
     switch (relayPhase)
     {
-        case 0: return ThaladredRelayPoint1; // Phase 0: move to relay 1
-        case 1: return ThaladredRelayPoint2; // Phase 1: move to relay 2
+        case 0: return ThaladredRelayPoint;
+        case 1:
         case 2:
-        case 3:
         default:
-            return ThaladredFinalPosition;       // Phase 2+: move to death zone
+            return ThaladredFinalPosition;
     }
 }
 
@@ -1586,12 +1608,25 @@ bool KaelthasSunstriderMoveAwayFromCapernianAction::Execute(Event event)
     if (!capernian)
         return false;
 
-    if (bot->GetExactDist2d(capernian) < 30.5f)
+    Player* capernianTank = GetCapernianTank(botAI, bot);
+    if ((capernianTank && capernian->GetVictim() == capernianTank) ||
+        botAI->IsMelee(bot))
+    {
+        if (bot->GetExactDist2d(capernian) < 40.0f)
+        {
+            bot->AttackStop();
+            bot->InterruptNonMeleeSpells(true);
+            return MoveAway(capernian, 41.0f, false);
+        }
+    }
+    else if (botAI->IsRangedDps(bot) && bot->GetExactDist2d(capernian) < 30.5f)
     {
         bot->AttackStop();
         bot->InterruptNonMeleeSpells(true);
         return MoveAway(capernian, 31.0f, false);
     }
+    else if (botAI->IsHeal(bot) && bot->GetExactDist2d(capernian) < 35.0f)
+        return MoveAway(capernian, 36.0f, false);
 
     return false;
 }
@@ -1627,7 +1662,7 @@ bool KaelthasSunstriderFirstAssistTankPositionTelonicusAction::Execute(Event eve
             float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
 
             return MoveTo(bot->GetMapId(), moveX, moveY, position.GetPositionZ(), false, false, false, false,
-                            MovementPriority::MOVEMENT_COMBAT, true, false);
+                          MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
 
@@ -1748,14 +1783,15 @@ bool KaelthasSunstriderManageAdvisorDpsTimerAction::Execute(Event event)
 
 bool KaelthasSunstriderGroupUpLegendaryWeaponsAction::Execute(Event event)
 {
-    const Position& position = KaelthasWeaponStackPosition;
-    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 5.0f)
-    {
-        return MoveTo(bot->GetMapId(), position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
-                      false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
-    }
-
+    Unit* axe = AI_VALUE2(Unit*, "find target", "devastation");
+    Unit* dagger = AI_VALUE2(Unit*, "find target", "infinity blades");
+    Unit* longbow = AI_VALUE2(Unit*, "find target", "netherstrand longbow");
+    Unit* mace = AI_VALUE2(Unit*, "find target", "cosmic infuser");
+    Unit* shield = AI_VALUE2(Unit*, "find target", "phaseshift bulwark");
     Unit* staff = AI_VALUE2(Unit*, "find target", "staff of disintegration");
+    Unit* sword = AI_VALUE2(Unit*, "find target", "warp slicer");
+
+    // Priority 1: Interrupt Staff of Disintegration's Frostbolt (always highest priority)
     if (staff && staff->HasUnitState(UNIT_STATE_CASTING) &&
         staff->FindCurrentSpellBySpellId(SPELL_STAFF_FROSTBOLT))
     {
@@ -1763,6 +1799,56 @@ bool KaelthasSunstriderGroupUpLegendaryWeaponsAction::Execute(Event event)
             return botAI->CastSpell("counterspell", staff);
         else if (botAI->CanCastSpell("earth shock", staff))
             return botAI->CastSpell("earth shock", staff);
+    }
+
+    // Check if ANY of the 4 stackable weapons are alive
+    bool anyStackableWeaponAlive = (mace && mace->IsAlive()) ||
+                                   (staff && staff->IsAlive()) ||
+                                   (dagger && dagger->IsAlive()) ||
+                                   (sword && sword->IsAlive());
+
+    // Priority 2: If ANY stackable weapon alive, move to stack position
+    if (anyStackableWeaponAlive)
+    {
+        const Position& position = KaelthasWeaponStackPosition;
+        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 10.0f)
+        {
+            return MoveInside(bot->GetMapId(), position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
+                              10.0f, MovementPriority::MOVEMENT_COMBAT);
+        }
+        return false; // Already in position, don't do anything else
+    }
+
+    // Priority 3: ALL stackable weapons dead - target axe/longbow individually
+    if (axe && axe->IsAlive() && botAI->IsRangedDps(bot))
+    {
+        SetRtiTarget(botAI, "diamond", axe);
+
+        if (bot->GetTarget() != axe->GetGUID())
+        {
+            bot->SetTarget(axe->GetGUID());
+            return Attack(axe);
+        }
+    }
+    else if (longbow && longbow->IsAlive() && botAI->IsMelee(bot))
+    {
+        SetRtiTarget(botAI, "cross", longbow);
+
+        if (bot->GetTarget() != longbow->GetGUID())
+        {
+            bot->SetTarget(longbow->GetGUID());
+            return Attack(longbow);
+        }
+    }
+    else if (shield && shield->IsAlive() && !botAI->IsHeal(bot))
+    {
+        SetRtiTarget(botAI, "skull", shield);
+
+        if (bot->GetTarget() != shield->GetGUID())
+        {
+            bot->SetTarget(shield->GetGUID());
+            return Attack(shield);
+        }
     }
 
     return false;
@@ -1840,7 +1926,8 @@ bool KaelthasSunstriderHunterTurnAwayNetherstrandLongbowAction::Execute(Event ev
 
 bool KaelthasSunstriderLootLegendaryWeaponsAction::Execute(Event event)
 {
-    struct WeaponInfo {
+    struct WeaponInfo
+    {
         uint32 npcEntry;
         uint32 itemId;
         const char* name;
@@ -1898,7 +1985,7 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::ShouldBotLootWeapon(uint32 we
                    (bot->getClass() == CLASS_SHAMAN && tab == 1);
 
         case NPC_WARP_SLICER:
-            return bot->getClass() == CLASS_ROGUE ||
+            return (bot->getClass() == CLASS_ROGUE && tab != 0) ||
                    (bot->getClass() == CLASS_WARRIOR && tab == 1);
 
         case NPC_STAFF_OF_DISINTEGRATION:
@@ -2080,9 +2167,12 @@ bool KaelthasSunstriderUseLegendaryWeaponsAction::UseNetherstrandLongbow()
     if (!ranged || ranged->GetEntry() != ITEM_NETHERSTRAND_LONGBOW)
         return false;
 
-    // Only use if bot doesn't have nether spikes
+    // Check if bot already has ANY nether spikes - should never use bow if spikes exist
     if (bot->HasItemCount(ITEM_BUNDLE_OF_NETHER_SPIKES, 1, false))
+    {
+        LOG_DEBUG("playerbots", "KaelthasSunstriderUseLegendaryWeaponsAction: {} already has nether spikes, skipping bow use", bot->GetName());
         return false;
+    }
 
     LOG_DEBUG("playerbots", "KaelthasSunstriderUseLegendaryWeaponsAction: {} using Netherstrand Longbow to create nether spikes", bot->GetName());
 
@@ -2122,10 +2212,18 @@ bool KaelthasSunstriderUseLegendaryWeaponsAction::UseEquippedItemWithPacket(Item
     if (!spellId)
         return false;
 
+    // CHECK COOLDOWN BEFORE SENDING PACKET
+    if (bot->HasSpellCooldown(spellId))
+    {
+        LOG_DEBUG("playerbots", "KaelthasSunstriderUseLegendaryWeaponsAction: {} item spell {} is on cooldown",
+                    bot->GetName(), spellId);
+        return false;
+    }
+
     WorldPacket packet(CMSG_USE_ITEM);
     packet << bagIndex << slot << cast_count << spellId << item_guid << glyphIndex << castFlags;
 
-    uint32 targetFlag = TARGET_FLAG_SELF;
+    uint32 targetFlag = TARGET_FLAG_UNIT;
     packet << targetFlag << bot->GetPackGUID();
 
     bot->GetSession()->HandleUseItemOpcode(packet);
@@ -2135,7 +2233,7 @@ bool KaelthasSunstriderUseLegendaryWeaponsAction::UseEquippedItemWithPacket(Item
 bool KaelthasSunstriderPhase3AssignDpsPriorityAction::Execute(Event event)
 {
     // Target priority 1: Thaladred for ranged
-    Unit* thaladred = AI_VALUE2(Unit*, "find target", "thaladrad the darkener");
+    Unit* thaladred = AI_VALUE2(Unit*, "find target", "thaladred the darkener");
     if (thaladred && botAI->IsRangedDps(bot))
     {
         MarkTargetWithSquare(bot, thaladred);
@@ -2182,7 +2280,7 @@ bool KaelthasSunstriderPhase3AssignDpsPriorityAction::Execute(Event event)
         return false;
     }
 
-    // Target priority 4: Telonicus for ranged
+    // Target priority 4: Telonicus for all dps
     Unit* telonicus = AI_VALUE2(Unit*, "find target", "master engineer telonicus");
     if (telonicus && telonicus->IsAlive())
     {
@@ -2198,7 +2296,6 @@ bool KaelthasSunstriderPhase3AssignDpsPriorityAction::Execute(Event event)
 
     return false;
 }
-
 
 bool KaelthasSunstriderCheatToTestAction::Execute(Event event)
 {

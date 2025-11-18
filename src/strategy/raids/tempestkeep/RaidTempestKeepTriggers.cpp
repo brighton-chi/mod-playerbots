@@ -234,11 +234,11 @@ bool KaelthasSunstriderNeedToTestStrategiesOnBossTrigger::IsActive()
 
 bool KaelthasSunstriderThaladredIsFixatedOnBotTrigger::IsActive()
 {
-    Unit* thaladred = AI_VALUE2(Unit*, "find target", "thaladrad the darkener");
+    Unit* thaladred = AI_VALUE2(Unit*, "find target", "thaladred the darkener");
     if (!thaladred)
         return false;
 
-    return thaladred->IsAlive() && !botAI->IsTank(bot) && thaladred->GetVictim() == bot;
+    return thaladred->IsAlive() && thaladred->GetVictim() == bot;
 }
 
 bool KaelthasSunstriderSanguinarEngagedByMainTankTrigger::IsActive()
@@ -287,6 +287,10 @@ bool KaelthasSunstriderCapernianCastsArcaneBurstTrigger::IsActive()
 {
     Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
     if (!capernian)
+        return false;
+
+    Player* capernianTank = GetCapernianTank(botAI, bot);
+    if (capernianTank && bot == capernianTank)
         return false;
 
     return capernian->IsAlive();

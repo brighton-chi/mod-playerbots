@@ -133,6 +133,8 @@ void RaidTempestKeepStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new VoidReaverMaintainPositionsMultiplier(botAI));
     multipliers.push_back(new HighAstromancerSolarianStayStackedMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderWaitForDpsMultiplier(botAI));
-    multipliers.push_back(new KaelthasSunstriderDisableTankAssistMultiplier(botAI));
+    multipliers.push_back(new KaelthasSunstriderControlMisdirectionMultiplier(botAI));
+    // multipliers.push_back(new KaelthasSunstriderDisableTankAssistMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderDelayBloodlustAndHeroismMultiplier(botAI));
+    multipliers.push_back(new KaelthasSunstriderReequipGearMultiplier(botAI));
 }

@@ -36,9 +36,8 @@ namespace TempestKeepHelpers
 
         const Position VoidReaverTankPosition = { 423.845f, 371.733f, 14.897f }; // middle of room
 
-        const Position ThaladredRelayPoint1 = { 0.0f, 0.0f, 0.0f };
-        const Position ThaladredRelayPoint2 = { 0.0f, 0.0f, 0.0f };
-        const Position ThaladredFinalPosition = { 0.0f, 0.0f, 0.0f };
+        const Position ThaladredRelayPoint = { 727.044f, -44.207f, 46.777f };
+        const Position ThaladredFinalPosition = { 643.342f, -27.474f, 46.777f };
         const Position SanguinarTankPosition = { 775.478f, 39.888f, 46.780f };
         // const Position CapernianTankPosition = { 0.0f, 0.0f, 0.0f };
         const Position TelonicusTankPosition = { 773.717f, 44.091f, 46.780f };
@@ -59,6 +58,11 @@ namespace TempestKeepHelpers
             if (currentGuid != target->GetGUID())
                 group->SetTargetIcon(iconId, bot->GetGUID(), target->GetGUID());
         }
+    }
+
+    void MarkTargetWithSkull(Player* bot, Unit* target)
+    {
+        MarkTargetWithIcon(bot, target, RtiTargetValue::skullIndex);
     }
 
     void MarkTargetWithSquare(Player* bot, Unit* target)
@@ -84,6 +88,11 @@ namespace TempestKeepHelpers
     void MarkTargetWithDiamond(Player* bot, Unit* target)
     {
         MarkTargetWithIcon(bot, target, RtiTargetValue::diamondIndex);
+    }
+
+    void MarkTargetWithCross(Player* bot, Unit* target)
+    {
+        MarkTargetWithIcon(bot, target, RtiTargetValue::crossIndex);
     }
 
     void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target)
@@ -242,7 +251,7 @@ namespace TempestKeepHelpers
         if (!group)
             return nullptr;
 
-        Player* meleeTankCandidate = nullptr;
+        Player* rangedDpsCandidate = nullptr;
 
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
@@ -250,14 +259,16 @@ namespace TempestKeepHelpers
             if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member))
                 continue;
 
+            // First priority: Warlock with tank strategy
             if (member->getClass() == CLASS_WARLOCK && GET_PLAYERBOT_AI(member)->HasStrategy("tank", BotState::BOT_STATE_COMBAT))
                 return member;
 
-            if (!meleeTankCandidate && GET_PLAYERBOT_AI(member)->IsAssistTankOfIndex(member, 2))
-                meleeTankCandidate = member;
+            // Second priority (fallback): Any ranged DPS
+            if (!rangedDpsCandidate && GET_PLAYERBOT_AI(member)->IsRanged(member) && !GET_PLAYERBOT_AI(member)->IsHeal(member))
+                rangedDpsCandidate = member;
         }
 
-        return meleeTankCandidate;
+        return rangedDpsCandidate;
     }
 
     bool IsAnyLegendaryWeaponAlive(PlayerbotAI* botAI)

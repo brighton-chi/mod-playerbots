@@ -56,6 +56,7 @@ namespace TempestKeepHelpers
         NPC_SOLARIUM_PRIEST                 = 18806,
 
         // Kael'thas Sunstrider
+        NPC_KAELTHAS_SUNSTRIDER = 19622,
         NPC_NETHERSTRAND_LONGBOW        = 21268,
         NPC_DEVASTATION            = 21269,
         NPC_COSMIC_INFUSER          = 21270,
@@ -106,8 +107,7 @@ namespace TempestKeepHelpers
 
         extern const Position VoidReaverTankPosition;
 
-        extern const Position ThaladredRelayPoint1;
-        extern const Position ThaladredRelayPoint2;
+        extern const Position ThaladredRelayPoint;
         extern const Position ThaladredFinalPosition;
         extern const Position SanguinarTankPosition;
         // extern const Position CapernianTankPosition;
@@ -119,11 +119,13 @@ namespace TempestKeepHelpers
     }
 
     void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);
+    void MarkTargetWithSkull(Player* bot, Unit* target);
     void MarkTargetWithSquare(Player* bot, Unit* target);
     void MarkTargetWithStar(Player* bot, Unit* target);
     void MarkTargetWithCircle(Player* bot, Unit* target);
     void MarkTargetWithTriangle(Player* bot, Unit* target);
     void MarkTargetWithDiamond(Player* bot, Unit* target);
+    void MarkTargetWithCross(Player* bot, Unit* target);
     void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target);
     bool IsMapIDTimerManager(PlayerbotAI* botAI, Player* bot);
     Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry);

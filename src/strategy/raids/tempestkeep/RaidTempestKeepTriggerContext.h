@@ -39,6 +39,7 @@ public:
         creators["kaelthas sunstrider sanguinar engaged by main tank"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_sanguinar_engaged_by_main_tank;
         creators["kaelthas sunstrider sanguinar casts bellowing roar"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_sanguinar_casts_bellowing_roar;
         creators["kaelthas sunstrider capernian engaged by warlock tank"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_capernian_engaged_by_warlock_tank;
+        creators["kaelthas sunstrider capernian casts arcane burst"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_capernian_casts_arcane_burst;
         creators["kaelthas sunstrider telonicus engaged by first assist tank"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_telonicus_engaged_by_first_assist_tank;
         creators["kaelthas sunstrider pulling tankable advisors"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_pulling_tankable_advisors;
         creators["kaelthas sunstrider waiting for tanks to get aggro on advisors"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_waiting_for_tanks_to_get_aggro_on_advisors;
@@ -82,6 +83,7 @@ private:
     static Trigger* kaelthas_sunstrider_sanguinar_engaged_by_main_tank(PlayerbotAI* botAI) { return new KaelthasSunstriderSanguinarEngagedByMainTankTrigger(botAI); }
     static Trigger* kaelthas_sunstrider_sanguinar_casts_bellowing_roar(PlayerbotAI* botAI) { return new KaelthasSunstriderSanguinarCastsBellowingRoarTrigger(botAI); }
     static Trigger* kaelthas_sunstrider_capernian_engaged_by_warlock_tank(PlayerbotAI* botAI) { return new KaelthasSunstriderCapernianEngagedByWarlockTankTrigger(botAI); }
+    static Trigger* kaelthas_sunstrider_capernian_casts_arcane_burst(PlayerbotAI* botAI) { return new KaelthasSunstriderCapernianCastsArcaneBurstTrigger(botAI); }
     static Trigger* kaelthas_sunstrider_telonicus_engaged_by_first_assist_tank(PlayerbotAI* botAI) { return new KaelthasSunstriderTelonicusEngagedByFirstAssistTankTrigger(botAI); }
     static Trigger* kaelthas_sunstrider_pulling_tankable_advisors(PlayerbotAI* botAI) { return new KaelthasSunstriderPullingTankableAdvisorsTrigger(botAI); }
     static Trigger* kaelthas_sunstrider_waiting_for_tanks_to_get_aggro_on_advisors(PlayerbotAI* botAI) { return new KaelthasSunstriderWaitingForTanksToGetAggroOnAdvisorsTrigger(botAI); }

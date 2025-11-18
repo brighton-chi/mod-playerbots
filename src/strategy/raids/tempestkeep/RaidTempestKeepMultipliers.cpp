@@ -4,11 +4,13 @@
 #include "ChooseTargetActions.h"
 #include "DruidBearActions.h"
 #include "DruidCatActions.h"
+#include "EquipAction.h"
 #include "HunterActions.h"
 #include "MageActions.h"
 #include "PaladinActions.h"
 #include "Playerbots.h"
 #include "RogueActions.h"
+#include "ShamanActions.h"
 #include "WarriorActions.h"
 
 static bool IsChargeAction(Action* action)
@@ -143,9 +145,16 @@ float KaelthasSunstriderWaitForDpsMultiplier::GetValue(Action* action)
         auto it = advisorDpsWaitTimer.find(mapId);
         if (it == advisorDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
         {
-            if ((!botAI->IsTank(bot) && dynamic_cast<AttackAction*>(action)) ||
-                (dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<CastHealingSpellAction*>(action)))
-                return 0.0f;
+            // If only Capernian is active, exclude the Capernian tank
+            bool isCapernianTank = capernianActive && !sanguinarActive && !telonicusActive &&
+                                   (GetCapernianTank(botAI, bot) == bot);
+
+            if (!isCapernianTank)
+            {
+                if ((!botAI->IsTank(bot) && dynamic_cast<AttackAction*>(action)) ||
+                    (dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<CastHealingSpellAction*>(action)))
+                    return 0.0f;
+            }
         }
     }
     // Phase 3: All 3 advisors active - melee only wait
@@ -166,11 +175,32 @@ float KaelthasSunstriderWaitForDpsMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+float KaelthasSunstriderControlMisdirectionMultiplier::GetValue(Action* action)
+{
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    if (!kaelthas)
+        return 1.0f;
+
+    if (kaelthas->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE))
+    {
+        if (dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
+            return 0.0f;
+    }
+
+    return 1.0f;
+}
+
 float KaelthasSunstriderDisableTankAssistMultiplier::GetValue(Action* action)
 {
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
-    if (kaelthas)
-        return 0.0f;
+    if (!kaelthas)
+        return 1.0f;
+
+    if (kaelthas->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE))
+    {
+        if (dynamic_cast<TankAssistAction*>(action))
+            return 0.0f;
+    }
 
     return 1.0f;
 }
@@ -185,7 +215,83 @@ float KaelthasSunstriderDelayBloodlustAndHeroismMultiplier::GetValue(Action* act
         return 1.0f;
 
     if (!AreAllAdvisorsActive(botAI))
-        return 0.0f;
+    {
+        if (dynamic_cast<CastBloodlustAction*>(action) ||
+            dynamic_cast<CastHeroismAction*>(action))
+            return 0.0f;
+    }
+
+    return 1.0f;
+}
+
+float KaelthasSunstriderReequipGearMultiplier::GetValue(Action* action)
+{
+    // Only apply to "equip upgrades" action
+    if (!dynamic_cast<EquipUpgradesAction*>(action))
+        return 1.0f;
+
+    // Only check when out of combat
+    if (bot->IsInCombat())
+        return 1.0f;
+
+    // Check if we're in Tempest Keep
+    if (bot->GetMapId() != 550) // Tempest Keep map ID
+        return 1.0f;
+
+    // Try to find Kael'thas using creature search (works outside combat)
+    std::list<ObjectGuid> targets;
+    AiObjectContext* context = botAI->GetAiObjectContext();
+
+    // Use the "possible targets" value which doesn't require combat
+    GuidVector possibleTargets = context->GetValue<GuidVector>("possible targets")->Get();
+
+    Unit* kaelthas = nullptr;
+    for (auto guid : possibleTargets)
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        if (unit && unit->GetEntry() == NPC_KAELTHAS_SUNSTRIDER)
+        {
+            kaelthas = unit;
+            break;
+        }
+    }
+
+    // If no Kael'thas found via possible targets, do a direct creature search
+    /* if (!kaelthas)
+    {
+        std::list<Creature*> creatures;
+        acore::AllCreaturesOfEntryInRange check(bot, NPC_KAELTHAS_SUNSTRIDER, 200.0f);
+        acore::CreatureListSearcher<acore::AllCreaturesOfEntryInRange> searcher(bot, creatures, check);
+        Cell::VisitGridObjects(bot, searcher, 200.0f);
+
+        if (!creatures.empty())
+            kaelthas = creatures.front();
+    } */
+
+    if (kaelthas && bot->GetExactDist2d(kaelthas) < 200.0f)
+    {
+        // Check if bot has empty equipment slots (lost legendary weapon)
+        bool hasEmptySlots = false;
+        for (uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
+        {
+            if (slot == EQUIPMENT_SLOT_BODY || slot == EQUIPMENT_SLOT_TABARD)
+                continue;
+
+            if (!bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
+            {
+                hasEmptySlots = true;
+                break;
+            }
+        }
+
+        // If has empty slots, massively boost "equip upgrades" priority
+        if (hasEmptySlots)
+        {
+            LOG_DEBUG("playerbots", "KaelthasSunstriderReequipGearMultiplier: {} has empty slots after wipe, forcing reequip",
+                      bot->GetName());
+            return 100.0f; // Very high multiplier to force immediate execution
+        }
+    }
 
     return 1.0f;
 }

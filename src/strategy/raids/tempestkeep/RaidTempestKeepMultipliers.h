@@ -45,6 +45,13 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class KaelthasSunstriderControlMisdirectionMultiplier : public Multiplier
+{
+public:
+    KaelthasSunstriderControlMisdirectionMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "kaelthas sunstrider control misdirection multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
 class KaelthasSunstriderDisableTankAssistMultiplier : public Multiplier
 {
 public:
@@ -57,6 +64,13 @@ class KaelthasSunstriderDelayBloodlustAndHeroismMultiplier : public Multiplier
 public:
     KaelthasSunstriderDelayBloodlustAndHeroismMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "kaelthas sunstrider delay bloodlust and heroism multiplier") {}
     virtual float GetValue(Action* action);
+};
+
+class KaelthasSunstriderReequipGearMultiplier : public Multiplier
+{
+public:
+    KaelthasSunstriderReequipGearMultiplier(PlayerbotAI* ai) : Multiplier(ai, "kael'thas sunstrider reequip gear") {}
+    float GetValue(Action* action) override;
 };
 
 #endif

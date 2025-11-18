@@ -234,10 +234,10 @@ public:
     bool Execute(Event event) override;
 };
 
-class KaelthasSunstriderGroupUpLegendaryWeaponsAction : public MovementAction
+class KaelthasSunstriderGroupUpLegendaryWeaponsAction : public AttackAction
 {
 public:
-    KaelthasSunstriderGroupUpLegendaryWeaponsAction(PlayerbotAI* botAI, std::string const name = "kaelthas sunstrider group up legendary weapons") : MovementAction(botAI, name) {}
+    KaelthasSunstriderGroupUpLegendaryWeaponsAction(PlayerbotAI* botAI, std::string const name = "kaelthas sunstrider group up legendary weapons") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 
@@ -255,10 +255,10 @@ public:
     bool Execute(Event event) override;
 };
 
-class KaelthasSunstriderLootLegendaryWeaponsAction : public Action
+class KaelthasSunstriderLootLegendaryWeaponsAction : public MovementAction
 {
 public:
-    KaelthasSunstriderLootLegendaryWeaponsAction(PlayerbotAI* botAI) : Action(botAI, "kaelthas sunstrider loot legendary weapons") {}
+    KaelthasSunstriderLootLegendaryWeaponsAction(PlayerbotAI* botAI) : MovementAction(botAI, "kaelthas sunstrider loot legendary weapons") {}
     bool Execute(Event event) override;
 
 private:
