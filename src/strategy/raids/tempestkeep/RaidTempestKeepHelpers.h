@@ -29,6 +29,7 @@ namespace TempestKeepHelpers
 
         // Kael'thas Sunstrider
         SPELL_PERMANENT_FEIGN_DEATH = 29266,
+        SPELL_KAEL_FULL_POWER               = 36187,
         SPELL_MENTAL_PROTECTION_FIELD = 36480, // Staff of Disintegration
         SPELL_ARCANE_BARRIER = 36481,          // Phaseshift Bulwark
         SPELL_KAELTHAS_PYROBLAST = 36819,
@@ -127,19 +128,23 @@ namespace TempestKeepHelpers
     void MarkTargetWithDiamond(Player* bot, Unit* target);
     void MarkTargetWithCross(Player* bot, Unit* target);
     void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target);
-    bool IsMapIDTimerManager(PlayerbotAI* botAI, Player* bot);
     Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry);
     Unit* GetNearestPlayerInRadius(Player* bot, float radius);
 
     void UpdateAlarLastPlatform(Unit* alar, uint32 mapId, const std::vector<Position>& platforms);
+    bool IsAlarMapIDTimerManager(PlayerbotAI* botAI, Player* bot);
     bool IsAlarAddTank(PlayerbotAI* botAI, Player* bot);
 
-    bool IsAnyTankableAdvisorActive(PlayerbotAI* botAI);
-    bool AreAllAdvisorsActive(PlayerbotAI* botAI);
+    bool IsKaelthasInPhase1(PlayerbotAI* botAI);
+    bool IsKaelthasInPhase2(PlayerbotAI* botAI);
+    bool IsKaelthasInPhase3(PlayerbotAI* botAI);
+    bool IsKaelthasInPhase4(PlayerbotAI* botAI);
+    bool IsKaelthasInPhase4To5Transition(PlayerbotAI* botAI);
+    bool IsKaelthasInPhase5(PlayerbotAI* botAI);
+    bool IsKaelthasMapIDTimerManager(PlayerbotAI* botAI, Player* bot);
     Player* GetCapernianTank(PlayerbotAI* botAI, Player* bot);
-    bool IsAnyLegendaryWeaponAlive(PlayerbotAI* botAI);
-    bool AreAllLegendaryWeaponsDead(PlayerbotAI* botAI, Player* bot);
     Player* GetNetherstrandLongbowTank(PlayerbotAI* botAI, Player* bot);
+    bool AreAllLegendaryWeaponsDead(PlayerbotAI* botAI, Player* bot);
 
     extern std::unordered_map<uint32, int8> lastAlarPlatform;
     extern std::unordered_map<uint32, bool> lastRebirthState;

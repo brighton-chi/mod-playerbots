@@ -38,6 +38,7 @@ public:
         creators["kaelthas sunstrider kite thaladred"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_kite_thaladred;
         creators["kaelthas sunstrider main tank position sanguinar"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_main_tank_position_sanguinar;
         creators["kaelthas sunstrider cast fear ward on sanguinar tank"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_cast_fear_ward_on_sanguinar_tank;
+        creators["kaelthas sunstrider manage warlock tank strategy"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_manage_warlock_tank_strategy;
         creators["kaelthas sunstrider warlock tank position capernian"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_warlock_tank_position_capernian;
         creators["kaelthas sunstrider move away from capernian"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_move_away_from_capernian;
         creators["kaelthas sunstrider first assist tank position telonicus"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_first_assist_tank_position_telonicus;
@@ -48,7 +49,7 @@ public:
         creators["kaelthas sunstrider hunter turn away netherstrand longbow"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_hunter_turn_away_netherstrand_longbow;
         creators["kaelthas sunstrider loot legendary weapons"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_loot_legendary_weapons;
         creators["kaelthas sunstrider use legendary weapons"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_use_legendary_weapons;
-        creators["kaelthas sunstrider assign dps priority"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_assign_dps_priority;
+        creators["kaelthas sunstrider assign advisor dps priority"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_assign_advisor_dps_priority;
         creators["kaelthas sunstrider cheat to test"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_cheat_to_test;
     }
 
@@ -81,6 +82,7 @@ private:
     static Action* kaelthas_sunstrider_log_for_testing(PlayerbotAI* botAI) { return new KaelthasSunstriderLogForTestingAction(botAI); }
     static Action* kaelthas_sunstrider_kite_thaladred(PlayerbotAI* botAI) { return new KaelthasSunstriderKiteThaladredAction(botAI); }
     static Action* kaelthas_sunstrider_main_tank_position_sanguinar(PlayerbotAI* botAI) { return new KaelthasSunstriderMainTankPositionSanguinarAction(botAI); }
+    static Action* kaelthas_sunstrider_manage_warlock_tank_strategy(PlayerbotAI* botAI) { return new KaelthasSunstriderManageWarlockTankStrategyAction(botAI); }
     static Action* kaelthas_sunstrider_cast_fear_ward_on_sanguinar_tank(PlayerbotAI* botAI) { return new KaelthasSunstriderCastFearWardOnSanguinarTankAction(botAI); }
     static Action* kaelthas_sunstrider_warlock_tank_position_capernian(PlayerbotAI* botAI) { return new KaelthasSunstriderWarlockTankPositionCapernianAction(botAI); }
     static Action* kaelthas_sunstrider_move_away_from_capernian(PlayerbotAI* botAI) { return new KaelthasSunstriderMoveAwayFromCapernianAction(botAI); }
@@ -92,7 +94,7 @@ private:
     static Action* kaelthas_sunstrider_hunter_turn_away_netherstrand_longbow(PlayerbotAI* botAI) { return new KaelthasSunstriderHunterTurnAwayNetherstrandLongbowAction(botAI); }
     static Action* kaelthas_sunstrider_loot_legendary_weapons(PlayerbotAI* botAI) { return new KaelthasSunstriderLootLegendaryWeaponsAction(botAI); }
     static Action* kaelthas_sunstrider_use_legendary_weapons(PlayerbotAI* botAI) { return new KaelthasSunstriderUseLegendaryWeaponsAction(botAI); }
-    static Action* kaelthas_sunstrider_assign_dps_priority(PlayerbotAI* botAI) { return new KaelthasSunstriderPhase3AssignDpsPriorityAction(botAI); }
+    static Action* kaelthas_sunstrider_assign_advisor_dps_priority(PlayerbotAI* botAI) { return new KaelthasSunstriderAssignAdvisorDpsPriorityAction(botAI); }
     static Action* kaelthas_sunstrider_cheat_to_test(PlayerbotAI* botAI) { return new KaelthasSunstriderCheatToTestAction(botAI); }
 };
 

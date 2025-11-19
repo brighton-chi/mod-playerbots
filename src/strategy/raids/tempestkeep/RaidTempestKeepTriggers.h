@@ -178,6 +178,13 @@ public:
     bool IsActive() override;
 };
 
+class KaelthasSunstriderCapernianRequiresAWarlockTankTrigger : public Trigger
+{
+public:
+    KaelthasSunstriderCapernianRequiresAWarlockTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider capernian requires a warlock tank") {}
+    bool IsActive() override;
+};
+
 class KaelthasSunstriderCapernianEngagedByWarlockTankTrigger : public Trigger
 {
 public:
@@ -248,10 +255,10 @@ public:
     bool IsActive() override;
 };
 
-class KaelthasSunstriderDeterminingPhase3KillOrderTrigger : public Trigger
+class KaelthasSunstriderDeterminingAdvisorKillOrderTrigger : public Trigger
 {
 public:
-    KaelthasSunstriderDeterminingPhase3KillOrderTrigger(PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider determining phase 3 kill order") {}
+    KaelthasSunstriderDeterminingAdvisorKillOrderTrigger(PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider determining advisor kill order") {}
     bool IsActive() override;
 };
 

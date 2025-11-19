@@ -103,7 +103,8 @@ float HighAstromancerSolarianStayStackedMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float KaelthasSunstriderWaitForDpsMultiplier::GetValue(Action* action)
+// Includes phase 3 wait for melee (i.e., if Sanguinar is their first target)
+/* float KaelthasSunstriderWaitForDpsMultiplier::GetValue(Action* action)
 {
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     if (!kaelthas)
@@ -173,6 +174,61 @@ float KaelthasSunstriderWaitForDpsMultiplier::GetValue(Action* action)
     }
 
     return 1.0f;
+} */
+
+float KaelthasSunstriderWaitForDpsMultiplier::GetValue(Action* action)
+{
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    if (!kaelthas)
+        return 1.0f;
+
+    // Allow misdirection actions to proceed
+    if (dynamic_cast<KaelthasSunstriderMisdirectAdvisorsToTanksAction*>(action))
+        return 1.0f;
+
+    // Only apply wait logic in Phase 1
+    if (!IsKaelthasInPhase1(botAI))
+        return 1.0f;
+
+    const uint32 mapId = kaelthas->GetMapId();
+    const time_t now = std::time(nullptr);
+    const uint8 dpsWaitSeconds = 8;
+
+    // Check if timer has elapsed
+    auto it = advisorDpsWaitTimer.find(mapId);
+    if (it == advisorDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
+    {
+        // Check if any advisor is active
+        Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
+        Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
+        Unit* telonicus = AI_VALUE2(Unit*, "find target", "master engineer telonicus");
+
+        auto isAdvisorActive = [](Unit* advisor)
+        {
+            return advisor && advisor->IsAlive() && !advisor->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
+        };
+
+        bool sanguinarActive = isAdvisorActive(sanguinar);
+        bool capernianActive = isAdvisorActive(capernian);
+        bool telonicusActive = isAdvisorActive(telonicus);
+
+        // If any advisor is active, apply wait logic
+        if (sanguinarActive || capernianActive || telonicusActive)
+        {
+            // Capernian tank is excluded from wait
+            bool isCapernianTank = capernianActive && (GetCapernianTank(botAI, bot) == bot);
+
+            if (!isCapernianTank && !botAI->IsTank(bot))
+            {
+                // All non-tanks wait
+                if (dynamic_cast<AttackAction*>(action) ||
+                    (dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<CastHealingSpellAction*>(action)))
+                    return 0.0f;
+            }
+        }
+    }
+
+    return 1.0f;
 }
 
 float KaelthasSunstriderControlMisdirectionMultiplier::GetValue(Action* action)
@@ -211,10 +267,7 @@ float KaelthasSunstriderDelayBloodlustAndHeroismMultiplier::GetValue(Action* act
     if (!kaelthas)
         return 1.0f;
 
-    if (!kaelthas->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE))
-        return 1.0f;
-
-    if (!AreAllAdvisorsActive(botAI))
+    if (!IsKaelthasInPhase3(botAI))
     {
         if (dynamic_cast<CastBloodlustAction*>(action) ||
             dynamic_cast<CastHeroismAction*>(action))

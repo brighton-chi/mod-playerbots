@@ -38,6 +38,7 @@ public:
         creators["kaelthas sunstrider thaladred is fixated on bot"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_thaladred_is_fixated_on_bot;
         creators["kaelthas sunstrider sanguinar engaged by main tank"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_sanguinar_engaged_by_main_tank;
         creators["kaelthas sunstrider sanguinar casts bellowing roar"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_sanguinar_casts_bellowing_roar;
+        creators["kaelthas sunstrider capernian requires a warlock tank"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_capernian_requires_a_warlock_tank;
         creators["kaelthas sunstrider capernian engaged by warlock tank"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_capernian_engaged_by_warlock_tank;
         creators["kaelthas sunstrider capernian casts arcane burst"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_capernian_casts_arcane_burst;
         creators["kaelthas sunstrider telonicus engaged by first assist tank"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_telonicus_engaged_by_first_assist_tank;
@@ -48,7 +49,7 @@ public:
         creators["kaelthas sunstrider netherstrand longbow fires multishot"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_netherstrand_longbow_fires_multishot;
         creators["kaelthas sunstrider legendary weapons are dead and lootable"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_legendary_weapons_are_dead_and_lootable;
         creators["kaelthas sunstrider legendary weapons are equipped"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_legendary_weapons_are_equipped;
-        creators["kaelthas sunstrider determining phase 3 kill order"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_determining_phase_3_kill_order;
+        creators["kaelthas sunstrider determining advisor kill order"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_determining_advisor_kill_order;
         creators["kaelthas sunstrider cheat to test"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_cheat_to_test;
     }
 
@@ -82,6 +83,7 @@ private:
     static Trigger* kaelthas_sunstrider_thaladred_is_fixated_on_bot(PlayerbotAI* botAI) { return new KaelthasSunstriderThaladredIsFixatedOnBotTrigger(botAI); }
     static Trigger* kaelthas_sunstrider_sanguinar_engaged_by_main_tank(PlayerbotAI* botAI) { return new KaelthasSunstriderSanguinarEngagedByMainTankTrigger(botAI); }
     static Trigger* kaelthas_sunstrider_sanguinar_casts_bellowing_roar(PlayerbotAI* botAI) { return new KaelthasSunstriderSanguinarCastsBellowingRoarTrigger(botAI); }
+    static Trigger* kaelthas_sunstrider_capernian_requires_a_warlock_tank(PlayerbotAI* botAI) { return new KaelthasSunstriderCapernianRequiresAWarlockTankTrigger(botAI); }
     static Trigger* kaelthas_sunstrider_capernian_engaged_by_warlock_tank(PlayerbotAI* botAI) { return new KaelthasSunstriderCapernianEngagedByWarlockTankTrigger(botAI); }
     static Trigger* kaelthas_sunstrider_capernian_casts_arcane_burst(PlayerbotAI* botAI) { return new KaelthasSunstriderCapernianCastsArcaneBurstTrigger(botAI); }
     static Trigger* kaelthas_sunstrider_telonicus_engaged_by_first_assist_tank(PlayerbotAI* botAI) { return new KaelthasSunstriderTelonicusEngagedByFirstAssistTankTrigger(botAI); }
@@ -92,7 +94,7 @@ private:
     static Trigger* kaelthas_sunstrider_netherstrand_longbow_fires_multishot(PlayerbotAI* botAI) { return new KaelthasSunstriderNetherstrandLongbowFiresMultiShotTrigger(botAI); }
     static Trigger* kaelthas_sunstrider_legendary_weapons_are_dead_and_lootable(PlayerbotAI* botAI) { return new KaelthasSunstriderLegendaryWeaponsAreDeadAndLootableTrigger(botAI); }
     static Trigger* kaelthas_sunstrider_legendary_weapons_are_equipped(PlayerbotAI* botAI) { return new KaelthasSunstriderLegendaryWeaponsAreEquippedTrigger(botAI); }
-    static Trigger* kaelthas_sunstrider_determining_phase_3_kill_order(PlayerbotAI* botAI) { return new KaelthasSunstriderDeterminingPhase3KillOrderTrigger(botAI); }
+    static Trigger* kaelthas_sunstrider_determining_advisor_kill_order(PlayerbotAI* botAI) { return new KaelthasSunstriderDeterminingAdvisorKillOrderTrigger(botAI); }
     static Trigger* kaelthas_sunstrider_cheat_to_test(PlayerbotAI* botAI) { return new KaelthasSunstriderCheatToTestTrigger(botAI); }
 };
 

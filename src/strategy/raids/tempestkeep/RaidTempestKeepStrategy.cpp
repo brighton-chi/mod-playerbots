@@ -87,6 +87,9 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kaelthas sunstrider sanguinar casts bellowing roar",
         NextAction::array(0, new NextAction("kaelthas sunstrider cast fear ward on sanguinar tank", ACTION_RAID + 2), nullptr)
     ));
+    triggers.push_back(new TriggerNode("kaelthas sunstrider capernian requires a warlock tank",
+        NextAction::array(0, new NextAction("kaelthas sunstrider manage warlock tank strategy", ACTION_EMERGENCY + 10), nullptr)
+    ));
     triggers.push_back(new TriggerNode("kaelthas sunstrider capernian engaged by warlock tank",
         NextAction::array(0, new NextAction("kaelthas sunstrider warlock tank position capernian", ACTION_RAID + 1), nullptr)
     ));
@@ -117,12 +120,12 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kaelthas sunstrider legendary weapons are equipped",
         NextAction::array(0, new NextAction("kaelthas sunstrider use legendary weapons", ACTION_EMERGENCY + 6), nullptr)
     ));
-    triggers.push_back(new TriggerNode("kaelthas sunstrider determining phase 3 kill order",
-        NextAction::array(0, new NextAction("kaelthas sunstrider assign dps priority", ACTION_RAID + 1), nullptr)
+    triggers.push_back(new TriggerNode("kaelthas sunstrider determining advisor kill order",
+        NextAction::array(0, new NextAction("kaelthas sunstrider assign advisor dps priority", ACTION_RAID + 1), nullptr)
     ));
-    triggers.push_back(new TriggerNode("kaelthas sunstrider cheat to test",
+    /* triggers.push_back(new TriggerNode("kaelthas sunstrider cheat to test",
         NextAction::array(0, new NextAction("kaelthas sunstrider cheat to test", ACTION_EMERGENCY + 10), nullptr)
-    ));
+    )); */
 }
 
 void RaidTempestKeepStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)

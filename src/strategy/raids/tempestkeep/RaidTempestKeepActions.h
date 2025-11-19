@@ -199,6 +199,13 @@ public:
     bool Execute(Event event) override;
 };
 
+class KaelthasSunstriderManageWarlockTankStrategyAction : public Action
+{
+public:
+    KaelthasSunstriderManageWarlockTankStrategyAction(PlayerbotAI* botAI, std::string const name = "kaelthas sunstrider manage warlock tank strategy") : Action(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 class KaelthasSunstriderWarlockTankPositionCapernianAction : public AttackAction
 {
 public:
@@ -279,10 +286,10 @@ private:
     bool UseEquippedItemWithPacket(Item* item);
 };
 
-class KaelthasSunstriderPhase3AssignDpsPriorityAction : public AttackAction
+class KaelthasSunstriderAssignAdvisorDpsPriorityAction : public AttackAction
 {
 public:
-    KaelthasSunstriderPhase3AssignDpsPriorityAction(PlayerbotAI* botAI, std::string const name = "kaelthas sunstrider phase 3 assign dps priority") : AttackAction(botAI, name) {}
+    KaelthasSunstriderAssignAdvisorDpsPriorityAction(PlayerbotAI* botAI, std::string const name = "kaelthas sunstrider assign advisor dps priority") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 
