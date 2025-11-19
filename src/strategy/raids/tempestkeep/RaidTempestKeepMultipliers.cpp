@@ -190,12 +190,11 @@ float KaelthasSunstriderWaitForDpsMultiplier::GetValue(Action* action)
     if (!IsKaelthasInPhase1(botAI))
         return 1.0f;
 
-    const uint32 mapId = kaelthas->GetMapId();
     const time_t now = std::time(nullptr);
     const uint8 dpsWaitSeconds = 8;
 
     // Check if timer has elapsed
-    auto it = advisorDpsWaitTimer.find(mapId);
+    auto it = advisorDpsWaitTimer.find(kaelthas->GetMapId());
     if (it == advisorDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
     {
         // Check if any advisor is active
@@ -267,7 +266,7 @@ float KaelthasSunstriderDelayBloodlustAndHeroismMultiplier::GetValue(Action* act
     if (!kaelthas)
         return 1.0f;
 
-    if (!IsKaelthasInPhase3(botAI))
+    if (!IsKaelthasInPhase3(botAI) && !IsKaelthasInPhase5(botAI))
     {
         if (dynamic_cast<CastBloodlustAction*>(action) ||
             dynamic_cast<CastHeroismAction*>(action))
