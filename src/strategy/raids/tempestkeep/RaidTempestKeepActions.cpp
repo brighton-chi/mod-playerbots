@@ -1831,14 +1831,14 @@ bool KaelthasSunstriderGroupUpLegendaryWeaponsAction::Execute(Event event)
     Unit* staff = AI_VALUE2(Unit*, "find target", "staff of disintegration");
     Unit* sword = AI_VALUE2(Unit*, "find target", "warp slicer");
 
-    // Priority 1: Staff of Disintegration (Circle)
-    if (staff && staff->IsAlive())
+    // Priority 1 (excluding tanks): Staff of Disintegration (Circle)
+    if (staff && staff->IsAlive() && botAI->IsDps(bot))
     {
         MarkTargetWithCircle(bot, staff);
         SetRtiTarget(botAI, "circle", staff);
 
         if (staff->HasUnitState(UNIT_STATE_CASTING) &&
-        staff->FindCurrentSpellBySpellId(SPELL_STAFF_FROSTBOLT))
+            staff->FindCurrentSpellBySpellId(SPELL_STAFF_FROSTBOLT))
         {
             if (bot->getClass() == CLASS_MAGE && botAI->CanCastSpell("counterspell", staff))
                 return botAI->CastSpell("counterspell", staff);
@@ -1854,8 +1854,8 @@ bool KaelthasSunstriderGroupUpLegendaryWeaponsAction::Execute(Event event)
         return false;
     }
 
-    // Priority 2: Cosmic Infuser (Star)
-    if (mace && mace->IsAlive())
+    // Priority 2 (excluding tanks): Cosmic Infuser (Star)
+    if (mace && mace->IsAlive() && botAI->IsDps(bot))
     {
         MarkTargetWithStar(bot, mace);
         SetRtiTarget(botAI, "star", mace);
@@ -1868,8 +1868,8 @@ bool KaelthasSunstriderGroupUpLegendaryWeaponsAction::Execute(Event event)
         return false;
     }
 
-    // Priority 3: Warp Slicer (Square)
-    if (sword && sword->IsAlive())
+    // Priority 3 (including first assist tank): Warp Slicer (Square)
+    if (sword && sword->IsAlive() && (botAI->IsDps(bot) || botAI->IsAssistTankOfIndex(bot, 0)))
     {
         MarkTargetWithSquare(bot, sword);
         SetRtiTarget(botAI, "square", sword);
@@ -1882,8 +1882,8 @@ bool KaelthasSunstriderGroupUpLegendaryWeaponsAction::Execute(Event event)
         return false;
     }
 
-    // Priority 4: Infinity Blades (Triangle)
-    if (dagger && dagger->IsAlive())
+    // Priority 4 (excluding tanks): Infinity Blades (Triangle)
+    if (dagger && dagger->IsAlive() && botAI->IsDps(bot))
     {
         MarkTargetWithTriangle(bot, dagger);
         SetRtiTarget(botAI, "triangle", dagger);
@@ -1896,8 +1896,8 @@ bool KaelthasSunstriderGroupUpLegendaryWeaponsAction::Execute(Event event)
         return false;
     }
 
-    // Priority 5: Netherstrand Longbow - Melee only (Cross)
-    if (longbow && longbow->IsAlive() && botAI->IsMelee(bot))
+    // Priority 5: Netherstrand Longbow (Cross)
+    if (longbow && longbow->IsAlive())
     {
         MarkTargetWithCross(bot, longbow);
         SetRtiTarget(botAI, "cross", longbow);
@@ -1924,8 +1924,8 @@ bool KaelthasSunstriderGroupUpLegendaryWeaponsAction::Execute(Event event)
         return false;
     }
 
-    // Priority 7: Phaseshift Bulwark - All non-healers (Skull)
-    if (shield && shield->IsAlive() && !botAI->IsHeal(bot))
+    // Priority 7: Phaseshift Bulwark (Skull)
+    if (shield && shield->IsAlive() && (botAI->IsDps(bot) || botAI->IsAssistTankOfIndex(bot, 1)))
     {
         MarkTargetWithSkull(bot, shield);
         SetRtiTarget(botAI, "skull", shield);
@@ -1935,7 +1935,6 @@ bool KaelthasSunstriderGroupUpLegendaryWeaponsAction::Execute(Event event)
             bot->SetTarget(shield->GetGUID());
             return Attack(shield);
         }
-        return false;
     }
 
     return false;
