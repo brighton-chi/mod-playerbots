@@ -184,7 +184,7 @@ bool HighAstromancerSolarianSolariumPriestsSpawnedTrigger::IsActive()
 
 bool HighAstromancerSolarianTransformedIntoVoidwalkerTrigger::IsActive()
 {
-    if (botAI->IsMainTank(bot))
+    if (!botAI->IsMainTank(bot))
         return false;
 
     Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
@@ -331,36 +331,37 @@ bool KaelthasSunstriderWaitingForTanksToGetAggroOnAdvisorsTrigger::IsActive()
 
 bool KaelthasSunstriderLegendaryWeaponsAreAliveTrigger::IsActive()
 {
-    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
-    if (!kaelthas)
-        return false;
-
     if (botAI->IsMainTank(bot))
         return false;
-
+    
     Player* longbowTank = GetNetherstrandLongbowTank(botAI, bot);
     if (longbowTank && longbowTank == bot)
         return false;
+    
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
 
-    return IsKaelthasInPhase2(botAI);
+    return kaelthas && IsKaelthasInPhase2(botAI);
 }
 
 bool KaelthasSunstriderDevastationChannelsWhirlwindTrigger::IsActive()
 {
+    if (!botAI->IsMainTank(bot))
+        return false;
+    
     Unit* devastation = AI_VALUE2(Unit*, "find target", "devastation");
 
-    return devastation && devastation->IsAlive() && botAI->IsMainTank(bot);
+    return devastation && devastation->IsAlive();
 }
 
 bool KaelthasSunstriderNetherstrandLongbowFiresMultiShotTrigger::IsActive()
 {
-    Unit* longbow = AI_VALUE2(Unit*, "find target", "netherstrand longbow");
-    if (!longbow || !longbow->IsAlive())
-        return false;
-
     Player* longbowTank = GetNetherstrandLongbowTank(botAI, bot);
+    if (longbowTank != bot)
+        return false;
+    
+    Unit* longbow = AI_VALUE2(Unit*, "find target", "netherstrand longbow");
 
-    return longbowTank && longbowTank == bot;
+    return longbow && longbow->IsAlive();
 }
 
 bool KaelthasSunstriderLegendaryWeaponsAreDeadAndLootableTrigger::IsActive()
