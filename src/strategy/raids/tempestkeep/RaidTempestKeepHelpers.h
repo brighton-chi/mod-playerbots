@@ -84,7 +84,8 @@ namespace TempestKeepHelpers
         ITEM_DEVASTATION = 30316,
         ITEM_COSMIC_INFUSER = 30317,
         ITEM_NETHERSTRAND_LONGBOW = 30318,
-        ITEM_BUNDLE_OF_NETHER_SPIKES = 30320,
+        ITEM_NETHER_SPIKES = 30319,
+        // ITEM_BUNDLE_OF_NETHER_SPIKES = 30320,
     };
 
     namespace TempestKeepPositions

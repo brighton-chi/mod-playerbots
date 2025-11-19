@@ -2249,8 +2249,7 @@ bool KaelthasSunstriderUseLegendaryWeaponsAction::UseNetherstrandLongbow()
     if (!ranged || ranged->GetEntry() != ITEM_NETHERSTRAND_LONGBOW)
         return false;
 
-    // Check if bot already has ANY nether spikes - should never use bow if spikes exist
-    if (bot->HasItemCount(ITEM_BUNDLE_OF_NETHER_SPIKES, 1, false))
+    if (bot->HasItemCount(ITEM_NETHER_SPIKES, 201, false))
     {
         LOG_DEBUG("playerbots", "KaelthasSunstriderUseLegendaryWeaponsAction: {} already has nether spikes, skipping bow use", bot->GetName());
         return false;
@@ -2293,14 +2292,6 @@ bool KaelthasSunstriderUseLegendaryWeaponsAction::UseEquippedItemWithPacket(Item
 
     if (!spellId)
         return false;
-
-    // CHECK COOLDOWN BEFORE SENDING PACKET
-    if (bot->HasSpellCooldown(spellId))
-    {
-        LOG_DEBUG("playerbots", "KaelthasSunstriderUseLegendaryWeaponsAction: {} item spell {} is on cooldown",
-                    bot->GetName(), spellId);
-        return false;
-    }
 
     WorldPacket packet(CMSG_USE_ITEM);
     packet << bagIndex << slot << cast_count << spellId << item_guid << glyphIndex << castFlags;
