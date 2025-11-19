@@ -32,8 +32,12 @@ namespace TempestKeepHelpers
         SPELL_KAEL_FULL_POWER               = 36187,
         SPELL_MENTAL_PROTECTION_FIELD = 36480, // Staff of Disintegration
         SPELL_ARCANE_BARRIER = 36481,          // Phaseshift Bulwark
+        SPELL_FLAME_STRIKE                  = 36735, // Summons NPC
+        SPELL_FLAME_STRIKE_DAMAGE           = 36731, // 115625 damage, 6 yards + 3000/s damage, 10 yards
+        SPELL_KAELTHAS_MIND_CONTROL = 36797,
         SPELL_KAELTHAS_PYROBLAST = 36819,
         SPELL_STAFF_FROSTBOLT = 36990,
+        SPELL_REMOTE_TOY_STUN               = 37029,
 
         // Hunter
         SPELL_MISDIRECTION = 34477,
@@ -67,6 +71,7 @@ namespace TempestKeepHelpers
         NPC_STAFF_OF_DISINTEGRATION = 21274,
         NPC_NETHER_VAPOR           = 21002, // 8 yard aura
         NPC_PHOENIX_EGG = 21364,
+        NPC_FLAME_STRIKE_TRIGGER = 21369, 
     };
 
     enum TempestKeepItems
