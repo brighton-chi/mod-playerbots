@@ -446,17 +446,75 @@ bool KaelthasSunstriderDeterminingAdvisorKillOrderTrigger::IsActive()
     return kaelthas && (IsKaelthasInPhase1(botAI) || IsKaelthasInPhase3(botAI));
 }
 
-// phase 4 onward break MC (use weak abilities)
-
-// phase 4 round up phoenixes
-
-// phase 4 kill eggs
-
-// phase 5 spread in air
-
-bool KaelthasSunstriderCheatToTestTrigger::IsActive()
+bool KaelthasSunstriderFlameStrikeAppearedUnderBotTrigger::IsActive()
 {
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
 
-    return kaelthas != nullptr;
+    return kaelthas && (IsKaelthasInPhase4(botAI) || IsKaelthasInPhase5(botAI));
+}
+
+bool KaelthasSunstriderPhoenixesAndEggsAreSpawningTrigger::IsActive()
+{
+    if (!botAI->IsRangedDps(bot) && !botAI->IsAssistTankOfIndex(bot, 0) && !botAI->IsAssistTankOfIndex(bot, 1))
+        return false;
+
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    if (!kaelthas || kaelthas && kaelthas->HasAura(SPELL_GRAVITY_LAPSE))
+        return false;
+
+    Unit* phoenix = AI_VALUE2(Unit*, "find target", "phoenix");
+    Unit* phoenixEgg = AI_VALUE2(Unit*, "find target", "phoenix egg");
+
+    return phoenix || phoenixEgg;
+}
+
+bool KaelthasSunstriderRaidMemberIsMindControlledTrigger::IsActive()
+{
+    if (!bot->HasItemCount(ITEM_INFINITY_BLADE, 1, true) || !botAI->IsTank(bot))
+        return false;
+
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    if (!kaelthas)
+        return false;
+
+    // Check if any raid member is mind controlled
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive())
+            continue;
+
+        if (member->HasAura(SPELL_KAELTHAS_MIND_CONTROL))
+            return true;
+    }
+
+    return false;
+}
+
+bool KaelthasSunstriderBossIsCastingPyroblastTrigger::IsActive()
+{
+    if (!botAI->IsDps(bot))
+        return false;
+
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    if (!kaelthas)
+        return false;
+
+    if (!kaelthas->HasUnitState(UNIT_STATE_CASTING))
+        return false;
+
+    Spell* currentSpell = kaelthas->GetCurrentSpell(CURRENT_GENERIC_SPELL);
+
+    return currentSpell && currentSpell->m_spellInfo->Id == SPELL_KAELTHAS_PYROBLAST;
+}
+
+bool KaelthasSunstriderBossIsManipulatingGravityTrigger::IsActive()
+{
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+
+    return kaelthas && kaelthas->HasAura(SPELL_GRAVITY_LAPSE);
 }

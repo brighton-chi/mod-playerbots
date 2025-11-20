@@ -191,7 +191,7 @@ float KaelthasSunstriderWaitForDpsMultiplier::GetValue(Action* action)
         return 1.0f;
 
     const time_t now = std::time(nullptr);
-    const uint8 dpsWaitSeconds = 8;
+    const uint8 dpsWaitSeconds = 10;
 
     // Check if timer has elapsed
     auto it = advisorDpsWaitTimer.find(kaelthas->GetMapId());
@@ -276,73 +276,59 @@ float KaelthasSunstriderDelayBloodlustAndHeroismMultiplier::GetValue(Action* act
     return 1.0f;
 }
 
-float KaelthasSunstriderReequipGearMultiplier::GetValue(Action* action)
+float KaelthasSunstriderTryNonfatalBreakingOfMindControlMultiplier::GetValue(Action* action)
 {
-    // Only apply to "equip upgrades" action
-    if (!dynamic_cast<EquipUpgradesAction*>(action))
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    if (!kaelthas)
         return 1.0f;
 
-    // Only check when out of combat
-    if (bot->IsInCombat())
+    if (!bot->HasItemCount(ITEM_INFINITY_BLADE, 1, true) || !botAI->IsTank(bot))
         return 1.0f;
 
-    // Check if we're in Tempest Keep
-    if (bot->GetMapId() != 550) // Tempest Keep map ID
+    Group* group = bot->GetGroup();
+    if (!group)
         return 1.0f;
 
-    // Try to find Kael'thas using creature search (works outside combat)
-    std::list<ObjectGuid> targets;
-    AiObjectContext* context = botAI->GetAiObjectContext();
-
-    // Use the "possible targets" value which doesn't require combat
-    GuidVector possibleTargets = context->GetValue<GuidVector>("possible targets")->Get();
-
-    Unit* kaelthas = nullptr;
-    for (auto guid : possibleTargets)
+    // Check if any raid member is mind controlled
+    bool hasMindControlledPlayer = false;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
-        Unit* unit = botAI->GetUnit(guid);
-        if (unit && unit->GetEntry() == NPC_KAELTHAS_SUNSTRIDER)
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive())
+            continue;
+
+        if (member->HasAura(SPELL_KAELTHAS_MIND_CONTROL))
         {
-            kaelthas = unit;
+            hasMindControlledPlayer = true;
             break;
         }
     }
 
-    // If no Kael'thas found via possible targets, do a direct creature search
-    /* if (!kaelthas)
+    // If someone is MC'd, suppress all attacks except the MC-breaking action
+    if (hasMindControlledPlayer)
     {
-        std::list<Creature*> creatures;
-        acore::AllCreaturesOfEntryInRange check(bot, NPC_KAELTHAS_SUNSTRIDER, 200.0f);
-        acore::CreatureListSearcher<acore::AllCreaturesOfEntryInRange> searcher(bot, creatures, check);
-        Cell::VisitGridObjects(bot, searcher, 200.0f);
+        if (dynamic_cast<AttackAction*>(action) &&
+            !dynamic_cast<KaelthasSunstriderBreakMindControlWithInfinityBladeAction*>(action))
+            return 0.0f;
+    }
 
-        if (!creatures.empty())
-            kaelthas = creatures.front();
-    } */
+    return 1.0f;
+}
 
-    if (kaelthas && bot->GetExactDist2d(kaelthas) < 200.0f)
+float KaelthasSunstriderAllDpsOnBossDuringPyroblastMultiplier::GetValue(Action* action)
+{
+    if (!botAI->IsDps(bot))
+        return 1.0f;
+
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    if (!kaelthas || !kaelthas->HasUnitState(UNIT_STATE_CASTING))
+        return 1.0f;
+
+    Spell* currentSpell = kaelthas->GetCurrentSpell(CURRENT_GENERIC_SPELL);
+    if (currentSpell && currentSpell->m_spellInfo->Id == SPELL_KAELTHAS_PYROBLAST)
     {
-        // Check if bot has empty equipment slots (lost legendary weapon)
-        bool hasEmptySlots = false;
-        for (uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
-        {
-            if (slot == EQUIPMENT_SLOT_BODY || slot == EQUIPMENT_SLOT_TABARD)
-                continue;
-
-            if (!bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
-            {
-                hasEmptySlots = true;
-                break;
-            }
-        }
-
-        // If has empty slots, massively boost "equip upgrades" priority
-        if (hasEmptySlots)
-        {
-            LOG_DEBUG("playerbots", "KaelthasSunstriderReequipGearMultiplier: {} has empty slots after wipe, forcing reequip",
-                      bot->GetName());
-            return 100.0f; // Very high multiplier to force immediate execution
-        }
+        if (dynamic_cast<KaelthasSunstriderRoundUpPhoenixesAndFocusDownEggsAction*>(action))
+            return 0.0f;
     }
 
     return 1.0f;

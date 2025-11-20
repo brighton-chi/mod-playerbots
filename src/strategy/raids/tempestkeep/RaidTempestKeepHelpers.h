@@ -29,12 +29,14 @@ namespace TempestKeepHelpers
 
         // Kael'thas Sunstrider
         SPELL_PERMANENT_FEIGN_DEATH = 29266,
+        SPELL_GRAVITY_LAPSE                 = 35941,
         SPELL_KAEL_FULL_POWER               = 36187,
         SPELL_MENTAL_PROTECTION_FIELD = 36480, // Staff of Disintegration
         SPELL_ARCANE_BARRIER = 36481,          // Phaseshift Bulwark
         SPELL_FLAME_STRIKE                  = 36735, // Summons NPC
         SPELL_FLAME_STRIKE_DAMAGE           = 36731, // 115625 damage, 6 yards + 3000/s damage, 10 yards
         SPELL_KAELTHAS_MIND_CONTROL = 36797,
+        SPELL_SHOCK_BARRIER                 = 36815,
         SPELL_KAELTHAS_PYROBLAST = 36819,
         SPELL_STAFF_FROSTBOLT = 36990,
         SPELL_REMOTE_TOY_STUN               = 37029,
@@ -49,6 +51,9 @@ namespace TempestKeepHelpers
 
         // Priest
         SPELL_FEAR_WARD               =  6346,
+
+        // Rogue
+        SPELL_SPRINT = 11305,
     };
 
     enum TempestKeepNPCs
@@ -70,7 +75,7 @@ namespace TempestKeepHelpers
         NPC_PHASESHIFT_BULWARK      = 21273,
         NPC_STAFF_OF_DISINTEGRATION = 21274,
         NPC_NETHER_VAPOR           = 21002, // 8 yard aura
-        NPC_PHOENIX_EGG = 21364,
+        NPC_PHOENIX = 21362,
         NPC_FLAME_STRIKE_TRIGGER = 21369,
     };
 

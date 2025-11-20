@@ -66,11 +66,18 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class KaelthasSunstriderReequipGearMultiplier : public Multiplier
+class KaelthasSunstriderTryNonfatalBreakingOfMindControlMultiplier : public Multiplier
 {
 public:
-    KaelthasSunstriderReequipGearMultiplier(PlayerbotAI* ai) : Multiplier(ai, "kael'thas sunstrider reequip gear") {}
-    float GetValue(Action* action) override;
+    KaelthasSunstriderTryNonfatalBreakingOfMindControlMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "kaelthas sunstrider try nonfatal breaking of mind control multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
+class KaelthasSunstriderAllDpsOnBossDuringPyroblastMultiplier : public Multiplier
+{
+public:
+    KaelthasSunstriderAllDpsOnBossDuringPyroblastMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "kaelthas sunstrider all dps on boss during pyroblast multiplier") {}
+    virtual float GetValue(Action* action);
 };
 
 #endif

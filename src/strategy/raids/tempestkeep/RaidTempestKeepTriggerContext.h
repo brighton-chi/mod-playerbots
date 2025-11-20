@@ -51,7 +51,11 @@ public:
         creators["kaelthas sunstrider legendary weapons are equipped"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_legendary_weapons_are_equipped;
         creators["kaelthas sunstrider legendary weapons were lost"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_legendary_weapons_were_lost;
         creators["kaelthas sunstrider determining advisor kill order"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_determining_advisor_kill_order;
-        creators["kaelthas sunstrider cheat to test"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_cheat_to_test;
+        creators["kaelthas sunstrider flame strike appeared under bot"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_flame_strike_appeared_under_bot;
+        creators["kaelthas sunstrider raid member is mind controlled"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_raid_member_is_mind_controlled;
+        creators["kaelthas sunstrider phoenixes and eggs are spawning"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_phoenixes_and_eggs_are_spawning;
+        creators["kaelthas sunstrider boss is casting pyroblast"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_boss_is_casting_pyroblast;
+        creators["kaelthas sunstrider boss is manipulating gravity"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_boss_is_manipulating_gravity;
     }
 
 private:
@@ -97,7 +101,11 @@ private:
     static Trigger* kaelthas_sunstrider_legendary_weapons_are_equipped(PlayerbotAI* botAI) { return new KaelthasSunstriderLegendaryWeaponsAreEquippedTrigger(botAI); }
     static Trigger* kaelthas_sunstrider_legendary_weapons_were_lost(PlayerbotAI* botAI) { return new KaelthasSunstriderLegendaryWeaponsWereLostTrigger(botAI); }
     static Trigger* kaelthas_sunstrider_determining_advisor_kill_order(PlayerbotAI* botAI) { return new KaelthasSunstriderDeterminingAdvisorKillOrderTrigger(botAI); }
-    static Trigger* kaelthas_sunstrider_cheat_to_test(PlayerbotAI* botAI) { return new KaelthasSunstriderCheatToTestTrigger(botAI); }
+    static Trigger* kaelthas_sunstrider_flame_strike_appeared_under_bot(PlayerbotAI* botAI) { return new KaelthasSunstriderFlameStrikeAppearedUnderBotTrigger(botAI); }
+    static Trigger* kaelthas_sunstrider_raid_member_is_mind_controlled(PlayerbotAI* botAI) { return new KaelthasSunstriderRaidMemberIsMindControlledTrigger(botAI); }
+    static Trigger* kaelthas_sunstrider_phoenixes_and_eggs_are_spawning(PlayerbotAI* botAI) { return new KaelthasSunstriderPhoenixesAndEggsAreSpawningTrigger(botAI); }
+    static Trigger* kaelthas_sunstrider_boss_is_casting_pyroblast(PlayerbotAI* botAI) { return new KaelthasSunstriderBossIsCastingPyroblastTrigger(botAI); }
+    static Trigger* kaelthas_sunstrider_boss_is_manipulating_gravity(PlayerbotAI* botAI) { return new KaelthasSunstriderBossIsManipulatingGravityTrigger(botAI); }
 };
 
 #endif

@@ -300,10 +300,43 @@ public:
     bool Execute(Event event) override;
 };
 
-class KaelthasSunstriderCheatToTestAction : public Action
+class KaelthasSunstriderAvoidFlameStrikeAction : public MovementAction
 {
 public:
-    KaelthasSunstriderCheatToTestAction(PlayerbotAI* botAI, std::string const name = "kaelthas sunstrider cheat to test") : Action(botAI, name) {}
+    KaelthasSunstriderAvoidFlameStrikeAction(PlayerbotAI* botAI, std::string const name = "kaelthas sunstrider avoid flame strike") : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+
+private:
+    std::vector<Unit*> GetAllFlameStrikeTriggers(PlayerbotAI* botAI, Player* bot);
+    Position FindSafestNearbyPosition(const std::vector<Unit*>& flameStrikes, float hazardRadius);
+    bool IsPathSafeFromFlameStrikes(const Position& start, const Position& end, const std::vector<Unit*>& flameStrikes, float hazardRadius);
+};
+
+class KaelthasSunstriderRoundUpPhoenixesAndFocusDownEggsAction : public AttackAction
+{
+public:
+    KaelthasSunstriderRoundUpPhoenixesAndFocusDownEggsAction(PlayerbotAI* botAI, std::string const name = "kaelthas sunstrider round up phoenixes and focus down eggs") : AttackAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class KaelthasSunstriderBreakMindControlWithInfinityBladeAction : public AttackAction
+{
+public:
+    KaelthasSunstriderBreakMindControlWithInfinityBladeAction(PlayerbotAI* botAI, std::string const name = "kaelthas sunstrider break mind control with infinity blade") : AttackAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class KaelthasSunstriderBreakThroughShockBarrierAction : public AttackAction
+{
+public:
+    KaelthasSunstriderBreakThroughShockBarrierAction(PlayerbotAI* botAI, std::string const name = "kaelthas sunstrider break through shock barrier") : AttackAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class KaelthasSunstriderSpreadOutInMidairAction : public MovementAction
+{
+public:
+    KaelthasSunstriderSpreadOutInMidairAction(PlayerbotAI* botAI, std::string const name = "kaelthas sunstrider spread out in midair") : MovementAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 

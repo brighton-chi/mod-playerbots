@@ -126,9 +126,21 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kaelthas sunstrider determining advisor kill order",
         NextAction::array(0, new NextAction("kaelthas sunstrider assign advisor dps priority", ACTION_RAID + 1), nullptr)
     ));
-    /* triggers.push_back(new TriggerNode("kaelthas sunstrider cheat to test",
-        NextAction::array(0, new NextAction("kaelthas sunstrider cheat to test", ACTION_EMERGENCY + 10), nullptr)
-    )); */
+    triggers.push_back(new TriggerNode("kaelthas sunstrider flame strike appeared under bot",
+        NextAction::array(0, new NextAction("kaelthas sunstrider avoid flame strike", ACTION_EMERGENCY + 8), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("kaelthas sunstrider phoenixes and eggs are spawning",
+        NextAction::array(0, new NextAction("kaelthas sunstrider round up phoenixes and focus down eggs", ACTION_RAID + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("kaelthas sunstrider raid member is mind controlled",
+        NextAction::array(0, new NextAction("kaelthas sunstrider break mind control with infinity blade", ACTION_EMERGENCY + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("kaelthas sunstrider boss is casting pyroblast",
+        NextAction::array(0, new NextAction("kaelthas sunstrider break through shock barrier", ACTION_EMERGENCY + 7), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("kaelthas sunstrider boss is manipulating gravity",
+        NextAction::array(0, new NextAction("kaelthas sunstrider spread out in midair", ACTION_EMERGENCY + 1), nullptr)
+    ));
 }
 
 void RaidTempestKeepStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
@@ -141,5 +153,6 @@ void RaidTempestKeepStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new KaelthasSunstriderWaitForDpsMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderDelayBloodlustAndHeroismMultiplier(botAI));
-    // multipliers.push_back(new KaelthasSunstriderReequipGearMultiplier(botAI));
+    multipliers.push_back(new KaelthasSunstriderTryNonfatalBreakingOfMindControlMultiplier(botAI));
+    multipliers.push_back(new KaelthasSunstriderAllDpsOnBossDuringPyroblastMultiplier(botAI));
 }
