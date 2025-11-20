@@ -1328,6 +1328,24 @@ bool KaelthasSunstriderLogForTestingAction::Execute(Event event)
         LOG_DEBUG("playerbots", "KaelthasSunstriderLogForTestingAction: Kael'thas fight elapsed_ms={} on map={}", elapsed, mapId);
     }
 
+    if (IsKaelthasInPhase1(botAI))
+        LOG_DEBUG("playerbots", "KaelthasSunstriderLogForTestingAction: Kael'thas fight in Phase 1");
+
+    if (IsKaelthasInPhase2(botAI))
+        LOG_DEBUG("playerbots", "KaelthasSunstriderLogForTestingAction: Kael'thas fight in Phase 2");
+
+    if (IsKaelthasInPhase3(botAI))
+        LOG_DEBUG("playerbots", "KaelthasSunstriderLogForTestingAction: Kael'thas fight in Phase 3");
+
+    if (IsKaelthasInPhase4(botAI))
+        LOG_DEBUG("playerbots", "KaelthasSunstriderLogForTestingAction: Kael'thas fight in Phase 4");
+
+    if (IsKaelthasInPhase4To5Transition(botAI))
+        LOG_DEBUG("playerbots", "KaelthasSunstriderLogForTestingAction: Kael'thas fight in Phase 4 to 5 transition");
+
+    if (IsKaelthasInPhase5(botAI))
+        LOG_DEBUG("playerbots", "KaelthasSunstriderLogForTestingAction: Kael'thas fight in Phase 5");
+
     return false;
 }
 
@@ -1399,7 +1417,7 @@ bool KaelthasSunstriderMainTankPositionSanguinarAction::Execute(Event event)
             float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
 
             return MoveTo(bot->GetMapId(), moveX, moveY, position.GetPositionZ(), false, false, false, false,
-                            MovementPriority::MOVEMENT_COMBAT, true, false);
+                            MovementPriority::MOVEMENT_COMBAT, true, true);
         }
     }
 
@@ -1442,9 +1460,8 @@ bool KaelthasSunstriderManageWarlockTankStrategyAction::Execute(Event event)
     {
         if (!currentlyTank)
         {
-            Unit* thaladred = AI_VALUE2(Unit*, "find target", "thaladred the darkener");
             Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
-            if (thaladred && !thaladred->IsAlive() && sanguinar && !sanguinar->IsAlive())
+            if (sanguinar && sanguinar->HasAura(SPELL_PERMANENT_FEIGN_DEATH))
             {
                 // Wait until first two advisors are dead before switching to tank
                 LOG_DEBUG("playerbots", "KaelthasSunstriderManageWarlockTankStrategyAction: {} adding TANK strategy for Phase 1",
@@ -1574,17 +1591,17 @@ bool KaelthasSunstriderMoveAwayFromCapernianAction::Execute(Event event)
     if (botAI->IsMelee(bot))
     {
         if (botAI->IsTank(bot) && IsKaelthasInPhase1(botAI))
-            safeDistance = 15.0f;  // Tank safe distance
+            safeDistance = 20.0f;  // Tank safe distance
         else
             safeDistance = 35.0f;  // Melee dps safe distance
     }
     else if (botAI->IsRangedDps(bot))
     {
-        safeDistance = 30.5f;  // Ranged DPS safe distance
+        safeDistance = 31.0f;  // Ranged DPS safe distance
     }
     else if (botAI->IsHeal(bot))
     {
-        safeDistance = 32.0f;  // Healer safe distance
+        safeDistance = 35.0f;  // Healer safe distance
     }
     else
     {
@@ -1642,7 +1659,7 @@ bool KaelthasSunstriderFirstAssistTankPositionTelonicusAction::Execute(Event eve
             float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
 
             return MoveTo(bot->GetMapId(), moveX, moveY, position.GetPositionZ(), false, false, false, false,
-                          MovementPriority::MOVEMENT_COMBAT, true, false);
+                          MovementPriority::MOVEMENT_COMBAT, true, true);
         }
     }
 
@@ -1768,8 +1785,14 @@ bool KaelthasSunstriderGroupUpLegendaryWeaponsAction::Execute(Event event)
     Unit* staff = AI_VALUE2(Unit*, "find target", "staff of disintegration");
     Unit* sword = AI_VALUE2(Unit*, "find target", "warp slicer");
 
+    if (botAI->IsTank(bot))
+    {
+        // Clear RTI marks for non-tank targets
+        SetRtiTarget(botAI, "skull", nullptr);
+    }
+
     // Priority 0 (excluding tanks): Stay away from Devastation
-    if (!botAI->IsTank(bot) && axe && axe->IsAlive())
+    if (/* !botAI->IsTank(bot) && */ axe && axe->IsAlive())
     {
         const float safeDistance = 7.0f;
         float currentDistance = bot->GetExactDist2d(axe);
@@ -1778,10 +1801,10 @@ bool KaelthasSunstriderGroupUpLegendaryWeaponsAction::Execute(Event event)
     }
 
     // Priority 1 (excluding tanks): Staff of Disintegration (Circle)
-    if (staff && staff->IsAlive() && botAI->IsDps(bot))
+    if (staff && staff->IsAlive() /* && botAI->IsDps(bot) */)
     {
-        MarkTargetWithCircle(bot, staff);
-        SetRtiTarget(botAI, "circle", staff);
+        MarkTargetWithTriangle(bot, staff);
+        SetRtiTarget(botAI, "triangle", staff);
 
         if (staff->HasUnitState(UNIT_STATE_CASTING) &&
             staff->FindCurrentSpellBySpellId(SPELL_STAFF_FROSTBOLT))
@@ -1801,10 +1824,10 @@ bool KaelthasSunstriderGroupUpLegendaryWeaponsAction::Execute(Event event)
     }
 
     // Priority 2 (excluding tanks): Cosmic Infuser (Star)
-    if (mace && mace->IsAlive() && botAI->IsDps(bot))
+    if (mace && mace->IsAlive() /* && botAI->IsDps(bot) */)
     {
-        MarkTargetWithStar(bot, mace);
-        SetRtiTarget(botAI, "star", mace);
+        MarkTargetWithTriangle(bot, mace);
+        SetRtiTarget(botAI, "triangle", mace);
 
         if (bot->GetTarget() != mace->GetGUID())
         {
@@ -1815,11 +1838,10 @@ bool KaelthasSunstriderGroupUpLegendaryWeaponsAction::Execute(Event event)
     }
 
     // Priority 3 (including first assist tank): Warp Slicer (Square)
-    if (sword && sword->IsAlive() && (botAI->IsDps(bot) || botAI->IsAssistTankOfIndex(bot, 0)))
+    if (sword && sword->IsAlive() /* && (botAI->IsDps(bot) || botAI->IsAssistTankOfIndex(bot, 0)) */)
     {
-        MarkTargetWithSquare(bot, sword);
-        SetRtiTarget(botAI, "square", sword);
-
+        MarkTargetWithTriangle(bot, sword);
+        SetRtiTarget(botAI, "triangle", sword);
         if (bot->GetTarget() != sword->GetGUID())
         {
             bot->SetTarget(sword->GetGUID());
@@ -1829,7 +1851,7 @@ bool KaelthasSunstriderGroupUpLegendaryWeaponsAction::Execute(Event event)
     }
 
     // Priority 4 (excluding tanks): Infinity Blades (Triangle)
-    if (dagger && dagger->IsAlive() && botAI->IsDps(bot))
+    if (dagger && dagger->IsAlive() /* && botAI->IsDps(bot) */)
     {
         MarkTargetWithTriangle(bot, dagger);
         SetRtiTarget(botAI, "triangle", dagger);
@@ -1871,10 +1893,10 @@ bool KaelthasSunstriderGroupUpLegendaryWeaponsAction::Execute(Event event)
     }
 
     // Priority 7: Phaseshift Bulwark (Skull)
-    if (shield && shield->IsAlive() && (botAI->IsDps(bot) || botAI->IsAssistTankOfIndex(bot, 1)))
+    if (shield && shield->IsAlive() /* && (botAI->IsDps(bot) || botAI->IsAssistTankOfIndex(bot, 1)) */)
     {
-        MarkTargetWithSkull(bot, shield);
-        SetRtiTarget(botAI, "skull", shield);
+        MarkTargetWithTriangle(bot, shield);
+        SetRtiTarget(botAI, "triangle", shield);
 
         if (bot->GetTarget() != shield->GetGUID())
         {
@@ -2138,31 +2160,73 @@ bool KaelthasSunstriderUseLegendaryWeaponsAction::Execute(Event event)
 
 bool KaelthasSunstriderUseLegendaryWeaponsAction::UsePhaseshiftBulwark()
 {
-    // Get equipped off-hand (shield slot)
     Item* offHand = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
     if (!offHand || offHand->GetEntry() != ITEM_PHASESHIFT_BULWARK)
         return false;
 
-    // Find Kael'thas
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     if (!kaelthas)
         return false;
 
-    // Only use if Kael'thas is casting Pyroblast
+    // Quick guard: ensure Kael is casting
     if (!kaelthas->HasUnitState(UNIT_STATE_CASTING))
+    {
+        LOG_DEBUG("playerbots", "KaelthasUseBulwark: Kael'thas not casting");
         return false;
+    }
 
+    // Try both generic and channeled current spell slots
     Spell* currentSpell = kaelthas->GetCurrentSpell(CURRENT_GENERIC_SPELL);
-    if (!currentSpell || currentSpell->m_spellInfo->Id != SPELL_KAELTHAS_PYROBLAST)
-        return false;
+    if (!currentSpell)
+        currentSpell = kaelthas->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
 
-    // Only use if bot is the target of the Pyroblast
+    if (!currentSpell)
+    {
+        LOG_DEBUG("playerbots", "KaelthasUseBulwark: no currentSpell found despite UNIT_STATE_CASTING");
+        return false;
+    }
+
+    LOG_DEBUG("playerbots", "KaelthasUseBulwark: Kael casting id={} casterEntry={} casterGUID={} ", currentSpell->m_spellInfo->Id, kaelthas->GetEntry(), kaelthas->GetGUID().ToString());
+
+    if (currentSpell->m_spellInfo->Id != SPELL_KAELTHAS_PYROBLAST)
+    {
+        LOG_DEBUG("playerbots", "KaelthasUseBulwark: current spell is not Pyroblast (id={})", currentSpell->m_spellInfo->Id);
+        return false;
+    }
+
+    // Primary target check using spell targets
     Unit* pyroblastTarget = currentSpell->m_targets.GetUnitTarget();
-    if (pyroblastTarget != bot)
+    if (pyroblastTarget)
+    {
+        LOG_DEBUG("playerbots", "KaelthasUseBulwark: spell target via m_targets.GetUnitTarget() = {}", pyroblastTarget->GetGUID().ToString());
+        if (pyroblastTarget != bot)
+            return false;
+    }
+    else
+    {
+        // Fallback: check victim (many scripts set victim, safer fallback)
+        if (kaelthas->GetVictim() != bot)
+        {
+            LOG_DEBUG("playerbots", "KaelthasUseBulwark: no unit target in spell, kael victim = {}, not bot", kaelthas->GetVictim() ? kaelthas->GetVictim()->GetGUID().ToString() : std::string("none"));
+            return false;
+        }
+        LOG_DEBUG("playerbots", "KaelthasUseBulwark: fallback - kael victim is bot");
+    }
+
+    // Final pre-use checks - will be rechecked in UseEquippedItemWithPacket
+    if (bot->CanUseItem(offHand) != EQUIP_ERR_OK)
+    {
+        LOG_DEBUG("playerbots", "KaelthasUseBulwark: cannot use item (CanUseItem != OK)");
         return false;
+    }
 
-    LOG_DEBUG("playerbots", "KaelthasSunstriderUseLegendaryWeaponsAction: {} using Phaseshift Bulwark to block Pyroblast", bot->GetName());
+    if (bot->IsNonMeleeSpellCast(true))
+    {
+        LOG_DEBUG("playerbots", "KaelthasUseBulwark: bot is currently casting, cannot use item");
+        return false;
+    }
 
+    LOG_DEBUG("playerbots", "KaelthasUseBulwark: Using Phaseshift Bulwark to block Pyroblast for bot={}", bot->GetName());
     return UseEquippedItemWithPacket(offHand);
 }
 
@@ -2529,6 +2593,8 @@ bool KaelthasSunstriderAvoidFlameStrikeAction::Execute(Event event)
     Position safestPos = FindSafestNearbyPosition(flameStrikes, hazardRadius);
 
     // Move to safe position
+    bot->AttackStop();
+    bot->InterruptNonMeleeSpells(true);
     return MoveTo(bot->GetMapId(), safestPos.GetPositionX(), safestPos.GetPositionY(),
                   safestPos.GetPositionZ(), false, false, false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
@@ -2644,6 +2710,8 @@ bool KaelthasSunstriderRoundUpPhoenixesAndFocusDownEggsAction::Execute(Event eve
     // Handle phoenix tanking for assist tanks
     if (botAI->IsAssistTankOfIndex(bot, 0) || botAI->IsAssistTankOfIndex(bot, 1))
     {
+        LOG_DEBUG("playerbots", "KaelthasRoundUpPhoenixes: entered assist-tank branch for bot={} guid={}", bot->GetName(), bot->GetGUID().ToString());
+
         // Get all phoenixes
         std::vector<Unit*> phoenixes;
         const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
@@ -2654,8 +2722,13 @@ bool KaelthasSunstriderRoundUpPhoenixesAndFocusDownEggsAction::Execute(Event eve
                 phoenixes.push_back(unit);
         }
 
+        LOG_DEBUG("playerbots", "KaelthasRoundUpPhoenixes: found {} phoenix candidates for bot={}", phoenixes.size(), bot->GetName());
+
         if (phoenixes.empty())
+        {
+            LOG_DEBUG("playerbots", "KaelthasRoundUpPhoenixes: no phoenixes found, returning false for bot={}", bot->GetName());
             return false;
+        }
 
         // Sort phoenixes by GUID for consistent targeting
         std::sort(phoenixes.begin(), phoenixes.end(),
@@ -2666,6 +2739,7 @@ bool KaelthasSunstriderRoundUpPhoenixesAndFocusDownEggsAction::Execute(Event eve
         {
             // Assist Tank 0: Take first phoenix (Square)
             targetPhoenix = phoenixes[0];
+            LOG_DEBUG("playerbots", "KaelthasRoundUpPhoenixes: assistTankIndex=0 assigning phoenix guid={} entry={} to bot={}", targetPhoenix->GetGUID().ToString(), targetPhoenix->GetEntry(), bot->GetName());
             MarkTargetWithSquare(bot, targetPhoenix);
             SetRtiTarget(botAI, "square", targetPhoenix);
         }
@@ -2673,18 +2747,31 @@ bool KaelthasSunstriderRoundUpPhoenixesAndFocusDownEggsAction::Execute(Event eve
         {
             // Assist Tank 1: Take second phoenix (Circle)
             targetPhoenix = phoenixes[1];
+            LOG_DEBUG("playerbots", "KaelthasRoundUpPhoenixes: assistTankIndex=1 assigning phoenix guid={} entry={} to bot={}", targetPhoenix->GetGUID().ToString(), targetPhoenix->GetEntry(), bot->GetName());
             MarkTargetWithCircle(bot, targetPhoenix);
             SetRtiTarget(botAI, "circle", targetPhoenix);
         }
+        else
+        {
+            LOG_DEBUG("playerbots", "KaelthasRoundUpPhoenixes: assist tank index not matched or not enough phoenixes for bot={}", bot->GetName());
+        }
 
         if (!targetPhoenix)
+        {
+            LOG_DEBUG("playerbots", "KaelthasRoundUpPhoenixes: no targetPhoenix assigned, returning false for bot={}", bot->GetName());
             return false;
+        }
 
         // Attack the assigned phoenix
         if (bot->GetTarget() != targetPhoenix->GetGUID())
         {
+            LOG_DEBUG("playerbots", "KaelthasRoundUpPhoenixes: bot={} setting target to phoenix guid={} and attacking", bot->GetName(), targetPhoenix->GetGUID().ToString());
             bot->SetTarget(targetPhoenix->GetGUID());
             return Attack(targetPhoenix);
+        }
+        else
+        {
+            LOG_DEBUG("playerbots", "KaelthasRoundUpPhoenixes: bot={} already targeting phoenix guid={}", bot->GetName(), targetPhoenix->GetGUID().ToString());
         }
 
         // If tanking the phoenix, kite it away from other players
@@ -2853,6 +2940,8 @@ bool KaelthasSunstriderSpreadOutInMidairAction::Execute(Event event)
     if (!group)
         return false;
 
+    LOG_DEBUG("playerbots", "KaelthasSunstriderSpreadOutInMidairAction: Enter bot={} guid={}", bot->GetName(), bot->GetGUID().ToString());
+
     const float minSpreadDistance = 10.0f;
 
     // Find all nearby raid members in 3D space
@@ -2868,8 +2957,13 @@ bool KaelthasSunstriderSpreadOutInMidairAction::Execute(Event event)
             nearbyPlayers.push_back(member);
     }
 
+    LOG_DEBUG("playerbots", "KaelthasSunstriderSpreadOutInMidairAction: found {} nearby players for bot={}", nearbyPlayers.size(), bot->GetName());
+
     if (nearbyPlayers.empty())
+    {
+        LOG_DEBUG("playerbots", "KaelthasSunstriderSpreadOutInMidairAction: no nearby players, nothing to do for bot={}", bot->GetName());
         return false;
+    }
 
     // Find the closest player in 3D
     Player* closestPlayer = nullptr;
@@ -2883,6 +2977,11 @@ bool KaelthasSunstriderSpreadOutInMidairAction::Execute(Event event)
             closestPlayer = player;
         }
     }
+
+    if (closestPlayer)
+        LOG_DEBUG("playerbots", "KaelthasSunstriderSpreadOutInMidairAction: closest player={} dist={:.1f} for bot={}", closestPlayer->GetName(), closestDist, bot->GetName());
+    else
+        LOG_DEBUG("playerbots", "KaelthasSunstriderSpreadOutInMidairAction: no closest player found for bot={}", bot->GetName());
 
     // If we're too close to someone, move away in 2D plane
     if (closestPlayer && closestDist < minSpreadDistance)
@@ -2898,9 +2997,13 @@ bool KaelthasSunstriderSpreadOutInMidairAction::Execute(Event event)
         float y = bot->GetPositionY() + sin(angle) * distance;
         float z = bot->GetPositionZ(); // Keep current Z, let physics handle it
 
+        LOG_DEBUG("playerbots", "KaelthasSunstriderSpreadOutInMidairAction: moving bot={} to target=({}, {}, {}) distanceRequested={:.1f}",
+                  bot->GetName(), x, y, z, distance);
+
         return MoveTo(bot->GetMapId(), x, y, z, false, false, false, true,
                       MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
+    LOG_DEBUG("playerbots", "KaelthasSunstriderSpreadOutInMidairAction: no spread required for bot={} (closestDist={:.1f})", bot->GetName(), closestDist);
     return false;
 }

@@ -311,4 +311,11 @@ public:
     bool IsActive() override;
 };
 
+class KaelthasSunstriderBossIsTransitioningPhasesTrigger : public Trigger
+{
+public:
+    KaelthasSunstriderBossIsTransitioningPhasesTrigger(PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider boss is transitioning phases") {}
+    bool IsActive() override;
+};
+
 #endif

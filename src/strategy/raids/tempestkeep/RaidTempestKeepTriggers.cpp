@@ -312,7 +312,8 @@ bool KaelthasSunstriderCapernianCastsArcaneBurstTrigger::IsActive()
 
 bool KaelthasSunstriderTelonicusEngagedByFirstAssistTankTrigger::IsActive()
 {
-    if (!botAI->IsAssistTankOfIndex(bot, 0))
+    // Require either: assist tank of index 0 OR (main tank AND Kael'thas is in phase 1)
+    if (!botAI->IsAssistTankOfIndex(bot, 0) && !(IsKaelthasInPhase1(botAI) && botAI->IsMainTank(bot)))
         return false;
 
     Unit* telonicus = AI_VALUE2(Unit*, "find target", "master engineer telonicus");
@@ -340,7 +341,7 @@ bool KaelthasSunstriderWaitingForTanksToGetAggroOnAdvisorsTrigger::IsActive()
 
 bool KaelthasSunstriderLegendaryWeaponsAreAliveTrigger::IsActive()
 {
-    if (botAI->IsMainTank(bot))
+    if (botAI->IsMainTank(bot) /*botAI->IsTank(bot)*/)
         return false;
 
     Player* longbowTank = GetNetherstrandLongbowTank(botAI, bot);
@@ -479,7 +480,7 @@ bool KaelthasSunstriderPhoenixesAndEggsAreSpawningTrigger::IsActive()
 
 bool KaelthasSunstriderRaidMemberIsMindControlledTrigger::IsActive()
 {
-    if (!bot->HasItemCount(ITEM_INFINITY_BLADE, 1, true) || !botAI->IsTank(bot))
+    if (!bot->HasItemCount(ITEM_INFINITY_BLADE, 1, true) || botAI->IsTank(bot))
         return false;
 
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
@@ -524,6 +525,11 @@ bool KaelthasSunstriderBossIsCastingPyroblastTrigger::IsActive()
 bool KaelthasSunstriderBossIsManipulatingGravityTrigger::IsActive()
 {
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+
+    if (kaelthas)
+        LOG_DEBUG("playerbots", "KaelthasSunstriderBossIsManipulatingGravityTrigger: kael entry={} guid={} has_gravity_lapse={}", kaelthas->GetEntry(), kaelthas->GetGUID().ToString(), kaelthas->HasAura(SPELL_GRAVITY_LAPSE));
+    else
+        LOG_DEBUG("playerbots", "KaelthasSunstriderBossIsManipulatingGravityTrigger: kael not found");
 
     return kaelthas && kaelthas->HasAura(SPELL_GRAVITY_LAPSE);
 }

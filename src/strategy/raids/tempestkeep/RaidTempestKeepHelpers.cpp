@@ -97,8 +97,8 @@ namespace TempestKeepHelpers
 
     void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target)
     {
-        if (!target)
-            return;
+        /* if (!target)
+            return; */
 
         std::string currentRti = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
         Unit* currentTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
@@ -200,39 +200,30 @@ namespace TempestKeepHelpers
     // Trigger: At least one advisor has NON_ATTACKABLE flag or PERMANENT_FEIGN_DEATH aura, and no weapons exist
     bool IsKaelthasInPhase1(PlayerbotAI* botAI)
     {
-        const char* advisors[] = {"thaladred the darkener", "lord sanguinar",
-                                "grand astromancer capernian", "master engineer telonicus"};
+        // Require Kael'thas to be staged/non-attackable (avoids scanning all weapon objects)
+        Unit* kaelthas = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "kael'thas sunstrider")->Get();
+        if (!kaelthas || !kaelthas->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE))
+            return false;
 
-        bool hasWaitingOrFeigningAdvisor = false;
+        // If any advisor is in the waiting/feign state, treat as Phase 1
+        const char* advisors[] = {"thaladred the darkener", "lord sanguinar",
+                                  "grand astromancer capernian", "master engineer telonicus"};
+
         for (const char* name : advisors)
         {
             Unit* advisor = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", name)->Get();
-            if (advisor && advisor->IsAlive())
+            if (!advisor)
+                continue;
+
+            if (advisor->IsAlive() &&
+                (advisor->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) ||
+                 advisor->HasAura(SPELL_PERMANENT_FEIGN_DEATH)))
             {
-                if (advisor->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) ||
-                    advisor->HasAura(SPELL_PERMANENT_FEIGN_DEATH))
-                {
-                    hasWaitingOrFeigningAdvisor = true;
-                    break;
-                }
+                return true;
             }
         }
 
-        if (!hasWaitingOrFeigningAdvisor)
-            return false;
-
-        const char* weapons[] = {"netherstrand longbow", "cosmic infuser", "devastation",
-                                "infinity blades", "warp slicer", "staff of disintegration",
-                                "phaseshift bulwark"};
-
-        for (const char* name : weapons)
-        {
-            Unit* weapon = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", name)->Get();
-            if (weapon)
-                return false;
-        }
-
-        return true;
+        return false;
     }
 
     // Phase 2: Legendary Weapons Phase
@@ -276,13 +267,11 @@ namespace TempestKeepHelpers
     bool IsKaelthasInPhase3(PlayerbotAI* botAI)
     {
         Unit* kaelthas = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "kael'thas sunstrider")->Get();
-        if (!kaelthas || (kaelthas && kaelthas->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE)))
+        if (!kaelthas || !kaelthas->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE))
             return false;
 
         const char* advisors[] = {"thaladred the darkener", "lord sanguinar",
-                                "grand astromancer capernian", "master engineer telonicus"};
-
-        uint8 attackableAdvisors = 0;
+                                  "grand astromancer capernian", "master engineer telonicus"};
 
         for (const char* name : advisors)
         {
@@ -296,12 +285,12 @@ namespace TempestKeepHelpers
             if (advisor->HasAura(SPELL_PERMANENT_FEIGN_DEATH))
                 return false;
 
-            attackableAdvisors++;
+            if (advisor->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE)) // can remove to exclude resurrection delay phase
+                return false;
         }
 
-        return attackableAdvisors == 4;
+        return true;
     }
-
     // Phase 4: Kael'thas Solo (Before 50% transition)
     // Trigger: Kael'thas is attackable (not NON_ATTACKABLE) and does NOT have KAEL_FULL_POWER aura
     bool IsKaelthasInPhase4(PlayerbotAI* botAI)
