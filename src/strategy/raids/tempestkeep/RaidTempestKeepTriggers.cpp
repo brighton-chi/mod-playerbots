@@ -408,7 +408,7 @@ bool KaelthasSunstriderLegendaryWeaponsWereLostTrigger::IsActive()
 
     // Check distance to Kael'thas
     float distance = bot->GetExactDist2d(kaelthas);
-    if (distance > 100.0f)
+    if (distance > 150.0f)
         return false;
 
     // Check if bot has a 2H weapon equipped in mainhand

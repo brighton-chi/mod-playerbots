@@ -371,42 +371,37 @@ namespace TempestKeepHelpers
         if (!group)
             return nullptr;
 
+        // First pass: Look for an assistant warlock (real player or bot)
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || member->getClass() != CLASS_WARLOCK)
+                continue;
+
+            if (group->IsAssistant(member->GetGUID()))
+                return member;
+        }
+
+        // Second pass: Fallback to bot warlock with highest HP
         Player* highestHpWarlock = nullptr;
         uint32 highestHp = 0;
 
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member))
+            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) ||
+                member->getClass() != CLASS_WARLOCK)
                 continue;
 
-            if (member->getClass() == CLASS_WARLOCK)
+            uint32 hp = member->GetMaxHealth();
+            if (!highestHpWarlock || hp > highestHp)
             {
-                uint32 hp = member->GetMaxHealth();
-                if (!highestHpWarlock || hp > highestHp)
-                {
-                    highestHpWarlock = member;
-                    highestHp = hp;
-                }
+                highestHpWarlock = member;
+                highestHp = hp;
             }
         }
 
-        // If warlock found, return it
-        if (highestHpWarlock)
-            return highestHpWarlock;
-
-        // Fallback: Any ranged DPS (not healer)
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member))
-                continue;
-
-            if (GET_PLAYERBOT_AI(member)->IsRanged(member) && !GET_PLAYERBOT_AI(member)->IsHeal(member))
-                return member;
-        }
-
-        return nullptr;
+        return highestHpWarlock; // Returns nullptr if no bot warlock found
     }
 
     Player* GetNetherstrandLongbowTank(PlayerbotAI* botAI, Player* bot)
@@ -415,6 +410,18 @@ namespace TempestKeepHelpers
         if (!group)
             return nullptr;
 
+        // First pass: Look for an assistant hunter (real player or bot)
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || member->getClass() != CLASS_HUNTER)
+                continue;
+
+            if (group->IsAssistant(member->GetGUID()))
+                return member;
+        }
+
+        // Second pass: Fallback to any bot hunter (must be alive and a bot)
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
