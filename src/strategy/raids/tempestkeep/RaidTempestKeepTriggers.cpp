@@ -228,6 +228,9 @@ bool KaelthasSunstriderNeedToTestStrategiesOnBossTrigger::IsActive()
 
 bool KaelthasSunstriderThaladredIsFixatedOnBotTrigger::IsActive()
 {
+    if (botAI->IsTank(bot))
+        return false;
+
     Unit* thaladred = AI_VALUE2(Unit*, "find target", "thaladred the darkener");
 
     return thaladred && thaladred->GetVictim() == bot;
@@ -240,7 +243,8 @@ bool KaelthasSunstriderSanguinarEngagedByMainTankTrigger::IsActive()
 
     Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
 
-    return sanguinar && !sanguinar->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) && sanguinar->IsAlive();
+    return sanguinar && sanguinar->IsAlive() && !sanguinar->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
+           !sanguinar->HasAura(SPELL_PERMANENT_FEIGN_DEATH);
 }
 
 bool KaelthasSunstriderSanguinarCastsBellowingRoarTrigger::IsActive()
@@ -252,7 +256,7 @@ bool KaelthasSunstriderSanguinarCastsBellowingRoarTrigger::IsActive()
     if (!sanguinar)
         return false;
 
-    if (!(IsKaelthasInPhase1(botAI) || IsKaelthasInPhase2(botAI) || IsKaelthasInPhase3(botAI)))
+    if (IsKaelthasInPhase4(botAI) || IsKaelthasInPhase5(botAI))
         return false;
 
     Group* group = bot->GetGroup();
@@ -284,32 +288,37 @@ bool KaelthasSunstriderCapernianRequiresAWarlockTankTrigger::IsActive()
 
 bool KaelthasSunstriderCapernianEngagedByWarlockTankTrigger::IsActive()
 {
-    Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
-    if (!capernian || capernian->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) || !capernian->IsAlive())
+    Player* capernianTank = GetCapernianTank(botAI, bot);
+    if (!capernianTank || capernianTank && capernianTank != bot)
         return false;
 
-    Player* capernianTank = GetCapernianTank(botAI, bot);
+    Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
 
-    return capernianTank && bot == capernianTank;
+    return capernian && capernian->IsAlive() && !capernian->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
+           !capernian->HasAura(SPELL_PERMANENT_FEIGN_DEATH);
 }
 
 bool KaelthasSunstriderCapernianCastsArcaneBurstTrigger::IsActive()
 {
-    Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
-    if (!capernian || capernian->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) || !capernian->IsAlive())
+    Player* capernianTank = GetCapernianTank(botAI, bot);
+    if (capernianTank && capernianTank == bot)
         return false;
 
-    Player* capernianTank = GetCapernianTank(botAI, bot);
+    Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
 
-    return !capernianTank || bot != capernianTank;
+    return capernian && capernian->IsAlive() && !capernian->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
+           !capernian->HasAura(SPELL_PERMANENT_FEIGN_DEATH);
 }
 
 bool KaelthasSunstriderTelonicusEngagedByFirstAssistTankTrigger::IsActive()
 {
+    if (!botAI->IsAssistTankOfIndex(bot, 0))
+        return false;
+
     Unit* telonicus = AI_VALUE2(Unit*, "find target", "master engineer telonicus");
 
-    return telonicus && !telonicus->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
-           telonicus->IsAlive() && botAI->IsAssistTankOfIndex(bot, 0);
+    return telonicus && telonicus->IsAlive() && !telonicus->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
+           !telonicus->HasAura(SPELL_PERMANENT_FEIGN_DEATH);
 }
 
 bool KaelthasSunstriderPullingTankableAdvisorsTrigger::IsActive()

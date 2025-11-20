@@ -1337,73 +1337,19 @@ bool KaelthasSunstriderKiteThaladredAction::Execute(Event event)
     if (!thaladred)
         return false;
 
-    /* const uint32 mapId = thaladred->GetMapId();
-
-    // Reset phase tracker when Thaladred is not aggressive (phase 1 start only)
-    if (thaladred->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE))
-    {
-        thaladredRelayPhase[mapId] = 0;
-        LOG_DEBUG("playerbots", "KaelthasSunstriderKiteThaladredAction: Thaladred not aggressive, relay phase reset to 0");
-        return false;
-    }
-
-    // Update phase based on Thaladred's position (15-yard buffer)
-    const float phaseBuffer = 15.0f;
-    uint8& relayPhase = thaladredRelayPhase[mapId];
-
-    const Position& relayPoint = ThaladredRelayPoint;
-    const Position& finalPosition = ThaladredFinalPosition;
-
-    if (relayPhase == 0 && thaladred->GetExactDist2d(relayPoint.GetPositionX(), relayPoint.GetPositionY()) <= phaseBuffer)
-    {
-        relayPhase = 1;
-        LOG_DEBUG("playerbots", "KaelthasSunstriderKiteThaladredAction: Thaladred reached Relay Point, advancing from phase 0 to 1");
-    }
-    else if (relayPhase == 1 && thaladred->GetExactDist2d(finalPosition.GetPositionX(), finalPosition.GetPositionY()) <= phaseBuffer)
-    {
-        relayPhase = 2;
-        LOG_DEBUG("playerbots", "KaelthasSunstriderKiteThaladredAction: Thaladred reached Final Position, advancing from phase 1 to 2");
-    } */
-
-    // If bot is fixated, handle movement based on current phase
-    if (thaladred->GetVictim() == bot)
+    float currentDistance = bot->GetExactDist2d(thaladred);
+    const float safeDistance = 25.0f;
+    if (currentDistance < safeDistance)
     {
         bot->AttackStop();
         bot->InterruptNonMeleeSpells(true);
 
-        /* if (relayPhase == 0)
-        {
-            // Phase 0: Run to relay point
-            LOG_DEBUG("playerbots", "KaelthasSunstriderKiteThaladredAction: Bot {} fixated, moving to relay point ({}, {}, {})",
-                      bot->GetName(), relayPoint.GetPositionX(), relayPoint.GetPositionY(), relayPoint.GetPositionZ());
+        LOG_DEBUG("playerbots", "KaelthasSunstriderKiteThaladredAction: Bot {} at final position, Thaladred too close, moving away",
+                    bot->GetName());
+        if (!bot->HasAura(SPELL_SPRINT))
+            bot->AddAura(SPELL_SPRINT, bot);
 
-            return MoveTo(bot->GetMapId(), relayPoint.GetPositionX(), relayPoint.GetPositionY(), relayPoint.GetPositionZ(),
-                          false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
-        }
-        else if (relayPhase == 1)
-        {
-            // Phase 1: Run to final position
-            LOG_DEBUG("playerbots", "KaelthasSunstriderKiteThaladredAction: Bot {} fixated, moving to final position ({}, {}, {})",
-                      bot->GetName(), finalPosition.GetPositionX(), finalPosition.GetPositionY(), finalPosition.GetPositionZ());
-
-            return MoveTo(bot->GetMapId(), finalPosition.GetPositionX(), finalPosition.GetPositionY(), finalPosition.GetPositionZ(),
-                          false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
-        }
-        else */ if (!botAI->IsTank(bot)) // relayPhase == 2
-        {
-            // Phase 2: Use standard MoveAway if Thaladred gets too close
-            float currentDistance = bot->GetExactDist2d(thaladred);
-            const float safeDistance = 25.0f;
-            if (currentDistance < safeDistance)
-            {
-                LOG_DEBUG("playerbots", "KaelthasSunstriderKiteThaladredAction: Bot {} at final position, Thaladred too close, moving away",
-                          bot->GetName());
-                if (!bot->HasAura(SPELL_SPRINT))
-                    bot->AddAura(SPELL_SPRINT, bot);
-
-                return MoveAway(thaladred, safeDistance - currentDistance + 5.0f);
-            }
-        }
+        return MoveAway(thaladred, safeDistance - currentDistance + 5.0f);
     }
 
     return false;
@@ -2302,12 +2248,14 @@ bool KaelthasSunstriderReequipGearAction::Execute(Event event)
     return botAI->DoSpecificAction("equip upgrades", Event(), true);
 }
 
-bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
+/* bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
 {
-    // Target priority 1: Thaladred for all dps except Capernian tank
     Player* capernianTank = GetCapernianTank(botAI, bot);
+    bool isCapernianTank = (capernianTank && bot == capernianTank);
+
+    // Target priority 1: Thaladred for all dps except Capernian tank
     Unit* thaladred = AI_VALUE2(Unit*, "find target", "thaladred the darkener");
-    if (thaladred && thaladred->IsAlive() && !thaladred->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) && bot != capernianTank)
+    if (thaladred && thaladred->IsAlive() && !isCapernianTank)
     {
         MarkTargetWithSquare(bot, thaladred);
         SetRtiTarget(botAI, "square", thaladred);
@@ -2323,7 +2271,7 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
 
     // Target priority 2: Capernian for ranged
     Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
-    if (capernian && capernian->IsAlive() && !capernian->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) && botAI->IsRangedDps(bot))
+    if (capernian && capernian->IsAlive() && (botAI->IsRangedDps(bot) || isCapernianTank))
     {
         SetRtiTarget(botAI, "circle", capernian);
 
@@ -2338,7 +2286,7 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
 
     // Target priority 3: Sanguinar for all dps
     Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
-    if (sanguinar && sanguinar->IsAlive() && !sanguinar->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE))
+    if (sanguinar && sanguinar->IsAlive())
     {
         SetRtiTarget(botAI, "star", sanguinar);
 
@@ -2353,7 +2301,7 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
 
     // Target priority 4: Telonicus for all dps
     Unit* telonicus = AI_VALUE2(Unit*, "find target", "master engineer telonicus");
-    if (telonicus && telonicus->IsAlive() && !telonicus->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE))
+    if (telonicus && telonicus->IsAlive())
     {
         SetRtiTarget(botAI, "triangle", telonicus);
 
@@ -2380,6 +2328,178 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
         }
     }
 
+    return false;
+} */
+
+// logging version
+bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
+{
+    LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: Enter bot={} guid={}", bot->GetName(), bot->GetGUID().ToString());
+
+    // Target priority 1: Thaladred for all dps except Capernian tank
+    Player* capernianTank = GetCapernianTank(botAI, bot);
+    if (capernianTank)
+        LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: capernianTank present name={} guid={}", capernianTank->GetName(), capernianTank->GetGUID().ToString());
+    else
+        LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: capernianTank none");
+
+    Unit* thaladred = AI_VALUE2(Unit*, "find target", "thaladred the darkener");
+    if (!thaladred)
+    {
+        LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: thaladred not found");
+    }
+    else
+    {
+        LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: thaladred found entry={} guid={} alive={} non_attackable={}", thaladred->GetEntry(), thaladred->GetGUID().ToString(), thaladred->IsAlive(), thaladred->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE));
+    }
+
+    bool isCapernianTank = (capernianTank && bot == capernianTank);
+
+    if (thaladred && thaladred->IsAlive() && !isCapernianTank)
+    {
+        LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: Selecting Thaladred (square) for bot={}", bot->GetName());
+        MarkTargetWithSquare(bot, thaladred);
+        SetRtiTarget(botAI, "square", thaladred);
+
+        if (bot->GetTarget() != thaladred->GetGUID())
+        {
+            LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: Setting target to Thaladred botTarget={} thaladredGuid={}", bot->GetTarget().ToString(), thaladred->GetGUID().ToString());
+            bot->SetTarget(thaladred->GetGUID());
+            return Attack(thaladred);
+        }
+
+        LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: Already targeting Thaladred targetGuid={}", bot->GetTarget().ToString());
+        return false;
+    }
+    else
+    {
+        if (!thaladred)
+            LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: Skipping Thaladred reason=not found");
+        else if (!thaladred->IsAlive())
+            LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: Skipping Thaladred reason=not alive", thaladred->GetHealth(), thaladred->GetMaxHealth());
+        else if (isCapernianTank)
+            LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: Skipping Thaladred reason=bot is capernian tank");
+    }
+
+    // Target priority 2: Capernian for ranged
+    Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
+    if (!capernian)
+    {
+        LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: capernian not found");
+    }
+    else
+    {
+        LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: capernian found entry={} guid={} alive={} non_attackable={} botIsRangedDps={}", capernian->GetEntry(), capernian->GetGUID().ToString(), capernian->IsAlive(), capernian->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE), botAI->IsRangedDps(bot));
+    }
+
+    if (capernian && capernian->IsAlive() && botAI->IsRangedDps(bot))
+    {
+        LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: Selecting Capernian (circle) for ranged bot={}", bot->GetName());
+        SetRtiTarget(botAI, "circle", capernian);
+
+        if (bot->GetTarget() != capernian->GetGUID())
+        {
+            LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: Setting target to Capernian botTarget={} capernianGuid={}", bot->GetTarget().ToString(), capernian->GetGUID().ToString());
+            bot->SetTarget(capernian->GetGUID());
+            return Attack(capernian);
+        }
+
+        LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: Already targeting Capernian targetGuid={}", bot->GetTarget().ToString());
+        return false;
+    }
+    else
+    {
+        if (capernian && !botAI->IsRangedDps(bot))
+            LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: Skipping Capernian reason=bot_not_ranged");
+    }
+
+    // Target priority 3: Sanguinar for all dps
+    Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
+    if (!sanguinar)
+    {
+        LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: sanguinar not found");
+    }
+    else
+    {
+        LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: sanguinar found entry={} guid={} alive={} non_attackable={}", sanguinar->GetEntry(), sanguinar->GetGUID().ToString(), sanguinar->IsAlive(), sanguinar->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE));
+    }
+
+    if (sanguinar && sanguinar->IsAlive())
+    {
+        LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: Selecting Sanguinar (star) for bot={}", bot->GetName());
+        SetRtiTarget(botAI, "star", sanguinar);
+
+        if (bot->GetTarget() != sanguinar->GetGUID())
+        {
+            LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: Setting target to Sanguinar botTarget={} sanguinarGuid={}", bot->GetTarget().ToString(), sanguinar->GetGUID().ToString());
+            bot->SetTarget(sanguinar->GetGUID());
+            return Attack(sanguinar);
+        }
+
+        LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: Already targeting Sanguinar targetGuid={}", bot->GetTarget().ToString());
+        return false;
+    }
+    else
+    {
+        if (sanguinar && !sanguinar->IsAlive())
+            LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: Skipping Sanguinar reason=not_alive");
+    }
+
+    // Target priority 4: Telonicus for all dps
+    Unit* telonicus = AI_VALUE2(Unit*, "find target", "master engineer telonicus");
+    if (!telonicus)
+    {
+        LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: telonicus not found");
+    }
+    else
+    {
+        LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: telonicus found entry={} guid={} alive={} non_attackable={} victimGuid={}", telonicus->GetEntry(), telonicus->GetGUID().ToString(), telonicus->IsAlive(), telonicus->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE), telonicus->GetVictim() ? telonicus->GetVictim()->GetGUID().ToString() : std::string("none"));
+    }
+
+    if (telonicus && telonicus->IsAlive())
+    {
+        LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: Selecting Telonicus (triangle) for bot={}", bot->GetName());
+        SetRtiTarget(botAI, "triangle", telonicus);
+
+        if (bot->GetTarget() != telonicus->GetGUID())
+        {
+            LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: Setting target to Telonicus botTarget={} telonicusGuid={}", bot->GetTarget().ToString(), telonicus->GetGUID().ToString());
+            bot->SetTarget(telonicus->GetGUID());
+            return Attack(telonicus);
+        }
+
+        LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: Already targeting Telonicus targetGuid={}", bot->GetTarget().ToString());
+
+        // Melee DPS positioning: stay at max-ish melee range behind Telonicus (bomb safety)
+        if (botAI->IsMelee(bot) && !botAI->IsTank(bot) && telonicus->GetVictim() != bot)
+        {
+            float maxMeleeRange = bot->GetMeleeRange(telonicus);
+            float behindAngle = Position::NormalizeOrientation(telonicus->GetOrientation() + M_PI);
+
+            float targetX = telonicus->GetPositionX() + (maxMeleeRange - 0.5f) * cos(behindAngle);
+            float targetY = telonicus->GetPositionY() + (maxMeleeRange - 0.5f) * sin(behindAngle);
+
+            LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: Melee positioning behind Telonicus maxRange={} target=({}, {}) botPos=({}, {})", maxMeleeRange, targetX, targetY, bot->GetPositionX(), bot->GetPositionY());
+
+            if (bot->GetExactDist2d(targetX, targetY) > 0.5f)
+            {
+                LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: Moving to melee safe spot behind Telonicus");
+                return MoveTo(telonicus->GetMapId(), targetX, targetY, bot->GetPositionZ(), false, false, false, false,
+                              MovementPriority::MOVEMENT_FORCED, true, false);
+            }
+            else
+            {
+                LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: Already at melee safe spot behind Telonicus");
+            }
+        }
+    }
+    else
+    {
+        if (telonicus && !telonicus->IsAlive())
+            LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: Skipping Telonicus reason=not_alive");
+    }
+
+    LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: Exit no action taken bot={}", bot->GetName());
     return false;
 }
 

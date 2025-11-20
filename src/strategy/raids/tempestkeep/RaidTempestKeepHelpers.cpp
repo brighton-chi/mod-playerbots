@@ -276,10 +276,7 @@ namespace TempestKeepHelpers
     bool IsKaelthasInPhase3(PlayerbotAI* botAI)
     {
         Unit* kaelthas = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "kael'thas sunstrider")->Get();
-        if (!kaelthas)
-            return false;
-
-        if (!kaelthas->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE))
+        if (!kaelthas || (kaelthas && kaelthas->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE)))
             return false;
 
         const char* advisors[] = {"thaladred the darkener", "lord sanguinar",
@@ -310,13 +307,8 @@ namespace TempestKeepHelpers
     bool IsKaelthasInPhase4(PlayerbotAI* botAI)
     {
         Unit* kaelthas = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "kael'thas sunstrider")->Get();
-        if (!kaelthas)
-            return false;
 
-        if (kaelthas->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE))
-            return false;
-
-        return !kaelthas->HasAura(SPELL_KAEL_FULL_POWER);
+        return kaelthas && !kaelthas->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) && !kaelthas->HasAura(SPELL_KAEL_FULL_POWER);
     }
 
     // Transition Phase: Kael'thas at 50% HP performing scene
@@ -324,13 +316,11 @@ namespace TempestKeepHelpers
     bool IsKaelthasInPhase4To5Transition(PlayerbotAI* botAI)
     {
         Unit* kaelthas = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "kael'thas sunstrider")->Get();
-        if (!kaelthas)
-            return false;
 
         // During transition: NOT_SELECTABLE is set, but NON_ATTACKABLE is NOT set
         // Before Phase 4: BOTH flags are set
         // Phase 4/5: NEITHER flag is set (except during transition)
-        return kaelthas->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE) &&
+        return kaelthas && kaelthas->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE) &&
             !kaelthas->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
     }
 
@@ -339,13 +329,8 @@ namespace TempestKeepHelpers
     bool IsKaelthasInPhase5(PlayerbotAI* botAI)
     {
         Unit* kaelthas = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "kael'thas sunstrider")->Get();
-        if (!kaelthas)
-            return false;
 
-        if (kaelthas->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE))
-            return false;
-
-        return kaelthas->HasAura(SPELL_KAEL_FULL_POWER);
+        return kaelthas && !kaelthas->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) && kaelthas->HasAura(SPELL_KAEL_FULL_POWER);
     }
 
     bool IsKaelthasMapIDTimerManager(PlayerbotAI* botAI, Player* bot)

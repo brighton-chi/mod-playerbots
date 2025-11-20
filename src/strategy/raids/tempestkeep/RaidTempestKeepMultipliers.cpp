@@ -251,7 +251,7 @@ float KaelthasSunstriderDisableTankAssistMultiplier::GetValue(Action* action)
     if (!kaelthas)
         return 1.0f;
 
-    if (kaelthas->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE))
+    if (kaelthas->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) && bot->GetVictim() != nullptr)
     {
         if (dynamic_cast<TankAssistAction*>(action))
             return 0.0f;
