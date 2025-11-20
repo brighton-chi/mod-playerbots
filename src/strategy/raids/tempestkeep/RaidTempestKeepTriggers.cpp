@@ -257,7 +257,7 @@ bool KaelthasSunstriderSanguinarCastsBellowingRoarTrigger::IsActive()
 
     Group* group = bot->GetGroup();
     if (!group)
-        return false; // Defensive check for edge case
+        return false;
 
     Player* mainTank = nullptr;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
@@ -333,11 +333,11 @@ bool KaelthasSunstriderLegendaryWeaponsAreAliveTrigger::IsActive()
 {
     if (botAI->IsMainTank(bot))
         return false;
-    
+
     Player* longbowTank = GetNetherstrandLongbowTank(botAI, bot);
     if (longbowTank && longbowTank == bot)
         return false;
-    
+
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
 
     return kaelthas && IsKaelthasInPhase2(botAI);
@@ -347,7 +347,7 @@ bool KaelthasSunstriderDevastationChannelsWhirlwindTrigger::IsActive()
 {
     if (!botAI->IsMainTank(bot))
         return false;
-    
+
     Unit* devastation = AI_VALUE2(Unit*, "find target", "devastation");
 
     return devastation && devastation->IsAlive();
@@ -358,7 +358,7 @@ bool KaelthasSunstriderNetherstrandLongbowFiresMultiShotTrigger::IsActive()
     Player* longbowTank = GetNetherstrandLongbowTank(botAI, bot);
     if (longbowTank != bot)
         return false;
-    
+
     Unit* longbow = AI_VALUE2(Unit*, "find target", "netherstrand longbow");
 
     return longbow && longbow->IsAlive();
@@ -368,7 +368,7 @@ bool KaelthasSunstriderLegendaryWeaponsAreDeadAndLootableTrigger::IsActive()
 {
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
 
-    return kaelthas && AreAllLegendaryWeaponsDead(botAI, bot);
+    return kaelthas && IsAnyLegendaryWeaponDead(botAI, bot);
 }
 
 bool KaelthasSunstriderLegendaryWeaponsAreEquippedTrigger::IsActive()
@@ -380,6 +380,60 @@ bool KaelthasSunstriderLegendaryWeaponsAreEquippedTrigger::IsActive()
     return bot->HasItemCount(ITEM_STAFF_OF_DISINTEGRATION, 1, false) ||
            bot->HasItemCount(ITEM_NETHERSTRAND_LONGBOW, 1, false) ||
            bot->HasItemCount(ITEM_PHASESHIFT_BULWARK, 1, false);
+}
+
+bool KaelthasSunstriderLegendaryWeaponsWereLostTrigger::IsActive()
+{
+    // Only run in Tempest Keep
+    if (bot->GetMapId() != 550)
+        return false;
+
+    // Only run out of combat
+    if (bot->IsInCombat())
+        return false;
+
+    const uint32 KAELTHAS_DB_GUID = 158218;
+
+    Map* map = bot->GetMap();
+    if (!map)
+        return false;
+
+    auto it = map->GetCreatureBySpawnIdStore().find(KAELTHAS_DB_GUID);
+    if (it == map->GetCreatureBySpawnIdStore().end())
+        return false;
+
+    Creature* kaelthas = it->second;
+    if (!kaelthas)
+        return false;
+
+    // Check distance to Kael'thas
+    float distance = bot->GetExactDist2d(kaelthas);
+    if (distance > 100.0f)
+        return false;
+
+    // Check if bot has a 2H weapon equipped in mainhand
+    Item* mainHand = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+    bool has2HWeapon = mainHand && mainHand->GetTemplate()->InventoryType == INVTYPE_2HWEAPON;
+
+    // Check for empty equipment slots
+    for (uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
+    {
+        if (slot == EQUIPMENT_SLOT_BODY || slot == EQUIPMENT_SLOT_TABARD)
+            continue;
+
+        // Skip offhand check if bot has 2H weapon equipped
+        if (slot == EQUIPMENT_SLOT_OFFHAND && has2HWeapon)
+            continue;
+
+        if (!bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
+        {
+            LOG_DEBUG("playerbots", "KaelthasSunstriderLegendaryWeaponsWereLostTrigger: {} - Found empty slot {}, trigger active!",
+                      bot->GetName(), slot);
+            return true;
+        }
+    }
+
+    return false;
 }
 
 bool KaelthasSunstriderDeterminingAdvisorKillOrderTrigger::IsActive()

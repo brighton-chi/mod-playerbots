@@ -255,6 +255,13 @@ public:
     bool IsActive() override;
 };
 
+class KaelthasSunstriderLegendaryWeaponsWereLostTrigger : public Trigger
+{
+public:
+    KaelthasSunstriderLegendaryWeaponsWereLostTrigger(PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider legendary weapons were lost") {}
+    bool IsActive() override;
+};
+
 class KaelthasSunstriderDeterminingAdvisorKillOrderTrigger : public Trigger
 {
 public:

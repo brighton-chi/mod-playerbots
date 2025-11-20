@@ -286,6 +286,13 @@ private:
     bool UseEquippedItemWithPacket(Item* item);
 };
 
+class KaelthasSunstriderReequipGearAction : public Action
+{
+public:
+    KaelthasSunstriderReequipGearAction(PlayerbotAI* botAI) : Action(botAI, "kaelthas reequip gear") {}
+    bool Execute(Event event) override;
+};
+
 class KaelthasSunstriderAssignAdvisorDpsPriorityAction : public AttackAction
 {
 public:

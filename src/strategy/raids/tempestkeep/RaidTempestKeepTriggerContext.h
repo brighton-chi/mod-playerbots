@@ -49,6 +49,7 @@ public:
         creators["kaelthas sunstrider netherstrand longbow fires multishot"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_netherstrand_longbow_fires_multishot;
         creators["kaelthas sunstrider legendary weapons are dead and lootable"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_legendary_weapons_are_dead_and_lootable;
         creators["kaelthas sunstrider legendary weapons are equipped"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_legendary_weapons_are_equipped;
+        creators["kaelthas sunstrider legendary weapons were lost"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_legendary_weapons_were_lost;
         creators["kaelthas sunstrider determining advisor kill order"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_determining_advisor_kill_order;
         creators["kaelthas sunstrider cheat to test"] = &RaidTempestKeepTriggerContext::kaelthas_sunstrider_cheat_to_test;
     }
@@ -94,6 +95,7 @@ private:
     static Trigger* kaelthas_sunstrider_netherstrand_longbow_fires_multishot(PlayerbotAI* botAI) { return new KaelthasSunstriderNetherstrandLongbowFiresMultiShotTrigger(botAI); }
     static Trigger* kaelthas_sunstrider_legendary_weapons_are_dead_and_lootable(PlayerbotAI* botAI) { return new KaelthasSunstriderLegendaryWeaponsAreDeadAndLootableTrigger(botAI); }
     static Trigger* kaelthas_sunstrider_legendary_weapons_are_equipped(PlayerbotAI* botAI) { return new KaelthasSunstriderLegendaryWeaponsAreEquippedTrigger(botAI); }
+    static Trigger* kaelthas_sunstrider_legendary_weapons_were_lost(PlayerbotAI* botAI) { return new KaelthasSunstriderLegendaryWeaponsWereLostTrigger(botAI); }
     static Trigger* kaelthas_sunstrider_determining_advisor_kill_order(PlayerbotAI* botAI) { return new KaelthasSunstriderDeterminingAdvisorKillOrderTrigger(botAI); }
     static Trigger* kaelthas_sunstrider_cheat_to_test(PlayerbotAI* botAI) { return new KaelthasSunstriderCheatToTestTrigger(botAI); }
 };

@@ -478,6 +478,50 @@ namespace TempestKeepHelpers
         return true;
     }
 
+    bool IsAnyLegendaryWeaponDead(PlayerbotAI* botAI, Player* bot)
+    {
+        const std::pair<const char*, uint32> weapons[] =
+        {
+            { "staff of disintegration", NPC_STAFF_OF_DISINTEGRATION },
+            { "cosmic infuser", NPC_COSMIC_INFUSER },
+            { "infinity blade", NPC_INFINITY_BLADES },
+            { "warp slicer", NPC_WARP_SLICER },
+            { "phaseshift bulwark", NPC_PHASESHIFT_BULWARK },
+            { "netherstrand longbow", NPC_NETHERSTRAND_LONGBOW },
+            { "devastation", NPC_DEVASTATION },
+        };
+
+        for (const auto& [name, entry] : weapons)
+        {
+            // Check if weapon is alive
+            Unit* weapon = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", name)->Get();
+            if (weapon && weapon->IsAlive())
+                continue; // Still alive, check next weapon
+
+            // Check if found as a dead corpse
+            GuidVector corpses = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest corpses")->Get();
+            for (auto const& guid : corpses)
+            {
+                LootObject loot(bot, guid);
+                WorldObject* obj = loot.GetWorldObject(bot);
+                if (!obj)
+                    continue;
+
+                if (Creature* cr = obj->ToCreature())
+                {
+                    if (cr->GetEntry() == entry && !cr->IsAlive())
+                    {
+                        // Found at least one dead weapon
+                        return true;
+                    }
+                }
+            }
+        }
+
+        // No dead weapons found
+        return false;
+    }
+
     std::unordered_map<uint32, int8> lastAlarPlatform;
     std::unordered_map<uint32, bool> lastRebirthState;
     std::unordered_map<uint32, bool> isPhase2;

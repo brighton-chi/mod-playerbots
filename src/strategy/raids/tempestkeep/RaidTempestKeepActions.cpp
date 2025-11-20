@@ -2037,7 +2037,7 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::Execute(Event event)
                 continue;
             }
 
-            return LootWeapon(weapon.npcEntry, weapon.itemId, weapon.name); // Pass itemId here
+            return LootWeapon(weapon.npcEntry, weapon.itemId, weapon.name);
         }
     }
 
@@ -2301,6 +2301,54 @@ bool KaelthasSunstriderUseLegendaryWeaponsAction::UseEquippedItemWithPacket(Item
 
     bot->GetSession()->HandleUseItemOpcode(packet);
     return true;
+}
+
+bool KaelthasSunstriderReequipGearAction::Execute(Event event)
+{
+    LOG_DEBUG("playerbots", "KaelthasSunstriderReequipGearAction: {} checking for empty equipment slots",
+              bot->GetName());
+
+    /* // Check for empty equipment slots
+    std::vector<uint8> emptySlots;
+    for (uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
+    {
+        if (slot == EQUIPMENT_SLOT_BODY || slot == EQUIPMENT_SLOT_TABARD)
+            continue;
+
+        Item* item = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot);
+        if (!item)
+        {
+            emptySlots.push_back(slot);
+            LOG_DEBUG("playerbots", "KaelthasSunstriderReequipGearAction: {} has empty slot {}",
+                      bot->GetName(), slot);
+        }
+    }
+
+    if (emptySlots.empty())
+    {
+        LOG_DEBUG("playerbots", "KaelthasSunstriderReequipGearAction: {} has no empty slots, skipping reequip",
+                  bot->GetName());
+        return false;
+    }
+
+    LOG_DEBUG("playerbots", "KaelthasSunstriderReequipGearAction: {} found {} empty slots, triggering equip upgrades",
+              bot->GetName(), emptySlots.size()); */
+
+    // Try to equip upgrades
+    bool result = botAI->DoSpecificAction("equip upgrades", Event(), true);
+
+    if (result)
+    {
+        LOG_DEBUG("playerbots", "KaelthasSunstriderReequipGearAction: {} successfully triggered equip upgrades",
+                  bot->GetName());
+    }
+    else
+    {
+        LOG_DEBUG("playerbots", "KaelthasSunstriderReequipGearAction: {} failed to trigger equip upgrades",
+                  bot->GetName());
+    }
+
+    return result;
 }
 
 bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)

@@ -71,7 +71,7 @@ namespace TempestKeepHelpers
         NPC_STAFF_OF_DISINTEGRATION = 21274,
         NPC_NETHER_VAPOR           = 21002, // 8 yard aura
         NPC_PHOENIX_EGG = 21364,
-        NPC_FLAME_STRIKE_TRIGGER = 21369, 
+        NPC_FLAME_STRIKE_TRIGGER = 21369,
     };
 
     enum TempestKeepItems
@@ -151,6 +151,7 @@ namespace TempestKeepHelpers
     Player* GetCapernianTank(PlayerbotAI* botAI, Player* bot);
     Player* GetNetherstrandLongbowTank(PlayerbotAI* botAI, Player* bot);
     bool AreAllLegendaryWeaponsDead(PlayerbotAI* botAI, Player* bot);
+    bool IsAnyLegendaryWeaponDead(PlayerbotAI* botAI, Player* bot);
 
     extern std::unordered_map<uint32, int8> lastAlarPlatform;
     extern std::unordered_map<uint32, bool> lastRebirthState;

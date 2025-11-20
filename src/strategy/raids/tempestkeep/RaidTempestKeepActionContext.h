@@ -50,6 +50,7 @@ public:
         creators["kaelthas sunstrider loot legendary weapons"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_loot_legendary_weapons;
         creators["kaelthas sunstrider use legendary weapons"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_use_legendary_weapons;
         creators["kaelthas sunstrider assign advisor dps priority"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_assign_advisor_dps_priority;
+        creators["kaelthas sunstrider reequip gear"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_reequip_gear;
         creators["kaelthas sunstrider cheat to test"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_cheat_to_test;
     }
 
@@ -95,6 +96,7 @@ private:
     static Action* kaelthas_sunstrider_loot_legendary_weapons(PlayerbotAI* botAI) { return new KaelthasSunstriderLootLegendaryWeaponsAction(botAI); }
     static Action* kaelthas_sunstrider_use_legendary_weapons(PlayerbotAI* botAI) { return new KaelthasSunstriderUseLegendaryWeaponsAction(botAI); }
     static Action* kaelthas_sunstrider_assign_advisor_dps_priority(PlayerbotAI* botAI) { return new KaelthasSunstriderAssignAdvisorDpsPriorityAction(botAI); }
+    static Action* kaelthas_sunstrider_reequip_gear(PlayerbotAI* botAI) { return new KaelthasSunstriderReequipGearAction(botAI); }
     static Action* kaelthas_sunstrider_cheat_to_test(PlayerbotAI* botAI) { return new KaelthasSunstriderCheatToTestAction(botAI); }
 };
 

@@ -120,6 +120,9 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kaelthas sunstrider legendary weapons are equipped",
         NextAction::array(0, new NextAction("kaelthas sunstrider use legendary weapons", ACTION_EMERGENCY + 6), nullptr)
     ));
+    triggers.push_back(new TriggerNode("kaelthas sunstrider legendary weapons were lost",
+        NextAction::array(0, new NextAction("kaelthas sunstrider reequip gear", ACTION_EMERGENCY + 11), nullptr)
+    ));
     triggers.push_back(new TriggerNode("kaelthas sunstrider determining advisor kill order",
         NextAction::array(0, new NextAction("kaelthas sunstrider assign advisor dps priority", ACTION_RAID + 1), nullptr)
     ));
@@ -138,5 +141,5 @@ void RaidTempestKeepStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new KaelthasSunstriderWaitForDpsMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderDelayBloodlustAndHeroismMultiplier(botAI));
-    multipliers.push_back(new KaelthasSunstriderReequipGearMultiplier(botAI));
+    // multipliers.push_back(new KaelthasSunstriderReequipGearMultiplier(botAI));
 }
