@@ -3351,7 +3351,7 @@ Position LadyVashjAvoidToxicSporesAction::FindSafestNearbyPosition(
 {
     const float searchStep = M_PI / 8.0f; // 22.5 degree increments
     const float minDistance = 2.0f;
-    const float maxDistance = 20.0f;
+    const float maxDistance = 30.0f;
     const float distanceStep = 1.0f;
 
     Position bestPos;
@@ -3450,7 +3450,7 @@ std::vector<Unit*> LadyVashjAvoidToxicSporesAction::GetAllSporeDropTriggers(Play
     const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
     for (auto const& npcGuid : npcs)
     {
-        const float maxSearchRadius = 30.0f;
+        const float maxSearchRadius = 40.0f;
         Unit* unit = botAI->GetUnit(npcGuid);
         if (unit && unit->GetEntry() == NPC_SPORE_DROP_TRIGGER && bot->GetExactDist2d(unit) < maxSearchRadius)
             sporeDropTriggers.push_back(unit);
