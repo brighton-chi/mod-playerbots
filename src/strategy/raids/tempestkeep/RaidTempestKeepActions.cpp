@@ -1155,7 +1155,7 @@ bool HighAstromancerSolarianStackBotsAction::Execute(Event event)
 
 bool HighAstromancerSolarianMoveAwayFromGroupAction::Execute(Event event)
 {
-    Group* group = bot->GetGroup();
+    /* Group* group = bot->GetGroup();
     if (!group)
         return false;
 
@@ -1169,7 +1169,11 @@ bool HighAstromancerSolarianMoveAwayFromGroupAction::Execute(Event event)
         const float safeDistance = 10.0f;
         if (currentDistance < safeDistance)
             return MoveAway(member, safeDistance - currentDistance + 0.5f);
-    }
+    } */
+    const float safeDistance = 10.0f;
+    Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
+    if (nearestPlayer)
+        return MoveFromGroup(safeDistance + 1.0f);
 
     return false;
 }
@@ -1944,10 +1948,11 @@ bool KaelthasSunstriderMoveDevastationAwayAction::Execute(Event event)
         if (nearestPlayer)
         {
             float currentDistance = bot->GetExactDist2d(nearestPlayer);
+            LOG_DEBUG("playerbots", "KaelthasMoveDevastationAway: nearestPlayer={} dist={} safeDistance={}", nearestPlayer->GetName(), currentDistance, safeDistance);
 
-            // If nearest player is inside danger zone, move away
-            if (currentDistance < safeDistance)
-                return MoveAway(nearestPlayer, safeDistance - currentDistance + 1.0f);
+            // nearestPlayer is guaranteed to be inside safeDistance by GetNearestPlayerInRadius,
+            // so we can directly attempt MoveFromGroup without rechecking currentDistance < safeDistance.
+            return MoveFromGroup(safeDistance + 1.0f);
         }
     }
 
@@ -1964,27 +1969,36 @@ bool KaelthasSunstriderHunterTurnAwayNetherstrandLongbowAction::Execute(Event ev
     SetRtiTarget(botAI, "cross", longbow);
 
     if (bot->GetVictim() != longbow)
+    {
+        LOG_DEBUG("playerbots", "HunterTurnAwayNetherstrandLongbowAction: starting Attack on longbow but continuing to kiting checks (threat present) bot={}", bot->GetName());
         return Attack(longbow);
+    }
 
     if (longbow->GetVictim() == bot)
     {
         // Find nearest raid member (danger zone)
         const float dangerZone = 20.0f;
 
-        // Try to move away from the average group position first.
-        // This produces a smoother group-wide kite-away behavior.
-        if (MoveFromGroup(dangerZone + 3.0f)) // +3 for extra buffer like MoveAway used previously
-            return true;
-
-        // Fallback: if MoveFromGroup didn't move (no group members or already far enough),
-        // do the nearest-player kite-away behavior as before.
+        // First check nearest player — only attempt to kite if someone is actually inside dangerZone
         Unit* nearestPlayer = GetNearestPlayerInRadius(bot, dangerZone);
-        if (nearestPlayer)
+        if (!nearestPlayer)
         {
-            // Kite away from nearest player to turn bow away from raid
-            float currentDistance = bot->GetExactDist2d(nearestPlayer);
-            if (currentDistance < dangerZone)
-                return MoveAway(nearestPlayer, dangerZone - currentDistance + 3.0f);
+            LOG_DEBUG("playerbots", "HunterTurnAwayNetherstrandLongbowAction: no nearest player within dangerZone={} for bot={}", dangerZone, bot->GetName());
+            return false;
+        }
+
+        float currentDistance = bot->GetExactDist2d(nearestPlayer);
+        LOG_DEBUG("playerbots", "HunterTurnAwayNetherstrandLongbowAction: nearestPlayer={} dist={} dangerZone={}", nearestPlayer->GetName(), currentDistance, dangerZone);
+
+        if (currentDistance < dangerZone)
+        {
+            // Try to move away from the average group position first. This produces a smoother group-wide kite-away behavior.
+            LOG_DEBUG("playerbots", "HunterTurnAwayNetherstrandLongbowAction: Attempting MoveFromGroup distance={}", dangerZone);
+            return MoveFromGroup(dangerZone);
+        }
+        else
+        {
+            LOG_DEBUG("playerbots", "HunterTurnAwayNetherstrandLongbowAction: nearestPlayer distance={} >= dangerZone={} (no movement)", currentDistance, dangerZone);
         }
     }
 
@@ -2762,7 +2776,8 @@ bool KaelthasSunstriderRoundUpPhoenixesAndFocusDownEggsAction::Execute(Event eve
                 {
                     LOG_DEBUG("playerbots", "KaelthasSunstriderRoundUpPhoenixesAndFocusDownEggsAction: {} kiting phoenix away from raid",
                               bot->GetName());
-                    return MoveAway(nearestPlayer, safeDistance - closestDist + 2.0f);
+                    // return MoveAway(nearestPlayer, safeDistance - closestDist + 2.0f);
+                    return MoveFromGroup(safeDistance + 2.0f);
                 }
             }
         }

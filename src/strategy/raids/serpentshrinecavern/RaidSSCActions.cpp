@@ -924,7 +924,7 @@ bool LeotherasTheBlindRunAwayFromWhirlwindAction::Execute(Event event)
         {
             bot->AttackStop();
             bot->InterruptNonMeleeSpells(true);
-            return MoveAway(leotherasHuman, safeDistance - currentDistance + 10.0f, false);
+            return MoveAway(leotherasHuman, safeDistance - currentDistance + 10.0f);
         }
     }
 
@@ -964,7 +964,7 @@ bool LeotherasTheBlindDemonFormPositionMeleeAction::Execute(Event event)
         {
             bot->AttackStop();
             bot->InterruptNonMeleeSpells(true);
-            return MoveAway(leotherasPhase3Demon, safeDistance - currentDistance + 5.0f, false);
+            return MoveAway(leotherasPhase3Demon, safeDistance - currentDistance + 5.0f);
         }
     }
 
@@ -1729,7 +1729,7 @@ bool LadyVashjMainTankPositionBossAction::Execute(Event event)
                 const float safeDistance = 10.0f;
                 if (currentDistance < safeDistance)
                 {
-                    return MoveAway(enchanted, safeDistance - currentDistance + 5.0f, false);
+                    return MoveAway(enchanted, safeDistance - currentDistance + 5.0f);
                 }
             }
         }
@@ -1899,7 +1899,8 @@ bool LadyVashjStaticChargeMoveAwayFromGroupAction::Execute(Event event)
         float currentDistance = bot->GetExactDist2d(mainTank);
         const float safeDistance = 10.0f;
         if (currentDistance < safeDistance)
-            return MoveAway(mainTank, safeDistance - currentDistance + 0.5f, false);
+            // return MoveAway(mainTank, safeDistance - currentDistance + 0.5f);
+            return MoveFromGroup(safeDistance + 0.5f);
     }
 
     // If any other bot has static charge, it should move away from other group members
@@ -1914,7 +1915,8 @@ bool LadyVashjStaticChargeMoveAwayFromGroupAction::Execute(Event event)
             float currentDistance = bot->GetExactDist2d(member);
             const float safeDistance = 10.0f;
             if (currentDistance < safeDistance)
-                return MoveAway(member, safeDistance - currentDistance + 0.5f, false);
+                // return MoveAway(member, safeDistance - currentDistance + 0.5f);
+                return MoveFromGroup(safeDistance + 0.5f);
         }
     }
 
@@ -1976,7 +1978,7 @@ bool LadyVashjTankAttackAndMoveAwayStriderAction::Execute(Event event)
             const float safeDistance = 20.0f;
 
             if (currentDistance < safeDistance)
-                return MoveAway(vashj, safeDistance - currentDistance + 5.0f, false);
+                return MoveAway(vashj, safeDistance - currentDistance + 5.0f);
 
             Player* firstCorePasser  = GetFirstTaintedCorePasser(group, botAI);
             Player* secondCorePasser = GetSecondTaintedCorePasser(group, botAI);
@@ -1991,7 +1993,7 @@ bool LadyVashjTankAttackAndMoveAwayStriderAction::Execute(Event event)
                     if (currentDistFromPasser < safeDistFromPasser)
                     {
                         LOG_DEBUG("playerbots", "AttackAndMoveAwayFromStriderAction: trying to move strider from core passer {} for tank bot={}", passer->GetName(), bot->GetName());
-                        return MoveAway(strider, safeDistFromPasser - currentDistFromPasser + 5.0f, false);
+                        return MoveAway(strider, safeDistFromPasser - currentDistFromPasser + 5.0f);
                     }
                 }
             }
@@ -2006,7 +2008,7 @@ bool LadyVashjTankAttackAndMoveAwayStriderAction::Execute(Event event)
         float currentDistance = bot->GetExactDist2d(strider);
         const float safeDistance = 15.0f;
         if (currentDistance < safeDistance)
-            return MoveAway(strider, safeDistance - currentDistance + 5.0f, false);
+            return MoveAway(strider, safeDistance - currentDistance + 5.0f);
     }
 
     if (!botAI->HasCheat(BotCheatMask::raid))

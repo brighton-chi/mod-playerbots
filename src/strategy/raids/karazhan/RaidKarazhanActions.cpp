@@ -94,10 +94,11 @@ bool AttumenTheHuntsmanSplitBossesAction::Execute(Event event)
 
     if (attumen->GetVictim() == bot && midnight->GetVictim() != bot)
     {
-        const float minDistance = 6.0f;
-        Unit* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance);
-        if (nearestPlayer)
-            return MoveAway(nearestPlayer, 8.0f, false);
+        const float safeDistance = 8.0f;
+        Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
+        if (nearestPlayer && attumen->GetExactDist2d(nearestPlayer) < safeDistance)
+            // return MoveAway(nearestPlayer, safeDistance + 2.0f);
+            return MoveFromGroup(safeDistance + 2.0f);
     }
 
     return false;
@@ -472,7 +473,10 @@ bool ShadeOfAranRunAwayFromArcaneExplosionAction::Execute(Event event)
     {
         bot->AttackStop();
         bot->InterruptNonMeleeSpells(true);
-        return MoveAway(aran, safeDistance - distance);
+        bool moved = MoveAway(aran, safeDistance - distance);
+        float newDistance = bot->GetDistance2d(aran);
+        LOG_INFO("playerbots", "Bot {} moved away from Aran: initial distance = {:.2f}, new distance = {:.2f}", bot->GetName(), distance, newDistance);
+        return moved;
     }
 
     return false;
