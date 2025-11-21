@@ -575,8 +575,8 @@ bool TheLurkerBelowRunAroundBehindBossAction::Execute(Event event)
     // Pick an angle behind Lurker (120-degree arc)
     float behindAngle = bossFacing + M_PI + ((rand() % 100) / 100.0f - 0.5f) * (M_PI / 3);
 
-    // Random radius between 23 and 27 yards
-    float radius = 23.0f + ((rand() % 500) / 100.0f);
+    // Random radius between 25 and 29 yards
+    float radius = 25.0f + ((rand() % 400) / 100.0f);
 
     // Calculate target position on the circle
     float targetX = lurker->GetPositionX() + radius * cos(behindAngle);
