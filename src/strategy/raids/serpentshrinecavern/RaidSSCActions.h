@@ -45,10 +45,10 @@ public:
     bool Execute(Event event) override;
 };
 
-class HydrossTheUnstableMarkElementalAddsAction : public Action
+class HydrossTheUnstablePrioritizeElementalAddsAction : public AttackAction
 {
 public:
-    HydrossTheUnstableMarkElementalAddsAction(PlayerbotAI* botAI, std::string const name = "hydross the unstable mark elemental adds") : Action(botAI, name) {}
+    HydrossTheUnstablePrioritizeElementalAddsAction(PlayerbotAI* botAI, std::string const name = "hydross the unstable prioritize elemental adds") : AttackAction(botAI, name) {}
 
     bool Execute(Event event) override;
 };

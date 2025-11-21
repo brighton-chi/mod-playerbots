@@ -53,7 +53,11 @@ bool HydrossTheUnstableBotIsNatureTankTrigger::IsActive()
 
 bool HydrossTheUnstableElementalsSpawnedTrigger::IsActive()
 {
-    if (!IsMapIDTimerManager(botAI, bot))
+    if (botAI->IsHeal(bot) || botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0))
+        return false;
+
+    Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
+    if (!hydross || hydross->GetHealthPct() < 10.0f)
         return false;
 
     Unit* waterElemental = AI_VALUE2(Unit*, "find target", "pure spawn of hydross");
@@ -215,7 +219,7 @@ bool LeotherasTheBlindBossIsInactiveTrigger::IsActive()
 bool LeotherasTheBlindEngagedByDemonFormTankTrigger::IsActive()
 {
     Player* demonFormTank = GetLeotherasDemonFormTank(botAI, bot);
-    if (bot != demonFormTank)
+    if (demonFormTank && bot != demonFormTank)
         return false;
 
     Unit* leotherasDemon = GetActiveLeotherasDemon(botAI);
@@ -228,7 +232,7 @@ bool LeotherasTheBlindBossEngagedByRangedTrigger::IsActive()
         return false;
 
     Player* demonFormTank = GetLeotherasDemonFormTank(botAI, bot);
-    if (demonFormTank == bot)
+    if (demonFormTank && demonFormTank == bot)
         return false;
 
     Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
@@ -248,7 +252,7 @@ bool LeotherasTheBlindBossChannelingWhirlwindTrigger::IsActive()
 bool LeotherasTheBlindDemonFormEngagedByMeleeWithoutWarlockTankTrigger::IsActive()
 {
     Player* demonFormTank = GetLeotherasDemonFormTank(botAI, bot);
-    if (demonFormTank->getClass() == CLASS_WARLOCK)
+    if (demonFormTank && demonFormTank->getClass() == CLASS_WARLOCK)
         return false;
 
     if (!botAI->IsMelee(bot) || botAI->IsMainTank(bot))
@@ -276,7 +280,7 @@ bool LeotherasTheBlindEnteredFinalPhaseTrigger::IsActive()
         return false;
 
     Player* demonFormTank = GetLeotherasDemonFormTank(botAI, bot);
-    if (demonFormTank == bot)
+    if (demonFormTank && demonFormTank == bot)
         return false;
 
     Unit* leotherasPhase3Demon = GetPhase3LeotherasDemon(botAI);

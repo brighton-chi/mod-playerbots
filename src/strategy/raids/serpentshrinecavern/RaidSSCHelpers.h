@@ -51,7 +51,7 @@ namespace SerpentShrineCavernHelpers
         SPELL_TOXIC_SPORES = 38574,
 
         // Hunter
-        SPELL_MISDIRECTION = 34477,
+        SPELL_MISDIRECTION = 35079,
 
         // Mage
         SPELL_SLOW = 31589,
@@ -190,7 +190,9 @@ namespace SerpentShrineCavernHelpers
     std::array<std::vector<Player*>, 2> GetMeleeBotGroups(Group* group);
 
     bool HasMarkOfHydrossAt100Percent(Player* bot);
+    bool HasNoMarkOfHydross(Player* bot);
     bool HasMarkOfCorruptionAt100Percent(Player* bot);
+    bool HasNoMarkOfCorruption(Player* bot);
 
     Unit* GetLeotherasHuman(PlayerbotAI* botAI);
     Unit* GetPhase2LeotherasDemon(PlayerbotAI* botAI);

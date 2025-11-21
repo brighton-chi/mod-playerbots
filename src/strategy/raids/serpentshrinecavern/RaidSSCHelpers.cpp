@@ -147,7 +147,7 @@ namespace SerpentShrineCavernHelpers
             for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
             {
                 Player* member = ref->GetSource();
-                if (member && member->IsAlive() && !botAI->IsTank(member) && GET_PLAYERBOT_AI(member))
+                if (member && member->IsAlive() && botAI->IsDps(member) && GET_PLAYERBOT_AI(member))
                     return member == bot;
             }
         }
@@ -175,11 +175,32 @@ namespace SerpentShrineCavernHelpers
                bot->HasAura(SPELL_MARK_OF_HYDROSS_500);
     }
 
+    bool HasNoMarkOfHydross(Player* bot)
+    {
+        return !bot->HasAura(SPELL_MARK_OF_HYDROSS_10) &&
+               !bot->HasAura(SPELL_MARK_OF_HYDROSS_25) &&
+               !bot->HasAura(SPELL_MARK_OF_HYDROSS_50) &&
+               !bot->HasAura(SPELL_MARK_OF_HYDROSS_100) &&
+               !bot->HasAura(SPELL_MARK_OF_HYDROSS_250) &&
+               !bot->HasAura(SPELL_MARK_OF_HYDROSS_500);
+    }
+
     bool HasMarkOfCorruptionAt100Percent(Player* bot)
     {
         return bot->HasAura(SPELL_MARK_OF_CORRUPTION_100) ||
                bot->HasAura(SPELL_MARK_OF_CORRUPTION_250) ||
                bot->HasAura(SPELL_MARK_OF_CORRUPTION_500);
+    }
+
+    bool HasNoMarkOfCorruption(Player* bot)
+    {
+        return
+               !bot->HasAura(SPELL_MARK_OF_CORRUPTION_10) &&
+               !bot->HasAura(SPELL_MARK_OF_CORRUPTION_25) &&
+               !bot->HasAura(SPELL_MARK_OF_CORRUPTION_50) &&
+               !bot->HasAura(SPELL_MARK_OF_CORRUPTION_100) &&
+               !bot->HasAura(SPELL_MARK_OF_CORRUPTION_250) &&
+               !bot->HasAura(SPELL_MARK_OF_CORRUPTION_500);
     }
 
     bool IsLurkerCastingSpout(Unit* lurker)

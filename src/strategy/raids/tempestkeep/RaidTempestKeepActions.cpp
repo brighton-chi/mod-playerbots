@@ -688,7 +688,7 @@ bool AlarJumpFromPlatformAction::Execute(Event event)
         size_t nearestIndex = 0;
         for (size_t i = 0; i < platformGroundPairs.size(); ++i)
         {
-        float dist = bot->GetExactDist2d(platformGroundPairs[i].first.GetPositionX(), platformGroundPairs[i].first.GetPositionY());
+            float dist = bot->GetExactDist2d(platformGroundPairs[i].first.GetPositionX(), platformGroundPairs[i].first.GetPositionY());
             if (dist < minDist)
             {
                 minDist = dist;
@@ -760,7 +760,7 @@ bool AlarMoveAwayFromRebirthAction::Execute(Event event)
         size_t nearestIndex = 0;
         for (size_t i = 0; i < platformGroundPairs.size(); ++i)
         {
-        float dist = bot->GetExactDist2d(platformGroundPairs[i].first.GetPositionX(), platformGroundPairs[i].first.GetPositionY());
+            float dist = bot->GetExactDist2d(platformGroundPairs[i].first.GetPositionX(), platformGroundPairs[i].first.GetPositionY());
             if (dist < minDist)
             {
                 minDist = dist;

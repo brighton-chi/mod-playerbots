@@ -22,7 +22,7 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction::array(0, new NextAction("hydross the unstable position nature tank", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("hydross the unstable elementals spawned",
-        NextAction::array(0, new NextAction("hydross the unstable mark elemental adds", ACTION_RAID + 1), nullptr)
+        NextAction::array(0, new NextAction("hydross the unstable prioritize elemental adds", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("hydross the unstable danger from water tombs",
         NextAction::array(0, new NextAction("hydross the unstable frost phase spread out", ACTION_EMERGENCY + 1), nullptr)

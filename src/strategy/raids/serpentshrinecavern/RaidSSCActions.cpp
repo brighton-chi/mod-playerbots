@@ -11,8 +11,6 @@
 #include "Playerbots.h"
 #include "RtiTargetValue.h"
 
-#include <chrono> // For testing purposes
-
 using namespace SerpentShrineCavernHelpers;
 using namespace SerpentShrineCavernPositions;
 
@@ -189,10 +187,10 @@ bool HydrossTheUnstablePositionFrostTankAction::Execute(Event event)
         if (bot->GetVictim() != hydross)
             return Attack(hydross);
 
-        if (hydross->GetVictim() == bot)
+        if (hydross->GetVictim() == bot && bot->IsWithinMeleeRange(hydross))
         {
             const Position& position = HydrossFrostTankPosition;
-            if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
+            if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 3.0f)
             {
                 float dX = position.GetPositionX() - bot->GetPositionX();
                 float dY = position.GetPositionY() - bot->GetPositionY();
@@ -203,12 +201,6 @@ bool HydrossTheUnstablePositionFrostTankAction::Execute(Event event)
 
                 return MoveTo(bot->GetMapId(), moveX, moveY, position.GetPositionZ(), false, false, false, true,
                               MovementPriority::MOVEMENT_COMBAT, true, true);
-            }
-            else if (!bot->IsWithinMeleeRange(hydross))
-            {
-                return MoveTo(hydross->GetMapId(), hydross->GetPositionX(),
-                              hydross->GetPositionY(), hydross->GetPositionZ(),
-                              false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
             }
         }
     }
@@ -222,7 +214,7 @@ bool HydrossTheUnstablePositionFrostTankAction::Execute(Event event)
         if (it != hydrossChangeToNaturePhaseTimer.end() && (now - it->second) >= 5)
         {
             const Position& position = HydrossNatureTankPosition;
-            if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
+            if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 3.0f)
             {
                 float dX = position.GetPositionX() - bot->GetPositionX();
                 float dY = position.GetPositionY() - bot->GetPositionY();
@@ -283,10 +275,10 @@ bool HydrossTheUnstablePositionNatureTankAction::Execute(Event event)
         if (bot->GetVictim() != hydross)
             return Attack(hydross);
 
-        if (hydross->GetVictim() == bot)
+        if (hydross->GetVictim() == bot && bot->IsWithinMeleeRange(hydross))
         {
             const Position& position = HydrossNatureTankPosition;
-            if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
+            if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 3.0f)
             {
                 float dX = position.GetPositionX() - bot->GetPositionX();
                 float dY = position.GetPositionY() - bot->GetPositionY();
@@ -297,12 +289,6 @@ bool HydrossTheUnstablePositionNatureTankAction::Execute(Event event)
 
                 return MoveTo(bot->GetMapId(), moveX, moveY, position.GetPositionZ(), false, false, false, true,
                               MovementPriority::MOVEMENT_COMBAT, true, true);
-            }
-            else if (!bot->IsWithinMeleeRange(hydross))
-            {
-                return MoveTo(hydross->GetMapId(), hydross->GetPositionX(),
-                            hydross->GetPositionY(), hydross->GetPositionZ(),
-                            false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
             }
         }
     }
@@ -316,7 +302,7 @@ bool HydrossTheUnstablePositionNatureTankAction::Execute(Event event)
         if (it != hydrossChangeToFrostPhaseTimer.end() && (now - it->second) >= 5)
         {
             const Position& position = HydrossFrostTankPosition;
-            if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
+            if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 3.0f)
             {
                 float dX = position.GetPositionX() - bot->GetPositionX();
                 float dY = position.GetPositionY() - bot->GetPositionY();
@@ -363,15 +349,35 @@ bool HydrossTheUnstablePositionNatureTankAction::Execute(Event event)
     return false;
 }
 
-bool HydrossTheUnstableMarkElementalAddsAction::Execute(Event event)
+bool HydrossTheUnstablePrioritizeElementalAddsAction::Execute(Event event)
 {
     Unit* waterElemental = GetFirstAliveUnitByEntry(botAI, NPC_PURE_SPAWN_OF_HYDROSS);
     if (waterElemental)
-        MarkTargetWithSkull(bot, waterElemental);
+    {
+        if (IsMapIDTimerManager(botAI, bot))
+            MarkTargetWithSkull(bot, waterElemental);
 
-    Unit* natureElemental = GetFirstAliveUnitByEntry(botAI, NPC_TAINTED_SPAWN_OF_HYDROSS);
-    if (natureElemental)
-        MarkTargetWithSkull(bot, natureElemental);
+        SetRtiTarget(botAI, "skull", waterElemental);
+
+        if (bot->GetTarget() != waterElemental->GetGUID())
+        {
+            bot->SetTarget(waterElemental->GetGUID());
+            return Attack(waterElemental);
+        }
+    }
+    else if (Unit* natureElemental = GetFirstAliveUnitByEntry(botAI, NPC_TAINTED_SPAWN_OF_HYDROSS))
+    {
+        if (IsMapIDTimerManager(botAI, bot))
+            MarkTargetWithSkull(bot, natureElemental);
+
+        SetRtiTarget(botAI, "skull", natureElemental);
+
+        if (bot->GetTarget() != natureElemental->GetGUID())
+        {
+            bot->SetTarget(natureElemental->GetGUID());
+            return Attack(natureElemental);
+        }
+    }
 
     return false;
 }
@@ -405,6 +411,8 @@ bool HydrossTheUnstableMisdirectBossToTankAction::Execute(Event event)
     if (!hydross || !group)
         return false;
 
+    LOG_DEBUG("playerbots", "HydrossMisdirect: entered for bot={} hydross={}", bot->GetName(), hydross->GetGUID().ToString());
+
     if (TryMisdirectToFrostTank(hydross, group))
         return true;
 
@@ -427,8 +435,7 @@ bool HydrossTheUnstableMisdirectBossToTankAction::TryMisdirectToFrostTank(Unit* 
         }
     }
 
-    Unit* waterElemental = GetFirstAliveUnitByEntry(botAI, NPC_PURE_SPAWN_OF_HYDROSS);
-    if (waterElemental && !hydross->HasAura(SPELL_CORRUPTION) && frostTank)
+    if (HasNoMarkOfHydross(bot) && !hydross->HasAura(SPELL_CORRUPTION) && frostTank)
     {
         if (botAI->CanCastSpell("misdirection", frostTank))
             return botAI->CastSpell("misdirection", frostTank);
@@ -456,8 +463,7 @@ bool HydrossTheUnstableMisdirectBossToTankAction::TryMisdirectToNatureTank(Unit*
         }
     }
 
-    Unit* natureElemental = GetFirstAliveUnitByEntry(botAI, NPC_TAINTED_SPAWN_OF_HYDROSS);
-    if (natureElemental && hydross->HasAura(SPELL_CORRUPTION) && natureTank)
+    if (HasNoMarkOfCorruption(bot) && hydross->HasAura(SPELL_CORRUPTION) && natureTank)
     {
         if (botAI->CanCastSpell("misdirection", natureTank))
             return botAI->CastSpell("misdirection", natureTank);
@@ -541,8 +547,7 @@ bool HydrossTheUnstableManageTimersAction::Execute(Event event)
         if (HasMarkOfHydrossAt100Percent(bot))
             hydrossChangeToNaturePhaseTimer.try_emplace(mapId, now);
     }
-
-    if (hydross->HasAura(SPELL_CORRUPTION))
+    else
     {
         hydrossNatureDpsWaitTimer.try_emplace(mapId, now);
         hydrossFrostDpsWaitTimer.erase(mapId);
@@ -1057,7 +1062,6 @@ bool LeotherasTheBlindManageTimersAndTrackersAction::Execute(Event event)
         leotherasHumanFormDpsWaitTimer.erase(mapId);
         leotherasDemonFormDpsWaitTimer.erase(mapId);
         leotherasFinalPhaseDpsWaitTimer.erase(mapId);
-
         return false;
     }
 
@@ -1068,20 +1072,15 @@ bool LeotherasTheBlindManageTimersAndTrackersAction::Execute(Event event)
     {
         leotherasHumanFormDpsWaitTimer.try_emplace(mapId, now);
         leotherasDemonFormDpsWaitTimer.erase(mapId);
-        return false;
     }
-
     // Demon Phase
-    Unit* leotherasPhase2Demon = GetPhase2LeotherasDemon(botAI);
-    if (leotherasPhase2Demon)
+    else if (Unit* leotherasPhase2Demon = GetPhase2LeotherasDemon(botAI))
     {
         leotherasDemonFormDpsWaitTimer.try_emplace(mapId, now);
         leotherasHumanFormDpsWaitTimer.erase(mapId);
-        return false;
     }
-
     // Final Phase (<15% HP)
-    if (leotherasHuman && leotherasPhase3Demon)
+    else if (leotherasHuman && leotherasPhase3Demon)
     {
         leotherasFinalPhaseDpsWaitTimer.try_emplace(mapId, now);
         leotherasHumanFormDpsWaitTimer.erase(mapId);
@@ -1105,16 +1104,10 @@ bool FathomLordKarathressMainTankPositionBossAction::Execute(Event event)
     if (bot->GetVictim() != karathress)
         return Attack(karathress);
 
-    if (karathress->GetVictim() == bot)
+    if (karathress->GetVictim() == bot && bot->IsWithinMeleeRange(karathress))
     {
         const Position& position = KarathressTankPosition;
-        if (!bot->IsWithinMeleeRange(karathress))
-        {
-            return MoveTo(karathress->GetMapId(), karathress->GetPositionX(),
-                          karathress->GetPositionY(), karathress->GetPositionZ(),
-                          false, false, false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
-        }
-        else if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
+        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
         {
             float dX = position.GetPositionX() - bot->GetPositionX();
             float dY = position.GetPositionY() - bot->GetPositionY();
@@ -1143,16 +1136,10 @@ bool FathomLordKarathressFirstAssistTankPositionSharkkisAction::Execute(Event ev
     if (bot->GetVictim() != sharkkis)
         return Attack(sharkkis);
 
-    if (sharkkis->GetVictim() == bot)
+    if (sharkkis->GetVictim() == bot && bot->IsWithinMeleeRange(sharkkis))
     {
         const Position& position = SharkkisTankPosition;
-        if (!bot->IsWithinMeleeRange(sharkkis))
-        {
-            return MoveTo(sharkkis->GetMapId(), sharkkis->GetPositionX(),
-                          sharkkis->GetPositionY(), sharkkis->GetPositionZ(),
-                          false, false, false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
-        }
-        else if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
+        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
         {
             float dX = position.GetPositionX() - bot->GetPositionX();
             float dY = position.GetPositionY() - bot->GetPositionY();
@@ -1181,16 +1168,10 @@ bool FathomLordKarathressSecondAssistTankPositionTidalvessAction::Execute(Event 
     if (bot->GetVictim() != tidalvess)
         return Attack(tidalvess);
 
-    if (tidalvess->GetVictim() == bot)
+    if (tidalvess->GetVictim() == bot && bot->IsWithinMeleeRange(tidalvess))
     {
         const Position& position = TidalvessTankPosition;
-        if (!bot->IsWithinMeleeRange(tidalvess))
-        {
-            return MoveTo(tidalvess->GetMapId(), tidalvess->GetPositionX(),
-                          tidalvess->GetPositionY(), tidalvess->GetPositionZ(),
-                          false, false, false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
-        }
-        else if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
+        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
         {
             float dX = position.GetPositionX() - bot->GetPositionX();
             float dY = position.GetPositionY() - bot->GetPositionY();
@@ -1532,7 +1513,7 @@ bool MorogrimTidewalkerMoveBossToTankPositionAction::Execute(Event event)
     if (bot->GetVictim() != tidewalker)
         return Attack(tidewalker);
 
-    if (tidewalker->GetVictim() == bot)
+    if (tidewalker->GetVictim() == bot && bot->IsWithinMeleeRange(tidewalker))
     {
         if (tidewalker->GetHealthPct() > 26.0f)
             return MoveToPhase1TankPosition(tidewalker);
@@ -1557,12 +1538,6 @@ bool MorogrimTidewalkerMoveBossToTankPositionAction::MoveToPhase1TankPosition(Un
 
         return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false,
                         MovementPriority::MOVEMENT_COMBAT, true, true);
-    }
-    else if (!bot->IsWithinMeleeRange(tidewalker))
-    {
-        return MoveTo(tidewalker->GetMapId(), tidewalker->GetPositionX(),
-                      tidewalker->GetPositionY(), tidewalker->GetPositionZ(),
-                      false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
     return false;
@@ -1642,7 +1617,10 @@ bool MorogrimTidewalkerPhase2RepositionRangedAction::Execute(Event event)
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
         else
+        {
             tidewalkerRangedStep.emplace(botGuid, 1);
+            step = 1;
+        }
     }
 
     if (step == 1)
@@ -1692,7 +1670,7 @@ bool LadyVashjMainTankPositionBossAction::Execute(Event event)
     if (bot->GetVictim() != vashj)
         return Attack(vashj);
 
-    if (vashj->GetVictim() == bot)
+    if (vashj->GetVictim() == bot && bot->IsWithinMeleeRange(vashj))
     {
         if (IsLadyVashjInPhase1(botAI))
         {
@@ -1709,12 +1687,6 @@ bool LadyVashjMainTankPositionBossAction::Execute(Event event)
                 return MoveTo(bot->GetMapId(), moveX, moveY, position.GetPositionZ(), false, false, false, false,
                             MovementPriority::MOVEMENT_COMBAT, true, true);
             }
-            else if (!bot->IsWithinMeleeRange(vashj))
-            {
-                return MoveTo(vashj->GetMapId(), vashj->GetPositionX(),
-                            vashj->GetPositionY(), vashj->GetPositionZ(),
-                            false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
-            }
         }
 
         if (IsLadyVashjInPhase3(botAI))
@@ -1725,9 +1697,7 @@ bool LadyVashjMainTankPositionBossAction::Execute(Event event)
                 float currentDistance = bot->GetExactDist2d(enchanted);
                 const float safeDistance = 10.0f;
                 if (currentDistance < safeDistance)
-                {
                     return MoveAway(enchanted, safeDistance - currentDistance + 5.0f);
-                }
             }
         }
     }
@@ -1924,9 +1894,12 @@ bool LadyVashjStaticChargeMoveAwayFromGroupAction::Execute(Event event)
 
 bool LadyVashjMisdirectStriderToFirstAssistTankAction::Execute(Event event)
 {
+    if (bot->getClass() != CLASS_HUNTER)
+        return false;
+
     Unit* strider = GetFirstAliveUnitByEntry(botAI, NPC_COILFANG_STRIDER);
     Group* group = bot->GetGroup();
-    if (!strider || !group || bot->getClass() != CLASS_HUNTER)
+    if (!strider || !group)
         return false;
 
     Player* firstAssistTank = nullptr;
@@ -1966,10 +1939,7 @@ bool LadyVashjTankAttackAndMoveAwayStriderAction::Execute(Event event)
             bot->AddAura(SPELL_FEAR_WARD_CHEAT, bot);
 
         if (botAI->IsAssistTankOfIndex(bot, 0) && bot->GetVictim() != strider)
-        {
-            LOG_DEBUG("playerbots", "AttackAndMoveAwayFromStriderAction: Tanking strider");
             return Attack(strider);
-        }
 
         if (strider->GetVictim() == bot)
         {

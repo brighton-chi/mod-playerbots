@@ -40,12 +40,11 @@ float HydrossTheUnstableDisableTankActionsMultiplier::GetValue(Action* action)
     if (!hydross || dynamic_cast<WipeAction*>(action))
         return 1.0f;
 
+    if (dynamic_cast<TankAssistAction*>(action))
+        return 0.0f;
+
     if (botAI->IsMainTank(bot))
     {
-        if (dynamic_cast<TankAssistAction*>(action) ||
-            dynamic_cast<CombatFormationMoveAction*>(action))
-            return 0.0f;
-
         if (hydross->HasAura(SPELL_CORRUPTION))
         {
             if (!dynamic_cast<HydrossTheUnstablePositionFrostTankAction*>(action))
@@ -55,10 +54,6 @@ float HydrossTheUnstableDisableTankActionsMultiplier::GetValue(Action* action)
 
     if (botAI->IsAssistTankOfIndex(bot, 0))
     {
-        if (dynamic_cast<TankAssistAction*>(action) ||
-            dynamic_cast<CombatFormationMoveAction*>(action))
-            return 0.0f;
-
         if (!hydross->HasAura(SPELL_CORRUPTION))
         {
             if (!dynamic_cast<HydrossTheUnstablePositionNatureTankAction*>(action))
@@ -75,6 +70,15 @@ float HydrossTheUnstableWaitForDpsMultiplier::GetValue(Action* action)
     if (!hydross)
         return 1.0f;
 
+    if (botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0))
+        return 1.0f;
+
+    Unit* waterElemental = AI_VALUE2(Unit*, "find target", "pure spawn of hydross");
+    Unit* natureElemental = AI_VALUE2(Unit*, "find target", "tainted spawn of hydross");
+    if (botAI->IsAssistTank(bot) && !botAI->IsAssistTankOfIndex(bot, 0) &&
+        (waterElemental || natureElemental))
+        return 1.0f;
+
     if (dynamic_cast<HydrossTheUnstableMisdirectBossToTankAction*>(action))
         return 1.0f;
 
@@ -85,6 +89,15 @@ float HydrossTheUnstableWaitForDpsMultiplier::GetValue(Action* action)
 
     if (!hydross->HasAura(SPELL_CORRUPTION))
     {
+        if (botAI->IsAssistTankOfIndex(bot, 0))
+        {
+            if (dynamic_cast<AttackAction*>(action) &&
+                !dynamic_cast<HydrossTheUnstablePositionNatureTankAction*>(action))
+                return 0.0f;
+        }
+        else if (botAI->IsTank(bot))
+            return 1.0f;
+
         auto itDps = hydrossFrostDpsWaitTimer.find(mapId);
         auto itPhase = hydrossChangeToFrostPhaseTimer.find(mapId);
 
@@ -96,7 +109,7 @@ float HydrossTheUnstableWaitForDpsMultiplier::GetValue(Action* action)
 
         if (justChanged || aboutToChange)
         {
-            if ((!botAI->IsMainTank(bot) && dynamic_cast<AttackAction*>(action)) ||
+            if (dynamic_cast<AttackAction*>(action) ||
                 (dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<CastHealingSpellAction*>(action)))
                 return 0.0f;
         }
@@ -104,6 +117,15 @@ float HydrossTheUnstableWaitForDpsMultiplier::GetValue(Action* action)
 
     if (hydross->HasAura(SPELL_CORRUPTION))
     {
+        if (botAI->IsMainTank(bot))
+        {
+            if (dynamic_cast<AttackAction*>(action) &&
+                !dynamic_cast<HydrossTheUnstablePositionNatureTankAction*>(action))
+                return 0.0f;
+        }
+        else if (botAI->IsTank(bot))
+            return 1.0f;
+
         auto itDps = hydrossNatureDpsWaitTimer.find(mapId);
         auto itPhase = hydrossChangeToNaturePhaseTimer.find(mapId);
 
@@ -115,7 +137,7 @@ float HydrossTheUnstableWaitForDpsMultiplier::GetValue(Action* action)
 
         if (justChanged || aboutToChange)
         {
-            if ((!botAI->IsAssistTankOfIndex(bot, 0) && dynamic_cast<AttackAction*>(action)) ||
+            if (dynamic_cast<AttackAction*>(action) ||
                 (dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<CastHealingSpellAction*>(action)))
                 return 0.0f;
         }

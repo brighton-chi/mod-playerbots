@@ -154,7 +154,7 @@ namespace TempestKeepHelpers
             for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
             {
                 Player* member = ref->GetSource();
-                if (member && member->IsAlive() && !botAI->IsTank(member) && GET_PLAYERBOT_AI(member))
+                if (member && member->IsAlive() && botAI->IsDps(member) && GET_PLAYERBOT_AI(member))
                     return member == bot;
             }
         }
@@ -422,7 +422,7 @@ namespace TempestKeepHelpers
             {
                 Player* member = ref->GetSource();
                 Player* capernianTank = GetCapernianTank(botAI, member);
-                if (member && member->IsAlive() && !botAI->IsTank(member) &&
+                if (member && member->IsAlive() && botAI->IsDps(member) &&
                     member != capernianTank && GET_PLAYERBOT_AI(member))
                     return member == bot;
             }

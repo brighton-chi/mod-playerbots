@@ -42,7 +42,7 @@ namespace TempestKeepHelpers
         SPELL_REMOTE_TOY_STUN               = 37029,
 
         // Hunter
-        SPELL_MISDIRECTION = 34477,
+        SPELL_MISDIRECTION = 35079,
 
         // Mage
         SPELL_POLYMORPH_SHEEP = 12826,
