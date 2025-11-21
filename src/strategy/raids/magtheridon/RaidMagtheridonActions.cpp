@@ -371,7 +371,7 @@ bool MagtheridonMainTankPositionBossAction::Execute(Event event)
     if (bot->GetVictim() != magtheridon)
         return Attack(magtheridon);
 
-    if (magtheridon->GetVictim() == bot)
+    if (magtheridon->GetVictim() == bot && bot->IsWithinMeleeRange(magtheridon))
     {
         const Location& position = MagtheridonsLairLocations::MagtheridonTankPosition;
         const float maxDistance = 2.0f;
