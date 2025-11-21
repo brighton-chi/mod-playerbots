@@ -425,19 +425,16 @@ float MorogrimTidewalkerDisablePhase2FleeActionMultiplier::GetValue(Action* acti
     return 1.0f;
 }
 
-float LadyVashjDelayCooldownsMultiplier::GetValue(Action* action)
+float LadyVashjDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     if (!vashj)
         return 1.0f;
 
     if (!IsLadyVashjInPhase3(botAI) &&
-        (dynamic_cast<CastHeroismAction*>(action) ||
-         dynamic_cast<CastBloodlustAction*>(action)))
+        (dynamic_cast<CastBloodlustAction*>(action) ||
+         dynamic_cast<CastHeroismAction*>(action)))
         return 0.0f;
-
-    /* if (IsLadyVashjInPhase1(botAI) && dynamic_cast<CastMetamorphosisAction*>(action))
-        return 0.0f; */
 
     return 1.0f;
 }
@@ -472,7 +469,7 @@ float LadyVashjDoNotLootTheTaintedCoreMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* action)
+/* float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* action)
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     if (!vashj)
@@ -480,9 +477,7 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
 
     Group* group = bot->GetGroup();
     Player* master = botAI->GetMaster();
-    if (!IsLadyVashjInPhase2(botAI) || !group || !master /* || dynamic_cast<WipeAction*>(action) ||
-        dynamic_cast<DestroyItemAction*>(action) || dynamic_cast<StoreLootAction*>(action) ||
-        dynamic_cast<LadyVashjCheatToTestAction*>(action) */)
+    if (!IsLadyVashjInPhase2(botAI) || !group || !master)
         return 1.0f;
 
     Player* designatedLooter = GetDesignatedCoreLooter(group, master, botAI);
@@ -508,7 +503,6 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
             return 1.0f;
 
         const uint32 mapId = vashj->GetMapId();
-        // query helper once for recent paralyze (default grace = 3s)
         bool recentParalyze = AnyRecentParalyze(group, mapId);
 
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
@@ -517,8 +511,6 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
             if (!member || !member->IsAlive())
                 continue;
 
-            // if any recent paralyze (or the member currently has paralyze),
-            // movement actions (except the pass-the-core action) should be deprioritized.
             if (recentParalyze || member->HasAura(SPELL_PARALYZE))
             {
                 if (dynamic_cast<MovementAction*>(action) &&
@@ -529,7 +521,7 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
     }
 
     return 1.0f;
-}
+} */
 
 float LadyVashjDisableAutomaticTargetingAndMovementModifier::GetValue(Action *action)
 {

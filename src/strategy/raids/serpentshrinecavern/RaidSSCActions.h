@@ -394,8 +394,7 @@ private:
     bool IsThirdCorePasserInIntendedPosition(Player* secondCorePasser, Player* thirdCorePasser, Unit* closestTrigger);
     bool IsFourthCorePasserInIntendedPosition(Player* thirdCorePasser, Player* fourthCorePasser, Unit* closestTrigger);
     void ScheduleStoreCoreAfterImbue(PlayerbotAI* botAI, Player* giver, Player* receiver);
-    bool CanUseGenerator();
-    bool UseCoreOnNearestGenerator();
+    void UseCoreOnNearestGenerator();
 };
 
 class LadyVashjDestroyTaintedCoreAction : public Action
@@ -428,13 +427,6 @@ class LadyVashjManageTrackersAction : public Action
 {
 public:
     LadyVashjManageTrackersAction(PlayerbotAI* botAI, std::string const name = "lady vashj manage trackers") : Action(botAI, name) {}
-    bool Execute(Event event) override;
-};
-
-class LadyVashjCheatToTestAction : public AttackAction
-{
-public:
-    LadyVashjCheatToTestAction(PlayerbotAI* botAI, std::string const name = "lady vashj cheat to test") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 

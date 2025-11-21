@@ -14,7 +14,6 @@ namespace SerpentShrineCavernHelpers
     {
         // Trash Mob
         SPELL_TOXIC_POOL = 38718,
-        // SPELL_ACID_GEYSER = 38971,
 
         // Hydross the Unstable <Duke of Currents>
         SPELL_MARK_OF_HYDROSS_10 = 38215,
@@ -43,14 +42,10 @@ namespace SerpentShrineCavernHelpers
         SPELL_METAMORPHOSIS = 37673,
         SPELL_INSIDIOUS_WHISPER = 37676,
 
-        // Morogrim Tidewalker
-        // SPELL_WATERY_GRAVE = 38049,
-
         // Lady Vashj <Coilfang Matron>
         SPELL_FEAR_WARD_CHEAT = 6346,
-        SPELL_PARALYZE = 38132, // from holding Tainted Core
+        SPELL_PARALYZE = 38132,
         SPELL_POISON_BOLT = 38253,
-        // SPELL_PANIC = 38258,
         SPELL_STATIC_CHARGE = 38280,
         SPELL_ENTANGLE = 38316,
         SPELL_TOXIC_SPORES = 38574,
@@ -94,7 +89,7 @@ namespace SerpentShrineCavernHelpers
         NPC_SPITFIRE_TOTEM = 22091,
 
         // Lady Vashj <Coilfang Matron>
-        NPC_WORLD_INVISIBLE_TRIGGER = 12999, // Casts the beam for the shield generator
+        NPC_WORLD_INVISIBLE_TRIGGER = 12999,
         NPC_LADY_VASHJ = 21212,
         NPC_ENCHANTED_ELEMENTAL = 21958,
         NPC_TAINTED_ELEMENTAL = 22009,
@@ -141,7 +136,6 @@ namespace SerpentShrineCavernHelpers
     {
         extern const Position HydrossFrostTankPosition;
         extern const Position HydrossNatureTankPosition;
-        // Hydross dps positions?
 
         extern const Position LurkerMainTankPosition;
         /* extern const Position LurkerEMeleePosition;
@@ -175,14 +169,6 @@ namespace SerpentShrineCavernHelpers
         extern const Position TidewalkerPhase2RangedPosition;
 
         extern const Position VashjPlatformCenterPosition;
-        /* extern const Position VashjNWStairsPosition;
-        extern const Position VashjWStairsPosition;
-        extern const Position VashjSWStairsPosition;
-        extern const Position VashjSSWStairsPosition;
-        extern const Position VashjSEStairsPosition;
-        extern const Position VashjEStairsPosition;
-        extern const Position VashjENEStairsPosition;
-        extern const Position VashjNNEStairsPosition; */
     }
 
     void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);

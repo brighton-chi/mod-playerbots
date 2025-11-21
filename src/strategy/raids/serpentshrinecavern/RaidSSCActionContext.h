@@ -68,7 +68,6 @@ public:
         creators["lady vashj avoid toxic spores"] = &RaidSSCActionContext::lady_vashj_avoid_toxic_spores;
         creators["lady vashj use free action abilities"] = &RaidSSCActionContext::lady_vashj_use_free_action_abilities;
         creators["lady vashj manage trackers"] = &RaidSSCActionContext::lady_vashj_manage_trackers;
-        creators["lady vashj cheat to test"] = &RaidSSCActionContext::lady_vashj_cheat_to_test;
     }
 
 private:
@@ -131,7 +130,6 @@ private:
     static Action* lady_vashj_avoid_toxic_spores(PlayerbotAI* botAI) { return new LadyVashjAvoidToxicSporesAction(botAI); }
     static Action* lady_vashj_use_free_action_abilities(PlayerbotAI* botAI) { return new LadyVashjUseFreeActionAbilitiesAction(botAI); }
     static Action* lady_vashj_manage_trackers(PlayerbotAI* botAI) { return new LadyVashjManageTrackersAction(botAI); }
-    static Action* lady_vashj_cheat_to_test(PlayerbotAI* botAI) { return new LadyVashjCheatToTestAction(botAI); }
 };
 
 #endif

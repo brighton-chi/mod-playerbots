@@ -129,10 +129,10 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class LadyVashjDelayCooldownsMultiplier : public Multiplier
+class LadyVashjDelayBloodlustAndHeroismMultiplier : public Multiplier
 {
 public:
-    LadyVashjDelayCooldownsMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "lady vashj delay cooldowns") {}
+    LadyVashjDelayBloodlustAndHeroismMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "lady vashj delay bloodlust and heroism") {}
     virtual float GetValue(Action* action);
 };
 
@@ -150,12 +150,12 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class LadyVashjCorePassersPrioritizePositioningMultiplier : public Multiplier
+/* class LadyVashjCorePassersPrioritizePositioningMultiplier : public Multiplier
 {
 public:
     LadyVashjCorePassersPrioritizePositioningMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "lady vashj core passers prioritize positioning") {}
     virtual float GetValue(Action* action);
-};
+}; */
 
 class LadyVashjDisableAutomaticTargetingAndMovementModifier : public Multiplier
 {

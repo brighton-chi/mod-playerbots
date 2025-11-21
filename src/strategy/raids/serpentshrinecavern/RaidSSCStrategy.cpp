@@ -173,9 +173,6 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("lady vashj need to manage trackers",
         NextAction::array(0, new NextAction("lady vashj manage trackers", ACTION_EMERGENCY + 10), nullptr)
     ));
-    /* triggers.push_back(new TriggerNode("lady vashj cheat to test",
-        NextAction::array(0, new NextAction("lady vashj cheat to test", ACTION_RAID + 1), nullptr)
-    )); */
 }
 
 void RaidSSCStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
@@ -196,7 +193,7 @@ void RaidSSCStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new FathomLordKarathressCaribdisTankHealerMaintainPositionMultiplier(botAI));
     multipliers.push_back(new MorogrimTidewalkerDelayBloodlustAndHeroismMultiplier(botAI));
     multipliers.push_back(new MorogrimTidewalkerDisablePhase2FleeActionMultiplier(botAI));
-    multipliers.push_back(new LadyVashjDelayCooldownsMultiplier(botAI));
+    multipliers.push_back(new LadyVashjDelayBloodlustAndHeroismMultiplier(botAI));
     multipliers.push_back(new LadyVashjStaticChargeStayAwayFromGroupMultiplier(botAI));
     multipliers.push_back(new LadyVashjDoNotLootTheTaintedCoreMultiplier(botAI));
     // multipliers.push_back(new LadyVashjCorePassersPrioritizePositioningMultiplier(botAI));

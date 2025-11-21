@@ -66,7 +66,6 @@ public:
         creators["lady vashj toxic sporebats are spewing poison clouds"] = &RaidSSCTriggerContext::lady_vashj_toxic_sporebats_are_spewing_poison_clouds;
         creators["lady vashj bot is entangled in toxic spores or static charge"] = &RaidSSCTriggerContext::lady_vashj_bot_is_entangled_in_toxic_spores_or_static_charge;
         creators["lady vashj need to manage trackers"] = &RaidSSCTriggerContext::lady_vashj_need_to_manage_trackers;
-        creators["lady vashj cheat to test"] = &RaidSSCTriggerContext::lady_vashj_cheat_to_test;
     }
 
 private:
@@ -127,7 +126,6 @@ private:
     static Trigger* lady_vashj_toxic_sporebats_are_spewing_poison_clouds(PlayerbotAI* botAI) { return new LadyVashjToxicSporebatsAreSpewingPoisonCloudsTrigger(botAI); }
     static Trigger* lady_vashj_bot_is_entangled_in_toxic_spores_or_static_charge(PlayerbotAI* botAI) { return new LadyVashjBotIsEntangledInToxicSporesOrStaticChargeTrigger(botAI); }
     static Trigger* lady_vashj_need_to_manage_trackers(PlayerbotAI* botAI) { return new LadyVashjNeedToManageTrackersTrigger(botAI); }
-    static Trigger* lady_vashj_cheat_to_test(PlayerbotAI* botAI) { return new LadyVashjCheatToTestTrigger(botAI); }
 };
 
 #endif

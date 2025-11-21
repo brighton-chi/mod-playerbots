@@ -37,7 +37,6 @@ namespace SerpentShrineCavernHelpers
     {
         const Position HydrossFrostTankPosition(-236.669f, -358.352f, -0.828f);
         const Position HydrossNatureTankPosition(-225.471f, -327.790f, -3.682f);
-        // Hydross dps positions?
 
         const Position LurkerMainTankPosition(23.706f, -406.038f, -19.686f);
         /* const Position LurkerEMeleePosition(36.815f, -432.585f, -19.339f);
@@ -58,8 +57,7 @@ namespace SerpentShrineCavernHelpers
         const Position LurkerNHealerLandPosition(66.268f, -418.774f, -19.592f);
         const Position LurkerNHealerSwimPosition(71.255f, -419.223f, -21.381f); */
 
-        // const Position KarathressTankPosition(472.973f, -540.804f, -7.548f);
-        const Position KarathressTankPosition(474.403f, -531.118f, -7.548f); // above works but maybe LoS issues, trying this one
+        const Position KarathressTankPosition(474.403f, -531.118f, -7.548f);
         const Position TidalvessTankPosition(511.282f, -501.162f, -13.158f);
         const Position SharkkisTankPosition(508.057f, -541.109f, -10.133f);
         const Position CaribdisTankPosition(464.462f, -475.820f, -13.158f);
@@ -72,14 +70,6 @@ namespace SerpentShrineCavernHelpers
         const Position TidewalkerPhase2RangedPosition(432.595f, -766.288f, -7.145f);
 
         const Position VashjPlatformCenterPosition(29.634f, -923.541f, 42.985f);
-        /* const Position VashjNWStairsPosition(65.087f, -878.344f, 41.097f);
-        const Position VashjWStairsPosition(29.693f, -865.188f, 41.097f);
-        const Position VashjSWStairsPosition(9.766f, -869.707f, 41.097f);
-        const Position VashjSSWStairsPosition(-25.352f, -910.754f, 41.097f);
-        const Position VashjSEStairsPosition(-9.504f, -964.514f, 41.097f);
-        const Position VashjEStairsPosition(29.701f, -982.523f, 41.097f);
-        const Position VashjENEStairsPosition(42.143f, -978.813f, 41.097f);
-        const Position VashjNNEStairsPosition(83.647f, -941.901f, 41.097f); */
     }
 
     void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId)
@@ -203,7 +193,7 @@ namespace SerpentShrineCavernHelpers
 
         uint32 spellId = currentSpell->m_spellInfo->Id;
         bool isSpout = spellId == SPELL_SPOUT_VISUAL;
-        LOG_DEBUG("playerbots", "IsLurkerCastingSpout: spellId={}, isSpout={}", spellId, isSpout);
+
         return isSpout;
     }
 
@@ -442,7 +432,6 @@ namespace SerpentShrineCavernHelpers
             if (member->IsAlive() && member->HasAura(SPELL_PARALYZE))
             {
                 lastParalyzeTime[mapId] = now;
-                LOG_DEBUG("playerbots", "AnyRecentParalyze: observed paralyze on member={}, setting lastParalyzeTime[mapId]={}", member->GetName(), now);
                 return true;
             }
         }
@@ -451,10 +440,7 @@ namespace SerpentShrineCavernHelpers
         if (it != lastParalyzeTime.end())
         {
             if ((now - it->second) <= static_cast<time_t>(graceSeconds))
-            {
-                LOG_DEBUG("playerbots", "AnyRecentParalyze: recent paralyze for map={} age={}s", mapId, (now - it->second));
                 return true;
-            }
         }
 
         return false;
@@ -462,11 +448,9 @@ namespace SerpentShrineCavernHelpers
 
     Player* GetDesignatedCoreLooter(Group* group, Player* master, PlayerbotAI* botAI)
     {
-        // If cheats are off, use the real master.
         if (!botAI->HasCheat(BotCheatMask::raid))
             return master;
 
-        // Prefer a melee DPS bot; fall back to a ranged DPS bot; if none found return nullptr.
         Player* fallback = nullptr;
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
