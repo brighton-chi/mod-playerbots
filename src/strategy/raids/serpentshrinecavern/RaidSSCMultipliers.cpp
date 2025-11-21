@@ -3,8 +3,6 @@
 #include "RaidSSCHelpers.h"
 #include "ChooseTargetActions.h"
 #include "DestroyItemAction.h"
-#include "DruidBearActions.h"
-#include "DruidCatActions.h"
 #include "FollowActions.h"
 #include "GenericSpellActions.h"
 #include "HunterActions.h"
@@ -12,21 +10,13 @@
 #include "MageActions.h"
 #include "PaladinActions.h"
 #include "Playerbots.h"
+#include "ReachTargetActions.h"
 #include "RogueActions.h"
 #include "ShamanActions.h"
 #include "WarlockActions.h"
-#include "WarriorActions.h"
 #include "WipeAction.h"
 
 using namespace SerpentShrineCavernHelpers;
-
-static bool IsChargeAction(Action* action)
-{
-    return dynamic_cast<CastChargeAction*>(action) ||
-           dynamic_cast<CastInterceptAction*>(action) ||
-           dynamic_cast<CastFeralChargeBearAction*>(action) ||
-           dynamic_cast<CastFeralChargeCatAction*>(action);
-}
 
 // Trash
 
@@ -160,7 +150,7 @@ float TheLurkerBelowStayAwayFromSpoutMultiplier::GetValue(Action* action)
     auto it = lurkerSpoutTimer.find(mapId);
     if (it != lurkerSpoutTimer.end() && it->second > now)
     {
-        if (IsChargeAction(action) || dynamic_cast<CastKillingSpreeAction*>(action) ||
+        if (dynamic_cast<CastReachTargetSpellAction*>(action) || dynamic_cast<CastKillingSpreeAction*>(action) ||
             dynamic_cast<CastBlinkBackAction*>(action) || dynamic_cast<CastDisengageAction*>(action) ||
             dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<FleeAction*>(action))
             return 0.0f;
@@ -180,7 +170,8 @@ float LeotherasTheBlindAvoidWhirlwindMultiplier::GetValue(Action* action)
     if (!leotherasHuman->HasAura(SPELL_LEOTHERAS_BANISHED) &&
         (leotherasHuman->HasAura(SPELL_WHIRLWIND) || leotherasHuman->HasAura(SPELL_WHIRLWIND_CHANNEL)))
     {
-        if (IsChargeAction(action) || (!botAI->IsTank(bot) && dynamic_cast<MovementAction*>(action) &&
+        if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
+            (!botAI->IsTank(bot) && dynamic_cast<MovementAction*>(action) &&
             !dynamic_cast<LeotherasTheBlindRunAwayFromWhirlwindAction*>(action)))
             return 0.0f;
     }
@@ -450,7 +441,7 @@ float LadyVashjStaticChargeStayAwayFromGroupMultiplier::GetValue(Action* action)
         if ((dynamic_cast<MovementAction*>(action) &&
             !dynamic_cast<LadyVashjStaticChargeMoveAwayFromGroupAction*>(action)) ||
             dynamic_cast<CastKillingSpreeAction*>(action) ||
-            IsChargeAction(action))
+            dynamic_cast<CastReachTargetSpellAction*>(action))
             return 0.0f;
     }
 

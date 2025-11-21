@@ -3,7 +3,6 @@
 #include "RaidTempestKeepHelpers.h"
 #include "ChooseTargetActions.h"
 #include "DruidBearActions.h"
-#include "DruidCatActions.h"
 #include "EquipAction.h"
 #include "HunterActions.h"
 #include "MageActions.h"
@@ -12,14 +11,6 @@
 #include "RogueActions.h"
 #include "ShamanActions.h"
 #include "WarriorActions.h"
-
-static bool IsChargeAction(Action* action)
-{
-    return dynamic_cast<CastChargeAction*>(action) ||
-           dynamic_cast<CastInterceptAction*>(action) ||
-           dynamic_cast<CastFeralChargeBearAction*>(action) ||
-           dynamic_cast<CastFeralChargeCatAction*>(action);
-}
 
 float AlarDisableTankAssistMultiplier::GetValue(Action* action)
 {

@@ -4,26 +4,16 @@
 #include "AttackAction.h"
 #include "ChooseTargetActions.h"
 #include "DruidActions.h"
-#include "DruidBearActions.h"
-#include "DruidCatActions.h"
 #include "GenericActions.h"
 #include "HunterActions.h"
 #include "MageActions.h"
 #include "Playerbots.h"
 #include "PriestActions.h"
+#include "ReachTargetActions.h"
 #include "RogueActions.h"
 #include "ShamanActions.h"
-#include "WarriorActions.h"
 
 using namespace KarazhanHelpers;
-
-static bool IsChargeAction(Action* action)
-{
-    return dynamic_cast<CastChargeAction*>(action) ||
-           dynamic_cast<CastInterceptAction*>(action) ||
-           dynamic_cast<CastFeralChargeBearAction*>(action) ||
-           dynamic_cast<CastFeralChargeCatAction*>(action);
-}
 
 // Keep tanks from jumping back and forth between Attumen and Midnight
 float AttumenTheHuntsmanDisableTankAssistMultiplier::GetValue(Action* action)
@@ -53,7 +43,7 @@ float AttumenTheHuntsmanStayStackedMultiplier::GetValue(Action* action)
             dynamic_cast<FleeAction*>(action) ||
             dynamic_cast<CastBlinkBackAction*>(action) ||
             dynamic_cast<CastDisengageAction*>(action) ||
-            IsChargeAction(action))
+            dynamic_cast<CastReachTargetSpellAction*>(action))
             return 0.0f;
     }
 
@@ -109,7 +99,7 @@ float ShadeOfAranArcaneExplosionDisableChargeMultiplier::GetValue(Action* action
     if (aran->HasUnitState(UNIT_STATE_CASTING) &&
         aran->FindCurrentSpellBySpellId(SPELL_ARCANE_EXPLOSION))
     {
-        if (IsChargeAction(action))
+        if (dynamic_cast<CastReachTargetSpellAction*>(action))
             return 0.0f;
 
         if (dynamic_cast<MovementAction*>(action))
@@ -134,7 +124,7 @@ float ShadeOfAranFlameWreathDisableMovementMultiplier::GetValue(Action* action)
     {
         if (dynamic_cast<MovementAction*>(action) || dynamic_cast<CastKillingSpreeAction*>(action) ||
             dynamic_cast<CastBlinkBackAction*>(action) || dynamic_cast<CastDisengageAction*>(action) ||
-            IsChargeAction(action))
+            dynamic_cast<CastReachTargetSpellAction*>(action))
             return 0.0f;
     }
 
@@ -169,7 +159,7 @@ float NetherspiteKeepBlockingBeamMultiplier::GetValue(Action* action)
             dynamic_cast<ReachTargetAction*>(action) ||
             dynamic_cast<FleeAction*>(action) ||
             dynamic_cast<CastKillingSpreeAction*>(action) ||
-            IsChargeAction(action))
+            dynamic_cast<CastReachTargetSpellAction*>(action))
             return 0.0f;
     }
 
