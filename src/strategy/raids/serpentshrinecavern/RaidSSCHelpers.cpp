@@ -39,7 +39,7 @@ namespace SerpentShrineCavernHelpers
         const Position HydrossNatureTankPosition(-225.471f, -327.790f, -3.682f);
 
         const Position LurkerMainTankPosition(23.706f, -406.038f, -19.686f);
-        /* const Position LurkerEMeleePosition(36.815f, -432.585f, -19.339f);
+        const Position LurkerEMeleePosition(36.815f, -432.585f, -19.339f);
         const Position LurkerWMeleePosition(47.721f, -406.668f, -19.635f);
         const Position LurkerNWIsletPosition(77.937f, -384.500f, -19.722f);
         const Position LurkerNWIsletSwimPosition(73.743f, -388.018f, -21.397f);
@@ -55,7 +55,7 @@ namespace SerpentShrineCavernHelpers
         const Position LurkerSWHealerLandPosition(37.255f, -387.031f, -19.417f);
         const Position LurkerSWHealerSwimPosition(37.505f, -382.907f, -21.397f);
         const Position LurkerNHealerLandPosition(66.268f, -418.774f, -19.592f);
-        const Position LurkerNHealerSwimPosition(71.255f, -419.223f, -21.381f); */
+        const Position LurkerNHealerSwimPosition(71.255f, -419.223f, -21.381f);
 
         const Position KarathressTankPosition(474.403f, -531.118f, -7.548f);
         const Position TidalvessTankPosition(511.282f, -501.162f, -13.158f);

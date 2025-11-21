@@ -24,9 +24,9 @@ public:
         creators["the lurker below spout is active"] = &RaidSSCTriggerContext::the_lurker_below_spout_is_active;
         creators["the lurker below boss is active for main tank"] = &RaidSSCTriggerContext::the_lurker_below_boss_is_active_for_main_tank;
         creators["the lurker below boss casts geyser"] = &RaidSSCTriggerContext::the_lurker_below_boss_casts_geyser;
-        // creators["the lurker below boss is active for other melee"] = &RaidSSCTriggerContext::the_lurker_below_boss_is_active_for_other_melee;
-        // creators["the lurker below boss is active for ranged dps"] = &RaidSSCTriggerContext::the_lurker_below_boss_is_active_for_ranged_dps;
-        // creators["the lurker below boss is active for healer"] = &RaidSSCTriggerContext::the_lurker_below_boss_is_active_for_healer;
+        creators["the lurker below boss is active for other melee"] = &RaidSSCTriggerContext::the_lurker_below_boss_is_active_for_other_melee;
+        creators["the lurker below boss is active for ranged dps"] = &RaidSSCTriggerContext::the_lurker_below_boss_is_active_for_ranged_dps;
+        creators["the lurker below boss is active for healer"] = &RaidSSCTriggerContext::the_lurker_below_boss_is_active_for_healer;
         creators["the lurker below need to prepare timer for spout"] = &RaidSSCTriggerContext::the_lurker_below_need_to_prepare_timer_for_spout;
 
         creators["leotheras the blind boss is inactive"] = &RaidSSCTriggerContext::leotheras_the_blind_boss_is_inactive;
@@ -84,9 +84,9 @@ private:
     static Trigger* the_lurker_below_spout_is_active(PlayerbotAI* botAI) { return new TheLurkerBelowSpoutIsActiveTrigger(botAI); }
     static Trigger* the_lurker_below_boss_is_active_for_main_tank(PlayerbotAI* botAI) { return new TheLurkerBelowBossIsActiveForMainTankTrigger(botAI); }
     static Trigger* the_lurker_below_boss_casts_geyser(PlayerbotAI* botAI) { return new TheLurkerBelowBossCastsGeyserTrigger(botAI); }
-    // static Trigger* the_lurker_below_boss_is_active_for_other_melee(PlayerbotAI* botAI) { return new TheLurkerBelowBossIsActiveForOtherMeleeTrigger(botAI); }
-    // static Trigger* the_lurker_below_boss_is_active_for_ranged_dps(PlayerbotAI* botAI) { return new TheLurkerBelowBossIsActiveForRangedDpsTrigger(botAI); }
-    // static Trigger* the_lurker_below_boss_is_active_for_healer(PlayerbotAI* botAI) { return new TheLurkerBelowBossIsActiveForHealerTrigger(botAI); }
+    static Trigger* the_lurker_below_boss_is_active_for_other_melee(PlayerbotAI* botAI) { return new TheLurkerBelowBossIsActiveForOtherMeleeTrigger(botAI); }
+    static Trigger* the_lurker_below_boss_is_active_for_ranged_dps(PlayerbotAI* botAI) { return new TheLurkerBelowBossIsActiveForRangedDpsTrigger(botAI); }
+    static Trigger* the_lurker_below_boss_is_active_for_healer(PlayerbotAI* botAI) { return new TheLurkerBelowBossIsActiveForHealerTrigger(botAI); }
     static Trigger* the_lurker_below_need_to_prepare_timer_for_spout(PlayerbotAI* botAI) { return new TheLurkerBelowNeedToPrepareTimerForSpoutTrigger(botAI); }
 
     static Trigger* leotheras_the_blind_boss_is_inactive(PlayerbotAI* botAI) { return new LeotherasTheBlindBossIsInactiveTrigger(botAI); }

@@ -108,6 +108,9 @@ bool HydrossTheUnstableNeedToManageTimersTrigger::IsActive()
 
 bool TheLurkerBelowSpoutIsActiveTrigger::IsActive()
 {
+    if (botAI->IsRanged(bot))
+        return false;
+
     Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
     if (!lurker)
         return false;
@@ -151,7 +154,7 @@ bool TheLurkerBelowBossCastsGeyserTrigger::IsActive()
 }
 
 // Below for implementation later if movement into water issue is resolved
-/* bool TheLurkerBelowBossIsActiveForOtherMeleeTrigger::IsActive()
+bool TheLurkerBelowBossIsActiveForOtherMeleeTrigger::IsActive()
 {
     if (!botAI->IsMelee(bot) || botAI->IsMainTank(bot))
         return false;
@@ -197,7 +200,7 @@ bool TheLurkerBelowBossIsActiveForHealerTrigger::IsActive()
     auto it = lurkerSpoutTimer.find(lurker->GetMapId());
     return lurker->getStandState() != UNIT_STAND_STATE_SUBMERGED &&
            (it == lurkerSpoutTimer.end() || it->second <= now);
-} */
+}
 
 bool TheLurkerBelowNeedToPrepareTimerForSpoutTrigger::IsActive()
 {

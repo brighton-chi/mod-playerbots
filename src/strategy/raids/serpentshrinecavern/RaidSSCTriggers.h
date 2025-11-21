@@ -94,7 +94,7 @@ public:
     bool IsActive() override;
 };
 
-/* class TheLurkerBelowBossIsActiveForOtherMeleeTrigger : public Trigger
+class TheLurkerBelowBossIsActiveForOtherMeleeTrigger : public Trigger
 {
 public:
     TheLurkerBelowBossIsActiveForOtherMeleeTrigger(PlayerbotAI* botAI) : Trigger(botAI, "the lurker below boss is active for other melee dps") {}
@@ -113,7 +113,7 @@ class TheLurkerBelowBossIsActiveForHealerTrigger : public Trigger
 public:
     TheLurkerBelowBossIsActiveForHealerTrigger(PlayerbotAI* botAI) : Trigger(botAI, "the lurker below boss is active for healer") {}
     bool IsActive() override;
-}; */
+};
 
 class TheLurkerBelowNeedToPrepareTimerForSpoutTrigger : public Trigger
 {

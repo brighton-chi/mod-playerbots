@@ -44,10 +44,10 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("the lurker below boss is active for main tank",
         NextAction::array(0, new NextAction("the lurker below position main tank", ACTION_RAID + 1), nullptr)
     ));
-    triggers.push_back(new TriggerNode("the lurker below boss casts geyser",
+    /* triggers.push_back(new TriggerNode("the lurker below boss casts geyser",
         NextAction::array(0, new NextAction("the lurker below spread ranged", ACTION_RAID + 1), nullptr)
-    ));
-    /* triggers.push_back(new TriggerNode("the lurker below boss is active for other melee",
+    )); */
+    triggers.push_back(new TriggerNode("the lurker below boss is active for other melee",
         NextAction::array(0, new NextAction("the lurker below position other melee", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("the lurker below boss is active for ranged dps",
@@ -55,7 +55,7 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     ));
     triggers.push_back(new TriggerNode("the lurker below boss is active for healer",
         NextAction::array(0, new NextAction("the lurker below position healer", ACTION_RAID + 1), nullptr)
-    )); */
+    ));
     triggers.push_back(new TriggerNode("the lurker below need to prepare timer for spout",
         NextAction::array(0, new NextAction("the lurker below manage spout timer", ACTION_EMERGENCY + 10), nullptr)
     ));

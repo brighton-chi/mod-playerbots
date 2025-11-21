@@ -685,7 +685,7 @@ bool TheLurkerBelowSpreadRangedAction::Execute(Event event)
 }
 
 // Below for implementation later if movement into water issue is resolved
-/* bool TheLurkerBelowPositionOtherMeleeAction::Execute(Event event)
+bool TheLurkerBelowPositionOtherMeleeAction::Execute(Event event)
 {
     Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
     Group* group = bot->GetGroup();
@@ -724,45 +724,6 @@ bool TheLurkerBelowSpreadRangedAction::Execute(Event event)
     return false;
 }
 
-bool TheLurkerBelowPositionRangedDpsAction::Execute(Event event)
-{
-    Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
-    Group* group = bot->GetGroup();
-    if (!lurker || !group)
-        return false;
-
-    auto groups = GetRangedDpsBotGroups(group);
-
-    int8 myGroup = -1;
-    for (int8 i = 0; i < 3 && myGroup == -1; ++i)
-    {
-        for (Player* member : groups[i])
-        {
-            if (member == bot)
-            {
-                myGroup = i;
-                break;
-            }
-        }
-    }
-    if (myGroup == -1)
-        return false;
-
-    const Position* landPositions[3] =
-        { &LurkerERangedDpsPosition, &LurkerNWRangedDpsPosition, &LurkerNERangedDpsPosition };
-    const Position* target = landPositions[myGroup];
-
-    if (bot->GetExactDist2d(target->GetPositionX(), target->GetPositionY()) > 0.2f)
-    {
-        bot->AttackStop();
-        bot->InterruptNonMeleeSpells(true);
-        return MoveTo(bot->GetMapId(), target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(),
-                      false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
-    }
-
-    return false;
-}
-
 bool TheLurkerBelowPositionHealerAction::Execute(Event event)
 {
     Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
@@ -773,7 +734,7 @@ bool TheLurkerBelowPositionHealerAction::Execute(Event event)
     auto groups = GetHealerBotGroups(group);
 
     int8 myGroup = -1;
-    for (int8 i = 0; i < 3 && myGroup == -1; ++i)
+    for (int8 i = 0; i < 3; ++i)
     {
         for (Player* member : groups[i])
         {
@@ -783,24 +744,298 @@ bool TheLurkerBelowPositionHealerAction::Execute(Event event)
                 break;
             }
         }
+        if (myGroup != -1) break;
     }
     if (myGroup == -1)
         return false;
 
     const Position* landPositions[3] =
         { &LurkerSEHealerLandPosition, &LurkerSWHealerLandPosition, &LurkerNHealerLandPosition };
-    const Position* target = landPositions[myGroup];
+    const Position* swimPositions[3]  =
+        { &LurkerSEHealerSwimPosition, &LurkerSWHealerSwimPosition, &LurkerNHealerSwimPosition };
 
-    if (bot->GetExactDist2d(target->GetPositionX(), target->GetPositionY()) > 0.2f)
+    uint32 mapId = lurker->GetMapId();
+    const time_t now = time(nullptr);
+
+    auto itTimer = lurkerSpoutTimer.find(mapId);
+    time_t timerVal = (itTimer != lurkerSpoutTimer.end()) ? itTimer->second : (time_t)-1;
+    LOG_DEBUG("playerbots", "Healer: lurkerSpoutTimer[{}]={}, now={}", mapId, timerVal, now);
+
+    // If timer is active, send bot to swim position
+    const Position* target = nullptr;
+    if (itTimer != lurkerSpoutTimer.end() && itTimer->second > now)
+    {
+        target = swimPositions[myGroup];
+        LOG_DEBUG("playerbots", "HealerAction: Bot {} moving to swim position ({}, {}, {})", bot->GetName(), target->GetPositionX(), target->GetPositionY(), target->GetPositionZ());
+    }
+    else
+    {
+        target = landPositions[myGroup];
+        LOG_DEBUG("playerbots", "HealerAction: Bot {} moving to land position ({}, {}, {})", bot->GetName(), target->GetPositionX(), target->GetPositionY(), target->GetPositionZ());
+    }
+
+    // Log bot's current position
+    LOG_DEBUG("playerbots", "HealerAction: Bot {} current position ({}, {}, {}), swimming={}, inWater={}, underWater={}",
+    bot->GetName(), bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), bot->isSwimming(), bot->IsInWater(), bot->IsUnderWater());
+
+    // Move if not close enough
+    if (bot->GetExactDist2d(target->GetPositionX(), target->GetPositionY()) > 0.1f)
     {
         bot->AttackStop();
         bot->InterruptNonMeleeSpells(true);
-        return MoveTo(bot->GetMapId(), target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(),
-                      false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
+        return MoveTo(bot->GetMapId(), target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), false, false, false, true,
+                      MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
     return false;
-} */
+}
+
+bool TheLurkerBelowPositionRangedDpsAction::Execute(Event event)
+{
+    Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
+    Group* group = bot->GetGroup();
+    if (!lurker || !group)
+        return false;
+
+    // pending per-bot post-move checks: number of future ticks to log after MoveTo succeeds
+    static std::unordered_map<ObjectGuid, int> pendingWaterChecks;
+    auto botGuid = bot->GetGUID();
+    auto pendingIt = pendingWaterChecks.find(botGuid);
+    if (pendingIt != pendingWaterChecks.end() && pendingIt->second > 0)
+    {
+        // Log current position and both map & unit cached liquid data for verification
+        Map* m = bot->GetMap();
+        if (m)
+        {
+            auto unitLdNow = bot->GetLiquidData();
+            auto mapLdNow  = m->GetLiquidData(bot->GetPhaseMask(), bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), bot->GetCollisionHeight(), 0);
+            LOG_DEBUG("playerbots", "RangedDpsAction (post-move-check): botPos=({:.3f},{:.3f},{:.3f}), unitLd.Level={}, unitLd.Status={}, mapLd.Level={}, mapLd.Status={}, IsInWater={}, isSwimming={}",
+                        bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(),
+                        unitLdNow.Level, unitLdNow.Status, mapLdNow.Level, mapLdNow.Status, bot->IsInWater(), bot->isSwimming());
+        }
+        if (--pendingIt->second <= 0)
+            pendingWaterChecks.erase(pendingIt);
+    }
+
+    auto groups = GetRangedDpsBotGroups(group);
+
+    int8 myGroup = -1;
+    for (int8 i = 0; i < 3; ++i)
+    {
+        for (Player* member : groups[i])
+        {
+            if (member == bot)
+            {
+                myGroup = i;
+                break;
+            }
+        }
+        if (myGroup != -1) break;
+    }
+    if (myGroup == -1)
+        return false;
+
+    const Position* isletPositions[3] =
+        { &LurkerNEIsletPosition, &LurkerNWIsletPosition, &LurkerEIsletPosition };
+    const Position* swimPositions[3]  =
+        { &LurkerNEIsletSwimPosition, &LurkerNWIsletSwimPosition, &LurkerEIsletSwimPosition };
+
+    uint32 mapId = lurker->GetMapId();
+    const time_t now = time(nullptr);
+
+    auto itTimer = lurkerSpoutTimer.find(mapId);
+    time_t timerVal = (itTimer != lurkerSpoutTimer.end()) ? itTimer->second : (time_t)-1;
+    LOG_DEBUG("playerbots", "RangedDpsAction: lurkerSpoutTimer[{}]={}, now={}", mapId, timerVal, now);
+
+    // If timer is active, send bot to swim position
+    const Position* target = nullptr;
+    if (itTimer != lurkerSpoutTimer.end() && itTimer->second > now)
+    {
+        target = swimPositions[myGroup];
+        LOG_DEBUG("playerbots", "RangedDpsAction: Bot {} moving to swim position ({}, {}, {})", bot->GetName(),
+                  target->GetPositionX(), target->GetPositionY(), target->GetPositionZ());
+    }
+    else
+    {
+        target = isletPositions[myGroup];
+        LOG_DEBUG("playerbots", "RangedDpsAction: Bot {} moving to islet position ({}, {}, {})", bot->GetName(), target->GetPositionX(), target->GetPositionY(), target->GetPositionZ());
+    }
+
+    // Consider bot "at target" only when:
+    //  - horizontally within a small threshold AND
+    //  - either vertically near the target Z OR the unit is already considered in-water
+    //
+    // Otherwise treat as "not at target" and run the movement/correction logic.
+    const float HORIZ_THRESHOLD = 0.2f;
+    const float VERT_THRESHOLD  = 0.2f; // allow some vertical tolerance (tweak if needed)
+
+    float botPosZ = bot->GetPositionZ();
+    bool atHoriz = bot->GetExactDist2d(target->GetPositionX(), target->GetPositionY()) <= HORIZ_THRESHOLD;
+    bool atVert  = fabs(botPosZ - target->GetPositionZ()) <= VERT_THRESHOLD;
+
+    bool unitConsideredInWater = false;
+    Map* map = bot->GetMap();
+    if (map)
+    {
+        // Use the server boolean IsInWater() as the authoritative check here.
+        // This ensures we continue trying to enter water until the server actually marks the unit as "in water".
+        unitConsideredInWater = bot->IsInWater();
+    }
+
+    // If not horizontally at target, or horizontally at target but not vertically and not in water,
+    // proceed to movement/collision correction logic below.
+    if (!atHoriz || (!atVert && !unitConsideredInWater))
+    {
+        bot->AttackStop();
+        bot->InterruptNonMeleeSpells(true);
+
+        // Validate and correct destination coords (adjust Z for water/terrain)
+        float destX = target->GetPositionX();
+        float destY = target->GetPositionY();
+        float destZ = target->GetPositionZ();
+        float waterZ = INVALID_HEIGHT;
+
+        Map* map = bot->GetMap();
+        if (map)
+        {
+            float collH = bot->GetCollisionHeight();
+            uint32 phaseMask = bot->GetPhaseMask();
+
+            auto ldCheck = map->GetLiquidData(phaseMask, destX, destY, destZ, bot->GetCollisionHeight(), 0);
+
+            if (ldCheck.Level != INVALID_HEIGHT)
+            {
+                waterZ = ldCheck.Level;
+            }
+
+                float botX = bot->GetPositionX();
+                float botY = bot->GetPositionY();
+                float botZ = bot->GetPositionZ();
+                uint32 pm = phaseMask;
+                float ch = collH;
+
+                auto ldBotCoord  = map->GetLiquidData(pm, botX, botY, botZ, ch, 0); // coordinate-based at bot pos
+                auto ldDestCoord = map->GetLiquidData(pm, destX, destY, destZ, ch, 0); // coordinate-based at dest
+                auto unitLd      = bot->GetLiquidData();                                // unit-cached (IsInWater reads this)
+
+                LOG_DEBUG("playerbots", "RangedDpsAction: target=({},{},{}), pre-move destZ={}, ldCheck.Level={}",
+                          target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), destZ, ldCheck.Level);
+                LOG_DEBUG("playerbots", "RangedDpsAction: botPos=({:.3f},{:.3f},{:.3f}), phaseMask={}, collH={:.3f}, GUID={}",
+                          botX, botY, botZ, pm, ch, bot->GetGUID().ToString());
+                LOG_DEBUG("playerbots", "RangedDpsAction: mapLd(bot) Level={}, Status={}, mapLd(dest) Level={}, Status={}",
+                          ldBotCoord.Level, ldBotCoord.Status, ldDestCoord.Level, ldDestCoord.Status);
+                LOG_DEBUG("playerbots", "RangedDpsAction: unit-cached Level={}, Status={} (IsInWater={}, isSwimming={})",
+                          unitLd.Level, unitLd.Status, bot->IsInWater(), bot->isSwimming());
+
+            // Extra diagnostics: show enum vs mask interpretations and constant values
+            {
+                bool unitInWaterEnum = (unitLd.Status == LIQUID_MAP_IN_WATER) || (unitLd.Status == LIQUID_MAP_UNDER_WATER);
+                bool unitInWaterMask = (unitLd.Status & MAP_LIQUID_STATUS_SWIMMING) != 0;
+                LOG_DEBUG("playerbots", "RangedDpsAction: unitLd.status raw={}, enumInWater={}, maskInWater={} (LIQUID_MAP_IN_WATER={}, LIQUID_MAP_UNDER_WATER={}, MAP_LIQUID_STATUS_SWIMMING=0x{:X})",
+                        unitLd.Status, unitInWaterEnum, unitInWaterMask,
+                        (uint32)LIQUID_MAP_IN_WATER, (uint32)LIQUID_MAP_UNDER_WATER, (uint32)MAP_LIQUID_STATUS_SWIMMING);
+
+                // extra map queries at slight Z offsets to show surface vs below-surface values
+                auto mapLdAtBot    = map->GetLiquidData(pm, botX, botY, botZ, ch, 0);
+                auto mapLdAtBotPlus = map->GetLiquidData(pm, botX, botY, botZ + 0.5f, ch, 0);
+                auto mapLdAtBotMinus= map->GetLiquidData(pm, botX, botY, botZ - 0.5f, ch, 0);
+                LOG_DEBUG("playerbots", "RangedDpsAction: mapLd samples at bot Z: center(Level={},Status={}), +0.5(Level={},Status={}), -0.5(Level={},Status={})",
+                        mapLdAtBot.Level, mapLdAtBot.Status,
+                        mapLdAtBotPlus.Level, mapLdAtBotPlus.Status,
+                        mapLdAtBotMinus.Level, mapLdAtBotMinus.Status);
+            }
+
+            // Interpret cached status using LIQUID_MAP_* enums (avoid false positives from bitmask vs enum mismatch)
+            bool unitHasLevel = (unitLd.Level != INVALID_HEIGHT);
+            bool unitInWaterEnum = (unitLd.Status == LIQUID_MAP_IN_WATER) || (unitLd.Status == LIQUID_MAP_UNDER_WATER);
+            bool unitInWaterMask = (unitLd.Status & MAP_LIQUID_STATUS_SWIMMING) != 0;
+
+            float horizDistToTarget = bot->GetExactDist2d(target->GetPositionX(), target->GetPositionY());
+            float vertDistToTarget  = fabs(bot->GetPositionZ() - target->GetPositionZ());
+            const float HORIZ_THRESHOLD = 0.2f; // yards/meters horizontally
+            const float VERT_THRESHOLD  = 0.2f; // allow some vertical tolerance (bot may be slightly above/below)
+
+            if (ldDestCoord.Level != INVALID_HEIGHT && (!unitHasLevel || !unitInWaterEnum))
+            {
+                if (horizDistToTarget <= HORIZ_THRESHOLD && vertDistToTarget <= VERT_THRESHOLD)
+                {
+                    LOG_DEBUG("playerbots", "RangedDpsAction: DISCREPANCY: dest is water per map query but unit-cached shows not in water -- unitLd.Level={}, unitLd.Status={}, enumInWater={}, maskInWater={}, swimMask=0x{:X}, horizDist={}, vertDist={}",
+                                unitLd.Level, unitLd.Status, unitInWaterEnum, unitInWaterMask, (uint32)MAP_LIQUID_STATUS_SWIMMING, horizDistToTarget, vertDistToTarget);
+                }
+                else
+                {
+                    // Informative, not a discrepancy: bot not yet at the target.
+                    LOG_DEBUG("playerbots", "RangedDpsAction: INFO: dest is water but bot not at target yet (horizDist={}, vertDist={}), skipping discrepancy log",
+                                horizDistToTarget, vertDistToTarget);
+                }
+            }
+
+            // Try to get collision-corrected coords (will update destZ if necessary)
+            // 'true' to account for flying/water/etc.
+            if (map->CheckCollisionAndGetValidCoords(bot, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(),
+                                                     destX, destY, destZ, true))
+            {
+                LOG_DEBUG("playerbots", "RangedDpsAction: collision-corrected dest ({}, {}, {})", destX, destY, destZ);
+
+                // If destination is water, prefer spline movement (generatePath=false) so Z is honored.
+                bool isWaterTarget = (ldDestCoord.Level != INVALID_HEIGHT) || (waterZ != INVALID_HEIGHT);
+                MotionMaster* mm = bot->GetMotionMaster();
+
+                if (isWaterTarget && mm)
+                {
+                    bool generatePath = false; // force spline movement for water so target Z is used
+                    LOG_DEBUG("playerbots", "RangedDpsAction: using MovePoint(spline) -> generatePath={}, dest=({:.3f},{:.3f},{:.3f})", generatePath, destX, destY, destZ);
+                    // Do NOT clear MotionMaster here in production; uncomment only for short debug tests.
+                    mm->Clear();
+                    mm->MovePoint(0, destX, destY, destZ, FORCED_MOVEMENT_NONE, 0.f, 0.f, generatePath);
+                    pendingWaterChecks[botGuid] = 6; // sample more ticks after spline start
+                    return true;
+                }
+
+                bool moved = MoveTo(bot->GetMapId(), destX, destY, destZ, false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+                LOG_DEBUG("playerbots", "RangedDpsAction: MoveTo called -> moved={}", moved);
+                if (moved)
+                    pendingWaterChecks[botGuid] = 3; // log next 3 ticks to capture post-move state
+                return moved;
+            }
+            else
+            {
+                LOG_DEBUG("playerbots", "RangedDpsAction: CheckCollisionAndGetValidCoords failed for {}, ignoring snapped coords and falling back",
+                          bot->GetName());
+            }
+        }
+        else
+        {
+            LOG_DEBUG("playerbots", "RangedDpsAction: bot has no map pointer");
+        }
+
+        // Fallback: original exact waypoint call (keeps previous behavior if correction failed)
+        {
+            // If target is water, prefer spline MovePoint here too
+            bool targetIsWater = (waterZ != INVALID_HEIGHT);
+            MotionMaster* mm = bot->GetMotionMaster();
+            if (targetIsWater && mm)
+            {
+                bool generatePath = false;
+                LOG_DEBUG("playerbots", "RangedDpsAction: fallback using MovePoint(spline) -> generatePath={}, target=({:.3f},{:.3f},{:.3f})", generatePath, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ());
+                mm->Clear(); // optional for debug
+                mm->MovePoint(0, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), FORCED_MOVEMENT_NONE, 0.f, 0.f, generatePath);
+                pendingWaterChecks[botGuid] = 6;
+                return true;
+            }
+
+            bool moved = MoveTo(bot->GetMapId(), target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(),
+                                false, false, false, false,
+                                MovementPriority::MOVEMENT_FORCED, true, false);
+            LOG_DEBUG("playerbots", "RangedDpsAction: fallback exact MoveTo(origXY) -> moved={}", moved);
+            if (moved)
+                pendingWaterChecks[botGuid] = 3; // log next ticks after exact move too
+            return moved;
+        }
+    }
+
+    return false;
+}
 
 bool TheLurkerBelowManageSpoutTimerAction::Execute(Event event)
 {
@@ -808,24 +1043,35 @@ bool TheLurkerBelowManageSpoutTimerAction::Execute(Event event)
     if (!lurker)
         return false;
 
-    const uint32 mapId = lurker->GetMapId();
+    uint32 mapId = lurker->GetMapId();
     const time_t now = std::time(nullptr);
 
-    if (lurker->GetHealth() == lurker->GetMaxHealth())
+    // detect casting first and set timer if needed (mirror prior behavior)
+    bool casting = IsLurkerCastingSpout(lurker);
+    auto it = lurkerSpoutTimer.find(mapId);
+    if (casting && (it == lurkerSpoutTimer.end() || it->second <= now))
     {
-        lurkerSpoutTimer.erase(mapId);
-        return false;
+        lurkerSpoutTimer[mapId] = now + 20; // safe assignment (no unintended default-insert elsewhere)
+        LOG_DEBUG("playerbots", "SpoutTimerAction: Set lurkerSpoutTimer[{}] = {} (mapAddr={})", mapId, lurkerSpoutTimer[mapId], (void*)&lurkerSpoutTimer);
+        it = lurkerSpoutTimer.find(mapId);
     }
 
-    auto it = lurkerSpoutTimer.find(mapId);
+    // erase expired timers (if any)
     if (it != lurkerSpoutTimer.end() && it->second <= now)
     {
+        LOG_DEBUG("playerbots", "SpoutTimerAction: Erasing expired lurkerSpoutTimer[{}] val={} now={}", mapId, it->second, now);
         lurkerSpoutTimer.erase(it);
         it = lurkerSpoutTimer.end();
     }
 
-    if (IsLurkerCastingSpout(lurker) && it == lurkerSpoutTimer.end())
-        lurkerSpoutTimer.emplace(mapId, now + 20); // 20s channel
+    // erase on encounter reset / full health (keep behavior from prior working version)
+    if (lurker->GetHealth() == lurker->GetMaxHealth())
+    {
+        if (lurkerSpoutTimer.count(mapId))
+            LOG_DEBUG("playerbots", "SpoutTimerAction: clearing timer due to reset mapId={} oldVal={} now={}", mapId, lurkerSpoutTimer[mapId], now);
+        lurkerSpoutTimer.erase(mapId);
+        return false;
+    }
 
     return false;
 }

@@ -138,7 +138,7 @@ namespace SerpentShrineCavernHelpers
         extern const Position HydrossNatureTankPosition;
 
         extern const Position LurkerMainTankPosition;
-        /* extern const Position LurkerEMeleePosition;
+        extern const Position LurkerEMeleePosition;
         extern const Position LurkerWMeleePosition;
         extern const Position LurkerNWIsletPosition;
         extern const Position LurkerNWIsletSwimPosition;
@@ -154,7 +154,7 @@ namespace SerpentShrineCavernHelpers
         extern const Position LurkerSWHealerLandPosition;
         extern const Position LurkerSWHealerSwimPosition;
         extern const Position LurkerNHealerLandPosition;
-        extern const Position LurkerNHealerSwimPosition; */
+        extern const Position LurkerNHealerSwimPosition;
 
         extern const Position KarathressTankPosition;
         extern const Position TidalvessTankPosition;
