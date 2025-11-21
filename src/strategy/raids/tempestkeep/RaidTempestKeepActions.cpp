@@ -1364,11 +1364,6 @@ bool KaelthasSunstriderKiteThaladredAction::Execute(Event event)
         bot->AttackStop();
         bot->InterruptNonMeleeSpells(true);
 
-        LOG_DEBUG("playerbots", "KaelthasSunstriderKiteThaladredAction: Bot {} at final position, Thaladred too close, moving away",
-                    bot->GetName());
-        if (!bot->HasAura(SPELL_SPRINT))
-            bot->AddAura(SPELL_SPRINT, bot);
-
         return MoveAway(thaladred, safeDistance - currentDistance + 5.0f);
     }
 
@@ -1462,22 +1457,6 @@ bool KaelthasSunstriderManageWarlockTankStrategyAction::Execute(Event event)
                 LOG_DEBUG("playerbots", "KaelthasSunstriderManageWarlockTankStrategyAction: {} adding TANK strategy for Phase 1",
                         bot->GetName());
                 botAI->ChangeStrategy("+tank", BotState::BOT_STATE_COMBAT);
-
-                Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
-                if (capernian && capernian->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) && !capernian->HasAura(SPELL_PERMANENT_FEIGN_DEATH))
-                {
-                    Position target;
-                    if (!TryGetCapernianWaitingPosition(botAI, target))
-                    {
-                        LOG_DEBUG("playerbots", "KaelthasSunstriderManageWarlockTankStrategyAction: {} failed to compute Capernian waiting position, skipping move", bot->GetName());
-                        return false;
-                    }
-
-                    LOG_DEBUG("playerbots", "KaelthasSunstriderManageWarlockTankStrategyAction: {} moving to Capernian waiting position for Phase 1",
-                              bot->GetName());
-                    return MoveTo(bot->GetMapId(), target.GetPositionX(), target.GetPositionY(), target.GetPositionZ(),
-                                  false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
-                }
             }
         }
         return false;
@@ -1503,18 +1482,6 @@ bool KaelthasSunstriderManageWarlockTankStrategyAction::Execute(Event event)
             LOG_DEBUG("playerbots", "KaelthasSunstriderManageWarlockTankStrategyAction: {} adding TANK strategy for Phase 2->3 transition",
                       bot->GetName());
             botAI->ChangeStrategy("+tank", BotState::BOT_STATE_COMBAT);
-
-            Position target;
-            if (!TryGetCapernianWaitingPosition(botAI, target))
-            {
-                LOG_DEBUG("playerbots", "KaelthasSunstriderManageWarlockTankStrategyAction: {} failed to compute Capernian waiting position, skipping move", bot->GetName());
-                return false;
-            }
-
-            LOG_DEBUG("playerbots", "KaelthasSunstriderManageWarlockTankStrategyAction: {} moving to Capernian waiting position for Phase 1",
-                      bot->GetName());
-            return MoveTo(bot->GetMapId(), target.GetPositionX(), target.GetPositionY(), target.GetPositionZ(),
-                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
         return false;
     }
@@ -1648,7 +1615,7 @@ bool KaelthasSunstriderMoveAwayFromCapernianAction::Execute(Event event)
 
     if (botAI->IsMelee(bot))
     {
-        safeDistance = 40.0f;  // Melee dps safe distance
+        safeDistance = 45.0f;  // Melee dps safe distance
     }
     else if (botAI->IsRangedDps(bot))
     {
@@ -2237,54 +2204,27 @@ bool KaelthasSunstriderUseLegendaryWeaponsAction::UsePhaseshiftBulwark()
         return false;
     }
 
-    // Try both generic and channeled current spell slots
     Spell* currentSpell = kaelthas->GetCurrentSpell(CURRENT_GENERIC_SPELL);
-    if (!currentSpell)
-        currentSpell = kaelthas->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
 
-    if (!currentSpell)
+    if (!kaelthas->FindCurrentSpellBySpellId(SPELL_KAELTHAS_PYROBLAST))
     {
-        LOG_DEBUG("playerbots", "KaelthasUseBulwark: no currentSpell found despite UNIT_STATE_CASTING");
+        if (currentSpell && currentSpell->m_spellInfo)
+            LOG_DEBUG("playerbots", "KaelthasUseBulwark: current spell is not Pyroblast (id={})", currentSpell->m_spellInfo->Id);
+        else
+            LOG_DEBUG("playerbots", "KaelthasUseBulwark: Kael'thas is casting no spell (or unknown)");
         return false;
     }
 
-    LOG_DEBUG("playerbots", "KaelthasUseBulwark: Kael casting id={} casterEntry={} casterGUID={} ", currentSpell->m_spellInfo->Id, kaelthas->GetEntry(), kaelthas->GetGUID().ToString());
-
-    if (currentSpell->m_spellInfo->Id != SPELL_KAELTHAS_PYROBLAST)
+    if (kaelthas->GetVictim() != bot)
     {
-        LOG_DEBUG("playerbots", "KaelthasUseBulwark: current spell is not Pyroblast (id={})", currentSpell->m_spellInfo->Id);
+        LOG_DEBUG("playerbots", "KaelthasUseBulwark: kael victim = {}, not bot", kaelthas->GetVictim() ? kaelthas->GetVictim()->GetGUID().ToString() : std::string("none"));
         return false;
-    }
-
-    // Primary target check using spell targets
-    Unit* pyroblastTarget = currentSpell->m_targets.GetUnitTarget();
-    if (pyroblastTarget)
-    {
-        LOG_DEBUG("playerbots", "KaelthasUseBulwark: spell target via m_targets.GetUnitTarget() = {}", pyroblastTarget->GetGUID().ToString());
-        if (pyroblastTarget != bot)
-            return false;
-    }
-    else
-    {
-        // Fallback: check victim (many scripts set victim, safer fallback)
-        if (kaelthas->GetVictim() != bot)
-        {
-            LOG_DEBUG("playerbots", "KaelthasUseBulwark: no unit target in spell, kael victim = {}, not bot", kaelthas->GetVictim() ? kaelthas->GetVictim()->GetGUID().ToString() : std::string("none"));
-            return false;
-        }
-        LOG_DEBUG("playerbots", "KaelthasUseBulwark: fallback - kael victim is bot");
     }
 
     // Final pre-use checks - will be rechecked in UseEquippedItemWithPacket
     if (bot->CanUseItem(offHand) != EQUIP_ERR_OK)
     {
         LOG_DEBUG("playerbots", "KaelthasUseBulwark: cannot use item (CanUseItem != OK)");
-        return false;
-    }
-
-    if (bot->IsNonMeleeSpellCast(true))
-    {
-        LOG_DEBUG("playerbots", "KaelthasUseBulwark: bot is currently casting, cannot use item");
         return false;
     }
 
@@ -2374,90 +2314,6 @@ bool KaelthasSunstriderReequipGearAction::Execute(Event event)
     return botAI->DoSpecificAction("equip upgrades", Event(), true);
 }
 
-/* bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
-{
-    Player* capernianTank = GetCapernianTank(botAI, bot);
-    bool isCapernianTank = (capernianTank && bot == capernianTank);
-
-    // Target priority 1: Thaladred for all dps except Capernian tank
-    Unit* thaladred = AI_VALUE2(Unit*, "find target", "thaladred the darkener");
-    if (thaladred && thaladred->IsAlive() && !isCapernianTank)
-    {
-        MarkTargetWithSquare(bot, thaladred);
-        SetRtiTarget(botAI, "square", thaladred);
-
-        if (bot->GetTarget() != thaladred->GetGUID())
-        {
-            bot->SetTarget(thaladred->GetGUID());
-            return Attack(thaladred);
-        }
-
-        return false;
-    }
-
-    // Target priority 2: Capernian for ranged
-    Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
-    if (capernian && capernian->IsAlive() && (botAI->IsRangedDps(bot) || isCapernianTank))
-    {
-        SetRtiTarget(botAI, "circle", capernian);
-
-        if (bot->GetTarget() != capernian->GetGUID())
-        {
-            bot->SetTarget(capernian->GetGUID());
-            return Attack(capernian);
-        }
-
-        return false;
-    }
-
-    // Target priority 3: Sanguinar for all dps
-    Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
-    if (sanguinar && sanguinar->IsAlive())
-    {
-        SetRtiTarget(botAI, "star", sanguinar);
-
-        if (bot->GetTarget() != sanguinar->GetGUID())
-        {
-            bot->SetTarget(sanguinar->GetGUID());
-            return Attack(sanguinar);
-        }
-
-        return false;
-    }
-
-    // Target priority 4: Telonicus for all dps
-    Unit* telonicus = AI_VALUE2(Unit*, "find target", "master engineer telonicus");
-    if (telonicus && telonicus->IsAlive())
-    {
-        SetRtiTarget(botAI, "triangle", telonicus);
-
-        if (bot->GetTarget() != telonicus->GetGUID())
-        {
-            bot->SetTarget(telonicus->GetGUID());
-            return Attack(telonicus);
-        }
-
-        // Melee DPS positioning: stay at max-ish melee range behind Telonicus (bomb safety)
-        if (botAI->IsMelee(bot) && !botAI->IsTank(bot) && telonicus->GetVictim() != bot)
-        {
-            float maxMeleeRange = bot->GetMeleeRange(telonicus);
-            float behindAngle = Position::NormalizeOrientation(telonicus->GetOrientation() + M_PI);
-
-            float targetX = telonicus->GetPositionX() + (maxMeleeRange - 0.5f) * cos(behindAngle);
-            float targetY = telonicus->GetPositionY() + (maxMeleeRange - 0.5f) * sin(behindAngle);
-
-            if (bot->GetExactDist2d(targetX, targetY) > 0.5f)
-            {
-                return MoveTo(telonicus->GetMapId(), targetX, targetY, bot->GetPositionZ(), false, false, false, false,
-                              MovementPriority::MOVEMENT_FORCED, true, false);
-            }
-        }
-    }
-
-    return false;
-} */
-
-// logging version
 bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
 {
     LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: Enter bot={} guid={}", bot->GetName(), bot->GetGUID().ToString());
@@ -2621,22 +2477,41 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
         if (botAI->IsMelee(bot) && !botAI->IsTank(bot) && telonicus->GetVictim() != bot)
         {
             float maxMeleeRange = bot->GetMeleeRange(telonicus);
-            float behindAngle = Position::NormalizeOrientation(telonicus->GetOrientation() + M_PI);
 
-            float targetX = telonicus->GetPositionX() + maxMeleeRange * cos(behindAngle);
-            float targetY = telonicus->GetPositionY() + maxMeleeRange * sin(behindAngle);
+            // Small buffer so melee doesn't get pushed out of range.
+            // Tolerance/hysteresis avoids twitching due to frequent re-eval.
+            const float meleeRangeBuffer = 0.5f;
+            const float tolerance = 0.75f;
 
-            LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: Melee positioning behind Telonicus maxRange={} target=({}, {}) botPos=({}, {})", maxMeleeRange, targetX, targetY, bot->GetPositionX(), bot->GetPositionY());
+            // Keep a minimum distance to avoid tiny desired distances
+            float desiredDist = std::max(2.0f, maxMeleeRange - meleeRangeBuffer);
+            float currentDist = bot->GetExactDist2d(telonicus);
 
-            if (bot->GetExactDist2d(targetX, targetY) > 0.5f)
+            // Only reposition if distance differs more than the tolerance
+            if (fabs(currentDist - desiredDist) > tolerance)
             {
-                LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: Moving to melee safe spot behind Telonicus");
-                return MoveTo(telonicus->GetMapId(), targetX, targetY, bot->GetPositionZ(), false, false, false, false,
-                              MovementPriority::MOVEMENT_FORCED, true, false);
+                float behindAngle = Position::NormalizeOrientation(telonicus->GetOrientation() + M_PI);
+                float targetX = telonicus->GetPositionX() + desiredDist * cos(behindAngle);
+                float targetY = telonicus->GetPositionY() + desiredDist * sin(behindAngle);
+
+                LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: Melee positioning behind Telonicus desiredDist={} currentDist={} target=({}, {}) botPos=({}, {})",
+                          desiredDist, currentDist, targetX, targetY, bot->GetPositionX(), bot->GetPositionY());
+
+                // Only move if we are not already within a small radius of the desired spot
+                if (!bot->IsWithinDist2d(targetX, targetY, 1.0f))
+                {
+                    LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: Moving to melee safe spot behind Telonicus");
+                    return MoveTo(telonicus->GetMapId(), targetX, targetY, telonicus->GetPositionZ(), false, false, false, false,
+                                  MovementPriority::MOVEMENT_FORCED, true, false);
+                }
+                else
+                {
+                    LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: Already at melee safe spot behind Telonicus (within 1.0f)");
+                }
             }
             else
             {
-                LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: Already at melee safe spot behind Telonicus");
+                LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: Not repositioning (within tolerance) desiredDist={} currentDist={}", desiredDist, currentDist);
             }
         }
     }
@@ -3063,7 +2938,7 @@ bool KaelthasSunstriderSpreadOutInMidairAction::Execute(Event event)
 
     LOG_DEBUG("playerbots", "KaelthasSunstriderSpreadOutInMidairAction: Enter bot={} guid={}", bot->GetName(), bot->GetGUID().ToString());
 
-    const float minSpreadDistance = 10.0f;
+    const float minSpreadDistance = 12.0f;
 
     // Find all nearby raid members in 3D space
     std::vector<Player*> nearbyPlayers;
@@ -3074,7 +2949,7 @@ bool KaelthasSunstriderSpreadOutInMidairAction::Execute(Event event)
             continue;
 
         // Check 3D distance using IsWithinDist3d
-        if (bot->IsWithinDist3d(member, minSpreadDistance * 2.0f))
+        if (bot->IsWithinDist3d(member, minSpreadDistance * 1.0f))
             nearbyPlayers.push_back(member);
     }
 

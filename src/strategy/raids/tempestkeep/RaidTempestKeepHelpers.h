@@ -51,10 +51,6 @@ namespace TempestKeepHelpers
 
         // Priest
         SPELL_FEAR_WARD               =  6346,
-
-        // Rogue
-        SPELL_SPRINT = 2983, // Rank 1 50%
-        // SPELL_SPRINT = 11305, // Rank 3 70%
     };
 
     enum TempestKeepNPCs
@@ -127,8 +123,6 @@ namespace TempestKeepHelpers
         extern const Position ThaladredRelayPoint;
         extern const Position ThaladredFinalPosition;
         extern const Position SanguinarTankPosition;
-        // extern const Position CapernianTankPosition;
-        extern const Position CapernianMeasurementPosition;
         extern const Position TelonicusTankPosition;
         extern const Position KaelthasWeaponStackPosition;
         extern const Position KaelthasAxeTankPosition;
@@ -161,8 +155,6 @@ namespace TempestKeepHelpers
     bool IsKaelthasInPhase5(PlayerbotAI* botAI);
     bool IsKaelthasMapIDTimerManager(PlayerbotAI* botAI, Player* bot);
     Player* GetCapernianTank(PlayerbotAI* botAI, Player* bot);
-    bool TryGetCapernianWaitingPosition(PlayerbotAI* botAI, Position& outPosition,
-        float distanceFromCapernian = 36.0f);
     Player* GetNetherstrandLongbowTank(PlayerbotAI* botAI, Player* bot);
     bool AreAllLegendaryWeaponsDead(PlayerbotAI* botAI, Player* bot);
     bool IsAnyLegendaryWeaponDead(PlayerbotAI* botAI, Player* bot);

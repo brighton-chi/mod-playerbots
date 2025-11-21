@@ -252,12 +252,9 @@ float KaelthasSunstriderDisableTankAssistMultiplier::GetValue(Action* action)
         return 1.0f;
 
         // Only disable tank-assist during staged kael phases (1-3) after the tank is already engaged.
-        if (kaelthas->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE))
+        if (kaelthas->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) && bot->GetTarget() != ObjectGuid::Empty)
         {
-            bool alreadyEngaged = bot->IsInCombat() || bot->GetTarget() != ObjectGuid::Empty;
-            LOG_DEBUG("playerbots", "DisableTankAssistMultiplier: bot={} inCombat={} hasTarget={} alreadyEngaged={}", bot->GetName(), bot->IsInCombat(), bot->GetTarget().ToString(), alreadyEngaged);
-
-            if (alreadyEngaged && dynamic_cast<TankAssistAction*>(action))
+            if (dynamic_cast<TankAssistAction*>(action))
                 return 0.0f;
         }
 

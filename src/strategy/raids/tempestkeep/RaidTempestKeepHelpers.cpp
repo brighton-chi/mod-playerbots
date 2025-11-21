@@ -39,8 +39,6 @@ namespace TempestKeepHelpers
         const Position ThaladredRelayPoint = { 727.044f, -44.207f, 46.777f };
         const Position ThaladredFinalPosition = { 643.342f, -27.474f, 46.777f };
         const Position SanguinarTankPosition = { 775.478f, 39.888f, 46.780f };
-        // const Position CapernianTankPosition = { 742.413f, -19.289f, 46.779f }; // ~45 yards from starting position
-        const Position CapernianMeasurementPosition = { 676.210f, -24.584f, 46.779f };
         const Position TelonicusTankPosition = { 773.717f, 44.091f, 46.780f };
         const Position KaelthasWeaponStackPosition = { 775.296f, -0.822f, 48.729f };
         const Position KaelthasAxeTankPosition = { 775.621f, 20.717f, 48.729f };
@@ -470,41 +468,6 @@ namespace TempestKeepHelpers
         }
 
         return highestHpWarlock; // Returns nullptr if no bot warlock found
-    }
-
-    bool TryGetCapernianWaitingPosition(PlayerbotAI* botAI, Position& outPosition, float distanceFromCapernian)
-    {
-        // Find Capernian
-        Unit* capernian = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "grand astromancer capernian")->Get();
-        if (!capernian)
-            return false;
-
-        const Position &measurement = TempestKeepPositions::CapernianMeasurementPosition;
-
-        // Direction vector from Capernian -> measurement
-        float dx = measurement.GetPositionX() - capernian->GetPositionX();
-        float dy = measurement.GetPositionY() - capernian->GetPositionY();
-        float dz = measurement.GetPositionZ() - capernian->GetPositionZ();
-
-        float dist = std::sqrt(dx * dx + dy * dy + dz * dz);
-
-        // Fail if measurement not farther than the requested distance (no valid point between the two at that distance)
-        if (dist <= distanceFromCapernian || dist == 0.0f)
-            return false;
-
-        // Unit vector from Capernian towards measurement
-        float ux = dx / dist;
-        float uy = dy / dist;
-        float uz = dz / dist;
-
-        outPosition = Position
-        {
-            capernian->GetPositionX() + ux * distanceFromCapernian,
-            capernian->GetPositionY() + uy * distanceFromCapernian,
-            capernian->GetPositionZ() + uz * distanceFromCapernian
-        };
-
-        return true;
     }
 
     Player* GetNetherstrandLongbowTank(PlayerbotAI* botAI, Player* bot)
