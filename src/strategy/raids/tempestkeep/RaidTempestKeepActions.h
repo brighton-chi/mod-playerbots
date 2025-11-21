@@ -199,10 +199,10 @@ public:
     bool Execute(Event event) override;
 };
 
-class KaelthasSunstriderManageWarlockTankStrategyAction : public Action
+class KaelthasSunstriderManageWarlockTankStrategyAction : public MovementAction
 {
 public:
-    KaelthasSunstriderManageWarlockTankStrategyAction(PlayerbotAI* botAI, std::string const name = "kaelthas sunstrider manage warlock tank strategy") : Action(botAI, name) {}
+    KaelthasSunstriderManageWarlockTankStrategyAction(PlayerbotAI* botAI, std::string const name = "kaelthas sunstrider manage warlock tank strategy") : MovementAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 

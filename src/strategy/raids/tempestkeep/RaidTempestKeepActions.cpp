@@ -10,6 +10,8 @@
 #include "Playerbots.h"
 #include "SharedDefines.h"
 
+#include "SpellAuraEffects.h" // for testing
+
 using namespace TempestKeepHelpers;
 using namespace TempestKeepPositions;
 
@@ -1409,15 +1411,8 @@ bool KaelthasSunstriderMainTankPositionSanguinarAction::Execute(Event event)
         }
         else if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
         {
-            float dX = position.GetPositionX() - bot->GetPositionX();
-            float dY = position.GetPositionY() - bot->GetPositionY();
-            float dist = sqrt(dX * dX + dY * dY);
-            float moveDist = std::min(7.0f, dist);
-            float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
-            float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
-
-            return MoveTo(bot->GetMapId(), moveX, moveY, position.GetPositionZ(), false, false, false, false,
-                            MovementPriority::MOVEMENT_COMBAT, true, true);
+            return MoveTo(bot->GetMapId(), position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(), false, false, false, false,
+                          MovementPriority::MOVEMENT_COMBAT, true, true);
         }
     }
 
@@ -1467,19 +1462,23 @@ bool KaelthasSunstriderManageWarlockTankStrategyAction::Execute(Event event)
                 LOG_DEBUG("playerbots", "KaelthasSunstriderManageWarlockTankStrategyAction: {} adding TANK strategy for Phase 1",
                         bot->GetName());
                 botAI->ChangeStrategy("+tank", BotState::BOT_STATE_COMBAT);
-            }
-        }
-        return false;
-    }
 
-    // Phase 2→3 Transition: Weapons dead, waiting for advisors - warlock should be tank
-    if (IsKaelthasInPhase2(botAI) && AreAllLegendaryWeaponsDead(botAI, bot))
-    {
-        if (!currentlyTank)
-        {
-            LOG_DEBUG("playerbots", "KaelthasSunstriderManageWarlockTankStrategyAction: {} adding TANK strategy for Phase 2->3 transition",
-                      bot->GetName());
-            botAI->ChangeStrategy("+tank", BotState::BOT_STATE_COMBAT);
+                Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
+                if (capernian && capernian->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) && !capernian->HasAura(SPELL_PERMANENT_FEIGN_DEATH))
+                {
+                    Position target;
+                    if (!TryGetCapernianWaitingPosition(botAI, target))
+                    {
+                        LOG_DEBUG("playerbots", "KaelthasSunstriderManageWarlockTankStrategyAction: {} failed to compute Capernian waiting position, skipping move", bot->GetName());
+                        return false;
+                    }
+
+                    LOG_DEBUG("playerbots", "KaelthasSunstriderManageWarlockTankStrategyAction: {} moving to Capernian waiting position for Phase 1",
+                              bot->GetName());
+                    return MoveTo(bot->GetMapId(), target.GetPositionX(), target.GetPositionY(), target.GetPositionZ(),
+                                  false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+                }
+            }
         }
         return false;
     }
@@ -1496,20 +1495,44 @@ bool KaelthasSunstriderManageWarlockTankStrategyAction::Execute(Event event)
         return false;
     }
 
+    // Phase 2→3 Transition: Weapons dead, waiting for advisors - warlock should be tank
+    if (IsKaelthasInPhase2To3Transition(botAI))
+    {
+        if (!currentlyTank)
+        {
+            LOG_DEBUG("playerbots", "KaelthasSunstriderManageWarlockTankStrategyAction: {} adding TANK strategy for Phase 2->3 transition",
+                      bot->GetName());
+            botAI->ChangeStrategy("+tank", BotState::BOT_STATE_COMBAT);
+
+            Position target;
+            if (!TryGetCapernianWaitingPosition(botAI, target))
+            {
+                LOG_DEBUG("playerbots", "KaelthasSunstriderManageWarlockTankStrategyAction: {} failed to compute Capernian waiting position, skipping move", bot->GetName());
+                return false;
+            }
+
+            LOG_DEBUG("playerbots", "KaelthasSunstriderManageWarlockTankStrategyAction: {} moving to Capernian waiting position for Phase 1",
+                      bot->GetName());
+            return MoveTo(bot->GetMapId(), target.GetPositionX(), target.GetPositionY(), target.GetPositionZ(),
+                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+        }
+        return false;
+    }
+
     // Phase 3: All advisors phase - handle Capernian
     if (IsKaelthasInPhase3(botAI))
     {
         Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
 
         // If Capernian is alive and warlock is not tanking, add tank strategy (failsafe)
-        if (capernian && capernian->IsAlive() && !currentlyTank)
+        if (capernian && !currentlyTank)
         {
             LOG_DEBUG("playerbots", "KaelthasSunstriderManageWarlockTankStrategyAction: {} adding TANK strategy for Phase 3 (Capernian alive failsafe)",
                       bot->GetName());
             botAI->ChangeStrategy("+tank", BotState::BOT_STATE_COMBAT);
         }
         // If Capernian is dead and still tanking, remove tank strategy
-        else if (capernian && !capernian->IsAlive() && currentlyTank)
+        else if (!capernian && currentlyTank)
         {
             LOG_DEBUG("playerbots", "KaelthasSunstriderManageWarlockTankStrategyAction: {} reset botAI for Phase 3 (Capernian dead)",
                       bot->GetName());
@@ -1584,24 +1607,56 @@ bool KaelthasSunstriderMoveAwayFromCapernianAction::Execute(Event event)
     if (!capernian)
         return false;
 
+    // Main-tank special: during Kael phase 1 position at ~20 yards and idle
+    if (botAI->IsMainTank(bot) && IsKaelthasInPhase1(botAI))
+    {
+        const float desiredDist = 15.0f;
+        const float tolerance = 2.0f; // acceptable +/- range in yards
+
+        // If we're outside the tolerance window, move to the point at desiredDist from Capernian along the bot->capernian direction.
+        if (fabs(bot->GetExactDist2d(capernian) - desiredDist) > tolerance)
+        {
+            // Direction vector from capernian to bot
+            float dx = bot->GetPositionX() - capernian->GetPositionX();
+            float dy = bot->GetPositionY() - capernian->GetPositionY();
+            float dist = sqrtf(dx * dx + dy * dy);
+            if (dist == 0.0f)
+                return false;
+
+            float nx = dx / dist;
+            float ny = dy / dist;
+
+            float targetX = capernian->GetPositionX() + nx * desiredDist;
+            float targetY = capernian->GetPositionY() + ny * desiredDist;
+
+            return MoveTo(capernian->GetMapId(), targetX, targetY, capernian->GetPositionZ(), false, false, false, true,
+                          MovementPriority::MOVEMENT_FORCED, true, false);
+        }
+        else
+        {
+            // At desired distance: stop and idle
+            bot->SetTarget(ObjectGuid::Empty);
+            bot->AttackStop();
+            bot->InterruptNonMeleeSpells(true);
+            return true;
+        }
+    }
+
     // Determine safe distance based on role
     float safeDistance;
     Player* capernianTank = GetCapernianTank(botAI, bot);
 
     if (botAI->IsMelee(bot))
     {
-        if (botAI->IsTank(bot) && IsKaelthasInPhase1(botAI))
-            safeDistance = 20.0f;  // Tank safe distance
-        else
-            safeDistance = 35.0f;  // Melee dps safe distance
+        safeDistance = 40.0f;  // Melee dps safe distance
     }
     else if (botAI->IsRangedDps(bot))
     {
-        safeDistance = 31.0f;  // Ranged DPS safe distance
+        safeDistance = 30.5f;  // Ranged DPS safe distance
     }
     else if (botAI->IsHeal(bot))
     {
-        safeDistance = 35.0f;  // Healer safe distance
+        safeDistance = 40.0f;  // Healer safe distance
     }
     else
     {
@@ -1617,7 +1672,7 @@ bool KaelthasSunstriderMoveAwayFromCapernianAction::Execute(Event event)
         return MoveAway(capernian, safeDistance - currentDistance + 1.0f);
     }
 
-    if (botAI->IsMelee(bot) && botAI->IsDps(bot) && IsKaelthasInPhase1(botAI))
+    if (botAI->IsMelee(bot) && IsKaelthasInPhase1(botAI))
     {
         bot->SetTarget(ObjectGuid::Empty);
         bot->AttackStop();
@@ -1651,14 +1706,7 @@ bool KaelthasSunstriderFirstAssistTankPositionTelonicusAction::Execute(Event eve
         }
         else if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
         {
-            float dX = position.GetPositionX() - bot->GetPositionX();
-            float dY = position.GetPositionY() - bot->GetPositionY();
-            float dist = sqrt(dX * dX + dY * dY);
-            float moveDist = std::min(7.0f, dist);
-            float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
-            float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
-
-            return MoveTo(bot->GetMapId(), moveX, moveY, position.GetPositionZ(), false, false, false, false,
+            return MoveTo(bot->GetMapId(), position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, true);
         }
     }
@@ -1731,7 +1779,7 @@ bool KaelthasSunstriderMisdirectAdvisorsToTanksAction::Execute(Event event)
         }
     }
 
-    if (!advisorTarget || !advisorTarget->IsAlive() || advisorTarget->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) ||
+    if (!advisorTarget || advisorTarget->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) || advisorTarget->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE) ||
         advisorTarget->HasAura(SPELL_PERMANENT_FEIGN_DEATH) || !tankTarget || !tankTarget->IsAlive())
         return false;
 
@@ -1792,16 +1840,16 @@ bool KaelthasSunstriderGroupUpLegendaryWeaponsAction::Execute(Event event)
     }
 
     // Priority 0 (excluding tanks): Stay away from Devastation
-    if (/* !botAI->IsTank(bot) && */ axe && axe->IsAlive())
+    if (axe)
     {
-        const float safeDistance = 7.0f;
+        const float safeDistance = 8.0f;
         float currentDistance = bot->GetExactDist2d(axe);
         if (currentDistance < safeDistance)
             return MoveAway(axe, safeDistance - currentDistance + 1.0f);
     }
 
     // Priority 1 (excluding tanks): Staff of Disintegration (Circle)
-    if (staff && staff->IsAlive() /* && botAI->IsDps(bot) */)
+    if (staff)
     {
         MarkTargetWithTriangle(bot, staff);
         SetRtiTarget(botAI, "triangle", staff);
@@ -1824,7 +1872,7 @@ bool KaelthasSunstriderGroupUpLegendaryWeaponsAction::Execute(Event event)
     }
 
     // Priority 2 (excluding tanks): Cosmic Infuser (Star)
-    if (mace && mace->IsAlive() /* && botAI->IsDps(bot) */)
+    if (mace)
     {
         MarkTargetWithTriangle(bot, mace);
         SetRtiTarget(botAI, "triangle", mace);
@@ -1838,10 +1886,11 @@ bool KaelthasSunstriderGroupUpLegendaryWeaponsAction::Execute(Event event)
     }
 
     // Priority 3 (including first assist tank): Warp Slicer (Square)
-    if (sword && sword->IsAlive() /* && (botAI->IsDps(bot) || botAI->IsAssistTankOfIndex(bot, 0)) */)
+    if (sword)
     {
         MarkTargetWithTriangle(bot, sword);
         SetRtiTarget(botAI, "triangle", sword);
+
         if (bot->GetTarget() != sword->GetGUID())
         {
             bot->SetTarget(sword->GetGUID());
@@ -1851,7 +1900,7 @@ bool KaelthasSunstriderGroupUpLegendaryWeaponsAction::Execute(Event event)
     }
 
     // Priority 4 (excluding tanks): Infinity Blades (Triangle)
-    if (dagger && dagger->IsAlive() /* && botAI->IsDps(bot) */)
+    if (dagger)
     {
         MarkTargetWithTriangle(bot, dagger);
         SetRtiTarget(botAI, "triangle", dagger);
@@ -1865,7 +1914,7 @@ bool KaelthasSunstriderGroupUpLegendaryWeaponsAction::Execute(Event event)
     }
 
     // Priority 5: Netherstrand Longbow (Cross)
-    if (longbow && longbow->IsAlive())
+    if (longbow)
     {
         MarkTargetWithCross(bot, longbow);
         SetRtiTarget(botAI, "cross", longbow);
@@ -1879,7 +1928,7 @@ bool KaelthasSunstriderGroupUpLegendaryWeaponsAction::Execute(Event event)
     }
 
     // Priority 6: Devastation - Ranged DPS only (Diamond)
-    if (axe && axe->IsAlive() && botAI->IsRangedDps(bot))
+    if (axe && botAI->IsRangedDps(bot))
     {
         MarkTargetWithDiamond(bot, axe);
         SetRtiTarget(botAI, "diamond", axe);
@@ -1893,7 +1942,7 @@ bool KaelthasSunstriderGroupUpLegendaryWeaponsAction::Execute(Event event)
     }
 
     // Priority 7: Phaseshift Bulwark (Skull)
-    if (shield && shield->IsAlive() /* && (botAI->IsDps(bot) || botAI->IsAssistTankOfIndex(bot, 1)) */)
+    if (shield)
     {
         MarkTargetWithTriangle(bot, shield);
         SetRtiTarget(botAI, "triangle", shield);
@@ -1911,7 +1960,7 @@ bool KaelthasSunstriderGroupUpLegendaryWeaponsAction::Execute(Event event)
 bool KaelthasSunstriderMoveDevastationAwayAction::Execute(Event event)
 {
     Unit* devastation = AI_VALUE2(Unit*, "find target", "devastation");
-    if (!devastation || !devastation->IsAlive())
+    if (!devastation)
         return false;
 
     MarkTargetWithDiamond(bot, devastation);
@@ -1922,7 +1971,7 @@ bool KaelthasSunstriderMoveDevastationAwayAction::Execute(Event event)
 
     if (devastation->GetVictim() == bot)
     {
-        const float safeDistance = 7.0f;
+        const float safeDistance = 8.0f;
         Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
 
         if (nearestPlayer)
@@ -1954,8 +2003,15 @@ bool KaelthasSunstriderHunterTurnAwayNetherstrandLongbowAction::Execute(Event ev
     {
         // Find nearest raid member (danger zone)
         const float dangerZone = 20.0f;
-        Unit* nearestPlayer = GetNearestPlayerInRadius(bot, dangerZone);
 
+        // Try to move away from the average group position first.
+        // This produces a smoother group-wide kite-away behavior.
+        if (MoveFromGroup(dangerZone + 3.0f)) // +3 for extra buffer like MoveAway used previously
+            return true;
+
+        // Fallback: if MoveFromGroup didn't move (no group members or already far enough),
+        // do the nearest-player kite-away behavior as before.
+        Unit* nearestPlayer = GetNearestPlayerInRadius(bot, dangerZone);
         if (nearestPlayer)
         {
             // Kite away from nearest player to turn bow away from raid
@@ -2167,6 +2223,12 @@ bool KaelthasSunstriderUseLegendaryWeaponsAction::UsePhaseshiftBulwark()
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     if (!kaelthas)
         return false;
+
+    if (bot->HasAura(SPELL_ARCANE_BARRIER))
+    {
+        LOG_DEBUG("playerbots", "KaelthasUseBulwark: bot already has Arcane Barrier aura");
+        return false;
+    }
 
     // Quick guard: ensure Kael is casting
     if (!kaelthas->HasUnitState(UNIT_STATE_CASTING))
@@ -2414,12 +2476,24 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
     }
     else
     {
-        LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: thaladred found entry={} guid={} alive={} non_attackable={}", thaladred->GetEntry(), thaladred->GetGUID().ToString(), thaladred->IsAlive(), thaladred->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE));
+        LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: thaladred found entry={} guid={} alive={} non_attackable={} not_selectable={} feigning={} deathState={} inWorld={} mapId={} health={}/{}",
+                    thaladred->GetEntry(),
+                    thaladred->GetGUID().ToString(),
+                    thaladred->IsAlive(),
+                    thaladred->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE),
+                    thaladred->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE),
+                    thaladred->HasAura(SPELL_PERMANENT_FEIGN_DEATH),
+                    int(thaladred->getDeathState()),
+                    thaladred->IsInWorld(),
+                    thaladred->GetMapId(),
+                    thaladred->GetHealth(), thaladred->GetMaxHealth());
     }
 
     bool isCapernianTank = (capernianTank && bot == capernianTank);
 
-    if (thaladred && thaladred->IsAlive() && !isCapernianTank)
+    // Only select an advisor if it is alive AND attackable (not non-attackable / not feigning)
+    if (thaladred && thaladred->IsAlive() && !isCapernianTank &&
+        !thaladred->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) && !thaladred->HasAura(SPELL_PERMANENT_FEIGN_DEATH))
     {
         LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: Selecting Thaladred (square) for bot={}", bot->GetName());
         MarkTargetWithSquare(bot, thaladred);
@@ -2440,9 +2514,11 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
         if (!thaladred)
             LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: Skipping Thaladred reason=not found");
         else if (!thaladred->IsAlive())
-            LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: Skipping Thaladred reason=not alive", thaladred->GetHealth(), thaladred->GetMaxHealth());
+            LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: Skipping Thaladred reason=not alive");
         else if (isCapernianTank)
             LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: Skipping Thaladred reason=bot is capernian tank");
+        else
+            LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: Skipping Thaladred reason=non_attackable_or_feigning");
     }
 
     // Target priority 2: Capernian for ranged
@@ -2453,10 +2529,11 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
     }
     else
     {
-        LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: capernian found entry={} guid={} alive={} non_attackable={} botIsRangedDps={}", capernian->GetEntry(), capernian->GetGUID().ToString(), capernian->IsAlive(), capernian->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE), botAI->IsRangedDps(bot));
+        LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: capernian found entry={} guid={} alive={} non_attackable={} feigning={} botIsRangedDps={}", capernian->GetEntry(), capernian->GetGUID().ToString(), capernian->IsAlive(), capernian->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE), capernian->HasAura(SPELL_PERMANENT_FEIGN_DEATH), botAI->IsRangedDps(bot));
     }
 
-    if (capernian && capernian->IsAlive() && botAI->IsRangedDps(bot))
+    if (capernian && capernian->IsAlive() && botAI->IsRangedDps(bot) &&
+        !capernian->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) && !capernian->HasAura(SPELL_PERMANENT_FEIGN_DEATH))
     {
         LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: Selecting Capernian (circle) for ranged bot={}", bot->GetName());
         SetRtiTarget(botAI, "circle", capernian);
@@ -2475,6 +2552,8 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
     {
         if (capernian && !botAI->IsRangedDps(bot))
             LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: Skipping Capernian reason=bot_not_ranged");
+        else if (capernian)
+            LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: Skipping Capernian reason=non_attackable_or_feigning");
     }
 
     // Target priority 3: Sanguinar for all dps
@@ -2485,10 +2564,11 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
     }
     else
     {
-        LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: sanguinar found entry={} guid={} alive={} non_attackable={}", sanguinar->GetEntry(), sanguinar->GetGUID().ToString(), sanguinar->IsAlive(), sanguinar->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE));
+        LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: sanguinar found entry={} guid={} alive={} non_attackable={} feigning={}", sanguinar->GetEntry(), sanguinar->GetGUID().ToString(), sanguinar->IsAlive(), sanguinar->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE), sanguinar->HasAura(SPELL_PERMANENT_FEIGN_DEATH));
     }
 
-    if (sanguinar && sanguinar->IsAlive())
+    if (sanguinar && sanguinar->IsAlive() &&
+        !sanguinar->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) && !sanguinar->HasAura(SPELL_PERMANENT_FEIGN_DEATH))
     {
         LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: Selecting Sanguinar (star) for bot={}", bot->GetName());
         SetRtiTarget(botAI, "star", sanguinar);
@@ -2507,6 +2587,8 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
     {
         if (sanguinar && !sanguinar->IsAlive())
             LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: Skipping Sanguinar reason=not_alive");
+        else if (sanguinar)
+            LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: Skipping Sanguinar reason=non_attackable_or_feigning");
     }
 
     // Target priority 4: Telonicus for all dps
@@ -2520,7 +2602,8 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
         LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: telonicus found entry={} guid={} alive={} non_attackable={} victimGuid={}", telonicus->GetEntry(), telonicus->GetGUID().ToString(), telonicus->IsAlive(), telonicus->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE), telonicus->GetVictim() ? telonicus->GetVictim()->GetGUID().ToString() : std::string("none"));
     }
 
-    if (telonicus && telonicus->IsAlive())
+    if (telonicus && telonicus->IsAlive() &&
+        !telonicus->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) && !telonicus->HasAura(SPELL_PERMANENT_FEIGN_DEATH))
     {
         LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: Selecting Telonicus (triangle) for bot={}", bot->GetName());
         SetRtiTarget(botAI, "triangle", telonicus);
@@ -2540,8 +2623,8 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
             float maxMeleeRange = bot->GetMeleeRange(telonicus);
             float behindAngle = Position::NormalizeOrientation(telonicus->GetOrientation() + M_PI);
 
-            float targetX = telonicus->GetPositionX() + (maxMeleeRange - 0.5f) * cos(behindAngle);
-            float targetY = telonicus->GetPositionY() + (maxMeleeRange - 0.5f) * sin(behindAngle);
+            float targetX = telonicus->GetPositionX() + maxMeleeRange * cos(behindAngle);
+            float targetY = telonicus->GetPositionY() + maxMeleeRange * sin(behindAngle);
 
             LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: Melee positioning behind Telonicus maxRange={} target=({}, {}) botPos=({}, {})", maxMeleeRange, targetX, targetY, bot->GetPositionX(), bot->GetPositionY());
 
@@ -2561,6 +2644,8 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
     {
         if (telonicus && !telonicus->IsAlive())
             LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: Skipping Telonicus reason=not_alive");
+        else if (telonicus)
+            LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: Skipping Telonicus reason=non_attackable_or_feigning");
     }
 
     LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: Exit no action taken bot={}", bot->GetName());
@@ -2810,7 +2895,20 @@ bool KaelthasSunstriderRoundUpPhoenixesAndFocusDownEggsAction::Execute(Event eve
         return false;
     }
 
-    if (botAI->IsRangedDps(bot))
+    if (botAI->IsMelee(bot) && botAI->IsDps(bot))
+    {
+        Unit* phoenix = AI_VALUE2(Unit*, "find target", "phoenix");
+        if (!phoenix)
+            return false;
+
+        float currentDistance = bot->GetExactDist2d(phoenix);
+        const float safeDistance = 10.0f;
+        if (currentDistance < safeDistance)
+            return MoveAway(phoenix, safeDistance - currentDistance + 2.0f);
+    }
+
+    if (botAI->IsRangedDps(bot) ||
+        (botAI->IsMelee(bot) && botAI->IsDps(bot) && IsKaelthasInPhase4To5Transition(botAI)))
     {
         Unit* phoenixEgg = AI_VALUE2(Unit*, "find target", "phoenix egg");
         if (!phoenixEgg)
@@ -2900,6 +2998,29 @@ bool KaelthasSunstriderBreakThroughShockBarrierAction::Execute(Event event)
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     if (!kaelthas)
         return false;
+
+    // Log Shock Barrier aura info if present
+    if (kaelthas->HasAura(SPELL_SHOCK_BARRIER))
+    {
+        Aura* barrier = kaelthas->GetAura(SPELL_SHOCK_BARRIER);
+        if (barrier)
+        {
+            LOG_DEBUG("playerbots", "KaelthasBreakThroughShockBarrierAction: Kael has SHOCK_BARRIER aura id={} caster={} duration_ms={} stacks={}",
+                        barrier->GetId(), barrier->GetCasterGUID().ToString(), barrier->GetDuration(), barrier->GetStackAmount());
+
+            // Log each effect on the aura (absorb value typically in an effect)
+            for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+            {
+                AuraEffect* effect = barrier->GetEffect(i);
+                if (!effect)
+                    continue;
+
+                LOG_DEBUG("playerbots", "KaelthasBreakThroughShockBarrierAction: barrier eff[{}]: auraType={} baseAmount={} amount={} effectIndex={}",
+                            i, int(effect->GetAuraType()), effect->GetBaseAmount(), effect->GetAmount(), int(effect->GetEffIndex()));
+            }
+        }
+    }
+    // End logging
 
     if (IsKaelthasMapIDTimerManager(botAI, bot))
         MarkTargetWithSkull(bot, kaelthas);

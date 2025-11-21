@@ -12,7 +12,7 @@ bool CrimsonHandCenturionCastsArcaneVolleyTrigger::IsActive()
 
     Unit* centurion = AI_VALUE2(Unit*, "find target", "crimson hand centurion");
 
-    return centurion && centurion->IsAlive() && centurion->HasAura(SPELL_ARCANE_FLURRY);
+    return centurion && centurion->HasAura(SPELL_ARCANE_FLURRY);
 }
 
 bool AlarPullingBossTrigger::IsActive()
@@ -243,7 +243,7 @@ bool KaelthasSunstriderSanguinarEngagedByMainTankTrigger::IsActive()
 
     Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
 
-    return sanguinar && sanguinar->IsAlive() && !sanguinar->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
+    return sanguinar && !sanguinar->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
            !sanguinar->HasAura(SPELL_PERMANENT_FEIGN_DEATH);
 }
 
@@ -294,7 +294,7 @@ bool KaelthasSunstriderCapernianEngagedByWarlockTankTrigger::IsActive()
 
     Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
 
-    return capernian && capernian->IsAlive() && !capernian->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
+    return capernian && !capernian->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
            !capernian->HasAura(SPELL_PERMANENT_FEIGN_DEATH);
 }
 
@@ -306,7 +306,7 @@ bool KaelthasSunstriderCapernianCastsArcaneBurstTrigger::IsActive()
 
     Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
 
-    return capernian && capernian->IsAlive() && !capernian->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
+    return capernian && !capernian->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
            !capernian->HasAura(SPELL_PERMANENT_FEIGN_DEATH);
 }
 
@@ -318,7 +318,7 @@ bool KaelthasSunstriderTelonicusEngagedByFirstAssistTankTrigger::IsActive()
 
     Unit* telonicus = AI_VALUE2(Unit*, "find target", "master engineer telonicus");
 
-    return telonicus && telonicus->IsAlive() && !telonicus->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
+    return telonicus && !telonicus->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
            !telonicus->HasAura(SPELL_PERMANENT_FEIGN_DEATH);
 }
 
@@ -360,7 +360,7 @@ bool KaelthasSunstriderDevastationChannelsWhirlwindTrigger::IsActive()
 
     Unit* devastation = AI_VALUE2(Unit*, "find target", "devastation");
 
-    return devastation && devastation->IsAlive();
+    return devastation;
 }
 
 bool KaelthasSunstriderNetherstrandLongbowFiresMultiShotTrigger::IsActive()
@@ -371,7 +371,7 @@ bool KaelthasSunstriderNetherstrandLongbowFiresMultiShotTrigger::IsActive()
 
     Unit* longbow = AI_VALUE2(Unit*, "find target", "netherstrand longbow");
 
-    return longbow && longbow->IsAlive();
+    return longbow;
 }
 
 bool KaelthasSunstriderLegendaryWeaponsAreDeadAndLootableTrigger::IsActive()
@@ -465,11 +465,8 @@ bool KaelthasSunstriderFlameStrikeAppearedUnderBotTrigger::IsActive()
 
 bool KaelthasSunstriderPhoenixesAndEggsAreSpawningTrigger::IsActive()
 {
-    if (!botAI->IsRangedDps(bot) && !botAI->IsAssistTankOfIndex(bot, 0) && !botAI->IsAssistTankOfIndex(bot, 1))
-        return false;
-
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
-    if (!kaelthas || kaelthas && kaelthas->HasAura(SPELL_GRAVITY_LAPSE))
+    if (!kaelthas)
         return false;
 
     Unit* phoenix = AI_VALUE2(Unit*, "find target", "phoenix");
@@ -481,10 +478,6 @@ bool KaelthasSunstriderPhoenixesAndEggsAreSpawningTrigger::IsActive()
 bool KaelthasSunstriderRaidMemberIsMindControlledTrigger::IsActive()
 {
     if (!bot->HasItemCount(ITEM_INFINITY_BLADE, 1, true) || botAI->IsTank(bot))
-        return false;
-
-    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
-    if (!kaelthas)
         return false;
 
     // Check if any raid member is mind controlled
@@ -514,22 +507,10 @@ bool KaelthasSunstriderBossIsCastingPyroblastTrigger::IsActive()
     if (!kaelthas)
         return false;
 
-    if (!kaelthas->HasUnitState(UNIT_STATE_CASTING))
-        return false;
-
-    Spell* currentSpell = kaelthas->GetCurrentSpell(CURRENT_GENERIC_SPELL);
-
-    return currentSpell && currentSpell->m_spellInfo->Id == SPELL_KAELTHAS_PYROBLAST;
+    return kaelthas->HasUnitState(UNIT_STATE_CASTING) && kaelthas->FindCurrentSpellBySpellId(SPELL_KAELTHAS_PYROBLAST);
 }
 
 bool KaelthasSunstriderBossIsManipulatingGravityTrigger::IsActive()
 {
-    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
-
-    if (kaelthas)
-        LOG_DEBUG("playerbots", "KaelthasSunstriderBossIsManipulatingGravityTrigger: kael entry={} guid={} has_gravity_lapse={}", kaelthas->GetEntry(), kaelthas->GetGUID().ToString(), kaelthas->HasAura(SPELL_GRAVITY_LAPSE));
-    else
-        LOG_DEBUG("playerbots", "KaelthasSunstriderBossIsManipulatingGravityTrigger: kael not found");
-
-    return kaelthas && kaelthas->HasAura(SPELL_GRAVITY_LAPSE);
+    return bot->HasAura(SPELL_GRAVITY_LAPSE);
 }

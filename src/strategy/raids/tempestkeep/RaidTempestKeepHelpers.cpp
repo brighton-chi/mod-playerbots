@@ -39,7 +39,8 @@ namespace TempestKeepHelpers
         const Position ThaladredRelayPoint = { 727.044f, -44.207f, 46.777f };
         const Position ThaladredFinalPosition = { 643.342f, -27.474f, 46.777f };
         const Position SanguinarTankPosition = { 775.478f, 39.888f, 46.780f };
-        // const Position CapernianTankPosition = { 0.0f, 0.0f, 0.0f };
+        // const Position CapernianTankPosition = { 742.413f, -19.289f, 46.779f }; // ~45 yards from starting position
+        const Position CapernianMeasurementPosition = { 676.210f, -24.584f, 46.779f };
         const Position TelonicusTankPosition = { 773.717f, 44.091f, 46.780f };
         const Position KaelthasWeaponStackPosition = { 775.296f, -0.822f, 48.729f };
         const Position KaelthasAxeTankPosition = { 775.621f, 20.717f, 48.729f };
@@ -205,6 +206,17 @@ namespace TempestKeepHelpers
         if (!kaelthas || !kaelthas->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE))
             return false;
 
+        // If any legendary weapon is currently alive, this is Phase 2 (do not treat as Phase 1)
+        const char* weapons[] = {"netherstrand longbow", "cosmic infuser", "devastation",
+                                 "infinity blades", "warp slicer", "staff of disintegration",
+                                 "phaseshift bulwark"};
+        for (const char* name : weapons)
+        {
+            Unit* weapon = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", name)->Get();
+            if (weapon && weapon->IsAlive())
+                return false;
+        }
+
         // If any advisor is in the waiting/feign state, treat as Phase 1
         const char* advisors[] = {"thaladred the darkener", "lord sanguinar",
                                   "grand astromancer capernian", "master engineer telonicus"};
@@ -230,6 +242,11 @@ namespace TempestKeepHelpers
     // Trigger: At least one legendary weapon exists AND at least one advisor has PERMANENT_FEIGN_DEATH or is NOT_SELECTABLE
     bool IsKaelthasInPhase2(PlayerbotAI* botAI)
     {
+        // Require Kael'thas to be staged/non-attackable (avoids scanning all weapon objects)
+        Unit* kaelthas = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "kael'thas sunstrider")->Get();
+        if (!kaelthas || !kaelthas->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE))
+            return false;
+
         const char* weapons[] = {"netherstrand longbow", "cosmic infuser", "devastation",
                                 "infinity blades", "warp slicer", "staff of disintegration",
                                 "phaseshift bulwark"};
@@ -262,64 +279,141 @@ namespace TempestKeepHelpers
         return false;
     }
 
+    bool IsKaelthasInPhase2To3Transition(PlayerbotAI* botAI)
+    {
+        // All 4 advisors must exist and be alive
+        const char* advisors[] = {
+            "thaladred the darkener",
+            "lord sanguinar",
+            "grand astromancer capernian",
+            "master engineer telonicus"
+        };
+
+        // 1) Ensure every advisor is present, alive and not still feigning (resurrected)
+        for (const char* name : advisors)
+        {
+            Unit* adv = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", name)->Get();
+            if (!adv)
+                return false;                       // missing -> not the window
+            if (!adv->IsAlive())
+                return false;                       // not alive -> not the window
+            if (adv->HasAura(SPELL_PERMANENT_FEIGN_DEATH))
+                return false;                       // still feigning -> not resurrected yet
+        }
+
+        // 2) None of the advisors should have re-entered combat yet.
+        //    If any advisor is in combat or has a victim, the window ended.
+        for (const char* name : advisors)
+        {
+            Unit* adv = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", name)->Get();
+            if (adv->IsInCombat() || adv->GetVictim())
+                return false; // at least one advisor already engaged -> not in the post-resurrect waiting window
+        }
+
+        // All resurrected and none have engaged -> we're in the phase2->phase3 post-resurrect waiting period
+        return true;
+    }
+
     // Phase 3: All Advisors Phase (After Resurrection)
-    // Trigger: All 4 advisors found, none have NON_ATTACKABLE flag, Kael'thas still has NON_ATTACKABLE flag
     bool IsKaelthasInPhase3(PlayerbotAI* botAI)
     {
         Unit* kaelthas = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "kael'thas sunstrider")->Get();
         if (!kaelthas || !kaelthas->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE))
-            return false;
+            return false; // Kael must be staged
 
-        const char* advisors[] = {"thaladred the darkener", "lord sanguinar",
-                                  "grand astromancer capernian", "master engineer telonicus"};
-
-        for (const char* name : advisors)
+        // Advisor NPC entries
+        const uint32 advisorEntries[] =
         {
-            Unit* advisor = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", name)->Get();
-            if (!advisor || !advisor->IsAlive())
-                return false;
+            NPC_THALADRED_THE_DARKENER,
+            NPC_LORD_SANGUINAR,
+            NPC_GRAND_ASTROMANCER_CAPERNIAN,
+            NPC_MASTER_ENGINEER_TELONICUS
+        };
 
-            if (advisor->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE))
-                return false;
+        uint8 aliveAttackable = 0;
+        uint8 aliveTotal = 0;
+        uint8 corpseCount = 0;
+        bool anyFeignOrNonAttackable = false;
 
-            if (advisor->HasAura(SPELL_PERMANENT_FEIGN_DEATH))
-                return false;
-
-            if (advisor->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE)) // can remove to exclude resurrection delay phase
-                return false;
+        // Check nearest corpses once
+        GuidVector corpses = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest corpses")->Get();
+        for (auto const& guid : corpses)
+        {
+            LootObject loot(botAI->GetBot(), guid);
+            WorldObject* object = loot.GetWorldObject(botAI->GetBot());
+            if (!object)
+                continue;
+            if (Creature* creature = object->ToCreature())
+            {
+                for (auto entry : advisorEntries)
+                {
+                    if (creature->GetEntry() == entry)
+                    {
+                        ++corpseCount;
+                        break;
+                    }
+                }
+            }
         }
 
-        return true;
+        // Check current advisor state
+        for (auto entry : advisorEntries)
+        {
+            Unit* advisor = GetFirstAliveUnitByEntry(botAI, entry); // helper present in file
+            if (!advisor)
+                continue;
+            ++aliveTotal;
+
+            // Detect any feign or staged advisor. If any advisor is in this state, we are not in Phase 3.
+            if (advisor->HasAura(SPELL_PERMANENT_FEIGN_DEATH) ||
+                advisor->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) ||
+                advisor->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE))
+            {
+                anyFeignOrNonAttackable = true;
+            }
+
+            bool isAttackable = advisor->IsAlive() &&
+                                !advisor->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
+                                !advisor->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE) &&
+                                !advisor->HasAura(SPELL_PERMANENT_FEIGN_DEATH);
+            if (isAttackable)
+                ++aliveAttackable;
+        }
+
+        // Phase 3 only while Kael staged AND no advisors are feigning/staged; persist if any advisor alive/attackable or any advisor corpse exists
+        if (anyFeignOrNonAttackable)
+            return false;
+
+        if (aliveAttackable > 0 || aliveTotal > 0 || corpseCount > 0)
+            return true;
+
+        return false;
     }
+
     // Phase 4: Kael'thas Solo (Before 50% transition)
-    // Trigger: Kael'thas is attackable (not NON_ATTACKABLE) and does NOT have KAEL_FULL_POWER aura
     bool IsKaelthasInPhase4(PlayerbotAI* botAI)
     {
         Unit* kaelthas = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "kael'thas sunstrider")->Get();
 
-        return kaelthas && !kaelthas->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) && !kaelthas->HasAura(SPELL_KAEL_FULL_POWER);
+        return kaelthas && !kaelthas->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) && !kaelthas->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE) &&
+               kaelthas->GetHealthPct() > 50.0f;
     }
 
     // Transition Phase: Kael'thas at 50% HP performing scene
-    // Trigger: Kael'thas is below 50% HP, has NOT_SELECTABLE flag, but does NOT have NON_ATTACKABLE flag
     bool IsKaelthasInPhase4To5Transition(PlayerbotAI* botAI)
     {
         Unit* kaelthas = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "kael'thas sunstrider")->Get();
 
-        // During transition: NOT_SELECTABLE is set, but NON_ATTACKABLE is NOT set
-        // Before Phase 4: BOTH flags are set
-        // Phase 4/5: NEITHER flag is set (except during transition)
         return kaelthas && kaelthas->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE) &&
-            !kaelthas->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
+               kaelthas->GetHealthPct() <= 50.0f;
     }
 
     // Phase 5: Kael'thas Solo (After 50% transition with Gravity Lapse)
-    // Trigger: Kael'thas is attackable (not NON_ATTACKABLE) and HAS KAEL_FULL_POWER aura
     bool IsKaelthasInPhase5(PlayerbotAI* botAI)
     {
         Unit* kaelthas = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "kael'thas sunstrider")->Get();
 
-        return kaelthas && !kaelthas->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) && kaelthas->HasAura(SPELL_KAEL_FULL_POWER);
+        return kaelthas && kaelthas->GetHealthPct() <= 50.0f && !kaelthas->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE);
     }
 
     bool IsKaelthasMapIDTimerManager(PlayerbotAI* botAI, Player* bot)
@@ -376,6 +470,41 @@ namespace TempestKeepHelpers
         }
 
         return highestHpWarlock; // Returns nullptr if no bot warlock found
+    }
+
+    bool TryGetCapernianWaitingPosition(PlayerbotAI* botAI, Position& outPosition, float distanceFromCapernian)
+    {
+        // Find Capernian
+        Unit* capernian = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "grand astromancer capernian")->Get();
+        if (!capernian)
+            return false;
+
+        const Position &measurement = TempestKeepPositions::CapernianMeasurementPosition;
+
+        // Direction vector from Capernian -> measurement
+        float dx = measurement.GetPositionX() - capernian->GetPositionX();
+        float dy = measurement.GetPositionY() - capernian->GetPositionY();
+        float dz = measurement.GetPositionZ() - capernian->GetPositionZ();
+
+        float dist = std::sqrt(dx * dx + dy * dy + dz * dz);
+
+        // Fail if measurement not farther than the requested distance (no valid point between the two at that distance)
+        if (dist <= distanceFromCapernian || dist == 0.0f)
+            return false;
+
+        // Unit vector from Capernian towards measurement
+        float ux = dx / dist;
+        float uy = dy / dist;
+        float uz = dz / dist;
+
+        outPosition = Position
+        {
+            capernian->GetPositionX() + ux * distanceFromCapernian,
+            capernian->GetPositionY() + uy * distanceFromCapernian,
+            capernian->GetPositionZ() + uz * distanceFromCapernian
+        };
+
+        return true;
     }
 
     Player* GetNetherstrandLongbowTank(PlayerbotAI* botAI, Player* bot)

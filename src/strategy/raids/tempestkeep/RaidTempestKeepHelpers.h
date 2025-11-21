@@ -29,7 +29,7 @@ namespace TempestKeepHelpers
 
         // Kael'thas Sunstrider
         SPELL_PERMANENT_FEIGN_DEATH = 29266,
-        SPELL_GRAVITY_LAPSE                 = 35941,
+        SPELL_GRAVITY_LAPSE                 = 39432,
         SPELL_KAEL_FULL_POWER               = 36187,
         SPELL_MENTAL_PROTECTION_FIELD = 36480, // Staff of Disintegration
         SPELL_ARCANE_BARRIER = 36481,          // Phaseshift Bulwark
@@ -53,7 +53,8 @@ namespace TempestKeepHelpers
         SPELL_FEAR_WARD               =  6346,
 
         // Rogue
-        SPELL_SPRINT = 11305,
+        SPELL_SPRINT = 2983, // Rank 1 50%
+        // SPELL_SPRINT = 11305, // Rank 3 70%
     };
 
     enum TempestKeepNPCs
@@ -67,6 +68,10 @@ namespace TempestKeepHelpers
 
         // Kael'thas Sunstrider
         NPC_KAELTHAS_SUNSTRIDER = 19622,
+        NPC_LORD_SANGUINAR          = 20060,
+        NPC_GRAND_ASTROMANCER_CAPERNIAN = 20062,
+        NPC_MASTER_ENGINEER_TELONICUS = 20063,
+        NPC_THALADRED_THE_DARKENER = 20064,
         NPC_NETHERSTRAND_LONGBOW        = 21268,
         NPC_DEVASTATION            = 21269,
         NPC_COSMIC_INFUSER          = 21270,
@@ -123,6 +128,7 @@ namespace TempestKeepHelpers
         extern const Position ThaladredFinalPosition;
         extern const Position SanguinarTankPosition;
         // extern const Position CapernianTankPosition;
+        extern const Position CapernianMeasurementPosition;
         extern const Position TelonicusTankPosition;
         extern const Position KaelthasWeaponStackPosition;
         extern const Position KaelthasAxeTankPosition;
@@ -148,12 +154,15 @@ namespace TempestKeepHelpers
 
     bool IsKaelthasInPhase1(PlayerbotAI* botAI);
     bool IsKaelthasInPhase2(PlayerbotAI* botAI);
+    bool IsKaelthasInPhase2To3Transition(PlayerbotAI* botAI);
     bool IsKaelthasInPhase3(PlayerbotAI* botAI);
     bool IsKaelthasInPhase4(PlayerbotAI* botAI);
     bool IsKaelthasInPhase4To5Transition(PlayerbotAI* botAI);
     bool IsKaelthasInPhase5(PlayerbotAI* botAI);
     bool IsKaelthasMapIDTimerManager(PlayerbotAI* botAI, Player* bot);
     Player* GetCapernianTank(PlayerbotAI* botAI, Player* bot);
+    bool TryGetCapernianWaitingPosition(PlayerbotAI* botAI, Position& outPosition,
+        float distanceFromCapernian = 36.0f);
     Player* GetNetherstrandLongbowTank(PlayerbotAI* botAI, Player* bot);
     bool AreAllLegendaryWeaponsDead(PlayerbotAI* botAI, Player* bot);
     bool IsAnyLegendaryWeaponDead(PlayerbotAI* botAI, Player* bot);

@@ -59,6 +59,13 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class KaelthasSunstriderKiteThaladredMultiplier : public Multiplier
+{
+public:
+    KaelthasSunstriderKiteThaladredMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "kaelthas sunstrider kite thaladred multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
 class KaelthasSunstriderDelayBloodlustAndHeroismMultiplier : public Multiplier
 {
 public:
@@ -77,6 +84,13 @@ class KaelthasSunstriderAllDpsOnBossDuringPyroblastMultiplier : public Multiplie
 {
 public:
     KaelthasSunstriderAllDpsOnBossDuringPyroblastMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "kaelthas sunstrider all dps on boss during pyroblast multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
+class KaelthasSunstriderMeleeDpsDoNotAttackDuringGravityLapseMultiplier : public Multiplier
+{
+public:
+    KaelthasSunstriderMeleeDpsDoNotAttackDuringGravityLapseMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "kaelthas sunstrider melee dps do not attack during gravity lapse multiplier") {}
     virtual float GetValue(Action* action);
 };
 

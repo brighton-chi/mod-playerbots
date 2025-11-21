@@ -251,9 +251,31 @@ float KaelthasSunstriderDisableTankAssistMultiplier::GetValue(Action* action)
     if (!kaelthas)
         return 1.0f;
 
-    if (kaelthas->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) && bot->GetVictim() != nullptr)
+        // Only disable tank-assist during staged kael phases (1-3) after the tank is already engaged.
+        if (kaelthas->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE))
+        {
+            bool alreadyEngaged = bot->IsInCombat() || bot->GetTarget() != ObjectGuid::Empty;
+            LOG_DEBUG("playerbots", "DisableTankAssistMultiplier: bot={} inCombat={} hasTarget={} alreadyEngaged={}", bot->GetName(), bot->IsInCombat(), bot->GetTarget().ToString(), alreadyEngaged);
+
+            if (alreadyEngaged && dynamic_cast<TankAssistAction*>(action))
+                return 0.0f;
+        }
+
+    return 1.0f;
+}
+
+float KaelthasSunstriderKiteThaladredMultiplier::GetValue(Action* action)
+{
+    if (botAI->IsTank(bot))
+        return 1.0f;
+
+    Unit* thaladred = AI_VALUE2(Unit*, "find target", "thaladred the darkener");
+    if (!thaladred)
+        return 1.0f;
+
+    if (thaladred->GetVictim() == bot)
     {
-        if (dynamic_cast<TankAssistAction*>(action))
+        if (!dynamic_cast<KaelthasSunstriderKiteThaladredAction*>(action))
             return 0.0f;
     }
 
@@ -328,6 +350,24 @@ float KaelthasSunstriderAllDpsOnBossDuringPyroblastMultiplier::GetValue(Action* 
     if (currentSpell && currentSpell->m_spellInfo->Id == SPELL_KAELTHAS_PYROBLAST)
     {
         if (dynamic_cast<KaelthasSunstriderRoundUpPhoenixesAndFocusDownEggsAction*>(action))
+            return 0.0f;
+    }
+
+    return 1.0f;
+}
+
+float KaelthasSunstriderMeleeDpsDoNotAttackDuringGravityLapseMultiplier::GetValue(Action* action)
+{
+    if (!botAI->IsMelee(bot) || !botAI->IsDps(bot))
+        return 1.0f;
+
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    if (!kaelthas)
+        return 1.0f;
+
+    if (bot->HasAura(SPELL_GRAVITY_LAPSE))
+    {
+        if (!dynamic_cast<KaelthasSunstriderSpreadOutInMidairAction*>(action))
             return 0.0f;
     }
 
