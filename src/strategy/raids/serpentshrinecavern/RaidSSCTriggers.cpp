@@ -18,7 +18,7 @@ bool BotIsStandingInToxicPoolTrigger::IsActive()
 
 bool GreyheartTidecallerWaterElementalTotemSpawnedTrigger::IsActive()
 {
-    if (!botAI->IsDps(bot));
+    if (!botAI->IsDps(bot))
         return false;
 
     Unit* totem = GetFirstAliveUnitByEntry(botAI, NPC_WATER_ELEMENTAL_TOTEM);
@@ -536,13 +536,13 @@ bool LadyVashjTaintedElementalCheatTrigger::IsActive()
         for (auto const& guid : corpses)
         {
             LootObject loot(bot, guid);
-            WorldObject* obj = loot.GetWorldObject(bot);
-            if (!obj)
+            WorldObject* object = loot.GetWorldObject(bot);
+            if (!object)
                 continue;
 
-            if (Creature* cr = obj->ToCreature())
+            if (Creature* creature = object->ToCreature())
             {
-                if (cr->GetEntry() == NPC_TAINTED_ELEMENTAL && !cr->IsAlive())
+                if (creature->GetEntry() == NPC_TAINTED_ELEMENTAL && !creature->IsAlive())
                 {
                     taintedPresent = true;
                     break;

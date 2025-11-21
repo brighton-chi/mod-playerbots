@@ -863,7 +863,7 @@ bool LeotherasTheBlindDemonFormTankAttackBossAction::Execute(Event event)
         float targetX = leotherasDemon->GetPositionX() + (maxMeleeRange - meleeRangeBuffer) * cos(angle);
         float targetY = leotherasDemon->GetPositionY() + (maxMeleeRange - meleeRangeBuffer) * sin(angle);
 
-        if (fabs(bot->GetExactDist2d(leotherasDemon) - (maxMeleeRange - meleeRangeBuffer)))
+        if (fabs(bot->GetExactDist2d(leotherasDemon) - (maxMeleeRange - meleeRangeBuffer)) > 0.1f)
         {
             return MoveTo(leotherasDemon->GetMapId(), targetX, targetY, bot->GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_FORCED, true, false);
@@ -944,7 +944,7 @@ bool LeotherasTheBlindDemonFormPositionMeleeAction::Execute(Event event)
         float targetX = leotherasPhase2Demon->GetPositionX() + (maxMeleeRange - meleeRangeBuffer) * cos(behindAngle);
         float targetY = leotherasPhase2Demon->GetPositionY() + (maxMeleeRange - meleeRangeBuffer) * sin(behindAngle);
 
-        if (fabs(bot->GetExactDist2d(targetX, targetY) - (maxMeleeRange - meleeRangeBuffer)))
+        if (fabs(bot->GetExactDist2d(targetX, targetY) - (maxMeleeRange - meleeRangeBuffer)) > 0.1f)
         {
             return MoveTo(leotherasPhase2Demon->GetMapId(), targetX, targetY, bot->GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, false);
@@ -1574,7 +1574,8 @@ bool MorogrimTidewalkerMoveBossToTankPositionAction::MoveToPhase2TankPosition(Un
     const Position& transition = TidewalkerPhaseTransitionWaypoint;
 
     const ObjectGuid botGuid = bot->GetGUID();
-    uint8 step = tidewalkerTankStep.count(botGuid) ? tidewalkerTankStep[botGuid] : 0;
+    auto itStep = tidewalkerTankStep.find(botGuid);
+    uint8 step = (itStep != tidewalkerTankStep.end()) ? itStep->second : 0;
 
     if (step == 0)
     {
@@ -1623,7 +1624,8 @@ bool MorogrimTidewalkerPhase2RepositionRangedAction::Execute(Event event)
     const Position& transition = TidewalkerPhaseTransitionWaypoint;
 
     const ObjectGuid botGuid = bot->GetGUID();
-    uint8 step = tidewalkerRangedStep.count(botGuid) ? tidewalkerRangedStep[botGuid] : 0;
+    auto itStep = tidewalkerRangedStep.find(botGuid);
+    uint8 step = (itStep != tidewalkerRangedStep.end()) ? itStep->second : 0;
 
     if (step == 0)
     {
@@ -1755,46 +1757,50 @@ bool LadyVashjPhase1PositionRangedAction::Execute(Event event)
         }
     }
 
-    if (!vashjRangedPositions.count(bot->GetGUID()))
+    const ObjectGuid guid = bot->GetGUID();
+
+    auto itPos = vashjRangedPositions.find(guid);
+    auto itReached = vashjHasReachedRangedPosition.find(guid);
+    if (itPos == vashjRangedPositions.end())
     {
         auto it = std::find(spreadMembers.begin(), spreadMembers.end(), bot);
-        uint8 botIndex = (it != spreadMembers.end()) ? std::distance(spreadMembers.begin(), it) : 0;
-        uint8 count = spreadMembers.size();
+        size_t botIndex = (it != spreadMembers.end()) ? std::distance(spreadMembers.begin(), it) : 0;
+        size_t count = spreadMembers.size();
 
-        float referenceAngle = M_PI / 2.0f; // π/2 radians = north
-        const float span = M_PI; // half circle
-        const float startAngle = referenceAngle - span / 2.0f;
-        float angle;
-        if (count <= 1)
-            angle = referenceAngle;
-        else
-            angle = startAngle + (float)botIndex / (count - 1) * span;
+        const float referenceAngle = M_PI / 2.0f; // north
+        const float arcSpan = M_PI; // 180°
+        const float startAngle = referenceAngle - arcSpan / 2.0f;
+        float angle = (count <= 1) ? referenceAngle : startAngle + (static_cast<float>(botIndex) / (count - 1)) * arcSpan;
 
-        uint32 botSeed = bot->GetGUID().GetCounter();
+        uint32 botSeed = guid.GetCounter();
         float radius = minSpreadRadius + (botSeed % 1000) / 1000.0f * (maxSpreadRadius - minSpreadRadius);
         float targetX = center.GetPositionX() + radius * cos(angle);
         float targetY = center.GetPositionY() + radius * sin(angle);
-        vashjRangedPositions.emplace(bot->GetGUID(), Position(targetX, targetY, center.GetPositionZ()));
-        vashjHasReachedRangedPosition.emplace(bot->GetGUID(), false);
-     }
+        float tz = center.GetPositionZ();
 
-    Position targetPosition = vashjRangedPositions[bot->GetGUID()];
-    if (!vashjHasReachedRangedPosition[bot->GetGUID()])
+        auto res = vashjRangedPositions.emplace(guid, Position(targetX, targetY, tz));
+        itPos = res.first;
+        vashjHasReachedRangedPosition.emplace(guid, false);
+        itReached = vashjHasReachedRangedPosition.find(guid);
+    }
+
+    if (itPos == vashjRangedPositions.end())
+        return false;
+
+    Position targetPosition = itPos->second;
+    if (itReached == vashjHasReachedRangedPosition.end() || !(itReached->second))
     {
         if (!bot->IsWithinDist2d(targetPosition.GetPositionX(), targetPosition.GetPositionY(), 2.0f))
         {
-            float destX = targetPosition.GetPositionX();
-            float destY = targetPosition.GetPositionY();
-            float destZ = targetPosition.GetPositionZ();
-
-            return MoveTo(bot->GetMapId(), destX, destY, destZ, false, false, false, false,
-                          MovementPriority::MOVEMENT_COMBAT, true, false);
+            return MoveTo(bot->GetMapId(), targetPosition.GetPositionX(), targetPosition.GetPositionY(), targetPosition.GetPositionZ(),
+                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
-        vashjHasReachedRangedPosition[bot->GetGUID()] = true;
+        if (itReached != vashjHasReachedRangedPosition.end())
+            itReached->second = true;
     }
 
     return false;
-}
+ }
 
 bool LadyVashjSetGroundingTotemInMainTankGroupAction::Execute(Event event)
 {
@@ -2306,14 +2312,14 @@ bool LadyVashjLootTaintedCoreAction::Execute(Event)
         const ObjectGuid corpseGuid = guid;
         const uint8 guessedIndex = 0; // best-effort guess (most single-item corpses use index 0)
 
-        botAI->AddTimedEvent([this, botGuid, corpseGuid, guessedIndex]()
+        botAI->AddTimedEvent([botGuid, corpseGuid, guessedIndex]()
         {
-            Player* receiver = botGuid.IsEmpty() ? nullptr : ObjectAccessor::FindPlayer(botGuid);
-            if (!receiver || !receiver->IsInWorld())
+        Player* receiver = botGuid.IsEmpty() ? nullptr : ObjectAccessor::FindPlayer(botGuid);
+            if (!receiver)
                 return;
 
-            // Double-check someone else didn't obtain the core in the meantime
-            if (Group* group = bot->GetGroup())
+            // Double-check someone else didn't obtain the core in the meantime using receiver's group
+            if (Group* group = receiver->GetGroup())
             {
                 for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
                 {
@@ -2322,9 +2328,6 @@ bool LadyVashjLootTaintedCoreAction::Execute(Event)
                         return;
                 }
             }
-
-            /* if (receiver->HasItemCount(ITEM_TAINTED_CORE, 1, false))
-                return; */
 
             // Set the loot GUID so server treats the following autostore as targeted to this corpse
             receiver->SetLootGUID(corpseGuid);
@@ -2696,6 +2699,8 @@ bool LadyVashjPassTheTaintedCoreAction::IsFirstCorePasserInIntendedPosition(Play
     float dist = firstCorePasser->GetExactDist2d(Position(targetX, targetY));
 
     return dist <= 2.0f; */
+
+    return false;
 }
 
 bool LadyVashjPassTheTaintedCoreAction::IsSecondCorePasserInIntendedPosition(Player* firstCorePasser, Player* secondCorePasser, Unit* closestTrigger)
@@ -2731,6 +2736,8 @@ bool LadyVashjPassTheTaintedCoreAction::IsSecondCorePasserInIntendedPosition(Pla
     float dist2 = secondCorePasser->GetExactDist2d(Position(pos2X, pos2Y));
 
     return dist1 <= 2.0f || dist2 <= 2.0f; */
+
+    return false;
 }
 
 bool LadyVashjPassTheTaintedCoreAction::IsThirdCorePasserInIntendedPosition(Player* secondCorePasser, Player* thirdCorePasser, Unit* closestTrigger)
@@ -2766,6 +2773,8 @@ bool LadyVashjPassTheTaintedCoreAction::IsThirdCorePasserInIntendedPosition(Play
     float dist2 = thirdCorePasser->GetExactDist2d(Position(pos2X, pos2Y));
 
     return dist1 <= 2.0f || dist2 <= 2.0f; */
+
+    return false;
 }
 
 bool LadyVashjPassTheTaintedCoreAction::IsFourthCorePasserInIntendedPosition(Player* thirdCorePasser, Player* fourthCorePasser, Unit* closestTrigger)
@@ -2780,6 +2789,8 @@ bool LadyVashjPassTheTaintedCoreAction::IsFourthCorePasserInIntendedPosition(Pla
     // Fallback: simple proximity to trigger
     /* float distToTrigger2d = fourthCorePasser->GetExactDist2d(closestTrigger);
     return distToTrigger2d <= 2.0f; */
+
+    return false;
 }
 
 void LadyVashjPassTheTaintedCoreAction::ScheduleStoreCoreAfterImbue(PlayerbotAI* botAI, Player* giver, Player* receiver)
@@ -2812,14 +2823,6 @@ void LadyVashjPassTheTaintedCoreAction::ScheduleStoreCoreAfterImbue(PlayerbotAI*
             imbuePending.erase(giverGuid);
             return;
         }
-
-        /* if (!receiverPlayer->IsInWorld())
-        {
-            intendedLineup.erase(receiverGuid);
-            intendedLineup.erase(giverGuid);
-            imbuePending.erase(giverGuid);
-            return;
-        } */
 
         // Detect if anyone already has the core
         if (Group* group = receiverPlayer->GetGroup())

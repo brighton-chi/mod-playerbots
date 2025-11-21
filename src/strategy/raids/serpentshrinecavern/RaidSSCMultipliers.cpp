@@ -118,10 +118,10 @@ float HydrossTheUnstableWaitForDpsMultiplier::GetValue(Action* action)
         auto itPhase = hydrossChangeToNaturePhaseTimer.find(mapId);
 
         bool justChanged = (itDps == hydrossNatureDpsWaitTimer.end() ||
-                            (std::time(nullptr) - itDps->second) < dpsWaitSeconds);
+                            (now - itDps->second) < dpsWaitSeconds);
 
         bool aboutToChange = (itPhase != hydrossChangeToNaturePhaseTimer.end() &&
-                              (std::time(nullptr) - itPhase->second) > phaseChangeWaitSeconds);
+                              (now - itPhase->second) > phaseChangeWaitSeconds);
 
         if (justChanged || aboutToChange)
         {
