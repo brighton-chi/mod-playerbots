@@ -32,8 +32,6 @@ namespace SerpentShrineCavernHelpers
 
         // The Lurker Below
         SPELL_SPOUT_VISUAL = 37431,
-        SPELL_SPOUT_PERIODIC_1 = 37429,
-        SPELL_SPOUT_PERIODIC_2 = 37430,
 
         // Leotheras the Blind
         SPELL_LEOTHERAS_BANISHED = 37546,
@@ -138,23 +136,6 @@ namespace SerpentShrineCavernHelpers
         extern const Position HydrossNatureTankPosition;
 
         extern const Position LurkerMainTankPosition;
-        extern const Position LurkerEMeleePosition;
-        extern const Position LurkerWMeleePosition;
-        extern const Position LurkerNWIsletPosition;
-        extern const Position LurkerNWIsletSwimPosition;
-        extern const Position LurkerNWRangedDpsPosition;
-        extern const Position LurkerNEIsletPosition;
-        extern const Position LurkerNEIsletSwimPosition;
-        extern const Position LurkerNERangedDpsPosition;
-        extern const Position LurkerEIsletPosition;
-        extern const Position LurkerEIsletSwimPosition;
-        extern const Position LurkerERangedDpsPosition;
-        extern const Position LurkerSEHealerLandPosition;
-        extern const Position LurkerSEHealerSwimPosition;
-        extern const Position LurkerSWHealerLandPosition;
-        extern const Position LurkerSWHealerSwimPosition;
-        extern const Position LurkerNHealerLandPosition;
-        extern const Position LurkerNHealerSwimPosition;
 
         extern const Position KarathressTankPosition;
         extern const Position TidalvessTankPosition;
@@ -184,15 +165,12 @@ namespace SerpentShrineCavernHelpers
     bool IsMapIDTimerManager(PlayerbotAI* botAI, Player* bot);
     Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry);
 
-    bool IsLurkerCastingSpout(Unit* lurker);
-    std::array<std::vector<Player*>, 3> GetRangedDpsBotGroups(Group* group);
-    std::array<std::vector<Player*>, 3> GetHealerBotGroups(Group* group);
-    std::array<std::vector<Player*>, 2> GetMeleeBotGroups(Group* group);
-
     bool HasMarkOfHydrossAt100Percent(Player* bot);
     bool HasNoMarkOfHydross(Player* bot);
     bool HasMarkOfCorruptionAt100Percent(Player* bot);
     bool HasNoMarkOfCorruption(Player* bot);
+
+    bool IsLurkerCastingSpout(Unit* lurker);
 
     Unit* GetLeotherasHuman(PlayerbotAI* botAI);
     Unit* GetPhase2LeotherasDemon(PlayerbotAI* botAI);

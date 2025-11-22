@@ -108,8 +108,8 @@ bool HydrossTheUnstableNeedToManageTimersTrigger::IsActive()
 
 bool TheLurkerBelowSpoutIsActiveTrigger::IsActive()
 {
-    if (botAI->IsRanged(bot))
-        return false;
+    /* if (botAI->IsRanged(bot))
+        return false; */
 
     Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
     if (!lurker)
@@ -140,55 +140,6 @@ bool TheLurkerBelowBossIsActiveForMainTankTrigger::IsActive()
 bool TheLurkerBelowBossCastsGeyserTrigger::IsActive()
 {
     if (!botAI->IsRanged(bot))
-        return false;
-
-    Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
-    if (!lurker)
-        return false;
-
-    const time_t now = std::time(nullptr);
-
-    auto it = lurkerSpoutTimer.find(lurker->GetMapId());
-    return lurker->getStandState() != UNIT_STAND_STATE_SUBMERGED &&
-           (it == lurkerSpoutTimer.end() || it->second <= now);
-}
-
-// Below for implementation later if movement into water issue is resolved
-bool TheLurkerBelowBossIsActiveForOtherMeleeTrigger::IsActive()
-{
-    if (!botAI->IsMelee(bot) || botAI->IsMainTank(bot))
-        return false;
-
-    Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
-    if (!lurker)
-        return false;
-
-    const time_t now = std::time(nullptr);
-
-    auto it = lurkerSpoutTimer.find(lurker->GetMapId());
-    return lurker->getStandState() != UNIT_STAND_STATE_SUBMERGED &&
-           (it == lurkerSpoutTimer.end() || it->second <= now);
-}
-
-bool TheLurkerBelowBossIsActiveForRangedDpsTrigger::IsActive()
-{
-    if (!botAI->IsRangedDps(bot))
-        return false;
-
-    Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
-    if (!lurker)
-        return false;
-
-    const time_t now = std::time(nullptr);
-
-    auto it = lurkerSpoutTimer.find(lurker->GetMapId());
-    return lurker->getStandState() != UNIT_STAND_STATE_SUBMERGED &&
-           (it == lurkerSpoutTimer.end() || it->second <= now);
-}
-
-bool TheLurkerBelowBossIsActiveForHealerTrigger::IsActive()
-{
-    if (!botAI->IsHeal(bot))
         return false;
 
     Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");

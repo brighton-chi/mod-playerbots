@@ -113,30 +113,6 @@ public:
     bool Execute(Event event) override;
 };
 
-class TheLurkerBelowPositionOtherMeleeAction : public MovementAction
-{
-public:
-    TheLurkerBelowPositionOtherMeleeAction(PlayerbotAI* botAI, std::string const name = "the lurker below position other melee") : MovementAction(botAI, name) {}
-
-    bool Execute(Event event) override;
-};
-
-class TheLurkerBelowPositionRangedDpsAction : public MovementAction
-{
-public:
-    TheLurkerBelowPositionRangedDpsAction(PlayerbotAI* botAI, std::string const name = "the lurker below position ranged dps") : MovementAction(botAI, name) {}
-
-    bool Execute(Event event) override;
-};
-
-class TheLurkerBelowPositionHealerAction : public MovementAction
-{
-public:
-    TheLurkerBelowPositionHealerAction(PlayerbotAI* botAI, std::string const name = "the lurker below position healer") : MovementAction(botAI, name) {}
-
-    bool Execute(Event event) override;
-};
-
 class TheLurkerBelowManageSpoutTimerAction : public Action
 {
 public:

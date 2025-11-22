@@ -39,23 +39,6 @@ namespace SerpentShrineCavernHelpers
         const Position HydrossNatureTankPosition(-225.471f, -327.790f, -3.682f);
 
         const Position LurkerMainTankPosition(23.706f, -406.038f, -19.686f);
-        const Position LurkerEMeleePosition(36.815f, -432.585f, -19.339f);
-        const Position LurkerWMeleePosition(47.721f, -406.668f, -19.635f);
-        const Position LurkerNWIsletPosition(77.937f, -384.500f, -19.722f);
-        const Position LurkerNWIsletSwimPosition(73.743f, -388.018f, -21.397f);
-        const Position LurkerNWRangedDpsPosition(58.372f, -393.667f, -19.526f);
-        const Position LurkerNEIsletPosition(63.022f, -456.310f, -19.793f);
-        const Position LurkerNEIsletSwimPosition(60.338f, -451.668f, -21.451f);
-        const Position LurkerNERangedDpsPosition(60.666f, -440.899f, -19.575f);
-        const Position LurkerEIsletPosition(14.283f, -457.467f, -19.793f);
-        const Position LurkerEIsletSwimPosition(17.191f, -452.586f, -21.436f);
-        const Position LurkerERangedDpsPosition(38.457f, -417.324f, -18.917f);
-        const Position LurkerSEHealerLandPosition(16.237f, -438.098f, -19.551f);
-        const Position LurkerSEHealerSwimPosition(14.637f, -440.707f, -21.459f);
-        const Position LurkerSWHealerLandPosition(37.255f, -387.031f, -19.417f);
-        const Position LurkerSWHealerSwimPosition(37.505f, -382.907f, -21.397f);
-        const Position LurkerNHealerLandPosition(66.268f, -418.774f, -19.592f);
-        const Position LurkerNHealerSwimPosition(71.255f, -419.223f, -21.381f);
 
         const Position KarathressTankPosition(474.403f, -531.118f, -7.548f);
         const Position TidalvessTankPosition(511.282f, -501.162f, -13.158f);
@@ -216,78 +199,6 @@ namespace SerpentShrineCavernHelpers
         bool isSpout = spellId == SPELL_SPOUT_VISUAL;
 
         return isSpout;
-    }
-
-    std::array<std::vector<Player*>, 3> GetRangedDpsBotGroups(Group* group)
-    {
-        std::array<std::vector<Player*>, 3> groups;
-        if (!group)
-            return groups;
-
-        int idx = 0;
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || !member->IsAlive())
-                continue;
-
-            PlayerbotAI* botAI = GET_PLAYERBOT_AI(member);
-            if (!botAI || !botAI->IsRanged(member) || !botAI->IsDps(member))
-                continue;
-
-            groups[idx % 3].push_back(member);
-            idx++;
-        }
-
-        return groups;
-    }
-
-    std::array<std::vector<Player*>, 3> GetHealerBotGroups(Group* group)
-    {
-        std::array<std::vector<Player*>, 3> groups;
-        if (!group)
-            return groups;
-
-        int idx = 0;
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || !member->IsAlive())
-                continue;
-
-            PlayerbotAI* botAI = GET_PLAYERBOT_AI(member);
-            if (!botAI || !botAI->IsHeal(member))
-                continue;
-
-            groups[idx % 3].push_back(member);
-            idx++;
-        }
-
-        return groups;
-    }
-
-    std::array<std::vector<Player*>, 2> GetMeleeBotGroups(Group* group)
-    {
-        std::array<std::vector<Player*>, 2> groups;
-        if (!group)
-            return groups;
-
-        int idx = 0;
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || !member->IsAlive())
-                continue;
-
-            PlayerbotAI* botAI = GET_PLAYERBOT_AI(member);
-            if (!botAI || !botAI->IsMelee(member) || botAI->IsMainTank(member))
-                continue;
-
-            groups[idx % 2].push_back(member);
-            idx++;
-        }
-
-        return groups;
     }
 
     Unit* GetLeotherasHuman(PlayerbotAI* botAI)
