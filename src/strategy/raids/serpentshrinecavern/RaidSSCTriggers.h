@@ -3,10 +3,10 @@
 
 #include "Trigger.h"
 
-class BotIsStandingInToxicPoolTrigger : public Trigger
+class UnderbogColossusSpawnedToxicPoolAfterDeathTrigger : public Trigger
 {
 public:
-    BotIsStandingInToxicPoolTrigger(PlayerbotAI* botAI) : Trigger(botAI, "bot is standing in toxic pool") {}
+    UnderbogColossusSpawnedToxicPoolAfterDeathTrigger(PlayerbotAI* botAI) : Trigger(botAI, "underbog colossus spawned toxic pool after death") {}
     bool IsActive() override;
 };
 

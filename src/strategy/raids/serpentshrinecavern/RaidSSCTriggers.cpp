@@ -11,7 +11,7 @@ using namespace SerpentShrineCavernHelpers;
 
 // Trash Mobs
 
-bool BotIsStandingInToxicPoolTrigger::IsActive()
+bool UnderbogColossusSpawnedToxicPoolAfterDeathTrigger::IsActive()
 {
     return bot->HasAura(SPELL_TOXIC_POOL);
 }

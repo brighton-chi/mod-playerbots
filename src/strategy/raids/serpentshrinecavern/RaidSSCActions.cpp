@@ -16,131 +16,73 @@ using namespace SerpentShrineCavernPositions;
 
 // Trash Mobs
 
-bool FollowMasterOutOfToxicPoolAction::Execute(Event event)
+// Non-combat method; some colossi leave a toxic pool upon death
+// Without this method, bots just stand (or drink) in the pool and die
+bool UnderbogColossusEscapeToxicPoolAction::Execute(Event event)
 {
-    /* Player* master = botAI->GetMaster();
-    if (!master)
-        return false;
-
-    if (bot->GetExactDist2d(master) > 2.0f)
-    {
-        bot->AttackStop();
-        bot->InterruptNonMeleeSpells(true);
-        return MoveTo(master->GetMapId(), master->GetPositionX(),
-                      master->GetPositionY(), master->GetPositionZ(),
-                      false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
-    }
-
-    return false; */
-    LOG_DEBUG("playerbots", "AvoidToxicPoolOnAuraAction: entered for bot={}", bot->GetName());
-
     Aura* aura = bot->GetAura(SPELL_TOXIC_POOL);
     if (!aura)
-    {
-        LOG_DEBUG("playerbots", "AvoidToxicPoolOnAuraAction: no toxic pool aura present for bot={}", bot->GetName());
         return false;
-    }
 
-    // Find the dynamic object that created the pool
     DynamicObject* dynObj = aura->GetDynobjOwner();
     if (!dynObj)
-    {
-        LOG_DEBUG("playerbots", "AvoidToxicPoolOnAuraAction: aura present but dynobj owner is null for bot={}", bot->GetName());
         return false;
-    }
 
-    // Gather info for logs and behavior
-    ObjectGuid dynGuid = dynObj->GetGUID();
-    uint32 dynSpellId = dynObj->GetSpellId();
-    const SpellInfo* sInfo = sSpellMgr->GetSpellInfo(dynSpellId);
-
-    // Try using the dyn object's radius, fall back to spell info if needed
-    float radius = 0.0f;
-    if (dynObj->GetRadius() > 0.0f)
-        radius = dynObj->GetRadius();
-    else if (sInfo)
+    float radius = dynObj->GetRadius();
+    if (radius <= 0.0f)
     {
-        for (int e = 0; e < MAX_SPELL_EFFECTS; ++e)
+        const SpellInfo* sInfo = sSpellMgr->GetSpellInfo(dynObj->GetSpellId());
+        if (sInfo)
         {
-            if (sInfo->Effects[e].Effect == SPELL_EFFECT_SCHOOL_DAMAGE ||
-                (sInfo->Effects[e].Effect == SPELL_EFFECT_APPLY_AURA &&
-                 sInfo->Effects[e].ApplyAuraName == SPELL_AURA_PERIODIC_DAMAGE))
+            for (int e = 0; e < MAX_SPELL_EFFECTS; ++e)
             {
-                radius = sInfo->Effects[e].CalcRadius();
-                break;
+                const auto& eff = sInfo->Effects[e];
+                if (eff.Effect == SPELL_EFFECT_SCHOOL_DAMAGE ||
+                    (eff.Effect == SPELL_EFFECT_APPLY_AURA && eff.ApplyAuraName == SPELL_AURA_PERIODIC_DAMAGE))
+                {
+                    radius = eff.CalcRadius();
+                    break;
+                }
             }
         }
     }
 
-    LOG_DEBUG("playerbots", "AvoidToxicPoolOnAuraAction: dynGuid={} spellId={} radius={} botPos=({}, {}) dynPos=({}, {}) for bot={}",
-              dynGuid.ToString(), dynSpellId, radius,
-              bot->GetPositionX(), bot->GetPositionY(),
-              dynObj->GetPositionX(), dynObj->GetPositionY(), bot->GetName());
-
     if (radius <= 0.0f)
-    {
-        LOG_DEBUG("playerbots", "AvoidToxicPoolOnAuraAction: cannot determine radius for dynGuid={}, abort fallback for bot={}", dynGuid.ToString(), bot->GetName());
         return false;
-    }
 
-    // Compute XY vector to edge point
-    const float buffer = 3.0f;          // safety buffer to be placed outside pool
-    const float centerThreshold = 1.0f; // treat dist <= radius + this as "in pool"
+    const float buffer = 5.0f;
+    const float centerThreshold = 1.0f;
     float dx = bot->GetPositionX() - dynObj->GetPositionX();
     float dy = bot->GetPositionY() - dynObj->GetPositionY();
     float distSq = dx * dx + dy * dy;
-    float insideThresh = radius + centerThreshold;
+    const float insideThresh = radius + centerThreshold;
+    const float insideThreshSq = insideThresh * insideThresh;
 
-    // If not inside or near the radius, nothing to do
-    if (distSq > insideThresh * insideThresh)
-    {
-        LOG_DEBUG("playerbots", "AvoidToxicPoolOnAuraAction: bot is outside threshold (dist2={} thresh2={}): no move. bot={}", distSq, insideThresh * insideThresh, bot->GetName());
+    if (distSq > insideThreshSq)
         return false;
-    }
 
-    float dist = std::sqrt(distSq);
     float safeDist = radius + buffer;
     float moveX, moveY;
 
-    if (dist < 0.001f)
+    if (distSq == 0.0f)
     {
-        // at center -> random outward direction
         float angle = frand(0.0f, static_cast<float>(M_PI * 2.0));
         moveX = dynObj->GetPositionX() + cosf(angle) * safeDist;
         moveY = dynObj->GetPositionY() + sinf(angle) * safeDist;
     }
     else
     {
-        moveX = dynObj->GetPositionX() + (dx / dist) * safeDist;
-        moveY = dynObj->GetPositionY() + (dy / dist) * safeDist;
+        float dist = std::sqrt(distSq);
+        float inv = 1.0f / dist;
+        moveX = dynObj->GetPositionX() + (dx * inv) * safeDist;
+        moveY = dynObj->GetPositionY() + (dy * inv) * safeDist;
     }
 
-    LOG_DEBUG("playerbots", "AvoidToxicPoolOnAuraAction: computed move target (x={}, y={}) safeDist={} for bot={} (dist={})",
-              moveX, moveY, safeDist, bot->GetName(), dist);
-
-    // Attempt to stop any combat and move out
     bot->AttackStop();
     bot->InterruptNonMeleeSpells(true);
 
-    bool moved = MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, true,
-                        MovementPriority::MOVEMENT_FORCED, true, false);
-
-    if (moved)
-    {
-        LOG_DEBUG("playerbots", "AvoidToxicPoolOnAuraAction: MoveTo issued for bot={} to ({}, {})", bot->GetName(), moveX, moveY);
-        return true;
-    }
-
-    // Fallback to FleePosition if MoveTo fails
-    Position centerPos(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ());
-    if (FleePosition(centerPos, radius))
-    {
-        LOG_DEBUG("playerbots", "AvoidToxicPoolOnAuraAction: FleePosition fallback used for bot={}", bot->GetName());
-        return true;
-    }
-
-    LOG_DEBUG("playerbots", "AvoidToxicPoolOnAuraAction: movement/fallback failed for bot={}", bot->GetName());
-    return false;
+    return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(),
+           false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 bool GreyheartTidecallerMarkWaterElementalTotemAction::Execute(Event event)
@@ -411,8 +353,6 @@ bool HydrossTheUnstableMisdirectBossToTankAction::Execute(Event event)
     if (!hydross || !group)
         return false;
 
-    LOG_DEBUG("playerbots", "HydrossMisdirect: entered for bot={} hydross={}", bot->GetName(), hydross->GetGUID().ToString());
-
     if (TryMisdirectToFrostTank(hydross, group))
         return true;
 
@@ -574,8 +514,8 @@ bool TheLurkerBelowRunAroundBehindBossAction::Execute(Event event)
     // Pick an angle behind Lurker (90-degree arc)
     float behindAngle = bossFacing + M_PI + ((rand() % 100) / 100.0f - 0.5f) * (M_PI / 2.0f);
 
-    // Random radius between 27 and 29 yards
-    float radius = 27.0f + ((rand() % 200) / 100.0f);
+    // Random radius between 20 and 24 yards
+    float radius = 20.0f + ((rand() % 400) / 100.0f);
 
     // Calculate target position on the circle
     float targetX = lurker->GetPositionX() + radius * cos(behindAngle);
@@ -617,11 +557,6 @@ bool TheLurkerBelowSpreadRangedAction::Execute(Event event)
     if (!lurker || !group)
         return false;
 
-    const float minRadius = 25.0f;
-    const float maxRadius = 27.0f;
-    const float returnThreshold = 2.0f;
-    const float referenceOrientation = 2.262f;
-
     if (lurker->GetHealth() == lurker->GetMaxHealth())
         lurkerRangedPositions.clear();
 
@@ -649,6 +584,10 @@ bool TheLurkerBelowSpreadRangedAction::Execute(Event event)
         if (count == 0)
             return false;
 
+        const float minRadius = 25.0f;
+        const float maxRadius = 27.0f;
+        const float referenceOrientation = Position::NormalizeOrientation(2.262f + M_PI);
+
         const float arcSpan = 2.0f * M_PI / 3.0f; // 120°
         float startAngle = referenceOrientation - arcSpan / 2.0f;
 
@@ -672,7 +611,7 @@ bool TheLurkerBelowSpreadRangedAction::Execute(Event event)
         return false;
 
     const Position& target = it->second;
-
+    const float returnThreshold = 2.0f;
     if (!bot->IsWithinDist2d(target.GetPositionX(), target.GetPositionY(), returnThreshold))
     {
         return MoveTo(bot->GetMapId(), target.GetPositionX(), target.GetPositionY(), target.GetPositionZ(), false, false, false, false,
@@ -1591,10 +1530,6 @@ bool LadyVashjPhase1PositionRangedAction::Execute(Event event)
     if (!group)
         return false;
 
-    const Position& center = VashjPlatformCenterPosition;
-    const float minSpreadRadius = 20.0f;
-    const float maxSpreadRadius = 30.0f;
-
     std::vector<Player*> spreadMembers;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
@@ -1616,14 +1551,26 @@ bool LadyVashjPhase1PositionRangedAction::Execute(Event event)
         auto it = std::find(spreadMembers.begin(), spreadMembers.end(), bot);
         size_t botIndex = (it != spreadMembers.end()) ? std::distance(spreadMembers.begin(), it) : 0;
         size_t count = spreadMembers.size();
+        if (count == 0)
+            return false;
+
+        const Position& center = VashjPlatformCenterPosition;
+        const float minRadius = 20.0f;
+        const float maxRadius = 30.0f;
 
         const float referenceAngle = M_PI / 2.0f; // north
         const float arcSpan = M_PI; // 180°
         const float startAngle = referenceAngle - arcSpan / 2.0f;
-        float angle = (count <= 1) ? referenceAngle : startAngle + (static_cast<float>(botIndex) / (count - 1)) * arcSpan;
 
-        uint32 botSeed = guid.GetCounter();
-        float radius = minSpreadRadius + (botSeed % 1000) / 1000.0f * (maxSpreadRadius - minSpreadRadius);
+        float angle;
+        if (count == 1)
+            angle = referenceAngle;
+        else
+            angle = startAngle + (static_cast<float>(botIndex) / (count - 1)) * arcSpan;
+
+        // uint32 botSeed = guid.GetCounter();
+        // float radius = minRadius + (botSeed % 1000) / 1000.0f * (maxRadius - minRadius);
+        float radius = minRadius + static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * (maxRadius - minRadius);
         float targetX = center.GetPositionX() + radius * cos(angle);
         float targetY = center.GetPositionY() + radius * sin(angle);
         float tz = center.GetPositionZ();
@@ -1650,7 +1597,7 @@ bool LadyVashjPhase1PositionRangedAction::Execute(Event event)
     }
 
     return false;
- }
+}
 
 bool LadyVashjSetGroundingTotemInMainTankGroupAction::Execute(Event event)
 {

@@ -9,7 +9,7 @@ class RaidSSCTriggerContext : public NamedObjectContext<Trigger>
 public:
     RaidSSCTriggerContext()
     {
-        creators["bot is standing in toxic pool"] = &RaidSSCTriggerContext::bot_is_standing_in_toxic_pool;
+        creators["underbog colossus spawned toxic pool after death"] = &RaidSSCTriggerContext::underbog_colossus_spawned_toxic_pool_after_death;
         creators["greyheart tidecaller water elemental totem spawned"] = &RaidSSCTriggerContext::greyheart_tidecaller_water_elemental_totem_spawned;
         creators["rancid mushroom spawned"] = &RaidSSCTriggerContext::rancid_mushroom_spawned;
 
@@ -66,7 +66,7 @@ public:
     }
 
 private:
-    static Trigger* bot_is_standing_in_toxic_pool(PlayerbotAI* botAI) { return new BotIsStandingInToxicPoolTrigger(botAI); }
+    static Trigger* underbog_colossus_spawned_toxic_pool_after_death(PlayerbotAI* botAI) { return new UnderbogColossusSpawnedToxicPoolAfterDeathTrigger(botAI); }
     static Trigger* greyheart_tidecaller_water_elemental_totem_spawned(PlayerbotAI* botAI) { return new GreyheartTidecallerWaterElementalTotemSpawnedTrigger(botAI); }
     static Trigger* rancid_mushroom_spawned(PlayerbotAI* botAI) { return new RancidMushroomSpawnedTrigger(botAI); }
 

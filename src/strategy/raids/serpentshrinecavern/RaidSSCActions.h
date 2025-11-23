@@ -5,10 +5,10 @@
 #include "AttackAction.h"
 #include "MovementActions.h"
 
-class FollowMasterOutOfToxicPoolAction : public MovementAction
+class UnderbogColossusEscapeToxicPoolAction : public MovementAction
 {
 public:
-    FollowMasterOutOfToxicPoolAction(PlayerbotAI* botAI, std::string const name = "follow master out of toxic pool") : MovementAction(botAI, name) {}
+    UnderbogColossusEscapeToxicPoolAction(PlayerbotAI* botAI, std::string const name = "underbog colossus escape toxic pool") : MovementAction(botAI, name) {}
 
     bool Execute(Event event) override;
 };

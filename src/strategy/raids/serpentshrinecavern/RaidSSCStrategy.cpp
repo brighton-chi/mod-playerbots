@@ -4,8 +4,8 @@
 void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // Trash Mobs
-    triggers.push_back(new TriggerNode("bot is standing in toxic pool",
-        NextAction::array(0, new NextAction("follow master out of toxic pool", ACTION_EMERGENCY + 10), nullptr)
+    triggers.push_back(new TriggerNode("underbog colossus spawned toxic pool after death",
+        NextAction::array(0, new NextAction("underbog colossus escape toxic pool", ACTION_EMERGENCY + 10), nullptr)
     ));
     triggers.push_back(new TriggerNode("greyheart tidecaller water elemental totem spawned",
         NextAction::array(0, new NextAction("greyheart tidecaller mark water elemental totem", ACTION_RAID + 1), nullptr)
