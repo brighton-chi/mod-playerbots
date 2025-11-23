@@ -104,21 +104,21 @@ bool AttumenTheHuntsmanSplitBossesAction::Execute(Event event)
     return false;
 }
 
-// Stack 1-5 yards behind mounted Attumen (inside minimum range of Berserker Charge)
+// Stack behind mounted Attumen (inside minimum range of Berserker Charge)
 bool AttumenTheHuntsmanStackBehindAction::Execute(Event event)
 {
     Unit* attumenMounted = GetFirstAliveUnitByEntry(botAI, NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED);
     if (!attumenMounted)
         return false;
 
-    const float distanceBehind = 3.0f;
+    const float distanceBehind = botAI->IsRanged(bot) ? 6.0f : 2.0f;
     float orientation = attumenMounted->GetOrientation() + M_PI;
     float x = attumenMounted->GetPositionX();
     float y = attumenMounted->GetPositionY();
     float rx = x + cos(orientation) * distanceBehind;
     float ry = y + sin(orientation) * distanceBehind;
 
-    if (bot->GetExactDist2d(rx, ry) > 2.0f)
+    if (bot->GetExactDist2d(rx, ry) > 1.0f)
     {
         return MoveTo(bot->GetMapId(), rx, ry, attumenMounted->GetPositionZ(), false, false, false, false,
                       MovementPriority::MOVEMENT_FORCED, true, false);
@@ -149,6 +149,21 @@ bool AttumenTheHuntsmanManageDpsTimerAction::Execute(Event event)
 
 // Moroes
 
+bool MoroesMainTankAttackBossAction::Execute(Event event)
+{
+    Unit* moroes = AI_VALUE2(Unit*, "find target", "moroes");
+    if (!moroes)
+        return false;
+
+    MarkTargetWithCircle(bot, moroes);
+    SetRtiTarget(botAI, "circle", moroes);
+
+    if (bot->GetVictim() != moroes)
+        return Attack(moroes);
+
+    return false;
+}
+
 // Mark targets with skull in the recommended kill order
 bool MoroesMarkTargetAction::Execute(Event event)
 {
@@ -161,7 +176,12 @@ bool MoroesMarkTargetAction::Execute(Event event)
     Unit* target = GetFirstAliveUnit({dorothea, catriona, keira, rafe, robin, crispin});
 
     if (target)
-        MarkTargetWithSkull(bot, target);
+    {
+        if (IsMapIDTimerManager(botAI, bot))
+            MarkTargetWithSkull(bot, target);
+
+        SetRtiTarget(botAI, "skull", target);
+    }
 
     return false;
 }
@@ -383,7 +403,10 @@ bool TheCuratorMarkAstralFlareAction::Execute(Event event)
     if (!target)
         return false;
 
-    MarkTargetWithSkull(bot, target);
+    if (IsMapIDTimerManager(botAI, bot))
+        MarkTargetWithSkull(bot, target);
+
+    SetRtiTarget(botAI, "skull", target);
 
     return false;
 }
@@ -395,6 +418,9 @@ bool TheCuratorPositionBossAction::Execute(Event event)
     Unit* curator = AI_VALUE2(Unit*, "find target", "the curator");
     if (!curator)
         return false;
+
+    MarkTargetWithCircle(bot, curator);
+    SetRtiTarget(botAI, "circle", curator);
 
     if (bot->GetVictim() != curator)
         return Attack(curator);
