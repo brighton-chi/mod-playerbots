@@ -546,10 +546,9 @@ bool GruulTheDragonkillerMainTankPositionBossAction::Execute(Event event)
         if (distanceToTankPosition > maxDistance)
         {
             float step = std::min(maxDistance, distanceToTankPosition);
-            float moveX = bot->GetPositionX() + (dX / distanceToTankPosition) * maxDistance;
-            float moveY = bot->GetPositionY() + (dY / distanceToTankPosition) * maxDistance;
-            const float moveZ = tankPosition.z;
-            return MoveTo(bot->GetMapId(), moveX, moveY, moveZ, false, false, false, false,
+            float moveX = bot->GetPositionX() + (dX / distanceToTankPosition) * step;
+            float moveY = bot->GetPositionY() + (dY / distanceToTankPosition) * step;
+            return MoveTo(bot->GetMapId(), moveX, moveY, tankPosition.z, false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
 

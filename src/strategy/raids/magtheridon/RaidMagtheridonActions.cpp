@@ -371,24 +371,29 @@ bool MagtheridonMainTankPositionBossAction::Execute(Event event)
     if (bot->GetVictim() != magtheridon)
         return Attack(magtheridon);
 
-    if (magtheridon->GetVictim() == bot && bot->IsWithinMeleeRange(magtheridon))
+    if (magtheridon->GetVictim() == bot)
     {
         const Location& position = MagtheridonsLairLocations::MagtheridonTankPosition;
-        const float maxDistance = 2.0f;
-
-        if (bot->GetExactDist2d(position.x, position.y) > maxDistance)
+        if (bot->GetExactDist2d(position.x, position.y) > 2.0f)
         {
             float dX = position.x - bot->GetPositionX();
             float dY = position.y - bot->GetPositionY();
             float dist = sqrt(dX * dX + dY * dY);
-            float moveX = bot->GetPositionX() + (dX / dist) * maxDistance;
-            float moveY = bot->GetPositionY() + (dY / dist) * maxDistance;
+            float moveDist = std::min(4.5f, dist);
+            float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
 
             return MoveTo(bot->GetMapId(), moveX, moveY, position.z, false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, true);
         }
 
         bot->SetFacingTo(position.orientation);
+    }
+    else if (!bot->IsWithinMeleeRange(magtheridon))
+    {
+        return MoveTo(magtheridon->GetMapId(), magtheridon->GetPositionX(),
+                      magtheridon->GetPositionY(), magtheridon->GetPositionZ(),
+                      false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
     return false;
