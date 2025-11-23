@@ -1809,10 +1809,9 @@ bool KaelthasSunstriderUseLegendaryWeaponsAction::UsePhaseshiftBulwark()
     if (!kaelthas->FindCurrentSpellBySpellId(SPELL_KAELTHAS_PYROBLAST))
     {
         if (currentSpell && currentSpell->m_spellInfo)
-            LOG_DEBUG("playerbots", "KaelthasUseBulwark: current spell is not Pyroblast (id={})", currentSpell->m_spellInfo->Id);
-        else
-            LOG_DEBUG("playerbots", "KaelthasUseBulwark: Kael'thas is casting no spell (or unknown)");
-        return false;
+        {
+            LOG_DEBUG("playerbots", "KaelthasUseBulwark: Pyroblast cast started, expected hit in {} ms", currentSpell->GetCastTime());
+        }
     }
 
     if (kaelthas->GetVictim() != bot)
@@ -1828,8 +1827,33 @@ bool KaelthasSunstriderUseLegendaryWeaponsAction::UsePhaseshiftBulwark()
         return false;
     }
 
-    LOG_DEBUG("playerbots", "KaelthasUseBulwark: Using Phaseshift Bulwark to block Pyroblast for bot={}", bot->GetName());
-    return UseEquippedItemWithPacket(offHand);
+    // Use Bulwark
+    auto now = std::chrono::system_clock::now();
+    std::time_t now_c = std::chrono::system_clock::to_time_t(now);
+    std::ostringstream oss;
+    oss << std::put_time(std::localtime(&now_c), "%H:%M:%S");
+    std::string timeStr = oss.str();
+
+    LOG_DEBUG("playerbots", "KaelthasUseBulwark: [{}] Using Phaseshift Bulwark to block Pyroblast for bot={}", timeStr, bot->GetName());
+
+    bool result = UseEquippedItemWithPacket(offHand);
+
+    // Log Arcane Barrier aura details (after use)
+    Aura* barrierAura = bot->GetAura(SPELL_ARCANE_BARRIER);
+    if (barrierAura)
+    {
+        LOG_DEBUG("playerbots", "KaelthasUseBulwark: Arcane Barrier aura duration_ms={} absorb_amount={}",
+            barrierAura->GetDuration(), barrierAura->GetEffect(0) ? barrierAura->GetEffect(0)->GetAmount() : -1);
+    }
+    else
+    {
+        LOG_DEBUG("playerbots", "KaelthasUseBulwark: Arcane Barrier aura not found after use");
+    }
+
+    // Log bot health after using Bulwark
+    LOG_DEBUG("playerbots", "KaelthasUseBulwark: bot health after use: {}", bot->GetHealth());
+
+    return result;
 }
 
 bool KaelthasSunstriderUseLegendaryWeaponsAction::UseStaffOfDisintegration()
