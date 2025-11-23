@@ -548,26 +548,14 @@ namespace SerpentShrineCavernHelpers
         {
             auto bounds = map->GetGameObjectBySpawnIdStore().equal_range(dbGuid);
             if (bounds.first == bounds.second)
-            {
-                LOG_DEBUG("playerbots", "Generator DB GUID {} not found in map", dbGuid);
                 continue;
-            }
 
             GameObject* go = bounds.first->second;
             if (!go)
-            {
-                LOG_DEBUG("playerbots", "Generator DB GUID {} found but GameObject is nullptr", dbGuid);
                 continue;
-            }
 
-            LOG_DEBUG("playerbots", "Generator DB GUID {} entry={} state={}", dbGuid, go->GetEntry(), go->GetGoState());
-
-            // Only include active generators
             if (go->GetGoState() != GO_STATE_READY)
-            {
-                LOG_DEBUG("playerbots", "Generator DB GUID {} entry={} is NOT active (state={}), skipping", dbGuid, go->GetEntry(), go->GetGoState());
                 continue;
-            }
 
             GeneratorInfo info;
             info.guid = go->GetGUID();
@@ -575,8 +563,6 @@ namespace SerpentShrineCavernHelpers
             info.y = go->GetPositionY();
             info.z = go->GetPositionZ();
             generators.push_back(info);
-
-            LOG_DEBUG("playerbots", "Generator DB GUID {} entry={} is ACTIVE and included", dbGuid, go->GetEntry());
         }
 
         return generators;

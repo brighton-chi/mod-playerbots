@@ -488,59 +488,6 @@ float LadyVashjDoNotLootTheTaintedCoreMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-/* float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* action)
-{
-    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    if (!vashj)
-        return 1.0f;
-
-    Group* group = bot->GetGroup();
-    Player* master = botAI->GetMaster();
-    if (!IsLadyVashjInPhase2(botAI) || !group || !master)
-        return 1.0f;
-
-    Player* designatedLooter = GetDesignatedCoreLooter(group, master, botAI);
-    Player* firstCorePasser = GetFirstTaintedCorePasser(group, botAI);
-    Player* secondCorePasser = GetSecondTaintedCorePasser(group, botAI);
-    Player* thirdCorePasser = GetThirdTaintedCorePasser(group, botAI);
-    Player* fourthCorePasser = GetFourthTaintedCorePasser(group, botAI);
-
-    if (bot == designatedLooter || bot == firstCorePasser || bot == secondCorePasser ||
-        bot == thirdCorePasser || bot == fourthCorePasser)
-    {
-        auto hasCore = [](Player* player) { return player && player->HasItemCount(ITEM_TAINTED_CORE, 1, false); };
-
-        if (bot == designatedLooter && (hasCore(firstCorePasser) || hasCore(secondCorePasser) ||
-            hasCore(thirdCorePasser) || hasCore(fourthCorePasser)))
-            return 1.0f;
-        else if (bot == firstCorePasser && (hasCore(secondCorePasser) || hasCore(thirdCorePasser) ||
-            hasCore(fourthCorePasser)))
-            return 1.0f;
-        else if (bot == secondCorePasser && (hasCore(thirdCorePasser) || hasCore(fourthCorePasser)))
-            return 1.0f;
-        else if (bot == thirdCorePasser && hasCore(fourthCorePasser))
-            return 1.0f;
-
-        bool recentParalyze = AnyRecentParalyze(group, vashj->GetMapId());
-
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || !member->IsAlive())
-                continue;
-
-            if (recentParalyze || member->HasAura(SPELL_PARALYZE))
-            {
-                if (dynamic_cast<MovementAction*>(action) &&
-                    !dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action))
-                    return 0.0f;
-            }
-        }
-    }
-
-    return 1.0f;
-} */
-
 float LadyVashjDisableAutomaticTargetingAndMovementModifier::GetValue(Action *action)
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");

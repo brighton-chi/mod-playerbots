@@ -41,12 +41,11 @@ namespace SerpentShrineCavernHelpers
         SPELL_INSIDIOUS_WHISPER = 37676,
 
         // Lady Vashj <Coilfang Matron>
-        SPELL_FEAR_WARD_CHEAT = 6346,
+        SPELL_FEAR_WARD = 6346,
         SPELL_PARALYZE = 38132,
         SPELL_POISON_BOLT = 38253,
         SPELL_STATIC_CHARGE = 38280,
         SPELL_ENTANGLE = 38316,
-        SPELL_TOXIC_SPORES = 38574,
 
         // Hunter
         SPELL_MISDIRECTION = 35079,

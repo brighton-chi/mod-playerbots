@@ -609,10 +609,7 @@ bool LadyVashjBotIsEntangledInToxicSporesOrStaticChargeTrigger::IsActive()
                 continue;
 
             if (botAI->IsMelee(member))
-            {
-                LOG_DEBUG("playerbots", "LadyVashjBotIsEntangledInToxicSporesOrStaticChargeTrigger: member {} is melee and entangled", member->GetName());
                 return true;
-            }
         }
     }
 
