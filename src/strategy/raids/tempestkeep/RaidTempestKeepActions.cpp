@@ -85,142 +85,6 @@ bool AlarBossTanksMoveBetweenPlatformsAction::Execute(Event event)
     return mtAction || atAction;
 }
 
-/* bool AlarBossTanksMoveBetweenPlatformsAction::PositionMainTank(Player* mainTank, Unit* alar, int8 alarPlatform, const std::vector<Position>& platforms)
-{
-    if (mainTank && alar && alar->GetPositionZ() < 42.0f)
-    {
-        Position mtTarget;
-        switch (alarPlatform)
-        {
-            case 0: // Alar at Platform 1
-            case 3: // Alar at Platform 4
-                mtTarget = platforms[0]; // Platform 1
-                break;
-            case 1: // Alar at Platform 2
-            case 2: // Alar at Platform 3
-                mtTarget = platforms[2]; // Platform 3
-                break;
-            default:
-                return false;
-        }
-
-        if (mainTank->GetExactDist2d(mtTarget.GetPositionX(), mtTarget.GetPositionY()) > 10.0f && mainTank->GetPositionZ() >= 17.0f)
-        {
-            // Teleport directly to platform
-            const uint32 mapId = alar->GetMapId();
-            bot->TeleportTo(mapId, mtTarget.GetPositionX(), mtTarget.GetPositionY(), mtTarget.GetPositionZ(), mainTank->GetOrientation());
-            return true;
-        }
-
-        if (mainTank->GetVictim() != alar)
-        {
-            const char* taunts[] = { "taunt", "growl", "hand of reckoning" };
-            for (const char* spellName : taunts)
-            {
-                if (botAI->CanCastSpell(spellName, alar))
-                    return botAI->CastSpell(spellName, alar);
-            }
-            return Attack(alar);
-        }
-    }
-
-    return false;
-} */
-/* bool AlarBossTanksMoveBetweenPlatformsAction::PositionMainTank(Player* mainTank, Unit* alar, int8 alarPlatform, const std::vector<Position>& platforms)
-{
-    if (!mainTank || !alar)
-        return false;
-
-    // If Al'ar is flying (Flame Quills), move to SW ramp base and hold position
-    if (alar->GetPositionZ() >= 42.0f && mainTank->GetPositionZ() < -2.0f)
-    {
-        if (mainTank->GetExactDist2d(AlarSWRampBase.GetPositionX(), AlarSWRampBase.GetPositionY()) >= 2.0f)
-        {
-            return MoveTo(bot->GetMapId(), AlarSWRampBase.GetPositionX(), AlarSWRampBase.GetPositionY(), AlarSWRampBase.GetPositionZ(), false, false, false, true,
-                          MovementPriority::MOVEMENT_COMBAT, true, false);
-        }
-        return true; // Hold position at ramp base
-    }
-
-    // Track if main tank is at platform 2
-    if (mainTank->GetExactDist2d(platforms[1].GetPositionX(), platforms[1].GetPositionY()) < 2.0f)
-        mainTankAtPlatform2[mainTank->GetGUID()] = true;
-    else if (mainTank->GetExactDist2d(platforms[0].GetPositionX(), platforms[0].GetPositionY()) < 2.0f)
-        mainTankAtPlatform2[mainTank->GetGUID()] = false;
-
-    Position mtTarget;
-    std::vector<Position> midpoints;
-
-    // Determine target and midpoints based on Al'ar's platform
-    if (alarPlatform == 0 || alarPlatform == 3)
-    {
-        mtTarget = platforms[0]; // Move to platform 1
-
-        // Only use waypoints if main tank is at platform 2
-        if (mainTankAtPlatform2[mainTank->GetGUID()])
-            midpoints = std::vector<Position>(midpoints_2_to_1.begin(), midpoints_2_to_1.begin() + 2); // Backward (2->1)
-        else
-            midpoints.clear(); // Move directly to platform 1
-    }
-    else if (alarPlatform == 1 || alarPlatform == 2)
-    {
-        mtTarget = platforms[1]; // Move to platform 2
-    midpoints = std::vector<Position>(midpoints_1_to_2.begin(), midpoints_1_to_2.begin() + 2); // Forward (1->2)
-    }
-    else
-        return false;
-
-    // If already at target, update state and attack
-    if (mainTank->GetExactDist2d(mtTarget.GetPositionX(), mtTarget.GetPositionY()) < 2.0f)
-    {
-        mtBalconyMidpointVisited[mainTank->GetGUID()].clear();
-
-        if (mainTank->GetVictim() != alar)
-        {
-            const char* taunts[] = { "taunt", "growl", "hand of reckoning" };
-            for (const char* spellName : taunts)
-            {
-                if (botAI->CanCastSpell(spellName, alar))
-                    return botAI->CastSpell(spellName, alar);
-            }
-            return Attack(alar);
-        }
-        return false;
-    }
-
-    // If movement is needed, go through midpoints
-    if (!midpoints.empty())
-    {
-        if (mtBalconyMidpointVisited[mainTank->GetGUID()].size() != midpoints.size())
-            mtBalconyMidpointVisited[mainTank->GetGUID()] = std::vector<bool>(midpoints.size(), false);
-
-        for (size_t i = 0; i < midpoints.size(); ++i)
-        {
-            if (!mtBalconyMidpointVisited[mainTank->GetGUID()][i])
-            {
-                const Position& wp = midpoints[i];
-                if (mainTank->GetExactDist2d(wp.GetPositionX(), wp.GetPositionY()) >= 2.0f)
-                {
-                    return MoveTo(bot->GetMapId(), wp.GetPositionX(), wp.GetPositionY(), wp.GetPositionZ(), false, false, false, true,
-                                  MovementPriority::MOVEMENT_FORCED, true, false);
-                }
-                else
-                    mtBalconyMidpointVisited[mainTank->GetGUID()][i] = true;
-                break;
-            }
-        }
-    }
-
-    // After all midpoints are visited, move to final target
-    if (mainTank->GetExactDist2d(mtTarget.GetPositionX(), mtTarget.GetPositionY()) >= 2.0f)
-    {
-        return MoveTo(bot->GetMapId(), mtTarget.GetPositionX(), mtTarget.GetPositionY(), mtTarget.GetPositionZ(), false, false, false, true,
-                      MovementPriority::MOVEMENT_FORCED, true, false);
-    }
-
-    return false;
-} */
-
 bool AlarBossTanksMoveBetweenPlatformsAction::PositionMainTank(Player* mainTank, Unit* alar, int8 alarPlatform, const std::vector<Position>& platforms)
 {
     if (!mainTank || !alar)
@@ -272,141 +136,6 @@ bool AlarBossTanksMoveBetweenPlatformsAction::PositionMainTank(Player* mainTank,
                   MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
-/* bool AlarBossTanksMoveBetweenPlatformsAction::PositionAssistTank(Player* assistTank, Unit* alar, int8 alarPlatform, const std::vector<Position>& platforms)
-{
-    if (assistTank && alar && alar->GetPositionZ() < 42.0f)
-    {
-        Position atTarget;
-        switch (alarPlatform)
-        {
-        case 0: // Al'ar at Platform 1
-        case 1: // Al'ar at Platform 2
-            atTarget = platforms[1]; // Platform 2
-            break;
-        case 2: // Al'ar at Platform 3
-        case 3: // Al'ar at Platform 4
-            atTarget = platforms[3]; // Platform 4
-            break;
-        default:
-            return false;
-        }
-
-        if (assistTank->GetExactDist2d(atTarget.GetPositionX(), atTarget.GetPositionY()) > 10.0f && assistTank->GetPositionZ() >= 17.0f)
-        {
-            const uint32 mapId = alar->GetMapId();
-            bot->TeleportTo(mapId, atTarget.GetPositionX(), atTarget.GetPositionY(), atTarget.GetPositionZ(), assistTank->GetOrientation());
-            return true;
-        }
-
-        if (assistTank->GetVictim() != alar)
-        {
-            const char* taunts[] = { "taunt", "growl", "hand of reckoning" };
-            for (const char* spellName : taunts)
-            {
-                if (botAI->CanCastSpell(spellName, alar))
-                    return botAI->CastSpell(spellName, alar);
-            }
-            return Attack(alar);
-        }
-    }
-
-    return false;
-} */
-
-/* bool AlarBossTanksMoveBetweenPlatformsAction::PositionAssistTank(Player* assistTank, Unit* alar, int8 alarPlatform, const std::vector<Position>& platforms)
-{
-    if (!assistTank || !alar)
-        return false;
-
-    // If Al'ar is flying (Flame Quills), move to SE ramp base and hold position
-    if (alar->GetPositionZ() >= 42.0f && assistTank->GetPositionZ() < -2.0f)
-    {
-        if (assistTank->GetExactDist2d(AlarSERampBase.GetPositionX(), AlarSERampBase.GetPositionY()) >= 2.0f)
-        {
-            return MoveTo(bot->GetMapId(), AlarSERampBase.GetPositionX(), AlarSERampBase.GetPositionY(), AlarSERampBase.GetPositionZ(), false, false, false, true,
-                          MovementPriority::MOVEMENT_COMBAT, true, false);
-        }
-        return true; // Hold position at ramp base
-    }
-
-    // Track if assist tank is at platform 3
-    if (assistTank->GetExactDist2d(platforms[2].GetPositionX(), platforms[2].GetPositionY()) < 2.0f)
-        assistTankAtPlatform3[assistTank->GetGUID()] = true;
-    else if (assistTank->GetExactDist2d(platforms[3].GetPositionX(), platforms[3].GetPositionY()) < 2.0f)
-        assistTankAtPlatform3[assistTank->GetGUID()] = false;
-
-    Position atTarget;
-    std::vector<Position> midpoints;
-
-    // Determine target and midpoints based on Al'ar's platform
-    if (alarPlatform == 0 || alarPlatform == 3)
-    {
-        atTarget = platforms[3]; // Move to platform 4
-
-        // Only use waypoints if assist tank is at platform 3
-        if (assistTankAtPlatform3[assistTank->GetGUID()])
-            midpoints = std::vector<Position>(midpoints_3_to_4.begin(), midpoints_3_to_4.begin() + 2); // Backward (3->4)
-        else
-            midpoints.clear(); // Move directly to platform 4
-    }
-    else if (alarPlatform == 1 || alarPlatform == 2)
-    {
-        atTarget = platforms[2]; // Move to platform 3
-    midpoints = std::vector<Position>(midpoints_4_to_3.begin(), midpoints_4_to_3.begin() + 2); // Forward (4->3)
-    }
-    else
-        return false;
-
-    // If already at target, update state and attack
-    if (assistTank->GetExactDist2d(atTarget.GetPositionX(), atTarget.GetPositionY()) < 2.0f)
-    {
-        atBalconyMidpointVisited[assistTank->GetGUID()].clear();
-
-        if (assistTank->GetVictim() != alar)
-        {
-            const char* taunts[] = { "taunt", "growl", "hand of reckoning" };
-            for (const char* spellName : taunts)
-            {
-                if (botAI->CanCastSpell(spellName, alar))
-                    return botAI->CastSpell(spellName, alar);
-            }
-            return Attack(alar);
-        }
-    }
-
-    // If movement is needed, go through midpoints
-    if (!midpoints.empty())
-    {
-        if (atBalconyMidpointVisited[assistTank->GetGUID()].size() != midpoints.size())
-            atBalconyMidpointVisited[assistTank->GetGUID()] = std::vector<bool>(midpoints.size(), false);
-
-        for (size_t i = 0; i < midpoints.size(); ++i)
-        {
-            if (!atBalconyMidpointVisited[assistTank->GetGUID()][i])
-            {
-                const Position& wp = midpoints[i];
-                if (assistTank->GetExactDist2d(wp.GetPositionX(), wp.GetPositionY()) >= 2.0f)
-                {
-                    return MoveTo(bot->GetMapId(), wp.GetPositionX(), wp.GetPositionY(), wp.GetPositionZ(), false, false, false, true,
-                                  MovementPriority::MOVEMENT_FORCED, true, false);
-                }
-                else
-                    atBalconyMidpointVisited[assistTank->GetGUID()][i] = true;
-                break;
-            }
-        }
-    }
-
-    // After all midpoints are visited, move to final target
-    if (assistTank->GetExactDist2d(atTarget.GetPositionX(), atTarget.GetPositionY()) >= 2.0f)
-    {
-        return MoveTo(bot->GetMapId(), atTarget.GetPositionX(), atTarget.GetPositionY(), atTarget.GetPositionZ(), false, false, false, true,
-                      MovementPriority::MOVEMENT_FORCED, true, false);
-    }
-
-    return false;
-} */
-
 bool AlarBossTanksMoveBetweenPlatformsAction::PositionAssistTank(Player* assistTank, Unit* alar, int8 alarPlatform, const std::vector<Position>& platforms)
 {
     if (!assistTank || !alar)
@@ -454,7 +183,8 @@ bool AlarBossTanksMoveBetweenPlatformsAction::PositionAssistTank(Player* assistT
     }
 
     // Move directly to target platform
-    return MoveTo(bot->GetMapId(), atTarget.GetPositionX(), atTarget.GetPositionY(), atTarget.GetPositionZ(), false, false, false, true,
+    return MoveTo(bot->GetMapId(), atTarget.GetPositionX(), atTarget.GetPositionY(),
+                  atTarget.GetPositionZ(), false, false, false, true,
                   MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
@@ -469,11 +199,10 @@ bool AlarMeleeDpsPrioritizeAddsAction::Execute(Event event)
     {
         if (bot->GetExactDist2d(AlarRoomSouthCenter.GetPositionX(), AlarRoomSouthCenter.GetPositionY()) >= 2.0f)
         {
-            LOG_DEBUG("playerbots", "Bot {} moving to South Center during Flame Quills", bot->GetName());
-            return MoveTo(bot->GetMapId(), AlarRoomSouthCenter.GetPositionX(), AlarRoomSouthCenter.GetPositionY(), AlarRoomSouthCenter.GetPositionZ(), false, false, false, true,
+            return MoveTo(bot->GetMapId(), AlarRoomSouthCenter.GetPositionX(), AlarRoomSouthCenter.GetPositionY(),
+                          AlarRoomSouthCenter.GetPositionZ(), false, false, false, true,
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
-        LOG_DEBUG("playerbots", "Bot {} holding position at South Center during Flame Quills", bot->GetName());
         return true;
     }
 
@@ -491,19 +220,15 @@ bool AlarMeleeDpsPrioritizeAddsAction::Execute(Event event)
 
     // Clear waypoint tracker if at target platform (before any movement logic)
     if (bot->GetExactDist2d(platformTarget.GetPositionX(), platformTarget.GetPositionY()) < 2.0f)
-    {
-        LOG_DEBUG("playerbots", "Bot {} reached platform {}. Clearing waypoint tracker.", bot->GetName(), int(alarPlatform + 1));
         meleeDpsWaypointVisited[bot->GetGUID()].clear();
-    }
 
     if (!waypoints.empty())
     {
-        if (meleeDpsWaypointVisited[bot->GetGUID()].empty() && bot->GetExactDist2d(platformTarget.GetPositionX(), platformTarget.GetPositionY()) >= 2.0f)
+        if (meleeDpsWaypointVisited[bot->GetGUID()].empty() &&
+            bot->GetExactDist2d(platformTarget.GetPositionX(), platformTarget.GetPositionY()) >= 2.0f)
         {
-            LOG_DEBUG("playerbots", "Bot {} initializing waypoint tracker for movement to platform {}", bot->GetName(), int(alarPlatform + 1));
             meleeDpsWaypointVisited[bot->GetGUID()] = std::vector<bool>(waypoints.size(), false);
         }
-
         for (size_t i = 0; i < waypoints.size(); ++i)
         {
             if (!meleeDpsWaypointVisited[bot->GetGUID()][i])
@@ -511,21 +236,16 @@ bool AlarMeleeDpsPrioritizeAddsAction::Execute(Event event)
                 const Position& wp = waypoints[i];
                 if (bot->GetExactDist2d(wp.GetPositionX(), wp.GetPositionY()) >= 2.0f)
                 {
-                    LOG_DEBUG("playerbots", "Bot {} moving to waypoint {} for platform {}: ({}, {}, {})", bot->GetName(), i + 1, int(alarPlatform + 1), wp.GetPositionX(), wp.GetPositionY(), wp.GetPositionZ());
                     return MoveTo(bot->GetMapId(), wp.GetPositionX(), wp.GetPositionY(), wp.GetPositionZ(), false, false, false, true,
                                   MovementPriority::MOVEMENT_COMBAT, true, false);
                 }
                 else
-                {
-                    LOG_DEBUG("playerbots", "Bot {} reached waypoint {} for platform {}: ({}, {}, {})", bot->GetName(), i + 1, int(alarPlatform + 1), wp.GetPositionX(), wp.GetPositionY(), wp.GetPositionZ());
                     meleeDpsWaypointVisited[bot->GetGUID()][i] = true;
-                }
                 break;
             }
         }
         if (bot->GetExactDist2d(platformTarget.GetPositionX(), platformTarget.GetPositionY()) >= 2.0f)
         {
-            LOG_DEBUG("playerbots", "Bot {} moving to final platform {}: ({}, {}, {})", bot->GetName(), int(alarPlatform + 1), platformTarget.GetPositionX(), platformTarget.GetPositionY(), platformTarget.GetPositionZ());
             return MoveTo(bot->GetMapId(), platformTarget.GetPositionX(), platformTarget.GetPositionY(), platformTarget.GetPositionZ(), false, false, false, true,
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
@@ -534,17 +254,13 @@ bool AlarMeleeDpsPrioritizeAddsAction::Execute(Event event)
     {
         if (bot->GetExactDist2d(platformTarget.GetPositionX(), platformTarget.GetPositionY()) >= 2.0f)
         {
-            LOG_DEBUG("playerbots", "Bot {} moving directly to platform {}: ({}, {}, {})", bot->GetName(), int(alarPlatform + 1), platformTarget.GetPositionX(), platformTarget.GetPositionY(), platformTarget.GetPositionZ());
             return MoveTo(bot->GetMapId(), platformTarget.GetPositionX(), platformTarget.GetPositionY(), platformTarget.GetPositionZ(), false, false, false, true,
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
 
     if (bot->GetVictim() != alar)
-    {
-        LOG_DEBUG("playerbots", "Bot {} attacking Al'ar on platform {}", bot->GetName(), int(alarPlatform + 1));
         return Attack(alar);
-    }
 
     return false;
 }
@@ -564,7 +280,7 @@ bool AlarRangedDpsPrioritizeBossAction::Execute(Event event)
     }
 
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    if (alar && (!ember /*|| !ember->GetHealthPct() >= 15.0f*/))
+    if (alar && (!ember))
     {
         MarkTargetWithStar(bot, alar);
         SetRtiTarget(botAI, "star", alar);
@@ -588,8 +304,8 @@ bool AlarRangedDpsPrioritizeBossAction::Execute(Event event)
         // Only move if not already within 15 yards
         if (bot->GetExactDist2d(groundTarget.GetPositionX(), groundTarget.GetPositionY()) > 15.0f)
         {
-            // Move near the ground target (e.g., 5 yards away for some spread)
-            return MoveNear(bot->GetMapId(), groundTarget.GetPositionX(), groundTarget.GetPositionY(), groundTarget.GetPositionZ(), 5.0f, MovementPriority::MOVEMENT_COMBAT);
+            return MoveNear(bot->GetMapId(), groundTarget.GetPositionX(), groundTarget.GetPositionY(),
+                            groundTarget.GetPositionZ(), 5.0f, MovementPriority::MOVEMENT_COMBAT);
         }
     }
 
@@ -605,15 +321,13 @@ bool AlarPositionHealerAction::Execute(Event event)
     const uint32 mapId = alar->GetMapId();
     int8 alarPlatform = lastAlarPlatform[mapId];
 
-    // List of ground positions matching platforms
     std::vector<Position> groundPositions = { AlarGround1, AlarGround2, AlarGround3, AlarGround4 };
     const Position& groundTarget = groundPositions[alarPlatform];
 
-    // Only move if not already within 15 yards
     if (bot->GetExactDist2d(groundTarget.GetPositionX(), groundTarget.GetPositionY()) > 15.0f)
     {
-        // Move near the ground target (e.g., 5 yards away for some spread)
-        return MoveNear(bot->GetMapId(), groundTarget.GetPositionX(), groundTarget.GetPositionY(), groundTarget.GetPositionZ(), 5.0f, MovementPriority::MOVEMENT_COMBAT);
+        return MoveNear(bot->GetMapId(), groundTarget.GetPositionX(), groundTarget.GetPositionY(),
+                        groundTarget.GetPositionZ(), 5.0f, MovementPriority::MOVEMENT_COMBAT);
     }
 
     return false;
@@ -627,6 +341,7 @@ bool AlarAddTankPickUpEmbersAction::Execute(Event event)
 
     const uint32 mapId = alar->GetMapId();
     Unit* ember = GetFirstAliveUnitByEntry(botAI, NPC_EMBER_OF_ALAR);
+
     if (ember)
     {
         MarkTargetWithSquare(bot, ember);
@@ -658,7 +373,8 @@ bool AlarAddTankPickUpEmbersAction::Execute(Event event)
         if (bot->GetExactDist2d(groundTarget.GetPositionX(), groundTarget.GetPositionY()) > 30.0f)
         {
             // Move near the ground target (e.g., 5 yards away for some spread)
-            return MoveNear(bot->GetMapId(), groundTarget.GetPositionX(), groundTarget.GetPositionY(), groundTarget.GetPositionZ(), 5.0f, MovementPriority::MOVEMENT_COMBAT);
+            return MoveNear(bot->GetMapId(), groundTarget.GetPositionX(), groundTarget.GetPositionY(),
+                            groundTarget.GetPositionZ(), 5.0f, MovementPriority::MOVEMENT_COMBAT);
         }
     }
 
@@ -688,56 +404,18 @@ bool AlarJumpFromPlatformAction::Execute(Event event)
         size_t nearestIndex = 0;
         for (size_t i = 0; i < platformGroundPairs.size(); ++i)
         {
-            float dist = bot->GetExactDist2d(platformGroundPairs[i].first.GetPositionX(), platformGroundPairs[i].first.GetPositionY());
+            float dist = bot->GetExactDist2d(platformGroundPairs[i].first.GetPositionX(),
+                                             platformGroundPairs[i].first.GetPositionY());
             if (dist < minDist)
             {
                 minDist = dist;
                 nearestIndex = i;
             }
         }
-
-    // Jump to corresponding landing poisition
-    const Position& ground = platformGroundPairs[nearestIndex].second;
-    return JumpTo(bot->GetMapId(), ground.GetPositionX(), ground.GetPositionY(), ground.GetPositionZ(), MovementPriority::MOVEMENT_FORCED);
+        const Position& ground = platformGroundPairs[nearestIndex].second;
+        return JumpTo(bot->GetMapId(), ground.GetPositionX(), ground.GetPositionY(),
+                      ground.GetPositionZ(), MovementPriority::MOVEMENT_FORCED);
     }
-
-    /* const Position& atMidpoint = AlarMidpointToSERamp;
-    const Position& atTarget = AlarSERampBase;
-    const Position& mtMidpoint = AlarMidpointToSWRamp;
-    const Position& mtTarget = AlarSWRampBase;
-    if (botAI->IsMainTank(bot) && bot->GetPositionZ() < -2.0f)
-    {
-        if (!mtGroundMidpointVisited[bot->GetGUID()])
-        {
-            if (bot->GetExactDist2d(mtMidpoint.GetPositionX(), mtMidpoint.GetPositionY()) >= 2.0f)
-            {
-                return MoveTo(bot->GetMapId(), mtMidpoint.GetPositionX(), mtMidpoint.GetPositionY(), mtMidpoint.GetPositionZ(), false, false, false, true,
-                                MovementPriority::MOVEMENT_COMBAT, true, false);
-            }
-            else
-                mtGroundMidpointVisited[bot->GetGUID()] = true;
-        }
-        // MT heads to SW ramp
-        return MoveTo(bot->GetMapId(), mtTarget.GetPositionX(), mtTarget.GetPositionY(), mtTarget.GetPositionZ(), false, false, false, true,
-                      MovementPriority::MOVEMENT_COMBAT, true, false);
-    }
-    else if (botAI->IsAssistTankOfIndex(bot, 0) && bot->GetPositionZ() < -2.0f)
-    {
-        // Only use midpoint if landing at groundposition2
-        if (!atGroundMidpointVisited[bot->GetGUID()])
-        {
-            if (bot->GetExactDist2d(atMidpoint.GetPositionX(), atMidpoint.GetPositionY()) >= 1.0f)
-            {
-                return MoveTo(bot->GetMapId(), atMidpoint.GetPositionX(), atMidpoint.GetPositionY(), atMidpoint.GetPositionZ(), false, false, false, true,
-                                MovementPriority::MOVEMENT_COMBAT, true, false);
-            }
-            else
-                atGroundMidpointVisited[bot->GetGUID()] = true;
-        }
-        // AT0 heads to SE ramp
-        return MoveTo(bot->GetMapId(), atTarget.GetPositionX(), atTarget.GetPositionY(), atTarget.GetPositionZ(), false, false, false, true,
-                      MovementPriority::MOVEMENT_COMBAT, true, false);
-    } */
 
     return false;
 }
@@ -760,17 +438,17 @@ bool AlarMoveAwayFromRebirthAction::Execute(Event event)
         size_t nearestIndex = 0;
         for (size_t i = 0; i < platformGroundPairs.size(); ++i)
         {
-            float dist = bot->GetExactDist2d(platformGroundPairs[i].first.GetPositionX(), platformGroundPairs[i].first.GetPositionY());
+            float dist = bot->GetExactDist2d(platformGroundPairs[i].first.GetPositionX(),
+                                             platformGroundPairs[i].first.GetPositionY());
             if (dist < minDist)
             {
                 minDist = dist;
                 nearestIndex = i;
             }
         }
-
-    // Jump to corresponding landing position
-    const Position& ground = platformGroundPairs[nearestIndex].second;
-    return JumpTo(bot->GetMapId(), ground.GetPositionX(), ground.GetPositionY(), ground.GetPositionZ(), MovementPriority::MOVEMENT_FORCED);
+        const Position& ground = platformGroundPairs[nearestIndex].second;
+        return JumpTo(bot->GetMapId(), ground.GetPositionX(), ground.GetPositionY(),
+                      ground.GetPositionZ(), MovementPriority::MOVEMENT_FORCED);
     }
 
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
@@ -812,7 +490,8 @@ bool AlarSwapTanksOnBossAction::Execute(Event event)
     }
 
     // If main tank is tanking Al'ar and has Melt Armor, assist tank should taunt
-    if (mainTank && assistTank && alar->GetVictim() == mainTank && mainTank->HasAura(SPELL_MELT_ARMOR) && bot == assistTank)
+    if (mainTank && assistTank && alar->GetVictim() == mainTank &&
+        mainTank->HasAura(SPELL_MELT_ARMOR) && bot == assistTank)
     {
         const char* taunts[] = { "taunt", "growl", "hand of reckoning" };
         for (const char* spellName : taunts)
@@ -823,7 +502,8 @@ bool AlarSwapTanksOnBossAction::Execute(Event event)
     }
 
     // If assist tank is tanking Al'ar and has Melt Armor, main tank should taunt
-    if (mainTank && assistTank && alar->GetVictim() == assistTank && assistTank->HasAura(SPELL_MELT_ARMOR) && bot == mainTank)
+    if (mainTank && assistTank && alar->GetVictim() == assistTank &&
+        assistTank->HasAura(SPELL_MELT_ARMOR) && bot == mainTank)
     {
         const char* taunts[] = { "taunt", "growl", "hand of reckoning" };
         for (const char* spellName : taunts)
@@ -847,8 +527,8 @@ bool AlarReturnToRoomCenterAction::Execute(Event event)
     const Position& center = AlarRoomCenter;
     if (bot->GetExactDist2d(center.GetPositionX(), center.GetPositionY()) > 35.0f)
     {
-        return MoveInside(bot->GetMapId(), center.GetPositionX(), center.GetPositionY(), center.GetPositionZ(), 25.0f,
-                          MovementPriority::MOVEMENT_COMBAT);
+        return MoveInside(bot->GetMapId(), center.GetPositionX(), center.GetPositionY(),
+                          center.GetPositionZ(), 25.0f, MovementPriority::MOVEMENT_COMBAT);
     }
 
     return false;
@@ -882,7 +562,7 @@ bool AlarDiveBombSpreadAction::Execute(Event event)
     {
         const uint32 minInterval = 200;
         return FleePosition(Position(closestMember->GetPositionX(), closestMember->GetPositionY(),
-                            closestMember->GetPositionZ()), 11.0f, minInterval);
+                                     closestMember->GetPositionZ()), 11.0f, minInterval);
     }
 
     return false;
@@ -911,17 +591,13 @@ bool AlarManageTimersAndTrackersAction::Execute(Event event)
         {
             mtBalconyMidpointVisited[bot->GetGUID()].clear();
             mainTankAtPlatform2[bot->GetGUID()] = false;
-            // mtGroundMidpointVisited[bot->GetGUID()] = false;
-            // lastMainTankPlatform[bot->GetGUID()] = 0; // Platform 1
         }
-        if (botAI->IsAssistTankOfIndex(bot, 0))
+        else if (botAI->IsAssistTankOfIndex(bot, 0))
         {
             atBalconyMidpointVisited[bot->GetGUID()].clear();
             assistTankAtPlatform3[bot->GetGUID()] = false;
-            // atGroundMidpointVisited[bot->GetGUID()] = false;
-            // lastAssistTankPlatform[bot->GetGUID()] = 1; // Platform 2
         }
-        if (botAI->IsMelee(bot) && botAI->IsDps(bot))
+        else if (botAI->IsMelee(bot) && botAI->IsDps(bot))
             meleeDpsWaypointVisited[bot->GetGUID()].clear();
     }
 
@@ -958,7 +634,8 @@ bool VoidReaverPositionBossAction::Execute(Event event)
 
         float dX = tankPosition.GetPositionX() - bot->GetPositionX();
         float dY = tankPosition.GetPositionY() - bot->GetPositionY();
-        float distanceToTankPosition = bot->GetExactDist2d(tankPosition.GetPositionX(), tankPosition.GetPositionY());
+        float distanceToTankPosition = bot->GetExactDist2d(tankPosition.GetPositionX(),
+                                                           tankPosition.GetPositionY());
 
         if (distanceToTankPosition > 2.0f)
         {
@@ -986,7 +663,6 @@ bool VoidReaverSpreadRangedAction::Execute(Event event)
     {
         initialVoidReaverPositions.clear();
         hasReachedInitialVoidReaverPosition.clear();
-        LOG_DEBUG("playerbots", "VoidReaverSpreadRangedAction: Cleared initial positions (Void Reaver at max health)");
     }
 
     // Assign positions only if not already assigned
@@ -1028,8 +704,6 @@ bool VoidReaverSpreadRangedAction::Execute(Event event)
             Position pos(targetX, targetY, ranged->GetPositionZ());
             initialVoidReaverPositions[ranged->GetGUID()] = pos;
             hasReachedInitialVoidReaverPosition[ranged->GetGUID()] = false;
-            LOG_DEBUG("playerbots", "VoidReaverSpreadRangedAction: {} assigned ring {} position ({}, {}, {})",
-                ranged->GetName(), ringIndex + 1, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ());
         }
     }
 
@@ -1041,8 +715,6 @@ bool VoidReaverSpreadRangedAction::Execute(Event event)
 
     if (!bot->IsWithinDist2d(destX, destY, 1.0f))
     {
-        LOG_DEBUG("playerbots", "VoidReaverSpreadRangedAction: Bot {} moving to initial position ({}, {}, {})", bot->GetName(), destX, destY, destZ);
-
         return MoveTo(bot->GetMapId(), destX, destY, destZ, false, false, false, false,
                       MovementPriority::MOVEMENT_FORCED, true, false);
     }
@@ -1124,8 +796,9 @@ bool HighAstromancerSolarianStackBotsAction::Execute(Event event)
 
         if (stackTarget && bot != stackTarget && bot->GetExactDist2d(stackTarget) >= 5.0f)
         {
-            return MoveTo(bot->GetMapId(), stackTarget->GetPositionX(), stackTarget->GetPositionY(), stackTarget->GetPositionZ(),
-                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+            return MoveTo(bot->GetMapId(), stackTarget->GetPositionX(), stackTarget->GetPositionY(),
+                          stackTarget->GetPositionZ(), false, false, false, false,
+                          MovementPriority::MOVEMENT_COMBAT, true, false);
         }
 
         return false;
@@ -1155,21 +828,6 @@ bool HighAstromancerSolarianStackBotsAction::Execute(Event event)
 
 bool HighAstromancerSolarianMoveAwayFromGroupAction::Execute(Event event)
 {
-    /* Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || member == bot)
-            continue;
-
-        float currentDistance = bot->GetExactDist2d(member);
-        const float safeDistance = 10.0f;
-        if (currentDistance < safeDistance)
-            return MoveAway(member, safeDistance - currentDistance + 0.5f);
-    } */
     const float safeDistance = 10.0f;
     Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
     if (nearestPlayer)
@@ -1187,8 +845,8 @@ bool HighAstromancerSolarianTargetSolariumPriestsAction::Execute(Event event)
 
     auto solariumPriests = GetSolariumPriests();
     auto meleeMembers = GetMeleeBots(group);
-    Unit* targetSolariumPriest = AssignSolariumPriestsToBots(solariumPriests, meleeMembers);
-    if (!targetSolariumPriest)
+    Unit* targetPriest = AssignSolariumPriestsToBots(solariumPriests, meleeMembers);
+    if (!targetPriest)
         return false;
 
     auto it = std::find(meleeMembers.begin(), meleeMembers.end(), bot);
@@ -1196,21 +854,21 @@ bool HighAstromancerSolarianTargetSolariumPriestsAction::Execute(Event event)
     size_t totalMelee = meleeMembers.size();
     if (botIndex < totalMelee / 2)
     {
-        MarkTargetWithSquare(bot, targetSolariumPriest);
-        SetRtiTarget(botAI, "square", targetSolariumPriest);
+        MarkTargetWithSquare(bot, targetPriest);
+        SetRtiTarget(botAI, "square", targetPriest);
     }
     else
     {
-        MarkTargetWithStar(bot, targetSolariumPriest);
-        SetRtiTarget(botAI, "star", targetSolariumPriest);
+        MarkTargetWithStar(bot, targetPriest);
+        SetRtiTarget(botAI, "star", targetPriest);
     }
 
-    if (bot->GetVictim() != targetSolariumPriest)
-        return Attack(targetSolariumPriest);
+    if (bot->GetVictim() != targetPriest)
+        return Attack(targetPriest);
 
-    if (!bot->IsWithinMeleeRange(targetSolariumPriest))
-        return MoveTo(bot->GetMapId(), targetSolariumPriest->GetPositionX(), targetSolariumPriest->GetPositionY(),
-                      targetSolariumPriest->GetPositionZ(), false, false, false, false,
+    if (!bot->IsWithinMeleeRange(targetPriest))
+        return MoveTo(bot->GetMapId(), targetPriest->GetPositionX(), targetPriest->GetPositionY(),
+                      targetPriest->GetPositionZ(), false, false, false, false,
                       MovementPriority::MOVEMENT_COMBAT, true, false);
 
     return false;
@@ -1253,8 +911,8 @@ Unit* HighAstromancerSolarianTargetSolariumPriestsAction::AssignSolariumPriestsT
         return nullptr;
 
     // Sort priest adds by GUID for consistent targeting
-    std::vector<Unit*> sortedSolariumPriests = solariumPriests;
-    std::sort(sortedSolariumPriests.begin(), sortedSolariumPriests.end(),
+    std::vector<Unit*> sortedPriests = solariumPriests;
+    std::sort(sortedPriests.begin(), sortedPriests.end(),
               [](Unit* a, Unit* b) { return a->GetGUID() < b->GetGUID(); });
 
     auto it = std::find(meleeMembers.begin(), meleeMembers.end(), bot);
@@ -1265,15 +923,14 @@ Unit* HighAstromancerSolarianTargetSolariumPriestsAction::AssignSolariumPriestsT
     size_t totalMelee = meleeMembers.size();
 
     if (botIndex < totalMelee / 2)
-        return sortedSolariumPriests[0];
+        return sortedPriests[0];
     else
-        return sortedSolariumPriests[1];
+        return sortedPriests[1];
 }
 
 bool HighAstromancerSolarianTankVoidwalkerAction::Execute(Event event)
 {
     Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
-
     if (astromancer->GetVictim() != bot)
     {
         if (botAI->CanCastSpell("taunt", astromancer))
@@ -1292,7 +949,6 @@ bool HighAstromancerSolarianTankVoidwalkerAction::Execute(Event event)
 bool HighAstromancerSolarianCastFearWardOnMainTankAction::Execute(Event event)
 {
     Player* mainTank = nullptr;
-
     if (Group* group = bot->GetGroup())
     {
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
@@ -1367,24 +1023,10 @@ bool KaelthasSunstriderKiteThaladredAction::Execute(Event event)
     {
         bot->AttackStop();
         bot->InterruptNonMeleeSpells(true);
-
         return MoveAway(thaladred, safeDistance - currentDistance + 5.0f);
     }
 
     return false;
-}
-
-Position KaelthasSunstriderKiteThaladredAction::GetTargetPosition(uint8 relayPhase)
-{
-    // This method is no longer needed but keep for potential future use
-    switch (relayPhase)
-    {
-        case 0: return ThaladredRelayPoint;
-        case 1:
-        case 2:
-        default:
-            return ThaladredFinalPosition;
-    }
 }
 
 bool KaelthasSunstriderMainTankPositionSanguinarAction::Execute(Event event)
@@ -1402,16 +1044,17 @@ bool KaelthasSunstriderMainTankPositionSanguinarAction::Execute(Event event)
     if (sanguinar->GetVictim() == bot)
     {
         const Position& position = SanguinarTankPosition;
+        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
+        {
+            return MoveTo(bot->GetMapId(), position.GetPositionX(), position.GetPositionY(),
+                          position.GetPositionZ(), false, false, false, false,
+                          MovementPriority::MOVEMENT_COMBAT, true, true);
+        }
         if (!bot->IsWithinMeleeRange(sanguinar))
         {
             return MoveTo(sanguinar->GetMapId(), sanguinar->GetPositionX(),
                           sanguinar->GetPositionY(), sanguinar->GetPositionZ(),
                           false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
-        }
-        else if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
-        {
-            return MoveTo(bot->GetMapId(), position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(), false, false, false, false,
-                          MovementPriority::MOVEMENT_COMBAT, true, true);
         }
     }
 
@@ -1600,8 +1243,8 @@ bool KaelthasSunstriderMoveAwayFromCapernianAction::Execute(Event event)
             float targetX = capernian->GetPositionX() + nx * desiredDist;
             float targetY = capernian->GetPositionY() + ny * desiredDist;
 
-            return MoveTo(capernian->GetMapId(), targetX, targetY, capernian->GetPositionZ(), false, false, false, true,
-                          MovementPriority::MOVEMENT_FORCED, true, false);
+            return MoveTo(capernian->GetMapId(), targetX, targetY, capernian->GetPositionZ(), false, false,
+                          false, true, MovementPriority::MOVEMENT_FORCED, true, false);
         }
         else
         {
@@ -1616,7 +1259,6 @@ bool KaelthasSunstriderMoveAwayFromCapernianAction::Execute(Event event)
     // Determine safe distance based on role
     float safeDistance;
     Player* capernianTank = GetCapernianTank(botAI, bot);
-
     if (botAI->IsMelee(bot))
     {
         safeDistance = 45.0f;  // Melee dps safe distance
@@ -1669,16 +1311,16 @@ bool KaelthasSunstriderFirstAssistTankPositionTelonicusAction::Execute(Event eve
     if (telonicus->GetVictim() == bot)
     {
         const Position& position = TelonicusTankPosition;
-        if (!bot->IsWithinMeleeRange(telonicus))
+        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
+        {
+            return MoveTo(bot->GetMapId(), position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(), false, false, false, false,
+                          MovementPriority::MOVEMENT_COMBAT, true, true);
+        }
+        else if (!bot->IsWithinMeleeRange(telonicus))
         {
             return MoveTo(telonicus->GetMapId(), telonicus->GetPositionX(),
                           telonicus->GetPositionY(), telonicus->GetPositionZ(),
                           false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
-        }
-        else if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
-        {
-            return MoveTo(bot->GetMapId(), position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(), false, false, false, false,
-                          MovementPriority::MOVEMENT_COMBAT, true, true);
         }
     }
 
@@ -1691,7 +1333,6 @@ bool KaelthasSunstriderMisdirectAdvisorsToTanksAction::Execute(Event event)
     if (!group)
         return false;
 
-    // Find up to 3 hunters in the group
     std::vector<Player*> hunters;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
@@ -1702,7 +1343,6 @@ bool KaelthasSunstriderMisdirectAdvisorsToTanksAction::Execute(Event event)
             break;
     }
 
-    // Find hunter index
     int hunterIndex = -1;
     for (size_t i = 0; i < hunters.size(); ++i)
     {
@@ -1715,7 +1355,6 @@ bool KaelthasSunstriderMisdirectAdvisorsToTanksAction::Execute(Event event)
     if (hunterIndex == -1)
         return false;
 
-    // Determine boss and tank targets based on hunter index
     Unit* advisorTarget = nullptr;
     Player* tankTarget = nullptr;
     if (hunterIndex == 0)
@@ -1778,15 +1417,10 @@ bool KaelthasSunstriderManageAdvisorDpsTimerAction::Execute(Event event)
         if (!advisor)
             continue;
 
-        // If any advisor is at 100% HP and aggressive, set timer
         if (advisor->GetHealth() == advisor->GetMaxHealth() && !advisor->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE))
         {
-            const uint32 mapId = advisor->GetMapId();
             const time_t now = std::time(nullptr);
-            advisorDpsWaitTimer.insert_or_assign(mapId, now);
-
-            LOG_DEBUG("playerbots", "KaelthasSunstriderManageAdvisorDpsTimerAction: Timer set for {} on map {}",
-                      name, mapId);
+            advisorDpsWaitTimer.insert_or_assign(advisor->GetMapId(), now);
             return false;
         }
     }
@@ -1805,10 +1439,7 @@ bool KaelthasSunstriderGroupUpLegendaryWeaponsAction::Execute(Event event)
     Unit* sword = AI_VALUE2(Unit*, "find target", "warp slicer");
 
     if (botAI->IsTank(bot))
-    {
-        // Clear RTI marks for non-tank targets
         SetRtiTarget(botAI, "skull", nullptr);
-    }
 
     // Priority 0 (excluding tanks): Stay away from Devastation
     if (axe)
@@ -1949,9 +1580,6 @@ bool KaelthasSunstriderMoveDevastationAwayAction::Execute(Event event)
         {
             float currentDistance = bot->GetExactDist2d(nearestPlayer);
             LOG_DEBUG("playerbots", "KaelthasMoveDevastationAway: nearestPlayer={} dist={} safeDistance={}", nearestPlayer->GetName(), currentDistance, safeDistance);
-
-            // nearestPlayer is guaranteed to be inside safeDistance by GetNearestPlayerInRadius,
-            // so we can directly attempt MoveFromGroup without rechecking currentDistance < safeDistance.
             return MoveFromGroup(safeDistance + 1.0f);
         }
     }
@@ -1969,10 +1597,7 @@ bool KaelthasSunstriderHunterTurnAwayNetherstrandLongbowAction::Execute(Event ev
     SetRtiTarget(botAI, "cross", longbow);
 
     if (bot->GetVictim() != longbow)
-    {
-        LOG_DEBUG("playerbots", "HunterTurnAwayNetherstrandLongbowAction: starting Attack on longbow but continuing to kiting checks (threat present) bot={}", bot->GetName());
         return Attack(longbow);
-    }
 
     if (longbow->GetVictim() == bot)
     {
@@ -1989,7 +1614,6 @@ bool KaelthasSunstriderHunterTurnAwayNetherstrandLongbowAction::Execute(Event ev
 
         float currentDistance = bot->GetExactDist2d(nearestPlayer);
         LOG_DEBUG("playerbots", "HunterTurnAwayNetherstrandLongbowAction: nearestPlayer={} dist={} dangerZone={}", nearestPlayer->GetName(), currentDistance, dangerZone);
-
         if (currentDistance < dangerZone)
         {
             // Try to move away from the average group position first. This produces a smoother group-wide kite-away behavior.
@@ -2030,11 +1654,7 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::Execute(Event event)
         if (ShouldBotLootWeapon(weapon.npcEntry))
         {
             if (bot->HasItemCount(weapon.itemId, 1, false))
-            {
-                LOG_DEBUG("playerbots", "KaelthasSunstriderLootLegendaryWeaponsAction: {} already has {} (itemId={}), skipping",
-                          bot->GetName(), weapon.name, weapon.itemId);
                 continue;
-            }
 
             return LootWeapon(weapon.npcEntry, weapon.itemId, weapon.name);
         }
@@ -2057,7 +1677,8 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::ShouldBotLootWeapon(uint32 we
 
         case NPC_DEVASTATION:
             return (bot->getClass() == CLASS_WARRIOR && tab == 0) ||
-                   (botAI->IsDps(bot) && (bot->getClass() == CLASS_PALADIN || bot->getClass() == CLASS_DEATH_KNIGHT));
+                   (botAI->IsDps(bot) && (bot->getClass() == CLASS_PALADIN ||
+                    bot->getClass() == CLASS_DEATH_KNIGHT));
 
         case NPC_INFINITY_BLADES:
             return bot->getClass() == CLASS_ROGUE ||
@@ -2075,7 +1696,8 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::ShouldBotLootWeapon(uint32 we
 
         case NPC_PHASESHIFT_BULWARK:
             return botAI->IsTank(bot) &&
-                   (bot->getClass() == CLASS_PALADIN || bot->getClass() == CLASS_WARRIOR || bot->getClass() == CLASS_DEATH_KNIGHT);
+                   (bot->getClass() == CLASS_PALADIN || bot->getClass() == CLASS_WARRIOR ||
+                    bot->getClass() == CLASS_DEATH_KNIGHT);
 
         default:
             return false;
@@ -2084,64 +1706,35 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::ShouldBotLootWeapon(uint32 we
 
 bool KaelthasSunstriderLootLegendaryWeaponsAction::LootWeapon(uint32 weaponEntry, uint32 itemId, const char* weaponName)
 {
-    LOG_DEBUG("playerbots", "KaelthasSunstriderLootLegendaryWeaponsAction: Execute start for bot {} (weaponEntry={})", bot->GetName(), weaponEntry);
-
     GuidVector corpses = context->GetValue<GuidVector>("nearest corpses")->Get();
     const float maxLootRange = sPlayerbotAIConfig->lootDistance;
 
     for (auto const& guid : corpses)
     {
-        LOG_DEBUG("playerbots", "KaelthasSunstriderLootLegendaryWeaponsAction: inspecting guid {}", guid.ToString());
-
         LootObject loot(bot, guid);
         if (!loot.IsLootPossible(bot))
-        {
-            LOG_DEBUG("playerbots", "KaelthasSunstriderLootLegendaryWeaponsAction: loot not possible on guid {}", guid.ToString());
             continue;
-        }
 
         WorldObject* object = loot.GetWorldObject(bot);
         if (!object)
-        {
-            LOG_DEBUG("playerbots", "KaelthasSunstriderLootLegendaryWeaponsAction: no world object for guid {}", guid.ToString());
             continue;
-        }
 
         Creature* creature = object->ToCreature();
         if (!creature)
-        {
-            LOG_DEBUG("playerbots", "KaelthasSunstriderLootLegendaryWeaponsAction: world object for guid {} is not a creature, skipping", guid.ToString());
             continue;
-        }
 
-        LOG_DEBUG("playerbots", "KaelthasSunstriderLootLegendaryWeaponsAction: found CREATURE guid={} entry={} hp={}/{} alive={}",
-                  guid.ToString(), creature->GetEntry(), creature->GetHealth(), creature->GetMaxHealth(), creature->IsAlive());
-
-        // Only consider the specific dead weapon
         if (creature->GetEntry() != weaponEntry || creature->IsAlive())
-        {
-            LOG_DEBUG("playerbots", "KaelthasSunstriderLootLegendaryWeaponsAction: creature {} is not the target weapon or is alive, skipping", guid.ToString());
             continue;
-        }
-
-        LOG_DEBUG("playerbots", "KaelthasSunstriderLootLegendaryWeaponsAction: found dead {} target {}", weaponName, guid.ToString());
 
         context->GetValue<LootObject>("loot target")->Set(loot);
 
         float dist = bot->GetDistance(object);
-        LOG_DEBUG("playerbots", "KaelthasSunstriderLootLegendaryWeaponsAction: target {} dist={}", guid.ToString(), dist);
 
         if (dist > maxLootRange)
-        {
-            LOG_DEBUG("playerbots", "KaelthasSunstriderLootLegendaryWeaponsAction: moving to target {} (dist={} > maxLootRange={})", guid.ToString(), dist, maxLootRange);
             return MoveTo(object, 2.0f, MovementPriority::MOVEMENT_FORCED);
-        }
-
-        LOG_DEBUG("playerbots", "KaelthasSunstriderLootLegendaryWeaponsAction: in range of target {}, invoking OpenLootAction", guid.ToString());
 
         OpenLootAction open(botAI);
         bool opened = open.Execute(Event());
-        LOG_DEBUG("playerbots", "KaelthasSunstriderLootLegendaryWeaponsAction: OpenLootAction returned {}", opened);
 
         if (!opened)
             return opened;
@@ -2163,9 +1756,6 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::LootWeapon(uint32 weaponEntry
 
             receiver->SetLootGUID(corpseGuid);
 
-            LOG_DEBUG("playerbots", "KaelthasSunstriderLootLegendaryWeaponsAction: sending CMSG_AUTOSTORE_LOOT_ITEM guessedIndex={} for bot={} corpse={} weapon={}",
-                      guessedIndex, receiver->GetName(), corpseGuid.ToString(), weaponName);
-
             WorldPacket* packet = new WorldPacket(CMSG_AUTOSTORE_LOOT_ITEM, 1);
             *packet << guessedIndex;
             receiver->GetSession()->QueuePacket(packet);
@@ -2174,21 +1764,17 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::LootWeapon(uint32 weaponEntry
         return true;
     }
 
-    LOG_DEBUG("playerbots", "KaelthasSunstriderLootLegendaryWeaponsAction: no matching dead {} found, returning false", weaponName);
     return false;
 }
 
 bool KaelthasSunstriderUseLegendaryWeaponsAction::Execute(Event event)
 {
-    // Check and use Phaseshift Bulwark
     if (UsePhaseshiftBulwark())
         return true;
 
-    // Check and use Staff of Disintegration
     if (UseStaffOfDisintegration())
         return true;
 
-    // Check and use Netherstrand Longbow
     if (UseNetherstrandLongbow())
         return true;
 
@@ -2932,7 +2518,10 @@ bool KaelthasSunstriderBreakThroughShockBarrierAction::Execute(Event event)
         for (const char* spell : spells)
         {
             if (botAI->CanCastSpell(spell, kaelthas))
+            {
+                LOG_DEBUG("playerbots", "KaelthasBreakThroughShockBarrierAction: bot={} casting interrupt {} on Kael'thas", bot->GetName(), spell);
                 return botAI->CastSpell(spell, kaelthas);
+            }
         }
     }
     else if (bot->GetTarget() != kaelthas->GetGUID())
@@ -3002,11 +2591,11 @@ bool KaelthasSunstriderSpreadOutInMidairAction::Execute(Event event)
 
         // Calculate 2D direction away from closest player
         float angle = bot->GetAngle(closestPlayer) + M_PI; // Opposite direction
-        float distance = minSpreadDistance - closestDist + 2.0f; // Extra buffer
+        float distance = minSpreadDistance - closestDist + 2.0f;
 
         float x = bot->GetPositionX() + cos(angle) * distance;
         float y = bot->GetPositionY() + sin(angle) * distance;
-        float z = bot->GetPositionZ(); // Keep current Z, let physics handle it
+        float z = bot->GetPositionZ();
 
         LOG_DEBUG("playerbots", "KaelthasSunstriderSpreadOutInMidairAction: moving bot={} to target=({}, {}, {}) distanceRequested={:.1f}",
                   bot->GetName(), x, y, z, distance);

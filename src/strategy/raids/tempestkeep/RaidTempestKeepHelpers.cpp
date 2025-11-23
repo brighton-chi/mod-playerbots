@@ -11,7 +11,6 @@ namespace TempestKeepHelpers
 {
     namespace TempestKeepPositions
     {
-        // Al'ar platform coordinates correspond with "OLDWorld Trigger (DO NOT DELETE) NPCs (15384)"
         const Position AlarRoomCenter = { 330.611f, -2.540f, -2.389f };
         const Position AlarRangedCenter = { 346.758f, 3.794f, -2.389f };
         const Position AlarPlatform1 = { 335.638f, 59.4879f, 17.9319f }; // West Platform
@@ -22,22 +21,16 @@ namespace TempestKeepHelpers
         const Position AlarPlatform1To2MidpointB = { 397.760f, 57.362f, 20.179f }; // 2nd Midpoint between Platform 1 and 2
         const Position AlarPlatform2To3MidpointA = { 419.272f, 28.838f, 20.179f }; // 1st Midpoint between Platform 2 and 3
         const Position AlarPlatform2To3MidpointB = { 419.272f, -28.838f, 20.179f }; // 2nd Midpoint between Platform 2 and 3
-        // const Position AlarPlatform3To4MidpointA = { 397.760f, -57.362f, 20.179f }; // 1st Midpoint between Platform 3 and 4
-        // const Position AlarPlatform3To4MidpointB = { 362.264f, -83.648f, 19.797f }; // 2nd Midpoint between Platform 3 and 4
         const Position AlarGround1 = { 336.439f, 48.181f, -2.389f }; // Landing point for jumping from West Platform
         const Position AlarGround2 = { 379.122f, 25.146f, -2.385f }; // Landing point for jumping from Northwest Platform
         const Position AlarGround3 = { 378.583f, -27.481f, -2.385f }; // Landing point for jumping from Northeast Platform
         const Position AlarGround4 = { 331.631f, -49.716f, -2.389f }; // Landing point for jumping from East Platform
         const Position AlarSERampBase = { 281.064f, -36.590f, -2.389f };
-        // const Position AlarMidpointToSERamp = { 337.099f, -6.412f, -2.389f };
         const Position AlarSWRampBase = { 281.064f, 36.590f, -2.389f };
-        // const Position AlarMidpointToSWRamp = { 337.099f, 6.412f, -2.389f };
         const Position AlarRoomSouthCenter = { 281.064f, 0.0f, -2.389f };
 
         const Position VoidReaverTankPosition = { 423.845f, 371.733f, 14.897f }; // middle of room
 
-        const Position ThaladredRelayPoint = { 727.044f, -44.207f, 46.777f };
-        const Position ThaladredFinalPosition = { 643.342f, -27.474f, 46.777f };
         const Position SanguinarTankPosition = { 775.478f, 39.888f, 46.780f };
         const Position TelonicusTankPosition = { 773.717f, 44.091f, 46.780f };
         const Position KaelthasWeaponStackPosition = { 775.296f, -0.822f, 48.729f };
@@ -96,9 +89,6 @@ namespace TempestKeepHelpers
 
     void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target)
     {
-        /* if (!target)
-            return; */
-
         std::string currentRti = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
         Unit* currentTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
 
@@ -501,56 +491,6 @@ namespace TempestKeepHelpers
         return nullptr;
     }
 
-    // Trigger: All legendary weapons exist and are dead (can overlap with early Phase 3)
-    bool AreAllLegendaryWeaponsDead(PlayerbotAI* botAI, Player* bot)
-    {
-        const std::pair<const char*, uint32> weapons[] =
-        {
-            { "staff of disintegration", NPC_STAFF_OF_DISINTEGRATION },
-            { "cosmic infuser", NPC_COSMIC_INFUSER },
-            { "infinity blade", NPC_INFINITY_BLADES },
-            { "warp slicer", NPC_WARP_SLICER },
-            { "phaseshift bulwark", NPC_PHASESHIFT_BULWARK },
-            { "netherstrand longbow", NPC_NETHERSTRAND_LONGBOW },
-            { "devastation", NPC_DEVASTATION },
-        };
-
-        for (const auto& [name, entry] : weapons)
-        {
-            // Check if weapon is alive
-            Unit* weapon = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", name)->Get();
-            if (weapon && weapon->IsAlive())
-                return false;
-
-            // Must find it as a dead corpse
-            bool foundDeadCorpse = false;
-            GuidVector corpses = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest corpses")->Get();
-            for (auto const& guid : corpses)
-            {
-                LootObject loot(bot, guid);
-                WorldObject* obj = loot.GetWorldObject(bot);
-                if (!obj)
-                    continue;
-
-                if (Creature* cr = obj->ToCreature())
-                {
-                    if (cr->GetEntry() == entry && !cr->IsAlive())
-                    {
-                        foundDeadCorpse = true;
-                        break;
-                    }
-                }
-            }
-
-            // If weapon not found as a dead corpse, return false
-            if (!foundDeadCorpse)
-                return false;
-        }
-
-        // All weapons confirmed as dead corpses
-        return true;
-    }
-
     bool IsAnyLegendaryWeaponDead(PlayerbotAI* botAI, Player* bot)
     {
         const std::pair<const char*, uint32> weapons[] =
@@ -598,53 +538,11 @@ namespace TempestKeepHelpers
     std::unordered_map<uint32, int8> lastAlarPlatform;
     std::unordered_map<uint32, bool> lastRebirthState;
     std::unordered_map<uint32, bool> isPhase2;
-    // std::unordered_map<ObjectGuid, int8> lastMainTankPlatform;
-    // std::unordered_map<ObjectGuid, int8> lastAssistTankPlatform;
     std::unordered_map<ObjectGuid, bool> mainTankAtPlatform2;
     std::unordered_map<ObjectGuid, bool> assistTankAtPlatform3;
     std::unordered_map<ObjectGuid, std::vector<bool>> mtBalconyMidpointVisited;
     std::unordered_map<ObjectGuid, std::vector<bool>> atBalconyMidpointVisited;
-    // std::unordered_map<ObjectGuid, bool> mtGroundMidpointVisited;
-    // std::unordered_map<ObjectGuid, bool> atGroundMidpointVisited;
     std::unordered_map<ObjectGuid, std::vector<bool>> meleeDpsWaypointVisited;
-    /* std::vector<Position> midpoints_1_to_6 =
-    {
-        TempestKeepPositions::AlarPlatform1To2MidpointA,
-        TempestKeepPositions::AlarPlatform1To2MidpointB,
-        TempestKeepPositions::AlarPlatform2To3MidpointA,
-        TempestKeepPositions::AlarPlatform2To3MidpointB,
-        TempestKeepPositions::AlarPlatform3To4MidpointA,
-        TempestKeepPositions::AlarPlatform3To4MidpointB
-    };
-    std::vector<Position> midpoints_6_to_1 =
-    {
-        TempestKeepPositions::AlarPlatform3To4MidpointB,
-        TempestKeepPositions::AlarPlatform3To4MidpointA,
-        TempestKeepPositions::AlarPlatform2To3MidpointB,
-        TempestKeepPositions::AlarPlatform2To3MidpointA,
-        TempestKeepPositions::AlarPlatform1To2MidpointB,
-        TempestKeepPositions::AlarPlatform1To2MidpointA
-    };
-    std::vector<Position> midpoints_1_to_2 =
-    {
-        TempestKeepPositions::AlarPlatform1To2MidpointA,
-        TempestKeepPositions::AlarPlatform1To2MidpointB,
-    };
-    std::vector<Position> midpoints_2_to_1 =
-    {
-        TempestKeepPositions::AlarPlatform1To2MidpointB,
-        TempestKeepPositions::AlarPlatform1To2MidpointA
-    };
-    std::vector<Position> midpoints_4_to_3 =
-    {
-        TempestKeepPositions::AlarPlatform3To4MidpointA,
-        TempestKeepPositions::AlarPlatform3To4MidpointB
-    };
-    std::vector<Position> midpoints_3_to_4 =
-    {
-        TempestKeepPositions::AlarPlatform3To4MidpointB,
-        TempestKeepPositions::AlarPlatform3To4MidpointA,
-    };*/
 
     std::unordered_map<ObjectGuid, Position> initialVoidReaverPositions;
     std::unordered_map<ObjectGuid, bool> hasReachedInitialVoidReaverPosition;

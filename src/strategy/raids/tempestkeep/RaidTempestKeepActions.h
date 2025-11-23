@@ -180,9 +180,6 @@ class KaelthasSunstriderKiteThaladredAction : public MovementAction
 public:
     KaelthasSunstriderKiteThaladredAction(PlayerbotAI* botAI) : MovementAction(botAI, "kaelthas sunstrider kite thaladred") {}
     bool Execute(Event event) override;
-
-private:
-    Position GetTargetPosition(uint8 relayPhase);
 };
 
 class KaelthasSunstriderMainTankPositionSanguinarAction : public AttackAction
