@@ -128,7 +128,6 @@ namespace SerpentShrineCavernHelpers
     extern std::unordered_map<ObjectGuid, Position> intendedLineup;
     extern std::unordered_map<ObjectGuid, time_t> lastImbueAttempt;
     extern std::unordered_map<uint32, time_t> lastParalyzeTime;
-    extern std::unordered_set<ObjectGuid> imbuePending;
 
     namespace SerpentShrineCavernPositions
     {

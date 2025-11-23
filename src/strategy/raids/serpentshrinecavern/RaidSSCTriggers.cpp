@@ -431,26 +431,6 @@ bool LadyVashjBotHasStaticChargeTrigger::IsActive()
     return false;
 }
 
-bool LadyVashjBotIsEntangledInToxicSporesOrStaticChargeTrigger::IsActive()
-{
-    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    if (!vashj)
-        return false;
-
-    if (Group* group = bot->GetGroup())
-    {
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (member && member->IsAlive() && member->HasAura(SPELL_ENTANGLE) &&
-                member->HasAura(SPELL_TOXIC_SPORES))
-                return true;
-        }
-    }
-
-    return false;
-}
-
 bool LadyVashjPullingBossInPhase1AndPhase3Trigger::IsActive()
 {
     if (bot->getClass() != CLASS_HUNTER)
@@ -609,6 +589,34 @@ bool LadyVashjToxicSporebatsAreSpewingPoisonCloudsTrigger::IsActive()
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     return vashj && IsLadyVashjInPhase3(botAI);
+}
+
+bool LadyVashjBotIsEntangledInToxicSporesOrStaticChargeTrigger::IsActive()
+{
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (!vashj)
+        return false;
+
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive())
+                continue;
+
+            if (!member->HasAura(SPELL_ENTANGLE))
+                continue;
+
+            if (botAI->IsMelee(member))
+            {
+                LOG_DEBUG("playerbots", "LadyVashjBotIsEntangledInToxicSporesOrStaticChargeTrigger: member {} is melee and entangled", member->GetName());
+                return true;
+            }
+        }
+    }
+
+    return false;
 }
 
 bool LadyVashjNeedToManageTrackersTrigger::IsActive()

@@ -20,13 +20,18 @@ using namespace SerpentShrineCavernHelpers;
 
 // Trash
 
-float ColossusRagerDoNotUseBloodlustOrHeroismMultiplier::GetValue(Action* action)
+float UnderbogColossusEscapeToxicPoolMultiplier::GetValue(Action* action)
 {
-    Unit* rager = AI_VALUE2(Unit*, "find target", "colossus rager");
-    if (!rager)
+    Aura* aura = bot->GetAura(SPELL_TOXIC_POOL);
+    if (!aura)
         return 1.0f;
 
-    if (dynamic_cast<CastHeroismAction*>(action) || dynamic_cast<CastBloodlustAction*>(action))
+    DynamicObject* dynObj = aura->GetDynobjOwner();
+    if (!dynObj)
+        return 1.0f;
+
+    if (dynamic_cast<MovementAction*>(action) &&
+        !dynamic_cast<UnderbogColossusEscapeToxicPoolAction*>(action))
         return 0.0f;
 
     return 1.0f;
@@ -166,10 +171,9 @@ float TheLurkerBelowStayAwayFromSpoutMultiplier::GetValue(Action* action)
     if (!lurker)
         return 1.0f;
 
-    const uint32 mapId = lurker->GetMapId();
     const time_t now = std::time(nullptr);
 
-    auto it = lurkerSpoutTimer.find(mapId);
+    auto it = lurkerSpoutTimer.find(lurker->GetMapId());
     if (it != lurkerSpoutTimer.end() && it->second > now)
     {
         if (dynamic_cast<CastReachTargetSpellAction*>(action) || dynamic_cast<CastKillingSpreeAction*>(action) ||
@@ -379,17 +383,19 @@ float FathomLordKarathressWaitForDpsMultiplier::GetValue(Action* action)
     if (!karathress)
         return 1.0f;
 
+    if (botAI->IsTank(bot))
+        return 1.0f;
+
     if (dynamic_cast<FathomLordKarathressMisdirectBossesToTanksAction*>(action))
         return 1.0f;
 
-    const uint32 mapId = karathress->GetMapId();
     const time_t now = std::time(nullptr);
     const uint8 dpsWaitSeconds = 8;
 
-    auto it = karathressDpsWaitTimer.find(mapId);
+    auto it = karathressDpsWaitTimer.find(karathress->GetMapId());
     if (it == karathressDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
     {
-        if ((!botAI->IsTank(bot) && dynamic_cast<AttackAction*>(action)) ||
+        if (dynamic_cast<AttackAction*>(action) ||
             (dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<CastHealingSpellAction*>(action)))
             return 0.0f;
     }
@@ -404,7 +410,7 @@ float FathomLordKarathressCaribdisTankHealerMaintainPositionMultiplier::GetValue
         return 1.0f;
 
     if (botAI->IsHealAssistantOfIndex(bot, 0) &&
-        (dynamic_cast<FleeAction*>(bot) || dynamic_cast<FollowAction*>(bot)))
+        (dynamic_cast<FleeAction*>(action) || dynamic_cast<FollowAction*>(action)))
         return 0.0f;
 
     return 1.0f;
@@ -515,8 +521,7 @@ float LadyVashjDoNotLootTheTaintedCoreMultiplier::GetValue(Action* action)
         else if (bot == thirdCorePasser && hasCore(fourthCorePasser))
             return 1.0f;
 
-        const uint32 mapId = vashj->GetMapId();
-        bool recentParalyze = AnyRecentParalyze(group, mapId);
+        bool recentParalyze = AnyRecentParalyze(group, vashj->GetMapId());
 
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
