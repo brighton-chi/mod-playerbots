@@ -80,12 +80,14 @@ bool AlarBossTanksMoveBetweenPlatformsAction::Execute(Event event)
 
     SetRtiTarget(botAI, "star", alar);
     bool mtAction = PositionMainTank(botAI->IsMainTank(bot) ? bot : nullptr, alar, alarPlatform, platforms);
-    bool atAction = PositionAssistTank(botAI->IsAssistTankOfIndex(bot, 0) ? bot : nullptr, alar, alarPlatform, platforms);
+    bool atAction = PositionAssistTank(botAI->IsAssistTankOfIndex(bot, 0) ?
+                    bot : nullptr, alar, alarPlatform, platforms);
 
     return mtAction || atAction;
 }
 
-bool AlarBossTanksMoveBetweenPlatformsAction::PositionMainTank(Player* mainTank, Unit* alar, int8 alarPlatform, const std::vector<Position>& platforms)
+bool AlarBossTanksMoveBetweenPlatformsAction::PositionMainTank(Player* mainTank, Unit* alar,
+    int8 alarPlatform, const std::vector<Position>& platforms)
 {
     if (!mainTank || !alar)
         return false;
@@ -95,7 +97,8 @@ bool AlarBossTanksMoveBetweenPlatformsAction::PositionMainTank(Player* mainTank,
     {
         if (mainTank->GetExactDist2d(AlarSWRampBase.GetPositionX(), AlarSWRampBase.GetPositionY()) >= 2.0f)
         {
-            return MoveTo(bot->GetMapId(), AlarSWRampBase.GetPositionX(), AlarSWRampBase.GetPositionY(), AlarSWRampBase.GetPositionZ(), false, false, false, true,
+            return MoveTo(bot->GetMapId(), AlarSWRampBase.GetPositionX(), AlarSWRampBase.GetPositionY(),
+                          AlarSWRampBase.GetPositionZ(), false, false, false, true,
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
         return true; // Hold position at ramp base
@@ -132,11 +135,13 @@ bool AlarBossTanksMoveBetweenPlatformsAction::PositionMainTank(Player* mainTank,
     }
 
     // Move directly to target platform
-    return MoveTo(bot->GetMapId(), mtTarget.GetPositionX(), mtTarget.GetPositionY(), mtTarget.GetPositionZ(), false, false, false, true,
+    return MoveTo(bot->GetMapId(), mtTarget.GetPositionX(), mtTarget.GetPositionY(),
+                  mtTarget.GetPositionZ(), false, false, false, true,
                   MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
-bool AlarBossTanksMoveBetweenPlatformsAction::PositionAssistTank(Player* assistTank, Unit* alar, int8 alarPlatform, const std::vector<Position>& platforms)
+bool AlarBossTanksMoveBetweenPlatformsAction::PositionAssistTank(Player* assistTank, Unit* alar,
+    int8 alarPlatform, const std::vector<Position>& platforms)
 {
     if (!assistTank || !alar)
         return false;
@@ -146,7 +151,8 @@ bool AlarBossTanksMoveBetweenPlatformsAction::PositionAssistTank(Player* assistT
     {
         if (assistTank->GetExactDist2d(AlarSERampBase.GetPositionX(), AlarSERampBase.GetPositionY()) >= 2.0f)
         {
-            return MoveTo(bot->GetMapId(), AlarSERampBase.GetPositionX(), AlarSERampBase.GetPositionY(), AlarSERampBase.GetPositionZ(), false, false, false, true,
+            return MoveTo(bot->GetMapId(), AlarSERampBase.GetPositionX(), AlarSERampBase.GetPositionY(),
+                          AlarSERampBase.GetPositionZ(), false, false, false, true,
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
         return true; // Hold position at ramp base
@@ -188,88 +194,127 @@ bool AlarBossTanksMoveBetweenPlatformsAction::PositionAssistTank(Player* assistT
                   MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
-bool AlarMeleeDpsPrioritizeAddsAction::Execute(Event event)
+bool AlarMeleeDpsPrioritizeBossAction::Execute(Event event)
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
     if (!alar)
         return false;
 
-    // If Al'ar is flying (Flame Quills), move to S of room and hold position
-    if (alar->GetPositionZ() >= 42.0f && bot->GetPositionZ() < -2.0f)
-    {
-        if (bot->GetExactDist2d(AlarRoomSouthCenter.GetPositionX(), AlarRoomSouthCenter.GetPositionY()) >= 2.0f)
-        {
-            return MoveTo(bot->GetMapId(), AlarRoomSouthCenter.GetPositionX(), AlarRoomSouthCenter.GetPositionY(),
-                          AlarRoomSouthCenter.GetPositionZ(), false, false, false, true,
-                          MovementPriority::MOVEMENT_COMBAT, true, false);
-        }
-        return true;
-    }
-
     const uint32 mapId = alar->GetMapId();
-    int8 alarPlatform = lastAlarPlatform[mapId];
 
-    std::vector<Position> platforms = { AlarPlatform1, AlarPlatform2, AlarPlatform3, AlarPlatform4 };
-    const Position& platformTarget = platforms[alarPlatform];
-
-    std::vector<Position> waypoints;
-    if (alarPlatform == 1)
-        waypoints = { AlarPlatform1To2MidpointA, AlarPlatform1To2MidpointB };
-    else if (alarPlatform == 2)
-        waypoints = { AlarPlatform2To3MidpointA, AlarPlatform2To3MidpointB };
-
-    // Clear waypoint tracker if at target platform (before any movement logic)
-    if (bot->GetExactDist2d(platformTarget.GetPositionX(), platformTarget.GetPositionY()) < 2.0f)
-        meleeDpsWaypointVisited[bot->GetGUID()].clear();
-
-    if (!waypoints.empty())
+    if (isPhase2[mapId])
     {
-        if (meleeDpsWaypointVisited[bot->GetGUID()].empty() &&
-            bot->GetExactDist2d(platformTarget.GetPositionX(), platformTarget.GetPositionY()) >= 2.0f)
+        Unit* ember = GetFirstAliveUnitByEntry(botAI, NPC_EMBER_OF_ALAR);
+        if (ember)
         {
-            meleeDpsWaypointVisited[bot->GetGUID()] = std::vector<bool>(waypoints.size(), false);
-        }
-        for (size_t i = 0; i < waypoints.size(); ++i)
-        {
-            if (!meleeDpsWaypointVisited[bot->GetGUID()][i])
+            float currentDistance = bot->GetExactDist2d(ember);
+            const float safeDistance = 18.0f;
+            if (ember->GetHealthPct() < 50.0f &&
+                currentDistance < safeDistance)
             {
-                const Position& wp = waypoints[i];
-                if (bot->GetExactDist2d(wp.GetPositionX(), wp.GetPositionY()) >= 2.0f)
-                {
-                    return MoveTo(bot->GetMapId(), wp.GetPositionX(), wp.GetPositionY(), wp.GetPositionZ(), false, false, false, true,
-                                  MovementPriority::MOVEMENT_COMBAT, true, false);
-                }
-                else
-                    meleeDpsWaypointVisited[bot->GetGUID()][i] = true;
-                break;
+                bot->AttackStop();
+                bot->InterruptNonMeleeSpells(true);
+                return MoveAway(ember, safeDistance - currentDistance + 2.0f);
             }
         }
-        if (bot->GetExactDist2d(platformTarget.GetPositionX(), platformTarget.GetPositionY()) >= 2.0f)
+        else if (alar && !ember)
         {
-            return MoveTo(bot->GetMapId(), platformTarget.GetPositionX(), platformTarget.GetPositionY(), platformTarget.GetPositionZ(), false, false, false, true,
-                          MovementPriority::MOVEMENT_COMBAT, true, false);
-        }
-    }
-    else
-    {
-        if (bot->GetExactDist2d(platformTarget.GetPositionX(), platformTarget.GetPositionY()) >= 2.0f)
-        {
-            return MoveTo(bot->GetMapId(), platformTarget.GetPositionX(), platformTarget.GetPositionY(), platformTarget.GetPositionZ(), false, false, false, true,
-                          MovementPriority::MOVEMENT_COMBAT, true, false);
+            MarkTargetWithStar(bot, alar);
+            SetRtiTarget(botAI, "star", alar);
+
+            if (bot->GetVictim() != alar)
+                return Attack(alar);
         }
     }
 
-    if (bot->GetVictim() != alar)
-        return Attack(alar);
+    if (!isPhase2[mapId])
+    {
+        // If Al'ar is flying (Flame Quills), move to S of room and hold position
+        if (alar->GetPositionZ() >= 42.0f && bot->GetPositionZ() < -2.0f)
+        {
+            if (bot->GetExactDist2d(AlarRoomSouthCenter.GetPositionX(), AlarRoomSouthCenter.GetPositionY()) >= 2.0f)
+            {
+                return MoveTo(bot->GetMapId(), AlarRoomSouthCenter.GetPositionX(), AlarRoomSouthCenter.GetPositionY(),
+                            AlarRoomSouthCenter.GetPositionZ(), false, false, false, true,
+                            MovementPriority::MOVEMENT_COMBAT, true, false);
+            }
+            return true;
+        }
+
+        int8 alarPlatform = lastAlarPlatform[mapId];
+
+        std::vector<Position> platforms = { AlarPlatform1, AlarPlatform2, AlarPlatform3, AlarPlatform4 };
+        const Position& platformTarget = platforms[alarPlatform];
+
+        std::vector<Position> waypoints;
+        if (alarPlatform == 1)
+            waypoints = { AlarPlatform1To2MidpointA, AlarPlatform1To2MidpointB };
+        else if (alarPlatform == 2)
+            waypoints = { AlarPlatform2To3MidpointA, AlarPlatform2To3MidpointB };
+
+        // Clear waypoint tracker if at target platform (before any movement logic)
+        if (bot->GetExactDist2d(platformTarget.GetPositionX(), platformTarget.GetPositionY()) < 2.0f)
+            meleeDpsWaypointVisited[bot->GetGUID()].clear();
+
+        if (!waypoints.empty())
+        {
+            if (meleeDpsWaypointVisited[bot->GetGUID()].empty() &&
+                bot->GetExactDist2d(platformTarget.GetPositionX(), platformTarget.GetPositionY()) >= 2.0f)
+            {
+                meleeDpsWaypointVisited[bot->GetGUID()] = std::vector<bool>(waypoints.size(), false);
+            }
+            for (size_t i = 0; i < waypoints.size(); ++i)
+            {
+                if (!meleeDpsWaypointVisited[bot->GetGUID()][i])
+                {
+                    const Position& wp = waypoints[i];
+                    if (bot->GetExactDist2d(wp.GetPositionX(), wp.GetPositionY()) >= 2.0f)
+                    {
+                        return MoveTo(bot->GetMapId(), wp.GetPositionX(), wp.GetPositionY(), wp.GetPositionZ(), false, false, false, true,
+                                    MovementPriority::MOVEMENT_COMBAT, true, false);
+                    }
+                    else
+                        meleeDpsWaypointVisited[bot->GetGUID()][i] = true;
+                    break;
+                }
+            }
+            if (bot->GetExactDist2d(platformTarget.GetPositionX(), platformTarget.GetPositionY()) >= 2.0f)
+            {
+                return MoveTo(bot->GetMapId(), platformTarget.GetPositionX(), platformTarget.GetPositionY(), platformTarget.GetPositionZ(), false, false, false, true,
+                            MovementPriority::MOVEMENT_COMBAT, true, false);
+            }
+        }
+        else
+        {
+            if (bot->GetExactDist2d(platformTarget.GetPositionX(), platformTarget.GetPositionY()) >= 2.0f)
+            {
+                return MoveTo(bot->GetMapId(), platformTarget.GetPositionX(), platformTarget.GetPositionY(), platformTarget.GetPositionZ(), false, false, false, true,
+                            MovementPriority::MOVEMENT_COMBAT, true, false);
+            }
+        }
+
+        if (bot->GetVictim() != alar)
+            return Attack(alar);
+    }
 
     return false;
 }
 
-bool AlarRangedDpsPrioritizeBossAction::Execute(Event event)
+bool AlarRangedDpsPrioritizeAddsAction::Execute(Event event)
 {
     Unit* ember = GetFirstAliveUnitByEntry(botAI, NPC_EMBER_OF_ALAR);
-    if (ember && ember->IsAlive() /*&& ember->GetHealthPct() < 15.0f*/)
+    if (ember)
     {
+        float currentDistance = bot->GetExactDist2d(ember);
+        const float safeDistance = 18.0f;
+        if (ember->GetHealthPct() < 50.0f &&
+            currentDistance < safeDistance)
+        {
+            bot->AttackStop();
+            bot->InterruptNonMeleeSpells(true);
+            return MoveAway(ember, safeDistance - currentDistance + 2.0f);
+        }
+
         SetRtiTarget(botAI, "square", ember);
 
         if (bot->GetTarget() != ember->GetGUID())
@@ -280,7 +325,7 @@ bool AlarRangedDpsPrioritizeBossAction::Execute(Event event)
     }
 
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    if (alar && (!ember))
+    if (alar && !ember)
     {
         MarkTargetWithStar(bot, alar);
         SetRtiTarget(botAI, "star", alar);
@@ -318,16 +363,33 @@ bool AlarPositionHealerAction::Execute(Event event)
     if (!alar)
         return false;
 
-    const uint32 mapId = alar->GetMapId();
-    int8 alarPlatform = lastAlarPlatform[mapId];
-
-    std::vector<Position> groundPositions = { AlarGround1, AlarGround2, AlarGround3, AlarGround4 };
-    const Position& groundTarget = groundPositions[alarPlatform];
-
-    if (bot->GetExactDist2d(groundTarget.GetPositionX(), groundTarget.GetPositionY()) > 15.0f)
+    Unit* ember = GetFirstAliveUnitByEntry(botAI, NPC_EMBER_OF_ALAR);
+    if (ember)
     {
-        return MoveNear(bot->GetMapId(), groundTarget.GetPositionX(), groundTarget.GetPositionY(),
-                        groundTarget.GetPositionZ(), 5.0f, MovementPriority::MOVEMENT_COMBAT);
+        float currentDistance = bot->GetExactDist2d(ember);
+        const float safeDistance = 18.0f;
+        if (ember->GetHealthPct() < 50.0f &&
+            currentDistance < safeDistance)
+        {
+            bot->AttackStop();
+            bot->InterruptNonMeleeSpells(true);
+            return MoveAway(ember, safeDistance - currentDistance + 2.0f);
+        }
+    }
+
+    const uint32 mapId = alar->GetMapId();
+    if (!isPhase2[alar->GetMapId()])
+    {
+        int8 alarPlatform = lastAlarPlatform[mapId];
+
+        std::vector<Position> groundPositions = { AlarGround1, AlarGround2, AlarGround3, AlarGround4 };
+        const Position& groundTarget = groundPositions[alarPlatform];
+
+        if (bot->GetExactDist2d(groundTarget.GetPositionX(), groundTarget.GetPositionY()) > 15.0f)
+        {
+            return MoveNear(bot->GetMapId(), groundTarget.GetPositionX(), groundTarget.GetPositionY(),
+                            groundTarget.GetPositionZ(), 5.0f, MovementPriority::MOVEMENT_COMBAT);
+        }
     }
 
     return false;
@@ -341,11 +403,16 @@ bool AlarAddTankPickUpEmbersAction::Execute(Event event)
 
     const uint32 mapId = alar->GetMapId();
     Unit* ember = GetFirstAliveUnitByEntry(botAI, NPC_EMBER_OF_ALAR);
+    if (!ember)
+        return false;
 
-    if (ember)
+    if (!isPhase2[mapId])
     {
         MarkTargetWithSquare(bot, ember);
         SetRtiTarget(botAI, "square", ember);
+
+        if (bot->GetVictim() == ember)
+            return Attack(ember);
 
         const Position& center = AlarRangedCenter;
         if (ember->GetVictim() == bot && bot->GetExactDist2d(center.GetPositionX(), center.GetPositionY()) > 5.0f)
@@ -360,22 +427,33 @@ bool AlarAddTankPickUpEmbersAction::Execute(Event event)
             return MoveTo(bot->GetMapId(), moveX, moveY, center.GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
-    }
-    else if (!isPhase2[mapId])
-    {
-        int8 alarPlatform = lastAlarPlatform[mapId];
-
-        // List of ground positions matching platforms
-        std::vector<Position> groundPositions = { AlarGround1, AlarGround2, AlarGround3, AlarGround4 };
-        const Position& groundTarget = groundPositions[alarPlatform];
-
-        // Only move if not already within 30 yards
-        if (bot->GetExactDist2d(groundTarget.GetPositionX(), groundTarget.GetPositionY()) > 30.0f)
+        else
         {
-            // Move near the ground target (e.g., 5 yards away for some spread)
-            return MoveNear(bot->GetMapId(), groundTarget.GetPositionX(), groundTarget.GetPositionY(),
-                            groundTarget.GetPositionZ(), 5.0f, MovementPriority::MOVEMENT_COMBAT);
+            int8 alarPlatform = lastAlarPlatform[mapId];
+
+            // List of ground positions matching platforms
+            std::vector<Position> groundPositions = { AlarGround1, AlarGround2, AlarGround3, AlarGround4 };
+            const Position& groundTarget = groundPositions[alarPlatform];
+
+            if (bot->GetExactDist2d(groundTarget.GetPositionX(), groundTarget.GetPositionY()) > 30.0f)
+            {
+                return MoveNear(bot->GetMapId(), groundTarget.GetPositionX(), groundTarget.GetPositionY(),
+                                groundTarget.GetPositionZ(), 5.0f, MovementPriority::MOVEMENT_COMBAT);
+            }
         }
+    }
+    else if (isPhase2[mapId])
+    {
+        MarkTargetWithSquare(bot, ember);
+        SetRtiTarget(botAI, "square", ember);
+
+        if (bot->GetVictim() == ember)
+            return Attack(ember);
+
+        const float safeDistance = 16.0f;
+        Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
+        if (nearestPlayer)
+            return MoveFromGroup(safeDistance + 2.0f);
     }
 
     return false;

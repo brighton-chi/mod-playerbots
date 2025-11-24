@@ -16,10 +16,10 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction::array(0, new NextAction("alar boss tanks move between platforms", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("alar boss engaged by melee dps",
-        NextAction::array(0, new NextAction("alar melee dps prioritize adds", ACTION_RAID + 1), nullptr)
+        NextAction::array(0, new NextAction("alar melee dps prioritize boss", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("alar boss engaged by ranged dps",
-        NextAction::array(0, new NextAction("alar ranged dps prioritize boss", ACTION_RAID + 1), nullptr)
+        NextAction::array(0, new NextAction("alar ranged dps prioritize adds", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("alar boss engaged by healer",
         NextAction::array(0, new NextAction("alar position healer", ACTION_RAID + 1), nullptr)
@@ -151,7 +151,7 @@ void RaidTempestKeepStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new VoidReaverMaintainPositionsMultiplier(botAI));
     multipliers.push_back(new HighAstromancerSolarianStayStackedMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderWaitForDpsMultiplier(botAI));
-    multipliers.push_back(new KaelthasSunstriderDisableTankAssistMultiplier(botAI));
+    multipliers.push_back(new KaelthasSunstriderDisableTankActionsMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderKiteThaladredMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderDelayBloodlustAndHeroismMultiplier(botAI));

@@ -10,6 +10,7 @@
 #include "Playerbots.h"
 #include "RogueActions.h"
 #include "ShamanActions.h"
+#include "WarlockActions.h"
 #include "WarriorActions.h"
 
 float AlarDisableTankAssistMultiplier::GetValue(Action* action)
@@ -163,18 +164,21 @@ float KaelthasSunstriderControlMisdirectionMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float KaelthasSunstriderDisableTankAssistMultiplier::GetValue(Action* action)
+float KaelthasSunstriderDisableTankActionsMultiplier::GetValue(Action* action)
 {
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     if (!kaelthas)
         return 1.0f;
 
-        // Only disable tank-assist during staged kael phases (1-3) after the tank is already engaged.
-        if (kaelthas->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) && bot->GetTarget() != ObjectGuid::Empty)
-        {
-            if (dynamic_cast<TankAssistAction*>(action))
-                return 0.0f;
-        }
+    // Only disable tank-assist during staged kael phases (1-3) after the tank is already engaged.
+    if (kaelthas->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) && bot->GetTarget() != ObjectGuid::Empty)
+    {
+        if (dynamic_cast<TankAssistAction*>(action))
+            return 0.0f;
+    }
+
+    if (dynamic_cast<CastShadowWardAction*>(action))
+        return 0.0f;
 
     return 1.0f;
 }

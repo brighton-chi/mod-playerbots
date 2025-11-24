@@ -52,10 +52,10 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class KaelthasSunstriderDisableTankAssistMultiplier : public Multiplier
+class KaelthasSunstriderDisableTankActionsMultiplier : public Multiplier
 {
 public:
-    KaelthasSunstriderDisableTankAssistMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "kaelthas sunstrider disable tank assist multiplier") {}
+    KaelthasSunstriderDisableTankActionsMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "kaelthas sunstrider disable tank actions multiplier") {}
     virtual float GetValue(Action* action);
 };
 

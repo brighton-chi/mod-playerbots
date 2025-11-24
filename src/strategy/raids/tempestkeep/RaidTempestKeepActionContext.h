@@ -13,8 +13,8 @@ public:
 
         creators["alar misdirect boss to main tank"] = &RaidTempestKeepActionContext::alar_misdirect_boss_to_main_tank;
         creators["alar boss tanks move between platforms"] = &RaidTempestKeepActionContext::alar_boss_tanks_move_between_platforms;
-        creators["alar melee dps prioritize adds"] = &RaidTempestKeepActionContext::alar_melee_dps_prioritize_adds;
-        creators["alar ranged dps prioritize boss"] = &RaidTempestKeepActionContext::alar_ranged_dps_prioritize_boss;
+        creators["alar melee dps prioritize boss"] = &RaidTempestKeepActionContext::alar_melee_dps_prioritize_boss;
+        creators["alar ranged dps prioritize adds"] = &RaidTempestKeepActionContext::alar_ranged_dps_prioritize_adds;
         creators["alar position healer"] = &RaidTempestKeepActionContext::alar_position_healer;
         creators["alar add tank pick up embers"] = &RaidTempestKeepActionContext::alar_add_tank_pick_up_embers;
         creators["alar jump from platform"] = &RaidTempestKeepActionContext::alar_jump_from_platform;
@@ -63,8 +63,8 @@ private:
 
     static Action* alar_misdirect_boss_to_main_tank(PlayerbotAI* botAI) { return new AlarMisdirectBossToMainTankAction(botAI); }
     static Action* alar_boss_tanks_move_between_platforms(PlayerbotAI* botAI) { return new AlarBossTanksMoveBetweenPlatformsAction(botAI); }
-    static Action* alar_melee_dps_prioritize_adds(PlayerbotAI* botAI) { return new AlarMeleeDpsPrioritizeAddsAction(botAI); }
-    static Action* alar_ranged_dps_prioritize_boss(PlayerbotAI* botAI) { return new AlarRangedDpsPrioritizeBossAction(botAI); }
+    static Action* alar_melee_dps_prioritize_boss(PlayerbotAI* botAI) { return new AlarMeleeDpsPrioritizeBossAction(botAI); }
+    static Action* alar_ranged_dps_prioritize_adds(PlayerbotAI* botAI) { return new AlarRangedDpsPrioritizeAddsAction(botAI); }
     static Action* alar_position_healer(PlayerbotAI* botAI) { return new AlarPositionHealerAction(botAI); }
     static Action* alar_add_tank_pick_up_embers(PlayerbotAI* botAI) { return new AlarAddTankPickUpEmbersAction(botAI); }
     static Action* alar_jump_from_platform(PlayerbotAI* botAI) { return new AlarJumpFromPlatformAction(botAI); }

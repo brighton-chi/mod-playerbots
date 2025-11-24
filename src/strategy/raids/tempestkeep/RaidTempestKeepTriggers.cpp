@@ -34,11 +34,11 @@ bool AlarEngagedByTanksInPhase1Trigger::IsActive()
 
 bool AlarBossEngagedByMeleeDpsTrigger::IsActive()
 {
-    if (!botAI->IsMelee(bot) || botAI->IsTank(bot))
+    if (!botAI->IsMelee(bot) || !botAI->IsDps(bot))
         return false;
 
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    return alar && !isPhase2[alar->GetMapId()];
+    return alar != nullptr;
 }
 
 bool AlarBossEngagedByRangedDpsTrigger::IsActive()
@@ -56,7 +56,7 @@ bool AlarBossEngagedByHealerTrigger::IsActive()
         return false;
 
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    return alar && !isPhase2[alar->GetMapId()];
+    return alar != nullptr;
 }
 
 bool AlarEmbersOfAlarSpawnedTrigger::IsActive()
@@ -256,8 +256,11 @@ bool KaelthasSunstriderSanguinarCastsBellowingRoarTrigger::IsActive()
 
 bool KaelthasSunstriderCapernianRequiresAWarlockTankTrigger::IsActive()
 {
+    if (bot->getClass() != CLASS_WARLOCK)
+        return false;
+
     Player* capernianTank = GetCapernianTank(botAI, bot);
-    if (!capernianTank || capernianTank->getClass() != CLASS_WARLOCK)
+    if (!capernianTank || capernianTank != bot)
         return false;
 
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
