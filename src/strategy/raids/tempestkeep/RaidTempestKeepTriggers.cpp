@@ -370,10 +370,6 @@ bool KaelthasSunstriderLegendaryWeaponsWereLostTrigger::IsActive()
     if (bot->GetMapId() != 550)
         return false;
 
-    // Only run out of combat
-    if (bot->IsInCombat())
-        return false;
-
     const uint32 KAELTHAS_DB_GUID = 158218;
 
     Map* map = bot->GetMap();
@@ -471,8 +467,7 @@ bool KaelthasSunstriderBossIsCastingPyroblastTrigger::IsActive()
         return false;
 
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
-    return kaelthas && kaelthas->HasUnitState(UNIT_STATE_CASTING) &&
-           kaelthas->FindCurrentSpellBySpellId(SPELL_KAELTHAS_PYROBLAST);
+    return kaelthas && kaelthas->HasAura(SPELL_SHOCK_BARRIER);
 }
 
 bool KaelthasSunstriderBossIsManipulatingGravityTrigger::IsActive()

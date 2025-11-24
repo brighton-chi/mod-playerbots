@@ -1122,17 +1122,17 @@ bool KaelthasSunstriderMainTankPositionSanguinarAction::Execute(Event event)
     if (sanguinar->GetVictim() == bot)
     {
         const Position& position = SanguinarTankPosition;
-        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
-        {
-            return MoveTo(bot->GetMapId(), position.GetPositionX(), position.GetPositionY(),
-                          position.GetPositionZ(), false, false, false, false,
-                          MovementPriority::MOVEMENT_COMBAT, true, true);
-        }
         if (!bot->IsWithinMeleeRange(sanguinar))
         {
             return MoveTo(sanguinar->GetMapId(), sanguinar->GetPositionX(),
                           sanguinar->GetPositionY(), sanguinar->GetPositionZ(),
                           false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+        }
+        else if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
+        {
+            return MoveTo(bot->GetMapId(), position.GetPositionX(), position.GetPositionY(),
+                          position.GetPositionZ(), false, false, false, false,
+                          MovementPriority::MOVEMENT_COMBAT, true, true);
         }
     }
 
@@ -1302,7 +1302,7 @@ bool KaelthasSunstriderMoveAwayFromCapernianAction::Execute(Event event)
         return false;
 
     // Main-tank special: during Kael phase 1 position at ~20 yards and idle
-    if (botAI->IsMainTank(bot) && IsKaelthasInPhase1(botAI))
+    if (botAI->IsTank(bot) && IsKaelthasInPhase1(botAI))
     {
         const float desiredDist = 15.0f;
         const float tolerance = 2.0f; // acceptable +/- range in yards
@@ -1326,14 +1326,6 @@ bool KaelthasSunstriderMoveAwayFromCapernianAction::Execute(Event event)
             return MoveTo(capernian->GetMapId(), targetX, targetY, capernian->GetPositionZ(), false, false,
                           false, true, MovementPriority::MOVEMENT_FORCED, true, false);
         }
-        else
-        {
-            // At desired distance: stop and idle
-            bot->SetTarget(ObjectGuid::Empty);
-            bot->AttackStop();
-            bot->InterruptNonMeleeSpells(true);
-            return true;
-        }
     }
 
     // Determine safe distance based on role
@@ -1350,10 +1342,6 @@ bool KaelthasSunstriderMoveAwayFromCapernianAction::Execute(Event event)
     else if (botAI->IsHeal(bot))
     {
         safeDistance = 40.0f;  // Healer safe distance
-    }
-    else
-    {
-        return false;  // No action needed for other roles
     }
 
     // Check if bot is inside danger zone
@@ -1391,16 +1379,16 @@ bool KaelthasSunstriderFirstAssistTankPositionTelonicusAction::Execute(Event eve
     if (telonicus->GetVictim() == bot)
     {
         const Position& position = TelonicusTankPosition;
-        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
-        {
-            return MoveTo(bot->GetMapId(), position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(), false, false, false, false,
-                          MovementPriority::MOVEMENT_COMBAT, true, true);
-        }
-        else if (!bot->IsWithinMeleeRange(telonicus))
+        if (!bot->IsWithinMeleeRange(telonicus))
         {
             return MoveTo(telonicus->GetMapId(), telonicus->GetPositionX(),
                           telonicus->GetPositionY(), telonicus->GetPositionZ(),
                           false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+        }
+        else if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
+        {
+            return MoveTo(bot->GetMapId(), position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(), false, false, false, false,
+                          MovementPriority::MOVEMENT_COMBAT, true, true);
         }
     }
 
@@ -1423,12 +1411,12 @@ bool KaelthasSunstriderMisdirectAdvisorsToTanksAction::Execute(Event event)
             break;
     }
 
-    int hunterIndex = -1;
+    int8 hunterIndex = -1;
     for (size_t i = 0; i < hunters.size(); ++i)
     {
         if (hunters[i] == bot)
         {
-            hunterIndex = static_cast<int>(i);
+            hunterIndex = static_cast<int8>(i);
             break;
         }
     }
@@ -1457,16 +1445,10 @@ bool KaelthasSunstriderMisdirectAdvisorsToTanksAction::Execute(Event event)
     }
     else if (hunterIndex == 2)
     {
-        advisorTarget = AI_VALUE2(Unit*, "find target", "lord sanguinar");
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (member && member->IsAlive() && GET_PLAYERBOT_AI(member)->IsMainTank(member))
-            {
-                tankTarget = member;
-                break;
-            }
-        }
+        // Change: 3rd hunter should also misdirect Capernian to the Capernian tank,
+        // same behavior as hunterIndex == 0.
+        advisorTarget = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
+        tankTarget = GetCapernianTank(botAI, bot);
     }
 
     if (!advisorTarget || advisorTarget->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) || advisorTarget->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE) ||
@@ -1523,127 +1505,135 @@ bool KaelthasSunstriderGroupUpLegendaryWeaponsAction::Execute(Event event)
     if (disperseEnabled)
     {
         LOG_DEBUG("playerbots", "GroupUpLegendaryWeaponsAction: disperse is enabled for bot={} current={} -> disabling disperse",
-                    bot->GetName(), currentDisperse);
-        botAI->DoSpecificAction("disperse", Event("disable"), true);
+                  bot->GetName(), currentDisperse);
+
+        // Reset the AI value directly (same as "disperse disable" command)
+        RESET_AI_VALUE(float, "disperse distance");
+
+        float applied = AI_VALUE(float, "disperse distance");
+        LOG_DEBUG("playerbots", "GroupUpLegendaryWeaponsAction: disperse disabled for bot={} applied={}", bot->GetName(), applied);
     }
     else
     {
         LOG_DEBUG("playerbots", "GroupUpLegendaryWeaponsAction: disperse is not enabled for bot={} current={} -> no action",
-                    bot->GetName(), currentDisperse);
+                  bot->GetName(), currentDisperse);
     }
 
-    // Priority 0 (excluding tanks): Stay away from Devastation
-    if (axe && !botAI->IsTank(bot))
+    if (botAI->IsAssistTank(bot))
     {
-        const float safeDistance = 8.0f;
-        float currentDistance = bot->GetExactDist2d(axe);
-        if (currentDistance < safeDistance)
-            return MoveAway(axe, safeDistance - currentDistance + 1.0f);
+        LOG_DEBUG("playerbots", "GroupUpLegendaryWeaponsAction: bot={} is assist tank -> no specific legendary weapon targeting",
+                    bot->GetName());
+        SetRtiTarget(botAI, "moon", nullptr);
     }
 
-    // Priority 1 (excluding tanks): Staff of Disintegration (Skull)
-    if (staff && !botAI->IsTank(bot))
+    if (botAI->IsDps(bot))
     {
-        MarkTargetWithSkull(bot, staff);
-        SetRtiTarget(botAI, "skull", staff);
-
-        if (staff->HasUnitState(UNIT_STATE_CASTING) &&
-            staff->FindCurrentSpellBySpellId(SPELL_STAFF_FROSTBOLT))
+        // Priority 0 (excluding tanks): Stay away from Devastation
+        if (axe /* && !botAI->IsTank(bot) */)
         {
-            if (bot->getClass() == CLASS_MAGE && botAI->CanCastSpell("counterspell", staff))
-                return botAI->CastSpell("counterspell", staff);
-            else if (bot->getClass() == CLASS_SHAMAN && botAI->CanCastSpell("wind shear", staff))
-                return botAI->CastSpell("wind shear", staff);
+            const float safeDistance = 8.0f;
+            float currentDistance = bot->GetExactDist2d(axe);
+            if (currentDistance < safeDistance)
+                return MoveAway(axe, safeDistance - currentDistance + 1.0f);
         }
-
-        if (bot->GetTarget() != staff->GetGUID())
+        // Priority 1 (excluding tanks): Staff of Disintegration (Skull)
+        if (staff /* && !botAI->IsTank(bot) */)
         {
-            bot->SetTarget(staff->GetGUID());
-            return Attack(staff);
+            MarkTargetWithSkull(bot, staff);
+            SetRtiTarget(botAI, "skull", staff);
+
+            if (staff->HasUnitState(UNIT_STATE_CASTING) &&
+                staff->FindCurrentSpellBySpellId(SPELL_STAFF_FROSTBOLT))
+            {
+                if (bot->getClass() == CLASS_MAGE && botAI->CanCastSpell("counterspell", staff))
+                    return botAI->CastSpell("counterspell", staff);
+                else if (bot->getClass() == CLASS_SHAMAN && botAI->CanCastSpell("wind shear", staff))
+                    return botAI->CastSpell("wind shear", staff);
+            }
+
+            if (bot->GetTarget() != staff->GetGUID())
+            {
+                bot->SetTarget(staff->GetGUID());
+                return Attack(staff);
+            }
+            return false;
         }
-        return false;
-    }
-
-    // Priority 2 (excluding tanks): Cosmic Infuser (Skull)
-    if (mace && !botAI->IsTank(bot))
-    {
-        MarkTargetWithSkull(bot, mace);
-        SetRtiTarget(botAI, "skull", mace);
-
-        if (bot->GetTarget() != mace->GetGUID())
+        // Priority 2 (excluding tanks): Cosmic Infuser (Skull)
+        if (mace /* && !botAI->IsTank(bot) */)
         {
-            bot->SetTarget(mace->GetGUID());
-            return Attack(mace);
+            MarkTargetWithSkull(bot, mace);
+            SetRtiTarget(botAI, "skull", mace);
+
+            if (bot->GetTarget() != mace->GetGUID())
+            {
+                bot->SetTarget(mace->GetGUID());
+                return Attack(mace);
+            }
+            return false;
         }
-        return false;
-    }
-
-    // Priority 3 (including first assist tank): Warp Slicer (Triangle)
-    if (sword && (!botAI->IsTank(bot) || botAI->IsAssistTankOfIndex(bot, 0)))
-    {
-        MarkTargetWithTriangle(bot, sword);
-        SetRtiTarget(botAI, "triangle", sword);
-
-        if (bot->GetTarget() != sword->GetGUID())
+        // Priority 3 (including first assist tank): Warp Slicer (Triangle)
+        if (sword /* && (!botAI->IsTank(bot) || botAI->IsAssistTankOfIndex(bot, 0))) */)
         {
-            bot->SetTarget(sword->GetGUID());
-            return Attack(sword);
+            MarkTargetWithSkull(bot, sword);
+            SetRtiTarget(botAI, "skull", sword);
+
+            if (bot->GetTarget() != sword->GetGUID())
+            {
+                bot->SetTarget(sword->GetGUID());
+                return Attack(sword);
+            }
+            return false;
         }
-        return false;
-    }
-
-    // Priority 4 (including second assist tank): Infinity Blades (Star)
-    if (dagger && (!botAI->IsTank(bot) || botAI->IsAssistTankOfIndex(bot, 1)))
-    {
-        MarkTargetWithStar(bot, dagger);
-        SetRtiTarget(botAI, "star", dagger);
-
-        if (bot->GetTarget() != dagger->GetGUID())
+        // Priority 4 (including second assist tank): Infinity Blades (Star)
+        if (dagger /* && (!botAI->IsTank(bot) || botAI->IsAssistTankOfIndex(bot, 1)) */)
         {
-            bot->SetTarget(dagger->GetGUID());
-            return Attack(dagger);
+            MarkTargetWithSkull(bot, dagger);
+            SetRtiTarget(botAI, "skull", dagger);
+
+            if (bot->GetTarget() != dagger->GetGUID())
+            {
+                bot->SetTarget(dagger->GetGUID());
+                return Attack(dagger);
+            }
+            return false;
         }
-        return false;
-    }
-
-    // Priority 5: Netherstrand Longbow (Cross)
-    if (longbow)
-    {
-        MarkTargetWithCross(bot, longbow);
-        SetRtiTarget(botAI, "cross", longbow);
-
-        if (bot->GetTarget() != longbow->GetGUID())
+        // Priority 5: Netherstrand Longbow (Cross)
+        if (longbow)
         {
-            bot->SetTarget(longbow->GetGUID());
-            return Attack(longbow);
+            MarkTargetWithCross(bot, longbow);
+            SetRtiTarget(botAI, "cross", longbow);
+
+            if (bot->GetTarget() != longbow->GetGUID())
+            {
+                bot->SetTarget(longbow->GetGUID());
+                return Attack(longbow);
+            }
+            return false;
         }
-        return false;
-    }
-
-    // Priority 6: Devastation - Ranged DPS only (Diamond)
-    if (axe && botAI->IsRangedDps(bot))
-    {
-        MarkTargetWithDiamond(bot, axe);
-        SetRtiTarget(botAI, "diamond", axe);
-
-        if (bot->GetTarget() != axe->GetGUID())
+        // Priority 6: Devastation - Ranged DPS only (Diamond)
+        if (axe && botAI->IsRangedDps(bot))
         {
-            bot->SetTarget(axe->GetGUID());
-            return Attack(axe);
+            MarkTargetWithDiamond(bot, axe);
+            SetRtiTarget(botAI, "diamond", axe);
+
+            if (bot->GetTarget() != axe->GetGUID())
+            {
+                bot->SetTarget(axe->GetGUID());
+                return Attack(axe);
+            }
+            return false;
         }
-        return false;
-    }
-
-    // Priority 7: Phaseshift Bulwark (Skull)
-    if (shield)
-    {
-        MarkTargetWithSkull(bot, shield);
-        SetRtiTarget(botAI, "skull", shield);
-
-        if (bot->GetTarget() != shield->GetGUID())
+        // Priority 7: Phaseshift Bulwark (Skull)
+        if (shield)
         {
-            bot->SetTarget(shield->GetGUID());
-            return Attack(shield);
+            MarkTargetWithSkull(bot, shield);
+            SetRtiTarget(botAI, "skull", shield);
+
+            if (bot->GetTarget() != shield->GetGUID())
+            {
+                bot->SetTarget(shield->GetGUID());
+                return Attack(shield);
+            }
         }
     }
 
@@ -1692,10 +1682,7 @@ bool KaelthasSunstriderHunterTurnAwayNetherstrandLongbowAction::Execute(Event ev
 
     if (longbow->GetVictim() == bot)
     {
-        // Find nearest raid member (danger zone)
         const float dangerZone = 15.0f;
-
-        // First check nearest player — only attempt to kite if someone is actually inside dangerZone
         Unit* nearestPlayer = GetNearestNonTankPlayerInRadius(bot, dangerZone);
         if (!nearestPlayer)
         {
@@ -1707,7 +1694,6 @@ bool KaelthasSunstriderHunterTurnAwayNetherstrandLongbowAction::Execute(Event ev
         LOG_DEBUG("playerbots", "HunterTurnAwayNetherstrandLongbowAction: nearestPlayer={} dist={} dangerZone={}", nearestPlayer->GetName(), currentDistance, dangerZone);
         if (currentDistance < dangerZone)
         {
-            // Try to move away from the average group position first. This produces a smoother group-wide kite-away behavior.
             LOG_DEBUG("playerbots", "HunterTurnAwayNetherstrandLongbowAction: Attempting MoveFromGroup distance={}", dangerZone);
             return MoveFromGroup(dangerZone);
         }
@@ -1882,32 +1868,16 @@ bool KaelthasSunstriderUseLegendaryWeaponsAction::UsePhaseshiftBulwark()
     if (!kaelthas)
         return false;
 
+    // Require Kael'thas to have Shock Barrier aura before using Bulwark
+    if (!kaelthas->HasAura(SPELL_SHOCK_BARRIER))
+    {
+        LOG_DEBUG("playerbots", "KaelthasUseBulwark: Kael'thas does not have Shock Barrier aura; skipping Bulwark");
+        return false;
+    }
+
     if (bot->HasAura(SPELL_ARCANE_BARRIER))
     {
         LOG_DEBUG("playerbots", "KaelthasUseBulwark: bot already has Arcane Barrier aura");
-        return false;
-    }
-
-    // Quick guard: ensure Kael is casting
-    if (!kaelthas->HasUnitState(UNIT_STATE_CASTING))
-    {
-        LOG_DEBUG("playerbots", "KaelthasUseBulwark: Kael'thas not casting");
-        return false;
-    }
-
-    Spell* currentSpell = kaelthas->GetCurrentSpell(CURRENT_GENERIC_SPELL);
-
-    if (!kaelthas->FindCurrentSpellBySpellId(SPELL_KAELTHAS_PYROBLAST))
-    {
-        if (currentSpell && currentSpell->m_spellInfo)
-        {
-            LOG_DEBUG("playerbots", "KaelthasUseBulwark: Pyroblast cast started, expected hit in {} ms", currentSpell->GetCastTime());
-        }
-    }
-
-    if (kaelthas->GetVictim() != bot)
-    {
-        LOG_DEBUG("playerbots", "KaelthasUseBulwark: kael victim = {}, not bot", kaelthas->GetVictim() ? kaelthas->GetVictim()->GetGUID().ToString() : std::string("none"));
         return false;
     }
 
@@ -2042,22 +2012,24 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
     if (botAI->IsRangedDps(bot) && bot != capernianTank)
     {
         const float desiredDisperse = 6.0f;
-        const float eps = 0.01f;
         float currentDisperse = AI_VALUE(float, "disperse distance");
-        bool disperseDisabled = (currentDisperse < 0.0f); // RESET_AI_VALUE -> -1
 
-        if (disperseDisabled || std::fabs(currentDisperse - desiredDisperse) > eps)
+        // negative values -> disabled (default is -1)
+        bool disperseDisabled = (currentDisperse < 0.0f);
+
+        if (disperseDisabled || currentDisperse != desiredDisperse)
         {
-            // Set directly instead of relying on DoSpecificAction
-            SET_AI_VALUE(float, "disperse distance", desiredDisperse);
-            botAI->TellMasterNoFacing("Set disperse distance to 6.00");
-            LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: directly set disperse for bot={} from {} -> {}",
+            LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: setting disperse for bot={} from {} to {}",
                       bot->GetName(), currentDisperse, desiredDisperse);
+            SET_AI_VALUE(float, "disperse distance", desiredDisperse);
+            float applied = AI_VALUE(float, "disperse distance");
+            LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: disperse applied for bot={} applied={}",
+                      bot->GetName(), applied);
         }
         else
         {
-            LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: disperse already set for bot={} current={} -> no action",
-                      bot->GetName(), currentDisperse);
+            LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: disperse already set for bot={} current={}",
+                        bot->GetName(), currentDisperse);
         }
     }
 
@@ -2271,13 +2243,18 @@ bool KaelthasSunstriderAvoidFlameStrikeAction::Execute(Event event)
     if (disperseEnabled)
     {
         LOG_DEBUG("playerbots", "AvoidFlameStrikeAction: disperse is enabled for bot={} current={} -> disabling disperse",
-                    bot->GetName(), currentDisperse);
-        botAI->DoSpecificAction("disperse", Event("disable"), true);
+                  bot->GetName(), currentDisperse);
+
+        // Reset the AI value directly (same as "disperse disable" command)
+        RESET_AI_VALUE(float, "disperse distance");
+
+        float applied = AI_VALUE(float, "disperse distance");
+        LOG_DEBUG("playerbots", "AvoidFlameStrikeAction: disperse disabled for bot={} applied={}", bot->GetName(), applied);
     }
     else
     {
         LOG_DEBUG("playerbots", "AvoidFlameStrikeAction: disperse is not enabled for bot={} current={} -> no action",
-                    bot->GetName(), currentDisperse);
+                  bot->GetName(), currentDisperse);
     }
 
     // Get all flame strike triggers
