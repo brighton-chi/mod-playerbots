@@ -1130,9 +1130,15 @@ bool KaelthasSunstriderMainTankPositionSanguinarAction::Execute(Event event)
         }
         else if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
         {
-            return MoveTo(bot->GetMapId(), position.GetPositionX(), position.GetPositionY(),
-                          position.GetPositionZ(), false, false, false, false,
-                          MovementPriority::MOVEMENT_COMBAT, true, true);
+            float dX = position.GetPositionX() - bot->GetPositionX();
+            float dY = position.GetPositionY() - bot->GetPositionY();
+            float dist = sqrt(dX * dX + dY * dY);
+            float moveDist = std::min(5.0f, dist);
+            float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
+
+            return MoveTo(bot->GetMapId(), moveX, moveY, position.GetPositionZ(), false, false, false, false,
+                          MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
 
@@ -1256,7 +1262,7 @@ bool KaelthasSunstriderWarlockTankPositionCapernianAction::Execute(Event event)
         return Attack(capernian);
     }
 
-    if (capernian->GetVictim() == bot)
+    if (capernian->GetVictim() == bot && IsKaelthasInPhase1(botAI))
     {
         const float minDistance = 31.0f;
         const float maxDistance = 34.0f;
@@ -1387,8 +1393,15 @@ bool KaelthasSunstriderFirstAssistTankPositionTelonicusAction::Execute(Event eve
         }
         else if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
         {
-            return MoveTo(bot->GetMapId(), position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(), false, false, false, false,
-                          MovementPriority::MOVEMENT_COMBAT, true, true);
+            float dX = position.GetPositionX() - bot->GetPositionX();
+            float dY = position.GetPositionY() - bot->GetPositionY();
+            float dist = sqrt(dX * dX + dY * dY);
+            float moveDist = std::min(5.0f, dist);
+            float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
+
+            return MoveTo(bot->GetMapId(), moveX, moveY, position.GetPositionZ(), false, false, false, false,
+                          MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
 
@@ -1529,15 +1542,15 @@ bool KaelthasSunstriderGroupUpLegendaryWeaponsAction::Execute(Event event)
     if (botAI->IsDps(bot))
     {
         // Priority 0 (excluding tanks): Stay away from Devastation
-        if (axe /* && !botAI->IsTank(bot) */)
+        if (axe)
         {
             const float safeDistance = 8.0f;
             float currentDistance = bot->GetExactDist2d(axe);
             if (currentDistance < safeDistance)
                 return MoveAway(axe, safeDistance - currentDistance + 1.0f);
         }
-        // Priority 1 (excluding tanks): Staff of Disintegration (Skull)
-        if (staff /* && !botAI->IsTank(bot) */)
+        // Priority 1: Staff of Disintegration (Skull)
+        if (staff)
         {
             MarkTargetWithSkull(bot, staff);
             SetRtiTarget(botAI, "skull", staff);
@@ -1558,8 +1571,8 @@ bool KaelthasSunstriderGroupUpLegendaryWeaponsAction::Execute(Event event)
             }
             return false;
         }
-        // Priority 2 (excluding tanks): Cosmic Infuser (Skull)
-        if (mace /* && !botAI->IsTank(bot) */)
+        // Priority 2: Cosmic Infuser (Skull)
+        if (mace)
         {
             MarkTargetWithSkull(bot, mace);
             SetRtiTarget(botAI, "skull", mace);
@@ -1571,8 +1584,8 @@ bool KaelthasSunstriderGroupUpLegendaryWeaponsAction::Execute(Event event)
             }
             return false;
         }
-        // Priority 3 (including first assist tank): Warp Slicer (Triangle)
-        if (sword /* && (!botAI->IsTank(bot) || botAI->IsAssistTankOfIndex(bot, 0))) */)
+        // Priority 3: Warp Slicer (Triangle)
+        if (sword)
         {
             MarkTargetWithSkull(bot, sword);
             SetRtiTarget(botAI, "skull", sword);
@@ -1584,8 +1597,8 @@ bool KaelthasSunstriderGroupUpLegendaryWeaponsAction::Execute(Event event)
             }
             return false;
         }
-        // Priority 4 (including second assist tank): Infinity Blades (Star)
-        if (dagger /* && (!botAI->IsTank(bot) || botAI->IsAssistTankOfIndex(bot, 1)) */)
+        // Priority 4: Infinity Blades (Star)
+        if (dagger)
         {
             MarkTargetWithSkull(bot, dagger);
             SetRtiTarget(botAI, "skull", dagger);
@@ -1600,7 +1613,6 @@ bool KaelthasSunstriderGroupUpLegendaryWeaponsAction::Execute(Event event)
         // Priority 5: Netherstrand Longbow (Cross)
         if (longbow)
         {
-            MarkTargetWithCross(bot, longbow);
             SetRtiTarget(botAI, "cross", longbow);
 
             if (bot->GetTarget() != longbow->GetGUID())
@@ -1613,7 +1625,6 @@ bool KaelthasSunstriderGroupUpLegendaryWeaponsAction::Execute(Event event)
         // Priority 6: Devastation - Ranged DPS only (Diamond)
         if (axe && botAI->IsRangedDps(bot))
         {
-            MarkTargetWithDiamond(bot, axe);
             SetRtiTarget(botAI, "diamond", axe);
 
             if (bot->GetTarget() != axe->GetGUID())
@@ -2393,6 +2404,7 @@ std::vector<Unit*> KaelthasSunstriderAvoidFlameStrikeAction::GetAllFlameStrikeTr
     return flameStrikeTriggers;
 }
 
+// Need to revise something with eggs--bots are not attacking them in time. So just ignore
 bool KaelthasSunstriderRoundUpPhoenixesAndFocusDownEggsAction::Execute(Event event)
 {
     // Handle phoenix tanking for assist tanks

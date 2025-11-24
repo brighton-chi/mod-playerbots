@@ -170,15 +170,6 @@ float KaelthasSunstriderDisableTankActionsMultiplier::GetValue(Action* action)
     if (!kaelthas)
         return 1.0f;
 
-    /*
-    // Only disable tank-assist during staged kael phases (1-3) after the tank is already engaged.
-    if (kaelthas->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) && bot->GetTarget() != ObjectGuid::Empty)
-    {
-        if (dynamic_cast<TankAssistAction*>(action))
-            return 0.0f;
-    }
-    */
-
     if (dynamic_cast<CastShadowWardAction*>(action))
         return 0.0f;
 

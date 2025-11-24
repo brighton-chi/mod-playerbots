@@ -216,7 +216,8 @@ bool KaelthasSunstriderThaladredIsFixatedOnBotTrigger::IsActive()
 
 bool KaelthasSunstriderSanguinarEngagedByMainTankTrigger::IsActive()
 {
-    if (!botAI->IsMainTank(bot))
+    if (!botAI->IsMainTank(bot) &&
+        !(IsKaelthasInPhase1(botAI) && botAI->IsTank(bot)))
         return false;
 
     Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
@@ -291,8 +292,9 @@ bool KaelthasSunstriderCapernianCastsArcaneBurstTrigger::IsActive()
 
 bool KaelthasSunstriderTelonicusEngagedByFirstAssistTankTrigger::IsActive()
 {
-    // Require either: assist tank of index 0 OR (main tank AND Kael'thas is in phase 1)
-    if (!botAI->IsAssistTankOfIndex(bot, 0) && !(IsKaelthasInPhase1(botAI) && botAI->IsMainTank(bot)))
+    // Require either: assist tank of index 0 OR other tank AND Kael'thas is in phase 1
+    if (!botAI->IsAssistTankOfIndex(bot, 0) &&
+        !(IsKaelthasInPhase1(botAI) && botAI->IsTank(bot)))
         return false;
 
     Unit* telonicus = AI_VALUE2(Unit*, "find target", "master engineer telonicus");
