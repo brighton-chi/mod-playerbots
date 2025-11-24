@@ -1270,20 +1270,22 @@ bool KaelthasSunstriderWarlockTankPositionCapernianAction::Execute(Event event)
 
             float dx = bot->GetPositionX() - capernian->GetPositionX();
             float dy = bot->GetPositionY() - capernian->GetPositionY();
-            float distXY = bot->GetExactDist2d(capernian);
 
-            if (distXY == 0.0f)
+            if (currentDist <= 1e-4f)
                 return false;
 
-            dx /= distXY;
-            dy /= distXY;
-
+            dx /= currentDist;
+            dy /= currentDist;
             float targetX = capernian->GetPositionX() + dx * desiredDist;
             float targetY = capernian->GetPositionY() + dy * desiredDist;
 
             if (!bot->IsWithinDist2d(targetX, targetY, 1.0f))
+            {
+                bot->AttackStop();
+                bot->InterruptNonMeleeSpells(true);
                 return MoveTo(bot->GetMapId(), targetX, targetY, capernian->GetPositionZ(), false, false, false, false,
                               MovementPriority::MOVEMENT_COMBAT, true, false);
+            }
         }
         float orientation = atan2(capernian->GetPositionY() - bot->GetPositionY(),
                                   capernian->GetPositionX() - bot->GetPositionX());
@@ -1516,11 +1518,22 @@ bool KaelthasSunstriderGroupUpLegendaryWeaponsAction::Execute(Event event)
     Unit* staff = AI_VALUE2(Unit*, "find target", "staff of disintegration");
     Unit* sword = AI_VALUE2(Unit*, "find target", "warp slicer");
 
-    if (botAI->IsTank(bot))
-        SetRtiTarget(botAI, "skull", nullptr);
+    float currentDisperse = AI_VALUE(float, "disperse distance");
+    bool disperseEnabled = (currentDisperse > 0.0f);
+    if (disperseEnabled)
+    {
+        LOG_DEBUG("playerbots", "GroupUpLegendaryWeaponsAction: disperse is enabled for bot={} current={} -> disabling disperse",
+                    bot->GetName(), currentDisperse);
+        botAI->DoSpecificAction("disperse", Event("disable"), true);
+    }
+    else
+    {
+        LOG_DEBUG("playerbots", "GroupUpLegendaryWeaponsAction: disperse is not enabled for bot={} current={} -> no action",
+                    bot->GetName(), currentDisperse);
+    }
 
     // Priority 0 (excluding tanks): Stay away from Devastation
-    if (axe)
+    if (axe && !botAI->IsTank(bot))
     {
         const float safeDistance = 8.0f;
         float currentDistance = bot->GetExactDist2d(axe);
@@ -1528,11 +1541,11 @@ bool KaelthasSunstriderGroupUpLegendaryWeaponsAction::Execute(Event event)
             return MoveAway(axe, safeDistance - currentDistance + 1.0f);
     }
 
-    // Priority 1 (excluding tanks): Staff of Disintegration (Circle)
-    if (staff)
+    // Priority 1 (excluding tanks): Staff of Disintegration (Skull)
+    if (staff && !botAI->IsTank(bot))
     {
-        MarkTargetWithTriangle(bot, staff);
-        SetRtiTarget(botAI, "triangle", staff);
+        MarkTargetWithSkull(bot, staff);
+        SetRtiTarget(botAI, "skull", staff);
 
         if (staff->HasUnitState(UNIT_STATE_CASTING) &&
             staff->FindCurrentSpellBySpellId(SPELL_STAFF_FROSTBOLT))
@@ -1551,11 +1564,11 @@ bool KaelthasSunstriderGroupUpLegendaryWeaponsAction::Execute(Event event)
         return false;
     }
 
-    // Priority 2 (excluding tanks): Cosmic Infuser (Star)
-    if (mace)
+    // Priority 2 (excluding tanks): Cosmic Infuser (Skull)
+    if (mace && !botAI->IsTank(bot))
     {
-        MarkTargetWithTriangle(bot, mace);
-        SetRtiTarget(botAI, "triangle", mace);
+        MarkTargetWithSkull(bot, mace);
+        SetRtiTarget(botAI, "skull", mace);
 
         if (bot->GetTarget() != mace->GetGUID())
         {
@@ -1565,8 +1578,8 @@ bool KaelthasSunstriderGroupUpLegendaryWeaponsAction::Execute(Event event)
         return false;
     }
 
-    // Priority 3 (including first assist tank): Warp Slicer (Square)
-    if (sword)
+    // Priority 3 (including first assist tank): Warp Slicer (Triangle)
+    if (sword && (!botAI->IsTank(bot) || botAI->IsAssistTankOfIndex(bot, 0)))
     {
         MarkTargetWithTriangle(bot, sword);
         SetRtiTarget(botAI, "triangle", sword);
@@ -1579,11 +1592,11 @@ bool KaelthasSunstriderGroupUpLegendaryWeaponsAction::Execute(Event event)
         return false;
     }
 
-    // Priority 4 (excluding tanks): Infinity Blades (Triangle)
-    if (dagger)
+    // Priority 4 (including second assist tank): Infinity Blades (Star)
+    if (dagger && (!botAI->IsTank(bot) || botAI->IsAssistTankOfIndex(bot, 1)))
     {
-        MarkTargetWithTriangle(bot, dagger);
-        SetRtiTarget(botAI, "triangle", dagger);
+        MarkTargetWithStar(bot, dagger);
+        SetRtiTarget(botAI, "star", dagger);
 
         if (bot->GetTarget() != dagger->GetGUID())
         {
@@ -1624,8 +1637,8 @@ bool KaelthasSunstriderGroupUpLegendaryWeaponsAction::Execute(Event event)
     // Priority 7: Phaseshift Bulwark (Skull)
     if (shield)
     {
-        MarkTargetWithTriangle(bot, shield);
-        SetRtiTarget(botAI, "triangle", shield);
+        MarkTargetWithSkull(bot, shield);
+        SetRtiTarget(botAI, "skull", shield);
 
         if (bot->GetTarget() != shield->GetGUID())
         {
@@ -1652,7 +1665,7 @@ bool KaelthasSunstriderMoveDevastationAwayAction::Execute(Event event)
     if (devastation->GetVictim() == bot)
     {
         const float safeDistance = 8.0f;
-        Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
+        Unit* nearestPlayer = GetNearestNonTankPlayerInRadius(bot, safeDistance);
 
         if (nearestPlayer)
         {
@@ -1680,10 +1693,10 @@ bool KaelthasSunstriderHunterTurnAwayNetherstrandLongbowAction::Execute(Event ev
     if (longbow->GetVictim() == bot)
     {
         // Find nearest raid member (danger zone)
-        const float dangerZone = 20.0f;
+        const float dangerZone = 15.0f;
 
         // First check nearest player — only attempt to kite if someone is actually inside dangerZone
-        Unit* nearestPlayer = GetNearestPlayerInRadius(bot, dangerZone);
+        Unit* nearestPlayer = GetNearestNonTankPlayerInRadius(bot, dangerZone);
         if (!nearestPlayer)
         {
             LOG_DEBUG("playerbots", "HunterTurnAwayNetherstrandLongbowAction: no nearest player within dangerZone={} for bot={}", dangerZone, bot->GetName());
@@ -2026,6 +2039,27 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
         LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: capernianTank present name={} guid={}", capernianTank->GetName(), capernianTank->GetGUID().ToString());
     else
         LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: capernianTank none");
+    if (botAI->IsRangedDps(bot) && bot != capernianTank)
+    {
+        const float desiredDisperse = 6.0f;
+        const float eps = 0.01f;
+        float currentDisperse = AI_VALUE(float, "disperse distance");
+        bool disperseDisabled = (currentDisperse < 0.0f); // RESET_AI_VALUE -> -1
+
+        if (disperseDisabled || std::fabs(currentDisperse - desiredDisperse) > eps)
+        {
+            // Set directly instead of relying on DoSpecificAction
+            SET_AI_VALUE(float, "disperse distance", desiredDisperse);
+            botAI->TellMasterNoFacing("Set disperse distance to 6.00");
+            LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: directly set disperse for bot={} from {} -> {}",
+                      bot->GetName(), currentDisperse, desiredDisperse);
+        }
+        else
+        {
+            LOG_DEBUG("playerbots", "AssignAdvisorDpsPriorityAction: disperse already set for bot={} current={} -> no action",
+                      bot->GetName(), currentDisperse);
+        }
+    }
 
     Unit* thaladred = AI_VALUE2(Unit*, "find target", "thaladred the darkener");
     if (!thaladred)
@@ -2231,6 +2265,21 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
 
 bool KaelthasSunstriderAvoidFlameStrikeAction::Execute(Event event)
 {
+    // Disable disperse if enabled
+    float currentDisperse = AI_VALUE(float, "disperse distance");
+    bool disperseEnabled = (currentDisperse > 0.0f);
+    if (disperseEnabled)
+    {
+        LOG_DEBUG("playerbots", "AvoidFlameStrikeAction: disperse is enabled for bot={} current={} -> disabling disperse",
+                    bot->GetName(), currentDisperse);
+        botAI->DoSpecificAction("disperse", Event("disable"), true);
+    }
+    else
+    {
+        LOG_DEBUG("playerbots", "AvoidFlameStrikeAction: disperse is not enabled for bot={} current={} -> no action",
+                    bot->GetName(), currentDisperse);
+    }
+
     // Get all flame strike triggers
     std::vector<Unit*> flameStrikes = GetAllFlameStrikeTriggers(botAI, bot);
     if (flameStrikes.empty())

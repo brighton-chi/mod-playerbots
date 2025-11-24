@@ -137,6 +137,38 @@ namespace TempestKeepHelpers
         return nearestPlayer;
     }
 
+    Unit* GetNearestNonTankPlayerInRadius(Player* bot, float radius)
+    {
+        Unit* nearestPlayer = nullptr;
+        float nearestDistance = radius;
+
+        if (Group* group = bot->GetGroup())
+        {
+            for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
+            {
+                Player* member = ref->GetSource();
+                if (!member || !member->IsAlive() || member == bot)
+                    continue;
+
+                // Exclude bots that are acting as tanks. Human players without bot AI are not excluded here.
+                if (PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member))
+                {
+                    if (memberAI->IsTank(member))
+                        continue;
+                }
+
+                float distance = bot->GetExactDist2d(member);
+                if (distance < nearestDistance)
+                {
+                    nearestDistance = distance;
+                    nearestPlayer = member;
+                }
+            }
+        }
+
+        return nearestPlayer;
+    }
+
     bool IsAlarMapIDTimerManager(PlayerbotAI* botAI, Player* bot)
     {
         if (Group* group = bot->GetGroup())

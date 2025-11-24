@@ -110,7 +110,7 @@ float KaelthasSunstriderWaitForDpsMultiplier::GetValue(Action* action)
         return 1.0f;
 
     const time_t now = std::time(nullptr);
-    const uint8 dpsWaitSeconds = 10;
+    const uint8 dpsWaitSeconds = 12;
 
     // Check if timer has elapsed
     auto it = advisorDpsWaitTimer.find(kaelthas->GetMapId());
@@ -194,7 +194,8 @@ float KaelthasSunstriderKiteThaladredMultiplier::GetValue(Action* action)
 
     if (thaladred->GetVictim() == bot)
     {
-        if (!dynamic_cast<KaelthasSunstriderKiteThaladredAction*>(action))
+        if (dynamic_cast<MovementAction*>(action) &&
+            !dynamic_cast<KaelthasSunstriderKiteThaladredAction*>(action))
             return 0.0f;
     }
 

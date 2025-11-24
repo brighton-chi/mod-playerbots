@@ -130,6 +130,7 @@ namespace TempestKeepHelpers
     void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target);
     Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry);
     Unit* GetNearestPlayerInRadius(Player* bot, float radius);
+    Unit* GetNearestNonTankPlayerInRadius(Player* bot, float radius);
 
     void UpdateAlarLastPlatform(Unit* alar, uint32 mapId, const std::vector<Position>& platforms);
     bool IsAlarMapIDTimerManager(PlayerbotAI* botAI, Player* bot);
