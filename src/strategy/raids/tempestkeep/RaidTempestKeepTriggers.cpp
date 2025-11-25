@@ -319,7 +319,7 @@ bool KaelthasSunstriderWaitingForTanksToGetAggroOnAdvisorsTrigger::IsActive()
 
 bool KaelthasSunstriderLegendaryWeaponsAreAliveTrigger::IsActive()
 {
-    if (botAI->IsMainTank(bot) /*botAI->IsTank(bot)*/)
+    if (botAI->IsMainTank(bot))
         return false;
 
     Player* longbowTank = GetNetherstrandLongbowTank(botAI, bot);

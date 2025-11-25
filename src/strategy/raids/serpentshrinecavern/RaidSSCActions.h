@@ -221,6 +221,13 @@ public:
     bool Execute(Event event) override;
 };
 
+class FathomLordKarathressPositionCaribdisTankHealerAction : public MovementAction
+{
+public:
+    FathomLordKarathressPositionCaribdisTankHealerAction(PlayerbotAI* botAI, std::string const name = "fathom-lord karathress position caribdis tank healer") : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 class FathomLordKarathressMisdirectBossesToTanksAction : public AttackAction
 {
 public:
@@ -232,13 +239,6 @@ class FathomLordKarathressAssignDpsPriorityAction : public AttackAction
 {
 public:
     FathomLordKarathressAssignDpsPriorityAction(PlayerbotAI* botAI, std::string const name = "fathom-lord karathress assign dps priority") : AttackAction(botAI, name) {}
-    bool Execute(Event event) override;
-};
-
-class FathomLordKarathressPositionCaribdisTankHealerAction : public MovementAction
-{
-public:
-    FathomLordKarathressPositionCaribdisTankHealerAction(PlayerbotAI* botAI, std::string const name = "fathom-lord karathress position caribdis tank healer") : MovementAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 
@@ -330,10 +330,10 @@ public:
     bool Execute(Event event) override;
 };
 
-class LadyVashjAssignPhase2DpsPriorityAction : public AttackAction
+class LadyVashjAssignDpsPriorityAction : public AttackAction
 {
 public:
-    LadyVashjAssignPhase2DpsPriorityAction(PlayerbotAI* botAI, std::string const name = "lady vashj assign phase 2 dps priority") : AttackAction(botAI, name) {}
+    LadyVashjAssignDpsPriorityAction(PlayerbotAI* botAI, std::string const name = "lady vashj assign dps priority") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 

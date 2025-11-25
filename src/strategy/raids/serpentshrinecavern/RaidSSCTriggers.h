@@ -199,6 +199,13 @@ public:
     bool IsActive() override;
 };
 
+class FathomLordKarathressCaribdisTankNeedsDedicatedHealerTrigger : public Trigger
+{
+public:
+    FathomLordKarathressCaribdisTankNeedsDedicatedHealerTrigger(PlayerbotAI* botAI) : Trigger(botAI, "fathom-lord karathress caribdis tank needs dedicated healer") {}
+    bool IsActive() override;
+};
+
 class FathomLordKarathressPullingBossesTrigger : public Trigger
 {
 public:
@@ -210,13 +217,6 @@ class FathomLordKarathressDeterminingKillOrderTrigger : public Trigger
 {
 public:
     FathomLordKarathressDeterminingKillOrderTrigger(PlayerbotAI* botAI) : Trigger(botAI, "fathom-lord karathress determining kill order") {}
-    bool IsActive() override;
-};
-
-class FathomLordKarathressCaribdisTankNeedsDedicatedHealerTrigger : public Trigger
-{
-public:
-    FathomLordKarathressCaribdisTankNeedsDedicatedHealerTrigger(PlayerbotAI* botAI) : Trigger(botAI, "fathom-lord karathress caribdis tank needs dedicated healer") {}
     bool IsActive() override;
 };
 

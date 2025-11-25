@@ -40,9 +40,9 @@ public:
         creators["fathom-lord karathress first assist tank position sharkkis"] = &RaidSSCActionContext::fathom_lord_karathress_first_assist_tank_position_sharkkis;
         creators["fathom-lord karathress second assist tank position tidalvess"] = &RaidSSCActionContext::fathom_lord_karathress_second_assist_tank_position_tidalvess;
         creators["fathom-lord karathress third assist tank position caribdis"] = &RaidSSCActionContext::fathom_lord_karathress_third_assist_tank_position_caribdis;
+        creators["fathom-lord karathress position caribdis tank healer"] = &RaidSSCActionContext::fathom_lord_karathress_position_caribdis_tank_healer;
         creators["fathom-lord karathress misdirect bosses to tanks"] = &RaidSSCActionContext::fathom_lord_karathress_misdirect_bosses_to_tanks;
         creators["fathom-lord karathress assign dps priority"] = &RaidSSCActionContext::fathom_lord_karathress_assign_dps_priority;
-        creators["fathom-lord karathress position caribdis tank healer"] = &RaidSSCActionContext::fathom_lord_karathress_position_caribdis_tank_healer;
         creators["fathom-lord karathress manage dps timer"] = &RaidSSCActionContext::fathom_lord_karathress_manage_dps_timer;
 
         creators["morogrim tidewalker misdirect boss to main tank"] = &RaidSSCActionContext::morogrim_tidewalker_misdirect_boss_to_main_tank;
@@ -57,7 +57,7 @@ public:
         creators["lady vashj misdirect boss to main tank"] = &RaidSSCActionContext::lady_vashj_misdirect_boss_to_main_tank;
         creators["lady vashj misdirect strider to first assist tank"] = &RaidSSCActionContext::lady_vashj_misdirect_strider_to_first_assist_tank;
         creators["lady vashj tank attack and move away strider"] = &RaidSSCActionContext::lady_vashj_tank_attack_and_move_away_strider;
-        creators["lady vashj assign phase 2 dps priority"] = &RaidSSCActionContext::lady_vashj_assign_phase_2_dps_priority;
+        creators["lady vashj assign dps priority"] = &RaidSSCActionContext::lady_vashj_assign_dps_priority;
         creators["lady vashj loot tainted core"] = &RaidSSCActionContext::lady_vashj_loot_tainted_core;
         creators["lady vashj teleport to tainted elemental"] = &RaidSSCActionContext::lady_vashj_teleport_to_tainted_elemental;
         creators["lady vashj pass the tainted core"] = &RaidSSCActionContext::lady_vashj_pass_the_tainted_core;
@@ -99,9 +99,9 @@ private:
     static Action* fathom_lord_karathress_first_assist_tank_position_sharkkis(PlayerbotAI* botAI) { return new FathomLordKarathressFirstAssistTankPositionSharkkisAction(botAI); }
     static Action* fathom_lord_karathress_second_assist_tank_position_tidalvess(PlayerbotAI* botAI) { return new FathomLordKarathressSecondAssistTankPositionTidalvessAction(botAI); }
     static Action* fathom_lord_karathress_third_assist_tank_position_caribdis(PlayerbotAI* botAI) { return new FathomLordKarathressThirdAssistTankPositionCaribdisAction(botAI); }
+    static Action* fathom_lord_karathress_position_caribdis_tank_healer(PlayerbotAI* botAI) { return new FathomLordKarathressPositionCaribdisTankHealerAction(botAI); }
     static Action* fathom_lord_karathress_misdirect_bosses_to_tanks(PlayerbotAI* botAI) { return new FathomLordKarathressMisdirectBossesToTanksAction(botAI); }
     static Action* fathom_lord_karathress_assign_dps_priority(PlayerbotAI* botAI) { return new FathomLordKarathressAssignDpsPriorityAction(botAI); }
-    static Action* fathom_lord_karathress_position_caribdis_tank_healer(PlayerbotAI* botAI) { return new FathomLordKarathressPositionCaribdisTankHealerAction(botAI); }
     static Action* fathom_lord_karathress_manage_dps_timer(PlayerbotAI* botAI) { return new FathomLordKarathressManageDpsTimerAction(botAI); }
 
     static Action* morogrim_tidewalker_misdirect_boss_to_main_tank(PlayerbotAI* botAI) { return new MorogrimTidewalkerMisdirectBossToMainTankAction(botAI); }
@@ -116,7 +116,7 @@ private:
     static Action* lady_vashj_misdirect_boss_to_main_tank(PlayerbotAI* botAI) { return new LadyVashjMisdirectBossToMainTankAction(botAI); }
     static Action* lady_vashj_misdirect_strider_to_first_assist_tank(PlayerbotAI* botAI) { return new LadyVashjMisdirectStriderToFirstAssistTankAction(botAI); }
     static Action* lady_vashj_tank_attack_and_move_away_strider(PlayerbotAI* botAI) { return new LadyVashjTankAttackAndMoveAwayStriderAction(botAI); }
-    static Action* lady_vashj_assign_phase_2_dps_priority(PlayerbotAI* botAI) { return new LadyVashjAssignPhase2DpsPriorityAction(botAI); }
+    static Action* lady_vashj_assign_dps_priority(PlayerbotAI* botAI) { return new LadyVashjAssignDpsPriorityAction(botAI); }
     static Action* lady_vashj_teleport_to_tainted_elemental(PlayerbotAI* botAI) { return new LadyVashjTeleportToTaintedElementalAction(botAI); }
     static Action* lady_vashj_loot_tainted_core(PlayerbotAI* botAI) { return new LadyVashjLootTaintedCoreAction(botAI); }
     static Action* lady_vashj_pass_the_tainted_core(PlayerbotAI* botAI) { return new LadyVashjPassTheTaintedCoreAction(botAI); }

@@ -13,96 +13,96 @@ namespace SerpentShrineCavernHelpers
     enum SerpentShrineCavernSpells
     {
         // Trash Mob
-        SPELL_TOXIC_POOL = 38718,
+        SPELL_TOXIC_POOL             = 38718,
 
         // Hydross the Unstable <Duke of Currents>
-        SPELL_MARK_OF_HYDROSS_10 = 38215,
-        SPELL_MARK_OF_HYDROSS_25 = 38216,
-        SPELL_MARK_OF_HYDROSS_50 = 38217,
-        SPELL_MARK_OF_HYDROSS_100 = 38218,
-        SPELL_MARK_OF_HYDROSS_250 = 38231,
-        SPELL_MARK_OF_HYDROSS_500 = 40584,
-        SPELL_MARK_OF_CORRUPTION_10 = 38219,
-        SPELL_MARK_OF_CORRUPTION_25 = 38220,
-        SPELL_MARK_OF_CORRUPTION_50 = 38221,
+        SPELL_MARK_OF_HYDROSS_10     = 38215,
+        SPELL_MARK_OF_HYDROSS_25     = 38216,
+        SPELL_MARK_OF_HYDROSS_50     = 38217,
+        SPELL_MARK_OF_HYDROSS_100    = 38218,
+        SPELL_MARK_OF_HYDROSS_250    = 38231,
+        SPELL_MARK_OF_HYDROSS_500    = 40584,
+        SPELL_MARK_OF_CORRUPTION_10  = 38219,
+        SPELL_MARK_OF_CORRUPTION_25  = 38220,
+        SPELL_MARK_OF_CORRUPTION_50  = 38221,
         SPELL_MARK_OF_CORRUPTION_100 = 38222,
         SPELL_MARK_OF_CORRUPTION_250 = 38230,
         SPELL_MARK_OF_CORRUPTION_500 = 40583,
-        SPELL_CORRUPTION = 37961,
+        SPELL_CORRUPTION             = 37961,
 
         // The Lurker Below
         SPELL_SPOUT_VISUAL = 37431,
 
         // Leotheras the Blind
-        SPELL_LEOTHERAS_BANISHED = 37546,
-        SPELL_WHIRLWIND = 37640,
-        SPELL_WHIRLWIND_CHANNEL = 37641,
-        SPELL_METAMORPHOSIS = 37673,
-        SPELL_INSIDIOUS_WHISPER = 37676,
+        SPELL_LEOTHERAS_BANISHED     = 37546,
+        SPELL_WHIRLWIND              = 37640,
+        SPELL_WHIRLWIND_CHANNEL      = 37641,
+        SPELL_METAMORPHOSIS          = 37673,
+        SPELL_INSIDIOUS_WHISPER      = 37676,
 
         // Lady Vashj <Coilfang Matron>
-        SPELL_FEAR_WARD = 6346,
-        SPELL_PARALYZE = 38132,
-        SPELL_POISON_BOLT = 38253,
-        SPELL_STATIC_CHARGE = 38280,
-        SPELL_ENTANGLE = 38316,
+        SPELL_FEAR_WARD              = 6346,
+        SPELL_PARALYZE               = 38132,
+        SPELL_POISON_BOLT            = 38253,
+        SPELL_STATIC_CHARGE          = 38280,
+        SPELL_ENTANGLE               = 38316,
 
         // Hunter
-        SPELL_MISDIRECTION = 35079,
+        SPELL_MISDIRECTION           = 35079,
 
         // Mage
-        SPELL_SLOW = 31589,
+        SPELL_SLOW                   = 31589,
 
         // Shaman
         SPELL_GROUNDING_TOTEM_EFFECT = 8178,
-        SPELL_FROST_SHOCK = 25464,
+        SPELL_FROST_SHOCK            = 25464,
 
         // Warlock
-        SPELL_CURSE_OF_EXHAUSTION = 18223,
+        SPELL_CURSE_OF_EXHAUSTION    = 18223,
 
         // Item
-        SPELL_HEAVY_NETHERWEAVE_NET = 31368,
+        SPELL_HEAVY_NETHERWEAVE_NET  = 31368,
     };
 
     enum SerpentShrineCavernNPCs
     {
         // Trash Mobs
-        NPC_WATER_ELEMENTAL_TOTEM = 22236,
-        NPC_RANCID_MUSHROOM = 22250,
+        NPC_WATER_ELEMENTAL_TOTEM    = 22236,
+        NPC_RANCID_MUSHROOM          = 22250,
 
         // Hydross the Unstable <Duke of Currents>
-        NPC_HYDROSS_FROST_FORM = 21216,
-        NPC_HYDROSS_NATURE_FORM = 21232,
-        NPC_PURE_SPAWN_OF_HYDROSS = 22035,
+        NPC_HYDROSS_FROST_FORM       = 21216,
+        NPC_HYDROSS_NATURE_FORM      = 21232,
+        NPC_PURE_SPAWN_OF_HYDROSS    = 22035,
         NPC_TAINTED_SPAWN_OF_HYDROSS = 22036,
 
         // Leotheras the Blind
-        NPC_LEOTHERAS_THE_BLIND = 21215,
-        NPC_GREYHEART_SPELLBINDER = 21806,
-        NPC_SHADOW_OF_LEOTHERAS = 21875,
-        NPC_INNER_DEMON = 21857,
+        NPC_LEOTHERAS_THE_BLIND      = 21215,
+        NPC_GREYHEART_SPELLBINDER    = 21806,
+        NPC_SHADOW_OF_LEOTHERAS      = 21875,
+        NPC_INNER_DEMON              = 21857,
 
         // Fathom-Lord Karathress
-        NPC_SPITFIRE_TOTEM = 22091,
+        NPC_SPITFIRE_TOTEM           = 22091,
 
         // Lady Vashj <Coilfang Matron>
-        NPC_WORLD_INVISIBLE_TRIGGER = 12999,
-        NPC_LADY_VASHJ = 21212,
-        NPC_ENCHANTED_ELEMENTAL = 21958,
-        NPC_TAINTED_ELEMENTAL = 22009,
-        NPC_COILFANG_ELITE = 22055,
-        NPC_COILFANG_STRIDER = 22056,
-        NPC_TOXIC_SPOREBAT = 22140,
-        NPC_SPORE_DROP_TRIGGER = 22207,
+        NPC_WORLD_INVISIBLE_TRIGGER  = 12999,
+        NPC_LADY_VASHJ               = 21212,
+        NPC_ENCHANTED_ELEMENTAL      = 21958,
+        NPC_TAINTED_ELEMENTAL        = 22009,
+        NPC_COILFANG_ELITE           = 22055,
+        NPC_COILFANG_STRIDER         = 22056,
+        NPC_TOXIC_SPOREBAT           = 22140,
+        NPC_SPORE_DROP_TRIGGER       = 22207,
     };
 
     enum SerpentShrineCavernItems
     {
         // Lady Vashj <Coilfang Matron>
-        ITEM_TAINTED_CORE = 31088,
+        ITEM_TAINTED_CORE            = 31088,
 
         // Tailoring
-        ITEM_HEAVY_NETHERWEAVE_NET = 24269,
+        ITEM_HEAVY_NETHERWEAVE_NET   = 24269,
     };
 
     extern std::unordered_map<uint32, time_t> hydrossFrostDpsWaitTimer;

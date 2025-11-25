@@ -108,9 +108,6 @@ bool HydrossTheUnstableNeedToManageTimersTrigger::IsActive()
 
 bool TheLurkerBelowSpoutIsActiveTrigger::IsActive()
 {
-    /* if (botAI->IsRanged(bot))
-        return false; */
-
     Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
     if (!lurker)
         return false;
@@ -304,6 +301,15 @@ bool FathomLordKarathressCaribdisEngagedByThirdAssistTankTrigger::IsActive()
     return caribdis && caribdis->IsAlive();
 }
 
+bool FathomLordKarathressCaribdisTankNeedsDedicatedHealerTrigger::IsActive()
+{
+    if (!botAI->IsHealAssistantOfIndex(bot, 0))
+        return false;
+
+    Unit* caribdis = AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
+    return caribdis && caribdis->IsAlive();
+}
+
 bool FathomLordKarathressPullingBossesTrigger::IsActive()
 {
     if (bot->getClass() != CLASS_HUNTER)
@@ -327,15 +333,6 @@ bool FathomLordKarathressDeterminingKillOrderTrigger::IsActive()
            (botAI->IsAssistTankOfIndex(bot, 0) && (!sharkkis || !sharkkis->IsAlive())) ||
            (botAI->IsAssistTankOfIndex(bot, 1) && (!tidalvess || !tidalvess->IsAlive())) ||
            (botAI->IsAssistTankOfIndex(bot, 2) && (!caribdis || !caribdis->IsAlive())));
-}
-
-bool FathomLordKarathressCaribdisTankNeedsDedicatedHealerTrigger::IsActive()
-{
-    if (!botAI->IsHealAssistantOfIndex(bot, 0))
-        return false;
-
-    Unit* caribdis = AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
-    return caribdis && caribdis->IsAlive();
 }
 
 bool FathomLordKarathressTanksNeedToEstablishAggroTrigger::IsActive()
@@ -575,7 +572,6 @@ bool LadyVashjCoreHandlerIsDeadTrigger::IsActive()
     {
         for (Player* coreHandler : coreHandlers)
         {
-            // If a core handler dies, it is no longer a core handler
             if (coreHandler && bot == coreHandler)
                 return false;
         }

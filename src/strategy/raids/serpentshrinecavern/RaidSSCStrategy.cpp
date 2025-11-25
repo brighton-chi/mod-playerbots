@@ -93,14 +93,14 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("fathom-lord karathress caribdis engaged by third assist tank",
         NextAction::array(0, new NextAction("fathom-lord karathress third assist tank position caribdis", ACTION_RAID + 1), nullptr)
     ));
+    triggers.push_back(new TriggerNode("fathom-lord karathress caribdis tank needs dedicated healer",
+        NextAction::array(0, new NextAction("fathom-lord karathress position caribdis tank healer", ACTION_RAID + 1), nullptr)
+    ));
     triggers.push_back(new TriggerNode("fathom-lord karathress pulling bosses",
         NextAction::array(0, new NextAction("fathom-lord karathress misdirect bosses to tanks", ACTION_RAID + 2), nullptr)
     ));
     triggers.push_back(new TriggerNode("fathom-lord karathress determining kill order",
         NextAction::array(0, new NextAction("fathom-lord karathress assign dps priority", ACTION_RAID + 1), nullptr)
-    ));
-    triggers.push_back(new TriggerNode("fathom-lord karathress caribdis tank needs dedicated healer",
-        NextAction::array(0, new NextAction("fathom-lord karathress position caribdis tank healer", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("fathom-lord karathress tanks need to establish aggro",
         NextAction::array(0, new NextAction("fathom-lord karathress manage dps timer", ACTION_EMERGENCY + 10), nullptr)
@@ -153,7 +153,7 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction::array(0, new NextAction("lady vashj destroy tainted core", ACTION_EMERGENCY + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("lady vashj determining kill order of adds",
-        NextAction::array(0, new NextAction("lady vashj assign phase 2 dps priority", ACTION_RAID + 1), nullptr)
+        NextAction::array(0, new NextAction("lady vashj assign dps priority", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("lady vashj toxic sporebats are spewing poison clouds",
         NextAction::array(0, new NextAction("lady vashj avoid toxic spores", ACTION_EMERGENCY + 6), nullptr)
@@ -175,6 +175,8 @@ void RaidSSCStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new TheLurkerBelowStayAwayFromSpoutMultiplier(botAI));
     multipliers.push_back(new LeotherasTheBlindAvoidWhirlwindMultiplier(botAI));
     multipliers.push_back(new LeotherasTheBlindDisableTankActionsMultiplier(botAI));
+    multipliers.push_back(new LeotherasTheBlindMeleeTankMaintainDemonFormPositionMultiplier(botAI));
+    multipliers.push_back(new LeotherasTheBlindDemonFormDisableMeleeActionsMultiplier(botAI));
     multipliers.push_back(new LeotherasTheBlindWaitForDpsMultiplier(botAI));
     multipliers.push_back(new LeotherasTheBlindDelayBloodlustAndHeroismMultiplier(botAI));
     multipliers.push_back(new FathomLordKarathressDisableTankAssistMultiplier(botAI));

@@ -196,48 +196,66 @@ float LeotherasTheBlindAvoidWhirlwindMultiplier::GetValue(Action* action)
     if (!leotherasHuman->HasAura(SPELL_LEOTHERAS_BANISHED) &&
         (leotherasHuman->HasAura(SPELL_WHIRLWIND) || leotherasHuman->HasAura(SPELL_WHIRLWIND_CHANNEL)))
     {
-        if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
-            (!botAI->IsTank(bot) && dynamic_cast<MovementAction*>(action) &&
-            !dynamic_cast<LeotherasTheBlindRunAwayFromWhirlwindAction*>(action)))
+        if (dynamic_cast<CastReachTargetSpellAction*>(action))
             return 0.0f;
+
+        if (!botAI->IsTank(bot))
+        {
+            if (dynamic_cast<MovementAction*>(action) &&
+                !dynamic_cast<LeotherasTheBlindRunAwayFromWhirlwindAction*>(action))
+                return 0.0f;
+        }
     }
 
     return 1.0f;
 }
 
+// Applies only if there is a Warlock tank
 float LeotherasTheBlindDisableTankActionsMultiplier::GetValue(Action* action)
 {
+    // (1) Multipliers that apply during Phase 2 or 3
     Unit* leotherasDemon = GetActiveLeotherasDemon(botAI);
-    if (!leotherasDemon || dynamic_cast<LeotherasTheBlindInnerDemonCheatAction*>(action) ||
+    if (!leotherasDemon ||
+        dynamic_cast<LeotherasTheBlindInnerDemonCheatAction*>(action) ||
         dynamic_cast<WipeAction*>(action))
         return 1.0f;
 
-    if (dynamic_cast<TankAssistAction*>(action) || dynamic_cast<CastShadowWardAction*>(action))
+    Player* demonFormTank = GetLeotherasDemonFormTank(botAI, bot);
+    if (!demonFormTank || demonFormTank->getClass() != CLASS_WARLOCK)
+        return 1.0f;
+
+    if (dynamic_cast<CastShadowWardAction*>(action))
         return 0.0f;
 
+    // (2) Phase 2 only: Tanks other than the Demon Form tank should do absolutely nothing
     Unit* leotherasDemonPhase2 = GetPhase2LeotherasDemon(botAI);
-    Player* demonFormTank = GetLeotherasDemonFormTank(botAI, bot);
     if (botAI->IsTank(bot) && bot != demonFormTank && leotherasDemonPhase2)
         return 0.0f;
 
     return 1.0f;
 }
 
-//
-float LeotherasTheBlindMainTankMaintainDemonFormPositionMultiplier::GetValue(Action* action)
+// Applies only if there is no Warlock tank
+float LeotherasTheBlindMeleeTankMaintainDemonFormPositionMultiplier::GetValue(Action* action)
 {
     Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
     if (!leotheras)
         return 1.0f;
 
     Unit* leotherasDemon = GetActiveLeotherasDemon(botAI);
-    Player* demonFormTank = GetLeotherasDemonFormTank(botAI, bot);
-    if (!leotherasDemon || (demonFormTank && demonFormTank->getClass() != CLASS_WARLOCK))
+    if (!leotherasDemon)
         return 1.0f;
 
-    if ((botAI->IsMainTank(bot) || botAI->IsTank(bot) && leotherasDemon->GetVictim() == bot) &&
-        (dynamic_cast<MovementAction*>(action) && !dynamic_cast<LeotherasTheBlindDemonFormTankAttackBossAction*>(action)))
+    Player* demonFormTank = GetLeotherasDemonFormTank(botAI, bot);
+    if (demonFormTank && demonFormTank->getClass() != CLASS_WARLOCK)
+        return 1.0f;
+
+    if (botAI->IsTank(bot) && leotherasDemon->GetVictim() == bot)
+    {
+    if (dynamic_cast<MovementAction*>(action) &&
+        !dynamic_cast<LeotherasTheBlindDemonFormTankAttackBossAction*>(action))
         return 0.0f;
+    }
 
     return 1.0f;
 }
@@ -249,22 +267,25 @@ float LeotherasTheBlindDemonFormDisableMeleeActionsMultiplier::GetValue(Action* 
     if (!leotheras)
         return 1.0f;
 
-    Unit* leotherasPhase2Demon = GetPhase2LeotherasDemon(botAI);
     Player* demonFormTank = GetLeotherasDemonFormTank(botAI, bot);
-    if (!leotherasPhase2Demon || leotherasPhase2Demon->HasAura(SPELL_LEOTHERAS_BANISHED) ||
-        botAI->IsRanged(bot) || leotherasPhase2Demon->GetVictim() == bot ||
-        botAI->IsMainTank(bot) || bot->HasAura(SPELL_INSIDIOUS_WHISPER) ||
-        (demonFormTank && demonFormTank->getClass() != CLASS_WARLOCK))
+    if (demonFormTank && demonFormTank->getClass() == CLASS_WARLOCK)
         return 1.0f;
 
-    if ((dynamic_cast<MovementAction*>(action) && !dynamic_cast<LeotherasTheBlindDemonFormPositionMeleeAction*>(action)) ||
-        dynamic_cast<CastKillingSpreeAction*>(action))
-        return 0.0f;
+    Unit* leotherasPhase2Demon = GetPhase2LeotherasDemon(botAI);
+    if (!leotherasPhase2Demon || leotherasPhase2Demon->GetVictim() == bot ||
+        bot->HasAura(SPELL_INSIDIOUS_WHISPER))
+        return 1.0f;
+
+    if (botAI->IsMelee(bot) && botAI->IsDps(bot))
+    {
+        if (dynamic_cast<CastKillingSpreeAction*>(action) || (dynamic_cast<MovementAction*>(action) &&
+            !dynamic_cast<LeotherasTheBlindDemonFormPositionMeleeAction*>(action)))
+            return 0.0f;
+    }
 
     return 1.0f;
 }
 
-// Applies only if there is no Warlock tank
 float LeotherasTheBlindWaitForDpsMultiplier::GetValue(Action* action)
 {
     Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
@@ -282,10 +303,13 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValue(Action* action)
     Unit* leotherasPhase3Demon = GetPhase3LeotherasDemon(botAI);
     if (leotherasHuman && !leotherasHuman->HasAura(SPELL_LEOTHERAS_BANISHED) && !leotherasPhase3Demon)
     {
+        if (botAI->IsTank(bot))
+            return 1.0f;
+
         auto it = leotherasHumanFormDpsWaitTimer.find(mapId);
         if (it == leotherasHumanFormDpsWaitTimer.end() || (now - it->second) < dpsWaitSecondsPhase1)
         {
-            if ((!botAI->IsTank(bot) && dynamic_cast<AttackAction*>(action)) ||
+            if (dynamic_cast<AttackAction*>(action) ||
                 (dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<CastHealingSpellAction*>(action)))
                 return 0.0f;
         }
@@ -311,13 +335,13 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValue(Action* action)
     const uint8 dpsWaitSecondsPhase3 = 12;
     if (leotherasPhase3Demon)
     {
-        if (demonFormTank == bot)
+        if (demonFormTank == bot || botAI->IsTank(bot))
             return 1.0f;
 
         auto it = leotherasFinalPhaseDpsWaitTimer.find(mapId);
         if (it == leotherasFinalPhaseDpsWaitTimer.end() || (now - it->second) < dpsWaitSecondsPhase3)
         {
-            if ((!botAI->IsTank(bot) && dynamic_cast<AttackAction*>(action)) ||
+            if (dynamic_cast<AttackAction*>(action) ||
                 (dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<CastHealingSpellAction*>(action)))
                 return 0.0f;
         }
@@ -326,6 +350,7 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+// Wait until the final phase to use Bloodlust/Heroism
 float LeotherasTheBlindDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
 {
     Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
@@ -333,8 +358,11 @@ float LeotherasTheBlindDelayBloodlustAndHeroismMultiplier::GetValue(Action* acti
         return 1.0f;
 
     Unit* leotherasPhase3Demon = GetPhase3LeotherasDemon(botAI);
-    if (!leotherasPhase3Demon && (dynamic_cast<CastHeroismAction*>(action) || dynamic_cast<CastBloodlustAction*>(action)))
-        return 0.0f;
+    if (!leotherasPhase3Demon)
+    {
+        if (dynamic_cast<CastHeroismAction*>(action) || dynamic_cast<CastBloodlustAction*>(action))
+            return 0.0f;
+    }
 
     return 1.0f;
 }
@@ -409,13 +437,16 @@ float FathomLordKarathressCaribdisTankHealerMaintainPositionMultiplier::GetValue
     if (!caribdis || !caribdis->IsAlive())
         return 1.0f;
 
-    if (botAI->IsHealAssistantOfIndex(bot, 0) &&
-        (dynamic_cast<FleeAction*>(action) || dynamic_cast<FollowAction*>(action)))
+    if (botAI->IsHealAssistantOfIndex(bot, 0))
+    {
+        if (dynamic_cast<FleeAction*>(action) || dynamic_cast<FollowAction*>(action))
         return 0.0f;
+    }
 
     return 1.0f;
 }
 
+// Use Bloodlust/Heroism after the first Murloc spawn
 float MorogrimTidewalkerDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
 {
     Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
@@ -423,8 +454,11 @@ float MorogrimTidewalkerDelayBloodlustAndHeroismMultiplier::GetValue(Action* act
         return 1.0f;
 
     Unit* murloc = AI_VALUE2(Unit*, "find target", "tidewalker lurker");
-    if (!murloc && (dynamic_cast<CastHeroismAction*>(action) || dynamic_cast<CastBloodlustAction*>(action)))
-        return 0.0f;
+    if (!murloc)
+    {
+        if (dynamic_cast<CastHeroismAction*>(action) || dynamic_cast<CastBloodlustAction*>(action))
+            return 0.0f;
+    }
 
     return 1.0f;
 }
@@ -444,16 +478,19 @@ float MorogrimTidewalkerDisablePhase2FleeActionMultiplier::GetValue(Action* acti
     return 1.0f;
 }
 
+// Wait until phase 3 to use Bloodlust/Heroism
 float LadyVashjDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     if (!vashj)
         return 1.0f;
 
-    if (!IsLadyVashjInPhase3(botAI) &&
-        (dynamic_cast<CastBloodlustAction*>(action) ||
-         dynamic_cast<CastHeroismAction*>(action)))
-        return 0.0f;
+    if (!IsLadyVashjInPhase3(botAI))
+    {
+        if (dynamic_cast<CastBloodlustAction*>(action) ||
+            dynamic_cast<CastHeroismAction*>(action))
+            return 0.0f;
+    }
 
     return 1.0f;
 }
@@ -476,6 +513,8 @@ float LadyVashjStaticChargeStayAwayFromGroupMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+// If raid cheat (which enables bot looting of the core) is not enabled
+// Bots should not loot the core
 float LadyVashjDoNotLootTheTaintedCoreMultiplier::GetValue(Action* action)
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
@@ -488,6 +527,8 @@ float LadyVashjDoNotLootTheTaintedCoreMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+// All of phase 2 and 3 require a custom movement and targeting system
+// So the standard target selection system must be disabled
 float LadyVashjDisableAutomaticTargetingAndMovementModifier::GetValue(Action *action)
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
@@ -507,9 +548,11 @@ float LadyVashjDisableAutomaticTargetingAndMovementModifier::GetValue(Action *ac
             return 0.0f;
 
         Unit* enchanted = AI_VALUE2(Unit*, "find target", "enchanted elemental");
-        if (enchanted && enchanted->IsAlive() && bot->GetVictim() == enchanted &&
-            dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
-            return 0.0f;
+        if (enchanted && enchanted->IsAlive() && bot->GetVictim() == enchanted)
+        {
+            if (dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
+                return 0.0f;
+        }
     }
 
     if (IsLadyVashjInPhase3(botAI))
@@ -524,8 +567,11 @@ float LadyVashjDisableAutomaticTargetingAndMovementModifier::GetValue(Action *ac
 
         if (enchanted && enchanted->IsAlive())
         {
-            if (bot->GetVictim() == enchanted && dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
+            if (bot->GetVictim() == enchanted)
+            {
+                if (dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
                 return 0.0f;
+            }
         }
 
         if ((!enchanted || !enchanted->IsAlive()) && (!strider || !strider->IsAlive()) &&

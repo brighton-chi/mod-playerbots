@@ -33,24 +33,24 @@ namespace SerpentShrineCavernHelpers
 
     namespace SerpentShrineCavernPositions
     {
-        const Position HydrossFrostTankPosition(-236.669f, -358.352f, -0.828f);
-        const Position HydrossNatureTankPosition(-225.471f, -327.790f, -3.682f);
+        const Position HydrossFrostTankPosition = { -236.669f, -358.352f, -0.828f };
+        const Position HydrossNatureTankPosition = { -225.471f, -327.790f, -3.682f };
 
-        const Position LurkerMainTankPosition(23.706f, -406.038f, -19.686f);
+        const Position LurkerMainTankPosition = { 23.706f, -406.038f, -19.686f };
 
-        const Position KarathressTankPosition(474.403f, -531.118f, -7.548f);
-        const Position TidalvessTankPosition(511.282f, -501.162f, -13.158f);
-        const Position SharkkisTankPosition(508.057f, -541.109f, -10.133f);
-        const Position CaribdisTankPosition(464.462f, -475.820f, -13.158f);
-        const Position CaribdisHealerPosition(466.203f, -503.201f, -13.158f);
-        const Position CaribdisRangedDpsPosition(463.197f, -501.190f, -13.158f);
+        const Position KarathressTankPosition = { 474.403f, -531.118f, -7.548f };
+        const Position TidalvessTankPosition = { 511.282f, -501.162f, -13.158f };
+        const Position SharkkisTankPosition = { 508.057f, -541.109f, -10.133f };
+        const Position CaribdisTankPosition = { 464.462f, -475.820f, -13.158f };
+        const Position CaribdisHealerPosition = { 466.203f, -503.201f, -13.158f };
+        const Position CaribdisRangedDpsPosition = { 463.197f, -501.190f, -13.158f };
 
-        const Position TidewalkerPhase1TankPosition(410.925f, -741.916f, -7.146f);
-        const Position TidewalkerPhaseTransitionWaypoint(407.035f, -759.479f, -7.168f);
-        const Position TidewalkerPhase2TankPosition(446.571f, -767.155f, -7.144f);
-        const Position TidewalkerPhase2RangedPosition(432.595f, -766.288f, -7.145f);
+        const Position TidewalkerPhase1TankPosition = { 410.925f, -741.916f, -7.146f };
+        const Position TidewalkerPhaseTransitionWaypoint = { 407.035f, -759.479f, -7.168f };
+        const Position TidewalkerPhase2TankPosition = { 446.571f, -767.155f, -7.144f };
+        const Position TidewalkerPhase2RangedPosition = { 432.595f, -766.288f, -7.145f };
 
-        const Position VashjPlatformCenterPosition(29.634f, -923.541f, 42.985f);
+        const Position VashjPlatformCenterPosition = { 29.634f, -923.541f, 42.985f };
     }
 
     void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId)
@@ -121,6 +121,7 @@ namespace SerpentShrineCavernHelpers
         }
     }
 
+    // Dps bot selected for marking and managing timers and trackers
     bool IsMapIDTimerManager(PlayerbotAI* botAI, Player* bot)
     {
         if (Group* group = bot->GetGroup())
@@ -533,10 +534,8 @@ namespace SerpentShrineCavernHelpers
     }
 
     const std::vector<uint32> SHIELD_GENERATOR_DB_GUIDS = { 47482, 47483, 47484, 47485 }; // NW, NE, SE, SW
-    // Entries: 185052 { 52.048f, -901.236f, 44.000f }, 185054 { 52.448f, -944.825f, 44.000f },
-    // 185051 { 7.81f, -945.244f, 44.000f }, 185053 { 7.417f, -901.109f, 44.000f }, respectively
 
-    // Get the positions of all Shield Generators by their database GUIDs
+    // Get the positions of all active Shield Generators by their database GUIDs
     std::vector<GeneratorInfo> GetAllGeneratorInfosByDbGuids(Map* map, const std::vector<uint32>& generatorDbGuids)
     {
         std::vector<GeneratorInfo> generators;
@@ -567,7 +566,8 @@ namespace SerpentShrineCavernHelpers
         return generators;
     }
 
-    // Returns the nearest active shield generator trigger (NPC_WORLD_INVISIBLE_TRIGGER) to the bot
+    // Returns the nearest active Shield Generator to the bot
+    // Active generators are powered by NPC_WORLD_INVISIBLE_TRIGGER creatures, which depawn after use
     Unit* GetNearestActiveShieldGeneratorTriggerByEntry(Player* bot, Unit* reference)
     {
         if (!bot || !reference)

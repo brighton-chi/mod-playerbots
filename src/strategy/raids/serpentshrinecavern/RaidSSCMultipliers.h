@@ -52,10 +52,10 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class LeotherasTheBlindMainTankMaintainDemonFormPositionMultiplier : public Multiplier
+class LeotherasTheBlindMeleeTankMaintainDemonFormPositionMultiplier : public Multiplier
 {
 public:
-    LeotherasTheBlindMainTankMaintainDemonFormPositionMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "leotheras the blind main tank maintain demon form position") {}
+    LeotherasTheBlindMeleeTankMaintainDemonFormPositionMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "leotheras the blind melee tank maintain demon form position") {}
     virtual float GetValue(Action* action);
 };
 
