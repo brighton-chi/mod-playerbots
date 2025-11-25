@@ -115,8 +115,8 @@ bool AttumenTheHuntsmanStackBehindAction::Execute(Event event)
     float orientation = attumenMounted->GetOrientation() + M_PI;
     float x = attumenMounted->GetPositionX();
     float y = attumenMounted->GetPositionY();
-    float rx = x + cos(orientation) * distanceBehind;
-    float ry = y + sin(orientation) * distanceBehind;
+    float rx = x + std::cos(orientation) * distanceBehind;
+    float ry = y + std::sin(orientation) * distanceBehind;
 
     if (bot->GetExactDist2d(rx, ry) > 1.0f)
     {
@@ -215,8 +215,8 @@ bool MaidenOfVirtueMoveBossToHealerAction::Execute(Event event)
     if (healer)
     {
         float angle = healer->GetOrientation();
-        float targetX = healer->GetPositionX() + cos(angle) * 6.0f;
-        float targetY = healer->GetPositionY() + sin(angle) * 6.0f;
+        float targetX = healer->GetPositionX() + std::cos(angle) * 6.0f;
+        float targetY = healer->GetPositionY() + std::sin(angle) * 6.0f;
         float targetZ = healer->GetPositionZ();
         {
             return MoveTo(bot->GetMapId(), targetX, targetY, targetZ, false, false, false, false,
@@ -555,8 +555,8 @@ bool ShadeOfAranRangedMaintainDistanceAction::Execute(Event event)
     {
         for (float angle = 0; angle < 2 * M_PI; angle += ringIncrement)
         {
-            float x = aran->GetPositionX() + cos(angle) * dist;
-            float y = aran->GetPositionY() + sin(angle) * dist;
+            float x = aran->GetPositionX() + std::cos(angle) * dist;
+            float y = aran->GetPositionY() + std::sin(angle) * dist;
 
             bool tooClose = false;
             for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
@@ -641,7 +641,7 @@ bool NetherspiteBlockRedBeamAction::Execute(Event event)
             float py = redPortal->GetPositionY();
             float dx = px - bx;
             float dy = py - by;
-            float length = sqrt(dx*dx + dy*dy);
+            float length = std::hypot(dx, dy);
             if (length == 0.0f)
                 return false;
 
@@ -672,7 +672,7 @@ Position NetherspiteBlockRedBeamAction::GetPositionOnBeam(Unit* boss, Unit* port
 
     float dx = px - bx;
     float dy = py - by;
-    float length = sqrt(dx*dx + dy*dy);
+    float length = std::hypot(dx, dy);
     if (length == 0.0f)
         return Position(bx, by, bz);
 
@@ -730,7 +730,7 @@ bool NetherspiteBlockBlueBeamAction::Execute(Event event)
         float py = bluePortal->GetPositionY();
         float dx = px - bx;
         float dy = py - by;
-        float length = sqrt(dx*dx + dy*dy);
+        float length = std::hypot(dx, dy);
         if (length == 0.0f)
             return false;
 
@@ -817,7 +817,7 @@ bool NetherspiteBlockGreenBeamAction::Execute(Event event)
         float py = greenPortal->GetPositionY();
         float dx = px - bx;
         float dy = py - by;
-        float length = sqrt(dx*dx + dy*dy);
+        float length = std::hypot(dx, dy);
         if (length == 0.0f)
             return false;
 
@@ -882,7 +882,7 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event event)
         float bx = netherspite->GetPositionX(), by = netherspite->GetPositionY();
         float px = redPortal->GetPositionX(), py = redPortal->GetPositionY();
         float dx = px - bx, dy = py - by;
-        float length = sqrt(dx*dx + dy*dy);
+        float length = std::hypot(dx, dy);
         beams.push_back({redPortal, 0.0f, length});
     }
 
@@ -891,7 +891,7 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event event)
         float bx = netherspite->GetPositionX(), by = netherspite->GetPositionY();
         float px = bluePortal->GetPositionX(), py = bluePortal->GetPositionY();
         float dx = px - bx, dy = py - by;
-        float length = sqrt(dx*dx + dy*dy);
+        float length = std::hypot(dx, dy);
         beams.push_back({bluePortal, 0.0f, length});
     }
 
@@ -900,7 +900,7 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event event)
         float bx = netherspite->GetPositionX(), by = netherspite->GetPositionY();
         float px = greenPortal->GetPositionX(), py = greenPortal->GetPositionY();
         float dx = px - bx, dy = py - by;
-        float length = sqrt(dx*dx + dy*dy);
+        float length = std::hypot(dx, dy);
         beams.push_back({greenPortal, 0.0f, length});
     }
 
@@ -909,7 +909,6 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event event)
     if (!nearVoidZone && !nearBeam)
         return false;
 
-    // use squared distances to avoid pow/sqrt
     const float minMoveDist = 2.0f;
     const float minMoveDistSq = minMoveDist * minMoveDist;
     const float maxSearchDist = 30.0f, stepAngle = M_PI/18.0f, stepDist = 0.5f;
@@ -925,8 +924,8 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event event)
     {
         for (float dist = 2.0f; dist <= maxSearchDist; dist += stepDist)
         {
-            float cx = botX + cos(angle) * dist;
-            float cy = botY + sin(angle) * dist;
+            float cx = botX + std::cos(angle) * dist;
+            float cy = botY + std::sin(angle) * dist;
             float cz = netherspiteZ;
 
             if (!IsSafePosition(cx, cy, cz, voidZones, 4.0f) ||
@@ -968,7 +967,7 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::IsAwayFromBeams(
         float bx = netherspite->GetPositionX(), by = netherspite->GetPositionY();
         float px = beam.portal->GetPositionX(), py = beam.portal->GetPositionY();
         float dx = px - bx, dy = py - by;
-        float length = sqrt(dx*dx + dy*dy);
+        float length = std::hypot(dx, dy);
 
         if (length == 0.0f)
             continue;
@@ -977,7 +976,7 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::IsAwayFromBeams(
         float botdx = x - bx, botdy = y - by;
         float t = (botdx * dx + botdy * dy);
         float beamX = bx + dx * t, beamY = by + dy * t;
-        float distToBeam = sqrt(pow(x - beamX, 2) + pow(y - beamY, 2));
+        float distToBeam = std::hypot(x - beamX, y - beamY);
 
         if (distToBeam < 5.0f && t > beam.minDist && t < beam.maxDist)
             return false;
@@ -1080,8 +1079,8 @@ bool PrinceMalchezaarEnfeebledAvoidHazardAction::Execute(Event event)
     for (int i = 0; i < numAngles; ++i)
     {
         float angle = (2 * M_PI * i) / numAngles;
-        float dx = cos(angle);
-        float dy = sin(angle);
+        float dx = std::cos(angle);
+        float dy = std::sin(angle);
 
         for (float dist = minSafeBossDistance; dist <= maxSafeBossDistance; dist += distIncrement)
         {

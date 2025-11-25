@@ -1277,7 +1277,7 @@ bool KaelthasSunstriderWarlockTankPositionCapernianAction::Execute(Event event)
             float dx = bot->GetPositionX() - capernian->GetPositionX();
             float dy = bot->GetPositionY() - capernian->GetPositionY();
 
-            if (currentDist <= 1e-4f)
+            if (currentDist == 0.0f)
                 return false;
 
             dx /= currentDist;
@@ -1830,9 +1830,9 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::LootWeapon(uint32 weaponEntry
         // Schedule autostore attempt
         const ObjectGuid botGuid = bot->GetGUID();
         const ObjectGuid corpseGuid = guid;
-        const uint8 guessedIndex = 0;
+        const uint8 weaponIndex = 0;
 
-        botAI->AddTimedEvent([this, botGuid, corpseGuid, guessedIndex, itemId, weaponName]()
+        botAI->AddTimedEvent([this, botGuid, corpseGuid, weaponIndex, itemId, weaponName]()
         {
             Player* receiver = botGuid.IsEmpty() ? nullptr : ObjectAccessor::FindPlayer(botGuid);
             if (!receiver || !receiver->IsInWorld())
@@ -1845,7 +1845,7 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::LootWeapon(uint32 weaponEntry
             receiver->SetLootGUID(corpseGuid);
 
             WorldPacket* packet = new WorldPacket(CMSG_AUTOSTORE_LOOT_ITEM, 1);
-            *packet << guessedIndex;
+            *packet << weaponIndex;
             receiver->GetSession()->QueuePacket(packet);
         }, 600);
 

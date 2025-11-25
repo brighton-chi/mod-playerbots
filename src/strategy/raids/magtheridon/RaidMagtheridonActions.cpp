@@ -455,7 +455,7 @@ bool MagtheridonSpreadRangedAction::Execute(Event event)
         uint8 count = members.size();
 
         float angle = 2 * M_PI * botIndex / count;
-        float radius = static_cast<float>(rand()) / RAND_MAX * maxSpreadRadius;
+        float radius = frand(0.0f, maxSpreadRadius);
         float targetX = centerX + radius * cos(angle);
         float targetY = centerY + radius * sin(angle);
 
@@ -488,8 +488,8 @@ bool MagtheridonSpreadRangedAction::Execute(Event event)
 
     if (distToCenter > maxSpreadRadius + radiusBuffer)
     {
-        float angle = static_cast<float>(rand()) / RAND_MAX * 2.0f * M_PI;
-        float radius = static_cast<float>(rand()) / RAND_MAX * maxSpreadRadius;
+        float angle = frand(0.0f, static_cast<float>(2.0f * M_PI));
+        float radius = frand(0.0f, maxSpreadRadius);
         float targetX = centerX + radius * cos(angle);
         float targetY = centerY + radius * sin(angle);
 
@@ -597,7 +597,7 @@ bool MagtheridonUseManticronCubeAction::HandleWaitingPhase(const CubeInfo& cubeI
             }
         }
 
-        float angle = static_cast<float>(rand()) / RAND_MAX * 2.0f * M_PI;
+        float angle = frand(0.0f, static_cast<float>(2.0f * M_PI));
         float fallbackX = cubeInfo.x + cos(angle) * safeWaitDistance;
         float fallbackY = cubeInfo.y + sin(angle) * safeWaitDistance;
         float fallbackZ = bot->GetPositionZ();
