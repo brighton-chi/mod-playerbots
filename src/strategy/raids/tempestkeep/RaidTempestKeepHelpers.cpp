@@ -181,7 +181,7 @@ namespace TempestKeepHelpers
             }
         }
 
-        return true;
+        return false;
     }
 
     bool IsAlarAddTank(PlayerbotAI* botAI, Player* bot)
@@ -450,7 +450,7 @@ namespace TempestKeepHelpers
             }
         }
 
-        return true;
+        return false;
     }
 
     Player* GetCapernianTank(PlayerbotAI* botAI, Player* bot)

@@ -1,5 +1,4 @@
 #include "RaidSSCHelpers.h"
-#include "RaidSSCActions.h"
 #include "AiFactory.h"
 #include "Creature.h"
 #include "Group.h"
@@ -134,7 +133,7 @@ namespace SerpentShrineCavernHelpers
             }
         }
 
-        return true;
+        return false;
     }
 
     Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry)

@@ -121,7 +121,7 @@ namespace KarazhanHelpers
             }
         }
 
-        return true;
+        return false;
     }
 
     Unit* GetFirstAliveUnit(const std::vector<Unit*>& units)
