@@ -163,6 +163,12 @@ public:
             if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(receiver))
             {
                 botAI->HandleCommand(type, msg, player);
+
+                // hotfix; otherwise the server will crash when whispering logout
+                // https://github.com/mod-playerbots/mod-playerbots/pull/1838
+                // TODO: find the root cause and solve it. (does not happen in party chat)
+                if (msg == "logout")
+                    return false;
             }
         }
         return true;
