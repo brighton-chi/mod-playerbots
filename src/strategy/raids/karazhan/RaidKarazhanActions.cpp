@@ -94,10 +94,9 @@ bool AttumenTheHuntsmanSplitBossesAction::Execute(Event event)
 
     if (attumen->GetVictim() == bot && midnight->GetVictim() != bot)
     {
-        const float safeDistance = 8.0f;
+        const float safeDistance = 6.0f;
         Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
         if (nearestPlayer && attumen->GetExactDist2d(nearestPlayer) < safeDistance)
-            // return MoveAway(nearestPlayer, safeDistance + 2.0f);
             return MoveFromGroup(safeDistance + 2.0f);
     }
 
@@ -1088,8 +1087,7 @@ bool PrinceMalchezaarEnfeebledAvoidHazardAction::Execute(Event event)
             float y = malchezaarY + dy * dist;
             float destZ = malchezaarZ;
             float destX = x, destY = y;
-            float destZ2 = destZ;
-            if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, bx, by, bz, destX, destY, destZ2, true))
+            if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, bx, by, bz, destX, destY, destZ, true))
                 continue;
 
             float ddx = destX - malchezaarX;
@@ -1098,7 +1096,7 @@ bool PrinceMalchezaarEnfeebledAvoidHazardAction::Execute(Event event)
             if (distFromBossSq < minSafeBossDistanceSq)
                 continue;
 
-            bool pathSafe = IsStraightPathSafe(Position(bx, by, bz), Position(destX, destY, destZ2),
+            bool pathSafe = IsStraightPathSafe(Position(bx, by, bz), Position(destX, destY, destZ),
                                                infernals, safeInfernalDistance, distIncrement);
             float mdx = destX - bx;
             float mdy = destY - by;
@@ -1109,7 +1107,7 @@ bool PrinceMalchezaarEnfeebledAvoidHazardAction::Execute(Event event)
                 bestMoveDistSq = moveDistSq;
                 bestDestX = destX;
                 bestDestY = destY;
-                bestDestZ = destZ2;
+                bestDestZ = destZ;
                 found = true;
             }
         }
