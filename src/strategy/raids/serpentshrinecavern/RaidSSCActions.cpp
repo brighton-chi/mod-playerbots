@@ -799,10 +799,11 @@ bool LeotherasTheBlindInnerDemonCheatAction::Execute(Event event)
     if (innerDemon)
     {
         // Tanks and healers have no ability to kill their own Inner Demons
-        // Hunters, Affliction Warlocks, and Arcane Mages also struggle to do so
+        // Hunters, Affliction Warlocks, Shadow Priests, and (for some reason) Arcane Mages also struggleo
         uint8 tab = AiFactory::GetPlayerSpecTab(bot);
         if (botAI->IsHeal(bot) || botAI->IsTank(bot) ||
             bot->getClass() == CLASS_HUNTER ||
+            (bot->getClass() == CLASS_PRIEST && tab == 2) ||
             (bot->getClass() == CLASS_WARLOCK && tab == 0) ||
             (bot->getClass() == CLASS_MAGE && tab == 0))
         {
@@ -1829,7 +1830,7 @@ bool LadyVashjTankAttackAndMoveAwayStriderAction::Execute(Event event)
             {
                 if (passer && passer != bot)
                 {
-                    float currentDistFromPasser = strider->GetExactDist2d(passer);
+                    float currentDistFromPasser = bot->GetExactDist2d(passer);
                     const float safeDistFromPasser = 15.0f;
                     if (currentDistFromPasser < safeDistFromPasser)
                         return MoveAway(strider, safeDistFromPasser - currentDistFromPasser + 5.0f);
@@ -2474,6 +2475,8 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpFourthCorePasser(Player* thirdCore
 
 // The next four functions check if the respective core passer is within 2 yards of their intended position
 // And are used to determine when the prior bot in the chain can pass the core
+// Known issue: if a passer bot is feared by a strider, the chain can be broken; if this happens, it is best
+// to order bots to destroy cores to reset the sequence for the next elemental spawn
 bool LadyVashjPassTheTaintedCoreAction::IsFirstCorePasserInIntendedPosition(
     Player* designatedLooter, Player* firstCorePasser, Unit* closestTrigger)
 {

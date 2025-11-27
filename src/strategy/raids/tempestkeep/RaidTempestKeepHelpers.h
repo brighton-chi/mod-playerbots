@@ -14,7 +14,7 @@ namespace TempestKeepHelpers
     enum TempestKeepSpells
     {
         // Trash
-        SPELL_ARCANE_FLURRY           = 37270,
+        SPELL_ARCANE_FLURRY           = 34821,
 
         // Al'ar
         SPELL_REBIRTH_PHASE2 = 34342,
@@ -25,18 +25,15 @@ namespace TempestKeepHelpers
         SPELL_WRATH_OF_THE_ASTROMANCER  = 42783,
 
         // Kael'thas Sunstrider
-        SPELL_PERMANENT_FEIGN_DEATH = 29266,
+        SPELL_PERMANENT_FEIGN_DEATH         = 29266,
         SPELL_GRAVITY_LAPSE                 = 39432,
         SPELL_KAEL_FULL_POWER               = 36187,
-        SPELL_MENTAL_PROTECTION_FIELD = 36480, // Staff of Disintegration
-        SPELL_ARCANE_BARRIER = 36481,          // Phaseshift Bulwark
-        SPELL_FLAME_STRIKE                  = 36735, // Summons NPC
-        SPELL_FLAME_STRIKE_DAMAGE           = 36731, // 115625 damage, 6 yards + 3000/s damage, 10 yards
-        SPELL_KAELTHAS_MIND_CONTROL = 36797,
+        SPELL_MENTAL_PROTECTION_FIELD       = 36480, // Staff of Disintegration
+        SPELL_ARCANE_BARRIER                = 36481, // Phaseshift Bulwark
+        SPELL_KAELTHAS_MIND_CONTROL         = 36797,
         SPELL_SHOCK_BARRIER                 = 36815,
-        SPELL_KAELTHAS_PYROBLAST = 36819,
-        SPELL_STAFF_FROSTBOLT = 36990,
-        SPELL_REMOTE_TOY_STUN               = 37029,
+        SPELL_KAELTHAS_PYROBLAST            = 36819,
+        SPELL_STAFF_FROSTBOLT               = 36990,
 
         // Hunter
         SPELL_MISDIRECTION = 35079,

@@ -906,7 +906,7 @@ bool HighAstromancerSolarianStackBotsAction::Execute(Event event)
 
 bool HighAstromancerSolarianMoveAwayFromGroupAction::Execute(Event event)
 {
-    const float safeDistance = 10.0f;
+    const float safeDistance = 15.0f;
     Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
     if (nearestPlayer)
         return MoveFromGroup(safeDistance + 1.0f);
