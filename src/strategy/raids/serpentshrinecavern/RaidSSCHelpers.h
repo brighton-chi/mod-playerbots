@@ -71,16 +71,14 @@ namespace SerpentShrineCavernHelpers
         NPC_RANCID_MUSHROOM          = 22250,
 
         // Hydross the Unstable <Duke of Currents>
-        NPC_HYDROSS_FROST_FORM       = 21216,
-        NPC_HYDROSS_NATURE_FORM      = 21232,
         NPC_PURE_SPAWN_OF_HYDROSS    = 22035,
         NPC_TAINTED_SPAWN_OF_HYDROSS = 22036,
 
         // Leotheras the Blind
         NPC_LEOTHERAS_THE_BLIND      = 21215,
         NPC_GREYHEART_SPELLBINDER    = 21806,
-        NPC_SHADOW_OF_LEOTHERAS      = 21875,
         NPC_INNER_DEMON              = 21857,
+        NPC_SHADOW_OF_LEOTHERAS      = 21875,
 
         // Fathom-Lord Karathress
         NPC_SPITFIRE_TOTEM           = 22091,
