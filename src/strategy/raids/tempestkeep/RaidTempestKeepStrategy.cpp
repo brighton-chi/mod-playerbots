@@ -75,9 +75,6 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     ));
 
     // Kael'thas Sunstrider <Lord of the Blood Elves>
-    triggers.push_back(new TriggerNode("kaelthas sunstrider need to test strategies on boss",
-        NextAction::array(0, new NextAction("kaelthas sunstrider log for testing", ACTION_EMERGENCY + 10), nullptr)
-    ));
     triggers.push_back(new TriggerNode("kaelthas sunstrider thaladred is fixated on bot",
         NextAction::array(0, new NextAction("kaelthas sunstrider kite thaladred", ACTION_EMERGENCY + 6), nullptr)
     ));

@@ -150,13 +150,6 @@ public:
     bool IsActive() override;
 };
 
-class KaelthasSunstriderNeedToTestStrategiesOnBossTrigger : public Trigger
-{
-public:
-    KaelthasSunstriderNeedToTestStrategiesOnBossTrigger(PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider need to test strategies on boss") {}
-    bool IsActive() override;
-};
-
 class KaelthasSunstriderThaladredIsFixatedOnBotTrigger : public Trigger
 {
 public:

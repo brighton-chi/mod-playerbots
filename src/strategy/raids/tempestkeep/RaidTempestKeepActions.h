@@ -168,13 +168,6 @@ public:
     bool Execute(Event event) override;
 };
 
-class KaelthasSunstriderLogForTestingAction : public Action
-{
-public:
-    KaelthasSunstriderLogForTestingAction(PlayerbotAI* botAI, std::string const name = "kaelthas sunstrider log for testing") : Action(botAI, name) {}
-    bool Execute(Event event) override;
-};
-
 class KaelthasSunstriderKiteThaladredAction : public MovementAction
 {
 public:

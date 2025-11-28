@@ -199,12 +199,6 @@ bool HighAstromancerSolarianBossCastsPsychicScreamTrigger::IsActive()
     return mainTank && !mainTank->HasAura(SPELL_FEAR_WARD) && botAI->CanCastSpell("fear ward", mainTank);
 }
 
-bool KaelthasSunstriderNeedToTestStrategiesOnBossTrigger::IsActive()
-{
-    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
-    return kaelthas && IsKaelthasMapIDTimerManager(botAI, bot);
-}
-
 bool KaelthasSunstriderThaladredIsFixatedOnBotTrigger::IsActive()
 {
     if (botAI->IsTank(bot))
@@ -292,7 +286,6 @@ bool KaelthasSunstriderCapernianCastsArcaneBurstTrigger::IsActive()
 
 bool KaelthasSunstriderTelonicusEngagedByFirstAssistTankTrigger::IsActive()
 {
-    // Require either: assist tank of index 0 OR other tank AND Kael'thas is in phase 1
     if (!botAI->IsAssistTankOfIndex(bot, 0) &&
         !(IsKaelthasInPhase1(botAI) && botAI->IsTank(bot)))
         return false;
@@ -368,7 +361,6 @@ bool KaelthasSunstriderLegendaryWeaponsAreEquippedTrigger::IsActive()
 
 bool KaelthasSunstriderLegendaryWeaponsWereLostTrigger::IsActive()
 {
-    // Only run in Tempest Keep
     if (bot->GetMapId() != 550)
         return false;
 
@@ -386,7 +378,6 @@ bool KaelthasSunstriderLegendaryWeaponsWereLostTrigger::IsActive()
     if (!kaelthas)
         return false;
 
-    // Check distance to Kael'thas
     float distance = bot->GetExactDist2d(kaelthas);
     if (distance > 150.0f)
         return false;
@@ -395,7 +386,6 @@ bool KaelthasSunstriderLegendaryWeaponsWereLostTrigger::IsActive()
     Item* mainHand = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
     bool has2HWeapon = mainHand && mainHand->GetTemplate()->InventoryType == INVTYPE_2HWEAPON;
 
-    // Check for empty equipment slots
     for (uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
     {
         if (slot == EQUIPMENT_SLOT_BODY || slot == EQUIPMENT_SLOT_TABARD)
@@ -406,11 +396,7 @@ bool KaelthasSunstriderLegendaryWeaponsWereLostTrigger::IsActive()
             continue;
 
         if (!bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
-        {
-            LOG_DEBUG("playerbots", "KaelthasSunstriderLegendaryWeaponsWereLostTrigger: {} - Found empty slot {}, trigger active!",
-                      bot->GetName(), slot);
             return true;
-        }
     }
 
     return false;

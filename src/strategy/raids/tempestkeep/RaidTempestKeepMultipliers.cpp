@@ -101,22 +101,18 @@ float KaelthasSunstriderWaitForDpsMultiplier::GetValue(Action* action)
     if (!kaelthas)
         return 1.0f;
 
-    // Allow misdirection actions to proceed
     if (dynamic_cast<KaelthasSunstriderMisdirectAdvisorsToTanksAction*>(action))
         return 1.0f;
 
-    // Only apply wait logic in Phase 1
     if (!IsKaelthasInPhase1(botAI))
         return 1.0f;
 
     const time_t now = std::time(nullptr);
     const uint8 dpsWaitSeconds = 12;
 
-    // Check if timer has elapsed
     auto it = advisorDpsWaitTimer.find(kaelthas->GetMapId());
     if (it == advisorDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
     {
-        // Check if any advisor is active
         Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
         Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
         Unit* telonicus = AI_VALUE2(Unit*, "find target", "master engineer telonicus");
@@ -130,15 +126,12 @@ float KaelthasSunstriderWaitForDpsMultiplier::GetValue(Action* action)
         bool capernianActive = isAdvisorActive(capernian);
         bool telonicusActive = isAdvisorActive(telonicus);
 
-        // If any advisor is active, apply wait logic
         if (sanguinarActive || capernianActive || telonicusActive)
         {
-            // Capernian tank is excluded from wait
             bool isCapernianTank = capernianActive && (GetCapernianTank(botAI, bot) == bot);
 
             if (!isCapernianTank && !botAI->IsTank(bot))
             {
-                // All non-tanks wait
                 if (dynamic_cast<AttackAction*>(action) ||
                     (dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<CastHealingSpellAction*>(action)))
                     return 0.0f;
@@ -224,7 +217,6 @@ float KaelthasSunstriderTryNonfatalBreakingOfMindControlMultiplier::GetValue(Act
     if (!group)
         return 1.0f;
 
-    // Check if any raid member is mind controlled
     bool hasMindControlledPlayer = false;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
@@ -239,7 +231,6 @@ float KaelthasSunstriderTryNonfatalBreakingOfMindControlMultiplier::GetValue(Act
         }
     }
 
-    // If someone is MC'd, suppress all attacks except the MC-breaking action
     if (hasMindControlledPlayer)
     {
         if (dynamic_cast<AttackAction*>(action) &&
@@ -259,8 +250,7 @@ float KaelthasSunstriderAllDpsOnBossDuringPyroblastMultiplier::GetValue(Action* 
     if (!kaelthas || !kaelthas->HasUnitState(UNIT_STATE_CASTING))
         return 1.0f;
 
-    Spell* currentSpell = kaelthas->GetCurrentSpell(CURRENT_GENERIC_SPELL);
-    if (currentSpell && currentSpell->m_spellInfo->Id == SPELL_KAELTHAS_PYROBLAST)
+    if (kaelthas->HasAura(SPELL_SHOCK_BARRIER))
     {
         if (dynamic_cast<KaelthasSunstriderRoundUpPhoenixesAndFocusDownEggsAction*>(action))
             return 0.0f;
