@@ -33,7 +33,7 @@ bool UnderbogColossusEscapeToxicPoolAction::Execute(Event event)
         {
             for (int e = 0; e < MAX_SPELL_EFFECTS; ++e)
             {
-                const auto& eff = sInfo->Effects[e];
+                auto const& eff = sInfo->Effects[e];
                 if (eff.Effect == SPELL_EFFECT_SCHOOL_DAMAGE ||
                     (eff.Effect == SPELL_EFFECT_APPLY_AURA && eff.ApplyAuraName == SPELL_AURA_PERIODIC_DAMAGE))
                 {

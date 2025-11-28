@@ -4,7 +4,6 @@
 #include "Strategy.h"
 #include "Multiplier.h"
 
-
 class RaidSSCStrategy : public Strategy
 {
 public:

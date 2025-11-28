@@ -1611,7 +1611,7 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::Execute(Event event)
         { NPC_PHASESHIFT_BULWARK, ITEM_PHASESHIFT_BULWARK, "phaseshift bulwark" }
     };
 
-    for (const auto& weapon : weapons)
+    for (auto const& weapon : weapons)
     {
         if (ShouldBotLootWeapon(weapon.npcEntry))
         {

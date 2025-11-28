@@ -527,7 +527,7 @@ namespace TempestKeepHelpers
             { "devastation", NPC_DEVASTATION },
         };
 
-        for (const auto& [name, entry] : weapons)
+        for (auto const& [name, entry] : weapons)
         {
             Unit* weapon = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", name)->Get();
             if (weapon && weapon->IsAlive())
