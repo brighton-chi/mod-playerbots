@@ -184,6 +184,34 @@ float TheLurkerBelowStayAwayFromSpoutMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+// Disable tank assist during Submerge only if there are 3 or more tanks in the raid
+float TheLurkerBelowDisableTankAssistMultiplier::GetValue(Action* action)
+{
+    Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
+    if (!lurker || lurker->getStandState() != UNIT_STAND_STATE_SUBMERGED)
+        return 1.0f;
+
+    Group* group = bot->GetGroup();
+    if (!group)
+        return 1.0f;
+
+    uint8 tankCount = 0;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive())
+            continue;
+
+        if (botAI->IsTank(member))
+            ++tankCount;
+    }
+
+    if (tankCount >= 3 && dynamic_cast<TankAssistAction*>(action))
+        return 0.0f;
+
+    return 1.0f;
+}
+
 // Leotheras the Blind
 
 float LeotherasTheBlindAvoidWhirlwindMultiplier::GetValue(Action* action)
@@ -195,11 +223,11 @@ float LeotherasTheBlindAvoidWhirlwindMultiplier::GetValue(Action* action)
     if (!leotherasHuman->HasAura(SPELL_LEOTHERAS_BANISHED) &&
         (leotherasHuman->HasAura(SPELL_WHIRLWIND) || leotherasHuman->HasAura(SPELL_WHIRLWIND_CHANNEL)))
     {
-        if (dynamic_cast<CastReachTargetSpellAction*>(action))
-            return 0.0f;
-
         if (!botAI->IsTank(bot))
         {
+            if (dynamic_cast<CastReachTargetSpellAction*>(action))
+                return 0.0f;
+
             if (dynamic_cast<MovementAction*>(action) &&
                 !dynamic_cast<LeotherasTheBlindRunAwayFromWhirlwindAction*>(action))
                 return 0.0f;
@@ -212,75 +240,22 @@ float LeotherasTheBlindAvoidWhirlwindMultiplier::GetValue(Action* action)
 // Applies only if there is a Warlock tank
 float LeotherasTheBlindDisableTankActionsMultiplier::GetValue(Action* action)
 {
-    // (1) Multipliers that apply during Phase 2 or 3
     Unit* leotherasDemon = GetActiveLeotherasDemon(botAI);
     if (!leotherasDemon ||
         dynamic_cast<LeotherasTheBlindInnerDemonCheatAction*>(action) ||
         dynamic_cast<WipeAction*>(action))
         return 1.0f;
 
+    // (1) Warlock tank will not use Shadow Ward
+    // Shadow Ward is coded into the Warlock tank strategy (for Twin Emps) but is useless here
     Player* demonFormTank = GetLeotherasDemonFormTank(botAI, bot);
-    if (!demonFormTank || demonFormTank->getClass() != CLASS_WARLOCK)
-        return 1.0f;
-
-    if (dynamic_cast<CastShadowWardAction*>(action))
+    if (demonFormTank && dynamic_cast<CastShadowWardAction*>(action))
         return 0.0f;
 
-    // (2) Phase 2 only: Tanks other than the Demon Form tank should do absolutely nothing
+    // (2) Phase 2 only: Tanks other than the Warlock tank should do absolutely nothing
     Unit* leotherasDemonPhase2 = GetPhase2LeotherasDemon(botAI);
     if (botAI->IsTank(bot) && bot != demonFormTank && leotherasDemonPhase2)
         return 0.0f;
-
-    return 1.0f;
-}
-
-// Applies only if there is no Warlock tank
-float LeotherasTheBlindMeleeTankMaintainDemonFormPositionMultiplier::GetValue(Action* action)
-{
-    Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
-    if (!leotheras)
-        return 1.0f;
-
-    Unit* leotherasDemon = GetActiveLeotherasDemon(botAI);
-    if (!leotherasDemon)
-        return 1.0f;
-
-    Player* demonFormTank = GetLeotherasDemonFormTank(botAI, bot);
-    if (demonFormTank && demonFormTank->getClass() != CLASS_WARLOCK)
-        return 1.0f;
-
-    if (botAI->IsTank(bot) && leotherasDemon->GetVictim() == bot)
-    {
-    if (dynamic_cast<MovementAction*>(action) &&
-        !dynamic_cast<LeotherasTheBlindDemonFormTankAttackBossAction*>(action))
-        return 0.0f;
-    }
-
-    return 1.0f;
-}
-
-// Applies only if there is no Warlock tank
-float LeotherasTheBlindDemonFormDisableMeleeActionsMultiplier::GetValue(Action* action)
-{
-    Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
-    if (!leotheras)
-        return 1.0f;
-
-    Player* demonFormTank = GetLeotherasDemonFormTank(botAI, bot);
-    if (demonFormTank && demonFormTank->getClass() == CLASS_WARLOCK)
-        return 1.0f;
-
-    Unit* leotherasPhase2Demon = GetPhase2LeotherasDemon(botAI);
-    if (!leotherasPhase2Demon || leotherasPhase2Demon->GetVictim() == bot ||
-        bot->HasAura(SPELL_INSIDIOUS_WHISPER))
-        return 1.0f;
-
-    if (botAI->IsMelee(bot) && botAI->IsDps(bot))
-    {
-        if (dynamic_cast<CastKillingSpreeAction*>(action) || (dynamic_cast<MovementAction*>(action) &&
-            !dynamic_cast<LeotherasTheBlindDemonFormPositionMeleeAction*>(action)))
-            return 0.0f;
-    }
 
     return 1.0f;
 }
@@ -330,7 +305,7 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValue(Action* action)
         }
     }
 
-    const uint8 dpsWaitSecondsPhase3 = 12;
+    const uint8 dpsWaitSecondsPhase3 = 8;
     if (leotherasPhase3Demon)
     {
         if (demonFormTank == bot || botAI->IsTank(bot))
@@ -461,7 +436,7 @@ float MorogrimTidewalkerDelayBloodlustAndHeroismMultiplier::GetValue(Action* act
     return 1.0f;
 }
 
-float MorogrimTidewalkerDisablePhase2FleeActionMultiplier::GetValue(Action* action)
+float MorogrimTidewalkerDisablePhase2MovementActionsMultiplier::GetValue(Action* action)
 {
     Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
     if (!tidewalker)
@@ -469,7 +444,8 @@ float MorogrimTidewalkerDisablePhase2FleeActionMultiplier::GetValue(Action* acti
 
     if (tidewalker->GetHealthPct() < 25.0f)
     {
-        if (dynamic_cast<FleeAction*>(action))
+        if (dynamic_cast<FleeAction*>(action) || dynamic_cast<CastDisengageAction*>(action) ||
+            dynamic_cast<CastBlinkBackAction*>(action))
             return 0.0f;
     }
 

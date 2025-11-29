@@ -113,6 +113,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class TheLurkerBelowTanksPickUpAddsAction : public AttackAction
+{
+public:
+    TheLurkerBelowTanksPickUpAddsAction(PlayerbotAI* botAI, std::string const name = "the lurker below tanks pick up adds") : AttackAction(botAI, name) {}
+
+    bool Execute(Event event) override;
+};
+
 class TheLurkerBelowManageSpoutTimerAction : public Action
 {
 public:
@@ -149,14 +157,6 @@ class LeotherasTheBlindRunAwayFromWhirlwindAction : public MovementAction
 {
 public:
     LeotherasTheBlindRunAwayFromWhirlwindAction(PlayerbotAI* botAI, std::string const name = "leotheras the blind run away from whirlwind") : MovementAction(botAI, name) {}
-
-    bool Execute(Event event) override;
-};
-
-class LeotherasTheBlindDemonFormPositionMeleeAction : public MovementAction
-{
-public:
-    LeotherasTheBlindDemonFormPositionMeleeAction(PlayerbotAI* botAI, std::string const name = "leotheras the blind demon form position melee") : MovementAction(botAI, name) {}
 
     bool Execute(Event event) override;
 };
@@ -200,24 +200,24 @@ public:
     bool Execute(Event event) override;
 };
 
-class FathomLordKarathressFirstAssistTankPositionSharkkisAction : public AttackAction
+class FathomLordKarathressFirstAssistTankPositionCaribdisAction : public AttackAction
 {
 public:
-    FathomLordKarathressFirstAssistTankPositionSharkkisAction(PlayerbotAI* botAI, std::string const name = "fathom-lord karathress first assist tank position sharkkis") : AttackAction(botAI, name) {}
+    FathomLordKarathressFirstAssistTankPositionCaribdisAction(PlayerbotAI* botAI, std::string const name = "fathom-lord karathress first assist tank position caribdis") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 
-class FathomLordKarathressSecondAssistTankPositionTidalvessAction : public AttackAction
+class FathomLordKarathressSecondAssistTankPositionSharkkisAction : public AttackAction
 {
 public:
-    FathomLordKarathressSecondAssistTankPositionTidalvessAction(PlayerbotAI* botAI, std::string const name = "fathom-lord karathress second assist tank position tidalvess") : AttackAction(botAI, name) {}
+    FathomLordKarathressSecondAssistTankPositionSharkkisAction(PlayerbotAI* botAI, std::string const name = "fathom-lord karathress second assist tank position sharkkis") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 
-class FathomLordKarathressThirdAssistTankPositionCaribdisAction : public AttackAction
+class FathomLordKarathressThirdAssistTankPositionTidalvessAction : public AttackAction
 {
 public:
-    FathomLordKarathressThirdAssistTankPositionCaribdisAction(PlayerbotAI* botAI, std::string const name = "fathom-lord karathress third assist tank position caribdis") : AttackAction(botAI, name) {}
+    FathomLordKarathressThirdAssistTankPositionTidalvessAction(PlayerbotAI* botAI, std::string const name = "fathom-lord karathress third assist tank position tidalvess") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 

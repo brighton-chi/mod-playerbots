@@ -150,6 +150,45 @@ bool TheLurkerBelowBossCastsGeyserTrigger::IsActive()
            (it == lurkerSpoutTimer.end() || it->second <= now);
 }
 
+// Trigger will be active only if there are at least 3 tanks in the raid
+bool TheLurkerBelowBossIsSubmergedTrigger::IsActive()
+{
+    Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
+    if (!lurker || lurker->getStandState() != UNIT_STAND_STATE_SUBMERGED)
+        return false;
+
+    Player* mainTank = nullptr;
+    Player* firstAssistTank = nullptr;
+    Player* secondAssistTank = nullptr;
+
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive())
+            continue;
+
+        PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
+        if (!memberAI)
+            continue;
+
+        if (!mainTank && memberAI->IsMainTank(member))
+            mainTank = member;
+        else if (!firstAssistTank && memberAI->IsAssistTankOfIndex(member, 0))
+            firstAssistTank = member;
+        else if (!secondAssistTank && memberAI->IsAssistTankOfIndex(member, 1))
+            secondAssistTank = member;
+    }
+
+    if (!mainTank || !firstAssistTank || !secondAssistTank)
+        return false;
+
+    return bot == mainTank || bot == firstAssistTank || bot == secondAssistTank;
+}
+
 bool TheLurkerBelowNeedToPrepareTimerForSpoutTrigger::IsActive()
 {
     if (!IsMapIDTimerManager(botAI, bot))
@@ -167,7 +206,7 @@ bool LeotherasTheBlindBossIsInactiveTrigger::IsActive()
     return spellbinder && spellbinder->IsAlive();
 }
 
-bool LeotherasTheBlindEngagedByDemonFormTankTrigger::IsActive()
+bool LeotherasTheBlindBossTransformedIntoDemonFormTrigger::IsActive()
 {
     Player* demonFormTank = GetLeotherasDemonFormTank(botAI, bot);
     if (demonFormTank && bot != demonFormTank)
@@ -200,19 +239,6 @@ bool LeotherasTheBlindBossChannelingWhirlwindTrigger::IsActive()
            (leotheras->HasAura(SPELL_WHIRLWIND) || leotheras->HasAura(SPELL_WHIRLWIND_CHANNEL));
 }
 
-bool LeotherasTheBlindDemonFormEngagedByMeleeWithoutWarlockTankTrigger::IsActive()
-{
-    Player* demonFormTank = GetLeotherasDemonFormTank(botAI, bot);
-    if (demonFormTank && demonFormTank->getClass() == CLASS_WARLOCK)
-        return false;
-
-    if (!botAI->IsMelee(bot) || botAI->IsMainTank(bot))
-        return false;
-
-    Unit* leotherasDemon = GetActiveLeotherasDemon(botAI);
-    return leotherasDemon != nullptr;
-}
-
 bool LeotherasTheBlindInnerDemonCheatTrigger::IsActive()
 {
     if (!botAI->HasCheat(BotCheatMask::raid))
@@ -221,8 +247,8 @@ bool LeotherasTheBlindInnerDemonCheatTrigger::IsActive()
     if (!bot->HasAura(SPELL_INSIDIOUS_WHISPER))
         return false;
 
-    Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
-    return leotheras != nullptr;
+    Unit* leotherasPhase2Demon = GetPhase2LeotherasDemon(botAI);
+    return leotherasPhase2Demon != nullptr;
 }
 
 bool LeotherasTheBlindEnteredFinalPhaseTrigger::IsActive()
@@ -274,31 +300,31 @@ bool FathomLordKarathressBossEngagedByMainTankTrigger::IsActive()
     return karathress != nullptr;
 }
 
-bool FathomLordKarathressSharkkisEngagedByFirstAssistTankTrigger::IsActive()
+bool FathomLordKarathressCaribdisEngagedByFirstAssistTankTrigger::IsActive()
 {
     if (!botAI->IsAssistTankOfIndex(bot, 0))
+        return false;
+
+    Unit* caribdis = AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
+    return caribdis && caribdis->IsAlive();
+}
+
+bool FathomLordKarathressSharkkisEngagedBySecondAssistTankTrigger::IsActive()
+{
+    if (!botAI->IsAssistTankOfIndex(bot, 1))
         return false;
 
     Unit* sharkkis = AI_VALUE2(Unit*, "find target", "fathom-guard sharkkis");
     return sharkkis && sharkkis->IsAlive();
 }
 
-bool FathomLordKarathressTidalvessEngagedBySecondAssistTankTrigger::IsActive()
-{
-    if (!botAI->IsAssistTankOfIndex(bot, 1))
-        return false;
-
-    Unit* tidalvess = AI_VALUE2(Unit*, "find target", "fathom-guard tidalvess");
-    return tidalvess && tidalvess->IsAlive();
-}
-
-bool FathomLordKarathressCaribdisEngagedByThirdAssistTankTrigger::IsActive()
+bool FathomLordKarathressTidalvessEngagedByThirdAssistTankTrigger::IsActive()
 {
     if (!botAI->IsAssistTankOfIndex(bot, 2))
         return false;
 
-    Unit* caribdis = AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
-    return caribdis && caribdis->IsAlive();
+    Unit* tidalvess = AI_VALUE2(Unit*, "find target", "fathom-guard tidalvess");
+    return tidalvess && tidalvess->IsAlive();
 }
 
 bool FathomLordKarathressCaribdisTankNeedsDedicatedHealerTrigger::IsActive()
@@ -307,7 +333,28 @@ bool FathomLordKarathressCaribdisTankNeedsDedicatedHealerTrigger::IsActive()
         return false;
 
     Unit* caribdis = AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
-    return caribdis && caribdis->IsAlive();
+    if (!caribdis || !caribdis->IsAlive())
+        return false;
+
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    Player* firstAssistTank = nullptr;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive())
+            continue;
+
+        if (botAI->IsAssistTankOfIndex(member, 0))
+        {
+            firstAssistTank = member;
+            break;
+        }
+    }
+
+    return firstAssistTank != nullptr;
 }
 
 bool FathomLordKarathressPullingBossesTrigger::IsActive()
@@ -325,14 +372,14 @@ bool FathomLordKarathressDeterminingKillOrderTrigger::IsActive()
     if (!karathress)
         return false;
 
+    Unit* caribdis = AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
     Unit* sharkkis = AI_VALUE2(Unit*, "find target", "fathom-guard sharkkis");
     Unit* tidalvess = AI_VALUE2(Unit*, "find target", "fathom-guard tidalvess");
-    Unit* caribdis = AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
 
     return (botAI->IsDps(bot) ||
-           (botAI->IsAssistTankOfIndex(bot, 0) && (!sharkkis || !sharkkis->IsAlive())) ||
-           (botAI->IsAssistTankOfIndex(bot, 1) && (!tidalvess || !tidalvess->IsAlive())) ||
-           (botAI->IsAssistTankOfIndex(bot, 2) && (!caribdis || !caribdis->IsAlive())));
+           (botAI->IsAssistTankOfIndex(bot, 0) && (!caribdis || !caribdis->IsAlive())) ||
+           (botAI->IsAssistTankOfIndex(bot, 1) && (!sharkkis || !sharkkis->IsAlive())) ||
+           (botAI->IsAssistTankOfIndex(bot, 2) && (!tidalvess || !tidalvess->IsAlive())));
 }
 
 bool FathomLordKarathressTanksNeedToEstablishAggroTrigger::IsActive()

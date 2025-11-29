@@ -94,6 +94,13 @@ public:
     bool IsActive() override;
 };
 
+class TheLurkerBelowBossIsSubmergedTrigger : public Trigger
+{
+public:
+    TheLurkerBelowBossIsSubmergedTrigger(PlayerbotAI* botAI) : Trigger(botAI, "the lurker below boss is submerged") {}
+    bool IsActive() override;
+};
+
 class TheLurkerBelowNeedToPrepareTimerForSpoutTrigger : public Trigger
 {
 public:
@@ -115,10 +122,10 @@ public:
     bool IsActive() override;
 };
 
-class LeotherasTheBlindEngagedByDemonFormTankTrigger : public Trigger
+class LeotherasTheBlindBossTransformedIntoDemonFormTrigger : public Trigger
 {
 public:
-    LeotherasTheBlindEngagedByDemonFormTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "leotheras the blind engaged by demon form tank") {}
+    LeotherasTheBlindBossTransformedIntoDemonFormTrigger(PlayerbotAI* botAI) : Trigger(botAI, "leotheras the blind boss transformed into demon form") {}
     bool IsActive() override;
 };
 
@@ -133,13 +140,6 @@ class LeotherasTheBlindBossChannelingWhirlwindTrigger : public Trigger
 {
 public:
     LeotherasTheBlindBossChannelingWhirlwindTrigger(PlayerbotAI* botAI) : Trigger(botAI, "leotheras the blind boss channeling whirlwind") {}
-    bool IsActive() override;
-};
-
-class LeotherasTheBlindDemonFormEngagedByMeleeWithoutWarlockTankTrigger : public Trigger
-{
-public:
-    LeotherasTheBlindDemonFormEngagedByMeleeWithoutWarlockTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "leotheras the blind demon form engaged by melee without warlock tank") {}
     bool IsActive() override;
 };
 
@@ -178,24 +178,24 @@ public:
     bool IsActive() override;
 };
 
-class FathomLordKarathressSharkkisEngagedByFirstAssistTankTrigger : public Trigger
+class FathomLordKarathressCaribdisEngagedByFirstAssistTankTrigger : public Trigger
 {
 public:
-    FathomLordKarathressSharkkisEngagedByFirstAssistTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "fathom-lord karathress sharkkis engaged by first assist tank") {}
+    FathomLordKarathressCaribdisEngagedByFirstAssistTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "fathom-lord karathress caribdis engaged by first assist tank") {}
     bool IsActive() override;
 };
 
-class FathomLordKarathressTidalvessEngagedBySecondAssistTankTrigger : public Trigger
+class FathomLordKarathressSharkkisEngagedBySecondAssistTankTrigger : public Trigger
 {
 public:
-    FathomLordKarathressTidalvessEngagedBySecondAssistTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "fathom-lord karathress tidalvess engaged by second assist tank") {}
+    FathomLordKarathressSharkkisEngagedBySecondAssistTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "fathom-lord karathress sharkkis engaged by second assist tank") {}
     bool IsActive() override;
 };
 
-class FathomLordKarathressCaribdisEngagedByThirdAssistTankTrigger : public Trigger
+class FathomLordKarathressTidalvessEngagedByThirdAssistTankTrigger : public Trigger
 {
 public:
-    FathomLordKarathressCaribdisEngagedByThirdAssistTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "fathom-lord karathress caribdis engaged by third assist tank") {}
+    FathomLordKarathressTidalvessEngagedByThirdAssistTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "fathom-lord karathress tidalvess engaged by third assist tank") {}
     bool IsActive() override;
 };
 

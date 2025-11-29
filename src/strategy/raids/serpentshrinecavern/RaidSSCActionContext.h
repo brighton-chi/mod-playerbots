@@ -24,22 +24,22 @@ public:
         creators["the lurker below run around behind boss"] = &RaidSSCActionContext::the_lurker_below_run_around_behind_boss;
         creators["the lurker below position main tank"] = &RaidSSCActionContext::the_lurker_below_position_main_tank;
         creators["the lurker below spread ranged"] = &RaidSSCActionContext::the_lurker_below_spread_ranged;
+        creators["the lurker below tanks pick up adds"] = &RaidSSCActionContext::the_lurker_below_tanks_pick_up_adds;
         creators["the lurker below manage spout timer"] = &RaidSSCActionContext::the_lurker_below_manage_spout_timer;
 
         creators["leotheras the blind target spellbinders"] = &RaidSSCActionContext::leotheras_the_blind_target_spellbinders;
         creators["leotheras the blind demon form tank attack boss"] = &RaidSSCActionContext::leotheras_the_blind_demon_form_tank_attack_boss;
         creators["leotheras the blind position ranged"] = &RaidSSCActionContext::leotheras_the_blind_position_ranged;
         creators["leotheras the blind run away from whirlwind"] = &RaidSSCActionContext::leotheras_the_blind_run_away_from_whirlwind;
-        creators["leotheras the blind demon form position melee"] = &RaidSSCActionContext::leotheras_the_blind_demon_form_position_melee;
         creators["leotheras the blind inner demon cheat"] = &RaidSSCActionContext::leotheras_the_blind_inner_demon_cheat;
         creators["leotheras the blind final phase assign dps priority"] = &RaidSSCActionContext::leotheras_the_blind_final_phase_assign_dps_priority;
         creators["leotheras the blind misdirect boss to demon form tank"] = &RaidSSCActionContext::leotheras_the_blind_misdirect_boss_to_demon_form_tank;
         creators["leotheras the blind manage timers and trackers"] = &RaidSSCActionContext::leotheras_the_blind_manage_timers_and_trackers;
 
         creators["fathom-lord karathress main tank position boss"] = &RaidSSCActionContext::fathom_lord_karathress_main_tank_position_boss;
-        creators["fathom-lord karathress first assist tank position sharkkis"] = &RaidSSCActionContext::fathom_lord_karathress_first_assist_tank_position_sharkkis;
-        creators["fathom-lord karathress second assist tank position tidalvess"] = &RaidSSCActionContext::fathom_lord_karathress_second_assist_tank_position_tidalvess;
-        creators["fathom-lord karathress third assist tank position caribdis"] = &RaidSSCActionContext::fathom_lord_karathress_third_assist_tank_position_caribdis;
+        creators["fathom-lord karathress first assist tank position caribdis"] = &RaidSSCActionContext::fathom_lord_karathress_first_assist_tank_position_caribdis;
+        creators["fathom-lord karathress second assist tank position sharkkis"] = &RaidSSCActionContext::fathom_lord_karathress_second_assist_tank_position_sharkkis;
+        creators["fathom-lord karathress third assist tank position tidalvess"] = &RaidSSCActionContext::fathom_lord_karathress_third_assist_tank_position_tidalvess;
         creators["fathom-lord karathress position caribdis tank healer"] = &RaidSSCActionContext::fathom_lord_karathress_position_caribdis_tank_healer;
         creators["fathom-lord karathress misdirect bosses to tanks"] = &RaidSSCActionContext::fathom_lord_karathress_misdirect_bosses_to_tanks;
         creators["fathom-lord karathress assign dps priority"] = &RaidSSCActionContext::fathom_lord_karathress_assign_dps_priority;
@@ -83,22 +83,22 @@ private:
     static Action* the_lurker_below_run_around_behind_boss(PlayerbotAI* botAI) { return new TheLurkerBelowRunAroundBehindBossAction(botAI); }
     static Action* the_lurker_below_position_main_tank(PlayerbotAI* botAI) { return new TheLurkerBelowPositionMainTankAction(botAI); }
     static Action* the_lurker_below_spread_ranged(PlayerbotAI* botAI) { return new TheLurkerBelowSpreadRangedAction(botAI); }
+    static Action* the_lurker_below_tanks_pick_up_adds(PlayerbotAI* botAI) { return new TheLurkerBelowTanksPickUpAddsAction(botAI); }
     static Action* the_lurker_below_manage_spout_timer(PlayerbotAI* botAI) { return new TheLurkerBelowManageSpoutTimerAction(botAI); }
 
     static Action* leotheras_the_blind_target_spellbinders(PlayerbotAI* botAI) { return new LeotherasTheBlindTargetSpellbindersAction(botAI); }
     static Action* leotheras_the_blind_demon_form_tank_attack_boss(PlayerbotAI* botAI) { return new LeotherasTheBlindDemonFormTankAttackBossAction(botAI); }
     static Action* leotheras_the_blind_position_ranged(PlayerbotAI* botAI) { return new LeotherasTheBlindPositionRangedAction(botAI); }
     static Action* leotheras_the_blind_run_away_from_whirlwind(PlayerbotAI* botAI) { return new LeotherasTheBlindRunAwayFromWhirlwindAction(botAI); }
-    static Action* leotheras_the_blind_demon_form_position_melee(PlayerbotAI* botAI) { return new LeotherasTheBlindDemonFormPositionMeleeAction(botAI); }
     static Action* leotheras_the_blind_inner_demon_cheat(PlayerbotAI* botAI) { return new LeotherasTheBlindInnerDemonCheatAction(botAI); }
     static Action* leotheras_the_blind_misdirect_boss_to_demon_form_tank(PlayerbotAI* botAI) { return new LeotherasTheBlindMisdirectBossToDemonFormTankAction(botAI); }
     static Action* leotheras_the_blind_final_phase_assign_dps_priority(PlayerbotAI* botAI) { return new LeotherasTheBlindFinalPhaseAssignDpsPriorityAction(botAI); }
     static Action* leotheras_the_blind_manage_timers_and_trackers(PlayerbotAI* botAI) { return new LeotherasTheBlindManageTimersAndTrackersAction(botAI); }
 
     static Action* fathom_lord_karathress_main_tank_position_boss(PlayerbotAI* botAI) { return new FathomLordKarathressMainTankPositionBossAction(botAI); }
-    static Action* fathom_lord_karathress_first_assist_tank_position_sharkkis(PlayerbotAI* botAI) { return new FathomLordKarathressFirstAssistTankPositionSharkkisAction(botAI); }
-    static Action* fathom_lord_karathress_second_assist_tank_position_tidalvess(PlayerbotAI* botAI) { return new FathomLordKarathressSecondAssistTankPositionTidalvessAction(botAI); }
-    static Action* fathom_lord_karathress_third_assist_tank_position_caribdis(PlayerbotAI* botAI) { return new FathomLordKarathressThirdAssistTankPositionCaribdisAction(botAI); }
+    static Action* fathom_lord_karathress_first_assist_tank_position_caribdis(PlayerbotAI* botAI) { return new FathomLordKarathressFirstAssistTankPositionCaribdisAction(botAI); }
+    static Action* fathom_lord_karathress_second_assist_tank_position_sharkkis(PlayerbotAI* botAI) { return new FathomLordKarathressSecondAssistTankPositionSharkkisAction(botAI); }
+    static Action* fathom_lord_karathress_third_assist_tank_position_tidalvess(PlayerbotAI* botAI) { return new FathomLordKarathressThirdAssistTankPositionTidalvessAction(botAI); }
     static Action* fathom_lord_karathress_position_caribdis_tank_healer(PlayerbotAI* botAI) { return new FathomLordKarathressPositionCaribdisTankHealerAction(botAI); }
     static Action* fathom_lord_karathress_misdirect_bosses_to_tanks(PlayerbotAI* botAI) { return new FathomLordKarathressMisdirectBossesToTanksAction(botAI); }
     static Action* fathom_lord_karathress_assign_dps_priority(PlayerbotAI* botAI) { return new FathomLordKarathressAssignDpsPriorityAction(botAI); }

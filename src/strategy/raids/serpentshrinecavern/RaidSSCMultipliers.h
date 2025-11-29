@@ -38,6 +38,13 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class TheLurkerBelowDisableTankAssistMultiplier : public Multiplier
+{
+public:
+    TheLurkerBelowDisableTankAssistMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "the lurker below disable tank assist") {}
+    virtual float GetValue(Action* action);
+};
+
 class LeotherasTheBlindAvoidWhirlwindMultiplier : public Multiplier
 {
 public:
@@ -49,20 +56,6 @@ class LeotherasTheBlindDisableTankActionsMultiplier : public Multiplier
 {
 public:
     LeotherasTheBlindDisableTankActionsMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "leotheras the blind disable tank actions") {}
-    virtual float GetValue(Action* action);
-};
-
-class LeotherasTheBlindMeleeTankMaintainDemonFormPositionMultiplier : public Multiplier
-{
-public:
-    LeotherasTheBlindMeleeTankMaintainDemonFormPositionMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "leotheras the blind melee tank maintain demon form position") {}
-    virtual float GetValue(Action* action);
-};
-
-class LeotherasTheBlindDemonFormDisableMeleeActionsMultiplier : public Multiplier
-{
-public:
-    LeotherasTheBlindDemonFormDisableMeleeActionsMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "leotheras the blind demon form disable melee actions") {}
     virtual float GetValue(Action* action);
 };
 
@@ -122,10 +115,10 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class MorogrimTidewalkerDisablePhase2FleeActionMultiplier : public Multiplier
+class MorogrimTidewalkerDisablePhase2MovementActionsMultiplier : public Multiplier
 {
 public:
-    MorogrimTidewalkerDisablePhase2FleeActionMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "morogrim tidewalker disable phase2 flee action") {}
+    MorogrimTidewalkerDisablePhase2MovementActionsMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "morogrim tidewalker disable phase2 movement actions") {}
     virtual float GetValue(Action* action);
 };
 

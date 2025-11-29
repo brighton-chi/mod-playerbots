@@ -47,6 +47,9 @@ namespace SerpentShrineCavernHelpers
         SPELL_STATIC_CHARGE          = 38280,
         SPELL_ENTANGLE               = 38316,
 
+        // Druid
+        SPELL_TREE_OF_LIFE           = 33891,
+
         // Hunter
         SPELL_MISDIRECTION           = 35079,
 
@@ -73,6 +76,9 @@ namespace SerpentShrineCavernHelpers
         // Hydross the Unstable <Duke of Currents>
         NPC_PURE_SPAWN_OF_HYDROSS    = 22035,
         NPC_TAINTED_SPAWN_OF_HYDROSS = 22036,
+
+        // The Lurker Below
+        NPC_COILFANG_GUARDIAN        = 21873,
 
         // Leotheras the Blind
         NPC_LEOTHERAS_THE_BLIND      = 21215,
@@ -180,7 +186,7 @@ namespace SerpentShrineCavernHelpers
     bool IsLadyVashjInPhase1(PlayerbotAI* botAI);
     bool IsLadyVashjInPhase2(PlayerbotAI* botAI);
     bool IsLadyVashjInPhase3(PlayerbotAI* botAI);
-    bool IsValidPhase2CombatNpc(Unit* unit, PlayerbotAI* botAI);
+    bool IsValidLadyVashjCombatNpc(Unit* unit, PlayerbotAI* botAI);
     bool AnyRecentParalyze(Group* group, uint32 graceSeconds = 3);
     Player* GetDesignatedCoreLooter(Group* group, PlayerbotAI* botAI);
     Player* GetFirstTaintedCorePasser(Group* group, PlayerbotAI* botAI);

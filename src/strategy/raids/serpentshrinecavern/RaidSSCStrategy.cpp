@@ -55,17 +55,14 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("leotheras the blind boss is inactive",
         NextAction::array(0, new NextAction("leotheras the blind target spellbinders", ACTION_RAID + 1), nullptr)
     ));
-    triggers.push_back(new TriggerNode("leotheras the blind engaged by demon form tank",
-        NextAction::array(0, new NextAction("leotheras the blind demon form tank attack boss", ACTION_EMERGENCY + 1), nullptr)
+    triggers.push_back(new TriggerNode("leotheras the blind boss transformed into demon form",
+        NextAction::array(0, new NextAction("leotheras the blind demon form tank attack boss", ACTION_EMERGENCY + 6), nullptr)
     ));
     triggers.push_back(new TriggerNode("leotheras the blind boss engaged by ranged",
         NextAction::array(0, new NextAction("leotheras the blind position ranged", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("leotheras the blind boss channeling whirlwind",
         NextAction::array(0, new NextAction("leotheras the blind run away from whirlwind", ACTION_EMERGENCY + 1), nullptr)
-    ));
-    triggers.push_back(new TriggerNode("leotheras the blind demon form engaged by melee without warlock tank",
-        NextAction::array(0, new NextAction("leotheras the blind demon form position melee", ACTION_EMERGENCY + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("leotheras the blind inner demon cheat",
         NextAction::array(0, new NextAction("leotheras the blind inner demon cheat", ACTION_EMERGENCY + 6), nullptr)
@@ -84,14 +81,14 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("fathom-lord karathress boss engaged by main tank",
         NextAction::array(0, new NextAction("fathom-lord karathress main tank position boss", ACTION_RAID + 1), nullptr)
     ));
-    triggers.push_back(new TriggerNode("fathom-lord karathress sharkkis engaged by first assist tank",
-        NextAction::array(0, new NextAction("fathom-lord karathress first assist tank position sharkkis", ACTION_RAID + 1), nullptr)
+    triggers.push_back(new TriggerNode("fathom-lord karathress caribdis engaged by first assist tank",
+        NextAction::array(0, new NextAction("fathom-lord karathress first assist tank position caribdis", ACTION_RAID + 1), nullptr)
     ));
-    triggers.push_back(new TriggerNode("fathom-lord karathress tidalvess engaged by second assist tank",
-        NextAction::array(0, new NextAction("fathom-lord karathress second assist tank position tidalvess", ACTION_RAID + 1), nullptr)
+    triggers.push_back(new TriggerNode("fathom-lord karathress sharkkis engaged by second assist tank",
+        NextAction::array(0, new NextAction("fathom-lord karathress second assist tank position sharkkis", ACTION_RAID + 1), nullptr)
     ));
-    triggers.push_back(new TriggerNode("fathom-lord karathress caribdis engaged by third assist tank",
-        NextAction::array(0, new NextAction("fathom-lord karathress third assist tank position caribdis", ACTION_RAID + 1), nullptr)
+    triggers.push_back(new TriggerNode("fathom-lord karathress tidalvess engaged by third assist tank",
+        NextAction::array(0, new NextAction("fathom-lord karathress third assist tank position tidalvess", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("fathom-lord karathress caribdis tank needs dedicated healer",
         NextAction::array(0, new NextAction("fathom-lord karathress position caribdis tank healer", ACTION_RAID + 1), nullptr)
@@ -147,7 +144,7 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             new NextAction("lady vashj loot tainted core", ACTION_EMERGENCY + 10), nullptr)
     ));
     triggers.push_back(new TriggerNode("lady vashj tainted core was looted",
-        NextAction::array(0, new NextAction("lady vashj pass the tainted core", ACTION_EMERGENCY + 1), nullptr)
+        NextAction::array(0, new NextAction("lady vashj pass the tainted core", ACTION_EMERGENCY + 10), nullptr)
     ));
     triggers.push_back(new TriggerNode("lady vashj core handler is dead",
         NextAction::array(0, new NextAction("lady vashj destroy tainted core", ACTION_EMERGENCY + 1), nullptr)
@@ -173,10 +170,9 @@ void RaidSSCStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new HydrossTheUnstableWaitForDpsMultiplier(botAI));
     multipliers.push_back(new HydrossTheUnstableControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new TheLurkerBelowStayAwayFromSpoutMultiplier(botAI));
+    multipliers.push_back(new TheLurkerBelowDisableTankAssistMultiplier(botAI));
     multipliers.push_back(new LeotherasTheBlindAvoidWhirlwindMultiplier(botAI));
     multipliers.push_back(new LeotherasTheBlindDisableTankActionsMultiplier(botAI));
-    multipliers.push_back(new LeotherasTheBlindMeleeTankMaintainDemonFormPositionMultiplier(botAI));
-    multipliers.push_back(new LeotherasTheBlindDemonFormDisableMeleeActionsMultiplier(botAI));
     multipliers.push_back(new LeotherasTheBlindWaitForDpsMultiplier(botAI));
     multipliers.push_back(new LeotherasTheBlindDelayBloodlustAndHeroismMultiplier(botAI));
     multipliers.push_back(new FathomLordKarathressDisableTankAssistMultiplier(botAI));
@@ -185,7 +181,7 @@ void RaidSSCStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new FathomLordKarathressWaitForDpsMultiplier(botAI));
     multipliers.push_back(new FathomLordKarathressCaribdisTankHealerMaintainPositionMultiplier(botAI));
     multipliers.push_back(new MorogrimTidewalkerDelayBloodlustAndHeroismMultiplier(botAI));
-    multipliers.push_back(new MorogrimTidewalkerDisablePhase2FleeActionMultiplier(botAI));
+    multipliers.push_back(new MorogrimTidewalkerDisablePhase2MovementActionsMultiplier(botAI));
     multipliers.push_back(new LadyVashjDelayBloodlustAndHeroismMultiplier(botAI));
     multipliers.push_back(new LadyVashjStaticChargeStayAwayFromGroupMultiplier(botAI));
     multipliers.push_back(new LadyVashjDoNotLootTheTaintedCoreMultiplier(botAI));

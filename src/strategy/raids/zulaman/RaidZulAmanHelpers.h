@@ -16,7 +16,7 @@ namespace ZulAmanHelpers
         SPELL_ELECTRICAL_STORM     = 43648,
 
         // Nalorakk <Bear Avatar>
-        SPELL_BEARFORM          = 42377
+        SPELL_BEARFORM          = 42377,
 
         // Jan'alai <Dragonhawk Avatar>
 
