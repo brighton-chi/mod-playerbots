@@ -110,7 +110,7 @@ float KaelthasSunstriderWaitForDpsMultiplier::GetValue(Action* action)
     const time_t now = std::time(nullptr);
     const uint8 dpsWaitSeconds = 12;
 
-    auto it = advisorDpsWaitTimer.find(kaelthas->GetMapId());
+    auto it = advisorDpsWaitTimer.find(TEMPESTKEEP_MAP_ID);
     if (it == advisorDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
     {
         Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");

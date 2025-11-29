@@ -391,11 +391,11 @@ bool NightbaneBossIsFlyingTrigger::IsActive()
     if (!nightbane || nightbane->GetPositionZ() <= 95.0f)
         return false;
 
-    const uint32 mapId = nightbane->GetMapId();
     const time_t now = std::time(nullptr);
+    const uint8 flightPhaseDurationSeconds = 35;
 
-    return nightbaneFlightPhaseStartTimer.find(mapId) != nightbaneFlightPhaseStartTimer.end() &&
-           (now - nightbaneFlightPhaseStartTimer[mapId] < 35);
+    return nightbaneFlightPhaseStartTimer.find(KARAZHAN_MAP_ID) != nightbaneFlightPhaseStartTimer.end() &&
+           (now - nightbaneFlightPhaseStartTimer[KARAZHAN_MAP_ID] < flightPhaseDurationSeconds);
 }
 
 bool NightbaneNeedToManageTimersAndTrackersTrigger::IsActive()

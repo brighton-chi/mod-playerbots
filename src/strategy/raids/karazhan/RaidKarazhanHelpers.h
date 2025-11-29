@@ -71,6 +71,8 @@ namespace KarazhanHelpers
         NPC_NETHERSPITE_INFERNAL         = 17646,
     };
 
+    constexpr uint32 KARAZHAN_MAP_ID = 532;
+
     // Attumen the Huntsman
     extern std::unordered_map<uint32, time_t> attumenDpsWaitTimer;
     // Big Bad Wolf

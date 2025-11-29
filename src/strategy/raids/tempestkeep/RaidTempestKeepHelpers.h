@@ -115,6 +115,8 @@ namespace TempestKeepHelpers
         extern const Position KaelthasTankPosition;
     }
 
+    constexpr uint32 TEMPESTKEEP_MAP_ID = 550;
+
     void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);
     void MarkTargetWithSkull(Player* bot, Unit* target);
     void MarkTargetWithSquare(Player* bot, Unit* target);
@@ -128,7 +130,7 @@ namespace TempestKeepHelpers
     Unit* GetNearestPlayerInRadius(Player* bot, float radius);
     Unit* GetNearestNonTankPlayerInRadius(Player* bot, float radius);
 
-    void UpdateAlarLastPlatform(Unit* alar, uint32 mapId, const std::vector<Position>& platforms);
+    void UpdateAlarLastPlatform(Unit* alar, const std::vector<Position>& platforms);
     bool IsAlarMapIDTimerManager(PlayerbotAI* botAI, Player* bot);
     bool IsAlarAddTank(PlayerbotAI* botAI, Player* bot);
 
@@ -146,7 +148,7 @@ namespace TempestKeepHelpers
 
     extern std::unordered_map<uint32, int8> lastAlarPlatform;
     extern std::unordered_map<uint32, bool> lastRebirthState;
-    extern std::unordered_map<uint32, bool> isPhase2;
+    extern std::unordered_map<uint32, bool> isAlarInPhase2;
     extern std::unordered_map<ObjectGuid, bool> mainTankAtPlatform2;
     extern std::unordered_map<ObjectGuid, bool> assistTankAtPlatform3;
     extern std::unordered_map<ObjectGuid, std::vector<bool>> mtBalconyMidpointVisited;

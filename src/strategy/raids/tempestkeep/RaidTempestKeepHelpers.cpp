@@ -190,9 +190,9 @@ namespace TempestKeepHelpers
                !botAI->IsAssistTankOfIndex(bot, 0);
     }
 
-    void UpdateAlarLastPlatform(Unit* alar, uint32 mapId, const std::vector<Position>& platforms)
+    void UpdateAlarLastPlatform(Unit* alar, const std::vector<Position>& platforms)
     {
-        int8 previousIndex = lastAlarPlatform.count(mapId) ? lastAlarPlatform[mapId] : -1;
+        int8 previousIndex = lastAlarPlatform.count(TEMPESTKEEP_MAP_ID) ? lastAlarPlatform[TEMPESTKEEP_MAP_ID] : -1;
         int8 closestIndex = -1;
         float minDist = std::numeric_limits<float>::max();
         for (size_t i = 0; i < platforms.size(); ++i)
@@ -206,14 +206,9 @@ namespace TempestKeepHelpers
         }
 
         if (closestIndex != -1 && closestIndex != previousIndex)
-        {
-            LOG_DEBUG("playerbots", "Al'ar platform switch: {} -> {} (mapId {})", previousIndex, closestIndex, mapId);
-            lastAlarPlatform[mapId] = closestIndex;
-        }
+            lastAlarPlatform[TEMPESTKEEP_MAP_ID] = closestIndex;
         else if (closestIndex != -1)
-        {
-            lastAlarPlatform[mapId] = closestIndex;
-        }
+            lastAlarPlatform[TEMPESTKEEP_MAP_ID] = closestIndex;
     }
 
     // Phase 1: Single Advisor Phase
@@ -554,7 +549,7 @@ namespace TempestKeepHelpers
 
     std::unordered_map<uint32, int8> lastAlarPlatform;
     std::unordered_map<uint32, bool> lastRebirthState;
-    std::unordered_map<uint32, bool> isPhase2;
+    std::unordered_map<uint32, bool> isAlarInPhase2;
     std::unordered_map<ObjectGuid, bool> mainTankAtPlatform2;
     std::unordered_map<ObjectGuid, bool> assistTankAtPlatform3;
     std::unordered_map<ObjectGuid, std::vector<bool>> mtBalconyMidpointVisited;

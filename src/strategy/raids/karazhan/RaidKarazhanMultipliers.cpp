@@ -61,7 +61,7 @@ float AttumenTheHuntsmanWaitForDpsMultiplier::GetValue(Action* action)
     const time_t now = std::time(nullptr);
     const uint8 dpsWaitSeconds = 8;
 
-    auto it = attumenDpsWaitTimer.find(attumenMounted->GetMapId());
+    auto it = attumenDpsWaitTimer.find(KARAZHAN_MAP_ID);
     if (it == attumenDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
     {
         if ((!botAI->IsMainTank(bot)))
@@ -175,7 +175,7 @@ float NetherspiteWaitForDpsMultiplier::GetValue(Action* action)
     const time_t now = std::time(nullptr);
     const uint8 dpsWaitSeconds = 5;
 
-    auto it = netherspiteDpsWaitTimer.find(netherspite->GetMapId());
+    auto it = netherspiteDpsWaitTimer.find(KARAZHAN_MAP_ID);
     if (it == netherspiteDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
     {
         if (!botAI->IsTank(bot))
@@ -256,7 +256,7 @@ float NightbaneWaitForDpsMultiplier::GetValue(Action* action)
     const time_t now = std::time(nullptr);
     const uint8 dpsWaitSeconds = 8;
 
-    auto it = nightbaneDpsWaitTimer.find(nightbane->GetMapId());
+    auto it = nightbaneDpsWaitTimer.find(KARAZHAN_MAP_ID);
     if (it == nightbaneDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
     {
         if (!botAI->IsMainTank(bot))
