@@ -1843,7 +1843,7 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
     {
         const float desiredDisperse = 6.0f;
         float currentDisperse = AI_VALUE(float, "disperse distance");
-        if (currentDisperse < 0.0f || currentDisperse < 0.0f != desiredDisperse)
+        if (currentDisperse < 0.0f || currentDisperse != desiredDisperse)
             SET_AI_VALUE(float, "disperse distance", desiredDisperse);
     }
 

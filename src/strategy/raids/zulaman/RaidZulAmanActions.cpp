@@ -1,5 +1,6 @@
 #include "RaidZulAmanActions.h"
 #include "RaidZulAmanHelpers.h"
+#include "Playerbots.h"
 
 using namespace ZulAmanHelpers;
 using namespace ZulAmanPositions;
@@ -38,7 +39,7 @@ bool AkilzonMoveToEyeOfTheStormAction::Execute(Event event)
             return member == stormBot;
     }
 
-    float distanceFromStorm = bot->GetExactDist2d(bot, stormBot);
+    float distanceFromStorm = bot->GetExactDist2d(stormBot);
     if (distanceFromStorm > 4.0f)
     {
         bot->AttackStop();
