@@ -114,7 +114,7 @@ bool TheLurkerBelowSpoutIsActiveTrigger::IsActive()
 
     const time_t now = std::time(nullptr);
 
-    auto it = lurkerSpoutTimer.find(lurker->GetMapId());
+    auto it = lurkerSpoutTimer.find(SSC_MAP_ID);
     return it != lurkerSpoutTimer.end() && it->second > now;
 }
 
@@ -129,7 +129,7 @@ bool TheLurkerBelowBossIsActiveForMainTankTrigger::IsActive()
 
     const time_t now = std::time(nullptr);
 
-    auto it = lurkerSpoutTimer.find(lurker->GetMapId());
+    auto it = lurkerSpoutTimer.find(SSC_MAP_ID);
     return lurker->getStandState() != UNIT_STAND_STATE_SUBMERGED &&
            (it == lurkerSpoutTimer.end() || it->second <= now);
 }
@@ -145,7 +145,7 @@ bool TheLurkerBelowBossCastsGeyserTrigger::IsActive()
 
     const time_t now = std::time(nullptr);
 
-    auto it = lurkerSpoutTimer.find(lurker->GetMapId());
+    auto it = lurkerSpoutTimer.find(SSC_MAP_ID);
     return lurker->getStandState() != UNIT_STAND_STATE_SUBMERGED &&
            (it == lurkerSpoutTimer.end() || it->second <= now);
 }
@@ -436,7 +436,8 @@ bool LadyVashjPullingBossInPhase1AndPhase3Trigger::IsActive()
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
 
     return vashj && ((vashj->GetHealthPct() <= 100.0f && vashj->GetHealthPct() > 90.0f) ||
-            (!vashj->HasUnitState(UNIT_STATE_ROOT) && vashj->GetHealthPct() <= 50.0f && vashj->GetHealthPct() > 40.0f));
+            (!vashj->HasUnitState(UNIT_STATE_ROOT) && vashj->GetHealthPct() <= 50.0f &&
+             vashj->GetHealthPct() > 40.0f));
 }
 
 bool LadyVashjCoilfangStriderIsApproachingTrigger::IsActive()
@@ -490,11 +491,10 @@ bool LadyVashjTaintedElementalCheatTrigger::IsActive()
         return false;
 
     Group* group = bot->GetGroup();
-    Player* master = botAI->GetMaster();
-    if (!group || !master)
+    if (!group)
         return false;
 
-    Player* designatedLooter = GetDesignatedCoreLooter(group, master, botAI);
+    Player* designatedLooter = GetDesignatedCoreLooter(group, botAI);
     return (designatedLooter && designatedLooter == bot &&
             !bot->HasItemCount(ITEM_TAINTED_CORE, 1, false));
 }
@@ -508,27 +508,31 @@ bool LadyVashjTaintedCoreWasLootedTrigger::IsActive()
     if (!IsLadyVashjInPhase2(botAI))
         return false;
 
-    Player* master = botAI->GetMaster();
     Group* group = bot->GetGroup();
-    if (!master || !group)
+    if (!group)
         return false;
 
-    Player* designatedLooter = GetDesignatedCoreLooter(group, master, botAI);
+    Player* designatedLooter = GetDesignatedCoreLooter(group, botAI);
     Player* firstCorePasser = GetFirstTaintedCorePasser(group, botAI);
     Player* secondCorePasser = GetSecondTaintedCorePasser(group, botAI);
     Player* thirdCorePasser = GetThirdTaintedCorePasser(group, botAI);
     Player* fourthCorePasser = GetFourthTaintedCorePasser(group, botAI);
 
-    auto hasCore = [](Player* p) -> bool { return p && p->HasItemCount(ITEM_TAINTED_CORE, 1, false); };
+    auto hasCore = [](Player* player) -> bool
+    {
+        return player && player->HasItemCount(ITEM_TAINTED_CORE, 1, false);
+    };
 
     if (bot == designatedLooter)
     {
-        if (hasCore(firstCorePasser) || hasCore(secondCorePasser) || hasCore(thirdCorePasser) || hasCore(fourthCorePasser))
+        if (hasCore(firstCorePasser) || hasCore(secondCorePasser) ||
+            hasCore(thirdCorePasser) || hasCore(fourthCorePasser))
             return false;
     }
     else if (bot == firstCorePasser)
     {
-        if (hasCore(secondCorePasser) || hasCore(thirdCorePasser) || hasCore(fourthCorePasser))
+        if (hasCore(secondCorePasser) || hasCore(thirdCorePasser) ||
+            hasCore(fourthCorePasser))
             return false;
     }
     else if (bot == secondCorePasser)
@@ -541,12 +545,15 @@ bool LadyVashjTaintedCoreWasLootedTrigger::IsActive()
         if (hasCore(fourthCorePasser))
             return false;
     }
+    else if (bot != fourthCorePasser)
+        return false;
 
-    if (AnyRecentParalyze(group, vashj->GetMapId()))
+    if (AnyRecentParalyze(group))
         return true;
 
+    // First and second passers move to positions as soon as the elemental appears
     Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
-    if (tainted && designatedLooter->GetExactDist2d(tainted) < 5.0f)
+    if (tainted && (bot == firstCorePasser || bot == secondCorePasser))
         return true;
 
     return false;
@@ -554,14 +561,13 @@ bool LadyVashjTaintedCoreWasLootedTrigger::IsActive()
 
 bool LadyVashjCoreHandlerIsDeadTrigger::IsActive()
 {
-    Player* master = botAI->GetMaster();
     Group* group = bot->GetGroup();
-    if (!master || !group)
+    if (!group)
         return false;
 
     Player* coreHandlers[] =
     {
-        GetDesignatedCoreLooter(group, master, botAI),
+        GetDesignatedCoreLooter(group, botAI),
         GetFirstTaintedCorePasser(group, botAI),
         GetSecondTaintedCorePasser(group, botAI),
         GetThirdTaintedCorePasser(group, botAI),

@@ -150,6 +150,13 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class LadyVashjCorePassersPrioritizePositioningMultiplier : public Multiplier
+{
+public:
+    LadyVashjCorePassersPrioritizePositioningMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "lady vashj core passers prioritize positioning") {}
+    virtual float GetValue(Action* action);
+};
+
 class LadyVashjDisableAutomaticTargetingAndMovementModifier : public Multiplier
 {
 public:

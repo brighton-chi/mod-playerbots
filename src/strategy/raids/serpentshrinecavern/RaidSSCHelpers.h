@@ -103,6 +103,8 @@ namespace SerpentShrineCavernHelpers
         ITEM_HEAVY_NETHERWEAVE_NET   = 24269,
     };
 
+    constexpr uint32 SSC_MAP_ID = 548;
+
     extern std::unordered_map<uint32, time_t> hydrossFrostDpsWaitTimer;
     extern std::unordered_map<uint32, time_t> hydrossNatureDpsWaitTimer;
     extern std::unordered_map<uint32, time_t> hydrossChangeToFrostPhaseTimer;
@@ -179,8 +181,8 @@ namespace SerpentShrineCavernHelpers
     bool IsLadyVashjInPhase2(PlayerbotAI* botAI);
     bool IsLadyVashjInPhase3(PlayerbotAI* botAI);
     bool IsValidPhase2CombatNpc(Unit* unit, PlayerbotAI* botAI);
-    bool AnyRecentParalyze(Group* group, uint32 mapId, uint32 graceSeconds = 3);
-    Player* GetDesignatedCoreLooter(Group* group, Player* master, PlayerbotAI* botAI);
+    bool AnyRecentParalyze(Group* group, uint32 graceSeconds = 3);
+    Player* GetDesignatedCoreLooter(Group* group, PlayerbotAI* botAI);
     Player* GetFirstTaintedCorePasser(Group* group, PlayerbotAI* botAI);
     Player* GetSecondTaintedCorePasser(Group* group, PlayerbotAI* botAI);
     Player* GetThirdTaintedCorePasser(Group* group, PlayerbotAI* botAI);

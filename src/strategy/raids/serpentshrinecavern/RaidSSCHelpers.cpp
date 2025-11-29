@@ -1,7 +1,6 @@
 #include "RaidSSCHelpers.h"
 #include "AiFactory.h"
 #include "Creature.h"
-#include "Group.h"
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
 #include "RtiTargetValue.h"
@@ -304,8 +303,7 @@ namespace SerpentShrineCavernHelpers
         if (!vashj)
             return false;
 
-        Creature* vashjCreature = vashj->ToCreature();
-        return vashjCreature && vashjCreature->GetHealthPct() > 70.0f && vashjCreature->GetReactState() != REACT_PASSIVE;
+        return vashj->GetHealthPct() > 70.0f;
     }
 
     bool IsLadyVashjInPhase2(PlayerbotAI* botAI)
@@ -314,8 +312,7 @@ namespace SerpentShrineCavernHelpers
         if (!vashj)
             return false;
 
-        Creature* vashjCreature = vashj->ToCreature();
-        return vashjCreature && vashjCreature->GetReactState() == REACT_PASSIVE;
+        return vashj->HasUnitState(UNIT_STATE_ROOT);
     }
 
     bool IsLadyVashjInPhase3(PlayerbotAI* botAI)
@@ -324,8 +321,7 @@ namespace SerpentShrineCavernHelpers
         if (!vashj)
             return false;
 
-        Creature* vashjCreature = vashj->ToCreature();
-        return vashjCreature && vashjCreature->GetHealthPct() <= 50.0f && vashjCreature->GetReactState() != REACT_PASSIVE;
+        return vashj->GetHealthPct() <= 50.0f && !vashj->HasUnitState(UNIT_STATE_ROOT);
     }
 
     bool IsValidPhase2CombatNpc(Unit* unit, PlayerbotAI* botAI)
@@ -350,7 +346,7 @@ namespace SerpentShrineCavernHelpers
         return false;
     }
 
-    bool AnyRecentParalyze(Group* group, uint32 mapId, uint32 graceSeconds)
+    bool AnyRecentParalyze(Group* group, uint32 graceSeconds)
     {
         const time_t now = std::time(nullptr);
 
@@ -362,12 +358,12 @@ namespace SerpentShrineCavernHelpers
 
             if (member->IsAlive() && member->HasAura(SPELL_PARALYZE))
             {
-                lastParalyzeTime[mapId] = now;
+                lastParalyzeTime[SSC_MAP_ID] = now;
                 return true;
             }
         }
 
-        auto it = lastParalyzeTime.find(mapId);
+        auto it = lastParalyzeTime.find(SSC_MAP_ID);
         if (it != lastParalyzeTime.end())
         {
             if ((now - it->second) <= static_cast<time_t>(graceSeconds))
@@ -377,16 +373,24 @@ namespace SerpentShrineCavernHelpers
         return false;
     }
 
-    Player* GetDesignatedCoreLooter(Group* group, Player* master, PlayerbotAI* botAI)
+    Player* GetDesignatedCoreLooter(Group* group, PlayerbotAI* botAI)
     {
-        if (!botAI->HasCheat(BotCheatMask::raid))
-            return master;
+        if (!group)
+            return nullptr;
 
-        Player* fallback = nullptr;
+        Player* leader = nullptr;
+        ObjectGuid leaderGuid = group->GetLeaderGUID();
+        if (!leaderGuid.IsEmpty())
+            leader = ObjectAccessor::FindPlayer(leaderGuid);
+
+        if (!botAI->HasCheat(BotCheatMask::raid))
+            return leader;
+
+        Player* fallback = leader;
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || member == master)
+            if (!member || !member->IsAlive() || member == leader)
                 continue;
 
             PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
@@ -400,12 +404,15 @@ namespace SerpentShrineCavernHelpers
                 fallback = member;
         }
 
-        return fallback ? fallback : master;
+        return fallback ? fallback : leader;
     }
 
     Player* GetFirstTaintedCorePasser(Group* group, PlayerbotAI* botAI)
     {
-        Player* designatedLooter = GetDesignatedCoreLooter(group, botAI->GetMaster(), botAI);
+        if (!group)
+            return nullptr;
+
+        Player* designatedLooter = GetDesignatedCoreLooter(group, botAI);
 
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
@@ -435,7 +442,10 @@ namespace SerpentShrineCavernHelpers
 
     Player* GetSecondTaintedCorePasser(Group* group, PlayerbotAI* botAI)
     {
-        Player* designatedLooter = GetDesignatedCoreLooter(group, botAI->GetMaster(), botAI);
+        if (!group)
+            return nullptr;
+
+        Player* designatedLooter = GetDesignatedCoreLooter(group, botAI);
         Player* firstCorePasser = GetFirstTaintedCorePasser(group, botAI);
 
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
@@ -467,7 +477,10 @@ namespace SerpentShrineCavernHelpers
 
     Player* GetThirdTaintedCorePasser(Group* group, PlayerbotAI* botAI)
     {
-        Player* designatedLooter = GetDesignatedCoreLooter(group, botAI->GetMaster(), botAI);
+        if (!group)
+            return nullptr;
+
+        Player* designatedLooter = GetDesignatedCoreLooter(group, botAI);
         Player* firstCorePasser = GetFirstTaintedCorePasser(group, botAI);
         Player* secondCorePasser = GetSecondTaintedCorePasser(group, botAI);
 
@@ -500,7 +513,10 @@ namespace SerpentShrineCavernHelpers
 
     Player* GetFourthTaintedCorePasser(Group* group, PlayerbotAI* botAI)
     {
-        Player* designatedLooter = GetDesignatedCoreLooter(group, botAI->GetMaster(), botAI);
+        if (!group)
+            return nullptr;
+
+        Player* designatedLooter = GetDesignatedCoreLooter(group, botAI);
         Player* firstCorePasser = GetFirstTaintedCorePasser(group, botAI);
         Player* secondCorePasser = GetSecondTaintedCorePasser(group, botAI);
         Player* thirdCorePasser = GetThirdTaintedCorePasser(group, botAI);

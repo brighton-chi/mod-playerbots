@@ -87,7 +87,6 @@ float HydrossTheUnstableWaitForDpsMultiplier::GetValue(Action* action)
     if (dynamic_cast<HydrossTheUnstableMisdirectBossToTankAction*>(action))
         return 1.0f;
 
-    const uint32 mapId = hydross->GetMapId();
     const time_t now = std::time(nullptr);
     const uint8 dpsWaitSeconds = 5;
     const uint8 phaseChangeWaitSeconds = 6;
@@ -103,8 +102,8 @@ float HydrossTheUnstableWaitForDpsMultiplier::GetValue(Action* action)
         else if (botAI->IsTank(bot))
             return 1.0f;
 
-        auto itDps = hydrossFrostDpsWaitTimer.find(mapId);
-        auto itPhase = hydrossChangeToFrostPhaseTimer.find(mapId);
+        auto itDps = hydrossFrostDpsWaitTimer.find(SSC_MAP_ID);
+        auto itPhase = hydrossChangeToFrostPhaseTimer.find(SSC_MAP_ID);
 
         bool justChanged = (itDps == hydrossFrostDpsWaitTimer.end() ||
                             (now - itDps->second) < dpsWaitSeconds);
@@ -131,8 +130,8 @@ float HydrossTheUnstableWaitForDpsMultiplier::GetValue(Action* action)
         else if (botAI->IsTank(bot))
             return 1.0f;
 
-        auto itDps = hydrossNatureDpsWaitTimer.find(mapId);
-        auto itPhase = hydrossChangeToNaturePhaseTimer.find(mapId);
+        auto itDps = hydrossNatureDpsWaitTimer.find(SSC_MAP_ID);
+        auto itPhase = hydrossChangeToNaturePhaseTimer.find(SSC_MAP_ID);
 
         bool justChanged = (itDps == hydrossNatureDpsWaitTimer.end() ||
                             (now - itDps->second) < dpsWaitSeconds);
@@ -173,7 +172,7 @@ float TheLurkerBelowStayAwayFromSpoutMultiplier::GetValue(Action* action)
 
     const time_t now = std::time(nullptr);
 
-    auto it = lurkerSpoutTimer.find(lurker->GetMapId());
+    auto it = lurkerSpoutTimer.find(SSC_MAP_ID);
     if (it != lurkerSpoutTimer.end() && it->second > now)
     {
         if (dynamic_cast<CastReachTargetSpellAction*>(action) || dynamic_cast<CastKillingSpreeAction*>(action) ||
@@ -295,7 +294,6 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValue(Action* action)
     if (dynamic_cast<LeotherasTheBlindMisdirectBossToDemonFormTankAction*>(action))
         return 1.0f;
 
-    const uint32 mapId = leotheras->GetMapId();
     const time_t now = std::time(nullptr);
 
     const uint8 dpsWaitSecondsPhase1 = 5;
@@ -306,7 +304,7 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValue(Action* action)
         if (botAI->IsTank(bot))
             return 1.0f;
 
-        auto it = leotherasHumanFormDpsWaitTimer.find(mapId);
+        auto it = leotherasHumanFormDpsWaitTimer.find(SSC_MAP_ID);
         if (it == leotherasHumanFormDpsWaitTimer.end() || (now - it->second) < dpsWaitSecondsPhase1)
         {
             if (dynamic_cast<AttackAction*>(action) ||
@@ -323,7 +321,7 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValue(Action* action)
         if (demonFormTank == bot)
             return 1.0f;
 
-        auto it = leotherasDemonFormDpsWaitTimer.find(mapId);
+        auto it = leotherasDemonFormDpsWaitTimer.find(SSC_MAP_ID);
         if (it == leotherasDemonFormDpsWaitTimer.end() || (now - it->second) < dpsWaitSecondsPhase2)
         {
             if (dynamic_cast<AttackAction*>(action) ||
@@ -338,7 +336,7 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValue(Action* action)
         if (demonFormTank == bot || botAI->IsTank(bot))
             return 1.0f;
 
-        auto it = leotherasFinalPhaseDpsWaitTimer.find(mapId);
+        auto it = leotherasFinalPhaseDpsWaitTimer.find(SSC_MAP_ID);
         if (it == leotherasFinalPhaseDpsWaitTimer.end() || (now - it->second) < dpsWaitSecondsPhase3)
         {
             if (dynamic_cast<AttackAction*>(action) ||
@@ -420,7 +418,7 @@ float FathomLordKarathressWaitForDpsMultiplier::GetValue(Action* action)
     const time_t now = std::time(nullptr);
     const uint8 dpsWaitSeconds = 8;
 
-    auto it = karathressDpsWaitTimer.find(karathress->GetMapId());
+    auto it = karathressDpsWaitTimer.find(SSC_MAP_ID);
     if (it == karathressDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
     {
         if (dynamic_cast<AttackAction*>(action) ||
@@ -523,6 +521,70 @@ float LadyVashjDoNotLootTheTaintedCoreMultiplier::GetValue(Action* action)
 
     if (dynamic_cast<LootAction*>(action))
         return 0.0f;
+
+    return 1.0f;
+}
+
+float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* action)
+{
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (!vashj || !IsLadyVashjInPhase2(botAI))
+        return 1.0f;
+
+    Group* group = bot->GetGroup();
+    if (!group)
+        return 1.0f;
+
+    Player* designatedLooter = GetDesignatedCoreLooter(group, botAI);
+    Player* firstCorePasser = GetFirstTaintedCorePasser(group, botAI);
+    Player* secondCorePasser = GetSecondTaintedCorePasser(group, botAI);
+    Player* thirdCorePasser = GetThirdTaintedCorePasser(group, botAI);
+    Player* fourthCorePasser = GetFourthTaintedCorePasser(group, botAI);
+
+    auto hasCore = [](Player* player)
+    {
+        return player && player->HasItemCount(ITEM_TAINTED_CORE, 1, false);
+    };
+
+    if (bot == designatedLooter)
+    {
+        if (hasCore(firstCorePasser) || hasCore(secondCorePasser) ||
+            hasCore(thirdCorePasser) || hasCore(fourthCorePasser))
+            return 1.0f;
+    }
+    else if (bot == firstCorePasser)
+    {
+        if (hasCore(secondCorePasser) || hasCore(thirdCorePasser) ||
+            hasCore(fourthCorePasser))
+            return 1.0f;
+    }
+    else if (bot == secondCorePasser)
+    {
+        if (hasCore(thirdCorePasser) || hasCore(fourthCorePasser))
+            return 1.0f;
+    }
+    else if (bot == thirdCorePasser)
+    {
+        if (hasCore(fourthCorePasser))
+            return 1.0f;
+    }
+    else if (bot != fourthCorePasser)
+        return 1.0f;
+
+    Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
+    if (tainted && (bot == firstCorePasser || bot == secondCorePasser))
+    {
+        if (dynamic_cast<MovementAction*>(action) &&
+            !dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action))
+            return 0.0f;
+    }
+
+    if (AnyRecentParalyze(group))
+    {
+        if (dynamic_cast<MovementAction*>(action) &&
+            !dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action))
+            return 0.0f;
+    }
 
     return 1.0f;
 }

@@ -78,8 +78,8 @@ bool UnderbogColossusEscapeToxicPoolAction::Execute(Event event)
     bot->AttackStop();
     bot->InterruptNonMeleeSpells(true);
 
-    return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(),
-           false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
+    return MoveTo(SSC_MAP_ID, moveX, moveY, bot->GetPositionZ(),
+                  false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 bool GreyheartTidecallerMarkWaterElementalTotemAction::Execute(Event event)
@@ -141,7 +141,7 @@ bool HydrossTheUnstablePositionFrostTankAction::Execute(Event event)
                 float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
                 float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
 
-                return MoveTo(bot->GetMapId(), moveX, moveY, position.GetPositionZ(), false, false, false, true,
+                return MoveTo(SSC_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false, false, true,
                               MovementPriority::MOVEMENT_COMBAT, true, true);
             }
         }
@@ -149,9 +149,8 @@ bool HydrossTheUnstablePositionFrostTankAction::Execute(Event event)
 
     if (!hydross->HasAura(SPELL_CORRUPTION) && HasMarkOfHydrossAt100Percent(bot) && hydross->GetVictim() == bot)
     {
-        const uint32 mapId = hydross->GetMapId();
         const time_t now = std::time(nullptr);
-        auto it = hydrossChangeToNaturePhaseTimer.find(mapId);
+        auto it = hydrossChangeToNaturePhaseTimer.find(SSC_MAP_ID);
 
         if (it != hydrossChangeToNaturePhaseTimer.end() && (now - it->second) >= 5)
         {
@@ -165,7 +164,7 @@ bool HydrossTheUnstablePositionFrostTankAction::Execute(Event event)
                 float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
                 float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
 
-                return MoveTo(bot->GetMapId(), moveX, moveY, position.GetPositionZ(), false, false, false, true,
+                return MoveTo(SSC_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false, false, true,
                             MovementPriority::MOVEMENT_COMBAT, true, true);
             }
             else
@@ -189,7 +188,7 @@ bool HydrossTheUnstablePositionFrostTankAction::Execute(Event event)
             float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
             float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
 
-            return MoveTo(bot->GetMapId(), moveX, moveY, position.GetPositionZ(), false, false, false, true,
+            return MoveTo(SSC_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false, false, true,
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
         else
@@ -232,7 +231,7 @@ bool HydrossTheUnstablePositionNatureTankAction::Execute(Event event)
                 float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
                 float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
 
-                return MoveTo(bot->GetMapId(), moveX, moveY, position.GetPositionZ(), false, false, false, true,
+                return MoveTo(SSC_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false, false, true,
                               MovementPriority::MOVEMENT_COMBAT, true, true);
             }
         }
@@ -240,9 +239,8 @@ bool HydrossTheUnstablePositionNatureTankAction::Execute(Event event)
 
     if (hydross->HasAura(SPELL_CORRUPTION) && HasMarkOfCorruptionAt100Percent(bot) && hydross->GetVictim() == bot)
     {
-        const uint32 mapId = hydross->GetMapId();
         const time_t now = std::time(nullptr);
-        auto it = hydrossChangeToFrostPhaseTimer.find(mapId);
+        auto it = hydrossChangeToFrostPhaseTimer.find(SSC_MAP_ID);
 
         if (it != hydrossChangeToFrostPhaseTimer.end() && (now - it->second) >= 5)
         {
@@ -256,7 +254,7 @@ bool HydrossTheUnstablePositionNatureTankAction::Execute(Event event)
                 float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
                 float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
 
-                return MoveTo(bot->GetMapId(), moveX, moveY, position.GetPositionZ(), false, false, false, true,
+                return MoveTo(SSC_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false, false, true,
                               MovementPriority::MOVEMENT_COMBAT, true, true);
             }
             else
@@ -280,7 +278,7 @@ bool HydrossTheUnstablePositionNatureTankAction::Execute(Event event)
             float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
             float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
 
-            return MoveTo(bot->GetMapId(), moveX, moveY, position.GetPositionZ(), false, false, false, true,
+            return MoveTo(SSC_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false, false, true,
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
         else
@@ -428,7 +426,6 @@ bool HydrossTheUnstableStopDpsUponPhaseChangeAction::Execute(Event event)
     if (!hydross)
         return false;
 
-    const uint32 mapId = hydross->GetMapId();
     const time_t now = std::time(nullptr);
     const int phaseEndStopSeconds = 6;
     const int phaseStartStopSeconds = 5;
@@ -436,22 +433,22 @@ bool HydrossTheUnstableStopDpsUponPhaseChangeAction::Execute(Event event)
     bool shouldStopDps = false;
 
     // 6 seconds after 100% Mark of Corruption, stop DPS until transition into frost phase
-    auto itNature = hydrossChangeToNaturePhaseTimer.find(mapId);
+    auto itNature = hydrossChangeToNaturePhaseTimer.find(SSC_MAP_ID);
     if (itNature != hydrossChangeToNaturePhaseTimer.end() && (now - itNature->second) >= phaseEndStopSeconds)
         shouldStopDps = true;
 
     // Keep DPS stopped for 5 seconds after transition into frost phase
-    auto itFrostDps = hydrossFrostDpsWaitTimer.find(mapId);
+    auto itFrostDps = hydrossFrostDpsWaitTimer.find(SSC_MAP_ID);
     if (itFrostDps != hydrossFrostDpsWaitTimer.end() && (now - itFrostDps->second) < phaseStartStopSeconds)
         shouldStopDps = true;
 
     // 6 seconds after 100% Mark of Hydross, stop DPS until transition into nature phase
-    auto itFrost = hydrossChangeToFrostPhaseTimer.find(mapId);
+    auto itFrost = hydrossChangeToFrostPhaseTimer.find(SSC_MAP_ID);
     if (itFrost != hydrossChangeToFrostPhaseTimer.end() && (now - itFrost->second) >= phaseEndStopSeconds)
         shouldStopDps = true;
 
     // Keep DPS stopped for 5 seconds after transition into nature phase
-    auto itNatureDps = hydrossNatureDpsWaitTimer.find(mapId);
+    auto itNatureDps = hydrossNatureDpsWaitTimer.find(SSC_MAP_ID);
     if (itNatureDps != hydrossNatureDpsWaitTimer.end() && (now - itNatureDps->second) < phaseStartStopSeconds)
         shouldStopDps = true;
 
@@ -471,34 +468,33 @@ bool HydrossTheUnstableManageTimersAction::Execute(Event event)
     if (!hydross)
         return false;
 
-    const uint32 mapId = hydross->GetMapId();
     const time_t now = std::time(nullptr);
 
     if (hydross->GetHealth() == hydross->GetMaxHealth())
     {
-        hydrossFrostDpsWaitTimer.erase(mapId);
-        hydrossNatureDpsWaitTimer.erase(mapId);
-        hydrossChangeToFrostPhaseTimer.erase(mapId);
-        hydrossChangeToNaturePhaseTimer.erase(mapId);
+        hydrossFrostDpsWaitTimer.erase(SSC_MAP_ID);
+        hydrossNatureDpsWaitTimer.erase(SSC_MAP_ID);
+        hydrossChangeToFrostPhaseTimer.erase(SSC_MAP_ID);
+        hydrossChangeToNaturePhaseTimer.erase(SSC_MAP_ID);
     }
 
     if (!hydross->HasAura(SPELL_CORRUPTION))
     {
-        hydrossFrostDpsWaitTimer.try_emplace(mapId, now);
-        hydrossNatureDpsWaitTimer.erase(mapId);
-        hydrossChangeToFrostPhaseTimer.erase(mapId);
+        hydrossFrostDpsWaitTimer.try_emplace(SSC_MAP_ID, now);
+        hydrossNatureDpsWaitTimer.erase(SSC_MAP_ID);
+        hydrossChangeToFrostPhaseTimer.erase(SSC_MAP_ID);
 
         if (HasMarkOfHydrossAt100Percent(bot))
-            hydrossChangeToNaturePhaseTimer.try_emplace(mapId, now);
+            hydrossChangeToNaturePhaseTimer.try_emplace(SSC_MAP_ID, now);
     }
     else
     {
-        hydrossNatureDpsWaitTimer.try_emplace(mapId, now);
-        hydrossFrostDpsWaitTimer.erase(mapId);
-        hydrossChangeToNaturePhaseTimer.erase(mapId);
+        hydrossNatureDpsWaitTimer.try_emplace(SSC_MAP_ID, now);
+        hydrossFrostDpsWaitTimer.erase(SSC_MAP_ID);
+        hydrossChangeToNaturePhaseTimer.erase(SSC_MAP_ID);
 
         if (HasMarkOfCorruptionAt100Percent(bot))
-            hydrossChangeToFrostPhaseTimer.try_emplace(mapId, now);
+            hydrossChangeToFrostPhaseTimer.try_emplace(SSC_MAP_ID, now);
     }
 
     return false;
@@ -524,7 +520,7 @@ bool TheLurkerBelowRunAroundBehindBossAction::Execute(Event event)
     if (bot->GetExactDist2d(targetX, targetY) > 1.0f)
     {
         bot->InterruptNonMeleeSpells(true);
-        return MoveTo(lurker->GetMapId(), targetX, targetY, lurker->GetPositionZ(), false, false, false, false,
+        return MoveTo(SSC_MAP_ID, targetX, targetY, lurker->GetPositionZ(), false, false, false, false,
                       MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
@@ -543,8 +539,8 @@ bool TheLurkerBelowPositionMainTankAction::Execute(Event event)
     const Position& position = LurkerMainTankPosition;
     if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 0.2f)
     {
-        return MoveTo(bot->GetMapId(), position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(), false, false, false, false,
-                      MovementPriority::MOVEMENT_FORCED, true, false);
+        return MoveTo(SSC_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
+                      false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
     return false;
@@ -614,8 +610,8 @@ bool TheLurkerBelowSpreadRangedAction::Execute(Event event)
     const float returnThreshold = 2.0f;
     if (!bot->IsWithinDist2d(target.GetPositionX(), target.GetPositionY(), returnThreshold))
     {
-        return MoveTo(bot->GetMapId(), target.GetPositionX(), target.GetPositionY(), target.GetPositionZ(), false, false, false, false,
-                      MovementPriority::MOVEMENT_COMBAT, true, false);
+        return MoveTo(SSC_MAP_ID, target.GetPositionX(), target.GetPositionY(), target.GetPositionZ(),
+                      false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
     return false;
@@ -627,16 +623,15 @@ bool TheLurkerBelowManageSpoutTimerAction::Execute(Event event)
     if (!lurker)
         return false;
 
-    const uint32 mapId = lurker->GetMapId();
     const time_t now = std::time(nullptr);
 
     if (lurker->GetHealth() == lurker->GetMaxHealth())
     {
-        lurkerSpoutTimer.erase(mapId);
+        lurkerSpoutTimer.erase(SSC_MAP_ID);
         return false;
     }
 
-    auto it = lurkerSpoutTimer.find(mapId);
+    auto it = lurkerSpoutTimer.find(SSC_MAP_ID);
     if (it != lurkerSpoutTimer.end() && it->second <= now)
     {
         lurkerSpoutTimer.erase(it);
@@ -645,7 +640,7 @@ bool TheLurkerBelowManageSpoutTimerAction::Execute(Event event)
 
     const time_t spoutCastTime = 20;
     if (IsLurkerCastingSpout(lurker) && it == lurkerSpoutTimer.end())
-        lurkerSpoutTimer.emplace(mapId, now + spoutCastTime);
+        lurkerSpoutTimer.emplace(SSC_MAP_ID, now + spoutCastTime);
 
     return false;
 }
@@ -691,7 +686,7 @@ bool LeotherasTheBlindDemonFormTankAttackBossAction::Execute(Event event)
 
         if (fabs(bot->GetExactDist2d(leotherasDemon) - (maxMeleeRange - meleeRangeBuffer)) > 0.1f)
         {
-            return MoveTo(leotherasDemon->GetMapId(), targetX, targetY, bot->GetPositionZ(), false, false, false, false,
+            return MoveTo(SSC_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_FORCED, true, false);
         }
     }
@@ -773,7 +768,7 @@ bool LeotherasTheBlindDemonFormPositionMeleeAction::Execute(Event event)
 
         if (fabs(bot->GetExactDist2d(targetX, targetY) - (maxMeleeRange - meleeRangeBuffer)) > 0.1f)
         {
-            return MoveTo(leotherasPhase2Demon->GetMapId(), targetX, targetY, bot->GetPositionZ(), false, false, false, false,
+            return MoveTo(SSC_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
@@ -842,12 +837,12 @@ bool LeotherasTheBlindFinalPhaseAssignDpsPriorityAction::Execute(Event event)
             float targetX = bot->GetPositionX() + 27.0f * std::cos(angle);
             float targetY = bot->GetPositionY() + 27.0f * std::sin(angle);
 
-            return MoveTo(bot->GetMapId(), targetX, targetY, bot->GetPositionZ(), false, false, false, false,
+            return MoveTo(SSC_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false, false, false,
                             MovementPriority::MOVEMENT_FORCED, true, false);
         }
         else if (botAI->IsTank(bot) && !bot->IsWithinMeleeRange(leotherasHuman))
         {
-            return MoveTo(leotherasHuman->GetMapId(), leotherasHuman->GetPositionX(),
+            return MoveTo(SSC_MAP_ID, leotherasHuman->GetPositionX(),
                           leotherasHuman->GetPositionY(), leotherasHuman->GetPositionZ(),
                           false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
@@ -880,15 +875,14 @@ bool LeotherasTheBlindManageTimersAndTrackersAction::Execute(Event event)
     if (!leotheras)
         return false;
 
-    const uint32 mapId = leotheras->GetMapId();
     const time_t now = std::time(nullptr);
 
     // Encounter start/reset: clear all timers
     if (leotheras->HasAura(SPELL_LEOTHERAS_BANISHED))
     {
-        leotherasHumanFormDpsWaitTimer.erase(mapId);
-        leotherasDemonFormDpsWaitTimer.erase(mapId);
-        leotherasFinalPhaseDpsWaitTimer.erase(mapId);
+        leotherasHumanFormDpsWaitTimer.erase(SSC_MAP_ID);
+        leotherasDemonFormDpsWaitTimer.erase(SSC_MAP_ID);
+        leotherasFinalPhaseDpsWaitTimer.erase(SSC_MAP_ID);
         return false;
     }
 
@@ -897,21 +891,21 @@ bool LeotherasTheBlindManageTimersAndTrackersAction::Execute(Event event)
     Unit* leotherasPhase3Demon = GetPhase3LeotherasDemon(botAI);
     if (leotherasHuman && !leotherasPhase3Demon)
     {
-        leotherasHumanFormDpsWaitTimer.try_emplace(mapId, now);
-        leotherasDemonFormDpsWaitTimer.erase(mapId);
+        leotherasHumanFormDpsWaitTimer.try_emplace(SSC_MAP_ID, now);
+        leotherasDemonFormDpsWaitTimer.erase(SSC_MAP_ID);
     }
     // Demon Phase
     else if (Unit* leotherasPhase2Demon = GetPhase2LeotherasDemon(botAI))
     {
-        leotherasDemonFormDpsWaitTimer.try_emplace(mapId, now);
-        leotherasHumanFormDpsWaitTimer.erase(mapId);
+        leotherasDemonFormDpsWaitTimer.try_emplace(SSC_MAP_ID, now);
+        leotherasHumanFormDpsWaitTimer.erase(SSC_MAP_ID);
     }
     // Final Phase (<15% HP)
     else if (leotherasHuman && leotherasPhase3Demon)
     {
-        leotherasFinalPhaseDpsWaitTimer.try_emplace(mapId, now);
-        leotherasHumanFormDpsWaitTimer.erase(mapId);
-        leotherasDemonFormDpsWaitTimer.erase(mapId);
+        leotherasFinalPhaseDpsWaitTimer.try_emplace(SSC_MAP_ID, now);
+        leotherasHumanFormDpsWaitTimer.erase(SSC_MAP_ID);
+        leotherasDemonFormDpsWaitTimer.erase(SSC_MAP_ID);
     }
 
     return false;
@@ -946,14 +940,13 @@ bool FathomLordKarathressMainTankPositionBossAction::Execute(Event event)
             float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
             float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
 
-            return MoveTo(bot->GetMapId(), moveX, moveY, position.GetPositionZ(), false, false, false, true,
+            return MoveTo(SSC_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false, false, true,
                           MovementPriority::MOVEMENT_COMBAT, true, true);
         }
     }
     else if (!bot->IsWithinMeleeRange(karathress))
     {
-        return MoveTo(karathress->GetMapId(), karathress->GetPositionX(),
-                      karathress->GetPositionY(), karathress->GetPositionZ(),
+        return MoveTo(SSC_MAP_ID, karathress->GetPositionX(), karathress->GetPositionY(), karathress->GetPositionZ(),
                       false, false, false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
@@ -985,14 +978,13 @@ bool FathomLordKarathressFirstAssistTankPositionSharkkisAction::Execute(Event ev
             float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
             float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
 
-            return MoveTo(bot->GetMapId(), moveX, moveY, position.GetPositionZ(), false, false, false, true,
+            return MoveTo(SSC_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false, false, true,
                           MovementPriority::MOVEMENT_COMBAT, true, true);
         }
     }
     else if (!bot->IsWithinMeleeRange(sharkkis))
     {
-        return MoveTo(sharkkis->GetMapId(), sharkkis->GetPositionX(),
-                      sharkkis->GetPositionY(), sharkkis->GetPositionZ(),
+        return MoveTo(SSC_MAP_ID, sharkkis->GetPositionX(), sharkkis->GetPositionY(), sharkkis->GetPositionZ(),
                       false, false, false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
@@ -1024,14 +1016,13 @@ bool FathomLordKarathressSecondAssistTankPositionTidalvessAction::Execute(Event 
             float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
             float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
 
-            return MoveTo(bot->GetMapId(), moveX, moveY, position.GetPositionZ(), false, false, false, true,
+            return MoveTo(SSC_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false, false, true,
                           MovementPriority::MOVEMENT_COMBAT, true, true);
         }
     }
     else if (!bot->IsWithinMeleeRange(tidalvess))
     {
-        return MoveTo(tidalvess->GetMapId(), tidalvess->GetPositionX(),
-                      tidalvess->GetPositionY(), tidalvess->GetPositionZ(),
+        return MoveTo(SSC_MAP_ID, tidalvess->GetPositionX(), tidalvess->GetPositionY(), tidalvess->GetPositionZ(),
                       false, false, false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
@@ -1064,14 +1055,13 @@ bool FathomLordKarathressThirdAssistTankPositionCaribdisAction::Execute(Event ev
             float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
             float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
 
-            return MoveTo(bot->GetMapId(), moveX, moveY, position.GetPositionZ(), false, false, false, true,
+            return MoveTo(SSC_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false, false, true,
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
     else if (!bot->IsWithinMeleeRange(caribdis))
     {
-        return MoveTo(caribdis->GetMapId(), caribdis->GetPositionX(),
-                      caribdis->GetPositionY(), caribdis->GetPositionZ(),
+        return MoveTo(SSC_MAP_ID, caribdis->GetPositionX(), caribdis->GetPositionY(), caribdis->GetPositionZ(),
                       false, false, false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
@@ -1096,7 +1086,7 @@ bool FathomLordKarathressPositionCaribdisTankHealerAction::Execute(Event event)
         float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
         float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
 
-        return MoveTo(bot->GetMapId(), moveX, moveY, position.GetPositionZ(), false, false, false, true,
+        return MoveTo(SSC_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false, false, true,
                       MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
@@ -1237,7 +1227,7 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event event)
             float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
             float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
 
-            return MoveTo(bot->GetMapId(), moveX, moveY, position.GetPositionZ(), false, false, false, true,
+            return MoveTo(SSC_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false, false, true,
                         MovementPriority::MOVEMENT_COMBAT, true, false);
         }
 
@@ -1318,11 +1308,10 @@ bool FathomLordKarathressManageDpsTimerAction::Execute(Event event)
     if (!karathress)
         return false;
 
-    const uint32 mapId = karathress->GetMapId();
     const time_t now = std::time(nullptr);
 
     if (karathress->GetHealth() == karathress->GetMaxHealth())
-        karathressDpsWaitTimer.insert_or_assign(mapId, now);
+        karathressDpsWaitTimer.insert_or_assign(SSC_MAP_ID, now);
 
     return false;
 }
@@ -1392,8 +1381,8 @@ bool MorogrimTidewalkerMoveBossToTankPositionAction::MoveToPhase1TankPosition(Un
         float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
         float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
 
-        return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-                        MovementPriority::MOVEMENT_COMBAT, true, true);
+        return MoveTo(SSC_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+                      MovementPriority::MOVEMENT_COMBAT, true, true);
     }
 
     return false;
@@ -1420,7 +1409,7 @@ bool MorogrimTidewalkerMoveBossToTankPositionAction::MoveToPhase2TankPosition(Un
             float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
             float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
 
-            return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+            return MoveTo(SSC_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, true);
         }
         else
@@ -1438,7 +1427,7 @@ bool MorogrimTidewalkerMoveBossToTankPositionAction::MoveToPhase2TankPosition(Un
             float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
             float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
 
-            return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+            return MoveTo(SSC_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, true);
         }
     }
@@ -1471,7 +1460,7 @@ bool MorogrimTidewalkerPhase2RepositionRangedAction::Execute(Event event)
             float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
             float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
 
-            return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+            return MoveTo(SSC_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
         else
@@ -1492,7 +1481,7 @@ bool MorogrimTidewalkerPhase2RepositionRangedAction::Execute(Event event)
             float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
             float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
 
-            return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+            return MoveTo(SSC_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
@@ -1543,8 +1532,8 @@ bool LadyVashjMainTankPositionBossAction::Execute(Event event)
                 float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
                 float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
 
-                return MoveTo(bot->GetMapId(), moveX, moveY, position.GetPositionZ(), false, false, false, false,
-                            MovementPriority::MOVEMENT_COMBAT, true, true);
+                return MoveTo(SSC_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false, false, false,
+                              MovementPriority::MOVEMENT_COMBAT, true, true);
             }
         }
 
@@ -1628,7 +1617,7 @@ bool LadyVashjPhase1PositionRangedAction::Execute(Event event)
     {
         if (!bot->IsWithinDist2d(targetPosition.GetPositionX(), targetPosition.GetPositionY(), 2.0f))
         {
-            return MoveTo(bot->GetMapId(), targetPosition.GetPositionX(), targetPosition.GetPositionY(), targetPosition.GetPositionZ(),
+            return MoveTo(SSC_MAP_ID, targetPosition.GetPositionX(), targetPosition.GetPositionY(), targetPosition.GetPositionZ(),
                           false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
         if (itReached != vashjHasReachedRangedPosition.end())
@@ -1668,8 +1657,8 @@ bool LadyVashjSetGroundingTotemInMainTankGroupAction::Execute(Event event)
         float targetX = mainTank->GetPositionX() + 25.0f * std::cos(angle);
         float targetY = mainTank->GetPositionY() + 25.0f * std::sin(angle);
 
-        return MoveTo(mainTank->GetMapId(), targetX, targetY, mainTank->GetPositionZ(),
-                        false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+        return MoveTo(SSC_MAP_ID, targetX, targetY, mainTank->GetPositionZ(),
+                      false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
     if (!botAI->HasStrategy("grounding totem", BotState::BOT_STATE_COMBAT))
@@ -2036,8 +2025,7 @@ bool LadyVashjAssignDpsPriorityAction::Execute(Event event)
     // If bots have wandered too far from the center and are not attacking anything, move them back
     if (!bot->GetVictim())
     {
-        Player* master = botAI->GetMaster();
-        Player* designatedLooter = GetDesignatedCoreLooter(bot->GetGroup(), master, botAI);
+        Player* designatedLooter = GetDesignatedCoreLooter(bot->GetGroup(), botAI);
         Player* firstCorePasser = GetFirstTaintedCorePasser(bot->GetGroup(), botAI);
         // A bot will not move back to the middle if:
         // (1) The designated looter is within 10 yards of a Tainted Elemental, and the bot is
@@ -2054,7 +2042,7 @@ bool LadyVashjAssignDpsPriorityAction::Execute(Event event)
             bot->AttackStop();
             bot->InterruptNonMeleeSpells(true);
 
-            return MoveInside(bot->GetMapId(), center.GetPositionX(), center.GetPositionY(),
+            return MoveInside(SSC_MAP_ID, center.GetPositionX(), center.GetPositionY(),
                               center.GetPositionZ(), 30.0f, MovementPriority::MOVEMENT_COMBAT);
         }
     }
@@ -2075,7 +2063,7 @@ bool LadyVashjTeleportToTaintedElementalAction::Execute(Event event)
     {
         bot->AttackStop();
         bot->InterruptNonMeleeSpells(true);
-        bot->TeleportTo(tainted->GetMapId(), tainted->GetPositionX(), tainted->GetPositionY(),
+        bot->TeleportTo(SSC_MAP_ID, tainted->GetPositionX(), tainted->GetPositionY(),
                         tainted->GetPositionZ(), tainted->GetOrientation());
     }
 
@@ -2184,12 +2172,11 @@ bool LadyVashjLootTaintedCoreAction::Execute(Event)
 
 bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
 {
-    Player* master = botAI->GetMaster();
     Group* group = bot->GetGroup();
-    if (!master || !group)
+    if (!group)
         return false;
 
-    Player* designatedLooter = GetDesignatedCoreLooter(group, master, botAI);
+    Player* designatedLooter = GetDesignatedCoreLooter(group, botAI);
     if (!designatedLooter)
         return false;
 
@@ -2336,7 +2323,7 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpFirstCorePasser(Player* designated
 
     bot->AttackStop();
     bot->InterruptNonMeleeSpells(true);
-    return MoveTo(bot->GetMapId(), targetX, targetY, targetZ,
+    return MoveTo(SSC_MAP_ID, targetX, targetY, targetZ,
                   false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
@@ -2380,7 +2367,7 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpSecondCorePasser(Player* firstCore
 
     bot->AttackStop();
     bot->InterruptNonMeleeSpells(false);
-    return MoveTo(bot->GetMapId(), targetX, targetY, targetZ,
+    return MoveTo(SSC_MAP_ID, targetX, targetY, targetZ,
                   false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
@@ -2390,6 +2377,7 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpThirdCorePasser(Player* secondCore
     if (!secondCorePasser->HasItemCount(ITEM_TAINTED_CORE, 1, false))
         return false;
 
+    // Also don't move if the second passer has the core but is able to use the generator
     if (secondCorePasser->GetExactDist2d(closestTrigger) <= 2.0f)
         return false;
 
@@ -2428,7 +2416,7 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpThirdCorePasser(Player* secondCore
 
     bot->AttackStop();
     bot->InterruptNonMeleeSpells(false);
-    return MoveTo(bot->GetMapId(), targetX, targetY, targetZ,
+    return MoveTo(SSC_MAP_ID, targetX, targetY, targetZ,
                   false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
@@ -2438,6 +2426,7 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpFourthCorePasser(Player* thirdCore
     if (!thirdCorePasser->HasItemCount(ITEM_TAINTED_CORE, 1, false))
         return false;
 
+    // Also don't move if the third passer has the core but is able to use the generator
     if (thirdCorePasser->GetExactDist2d(closestTrigger) <= 2.0f)
         return false;
 
@@ -2464,7 +2453,7 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpFourthCorePasser(Player* thirdCore
 
     bot->AttackStop();
     bot->InterruptNonMeleeSpells(false);
-    return MoveTo(bot->GetMapId(), targetX, targetY, targetZ,
+    return MoveTo(SSC_MAP_ID, targetX, targetY, targetZ,
                   false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
@@ -2692,7 +2681,7 @@ bool LadyVashjAvoidToxicSporesAction::Execute(Event event)
 
     Position safestPos = FindSafestNearbyPosition(spores, vashjCenter, maxRadius, hazardRadius);
 
-    return MoveTo(bot->GetMapId(), safestPos.GetPositionX(), safestPos.GetPositionY(),
+    return MoveTo(SSC_MAP_ID, safestPos.GetPositionX(), safestPos.GetPositionY(),
                   safestPos.GetPositionZ(), false, false, false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
