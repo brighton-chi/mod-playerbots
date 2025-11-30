@@ -306,11 +306,6 @@ bool BigBadWolfPositionBossAction::Execute(Event event)
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
-    else if (!bot->IsWithinMeleeRange(wolf))
-    {
-        return MoveTo(KARAZHAN_MAP_ID, wolf->GetPositionX(), wolf->GetPositionY(), wolf->GetPositionZ(),
-                      false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
-    }
 
     return false;
 }
@@ -1292,12 +1287,6 @@ bool NightbaneGroundPhasePositionBossAction::Execute(Event event)
         float orientation = atan2(nightbane->GetPositionY() - bot->GetPositionY(),
                                   nightbane->GetPositionX() - bot->GetPositionX());
         bot->SetFacingTo(orientation);
-    }
-    else if (!bot->IsWithinMeleeRange(nightbane))
-    {
-        return MoveTo(KARAZHAN_MAP_ID, nightbane->GetPositionX(), nightbane->GetPositionY(),
-                      nightbane->GetPositionZ(), false, false, false, false,
-                      MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
     return false;
