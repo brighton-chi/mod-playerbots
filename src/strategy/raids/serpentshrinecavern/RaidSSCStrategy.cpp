@@ -146,7 +146,7 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("lady vashj tainted core was looted",
         NextAction::array(0, new NextAction("lady vashj pass the tainted core", ACTION_EMERGENCY + 10), nullptr)
     ));
-    triggers.push_back(new TriggerNode("lady vashj core handler is dead",
+    triggers.push_back(new TriggerNode("lady vashj tainted core is unusable",
         NextAction::array(0, new NextAction("lady vashj destroy tainted core", ACTION_EMERGENCY + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("lady vashj determining kill order of adds",
@@ -182,7 +182,6 @@ void RaidSSCStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new FathomLordKarathressCaribdisTankHealerMaintainPositionMultiplier(botAI));
     multipliers.push_back(new MorogrimTidewalkerDelayBloodlustAndHeroismMultiplier(botAI));
     multipliers.push_back(new MorogrimTidewalkerDisablePhase2MovementActionsMultiplier(botAI));
-    multipliers.push_back(new LadyVashjDisablePhase3TankAssistMultiplier(botAI));
     multipliers.push_back(new LadyVashjDelayBloodlustAndHeroismMultiplier(botAI));
     multipliers.push_back(new LadyVashjStaticChargeStayAwayFromGroupMultiplier(botAI));
     multipliers.push_back(new LadyVashjDoNotLootTheTaintedCoreMultiplier(botAI));

@@ -585,7 +585,7 @@ bool LadyVashjTaintedCoreWasLootedTrigger::IsActive()
     else if (bot != fourthCorePasser)
         return false;
 
-    if (AnyRecentParalyze(group))
+    if (AnyRecentCoreInInventory(group))
         return true;
 
     // First and second passers move to positions as soon as the elemental appears
@@ -596,8 +596,11 @@ bool LadyVashjTaintedCoreWasLootedTrigger::IsActive()
     return false;
 }
 
-bool LadyVashjCoreHandlerIsDeadTrigger::IsActive()
+bool LadyVashjTaintedCoreIsUnusableTrigger::IsActive()
 {
+    if (IsLadyVashjInPhase3(botAI))
+        return true;
+
     Group* group = bot->GetGroup();
     if (!group)
         return false;

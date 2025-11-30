@@ -42,7 +42,6 @@ namespace SerpentShrineCavernHelpers
 
         // Lady Vashj <Coilfang Matron>
         SPELL_FEAR_WARD              = 6346,
-        SPELL_PARALYZE               = 38132,
         SPELL_POISON_BOLT            = 38253,
         SPELL_STATIC_CHARGE          = 38280,
         SPELL_ENTANGLE               = 38316,
@@ -128,10 +127,10 @@ namespace SerpentShrineCavernHelpers
     extern std::unordered_map<ObjectGuid, uint8> tidewalkerRangedStep;
 
     extern std::unordered_map<ObjectGuid, Position> vashjRangedPositions;
-    extern std::unordered_map<ObjectGuid, bool> vashjHasReachedRangedPosition;
+    extern std::unordered_map<ObjectGuid, bool> hasReachedVashjRangedPosition;
     extern std::unordered_map<ObjectGuid, Position> intendedLineup;
     extern std::unordered_map<ObjectGuid, time_t> lastImbueAttempt;
-    extern std::unordered_map<uint32, time_t> lastParalyzeTime;
+    extern std::unordered_map<uint32, time_t> lastCoreInInventoryTime;
 
     namespace SerpentShrineCavernPositions
     {
@@ -186,7 +185,7 @@ namespace SerpentShrineCavernHelpers
     bool IsLadyVashjInPhase2(PlayerbotAI* botAI);
     bool IsLadyVashjInPhase3(PlayerbotAI* botAI);
     bool IsValidLadyVashjCombatNpc(Unit* unit, PlayerbotAI* botAI);
-    bool AnyRecentParalyze(Group* group, uint32 graceSeconds = 3);
+    bool AnyRecentCoreInInventory(Group* group, uint32 graceSeconds = 3);
     Player* GetDesignatedCoreLooter(Group* group, PlayerbotAI* botAI);
     Player* GetFirstTaintedCorePasser(Group* group, PlayerbotAI* botAI);
     Player* GetSecondTaintedCorePasser(Group* group, PlayerbotAI* botAI);

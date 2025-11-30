@@ -361,6 +361,7 @@ public:
     bool Execute(Event event) override;
 
 private:
+    uint8 ComputeNeededPassers(Player* designatedLooter, Unit* closestTrigger);
     bool LineUpFirstCorePasser(Player* designatedLooter, Unit* closestTrigger);
     bool LineUpSecondCorePasser(Player* firstCorePasser, Unit* closestTrigger);
     bool LineUpThirdCorePasser(Player* secondCorePasser, Unit* closestTrigger);

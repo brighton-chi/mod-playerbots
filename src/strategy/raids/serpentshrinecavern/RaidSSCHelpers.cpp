@@ -25,10 +25,10 @@ namespace SerpentShrineCavernHelpers
     std::unordered_map<ObjectGuid, uint8> tidewalkerRangedStep;
 
     std::unordered_map<ObjectGuid, Position> vashjRangedPositions;
-    std::unordered_map<ObjectGuid, bool> vashjHasReachedRangedPosition;
+    std::unordered_map<ObjectGuid, bool> hasReachedVashjRangedPosition;
     std::unordered_map<ObjectGuid, Position> intendedLineup;
     std::unordered_map<ObjectGuid, time_t> lastImbueAttempt;
-    std::unordered_map<uint32, time_t> lastParalyzeTime;
+    std::unordered_map<uint32, time_t> lastCoreInInventoryTime;
 
     namespace SerpentShrineCavernPositions
     {
@@ -300,7 +300,8 @@ namespace SerpentShrineCavernHelpers
         if (!vashj)
             return false;
 
-        return vashj->GetHealthPct() > 70.0f;
+        Creature* vashjCreature = vashj->ToCreature();
+        return vashjCreature && vashjCreature->GetHealthPct() > 70.0f && vashjCreature->GetReactState() != REACT_PASSIVE;
     }
 
     bool IsLadyVashjInPhase2(PlayerbotAI* botAI)
@@ -309,7 +310,8 @@ namespace SerpentShrineCavernHelpers
         if (!vashj)
             return false;
 
-        return vashj->HasUnitState(UNIT_STATE_ROOT);
+        Creature* vashjCreature = vashj->ToCreature();
+        return vashjCreature && vashjCreature->GetReactState() == REACT_PASSIVE;
     }
 
     bool IsLadyVashjInPhase3(PlayerbotAI* botAI)
@@ -318,7 +320,8 @@ namespace SerpentShrineCavernHelpers
         if (!vashj)
             return false;
 
-        return vashj->GetHealthPct() <= 50.0f && !vashj->HasUnitState(UNIT_STATE_ROOT);
+        Creature* vashjCreature = vashj->ToCreature();
+        return vashjCreature && vashjCreature->GetHealthPct() <= 50.0f && vashjCreature->GetReactState() != REACT_PASSIVE;
     }
 
     bool IsValidLadyVashjCombatNpc(Unit* unit, PlayerbotAI* botAI)
@@ -343,8 +346,11 @@ namespace SerpentShrineCavernHelpers
         return false;
     }
 
-    bool AnyRecentParalyze(Group* group, uint32 graceSeconds)
+    bool AnyRecentCoreInInventory(Group* group, uint32 graceSeconds)
     {
+        if (!group)
+            return false;
+
         const time_t now = std::time(nullptr);
 
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
@@ -353,15 +359,15 @@ namespace SerpentShrineCavernHelpers
             if (!member)
                 continue;
 
-            if (member->IsAlive() && member->HasAura(SPELL_PARALYZE))
+            if (member->IsAlive() && member->HasItemCount(ITEM_TAINTED_CORE, 1, false))
             {
-                lastParalyzeTime[SSC_MAP_ID] = now;
+                lastCoreInInventoryTime[SSC_MAP_ID] = now;
                 return true;
             }
         }
 
-        auto it = lastParalyzeTime.find(SSC_MAP_ID);
-        if (it != lastParalyzeTime.end())
+        auto it = lastCoreInInventoryTime.find(SSC_MAP_ID);
+        if (it != lastCoreInInventoryTime.end())
         {
             if ((now - it->second) <= static_cast<time_t>(graceSeconds))
                 return true;

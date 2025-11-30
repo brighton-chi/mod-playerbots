@@ -311,10 +311,10 @@ public:
     bool IsActive() override;
 };
 
-class LadyVashjCoreHandlerIsDeadTrigger : public Trigger
+class LadyVashjTaintedCoreIsUnusableTrigger : public Trigger
 {
 public:
-    LadyVashjCoreHandlerIsDeadTrigger(PlayerbotAI* botAI) : Trigger(botAI, "lady vashj core handler is dead") {}
+    LadyVashjTaintedCoreIsUnusableTrigger(PlayerbotAI* botAI) : Trigger(botAI, "lady vashj tainted core is unusable") {}
     bool IsActive() override;
 };
 

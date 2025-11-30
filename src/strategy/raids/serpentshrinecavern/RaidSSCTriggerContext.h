@@ -58,7 +58,7 @@ public:
         creators["lady vashj determining kill order of adds"] = &RaidSSCTriggerContext::lady_vashj_determining_kill_order_of_adds;
         creators["lady vashj tainted elemental cheat"] = &RaidSSCTriggerContext::lady_vashj_tainted_elemental_cheat;
         creators["lady vashj tainted core was looted"] = &RaidSSCTriggerContext::lady_vashj_tainted_core_was_looted;
-        creators["lady vashj core handler is dead"] = &RaidSSCTriggerContext::lady_vashj_core_handler_is_dead;
+        creators["lady vashj tainted core is unusable"] = &RaidSSCTriggerContext::lady_vashj_tainted_core_is_unusable;
         creators["lady vashj toxic sporebats are spewing poison clouds"] = &RaidSSCTriggerContext::lady_vashj_toxic_sporebats_are_spewing_poison_clouds;
         creators["lady vashj bot is entangled in toxic spores or static charge"] = &RaidSSCTriggerContext::lady_vashj_bot_is_entangled_in_toxic_spores_or_static_charge;
         creators["lady vashj need to manage trackers"] = &RaidSSCTriggerContext::lady_vashj_need_to_manage_trackers;
@@ -114,7 +114,7 @@ private:
     static Trigger* lady_vashj_determining_kill_order_of_adds(PlayerbotAI* botAI) { return new LadyVashjDeterminingKillOrderOfAddsTrigger(botAI); }
     static Trigger* lady_vashj_tainted_elemental_cheat(PlayerbotAI* botAI) { return new LadyVashjTaintedElementalCheatTrigger(botAI); }
     static Trigger* lady_vashj_tainted_core_was_looted(PlayerbotAI* botAI) { return new LadyVashjTaintedCoreWasLootedTrigger(botAI); }
-    static Trigger* lady_vashj_core_handler_is_dead(PlayerbotAI* botAI) { return new LadyVashjCoreHandlerIsDeadTrigger(botAI); }
+    static Trigger* lady_vashj_tainted_core_is_unusable(PlayerbotAI* botAI) { return new LadyVashjTaintedCoreIsUnusableTrigger(botAI); }
     static Trigger* lady_vashj_toxic_sporebats_are_spewing_poison_clouds(PlayerbotAI* botAI) { return new LadyVashjToxicSporebatsAreSpewingPoisonCloudsTrigger(botAI); }
     static Trigger* lady_vashj_bot_is_entangled_in_toxic_spores_or_static_charge(PlayerbotAI* botAI) { return new LadyVashjBotIsEntangledInToxicSporesOrStaticChargeTrigger(botAI); }
     static Trigger* lady_vashj_need_to_manage_trackers(PlayerbotAI* botAI) { return new LadyVashjNeedToManageTrackersTrigger(botAI); }

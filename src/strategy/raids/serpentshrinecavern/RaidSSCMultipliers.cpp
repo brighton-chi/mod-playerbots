@@ -457,7 +457,7 @@ float MorogrimTidewalkerDisablePhase2MovementActionsMultiplier::GetValue(Action*
 float LadyVashjDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    if (!vashj || !IsLadyVashjInPhase3(botAI))
+    if (!vashj || IsLadyVashjInPhase3(botAI))
         return 1.0f;
 
     if (dynamic_cast<CastBloodlustAction*>(action) ||
@@ -467,22 +467,10 @@ float LadyVashjDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float LadyVashjDisablePhase3TankAssistMultiplier::GetValue(Action* action)
-{
-    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    if (!vashj || !IsLadyVashjInPhase3(botAI))
-        return 1.0f;
-
-    if (botAI->IsMainTank(bot) && dynamic_cast<TankAssistAction*>(action))
-        return 0.0f;
-
-    return 1.0f;
-}
-
 float LadyVashjStaticChargeStayAwayFromGroupMultiplier::GetValue(Action* action)
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    if (!vashj || IsLadyVashjInPhase2(botAI))
+    if (!vashj)
         return 1.0f;
 
     if (!botAI->IsMainTank(bot) && bot->HasAura(SPELL_STATIC_CHARGE))
@@ -515,6 +503,11 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     if (!vashj || !IsLadyVashjInPhase2(botAI))
+        return 1.0f;
+
+    if (dynamic_cast<WipeAction*>(action) ||
+        dynamic_cast<DestroyItemAction*>(action) ||
+        dynamic_cast<LadyVashjDestroyTaintedCoreAction*>(action))
         return 1.0f;
 
     Group* group = bot->GetGroup();
@@ -565,10 +558,9 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
             return 0.0f;
     }
 
-    if (AnyRecentParalyze(group))
+    if (AnyRecentCoreInInventory(group))
     {
-        if (dynamic_cast<MovementAction*>(action) &&
-            !dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action))
+        if (!dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action))
             return 0.0f;
     }
 
