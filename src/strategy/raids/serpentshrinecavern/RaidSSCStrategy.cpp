@@ -47,6 +47,9 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("the lurker below boss casts geyser",
         NextAction::array(0, new NextAction("the lurker below spread ranged", ACTION_RAID + 1), nullptr)
     ));
+    triggers.push_back(new TriggerNode("the lurker below boss is submerged",
+        NextAction::array(0, new NextAction("the lurker below tanks pick up adds", ACTION_EMERGENCY + 1), nullptr)
+    ));
     triggers.push_back(new TriggerNode("the lurker below need to prepare timer for spout",
         NextAction::array(0, new NextAction("the lurker below manage spout timer", ACTION_EMERGENCY + 10), nullptr)
     ));

@@ -209,7 +209,7 @@ bool LeotherasTheBlindBossIsInactiveTrigger::IsActive()
 bool LeotherasTheBlindBossTransformedIntoDemonFormTrigger::IsActive()
 {
     Player* demonFormTank = GetLeotherasDemonFormTank(botAI, bot);
-    if (demonFormTank && bot != demonFormTank)
+    if (!demonFormTank || bot != demonFormTank)
         return false;
 
     Unit* leotherasDemon = GetActiveLeotherasDemon(botAI);
@@ -244,11 +244,7 @@ bool LeotherasTheBlindInnerDemonCheatTrigger::IsActive()
     if (!botAI->HasCheat(BotCheatMask::raid))
         return false;
 
-    if (!bot->HasAura(SPELL_INSIDIOUS_WHISPER))
-        return false;
-
-    Unit* leotherasPhase2Demon = GetPhase2LeotherasDemon(botAI);
-    return leotherasPhase2Demon != nullptr;
+    return bot->HasAura(SPELL_INSIDIOUS_WHISPER);
 }
 
 bool LeotherasTheBlindEnteredFinalPhaseTrigger::IsActive()

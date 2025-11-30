@@ -177,7 +177,8 @@ float TheLurkerBelowStayAwayFromSpoutMultiplier::GetValue(Action* action)
     {
         if (dynamic_cast<CastReachTargetSpellAction*>(action) || dynamic_cast<CastKillingSpreeAction*>(action) ||
             dynamic_cast<CastBlinkBackAction*>(action) || dynamic_cast<CastDisengageAction*>(action) ||
-            dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<FleeAction*>(action))
+            dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<FleeAction*>(action) ||
+            dynamic_cast<FollowAction*>(action))
             return 0.0f;
     }
 

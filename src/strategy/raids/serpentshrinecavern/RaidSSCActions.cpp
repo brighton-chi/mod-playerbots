@@ -738,28 +738,10 @@ bool LeotherasTheBlindDemonFormTankAttackBossAction::Execute(Event event)
     MarkTargetWithSquare(bot, leotherasDemon);
     SetRtiTarget(botAI, "square", leotherasDemon);
 
-    if (bot->GetVictim() != leotherasDemon)
+    if (bot->GetTarget() != leotherasDemon->GetGUID())
     {
         bot->SetTarget(leotherasDemon->GetGUID());
         return Attack(leotherasDemon);
-    }
-
-    // Fallback logic for if there is no Warlock tank (not recommended)
-    if (botAI->IsMainTank(bot) && botAI->IsMelee(bot) && leotherasDemon->GetVictim() == bot)
-    {
-        float maxMeleeRange = bot->GetMeleeRange(leotherasDemon);
-        const float meleeRangeBuffer = 0.02f;
-        float angle = atan2(bot->GetPositionY() - leotherasDemon->GetPositionY(),
-                            bot->GetPositionX() - leotherasDemon->GetPositionX());
-
-        float targetX = leotherasDemon->GetPositionX() + (maxMeleeRange - meleeRangeBuffer) * std::cos(angle);
-        float targetY = leotherasDemon->GetPositionY() + (maxMeleeRange - meleeRangeBuffer) * std::sin(angle);
-
-        if (fabs(bot->GetExactDist2d(leotherasDemon) - (maxMeleeRange - meleeRangeBuffer)) > 0.1f)
-        {
-            return MoveTo(SSC_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false, false, false,
-                          MovementPriority::MOVEMENT_FORCED, true, false);
-        }
     }
 
     return false;
@@ -825,22 +807,96 @@ bool LeotherasTheBlindRunAwayFromWhirlwindAction::Execute(Event event)
     return false;
 }
 
-bool LeotherasTheBlindInnerDemonCheatAction::Execute(Event event)
+/* bool LeotherasTheBlindInnerDemonCheatAction::Execute(Event event)
 {
-    Unit* innerDemon = GetFirstAliveUnitByEntry(botAI, NPC_INNER_DEMON);
+    Unit* innerDemon = nullptr;
+    GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
+    for (auto const& guid : npcs)
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        Creature* creature = unit ? unit->ToCreature() : nullptr;
+        if (creature && creature->IsAlive() && creature->GetEntry() == NPC_INNER_DEMON
+            && creature->GetSummonerGUID() == bot->GetGUID())
+        {
+            innerDemon = creature;
+            break;
+        }
+    }
+
     if (innerDemon)
     {
         // Tanks and healers have no ability to kill their own Inner Demons
         // Hunters, Affliction Warlocks, Shadow Priests, and (for some reason) Arcane Mages also struggleo
         uint8 tab = AiFactory::GetPlayerSpecTab(bot);
+        Player* demonFormTank = GetLeotherasDemonFormTank(botAI, bot);
         if (botAI->IsHeal(bot) || botAI->IsTank(bot) ||
             bot->getClass() == CLASS_HUNTER ||
             (bot->getClass() == CLASS_PRIEST && tab == 2) ||
             (bot->getClass() == CLASS_WARLOCK && tab == 0) ||
-            (bot->getClass() == CLASS_MAGE && tab == 0))
+            (bot->getClass() == CLASS_MAGE && tab == 0) ||
+            (demonFormTank && demonFormTank == bot))
         {
-            Unit::DealDamage(bot, innerDemon, innerDemon->GetMaxHealth() / 20, nullptr,
+            Unit::DealDamage(bot, innerDemon, innerDemon->GetMaxHealth() / 25, nullptr,
                              DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false, true);
+            return true;
+        }
+    }
+
+    return false;
+} */
+// Logging version of Inner Demon cheat
+bool LeotherasTheBlindInnerDemonCheatAction::Execute(Event event)
+{
+    Unit* innerDemon = nullptr;
+    GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
+    for (auto const& guid : npcs)
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        Creature* creature = unit ? unit->ToCreature() : nullptr;
+        if (creature && creature->IsAlive() && creature->GetEntry() == NPC_INNER_DEMON
+            && creature->GetSummonerGUID() == bot->GetGUID())
+        {
+            innerDemon = creature;
+            break;
+        }
+    }
+
+    if (innerDemon)
+    {
+        uint8 tab = AiFactory::GetPlayerSpecTab(bot);
+        Player* demonFormTank = GetLeotherasDemonFormTank(botAI, bot);
+
+        // Log targeting and current HP for all classes/specs, including bot's current target
+        ObjectGuid botTarget = bot->GetTarget();
+        LOG_DEBUG("playerbots", "Bot [{}] ({}) found Inner Demon [{}] (HP: {}/{}) | Bot target: [{}]",
+            bot->GetName(), bot->GetGUID().ToString(),
+            innerDemon->GetGUID().ToString(), innerDemon->GetHealth(), innerDemon->GetMaxHealth(),
+            botTarget.ToString());
+
+        if (botAI->IsHeal(bot) || botAI->IsTank(bot) ||
+            bot->getClass() == CLASS_HUNTER ||
+            (bot->getClass() == CLASS_PRIEST && tab == 2) ||
+            (bot->getClass() == CLASS_WARLOCK && tab == 0) ||
+            (bot->getClass() == CLASS_MAGE && tab == 0) ||
+            (demonFormTank && demonFormTank == bot))
+        {
+            uint32 damage = innerDemon->GetMaxHealth() / 20;
+            uint32 hpBefore = innerDemon->GetHealth();
+
+            Unit::DealDamage(bot, innerDemon, damage, nullptr,
+                             DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false, true);
+
+            uint32 hpAfter = innerDemon->IsAlive() ? innerDemon->GetHealth() : 0;
+            uint32 actualDamage = hpBefore > hpAfter ? hpBefore - hpAfter : 0;
+
+            LOG_DEBUG("playerbots", "InnerDemonCheatAction: Bot [{}] ({}) intended {} damage, actually dealt {} to Inner Demon [{}] (HP: {}/{})",
+                bot->GetName(), bot->GetGUID().ToString(), damage, actualDamage,
+                innerDemon->GetGUID().ToString(), hpAfter, innerDemon->GetMaxHealth());
+
+            LOG_DEBUG("playerbots", "InnerDemonCheatAction: Bot [{}] ({}) HP: {}/{}",
+                bot->GetName(), bot->GetGUID().ToString(),
+                bot->GetHealth(), bot->GetMaxHealth());
+
             return true;
         }
     }
@@ -2725,6 +2781,8 @@ bool LadyVashjAvoidToxicSporesAction::Execute(Event event)
 
     Position safestPos = FindSafestNearbyPosition(spores, vashjCenter, maxRadius, hazardRadius);
 
+    bot->AttackStop();
+    bot->InterruptNonMeleeSpells(true);
     return MoveTo(SSC_MAP_ID, safestPos.GetPositionX(), safestPos.GetPositionY(),
                   safestPos.GetPositionZ(), false, false, false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
@@ -2734,7 +2792,7 @@ Position LadyVashjAvoidToxicSporesAction::FindSafestNearbyPosition(const std::ve
 {
     const float searchStep = M_PI / 8.0f;
     const float minDistance = 2.0f;
-    const float maxDistance = 30.0f;
+    const float maxDistance = 40.0f;
     const float distanceStep = 1.0f;
 
     Position bestPos;
@@ -2891,6 +2949,7 @@ bool LadyVashjUseFreeActionAbilitiesAction::Execute(Event event)
         {
             if (botAI->IsMainTank(member))
                 mainTankToxic = member;
+
             if (!anyToxic)
                 anyToxic = member;
         }
@@ -2899,6 +2958,7 @@ bool LadyVashjUseFreeActionAbilitiesAction::Execute(Event event)
         {
             if (botAI->IsMainTank(member))
                 mainTankStatic = member;
+
             if (!anyStatic)
                 anyStatic = member;
         }
