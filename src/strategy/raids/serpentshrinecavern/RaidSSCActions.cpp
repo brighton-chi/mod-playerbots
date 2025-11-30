@@ -92,24 +92,6 @@ bool GreyheartTidecallerMarkWaterElementalTotemAction::Execute(Event event)
     return false;
 }
 
-bool RancidMushroomMoveAwayFromMushroomSporeCloudAction::Execute(Event event)
-{
-    Unit* mushroom = GetFirstAliveUnitByEntry(botAI, NPC_RANCID_MUSHROOM);
-    if (!mushroom)
-        return false;
-
-    float currentDistance = bot->GetExactDist2d(mushroom);
-    const float safeDistance = 10.0f;
-    if (currentDistance < safeDistance)
-    {
-        bot->AttackStop();
-        bot->InterruptNonMeleeSpells(false);
-        return MoveAway(mushroom, safeDistance - currentDistance + 2.0f, false);
-    }
-
-    return false;
-}
-
 // Hydross the Unstable <Duke of Currents>
 
 // (1) When tanking, move to designated tanking spot on frost side
@@ -807,44 +789,8 @@ bool LeotherasTheBlindRunAwayFromWhirlwindAction::Execute(Event event)
     return false;
 }
 
-/* bool LeotherasTheBlindInnerDemonCheatAction::Execute(Event event)
-{
-    Unit* innerDemon = nullptr;
-    GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
-    for (auto const& guid : npcs)
-    {
-        Unit* unit = botAI->GetUnit(guid);
-        Creature* creature = unit ? unit->ToCreature() : nullptr;
-        if (creature && creature->IsAlive() && creature->GetEntry() == NPC_INNER_DEMON
-            && creature->GetSummonerGUID() == bot->GetGUID())
-        {
-            innerDemon = creature;
-            break;
-        }
-    }
-
-    if (innerDemon)
-    {
-        // Tanks and healers have no ability to kill their own Inner Demons
-        // Hunters, Affliction Warlocks, Shadow Priests, and (for some reason) Arcane Mages also struggleo
-        uint8 tab = AiFactory::GetPlayerSpecTab(bot);
-        Player* demonFormTank = GetLeotherasDemonFormTank(botAI, bot);
-        if (botAI->IsHeal(bot) || botAI->IsTank(bot) ||
-            bot->getClass() == CLASS_HUNTER ||
-            (bot->getClass() == CLASS_PRIEST && tab == 2) ||
-            (bot->getClass() == CLASS_WARLOCK && tab == 0) ||
-            (bot->getClass() == CLASS_MAGE && tab == 0) ||
-            (demonFormTank && demonFormTank == bot))
-        {
-            Unit::DealDamage(bot, innerDemon, innerDemon->GetMaxHealth() / 25, nullptr,
-                             DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false, true);
-            return true;
-        }
-    }
-
-    return false;
-} */
-// Logging version of Inner Demon cheat
+// Tanks and healers have no ability to kill their own Inner Demons
+// Hunters, Affliction Warlocks, Shadow Priests, and (for some reason) Arcane Mages also struggle
 bool LeotherasTheBlindInnerDemonCheatAction::Execute(Event event)
 {
     Unit* innerDemon = nullptr;
@@ -866,13 +812,6 @@ bool LeotherasTheBlindInnerDemonCheatAction::Execute(Event event)
         uint8 tab = AiFactory::GetPlayerSpecTab(bot);
         Player* demonFormTank = GetLeotherasDemonFormTank(botAI, bot);
 
-        // Log targeting and current HP for all classes/specs, including bot's current target
-        ObjectGuid botTarget = bot->GetTarget();
-        LOG_DEBUG("playerbots", "Bot [{}] ({}) found Inner Demon [{}] (HP: {}/{}) | Bot target: [{}]",
-            bot->GetName(), bot->GetGUID().ToString(),
-            innerDemon->GetGUID().ToString(), innerDemon->GetHealth(), innerDemon->GetMaxHealth(),
-            botTarget.ToString());
-
         if (botAI->IsHeal(bot) || botAI->IsTank(bot) ||
             bot->getClass() == CLASS_HUNTER ||
             (bot->getClass() == CLASS_PRIEST && tab == 2) ||
@@ -880,22 +819,8 @@ bool LeotherasTheBlindInnerDemonCheatAction::Execute(Event event)
             (bot->getClass() == CLASS_MAGE && tab == 0) ||
             (demonFormTank && demonFormTank == bot))
         {
-            uint32 damage = innerDemon->GetMaxHealth() / 20;
-            uint32 hpBefore = innerDemon->GetHealth();
-
-            Unit::DealDamage(bot, innerDemon, damage, nullptr,
+            Unit::DealDamage(bot, innerDemon, innerDemon->GetMaxHealth() / 25, nullptr,
                              DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false, true);
-
-            uint32 hpAfter = innerDemon->IsAlive() ? innerDemon->GetHealth() : 0;
-            uint32 actualDamage = hpBefore > hpAfter ? hpBefore - hpAfter : 0;
-
-            LOG_DEBUG("playerbots", "InnerDemonCheatAction: Bot [{}] ({}) intended {} damage, actually dealt {} to Inner Demon [{}] (HP: {}/{})",
-                bot->GetName(), bot->GetGUID().ToString(), damage, actualDamage,
-                innerDemon->GetGUID().ToString(), hpAfter, innerDemon->GetMaxHealth());
-
-            LOG_DEBUG("playerbots", "InnerDemonCheatAction: Bot [{}] ({}) HP: {}/{}",
-                bot->GetName(), bot->GetGUID().ToString(),
-                bot->GetHealth(), bot->GetMaxHealth());
 
             return true;
         }
@@ -1039,11 +964,6 @@ bool FathomLordKarathressMainTankPositionBossAction::Execute(Event event)
                           MovementPriority::MOVEMENT_COMBAT, true, true);
         }
     }
-    else if (!bot->IsWithinMeleeRange(karathress))
-    {
-        return MoveTo(SSC_MAP_ID, karathress->GetPositionX(), karathress->GetPositionY(), karathress->GetPositionZ(),
-                      false, false, false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
-    }
 
     return false;
 }
@@ -1078,11 +998,6 @@ bool FathomLordKarathressFirstAssistTankPositionCaribdisAction::Execute(Event ev
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
-    else if (!bot->IsWithinMeleeRange(caribdis))
-    {
-        return MoveTo(SSC_MAP_ID, caribdis->GetPositionX(), caribdis->GetPositionY(), caribdis->GetPositionZ(),
-                      false, false, false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
-    }
 
     return false;
 }
@@ -1116,11 +1031,6 @@ bool FathomLordKarathressSecondAssistTankPositionSharkkisAction::Execute(Event e
                           MovementPriority::MOVEMENT_COMBAT, true, true);
         }
     }
-    else if (!bot->IsWithinMeleeRange(sharkkis))
-    {
-        return MoveTo(SSC_MAP_ID, sharkkis->GetPositionX(), sharkkis->GetPositionY(), sharkkis->GetPositionZ(),
-                      false, false, false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
-    }
 
     return false;
 }
@@ -1153,11 +1063,6 @@ bool FathomLordKarathressThirdAssistTankPositionTidalvessAction::Execute(Event e
             return MoveTo(SSC_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false, false, true,
                           MovementPriority::MOVEMENT_COMBAT, true, true);
         }
-    }
-    else if (!bot->IsWithinMeleeRange(tidalvess))
-    {
-        return MoveTo(SSC_MAP_ID, tidalvess->GetPositionX(), tidalvess->GetPositionY(), tidalvess->GetPositionZ(),
-                      false, false, false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
     return false;
@@ -1458,7 +1363,7 @@ bool MorogrimTidewalkerMoveBossToTankPositionAction::Execute(Event event)
     if (bot->GetVictim() != tidewalker)
         return Attack(tidewalker);
 
-    if (tidewalker->GetVictim() == bot && bot->IsWithinMeleeRange(tidewalker))
+    if (tidewalker->GetVictim() == bot)
     {
         if (tidewalker->GetHealthPct() > 26.0f)
             return MoveToPhase1TankPosition(tidewalker);
@@ -1482,7 +1387,7 @@ bool MorogrimTidewalkerMoveBossToTankPositionAction::MoveToPhase1TankPosition(Un
         float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
         float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
 
-        return MoveTo(SSC_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        return MoveTo(SSC_MAP_ID, moveX, moveY, phase1.GetPositionZ(), false, false, false, false,
                       MovementPriority::MOVEMENT_COMBAT, true, true);
     }
 
@@ -1510,7 +1415,7 @@ bool MorogrimTidewalkerMoveBossToTankPositionAction::MoveToPhase2TankPosition(Un
             float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
             float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
 
-            return MoveTo(SSC_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+            return MoveTo(SSC_MAP_ID, moveX, moveY, transition.GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, true);
         }
         else
@@ -1528,7 +1433,7 @@ bool MorogrimTidewalkerMoveBossToTankPositionAction::MoveToPhase2TankPosition(Un
             float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
             float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
 
-            return MoveTo(SSC_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+            return MoveTo(SSC_MAP_ID, moveX, moveY, phase2.GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, true);
         }
     }
@@ -1561,7 +1466,7 @@ bool MorogrimTidewalkerPhase2RepositionRangedAction::Execute(Event event)
             float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
             float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
 
-            return MoveTo(SSC_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+            return MoveTo(SSC_MAP_ID, moveX, moveY, transition.GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
         else
@@ -1582,7 +1487,7 @@ bool MorogrimTidewalkerPhase2RepositionRangedAction::Execute(Event event)
             float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
             float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
 
-            return MoveTo(SSC_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+            return MoveTo(SSC_MAP_ID, moveX, moveY, phase2.GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
@@ -1619,7 +1524,7 @@ bool LadyVashjMainTankPositionBossAction::Execute(Event event)
     if (bot->GetVictim() != vashj)
         return Attack(vashj);
 
-    if (vashj->GetVictim() == bot && bot->IsWithinMeleeRange(vashj))
+    if (vashj->GetVictim() == bot /* && bot->IsWithinMeleeRange(vashj) */)
     {
         if (IsLadyVashjInPhase1(botAI))
         {
@@ -2781,7 +2686,6 @@ bool LadyVashjAvoidToxicSporesAction::Execute(Event event)
 
     Position safestPos = FindSafestNearbyPosition(spores, vashjCenter, maxRadius, hazardRadius);
 
-    bot->AttackStop();
     bot->InterruptNonMeleeSpells(true);
     return MoveTo(SSC_MAP_ID, safestPos.GetPositionX(), safestPos.GetPositionY(),
                   safestPos.GetPositionZ(), false, false, false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
@@ -2810,7 +2714,16 @@ Position LadyVashjAvoidToxicSporesAction::FindSafestNearbyPosition(const std::ve
             if (vashjCenter.GetExactDist2d(x, y) > maxRadius)
                 continue;
 
-            Position testPos(x, y, z);
+            float validZ = z;
+
+            if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, bot->GetPositionX(), bot->GetPositionY(),
+                bot->GetPositionZ(), x, y, validZ))
+                continue;
+
+            if (!bot->IsWithinLOS(x, y, validZ))
+                continue;
+
+            Position testPos(x, y, validZ);
 
             bool isSafe = true;
             for (Unit* spore : spores)

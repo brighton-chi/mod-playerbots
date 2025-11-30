@@ -122,6 +122,13 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class LadyVashjDisablePhase3TankAssistMultiplier : public Multiplier
+{
+public:
+    LadyVashjDisablePhase3TankAssistMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "lady vashj disable phase 3 tank assist") {}
+    virtual float GetValue(Action* action);
+};
+
 class LadyVashjDelayBloodlustAndHeroismMultiplier : public Multiplier
 {
 public:

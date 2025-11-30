@@ -11,7 +11,6 @@ public:
     {
         creators["underbog colossus escape toxic pool"] = &RaidSSCActionContext::underbog_colossus_escape_toxic_pool;
         creators["greyheart tidecaller mark water elemental totem"] = &RaidSSCActionContext::greyheart_tidecaller_mark_water_elemental_totem;
-        creators["rancid mushroom move away from mushroom spore cloud"] = &RaidSSCActionContext::rancid_mushroom_move_away_from_mushroom_spore_cloud;
 
         creators["hydross the unstable position frost tank"] = &RaidSSCActionContext::hydross_the_unstable_position_frost_tank;
         creators["hydross the unstable position nature tank"] = &RaidSSCActionContext::hydross_the_unstable_position_nature_tank;
@@ -70,7 +69,6 @@ public:
 private:
     static Action* underbog_colossus_escape_toxic_pool(PlayerbotAI* botAI) { return new UnderbogColossusEscapeToxicPoolAction(botAI); }
     static Action* greyheart_tidecaller_mark_water_elemental_totem(PlayerbotAI* botAI) { return new GreyheartTidecallerMarkWaterElementalTotemAction(botAI); }
-    static Action* rancid_mushroom_move_away_from_mushroom_spore_cloud(PlayerbotAI* botAI) { return new RancidMushroomMoveAwayFromMushroomSporeCloudAction(botAI); }
 
     static Action* hydross_the_unstable_position_frost_tank(PlayerbotAI* botAI) { return new HydrossTheUnstablePositionFrostTankAction(botAI); }
     static Action* hydross_the_unstable_position_nature_tank(PlayerbotAI* botAI) { return new HydrossTheUnstablePositionNatureTankAction(botAI); }

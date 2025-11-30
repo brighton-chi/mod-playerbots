@@ -12,7 +12,7 @@ namespace SerpentShrineCavernHelpers
 {
     enum SerpentShrineCavernSpells
     {
-        // Trash Mob
+        // Trash Mobs
         SPELL_TOXIC_POOL             = 38718,
 
         // Hydross the Unstable <Duke of Currents>
@@ -71,7 +71,6 @@ namespace SerpentShrineCavernHelpers
     {
         // Trash Mobs
         NPC_WATER_ELEMENTAL_TOTEM    = 22236,
-        NPC_RANCID_MUSHROOM          = 22250,
 
         // Hydross the Unstable <Duke of Currents>
         NPC_PURE_SPAWN_OF_HYDROSS    = 22035,

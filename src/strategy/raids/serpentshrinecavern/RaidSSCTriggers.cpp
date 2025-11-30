@@ -25,12 +25,6 @@ bool GreyheartTidecallerWaterElementalTotemSpawnedTrigger::IsActive()
     return totem != nullptr;
 }
 
-bool RancidMushroomSpawnedTrigger::IsActive()
-{
-    Unit* mushroom = GetFirstAliveUnitByEntry(botAI, NPC_RANCID_MUSHROOM);
-    return mushroom != nullptr;
-}
-
 // Hydross the Unstable <Duke of Currents>
 
 bool HydrossTheUnstableBotIsFrostTankTrigger::IsActive()

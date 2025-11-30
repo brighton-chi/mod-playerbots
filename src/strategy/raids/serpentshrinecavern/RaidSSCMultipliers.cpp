@@ -457,15 +457,24 @@ float MorogrimTidewalkerDisablePhase2MovementActionsMultiplier::GetValue(Action*
 float LadyVashjDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    if (!vashj)
+    if (!vashj || !IsLadyVashjInPhase3(botAI))
         return 1.0f;
 
-    if (!IsLadyVashjInPhase3(botAI))
-    {
-        if (dynamic_cast<CastBloodlustAction*>(action) ||
-            dynamic_cast<CastHeroismAction*>(action))
-            return 0.0f;
-    }
+    if (dynamic_cast<CastBloodlustAction*>(action) ||
+        dynamic_cast<CastHeroismAction*>(action))
+        return 0.0f;
+
+    return 1.0f;
+}
+
+float LadyVashjDisablePhase3TankAssistMultiplier::GetValue(Action* action)
+{
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (!vashj || !IsLadyVashjInPhase3(botAI))
+        return 1.0f;
+
+    if (botAI->IsMainTank(bot) && dynamic_cast<TankAssistAction*>(action))
+        return 0.0f;
 
     return 1.0f;
 }

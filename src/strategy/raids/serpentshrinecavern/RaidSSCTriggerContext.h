@@ -11,7 +11,6 @@ public:
     {
         creators["underbog colossus spawned toxic pool after death"] = &RaidSSCTriggerContext::underbog_colossus_spawned_toxic_pool_after_death;
         creators["greyheart tidecaller water elemental totem spawned"] = &RaidSSCTriggerContext::greyheart_tidecaller_water_elemental_totem_spawned;
-        creators["rancid mushroom spawned"] = &RaidSSCTriggerContext::rancid_mushroom_spawned;
 
         creators["hydross the unstable bot is frost tank"] = &RaidSSCTriggerContext::hydross_the_unstable_bot_is_frost_tank;
         creators["hydross the unstable bot is nature tank"] = &RaidSSCTriggerContext::hydross_the_unstable_bot_is_nature_tank;
@@ -68,7 +67,6 @@ public:
 private:
     static Trigger* underbog_colossus_spawned_toxic_pool_after_death(PlayerbotAI* botAI) { return new UnderbogColossusSpawnedToxicPoolAfterDeathTrigger(botAI); }
     static Trigger* greyheart_tidecaller_water_elemental_totem_spawned(PlayerbotAI* botAI) { return new GreyheartTidecallerWaterElementalTotemSpawnedTrigger(botAI); }
-    static Trigger* rancid_mushroom_spawned(PlayerbotAI* botAI) { return new RancidMushroomSpawnedTrigger(botAI); }
 
     static Trigger* hydross_the_unstable_bot_is_frost_tank(PlayerbotAI* botAI) { return new HydrossTheUnstableBotIsFrostTankTrigger(botAI); }
     static Trigger* hydross_the_unstable_bot_is_nature_tank(PlayerbotAI* botAI) { return new HydrossTheUnstableBotIsNatureTankTrigger(botAI); }

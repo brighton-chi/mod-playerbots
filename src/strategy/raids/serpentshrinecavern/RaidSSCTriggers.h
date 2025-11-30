@@ -17,13 +17,6 @@ public:
     bool IsActive() override;
 };
 
-class RancidMushroomSpawnedTrigger : public Trigger
-{
-public:
-    RancidMushroomSpawnedTrigger(PlayerbotAI* botAI) : Trigger(botAI, "rancid mushroom spawned") {}
-    bool IsActive() override;
-};
-
 class HydrossTheUnstableBotIsFrostTankTrigger : public Trigger
 {
 public:
