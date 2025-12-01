@@ -388,7 +388,7 @@ bool AlarAddTankPickUpEmbersAction::Execute(Event event)
         MarkTargetWithSquare(bot, ember);
         SetRtiTarget(botAI, "square", ember);
 
-        if (bot->GetVictim() == ember)
+        if (bot->GetVictim() != ember)
             return Attack(ember);
 
         const Position& center = AlarRangedCenter;
@@ -422,7 +422,7 @@ bool AlarAddTankPickUpEmbersAction::Execute(Event event)
         MarkTargetWithSquare(bot, ember);
         SetRtiTarget(botAI, "square", ember);
 
-        if (bot->GetVictim() == ember)
+        if (bot->GetVictim() != ember)
             return Attack(ember);
 
         const float safeDistance = 16.0f;
