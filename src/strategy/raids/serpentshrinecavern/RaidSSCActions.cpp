@@ -1951,7 +1951,7 @@ bool LadyVashjAssignDpsPriorityAction::Execute(Event event)
             else
                 targets = { elite, enchanted, vashj };
         }
-        if (botAI->IsRanged(bot))
+        else if (botAI->IsRanged(bot))
         {
             // Hunters will try to kill Toxic Sporebats (in practice, they are generally not in range)
             if (bot->getClass() == CLASS_HUNTER)
@@ -1959,7 +1959,7 @@ bool LadyVashjAssignDpsPriorityAction::Execute(Event event)
             else
                 targets = { enchanted, strider, elite, vashj };
         }
-        if (botAI->IsMelee(bot) && botAI->IsDps(bot))
+        else if (botAI->IsMelee(bot) && botAI->IsDps(bot))
             targets = { enchanted, elite, vashj };
         else
             targets = { enchanted, elite, strider, vashj };
@@ -2213,14 +2213,19 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
         {
             if (IsFirstCorePasserInIntendedPosition(designatedLooter, firstCorePasser, closestTrigger))
             {
-                const ObjectGuid giverGuid = bot->GetGUID();
                 const time_t now = std::time(nullptr);
 
-                auto it = lastImbueAttempt.find(giverGuid);
-                if (it == lastImbueAttempt.end() || (now - it->second) >= 2)
+                auto [it, inserted] = lastImbueAttempt.try_emplace(SSC_MAP_ID, now);
+                if (inserted)
                 {
                     botAI->ImbueItem(item, firstCorePasser);
-                    lastImbueAttempt[giverGuid] = now;
+                    ScheduleStoreCoreAfterImbue(botAI, bot, firstCorePasser);
+                    return true;
+                }
+                if ((now - it->second) >= 2)
+                {
+                    it->second = now;
+                    botAI->ImbueItem(item, firstCorePasser);
                     ScheduleStoreCoreAfterImbue(botAI, bot, firstCorePasser);
                     return true;
                 }
@@ -2231,14 +2236,19 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
         {
             if (IsSecondCorePasserInIntendedPosition(firstCorePasser, secondCorePasser, closestTrigger))
             {
-                const ObjectGuid giverGuid = bot->GetGUID();
                 const time_t now = std::time(nullptr);
 
-                auto it = lastImbueAttempt.find(giverGuid);
-                if (it == lastImbueAttempt.end() || (now - it->second) >= 2)
+                auto [it, inserted] = lastImbueAttempt.try_emplace(SSC_MAP_ID, now);
+                if (inserted)
                 {
                     botAI->ImbueItem(item, secondCorePasser);
-                    lastImbueAttempt[giverGuid] = now;
+                    ScheduleStoreCoreAfterImbue(botAI, bot, secondCorePasser);
+                    return true;
+                }
+                if ((now - it->second) >= 2)
+                {
+                    it->second = now;
+                    botAI->ImbueItem(item, secondCorePasser);
                     ScheduleStoreCoreAfterImbue(botAI, bot, secondCorePasser);
                     return true;
                 }
@@ -2253,14 +2263,19 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
             {
                 if (IsThirdCorePasserInIntendedPosition(secondCorePasser, thirdCorePasser, closestTrigger))
                 {
-                    const ObjectGuid giverGuid = bot->GetGUID();
                     const time_t now = std::time(nullptr);
 
-                    auto it = lastImbueAttempt.find(giverGuid);
-                    if (it == lastImbueAttempt.end() || (now - it->second) >= 2)
+                    auto [it, inserted] = lastImbueAttempt.try_emplace(SSC_MAP_ID, now);
+                    if (inserted)
                     {
                         botAI->ImbueItem(item, thirdCorePasser);
-                        lastImbueAttempt[giverGuid] = now;
+                        ScheduleStoreCoreAfterImbue(botAI, bot, thirdCorePasser);
+                        return true;
+                    }
+                    if ((now - it->second) >= 2)
+                    {
+                        it->second = now;
+                        botAI->ImbueItem(item, thirdCorePasser);
                         ScheduleStoreCoreAfterImbue(botAI, bot, thirdCorePasser);
                         return true;
                     }
@@ -2275,14 +2290,19 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
             {
                 if (IsFourthCorePasserInIntendedPosition(thirdCorePasser, fourthCorePasser, closestTrigger))
                 {
-                    const ObjectGuid giverGuid = bot->GetGUID();
                     const time_t now = std::time(nullptr);
 
-                    auto it = lastImbueAttempt.find(giverGuid);
-                    if (it == lastImbueAttempt.end() || (now - it->second) >= 2)
+                    auto [it, inserted] = lastImbueAttempt.try_emplace(SSC_MAP_ID, now);
+                    if (inserted)
                     {
                         botAI->ImbueItem(item, fourthCorePasser);
-                        lastImbueAttempt[giverGuid] = now;
+                        ScheduleStoreCoreAfterImbue(botAI, bot, fourthCorePasser);
+                        return true;
+                    }
+                    if ((now - it->second) >= 2)
+                    {
+                        it->second = now;
+                        botAI->ImbueItem(item, fourthCorePasser);
                         ScheduleStoreCoreAfterImbue(botAI, bot, fourthCorePasser);
                         return true;
                     }
@@ -2571,8 +2591,6 @@ void LadyVashjPassTheTaintedCoreAction::ScheduleStoreCoreAfterImbue(PlayerbotAI*
                 Item::GenerateItemRandomPropertyId(ITEM_TAINTED_CORE));
             if (created)
             {
-                time_t now = std::time(nullptr);
-                lastImbueAttempt[giverGuid] = now;
                 intendedLineup.erase(receiverGuid);
                 intendedLineup.erase(giverGuid);
             }

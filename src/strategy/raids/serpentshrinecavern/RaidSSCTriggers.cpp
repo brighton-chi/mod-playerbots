@@ -438,8 +438,7 @@ bool LadyVashjBossEngagedByRangedInPhase1Trigger::IsActive()
 
 bool LadyVashjCastsShockBlastOnHighestAggroTrigger::IsActive()
 {
-    uint8 tab = AiFactory::GetPlayerSpecTab(bot);
-    if (bot->getClass() != CLASS_SHAMAN || tab != 2)
+    if (bot->getClass() != CLASS_SHAMAN)
         return false;
 
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
