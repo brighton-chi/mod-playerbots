@@ -32,6 +32,7 @@ namespace TempestKeepHelpers
         const Position VoidReaverTankPosition = { 423.845f, 371.733f, 14.897f }; // middle of room
 
         const Position SanguinarTankPosition = { 775.478f, 39.888f, 46.780f };
+        // const Position CapernianTankPosition = { 743.772f, -13.762f, 46.780f };
         const Position TelonicusTankPosition = { 773.717f, 44.091f, 46.780f };
         const Position KaelthasWeaponStackPosition = { 775.296f, -0.822f, 48.729f };
         const Position KaelthasAxeTankPosition = { 775.621f, 20.717f, 48.729f };

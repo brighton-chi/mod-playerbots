@@ -175,7 +175,7 @@ float KaelthasSunstriderKiteThaladredMultiplier::GetValue(Action* action)
         return 1.0f;
 
     Unit* thaladred = AI_VALUE2(Unit*, "find target", "thaladred the darkener");
-    if (!thaladred)
+    if (!thaladred || thaladred->HasAura(SPELL_PERMANENT_FEIGN_DEATH))
         return 1.0f;
 
     if (thaladred->GetVictim() == bot)
@@ -194,7 +194,9 @@ float KaelthasSunstriderDelayBloodlustAndHeroismMultiplier::GetValue(Action* act
     if (!kaelthas)
         return 1.0f;
 
-    if (!IsKaelthasInPhase3(botAI) && !IsKaelthasInPhase5(botAI))
+    Unit* thaladred = AI_VALUE2(Unit*, "find target", "thaladred the darkener");
+    if ((!IsKaelthasInPhase3(botAI) && !IsKaelthasInPhase5(botAI)) ||
+        thaladred->HasAura(SPELL_PERMANENT_FEIGN_DEATH))
     {
         if (dynamic_cast<CastBloodlustAction*>(action) ||
             dynamic_cast<CastHeroismAction*>(action))

@@ -264,6 +264,9 @@ bool KaelthasSunstriderCapernianRequiresAWarlockTankTrigger::IsActive()
 
 bool KaelthasSunstriderCapernianEngagedByWarlockTankTrigger::IsActive()
 {
+    if (bot->getClass() != CLASS_WARLOCK)
+        return false;
+
     Player* capernianTank = GetCapernianTank(botAI, bot);
     if (!capernianTank || capernianTank != bot)
         return false;
@@ -404,7 +407,7 @@ bool KaelthasSunstriderLegendaryWeaponsWereLostTrigger::IsActive()
 
 bool KaelthasSunstriderDeterminingAdvisorKillOrderTrigger::IsActive()
 {
-    if (!botAI->IsDps(bot))
+    if (botAI->IsTank(bot))
         return false;
 
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");

@@ -14,7 +14,7 @@ namespace TempestKeepHelpers
     enum TempestKeepSpells
     {
         // Trash
-        SPELL_ARCANE_FLURRY             = 34821,
+        SPELL_ARCANE_FLURRY             = 37268,
 
         // Al'ar
         SPELL_REBIRTH_PHASE2            = 34342,
@@ -108,6 +108,7 @@ namespace TempestKeepHelpers
         extern const Position VoidReaverTankPosition;
 
         extern const Position SanguinarTankPosition;
+        // extern const Position CapernianTankPosition;
         extern const Position TelonicusTankPosition;
         extern const Position KaelthasWeaponStackPosition;
         extern const Position KaelthasAxeTankPosition;
