@@ -2175,21 +2175,20 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
     if (!firstCorePasser || !secondCorePasser || !thirdCorePasser || !fourthCorePasser || !closestTrigger)
         return false;
 
-    if (botAI->HasCheat(BotCheatMask::raid))
-    {
-        if (!bot->HasAura(SPELL_FEAR_WARD))
-            bot->AddAura(SPELL_FEAR_WARD, bot);
-    }
+    // Not gated behind CheatMask because this is necessary to address an issue with bot movement, which
+    // is that bots cannot be rooted and therefore will move when feared while holding the Tainted Core
+    if (!bot->HasAura(SPELL_FEAR_WARD))
+        bot->AddAura(SPELL_FEAR_WARD, bot);
 
     const uint8 neededPassers = ComputeNeededPassers(designatedLooter, closestTrigger);
 
     // Passer order: HealAssistantOfIndex 0, 1, 2, then RangedDpsAssistantOfIndex 0
-    if (bot == firstCorePasser && !botAI->HasItemInInventory(ITEM_TAINTED_CORE) && neededPassers >= 1)
+    if (bot == firstCorePasser && !botAI->HasItemInInventory(ITEM_TAINTED_CORE))
     {
         if (LineUpFirstCorePasser(designatedLooter, closestTrigger))
             return true;
     }
-    else if (bot == secondCorePasser && !botAI->HasItemInInventory(ITEM_TAINTED_CORE) && neededPassers >= 2)
+    else if (bot == secondCorePasser && !botAI->HasItemInInventory(ITEM_TAINTED_CORE))
     {
         if (LineUpSecondCorePasser(firstCorePasser, closestTrigger))
             return true;
@@ -2322,15 +2321,12 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
 // Determine, by distance to the closest trigger, how many core passers are needed
 uint8 LadyVashjPassTheTaintedCoreAction::ComputeNeededPassers(Player* designatedLooter, Unit* closestTrigger)
 {
-    if (!designatedLooter || !closestTrigger)
-        return static_cast<uint8>(1);
-
-    const float farDistance = 38.0f;
-    float dist = designatedLooter->GetExactDist2d(closestTrigger);
+    const float maxTargetDistance = 39.0f;
+    float distanceToTrigger = designatedLooter->GetExactDist2d(closestTrigger);
 
     int needed = 1;
-    if (farDistance > 0.0f)
-        needed = static_cast<int>(std::ceil(dist / farDistance));
+    if (maxTargetDistance > 0.0f)
+        needed = static_cast<int>(std::ceil(distanceToTrigger / maxTargetDistance));
 
     if (needed < 1) needed = 1;
     if (needed > 4) needed = 4;
@@ -2380,7 +2376,7 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpSecondCorePasser(Player* firstCore
     const float thresholdDist = 40.0f;
     const float nearTriggerDist = 1.5f;
     // if firstCorePasser is not thresholdDist yards from closestTrigger, go to farDistance from firstCorePasser
-    const float farDistance = 38.0f;
+    const float farDistance = 39.0f;
 
     if (distToTrigger <= thresholdDist)
     {
@@ -2421,7 +2417,7 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpThirdCorePasser(Player* secondCore
     float targetX, targetY, targetZ;
     const float thresholdDist = 40.0f;
     const float nearTriggerDist = 1.5f;
-    const float farDistance = 38.0f;
+    const float farDistance = 39.0f;
 
     if (distToTrigger <= thresholdDist)
     {
@@ -2455,15 +2451,17 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpFourthCorePasser(Player* thirdCore
 
     float dx = tx - sx;
     float dy = ty - sy;
-    float length = std::sqrt(dx*dx + dy*dy);
+    float distToTrigger = std::sqrt(dx*dx + dy*dy);
 
-    if (length == 0.0f)
+    if (distToTrigger == 0.0f)
         return false;
 
-    dx /= length; dy /= length;
+    dx /= distToTrigger; dy /= distToTrigger;
 
-    float targetX = tx - dx * 2.0f;
-    float targetY = ty - dy * 2.0f;
+    const float nearTriggerDist = 1.5f;
+    float moveDist = std::max(distToTrigger - nearTriggerDist, 0.0f);
+    float targetX = tx - dx * moveDist;
+    float targetY = ty - dy * moveDist;
     const float targetZ = 42.985f;
 
     intendedLineup.insert_or_assign(bot->GetGUID(), Position(targetX, targetY, targetZ));

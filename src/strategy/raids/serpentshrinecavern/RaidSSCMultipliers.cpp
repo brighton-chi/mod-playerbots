@@ -475,9 +475,12 @@ float LadyVashjStaticChargeStayAwayFromGroupMultiplier::GetValue(Action* action)
 
     if (!botAI->IsMainTank(bot) && bot->HasAura(SPELL_STATIC_CHARGE))
     {
-        if ((dynamic_cast<MovementAction*>(action) &&
-            !dynamic_cast<LadyVashjStaticChargeMoveAwayFromGroupAction*>(action)) ||
-            dynamic_cast<CastKillingSpreeAction*>(action) ||
+        if (dynamic_cast<MovementAction*>(action) &&
+            !dynamic_cast<LadyVashjStaticChargeMoveAwayFromGroupAction*>(action) &&
+            !dynamic_cast<LadyVashjAvoidToxicSporesAction*>(action))
+            return 0.0f;
+
+        if (dynamic_cast<CastKillingSpreeAction*>(action) ||
             dynamic_cast<CastReachTargetSpellAction*>(action))
             return 0.0f;
     }
