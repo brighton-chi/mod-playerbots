@@ -1036,7 +1036,7 @@ bool KaelthasSunstriderMainTankPositionSanguinarAction::Execute(Event event)
     if (bot->GetVictim() != sanguinar)
         return Attack(sanguinar);
 
-    if (sanguinar->GetVictim() == bot)
+    if (sanguinar->GetVictim() == bot && bot->IsWithinMeleeRange(sanguinar))
     {
         const Position& position = SanguinarTankPosition;
         if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
@@ -1176,7 +1176,7 @@ bool KaelthasSunstriderWarlockTankPositionCapernianAction::Execute(Event event)
             {
                 bot->AttackStop();
                 bot->InterruptNonMeleeSpells(true);
-                return MoveTo(TEMPESTKEEP_MAP_ID, targetX, targetY, capernian->GetPositionZ(), false, false, false, false,
+                return MoveTo(TEMPESTKEEP_MAP_ID, targetX, targetY, capernian->GetPositionZ(), false, false, false, true,
                               MovementPriority::MOVEMENT_COMBAT, true, false);
             }
         }
@@ -1283,8 +1283,8 @@ bool KaelthasSunstriderMoveAwayFromCapernianAction::Execute(Event event)
         return MoveAway(capernian, safeDistance - currentDistance + 1.0f);
     }
 
-    // In Phase 1, melee DPS should stay awand and do nothing while Capernian is active
-    if (botAI->IsMelee(bot) && botAI->IsDps(bot) && IsKaelthasInPhase1(botAI))
+    // In Phase 1, melee other than main tank should stay away and do nothing while Capernian is active
+    if (botAI->IsMelee(bot) && !botAI->IsMainTank(bot) && IsKaelthasInPhase1(botAI))
     {
         bot->SetTarget(ObjectGuid::Empty);
         bot->AttackStop();
@@ -1307,7 +1307,7 @@ bool KaelthasSunstriderFirstAssistTankPositionTelonicusAction::Execute(Event eve
     if (bot->GetVictim() != telonicus)
         return Attack(telonicus);
 
-    if (telonicus->GetVictim() == bot)
+    if (telonicus->GetVictim() == bot && bot->IsWithinMeleeRange(telonicus))
     {
         const Position& position = TelonicusTankPosition;
         if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
@@ -1440,22 +1440,23 @@ bool KaelthasSunstriderGroupUpLegendaryWeaponsAction::Execute(Event event)
     if (botAI->IsAssistTank(bot))
         SetRtiTarget(botAI, "moon", nullptr);
 
+    // Priority 0: Stay away from Devastation
+    // Applies to DPS and healers at all times and tanks if they need to pull away the mace, dagger, or sword
+    if (axe)
+    {
+        if (botAI->IsDps(bot) || botAI->IsHeal(bot) ||
+            (botAI->IsAssistTank(bot) && (mace && mace->GetVictim() == bot ||
+             dagger && dagger->GetVictim() == bot || sword && sword->GetVictim() == bot)))
+        {
+            const float safeDistance = 10.0f;
+            float currentDistance = bot->GetExactDist2d(axe);
+            if (currentDistance < safeDistance)
+                return MoveAway(axe, safeDistance - currentDistance + 1.0f);
+        }
+    }
+
     if (botAI->IsDps(bot))
     {
-        // Priority 0: Stay away from Devastation
-        // Applies to DPS at all times and tanks if they need to pull away the mace, dagger, or sword
-        if (axe)
-        {
-            if (botAI->IsDps(bot) ||
-                (botAI->IsTank(bot) &&
-                 (mace->GetVictim() == bot || dagger->GetVictim() == bot || sword->GetVictim() == bot)))
-            {
-                const float safeDistance = 8.0f;
-                float currentDistance = bot->GetExactDist2d(axe);
-                if (currentDistance < safeDistance)
-                    return MoveAway(axe, safeDistance - currentDistance + 1.0f);
-            }
-        }
         // Priority 1: Staff of Disintegration (Skull)
         if (staff)
         {
@@ -1557,7 +1558,7 @@ bool KaelthasSunstriderMoveDevastationAwayAction::Execute(Event event)
 
     if (devastation->GetVictim() == bot)
     {
-        const float safeDistance = 8.0f;
+        const float safeDistance = 10.0f;
         Unit* nearestPlayer = GetNearestNonTankPlayerInRadius(bot, safeDistance);
         if (nearestPlayer)
         {
@@ -1865,11 +1866,8 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
         MarkTargetWithSquare(bot, thaladred);
         SetRtiTarget(botAI, "square", thaladred);
 
-        if (bot->GetTarget() != thaladred->GetGUID())
-        {
-            bot->SetTarget(thaladred->GetGUID());
+        if (bot->GetVictim() != thaladred)
             return Attack(thaladred);
-        }
 
         return false;
     }
@@ -1881,11 +1879,8 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
     {
         SetRtiTarget(botAI, "circle", capernian);
 
-        if (bot->GetTarget() != capernian->GetGUID())
-        {
-            bot->SetTarget(capernian->GetGUID());
+        if (bot->GetVictim() != capernian)
             return Attack(capernian);
-        }
 
         return false;
     }
@@ -1897,11 +1892,8 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
     {
         SetRtiTarget(botAI, "star", sanguinar);
 
-        if (bot->GetTarget() != sanguinar->GetGUID())
-        {
-            bot->SetTarget(sanguinar->GetGUID());
+        if (bot->GetVictim() != sanguinar)
             return Attack(sanguinar);
-        }
 
         return false;
     }
@@ -1913,11 +1905,8 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
     {
         SetRtiTarget(botAI, "triangle", telonicus);
 
-        if (bot->GetTarget() != telonicus->GetGUID())
-        {
-            bot->SetTarget(telonicus->GetGUID());
+        if (bot->GetVictim() != telonicus)
             return Attack(telonicus);
-        }
 
         // Melee DPS positioning: stay at max-ish melee range behind Telonicus (bomb safety)
         if (botAI->IsMelee(bot) && botAI->IsDps(bot) && telonicus->GetVictim() != bot)

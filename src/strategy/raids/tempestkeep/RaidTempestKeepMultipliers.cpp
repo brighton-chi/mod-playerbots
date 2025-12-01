@@ -119,23 +119,35 @@ float KaelthasSunstriderWaitForDpsMultiplier::GetValue(Action* action)
 
         auto isAdvisorActive = [](Unit* advisor)
         {
-            return advisor && advisor->IsAlive() && !advisor->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
+            return advisor && advisor->IsAlive() &&
+                   !advisor->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
+                   !advisor->HasAura(SPELL_PERMANENT_FEIGN_DEATH);
         };
 
-        bool sanguinarActive = isAdvisorActive(sanguinar);
-        bool capernianActive = isAdvisorActive(capernian);
-        bool telonicusActive = isAdvisorActive(telonicus);
-
-        if (sanguinarActive || capernianActive || telonicusActive)
+        if (isAdvisorActive(sanguinar) && !botAI->IsMainTank(bot))
         {
-            bool isCapernianTank = capernianActive && (GetCapernianTank(botAI, bot) == bot);
+            if (dynamic_cast<AttackAction*>(action) ||
+                (dynamic_cast<CastSpellAction*>(action) &&
+                 !dynamic_cast<CastHealingSpellAction*>(action)))
+                return 0.0f;
+        }
 
-            if (!isCapernianTank && !botAI->IsTank(bot))
-            {
-                if (dynamic_cast<AttackAction*>(action) ||
-                    (dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<CastHealingSpellAction*>(action)))
-                    return 0.0f;
-            }
+        if (isAdvisorActive(telonicus) && !botAI->IsAssistTankOfIndex(bot, 0))
+        {
+            if (dynamic_cast<AttackAction*>(action) ||
+                (dynamic_cast<CastSpellAction*>(action) &&
+                 !dynamic_cast<CastHealingSpellAction*>(action)))
+                return 0.0f;
+        }
+
+        Player* capernianTank = GetCapernianTank(botAI, bot);
+        if (isAdvisorActive(capernian) && capernianTank && capernianTank != bot &&
+            !botAI->IsMainTank(bot))
+        {
+            if (dynamic_cast<AttackAction*>(action) ||
+                (dynamic_cast<CastSpellAction*>(action) &&
+                 !dynamic_cast<CastHealingSpellAction*>(action)))
+                return 0.0f;
         }
     }
 
@@ -157,6 +169,7 @@ float KaelthasSunstriderControlMisdirectionMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+// Rename if just Shadow Ward ultimately
 float KaelthasSunstriderDisableTankActionsMultiplier::GetValue(Action* action)
 {
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
@@ -196,7 +209,7 @@ float KaelthasSunstriderDelayBloodlustAndHeroismMultiplier::GetValue(Action* act
 
     Unit* thaladred = AI_VALUE2(Unit*, "find target", "thaladred the darkener");
     if ((!IsKaelthasInPhase3(botAI) && !IsKaelthasInPhase5(botAI)) ||
-        thaladred->HasAura(SPELL_PERMANENT_FEIGN_DEATH))
+        thaladred && thaladred->HasAura(SPELL_PERMANENT_FEIGN_DEATH))
     {
         if (dynamic_cast<CastBloodlustAction*>(action) ||
             dynamic_cast<CastHeroismAction*>(action))

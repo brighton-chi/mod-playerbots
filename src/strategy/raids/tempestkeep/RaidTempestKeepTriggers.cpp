@@ -210,8 +210,7 @@ bool KaelthasSunstriderThaladredIsFixatedOnBotTrigger::IsActive()
 
 bool KaelthasSunstriderSanguinarEngagedByMainTankTrigger::IsActive()
 {
-    if (!botAI->IsMainTank(bot) &&
-        !(IsKaelthasInPhase1(botAI) && botAI->IsTank(bot)))
+    if (!botAI->IsMainTank(bot))
         return false;
 
     Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
@@ -246,7 +245,8 @@ bool KaelthasSunstriderSanguinarCastsBellowingRoarTrigger::IsActive()
         }
     }
 
-    return mainTank && !mainTank->HasAura(SPELL_FEAR_WARD) && botAI->CanCastSpell("fear ward", mainTank);
+    return mainTank && !mainTank->HasAura(SPELL_FEAR_WARD) &&
+           botAI->CanCastSpell("fear ward", mainTank);
 }
 
 bool KaelthasSunstriderCapernianRequiresAWarlockTankTrigger::IsActive()
@@ -289,8 +289,7 @@ bool KaelthasSunstriderCapernianCastsArcaneBurstTrigger::IsActive()
 
 bool KaelthasSunstriderTelonicusEngagedByFirstAssistTankTrigger::IsActive()
 {
-    if (!botAI->IsAssistTankOfIndex(bot, 0) &&
-        !(IsKaelthasInPhase1(botAI) && botAI->IsTank(bot)))
+    if (!botAI->IsAssistTankOfIndex(bot, 0))
         return false;
 
     Unit* telonicus = AI_VALUE2(Unit*, "find target", "master engineer telonicus");
@@ -364,7 +363,7 @@ bool KaelthasSunstriderLegendaryWeaponsAreEquippedTrigger::IsActive()
 
 bool KaelthasSunstriderLegendaryWeaponsWereLostTrigger::IsActive()
 {
-    if (bot->GetMapId() != 550)
+    if (bot->GetMapId() != TEMPESTKEEP_MAP_ID)
         return false;
 
     const uint32 KAELTHAS_DB_GUID = 158218;
@@ -407,7 +406,7 @@ bool KaelthasSunstriderLegendaryWeaponsWereLostTrigger::IsActive()
 
 bool KaelthasSunstriderDeterminingAdvisorKillOrderTrigger::IsActive()
 {
-    if (botAI->IsTank(bot))
+    if (botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0))
         return false;
 
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");

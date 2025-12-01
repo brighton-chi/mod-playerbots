@@ -106,10 +106,10 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction::array(0, new NextAction("kaelthas sunstrider group up legendary weapons", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("kaelthas sunstrider devastation channels whirlwind",
-        NextAction::array(0, new NextAction("kaelthas sunstrider main tank move devastation away", ACTION_RAID + 1), nullptr)
+        NextAction::array(0, new NextAction("kaelthas sunstrider main tank move devastation away", ACTION_EMERGENCY + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("kaelthas sunstrider netherstrand longbow fires multishot",
-        NextAction::array(0, new NextAction("kaelthas sunstrider hunter turn away netherstrand longbow", ACTION_RAID + 1), nullptr)
+        NextAction::array(0, new NextAction("kaelthas sunstrider hunter turn away netherstrand longbow", ACTION_EMERGENCY + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("kaelthas sunstrider legendary weapons are dead and lootable",
         NextAction::array(0, new NextAction("kaelthas sunstrider loot legendary weapons", ACTION_RAID + 1), nullptr)
