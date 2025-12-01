@@ -634,7 +634,7 @@ bool NetherspiteBlockRedBeamAction::Execute(Event event)
             float py = redPortal->GetPositionY();
             float dx = px - bx;
             float dy = py - by;
-            float length = std::hypot(dx, dy);
+            float length = sqrt(dx * dx + dy * dy);
             if (length == 0.0f)
                 return false;
 
@@ -665,7 +665,7 @@ Position NetherspiteBlockRedBeamAction::GetPositionOnBeam(Unit* boss, Unit* port
 
     float dx = px - bx;
     float dy = py - by;
-    float length = std::hypot(dx, dy);
+    float length = sqrt(dx * dx + dy * dy);
     if (length == 0.0f)
         return Position(bx, by, bz);
 
@@ -723,7 +723,7 @@ bool NetherspiteBlockBlueBeamAction::Execute(Event event)
         float py = bluePortal->GetPositionY();
         float dx = px - bx;
         float dy = py - by;
-        float length = std::hypot(dx, dy);
+        float length = sqrt(dx * dx + dy * dy);
         if (length == 0.0f)
             return false;
 
@@ -810,7 +810,7 @@ bool NetherspiteBlockGreenBeamAction::Execute(Event event)
         float py = greenPortal->GetPositionY();
         float dx = px - bx;
         float dy = py - by;
-        float length = std::hypot(dx, dy);
+        float length = sqrt(dx * dx + dy * dy);
         if (length == 0.0f)
             return false;
 
@@ -875,7 +875,7 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event event)
         float bx = netherspite->GetPositionX(), by = netherspite->GetPositionY();
         float px = redPortal->GetPositionX(), py = redPortal->GetPositionY();
         float dx = px - bx, dy = py - by;
-        float length = std::hypot(dx, dy);
+        float length = sqrt(dx * dx + dy * dy);
         beams.push_back({redPortal, 0.0f, length});
     }
 
@@ -884,7 +884,7 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event event)
         float bx = netherspite->GetPositionX(), by = netherspite->GetPositionY();
         float px = bluePortal->GetPositionX(), py = bluePortal->GetPositionY();
         float dx = px - bx, dy = py - by;
-        float length = std::hypot(dx, dy);
+        float length = sqrt(dx * dx + dy * dy);
         beams.push_back({bluePortal, 0.0f, length});
     }
 
@@ -893,7 +893,7 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event event)
         float bx = netherspite->GetPositionX(), by = netherspite->GetPositionY();
         float px = greenPortal->GetPositionX(), py = greenPortal->GetPositionY();
         float dx = px - bx, dy = py - by;
-        float length = std::hypot(dx, dy);
+        float length = sqrt(dx * dx + dy * dy);
         beams.push_back({greenPortal, 0.0f, length});
     }
 
@@ -960,7 +960,7 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::IsAwayFromBeams(
         float bx = netherspite->GetPositionX(), by = netherspite->GetPositionY();
         float px = beam.portal->GetPositionX(), py = beam.portal->GetPositionY();
         float dx = px - bx, dy = py - by;
-        float length = std::hypot(dx, dy);
+        float length = sqrt(dx * dx + dy * dy);
 
         if (length == 0.0f)
             continue;
@@ -969,7 +969,7 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::IsAwayFromBeams(
         float botdx = x - bx, botdy = y - by;
         float t = (botdx * dx + botdy * dy);
         float beamX = bx + dx * t, beamY = by + dy * t;
-        float distToBeam = std::hypot(x - beamX, y - beamY);
+        float distToBeam = sqrt((x - beamX) * (x - beamX) + (y - beamY) * (y - beamY));
 
         if (distToBeam < 5.0f && t > beam.minDist && t < beam.maxDist)
             return false;

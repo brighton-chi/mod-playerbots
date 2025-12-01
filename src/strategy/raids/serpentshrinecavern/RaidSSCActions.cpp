@@ -69,7 +69,7 @@ bool UnderbogColossusEscapeToxicPoolAction::Execute(Event event)
     }
     else
     {
-        float dist = std::hypot(dx, dy);
+        float dist = sqrt(dx * dx + dy * dy);
         float inv = 1.0f / dist;
         moveX = dynObj->GetPositionX() + (dx * inv) * safeDist;
         moveY = dynObj->GetPositionY() + (dy * inv) * safeDist;
@@ -110,14 +110,14 @@ bool HydrossTheUnstablePositionFrostTankAction::Execute(Event event)
         if (bot->GetVictim() != hydross)
             return Attack(hydross);
 
-        if (hydross->GetVictim() == bot && bot->IsWithinMeleeRange(hydross))
+        if (hydross->GetVictim() == bot)
         {
             const Position& position = HydrossFrostTankPosition;
             if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 3.0f)
             {
                 float dX = position.GetPositionX() - bot->GetPositionX();
                 float dY = position.GetPositionY() - bot->GetPositionY();
-                float dist = std::hypot(dX, dY);
+                float dist = sqrt(dX * dX + dY * dY);
                 float moveDist = std::min(4.5f, dist);
                 float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
                 float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
@@ -140,7 +140,7 @@ bool HydrossTheUnstablePositionFrostTankAction::Execute(Event event)
             {
                 float dX = position.GetPositionX() - bot->GetPositionX();
                 float dY = position.GetPositionY() - bot->GetPositionY();
-                float dist = std::hypot(dX, dY);
+                float dist = sqrt(dX * dX + dY * dY);
                 float moveDist = std::min(4.5f, dist);
                 float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
                 float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
@@ -164,7 +164,7 @@ bool HydrossTheUnstablePositionFrostTankAction::Execute(Event event)
         {
             float dX = position.GetPositionX() - bot->GetPositionX();
             float dY = position.GetPositionY() - bot->GetPositionY();
-            float dist = std::hypot(dX, dY);
+            float dist = sqrt(dX * dX + dY * dY);
             float moveDist = std::min(7.0f, dist);
             float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
             float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
@@ -200,14 +200,14 @@ bool HydrossTheUnstablePositionNatureTankAction::Execute(Event event)
         if (bot->GetVictim() != hydross)
             return Attack(hydross);
 
-        if (hydross->GetVictim() == bot && bot->IsWithinMeleeRange(hydross))
+        if (hydross->GetVictim() == bot)
         {
             const Position& position = HydrossNatureTankPosition;
             if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 3.0f)
             {
                 float dX = position.GetPositionX() - bot->GetPositionX();
                 float dY = position.GetPositionY() - bot->GetPositionY();
-                float dist = std::hypot(dX, dY);
+                float dist = sqrt(dX * dX + dY * dY);
                 float moveDist = std::min(4.5f, dist);
                 float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
                 float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
@@ -230,7 +230,7 @@ bool HydrossTheUnstablePositionNatureTankAction::Execute(Event event)
             {
                 float dX = position.GetPositionX() - bot->GetPositionX();
                 float dY = position.GetPositionY() - bot->GetPositionY();
-                float dist = std::hypot(dX, dY);
+                float dist = sqrt(dX * dX + dY * dY);
                 float moveDist = std::min(4.5f, dist);
                 float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
                 float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
@@ -254,7 +254,7 @@ bool HydrossTheUnstablePositionNatureTankAction::Execute(Event event)
         {
             float dX = position.GetPositionX() - bot->GetPositionX();
             float dY = position.GetPositionY() - bot->GetPositionY();
-            float dist = std::hypot(dX, dY);
+            float dist = sqrt(dX * dX + dY * dY);
             float moveDist = std::min(7.0f, dist);
             float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
             float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
@@ -845,26 +845,17 @@ bool LeotherasTheBlindFinalPhaseAssignDpsPriorityAction::Execute(Event event)
         return Attack(leotherasHuman);
     }
 
-    if (botAI->IsTank(bot))
+    if (botAI->IsTank(bot) && leotherasHuman->GetVictim() == bot)
     {
-        if (leotherasHuman->GetVictim() == bot)
+        if (leotherasHuman->GetExactDist2d(leotherasDemon) < 25.0f)
         {
-            if (leotherasHuman->GetExactDist2d(leotherasDemon) < 25.0f)
-            {
-                float angle = atan2(bot->GetPositionY() - leotherasDemon->GetPositionY(),
-                                    bot->GetPositionX() - leotherasDemon->GetPositionX());
-                float targetX = bot->GetPositionX() + 27.0f * std::cos(angle);
-                float targetY = bot->GetPositionY() + 27.0f * std::sin(angle);
+            float angle = atan2(bot->GetPositionY() - leotherasDemon->GetPositionY(),
+                                bot->GetPositionX() - leotherasDemon->GetPositionX());
+            float targetX = bot->GetPositionX() + 27.0f * std::cos(angle);
+            float targetY = bot->GetPositionY() + 27.0f * std::sin(angle);
 
-                return MoveTo(SSC_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false, false, false,
-                              MovementPriority::MOVEMENT_FORCED, true, false);
-            }
-        }
-        else if (!bot->IsWithinMeleeRange(leotherasHuman))
-        {
-            return MoveTo(SSC_MAP_ID, leotherasHuman->GetPositionX(),
-                          leotherasHuman->GetPositionY(), leotherasHuman->GetPositionZ(),
-                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+            return MoveTo(SSC_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false, false, false,
+                            MovementPriority::MOVEMENT_FORCED, true, false);
         }
     }
 
@@ -1523,7 +1514,7 @@ bool LadyVashjMainTankPositionBossAction::Execute(Event event)
     if (bot->GetVictim() != vashj)
         return Attack(vashj);
 
-    if (vashj->GetVictim() == bot /* && bot->IsWithinMeleeRange(vashj) */)
+    if (vashj->GetVictim() == bot)
     {
         if (IsLadyVashjInPhase1(botAI))
         {

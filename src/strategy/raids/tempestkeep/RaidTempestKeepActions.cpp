@@ -908,11 +908,6 @@ bool HighAstromancerSolarianTargetSolariumPriestsAction::Execute(Event event)
     if (bot->GetVictim() != targetPriest)
         return Attack(targetPriest);
 
-    if (!bot->IsWithinMeleeRange(targetPriest))
-        return MoveTo(TEMPESTKEEP_MAP_ID, targetPriest->GetPositionX(), targetPriest->GetPositionY(),
-                      targetPriest->GetPositionZ(), false, false, false, false,
-                      MovementPriority::MOVEMENT_COMBAT, true, false);
-
     return false;
 }
 
@@ -1044,12 +1039,7 @@ bool KaelthasSunstriderMainTankPositionSanguinarAction::Execute(Event event)
     if (sanguinar->GetVictim() == bot)
     {
         const Position& position = SanguinarTankPosition;
-        if (!bot->IsWithinMeleeRange(sanguinar))
-        {
-            return MoveTo(TEMPESTKEEP_MAP_ID, sanguinar->GetPositionX(), sanguinar->GetPositionY(), sanguinar->GetPositionZ(),
-                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
-        }
-        else if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
+        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
         {
             float dX = position.GetPositionX() - bot->GetPositionX();
             float dY = position.GetPositionY() - bot->GetPositionY();
@@ -1275,12 +1265,7 @@ bool KaelthasSunstriderFirstAssistTankPositionTelonicusAction::Execute(Event eve
     if (telonicus->GetVictim() == bot)
     {
         const Position& position = TelonicusTankPosition;
-        if (!bot->IsWithinMeleeRange(telonicus))
-        {
-            return MoveTo(TEMPESTKEEP_MAP_ID, telonicus->GetPositionX(), telonicus->GetPositionY(), telonicus->GetPositionZ(),
-                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
-        }
-        else if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
+        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
         {
             float dX = position.GetPositionX() - bot->GetPositionX();
             float dY = position.GetPositionY() - bot->GetPositionY();
