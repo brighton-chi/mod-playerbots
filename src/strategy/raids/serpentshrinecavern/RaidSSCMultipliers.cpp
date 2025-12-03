@@ -45,7 +45,7 @@ float HydrossTheUnstableDisableTankActionsMultiplier::GetValue(Action* action)
     if (!hydross || dynamic_cast<WipeAction*>(action))
         return 1.0f;
 
-    if (dynamic_cast<TankAssistAction*>(action))
+    if (bot->GetVictim() != nullptr && dynamic_cast<TankAssistAction*>(action))
         return 0.0f;
 
     if (botAI->IsMainTank(bot))
@@ -196,8 +196,11 @@ float TheLurkerBelowDisableTankAssistMultiplier::GetValue(Action* action)
             ++tankCount;
     }
 
-    if (tankCount >= 3 && dynamic_cast<TankAssistAction*>(action))
-        return 0.0f;
+    if (tankCount >= 3)
+    {
+        if (bot->GetVictim() != nullptr && dynamic_cast<TankAssistAction*>(action))
+            return 0.0f;
+    }
 
     return 1.0f;
 }
@@ -367,7 +370,7 @@ float FathomLordKarathressDisableTankAssistMultiplier::GetValue(Action* action)
     if (!karathress)
         return 1.0f;
 
-    if (dynamic_cast<TankAssistAction*>(action))
+    if (bot->GetVictim() != nullptr && dynamic_cast<TankAssistAction*>(action))
         return 0.0f;
 
     return 1.0f;

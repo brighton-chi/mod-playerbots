@@ -24,7 +24,7 @@ float AttumenTheHuntsmanDisableTankAssistMultiplier::GetValue(Action* action)
     if (!midnight && !attumen)
         return 1.0f;
 
-    if (dynamic_cast<TankAssistAction*>(action))
+    if (bot->GetVictim() != nullptr && dynamic_cast<TankAssistAction*>(action))
         return 0.0f;
 
     return 1.0f;
@@ -82,7 +82,7 @@ float TheCuratorDisableTankAssistMultiplier::GetValue(Action* action)
     if (!curator)
         return 1.0f;
 
-    if (dynamic_cast<TankAssistAction*>(action))
+    if (bot->GetVictim() != nullptr && dynamic_cast<TankAssistAction*>(action))
         return 0.0f;
 
     return 1.0f;
