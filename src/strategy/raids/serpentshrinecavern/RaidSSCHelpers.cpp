@@ -592,10 +592,6 @@ namespace SerpentShrineCavernHelpers
         if (!bot || !reference)
             return nullptr;
 
-        Map* map = bot->GetMap();
-        if (!map)
-            return nullptr;
-
         std::list<Creature*> triggers;
         const float searchRange = 150.0f;
         reference->GetCreatureListWithEntryInGrid(triggers, NPC_WORLD_INVISIBLE_TRIGGER, searchRange);
