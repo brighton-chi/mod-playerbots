@@ -1,5 +1,4 @@
 #include <algorithm>
-#include <map>
 
 #include "RaidTempestKeepHelpers.h"
 #include "RaidTempestKeepActions.h"
