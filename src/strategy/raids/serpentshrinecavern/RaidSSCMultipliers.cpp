@@ -42,7 +42,7 @@ float UnderbogColossusEscapeToxicPoolMultiplier::GetValue(Action* action)
 float HydrossTheUnstableDisableTankActionsMultiplier::GetValue(Action* action)
 {
     Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross");
-    if (!hydross || dynamic_cast<WipeAction*>(action))
+    if (!hydross)
         return 1.0f;
 
     if (bot->GetVictim() != nullptr && dynamic_cast<TankAssistAction*>(action))
@@ -52,7 +52,8 @@ float HydrossTheUnstableDisableTankActionsMultiplier::GetValue(Action* action)
     {
         if (hydross->HasAura(SPELL_CORRUPTION))
         {
-            if (!dynamic_cast<HydrossTheUnstablePositionFrostTankAction*>(action))
+            if (dynamic_cast<MovementAction*>(action) && 
+                !dynamic_cast<HydrossTheUnstablePositionFrostTankAction*>(action))
                 return 0.0f;
         }
     }
@@ -61,7 +62,8 @@ float HydrossTheUnstableDisableTankActionsMultiplier::GetValue(Action* action)
     {
         if (!hydross->HasAura(SPELL_CORRUPTION))
         {
-            if (!dynamic_cast<HydrossTheUnstablePositionNatureTankAction*>(action))
+            if (dynamic_cast<MovementAction*>(action) && 
+                !dynamic_cast<HydrossTheUnstablePositionNatureTankAction*>(action))
                 return 0.0f;
         }
     }
@@ -250,8 +252,9 @@ float LeotherasTheBlindDisableTankActionsMultiplier::GetValue(Action* action)
     Unit* leotherasDemonPhase2 = GetPhase2LeotherasDemon(botAI);
     if (botAI->IsTank(bot) && bot != demonFormTank && leotherasDemonPhase2)
     {
-        if (dynamic_cast<LeotherasTheBlindInnerDemonCheatAction*>(action) ||
-            dynamic_cast<WipeAction*>(action))
+        if ((dynamic_cast<AttackAction*>(action) && 
+             !dynamic_cast<LeotherasTheBlindInnerDemonCheatAction*>(action)) ||
+             dynamic_cast<CastSpellAction*>(action))
             return 1.0f;
         else
             return 0.0f;
