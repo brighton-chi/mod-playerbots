@@ -123,12 +123,13 @@ namespace KarazhanHelpers
     std::vector<Unit*> GetAllVoidZones(PlayerbotAI *botAI, Player* bot);
     bool IsSafePosition (float x, float y, float z, const std::vector<Unit*>& hazards, float hazardRadius);
     std::vector<Unit*> GetSpawnedInfernals(PlayerbotAI* botAI);
-    bool IsStraightPathSafe(const Position& start, const Position& target,
+    bool IsStraightPathSafe(
+        const Position& start, const Position& target,
         const std::vector<Unit*>& hazards, float hazardRadius, float stepSize);
-    bool TryFindSafePositionWithSafePath( Player* bot, float originX, float originY, float originZ,
-        float centerX, float centerY, float centerZ, const std::vector<Unit*>& hazards,
-        float safeDistance, float stepSize, uint8 numAngles, float maxSampleDist, bool requireSafePath,
-        float& bestDestX, float& bestDestY, float& bestDestZ);
+    bool TryFindSafePositionWithSafePath(
+        Player* bot, float originX, float originY, float originZ, float centerX, float centerY, float centerZ, 
+        const std::vector<Unit*>& hazards, float safeDistance, float stepSize, uint8 numAngles, 
+        float maxSampleDist, bool requireSafePath, float& bestDestX, float& bestDestY, float& bestDestZ);
 }
 
 #endif

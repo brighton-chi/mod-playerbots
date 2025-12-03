@@ -447,8 +447,7 @@ namespace KarazhanHelpers
     }
 
     bool TryFindSafePositionWithSafePath(
-        Player* bot,
-        float originX, float originY, float originZ, float centerX, float centerY, float centerZ,
+        Player* bot, float originX, float originY, float originZ, float centerX, float centerY, float centerZ,
         const std::vector<Unit*>& hazards, float safeDistance, float stepSize, uint8 numAngles,
         float maxSampleDist, bool requireSafePath, float& bestDestX, float& bestDestY, float& bestDestZ)
     {

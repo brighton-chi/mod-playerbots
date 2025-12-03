@@ -20,9 +20,11 @@ using namespace KarazhanHelpers;
 float AttumenTheHuntsmanDisableTankAssistMultiplier::GetValue(Action* action)
 {
     Unit* midnight = AI_VALUE2(Unit*, "find target", "midnight");
-    Unit* attumen = AI_VALUE2(Unit*, "find target", "attumen the huntsman");
+    if (!midnight)
+        return 1.0f;
 
-    if (!midnight && !attumen)
+    Unit* attumen = AI_VALUE2(Unit*, "find target", "attumen the huntsman");
+    if (!attumen)
         return 1.0f;
 
     if (bot->GetVictim() != nullptr && dynamic_cast<TankAssistAction*>(action))
@@ -35,7 +37,7 @@ float AttumenTheHuntsmanDisableTankAssistMultiplier::GetValue(Action* action)
 float AttumenTheHuntsmanStayStackedMultiplier::GetValue(Action* action)
 {
     Unit* attumenMounted = GetFirstAliveUnitByEntry(botAI, NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED);
-    if (!attumenMounted || !attumenMounted->IsAlive())
+    if (!attumenMounted)
         return 1.0f;
 
     if (!botAI->IsMainTank(bot) && attumenMounted->GetVictim() != bot)
@@ -56,7 +58,7 @@ float AttumenTheHuntsmanStayStackedMultiplier::GetValue(Action* action)
 float AttumenTheHuntsmanWaitForDpsMultiplier::GetValue(Action* action)
 {
     Unit* attumenMounted = GetFirstAliveUnitByEntry(botAI, NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED);
-    if (!attumenMounted || !attumenMounted->IsAlive())
+    if (!attumenMounted)
         return 1.0f;
 
     const time_t now = std::time(nullptr);
@@ -119,8 +121,7 @@ float ShadeOfAranArcaneExplosionDisableChargeMultiplier::GetValue(Action* action
 float ShadeOfAranFlameWreathDisableMovementMultiplier::GetValue(Action* action)
 {
     Unit* aran = AI_VALUE2(Unit*, "find target", "shade of aran");
-    Group* group = bot->GetGroup();
-    if (!aran || !group)
+    if (!aran)
         return 1.0f;
 
     if (IsFlameWreathActive(botAI, bot))
