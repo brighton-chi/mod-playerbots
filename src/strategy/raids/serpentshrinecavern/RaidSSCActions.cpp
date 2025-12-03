@@ -141,7 +141,7 @@ bool HydrossTheUnstablePositionFrostTankAction::Execute(Event event)
             float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
 
             return MoveTo(SSC_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false, false, true,
-                        MovementPriority::MOVEMENT_COMBAT, true, true);
+                          MovementPriority::MOVEMENT_COMBAT, true, true);
         }
         else
         {
@@ -567,8 +567,7 @@ bool TheLurkerBelowSpreadRangedAction::Execute(Event event)
         return false;
 
     const Position& target = it->second;
-    const float returnThreshold = 2.0f;
-    if (!bot->IsWithinDist2d(target.GetPositionX(), target.GetPositionY(), returnThreshold))
+    if (bot->GetExactDist2d(target.GetPositionX(), target.GetPositionY()) > 2.0f)
     {
         return MoveTo(SSC_MAP_ID, target.GetPositionX(), target.GetPositionY(), target.GetPositionZ(),
                       false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
@@ -1615,7 +1614,7 @@ bool LadyVashjPhase1PositionRangedAction::Execute(Event event)
     Position targetPosition = itPos->second;
     if (itReached == hasReachedVashjRangedPosition.end() || !(itReached->second))
     {
-        if (!bot->IsWithinDist2d(targetPosition.GetPositionX(), targetPosition.GetPositionY(), 2.0f))
+        if (bot->GetExactDist2d(targetPosition.GetPositionX(), targetPosition.GetPositionY()) > 2.0f)
         {
             return MoveTo(SSC_MAP_ID, targetPosition.GetPositionX(), targetPosition.GetPositionY(), targetPosition.GetPositionZ(),
                           false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
@@ -1649,16 +1648,10 @@ bool LadyVashjSetGroundingTotemInMainTankGroupAction::Execute(Event event)
     if (!mainTank)
         return false;
 
-    float dist = bot->GetExactDist2d(mainTank);
-    if (dist >= 27.0f)
+    if (bot->GetExactDist2d(mainTank) > 25.0f)
     {
-        float angle = atan2(bot->GetPositionY() - mainTank->GetPositionY(),
-                      bot->GetPositionX() - mainTank->GetPositionX());
-        float targetX = mainTank->GetPositionX() + 25.0f * std::cos(angle);
-        float targetY = mainTank->GetPositionY() + 25.0f * std::sin(angle);
-
-        return MoveTo(SSC_MAP_ID, targetX, targetY, mainTank->GetPositionZ(),
-                      false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+        return MoveInside(SSC_MAP_ID, mainTank->GetPositionX(), mainTank->GetPositionY(),
+                          mainTank->GetPositionZ(), 20.0f, MovementPriority::MOVEMENT_COMBAT);
     }
 
     if (!botAI->HasStrategy("grounding totem", BotState::BOT_STATE_COMBAT))
