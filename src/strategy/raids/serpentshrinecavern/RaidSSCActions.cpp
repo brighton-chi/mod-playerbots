@@ -94,7 +94,7 @@ bool GreyheartTidecallerMarkWaterElementalTotemAction::Execute(Event event)
 // Hydross the Unstable <Duke of Currents>
 
 // (1) When tanking, move to designated tanking spot on frost side
-// (2) 5 seconds into 100% Mark of Hydross, move to nature tank's spot to hand off boss
+// (2) At 100% Mark of Hydross, move to nature tank's spot to hand off boss
 // (3) When Hydross is in nature form, move back to frost tank spot and wait for transition
 bool HydrossTheUnstablePositionFrostTankAction::Execute(Event event)
 {
@@ -130,30 +130,24 @@ bool HydrossTheUnstablePositionFrostTankAction::Execute(Event event)
 
     if (!hydross->HasAura(SPELL_CORRUPTION) && HasMarkOfHydrossAt100Percent(bot) && hydross->GetVictim() == bot)
     {
-        const time_t now = std::time(nullptr);
-        auto it = hydrossChangeToNaturePhaseTimer.find(SSC_MAP_ID);
-
-        if (it != hydrossChangeToNaturePhaseTimer.end() && (now - it->second) >= 5)
+        const Position& position = HydrossNatureTankPosition;
+        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 3.0f)
         {
-            const Position& position = HydrossNatureTankPosition;
-            if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 3.0f)
-            {
-                float dX = position.GetPositionX() - bot->GetPositionX();
-                float dY = position.GetPositionY() - bot->GetPositionY();
-                float dist = sqrt(dX * dX + dY * dY);
-                float moveDist = std::min(4.5f, dist);
-                float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
-                float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
+            float dX = position.GetPositionX() - bot->GetPositionX();
+            float dY = position.GetPositionY() - bot->GetPositionY();
+            float dist = sqrt(dX * dX + dY * dY);
+            float moveDist = std::min(4.5f, dist);
+            float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
 
-                return MoveTo(SSC_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false, false, true,
-                            MovementPriority::MOVEMENT_COMBAT, true, true);
-            }
-            else
-            {
-                bot->AttackStop();
-                bot->InterruptNonMeleeSpells(true);
-                return true;
-            }
+            return MoveTo(SSC_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false, false, true,
+                        MovementPriority::MOVEMENT_COMBAT, true, true);
+        }
+        else
+        {
+            bot->AttackStop();
+            bot->InterruptNonMeleeSpells(true);
+            return true;
         }
     }
 
@@ -184,7 +178,7 @@ bool HydrossTheUnstablePositionFrostTankAction::Execute(Event event)
 }
 
 // (1) When tanking, move to designated tanking spot on nature side
-// (2) 5 seconds into 100% Mark of Corruption, move to frost tank's spot to hand off boss
+// (2) At 100% Mark of Corruption, move to frost tank's spot to hand off boss
 // (3) When Hydross is in frost form, move back to nature tank spot and wait for transition
 bool HydrossTheUnstablePositionNatureTankAction::Execute(Event event)
 {
@@ -220,30 +214,24 @@ bool HydrossTheUnstablePositionNatureTankAction::Execute(Event event)
 
     if (hydross->HasAura(SPELL_CORRUPTION) && HasMarkOfCorruptionAt100Percent(bot) && hydross->GetVictim() == bot)
     {
-        const time_t now = std::time(nullptr);
-        auto it = hydrossChangeToFrostPhaseTimer.find(SSC_MAP_ID);
-
-        if (it != hydrossChangeToFrostPhaseTimer.end() && (now - it->second) >= 5)
+        const Position& position = HydrossFrostTankPosition;
+        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 3.0f)
         {
-            const Position& position = HydrossFrostTankPosition;
-            if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 3.0f)
-            {
-                float dX = position.GetPositionX() - bot->GetPositionX();
-                float dY = position.GetPositionY() - bot->GetPositionY();
-                float dist = sqrt(dX * dX + dY * dY);
-                float moveDist = std::min(4.5f, dist);
-                float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
-                float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
+            float dX = position.GetPositionX() - bot->GetPositionX();
+            float dY = position.GetPositionY() - bot->GetPositionY();
+            float dist = sqrt(dX * dX + dY * dY);
+            float moveDist = std::min(4.5f, dist);
+            float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
 
-                return MoveTo(SSC_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false, false, true,
-                              MovementPriority::MOVEMENT_COMBAT, true, true);
-            }
-            else
-            {
-                bot->AttackStop();
-                bot->InterruptNonMeleeSpells(true);
-                return true;
-            }
+            return MoveTo(SSC_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false, false, true,
+                            MovementPriority::MOVEMENT_COMBAT, true, true);
+        }
+        else
+        {
+            bot->AttackStop();
+            bot->InterruptNonMeleeSpells(true);
+            return true;
         }
     }
 
@@ -408,14 +396,12 @@ bool HydrossTheUnstableStopDpsUponPhaseChangeAction::Execute(Event event)
         return false;
 
     const time_t now = std::time(nullptr);
-    const int phaseEndStopSeconds = 6;
     const int phaseStartStopSeconds = 5;
 
     bool shouldStopDps = false;
 
-    // 6 seconds after 100% Mark of Corruption, stop DPS until transition into frost phase
-    auto itNature = hydrossChangeToNaturePhaseTimer.find(SSC_MAP_ID);
-    if (itNature != hydrossChangeToNaturePhaseTimer.end() && (now - itNature->second) >= phaseEndStopSeconds)
+    // After 100% Mark of Corruption, stop DPS until transition into frost phase
+    if (HasMarkOfCorruptionAt100Percent(bot))
         shouldStopDps = true;
 
     // Keep DPS stopped for 5 seconds after transition into frost phase
@@ -423,9 +409,8 @@ bool HydrossTheUnstableStopDpsUponPhaseChangeAction::Execute(Event event)
     if (itFrostDps != hydrossFrostDpsWaitTimer.end() && (now - itFrostDps->second) < phaseStartStopSeconds)
         shouldStopDps = true;
 
-    // 6 seconds after 100% Mark of Hydross, stop DPS until transition into nature phase
-    auto itFrost = hydrossChangeToFrostPhaseTimer.find(SSC_MAP_ID);
-    if (itFrost != hydrossChangeToFrostPhaseTimer.end() && (now - itFrost->second) >= phaseEndStopSeconds)
+    // After 100% Mark of Hydross, stop DPS until transition into nature phase
+    if (HasMarkOfHydrossAt100Percent(bot))
         shouldStopDps = true;
 
     // Keep DPS stopped for 5 seconds after transition into nature phase
@@ -455,27 +440,17 @@ bool HydrossTheUnstableManageTimersAction::Execute(Event event)
     {
         hydrossFrostDpsWaitTimer.erase(SSC_MAP_ID);
         hydrossNatureDpsWaitTimer.erase(SSC_MAP_ID);
-        hydrossChangeToFrostPhaseTimer.erase(SSC_MAP_ID);
-        hydrossChangeToNaturePhaseTimer.erase(SSC_MAP_ID);
     }
 
     if (!hydross->HasAura(SPELL_CORRUPTION))
     {
         hydrossFrostDpsWaitTimer.try_emplace(SSC_MAP_ID, now);
         hydrossNatureDpsWaitTimer.erase(SSC_MAP_ID);
-        hydrossChangeToFrostPhaseTimer.erase(SSC_MAP_ID);
-
-        if (HasMarkOfHydrossAt100Percent(bot))
-            hydrossChangeToNaturePhaseTimer.try_emplace(SSC_MAP_ID, now);
     }
     else
     {
         hydrossNatureDpsWaitTimer.try_emplace(SSC_MAP_ID, now);
         hydrossFrostDpsWaitTimer.erase(SSC_MAP_ID);
-        hydrossChangeToNaturePhaseTimer.erase(SSC_MAP_ID);
-
-        if (HasMarkOfCorruptionAt100Percent(bot))
-            hydrossChangeToFrostPhaseTimer.try_emplace(SSC_MAP_ID, now);
     }
 
     return false;
@@ -769,7 +744,7 @@ bool LeotherasTheBlindRunAwayFromWhirlwindAction::Execute(Event event)
     Unit* leotherasPhase3Demon = GetPhase3LeotherasDemon(botAI);
     Player* demonFormTank = GetLeotherasDemonFormTank(botAI, bot);
 
-    if (leotherasPhase3Demon && demonFormTank == bot)
+    if (leotherasPhase3Demon && demonFormTank && demonFormTank == bot)
         return false;
 
     Unit* leotherasHuman = GetLeotherasHuman(botAI);
@@ -788,8 +763,38 @@ bool LeotherasTheBlindRunAwayFromWhirlwindAction::Execute(Event event)
     return false;
 }
 
+// If there is no Warlock tank, then a melee tank will be picking up Demon Leo
+// In that case, melee needs to get out after too many Chaos Blast stacks
+bool LeotherasTheBlindMeleeDpsRunAwayFromBossAction::Execute(Event event)
+{
+    Unit* leotherasPhase2Demon = GetPhase2LeotherasDemon(botAI);
+    Player* demonFormTank = GetLeotherasDemonFormTank(botAI, bot);
+
+    if (!leotherasPhase2Demon || demonFormTank != nullptr)
+        return false;
+
+    Aura* chaosBlast = bot->GetAura(SPELL_CHAOS_BLAST);
+    if (chaosBlast && chaosBlast->GetStackAmount() >= 5)
+    {
+        Unit* demonVictim = leotherasPhase2Demon->GetVictim();
+        if (!demonVictim)
+            return false;
+
+        float currentDistance = bot->GetExactDist2d(demonVictim);
+        const float safeDistance = 10.0f;
+        if (currentDistance < safeDistance)
+        {
+            bot->AttackStop();
+            bot->InterruptNonMeleeSpells(true);
+            return MoveAway(demonVictim, safeDistance - currentDistance + 1.0f);
+        }
+    }
+
+    return false;
+}
+
 // Tanks and healers have no ability to kill their own Inner Demons
-// Hunters, Affliction Warlocks, Shadow Priests, and (for some reason) Arcane Mages also struggle
+// Hunters, Affliction Warlocks, Shadow Priests, and (for some reason) Mages also struggle
 bool LeotherasTheBlindInnerDemonCheatAction::Execute(Event event)
 {
     Unit* innerDemon = nullptr;
@@ -813,9 +818,9 @@ bool LeotherasTheBlindInnerDemonCheatAction::Execute(Event event)
 
         if (botAI->IsHeal(bot) || botAI->IsTank(bot) ||
             bot->getClass() == CLASS_HUNTER ||
+            bot->getClass() == CLASS_MAGE ||
             (bot->getClass() == CLASS_PRIEST && tab == 2) ||
             (bot->getClass() == CLASS_WARLOCK && tab == 0) ||
-            (bot->getClass() == CLASS_MAGE && tab == 0) ||
             (demonFormTank && demonFormTank == bot))
         {
             Unit::DealDamage(bot, innerDemon, innerDemon->GetMaxHealth() / 25, nullptr,
@@ -2214,6 +2219,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
             {
                 const time_t now = std::time(nullptr);
 
+                // Track lastImbueAttempt to prevent repeated throwing animations from multiple imbue attempts
                 auto [it, inserted] = lastImbueAttempt.try_emplace(SSC_MAP_ID, now);
                 if (inserted)
                 {

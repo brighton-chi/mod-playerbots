@@ -9,7 +9,6 @@ class UnderbogColossusEscapeToxicPoolAction : public MovementAction
 {
 public:
     UnderbogColossusEscapeToxicPoolAction(PlayerbotAI* botAI, std::string const name = "underbog colossus escape toxic pool") : MovementAction(botAI, name) {}
-
     bool Execute(Event event) override;
 };
 
@@ -17,15 +16,6 @@ class GreyheartTidecallerMarkWaterElementalTotemAction : public Action
 {
 public:
     GreyheartTidecallerMarkWaterElementalTotemAction(PlayerbotAI* botAI, std::string const name = "greyheart tidecaller mark water elemental totem") : Action(botAI, name) {}
-
-    bool Execute(Event event) override;
-};
-
-class RancidMushroomMoveAwayFromMushroomSporeCloudAction : public MovementAction
-{
-public:
-    RancidMushroomMoveAwayFromMushroomSporeCloudAction(PlayerbotAI* botAI, std::string const name = "rancid mushroom move away from mushroom spore cloud") : MovementAction(botAI, name) {}
-
     bool Execute(Event event) override;
 };
 
@@ -33,7 +23,6 @@ class HydrossTheUnstablePositionFrostTankAction : public AttackAction
 {
 public:
     HydrossTheUnstablePositionFrostTankAction(PlayerbotAI* botAI, std::string const name = "hydross the unstable position frost tank") : AttackAction(botAI, name) {}
-
     bool Execute(Event event) override;
 };
 
@@ -41,7 +30,6 @@ class HydrossTheUnstablePositionNatureTankAction : public AttackAction
 {
 public:
     HydrossTheUnstablePositionNatureTankAction(PlayerbotAI* botAI, std::string const name = "hydross the unstable position nature tank") : AttackAction(botAI, name) {}
-
     bool Execute(Event event) override;
 };
 
@@ -49,7 +37,6 @@ class HydrossTheUnstablePrioritizeElementalAddsAction : public AttackAction
 {
 public:
     HydrossTheUnstablePrioritizeElementalAddsAction(PlayerbotAI* botAI, std::string const name = "hydross the unstable prioritize elemental adds") : AttackAction(botAI, name) {}
-
     bool Execute(Event event) override;
 };
 
@@ -57,7 +44,6 @@ class HydrossTheUnstableFrostPhaseSpreadOutAction : public MovementAction
 {
 public:
     HydrossTheUnstableFrostPhaseSpreadOutAction(PlayerbotAI* botAI, std::string const name = "hydross the unstable frost phase spread out") : MovementAction(botAI, name) {}
-
     bool Execute(Event event) override;
 };
 
@@ -65,7 +51,6 @@ class HydrossTheUnstableMisdirectBossToTankAction : public Action
 {
 public:
     HydrossTheUnstableMisdirectBossToTankAction(PlayerbotAI* botAI, std::string const name = "hydross the unstable misdirect boss to tank") : Action(botAI, name) {}
-
     bool Execute(Event event) override;
 
 private:
@@ -77,7 +62,6 @@ class HydrossTheUnstableStopDpsUponPhaseChangeAction : public Action
 {
 public:
     HydrossTheUnstableStopDpsUponPhaseChangeAction(PlayerbotAI* botAI, std::string const name = "hydross the unstable stop dps upon phase change") : Action(botAI, name) {}
-
     bool Execute(Event event) override;
 };
 
@@ -85,7 +69,6 @@ class HydrossTheUnstableManageTimersAction : public Action
 {
 public:
     HydrossTheUnstableManageTimersAction(PlayerbotAI* botAI, std::string const name = "hydross the unstable manage timers") : Action(botAI, name) {}
-
     bool Execute(Event event) override;
 };
 
@@ -93,7 +76,6 @@ class TheLurkerBelowRunAroundBehindBossAction : public MovementAction
 {
 public:
     TheLurkerBelowRunAroundBehindBossAction(PlayerbotAI* botAI, std::string const name = "the lurker below run around behind boss") : MovementAction(botAI, name) {}
-
     bool Execute(Event event) override;
 };
 
@@ -101,7 +83,6 @@ class TheLurkerBelowPositionMainTankAction : public AttackAction
 {
 public:
     TheLurkerBelowPositionMainTankAction(PlayerbotAI* botAI, std::string const name = "the lurker below position main tank") : AttackAction(botAI, name) {}
-
     bool Execute(Event event) override;
 };
 
@@ -109,7 +90,6 @@ class TheLurkerBelowSpreadRangedAction : public MovementAction
 {
 public:
     TheLurkerBelowSpreadRangedAction(PlayerbotAI* botAI, std::string const name = "the lurker below spread ranged") : MovementAction(botAI, name) {}
-
     bool Execute(Event event) override;
 };
 
@@ -117,7 +97,6 @@ class TheLurkerBelowTanksPickUpAddsAction : public AttackAction
 {
 public:
     TheLurkerBelowTanksPickUpAddsAction(PlayerbotAI* botAI, std::string const name = "the lurker below tanks pick up adds") : AttackAction(botAI, name) {}
-
     bool Execute(Event event) override;
 };
 
@@ -125,7 +104,6 @@ class TheLurkerBelowManageSpoutTimerAction : public Action
 {
 public:
     TheLurkerBelowManageSpoutTimerAction(PlayerbotAI* botAI, std::string const name = "the lurker below manage spout timer") : Action(botAI, name) {}
-
     bool Execute(Event event) override;
 };
 
@@ -133,7 +111,6 @@ class LeotherasTheBlindTargetSpellbindersAction : public Action
 {
 public:
     LeotherasTheBlindTargetSpellbindersAction(PlayerbotAI* botAI, std::string const name = "leotheras the blind target spellbinders") : Action(botAI, name) {}
-
     bool Execute(Event event) override;
 };
 
@@ -141,7 +118,6 @@ class LeotherasTheBlindPositionRangedAction : public MovementAction
 {
 public:
     LeotherasTheBlindPositionRangedAction(PlayerbotAI* botAI, std::string const name = "leotheras the blind position ranged") : MovementAction(botAI, name) {}
-
     bool Execute(Event event) override;
 };
 
@@ -149,7 +125,6 @@ class LeotherasTheBlindDemonFormTankAttackBossAction : public AttackAction
 {
 public:
     LeotherasTheBlindDemonFormTankAttackBossAction(PlayerbotAI* botAI, std::string const name = "leotheras the blind demon form tank attack boss") : AttackAction(botAI, name) {}
-
     bool Execute(Event event) override;
 };
 
@@ -157,7 +132,13 @@ class LeotherasTheBlindRunAwayFromWhirlwindAction : public MovementAction
 {
 public:
     LeotherasTheBlindRunAwayFromWhirlwindAction(PlayerbotAI* botAI, std::string const name = "leotheras the blind run away from whirlwind") : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
 
+class LeotherasTheBlindMeleeDpsRunAwayFromBossAction : public MovementAction
+{
+public:
+    LeotherasTheBlindMeleeDpsRunAwayFromBossAction(PlayerbotAI* botAI, std::string const name = "leotheras the blind melee dps run away from boss") : MovementAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 
@@ -165,7 +146,6 @@ class LeotherasTheBlindInnerDemonCheatAction : public AttackAction
 {
 public:
     LeotherasTheBlindInnerDemonCheatAction(PlayerbotAI* botAI, std::string const name = "leotheras the blind inner demon cheat") : AttackAction(botAI, name) {}
-
     bool Execute(Event event) override;
 };
 
@@ -173,7 +153,6 @@ class LeotherasTheBlindFinalPhaseAssignDpsPriorityAction : public AttackAction
 {
 public:
     LeotherasTheBlindFinalPhaseAssignDpsPriorityAction(PlayerbotAI* botAI, std::string const name = "leotheras the blind final phase assign dps priority") : AttackAction(botAI, name) {}
-
     bool Execute(Event event) override;
 };
 
@@ -181,7 +160,6 @@ class LeotherasTheBlindMisdirectBossToDemonFormTankAction : public AttackAction
 {
 public:
     LeotherasTheBlindMisdirectBossToDemonFormTankAction(PlayerbotAI* botAI, std::string const name = "leotheras the blind misdirect boss to demon form tank") : AttackAction(botAI, name) {}
-
     bool Execute(Event event) override;
 };
 
@@ -189,7 +167,6 @@ class LeotherasTheBlindManageTimersAndTrackersAction : public Action
 {
 public:
     LeotherasTheBlindManageTimersAndTrackersAction(PlayerbotAI* botAI, std::string const name = "leotheras the blind manage timers and trackers") : Action(botAI, name) {}
-
     bool Execute(Event event) override;
 };
 

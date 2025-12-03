@@ -64,6 +64,9 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("leotheras the blind boss channeling whirlwind",
         NextAction::array(0, new NextAction("leotheras the blind run away from whirlwind", ACTION_EMERGENCY + 1), nullptr)
     ));
+    triggers.push_back(new TriggerNode("leotheras the blind bot has too many chaos blast stacks",
+        NextAction::array(0, new NextAction("leotheras the blind melee dps run away from boss", ACTION_EMERGENCY + 7), nullptr)
+    ));
     triggers.push_back(new TriggerNode("leotheras the blind inner demon cheat",
         NextAction::array(0, new NextAction("leotheras the blind inner demon cheat", ACTION_EMERGENCY + 6), nullptr)
     ));
@@ -173,6 +176,7 @@ void RaidSSCStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new TheLurkerBelowDisableTankAssistMultiplier(botAI));
     multipliers.push_back(new LeotherasTheBlindAvoidWhirlwindMultiplier(botAI));
     multipliers.push_back(new LeotherasTheBlindDisableTankActionsMultiplier(botAI));
+    multipliers.push_back(new LeotherasTheBlindMeleeDpsAvoidChaosBlastMultiplier(botAI));
     multipliers.push_back(new LeotherasTheBlindWaitForDpsMultiplier(botAI));
     multipliers.push_back(new LeotherasTheBlindDelayBloodlustAndHeroismMultiplier(botAI));
     multipliers.push_back(new FathomLordKarathressDisableTankAssistMultiplier(botAI));

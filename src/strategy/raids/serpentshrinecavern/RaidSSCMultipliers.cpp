@@ -89,7 +89,6 @@ float HydrossTheUnstableWaitForDpsMultiplier::GetValue(Action* action)
 
     const time_t now = std::time(nullptr);
     const uint8 dpsWaitSeconds = 5;
-    const uint8 phaseChangeWaitSeconds = 6;
 
     if (!hydross->HasAura(SPELL_CORRUPTION))
     {
@@ -103,15 +102,10 @@ float HydrossTheUnstableWaitForDpsMultiplier::GetValue(Action* action)
             return 1.0f;
 
         auto itDps = hydrossFrostDpsWaitTimer.find(SSC_MAP_ID);
-        auto itPhase = hydrossChangeToFrostPhaseTimer.find(SSC_MAP_ID);
-
         bool justChanged = (itDps == hydrossFrostDpsWaitTimer.end() ||
                             (now - itDps->second) < dpsWaitSeconds);
 
-        bool aboutToChange = (itPhase != hydrossChangeToFrostPhaseTimer.end() &&
-                              (now - itPhase->second) > phaseChangeWaitSeconds);
-
-        if (justChanged || aboutToChange)
+        if (justChanged || HasMarkOfHydrossAt100Percent(bot))
         {
             if (dynamic_cast<AttackAction*>(action) ||
                 (dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<CastHealingSpellAction*>(action)))
@@ -131,15 +125,10 @@ float HydrossTheUnstableWaitForDpsMultiplier::GetValue(Action* action)
             return 1.0f;
 
         auto itDps = hydrossNatureDpsWaitTimer.find(SSC_MAP_ID);
-        auto itPhase = hydrossChangeToNaturePhaseTimer.find(SSC_MAP_ID);
-
         bool justChanged = (itDps == hydrossNatureDpsWaitTimer.end() ||
                             (now - itDps->second) < dpsWaitSeconds);
 
-        bool aboutToChange = (itPhase != hydrossChangeToNaturePhaseTimer.end() &&
-                              (now - itPhase->second) > phaseChangeWaitSeconds);
-
-        if (justChanged || aboutToChange)
+        if (justChanged || HasMarkOfCorruptionAt100Percent(bot))
         {
             if (dynamic_cast<AttackAction*>(action) ||
                 (dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<CastHealingSpellAction*>(action)))
@@ -242,21 +231,50 @@ float LeotherasTheBlindAvoidWhirlwindMultiplier::GetValue(Action* action)
 float LeotherasTheBlindDisableTankActionsMultiplier::GetValue(Action* action)
 {
     Unit* leotherasDemon = GetActiveLeotherasDemon(botAI);
-    if (!leotherasDemon ||
-        dynamic_cast<LeotherasTheBlindInnerDemonCheatAction*>(action) ||
-        dynamic_cast<WipeAction*>(action))
+    if (!leotherasDemon)
+        return 1.0f;
+
+    Player* demonFormTank = GetLeotherasDemonFormTank(botAI, bot);
+    if (!demonFormTank)
         return 1.0f;
 
     // (1) Warlock tank will not use Shadow Ward
     // Shadow Ward is coded into the Warlock tank strategy (for Twin Emps) but is useless here
-    Player* demonFormTank = GetLeotherasDemonFormTank(botAI, bot);
-    if (demonFormTank && dynamic_cast<CastShadowWardAction*>(action))
+    if (dynamic_cast<CastShadowWardAction*>(action))
         return 0.0f;
 
     // (2) Phase 2 only: Tanks other than the Warlock tank should do absolutely nothing
     Unit* leotherasDemonPhase2 = GetPhase2LeotherasDemon(botAI);
     if (botAI->IsTank(bot) && bot != demonFormTank && leotherasDemonPhase2)
-        return 0.0f;
+    {
+        if (dynamic_cast<LeotherasTheBlindInnerDemonCheatAction*>(action) ||
+            dynamic_cast<WipeAction*>(action))
+            return 1.0f;
+        else
+            return 0.0f;
+    }
+
+    return 1.0f;
+}
+
+float LeotherasTheBlindMeleeDpsAvoidChaosBlastMultiplier::GetValue(Action* action)
+{
+    Unit* leotherasDemonPhase2 = GetPhase2LeotherasDemon(botAI);
+    if (!leotherasDemonPhase2)
+        return 1.0f;
+
+    if (botAI->IsMelee(bot) && !botAI->IsTank(bot))
+    {
+        Aura* chaosBlast = bot->GetAura(SPELL_CHAOS_BLAST);
+        if (chaosBlast && chaosBlast->GetStackAmount() >= 5)
+        {
+            if (dynamic_cast<AttackAction*>(action) ||
+                dynamic_cast<ReachTargetAction*>(action) ||
+                dynamic_cast<CombatFormationMoveAction*>(action) ||
+                dynamic_cast<CastReachTargetSpellAction*>(action))
+                return 0.0f;
+        }
+    }
 
     return 1.0f;
 }

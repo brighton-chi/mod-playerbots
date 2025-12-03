@@ -59,6 +59,13 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class LeotherasTheBlindMeleeDpsAvoidChaosBlastMultiplier : public Multiplier
+{
+public:
+    LeotherasTheBlindMeleeDpsAvoidChaosBlastMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "leotheras the blind melee dps avoid chaos blast") {}
+    virtual float GetValue(Action* action);
+};
+
 class LeotherasTheBlindWaitForDpsMultiplier : public Multiplier
 {
 public:

@@ -38,6 +38,7 @@ namespace SerpentShrineCavernHelpers
         SPELL_WHIRLWIND              = 37640,
         SPELL_WHIRLWIND_CHANNEL      = 37641,
         SPELL_METAMORPHOSIS          = 37673,
+        SPELL_CHAOS_BLAST            = 37675,
         SPELL_INSIDIOUS_WHISPER      = 37676,
 
         // Lady Vashj <Coilfang Matron>

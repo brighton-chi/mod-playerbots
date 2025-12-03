@@ -136,6 +136,13 @@ public:
     bool IsActive() override;
 };
 
+class LeotherasTheBlindBotHasTooManyChaosBlastStacksTrigger : public Trigger
+{
+public:
+    LeotherasTheBlindBotHasTooManyChaosBlastStacksTrigger(PlayerbotAI* botAI) : Trigger(botAI, "leotheras the blind bot has too many chaos blast stacks") {}
+    bool IsActive() override;
+};
+
 class LeotherasTheBlindInnerDemonCheatTrigger : public Trigger
 {
 public:

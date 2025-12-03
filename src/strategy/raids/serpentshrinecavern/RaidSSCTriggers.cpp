@@ -233,6 +233,23 @@ bool LeotherasTheBlindBossChannelingWhirlwindTrigger::IsActive()
            (leotheras->HasAura(SPELL_WHIRLWIND) || leotheras->HasAura(SPELL_WHIRLWIND_CHANNEL));
 }
 
+bool LeotherasTheBlindBotHasTooManyChaosBlastStacksTrigger::IsActive()
+{
+    Player* demonFormTank = GetLeotherasDemonFormTank(botAI, bot);
+    if (!demonFormTank)
+        return false;
+
+    if (!botAI->IsMelee(bot) && !botAI->IsDps(bot))
+        return false;
+
+    Unit* leotherasPhase2Demon = GetPhase2LeotherasDemon(botAI);
+    if (!leotherasPhase2Demon)
+        return false;
+
+    Aura* chaosBlast = bot->GetAura(SPELL_CHAOS_BLAST);
+    return chaosBlast && chaosBlast->GetStackAmount() >= 5;
+}
+
 bool LeotherasTheBlindInnerDemonCheatTrigger::IsActive()
 {
     if (!botAI->HasCheat(BotCheatMask::raid))

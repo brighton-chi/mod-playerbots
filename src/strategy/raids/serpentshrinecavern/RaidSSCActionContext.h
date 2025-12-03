@@ -30,6 +30,7 @@ public:
         creators["leotheras the blind demon form tank attack boss"] = &RaidSSCActionContext::leotheras_the_blind_demon_form_tank_attack_boss;
         creators["leotheras the blind position ranged"] = &RaidSSCActionContext::leotheras_the_blind_position_ranged;
         creators["leotheras the blind run away from whirlwind"] = &RaidSSCActionContext::leotheras_the_blind_run_away_from_whirlwind;
+        creators["leotheras the blind melee dps run away from boss"] = &RaidSSCActionContext::leotheras_the_blind_melee_dps_run_away_from_boss;
         creators["leotheras the blind inner demon cheat"] = &RaidSSCActionContext::leotheras_the_blind_inner_demon_cheat;
         creators["leotheras the blind final phase assign dps priority"] = &RaidSSCActionContext::leotheras_the_blind_final_phase_assign_dps_priority;
         creators["leotheras the blind misdirect boss to demon form tank"] = &RaidSSCActionContext::leotheras_the_blind_misdirect_boss_to_demon_form_tank;
@@ -88,6 +89,7 @@ private:
     static Action* leotheras_the_blind_demon_form_tank_attack_boss(PlayerbotAI* botAI) { return new LeotherasTheBlindDemonFormTankAttackBossAction(botAI); }
     static Action* leotheras_the_blind_position_ranged(PlayerbotAI* botAI) { return new LeotherasTheBlindPositionRangedAction(botAI); }
     static Action* leotheras_the_blind_run_away_from_whirlwind(PlayerbotAI* botAI) { return new LeotherasTheBlindRunAwayFromWhirlwindAction(botAI); }
+    static Action* leotheras_the_blind_melee_dps_run_away_from_boss(PlayerbotAI* botAI) { return new LeotherasTheBlindMeleeDpsRunAwayFromBossAction(botAI); }
     static Action* leotheras_the_blind_inner_demon_cheat(PlayerbotAI* botAI) { return new LeotherasTheBlindInnerDemonCheatAction(botAI); }
     static Action* leotheras_the_blind_misdirect_boss_to_demon_form_tank(PlayerbotAI* botAI) { return new LeotherasTheBlindMisdirectBossToDemonFormTankAction(botAI); }
     static Action* leotheras_the_blind_final_phase_assign_dps_priority(PlayerbotAI* botAI) { return new LeotherasTheBlindFinalPhaseAssignDpsPriorityAction(botAI); }
