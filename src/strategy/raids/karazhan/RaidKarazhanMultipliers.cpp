@@ -4,6 +4,7 @@
 #include "AttackAction.h"
 #include "ChooseTargetActions.h"
 #include "DruidActions.h"
+#include "FollowActions.h"
 #include "GenericActions.h"
 #include "HunterActions.h"
 #include "MageActions.h"
@@ -101,9 +102,12 @@ float ShadeOfAranArcaneExplosionDisableChargeMultiplier::GetValue(Action* action
         if (dynamic_cast<CastReachTargetSpellAction*>(action))
             return 0.0f;
 
-        if (dynamic_cast<MovementAction*>(action))
+        if (bot->GetDistance2d(aran) >= 20.0f)
         {
-            if (bot->GetDistance2d(aran) >= 20.0f)
+            if (dynamic_cast<CombatFormationMoveAction*>(action) ||
+                dynamic_cast<FleeAction*>(action) ||
+                dynamic_cast<FollowAction*>(action) ||
+                dynamic_cast<ReachTargetAction*>(action))
                 return 0.0f;
         }
     }
@@ -121,8 +125,13 @@ float ShadeOfAranFlameWreathDisableMovementMultiplier::GetValue(Action* action)
 
     if (IsFlameWreathActive(botAI, bot))
     {
-        if (dynamic_cast<MovementAction*>(action) || dynamic_cast<CastKillingSpreeAction*>(action) ||
-            dynamic_cast<CastBlinkBackAction*>(action) || dynamic_cast<CastDisengageAction*>(action) ||
+        if (dynamic_cast<CombatFormationMoveAction*>(action) ||
+            dynamic_cast<FleeAction*>(action) ||
+            dynamic_cast<FollowAction*>(action) ||
+            dynamic_cast<ReachTargetAction*>(action) ||
+            dynamic_cast<CastKillingSpreeAction*>(action) ||
+            dynamic_cast<CastBlinkBackAction*>(action) ||
+            dynamic_cast<CastDisengageAction*>(action) ||
             dynamic_cast<CastReachTargetSpellAction*>(action))
             return 0.0f;
     }
