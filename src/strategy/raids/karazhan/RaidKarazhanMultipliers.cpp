@@ -247,7 +247,7 @@ float NightbaneDisablePetsMultiplier::GetValue(Action* action)
         dynamic_cast<CastShadowfiendAction*>(action))
         return 0.0f;
 
-    if (nightbane->GetPositionZ() > 95.0f)
+    if (nightbane->GetPositionZ() > NIGHTBANE_FLIGHT_Z)
     {
         if (dynamic_cast<PetAttackAction*>(action))
             return 0.0f;
@@ -260,7 +260,7 @@ float NightbaneDisablePetsMultiplier::GetValue(Action* action)
 float NightbaneWaitForDpsMultiplier::GetValue(Action* action)
 {
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
-    if (!nightbane || nightbane->GetPositionZ() > 95.0f)
+    if (!nightbane || nightbane->GetPositionZ() > NIGHTBANE_FLIGHT_Z)
         return 1.0f;
 
     const time_t now = std::time(nullptr);
@@ -282,13 +282,14 @@ float NightbaneWaitForDpsMultiplier::GetValue(Action* action)
 
 // The "avoid aoe" strategy must be disabled for the main tank
 // Otherwise, the main tank will spin Nightbane to avoid Charred Earth and wipe the raid
+// It is also disabled for all bots during the flight phase
 float NightbaneDisableAvoidAoeMultiplier::GetValue(Action* action)
 {
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
     if (!nightbane)
         return 1.0f;
 
-    if (nightbane->GetPositionZ() > 95.0f || botAI->IsMainTank(bot))
+    if (nightbane->GetPositionZ() > NIGHTBANE_FLIGHT_Z || botAI->IsMainTank(bot))
     {
         if (dynamic_cast<AvoidAoeAction*>(action))
             return 0.0f;
@@ -312,7 +313,8 @@ float NightbaneDisableMovementMultiplier::GetValue(Action* action)
     // Disable CombatFormationMoveAction for all bots except:
     // (1) main tank and (2) only during the ground phase, other melee
     if (botAI->IsRanged(bot) ||
-        (botAI->IsMelee(bot) && !botAI->IsMainTank(bot) && nightbane->GetPositionZ() > 95.0f))
+        (botAI->IsMelee(bot) && !botAI->IsMainTank(bot) && 
+         nightbane->GetPositionZ() > NIGHTBANE_FLIGHT_Z))
     {
         if (dynamic_cast<CombatFormationMoveAction*>(action))
             return 0.0f;

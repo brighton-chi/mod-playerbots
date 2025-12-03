@@ -316,14 +316,13 @@ bool PrinceMalchezaarBossEngagedByMainTankTrigger::IsActive()
     return malchezaar != nullptr;
 }
 
-// Z-axis of 95 yards is used to determine if Nightbane is flying
 bool NightbaneBossEngagedByMainTankTrigger::IsActive()
 {
     if (!botAI->IsMainTank(bot))
         return false;
     
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
-    return nightbane && nightbane->GetPositionZ() <= 95.0f;
+    return nightbane && nightbane->GetPositionZ() <= NIGHTBANE_FLIGHT_Z;
 }
 
 bool NightbaneRangedBotsAreInCharredEarthTrigger::IsActive()
@@ -332,7 +331,7 @@ bool NightbaneRangedBotsAreInCharredEarthTrigger::IsActive()
         return false;
     
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
-    return nightbane && nightbane->GetPositionZ() <= 95.0f;
+    return nightbane && nightbane->GetPositionZ() <= NIGHTBANE_FLIGHT_Z;
 }
 
 bool NightbaneMainTankIsSusceptibleToFearTrigger::IsActive()
@@ -373,7 +372,7 @@ bool NightbanePetsIgnoreCollisionToChaseFlyingBossTrigger::IsActive()
 bool NightbaneBossIsFlyingTrigger::IsActive()
 {
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
-    if (!nightbane || nightbane->GetPositionZ() <= 95.0f)
+    if (!nightbane || nightbane->GetPositionZ() <= NIGHTBANE_FLIGHT_Z)
         return false;
 
     const time_t now = std::time(nullptr);

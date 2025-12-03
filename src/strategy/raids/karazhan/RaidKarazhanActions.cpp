@@ -1390,10 +1390,10 @@ bool NightbaneControlPetAggressionAction::Execute(Event event)
     if (!pet)
         return false;
 
-    if (nightbane->GetPositionZ() <= 95.0f && pet->GetReactState() == REACT_PASSIVE)
+    if (nightbane->GetPositionZ() <= NIGHTBANE_FLIGHT_Z && pet->GetReactState() == REACT_PASSIVE)
         pet->SetReactState(REACT_DEFENSIVE);
 
-    if (nightbane->GetPositionZ() > 95.0f && pet->GetReactState() != REACT_PASSIVE)
+    if (nightbane->GetPositionZ() > NIGHTBANE_FLIGHT_Z && pet->GetReactState() != REACT_PASSIVE)
     {
         pet->AttackStop();
         pet->SetReactState(REACT_PASSIVE);
@@ -1409,7 +1409,7 @@ bool NightbaneControlPetAggressionAction::Execute(Event event)
 bool NightbaneFlightPhaseMovementAction::Execute(Event event)
 {
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
-    if (!nightbane || nightbane->GetPositionZ() <= 95.0f)
+    if (!nightbane || nightbane->GetPositionZ() <= NIGHTBANE_FLIGHT_Z)
         return false;
 
     MarkTargetWithMoon(bot, nightbane);
@@ -1474,7 +1474,7 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event event)
             nightbaneDpsWaitTimer.erase(KARAZHAN_MAP_ID);
     }
     // Erase flight phase timer and Rain of Bones tracker on ground phase and start DPS wait timer
-    else if (nightbane->GetPositionZ() <= 95.0f)
+    else if (nightbane->GetPositionZ() <= NIGHTBANE_FLIGHT_Z)
     {
         nightbaneRainOfBonesHit.erase(botGuid);
 
@@ -1486,7 +1486,7 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event event)
     }
     // Erase DPS wait timer and tank and ranged position tracking and start flight phase timer
     // at beginning of flight phase
-    else if (nightbane->GetPositionZ() > 95.0f)
+    else if (nightbane->GetPositionZ() > NIGHTBANE_FLIGHT_Z)
     {
         if (botAI->IsMainTank(bot))
             nightbaneTankStep.erase(botGuid);

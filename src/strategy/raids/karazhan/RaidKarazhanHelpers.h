@@ -71,7 +71,8 @@ namespace KarazhanHelpers
         NPC_NETHERSPITE_INFERNAL         = 17646,
     };
 
-    constexpr uint32 KARAZHAN_MAP_ID = 532;
+    const uint32 KARAZHAN_MAP_ID = 532;
+    const float NIGHTBANE_FLIGHT_Z = 95.0f;
 
     // Attumen the Huntsman
     extern std::unordered_map<uint32, time_t> attumenDpsWaitTimer;
