@@ -66,8 +66,7 @@ bool AlarBossTanksMoveBetweenPlatformsAction::Execute(Event event)
 
     std::vector<Position> platforms = { AlarPlatform1, AlarPlatform2, AlarPlatform3, AlarPlatform4 };
 
-    UpdateAlarLastPlatform(alar, platforms);
-    int8 alarPlatform = lastAlarPlatform[TEMPESTKEEP_MAP_ID];
+    int8 alarPlatform = targetAlarPlatform[TEMPESTKEEP_MAP_ID];
 
     SetRtiTarget(botAI, "star", alar);
     bool mtAction = PositionMainTank(botAI->IsMainTank(bot) ? bot : nullptr, alar, alarPlatform, platforms);
@@ -95,8 +94,10 @@ bool AlarBossTanksMoveBetweenPlatformsAction::PositionMainTank(Player* mainTank,
         return true;
     }
 
-    Position mtTarget;
+    if (alarPlatform < 0 || alarPlatform >= static_cast<int8>(platforms.size()))
+        return false;
 
+    Position mtTarget;
     // Determine target based on Al'ar's platform
     if (alarPlatform == 0 || alarPlatform == 3)
     {
@@ -147,8 +148,10 @@ bool AlarBossTanksMoveBetweenPlatformsAction::PositionAssistTank(Player* assistT
         return true;
     }
 
-    Position atTarget;
+    if (alarPlatform < 0 || alarPlatform >= static_cast<int8>(platforms.size()))
+        return false;
 
+    Position atTarget;
     // Determine target based on Al'ar's platform
     if (alarPlatform == 0 || alarPlatform == 3)
     {
@@ -226,10 +229,13 @@ bool AlarMeleeDpsPrioritizeBossAction::Execute(Event event)
             return true;
         }
 
-        int8 alarPlatform = lastAlarPlatform[TEMPESTKEEP_MAP_ID];
+        int8 alarPlatform = targetAlarPlatform[TEMPESTKEEP_MAP_ID];
         std::vector<Position> platforms = { AlarPlatform1, AlarPlatform2, AlarPlatform3, AlarPlatform4 };
-        const Position& platformTarget = platforms[alarPlatform];
 
+        if (alarPlatform < 0 || alarPlatform >= static_cast<int8>(platforms.size()))
+            return false;
+
+        const Position& platformTarget = platforms[alarPlatform];
         std::vector<Position> waypoints;
         if (alarPlatform == 1)
             waypoints = { AlarPlatform1To2MidpointA, AlarPlatform1To2MidpointB };
@@ -322,10 +328,12 @@ bool AlarRangedDpsPrioritizeAddsAction::Execute(Event event)
 
     if (!isAlarInPhase2[TEMPESTKEEP_MAP_ID])
     {
-        int8 alarPlatform = lastAlarPlatform[TEMPESTKEEP_MAP_ID];
+        int8 alarPlatform = targetAlarPlatform[TEMPESTKEEP_MAP_ID];
         std::vector<Position> groundPositions = { AlarGround1, AlarGround2, AlarGround3, AlarGround4 };
-        const Position& groundTarget = groundPositions[alarPlatform];
+        if (alarPlatform < 0)
+            return false;
 
+        const Position& groundTarget = groundPositions[alarPlatform];
         if (bot->GetExactDist2d(groundTarget.GetPositionX(), groundTarget.GetPositionY()) > 15.0f)
         {
             return MoveNear(TEMPESTKEEP_MAP_ID, groundTarget.GetPositionX(), groundTarget.GetPositionY(),
@@ -359,7 +367,7 @@ bool AlarPositionHealerAction::Execute(Event event)
 
     if (!isAlarInPhase2[TEMPESTKEEP_MAP_ID])
     {
-        int8 alarPlatform = lastAlarPlatform[TEMPESTKEEP_MAP_ID];
+        int8 alarPlatform = targetAlarPlatform[TEMPESTKEEP_MAP_ID];
         std::vector<Position> groundPositions = { AlarGround1, AlarGround2, AlarGround3, AlarGround4 };
         const Position& groundTarget = groundPositions[alarPlatform];
 
@@ -406,7 +414,7 @@ bool AlarAddTankPickUpEmbersAction::Execute(Event event)
         }
         else
         {
-            int8 alarPlatform = lastAlarPlatform[TEMPESTKEEP_MAP_ID];
+            int8 alarPlatform = targetAlarPlatform[TEMPESTKEEP_MAP_ID];
             std::vector<Position> groundPositions = { AlarGround1, AlarGround2, AlarGround3, AlarGround4 };
             const Position& groundTarget = groundPositions[alarPlatform];
 
@@ -622,11 +630,28 @@ bool AlarManageTimersAndTrackersAction::Execute(Event event)
     if (!alar)
         return false;
 
-    if (IsAlarMapIDTimerManager(botAI, bot) && alar->GetHealthPct() > 99.5f && alar->GetPositionZ() >= 17.0f)
+    if (IsAlarMapIDTimerManager(botAI, bot))
     {
-        lastRebirthState[TEMPESTKEEP_MAP_ID] = false;
-        lastAlarPlatform[TEMPESTKEEP_MAP_ID] = -1;
-        isAlarInPhase2[TEMPESTKEEP_MAP_ID] = false;
+        std::vector<Position> platforms = { AlarPlatform1, AlarPlatform2, AlarPlatform3, AlarPlatform4 };
+
+        DetermineAlarTargetPlatform(alar, platforms);
+
+        if (alar->GetHealthPct() > 99.5f && alar->GetPositionZ() >= 17.0f)
+        {
+            lastRebirthState[TEMPESTKEEP_MAP_ID] = false;
+            targetAlarPlatform[TEMPESTKEEP_MAP_ID] = -1;
+            isAlarInPhase2[TEMPESTKEEP_MAP_ID] = false;
+        }
+
+        bool rebirthActive = alar->HasUnitState(UNIT_STATE_CASTING) &&
+                             alar->FindCurrentSpellBySpellId(SPELL_REBIRTH_PHASE2);
+        bool lastRebirth = lastRebirthState[TEMPESTKEEP_MAP_ID];
+
+        // Detect transition: finished casting Rebirth (phase 2 begins)
+        if (lastRebirth && !rebirthActive)
+            isAlarInPhase2[TEMPESTKEEP_MAP_ID] = true;
+
+        lastRebirthState[TEMPESTKEEP_MAP_ID] = rebirthActive;
     }
 
     if ((alar->GetHealthPct() > 99.5f && alar->GetPositionZ() >= 17.0f) ||
@@ -645,20 +670,6 @@ bool AlarManageTimersAndTrackersAction::Execute(Event event)
         else if (botAI->IsMelee(bot) && botAI->IsDps(bot))
             meleeDpsWaypointVisited[bot->GetGUID()].clear();
     }
-
-    // Manual override: if Flame Quills is active, set lastAlarPlatform to platform 4 (index 3)
-    if (alar->GetPositionZ() >= 22.0f && alar->GetHealthPct() < 95.0f)
-        lastAlarPlatform[TEMPESTKEEP_MAP_ID] = 3;
-
-    bool rebirthActive = alar->HasUnitState(UNIT_STATE_CASTING) &&
-                         alar->FindCurrentSpellBySpellId(SPELL_REBIRTH_PHASE2);
-    bool lastRebirth = lastRebirthState[TEMPESTKEEP_MAP_ID];
-
-    // Detect transition: finished casting Rebirth (phase 2 begins)
-    if (lastRebirth && !rebirthActive)
-        isAlarInPhase2[TEMPESTKEEP_MAP_ID] = true;
-
-    lastRebirthState[TEMPESTKEEP_MAP_ID] = rebirthActive;
 
     return false;
 }

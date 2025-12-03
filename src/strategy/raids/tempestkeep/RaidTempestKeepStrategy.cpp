@@ -142,6 +142,7 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
 void RaidTempestKeepStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
+    multipliers.push_back(new AlarMoveBetweenPlatformsMultiplier(botAI));
     multipliers.push_back(new AlarDisableTankAssistMultiplier(botAI));
     multipliers.push_back(new AlarStayAwayFromRebirthMultiplier(botAI));
     multipliers.push_back(new AlarPhase2NoTankingIfArmorMeltedMultiplier(botAI));

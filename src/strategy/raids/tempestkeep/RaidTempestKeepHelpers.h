@@ -131,7 +131,7 @@ namespace TempestKeepHelpers
     Unit* GetNearestPlayerInRadius(Player* bot, float radius);
     Unit* GetNearestNonTankPlayerInRadius(Player* bot, float radius);
 
-    void UpdateAlarLastPlatform(Unit* alar, const std::vector<Position>& platforms);
+    void DetermineAlarTargetPlatform(Unit* alar, const std::vector<Position>& platforms);
     bool IsAlarMapIDTimerManager(PlayerbotAI* botAI, Player* bot);
     bool IsAlarAddTank(PlayerbotAI* botAI, Player* bot);
 
@@ -147,7 +147,7 @@ namespace TempestKeepHelpers
     Player* GetNetherstrandLongbowTank(PlayerbotAI* botAI, Player* bot);
     bool IsAnyLegendaryWeaponDead(PlayerbotAI* botAI, Player* bot);
 
-    extern std::unordered_map<uint32, int8> lastAlarPlatform;
+    extern std::unordered_map<uint32, int8> targetAlarPlatform;
     extern std::unordered_map<uint32, bool> lastRebirthState;
     extern std::unordered_map<uint32, bool> isAlarInPhase2;
     extern std::unordered_map<ObjectGuid, bool> mainTankAtPlatform2;

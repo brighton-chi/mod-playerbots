@@ -4,6 +4,7 @@
 #include "ChooseTargetActions.h"
 #include "DruidBearActions.h"
 #include "EquipAction.h"
+#include "FollowActions.h"
 #include "HunterActions.h"
 #include "MageActions.h"
 #include "PaladinActions.h"
@@ -12,6 +13,27 @@
 #include "ShamanActions.h"
 #include "WarlockActions.h"
 #include "WarriorActions.h"
+
+float AlarMoveBetweenPlatformsMultiplier::GetValue(Action* action)
+{
+    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+    if (!alar || !isAlarInPhase2[TEMPESTKEEP_MAP_ID])
+        return 1.0f;
+
+    if (!IsAlarAddTank(botAI, bot))
+        return 1.0f;
+
+    if (dynamic_cast<CombatFormationMoveAction*>(action) ||
+        dynamic_cast<FleeAction*>(action) ||
+        dynamic_cast<FollowAction*>(action) ||
+        dynamic_cast<ReachTargetAction*>(action) ||
+        dynamic_cast<CastKillingSpreeAction*>(action) ||
+        dynamic_cast<CastDisengageAction*>(action) ||
+        dynamic_cast<CastBlinkBackAction*>(action))
+        return 0.0f;
+
+    return 1.0f;
+}
 
 float AlarDisableTankAssistMultiplier::GetValue(Action* action)
 {

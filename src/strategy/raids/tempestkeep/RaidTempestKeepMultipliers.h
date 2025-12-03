@@ -3,6 +3,13 @@
 
 #include "Multiplier.h"
 
+class AlarMoveBetweenPlatformsMultiplier : public Multiplier
+{
+public:
+    AlarMoveBetweenPlatformsMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "alar move between platforms multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
 class AlarDisableTankAssistMultiplier : public Multiplier
 {
 public:
