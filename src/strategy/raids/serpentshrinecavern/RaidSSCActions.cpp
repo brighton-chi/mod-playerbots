@@ -543,9 +543,8 @@ bool TheLurkerBelowSpreadRangedAction::Execute(Event event)
 
         float tx = lurker->GetPositionX() + radius * std::cos(angle);
         float ty = lurker->GetPositionY() + radius * std::sin(angle);
-        float tz = lurker->GetPositionZ();
 
-        lurkerRangedPositions.emplace(guid, Position(tx, ty, tz));
+        lurkerRangedPositions.try_emplace(guid, Position(tx, ty, lurker->GetPositionZ()));
         it = lurkerRangedPositions.find(guid);
     }
 
@@ -652,7 +651,7 @@ bool TheLurkerBelowManageSpoutTimerAction::Execute(Event event)
 
     const time_t spoutCastTime = 20;
     if (IsLurkerCastingSpout(lurker) && it == lurkerSpoutTimer.end())
-        lurkerSpoutTimer.emplace(SSC_MAP_ID, now + spoutCastTime);
+        lurkerSpoutTimer.try_emplace(SSC_MAP_ID, now + spoutCastTime);
 
     return false;
 }
@@ -1399,7 +1398,7 @@ bool MorogrimTidewalkerMoveBossToTankPositionAction::MoveToPhase2TankPosition(Un
                           MovementPriority::MOVEMENT_COMBAT, true, true);
         }
         else
-            tidewalkerTankStep.emplace(botGuid, 1);
+            tidewalkerTankStep.try_emplace(botGuid, 1);
     }
 
     if (step == 1)
@@ -1451,7 +1450,7 @@ bool MorogrimTidewalkerPhase2RepositionRangedAction::Execute(Event event)
         }
         else
         {
-            tidewalkerRangedStep.emplace(botGuid, 1);
+            tidewalkerRangedStep.try_emplace(botGuid, 1);
             step = 1;
         }
     }
@@ -1586,23 +1585,22 @@ bool LadyVashjPhase1PositionRangedAction::Execute(Event event)
         float radius = frand(minRadius, maxRadius);
         float targetX = center.GetPositionX() + radius * std::cos(angle);
         float targetY = center.GetPositionY() + radius * std::sin(angle);
-        float tz = center.GetPositionZ();
 
-        auto res = vashjRangedPositions.emplace(guid, Position(targetX, targetY, tz));
+        auto res = vashjRangedPositions.try_emplace(guid, Position(targetX, targetY, center.GetPositionZ()));
         itPos = res.first;
-        hasReachedVashjRangedPosition.emplace(guid, false);
+        hasReachedVashjRangedPosition.try_emplace(guid, false);
         itReached = hasReachedVashjRangedPosition.find(guid);
     }
 
     if (itPos == vashjRangedPositions.end())
         return false;
 
-    Position targetPosition = itPos->second;
+    Position position = itPos->second;
     if (itReached == hasReachedVashjRangedPosition.end() || !(itReached->second))
     {
-        if (bot->GetExactDist2d(targetPosition.GetPositionX(), targetPosition.GetPositionY()) > 2.0f)
+        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
         {
-            return MoveTo(SSC_MAP_ID, targetPosition.GetPositionX(), targetPosition.GetPositionY(), targetPosition.GetPositionZ(),
+            return MoveTo(SSC_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
                           false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
         if (itReached != hasReachedVashjRangedPosition.end())
@@ -1907,9 +1905,9 @@ bool LadyVashjAssignDpsPriorityAction::Execute(Event event)
         {
             // With raid cheats enabled, the first assist tank will tank the Strider
             if (botAI->HasCheat(BotCheatMask::raid) && botAI->IsAssistTankOfIndex(bot, 0))
-                targets = { strider, enchanted };
+                targets = { strider, elite, enchanted };
             else
-                targets = { elite, enchanted };
+                targets = { elite, strider, enchanted };
         }
         else
             targets = { enchanted, elite, strider };
@@ -1928,20 +1926,23 @@ bool LadyVashjAssignDpsPriorityAction::Execute(Event event)
             else if (botAI->IsAssistTankOfIndex(bot, 0))
             {
                 if (botAI->HasCheat(BotCheatMask::raid))
-                    targets = { strider, enchanted, vashj };
-                else
-                    targets = { elite, enchanted, vashj };
+                    targets = { strider, elite, enchanted, vashj };
             }
             else
-                targets = { elite, enchanted, vashj };
+                targets = { elite, strider, enchanted, vashj };
         }
         else if (botAI->IsRanged(bot))
         {
-            // Hunters will try to kill Toxic Sporebats (in practice, they are generally not in range)
+            /* // Hunters will prioritize Toxic Sporebats
             if (bot->getClass() == CLASS_HUNTER)
                 targets = { enchanted, sporebat, strider, elite, vashj };
             else
+                targets = { enchanted, strider, elite, vashj }; */
+            // Try seeing results if all ranged, other than Priest, attack sporebats
+            if (bot->getClass() == CLASS_PRIEST)
                 targets = { enchanted, strider, elite, vashj };
+            else
+                targets = { enchanted, sporebat, strider, elite, vashj };
         }
         else if (botAI->IsMelee(bot) && botAI->IsDps(bot))
             targets = { enchanted, elite, vashj };
@@ -2041,7 +2042,6 @@ bool LadyVashjTeleportToTaintedElementalAction::Execute(Event event)
     {
         MarkTargetWithStar(bot, tainted);
         SetRtiTarget(botAI, "star", tainted);
-
         return Attack(tainted);
     }
 
