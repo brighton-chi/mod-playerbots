@@ -199,7 +199,7 @@ namespace TempestKeepHelpers
         }
 
         // Flame Quills exception: reset platform index
-        if (alar->GetPositionZ() >= 42.0f)
+        if (alar->GetPositionZ() >= ALAR_FLAME_QUILLS_Z)
         {
             targetAlarPlatform[TEMPESTKEEP_MAP_ID] = -1;
             return;
@@ -573,11 +573,6 @@ namespace TempestKeepHelpers
     std::unordered_map<uint32, int8> targetAlarPlatform;
     std::unordered_map<uint32, bool> lastRebirthState;
     std::unordered_map<uint32, bool> isAlarInPhase2;
-    std::unordered_map<ObjectGuid, bool> mainTankAtPlatform2;
-    std::unordered_map<ObjectGuid, bool> assistTankAtPlatform3;
-    std::unordered_map<ObjectGuid, std::vector<bool>> mtBalconyMidpointVisited;
-    std::unordered_map<ObjectGuid, std::vector<bool>> atBalconyMidpointVisited;
-    std::unordered_map<ObjectGuid, std::vector<bool>> meleeDpsWaypointVisited;
 
     std::unordered_map<ObjectGuid, Position> initialVoidReaverPositions;
     std::unordered_map<ObjectGuid, bool> hasReachedInitialVoidReaverPosition;

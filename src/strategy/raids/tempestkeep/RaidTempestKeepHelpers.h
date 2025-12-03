@@ -112,7 +112,11 @@ namespace TempestKeepHelpers
         extern const Position KaelthasTankPosition;
     }
 
-    constexpr uint32 TEMPESTKEEP_MAP_ID = 550;
+    const uint32 TEMPESTKEEP_MAP_ID = 550;
+    const float ALAR_FLAME_QUILLS_Z = 42.0f;
+    const float ALAR_GROUND_Z = -2.0f;
+    const float ALAR_BALCONY_Z = 17.0f;
+    const float ALAR_FLIGHT_Z = 22.0f;
 
     void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);
     void MarkTargetWithSkull(Player* bot, Unit* target);
@@ -146,11 +150,6 @@ namespace TempestKeepHelpers
     extern std::unordered_map<uint32, int8> targetAlarPlatform;
     extern std::unordered_map<uint32, bool> lastRebirthState;
     extern std::unordered_map<uint32, bool> isAlarInPhase2;
-    extern std::unordered_map<ObjectGuid, bool> mainTankAtPlatform2;
-    extern std::unordered_map<ObjectGuid, bool> assistTankAtPlatform3;
-    extern std::unordered_map<ObjectGuid, std::vector<bool>> mtBalconyMidpointVisited;
-    extern std::unordered_map<ObjectGuid, std::vector<bool>> atBalconyMidpointVisited;
-    extern std::unordered_map<ObjectGuid, std::vector<bool>> meleeDpsWaypointVisited;
 
     extern std::unordered_map<ObjectGuid, Position> initialVoidReaverPositions;
     extern std::unordered_map<ObjectGuid, bool> hasReachedInitialVoidReaverPosition;

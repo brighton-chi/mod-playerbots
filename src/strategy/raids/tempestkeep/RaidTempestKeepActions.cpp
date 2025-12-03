@@ -83,7 +83,7 @@ bool AlarBossTanksMoveBetweenPlatformsAction::PositionMainTank(Player* mainTank,
         return false;
 
     // If Al'ar is flying (Flame Quills), move to SW ramp base and hold position
-    if (alar->GetPositionZ() >= 42.0f && mainTank->GetPositionZ() < -2.0f)
+    if (alar->GetPositionZ() >= ALAR_FLAME_QUILLS_Z && mainTank->GetPositionZ() < ALAR_GROUND_Z)
     {
         if (mainTank->GetExactDist2d(AlarSWRampBase.GetPositionX(), AlarSWRampBase.GetPositionY()) >= 2.0f)
         {
@@ -137,7 +137,7 @@ bool AlarBossTanksMoveBetweenPlatformsAction::PositionAssistTank(Player* assistT
         return false;
 
     // If Al'ar is flying (Flame Quills), move to SE ramp base and hold position
-    if (alar->GetPositionZ() >= 42.0f && assistTank->GetPositionZ() < -2.0f)
+    if (alar->GetPositionZ() >= ALAR_FLAME_QUILLS_Z && assistTank->GetPositionZ() < ALAR_GROUND_Z)
     {
         if (assistTank->GetExactDist2d(AlarSERampBase.GetPositionX(), AlarSERampBase.GetPositionY()) >= 2.0f)
         {
@@ -218,7 +218,7 @@ bool AlarMeleeDpsPrioritizeBossAction::Execute(Event event)
     if (!isAlarInPhase2[TEMPESTKEEP_MAP_ID])
     {
         // If Al'ar is flying (Flame Quills), move to S of room and hold position
-        if (alar->GetPositionZ() >= 42.0f && bot->GetPositionZ() < -2.0f)
+        if (alar->GetPositionZ() >= ALAR_FLAME_QUILLS_Z && bot->GetPositionZ() < ALAR_GROUND_Z)
         {
             if (bot->GetExactDist2d(AlarRoomSouthCenter.GetPositionX(), AlarRoomSouthCenter.GetPositionY()) >= 2.0f)
             {
@@ -411,7 +411,7 @@ bool AlarJumpFromPlatformAction::Execute(Event event)
     if (!alar)
         return false;
 
-    if (bot->GetPositionZ() >= 17.0f)
+    if (bot->GetPositionZ() >= ALAR_BALCONY_Z)
     {
         std::vector<std::pair<Position, Position>> platformGroundPairs =
         {
@@ -443,7 +443,7 @@ bool AlarJumpFromPlatformAction::Execute(Event event)
 
 bool AlarMoveAwayFromRebirthAction::Execute(Event event)
 {
-    if (bot->GetPositionZ() >= 17.0f)
+    if (bot->GetPositionZ() >= ALAR_BALCONY_Z)
     {
         std::vector<std::pair<Position, Position>> platformGroundPairs =
         {
@@ -579,7 +579,7 @@ bool AlarDiveBombSpreadAction::Execute(Event event)
 
     if (closestMember)
     {
-        const uint32 minInterval = 200;
+        const uint32 minInterval = 500;
         return FleePosition(Position(closestMember->GetPositionX(), closestMember->GetPositionY(),
                                      closestMember->GetPositionZ()), 11.0f, minInterval);
     }
@@ -593,45 +593,25 @@ bool AlarManageTimersAndTrackersAction::Execute(Event event)
     if (!alar)
         return false;
 
-    if (IsAlarMapIDTimerManager(botAI, bot))
+    std::vector<Position> platforms = { AlarPlatform0, AlarPlatform1, AlarPlatform2, AlarPlatform3 };
+
+    DetermineAlarTargetPlatform(alar, platforms);
+
+    if (alar->GetHealthPct() > 99.5f && alar->GetPositionZ() >= ALAR_BALCONY_Z)
     {
-        std::vector<Position> platforms = { AlarPlatform0, AlarPlatform1, AlarPlatform2, AlarPlatform3 };
-
-        DetermineAlarTargetPlatform(alar, platforms);
-
-        if (alar->GetHealthPct() > 99.5f && alar->GetPositionZ() >= 17.0f)
-        {
-            lastRebirthState[TEMPESTKEEP_MAP_ID] = false;
-            isAlarInPhase2[TEMPESTKEEP_MAP_ID] = false;
-        }
-
-        bool rebirthActive = alar->HasUnitState(UNIT_STATE_CASTING) &&
-                             alar->FindCurrentSpellBySpellId(SPELL_REBIRTH_PHASE2);
-        bool lastRebirth = lastRebirthState[TEMPESTKEEP_MAP_ID];
-
-        // Detect transition: finished casting Rebirth (phase 2 begins)
-        if (lastRebirth && !rebirthActive)
-            isAlarInPhase2[TEMPESTKEEP_MAP_ID] = true;
-
-        lastRebirthState[TEMPESTKEEP_MAP_ID] = rebirthActive;
+        lastRebirthState[TEMPESTKEEP_MAP_ID] = false;
+        isAlarInPhase2[TEMPESTKEEP_MAP_ID] = false;
     }
 
-    if ((alar->GetHealthPct() > 99.5f && alar->GetPositionZ() >= 17.0f) ||
-        alar->GetPositionZ() >= 22.0f)
-    {
-        if (botAI->IsMainTank(bot))
-        {
-            mtBalconyMidpointVisited[bot->GetGUID()].clear();
-            mainTankAtPlatform2[bot->GetGUID()] = false;
-        }
-        else if (botAI->IsAssistTankOfIndex(bot, 0))
-        {
-            atBalconyMidpointVisited[bot->GetGUID()].clear();
-            assistTankAtPlatform3[bot->GetGUID()] = false;
-        }
-        else if (botAI->IsMelee(bot) && botAI->IsDps(bot))
-            meleeDpsWaypointVisited[bot->GetGUID()].clear();
-    }
+    bool rebirthActive = alar->HasUnitState(UNIT_STATE_CASTING) &&
+                         alar->FindCurrentSpellBySpellId(SPELL_REBIRTH_PHASE2);
+    bool lastRebirth = lastRebirthState[TEMPESTKEEP_MAP_ID];
+
+    // Detect transition: finished casting Rebirth (phase 2 begins)
+    if (lastRebirth && !rebirthActive)
+        isAlarInPhase2[TEMPESTKEEP_MAP_ID] = true;
+
+    lastRebirthState[TEMPESTKEEP_MAP_ID] = rebirthActive;
 
     return false;
 }

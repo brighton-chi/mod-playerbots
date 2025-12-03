@@ -71,8 +71,8 @@ bool AlarEmbersOfAlarSpawnedTrigger::IsActive()
 bool AlarIncomingFlameQuillsTrigger::IsActive()
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    return alar && alar->GetHealthPct() < 95.0f && alar->GetPositionZ() >= 22.0f &&
-           bot->GetPositionZ() >= 17.0f && !isAlarInPhase2[TEMPESTKEEP_MAP_ID];
+    return alar && alar->GetHealthPct() < 95.0f && alar->GetPositionZ() >= ALAR_FLIGHT_Z &&
+           bot->GetPositionZ() >= ALAR_BALCONY_Z && !isAlarInPhase2[TEMPESTKEEP_MAP_ID];
 }
 
 bool AlarRisingFromTheAshesTrigger::IsActive()
@@ -96,17 +96,20 @@ bool AlarPhase2EncounterIsAtRoomCenterTrigger::IsActive()
         return false;
 
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    return alar && alar->GetPositionZ() < 42.0f && isAlarInPhase2[TEMPESTKEEP_MAP_ID];
+    return alar && alar->GetPositionZ() < ALAR_FLAME_QUILLS_Z && isAlarInPhase2[TEMPESTKEEP_MAP_ID];
 }
 
 bool AlarBossIsPreparingToDiveBombTrigger::IsActive()
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    return alar && alar->GetPositionZ() >= 42.0f && isAlarInPhase2[TEMPESTKEEP_MAP_ID];
+    return alar && alar->GetPositionZ() >= ALAR_FLAME_QUILLS_Z && isAlarInPhase2[TEMPESTKEEP_MAP_ID];
 }
 
 bool AlarNeedToManageTimersAndTrackersTrigger::IsActive()
 {
+    if (!IsMapIDTimerManager(botAI, bot))
+        return false;
+    
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
     return alar != nullptr;
 }
