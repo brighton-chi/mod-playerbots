@@ -13,18 +13,14 @@ namespace TempestKeepHelpers
     {
         const Position AlarRoomCenter = { 330.611f, -2.540f, -2.389f };
         const Position AlarRangedCenter = { 346.758f, 3.794f, -2.389f };
-        const Position AlarPlatform1 = { 335.638f, 59.4879f, 17.9319f }; // West Platform
-        const Position AlarPlatform2 = { 388.751f, 31.7312f, 20.2636f }; // Northwest Platform
-        const Position AlarPlatform3 = { 388.791f, -33.1059f, 20.2636f }; // Northeast Platform
-        const Position AlarPlatform4 = { 332.723f, -61.159f, 17.9791f }; // East Platform
-        const Position AlarPlatform1To2MidpointA = { 362.264f, 83.648f, 19.797f }; // 1st Midpoint between Platform 1 and 2
-        const Position AlarPlatform1To2MidpointB = { 397.760f, 57.362f, 20.179f }; // 2nd Midpoint between Platform 1 and 2
-        const Position AlarPlatform2To3MidpointA = { 419.272f, 28.838f, 20.179f }; // 1st Midpoint between Platform 2 and 3
-        const Position AlarPlatform2To3MidpointB = { 419.272f, -28.838f, 20.179f }; // 2nd Midpoint between Platform 2 and 3
-        const Position AlarGround1 = { 336.439f, 48.181f, -2.389f }; // Landing point for jumping from West Platform
-        const Position AlarGround2 = { 379.122f, 25.146f, -2.385f }; // Landing point for jumping from Northwest Platform
-        const Position AlarGround3 = { 378.583f, -27.481f, -2.385f }; // Landing point for jumping from Northeast Platform
-        const Position AlarGround4 = { 331.631f, -49.716f, -2.389f }; // Landing point for jumping from East Platform
+        const Position AlarPlatform0 = { 335.638f, 59.4879f, 17.9319f }; // West Platform
+        const Position AlarPlatform1 = { 388.751f, 31.7312f, 20.2636f }; // Northwest Platform
+        const Position AlarPlatform2 = { 388.791f, -33.1059f, 20.2636f }; // Northeast Platform
+        const Position AlarPlatform3 = { 332.723f, -61.159f, 17.9791f }; // East Platform
+        const Position AlarGround0 = { 336.439f, 48.181f, -2.389f }; // Landing point for jumping from West Platform
+        const Position AlarGround1 = { 379.122f, 25.146f, -2.385f }; // Landing point for jumping from Northwest Platform
+        const Position AlarGround2 = { 378.583f, -27.481f, -2.385f }; // Landing point for jumping from Northeast Platform
+        const Position AlarGround3 = { 331.631f, -49.716f, -2.389f }; // Landing point for jumping from East Platform
         const Position AlarSERampBase = { 281.064f, -36.590f, -2.389f };
         const Position AlarSWRampBase = { 281.064f, 36.590f, -2.389f };
         const Position AlarRoomSouthCenter = { 281.064f, 0.0f, -2.389f };
@@ -196,6 +192,12 @@ namespace TempestKeepHelpers
         if (!alar || platforms.empty())
             return;
 
+        if (alar->GetHealthPct() >= 99.5f)
+        {
+            targetAlarPlatform[TEMPESTKEEP_MAP_ID] = 0;
+            return;
+        }
+
         // Flame Quills exception: reset platform index
         if (alar->GetPositionZ() >= 42.0f)
         {
@@ -203,7 +205,7 @@ namespace TempestKeepHelpers
             return;
         }
 
-        constexpr float platformThreshold = 5.0f;
+        const float platformThreshold = 5.0f;
         int8 currentIndex = targetAlarPlatform.count(TEMPESTKEEP_MAP_ID) ? targetAlarPlatform[TEMPESTKEEP_MAP_ID] : -1;
 
         // If index is -1 (after Flame Quills), find closest platform

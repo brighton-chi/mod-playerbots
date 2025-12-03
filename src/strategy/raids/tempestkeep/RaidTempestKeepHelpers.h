@@ -89,18 +89,14 @@ namespace TempestKeepHelpers
     {
         extern const Position AlarRoomCenter;
         extern const Position AlarRangedCenter;
+        extern const Position AlarPlatform0;
         extern const Position AlarPlatform1;
         extern const Position AlarPlatform2;
         extern const Position AlarPlatform3;
-        extern const Position AlarPlatform4;
-        extern const Position AlarPlatform1To2MidpointA;
-        extern const Position AlarPlatform1To2MidpointB;
-        extern const Position AlarPlatform2To3MidpointA;
-        extern const Position AlarPlatform2To3MidpointB;
+        extern const Position AlarGround0;
         extern const Position AlarGround1;
         extern const Position AlarGround2;
         extern const Position AlarGround3;
-        extern const Position AlarGround4;
         extern const Position AlarSERampBase;
         extern const Position AlarSWRampBase;
         extern const Position AlarRoomSouthCenter;
