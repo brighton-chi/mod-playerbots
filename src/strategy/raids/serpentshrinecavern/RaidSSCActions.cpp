@@ -154,17 +154,10 @@ bool HydrossTheUnstablePositionFrostTankAction::Execute(Event event)
     if (hydross->HasAura(SPELL_CORRUPTION))
     {
         const Position& position = HydrossFrostTankPosition;
-        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 3.0f)
+        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
         {
-            float dX = position.GetPositionX() - bot->GetPositionX();
-            float dY = position.GetPositionY() - bot->GetPositionY();
-            float dist = sqrt(dX * dX + dY * dY);
-            float moveDist = std::min(7.0f, dist);
-            float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
-            float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
-
-            return MoveTo(SSC_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false, false, true,
-                          MovementPriority::MOVEMENT_COMBAT, true, false);
+            return MoveTo(SSC_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(), 
+                          false, false, false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
         else
         {
@@ -238,17 +231,10 @@ bool HydrossTheUnstablePositionNatureTankAction::Execute(Event event)
     if (!hydross->HasAura(SPELL_CORRUPTION))
     {
         const Position& position = HydrossNatureTankPosition;
-        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 3.0f)
+        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
         {
-            float dX = position.GetPositionX() - bot->GetPositionX();
-            float dY = position.GetPositionY() - bot->GetPositionY();
-            float dist = sqrt(dX * dX + dY * dY);
-            float moveDist = std::min(7.0f, dist);
-            float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
-            float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
-
-            return MoveTo(SSC_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false, false, true,
-                          MovementPriority::MOVEMENT_COMBAT, true, false);
+            return MoveTo(SSC_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(), 
+                          false, false, false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
         else
         {
