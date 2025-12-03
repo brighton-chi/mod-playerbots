@@ -1242,7 +1242,7 @@ bool KaelthasSunstriderMoveAwayFromCapernianAction::Execute(Event event)
         return false;
 
     // Main tank purposely stay in range to bait Conflagration in Phase 1
-    if (botAI->IsMainTank(bot) && IsKaelthasInPhase1(botAI))
+    if (botAI->IsMainTank(bot))
     {
         const float desiredDist = 15.0f;
         const float tolerance = 2.0f;
@@ -1271,7 +1271,7 @@ bool KaelthasSunstriderMoveAwayFromCapernianAction::Execute(Event event)
     if (botAI->IsMelee(bot) && !botAI->IsMainTank(bot))
         safeDistance = 45.0f;
     else if (botAI->IsRangedDps(bot))
-        safeDistance = 30.5f;
+        safeDistance = 25.0f;
     else if (botAI->IsHeal(bot))
         safeDistance = 40.0f;
 
@@ -1284,7 +1284,7 @@ bool KaelthasSunstriderMoveAwayFromCapernianAction::Execute(Event event)
     }
 
     // In Phase 1, melee other than main tank should stay away and do nothing while Capernian is active
-    if (botAI->IsMelee(bot) && !botAI->IsMainTank(bot) && IsKaelthasInPhase1(botAI))
+    if (botAI->IsMelee(bot) && !botAI->IsMainTank(bot))
     {
         bot->SetTarget(ObjectGuid::Empty);
         bot->AttackStop();

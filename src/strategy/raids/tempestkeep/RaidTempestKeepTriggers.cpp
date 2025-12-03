@@ -278,6 +278,9 @@ bool KaelthasSunstriderCapernianEngagedByWarlockTankTrigger::IsActive()
 
 bool KaelthasSunstriderCapernianCastsArcaneBurstTrigger::IsActive()
 {
+    if (!IsKaelthasInPhase1(botAI)) // See how limiting this to phase 1 goes
+        return false;
+
     Player* capernianTank = GetCapernianTank(botAI, bot);
     if (capernianTank && capernianTank == bot)
         return false;
