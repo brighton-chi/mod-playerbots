@@ -50,14 +50,11 @@ bool AttumenTheHuntsmanMarkTargetAction::Execute(Event event)
         MarkTargetWithStar(bot, midnight);
         SetRtiTarget(botAI, "star", midnight);
 
-        if (botAI->IsRangedDps(bot) && bot->GetTarget() != midnight->GetGUID())
+        if (bot->GetTarget() != midnight->GetGUID())
         {
             bot->SetTarget(midnight->GetGUID());
             return Attack(midnight);
         }
-
-        if (botAI->IsMelee(bot) && bot->GetVictim() != midnight)
-            return Attack(midnight);
     }
 
     if (attumenMounted)
@@ -65,14 +62,11 @@ bool AttumenTheHuntsmanMarkTargetAction::Execute(Event event)
         MarkTargetWithStar(bot, attumenMounted);
         SetRtiTarget(botAI, "star", attumenMounted);
 
-        if (botAI->IsRangedDps(bot) && bot->GetTarget() != attumenMounted->GetGUID())
+        if (bot->GetTarget() != attumenMounted->GetGUID())
         {
             bot->SetTarget(attumenMounted->GetGUID());
             return Attack(attumenMounted);
         }
-
-        if (botAI->IsMelee(bot) && bot->GetVictim() != attumenMounted)
-            return Attack(attumenMounted);
     }
 
     return false;
@@ -82,8 +76,11 @@ bool AttumenTheHuntsmanMarkTargetAction::Execute(Event event)
 bool AttumenTheHuntsmanSplitBossesAction::Execute(Event event)
 {
     Unit* midnight = AI_VALUE2(Unit*, "find target", "midnight");
+    if (!midnight)
+        return false;
+
     Unit* attumen = GetFirstAliveUnitByEntry(botAI, NPC_ATTUMEN_THE_HUNTSMAN);
-    if (!midnight || !attumen)
+    if (!attumen)
         return false;
 
     MarkTargetWithSquare(bot, attumen);
@@ -130,17 +127,22 @@ bool AttumenTheHuntsmanStackBehindAction::Execute(Event event)
 bool AttumenTheHuntsmanManageDpsTimerAction::Execute(Event event)
 {
     Unit* midnight = AI_VALUE2(Unit*, "find target", "midnight");
-    Unit* attumenMounted = GetFirstAliveUnitByEntry(botAI, NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED);
-    if (!midnight && !attumenMounted)
+    if (!midnight)
         return false;
-
-    const time_t now = std::time(nullptr);
 
     if (midnight && midnight->GetHealth() == midnight->GetMaxHealth())
         attumenDpsWaitTimer.erase(KARAZHAN_MAP_ID);
 
+    // Midnight is still present as a separate (invisible) unit after Attumen mounts
+    // So this block can be reached
+    Unit* attumenMounted = GetFirstAliveUnitByEntry(botAI, NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED);
+    if (!attumenMounted)
+        return false;
+
+    const time_t now = std::time(nullptr);
+
     if (attumenMounted)
-        attumenDpsWaitTimer.emplace(KARAZHAN_MAP_ID, now);
+        attumenDpsWaitTimer.try_emplace(KARAZHAN_MAP_ID, now);
 
     return false;
 }
@@ -338,8 +340,11 @@ bool BigBadWolfRunAwayFromBossAction::Execute(Event event)
 bool RomuloAndJulianneMarkTargetAction::Execute(Event event)
 {
     Unit* romulo = AI_VALUE2(Unit*, "find target", "romulo");
+    if (!romulo)
+        return false;
+
     Unit* julianne = AI_VALUE2(Unit*, "find target", "julianne");
-    if (!romulo || !julianne)
+    if (!julianne)
         return false;
 
     Unit* target = nullptr;
@@ -392,14 +397,14 @@ bool WizardOfOzScorchStrawmanAction::Execute(Event event)
 // Prioritize destroying Astral Flares
 bool TheCuratorMarkAstralFlareAction::Execute(Event event)
 {
-    Unit* target = AI_VALUE2(Unit*, "find target", "astral flare");
-    if (!target)
+    Unit* flare = AI_VALUE2(Unit*, "find target", "astral flare");
+    if (!flare)
         return false;
 
     if (IsMapIDTimerManager(botAI, bot))
-        MarkTargetWithSkull(bot, target);
+        MarkTargetWithSkull(bot, flare);
 
-    SetRtiTarget(botAI, "skull", target);
+    SetRtiTarget(botAI, "skull", flare);
 
     return false;
 }
@@ -593,8 +598,11 @@ bool ShadeOfAranRangedMaintainDistanceAction::Execute(Event event)
 bool NetherspiteBlockRedBeamAction::Execute(Event event)
 {
     Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
+    if (!netherspite)
+        return false;
+
     Unit* redPortal = bot->FindNearestCreature(NPC_RED_PORTAL, 150.0f);
-    if (!netherspite || !redPortal)
+    if (!redPortal)
         return false;
 
     const ObjectGuid botGuid = bot->GetGUID();
@@ -683,8 +691,11 @@ Position NetherspiteBlockRedBeamAction::GetPositionOnBeam(Unit* boss, Unit* port
 bool NetherspiteBlockBlueBeamAction::Execute(Event event)
 {
     Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
+    if (!netherspite)
+        return false;
+
     Unit* bluePortal = bot->FindNearestCreature(NPC_BLUE_PORTAL, 150.0f);
-    if (!netherspite || !bluePortal)
+    if (!blurPortal)
         return false;
 
     const ObjectGuid botGuid = bot->GetGUID();
@@ -771,8 +782,11 @@ bool NetherspiteBlockBlueBeamAction::Execute(Event event)
 bool NetherspiteBlockGreenBeamAction::Execute(Event event)
 {
     Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
+    if (!netherspite)
+        return false;
+
     Unit* greenPortal = bot->FindNearestCreature(NPC_GREEN_PORTAL, 150.0f);
-    if (!netherspite || !greenPortal)
+    if (!greenPortal)
         return false;
 
     const ObjectGuid botGuid = bot->GetGUID();
@@ -1028,12 +1042,12 @@ bool NetherspiteManageTimersAndTrackersAction::Execute(Event event)
     else if (!netherspite->HasAura(SPELL_NETHERSPITE_BANISHED))
     {
         if (IsMapIDTimerManager(botAI, bot))
-            netherspiteDpsWaitTimer.emplace(KARAZHAN_MAP_ID, now);
+            netherspiteDpsWaitTimer.try_emplace(KARAZHAN_MAP_ID, now);
 
         if (botAI->IsTank(bot) && bot->HasAura(SPELL_RED_BEAM_DEBUFF))
         {
-            redBeamMoveTimer.emplace(botGuid, now);
-            lastBeamMoveSideways.emplace(botGuid, false);
+            redBeamMoveTimer.try_emplace(botGuid, now);
+            lastBeamMoveSideways.try_emplace(botGuid, false);
         }
     }
 
@@ -1045,7 +1059,7 @@ bool NetherspiteManageTimersAndTrackersAction::Execute(Event event)
 bool PrinceMalchezaarEnfeebledAvoidHazardAction::Execute(Event event)
 {
     Unit* malchezaar = AI_VALUE2(Unit*, "find target", "prince malchezaar");
-    if (!malchezaar || !bot->HasAura(SPELL_ENFEEBLE))
+    if (!malchezaar)
         return false;
 
     std::vector<Unit*> infernals = GetSpawnedInfernals(botAI);
@@ -1122,7 +1136,7 @@ bool PrinceMalchezaarEnfeebledAvoidHazardAction::Execute(Event event)
 bool PrinceMalchezaarNonTankAvoidInfernalAction::Execute(Event event)
 {
     Unit* malchezaar = AI_VALUE2(Unit*, "find target", "prince malchezaar");
-    if (!malchezaar || bot->HasAura(SPELL_ENFEEBLE))
+    if (!malchezaar)
         return false;
 
     std::vector<Unit*> infernals = GetSpawnedInfernals(botAI);
@@ -1369,8 +1383,11 @@ bool NightbaneCastFearWardOnMainTankAction::Execute(Event event)
 bool NightbaneControlPetAggressionAction::Execute(Event event)
 {
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
+    if (!nightbane)
+        return false;
+
     Pet* pet = bot->GetPet();
-    if (!nightbane || !pet)
+    if (!pet)
         return false;
 
     if (nightbane->GetPositionZ() <= 95.0f && pet->GetReactState() == REACT_PASSIVE)
@@ -1464,7 +1481,7 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event event)
         if (IsMapIDTimerManager(botAI, bot))
         {
             nightbaneFlightPhaseStartTimer.erase(KARAZHAN_MAP_ID);
-            nightbaneDpsWaitTimer.emplace(KARAZHAN_MAP_ID, now);
+            nightbaneDpsWaitTimer.try_emplace(KARAZHAN_MAP_ID, now);
         }
     }
     // Erase DPS wait timer and tank and ranged position tracking and start flight phase timer
@@ -1480,7 +1497,7 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event event)
         if (IsMapIDTimerManager(botAI, bot))
         {
             nightbaneDpsWaitTimer.erase(KARAZHAN_MAP_ID);
-            nightbaneFlightPhaseStartTimer.emplace(KARAZHAN_MAP_ID, now);
+            nightbaneFlightPhaseStartTimer.try_emplace(KARAZHAN_MAP_ID, now);
         }
     }
 
