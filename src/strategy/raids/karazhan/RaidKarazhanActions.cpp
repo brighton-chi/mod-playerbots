@@ -1277,16 +1277,19 @@ bool NightbaneGroundPhasePositionBossAction::Execute(Event event)
         const float maxDistance = 0.5f;
         float distanceToTarget = bot->GetExactDist2d(targetPos);
 
-        if (distanceToTarget > maxDistance)
+        if ((distanceToTarget > maxDistance) && bot->IsWithinMeleeRange(nightbane))
             return MoveTo(KARAZHAN_MAP_ID, targetPos.GetPositionX(), targetPos.GetPositionY(), targetPos.GetPositionZ(),
                           false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, true);
 
         if (step == 0 && distanceToTarget <= maxDistance)
             nightbaneTankStep[botGuid] = 1;
 
-        float orientation = atan2(nightbane->GetPositionY() - bot->GetPositionY(),
-                                  nightbane->GetPositionX() - bot->GetPositionX());
-        bot->SetFacingTo(orientation);
+        if (step == 1 && distanceToTarget <= maxDistance)
+        {
+            float orientation = atan2(nightbane->GetPositionY() - bot->GetPositionY(),
+                                      nightbane->GetPositionX() - bot->GetPositionX());
+            bot->SetFacingTo(orientation);
+        }
     }
 
     return false;
