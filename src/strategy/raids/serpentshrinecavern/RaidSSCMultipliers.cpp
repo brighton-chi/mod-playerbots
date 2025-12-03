@@ -315,7 +315,10 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValue(Action* action)
     Player* demonFormTank = GetLeotherasDemonFormTank(botAI, bot);
     if (leotherasPhase2Demon)
     {
-        if (demonFormTank == bot)
+        if (demonFormTank && demonFormTank == bot)
+            return 1.0f;
+
+        if (!demonFormTank && botAI->IsTank(bot))
             return 1.0f;
 
         auto it = leotherasDemonFormDpsWaitTimer.find(SSC_MAP_ID);
@@ -330,7 +333,7 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValue(Action* action)
     const uint8 dpsWaitSecondsPhase3 = 8;
     if (leotherasPhase3Demon)
     {
-        if (demonFormTank == bot || botAI->IsTank(bot))
+        if ((demonFormTank && demonFormTank == bot) || botAI->IsTank(bot))
             return 1.0f;
 
         auto it = leotherasFinalPhaseDpsWaitTimer.find(SSC_MAP_ID);
