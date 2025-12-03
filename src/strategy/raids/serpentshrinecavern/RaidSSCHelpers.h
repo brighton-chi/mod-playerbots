@@ -108,7 +108,7 @@ namespace SerpentShrineCavernHelpers
         ITEM_HEAVY_NETHERWEAVE_NET   = 24269,
     };
 
-    constexpr uint32 SSC_MAP_ID = 548;
+    const uint32 SSC_MAP_ID = 548;
 
     extern std::unordered_map<uint32, time_t> hydrossFrostDpsWaitTimer;
     extern std::unordered_map<uint32, time_t> hydrossNatureDpsWaitTimer;
