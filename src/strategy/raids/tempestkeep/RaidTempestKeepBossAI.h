@@ -3,8 +3,9 @@
 
 #include "ScriptedCreature.h"
 
-struct boss_kaelthas : public BossAI
+class boss_kaelthas : public BossAI
 {
+public:
     boss_kaelthas(Creature* creature);
 
     void PrepareAdvisors();
