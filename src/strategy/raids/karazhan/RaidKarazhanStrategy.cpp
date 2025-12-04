@@ -13,7 +13,7 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction::array(0, new NextAction("attumen the huntsman mark target", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("attumen the huntsman attumen spawned",
-        NextAction::array(0, new NextAction("attumen the huntsman split bosses", ACTION_RAID + 1), nullptr)
+        NextAction::array(0, new NextAction("attumen the huntsman split bosses", ACTION_RAID + 2), nullptr)
     ));
     triggers.push_back(new TriggerNode("attumen the huntsman attumen is mounted",
         NextAction::array(0, new NextAction("attumen the huntsman stack behind", ACTION_RAID + 1), nullptr)

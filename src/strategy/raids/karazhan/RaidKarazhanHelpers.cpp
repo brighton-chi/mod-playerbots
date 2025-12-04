@@ -172,10 +172,6 @@ namespace KarazhanHelpers
 
     bool IsFlameWreathActive(PlayerbotAI* botAI, Player* bot)
     {
-        Group* group = bot->GetGroup();
-        if (!group)
-            return false;
-
         Unit* aran = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "shade of aran")->Get();
         Spell* currentSpell = aran ? aran->GetCurrentSpell(CURRENT_GENERIC_SPELL) : nullptr;
 
@@ -183,14 +179,17 @@ namespace KarazhanHelpers
             currentSpell->m_spellInfo->Id == SPELL_FLAME_WREATH_CAST)
             return true;
 
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        if (Group* group = bot->GetGroup())
         {
-            Player* member = ref->GetSource();
-            if (!member || !member->IsAlive())
-                continue;
+            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+            {
+                Player* member = ref->GetSource();
+                if (!member || !member->IsAlive())
+                    continue;
 
-            if (member->HasAura(SPELL_FLAME_WREATH_AURA))
-                return true;
+                if (member->HasAura(SPELL_FLAME_WREATH_AURA))
+                    return true;
+            }
         }
 
         return false;

@@ -41,30 +41,38 @@ bool ManaWarpStunCreatureBeforeWarpBreachAction::Execute(Event event)
 // Prioritize Midnight until Attumen is mounted
 bool AttumenTheHuntsmanMarkTargetAction::Execute(Event event)
 {
-    Unit* midnight = AI_VALUE2(Unit*, "find target", "midnight");
     Unit* attumenMounted = GetFirstAliveUnitByEntry(botAI, NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED);
-
-    if (!botAI->IsAssistTankOfIndex(bot, 0) && midnight && !attumenMounted)
-    {
-        MarkTargetWithStar(bot, midnight);
-        SetRtiTarget(botAI, "star", midnight);
-
-        if (bot->GetTarget() != midnight->GetGUID())
-        {
-            bot->SetTarget(midnight->GetGUID());
-            return Attack(midnight);
-        }
-    }
-
     if (attumenMounted)
     {
-        MarkTargetWithStar(bot, attumenMounted);
+        if (IsMapIDTimerManager(botAI, bot))
+            MarkTargetWithStar(bot, attumenMounted);
+
         SetRtiTarget(botAI, "star", attumenMounted);
 
         if (bot->GetTarget() != attumenMounted->GetGUID())
         {
             bot->SetTarget(attumenMounted->GetGUID());
             return Attack(attumenMounted);
+        }
+    }
+    else
+    {
+        Unit* midnight = AI_VALUE2(Unit*, "find target", "midnight");
+        if (midnight)
+        {
+            if (IsMapIDTimerManager(botAI, bot))
+                MarkTargetWithStar(bot, midnight);
+
+            if (!botAI->IsAssistTankOfIndex(bot, 0))
+            {
+                SetRtiTarget(botAI, "star", midnight);
+
+                if (bot->GetTarget() != midnight->GetGUID())
+                {
+                    bot->SetTarget(midnight->GetGUID());
+                    return Attack(midnight);
+                }
+            }
         }
     }
 
@@ -108,14 +116,12 @@ bool AttumenTheHuntsmanStackBehindAction::Execute(Event event)
 
     const float distanceBehind = botAI->IsRanged(bot) ? 6.0f : 2.0f;
     float orientation = attumenMounted->GetOrientation() + M_PI;
-    float x = attumenMounted->GetPositionX();
-    float y = attumenMounted->GetPositionY();
-    float rx = x + std::cos(orientation) * distanceBehind;
-    float ry = y + std::sin(orientation) * distanceBehind;
+    float rearX = attumenMounted->GetPositionX() + std::cos(orientation) * distanceBehind;
+    float rearY = attumenMounted->GetPositionY() + std::sin(orientation) * distanceBehind;
 
-    if (bot->GetExactDist2d(rx, ry) > 1.0f)
+    if (bot->GetExactDist2d(rearX, rearY) > 1.0f)
     {
-        return MoveTo(KARAZHAN_MAP_ID, rx, ry, attumenMounted->GetPositionZ(), false, false, false, false,
+        return MoveTo(KARAZHAN_MAP_ID, rearX, rearY, attumenMounted->GetPositionZ(), false, false, false, false,
                       MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
@@ -192,23 +198,25 @@ bool MoroesMarkTargetAction::Execute(Event event)
 bool MaidenOfVirtueMoveBossToHealerAction::Execute(Event event)
 {
     Unit* maiden = AI_VALUE2(Unit*, "find target", "maiden of virtue");
-    Group* group = bot->GetGroup();
-    if (!maiden || !group)
+    if (!maiden)
         return false;
 
     if (bot->GetVictim() != maiden)
         return Attack(maiden);
 
     Unit* healer = nullptr;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    if (Group* group = bot->GetGroup())
     {
-        Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || !botAI->IsHeal(member) ||
-            !member->HasAura(SPELL_REPENTANCE))
-            continue;
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || !botAI->IsHeal(member) ||
+                !member->HasAura(SPELL_REPENTANCE))
+                continue;
 
-        healer = member;
-        break;
+            healer = member;
+            break;
+        }
     }
 
     if (healer)
@@ -243,28 +251,27 @@ bool MaidenOfVirtueMoveBossToHealerAction::Execute(Event event)
 // Spread out ranged DPS between the pillars
 bool MaidenOfVirtuePositionRangedAction::Execute(Event event)
 {
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
     const uint8 maxIndex = 7;
     uint8 index = 0;
 
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    if (Group* group = bot->GetGroup())
     {
-        Player* member = ref->GetSource();
-        if (!member || !botAI->IsRanged(member))
-            continue;
-
-        if (member == bot)
-            break;
-
-        if (index >= maxIndex)
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
-            index = 0;
-            continue;
+            Player* member = ref->GetSource();
+            if (!member || !botAI->IsRanged(member))
+                continue;
+
+            if (member == bot)
+                break;
+
+            if (index >= maxIndex)
+            {
+                index = 0;
+                continue;
+            }
+            index++;
         }
-        index++;
     }
 
     const Position& position = MAIDEN_OF_VIRTUE_RANGED_POSITION[index];
@@ -538,8 +545,11 @@ bool ShadeOfAranMarkConjuredElementalAction::Execute(Event event)
 bool ShadeOfAranRangedMaintainDistanceAction::Execute(Event event)
 {
     Unit* aran = AI_VALUE2(Unit*, "find target", "shade of aran");
+    if (!aran)
+        return false;
+
     Group* group = bot->GetGroup();
-    if (!aran || !group)
+    if (!group)
         return false;
 
     const float minDist = 11.0f;
@@ -1348,18 +1358,17 @@ bool NightbaneGroundPhaseRotateRangedPositionsAction::Execute(Event event)
 // For countering Bellowing Roars during the ground phase
 bool NightbaneCastFearWardOnMainTankAction::Execute(Event event)
 {
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
     Player* mainTank = nullptr;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    if (Group* group = bot->GetGroup())
     {
-        Player* member = ref->GetSource();
-        if (member && botAI->IsMainTank(member))
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
-            mainTank = member;
-            break;
+            Player* member = ref->GetSource();
+            if (member && botAI->IsMainTank(member))
+            {
+                mainTank = member;
+                break;
+            }
         }
     }
 

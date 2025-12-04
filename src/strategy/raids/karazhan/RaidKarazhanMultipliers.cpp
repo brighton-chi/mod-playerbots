@@ -67,7 +67,7 @@ float AttumenTheHuntsmanWaitForDpsMultiplier::GetValue(Action* action)
     auto it = attumenDpsWaitTimer.find(KARAZHAN_MAP_ID);
     if (it == attumenDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
     {
-        if ((!botAI->IsMainTank(bot)))
+        if (!botAI->IsMainTank(bot))
         {
             if (dynamic_cast<AttackAction*>(action) || (dynamic_cast<CastSpellAction*>(action) &&
                 !dynamic_cast<CastHealingSpellAction*>(action)))
@@ -313,7 +313,7 @@ float NightbaneDisableMovementMultiplier::GetValue(Action* action)
     // Disable CombatFormationMoveAction for all bots except:
     // (1) main tank and (2) only during the ground phase, other melee
     if (botAI->IsRanged(bot) ||
-        (botAI->IsMelee(bot) && !botAI->IsMainTank(bot) && 
+        (botAI->IsMelee(bot) && !botAI->IsMainTank(bot) &&
          nightbane->GetPositionZ() > NIGHTBANE_FLIGHT_Z))
     {
         if (dynamic_cast<CombatFormationMoveAction*>(action))
