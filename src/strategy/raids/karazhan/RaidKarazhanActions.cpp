@@ -272,9 +272,8 @@ bool MaidenOfVirtuePositionRangedAction::Execute(Event event)
     {
         bot->AttackStop();
         bot->InterruptNonMeleeSpells(true);
-        return MoveTo(KARAZHAN_MAP_ID, position.GetPositionX(),
-                      position.GetPositionY(), position.GetPositionZ(), false,
-                      false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+        return MoveTo(KARAZHAN_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
+                      false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
     return false;
@@ -1278,12 +1277,12 @@ bool NightbaneGroundPhasePositionBossAction::Execute(Event event)
             NIGHTBANE_TRANSITION_BOSS_POSITION,
             NIGHTBANE_FINAL_BOSS_POSITION
         };
-        const Position& targetPos = tankPositions[step];
+        const Position& position = tankPositions[step];
         const float maxDistance = 0.5f;
-        float distanceToTarget = bot->GetExactDist2d(targetPos);
+        float distanceToTarget = bot->GetExactDist2d(position);
 
         if ((distanceToTarget > maxDistance) && bot->IsWithinMeleeRange(nightbane))
-            return MoveTo(KARAZHAN_MAP_ID, targetPos.GetPositionX(), targetPos.GetPositionY(), targetPos.GetPositionZ(),
+            return MoveTo(KARAZHAN_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
                           false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, true);
 
         if (step == 0 && distanceToTarget <= maxDistance)
@@ -1314,22 +1313,22 @@ bool NightbaneGroundPhaseRotateRangedPositionsAction::Execute(Event event)
         NIGHTBANE_RANGED_POSITION2,
         NIGHTBANE_RANGED_POSITION3
     };
-    const Position& targetPos = rangedPositions[index];
+    const Position& position = rangedPositions[index];
     const float maxDistance = 2.0f;
-    float distanceToTarget = bot->GetExactDist2d(targetPos);
+    float distanceToTarget = bot->GetExactDist2d(position);
 
     if (distanceToTarget <= maxDistance &&
         bot->HasAura(SPELL_CHARRED_EARTH) && !bot->HasAura(SPELL_BELLOWING_ROAR))
     {
         index = (index + 1) % 3;
         nightbaneRangedStep[botGuid] = index;
-        const Position& newTargetPos = rangedPositions[index];
-        float newDistanceToTarget = bot->GetExactDist2d(newTargetPos);
+        const Position& newPosition = rangedPositions[index];
+        float newDistanceToTarget = bot->GetExactDist2d(newPosition);
         if (newDistanceToTarget > maxDistance)
         {
             bot->AttackStop();
             bot->InterruptNonMeleeSpells(true);
-            return MoveTo(KARAZHAN_MAP_ID, newTargetPos.GetPositionX(), newTargetPos.GetPositionY(), newTargetPos.GetPositionZ(),
+            return MoveTo(KARAZHAN_MAP_ID, newPosition.GetPositionX(), newPosition.GetPositionY(), newPosition.GetPositionZ(),
                           false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
         }
         return false;
@@ -1339,7 +1338,7 @@ bool NightbaneGroundPhaseRotateRangedPositionsAction::Execute(Event event)
     {
         bot->AttackStop();
         bot->InterruptNonMeleeSpells(true);
-        return MoveTo(KARAZHAN_MAP_ID, targetPos.GetPositionX(), targetPos.GetPositionY(), targetPos.GetPositionZ(),
+        return MoveTo(KARAZHAN_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
                       false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
     }
 

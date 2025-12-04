@@ -283,20 +283,21 @@ bool HydrossTheUnstablePrioritizeElementalAddsAction::Execute(Event event)
 bool HydrossTheUnstableFrostPhaseSpreadOutAction::Execute(Event event)
 {
     Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
-    Group* group = bot->GetGroup();
-    if (!hydross || !group)
+    if (!hydross)
         return false;
 
-    const uint32 minInterval = 500;
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    if (Group* group = bot->GetGroup())
     {
-        Player* member = ref->GetSource();
-        if (!member || member == bot || !member->IsAlive())
-            continue;
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || member == bot || !member->IsAlive())
+                continue;
 
-        if (bot->GetExactDist2d(member) < 6.0f)
-            return FleePosition(member->GetPosition(), 8.0f, minInterval);
+            const uint32 minInterval = 500;
+            if (bot->GetExactDist2d(member) < 6.0f)
+                return FleePosition(member->GetPosition(), 8.0f, minInterval);
+        }
     }
 
     return false;
@@ -305,15 +306,17 @@ bool HydrossTheUnstableFrostPhaseSpreadOutAction::Execute(Event event)
 bool HydrossTheUnstableMisdirectBossToTankAction::Execute(Event event)
 {
     Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
-    Group* group = bot->GetGroup();
-    if (!hydross || !group)
+    if (!hydross)
         return false;
 
-    if (TryMisdirectToFrostTank(hydross, group))
-        return true;
+    if (Group* group = bot->GetGroup())
+    {
+        if (TryMisdirectToFrostTank(hydross, group))
+            return true;
 
-    if (TryMisdirectToNatureTank(hydross, group))
-        return true;
+        if (TryMisdirectToNatureTank(hydross, group))
+            return true;
+    }
 
     return false;
 }
@@ -494,21 +497,23 @@ bool TheLurkerBelowPositionMainTankAction::Execute(Event event)
 bool TheLurkerBelowSpreadRangedAction::Execute(Event event)
 {
     Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
-    Group* group = bot->GetGroup();
-    if (!lurker || !group)
+    if (!lurker)
         return false;
 
     if (lurker->GetHealth() == lurker->GetMaxHealth())
         lurkerRangedPositions.clear();
 
     std::vector<Player*> rangedMembers;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    if (Group* group = bot->GetGroup())
     {
-        Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || !botAI->IsRanged(member))
-            continue;
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || !botAI->IsRanged(member))
+                continue;
 
-        rangedMembers.push_back(member);
+            rangedMembers.push_back(member);
+        }
     }
 
     if (rangedMembers.empty())
@@ -563,25 +568,25 @@ bool TheLurkerBelowSpreadRangedAction::Execute(Event event)
 // If >= 3 tanks in the raid, the first 3 will each pick up 1 Guardian
 bool TheLurkerBelowTanksPickUpAddsAction::Execute(Event event)
 {
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
     Player* mainTank = nullptr;
     Player* firstAssistTank = nullptr;
     Player* secondAssistTank = nullptr;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || !member->IsAlive())
-            continue;
 
-        if (!mainTank && botAI->IsMainTank(member))
-            mainTank = member;
-        else if (!firstAssistTank && botAI->IsAssistTankOfIndex(member, 0))
-            firstAssistTank = member;
-        else if (!secondAssistTank && botAI->IsAssistTankOfIndex(member, 1))
-            secondAssistTank = member;
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive())
+                continue;
+
+            if (!mainTank && botAI->IsMainTank(member))
+                mainTank = member;
+            else if (!firstAssistTank && botAI->IsAssistTankOfIndex(member, 0))
+                firstAssistTank = member;
+            else if (!secondAssistTank && botAI->IsAssistTankOfIndex(member, 1))
+                secondAssistTank = member;
+        }
     }
 
     if (!mainTank || !firstAssistTank || !secondAssistTank)
@@ -1305,18 +1310,20 @@ bool FathomLordKarathressManageDpsTimerAction::Execute(Event event)
 bool MorogrimTidewalkerMisdirectBossToMainTankAction::Execute(Event event)
 {
     Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
-    Group* group = bot->GetGroup();
-    if (!tidewalker || !group)
+    if (!tidewalker)
         return false;
 
     Player* mainTank = nullptr;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    if (Group* group = bot->GetGroup())
     {
-        Player* member = ref->GetSource();
-        if (member && member->IsAlive() && botAI->IsMainTank(member))
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
-            mainTank = member;
-            break;
+            Player* member = ref->GetSource();
+            if (member && member->IsAlive() && botAI->IsMainTank(member))
+            {
+                mainTank = member;
+                break;
+            }
         }
     }
 
@@ -1540,18 +1547,17 @@ bool LadyVashjMainTankPositionBossAction::Execute(Event event)
 // Semicircle around center of the room (to allow escape by Static Charged bots)
 bool LadyVashjPhase1PositionRangedAction::Execute(Event event)
 {
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
     std::vector<Player*> spreadMembers;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    if (Group* group = bot->GetGroup())
     {
-        Player* member = ref->GetSource();
-        if (member && member->IsAlive() && GET_PLAYERBOT_AI(member))
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
-            if (botAI->IsRanged(member))
-                spreadMembers.push_back(member);
+            Player* member = ref->GetSource();
+            if (member && member->IsAlive() && GET_PLAYERBOT_AI(member))
+            {
+                if (botAI->IsRanged(member))
+                    spreadMembers.push_back(member);
+            }
         }
     }
 
@@ -1612,19 +1618,17 @@ bool LadyVashjPhase1PositionRangedAction::Execute(Event event)
 // For absorbing Shock Burst
 bool LadyVashjSetGroundingTotemInMainTankGroupAction::Execute(Event event)
 {
-    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
     Player* mainTank = nullptr;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    if (Group* group = bot->GetGroup())
     {
-        Player* member = ref->GetSource();
-        if (member && member->IsAlive() && botAI->IsMainTank(member))
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
-            mainTank = member;
-            break;
+            Player* member = ref->GetSource();
+            if (member && member->IsAlive() && botAI->IsMainTank(member))
+            {
+                mainTank = member;
+                break;
+            }
         }
     }
 
@@ -1649,18 +1653,20 @@ bool LadyVashjSetGroundingTotemInMainTankGroupAction::Execute(Event event)
 bool LadyVashjMisdirectBossToMainTankAction::Execute(Event event)
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    Group* group = bot->GetGroup();
-    if (!vashj || !group)
+    if (!vashj)
         return false;
 
     Player* mainTank = nullptr;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    if (Group* group = bot->GetGroup())
     {
-        Player* member = ref->GetSource();
-        if (member && member->IsAlive() && botAI->IsMainTank(member))
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
-            mainTank = member;
-            break;
+            Player* member = ref->GetSource();
+            if (member && member->IsAlive() && botAI->IsMainTank(member))
+            {
+                mainTank = member;
+                break;
+            }
         }
     }
 
@@ -1732,18 +1738,20 @@ bool LadyVashjMisdirectStriderToFirstAssistTankAction::Execute(Event event)
         return false;
 
     Unit* strider = GetFirstAliveUnitByEntry(botAI, NPC_COILFANG_STRIDER);
-    Group* group = bot->GetGroup();
-    if (!strider || !group)
+    if (!strider)
         return false;
 
     Player* firstAssistTank = nullptr;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    if (Group* group = bot->GetGroup())
     {
-        Player* member = ref->GetSource();
-        if (member && member->IsAlive() && botAI->IsAssistTankOfIndex(member, 0))
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
-            firstAssistTank = member;
-            break;
+            Player* member = ref->GetSource();
+            if (member && member->IsAlive() && botAI->IsAssistTankOfIndex(member, 0))
+            {
+                firstAssistTank = member;
+                break;
+            }
         }
     }
 
@@ -1762,9 +1770,11 @@ bool LadyVashjMisdirectStriderToFirstAssistTankAction::Execute(Event event)
 bool LadyVashjTankAttackAndMoveAwayStriderAction::Execute(Event event)
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (!vashj)
+        return false;
+
     Unit* strider = GetFirstAliveUnitByEntry(botAI, NPC_COILFANG_STRIDER);
-    Group* group = bot->GetGroup();
-    if (!vashj || !strider || !group)
+    if (!strider)
         return false;
 
     // Raid cheat automatically applies Fear Ward to tanks to make Strider tankable

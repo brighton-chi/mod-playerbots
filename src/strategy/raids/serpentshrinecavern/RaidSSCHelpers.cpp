@@ -243,20 +243,19 @@ namespace SerpentShrineCavernHelpers
 
     Player* GetLeotherasDemonFormTank(PlayerbotAI* botAI, Player* bot)
     {
-        Group* group = bot->GetGroup();
-        if (!group)
-            return nullptr;
-
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        if (Group* group = bot->GetGroup())
         {
-            Player* member = ref->GetSource();
-            if (!member || !member->IsAlive())
-                continue;
+            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+            {
+                Player* member = ref->GetSource();
+                if (!member || !member->IsAlive())
+                    continue;
 
-            PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
-            if (member->getClass() == CLASS_WARLOCK &&
-                memberAI && memberAI->HasStrategy("tank", BotState::BOT_STATE_COMBAT))
-                return member;
+                PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
+                if (member->getClass() == CLASS_WARLOCK &&
+                    memberAI && memberAI->HasStrategy("tank", BotState::BOT_STATE_COMBAT))
+                    return member;
+            }
         }
 
         return nullptr;

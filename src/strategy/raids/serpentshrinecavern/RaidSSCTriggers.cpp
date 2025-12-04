@@ -343,21 +343,20 @@ bool FathomLordKarathressCaribdisTankNeedsDedicatedHealerTrigger::IsActive()
     if (!caribdis || !caribdis->IsAlive())
         return false;
 
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
     Player* firstAssistTank = nullptr;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    if (Group* group = bot->GetGroup())
     {
-        Player* member = ref->GetSource();
-        if (!member || !member->IsAlive())
-            continue;
-
-        if (botAI->IsAssistTankOfIndex(member, 0))
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
-            firstAssistTank = member;
-            break;
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive())
+                continue;
+
+            if (botAI->IsAssistTankOfIndex(member, 0))
+            {
+                firstAssistTank = member;
+                break;
+            }
         }
     }
 
