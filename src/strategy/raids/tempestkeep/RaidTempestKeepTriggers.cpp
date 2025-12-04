@@ -309,7 +309,17 @@ bool KaelthasSunstriderPullingTankableAdvisorsTrigger::IsActive()
         return false;
 
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
-    return kaelthas && (IsKaelthasInPhase1(botAI) || IsKaelthasInPhase3(botAI));
+    if (!kaelthas)
+        return false;
+
+    boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI()))
+    if (kaelAI)
+    {
+        uint32 currentPhase = kaelAI->GetPhase();
+        return currentPhase == PHASE_SINGLE_ADVISOR || currentPhase == PHASE_ALL_ADVISORS;
+    }
+    
+    return false;
 }
 
 bool KaelthasSunstriderWaitingForTanksToGetAggroOnAdvisorsTrigger::IsActive()
