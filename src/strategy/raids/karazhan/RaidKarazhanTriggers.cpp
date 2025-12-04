@@ -13,6 +13,9 @@ bool ManaWarpIsAboutToExplodeTrigger::IsActive()
 
 bool AttumenTheHuntsmanNeedTargetPriorityTrigger::IsActive()
 {
+    if (botAI->IsHeal(bot))
+        return false;
+
     Unit* midnight = AI_VALUE2(Unit*, "find target", "midnight");
     return midnight != nullptr;
 }
@@ -28,7 +31,7 @@ bool AttumenTheHuntsmanAttumenSpawnedTrigger::IsActive()
 
 bool AttumenTheHuntsmanAttumenIsMountedTrigger::IsActive()
 {
-    if (!botAI->IsMainTank(bot))
+    if (botAI->IsMainTank(bot))
         return false;
 
     Unit* attumenMounted = GetFirstAliveUnitByEntry(botAI, NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED);
@@ -224,8 +227,8 @@ bool ShadeOfAranBossUsesCounterspellAndBlizzardTrigger::IsActive()
 
     Unit* aran = AI_VALUE2(Unit*, "find target", "shade of aran");
     return aran && !(aran->HasUnitState(UNIT_STATE_CASTING) &&
-             aran->FindCurrentSpellBySpellId(SPELL_ARCANE_EXPLOSION)) &&
-             !IsFlameWreathActive(botAI, bot);
+           aran->FindCurrentSpellBySpellId(SPELL_ARCANE_EXPLOSION)) &&
+           !IsFlameWreathActive(botAI, bot);
 }
 
 bool NetherspiteRedBeamIsActiveTrigger::IsActive()
@@ -340,18 +343,20 @@ bool NightbaneMainTankIsSusceptibleToFearTrigger::IsActive()
         return false;
 
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
-    Group* group = bot->GetGroup();
-    if (!nightbane || !group)
+    if (!nightbane)
         return false;
 
     Player* mainTank = nullptr;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    if (Group* group = bot->GetGroup())
     {
-        Player* member = ref->GetSource();
-        if (member && botAI->IsMainTank(member))
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
-            mainTank = member;
-            break;
+            Player* member = ref->GetSource();
+            if (member && botAI->IsMainTank(member))
+            {
+                mainTank = member;
+                break;
+            }
         }
     }
 

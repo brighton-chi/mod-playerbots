@@ -67,7 +67,7 @@ float AttumenTheHuntsmanWaitForDpsMultiplier::GetValue(Action* action)
     auto it = attumenDpsWaitTimer.find(KARAZHAN_MAP_ID);
     if (it == attumenDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
     {
-        if ((!botAI->IsMainTank(bot)))
+        if (!botAI->IsMainTank(bot))
         {
             if (dynamic_cast<AttackAction*>(action) || (dynamic_cast<CastSpellAction*>(action) &&
                 !dynamic_cast<CastHealingSpellAction*>(action)))
@@ -87,6 +87,23 @@ float TheCuratorDisableTankAssistMultiplier::GetValue(Action* action)
 
     if (bot->GetVictim() != nullptr && dynamic_cast<TankAssistAction*>(action))
         return 0.0f;
+
+    return 1.0f;
+}
+
+// Save Bloodlust/Heroism for Evocation (100% increased damage)
+float TheCuratorDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
+{
+    Unit* curator = AI_VALUE2(Unit*, "find target", "the curator");
+    if (!curator)
+        return 1.0f;
+
+    if (!curator->HasAura(SPELL_CURATOR_EVOCATION))
+    {
+        if (dynamic_cast<CastBloodlustAction*>(action) ||
+            dynamic_cast<CastHeroismAction*>(action))
+            return 0.0f;
+    }
 
     return 1.0f;
 }
@@ -229,6 +246,23 @@ float PrinceMalchezaarEnfeebleKeepDistanceMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+// Wait until Phase 3 to use Bloodlust/Heroism
+float PrinceMalchezaarDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
+{
+    Unit* malchezaar = AI_VALUE2(Unit*, "find target", "prince malchezaar");
+    if (!malchezaar)
+        return 1.0f;
+
+    if (malchezaar->GetHealthPct() > 30.0f)
+    {
+        if (dynamic_cast<CastBloodlustAction*>(action) ||
+            dynamic_cast<CastHeroismAction*>(action))
+            return 0.0f;
+    }
+
+    return 1.0f;
+}
+
 // Pets tend to run out of bounds and cause skeletons to spawn off the map
 // Pets also tend to pull adds from inside of the tower through the floor
 // This multiplier DOES NOT impact Hunter and Warlock pets
@@ -313,7 +347,7 @@ float NightbaneDisableMovementMultiplier::GetValue(Action* action)
     // Disable CombatFormationMoveAction for all bots except:
     // (1) main tank and (2) only during the ground phase, other melee
     if (botAI->IsRanged(bot) ||
-        (botAI->IsMelee(bot) && !botAI->IsMainTank(bot) && 
+        (botAI->IsMelee(bot) && !botAI->IsMainTank(bot) &&
          nightbane->GetPositionZ() > NIGHTBANE_FLIGHT_Z))
     {
         if (dynamic_cast<CombatFormationMoveAction*>(action))

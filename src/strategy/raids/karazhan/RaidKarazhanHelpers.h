@@ -18,6 +18,9 @@ namespace KarazhanHelpers
         // Opera Event
         SPELL_LITTLE_RED_RIDING_HOOD     = 30756,
 
+        // The Curator
+        SPELL_CURATOR_EVOCATION          = 30254,
+
         // Shade of Aran
         SPELL_FLAME_WREATH_CAST          = 30004,
         SPELL_FLAME_WREATH_AURA          = 29946,
