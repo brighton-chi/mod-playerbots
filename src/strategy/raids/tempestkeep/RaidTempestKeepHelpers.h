@@ -85,32 +85,29 @@ namespace TempestKeepHelpers
         ITEM_NETHER_SPIKES              = 30319,
     };
 
-    namespace TempestKeepPositions
-    {
-        extern const Position AlarRoomCenter;
-        extern const Position AlarRangedCenter;
-        extern const Position AlarPlatform0;
-        extern const Position AlarPlatform1;
-        extern const Position AlarPlatform2;
-        extern const Position AlarPlatform3;
-        extern const Position AlarGround0;
-        extern const Position AlarGround1;
-        extern const Position AlarGround2;
-        extern const Position AlarGround3;
-        extern const Position AlarSERampBase;
-        extern const Position AlarSWRampBase;
-        extern const Position AlarRoomSouthCenter;
+    extern const Position ALAR_ROOM_CENTER;
+    extern const Position ALAR_RANGED_CENTER;
+    extern const Position ALAR_PLATFORM_0;
+    extern const Position ALAR_PLATFORM_1;
+    extern const Position ALAR_PLATFORM_2;
+    extern const Position ALAR_PLATFORM_3;
+    extern const Position ALAR_GROUND_0;
+    extern const Position ALAR_GROUND_1;
+    extern const Position ALAR_GROUND_2;
+    extern const Position ALAR_GROUND_3;
+    extern const Position ALAR_SE_RAMP_BASE;
+    extern const Position ALAR_SW_RAMP_BASE;
+    extern const Position ALAR_ROOM_S_CENTER;
 
-        extern const Position VoidReaverTankPosition;
+    extern const Position VOID_REAVER_TANK_POSITION;
 
-        extern const Position SanguinarTankPosition;
-        // extern const Position CapernianTankPosition;
-        extern const Position TelonicusTankPosition;
-        extern const Position KaelthasWeaponStackPosition;
-        extern const Position KaelthasAxeTankPosition;
-        extern const Position KaelthasBowTankPosition;
-        extern const Position KaelthasTankPosition;
-    }
+    extern const Position SANGUINAR_TANK_POSITION;
+    // extern const Position CAPERNIAN_TANK_POSITION;
+    extern const Position TELONICUS_TANK_POSITION;
+    extern const Position KAELTHAS_WEAPON_STACK_POSITION;
+    extern const Position KAELTHAS_AXE_TANK_POSITION;
+    extern const Position KAELTHAS_BOW_TANK_POSITION;
+    extern const Position KAELTHAS_TANK_POSITION;
 
     const uint32 TEMPESTKEEP_MAP_ID = 550;
     const float ALAR_FLAME_QUILLS_Z = 42.0f;

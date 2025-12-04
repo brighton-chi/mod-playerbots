@@ -262,17 +262,17 @@ public:
     bool IsActive() override;
 };
 
+class KaelthasSunstriderBossEngagedByMainTankTrigger : public Trigger
+{
+public:
+    KaelthasSunstriderBossEngagedByMainTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider boss engaged by main tank") {}
+    bool IsActive() override;
+};
+
 class KaelthasSunstriderFlameStrikeAppearedUnderBotTrigger : public Trigger
 {
 public:
     KaelthasSunstriderFlameStrikeAppearedUnderBotTrigger(PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider flame strike appeared under bot") {}
-    bool IsActive() override;
-};
-
-class KaelthasSunstriderCheatToTestTrigger : public Trigger
-{
-public:
-    KaelthasSunstriderCheatToTestTrigger(PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider cheat to test") {}
     bool IsActive() override;
 };
 
@@ -301,13 +301,6 @@ class KaelthasSunstriderBossIsManipulatingGravityTrigger : public Trigger
 {
 public:
     KaelthasSunstriderBossIsManipulatingGravityTrigger(PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider boss is manipulating gravity") {}
-    bool IsActive() override;
-};
-
-class KaelthasSunstriderBossIsTransitioningPhasesTrigger : public Trigger
-{
-public:
-    KaelthasSunstriderBossIsTransitioningPhasesTrigger(PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider boss is transitioning phases") {}
     bool IsActive() override;
 };
 

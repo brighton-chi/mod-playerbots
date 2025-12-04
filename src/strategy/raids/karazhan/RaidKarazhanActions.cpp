@@ -4,7 +4,6 @@
 #include "PlayerbotTextMgr.h"
 
 using namespace KarazhanHelpers;
-using namespace KarazhanPositions;
 
 // Trash
 
@@ -217,23 +216,23 @@ bool MaidenOfVirtueMoveBossToHealerAction::Execute(Event event)
         float angle = healer->GetOrientation();
         float targetX = healer->GetPositionX() + std::cos(angle) * 6.0f;
         float targetY = healer->GetPositionY() + std::sin(angle) * 6.0f;
-        float targetZ = healer->GetPositionZ();
         {
-            return MoveTo(KARAZHAN_MAP_ID, targetX, targetY, targetZ, false, false, false, false,
+            return MoveTo(KARAZHAN_MAP_ID, targetX, targetY, healer->GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
 
+    const Position& position = MAIDEN_OF_VIRTUE_BOSS_POSITION;
     const float maxDistance = 2.0f;
-    float distanceToBossPosition = maiden->GetExactDist2d(MaidenOfVirtueBossPosition);
-    if (distanceToBossPosition > maxDistance)
+    float distanceToPosition = maiden->GetExactDist2d(position);
+    if (distanceToPosition > maxDistance)
     {
-        float dX = MaidenOfVirtueBossPosition.GetPositionX() - maiden->GetPositionX();
-        float dY = MaidenOfVirtueBossPosition.GetPositionY() - maiden->GetPositionY();
-        float mX = MaidenOfVirtueBossPosition.GetPositionX() + (dX / distanceToBossPosition) * maxDistance;
-        float mY = MaidenOfVirtueBossPosition.GetPositionY() + (dY / distanceToBossPosition) * maxDistance;
+        float dX = position.GetPositionX() - maiden->GetPositionX();
+        float dY = position.GetPositionY() - maiden->GetPositionY();
+        float mX = position.GetPositionX() + (dX / distanceToPosition) * maxDistance;
+        float mY = position.GetPositionY() + (dY / distanceToPosition) * maxDistance;
         {
-            return MoveTo(KARAZHAN_MAP_ID, mX, mY, bot->GetPositionZ(), false, false, false, false,
+            return MoveTo(KARAZHAN_MAP_ID, mX, mY, position.GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
@@ -268,12 +267,13 @@ bool MaidenOfVirtuePositionRangedAction::Execute(Event event)
         index++;
     }
 
-    if (bot->GetExactDist2d(MaidenOfVirtueRangedPosition[index]) > 2.0f)
+    const Position& position = MAIDEN_OF_VIRTUE_RANGED_POSITION[index];
+    if (bot->GetExactDist2d(position) > 2.0f)
     {
         bot->AttackStop();
         bot->InterruptNonMeleeSpells(true);
-        return MoveTo(KARAZHAN_MAP_ID, MaidenOfVirtueRangedPosition[index].GetPositionX(),
-                      MaidenOfVirtueRangedPosition[index].GetPositionY(), bot->GetPositionZ(), false,
+        return MoveTo(KARAZHAN_MAP_ID, position.GetPositionX(),
+                      position.GetPositionY(), position.GetPositionZ(), false,
                       false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
@@ -294,18 +294,20 @@ bool BigBadWolfPositionBossAction::Execute(Event event)
 
     if (wolf->GetVictim() == bot)
     {
-        const float maxDistance = 2.0f;
-        float distanceToBossPosition = wolf->GetExactDist2d(BigBadWolfBossPosition);
+        const Position& position = BIG_BAD_WOLF_BOSS_POSITION;
+        const float maxStep = 2.0f;
+        float dist = wolf->GetExactDist2d(position);
 
-        if (distanceToBossPosition > maxDistance)
+        if (dist > 0.0f && dist > maxStep)
         {
-            float dX = BigBadWolfBossPosition.GetPositionX() - wolf->GetPositionX();
-            float dY = BigBadWolfBossPosition.GetPositionY() - wolf->GetPositionY();
-            float mX = BigBadWolfBossPosition.GetPositionX() + (dX / distanceToBossPosition) * maxDistance;
-            float mY = BigBadWolfBossPosition.GetPositionY() + (dY / distanceToBossPosition) * maxDistance;
+            float dX = position.GetPositionX() - wolf->GetPositionX();
+            float dY = position.GetPositionY() - wolf->GetPositionY();
+            float moveDist = std::min(maxStep, dist);
+            float moveX = wolf->GetPositionX() + (dX / dist) * moveDist;
+            float moveY = wolf->GetPositionY() + (dY / dist) * moveDist;
 
-            return MoveTo(KARAZHAN_MAP_ID, mX, mY, bot->GetPositionZ(), false, false, false, false,
-                          MovementPriority::MOVEMENT_COMBAT, true, false);
+            return MoveTo(KARAZHAN_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false, false, false,
+                            MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
 
@@ -318,19 +320,18 @@ bool BigBadWolfRunAwayFromBossAction::Execute(Event event)
     const ObjectGuid botGuid = bot->GetGUID();
     uint8 index = bigBadWolfRunIndex.count(botGuid) ? bigBadWolfRunIndex[botGuid] : 0;
 
-    Position target = BigBadWolfRunPosition[index];
-
-    while (bot->GetExactDist2d(target.GetPositionX(), target.GetPositionY()) < 1.0f)
+    while (bot->GetExactDist2d(BIG_BAD_WOLF_RUN_POSITION[index].GetPositionX(),
+                               BIG_BAD_WOLF_RUN_POSITION[index].GetPositionY()) < 1.0f)
     {
         index = (index + 1) % 4;
-        target = BigBadWolfRunPosition[index];
     }
 
     bigBadWolfRunIndex[botGuid] = index;
     bot->AttackStop();
     bot->InterruptNonMeleeSpells(true);
 
-    return MoveTo(KARAZHAN_MAP_ID, target.GetPositionX(), target.GetPositionY(), target.GetPositionZ(),
+    const Position& position = BIG_BAD_WOLF_RUN_POSITION[index];
+    return MoveTo(KARAZHAN_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
                   false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
@@ -425,17 +426,18 @@ bool TheCuratorPositionBossAction::Execute(Event event)
 
     if (curator->GetVictim() == bot)
     {
+        const Position& position = THE_CURATOR_BOSS_POSITION;
         const float maxDistance = 3.0f;
-        float distanceToBossPosition = curator->GetExactDist2d(TheCuratorBossPosition);
+        float distanceToBossPosition = curator->GetExactDist2d(position);
 
         if (distanceToBossPosition > maxDistance)
         {
-            float dX = TheCuratorBossPosition.GetPositionX() - curator->GetPositionX();
-            float dY = TheCuratorBossPosition.GetPositionY() - curator->GetPositionY();
-            float mX = TheCuratorBossPosition.GetPositionX() + (dX / distanceToBossPosition) * maxDistance;
-            float mY = TheCuratorBossPosition.GetPositionY() + (dY / distanceToBossPosition) * maxDistance;
+            float dX = position.GetPositionX() - curator->GetPositionX();
+            float dY = position.GetPositionY() - curator->GetPositionY();
+            float mX = position.GetPositionX() + (dX / distanceToBossPosition) * maxDistance;
+            float mY = position.GetPositionY() + (dY / distanceToBossPosition) * maxDistance;
 
-            return MoveTo(KARAZHAN_MAP_ID, mX, mY, bot->GetPositionZ(), false, false, false, false,
+            return MoveTo(KARAZHAN_MAP_ID, mX, mY, position.GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
@@ -636,18 +638,12 @@ bool NetherspiteBlockRedBeamAction::Execute(Event event)
                           false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
         else
         {
-            float bx = netherspite->GetPositionX();
-            float by = netherspite->GetPositionY();
-            float px = redPortal->GetPositionX();
-            float py = redPortal->GetPositionY();
-            float dx = px - bx;
-            float dy = py - by;
-            float length = sqrt(dx * dx + dy * dy);
+            float length = netherspite->GetExactDist2d(redPortal);
             if (length == 0.0f)
                 return false;
 
-            dx /= length;
-            dy /= length;
+            float dx = (redPortal->GetPositionX() - netherspite->GetPositionX()) / length;
+            float dy = (redPortal->GetPositionY() - netherspite->GetPositionY()) / length;
             float perpDx = -dy;
             float perpDy = dx;
             float sideX = beamPos.GetPositionX() + perpDx * 3.0f;
@@ -663,17 +659,17 @@ bool NetherspiteBlockRedBeamAction::Execute(Event event)
     return false;
 }
 
-Position NetherspiteBlockRedBeamAction::GetPositionOnBeam(Unit* boss, Unit* portal, float distanceFromBoss)
+Position NetherspiteBlockRedBeamAction::GetPositionOnBeam(Unit* netherspite, Unit* portal, float distanceFromBoss)
 {
-    float bx = boss->GetPositionX();
-    float by = boss->GetPositionY();
-    float bz = boss->GetPositionZ();
+    float bx = netherspite->GetPositionX();
+    float by = netherspite->GetPositionY();
+    float bz = netherspite->GetPositionZ();
     float px = portal->GetPositionX();
     float py = portal->GetPositionY();
 
     float dx = px - bx;
     float dy = py - by;
-    float length = sqrt(dx * dx + dy * dy);
+    float length = netherspite->GetExactDist2d(px, py);
     if (length == 0.0f)
         return Position(bx, by, bz);
 
@@ -695,7 +691,7 @@ bool NetherspiteBlockBlueBeamAction::Execute(Event event)
         return false;
 
     Unit* bluePortal = bot->FindNearestCreature(NPC_BLUE_PORTAL, 150.0f);
-    if (!blurPortal)
+    if (!bluePortal)
         return false;
 
     const ObjectGuid botGuid = bot->GetGUID();
@@ -727,14 +723,16 @@ bool NetherspiteBlockBlueBeamAction::Execute(Event event)
 
         float idealDistance = botAI->IsRanged(bot) ? 25.0f : 18.0f;
         std::vector<Unit*> voidZones = GetAllVoidZones(botAI, bot);
+
         float bx = netherspite->GetPositionX();
         float by = netherspite->GetPositionY();
         float bz = netherspite->GetPositionZ();
         float px = bluePortal->GetPositionX();
         float py = bluePortal->GetPositionY();
+
         float dx = px - bx;
         float dy = py - by;
-        float length = sqrt(dx * dx + dy * dy);
+        float length = netherspite->GetExactDist2d(bluePortal);
         if (length == 0.0f)
             return false;
 
@@ -817,14 +815,16 @@ bool NetherspiteBlockGreenBeamAction::Execute(Event event)
         _wasBlockingGreenBeam[botGuid] = true;
 
         std::vector<Unit*> voidZones = GetAllVoidZones(botAI, bot);
+
         float bx = netherspite->GetPositionX();
         float by = netherspite->GetPositionY();
         float bz = netherspite->GetPositionZ();
         float px = greenPortal->GetPositionX();
         float py = greenPortal->GetPositionY();
+
         float dx = px - bx;
         float dy = py - by;
-        float length = sqrt(dx * dx + dy * dy);
+        float length = netherspite->GetExactDist2d(greenPortal);
         if (length == 0.0f)
             return false;
 
@@ -886,28 +886,19 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event event)
 
     if (redPortal)
     {
-        float bx = netherspite->GetPositionX(), by = netherspite->GetPositionY();
-        float px = redPortal->GetPositionX(), py = redPortal->GetPositionY();
-        float dx = px - bx, dy = py - by;
-        float length = sqrt(dx * dx + dy * dy);
+        float length = netherspite->GetExactDist2d(redPortal);
         beams.push_back({redPortal, 0.0f, length});
     }
 
     if (bluePortal)
     {
-        float bx = netherspite->GetPositionX(), by = netherspite->GetPositionY();
-        float px = bluePortal->GetPositionX(), py = bluePortal->GetPositionY();
-        float dx = px - bx, dy = py - by;
-        float length = sqrt(dx * dx + dy * dy);
+        float length = netherspite->GetExactDist2d(bluePortal);
         beams.push_back({bluePortal, 0.0f, length});
     }
 
     if (greenPortal)
     {
-        float bx = netherspite->GetPositionX(), by = netherspite->GetPositionY();
-        float px = greenPortal->GetPositionX(), py = greenPortal->GetPositionY();
-        float dx = px - bx, dy = py - by;
-        float length = sqrt(dx * dx + dy * dy);
+        float length = netherspite->GetExactDist2d(greenPortal);
         beams.push_back({greenPortal, 0.0f, length});
     }
 
@@ -974,18 +965,18 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::IsAwayFromBeams(
         float bx = netherspite->GetPositionX(), by = netherspite->GetPositionY();
         float px = beam.portal->GetPositionX(), py = beam.portal->GetPositionY();
         float dx = px - bx, dy = py - by;
-        float length = sqrt(dx * dx + dy * dy);
+        float length = netherspite->GetExactDist2d(beam.portal);
 
         if (length == 0.0f)
             continue;
 
         dx /= length; dy /= length;
         float botdx = x - bx, botdy = y - by;
-        float t = (botdx * dx + botdy * dy);
-        float beamX = bx + dx * t, beamY = by + dy * t;
+        float distanceAlongBeam = (botdx * dx + botdy * dy);
+        float beamX = bx + dx * distanceAlongBeam, beamY = by + dy * distanceAlongBeam;
         float distToBeam = sqrt((x - beamX) * (x - beamX) + (y - beamY) * (y - beamY));
 
-        if (distToBeam < 5.0f && t > beam.minDist && t < beam.maxDist)
+        if (distToBeam < 5.0f && distanceAlongBeam > beam.minDist && distanceAlongBeam < beam.maxDist)
             return false;
     }
 
@@ -1284,8 +1275,8 @@ bool NightbaneGroundPhasePositionBossAction::Execute(Event event)
     {
         const Position tankPositions[2] =
         {
-            NightbaneTransitionBossPosition,
-            NightbaneFinalBossPosition
+            NIGHTBANE_TRANSITION_BOSS_POSITION,
+            NIGHTBANE_FINAL_BOSS_POSITION
         };
         const Position& targetPos = tankPositions[step];
         const float maxDistance = 0.5f;
@@ -1319,9 +1310,9 @@ bool NightbaneGroundPhaseRotateRangedPositionsAction::Execute(Event event)
 
     const Position rangedPositions[3] =
     {
-        NightbaneRangedPosition1,
-        NightbaneRangedPosition2,
-        NightbaneRangedPosition3
+        NIGHTBANE_RANGED_POSITION1,
+        NIGHTBANE_RANGED_POSITION2,
+        NIGHTBANE_RANGED_POSITION3
     };
     const Position& targetPos = rangedPositions[index];
     const float maxDistance = 2.0f;
@@ -1430,15 +1421,15 @@ bool NightbaneFlightPhaseMovementAction::Execute(Event event)
     float destX, destY, destZ;
     if (nightbaneRainOfBonesHit[botGuid])
     {
-        destX = NightbaneRainOfBonesPosition.GetPositionX();
-        destY = NightbaneRainOfBonesPosition.GetPositionY();
-        destZ = NightbaneRainOfBonesPosition.GetPositionZ();
+        destX = NIGHTBANE_RAIN_OF_BONES_POSITION.GetPositionX();
+        destY = NIGHTBANE_RAIN_OF_BONES_POSITION.GetPositionY();
+        destZ = NIGHTBANE_RAIN_OF_BONES_POSITION.GetPositionZ();
     }
     else
     {
-        destX = NightbaneFlightStackPosition.GetPositionX();
-        destY = NightbaneFlightStackPosition.GetPositionY();
-        destZ = NightbaneFlightStackPosition.GetPositionZ();
+        destX = NIGHTBANE_FLIGHT_STACK_POSITION.GetPositionX();
+        destY = NIGHTBANE_FLIGHT_STACK_POSITION.GetPositionY();
+        destZ = NIGHTBANE_FLIGHT_STACK_POSITION.GetPositionZ();
     }
 
     if (bot->GetExactDist2d(destX, destY) > 2.0f)

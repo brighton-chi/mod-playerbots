@@ -8,32 +8,28 @@
 
 namespace TempestKeepHelpers
 {
-    namespace TempestKeepPositions
-    {
-        const Position AlarRoomCenter = { 330.611f, -2.540f, -2.389f };
-        const Position AlarRangedCenter = { 346.758f, 3.794f, -2.389f };
-        const Position AlarPlatform0 = { 335.638f, 59.4879f, 17.9319f }; // West Platform
-        const Position AlarPlatform1 = { 388.751f, 31.7312f, 20.2636f }; // Northwest Platform
-        const Position AlarPlatform2 = { 388.791f, -33.1059f, 20.2636f }; // Northeast Platform
-        const Position AlarPlatform3 = { 332.723f, -61.159f, 17.9791f }; // East Platform
-        const Position AlarGround0 = { 336.439f, 48.181f, -2.389f }; // Landing point for jumping from West Platform
-        const Position AlarGround1 = { 379.122f, 25.146f, -2.385f }; // Landing point for jumping from Northwest Platform
-        const Position AlarGround2 = { 378.583f, -27.481f, -2.385f }; // Landing point for jumping from Northeast Platform
-        const Position AlarGround3 = { 331.631f, -49.716f, -2.389f }; // Landing point for jumping from East Platform
-        const Position AlarSERampBase = { 281.064f, -36.590f, -2.389f };
-        const Position AlarSWRampBase = { 281.064f, 36.590f, -2.389f };
-        const Position AlarRoomSouthCenter = { 281.064f, 0.0f, -2.389f };
+    const Position ALAR_ROOM_CENTER = { 330.611f, -2.540f, -2.389f };
+    const Position ALAR_RANGED_CENTER = { 346.758f, 3.794f, -2.389f };
+    const Position ALAR_PLATFORM_0 = { 335.638f, 59.4879f, 17.9319f }; // West Platform
+    const Position ALAR_PLATFORM_1 = { 388.751f, 31.7312f, 20.2636f }; // Northwest Platform
+    const Position ALAR_PLATFORM_2 = { 388.791f, -33.1059f, 20.2636f }; // Northeast Platform
+    const Position ALAR_PLATFORM_3 = { 332.723f, -61.159f, 17.9791f }; // East Platform
+    const Position ALAR_GROUND_0 = { 336.439f, 48.181f, -2.389f }; // Landing point for jumping from West Platform
+    const Position ALAR_GROUND_1 = { 379.122f, 25.146f, -2.385f }; // Landing point for jumping from Northwest Platform
+    const Position ALAR_GROUND_2 = { 378.583f, -27.481f, -2.385f }; // Landing point for jumping from Northeast Platform
+    const Position ALAR_GROUND_3 = { 331.631f, -49.716f, -2.389f }; // Landing point for jumping from East Platform
+    const Position ALAR_SE_RAMP_BASE = { 281.064f, -36.590f, -2.389f };
+    const Position ALAR_SW_RAMP_BASE = { 281.064f, 36.590f, -2.389f };
+    const Position ALAR_ROOM_S_CENTER = { 281.064f, 0.0f, -2.389f };
 
-        const Position VoidReaverTankPosition = { 423.845f, 371.733f, 14.897f }; // middle of room
-
-        const Position SanguinarTankPosition = { 775.478f, 39.888f, 46.780f };
-        // const Position CapernianTankPosition = { 743.772f, -13.762f, 46.780f };
-        const Position TelonicusTankPosition = { 773.717f, 44.091f, 46.780f };
-        const Position KaelthasWeaponStackPosition = { 775.296f, -0.822f, 48.729f };
-        const Position KaelthasAxeTankPosition = { 775.621f, 20.717f, 48.729f };
-        const Position KaelthasBowTankPosition = { 777.713f, -28.857f, 48.729f };
-        const Position KaelthasTankPosition = { 799.390f, -0.837f, 48.729f };
-    }
+    const Position VOID_REAVER_TANK_POSITION = { 423.845f, 371.733f, 14.897f }; // middle of room
+    const Position SANGUINAR_TANK_POSITION = { 775.478f, 39.888f, 46.780f };
+    // const Position CAPERNIAN_TANK_POSITION = { 743.772f, -13.762f, 46.780f };
+    const Position TELONICUS_TANK_POSITION = { 773.717f, 44.091f, 46.780f };
+    const Position KAELTHAS_WEAPON_STACK_POSITION = { 775.296f, -0.822f, 48.729f };
+    const Position KAELTHAS_AXE_TANK_POSITION = { 775.621f, 20.717f, 48.729f };
+    const Position KAELTHAS_BOW_TANK_POSITION = { 777.713f, -28.857f, 48.729f };
+    const Position KAELTHAS_TANK_POSITION = { 799.390f, -0.837f, 48.729f }; // need method for this
 
     void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId)
     {

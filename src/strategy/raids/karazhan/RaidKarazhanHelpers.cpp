@@ -20,40 +20,37 @@ namespace KarazhanHelpers
     std::unordered_map<uint32, time_t> nightbaneFlightPhaseStartTimer;
     std::unordered_map<ObjectGuid, bool> nightbaneRainOfBonesHit;
 
-    namespace KarazhanPositions
+    const Position MAIDEN_OF_VIRTUE_BOSS_POSITION = { -10945.881f, -2103.782f, 92.712f };
+    const Position MAIDEN_OF_VIRTUE_RANGED_POSITION[8] =
     {
-        const Position MaidenOfVirtueBossPosition = { -10945.881f, -2103.782f, 92.712f };
-        const Position MaidenOfVirtueRangedPosition[8] =
-        {
-            { -10931.178f, -2116.580f, 92.179f },
-            { -10925.828f, -2102.425f, 92.180f },
-            { -10933.089f, -2088.502f, 92.180f },
-            { -10947.590f, -2082.815f, 92.180f },
-            { -10960.912f, -2090.437f, 92.179f },
-            { -10966.017f, -2105.288f, 92.175f },
-            { -10959.242f, -2119.617f, 92.180f },
-            { -10944.495f, -2123.857f, 92.180f },
-        };
+        { -10931.178f, -2116.580f, 92.179f },
+        { -10925.828f, -2102.425f, 92.180f },
+        { -10933.089f, -2088.502f, 92.180f },
+        { -10947.590f, -2082.815f, 92.180f },
+        { -10960.912f, -2090.437f, 92.179f },
+        { -10966.017f, -2105.288f, 92.175f },
+        { -10959.242f, -2119.617f, 92.180f },
+        { -10944.495f, -2123.857f, 92.180f },
+    };
 
-        const Position BigBadWolfBossPosition = { -10913.391f, -1773.508f, 90.477f };
-        const Position BigBadWolfRunPosition[4] =
-        {
-            { -10875.456f, -1779.036f, 90.477f },
-            { -10872.281f, -1751.638f, 90.477f },
-            { -10910.492f, -1747.401f, 90.477f },
-            { -10913.391f, -1773.508f, 90.477f },
-        };
+    const Position BIG_BAD_WOLF_BOSS_POSITION = { -10913.391f, -1773.508f, 90.477f };
+    const Position BIG_BAD_WOLF_RUN_POSITION[4] =
+    {
+        { -10875.456f, -1779.036f, 90.477f },
+        { -10872.281f, -1751.638f, 90.477f },
+        { -10910.492f, -1747.401f, 90.477f },
+        { -10913.391f, -1773.508f, 90.477f },
+    };
 
-        const Position TheCuratorBossPosition = { -11139.463f, -1884.645f, 165.765f };
+    const Position THE_CURATOR_BOSS_POSITION = { -11139.463f, -1884.645f, 165.765f };
 
-        const Position NightbaneTransitionBossPosition = { -11160.646f, -1932.773f, 91.473f }; // near some ribs
-        const Position NightbaneFinalBossPosition = { -11173.530f, -1940.707f, 91.473f };
-        const Position NightbaneRangedPosition1 = { -11145.949f, -1970.927f, 91.473f };
-        const Position NightbaneRangedPosition2 = { -11143.594f, -1954.981f, 91.473f };
-        const Position NightbaneRangedPosition3 = { -11159.778f, -1961.031f, 91.473f };
-        const Position NightbaneFlightStackPosition = { -11159.555f, -1893.526f, 91.473f }; // Broken Barrel
-        const Position NightbaneRainOfBonesPosition = { -11165.233f, -1911.123f, 91.473f };
-    }
+    const Position NIGHTBANE_TRANSITION_BOSS_POSITION = { -11160.646f, -1932.773f, 91.473f }; // near some ribs
+    const Position NIGHTBANE_FINAL_BOSS_POSITION = { -11173.530f, -1940.707f, 91.473f };
+    const Position NIGHTBANE_RANGED_POSITION1 = { -11145.949f, -1970.927f, 91.473f };
+    const Position NIGHTBANE_RANGED_POSITION2 = { -11143.594f, -1954.981f, 91.473f };
+    const Position NIGHTBANE_RANGED_POSITION3 = { -11159.778f, -1961.031f, 91.473f };
+    const Position NIGHTBANE_FLIGHT_STACK_POSITION = { -11159.555f, -1893.526f, 91.473f }; // Broken Barrel
+    const Position NIGHTBANE_RAIN_OF_BONES_POSITION = { -11165.233f, -1911.123f, 91.473f };
 
     void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId)
     {
@@ -389,8 +386,7 @@ namespace KarazhanHelpers
     {
         for (Unit* hazard : hazards)
         {
-            float dist = std::sqrt(std::pow(x - hazard->GetPositionX(), 2) +
-                                   std::pow(y - hazard->GetPositionY(), 2));
+            float dist = hazard->GetExactDist2d(x, y);
             if (dist < hazardRadius)
                 return false;
         }
@@ -422,9 +418,7 @@ namespace KarazhanHelpers
         float ty = target.GetPositionY();
         float tz = target.GetPositionZ();
 
-        const float dxTotal = tx - sx;
-        const float dyTotal = ty - sy;
-        const float totalDist = std::sqrt(dxTotal*dxTotal + dyTotal*dyTotal);
+        const float totalDist = start.GetExactDist2d(target.GetPositionX(), target.GetPositionY());
         if (totalDist == 0.0f)
             return true;
 
@@ -480,9 +474,7 @@ namespace KarazhanHelpers
                         continue;
                 }
 
-                const float mdx = destX - originX;
-                const float mdy = destY - originY;
-                float moveDist = std::sqrt(mdx*mdx + mdy*mdy);
+                const float moveDist = Position(originX, originY, originZ).GetExactDist2d(destX, destY);
                 if (moveDist < bestMoveDist)
                 {
                     bestMoveDist = moveDist;

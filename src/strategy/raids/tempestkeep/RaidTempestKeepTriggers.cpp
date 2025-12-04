@@ -107,9 +107,9 @@ bool AlarBossIsPreparingToDiveBombTrigger::IsActive()
 
 bool AlarNeedToManageTimersAndTrackersTrigger::IsActive()
 {
-    if (!IsMapIDTimerManager(botAI, bot))
+    if (!IsAlarMapIDTimerManager(botAI, bot))
         return false;
-    
+
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
     return alar != nullptr;
 }
@@ -417,6 +417,15 @@ bool KaelthasSunstriderDeterminingAdvisorKillOrderTrigger::IsActive()
 
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     return kaelthas && (IsKaelthasInPhase1(botAI) || IsKaelthasInPhase3(botAI));
+}
+
+bool KaelthasSunstriderBossEngagedByMainTankTrigger::IsActive()
+{
+    if (!botAI->IsMainTank(bot))
+        return false;
+
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    return kaelthas && (IsKaelthasInPhase4(botAI) || IsKaelthasInPhase5(botAI));
 }
 
 bool KaelthasSunstriderFlameStrikeAppearedUnderBotTrigger::IsActive()

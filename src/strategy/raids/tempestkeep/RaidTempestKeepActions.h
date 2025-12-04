@@ -7,7 +7,6 @@
 #include "MovementActions.h"
 
 using namespace TempestKeepHelpers;
-using namespace TempestKeepPositions;
 
 class CrimsonHandCenturionCastPolymorphAction : public Action
 {
@@ -287,6 +286,13 @@ class KaelthasSunstriderAssignAdvisorDpsPriorityAction : public AttackAction
 {
 public:
     KaelthasSunstriderAssignAdvisorDpsPriorityAction(PlayerbotAI* botAI, std::string const name = "kaelthas sunstrider assign advisor dps priority") : AttackAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class KaelthasSunstriderMainTankPositionBossAction : public AttackAction
+{
+public:
+    KaelthasSunstriderMainTankPositionBossAction(PlayerbotAI* botAI, std::string const name = "kaelthas sunstrider main tank position boss") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 

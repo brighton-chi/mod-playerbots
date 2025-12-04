@@ -50,6 +50,7 @@ public:
         creators["kaelthas sunstrider use legendary weapons"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_use_legendary_weapons;
         creators["kaelthas sunstrider assign advisor dps priority"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_assign_advisor_dps_priority;
         creators["kaelthas sunstrider reequip gear"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_reequip_gear;
+        creators["kaelthas sunstrider main tank position boss"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_main_tank_position_boss;
         creators["kaelthas sunstrider avoid flame strike"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_avoid_flame_strike;
         creators["kaelthas sunstrider round up phoenixes and focus down eggs"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_round_up_phoenixes_and_focus_down_eggs;
         creators["kaelthas sunstrider break mind control with infinity blade"] = &RaidTempestKeepActionContext::kaelthas_sunstrider_break_mind_control_with_infinity_blade;
@@ -99,6 +100,7 @@ private:
     static Action* kaelthas_sunstrider_use_legendary_weapons(PlayerbotAI* botAI) { return new KaelthasSunstriderUseLegendaryWeaponsAction(botAI); }
     static Action* kaelthas_sunstrider_assign_advisor_dps_priority(PlayerbotAI* botAI) { return new KaelthasSunstriderAssignAdvisorDpsPriorityAction(botAI); }
     static Action* kaelthas_sunstrider_reequip_gear(PlayerbotAI* botAI) { return new KaelthasSunstriderReequipGearAction(botAI); }
+    static Action* kaelthas_sunstrider_main_tank_position_boss(PlayerbotAI* botAI) { return new KaelthasSunstriderMainTankPositionBossAction(botAI); }
     static Action* kaelthas_sunstrider_avoid_flame_strike(PlayerbotAI* botAI) { return new KaelthasSunstriderAvoidFlameStrikeAction(botAI); }
     static Action* kaelthas_sunstrider_round_up_phoenixes_and_focus_down_eggs(PlayerbotAI* botAI) { return new KaelthasSunstriderRoundUpPhoenixesAndFocusDownEggsAction(botAI); }
     static Action* kaelthas_sunstrider_break_mind_control_with_infinity_blade(PlayerbotAI* botAI) { return new KaelthasSunstriderBreakMindControlWithInfinityBladeAction(botAI); }

@@ -133,27 +133,24 @@ namespace SerpentShrineCavernHelpers
     extern std::unordered_map<uint32, time_t> lastImbueAttempt;
     extern std::unordered_map<uint32, time_t> lastCoreInInventoryTime;
 
-    namespace SerpentShrineCavernPositions
-    {
-        extern const Position HydrossFrostTankPosition;
-        extern const Position HydrossNatureTankPosition;
+    extern const Position HYDROSS_FROST_TANK_POSITION;
+    extern const Position HYDROSS_NATURE_TANK_POSITION;
 
-        extern const Position LurkerMainTankPosition;
+    extern const Position LURKER_MAIN_TANK_POSITION;
 
-        extern const Position KarathressTankPosition;
-        extern const Position TidalvessTankPosition;
-        extern const Position SharkkisTankPosition;
-        extern const Position CaribdisTankPosition;
-        extern const Position CaribdisHealerPosition;
-        extern const Position CaribdisRangedDpsPosition;
+    extern const Position KARATHRESS_TANK_POSITION;
+    extern const Position TIDALVESS_TANK_POSITION;
+    extern const Position SHARKKIS_TANK_POSITION;
+    extern const Position CARIBDIS_TANK_POSITION;
+    extern const Position CARIBDIS_HEALER_POSITION;
+    extern const Position CARIBDIS_RANGED_DPS_POSITION;
 
-        extern const Position TidewalkerPhase1TankPosition;
-        extern const Position TidewalkerPhaseTransitionWaypoint;
-        extern const Position TidewalkerPhase2TankPosition;
-        extern const Position TidewalkerPhase2RangedPosition;
+    extern const Position TIDEWALKER_PHASE_1_TANK_POSITION;
+    extern const Position TIDEWALKER_PHASE_TRANSITION_WAYPOINT;
+    extern const Position TIDEWALKER_PHASE_2_TANK_POSITION;
+    extern const Position TIDEWALKER_PHASE_2_RANGED_POSITION;
 
-        extern const Position VashjPlatformCenterPosition;
-    }
+    extern const Position VASHJ_PLATFORM_CENTER_POSITION;
 
     void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);
     void MarkTargetWithSkull(Player* bot, Unit* target);

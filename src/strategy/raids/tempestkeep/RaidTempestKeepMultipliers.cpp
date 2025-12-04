@@ -307,7 +307,8 @@ float KaelthasSunstriderMeleeDpsDoNotAttackDuringGravityLapseMultiplier::GetValu
 
     if (bot->HasAura(SPELL_GRAVITY_LAPSE))
     {
-        if (!dynamic_cast<KaelthasSunstriderSpreadOutInMidairAction*>(action))
+        if (dynamic_cast<MovementAction*>(action) &&
+            !dynamic_cast<KaelthasSunstriderSpreadOutInMidairAction*>(action))
             return 0.0f;
     }
 

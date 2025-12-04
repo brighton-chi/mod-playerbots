@@ -123,6 +123,9 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kaelthas sunstrider determining advisor kill order",
         NextAction::array(0, new NextAction("kaelthas sunstrider assign advisor dps priority", ACTION_RAID + 1), nullptr)
     ));
+    triggers.push_back(new TriggerNode("kaelthas sunstrider boss engaged by main tank",
+        NextAction::array(0, new NextAction("kaelthas sunstrider main tank position boss", ACTION_RAID + 1), nullptr)
+    ));
     triggers.push_back(new TriggerNode("kaelthas sunstrider flame strike appeared under bot",
         NextAction::array(0, new NextAction("kaelthas sunstrider avoid flame strike", ACTION_EMERGENCY + 8), nullptr)
     ));
