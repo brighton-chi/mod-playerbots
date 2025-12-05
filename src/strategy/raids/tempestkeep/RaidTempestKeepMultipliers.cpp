@@ -46,10 +46,17 @@ float AlarDisableTankAssistMultiplier::GetValue(Action* action)
     if (!alar)
         return 1.0f;
 
+    boss_alar* alarAI = dynamic_cast<boss_alar*>(alar->GetAI());
+    if (!alarAI)
+        return 1.0f;
+
     if (botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0))
     {
-        if (bot->GetVictim() != nullptr && dynamic_cast<TankAssistAction*>(action))
-            return 0.0f;
+        if (bot->GetVictim() != nullptr && !alarAI->HasPretendedToDie())
+        {
+            if (dynamic_cast<TankAssistAction*>(action))
+                return 0.0f;
+        }
     }
 
     return 1.0f;
@@ -61,10 +68,13 @@ float AlarStayAwayFromRebirthMultiplier::GetValue(Action* action)
     if (!alar)
         return 1.0f;
 
-    if (alar->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE) &&
-        (dynamic_cast<MovementAction*>(action) &&
-         !(dynamic_cast<AlarMoveAwayFromRebirthAction*>(action) || dynamic_cast<AvoidAoeAction*>(action))))
-        return 0.0f;
+    boss_alar* alarAI = dynamic_cast<boss_alar*>(alar->GetAI());
+    if (alarAI && alarAI->IsPassive())
+    {
+        if (dynamic_cast<MovementAction*>(action) &&
+            !(dynamic_cast<AlarMoveAwayFromRebirthAction*>(action)))
+              return 0.0f;
+    }
 
     return 1.0f;
 }
@@ -237,7 +247,7 @@ float KaelthasSunstriderDelayBloodlustAndHeroismMultiplier::GetValue(Action* act
 
     boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
     if (!kaelAI)
-        return false;
+        return 1.0f;
 
     Unit* thaladred = AI_VALUE2(Unit*, "find target", "thaladred the darkener");
     if ((kaelAI->GetPhase() != PHASE_ALL_ADVISORS && kaelAI->GetPhase() != PHASE_FINAL) ||

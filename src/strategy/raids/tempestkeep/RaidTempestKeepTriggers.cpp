@@ -6,6 +6,8 @@
 
 using namespace TempestKeepHelpers;
 
+// Trash
+
 bool CrimsonHandCenturionCastsArcaneVolleyTrigger::IsActive()
 {
     if (bot->getClass() != CLASS_MAGE)
@@ -14,6 +16,8 @@ bool CrimsonHandCenturionCastsArcaneVolleyTrigger::IsActive()
     Unit* centurion = AI_VALUE2(Unit*, "find target", "crimson hand centurion");
     return centurion && centurion->HasAura(SPELL_ARCANE_FLURRY);
 }
+
+// Al'ar <Phoenix God>
 
 bool AlarPullingBossTrigger::IsActive()
 {
@@ -24,9 +28,9 @@ bool AlarPullingBossTrigger::IsActive()
     return alar && alar->GetHealthPct() > 98.0f;
 }
 
-bool AlarEngagedByTanksInPhase1Trigger::IsActive()
+bool AlarBossIsFlyingBetweenPlatformsTrigger::IsActive()
 {
-    if (!botAI->IsMainTank(bot) && !botAI->IsAssistTankOfIndex(bot, 0))
+    if (IsAlarAddTank(botAI, bot))
         return false;
 
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
@@ -34,52 +38,7 @@ bool AlarEngagedByTanksInPhase1Trigger::IsActive()
         return false;
 
     boss_alar* alarAI = dynamic_cast<boss_alar*>(alar->GetAI());
-    return alarAI && !alarAI->HasPretendedToDie();
-}
-
-bool AlarBossEngagedByMeleeDpsTrigger::IsActive()
-{
-    if (!botAI->IsMelee(bot) || !botAI->IsDps(bot))
-        return false;
-
-    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    return alar != nullptr;
-}
-
-bool AlarBossEngagedByRangedDpsTrigger::IsActive()
-{
-    if (!botAI->IsRangedDps(bot))
-        return false;
-
-    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    return alar != nullptr;
-}
-
-bool AlarBossEngagedByHealerTrigger::IsActive()
-{
-    if (!botAI->IsHeal(bot))
-        return false;
-
-    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    return alar != nullptr;
-}
-
-bool AlarEmbersOfAlarSpawnedTrigger::IsActive()
-{
-    if (!IsAlarAddTank(botAI, bot))
-        return false;
-
-    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    return alar != nullptr;
-}
-
-bool AlarIncomingFlameQuillsTrigger::IsActive()
-{
-    if (bot->GetPositionZ() < ALAR_BALCONY_Z)
-        return false;
-
-    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    if (!alar || alarAI->HasPretendedToDie())
+    if (!alarAI || alarAI->HasPretendedToDie())
         return false;
 
     int8 locationIndex = GetAlarCurrentLocationIndex(alar);
@@ -89,13 +48,49 @@ bool AlarIncomingFlameQuillsTrigger::IsActive()
         locationIndex = GetAlarDestinationLocationIndex(alar, dest);
     }
 
-    return locationIndex == POINT_QUILL_IDX;
+    if (locationIndex == POINT_QUILL_OR_DIVE_IDX)
+        return false;
+
+    return true;
+}
+
+bool AlarBossSpawnsEmbersOfAlarTrigger::IsActive()
+{
+    if (!IsAlarAddTank(botAI, bot) && !botAI->IsRanged(bot))
+        return false;
+
+    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+    return alar != nullptr;
+}
+
+bool AlarIncomingFlameQuillsTrigger::IsActive()
+{
+    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+    if (!alar)
+        return false;
+
+    boss_alar* alarAI = dynamic_cast<boss_alar*>(alar->GetAI());
+    if (!alarAI || alarAI->HasPretendedToDie())
+        return false;
+
+    int8 locationIndex = GetAlarCurrentLocationIndex(alar);
+    if (locationIndex == LOCATION_NONE)
+    {
+        Position dest;
+        locationIndex = GetAlarDestinationLocationIndex(alar, dest);
+    }
+
+    return locationIndex == POINT_QUILL_OR_DIVE_IDX;
 }
 
 bool AlarRisingFromTheAshesTrigger::IsActive()
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    return alar && alar->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE);
+    if (!alar)
+        return false;
+
+    boss_alar* alarAI = dynamic_cast<boss_alar*>(alar->GetAI());
+    return alarAI && alarAI->IsPassive();
 }
 
 bool AlarBossTankArmorWasMeltedTrigger::IsActive()
@@ -128,9 +123,8 @@ bool AlarBossIsPerformingDiveBombSequenceTrigger::IsActive()
         locationIndex = GetAlarDestinationLocationIndex(alar, dest);
     }
 
-    // Active if Al'ar is at/heading to dive bomb, or is not visible, or is not selectable
-    return locationIndex == POINT_DIVE_IDX ||
-           (!alar->IsVisible() && locationIndex != POINT_MIDDLE_IDX);
+    return locationIndex == POINT_QUILL_OR_DIVE_IDX ||
+           (alarAI->IsNoMelee() && !alarAI->IsPassive());
 }
 
 bool AlarPhase2EncounterIsAtRoomCenterTrigger::IsActive()
@@ -146,7 +140,6 @@ bool AlarPhase2EncounterIsAtRoomCenterTrigger::IsActive()
     if (!alarAI || !alarAI->HasPretendedToDie())
         return false;
 
-    // Exclude dive bomb sequence
     int8 locationIndex = GetAlarCurrentLocationIndex(alar);
     if (locationIndex == LOCATION_NONE)
     {
@@ -154,12 +147,10 @@ bool AlarPhase2EncounterIsAtRoomCenterTrigger::IsActive()
         locationIndex = GetAlarDestinationLocationIndex(alar, dest);
     }
 
-    // If Al'ar is at or heading to dive bomb location, or is not visible, or is not selectable, do not trigger
-    if (locationIndex == POINT_DIVE_IDX || (!alar->IsVisible() && locationIndex != POINT_MIDDLE_IDX))
-        return false;
-
-    return true;
+    return locationIndex != POINT_QUILL_OR_DIVE_IDX && !alarAI->IsNoMelee();
 }
+
+// Void Reaver
 
 bool VoidReaverBossEngagedByTankTrigger::IsActive()
 {
@@ -187,6 +178,8 @@ bool VoidReaverTanksLostAggroTrigger::IsActive()
     Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
     return voidReaver && voidReaver->GetVictim() == bot;
 }
+
+// High Astromancer Solarian
 
 bool HighAstromancerSolarianPhase1And2MovementTrigger::IsActive()
 {
@@ -248,6 +241,8 @@ bool HighAstromancerSolarianBossCastsPsychicScreamTrigger::IsActive()
 
     return mainTank && !mainTank->HasAura(SPELL_FEAR_WARD) && botAI->CanCastSpell("fear ward", mainTank);
 }
+
+// Kael'thas Sunstrider <Lord of the Blood Elves>
 
 bool KaelthasSunstriderThaladredIsFixatedOnBotTrigger::IsActive()
 {
@@ -358,6 +353,30 @@ bool KaelthasSunstriderTelonicusEngagedByFirstAssistTankTrigger::IsActive()
     Unit* telonicus = AI_VALUE2(Unit*, "find target", "master engineer telonicus");
     return telonicus && !telonicus->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
            !telonicus->HasAura(SPELL_PERMANENT_FEIGN_DEATH);
+}
+
+bool KaelthasSunstriderPhase3AdvisorMeleeTanksNeedDedicatedHealerTrigger::IsActive()
+{
+    if (!botAI->IsHealAssistantOfIndex(bot, 0))
+        return false;
+
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    if (!kaelthas)
+        return false;
+
+    boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
+    if (!kaelAI || kaelAI->GetPhase() != PHASE_ALL_ADVISORS)
+        return false;
+
+    Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
+    if (sanguinar && sanguinar->IsAlive())
+        return true;
+
+    Unit* telonicus = AI_VALUE2(Unit*, "find target", "master engineer telonicus");
+    if (telonicus && telonicus->IsAlive())
+        return true;
+
+    return false;
 }
 
 bool KaelthasSunstriderPullingTankableAdvisorsTrigger::IsActive()

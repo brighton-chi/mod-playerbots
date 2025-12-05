@@ -19,43 +19,19 @@ public:
     bool IsActive() override;
 };
 
-class AlarEngagedByTanksInPhase1Trigger : public Trigger
+class AlarBossIsFlyingBetweenPlatformsTrigger : public Trigger
 {
 public:
-    AlarEngagedByTanksInPhase1Trigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "alar engaged by tanks in phase 1") {}
+    AlarBossIsFlyingBetweenPlatformsTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "alar boss is flying between platforms") {}
     bool IsActive() override;
 };
 
-class AlarBossEngagedByMeleeDpsTrigger : public Trigger
+class AlarBossSpawnsEmbersOfAlarTrigger : public Trigger
 {
 public:
-    AlarBossEngagedByMeleeDpsTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "alar boss engaged by melee dps") {}
-    bool IsActive() override;
-};
-
-class AlarBossEngagedByRangedDpsTrigger : public Trigger
-{
-public:
-    AlarBossEngagedByRangedDpsTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "alar boss engaged by ranged dps") {}
-    bool IsActive() override;
-};
-
-class AlarBossEngagedByHealerTrigger : public Trigger
-{
-public:
-    AlarBossEngagedByHealerTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "alar boss engaged by healer") {}
-    bool IsActive() override;
-};
-
-class AlarEmbersOfAlarSpawnedTrigger : public Trigger
-{
-public:
-    AlarEmbersOfAlarSpawnedTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "alar embers of alar spawned") {}
+    AlarBossSpawnsEmbersOfAlarTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "alar boss spawns embers of alar") {}
     bool IsActive() override;
 };
 
@@ -216,6 +192,14 @@ class KaelthasSunstriderTelonicusEngagedByFirstAssistTankTrigger : public Trigge
 public:
     KaelthasSunstriderTelonicusEngagedByFirstAssistTankTrigger(
         PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider telonicus engaged by first assist tank") {}
+    bool IsActive() override;
+};
+
+class KaelthasSunstriderPhase3AdvisorMeleeTanksNeedDedicatedHealerTrigger : public Trigger
+{
+public:
+    KaelthasSunstriderPhase3AdvisorMeleeTanksNeedDedicatedHealerTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider phase 3 advisor melee tanks need dedicated healer") {}
     bool IsActive() override;
 };
 

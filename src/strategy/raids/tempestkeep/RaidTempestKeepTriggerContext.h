@@ -17,20 +17,11 @@ public:
         creators["alar pulling boss"] =
             &RaidTempestKeepTriggerContext::alar_pulling_boss;
 
-        creators["alar engaged by tanks in phase 1"] =
-            &RaidTempestKeepTriggerContext::alar_engaged_by_tanks_in_phase_1;
+        creators["alar boss is flying between platforms"] =
+            &RaidTempestKeepTriggerContext::alar_boss_is_flying_between_platforms;
 
-        creators["alar boss engaged by melee dps"] =
-            &RaidTempestKeepTriggerContext::alar_boss_engaged_by_melee_dps;
-
-        creators["alar boss engaged by ranged dps"] =
-            &RaidTempestKeepTriggerContext::alar_boss_engaged_by_ranged_dps;
-
-        creators["alar boss engaged by healer"] =
-            &RaidTempestKeepTriggerContext::alar_boss_engaged_by_healer;
-
-        creators["alar embers of alar spawned"] =
-            &RaidTempestKeepTriggerContext::alar_embers_of_alar_spawned;
+        creators["alar boss spawns embers of alar"] =
+            &RaidTempestKeepTriggerContext::alar_boss_spawns_embers_of_alar;
 
         creators["alar incoming flame quills"] =
             &RaidTempestKeepTriggerContext::alar_incoming_flame_quills;
@@ -95,6 +86,9 @@ public:
         creators["kaelthas sunstrider telonicus engaged by first assist tank"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_telonicus_engaged_by_first_assist_tank;
 
+        creators["kaelthas sunstrider phase 3 advisor melee tanks need dedicated healer"] =
+            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_phase_3_advisor_melee_tanks_need_dedicated_healer;
+
         creators["kaelthas sunstrider pulling tankable advisors"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_pulling_tankable_advisors;
 
@@ -150,20 +144,11 @@ private:
     static Trigger* alar_pulling_boss(
         PlayerbotAI* botAI) { return new AlarPullingBossTrigger(botAI); }
 
-    static Trigger* alar_engaged_by_tanks_in_phase_1(
-        PlayerbotAI* botAI) { return new AlarEngagedByTanksInPhase1Trigger(botAI); }
+    static Trigger* alar_boss_is_flying_between_platforms(
+        PlayerbotAI* botAI) { return new AlarBossIsFlyingBetweenPlatformsTrigger(botAI); }
 
-    static Trigger* alar_boss_engaged_by_melee_dps(
-        PlayerbotAI* botAI) { return new AlarBossEngagedByMeleeDpsTrigger(botAI); }
-
-    static Trigger* alar_boss_engaged_by_ranged_dps(
-        PlayerbotAI* botAI) { return new AlarBossEngagedByRangedDpsTrigger(botAI); }
-
-    static Trigger* alar_boss_engaged_by_healer(
-        PlayerbotAI* botAI) { return new AlarBossEngagedByHealerTrigger(botAI); }
-
-    static Trigger* alar_embers_of_alar_spawned(
-        PlayerbotAI* botAI) { return new AlarEmbersOfAlarSpawnedTrigger(botAI); }
+    static Trigger* alar_boss_spawns_embers_of_alar(
+        PlayerbotAI* botAI) { return new AlarBossSpawnsEmbersOfAlarTrigger(botAI); }
 
     static Trigger* alar_incoming_flame_quills(
         PlayerbotAI* botAI) { return new AlarIncomingFlameQuillsTrigger(botAI); }
@@ -227,6 +212,9 @@ private:
 
     static Trigger* kaelthas_sunstrider_telonicus_engaged_by_first_assist_tank(
         PlayerbotAI* botAI) { return new KaelthasSunstriderTelonicusEngagedByFirstAssistTankTrigger(botAI); }
+
+    static Trigger* kaelthas_sunstrider_phase_3_advisor_melee_tanks_need_dedicated_healer(
+        PlayerbotAI* botAI) { return new KaelthasSunstriderPhase3AdvisorMeleeTanksNeedDedicatedHealerTrigger(botAI); }
 
     static Trigger* kaelthas_sunstrider_pulling_tankable_advisors(
         PlayerbotAI* botAI) { return new KaelthasSunstriderPullingTankableAdvisorsTrigger(botAI); }

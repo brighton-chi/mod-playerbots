@@ -32,21 +32,22 @@ namespace TempestKeepHelpers
     };
     const Position ALAR_ROOM_CENTER = { 330.611f, -2.540f, -2.389f };
     const Position ALAR_RANGED_CENTER = { 346.758f, 3.794f, -2.389f };
-    const Position ALAR_POINT_QUILL = {332.0f, 0.01f, 43.0f, 0.0f}; //quill
-    const Position ALAR_POINT_MIDDLE = {331.0f, 0.01f, -2.38f, 0.0f}; //middle (p2)
-    const Position ALAR_POINT_DIVE = {332.0f, 0.01f, 43.0f, 0.0f}; // dive
+    const Position ALAR_POINT_QUILL_OR_DIVE = {332.0f, 0.01f, 43.0f, 0.0f};
+    const Position ALAR_POINT_MIDDLE = {331.0f, 0.01f, -2.38f, 0.0f};
     const Position ALAR_SE_RAMP_BASE = { 281.064f, -36.590f, -2.389f };
     const Position ALAR_SW_RAMP_BASE = { 281.064f, 36.590f, -2.389f };
     const Position ALAR_ROOM_S_CENTER = { 281.064f, 0.0f, -2.389f };
 
     const Position VOID_REAVER_TANK_POSITION = { 423.845f, 371.733f, 14.897f }; // middle of room
+
     const Position SANGUINAR_TANK_POSITION = { 775.478f, 39.888f, 46.780f };
     // const Position CAPERNIAN_TANK_POSITION = { 743.772f, -13.762f, 46.780f };
     const Position TELONICUS_TANK_POSITION = { 773.717f, 44.091f, 46.780f };
+    const Position ADVISOR_HEAL_POSITION = {  749.443f, 26.927f, 46.780f };
     const Position KAELTHAS_WEAPON_STACK_POSITION = { 775.296f, -0.822f, 48.729f };
     const Position KAELTHAS_AXE_TANK_POSITION = { 775.621f, 20.717f, 48.729f };
     const Position KAELTHAS_BOW_TANK_POSITION = { 777.713f, -28.857f, 48.729f };
-    const Position KAELTHAS_TANK_POSITION = { 799.390f, -0.837f, 48.729f }; // need method for this if I want it
+    const Position KAELTHAS_TANK_POSITION = { 799.390f, -0.837f, 48.729f };
 
     void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId)
     {
@@ -188,16 +189,14 @@ namespace TempestKeepHelpers
 
         dest.Relocate(x, y, z);
 
-        // Array of all platforms and special points
         const Position locations[] =
         {
             ALAR_PLATFORM_0,
             ALAR_PLATFORM_1,
             ALAR_PLATFORM_2,
             ALAR_PLATFORM_3,
-            ALAR_POINT_QUILL,
+            ALAR_POINT_QUILL_OR_DIVE,
             ALAR_POINT_MIDDLE,
-            ALAR_POINT_DIVE
         };
 
         float minDist = std::numeric_limits<float>::max();
@@ -222,16 +221,14 @@ namespace TempestKeepHelpers
         if (!alar)
             return LOCATION_NONE;
 
-        // Define the locations array with all platforms and special points
         const Position locations[] =
         {
             ALAR_PLATFORM_0,
             ALAR_PLATFORM_1,
             ALAR_PLATFORM_2,
             ALAR_PLATFORM_3,
-            ALAR_POINT_QUILL,
+            ALAR_POINT_QUILL_OR_DIVE,
             ALAR_POINT_MIDDLE,
-            ALAR_POINT_DIVE
         };
 
         float minDist = std::numeric_limits<float>::max();

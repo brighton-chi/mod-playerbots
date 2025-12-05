@@ -17,6 +17,7 @@ namespace TempestKeepHelpers
         SPELL_ARCANE_FLURRY             = 37268,
 
         // Al'ar
+        SPELL_DIVE_BOMB_VISUAL          = 35367,
         SPELL_MELT_ARMOR                = 35410,
 
         // High Astromancer Solarian
@@ -90,9 +91,8 @@ namespace TempestKeepHelpers
         PLATFORM_1_IDX,
         PLATFORM_2_IDX,
         PLATFORM_3_IDX,
-        POINT_QUILL_IDX,
+        POINT_QUILL_OR_DIVE_IDX,
         POINT_MIDDLE_IDX,
-        POINT_DIVE_IDX,
         LOCATION_NONE = -1
     };
 
@@ -108,9 +108,8 @@ namespace TempestKeepHelpers
     extern const Position GROUND_POSITIONS[4];
     extern const Position ALAR_ROOM_CENTER;
     extern const Position ALAR_RANGED_CENTER;
-    extern const Position ALAR_POINT_QUILL;
+    extern const Position ALAR_POINT_QUILL_OR_DIVE;
     extern const Position ALAR_POINT_MIDDLE;
-    extern const Position ALAR_POINT_DIVE;
     extern const Position ALAR_SE_RAMP_BASE;
     extern const Position ALAR_SW_RAMP_BASE;
     extern const Position ALAR_ROOM_S_CENTER;
@@ -120,13 +119,13 @@ namespace TempestKeepHelpers
     extern const Position SANGUINAR_TANK_POSITION;
     // extern const Position CAPERNIAN_TANK_POSITION;
     extern const Position TELONICUS_TANK_POSITION;
+    extern const Position ADVISOR_HEAL_POSITION;
     extern const Position KAELTHAS_WEAPON_STACK_POSITION;
     extern const Position KAELTHAS_AXE_TANK_POSITION;
     extern const Position KAELTHAS_BOW_TANK_POSITION;
     extern const Position KAELTHAS_TANK_POSITION;
 
     const uint32 TEMPESTKEEP_MAP_ID = 550;
-    const float ALAR_GROUND_Z = -2.0f;
     const float ALAR_BALCONY_Z = 17.0f;
 
     void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);

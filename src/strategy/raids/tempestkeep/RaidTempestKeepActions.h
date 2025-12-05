@@ -37,27 +37,19 @@ private:
     bool PositionAssistTank(Player* assistTank, Unit* alar, int8 locationIndex);
 };
 
-class AlarMeleeDpsPrioritizeBossAction : public AttackAction
+class AlarMeleeDpsMoveBetweenPlatformsAction : public AttackAction
 {
 public:
-    AlarMeleeDpsPrioritizeBossAction(
-        PlayerbotAI* botAI, std::string const name = "alar melee dps prioritize boss") : AttackAction(botAI, name) {}
+    AlarMeleeDpsMoveBetweenPlatformsAction(
+        PlayerbotAI* botAI, std::string const name = "alar melee dps move between platforms") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 
-class AlarRangedDpsPrioritizeAddsAction : public AttackAction
+class AlarRangedMoveUnderPlatformsAction : public AttackAction
 {
 public:
-    AlarRangedDpsPrioritizeAddsAction(
-        PlayerbotAI* botAI, std::string const name = "alar ranged dps prioritize adds") : AttackAction(botAI, name) {}
-    bool Execute(Event event) override;
-};
-
-class AlarPositionHealerAction : public MovementAction
-{
-public:
-    AlarPositionHealerAction(
-        PlayerbotAI* botAI, std::string const name = "alar position healer") : MovementAction(botAI, name) {}
+    AlarRangedMoveUnderPlatformsAction(
+        PlayerbotAI* botAI, std::string const name = "alar ranged move under platforms") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 
@@ -82,6 +74,14 @@ class AlarMoveAwayFromRebirthAction : public MovementAction
 public:
     AlarMoveAwayFromRebirthAction(
         PlayerbotAI* botAI, std::string const name = "alar move away from rebirth") : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class AlarRangedDpsPrioritizeEmbersInPhase2Action : public AttackAction
+{
+public:
+    AlarRangedDpsPrioritizeEmbersInPhase2Action(
+        PlayerbotAI* botAI, std::string const name = "alar ranged dps prioritize embers in phase 2") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 
@@ -235,6 +235,14 @@ class KaelthasSunstriderFirstAssistTankPositionTelonicusAction : public AttackAc
 public:
     KaelthasSunstriderFirstAssistTankPositionTelonicusAction(
         PlayerbotAI* botAI, std::string const name = "kaelthas sunstrider first assist tank position telonicus") : AttackAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class KaelthasSunstriderPositionPhase3TankHealerAction : public AttackAction
+{
+public:
+    KaelthasSunstriderPositionPhase3TankHealerAction(
+        PlayerbotAI* botAI, std::string const name = "kaelthas sunstrider position phase 3 tank healer") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 

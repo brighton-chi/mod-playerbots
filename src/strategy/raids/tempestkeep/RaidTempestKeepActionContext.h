@@ -20,14 +20,11 @@ public:
         creators["alar boss tanks move between platforms"] =
             &RaidTempestKeepActionContext::alar_boss_tanks_move_between_platforms;
 
-        creators["alar melee dps prioritize boss"] =
-            &RaidTempestKeepActionContext::alar_melee_dps_prioritize_boss;
+        creators["alar melee dps move between platforms"] =
+            &RaidTempestKeepActionContext::alar_melee_dps_move_between_platforms;
 
-        creators["alar ranged dps prioritize adds"] =
-            &RaidTempestKeepActionContext::alar_ranged_dps_prioritize_adds;
-
-        creators["alar position healer"] =
-            &RaidTempestKeepActionContext::alar_position_healer;
+        creators["alar ranged move under platforms"] =
+            &RaidTempestKeepActionContext::alar_ranged_move_under_platforms;
 
         creators["alar add tank pick up embers"] =
             &RaidTempestKeepActionContext::alar_add_tank_pick_up_embers;
@@ -37,6 +34,9 @@ public:
 
         creators["alar move away from rebirth"] =
             &RaidTempestKeepActionContext::alar_move_away_from_rebirth;
+
+        creators["alar ranged dps prioritize embers in phase 2"] =
+            &RaidTempestKeepActionContext::alar_ranged_dps_prioritize_embers_in_phase_2;
 
         creators["alar swap tanks on boss"] =
             &RaidTempestKeepActionContext::alar_swap_tanks_on_boss;
@@ -94,6 +94,9 @@ public:
 
         creators["kaelthas sunstrider first assist tank position telonicus"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_first_assist_tank_position_telonicus;
+
+        creators["kaelthas sunstrider position phase 3 tank healer"] =
+            &RaidTempestKeepActionContext::kaelthas_sunstrider_position_phase_3_tank_healer;
 
         creators["kaelthas sunstrider misdirect advisors to tanks"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_misdirect_advisors_to_tanks;
@@ -153,14 +156,11 @@ private:
     static Action* alar_boss_tanks_move_between_platforms(
         PlayerbotAI* botAI) { return new AlarBossTanksMoveBetweenPlatformsAction(botAI); }
 
-    static Action* alar_melee_dps_prioritize_boss(
-        PlayerbotAI* botAI) { return new AlarMeleeDpsPrioritizeBossAction(botAI); }
+    static Action* alar_melee_dps_move_between_platforms(
+        PlayerbotAI* botAI) { return new AlarMeleeDpsMoveBetweenPlatformsAction(botAI); }
 
-    static Action* alar_ranged_dps_prioritize_adds(
-        PlayerbotAI* botAI) { return new AlarRangedDpsPrioritizeAddsAction(botAI); }
-
-    static Action* alar_position_healer(
-        PlayerbotAI* botAI) { return new AlarPositionHealerAction(botAI); }
+    static Action* alar_ranged_move_under_platforms(
+        PlayerbotAI* botAI) { return new AlarRangedMoveUnderPlatformsAction(botAI); }
 
     static Action* alar_add_tank_pick_up_embers(
         PlayerbotAI* botAI) { return new AlarAddTankPickUpEmbersAction(botAI); }
@@ -170,6 +170,9 @@ private:
 
     static Action* alar_move_away_from_rebirth(
         PlayerbotAI* botAI) { return new AlarMoveAwayFromRebirthAction(botAI); }
+
+    static Action* alar_ranged_dps_prioritize_embers_in_phase_2(
+        PlayerbotAI* botAI) { return new AlarRangedDpsPrioritizeEmbersInPhase2Action(botAI); }
 
     static Action* alar_swap_tanks_on_boss(
         PlayerbotAI* botAI) { return new AlarSwapTanksOnBossAction(botAI); }
@@ -227,6 +230,9 @@ private:
 
     static Action* kaelthas_sunstrider_first_assist_tank_position_telonicus(
         PlayerbotAI* botAI) { return new KaelthasSunstriderFirstAssistTankPositionTelonicusAction(botAI); }
+
+    static Action* kaelthas_sunstrider_position_phase_3_tank_healer(
+        PlayerbotAI* botAI) { return new KaelthasSunstriderPositionPhase3TankHealerAction(botAI); }
 
     static Action* kaelthas_sunstrider_misdirect_advisors_to_tanks(
         PlayerbotAI* botAI) { return new KaelthasSunstriderMisdirectAdvisorsToTanksAction(botAI); }

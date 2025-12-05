@@ -36,6 +36,8 @@ struct boss_alar : public BossAI
     Position DeterminePhoenixPosition(Position playerPosition);
 
     bool HasPretendedToDie() const { return _hasPretendedToDie; }
+    bool IsNoMelee() const { return _noMelee; }
+    bool IsPassive() const { return me->GetReactState() == REACT_PASSIVE; }
 
 private:
     bool _hasPretendedToDie;
@@ -70,9 +72,8 @@ enum KTActions
 {
 };
 
-class boss_kaelthas : public BossAI
+struct boss_kaelthas : public BossAI
 {
-public:
     boss_kaelthas(Creature* creature);
 
     void PrepareAdvisors();
