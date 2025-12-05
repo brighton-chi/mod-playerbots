@@ -287,7 +287,7 @@ bool LeotherasTheBlindDemonFormTankNeedsAggro::IsActive()
     return leotheras != nullptr;
 }
 
-bool LeotherasTheBlindNeedToManageTimersAndTrackersTrigger::IsActive()
+bool LeotherasTheBlindBossWipesAggroUponPhaseChangeTrigger::IsActive()
 {
     if (!IsMapIDTimerManager(botAI, bot))
         return false;

@@ -76,8 +76,8 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("leotheras the blind demon form tank needs aggro",
         NextAction::array(0, new NextAction("leotheras the blind misdirect boss to demon form tank", ACTION_RAID + 3), nullptr)
     ));
-    triggers.push_back(new TriggerNode("leotheras the blind need to manage timers and trackers",
-        NextAction::array(0, new NextAction("leotheras the blind manage timers and trackers", ACTION_EMERGENCY + 10), nullptr)
+    triggers.push_back(new TriggerNode("leotheras the blind boss wipes aggro upon phase change",
+        NextAction::array(0, new NextAction("leotheras the blind manage dps wait timers", ACTION_EMERGENCY + 10), nullptr)
     ));
 
     // Fathom-Lord Karathress

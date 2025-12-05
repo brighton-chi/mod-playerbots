@@ -872,7 +872,7 @@ bool LeotherasTheBlindMisdirectBossToDemonFormTankAction::Execute(Event event)
 }
 
 // This does not pause DPS after a Whirlwind, which is also an aggro wipe
-bool LeotherasTheBlindManageTimersAndTrackersAction::Execute(Event event)
+bool LeotherasTheBlindManageDpsWaitTimersAction::Execute(Event event)
 {
     Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
     if (!leotheras)
@@ -2038,7 +2038,6 @@ bool LadyVashjTeleportToTaintedElementalAction::Execute(Event event)
     if (!tainted)
         return false;
 
-    lastTaintedGuid = tainted->GetGUID();
     if (bot->GetExactDist2d(tainted) >= 10.0f)
     {
         bot->AttackStop();
