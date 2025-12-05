@@ -182,17 +182,7 @@ bool TerestianIllhoofNeedTargetPriorityTrigger::IsActive()
         return false;
 
     Unit* illhoof = AI_VALUE2(Unit*, "find target", "terestian illhoof");
-    if (!illhoof)
-        return false;
-
-    Unit* target = GetFirstAliveUnit(
-    {
-        AI_VALUE2(Unit*, "find target", "demon chains"),
-        AI_VALUE2(Unit*, "find target", "kil'rek"),
-        illhoof
-    });
-
-    return target != nullptr;
+    return illhoof != nullptr;
 }
 
 bool ShadeOfAranArcaneExplosionIsCastingTrigger::IsActive()

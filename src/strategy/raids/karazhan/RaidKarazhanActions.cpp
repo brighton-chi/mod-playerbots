@@ -472,17 +472,10 @@ bool TheCuratorSpreadRangedAction::Execute(Event event)
 // Prioritize (1) Demon Chains, (2) Kil'rek, (3) Illhoof
 bool TerestianIllhoofMarkTargetAction::Execute(Event event)
 {
+    Unit* demonChains = AI_VALUE2(Unit*, "find target", "demon chains");
+    Unit* kilrek = AI_VALUE2(Unit*, "find target", "kil'rek");
     Unit* illhoof = AI_VALUE2(Unit*, "find target", "terestian illhoof");
-    if (!illhoof)
-        return false;
-
-    Unit* target = AI_VALUE2(Unit*, "find target", "demon chains");
-    if (!target || !target->IsAlive())
-    {
-        target = AI_VALUE2(Unit*, "find target", "kil'rek");
-        if (!target || !target->IsAlive())
-            target = illhoof;
-    }
+    Unit* target = GetFirstAliveUnit({demonChains, kilrek, illhoof});
 
     if (target)
         MarkTargetWithSkull(bot, target);
@@ -505,10 +498,7 @@ bool ShadeOfAranRunAwayFromArcaneExplosionAction::Execute(Event event)
     {
         bot->AttackStop();
         bot->InterruptNonMeleeSpells(true);
-        bool moved = MoveAway(aran, safeDistance - distance);
-        float newDistance = bot->GetDistance2d(aran);
-        LOG_INFO("playerbots", "Bot {} moved away from Aran: initial distance = {:.2f}, new distance = {:.2f}", bot->GetName(), distance, newDistance);
-        return moved;
+        return MoveAway(aran, safeDistance - distance);
     }
 
     return false;
