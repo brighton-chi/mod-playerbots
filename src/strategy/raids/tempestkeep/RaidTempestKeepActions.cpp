@@ -1,5 +1,6 @@
 #include "RaidTempestKeepActions.h"
 #include "RaidTempestKeepHelpers.h"
+#include "RaidTempestKeepBossAI.h"
 #include "AiFactory.h"
 #include "LootAction.h"
 #include "LootObjectStack.h"
@@ -67,6 +68,10 @@ bool AlarBossTanksMoveBetweenPlatformsAction::Execute(Event event)
     if (!alar)
         return false;
 
+    boss_alar* alarAI = dynamic_cast<boss_alar*>(alar->GetAI());
+    if (!alarAI)
+        return false;
+
     std::vector<Position> platforms = { ALAR_PLATFORM_0, ALAR_PLATFORM_1, ALAR_PLATFORM_2, ALAR_PLATFORM_3 };
     int8 alarPlatform = targetAlarPlatform[TEMPESTKEEP_MAP_ID];
 
@@ -82,10 +87,10 @@ bool AlarBossTanksMoveBetweenPlatformsAction::Execute(Event event)
 bool AlarBossTanksMoveBetweenPlatformsAction::PositionMainTank(Player* mainTank, Unit* alar,
     int8 alarPlatform, const std::vector<Position>& platforms)
 {
-    if (!mainTank || !alar)
+    if (!mainTank)
         return false;
 
-    if (alar->GetPositionZ() >= ALAR_FLAME_QUILLS_Z && mainTank->GetPositionZ() < ALAR_GROUND_Z)
+    if (alarAI->GetPlatform() == POINT_QUILL && mainTank->GetPositionZ() < ALAR_GROUND_Z)
     {
         if (mainTank->GetExactDist2d(ALAR_SW_RAMP_BASE.GetPositionX(), ALAR_SW_RAMP_BASE.GetPositionY()) >= 2.0f)
         {
@@ -134,10 +139,10 @@ bool AlarBossTanksMoveBetweenPlatformsAction::PositionMainTank(Player* mainTank,
 bool AlarBossTanksMoveBetweenPlatformsAction::PositionAssistTank(Player* assistTank, Unit* alar,
     int8 alarPlatform, const std::vector<Position>& platforms)
 {
-    if (!assistTank || !alar)
+    if (!assistTank)
         return false;
 
-    if (alar->GetPositionZ() >= ALAR_FLAME_QUILLS_Z && assistTank->GetPositionZ() < ALAR_GROUND_Z)
+    if (alarAI->GetPlatform() == POINT_QUILL && assistTank->GetPositionZ() < ALAR_GROUND_Z)
     {
         if (assistTank->GetExactDist2d(ALAR_SE_RAMP_BASE.GetPositionX(), ALAR_SE_RAMP_BASE.GetPositionY()) >= 2.0f)
         {
@@ -191,7 +196,11 @@ bool AlarMeleeDpsPrioritizeBossAction::Execute(Event event)
 
     SetRtiTarget(botAI, "star", alar);
 
-    if (isAlarInPhase2[TEMPESTKEEP_MAP_ID])
+    boss_alar* alarAI = dynamic_cast<boss_alar*>(alar->GetAI());
+    if (!alarAI)
+        return false;
+
+    if (alarAI->HasPretendedToDie())
     {
         Unit* ember = GetFirstAliveUnitByEntry(botAI, NPC_EMBER_OF_ALAR);
         if (ember != nullptr)
@@ -207,10 +216,9 @@ bool AlarMeleeDpsPrioritizeBossAction::Execute(Event event)
             }
         }
     }
-
-    if (!isAlarInPhase2[TEMPESTKEEP_MAP_ID])
+    else
     {
-        if (alar->GetPositionZ() >= ALAR_FLAME_QUILLS_Z && bot->GetPositionZ() < ALAR_GROUND_Z)
+        if (alarAI->GetPlatform() == POINT_QUILL && bot->GetPositionZ() < ALAR_GROUND_Z)
         {
             if (bot->GetExactDist2d(ALAR_ROOM_S_CENTER.GetPositionX(), ALAR_ROOM_S_CENTER.GetPositionY()) >= 2.0f)
             {
@@ -279,7 +287,8 @@ bool AlarRangedDpsPrioritizeAddsAction::Execute(Event event)
         }
     }
 
-    if (!isAlarInPhase2[TEMPESTKEEP_MAP_ID])
+    boss_alar* alarAI = dynamic_cast<boss_alar*>(alar->GetAI());
+    if (alarAI && !alarAI->HasPretendedToDie())
     {
         int8 alarPlatform = targetAlarPlatform[TEMPESTKEEP_MAP_ID];
         std::vector<Position> groundPositions = { ALAR_GROUND_0, ALAR_GROUND_1, ALAR_GROUND_2, ALAR_GROUND_3 };
@@ -318,7 +327,8 @@ bool AlarPositionHealerAction::Execute(Event event)
         }
     }
 
-    if (!isAlarInPhase2[TEMPESTKEEP_MAP_ID])
+    boss_alar* alarAI = dynamic_cast<boss_alar*>(alar->GetAI());
+    if (alarAI && !alarAI->HasPretendedToDie())
     {
         int8 alarPlatform = targetAlarPlatform[TEMPESTKEEP_MAP_ID];
         std::vector<Position> groundPositions = { ALAR_GROUND_0, ALAR_GROUND_1, ALAR_GROUND_2, ALAR_GROUND_3 };
@@ -342,7 +352,11 @@ bool AlarAddTankPickUpEmbersAction::Execute(Event event)
     if (!alar)
         return false;
 
-    if (!isAlarInPhase2[TEMPESTKEEP_MAP_ID])
+    boss_alar* alarAI = dynamic_cast<boss_alar*>(alar->GetAI());
+    if (!alarAI)
+        return false;
+
+    if (!alarAI->HasPretendedToDie())
     {
         Unit* ember = GetFirstAliveUnitByEntry(botAI, NPC_EMBER_OF_ALAR);
         if (ember)
@@ -376,7 +390,7 @@ bool AlarAddTankPickUpEmbersAction::Execute(Event event)
             }
         }
     }
-    else if (isAlarInPhase2[TEMPESTKEEP_MAP_ID])
+    else
     {
         Unit* ember = GetFirstAliveUnitByEntry(botAI, NPC_EMBER_OF_ALAR);
         if (!ember)
@@ -594,7 +608,7 @@ bool AlarManageTimersAndTrackersAction::Execute(Event event)
 
     DetermineAlarTargetPlatform(alar, platforms);
 
-    if (alar->GetHealthPct() > 99.5f && alar->GetPositionZ() >= ALAR_BALCONY_Z)
+    /* if (alar->GetHealthPct() > 99.5f && alar->GetPositionZ() >= ALAR_BALCONY_Z)
     {
         lastRebirthState[TEMPESTKEEP_MAP_ID] = false;
         isAlarInPhase2[TEMPESTKEEP_MAP_ID] = false;
@@ -608,7 +622,7 @@ bool AlarManageTimersAndTrackersAction::Execute(Event event)
     if (lastRebirth && !rebirthActive)
         isAlarInPhase2[TEMPESTKEEP_MAP_ID] = true;
 
-    lastRebirthState[TEMPESTKEEP_MAP_ID] = rebirthActive;
+    lastRebirthState[TEMPESTKEEP_MAP_ID] = rebirthActive; */
 
     return false;
 }
@@ -1038,10 +1052,14 @@ bool KaelthasSunstriderManageWarlockTankStrategyAction::Execute(Event event)
     if (!kaelthas)
         return false;
 
+    boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
+    if (!kaelAI)
+        return false;
+
     bool currentlyTank = botAI->HasStrategy("tank", BotState::BOT_STATE_COMBAT);
 
     // Phase 1: Single advisor phase - switch to tank after Sanguinar is dead
-    if (IsKaelthasInPhase1(botAI))
+    if (kaelAI->GetPhase() == PHASE_SINGLE_ADVISOR)
     {
         if (!currentlyTank)
         {
@@ -1053,7 +1071,7 @@ bool KaelthasSunstriderManageWarlockTankStrategyAction::Execute(Event event)
     }
 
     // Phase 2: Weapons phase - reset to DPS
-    if (IsKaelthasInPhase2(botAI))
+    if (kaelAI->GetPhase() == PHASE_WEAPONS)
     {
         if (currentlyTank)
             botAI->ResetStrategies(false);
@@ -1061,7 +1079,7 @@ bool KaelthasSunstriderManageWarlockTankStrategyAction::Execute(Event event)
     }
 
     // Phase 2→3 Transition: Weapons dead, waiting for advisors - switch to tank
-    if (IsKaelthasInPhase2To3Transition(botAI))
+    if (kaelAI->GetPhase() == PHASE_TRANSITION)
     {
         if (!currentlyTank)
             botAI->ChangeStrategy("+tank", BotState::BOT_STATE_COMBAT);
@@ -1069,7 +1087,7 @@ bool KaelthasSunstriderManageWarlockTankStrategyAction::Execute(Event event)
     }
 
     // Phase 3: All advisors phase
-    if (IsKaelthasInPhase3(botAI))
+    if (kaelAI->GetPhase() == PHASE_ALL_ADVISORS)
     {
         Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
 
@@ -1086,6 +1104,14 @@ bool KaelthasSunstriderManageWarlockTankStrategyAction::Execute(Event event)
 
 bool KaelthasSunstriderWarlockTankPositionCapernianAction::Execute(Event event)
 {
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    if (!kaelthas)
+        return false;
+
+    boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
+    if (!kaelAI)
+        return false;
+
     Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
     if (!capernian)
         return false;
@@ -1104,7 +1130,7 @@ bool KaelthasSunstriderWarlockTankPositionCapernianAction::Execute(Event event)
         return Attack(capernian);
     }
 
-    if (capernian->GetVictim() == bot && IsKaelthasInPhase1(botAI))
+    if (capernian->GetVictim() == bot && kaelAI->GetPhase() == PHASE_SINGLE_ADVISOR)
     {
         const float minDistance = 31.0f;
         const float maxDistance = 34.0f;
@@ -2177,8 +2203,10 @@ bool KaelthasSunstriderRoundUpPhoenixesAndFocusDownEggsAction::Execute(Event eve
             return MoveAway(phoenix, safeDistance - currentDistance + 2.0f);
     }
 
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     if (botAI->IsRangedDps(bot) ||
-        (botAI->IsMelee(bot) && botAI->IsDps(bot) && IsKaelthasInPhase4To5Transition(botAI)))
+        (botAI->IsMelee(bot) && botAI->IsDps(bot) && kaelthas &&
+         kaelthas->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE) && kaelthas->GetHealthPct() <= 50.0f))
     {
         Unit* phoenixEgg = AI_VALUE2(Unit*, "find target", "phoenix egg");
         if (!phoenixEgg)

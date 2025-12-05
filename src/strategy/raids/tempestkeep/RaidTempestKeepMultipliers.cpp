@@ -1,6 +1,7 @@
 #include "RaidTempestKeepMultipliers.h"
 #include "RaidTempestKeepActions.h"
 #include "RaidTempestKeepHelpers.h"
+#include "RaidTempestKeepBossAI.h"
 #include "ChooseTargetActions.h"
 #include "DruidBearActions.h"
 #include "EquipAction.h"
@@ -123,10 +124,11 @@ float KaelthasSunstriderWaitForDpsMultiplier::GetValue(Action* action)
     if (!kaelthas)
         return 1.0f;
 
-    if (dynamic_cast<KaelthasSunstriderMisdirectAdvisorsToTanksAction*>(action))
+    boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
+    if (!kaelAI || kaelAI->GetPhase() != PHASE_SINGLE_ADVISOR)
         return 1.0f;
 
-    if (!IsKaelthasInPhase1(botAI))
+    if (dynamic_cast<KaelthasSunstriderMisdirectAdvisorsToTanksAction*>(action))
         return 1.0f;
 
     const time_t now = std::time(nullptr);
@@ -229,8 +231,12 @@ float KaelthasSunstriderDelayBloodlustAndHeroismMultiplier::GetValue(Action* act
     if (!kaelthas)
         return 1.0f;
 
+    boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
+    if (!kaelAI)
+        return false;
+
     Unit* thaladred = AI_VALUE2(Unit*, "find target", "thaladred the darkener");
-    if ((!IsKaelthasInPhase3(botAI) && !IsKaelthasInPhase5(botAI)) ||
+    if ((kaelAI->GetPhase() != PHASE_ALL_ADVISORS && kaelAI->GetPhase() != PHASE_FINAL) ||
         thaladred && thaladred->HasAura(SPELL_PERMANENT_FEIGN_DEATH))
     {
         if (dynamic_cast<CastBloodlustAction*>(action) ||
