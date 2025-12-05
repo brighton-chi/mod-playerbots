@@ -72,25 +72,33 @@ bool AlarBossTanksMoveBetweenPlatformsAction::Execute(Event event)
     if (!alarAI)
         return false;
 
-    std::vector<Position> platforms = { ALAR_PLATFORM_0, ALAR_PLATFORM_1, ALAR_PLATFORM_2, ALAR_PLATFORM_3 };
-    int8 alarPlatform = targetAlarPlatform[TEMPESTKEEP_MAP_ID];
+    std::vector<Position> platforms =
+    {
+        ALAR_PLATFORM_0,
+        ALAR_PLATFORM_1,
+        ALAR_PLATFORM_2,
+        ALAR_PLATFORM_3
+    };
+
+    uint8 alarPlatform = alarAI->GetPlatform();
 
     SetRtiTarget(botAI, "star", alar);
 
-    bool mtAction = PositionMainTank(botAI->IsMainTank(bot) ? bot : nullptr, alar, alarPlatform, platforms);
-    bool atAction = PositionAssistTank(botAI->IsAssistTankOfIndex(bot, 0) ?
-                    bot : nullptr, alar, alarPlatform, platforms);
+    bool mtAction = PositionMainTank(botAI->IsMainTank(bot) ? bot : nullptr, alar, alarAI, platforms);
+    bool atAction = PositionAssistTank(botAI->IsAssistTankOfIndex(bot, 0) ? bot : nullptr, alar, alarAI, platforms);
 
     return mtAction || atAction;
 }
 
 bool AlarBossTanksMoveBetweenPlatformsAction::PositionMainTank(Player* mainTank, Unit* alar,
-    int8 alarPlatform, const std::vector<Position>& platforms)
+    boss_alar* alarAI, const std::vector<Position>& platforms)
 {
     if (!mainTank)
         return false;
 
-    if (alarAI->GetPlatform() == POINT_QUILL && mainTank->GetPositionZ() < ALAR_GROUND_Z)
+    uint8 alarPlatform = alarAI->GetPlatform();
+
+    if (alarPlatform == POINT_QUILL && mainTank->GetPositionZ() < ALAR_GROUND_Z)
     {
         if (mainTank->GetExactDist2d(ALAR_SW_RAMP_BASE.GetPositionX(), ALAR_SW_RAMP_BASE.GetPositionY()) >= 2.0f)
         {
@@ -101,7 +109,7 @@ bool AlarBossTanksMoveBetweenPlatformsAction::PositionMainTank(Player* mainTank,
         return true;
     }
 
-    if (alarPlatform < 0 || alarPlatform >= static_cast<int8>(platforms.size()))
+    if (alarPlatform > 3)
         return false;
 
     Position mtTarget;
@@ -137,12 +145,14 @@ bool AlarBossTanksMoveBetweenPlatformsAction::PositionMainTank(Player* mainTank,
 }
 
 bool AlarBossTanksMoveBetweenPlatformsAction::PositionAssistTank(Player* assistTank, Unit* alar,
-    int8 alarPlatform, const std::vector<Position>& platforms)
+    boss_alar* alarAI, const std::vector<Position>& platforms)
 {
     if (!assistTank)
         return false;
 
-    if (alarAI->GetPlatform() == POINT_QUILL && assistTank->GetPositionZ() < ALAR_GROUND_Z)
+    uint8 alarPlatform = alarAI->GetPlatform();
+
+    if (alarPlatform == POINT_QUILL && assistTank->GetPositionZ() < ALAR_GROUND_Z)
     {
         if (assistTank->GetExactDist2d(ALAR_SE_RAMP_BASE.GetPositionX(), ALAR_SE_RAMP_BASE.GetPositionY()) >= 2.0f)
         {
@@ -153,7 +163,7 @@ bool AlarBossTanksMoveBetweenPlatformsAction::PositionAssistTank(Player* assistT
         return true;
     }
 
-    if (alarPlatform < 0 || alarPlatform >= static_cast<int8>(platforms.size()))
+    if (alarPlatform > 3)
         return false;
 
     Position atTarget;
@@ -229,10 +239,16 @@ bool AlarMeleeDpsPrioritizeBossAction::Execute(Event event)
             return true;
         }
 
-        int8 alarPlatform = targetAlarPlatform[TEMPESTKEEP_MAP_ID];
-        std::vector<Position> platforms = { ALAR_PLATFORM_0, ALAR_PLATFORM_1, ALAR_PLATFORM_2, ALAR_PLATFORM_3 };
+        std::vector<Position> platforms =
+        {
+            ALAR_PLATFORM_0,
+            ALAR_PLATFORM_1,
+            ALAR_PLATFORM_2,
+            ALAR_PLATFORM_3
+        };
 
-        if (alarPlatform < 0 || alarPlatform >= static_cast<int8>(platforms.size()))
+        uint8 alarPlatform = alarAI->GetPlatform();
+        if (alarPlatform > 3)
             return false;
 
         const Position& platformTarget = platforms[alarPlatform];
@@ -290,10 +306,25 @@ bool AlarRangedDpsPrioritizeAddsAction::Execute(Event event)
     boss_alar* alarAI = dynamic_cast<boss_alar*>(alar->GetAI());
     if (alarAI && !alarAI->HasPretendedToDie())
     {
-        int8 alarPlatform = targetAlarPlatform[TEMPESTKEEP_MAP_ID];
-        std::vector<Position> groundPositions = { ALAR_GROUND_0, ALAR_GROUND_1, ALAR_GROUND_2, ALAR_GROUND_3 };
-        if (alarPlatform < 0)
+        std::vector<Position> platforms =
+        {
+            ALAR_PLATFORM_0,
+            ALAR_PLATFORM_1,
+            ALAR_PLATFORM_2,
+            ALAR_PLATFORM_3
+        };
+
+        uint8 alarPlatform = alarAI->GetPlatform();
+        if (alarPlatform > 3)
             return false;
+
+        std::vector<Position> groundPositions =
+        {
+            ALAR_GROUND_0,
+            ALAR_GROUND_1,
+            ALAR_GROUND_2,
+            ALAR_GROUND_3
+        };
 
         const Position& groundTarget = groundPositions[alarPlatform];
         if (bot->GetExactDist2d(groundTarget.GetPositionX(), groundTarget.GetPositionY()) > 12.0f)
@@ -330,10 +361,25 @@ bool AlarPositionHealerAction::Execute(Event event)
     boss_alar* alarAI = dynamic_cast<boss_alar*>(alar->GetAI());
     if (alarAI && !alarAI->HasPretendedToDie())
     {
-        int8 alarPlatform = targetAlarPlatform[TEMPESTKEEP_MAP_ID];
-        std::vector<Position> groundPositions = { ALAR_GROUND_0, ALAR_GROUND_1, ALAR_GROUND_2, ALAR_GROUND_3 };
-        if (alarPlatform < 0)
+        std::vector<Position> platforms =
+        {
+            ALAR_PLATFORM_0,
+            ALAR_PLATFORM_1,
+            ALAR_PLATFORM_2,
+            ALAR_PLATFORM_3
+        };
+
+        uint8 alarPlatform = alarAI->GetPlatform();
+        if (alarPlatform > 3)
             return false;
+
+        std::vector<Position> groundPositions =
+        {
+            ALAR_GROUND_0,
+            ALAR_GROUND_1,
+            ALAR_GROUND_2,
+            ALAR_GROUND_3
+        };
 
         const Position& groundTarget = groundPositions[alarPlatform];
         if (bot->GetExactDist2d(groundTarget.GetPositionX(), groundTarget.GetPositionY()) > 12.0f)
@@ -377,10 +423,25 @@ bool AlarAddTankPickUpEmbersAction::Execute(Event event)
         }
         else
         {
-            int8 alarPlatform = targetAlarPlatform[TEMPESTKEEP_MAP_ID];
-            std::vector<Position> groundPositions = { ALAR_GROUND_0, ALAR_GROUND_1, ALAR_GROUND_2, ALAR_GROUND_3 };
-            if (alarPlatform < 0)
+            std::vector<Position> platforms =
+            {
+                ALAR_PLATFORM_0,
+                ALAR_PLATFORM_1,
+                ALAR_PLATFORM_2,
+                ALAR_PLATFORM_3
+            };
+
+            uint8 alarPlatform = alarAI->GetPlatform();
+            if (alarPlatform > 3)
                 return false;
+
+            std::vector<Position> groundPositions =
+            {
+                ALAR_GROUND_0,
+                ALAR_GROUND_1,
+                ALAR_GROUND_2,
+                ALAR_GROUND_3
+            };
 
             const Position& groundTarget = groundPositions[alarPlatform];
             if (bot->GetExactDist2d(groundTarget.GetPositionX(), groundTarget.GetPositionY()) > 22.0f)
@@ -420,29 +481,21 @@ bool AlarJumpFromPlatformAction::Execute(Event event)
     if (!alar)
         return false;
 
+    boss_alar* alarAI = dynamic_cast<boss_alar*>(alar->GetAI());
+    if (!alarAI)
+        return false;
+
     if (bot->GetPositionZ() >= ALAR_BALCONY_Z)
     {
-        std::vector<std::pair<Position, Position>> platformGroundPairs =
-        {
-            {ALAR_PLATFORM_0, ALAR_GROUND_0},
-            {ALAR_PLATFORM_1, ALAR_GROUND_1},
-            {ALAR_PLATFORM_2, ALAR_GROUND_2},
-            {ALAR_PLATFORM_3, ALAR_GROUND_3}
-        };
+        uint8 alarPlatform = alarAI->GetPlatform();
+        // Only jump if on a valid platform (0-3)
+        if (alarPlatform > 3)
+            return false;
 
-        float minDist = std::numeric_limits<float>::max();
-        size_t nearestIndex = 0;
-        for (size_t i = 0; i < platformGroundPairs.size(); ++i)
-        {
-            float dist = bot->GetExactDist2d(platformGroundPairs[i].first.GetPositionX(),
-                                             platformGroundPairs[i].first.GetPositionY());
-            if (dist < minDist)
-            {
-                minDist = dist;
-                nearestIndex = i;
-            }
-        }
-        const Position& ground = platformGroundPairs[nearestIndex].second;
+        // Map platform index to ground position
+        const Position groundPositions[] = { ALAR_GROUND_0, ALAR_GROUND_1, ALAR_GROUND_2, ALAR_GROUND_3 };
+        const Position& ground = groundPositions[alarPlatform];
+
         return JumpTo(TEMPESTKEEP_MAP_ID, ground.GetPositionX(), ground.GetPositionY(),
                       ground.GetPositionZ(), MovementPriority::MOVEMENT_FORCED);
     }
@@ -452,33 +505,6 @@ bool AlarJumpFromPlatformAction::Execute(Event event)
 
 bool AlarMoveAwayFromRebirthAction::Execute(Event event)
 {
-    if (bot->GetPositionZ() >= ALAR_BALCONY_Z)
-    {
-        std::vector<std::pair<Position, Position>> platformGroundPairs =
-        {
-            {ALAR_PLATFORM_0, ALAR_GROUND_0},
-            {ALAR_PLATFORM_1, ALAR_GROUND_1},
-            {ALAR_PLATFORM_2, ALAR_GROUND_2},
-            {ALAR_PLATFORM_3, ALAR_GROUND_3}
-        };
-
-        float minDist = std::numeric_limits<float>::max();
-        size_t nearestIndex = 0;
-        for (size_t i = 0; i < platformGroundPairs.size(); ++i)
-        {
-            float dist = bot->GetExactDist2d(platformGroundPairs[i].first.GetPositionX(),
-                                             platformGroundPairs[i].first.GetPositionY());
-            if (dist < minDist)
-            {
-                minDist = dist;
-                nearestIndex = i;
-            }
-        }
-        const Position& ground = platformGroundPairs[nearestIndex].second;
-        return JumpTo(TEMPESTKEEP_MAP_ID, ground.GetPositionX(), ground.GetPositionY(),
-                      ground.GetPositionZ(), MovementPriority::MOVEMENT_FORCED);
-    }
-
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
     if (!alar)
         return false;
@@ -566,63 +592,52 @@ bool AlarReturnToRoomCenterAction::Execute(Event event)
 
 bool AlarDiveBombSpreadAction::Execute(Event event)
 {
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    GuidVector members = AI_VALUE(GuidVector, "group members");
-    Unit* closestMember = nullptr;
-    float closestDist = std::numeric_limits<float>::max();
-
-    for (auto& member : members)
-    {
-        Unit* unit = botAI->GetUnit(member);
-        if (!unit || bot->GetGUID() == member)
-            continue;
-
-        float dist = bot->GetExactDist2d(unit);
-        if (dist < closestDist)
-        {
-            closestDist = dist;
-            closestMember = unit;
-        }
-    }
-
-    if (closestMember)
-    {
-        const uint32 minInterval = 500;
-        return FleePosition(Position(closestMember->GetPositionX(), closestMember->GetPositionY(),
-                                     closestMember->GetPositionZ()), 11.0f, minInterval);
-    }
-
-    return false;
-}
-
-bool AlarManageTimersAndTrackersAction::Execute(Event event)
-{
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
     if (!alar)
         return false;
 
-    std::vector<Position> platforms = { ALAR_PLATFORM_0, ALAR_PLATFORM_1, ALAR_PLATFORM_2, ALAR_PLATFORM_3 };
-
-    DetermineAlarTargetPlatform(alar, platforms);
-
-    /* if (alar->GetHealthPct() > 99.5f && alar->GetPositionZ() >= ALAR_BALCONY_Z)
+    if (alar->IsVisible())
     {
-        lastRebirthState[TEMPESTKEEP_MAP_ID] = false;
-        isAlarInPhase2[TEMPESTKEEP_MAP_ID] = false;
+        Group* group = bot->GetGroup();
+        if (!group)
+            return false;
+
+        GuidVector members = AI_VALUE(GuidVector, "group members");
+        Unit* closestMember = nullptr;
+        float closestDist = std::numeric_limits<float>::max();
+
+        for (auto& member : members)
+        {
+            Unit* unit = botAI->GetUnit(member);
+            if (!unit || bot->GetGUID() == member)
+                continue;
+
+            float dist = bot->GetExactDist2d(unit);
+            if (dist < closestDist)
+            {
+                closestDist = dist;
+                closestMember = unit;
+            }
+        }
+
+        if (closestMember)
+        {
+            const uint32 minInterval = 500;
+            return FleePosition(Position(closestMember->GetPositionX(), closestMember->GetPositionY(),
+                                        closestMember->GetPositionZ()), 11.0f, minInterval);
+        }
     }
-
-    bool rebirthActive = alar->HasUnitState(UNIT_STATE_CASTING) &&
-                         alar->FindCurrentSpellBySpellId(SPELL_REBIRTH_PHASE2);
-    bool lastRebirth = lastRebirthState[TEMPESTKEEP_MAP_ID];
-
-    // Detect transition: finished casting Rebirth (phase 2 begins)
-    if (lastRebirth && !rebirthActive)
-        isAlarInPhase2[TEMPESTKEEP_MAP_ID] = true;
-
-    lastRebirthState[TEMPESTKEEP_MAP_ID] = rebirthActive; */
+    else
+    {
+        float currentDistance = bot->GetExactDist2d(alar);
+        const float safeDistance = 20.0f;
+        if (currentDistance < safeDistance)
+        {
+            bot->AttackStop();
+            bot->InterruptNonMeleeSpells(true);
+            return MoveAway(alar, safeDistance - currentDistance + 5.0f);
+        }
+    }
 
     return false;
 }

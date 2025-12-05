@@ -17,7 +17,6 @@ namespace TempestKeepHelpers
         SPELL_ARCANE_FLURRY             = 37268,
 
         // Al'ar
-        SPELL_REBIRTH_PHASE2            = 34342,
         SPELL_MELT_ARMOR                = 35410,
 
         // High Astromancer Solarian
@@ -110,10 +109,8 @@ namespace TempestKeepHelpers
     extern const Position KAELTHAS_TANK_POSITION;
 
     const uint32 TEMPESTKEEP_MAP_ID = 550;
-    const float ALAR_FLAME_QUILLS_Z = 42.0f;
     const float ALAR_GROUND_Z = -2.0f;
     const float ALAR_BALCONY_Z = 17.0f;
-    const float ALAR_FLIGHT_Z = 22.0f;
 
     void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);
     void MarkTargetWithSkull(Player* bot, Unit* target);
@@ -128,8 +125,6 @@ namespace TempestKeepHelpers
     Unit* GetNearestPlayerInRadius(Player* bot, float radius);
     Unit* GetNearestNonTankPlayerInRadius(Player* bot, float radius);
 
-    void DetermineAlarTargetPlatform(Unit* alar, const std::vector<Position>& platforms);
-    bool IsAlarMapIDTimerManager(PlayerbotAI* botAI, Player* bot);
     bool IsAlarAddTank(PlayerbotAI* botAI, Player* bot);
 
     bool IsKaelthasInPhase1(PlayerbotAI* botAI);
@@ -143,10 +138,6 @@ namespace TempestKeepHelpers
     Player* GetCapernianTank(PlayerbotAI* botAI, Player* bot);
     Player* GetNetherstrandLongbowTank(PlayerbotAI* botAI, Player* bot);
     bool IsAnyLegendaryWeaponDead(PlayerbotAI* botAI, Player* bot);
-
-    extern std::unordered_map<uint32, int8> targetAlarPlatform;
-    extern std::unordered_map<uint32, bool> lastRebirthState;
-    extern std::unordered_map<uint32, bool> isAlarInPhase2;
 
     extern std::unordered_map<ObjectGuid, Position> initialVoidReaverPositions;
     extern std::unordered_map<ObjectGuid, bool> hasReachedInitialVoidReaverPosition;

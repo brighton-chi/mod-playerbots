@@ -160,73 +160,11 @@ namespace TempestKeepHelpers
         return nearestPlayer;
     }
 
-    bool IsAlarMapIDTimerManager(PlayerbotAI* botAI, Player* bot)
-    {
-        if (Group* group = bot->GetGroup())
-        {
-            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-            {
-                Player* member = ref->GetSource();
-                if (member && member->IsAlive() && botAI->IsDps(member) && GET_PLAYERBOT_AI(member))
-                    return member == bot;
-            }
-        }
-
-        return false;
-    }
-
     bool IsAlarAddTank(PlayerbotAI* botAI, Player* bot)
     {
         return botAI->IsTank(bot) &&
                !botAI->IsMainTank(bot) &&
                !botAI->IsAssistTankOfIndex(bot, 0);
-    }
-
-    void DetermineAlarTargetPlatform(Unit* alar, const std::vector<Position>& platforms)
-    {
-        if (!alar || platforms.empty())
-            return;
-
-        if (alar->GetHealthPct() >= 99.5f)
-        {
-            targetAlarPlatform[TEMPESTKEEP_MAP_ID] = 0;
-            return;
-        }
-
-        // Flame Quills exception: reset platform index
-        if (alar->GetPositionZ() >= ALAR_FLAME_QUILLS_Z)
-        {
-            targetAlarPlatform[TEMPESTKEEP_MAP_ID] = -1;
-            return;
-        }
-
-        const float platformThreshold = 5.0f;
-        int8 currentIndex = targetAlarPlatform.count(TEMPESTKEEP_MAP_ID) ? targetAlarPlatform[TEMPESTKEEP_MAP_ID] : -1;
-
-        // If index is -1 (after Flame Quills), find closest platform
-        if (currentIndex == -1)
-        {
-            float minDist = std::numeric_limits<float>::max();
-            for (size_t i = 0; i < platforms.size(); ++i)
-            {
-                float dist = alar->GetExactDist2d(platforms[i].GetPositionX(), platforms[i].GetPositionY());
-                if (dist < minDist)
-                {
-                    minDist = dist;
-                    currentIndex = static_cast<int8>(i);
-                }
-            }
-            targetAlarPlatform[TEMPESTKEEP_MAP_ID] = currentIndex;
-            return;
-        }
-
-        // Normal platform movement: increment index when Al'ar leaves current platform
-        float dist = alar->GetExactDist2d(platforms[currentIndex].GetPositionX(), platforms[currentIndex].GetPositionY());
-        if (dist > platformThreshold)
-        {
-            int8 nextIndex = (currentIndex + 1) % platforms.size();
-            targetAlarPlatform[TEMPESTKEEP_MAP_ID] = nextIndex;
-        }
     }
 
     // Phase 1: Single Advisor Phase
@@ -565,13 +503,8 @@ namespace TempestKeepHelpers
         return false;
     }
 
-    std::unordered_map<uint32, int8> targetAlarPlatform;
-    std::unordered_map<uint32, bool> lastRebirthState;
-    std::unordered_map<uint32, bool> isAlarInPhase2;
-
     std::unordered_map<ObjectGuid, Position> initialVoidReaverPositions;
     std::unordered_map<ObjectGuid, bool> hasReachedInitialVoidReaverPosition;
 
-    std::unordered_map<uint32, uint8> thaladredRelayPhase;
     std::unordered_map<uint32, time_t> advisorDpsWaitTimer;
 }

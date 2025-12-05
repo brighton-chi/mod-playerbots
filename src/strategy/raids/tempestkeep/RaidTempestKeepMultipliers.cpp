@@ -18,10 +18,14 @@
 float AlarMoveBetweenPlatformsMultiplier::GetValue(Action* action)
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    if (!alar || !isAlarInPhase2[TEMPESTKEEP_MAP_ID])
+    if (!alar)
         return 1.0f;
 
-    if (!IsAlarAddTank(botAI, bot))
+    boss_alar* alarAI = dynamic_cast<boss_alar*>(alar->GetAI());
+    if (!alarAI || alarAI->HasPretendedToDie())
+        return 1.0f;
+
+    if (IsAlarAddTank(botAI, bot))
         return 1.0f;
 
     if (dynamic_cast<CombatFormationMoveAction*>(action) ||

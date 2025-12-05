@@ -22,7 +22,6 @@ public:
         creators["alar swap tanks on boss"] = &RaidTempestKeepActionContext::alar_swap_tanks_on_boss;
         creators["alar return to room center"] = &RaidTempestKeepActionContext::alar_return_to_room_center;
         creators["alar dive bomb spread"] = &RaidTempestKeepActionContext::alar_dive_bomb_spread;
-        creators["alar manage timers and trackers"] = &RaidTempestKeepActionContext::alar_manage_timers_and_trackers;
 
         creators["void reaver position boss"] = &RaidTempestKeepActionContext::void_reaver_position_boss;
         creators["void reaver spread ranged"] = &RaidTempestKeepActionContext::void_reaver_spread_ranged;
@@ -72,7 +71,6 @@ private:
     static Action* alar_swap_tanks_on_boss(PlayerbotAI* botAI) { return new AlarSwapTanksOnBossAction(botAI); }
     static Action* alar_return_to_room_center(PlayerbotAI* botAI) { return new AlarReturnToRoomCenterAction(botAI); }
     static Action* alar_dive_bomb_spread(PlayerbotAI* botAI) { return new AlarDiveBombSpreadAction(botAI); }
-    static Action* alar_manage_timers_and_trackers(PlayerbotAI* botAI) { return new AlarManageTimersAndTrackersAction(botAI); }
 
     static Action* void_reaver_position_boss(PlayerbotAI* botAI) { return new VoidReaverPositionBossAction(botAI); }
     static Action* void_reaver_spread_ranged(PlayerbotAI* botAI) { return new VoidReaverSpreadRangedAction(botAI); }

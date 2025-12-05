@@ -22,7 +22,6 @@ public:
         creators["alar engaged by tanks in phase 2"] = &RaidTempestKeepTriggerContext::alar_engaged_by_tanks_in_phase_2;
         creators["alar phase 2 encounter is at room center"] = &RaidTempestKeepTriggerContext::alar_phase_2_encounter_is_at_room_center;
         creators["alar boss is preparing to dive bomb"] = &RaidTempestKeepTriggerContext::alar_boss_is_preparing_to_dive_bomb;
-        creators["alar need to manage timers and trackers"] = &RaidTempestKeepTriggerContext::alar_need_to_manage_timers_and_trackers;
 
         creators["void reaver boss engaged by tank"] = &RaidTempestKeepTriggerContext::void_reaver_boss_engaged_by_tank;
         creators["void reaver boss launches arcane orbs"] = &RaidTempestKeepTriggerContext::void_reaver_boss_launches_arcane_orbs;
@@ -72,7 +71,6 @@ private:
     static Trigger* alar_engaged_by_tanks_in_phase_2(PlayerbotAI* botAI) { return new AlarEngagedByTanksInPhase2Trigger(botAI); }
     static Trigger* alar_phase_2_encounter_is_at_room_center(PlayerbotAI* botAI) { return new AlarPhase2EncounterIsAtRoomCenterTrigger(botAI); }
     static Trigger* alar_boss_is_preparing_to_dive_bomb(PlayerbotAI* botAI) { return new AlarBossIsPreparingToDiveBombTrigger(botAI); }
-    static Trigger* alar_need_to_manage_timers_and_trackers(PlayerbotAI* botAI) { return new AlarNeedToManageTimersAndTrackersTrigger(botAI); }
 
     static Trigger* void_reaver_boss_engaged_by_tank(PlayerbotAI* botAI) { return new VoidReaverBossEngagedByTankTrigger(botAI); }
     static Trigger* void_reaver_boss_launches_arcane_orbs(PlayerbotAI* botAI) { return new VoidReaverBossLaunchesArcaneOrbsTrigger(botAI); }

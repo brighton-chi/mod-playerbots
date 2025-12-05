@@ -79,9 +79,12 @@ bool AlarIncomingFlameQuillsTrigger::IsActive()
     if (!alar)
         return false;
 
+    if (bot->GetPositionZ() < ALAR_BALCONY_Z)
+        return false;
+
     boss_alar* alarAI = dynamic_cast<boss_alar*>(alar->GetAI());
-    return alarAI && alarAI->GetPlatform() == POINT_QUILL &&
-           bot->GetPositionZ() >= ALAR_BALCONY_Z;
+    return alarAI && (alarAI->GetPlatform() == POINT_QUILL ||
+           alarAI->GetPlatform() == POINT_MIDDLE);
 }
 
 bool AlarRisingFromTheAshesTrigger::IsActive()
@@ -113,7 +116,7 @@ bool AlarPhase2EncounterIsAtRoomCenterTrigger::IsActive()
         return false;
 
     boss_alar* alarAI = dynamic_cast<boss_alar*>(alar->GetAI());
-    return alarAI && alarAI->HasPretendedToDie() && alar->GetPlatform() != POINT_DIVE;
+    return alarAI && alarAI->HasPretendedToDie() && alarAI->GetPlatform() != POINT_DIVE;
 }
 
 bool AlarBossIsPreparingToDiveBombTrigger::IsActive()
@@ -123,16 +126,7 @@ bool AlarBossIsPreparingToDiveBombTrigger::IsActive()
         return false;
 
     boss_alar* alarAI = dynamic_cast<boss_alar*>(alar->GetAI());
-    return alarAI && alar->GetPlatform() == POINT_DIVE;
-}
-
-bool AlarNeedToManageTimersAndTrackersTrigger::IsActive()
-{
-    if (!IsAlarMapIDTimerManager(botAI, bot))
-        return false;
-
-    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    return alar != nullptr;
+    return alarAI && alarAI->GetPlatform() == POINT_DIVE;
 }
 
 bool VoidReaverBossEngagedByTankTrigger::IsActive()

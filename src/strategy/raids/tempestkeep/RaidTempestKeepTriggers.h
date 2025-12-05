@@ -87,13 +87,6 @@ public:
     bool IsActive() override;
 };
 
-class AlarNeedToManageTimersAndTrackersTrigger : public Trigger
-{
-public:
-    AlarNeedToManageTimersAndTrackersTrigger(PlayerbotAI* botAI) : Trigger(botAI, "alar need to manage timers and trackers") {}
-    bool IsActive() override;
-};
-
 class VoidReaverBossEngagedByTankTrigger : public Trigger
 {
 public:

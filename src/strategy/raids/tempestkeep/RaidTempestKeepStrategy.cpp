@@ -42,9 +42,6 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("alar phase 2 encounter is at room center",
         NextAction::array(0, new NextAction("alar return to room center", ACTION_RAID + 1), nullptr)
     ));
-    triggers.push_back(new TriggerNode("alar need to manage timers and trackers",
-        NextAction::array(0, new NextAction("alar manage timers and trackers", ACTION_EMERGENCY + 10), nullptr)
-    ));
 
     // Void Reaver
     triggers.push_back(new TriggerNode("void reaver boss engaged by tank",

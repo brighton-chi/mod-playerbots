@@ -2,6 +2,7 @@
 #define _PLAYERBOT_RAIDTEMPESTKEEPACTIONS_H
 
 #include "RaidTempestKeepHelpers.h"
+#include "RaidTempestKeepBossAI.h"
 #include "Action.h"
 #include "AttackAction.h"
 #include "MovementActions.h"
@@ -29,8 +30,8 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool PositionMainTank(Player* mainTank, Unit* alar, int8 alarPlatform, const std::vector<Position>& platforms);
-    bool PositionAssistTank(Player* assistTank, Unit* alar, int8 alarPlatform, const std::vector<Position>& platforms);
+    bool PositionMainTank(Player* mainTank, Unit* alar, boss_alar* alarAI, const std::vector<Position>& platforms);
+    bool PositionAssistTank(Player* assistTank, Unit* alar, boss_alar* alarAI, const std::vector<Position>& platforms);
 };
 
 class AlarMeleeDpsPrioritizeBossAction : public AttackAction
@@ -93,13 +94,6 @@ class AlarDiveBombSpreadAction : public MovementAction
 {
 public:
     AlarDiveBombSpreadAction(PlayerbotAI* botAI, std::string const name = "alar dive bomb spread") : MovementAction(botAI, name) {}
-    bool Execute(Event event) override;
-};
-
-class AlarManageTimersAndTrackersAction : public Action
-{
-public:
-    AlarManageTimersAndTrackersAction(PlayerbotAI* botAI, std::string const name = "alar manage timers and trackers") : Action(botAI, name) {}
     bool Execute(Event event) override;
 };
 
