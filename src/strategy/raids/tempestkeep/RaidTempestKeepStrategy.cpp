@@ -28,16 +28,16 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction::array(0, new NextAction("alar add tank pick up embers", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("alar incoming flame quills",
-        NextAction::array(0, new NextAction("alar jump from platform", ACTION_EMERGENCY + 9), nullptr)
+        NextAction::array(0, new NextAction("alar jump from platform", ACTION_EMERGENCY + 7), nullptr)
     ));
     triggers.push_back(new TriggerNode("alar rising from the ashes",
-        NextAction::array(0, new NextAction("alar move away from rebirth", ACTION_EMERGENCY + 9), nullptr)
+        NextAction::array(0, new NextAction("alar move away from rebirth", ACTION_EMERGENCY + 7), nullptr)
     ));
-    triggers.push_back(new TriggerNode("alar engaged by tanks in phase 2",
-        NextAction::array(0, new NextAction("alar swap tanks on boss", ACTION_RAID + 1), nullptr)
+    triggers.push_back(new TriggerNode("alar boss tank armor was melted",
+        NextAction::array(0, new NextAction("alar swap tanks on boss", ACTION_EMERGENCY + 2), nullptr)
     ));
-    triggers.push_back(new TriggerNode("alar boss is preparing to dive bomb",
-        NextAction::array(0, new NextAction("alar dive bomb spread", ACTION_EMERGENCY + 1), nullptr)
+    triggers.push_back(new TriggerNode("alar boss is performing dive bomb sequence",
+        NextAction::array(0, new NextAction("alar dive bomb spread and stay back", ACTION_EMERGENCY + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("alar phase 2 encounter is at room center",
         NextAction::array(0, new NextAction("alar return to room center", ACTION_RAID + 1), nullptr)

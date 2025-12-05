@@ -75,16 +75,21 @@ bool AlarEmbersOfAlarSpawnedTrigger::IsActive()
 
 bool AlarIncomingFlameQuillsTrigger::IsActive()
 {
-    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    if (!alar)
-        return false;
-
     if (bot->GetPositionZ() < ALAR_BALCONY_Z)
         return false;
 
-    boss_alar* alarAI = dynamic_cast<boss_alar*>(alar->GetAI());
-    return alarAI && (alarAI->GetPlatform() == POINT_QUILL ||
-           alarAI->GetPlatform() == POINT_MIDDLE);
+    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+    if (!alar || alarAI->HasPretendedToDie())
+        return false;
+
+    int8 locationIndex = GetAlarCurrentLocationIndex(alar);
+    if (locationIndex == LOCATION_NONE)
+    {
+        Position dest;
+        locationIndex = GetAlarDestinationLocationIndex(alar, dest);
+    }
+
+    return locationIndex == POINT_QUILL_IDX;
 }
 
 bool AlarRisingFromTheAshesTrigger::IsActive()
@@ -93,7 +98,7 @@ bool AlarRisingFromTheAshesTrigger::IsActive()
     return alar && alar->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE);
 }
 
-bool AlarEngagedByTanksInPhase2Trigger::IsActive()
+bool AlarBossTankArmorWasMeltedTrigger::IsActive()
 {
     if (!botAI->IsMainTank(bot) && !botAI->IsAssistTankOfIndex(bot, 0))
         return false;
@@ -103,7 +108,29 @@ bool AlarEngagedByTanksInPhase2Trigger::IsActive()
         return false;
 
     boss_alar* alarAI = dynamic_cast<boss_alar*>(alar->GetAI());
-    return alarAI && !alarAI->HasPretendedToDie();
+    return alarAI && alarAI->HasPretendedToDie();
+}
+
+bool AlarBossIsPerformingDiveBombSequenceTrigger::IsActive()
+{
+    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+    if (!alar)
+        return false;
+
+    boss_alar* alarAI = dynamic_cast<boss_alar*>(alar->GetAI());
+    if (!alarAI || !alarAI->HasPretendedToDie())
+        return false;
+
+    int8 locationIndex = GetAlarCurrentLocationIndex(alar);
+    if (locationIndex == LOCATION_NONE)
+    {
+        Position dest;
+        locationIndex = GetAlarDestinationLocationIndex(alar, dest);
+    }
+
+    // Active if Al'ar is at/heading to dive bomb, or is not visible, or is not selectable
+    return locationIndex == POINT_DIVE_IDX ||
+           (!alar->IsVisible() && locationIndex != POINT_MIDDLE_IDX);
 }
 
 bool AlarPhase2EncounterIsAtRoomCenterTrigger::IsActive()
@@ -116,17 +143,22 @@ bool AlarPhase2EncounterIsAtRoomCenterTrigger::IsActive()
         return false;
 
     boss_alar* alarAI = dynamic_cast<boss_alar*>(alar->GetAI());
-    return alarAI && alarAI->HasPretendedToDie() && alarAI->GetPlatform() != POINT_DIVE;
-}
-
-bool AlarBossIsPreparingToDiveBombTrigger::IsActive()
-{
-    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    if (!alar)
+    if (!alarAI || !alarAI->HasPretendedToDie())
         return false;
 
-    boss_alar* alarAI = dynamic_cast<boss_alar*>(alar->GetAI());
-    return alarAI && alarAI->GetPlatform() == POINT_DIVE;
+    // Exclude dive bomb sequence
+    int8 locationIndex = GetAlarCurrentLocationIndex(alar);
+    if (locationIndex == LOCATION_NONE)
+    {
+        Position dest;
+        locationIndex = GetAlarDestinationLocationIndex(alar, dest);
+    }
+
+    // If Al'ar is at or heading to dive bomb location, or is not visible, or is not selectable, do not trigger
+    if (locationIndex == POINT_DIVE_IDX || (!alar->IsVisible() && locationIndex != POINT_MIDDLE_IDX))
+        return false;
+
+    return true;
 }
 
 bool VoidReaverBossEngagedByTankTrigger::IsActive()

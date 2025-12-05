@@ -84,16 +84,33 @@ namespace TempestKeepHelpers
         ITEM_NETHER_SPIKES              = 30319,
     };
 
-    extern const Position ALAR_ROOM_CENTER;
-    extern const Position ALAR_RANGED_CENTER;
+    enum AlarLocationIndex
+    {
+        PLATFORM_0_IDX,
+        PLATFORM_1_IDX,
+        PLATFORM_2_IDX,
+        PLATFORM_3_IDX,
+        POINT_QUILL_IDX,
+        POINT_MIDDLE_IDX,
+        POINT_DIVE_IDX,
+        LOCATION_NONE = -1
+    };
+
     extern const Position ALAR_PLATFORM_0;
     extern const Position ALAR_PLATFORM_1;
     extern const Position ALAR_PLATFORM_2;
     extern const Position ALAR_PLATFORM_3;
+    extern const Position PLATFORM_POSITIONS[4];
     extern const Position ALAR_GROUND_0;
     extern const Position ALAR_GROUND_1;
     extern const Position ALAR_GROUND_2;
     extern const Position ALAR_GROUND_3;
+    extern const Position GROUND_POSITIONS[4];
+    extern const Position ALAR_ROOM_CENTER;
+    extern const Position ALAR_RANGED_CENTER;
+    extern const Position ALAR_POINT_QUILL;
+    extern const Position ALAR_POINT_MIDDLE;
+    extern const Position ALAR_POINT_DIVE;
     extern const Position ALAR_SE_RAMP_BASE;
     extern const Position ALAR_SW_RAMP_BASE;
     extern const Position ALAR_ROOM_S_CENTER;
@@ -125,6 +142,9 @@ namespace TempestKeepHelpers
     Unit* GetNearestPlayerInRadius(Player* bot, float radius);
     Unit* GetNearestNonTankPlayerInRadius(Player* bot, float radius);
 
+    int8 GetAlarDestinationLocationIndex(Unit* alar, Position& dest);
+    int8 GetAlarCurrentLocationIndex(Unit* alar);
+    void GetClosestPlatformAndGround(const Position& botPos, int8& closestPlatform, Position& ground);
     bool IsAlarAddTank(PlayerbotAI* botAI, Player* bot);
 
     bool IsKaelthasInPhase1(PlayerbotAI* botAI);

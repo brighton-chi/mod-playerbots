@@ -8,16 +8,33 @@
 
 namespace TempestKeepHelpers
 {
-    const Position ALAR_ROOM_CENTER = { 330.611f, -2.540f, -2.389f };
-    const Position ALAR_RANGED_CENTER = { 346.758f, 3.794f, -2.389f };
     const Position ALAR_PLATFORM_0 = { 335.638f, 59.4879f, 17.9319f }; // West Platform
     const Position ALAR_PLATFORM_1 = { 388.751f, 31.7312f, 20.2636f }; // Northwest Platform
     const Position ALAR_PLATFORM_2 = { 388.791f, -33.1059f, 20.2636f }; // Northeast Platform
     const Position ALAR_PLATFORM_3 = { 332.723f, -61.159f, 17.9791f }; // East Platform
+    const Position PLATFORM_POSITIONS[] =
+    {
+        ALAR_PLATFORM_0,
+        ALAR_PLATFORM_1,
+        ALAR_PLATFORM_2,
+        ALAR_PLATFORM_3
+    };
     const Position ALAR_GROUND_0 = { 336.439f, 48.181f, -2.389f }; // Landing point for jumping from West Platform
     const Position ALAR_GROUND_1 = { 379.122f, 25.146f, -2.385f }; // Landing point for jumping from Northwest Platform
     const Position ALAR_GROUND_2 = { 378.583f, -27.481f, -2.385f }; // Landing point for jumping from Northeast Platform
     const Position ALAR_GROUND_3 = { 331.631f, -49.716f, -2.389f }; // Landing point for jumping from East Platform
+    const Position GROUND_POSITIONS[] =
+    {
+        ALAR_GROUND_0,
+        ALAR_GROUND_1,
+        ALAR_GROUND_2,
+        ALAR_GROUND_3
+    };
+    const Position ALAR_ROOM_CENTER = { 330.611f, -2.540f, -2.389f };
+    const Position ALAR_RANGED_CENTER = { 346.758f, 3.794f, -2.389f };
+    const Position ALAR_POINT_QUILL = {332.0f, 0.01f, 43.0f, 0.0f}; //quill
+    const Position ALAR_POINT_MIDDLE = {331.0f, 0.01f, -2.38f, 0.0f}; //middle (p2)
+    const Position ALAR_POINT_DIVE = {332.0f, 0.01f, 43.0f, 0.0f}; // dive
     const Position ALAR_SE_RAMP_BASE = { 281.064f, -36.590f, -2.389f };
     const Position ALAR_SW_RAMP_BASE = { 281.064f, 36.590f, -2.389f };
     const Position ALAR_ROOM_S_CENTER = { 281.064f, 0.0f, -2.389f };
@@ -29,7 +46,7 @@ namespace TempestKeepHelpers
     const Position KAELTHAS_WEAPON_STACK_POSITION = { 775.296f, -0.822f, 48.729f };
     const Position KAELTHAS_AXE_TANK_POSITION = { 775.621f, 20.717f, 48.729f };
     const Position KAELTHAS_BOW_TANK_POSITION = { 777.713f, -28.857f, 48.729f };
-    const Position KAELTHAS_TANK_POSITION = { 799.390f, -0.837f, 48.729f }; // need method for this
+    const Position KAELTHAS_TANK_POSITION = { 799.390f, -0.837f, 48.729f }; // need method for this if I want it
 
     void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId)
     {
@@ -158,6 +175,96 @@ namespace TempestKeepHelpers
         }
 
         return nearestPlayer;
+    }
+
+    int8 GetAlarDestinationLocationIndex(Unit* alar, Position& dest)
+    {
+        if (!alar)
+            return LOCATION_NONE;
+
+        float x, y, z;
+        if (!alar->GetMotionMaster()->GetDestination(x, y, z))
+            return LOCATION_NONE;
+
+        dest.Relocate(x, y, z);
+
+        // Array of all platforms and special points
+        const Position locations[] =
+        {
+            ALAR_PLATFORM_0,
+            ALAR_PLATFORM_1,
+            ALAR_PLATFORM_2,
+            ALAR_PLATFORM_3,
+            ALAR_POINT_QUILL,
+            ALAR_POINT_MIDDLE,
+            ALAR_POINT_DIVE
+        };
+
+        float minDist = std::numeric_limits<float>::max();
+        int8 locationIndex = LOCATION_NONE;
+        for (int8 i = 0; i < 7; ++i)
+        {
+            float dist = dest.GetExactDist2d(&locations[i]);
+            if (dist < minDist)
+            {
+                minDist = dist;
+                locationIndex = i;
+            }
+        }
+        if (minDist > 0.1f)
+            return LOCATION_NONE;
+
+        return locationIndex;
+    }
+
+    int8 GetAlarCurrentLocationIndex(Unit* alar)
+    {
+        if (!alar)
+            return LOCATION_NONE;
+
+        // Define the locations array with all platforms and special points
+        const Position locations[] =
+        {
+            ALAR_PLATFORM_0,
+            ALAR_PLATFORM_1,
+            ALAR_PLATFORM_2,
+            ALAR_PLATFORM_3,
+            ALAR_POINT_QUILL,
+            ALAR_POINT_MIDDLE,
+            ALAR_POINT_DIVE
+        };
+
+        float minDist = std::numeric_limits<float>::max();
+        int8 locationIndex = LOCATION_NONE;
+        for (int8 i = 0; i < 7; ++i)
+        {
+            float dist = alar->GetPosition().GetExactDist2d(&locations[i]);
+            if (dist < minDist)
+            {
+                minDist = dist;
+                locationIndex = i;
+            }
+        }
+        if (minDist > 0.1f)
+            return LOCATION_NONE;
+
+        return locationIndex;
+    }
+
+    void GetClosestPlatformAndGround(const Position& botPos, int8& closestPlatform, Position& ground)
+    {
+        float minDist = std::numeric_limits<float>::max();
+        closestPlatform = -1;
+        for (int8 i = 0; i < 4; ++i)
+        {
+            float dist = botPos.GetExactDist2d(&PLATFORM_POSITIONS[i]);
+            if (dist < minDist)
+            {
+                minDist = dist;
+                closestPlatform = i;
+            }
+        }
+        ground = GROUND_POSITIONS[closestPlatform];
     }
 
     bool IsAlarAddTank(PlayerbotAI* botAI, Player* bot)

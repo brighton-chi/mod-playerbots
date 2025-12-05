@@ -20,8 +20,8 @@ public:
         creators["alar jump from platform"] = &RaidTempestKeepActionContext::alar_jump_from_platform;
         creators["alar move away from rebirth"] = &RaidTempestKeepActionContext::alar_move_away_from_rebirth;
         creators["alar swap tanks on boss"] = &RaidTempestKeepActionContext::alar_swap_tanks_on_boss;
+        creators["alar dive bomb spread and stay back"] = &RaidTempestKeepActionContext::alar_dive_bomb_spread_and_stay_back;
         creators["alar return to room center"] = &RaidTempestKeepActionContext::alar_return_to_room_center;
-        creators["alar dive bomb spread"] = &RaidTempestKeepActionContext::alar_dive_bomb_spread;
 
         creators["void reaver position boss"] = &RaidTempestKeepActionContext::void_reaver_position_boss;
         creators["void reaver spread ranged"] = &RaidTempestKeepActionContext::void_reaver_spread_ranged;
@@ -69,8 +69,8 @@ private:
     static Action* alar_jump_from_platform(PlayerbotAI* botAI) { return new AlarJumpFromPlatformAction(botAI); }
     static Action* alar_move_away_from_rebirth(PlayerbotAI* botAI) { return new AlarMoveAwayFromRebirthAction(botAI); }
     static Action* alar_swap_tanks_on_boss(PlayerbotAI* botAI) { return new AlarSwapTanksOnBossAction(botAI); }
+    static Action* alar_dive_bomb_spread_and_stay_back(PlayerbotAI* botAI) { return new AlarDiveBombSpreadAndStayBackAction(botAI); }
     static Action* alar_return_to_room_center(PlayerbotAI* botAI) { return new AlarReturnToRoomCenterAction(botAI); }
-    static Action* alar_dive_bomb_spread(PlayerbotAI* botAI) { return new AlarDiveBombSpreadAction(botAI); }
 
     static Action* void_reaver_position_boss(PlayerbotAI* botAI) { return new VoidReaverPositionBossAction(botAI); }
     static Action* void_reaver_spread_ranged(PlayerbotAI* botAI) { return new VoidReaverSpreadRangedAction(botAI); }

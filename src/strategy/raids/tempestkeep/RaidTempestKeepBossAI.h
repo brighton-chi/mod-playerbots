@@ -13,9 +13,8 @@ enum Misc
     POINT_DIVE = 8
 };
 
-class boss_alar : public BossAI
+struct boss_alar : public BossAI
 {
-public:
     boss_alar(Creature* creature);
 
     void Reset() override;
@@ -36,7 +35,6 @@ public:
     void UpdateAI(uint32 diff) override;
     Position DeterminePhoenixPosition(Position playerPosition);
 
-    uint8 GetPlatform() const { return _platform; }
     bool HasPretendedToDie() const { return _hasPretendedToDie; }
 
 private:

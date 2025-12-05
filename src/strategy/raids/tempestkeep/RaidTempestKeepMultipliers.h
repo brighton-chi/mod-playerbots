@@ -6,98 +6,112 @@
 class AlarMoveBetweenPlatformsMultiplier : public Multiplier
 {
 public:
-    AlarMoveBetweenPlatformsMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "alar move between platforms multiplier") {}
+    AlarMoveBetweenPlatformsMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "alar move between platforms multiplier") {}
     virtual float GetValue(Action* action);
 };
 
 class AlarDisableTankAssistMultiplier : public Multiplier
 {
 public:
-    AlarDisableTankAssistMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "alar disable tank assist multiplier") {}
+    AlarDisableTankAssistMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "alar disable tank assist multiplier") {}
     virtual float GetValue(Action* action);
 };
 
 class AlarStayAwayFromRebirthMultiplier : public Multiplier
 {
 public:
-    AlarStayAwayFromRebirthMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "alar stay away from rebirth multiplier") {}
+    AlarStayAwayFromRebirthMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "alar stay away from rebirth multiplier") {}
     virtual float GetValue(Action* action);
 };
 
 class AlarPhase2NoTankingIfArmorMeltedMultiplier : public Multiplier
 {
 public:
-    AlarPhase2NoTankingIfArmorMeltedMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "alar phase 2 no tanking if armor melted multiplier") {}
+    AlarPhase2NoTankingIfArmorMeltedMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "alar phase 2 no tanking if armor melted multiplier") {}
     virtual float GetValue(Action* action);
 };
 
 class VoidReaverMaintainPositionsMultiplier : public Multiplier
 {
 public:
-    VoidReaverMaintainPositionsMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "void reaver maintain positions multiplier") {}
+    VoidReaverMaintainPositionsMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "void reaver maintain positions multiplier") {}
     virtual float GetValue(Action* action);
 };
 
 class HighAstromancerSolarianStayStackedMultiplier : public Multiplier
 {
 public:
-    HighAstromancerSolarianStayStackedMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "high astromancer solarian stay stacked multiplier") {}
+    HighAstromancerSolarianStayStackedMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "high astromancer solarian stay stacked multiplier") {}
     virtual float GetValue(Action* action);
 };
 
 class KaelthasSunstriderWaitForDpsMultiplier : public Multiplier
 {
 public:
-    KaelthasSunstriderWaitForDpsMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "kaelthas sunstrider wait for dps multiplier") {}
+    KaelthasSunstriderWaitForDpsMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "kaelthas sunstrider wait for dps multiplier") {}
     virtual float GetValue(Action* action);
 };
 
 class KaelthasSunstriderControlMisdirectionMultiplier : public Multiplier
 {
 public:
-    KaelthasSunstriderControlMisdirectionMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "kaelthas sunstrider control misdirection multiplier") {}
+    KaelthasSunstriderControlMisdirectionMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "kaelthas sunstrider control misdirection multiplier") {}
     virtual float GetValue(Action* action);
 };
 
 class KaelthasSunstriderDisableTankActionsMultiplier : public Multiplier
 {
 public:
-    KaelthasSunstriderDisableTankActionsMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "kaelthas sunstrider disable tank actions multiplier") {}
+    KaelthasSunstriderDisableTankActionsMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "kaelthas sunstrider disable tank actions multiplier") {}
     virtual float GetValue(Action* action);
 };
 
 class KaelthasSunstriderKiteThaladredMultiplier : public Multiplier
 {
 public:
-    KaelthasSunstriderKiteThaladredMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "kaelthas sunstrider kite thaladred multiplier") {}
+    KaelthasSunstriderKiteThaladredMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "kaelthas sunstrider kite thaladred multiplier") {}
     virtual float GetValue(Action* action);
 };
 
 class KaelthasSunstriderDelayBloodlustAndHeroismMultiplier : public Multiplier
 {
 public:
-    KaelthasSunstriderDelayBloodlustAndHeroismMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "kaelthas sunstrider delay bloodlust and heroism multiplier") {}
+    KaelthasSunstriderDelayBloodlustAndHeroismMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "kaelthas sunstrider delay bloodlust and heroism multiplier") {}
     virtual float GetValue(Action* action);
 };
 
 class KaelthasSunstriderTryNonfatalBreakingOfMindControlMultiplier : public Multiplier
 {
 public:
-    KaelthasSunstriderTryNonfatalBreakingOfMindControlMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "kaelthas sunstrider try nonfatal breaking of mind control multiplier") {}
+    KaelthasSunstriderTryNonfatalBreakingOfMindControlMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "kaelthas sunstrider try nonfatal breaking of mind control multiplier") {}
     virtual float GetValue(Action* action);
 };
 
 class KaelthasSunstriderAllDpsOnBossDuringPyroblastMultiplier : public Multiplier
 {
 public:
-    KaelthasSunstriderAllDpsOnBossDuringPyroblastMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "kaelthas sunstrider all dps on boss during pyroblast multiplier") {}
+    KaelthasSunstriderAllDpsOnBossDuringPyroblastMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "kaelthas sunstrider all dps on boss during pyroblast multiplier") {}
     virtual float GetValue(Action* action);
 };
 
 class KaelthasSunstriderMeleeDpsDoNotAttackDuringGravityLapseMultiplier : public Multiplier
 {
 public:
-    KaelthasSunstriderMeleeDpsDoNotAttackDuringGravityLapseMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "kaelthas sunstrider melee dps do not attack during gravity lapse multiplier") {}
+    KaelthasSunstriderMeleeDpsDoNotAttackDuringGravityLapseMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "kaelthas sunstrider melee dps do not attack during gravity lapse multiplier") {}
     virtual float GetValue(Action* action);
 };
 
