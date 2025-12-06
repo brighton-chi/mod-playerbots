@@ -1085,52 +1085,6 @@ bool KaelthasSunstriderWarlockTankPositionCapernianAction::Execute(Event event)
 
     return false;
 }
-// HKM Krosh Variant
-/*
-bool KaelthasSunstriderWarlockTankPositionCapernianAction::Execute(Event event)
-{
-    Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
-    if (!capernian)
-        return false;
-
-    MarkTargetWithCircle(bot, capernian);
-    SetRtiTarget(botAI, "circle", capernian);
-
-    if (!botAI->HasStrategy("curse of doom", BOT_STATE_COMBAT))
-        botAI->ChangeStrategy("+curse of doom", BOT_STATE_COMBAT);
-
-    if (bot->GetVictim() != capernian)
-    {
-        if (botAI->CanCastSpell("curse of doom", capernian))
-            return botAI->CastSpell("curse of doom", capernian);
-
-        return Attack(capernian);
-    }
-
-    if (capernian->GetVictim() == bot && IsKaelthasInPhase1(botAI))
-    {
-        const Position& position = CAPERNIAN_TANK_POSITION;
-        float distanceToCapernian = capernian->GetExactDist2d(position.x, position.y);
-        const float minDistance = 16.0f;
-        const float maxDistance = 29.0f;
-
-        if (distanceToCapernian > minDistance && distanceToCapernian < maxDistance)
-        {
-            if (bot->GetExactDist2d(position.x, position.y) > 1.0f)
-            {
-                return MoveTo(bot->GetMapId(), position.x, position.y, position.z, false,
-                              false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
-            }
-
-            float orientation = atan2(capernian->GetPositionY() - bot->GetPositionY(),
-                                      capernian->GetPositionX() - bot->GetPositionX());
-            bot->SetFacingTo(orientation);
-        }
-    }
-
-    return false;
-}
-*/
 
 bool KaelthasSunstriderMoveAwayFromCapernianAction::Execute(Event event)
 {
@@ -1138,7 +1092,7 @@ bool KaelthasSunstriderMoveAwayFromCapernianAction::Execute(Event event)
     if (!capernian)
         return false;
 
-    // Main tank purposely stay in range to bait Conflagration in Phase 1
+    // Main tank purposely stays in range to bait Conflagration in Phase 1
     if (botAI->IsMainTank(bot))
     {
         const float desiredDist = 15.0f;
@@ -1163,7 +1117,6 @@ bool KaelthasSunstriderMoveAwayFromCapernianAction::Execute(Event event)
         }
     }
 
-    // Determine safe distance based on role
     float safeDistance;
     if (botAI->IsMelee(bot) && !botAI->IsMainTank(bot))
         safeDistance = 45.0f;
@@ -1180,7 +1133,6 @@ bool KaelthasSunstriderMoveAwayFromCapernianAction::Execute(Event event)
         return MoveAway(capernian, safeDistance - currentDistance + 1.0f);
     }
 
-    // In Phase 1, melee other than main tank should stay away and do nothing while Capernian is active
     if (botAI->IsMelee(bot) && !botAI->IsMainTank(bot))
     {
         bot->SetTarget(ObjectGuid::Empty);
@@ -1350,12 +1302,11 @@ bool KaelthasSunstriderGroupUpLegendaryWeaponsAction::Execute(Event event)
     Unit* staff = AI_VALUE2(Unit*, "find target", "staff of disintegration");
     Unit* sword = AI_VALUE2(Unit*, "find target", "warp slicer");
 
-    // Disable disperse during the weapons phase
     float currentDisperse = AI_VALUE(float, "disperse distance");
     if (currentDisperse > 0.0f)
         RESET_AI_VALUE(float, "disperse distance");
 
-    // Clear targets for assist tanks at start of weapon phase
+    // Clear targets for assist tanks at start of weapon phase (better to pick up adds?)
     if (botAI->IsAssistTank(bot))
         SetRtiTarget(botAI, "moon", nullptr);
 
@@ -1407,7 +1358,7 @@ bool KaelthasSunstriderGroupUpLegendaryWeaponsAction::Execute(Event event)
 
             return false;
         }
-        // Priority 3: Warp Slicer (Triangle)
+        // Priority 3: Warp Slicer (Skull)
         if (sword)
         {
             MarkTargetWithSkull(bot, sword);
@@ -1418,7 +1369,7 @@ bool KaelthasSunstriderGroupUpLegendaryWeaponsAction::Execute(Event event)
 
             return false;
         }
-        // Priority 4: Infinity Blades (Star)
+        // Priority 4: Infinity Blades (Skull)
         if (dagger)
         {
             MarkTargetWithSkull(bot, dagger);
@@ -1702,7 +1653,6 @@ bool KaelthasSunstriderUseLegendaryWeaponsAction::UseStaffOfDisintegration()
 
 bool KaelthasSunstriderUseLegendaryWeaponsAction::UseNetherstrandLongbow()
 {
-    // Get equipped ranged weapon
     Item* ranged = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_RANGED);
     if (!ranged || ranged->GetEntry() != ITEM_NETHERSTRAND_LONGBOW)
         return false;
@@ -1763,6 +1713,7 @@ bool KaelthasSunstriderReequipGearAction::Execute(Event event)
 bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
 {
     // Enable disperse at the start of phases 1 and 3 for ranged, except Capernian tank
+    // The purpose is so they don't all get melted by Conflagration
     Player* capernianTank = GetCapernianTank(botAI, bot);
     if (botAI->IsRanged(bot) && bot != capernianTank)
     {
@@ -2020,15 +1971,10 @@ std::vector<Unit*> KaelthasSunstriderAvoidFlameStrikeAction::GetAllFlameStrikeTr
     return flameStrikeTriggers;
 }
 
-// Need to revise something with eggs--bots are not attacking them in time. Consider ignoring them maybe?
 bool KaelthasSunstriderRoundUpPhoenixesAndFocusDownEggsAction::Execute(Event event)
 {
-    // Handle phoenix tanking for assist tanks
     if (botAI->IsAssistTankOfIndex(bot, 0) || botAI->IsAssistTankOfIndex(bot, 1))
     {
-        LOG_DEBUG("playerbots", "KaelthasRoundUpPhoenixes: entered assist-tank branch for bot={} guid={}", bot->GetName(), bot->GetGUID().ToString());
-
-        // Get all phoenixes
         std::vector<Unit*> phoenixes;
         const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
         for (auto const& npcGuid : npcs)
@@ -2038,15 +1984,9 @@ bool KaelthasSunstriderRoundUpPhoenixesAndFocusDownEggsAction::Execute(Event eve
                 phoenixes.push_back(unit);
         }
 
-        LOG_DEBUG("playerbots", "KaelthasRoundUpPhoenixes: found {} phoenix candidates for bot={}", phoenixes.size(), bot->GetName());
-
         if (phoenixes.empty())
-        {
-            LOG_DEBUG("playerbots", "KaelthasRoundUpPhoenixes: no phoenixes found, returning false for bot={}", bot->GetName());
             return false;
-        }
 
-        // Sort phoenixes by GUID for consistent targeting
         std::sort(phoenixes.begin(), phoenixes.end(),
                   [](Unit* a, Unit* b) { return a->GetGUID() < b->GetGUID(); });
 
@@ -2055,7 +1995,6 @@ bool KaelthasSunstriderRoundUpPhoenixesAndFocusDownEggsAction::Execute(Event eve
         {
             // Assist Tank 0: Take first phoenix (Square)
             targetPhoenix = phoenixes[0];
-            LOG_DEBUG("playerbots", "KaelthasRoundUpPhoenixes: assistTankIndex=0 assigning phoenix guid={} entry={} to bot={}", targetPhoenix->GetGUID().ToString(), targetPhoenix->GetEntry(), bot->GetName());
             MarkTargetWithSquare(bot, targetPhoenix);
             SetRtiTarget(botAI, "square", targetPhoenix);
         }
@@ -2063,42 +2002,21 @@ bool KaelthasSunstriderRoundUpPhoenixesAndFocusDownEggsAction::Execute(Event eve
         {
             // Assist Tank 1: Take second phoenix (Circle)
             targetPhoenix = phoenixes[1];
-            LOG_DEBUG("playerbots", "KaelthasRoundUpPhoenixes: assistTankIndex=1 assigning phoenix guid={} entry={} to bot={}", targetPhoenix->GetGUID().ToString(), targetPhoenix->GetEntry(), bot->GetName());
             MarkTargetWithCircle(bot, targetPhoenix);
             SetRtiTarget(botAI, "circle", targetPhoenix);
         }
-        else
-        {
-            LOG_DEBUG("playerbots", "KaelthasRoundUpPhoenixes: assist tank index not matched or not enough phoenixes for bot={}", bot->GetName());
-        }
 
         if (!targetPhoenix)
-        {
-            LOG_DEBUG("playerbots", "KaelthasRoundUpPhoenixes: no targetPhoenix assigned, returning false for bot={}", bot->GetName());
             return false;
-        }
 
-        // Attack the assigned phoenix
-        if (bot->GetTarget() != targetPhoenix->GetGUID())
-        {
-            LOG_DEBUG("playerbots", "KaelthasRoundUpPhoenixes: bot={} setting target to phoenix guid={} and attacking", bot->GetName(), targetPhoenix->GetGUID().ToString());
-            bot->SetTarget(targetPhoenix->GetGUID());
+        if (bot->GetVictim() != targetPhoenix)
             return Attack(targetPhoenix);
-        }
-        else
-        {
-            LOG_DEBUG("playerbots", "KaelthasRoundUpPhoenixes: bot={} already targeting phoenix guid={}", bot->GetName(), targetPhoenix->GetGUID().ToString());
-        }
 
-        // If tanking the phoenix, kite it away from other players
         if (targetPhoenix->GetVictim() == bot)
         {
             const float safeDistance = 10.0f;
 
-            // Find nearest non-phoenix-tank player within danger radius
             Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
-
-            // Filter out other phoenix tanks
             if (Group* group = bot->GetGroup())
             {
                 if (nearestPlayer && group)
@@ -2107,22 +2025,16 @@ bool KaelthasSunstriderRoundUpPhoenixesAndFocusDownEggsAction::Execute(Event eve
                     if (nearestAI && (nearestAI->IsAssistTankOfIndex(nearestPlayer->ToPlayer(), 0) ||
                                        nearestAI->IsAssistTankOfIndex(nearestPlayer->ToPlayer(), 1)))
                     {
-                        nearestPlayer = nullptr; // Ignore other phoenix tanks
+                        nearestPlayer = nullptr;
                     }
                 }
             }
 
-            // If too close to a player, kite away
             if (nearestPlayer)
             {
                 float closestDist = bot->GetExactDist2d(nearestPlayer);
                 if (closestDist < safeDistance)
-                {
-                    LOG_DEBUG("playerbots", "KaelthasSunstriderRoundUpPhoenixesAndFocusDownEggsAction: {} kiting phoenix away from raid",
-                              bot->GetName());
-                    // return MoveAway(nearestPlayer, safeDistance - closestDist + 2.0f);
                     return MoveFromGroup(safeDistance + 2.0f);
-                }
             }
         }
 

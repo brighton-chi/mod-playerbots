@@ -67,11 +67,11 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class KaelthasSunstriderDisableTankActionsMultiplier : public Multiplier
+class KaelthasSunstriderDisableShadowWardMultiplier : public Multiplier
 {
 public:
-    KaelthasSunstriderDisableTankActionsMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "kaelthas sunstrider disable tank actions multiplier") {}
+    KaelthasSunstriderDisableShadowWardMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "kaelthas sunstrider disable shadow ward multiplier") {}
     virtual float GetValue(Action* action);
 };
 

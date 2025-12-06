@@ -117,7 +117,6 @@ namespace TempestKeepHelpers
     extern const Position VOID_REAVER_TANK_POSITION;
 
     extern const Position SANGUINAR_TANK_POSITION;
-    // extern const Position CAPERNIAN_TANK_POSITION;
     extern const Position TELONICUS_TANK_POSITION;
     extern const Position ADVISOR_HEAL_POSITION;
     extern const Position KAELTHAS_WEAPON_STACK_POSITION;
@@ -146,13 +145,6 @@ namespace TempestKeepHelpers
     void GetClosestPlatformAndGround(const Position& botPos, int8& closestPlatform, Position& ground);
     bool IsAlarAddTank(PlayerbotAI* botAI, Player* bot);
 
-    bool IsKaelthasInPhase1(PlayerbotAI* botAI);
-    bool IsKaelthasInPhase2(PlayerbotAI* botAI);
-    bool IsKaelthasInPhase2To3Transition(PlayerbotAI* botAI);
-    bool IsKaelthasInPhase3(PlayerbotAI* botAI);
-    bool IsKaelthasInPhase4(PlayerbotAI* botAI);
-    bool IsKaelthasInPhase4To5Transition(PlayerbotAI* botAI);
-    bool IsKaelthasInPhase5(PlayerbotAI* botAI);
     bool IsKaelthasMapIDTimerManager(PlayerbotAI* botAI, Player* bot);
     Player* GetCapernianTank(PlayerbotAI* botAI, Player* bot);
     Player* GetNetherstrandLongbowTank(PlayerbotAI* botAI, Player* bot);

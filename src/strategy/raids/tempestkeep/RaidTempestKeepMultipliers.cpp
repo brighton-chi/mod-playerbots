@@ -207,8 +207,8 @@ float KaelthasSunstriderControlMisdirectionMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-// Rename if just Shadow Ward ultimately
-float KaelthasSunstriderDisableTankActionsMultiplier::GetValue(Action* action)
+// For disabling Capernian Tank's Shadow Ward
+float KaelthasSunstriderDisableShadowWardMultiplier::GetValue(Action* action)
 {
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     if (!kaelthas)
