@@ -74,7 +74,6 @@ bool AlarBossTanksMoveBetweenPlatformsAction::Execute(Event event)
     MarkTargetWithStar(bot, alar);
     SetRtiTarget(botAI, "star", alar);
 
-    // Prefer current location index, fallback to movement destination index
     int8 locationIndex = GetAlarCurrentLocationIndex(alar);
     if (locationIndex == LOCATION_NONE)
     {
@@ -616,7 +615,6 @@ bool VoidReaverSpreadRangedAction::Execute(Event event)
         const float offsetArc = 1.0f;
         const uint8 botsPerRing = 8;
 
-        // Assign all ranged (healers first, then dps) to rings
         std::vector<Player*> rangedBots = healers;
         rangedBots.insert(rangedBots.end(), rangedDps.begin(), rangedDps.end());
 
@@ -659,7 +657,6 @@ Position VoidReaverSpreadRangedAction::GetRangedBotPosition(const Position& cent
     float baseAngle = 2 * M_PI * posInRing / botsPerRing;
     float angle = baseAngle + (ringIndex == 1 ? angleOffset : 0);
 
-    // If overflow, wrap around
     if (ringIndex > 1)
     {
         angle = 2 * M_PI * (botIndex % botsPerRing) / botsPerRing;
@@ -1010,7 +1007,7 @@ bool KaelthasSunstriderManageWarlockTankStrategyAction::Execute(Event event)
     {
         Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
 
-        // If Capernian is alive, add tank strategy (failsafe for if not all weapons are down)
+        // If Capernian is alive, add tank strategy (applicable only if not all weapons are down)
         if (capernian && !currentlyTank)
             botAI->ChangeStrategy("+tank", BotState::BOT_STATE_COMBAT);
         // If Capernian is dead, reset to DPS
@@ -1778,7 +1775,7 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
         if (bot->GetVictim() != telonicus)
             return Attack(telonicus);
 
-        // Melee DPS positioning: stay at max-ish melee range behind Telonicus (bomb safety)
+        // Melee DPS positioning: stay at max-ish melee range behind Telonicus (god damn bombs)
         if (botAI->IsMelee(bot) && botAI->IsDps(bot) && telonicus->GetVictim() != bot)
         {
             float maxMeleeRange = bot->GetMeleeRange(telonicus);
@@ -1841,7 +1838,7 @@ bool KaelthasSunstriderMainTankPositionBossAction::Execute(Event event)
 
 bool KaelthasSunstriderAvoidFlameStrikeAction::Execute(Event event)
 {
-    // Disable disperse in Phase 4
+    // Disable disperse in Phase 4--could insert this somewhere else instead
     float currentDisperse = AI_VALUE(float, "disperse distance");
     if (currentDisperse > 0.0f)
         RESET_AI_VALUE(float, "disperse distance");
