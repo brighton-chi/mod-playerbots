@@ -82,7 +82,7 @@ bool HydrossTheUnstableAggroResetsUponPhaseChangeTrigger::IsActive()
     if (bot->getClass() == CLASS_HUNTER)
         return false;
 
-    if (!botAI->IsDps(bot))
+    if (botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0))
         return false;
 
     Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");

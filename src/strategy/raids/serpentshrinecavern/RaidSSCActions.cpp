@@ -113,7 +113,7 @@ bool HydrossTheUnstablePositionFrostTankAction::Execute(Event event)
         {
             const Position& position = HYDROSS_FROST_TANK_POSITION;
             float dist = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
-            if (dist > 3.0f)
+            if (dist > 2.0f)
             {
                 float dX = position.GetPositionX() - bot->GetPositionX();
                 float dY = position.GetPositionY() - bot->GetPositionY();
@@ -121,32 +121,39 @@ bool HydrossTheUnstablePositionFrostTankAction::Execute(Event event)
                 float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
                 float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
 
-                return MoveTo(SSC_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false, false, true,
-                              MovementPriority::MOVEMENT_COMBAT, true, true);
+                return MoveTo(SSC_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
+                              false, true, MovementPriority::MOVEMENT_COMBAT, true, true);
             }
         }
     }
 
-    if (!hydross->HasAura(SPELL_CORRUPTION) && HasMarkOfHydrossAt100Percent(bot) && hydross->GetVictim() == bot)
+    if (!hydross->HasAura(SPELL_CORRUPTION) && HasMarkOfHydrossAt100Percent(bot) &&
+        hydross->GetVictim() == bot)
     {
-        const Position& position = HYDROSS_NATURE_TANK_POSITION;
-        float dist = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
-        if (dist > 3.0f)
-        {
-            float dX = position.GetPositionX() - bot->GetPositionX();
-            float dY = position.GetPositionY() - bot->GetPositionY();
-            float moveDist = std::min(5.0f, dist);
-            float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
-            float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
+        const time_t now = std::time(nullptr);
+        auto it = hydrossChangeToNaturePhaseTimer.find(SSC_MAP_ID);
 
-            return MoveTo(SSC_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false, false, true,
-                          MovementPriority::MOVEMENT_COMBAT, true, true);
-        }
-        else
+        if (it != hydrossChangeToNaturePhaseTimer.end() && (now - it->second) >= 1)
         {
-            bot->AttackStop();
-            bot->InterruptNonMeleeSpells(true);
-            return true;
+            const Position& position = HYDROSS_NATURE_TANK_POSITION;
+            float dist = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+            if (dist > 2.0f)
+            {
+                float dX = position.GetPositionX() - bot->GetPositionX();
+                float dY = position.GetPositionY() - bot->GetPositionY();
+                float moveDist = std::min(5.0f, dist);
+                float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
+                float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
+
+                return MoveTo(SSC_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
+                              false, true, MovementPriority::MOVEMENT_COMBAT, true, true);
+            }
+            else
+            {
+                bot->AttackStop();
+                bot->InterruptNonMeleeSpells(true);
+                return true;
+            }
         }
     }
 
@@ -155,8 +162,9 @@ bool HydrossTheUnstablePositionFrostTankAction::Execute(Event event)
         const Position& position = HYDROSS_FROST_TANK_POSITION;
         if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
         {
-            return MoveTo(SSC_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
-                          false, false, false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
+            return MoveTo(SSC_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                          position.GetPositionZ(), false, false, false, true,
+                          MovementPriority::MOVEMENT_COMBAT, true, false);
         }
         else
         {
@@ -190,7 +198,7 @@ bool HydrossTheUnstablePositionNatureTankAction::Execute(Event event)
         {
             const Position& position = HYDROSS_NATURE_TANK_POSITION;
             float dist = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
-            if (dist > 3.0f)
+            if (dist > 2.0f)
             {
                 float dX = position.GetPositionX() - bot->GetPositionX();
                 float dY = position.GetPositionY() - bot->GetPositionY();
@@ -198,32 +206,39 @@ bool HydrossTheUnstablePositionNatureTankAction::Execute(Event event)
                 float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
                 float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
 
-                return MoveTo(SSC_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false, false, true,
-                              MovementPriority::MOVEMENT_COMBAT, true, true);
+                return MoveTo(SSC_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
+                              false, true, MovementPriority::MOVEMENT_COMBAT, true, true);
             }
         }
     }
 
-    if (hydross->HasAura(SPELL_CORRUPTION) && HasMarkOfCorruptionAt100Percent(bot) && hydross->GetVictim() == bot)
+    if (hydross->HasAura(SPELL_CORRUPTION) && HasMarkOfCorruptionAt100Percent(bot) &&
+        hydross->GetVictim() == bot)
     {
-        const Position& position = HYDROSS_FROST_TANK_POSITION;
-        float dist = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
-        if (dist > 3.0f)
-        {
-            float dX = position.GetPositionX() - bot->GetPositionX();
-            float dY = position.GetPositionY() - bot->GetPositionY();
-            float moveDist = std::min(5.0f, dist);
-            float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
-            float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
+        const time_t now = std::time(nullptr);
+        auto it = hydrossChangeToFrostPhaseTimer.find(SSC_MAP_ID);
 
-            return MoveTo(SSC_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false, false, true,
-                            MovementPriority::MOVEMENT_COMBAT, true, true);
-        }
-        else
+        if (it != hydrossChangeToFrostPhaseTimer.end() && (now - it->second) >= 1)
         {
-            bot->AttackStop();
-            bot->InterruptNonMeleeSpells(true);
-            return true;
+            const Position& position = HYDROSS_FROST_TANK_POSITION;
+            float dist = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+            if (dist > 2.0f)
+            {
+                float dX = position.GetPositionX() - bot->GetPositionX();
+                float dY = position.GetPositionY() - bot->GetPositionY();
+                float moveDist = std::min(5.0f, dist);
+                float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
+                float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
+
+                return MoveTo(SSC_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
+                              false, true, MovementPriority::MOVEMENT_COMBAT, true, true);
+            }
+            else
+            {
+                bot->AttackStop();
+                bot->InterruptNonMeleeSpells(true);
+                return true;
+            }
         }
     }
 
@@ -232,8 +247,9 @@ bool HydrossTheUnstablePositionNatureTankAction::Execute(Event event)
         const Position& position = HYDROSS_NATURE_TANK_POSITION;
         if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
         {
-            return MoveTo(SSC_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
-                          false, false, false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
+            return MoveTo(SSC_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                          position.GetPositionZ(), false, false, false, true,
+                          MovementPriority::MOVEMENT_COMBAT, true, false);
         }
         else
         {
@@ -321,7 +337,8 @@ bool HydrossTheUnstableMisdirectBossToTankAction::Execute(Event event)
     return false;
 }
 
-bool HydrossTheUnstableMisdirectBossToTankAction::TryMisdirectToFrostTank(Unit* hydross, Group* group)
+bool HydrossTheUnstableMisdirectBossToTankAction::TryMisdirectToFrostTank(
+    Unit* hydross, Group* group)
 {
     Player* frostTank = nullptr;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
@@ -349,7 +366,8 @@ bool HydrossTheUnstableMisdirectBossToTankAction::TryMisdirectToFrostTank(Unit* 
     return false;
 }
 
-bool HydrossTheUnstableMisdirectBossToTankAction::TryMisdirectToNatureTank(Unit* hydross, Group* group)
+bool HydrossTheUnstableMisdirectBossToTankAction::TryMisdirectToNatureTank(
+    Unit* hydross, Group* group)
 {
     Player* natureTank = nullptr;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
@@ -385,25 +403,28 @@ bool HydrossTheUnstableStopDpsUponPhaseChangeAction::Execute(Event event)
 
     const time_t now = std::time(nullptr);
     const int phaseStartStopSeconds = 5;
+    const int phaseEndStopSeconds = 1;
 
     bool shouldStopDps = false;
 
-    // After 100% Mark of Corruption, stop DPS until transition into frost phase
-    if (HasMarkOfCorruptionAt100Percent(bot))
-        shouldStopDps = true;
-
-    // Keep DPS stopped for 5 seconds after transition into frost phase
-    auto itFrostDps = hydrossFrostDpsWaitTimer.find(SSC_MAP_ID);
-    if (itFrostDps != hydrossFrostDpsWaitTimer.end() && (now - itFrostDps->second) < phaseStartStopSeconds)
-        shouldStopDps = true;
-
-    // After 100% Mark of Hydross, stop DPS until transition into nature phase
-    if (HasMarkOfHydrossAt100Percent(bot))
+    // 1 second after 100% Mark of Hydross, stop DPS until transition into nature phase
+    auto itNature = hydrossChangeToNaturePhaseTimer.find(SSC_MAP_ID);
+    if (itNature != hydrossChangeToNaturePhaseTimer.end() && (now - itNature->second) >= phaseEndStopSeconds)
         shouldStopDps = true;
 
     // Keep DPS stopped for 5 seconds after transition into nature phase
     auto itNatureDps = hydrossNatureDpsWaitTimer.find(SSC_MAP_ID);
     if (itNatureDps != hydrossNatureDpsWaitTimer.end() && (now - itNatureDps->second) < phaseStartStopSeconds)
+        shouldStopDps = true;
+
+    // 1 second after 100% Mark of Corruption, stop DPS until transition into frost phase
+    auto itFrost = hydrossChangeToFrostPhaseTimer.find(SSC_MAP_ID);
+    if (itFrost != hydrossChangeToFrostPhaseTimer.end() && (now - itFrost->second) >= phaseEndStopSeconds)
+        shouldStopDps = true;
+
+    // Keep DPS stopped for 5 seconds after transition into frost phase
+    auto itFrostDps = hydrossFrostDpsWaitTimer.find(SSC_MAP_ID);
+    if (itFrostDps != hydrossFrostDpsWaitTimer.end() && (now - itFrostDps->second) < phaseStartStopSeconds)
         shouldStopDps = true;
 
     if (shouldStopDps)
@@ -428,17 +449,27 @@ bool HydrossTheUnstableManageTimersAction::Execute(Event event)
     {
         hydrossFrostDpsWaitTimer.erase(SSC_MAP_ID);
         hydrossNatureDpsWaitTimer.erase(SSC_MAP_ID);
+        hydrossChangeToFrostPhaseTimer.erase(SSC_MAP_ID);
+        hydrossChangeToNaturePhaseTimer.erase(SSC_MAP_ID);
     }
 
     if (!hydross->HasAura(SPELL_CORRUPTION))
     {
         hydrossFrostDpsWaitTimer.try_emplace(SSC_MAP_ID, now);
         hydrossNatureDpsWaitTimer.erase(SSC_MAP_ID);
+        hydrossChangeToFrostPhaseTimer.erase(SSC_MAP_ID);
+
+        if (HasMarkOfHydrossAt100Percent(bot))
+            hydrossChangeToNaturePhaseTimer.try_emplace(SSC_MAP_ID, now);
     }
     else
     {
         hydrossNatureDpsWaitTimer.try_emplace(SSC_MAP_ID, now);
         hydrossFrostDpsWaitTimer.erase(SSC_MAP_ID);
+        hydrossChangeToNaturePhaseTimer.erase(SSC_MAP_ID);
+
+        if (HasMarkOfCorruptionAt100Percent(bot))
+            hydrossChangeToFrostPhaseTimer.try_emplace(SSC_MAP_ID, now);
     }
 
     return false;
