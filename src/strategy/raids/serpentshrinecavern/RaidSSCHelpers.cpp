@@ -344,23 +344,7 @@ namespace SerpentShrineCavernHelpers
 
     bool AnyRecentCoreInInventory(Group* group, uint32 graceSeconds)
     {
-        if (!group)
-            return false;
-
         const time_t now = std::time(nullptr);
-
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member)
-                continue;
-
-            if (member->IsAlive() && member->HasItemCount(ITEM_TAINTED_CORE, 1, false))
-            {
-                lastCoreInInventoryTime[SSC_MAP_ID] = now;
-                return true;
-            }
-        }
 
         auto it = lastCoreInInventoryTime.find(SSC_MAP_ID);
         if (it != lastCoreInInventoryTime.end())

@@ -2106,16 +2106,12 @@ bool LadyVashjLootTaintedCoreAction::Execute(Event)
 
         // The Tainted Elemental lootable corpse is a dead Creature object, not a corpse object
         Creature* creature = object->ToCreature();
-        if (!creature)
-            continue;
-
-        if (creature->GetEntry() != NPC_TAINTED_ELEMENTAL || creature->IsAlive())
+        if (!creature || creature->GetEntry() != NPC_TAINTED_ELEMENTAL || creature->IsAlive())
             continue;
 
         context->GetValue<LootObject>("loot target")->Set(loot);
 
         float dist = bot->GetDistance(object);
-
         if (dist > maxLootRange)
             return MoveTo(object, 2.0f, MovementPriority::MOVEMENT_FORCED);
 
@@ -2167,6 +2163,8 @@ bool LadyVashjLootTaintedCoreAction::Execute(Event)
             WorldPacket* packet = new WorldPacket(CMSG_AUTOSTORE_LOOT_ITEM, 1);
             *packet << coreIndex;
             receiver->GetSession()->QueuePacket(packet);
+
+            lastCoreInInventoryTime[SSC_MAP_ID] = std::time(nullptr);
         }, 600);
 
         return true;
@@ -2199,8 +2197,6 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
     if (!bot->HasAura(SPELL_FEAR_WARD))
         bot->AddAura(SPELL_FEAR_WARD, bot);
 
-    const uint8 neededPassers = ComputeNeededPassers(designatedLooter, closestTrigger);
-
     // Passer order: HealAssistantOfIndex 0, 1, 2, then RangedDpsAssistantOfIndex 0
     if (bot == firstCorePasser && !botAI->HasItemInInventory(ITEM_TAINTED_CORE))
     {
@@ -2212,12 +2208,12 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
         if (LineUpSecondCorePasser(firstCorePasser, closestTrigger))
             return true;
     }
-    else if (bot == thirdCorePasser && !botAI->HasItemInInventory(ITEM_TAINTED_CORE) && neededPassers >= 3)
+    else if (bot == thirdCorePasser && !botAI->HasItemInInventory(ITEM_TAINTED_CORE))
     {
         if (LineUpThirdCorePasser(secondCorePasser, closestTrigger))
             return true;
     }
-    else if (bot == fourthCorePasser && !botAI->HasItemInInventory(ITEM_TAINTED_CORE) && neededPassers >= 4)
+    else if (bot == fourthCorePasser && !botAI->HasItemInInventory(ITEM_TAINTED_CORE))
     {
         if (LineUpFourthCorePasser(thirdCorePasser, closestTrigger))
             return true;
@@ -2338,22 +2334,6 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
     return false;
 }
 
-// Determine, by distance to the closest trigger, how many core passers are needed
-uint8 LadyVashjPassTheTaintedCoreAction::ComputeNeededPassers(Player* designatedLooter, Unit* closestTrigger)
-{
-    const float maxTargetDistance = 39.0f;
-    float distanceToTrigger = designatedLooter->GetExactDist2d(closestTrigger);
-
-    int needed = 1;
-    if (maxTargetDistance > 0.0f)
-        needed = static_cast<int>(std::ceil(distanceToTrigger / maxTargetDistance));
-
-    if (needed < 1) needed = 1;
-    if (needed > 4) needed = 4;
-
-    return static_cast<uint8>(needed);
-}
-
 bool LadyVashjPassTheTaintedCoreAction::LineUpFirstCorePasser(Player* designatedLooter, Unit* closestTrigger)
 {
     const float centerX = VASHJ_PLATFORM_CENTER_POSITION.GetPositionX();
@@ -2396,7 +2376,7 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpSecondCorePasser(Player* firstCore
     const float thresholdDist = 40.0f;
     const float nearTriggerDist = 1.5f;
     // if firstCorePasser is not thresholdDist yards from closestTrigger, go to farDistance from firstCorePasser
-    const float farDistance = 39.0f;
+    const float farDistance = 38.0f;
 
     if (distToTrigger <= thresholdDist)
     {
@@ -2422,6 +2402,14 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpSecondCorePasser(Player* firstCore
 
 bool LadyVashjPassTheTaintedCoreAction::LineUpThirdCorePasser(Player* secondCorePasser, Unit* closestTrigger)
 {
+    // Since the third passer is often not needed, wait until the second passer has the core to move
+    if (!secondCorePasser->HasItemCount(ITEM_TAINTED_CORE, 1, false))
+        return false;
+
+    // Also don't move if the second passer has the core but is able to use the generator
+    if (secondCorePasser->GetExactDist2d(closestTrigger) <= 4.0f)
+        return false;
+
     float sx = secondCorePasser->GetPositionX();
     float sy = secondCorePasser->GetPositionY();
 
@@ -2437,7 +2425,7 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpThirdCorePasser(Player* secondCore
     float targetX, targetY, targetZ;
     const float thresholdDist = 40.0f;
     const float nearTriggerDist = 1.5f;
-    const float farDistance = 39.0f;
+    const float farDistance = 38.0f;
 
     if (distToTrigger <= thresholdDist)
     {
@@ -2463,6 +2451,14 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpThirdCorePasser(Player* secondCore
 
 bool LadyVashjPassTheTaintedCoreAction::LineUpFourthCorePasser(Player* thirdCorePasser, Unit* closestTrigger)
 {
+    // Since the fourth passer is often not needed, wait until the third passer has the core to move
+    if (!thirdCorePasser->HasItemCount(ITEM_TAINTED_CORE, 1, false))
+        return false;
+
+    // Also don't move if the third passer has the core but is able to use the generator
+    if (thirdCorePasser->GetExactDist2d(closestTrigger) <= 4.0f)
+        return false;
+
     float sx = thirdCorePasser->GetPositionX();
     float sy = thirdCorePasser->GetPositionY();
 
@@ -2609,6 +2605,7 @@ void LadyVashjPassTheTaintedCoreAction::ScheduleStoreCoreAfterImbue(PlayerbotAI*
                 Item::GenerateItemRandomPropertyId(ITEM_TAINTED_CORE));
             if (created)
             {
+                lastCoreInInventoryTime[SSC_MAP_ID] = std::time(nullptr);
                 intendedLineup.erase(receiverGuid);
                 intendedLineup.erase(giverGuid);
             }
