@@ -2040,7 +2040,14 @@ bool LadyVashjAssignDpsPriorityAction::Execute(Event event)
     if (!bot->GetVictim())
     {
         Player* designatedLooter = GetDesignatedCoreLooter(bot->GetGroup(), botAI);
-        if (designatedLooter && tainted && designatedLooter->GetExactDist2d(tainted) < 5.0f)
+        Player* firstCorePasser = GetFirstTaintedCorePasser(bot->GetGroup(), botAI);
+        // A bot will not move back to the middle if:
+        // (1) The designated looter is within 10 yards of a Tainted Elemental, and the bot is
+        //     either the designated looter or the first core passer, or
+        // (2) It otherwise has the Tainted Core
+        if (designatedLooter && tainted && designatedLooter->GetExactDist2d(tainted) < 5.0f &&
+            (designatedLooter == bot || (firstCorePasser && firstCorePasser == bot)) ||
+            bot->HasItemCount(ITEM_TAINTED_CORE, 1, false))
             return false;
 
         const Position& center = VASHJ_PLATFORM_CENTER_POSITION;
@@ -2234,14 +2241,16 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
                 if (inserted)
                 {
                     botAI->ImbueItem(item, firstCorePasser);
-                    ScheduleStoreCoreAfterImbue(botAI, bot, firstCorePasser);
+                    lastCoreInInventoryTime[SSC_MAP_ID] = now;
+                    //ScheduleStoreCoreAfterImbue(botAI, bot, firstCorePasser);
                     return true;
                 }
                 if ((now - it->second) >= 2)
                 {
                     it->second = now;
                     botAI->ImbueItem(item, firstCorePasser);
-                    ScheduleStoreCoreAfterImbue(botAI, bot, firstCorePasser);
+                    lastCoreInInventoryTime[SSC_MAP_ID] = now;
+                    //ScheduleStoreCoreAfterImbue(botAI, bot, firstCorePasser);
                     return true;
                 }
             }
@@ -2257,14 +2266,18 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
                 if (inserted)
                 {
                     botAI->ImbueItem(item, secondCorePasser);
-                    ScheduleStoreCoreAfterImbue(botAI, bot, secondCorePasser);
+                    lastCoreInInventoryTime[SSC_MAP_ID] = now;
+                    intendedLineup.erase(bot->GetGUID());
+                    //ScheduleStoreCoreAfterImbue(botAI, bot, secondCorePasser);
                     return true;
                 }
                 if ((now - it->second) >= 2)
                 {
                     it->second = now;
                     botAI->ImbueItem(item, secondCorePasser);
-                    ScheduleStoreCoreAfterImbue(botAI, bot, secondCorePasser);
+                    lastCoreInInventoryTime[SSC_MAP_ID] = now;
+                    intendedLineup.erase(bot->GetGUID());
+                    //ScheduleStoreCoreAfterImbue(botAI, bot, secondCorePasser);
                     return true;
                 }
             }
@@ -2284,14 +2297,18 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
                     if (inserted)
                     {
                         botAI->ImbueItem(item, thirdCorePasser);
-                        ScheduleStoreCoreAfterImbue(botAI, bot, thirdCorePasser);
+                        lastCoreInInventoryTime[SSC_MAP_ID] = now;
+                        intendedLineup.erase(bot->GetGUID());
+                        //ScheduleStoreCoreAfterImbue(botAI, bot, thirdCorePasser);
                         return true;
                     }
                     if ((now - it->second) >= 2)
                     {
                         it->second = now;
                         botAI->ImbueItem(item, thirdCorePasser);
-                        ScheduleStoreCoreAfterImbue(botAI, bot, thirdCorePasser);
+                        lastCoreInInventoryTime[SSC_MAP_ID] = now;
+                        intendedLineup.erase(bot->GetGUID());
+                        //ScheduleStoreCoreAfterImbue(botAI, bot, thirdCorePasser);
                         return true;
                     }
                 }
@@ -2311,14 +2328,18 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
                     if (inserted)
                     {
                         botAI->ImbueItem(item, fourthCorePasser);
-                        ScheduleStoreCoreAfterImbue(botAI, bot, fourthCorePasser);
+                        lastCoreInInventoryTime[SSC_MAP_ID] = now;
+                        intendedLineup.erase(bot->GetGUID());
+                        //ScheduleStoreCoreAfterImbue(botAI, bot, fourthCorePasser);
                         return true;
                     }
                     if ((now - it->second) >= 2)
                     {
                         it->second = now;
                         botAI->ImbueItem(item, fourthCorePasser);
-                        ScheduleStoreCoreAfterImbue(botAI, bot, fourthCorePasser);
+                        lastCoreInInventoryTime[SSC_MAP_ID] = now;
+                        intendedLineup.erase(bot->GetGUID());
+                        //ScheduleStoreCoreAfterImbue(botAI, bot, fourthCorePasser);
                         return true;
                     }
                 }
@@ -2348,7 +2369,7 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpFirstCorePasser(Player* designated
     float targetY = centerY + radius * std::sin(angle);
     const float targetZ = 41.097f;
 
-    intendedLineup.insert_or_assign(bot->GetGUID(), Position(targetX, targetY, targetZ));
+    intendedLineup.try_emplace(bot->GetGUID(), Position(targetX, targetY, targetZ));
 
     bot->AttackStop();
     bot->InterruptNonMeleeSpells(true);
@@ -2363,7 +2384,7 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpSecondCorePasser(Player* firstCore
 
     float dx = closestTrigger->GetPositionX() - fx;
     float dy = closestTrigger->GetPositionY() - fy;
-    float distToTrigger = bot->GetExactDist2d(closestTrigger);
+    float distToTrigger = firstCorePasser->GetExactDist2d(closestTrigger);
 
     if (distToTrigger == 0.0f)
         return false;
@@ -2392,7 +2413,7 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpSecondCorePasser(Player* firstCore
         targetZ = 42.985f;
     }
 
-    intendedLineup.insert_or_assign(bot->GetGUID(), Position(targetX, targetY, targetZ));
+    intendedLineup.try_emplace(bot->GetGUID(), Position(targetX, targetY, targetZ));
 
     bot->AttackStop();
     bot->InterruptNonMeleeSpells(false);
@@ -2415,7 +2436,7 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpThirdCorePasser(Player* secondCore
 
     float dx = closestTrigger->GetPositionX() - sx;
     float dy = closestTrigger->GetPositionY() - sy;
-    float distToTrigger = bot->GetExactDist2d(closestTrigger);
+    float distToTrigger = secondCorePasser->GetExactDist2d(closestTrigger);
 
     if (distToTrigger == 0.0f)
         return false;
@@ -2441,7 +2462,7 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpThirdCorePasser(Player* secondCore
         targetZ = 42.985f;
     }
 
-    intendedLineup.insert_or_assign(bot->GetGUID(), Position(targetX, targetY, targetZ));
+    intendedLineup.try_emplace(bot->GetGUID(), Position(targetX, targetY, targetZ));
 
     bot->AttackStop();
     bot->InterruptNonMeleeSpells(false);
@@ -2467,7 +2488,7 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpFourthCorePasser(Player* thirdCore
 
     float dx = tx - sx;
     float dy = ty - sy;
-    float distToTrigger = bot->GetExactDist2d(closestTrigger);
+    float distToTrigger = thirdCorePasser->GetExactDist2d(closestTrigger);
 
     if (distToTrigger == 0.0f)
         return false;
@@ -2480,7 +2501,7 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpFourthCorePasser(Player* thirdCore
     float targetY = ty - dy * moveDist;
     const float targetZ = 42.985f;
 
-    intendedLineup.insert_or_assign(bot->GetGUID(), Position(targetX, targetY, targetZ));
+    intendedLineup.try_emplace(bot->GetGUID(), Position(targetX, targetY, targetZ));
 
     bot->AttackStop();
     bot->InterruptNonMeleeSpells(false);
@@ -2552,68 +2573,25 @@ void LadyVashjPassTheTaintedCoreAction::ScheduleStoreCoreAfterImbue(PlayerbotAI*
         return;
 
     const uint32 delayMs = 1500;
-
-    const ObjectGuid giverGuid    = giver ? giver->GetGUID() : ObjectGuid::Empty;
     const ObjectGuid receiverGuid = receiver->GetGUID();
 
-    botAI->AddTimedEvent([botAI, giverGuid, receiverGuid]()
+    botAI->AddTimedEvent([receiverGuid]()
     {
         Player* receiverPlayer = receiverGuid.IsEmpty() ? nullptr : ObjectAccessor::FindPlayer(receiverGuid);
-        Player* giverPlayer    = giverGuid.IsEmpty()    ? nullptr : ObjectAccessor::FindPlayer(giverGuid);
-
         if (!receiverPlayer)
-        {
-            intendedLineup.erase(receiverGuid);
-            intendedLineup.erase(giverGuid);
             return;
-        }
-
-        // Detect if anyone already has the core
-        if (Group* group = receiverPlayer->GetGroup())
-        {
-            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-            {
-                Player* member = ref->GetSource();
-
-                if (!member)
-                    continue;
-
-                if (member->HasItemCount(ITEM_TAINTED_CORE, 1, false))
-                {
-                    intendedLineup.erase(receiverGuid);
-                    intendedLineup.erase(giverGuid);
-                    return;
-                }
-            }
-        }
 
         if (receiverPlayer->HasItemCount(ITEM_TAINTED_CORE, 1, false))
-        {
-            intendedLineup.erase(receiverGuid);
-            intendedLineup.erase(giverGuid);
             return;
-        }
 
-        // Store a new core into receiver inventory (sends client/db update)
         ItemPosCountVec dest;
         uint32 count = 1;
         int canStore = receiverPlayer->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, ITEM_TAINTED_CORE, count);
 
         if (canStore == EQUIP_ERR_OK)
         {
-            Item* created = receiverPlayer->StoreNewItem(dest, ITEM_TAINTED_CORE, true,
+            receiverPlayer->StoreNewItem(dest, ITEM_TAINTED_CORE, true,
                 Item::GenerateItemRandomPropertyId(ITEM_TAINTED_CORE));
-            if (created)
-            {
-                lastCoreInInventoryTime[SSC_MAP_ID] = std::time(nullptr);
-                intendedLineup.erase(receiverGuid);
-                intendedLineup.erase(giverGuid);
-            }
-        }
-        else
-        {
-            intendedLineup.erase(receiverGuid);
-            intendedLineup.erase(giverGuid);
         }
     }, delayMs);
 }
