@@ -1241,14 +1241,8 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event event)
         float dist = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
         if (dist > 2.0f)
         {
-            float dX = position.GetPositionX() - bot->GetPositionX();
-            float dY = position.GetPositionY() - bot->GetPositionY();
-            float moveDist = std::min(10.0f, dist);
-            float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
-            float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
-
-            return MoveTo(SSC_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false, false, true,
-                        MovementPriority::MOVEMENT_COMBAT, true, false);
+            return MoveInside(SSC_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                              position.GetPositionZ(), 8.0f, MovementPriority::MOVEMENT_COMBAT);
         }
 
         if (bot->GetTarget() != caribdis->GetGUID())
