@@ -726,13 +726,16 @@ bool LeotherasTheBlindDemonFormTankAttackBossAction::Execute(Event event)
 // And stay away from the Warlock tank to avoid Chaos Blasts
 bool LeotherasTheBlindPositionRangedAction::Execute(Event event)
 {
-    Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
-    if (!leotheras)
-        return false;
-
     const uint32 minInterval = 500;
-    if (bot->GetExactDist2d(leotheras) < 10.0f)
-        return FleePosition(leotheras->GetPosition(), 12.0f, minInterval);
+
+    Unit* leotherasHuman = GetLeotherasHuman(botAI);
+    if (leotherasHuman && bot->GetExactDist2d(leotherasHuman) < 10.0f &&
+        leotherasHuman->GetVictim() != bot)
+        return FleePosition(leotherasHuman->GetPosition(), 12.0f, minInterval);
+
+    Unit* leotherasDemon = GetActiveLeotherasDemon(botAI);
+    if (!leotherasDemon)
+        return false;
 
     if (Group* group = bot->GetGroup())
     {
@@ -743,9 +746,7 @@ bool LeotherasTheBlindPositionRangedAction::Execute(Event event)
                 continue;
 
             Player* demonFormTank = GetLeotherasDemonFormTank(botAI, bot);
-            Unit* leotherasDemon = GetActiveLeotherasDemon(botAI);
-            if (demonFormTank && demonFormTank == member &&
-                leotherasDemon)
+            if (demonFormTank && demonFormTank == member)
             {
                 if (bot->GetExactDist2d(member) < 10.0f)
                     return FleePosition(member->GetPosition(), 12.0f, minInterval);
@@ -871,15 +872,16 @@ bool LeotherasTheBlindFinalPhaseAssignDpsPriorityAction::Execute(Event event)
 
     if (botAI->IsTank(bot) && leotherasHuman->GetVictim() == bot)
     {
-        if (leotherasHuman->GetExactDist2d(leotherasDemon) < 25.0f)
+        Unit* demonTarget = leotherasDemon->GetVictim();
+        if (demonTarget && leotherasHuman->GetExactDist2d(demonTarget) < 20.0f)
         {
-            float angle = atan2(bot->GetPositionY() - leotherasDemon->GetPositionY(),
-                                bot->GetPositionX() - leotherasDemon->GetPositionX());
-            float targetX = bot->GetPositionX() + 27.0f * std::cos(angle);
-            float targetY = bot->GetPositionY() + 27.0f * std::sin(angle);
+            float angle = atan2(bot->GetPositionY() - demonTarget->GetPositionY(),
+                                bot->GetPositionX() - demonTarget->GetPositionX());
+            float targetX = bot->GetPositionX() + 21.0f * std::cos(angle);
+            float targetY = bot->GetPositionY() + 21.0f * std::sin(angle);
 
             return MoveTo(SSC_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false, false, false,
-                            MovementPriority::MOVEMENT_FORCED, true, false);
+                          MovementPriority::MOVEMENT_FORCED, true, false);
         }
     }
 

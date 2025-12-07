@@ -220,7 +220,8 @@ bool LeotherasTheBlindBossEngagedByRangedTrigger::IsActive()
         return false;
 
     Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
-    return leotheras && !leotheras->HasAura(SPELL_LEOTHERAS_BANISHED);
+    return leotheras && !leotheras->HasAura(SPELL_LEOTHERAS_BANISHED) &&
+           !leotheras->HasAura(SPELL_WHIRLWIND) && !leotheras->HasAura(SPELL_WHIRLWIND_CHANNEL);
 }
 
 bool LeotherasTheBlindBossChannelingWhirlwindTrigger::IsActive()

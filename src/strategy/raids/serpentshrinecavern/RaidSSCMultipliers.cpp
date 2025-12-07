@@ -265,8 +265,6 @@ float LeotherasTheBlindDisableTankActionsMultiplier::GetValue(Action* action)
         if ((dynamic_cast<AttackAction*>(action) &&
              !dynamic_cast<LeotherasTheBlindInnerDemonCheatAction*>(action)) ||
              dynamic_cast<CastSpellAction*>(action))
-            return 1.0f;
-        else
             return 0.0f;
     }
 
