@@ -26,6 +26,7 @@ namespace SerpentShrineCavernHelpers
 
     std::unordered_map<ObjectGuid, Position> vashjRangedPositions;
     std::unordered_map<ObjectGuid, bool> hasReachedVashjRangedPosition;
+    std::unordered_map<uint32, ObjectGuid> nearestTriggerGuid;
     std::unordered_map<ObjectGuid, Position> intendedLineup;
     std::unordered_map<uint32, time_t> lastImbueAttempt;
     std::unordered_map<uint32, time_t> lastCoreInInventoryTime;
@@ -577,9 +578,9 @@ namespace SerpentShrineCavernHelpers
 
     // Returns the nearest active Shield Generator to the bot
     // Active generators are powered by NPC_WORLD_INVISIBLE_TRIGGER creatures, which depawn after use
-    Unit* GetNearestActiveShieldGeneratorTriggerByEntry(Player* bot, Unit* reference)
+    Unit* GetNearestActiveShieldGeneratorTriggerByEntry(Unit* reference)
     {
-        if (!bot || !reference)
+        if (!reference)
             return nullptr;
 
         std::list<Creature*> triggers;

@@ -129,6 +129,7 @@ namespace SerpentShrineCavernHelpers
 
     extern std::unordered_map<ObjectGuid, Position> vashjRangedPositions;
     extern std::unordered_map<ObjectGuid, bool> hasReachedVashjRangedPosition;
+    extern std::unordered_map<uint32, ObjectGuid> nearestTriggerGuid;
     extern std::unordered_map<ObjectGuid, Position> intendedLineup;
     extern std::unordered_map<uint32, time_t> lastImbueAttempt;
     extern std::unordered_map<uint32, time_t> lastCoreInInventoryTime;
@@ -198,7 +199,7 @@ namespace SerpentShrineCavernHelpers
 
     extern const std::vector<uint32> SHIELD_GENERATOR_DB_GUIDS;
     std::vector<GeneratorInfo> GetAllGeneratorInfosByDbGuids(Map* map, const std::vector<uint32>& generatorDbGuids);
-    Unit* GetNearestActiveShieldGeneratorTriggerByEntry(Player* bot, Unit* reference);
+    Unit* GetNearestActiveShieldGeneratorTriggerByEntry(Unit* reference);
     const GeneratorInfo* GetNearestGeneratorToBot(Player* bot, const std::vector<GeneratorInfo>& generators);
 }
 

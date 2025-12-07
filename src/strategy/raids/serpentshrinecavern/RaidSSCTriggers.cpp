@@ -578,8 +578,7 @@ bool LadyVashjTaintedCoreWasLootedTrigger::IsActive()
 
     if (bot == designatedLooter)
     {
-        if (hasCore(firstCorePasser) || hasCore(secondCorePasser) ||
-            hasCore(thirdCorePasser) || hasCore(fourthCorePasser))
+        if (!hasCore(bot))
             return false;
     }
     else if (bot == firstCorePasser)

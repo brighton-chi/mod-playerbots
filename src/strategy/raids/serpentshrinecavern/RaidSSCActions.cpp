@@ -624,7 +624,7 @@ bool TheLurkerBelowTanksPickUpAddsAction::Execute(Event event)
         return false;
 
     std::vector<Unit*> guardians;
-    GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
+    auto const& npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
     for (auto guid : npcs)
     {
         Unit* unit = botAI->GetUnit(guid);
@@ -818,7 +818,7 @@ bool LeotherasTheBlindMeleeDpsRunAwayFromBossAction::Execute(Event event)
 bool LeotherasTheBlindInnerDemonCheatAction::Execute(Event event)
 {
     Unit* innerDemon = nullptr;
-    GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
+    auto const& npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
     for (auto const& guid : npcs)
     {
         Unit* unit = botAI->GetUnit(guid);
@@ -1193,9 +1193,8 @@ bool FathomLordKarathressMisdirectBossesToTanksAction::Execute(Event event)
     return false;
 }
 
-// Kill order is different from what is recommended for players because bots handle
-// Caribdis Cyclones poorly and need more time to get her down (normally, ranged would help get
-// Sharkkis down first)
+// Kill order is different from what is recommended for players because bots handle Caribdis
+// Cyclones poorly and need more time to get her down (normally, ranged would help with Sharkkis first)
 bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event event)
 {
     // Target priority 1: Spitfire Totems for melee dps
@@ -1869,7 +1868,7 @@ bool LadyVashjAssignDpsPriorityAction::Execute(Event event)
     if (!vashj)
         return false;
 
-    GuidVector attackers = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
+    auto const& attackers = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
     Unit* target = nullptr;
     Unit* tainted = nullptr;
     Unit* enchanted = nullptr;
@@ -1894,6 +1893,11 @@ bool LadyVashjAssignDpsPriorityAction::Execute(Event event)
 
         switch (unit->GetEntry())
         {
+            case NPC_TAINTED_ELEMENTAL:
+            if (!tainted)
+                tainted = unit;
+            break;
+
             case NPC_ENCHANTED_ELEMENTAL:
                 if (!enchanted || vashj->GetExactDist2d(unit) < vashj->GetExactDist2d(enchanted))
                     enchanted = unit;
@@ -1931,12 +1935,12 @@ bool LadyVashjAssignDpsPriorityAction::Execute(Event event)
             // Hunters and Mages prioritize Enchanted Elementals, while other ranged DPS prioritize Striders
             // This works well with 3 Hunters and 2 Mages; effectiveness may vary based on raid composition
             if (bot->getClass() == CLASS_HUNTER || bot->getClass() == CLASS_MAGE)
-                targets = { enchanted, strider, elite };
+                targets = { tainted, enchanted, strider, elite };
             else
-                targets = { strider, elite, enchanted };
+                targets = { tainted, strider, elite, enchanted };
         }
         else if (botAI->IsMelee(bot) && botAI->IsDps(bot))
-            targets = { enchanted, elite };
+            targets = { tainted, enchanted, elite };
         else if (botAI->IsTank(bot))
         {
             // With raid cheats enabled, the first assist tank will tank the Strider
@@ -1969,13 +1973,8 @@ bool LadyVashjAssignDpsPriorityAction::Execute(Event event)
         }
         else if (botAI->IsRanged(bot))
         {
-            /* // Hunters will prioritize Toxic Sporebats
-            if (bot->getClass() == CLASS_HUNTER)
-                targets = { enchanted, sporebat, strider, elite, vashj };
-            else
-                targets = { enchanted, strider, elite, vashj }; */
-            // Try seeing results if all ranged, other than Priest, attack sporebats
-            if (bot->getClass() == CLASS_PRIEST)
+            // Ranged, other than Priests and Warlocks, will prioritize Toxic Sporebats
+            if (bot->getClass() == CLASS_PRIEST || bot->getClass() == CLASS_WARLOCK)
                 targets = { enchanted, strider, elite, vashj };
             else
                 targets = { enchanted, sporebat, strider, elite, vashj };
@@ -2041,13 +2040,10 @@ bool LadyVashjAssignDpsPriorityAction::Execute(Event event)
     {
         Player* designatedLooter = GetDesignatedCoreLooter(bot->GetGroup(), botAI);
         Player* firstCorePasser = GetFirstTaintedCorePasser(bot->GetGroup(), botAI);
-        // A bot will not move back to the middle if:
-        // (1) The designated looter is within 10 yards of a Tainted Elemental, and the bot is
-        //     either the designated looter or the first core passer, or
-        // (2) It otherwise has the Tainted Core
-        if (designatedLooter && tainted && designatedLooter->GetExactDist2d(tainted) < 5.0f &&
-            (designatedLooter == bot || (firstCorePasser && firstCorePasser == bot)) ||
-            bot->HasItemCount(ITEM_TAINTED_CORE, 1, false))
+        // A bot will not move back to the middle if (1) there is a Tainted Elemental, and
+        // (2) the bot is either the designated looter or the first core passer
+        if (tainted && ((designatedLooter && designatedLooter == bot) ||
+            (firstCorePasser && firstCorePasser == bot)))
             return false;
 
         const Position& center = VASHJ_PLATFORM_CENTER_POSITION;
@@ -2098,7 +2094,7 @@ bool LadyVashjTeleportToTaintedElementalAction::Execute(Event event)
 
 bool LadyVashjLootTaintedCoreAction::Execute(Event)
 {
-    GuidVector corpses = context->GetValue<GuidVector>("nearest corpses")->Get();
+    auto const& corpses = context->GetValue<GuidVector>("nearest corpses")->Get();
     const float maxLootRange = sPlayerbotAIConfig->lootDistance;
 
     for (auto const& guid : corpses)
@@ -2111,7 +2107,6 @@ bool LadyVashjLootTaintedCoreAction::Execute(Event)
         if (!object)
             continue;
 
-        // The Tainted Elemental lootable corpse is a dead Creature object, not a corpse object
         Creature* creature = object->ToCreature();
         if (!creature || creature->GetEntry() != NPC_TAINTED_ELEMENTAL || creature->IsAlive())
             continue;
@@ -2122,16 +2117,12 @@ bool LadyVashjLootTaintedCoreAction::Execute(Event)
         if (dist > maxLootRange)
             return MoveTo(object, 2.0f, MovementPriority::MOVEMENT_FORCED);
 
-        // Invoke OpenLootAction to request the server's StoreLoot packet for this corpse
-        // Attempt a forced autostore (without modifying LootAction) by scheduling a short-timer to send
-        // CMSG_AUTOSTORE_LOOT_ITEM (index 0) once the server has had time to send the StoreLoot packet
         OpenLootAction open(botAI);
         bool opened = open.Execute(Event());
 
         if (!opened)
             return opened;
 
-        // If anyone in the group already has the core, skip creating a duplicate
         if (Group* group = bot->GetGroup())
         {
             for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
@@ -2142,7 +2133,6 @@ bool LadyVashjLootTaintedCoreAction::Execute(Event)
             }
         }
 
-        // Schedule autostore attempt + reconcile fallback
         const ObjectGuid botGuid = bot->GetGUID();
         const ObjectGuid corpseGuid = guid;
         const uint8 coreIndex = 0;
@@ -2153,7 +2143,6 @@ bool LadyVashjLootTaintedCoreAction::Execute(Event)
             if (!receiver)
                 return;
 
-            // Double-check someone else didn't obtain the core in the meantime using receiver's group
             if (Group* group = receiver->GetGroup())
             {
                 for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
@@ -2164,7 +2153,6 @@ bool LadyVashjLootTaintedCoreAction::Execute(Event)
                 }
             }
 
-            // Set the loot GUID so server treats the following autostore as targeted to this corpse
             receiver->SetLootGUID(corpseGuid);
 
             WorldPacket* packet = new WorldPacket(CMSG_AUTOSTORE_LOOT_ITEM, 1);
@@ -2194,7 +2182,25 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
     Player* secondCorePasser = GetSecondTaintedCorePasser(group, botAI);
     Player* thirdCorePasser = GetThirdTaintedCorePasser(group, botAI);
     Player* fourthCorePasser = GetFourthTaintedCorePasser(group, botAI);
-    Unit* closestTrigger = GetNearestActiveShieldGeneratorTriggerByEntry(bot, designatedLooter);
+
+    Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
+    Unit* closestTrigger = nullptr;
+    if (tainted)
+    {
+        closestTrigger = GetNearestActiveShieldGeneratorTriggerByEntry(tainted);
+        if (closestTrigger)
+            nearestTriggerGuid.insert_or_assign(SSC_MAP_ID, closestTrigger->GetGUID());
+    }
+
+    auto itSnap = nearestTriggerGuid.find(SSC_MAP_ID);
+    if (itSnap != nearestTriggerGuid.end() && !itSnap->second.IsEmpty())
+    {
+        Unit* snapUnit = botAI->GetUnit(itSnap->second);
+        if (snapUnit)
+            closestTrigger = snapUnit;
+        else
+            nearestTriggerGuid.clear();
+    }
 
     if (!firstCorePasser || !secondCorePasser || !thirdCorePasser || !fourthCorePasser || !closestTrigger)
         return false;
@@ -2204,30 +2210,32 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
     if (!bot->HasAura(SPELL_FEAR_WARD))
         bot->AddAura(SPELL_FEAR_WARD, bot);
 
-    // Passer order: HealAssistantOfIndex 0, 1, 2, then RangedDpsAssistantOfIndex 0
-    if (bot == firstCorePasser && !botAI->HasItemInInventory(ITEM_TAINTED_CORE))
-    {
-        if (LineUpFirstCorePasser(designatedLooter, closestTrigger))
-            return true;
-    }
-    else if (bot == secondCorePasser && !botAI->HasItemInInventory(ITEM_TAINTED_CORE))
-    {
-        if (LineUpSecondCorePasser(firstCorePasser, closestTrigger))
-            return true;
-    }
-    else if (bot == thirdCorePasser && !botAI->HasItemInInventory(ITEM_TAINTED_CORE))
-    {
-        if (LineUpThirdCorePasser(secondCorePasser, closestTrigger))
-            return true;
-    }
-    else if (bot == fourthCorePasser && !botAI->HasItemInInventory(ITEM_TAINTED_CORE))
-    {
-        if (LineUpFourthCorePasser(thirdCorePasser, closestTrigger))
-            return true;
-    }
-
     Item* item = bot->GetItemByEntry(ITEM_TAINTED_CORE);
-    if (item && botAI->HasItemInInventory(ITEM_TAINTED_CORE))
+    if (!item || !botAI->HasItemInInventory(ITEM_TAINTED_CORE))
+    {
+        // Passer order: HealAssistantOfIndex 0, 1, 2, then RangedDpsAssistantOfIndex 0
+        if (bot == firstCorePasser)
+        {
+            if (LineUpFirstCorePasser(designatedLooter, closestTrigger))
+                return true;
+        }
+        else if (bot == secondCorePasser)
+        {
+            if (LineUpSecondCorePasser(firstCorePasser, closestTrigger))
+                return true;
+        }
+        else if (bot == thirdCorePasser)
+        {
+            if (LineUpThirdCorePasser(designatedLooter, firstCorePasser, secondCorePasser, closestTrigger))
+                return true;
+        }
+        else if (bot == fourthCorePasser)
+        {
+            if (LineUpFourthCorePasser(firstCorePasser, secondCorePasser, thirdCorePasser, closestTrigger))
+                return true;
+        }
+    }
+    else if (item && botAI->HasItemInInventory(ITEM_TAINTED_CORE))
     {
         // Designated core looter logic--applicable only if cheat mode is on and thus looter is a bot
         if (bot == designatedLooter)
@@ -2236,13 +2244,13 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
             {
                 const time_t now = std::time(nullptr);
 
-                // Track lastImbueAttempt to prevent repeated throwing animations from multiple imbue attempts
+                // Track lastImbueAttempt is to prevent repeated throwing animations from multiple imbue attempts
                 auto [it, inserted] = lastImbueAttempt.try_emplace(SSC_MAP_ID, now);
                 if (inserted)
                 {
                     botAI->ImbueItem(item, firstCorePasser);
                     lastCoreInInventoryTime[SSC_MAP_ID] = now;
-                    //ScheduleStoreCoreAfterImbue(botAI, bot, firstCorePasser);
+                    ScheduleStoreCoreAfterImbue(botAI, bot, firstCorePasser);
                     return true;
                 }
                 if ((now - it->second) >= 2)
@@ -2250,7 +2258,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
                     it->second = now;
                     botAI->ImbueItem(item, firstCorePasser);
                     lastCoreInInventoryTime[SSC_MAP_ID] = now;
-                    //ScheduleStoreCoreAfterImbue(botAI, bot, firstCorePasser);
+                    ScheduleStoreCoreAfterImbue(botAI, bot, firstCorePasser);
                     return true;
                 }
             }
@@ -2268,7 +2276,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
                     botAI->ImbueItem(item, secondCorePasser);
                     lastCoreInInventoryTime[SSC_MAP_ID] = now;
                     intendedLineup.erase(bot->GetGUID());
-                    //ScheduleStoreCoreAfterImbue(botAI, bot, secondCorePasser);
+                    ScheduleStoreCoreAfterImbue(botAI, bot, secondCorePasser);
                     return true;
                 }
                 if ((now - it->second) >= 2)
@@ -2277,14 +2285,13 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
                     botAI->ImbueItem(item, secondCorePasser);
                     lastCoreInInventoryTime[SSC_MAP_ID] = now;
                     intendedLineup.erase(bot->GetGUID());
-                    //ScheduleStoreCoreAfterImbue(botAI, bot, secondCorePasser);
+                    ScheduleStoreCoreAfterImbue(botAI, bot, secondCorePasser);
                     return true;
                 }
             }
         }
         // Second core passer: if closest usable generator is within passing distance of the first passer, move
-        // to the generator; otherwise, move as close as possible to the generator while remaining in passing range
-        // Usually, the second core passer will be able to use the generator, but it depends on where the elemental spawns
+        // to the generator; otherwise, move as close as possible to the generator while staying in passing range
         else if (bot == secondCorePasser)
         {
             if (!UseCoreOnNearestGenerator())
@@ -2299,7 +2306,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
                         botAI->ImbueItem(item, thirdCorePasser);
                         lastCoreInInventoryTime[SSC_MAP_ID] = now;
                         intendedLineup.erase(bot->GetGUID());
-                        //ScheduleStoreCoreAfterImbue(botAI, bot, thirdCorePasser);
+                        ScheduleStoreCoreAfterImbue(botAI, bot, thirdCorePasser);
                         return true;
                     }
                     if ((now - it->second) >= 2)
@@ -2308,14 +2315,14 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
                         botAI->ImbueItem(item, thirdCorePasser);
                         lastCoreInInventoryTime[SSC_MAP_ID] = now;
                         intendedLineup.erase(bot->GetGUID());
-                        //ScheduleStoreCoreAfterImbue(botAI, bot, thirdCorePasser);
+                        ScheduleStoreCoreAfterImbue(botAI, bot, thirdCorePasser);
                         return true;
                     }
                 }
             }
         }
         // Third core passer: if closest usable generator is within passing distance of the second passer, move
-        // to the generator; otherwise, move as close as possible to the generator while remaining in passing range
+        // to the generator; otherwise, move as close as possible to the generator while staying in passing range
         else if (bot == thirdCorePasser)
         {
             if (!UseCoreOnNearestGenerator())
@@ -2330,7 +2337,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
                         botAI->ImbueItem(item, fourthCorePasser);
                         lastCoreInInventoryTime[SSC_MAP_ID] = now;
                         intendedLineup.erase(bot->GetGUID());
-                        //ScheduleStoreCoreAfterImbue(botAI, bot, fourthCorePasser);
+                        ScheduleStoreCoreAfterImbue(botAI, bot, fourthCorePasser);
                         return true;
                     }
                     if ((now - it->second) >= 2)
@@ -2339,13 +2346,13 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
                         botAI->ImbueItem(item, fourthCorePasser);
                         lastCoreInInventoryTime[SSC_MAP_ID] = now;
                         intendedLineup.erase(bot->GetGUID());
-                        //ScheduleStoreCoreAfterImbue(botAI, bot, fourthCorePasser);
+                        ScheduleStoreCoreAfterImbue(botAI, bot, fourthCorePasser);
                         return true;
                     }
                 }
             }
         }
-        // Fourth core passer: the fourth passer is rarely needed and will always be enough to reach a usable generator
+        // Fourth core passer: the fourth passer is rarely needed (and no more than four ever are)
         else if (bot == fourthCorePasser)
         {
             UseCoreOnNearestGenerator();
@@ -2355,7 +2362,8 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
     return false;
 }
 
-bool LadyVashjPassTheTaintedCoreAction::LineUpFirstCorePasser(Player* designatedLooter, Unit* closestTrigger)
+bool LadyVashjPassTheTaintedCoreAction::LineUpFirstCorePasser(
+    Player* designatedLooter, Unit* closestTrigger)
 {
     const float centerX = VASHJ_PLATFORM_CENTER_POSITION.GetPositionX();
     const float centerY = VASHJ_PLATFORM_CENTER_POSITION.GetPositionY();
@@ -2369,15 +2377,16 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpFirstCorePasser(Player* designated
     float targetY = centerY + radius * std::sin(angle);
     const float targetZ = 41.097f;
 
-    intendedLineup.try_emplace(bot->GetGUID(), Position(targetX, targetY, targetZ));
+    intendedLineup.insert_or_assign(bot->GetGUID(), Position(targetX, targetY, targetZ));
 
     bot->AttackStop();
     bot->InterruptNonMeleeSpells(true);
-    return MoveTo(SSC_MAP_ID, targetX, targetY, targetZ,
-                  false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
+    return MoveTo(SSC_MAP_ID, targetX, targetY, targetZ, false, false, false, true,
+                  MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
-bool LadyVashjPassTheTaintedCoreAction::LineUpSecondCorePasser(Player* firstCorePasser, Unit* closestTrigger)
+bool LadyVashjPassTheTaintedCoreAction::LineUpSecondCorePasser(
+    Player* firstCorePasser, Unit* closestTrigger)
 {
     float fx = firstCorePasser->GetPositionX();
     float fy = firstCorePasser->GetPositionY();
@@ -2393,10 +2402,10 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpSecondCorePasser(Player* firstCore
 
     // Target is on a line between firstCorePasser and closestTrigger
     float targetX, targetY, targetZ;
-    // if firstCorePasser is within this distance of closestTrigger, go to nearTriggerDist short of closestTrigger
+    // If firstCorePasser is within thresholdDist of closestTrigger, go to nearTriggerDist short of closestTrigger
     const float thresholdDist = 40.0f;
     const float nearTriggerDist = 1.5f;
-    // if firstCorePasser is not thresholdDist yards from closestTrigger, go to farDistance from firstCorePasser
+    // If firstCorePasser is not thresholdDist yards from closestTrigger, go to farDistance from firstCorePasser
     const float farDistance = 38.0f;
 
     if (distToTrigger <= thresholdDist)
@@ -2413,22 +2422,25 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpSecondCorePasser(Player* firstCore
         targetZ = 42.985f;
     }
 
-    intendedLineup.try_emplace(bot->GetGUID(), Position(targetX, targetY, targetZ));
+    intendedLineup.insert_or_assign(bot->GetGUID(), Position(targetX, targetY, targetZ));
 
     bot->AttackStop();
     bot->InterruptNonMeleeSpells(false);
-    return MoveTo(SSC_MAP_ID, targetX, targetY, targetZ,
-                  false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
+    return MoveTo(SSC_MAP_ID, targetX, targetY, targetZ, false, false, false, true,
+                  MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
-bool LadyVashjPassTheTaintedCoreAction::LineUpThirdCorePasser(Player* secondCorePasser, Unit* closestTrigger)
+bool LadyVashjPassTheTaintedCoreAction::LineUpThirdCorePasser(
+    Player* designatedLooter, Player* firstCorePasser, Player* secondCorePasser, Unit* closestTrigger)
 {
-    // Since the third passer is often not needed, wait until the second passer has the core to move
-    if (!secondCorePasser->HasItemCount(ITEM_TAINTED_CORE, 1, false))
-        return false;
+    // Wait to move until it is clear that a third passer is needed
+    bool needThird =
+        (IsFirstCorePasserInIntendedPosition(designatedLooter, firstCorePasser, closestTrigger) &&
+         firstCorePasser->GetExactDist2d(closestTrigger) > 42.0f) ||
+        (IsSecondCorePasserInIntendedPosition(firstCorePasser, secondCorePasser, closestTrigger) &&
+         secondCorePasser->GetExactDist2d(closestTrigger) > 4.0f);
 
-    // Also don't move if the second passer has the core but is able to use the generator
-    if (secondCorePasser->GetExactDist2d(closestTrigger) <= 4.0f)
+    if (!needThird)
         return false;
 
     float sx = secondCorePasser->GetPositionX();
@@ -2462,22 +2474,27 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpThirdCorePasser(Player* secondCore
         targetZ = 42.985f;
     }
 
-    intendedLineup.try_emplace(bot->GetGUID(), Position(targetX, targetY, targetZ));
+    intendedLineup.insert_or_assign(bot->GetGUID(), Position(targetX, targetY, targetZ));
 
     bot->AttackStop();
     bot->InterruptNonMeleeSpells(false);
-    return MoveTo(SSC_MAP_ID, targetX, targetY, targetZ,
-                  false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
+    return MoveTo(SSC_MAP_ID, targetX, targetY, targetZ, false, false, false, true,
+                  MovementPriority::MOVEMENT_FORCED, true, false);
+
+    return false;
 }
 
-bool LadyVashjPassTheTaintedCoreAction::LineUpFourthCorePasser(Player* thirdCorePasser, Unit* closestTrigger)
+bool LadyVashjPassTheTaintedCoreAction::LineUpFourthCorePasser(
+    Player* firstCorePasser, Player* secondCorePasser, Player* thirdCorePasser, Unit* closestTrigger)
 {
-    // Since the fourth passer is often not needed, wait until the third passer has the core to move
-    if (!thirdCorePasser->HasItemCount(ITEM_TAINTED_CORE, 1, false))
-        return false;
+    // Wait to move until it is clear that a fourth passer is needed
+    bool needFourth =
+        (IsSecondCorePasserInIntendedPosition(firstCorePasser, secondCorePasser, closestTrigger) &&
+         secondCorePasser->GetExactDist2d(closestTrigger) > 42.0f) ||
+        (IsThirdCorePasserInIntendedPosition(secondCorePasser, thirdCorePasser, closestTrigger) &&
+         thirdCorePasser->GetExactDist2d(closestTrigger) > 4.0f);
 
-    // Also don't move if the third passer has the core but is able to use the generator
-    if (thirdCorePasser->GetExactDist2d(closestTrigger) <= 4.0f)
+    if (!needFourth)
         return false;
 
     float sx = thirdCorePasser->GetPositionX();
@@ -2496,30 +2513,28 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpFourthCorePasser(Player* thirdCore
     dx /= distToTrigger; dy /= distToTrigger;
 
     const float nearTriggerDist = 1.5f;
-    float moveDist = std::max(distToTrigger - nearTriggerDist, 0.0f);
-    float targetX = tx - dx * moveDist;
-    float targetY = ty - dy * moveDist;
+    float targetX = tx - dx * nearTriggerDist;
+    float targetY = ty - dy * nearTriggerDist;
     const float targetZ = 42.985f;
 
-    intendedLineup.try_emplace(bot->GetGUID(), Position(targetX, targetY, targetZ));
+    intendedLineup.insert_or_assign(bot->GetGUID(), Position(targetX, targetY, targetZ));
 
     bot->AttackStop();
     bot->InterruptNonMeleeSpells(false);
-    return MoveTo(SSC_MAP_ID, targetX, targetY, targetZ,
-                  false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
+    return MoveTo(SSC_MAP_ID, targetX, targetY, targetZ, false, false, false, true,
+                  MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
-// The next four functions check if the respective core passer is within 2 yards of their intended position
-// And are used to determine when the prior bot in the chain can pass the core
-// Known issue: if a passer bot is feared by a strider, the chain can be broken; if this happens, it is best
-// to order bots to destroy cores to reset the sequence for the next elemental spawn
+// The next four functions check if the respective core passer is within 2 yards of their intended
+// position and are used to determine when the prior bot in the chain can pass the core
 bool LadyVashjPassTheTaintedCoreAction::IsFirstCorePasserInIntendedPosition(
     Player* designatedLooter, Player* firstCorePasser, Unit* closestTrigger)
 {
     auto itSnap = intendedLineup.find(firstCorePasser->GetGUID());
     if (itSnap != intendedLineup.end())
     {
-        float dist2d = firstCorePasser->GetExactDist2d(itSnap->second.GetPositionX(), itSnap->second.GetPositionY());
+        float dist2d = firstCorePasser->GetExactDist2d(itSnap->second.GetPositionX(),
+                                                       itSnap->second.GetPositionY());
         return dist2d <= 2.0f;
     }
 
@@ -2532,7 +2547,8 @@ bool LadyVashjPassTheTaintedCoreAction::IsSecondCorePasserInIntendedPosition(
     auto itSnap = intendedLineup.find(secondCorePasser->GetGUID());
     if (itSnap != intendedLineup.end())
     {
-        float dist2d = secondCorePasser->GetExactDist2d(itSnap->second.GetPositionX(), itSnap->second.GetPositionY());
+        float dist2d = secondCorePasser->GetExactDist2d(itSnap->second.GetPositionX(),
+                                                        itSnap->second.GetPositionY());
         return dist2d <= 2.0f;
     }
 
@@ -2545,7 +2561,8 @@ bool LadyVashjPassTheTaintedCoreAction::IsThirdCorePasserInIntendedPosition(
     auto itSnap = intendedLineup.find(thirdCorePasser->GetGUID());
     if (itSnap != intendedLineup.end())
     {
-        float dist2d = thirdCorePasser->GetExactDist2d(itSnap->second.GetPositionX(), itSnap->second.GetPositionY());
+        float dist2d = thirdCorePasser->GetExactDist2d(itSnap->second.GetPositionX(),
+                                                       itSnap->second.GetPositionY());
         return dist2d <= 2.0f;
     }
 
@@ -2558,16 +2575,19 @@ bool LadyVashjPassTheTaintedCoreAction::IsFourthCorePasserInIntendedPosition(
     auto itSnap = intendedLineup.find(fourthCorePasser->GetGUID());
     if (itSnap != intendedLineup.end())
     {
-        float dist2d = fourthCorePasser->GetExactDist2d(itSnap->second.GetPositionX(), itSnap->second.GetPositionY());
+        float dist2d = fourthCorePasser->GetExactDist2d(itSnap->second.GetPositionX(),
+                                                        itSnap->second.GetPositionY());
         return dist2d <= 2.0f;
     }
 
     return false;
 }
 
-// Because ImbueItem() does not actually cause the receiving bot to receive the core, we have to simulate
-// the passing mechanic by creating the core on the receiver (ImbueItem() does take away the core from the passer)
-void LadyVashjPassTheTaintedCoreAction::ScheduleStoreCoreAfterImbue(PlayerbotAI* botAI, Player* giver, Player* receiver)
+// ImbueItem() is inconsistent in causing the receiving bot to receive the core
+// So ScheduleStoreCoreAfterImbue() simulates the passing mechanic by creating the core on the receiver
+// However, ImbueItem() does always take away the core from the passer
+void LadyVashjPassTheTaintedCoreAction::ScheduleStoreCoreAfterImbue(
+    PlayerbotAI* botAI, Player* giver, Player* receiver)
 {
     if (!receiver)
         return;
@@ -2598,7 +2618,7 @@ void LadyVashjPassTheTaintedCoreAction::ScheduleStoreCoreAfterImbue(PlayerbotAI*
 
 bool LadyVashjPassTheTaintedCoreAction::UseCoreOnNearestGenerator()
 {
-    std::vector<GeneratorInfo> generators = GetAllGeneratorInfosByDbGuids(bot->GetMap(), SHIELD_GENERATOR_DB_GUIDS);
+    auto const& generators = GetAllGeneratorInfosByDbGuids(bot->GetMap(), SHIELD_GENERATOR_DB_GUIDS);
     const GeneratorInfo* nearestGen = GetNearestGeneratorToBot(bot, generators);
     if (!nearestGen)
         return false;
@@ -2607,8 +2627,7 @@ bool LadyVashjPassTheTaintedCoreAction::UseCoreOnNearestGenerator()
     if (!generator)
         return false;
 
-    float dist = bot->GetExactDist2d(generator);
-    if (dist > 4.5f)
+    if (bot->GetExactDist2d(generator) > 4.5f)
         return false;
 
     if (Item* core = bot->GetItemByEntry(ITEM_TAINTED_CORE))
@@ -2662,13 +2681,11 @@ bool LadyVashjDestroyTaintedCoreAction::Execute(Event event)
     return false;
 }
 
-// Custom Toxic Spore avoidance action
-// The standard "avoid aoe" strategy does work, but I find it doesn't provide enough
-// buffer distance for the toxic pools, and the standard strategy has a tendency to
-// take bots down the stairs and get them stuck or out of LoS
+// The standard "avoid aoe" strategy does work for Toxic Spores, but I find it doesn't provide enough
+// buffer distance, and it has a tendency to take bots down the stairs and get them stuck or out of LoS
 bool LadyVashjAvoidToxicSporesAction::Execute(Event event)
 {
-    std::vector<Unit*> spores = GetAllSporeDropTriggers(botAI, bot);
+    auto const& spores = GetAllSporeDropTriggers(botAI, bot);
     if (spores.empty())
         return false;
 
@@ -2695,12 +2712,14 @@ bool LadyVashjAvoidToxicSporesAction::Execute(Event event)
     if (vashj && vashj->GetVictim() == bot)
     {
         return MoveTo(SSC_MAP_ID, safestPos.GetPositionX(), safestPos.GetPositionY(),
-                      safestPos.GetPositionZ(), false, false, false, true, MovementPriority::MOVEMENT_COMBAT, true, true);
+                      safestPos.GetPositionZ(), false, false, false, true,
+                      MovementPriority::MOVEMENT_COMBAT, true, true);
     }
     else
     {
         return MoveTo(SSC_MAP_ID, safestPos.GetPositionX(), safestPos.GetPositionY(),
-                      safestPos.GetPositionZ(), false, false, false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
+                      safestPos.GetPositionZ(), false, false, false, true,
+                      MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 }
 
@@ -2793,15 +2812,17 @@ bool LadyVashjAvoidToxicSporesAction::IsPathSafeFromSpores(const Position& start
 }
 
 // When Toxic Sporebats spit poison, they summon "Spore Drop Trigger" NPCs that create the toxic pools
-std::vector<Unit*> LadyVashjAvoidToxicSporesAction::GetAllSporeDropTriggers(PlayerbotAI* botAI, Player* bot)
+std::vector<Unit*> LadyVashjAvoidToxicSporesAction::GetAllSporeDropTriggers(
+    PlayerbotAI* botAI, Player* bot)
 {
     std::vector<Unit*> sporeDropTriggers;
-    const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
+    auto const& npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
     for (auto const& npcGuid : npcs)
     {
         const float maxSearchRadius = 40.0f;
         Unit* unit = botAI->GetUnit(npcGuid);
-        if (unit && unit->GetEntry() == NPC_SPORE_DROP_TRIGGER && bot->GetExactDist2d(unit) < maxSearchRadius)
+        if (unit && unit->GetEntry() == NPC_SPORE_DROP_TRIGGER &&
+            bot->GetExactDist2d(unit) < maxSearchRadius)
             sporeDropTriggers.push_back(unit);
     }
 
@@ -2814,7 +2835,7 @@ bool LadyVashjUseFreeActionAbilitiesAction::Execute(Event event)
     if (!group)
         return false;
 
-    std::vector<Unit*> spores = LadyVashjAvoidToxicSporesAction::GetAllSporeDropTriggers(botAI, bot);
+    auto const& spores = LadyVashjAvoidToxicSporesAction::GetAllSporeDropTriggers(botAI, bot);
     const float toxicSporeRadius = 6.0f;
 
     // If Rogues are Entangled and either have Static Charge or are near a spore, use Cloak of Shadows
@@ -2911,6 +2932,7 @@ bool LadyVashjManageTrackersAction::Execute(Event event)
 
     vashjRangedPositions.clear();
     hasReachedVashjRangedPosition.clear();
+    nearestTriggerGuid.clear();
     lastImbueAttempt.clear();
     intendedLineup.clear();
 

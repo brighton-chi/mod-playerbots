@@ -383,8 +383,8 @@ public:
 private:
     bool LineUpFirstCorePasser(Player* designatedLooter, Unit* closestTrigger);
     bool LineUpSecondCorePasser(Player* firstCorePasser, Unit* closestTrigger);
-    bool LineUpThirdCorePasser(Player* secondCorePasser, Unit* closestTrigger);
-    bool LineUpFourthCorePasser(Player* thirdCorePasser, Unit* closestTrigger);
+    bool LineUpThirdCorePasser(Player* designatedLooter, Player* firstCorePasser, Player* secondCorePasser, Unit* closestTrigger);
+    bool LineUpFourthCorePasser(Player* firstCorePasser, Player* secondCorePasser, Player* thirdCorePasser, Unit* closestTrigger);
     bool IsFirstCorePasserInIntendedPosition(Player* designatedLooter, Player* firstCorePasser, Unit* closestTrigger);
     bool IsSecondCorePasserInIntendedPosition(Player* firstCorePasser, Player* secondCorePasser, Unit* closestTrigger);
     bool IsThirdCorePasserInIntendedPosition(Player* secondCorePasser, Player* thirdCorePasser, Unit* closestTrigger);

@@ -565,8 +565,7 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
 
     if (bot == designatedLooter)
     {
-        if (hasCore(firstCorePasser) || hasCore(secondCorePasser) ||
-            hasCore(thirdCorePasser) || hasCore(fourthCorePasser))
+        if (!hasCore(bot))
             return 1.0f;
     }
     else if (bot == firstCorePasser)
@@ -605,7 +604,7 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
     return 1.0f;
 }
 
-// All of phase 2 and 3 require a custom movement and targeting system
+// All of phases 2 and 3 require a custom movement and targeting system
 // So the standard target selection system must be disabled
 float LadyVashjDisableAutomaticTargetingAndMovementModifier::GetValue(Action *action)
 {
