@@ -365,7 +365,7 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
     }
 
     // Update the bot's group status (moved to helper function)
-    UpdateAIGroupAndMaster();
+    UpdateAIGroupMaster();
 
     // Update internal AI
     UpdateAIInternal(elapsed, minimal);
@@ -373,7 +373,7 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
 }
 
 // Helper function for UpdateAI to check group membership and handle removal if necessary
-void PlayerbotAI::UpdateAIGroupAndMaster()
+void PlayerbotAI::UpdateAIGroupMaster()
 {
     if (!bot)
         return;
@@ -431,8 +431,6 @@ void PlayerbotAI::UpdateAIGroupAndMaster()
                 botAI->ChangeStrategy("-follow", BOT_STATE_NON_COMBAT);
             }
         }
-        else if (!newMaster && !bot->InBattleground())
-            LeaveOrDisbandGroup();
     }
 }
 
@@ -1461,7 +1459,7 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
             strategyName = "onyxia";  // Onyxia's Lair
             break;
         case 409:
-            strategyName = "mc";  // Molten Core
+            strategyName = "moltencore";  // Molten Core
             break;
         case 469:
             strategyName = "bwl";  // Blackwing Lair
@@ -2264,7 +2262,7 @@ uint32 PlayerbotAI::GetGroupTankNum(Player* player)
 
 bool PlayerbotAI::IsAssistTank(Player* player) { return IsTank(player) && !IsMainTank(player); }
 
-bool PlayerbotAI::IsAssistTankOfIndex(Player* player, int index)
+bool PlayerbotAI::IsAssistTankOfIndex(Player* player, int index, bool ignoreDeadPlayers)
 {
     Group* group = player->GetGroup();
     if (!group)
@@ -2280,6 +2278,9 @@ bool PlayerbotAI::IsAssistTankOfIndex(Player* player, int index)
         {
             continue;
         }
+
+        if (ignoreDeadPlayers && !member->IsAlive())
+            continue;
 
         if (group->IsAssistant(member->GetGUID()) && IsAssistTank(member))
         {
@@ -2299,6 +2300,9 @@ bool PlayerbotAI::IsAssistTankOfIndex(Player* player, int index)
         {
             continue;
         }
+
+        if (ignoreDeadPlayers && !member->IsAlive())
+            continue;
 
         if (!group->IsAssistant(member->GetGUID()) && IsAssistTank(member))
         {

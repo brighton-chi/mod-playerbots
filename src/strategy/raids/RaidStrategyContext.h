@@ -25,7 +25,7 @@ public:
     RaidStrategyContext() : NamedObjectContext<Strategy>(false, true)
     {
         creators["aq20"] = &RaidStrategyContext::aq20;
-        creators["mc"] = &RaidStrategyContext::mc;
+        creators["moltencore"] = &RaidStrategyContext::moltencore;
         creators["bwl"] = &RaidStrategyContext::bwl;
         creators["karazhan"] = &RaidStrategyContext::karazhan;
         creators["gruulslair"] = &RaidStrategyContext::gruulslair;
@@ -44,7 +44,7 @@ public:
 
 private:
     static Strategy* aq20(PlayerbotAI* botAI) { return new RaidAq20Strategy(botAI); }
-    static Strategy* mc(PlayerbotAI* botAI) { return new RaidMcStrategy(botAI); }
+    static Strategy* moltencore(PlayerbotAI* botAI) { return new RaidMcStrategy(botAI); }
     static Strategy* bwl(PlayerbotAI* botAI) { return new RaidBwlStrategy(botAI); }
     static Strategy* karazhan(PlayerbotAI* botAI) { return new RaidKarazhanStrategy(botAI); }
     static Strategy* gruulslair(PlayerbotAI* botAI) { return new RaidGruulsLairStrategy(botAI); }
