@@ -31,7 +31,6 @@ namespace TempestKeepHelpers
         ALAR_GROUND_3
     };
     const Position ALAR_ROOM_CENTER = { 330.611f, -2.540f, -2.389f };
-    const Position ALAR_RANGED_CENTER = { 346.758f, 3.794f, -2.389f };
     const Position ALAR_POINT_QUILL_OR_DIVE = {332.0f, 0.01f, 43.0f, 0.0f};
     const Position ALAR_POINT_MIDDLE = {331.0f, 0.01f, -2.38f, 0.0f};
     const Position ALAR_SE_RAMP_BASE = { 281.064f, -36.590f, -2.389f };

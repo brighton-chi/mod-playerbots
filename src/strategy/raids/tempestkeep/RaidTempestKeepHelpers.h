@@ -107,7 +107,6 @@ namespace TempestKeepHelpers
     extern const Position ALAR_GROUND_3;
     extern const Position GROUND_POSITIONS[4];
     extern const Position ALAR_ROOM_CENTER;
-    extern const Position ALAR_RANGED_CENTER;
     extern const Position ALAR_POINT_QUILL_OR_DIVE;
     extern const Position ALAR_POINT_MIDDLE;
     extern const Position ALAR_SE_RAMP_BASE;

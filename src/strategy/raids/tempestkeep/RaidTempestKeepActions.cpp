@@ -250,6 +250,18 @@ bool AlarAddTankPickUpEmbersAction::Execute(Event event)
     if (!IsAlarAddTank(botAI, bot))
         return false;
 
+    if (bot->GetPositionZ() > ALAR_BALCONY_Z)
+    {
+        int8 closestPlatform;
+        Position ground;
+        GetClosestPlatformAndGround(bot->GetPosition(), closestPlatform, ground);
+
+        bot->AttackStop();
+        bot->InterruptNonMeleeSpells(true);
+        return JumpTo(TEMPESTKEEP_MAP_ID, ground.GetPositionX(), ground.GetPositionY(),
+                      ground.GetPositionZ(), MovementPriority::MOVEMENT_FORCED);
+    }
+
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
     if (!alar)
         return false;
@@ -281,7 +293,7 @@ bool AlarAddTankPickUpEmbersAction::Execute(Event event)
             {
                 const Position& groundTarget = GROUND_POSITIONS[locationIndex];
                 return MoveNear(TEMPESTKEEP_MAP_ID, groundTarget.GetPositionX(), groundTarget.GetPositionY(),
-                                groundTarget.GetPositionZ(), 25.0f, MovementPriority::MOVEMENT_COMBAT);
+                                groundTarget.GetPositionZ(), 20.0f, MovementPriority::MOVEMENT_COMBAT);
             }
             else
                 return MoveFromGroup(20.0f);
@@ -319,7 +331,7 @@ bool AlarJumpFromPlatformAction::Execute(Event event)
         {
             return MoveTo(TEMPESTKEEP_MAP_ID, ALAR_SW_RAMP_BASE.GetPositionX(), ALAR_SW_RAMP_BASE.GetPositionY(),
                           ALAR_SW_RAMP_BASE.GetPositionZ(), false, false, false, false,
-                          MovementPriority::MOVEMENT_COMBAT, true, false);
+                          MovementPriority::MOVEMENT_FORCED, true, false);
         }
     }
     else if (botAI->IsAssistTankOfIndex(bot, 0))
@@ -328,24 +340,31 @@ bool AlarJumpFromPlatformAction::Execute(Event event)
         {
             return MoveTo(TEMPESTKEEP_MAP_ID, ALAR_SE_RAMP_BASE.GetPositionX(), ALAR_SE_RAMP_BASE.GetPositionY(),
                           ALAR_SE_RAMP_BASE.GetPositionZ(), false, false, false, false,
-                          MovementPriority::MOVEMENT_COMBAT, true, false);
+                          MovementPriority::MOVEMENT_FORCED, true, false);
         }
     }
-    else if (botAI->IsMelee(bot) && !IsAlarAddTank(botAI, bot))
+    else if (IsAlarAddTank(botAI, bot))
+    {
+        if (bot->GetExactDist2d(ALAR_POINT_MIDDLE.GetPositionX(), ALAR_POINT_MIDDLE.GetPositionY()) > 20.0f)
+        {
+            return MoveInside(TEMPESTKEEP_MAP_ID, ALAR_POINT_MIDDLE.GetPositionX(), ALAR_POINT_MIDDLE.GetPositionY(),
+                              ALAR_POINT_MIDDLE.GetPositionZ(), 30.0f, MovementPriority::MOVEMENT_FORCED);
+        }
+    }
+    else if (botAI->IsMelee(bot))
     {
         if (bot->GetExactDist2d(ALAR_ROOM_S_CENTER.GetPositionX(), ALAR_ROOM_S_CENTER.GetPositionY()) > 5.0f)
         {
-            return MoveTo(TEMPESTKEEP_MAP_ID, ALAR_ROOM_S_CENTER.GetPositionX(), ALAR_ROOM_S_CENTER.GetPositionY(),
-                          ALAR_ROOM_S_CENTER.GetPositionZ(), false, false, false, false,
-                          MovementPriority::MOVEMENT_COMBAT, true, false);
+            return MoveInside(TEMPESTKEEP_MAP_ID, ALAR_ROOM_S_CENTER.GetPositionX(), ALAR_ROOM_S_CENTER.GetPositionY(),
+                              ALAR_ROOM_S_CENTER.GetPositionZ(), 5.0f, MovementPriority::MOVEMENT_FORCED);
         }
     }
     else if (botAI->IsRanged(bot))
     {
-        if (bot->GetExactDist2d(ALAR_RANGED_CENTER.GetPositionX(), ALAR_RANGED_CENTER.GetPositionY()) > 20.0f)
+        if (bot->GetExactDist2d(ALAR_POINT_MIDDLE.GetPositionX(), ALAR_POINT_MIDDLE.GetPositionY()) > 10.0f)
         {
-            return MoveInside(TEMPESTKEEP_MAP_ID, ALAR_RANGED_CENTER.GetPositionX(), ALAR_RANGED_CENTER.GetPositionY(),
-                              ALAR_RANGED_CENTER.GetPositionZ(), 20.0f, MovementPriority::MOVEMENT_COMBAT);
+            return MoveInside(TEMPESTKEEP_MAP_ID, ALAR_POINT_MIDDLE.GetPositionX(), ALAR_POINT_MIDDLE.GetPositionY(),
+                              ALAR_POINT_MIDDLE.GetPositionZ(), 10.0f, MovementPriority::MOVEMENT_FORCED);
         }
     }
 
