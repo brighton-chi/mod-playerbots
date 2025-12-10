@@ -22,17 +22,12 @@ using namespace SerpentShrineCavernHelpers;
 
 float UnderbogColossusEscapeToxicPoolMultiplier::GetValue(Action* action)
 {
-    Aura* aura = bot->GetAura(SPELL_TOXIC_POOL);
-    if (!aura)
-        return 1.0f;
-
-    DynamicObject* dynObj = aura->GetDynobjOwner();
-    if (!dynObj)
-        return 1.0f;
-
-    if (dynamic_cast<MovementAction*>(action) &&
-        !dynamic_cast<UnderbogColossusEscapeToxicPoolAction*>(action))
-        return 0.0f;
+    if (bot->HasAura(SPELL_TOXIC_POOL))
+    {
+        if (dynamic_cast<MovementAction*>(action) &&
+            !dynamic_cast<UnderbogColossusEscapeToxicPoolAction*>(action))
+            return 0.0f;
+    }
 
     return 1.0f;
 }
@@ -55,8 +50,10 @@ float HydrossTheUnstableDisableTankActionsMultiplier::GetValue(Action* action)
     {
         if (hydross->HasAura(SPELL_CORRUPTION))
         {
-            if (dynamic_cast<MovementAction*>(action) &&
-                !dynamic_cast<HydrossTheUnstablePositionFrostTankAction*>(action))
+            if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
+                dynamic_cast<CombatFormationMoveAction*>(action) ||
+                dynamic_cast<ReachTargetAction*>(action) ||
+                dynamic_cast<FollowAction*>(action))
                 return 0.0f;
         }
     }
@@ -65,8 +62,10 @@ float HydrossTheUnstableDisableTankActionsMultiplier::GetValue(Action* action)
     {
         if (!hydross->HasAura(SPELL_CORRUPTION))
         {
-            if (dynamic_cast<MovementAction*>(action) &&
-                !dynamic_cast<HydrossTheUnstablePositionNatureTankAction*>(action))
+            if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
+                dynamic_cast<CombatFormationMoveAction*>(action) ||
+                dynamic_cast<ReachTargetAction*>(action) ||
+                dynamic_cast<FollowAction*>(action))
                 return 0.0f;
         }
     }
@@ -179,7 +178,7 @@ float TheLurkerBelowStayAwayFromSpoutMultiplier::GetValue(Action* action)
         if (dynamic_cast<CastReachTargetSpellAction*>(action) || dynamic_cast<CastKillingSpreeAction*>(action) ||
             dynamic_cast<CastBlinkBackAction*>(action) || dynamic_cast<CastDisengageAction*>(action) ||
             dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<FleeAction*>(action) ||
-            dynamic_cast<FollowAction*>(action))
+            dynamic_cast<FollowAction*>(action) || dynamic_cast<ReachTargetAction*>(action))
             return 0.0f;
     }
 

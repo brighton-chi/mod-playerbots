@@ -93,7 +93,7 @@ bool GreyheartTidecallerMarkWaterElementalTotemAction::Execute(Event event)
 // Hydross the Unstable <Duke of Currents>
 
 // (1) When tanking, move to designated tanking spot on frost side
-// (2) At 100% Mark of Hydross, move to nature tank's spot to hand off boss
+// (2) 1 second after 100% Mark of Hydross, move to nature tank's spot to hand off boss
 // (3) When Hydross is in nature form, move back to frost tank spot and wait for transition
 bool HydrossTheUnstablePositionFrostTankAction::Execute(Event event)
 {
@@ -148,12 +148,6 @@ bool HydrossTheUnstablePositionFrostTankAction::Execute(Event event)
                 return MoveTo(SSC_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
                               false, true, MovementPriority::MOVEMENT_COMBAT, true, true);
             }
-            else
-            {
-                bot->AttackStop();
-                bot->InterruptNonMeleeSpells(true);
-                return true;
-            }
         }
     }
 
@@ -166,19 +160,13 @@ bool HydrossTheUnstablePositionFrostTankAction::Execute(Event event)
                           position.GetPositionZ(), false, false, false, true,
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
-        else
-        {
-            bot->AttackStop();
-            bot->InterruptNonMeleeSpells(true);
-            return true;
-        }
     }
 
     return false;
 }
 
 // (1) When tanking, move to designated tanking spot on nature side
-// (2) At 100% Mark of Corruption, move to frost tank's spot to hand off boss
+// (2) 1 second after 100% Mark of Corruption, move to frost tank's spot to hand off boss
 // (3) When Hydross is in frost form, move back to nature tank spot and wait for transition
 bool HydrossTheUnstablePositionNatureTankAction::Execute(Event event)
 {
@@ -250,12 +238,6 @@ bool HydrossTheUnstablePositionNatureTankAction::Execute(Event event)
             return MoveTo(SSC_MAP_ID, position.GetPositionX(), position.GetPositionY(),
                           position.GetPositionZ(), false, false, false, true,
                           MovementPriority::MOVEMENT_COMBAT, true, false);
-        }
-        else
-        {
-            bot->AttackStop();
-            bot->InterruptNonMeleeSpells(true);
-            return true;
         }
     }
 
