@@ -3,20 +3,53 @@
 #include "Playerbots.h"
 
 using namespace ZulAmanHelpers;
-using namespace ZulAmanPositions;
 
 // Akil'zon <Eagle Avatar>
 
+bool AkilzonMisdirectBossToMainTankAction::Execute(Event event)
+{
+    Unit* akilzon = AI_VALUE2(Unit*, "find target", "akil'zon");
+    if (!akilzon)
+        return false;
+
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    Player* mainTank = nullptr;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && member->IsAlive() && botAI->IsMainTank(member))
+        {
+            mainTank = member;
+            break;
+        }
+    }
+
+    if (!mainTank)
+        return false;
+
+    if (botAI->CanCastSpell("misdirection", mainTank))
+        return botAI->CastSpell("misdirection", mainTank);
+
+    if (bot->HasAura(SPELL_MISDIRECTION) && botAI->CanCastSpell("steady shot", akilzon))
+        return botAI->CastSpell("steady shot", akilzon);
+
+    return false;
+}
+
 bool AkilzonSpreadRangedAction::Execute(Event event)
 {
-    const float minDistance = 15.0f;
+    const float minDistance = 14.0f;
     Unit* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance);
 
     if (nearestPlayer)
     {
+        const uint32 minInterval = 1000;
         bot->AttackStop();
         bot->InterruptNonMeleeSpells(true);
-        return FleePosition(nearestPlayer->GetPosition(), minDistance);
+        return FleePosition(nearestPlayer->GetPosition(), minDistance + 1.0f, minInterval);
     }
 
     return false;
@@ -28,7 +61,7 @@ bool AkilzonMoveToEyeOfTheStormAction::Execute(Event event)
     if (!group)
         return false;
 
-    Player* stormBot = nullptr;
+    Player* stormTarget = nullptr;
     for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
     {
         Player* member = ref->GetSource();
@@ -36,17 +69,20 @@ bool AkilzonMoveToEyeOfTheStormAction::Execute(Event event)
             continue;
 
         if (member->HasAura(SPELL_ELECTRICAL_STORM))
-            return member == stormBot;
+            stormTarget = member;
     }
 
-    float distanceFromStorm = bot->GetExactDist2d(stormBot);
+    if (!stormTarget)
+        return false;
+
+    float distanceFromStorm = bot->GetExactDist2d(stormTarget);
     if (distanceFromStorm > 4.0f)
     {
         bot->AttackStop();
         bot->InterruptNonMeleeSpells(true);
-        return MoveTo(bot->GetMapId(), stormBot->GetPositionX(),
-                      stormBot->GetPositionY(), stormBot->GetPositionZ(),
-                      false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+        return MoveTo(bot->GetMapId(), stormTarget->GetPositionX(), stormTarget->GetPositionY(),
+                      stormTarget->GetPositionZ(), false, false, false, false,
+                      MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
     return false;
@@ -54,10 +90,764 @@ bool AkilzonMoveToEyeOfTheStormAction::Execute(Event event)
 
 // Nalorakk <Bear Avatar>
 
+bool NalorakkMisdirectBossToMainTankAction::Execute(Event event)
+{
+    Unit* nalorakk = AI_VALUE2(Unit*, "find target", "nalorakk");
+    if (!nalorakk)
+        return false;
+
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    Player* mainTank = nullptr;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && member->IsAlive() && botAI->IsMainTank(member))
+        {
+            mainTank = member;
+            break;
+        }
+    }
+
+    if (!mainTank)
+        return false;
+
+    if (botAI->CanCastSpell("misdirection", mainTank))
+        return botAI->CastSpell("misdirection", mainTank);
+
+    if (bot->HasAura(SPELL_MISDIRECTION) && botAI->CanCastSpell("steady shot", nalorakk))
+        return botAI->CastSpell("steady shot", nalorakk);
+
+    return false;
+}
+
+bool NalorakkTanksPositionBossAction::Execute(Event event)
+{
+    if (!botAI->IsMainTank(bot) && !botAI->IsAssistTankOfIndex(bot, 0))
+        return false;
+
+    Unit* nalorakk = AI_VALUE2(Unit*, "find target", "nalorakk");
+    if (!nalorakk)
+        return false;
+
+    bool mtAction = MainTankPositionTrollForm(botAI->IsMainTank(bot)
+        ? bot : nullptr, nalorakk);
+    bool atAction = FirstAssistTankPositionBearForm(botAI->IsAssistTankOfIndex(bot, 0)
+        ? bot : nullptr, nalorakk);
+
+    return mtAction || atAction;
+}
+
+bool NalorakkTanksPositionBossAction::MainTankPositionTrollForm(
+    Player* mainTank, Unit* nalorakk)
+{
+    if (!mainTank)
+        return false;
+
+    if (nalorakk->HasAura(SPELL_BEARFORM))
+        return false;
+
+    if (nalorakk->GetVictim() != mainTank)
+    {
+        const char* taunts[] = { "taunt", "growl", "hand of reckoning" };
+        for (const char* spellName : taunts)
+        {
+            if (botAI->CanCastSpell(spellName, nalorakk))
+                return botAI->CastSpell(spellName, nalorakk);
+        }
+    }
+    else if (mainTank->GetVictim() != nalorakk)
+    {
+        return Attack(nalorakk);
+    }
+    else if (nalorakk->GetVictim() == mainTank && mainTank->IsWithinMeleeRange(nalorakk))
+    {
+        const Position& position = NALORAKK_TANK_POSITION;
+        float dist = mainTank->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+        if (dist > 2.0f)
+        {
+            float dX = position.GetPositionX() - mainTank->GetPositionX();
+            float dY = position.GetPositionY() - mainTank->GetPositionY();
+            float moveDist = std::min(5.0f, dist);
+            float moveX = mainTank->GetPositionX() + (dX / dist) * moveDist;
+            float moveY = mainTank->GetPositionY() + (dY / dist) * moveDist;
+
+            return MoveTo(ZULAMAN_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
+                          false, false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
+        }
+    }
+
+    return false;
+}
+
+bool NalorakkTanksPositionBossAction::FirstAssistTankPositionBearForm(
+    Player* assistTank, Unit* nalorakk)
+{
+    if (!assistTank)
+        return false;
+
+    if (!nalorakk->HasAura(SPELL_BEARFORM))
+        return false;
+
+    if (nalorakk->GetVictim() != assistTank)
+    {
+        const char* taunts[] = { "taunt", "growl", "hand of reckoning" };
+        for (const char* spellName : taunts)
+        {
+            if (botAI->CanCastSpell(spellName, nalorakk))
+                return botAI->CastSpell(spellName, nalorakk);
+        }
+    }
+    else if (assistTank->GetVictim() != nalorakk)
+    {
+        return Attack(nalorakk);
+    }
+    else if (nalorakk->GetVictim() == assistTank && assistTank->IsWithinMeleeRange(nalorakk))
+    {
+        const Position& position = NALORAKK_TANK_POSITION;
+        float dist = assistTank->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+        if (dist > 2.0f)
+        {
+            float dX = position.GetPositionX() - assistTank->GetPositionX();
+            float dY = position.GetPositionY() - assistTank->GetPositionY();
+            float moveDist = std::min(5.0f, dist);
+            float moveX = assistTank->GetPositionX() + (dX / dist) * moveDist;
+            float moveY = assistTank->GetPositionY() + (dY / dist) * moveDist;
+
+            return MoveTo(ZULAMAN_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
+                          false, false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
+        }
+    }
+
+    return false;
+}
+
+bool NalorakkSpreadRangedAction::Execute(Event event)
+{
+    const float minDistance = 11.0f;
+    Unit* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance);
+
+    if (nearestPlayer)
+    {
+        const uint32 minInterval = 1000;
+        bot->AttackStop();
+        bot->InterruptNonMeleeSpells(true);
+        return FleePosition(nearestPlayer->GetPosition(), minDistance + 1.0f, minInterval);
+    }
+
+    return false;
+}
+
 // Jan'alai <Dragonhawk Avatar>
+
+bool JanalaiMisdirectBossToMainTankAction::Execute(Event event)
+{
+    Unit* janalai = AI_VALUE2(Unit*, "find target", "jan'alai");
+    if (!janalai)
+        return false;
+
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    Player* mainTank = nullptr;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && member->IsAlive() && botAI->IsMainTank(member))
+        {
+            mainTank = member;
+            break;
+        }
+    }
+
+    if (!mainTank)
+        return false;
+
+    if (botAI->CanCastSpell("misdirection", mainTank))
+        return botAI->CastSpell("misdirection", mainTank);
+
+    if (bot->HasAura(SPELL_MISDIRECTION) && botAI->CanCastSpell("steady shot", janalai))
+        return botAI->CastSpell("steady shot", janalai);
+
+    return false;
+}
+
+bool JanalaiMainTankPositionBossAction::Execute(Event event)
+{
+    Unit* janalai = AI_VALUE2(Unit*, "find target", "jan'alai");
+    if (!janalai)
+        return false;
+
+    if (bot->GetVictim() != janalai)
+        return Attack(janalai);
+
+    if (janalai->GetVictim() == bot && bot->IsWithinMeleeRange(janalai))
+    {
+        const Position& position = JANALAI_TANK_POSITION;
+        float dist = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+        if (dist > 2.0f)
+        {
+            float dX = position.GetPositionX() - bot->GetPositionX();
+            float dY = position.GetPositionY() - bot->GetPositionY();
+            float moveDist = std::min(5.0f, dist);
+            float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
+
+            return MoveTo(ZULAMAN_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
+                          false, false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
+        }
+    }
+
+    return false;
+}
+
+bool JanalaiSpreadRangedInCircleAction::Execute(Event event)
+{
+    Unit* janalai = AI_VALUE2(Unit*, "find target", "jan'alai");
+    if (!janalai)
+        return false;
+
+    if (janalai->GetHealth() == janalai->GetMaxHealth())
+        janalaiRangedPositions.clear();
+
+    std::vector<Player*> rangedMembers;
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || !botAI->IsRanged(member))
+                continue;
+
+            rangedMembers.push_back(member);
+        }
+    }
+
+    if (rangedMembers.empty())
+        return false;
+
+    const ObjectGuid guid = bot->GetGUID();
+
+    // use per-boss cached positions keyed by bot guid
+    auto it = janalaiRangedPositions.find(guid);
+    if (it == janalaiRangedPositions.end())
+    {
+        auto findIt = std::find(rangedMembers.begin(), rangedMembers.end(), bot);
+        size_t botIndex =
+            (findIt != rangedMembers.end()) ? std::distance(rangedMembers.begin(), findIt) : 0;
+        size_t count = rangedMembers.size();
+        if (count == 0)
+            return false;
+
+        const float radius = 10.0f; // fixed 10 yards
+        // full 360° circle evenly spaced
+        float angle = (count == 1) ? 0.0f : (2.0f * M_PI * static_cast<float>(botIndex) / static_cast<float>(count));
+
+        float tx = JANALAI_TANK_POSITION.GetPositionX() + radius * std::cos(angle);
+        float ty = JANALAI_TANK_POSITION.GetPositionY() + radius * std::sin(angle);
+
+        janalaiRangedPositions.try_emplace(guid, Position(tx, ty, JANALAI_TANK_POSITION.GetPositionZ()));
+        it = janalaiRangedPositions.find(guid);
+    }
+
+    if (it == janalaiRangedPositions.end())
+        return false;
+
+    const Position& target = it->second;
+    if (bot->GetExactDist2d(target.GetPositionX(), target.GetPositionY()) > 2.0f)
+    {
+        return MoveTo(ZULAMAN_MAP_ID, target.GetPositionX(), target.GetPositionY(),
+                      target.GetPositionZ(), false, false, false, false,
+                      MovementPriority::MOVEMENT_COMBAT, true, false);
+    }
+
+    return false;
+}
+
+bool JanalaiMoveAwayFromFireBombsAction::Execute(Event event)
+{
+    auto const& bombs = GetAllFireBombTriggers(botAI, bot);
+    if (bombs.empty())
+        return false;
+
+    const float hazardRadius = 6.0f;
+    bool inDanger = false;
+    for (Unit* bomb : bombs)
+    {
+        if (bot->GetExactDist2d(bomb) < hazardRadius)
+        {
+            inDanger = true;
+            break;
+        }
+    }
+
+    if (!inDanger)
+        return false;
+
+    const Position& janalaiCenter = JANALAI_TANK_POSITION;
+    const float maxRadius = 60.0f;
+
+    Position safestPos = FindSafestNearbyPosition(bombs, janalaiCenter, maxRadius, hazardRadius);
+
+    return MoveTo(ZULAMAN_MAP_ID, safestPos.GetPositionX(), safestPos.GetPositionY(),
+                  safestPos.GetPositionZ(), false, false, false, true,
+                  MovementPriority::MOVEMENT_COMBAT, true, false);
+}
+
+Position JanalaiMoveAwayFromFireBombsAction::FindSafestNearbyPosition(
+    const std::vector<Unit*>& bombs, const Position& janalaiCenter,
+    float maxRadius, float hazardRadius)
+{
+    const float searchStep = M_PI / 8.0f;
+    const float minDistance = 2.0f;
+    const float maxDistance = 40.0f;
+    const float distanceStep = 1.0f;
+
+    Position bestPos;
+    float minMoveDistance = 1000.0f;
+    bool foundSafe = false;
+
+    for (float distance = minDistance;
+         distance <= maxDistance; distance += distanceStep)
+    {
+        for (float angle = 0.0f; angle < 2 * M_PI; angle += searchStep)
+        {
+            float x = bot->GetPositionX() + distance * std::cos(angle);
+            float y = bot->GetPositionY() + distance * std::sin(angle);
+            float z = bot->GetPositionZ();
+
+            if (janalaiCenter.GetExactDist2d(x, y) > maxRadius)
+                continue;
+
+            bool isSafe = true;
+            for (Unit* bomb : bombs)
+            {
+                if (bomb->GetExactDist2d(x, y) < hazardRadius)
+                {
+                    isSafe = false;
+                    break;
+                }
+            }
+
+            if (!isSafe)
+                continue;
+
+            Position testPos(x, y, z);
+
+            bool pathSafe =
+                IsPathSafeFromFireBombs(bot->GetPosition(), testPos, bombs, hazardRadius);
+            if (pathSafe || !foundSafe)
+            {
+                float moveDistance = bot->GetExactDist2d(x, y);
+
+                if (pathSafe && (!foundSafe || moveDistance < minMoveDistance))
+                {
+                    bestPos = testPos;
+                    minMoveDistance = moveDistance;
+                    foundSafe = true;
+                }
+                else if (!foundSafe && moveDistance < minMoveDistance)
+                {
+                    bestPos = testPos;
+                    minMoveDistance = moveDistance;
+                }
+            }
+        }
+
+        if (foundSafe)
+            break;
+    }
+
+    return bestPos;
+}
+
+bool JanalaiMoveAwayFromFireBombsAction::IsPathSafeFromFireBombs(const Position& start,
+    const Position& end, const std::vector<Unit*>& bombs, float hazardRadius)
+{
+    const int numChecks = 10;
+    float dx = end.GetPositionX() - start.GetPositionX();
+    float dy = end.GetPositionY() - start.GetPositionY();
+
+    for (int i = 1; i <= numChecks; ++i)
+    {
+        float ratio = static_cast<float>(i) / numChecks;
+        float checkX = start.GetPositionX() + dx * ratio;
+        float checkY = start.GetPositionY() + dy * ratio;
+
+        for (Unit* bomb : bombs)
+        {
+            float distToBomb = bomb->GetExactDist2d(checkX, checkY);
+            if (distToBomb < hazardRadius)
+                return false;
+        }
+    }
+
+    return true;
+}
+
+std::vector<Unit*> JanalaiMoveAwayFromFireBombsAction::GetAllFireBombTriggers(
+    PlayerbotAI* botAI, Player* bot)
+{
+    std::vector<Unit*> fireBombs;
+    auto const& npcs =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
+    for (auto const& npcGuid : npcs)
+    {
+        const float maxSearchRadius = 40.0f;
+        Unit* unit = botAI->GetUnit(npcGuid);
+        if (unit && unit->GetEntry() == NPC_FIRE_BOMB &&
+            bot->GetExactDist2d(unit) < maxSearchRadius)
+            fireBombs.push_back(unit);
+    }
+
+    return fireBombs;
+}
 
 // Halazzi <Lynx Avatar>
 
+bool HalazziMisdirectBossToMainTankAction::Execute(Event event)
+{
+    Unit* halazzi = AI_VALUE2(Unit*, "find target", "halazzi");
+    if (!halazzi)
+        return false;
+
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    Player* mainTank = nullptr;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && member->IsAlive() && botAI->IsMainTank(member))
+        {
+            mainTank = member;
+            break;
+        }
+    }
+
+    if (!mainTank)
+        return false;
+
+    if (botAI->CanCastSpell("misdirection", mainTank))
+        return botAI->CastSpell("misdirection", mainTank);
+
+    if (bot->HasAura(SPELL_MISDIRECTION) && botAI->CanCastSpell("steady shot", halazzi))
+        return botAI->CastSpell("steady shot", halazzi);
+
+    return false;
+}
+
+bool HalazziMainTankPositionBossAction::Execute(Event event)
+{
+    Unit* halazzi = AI_VALUE2(Unit*, "find target", "halazzi");
+    if (!halazzi)
+        return false;
+
+    MarkTargetWithStar(bot, halazzi);
+    SetRtiTarget(botAI, "star", halazzi);
+
+    if (bot->GetVictim() != halazzi)
+        return Attack(halazzi);
+
+    if (halazzi->GetVictim() == bot && bot->IsWithinMeleeRange(halazzi))
+    {
+        const Position& position = HALAZZI_TANK_POSITION;
+        float dist = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+        if (dist > 2.0f)
+        {
+            float dX = position.GetPositionX() - bot->GetPositionX();
+            float dY = position.GetPositionY() - bot->GetPositionY();
+            float moveDist = std::min(5.0f, dist);
+            float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
+
+            return MoveTo(ZULAMAN_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
+                          false, false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
+        }
+    }
+
+    return false;
+}
+
+bool HalazziFirstAssistTankAttackSpiritLynxAction::Execute(Event event)
+{
+    Unit* lynx = AI_VALUE2(Unit*, "find target", "spirit of the lynx");
+    if (lynx != nullptr)
+    {
+        MarkTargetWithCircle(bot, lynx);
+        SetRtiTarget(botAI, "circle", lynx);
+
+        if (lynx->GetVictim() != bot)
+        {
+            const char* taunts[] = { "taunt", "growl", "hand of reckoning" };
+            for (const char* spellName : taunts)
+            {
+                if (botAI->CanCastSpell(spellName, lynx))
+                    return botAI->CastSpell(spellName, lynx);
+            }
+        }
+
+        if (bot->GetVictim() != lynx)
+            return Attack(lynx);
+    }
+    else if (Unit* halazzi = AI_VALUE2(Unit*, "find target", "halazzi"))
+    {
+        SetRtiTarget(botAI, "star", halazzi);
+
+        if (bot->GetVictim() != halazzi)
+            return Attack(halazzi);
+
+        const Position& position = HALAZZI_TANK_POSITION;
+        float dist = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+        if (dist > 2.0f)
+        {
+            float dX = position.GetPositionX() - bot->GetPositionX();
+            float dY = position.GetPositionY() - bot->GetPositionY();
+            float moveDist = std::min(5.0f, dist);
+            float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
+
+            return MoveTo(ZULAMAN_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
+                          false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+        }
+    }
+
+    return false;
+}
+
+bool HalazziAssignDpsPriorityAction::Execute(Event event)
+{
+    // Target priority 1: Corrupted Lightning Totems
+    Unit* totem = GetFirstAliveUnitByEntry(botAI, NPC_CORRUPTED_LIGHTNING_TOTEM);
+    if (totem)
+    {
+        MarkTargetWithSkull(bot, totem);
+        SetRtiTarget(botAI, "skull", totem);
+
+        if (bot->GetTarget() != totem->GetGUID())
+        {
+            bot->SetTarget(totem->GetGUID());
+            return Attack(totem);
+        }
+
+        return false;
+    }
+
+    // Target priority 2: Halazzi
+    Unit* halazzi = AI_VALUE2(Unit*, "find target", "halazzi");
+    if (halazzi)
+    {
+        SetRtiTarget(botAI, "star", halazzi);
+
+        if (bot->GetTarget() != halazzi->GetGUID())
+        {
+            bot->SetTarget(halazzi->GetGUID());
+            return Attack(halazzi);
+        }
+    }
+
+    return false;
+}
+
 // Hex Lord Malacrass
 
+bool HexLordMalacrassMisdirectBossToMainTankAction::Execute(Event event)
+{
+    Unit* malacrass = AI_VALUE2(Unit*, "find target", "hex lord malacrass");
+    if (!malacrass)
+        return false;
+
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    Player* mainTank = nullptr;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && member->IsAlive() && botAI->IsMainTank(member))
+        {
+            mainTank = member;
+            break;
+        }
+    }
+
+    if (!mainTank)
+        return false;
+
+    if (botAI->CanCastSpell("misdirection", mainTank))
+        return botAI->CastSpell("misdirection", mainTank);
+
+    if (bot->HasAura(SPELL_MISDIRECTION) && botAI->CanCastSpell("steady shot", malacrass))
+        return botAI->CastSpell("steady shot", malacrass);
+
+    return false;
+}
+
+bool HexLordMalacrassAssignDpsPriorityAction::Execute(Event event)
+{
+    Unit* raadan = AI_VALUE2(Unit*, "find target", "lord raadan");
+    Unit* antille = AI_VALUE2(Unit*, "find target", "alyson antille");
+    Unit* koragg = AI_VALUE2(Unit*, "find target", "koragg");
+    Unit* darkheart = AI_VALUE2(Unit*, "find target", "darkheart");
+    Unit* fenstalker = AI_VALUE2(Unit*, "find target", "fenstalker");
+    Unit* gazakroth = AI_VALUE2(Unit*, "find target", "gazakroth");
+    Unit* thurg = AI_VALUE2(Unit*, "find target", "thurg");
+    Unit* slither = AI_VALUE2(Unit*, "find target", "slither");
+    Unit* malacrass = AI_VALUE2(Unit*, "find target", "hex lord malacrass");
+
+    Unit* target = GetFirstAliveUnit(
+        { raadan, antille, koragg, darkheart, fenstalker,
+            gazakroth, thurg, slither, malacrass });
+
+    if (target)
+    {
+        MarkTargetWithSkull(bot, target);
+        SetRtiTarget(botAI, "skull", target);
+    }
+
+    return false;
+}
+
+bool HexLordMalacrassPurgeBuffFromBossAction::Execute(Event event)
+{
+    Unit* malacrass = AI_VALUE2(Unit*, "find target", "hex lord malacrass");
+    if (!malacrass)
+        return false;
+
+    const char* dispelSpells[] = {
+        "arcane shot", "devour magic", "dispel magic", "purge", "spellsteal" };
+    for (const char* spellName : dispelSpells)
+    {
+        if (botAI->CanCastSpell(spellName, malacrass))
+            return botAI->CastSpell(spellName, malacrass);
+    }
+
+    return false;
+}
+
+bool HexLordMalacrassDispelMindControlAction::Execute(Event event)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    Player* mcTarget = nullptr;
+    for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive() || member == bot)
+            continue;
+
+        if (member->HasAura(SPELL_MIND_CONTROL))
+        {
+            mcTarget = member;
+            break;
+        }
+    }
+
+    if (!mcTarget)
+        return false;
+
+    const char* dispelSpells[] = {
+        "devour magic", "dispel magic", "purge" };
+    for (const char* spellName : dispelSpells)
+    {
+        if (botAI->CanCastSpell(spellName, mcTarget))
+            return botAI->CastSpell(spellName, mcTarget);
+    }
+
+    return false;
+}
+
 // Zul'jin
+
+bool ZuljinMisdirectBossToMainTankAction::Execute(Event event)
+{
+    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zuljin");
+    if (!zuljin)
+        return false;
+
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    Player* mainTank = nullptr;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && member->IsAlive() && botAI->IsMainTank(member))
+        {
+            mainTank = member;
+            break;
+        }
+    }
+
+    if (!mainTank)
+        return false;
+
+    if (botAI->CanCastSpell("misdirection", mainTank))
+        return botAI->CastSpell("misdirection", mainTank);
+
+    if (bot->HasAura(SPELL_MISDIRECTION) && botAI->CanCastSpell("steady shot", zuljin))
+        return botAI->CastSpell("steady shot", zuljin);
+
+    return false;
+}
+
+bool ZuljinRunAwayFromWhirlwindAction::Execute(Event event)
+{
+    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zuljin");
+    if (zuljin)
+    {
+        float currentDistance = bot->GetExactDist2d(zuljin);
+        const float safeDistance = 10.0f;
+        if (currentDistance < safeDistance)
+        {
+            bot->AttackStop();
+            bot->InterruptNonMeleeSpells(true);
+            return MoveAway(zuljin, safeDistance - currentDistance + 1.0f);
+        }
+    }
+
+    return false;
+}
+
+bool ZuljinSpreadRangedAction::Execute(Event event)
+{
+    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zuljin");
+    if (!zuljin)
+        return false;
+
+    const float minDistance = zuljin->HasAura(SPELL_SHAPE_OF_THE_EAGLE) ? 14.0f : 5.0f;
+    Unit* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance);
+
+    if (nearestPlayer)
+    {
+        const uint32 minInterval = 1000;
+        bot->AttackStop();
+        bot->InterruptNonMeleeSpells(true);
+        return FleePosition(nearestPlayer->GetPosition(), minDistance + 1.0f, minInterval);
+    }
+
+    return false;
+}
+
+bool ZuljinMoveNearGroupAction::Execute(Event event)
+{
+    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zuljin");
+    if (!zuljin)
+        return false;
+
+    if (bot->GetExactDist2d(zuljin) > 16.0f)
+    {
+        return MoveInside(ZULAMAN_MAP_ID, zuljin->GetPositionX(), zuljin->GetPositionY(),
+                          zuljin->GetPositionZ(), 15.0f, MovementPriority::MOVEMENT_COMBAT);
+    }
+
+    return false;
+}

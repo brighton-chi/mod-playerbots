@@ -2,29 +2,273 @@
 #include "RaidZulAmanActions.h"
 #include "RaidZulAmanHelpers.h"
 #include "ChooseTargetActions.h"
-#include "DestroyItemAction.h"
+#include "DruidBearActions.h"
 #include "FollowActions.h"
 #include "GenericSpellActions.h"
 #include "HunterActions.h"
 #include "MageActions.h"
 #include "PaladinActions.h"
 #include "Playerbots.h"
+#include "PriestActions.h"
 #include "ReachTargetActions.h"
 #include "RogueActions.h"
 #include "ShamanActions.h"
 #include "WarlockActions.h"
-#include "WipeAction.h"
+#include "WarriorActions.h"
 
 using namespace ZulAmanHelpers;
 
 // Akil'zon <Eagle Avatar>
 
+float AkilzonStayInEyeOfTheStormMultiplier::GetValue(Action* action)
+{
+    Unit* akilzon = AI_VALUE2(Unit*, "find target", "akilzon");
+    if (!akilzon)
+        return 1.0f;
+
+    Group* group = bot->GetGroup();
+    if (!group)
+        return 1.0f;
+
+    bool electricalStormActive = false;
+    for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive())
+            continue;
+
+        if (member->HasAura(SPELL_ELECTRICAL_STORM))
+        {
+            electricalStormActive = true;
+            break;
+        }
+    }
+
+    if (!electricalStormActive)
+        return 1.0f;
+
+    if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
+        dynamic_cast<CastKillingSpreeAction*>(action) ||
+        dynamic_cast<CastBlinkBackAction*>(action) ||
+        dynamic_cast<CastDisengageAction*>(action) ||
+        dynamic_cast<CombatFormationMoveAction*>(action) ||
+        dynamic_cast<FleeAction*>(action) ||
+        dynamic_cast<FollowAction*>(action) ||
+        dynamic_cast<ReachTargetAction*>(action))
+        return 0.0f;
+
+    return 1.0f;
+}
+
 // Nalorakk <Bear Avatar>
+
+float NalorakkDisableTankActionsMultiplier::GetValue(Action* action)
+{
+    Unit* nalorakk = AI_VALUE2(Unit*, "find target", "nalorakk");
+    if (!nalorakk)
+        return 1.0f;
+
+    if (!nalorakk->HasAura(SPELL_BEARFORM) && bot->GetVictim() != nullptr &&
+        botAI->IsAssistTankOfIndex(bot, 0))
+    {
+        if (dynamic_cast<TankAssistAction*>(action) ||
+            dynamic_cast<CastTauntAction*>(action) ||
+            dynamic_cast<CastGrowlAction*>(action) ||
+            dynamic_cast<CastHandOfReckoningAction*>(action))
+            return 0.0f;
+    }
+    else if (nalorakk->HasAura(SPELL_BEARFORM) && bot->GetVictim() != nullptr &&
+             botAI->IsMainTank(bot))
+    {
+        if (dynamic_cast<TankAssistAction*>(action))
+            return 0.0f;
+    }
+
+    return 1.0f;
+}
+
+float NalorakkControlMisdirectionMultiplier::GetValue(Action* action)
+{
+    Unit* nalorakk = AI_VALUE2(Unit*, "find target", "nalorakk");
+    if (!nalorakk)
+        return 1.0f;
+
+    if (dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
+        return 0.0f;
+
+    return 1.0f;
+}
 
 // Jan'alai <Dragonhawk Avatar>
 
+float JanalaiDisableTankAssistMultiplier::GetValue(Action* action)
+{
+    Unit* janalai = AI_VALUE2(Unit*, "find target", "janalai");
+    if (!janalai)
+        return 1.0f;
+
+    if (botAI->IsMainTank(bot))
+    {
+        if (dynamic_cast<TankAssistAction*>(action))
+            return 0.0f;
+    }
+
+    return 1.0f;
+}
+
+float JanalaiStayAwayFromFireBombsMultiplier::GetValue(Action* action)
+{
+    if (!AnyNearbyNpcWithEntry(botAI, NPC_FIRE_BOMB))
+        return 1.0f;
+
+    if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
+        dynamic_cast<CastKillingSpreeAction*>(action) ||
+        dynamic_cast<CastBlinkBackAction*>(action) ||
+        dynamic_cast<CastDisengageAction*>(action) ||
+        dynamic_cast<CombatFormationMoveAction*>(action) ||
+        dynamic_cast<FleeAction*>(action) ||
+        dynamic_cast<FollowAction*>(action) ||
+        dynamic_cast<ReachTargetAction*>(action))
+        return 0.0f;
+
+    return 1.0f;
+}
+
+float JanalaiDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
+{
+    Unit* janalai = AI_VALUE2(Unit*, "find target", "janalai");
+    if (!janalai)
+        return 1.0f;
+
+    if (janalai->GetHealthPct() > 35.0f)
+    {
+        if (dynamic_cast<CastBloodlustAction*>(action) ||
+            dynamic_cast<CastHeroismAction*>(action))
+            return 0.0f;
+    }
+
+    return 1.0f;
+}
+
 // Halazzi <Lynx Avatar>
+
+float HalazziDisableTankActionsMultiplier::GetValue(Action* action)
+{
+    Unit* lynx = AI_VALUE2(Unit*, "find target", "spirit of the lynx");
+    if (!lynx)
+        return 1.0f;
+
+    if (botAI->IsMainTank(bot))
+    {
+        if (dynamic_cast<TankAssistAction*>(action) ||
+            dynamic_cast<CastTauntAction*>(action) ||
+            dynamic_cast<CastGrowlAction*>(action) ||
+            dynamic_cast<CastHandOfReckoningAction*>(action))
+            return 0.0f;
+    }
+
+    return 1.0f;
+}
+
+float HalazziControlMisdirectionMultiplier::GetValue(Action* action)
+{
+    Unit* halazzi = AI_VALUE2(Unit*, "find target", "halazzi");
+    if (!halazzi)
+        return 1.0f;
+
+    if (dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
+        return 0.0f;
+
+    return 1.0f;
+}
 
 // Hex Lord Malacrass
 
+float HexLordMalacrassDoNotDispelUnstableAfflictionMultiplier::GetValue(Action* action)
+{
+    Unit* malacrass = AI_VALUE2(Unit*, "find target", "hex lord malacrass");
+    if (!malacrass)
+        return 1.0f;
+
+    bool hasUnstableAffliction = false;
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* ref = bot->GetGroup()->GetFirstMember(); ref != nullptr; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive())
+                continue;
+
+            if (member->HasAura(SPELL_UNSTABLE_AFFLICTION))
+            {
+                hasUnstableAffliction = true;
+                break;
+            }
+        }
+    }
+
+    if (!hasUnstableAffliction)
+        return 1.0f;
+
+    if (dynamic_cast<CastDevourMagicCleanseAction*>(action) ||
+        dynamic_cast<CastDispelMagicAction*>(action) ||
+        dynamic_cast<CastDispelMagicOnPartyAction*>(action) ||
+        dynamic_cast<CastMassDispelAction*>(action) ||
+        dynamic_cast<CastPurgeAction*>(action))
+        return 0.0f;
+
+    return 1.0f;
+}
+
 // Zul'jin
+
+float ZuljinAvoidWhirlwindMultiplier::GetValue(Action* action)
+{
+    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zuljin");
+    if (!zuljin)
+        return 1.0f;
+
+    if (botAI->IsMainTank(bot) || botAI->IsRanged(bot))
+        return 1.0f;
+
+    if (zuljin->HasAura(SPELL_WHIRLWIND))
+    {
+        if (dynamic_cast<MovementAction*>(action) &&
+            !dynamic_cast<ZuljinRunAwayFromWhirlwindAction*>(action))
+            return 0.0f;
+    }
+
+    return 1.0f;
+}
+
+float ZuljinDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
+{
+    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
+    if (!zuljin)
+        return 1.0f;
+
+    if (!zuljin->HasAura(SPELL_SHAPE_OF_THE_EAGLE))
+    {
+        if (dynamic_cast<CastBloodlustAction*>(action) ||
+            dynamic_cast<CastHeroismAction*>(action))
+            return 0.0f;
+    }
+
+    return 1.0f;
+}
+
+float ZuljinStayCloseToLynxFormMultiplier::GetValue(Action* action)
+{
+    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zuljin");
+    if (!zuljin)
+        return 1.0f;
+
+    if (zuljin->HasAura(SPELL_SHAPE_OF_THE_LYNX))
+    {
+        if (dynamic_cast<FleeAction*>(action) ||
+            dynamic_cast<FollowAction*>(action))
+            return 0.0f;
+    }
+
+    return 1.0f;
+}
