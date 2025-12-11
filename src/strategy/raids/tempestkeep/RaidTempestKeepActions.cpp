@@ -532,7 +532,7 @@ bool AlarDiveBombSpreadAndStayBackAction::Execute(Event event)
 
         if (closestMember)
         {
-            const uint32 minInterval = 500;
+            const uint32 minInterval = 1000;
             return FleePosition(Position(closestMember->GetPositionX(), closestMember->GetPositionY(),
                                          closestMember->GetPositionZ()), 11.0f, minInterval);
         }
