@@ -97,11 +97,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class TheLurkerBelowSpreadRangedAction : public MovementAction
+class TheLurkerBelowSpreadRangedInArcAction : public MovementAction
 {
 public:
-    TheLurkerBelowSpreadRangedAction(
-        PlayerbotAI* botAI, std::string const name = "the lurker below spread ranged") : MovementAction(botAI, name) {}
+    TheLurkerBelowSpreadRangedInArcAction(
+        PlayerbotAI* botAI, std::string const name = "the lurker below spread ranged in arc") : MovementAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 
@@ -301,11 +301,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class LadyVashjPhase1PositionRangedAction : public MovementAction
+class LadyVashjPhase1SpreadRangedInArcAction : public MovementAction
 {
 public:
-    LadyVashjPhase1PositionRangedAction(
-        PlayerbotAI* botAI, std::string const name = "lady vashj phase 1 position ranged") : MovementAction(botAI, name) {}
+    LadyVashjPhase1SpreadRangedInArcAction(
+        PlayerbotAI* botAI, std::string const name = "lady vashj phase 1 spread ranged in arc") : MovementAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 

@@ -126,7 +126,8 @@ namespace SerpentShrineCavernHelpers
             for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
             {
                 Player* member = ref->GetSource();
-                if (member && member->IsAlive() && botAI->IsDps(member) && GET_PLAYERBOT_AI(member))
+                if (member && member->IsAlive() && botAI->IsDps(member) &&
+                    GET_PLAYERBOT_AI(member))
                     return member == bot;
             }
         }
@@ -136,7 +137,8 @@ namespace SerpentShrineCavernHelpers
 
     Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry)
     {
-        const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
+        auto const& npcs =
+            botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
         for (auto const& npcGuid : npcs)
         {
             Unit* unit = botAI->GetUnit(npcGuid);
@@ -199,11 +201,12 @@ namespace SerpentShrineCavernHelpers
 
     Unit* GetLeotherasHuman(PlayerbotAI* botAI)
     {
-        const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
+        auto const& npcs =
+            botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
         for (auto const& guid : npcs)
         {
             Unit* unit = botAI->GetUnit(guid);
-            if (unit && unit->IsAlive() && unit->GetEntry() == NPC_LEOTHERAS_THE_BLIND &&
+            if (unit && unit->GetEntry() == NPC_LEOTHERAS_THE_BLIND &&
                 unit->IsInCombat() && !unit->HasAura(SPELL_METAMORPHOSIS))
                 return unit;
         }
@@ -212,11 +215,12 @@ namespace SerpentShrineCavernHelpers
 
     Unit* GetPhase2LeotherasDemon(PlayerbotAI* botAI)
     {
-        const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
+        auto const& npcs =
+            botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
         for (auto const& guid : npcs)
         {
             Unit* unit = botAI->GetUnit(guid);
-            if (unit && unit->IsAlive() && unit->GetEntry() == NPC_LEOTHERAS_THE_BLIND &&
+            if (unit && unit->GetEntry() == NPC_LEOTHERAS_THE_BLIND &&
                 unit->HasAura(SPELL_METAMORPHOSIS))
                 return unit;
         }
@@ -225,11 +229,12 @@ namespace SerpentShrineCavernHelpers
 
     Unit* GetPhase3LeotherasDemon(PlayerbotAI* botAI)
     {
-        const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
+        auto const& npcs =
+            botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
         for (auto const& guid : npcs)
         {
             Unit* unit = botAI->GetUnit(guid);
-            if (unit && unit->IsAlive() && unit->GetEntry() == NPC_SHADOW_OF_LEOTHERAS)
+            if (unit && unit->GetEntry() == NPC_SHADOW_OF_LEOTHERAS)
                 return unit;
         }
         return nullptr;
@@ -293,17 +298,20 @@ namespace SerpentShrineCavernHelpers
 
     bool IsLadyVashjInPhase1(PlayerbotAI* botAI)
     {
-        Unit* vashj = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "lady vashj")->Get();
+        Unit* vashj =
+            botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "lady vashj")->Get();
         if (!vashj)
             return false;
 
         Creature* vashjCreature = vashj->ToCreature();
-        return vashjCreature && vashjCreature->GetHealthPct() > 70.0f && vashjCreature->GetReactState() != REACT_PASSIVE;
+        return vashjCreature && vashjCreature->GetHealthPct() > 70.0f &&
+               vashjCreature->GetReactState() != REACT_PASSIVE;
     }
 
     bool IsLadyVashjInPhase2(PlayerbotAI* botAI)
     {
-        Unit* vashj = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "lady vashj")->Get();
+        Unit* vashj =
+            botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "lady vashj")->Get();
         if (!vashj)
             return false;
 
@@ -313,12 +321,14 @@ namespace SerpentShrineCavernHelpers
 
     bool IsLadyVashjInPhase3(PlayerbotAI* botAI)
     {
-        Unit* vashj = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "lady vashj")->Get();
+        Unit* vashj =
+            botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "lady vashj")->Get();
         if (!vashj)
             return false;
 
         Creature* vashjCreature = vashj->ToCreature();
-        return vashjCreature && vashjCreature->GetHealthPct() <= 50.0f && vashjCreature->GetReactState() != REACT_PASSIVE;
+        return vashjCreature && vashjCreature->GetHealthPct() <= 50.0f &&
+               vashjCreature->GetReactState() != REACT_PASSIVE;
     }
 
     bool IsValidLadyVashjCombatNpc(Unit* unit, PlayerbotAI* botAI)
@@ -460,8 +470,9 @@ namespace SerpentShrineCavernHelpers
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) || botAI->IsTank(member) ||
-                member == designatedLooter || member == firstCorePasser)
+            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) ||
+                botAI->IsTank(member) || member == designatedLooter ||
+                member == firstCorePasser)
                 continue;
             return member;
         }
@@ -496,8 +507,9 @@ namespace SerpentShrineCavernHelpers
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) || botAI->IsTank(member) ||
-                member == designatedLooter || member == firstCorePasser || member == secondCorePasser)
+            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) ||
+                botAI->IsTank(member) || member == designatedLooter ||
+                member == firstCorePasser || member == secondCorePasser)
                 continue;
             return member;
         }
@@ -519,7 +531,8 @@ namespace SerpentShrineCavernHelpers
         {
             Player* member = ref->GetSource();
             if (!member || !member->IsAlive() || member == designatedLooter ||
-                member == firstCorePasser || member == secondCorePasser || member == thirdCorePasser)
+                member == firstCorePasser || member == secondCorePasser ||
+                member == thirdCorePasser)
                 continue;
 
             PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
@@ -533,8 +546,9 @@ namespace SerpentShrineCavernHelpers
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) || botAI->IsTank(member) ||
-                member == designatedLooter || member == firstCorePasser || member == secondCorePasser ||
+            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) ||
+                botAI->IsTank(member) || member == designatedLooter ||
+                member == firstCorePasser || member == secondCorePasser ||
                 member == thirdCorePasser)
                 continue;
             return member;
@@ -543,10 +557,17 @@ namespace SerpentShrineCavernHelpers
         return nullptr;
     }
 
-    const std::vector<uint32> SHIELD_GENERATOR_DB_GUIDS = { 47482, 47483, 47484, 47485 }; // NW, NE, SE, SW
+    const std::vector<uint32> SHIELD_GENERATOR_DB_GUIDS =
+    {
+        47482, // NW
+        47483, // NE
+        47484, // SE
+        47485  // SW
+    };
 
     // Get the positions of all active Shield Generators by their database GUIDs
-    std::vector<GeneratorInfo> GetAllGeneratorInfosByDbGuids(Map* map, const std::vector<uint32>& generatorDbGuids)
+    std::vector<GeneratorInfo> GetAllGeneratorInfosByDbGuids(
+        Map* map, const std::vector<uint32>& generatorDbGuids)
     {
         std::vector<GeneratorInfo> generators;
         if (!map)
@@ -577,7 +598,8 @@ namespace SerpentShrineCavernHelpers
     }
 
     // Returns the nearest active Shield Generator to the bot
-    // Active generators are powered by NPC_WORLD_INVISIBLE_TRIGGER creatures, which depawn after use
+    // Active generators are powered by NPC_WORLD_INVISIBLE_TRIGGER creatures,
+    // which depawn after use
     Unit* GetNearestActiveShieldGeneratorTriggerByEntry(Unit* reference)
     {
         if (!reference)
@@ -585,7 +607,8 @@ namespace SerpentShrineCavernHelpers
 
         std::list<Creature*> triggers;
         const float searchRange = 150.0f;
-        reference->GetCreatureListWithEntryInGrid(triggers, NPC_WORLD_INVISIBLE_TRIGGER, searchRange);
+        reference->GetCreatureListWithEntryInGrid(
+            triggers, NPC_WORLD_INVISIBLE_TRIGGER, searchRange);
 
         Creature* nearest = nullptr;
         float minDist = std::numeric_limits<float>::max();
@@ -606,7 +629,8 @@ namespace SerpentShrineCavernHelpers
         return nearest;
     }
 
-    const GeneratorInfo* GetNearestGeneratorToBot(Player* bot, const std::vector<GeneratorInfo>& generators)
+    const GeneratorInfo* GetNearestGeneratorToBot(
+        Player* bot, const std::vector<GeneratorInfo>& generators)
     {
         if (!bot || generators.empty())
             return nullptr;

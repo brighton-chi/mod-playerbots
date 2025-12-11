@@ -441,7 +441,7 @@ bool LadyVashjBossEngagedByMainTankTrigger::IsActive()
         return false;
 
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    return vashj && (IsLadyVashjInPhase1(botAI) || IsLadyVashjInPhase3(botAI));
+    return vashj && !IsLadyVashjInPhase2(botAI);
 }
 
 bool LadyVashjBossEngagedByRangedInPhase1Trigger::IsActive()
@@ -459,7 +459,13 @@ bool LadyVashjCastsShockBlastOnHighestAggroTrigger::IsActive()
         return false;
 
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    return vashj && (IsLadyVashjInPhase1(botAI) || IsLadyVashjInPhase3(botAI));
+    if (!vashj || IsLadyVashjInPhase2(botAI))
+        return false;
+
+    if (!IsMainTankInSameSubgroup(bot))
+        return false;
+
+    return true;
 }
 
 bool LadyVashjBotHasStaticChargeTrigger::IsActive()

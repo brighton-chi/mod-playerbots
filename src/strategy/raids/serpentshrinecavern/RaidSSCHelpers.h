@@ -47,9 +47,6 @@ namespace SerpentShrineCavernHelpers
         SPELL_STATIC_CHARGE          = 38280,
         SPELL_ENTANGLE               = 38316,
 
-        // Druid
-        SPELL_TREE_OF_LIFE           = 33891,
-
         // Hunter
         SPELL_MISDIRECTION           = 35079,
 
@@ -198,9 +195,11 @@ namespace SerpentShrineCavernHelpers
     };
 
     extern const std::vector<uint32> SHIELD_GENERATOR_DB_GUIDS;
-    std::vector<GeneratorInfo> GetAllGeneratorInfosByDbGuids(Map* map, const std::vector<uint32>& generatorDbGuids);
+    std::vector<GeneratorInfo> GetAllGeneratorInfosByDbGuids(
+        Map* map, const std::vector<uint32>& generatorDbGuids);
     Unit* GetNearestActiveShieldGeneratorTriggerByEntry(Unit* reference);
-    const GeneratorInfo* GetNearestGeneratorToBot(Player* bot, const std::vector<GeneratorInfo>& generators);
+    const GeneratorInfo* GetNearestGeneratorToBot(
+        Player* bot, const std::vector<GeneratorInfo>& generators);
 }
 
 #endif

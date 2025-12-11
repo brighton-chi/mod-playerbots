@@ -45,8 +45,8 @@ public:
         creators["the lurker below position main tank"] =
             &RaidSSCActionContext::the_lurker_below_position_main_tank;
 
-        creators["the lurker below spread ranged"] =
-            &RaidSSCActionContext::the_lurker_below_spread_ranged;
+        creators["the lurker below spread ranged in arc"] =
+            &RaidSSCActionContext::the_lurker_below_spread_ranged_in_arc;
 
         creators["the lurker below tanks pick up adds"] =
             &RaidSSCActionContext::the_lurker_below_tanks_pick_up_adds;
@@ -124,8 +124,8 @@ public:
         creators["lady vashj main tank position boss"] =
             &RaidSSCActionContext::lady_vashj_main_tank_position_boss;
 
-        creators["lady vashj phase 1 position ranged"] =
-            &RaidSSCActionContext::lady_vashj_phase_1_position_ranged;
+        creators["lady vashj phase 1 spread ranged in arc"] =
+            &RaidSSCActionContext::lady_vashj_phase_1_spread_ranged_in_arc;
 
         creators["lady vashj set grounding totem in main tank group"] =
             &RaidSSCActionContext::lady_vashj_set_grounding_totem_in_main_tank_group;
@@ -204,8 +204,8 @@ private:
     static Action* the_lurker_below_position_main_tank(
         PlayerbotAI* botAI) { return new TheLurkerBelowPositionMainTankAction(botAI); }
 
-    static Action* the_lurker_below_spread_ranged(
-        PlayerbotAI* botAI) { return new TheLurkerBelowSpreadRangedAction(botAI); }
+    static Action* the_lurker_below_spread_ranged_in_arc(
+        PlayerbotAI* botAI) { return new TheLurkerBelowSpreadRangedInArcAction(botAI); }
 
     static Action* the_lurker_below_tanks_pick_up_adds(
         PlayerbotAI* botAI) { return new TheLurkerBelowTanksPickUpAddsAction(botAI); }
@@ -283,8 +283,8 @@ private:
     static Action* lady_vashj_main_tank_position_boss(
         PlayerbotAI* botAI) { return new LadyVashjMainTankPositionBossAction(botAI); }
 
-    static Action* lady_vashj_phase_1_position_ranged(
-        PlayerbotAI* botAI) { return new LadyVashjPhase1PositionRangedAction(botAI); }
+    static Action* lady_vashj_phase_1_spread_ranged_in_arc(
+        PlayerbotAI* botAI) { return new LadyVashjPhase1SpreadRangedInArcAction(botAI); }
 
     static Action* lady_vashj_set_grounding_totem_in_main_tank_group(
         PlayerbotAI* botAI) { return new LadyVashjSetGroundingTotemInMainTankGroupAction(botAI); }
