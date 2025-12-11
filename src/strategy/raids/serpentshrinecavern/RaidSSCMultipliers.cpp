@@ -426,7 +426,7 @@ float FathomLordKarathressWaitForDpsMultiplier::GetValue(Action* action)
         return 1.0f;
 
     const time_t now = std::time(nullptr);
-    const uint8 dpsWaitSeconds = 8;
+    const uint8 dpsWaitSeconds = 10;
 
     auto it = karathressDpsWaitTimer.find(SSC_MAP_ID);
     if (it == karathressDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
