@@ -42,20 +42,39 @@ namespace ZulAmanHelpers
 
     enum ZulAmanNPCs
     {
+        // Trash
+        NPC_AMANI_HEALING_WARD = 23757,
+        NPC_AMANI_PROTECTIVE_WARD = 23822,
+
         // Jan'alai <Dragonhawk Avatar>
+        NPC_AMANI_DRAGONHAWK_HATCHLING = 23598,
+        NPC_EGG                     = 23817,
         NPC_AMANI_HATCHER           = 23818,
         NPC_FIRE_BOMB               = 23920,
 
         // Halazzi <Lynx Avatar>
-        // NPC_SPIRIT_OF_THE_LYNX      = 24143,
         NPC_CORRUPTED_LIGHTNING_TOTEM = 24224,
+
+        // Hex Lord Malacrass
+        NPC_HEX_LORD_MALACRASS    = 24239,
+        NPC_ALYSON_ANTILLE        = 24240,
+        NPC_THURG                = 24241,
+        NPC_SLITHER               = 24242,
+        NPC_LORD_RAADAN          = 24243,
+        NPC_GAZAKROTH            = 24244,
+        NPC_FENSTALKER           = 24245,
+        NPC_DARKHEART            = 24246,
+        NPC_KORAGG               = 24247,
     };
 
     const uint32 ZULAMAN_MAP_ID = 568;
 
+    extern const Position AKILZON_TANK_POSITION;
     extern const Position NALORAKK_TANK_POSITION;
     extern const Position JANALAI_TANK_POSITION;
     extern const Position HALAZZI_TANK_POSITION;
+    extern const Position MALACRASS_TANK_POSITION;
+    extern const Position ZULJIN_TANK_POSITION;
 
     extern std::unordered_map<ObjectGuid, Position> janalaiRangedPositions;
 
@@ -63,11 +82,15 @@ namespace ZulAmanHelpers
     void MarkTargetWithSkull(Player* bot, Unit* target);
     void MarkTargetWithStar(Player* bot, Unit* target);
     void MarkTargetWithCircle(Player* bot, Unit* target);
+    void MarkTargetWithMoon(Player* bot, Unit* target);
     void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target);
-    Unit* GetFirstAliveUnit(const std::vector<Unit*>& units);
     Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry);
+    Unit* GetFirstAliveUnitByEntries(PlayerbotAI* botAI, const std::vector<uint32>& entries);
     bool AnyNearbyNpcWithEntry(PlayerbotAI* botAI, uint32 entry);
     Unit* GetNearestPlayerInRadius(Player* bot, float radius);
+    bool AnyGroupMemberHasElectricalStorm(Player* bot);
+    std::pair<Unit*, Unit*> GetAmaniHatcherPair(PlayerbotAI* botAI);
+    bool IsAnyMalacrassNpcAlive(PlayerbotAI* botAI);
 }
 
 #endif

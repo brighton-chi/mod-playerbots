@@ -5,9 +5,12 @@
 
 namespace ZulAmanHelpers
 {
+    const Position AKILZON_TANK_POSITION = { 378.369f, 1407.718f, 74.797f };
     const Position NALORAKK_TANK_POSITION = { -80.208f, 1324.530f, 40.942f };
     const Position JANALAI_TANK_POSITION = { -33.873f, 1149.571f, 19.146f };
     const Position HALAZZI_TANK_POSITION = { 370.733f, 1131.202f, 6.516f };
+    const Position MALACRASS_TANK_POSITION = { 118.162f, 968.456f, 29.531f };
+    const Position ZULJIN_TANK_POSITION = { 120.210f, 705.564f, 45.111f };
 
     std::unordered_map<ObjectGuid, Position> janalaiRangedPositions;
 
@@ -39,6 +42,11 @@ namespace ZulAmanHelpers
         MarkTargetWithIcon(bot, target, RtiTargetValue::circleIndex);
     }
 
+    void MarkTargetWithMoon(Player* bot, Unit* target)
+    {
+        MarkTargetWithIcon(bot, target, RtiTargetValue::moonIndex);
+    }
+
     void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target)
     {
         if (!target)
@@ -54,17 +62,6 @@ namespace ZulAmanHelpers
         }
     }
 
-    Unit* GetFirstAliveUnit(const std::vector<Unit*>& units)
-    {
-        for (Unit* unit : units)
-        {
-            if (unit && unit->IsAlive())
-                return unit;
-        }
-
-        return nullptr;
-    }
-
     Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry)
     {
         auto const& npcs =
@@ -74,6 +71,29 @@ namespace ZulAmanHelpers
             Unit* unit = botAI->GetUnit(npcGuid);
             if (unit && unit->IsAlive() && unit->GetEntry() == entry)
                 return unit;
+        }
+
+        return nullptr;
+    }
+
+    Unit* GetFirstAliveUnitByEntries(PlayerbotAI* botAI, const std::vector<uint32>& entries)
+    {
+        if (!botAI)
+            return nullptr;
+
+        auto npcValue = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs");
+        if (!npcValue)
+            return nullptr;
+
+        auto const& npcs = npcValue->Get();
+        for (uint32 entry : entries)
+        {
+            for (auto const& guid : npcs)
+            {
+                Unit* unit = botAI->GetUnit(guid);
+                if (unit && unit->IsAlive() && unit->GetEntry() == entry)
+                    return unit;
+            }
         }
 
         return nullptr;
@@ -122,5 +142,77 @@ namespace ZulAmanHelpers
         }
 
         return nearestPlayer;
+    }
+
+    bool AnyGroupMemberHasElectricalStorm(Player* bot)
+    {
+        Group* group = bot->GetGroup();
+        if (!group)
+            return false;
+
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive())
+                continue;
+
+            if (member->HasAura(SPELL_ELECTRICAL_STORM))
+                return true;
+        }
+        return false;
+    }
+
+    std::pair<Unit*, Unit*> GetAmaniHatcherPair(PlayerbotAI* botAI)
+    {
+        Unit* lowest = nullptr;
+        Unit* highest = nullptr;
+
+        auto npcValue = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs");
+        if (!npcValue)
+            return {nullptr, nullptr};
+
+        for (auto const& guid : npcValue->Get())
+        {
+            Unit* unit = botAI->GetUnit(guid);
+            if (unit && unit->IsAlive() && unit->GetEntry() == NPC_AMANI_HATCHER)
+            {
+                if (!lowest || unit->GetGUID().GetRawValue() < lowest->GetGUID().GetRawValue())
+                    lowest = unit;
+                if (!highest || unit->GetGUID().GetRawValue() > highest->GetGUID().GetRawValue())
+                    highest = unit;
+            }
+        }
+
+        return {lowest, highest};
+    }
+
+    bool IsAnyMalacrassNpcAlive(PlayerbotAI* botAI)
+    {
+        static const std::set<uint32> malacrassNpcEntries =
+        {
+            NPC_LORD_RAADAN,
+            NPC_ALYSON_ANTILLE,
+            NPC_KORAGG,
+            NPC_DARKHEART,
+            NPC_FENSTALKER,
+            NPC_GAZAKROTH,
+            NPC_THURG,
+            NPC_SLITHER,
+            NPC_HEX_LORD_MALACRASS
+        };
+
+        auto npcValue = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs");
+        if (!npcValue)
+            return false;
+
+        auto const& npcs = npcValue->Get();
+        for (auto const& guid : npcs)
+        {
+            Unit* unit = botAI->GetUnit(guid);
+            if (unit && unit->IsAlive() && malacrassNpcEntries.count(unit->GetEntry()))
+                return true;
+        }
+
+        return false;
     }
 }

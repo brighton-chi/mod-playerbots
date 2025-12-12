@@ -5,11 +5,27 @@
 #include "AttackAction.h"
 #include "MovementActions.h"
 
+class AmanishiMedicineManMarkWardAction : public Action
+{
+public:
+    AmanishiMedicineManMarkWardAction(
+        PlayerbotAI* botAI, std::string const name = "amanishi medicine man mark ward") : Action(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 class AkilzonMisdirectBossToMainTankAction : public AttackAction
 {
 public:
     AkilzonMisdirectBossToMainTankAction(
         PlayerbotAI* botAI, std::string const name = "akilzon misdirect boss to main tank") : AttackAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class AkilzonMainTankPositionBossAction : public AttackAction
+{
+public:
+    AkilzonMainTankPositionBossAction(
+        PlayerbotAI* botAI, std::string const name = "akilzon main tank position boss") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 
@@ -93,6 +109,14 @@ private:
     std::vector<Unit*> GetAllFireBombTriggers(PlayerbotAI* botAI, Player* bot);
 };
 
+class JanalaiMarkAmaniHatchersAction : public Action
+{
+public:
+    JanalaiMarkAmaniHatchersAction(
+        PlayerbotAI* botAI, std::string const name = "janalai mark amani hatchers") : Action(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 class HalazziMisdirectBossToMainTankAction : public AttackAction
 {
 public:
@@ -157,11 +181,27 @@ public:
     bool Execute(Event event) override;
 };
 
+class HexLordMalacrassMainTankPositionBossAction : public AttackAction
+{
+public:
+    HexLordMalacrassMainTankPositionBossAction(
+        PlayerbotAI* botAI, std::string const name = "hex lord malacrass main tank position boss") : AttackAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 class ZuljinMisdirectBossToMainTankAction : public AttackAction
 {
 public:
     ZuljinMisdirectBossToMainTankAction(
         PlayerbotAI* botAI, std::string const name = "zuljin misdirect boss to main tank") : AttackAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class ZuljinMainTankPositionBossAction : public AttackAction
+{
+public:
+    ZuljinMainTankPositionBossAction(
+        PlayerbotAI* botAI, std::string const name = "zuljin main tank position boss") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 

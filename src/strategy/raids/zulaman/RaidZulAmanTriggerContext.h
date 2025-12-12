@@ -9,9 +9,16 @@ class RaidZulAmanTriggerContext : public NamedObjectContext<Trigger>
 public:
     RaidZulAmanTriggerContext()
     {
+        // Trash
+        creators["amanishi medicine man summoned ward"] =
+            &RaidZulAmanTriggerContext::amanishi_medicine_man_summoned_ward;
+
         // Akil'zon <Eagle Avatar>
         creators["akilzon pulling boss"] =
             &RaidZulAmanTriggerContext::akilzon_pulling_boss;
+
+        creators["akilzon boss engaged by main tank"] =
+            &RaidZulAmanTriggerContext::akilzon_boss_engaged_by_main_tank;
 
         creators["akilzon boss casts static disruption"] =
             &RaidZulAmanTriggerContext::akilzon_boss_casts_static_disruption;
@@ -42,6 +49,9 @@ public:
         creators["janalai boss summoning fire bombs"] =
             &RaidZulAmanTriggerContext::janalai_boss_summoning_fire_bombs;
 
+        creators["janalai amani hatchers spawned"] =
+            &RaidZulAmanTriggerContext::janalai_amani_hatchers_spawned;
+
         // Halazzi <Lynx Avatar>
         creators["halazzi pulling boss"] =
             &RaidZulAmanTriggerContext::halazzi_pulling_boss;
@@ -69,10 +79,16 @@ public:
         creators["hex lord malacrass party member is mind controlled"] =
             &RaidZulAmanTriggerContext::hex_lord_malacrass_party_member_is_mind_controlled;
 
+        creators["hex lord malacrass all adds are down"] =
+            &RaidZulAmanTriggerContext::hex_lord_malacrass_all_adds_are_down;
+
         // Zul'jin
 
         creators["zuljin main tank needs aggro upon pull or phase change"] =
             &RaidZulAmanTriggerContext::zuljin_main_tank_needs_aggro_upon_pull_or_phase_change;
+
+        creators["zuljin boss engaged by main tank"] =
+            &RaidZulAmanTriggerContext::zuljin_boss_engaged_by_main_tank;
 
         creators["zuljin boss is channeling whirlwind in troll form"] =
             &RaidZulAmanTriggerContext::zuljin_boss_is_channeling_whirlwind_in_troll_form;
@@ -85,9 +101,16 @@ public:
     }
 
 private:
+    // Trash
+    static Trigger* amanishi_medicine_man_summoned_ward(
+        PlayerbotAI* botAI) { return new AmanishiMedicineManSummonedWardTrigger(botAI); }
+
     // Akil'zon <Eagle Avatar>
     static Trigger* akilzon_pulling_boss(
         PlayerbotAI* botAI) { return new AkilzonPullingBossTrigger(botAI); }
+
+    static Trigger* akilzon_boss_engaged_by_main_tank(
+        PlayerbotAI* botAI) { return new AkilzonBossEngagedByMainTankTrigger(botAI); }
 
     static Trigger* akilzon_boss_casts_static_disruption(
         PlayerbotAI* botAI) { return new AkilzonBossCastsStaticDisruptionTrigger(botAI); }
@@ -118,6 +141,9 @@ private:
     static Trigger* janalai_boss_summoning_fire_bombs(
         PlayerbotAI* botAI) { return new JanalaiBossSummoningFireBombsTrigger(botAI); }
 
+    static Trigger* janalai_amani_hatchers_spawned(
+        PlayerbotAI* botAI) { return new JanalaiAmaniHatchersSpawnedTrigger(botAI); }
+
     // Halazzi <Lynx Avatar>
     static Trigger* halazzi_pulling_boss(
         PlayerbotAI* botAI) { return new HalazziPullingBossTrigger(botAI); }
@@ -145,7 +171,13 @@ private:
     static Trigger* hex_lord_malacrass_party_member_is_mind_controlled(
         PlayerbotAI* botAI) { return new HexLordMalacrassPartyMemberIsMindControlledTrigger(botAI); }
 
+    static Trigger* hex_lord_malacrass_all_adds_are_down(
+        PlayerbotAI* botAI) { return new HexLordMalacrassAllAddsAreDownTrigger(botAI); }
+
     // Zul'jin
+
+    static Trigger* zuljin_boss_engaged_by_main_tank(
+        PlayerbotAI* botAI) { return new ZuljinBossEngagedByMainTankTrigger(botAI); }
 
     static Trigger* zuljin_main_tank_needs_aggro_upon_pull_or_phase_change(
         PlayerbotAI* botAI) { return new ZuljinMainTankNeedsAggroUponPullOrPhaseChangeTrigger(botAI); }

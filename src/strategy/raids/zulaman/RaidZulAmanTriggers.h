@@ -3,11 +3,27 @@
 
 #include "Trigger.h"
 
+class AmanishiMedicineManSummonedWardTrigger : public Trigger
+{
+public:
+    AmanishiMedicineManSummonedWardTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "amanishi medicine man summoned ward") {}
+    bool IsActive() override;
+};
+
 class AkilzonPullingBossTrigger : public Trigger
 {
 public:
     AkilzonPullingBossTrigger(
         PlayerbotAI* botAI) : Trigger(botAI, "akilzon pulling boss") {}
+    bool IsActive() override;
+};
+
+class AkilzonBossEngagedByMainTankTrigger : public Trigger
+{
+public:
+    AkilzonBossEngagedByMainTankTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "akilzon boss engaged by main tank") {}
     bool IsActive() override;
 };
 
@@ -147,11 +163,35 @@ public:
     bool IsActive() override;
 };
 
+class HexLordMalacrassAllAddsAreDownTrigger : public Trigger
+{
+public:
+    HexLordMalacrassAllAddsAreDownTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "hex lord malacrass all adds are down") {}
+    bool IsActive() override;
+};
+
+class JanalaiAmaniHatchersSpawnedTrigger : public Trigger
+{
+public:
+    JanalaiAmaniHatchersSpawnedTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "janalai amani hatchers spawned") {}
+    bool IsActive() override;
+};
+
 class ZuljinMainTankNeedsAggroUponPullOrPhaseChangeTrigger : public Trigger
 {
 public:
     ZuljinMainTankNeedsAggroUponPullOrPhaseChangeTrigger(
         PlayerbotAI* botAI) : Trigger(botAI, "zuljin main tank needs aggro upon pull or phase change") {}
+    bool IsActive() override;
+};
+
+class ZuljinBossEngagedByMainTankTrigger : public Trigger
+{
+public:
+    ZuljinBossEngagedByMainTankTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "zuljin boss engaged by main tank") {}
     bool IsActive() override;
 };
 

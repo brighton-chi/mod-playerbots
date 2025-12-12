@@ -5,6 +5,14 @@
 
 using namespace ZulAmanHelpers;
 
+// Trash
+
+bool AmanishiMedicineManSummonedWardTrigger::IsActive()
+{
+    Unit* medicineMan = AI_VALUE2(Unit*, "find target", "amani'shi medicine man");
+    return medicineMan != nullptr;
+}
+
 // Akil'zon <Eagle Avatar>
 
 bool AkilzonPullingBossTrigger::IsActive()
@@ -16,6 +24,18 @@ bool AkilzonPullingBossTrigger::IsActive()
     return akilzon && akilzon->GetHealthPct() > 95.0f;
 }
 
+bool AkilzonBossEngagedByMainTankTrigger::IsActive()
+{
+    if (!botAI->IsMainTank(bot))
+        return false;
+
+    Unit* akilzon = AI_VALUE2(Unit*, "find target", "akil'zon");
+    if (!akilzon)
+        return false;
+
+    return !AnyGroupMemberHasElectricalStorm(bot);
+}
+
 bool AkilzonBossCastsStaticDisruptionTrigger::IsActive()
 {
     if (!botAI->IsRanged(bot))
@@ -25,21 +45,7 @@ bool AkilzonBossCastsStaticDisruptionTrigger::IsActive()
     if (!akilzon)
         return false;
 
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || !member->IsAlive())
-            continue;
-
-        if (member->HasAura(SPELL_ELECTRICAL_STORM))
-            return false;
-    }
-
-    return true;
+    return !AnyGroupMemberHasElectricalStorm(bot);
 }
 
 bool AkilzonElectricalStormHasFormedTrigger::IsActive()
@@ -48,20 +54,7 @@ bool AkilzonElectricalStormHasFormedTrigger::IsActive()
     if (!akilzon)
         return false;
 
-    if (Group* group = bot->GetGroup())
-    {
-        for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || !member->IsAlive())
-                continue;
-
-            if (member->HasAura(SPELL_ELECTRICAL_STORM))
-                return true;
-        }
-    }
-
-    return false;
+    return AnyGroupMemberHasElectricalStorm(bot);
 }
 
 // Nalorakk <Bear Avatar>
@@ -130,8 +123,8 @@ bool JanalaiBossCastsFlameBreathTrigger::IsActive()
 
     // Trying to find a way to get the fixed dispersal off when hatchlings spawn
     // TBD whether some other type of dispersal will still be needed during this period
-    Unit* hatchling = AI_VALUE2(Unit*, "find target", "amani dragonhawk hatchling");
-    if (hatchling && hatchling->GetExactDist2d(janalai) < 30.0f)
+    Unit* hatchling = GetFirstAliveUnitByEntry(botAI, NPC_AMANI_DRAGONHAWK_HATCHLING);
+    if (hatchling)
         return false;
 
     if (AnyNearbyNpcWithEntry(botAI, NPC_FIRE_BOMB))
@@ -142,8 +135,28 @@ bool JanalaiBossCastsFlameBreathTrigger::IsActive()
 
 bool JanalaiBossSummoningFireBombsTrigger::IsActive()
 {
-    if (AnyNearbyNpcWithEntry(botAI, NPC_FIRE_BOMB))
-        return true;
+    return AnyNearbyNpcWithEntry(botAI, NPC_FIRE_BOMB);
+}
+
+bool JanalaiAmaniHatchersSpawnedTrigger::IsActive()
+{
+    Unit* hatcher = GetFirstAliveUnitByEntry(botAI, NPC_AMANI_HATCHER);
+    if (!hatcher)
+        return false;
+
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) ||
+                !botAI->IsDps(member))
+                continue;
+
+            if (member == bot)
+                return true;
+        }
+    }
 
     return false;
 }
@@ -243,6 +256,12 @@ bool HexLordMalacrassPartyMemberIsMindControlledTrigger::IsActive()
     return false;
 }
 
+bool HexLordMalacrassAllAddsAreDownTrigger::IsActive()
+{
+    Unit* malacrass = AI_VALUE2(Unit*, "find target", "hex lord malacrass");
+    return malacrass && !IsAnyMalacrassNpcAlive(botAI);
+}
+
 // Zul'jin
 
 bool ZuljinMainTankNeedsAggroUponPullOrPhaseChangeTrigger::IsActive()
@@ -260,6 +279,15 @@ bool ZuljinMainTankNeedsAggroUponPullOrPhaseChangeTrigger::IsActive()
            (hp <= 80.0f && hp > 75.0f && zuljin->HasAura(SPELL_SHAPE_OF_THE_BEAR)) ||
            (hp <= 40.0f && hp > 35.0f && zuljin->HasAura(SPELL_SHAPE_OF_THE_LYNX)) ||
            (hp <= 20.0f && hp > 15.0f && zuljin->HasAura(SPELL_SHAPE_OF_THE_DRAGONHAWK));
+}
+
+bool ZuljinBossEngagedByMainTankTrigger::IsActive()
+{
+    if (!botAI->IsMainTank(bot))
+        return false;
+
+    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
+    return zuljin && !zuljin->HasAura(SPELL_SHAPE_OF_THE_EAGLE);
 }
 
 bool ZuljinBossIsChannelingWhirlwindInTrollFormTrigger::IsActive()
@@ -284,7 +312,7 @@ bool ZuljinBossCastsAoeAbilitiesTrigger::IsActive()
 
 bool ZuljinBossIsChargingPlayersInLynxFormTrigger::IsActive()
 {
-    if (!botAI->IsMainTank(bot))
+    if (botAI->IsMainTank(bot))
         return false;
 
     Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");

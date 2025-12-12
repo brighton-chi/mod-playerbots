@@ -9,9 +9,16 @@ class RaidZulAmanActionContext : public NamedObjectContext<Action>
 public:
     RaidZulAmanActionContext()
     {
+        // Trash
+        creators["amanishi medicine man mark ward"] =
+            &RaidZulAmanActionContext::amanishi_medicine_man_mark_ward;
+
         // Akil'zon <Eagle Avatar>
         creators["akilzon misdirect boss to main tank"] =
             &RaidZulAmanActionContext::akilzon_misdirect_boss_to_main_tank;
+
+        creators["akilzon main tank position boss"] =
+            &RaidZulAmanActionContext::akilzon_main_tank_position_boss;
 
         creators["akilzon spread ranged"] =
             &RaidZulAmanActionContext::akilzon_spread_ranged;
@@ -42,6 +49,9 @@ public:
         creators["janalai move away from fire bombs"] =
             &RaidZulAmanActionContext::janalai_move_away_from_fire_bombs;
 
+        creators["janalai mark amani hatchers"] =
+            &RaidZulAmanActionContext::janalai_mark_amani_hatchers;
+
         // Halazzi <Lynx Avatar>
         creators["halazzi misdirect boss to main tank"] =
             &RaidZulAmanActionContext::halazzi_misdirect_boss_to_main_tank;
@@ -56,7 +66,6 @@ public:
             &RaidZulAmanActionContext::halazzi_assign_dps_priority;
 
         // Hex Lord Malacrass
-
         creators["hex lord malacrass misdirect boss to main tank"] =
             &RaidZulAmanActionContext::hex_lord_malacrass_misdirect_boss_to_main_tank;
 
@@ -69,10 +78,15 @@ public:
         creators["hex lord malacrass dispel mind control"] =
             &RaidZulAmanActionContext::hex_lord_malacrass_dispel_mind_control;
 
-        // Zul'jin
+        creators["hex lord malacrass main tank position boss"] =
+            &RaidZulAmanActionContext::hex_lord_malacrass_main_tank_position_boss;
 
+        // Zul'jin
         creators["zuljin misdirect boss to main tank"] =
             &RaidZulAmanActionContext::zuljin_misdirect_boss_to_main_tank;
+
+        creators["zuljin main tank position boss"] =
+            &RaidZulAmanActionContext::zuljin_main_tank_position_boss;
 
         creators["zuljin run away from whirlwind"] =
             &RaidZulAmanActionContext::zuljin_run_away_from_whirlwind;
@@ -85,9 +99,16 @@ public:
     }
 
 private:
+    // Trash
+    static Action* amanishi_medicine_man_mark_ward(
+        PlayerbotAI* botAI) { return new AmanishiMedicineManMarkWardAction(botAI); }
+
     // Akil'zon <Eagle Avatar>
     static Action* akilzon_misdirect_boss_to_main_tank(
         PlayerbotAI* botAI) { return new AkilzonMisdirectBossToMainTankAction(botAI); }
+
+    static Action* akilzon_main_tank_position_boss(
+        PlayerbotAI* botAI) { return new AkilzonMainTankPositionBossAction(botAI); }
 
     static Action* akilzon_spread_ranged(
         PlayerbotAI* botAI) { return new AkilzonSpreadRangedAction(botAI); }
@@ -118,6 +139,9 @@ private:
     static Action* janalai_move_away_from_fire_bombs(
         PlayerbotAI* botAI) { return new JanalaiMoveAwayFromFireBombsAction(botAI); }
 
+    static Action* janalai_mark_amani_hatchers(
+        PlayerbotAI* botAI) { return new JanalaiMarkAmaniHatchersAction(botAI); }
+
     // Halazzi <Lynx Avatar>
     static Action* halazzi_misdirect_boss_to_main_tank(
         PlayerbotAI* botAI) { return new HalazziMisdirectBossToMainTankAction(botAI); }
@@ -132,7 +156,6 @@ private:
         PlayerbotAI* botAI) { return new HalazziAssignDpsPriorityAction(botAI); }
 
     // Hex Lord Malacrass
-
     static Action* hex_lord_malacrass_misdirect_boss_to_main_tank(
         PlayerbotAI* botAI) { return new HexLordMalacrassMisdirectBossToMainTankAction(botAI); }
 
@@ -145,10 +168,15 @@ private:
     static Action* hex_lord_malacrass_dispel_mind_control(
         PlayerbotAI* botAI) { return new HexLordMalacrassDispelMindControlAction(botAI); }
 
-    // Zul'jin
+    static Action* hex_lord_malacrass_main_tank_position_boss(
+        PlayerbotAI* botAI) { return new HexLordMalacrassMainTankPositionBossAction(botAI); }
 
+    // Zul'jin
     static Action* zuljin_misdirect_boss_to_main_tank(
         PlayerbotAI* botAI) { return new ZuljinMisdirectBossToMainTankAction(botAI); }
+
+    static Action* zuljin_main_tank_position_boss(
+        PlayerbotAI* botAI) { return new ZuljinMainTankPositionBossAction(botAI); }
 
     static Action* zuljin_run_away_from_whirlwind(
         PlayerbotAI* botAI) { return new ZuljinRunAwayFromWhirlwindAction(botAI); }

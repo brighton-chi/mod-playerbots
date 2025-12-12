@@ -3,12 +3,20 @@
 
 void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
+    // Trash
+    triggers.push_back(new TriggerNode("amanishi medicine man summoned ward",
+        NextAction::array(0, new NextAction("amanishi medicine man mark ward", ACTION_RAID + 1), nullptr)
+    ));
+
     // Akil'zon <Eagle Avatar>
     triggers.push_back(new TriggerNode("akilzon pulling boss",
-        NextAction::array(0, new NextAction("akilzon misdirect boss to main tank", ACTION_RAID + 1), nullptr)
+        NextAction::array(0, new NextAction("akilzon misdirect boss to main tank", ACTION_RAID + 2), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("akilzon boss engaged by main tank",
+        NextAction::array(0, new NextAction("akilzon main tank position boss", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("akilzon boss casts static disruption",
-        NextAction::array(0, new NextAction("akilzon spread ranged", ACTION_EMERGENCY + 1), nullptr)
+        NextAction::array(0, new NextAction("akilzon spread ranged", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("akilzon electrical storm has formed",
         NextAction::array(0, new NextAction("akilzon move to eye of the storm", ACTION_EMERGENCY + 2), nullptr)
@@ -38,6 +46,9 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("janalai boss summoning fire bombs",
         NextAction::array(0, new NextAction("janalai move away from fire bombs", ACTION_EMERGENCY + 6), nullptr)
     ));
+    triggers.push_back(new TriggerNode("janalai amani hatchers spawned",
+        NextAction::array(0, new NextAction("janalai mark amani hatchers", ACTION_RAID + 2), nullptr)
+    ));
 
     // Halazzi <Lynx Avatar>
     triggers.push_back(new TriggerNode("halazzi pulling boss",
@@ -66,10 +77,16 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("hex lord malacrass party member is mind controlled",
         NextAction::array(0, new NextAction("hex lord malacrass dispel mind control", ACTION_EMERGENCY + 2), nullptr)
     ));
+    triggers.push_back(new TriggerNode("hex lord malacrass all adds are down",
+        NextAction::array(0, new NextAction("hex lord malacrass main tank position boss", ACTION_RAID + 1), nullptr)
+    ));
 
     // Zul'jin
     triggers.push_back(new TriggerNode("zuljin main tank needs aggro upon pull or phase change",
         NextAction::array(0, new NextAction("zuljin misdirect boss to main tank", ACTION_RAID + 2), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("zuljin boss engaged by main tank",
+        NextAction::array(0, new NextAction("zuljin main tank position boss", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("zuljin boss is channeling whirlwind in troll form",
         NextAction::array(0, new NextAction("zuljin run away from whirlwind", ACTION_EMERGENCY + 6), nullptr)
@@ -95,5 +112,6 @@ void RaidZulAmanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new HexLordMalacrassDoNotDispelUnstableAfflictionMultiplier(botAI));
     multipliers.push_back(new ZuljinAvoidWhirlwindMultiplier(botAI));
     multipliers.push_back(new ZuljinDelayBloodlustAndHeroismMultiplier(botAI));
+    multipliers.push_back(new ZuljinDoNotAvoidCyclonesMultiplier(botAI));
     multipliers.push_back(new ZuljinStayCloseToLynxFormMultiplier(botAI));
 }
