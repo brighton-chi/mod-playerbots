@@ -3,6 +3,14 @@
 
 #include "Multiplier.h"
 
+class AkilzonDisableTankActionsMultiplier : public Multiplier
+{
+public:
+    AkilzonDisableTankActionsMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "akilzon disable tank actions") {}
+    virtual float GetValue(Action* action);
+};
+
 class AkilzonStayInEyeOfTheStormMultiplier : public Multiplier
 {
 public:
@@ -27,11 +35,11 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class JanalaiDisableTankAssistMultiplier : public Multiplier
+class JanalaiDisableTankActionsMultiplier : public Multiplier
 {
 public:
-    JanalaiDisableTankAssistMultiplier(PlayerbotAI* botAI) : Multiplier(
-        botAI, "janalai disable tank assist") {}
+    JanalaiDisableTankActionsMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "janalai disable tank actions") {}
     virtual float GetValue(Action* action);
 };
 
@@ -40,6 +48,14 @@ class JanalaiStayAwayFromFireBombsMultiplier : public Multiplier
 public:
     JanalaiStayAwayFromFireBombsMultiplier(PlayerbotAI* botAI) : Multiplier(
         botAI, "janalai stay away from fire bombs") {}
+    virtual float GetValue(Action* action);
+};
+
+class JanalaiDoNotCrowdControlHatchersMultiplier : public Multiplier
+{
+public:
+    JanalaiDoNotCrowdControlHatchersMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "janalai do not crowd control hatchers") {}
     virtual float GetValue(Action* action);
 };
 
@@ -72,6 +88,14 @@ class HexLordMalacrassDoNotDispelUnstableAfflictionMultiplier : public Multiplie
 public:
     HexLordMalacrassDoNotDispelUnstableAfflictionMultiplier(PlayerbotAI* botAI) : Multiplier(
         botAI, "hex lord malacrass do not dispel unstable affliction") {}
+    virtual float GetValue(Action* action);
+};
+
+class ZuljinDisableTankActionsMultiplier : public Multiplier
+{
+public:
+    ZuljinDisableTankActionsMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "zuljin disable tank actions") {}
     virtual float GetValue(Action* action);
 };
 

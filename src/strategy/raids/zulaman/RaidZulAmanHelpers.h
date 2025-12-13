@@ -1,7 +1,6 @@
 #ifndef _PLAYERBOT_RAIDZULAMANHELPERS_H_
 #define _PLAYERBOT_RAIDZULAMANHELPERS_H_
 
-#include <ctime>
 #include <unordered_map>
 
 #include "AiObject.h"

@@ -1,10 +1,11 @@
 #include "RaidZulAmanActions.h"
 #include "RaidZulAmanHelpers.h"
 #include "Playerbots.h"
+#include "RtiTargetValue.h"
 
 using namespace ZulAmanHelpers;
 
-//
+// Trash
 
 bool AmanishiMedicineManMarkWardAction::Execute(Event event)
 {
@@ -122,8 +123,8 @@ bool AkilzonMoveToEyeOfTheStormAction::Execute(Event event)
     {
         bot->AttackStop();
         bot->InterruptNonMeleeSpells(true);
-        return MoveTo(bot->GetMapId(), stormTarget->GetPositionX(), stormTarget->GetPositionY(),
-                      stormTarget->GetPositionZ(), false, false, false, false,
+        return MoveTo(ZULAMAN_MAP_ID, stormTarget->GetPositionX(), stormTarget->GetPositionY(),
+                      stormTarget->GetPositionZ(), false, false, false, true,
                       MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
@@ -482,10 +483,12 @@ bool JanalaiMoveAwayFromFireBombsAction::Execute(Event event)
         return false;
 
     const Position& janalaiCenter = JANALAI_TANK_POSITION;
-    const float maxRadius = 60.0f;
+    const float maxRadius = 30.0f;
 
     Position safestPos = FindSafestNearbyPosition(bombs, janalaiCenter, maxRadius, hazardRadius);
 
+    bot->AttackStop();
+    bot->InterruptNonMeleeSpells(true);
     return MoveTo(ZULAMAN_MAP_ID, safestPos.GetPositionX(), safestPos.GetPositionY(),
                   safestPos.GetPositionZ(), false, false, false, true,
                   MovementPriority::MOVEMENT_COMBAT, true, false);
@@ -501,7 +504,7 @@ Position JanalaiMoveAwayFromFireBombsAction::FindSafestNearbyPosition(
     const float distanceStep = 1.0f;
 
     Position bestPos;
-    float minMoveDistance = 1000.0f;
+    float minMoveDistance = std::numeric_limits<float>::max();
     bool foundSafe = false;
 
     for (float distance = minDistance;
@@ -602,6 +605,10 @@ std::vector<Unit*> JanalaiMoveAwayFromFireBombsAction::GetAllFireBombTriggers(
 
 bool JanalaiMarkAmaniHatchersAction::Execute(Event event)
 {
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
     auto [hatcherLow, hatcherHigh] = GetAmaniHatcherPair(botAI);
 
     // Both hatchers alive and distinct: mark one skull, one moon
@@ -610,16 +617,13 @@ bool JanalaiMarkAmaniHatchersAction::Execute(Event event)
         MarkTargetWithSkull(bot, hatcherLow);
         MarkTargetWithMoon(bot, hatcherHigh);
     }
-    // Only one hatcher alive: if any hatchling is alive, mark it with skull
-    else if (hatcherHigh && hatcherHigh->IsAlive())
+    // Only one hatcher alive: mark with moon unless already skull
+    else if (hatcherHigh && hatcherHigh->IsAlive() && group)
     {
-        Unit* hatchling = AI_VALUE2(Unit*, "find target", "amani hatchling");
-        if (hatchling && hatchling->IsAlive())
-            MarkTargetWithSkull(bot, hatcherHigh);
-        else if (!GetFirstAliveUnitByEntry(botAI, NPC_EGG))
-            MarkTargetWithSkull(bot, hatcherHigh);
-        else
+        ObjectGuid guid = hatcherHigh->GetGUID();
+        if (group->GetTargetIcon(RtiTargetValue::skullIndex) != guid)
             MarkTargetWithMoon(bot, hatcherHigh);
+        // else: do nothing, allow skull to persist
     }
 
     return false;
@@ -892,6 +896,8 @@ bool HexLordMalacrassDispelMindControlAction::Execute(Event event)
     return false;
 }
 
+// Malacrass coordinates should be fine, but the mmaps in his room are all fucked up
+// Disabling in strategy.cpp for now
 bool HexLordMalacrassMainTankPositionBossAction::Execute(Event event)
 {
     Unit* malacrass = AI_VALUE2(Unit*, "find target", "hex lord malacrass");

@@ -2747,7 +2747,7 @@ Position LadyVashjAvoidToxicSporesAction::FindSafestNearbyPosition(
     const float distanceStep = 1.0f;
 
     Position bestPos;
-    float minMoveDistance = 1000.0f;
+    float minMoveDistance = std::numeric_limits<float>::max();
     bool foundSafe = false;
 
     for (float distance = minDistance;

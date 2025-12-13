@@ -19,7 +19,7 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction::array(0, new NextAction("akilzon spread ranged", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("akilzon electrical storm has formed",
-        NextAction::array(0, new NextAction("akilzon move to eye of the storm", ACTION_EMERGENCY + 2), nullptr)
+        NextAction::array(0, new NextAction("akilzon move to eye of the storm", ACTION_EMERGENCY + 6), nullptr)
     ));
 
     // Nalorakk <Bear Avatar>
@@ -77,9 +77,9 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("hex lord malacrass party member is mind controlled",
         NextAction::array(0, new NextAction("hex lord malacrass dispel mind control", ACTION_EMERGENCY + 2), nullptr)
     ));
-    triggers.push_back(new TriggerNode("hex lord malacrass all adds are down",
+    /* triggers.push_back(new TriggerNode("hex lord malacrass all adds are down",
         NextAction::array(0, new NextAction("hex lord malacrass main tank position boss", ACTION_RAID + 1), nullptr)
-    ));
+    )); */
 
     // Zul'jin
     triggers.push_back(new TriggerNode("zuljin main tank needs aggro upon pull or phase change",
@@ -101,15 +101,18 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
 void RaidZulAmanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
+    multipliers.push_back(new AkilzonDisableTankActionsMultiplier(botAI));
     multipliers.push_back(new AkilzonStayInEyeOfTheStormMultiplier(botAI));
     multipliers.push_back(new NalorakkDisableTankActionsMultiplier(botAI));
     multipliers.push_back(new NalorakkControlMisdirectionMultiplier(botAI));
-    multipliers.push_back(new JanalaiDisableTankAssistMultiplier(botAI));
+    multipliers.push_back(new JanalaiDisableTankActionsMultiplier(botAI));
     multipliers.push_back(new JanalaiStayAwayFromFireBombsMultiplier(botAI));
+    multipliers.push_back(new JanalaiDoNotCrowdControlHatchersMultiplier(botAI));
     multipliers.push_back(new JanalaiDelayBloodlustAndHeroismMultiplier(botAI));
     multipliers.push_back(new HalazziDisableTankActionsMultiplier(botAI));
     multipliers.push_back(new HalazziControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new HexLordMalacrassDoNotDispelUnstableAfflictionMultiplier(botAI));
+    multipliers.push_back(new ZuljinDisableTankActionsMultiplier(botAI));
     multipliers.push_back(new ZuljinAvoidWhirlwindMultiplier(botAI));
     multipliers.push_back(new ZuljinDelayBloodlustAndHeroismMultiplier(botAI));
     multipliers.push_back(new ZuljinDoNotAvoidCyclonesMultiplier(botAI));

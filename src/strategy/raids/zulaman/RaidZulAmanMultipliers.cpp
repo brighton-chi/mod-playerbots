@@ -20,6 +20,21 @@ using namespace ZulAmanHelpers;
 
 // Akil'zon <Eagle Avatar>
 
+float AkilzonDisableTankActionsMultiplier::GetValue(Action* action)
+{
+    if (!botAI->IsTank(bot))
+        return 1.0f;
+
+    Unit* akilzon = AI_VALUE2(Unit*, "find target", "akil'zon");
+    if (!akilzon)
+        return 1.0f;
+
+    if (dynamic_cast<CombatFormationMoveAction*>(action))
+        return 0.0f;
+
+    return 1.0f;
+}
+
 float AkilzonStayInEyeOfTheStormMultiplier::GetValue(Action* action)
 {
     Unit* akilzon = AI_VALUE2(Unit*, "find target", "akilzon");
@@ -47,7 +62,7 @@ float AkilzonStayInEyeOfTheStormMultiplier::GetValue(Action* action)
     if (!electricalStormActive)
         return 1.0f;
 
-    /* if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
+    if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
         dynamic_cast<CastKillingSpreeAction*>(action) ||
         dynamic_cast<CastBlinkBackAction*>(action) ||
         dynamic_cast<CastDisengageAction*>(action) ||
@@ -55,10 +70,6 @@ float AkilzonStayInEyeOfTheStormMultiplier::GetValue(Action* action)
         dynamic_cast<FleeAction*>(action) ||
         dynamic_cast<FollowAction*>(action) ||
         dynamic_cast<ReachTargetAction*>(action))
-        return 0.0f; */
-    if (dynamic_cast<MovementAction*>(action) &&
-        !dynamic_cast<AttackAction*>(action) &&
-        !dynamic_cast<AkilzonMoveToEyeOfTheStormAction*>(action))
         return 0.0f;
 
     return 1.0f;
@@ -74,6 +85,9 @@ float NalorakkDisableTankActionsMultiplier::GetValue(Action* action)
     Unit* nalorakk = AI_VALUE2(Unit*, "find target", "nalorakk");
     if (!nalorakk)
         return 1.0f;
+
+    if (dynamic_cast<CombatFormationMoveAction*>(action))
+        return 0.0f;
 
     if (!nalorakk->HasAura(SPELL_BEARFORM) && bot->GetVictim() != nullptr &&
         botAI->IsAssistTankOfIndex(bot, 0))
@@ -114,7 +128,7 @@ float NalorakkControlMisdirectionMultiplier::GetValue(Action* action)
 
 // Jan'alai <Dragonhawk Avatar>
 
-float JanalaiDisableTankAssistMultiplier::GetValue(Action* action)
+float JanalaiDisableTankActionsMultiplier::GetValue(Action* action)
 {
     if (!botAI->IsTank(bot))
         return 1.0f;
@@ -122,6 +136,9 @@ float JanalaiDisableTankAssistMultiplier::GetValue(Action* action)
     Unit* janalai = AI_VALUE2(Unit*, "find target", "janalai");
     if (!janalai)
         return 1.0f;
+
+    if (dynamic_cast<CombatFormationMoveAction*>(action))
+        return 0.0f;
 
     if (botAI->IsMainTank(bot))
     {
@@ -160,6 +177,18 @@ float JanalaiStayAwayFromFireBombsMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+float JanalaiDoNotCrowdControlHatchersMultiplier::GetValue(Action* action)
+{
+    Unit* hatcher = AI_VALUE2(Unit*, "find target", "amani'shi hatcher");
+    if (!hatcher)
+        return 1.0f;
+
+    if (dynamic_cast<CastCrowdControlSpellAction*>(action))
+        return 0.0f;
+
+    return 1.0f;
+}
+
 float JanalaiDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
 {
     if (bot->getClass() != CLASS_SHAMAN)
@@ -183,18 +212,28 @@ float JanalaiDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
 
 float HalazziDisableTankActionsMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsMainTank(bot))
+    Unit* halazzi = AI_VALUE2(Unit*, "find target", "halazzi");
+    if (!halazzi)
         return 1.0f;
 
-    Unit* lynx = AI_VALUE2(Unit*, "find target", "spirit of the lynx");
-    if (!lynx)
+    if (!botAI->IsTank(bot))
         return 1.0f;
 
-    if (dynamic_cast<TankAssistAction*>(action) ||
-        dynamic_cast<CastTauntAction*>(action) ||
-        dynamic_cast<CastGrowlAction*>(action) ||
-        dynamic_cast<CastHandOfReckoningAction*>(action))
+    if (dynamic_cast<CombatFormationMoveAction*>(action))
         return 0.0f;
+
+    if (!botAI->IsMainTank(bot))
+    {
+        Unit* lynx = AI_VALUE2(Unit*, "find target", "spirit of the lynx");
+        if (!lynx)
+            return 1.0f;
+
+        if (dynamic_cast<TankAssistAction*>(action) ||
+            dynamic_cast<CastTauntAction*>(action) ||
+            dynamic_cast<CastGrowlAction*>(action) ||
+            dynamic_cast<CastHandOfReckoningAction*>(action))
+            return 0.0f;
+    }
 
     return 1.0f;
 }
@@ -259,6 +298,21 @@ float HexLordMalacrassDoNotDispelUnstableAfflictionMultiplier::GetValue(Action* 
 
 // Zul'jin
 
+float ZuljinDisableTankActionsMultiplier::GetValue(Action* action)
+{
+    if (!botAI->IsTank(bot))
+        return 1.0f;
+
+    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
+    if (!zuljin)
+        return 1.0f;
+
+    if (dynamic_cast<CombatFormationMoveAction*>(action))
+        return 0.0f;
+
+    return 1.0f;
+}
+
 float ZuljinAvoidWhirlwindMultiplier::GetValue(Action* action)
 {
     if (botAI->IsMainTank(bot))
@@ -270,8 +324,14 @@ float ZuljinAvoidWhirlwindMultiplier::GetValue(Action* action)
 
     if (zuljin->HasAura(SPELL_WHIRLWIND))
     {
-        if (dynamic_cast<MovementAction*>(action) &&
-            !dynamic_cast<ZuljinRunAwayFromWhirlwindAction*>(action))
+        if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
+            dynamic_cast<CastKillingSpreeAction*>(action) ||
+            dynamic_cast<CastBlinkBackAction*>(action) ||
+            dynamic_cast<CastDisengageAction*>(action) ||
+            dynamic_cast<CombatFormationMoveAction*>(action) ||
+            dynamic_cast<FleeAction*>(action) ||
+            dynamic_cast<FollowAction*>(action) ||
+            dynamic_cast<ReachTargetAction*>(action))
             return 0.0f;
     }
 

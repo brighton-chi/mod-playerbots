@@ -140,25 +140,11 @@ bool JanalaiBossSummoningFireBombsTrigger::IsActive()
 
 bool JanalaiAmaniHatchersSpawnedTrigger::IsActive()
 {
-    Unit* hatcher = GetFirstAliveUnitByEntry(botAI, NPC_AMANI_HATCHER);
-    if (!hatcher)
+    if (!botAI->IsDps(bot))
         return false;
 
-    if (Group* group = bot->GetGroup())
-    {
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) ||
-                !botAI->IsDps(member))
-                continue;
-
-            if (member == bot)
-                return true;
-        }
-    }
-
-    return false;
+    Unit* hatcher = GetFirstAliveUnitByEntry(botAI, NPC_AMANI_HATCHER);
+    return hatcher != nullptr;
 }
 
 // Halazzi <Lynx Avatar>
