@@ -91,11 +91,11 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class FathomLordKarathressDisableTankAssistMultiplier : public Multiplier
+class FathomLordKarathressDisableTankActionsMultiplier : public Multiplier
 {
 public:
-    FathomLordKarathressDisableTankAssistMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "fathom-lord karathress disable tank assist") {}
+    FathomLordKarathressDisableTankActionsMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "fathom-lord karathress disable tank actions") {}
     virtual float GetValue(Action* action);
 };
 
@@ -136,6 +136,14 @@ class MorogrimTidewalkerDelayBloodlustAndHeroismMultiplier : public Multiplier
 public:
     MorogrimTidewalkerDelayBloodlustAndHeroismMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "morogrim tidewalker delay bloodlust and heroism") {}
+    virtual float GetValue(Action* action);
+};
+
+class MorogrimTidewalkerDisableTankActionsMultiplier : public Multiplier
+{
+public:
+    MorogrimTidewalkerDisableTankActionsMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "morogrim tidewalker disable tank actions") {}
     virtual float GetValue(Action* action);
 };
 

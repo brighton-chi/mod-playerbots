@@ -43,7 +43,8 @@ float HydrossTheUnstableDisableTankActionsMultiplier::GetValue(Action* action)
     if (!hydross)
         return 1.0f;
 
-    if (dynamic_cast<TankAssistAction*>(action))
+    if (dynamic_cast<TankAssistAction*>(action) ||
+        dynamic_cast<CombatFormationMoveAction*>(action))
         return 0.0f;
 
     if (botAI->IsMainTank(bot))
@@ -51,9 +52,7 @@ float HydrossTheUnstableDisableTankActionsMultiplier::GetValue(Action* action)
         if (hydross->HasAura(SPELL_CORRUPTION))
         {
             if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
-                dynamic_cast<CombatFormationMoveAction*>(action) ||
-                dynamic_cast<ReachTargetAction*>(action) ||
-                dynamic_cast<FollowAction*>(action))
+                dynamic_cast<ReachTargetAction*>(action))
                 return 0.0f;
         }
     }
@@ -63,9 +62,7 @@ float HydrossTheUnstableDisableTankActionsMultiplier::GetValue(Action* action)
         if (!hydross->HasAura(SPELL_CORRUPTION))
         {
             if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
-                dynamic_cast<CombatFormationMoveAction*>(action) ||
-                dynamic_cast<ReachTargetAction*>(action) ||
-                dynamic_cast<FollowAction*>(action))
+                dynamic_cast<ReachTargetAction*>(action))
                 return 0.0f;
         }
     }
@@ -158,11 +155,11 @@ float HydrossTheUnstableControlMisdirectionMultiplier::GetValue(Action* action)
         return 1.0f;
 
     Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
-    if (!hydross)
-        return 1.0f;
-
-    if (dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
-        return 0.0f;
+    if (hydross)
+    {
+        if (dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
+            return 0.0f;
+    }
 
     return 1.0f;
 }
@@ -401,7 +398,7 @@ float LeotherasTheBlindDelayBloodlustAndHeroismMultiplier::GetValue(Action* acti
 
 // Fathom-Lord Karathress
 
-float FathomLordKarathressDisableTankAssistMultiplier::GetValue(Action* action)
+float FathomLordKarathressDisableTankActionsMultiplier::GetValue(Action* action)
 {
     if (!botAI->IsTank(bot))
         return 1.0f;
@@ -410,7 +407,8 @@ float FathomLordKarathressDisableTankAssistMultiplier::GetValue(Action* action)
     if (!karathress)
         return 1.0f;
 
-    if (bot->GetVictim() != nullptr && dynamic_cast<TankAssistAction*>(action))
+    if ((bot->GetVictim() != nullptr && dynamic_cast<TankAssistAction*>(action)) ||
+        dynamic_cast<CombatFormationMoveAction*>(action))
         return 0.0f;
 
     return 1.0f;
@@ -419,11 +417,11 @@ float FathomLordKarathressDisableTankAssistMultiplier::GetValue(Action* action)
 float FathomLordKarathressDisableAoeMultiplier::GetValue(Action* action)
 {
     Unit* karathress = AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
-    if (!karathress)
-        return 1.0f;
-
-    if (dynamic_cast<DpsAoeAction*>(action))
-        return 0.0f;
+    if (karathress)
+    {
+        if (dynamic_cast<DpsAoeAction*>(action))
+            return 0.0f;
+    }
 
     return 1.0f;
 }
@@ -434,11 +432,11 @@ float FathomLordKarathressControlMisdirectionMultiplier::GetValue(Action* action
         return 1.0f;
 
     Unit* karathress = AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
-    if (!karathress)
-        return 1.0f;
-
-    if (dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
-        return 0.0f;
+    if (karathress)
+    {
+        if (dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
+            return 0.0f;
+    }
 
     return 1.0f;
 }
@@ -476,11 +474,12 @@ float FathomLordKarathressCaribdisTankHealerMaintainPositionMultiplier::GetValue
         return 1.0f;
 
     Unit* caribdis = AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
-    if (!caribdis || !caribdis->IsAlive())
-        return 1.0f;
-
-    if (dynamic_cast<FleeAction*>(action) || dynamic_cast<FollowAction*>(action))
-        return 0.0f;
+    if (caribdis && caribdis->IsAlive())
+    {
+        if (dynamic_cast<FleeAction*>(action) ||
+            dynamic_cast<FollowAction*>(action))
+            return 0.0f;
+    }
 
     return 1.0f;
 }
@@ -500,6 +499,21 @@ float MorogrimTidewalkerDelayBloodlustAndHeroismMultiplier::GetValue(Action* act
     {
         if (dynamic_cast<CastHeroismAction*>(action) ||
             dynamic_cast<CastBloodlustAction*>(action))
+            return 0.0f;
+    }
+
+    return 1.0f;
+}
+
+float MorogrimTidewalkerDisableTankActionsMultiplier::GetValue(Action* action)
+{
+    if (!botAI->IsMainTank(bot))
+        return 1.0f;
+
+    Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
+    if (tidewalker)
+    {
+        if (dynamic_cast<CombatFormationMoveAction*>(action))
             return 0.0f;
     }
 
@@ -568,11 +582,11 @@ float LadyVashjDoNotLootTheTaintedCoreMultiplier::GetValue(Action* action)
         return 1.0f;
 
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    if (!vashj)
-        return 1.0f;
-
-    if (dynamic_cast<LootAction*>(action))
-        return 0.0f;
+    if (vashj)
+    {
+        if (dynamic_cast<LootAction*>(action))
+            return 0.0f;
+    }
 
     return 1.0f;
 }

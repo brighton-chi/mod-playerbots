@@ -31,6 +31,7 @@ float AlarMoveBetweenPlatformsMultiplier::GetValue(Action* action)
     if (dynamic_cast<FleeAction*>(action) ||
         dynamic_cast<FollowAction*>(action) ||
         dynamic_cast<ReachTargetAction*>(action) ||
+        dynamic_cast<TankFaceAction*>(action) ||
         dynamic_cast<CastKillingSpreeAction*>(action) ||
         dynamic_cast<CastDisengageAction*>(action) ||
         dynamic_cast<CastBlinkBackAction*>(action))
@@ -90,13 +91,28 @@ float AlarPhase2NoTankingIfArmorMeltedMultiplier::GetValue(Action* action)
         return 1.0f;
 
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    if (!alar)
+    if (alar)
+    {
+        if (dynamic_cast<CastTauntAction*>(action) ||
+            dynamic_cast<CastGrowlAction*>(action) ||
+            dynamic_cast<CastHandOfReckoningAction*>(action))
+            return 0.0f;
+    }
+
+    return 1.0f;
+}
+
+float VoidReaverDisableTankActionsMultiplier::GetValue(Action* action)
+{
+    if (!botAI->IsTank(bot))
         return 1.0f;
 
-    if (dynamic_cast<CastTauntAction*>(action) ||
-        dynamic_cast<CastGrowlAction*>(action) ||
-        dynamic_cast<CastHandOfReckoningAction*>(action))
-        return 0.0f;
+    Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
+    if (voidReaver)
+    {
+        if (dynamic_cast<CombatFormationMoveAction*>(action))
+            return 0.0f;
+    }
 
     return 1.0f;
 }
@@ -107,15 +123,15 @@ float VoidReaverMaintainPositionsMultiplier::GetValue(Action* action)
         return 1.0f;
 
     Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
-    if (!voidReaver)
-        return 1.0f;
-
+    if (voidReaver)
+    {
         if (dynamic_cast<CombatFormationMoveAction*>(action) ||
             dynamic_cast<FleeAction*>(action) ||
             dynamic_cast<CastBlinkBackAction*>(action) ||
             dynamic_cast<CastDisengageAction*>(action) ||
             dynamic_cast<ReachTargetAction*>(action))
             return 0.0f;
+    }
 
     return 1.0f;
 }
@@ -210,7 +226,8 @@ float KaelthasSunstriderControlMisdirectionMultiplier::GetValue(Action* action)
     if (!kaelthas)
         return 1.0f;
 
-    if (kaelthas->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE))
+    boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
+    if (kaelAI && kaelAI->GetPhase() != PHASE_FINAL)
     {
         if (dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
             return 0.0f;
@@ -264,12 +281,8 @@ float KaelthasSunstriderDelayBloodlustAndHeroismMultiplier::GetValue(Action* act
         return 1.0f;
 
     boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
-    if (!kaelAI)
-        return 1.0f;
-
-    Unit* thaladred = AI_VALUE2(Unit*, "find target", "thaladred the darkener");
-    if ((kaelAI->GetPhase() != PHASE_ALL_ADVISORS && kaelAI->GetPhase() != PHASE_FINAL) ||
-        thaladred && thaladred->HasAura(SPELL_PERMANENT_FEIGN_DEATH))
+    if (kaelAI &&
+        kaelAI->GetPhase() != PHASE_ALL_ADVISORS && kaelAI->GetPhase() != PHASE_FINAL)
     {
         if (dynamic_cast<CastBloodlustAction*>(action) ||
             dynamic_cast<CastHeroismAction*>(action))
