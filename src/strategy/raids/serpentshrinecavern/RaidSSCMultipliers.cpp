@@ -177,6 +177,24 @@ float TheLurkerBelowStayAwayFromSpoutMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+float TheLurkerBelowMaintainRangedSpreadMultiplier::GetValue(Action* action)
+{
+    if (!botAI->IsRanged(bot))
+        return 1.0f;
+
+    Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
+    if (lurker)
+    {
+        if (dynamic_cast<CombatFormationMoveAction*>(action) ||
+            dynamic_cast<FleeAction*>(action) ||
+            dynamic_cast<CastDisengageAction*>(action) ||
+            dynamic_cast<CastBlinkBackAction*>(action))
+            return 0.0f;
+    }
+
+    return 1.0f;
+}
+
 // Disable tank assist during Submerge only if there are 3 or more tanks in the raid
 float TheLurkerBelowDisableTankAssistMultiplier::GetValue(Action* action)
 {
@@ -506,15 +524,19 @@ float MorogrimTidewalkerDisableTankActionsMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float MorogrimTidewalkerDisablePhase2MovementActionsMultiplier::GetValue(Action* action)
+float MorogrimTidewalkerMaintainPhase2StackingMultiplier::GetValue(Action* action)
 {
+    if (!botAI->IsRanged(bot))
+        return 1.0f;
+
     Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
     if (!tidewalker)
         return 1.0f;
 
     if (tidewalker->GetHealthPct() < 25.0f)
     {
-        if (dynamic_cast<FleeAction*>(action) ||
+        if (dynamic_cast<CombatFormationMoveAction*>(action) ||
+            dynamic_cast<FleeAction*>(action) ||
             dynamic_cast<CastDisengageAction*>(action) ||
             dynamic_cast<CastBlinkBackAction*>(action))
             return 0.0f;
@@ -536,6 +558,24 @@ float LadyVashjDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
     if (dynamic_cast<CastBloodlustAction*>(action) ||
         dynamic_cast<CastHeroismAction*>(action))
         return 0.0f;
+
+    return 1.0f;
+}
+
+float LadyVashjMaintainPhase1RangedSpreadMultiplier::GetValue(Action* action)
+{
+    if (!botAI->IsRanged(bot))
+        return 1.0f;
+
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (vashj && IsLadyVashjInPhase1(botAI))
+    {
+        if (dynamic_cast<CombatFormationMoveAction*>(action) ||
+            dynamic_cast<FleeAction*>(action) ||
+            dynamic_cast<CastDisengageAction*>(action) ||
+            dynamic_cast<CastBlinkBackAction*>(action))
+            return 0.0f;
+    }
 
     return 1.0f;
 }

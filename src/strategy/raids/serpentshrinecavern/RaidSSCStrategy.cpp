@@ -173,6 +173,7 @@ void RaidSSCStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new HydrossTheUnstableWaitForDpsMultiplier(botAI));
     multipliers.push_back(new HydrossTheUnstableControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new TheLurkerBelowStayAwayFromSpoutMultiplier(botAI));
+    multipliers.push_back(new TheLurkerBelowMaintainRangedSpreadMultiplier(botAI));
     multipliers.push_back(new TheLurkerBelowDisableTankAssistMultiplier(botAI));
     multipliers.push_back(new LeotherasTheBlindAvoidWhirlwindMultiplier(botAI));
     multipliers.push_back(new LeotherasTheBlindDisableTankActionsMultiplier(botAI));
@@ -186,8 +187,9 @@ void RaidSSCStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new FathomLordKarathressCaribdisTankHealerMaintainPositionMultiplier(botAI));
     multipliers.push_back(new MorogrimTidewalkerDelayBloodlustAndHeroismMultiplier(botAI));
     multipliers.push_back(new MorogrimTidewalkerDisableTankActionsMultiplier(botAI));
-    multipliers.push_back(new MorogrimTidewalkerDisablePhase2MovementActionsMultiplier(botAI));
+    multipliers.push_back(new MorogrimTidewalkerMaintainPhase2StackingMultiplier(botAI));
     multipliers.push_back(new LadyVashjDelayBloodlustAndHeroismMultiplier(botAI));
+    multipliers.push_back(new LadyVashjMaintainPhase1RangedSpreadMultiplier(botAI));
     multipliers.push_back(new LadyVashjStaticChargeStayAwayFromGroupMultiplier(botAI));
     multipliers.push_back(new LadyVashjDoNotLootTheTaintedCoreMultiplier(botAI));
     multipliers.push_back(new LadyVashjCorePassersPrioritizePositioningMultiplier(botAI));

@@ -43,6 +43,14 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class TheLurkerBelowMaintainRangedSpreadMultiplier : public Multiplier
+{
+public:
+    TheLurkerBelowMaintainRangedSpreadMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "the lurker below maintain ranged spread") {}
+    virtual float GetValue(Action* action);
+};
+
 class TheLurkerBelowDisableTankAssistMultiplier : public Multiplier
 {
 public:
@@ -147,11 +155,11 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class MorogrimTidewalkerDisablePhase2MovementActionsMultiplier : public Multiplier
+class MorogrimTidewalkerMaintainPhase2StackingMultiplier : public Multiplier
 {
 public:
-    MorogrimTidewalkerDisablePhase2MovementActionsMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "morogrim tidewalker disable phase2 movement actions") {}
+    MorogrimTidewalkerMaintainPhase2StackingMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "morogrim tidewalker maintain phase2 stacking") {}
     virtual float GetValue(Action* action);
 };
 
@@ -160,6 +168,14 @@ class LadyVashjDelayBloodlustAndHeroismMultiplier : public Multiplier
 public:
     LadyVashjDelayBloodlustAndHeroismMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "lady vashj delay bloodlust and heroism") {}
+    virtual float GetValue(Action* action);
+};
+
+class LadyVashjMaintainPhase1RangedSpreadMultiplier : public Multiplier
+{
+public:
+    LadyVashjMaintainPhase1RangedSpreadMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "lady vashj maintain phase1 ranged spread") {}
     virtual float GetValue(Action* action);
 };
 

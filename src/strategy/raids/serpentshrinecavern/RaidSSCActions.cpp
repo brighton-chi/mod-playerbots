@@ -547,9 +547,11 @@ bool TheLurkerBelowSpreadRangedInArcAction::Execute(Event event)
         if (count == 0)
             return false;
 
-        const float minRadius = 25.0f;
-        const float maxRadius = 27.0f;
-        const float referenceOrientation = Position::NormalizeOrientation(2.262f + M_PI);
+        const float minRadius = 27.0f;
+        const float maxRadius = 29.0f;
+        const float mainTankFacingOrientation = 2.262f;
+        const float referenceOrientation =
+            Position::NormalizeOrientation(mainTankFacingOrientation + M_PI);
 
         const float arcSpan = 2.0f * M_PI / 3.0f; // 120°
         float startAngle = referenceOrientation - arcSpan / 2.0f;
