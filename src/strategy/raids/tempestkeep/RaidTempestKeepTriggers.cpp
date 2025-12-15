@@ -183,6 +183,9 @@ bool VoidReaverTanksLostAggroTrigger::IsActive()
 
 bool HighAstromancerSolarianPhase1And2MovementTrigger::IsActive()
 {
+    if (bot->HasAura(SPELL_WRATH_OF_THE_ASTROMANCER))
+        return false;
+
     Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
     return astromancer && !astromancer->HasAura(SPELL_SOLARIAN_TRANSFORM);
 }
