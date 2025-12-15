@@ -51,11 +51,14 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     ));
 
     // High Astromancer Solarian
-    triggers.push_back(new TriggerNode("high astromancer solarian phase 1 and 2 movement",
-        NextAction::array(0, new NextAction("high astromancer solarian stack bots", ACTION_RAID + 1), nullptr)
+    triggers.push_back(new TriggerNode("high astromancer solarian boss casts wrath of the astromancer",
+        NextAction::array(0, new NextAction("high astromancer solarian ranged leave space for melee", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("high astromancer solarian bot has wrath of the astromancer",
         NextAction::array(0, new NextAction("high astromancer solarian move away from group", ACTION_EMERGENCY + 6), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("high astromancer solarian solarium agents spawned",
+        NextAction::array(0, new NextAction("high astromancer solarian stack for aoe", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("high astromancer solarian solarium priests spawned",
         NextAction::array(0, new NextAction("high astromancer solarian target solarium priests", ACTION_RAID + 1), nullptr)
@@ -147,7 +150,8 @@ void RaidTempestKeepStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new AlarPhase2NoTankingIfArmorMeltedMultiplier(botAI));
     multipliers.push_back(new VoidReaverDisableTankActionsMultiplier(botAI));
     multipliers.push_back(new VoidReaverMaintainPositionsMultiplier(botAI));
-    multipliers.push_back(new HighAstromancerSolarianStayStackedMultiplier(botAI));
+    multipliers.push_back(new HighAstromancerSolarianDisableTankAssistMultiplier(botAI));
+    multipliers.push_back(new HighAstromancerSolarianMaintainPositionMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderWaitForDpsMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderDisableShadowWardMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderKiteThaladredMultiplier(botAI));
@@ -155,5 +159,5 @@ void RaidTempestKeepStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new KaelthasSunstriderDelayBloodlustAndHeroismMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderTryNonfatalBreakingOfMindControlMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderAllDpsOnBossDuringPyroblastMultiplier(botAI));
-    multipliers.push_back(new KaelthasSunstriderMeleeDpsDoNotAttackDuringGravityLapseMultiplier(botAI));
+    multipliers.push_back(new KaelthasSunstriderStaySpreadDuringGravityLapseMultiplier(botAI));
 }

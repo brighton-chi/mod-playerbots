@@ -137,11 +137,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class HighAstromancerSolarianStackBotsAction : public MovementAction
+class HighAstromancerSolarianRangedLeaveSpaceForMeleeAction : public MovementAction
 {
 public:
-    HighAstromancerSolarianStackBotsAction(
-        PlayerbotAI* botAI, std::string const name = "high astromancer solarian stack bots") : MovementAction(botAI, name) {}
+    HighAstromancerSolarianRangedLeaveSpaceForMeleeAction(
+        PlayerbotAI* botAI, std::string const name = "high astromancer solarian ranged leave space for melee") : MovementAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 
@@ -150,6 +150,14 @@ class HighAstromancerSolarianMoveAwayFromGroupAction : public MovementAction
 public:
     HighAstromancerSolarianMoveAwayFromGroupAction(
         PlayerbotAI* botAI, std::string const name = "high astromancer solarian move away from group") : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class HighAstromancerSolarianStackForAoeAction : public MovementAction
+{
+public:
+    HighAstromancerSolarianStackForAoeAction(
+        PlayerbotAI* botAI, std::string const name = "high astromancer solarian stack for aoe") : MovementAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 

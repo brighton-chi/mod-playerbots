@@ -99,11 +99,11 @@ public:
     bool IsActive() override;
 };
 
-class HighAstromancerSolarianPhase1And2MovementTrigger : public Trigger
+class HighAstromancerSolarianBossCastsWrathOfTheAstromancerTrigger : public Trigger
 {
 public:
-    HighAstromancerSolarianPhase1And2MovementTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "high astromancer solarian phase 1 and 2 movement") {}
+    HighAstromancerSolarianBossCastsWrathOfTheAstromancerTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "high astromancer solarian boss casts wrath of the astromancer") {}
     bool IsActive() override;
 };
 
@@ -112,6 +112,14 @@ class HighAstromancerSolarianBotHasWrathOfTheAstromancerTrigger : public Trigger
 public:
     HighAstromancerSolarianBotHasWrathOfTheAstromancerTrigger(
         PlayerbotAI* botAI) : Trigger(botAI, "high astromancer solarian bot has wrath of the astromancer") {}
+    bool IsActive() override;
+};
+
+class HighAstromancerSolarianSolariumAgentsSpawnedTrigger : public Trigger
+{
+public:
+    HighAstromancerSolarianSolariumAgentsSpawnedTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "high astromancer solarian solarium agents spawned") {}
     bool IsActive() override;
 };
 

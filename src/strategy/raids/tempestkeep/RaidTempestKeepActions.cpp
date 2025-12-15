@@ -717,53 +717,16 @@ bool VoidReaverUseAggroDumpAbilityAction::Execute(Event event)
 
 // High Astromancer Solarian
 
-bool HighAstromancerSolarianStackBotsAction::Execute(Event event)
+bool HighAstromancerSolarianRangedLeaveSpaceForMeleeAction::Execute(Event event)
 {
-    Unit* solariumAgent = AI_VALUE2(Unit*, "find target", "solarium agent");
-    // Phase 2: If any agent is present, all bots stack on first alive group member
-    if (solariumAgent)
-    {
-        Player* stackTarget = nullptr;
-        if (Group* group = bot->GetGroup())
-        {
-            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-            {
-                Player* member = ref->GetSource();
-                if (member && member->IsAlive())
-                {
-                    stackTarget = member;
-                    break;
-                }
-            }
-        }
-
-        if (stackTarget && bot != stackTarget && bot->GetExactDist2d(stackTarget) >= 5.0f)
-        {
-            return MoveTo(TEMPESTKEEP_MAP_ID, stackTarget->GetPositionX(), stackTarget->GetPositionY(),
-                          stackTarget->GetPositionZ(), false, false, false, false,
-                          MovementPriority::MOVEMENT_COMBAT, true, false);
-        }
-
-        return false;
-    }
-
-    // Phase 1: All ranged stack 25 yards from boss
     Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
-    if (astromancer && botAI->IsRanged(bot))
-    {
-        const float stackDistance = 25.0f;
-        const float stackAngle = 5.0f * M_PI / 4.0f; // Southwest direction
-        float stackX = astromancer->GetPositionX() + stackDistance * cos(stackAngle);
-        float stackY = astromancer->GetPositionY() + stackDistance * sin(stackAngle);
+    if (!astromancer)
+        return false;
 
-        if (bot->GetExactDist2d(stackX, stackY) >= 3.0f)
-        {
-            bot->AttackStop();
-            bot->InterruptNonMeleeSpells(false);
-            return MoveTo(TEMPESTKEEP_MAP_ID, stackX, stackY, astromancer->GetPositionZ(), false,
-                          false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
-        }
-    }
+    float currentDistance = bot->GetExactDist2d(astromancer);
+    const float minDistance = 20.0f;
+    if (currentDistance < minDistance)
+        return MoveAway(astromancer, minDistance - currentDistance + 2.0f);
 
     return false;
 }
@@ -773,7 +736,39 @@ bool HighAstromancerSolarianMoveAwayFromGroupAction::Execute(Event event)
     const float safeDistance = 15.0f;
     Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
     if (nearestPlayer)
+    {
+        bot->AttackStop();
+        bot->InterruptNonMeleeSpells(true);
         return MoveFromGroup(safeDistance + 1.0f);
+    }
+
+    return false;
+}
+
+// If any agent is present, all bots stack on first alive ranged group member
+bool HighAstromancerSolarianStackForAoeAction::Execute(Event event)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    Player* stackTarget = nullptr;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && member->IsAlive() && botAI->IsRanged(member))
+        {
+            stackTarget = member;
+            break;
+        }
+    }
+
+    if (stackTarget && bot != stackTarget && bot->GetExactDist2d(stackTarget) >= 5.0f)
+    {
+        return MoveTo(TEMPESTKEEP_MAP_ID, stackTarget->GetPositionX(), stackTarget->GetPositionY(),
+                      stackTarget->GetPositionZ(), false, false, false, false,
+                      MovementPriority::MOVEMENT_COMBAT, true, false);
+    }
 
     return false;
 }
@@ -1054,37 +1049,25 @@ bool KaelthasSunstriderWarlockTankPositionCapernianAction::Execute(Event event)
     MarkTargetWithCircle(bot, capernian);
     SetRtiTarget(botAI, "circle", capernian);
 
-    if (!botAI->HasStrategy("curse of doom", BOT_STATE_COMBAT))
-        botAI->ChangeStrategy("+curse of doom", BOT_STATE_COMBAT);
-
     if (bot->GetVictim() != capernian)
-    {
-        if (botAI->CanCastSpell("curse of doom", capernian))
-            return botAI->CastSpell("curse of doom", capernian);
-
         return Attack(capernian);
-    }
 
     if (capernian->GetVictim() == bot && kaelAI->GetPhase() == PHASE_SINGLE_ADVISOR)
     {
+        float currentDist = bot->GetDistance2d(capernian);
+        if (currentDist == 0.0f)
+            return false;
+
         const float minDistance = 31.0f;
-        const float maxDistance = 34.0f;
-
-        float currentDist = bot->GetExactDist2d(capernian);
-        if (currentDist < minDistance || currentDist > maxDistance)
+        if (currentDist < minDistance)
         {
-            float desiredDist = (currentDist < minDistance) ? minDistance : maxDistance;
-
             float dx = bot->GetPositionX() - capernian->GetPositionX();
             float dy = bot->GetPositionY() - capernian->GetPositionY();
 
-            if (currentDist == 0.0f)
-                return false;
-
             dx /= currentDist;
             dy /= currentDist;
-            float targetX = capernian->GetPositionX() + dx * desiredDist;
-            float targetY = capernian->GetPositionY() + dy * desiredDist;
+            float targetX = capernian->GetPositionX() + dx * minDistance;
+            float targetY = capernian->GetPositionY() + dy * minDistance;
 
             if (bot->GetExactDist2d(targetX, targetY) > 1.0f)
             {

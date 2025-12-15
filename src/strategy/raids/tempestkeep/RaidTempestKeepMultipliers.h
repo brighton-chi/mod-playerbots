@@ -51,11 +51,19 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class HighAstromancerSolarianStayStackedMultiplier : public Multiplier
+class HighAstromancerSolarianDisableTankAssistMultiplier : public Multiplier
 {
 public:
-    HighAstromancerSolarianStayStackedMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "high astromancer solarian stay stacked multiplier") {}
+    HighAstromancerSolarianDisableTankAssistMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "high astromancer solarian disable tank assist multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
+class HighAstromancerSolarianMaintainPositionMultiplier : public Multiplier
+{
+public:
+    HighAstromancerSolarianMaintainPositionMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "high astromancer solarian maintain position multiplier") {}
     virtual float GetValue(Action* action);
 };
 
@@ -115,11 +123,11 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class KaelthasSunstriderMeleeDpsDoNotAttackDuringGravityLapseMultiplier : public Multiplier
+class KaelthasSunstriderStaySpreadDuringGravityLapseMultiplier : public Multiplier
 {
 public:
-    KaelthasSunstriderMeleeDpsDoNotAttackDuringGravityLapseMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "kaelthas sunstrider melee dps do not attack during gravity lapse multiplier") {}
+    KaelthasSunstriderStaySpreadDuringGravityLapseMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "kaelthas sunstrider stay spread during gravity lapse multiplier") {}
     virtual float GetValue(Action* action);
 };
 

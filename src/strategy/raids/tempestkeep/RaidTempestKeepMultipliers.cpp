@@ -136,21 +136,42 @@ float VoidReaverMaintainPositionsMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float HighAstromancerSolarianStayStackedMultiplier::GetValue(Action* action)
+float HighAstromancerSolarianMaintainPositionMultiplier::GetValue(Action* action)
 {
     Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
     if (!astromancer || astromancer->HasAura(SPELL_SOLARIAN_TRANSFORM))
         return 1.0f;
 
-    if (dynamic_cast<FleeAction*>(action) ||
-        dynamic_cast<CastBlinkBackAction*>(action) ||
-        dynamic_cast<CastDisengageAction*>(action))
-        return 0.0f;
+    if (botAI->IsRanged(bot))
+    {
+        if (dynamic_cast<CombatFormationMoveAction*>(action) ||
+            dynamic_cast<FleeAction*>(action) ||
+            dynamic_cast<CastBlinkBackAction*>(action) ||
+            dynamic_cast<CastDisengageAction*>(action))
+            return 0.0f;
+    }
 
     if (bot->HasAura(SPELL_WRATH_OF_THE_ASTROMANCER))
     {
-        if (dynamic_cast<MovementAction*>(action) && !dynamic_cast<AttackAction*>(action) &&
-            !dynamic_cast<HighAstromancerSolarianMoveAwayFromGroupAction*>(action))
+        if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
+            (dynamic_cast<MovementAction*>(action) &&
+             !dynamic_cast<HighAstromancerSolarianMoveAwayFromGroupAction*>(action)))
+             return 0.0f;
+    }
+
+    return 1.0f;
+}
+
+// Disable Tank Assist when Solarium Priest is present
+float HighAstromancerSolarianDisableTankAssistMultiplier::GetValue(Action* action)
+{
+    if (!botAI->IsTank(bot))
+        return 1.0f;
+
+    Unit* solariumPriest = AI_VALUE2(Unit*, "find target", "solarium priest");
+    if (solariumPriest)
+    {
+        if (dynamic_cast<TankAssistAction*>(action))
             return 0.0f;
     }
 
@@ -192,7 +213,7 @@ float KaelthasSunstriderWaitForDpsMultiplier::GetValue(Action* action)
             if (dynamic_cast<AttackAction*>(action) ||
                 (dynamic_cast<CastSpellAction*>(action) &&
                  !dynamic_cast<CastHealingSpellAction*>(action)))
-                return 0.0f;
+                 return 0.0f;
         }
 
         if (isAdvisorActive(telonicus) && !botAI->IsAssistTankOfIndex(bot, 0))
@@ -200,7 +221,7 @@ float KaelthasSunstriderWaitForDpsMultiplier::GetValue(Action* action)
             if (dynamic_cast<AttackAction*>(action) ||
                 (dynamic_cast<CastSpellAction*>(action) &&
                  !dynamic_cast<CastHealingSpellAction*>(action)))
-                return 0.0f;
+                 return 0.0f;
         }
 
         Player* capernianTank = GetCapernianTank(botAI, bot);
@@ -210,7 +231,7 @@ float KaelthasSunstriderWaitForDpsMultiplier::GetValue(Action* action)
             if (dynamic_cast<AttackAction*>(action) ||
                 (dynamic_cast<CastSpellAction*>(action) &&
                  !dynamic_cast<CastHealingSpellAction*>(action)))
-                return 0.0f;
+                 return 0.0f;
         }
     }
 
@@ -347,16 +368,16 @@ float KaelthasSunstriderAllDpsOnBossDuringPyroblastMultiplier::GetValue(Action* 
     return 1.0f;
 }
 
-float KaelthasSunstriderMeleeDpsDoNotAttackDuringGravityLapseMultiplier::GetValue(Action* action)
+float KaelthasSunstriderStaySpreadDuringGravityLapseMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsMelee(bot) || !botAI->IsDps(bot))
+    if (!bot->HasAura(SPELL_GRAVITY_LAPSE))
+        return 1.0f;
+
+    if (bot->getClass() == CLASS_HUNTER)
         return 1.0f;
 
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
-    if (!kaelthas)
-        return 1.0f;
-
-    if (bot->HasAura(SPELL_GRAVITY_LAPSE))
+    if (kaelthas)
     {
         if (dynamic_cast<MovementAction*>(action) &&
             !dynamic_cast<KaelthasSunstriderSpreadOutInMidairAction*>(action))

@@ -49,11 +49,14 @@ public:
             &RaidTempestKeepTriggerContext::void_reaver_tanks_lost_aggro;
 
         // High Astromancer Solarian
-        creators["high astromancer solarian phase 1 and 2 movement"] =
-            &RaidTempestKeepTriggerContext::high_astromancer_solarian_phase_1_and_2_movement;
+        creators["high astromancer solarian boss casts wrath of the astromancer"] =
+            &RaidTempestKeepTriggerContext::high_astromancer_solarian_boss_casts_wrath_of_the_astromancer;
 
         creators["high astromancer solarian bot has wrath of the astromancer"] =
             &RaidTempestKeepTriggerContext::high_astromancer_solarian_bot_has_wrath_of_the_astromancer;
+
+        creators["high astromancer solarian solarium agents spawned"] =
+            &RaidTempestKeepTriggerContext::high_astromancer_solarian_solarium_agents_spawned;
 
         creators["high astromancer solarian solarium priests spawned"] =
             &RaidTempestKeepTriggerContext::high_astromancer_solarian_solarium_priests_spawned;
@@ -176,11 +179,14 @@ private:
         PlayerbotAI* botAI) { return new VoidReaverTanksLostAggroTrigger(botAI); }
 
     // High Astromancer Solarian
-    static Trigger* high_astromancer_solarian_phase_1_and_2_movement(
-        PlayerbotAI* botAI) { return new HighAstromancerSolarianPhase1And2MovementTrigger(botAI); }
+    static Trigger* high_astromancer_solarian_boss_casts_wrath_of_the_astromancer(
+        PlayerbotAI* botAI) { return new HighAstromancerSolarianBossCastsWrathOfTheAstromancerTrigger(botAI); }
 
     static Trigger* high_astromancer_solarian_bot_has_wrath_of_the_astromancer(
         PlayerbotAI* botAI) { return new HighAstromancerSolarianBotHasWrathOfTheAstromancerTrigger(botAI); }
+
+    static Trigger* high_astromancer_solarian_solarium_agents_spawned(
+        PlayerbotAI* botAI) { return new HighAstromancerSolarianSolariumAgentsSpawnedTrigger(botAI); }
 
     static Trigger* high_astromancer_solarian_solarium_priests_spawned(
         PlayerbotAI* botAI) { return new HighAstromancerSolarianSolariumPriestsSpawnedTrigger(botAI); }

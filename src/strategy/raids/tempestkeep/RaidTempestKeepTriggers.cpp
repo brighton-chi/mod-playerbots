@@ -181,8 +181,11 @@ bool VoidReaverTanksLostAggroTrigger::IsActive()
 
 // High Astromancer Solarian
 
-bool HighAstromancerSolarianPhase1And2MovementTrigger::IsActive()
+bool HighAstromancerSolarianBossCastsWrathOfTheAstromancerTrigger::IsActive()
 {
+    if (!botAI->IsRanged(bot))
+        return false;
+
     if (bot->HasAura(SPELL_WRATH_OF_THE_ASTROMANCER))
         return false;
 
@@ -192,8 +195,16 @@ bool HighAstromancerSolarianPhase1And2MovementTrigger::IsActive()
 
 bool HighAstromancerSolarianBotHasWrathOfTheAstromancerTrigger::IsActive()
 {
-    Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
-    return astromancer && bot->HasAura(SPELL_WRATH_OF_THE_ASTROMANCER);
+    return bot->HasAura(SPELL_WRATH_OF_THE_ASTROMANCER);
+}
+
+bool HighAstromancerSolarianSolariumAgentsSpawnedTrigger::IsActive()
+{
+    if (bot->HasAura(SPELL_WRATH_OF_THE_ASTROMANCER))
+        return false;
+
+    Unit* solariumAgent = AI_VALUE2(Unit*, "find target", "solarium agent");
+    return solariumAgent != nullptr;
 }
 
 bool HighAstromancerSolarianSolariumPriestsSpawnedTrigger::IsActive()
@@ -242,7 +253,8 @@ bool HighAstromancerSolarianBossCastsPsychicScreamTrigger::IsActive()
         }
     }
 
-    return mainTank && !mainTank->HasAura(SPELL_FEAR_WARD) && botAI->CanCastSpell("fear ward", mainTank);
+    return mainTank && !mainTank->HasAura(SPELL_FEAR_WARD) &&
+           botAI->CanCastSpell("fear ward", mainTank);
 }
 
 // Kael'thas Sunstrider <Lord of the Blood Elves>

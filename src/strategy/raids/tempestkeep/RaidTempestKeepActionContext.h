@@ -58,11 +58,14 @@ public:
             &RaidTempestKeepActionContext::void_reaver_use_aggro_dump_ability;
 
         // High Astromancer Solarian
-        creators["high astromancer solarian stack bots"] =
-            &RaidTempestKeepActionContext::high_astromancer_solarian_stack_bots;
+        creators["high astromancer solarian ranged leave space for melee"] =
+            &RaidTempestKeepActionContext::high_astromancer_solarian_ranged_leave_space_for_melee;
 
         creators["high astromancer solarian move away from group"] =
             &RaidTempestKeepActionContext::high_astromancer_solarian_move_away_from_group;
+
+        creators["high astromancer solarian stack for aoe"] =
+            &RaidTempestKeepActionContext::high_astromancer_solarian_stack_for_aoe;
 
         creators["high astromancer solarian target solarium priests"] =
             &RaidTempestKeepActionContext::high_astromancer_solarian_target_solarium_priests;
@@ -194,11 +197,14 @@ private:
         PlayerbotAI* botAI) { return new VoidReaverUseAggroDumpAbilityAction(botAI); }
 
     // High Astromancer Solarian
-    static Action* high_astromancer_solarian_stack_bots(
-        PlayerbotAI* botAI) { return new HighAstromancerSolarianStackBotsAction(botAI); }
+    static Action* high_astromancer_solarian_ranged_leave_space_for_melee(
+        PlayerbotAI* botAI) { return new HighAstromancerSolarianRangedLeaveSpaceForMeleeAction(botAI); }
 
     static Action* high_astromancer_solarian_move_away_from_group(
         PlayerbotAI* botAI) { return new HighAstromancerSolarianMoveAwayFromGroupAction(botAI); }
+
+    static Action* high_astromancer_solarian_stack_for_aoe(
+        PlayerbotAI* botAI) { return new HighAstromancerSolarianStackForAoeAction(botAI); }
 
     static Action* high_astromancer_solarian_target_solarium_priests(
         PlayerbotAI* botAI) { return new HighAstromancerSolarianTargetSolariumPriestsAction(botAI); }
