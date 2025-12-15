@@ -249,22 +249,31 @@ namespace SerpentShrineCavernHelpers
 
     Player* GetLeotherasDemonFormTank(PlayerbotAI* botAI, Player* bot)
     {
-        if (Group* group = bot->GetGroup())
-        {
-            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-            {
-                Player* member = ref->GetSource();
-                if (!member || !member->IsAlive())
-                    continue;
+        Group* group = bot->GetGroup();
+        if (!group)
+            return nullptr;
 
-                PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
-                if (member->getClass() == CLASS_WARLOCK &&
-                    memberAI && memberAI->HasStrategy("tank", BotState::BOT_STATE_COMBAT))
-                    return member;
-            }
+        Player* fallbackWarlockTank = nullptr;
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || member->getClass() != CLASS_WARLOCK)
+                continue;
+
+            // (1) Return the first assistant Warlock (real player or bot)
+            if (group->IsAssistant(member->GetGUID()))
+                return member;
+
+            // (2) Otherwise, get the first Warlock bot with the co +tank strategy
+            PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
+            if (!fallbackWarlockTank && memberAI &&
+                memberAI->HasStrategy("tank", BotState::BOT_STATE_COMBAT))
+                fallbackWarlockTank = member;
         }
 
-        return nullptr;
+        // (3) Return the fallback Warlock bot tank if found,
+        // otherwise nullptr (no Warlock tank for Leotheras)
+        return fallbackWarlockTank;
     }
 
     bool IsMainTankInSameSubgroup(Player* bot)

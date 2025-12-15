@@ -303,7 +303,7 @@ namespace TempestKeepHelpers
                 return member;
         }
 
-        // (2) Fallback to bot Warlock with highest HP
+        // (2) Fall back to bot Warlock with highest HP
         Player* highestHpWarlock = nullptr;
         uint32 highestHp = 0;
 
@@ -322,6 +322,7 @@ namespace TempestKeepHelpers
             }
         }
 
+        // (3) Return the found Warlock tank, or nullptr if none found
         return highestHpWarlock;
     }
 
