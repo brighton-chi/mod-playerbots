@@ -896,42 +896,11 @@ bool HexLordMalacrassDispelMindControlAction::Execute(Event event)
     return false;
 }
 
-// Malacrass coordinates should be fine, but the mmaps in his room are all fucked up
-// Disabling in strategy.cpp for now
-bool HexLordMalacrassMainTankPositionBossAction::Execute(Event event)
-{
-    Unit* malacrass = AI_VALUE2(Unit*, "find target", "hex lord malacrass");
-    if (!malacrass)
-        return false;
-
-    if (bot->GetVictim() != malacrass)
-        return Attack(malacrass);
-
-    if (malacrass->GetVictim() == bot)
-    {
-        const Position& position = MALACRASS_TANK_POSITION;
-        float dist = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
-        if (dist > 4.0f)
-        {
-            float dX = position.GetPositionX() - bot->GetPositionX();
-            float dY = position.GetPositionY() - bot->GetPositionY();
-            float moveDist = std::min(10.0f, dist);
-            float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
-            float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
-
-            return MoveTo(ZULAMAN_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
-                          false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
-        }
-    }
-
-    return false;
-}
-
 // Zul'jin
 
 bool ZuljinMisdirectBossToMainTankAction::Execute(Event event)
 {
-    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zuljin");
+    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
     if (!zuljin)
         return false;
 
@@ -964,7 +933,7 @@ bool ZuljinMisdirectBossToMainTankAction::Execute(Event event)
 
 bool ZuljinMainTankPositionBossAction::Execute(Event event)
 {
-    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zuljin");
+    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
     if (!zuljin)
         return false;
 
@@ -993,7 +962,7 @@ bool ZuljinMainTankPositionBossAction::Execute(Event event)
 
 bool ZuljinRunAwayFromWhirlwindAction::Execute(Event event)
 {
-    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zuljin");
+    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
     if (zuljin)
     {
         float currentDistance = bot->GetExactDist2d(zuljin);
@@ -1011,7 +980,7 @@ bool ZuljinRunAwayFromWhirlwindAction::Execute(Event event)
 
 bool ZuljinSpreadRangedAction::Execute(Event event)
 {
-    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zuljin");
+    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
     if (!zuljin)
         return false;
 
@@ -1031,7 +1000,7 @@ bool ZuljinSpreadRangedAction::Execute(Event event)
 
 bool ZuljinMoveNearGroupAction::Execute(Event event)
 {
-    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zuljin");
+    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
     if (!zuljin)
         return false;
 

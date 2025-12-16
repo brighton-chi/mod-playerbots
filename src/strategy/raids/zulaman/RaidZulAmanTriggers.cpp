@@ -121,8 +121,6 @@ bool JanalaiBossCastsFlameBreathTrigger::IsActive()
     if (!janalai)
         return false;
 
-    // Trying to find a way to get the fixed dispersal off when hatchlings spawn
-    // TBD whether some other type of dispersal will still be needed during this period
     Unit* hatchling = GetFirstAliveUnitByEntry(botAI, NPC_AMANI_DRAGONHAWK_HATCHLING);
     if (hatchling)
         return false;
@@ -135,6 +133,10 @@ bool JanalaiBossCastsFlameBreathTrigger::IsActive()
 
 bool JanalaiBossSummoningFireBombsTrigger::IsActive()
 {
+    Unit* janalai = AI_VALUE2(Unit*, "find target", "jan'alai");
+    if (!janalai)
+        return false;
+
     return AnyNearbyNpcWithEntry(botAI, NPC_FIRE_BOMB);
 }
 
@@ -240,12 +242,6 @@ bool HexLordMalacrassPartyMemberIsMindControlledTrigger::IsActive()
     }
 
     return false;
-}
-
-bool HexLordMalacrassAllAddsAreDownTrigger::IsActive()
-{
-    Unit* malacrass = AI_VALUE2(Unit*, "find target", "hex lord malacrass");
-    return malacrass && !IsAnyMalacrassNpcAlive(botAI);
 }
 
 // Zul'jin

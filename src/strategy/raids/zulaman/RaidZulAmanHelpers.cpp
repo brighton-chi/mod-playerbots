@@ -9,7 +9,7 @@ namespace ZulAmanHelpers
     const Position NALORAKK_TANK_POSITION = { -80.208f, 1324.530f, 40.942f };
     const Position JANALAI_TANK_POSITION = { -33.873f, 1149.571f, 19.146f };
     const Position HALAZZI_TANK_POSITION = { 370.733f, 1131.202f, 6.516f };
-    const Position MALACRASS_TANK_POSITION = { 118.162f, 968.456f, 29.531f };
+    const Position MALACRASS_TANK_POSITION = { 118.713f, 996.234f, 30.650f }; // 30.62356f is actual Z
     const Position ZULJIN_TANK_POSITION = { 120.210f, 705.564f, 45.111f };
 
     std::unordered_map<ObjectGuid, Position> janalaiRangedPositions;
@@ -184,35 +184,5 @@ namespace ZulAmanHelpers
         }
 
         return {lowest, highest};
-    }
-
-    bool IsAnyMalacrassNpcAlive(PlayerbotAI* botAI)
-    {
-        static const std::set<uint32> malacrassNpcEntries =
-        {
-            NPC_LORD_RAADAN,
-            NPC_ALYSON_ANTILLE,
-            NPC_KORAGG,
-            NPC_DARKHEART,
-            NPC_FENSTALKER,
-            NPC_GAZAKROTH,
-            NPC_THURG,
-            NPC_SLITHER,
-            NPC_HEX_LORD_MALACRASS
-        };
-
-        auto npcValue = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs");
-        if (!npcValue)
-            return false;
-
-        auto const& npcs = npcValue->Get();
-        for (auto const& guid : npcs)
-        {
-            Unit* unit = botAI->GetUnit(guid);
-            if (unit && unit->IsAlive() && malacrassNpcEntries.count(unit->GetEntry()))
-                return true;
-        }
-
-        return false;
     }
 }

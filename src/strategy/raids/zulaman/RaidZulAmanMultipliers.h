@@ -7,7 +7,7 @@ class AkilzonDisableTankActionsMultiplier : public Multiplier
 {
 public:
     AkilzonDisableTankActionsMultiplier(PlayerbotAI* botAI) : Multiplier(
-        botAI, "akilzon disable tank actions") {}
+        botAI, "akil'zon disable tank actions") {}
     virtual float GetValue(Action* action);
 };
 
@@ -15,7 +15,7 @@ class AkilzonStayInEyeOfTheStormMultiplier : public Multiplier
 {
 public:
     AkilzonStayInEyeOfTheStormMultiplier(PlayerbotAI* botAI) : Multiplier(
-        botAI, "akilzon stay in eye of the storm") {}
+        botAI, "akil'zon stay in eye of the storm") {}
     virtual float GetValue(Action* action);
 };
 
@@ -39,7 +39,7 @@ class JanalaiDisableTankActionsMultiplier : public Multiplier
 {
 public:
     JanalaiDisableTankActionsMultiplier(PlayerbotAI* botAI) : Multiplier(
-        botAI, "janalai disable tank actions") {}
+        botAI, "jan'alai disable tank actions") {}
     virtual float GetValue(Action* action);
 };
 
@@ -47,7 +47,7 @@ class JanalaiStayAwayFromFireBombsMultiplier : public Multiplier
 {
 public:
     JanalaiStayAwayFromFireBombsMultiplier(PlayerbotAI* botAI) : Multiplier(
-        botAI, "janalai stay away from fire bombs") {}
+        botAI, "jan'alai stay away from fire bombs") {}
     virtual float GetValue(Action* action);
 };
 
@@ -55,7 +55,7 @@ class JanalaiDoNotCrowdControlHatchersMultiplier : public Multiplier
 {
 public:
     JanalaiDoNotCrowdControlHatchersMultiplier(PlayerbotAI* botAI) : Multiplier(
-        botAI, "janalai do not crowd control hatchers") {}
+        botAI, "jan'alai do not crowd control hatchers") {}
     virtual float GetValue(Action* action);
 };
 
@@ -63,7 +63,7 @@ class JanalaiDelayBloodlustAndHeroismMultiplier : public Multiplier
 {
 public:
     JanalaiDelayBloodlustAndHeroismMultiplier(PlayerbotAI* botAI) : Multiplier(
-        botAI, "janalai delay bloodlust and heroism") {}
+        botAI, "jan'alai delay bloodlust and heroism") {}
     virtual float GetValue(Action* action);
 };
 
@@ -95,7 +95,7 @@ class ZuljinDisableTankActionsMultiplier : public Multiplier
 {
 public:
     ZuljinDisableTankActionsMultiplier(PlayerbotAI* botAI) : Multiplier(
-        botAI, "zuljin disable tank actions") {}
+        botAI, "zul'jin disable tank actions") {}
     virtual float GetValue(Action* action);
 };
 
@@ -103,7 +103,7 @@ class ZuljinAvoidWhirlwindMultiplier : public Multiplier
 {
 public:
     ZuljinAvoidWhirlwindMultiplier(PlayerbotAI* botAI) : Multiplier(
-        botAI, "zuljin avoid whirlwind") {}
+        botAI, "zul'jin avoid whirlwind") {}
     virtual float GetValue(Action* action);
 };
 
@@ -111,7 +111,7 @@ class ZuljinDelayBloodlustAndHeroismMultiplier : public Multiplier
 {
 public:
     ZuljinDelayBloodlustAndHeroismMultiplier(PlayerbotAI* botAI) : Multiplier(
-        botAI, "zuljin delay bloodlust and heroism") {}
+        botAI, "zul'jin delay bloodlust and heroism") {}
     virtual float GetValue(Action* action);
 };
 
@@ -119,7 +119,7 @@ class ZuljinDoNotAvoidCyclonesMultiplier : public Multiplier
 {
 public:
     ZuljinDoNotAvoidCyclonesMultiplier(PlayerbotAI* botAI) : Multiplier(
-        botAI, "zuljin do not avoid cyclones") {}
+        botAI, "zul'jin do not avoid cyclones") {}
     virtual float GetValue(Action* action);
 };
 
@@ -127,7 +127,7 @@ class ZuljinStayCloseToLynxFormMultiplier : public Multiplier
 {
 public:
     ZuljinStayCloseToLynxFormMultiplier(PlayerbotAI* botAI) : Multiplier(
-        botAI, "zuljin stay close to lynx form") {}
+        botAI, "zul'jin stay close to lynx form") {}
     virtual float GetValue(Action* action);
 };
 

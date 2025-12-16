@@ -12,58 +12,54 @@ namespace ZulAmanHelpers
     enum ZulAmanSpells
     {
         // Akil'zon <Eagle Avatar>
-        SPELL_ELECTRICAL_STORM     = 43648,
+        SPELL_ELECTRICAL_STORM         = 43648,
 
         // Nalorakk <Bear Avatar>
-        SPELL_BEARFORM          = 42377,
-
-        // Jan'alai <Dragonhawk Avatar>
-
-        // Halazzi <Lynx Avatar>
+        SPELL_BEARFORM                 = 42377,
 
         // Hex Lord Malacrass
-        SPELL_LIFEBLOOM = 43421,
-        SPELL_AVENGING_WRATH = 43430,
-        SPELL_BLIND = 43433,
-        SPELL_UNSTABLE_AFFLICTION = 43522,
-        SPELL_MIND_CONTROL = 43550,
+        SPELL_LIFEBLOOM                = 43421,
+        SPELL_AVENGING_WRATH           = 43430,
+        SPELL_BLIND                    = 43433,
+        SPELL_UNSTABLE_AFFLICTION      = 43522,
+        SPELL_MIND_CONTROL             = 43550,
 
         // Zul'jin
-        SPELL_WHIRLWIND = 17207,
-        SPELL_SHAPE_OF_THE_BEAR       = 42594,
-        SPELL_SHAPE_OF_THE_EAGLE      = 42606,
-        SPELL_SHAPE_OF_THE_LYNX       = 42607,
-        SPELL_SHAPE_OF_THE_DRAGONHAWK = 42608,
+        SPELL_WHIRLWIND                = 17207,
+        SPELL_SHAPE_OF_THE_BEAR        = 42594,
+        SPELL_SHAPE_OF_THE_EAGLE       = 42606,
+        SPELL_SHAPE_OF_THE_LYNX        = 42607,
+        SPELL_SHAPE_OF_THE_DRAGONHAWK  = 42608,
 
         // Hunter
-        SPELL_MISDIRECTION           = 35079,
+        SPELL_MISDIRECTION             = 35079,
     };
 
     enum ZulAmanNPCs
     {
         // Trash
-        NPC_AMANI_HEALING_WARD = 23757,
-        NPC_AMANI_PROTECTIVE_WARD = 23822,
+        NPC_AMANI_HEALING_WARD         = 23757,
+        NPC_AMANI_PROTECTIVE_WARD      = 23822,
 
         // Jan'alai <Dragonhawk Avatar>
         NPC_AMANI_DRAGONHAWK_HATCHLING = 23598,
-        NPC_EGG                     = 23817,
-        NPC_AMANI_HATCHER           = 23818,
-        NPC_FIRE_BOMB               = 23920,
+        NPC_EGG                        = 23817,
+        NPC_AMANI_HATCHER              = 23818,
+        NPC_FIRE_BOMB                  = 23920,
 
         // Halazzi <Lynx Avatar>
-        NPC_CORRUPTED_LIGHTNING_TOTEM = 24224,
+        NPC_CORRUPTED_LIGHTNING_TOTEM  = 24224,
 
         // Hex Lord Malacrass
-        NPC_HEX_LORD_MALACRASS    = 24239,
-        NPC_ALYSON_ANTILLE        = 24240,
-        NPC_THURG                = 24241,
-        NPC_SLITHER               = 24242,
-        NPC_LORD_RAADAN          = 24243,
-        NPC_GAZAKROTH            = 24244,
-        NPC_FENSTALKER           = 24245,
-        NPC_DARKHEART            = 24246,
-        NPC_KORAGG               = 24247,
+        NPC_HEX_LORD_MALACRASS         = 24239,
+        NPC_ALYSON_ANTILLE             = 24240,
+        NPC_THURG                      = 24241,
+        NPC_SLITHER                    = 24242,
+        NPC_LORD_RAADAN                = 24243,
+        NPC_GAZAKROTH                  = 24244,
+        NPC_FENSTALKER                 = 24245,
+        NPC_DARKHEART                  = 24246,
+        NPC_KORAGG                     = 24247,
     };
 
     const uint32 ZULAMAN_MAP_ID = 568;
@@ -89,7 +85,6 @@ namespace ZulAmanHelpers
     Unit* GetNearestPlayerInRadius(Player* bot, float radius);
     bool AnyGroupMemberHasElectricalStorm(Player* bot);
     std::pair<Unit*, Unit*> GetAmaniHatcherPair(PlayerbotAI* botAI);
-    bool IsAnyMalacrassNpcAlive(PlayerbotAI* botAI);
 }
 
 #endif

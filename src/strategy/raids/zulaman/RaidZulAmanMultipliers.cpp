@@ -37,7 +37,7 @@ float AkilzonDisableTankActionsMultiplier::GetValue(Action* action)
 
 float AkilzonStayInEyeOfTheStormMultiplier::GetValue(Action* action)
 {
-    Unit* akilzon = AI_VALUE2(Unit*, "find target", "akilzon");
+    Unit* akilzon = AI_VALUE2(Unit*, "find target", "akil'zon");
     if (!akilzon)
         return 1.0f;
 
@@ -133,7 +133,7 @@ float JanalaiDisableTankActionsMultiplier::GetValue(Action* action)
     if (!botAI->IsTank(bot))
         return 1.0f;
 
-    Unit* janalai = AI_VALUE2(Unit*, "find target", "janalai");
+    Unit* janalai = AI_VALUE2(Unit*, "find target", "jan'alai");
     if (!janalai)
         return 1.0f;
 
@@ -194,7 +194,7 @@ float JanalaiDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
     if (bot->getClass() != CLASS_SHAMAN)
         return 1.0f;
 
-    Unit* janalai = AI_VALUE2(Unit*, "find target", "janalai");
+    Unit* janalai = AI_VALUE2(Unit*, "find target", "jan'alai");
     if (!janalai)
         return 1.0f;
 
@@ -318,7 +318,7 @@ float ZuljinAvoidWhirlwindMultiplier::GetValue(Action* action)
     if (botAI->IsMainTank(bot))
         return 1.0f;
 
-    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zuljin");
+    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
     if (!zuljin)
         return 1.0f;
 

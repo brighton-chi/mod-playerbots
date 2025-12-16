@@ -10,20 +10,20 @@ public:
     RaidZulAmanActionContext()
     {
         // Trash
-        creators["amanishi medicine man mark ward"] =
+        creators["amani'shi medicine man mark ward"] =
             &RaidZulAmanActionContext::amanishi_medicine_man_mark_ward;
 
         // Akil'zon <Eagle Avatar>
-        creators["akilzon misdirect boss to main tank"] =
+        creators["akil'zon misdirect boss to main tank"] =
             &RaidZulAmanActionContext::akilzon_misdirect_boss_to_main_tank;
 
-        creators["akilzon main tank position boss"] =
+        creators["akil'zon main tank position boss"] =
             &RaidZulAmanActionContext::akilzon_main_tank_position_boss;
 
-        creators["akilzon spread ranged"] =
+        creators["akil'zon spread ranged"] =
             &RaidZulAmanActionContext::akilzon_spread_ranged;
 
-        creators["akilzon move to eye of the storm"] =
+        creators["akil'zon move to eye of the storm"] =
             &RaidZulAmanActionContext::akilzon_move_to_eye_of_the_storm;
 
         // Nalorakk <Bear Avatar>
@@ -37,19 +37,19 @@ public:
             &RaidZulAmanActionContext::nalorakk_spread_ranged;
 
         // Jan'alai <Dragonhawk Avatar>
-        creators["janalai misdirect boss to main tank"] =
+        creators["jan'alai misdirect boss to main tank"] =
             &RaidZulAmanActionContext::janalai_misdirect_boss_to_main_tank;
 
-        creators["janalai main tank position boss"] =
+        creators["jan'alai main tank position boss"] =
             &RaidZulAmanActionContext::janalai_main_tank_position_boss;
 
-        creators["janalai spread ranged in circle"] =
+        creators["jan'alai spread ranged in circle"] =
             &RaidZulAmanActionContext::janalai_spread_ranged_in_circle;
 
-        creators["janalai move away from fire bombs"] =
+        creators["jan'alai move away from fire bombs"] =
             &RaidZulAmanActionContext::janalai_move_away_from_fire_bombs;
 
-        creators["janalai mark amani hatchers"] =
+        creators["jan'alai mark amani hatchers"] =
             &RaidZulAmanActionContext::janalai_mark_amani_hatchers;
 
         // Halazzi <Lynx Avatar>
@@ -78,23 +78,20 @@ public:
         creators["hex lord malacrass dispel mind control"] =
             &RaidZulAmanActionContext::hex_lord_malacrass_dispel_mind_control;
 
-        creators["hex lord malacrass main tank position boss"] =
-            &RaidZulAmanActionContext::hex_lord_malacrass_main_tank_position_boss;
-
         // Zul'jin
-        creators["zuljin misdirect boss to main tank"] =
+        creators["zul'jin misdirect boss to main tank"] =
             &RaidZulAmanActionContext::zuljin_misdirect_boss_to_main_tank;
 
-        creators["zuljin main tank position boss"] =
+        creators["zul'jin main tank position boss"] =
             &RaidZulAmanActionContext::zuljin_main_tank_position_boss;
 
-        creators["zuljin run away from whirlwind"] =
+        creators["zul'jin run away from whirlwind"] =
             &RaidZulAmanActionContext::zuljin_run_away_from_whirlwind;
 
-        creators["zuljin spread ranged"] =
+        creators["zul'jin spread ranged"] =
             &RaidZulAmanActionContext::zuljin_spread_ranged;
 
-        creators["zuljin move near group"] =
+        creators["zul'jin move near group"] =
             &RaidZulAmanActionContext::zuljin_move_near_group;
     }
 
@@ -167,9 +164,6 @@ private:
 
     static Action* hex_lord_malacrass_dispel_mind_control(
         PlayerbotAI* botAI) { return new HexLordMalacrassDispelMindControlAction(botAI); }
-
-    static Action* hex_lord_malacrass_main_tank_position_boss(
-        PlayerbotAI* botAI) { return new HexLordMalacrassMainTankPositionBossAction(botAI); }
 
     // Zul'jin
     static Action* zuljin_misdirect_boss_to_main_tank(

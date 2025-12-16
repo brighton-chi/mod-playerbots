@@ -7,7 +7,7 @@ class AmanishiMedicineManSummonedWardTrigger : public Trigger
 {
 public:
     AmanishiMedicineManSummonedWardTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "amanishi medicine man summoned ward") {}
+        PlayerbotAI* botAI) : Trigger(botAI, "amani'shi medicine man summoned ward") {}
     bool IsActive() override;
 };
 
@@ -15,7 +15,7 @@ class AkilzonPullingBossTrigger : public Trigger
 {
 public:
     AkilzonPullingBossTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "akilzon pulling boss") {}
+        PlayerbotAI* botAI) : Trigger(botAI, "akil'zon pulling boss") {}
     bool IsActive() override;
 };
 
@@ -23,7 +23,7 @@ class AkilzonBossEngagedByMainTankTrigger : public Trigger
 {
 public:
     AkilzonBossEngagedByMainTankTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "akilzon boss engaged by main tank") {}
+        PlayerbotAI* botAI) : Trigger(botAI, "akil'zon boss engaged by main tank") {}
     bool IsActive() override;
 };
 
@@ -31,7 +31,7 @@ class AkilzonBossCastsStaticDisruptionTrigger : public Trigger
 {
 public:
     AkilzonBossCastsStaticDisruptionTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "akilzon boss casts static disruption") {}
+        PlayerbotAI* botAI) : Trigger(botAI, "akil'zon boss casts static disruption") {}
     bool IsActive() override;
 };
 
@@ -39,7 +39,7 @@ class AkilzonElectricalStormHasFormedTrigger : public Trigger
 {
 public:
     AkilzonElectricalStormHasFormedTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "akilzon electrical storm has formed") {}
+        PlayerbotAI* botAI) : Trigger(botAI, "akil'zon electrical storm has formed") {}
     bool IsActive() override;
 };
 
@@ -71,7 +71,7 @@ class JanalaiPullingBossTrigger : public Trigger
 {
 public:
     JanalaiPullingBossTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "janalai pulling boss") {}
+        PlayerbotAI* botAI) : Trigger(botAI, "jan'alai pulling boss") {}
     bool IsActive() override;
 };
 
@@ -79,7 +79,7 @@ class JanalaiBossEngagedByMainTankTrigger : public Trigger
 {
 public:
     JanalaiBossEngagedByMainTankTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "janalai boss engaged by main tank") {}
+        PlayerbotAI* botAI) : Trigger(botAI, "jan'alai boss engaged by main tank") {}
     bool IsActive() override;
 };
 
@@ -87,7 +87,7 @@ class JanalaiBossCastsFlameBreathTrigger : public Trigger
 {
 public:
     JanalaiBossCastsFlameBreathTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "janalai boss casts flame breath") {}
+        PlayerbotAI* botAI) : Trigger(botAI, "jan'alai boss casts flame breath") {}
     bool IsActive() override;
 };
 
@@ -95,7 +95,15 @@ class JanalaiBossSummoningFireBombsTrigger : public Trigger
 {
 public:
     JanalaiBossSummoningFireBombsTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "janalai boss summoning fire bombs") {}
+        PlayerbotAI* botAI) : Trigger(botAI, "jan'alai boss summoning fire bombs") {}
+    bool IsActive() override;
+};
+
+class JanalaiAmaniHatchersSpawnedTrigger : public Trigger
+{
+public:
+    JanalaiAmaniHatchersSpawnedTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "jan'alai amani hatchers spawned") {}
     bool IsActive() override;
 };
 
@@ -163,27 +171,11 @@ public:
     bool IsActive() override;
 };
 
-class HexLordMalacrassAllAddsAreDownTrigger : public Trigger
-{
-public:
-    HexLordMalacrassAllAddsAreDownTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "hex lord malacrass all adds are down") {}
-    bool IsActive() override;
-};
-
-class JanalaiAmaniHatchersSpawnedTrigger : public Trigger
-{
-public:
-    JanalaiAmaniHatchersSpawnedTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "janalai amani hatchers spawned") {}
-    bool IsActive() override;
-};
-
 class ZuljinMainTankNeedsAggroUponPullOrPhaseChangeTrigger : public Trigger
 {
 public:
     ZuljinMainTankNeedsAggroUponPullOrPhaseChangeTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "zuljin main tank needs aggro upon pull or phase change") {}
+        PlayerbotAI* botAI) : Trigger(botAI, "zul'jin main tank needs aggro upon pull or phase change") {}
     bool IsActive() override;
 };
 
@@ -191,7 +183,7 @@ class ZuljinBossEngagedByMainTankTrigger : public Trigger
 {
 public:
     ZuljinBossEngagedByMainTankTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "zuljin boss engaged by main tank") {}
+        PlayerbotAI* botAI) : Trigger(botAI, "zul'jin boss engaged by main tank") {}
     bool IsActive() override;
 };
 
@@ -199,7 +191,7 @@ class ZuljinBossIsChannelingWhirlwindInTrollFormTrigger : public Trigger
 {
 public:
     ZuljinBossIsChannelingWhirlwindInTrollFormTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "zuljin boss is channeling whirlwind in troll form") {}
+        PlayerbotAI* botAI) : Trigger(botAI, "zul'jin boss is channeling whirlwind in troll form") {}
     bool IsActive() override;
 };
 
@@ -207,7 +199,7 @@ class ZuljinBossCastsAoeAbilitiesTrigger : public Trigger
 {
 public:
     ZuljinBossCastsAoeAbilitiesTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "zuljin boss casts aoe abilities") {}
+        PlayerbotAI* botAI) : Trigger(botAI, "zul'jin boss casts aoe abilities") {}
     bool IsActive() override;
 };
 
@@ -215,7 +207,7 @@ class ZuljinBossIsChargingPlayersInLynxFormTrigger : public Trigger
 {
 public:
     ZuljinBossIsChargingPlayersInLynxFormTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "zuljin boss is charging players in lynx form") {}
+        PlayerbotAI* botAI) : Trigger(botAI, "zul'jin boss is charging players in lynx form") {}
     bool IsActive() override;
 };
 

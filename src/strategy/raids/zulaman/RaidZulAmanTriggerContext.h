@@ -10,20 +10,20 @@ public:
     RaidZulAmanTriggerContext()
     {
         // Trash
-        creators["amanishi medicine man summoned ward"] =
+        creators["amani'shi medicine man summoned ward"] =
             &RaidZulAmanTriggerContext::amanishi_medicine_man_summoned_ward;
 
         // Akil'zon <Eagle Avatar>
-        creators["akilzon pulling boss"] =
+        creators["akil'zon pulling boss"] =
             &RaidZulAmanTriggerContext::akilzon_pulling_boss;
 
-        creators["akilzon boss engaged by main tank"] =
+        creators["akil'zon boss engaged by main tank"] =
             &RaidZulAmanTriggerContext::akilzon_boss_engaged_by_main_tank;
 
-        creators["akilzon boss casts static disruption"] =
+        creators["akil'zon boss casts static disruption"] =
             &RaidZulAmanTriggerContext::akilzon_boss_casts_static_disruption;
 
-        creators["akilzon electrical storm has formed"] =
+        creators["akil'zon electrical storm has formed"] =
             &RaidZulAmanTriggerContext::akilzon_electrical_storm_has_formed;
 
         // Nalorakk <Bear Avatar>
@@ -37,19 +37,19 @@ public:
             &RaidZulAmanTriggerContext::nalorakk_boss_switches_forms;
 
         // Jan'alai <Dragonhawk Avatar>
-        creators["janalai pulling boss"] =
+        creators["jan'alai pulling boss"] =
             &RaidZulAmanTriggerContext::janalai_pulling_boss;
 
-        creators["janalai boss engaged by main tank"] =
+        creators["jan'alai boss engaged by main tank"] =
             &RaidZulAmanTriggerContext::janalai_boss_engaged_by_main_tank;
 
-        creators["janalai boss casts flame breath"] =
+        creators["jan'alai boss casts flame breath"] =
             &RaidZulAmanTriggerContext::janalai_boss_casts_flame_breath;
 
-        creators["janalai boss summoning fire bombs"] =
+        creators["jan'alai boss summoning fire bombs"] =
             &RaidZulAmanTriggerContext::janalai_boss_summoning_fire_bombs;
 
-        creators["janalai amani hatchers spawned"] =
+        creators["jan'alai amani hatchers spawned"] =
             &RaidZulAmanTriggerContext::janalai_amani_hatchers_spawned;
 
         // Halazzi <Lynx Avatar>
@@ -79,24 +79,21 @@ public:
         creators["hex lord malacrass party member is mind controlled"] =
             &RaidZulAmanTriggerContext::hex_lord_malacrass_party_member_is_mind_controlled;
 
-        creators["hex lord malacrass all adds are down"] =
-            &RaidZulAmanTriggerContext::hex_lord_malacrass_all_adds_are_down;
-
         // Zul'jin
 
-        creators["zuljin main tank needs aggro upon pull or phase change"] =
+        creators["zul'jin main tank needs aggro upon pull or phase change"] =
             &RaidZulAmanTriggerContext::zuljin_main_tank_needs_aggro_upon_pull_or_phase_change;
 
-        creators["zuljin boss engaged by main tank"] =
+        creators["zul'jin boss engaged by main tank"] =
             &RaidZulAmanTriggerContext::zuljin_boss_engaged_by_main_tank;
 
-        creators["zuljin boss is channeling whirlwind in troll form"] =
+        creators["zul'jin boss is channeling whirlwind in troll form"] =
             &RaidZulAmanTriggerContext::zuljin_boss_is_channeling_whirlwind_in_troll_form;
 
-        creators["zuljin boss casts aoe abilities"] =
+        creators["zul'jin boss casts aoe abilities"] =
             &RaidZulAmanTriggerContext::zuljin_boss_casts_aoe_abilities;
 
-        creators["zuljin boss is charging players in lynx form"] =
+        creators["zul'jin boss is charging players in lynx form"] =
             &RaidZulAmanTriggerContext::zuljin_boss_is_charging_players_in_lynx_form;
     }
 
@@ -170,9 +167,6 @@ private:
 
     static Trigger* hex_lord_malacrass_party_member_is_mind_controlled(
         PlayerbotAI* botAI) { return new HexLordMalacrassPartyMemberIsMindControlledTrigger(botAI); }
-
-    static Trigger* hex_lord_malacrass_all_adds_are_down(
-        PlayerbotAI* botAI) { return new HexLordMalacrassAllAddsAreDownTrigger(botAI); }
 
     // Zul'jin
 
