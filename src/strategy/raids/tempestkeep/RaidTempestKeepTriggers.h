@@ -15,7 +15,7 @@ class AlarPullingBossTrigger : public Trigger
 {
 public:
     AlarPullingBossTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "alar pulling boss") {}
+        PlayerbotAI* botAI) : Trigger(botAI, "al'ar pulling boss") {}
     bool IsActive() override;
 };
 
@@ -23,7 +23,7 @@ class AlarBossIsFlyingBetweenPlatformsTrigger : public Trigger
 {
 public:
     AlarBossIsFlyingBetweenPlatformsTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "alar boss is flying between platforms") {}
+        PlayerbotAI* botAI) : Trigger(botAI, "al'ar boss is flying between platforms") {}
     bool IsActive() override;
 };
 
@@ -31,7 +31,7 @@ class AlarBossSpawnsEmbersOfAlarTrigger : public Trigger
 {
 public:
     AlarBossSpawnsEmbersOfAlarTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "alar boss spawns embers of alar") {}
+        PlayerbotAI* botAI) : Trigger(botAI, "al'ar boss spawns embers of alar") {}
     bool IsActive() override;
 };
 
@@ -39,7 +39,7 @@ class AlarIncomingFlameQuillsTrigger : public Trigger
 {
 public:
     AlarIncomingFlameQuillsTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "alar incoming flame quills") {}
+        PlayerbotAI* botAI) : Trigger(botAI, "al'ar incoming flame quills") {}
     bool IsActive() override;
 };
 
@@ -47,7 +47,7 @@ class AlarRisingFromTheAshesTrigger : public Trigger
 {
 public:
     AlarRisingFromTheAshesTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "alar rising from the ashes") {}
+        PlayerbotAI* botAI) : Trigger(botAI, "al'ar rising from the ashes") {}
     bool IsActive() override;
 };
 
@@ -55,7 +55,7 @@ class AlarBossTankArmorWasMeltedTrigger : public Trigger
 {
 public:
     AlarBossTankArmorWasMeltedTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "alar boss tank armor was melted") {}
+        PlayerbotAI* botAI) : Trigger(botAI, "al'ar boss tank armor was melted") {}
     bool IsActive() override;
 };
 
@@ -63,7 +63,7 @@ class AlarBossIsPerformingDiveBombSequenceTrigger : public Trigger
 {
 public:
     AlarBossIsPerformingDiveBombSequenceTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "alar boss is performing dive bomb sequence") {}
+        PlayerbotAI* botAI) : Trigger(botAI, "al'ar boss is performing dive bomb sequence") {}
     bool IsActive() override;
 };
 
@@ -71,7 +71,7 @@ class AlarPhase2EncounterIsAtRoomCenterTrigger : public Trigger
 {
 public:
     AlarPhase2EncounterIsAtRoomCenterTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "alar phase 2 encounter is at room center") {}
+        PlayerbotAI* botAI) : Trigger(botAI, "al'ar phase 2 encounter is at room center") {}
     bool IsActive() override;
 };
 
@@ -151,7 +151,7 @@ class KaelthasSunstriderThaladredIsFixatedOnBotTrigger : public Trigger
 {
 public:
     KaelthasSunstriderThaladredIsFixatedOnBotTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider thaladred is fixated on bot") {}
+        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider thaladred is fixated on bot") {}
     bool IsActive() override;
 };
 
@@ -159,7 +159,7 @@ class KaelthasSunstriderSanguinarEngagedByMainTankTrigger : public Trigger
 {
 public:
     KaelthasSunstriderSanguinarEngagedByMainTankTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider sanguinar engaged by main tank") {}
+        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider sanguinar engaged by main tank") {}
     bool IsActive() override;
 };
 
@@ -167,7 +167,7 @@ class KaelthasSunstriderSanguinarCastsBellowingRoarTrigger : public Trigger
 {
 public:
     KaelthasSunstriderSanguinarCastsBellowingRoarTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider sanguinar casts bellowing roar") {}
+        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider sanguinar casts bellowing roar") {}
     bool IsActive() override;
 };
 
@@ -175,7 +175,7 @@ class KaelthasSunstriderCapernianRequiresAWarlockTankTrigger : public Trigger
 {
 public:
     KaelthasSunstriderCapernianRequiresAWarlockTankTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider capernian requires a warlock tank") {}
+        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider capernian requires a warlock tank") {}
     bool IsActive() override;
 };
 
@@ -183,7 +183,7 @@ class KaelthasSunstriderCapernianEngagedByWarlockTankTrigger : public Trigger
 {
 public:
     KaelthasSunstriderCapernianEngagedByWarlockTankTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider capernian engaged by warlock tank") {}
+        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider capernian engaged by warlock tank") {}
     bool IsActive() override;
 };
 
@@ -191,7 +191,7 @@ class KaelthasSunstriderCapernianCastsArcaneBurstTrigger : public Trigger
 {
 public:
     KaelthasSunstriderCapernianCastsArcaneBurstTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider capernian casts arcane burst") {}
+        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider capernian casts arcane burst") {}
     bool IsActive() override;
 };
 
@@ -199,7 +199,7 @@ class KaelthasSunstriderTelonicusEngagedByFirstAssistTankTrigger : public Trigge
 {
 public:
     KaelthasSunstriderTelonicusEngagedByFirstAssistTankTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider telonicus engaged by first assist tank") {}
+        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider telonicus engaged by first assist tank") {}
     bool IsActive() override;
 };
 
@@ -207,7 +207,7 @@ class KaelthasSunstriderPhase3AdvisorMeleeTanksNeedDedicatedHealerTrigger : publ
 {
 public:
     KaelthasSunstriderPhase3AdvisorMeleeTanksNeedDedicatedHealerTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider phase 3 advisor melee tanks need dedicated healer") {}
+        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider phase 3 advisor melee tanks need dedicated healer") {}
     bool IsActive() override;
 };
 
@@ -215,7 +215,7 @@ class KaelthasSunstriderPullingTankableAdvisorsTrigger : public Trigger
 {
 public:
     KaelthasSunstriderPullingTankableAdvisorsTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider pulling tankable advisors") {}
+        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider pulling tankable advisors") {}
     bool IsActive() override;
 };
 
@@ -223,7 +223,7 @@ class KaelthasSunstriderWaitingForTanksToGetAggroOnAdvisorsTrigger : public Trig
 {
 public:
     KaelthasSunstriderWaitingForTanksToGetAggroOnAdvisorsTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider waiting for tanks to get aggro on advisors") {}
+        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider waiting for tanks to get aggro on advisors") {}
     bool IsActive() override;
 };
 
@@ -231,7 +231,7 @@ class KaelthasSunstriderLegendaryWeaponsAreAliveTrigger : public Trigger
 {
 public:
     KaelthasSunstriderLegendaryWeaponsAreAliveTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider legendary weapons are alive") {}
+        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider legendary weapons are alive") {}
     bool IsActive() override;
 };
 
@@ -239,7 +239,7 @@ class KaelthasSunstriderDevastationChannelsWhirlwindTrigger : public Trigger
 {
 public:
     KaelthasSunstriderDevastationChannelsWhirlwindTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider devastation channels whirlwind") {}
+        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider devastation channels whirlwind") {}
     bool IsActive() override;
 };
 
@@ -247,7 +247,7 @@ class KaelthasSunstriderNetherstrandLongbowFiresMultiShotTrigger : public Trigge
 {
 public:
     KaelthasSunstriderNetherstrandLongbowFiresMultiShotTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider netherstrand longbow fires multi shot") {}
+        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider netherstrand longbow fires multi shot") {}
     bool IsActive() override;
 };
 
@@ -255,7 +255,7 @@ class KaelthasSunstriderLegendaryWeaponsAreDeadAndLootableTrigger : public Trigg
 {
 public:
     KaelthasSunstriderLegendaryWeaponsAreDeadAndLootableTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider legendary weapons are dead and lootable") {}
+        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider legendary weapons are dead and lootable") {}
     bool IsActive() override;
 };
 
@@ -263,7 +263,7 @@ class KaelthasSunstriderLegendaryWeaponsAreEquippedTrigger : public Trigger
 {
 public:
     KaelthasSunstriderLegendaryWeaponsAreEquippedTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider legendary weapons are equipped") {}
+        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider legendary weapons are equipped") {}
     bool IsActive() override;
 };
 
@@ -271,7 +271,7 @@ class KaelthasSunstriderLegendaryWeaponsWereLostTrigger : public Trigger
 {
 public:
     KaelthasSunstriderLegendaryWeaponsWereLostTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider legendary weapons were lost") {}
+        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider legendary weapons were lost") {}
     bool IsActive() override;
 };
 
@@ -279,7 +279,7 @@ class KaelthasSunstriderDeterminingAdvisorKillOrderTrigger : public Trigger
 {
 public:
     KaelthasSunstriderDeterminingAdvisorKillOrderTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider determining advisor kill order") {}
+        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider determining advisor kill order") {}
     bool IsActive() override;
 };
 
@@ -287,7 +287,7 @@ class KaelthasSunstriderBossEngagedByMainTankTrigger : public Trigger
 {
 public:
     KaelthasSunstriderBossEngagedByMainTankTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider boss engaged by main tank") {}
+        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider boss engaged by main tank") {}
     bool IsActive() override;
 };
 
@@ -295,7 +295,7 @@ class KaelthasSunstriderFlameStrikeAppearedUnderBotTrigger : public Trigger
 {
 public:
     KaelthasSunstriderFlameStrikeAppearedUnderBotTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider flame strike appeared under bot") {}
+        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider flame strike appeared under bot") {}
     bool IsActive() override;
 };
 
@@ -303,7 +303,7 @@ class KaelthasSunstriderPhoenixesAndEggsAreSpawningTrigger : public Trigger
 {
 public:
     KaelthasSunstriderPhoenixesAndEggsAreSpawningTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider phoenixes and eggs are spawning") {}
+        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider phoenixes and eggs are spawning") {}
     bool IsActive() override;
 };
 
@@ -311,7 +311,7 @@ class KaelthasSunstriderRaidMemberIsMindControlledTrigger : public Trigger
 {
 public:
     KaelthasSunstriderRaidMemberIsMindControlledTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider raid member is mind controlled") {}
+        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider raid member is mind controlled") {}
     bool IsActive() override;
 };
 
@@ -319,7 +319,7 @@ class KaelthasSunstriderBossIsCastingPyroblastTrigger : public Trigger
 {
 public:
     KaelthasSunstriderBossIsCastingPyroblastTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider boss is casting pyroblast") {}
+        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider boss is casting pyroblast") {}
     bool IsActive() override;
 };
 
@@ -327,7 +327,7 @@ class KaelthasSunstriderBossIsManipulatingGravityTrigger : public Trigger
 {
 public:
     KaelthasSunstriderBossIsManipulatingGravityTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kaelthas sunstrider boss is manipulating gravity") {}
+        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider boss is manipulating gravity") {}
     bool IsActive() override;
 };
 

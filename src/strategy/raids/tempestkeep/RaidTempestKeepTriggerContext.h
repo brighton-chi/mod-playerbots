@@ -14,28 +14,28 @@ public:
             &RaidTempestKeepTriggerContext::crimson_hand_centurion_casts_arcane_volley;
 
         // Al'ar <Phoenix God>
-        creators["alar pulling boss"] =
+        creators["al'ar pulling boss"] =
             &RaidTempestKeepTriggerContext::alar_pulling_boss;
 
-        creators["alar boss is flying between platforms"] =
+        creators["al'ar boss is flying between platforms"] =
             &RaidTempestKeepTriggerContext::alar_boss_is_flying_between_platforms;
 
-        creators["alar boss spawns embers of alar"] =
+        creators["al'ar boss spawns embers of alar"] =
             &RaidTempestKeepTriggerContext::alar_boss_spawns_embers_of_alar;
 
-        creators["alar incoming flame quills"] =
+        creators["al'ar incoming flame quills"] =
             &RaidTempestKeepTriggerContext::alar_incoming_flame_quills;
 
-        creators["alar rising from the ashes"] =
+        creators["al'ar rising from the ashes"] =
             &RaidTempestKeepTriggerContext::alar_rising_from_the_ashes;
 
-        creators["alar boss tank armor was melted"] =
+        creators["al'ar boss tank armor was melted"] =
             &RaidTempestKeepTriggerContext::alar_boss_tank_armor_was_melted;
 
-        creators["alar boss is performing dive bomb sequence"] =
+        creators["al'ar boss is performing dive bomb sequence"] =
             &RaidTempestKeepTriggerContext::alar_boss_is_performing_dive_bomb_sequence;
 
-        creators["alar phase 2 encounter is at room center"] =
+        creators["al'ar phase 2 encounter is at room center"] =
             &RaidTempestKeepTriggerContext::alar_phase_2_encounter_is_at_room_center;
 
         // Void Reaver
@@ -68,73 +68,73 @@ public:
             &RaidTempestKeepTriggerContext::high_astromancer_solarian_boss_casts_psychic_scream;
 
         // Kael'thas Sunstrider <Lord of the Blood Elves>
-        creators["kaelthas sunstrider thaladred is fixated on bot"] =
+        creators["kael'thas sunstrider thaladred is fixated on bot"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_thaladred_is_fixated_on_bot;
 
-        creators["kaelthas sunstrider sanguinar engaged by main tank"] =
+        creators["kael'thas sunstrider sanguinar engaged by main tank"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_sanguinar_engaged_by_main_tank;
 
-        creators["kaelthas sunstrider sanguinar casts bellowing roar"] =
+        creators["kael'thas sunstrider sanguinar casts bellowing roar"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_sanguinar_casts_bellowing_roar;
 
-        creators["kaelthas sunstrider capernian requires a warlock tank"] =
+        creators["kael'thas sunstrider capernian requires a warlock tank"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_capernian_requires_a_warlock_tank;
 
-        creators["kaelthas sunstrider capernian engaged by warlock tank"] =
+        creators["kael'thas sunstrider capernian engaged by warlock tank"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_capernian_engaged_by_warlock_tank;
 
-        creators["kaelthas sunstrider capernian casts arcane burst"] =
+        creators["kael'thas sunstrider capernian casts arcane burst"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_capernian_casts_arcane_burst;
 
-        creators["kaelthas sunstrider telonicus engaged by first assist tank"] =
+        creators["kael'thas sunstrider telonicus engaged by first assist tank"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_telonicus_engaged_by_first_assist_tank;
 
-        creators["kaelthas sunstrider phase 3 advisor melee tanks need dedicated healer"] =
+        creators["kael'thas sunstrider phase 3 advisor melee tanks need dedicated healer"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_phase_3_advisor_melee_tanks_need_dedicated_healer;
 
-        creators["kaelthas sunstrider pulling tankable advisors"] =
+        creators["kael'thas sunstrider pulling tankable advisors"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_pulling_tankable_advisors;
 
-        creators["kaelthas sunstrider waiting for tanks to get aggro on advisors"] =
+        creators["kael'thas sunstrider waiting for tanks to get aggro on advisors"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_waiting_for_tanks_to_get_aggro_on_advisors;
 
-        creators["kaelthas sunstrider legendary weapons are alive"] =
+        creators["kael'thas sunstrider legendary weapons are alive"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_legendary_weapons_are_alive;
 
-        creators["kaelthas sunstrider devastation channels whirlwind"] =
+        creators["kael'thas sunstrider devastation channels whirlwind"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_devastation_channels_whirlwind;
 
-        creators["kaelthas sunstrider netherstrand longbow fires multishot"] =
+        creators["kael'thas sunstrider netherstrand longbow fires multishot"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_netherstrand_longbow_fires_multishot;
 
-        creators["kaelthas sunstrider legendary weapons are dead and lootable"] =
+        creators["kael'thas sunstrider legendary weapons are dead and lootable"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_legendary_weapons_are_dead_and_lootable;
 
-        creators["kaelthas sunstrider legendary weapons are equipped"] =
+        creators["kael'thas sunstrider legendary weapons are equipped"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_legendary_weapons_are_equipped;
 
-        creators["kaelthas sunstrider legendary weapons were lost"] =
+        creators["kael'thas sunstrider legendary weapons were lost"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_legendary_weapons_were_lost;
 
-        creators["kaelthas sunstrider determining advisor kill order"] =
+        creators["kael'thas sunstrider determining advisor kill order"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_determining_advisor_kill_order;
 
-        creators["kaelthas sunstrider boss engaged by main tank"] =
+        creators["kael'thas sunstrider boss engaged by main tank"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_boss_engaged_by_main_tank;
 
-        creators["kaelthas sunstrider flame strike appeared under bot"] =
+        creators["kael'thas sunstrider flame strike appeared under bot"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_flame_strike_appeared_under_bot;
 
-        creators["kaelthas sunstrider raid member is mind controlled"] =
+        creators["kael'thas sunstrider raid member is mind controlled"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_raid_member_is_mind_controlled;
 
-        creators["kaelthas sunstrider phoenixes and eggs are spawning"] =
+        creators["kael'thas sunstrider phoenixes and eggs are spawning"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_phoenixes_and_eggs_are_spawning;
 
-        creators["kaelthas sunstrider boss is casting pyroblast"] =
+        creators["kael'thas sunstrider boss is casting pyroblast"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_boss_is_casting_pyroblast;
 
-        creators["kaelthas sunstrider boss is manipulating gravity"] =
+        creators["kael'thas sunstrider boss is manipulating gravity"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_boss_is_manipulating_gravity;
     }
 

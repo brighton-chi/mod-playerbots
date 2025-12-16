@@ -14,37 +14,37 @@ public:
             &RaidTempestKeepActionContext::crimson_hand_centurion_cast_polymorph;
 
         // Al'ar <Phoenix God>
-        creators["alar misdirect boss to main tank"] =
+        creators["al'ar misdirect boss to main tank"] =
             &RaidTempestKeepActionContext::alar_misdirect_boss_to_main_tank;
 
-        creators["alar boss tanks move between platforms"] =
+        creators["al'ar boss tanks move between platforms"] =
             &RaidTempestKeepActionContext::alar_boss_tanks_move_between_platforms;
 
-        creators["alar melee dps move between platforms"] =
+        creators["al'ar melee dps move between platforms"] =
             &RaidTempestKeepActionContext::alar_melee_dps_move_between_platforms;
 
-        creators["alar ranged move under platforms"] =
+        creators["al'ar ranged move under platforms"] =
             &RaidTempestKeepActionContext::alar_ranged_move_under_platforms;
 
-        creators["alar add tank pick up embers"] =
+        creators["al'ar add tank pick up embers"] =
             &RaidTempestKeepActionContext::alar_add_tank_pick_up_embers;
 
-        creators["alar jump from platform"] =
+        creators["al'ar jump from platform"] =
             &RaidTempestKeepActionContext::alar_jump_from_platform;
 
-        creators["alar move away from rebirth"] =
+        creators["al'ar move away from rebirth"] =
             &RaidTempestKeepActionContext::alar_move_away_from_rebirth;
 
-        creators["alar ranged dps prioritize embers in phase 2"] =
+        creators["al'ar ranged dps prioritize embers in phase 2"] =
             &RaidTempestKeepActionContext::alar_ranged_dps_prioritize_embers_in_phase_2;
 
-        creators["alar swap tanks on boss"] =
+        creators["al'ar swap tanks on boss"] =
             &RaidTempestKeepActionContext::alar_swap_tanks_on_boss;
 
-        creators["alar dive bomb spread and stay back"] =
+        creators["al'ar dive bomb spread and stay back"] =
             &RaidTempestKeepActionContext::alar_dive_bomb_spread_and_stay_back;
 
-        creators["alar return to room center"] =
+        creators["al'ar return to room center"] =
             &RaidTempestKeepActionContext::alar_return_to_room_center;
 
         // Void Reaver
@@ -77,73 +77,73 @@ public:
             &RaidTempestKeepActionContext::high_astromancer_solarian_cast_fear_ward_on_main_tank;
 
         // Kael'thas Sunstrider <Lord of the Blood Elves>
-        creators["kaelthas sunstrider kite thaladred"] =
+        creators["kael'thas sunstrider kite thaladred"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_kite_thaladred;
 
-        creators["kaelthas sunstrider main tank position sanguinar"] =
+        creators["kael'thas sunstrider main tank position sanguinar"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_main_tank_position_sanguinar;
 
-        creators["kaelthas sunstrider cast fear ward on sanguinar tank"] =
+        creators["kael'thas sunstrider cast fear ward on sanguinar tank"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_cast_fear_ward_on_sanguinar_tank;
 
-        creators["kaelthas sunstrider manage warlock tank strategy"] =
+        creators["kael'thas sunstrider manage warlock tank strategy"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_manage_warlock_tank_strategy;
 
-        creators["kaelthas sunstrider warlock tank position capernian"] =
+        creators["kael'thas sunstrider warlock tank position capernian"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_warlock_tank_position_capernian;
 
-        creators["kaelthas sunstrider move away from capernian"] =
+        creators["kael'thas sunstrider move away from capernian"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_move_away_from_capernian;
 
-        creators["kaelthas sunstrider first assist tank position telonicus"] =
+        creators["kael'thas sunstrider first assist tank position telonicus"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_first_assist_tank_position_telonicus;
 
-        creators["kaelthas sunstrider position phase 3 tank healer"] =
+        creators["kael'thas sunstrider position phase 3 tank healer"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_position_phase_3_tank_healer;
 
-        creators["kaelthas sunstrider misdirect advisors to tanks"] =
+        creators["kael'thas sunstrider misdirect advisors to tanks"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_misdirect_advisors_to_tanks;
 
-        creators["kaelthas sunstrider manage advisor dps timer"] =
+        creators["kael'thas sunstrider manage advisor dps timer"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_manage_advisor_dps_timer;
 
-        creators["kaelthas sunstrider group up legendary weapons"] =
+        creators["kael'thas sunstrider group up legendary weapons"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_group_up_legendary_weapons;
 
-        creators["kaelthas sunstrider main tank move devastation away"] =
+        creators["kael'thas sunstrider main tank move devastation away"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_main_tank_move_devastation_away;
 
-        creators["kaelthas sunstrider hunter turn away netherstrand longbow"] =
+        creators["kael'thas sunstrider hunter turn away netherstrand longbow"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_hunter_turn_away_netherstrand_longbow;
 
-        creators["kaelthas sunstrider loot legendary weapons"] =
+        creators["kael'thas sunstrider loot legendary weapons"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_loot_legendary_weapons;
 
-        creators["kaelthas sunstrider use legendary weapons"] =
+        creators["kael'thas sunstrider use legendary weapons"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_use_legendary_weapons;
 
-        creators["kaelthas sunstrider assign advisor dps priority"] =
+        creators["kael'thas sunstrider assign advisor dps priority"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_assign_advisor_dps_priority;
 
-        creators["kaelthas sunstrider reequip gear"] =
+        creators["kael'thas sunstrider reequip gear"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_reequip_gear;
 
-        creators["kaelthas sunstrider main tank position boss"] =
+        creators["kael'thas sunstrider main tank position boss"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_main_tank_position_boss;
 
-        creators["kaelthas sunstrider avoid flame strike"] =
+        creators["kael'thas sunstrider avoid flame strike"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_avoid_flame_strike;
 
-        creators["kaelthas sunstrider round up phoenixes and focus down eggs"] =
+        creators["kael'thas sunstrider round up phoenixes and focus down eggs"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_round_up_phoenixes_and_focus_down_eggs;
 
-        creators["kaelthas sunstrider break mind control with infinity blade"] =
+        creators["kael'thas sunstrider break mind control with infinity blade"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_break_mind_control_with_infinity_blade;
 
-        creators["kaelthas sunstrider break through shock barrier"] =
+        creators["kael'thas sunstrider break through shock barrier"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_break_through_shock_barrier;
 
-        creators["kaelthas sunstrider spread out in midair"] =
+        creators["kael'thas sunstrider spread out in midair"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_spread_out_in_midair;
     }
 
