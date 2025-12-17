@@ -1470,6 +1470,9 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
         case 533:
             strategyName = "naxx";  // Naxxramas
             break;
+        case 534:
+            strategyName = "hyjalsummit";  // Hyjal Summit
+            break;
         case 544:
             strategyName = "magtheridon";  // Magtheridon's Lair
             break;
@@ -1479,6 +1482,9 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
         case 550:
             strategyName = "tempestkeep";  // Tempest Keep
             break;
+        /* case 564:
+            strategyName = "blacktemple";  // Black Temple
+            break; */
         case 565:
             strategyName = "gruulslair";  // Gruul's Lair
             break;
