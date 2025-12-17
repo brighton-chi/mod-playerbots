@@ -1266,6 +1266,10 @@ bool KaelthasSunstriderMisdirectAdvisorsToTanksAction::Execute(Event event)
 
 bool KaelthasSunstriderManageAdvisorDpsTimerAction::Execute(Event event)
 {
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    if (!kaelthas)
+        return false;
+
     const char* advisorNames[] =
     {
         "grand astromancer capernian",
@@ -1283,7 +1287,7 @@ bool KaelthasSunstriderManageAdvisorDpsTimerAction::Execute(Event event)
             !advisor->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE))
         {
             const time_t now = std::time(nullptr);
-            advisorDpsWaitTimer.insert_or_assign(TEMPEST_KEEP_MAP_ID, now);
+            advisorDpsWaitTimer.insert_or_assign(kaelthas->GetMap()->GetInstanceId(), now);
             return false;
         }
     }

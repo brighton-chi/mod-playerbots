@@ -285,7 +285,7 @@ namespace TempestKeepHelpers
 
     std::unordered_map<uint32, time_t> advisorDpsWaitTimer;
 
-    bool IsKaelthasMapIDTimerManager(PlayerbotAI* botAI, Player* bot)
+    bool IsKaelthasInstanceTimerManager(PlayerbotAI* botAI, Player* bot)
     {
         if (Group* group = bot->GetGroup())
         {

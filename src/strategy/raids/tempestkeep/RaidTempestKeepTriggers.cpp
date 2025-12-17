@@ -410,7 +410,7 @@ bool KaelthasSunstriderPullingTankableAdvisorsTrigger::IsActive()
 
 bool KaelthasSunstriderWaitingForTanksToGetAggroOnAdvisorsTrigger::IsActive()
 {
-    if (!IsKaelthasMapIDTimerManager(botAI, bot))
+    if (!IsKaelthasInstanceTimerManager(botAI, bot))
         return false;
 
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
