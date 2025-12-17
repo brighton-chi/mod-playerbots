@@ -117,7 +117,7 @@ namespace SerpentShrineCavernHelpers
     void MarkTargetWithCross(Player* bot, Unit* target);
     void MarkTargetWithMoon(Player* bot, Unit* target);
     void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target);
-    bool IsMapIDTimerManager(PlayerbotAI* botAI, Player* bot);
+    bool IsInstanceTimerManager(PlayerbotAI* botAI, Player* bot);
     Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry);
 
     // Hydross the Unstable <Duke of Currents>

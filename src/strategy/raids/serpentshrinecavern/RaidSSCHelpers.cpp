@@ -78,7 +78,7 @@ namespace SerpentShrineCavernHelpers
     }
 
     // Dps bot selected for marking and managing timers and trackers
-    bool IsMapIDTimerManager(PlayerbotAI* botAI, Player* bot)
+    bool IsInstanceTimerManager(PlayerbotAI* botAI, Player* bot)
     {
         if (Group* group = bot->GetGroup())
         {
@@ -378,6 +378,11 @@ namespace SerpentShrineCavernHelpers
 
     bool AnyRecentCoreInInventory(Group* group, uint32 graceSeconds)
     {
+        Unit* vashj =
+            botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "lady vashj")->Get();
+        if (!vashj)
+            return false;
+
         if (group)
         {
             for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
@@ -388,9 +393,10 @@ namespace SerpentShrineCavernHelpers
             }
         }
 
+        const uint32 instanceId = vashj->GetMap()->GetInstanceId();
         const time_t now = std::time(nullptr);
 
-        auto it = lastCoreInInventoryTime.find(SSC_MAP_ID);
+        auto it = lastCoreInInventoryTime.find(instanceId);
         if (it != lastCoreInInventoryTime.end())
         {
             if ((now - it->second) <= static_cast<time_t>(graceSeconds))

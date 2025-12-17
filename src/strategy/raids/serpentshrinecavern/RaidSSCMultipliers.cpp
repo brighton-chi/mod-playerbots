@@ -89,14 +89,15 @@ float HydrossTheUnstableWaitForDpsMultiplier::GetValue(Action* action)
     if (dynamic_cast<HydrossTheUnstableMisdirectBossToTankAction*>(action))
         return 1.0f;
 
+    const uint32 instanceId = hydross->GetMap()->GetInstanceId();
     const time_t now = std::time(nullptr);
     const uint8 phaseChangeWaitSeconds = 1;
     const uint8 dpsWaitSeconds = 5;
 
     if (!hydross->HasAura(SPELL_CORRUPTION) && !botAI->IsMainTank(bot))
     {
-        auto itDps = hydrossFrostDpsWaitTimer.find(SSC_MAP_ID);
-        auto itPhase = hydrossChangeToFrostPhaseTimer.find(SSC_MAP_ID);
+        auto itDps = hydrossFrostDpsWaitTimer.find(instanceId);
+        auto itPhase = hydrossChangeToFrostPhaseTimer.find(instanceId);
 
         bool justChanged = (itDps == hydrossFrostDpsWaitTimer.end() ||
                             (now - itDps->second) < dpsWaitSeconds);
@@ -114,8 +115,8 @@ float HydrossTheUnstableWaitForDpsMultiplier::GetValue(Action* action)
 
     if (hydross->HasAura(SPELL_CORRUPTION) && !botAI->IsAssistTankOfIndex(bot, 0))
     {
-        auto itDps = hydrossNatureDpsWaitTimer.find(SSC_MAP_ID);
-        auto itPhase = hydrossChangeToNaturePhaseTimer.find(SSC_MAP_ID);
+        auto itDps = hydrossNatureDpsWaitTimer.find(instanceId);
+        auto itPhase = hydrossChangeToNaturePhaseTimer.find(instanceId);
 
         bool justChanged = (itDps == hydrossNatureDpsWaitTimer.end() ||
                             (now - itDps->second) < dpsWaitSeconds);
@@ -160,7 +161,7 @@ float TheLurkerBelowStayAwayFromSpoutMultiplier::GetValue(Action* action)
 
     const time_t now = std::time(nullptr);
 
-    auto it = lurkerSpoutTimer.find(SSC_MAP_ID);
+    auto it = lurkerSpoutTimer.find(lurker->GetMap()->GetInstanceId());
     if (it != lurkerSpoutTimer.end() && it->second > now)
     {
         if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
@@ -315,6 +316,7 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValue(Action* action)
     if (dynamic_cast<LeotherasTheBlindMisdirectBossToDemonFormTankAction*>(action))
         return 1.0f;
 
+    const uint32 instanceId = leotheras->GetMap()->GetInstanceId();
     const time_t now = std::time(nullptr);
 
     const uint8 dpsWaitSecondsPhase1 = 5;
@@ -326,7 +328,7 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValue(Action* action)
         if (botAI->IsTank(bot))
             return 1.0f;
 
-        auto it = leotherasHumanFormDpsWaitTimer.find(SSC_MAP_ID);
+        auto it = leotherasHumanFormDpsWaitTimer.find(instanceId);
         if (it == leotherasHumanFormDpsWaitTimer.end() ||
             (now - it->second) < dpsWaitSecondsPhase1)
         {
@@ -348,7 +350,7 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValue(Action* action)
         if (!demonFormTank && botAI->IsTank(bot))
             return 1.0f;
 
-        auto it = leotherasDemonFormDpsWaitTimer.find(SSC_MAP_ID);
+        auto it = leotherasDemonFormDpsWaitTimer.find(instanceId);
         if (it == leotherasDemonFormDpsWaitTimer.end() ||
             (now - it->second) < dpsWaitSecondsPhase2)
         {
@@ -365,7 +367,7 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValue(Action* action)
         if ((demonFormTank && demonFormTank == bot) || botAI->IsTank(bot))
             return 1.0f;
 
-        auto it = leotherasFinalPhaseDpsWaitTimer.find(SSC_MAP_ID);
+        auto it = leotherasFinalPhaseDpsWaitTimer.find(instanceId);
         if (it == leotherasFinalPhaseDpsWaitTimer.end() ||
             (now - it->second) < dpsWaitSecondsPhase3)
         {
@@ -460,7 +462,7 @@ float FathomLordKarathressWaitForDpsMultiplier::GetValue(Action* action)
     const time_t now = std::time(nullptr);
     const uint8 dpsWaitSeconds = 10;
 
-    auto it = karathressDpsWaitTimer.find(SSC_MAP_ID);
+    auto it = karathressDpsWaitTimer.find(karathress->GetMap()->GetInstanceId());
     if (it == karathressDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
     {
         if (dynamic_cast<AttackAction*>(action) ||

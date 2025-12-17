@@ -132,7 +132,7 @@ bool HydrossTheUnstablePositionFrostTankAction::Execute(Event event)
         hydross->GetVictim() == bot && bot->IsWithinMeleeRange(hydross))
     {
         const time_t now = std::time(nullptr);
-        auto it = hydrossChangeToNaturePhaseTimer.find(SSC_MAP_ID);
+        auto it = hydrossChangeToNaturePhaseTimer.find(hydross->GetMap()->GetInstanceId());
 
         if (it != hydrossChangeToNaturePhaseTimer.end() && (now - it->second) >= 1)
         {
@@ -205,7 +205,7 @@ bool HydrossTheUnstablePositionNatureTankAction::Execute(Event event)
         hydross->GetVictim() == bot && bot->IsWithinMeleeRange(hydross))
     {
         const time_t now = std::time(nullptr);
-        auto it = hydrossChangeToFrostPhaseTimer.find(SSC_MAP_ID);
+        auto it = hydrossChangeToFrostPhaseTimer.find(hydross->GetMap()->GetInstanceId());
 
         if (it != hydrossChangeToFrostPhaseTimer.end() && (now - it->second) >= 1)
         {
@@ -250,7 +250,7 @@ bool HydrossTheUnstablePrioritizeElementalAddsAction::Execute(Event event)
     Unit* waterElemental = GetFirstAliveUnitByEntry(botAI, NPC_PURE_SPAWN_OF_HYDROSS);
     if (waterElemental)
     {
-        if (IsMapIDTimerManager(botAI, bot))
+        if (IsInstanceTimerManager(botAI, bot))
             MarkTargetWithSkull(bot, waterElemental);
 
         SetRtiTarget(botAI, "skull", waterElemental);
@@ -263,7 +263,7 @@ bool HydrossTheUnstablePrioritizeElementalAddsAction::Execute(Event event)
     }
     else if (Unit* natureElemental = GetFirstAliveUnitByEntry(botAI, NPC_TAINTED_SPAWN_OF_HYDROSS))
     {
-        if (IsMapIDTimerManager(botAI, bot))
+        if (IsInstanceTimerManager(botAI, bot))
             MarkTargetWithSkull(bot, natureElemental);
 
         SetRtiTarget(botAI, "skull", natureElemental);
@@ -384,6 +384,7 @@ bool HydrossTheUnstableStopDpsUponPhaseChangeAction::Execute(Event event)
     if (!hydross)
         return false;
 
+    const uint32 instanceId = hydross->GetMap()->GetInstanceId();
     const time_t now = std::time(nullptr);
     const int phaseStartStopSeconds = 5;
     const int phaseEndStopSeconds = 1;
@@ -391,25 +392,25 @@ bool HydrossTheUnstableStopDpsUponPhaseChangeAction::Execute(Event event)
     bool shouldStopDps = false;
 
     // 1 second after 100% Mark of Hydross, stop DPS until transition into nature phase
-    auto itNature = hydrossChangeToNaturePhaseTimer.find(SSC_MAP_ID);
+    auto itNature = hydrossChangeToNaturePhaseTimer.find(instanceId);
     if (itNature != hydrossChangeToNaturePhaseTimer.end() &&
         (now - itNature->second) >= phaseEndStopSeconds)
         shouldStopDps = true;
 
     // Keep DPS stopped for 5 seconds after transition into nature phase
-    auto itNatureDps = hydrossNatureDpsWaitTimer.find(SSC_MAP_ID);
+    auto itNatureDps = hydrossNatureDpsWaitTimer.find(instanceId);
     if (itNatureDps != hydrossNatureDpsWaitTimer.end() &&
         (now - itNatureDps->second) < phaseStartStopSeconds)
         shouldStopDps = true;
 
     // 1 second after 100% Mark of Corruption, stop DPS until transition into frost phase
-    auto itFrost = hydrossChangeToFrostPhaseTimer.find(SSC_MAP_ID);
+    auto itFrost = hydrossChangeToFrostPhaseTimer.find(instanceId);
     if (itFrost != hydrossChangeToFrostPhaseTimer.end() &&
         (now - itFrost->second) >= phaseEndStopSeconds)
         shouldStopDps = true;
 
     // Keep DPS stopped for 5 seconds after transition into frost phase
-    auto itFrostDps = hydrossFrostDpsWaitTimer.find(SSC_MAP_ID);
+    auto itFrostDps = hydrossFrostDpsWaitTimer.find(instanceId);
     if (itFrostDps != hydrossFrostDpsWaitTimer.end() &&
         (now - itFrostDps->second) < phaseStartStopSeconds)
         shouldStopDps = true;
@@ -430,33 +431,34 @@ bool HydrossTheUnstableManageTimersAction::Execute(Event event)
     if (!hydross)
         return false;
 
+    const uint32 instanceId = hydross->GetMap()->GetInstanceId();
     const time_t now = std::time(nullptr);
 
     if (hydross->GetHealth() == hydross->GetMaxHealth())
     {
-        hydrossFrostDpsWaitTimer.erase(SSC_MAP_ID);
-        hydrossNatureDpsWaitTimer.erase(SSC_MAP_ID);
-        hydrossChangeToFrostPhaseTimer.erase(SSC_MAP_ID);
-        hydrossChangeToNaturePhaseTimer.erase(SSC_MAP_ID);
+        hydrossFrostDpsWaitTimer.erase(instanceId);
+        hydrossNatureDpsWaitTimer.erase(instanceId);
+        hydrossChangeToFrostPhaseTimer.erase(instanceId);
+        hydrossChangeToNaturePhaseTimer.erase(instanceId);
     }
 
     if (!hydross->HasAura(SPELL_CORRUPTION))
     {
-        hydrossFrostDpsWaitTimer.try_emplace(SSC_MAP_ID, now);
-        hydrossNatureDpsWaitTimer.erase(SSC_MAP_ID);
-        hydrossChangeToFrostPhaseTimer.erase(SSC_MAP_ID);
+        hydrossFrostDpsWaitTimer.try_emplace(instanceId, now);
+        hydrossNatureDpsWaitTimer.erase(instanceId);
+        hydrossChangeToFrostPhaseTimer.erase(instanceId);
 
         if (HasMarkOfHydrossAt100Percent(bot))
-            hydrossChangeToNaturePhaseTimer.try_emplace(SSC_MAP_ID, now);
+            hydrossChangeToNaturePhaseTimer.try_emplace(instanceId, now);
     }
     else
     {
-        hydrossNatureDpsWaitTimer.try_emplace(SSC_MAP_ID, now);
-        hydrossFrostDpsWaitTimer.erase(SSC_MAP_ID);
-        hydrossChangeToNaturePhaseTimer.erase(SSC_MAP_ID);
+        hydrossNatureDpsWaitTimer.try_emplace(instanceId, now);
+        hydrossFrostDpsWaitTimer.erase(instanceId);
+        hydrossChangeToNaturePhaseTimer.erase(instanceId);
 
         if (HasMarkOfCorruptionAt100Percent(bot))
-            hydrossChangeToFrostPhaseTimer.try_emplace(SSC_MAP_ID, now);
+            hydrossChangeToFrostPhaseTimer.try_emplace(instanceId, now);
     }
 
     return false;
@@ -659,15 +661,16 @@ bool TheLurkerBelowManageSpoutTimerAction::Execute(Event event)
     if (!lurker)
         return false;
 
+    const uint32 instanceId = lurker->GetMap()->GetInstanceId();
     const time_t now = std::time(nullptr);
 
     if (lurker->GetHealth() == lurker->GetMaxHealth())
     {
-        lurkerSpoutTimer.erase(SSC_MAP_ID);
+        lurkerSpoutTimer.erase(instanceId);
         return false;
     }
 
-    auto it = lurkerSpoutTimer.find(SSC_MAP_ID);
+    auto it = lurkerSpoutTimer.find(instanceId);
     if (it != lurkerSpoutTimer.end() && it->second <= now)
     {
         lurkerSpoutTimer.erase(it);
@@ -676,7 +679,7 @@ bool TheLurkerBelowManageSpoutTimerAction::Execute(Event event)
 
     const time_t spoutCastTime = 20;
     if (IsLurkerCastingSpout(lurker) && it == lurkerSpoutTimer.end())
-        lurkerSpoutTimer.try_emplace(SSC_MAP_ID, now + spoutCastTime);
+        lurkerSpoutTimer.try_emplace(instanceId, now + spoutCastTime);
 
     return false;
 }
@@ -898,14 +901,15 @@ bool LeotherasTheBlindManageDpsWaitTimersAction::Execute(Event event)
     if (!leotheras)
         return false;
 
+    const uint32 instanceId = leotheras->GetMap()->GetInstanceId();
     const time_t now = std::time(nullptr);
 
     // Encounter start/reset: clear all timers
     if (leotheras->HasAura(SPELL_LEOTHERAS_BANISHED))
     {
-        leotherasHumanFormDpsWaitTimer.erase(SSC_MAP_ID);
-        leotherasDemonFormDpsWaitTimer.erase(SSC_MAP_ID);
-        leotherasFinalPhaseDpsWaitTimer.erase(SSC_MAP_ID);
+        leotherasHumanFormDpsWaitTimer.erase(instanceId);
+        leotherasDemonFormDpsWaitTimer.erase(instanceId);
+        leotherasFinalPhaseDpsWaitTimer.erase(instanceId);
         return false;
     }
 
@@ -914,21 +918,21 @@ bool LeotherasTheBlindManageDpsWaitTimersAction::Execute(Event event)
     Unit* leotherasPhase3Demon = GetPhase3LeotherasDemon(botAI);
     if (leotherasHuman && !leotherasPhase3Demon)
     {
-        leotherasHumanFormDpsWaitTimer.try_emplace(SSC_MAP_ID, now);
-        leotherasDemonFormDpsWaitTimer.erase(SSC_MAP_ID);
+        leotherasHumanFormDpsWaitTimer.try_emplace(instanceId, now);
+        leotherasDemonFormDpsWaitTimer.erase(instanceId);
     }
     // Demon Phase
     else if (Unit* leotherasPhase2Demon = GetPhase2LeotherasDemon(botAI))
     {
-        leotherasDemonFormDpsWaitTimer.try_emplace(SSC_MAP_ID, now);
-        leotherasHumanFormDpsWaitTimer.erase(SSC_MAP_ID);
+        leotherasDemonFormDpsWaitTimer.try_emplace(instanceId, now);
+        leotherasHumanFormDpsWaitTimer.erase(instanceId);
     }
     // Final Phase (<15% HP)
     else if (leotherasHuman && leotherasPhase3Demon)
     {
-        leotherasFinalPhaseDpsWaitTimer.try_emplace(SSC_MAP_ID, now);
-        leotherasHumanFormDpsWaitTimer.erase(SSC_MAP_ID);
-        leotherasDemonFormDpsWaitTimer.erase(SSC_MAP_ID);
+        leotherasFinalPhaseDpsWaitTimer.try_emplace(instanceId, now);
+        leotherasHumanFormDpsWaitTimer.erase(instanceId);
+        leotherasDemonFormDpsWaitTimer.erase(instanceId);
     }
 
     return false;
@@ -1315,7 +1319,7 @@ bool FathomLordKarathressManageDpsTimerAction::Execute(Event event)
     const time_t now = std::time(nullptr);
 
     if (karathress->GetHealth() == karathress->GetMaxHealth())
-        karathressDpsWaitTimer.insert_or_assign(SSC_MAP_ID, now);
+        karathressDpsWaitTimer.insert_or_assign(karathress->GetMap()->GetInstanceId(), now);
 
     return false;
 }
@@ -2090,6 +2094,10 @@ bool LadyVashjTeleportToTaintedElementalAction::Execute(Event event)
 
 bool LadyVashjLootTaintedCoreAction::Execute(Event)
 {
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (!vashj)
+        return false;
+
     auto const& corpses = context->GetValue<GuidVector>("nearest corpses")->Get();
     const float maxLootRange = sPlayerbotAIConfig->lootDistance;
 
@@ -2155,7 +2163,7 @@ bool LadyVashjLootTaintedCoreAction::Execute(Event)
             *packet << coreIndex;
             receiver->GetSession()->QueuePacket(packet);
 
-            lastCoreInInventoryTime[SSC_MAP_ID] = std::time(nullptr);
+            lastCoreInInventoryTime[vashj->GetMap()->GetInstanceId()] = std::time(nullptr);
         }, 600);
 
         return true;
@@ -2166,6 +2174,10 @@ bool LadyVashjLootTaintedCoreAction::Execute(Event)
 
 bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
 {
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (!vashj)
+        return false;
+
     Group* group = bot->GetGroup();
     if (!group)
         return false;
@@ -2178,6 +2190,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
     Player* secondCorePasser = GetSecondTaintedCorePasser(group, botAI);
     Player* thirdCorePasser = GetThirdTaintedCorePasser(group, botAI);
     Player* fourthCorePasser = GetFourthTaintedCorePasser(group, botAI);
+    const uint32 instanceId = vashj->GetMap()->GetInstanceId();
 
     Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
     Unit* closestTrigger = nullptr;
@@ -2185,10 +2198,10 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
     {
         closestTrigger = GetNearestActiveShieldGeneratorTriggerByEntry(tainted);
         if (closestTrigger)
-            nearestTriggerGuid.insert_or_assign(SSC_MAP_ID, closestTrigger->GetGUID());
+            nearestTriggerGuid.insert_or_assign(instanceId, closestTrigger->GetGUID());
     }
 
-    auto itSnap = nearestTriggerGuid.find(SSC_MAP_ID);
+    auto itSnap = nearestTriggerGuid.find(instanceId);
     if (itSnap != nearestTriggerGuid.end() && !itSnap->second.IsEmpty())
     {
         Unit* snapUnit = botAI->GetUnit(itSnap->second);
@@ -2248,11 +2261,11 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
 
                 // Track lastImbueAttempt is to prevent repeated throwing animations
                 // from multiple imbue attempts
-                auto [it, inserted] = lastImbueAttempt.try_emplace(SSC_MAP_ID, now);
+                auto [it, inserted] = lastImbueAttempt.try_emplace(instanceId, now);
                 if (inserted)
                 {
                     botAI->ImbueItem(item, firstCorePasser);
-                    lastCoreInInventoryTime[SSC_MAP_ID] = now;
+                    lastCoreInInventoryTime[instanceId] = now;
                     ScheduleStoreCoreAfterImbue(botAI, bot, firstCorePasser);
                     return true;
                 }
@@ -2260,7 +2273,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
                 {
                     it->second = now;
                     botAI->ImbueItem(item, firstCorePasser);
-                    lastCoreInInventoryTime[SSC_MAP_ID] = now;
+                    lastCoreInInventoryTime[instanceId] = now;
                     ScheduleStoreCoreAfterImbue(botAI, bot, firstCorePasser);
                     return true;
                 }
@@ -2275,11 +2288,11 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
             {
                 const time_t now = std::time(nullptr);
 
-                auto [it, inserted] = lastImbueAttempt.try_emplace(SSC_MAP_ID, now);
+                auto [it, inserted] = lastImbueAttempt.try_emplace(instanceId, now);
                 if (inserted)
                 {
                     botAI->ImbueItem(item, secondCorePasser);
-                    lastCoreInInventoryTime[SSC_MAP_ID] = now;
+                    lastCoreInInventoryTime[instanceId] = now;
                     intendedLineup.erase(bot->GetGUID());
                     ScheduleStoreCoreAfterImbue(botAI, bot, secondCorePasser);
                     return true;
@@ -2288,7 +2301,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
                 {
                     it->second = now;
                     botAI->ImbueItem(item, secondCorePasser);
-                    lastCoreInInventoryTime[SSC_MAP_ID] = now;
+                    lastCoreInInventoryTime[instanceId] = now;
                     intendedLineup.erase(bot->GetGUID());
                     ScheduleStoreCoreAfterImbue(botAI, bot, secondCorePasser);
                     return true;
@@ -2307,11 +2320,11 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
                 {
                     const time_t now = std::time(nullptr);
 
-                    auto [it, inserted] = lastImbueAttempt.try_emplace(SSC_MAP_ID, now);
+                    auto [it, inserted] = lastImbueAttempt.try_emplace(instanceId, now);
                     if (inserted)
                     {
                         botAI->ImbueItem(item, thirdCorePasser);
-                        lastCoreInInventoryTime[SSC_MAP_ID] = now;
+                        lastCoreInInventoryTime[instanceId] = now;
                         intendedLineup.erase(bot->GetGUID());
                         ScheduleStoreCoreAfterImbue(botAI, bot, thirdCorePasser);
                         return true;
@@ -2320,7 +2333,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
                     {
                         it->second = now;
                         botAI->ImbueItem(item, thirdCorePasser);
-                        lastCoreInInventoryTime[SSC_MAP_ID] = now;
+                        lastCoreInInventoryTime[instanceId] = now;
                         intendedLineup.erase(bot->GetGUID());
                         ScheduleStoreCoreAfterImbue(botAI, bot, thirdCorePasser);
                         return true;
@@ -2340,11 +2353,11 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
                 {
                     const time_t now = std::time(nullptr);
 
-                    auto [it, inserted] = lastImbueAttempt.try_emplace(SSC_MAP_ID, now);
+                    auto [it, inserted] = lastImbueAttempt.try_emplace(instanceId, now);
                     if (inserted)
                     {
                         botAI->ImbueItem(item, fourthCorePasser);
-                        lastCoreInInventoryTime[SSC_MAP_ID] = now;
+                        lastCoreInInventoryTime[instanceId] = now;
                         intendedLineup.erase(bot->GetGUID());
                         ScheduleStoreCoreAfterImbue(botAI, bot, fourthCorePasser);
                         return true;
@@ -2353,7 +2366,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
                     {
                         it->second = now;
                         botAI->ImbueItem(item, fourthCorePasser);
-                        lastCoreInInventoryTime[SSC_MAP_ID] = now;
+                        lastCoreInInventoryTime[instanceId] = now;
                         intendedLineup.erase(bot->GetGUID());
                         ScheduleStoreCoreAfterImbue(botAI, bot, fourthCorePasser);
                         return true;

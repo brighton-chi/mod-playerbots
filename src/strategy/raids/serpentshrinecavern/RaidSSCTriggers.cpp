@@ -91,7 +91,7 @@ bool HydrossTheUnstableAggroResetsUponPhaseChangeTrigger::IsActive()
 
 bool HydrossTheUnstableNeedToManageTimersTrigger::IsActive()
 {
-    if (!IsMapIDTimerManager(botAI, bot))
+    if (!IsInstanceTimerManager(botAI, bot))
         return false;
 
     Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
@@ -108,7 +108,7 @@ bool TheLurkerBelowSpoutIsActiveTrigger::IsActive()
 
     const time_t now = std::time(nullptr);
 
-    auto it = lurkerSpoutTimer.find(SSC_MAP_ID);
+    auto it = lurkerSpoutTimer.find(lurker->GetMap()->GetInstanceId());
     return it != lurkerSpoutTimer.end() && it->second > now;
 }
 
@@ -123,7 +123,7 @@ bool TheLurkerBelowBossIsActiveForMainTankTrigger::IsActive()
 
     const time_t now = std::time(nullptr);
 
-    auto it = lurkerSpoutTimer.find(SSC_MAP_ID);
+    auto it = lurkerSpoutTimer.find(lurker->GetMap()->GetInstanceId());
     return lurker->getStandState() != UNIT_STAND_STATE_SUBMERGED &&
            (it == lurkerSpoutTimer.end() || it->second <= now);
 }
@@ -139,7 +139,7 @@ bool TheLurkerBelowBossCastsGeyserTrigger::IsActive()
 
     const time_t now = std::time(nullptr);
 
-    auto it = lurkerSpoutTimer.find(SSC_MAP_ID);
+    auto it = lurkerSpoutTimer.find(lurker->GetMap()->GetInstanceId());
     return lurker->getStandState() != UNIT_STAND_STATE_SUBMERGED &&
            (it == lurkerSpoutTimer.end() || it->second <= now);
 }
@@ -185,7 +185,7 @@ bool TheLurkerBelowBossIsSubmergedTrigger::IsActive()
 
 bool TheLurkerBelowNeedToPrepareTimerForSpoutTrigger::IsActive()
 {
-    if (!IsMapIDTimerManager(botAI, bot))
+    if (!IsInstanceTimerManager(botAI, bot))
         return false;
 
     Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
@@ -290,7 +290,7 @@ bool LeotherasTheBlindDemonFormTankNeedsAggro::IsActive()
 
 bool LeotherasTheBlindBossWipesAggroUponPhaseChangeTrigger::IsActive()
 {
-    if (!IsMapIDTimerManager(botAI, bot))
+    if (!IsInstanceTimerManager(botAI, bot))
         return false;
 
     Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
@@ -391,7 +391,7 @@ bool FathomLordKarathressDeterminingKillOrderTrigger::IsActive()
 
 bool FathomLordKarathressTanksNeedToEstablishAggroTrigger::IsActive()
 {
-    if (!IsMapIDTimerManager(botAI, bot))
+    if (!IsInstanceTimerManager(botAI, bot))
         return false;
 
     Unit* karathress = AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
