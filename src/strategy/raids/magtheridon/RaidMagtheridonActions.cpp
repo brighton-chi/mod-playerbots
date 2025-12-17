@@ -221,7 +221,7 @@ bool MagtheridonAssignDPSPriorityAction::Execute(Event event)
 
         if (bot->GetTarget() != channelerSquare->GetGUID())
         {
-            bot->SetSelection(channelerSquare->GetGUID());
+            bot->SetTarget(channelerSquare->GetGUID());
             return Attack(channelerSquare);
         }
 
@@ -235,7 +235,7 @@ bool MagtheridonAssignDPSPriorityAction::Execute(Event event)
 
         if (bot->GetTarget() != channelerStar->GetGUID())
         {
-            bot->SetSelection(channelerStar->GetGUID());
+            bot->SetTarget(channelerStar->GetGUID());
             return Attack(channelerStar);
         }
 
@@ -249,7 +249,7 @@ bool MagtheridonAssignDPSPriorityAction::Execute(Event event)
 
         if (bot->GetTarget() != channelerCircle->GetGUID())
         {
-            bot->SetSelection(channelerCircle->GetGUID());
+            bot->SetTarget(channelerCircle->GetGUID());
             return Attack(channelerCircle);
         }
 
@@ -263,7 +263,7 @@ bool MagtheridonAssignDPSPriorityAction::Execute(Event event)
 
         if (bot->GetTarget() != channelerDiamond->GetGUID())
         {
-            bot->SetSelection(channelerDiamond->GetGUID());
+            bot->SetTarget(channelerDiamond->GetGUID());
             return Attack(channelerDiamond);
         }
 
@@ -277,7 +277,7 @@ bool MagtheridonAssignDPSPriorityAction::Execute(Event event)
 
         if (bot->GetTarget() != channelerTriangle->GetGUID())
         {
-            bot->SetSelection(channelerTriangle->GetGUID());
+            bot->SetTarget(channelerTriangle->GetGUID());
             return Attack(channelerTriangle);
         }
 
@@ -296,7 +296,7 @@ bool MagtheridonAssignDPSPriorityAction::Execute(Event event)
 
         if (bot->GetTarget() != magtheridon->GetGUID())
         {
-            bot->SetSelection(magtheridon->GetGUID());
+            bot->SetTarget(magtheridon->GetGUID());
             return Attack(magtheridon);
         }
     }
@@ -371,7 +371,7 @@ bool MagtheridonMainTankPositionBossAction::Execute(Event event)
     if (bot->GetVictim() != magtheridon)
         return Attack(magtheridon);
 
-    if (magtheridon->GetVictim() == bot)
+    if (magtheridon->GetVictim() == bot && bot->IsWithinMeleeRange(magtheridon))
     {
         const Location& position = MagtheridonsLairLocations::MagtheridonTankPosition;
         if (bot->GetExactDist2d(position.x, position.y) > 2.0f)
@@ -386,14 +386,6 @@ bool MagtheridonMainTankPositionBossAction::Execute(Event event)
             return MoveTo(bot->GetMapId(), moveX, moveY, position.z, false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, true);
         }
-
-        bot->SetFacingTo(position.orientation);
-    }
-    else if (!bot->IsWithinMeleeRange(magtheridon))
-    {
-        return MoveTo(magtheridon->GetMapId(), magtheridon->GetPositionX(),
-                      magtheridon->GetPositionY(), magtheridon->GetPositionZ(),
-                      false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
     return false;
@@ -406,13 +398,19 @@ std::unordered_map<ObjectGuid, bool> MagtheridonSpreadRangedAction::hasReachedIn
 
 bool MagtheridonSpreadRangedAction::Execute(Event event)
 {
+    Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
+    if (!magtheridon)
+        return false;
+
     Group* group = bot->GetGroup();
     if (!group)
         return false;
 
+    const uint32 instanceId = magtheridon->GetMap()->GetInstanceId();
+
     // Wait for 6 seconds after Magtheridon activates to spread
     const uint8 spreadWaitSeconds = 6;
-    auto it = magtheridonSpreadWaitTimer.find(bot->GetMapId());
+    auto it = magtheridonSpreadWaitTimer.find(instanceId);
     if (it == magtheridonSpreadWaitTimer.end() ||
         (time(nullptr) - it->second) < spreadWaitSeconds)
         return false;
@@ -421,7 +419,7 @@ bool MagtheridonSpreadRangedAction::Execute(Event event)
     if (cubeIt != botToCubeAssignment.end())
     {
         time_t now = time(nullptr);
-        auto timerIt = magtheridonBlastNovaTimer.find(bot->GetMapId());
+        auto timerIt = magtheridonBlastNovaTimer.find(instanceId);
         if (timerIt != magtheridonBlastNovaTimer.end())
         {
             time_t lastBlastNova = timerIt->second;
@@ -655,28 +653,28 @@ bool MagtheridonManageTimersAndAssignmentsAction::Execute(Event event)
     if (!magtheridon)
         return false;
 
-    uint32 mapId = magtheridon->GetMapId();
+    uint32 instanceId = magtheridon->GetMap()->GetInstanceId();
 
     bool blastNovaActive = magtheridon->HasUnitState(UNIT_STATE_CASTING) &&
                            magtheridon->FindCurrentSpellBySpellId(SPELL_BLAST_NOVA);
-    bool lastBlastNova = lastBlastNovaState[mapId];
+    bool lastBlastNova = lastBlastNovaState[instanceId];
 
-    if (lastBlastNova && !blastNovaActive && IsMapIDTimerManager(botAI, bot))
-        magtheridonBlastNovaTimer[mapId] = time(nullptr);
-    lastBlastNovaState[mapId] = blastNovaActive;
+    if (lastBlastNova && !blastNovaActive && IsInstanceTimerManager(botAI, bot))
+        magtheridonBlastNovaTimer[instanceId] = time(nullptr);
+    lastBlastNovaState[instanceId] = blastNovaActive;
 
-    if (IsMapIDTimerManager(botAI, bot))
+    if (IsInstanceTimerManager(botAI, bot))
     {
         if (!magtheridon->HasAura(SPELL_SHADOW_CAGE))
         {
-            if (magtheridonSpreadWaitTimer.find(mapId) == magtheridonSpreadWaitTimer.end())
-                magtheridonSpreadWaitTimer[mapId] = time(nullptr);
+            if (magtheridonSpreadWaitTimer.find(instanceId) == magtheridonSpreadWaitTimer.end())
+                magtheridonSpreadWaitTimer[instanceId] = time(nullptr);
 
-            if (magtheridonBlastNovaTimer.find(mapId) == magtheridonBlastNovaTimer.end())
-                magtheridonBlastNovaTimer[mapId] = time(nullptr);
+            if (magtheridonBlastNovaTimer.find(instanceId) == magtheridonBlastNovaTimer.end())
+                magtheridonBlastNovaTimer[instanceId] = time(nullptr);
 
-            if (magtheridonAggroWaitTimer.find(mapId) == magtheridonAggroWaitTimer.end())
-                magtheridonAggroWaitTimer[mapId] = time(nullptr);
+            if (magtheridonAggroWaitTimer.find(instanceId) == magtheridonAggroWaitTimer.end())
+                magtheridonAggroWaitTimer[instanceId] = time(nullptr);
         }
     }
 
@@ -691,16 +689,16 @@ bool MagtheridonManageTimersAndAssignmentsAction::Execute(Event event)
         if (!botToCubeAssignment.empty())
             botToCubeAssignment.clear();
 
-        if (IsMapIDTimerManager(botAI, bot))
+        if (IsInstanceTimerManager(botAI, bot))
         {
-            if (magtheridonSpreadWaitTimer.find(mapId) != magtheridonSpreadWaitTimer.end())
-                magtheridonSpreadWaitTimer.erase(mapId);
+            if (magtheridonSpreadWaitTimer.find(instanceId) != magtheridonSpreadWaitTimer.end())
+                magtheridonSpreadWaitTimer.erase(instanceId);
 
-            if (magtheridonBlastNovaTimer.find(mapId) != magtheridonBlastNovaTimer.end())
-                magtheridonBlastNovaTimer.erase(mapId);
+            if (magtheridonBlastNovaTimer.find(instanceId) != magtheridonBlastNovaTimer.end())
+                magtheridonBlastNovaTimer.erase(instanceId);
 
-            if (magtheridonAggroWaitTimer.find(mapId) != magtheridonAggroWaitTimer.end())
-                magtheridonAggroWaitTimer.erase(mapId);
+            if (magtheridonAggroWaitTimer.find(instanceId) != magtheridonAggroWaitTimer.end())
+                magtheridonAggroWaitTimer.erase(instanceId);
         }
     }
 

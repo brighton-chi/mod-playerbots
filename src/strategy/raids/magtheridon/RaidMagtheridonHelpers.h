@@ -54,7 +54,7 @@ namespace MagtheridonHelpers
     void MarkTargetWithCross(Player* bot, Unit* target);
     void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target);
     bool IsSafeFromMagtheridonHazards(PlayerbotAI* botAI, Player* bot, float x, float y, float z);
-    bool IsMapIDTimerManager(PlayerbotAI* botAI, Player* bot);
+    bool IsInstanceTimerManager(PlayerbotAI* botAI, Player* bot);
 
     struct Location
     {

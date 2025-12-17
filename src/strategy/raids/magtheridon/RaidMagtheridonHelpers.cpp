@@ -209,18 +209,18 @@ namespace MagtheridonHelpers
         return true;
     }
 
-    bool IsMapIDTimerManager(PlayerbotAI* botAI, Player* bot)
+    bool IsInstanceTimerManager(PlayerbotAI* botAI, Player* bot)
     {
         if (Group* group = bot->GetGroup())
         {
             for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
             {
                 Player* member = ref->GetSource();
-                if (member && member->IsAlive() && !botAI->IsMainTank(member) && GET_PLAYERBOT_AI(member))
+                if (member && member->IsAlive() && botAI->IsDps(member) && GET_PLAYERBOT_AI(member))
                     return member == bot;
             }
         }
 
-        return true;
+        return false;
     }
 }

@@ -1,6 +1,3 @@
-#include <unordered_map>
-#include <ctime>
-
 #include "RaidMagtheridonMultipliers.h"
 #include "RaidMagtheridonActions.h"
 #include "RaidMagtheridonHelpers.h"
@@ -42,7 +39,7 @@ float MagtheridonWaitToAttackMultiplier::GetValue(Action* action)
         return 1.0f;
 
     const uint8 aggroWaitSeconds = 6;
-    auto it = magtheridonAggroWaitTimer.find(bot->GetMapId());
+    auto it = magtheridonAggroWaitTimer.find(magtheridon->GetMap()->GetInstanceId());
     if (it == magtheridonAggroWaitTimer.end() ||
         (time(nullptr) - it->second) < aggroWaitSeconds)
     {
