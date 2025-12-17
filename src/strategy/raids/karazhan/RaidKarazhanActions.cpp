@@ -44,7 +44,7 @@ bool AttumenTheHuntsmanMarkTargetAction::Execute(Event event)
     Unit* attumenMounted = GetFirstAliveUnitByEntry(botAI, NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED);
     if (attumenMounted)
     {
-        if (IsMapIDTimerManager(botAI, bot))
+        if (IsInstanceTimerManager(botAI, bot))
             MarkTargetWithStar(bot, attumenMounted);
 
         SetRtiTarget(botAI, "star", attumenMounted);
@@ -57,7 +57,7 @@ bool AttumenTheHuntsmanMarkTargetAction::Execute(Event event)
     }
     else if (Unit* midnight = AI_VALUE2(Unit*, "find target", "midnight"))
     {
-        if (IsMapIDTimerManager(botAI, bot))
+        if (IsInstanceTimerManager(botAI, bot))
             MarkTargetWithStar(bot, midnight);
 
         if (!botAI->IsAssistTankOfIndex(bot, 0))
@@ -131,8 +131,10 @@ bool AttumenTheHuntsmanManageDpsTimerAction::Execute(Event event)
     if (!midnight)
         return false;
 
+    const uint32 instanceId = midnight->GetMap()->GetInstanceId();
+
     if (midnight && midnight->GetHealth() == midnight->GetMaxHealth())
-        attumenDpsWaitTimer.erase(KARAZHAN_MAP_ID);
+        attumenDpsWaitTimer.erase(instanceId);
 
     // Midnight is still present as a separate (invisible) unit after Attumen mounts
     // So this block can be reached
@@ -143,7 +145,7 @@ bool AttumenTheHuntsmanManageDpsTimerAction::Execute(Event event)
     const time_t now = std::time(nullptr);
 
     if (attumenMounted)
-        attumenDpsWaitTimer.try_emplace(KARAZHAN_MAP_ID, now);
+        attumenDpsWaitTimer.try_emplace(instanceId, now);
 
     return false;
 }
@@ -178,7 +180,7 @@ bool MoroesMarkTargetAction::Execute(Event event)
 
     if (target)
     {
-        if (IsMapIDTimerManager(botAI, bot))
+        if (IsInstanceTimerManager(botAI, bot))
             MarkTargetWithSkull(bot, target);
 
         SetRtiTarget(botAI, "skull", target);
@@ -309,7 +311,7 @@ bool BigBadWolfPositionBossAction::Execute(Event event)
             float moveY = wolf->GetPositionY() + (dY / dist) * moveDist;
 
             return MoveTo(KARAZHAN_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false, false, false,
-                            MovementPriority::MOVEMENT_COMBAT, true, false);
+                          MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
 
@@ -404,7 +406,7 @@ bool TheCuratorMarkAstralFlareAction::Execute(Event event)
     if (!flare)
         return false;
 
-    if (IsMapIDTimerManager(botAI, bot))
+    if (IsInstanceTimerManager(botAI, bot))
         MarkTargetWithSkull(bot, flare);
 
     SetRtiTarget(botAI, "skull", flare);
@@ -997,6 +999,7 @@ bool NetherspiteManageTimersAndTrackersAction::Execute(Event event)
     if (!netherspite)
         return false;
 
+    const uint32 instanceId = netherspite->GetMap()->GetInstanceId();
     const ObjectGuid botGuid = bot->GetGUID();
     const time_t now = std::time(nullptr);
 
@@ -1005,8 +1008,8 @@ bool NetherspiteManageTimersAndTrackersAction::Execute(Event event)
     if (netherspite->GetHealth() == netherspite->GetMaxHealth() &&
         !netherspite->HasAura(SPELL_GREEN_BEAM_HEAL))
     {
-        if (IsMapIDTimerManager(botAI, bot))
-            netherspiteDpsWaitTimer.insert_or_assign(KARAZHAN_MAP_ID, now);
+        if (IsInstanceTimerManager(botAI, bot))
+            netherspiteDpsWaitTimer.insert_or_assign(instanceId, now);
 
         if (botAI->IsTank(bot) && !bot->HasAura(SPELL_RED_BEAM_DEBUFF))
         {
@@ -1016,8 +1019,8 @@ bool NetherspiteManageTimersAndTrackersAction::Execute(Event event)
     }
     else if (netherspite->HasAura(SPELL_NETHERSPITE_BANISHED))
     {
-        if (IsMapIDTimerManager(botAI, bot))
-            netherspiteDpsWaitTimer.erase(KARAZHAN_MAP_ID);
+        if (IsInstanceTimerManager(botAI, bot))
+            netherspiteDpsWaitTimer.erase(instanceId);
 
         if (botAI->IsTank(bot))
         {
@@ -1027,8 +1030,8 @@ bool NetherspiteManageTimersAndTrackersAction::Execute(Event event)
     }
     else if (!netherspite->HasAura(SPELL_NETHERSPITE_BANISHED))
     {
-        if (IsMapIDTimerManager(botAI, bot))
-            netherspiteDpsWaitTimer.try_emplace(KARAZHAN_MAP_ID, now);
+        if (IsInstanceTimerManager(botAI, bot))
+            netherspiteDpsWaitTimer.try_emplace(instanceId, now);
 
         if (botAI->IsTank(bot) && bot->HasAura(SPELL_RED_BEAM_DEBUFF))
         {
@@ -1443,6 +1446,7 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event event)
     if (!nightbane)
         return false;
 
+    const uint32 instanceId = nightbane->GetMap()->GetInstanceId();
     const ObjectGuid botGuid = bot->GetGUID();
     const time_t now = std::time(nullptr);
 
@@ -1455,18 +1459,18 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event event)
         if (botAI->IsRanged(bot))
             nightbaneRangedStep.erase(botGuid);
 
-        if (IsMapIDTimerManager(botAI, bot))
-            nightbaneDpsWaitTimer.erase(KARAZHAN_MAP_ID);
+        if (IsInstanceTimerManager(botAI, bot))
+            nightbaneDpsWaitTimer.erase(instanceId);
     }
     // Erase flight phase timer and Rain of Bones tracker on ground phase and start DPS wait timer
     else if (nightbane->GetPositionZ() <= NIGHTBANE_FLIGHT_Z)
     {
         nightbaneRainOfBonesHit.erase(botGuid);
 
-        if (IsMapIDTimerManager(botAI, bot))
+        if (IsInstanceTimerManager(botAI, bot))
         {
-            nightbaneFlightPhaseStartTimer.erase(KARAZHAN_MAP_ID);
-            nightbaneDpsWaitTimer.try_emplace(KARAZHAN_MAP_ID, now);
+            nightbaneFlightPhaseStartTimer.erase(instanceId);
+            nightbaneDpsWaitTimer.try_emplace(instanceId, now);
         }
     }
     // Erase DPS wait timer and tank and ranged position tracking and start flight phase timer
@@ -1479,10 +1483,10 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event event)
         if (botAI->IsRanged(bot))
             nightbaneRangedStep.erase(botGuid);
 
-        if (IsMapIDTimerManager(botAI, bot))
+        if (IsInstanceTimerManager(botAI, bot))
         {
-            nightbaneDpsWaitTimer.erase(KARAZHAN_MAP_ID);
-            nightbaneFlightPhaseStartTimer.try_emplace(KARAZHAN_MAP_ID, now);
+            nightbaneDpsWaitTimer.erase(instanceId);
+            nightbaneFlightPhaseStartTimer.try_emplace(instanceId, now);
         }
     }
 
