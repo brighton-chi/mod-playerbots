@@ -354,6 +354,7 @@ float ZuljinDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+// Commented out in strategies
 float ZuljinDoNotAvoidCyclonesMultiplier::GetValue(Action* action)
 {
     Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");

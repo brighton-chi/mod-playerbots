@@ -112,6 +112,6 @@ void RaidZulAmanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new ZuljinDisableTankActionsMultiplier(botAI));
     multipliers.push_back(new ZuljinAvoidWhirlwindMultiplier(botAI));
     multipliers.push_back(new ZuljinDelayBloodlustAndHeroismMultiplier(botAI));
-    multipliers.push_back(new ZuljinDoNotAvoidCyclonesMultiplier(botAI));
+    // multipliers.push_back(new ZuljinDoNotAvoidCyclonesMultiplier(botAI));
     multipliers.push_back(new ZuljinStayCloseToLynxFormMultiplier(botAI));
 }

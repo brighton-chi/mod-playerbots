@@ -104,7 +104,7 @@ namespace ZulAmanHelpers
         if (!botAI)
             return false;
 
-        auto npcValue = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs");
+        auto npcValue = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs");
         if (!npcValue)
             return false;
 
