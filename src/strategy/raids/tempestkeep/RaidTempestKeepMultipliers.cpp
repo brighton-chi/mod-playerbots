@@ -15,6 +15,8 @@
 #include "WarlockActions.h"
 #include "WarriorActions.h"
 
+// Al'ar <Phoenix God>
+
 float AlarMoveBetweenPlatformsMultiplier::GetValue(Action* action)
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
@@ -102,6 +104,8 @@ float AlarPhase2NoTankingIfArmorMeltedMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+// Void Reaver
+
 float VoidReaverDisableTankActionsMultiplier::GetValue(Action* action)
 {
     if (!botAI->IsTank(bot))
@@ -135,6 +139,8 @@ float VoidReaverMaintainPositionsMultiplier::GetValue(Action* action)
 
     return 1.0f;
 }
+
+// High Astromancer Solarian
 
 float HighAstromancerSolarianMaintainPositionMultiplier::GetValue(Action* action)
 {
@@ -178,6 +184,8 @@ float HighAstromancerSolarianDisableTankAssistMultiplier::GetValue(Action* actio
     return 1.0f;
 }
 
+// Kael'thas Sunstrider <Lord of the Blood Elves>
+
 float KaelthasSunstriderWaitForDpsMultiplier::GetValue(Action* action)
 {
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
@@ -194,7 +202,7 @@ float KaelthasSunstriderWaitForDpsMultiplier::GetValue(Action* action)
     const time_t now = std::time(nullptr);
     const uint8 dpsWaitSeconds = 12;
 
-    auto it = advisorDpsWaitTimer.find(TEMPESTKEEP_MAP_ID);
+    auto it = advisorDpsWaitTimer.find(TEMPEST_KEEP_MAP_ID);
     if (it == advisorDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
     {
         Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");

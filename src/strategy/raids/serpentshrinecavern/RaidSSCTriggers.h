@@ -3,6 +3,8 @@
 
 #include "Trigger.h"
 
+// Trash
+
 class UnderbogColossusSpawnedToxicPoolAfterDeathTrigger : public Trigger
 {
 public:
@@ -18,6 +20,8 @@ public:
         PlayerbotAI* botAI) : Trigger(botAI, "greyheart tidecaller water elemental totem spawned") {}
     bool IsActive() override;
 };
+
+// Hydross the Unstable <Duke of Currents>
 
 class HydrossTheUnstableBotIsFrostTankTrigger : public Trigger
 {
@@ -75,6 +79,8 @@ public:
     bool IsActive() override;
 };
 
+// The Lurker Below
+
 class TheLurkerBelowSpoutIsActiveTrigger : public Trigger
 {
 public:
@@ -114,6 +120,8 @@ public:
         PlayerbotAI* botAI) : Trigger(botAI, "the lurker below need to prepare timer for spout") {}
     bool IsActive() override;
 };
+
+// Leotheras the Blind
 
 class LeotherasTheBlindBossIsInactiveTrigger : public Trigger
 {
@@ -195,6 +203,8 @@ public:
     bool IsActive() override;
 };
 
+// Fathom-Lord Karathress
+
 class FathomLordKarathressBossEngagedByMainTankTrigger : public Trigger
 {
 public:
@@ -259,6 +269,8 @@ public:
     bool IsActive() override;
 };
 
+// Morogrim Tidewalker
+
 class MorogrimTidewalkerPullingBossTrigger : public Trigger
 {
 public:
@@ -290,6 +302,8 @@ public:
         PlayerbotAI* botAI) : Trigger(botAI, "morogrim tidewalker encounter reset") {}
     bool IsActive() override;
 };
+
+// Lady Vashj <Coilfang Matron>
 
 class LadyVashjBossEngagedByMainTankTrigger : public Trigger
 {

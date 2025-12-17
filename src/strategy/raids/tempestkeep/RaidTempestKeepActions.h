@@ -9,6 +9,8 @@
 
 using namespace TempestKeepHelpers;
 
+// Trash
+
 class CrimsonHandCenturionCastPolymorphAction : public Action
 {
 public:
@@ -16,6 +18,8 @@ public:
         PlayerbotAI* botAI, std::string const name = "crimson hand centurion cast polymorph") : Action(botAI, name) {}
     bool Execute(Event event) override;
 };
+
+// Al'ar <Phoenix God>
 
 class AlarMisdirectBossToMainTankAction : public AttackAction
 {
@@ -109,6 +113,8 @@ public:
     bool Execute(Event event) override;
 };
 
+// Void Reaver
+
 class VoidReaverPositionBossAction : public AttackAction
 {
 public:
@@ -136,6 +142,8 @@ public:
         PlayerbotAI* botAI, std::string const name = "void reaver use aggro dump ability") : Action(botAI, name) {}
     bool Execute(Event event) override;
 };
+
+// High Astromancer Solarian
 
 class HighAstromancerSolarianRangedLeaveSpaceForMeleeAction : public MovementAction
 {
@@ -189,6 +197,8 @@ public:
         PlayerbotAI* botAI, std::string const name = "high astromancer solarian cast fear ward on main tank") : Action(botAI, name) {}
     bool Execute(Event event) override;
 };
+
+// Kael'thas Sunstrider <Lord of the Blood Elves>
 
 class KaelthasSunstriderKiteThaladredAction : public MovementAction
 {

@@ -5,6 +5,8 @@
 #include "AttackAction.h"
 #include "MovementActions.h"
 
+// Trash
+
 class UnderbogColossusEscapeToxicPoolAction : public MovementAction
 {
 public:
@@ -20,6 +22,8 @@ public:
         PlayerbotAI* botAI, std::string const name = "greyheart tidecaller mark water elemental totem") : Action(botAI, name) {}
     bool Execute(Event event) override;
 };
+
+// Hydross the Unstable <Duke of Currents>
 
 class HydrossTheUnstablePositionFrostTankAction : public AttackAction
 {
@@ -81,6 +85,8 @@ public:
     bool Execute(Event event) override;
 };
 
+// The Lurker Below
+
 class TheLurkerBelowRunAroundBehindBossAction : public MovementAction
 {
 public:
@@ -120,6 +126,8 @@ public:
         PlayerbotAI* botAI, std::string const name = "the lurker below manage spout timer") : Action(botAI, name) {}
     bool Execute(Event event) override;
 };
+
+// Leotheras the Blind
 
 class LeotherasTheBlindTargetSpellbindersAction : public Action
 {
@@ -193,6 +201,8 @@ public:
     bool Execute(Event event) override;
 };
 
+// Fathom-Lord Karathress
+
 class FathomLordKarathressMainTankPositionBossAction : public AttackAction
 {
 public:
@@ -257,6 +267,8 @@ public:
     bool Execute(Event event) override;
 };
 
+// Morogrim Tidewalker
+
 class MorogrimTidewalkerMisdirectBossToMainTankAction : public AttackAction
 {
 public:
@@ -292,6 +304,8 @@ public:
         PlayerbotAI* botAI, std::string const name = "morogrim tidewalker reset phase transition steps") : Action(botAI, name) {}
     bool Execute(Event event) override;
 };
+
+// Lady Vashj <Coilfang Matron>
 
 class LadyVashjMainTankPositionBossAction : public AttackAction
 {

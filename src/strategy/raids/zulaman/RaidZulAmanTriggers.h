@@ -3,6 +3,8 @@
 
 #include "Trigger.h"
 
+// Trash
+
 class AmanishiMedicineManSummonedWardTrigger : public Trigger
 {
 public:
@@ -10,6 +12,8 @@ public:
         PlayerbotAI* botAI) : Trigger(botAI, "amani'shi medicine man summoned ward") {}
     bool IsActive() override;
 };
+
+// Akil'zon <Eagle Avatar>
 
 class AkilzonPullingBossTrigger : public Trigger
 {
@@ -43,6 +47,8 @@ public:
     bool IsActive() override;
 };
 
+// Nalorakk <Bear Avatar>
+
 class NalorakkPullingBossTrigger : public Trigger
 {
 public:
@@ -66,6 +72,8 @@ public:
         PlayerbotAI* botAI) : Trigger(botAI, "nalorakk boss casts surge") {}
     bool IsActive() override;
 };
+
+// Jan'alai <Dragonhawk Avatar>
 
 class JanalaiPullingBossTrigger : public Trigger
 {
@@ -107,6 +115,8 @@ public:
     bool IsActive() override;
 };
 
+// Halazzi <Lynx Avatar>
+
 class HalazziPullingBossTrigger : public Trigger
 {
 public:
@@ -139,6 +149,8 @@ public:
     bool IsActive() override;
 };
 
+// Hex Lord Malacrass
+
 class HexLordMalacrassPullingBossTrigger : public Trigger
 {
 public:
@@ -170,6 +182,8 @@ public:
         PlayerbotAI* botAI) : Trigger(botAI, "hex lord malacrass party member is mind controlled") {}
     bool IsActive() override;
 };
+
+// Zul'jin
 
 class ZuljinMainTankNeedsAggroUponPullOrPhaseChangeTrigger : public Trigger
 {

@@ -7,48 +7,7 @@
 
 namespace SerpentShrineCavernHelpers
 {
-    std::unordered_map<uint32, time_t> hydrossFrostDpsWaitTimer;
-    std::unordered_map<uint32, time_t> hydrossNatureDpsWaitTimer;
-    std::unordered_map<uint32, time_t> hydrossChangeToFrostPhaseTimer;
-    std::unordered_map<uint32, time_t> hydrossChangeToNaturePhaseTimer;
-
-    std::unordered_map<uint32, time_t> lurkerSpoutTimer;
-    std::unordered_map<ObjectGuid, Position> lurkerRangedPositions;
-
-    std::unordered_map<uint32, time_t> leotherasHumanFormDpsWaitTimer;
-    std::unordered_map<uint32, time_t> leotherasDemonFormDpsWaitTimer;
-    std::unordered_map<uint32, time_t> leotherasFinalPhaseDpsWaitTimer;
-
-    std::unordered_map<uint32, time_t> karathressDpsWaitTimer;
-
-    std::unordered_map<ObjectGuid, uint8> tidewalkerTankStep;
-    std::unordered_map<ObjectGuid, uint8> tidewalkerRangedStep;
-
-    std::unordered_map<ObjectGuid, Position> vashjRangedPositions;
-    std::unordered_map<ObjectGuid, bool> hasReachedVashjRangedPosition;
-    std::unordered_map<uint32, ObjectGuid> nearestTriggerGuid;
-    std::unordered_map<ObjectGuid, Position> intendedLineup;
-    std::unordered_map<uint32, time_t> lastImbueAttempt;
-    std::unordered_map<uint32, time_t> lastCoreInInventoryTime;
-
-    const Position HYDROSS_FROST_TANK_POSITION = { -236.669f, -358.352f, -0.828f };
-    const Position HYDROSS_NATURE_TANK_POSITION = { -225.471f, -327.790f, -3.682f };
-
-    const Position LURKER_MAIN_TANK_POSITION = { 23.706f, -406.038f, -19.686f };
-
-    const Position KARATHRESS_TANK_POSITION = { 474.403f, -531.118f, -7.548f };
-    const Position TIDALVESS_TANK_POSITION = { 511.282f, -501.162f, -13.158f };
-    const Position SHARKKIS_TANK_POSITION = { 508.057f, -541.109f, -10.133f };
-    const Position CARIBDIS_TANK_POSITION = { 464.462f, -475.820f, -13.158f };
-    const Position CARIBDIS_HEALER_POSITION = { 466.203f, -503.201f, -13.158f };
-    const Position CARIBDIS_RANGED_DPS_POSITION = { 463.197f, -501.190f, -13.158f };
-
-    const Position TIDEWALKER_PHASE_1_TANK_POSITION = { 410.925f, -741.916f, -7.146f };
-    const Position TIDEWALKER_PHASE_TRANSITION_WAYPOINT = { 407.035f, -759.479f, -7.168f };
-    const Position TIDEWALKER_PHASE_2_TANK_POSITION = { 446.571f, -767.155f, -7.144f };
-    const Position TIDEWALKER_PHASE_2_RANGED_POSITION = { 432.595f, -766.288f, -7.145f };
-
-    const Position VASHJ_PLATFORM_CENTER_POSITION = { 29.634f, -923.541f, 42.985f };
+    // General Helpers
 
     void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId)
     {
@@ -149,6 +108,16 @@ namespace SerpentShrineCavernHelpers
         return nullptr;
     }
 
+    // Hydross the Unstable <Duke of Currents>
+
+    const Position HYDROSS_FROST_TANK_POSITION = { -236.669f, -358.352f, -0.828f };
+    const Position HYDROSS_NATURE_TANK_POSITION = { -225.471f, -327.790f, -3.682f };
+
+    std::unordered_map<uint32, time_t> hydrossFrostDpsWaitTimer;
+    std::unordered_map<uint32, time_t> hydrossNatureDpsWaitTimer;
+    std::unordered_map<uint32, time_t> hydrossChangeToFrostPhaseTimer;
+    std::unordered_map<uint32, time_t> hydrossChangeToNaturePhaseTimer;
+
     bool HasMarkOfHydrossAt100Percent(Player* bot)
     {
         return bot->HasAura(SPELL_MARK_OF_HYDROSS_100) ||
@@ -184,6 +153,13 @@ namespace SerpentShrineCavernHelpers
                !bot->HasAura(SPELL_MARK_OF_CORRUPTION_500);
     }
 
+    // The Lurker Below
+
+    const Position LURKER_MAIN_TANK_POSITION = { 23.706f, -406.038f, -19.686f };
+
+    std::unordered_map<uint32, time_t> lurkerSpoutTimer;
+    std::unordered_map<ObjectGuid, Position> lurkerRangedPositions;
+
     bool IsLurkerCastingSpout(Unit* lurker)
     {
         if (!lurker || !lurker->HasUnitState(UNIT_STATE_CASTING))
@@ -198,6 +174,12 @@ namespace SerpentShrineCavernHelpers
 
         return isSpout;
     }
+
+    // Leotheras the Blind
+
+    std::unordered_map<uint32, time_t> leotherasHumanFormDpsWaitTimer;
+    std::unordered_map<uint32, time_t> leotherasDemonFormDpsWaitTimer;
+    std::unordered_map<uint32, time_t> leotherasFinalPhaseDpsWaitTimer;
 
     Unit* GetLeotherasHuman(PlayerbotAI* botAI)
     {
@@ -275,6 +257,38 @@ namespace SerpentShrineCavernHelpers
         // otherwise nullptr (no Warlock tank for Leotheras)
         return fallbackWarlockTank;
     }
+
+    // Fathom-Lord Karathress
+
+    const Position KARATHRESS_TANK_POSITION = { 474.403f, -531.118f, -7.548f };
+    const Position TIDALVESS_TANK_POSITION = { 511.282f, -501.162f, -13.158f };
+    const Position SHARKKIS_TANK_POSITION = { 508.057f, -541.109f, -10.133f };
+    const Position CARIBDIS_TANK_POSITION = { 464.462f, -475.820f, -13.158f };
+    const Position CARIBDIS_HEALER_POSITION = { 466.203f, -503.201f, -13.158f };
+    const Position CARIBDIS_RANGED_DPS_POSITION = { 463.197f, -501.190f, -13.158f };
+
+    std::unordered_map<uint32, time_t> karathressDpsWaitTimer;
+
+    // Morogrim Tidewalker
+
+    const Position TIDEWALKER_PHASE_1_TANK_POSITION = { 410.925f, -741.916f, -7.146f };
+    const Position TIDEWALKER_PHASE_TRANSITION_WAYPOINT = { 407.035f, -759.479f, -7.168f };
+    const Position TIDEWALKER_PHASE_2_TANK_POSITION = { 446.571f, -767.155f, -7.144f };
+    const Position TIDEWALKER_PHASE_2_RANGED_POSITION = { 432.595f, -766.288f, -7.145f };
+
+    std::unordered_map<ObjectGuid, uint8> tidewalkerTankStep;
+    std::unordered_map<ObjectGuid, uint8> tidewalkerRangedStep;
+
+    // Lady Vashj <Coilfang Matron>
+
+    const Position VASHJ_PLATFORM_CENTER_POSITION = { 29.634f, -923.541f, 42.985f };
+
+    std::unordered_map<ObjectGuid, Position> vashjRangedPositions;
+    std::unordered_map<ObjectGuid, bool> hasReachedVashjRangedPosition;
+    std::unordered_map<uint32, ObjectGuid> nearestTriggerGuid;
+    std::unordered_map<ObjectGuid, Position> intendedLineup;
+    std::unordered_map<uint32, time_t> lastImbueAttempt;
+    std::unordered_map<uint32, time_t> lastCoreInInventoryTime;
 
     bool IsMainTankInSameSubgroup(Player* bot)
     {

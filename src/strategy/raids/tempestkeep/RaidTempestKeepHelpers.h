@@ -67,7 +67,7 @@ namespace TempestKeepHelpers
         NPC_WARP_SLICER                 = 21272,
         NPC_PHASESHIFT_BULWARK          = 21273,
         NPC_STAFF_OF_DISINTEGRATION     = 21274,
-        NPC_NETHER_VAPOR                = 21002, // Improperly implemented in AC; method needed if fixed
+        // NPC_NETHER_VAPOR             = 21002, // Improperly implemented in AC; method needed if fixed
         NPC_PHOENIX                     = 21362,
         NPC_FLAME_STRIKE_TRIGGER        = 21369,
     };
@@ -96,6 +96,23 @@ namespace TempestKeepHelpers
         LOCATION_NONE = -1
     };
 
+    // General
+    const uint32 TEMPEST_KEEP_MAP_ID = 550;
+    void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);
+    void MarkTargetWithSkull(Player* bot, Unit* target);
+    void MarkTargetWithSquare(Player* bot, Unit* target);
+    void MarkTargetWithStar(Player* bot, Unit* target);
+    void MarkTargetWithCircle(Player* bot, Unit* target);
+    void MarkTargetWithTriangle(Player* bot, Unit* target);
+    void MarkTargetWithDiamond(Player* bot, Unit* target);
+    void MarkTargetWithCross(Player* bot, Unit* target);
+    void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target);
+    Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry);
+    Unit* GetNearestPlayerInRadius(Player* bot, float radius);
+    Unit* GetNearestNonTankPlayerInRadius(Player* bot, float radius);
+
+    // Al'ar <Phoenix God>
+    const float ALAR_BALCONY_Z = 17.0f;
     extern const Position ALAR_PLATFORM_0;
     extern const Position ALAR_PLATFORM_1;
     extern const Position ALAR_PLATFORM_2;
@@ -112,9 +129,20 @@ namespace TempestKeepHelpers
     extern const Position ALAR_SE_RAMP_BASE;
     extern const Position ALAR_SW_RAMP_BASE;
     extern const Position ALAR_ROOM_S_CENTER;
+    int8 GetAlarDestinationLocationIndex(Unit* alar, Position& dest);
+    int8 GetAlarCurrentLocationIndex(Unit* alar);
+    void GetClosestPlatformAndGround(const Position& botPos, int8& closestPlatform, Position& ground);
+    bool IsAlarAddTank(PlayerbotAI* botAI, Player* bot);
 
+    // Void Reaver
     extern const Position VOID_REAVER_TANK_POSITION;
+    extern std::unordered_map<ObjectGuid, Position> initialVoidReaverPositions;
+    extern std::unordered_map<ObjectGuid, bool> hasReachedInitialVoidReaverPosition;
 
+    // High Astromancer Solarian
+    // N/A
+
+    // Kael'thas Sunstrider <Lord of the Blood Elves>
     extern const Position SANGUINAR_TANK_POSITION;
     extern const Position TELONICUS_TANK_POSITION;
     extern const Position ADVISOR_HEAL_POSITION;
@@ -122,37 +150,11 @@ namespace TempestKeepHelpers
     extern const Position KAELTHAS_AXE_TANK_POSITION;
     extern const Position KAELTHAS_BOW_TANK_POSITION;
     extern const Position KAELTHAS_TANK_POSITION;
-
-    const uint32 TEMPESTKEEP_MAP_ID = 550;
-    const float ALAR_BALCONY_Z = 17.0f;
-
-    void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);
-    void MarkTargetWithSkull(Player* bot, Unit* target);
-    void MarkTargetWithSquare(Player* bot, Unit* target);
-    void MarkTargetWithStar(Player* bot, Unit* target);
-    void MarkTargetWithCircle(Player* bot, Unit* target);
-    void MarkTargetWithTriangle(Player* bot, Unit* target);
-    void MarkTargetWithDiamond(Player* bot, Unit* target);
-    void MarkTargetWithCross(Player* bot, Unit* target);
-    void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target);
-    Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry);
-    Unit* GetNearestPlayerInRadius(Player* bot, float radius);
-    Unit* GetNearestNonTankPlayerInRadius(Player* bot, float radius);
-
-    int8 GetAlarDestinationLocationIndex(Unit* alar, Position& dest);
-    int8 GetAlarCurrentLocationIndex(Unit* alar);
-    void GetClosestPlatformAndGround(const Position& botPos, int8& closestPlatform, Position& ground);
-    bool IsAlarAddTank(PlayerbotAI* botAI, Player* bot);
-
+    extern std::unordered_map<uint32, time_t> advisorDpsWaitTimer;
     bool IsKaelthasMapIDTimerManager(PlayerbotAI* botAI, Player* bot);
     Player* GetCapernianTank(PlayerbotAI* botAI, Player* bot);
     Player* GetNetherstrandLongbowTank(PlayerbotAI* botAI, Player* bot);
     bool IsAnyLegendaryWeaponDead(PlayerbotAI* botAI, Player* bot);
-
-    extern std::unordered_map<ObjectGuid, Position> initialVoidReaverPositions;
-    extern std::unordered_map<ObjectGuid, bool> hasReachedInitialVoidReaverPosition;
-
-    extern std::unordered_map<uint32, time_t> advisorDpsWaitTimer;
 }
 
 #endif

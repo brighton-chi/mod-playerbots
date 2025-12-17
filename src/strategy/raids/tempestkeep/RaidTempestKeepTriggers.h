@@ -3,6 +3,8 @@
 
 #include "Trigger.h"
 
+// Trash
+
 class CrimsonHandCenturionCastsArcaneVolleyTrigger : public Trigger
 {
 public:
@@ -10,6 +12,8 @@ public:
         PlayerbotAI* botAI) : Trigger(botAI, "crimson hand centurion casts arcane volley") {}
     bool IsActive() override;
 };
+
+// Al'ar <Phoenix God>
 
 class AlarPullingBossTrigger : public Trigger
 {
@@ -75,6 +79,8 @@ public:
     bool IsActive() override;
 };
 
+// Void Reaver
+
 class VoidReaverBossEngagedByTankTrigger : public Trigger
 {
 public:
@@ -98,6 +104,8 @@ public:
         PlayerbotAI* botAI) : Trigger(botAI, "void reaver tanks lost aggro") {}
     bool IsActive() override;
 };
+
+// High Astromancer Solarian
 
 class HighAstromancerSolarianBossCastsWrathOfTheAstromancerTrigger : public Trigger
 {
@@ -146,6 +154,8 @@ public:
         PlayerbotAI* botAI) : Trigger(botAI, "high astromancer solarian boss casts psychic scream") {}
     bool IsActive() override;
 };
+
+// Kael'thas Sunstrider <Lord of the Blood Elves>
 
 class KaelthasSunstriderThaladredIsFixatedOnBotTrigger : public Trigger
 {

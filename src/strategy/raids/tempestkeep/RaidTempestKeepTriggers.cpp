@@ -476,7 +476,7 @@ bool KaelthasSunstriderLegendaryWeaponsAreEquippedTrigger::IsActive()
 
 bool KaelthasSunstriderLegendaryWeaponsWereLostTrigger::IsActive()
 {
-    if (bot->GetMapId() != TEMPESTKEEP_MAP_ID)
+    if (bot->GetMapId() != TEMPEST_KEEP_MAP_ID)
         return false;
 
     const uint32 KAELTHAS_DB_GUID = 158218;

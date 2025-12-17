@@ -105,51 +105,8 @@ namespace SerpentShrineCavernHelpers
         ITEM_HEAVY_NETHERWEAVE_NET   = 24269,
     };
 
+    // General
     const uint32 SSC_MAP_ID = 548;
-
-    extern std::unordered_map<uint32, time_t> hydrossFrostDpsWaitTimer;
-    extern std::unordered_map<uint32, time_t> hydrossNatureDpsWaitTimer;
-    extern std::unordered_map<uint32, time_t> hydrossChangeToFrostPhaseTimer;
-    extern std::unordered_map<uint32, time_t> hydrossChangeToNaturePhaseTimer;
-
-    extern std::unordered_map<uint32, time_t> lurkerSpoutTimer;
-    extern std::unordered_map<ObjectGuid, Position> lurkerRangedPositions;
-
-    extern std::unordered_map<uint32, time_t> leotherasHumanFormDpsWaitTimer;
-    extern std::unordered_map<uint32, time_t> leotherasDemonFormDpsWaitTimer;
-    extern std::unordered_map<uint32, time_t> leotherasFinalPhaseDpsWaitTimer;
-
-    extern std::unordered_map<uint32, time_t> karathressDpsWaitTimer;
-
-    extern std::unordered_map<ObjectGuid, uint8> tidewalkerTankStep;
-    extern std::unordered_map<ObjectGuid, uint8> tidewalkerRangedStep;
-
-    extern std::unordered_map<ObjectGuid, Position> vashjRangedPositions;
-    extern std::unordered_map<ObjectGuid, bool> hasReachedVashjRangedPosition;
-    extern std::unordered_map<uint32, ObjectGuid> nearestTriggerGuid;
-    extern std::unordered_map<ObjectGuid, Position> intendedLineup;
-    extern std::unordered_map<uint32, time_t> lastImbueAttempt;
-    extern std::unordered_map<uint32, time_t> lastCoreInInventoryTime;
-
-    extern const Position HYDROSS_FROST_TANK_POSITION;
-    extern const Position HYDROSS_NATURE_TANK_POSITION;
-
-    extern const Position LURKER_MAIN_TANK_POSITION;
-
-    extern const Position KARATHRESS_TANK_POSITION;
-    extern const Position TIDALVESS_TANK_POSITION;
-    extern const Position SHARKKIS_TANK_POSITION;
-    extern const Position CARIBDIS_TANK_POSITION;
-    extern const Position CARIBDIS_HEALER_POSITION;
-    extern const Position CARIBDIS_RANGED_DPS_POSITION;
-
-    extern const Position TIDEWALKER_PHASE_1_TANK_POSITION;
-    extern const Position TIDEWALKER_PHASE_TRANSITION_WAYPOINT;
-    extern const Position TIDEWALKER_PHASE_2_TANK_POSITION;
-    extern const Position TIDEWALKER_PHASE_2_RANGED_POSITION;
-
-    extern const Position VASHJ_PLATFORM_CENTER_POSITION;
-
     void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);
     void MarkTargetWithSkull(Player* bot, Unit* target);
     void MarkTargetWithSquare(Player* bot, Unit* target);
@@ -163,19 +120,59 @@ namespace SerpentShrineCavernHelpers
     bool IsMapIDTimerManager(PlayerbotAI* botAI, Player* bot);
     Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry);
 
+    // Hydross the Unstable <Duke of Currents>
+    extern const Position HYDROSS_FROST_TANK_POSITION;
+    extern const Position HYDROSS_NATURE_TANK_POSITION;
+    extern std::unordered_map<uint32, time_t> hydrossFrostDpsWaitTimer;
+    extern std::unordered_map<uint32, time_t> hydrossNatureDpsWaitTimer;
+    extern std::unordered_map<uint32, time_t> hydrossChangeToFrostPhaseTimer;
+    extern std::unordered_map<uint32, time_t> hydrossChangeToNaturePhaseTimer;
     bool HasMarkOfHydrossAt100Percent(Player* bot);
     bool HasNoMarkOfHydross(Player* bot);
     bool HasMarkOfCorruptionAt100Percent(Player* bot);
     bool HasNoMarkOfCorruption(Player* bot);
 
+    // The Lurker Below
+    extern const Position LURKER_MAIN_TANK_POSITION;
+    extern std::unordered_map<uint32, time_t> lurkerSpoutTimer;
+    extern std::unordered_map<ObjectGuid, Position> lurkerRangedPositions;
     bool IsLurkerCastingSpout(Unit* lurker);
 
+    // Leotheras the Blind
+    extern std::unordered_map<uint32, time_t> leotherasHumanFormDpsWaitTimer;
+    extern std::unordered_map<uint32, time_t> leotherasDemonFormDpsWaitTimer;
+    extern std::unordered_map<uint32, time_t> leotherasFinalPhaseDpsWaitTimer;
     Unit* GetLeotherasHuman(PlayerbotAI* botAI);
     Unit* GetPhase2LeotherasDemon(PlayerbotAI* botAI);
     Unit* GetPhase3LeotherasDemon(PlayerbotAI* botAI);
     Unit* GetActiveLeotherasDemon(PlayerbotAI* botAI);
     Player* GetLeotherasDemonFormTank(PlayerbotAI* botAI, Player* bot);
 
+    // Fathom-Lord Karathress
+    extern const Position KARATHRESS_TANK_POSITION;
+    extern const Position TIDALVESS_TANK_POSITION;
+    extern const Position SHARKKIS_TANK_POSITION;
+    extern const Position CARIBDIS_TANK_POSITION;
+    extern const Position CARIBDIS_HEALER_POSITION;
+    extern const Position CARIBDIS_RANGED_DPS_POSITION;
+    extern std::unordered_map<uint32, time_t> karathressDpsWaitTimer;
+
+    // Morogrim Tidewalker
+    extern const Position TIDEWALKER_PHASE_1_TANK_POSITION;
+    extern const Position TIDEWALKER_PHASE_TRANSITION_WAYPOINT;
+    extern const Position TIDEWALKER_PHASE_2_TANK_POSITION;
+    extern const Position TIDEWALKER_PHASE_2_RANGED_POSITION;
+    extern std::unordered_map<ObjectGuid, uint8> tidewalkerTankStep;
+    extern std::unordered_map<ObjectGuid, uint8> tidewalkerRangedStep;
+
+    // Lady Vashj <Coilfang Matron>
+    extern const Position VASHJ_PLATFORM_CENTER_POSITION;
+    extern std::unordered_map<ObjectGuid, Position> vashjRangedPositions;
+    extern std::unordered_map<ObjectGuid, bool> hasReachedVashjRangedPosition;
+    extern std::unordered_map<uint32, ObjectGuid> nearestTriggerGuid;
+    extern std::unordered_map<ObjectGuid, Position> intendedLineup;
+    extern std::unordered_map<uint32, time_t> lastImbueAttempt;
+    extern std::unordered_map<uint32, time_t> lastCoreInInventoryTime;
     bool IsMainTankInSameSubgroup(Player* bot);
     bool IsLadyVashjInPhase1(PlayerbotAI* botAI);
     bool IsLadyVashjInPhase2(PlayerbotAI* botAI);
@@ -187,13 +184,7 @@ namespace SerpentShrineCavernHelpers
     Player* GetSecondTaintedCorePasser(Group* group, PlayerbotAI* botAI);
     Player* GetThirdTaintedCorePasser(Group* group, PlayerbotAI* botAI);
     Player* GetFourthTaintedCorePasser(Group* group, PlayerbotAI* botAI);
-
-    struct GeneratorInfo
-    {
-        ObjectGuid guid;
-        float x, y, z;
-    };
-
+    struct GeneratorInfo { ObjectGuid guid; float x, y, z; };
     extern const std::vector<uint32> SHIELD_GENERATOR_DB_GUIDS;
     std::vector<GeneratorInfo> GetAllGeneratorInfosByDbGuids(
         Map* map, const std::vector<uint32>& generatorDbGuids);

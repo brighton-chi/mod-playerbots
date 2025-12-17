@@ -5,6 +5,8 @@
 #include "AttackAction.h"
 #include "MovementActions.h"
 
+// Trash
+
 class AmanishiMedicineManMarkWardAction : public Action
 {
 public:
@@ -12,6 +14,8 @@ public:
         PlayerbotAI* botAI, std::string const name = "amani'shi medicine man mark ward") : Action(botAI, name) {}
     bool Execute(Event event) override;
 };
+
+// Akil'zon <Eagle Avatar>
 
 class AkilzonMisdirectBossToMainTankAction : public AttackAction
 {
@@ -45,6 +49,8 @@ public:
     bool Execute(Event event) override;
 };
 
+// Nalorakk <Bear Avatar>
+
 class NalorakkMisdirectBossToMainTankAction : public AttackAction
 {
 public:
@@ -72,6 +78,8 @@ public:
         PlayerbotAI* botAI, std::string const name = "nalorakk spread ranged") : MovementAction(botAI, name) {}
     bool Execute(Event event) override;
 };
+
+// Jan'alai <Dragonhawk Avatar>
 
 class JanalaiMisdirectBossToMainTankAction : public AttackAction
 {
@@ -117,6 +125,8 @@ public:
     bool Execute(Event event) override;
 };
 
+// Halazzi <Lynx Avatar>
+
 class HalazziMisdirectBossToMainTankAction : public AttackAction
 {
 public:
@@ -149,6 +159,8 @@ public:
     bool Execute(Event event) override;
 };
 
+// Hex Lord Malacrass
+
 class HexLordMalacrassMisdirectBossToMainTankAction : public AttackAction
 {
 public:
@@ -180,6 +192,8 @@ public:
         PlayerbotAI* botAI, std::string const name = "hex lord malacrass dispel mind control") : Action(botAI, name) {}
     bool Execute(Event event) override;
 };
+
+// Zul'jin
 
 class ZuljinMisdirectBossToMainTankAction : public AttackAction
 {

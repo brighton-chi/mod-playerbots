@@ -5,14 +5,7 @@
 
 namespace ZulAmanHelpers
 {
-    const Position AKILZON_TANK_POSITION = { 378.369f, 1407.718f, 74.797f };
-    const Position NALORAKK_TANK_POSITION = { -80.208f, 1324.530f, 40.942f };
-    const Position JANALAI_TANK_POSITION = { -33.873f, 1149.571f, 19.146f };
-    const Position HALAZZI_TANK_POSITION = { 370.733f, 1131.202f, 6.516f };
-    const Position MALACRASS_TANK_POSITION = { 118.713f, 996.234f, 30.650f }; // 30.62356f is actual Z
-    const Position ZULJIN_TANK_POSITION = { 120.210f, 705.564f, 45.111f };
-
-    std::unordered_map<ObjectGuid, Position> janalaiRangedPositions;
+    // General Helpers
 
     void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId)
     {
@@ -144,6 +137,9 @@ namespace ZulAmanHelpers
         return nearestPlayer;
     }
 
+    // Akil'zon <Eagle Avatar>
+    const Position AKILZON_TANK_POSITION = { 378.369f, 1407.718f, 74.797f };
+
     bool AnyGroupMemberHasElectricalStorm(Player* bot)
     {
         Group* group = bot->GetGroup();
@@ -161,6 +157,13 @@ namespace ZulAmanHelpers
         }
         return false;
     }
+
+    // Nalorakk <Bear Avatar>
+    const Position NALORAKK_TANK_POSITION = { -80.208f, 1324.530f, 40.942f };
+
+    // Jan'alai <Dragonhawk Avatar>
+    const Position JANALAI_TANK_POSITION = { -33.873f, 1149.571f, 19.146f };
+    std::unordered_map<ObjectGuid, Position> janalaiRangedPositions;
 
     std::pair<Unit*, Unit*> GetAmaniHatcherPair(PlayerbotAI* botAI)
     {
@@ -185,4 +188,13 @@ namespace ZulAmanHelpers
 
         return {lowest, highest};
     }
+
+    // Halazzi <Lynx Avatar>
+    const Position HALAZZI_TANK_POSITION = { 370.733f, 1131.202f, 6.516f };
+
+    // Hex Lord Malacrass
+    const Position MALACRASS_TANK_POSITION = { 118.713f, 996.234f, 30.650f }; // 30.62356f is actual Z
+
+    // Zul'jin
+    const Position ZULJIN_TANK_POSITION = { 120.210f, 705.564f, 45.111f };
 }

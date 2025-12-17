@@ -62,17 +62,8 @@ namespace ZulAmanHelpers
         NPC_KORAGG                     = 24247,
     };
 
+    // General
     const uint32 ZULAMAN_MAP_ID = 568;
-
-    extern const Position AKILZON_TANK_POSITION;
-    extern const Position NALORAKK_TANK_POSITION;
-    extern const Position JANALAI_TANK_POSITION;
-    extern const Position HALAZZI_TANK_POSITION;
-    extern const Position MALACRASS_TANK_POSITION;
-    extern const Position ZULJIN_TANK_POSITION;
-
-    extern std::unordered_map<ObjectGuid, Position> janalaiRangedPositions;
-
     void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);
     void MarkTargetWithSkull(Player* bot, Unit* target);
     void MarkTargetWithStar(Player* bot, Unit* target);
@@ -83,8 +74,27 @@ namespace ZulAmanHelpers
     Unit* GetFirstAliveUnitByEntries(PlayerbotAI* botAI, const std::vector<uint32>& entries);
     bool AnyNearbyNpcWithEntry(PlayerbotAI* botAI, uint32 entry);
     Unit* GetNearestPlayerInRadius(Player* bot, float radius);
+
+    // Akil'zon <Eagle Avatar>
+    extern const Position AKILZON_TANK_POSITION;
     bool AnyGroupMemberHasElectricalStorm(Player* bot);
+
+    // Nalorakk <Bear Avatar>
+    extern const Position NALORAKK_TANK_POSITION;
+
+    // Jan'alai <Dragonhawk Avatar>
+    extern const Position JANALAI_TANK_POSITION;
+    extern std::unordered_map<ObjectGuid, Position> janalaiRangedPositions;
     std::pair<Unit*, Unit*> GetAmaniHatcherPair(PlayerbotAI* botAI);
+
+    // Halazzi <Lynx Avatar>
+    extern const Position HALAZZI_TANK_POSITION;
+
+    // Hex Lord Malacrass
+    extern const Position MALACRASS_TANK_POSITION;
+
+    // Zul'jin
+    extern const Position ZULJIN_TANK_POSITION;
 }
 
 #endif

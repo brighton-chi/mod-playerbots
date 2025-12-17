@@ -3,6 +3,8 @@
 
 #include "Multiplier.h"
 
+// Akil'zon <Eagle Avatar>
+
 class AkilzonDisableTankActionsMultiplier : public Multiplier
 {
 public:
@@ -19,6 +21,8 @@ public:
     virtual float GetValue(Action* action);
 };
 
+// Nalorakk <Bear Avatar>
+
 class NalorakkDisableTankActionsMultiplier : public Multiplier
 {
 public:
@@ -34,6 +38,8 @@ public:
         botAI, "nalorakk control misdirection") {}
     virtual float GetValue(Action* action);
 };
+
+// Jan'alai <Dragonhawk Avatar>
 
 class JanalaiDisableTankActionsMultiplier : public Multiplier
 {
@@ -67,6 +73,8 @@ public:
     virtual float GetValue(Action* action);
 };
 
+// Halazzi <Lynx Avatar>
+
 class HalazziDisableTankActionsMultiplier : public Multiplier
 {
 public:
@@ -83,6 +91,8 @@ public:
     virtual float GetValue(Action* action);
 };
 
+// Hex Lord Malacrass
+
 class HexLordMalacrassDoNotDispelUnstableAfflictionMultiplier : public Multiplier
 {
 public:
@@ -90,6 +100,8 @@ public:
         botAI, "hex lord malacrass do not dispel unstable affliction") {}
     virtual float GetValue(Action* action);
 };
+
+// Zul'jin
 
 class ZuljinDisableTankActionsMultiplier : public Multiplier
 {
