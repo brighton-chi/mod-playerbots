@@ -26,6 +26,9 @@ namespace HyjalSummitHelpers
 
         // Hunter
         SPELL_MISDIRECTION             = 35079,
+
+        // Priest
+        SPELL_FEAR_WARD                 =  6346,
     };
 
     enum HyjalSummitNPCs
@@ -37,6 +40,7 @@ namespace HyjalSummitHelpers
     // General
     const uint32 HYJAL_SUMMIT_MAP_ID = 534;
     void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);
+    void MarkTargetWithSkull(Player* bot, Unit* target);
     void MarkTargetWithSquare(Player* bot, Unit* target);
     void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target);
     Unit* GetNearestPlayerInRadius(Player* bot, float radius);
@@ -55,9 +59,12 @@ namespace HyjalSummitHelpers
 
     // Kaz'rogal
     extern const Position KAZROGAL_TANK_POSITION;
+    extern std::unordered_map<ObjectGuid, Position> kazrogalRangedPositions;
 
     // Azgalor
-    extern const Position AZGALOR_TANK_POSITION;
+    extern const Position AZGALOR_MAIN_TANK_POSITION;
+    extern const Position AZGALOR_DOOMGUARD_TANK_POSITION;
+    extern std::unordered_map<ObjectGuid, Position> azgalorRangedPositions;
 
     // Archimonde
     extern const Position ARCHIMONDE_TANK_POSITION;

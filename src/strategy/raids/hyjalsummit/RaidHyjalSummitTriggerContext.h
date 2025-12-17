@@ -39,11 +39,49 @@ public:
             &RaidHyjalSummitTriggerContext::anetheron_infernals_despawn_when_boss_dies;
 
         // Kaz'rogal
+        creators["kaz'rogal pulling boss"] =
+            &RaidHyjalSummitTriggerContext::kazrogal_pulling_boss;
+
+        creators["kaz'rogal boss engaged by main tank"] =
+            &RaidHyjalSummitTriggerContext::kazrogal_boss_engaged_by_main_tank;
+
+        creators["kaz'rogal boss engaged by assist tanks"] =
+            &RaidHyjalSummitTriggerContext::kazrogal_boss_engaged_by_assist_tanks;
+
+        creators["kaz'rogal bot is low on mana"] =
+            &RaidHyjalSummitTriggerContext::kazrogal_bot_is_low_on_mana;
+
+        creators["kaz'rogal bot is low on mana"] =
+            &RaidHyjalSummitTriggerContext::kazrogal_bot_is_low_on_mana;
+
+        creators["kaz'rogal mage or paladin has mark of kaz'rogal"] =
+            &RaidHyjalSummitTriggerContext::kazrogal_mage_or_paladin_has_mark_of_kazrogal;
 
         // Azgalor
+        creators["azgalor pulling boss"] =
+            &RaidHyjalSummitTriggerContext::azgalor_pulling_boss;
+
+        creators["azgalor boss engaged by main tank"] =
+            &RaidHyjalSummitTriggerContext::azgalor_boss_engaged_by_main_tank;
+
+        creators["azgalor boss casts rain of fire"] =
+            &RaidHyjalSummitTriggerContext::azgalor_boss_casts_rain_of_fire;
+
+        creators["azgalor bot is doomed"] =
+            &RaidHyjalSummitTriggerContext::azgalor_bot_is_doomed;
+
+        creators["azgalor doomguard spawned"] =
+            &RaidHyjalSummitTriggerContext::azgalor_doomguard_spawned;
 
         // Archimonde
+        creators["archimonde pulling boss"] =
+            &RaidHyjalSummitTriggerContext::archimonde_pulling_boss;
 
+        creators["archimonde boss engaged by main tank"] =
+            &RaidHyjalSummitTriggerContext::archimonde_boss_engaged_by_main_tank;
+
+        creators["archimonde boss casts fear"] =
+            &RaidHyjalSummitTriggerContext::archimonde_boss_casts_fear;
     }
 
 private:
@@ -77,11 +115,49 @@ private:
         PlayerbotAI* botAI) { return new AnetheronInfernalsDespawnWhenBossDiesTrigger(botAI); }
 
     // Kaz'rogal
+    static Trigger* kazrogal_pulling_boss(
+        PlayerbotAI* botAI) { return new KazrogalPullingBossTrigger(botAI); }
+
+    static Trigger* kazrogal_boss_engaged_by_main_tank(
+        PlayerbotAI* botAI) { return new KazrogalBossEngagedByMainTankTrigger(botAI); }
+
+    static Trigger* kazrogal_boss_engaged_by_assist_tanks(
+        PlayerbotAI* botAI) { return new KazrogalBossEngagedByAssistTanksTrigger(botAI); }
+
+    static Trigger* kazrogal_low_mana_bots_need_escape_path(
+        PlayerbotAI* botAI) { return new KazrogalLowManaBotsNeedEscapePathTrigger(botAI); }
+
+    static Trigger* kazrogal_bot_is_low_on_mana(
+        PlayerbotAI* botAI) { return new KazrogalBotIsLowOnManaTrigger(botAI); }
+
+    static Trigger* kazrogal_mage_or_paladin_has_mark_of_kazrogal(
+        PlayerbotAI* botAI) { return new KazrogalMageOrPaladinHasMarkOfKazrogalTrigger(botAI); }
 
     // Azgalor
+    static Trigger* azgalor_pulling_boss(
+        PlayerbotAI* botAI) { return new AzgalorPullingBossTrigger(botAI); }
+
+    static Trigger* azgalor_boss_engaged_by_main_tank(
+        PlayerbotAI* botAI) { return new AzgalorBossEngagedByMainTankTrigger(botAI); }
+
+    static Trigger* azgalor_boss_casts_rain_of_fire(
+        PlayerbotAI* botAI) { return new AzgalorBossCastsRainOfFireTrigger(botAI); }
+
+    static Trigger* azgalor_bot_is_doomed(
+        PlayerbotAI* botAI) { return new AzgalorBotIsDoomedTrigger(botAI); }
+
+    static Trigger* azgalor_doomguard_spawned(
+        PlayerbotAI* botAI) { return new AzgalorDoomguardSpawnedTrigger(botAI); }
 
     // Archimonde
+    static Trigger* archimonde_pulling_boss(
+        PlayerbotAI* botAI) { return new ArchimondePullingBossTrigger(botAI); }
 
+    static Trigger* archimonde_boss_engaged_by_main_tank(
+        PlayerbotAI* botAI) { return new ArchimondeBossEngagedByMainTankTrigger(botAI); }
+
+    static Trigger* archimonde_boss_casts_fear(
+        PlayerbotAI* botAI) { return new ArchimondeBossCastsFearTrigger(botAI); }
 };
 
 #endif

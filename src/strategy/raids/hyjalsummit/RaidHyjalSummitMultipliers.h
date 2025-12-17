@@ -3,6 +3,14 @@
 
 #include "Multiplier.h"
 
+class HyjalSummitTimeBloodlustAndHeroismMultiplier : public Multiplier
+{
+public:
+    HyjalSummitTimeBloodlustAndHeroismMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "hyjal summit time bloodlust and heroism multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
 // Rage Winterchill
 
 class RageWinterchillDelayBloodlustAndHeroismMultiplier : public Multiplier
@@ -31,6 +39,14 @@ public:
 
 // Anetheron
 
+class AnetheronDelayBloodlustAndHeroismMultiplier : public Multiplier
+{
+public:
+    AnetheronDelayBloodlustAndHeroismMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "anetheron delay bloodlust and heroism multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
 class AnetheronDisableTankActionsMultiplier : public Multiplier
 {
 public:
@@ -47,11 +63,11 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class AnetheronDelayBloodlustAndHeroismMultiplier : public Multiplier
+class AnetheronInfernalTankMaintainPositionMultiplier : public Multiplier
 {
 public:
-    AnetheronDelayBloodlustAndHeroismMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "anetheron delay bloodlust and heroism multiplier") {}
+    AnetheronInfernalTankMaintainPositionMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "anetheron infernal tank maintain position multiplier") {}
     virtual float GetValue(Action* action);
 };
 
@@ -73,7 +89,23 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class KazrogalLowManaBotStayAwayFromGroupMultiplier : public Multiplier
+{
+public:
+    KazrogalLowManaBotStayAwayFromGroupMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "kaz'rogal low mana bot stay away from group multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
 // Azgalor
+
+class AzgalorDisableTankAssistMultiplier : public Multiplier
+{
+public:
+    AzgalorDisableTankAssistMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "azgalor disable tank assist multiplier") {}
+    virtual float GetValue(Action* action);
+};
 
 class AzgalorDelayBloodlustAndHeroismMultiplier : public Multiplier
 {

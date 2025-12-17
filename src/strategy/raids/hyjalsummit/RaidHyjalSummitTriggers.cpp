@@ -78,29 +78,6 @@ bool AnetheronBotIsTargetedByInfernalTrigger::IsActive()
     if (!anetheron)
         return false;
 
-    // Debug logging for inferno targeting
-    Spell* spell = anetheron->GetCurrentSpell(CURRENT_GENERIC_SPELL);
-    if (spell)
-    {
-        LOG_DEBUG("playerbots", "Anetheron current spell id: {}", spell->m_spellInfo->Id);
-        if (spell->m_spellInfo->Id == SPELL_INFERNO)
-        {
-            Unit* spellTarget = spell->m_targets.GetUnitTarget();
-            if (spellTarget)
-            {
-                LOG_DEBUG("playerbots", "Inferno spell target guid: {} bot guid: {}", spellTarget->GetGUID().ToString(), bot->GetGUID().ToString());
-            }
-            else
-            {
-                LOG_DEBUG("playerbots", "Inferno spell target is nullptr");
-            }
-        }
-    }
-    else
-    {
-        LOG_DEBUG("playerbots", "Anetheron has no current spell");
-    }
-
     if (IsBotTargetedByInferno(anetheron, bot))
         return true;
 
@@ -131,7 +108,164 @@ bool AnetheronInfernalsDespawnWhenBossDiesTrigger::IsActive()
 
 // Kaz'rogal
 
+bool KazrogalPullingBossTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_HUNTER)
+        return false;
+
+    Unit* kazrogal = AI_VALUE2(Unit*, "find target", "kaz'rogal");
+    return kazrogal && kazrogal->GetHealthPct() > 95.0f;
+}
+
+bool KazrogalBossEngagedByMainTankTrigger::IsActive()
+{
+    if (!botAI->IsMainTank(bot))
+        return false;
+
+    Unit* kazrogal = AI_VALUE2(Unit*, "find target", "kaz'rogal");
+    return kazrogal != nullptr;
+}
+
+bool KazrogalBossEngagedByAssistTanksTrigger::IsActive()
+{
+    if (!botAI->IsAssistTank(bot))
+        return false;
+
+    Unit* kazrogal = AI_VALUE2(Unit*, "find target", "kaz'rogal");
+    if (!kazrogal)
+        return false;
+
+    return bot->GetPower(POWER_MANA) > 3000;
+}
+
+bool KazrogalLowManaBotsNeedEscapePathTrigger::IsActive()
+{
+    if (!botAI->IsRanged(bot))
+        return false;
+
+    Unit* kazrogal = AI_VALUE2(Unit*, "find target", "kaz'rogal");
+    if (!kazrogal)
+        return false;
+
+    return bot->GetPower(POWER_MANA) > 3000;
+}
+
+bool KazrogalBotIsLowOnManaTrigger::IsActive()
+{
+    uint8 tab = GetPlayerSpecTab(bot);
+    if (bot->getClass() == CLASS_WARRIOR ||
+        bot->getClass() == CLASS_ROGUE ||
+        bot->getClass() == CLASS_DEATH_KNIGHT ||
+        (bot->getClass() == CLASS_DRUID && tab == DRUID_TAB_FERAL))
+        return false;
+
+    Unit* kazrogal = AI_VALUE2(Unit*, "find target", "kaz'rogal");
+    if (!kazrogal)
+        return false;
+
+    return bot->GetPower(POWER_MANA) <= 3000;
+}
+
+bool KazrogalMageOrPaladinHasMarkOfKazrogalTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_MAGE &&
+        bot->getClass() != CLASS_PALADIN)
+        return false;
+
+    Unit* kazrogal = AI_VALUE2(Unit*, "find target", "kaz'rogal");
+    if (!kazrogal)
+        return false;
+
+    return bot->HasAura(SPELL_MARK_OF_KAZROGAL);
+}
+
 // Azgalor
+
+bool AzgalorPullingBossTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_HUNTER)
+        return false;
+
+    Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
+    return azgalor && azgalor->GetHealthPct() > 95.0f;
+}
+
+bool AzgalorBossEngagedByMainTankTrigger::IsActive()
+{
+    if (!botAI->IsMainTank(bot))
+        return false;
+
+    Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
+    return azgalor != nullptr;
+}
+
+bool AzgalorBossCastsRainOfFireTrigger::IsActive()
+{
+    if (!botAI->IsRanged(bot))
+        return false;
+
+    Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
+    if (!azgalor)
+        return false;
+
+    return !bot->HasAura(SPELL_DOOM);
+}
+
+bool AzgalorBotIsDoomedTrigger::IsActive()
+{
+    return bot->HasAura(SPELL_DOOM);
+}
+
+bool AzgalorDoomguardSpawnedTrigger::IsActive()
+{
+    Unit* doomguard = AI_VALUE2(Unit*, "find target", "lesser doomguard");
+    return doomguard != nullptr;
+}
 
 // Archimonde
 
+bool ArchimondePullingBossTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_HUNTER)
+        return false;
+
+    Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
+    return archimonde && archimonde->GetHealthPct() > 95.0f;
+}
+
+bool ArchimondeBossEngagedByMainTankTrigger::IsActive()
+{
+    if (!botAI->IsMainTank(bot))
+        return false;
+
+    Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
+    return archimonde != nullptr;
+}
+
+bool ArchimondeBossCastsFearTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_PRIEST)
+        return false;
+
+    Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
+    if (!archimonde)
+        return false;
+
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    Player* mainTank = nullptr;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && botAI->IsMainTank(member))
+        {
+            mainTank = member;
+            break;
+        }
+    }
+
+    return mainTank && !mainTank->HasAura(SPELL_FEAR_WARD) &&
+           botAI->CanCastSpell("fear ward", mainTank);
+}

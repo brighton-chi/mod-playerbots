@@ -81,9 +81,120 @@ public:
 
 // Kaz'rogal
 
+class KazrogalPullingBossTrigger : public Trigger
+{
+public:
+    KazrogalPullingBossTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "kaz'rogal pulling boss") {}
+    bool IsActive() override;
+};
+
+class KazrogalBossEngagedByMainTankTrigger : public Trigger
+{
+public:
+    KazrogalBossEngagedByMainTankTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "kaz'rogal boss engaged by main tank") {}
+    bool IsActive() override;
+};
+
+class KazrogalBossEngagedByAssistTanksTrigger : public Trigger
+{
+public:
+    KazrogalBossEngagedByAssistTanksTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "kaz'rogal boss engaged by assist tanks") {}
+    bool IsActive() override;
+};
+
+class KazrogalLowManaBotsNeedEscapePathTrigger : public Trigger
+{
+public:
+    KazrogalLowManaBotsNeedEscapePathTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "kaz'rogal low mana bots need escape path") {}
+    bool IsActive() override;
+};
+
+class KazrogalBotIsLowOnManaTrigger : public Trigger
+{
+public:
+    KazrogalBotIsLowOnManaTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "kaz'rogal bot is low on mana") {}
+    bool IsActive() override;
+};
+
+class KazrogalMageOrPaladinHasMarkOfKazrogalTrigger : public Trigger
+{
+public:
+    KazrogalMageOrPaladinHasMarkOfKazrogalTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "kaz'rogal mage or paladin has mark of kaz'rogal") {}
+    bool IsActive() override;
+};
+
 // Azgalor
+
+class AzgalorPullingBossTrigger : public Trigger
+{
+public:
+    AzgalorPullingBossTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "azgalor pulling boss") {}
+    bool IsActive() override;
+};
+
+class AzgalorBossEngagedByMainTankTrigger : public Trigger
+{
+public:
+    AzgalorBossEngagedByMainTankTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "azgalor boss engaged by main tank") {}
+    bool IsActive() override;
+};
+
+class AzgalorBossCastsRainOfFireTrigger : public Trigger
+{
+public:
+    AzgalorBossCastsRainOfFireTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "azgalor boss casts rain of fire") {}
+    bool IsActive() override;
+};
+
+class AzgalorBotIsDoomedTrigger : public Trigger
+{
+public:
+    AzgalorBotIsDoomedTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "azgalor bot is doomed") {}
+    bool IsActive() override;
+};
+
+class AzgalorDoomguardSpawnedTrigger : public Trigger
+{
+public:
+    AzgalorDoomguardSpawnedTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "azgalor doomguard spawned") {}
+    bool IsActive() override;
+};
 
 // Archimonde
 
+class ArchimondePullingBossTrigger : public Trigger
+{
+public:
+    ArchimondePullingBossTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "archimonde pulling boss") {}
+    bool IsActive() override;
+};
+
+class ArchimondeBossEngagedByMainTankTrigger : public Trigger
+{
+public:
+    ArchimondeBossEngagedByMainTankTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "archimonde boss engaged by main tank") {}
+    bool IsActive() override;
+};
+
+class ArchimondeBossCastsFearTrigger : public Trigger
+{
+public:
+    ArchimondeBossCastsFearTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "archimonde boss casts fear") {}
+    bool IsActive() override;
+};
 
 #endif

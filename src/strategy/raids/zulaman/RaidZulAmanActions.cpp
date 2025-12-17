@@ -242,7 +242,7 @@ bool NalorakkTanksPositionBossAction::MainTankPositionTrollForm(
         float bossZ = nalorakk->GetPositionZ();
         float bossO = nalorakk->GetOrientation();
 
-        // Distance in front of boss to stand (e.g., 3 yards)
+        // Distance in front of boss to stand
         float frontDist = 3.0f;
         float targetX = bossX + std::cos(bossO) * frontDist;
         float targetY = bossY + std::sin(bossO) * frontDist;

@@ -20,6 +20,11 @@ namespace HyjalSummitHelpers
         }
     }
 
+    void MarkTargetWithSkull(Player* bot, Unit* target)
+    {
+        MarkTargetWithIcon(bot, target, RtiTargetValue::skullIndex);
+    }
+
     void MarkTargetWithSquare(Player* bot, Unit* target)
     {
         MarkTargetWithIcon(bot, target, RtiTargetValue::squareIndex);
@@ -90,8 +95,8 @@ namespace HyjalSummitHelpers
 
     // Anetheron
 
-    const Position ANETHERON_MAIN_TANK_POSITION = { 5026.900f, -1757.163f, 1323.403f };
-    const Position ANETHERON_INFERNAL_TANK_POSITION = { 4998.080f, -1766.223f, 1329.452f };
+    const Position ANETHERON_MAIN_TANK_POSITION = { 5026.900f, -1757.163f, 1323.403f }; // Closer to gate
+    const Position ANETHERON_INFERNAL_TANK_POSITION = { 5024.107f, -1787.967f, 1321.832f }; // Back toward ballista
     std::unordered_map<ObjectGuid, Position> anetheronRangedPositions;
 
     bool IsBotTargetedByInferno(Unit* anetheron, Player* bot)
@@ -112,11 +117,14 @@ namespace HyjalSummitHelpers
 
     // Kaz'rogal
 
-    const Position KAZROGAL_TANK_POSITION = { 0.0f, 0.0f, 0.0f };
+    const Position KAZROGAL_TANK_POSITION = { 5501.381f, -2736.129f, 1487.012f }; // toward back of weird strip land between paths
+    std::unordered_map<ObjectGuid, Position> kazrogalRangedPositions;
 
     // Azgalor
 
-    const Position AZGALOR_TANK_POSITION = { 0.0f, 0.0f, 0.0f };
+    const Position AZGALOR_MAIN_TANK_POSITION = { 5492.193f, -2726.423f, 1484.705f }; // In middleish of the weird strip of land between paths
+    const Position AZGALOR_DOOMGUARD_TANK_POSITION = { 5487.0f, -2745.0f, 1484.705f };
+    std::unordered_map<ObjectGuid, Position> azgalorRangedPositions;
 
     // Archimonde
 
