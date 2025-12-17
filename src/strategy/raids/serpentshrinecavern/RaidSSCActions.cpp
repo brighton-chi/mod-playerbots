@@ -2141,9 +2141,9 @@ bool LadyVashjLootTaintedCoreAction::Execute(Event)
         const ObjectGuid corpseGuid = guid;
         const uint8 coreIndex = 0;
 
-        botAI->AddTimedEvent([botGuid, corpseGuid, coreIndex]()
+        botAI->AddTimedEvent([botGuid, corpseGuid, coreIndex, vashj]()
         {
-        Player* receiver = botGuid.IsEmpty() ? nullptr : ObjectAccessor::FindPlayer(botGuid);
+            Player* receiver = botGuid.IsEmpty() ? nullptr : ObjectAccessor::FindPlayer(botGuid);
             if (!receiver)
                 return;
 

@@ -3,6 +3,7 @@
 #include "RaidTempestKeepHelpers.h"
 #include "RaidTempestKeepBossAI.h"
 #include "ChooseTargetActions.h"
+#include "DKActions.h"
 #include "DruidBearActions.h"
 #include "EquipAction.h"
 #include "FollowActions.h"
@@ -97,7 +98,8 @@ float AlarPhase2NoTankingIfArmorMeltedMultiplier::GetValue(Action* action)
     {
         if (dynamic_cast<CastTauntAction*>(action) ||
             dynamic_cast<CastGrowlAction*>(action) ||
-            dynamic_cast<CastHandOfReckoningAction*>(action))
+            dynamic_cast<CastHandOfReckoningAction*>(action) ||
+            dynamic_cast<CastDarkCommandAction*>(action))
             return 0.0f;
     }
 

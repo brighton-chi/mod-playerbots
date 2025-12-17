@@ -677,7 +677,7 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
             return 0.0f;
     }
 
-    if (AnyRecentCoreInInventory(group))
+    if (AnyRecentCoreInInventory(group, botAI))
     {
         if (!dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action))
             return 0.0f;

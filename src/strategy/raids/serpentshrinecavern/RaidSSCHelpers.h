@@ -178,7 +178,7 @@ namespace SerpentShrineCavernHelpers
     bool IsLadyVashjInPhase2(PlayerbotAI* botAI);
     bool IsLadyVashjInPhase3(PlayerbotAI* botAI);
     bool IsValidLadyVashjCombatNpc(Unit* unit, PlayerbotAI* botAI);
-    bool AnyRecentCoreInInventory(Group* group, uint32 graceSeconds = 3);
+    bool AnyRecentCoreInInventory(Group* group, PlayerbotAI* botAI, uint32 graceSeconds = 3);
     Player* GetDesignatedCoreLooter(Group* group, PlayerbotAI* botAI);
     Player* GetFirstTaintedCorePasser(Group* group, PlayerbotAI* botAI);
     Player* GetSecondTaintedCorePasser(Group* group, PlayerbotAI* botAI);

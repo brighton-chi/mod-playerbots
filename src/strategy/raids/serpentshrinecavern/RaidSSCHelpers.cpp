@@ -376,7 +376,7 @@ namespace SerpentShrineCavernHelpers
         return false;
     }
 
-    bool AnyRecentCoreInInventory(Group* group, uint32 graceSeconds)
+    bool AnyRecentCoreInInventory(Group* group, PlayerbotAI* botAI, uint32 graceSeconds)
     {
         Unit* vashj =
             botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "lady vashj")->Get();

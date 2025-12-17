@@ -106,15 +106,18 @@ bool AlarBossTanksMoveBetweenPlatformsAction::PositionMainTank(
             return MoveTo(TEMPEST_KEEP_MAP_ID, target.GetPositionX(), target.GetPositionY(), target.GetPositionZ(),
                           false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
-        if (mainTank->GetVictim() != alar)
+        else if (mainTank->GetVictim() != alar)
         {
-            const char* taunts[] = { "taunt", "growl", "hand of reckoning" };
+            return Attack(alar);
+        }
+        else if (alar->GetVictim() != mainTank)
+        {
+            const char* taunts[] = { "taunt", "growl", "hand of reckoning", "dark command" };
             for (const char* spellName : taunts)
             {
                 if (botAI->CanCastSpell(spellName, alar))
                     return botAI->CastSpell(spellName, alar);
             }
-            return Attack(alar);
         }
     }
 
@@ -137,15 +140,18 @@ bool AlarBossTanksMoveBetweenPlatformsAction::PositionAssistTank(Player* assistT
             return MoveTo(TEMPEST_KEEP_MAP_ID, target.GetPositionX(), target.GetPositionY(), target.GetPositionZ(),
                           false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
-        if (assistTank->GetVictim() != alar)
+        else if (assistTank->GetVictim() != alar)
         {
-            const char* taunts[] = { "taunt", "growl", "hand of reckoning" };
+            return Attack(alar);
+        }
+        else if (alar->GetVictim() != assistTank)
+        {
+            const char* taunts[] = { "taunt", "growl", "hand of reckoning", "dark command" };
             for (const char* spellName : taunts)
             {
                 if (botAI->CanCastSpell(spellName, alar))
                     return botAI->CastSpell(spellName, alar);
             }
-            return Attack(alar);
         }
     }
 
@@ -466,7 +472,7 @@ bool AlarSwapTanksOnBossAction::Execute(Event event)
     if (mainTank && assistTank && alar->GetVictim() == mainTank &&
         mainTank->HasAura(SPELL_MELT_ARMOR) && bot == assistTank)
     {
-        const char* taunts[] = { "taunt", "growl", "hand of reckoning" };
+        const char* taunts[] = { "taunt", "growl", "hand of reckoning", "dark command" };
         for (const char* spellName : taunts)
         {
             if (botAI->CanCastSpell(spellName, alar))
@@ -477,7 +483,7 @@ bool AlarSwapTanksOnBossAction::Execute(Event event)
     if (mainTank && assistTank && alar->GetVictim() == assistTank &&
         assistTank->HasAura(SPELL_MELT_ARMOR) && bot == mainTank)
     {
-        const char* taunts[] = { "taunt", "growl", "hand of reckoning" };
+        const char* taunts[] = { "taunt", "growl", "hand of reckoning", "dark command" };
         for (const char* spellName : taunts)
         {
             if (botAI->CanCastSpell(spellName, alar))
@@ -865,16 +871,20 @@ Unit* HighAstromancerSolarianTargetSolariumPriestsAction::AssignSolariumPriestsT
 bool HighAstromancerSolarianTankVoidwalkerAction::Execute(Event event)
 {
     Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
+    if (!astromancer)
+        return false;
+
+    if (bot->GetVictim() != astromancer)
+        return Attack(astromancer);
+
     if (astromancer->GetVictim() != bot)
     {
-        if (botAI->CanCastSpell("taunt", astromancer))
-            return botAI->CastSpell("taunt", astromancer);
-
-        if (botAI->CanCastSpell("growl", astromancer))
-            return botAI->CastSpell("growl", astromancer);
-
-        if (botAI->CanCastSpell("hand of reckoning", astromancer))
-            return botAI->CastSpell("hand of reckoning", astromancer);
+        const char* taunts[] = { "taunt", "growl", "hand of reckoning", "dark command" };
+        for (const char* spellName : taunts)
+        {
+            if (botAI->CanCastSpell(spellName, astromancer))
+                return botAI->CastSpell(spellName, astromancer);
+        }
     }
 
     return false;

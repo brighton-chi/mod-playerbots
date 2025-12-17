@@ -606,7 +606,7 @@ bool LadyVashjTaintedCoreWasLootedTrigger::IsActive()
     else if (bot != fourthCorePasser)
         return false;
 
-    if (AnyRecentCoreInInventory(group))
+    if (AnyRecentCoreInInventory(group, botAI))
         return true;
 
     // First and second passers move to positions as soon as the elemental appears

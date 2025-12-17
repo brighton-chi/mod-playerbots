@@ -2,6 +2,7 @@
 #include "RaidZulAmanActions.h"
 #include "RaidZulAmanHelpers.h"
 #include "ChooseTargetActions.h"
+#include "DKActions.h"
 #include "DruidBearActions.h"
 #include "FollowActions.h"
 #include "GenericSpellActions.h"
@@ -41,25 +42,7 @@ float AkilzonStayInEyeOfTheStormMultiplier::GetValue(Action* action)
     if (!akilzon)
         return 1.0f;
 
-    Group* group = bot->GetGroup();
-    if (!group)
-        return 1.0f;
-
-    bool electricalStormActive = false;
-    for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member)
-            continue;
-
-        if (member->HasAura(SPELL_ELECTRICAL_STORM))
-        {
-            electricalStormActive = true;
-            break;
-        }
-    }
-
-    if (!electricalStormActive)
+    if (!IsElectricalStormWindowActive(akilzon))
         return 1.0f;
 
     if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
@@ -95,7 +78,8 @@ float NalorakkDisableTankActionsMultiplier::GetValue(Action* action)
         if (dynamic_cast<TankAssistAction*>(action) ||
             dynamic_cast<CastTauntAction*>(action) ||
             dynamic_cast<CastGrowlAction*>(action) ||
-            dynamic_cast<CastHandOfReckoningAction*>(action))
+            dynamic_cast<CastHandOfReckoningAction*>(action) ||
+            dynamic_cast<CastDarkCommandAction*>(action))
             return 0.0f;
     }
     else if (nalorakk->HasAura(SPELL_BEARFORM) && bot->GetVictim() != nullptr &&
@@ -104,7 +88,8 @@ float NalorakkDisableTankActionsMultiplier::GetValue(Action* action)
         if (dynamic_cast<TankAssistAction*>(action) ||
             dynamic_cast<CastTauntAction*>(action) ||
             dynamic_cast<CastGrowlAction*>(action) ||
-            dynamic_cast<CastHandOfReckoningAction*>(action))
+            dynamic_cast<CastHandOfReckoningAction*>(action) ||
+            dynamic_cast<CastDarkCommandAction*>(action))
             return 0.0f;
     }
 
@@ -246,7 +231,8 @@ float HalazziDisableTankActionsMultiplier::GetValue(Action* action)
         if (dynamic_cast<TankAssistAction*>(action) ||
             dynamic_cast<CastTauntAction*>(action) ||
             dynamic_cast<CastGrowlAction*>(action) ||
-            dynamic_cast<CastHandOfReckoningAction*>(action))
+            dynamic_cast<CastHandOfReckoningAction*>(action) ||
+            dynamic_cast<CastDarkCommandAction*>(action))
             return 0.0f;
     }
 

@@ -100,6 +100,10 @@ bool AkilzonSpreadRangedAction::Execute(Event event)
 
 bool AkilzonStartElectricalStormTimerAction::Execute(Event event)
 {
+    Unit* akilzon = AI_VALUE2(Unit*, "find target", "akil'zon");
+    if (!akilzon)
+        return false;
+
     const uint32 instanceId = akilzon->GetMap()->GetInstanceId();
     electricalStormTimer.insert_or_assign(instanceId, std::time(nullptr));
     return false;
@@ -199,18 +203,18 @@ bool NalorakkTanksPositionBossAction::MainTankPositionTrollForm(
 
     if (!nalorakk->HasAura(SPELL_BEARFORM))
     {
-        if (nalorakk->GetVictim() != mainTank)
+        if (mainTank->GetVictim() != nalorakk)
         {
-            const char* taunts[] = { "taunt", "growl", "hand of reckoning" };
+            return Attack(nalorakk);
+        }
+        else if (nalorakk->GetVictim() != mainTank)
+        {
+            const char* taunts[] = { "taunt", "growl", "hand of reckoning", "dark command" };
             for (const char* spellName : taunts)
             {
                 if (botAI->CanCastSpell(spellName, nalorakk))
                     return botAI->CastSpell(spellName, nalorakk);
             }
-        }
-        else if (mainTank->GetVictim() != nalorakk)
-        {
-            return Attack(nalorakk);
         }
         else if (nalorakk->GetVictim() == mainTank && mainTank->IsWithinMeleeRange(nalorakk))
         {
@@ -268,18 +272,18 @@ bool NalorakkTanksPositionBossAction::FirstAssistTankPositionBearForm(
 
     if (nalorakk->HasAura(SPELL_BEARFORM))
     {
-        if (nalorakk->GetVictim() != assistTank)
+        if (assistTank->GetVictim() != nalorakk)
         {
-            const char* taunts[] = { "taunt", "growl", "hand of reckoning" };
+            return Attack(nalorakk);
+        }
+        else if (nalorakk->GetVictim() != assistTank)
+        {
+            const char* taunts[] = { "taunt", "growl", "hand of reckoning", "dark command" };
             for (const char* spellName : taunts)
             {
                 if (botAI->CanCastSpell(spellName, nalorakk))
                     return botAI->CastSpell(spellName, nalorakk);
             }
-        }
-        else if (assistTank->GetVictim() != nalorakk)
-        {
-            return Attack(nalorakk);
         }
         else if (nalorakk->GetVictim() == assistTank && assistTank->IsWithinMeleeRange(nalorakk))
         {
@@ -710,18 +714,19 @@ bool HalazziFirstAssistTankAttackSpiritLynxAction::Execute(Event event)
         MarkTargetWithCircle(bot, lynx);
         SetRtiTarget(botAI, "circle", lynx);
 
-        if (lynx->GetVictim() != bot)
+        if (bot->GetVictim() != lynx)
         {
-            const char* taunts[] = { "taunt", "growl", "hand of reckoning" };
+            return Attack(lynx);
+        }
+        else if (lynx->GetVictim() != bot)
+        {
+            const char* taunts[] = { "taunt", "growl", "hand of reckoning", "dark command" };
             for (const char* spellName : taunts)
             {
                 if (botAI->CanCastSpell(spellName, lynx))
                     return botAI->CastSpell(spellName, lynx);
             }
         }
-
-        if (bot->GetVictim() != lynx)
-            return Attack(lynx);
     }
     else if (Unit* halazzi = AI_VALUE2(Unit*, "find target", "halazzi"))
     {

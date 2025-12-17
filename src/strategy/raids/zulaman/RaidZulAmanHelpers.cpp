@@ -158,6 +158,9 @@ namespace ZulAmanHelpers
 
     bool IsElectricalStormWindowActive(Unit* akilzon)
     {
+        if (!akilzon)
+            return false;
+
         // Electrical Storm forms every 60 seconds and lasts for 8.5 seconds
         // The window begins 5 seconds before the Electrical Storm forms
         const uint32 windowStartSeconds = 55;
