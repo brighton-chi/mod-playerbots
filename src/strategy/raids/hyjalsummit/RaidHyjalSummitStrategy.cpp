@@ -34,4 +34,8 @@ void RaidHyjalSummitStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new RageWinterchillDelayBloodlustAndHeroismMultiplier(botAI));
     multipliers.push_back(new RageWinterchillDisableTankFaceMultiplier(botAI));
     multipliers.push_back(new AnetheronDisableCombatFormationMoveMultiplier(botAI));
+    multipliers.push_back(new AnetheronDelayBloodlustAndHeroismMultiplier(botAI));
+    multipliers.push_back(new KazrogalDelayBloodlustAndHeroismMultiplier(botAI));
+    multipliers.push_back(new AzgalorDelayBloodlustAndHeroismMultiplier(botAI));
+    multipliers.push_back(new ArchimondeDelayBloodlustAndHeroismMultiplier(botAI));
 }

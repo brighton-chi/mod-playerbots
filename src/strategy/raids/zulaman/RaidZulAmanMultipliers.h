@@ -135,14 +135,6 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class ZuljinDoNotAvoidCyclonesMultiplier : public Multiplier
-{
-public:
-    ZuljinDoNotAvoidCyclonesMultiplier(PlayerbotAI* botAI) : Multiplier(
-        botAI, "zul'jin do not avoid cyclones") {}
-    virtual float GetValue(Action* action);
-};
-
 class ZuljinStayCloseToLynxFormMultiplier : public Multiplier
 {
 public:

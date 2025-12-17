@@ -369,19 +369,6 @@ float ZuljinDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-// Commented out in strategies
-float ZuljinDoNotAvoidCyclonesMultiplier::GetValue(Action* action)
-{
-    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
-    if (zuljin && zuljin->HasAura(SPELL_SHAPE_OF_THE_EAGLE))
-    {
-        if (dynamic_cast<AvoidAoeAction*>(action))
-            return 0.0f;
-    }
-
-    return 1.0f;
-}
-
 float ZuljinStayCloseToLynxFormMultiplier::GetValue(Action* action)
 {
     Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");

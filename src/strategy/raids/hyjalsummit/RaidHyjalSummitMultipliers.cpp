@@ -75,9 +75,84 @@ float AnetheronDisableCombatFormationMoveMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+float AnetheronDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
+{
+    if (bot->getClass() != CLASS_SHAMAN)
+        return 1.0f;
+
+    Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
+    if (!anetheron)
+        return 1.0f;
+
+    if (anetheron->GetHealthPct() > 80.0f)
+    {
+        if (dynamic_cast<CastBloodlustAction*>(action) ||
+            dynamic_cast<CastHeroismAction*>(action))
+            return 0.0f;
+    }
+
+    return 1.0f;
+}
+
 // Kaz'rogal
+
+float KazrogalDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
+{
+    if (bot->getClass() != CLASS_SHAMAN)
+        return 1.0f;
+
+    Unit* kazrogal = AI_VALUE2(Unit*, "find target", "kaz'rogal");
+    if (!kazrogal)
+        return 1.0f;
+
+    if (kazrogal->GetHealthPct() > 90.0f)
+    {
+        if (dynamic_cast<CastBloodlustAction*>(action) ||
+            dynamic_cast<CastHeroismAction*>(action))
+            return 0.0f;
+    }
+
+    return 1.0f;
+}
 
 // Azgalor
 
+float AzgalorDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
+{
+    if (bot->getClass() != CLASS_SHAMAN)
+        return 1.0f;
+
+    Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
+    if (!azgalor)
+        return 1.0f;
+
+    if (azgalor->GetHealthPct() > 90.0f)
+    {
+        if (dynamic_cast<CastBloodlustAction*>(action) ||
+            dynamic_cast<CastHeroismAction*>(action))
+            return 0.0f;
+    }
+
+    return 1.0f;
+}
+
 // Archimonde
 
+float ArchimondeDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
+{
+    if (bot->getClass() != CLASS_SHAMAN)
+        return 1.0f;
+
+    Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
+    if (!archimonde)
+        return 1.0f;
+
+    if (archimonde->GetHealthPct() > 90.0f)
+    {
+        if (dynamic_cast<CastBloodlustAction*>(action) ||
+            dynamic_cast<CastHeroismAction*>(action))
+            return 0.0f;
+    }
+
+    return 1.0f;
+}

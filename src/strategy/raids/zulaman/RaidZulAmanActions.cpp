@@ -84,7 +84,7 @@ bool AkilzonMainTankPositionBossAction::Execute(Event event)
 
 bool AkilzonSpreadRangedAction::Execute(Event event)
 {
-    const float minDistance = 14.0f;
+    const float minDistance = 13.0f;
     Unit* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance);
 
     if (nearestPlayer)
@@ -92,7 +92,7 @@ bool AkilzonSpreadRangedAction::Execute(Event event)
         const uint32 minInterval = 1000;
         bot->AttackStop();
         bot->InterruptNonMeleeSpells(true);
-        return FleePosition(nearestPlayer->GetPosition(), minDistance + 1.0f, minInterval);
+        return FleePosition(nearestPlayer->GetPosition(), minDistance + 0.5f, minInterval);
     }
 
     return false;
@@ -426,7 +426,6 @@ bool JanalaiSpreadRangedInCircleAction::Execute(Event event)
 
     const ObjectGuid guid = bot->GetGUID();
 
-    // use per-boss cached positions keyed by bot guid
     auto it = janalaiRangedPositions.find(guid);
     if (it == janalaiRangedPositions.end())
     {
@@ -437,8 +436,7 @@ bool JanalaiSpreadRangedInCircleAction::Execute(Event event)
         if (count == 0)
             return false;
 
-        const float radius = 10.0f; // fixed 10 yards
-        // full 360° circle evenly spaced
+        const float radius = 15.0f;
         float angle = (count == 1) ? 0.0f : (2.0f * M_PI * static_cast<float>(botIndex) / static_cast<float>(count));
 
         float tx = JANALAI_TANK_POSITION.GetPositionX() + radius * std::cos(angle);

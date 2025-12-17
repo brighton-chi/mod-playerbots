@@ -133,9 +133,9 @@ bool JanalaiBossCastsFlameBreathTrigger::IsActive()
 
 bool JanalaiBossSummoningFireBombsTrigger::IsActive()
 {
-    /* Unit* janalai = AI_VALUE2(Unit*, "find target", "jan'alai");
+    Unit* janalai = AI_VALUE2(Unit*, "find target", "jan'alai");
     if (!janalai)
-        return false; */
+        return false;
 
     return AnyNearbyNpcWithEntry(botAI, NPC_FIRE_BOMB);
 }

@@ -14,6 +14,12 @@ namespace HyjalSummitHelpers
         // Rage Winterchill
         SPELL_DEATH_AND_DECAY          = 31258,
 
+        // Kaz'rogal
+        SPELL_MARK_OF_KAZROGAL         = 31447,
+
+        // Azgalor
+        SPELL_DOOM                     = 31347,
+
         // Hunter
         SPELL_MISDIRECTION             = 35079,
     };
@@ -32,14 +38,17 @@ namespace HyjalSummitHelpers
     extern std::unordered_map<ObjectGuid, Position> winterchillRangedPositions;
 
     // Anetheron
-    extern const Position ANETHERON_TANK_POSITION;
+    extern const Position ANETHERON_MAIN_TANK_POSITION;
+    extern const Position ANETHERON_INFERNAL_TANK_POSITION;
 
     // Kaz'rogal
+    extern const Position KAZROGAL_TANK_POSITION;
 
     // Azgalor
+    extern const Position AZGALOR_TANK_POSITION;
 
     // Archimonde
-
+    extern const Position ARCHIMONDE_TANK_POSITION;
 }
 
 #endif

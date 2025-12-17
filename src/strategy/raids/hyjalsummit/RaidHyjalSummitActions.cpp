@@ -178,7 +178,7 @@ bool AnetheronMainTankPositionBossAction::Execute(Event event)
 
     if (anetheron->GetVictim() == bot)
     {
-        const Position& position = ANETHERON_TANK_POSITION;
+        const Position& position = ANETHERON_MAIN_TANK_POSITION;
         float dist = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
         if (dist > 4.0f)
         {
