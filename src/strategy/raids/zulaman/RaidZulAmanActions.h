@@ -41,6 +41,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class AkilzonStartElectricalStormTimerAction : public Action
+{
+public:
+    AkilzonStartElectricalStormTimerAction(
+        PlayerbotAI* botAI, std::string const name = "akil'zon start electrical storm timer") : Action(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 class AkilzonMoveToEyeOfTheStormAction : public MovementAction
 {
 public:

@@ -33,7 +33,7 @@ bool AkilzonBossEngagedByMainTankTrigger::IsActive()
     if (!akilzon)
         return false;
 
-    return !AnyGroupMemberHasElectricalStorm(bot);
+    return !IsElectricalStormWindowActive(akilzon);
 }
 
 bool AkilzonBossCastsStaticDisruptionTrigger::IsActive()
@@ -45,7 +45,16 @@ bool AkilzonBossCastsStaticDisruptionTrigger::IsActive()
     if (!akilzon)
         return false;
 
-    return !AnyGroupMemberHasElectricalStorm(bot);
+    return !IsElectricalStormWindowActive(akilzon);
+}
+
+bool AkilzonElectricalStormFormsEvery60SecondsTrigger::IsActive()
+{
+    if (!IsElectricalStormTimerManager(botAI, bot))
+        return false;
+
+    Unit* akilzon = AI_VALUE2(Unit*, "find target", "akil'zon");
+    return akilzon && akilzon->GetHealth() == akilzon->GetMaxHealth();
 }
 
 bool AkilzonElectricalStormHasFormedTrigger::IsActive()
@@ -54,7 +63,7 @@ bool AkilzonElectricalStormHasFormedTrigger::IsActive()
     if (!akilzon)
         return false;
 
-    return AnyGroupMemberHasElectricalStorm(bot);
+    return IsElectricalStormWindowActive(akilzon);
 }
 
 // Nalorakk <Bear Avatar>

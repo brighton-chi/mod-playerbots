@@ -98,33 +98,41 @@ bool AkilzonSpreadRangedAction::Execute(Event event)
     return false;
 }
 
+bool AkilzonStartElectricalStormTimerAction::Execute(Event event)
+{
+    const uint32 instanceId = akilzon->GetMap()->GetInstanceId();
+    electricalStormTimer.insert_or_assign(instanceId, std::time(nullptr));
+    return false;
+}
+
+// All bots collapse on the main tank 5 seconds before Electrical Storm starts
 bool AkilzonMoveToEyeOfTheStormAction::Execute(Event event)
 {
     Group* group = bot->GetGroup();
     if (!group)
         return false;
 
-    Player* stormTarget = nullptr;
+    Player* mainTank = nullptr;
     for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member)
-            continue;
-
-        if (member->HasAura(SPELL_ELECTRICAL_STORM))
-            stormTarget = member;
+        if (member && botAI->IsMainTank(member))
+        {
+            mainTank = member;
+            break;
+        }
     }
 
-    if (!stormTarget)
+    if (!mainTank)
         return false;
 
-    float distanceFromStorm = bot->GetExactDist2d(stormTarget);
+    float distanceFromStorm = bot->GetExactDist2d(mainTank);
     if (distanceFromStorm > 2.0f)
     {
         bot->AttackStop();
         bot->InterruptNonMeleeSpells(true);
-        return MoveTo(ZULAMAN_MAP_ID, stormTarget->GetPositionX(), stormTarget->GetPositionY(),
-                      stormTarget->GetPositionZ(), false, false, false, true,
+        return MoveTo(ZULAMAN_MAP_ID, mainTank->GetPositionX(), mainTank->GetPositionY(),
+                      mainTank->GetPositionZ(), false, false, false, true,
                       MovementPriority::MOVEMENT_FORCED, true, false);
     }
 

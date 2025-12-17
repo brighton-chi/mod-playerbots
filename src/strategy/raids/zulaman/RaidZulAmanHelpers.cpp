@@ -139,8 +139,48 @@ namespace ZulAmanHelpers
 
     // Akil'zon <Eagle Avatar>
     const Position AKILZON_TANK_POSITION = { 378.369f, 1407.718f, 74.797f };
+    std::unordered_map<uint32, time_t> electricalStormTimer;
 
-    bool AnyGroupMemberHasElectricalStorm(Player* bot)
+    bool IsElectricalStormTimerManager(PlayerbotAI* botAI, Player* bot)
+    {
+        if (Group* group = bot->GetGroup())
+        {
+            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+            {
+                Player* member = ref->GetSource();
+                if (member && member->IsAlive() && botAI->IsDps(member) && GET_PLAYERBOT_AI(member))
+                    return member == bot;
+            }
+        }
+
+        return false;
+    }
+
+    bool IsElectricalStormWindowActive(Unit* akilzon)
+    {
+        // Electrical Storm forms every 60 seconds and lasts for 8.5 seconds
+        // The window begins 5 seconds before the Electrical Storm forms
+        const uint32 windowStartSeconds = 55;
+        const uint32 windowEndSeconds = 69;
+        const uint32 windowRecurrenceSeconds = 60;
+
+        const uint32 instanceId = akilzon->GetMap()->GetInstanceId();
+        time_t now = time(nullptr);
+
+        auto it = electricalStormTimer.find(instanceId);
+        if (it == electricalStormTimer.end())
+            return false;
+
+        long elapsed = static_cast<long>(now - it->second);
+        if (elapsed < 0)
+            return false;
+
+        uint32 remainder = static_cast<uint32>(elapsed % windowRecurrenceSeconds);
+
+        return remainder >= windowStartSeconds && remainder <= windowEndSeconds;
+    }
+
+    /* bool AnyGroupMemberHasElectricalStorm(Player* bot)
     {
         Group* group = bot->GetGroup();
         if (!group)
@@ -156,7 +196,7 @@ namespace ZulAmanHelpers
                 return true;
         }
         return false;
-    }
+    } */
 
     // Nalorakk <Bear Avatar>
     const Position NALORAKK_TANK_POSITION = { -80.208f, 1324.530f, 40.942f };

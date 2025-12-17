@@ -159,7 +159,7 @@ float JanalaiDisableTankActionsMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float JanalaiDisableDispersalMultiplier::GetValue(Action* action)
+float JanalaiDisableRangedDispersalMultiplier::GetValue(Action* action)
 {
     if (!botAI->IsRanged(bot))
         return 1.0f;

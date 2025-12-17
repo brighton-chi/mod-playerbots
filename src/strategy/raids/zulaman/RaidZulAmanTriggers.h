@@ -39,6 +39,14 @@ public:
     bool IsActive() override;
 };
 
+class AkilzonElectricalStormFormsEvery60SecondsTrigger : public Trigger
+{
+public:
+    AkilzonElectricalStormFormsEvery60SecondsTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "akil'zon electrical storm forms every 60 seconds") {}
+    bool IsActive() override;
+};
+
 class AkilzonElectricalStormHasFormedTrigger : public Trigger
 {
 public:
