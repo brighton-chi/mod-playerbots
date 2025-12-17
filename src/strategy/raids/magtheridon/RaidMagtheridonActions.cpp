@@ -653,7 +653,7 @@ bool MagtheridonManageTimersAndAssignmentsAction::Execute(Event event)
     if (!magtheridon)
         return false;
 
-    uint32 instanceId = magtheridon->GetMap()->GetInstanceId();
+    const uint32 instanceId = magtheridon->GetMap()->GetInstanceId();
 
     bool blastNovaActive = magtheridon->HasUnitState(UNIT_STATE_CASTING) &&
                            magtheridon->FindCurrentSpellBySpellId(SPELL_BLAST_NOVA);
