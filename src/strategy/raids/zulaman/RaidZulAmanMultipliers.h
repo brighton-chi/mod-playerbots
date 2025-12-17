@@ -5,11 +5,11 @@
 
 // Akil'zon <Eagle Avatar>
 
-class AkilzonDisableTankActionsMultiplier : public Multiplier
+class AkilzonDisableCombatFormationMoveMultiplier : public Multiplier
 {
 public:
-    AkilzonDisableTankActionsMultiplier(PlayerbotAI* botAI) : Multiplier(
-        botAI, "akil'zon disable tank actions") {}
+    AkilzonDisableCombatFormationMoveMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "akil'zon disable combat formation move") {}
     virtual float GetValue(Action* action);
 };
 
@@ -46,6 +46,14 @@ class JanalaiDisableTankActionsMultiplier : public Multiplier
 public:
     JanalaiDisableTankActionsMultiplier(PlayerbotAI* botAI) : Multiplier(
         botAI, "jan'alai disable tank actions") {}
+    virtual float GetValue(Action* action);
+};
+
+class JanalaiDisableDispersalMultiplier : public Multiplier
+{
+public:
+    JanalaiDisableDispersalMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "jan'alai disable dispersal") {}
     virtual float GetValue(Action* action);
 };
 
@@ -103,11 +111,11 @@ public:
 
 // Zul'jin
 
-class ZuljinDisableTankActionsMultiplier : public Multiplier
+class ZuljinDisableTankFaceMultiplier : public Multiplier
 {
 public:
-    ZuljinDisableTankActionsMultiplier(PlayerbotAI* botAI) : Multiplier(
-        botAI, "zul'jin disable tank actions") {}
+    ZuljinDisableTankFaceMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "zul'jin disable tank face") {}
     virtual float GetValue(Action* action);
 };
 

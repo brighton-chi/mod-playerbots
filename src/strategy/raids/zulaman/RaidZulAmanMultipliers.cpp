@@ -20,9 +20,9 @@ using namespace ZulAmanHelpers;
 
 // Akil'zon <Eagle Avatar>
 
-float AkilzonDisableTankActionsMultiplier::GetValue(Action* action)
+float AkilzonDisableCombatFormationMoveMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsTank(bot))
+    if (!botAI->IsTank(bot) && !botAI->IsRanged(bot))
         return 1.0f;
 
     Unit* akilzon = AI_VALUE2(Unit*, "find target", "akil'zon");
@@ -137,7 +137,7 @@ float JanalaiDisableTankActionsMultiplier::GetValue(Action* action)
     if (!janalai)
         return 1.0f;
 
-    if (dynamic_cast<CombatFormationMoveAction*>(action))
+    if (dynamic_cast<TankFaceAction*>(action))
         return 0.0f;
 
     if (botAI->IsMainTank(bot))
@@ -154,6 +154,21 @@ float JanalaiDisableTankActionsMultiplier::GetValue(Action* action)
             if (dynamic_cast<TankAssistAction*>(action))
                 return 0.0f;
         }
+    }
+
+    return 1.0f;
+}
+
+float JanalaiDisableDispersalMultiplier::GetValue(Action* action)
+{
+    if (!botAI->IsRanged(bot))
+        return 1.0f;
+
+    Unit* janalai = AI_VALUE2(Unit*, "find target", "jan'alai");
+    if (janalai)
+    {
+        if (dynamic_cast<CombatFormationMoveAction*>(action))
+            return 0.0f;
     }
 
     return 1.0f;
@@ -219,7 +234,7 @@ float HalazziDisableTankActionsMultiplier::GetValue(Action* action)
     if (!botAI->IsTank(bot))
         return 1.0f;
 
-    if (dynamic_cast<CombatFormationMoveAction*>(action))
+    if (dynamic_cast<TankFaceAction*>(action))
         return 0.0f;
 
     if (!botAI->IsMainTank(bot))
@@ -298,7 +313,7 @@ float HexLordMalacrassDoNotDispelUnstableAfflictionMultiplier::GetValue(Action* 
 
 // Zul'jin
 
-float ZuljinDisableTankActionsMultiplier::GetValue(Action* action)
+float ZuljinDisableTankFaceMultiplier::GetValue(Action* action)
 {
     if (!botAI->IsTank(bot))
         return 1.0f;
@@ -306,7 +321,7 @@ float ZuljinDisableTankActionsMultiplier::GetValue(Action* action)
     Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
     if (zuljin)
     {
-        if (dynamic_cast<CombatFormationMoveAction*>(action))
+        if (dynamic_cast<TankFaceAction*>(action))
             return 0.0f;
     }
 

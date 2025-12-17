@@ -98,18 +98,19 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
 void RaidZulAmanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
-    multipliers.push_back(new AkilzonDisableTankActionsMultiplier(botAI));
+    multipliers.push_back(new AkilzonDisableCombatFormationMoveMultiplier(botAI));
     multipliers.push_back(new AkilzonStayInEyeOfTheStormMultiplier(botAI));
     multipliers.push_back(new NalorakkDisableTankActionsMultiplier(botAI));
     multipliers.push_back(new NalorakkControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new JanalaiDisableTankActionsMultiplier(botAI));
+    multipliers.push_back(new JanalaiDisableDispersalMultiplier(botAI));
     multipliers.push_back(new JanalaiStayAwayFromFireBombsMultiplier(botAI));
     multipliers.push_back(new JanalaiDoNotCrowdControlHatchersMultiplier(botAI));
     multipliers.push_back(new JanalaiDelayBloodlustAndHeroismMultiplier(botAI));
     multipliers.push_back(new HalazziDisableTankActionsMultiplier(botAI));
     multipliers.push_back(new HalazziControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new HexLordMalacrassDoNotDispelUnstableAfflictionMultiplier(botAI));
-    multipliers.push_back(new ZuljinDisableTankActionsMultiplier(botAI));
+    multipliers.push_back(new ZuljinDisableTankFaceMultiplier(botAI));
     multipliers.push_back(new ZuljinAvoidWhirlwindMultiplier(botAI));
     multipliers.push_back(new ZuljinDelayBloodlustAndHeroismMultiplier(botAI));
     // multipliers.push_back(new ZuljinDoNotAvoidCyclonesMultiplier(botAI));
