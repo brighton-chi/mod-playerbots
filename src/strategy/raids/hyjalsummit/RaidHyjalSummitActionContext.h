@@ -26,6 +26,18 @@ public:
         creators["anetheron main tank position boss"] =
             &RaidHyjalSummitActionContext::anetheron_main_tank_position_boss;
 
+        creators["anetheron spread ranged in arc"] =
+            &RaidHyjalSummitActionContext::anetheron_spread_ranged_in_arc;
+
+        creators["anetheron bring infernal to infernal tank"] =
+            &RaidHyjalSummitActionContext::anetheron_bring_infernal_to_infernal_tank;
+
+        creators["anetheron first assist tank pick up infernals"] =
+            &RaidHyjalSummitActionContext::anetheron_first_assist_tank_pick_up_infernals;
+
+        creators["anetheron focus all dps on boss"] =
+            &RaidHyjalSummitActionContext::anetheron_focus_all_dps_on_boss;
+
         // Kaz'rogal
 
         // Azgalor
@@ -51,6 +63,18 @@ private:
 
     static Action* anetheron_main_tank_position_boss(
         PlayerbotAI* botAI) { return new AnetheronMainTankPositionBossAction(botAI); }
+
+    static Action* anetheron_spread_ranged_in_arc(
+        PlayerbotAI* botAI) { return new AnetheronSpreadRangedInArcAction(botAI); }
+
+    static Action* anetheron_bring_infernal_to_infernal_tank(
+        PlayerbotAI* botAI) { return new AnetheronBringInfernalToInfernalTankAction(botAI); }
+
+    static Action* anetheron_first_assist_tank_pick_up_infernals(
+        PlayerbotAI* botAI) { return new AnetheronFirstAssistTankPickUpInfernalsAction(botAI); }
+
+    static Action* anetheron_focus_all_dps_on_boss(
+        PlayerbotAI* botAI) { return new AnetheronFocusAllDpsOnBossAction(botAI); }
 
     // Kaz'rogal
 

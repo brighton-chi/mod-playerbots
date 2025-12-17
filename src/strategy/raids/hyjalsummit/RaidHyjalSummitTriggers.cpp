@@ -54,6 +54,81 @@ bool AnetheronBossEngagedByMainTankTrigger::IsActive()
     return anetheron != nullptr;
 }
 
+bool AnetheronBossCastsCarrionSwarmTrigger::IsActive()
+{
+    if (!botAI->IsRanged(bot) || bot->HasAura(SPELL_IMMOLATION))
+        return false;
+
+    Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
+    if (!anetheron)
+        return false;
+
+    if (IsBotTargetedByInferno(anetheron, bot))
+        return false;
+
+    return true;
+}
+
+bool AnetheronBotIsTargetedByInfernalTrigger::IsActive()
+{
+    if (botAI->IsMainTank(bot))
+        return false;
+
+    Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
+    if (!anetheron)
+        return false;
+
+    // Debug logging for inferno targeting
+    Spell* spell = anetheron->GetCurrentSpell(CURRENT_GENERIC_SPELL);
+    if (spell)
+    {
+        LOG_DEBUG("playerbots", "Anetheron current spell id: {}", spell->m_spellInfo->Id);
+        if (spell->m_spellInfo->Id == SPELL_INFERNO)
+        {
+            Unit* spellTarget = spell->m_targets.GetUnitTarget();
+            if (spellTarget)
+            {
+                LOG_DEBUG("playerbots", "Inferno spell target guid: {} bot guid: {}", spellTarget->GetGUID().ToString(), bot->GetGUID().ToString());
+            }
+            else
+            {
+                LOG_DEBUG("playerbots", "Inferno spell target is nullptr");
+            }
+        }
+    }
+    else
+    {
+        LOG_DEBUG("playerbots", "Anetheron has no current spell");
+    }
+
+    if (IsBotTargetedByInferno(anetheron, bot))
+        return true;
+
+    Unit* infernal = AI_VALUE2(Unit*, "find target", "towering infernal");
+    if (infernal && infernal->GetVictim() == bot)
+        return true;
+
+    return false;
+}
+
+bool AnetheronInfernalsNeedToBeKeptAwayFromRaidTrigger::IsActive()
+{
+    if (!botAI->IsAssistTankOfIndex(bot, 0))
+        return false;
+
+    Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
+    return anetheron != nullptr;
+}
+
+bool AnetheronInfernalsDespawnWhenBossDiesTrigger::IsActive()
+{
+    if (!botAI->IsDps(bot))
+        return false;
+
+    Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
+    return anetheron != nullptr;
+}
+
 // Kaz'rogal
 
 // Azgalor

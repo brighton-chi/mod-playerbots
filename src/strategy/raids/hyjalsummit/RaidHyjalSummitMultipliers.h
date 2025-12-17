@@ -13,15 +13,31 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class RageWinterchillDisableTankFaceMultiplier : public Multiplier
+class RageWinterchillDisableMainTankAvoidAoeMultiplier : public Multiplier
 {
 public:
-    RageWinterchillDisableTankFaceMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "rage winterchill disable tank face multiplier") {}
+    RageWinterchillDisableMainTankAvoidAoeMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "rage winterchill disable main tank avoid aoe multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
+class RageWinterchillDisableCombatFormationMoveMultiplier : public Multiplier
+{
+public:
+    RageWinterchillDisableCombatFormationMoveMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "rage winterchill disable combat formation move multiplier") {}
     virtual float GetValue(Action* action);
 };
 
 // Anetheron
+
+class AnetheronDisableTankActionsMultiplier : public Multiplier
+{
+public:
+    AnetheronDisableTankActionsMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "anetheron disable tank actions multiplier") {}
+    virtual float GetValue(Action* action);
+};
 
 class AnetheronDisableCombatFormationMoveMultiplier : public Multiplier
 {
@@ -36,6 +52,14 @@ class AnetheronDelayBloodlustAndHeroismMultiplier : public Multiplier
 public:
     AnetheronDelayBloodlustAndHeroismMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "anetheron delay bloodlust and heroism multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
+class AnetheronControlMisdirectionMultiplier : public Multiplier
+{
+public:
+    AnetheronControlMisdirectionMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "anetheron control misdirection multiplier") {}
     virtual float GetValue(Action* action);
 };
 

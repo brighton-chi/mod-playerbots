@@ -552,17 +552,16 @@ bool TheLurkerBelowSpreadRangedInArcAction::Execute(Event event)
         const float minRadius = 27.0f;
         const float maxRadius = 29.0f;
         const float mainTankFacingOrientation = 2.262f;
-        const float referenceOrientation =
+        const float arcCenter =
             Position::NormalizeOrientation(mainTankFacingOrientation + M_PI);
 
         const float arcSpan = 2.0f * M_PI / 3.0f; // 120°
-        float startAngle = referenceOrientation - arcSpan / 2.0f;
-
+        const float arcStart = arcCenter - arcSpan / 2.0f;
         float angle;
         if (count == 1)
-            angle = referenceOrientation;
+            angle = arcCenter;
         else
-            angle = startAngle + (static_cast<float>(botIndex) / (count - 1)) * arcSpan;
+            angle = arcStart + (static_cast<float>(botIndex) / (count - 1)) * arcSpan;
 
         float radius = frand(minRadius, maxRadius);
 
@@ -1596,15 +1595,15 @@ bool LadyVashjPhase1SpreadRangedInArcAction::Execute(Event event)
         const float minRadius = 20.0f;
         const float maxRadius = 30.0f;
 
-        const float referenceAngle = M_PI / 2.0f; // North
+        const float arcCenter = M_PI / 2.0f; // North
         const float arcSpan = M_PI; // 180°
-        const float startAngle = referenceAngle - arcSpan / 2.0f;
+        const float arcStart = arcCenter - arcSpan / 2.0f;
 
         float angle;
         if (count == 1)
-            angle = referenceAngle;
+            angle = arcCenter;
         else
-            angle = startAngle + (static_cast<float>(botIndex) / (count - 1)) * arcSpan;
+            angle = arcStart + (static_cast<float>(botIndex) / (count - 1)) * arcSpan;
 
         float radius = frand(minRadius, maxRadius);
         float targetX = center.GetPositionX() + radius * std::cos(angle);

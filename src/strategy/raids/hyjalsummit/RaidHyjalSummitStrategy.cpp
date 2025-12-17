@@ -16,10 +16,22 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     // Anetheron
     triggers.push_back(new TriggerNode("anetheron pulling boss",
-        NextAction::array(0, new NextAction("anetheron misdirect boss to main tank", ACTION_RAID + 2), nullptr)
+        NextAction::array(0, new NextAction("anetheron misdirect boss to main tank", ACTION_RAID + 3), nullptr)
     ));
     triggers.push_back(new TriggerNode("anetheron boss engaged by main tank",
         NextAction::array(0, new NextAction("anetheron main tank position boss", ACTION_RAID + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("anetheron boss casts carrion swarm",
+        NextAction::array(0, new NextAction("anetheron spread ranged in arc", ACTION_RAID + 2), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("anetheron bot is targeted by infernal",
+        NextAction::array(0, new NextAction("anetheron bring infernal to infernal tank", ACTION_EMERGENCY + 2), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("anetheron infernals need to be kept away from raid",
+        NextAction::array(0, new NextAction("anetheron first assist tank pick up infernals", ACTION_EMERGENCY + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("anetheron infernals despawn when boss dies",
+        NextAction::array(0, new NextAction("anetheron focus all dps on boss", ACTION_RAID + 1), nullptr)
     ));
 
     // Kaz'rogal
@@ -32,9 +44,12 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 void RaidHyjalSummitStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     multipliers.push_back(new RageWinterchillDelayBloodlustAndHeroismMultiplier(botAI));
-    multipliers.push_back(new RageWinterchillDisableTankFaceMultiplier(botAI));
+    multipliers.push_back(new RageWinterchillDisableMainTankAvoidAoeMultiplier(botAI));
+    multipliers.push_back(new RageWinterchillDisableCombatFormationMoveMultiplier(botAI));
+    multipliers.push_back(new AnetheronDisableTankActionsMultiplier(botAI));
     multipliers.push_back(new AnetheronDisableCombatFormationMoveMultiplier(botAI));
     multipliers.push_back(new AnetheronDelayBloodlustAndHeroismMultiplier(botAI));
+    multipliers.push_back(new AnetheronControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new KazrogalDelayBloodlustAndHeroismMultiplier(botAI));
     multipliers.push_back(new AzgalorDelayBloodlustAndHeroismMultiplier(botAI));
     multipliers.push_back(new ArchimondeDelayBloodlustAndHeroismMultiplier(botAI));

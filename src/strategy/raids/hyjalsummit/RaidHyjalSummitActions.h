@@ -49,6 +49,38 @@ public:
     bool Execute(Event event) override;
 };
 
+class AnetheronSpreadRangedInArcAction : public MovementAction
+{
+public:
+    AnetheronSpreadRangedInArcAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "anetheron spread ranged in arc") {}
+    bool Execute(Event event) override;
+};
+
+class AnetheronBringInfernalToInfernalTankAction : public MovementAction
+{
+public:
+    AnetheronBringInfernalToInfernalTankAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "anetheron bring infernal to infernal tank") {}
+    bool Execute(Event event) override;
+};
+
+class AnetheronFirstAssistTankPickUpInfernalsAction : public AttackAction
+{
+public:
+    AnetheronFirstAssistTankPickUpInfernalsAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "anetheron first assist tank pick up infernals") {}
+    bool Execute(Event event) override;
+};
+
+class AnetheronFocusAllDpsOnBossAction : public AttackAction
+{
+public:
+    AnetheronFocusAllDpsOnBossAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "anetheron focus all dps on boss") {}
+    bool Execute(Event event) override;
+};
+
 // Kaz'rogal
 
 // Azgalor
