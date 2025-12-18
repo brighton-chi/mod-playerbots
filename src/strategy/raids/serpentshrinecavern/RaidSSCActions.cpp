@@ -554,21 +554,22 @@ bool TheLurkerBelowSpreadRangedInArcAction::Execute(Event event)
             (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
         float radius = 28.0f;
 
-        float tx = lurker->GetPositionX() + radius * std::sin(angle);
-        float ty = lurker->GetPositionY() + radius * std::cos(angle);
+        float targetX = lurker->GetPositionX() + radius * std::sin(angle);
+        float targetY = lurker->GetPositionY() + radius * std::cos(angle);
+        float targetZ = bot->GetMap()->GetHeight(targetX, targetY, lurker->GetPositionZ());
 
-        lurkerRangedPositions.try_emplace(guid, Position(tx, ty, lurker->GetPositionZ()));
+        lurkerRangedPositions.try_emplace(guid, Position(targetX, targetY, targetZ));
         it = lurkerRangedPositions.find(guid);
     }
 
     if (it == lurkerRangedPositions.end())
         return false;
 
-    const Position& target = it->second;
-    if (bot->GetExactDist2d(target.GetPositionX(), target.GetPositionY()) > 2.0f)
+    const Position& position = it->second;
+    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
     {
-        return MoveTo(SSC_MAP_ID, target.GetPositionX(), target.GetPositionY(),
-                      target.GetPositionZ(), false, false, false, false,
+        return MoveTo(SSC_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                      position.GetPositionZ(), false, false, false, false,
                       MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
@@ -1592,9 +1593,9 @@ bool LadyVashjPhase1SpreadRangedInArcAction::Execute(Event event)
         float radius = frand(minRadius, maxRadius);
         float targetX = center.GetPositionX() + radius * std::cos(angle);
         float targetY = center.GetPositionY() + radius * std::sin(angle);
+        float targetZ = bot->GetMap()->GetHeight(targetX, targetY, center.GetPositionZ());
 
-        auto res = vashjRangedPositions.try_emplace(
-            guid, Position(targetX, targetY, center.GetPositionZ()));
+        auto res = vashjRangedPositions.try_emplace(guid, Position(targetX, targetY, targetZ));
         itPos = res.first;
         hasReachedVashjRangedPosition.try_emplace(guid, false);
         itReached = hasReachedVashjRangedPosition.find(guid);

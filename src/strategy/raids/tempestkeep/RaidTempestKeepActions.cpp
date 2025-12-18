@@ -651,8 +651,8 @@ bool VoidReaverSpreadRangedAction::Execute(Event event)
             float ringRadius = radius + (ringIndex * offsetArc);
             float angle = 2 * M_PI * posInRing / botsPerRing;
 
-            float targetX = tankPosition.GetPositionX() + ringRadius * cos(angle);
-            float targetY = tankPosition.GetPositionY() + ringRadius * sin(angle);
+            float targetX = tankPosition.GetPositionX() + ringRadius * std::cos(angle);
+            float targetY = tankPosition.GetPositionY() + ringRadius * std::sin(angle);
 
             Position pos(targetX, targetY, ranged->GetPositionZ());
             initialVoidReaverPositions[ranged->GetGUID()] = pos;
@@ -1810,8 +1810,8 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
             if (fabs(currentDist - desiredDist) > tolerance)
             {
                 float behindAngle = Position::NormalizeOrientation(telonicus->GetOrientation() + M_PI);
-                float targetX = telonicus->GetPositionX() + desiredDist * cos(behindAngle);
-                float targetY = telonicus->GetPositionY() + desiredDist * sin(behindAngle);
+                float targetX = telonicus->GetPositionX() + desiredDist * std::cos(behindAngle);
+                float targetY = telonicus->GetPositionY() + desiredDist * std::sin(behindAngle);
 
                 if (bot->GetExactDist2d(targetX, targetY) > 1.0f)
                 {
@@ -1909,8 +1909,8 @@ Position KaelthasSunstriderAvoidFlameStrikeAction::FindSafestNearbyPosition(
     {
         for (float angle = 0.0f; angle < 2 * M_PI; angle += searchStep)
         {
-            float x = bot->GetPositionX() + distance * cos(angle);
-            float y = bot->GetPositionY() + distance * sin(angle);
+            float x = bot->GetPositionX() + distance * std::cos(angle);
+            float y = bot->GetPositionY() + distance * std::sin(angle);
 
             Position testPos(x, y, bot->GetPositionZ());
 
@@ -2220,8 +2220,8 @@ bool KaelthasSunstriderSpreadOutInMidairAction::Execute(Event event)
         float angle = bot->GetAngle(closestPlayer) + M_PI;
         float distance = minSpreadDistance - closestDist + 2.0f;
 
-        float x = bot->GetPositionX() + cos(angle) * distance;
-        float y = bot->GetPositionY() + sin(angle) * distance;
+        float x = bot->GetPositionX() + std::cos(angle) * distance;
+        float y = bot->GetPositionY() + std::sin(angle) * distance;
 
         return MoveTo(TEMPEST_KEEP_MAP_ID, x, y, bot->GetPositionZ(), false, false,
                       false, true, MovementPriority::MOVEMENT_FORCED, true, false);

@@ -430,10 +430,11 @@ bool MagtheridonSpreadRangedAction::Execute(Event event)
 
         float angle = 2 * M_PI * botIndex / count;
         float radius = frand(0.0f, maxSpreadRadius);
-        float targetX = centerX + radius * cos(angle);
-        float targetY = centerY + radius * sin(angle);
+        float targetX = centerX + radius * std::cos(angle);
+        float targetY = centerY + radius * std::sin(angle);
+        float targetZ = bot->GetMap()->GetHeight(targetX, targetY, centerZ);
 
-        initialPositions[bot->GetGUID()] = Position(targetX, targetY, centerZ);
+        initialPositions[bot->GetGUID()] = Position(targetX, targetY, targetZ);
         hasReachedInitialPosition[bot->GetGUID()] = false;
     }
 
@@ -464,8 +465,8 @@ bool MagtheridonSpreadRangedAction::Execute(Event event)
     {
         float angle = frand(0.0f, static_cast<float>(2.0f * M_PI));
         float radius = frand(0.0f, maxSpreadRadius);
-        float targetX = centerX + radius * cos(angle);
-        float targetY = centerY + radius * sin(angle);
+        float targetX = centerX + radius * std::cos(angle);
+        float targetY = centerY + radius * std::sin(angle);
 
         if (bot->GetMap()->CheckCollisionAndGetValidCoords(bot, bot->GetPositionX(), bot->GetPositionY(),
                                                            bot->GetPositionZ(), targetX, targetY, centerZ))
@@ -558,8 +559,8 @@ bool MagtheridonUseManticronCubeAction::HandleWaitingPhase(const CubeInfo& cubeI
         for (int i = 0; i < 12; ++i)
         {
             float angle = i * M_PI / 6.0f;
-            float targetX = cubeInfo.x + cos(angle) * safeWaitDistance;
-            float targetY = cubeInfo.y + sin(angle) * safeWaitDistance;
+            float targetX = cubeInfo.x + std::cos(angle) * safeWaitDistance;
+            float targetY = cubeInfo.y + std::sin(angle) * safeWaitDistance;
             float targetZ = bot->GetPositionZ();
 
             if (IsSafeFromMagtheridonHazards(botAI, bot, targetX, targetY, targetZ))
@@ -572,8 +573,8 @@ bool MagtheridonUseManticronCubeAction::HandleWaitingPhase(const CubeInfo& cubeI
         }
 
         float angle = frand(0.0f, static_cast<float>(2.0f * M_PI));
-        float fallbackX = cubeInfo.x + cos(angle) * safeWaitDistance;
-        float fallbackY = cubeInfo.y + sin(angle) * safeWaitDistance;
+        float fallbackX = cubeInfo.x + std::cos(angle) * safeWaitDistance;
+        float fallbackY = cubeInfo.y + std::sin(angle) * safeWaitDistance;
         float fallbackZ = bot->GetPositionZ();
 
         return MoveTo(MAGTHERIDON_MAP_ID, fallbackX, fallbackY, fallbackZ, false, false,
@@ -606,8 +607,8 @@ bool MagtheridonUseManticronCubeAction::HandleCubeInteraction(
         }
 
         float angle = atan2(cubeInfo.y - bot->GetPositionY(), cubeInfo.x - bot->GetPositionX());
-        float targetX = cubeInfo.x - cos(angle) * interactDistance;
-        float targetY = cubeInfo.y - sin(angle) * interactDistance;
+        float targetX = cubeInfo.x - std::cos(angle) * interactDistance;
+        float targetY = cubeInfo.y - std::sin(angle) * interactDistance;
 
         bot->AttackStop();
         bot->InterruptNonMeleeSpells(true);

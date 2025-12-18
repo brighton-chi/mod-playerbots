@@ -548,7 +548,7 @@ bool GruulTheDragonkillerSpreadRangedAction::Execute(Event event)
     const Location& tankPosition = GruulsLairLocations::GruulTankPosition;
     const float centerX = tankPosition.x;
     const float centerY = tankPosition.y;
-    float centerZ = bot->GetPositionZ();
+    const float centerZ = tankPosition.z;
     const float minRadius = 25.0f;
     const float maxRadius = 40.0f;
 
@@ -584,8 +584,9 @@ bool GruulTheDragonkillerSpreadRangedAction::Execute(Event event)
                        static_cast<float>(RAND_MAX) * (maxRadius - minRadius);
         float targetX = centerX + radius * cos(angle);
         float targetY = centerY + radius * sin(angle);
+        float targetZ = bot->GetMap()->GetHeight(targetX, targetY, centerZ);
 
-        initialPositions[bot->GetGUID()] = Position(targetX, targetY, centerZ);
+        initialPositions[bot->GetGUID()] = Position(targetX, targetY, targetZ);
         hasReachedInitialPosition[bot->GetGUID()] = false;
     }
 
