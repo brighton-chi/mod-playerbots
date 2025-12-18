@@ -25,6 +25,9 @@ namespace HyjalSummitHelpers
         SPELL_RAIN_OF_FIRE             = 31340,
         SPELL_DOOM                     = 31347,
 
+        // Archimonde
+        SPELL_DOOMFIRE = 31944,
+
         // Hunter
         SPELL_MISDIRECTION             = 35079,
 
@@ -69,7 +72,7 @@ namespace HyjalSummitHelpers
     // Azgalor
     extern const Position AZGALOR_MAIN_TANK_POSITION;
     extern const Position AZGALOR_DOOMGUARD_TANK_POSITION;
-    extern std::unordered_map<ObjectGuid, Position> azgalorRangedPositions;
+    bool AnyGroupMemberHasDoom(Player* bot);
 
     // Archimonde
     extern const Position ARCHIMONDE_TANK_POSITION;

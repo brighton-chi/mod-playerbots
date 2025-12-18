@@ -91,6 +91,14 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class AzgalorDoomedBotPrioritizePositioningMultiplier : public Multiplier
+{
+public:
+    AzgalorDoomedBotPrioritizePositioningMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "azgalor doomed bot prioritize positioning multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
 // Archimonde
 
 #endif

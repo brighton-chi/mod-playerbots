@@ -221,7 +221,7 @@ bool AzgalorBossCastsRainOfFireTrigger::IsActive()
 
 bool AzgalorBotIsDoomedTrigger::IsActive()
 {
-    return bot->HasAura(SPELL_DOOM);
+    return AnyGroupMemberHasDoom(bot);
 }
 
 bool AzgalorDoomguardSpawnedTrigger::IsActive()
@@ -278,8 +278,34 @@ bool ArchimondeBossCastsFearTrigger::IsActive()
            botAI->CanCastSpell("fear ward", mainTank);
 }
 
+bool ArchimondeBossCastsAirBurstTrigger::IsActive()
+{
+    if (!botAI->IsRanged(bot))
+        return false;
+
+    if (bot->HasAura(SPELL_DOOMFIRE))
+        return false;
+
+    Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
+    return archimonde != nullptr;
+}
+
 bool ArchimondeBossSummonedDoomfireTrigger::IsActive()
 {
+    Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
+    return archimonde != nullptr;
+}
+
+bool ArchimondeBotStoodInDoomfireTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_MAGE &&
+        bot->getClass() != CLASS_ROGUE &&
+        bot->getClass() != CLASS_PALADIN)
+        return false;
+
+    if (!bot->HasAura(SPELL_DOOMFIRE))
+        return false;
+
     Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
     return archimonde != nullptr;
 }

@@ -197,11 +197,27 @@ public:
     bool IsActive() override;
 };
 
+class ArchimondeBossCastsAirBurstTrigger : public Trigger
+{
+public:
+    ArchimondeBossCastsAirBurstTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "archimonde boss casts air burst") {}
+    bool IsActive() override;
+};
+
 class ArchimondeBossSummonedDoomfireTrigger : public Trigger
 {
 public:
     ArchimondeBossSummonedDoomfireTrigger(
         PlayerbotAI* botAI) : Trigger(botAI, "archimonde boss summoned doomfire") {}
+    bool IsActive() override;
+};
+
+class ArchimondeBotStoodInDoomfireTrigger : public Trigger
+{
+public:
+    ArchimondeBotStoodInDoomfireTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "archimonde bot stood in doomfire") {}
     bool IsActive() override;
 };
 

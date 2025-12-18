@@ -70,7 +70,9 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             new NextAction("azgalor first assist tank position doomguard", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("azgalor doomguard spawned",
-        NextAction::array(0, new NextAction("azgalor melee dps prioritize doomguards", ACTION_RAID + 1), nullptr)
+        NextAction::array(0,
+            new NextAction("azgalor melee dps prioritize doomguards", ACTION_RAID + 1),
+            new NextAction("azgalor first assist tank position doomguard", ACTION_RAID + 1), nullptr)
     ));
 
     // Archimonde
@@ -83,8 +85,14 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("archimonde boss casts fear",
         NextAction::array(0, new NextAction("archimonde cast fear ward on main tank", ACTION_RAID + 2), nullptr)
     ));
-    triggers.push_back(new TriggerNode("archimonde boss summoned doomfire",
+    triggers.push_back(new TriggerNode("archimonde boss casts air burst",
+        NextAction::array(0, new NextAction("archimonde disperse ranged bots", ACTION_RAID + 1), nullptr)
+    ));
+    /* triggers.push_back(new TriggerNode("archimonde boss summoned doomfire",
         NextAction::array(0, new NextAction("archimonde avoid doomfire", ACTION_EMERGENCY + 6), nullptr)
+    )); */
+    triggers.push_back(new TriggerNode("archimonde bot stood in doomfire",
+        NextAction::array(0, new NextAction("archimonde remove doomfire dot", ACTION_EMERGENCY + 6), nullptr)
     ));
 }
 
@@ -100,4 +108,5 @@ void RaidHyjalSummitStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new KazrogalLowManaBotStayAwayFromGroupMultiplier(botAI));
     multipliers.push_back(new AzgalorDisableTankAssistMultiplier(botAI));
     multipliers.push_back(new AzgalorTanksMaintainPositionMultiplier(botAI));
+    multipliers.push_back(new AzgalorDoomedBotPrioritizePositioningMultiplier(botAI));
 }

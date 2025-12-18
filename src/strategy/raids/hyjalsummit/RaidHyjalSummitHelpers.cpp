@@ -122,11 +122,28 @@ namespace HyjalSummitHelpers
 
     // Azgalor
 
-    const Position AZGALOR_MAIN_TANK_POSITION = { 5493.145f, -2711.888f, 1482.124f };
-    const Position AZGALOR_DOOMGUARD_TANK_POSITION = { 5452.330f, -2721.679f, 1485.411f };
-    std::unordered_map<ObjectGuid, Position> azgalorRangedPositions;
+    const Position AZGALOR_MAIN_TANK_POSITION = { 5496.211f, -2713.713f, 1482.272f };
+    const Position AZGALOR_DOOMGUARD_TANK_POSITION = { 5445.848f, -2694.923f, 1485.965f };
+
+    bool AnyGroupMemberHasDoom(Player* bot)
+    {
+        if (Group* group = bot->GetGroup())
+        {
+            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+            {
+                Player* member = ref->GetSource();
+                if (member && member->IsAlive() &&
+                    member->HasAura(SPELL_DOOM))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
 
     // Archimonde
 
-    const Position ARCHIMONDE_TANK_POSITION = { 0.0f, 0.0f, 0.0f };
+    const Position ARCHIMONDE_TANK_POSITION = { 5643.303f, -3447.171f, 1586.494f };
 }

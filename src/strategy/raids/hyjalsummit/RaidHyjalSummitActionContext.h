@@ -86,8 +86,14 @@ public:
         creators["archimonde cast fear ward on main tank"] =
             &RaidHyjalSummitActionContext::archimonde_cast_fear_ward_on_main_tank;
 
+        creators["archimonde disperse ranged bots"] =
+            &RaidHyjalSummitActionContext::archimonde_disperse_ranged_bots;
+
         creators["archimonde avoid doomfire"] =
             &RaidHyjalSummitActionContext::archimonde_avoid_doomfire;
+
+        creators["archimonde remove doomfire dot"] =
+            &RaidHyjalSummitActionContext::archimonde_remove_doomfire_dot;
     }
 
 private:
@@ -168,8 +174,14 @@ private:
     static Action* archimonde_cast_fear_ward_on_main_tank(
         PlayerbotAI* botAI) { return new ArchimondeCastFearWardOnMainTankAction(botAI); }
 
+    static Action* archimonde_disperse_ranged_bots(
+        PlayerbotAI* botAI) { return new ArchimondeDisperseRangedBotsAction(botAI); }
+
     static Action* archimonde_avoid_doomfire(
         PlayerbotAI* botAI) { return new ArchimondeAvoidDoomfireAction(botAI); }
+
+    static Action* archimonde_remove_doomfire_dot(
+        PlayerbotAI* botAI) { return new ArchimondeRemoveDoomfireDotAction(botAI); }
 };
 
 #endif

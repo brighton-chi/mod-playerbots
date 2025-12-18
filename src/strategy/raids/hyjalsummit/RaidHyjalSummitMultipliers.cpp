@@ -36,7 +36,7 @@ float HyjalSummitTimeBloodlustAndHeroismMultiplier::GetValue(Action* action)
 
     bool canUseDuringArchimonde = false;
     Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
-    if (archimonde && archimonde->GetHealthPct() < 95.0f)
+    if (archimonde && archimonde->GetHealthPct() < 98.0f)
         canUseDuringArchimonde = true;
 
     if (!canUseDuringWinterchill &&
@@ -211,8 +211,40 @@ float AzgalorTanksMaintainPositionMultiplier::GetValue(Action* action)
     Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
     if (azgalor)
     {
-        if (dynamic_cast<TankFaceAction*>(action) || dynamic_cast<AvoidAoeAction*>(action))
+        if (dynamic_cast<TankFaceAction*>(action) ||
+            dynamic_cast<AvoidAoeAction*>(action))
             return 0.0f;
+    }
+
+    Unit* doomguard = AI_VALUE2(Unit*, "find target", "lesser doomguard");
+    if (doomguard || AnyGroupMemberHasDoom(bot))
+    {
+        if (botAI->IsAssistTankOfIndex(bot, 0))
+        {
+            if (dynamic_cast<MovementAction*>(action) &&
+                !dynamic_cast<AttackAction*>(action) &&
+                !dynamic_cast<AzgalorFirstAssistTankPositionDoomguardAction*>(action))
+                return 0.0f;
+
+            if (dynamic_cast<CastReachTargetSpellAction*>(action))
+                return 0.0f;
+        }
+    }
+
+    return 1.0f;
+}
+
+float AzgalorDoomedBotPrioritizePositioningMultiplier::GetValue(Action* action)
+{
+    if (bot->HasAura(SPELL_DOOM))
+    {
+        if (dynamic_cast<MovementAction*>(action) &&
+            !dynamic_cast<AttackAction*>(action) &&
+            !dynamic_cast<AvoidAoeAction*>(action) &&
+            !dynamic_cast<AzgalorMoveToDoomguardTankAction*>(action))
+        {
+            return 0.0f;
+        }
     }
 
     return 1.0f;

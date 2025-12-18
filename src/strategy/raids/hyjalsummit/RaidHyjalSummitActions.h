@@ -207,6 +207,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class ArchimondeDisperseRangedBotsAction : public MovementAction
+{
+public:
+    ArchimondeDisperseRangedBotsAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "archimonde disperse ranged bots") {}
+    bool Execute(Event event) override;
+};
+
 class ArchimondeAvoidDoomfireAction : public MovementAction
 {
 public:
@@ -220,6 +228,14 @@ private:
         const std::vector<Unit*>& doomfires, float hazardRadius);
     Position FindSafestNearbyPosition(const std::vector<Unit*>& doomfires,
         const Position& archimondeCenter, float maxRadius, float hazardRadius);
+};
+
+class ArchimondeRemoveDoomfireDotAction : public Action
+{
+public:
+    ArchimondeRemoveDoomfireDotAction(
+        PlayerbotAI* botAI) : Action(botAI, "archimonde remove doomfire dot") {}
+    bool Execute(Event event) override;
 };
 
 #endif
