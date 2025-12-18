@@ -135,9 +135,9 @@ bool RageWinterchillSpreadRangedInCircleAction::Execute(Event event)
 
         float targetX = RAGE_WINTERCHILL_TANK_POSITION.GetPositionX() + radius * std::cos(angle);
         float targetY = RAGE_WINTERCHILL_TANK_POSITION.GetPositionY() + radius * std::sin(angle);
+        float targetZ = bot->GetMap()->GetHeight(targetX, targetY, RAGE_WINTERCHILL_TANK_POSITION.GetPositionZ());
 
-        winterchillRangedPositions.try_emplace(guid, Position(
-            targetX, targetY, RAGE_WINTERCHILL_TANK_POSITION.GetPositionZ()));
+        winterchillRangedPositions.try_emplace(guid, Position(targetX, targetY, targetZ));
         hasReachedWinterchillPosition[guid] = false;
         it = winterchillRangedPositions.find(guid);
     }
@@ -288,9 +288,9 @@ bool AnetheronSpreadRangedInArcAction::Execute(Event event)
 
         float targetX = ANETHERON_MAIN_TANK_POSITION.GetPositionX() + radius * std::sin(angle);
         float targetY = ANETHERON_MAIN_TANK_POSITION.GetPositionY() + radius * std::cos(angle);
+        float targetZ = bot->GetMap()->GetHeight(targetX, targetY, ANETHERON_MAIN_TANK_POSITION.GetPositionZ());
 
-        anetheronRangedPositions.try_emplace(guid, Position(
-            targetX, targetY, ANETHERON_MAIN_TANK_POSITION.GetPositionZ()));
+        anetheronRangedPositions.try_emplace(guid, Position(targetX, targetY, targetZ));
         it = anetheronRangedPositions.find(guid);
     }
 
@@ -530,9 +530,9 @@ bool KazrogalSpreadRangedInArcAction::Execute(Event event)
 
         float targetX = KAZROGAL_TANK_POSITION.GetPositionX() + radius * std::sin(angle);
         float targetY = KAZROGAL_TANK_POSITION.GetPositionY() + radius * std::cos(angle);
+        float targetZ = bot->GetMap()->GetHeight(targetX, targetY, KAZROGAL_TANK_POSITION.GetPositionZ());
 
-        kazrogalRangedPositions.try_emplace(guid, Position(
-            targetX, targetY, KAZROGAL_TANK_POSITION.GetPositionZ()));
+        kazrogalRangedPositions.try_emplace(guid, Position(targetX, targetY, targetZ));
         it = kazrogalRangedPositions.find(guid);
     }
 
@@ -682,7 +682,7 @@ bool AzgalorSpreadRangedInArcAction::Execute(Event event)
         float angle = 0.0f;
 
         // const float arcSpan = 3.0f * M_PI / 2.0f; // 270 degrees
-        const float arcSpan = 2.0f * M_PI / 3.0f; // 120 degrees
+        const float arcSpan = 5.0f * M_PI / 6.0f; // 150 degrees
         const float arcCenter = 4.706f;
         const float arcStart = arcCenter - arcSpan / 2.0f;
 
@@ -690,14 +690,14 @@ bool AzgalorSpreadRangedInArcAction::Execute(Event event)
         {
             auto findIt = std::find(healers.begin(), healers.end(), bot);
             botIndex = (findIt != healers.end()) ? std::distance(healers.begin(), findIt) : 0;
-            radius = 35.0f;
+            radius = 40.0f;
             count = healers.size();
         }
         else
         {
             auto findIt = std::find(rangedDps.begin(), rangedDps.end(), bot);
             botIndex = (findIt != rangedDps.end()) ? std::distance(rangedDps.begin(), findIt) : 0;
-            radius = 30.0f;
+            radius = 35.0f;
             count = rangedDps.size();
         }
 
@@ -706,9 +706,9 @@ bool AzgalorSpreadRangedInArcAction::Execute(Event event)
 
         float targetX = AZGALOR_MAIN_TANK_POSITION.GetPositionX() + radius * std::sin(angle);
         float targetY = AZGALOR_MAIN_TANK_POSITION.GetPositionY() + radius * std::cos(angle);
+        float targetZ = bot->GetMap()->GetHeight(targetX, targetY, AZGALOR_MAIN_TANK_POSITION.GetPositionZ());
 
-        azgalorRangedPositions.try_emplace(guid, Position(
-            targetX, targetY, AZGALOR_MAIN_TANK_POSITION.GetPositionZ()));
+        azgalorRangedPositions.try_emplace(guid, Position(targetX, targetY, targetZ));
         it = azgalorRangedPositions.find(guid);
     }
 
@@ -933,8 +933,8 @@ Position ArchimondeAvoidDoomfireAction::FindSafestNearbyPosition(
     {
         for (float angle = 0.0f; angle < 2 * M_PI; angle += searchStep)
         {
-            float x = bot->GetPositionX() + distance * std::cos(angle);
-            float y = bot->GetPositionY() + distance * std::sin(angle);
+            float x = bot->GetPositionX() + distance * std::sin(angle);
+            float y = bot->GetPositionY() + distance * std::cos(angle);
             float z = bot->GetPositionZ();
 
             if (archimondeCenter.GetExactDist2d(x, y) > maxRadius)
