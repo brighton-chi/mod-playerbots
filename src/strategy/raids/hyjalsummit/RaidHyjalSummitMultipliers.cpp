@@ -1,6 +1,7 @@
 #include "RaidHyjalSummitMultipliers.h"
 #include "RaidHyjalSummitActions.h"
 #include "RaidHyjalSummitHelpers.h"
+#include "AiFactory.h"
 #include "ChooseTargetActions.h"
 #include "HunterActions.h"
 #include "ReachTargetActions.h"
@@ -210,7 +211,7 @@ float KazrogalDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
 
 float KazrogalLowManaBotStayAwayFromGroupMultiplier::GetValue(Action* action)
 {
-    uint8 tab = GetPlayerSpecTab(bot);
+    uint8 tab = AiFactory::GetPlayerSpecTab(bot);
     if (bot->getClass() == CLASS_WARRIOR ||
         bot->getClass() == CLASS_ROGUE ||
         bot->getClass() == CLASS_DEATH_KNIGHT ||

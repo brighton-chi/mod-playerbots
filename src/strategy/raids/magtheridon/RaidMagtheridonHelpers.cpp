@@ -8,15 +8,12 @@
 
 namespace MagtheridonHelpers
 {
-    namespace MagtheridonsLairLocations
-    {
-        const Location WaitingForMagtheridonPosition = {   1.359f,   2.048f, -0.406f, 3.135f };
-        const Location MagtheridonTankPosition =       {  22.827f,   2.105f, -0.406f, 3.135f };
-        const Location NWChannelerTankPosition =       { -11.764f,  30.818f, -0.411f,   0.0f };
-        const Location NEChannelerTankPosition =       { -12.490f, -26.211f, -0.411f,   0.0f };
-        const Location RangedSpreadPosition =          { -14.890f,   1.995f, -0.406f,   0.0f };
-        const Location HealerSpreadPosition =          {  -2.265f,   1.874f, -0.404f,   0.0f };
-    }
+    const Position WAITING_FOR_MAGTHERIDON_POSITION = {   1.359f,   2.048f, -0.406f, 3.135f };
+    const Position MAGTHERIDON_TANK_POSITION =        {  22.827f,   2.105f, -0.406f, 3.135f };
+    const Position NW_CHANNELER_TANK_POSITION =       { -11.764f,  30.818f, -0.411f,   0.0f };
+    const Position NE_CHANNELER_TANK_POSITION =       { -12.490f, -26.211f, -0.411f,   0.0f };
+    const Position RANGED_SPREAD_POSITION =           { -14.890f,   1.995f, -0.406f,   0.0f };
+    const Position HEALER_SPREAD_POSITION =           {  -2.265f,   1.874f, -0.404f,   0.0f };
 
     // Identify channelers by their database GUIDs
     Creature* GetChanneler(Player* bot, uint32 dbGuid)

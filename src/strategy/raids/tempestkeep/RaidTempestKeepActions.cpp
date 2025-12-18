@@ -103,8 +103,9 @@ bool AlarBossTanksMoveBetweenPlatformsAction::PositionMainTank(
 
         if (mainTank->GetExactDist2d(target.GetPositionX(), target.GetPositionY()) > 5.0f)
         {
-            return MoveTo(TEMPEST_KEEP_MAP_ID, target.GetPositionX(), target.GetPositionY(), target.GetPositionZ(),
-                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+            return MoveTo(TEMPEST_KEEP_MAP_ID, target.GetPositionX(), target.GetPositionY(),
+                          target.GetPositionZ(), false, false, false, false,
+                          MovementPriority::MOVEMENT_COMBAT, true, false);
         }
         else if (mainTank->GetVictim() != alar)
         {
@@ -124,7 +125,8 @@ bool AlarBossTanksMoveBetweenPlatformsAction::PositionMainTank(
     return false;
 }
 
-bool AlarBossTanksMoveBetweenPlatformsAction::PositionAssistTank(Player* assistTank, Unit* alar, int8 locationIndex)
+bool AlarBossTanksMoveBetweenPlatformsAction::PositionAssistTank(
+    Player* assistTank, Unit* alar, int8 locationIndex)
 {
     if (!assistTank)
         return false;
@@ -137,8 +139,9 @@ bool AlarBossTanksMoveBetweenPlatformsAction::PositionAssistTank(Player* assistT
 
         if (assistTank->GetExactDist2d(target.GetPositionX(), target.GetPositionY()) > 5.0f)
         {
-            return MoveTo(TEMPEST_KEEP_MAP_ID, target.GetPositionX(), target.GetPositionY(), target.GetPositionZ(),
-                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+            return MoveTo(TEMPEST_KEEP_MAP_ID, target.GetPositionX(), target.GetPositionY(),
+                          target.GetPositionZ(), false, false, false, false,
+                          MovementPriority::MOVEMENT_COMBAT, true, false);
         }
         else if (assistTank->GetVictim() != alar)
         {
@@ -182,8 +185,9 @@ bool AlarMeleeDpsMoveBetweenPlatformsAction::Execute(Event event)
 
         if (bot->GetExactDist2d(target.GetPositionX(), target.GetPositionY()) > 5.0f)
         {
-            return MoveTo(TEMPEST_KEEP_MAP_ID, target.GetPositionX(), target.GetPositionY(), target.GetPositionZ(),
-                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+            return MoveTo(TEMPEST_KEEP_MAP_ID, target.GetPositionX(), target.GetPositionY(),
+                          target.GetPositionZ(), false, false, false, false,
+                          MovementPriority::MOVEMENT_COMBAT, true, false);
         }
 
         if (bot->GetVictim() != alar)
@@ -220,10 +224,7 @@ bool AlarRangedMoveUnderPlatformsAction::Execute(Event event)
             SetRtiTarget(botAI, "square", ember);
 
             if (bot->GetTarget() != ember->GetGUID())
-            {
-                bot->SetTarget(ember->GetGUID());
                 return Attack(ember);
-            }
             else if (!ember)
                 SetRtiTarget(botAI, "star", alar);
         }
@@ -238,13 +239,15 @@ bool AlarRangedMoveUnderPlatformsAction::Execute(Event event)
 
     if (locationIndex >= PLATFORM_0_IDX && locationIndex <= PLATFORM_3_IDX)
     {
-        const Position groundPositions[] = {ALAR_GROUND_0, ALAR_GROUND_1, ALAR_GROUND_2, ALAR_GROUND_3};
+        const Position groundPositions[] =
+            {ALAR_GROUND_0, ALAR_GROUND_1, ALAR_GROUND_2, ALAR_GROUND_3};
         const Position& groundTarget = groundPositions[locationIndex];
 
         if (bot->GetExactDist2d(groundTarget.GetPositionX(), groundTarget.GetPositionY()) > 8.0f)
         {
-            return MoveInside(TEMPEST_KEEP_MAP_ID, groundTarget.GetPositionX(), groundTarget.GetPositionY(),
-                              groundTarget.GetPositionZ(), 8.0f, MovementPriority::MOVEMENT_COMBAT);
+            return MoveInside(TEMPEST_KEEP_MAP_ID, groundTarget.GetPositionX(),
+                              groundTarget.GetPositionY(), groundTarget.GetPositionZ(),
+                              8.0f, MovementPriority::MOVEMENT_COMBAT);
         }
     }
 
@@ -298,8 +301,10 @@ bool AlarAddTankPickUpEmbersAction::Execute(Event event)
             if (locationIndex >= PLATFORM_0_IDX && locationIndex <= PLATFORM_3_IDX)
             {
                 const Position& groundTarget = GROUND_POSITIONS[locationIndex];
-                return MoveNear(TEMPEST_KEEP_MAP_ID, groundTarget.GetPositionX(), groundTarget.GetPositionY(),
-                                groundTarget.GetPositionZ(), 20.0f, MovementPriority::MOVEMENT_COMBAT);
+
+                return MoveNear(TEMPEST_KEEP_MAP_ID, groundTarget.GetPositionX(),
+                                groundTarget.GetPositionY(), groundTarget.GetPositionZ(),
+                                20.0f, MovementPriority::MOVEMENT_COMBAT);
             }
             else
                 return MoveFromGroup(20.0f);
@@ -310,8 +315,9 @@ bool AlarAddTankPickUpEmbersAction::Execute(Event event)
         const Position& groundTarget = GROUND_POSITIONS[locationIndex];
         if (bot->GetExactDist2d(groundTarget.GetPositionX(), groundTarget.GetPositionY()) > 20.0f)
         {
-            return MoveInside(TEMPEST_KEEP_MAP_ID, groundTarget.GetPositionX(), groundTarget.GetPositionY(),
-                              groundTarget.GetPositionZ(), 20.0f, MovementPriority::MOVEMENT_COMBAT);
+            return MoveInside(TEMPEST_KEEP_MAP_ID, groundTarget.GetPositionX(),
+                              groundTarget.GetPositionY(), groundTarget.GetPositionZ(),
+                              20.0f, MovementPriority::MOVEMENT_COMBAT);
         }
     }
 
@@ -426,19 +432,13 @@ bool AlarRangedDpsPrioritizeEmbersInPhase2Action::Execute(Event event)
 
         SetRtiTarget(botAI, "square", ember);
         if (bot->GetTarget() != ember->GetGUID())
-        {
-            bot->SetTarget(ember->GetGUID());
             return Attack(ember);
-        }
     }
     else if (Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar"))
     {
         SetRtiTarget(botAI, "star", alar);
         if (bot->GetTarget() != alar->GetGUID())
-        {
-            bot->SetTarget(alar->GetGUID());
             return Attack(alar);
-        }
     }
 
     return false;
@@ -947,14 +947,16 @@ bool KaelthasSunstriderMainTankPositionSanguinarAction::Execute(Event event)
     if (sanguinar->GetVictim() == bot && bot->IsWithinMeleeRange(sanguinar))
     {
         const Position& position = SANGUINAR_TANK_POSITION;
-        float dist = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
-        if (dist > 2.0f)
+        float distToPosition =
+            bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+
+        if (distToPosition > 2.0f)
         {
             float dX = position.GetPositionX() - bot->GetPositionX();
             float dY = position.GetPositionY() - bot->GetPositionY();
-            float moveDist = std::min(5.0f, dist);
-            float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
-            float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
+            float moveDist = std::min(5.0f, distToPosition);
+            float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
             return MoveTo(TEMPEST_KEEP_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
                           false, false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
@@ -1168,14 +1170,16 @@ bool KaelthasSunstriderFirstAssistTankPositionTelonicusAction::Execute(Event eve
     if (telonicus->GetVictim() == bot && bot->IsWithinMeleeRange(telonicus))
     {
         const Position& position = TELONICUS_TANK_POSITION;
-        float dist = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
-        if (dist > 2.0f)
+        float distToPosition =
+            bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+
+        if (distToPosition > 2.0f)
         {
             float dX = position.GetPositionX() - bot->GetPositionX();
             float dY = position.GetPositionY() - bot->GetPositionY();
-            float moveDist = std::min(5.0f, dist);
-            float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
-            float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
+            float moveDist = std::min(5.0f, distToPosition);
+            float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
             return MoveTo(TEMPEST_KEEP_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
                           false, false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
@@ -1188,14 +1192,16 @@ bool KaelthasSunstriderFirstAssistTankPositionTelonicusAction::Execute(Event eve
 bool KaelthasSunstriderPositionPhase3TankHealerAction::Execute(Event event)
 {
     const Position& position = ADVISOR_HEAL_POSITION;
-    float dist = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
-    if (dist > 2.0f)
+    float distToPosition =
+        bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+
+    if (distToPosition > 2.0f)
     {
         float dX = position.GetPositionX() - bot->GetPositionX();
         float dY = position.GetPositionY() - bot->GetPositionY();
-        float moveDist = std::min(10.0f, dist);
-        float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
-        float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
+        float moveDist = std::min(10.0f, distToPosition);
+        float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+        float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
         return MoveTo(TEMPEST_KEEP_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
                       false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
@@ -1579,9 +1585,9 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::LootWeapon(uint32 weaponEntry
 
         context->GetValue<LootObject>("loot target")->Set(loot);
 
-        float dist = bot->GetDistance(object);
+        float distToObject = bot->GetDistance(object);
 
-        if (dist > maxLootRange)
+        if (distToObject > maxLootRange)
             return MoveTo(object, 2.0f, MovementPriority::MOVEMENT_FORCED);
 
         OpenLootAction open(botAI);
@@ -1795,7 +1801,6 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
         if (botAI->IsMelee(bot) && botAI->IsDps(bot) && telonicus->GetVictim() != bot)
         {
             float maxMeleeRange = bot->GetMeleeRange(telonicus);
-
             const float meleeRangeBuffer = 0.5f;
             const float tolerance = 0.75f;
 
@@ -1835,14 +1840,16 @@ bool KaelthasSunstriderMainTankPositionBossAction::Execute(Event event)
     if (kaelthas->GetVictim() == bot && bot->IsWithinMeleeRange(kaelthas))
     {
         const Position& position = KAELTHAS_TANK_POSITION;
-        float dist = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
-        if (dist > 2.0f)
+        float distToPosition =
+            bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+
+        if (distToPosition > 2.0f)
         {
             float dX = position.GetPositionX() - bot->GetPositionX();
             float dY = position.GetPositionY() - bot->GetPositionY();
-            float moveDist = std::min(5.0f, dist);
-            float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
-            float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
+            float moveDist = std::min(5.0f, distToPosition);
+            float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
             return MoveTo(TEMPEST_KEEP_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
                           false, false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
@@ -2079,10 +2086,7 @@ bool KaelthasSunstriderRoundUpPhoenixesAndFocusDownEggsAction::Execute(Event eve
         SetRtiTarget(botAI, "diamond", phoenixEgg);
 
         if (bot->GetTarget() != phoenixEgg->GetGUID())
-        {
-            bot->SetTarget(phoenixEgg->GetGUID());
             return Attack (phoenixEgg);
-        }
     }
 
     return false;
@@ -2171,7 +2175,6 @@ bool KaelthasSunstriderBreakThroughShockBarrierAction::Execute(Event event)
     else if (bot->GetTarget() != kaelthas->GetGUID())
     {
         SetRtiTarget(botAI, "star", kaelthas);
-        bot->SetTarget(kaelthas->GetGUID());
         return Attack(kaelthas);
     }
 
@@ -2204,10 +2207,10 @@ bool KaelthasSunstriderSpreadOutInMidairAction::Execute(Event event)
     float closestDist = std::numeric_limits<float>::max();
     for (Player* player : nearbyPlayers)
     {
-        float dist = bot->GetExactDist(player);
-        if (dist < closestDist)
+        float distToPlayer = bot->GetExactDist(player);
+        if (distToPlayer < closestDist)
         {
-            closestDist = dist;
+            closestDist = distToPlayer;
             closestPlayer = player;
         }
     }

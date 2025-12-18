@@ -1,6 +1,7 @@
 #include "RaidHyjalSummitTriggers.h"
 #include "RaidHyjalSummitHelpers.h"
 #include "RaidHyjalSummitActions.h"
+#include "AiFactory.h"
 #include "Playerbots.h"
 
 using namespace HyjalSummitHelpers;
@@ -152,7 +153,7 @@ bool KazrogalLowManaBotsNeedEscapePathTrigger::IsActive()
 
 bool KazrogalBotIsLowOnManaTrigger::IsActive()
 {
-    uint8 tab = GetPlayerSpecTab(bot);
+    uint8 tab = AiFactory::GetPlayerSpecTab(bot);
     if (bot->getClass() == CLASS_WARRIOR ||
         bot->getClass() == CLASS_ROGUE ||
         bot->getClass() == CLASS_DEATH_KNIGHT ||

@@ -165,11 +165,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class AzgalorFirstAssistTankPositionDoomguardAction : public MovementAction
+class AzgalorFirstAssistTankPositionDoomguardAction : public AttackAction
 {
 public:
     AzgalorFirstAssistTankPositionDoomguardAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "azgalor first assist tank position doomguard") {}
+        PlayerbotAI* botAI) : AttackAction(botAI, "azgalor first assist tank position doomguard") {}
     bool Execute(Event event) override;
 };
 

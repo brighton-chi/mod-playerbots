@@ -38,6 +38,7 @@ namespace MagtheridonHelpers
         GO_BLAZE            = 181832,
     };
 
+    constexpr uint32 MAGTHERIDON_MAP_ID  =   544;
     constexpr uint32 SOUTH_CHANNELER     = 90978;
     constexpr uint32 WEST_CHANNELER      = 90979;
     constexpr uint32 NORTHWEST_CHANNELER = 90980;
@@ -53,34 +54,24 @@ namespace MagtheridonHelpers
     void MarkTargetWithTriangle(Player* bot, Unit* target);
     void MarkTargetWithCross(Player* bot, Unit* target);
     void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target);
-    bool IsSafeFromMagtheridonHazards(PlayerbotAI* botAI, Player* bot, float x, float y, float z);
+    bool IsSafeFromMagtheridonHazards(
+        PlayerbotAI* botAI, Player* bot, float x, float y, float z);
     bool IsInstanceTimerManager(PlayerbotAI* botAI, Player* bot);
 
-    struct Location
-    {
-        float x, y, z, orientation;
-    };
+    extern const Position WAITING_FOR_MAGTHERIDON_POSITION;
+    extern const Position MAGTHERIDON_TANK_POSITION;
+    extern const Position NW_CHANNELER_TANK_POSITION;
+    extern const Position NE_CHANNELER_TANK_POSITION;
+    extern const Position RANGED_SPREAD_POSITION;
+    extern const Position HEALER_SPREAD_POSITION;
 
-    namespace MagtheridonsLairLocations
-    {
-        extern const Location WaitingForMagtheridonPosition;
-        extern const Location MagtheridonTankPosition;
-        extern const Location NWChannelerTankPosition;
-        extern const Location NEChannelerTankPosition;
-        extern const Location RangedSpreadPosition;
-        extern const Location HealerSpreadPosition;
-    }
-
-    struct CubeInfo
-    {
-        ObjectGuid guid;
-        float x, y, z;
-    };
-
+    struct CubeInfo { ObjectGuid guid; float x, y, z; };
     extern const std::vector<uint32> MANTICRON_CUBE_DB_GUIDS;
     extern std::unordered_map<ObjectGuid, CubeInfo> botToCubeAssignment;
-    std::vector<CubeInfo> GetAllCubeInfosByDbGuids(Map* map, const std::vector<uint32>& cubeDbGuids);
-    void AssignBotsToCubesByGuidAndCoords(Group* group, const std::vector<CubeInfo>& cubes, PlayerbotAI* botAI);
+    std::vector<CubeInfo> GetAllCubeInfosByDbGuids(
+        Map* map, const std::vector<uint32>& cubeDbGuids);
+    void AssignBotsToCubesByGuidAndCoords(
+        Group* group, const std::vector<CubeInfo>& cubes, PlayerbotAI* botAI);
     extern std::unordered_map<uint32, bool> lastBlastNovaState;
     extern std::unordered_map<uint32, time_t> magtheridonBlastNovaTimer;
     extern std::unordered_map<uint32, time_t> magtheridonSpreadWaitTimer;

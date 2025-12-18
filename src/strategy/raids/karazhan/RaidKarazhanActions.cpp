@@ -299,19 +299,18 @@ bool BigBadWolfPositionBossAction::Execute(Event event)
     if (wolf->GetVictim() == bot)
     {
         const Position& position = BIG_BAD_WOLF_BOSS_POSITION;
-        const float maxStep = 2.0f;
-        float dist = wolf->GetExactDist2d(position);
+        float distanceToPosition = wolf->GetExactDist2d(position);
 
-        if (dist > 0.0f && dist > maxStep)
+        if (distanceToPosition > 2.0f)
         {
             float dX = position.GetPositionX() - wolf->GetPositionX();
             float dY = position.GetPositionY() - wolf->GetPositionY();
-            float moveDist = std::min(maxStep, dist);
-            float moveX = wolf->GetPositionX() + (dX / dist) * moveDist;
-            float moveY = wolf->GetPositionY() + (dY / dist) * moveDist;
+            float moveDist = std::min(5.0f, distanceToPosition);
+            float moveX = wolf->GetPositionX() + (dX / distanceToPosition) * moveDist;
+            float moveY = wolf->GetPositionY() + (dY / distanceToPosition) * moveDist;
 
             return MoveTo(KARAZHAN_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false, false, false,
-                          MovementPriority::MOVEMENT_COMBAT, true, false);
+                          MovementPriority::MOVEMENT_COMBAT, true, true);
         }
     }
 
@@ -431,17 +430,17 @@ bool TheCuratorPositionBossAction::Execute(Event event)
     if (curator->GetVictim() == bot)
     {
         const Position& position = THE_CURATOR_BOSS_POSITION;
-        const float maxDistance = 3.0f;
-        float distanceToBossPosition = curator->GetExactDist2d(position);
+        float distanceToPosition = curator->GetExactDist2d(position);
 
-        if (distanceToBossPosition > maxDistance)
+        if (distanceToPosition > 2.0f)
         {
             float dX = position.GetPositionX() - curator->GetPositionX();
             float dY = position.GetPositionY() - curator->GetPositionY();
-            float mX = position.GetPositionX() + (dX / distanceToBossPosition) * maxDistance;
-            float mY = position.GetPositionY() + (dY / distanceToBossPosition) * maxDistance;
+            float moveDist = std::min(10.0f, distanceToPosition);
+            float moveX = position.GetPositionX() + (dX / distanceToPosition) * moveDist;
+            float moveY = position.GetPositionY() + (dY / distanceToPosition) * moveDist;
 
-            return MoveTo(KARAZHAN_MAP_ID, mX, mY, position.GetPositionZ(), false, false, false, false,
+            return MoveTo(KARAZHAN_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
