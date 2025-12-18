@@ -65,12 +65,12 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction::array(0, new NextAction("azgalor spread ranged in arc", ACTION_RAID + 2), nullptr)
     ));
     triggers.push_back(new TriggerNode("azgalor bot is doomed",
-        NextAction::array(0, new NextAction("azgalor move to doomguard tank", ACTION_EMERGENCY + 2), nullptr)
+        NextAction::array(0,
+            new NextAction("azgalor move to doomguard tank", ACTION_EMERGENCY + 2),
+            new NextAction("azgalor first assist tank position doomguard", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("azgalor doomguard spawned",
-        NextAction::array(0,
-            new NextAction("azgalor first assist tank position doomguard", ACTION_RAID + 1),
-            new NextAction("azgalor melee dps prioritize doomguards", ACTION_RAID + 1), nullptr)
+        NextAction::array(0, new NextAction("azgalor melee dps prioritize doomguards", ACTION_RAID + 1), nullptr)
     ));
 
     // Archimonde

@@ -106,37 +106,35 @@ bool RageWinterchillSpreadRangedInCircleAction::Execute(Event event)
     auto it = winterchillRangedPositions.find(guid);
     if (it == winterchillRangedPositions.end())
     {
-        float targetX = 0.0f, targetY = 0.0f;
+        size_t count = healers.size() + rangedDps.size();
+        size_t botIndex = 0;
         float radius = 0.0f;
         float angle = 0.0f;
 
+        const float arcSpan = 2.0f * M_PI; // 360 degrees for a full circle
+        const float arcCenter = 0.0f;
+        const float arcStart = arcCenter - arcSpan / 2.0f;
+
         if (botAI->IsHeal(bot))
         {
-            size_t count = healers.size();
-            if (count == 0)
-                return false;
-
             auto findIt = std::find(healers.begin(), healers.end(), bot);
-            size_t botIndex = (findIt != healers.end()) ? std::distance(healers.begin(), findIt) : 0;
-            const float radius = 30.0f;
-            float angle = (count == 1) ? 0.0f :
-                (2.0f * M_PI * static_cast<float>(botIndex) / static_cast<float>(count));
+            botIndex = (findIt != healers.end()) ? std::distance(healers.begin(), findIt) : 0;
+            radius = 30.0f;
+            count = healers.size();
         }
         else
         {
-            size_t count = rangedDps.size();
-            if (count == 0)
-                return false;
-
             auto findIt = std::find(rangedDps.begin(), rangedDps.end(), bot);
-            size_t botIndex = (findIt != rangedDps.end()) ? std::distance(rangedDps.begin(), findIt) : 0;
-            const float radius = 25.0f;
-            float angle = (count == 1) ? 0.0f :
-                (2.0f * M_PI * static_cast<float>(botIndex) / static_cast<float>(count));
+            botIndex = (findIt != rangedDps.end()) ? std::distance(rangedDps.begin(), findIt) : 0;
+            radius = 25.0f;
+            count = rangedDps.size();
         }
 
-        targetX = RAGE_WINTERCHILL_TANK_POSITION.GetPositionX() + radius * std::cos(angle);
-        targetY = RAGE_WINTERCHILL_TANK_POSITION.GetPositionY() + radius * std::sin(angle);
+        angle = (count == 1) ? arcCenter :
+            (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
+
+        float targetX = RAGE_WINTERCHILL_TANK_POSITION.GetPositionX() + radius * std::cos(angle);
+        float targetY = RAGE_WINTERCHILL_TANK_POSITION.GetPositionY() + radius * std::sin(angle);
 
         winterchillRangedPositions.try_emplace(guid, Position(
             targetX, targetY, RAGE_WINTERCHILL_TANK_POSITION.GetPositionZ()));
@@ -261,7 +259,8 @@ bool AnetheronSpreadRangedInArcAction::Execute(Event event)
     auto it = anetheronRangedPositions.find(guid);
     if (it == anetheronRangedPositions.end())
     {
-        float targetX = 0.0f, targetY = 0.0f;
+        size_t count = healers.size() + rangedDps.size();
+        size_t botIndex = 0;
         float radius = 0.0f;
         float angle = 0.0f;
 
@@ -271,31 +270,24 @@ bool AnetheronSpreadRangedInArcAction::Execute(Event event)
 
         if (botAI->IsHeal(bot))
         {
-            size_t count = healers.size();
-            if (count == 0)
-                return false;
-
             auto findIt = std::find(healers.begin(), healers.end(), bot);
-            size_t botIndex = (findIt != healers.end()) ? std::distance(healers.begin(), findIt) : 0;
-            const float radius = 30.0f;
-            float angle = (count == 1) ? 0.0f :
-                (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
+            botIndex = (findIt != healers.end()) ? std::distance(healers.begin(), findIt) : 0;
+            radius = 30.0f;
+            count = healers.size();
         }
         else
         {
-            size_t count = rangedDps.size();
-            if (count == 0)
-                return false;
-
             auto findIt = std::find(rangedDps.begin(), rangedDps.end(), bot);
-            size_t botIndex = (findIt != rangedDps.end()) ? std::distance(rangedDps.begin(), findIt) : 0;
-            const float radius = 25.0f;
-            float angle = (count == 1) ? 0.0f :
-                (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
+            botIndex = (findIt != rangedDps.end()) ? std::distance(rangedDps.begin(), findIt) : 0;
+            radius = 25.0f;
+            count = rangedDps.size();
         }
 
-        targetX = ANETHERON_MAIN_TANK_POSITION.GetPositionX() + radius * std::sin(angle);
-        targetY = ANETHERON_MAIN_TANK_POSITION.GetPositionY() + radius * std::cos(angle);
+        angle = (count == 1) ? arcCenter :
+            (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
+
+        float targetX = ANETHERON_MAIN_TANK_POSITION.GetPositionX() + radius * std::sin(angle);
+        float targetY = ANETHERON_MAIN_TANK_POSITION.GetPositionY() + radius * std::cos(angle);
 
         anetheronRangedPositions.try_emplace(guid, Position(
             targetX, targetY, ANETHERON_MAIN_TANK_POSITION.GetPositionZ()));
@@ -525,7 +517,8 @@ bool KazrogalSpreadRangedInArcAction::Execute(Event event)
     {
         size_t count = rangedMembers.size();
         auto findIt = std::find(rangedMembers.begin(), rangedMembers.end(), bot);
-        size_t botIndex = (findIt != rangedMembers.end()) ? std::distance(rangedMembers.begin(), findIt) : 0;
+        size_t botIndex = (findIt != rangedMembers.end()) ?
+            std::distance(rangedMembers.begin(), findIt) : 0;
 
         const float arcSpan = 2.0f * M_PI / 4.0f; // 90 degrees
         const float arcCenter = 4.749f;
@@ -683,41 +676,36 @@ bool AzgalorSpreadRangedInArcAction::Execute(Event event)
     auto it = azgalorRangedPositions.find(guid);
     if (it == azgalorRangedPositions.end())
     {
-        float targetX = 0.0f, targetY = 0.0f;
+        size_t count = healers.size() + rangedDps.size();
+        size_t botIndex = 0;
         float radius = 0.0f;
         float angle = 0.0f;
 
-        const float arcSpan = 3.0f * M_PI / 2.0f; // 270 degrees
+        // const float arcSpan = 3.0f * M_PI / 2.0f; // 270 degrees
+        const float arcSpan = 2.0f * M_PI / 3.0f; // 120 degrees
         const float arcCenter = 4.706f;
         const float arcStart = arcCenter - arcSpan / 2.0f;
 
         if (botAI->IsHeal(bot))
         {
-            size_t count = healers.size();
-            if (count == 0)
-                return false;
-
             auto findIt = std::find(healers.begin(), healers.end(), bot);
-            size_t botIndex = (findIt != healers.end()) ? std::distance(healers.begin(), findIt) : 0;
-            const float radius = 32.0f;
-            float angle = (count == 1) ? 0.0f :
-                (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
+            botIndex = (findIt != healers.end()) ? std::distance(healers.begin(), findIt) : 0;
+            radius = 35.0f;
+            count = healers.size();
         }
         else
         {
-            size_t count = rangedDps.size();
-            if (count == 0)
-                return false;
-
             auto findIt = std::find(rangedDps.begin(), rangedDps.end(), bot);
-            size_t botIndex = (findIt != rangedDps.end()) ? std::distance(rangedDps.begin(), findIt) : 0;
-            const float radius = 30.0f;
-            float angle = (count == 1) ? 0.0f :
-                (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
+            botIndex = (findIt != rangedDps.end()) ? std::distance(rangedDps.begin(), findIt) : 0;
+            radius = 30.0f;
+            count = rangedDps.size();
         }
 
-        targetX = AZGALOR_MAIN_TANK_POSITION.GetPositionX() + radius * std::sin(angle);
-        targetY = AZGALOR_MAIN_TANK_POSITION.GetPositionY() + radius * std::cos(angle);
+        angle = (count == 1) ? arcCenter :
+            (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
+
+        float targetX = AZGALOR_MAIN_TANK_POSITION.GetPositionX() + radius * std::sin(angle);
+        float targetY = AZGALOR_MAIN_TANK_POSITION.GetPositionY() + radius * std::cos(angle);
 
         azgalorRangedPositions.try_emplace(guid, Position(
             targetX, targetY, AZGALOR_MAIN_TANK_POSITION.GetPositionZ()));
