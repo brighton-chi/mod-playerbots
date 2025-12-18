@@ -19,19 +19,11 @@ public:
     float GetValue(Action* action) override;
 };
 
-class MagtheridonDisableOffTankAssistMultiplier : public Multiplier
+class MagtheridonDisableTankActionsMultiplier : public Multiplier
 {
 public:
-    MagtheridonDisableOffTankAssistMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "magtheridon disable off tank assist multiplier") {}
-    float GetValue(Action* action) override;
-};
-
-class MagtheridonDisableTankFaceActionMultiplier : public Multiplier
-{
-public:
-    MagtheridonDisableTankFaceActionMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "magtheridon disable tank face action multiplier") {}
+    MagtheridonDisableTankActionsMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "magtheridon disable tank actions multiplier") {}
     float GetValue(Action* action) override;
 };
 

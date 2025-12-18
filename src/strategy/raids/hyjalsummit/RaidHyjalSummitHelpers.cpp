@@ -117,13 +117,13 @@ namespace HyjalSummitHelpers
 
     // Kaz'rogal
 
-    const Position KAZROGAL_TANK_POSITION = { 5501.381f, -2736.129f, 1487.012f }; // toward back of weird strip land between paths
+    const Position KAZROGAL_TANK_POSITION = { 5481.656f, -2719.316f, 1482.882f };
     std::unordered_map<ObjectGuid, Position> kazrogalRangedPositions;
 
     // Azgalor
 
     const Position AZGALOR_MAIN_TANK_POSITION = { 5492.193f, -2726.423f, 1484.705f }; // In middleish of the weird strip of land between paths
-    const Position AZGALOR_DOOMGUARD_TANK_POSITION = { 5487.0f, -2745.0f, 1484.705f };
+    const Position AZGALOR_DOOMGUARD_TANK_POSITION = { 5490.338f, -2743.207f, 1487.171f };
     std::unordered_map<ObjectGuid, Position> azgalorRangedPositions;
 
     // Archimonde

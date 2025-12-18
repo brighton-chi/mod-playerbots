@@ -45,10 +45,10 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction::array(0, new NextAction("kaz'rogal assist tanks move in front of boss", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("kaz'rogal low mana bots need escape path",
-        NextAction::array(0, new NextAction("kaz'rogal low mana bot move from group", ACTION_EMERGENCY + 1), nullptr)
+        NextAction::array(0, new NextAction("kaz'rogal spread ranged in arc", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("kaz'rogal bot is low on mana",
-        NextAction::array(0, new NextAction("kaz'rogal spread ranged in arc", ACTION_RAID + 1), nullptr)
+        NextAction::array(0, new NextAction("kaz'rogal low mana bot move from group", ACTION_EMERGENCY + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("kaz'rogal mage or paladin has mark of kaz'rogal",
         NextAction::array(0, new NextAction("kaz'rogal remove mark of kaz'rogal", ACTION_EMERGENCY + 6), nullptr)

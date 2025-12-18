@@ -51,8 +51,8 @@ public:
         creators["kaz'rogal bot is low on mana"] =
             &RaidHyjalSummitTriggerContext::kazrogal_bot_is_low_on_mana;
 
-        creators["kaz'rogal bot is low on mana"] =
-            &RaidHyjalSummitTriggerContext::kazrogal_bot_is_low_on_mana;
+        creators["kaz'rogal low mana bots need escape path"] =
+            &RaidHyjalSummitTriggerContext::kazrogal_low_mana_bots_need_escape_path;
 
         creators["kaz'rogal mage or paladin has mark of kaz'rogal"] =
             &RaidHyjalSummitTriggerContext::kazrogal_mage_or_paladin_has_mark_of_kazrogal;

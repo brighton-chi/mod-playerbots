@@ -4,6 +4,7 @@
 #include "ChooseTargetActions.h"
 #include "GenericSpellActions.h"
 #include "Playerbots.h"
+#include "ReachTargetActions.h"
 #include "WarlockActions.h"
 #include "WipeAction.h"
 
@@ -57,30 +58,22 @@ float MagtheridonWaitToAttackMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-// No tank assist for offtanks during the channeler phase
-// So they don't try to pull channelers from each other or the main tank
-float MagtheridonDisableOffTankAssistMultiplier::GetValue(Action* action)
-{
-    if (!botAI->IsAssistTank(bot))
-        return 1.0f;
-
-    Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
-    if (magtheridon && magtheridon->HasAura(SPELL_SHADOW_CAGE))
-    {
-        if (dynamic_cast<TankAssistAction*>(action))
-            return 0.0f;
-    }
-
-    return 1.0f;
-}
-
-float MagtheridonDisableTankFaceActionMultiplier::GetValue(Action* action)
+float MagtheridonDisableTankActionsMultiplier::GetValue(Action* action)
 {
     if (!botAI->IsTank(bot))
         return 1.0f;
 
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
-    if (magtheridon && !magtheridon->HasAura(SPELL_SHADOW_CAGE))
+    if (!magtheridon)
+        return 1.0f;
+
+    if (magtheridon->HasAura(SPELL_SHADOW_CAGE))
+    {
+        if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
+            dynamic_cast<TankAssistAction*>(action))
+            return 0.0f;
+    }
+    else
     {
         if (dynamic_cast<TankFaceAction*>(action))
             return 0.0f;

@@ -533,7 +533,7 @@ bool KazrogalSpreadRangedInArcAction::Execute(Event event)
 
         // Arc settings
         const float arcSpan = 2.0f * M_PI / 3.0f; // 120 degrees in radians
-        const float arcCenter = 0.165f;           // chosen orientation
+        const float arcCenter = 1.342f;           // chosen orientation
         const float arcStart = arcCenter - arcSpan / 2.0f; // start of arc
 
         if (botAI->IsHeal(bot))
@@ -715,7 +715,7 @@ bool AzgalorSpreadRangedInArcAction::Execute(Event event)
 
         // Arc settings
         const float arcSpan = 2.0f * M_PI / 3.0f; // 120 degrees in radians
-        const float arcCenter = 0.165f;           // chosen orientation
+        const float arcCenter = 6.034f;           // chosen orientation
         const float arcStart = arcCenter - arcSpan / 2.0f; // start of arc
 
         if (botAI->IsHeal(bot))
