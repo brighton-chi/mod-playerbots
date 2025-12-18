@@ -70,7 +70,7 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("azgalor doomguard spawned",
         NextAction::array(0,
             new NextAction("azgalor first assist tank position doomguard", ACTION_RAID + 1),
-            new NextAction("azgalor mark doomguard with skull", ACTION_RAID + 1), nullptr)
+            new NextAction("azgalor melee dps prioritize doomguards", ACTION_RAID + 1), nullptr)
     ));
 
     // Archimonde
@@ -91,17 +91,13 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 void RaidHyjalSummitStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     multipliers.push_back(new HyjalSummitTimeBloodlustAndHeroismMultiplier(botAI));
-    // multipliers.push_back(new RageWinterchillDelayBloodlustAndHeroismMultiplier(botAI));
     multipliers.push_back(new RageWinterchillDisableMainTankAvoidAoeMultiplier(botAI));
     multipliers.push_back(new RageWinterchillDisableCombatFormationMoveMultiplier(botAI));
-    // multipliers.push_back(new AnetheronDelayBloodlustAndHeroismMultiplier(botAI));
     multipliers.push_back(new AnetheronDisableTankActionsMultiplier(botAI));
     multipliers.push_back(new AnetheronDisableCombatFormationMoveMultiplier(botAI));
     multipliers.push_back(new AnetheronInfernalTankMaintainPositionMultiplier(botAI));
     multipliers.push_back(new AnetheronControlMisdirectionMultiplier(botAI));
-    // multipliers.push_back(new KazrogalDelayBloodlustAndHeroismMultiplier(botAI));
     multipliers.push_back(new KazrogalLowManaBotStayAwayFromGroupMultiplier(botAI));
-    // multipliers.push_back(new AzgalorDelayBloodlustAndHeroismMultiplier(botAI));
     multipliers.push_back(new AzgalorDisableTankAssistMultiplier(botAI));
-    // multipliers.push_back(new ArchimondeDelayBloodlustAndHeroismMultiplier(botAI));
+    multipliers.push_back(new AzgalorTanksMaintainPositionMultiplier(botAI));
 }

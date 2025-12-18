@@ -148,7 +148,11 @@ bool KazrogalLowManaBotsNeedEscapePathTrigger::IsActive()
     if (!kazrogal)
         return false;
 
-    return bot->GetPower(POWER_MANA) > 3000;
+    if (bot->GetPower(POWER_MANA) <= 2000 ||
+        (bot->GetPower(POWER_MANA) <= 3000 && bot->HasAura(SPELL_MARK_OF_KAZROGAL)))
+        return false;
+
+    return true;
 }
 
 bool KazrogalBotIsLowOnManaTrigger::IsActive()
@@ -164,7 +168,9 @@ bool KazrogalBotIsLowOnManaTrigger::IsActive()
     if (!kazrogal)
         return false;
 
-    return bot->GetPower(POWER_MANA) <= 3000;
+    // Try to see if I can keep bots in for longer unless they have mark (if not, just move away at <=3000 mana)
+    return bot->GetPower(POWER_MANA) <= 2000 ||
+           (bot->GetPower(POWER_MANA) <= 3000 && bot->HasAura(SPELL_MARK_OF_KAZROGAL));
 }
 
 bool KazrogalMageOrPaladinHasMarkOfKazrogalTrigger::IsActive()
@@ -200,16 +206,17 @@ bool AzgalorBossEngagedByMainTankTrigger::IsActive()
     return azgalor != nullptr;
 }
 
+// Spread to mitigate Rain of Fire, but GTFO if Rain of Fire is on the bot
 bool AzgalorBossCastsRainOfFireTrigger::IsActive()
 {
     if (!botAI->IsRanged(bot))
         return false;
 
-    Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
-    if (!azgalor)
+    if (bot->HasAura(SPELL_RAIN_OF_FIRE) || bot->HasAura(SPELL_DOOM))
         return false;
 
-    return !bot->HasAura(SPELL_DOOM);
+    Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
+    return azgalor != nullptr;
 }
 
 bool AzgalorBotIsDoomedTrigger::IsActive()

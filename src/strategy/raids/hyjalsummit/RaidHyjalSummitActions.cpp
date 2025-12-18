@@ -118,8 +118,9 @@ bool RageWinterchillSpreadRangedInCircleAction::Execute(Event event)
 
             auto findIt = std::find(healers.begin(), healers.end(), bot);
             size_t botIndex = (findIt != healers.end()) ? std::distance(healers.begin(), findIt) : 0;
-            radius = 30.0f;
-            angle = (count == 1) ? 0.0f : (2.0f * M_PI * static_cast<float>(botIndex) / static_cast<float>(count));
+            const float radius = 30.0f;
+            float angle = (count == 1) ? 0.0f :
+                (2.0f * M_PI * static_cast<float>(botIndex) / static_cast<float>(count));
         }
         else
         {
@@ -129,8 +130,9 @@ bool RageWinterchillSpreadRangedInCircleAction::Execute(Event event)
 
             auto findIt = std::find(rangedDps.begin(), rangedDps.end(), bot);
             size_t botIndex = (findIt != rangedDps.end()) ? std::distance(rangedDps.begin(), findIt) : 0;
-            radius = 25.0f;
-            angle = (count == 1) ? 0.0f : (2.0f * M_PI * static_cast<float>(botIndex) / static_cast<float>(count));
+            const float radius = 25.0f;
+            float angle = (count == 1) ? 0.0f :
+                (2.0f * M_PI * static_cast<float>(botIndex) / static_cast<float>(count));
         }
 
         targetX = RAGE_WINTERCHILL_TANK_POSITION.GetPositionX() + radius * std::cos(angle);
@@ -276,9 +278,10 @@ bool AnetheronSpreadRangedInArcAction::Execute(Event event)
 
             auto findIt = std::find(healers.begin(), healers.end(), bot);
             size_t botIndex = (findIt != healers.end()) ? std::distance(healers.begin(), findIt) : 0;
-            radius = 30.0f;
+            const float radius = 30.0f;
             // Spread evenly along the arc
-            angle = (count == 1) ? 0.0f : (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
+            float angle = (count == 1) ? 0.0f :
+                (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
         }
         else
         {
@@ -288,9 +291,10 @@ bool AnetheronSpreadRangedInArcAction::Execute(Event event)
 
             auto findIt = std::find(rangedDps.begin(), rangedDps.end(), bot);
             size_t botIndex = (findIt != rangedDps.end()) ? std::distance(rangedDps.begin(), findIt) : 0;
-            radius = 25.0f;
+            const float radius = 25.0f;
             // Spread evenly along the arc
-            angle = (count == 1) ? 0.0f : (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
+            float angle = (count == 1) ? 0.0f :
+                (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
         }
 
         targetX = ANETHERON_MAIN_TANK_POSITION.GetPositionX() + radius * std::sin(angle); // sin for X (east-west)
@@ -506,20 +510,16 @@ bool KazrogalSpreadRangedInArcAction::Execute(Event event)
     if (!group)
         return false;
 
-    std::vector<Player*> healers;
-    std::vector<Player*> rangedDps;
+    std::vector<Player*> rangedMembers;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
         if (!member || !member->IsAlive() || !botAI->IsRanged(member))
             continue;
-        if (botAI->IsHeal(member))
-            healers.push_back(member);
-        else
-            rangedDps.push_back(member);
+        rangedMembers.push_back(member);
     }
 
-    if (healers.empty() && rangedDps.empty())
+    if (rangedMembers.empty())
         return false;
 
     const ObjectGuid guid = bot->GetGUID();
@@ -532,34 +532,18 @@ bool KazrogalSpreadRangedInArcAction::Execute(Event event)
         float angle = 0.0f;
 
         // Arc settings
-        const float arcSpan = 2.0f * M_PI / 3.0f; // 120 degrees in radians
-        const float arcCenter = 1.342f;           // chosen orientation
+        const float arcSpan = 2.0f * M_PI / 4.0f;
+        const float arcCenter = 4.749f;
         const float arcStart = arcCenter - arcSpan / 2.0f; // start of arc
 
-        if (botAI->IsHeal(bot))
-        {
-            size_t count = healers.size();
-            if (count == 0)
-                return false;
+        size_t count = rangedMembers.size();
+        auto findIt = std::find(rangedMembers.begin(), rangedMembers.end(), bot);
+        size_t botIndex = (findIt != rangedMembers.end()) ? std::distance(rangedMembers.begin(), findIt) : 0;
 
-            auto findIt = std::find(healers.begin(), healers.end(), bot);
-            size_t botIndex = (findIt != healers.end()) ? std::distance(healers.begin(), findIt) : 0;
-            radius = 30.0f;
-            // Spread evenly along the arc
-            angle = (count == 1) ? 0.0f : (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
-        }
-        else
-        {
-            size_t count = rangedDps.size();
-            if (count == 0)
-                return false;
-
-            auto findIt = std::find(rangedDps.begin(), rangedDps.end(), bot);
-            size_t botIndex = (findIt != rangedDps.end()) ? std::distance(rangedDps.begin(), findIt) : 0;
-            radius = 25.0f;
-            // Spread evenly along the arc
-            angle = (count == 1) ? 0.0f : (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
-        }
+        const float radius = 25.0f;
+        // Spread evenly along the arc
+        float angle = (count == 1) ? 0.0f :
+            (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
 
         targetX = KAZROGAL_TANK_POSITION.GetPositionX() + radius * std::sin(angle); // sin for X (east-west)
         targetY = KAZROGAL_TANK_POSITION.GetPositionY() + radius * std::cos(angle); // cos for Y (north-south)
@@ -714,8 +698,8 @@ bool AzgalorSpreadRangedInArcAction::Execute(Event event)
         float angle = 0.0f;
 
         // Arc settings
-        const float arcSpan = 2.0f * M_PI / 3.0f; // 120 degrees in radians
-        const float arcCenter = 6.034f;           // chosen orientation
+        const float arcSpan = 3.0f * M_PI / 2.0f; // 270 degrees in radians
+        const float arcCenter = 4.706f;
         const float arcStart = arcCenter - arcSpan / 2.0f; // start of arc
 
         if (botAI->IsHeal(bot))
@@ -726,9 +710,10 @@ bool AzgalorSpreadRangedInArcAction::Execute(Event event)
 
             auto findIt = std::find(healers.begin(), healers.end(), bot);
             size_t botIndex = (findIt != healers.end()) ? std::distance(healers.begin(), findIt) : 0;
-            radius = 30.0f;
+            const float radius = 32.0f;
             // Spread evenly along the arc
-            angle = (count == 1) ? 0.0f : (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
+            float angle = (count == 1) ? 0.0f :
+                (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
         }
         else
         {
@@ -738,9 +723,10 @@ bool AzgalorSpreadRangedInArcAction::Execute(Event event)
 
             auto findIt = std::find(rangedDps.begin(), rangedDps.end(), bot);
             size_t botIndex = (findIt != rangedDps.end()) ? std::distance(rangedDps.begin(), findIt) : 0;
-            radius = 25.0f;
+            const float radius = 30.0f;
             // Spread evenly along the arc
-            angle = (count == 1) ? 0.0f : (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
+            float angle = (count == 1) ? 0.0f :
+                (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
         }
 
         targetX = AZGALOR_MAIN_TANK_POSITION.GetPositionX() + radius * std::sin(angle); // sin for X (east-west)
@@ -809,14 +795,21 @@ bool AzgalorFirstAssistTankPositionDoomguardAction::Execute(Event event)
     return false;
 }
 
-bool AzgalorMarkDoomguardWithSkullAction::Execute(Event event)
+bool AzgalorMeleeDpsPrioritizeDoomguardsAction::Execute(Event event)
 {
-    if (!IsInstanceTimerManager(botAI, bot))
+    Unit* doomguard = AI_VALUE2(Unit*, "find target", "lesser doomguard");
+    if (!doomguard)
         return false;
 
-    Unit* doomguard = AI_VALUE2(Unit*, "find target", "doomguard");
-    if (doomguard)
-        MarkTargetWithSkull(bot, doomguard);
+    if (IsInstanceTimerManager(botAI, bot))
+        MarkTargetWithSquare(bot, doomguard);
+
+    if (botAI->IsMelee(bot) && botAI->IsDps(bot))
+    {
+        SetRtiTarget(botAI, "square", doomguard);
+        if (bot->GetVictim() != doomguard)
+            return Attack(doomguard);
+    }
 
     return false;
 }

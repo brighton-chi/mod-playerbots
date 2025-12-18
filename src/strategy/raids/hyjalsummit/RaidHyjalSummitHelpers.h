@@ -22,6 +22,7 @@ namespace HyjalSummitHelpers
         SPELL_MARK_OF_KAZROGAL         = 31447,
 
         // Azgalor
+        SPELL_RAIN_OF_FIRE             = 31340,
         SPELL_DOOM                     = 31347,
 
         // Hunter

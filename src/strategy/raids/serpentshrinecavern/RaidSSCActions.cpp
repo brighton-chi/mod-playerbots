@@ -542,31 +542,22 @@ bool TheLurkerBelowSpreadRangedInArcAction::Execute(Event event)
     auto it = lurkerRangedPositions.find(guid);
     if (it == lurkerRangedPositions.end())
     {
-        auto findIt = std::find(rangedMembers.begin(), rangedMembers.end(), bot);
-        size_t botIndex =
-            (findIt != rangedMembers.end()) ? std::distance(rangedMembers.begin(), findIt) : 0;
         size_t count = rangedMembers.size();
-        if (count == 0)
-            return false;
+        auto findIt = std::find(rangedMembers.begin(), rangedMembers.end(), bot);
+        size_t botIndex = (findIt != rangedMembers.end()) ?
+            std::distance(rangedMembers.begin(), findIt) : 0;
 
-        const float minRadius = 27.0f;
-        const float maxRadius = 29.0f;
-        const float mainTankFacingOrientation = 2.262f;
-        const float arcCenter =
-            Position::NormalizeOrientation(mainTankFacingOrientation + M_PI);
-
-        const float arcSpan = 2.0f * M_PI / 3.0f; // 120°
+        // Arc settings
+        const float arcSpan = 2.0f * M_PI / 3.0f; // 120 degrees in radians
+        const float arcCenter = 2.262f;
         const float arcStart = arcCenter - arcSpan / 2.0f;
-        float angle;
-        if (count == 1)
-            angle = arcCenter;
-        else
-            angle = arcStart + (static_cast<float>(botIndex) / (count - 1)) * arcSpan;
 
-        float radius = frand(minRadius, maxRadius);
+        float angle = (count == 1) ? arcCenter :
+            (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
+        float radius = 28.0f;
 
-        float tx = lurker->GetPositionX() + radius * std::cos(angle);
-        float ty = lurker->GetPositionY() + radius * std::sin(angle);
+        float tx = lurker->GetPositionX() + radius * std::sin(angle);
+        float ty = lurker->GetPositionY() + radius * std::cos(angle);
 
         lurkerRangedPositions.try_emplace(guid, Position(tx, ty, lurker->GetPositionZ()));
         it = lurkerRangedPositions.find(guid);

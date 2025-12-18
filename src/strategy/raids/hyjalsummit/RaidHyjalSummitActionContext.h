@@ -73,8 +73,8 @@ public:
         creators["azgalor first assist tank position doomguard"] =
             &RaidHyjalSummitActionContext::azgalor_first_assist_tank_position_doomguard;
 
-        creators["azgalor mark doomguard with skull"] =
-            &RaidHyjalSummitActionContext::azgalor_mark_doomguard_with_skull;
+        creators["azgalor melee dps prioritize doomguards"] =
+            &RaidHyjalSummitActionContext::azgalor_melee_dps_prioritize_doomguards;
 
         // Archimonde
         creators["archimonde misdirect boss to main tank"] =
@@ -155,8 +155,8 @@ private:
     static Action* azgalor_first_assist_tank_position_doomguard(
         PlayerbotAI* botAI) { return new AzgalorFirstAssistTankPositionDoomguardAction(botAI); }
 
-    static Action* azgalor_mark_doomguard_with_skull(
-        PlayerbotAI* botAI) { return new AzgalorMarkDoomguardWithSkullAction(botAI); }
+    static Action* azgalor_melee_dps_prioritize_doomguards(
+        PlayerbotAI* botAI) { return new AzgalorMeleeDpsPrioritizeDoomguardsAction(botAI); }
 
     // Archimonde
     static Action* archimonde_misdirect_boss_to_main_tank(

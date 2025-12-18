@@ -14,36 +14,36 @@ float HyjalSummitTimeBloodlustAndHeroismMultiplier::GetValue(Action* action)
     if (bot->getClass() != CLASS_SHAMAN)
         return 1.0f;
 
-    bool canUseAgainstWinterchill = false;
+    bool canUseDuringWinterchill = false;
     Unit* winterchill = AI_VALUE2(Unit*, "find target", "rage winterchill");
     if (winterchill && winterchill->GetHealthPct() < 90.0f)
-        canUseAgainstWinterchill = true;
+        canUseDuringWinterchill = true;
 
-    bool canUseAgainstAnetheron = false;
+    bool canUseDuringAnetheron = false;
     Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
     if (anetheron && anetheron->GetHealthPct() < 80.0f)
-        canUseAgainstAnetheron = true;
+        canUseDuringAnetheron = true;
 
-    bool canUseAgainstKazrogal = false;
+    bool canUseDuringKazrogal = false;
     Unit* kazrogal = AI_VALUE2(Unit*, "find target", "kaz'rogal");
     if (kazrogal && kazrogal->GetHealthPct() < 90.0f)
-        canUseAgainstKazrogal = true;
+        canUseDuringKazrogal = true;
 
-    bool canUseAgainstAzgalor = false;
+    bool canUseDuringAzgalor = false;
     Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
     if (azgalor && azgalor->GetHealthPct() < 90.0f)
-        canUseAgainstAzgalor = true;
+        canUseDuringAzgalor = true;
 
-    bool canUseAgainstArchimonde = false;
+    bool canUseDuringArchimonde = false;
     Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
-    if (archimonde && archimonde->GetHealthPct() < 90.0f)
-        canUseAgainstArchimonde = true;
+    if (archimonde && archimonde->GetHealthPct() < 95.0f)
+        canUseDuringArchimonde = true;
 
-    if (!canUseAgainstWinterchill &&
-        !canUseAgainstAnetheron &&
-        !canUseAgainstKazrogal &&
-        !canUseAgainstAzgalor &&
-        !canUseAgainstArchimonde)
+    if (!canUseDuringWinterchill &&
+        !canUseDuringAnetheron &&
+        !canUseDuringKazrogal &&
+        !canUseDuringAzgalor &&
+        !canUseDuringArchimonde)
     {
         if (dynamic_cast<CastBloodlustAction*>(action) ||
             dynamic_cast<CastHeroismAction*>(action))
@@ -54,22 +54,6 @@ float HyjalSummitTimeBloodlustAndHeroismMultiplier::GetValue(Action* action)
 }
 
 // Rage Winterchill
-
-float RageWinterchillDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
-{
-    if (bot->getClass() != CLASS_SHAMAN)
-        return 1.0f;
-
-    Unit* winterchill = AI_VALUE2(Unit*, "find target", "rage winterchill");
-    if (winterchill && winterchill->GetHealthPct() > 90.0f)
-    {
-        if (dynamic_cast<CastBloodlustAction*>(action) ||
-            dynamic_cast<CastHeroismAction*>(action))
-            return 0.0f;
-    }
-
-    return 1.0f;
-}
 
 float RageWinterchillDisableMainTankAvoidAoeMultiplier::GetValue(Action* action)
 {
@@ -102,22 +86,6 @@ float RageWinterchillDisableCombatFormationMoveMultiplier::GetValue(Action* acti
 }
 
 // Anetheron
-
-float AnetheronDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
-{
-    if (bot->getClass() != CLASS_SHAMAN)
-        return 1.0f;
-
-    Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
-    if (anetheron && anetheron->GetHealthPct() > 80.0f)
-    {
-        if (dynamic_cast<CastBloodlustAction*>(action) ||
-            dynamic_cast<CastHeroismAction*>(action))
-            return 0.0f;
-    }
-
-    return 1.0f;
-}
 
 float AnetheronDisableTankActionsMultiplier::GetValue(Action* action)
 {
@@ -193,22 +161,6 @@ float AnetheronControlMisdirectionMultiplier::GetValue(Action* action)
 
 // Kaz'rogal
 
-float KazrogalDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
-{
-    if (bot->getClass() != CLASS_SHAMAN)
-        return 1.0f;
-
-    Unit* kazrogal = AI_VALUE2(Unit*, "find target", "kaz'rogal");
-    if (kazrogal && kazrogal->GetHealthPct() > 90.0f)
-    {
-        if (dynamic_cast<CastBloodlustAction*>(action) ||
-            dynamic_cast<CastHeroismAction*>(action))
-            return 0.0f;
-    }
-
-    return 1.0f;
-}
-
 float KazrogalLowManaBotStayAwayFromGroupMultiplier::GetValue(Action* action)
 {
     uint8 tab = AiFactory::GetPlayerSpecTab(bot);
@@ -251,16 +203,15 @@ float AzgalorDisableTankAssistMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float AzgalorDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
+float AzgalorTanksMaintainPositionMultiplier::GetValue(Action* action)
 {
-    if (bot->getClass() != CLASS_SHAMAN)
+    if (!botAI->IsMainTank(bot) && !botAI->IsAssistTankOfIndex(bot, 0))
         return 1.0f;
 
     Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
-    if (azgalor && azgalor->GetHealthPct() > 90.0f)
+    if (azgalor)
     {
-        if (dynamic_cast<CastBloodlustAction*>(action) ||
-            dynamic_cast<CastHeroismAction*>(action))
+        if (dynamic_cast<TankFaceAction*>(action) || dynamic_cast<AvoidAoeAction*>(action))
             return 0.0f;
     }
 
@@ -269,18 +220,3 @@ float AzgalorDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
 
 // Archimonde
 
-float ArchimondeDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
-{
-    if (bot->getClass() != CLASS_SHAMAN)
-        return 1.0f;
-
-    Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
-    if (archimonde && archimonde->GetHealthPct() > 90.0f)
-    {
-        if (dynamic_cast<CastBloodlustAction*>(action) ||
-            dynamic_cast<CastHeroismAction*>(action))
-            return 0.0f;
-    }
-
-    return 1.0f;
-}

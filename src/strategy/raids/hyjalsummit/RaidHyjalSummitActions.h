@@ -173,11 +173,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class AzgalorMarkDoomguardWithSkullAction : public Action
+class AzgalorMeleeDpsPrioritizeDoomguardsAction : public AttackAction
 {
 public:
-    AzgalorMarkDoomguardWithSkullAction(
-        PlayerbotAI* botAI) : Action(botAI, "azgalor mark doomguard with skull") {}
+    AzgalorMeleeDpsPrioritizeDoomguardsAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "azgalor melee dps prioritize doomguards") {}
     bool Execute(Event event) override;
 };
 
