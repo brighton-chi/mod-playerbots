@@ -270,3 +270,9 @@ bool ArchimondeBossCastsFearTrigger::IsActive()
     return mainTank && !mainTank->HasAura(SPELL_FEAR_WARD) &&
            botAI->CanCastSpell("fear ward", mainTank);
 }
+
+bool ArchimondeBossSummonedDoomfireTrigger::IsActive()
+{
+    Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
+    return archimonde != nullptr;
+}

@@ -906,3 +906,152 @@ bool ArchimondeCastFearWardOnMainTankAction::Execute(Event event)
 
     return false;
 }
+
+bool ArchimondeAvoidDoomfireAction::Execute(Event event)
+{
+    auto const& doomfires = GetAllDoomfires(botAI, bot);
+    if (doomfires.empty())
+        return false;
+
+    const float hazardRadius = 8.0f;
+    bool inDanger = false;
+    for (Unit* doomfire : doomfires)
+    {
+        if (bot->GetExactDist2d(doomfire) < hazardRadius)
+        {
+            inDanger = true;
+            break;
+        }
+    }
+
+    if (!inDanger)
+        return false;
+
+    const Position& archimondeCenter = ARCHIMONDE_TANK_POSITION;
+    const float maxRadius = 60.0f;
+
+    Position safestPos = FindSafestNearbyPosition(doomfires, archimondeCenter, maxRadius, hazardRadius);
+
+    Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
+    if (archimonde && archimonde->GetVictim() == bot)
+    {
+        return MoveTo(HYJAL_SUMMIT_MAP_ID, safestPos.GetPositionX(), safestPos.GetPositionY(),
+                      safestPos.GetPositionZ(), false, false, false, true,
+                      MovementPriority::MOVEMENT_COMBAT, true, true);
+    }
+    else
+    {
+        return MoveTo(HYJAL_SUMMIT_MAP_ID, safestPos.GetPositionX(), safestPos.GetPositionY(),
+                      safestPos.GetPositionZ(), false, false, false, true,
+                      MovementPriority::MOVEMENT_COMBAT, true, false);
+    }
+}
+
+Position ArchimondeAvoidDoomfireAction::FindSafestNearbyPosition(
+    const std::vector<Unit*>& doomfires, const Position& archimondeCenter,
+    float maxRadius, float hazardRadius)
+{
+    const float searchStep = M_PI / 8.0f;
+    const float minDistance = 2.0f;
+    const float maxDistance = 40.0f;
+    const float distanceStep = 1.0f;
+
+    Position bestPos;
+    float minMoveDistance = std::numeric_limits<float>::max();
+    bool foundSafe = false;
+
+    for (float distance = minDistance;
+         distance <= maxDistance; distance += distanceStep)
+    {
+        for (float angle = 0.0f; angle < 2 * M_PI; angle += searchStep)
+        {
+            float x = bot->GetPositionX() + distance * std::cos(angle);
+            float y = bot->GetPositionY() + distance * std::sin(angle);
+            float z = bot->GetPositionZ();
+
+            if (archimondeCenter.GetExactDist2d(x, y) > maxRadius)
+                continue;
+
+            bool isSafe = true;
+            for (Unit* doomfire : doomfires)
+            {
+                if (doomfire->GetExactDist2d(x, y) < hazardRadius)
+                {
+                    isSafe = false;
+                    break;
+                }
+            }
+
+            if (!isSafe)
+                continue;
+
+            Position testPos(x, y, z);
+
+            bool pathSafe =
+                IsPathSafeFromDoomfires(bot->GetPosition(), testPos, doomfires, hazardRadius);
+            if (pathSafe || !foundSafe)
+            {
+                float moveDistance = bot->GetExactDist2d(x, y);
+
+                if (pathSafe && (!foundSafe || moveDistance < minMoveDistance))
+                {
+                    bestPos = testPos;
+                    minMoveDistance = moveDistance;
+                    foundSafe = true;
+                }
+                else if (!foundSafe && moveDistance < minMoveDistance)
+                {
+                    bestPos = testPos;
+                    minMoveDistance = moveDistance;
+                }
+            }
+        }
+
+        if (foundSafe)
+            break;
+    }
+
+    return bestPos;
+}
+
+bool ArchimondeAvoidDoomfireAction::IsPathSafeFromDoomfires(const Position& start,
+    const Position& end, const std::vector<Unit*>& doomfires, float hazardRadius)
+{
+    const int numChecks = 10;
+    float dx = end.GetPositionX() - start.GetPositionX();
+    float dy = end.GetPositionY() - start.GetPositionY();
+
+    for (int i = 1; i <= numChecks; ++i)
+    {
+        float ratio = static_cast<float>(i) / numChecks;
+        float checkX = start.GetPositionX() + dx * ratio;
+        float checkY = start.GetPositionY() + dy * ratio;
+
+        for (Unit* doomfire : doomfires)
+        {
+            float distToDoomfire = doomfire->GetExactDist2d(checkX, checkY);
+            if (distToDoomfire < hazardRadius)
+                return false;
+        }
+    }
+
+    return true;
+}
+
+std::vector<Unit*> ArchimondeAvoidDoomfireAction::GetAllDoomfires(
+    PlayerbotAI* botAI, Player* bot)
+{
+    std::vector<Unit*> doomfires;
+    auto const& npcs =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
+    for (auto const& npcGuid : npcs)
+    {
+        const float maxSearchRadius = 40.0f;
+        Unit* unit = botAI->GetUnit(npcGuid);
+        if (unit && unit->GetEntry() == NPC_DOOMFIRE &&
+            bot->GetExactDist2d(unit) < maxSearchRadius)
+            doomfires.push_back(unit);
+    }
+
+    return doomfires;
+}

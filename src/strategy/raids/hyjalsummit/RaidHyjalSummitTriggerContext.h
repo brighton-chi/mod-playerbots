@@ -82,6 +82,9 @@ public:
 
         creators["archimonde boss casts fear"] =
             &RaidHyjalSummitTriggerContext::archimonde_boss_casts_fear;
+
+        creators["archimonde boss summoned doomfire"] =
+            &RaidHyjalSummitTriggerContext::archimonde_boss_summoned_doomfire;
     }
 
 private:
@@ -158,6 +161,9 @@ private:
 
     static Trigger* archimonde_boss_casts_fear(
         PlayerbotAI* botAI) { return new ArchimondeBossCastsFearTrigger(botAI); }
+
+    static Trigger* archimonde_boss_summoned_doomfire(
+        PlayerbotAI* botAI) { return new ArchimondeBossSummonedDoomfireTrigger(botAI); }
 };
 
 #endif

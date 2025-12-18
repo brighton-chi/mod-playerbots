@@ -35,6 +35,10 @@ namespace HyjalSummitHelpers
     {
         // Anetheron
         NPC_TOWERING_INFERNAL = 17818,
+
+        // Archimonde
+        NPC_DOOMFIRE           = 18095,
+        // NPC_DOOMFIRE_TARGETING    = 18104, // Known as "DOOMFIRE_SPIRIT" in the boss script
     };
 
     // General

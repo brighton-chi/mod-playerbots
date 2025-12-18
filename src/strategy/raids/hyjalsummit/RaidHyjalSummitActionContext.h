@@ -85,6 +85,9 @@ public:
 
         creators["archimonde cast fear ward on main tank"] =
             &RaidHyjalSummitActionContext::archimonde_cast_fear_ward_on_main_tank;
+
+        creators["archimonde avoid doomfire"] =
+            &RaidHyjalSummitActionContext::archimonde_avoid_doomfire;
     }
 
 private:
@@ -164,6 +167,9 @@ private:
 
     static Action* archimonde_cast_fear_ward_on_main_tank(
         PlayerbotAI* botAI) { return new ArchimondeCastFearWardOnMainTankAction(botAI); }
+
+    static Action* archimonde_avoid_doomfire(
+        PlayerbotAI* botAI) { return new ArchimondeAvoidDoomfireAction(botAI); }
 };
 
 #endif

@@ -197,4 +197,12 @@ public:
     bool IsActive() override;
 };
 
+class ArchimondeBossSummonedDoomfireTrigger : public Trigger
+{
+public:
+    ArchimondeBossSummonedDoomfireTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "archimonde boss summoned doomfire") {}
+    bool IsActive() override;
+};
+
 #endif
