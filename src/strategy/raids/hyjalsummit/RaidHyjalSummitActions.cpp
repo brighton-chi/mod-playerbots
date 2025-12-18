@@ -265,10 +265,9 @@ bool AnetheronSpreadRangedInArcAction::Execute(Event event)
         float radius = 0.0f;
         float angle = 0.0f;
 
-        // Arc settings
-        const float arcSpan = 3.0f * M_PI / 2.0f; // 270 degrees in radians
-        const float arcCenter = 0.165f;           // chosen orientation
-        const float arcStart = arcCenter - arcSpan / 2.0f; // start of arc
+        const float arcSpan = 3.0f * M_PI / 2.0f; // 270 degrees
+        const float arcCenter = 0.165f;
+        const float arcStart = arcCenter - arcSpan / 2.0f;
 
         if (botAI->IsHeal(bot))
         {
@@ -279,7 +278,6 @@ bool AnetheronSpreadRangedInArcAction::Execute(Event event)
             auto findIt = std::find(healers.begin(), healers.end(), bot);
             size_t botIndex = (findIt != healers.end()) ? std::distance(healers.begin(), findIt) : 0;
             const float radius = 30.0f;
-            // Spread evenly along the arc
             float angle = (count == 1) ? 0.0f :
                 (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
         }
@@ -292,13 +290,12 @@ bool AnetheronSpreadRangedInArcAction::Execute(Event event)
             auto findIt = std::find(rangedDps.begin(), rangedDps.end(), bot);
             size_t botIndex = (findIt != rangedDps.end()) ? std::distance(rangedDps.begin(), findIt) : 0;
             const float radius = 25.0f;
-            // Spread evenly along the arc
             float angle = (count == 1) ? 0.0f :
                 (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
         }
 
-        targetX = ANETHERON_MAIN_TANK_POSITION.GetPositionX() + radius * std::sin(angle); // sin for X (east-west)
-        targetY = ANETHERON_MAIN_TANK_POSITION.GetPositionY() + radius * std::cos(angle); // cos for Y (north-south)
+        targetX = ANETHERON_MAIN_TANK_POSITION.GetPositionX() + radius * std::sin(angle);
+        targetY = ANETHERON_MAIN_TANK_POSITION.GetPositionY() + radius * std::cos(angle);
 
         anetheronRangedPositions.try_emplace(guid, Position(
             targetX, targetY, ANETHERON_MAIN_TANK_POSITION.GetPositionZ()));
@@ -344,7 +341,6 @@ bool AnetheronFirstAssistTankPickUpInfernalsAction::Execute(Event event)
                       MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
-    // Find all infernals within 15 yards of the tank position
     std::vector<Unit*> infernals;
     for (auto const& guid : AI_VALUE(GuidVector, "possible targets no los"))
     {
@@ -527,26 +523,20 @@ bool KazrogalSpreadRangedInArcAction::Execute(Event event)
     auto it = kazrogalRangedPositions.find(guid);
     if (it == kazrogalRangedPositions.end())
     {
-        float targetX = 0.0f, targetY = 0.0f;
-        float radius = 0.0f;
-        float angle = 0.0f;
-
-        // Arc settings
-        const float arcSpan = 2.0f * M_PI / 4.0f;
-        const float arcCenter = 4.749f;
-        const float arcStart = arcCenter - arcSpan / 2.0f; // start of arc
-
         size_t count = rangedMembers.size();
         auto findIt = std::find(rangedMembers.begin(), rangedMembers.end(), bot);
         size_t botIndex = (findIt != rangedMembers.end()) ? std::distance(rangedMembers.begin(), findIt) : 0;
 
+        const float arcSpan = 2.0f * M_PI / 4.0f; // 90 degrees
+        const float arcCenter = 4.749f;
+        const float arcStart = arcCenter - arcSpan / 2.0f;
+
         const float radius = 25.0f;
-        // Spread evenly along the arc
-        float angle = (count == 1) ? 0.0f :
+        float angle = (count == 1) ? arcCenter :
             (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
 
-        targetX = KAZROGAL_TANK_POSITION.GetPositionX() + radius * std::sin(angle); // sin for X (east-west)
-        targetY = KAZROGAL_TANK_POSITION.GetPositionY() + radius * std::cos(angle); // cos for Y (north-south)
+        float targetX = KAZROGAL_TANK_POSITION.GetPositionX() + radius * std::sin(angle);
+        float targetY = KAZROGAL_TANK_POSITION.GetPositionY() + radius * std::cos(angle);
 
         kazrogalRangedPositions.try_emplace(guid, Position(
             targetX, targetY, KAZROGAL_TANK_POSITION.GetPositionZ()));
@@ -697,10 +687,9 @@ bool AzgalorSpreadRangedInArcAction::Execute(Event event)
         float radius = 0.0f;
         float angle = 0.0f;
 
-        // Arc settings
-        const float arcSpan = 3.0f * M_PI / 2.0f; // 270 degrees in radians
+        const float arcSpan = 3.0f * M_PI / 2.0f; // 270 degrees
         const float arcCenter = 4.706f;
-        const float arcStart = arcCenter - arcSpan / 2.0f; // start of arc
+        const float arcStart = arcCenter - arcSpan / 2.0f;
 
         if (botAI->IsHeal(bot))
         {
@@ -711,7 +700,6 @@ bool AzgalorSpreadRangedInArcAction::Execute(Event event)
             auto findIt = std::find(healers.begin(), healers.end(), bot);
             size_t botIndex = (findIt != healers.end()) ? std::distance(healers.begin(), findIt) : 0;
             const float radius = 32.0f;
-            // Spread evenly along the arc
             float angle = (count == 1) ? 0.0f :
                 (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
         }
@@ -724,13 +712,12 @@ bool AzgalorSpreadRangedInArcAction::Execute(Event event)
             auto findIt = std::find(rangedDps.begin(), rangedDps.end(), bot);
             size_t botIndex = (findIt != rangedDps.end()) ? std::distance(rangedDps.begin(), findIt) : 0;
             const float radius = 30.0f;
-            // Spread evenly along the arc
             float angle = (count == 1) ? 0.0f :
                 (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
         }
 
-        targetX = AZGALOR_MAIN_TANK_POSITION.GetPositionX() + radius * std::sin(angle); // sin for X (east-west)
-        targetY = AZGALOR_MAIN_TANK_POSITION.GetPositionY() + radius * std::cos(angle); // cos for Y (north-south)
+        targetX = AZGALOR_MAIN_TANK_POSITION.GetPositionX() + radius * std::sin(angle);
+        targetY = AZGALOR_MAIN_TANK_POSITION.GetPositionY() + radius * std::cos(angle);
 
         azgalorRangedPositions.try_emplace(guid, Position(
             targetX, targetY, AZGALOR_MAIN_TANK_POSITION.GetPositionZ()));

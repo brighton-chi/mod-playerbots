@@ -70,7 +70,6 @@ namespace HyjalSummitHelpers
         return nearestPlayer;
     }
 
-    // Dps bot selected for marking and managing timers and trackers
     bool IsInstanceTimerManager(PlayerbotAI* botAI, Player* bot)
     {
         if (Group* group = bot->GetGroup())
@@ -89,14 +88,14 @@ namespace HyjalSummitHelpers
 
     // Rage Winterchill
 
-    const Position RAGE_WINTERCHILL_TANK_POSITION = { 5031.061f, -1784.521f, 1321.626f }; // Crossroads
+    const Position RAGE_WINTERCHILL_TANK_POSITION = { 5031.061f, -1784.521f, 1321.626f };
     std::unordered_map<ObjectGuid, Position> winterchillRangedPositions;
     std::unordered_map<ObjectGuid, bool> hasReachedWinterchillPosition;
 
     // Anetheron
 
-    const Position ANETHERON_MAIN_TANK_POSITION = { 5026.900f, -1757.163f, 1323.403f }; // Closer to gate
-    const Position ANETHERON_INFERNAL_TANK_POSITION = { 5024.107f, -1787.967f, 1321.832f }; // Back toward ballista
+    const Position ANETHERON_MAIN_TANK_POSITION = { 5026.900f, -1757.163f, 1323.403f };
+    const Position ANETHERON_INFERNAL_TANK_POSITION = { 5024.107f, -1787.967f, 1321.832f };
     std::unordered_map<ObjectGuid, Position> anetheronRangedPositions;
 
     bool IsBotTargetedByInferno(Unit* anetheron, Player* bot)
@@ -123,7 +122,7 @@ namespace HyjalSummitHelpers
 
     // Azgalor
 
-    const Position AZGALOR_MAIN_TANK_POSITION = { 5493.145f, -2711.888f, 1482.124f }; // In middleish of the weird strip of land between paths
+    const Position AZGALOR_MAIN_TANK_POSITION = { 5493.145f, -2711.888f, 1482.124f };
     const Position AZGALOR_DOOMGUARD_TANK_POSITION = { 5452.330f, -2721.679f, 1485.411f };
     std::unordered_map<ObjectGuid, Position> azgalorRangedPositions;
 

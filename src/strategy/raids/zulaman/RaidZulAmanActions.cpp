@@ -235,14 +235,12 @@ bool NalorakkTanksPositionBossAction::MainTankPositionTrollForm(
     }
     else
     {
-        // Move in front of Nalorakk (bear form)
-        // Get Nalorakk's position and orientation
+        // Move in front of Nalorakk in Bear Form
         float bossX = nalorakk->GetPositionX();
         float bossY = nalorakk->GetPositionY();
         float bossZ = nalorakk->GetPositionZ();
         float bossO = nalorakk->GetOrientation();
 
-        // Distance in front of boss to stand
         float frontDist = 3.0f;
         float targetX = bossX + std::cos(bossO) * frontDist;
         float targetY = bossY + std::sin(bossO) * frontDist;
@@ -304,6 +302,7 @@ bool NalorakkTanksPositionBossAction::FirstAssistTankPositionBearForm(
     }
     else
     {
+        // Move in front of Nalorakk in Troll Form
         float bossX = nalorakk->GetPositionX();
         float bossY = nalorakk->GetPositionY();
         float bossZ = nalorakk->GetPositionZ();
@@ -621,19 +620,20 @@ bool JanalaiMarkAmaniHatchersAction::Execute(Event event)
 
     auto [hatcherLow, hatcherHigh] = GetAmaniHatcherPair(botAI);
 
-    // Both hatchers alive and distinct: mark one skull, one moon
+    // When hatchers spawn, mark one with Skull and the other with Moon
     if (hatcherLow && hatcherHigh && hatcherLow != hatcherHigh)
     {
         MarkTargetWithSkull(bot, hatcherLow);
         MarkTargetWithMoon(bot, hatcherHigh);
     }
-    // Only one hatcher alive: mark with moon unless already skull
+    // Only one hatcher alive: mark with Moon unless already marked with Skull
+    // This allows the player to override the mark when it is time to kill
+    // the second hatcher (i.e., after all eggs are hatched for one side)
     else if (hatcherHigh && hatcherHigh->IsAlive() && group)
     {
         ObjectGuid guid = hatcherHigh->GetGUID();
         if (group->GetTargetIcon(RtiTargetValue::skullIndex) != guid)
             MarkTargetWithMoon(bot, hatcherHigh);
-        // else: do nothing, allow skull to persist
     }
 
     return false;
