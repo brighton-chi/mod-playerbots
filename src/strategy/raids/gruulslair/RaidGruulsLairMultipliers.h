@@ -3,45 +3,59 @@
 
 #include "Multiplier.h"
 
+class HighKingMaulgarWaitForDpsMultiplier : public Multiplier
+{
+public:
+    HighKingMaulgarWaitForDpsMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "high king maulgar wait for dps multiplier") {}
+    float GetValue(Action* action) override;
+};
+
 class HighKingMaulgarDisableTankAssistMultiplier : public Multiplier
 {
 public:
-    HighKingMaulgarDisableTankAssistMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "high king maulgar disable tank assist multiplier") {}
+    HighKingMaulgarDisableTankAssistMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "high king maulgar disable tank assist multiplier") {}
     float GetValue(Action* action) override;
 };
 
 class HighKingMaulgarAvoidWhirlwindMultiplier : public Multiplier
 {
 public:
-    HighKingMaulgarAvoidWhirlwindMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "high king maulgar avoid whirlwind multiplier") {}
+    HighKingMaulgarAvoidWhirlwindMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "high king maulgar avoid whirlwind multiplier") {}
     float GetValue(Action* action) override;
 };
 
 class HighKingMaulgarDisableArcaneShotOnKroshMultiplier : public Multiplier
 {
 public:
-    HighKingMaulgarDisableArcaneShotOnKroshMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "high king maulgar disable arcane shot on krosh multiplier") {}
+    HighKingMaulgarDisableArcaneShotOnKroshMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "high king maulgar disable arcane shot on krosh multiplier") {}
     float GetValue(Action* action) override;
 };
 
-class HighKingMaulgarDisableMageTankAOEMultiplier : public Multiplier
+class HighKingMaulgarDisableMageTankAoeMultiplier : public Multiplier
 {
 public:
-    HighKingMaulgarDisableMageTankAOEMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "high king maulgar disable mage tank aoe multiplier") {}
+    HighKingMaulgarDisableMageTankAoeMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "high king maulgar disable mage tank aoe multiplier") {}
     float GetValue(Action* action) override;
 };
 
-class GruulTheDragonkillerMainTankMovementMultiplier : public Multiplier
+class GruulTheDragonkillerDisableTankFaceMultiplier : public Multiplier
 {
 public:
-    GruulTheDragonkillerMainTankMovementMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "gruul the dragonkiller main tank movement multiplier") {}
+    GruulTheDragonkillerDisableTankFaceMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "gruul the dragonkiller disable tank face multiplier") {}
     float GetValue(Action* action) override;
 };
 
 class GruulTheDragonkillerGroundSlamMultiplier : public Multiplier
 {
 public:
-    GruulTheDragonkillerGroundSlamMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "gruul the dragonkiller ground slam multiplier") {}
+    GruulTheDragonkillerGroundSlamMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "gruul the dragonkiller ground slam multiplier") {}
     float GetValue(Action* action) override;
 };
 

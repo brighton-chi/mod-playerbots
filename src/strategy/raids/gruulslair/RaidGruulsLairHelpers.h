@@ -1,6 +1,8 @@
 #ifndef RAID_GRUULSLAIRHELPERS_H
 #define RAID_GRUULSLAIRHELPERS_H
 
+#include <unordered_map>
+
 #include "PlayerbotAI.h"
 #include "RtiTargetValue.h"
 
@@ -30,6 +32,17 @@ namespace GruulsLairHelpers
         NPC_WILD_FEL_STALKER = 18847,
     };
 
+    const uint32 GRUULS_LAIR_MAP_ID = 565;
+
+    extern std::unordered_map<uint32, time_t> maulgarDpsWaitTimer;
+
+    extern const Position MAULGAR_TANK_POSITION;
+    extern const Position OLM_TANK_POSITION;
+    extern const Position BLINDEYE_TANK_POSITION;
+    extern const Position KROSH_TANK_POSITION;
+    extern const Position MAULGAR_ROOM_CENTER;
+    extern const Position GRUUL_TANK_POSITION;
+
     bool IsAnyOgreBossAlive(PlayerbotAI* botAI);
     void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);
     void MarkTargetWithSquare(Player* bot, Unit* target);
@@ -42,21 +55,6 @@ namespace GruulsLairHelpers
     bool IsKigglerMoonkinTank(PlayerbotAI* botAI, Player* bot);
     bool IsPositionSafe(PlayerbotAI* botAI, Player* bot, Position pos);
     bool TryGetNewSafePosition(PlayerbotAI* botAI, Player* bot, Position& outPos);
-
-    struct Location
-    {
-        float x, y, z;
-    };
-
-    namespace GruulsLairLocations
-    {
-        extern const Location MaulgarTankPosition;
-        extern const Location OlmTankPosition;
-        extern const Location BlindeyeTankPosition;
-        extern const Location KroshTankPosition;
-        extern const Location MaulgarRoomCenter;
-        extern const Location GruulTankPosition;
-    }
 }
 
 #endif

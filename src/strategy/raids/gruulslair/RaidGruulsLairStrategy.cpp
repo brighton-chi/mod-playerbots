@@ -24,6 +24,7 @@ void RaidGruulsLairStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("high king maulgar healer in danger", NextAction::array(0,
         new NextAction("high king maulgar healer find safe position", ACTION_RAID + 1), nullptr)));
+
     triggers.push_back(new TriggerNode("high king maulgar boss channeling whirlwind", NextAction::array(0,
         new NextAction("high king maulgar run away from whirlwind", ACTION_EMERGENCY + 6), nullptr)));
 
@@ -32,6 +33,9 @@ void RaidGruulsLairStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("high king maulgar pulling olm and blindeye", NextAction::array(0,
         new NextAction("high king maulgar misdirect olm and blindeye", ACTION_RAID + 2), nullptr)));
+
+    triggers.push_back(new TriggerNode("high king maulgar need to manage dps timer", NextAction::array(0,
+        new NextAction("high king maulgar manage dps timer", ACTION_EMERGENCY + 10), nullptr)));
 
     // Gruul the Dragonkiller
     triggers.push_back(new TriggerNode("gruul the dragonkiller boss engaged by main tank", NextAction::array(0,
@@ -46,10 +50,11 @@ void RaidGruulsLairStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
 void RaidGruulsLairStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
+    multipliers.push_back(new HighKingMaulgarWaitForDpsMultiplier(botAI));
     multipliers.push_back(new HighKingMaulgarDisableTankAssistMultiplier(botAI));
     multipliers.push_back(new HighKingMaulgarAvoidWhirlwindMultiplier(botAI));
     multipliers.push_back(new HighKingMaulgarDisableArcaneShotOnKroshMultiplier(botAI));
-    multipliers.push_back(new HighKingMaulgarDisableMageTankAOEMultiplier(botAI));
-    multipliers.push_back(new GruulTheDragonkillerMainTankMovementMultiplier(botAI));
+    multipliers.push_back(new HighKingMaulgarDisableMageTankAoeMultiplier(botAI));
+    multipliers.push_back(new GruulTheDragonkillerDisableTankFaceMultiplier(botAI));
     multipliers.push_back(new GruulTheDragonkillerGroundSlamMultiplier(botAI));
 }

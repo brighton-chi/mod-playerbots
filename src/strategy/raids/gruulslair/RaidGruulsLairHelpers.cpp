@@ -6,19 +6,18 @@
 
 namespace GruulsLairHelpers
 {
-    namespace GruulsLairLocations
-    {
-        // Olm does not chase properly due to the Core's caster movement issues
-        // Thus, the below "OlmTankPosition" is beyond the actual desired tanking location
-        // It is the spot to which the OlmTank runs to to pull Olm to a decent tanking location
-        // "MaulgarRoomCenter" is to keep healers in a centralized location
-        const Location MaulgarTankPosition  = {  90.686f, 167.047f, -13.234f };
-        const Location OlmTankPosition      = {  87.485f, 234.942f,  -3.635f };
-        const Location BlindeyeTankPosition = {  99.681f, 213.989f, -10.345f };
-        const Location KroshTankPosition    = { 116.880f, 166.208f, -14.231f };
-        const Location MaulgarRoomCenter    = {  88.754f, 150.759f, -11.569f };
-        const Location GruulTankPosition    = { 241.238f, 365.025f,  -4.220f };
-    }
+    // Olm does not chase properly due to the Core's caster movement issues
+    // Thus, the below "OlmTankPosition" is beyond the actual desired tanking location
+    // It is the spot to which the OlmTank runs to to pull Olm to a decent tanking location
+    // "MaulgarRoomCenter" is to keep healers in a centralized location
+    const Position MAULGAR_TANK_POSITION  = {  90.686f, 167.047f, -13.234f };
+    const Position OLM_TANK_POSITION      = {  87.485f, 234.942f,  -3.635f };
+    const Position BLINDEYE_TANK_POSITION = {  99.681f, 213.989f, -10.345f };
+    const Position KROSH_TANK_POSITION    = { 116.880f, 166.208f, -14.231f };
+    const Position MAULGAR_ROOM_CENTER    = {  88.754f, 150.759f, -11.569f };
+    const Position GRUUL_TANK_POSITION    = { 241.238f, 365.025f,  -4.220f };
+
+    std::unordered_map<uint32, time_t> maulgarDpsWaitTimer;
 
     bool IsAnyOgreBossAlive(PlayerbotAI* botAI)
     {
@@ -162,18 +161,22 @@ namespace GruulsLairHelpers
         const float MAULGAR_SAFE_DISTANCE = 10.0f;
         bool isSafe = true;
 
-        Unit* krosh = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "krosh firehand")->Get();
+        Unit* krosh =
+            botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "krosh firehand")->Get();
         if (krosh && krosh->IsAlive())
         {
-            float dist = sqrt(pow(pos.GetPositionX() - krosh->GetPositionX(), 2) + pow(pos.GetPositionY() - krosh->GetPositionY(), 2));
+            float dist = sqrt(pow(pos.GetPositionX() - krosh->GetPositionX(), 2) +
+                         pow(pos.GetPositionY() - krosh->GetPositionY(), 2));
             if (dist < KROSH_SAFE_DISTANCE)
                 isSafe = false;
         }
 
-        Unit* maulgar = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "high king maulgar")->Get();
+        Unit* maulgar =
+            botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "high king maulgar")->Get();
         if (botAI->IsRanged(bot) && maulgar && maulgar->IsAlive())
         {
-            float dist = sqrt(pow(pos.GetPositionX() - maulgar->GetPositionX(), 2) + pow(pos.GetPositionY() - maulgar->GetPositionY(), 2));
+            float dist = sqrt(pow(pos.GetPositionX() - maulgar->GetPositionX(), 2) +
+                         pow(pos.GetPositionY() - maulgar->GetPositionY(), 2));
             if (dist < MAULGAR_SAFE_DISTANCE)
                 isSafe = false;
         }
@@ -205,7 +208,8 @@ namespace GruulsLairHelpers
             candidatePos.m_positionY = bot->GetPositionY() + SEARCH_RADIUS * sin(angle);
             candidatePos.m_positionZ = bot->GetPositionZ();
 
-            float destX = candidatePos.m_positionX, destY = candidatePos.m_positionY, destZ = candidatePos.m_positionZ;
+            float destX = candidatePos.m_positionX, destY = candidatePos.m_positionY,
+                  destZ = candidatePos.m_positionZ;
             if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, bot->GetPositionX(), bot->GetPositionY(),
                 bot->GetPositionZ(), destX, destY, destZ, true))
                 continue;
@@ -219,7 +223,8 @@ namespace GruulsLairHelpers
 
             if (IsPositionSafe(botAI, bot, candidatePos))
             {
-                float movementDistance = sqrt(pow(destX - bot->GetPositionX(), 2) + pow(destY - bot->GetPositionY(), 2));
+                float movementDistance = sqrt(pow(destX - bot->GetPositionX(), 2) +
+                                              pow(destY - bot->GetPositionY(), 2));
                 if (movementDistance < bestScore)
                 {
                     bestScore = movementDistance;

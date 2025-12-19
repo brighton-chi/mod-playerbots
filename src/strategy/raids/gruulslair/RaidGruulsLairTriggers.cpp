@@ -43,18 +43,19 @@ bool HighKingMaulgarIsMoonkinTankTrigger::IsActive()
 
 bool HighKingMaulgarDeterminingKillOrderTrigger::IsActive()
 {
-    Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
-    Unit* kiggler = AI_VALUE2(Unit*, "find target", "kiggler the crazed");
-    Unit* olm = AI_VALUE2(Unit*, "find target", "olm the summoner");
-    Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
-    Unit* krosh = AI_VALUE2(Unit*, "find target", "krosh firehand");
+    if (!botAI->IsDps(bot))
+        return false;
 
-    return (botAI->IsDps(bot) || botAI->IsTank(bot)) &&
-           !(botAI->IsMainTank(bot) && maulgar && maulgar->IsAlive()) &&
-           !(botAI->IsAssistTankOfIndex(bot, 0) && olm && olm->IsAlive()) &&
-           !(botAI->IsAssistTankOfIndex(bot, 1) && blindeye && blindeye->IsAlive()) &&
-           !(IsKroshMageTank(botAI, bot) && krosh && krosh->IsAlive()) &&
-           !(IsKigglerMoonkinTank(botAI, bot) && kiggler && kiggler->IsAlive());
+    Unit* krosh = AI_VALUE2(Unit*, "find target", "krosh firehand");
+    if (krosh && krosh->IsAlive() && IsKroshMageTank(botAI, bot))
+        return false;
+
+    Unit* kiggler = AI_VALUE2(Unit*, "find target", "kiggler the crazed");
+    if (kiggler && kiggler->IsAlive() && IsKigglerMoonkinTank(botAI, bot))
+        return false;
+
+    Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
+    return maulgar != nullptr;
 }
 
 bool HighKingMaulgarHealerInDangerTrigger::IsActive()
@@ -129,6 +130,26 @@ bool HighKingMaulgarPullingOlmAndBlindeyeTrigger::IsActive()
 
     default:
         break;
+    }
+
+    return false;
+}
+
+bool HighKingMaulgarNeedToManageDpsTimerTrigger::IsActive()
+{
+    Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
+    if (!maulgar)
+        return false;
+
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && member->IsAlive() && botAI->IsDps(member) && GET_PLAYERBOT_AI(member))
+            return member == bot;
     }
 
     return false;
