@@ -14,14 +14,14 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     ));
     triggers.push_back(new TriggerNode("al'ar boss is flying between platforms",
         NextAction::array(0,
-        new NextAction("al'ar boss tanks move between platforms", ACTION_RAID + 1),
-        new NextAction("al'ar melee dps move between platforms", ACTION_RAID + 1),
-        new NextAction("al'ar ranged move under platforms", ACTION_RAID + 1), nullptr)
+            new NextAction("al'ar boss tanks move between platforms", ACTION_RAID + 1),
+            new NextAction("al'ar melee dps move between platforms", ACTION_RAID + 1),
+            new NextAction("al'ar ranged move under platforms", ACTION_RAID + 3), nullptr)
     ));
     triggers.push_back(new TriggerNode("al'ar boss spawns embers of alar",
         NextAction::array(0,
-        new NextAction("al'ar add tank pick up embers", ACTION_RAID + 2),
-        new NextAction("al'ar ranged dps prioritize embers in phase 2", ACTION_RAID + 2), nullptr)
+            new NextAction("al'ar add tank pick up embers", ACTION_RAID + 2),
+            new NextAction("al'ar ranged dps prioritize embers", ACTION_RAID + 2), nullptr)
     ));
     triggers.push_back(new TriggerNode("al'ar incoming flame quills",
         NextAction::array(0, new NextAction("al'ar jump from platform", ACTION_EMERGENCY + 7), nullptr)
@@ -40,14 +40,13 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     ));
 
     // Void Reaver
-    triggers.push_back(new TriggerNode("void reaver boss engaged by tank",
-        NextAction::array(0, new NextAction("void reaver position boss", ACTION_RAID + 1), nullptr)
+    triggers.push_back(new TriggerNode("void reaver knock away reduces tank aggro",
+        NextAction::array(0,
+            new NextAction("void reaver tanks position boss", ACTION_RAID + 1),
+            new NextAction("void reaver ranged use aggro dump ability", ACTION_EMERGENCY + 6), nullptr)
     ));
     triggers.push_back(new TriggerNode("void reaver boss launches arcane orbs",
         NextAction::array(0, new NextAction("void reaver spread ranged", ACTION_RAID + 1), nullptr)
-    ));
-    triggers.push_back(new TriggerNode("void reaver tanks lost aggro",
-        NextAction::array(0, new NextAction("void reaver use aggro dump ability", ACTION_EMERGENCY + 6), nullptr)
     ));
 
     // High Astromancer Solarian
@@ -74,6 +73,9 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kael'thas sunstrider thaladred is fixated on bot",
         NextAction::array(0, new NextAction("kael'thas sunstrider kite thaladred", ACTION_EMERGENCY + 6), nullptr)
     ));
+    triggers.push_back(new TriggerNode("kael'thas sunstrider pulling tankable advisors",
+        NextAction::array(0, new NextAction("kael'thas sunstrider misdirect advisors to tanks", ACTION_EMERGENCY + 2), nullptr)
+    ));
     triggers.push_back(new TriggerNode("kael'thas sunstrider sanguinar engaged by main tank",
         NextAction::array(0, new NextAction("kael'thas sunstrider main tank position sanguinar", ACTION_RAID + 1), nullptr)
     ));
@@ -92,23 +94,17 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kael'thas sunstrider telonicus engaged by first assist tank",
         NextAction::array(0, new NextAction("kael'thas sunstrider first assist tank position telonicus", ACTION_RAID + 1), nullptr)
     ));
-    triggers.push_back(new TriggerNode("kael'thas sunstrider phase 3 advisor melee tanks need dedicated healer",
+    triggers.push_back(new TriggerNode("kael'thas sunstrider melee tanks need dedicated healer in phase 3",
         NextAction::array(0, new NextAction("kael'thas sunstrider position phase 3 tank healer", ACTION_RAID + 2), nullptr)
-    ));
-    triggers.push_back(new TriggerNode("kael'thas sunstrider pulling tankable advisors",
-        NextAction::array(0, new NextAction("kael'thas sunstrider misdirect advisors to tanks", ACTION_EMERGENCY + 2), nullptr)
     ));
     triggers.push_back(new TriggerNode("kael'thas sunstrider waiting for tanks to get aggro on advisors",
         NextAction::array(0, new NextAction("kael'thas sunstrider manage advisor dps timer", ACTION_EMERGENCY + 10), nullptr)
     ));
     triggers.push_back(new TriggerNode("kael'thas sunstrider legendary weapons are alive",
-        NextAction::array(0, new NextAction("kael'thas sunstrider group up legendary weapons", ACTION_RAID + 1), nullptr)
-    ));
-    triggers.push_back(new TriggerNode("kael'thas sunstrider devastation channels whirlwind",
-        NextAction::array(0, new NextAction("kael'thas sunstrider main tank move devastation away", ACTION_EMERGENCY + 1), nullptr)
-    ));
-    triggers.push_back(new TriggerNode("kael'thas sunstrider netherstrand longbow fires multishot",
-        NextAction::array(0, new NextAction("kael'thas sunstrider hunter turn away netherstrand longbow", ACTION_EMERGENCY + 1), nullptr)
+        NextAction::array(0,
+            new NextAction("kael'thas sunstrider assign legendary weapon dps priority", ACTION_RAID + 1),
+            new NextAction("kael'thas sunstrider main tank move devastation away", ACTION_EMERGENCY + 1),
+            new NextAction("kael'thas sunstrider hunter turn away netherstrand longbow", ACTION_EMERGENCY + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("kael'thas sunstrider legendary weapons are dead and lootable",
         NextAction::array(0, new NextAction("kael'thas sunstrider loot legendary weapons", ACTION_RAID + 1), nullptr)
@@ -122,11 +118,10 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kael'thas sunstrider determining advisor kill order",
         NextAction::array(0, new NextAction("kael'thas sunstrider assign advisor dps priority", ACTION_RAID + 1), nullptr)
     ));
-    triggers.push_back(new TriggerNode("kael'thas sunstrider boss engaged by main tank",
-        NextAction::array(0, new NextAction("kael'thas sunstrider main tank position boss", ACTION_RAID + 1), nullptr)
-    ));
-    triggers.push_back(new TriggerNode("kael'thas sunstrider flame strike appeared under bot",
-        NextAction::array(0, new NextAction("kael'thas sunstrider avoid flame strike", ACTION_EMERGENCY + 8), nullptr)
+    triggers.push_back(new TriggerNode("kael'thas sunstrider boss has entered the fight",
+        NextAction::array(0,
+            new NextAction("kael'thas sunstrider main tank position boss", ACTION_RAID + 1),
+            new NextAction("kael'thas sunstrider avoid flame strike", ACTION_EMERGENCY + 8), nullptr)
     ));
     triggers.push_back(new TriggerNode("kael'thas sunstrider phoenixes and eggs are spawning",
         NextAction::array(0, new NextAction("kael'thas sunstrider round up phoenixes and focus down eggs", ACTION_RAID + 1), nullptr)

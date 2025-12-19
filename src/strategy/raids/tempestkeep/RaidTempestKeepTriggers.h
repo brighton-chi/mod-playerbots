@@ -81,11 +81,11 @@ public:
 
 // Void Reaver
 
-class VoidReaverBossEngagedByTankTrigger : public Trigger
+class VoidReaverKnockAwayReducesTankAggroTrigger : public Trigger
 {
 public:
-    VoidReaverBossEngagedByTankTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "void reaver boss engaged by tank") {}
+    VoidReaverKnockAwayReducesTankAggroTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "void reaver knock away reduces tank aggro") {}
     bool IsActive() override;
 };
 
@@ -94,14 +94,6 @@ class VoidReaverBossLaunchesArcaneOrbsTrigger : public Trigger
 public:
     VoidReaverBossLaunchesArcaneOrbsTrigger(
         PlayerbotAI* botAI) : Trigger(botAI, "void reaver boss launches arcane orbs") {}
-    bool IsActive() override;
-};
-
-class VoidReaverTanksLostAggroTrigger : public Trigger
-{
-public:
-    VoidReaverTanksLostAggroTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "void reaver tanks lost aggro") {}
     bool IsActive() override;
 };
 
@@ -165,6 +157,14 @@ public:
     bool IsActive() override;
 };
 
+class KaelthasSunstriderPullingTankableAdvisorsTrigger : public Trigger
+{
+public:
+    KaelthasSunstriderPullingTankableAdvisorsTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider pulling tankable advisors") {}
+    bool IsActive() override;
+};
+
 class KaelthasSunstriderSanguinarEngagedByMainTankTrigger : public Trigger
 {
 public:
@@ -213,19 +213,11 @@ public:
     bool IsActive() override;
 };
 
-class KaelthasSunstriderPhase3AdvisorMeleeTanksNeedDedicatedHealerTrigger : public Trigger
+class KaelthasSunstriderMeleeTanksNeedDedicatedHealerInPhase3Trigger : public Trigger
 {
 public:
-    KaelthasSunstriderPhase3AdvisorMeleeTanksNeedDedicatedHealerTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider phase 3 advisor melee tanks need dedicated healer") {}
-    bool IsActive() override;
-};
-
-class KaelthasSunstriderPullingTankableAdvisorsTrigger : public Trigger
-{
-public:
-    KaelthasSunstriderPullingTankableAdvisorsTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider pulling tankable advisors") {}
+    KaelthasSunstriderMeleeTanksNeedDedicatedHealerInPhase3Trigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider melee tanks need dedicated healer in phase 3") {}
     bool IsActive() override;
 };
 
@@ -242,22 +234,6 @@ class KaelthasSunstriderLegendaryWeaponsAreAliveTrigger : public Trigger
 public:
     KaelthasSunstriderLegendaryWeaponsAreAliveTrigger(
         PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider legendary weapons are alive") {}
-    bool IsActive() override;
-};
-
-class KaelthasSunstriderDevastationChannelsWhirlwindTrigger : public Trigger
-{
-public:
-    KaelthasSunstriderDevastationChannelsWhirlwindTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider devastation channels whirlwind") {}
-    bool IsActive() override;
-};
-
-class KaelthasSunstriderNetherstrandLongbowFiresMultiShotTrigger : public Trigger
-{
-public:
-    KaelthasSunstriderNetherstrandLongbowFiresMultiShotTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider netherstrand longbow fires multi shot") {}
     bool IsActive() override;
 };
 
@@ -293,19 +269,11 @@ public:
     bool IsActive() override;
 };
 
-class KaelthasSunstriderBossEngagedByMainTankTrigger : public Trigger
+class KaelthasSunstriderBossHasEnteredTheFightTrigger : public Trigger
 {
 public:
-    KaelthasSunstriderBossEngagedByMainTankTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider boss engaged by main tank") {}
-    bool IsActive() override;
-};
-
-class KaelthasSunstriderFlameStrikeAppearedUnderBotTrigger : public Trigger
-{
-public:
-    KaelthasSunstriderFlameStrikeAppearedUnderBotTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider flame strike appeared under bot") {}
+    KaelthasSunstriderBossHasEnteredTheFightTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider boss has entered the fight") {}
     bool IsActive() override;
 };
 

@@ -39,14 +39,11 @@ public:
             &RaidTempestKeepTriggerContext::alar_phase_2_encounter_is_at_room_center;
 
         // Void Reaver
-        creators["void reaver boss engaged by tank"] =
-            &RaidTempestKeepTriggerContext::void_reaver_boss_engaged_by_tank;
+        creators["void reaver knock away reduces tank aggro"] =
+            &RaidTempestKeepTriggerContext::void_reaver_knock_away_reduces_tank_aggro;
 
         creators["void reaver boss launches arcane orbs"] =
             &RaidTempestKeepTriggerContext::void_reaver_boss_launches_arcane_orbs;
-
-        creators["void reaver tanks lost aggro"] =
-            &RaidTempestKeepTriggerContext::void_reaver_tanks_lost_aggro;
 
         // High Astromancer Solarian
         creators["high astromancer solarian boss casts wrath of the astromancer"] =
@@ -71,6 +68,9 @@ public:
         creators["kael'thas sunstrider thaladred is fixated on bot"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_thaladred_is_fixated_on_bot;
 
+        creators["kael'thas sunstrider pulling tankable advisors"] =
+            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_pulling_tankable_advisors;
+
         creators["kael'thas sunstrider sanguinar engaged by main tank"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_sanguinar_engaged_by_main_tank;
 
@@ -89,23 +89,14 @@ public:
         creators["kael'thas sunstrider telonicus engaged by first assist tank"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_telonicus_engaged_by_first_assist_tank;
 
-        creators["kael'thas sunstrider phase 3 advisor melee tanks need dedicated healer"] =
-            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_phase_3_advisor_melee_tanks_need_dedicated_healer;
-
-        creators["kael'thas sunstrider pulling tankable advisors"] =
-            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_pulling_tankable_advisors;
+        creators["kael'thas sunstrider melee tanks need dedicated healer in phase 3"] =
+            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_melee_tanks_need_dedicated_healer_in_phase_3;
 
         creators["kael'thas sunstrider waiting for tanks to get aggro on advisors"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_waiting_for_tanks_to_get_aggro_on_advisors;
 
         creators["kael'thas sunstrider legendary weapons are alive"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_legendary_weapons_are_alive;
-
-        creators["kael'thas sunstrider devastation channels whirlwind"] =
-            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_devastation_channels_whirlwind;
-
-        creators["kael'thas sunstrider netherstrand longbow fires multishot"] =
-            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_netherstrand_longbow_fires_multishot;
 
         creators["kael'thas sunstrider legendary weapons are dead and lootable"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_legendary_weapons_are_dead_and_lootable;
@@ -119,11 +110,8 @@ public:
         creators["kael'thas sunstrider determining advisor kill order"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_determining_advisor_kill_order;
 
-        creators["kael'thas sunstrider boss engaged by main tank"] =
-            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_boss_engaged_by_main_tank;
-
-        creators["kael'thas sunstrider flame strike appeared under bot"] =
-            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_flame_strike_appeared_under_bot;
+        creators["kael'thas sunstrider boss has entered the fight"] =
+            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_boss_has_entered_the_fight;
 
         creators["kael'thas sunstrider raid member is mind controlled"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_raid_member_is_mind_controlled;
@@ -169,14 +157,11 @@ private:
         PlayerbotAI* botAI) { return new AlarPhase2EncounterIsAtRoomCenterTrigger(botAI); }
 
     // Void Reaver
-    static Trigger* void_reaver_boss_engaged_by_tank(
-        PlayerbotAI* botAI) { return new VoidReaverBossEngagedByTankTrigger(botAI); }
+    static Trigger* void_reaver_knock_away_reduces_tank_aggro(
+        PlayerbotAI* botAI) { return new VoidReaverKnockAwayReducesTankAggroTrigger(botAI); }
 
     static Trigger* void_reaver_boss_launches_arcane_orbs(
         PlayerbotAI* botAI) { return new VoidReaverBossLaunchesArcaneOrbsTrigger(botAI); }
-
-    static Trigger* void_reaver_tanks_lost_aggro(
-        PlayerbotAI* botAI) { return new VoidReaverTanksLostAggroTrigger(botAI); }
 
     // High Astromancer Solarian
     static Trigger* high_astromancer_solarian_boss_casts_wrath_of_the_astromancer(
@@ -201,6 +186,9 @@ private:
     static Trigger* kaelthas_sunstrider_thaladred_is_fixated_on_bot(
         PlayerbotAI* botAI) { return new KaelthasSunstriderThaladredIsFixatedOnBotTrigger(botAI); }
 
+    static Trigger* kaelthas_sunstrider_pulling_tankable_advisors(
+        PlayerbotAI* botAI) { return new KaelthasSunstriderPullingTankableAdvisorsTrigger(botAI); }
+
     static Trigger* kaelthas_sunstrider_sanguinar_engaged_by_main_tank(
         PlayerbotAI* botAI) { return new KaelthasSunstriderSanguinarEngagedByMainTankTrigger(botAI); }
 
@@ -219,23 +207,14 @@ private:
     static Trigger* kaelthas_sunstrider_telonicus_engaged_by_first_assist_tank(
         PlayerbotAI* botAI) { return new KaelthasSunstriderTelonicusEngagedByFirstAssistTankTrigger(botAI); }
 
-    static Trigger* kaelthas_sunstrider_phase_3_advisor_melee_tanks_need_dedicated_healer(
-        PlayerbotAI* botAI) { return new KaelthasSunstriderPhase3AdvisorMeleeTanksNeedDedicatedHealerTrigger(botAI); }
-
-    static Trigger* kaelthas_sunstrider_pulling_tankable_advisors(
-        PlayerbotAI* botAI) { return new KaelthasSunstriderPullingTankableAdvisorsTrigger(botAI); }
+    static Trigger* kaelthas_sunstrider_melee_tanks_need_dedicated_healer_in_phase_3(
+        PlayerbotAI* botAI) { return new KaelthasSunstriderMeleeTanksNeedDedicatedHealerInPhase3Trigger(botAI); }
 
     static Trigger* kaelthas_sunstrider_waiting_for_tanks_to_get_aggro_on_advisors(
         PlayerbotAI* botAI) { return new KaelthasSunstriderWaitingForTanksToGetAggroOnAdvisorsTrigger(botAI); }
 
     static Trigger* kaelthas_sunstrider_legendary_weapons_are_alive(
         PlayerbotAI* botAI) { return new KaelthasSunstriderLegendaryWeaponsAreAliveTrigger(botAI); }
-
-    static Trigger* kaelthas_sunstrider_devastation_channels_whirlwind(
-        PlayerbotAI* botAI) { return new KaelthasSunstriderDevastationChannelsWhirlwindTrigger(botAI); }
-
-    static Trigger* kaelthas_sunstrider_netherstrand_longbow_fires_multishot(
-        PlayerbotAI* botAI) { return new KaelthasSunstriderNetherstrandLongbowFiresMultiShotTrigger(botAI); }
 
     static Trigger* kaelthas_sunstrider_legendary_weapons_are_dead_and_lootable(
         PlayerbotAI* botAI) { return new KaelthasSunstriderLegendaryWeaponsAreDeadAndLootableTrigger(botAI); }
@@ -249,11 +228,8 @@ private:
     static Trigger* kaelthas_sunstrider_determining_advisor_kill_order(
         PlayerbotAI* botAI) { return new KaelthasSunstriderDeterminingAdvisorKillOrderTrigger(botAI); }
 
-    static Trigger* kaelthas_sunstrider_boss_engaged_by_main_tank(
-        PlayerbotAI* botAI) { return new KaelthasSunstriderBossEngagedByMainTankTrigger(botAI); }
-
-    static Trigger* kaelthas_sunstrider_flame_strike_appeared_under_bot(
-        PlayerbotAI* botAI) { return new KaelthasSunstriderFlameStrikeAppearedUnderBotTrigger(botAI); }
+    static Trigger* kaelthas_sunstrider_boss_has_entered_the_fight(
+        PlayerbotAI* botAI) { return new KaelthasSunstriderBossHasEnteredTheFightTrigger(botAI); }
 
     static Trigger* kaelthas_sunstrider_raid_member_is_mind_controlled(
         PlayerbotAI* botAI) { return new KaelthasSunstriderRaidMemberIsMindControlledTrigger(botAI); }

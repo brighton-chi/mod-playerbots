@@ -65,6 +65,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class AlarRangedDpsPrioritizeEmbersAction : public AttackAction
+{
+public:
+    AlarRangedDpsPrioritizeEmbersAction(
+        PlayerbotAI* botAI, std::string const name = "al'ar ranged dps prioritize embers") : AttackAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 class AlarJumpFromPlatformAction : public MovementAction
 {
 public:
@@ -78,14 +86,6 @@ class AlarMoveAwayFromRebirthAction : public MovementAction
 public:
     AlarMoveAwayFromRebirthAction(
         PlayerbotAI* botAI, std::string const name = "al'ar move away from rebirth") : MovementAction(botAI, name) {}
-    bool Execute(Event event) override;
-};
-
-class AlarRangedDpsPrioritizeEmbersInPhase2Action : public AttackAction
-{
-public:
-    AlarRangedDpsPrioritizeEmbersInPhase2Action(
-        PlayerbotAI* botAI, std::string const name = "al'ar ranged dps prioritize embers in phase 2") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 
@@ -115,11 +115,19 @@ public:
 
 // Void Reaver
 
-class VoidReaverPositionBossAction : public AttackAction
+class VoidReaverTanksPositionBossAction : public AttackAction
 {
 public:
-    VoidReaverPositionBossAction(
-        PlayerbotAI* botAI, std::string const name = "void reaver position boss") : AttackAction(botAI, name) {}
+    VoidReaverTanksPositionBossAction(
+        PlayerbotAI* botAI, std::string const name = "void reaver tanks position boss") : AttackAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class VoidReaverRangedUseAggroDumpAbilityAction : public Action
+{
+public:
+    VoidReaverRangedUseAggroDumpAbilityAction(
+        PlayerbotAI* botAI, std::string const name = "void reaver ranged use aggro dump ability") : Action(botAI, name) {}
     bool Execute(Event event) override;
 };
 
@@ -133,14 +141,6 @@ public:
 private:
     Position GetRangedBotPosition(
         const Position& center, float radius, uint8 botsPerRing, float offsetArc, uint8 botIndex, float botZ);
-};
-
-class VoidReaverUseAggroDumpAbilityAction : public Action
-{
-public:
-    VoidReaverUseAggroDumpAbilityAction(
-        PlayerbotAI* botAI, std::string const name = "void reaver use aggro dump ability") : Action(botAI, name) {}
-    bool Execute(Event event) override;
 };
 
 // High Astromancer Solarian
@@ -208,6 +208,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class KaelthasSunstriderMisdirectAdvisorsToTanksAction : public AttackAction
+{
+public:
+    KaelthasSunstriderMisdirectAdvisorsToTanksAction(
+        PlayerbotAI* botAI, std::string const name = "kael'thas sunstrider misdirect advisors to tanks") : AttackAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 class KaelthasSunstriderMainTankPositionSanguinarAction : public AttackAction
 {
 public:
@@ -264,14 +272,6 @@ public:
     bool Execute(Event event) override;
 };
 
-class KaelthasSunstriderMisdirectAdvisorsToTanksAction : public AttackAction
-{
-public:
-    KaelthasSunstriderMisdirectAdvisorsToTanksAction(
-        PlayerbotAI* botAI, std::string const name = "kael'thas sunstrider misdirect advisors to tanks") : AttackAction(botAI, name) {}
-    bool Execute(Event event) override;
-};
-
 class KaelthasSunstriderManageAdvisorDpsTimerAction : public Action
 {
 public:
@@ -280,11 +280,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class KaelthasSunstriderGroupUpLegendaryWeaponsAction : public AttackAction
+class KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction : public AttackAction
 {
 public:
-    KaelthasSunstriderGroupUpLegendaryWeaponsAction(
-        PlayerbotAI* botAI, std::string const name = "kael'thas sunstrider group up legendary weapons") : AttackAction(botAI, name) {}
+    KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction(
+        PlayerbotAI* botAI, std::string const name = "kael'thas sunstrider assign legendary weapon dps priority") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 

@@ -29,14 +29,14 @@ public:
         creators["al'ar add tank pick up embers"] =
             &RaidTempestKeepActionContext::alar_add_tank_pick_up_embers;
 
+        creators["al'ar ranged dps prioritize embers"] =
+            &RaidTempestKeepActionContext::alar_ranged_dps_prioritize_embers;
+
         creators["al'ar jump from platform"] =
             &RaidTempestKeepActionContext::alar_jump_from_platform;
 
         creators["al'ar move away from rebirth"] =
             &RaidTempestKeepActionContext::alar_move_away_from_rebirth;
-
-        creators["al'ar ranged dps prioritize embers in phase 2"] =
-            &RaidTempestKeepActionContext::alar_ranged_dps_prioritize_embers_in_phase_2;
 
         creators["al'ar swap tanks on boss"] =
             &RaidTempestKeepActionContext::alar_swap_tanks_on_boss;
@@ -48,14 +48,14 @@ public:
             &RaidTempestKeepActionContext::alar_return_to_room_center;
 
         // Void Reaver
-        creators["void reaver position boss"] =
-            &RaidTempestKeepActionContext::void_reaver_position_boss;
+        creators["void reaver tanks position boss"] =
+            &RaidTempestKeepActionContext::void_reaver_tanks_position_boss;
+
+        creators["void reaver ranged use aggro dump ability"] =
+            &RaidTempestKeepActionContext::void_reaver_ranged_use_aggro_dump_ability;
 
         creators["void reaver spread ranged"] =
             &RaidTempestKeepActionContext::void_reaver_spread_ranged;
-
-        creators["void reaver use aggro dump ability"] =
-            &RaidTempestKeepActionContext::void_reaver_use_aggro_dump_ability;
 
         // High Astromancer Solarian
         creators["high astromancer solarian ranged leave space for melee"] =
@@ -107,8 +107,8 @@ public:
         creators["kael'thas sunstrider manage advisor dps timer"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_manage_advisor_dps_timer;
 
-        creators["kael'thas sunstrider group up legendary weapons"] =
-            &RaidTempestKeepActionContext::kaelthas_sunstrider_group_up_legendary_weapons;
+        creators["kael'thas sunstrider assign legendary weapon dps priority"] =
+            &RaidTempestKeepActionContext::kaelthas_sunstrider_assign_legendary_weapon_dps_priority;
 
         creators["kael'thas sunstrider main tank move devastation away"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_main_tank_move_devastation_away;
@@ -168,14 +168,14 @@ private:
     static Action* alar_add_tank_pick_up_embers(
         PlayerbotAI* botAI) { return new AlarAddTankPickUpEmbersAction(botAI); }
 
+    static Action* alar_ranged_dps_prioritize_embers(
+        PlayerbotAI* botAI) { return new AlarRangedDpsPrioritizeEmbersAction(botAI); }
+
     static Action* alar_jump_from_platform(
         PlayerbotAI* botAI) { return new AlarJumpFromPlatformAction(botAI); }
 
     static Action* alar_move_away_from_rebirth(
         PlayerbotAI* botAI) { return new AlarMoveAwayFromRebirthAction(botAI); }
-
-    static Action* alar_ranged_dps_prioritize_embers_in_phase_2(
-        PlayerbotAI* botAI) { return new AlarRangedDpsPrioritizeEmbersInPhase2Action(botAI); }
 
     static Action* alar_swap_tanks_on_boss(
         PlayerbotAI* botAI) { return new AlarSwapTanksOnBossAction(botAI); }
@@ -187,14 +187,14 @@ private:
         PlayerbotAI* botAI) { return new AlarReturnToRoomCenterAction(botAI); }
 
     // Void Reaver
-    static Action* void_reaver_position_boss(
-        PlayerbotAI* botAI) { return new VoidReaverPositionBossAction(botAI); }
+    static Action* void_reaver_tanks_position_boss(
+        PlayerbotAI* botAI) { return new VoidReaverTanksPositionBossAction(botAI); }
+
+    static Action* void_reaver_ranged_use_aggro_dump_ability(
+        PlayerbotAI* botAI) { return new VoidReaverRangedUseAggroDumpAbilityAction(botAI); }
 
     static Action* void_reaver_spread_ranged(
         PlayerbotAI* botAI) { return new VoidReaverSpreadRangedAction(botAI); }
-
-    static Action* void_reaver_use_aggro_dump_ability(
-        PlayerbotAI* botAI) { return new VoidReaverUseAggroDumpAbilityAction(botAI); }
 
     // High Astromancer Solarian
     static Action* high_astromancer_solarian_ranged_leave_space_for_melee(
@@ -246,8 +246,8 @@ private:
     static Action* kaelthas_sunstrider_manage_advisor_dps_timer(
         PlayerbotAI* botAI) { return new KaelthasSunstriderManageAdvisorDpsTimerAction(botAI); }
 
-    static Action* kaelthas_sunstrider_group_up_legendary_weapons(
-        PlayerbotAI* botAI) { return new KaelthasSunstriderGroupUpLegendaryWeaponsAction(botAI); }
+    static Action* kaelthas_sunstrider_assign_legendary_weapon_dps_priority(
+        PlayerbotAI* botAI) { return new KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction(botAI); }
 
     static Action* kaelthas_sunstrider_main_tank_move_devastation_away(
         PlayerbotAI* botAI) { return new KaelthasSunstriderMoveDevastationAwayAction(botAI); }
