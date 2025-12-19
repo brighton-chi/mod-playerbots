@@ -50,6 +50,7 @@ namespace TempestKeepHelpers
     {
         // Al'ar
         NPC_EMBER_OF_ALAR               = 19551,
+        // NPC_FLAME_PATCH                 = 20602, // Special strategy is preferable, but not built in right now
 
         // High Astromancer Solarian
         NPC_SOLARIUM_PRIEST             = 18806,

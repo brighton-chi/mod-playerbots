@@ -414,13 +414,6 @@ bool KaelthasSunstriderWaitingForTanksToGetAggroOnAdvisorsTrigger::IsActive()
 
 bool KaelthasSunstriderLegendaryWeaponsAreAliveTrigger::IsActive()
 {
-    if (botAI->IsMainTank(bot))
-        return false;
-
-    Player* longbowTank = GetNetherstrandLongbowTank(botAI, bot);
-    if (longbowTank && longbowTank == bot)
-        return false;
-
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     if (!kaelthas)
         return false;

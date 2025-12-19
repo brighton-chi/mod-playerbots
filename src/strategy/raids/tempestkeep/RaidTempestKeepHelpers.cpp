@@ -292,10 +292,15 @@ namespace TempestKeepHelpers
             for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
             {
                 Player* member = ref->GetSource();
+                if (!member || !member->IsAlive() || !botAI->IsDps(member) ||
+                    !GET_PLAYERBOT_AI(member))
+                    continue;
+
                 Player* capernianTank = GetCapernianTank(botAI, member);
-                if (member && member->IsAlive() && botAI->IsDps(member) &&
-                    member != capernianTank && GET_PLAYERBOT_AI(member))
-                    return member == bot;
+                if (capernianTank && capernianTank == member)
+                    continue;
+
+                return member == bot;
             }
         }
 

@@ -285,7 +285,15 @@ float KaelthasSunstriderDisableShadowWardMultiplier::GetValue(Action* action)
 
 float KaelthasSunstriderKiteThaladredMultiplier::GetValue(Action* action)
 {
-    if (botAI->IsTank(bot))
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    if (!kaelthas)
+        return 1.0f;
+
+    boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
+    if (!kaelAI)
+        return 1.0f;
+
+    if (botAI->IsTank(bot) && kaelAI->GetPhase() == PHASE_ALL_ADVISORS)
         return 1.0f;
 
     Unit* thaladred = AI_VALUE2(Unit*, "find target", "thaladred the darkener");

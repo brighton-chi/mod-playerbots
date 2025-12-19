@@ -230,6 +230,7 @@ bool AlarRangedMoveUnderPlatformsAction::Execute(Event event)
     return false;
 }
 
+// This needs a better way to handle Embers in phase 2 since 2 spawn at once
 bool AlarAddTankPickUpEmbersAction::Execute(Event event)
 {
     if (!IsAlarAddTank(botAI, bot))
@@ -266,10 +267,6 @@ bool AlarAddTankPickUpEmbersAction::Execute(Event event)
             {
                 // Phase 1, Ember spawned: Pick up Ember and move it to 25 yards from the ranged group
                 const Position& groundTarget = GROUND_POSITIONS[locationIndex];
-                /*
-                return MoveNear(TEMPEST_KEEP_MAP_ID, groundTarget.GetPositionX(),
-                                groundTarget.GetPositionY(), groundTarget.GetPositionZ(),
-                                20.0f, MovementPriority::MOVEMENT_COMBAT); */
                 const Position& center = ALAR_POINT_MIDDLE;
                 float dx = center.GetPositionX() - groundTarget.GetPositionX();
                 float dy = center.GetPositionY() - groundTarget.GetPositionY();
@@ -548,10 +545,10 @@ bool AlarReturnToRoomCenterAction::Execute(Event event)
 {
     const Position& center = ALAR_ROOM_CENTER;
     if (bot->GetVictim() == nullptr &&
-        bot->GetExactDist2d(center.GetPositionX(), center.GetPositionY()) > 35.0f)
+        bot->GetExactDist2d(center.GetPositionX(), center.GetPositionY()) > 40.0f)
     {
         return MoveInside(TEMPEST_KEEP_MAP_ID, center.GetPositionX(), center.GetPositionY(),
-                          center.GetPositionZ(), 30.0f, MovementPriority::MOVEMENT_COMBAT);
+                          center.GetPositionZ(), 40.0f, MovementPriority::MOVEMENT_COMBAT);
     }
 
     return false;
@@ -1005,7 +1002,7 @@ bool KaelthasSunstriderMainTankPositionSanguinarAction::Execute(Event event)
     MarkTargetWithStar(bot, sanguinar);
     SetRtiTarget(botAI, "star", sanguinar);
 
-    if (bot->GetVictim() != sanguinar)
+    if (bot->GetTarget() != sanguinar->GetGUID())
         return Attack(sanguinar);
 
     if (sanguinar->GetVictim() == bot && bot->IsWithinMeleeRange(sanguinar))
@@ -1136,7 +1133,7 @@ bool KaelthasSunstriderWarlockTankPositionCapernianAction::Execute(Event event)
         if (currentDist == 0.0f)
             return false;
 
-        const float minDistance = 32.0f;
+        const float minDistance = 20.0f;
         if (currentDist < minDistance)
         {
             /* float dx = bot->GetPositionX() - capernian->GetPositionX();
@@ -1154,7 +1151,7 @@ bool KaelthasSunstriderWarlockTankPositionCapernianAction::Execute(Event event)
                 return MoveTo(TEMPEST_KEEP_MAP_ID, targetX, targetY, capernian->GetPositionZ(), false,
                               false, false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
             } */
-            return MoveAway(capernian, minDistance - currentDist + 0.5f);
+            return MoveAway(capernian, minDistance - currentDist + 1.0f);
         }
         /* float orientation = atan2(capernian->GetPositionY() - bot->GetPositionY(),
                                   capernian->GetPositionX() - bot->GetPositionX());
@@ -1231,7 +1228,7 @@ bool KaelthasSunstriderFirstAssistTankPositionTelonicusAction::Execute(Event eve
     MarkTargetWithTriangle(bot, telonicus);
     SetRtiTarget(botAI, "triangle", telonicus);
 
-    if (bot->GetVictim() != telonicus)
+    if (bot->GetTarget() != telonicus->GetGUID())
         return Attack(telonicus);
 
     if (telonicus->GetVictim() == bot && bot->IsWithinMeleeRange(telonicus))
@@ -1301,7 +1298,7 @@ bool KaelthasSunstriderManageAdvisorDpsTimerAction::Execute(Event event)
         {
             const time_t now = std::time(nullptr);
             advisorDpsWaitTimer.insert_or_assign(kaelthas->GetMap()->GetInstanceId(), now);
-            return false;
+            return true;
         }
     }
 
@@ -2197,7 +2194,7 @@ bool KaelthasSunstriderSpreadOutInMidairAction::Execute(Event event)
     if (!group)
         return false;
 
-    const float minSpreadDistance = 12.0f;
+    const float minSpreadDistance = 15.0f;
 
     std::vector<Player*> nearbyPlayers;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
@@ -2228,7 +2225,7 @@ bool KaelthasSunstriderSpreadOutInMidairAction::Execute(Event event)
     if (closestPlayer && closestDist < minSpreadDistance)
     {
         float angle = bot->GetAngle(closestPlayer) + M_PI;
-        float distance = minSpreadDistance - closestDist + 2.0f;
+        float distance = minSpreadDistance - closestDist;
 
         float x = bot->GetPositionX() + std::cos(angle) * distance;
         float y = bot->GetPositionY() + std::sin(angle) * distance;
