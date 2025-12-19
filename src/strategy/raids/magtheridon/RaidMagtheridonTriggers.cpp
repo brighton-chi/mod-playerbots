@@ -144,6 +144,9 @@ bool MagtheridonIncomingBlastNovaTrigger::IsActive()
 
 bool MagtheridonNeedToManageTimersAndAssignmentsTrigger::IsActive()
 {
+    if (botAI->IsTank(bot))
+        return false;
+
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
     return magtheridon != nullptr;
 }
