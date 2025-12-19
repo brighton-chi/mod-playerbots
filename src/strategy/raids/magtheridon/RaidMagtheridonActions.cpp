@@ -419,7 +419,6 @@ bool MagtheridonSpreadRangedAction::Execute(Event event)
     float maxSpreadRadius = isHealer ? 15.0f : 20.0f;
     float centerX = center.GetPositionX();
     float centerY = center.GetPositionY();
-    float centerZ = center.GetPositionZ();
     const float radiusBuffer = 3.0f;
 
     if (!initialPositions.count(bot->GetGUID()))
@@ -432,7 +431,7 @@ bool MagtheridonSpreadRangedAction::Execute(Event event)
         float radius = frand(0.0f, maxSpreadRadius);
         float targetX = centerX + radius * std::cos(angle);
         float targetY = centerY + radius * std::sin(angle);
-        float targetZ = bot->GetMap()->GetHeight(targetX, targetY, centerZ);
+        float targetZ = center.GetPositionZ();
 
         initialPositions[bot->GetGUID()] = Position(targetX, targetY, targetZ);
         hasReachedInitialPosition[bot->GetGUID()] = false;
@@ -467,13 +466,14 @@ bool MagtheridonSpreadRangedAction::Execute(Event event)
         float radius = frand(0.0f, maxSpreadRadius);
         float targetX = centerX + radius * std::cos(angle);
         float targetY = centerY + radius * std::sin(angle);
+        float targetZ = center.GetPositionZ();
 
         if (bot->GetMap()->CheckCollisionAndGetValidCoords(bot, bot->GetPositionX(), bot->GetPositionY(),
-                                                           bot->GetPositionZ(), targetX, targetY, centerZ))
+                                                           bot->GetPositionZ(), targetX, targetY, targetZ))
         {
             bot->AttackStop();
             bot->InterruptNonMeleeSpells(false);
-            return MoveTo(bot->GetMapId(), targetX, targetY, centerZ, false, false, false, false,
+            return MoveTo(bot->GetMapId(), targetX, targetY, targetZ, false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }

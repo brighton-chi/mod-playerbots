@@ -556,9 +556,8 @@ bool TheLurkerBelowSpreadRangedInArcAction::Execute(Event event)
 
         float targetX = lurker->GetPositionX() + radius * std::sin(angle);
         float targetY = lurker->GetPositionY() + radius * std::cos(angle);
-        float targetZ = bot->GetMap()->GetHeight(targetX, targetY, lurker->GetPositionZ());
 
-        lurkerRangedPositions.try_emplace(guid, Position(targetX, targetY, targetZ));
+        lurkerRangedPositions.try_emplace(guid, Position(targetX, targetY, lurker->GetPositionZ()));
         it = lurkerRangedPositions.find(guid);
     }
 
@@ -1593,9 +1592,8 @@ bool LadyVashjPhase1SpreadRangedInArcAction::Execute(Event event)
         float radius = frand(minRadius, maxRadius);
         float targetX = center.GetPositionX() + radius * std::cos(angle);
         float targetY = center.GetPositionY() + radius * std::sin(angle);
-        float targetZ = bot->GetMap()->GetHeight(targetX, targetY, center.GetPositionZ());
 
-        auto res = vashjRangedPositions.try_emplace(guid, Position(targetX, targetY, targetZ));
+        auto res = vashjRangedPositions.try_emplace(guid, Position(targetX, targetY, center.GetPositionZ()));
         itPos = res.first;
         hasReachedVashjRangedPosition.try_emplace(guid, false);
         itReached = hasReachedVashjRangedPosition.find(guid);
