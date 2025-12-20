@@ -92,7 +92,7 @@ namespace SerpentShrineCavernHelpers
         NPC_TAINTED_ELEMENTAL        = 22009,
         NPC_COILFANG_ELITE           = 22055,
         NPC_COILFANG_STRIDER         = 22056,
-        NPC_TOXIC_SPOREBAT           = 22140,
+        // NPC_TOXIC_SPOREBAT        = 22140,
         NPC_SPORE_DROP_TRIGGER       = 22207,
     };
 

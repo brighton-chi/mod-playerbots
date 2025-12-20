@@ -345,19 +345,11 @@ public:
     bool IsActive() override;
 };
 
-class LadyVashjCoilfangStriderIsApproachingTrigger : public Trigger
+class LadyVashjAddsSpawnInPhase2AndPhase3Trigger : public Trigger
 {
 public:
-    LadyVashjCoilfangStriderIsApproachingTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "lady vashj coilfang strider is approaching") {}
-    bool IsActive() override;
-};
-
-class LadyVashjDeterminingKillOrderOfAddsTrigger : public Trigger
-{
-public:
-LadyVashjDeterminingKillOrderOfAddsTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "lady vashj determining kill order of adds") {}
+    LadyVashjAddsSpawnInPhase2AndPhase3Trigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "lady vashj adds spawn in phase 2 and phase 3") {}
     bool IsActive() override;
 };
 

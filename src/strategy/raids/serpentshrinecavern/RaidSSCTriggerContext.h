@@ -136,11 +136,8 @@ public:
         creators["lady vashj pulling boss in phase 1 and phase 3"] =
             &RaidSSCTriggerContext::lady_vashj_pulling_boss_in_phase_1_and_phase_3;
 
-        creators["lady vashj coilfang strider is approaching"] =
-            &RaidSSCTriggerContext::lady_vashj_coilfang_strider_is_approaching;
-
-        creators["lady vashj determining kill order of adds"] =
-            &RaidSSCTriggerContext::lady_vashj_determining_kill_order_of_adds;
+        creators["lady vashj adds spawn in phase 2 and phase 3"] =
+            &RaidSSCTriggerContext::lady_vashj_adds_spawn_in_phase_2_and_phase_3;
 
         creators["lady vashj tainted elemental cheat"] =
             &RaidSSCTriggerContext::lady_vashj_tainted_elemental_cheat;
@@ -289,11 +286,8 @@ private:
     static Trigger* lady_vashj_pulling_boss_in_phase_1_and_phase_3(
         PlayerbotAI* botAI) { return new LadyVashjPullingBossInPhase1AndPhase3Trigger(botAI); }
 
-    static Trigger* lady_vashj_coilfang_strider_is_approaching(
-        PlayerbotAI* botAI) { return new LadyVashjCoilfangStriderIsApproachingTrigger(botAI); }
-
-    static Trigger* lady_vashj_determining_kill_order_of_adds(
-        PlayerbotAI* botAI) { return new LadyVashjDeterminingKillOrderOfAddsTrigger(botAI); }
+    static Trigger* lady_vashj_adds_spawn_in_phase_2_and_phase_3(
+        PlayerbotAI* botAI) { return new LadyVashjAddsSpawnInPhase2AndPhase3Trigger(botAI); }
 
     static Trigger* lady_vashj_tainted_elemental_cheat(
         PlayerbotAI* botAI) { return new LadyVashjTaintedElementalCheatTrigger(botAI); }

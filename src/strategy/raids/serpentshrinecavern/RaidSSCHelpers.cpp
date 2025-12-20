@@ -235,27 +235,31 @@ namespace SerpentShrineCavernHelpers
         if (!group)
             return nullptr;
 
-        Player* fallbackWarlockTank = nullptr;
+        // (1) First loop: Return the first assistant Warlock (real player or bot)
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
             if (!member || !member->IsAlive() || member->getClass() != CLASS_WARLOCK)
                 continue;
 
-            // (1) Return the first assistant Warlock (real player or bot)
             if (group->IsAssistant(member->GetGUID()))
                 return member;
-
-            // (2) Otherwise, get the first Warlock bot with the co +tank strategy
-            PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
-            if (!fallbackWarlockTank && memberAI &&
-                memberAI->HasStrategy("tank", BotState::BOT_STATE_COMBAT))
-                fallbackWarlockTank = member;
         }
 
-        // (3) Return the fallback Warlock bot tank if found,
-        // otherwise nullptr (no Warlock tank for Leotheras)
-        return fallbackWarlockTank;
+        // (2) Second loop: Return the first Warlock bot with the tank strategy
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || member->getClass() != CLASS_WARLOCK)
+                continue;
+
+            PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
+            if (memberAI && memberAI->HasStrategy("tank", BotState::BOT_STATE_COMBAT))
+                return member;
+        }
+
+        // (3) If no assistant or tank Warlock found, return nullptr
+        return nullptr;
     }
 
     // Fathom-Lord Karathress
@@ -370,7 +374,7 @@ namespace SerpentShrineCavernHelpers
         {
             return entry == NPC_TAINTED_ELEMENTAL || entry == NPC_ENCHANTED_ELEMENTAL ||
                    entry == NPC_COILFANG_ELITE || entry == NPC_COILFANG_STRIDER ||
-                   entry == NPC_TOXIC_SPOREBAT || entry == NPC_LADY_VASHJ;
+                   /* entry == NPC_TOXIC_SPOREBAT || */ entry == NPC_LADY_VASHJ;
         }
 
         return false;

@@ -347,6 +347,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class LadyVashjAssignPhase2AndPhase3DpsPriorityAction : public AttackAction
+{
+public:
+    LadyVashjAssignPhase2AndPhase3DpsPriorityAction(
+        PlayerbotAI* botAI, std::string const name = "lady vashj assign phase 2 and phase 3 dps priority") : AttackAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 class LadyVashjMisdirectStriderToFirstAssistTankAction : public AttackAction
 {
 public:
@@ -360,14 +368,6 @@ class LadyVashjTankAttackAndMoveAwayStriderAction : public AttackAction
 public:
     LadyVashjTankAttackAndMoveAwayStriderAction(
         PlayerbotAI* botAI, std::string const name = "lady vashj tank attack and move away strider") : AttackAction(botAI, name) {}
-    bool Execute(Event event) override;
-};
-
-class LadyVashjAssignDpsPriorityAction : public AttackAction
-{
-public:
-    LadyVashjAssignDpsPriorityAction(
-        PlayerbotAI* botAI, std::string const name = "lady vashj assign dps priority") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 

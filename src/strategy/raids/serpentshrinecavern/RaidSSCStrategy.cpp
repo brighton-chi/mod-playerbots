@@ -136,11 +136,6 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("lady vashj pulling boss in phase 1 and phase 3",
         NextAction::array(0, new NextAction("lady vashj misdirect boss to main tank", ACTION_EMERGENCY + 1), nullptr)
     ));
-    triggers.push_back(new TriggerNode("lady vashj coilfang strider is approaching",
-        NextAction::array(0,
-            new NextAction("lady vashj misdirect strider to first assist tank", ACTION_EMERGENCY + 1),
-            new NextAction("lady vashj tank attack and move away strider", ACTION_EMERGENCY + 1), nullptr)
-    ));
     triggers.push_back(new TriggerNode("lady vashj tainted elemental cheat",
         NextAction::array(0,
             new NextAction("lady vashj teleport to tainted elemental", ACTION_EMERGENCY + 10),
@@ -152,8 +147,11 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("lady vashj tainted core is unusable",
         NextAction::array(0, new NextAction("lady vashj destroy tainted core", ACTION_EMERGENCY + 1), nullptr)
     ));
-    triggers.push_back(new TriggerNode("lady vashj determining kill order of adds",
-        NextAction::array(0, new NextAction("lady vashj assign dps priority", ACTION_RAID + 1), nullptr)
+    triggers.push_back(new TriggerNode("lady vashj adds spawn in phase 2 and phase 3",
+        NextAction::array(0,
+            new NextAction("lady vashj assign phase 2 and phase 3 dps priority", ACTION_RAID + 1),
+            new NextAction("lady vashj misdirect strider to first assist tank", ACTION_EMERGENCY + 1),
+            new NextAction("lady vashj tank attack and move away strider", ACTION_EMERGENCY + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("lady vashj toxic sporebats are spewing poison clouds",
         NextAction::array(0, new NextAction("lady vashj avoid toxic spores", ACTION_EMERGENCY + 6), nullptr)

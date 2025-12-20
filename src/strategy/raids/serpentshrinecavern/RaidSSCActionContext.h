@@ -136,14 +136,14 @@ public:
         creators["lady vashj misdirect boss to main tank"] =
             &RaidSSCActionContext::lady_vashj_misdirect_boss_to_main_tank;
 
+        creators["lady vashj assign phase 2 and phase 3 dps priority"] =
+            &RaidSSCActionContext::lady_vashj_assign_phase_2_and_phase_3_dps_priority;
+
         creators["lady vashj misdirect strider to first assist tank"] =
             &RaidSSCActionContext::lady_vashj_misdirect_strider_to_first_assist_tank;
 
         creators["lady vashj tank attack and move away strider"] =
             &RaidSSCActionContext::lady_vashj_tank_attack_and_move_away_strider;
-
-        creators["lady vashj assign dps priority"] =
-            &RaidSSCActionContext::lady_vashj_assign_dps_priority;
 
         creators["lady vashj loot tainted core"] =
             &RaidSSCActionContext::lady_vashj_loot_tainted_core;
@@ -295,14 +295,14 @@ private:
     static Action* lady_vashj_misdirect_boss_to_main_tank(
         PlayerbotAI* botAI) { return new LadyVashjMisdirectBossToMainTankAction(botAI); }
 
+    static Action* lady_vashj_assign_phase_2_and_phase_3_dps_priority(
+        PlayerbotAI* botAI) { return new LadyVashjAssignPhase2AndPhase3DpsPriorityAction(botAI); }
+
     static Action* lady_vashj_misdirect_strider_to_first_assist_tank(
         PlayerbotAI* botAI) { return new LadyVashjMisdirectStriderToFirstAssistTankAction(botAI); }
 
     static Action* lady_vashj_tank_attack_and_move_away_strider(
         PlayerbotAI* botAI) { return new LadyVashjTankAttackAndMoveAwayStriderAction(botAI); }
-
-    static Action* lady_vashj_assign_dps_priority(
-        PlayerbotAI* botAI) { return new LadyVashjAssignDpsPriorityAction(botAI); }
 
     static Action* lady_vashj_teleport_to_tainted_elemental(
         PlayerbotAI* botAI) { return new LadyVashjTeleportToTaintedElementalAction(botAI); }

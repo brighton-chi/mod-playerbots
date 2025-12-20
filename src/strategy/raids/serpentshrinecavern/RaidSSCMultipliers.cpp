@@ -740,7 +740,7 @@ float LadyVashjDisableAutomaticTargetingAndMovementModifier::GetValue(Action *ac
         if ((!enchanted || !enchanted->IsAlive()) && (!strider || !strider->IsAlive()) &&
             (!elite || !elite->IsAlive()))
         {
-            if (dynamic_cast<SetBehindTargetAction*>(action))
+            if (dynamic_cast<CombatFormationMoveAction*>(action))
                 return 0.0f;
         }
     }

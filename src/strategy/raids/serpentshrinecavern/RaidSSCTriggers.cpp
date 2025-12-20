@@ -79,10 +79,10 @@ bool HydrossTheUnstableTankNeedsAggroUponPhaseChangeTrigger::IsActive()
 
 bool HydrossTheUnstableAggroResetsUponPhaseChangeTrigger::IsActive()
 {
-    if (bot->getClass() == CLASS_HUNTER)
-        return false;
-
-    if (botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0))
+    if (bot->getClass() == CLASS_HUNTER ||
+        botAI->IsMainTank(bot) ||
+        botAI->IsAssistTankOfIndex(bot, 0) ||
+        botAI->IsHeal(bot))
         return false;
 
     Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
@@ -499,17 +499,10 @@ bool LadyVashjPullingBossInPhase1AndPhase3Trigger::IsActive()
              vashj->GetHealthPct() > 40.0f));
 }
 
-bool LadyVashjCoilfangStriderIsApproachingTrigger::IsActive()
-{
-    Unit* strider = AI_VALUE2(Unit*, "find target", "coilfang strider");
-    return strider && strider->IsAlive() &&
-           (IsLadyVashjInPhase2(botAI) || IsLadyVashjInPhase3(botAI));
-}
-
-bool LadyVashjDeterminingKillOrderOfAddsTrigger::IsActive()
+bool LadyVashjAddsSpawnInPhase2AndPhase3Trigger::IsActive()
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    return vashj && (IsLadyVashjInPhase2(botAI) || IsLadyVashjInPhase3(botAI));
+    return vashj && !IsLadyVashjInPhase1(botAI);
 }
 
 bool LadyVashjTaintedElementalCheatTrigger::IsActive()
