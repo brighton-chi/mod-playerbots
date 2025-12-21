@@ -50,6 +50,7 @@ void RaidGruulsLairStrategy::InitMultipliers(std::vector<Multiplier*>& multiplie
 {
     multipliers.push_back(new HighKingMaulgarWaitForDpsMultiplier(botAI));
     multipliers.push_back(new HighKingMaulgarDisableTankAssistMultiplier(botAI));
+    multipliers.push_back(new HighKingMaulgarDisableMovementActionsMultiplier(botAI));
     multipliers.push_back(new HighKingMaulgarAvoidWhirlwindMultiplier(botAI));
     multipliers.push_back(new HighKingMaulgarDisableArcaneShotOnKroshMultiplier(botAI));
     multipliers.push_back(new HighKingMaulgarDisableMageTankAoeMultiplier(botAI));

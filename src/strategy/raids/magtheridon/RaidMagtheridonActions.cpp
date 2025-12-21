@@ -61,7 +61,7 @@ bool MagtheridonMainTankAttackFirstThreeChannelersAction::Execute(Event event)
 
     SetRtiTarget(botAI, rtiName, currentTarget);
 
-    if (currentTarget && bot->GetVictim() != currentTarget)
+    if (currentTarget && bot->GetTarget() != currentTarget->GetGUID())
         return Attack(currentTarget);
 
     return false;
@@ -76,7 +76,7 @@ bool MagtheridonFirstAssistTankAttackNWChannelerAction::Execute(Event event)
     MarkTargetWithDiamond(bot, channelerDiamond);
     SetRtiTarget(botAI, "diamond", channelerDiamond);
 
-    if (bot->GetVictim() != channelerDiamond)
+    if (bot->GetTarget() != channelerDiamond->GetGUID())
         return Attack(channelerDiamond);
 
     if (channelerDiamond->GetVictim() == bot)
@@ -108,7 +108,7 @@ bool MagtheridonSecondAssistTankAttackNEChannelerAction::Execute(Event event)
     MarkTargetWithTriangle(bot, channelerTriangle);
     SetRtiTarget(botAI, "triangle", channelerTriangle);
 
-    if (bot->GetVictim() != channelerTriangle)
+    if (bot->GetTarget() != channelerTriangle->GetGUID())
         return Attack(channelerTriangle);
 
     if (channelerTriangle->GetVictim() == bot)
@@ -345,7 +345,7 @@ bool MagtheridonMainTankPositionBossAction::Execute(Event event)
     MarkTargetWithCross(bot, magtheridon);
     SetRtiTarget(botAI, "cross", magtheridon);
 
-    if (bot->GetVictim() != magtheridon)
+    if (bot->GetTarget() != magtheridon->GetGUID())
         return Attack(magtheridon);
 
     if (magtheridon->GetVictim() == bot && bot->IsWithinMeleeRange(magtheridon))

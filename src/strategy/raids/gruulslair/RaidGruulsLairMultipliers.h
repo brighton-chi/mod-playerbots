@@ -19,6 +19,14 @@ public:
     float GetValue(Action* action) override;
 };
 
+class HighKingMaulgarDisableMovementActionsMultiplier : public Multiplier
+{
+public:
+    HighKingMaulgarDisableMovementActionsMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "high king maulgar disable movement actions multiplier") {}
+    float GetValue(Action* action) override;
+};
+
 class HighKingMaulgarAvoidWhirlwindMultiplier : public Multiplier
 {
 public:

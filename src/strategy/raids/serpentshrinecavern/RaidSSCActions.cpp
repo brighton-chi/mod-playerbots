@@ -104,7 +104,7 @@ bool HydrossTheUnstablePositionFrostTankAction::Execute(Event event)
         MarkTargetWithSquare(bot, hydross);
         SetRtiTarget(botAI, "square", hydross);
 
-        if (bot->GetVictim() != hydross)
+        if (bot->GetTarget() != hydross->GetGUID())
             return Attack(hydross);
 
         if (hydross->GetVictim() == bot && bot->IsWithinMeleeRange(hydross))
@@ -181,7 +181,7 @@ bool HydrossTheUnstablePositionNatureTankAction::Execute(Event event)
         MarkTargetWithTriangle(bot, hydross);
         SetRtiTarget(botAI, "triangle", hydross);
 
-        if (bot->GetVictim() != hydross)
+        if (bot->GetTarget() != hydross->GetGUID())
             return Attack(hydross);
 
         if (hydross->GetVictim() == bot && bot->IsWithinMeleeRange(hydross))
@@ -496,7 +496,7 @@ bool TheLurkerBelowPositionMainTankAction::Execute(Event event)
     if (!lurker)
         return false;
 
-    if (bot->GetVictim() != lurker)
+    if (bot->GetTarget() != lurker->GetGUID())
         return Attack(lurker);
 
     const Position& position = LURKER_MAIN_TANK_POSITION;
@@ -633,7 +633,7 @@ bool TheLurkerBelowTanksPickUpAddsAction::Execute(Event event)
         {
             MarkTargetWithIcon(bot, guardian, rtiIndices[i]);
             SetRtiTarget(botAI, rtiNames[i], guardian);
-            if (bot->GetVictim() != guardian)
+            if (bot->GetTarget() != guardian->GetGUID())
                 return Attack(guardian);
         }
     }
@@ -934,7 +934,7 @@ bool FathomLordKarathressMainTankPositionBossAction::Execute(Event event)
     MarkTargetWithTriangle(bot, karathress);
     SetRtiTarget(botAI, "triangle", karathress);
 
-    if (bot->GetVictim() != karathress)
+    if (bot->GetTarget() != karathress->GetGUID())
         return Attack(karathress);
 
     if (karathress->GetVictim() == bot && bot->IsWithinMeleeRange(karathress))
@@ -970,7 +970,7 @@ bool FathomLordKarathressFirstAssistTankPositionCaribdisAction::Execute(Event ev
     MarkTargetWithDiamond(bot, caribdis);
     SetRtiTarget(botAI, "diamond", caribdis);
 
-    if (bot->GetVictim() != caribdis)
+    if (bot->GetTarget() != caribdis->GetGUID())
         return Attack(caribdis);
 
     if (caribdis->GetVictim() == bot)
@@ -1005,7 +1005,7 @@ bool FathomLordKarathressSecondAssistTankPositionSharkkisAction::Execute(Event e
     MarkTargetWithStar(bot, sharkkis);
     SetRtiTarget(botAI, "star", sharkkis);
 
-    if (bot->GetVictim() != sharkkis)
+    if (bot->GetTarget() != sharkkis->GetGUID())
         return Attack(sharkkis);
 
     if (sharkkis->GetVictim() == bot && bot->IsWithinMeleeRange(sharkkis))
@@ -1040,7 +1040,7 @@ bool FathomLordKarathressThirdAssistTankPositionTidalvessAction::Execute(Event e
     MarkTargetWithCircle(bot, tidalvess);
     SetRtiTarget(botAI, "circle", tidalvess);
 
-    if (bot->GetVictim() != tidalvess)
+    if (bot->GetTarget() != tidalvess->GetGUID())
         return Attack(tidalvess);
 
     if (tidalvess->GetVictim() == bot && bot->IsWithinMeleeRange(tidalvess))
@@ -1335,7 +1335,7 @@ bool MorogrimTidewalkerMoveBossToTankPositionAction::Execute(Event event)
     if (!tidewalker)
         return false;
 
-    if (bot->GetVictim() != tidewalker)
+    if (bot->GetTarget() != tidewalker->GetGUID())
         return Attack(tidewalker);
 
     if (tidewalker->GetVictim() == bot && bot->IsWithinMeleeRange(tidewalker))
@@ -1504,7 +1504,7 @@ bool LadyVashjMainTankPositionBossAction::Execute(Event event)
     if (!vashj)
         return false;
 
-    if (bot->GetVictim() != vashj)
+    if (bot->GetTarget() != vashj->GetGUID())
         return Attack(vashj);
 
     if (vashj->GetVictim() == bot && bot->IsWithinMeleeRange(vashj))
@@ -1990,7 +1990,7 @@ bool LadyVashjTankAttackAndMoveAwayStriderAction::Execute(Event event)
         if (!bot->HasAura(SPELL_FEAR_WARD))
             bot->AddAura(SPELL_FEAR_WARD, bot);
 
-        if (botAI->IsAssistTankOfIndex(bot, 0) && bot->GetVictim() != strider)
+        if (botAI->IsAssistTankOfIndex(bot, 0) && bot->GetTarget() != strider->GetGUID())
             return Attack(strider);
 
         if (strider->GetVictim() == bot)
@@ -2057,7 +2057,7 @@ bool LadyVashjTeleportToTaintedElementalAction::Execute(Event event)
                         tainted->GetPositionZ(), tainted->GetOrientation());
     }
 
-    if (bot->GetVictim() != tainted)
+    if (bot->GetTarget() != tainted->GetGUID())
     {
         MarkTargetWithStar(bot, tainted);
         SetRtiTarget(botAI, "star", tainted);

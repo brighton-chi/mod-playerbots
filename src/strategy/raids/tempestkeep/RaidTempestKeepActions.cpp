@@ -107,7 +107,7 @@ bool AlarBossTanksMoveBetweenPlatformsAction::PositionMainTank(
                           target.GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
-        else if (mainTank->GetVictim() != alar)
+        else if (mainTank->GetTarget() != alar->GetGUID())
         {
             return Attack(alar);
         }
@@ -143,7 +143,7 @@ bool AlarBossTanksMoveBetweenPlatformsAction::PositionAssistTank(
                           target.GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
-        else if (assistTank->GetVictim() != alar)
+        else if (assistTank->GetTarget() != alar->GetGUID())
         {
             return Attack(alar);
         }
@@ -190,7 +190,7 @@ bool AlarMeleeDpsMoveBetweenPlatformsAction::Execute(Event event)
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
 
-        if (bot->GetVictim() != alar)
+        if (bot->GetTarget() != alar->GetGUID())
             return Attack(alar);
     }
 
@@ -524,7 +524,7 @@ bool AlarSwapTanksOnBossAction::Execute(Event event)
     }
 
     boss_alar* alarAI = dynamic_cast<boss_alar*>(alar->GetAI());
-    if (bot->GetVictim() != alar && alarAI && !alarAI->IsNoMelee())
+    if (bot->GetTarget() != alar->GetGUID() && alarAI && !alarAI->IsNoMelee())
     {
         SetRtiTarget(botAI, "star", alar);
         return Attack(alar);
@@ -612,7 +612,7 @@ bool VoidReaverTanksPositionBossAction::Execute(Event event)
     if (!voidReaver)
         return false;
 
-    if (bot->GetVictim() != voidReaver)
+    if (bot->GetTarget() != voidReaver->GetGUID())
         return Attack(voidReaver);
 
     if (voidReaver->GetVictim() == bot)
@@ -845,7 +845,7 @@ bool HighAstromancerSolarianTargetSolariumPriestsAction::Execute(Event event)
         SetRtiTarget(botAI, "star", targetPriest);
     }
 
-    if (bot->GetVictim() != targetPriest)
+    if (bot->GetTarget() != targetPriest->GetGUID())
         return Attack(targetPriest);
 
     return false;
@@ -910,7 +910,7 @@ bool HighAstromancerSolarianTankVoidwalkerAction::Execute(Event event)
     if (!astromancer)
         return false;
 
-    if (bot->GetVictim() != astromancer)
+    if (bot->GetTarget() != astromancer->GetGUID())
         return Attack(astromancer);
 
     if (astromancer->GetVictim() != bot)
@@ -1172,7 +1172,7 @@ bool KaelthasSunstriderWarlockTankPositionCapernianAction::Execute(Event event)
     MarkTargetWithCircle(bot, capernian);
     SetRtiTarget(botAI, "circle", capernian);
 
-    if (bot->GetVictim() != capernian)
+    if (bot->GetTarget() != capernian->GetGUID())
         return Attack(capernian);
 
     if (capernian->GetVictim() == bot && kaelAI->GetPhase() == PHASE_SINGLE_ADVISOR)
@@ -1408,7 +1408,7 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event eve
                     return botAI->CastSpell("wind shear", staff);
             }
 
-            if (bot->GetVictim() != staff)
+            if (bot->GetTarget() != staff->GetGUID())
                 return Attack(staff);
 
             return false;
@@ -1419,7 +1419,7 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event eve
             MarkTargetWithSkull(bot, mace);
             SetRtiTarget(botAI, "skull", mace);
 
-            if (bot->GetVictim() != mace)
+            if (bot->GetTarget() != mace->GetGUID())
                 return Attack(mace);
 
             return false;
@@ -1430,7 +1430,7 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event eve
             MarkTargetWithSkull(bot, sword);
             SetRtiTarget(botAI, "skull", sword);
 
-            if (bot->GetVictim() != sword)
+            if (bot->GetTarget() != sword->GetGUID())
                 return Attack(sword);
 
             return false;
@@ -1441,7 +1441,7 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event eve
             MarkTargetWithSkull(bot, dagger);
             SetRtiTarget(botAI, "skull", dagger);
 
-            if (bot->GetVictim() != dagger)
+            if (bot->GetTarget() != dagger->GetGUID())
                 return Attack(dagger);
 
             return false;
@@ -1451,7 +1451,7 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event eve
         {
             SetRtiTarget(botAI, "cross", longbow);
 
-            if (bot->GetVictim() != longbow)
+            if (bot->GetTarget() != longbow->GetGUID())
                 return Attack(longbow);
 
             return false;
@@ -1461,7 +1461,7 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event eve
         {
             SetRtiTarget(botAI, "diamond", axe);
 
-            if (bot->GetVictim() != axe)
+            if (bot->GetTarget() != axe->GetGUID())
                 return Attack(axe);
 
             return false;
@@ -1472,7 +1472,7 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event eve
             MarkTargetWithSkull(bot, shield);
             SetRtiTarget(botAI, "skull", shield);
 
-            if (bot->GetVictim() != shield)
+            if (bot->GetTarget() != shield->GetGUID())
                 return Attack(shield);
         }
     }
@@ -1485,17 +1485,17 @@ bool KaelthasSunstriderMoveDevastationAwayAction::Execute(Event event)
     if (!botAI->IsMainTank(bot))
         return false;
 
-    Unit* devastation = AI_VALUE2(Unit*, "find target", "devastation");
-    if (!devastation)
+    Unit* axe = AI_VALUE2(Unit*, "find target", "devastation");
+    if (!axe)
         return false;
 
-    MarkTargetWithDiamond(bot, devastation);
-    SetRtiTarget(botAI, "diamond", devastation);
+    MarkTargetWithDiamond(bot, axe);
+    SetRtiTarget(botAI, "diamond", axe);
 
-    if (bot->GetVictim() != devastation)
-        return Attack(devastation);
+    if (bot->GetTarget() != axe->GetGUID())
+        return Attack(axe);
 
-    if (devastation->GetVictim() == bot)
+    if (axe->GetVictim() == bot)
     {
         const float safeDistance = 10.0f;
         Unit* nearestPlayer = GetNearestNonTankPlayerInRadius(bot, safeDistance);
@@ -1522,7 +1522,7 @@ bool KaelthasSunstriderHunterTurnAwayNetherstrandLongbowAction::Execute(Event ev
     MarkTargetWithCross(bot, longbow);
     SetRtiTarget(botAI, "cross", longbow);
 
-    if (bot->GetVictim() != longbow)
+    if (bot->GetTarget() != longbow->GetGUID())
         return Attack(longbow);
 
     if (longbow->GetVictim() == bot)
@@ -1814,7 +1814,7 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
         MarkTargetWithSquare(bot, thaladred);
         SetRtiTarget(botAI, "square", thaladred);
 
-        if (bot->GetVictim() != thaladred)
+        if (bot->GetTarget() != thaladred->GetGUID())
             return Attack(thaladred);
 
         return false;
@@ -1828,7 +1828,7 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
     {
         SetRtiTarget(botAI, "circle", capernian);
 
-        if (bot->GetVictim() != capernian)
+        if (bot->GetTarget() != capernian->GetGUID())
             return Attack(capernian);
 
         return false;
@@ -1841,7 +1841,7 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
     {
         SetRtiTarget(botAI, "star", sanguinar);
 
-        if (bot->GetVictim() != sanguinar)
+        if (bot->GetTarget() != sanguinar->GetGUID())
             return Attack(sanguinar);
 
         return false;
@@ -1854,7 +1854,7 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
     {
         SetRtiTarget(botAI, "triangle", telonicus);
 
-        if (bot->GetVictim() != telonicus)
+        if (bot->GetTarget() != telonicus->GetGUID())
             return Attack(telonicus);
 
         // Melee DPS positioning: stay at max-ish melee range behind Telonicus (god damn bombs)
@@ -1897,7 +1897,7 @@ bool KaelthasSunstriderMainTankPositionBossAction::Execute(Event event)
     MarkTargetWithStar(bot, kaelthas);
     SetRtiTarget(botAI, "star", kaelthas);
 
-    if (bot->GetVictim() != kaelthas)
+    if (bot->GetTarget() != kaelthas->GetGUID())
         return Attack(kaelthas);
 
     if (kaelthas->GetVictim() == bot && bot->IsWithinMeleeRange(kaelthas))
@@ -2092,7 +2092,7 @@ bool KaelthasSunstriderRoundUpPhoenixesAndFocusDownEggsAction::Execute(Event eve
         if (!targetPhoenix)
             return false;
 
-        if (bot->GetVictim() != targetPhoenix)
+        if (bot->GetTarget() != targetPhoenix->GetGUID())
             return Attack(targetPhoenix);
 
         if (targetPhoenix->GetVictim() == bot)

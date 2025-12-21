@@ -8,8 +8,7 @@ namespace GruulsLairHelpers
 {
     // Olm does not chase properly due to the Core's caster movement issues
     // Thus, the below "OlmTankPosition" is beyond the actual desired tanking location
-    // It is the spot to which the OlmTank runs to to pull Olm to a decent tanking location
-    // "MaulgarRoomCenter" is to keep healers in a centralized location
+    // It is where the OlmTank runs to to pull Olm to a decent tanking location
     const Position MAULGAR_TANK_POSITION  = {  90.686f, 167.047f, -13.234f };
     const Position OLM_TANK_POSITION      = {  87.485f, 234.942f,  -3.635f };
     const Position BLINDEYE_TANK_POSITION = {  99.681f, 213.989f, -10.345f };
@@ -18,28 +17,6 @@ namespace GruulsLairHelpers
     const Position GRUUL_TANK_POSITION    = { 241.238f, 365.025f,  -4.220f };
 
     std::unordered_map<uint32, time_t> maulgarDpsWaitTimer;
-
-    bool IsAnyOgreBossAlive(PlayerbotAI* botAI)
-    {
-        const char* ogreBossNames[] =
-        {
-            "high king maulgar",
-            "kiggler the crazed",
-            "krosh firehand",
-            "olm the summoner",
-            "blindeye the seer"
-        };
-
-        for (const char* name : ogreBossNames)
-        {
-            Unit* boss = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", name)->Get();
-            if (!boss || !boss->IsAlive())
-                continue;
-            return true;
-        }
-
-        return false;
-    }
 
     void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId)
     {
@@ -166,7 +143,7 @@ namespace GruulsLairHelpers
         if (krosh && krosh->IsAlive())
         {
             float dist = sqrt(pow(pos.GetPositionX() - krosh->GetPositionX(), 2) +
-                         pow(pos.GetPositionY() - krosh->GetPositionY(), 2));
+                              pow(pos.GetPositionY() - krosh->GetPositionY(), 2));
             if (dist < kroshSafeDistance)
                 isSafe = false;
         }
@@ -176,7 +153,7 @@ namespace GruulsLairHelpers
         if (botAI->IsRanged(bot) && maulgar && maulgar->IsAlive())
         {
             float dist = sqrt(pow(pos.GetPositionX() - maulgar->GetPositionX(), 2) +
-                         pow(pos.GetPositionY() - maulgar->GetPositionY(), 2));
+                              pow(pos.GetPositionY() - maulgar->GetPositionY(), 2));
             if (dist < maulgarSafeDistance)
                 isSafe = false;
         }
@@ -211,7 +188,7 @@ namespace GruulsLairHelpers
             float destX = candidatePos.m_positionX, destY = candidatePos.m_positionY,
                   destZ = candidatePos.m_positionZ;
             if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, bot->GetPositionX(), bot->GetPositionY(),
-                bot->GetPositionZ(), destX, destY, destZ, true))
+                                                                bot->GetPositionZ(), destX, destY, destZ, true))
                 continue;
 
             if (destX != candidatePos.m_positionX || destY != candidatePos.m_positionY)

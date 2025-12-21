@@ -4,6 +4,7 @@
 #include "ChooseTargetActions.h"
 #include "DruidBearActions.h"
 #include "DruidCatActions.h"
+#include "FollowActions.h"
 #include "GenericSpellActions.h"
 #include "HunterActions.h"
 #include "MageActions.h"
@@ -51,6 +52,24 @@ float HighKingMaulgarDisableTankAssistMultiplier::GetValue(Action* action)
     {
         if (bot->IsInCombat() &&
             dynamic_cast<TankAssistAction*>(action))
+            return 0.0f;
+    }
+
+    return 1.0f;
+}
+
+float HighKingMaulgarDisableMovementActionsMultiplier::GetValue(Action* action)
+{
+    Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
+    if (maulgar)
+    {
+        if (dynamic_cast<FollowAction*>(action) ||
+            dynamic_cast<FleeAction*>(action))
+            return 0.0f;
+
+        if (dynamic_cast<CombatFormationMoveAction*>(action) &&
+            !dynamic_cast<TankFaceAction*>(action) &&
+            !dynamic_cast<SetBehindTargetAction*>(action))
             return 0.0f;
     }
 

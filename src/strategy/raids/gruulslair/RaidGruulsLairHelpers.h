@@ -11,20 +11,20 @@ namespace GruulsLairHelpers
     enum GruulsLairSpells
     {
         // High King Maulgar
-        SPELL_WHIRLWIND = 33238,
+        SPELL_WHIRLWIND      = 33238,
 
         // Krosh Firehand
-        SPELL_SPELL_SHIELD = 33054,
+        SPELL_SPELL_SHIELD   = 33054,
 
         // Hunter
-        SPELL_MISDIRECTION = 35079,
+        SPELL_MISDIRECTION   = 35079,
 
         // Warlock
-        SPELL_BANISH = 18647, // Rank 2
+        SPELL_BANISH         = 18647, // Rank 2
 
         // Gruul the Dragonkiller
-        SPELL_GROUND_SLAM_1 = 33525,
-        SPELL_GROUND_SLAM_2 = 39187,
+        SPELL_GROUND_SLAM_1  = 33525,
+        SPELL_GROUND_SLAM_2  = 39187,
     };
 
     enum GruulsLairNPCs
@@ -43,7 +43,6 @@ namespace GruulsLairHelpers
     extern const Position MAULGAR_ROOM_CENTER;
     extern const Position GRUUL_TANK_POSITION;
 
-    bool IsAnyOgreBossAlive(PlayerbotAI* botAI);
     void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);
     void MarkTargetWithSquare(Player* bot, Unit* target);
     void MarkTargetWithStar(Player* bot, Unit* target);
