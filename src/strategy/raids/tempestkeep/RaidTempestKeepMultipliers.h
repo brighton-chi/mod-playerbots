@@ -67,6 +67,14 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class KaelthasSunstriderKiteThaladredMultiplier : public Multiplier
+{
+public:
+    KaelthasSunstriderKiteThaladredMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "kael'thas sunstrider kite thaladred multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
 class KaelthasSunstriderWaitForDpsMultiplier : public Multiplier
 {
 public:
@@ -91,11 +99,19 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class KaelthasSunstriderKiteThaladredMultiplier : public Multiplier
+class KaelthasSunstriderManageTankTargetingMultiplier : public Multiplier
 {
 public:
-    KaelthasSunstriderKiteThaladredMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "kael'thas sunstrider kite thaladred multiplier") {}
+    KaelthasSunstriderManageTankTargetingMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "kael'thas sunstrider manage tank targeting multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
+class KaelthasSunstriderDisableDisperseMultiplier : public Multiplier
+{
+public:
+    KaelthasSunstriderDisableDisperseMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "kael'thas sunstrider disable disperse multiplier") {}
     virtual float GetValue(Action* action);
 };
 

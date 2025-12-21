@@ -500,7 +500,7 @@ bool AlarDiveBombSpreadAndStayBackAction::Execute(Event event)
         if (!group)
             return false;
 
-        GuidVector members = AI_VALUE(GuidVector, "group members");
+        auto const& members = AI_VALUE(GuidVector, "group members");
         Unit* closestMember = nullptr;
         float closestDist = std::numeric_limits<float>::max();
 
@@ -804,7 +804,7 @@ bool HighAstromancerSolarianTargetSolariumPriestsAction::Execute(Event event)
 std::vector<Unit*> HighAstromancerSolarianTargetSolariumPriestsAction::GetSolariumPriests()
 {
     std::vector<Unit*> solariumPriests;
-    const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
+    auto const& npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
     for (auto const& npcGuid : npcs)
     {
         Unit* unit = botAI->GetUnit(npcGuid);
@@ -1314,9 +1314,9 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event eve
     if (longBowTank && longBowTank == bot)
         return false;
 
-    float currentDisperse = AI_VALUE(float, "disperse distance");
+    /* float currentDisperse = AI_VALUE(float, "disperse distance");
     if (currentDisperse > 0.0f)
-        RESET_AI_VALUE(float, "disperse distance");
+        RESET_AI_VALUE(float, "disperse distance"); */
 
     // Clear targets for assist tanks at start of weapon phase (better to pick up adds?)
     if (botAI->IsAssistTank(bot))
@@ -1537,27 +1537,30 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::ShouldBotLootWeapon(uint32 we
             return botAI->IsHeal(bot);
 
         case NPC_DEVASTATION:
-            return (bot->getClass() == CLASS_WARRIOR && tab == 0) ||
-                   (botAI->IsDps(bot) && (bot->getClass() == CLASS_PALADIN ||
-                    bot->getClass() == CLASS_DEATH_KNIGHT));
+            return (bot->getClass() == CLASS_WARRIOR && tab == WARRIOR_TAB_ARMS) ||
+                   (bot->getClass() == CLASS_PALADIN && tab == PALADIN_TAB_RETRIBUTION) ||
+                   (botAI->IsDps(bot) && bot->getClass() == CLASS_DEATH_KNIGHT);
 
         case NPC_INFINITY_BLADES:
             return bot->getClass() == CLASS_ROGUE ||
                    bot->getClass() == CLASS_HUNTER ||
-                   (bot->getClass() == CLASS_WARRIOR && tab != 0) ||
-                   (bot->getClass() == CLASS_SHAMAN && tab == 1);
+                   (bot->getClass() == CLASS_SHAMAN && tab == SHAMAN_TAB_ENHANCEMENT) ||
+                   (bot->getClass() == CLASS_WARRIOR && tab == WARRIOR_TAB_PROTECTION);
 
         case NPC_WARP_SLICER:
-            return (bot->getClass() == CLASS_ROGUE && tab != 0) ||
-                   (bot->getClass() == CLASS_WARRIOR && tab == 1);
+            return bot->getClass() == CLASS_ROGUE && tab != ROGUE_TAB_ASSASSINATION ||
+                   (botAI->IsTank(bot) &&
+                    (bot->getClass() == CLASS_DEATH_KNIGHT ||
+                     bot->getClass() == CLASS_PALADIN));
 
         case NPC_STAFF_OF_DISINTEGRATION:
             return (botAI->IsRangedDps(bot) && bot->getClass() != CLASS_HUNTER) ||
-                   (bot->getClass() == CLASS_DRUID && tab == 1);
+                   (bot->getClass() == CLASS_DRUID && tab == DRUID_TAB_FERAL);
 
         case NPC_PHASESHIFT_BULWARK:
             return botAI->IsTank(bot) &&
-                   (bot->getClass() == CLASS_PALADIN || bot->getClass() == CLASS_WARRIOR ||
+                   (bot->getClass() == CLASS_PALADIN ||
+                    bot->getClass() == CLASS_WARRIOR ||
                     bot->getClass() == CLASS_DEATH_KNIGHT);
 
         default:
@@ -1567,7 +1570,7 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::ShouldBotLootWeapon(uint32 we
 
 bool KaelthasSunstriderLootLegendaryWeaponsAction::LootWeapon(uint32 weaponEntry, uint32 itemId, const char* weaponName)
 {
-    GuidVector corpses = context->GetValue<GuidVector>("nearest corpses")->Get();
+    auto const& corpses = context->GetValue<GuidVector>("nearest corpses")->Get();
     const float maxLootRange = sPlayerbotAIConfig->lootDistance;
 
     for (auto const& guid : corpses)
@@ -1765,9 +1768,10 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
         return false;
     }
 
-    // Target priority 2: Capernian for ranged
+    // Target priority 2: Capernian for ranged, except longbow tank (in practice, Phase 3 only)
     Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
-    if (capernian && capernian->IsAlive() && botAI->IsRangedDps(bot) &&
+    Player* longBowTank = GetNetherstrandLongbowTank(botAI, bot);
+    if (capernian && capernian->IsAlive() && botAI->IsRangedDps(bot) && (!longBowTank || bot != longBowTank) &&
         !capernian->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) && !capernian->HasAura(SPELL_PERMANENT_FEIGN_DEATH))
     {
         SetRtiTarget(botAI, "circle", capernian);
@@ -1869,9 +1873,9 @@ bool KaelthasSunstriderMainTankPositionBossAction::Execute(Event event)
 bool KaelthasSunstriderAvoidFlameStrikeAction::Execute(Event event)
 {
     // Disable disperse in Phase 4--could insert this somewhere else instead
-    float currentDisperse = AI_VALUE(float, "disperse distance");
+    /* float currentDisperse = AI_VALUE(float, "disperse distance");
     if (currentDisperse > 0.0f)
-        RESET_AI_VALUE(float, "disperse distance");
+        RESET_AI_VALUE(float, "disperse distance"); */
 
     std::vector<Unit*> flameStrikes = GetAllFlameStrikeTriggers(botAI, bot);
     if (flameStrikes.empty())
@@ -1986,7 +1990,7 @@ bool KaelthasSunstriderAvoidFlameStrikeAction::IsPathSafeFromFlameStrikes(
 std::vector<Unit*> KaelthasSunstriderAvoidFlameStrikeAction::GetAllFlameStrikeTriggers(PlayerbotAI* botAI, Player* bot)
 {
     std::vector<Unit*> flameStrikeTriggers;
-    const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
+    auto const& npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
     for (auto const& npcGuid : npcs)
     {
         const float maxSearchRadius = 45.0f;
@@ -2003,7 +2007,7 @@ bool KaelthasSunstriderRoundUpPhoenixesAndFocusDownEggsAction::Execute(Event eve
     if (botAI->IsAssistTankOfIndex(bot, 0) || botAI->IsAssistTankOfIndex(bot, 1))
     {
         std::vector<Unit*> phoenixes;
-        const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
+        auto const& npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
         for (auto const& npcGuid : npcs)
         {
             Unit* unit = botAI->GetUnit(npcGuid);

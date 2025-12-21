@@ -252,11 +252,22 @@ bool HighAstromancerSolarianBossCastsPsychicScreamTrigger::IsActive()
 
 bool KaelthasSunstriderThaladredIsFixatedOnBotTrigger::IsActive()
 {
-    if (botAI->IsTank(bot))
+    Unit* thaladred = AI_VALUE2(Unit*, "find target", "thaladred the darkener");
+    if (!thaladred || thaladred->GetVictim() != bot)
         return false;
 
-    Unit* thaladred = AI_VALUE2(Unit*, "find target", "thaladred the darkener");
-    return thaladred && thaladred->GetVictim() == bot;
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    if (!kaelthas)
+        return false;
+
+    boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
+    if (!kaelAI)
+        return false;
+
+    if (botAI->IsTank(bot) && kaelAI->GetPhase() == PHASE_ALL_ADVISORS)
+        return false;
+
+    return true;
 }
 
 bool KaelthasSunstriderPullingTankableAdvisorsTrigger::IsActive()
