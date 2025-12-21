@@ -44,11 +44,8 @@ public:
             &RaidGruulsLairTriggerContext::high_king_maulgar_need_to_manage_dps_timer;
 
         // Gruul the Dragonkiller
-        creators["gruul the dragonkiller boss engaged by main tank"] =
-            &RaidGruulsLairTriggerContext::gruul_the_dragonkiller_boss_engaged_by_main_tank;
-
-        creators["gruul the dragonkiller boss engaged by range"] =
-            &RaidGruulsLairTriggerContext::gruul_the_dragonkiller_boss_engaged_by_range;
+        creators["gruul the dragonkiller boss is active"] =
+            &RaidGruulsLairTriggerContext::gruul_the_dragonkiller_boss_is_active;
 
         creators["gruul the dragonkiller incoming shatter"] =
             &RaidGruulsLairTriggerContext::gruul_the_dragonkiller_incoming_shatter;
@@ -89,11 +86,8 @@ private:
         PlayerbotAI* botAI) { return new HighKingMaulgarNeedToManageDpsTimerTrigger(botAI); }
 
     // Gruul the Dragonkiller
-    static Trigger* gruul_the_dragonkiller_boss_engaged_by_main_tank(
-        PlayerbotAI* botAI) { return new GruulTheDragonkillerBossEngagedByMainTankTrigger(botAI); }
-
-    static Trigger* gruul_the_dragonkiller_boss_engaged_by_range(
-        PlayerbotAI* botAI) { return new GruulTheDragonkillerBossEngagedByRangeTrigger(botAI); }
+    static Trigger* gruul_the_dragonkiller_boss_is_active(
+        PlayerbotAI* botAI) { return new GruulTheDragonkillerBossIsActiveTrigger(botAI); }
 
     static Trigger* gruul_the_dragonkiller_incoming_shatter(
         PlayerbotAI* botAI) { return new GruulTheDragonkillerIncomingShatterTrigger(botAI); }

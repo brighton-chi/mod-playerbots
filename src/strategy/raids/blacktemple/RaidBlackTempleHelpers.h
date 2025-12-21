@@ -67,7 +67,7 @@ namespace BlackTempleHelpers
     bool IsInstanceTimerManager(PlayerbotAI* botAI, Player* bot);
 
     // High Warlord Naj'entus
-    extern Position NAJENTUS_TANK_POSITION;
+    extern const Position NAJENTUS_TANK_POSITION;
 
     // Supremus
 

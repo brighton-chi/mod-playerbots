@@ -648,23 +648,21 @@ bool AzgalorDisperseRangedAction::Execute(Event event)
     if (!azgalor)
         return false;
 
+    const uint32 minInterval = 1000;
+
     // Flee if within 25 yards of Azgalor
     if (bot->GetExactDist2d(azgalor) < 25.0f)
-        return FleePosition(
-            Position(azgalor->GetPositionX(), azgalor->GetPositionY(), azgalor->GetPositionZ()), 25.0f, 1000);
+    {
+        return FleePosition(Position(azgalor->GetPositionX(), azgalor->GetPositionY(),
+                                     azgalor->GetPositionZ()), 25.0f, minInterval);
+    }
 
     // Flee if within 6 yards of any other player
-    Group* group = bot->GetGroup();
-    if (group)
+    Unit* nearestPlayer = GetNearestPlayerInRadius(bot, 6.0f);
+    if (nearestPlayer)
     {
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || member == bot || !member->IsAlive())
-                continue;
-            if (bot->GetExactDist2d(member) < 6.0f)
-                return FleePosition(Position(member->GetPositionX(), member->GetPositionY(), member->GetPositionZ()), 6.0f, 1000);
-        }
+        return FleePosition(Position(nearestPlayer->GetPositionX(), nearestPlayer->GetPositionY(),
+                                     nearestPlayer->GetPositionZ()), 6.0f, minInterval);
     }
 
     return false;

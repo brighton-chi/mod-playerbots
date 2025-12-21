@@ -74,23 +74,21 @@ bool HighWarlordNajentusDisperseRangedAction::Execute(Event event)
     if (!najentus)
         return false;
 
+    const uint32 minInterval = 1000;
+
     // Flee if within 10 yards of Naj'entus
     if (bot->GetExactDist2d(najentus) < 10.0f)
-        return FleePosition(
-            Position(najentus->GetPositionX(), najentus->GetPositionY(), najentus->GetPositionZ()), 10.0f, 1000);
+    {
+        return FleePosition(Position(najentus->GetPositionX(), najentus->GetPositionY(),
+                                     najentus->GetPositionZ()), 10.0f, minInterval);
+    }
 
     // Flee if within 7 yards of any other player
-    Group* group = bot->GetGroup();
-    if (group)
+    Unit* nearestPlayer = GetNearestPlayerInRadius(bot, 7.0f);
+    if (nearestPlayer)
     {
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || member == bot || !member->IsAlive())
-                continue;
-            if (bot->GetExactDist2d(member) < 7.0f)
-                return FleePosition(Position(member->GetPositionX(), member->GetPositionY(), member->GetPositionZ()), 7.0f, 1000);
-        }
+        return FleePosition(Position(nearestPlayer->GetPositionX(), nearestPlayer->GetPositionY(),
+                                     nearestPlayer->GetPositionZ()), 7.0f, minInterval);
     }
 
     return false;

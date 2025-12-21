@@ -548,30 +548,15 @@ bool GruulTheDragonkillerSpreadRangedAction::Execute(Event event)
     }
 
     const Position& position = GRUUL_TANK_POSITION;
-    const float centerX = position.GetPositionX();
-    const float centerY = position.GetPositionY();
     const float minRadius = 25.0f;
     const float maxRadius = 40.0f;
 
     std::vector<Player*> members;
-    Player* closestMember = nullptr;
-    float closestDist = std::numeric_limits<float>::max();
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive())
-            continue;
-
-        members.push_back(member);
-        if (member != bot)
-        {
-            float dist = bot->GetExactDist2d(member);
-            if (dist < closestDist)
-            {
-                closestDist = dist;
-                closestMember = member;
-            }
-        }
+        if (member && member->IsAlive() && botAI->IsRanged(member))
+            members.push_back(member);
     }
 
     if (!initialPositions.count(bot->GetGUID()))
@@ -583,8 +568,8 @@ bool GruulTheDragonkillerSpreadRangedAction::Execute(Event event)
         float angle = 2 * M_PI * botIndex / count;
         float radius = minRadius + static_cast<float>(rand()) /
                        static_cast<float>(RAND_MAX) * (maxRadius - minRadius);
-        float targetX = centerX + radius * cos(angle);
-        float targetY = centerY + radius * sin(angle);
+        float targetX = position.GetPositionX() + radius * cos(angle);
+        float targetY = position.GetPositionY() + radius * sin(angle);
 
         initialPositions[bot->GetGUID()] = Position(targetX, targetY, position.GetPositionZ());
         hasReachedInitialPosition[bot->GetGUID()] = false;
@@ -610,13 +595,24 @@ bool GruulTheDragonkillerSpreadRangedAction::Execute(Event event)
         hasReachedInitialPosition[bot->GetGUID()] = true;
     }
 
-    const float minSpreadDistance = 10.0f;
-    const float movementThreshold = 2.0f;
+    Player* closestMember = nullptr;
+    float closestDist = std::numeric_limits<float>::max();
+    for (auto const& member : members)
+    {
+        float distance = bot->GetExactDist(member);
+        if (distance < closestDist)
+        {
+            closestDist = distance;
+            closestMember = member;
+        }
+    }
 
-    if (closestMember && closestDist < minSpreadDistance - movementThreshold)
+    const float minSpreadDistance = 10.0f;
+    const uint32 minInterval = 1000;
+    if (closestMember && closestDist < minSpreadDistance)
     {
         return FleePosition(Position(closestMember->GetPositionX(), closestMember->GetPositionY(),
-                            closestMember->GetPositionZ()), minSpreadDistance, 0);
+                                     closestMember->GetPositionZ()), minSpreadDistance, minInterval);
     }
 
     return false;

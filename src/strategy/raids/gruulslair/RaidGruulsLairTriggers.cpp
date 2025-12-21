@@ -141,15 +141,14 @@ bool HighKingMaulgarNeedToManageDpsTimerTrigger::IsActive()
     if (!maulgar)
         return false;
 
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    if (Group* group = bot->GetGroup())
     {
-        Player* member = ref->GetSource();
-        if (member && member->IsAlive() && botAI->IsDps(member) && GET_PLAYERBOT_AI(member))
-            return member == bot;
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (member && member->IsAlive() && botAI->IsDps(member) && GET_PLAYERBOT_AI(member))
+                return member == bot;
+        }
     }
 
     return false;
@@ -157,25 +156,16 @@ bool HighKingMaulgarNeedToManageDpsTimerTrigger::IsActive()
 
 // Gruul the Dragonkiller Triggers
 
-bool GruulTheDragonkillerBossEngagedByMainTankTrigger::IsActive()
+bool GruulTheDragonkillerBossIsActiveTrigger::IsActive()
 {
     Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
-
-    return gruul && gruul->IsAlive() && botAI->IsMainTank(bot);
-}
-
-bool GruulTheDragonkillerBossEngagedByRangeTrigger::IsActive()
-{
-    Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
-
-    return gruul && gruul->IsAlive() && botAI->IsRanged(bot);
+    return gruul != nullptr;
 }
 
 bool GruulTheDragonkillerIncomingShatterTrigger::IsActive()
 {
     Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
 
-    return gruul && gruul->IsAlive() &&
-           (bot->HasAura(SPELL_GROUND_SLAM_1) ||
+    return gruul && (bot->HasAura(SPELL_GROUND_SLAM_1) ||
             bot->HasAura(SPELL_GROUND_SLAM_2));
 }
