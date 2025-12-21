@@ -44,8 +44,8 @@ public:
             &RaidGruulsLairActionContext::high_king_maulgar_manage_dps_timer;
 
         // Gruul the Dragonkiller
-        creators["gruul the dragonkiller main tank position boss"] =
-            &RaidGruulsLairActionContext::gruul_the_dragonkiller_main_tank_position_boss;
+        creators["gruul the dragonkiller tank position boss"] =
+            &RaidGruulsLairActionContext::gruul_the_dragonkiller_tank_position_boss;
 
         creators["gruul the dragonkiller spread ranged"] =
             &RaidGruulsLairActionContext::gruul_the_dragonkiller_spread_ranged;
@@ -90,8 +90,8 @@ private:
         PlayerbotAI* botAI) { return new HighKingMaulgarManageDpsTimerAction(botAI); }
 
     // Gruul the Dragonkiller
-    static Action* gruul_the_dragonkiller_main_tank_position_boss(
-        PlayerbotAI* botAI) { return new GruulTheDragonkillerMainTankPositionBossAction(botAI); }
+    static Action* gruul_the_dragonkiller_tank_position_boss(
+        PlayerbotAI* botAI) { return new GruulTheDragonkillerTankPositionBossAction(botAI); }
 
     static Action* gruul_the_dragonkiller_spread_ranged(
         PlayerbotAI* botAI) { return new GruulTheDragonkillerSpreadRangedAction(botAI); }

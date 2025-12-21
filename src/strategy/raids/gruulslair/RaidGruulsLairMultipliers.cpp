@@ -49,7 +49,7 @@ float HighKingMaulgarDisableTankAssistMultiplier::GetValue(Action* action)
     Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
     if (maulgar)
     {
-        if (bot->GetVictim() != nullptr &&
+        if (bot->IsInCombat() &&
             dynamic_cast<TankAssistAction*>(action))
             return 0.0f;
     }

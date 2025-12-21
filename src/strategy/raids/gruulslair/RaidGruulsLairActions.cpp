@@ -181,8 +181,10 @@ bool HighKingMaulgarAssignDpsPriorityAction::Execute(Event event)
 {
     // Target priority 1: Blindeye
     Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
-    if (blindeye && blindeye->IsAlive())
+    if (blindeye)
     {
+        SetRtiTarget(botAI, "star", blindeye);
+
         Position safePos;
         if (TryGetNewSafePosition(botAI, bot, safePos))
         {
@@ -192,19 +194,16 @@ bool HighKingMaulgarAssignDpsPriorityAction::Execute(Event event)
                           safePos.GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
-
-        SetRtiTarget(botAI, "star", blindeye);
-
-        if (bot->GetTarget() != blindeye->GetGUID())
-            return Attack(blindeye);
 
         return false;
     }
 
     // Target priority 2: Olm
     Unit* olm = AI_VALUE2(Unit*, "find target", "olm the summoner");
-    if (olm && olm->IsAlive())
+    if (olm)
     {
+        SetRtiTarget(botAI, "circle", olm);
+
         Position safePos;
         if (TryGetNewSafePosition(botAI, bot, safePos))
         {
@@ -214,19 +213,16 @@ bool HighKingMaulgarAssignDpsPriorityAction::Execute(Event event)
                           safePos.GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
-
-        SetRtiTarget(botAI, "circle", olm);
-
-        if (bot->GetTarget() != olm->GetGUID())
-            return Attack(olm);
 
         return false;
     }
 
     // Target priority 3a: Krosh (ranged only)
     Unit* krosh = AI_VALUE2(Unit*, "find target", "krosh firehand");
-    if (krosh && krosh->IsAlive() && botAI->IsRanged(bot))
+    if (krosh && botAI->IsRangedDps(bot))
     {
+        SetRtiTarget(botAI, "triangle", krosh);
+
         Position safePos;
         if (TryGetNewSafePosition(botAI, bot, safePos))
         {
@@ -236,19 +232,16 @@ bool HighKingMaulgarAssignDpsPriorityAction::Execute(Event event)
                           safePos.GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
-
-        SetRtiTarget(botAI, "triangle", krosh);
-
-        if (bot->GetTarget() != krosh->GetGUID())
-            return Attack(krosh);
 
         return false;
     }
 
     // Target priority 3b: Kiggler
     Unit* kiggler = AI_VALUE2(Unit*, "find target", "kiggler the crazed");
-    if (kiggler && kiggler->IsAlive())
+    if (kiggler)
     {
+        SetRtiTarget(botAI, "diamond", kiggler);
+
         Position safePos;
         if (TryGetNewSafePosition(botAI, bot, safePos))
         {
@@ -258,19 +251,16 @@ bool HighKingMaulgarAssignDpsPriorityAction::Execute(Event event)
                           safePos.GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
-
-        SetRtiTarget(botAI, "diamond", kiggler);
-
-        if (bot->GetTarget() != kiggler->GetGUID())
-            return Attack(kiggler);
 
         return false;
     }
 
     // Target priority 4: Maulgar
     Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
-    if (maulgar && maulgar->IsAlive())
+    if (maulgar)
     {
+        SetRtiTarget(botAI, "square", maulgar);
+
         Position safePos;
         if (TryGetNewSafePosition(botAI, bot, safePos))
         {
@@ -280,11 +270,6 @@ bool HighKingMaulgarAssignDpsPriorityAction::Execute(Event event)
                           safePos.GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
-
-        SetRtiTarget(botAI, "square", maulgar);
-
-        if (bot->GetTarget() != maulgar->GetGUID())
-            return Attack(maulgar);
     }
 
     return false;
@@ -500,8 +485,11 @@ bool HighKingMaulgarManageDpsTimerAction::Execute(Event event)
 // Gruul the Dragonkiller Actions
 
 // Position in center of the room
-bool GruulTheDragonkillerMainTankPositionBossAction::Execute(Event event)
+bool GruulTheDragonkillerTankPositionBossAction::Execute(Event event)
 {
+    if (!botAI->IsTank(bot))
+        return false;
+
     Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
 
     if (bot->GetTarget() != gruul->GetGUID())
@@ -533,6 +521,9 @@ bool GruulTheDragonkillerMainTankPositionBossAction::Execute(Event event)
 // Ranged should spread out 10 yards from each other
 bool GruulTheDragonkillerSpreadRangedAction::Execute(Event event)
 {
+    if (!botAI->IsRanged(bot))
+        return false;
+
     Group* group = bot->GetGroup();
     if (!group)
         return false;
@@ -591,7 +582,6 @@ bool GruulTheDragonkillerSpreadRangedAction::Execute(Event event)
             return MoveTo(GRUULS_LAIR_MAP_ID, destX, destY, destZ, false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
-
         hasReachedInitialPosition[bot->GetGUID()] = true;
     }
 
