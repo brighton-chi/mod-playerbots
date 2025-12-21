@@ -53,7 +53,8 @@ bool AlarBossIsFlyingBetweenPlatformsTrigger::IsActive()
 
 bool AlarBossSpawnsEmbersOfAlarTrigger::IsActive()
 {
-    if (!botAI->IsAssistTankOfIndex(bot, 1) && !botAI->IsRangedDps(bot))
+    if (!botAI->IsTank(bot) &&
+        !botAI->IsRangedDps(bot))
         return false;
 
     Unit* ember = AI_VALUE2(Unit*, "find target", "ember of al'ar");

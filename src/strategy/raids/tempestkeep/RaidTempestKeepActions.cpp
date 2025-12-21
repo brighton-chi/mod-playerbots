@@ -245,9 +245,9 @@ bool AlarRangedAndEmberTankMoveUnderPlatformsAction::Execute(Event event)
     return false;
 }
 
-bool AlarSecondAssistTankPickUpEmbersAction::Execute(Event event)
+bool AlarAssistTanksPickUpEmbersAction::Execute(Event event)
 {
-    if (!botAI->IsAssistTankOfIndex(bot, 1))
+    if (!botAI->IsTank(bot))
         return false;
 
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
@@ -266,8 +266,12 @@ bool AlarSecondAssistTankPickUpEmbersAction::Execute(Event event)
     return false;
 }
 
-bool AlarSecondAssistTankPickUpEmbersAction::HandlePhase1Embers(Unit* alar, boss_alar* alarAI)
+// Embers will be tanked by the second assist tank only in Phase 1
+bool AlarAssistTanksPickUpEmbersAction::HandlePhase1Embers(Unit* alar, boss_alar* alarAI)
 {
+    if (!botAI->IsAssistTankOfIndex(bot, 1))
+        return false;
+
     Unit* ember = AI_VALUE2(Unit*, "find target", "ember of al'ar");
     if (!ember)
         return false;
@@ -317,41 +321,65 @@ bool AlarSecondAssistTankPickUpEmbersAction::HandlePhase1Embers(Unit* alar, boss
     return false;
 }
 
-bool AlarSecondAssistTankPickUpEmbersAction::HandlePhase2Embers(Unit* alar, boss_alar* alarAI)
+// One Ember will be tanked by the second assist tank in Phase 2, and the other by
+// the main tank or first assist tank (whichever is not tanking Al'ar)
+bool AlarAssistTanksPickUpEmbersAction::HandlePhase2Embers(Unit* alar, boss_alar* alarAI)
 {
     auto [firstEmber, secondEmber] = GetFirstTwoEmbersOfAlar(botAI);
 
-    if (firstEmber && firstEmber->GetVictim() != bot)
+    if (botAI->IsAssistTankOfIndex(bot, 1) && firstEmber)
     {
-        if (bot->GetTarget() != firstEmber->GetGUID())
-            return Attack(firstEmber);
+        MarkTargetWithSquare(bot, firstEmber);
+        SetRtiTarget(botAI, "square", firstEmber);
 
-        const char* taunts[] = { "taunt", "growl", "hand of reckoning", "dark command" };
-        for (const char* spellName : taunts)
+        if (firstEmber->GetVictim() != bot)
         {
-            if (botAI->CanCastSpell(spellName, firstEmber))
-                return botAI->CastSpell(spellName, firstEmber);
+            if (bot->GetTarget() != firstEmber->GetGUID())
+                return Attack(firstEmber);
+
+            const char* taunts[] = { "taunt", "growl", "hand of reckoning", "dark command" };
+            for (const char* spellName : taunts)
+            {
+                if (botAI->CanCastSpell(spellName, firstEmber))
+                    return botAI->CastSpell(spellName, firstEmber);
+            }
+        }
+        else if (bot->IsWithinMeleeRange(firstEmber))
+        {
+            const float safeDistance = 15.0f;
+            Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
+            if (nearestPlayer)
+                return MoveFromGroup(safeDistance + 1.0f);
         }
     }
-    else if (secondEmber && secondEmber->GetVictim() != bot)
+    else
     {
-        if (bot->GetTarget() != secondEmber->GetGUID())
-            return Attack(secondEmber);
-
-        const char* taunts[] = { "taunt", "growl", "hand of reckoning", "dark command" };
-        for (const char* spellName : taunts)
+        Player* secondEmberTank = GetSecondEmberTank(botAI, alar);
+        if (secondEmberTank && bot == secondEmberTank && secondEmber)
         {
-            if (botAI->CanCastSpell(spellName, secondEmber))
-                return botAI->CastSpell(spellName, secondEmber);
+            MarkTargetWithCircle(bot, secondEmber);
+            SetRtiTarget(botAI, "circle", secondEmber);
+
+            if (secondEmber->GetVictim() != bot)
+            {
+                if (bot->GetTarget() != secondEmber->GetGUID())
+                    return Attack(secondEmber);
+
+                const char* taunts[] = { "taunt", "growl", "hand of reckoning", "dark command" };
+                for (const char* spellName : taunts)
+                {
+                    if (botAI->CanCastSpell(spellName, secondEmber))
+                        return botAI->CastSpell(spellName, secondEmber);
+                }
+            }
+            else if (bot->IsWithinMeleeRange(secondEmber))
+            {
+                const float safeDistance = 15.0f;
+                Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
+                if (nearestPlayer)
+                    return MoveFromGroup(safeDistance + 1.0f);
+            }
         }
-    }
-    else if ((firstEmber && firstEmber->GetVictim() == bot) &&
-             (!secondEmber || secondEmber->GetVictim() == bot))
-    {
-        const float safeDistance = 15.0f;
-        Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
-        if (nearestPlayer)
-            return MoveFromGroup(safeDistance + 1.0f);
     }
 
     return false;
@@ -365,25 +393,29 @@ bool AlarRangedDpsPrioritizeEmbersAction::Execute(Event event)
     auto [firstEmber, secondEmber] = GetFirstTwoEmbersOfAlar(botAI);
 
     const float safeDistance = 15.0f;
-    if (firstEmber && bot->GetDistance2d(firstEmber) < safeDistance)
+    if (firstEmber)
     {
-        bot->AttackStop();
-        bot->InterruptNonMeleeSpells(true);
-        return MoveAway(firstEmber, safeDistance - bot->GetDistance2d(firstEmber));
+        if (bot->GetDistance2d(firstEmber) < safeDistance)
+        {
+            bot->AttackStop();
+            bot->InterruptNonMeleeSpells(true);
+            return MoveAway(firstEmber, safeDistance - bot->GetDistance2d(firstEmber));
+        }
+        SetRtiTarget(botAI, "square", firstEmber);
+        if (bot->GetTarget() != firstEmber->GetGUID())
+            return Attack(firstEmber);
     }
-    if (secondEmber && bot->GetDistance2d(secondEmber) < safeDistance)
+    else if (secondEmber)
     {
-        bot->AttackStop();
-        bot->InterruptNonMeleeSpells(true);
-        return MoveAway(secondEmber, safeDistance - bot->GetDistance2d(secondEmber));
-    }
-
-    Unit* emberTarget = firstEmber ? firstEmber : secondEmber;
-    if (emberTarget)
-    {
-        SetRtiTarget(botAI, "square", emberTarget);
-        if (bot->GetTarget() != emberTarget->GetGUID())
-            return Attack(emberTarget);
+        if (bot->GetDistance2d(secondEmber) < safeDistance)
+        {
+            bot->AttackStop();
+            bot->InterruptNonMeleeSpells(true);
+            return MoveAway(secondEmber, safeDistance - bot->GetDistance2d(secondEmber));
+        }
+        SetRtiTarget(botAI, "circle", secondEmber);
+        if (bot->GetTarget() != secondEmber->GetGUID())
+            return Attack(secondEmber);
     }
     else if (Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar"))
     {
@@ -513,33 +545,44 @@ bool AlarSwapTanksOnBossAction::Execute(Event event)
         }
     }
 
+    if (mainTank && bot == mainTank && !mainTank->HasAura(SPELL_MELT_ARMOR))
+    {
+        SetRtiTarget(botAI, "star", alar);
+
+        if (bot->GetTarget() != alar->GetGUID())
+            return Attack(alar);
+    }
+
     if (mainTank && assistTank && alar->GetVictim() == mainTank &&
         mainTank->HasAura(SPELL_MELT_ARMOR) && bot == assistTank)
     {
+        SetRtiTarget(botAI, "star", alar);
+
         const char* taunts[] = { "taunt", "growl", "hand of reckoning", "dark command" };
         for (const char* spellName : taunts)
         {
             if (botAI->CanCastSpell(spellName, alar))
                 return botAI->CastSpell(spellName, alar);
         }
+
+        if (bot->GetTarget() != alar->GetGUID())
+            return Attack(alar);
     }
 
     if (mainTank && assistTank && alar->GetVictim() == assistTank &&
         assistTank->HasAura(SPELL_MELT_ARMOR) && bot == mainTank)
     {
+        SetRtiTarget(botAI, "star", alar);
+
         const char* taunts[] = { "taunt", "growl", "hand of reckoning", "dark command" };
         for (const char* spellName : taunts)
         {
             if (botAI->CanCastSpell(spellName, alar))
                 return botAI->CastSpell(spellName, alar);
         }
-    }
 
-    boss_alar* alarAI = dynamic_cast<boss_alar*>(alar->GetAI());
-    if (bot->GetTarget() != alar->GetGUID() && alarAI && !alarAI->IsNoMelee())
-    {
-        SetRtiTarget(botAI, "star", alar);
-        return Attack(alar);
+        if (bot->GetTarget() != alar->GetGUID())
+            return Attack(alar);
     }
 
     return false;
@@ -551,11 +594,9 @@ bool AlarAvoidFlamePatchesAndDiveBombsAction::Execute(Event event)
     if (!alar)
         return false;
 
-    // Try to avoid flame patch first
     if (AvoidFlamePatch())
         return true;
 
-    // Then handle dive bomb logic
     if (HandleDiveBomb(alar))
         return true;
 
@@ -631,9 +672,8 @@ bool AlarAvoidFlamePatchesAndDiveBombsAction::HandleDiveBomb(Unit* alar)
 
         if (closestMember)
         {
-            const uint32 minInterval = 1000;
             return FleePosition(Position(closestMember->GetPositionX(), closestMember->GetPositionY(),
-                                         closestMember->GetPositionZ()), 11.0f, minInterval);
+                                         closestMember->GetPositionZ()), 11.0f);
         }
     }
 

@@ -26,8 +26,8 @@ public:
         creators["al'ar ranged and ember tank move under platforms"] =
             &RaidTempestKeepActionContext::alar_ranged_and_ember_tank_move_under_platforms;
 
-        creators["al'ar second assist tank pick up embers"] =
-            &RaidTempestKeepActionContext::alar_second_assist_tank_pick_up_embers;
+        creators["al'ar assist tanks pick up embers"] =
+            &RaidTempestKeepActionContext::alar_assist_tanks_pick_up_embers;
 
         creators["al'ar ranged dps prioritize embers"] =
             &RaidTempestKeepActionContext::alar_ranged_dps_prioritize_embers;
@@ -165,8 +165,8 @@ private:
     static Action* alar_ranged_and_ember_tank_move_under_platforms(
         PlayerbotAI* botAI) { return new AlarRangedAndEmberTankMoveUnderPlatformsAction(botAI); }
 
-    static Action* alar_second_assist_tank_pick_up_embers(
-        PlayerbotAI* botAI) { return new AlarSecondAssistTankPickUpEmbersAction(botAI); }
+    static Action* alar_assist_tanks_pick_up_embers(
+        PlayerbotAI* botAI) { return new AlarAssistTanksPickUpEmbersAction(botAI); }
 
     static Action* alar_ranged_dps_prioritize_embers(
         PlayerbotAI* botAI) { return new AlarRangedDpsPrioritizeEmbersAction(botAI); }

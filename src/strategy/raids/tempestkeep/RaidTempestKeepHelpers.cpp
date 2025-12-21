@@ -367,6 +367,38 @@ namespace TempestKeepHelpers
         return { firstEmber, secondEmber };
     }
 
+    Player* GetSecondEmberTank(PlayerbotAI* botAI, Unit* alar)
+    {
+        Player* mainTank = nullptr;
+        Player* assistTank = nullptr;
+
+        if (Group* group = botAI->GetBot()->GetGroup())
+        {
+            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+            {
+                Player* member = ref->GetSource();
+                if (!member)
+                    continue;
+                if (botAI->IsMainTank(member))
+                    mainTank = member;
+                if (botAI->IsAssistTankOfIndex(member, 0))
+                    assistTank = member;
+            }
+        }
+
+        bool mainTankHasMelt = mainTank && mainTank->HasAura(SPELL_MELT_ARMOR);
+        bool assistTankHasMelt = assistTank && assistTank->HasAura(SPELL_MELT_ARMOR);
+
+        if (!mainTankHasMelt && !assistTankHasMelt)
+            return assistTank;
+        if (mainTankHasMelt)
+            return mainTank;
+        if (assistTankHasMelt)
+            return assistTank;
+
+        return nullptr;
+    }
+
     // Void Reaver
 
     const Position VOID_REAVER_TANK_POSITION = { 423.845f, 371.733f, 14.897f };

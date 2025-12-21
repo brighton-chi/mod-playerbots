@@ -72,11 +72,11 @@ float AlarDisableTankAssistMultiplier::GetValue(Action* action)
     if (!alar)
         return 1.0f;
 
-    boss_alar* alarAI = dynamic_cast<boss_alar*>(alar->GetAI());
+    /* boss_alar* alarAI = dynamic_cast<boss_alar*>(alar->GetAI());
     if (!alarAI)
-        return 1.0f;
+        return 1.0f; */
 
-    if (bot->GetVictim() != nullptr && !alarAI->HasPretendedToDie())
+    if (bot->IsInCombat() /* && !alarAI->HasPretendedToDie() */)
     {
         if (dynamic_cast<TankAssistAction*>(action))
             return 0.0f;
@@ -191,7 +191,7 @@ float HighAstromancerSolarianDisableTankAssistMultiplier::GetValue(Action* actio
         return 1.0f;
 
     Unit* solariumPriest = AI_VALUE2(Unit*, "find target", "solarium priest");
-    if (solariumPriest)
+    if (solariumPriest && bot->IsInCombat())
     {
         if (dynamic_cast<TankAssistAction*>(action))
             return 0.0f;

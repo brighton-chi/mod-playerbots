@@ -57,11 +57,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class AlarSecondAssistTankPickUpEmbersAction : public AttackAction
+class AlarAssistTanksPickUpEmbersAction : public AttackAction
 {
 public:
-    AlarSecondAssistTankPickUpEmbersAction(
-        PlayerbotAI* botAI, std::string const name = "al'ar second assist tank pick up embers") : AttackAction(botAI, name) {}
+    AlarAssistTanksPickUpEmbersAction(
+        PlayerbotAI* botAI, std::string const name = "al'ar assist tanks pick up embers") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
 
 private:
