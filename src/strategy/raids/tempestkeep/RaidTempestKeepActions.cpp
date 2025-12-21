@@ -197,9 +197,9 @@ bool AlarMeleeDpsMoveBetweenPlatformsAction::Execute(Event event)
     return false;
 }
 
-bool AlarRangedMoveUnderPlatformsAction::Execute(Event event)
+bool AlarRangedAndEmberTankMoveUnderPlatformsAction::Execute(Event event)
 {
-    if (!botAI->IsRanged(bot))
+    if (!botAI->IsRanged(bot) && !botAI->IsAssistTankOfIndex(bot, 1))
         return false;
 
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
@@ -219,11 +219,26 @@ bool AlarRangedMoveUnderPlatformsAction::Execute(Event event)
             {ALAR_GROUND_0, ALAR_GROUND_1, ALAR_GROUND_2, ALAR_GROUND_3};
         const Position& groundTarget = groundPositions[locationIndex];
 
-        if (bot->GetExactDist2d(groundTarget.GetPositionX(), groundTarget.GetPositionY()) > 8.0f)
+        if (botAI->IsRanged(bot))
         {
-            return MoveInside(TEMPEST_KEEP_MAP_ID, groundTarget.GetPositionX(),
-                              groundTarget.GetPositionY(), groundTarget.GetPositionZ(),
-                              8.0f, MovementPriority::MOVEMENT_COMBAT);
+            if (bot->GetExactDist2d(
+                groundTarget.GetPositionX(), groundTarget.GetPositionY()) > 8.0f)
+            {
+                return MoveInside(TEMPEST_KEEP_MAP_ID, groundTarget.GetPositionX(),
+                                  groundTarget.GetPositionY(), groundTarget.GetPositionZ(),
+                                  8.0f, MovementPriority::MOVEMENT_COMBAT);
+            }
+        }
+        else if (botAI->IsAssistTankOfIndex(bot, 1))
+        {
+            Unit* ember = AI_VALUE2(Unit*, "find target", "ember of al'ar");
+            if (!ember && bot->GetExactDist2d(
+                groundTarget.GetPositionX(), groundTarget.GetPositionY()) > 20.0f)
+            {
+                return MoveInside(TEMPEST_KEEP_MAP_ID, groundTarget.GetPositionX(),
+                                  groundTarget.GetPositionY(), groundTarget.GetPositionZ(),
+                                  20.0f, MovementPriority::MOVEMENT_COMBAT);
+            }
         }
     }
 
@@ -240,68 +255,62 @@ bool AlarSecondAssistTankPickUpEmbersAction::Execute(Event event)
         return false;
 
     boss_alar* alarAI = dynamic_cast<boss_alar*>(alar->GetAI());
-    if (!alarAI)
-        return false;
+    if (alarAI)
+    {
+        if (!alarAI->HasPretendedToDie())
+            return HandlePhase1Embers(alar, alarAI);
+        else
+            return HandlePhase2Embers(alar, alarAI);
+    }
 
-    return HandlePhase1Embers(alar, alarAI) || HandlePhase2Embers(alar, alarAI);
+    return false;
 }
 
 bool AlarSecondAssistTankPickUpEmbersAction::HandlePhase1Embers(Unit* alar, boss_alar* alarAI)
 {
-    int8 locationIndex = GetAlarCurrentLocationIndex(alar);
-    if (locationIndex == LOCATION_NONE)
-    {
-        Position dest;
-        locationIndex = GetAlarDestinationLocationIndex(alar, dest);
-    }
-
     Unit* ember = AI_VALUE2(Unit*, "find target", "ember of al'ar");
-    if (ember)
+    if (!ember)
+        return false;
+
+    MarkTargetWithSquare(bot, ember);
+    SetRtiTarget(botAI, "square", ember);
+
+    if (bot->GetTarget() != ember->GetGUID())
+        return Attack(ember);
+
+    if (ember->GetVictim() == bot)
     {
-        MarkTargetWithSquare(bot, ember);
-        SetRtiTarget(botAI, "square", ember);
-
-        if (bot->GetTarget() != ember->GetGUID())
-            return Attack(ember);
-
-        if (ember->GetVictim() == bot)
+        int8 locationIndex = GetAlarCurrentLocationIndex(alar);
+        if (locationIndex == LOCATION_NONE)
         {
-            if (locationIndex >= PLATFORM_0_IDX && locationIndex <= PLATFORM_3_IDX)
-            {
-                // Pick up Ember and move it to 25 yards from the ranged group
-                const Position& groundTarget = GROUND_POSITIONS[locationIndex];
-                const Position& center = ALAR_POINT_MIDDLE;
-                float dx = center.GetPositionX() - groundTarget.GetPositionX();
-                float dy = center.GetPositionY() - groundTarget.GetPositionY();
-                float distToCenter = groundTarget.GetExactDist2d(center.GetPositionX(), center.GetPositionY());
-
-                float moveDist = 25.0f; // distance from groundTarget toward center
-                float targetX = groundTarget.GetPositionX() + (dx / distToCenter) * moveDist;
-                float targetY = groundTarget.GetPositionY() + (dy / distToCenter) * moveDist;
-                float targetZ = groundTarget.GetPositionZ();
-
-                return MoveTo(TEMPEST_KEEP_MAP_ID, targetX, targetY, targetZ, false, false, false, false,
-                                MovementPriority::MOVEMENT_COMBAT, true, false);
-            }
-            else
-            {
-                // Flame Quills: Move Ember generally away from the group
-                const float safeDistance = 15.0f;
-                Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
-                if (nearestPlayer)
-                    return MoveFromGroup(safeDistance + 1.0f);
-            }
+            Position dest;
+            locationIndex = GetAlarDestinationLocationIndex(alar, dest);
         }
-    }
-    else if (locationIndex >= PLATFORM_0_IDX && locationIndex <= PLATFORM_3_IDX)
-    {
-        // No Embers: Return to current ranged group position
-        const Position& groundTarget = GROUND_POSITIONS[locationIndex];
-        if (bot->GetExactDist2d(groundTarget.GetPositionX(), groundTarget.GetPositionY()) > 20.0f)
+
+        if (locationIndex >= PLATFORM_0_IDX && locationIndex <= PLATFORM_3_IDX)
         {
-            return MoveInside(TEMPEST_KEEP_MAP_ID, groundTarget.GetPositionX(),
-                                groundTarget.GetPositionY(), groundTarget.GetPositionZ(),
-                                20.0f, MovementPriority::MOVEMENT_COMBAT);
+            // Pick up Ember and move it to 25 yards from the ranged group
+            const Position& groundTarget = GROUND_POSITIONS[locationIndex];
+            const Position& center = ALAR_POINT_MIDDLE;
+            float dx = center.GetPositionX() - groundTarget.GetPositionX();
+            float dy = center.GetPositionY() - groundTarget.GetPositionY();
+            float distToCenter = groundTarget.GetExactDist2d(center.GetPositionX(), center.GetPositionY());
+
+            float moveDist = 25.0f; // distance from groundTarget toward center
+            float targetX = groundTarget.GetPositionX() + (dx / distToCenter) * moveDist;
+            float targetY = groundTarget.GetPositionY() + (dy / distToCenter) * moveDist;
+            float targetZ = groundTarget.GetPositionZ();
+
+            return MoveTo(TEMPEST_KEEP_MAP_ID, targetX, targetY, targetZ, false, false, false, false,
+                            MovementPriority::MOVEMENT_COMBAT, true, false);
+        }
+        else
+        {
+            // Flame Quills: Move Ember generally away from the group
+            const float safeDistance = 15.0f;
+            Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
+            if (nearestPlayer)
+                return MoveFromGroup(safeDistance + 1.0f);
         }
     }
 
@@ -479,6 +488,9 @@ bool AlarMoveAwayFromRebirthAction::Execute(Event event)
 // Main tank and first assist tank will swap tanking Al'ar when Melt Armor is applied
 bool AlarSwapTanksOnBossAction::Execute(Event event)
 {
+    if (!botAI->IsMainTank(bot) && !botAI->IsAssistTankOfIndex(bot, 0))
+        return false;
+
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
     if (!alar)
         return false;
@@ -533,18 +545,67 @@ bool AlarSwapTanksOnBossAction::Execute(Event event)
     return false;
 }
 
-bool AlarDiveBombSpreadAndStayBackAction::Execute(Event event)
+bool AlarAvoidFlamePatchesAndDiveBombsAction::Execute(Event event)
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
     if (!alar)
         return false;
 
-    int8 currentIndex = GetAlarCurrentLocationIndex(alar);
-    Position dest;
-    int8 destIndex = GetAlarDestinationLocationIndex(alar, dest);
+    // Try to avoid flame patch first
+    if (AvoidFlamePatch())
+        return true;
 
-    if (currentIndex == POINT_QUILL_OR_DIVE_IDX || destIndex == POINT_QUILL_OR_DIVE_IDX ||
-        alar->HasAura(SPELL_DIVE_BOMB_VISUAL))
+    // Then handle dive bomb logic
+    if (HandleDiveBomb(alar))
+        return true;
+
+    return false;
+}
+
+bool AlarAvoidFlamePatchesAndDiveBombsAction::AvoidFlamePatch()
+{
+    std::vector<Unit*> flamePatches = GetAllHazardTriggers(botAI, bot, NPC_FLAME_PATCH, 40.0f);
+    const float hazardRadius = 8.0f;
+    for (Unit* flamePatch : flamePatches)
+    {
+        if (bot->GetExactDist2d(flamePatch) < hazardRadius)
+        {
+            Position safestPos = FindSafestNearbyPosition(bot, flamePatches, 30.0f, hazardRadius);
+            bot->AttackStop();
+            bot->InterruptNonMeleeSpells(true);
+            return MoveTo(TEMPEST_KEEP_MAP_ID, safestPos.GetPositionX(), safestPos.GetPositionY(),
+                          safestPos.GetPositionZ(), false, false, false, true,
+                          MovementPriority::MOVEMENT_COMBAT, true, false);
+        }
+    }
+
+    return false;
+}
+
+bool AlarAvoidFlamePatchesAndDiveBombsAction::HandleDiveBomb(Unit* alar)
+{
+    int8 locationIndex = GetAlarCurrentLocationIndex(alar);
+    if (locationIndex == LOCATION_NONE)
+    {
+        Position dest;
+        locationIndex = GetAlarDestinationLocationIndex(alar, dest);
+    }
+
+    boss_alar* alarAI = dynamic_cast<boss_alar*>(alar->GetAI());
+    if (locationIndex != POINT_QUILL_OR_DIVE_IDX &&
+        !(alarAI && alarAI->IsNoMelee() && !alarAI->IsPassive()) &&
+        !alar->HasAura(SPELL_DIVE_BOMB_VISUAL))
+        return false;
+
+    float currentDistance = bot->GetDistance2d(alar);
+    const float safeDistance = 20.0f;
+    if (currentDistance < safeDistance)
+    {
+        bot->AttackStop();
+        bot->InterruptNonMeleeSpells(true);
+        return MoveAway(alar, safeDistance - currentDistance);
+    }
+    else
     {
         Group* group = bot->GetGroup();
         if (!group)
@@ -573,17 +634,6 @@ bool AlarDiveBombSpreadAndStayBackAction::Execute(Event event)
             const uint32 minInterval = 1000;
             return FleePosition(Position(closestMember->GetPositionX(), closestMember->GetPositionY(),
                                          closestMember->GetPositionZ()), 11.0f, minInterval);
-        }
-    }
-    else
-    {
-        float currentDistance = bot->GetDistance2d(alar);
-        const float safeDistance = 16.0f;
-        if (currentDistance < safeDistance)
-        {
-            bot->AttackStop();
-            bot->InterruptNonMeleeSpells(true);
-            return MoveAway(alar, safeDistance - currentDistance);
         }
     }
 
@@ -1792,13 +1842,25 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
 {
     // Enable disperse at the start of phases 1 and 3 for ranged, except Capernian tank
     // The purpose is so they don't all get melted by Conflagration
-    Player* capernianTank = GetCapernianTank(botAI, bot);
+    /* Player* capernianTank = GetCapernianTank(botAI, bot);
     if (botAI->IsRanged(bot) && bot != capernianTank)
     {
         const float desiredDisperse = 7.0f;
         float currentDisperse = AI_VALUE(float, "disperse distance");
         if (currentDisperse < 0.0f || currentDisperse != desiredDisperse)
             SET_AI_VALUE(float, "disperse distance", desiredDisperse);
+    } */
+    Player* capernianTank = GetCapernianTank(botAI, bot);
+    if (botAI->IsRanged(bot) && bot != capernianTank)
+    {
+        const float safeDistance = 7.0f;
+        Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
+        if (nearestPlayer)
+        {
+            const uint32 minInterval = 1000;
+            return FleePosition(Position(nearestPlayer->GetPositionX(), nearestPlayer->GetPositionY(),
+                                         nearestPlayer->GetPositionZ()), safeDistance, minInterval);
+        }
     }
 
     if (botAI->IsHeal(bot))
@@ -1929,7 +1991,8 @@ bool KaelthasSunstriderAvoidFlameStrikeAction::Execute(Event event)
     if (currentDisperse > 0.0f)
         RESET_AI_VALUE(float, "disperse distance"); */
 
-    std::vector<Unit*> flameStrikes = GetAllFlameStrikeTriggers(botAI, bot);
+    std::vector<Unit*> flameStrikes =
+        GetAllHazardTriggers(botAI, bot, NPC_FLAME_STRIKE_TRIGGER, 40.0f);
     if (flameStrikes.empty())
         return false;
 
@@ -1947,111 +2010,13 @@ bool KaelthasSunstriderAvoidFlameStrikeAction::Execute(Event event)
     if (!inDanger)
         return false;
 
-    Position safestPos = FindSafestNearbyPosition(flameStrikes, hazardRadius);
+    Position safestPos = FindSafestNearbyPosition(bot, flameStrikes, 30.0f, hazardRadius);
 
     bot->AttackStop();
     bot->InterruptNonMeleeSpells(true);
     return MoveTo(TEMPEST_KEEP_MAP_ID, safestPos.GetPositionX(), safestPos.GetPositionY(),
                   safestPos.GetPositionZ(), false, false, false, true,
                   MovementPriority::MOVEMENT_COMBAT, true, false);
-}
-
-Position KaelthasSunstriderAvoidFlameStrikeAction::FindSafestNearbyPosition(
-    const std::vector<Unit*>& flameStrikes, float hazardRadius)
-{
-    const float searchStep = M_PI / 8.0f;
-    const float minDistance = 2.0f;
-    const float maxDistance = 30.0f;
-    const float distanceStep = 1.0f;
-
-    Position bestPos;
-    float minMoveDistance = 1000.0f;
-    bool foundSafe = false;
-
-    for (float distance = minDistance; distance <= maxDistance; distance += distanceStep)
-    {
-        for (float angle = 0.0f; angle < 2 * M_PI; angle += searchStep)
-        {
-            float x = bot->GetPositionX() + distance * std::cos(angle);
-            float y = bot->GetPositionY() + distance * std::sin(angle);
-
-            Position testPos(x, y, bot->GetPositionZ());
-
-            bool isSafe = true;
-            for (Unit* flameStrike : flameStrikes)
-            {
-                if (flameStrike->GetExactDist2d(x, y) < hazardRadius)
-                {
-                    isSafe = false;
-                    break;
-                }
-            }
-            if (!isSafe)
-                continue;
-
-            bool pathSafe = IsPathSafeFromFlameStrikes(bot->GetPosition(), testPos, flameStrikes, hazardRadius);
-            if (pathSafe || !foundSafe)
-            {
-                float moveDistance = bot->GetExactDist2d(x, y);
-
-                if (pathSafe && (!foundSafe || moveDistance < minMoveDistance))
-                {
-                    bestPos = testPos;
-                    minMoveDistance = moveDistance;
-                    foundSafe = true;
-                }
-                else if (!foundSafe && moveDistance < minMoveDistance)
-                {
-                    bestPos = testPos;
-                    minMoveDistance = moveDistance;
-                }
-            }
-        }
-
-        if (foundSafe)
-            break;
-    }
-
-    return bestPos;
-}
-
-bool KaelthasSunstriderAvoidFlameStrikeAction::IsPathSafeFromFlameStrikes(
-    const Position& start, const Position& end, const std::vector<Unit*>& flameStrikes, float hazardRadius)
-{
-    const int numChecks = 10;
-    float dx = end.GetPositionX() - start.GetPositionX();
-    float dy = end.GetPositionY() - start.GetPositionY();
-
-    for (int i = 1; i <= numChecks; ++i)
-    {
-        float ratio = static_cast<float>(i) / numChecks;
-        float checkX = start.GetPositionX() + dx * ratio;
-        float checkY = start.GetPositionY() + dy * ratio;
-
-        for (Unit* flameStrike : flameStrikes)
-        {
-            float distToFlameStrike = flameStrike->GetExactDist2d(checkX, checkY);
-            if (distToFlameStrike < hazardRadius)
-                return false;
-        }
-    }
-
-    return true;
-}
-
-std::vector<Unit*> KaelthasSunstriderAvoidFlameStrikeAction::GetAllFlameStrikeTriggers(PlayerbotAI* botAI, Player* bot)
-{
-    std::vector<Unit*> flameStrikeTriggers;
-    auto const& npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
-    for (auto const& npcGuid : npcs)
-    {
-        const float maxSearchRadius = 45.0f;
-        Unit* unit = botAI->GetUnit(npcGuid);
-        if (unit && unit->GetEntry() == NPC_FLAME_STRIKE_TRIGGER && bot->GetExactDist2d(unit) < maxSearchRadius)
-            flameStrikeTriggers.push_back(unit);
-    }
-
-    return flameStrikeTriggers;
 }
 
 bool KaelthasSunstriderRoundUpPhoenixesAndFocusDownEggsAction::Execute(Event event)

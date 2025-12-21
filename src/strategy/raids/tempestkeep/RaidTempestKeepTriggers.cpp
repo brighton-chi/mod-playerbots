@@ -30,9 +30,6 @@ bool AlarPullingBossTrigger::IsActive()
 
 bool AlarBossIsFlyingBetweenPlatformsTrigger::IsActive()
 {
-    if (!botAI->IsAssistTankOfIndex(bot, 1))
-        return false;
-
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
     if (!alar)
         return false;
@@ -59,8 +56,8 @@ bool AlarBossSpawnsEmbersOfAlarTrigger::IsActive()
     if (!botAI->IsAssistTankOfIndex(bot, 1) && !botAI->IsRangedDps(bot))
         return false;
 
-    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    return alar != nullptr;
+    Unit* ember = AI_VALUE2(Unit*, "find target", "ember of al'ar");
+    return ember != nullptr;
 }
 
 bool AlarIncomingFlameQuillsTrigger::IsActive()
@@ -93,38 +90,14 @@ bool AlarRisingFromTheAshesTrigger::IsActive()
     return alarAI && alarAI->IsPassive();
 }
 
-bool AlarBossTankArmorWasMeltedTrigger::IsActive()
+bool AlarEverythingIsOnFireInPhase2Trigger::IsActive()
 {
-    if (!botAI->IsMainTank(bot) && !botAI->IsAssistTankOfIndex(bot, 0))
-        return false;
-
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
     if (!alar)
         return false;
 
     boss_alar* alarAI = dynamic_cast<boss_alar*>(alar->GetAI());
     return alarAI && alarAI->HasPretendedToDie();
-}
-
-bool AlarBossIsPerformingDiveBombSequenceTrigger::IsActive()
-{
-    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    if (!alar)
-        return false;
-
-    boss_alar* alarAI = dynamic_cast<boss_alar*>(alar->GetAI());
-    if (!alarAI || !alarAI->HasPretendedToDie())
-        return false;
-
-    int8 locationIndex = GetAlarCurrentLocationIndex(alar);
-    if (locationIndex == LOCATION_NONE)
-    {
-        Position dest;
-        locationIndex = GetAlarDestinationLocationIndex(alar, dest);
-    }
-
-    return locationIndex == POINT_QUILL_OR_DIVE_IDX ||
-           (alarAI->IsNoMelee() && !alarAI->IsPassive());
 }
 
 bool AlarPhase2EncounterIsAtRoomCenterTrigger::IsActive()

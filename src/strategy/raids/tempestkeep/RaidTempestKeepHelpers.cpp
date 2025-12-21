@@ -126,6 +126,106 @@ namespace TempestKeepHelpers
         return nearestPlayer;
     }
 
+    std::vector<Unit*> GetAllHazardTriggers(
+        PlayerbotAI* botAI, Player* bot, uint32 npcEntry, float maxSearchRadius)
+    {
+        std::vector<Unit*> hazardTriggers;
+        auto const& npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
+        for (auto const& npcGuid : npcs)
+        {
+            Unit* unit = botAI->GetUnit(npcGuid);
+            if (unit && unit->GetEntry() == npcEntry && bot->GetExactDist2d(unit) < maxSearchRadius)
+                hazardTriggers.push_back(unit);
+        }
+
+        return hazardTriggers;
+    }
+
+    Position FindSafestNearbyPosition(Player* bot, const std::vector<Unit*>& hazards,
+        float maxRadius, float hazardRadius, const Position* center)
+    {
+        const float searchStep = M_PI / 8.0f;
+        const float minDistance = 2.0f;
+        const float maxDistance = 30.0f;
+        const float distanceStep = 1.0f;
+
+        Position bestPos;
+        float minMoveDistance = std::numeric_limits<float>::max();
+        bool foundSafe = false;
+
+        for (float distance = minDistance; distance <= maxDistance; distance += distanceStep)
+        {
+            for (float angle = 0.0f; angle < 2 * M_PI; angle += searchStep)
+            {
+                const Position& searchCenter = center ? *center : bot->GetPosition();
+                float x = searchCenter.GetPositionX() + distance * std::cos(angle);
+                float y = searchCenter.GetPositionY() + distance * std::sin(angle);
+
+                bool isSafe = true;
+                for (Unit* hazard : hazards)
+                {
+                    if (hazard->GetExactDist2d(x, y) < hazardRadius)
+                    {
+                        isSafe = false;
+                        break;
+                    }
+                }
+
+                if (!isSafe)
+                    continue;
+
+                Position testPos(x, y, bot->GetPositionZ());
+
+                bool pathSafe = IsPathSafeFromHazards(bot->GetPosition(), testPos, hazards, hazardRadius);
+                if (pathSafe || !foundSafe)
+                {
+                    float moveDistance = bot->GetExactDist2d(x, y);
+
+                    if (pathSafe && (!foundSafe || moveDistance < minMoveDistance))
+                    {
+                        bestPos = testPos;
+                        minMoveDistance = moveDistance;
+                        foundSafe = true;
+                    }
+                    else if (!foundSafe && moveDistance < minMoveDistance)
+                    {
+                        bestPos = testPos;
+                        minMoveDistance = moveDistance;
+                    }
+                }
+            }
+
+            if (foundSafe)
+                break;
+        }
+
+        return bestPos;
+    }
+
+    bool IsPathSafeFromHazards(
+        const Position& start, const Position& end, const std::vector<Unit*>& hazards, float hazardRadius)
+    {
+        const uint8 numChecks = 10;
+        float dx = end.GetPositionX() - start.GetPositionX();
+        float dy = end.GetPositionY() - start.GetPositionY();
+
+        for (uint8 i = 1; i <= numChecks; ++i)
+        {
+            float ratio = static_cast<float>(i) / numChecks;
+            float checkX = start.GetPositionX() + dx * ratio;
+            float checkY = start.GetPositionY() + dy * ratio;
+
+            for (Unit* hazard : hazards)
+            {
+                float distToHazard = hazard->GetExactDist2d(checkX, checkY);
+                if (distToHazard < hazardRadius)
+                    return false;
+            }
+        }
+
+        return true;
+    }
+
     // Al'ar <Phoenix God>
 
     const Position ALAR_PLATFORM_0 = { 335.638f, 59.4879f, 17.9319f }; // West Platform

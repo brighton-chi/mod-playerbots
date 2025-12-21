@@ -29,11 +29,8 @@ public:
         creators["al'ar rising from the ashes"] =
             &RaidTempestKeepTriggerContext::alar_rising_from_the_ashes;
 
-        creators["al'ar boss tank armor was melted"] =
-            &RaidTempestKeepTriggerContext::alar_boss_tank_armor_was_melted;
-
-        creators["al'ar boss is performing dive bomb sequence"] =
-            &RaidTempestKeepTriggerContext::alar_boss_is_performing_dive_bomb_sequence;
+        creators["al'ar everything is on fire in phase 2"] =
+            &RaidTempestKeepTriggerContext::alar_everything_is_on_fire_in_phase_2;
 
         creators["al'ar phase 2 encounter is at room center"] =
             &RaidTempestKeepTriggerContext::alar_phase_2_encounter_is_at_room_center;
@@ -147,11 +144,8 @@ private:
     static Trigger* alar_rising_from_the_ashes(
         PlayerbotAI* botAI) { return new AlarRisingFromTheAshesTrigger(botAI); }
 
-    static Trigger* alar_boss_tank_armor_was_melted(
-        PlayerbotAI* botAI) { return new AlarBossTankArmorWasMeltedTrigger(botAI); }
-
-    static Trigger* alar_boss_is_performing_dive_bomb_sequence(
-        PlayerbotAI* botAI) { return new AlarBossIsPerformingDiveBombSequenceTrigger(botAI); }
+    static Trigger* alar_everything_is_on_fire_in_phase_2(
+        PlayerbotAI* botAI) { return new AlarEverythingIsOnFireInPhase2Trigger(botAI); }
 
     static Trigger* alar_phase_2_encounter_is_at_room_center(
         PlayerbotAI* botAI) { return new AlarPhase2EncounterIsAtRoomCenterTrigger(botAI); }

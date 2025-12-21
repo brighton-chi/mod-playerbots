@@ -49,11 +49,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class AlarRangedMoveUnderPlatformsAction : public AttackAction
+class AlarRangedAndEmberTankMoveUnderPlatformsAction : public AttackAction
 {
 public:
-    AlarRangedMoveUnderPlatformsAction(
-        PlayerbotAI* botAI, std::string const name = "al'ar ranged move under platforms") : AttackAction(botAI, name) {}
+    AlarRangedAndEmberTankMoveUnderPlatformsAction(
+        PlayerbotAI* botAI, std::string const name = "al'ar ranged and ember tank move under platforms") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 
@@ -101,12 +101,16 @@ public:
     bool Execute(Event event) override;
 };
 
-class AlarDiveBombSpreadAndStayBackAction : public MovementAction
+class AlarAvoidFlamePatchesAndDiveBombsAction : public MovementAction
 {
 public:
-    AlarDiveBombSpreadAndStayBackAction(
-        PlayerbotAI* botAI, std::string const name = "al'ar dive bomb spread and stay back") : MovementAction(botAI, name) {}
+    AlarAvoidFlamePatchesAndDiveBombsAction(
+        PlayerbotAI* botAI, std::string const name = "al'ar avoid flame patches and dive bombs") : MovementAction(botAI, name) {}
     bool Execute(Event event) override;
+
+private:
+    bool AvoidFlamePatch();
+    bool HandleDiveBomb(Unit* alar);
 };
 
 class AlarReturnToRoomCenterAction : public MovementAction
@@ -364,11 +368,6 @@ public:
     KaelthasSunstriderAvoidFlameStrikeAction(
         PlayerbotAI* botAI, std::string const name = "kael'thas sunstrider avoid flame strike") : MovementAction(botAI, name) {}
     bool Execute(Event event) override;
-
-private:
-    std::vector<Unit*> GetAllFlameStrikeTriggers(PlayerbotAI* botAI, Player* bot);
-    Position FindSafestNearbyPosition(const std::vector<Unit*>& flameStrikes, float hazardRadius);
-    bool IsPathSafeFromFlameStrikes(const Position& start, const Position& end, const std::vector<Unit*>& flameStrikes, float hazardRadius);
 };
 
 class KaelthasSunstriderRoundUpPhoenixesAndFocusDownEggsAction : public AttackAction

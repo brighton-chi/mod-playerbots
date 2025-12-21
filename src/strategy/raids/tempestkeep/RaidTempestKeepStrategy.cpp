@@ -16,11 +16,11 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction::array(0,
             new NextAction("al'ar boss tanks move between platforms", ACTION_RAID + 1),
             new NextAction("al'ar melee dps move between platforms", ACTION_RAID + 1),
-            new NextAction("al'ar ranged move under platforms", ACTION_RAID + 3), nullptr)
+            new NextAction("al'ar ranged and ember tank move under platforms", ACTION_RAID + 3), nullptr)
     ));
     triggers.push_back(new TriggerNode("al'ar boss spawns embers of alar",
         NextAction::array(0,
-            new NextAction("al'ar second assist tank pick up embers", ACTION_RAID + 2),
+            new NextAction("al'ar second assist tank pick up embers", ACTION_RAID + 4),
             new NextAction("al'ar ranged dps prioritize embers", ACTION_RAID + 2), nullptr)
     ));
     triggers.push_back(new TriggerNode("al'ar incoming flame quills",
@@ -29,11 +29,10 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("al'ar rising from the ashes",
         NextAction::array(0, new NextAction("al'ar move away from rebirth", ACTION_EMERGENCY + 7), nullptr)
     ));
-    triggers.push_back(new TriggerNode("al'ar boss tank armor was melted",
-        NextAction::array(0, new NextAction("al'ar swap tanks on boss", ACTION_EMERGENCY + 1), nullptr)
-    ));
-    triggers.push_back(new TriggerNode("al'ar boss is performing dive bomb sequence",
-        NextAction::array(0, new NextAction("al'ar dive bomb spread and stay back", ACTION_EMERGENCY + 2), nullptr)
+    triggers.push_back(new TriggerNode("al'ar everything is on fire in phase 2",
+        NextAction::array(0,
+            new NextAction("al'ar swap tanks on boss", ACTION_EMERGENCY + 1),
+            new NextAction("al'ar avoid flame patches and dive bombs", ACTION_EMERGENCY + 2), nullptr)
     ));
     triggers.push_back(new TriggerNode("al'ar phase 2 encounter is at room center",
         NextAction::array(0, new NextAction("al'ar return to room center", ACTION_RAID + 1), nullptr)
@@ -140,13 +139,17 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 void RaidTempestKeepStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     multipliers.push_back(new AlarMoveBetweenPlatformsMultiplier(botAI));
+    multipliers.push_back(new AlarDisableDisperseMultiplier(botAI));
     multipliers.push_back(new AlarDisableTankAssistMultiplier(botAI));
     multipliers.push_back(new AlarStayAwayFromRebirthMultiplier(botAI));
     multipliers.push_back(new AlarPhase2NoTankingIfArmorMeltedMultiplier(botAI));
+
     multipliers.push_back(new VoidReaverDisableTankActionsMultiplier(botAI));
     multipliers.push_back(new VoidReaverMaintainPositionsMultiplier(botAI));
+
     multipliers.push_back(new HighAstromancerSolarianDisableTankAssistMultiplier(botAI));
     multipliers.push_back(new HighAstromancerSolarianMaintainPositionMultiplier(botAI));
+
     multipliers.push_back(new KaelthasSunstriderKiteThaladredMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderWaitForDpsMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderControlMisdirectionMultiplier(botAI));

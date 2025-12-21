@@ -11,6 +11,14 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class AlarDisableDisperseMultiplier : public Multiplier
+{
+public:
+    AlarDisableDisperseMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "al'ar disable disperse multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
 class AlarDisableTankAssistMultiplier : public Multiplier
 {
 public:

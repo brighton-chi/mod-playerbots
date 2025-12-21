@@ -55,19 +55,11 @@ public:
     bool IsActive() override;
 };
 
-class AlarBossTankArmorWasMeltedTrigger : public Trigger
+class AlarEverythingIsOnFireInPhase2Trigger : public Trigger
 {
 public:
-    AlarBossTankArmorWasMeltedTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "al'ar boss tank armor was melted") {}
-    bool IsActive() override;
-};
-
-class AlarBossIsPerformingDiveBombSequenceTrigger : public Trigger
-{
-public:
-    AlarBossIsPerformingDiveBombSequenceTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "al'ar boss is performing dive bomb sequence") {}
+    AlarEverythingIsOnFireInPhase2Trigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "al'ar everything is on fire in phase 2") {}
     bool IsActive() override;
 };
 

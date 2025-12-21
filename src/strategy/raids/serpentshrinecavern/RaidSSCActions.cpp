@@ -2803,11 +2803,11 @@ Position LadyVashjAvoidToxicSporesAction::FindSafestNearbyPosition(
 bool LadyVashjAvoidToxicSporesAction::IsPathSafeFromSpores(const Position& start,
     const Position& end, const std::vector<Unit*>& spores, float hazardRadius)
 {
-    const int numChecks = 10;
+    const uint8 numChecks = 10;
     float dx = end.GetPositionX() - start.GetPositionX();
     float dy = end.GetPositionY() - start.GetPositionY();
 
-    for (int i = 1; i <= numChecks; ++i)
+    for (uint8 i = 1; i <= numChecks; ++i)
     {
         float ratio = static_cast<float>(i) / numChecks;
         float checkX = start.GetPositionX() + dx * ratio;

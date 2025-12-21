@@ -23,8 +23,8 @@ public:
         creators["al'ar melee dps move between platforms"] =
             &RaidTempestKeepActionContext::alar_melee_dps_move_between_platforms;
 
-        creators["al'ar ranged move under platforms"] =
-            &RaidTempestKeepActionContext::alar_ranged_move_under_platforms;
+        creators["al'ar ranged and ember tank move under platforms"] =
+            &RaidTempestKeepActionContext::alar_ranged_and_ember_tank_move_under_platforms;
 
         creators["al'ar second assist tank pick up embers"] =
             &RaidTempestKeepActionContext::alar_second_assist_tank_pick_up_embers;
@@ -41,8 +41,8 @@ public:
         creators["al'ar swap tanks on boss"] =
             &RaidTempestKeepActionContext::alar_swap_tanks_on_boss;
 
-        creators["al'ar dive bomb spread and stay back"] =
-            &RaidTempestKeepActionContext::alar_dive_bomb_spread_and_stay_back;
+        creators["al'ar avoid flame patches and dive bombs"] =
+            &RaidTempestKeepActionContext::alar_avoid_flame_patches_and_dive_bombs;
 
         creators["al'ar return to room center"] =
             &RaidTempestKeepActionContext::alar_return_to_room_center;
@@ -162,8 +162,8 @@ private:
     static Action* alar_melee_dps_move_between_platforms(
         PlayerbotAI* botAI) { return new AlarMeleeDpsMoveBetweenPlatformsAction(botAI); }
 
-    static Action* alar_ranged_move_under_platforms(
-        PlayerbotAI* botAI) { return new AlarRangedMoveUnderPlatformsAction(botAI); }
+    static Action* alar_ranged_and_ember_tank_move_under_platforms(
+        PlayerbotAI* botAI) { return new AlarRangedAndEmberTankMoveUnderPlatformsAction(botAI); }
 
     static Action* alar_second_assist_tank_pick_up_embers(
         PlayerbotAI* botAI) { return new AlarSecondAssistTankPickUpEmbersAction(botAI); }
@@ -180,8 +180,8 @@ private:
     static Action* alar_swap_tanks_on_boss(
         PlayerbotAI* botAI) { return new AlarSwapTanksOnBossAction(botAI); }
 
-    static Action* alar_dive_bomb_spread_and_stay_back(
-        PlayerbotAI* botAI) { return new AlarDiveBombSpreadAndStayBackAction(botAI); }
+    static Action* alar_avoid_flame_patches_and_dive_bombs(
+        PlayerbotAI* botAI) { return new AlarAvoidFlamePatchesAndDiveBombsAction(botAI); }
 
     static Action* alar_return_to_room_center(
         PlayerbotAI* botAI) { return new AlarReturnToRoomCenterAction(botAI); }

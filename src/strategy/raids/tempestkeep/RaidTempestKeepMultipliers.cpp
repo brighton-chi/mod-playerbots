@@ -49,6 +49,20 @@ float AlarMoveBetweenPlatformsMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+float AlarDisableDisperseMultiplier::GetValue(Action* action)
+{
+    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+    if (!alar)
+        return 1.0f;
+
+    if (dynamic_cast<CombatFormationMoveAction*>(action) &&
+        !dynamic_cast<TankFaceAction*>(action) &&
+        !dynamic_cast<SetBehindTargetAction*>(action))
+        return 0.0f;
+
+    return 1.0f;
+}
+
 float AlarDisableTankAssistMultiplier::GetValue(Action* action)
 {
     if (!botAI->IsMainTank(bot) && !botAI->IsAssistTankOfIndex(bot, 0))

@@ -509,7 +509,7 @@ Position JanalaiMoveAwayFromFireBombsAction::FindSafestNearbyPosition(
 {
     const float searchStep = M_PI / 8.0f;
     const float minDistance = 2.0f;
-    const float maxDistance = 40.0f;
+    const float maxDistance = 30.0f;
     const float distanceStep = 1.0f;
 
     Position bestPos;
@@ -523,7 +523,6 @@ Position JanalaiMoveAwayFromFireBombsAction::FindSafestNearbyPosition(
         {
             float x = bot->GetPositionX() + distance * std::cos(angle);
             float y = bot->GetPositionY() + distance * std::sin(angle);
-            float z = bot->GetPositionZ();
 
             if (janalaiCenter.GetExactDist2d(x, y) > maxRadius)
                 continue;
@@ -541,7 +540,7 @@ Position JanalaiMoveAwayFromFireBombsAction::FindSafestNearbyPosition(
             if (!isSafe)
                 continue;
 
-            Position testPos(x, y, z);
+            Position testPos(x, y, bot->GetPositionZ());
 
             bool pathSafe =
                 IsPathSafeFromFireBombs(bot->GetPosition(), testPos, bombs, hazardRadius);
@@ -573,11 +572,11 @@ Position JanalaiMoveAwayFromFireBombsAction::FindSafestNearbyPosition(
 bool JanalaiMoveAwayFromFireBombsAction::IsPathSafeFromFireBombs(const Position& start,
     const Position& end, const std::vector<Unit*>& bombs, float hazardRadius)
 {
-    const int numChecks = 10;
+    const uint8 numChecks = 10;
     float dx = end.GetPositionX() - start.GetPositionX();
     float dy = end.GetPositionY() - start.GetPositionY();
 
-    for (int i = 1; i <= numChecks; ++i)
+    for (uint8 i = 1; i <= numChecks; ++i)
     {
         float ratio = static_cast<float>(i) / numChecks;
         float checkX = start.GetPositionX() + dx * ratio;

@@ -50,7 +50,7 @@ namespace TempestKeepHelpers
     {
         // Al'ar
         NPC_EMBER_OF_ALAR               = 19551,
-        // NPC_FLAME_PATCH                 = 20602, // Special strategy is preferable, but not built in right now
+        NPC_FLAME_PATCH                 = 20602,
 
         // High Astromancer Solarian
         NPC_SOLARIUM_PRIEST             = 18806,
@@ -111,6 +111,13 @@ namespace TempestKeepHelpers
     Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry);
     Unit* GetNearestPlayerInRadius(Player* bot, float radius);
     Unit* GetNearestNonTankPlayerInRadius(Player* bot, float radius);
+    std::vector<Unit*> GetAllHazardTriggers(
+        PlayerbotAI* botAI, Player* bot, uint32 npcEntry, float maxSearchRadius);
+    Position FindSafestNearbyPosition(Player* bot, const std::vector<Unit*>& hazards,
+        float maxRadius, float hazardRadius, const Position* center = nullptr);
+    bool IsPathSafeFromHazards(
+        const Position& start, const Position& end, const std::vector<Unit*>& hazards,
+        float hazardRadius);
 
     // Al'ar <Phoenix God>
     const float ALAR_BALCONY_Z = 17.0f;
