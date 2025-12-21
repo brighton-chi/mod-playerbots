@@ -149,11 +149,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class AzgalorSpreadRangedInArcAction : public MovementAction
+class AzgalorDisperseRangedAction : public MovementAction
 {
 public:
-    AzgalorSpreadRangedInArcAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "azgalor spread ranged in arc") {}
+    AzgalorDisperseRangedAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "azgalor disperse ranged") {}
     bool Execute(Event event) override;
 };
 

@@ -62,7 +62,7 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction::array(0, new NextAction("azgalor main tank position boss", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("azgalor boss casts rain of fire",
-        NextAction::array(0, new NextAction("azgalor spread ranged in arc", ACTION_RAID + 2), nullptr)
+        NextAction::array(0, new NextAction("azgalor disperse ranged", ACTION_RAID + 2), nullptr)
     ));
     triggers.push_back(new TriggerNode("azgalor bot is doomed",
         NextAction::array(0,

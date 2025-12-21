@@ -642,7 +642,7 @@ bool AzgalorMainTankPositionBossAction::Execute(Event event)
     return false;
 }
 
-bool AzgalorSpreadRangedInArcAction::Execute(Event event) // NEED TO RENAME THIS
+bool AzgalorDisperseRangedAction::Execute(Event event)
 {
     Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
     if (!azgalor)

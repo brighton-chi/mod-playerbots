@@ -64,8 +64,8 @@ public:
         creators["azgalor main tank position boss"] =
             &RaidHyjalSummitActionContext::azgalor_main_tank_position_boss;
 
-        creators["azgalor spread ranged in arc"] =
-            &RaidHyjalSummitActionContext::azgalor_spread_ranged_in_arc;
+        creators["azgalor disperse ranged"] =
+            &RaidHyjalSummitActionContext::azgalor_disperse_ranged;
 
         creators["azgalor move to doomguard tank"] =
             &RaidHyjalSummitActionContext::azgalor_move_to_doomguard_tank;
@@ -152,8 +152,8 @@ private:
     static Action* azgalor_main_tank_position_boss(
         PlayerbotAI* botAI) { return new AzgalorMainTankPositionBossAction(botAI); }
 
-    static Action* azgalor_spread_ranged_in_arc(
-        PlayerbotAI* botAI) { return new AzgalorSpreadRangedInArcAction(botAI); }
+    static Action* azgalor_disperse_ranged(
+        PlayerbotAI* botAI) { return new AzgalorDisperseRangedAction(botAI); }
 
     static Action* azgalor_move_to_doomguard_tank(
         PlayerbotAI* botAI) { return new AzgalorMoveToDoomguardTankAction(botAI); }
