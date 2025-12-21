@@ -157,8 +157,8 @@ namespace GruulsLairHelpers
 
     bool IsPositionSafe(PlayerbotAI* botAI, Player* bot, Position pos)
     {
-        const float KROSH_SAFE_DISTANCE = 20.0f;
-        const float MAULGAR_SAFE_DISTANCE = 10.0f;
+        const float kroshSafeDistance = 20.0f;
+        const float maulgarSafeDistance = 10.0f;
         bool isSafe = true;
 
         Unit* krosh =
@@ -167,7 +167,7 @@ namespace GruulsLairHelpers
         {
             float dist = sqrt(pow(pos.GetPositionX() - krosh->GetPositionX(), 2) +
                          pow(pos.GetPositionY() - krosh->GetPositionY(), 2));
-            if (dist < KROSH_SAFE_DISTANCE)
+            if (dist < kroshSafeDistance)
                 isSafe = false;
         }
 
@@ -177,7 +177,7 @@ namespace GruulsLairHelpers
         {
             float dist = sqrt(pow(pos.GetPositionX() - maulgar->GetPositionX(), 2) +
                          pow(pos.GetPositionY() - maulgar->GetPositionY(), 2));
-            if (dist < MAULGAR_SAFE_DISTANCE)
+            if (dist < maulgarSafeDistance)
                 isSafe = false;
         }
 
@@ -186,8 +186,8 @@ namespace GruulsLairHelpers
 
     bool TryGetNewSafePosition(PlayerbotAI* botAI, Player* bot, Position& outPos)
     {
-        const float SEARCH_RADIUS = 30.0f;
-        const uint8 NUM_POSITIONS = 32;
+        const float searchRadius = 30.0f;
+        const uint8 numPositions = 32;
 
         outPos = { bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ() };
         if (IsPositionSafe(botAI, bot, outPos))
@@ -200,12 +200,12 @@ namespace GruulsLairHelpers
         bool foundSafeSpot = false;
         Position bestPos;
 
-        for (int i = 0; i < NUM_POSITIONS; ++i)
+        for (int i = 0; i < numPositions; ++i)
         {
-            float angle = 2 * M_PI * i / NUM_POSITIONS;
+            float angle = 2 * M_PI * i / numPositions;
             Position candidatePos;
-            candidatePos.m_positionX = bot->GetPositionX() + SEARCH_RADIUS * cos(angle);
-            candidatePos.m_positionY = bot->GetPositionY() + SEARCH_RADIUS * sin(angle);
+            candidatePos.m_positionX = bot->GetPositionX() + searchRadius * cos(angle);
+            candidatePos.m_positionY = bot->GetPositionY() + searchRadius * sin(angle);
             candidatePos.m_positionZ = bot->GetPositionZ();
 
             float destX = candidatePos.m_positionX, destY = candidatePos.m_positionY,

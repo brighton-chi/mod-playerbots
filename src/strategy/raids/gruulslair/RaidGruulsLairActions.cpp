@@ -16,7 +16,7 @@ bool HighKingMaulgarMainTankAttackMaulgarAction::Execute(Event event)
     MarkTargetWithSquare(bot, maulgar);
     SetRtiTarget(botAI, "square", maulgar);
 
-    if (bot->GetVictim() != maulgar)
+    if (bot->GetTarget() != maulgar->GetGUID())
         return Attack(maulgar);
 
     if (maulgar->GetVictim() == bot && bot->IsWithinMeleeRange(maulgar))
@@ -47,7 +47,7 @@ bool HighKingMaulgarFirstAssistTankAttackOlmAction::Execute(Event event)
     MarkTargetWithCircle(bot, olm);
     SetRtiTarget(botAI, "circle", olm);
 
-    if (bot->GetVictim() != olm)
+    if (bot->GetTarget() != olm->GetGUID())
         return Attack(olm);
 
     if (olm->GetVictim() == bot)
@@ -79,7 +79,7 @@ bool HighKingMaulgarSecondAssistTankAttackBlindeyeAction::Execute(Event event)
     MarkTargetWithStar(bot, blindeye);
     SetRtiTarget(botAI, "star", blindeye);
 
-    if (bot->GetVictim() != blindeye)
+    if (bot->GetTarget() != blindeye->GetGUID())
         return Attack(blindeye);
 
     if (blindeye->GetVictim() == bot && bot->IsWithinMeleeRange(blindeye))
@@ -504,7 +504,7 @@ bool GruulTheDragonkillerMainTankPositionBossAction::Execute(Event event)
 {
     Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
 
-    if (bot->GetVictim() != gruul)
+    if (bot->GetTarget() != gruul->GetGUID())
         return Attack(gruul);
 
     if (gruul->GetVictim() == bot && bot->IsWithinMeleeRange(gruul))
@@ -629,7 +629,7 @@ bool GruulTheDragonkillerShatterSpreadAction::Execute(Event event)
     if (!group)
         return false;
 
-    GuidVector members = AI_VALUE(GuidVector, "group members");
+    auto const& members = AI_VALUE(GuidVector, "group members");
     Unit* closestMember = nullptr;
     float closestDist = std::numeric_limits<float>::max();
 
@@ -647,10 +647,7 @@ bool GruulTheDragonkillerShatterSpreadAction::Execute(Event event)
     }
 
     if (closestMember)
-    {
-        return FleePosition(Position(closestMember->GetPositionX(), closestMember->GetPositionY(),
-                            closestMember->GetPositionZ()), 6.0f, 0);
-    }
+        return MoveAway(closestMember, 15.0f);
 
     return false;
 }

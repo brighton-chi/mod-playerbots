@@ -17,14 +17,14 @@ bool HighKingMaulgarIsFirstAssistTankTrigger::IsActive()
 {
     Unit* olm = AI_VALUE2(Unit*, "find target", "olm the summoner");
 
-    return botAI->IsAssistTankOfIndex(bot, 0) && olm && olm->IsAlive();
+    return botAI->IsAssistTankOfIndex(bot, 0, true) && olm && olm->IsAlive();
 }
 
 bool HighKingMaulgarIsSecondAssistTankTrigger::IsActive()
 {
     Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
 
-    return botAI->IsAssistTankOfIndex(bot, 1) && blindeye && blindeye->IsAlive();
+    return botAI->IsAssistTankOfIndex(bot, 1, true) && blindeye && blindeye->IsAlive();
 }
 
 bool HighKingMaulgarIsMageTankTrigger::IsActive()
