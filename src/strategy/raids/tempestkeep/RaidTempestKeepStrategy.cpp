@@ -20,7 +20,7 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     ));
     triggers.push_back(new TriggerNode("al'ar boss spawns embers of alar",
         NextAction::array(0,
-            new NextAction("al'ar add tank pick up embers", ACTION_RAID + 2),
+            new NextAction("al'ar second assist tank pick up embers", ACTION_RAID + 2),
             new NextAction("al'ar ranged dps prioritize embers", ACTION_RAID + 2), nullptr)
     ));
     triggers.push_back(new TriggerNode("al'ar incoming flame quills",

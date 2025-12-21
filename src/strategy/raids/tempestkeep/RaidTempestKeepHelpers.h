@@ -132,8 +132,9 @@ namespace TempestKeepHelpers
     extern const Position ALAR_ROOM_S_CENTER;
     int8 GetAlarDestinationLocationIndex(Unit* alar, Position& dest);
     int8 GetAlarCurrentLocationIndex(Unit* alar);
-    void GetClosestPlatformAndGround(const Position& botPos, int8& closestPlatform, Position& ground);
-    bool IsAlarAddTank(PlayerbotAI* botAI, Player* bot);
+    void GetClosestPlatformAndGround(
+        const Position& botPos, int8& closestPlatform, Position& ground);
+    std::pair<Unit*, Unit*> GetFirstTwoEmbersOfAlar(PlayerbotAI* botAI);
 
     // Void Reaver
     extern const Position VOID_REAVER_TANK_POSITION;

@@ -28,7 +28,7 @@ float AlarMoveBetweenPlatformsMultiplier::GetValue(Action* action)
     if (!alarAI || alarAI->HasPretendedToDie())
         return 1.0f;
 
-    if (IsAlarAddTank(botAI, bot))
+    if (botAI->IsAssistTankOfIndex(bot, 1))
         return 1.0f;
 
     if (dynamic_cast<FleeAction*>(action) ||

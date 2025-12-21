@@ -70,19 +70,6 @@ namespace TempestKeepHelpers
         }
     }
 
-    Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry)
-    {
-        const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
-        for (auto const& npcGuid : npcs)
-        {
-            Unit* unit = botAI->GetUnit(npcGuid);
-            if (unit && unit->IsAlive() && unit->GetEntry() == entry)
-                return unit;
-        }
-
-        return nullptr;
-    }
-
     Unit* GetNearestPlayerInRadius(Player* bot, float radius)
     {
         Unit* nearestPlayer = nullptr;
@@ -256,11 +243,28 @@ namespace TempestKeepHelpers
         ground = GROUND_POSITIONS[closestPlatform];
     }
 
-    bool IsAlarAddTank(PlayerbotAI* botAI, Player* bot)
+    std::pair<Unit*, Unit*> GetFirstTwoEmbersOfAlar(PlayerbotAI* botAI)
     {
-        return botAI->IsTank(bot) &&
-               !botAI->IsMainTank(bot) &&
-               !botAI->IsAssistTankOfIndex(bot, 0);
+        Unit* firstEmber = nullptr;
+        Unit* secondEmber = nullptr;
+
+        for (auto const& guid :
+             botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get())
+        {
+            Unit* unit = botAI->GetUnit(guid);
+            if (unit && unit->IsAlive() && unit->GetEntry() == NPC_EMBER_OF_ALAR)
+            {
+                if (!firstEmber)
+                    firstEmber = unit;
+                else if (!secondEmber)
+                {
+                    secondEmber = unit;
+                    break;
+                }
+            }
+        }
+
+        return { firstEmber, secondEmber };
     }
 
     // Void Reaver

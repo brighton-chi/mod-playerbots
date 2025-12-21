@@ -230,16 +230,24 @@ bool AlarRangedMoveUnderPlatformsAction::Execute(Event event)
     return false;
 }
 
-// This needs a better way to handle Embers in phase 2 since 2 spawn at once
-bool AlarAddTankPickUpEmbersAction::Execute(Event event)
+bool AlarSecondAssistTankPickUpEmbersAction::Execute(Event event)
 {
-    if (!IsAlarAddTank(botAI, bot))
+    if (!botAI->IsAssistTankOfIndex(bot, 1))
         return false;
 
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
     if (!alar)
         return false;
 
+    boss_alar* alarAI = dynamic_cast<boss_alar*>(alar->GetAI());
+    if (!alarAI)
+        return false;
+
+    return HandlePhase1Embers(alar, alarAI) || HandlePhase2Embers(alar, alarAI);
+}
+
+bool AlarSecondAssistTankPickUpEmbersAction::HandlePhase1Embers(Unit* alar, boss_alar* alarAI)
+{
     int8 locationIndex = GetAlarCurrentLocationIndex(alar);
     if (locationIndex == LOCATION_NONE)
     {
@@ -247,25 +255,20 @@ bool AlarAddTankPickUpEmbersAction::Execute(Event event)
         locationIndex = GetAlarDestinationLocationIndex(alar, dest);
     }
 
-    Unit* ember = GetFirstAliveUnitByEntry(botAI, NPC_EMBER_OF_ALAR);
+    Unit* ember = AI_VALUE2(Unit*, "find target", "ember of al'ar");
     if (ember)
     {
         MarkTargetWithSquare(bot, ember);
+        SetRtiTarget(botAI, "square", ember);
 
-        boss_alar* alarAI = dynamic_cast<boss_alar*>(alar->GetAI());
-        if (alarAI && !alarAI->HasPretendedToDie())
-            SetRtiTarget(botAI, "square", ember);
-        else if (alarAI && alarAI->HasPretendedToDie())
-            SetRtiTarget(botAI, "skull", nullptr);
-
-        if (bot->GetVictim() != ember)
+        if (bot->GetTarget() != ember->GetGUID())
             return Attack(ember);
 
         if (ember->GetVictim() == bot)
         {
             if (locationIndex >= PLATFORM_0_IDX && locationIndex <= PLATFORM_3_IDX)
             {
-                // Phase 1, Ember spawned: Pick up Ember and move it to 25 yards from the ranged group
+                // Pick up Ember and move it to 25 yards from the ranged group
                 const Position& groundTarget = GROUND_POSITIONS[locationIndex];
                 const Position& center = ALAR_POINT_MIDDLE;
                 float dx = center.GetPositionX() - groundTarget.GetPositionX();
@@ -278,11 +281,11 @@ bool AlarAddTankPickUpEmbersAction::Execute(Event event)
                 float targetZ = groundTarget.GetPositionZ();
 
                 return MoveTo(TEMPEST_KEEP_MAP_ID, targetX, targetY, targetZ, false, false, false, false,
-                              MovementPriority::MOVEMENT_COMBAT, true, false);
+                                MovementPriority::MOVEMENT_COMBAT, true, false);
             }
             else
             {
-                // Phase 1, Flame Quills, or Phase 2: Move Embers generally away from the group
+                // Flame Quills: Move Ember generally away from the group
                 const float safeDistance = 15.0f;
                 Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
                 if (nearestPlayer)
@@ -292,14 +295,54 @@ bool AlarAddTankPickUpEmbersAction::Execute(Event event)
     }
     else if (locationIndex >= PLATFORM_0_IDX && locationIndex <= PLATFORM_3_IDX)
     {
-        // Phase 1, no Embers: Return to current ranged group position
+        // No Embers: Return to current ranged group position
         const Position& groundTarget = GROUND_POSITIONS[locationIndex];
         if (bot->GetExactDist2d(groundTarget.GetPositionX(), groundTarget.GetPositionY()) > 20.0f)
         {
             return MoveInside(TEMPEST_KEEP_MAP_ID, groundTarget.GetPositionX(),
-                              groundTarget.GetPositionY(), groundTarget.GetPositionZ(),
-                              20.0f, MovementPriority::MOVEMENT_COMBAT);
+                                groundTarget.GetPositionY(), groundTarget.GetPositionZ(),
+                                20.0f, MovementPriority::MOVEMENT_COMBAT);
         }
+    }
+
+    return false;
+}
+
+bool AlarSecondAssistTankPickUpEmbersAction::HandlePhase2Embers(Unit* alar, boss_alar* alarAI)
+{
+    auto [firstEmber, secondEmber] = GetFirstTwoEmbersOfAlar(botAI);
+
+    if (firstEmber && firstEmber->GetVictim() != bot)
+    {
+        if (bot->GetTarget() != firstEmber->GetGUID())
+            return Attack(firstEmber);
+
+        const char* taunts[] = { "taunt", "growl", "hand of reckoning", "dark command" };
+        for (const char* spellName : taunts)
+        {
+            if (botAI->CanCastSpell(spellName, firstEmber))
+                return botAI->CastSpell(spellName, firstEmber);
+        }
+    }
+    else if (secondEmber && secondEmber->GetVictim() != bot)
+    {
+        if (bot->GetTarget() != secondEmber->GetGUID())
+            return Attack(secondEmber);
+
+        const char* taunts[] = { "taunt", "growl", "hand of reckoning", "dark command" };
+        for (const char* spellName : taunts)
+        {
+            if (botAI->CanCastSpell(spellName, secondEmber))
+                return botAI->CastSpell(spellName, secondEmber);
+        }
+    }
+    else if ((firstEmber && firstEmber->GetVictim() == bot) &&
+             (!secondEmber || secondEmber->GetVictim() == bot))
+    {
+        const float safeDistance = 15.0f;
+        Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
+        if (nearestPlayer)
+            return MoveFromGroup(safeDistance + 1.0f);
     }
 
     return false;
@@ -310,21 +353,28 @@ bool AlarRangedDpsPrioritizeEmbersAction::Execute(Event event)
     if (!botAI->IsRangedDps(bot))
         return false;
 
-    Unit* ember = GetFirstAliveUnitByEntry(botAI, NPC_EMBER_OF_ALAR);
-    if (ember)
-    {
-        float currentDistance = bot->GetDistance2d(ember);
-        const float safeDistance = 15.0f;
-        if (currentDistance < safeDistance)
-        {
-            bot->AttackStop();
-            bot->InterruptNonMeleeSpells(true);
-            return MoveAway(ember, safeDistance - currentDistance);
-        }
+    auto [firstEmber, secondEmber] = GetFirstTwoEmbersOfAlar(botAI);
 
-        SetRtiTarget(botAI, "square", ember);
-        if (bot->GetTarget() != ember->GetGUID())
-            return Attack(ember);
+    const float safeDistance = 15.0f;
+    if (firstEmber && bot->GetDistance2d(firstEmber) < safeDistance)
+    {
+        bot->AttackStop();
+        bot->InterruptNonMeleeSpells(true);
+        return MoveAway(firstEmber, safeDistance - bot->GetDistance2d(firstEmber));
+    }
+    if (secondEmber && bot->GetDistance2d(secondEmber) < safeDistance)
+    {
+        bot->AttackStop();
+        bot->InterruptNonMeleeSpells(true);
+        return MoveAway(secondEmber, safeDistance - bot->GetDistance2d(secondEmber));
+    }
+
+    Unit* emberTarget = firstEmber ? firstEmber : secondEmber;
+    if (emberTarget)
+    {
+        SetRtiTarget(botAI, "square", emberTarget);
+        if (bot->GetTarget() != emberTarget->GetGUID())
+            return Attack(emberTarget);
     }
     else if (Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar"))
     {
@@ -368,7 +418,7 @@ bool AlarJumpFromPlatformAction::Execute(Event event)
                           MovementPriority::MOVEMENT_FORCED, true, false);
         }
     }
-    else if (IsAlarAddTank(botAI, bot))
+    else if (botAI->IsAssistTankOfIndex(bot, 1))
     {
         if (bot->GetExactDist2d(ALAR_POINT_MIDDLE.GetPositionX(), ALAR_POINT_MIDDLE.GetPositionY()) > 25.0f)
         {
@@ -1568,7 +1618,8 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::ShouldBotLootWeapon(uint32 we
     }
 }
 
-bool KaelthasSunstriderLootLegendaryWeaponsAction::LootWeapon(uint32 weaponEntry, uint32 itemId, const char* weaponName)
+bool KaelthasSunstriderLootLegendaryWeaponsAction::LootWeapon(
+    uint32 weaponEntry, uint32 itemId, const char* weaponName)
 {
     auto const& corpses = context->GetValue<GuidVector>("nearest corpses")->Get();
     const float maxLootRange = sPlayerbotAIConfig->lootDistance;
@@ -1623,6 +1674,7 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::LootWeapon(uint32 weaponEntry
             receiver->GetSession()->QueuePacket(packet);
         }, 600);
 
+        botAI->DoSpecificAction("equip upgrades", Event(), true);
         return true;
     }
 

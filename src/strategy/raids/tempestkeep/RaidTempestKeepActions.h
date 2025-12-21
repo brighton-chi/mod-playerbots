@@ -57,12 +57,16 @@ public:
     bool Execute(Event event) override;
 };
 
-class AlarAddTankPickUpEmbersAction : public AttackAction
+class AlarSecondAssistTankPickUpEmbersAction : public AttackAction
 {
 public:
-    AlarAddTankPickUpEmbersAction(
-        PlayerbotAI* botAI, std::string const name = "al'ar add tank pick up embers") : AttackAction(botAI, name) {}
+    AlarSecondAssistTankPickUpEmbersAction(
+        PlayerbotAI* botAI, std::string const name = "al'ar second assist tank pick up embers") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
+
+private:
+    bool HandlePhase1Embers(Unit* alar, boss_alar* alarAI);
+    bool HandlePhase2Embers(Unit* alar, boss_alar* alarAI);
 };
 
 class AlarRangedDpsPrioritizeEmbersAction : public AttackAction

@@ -213,11 +213,8 @@ namespace ZulAmanHelpers
         Unit* lowest = nullptr;
         Unit* highest = nullptr;
 
-        auto npcValue = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs");
-        if (!npcValue)
-            return {nullptr, nullptr};
-
-        for (auto const& guid : npcValue->Get())
+        for (auto const& guid :
+             botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get())
         {
             Unit* unit = botAI->GetUnit(guid);
             if (unit && unit->IsAlive() && unit->GetEntry() == NPC_AMANI_HATCHER)

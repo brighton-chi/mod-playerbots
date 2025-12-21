@@ -30,7 +30,7 @@ bool AlarPullingBossTrigger::IsActive()
 
 bool AlarBossIsFlyingBetweenPlatformsTrigger::IsActive()
 {
-    if (IsAlarAddTank(botAI, bot))
+    if (!botAI->IsAssistTankOfIndex(bot, 1))
         return false;
 
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
@@ -56,7 +56,7 @@ bool AlarBossIsFlyingBetweenPlatformsTrigger::IsActive()
 
 bool AlarBossSpawnsEmbersOfAlarTrigger::IsActive()
 {
-    if (!IsAlarAddTank(botAI, bot) && !botAI->IsRangedDps(bot))
+    if (!botAI->IsAssistTankOfIndex(bot, 1) && !botAI->IsRangedDps(bot))
         return false;
 
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
