@@ -35,6 +35,9 @@ public:
         creators["al'ar phase 2 encounter is at room center"] =
             &RaidTempestKeepTriggerContext::alar_phase_2_encounter_is_at_room_center;
 
+        creators["al'ar strategy changes between phases"] =
+            &RaidTempestKeepTriggerContext::alar_strategy_changes_between_phases;
+
         // Void Reaver
         creators["void reaver knock away reduces tank aggro"] =
             &RaidTempestKeepTriggerContext::void_reaver_knock_away_reduces_tank_aggro;
@@ -149,6 +152,9 @@ private:
 
     static Trigger* alar_phase_2_encounter_is_at_room_center(
         PlayerbotAI* botAI) { return new AlarPhase2EncounterIsAtRoomCenterTrigger(botAI); }
+
+    static Trigger* alar_strategy_changes_between_phases(
+        PlayerbotAI* botAI) { return new AlarStrategyChangesBetweenPhasesTrigger(botAI); }
 
     // Void Reaver
     static Trigger* void_reaver_knock_away_reduces_tank_aggro(

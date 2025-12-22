@@ -17,7 +17,8 @@ namespace TempestKeepHelpers
         SPELL_ARCANE_FLURRY             = 37268,
 
         // Al'ar
-        SPELL_DIVE_BOMB_VISUAL          = 35367,
+        SPELL_REBIRTH_PHASE2            = 34342,
+        SPELL_REBIRTH_DIVE              = 35369,
         SPELL_MELT_ARMOR                = 35410,
 
         // High Astromancer Solarian
@@ -137,6 +138,8 @@ namespace TempestKeepHelpers
     extern const Position ALAR_SE_RAMP_BASE;
     extern const Position ALAR_SW_RAMP_BASE;
     extern const Position ALAR_ROOM_S_CENTER;
+    extern std::unordered_map<uint32, bool> lastRebirthState;
+    extern std::unordered_map<uint32, bool> isAlarInPhase2;
     int8 GetAlarDestinationLocationIndex(Unit* alar, Position& dest);
     int8 GetAlarCurrentLocationIndex(Unit* alar);
     void GetClosestPlatformAndGround(

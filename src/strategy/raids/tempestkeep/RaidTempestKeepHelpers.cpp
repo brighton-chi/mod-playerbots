@@ -257,6 +257,9 @@ namespace TempestKeepHelpers
     const Position ALAR_SW_RAMP_BASE = { 281.064f, 36.590f, -2.389f };
     const Position ALAR_ROOM_S_CENTER = { 281.064f, 0.0f, -2.389f };
 
+    std::unordered_map<uint32, bool> lastRebirthState;
+    std::unordered_map<uint32, bool> isAlarInPhase2;
+
     int8 GetAlarDestinationLocationIndex(Unit* alar, Position& dest)
     {
         if (!alar)

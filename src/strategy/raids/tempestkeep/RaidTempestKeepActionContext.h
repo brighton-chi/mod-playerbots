@@ -47,6 +47,9 @@ public:
         creators["al'ar return to room center"] =
             &RaidTempestKeepActionContext::alar_return_to_room_center;
 
+        creators["al'ar manage phase tracker"] =
+            &RaidTempestKeepActionContext::alar_manage_phase_tracker;
+
         // Void Reaver
         creators["void reaver tanks position boss"] =
             &RaidTempestKeepActionContext::void_reaver_tanks_position_boss;
@@ -185,6 +188,9 @@ private:
 
     static Action* alar_return_to_room_center(
         PlayerbotAI* botAI) { return new AlarReturnToRoomCenterAction(botAI); }
+
+    static Action* alar_manage_phase_tracker(
+        PlayerbotAI* botAI) { return new AlarManagePhaseTrackerAction(botAI); }
 
     // Void Reaver
     static Action* void_reaver_tanks_position_boss(

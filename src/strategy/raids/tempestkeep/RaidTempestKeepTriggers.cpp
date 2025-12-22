@@ -1,7 +1,7 @@
 #include "RaidTempestKeepTriggers.h"
 #include "RaidTempestKeepHelpers.h"
 #include "RaidTempestKeepActions.h"
-#include "RaidTempestKeepBossAI.h"
+#include "RaidTempestKeepKaelthasBossAI.h"
 #include "Playerbots.h"
 
 using namespace TempestKeepHelpers;
@@ -31,11 +31,10 @@ bool AlarPullingBossTrigger::IsActive()
 bool AlarBossIsFlyingBetweenPlatformsTrigger::IsActive()
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    if (!alar)
+    if (!alar || !alar->IsVisible())
         return false;
 
-    boss_alar* alarAI = dynamic_cast<boss_alar*>(alar->GetAI());
-    if (!alarAI || alarAI->HasPretendedToDie())
+    if (isAlarInPhase2[alar->GetMap()->GetInstanceId()])
         return false;
 
     int8 locationIndex = GetAlarCurrentLocationIndex(alar);
@@ -45,7 +44,8 @@ bool AlarBossIsFlyingBetweenPlatformsTrigger::IsActive()
         locationIndex = GetAlarDestinationLocationIndex(alar, dest);
     }
 
-    if (locationIndex == POINT_QUILL_OR_DIVE_IDX)
+    if (locationIndex == POINT_QUILL_OR_DIVE_IDX ||
+        locationIndex == POINT_MIDDLE_IDX)
         return false;
 
     return true;
@@ -67,8 +67,7 @@ bool AlarIncomingFlameQuillsTrigger::IsActive()
     if (!alar)
         return false;
 
-    boss_alar* alarAI = dynamic_cast<boss_alar*>(alar->GetAI());
-    if (!alarAI || alarAI->HasPretendedToDie())
+    if (isAlarInPhase2[alar->GetMap()->GetInstanceId()])
         return false;
 
     int8 locationIndex = GetAlarCurrentLocationIndex(alar);
@@ -87,8 +86,11 @@ bool AlarRisingFromTheAshesTrigger::IsActive()
     if (!alar)
         return false;
 
-    boss_alar* alarAI = dynamic_cast<boss_alar*>(alar->GetAI());
-    return alarAI && alarAI->IsPassive();
+    if (isAlarInPhase2[alar->GetMap()->GetInstanceId()])
+        return false;
+
+    Creature* alarCreature = alar->ToCreature();
+    return alarCreature && alarCreature->GetReactState() == REACT_PASSIVE;
 }
 
 bool AlarEverythingIsOnFireInPhase2Trigger::IsActive()
@@ -97,8 +99,7 @@ bool AlarEverythingIsOnFireInPhase2Trigger::IsActive()
     if (!alar)
         return false;
 
-    boss_alar* alarAI = dynamic_cast<boss_alar*>(alar->GetAI());
-    return alarAI && alarAI->HasPretendedToDie();
+    return isAlarInPhase2[alar->GetMap()->GetInstanceId()];
 }
 
 bool AlarPhase2EncounterIsAtRoomCenterTrigger::IsActive()
@@ -110,8 +111,11 @@ bool AlarPhase2EncounterIsAtRoomCenterTrigger::IsActive()
     if (!alar)
         return false;
 
-    boss_alar* alarAI = dynamic_cast<boss_alar*>(alar->GetAI());
-    if (!alarAI || !alarAI->HasPretendedToDie())
+    if (!isAlarInPhase2[alar->GetMap()->GetInstanceId()])
+        return false;
+
+    Creature* alarCreature = alar->ToCreature();
+    if (alarCreature && alarCreature->GetReactState() == REACT_PASSIVE)
         return false;
 
     int8 locationIndex = GetAlarCurrentLocationIndex(alar);
@@ -121,7 +125,27 @@ bool AlarPhase2EncounterIsAtRoomCenterTrigger::IsActive()
         locationIndex = GetAlarDestinationLocationIndex(alar, dest);
     }
 
-    return locationIndex != POINT_QUILL_OR_DIVE_IDX && !alarAI->IsNoMelee();
+    return locationIndex != POINT_QUILL_OR_DIVE_IDX;
+}
+
+bool AlarStrategyChangesBetweenPhasesTrigger::IsActive()
+{
+    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+    if (!alar)
+        return false;
+
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (member && member->IsAlive() && botAI->IsDps(member) &&
+                GET_PLAYERBOT_AI(member))
+                return member == bot;
+        }
+    }
+
+    return false;
 }
 
 // Void Reaver

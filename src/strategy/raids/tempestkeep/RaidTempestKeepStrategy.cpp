@@ -16,11 +16,11 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction::array(0,
             new NextAction("al'ar boss tanks move between platforms", ACTION_RAID + 1),
             new NextAction("al'ar melee dps move between platforms", ACTION_RAID + 1),
-            new NextAction("al'ar ranged and ember tank move under platforms", ACTION_RAID + 3), nullptr)
+            new NextAction("al'ar ranged and ember tank move under platforms", ACTION_RAID + 4), nullptr)
     ));
     triggers.push_back(new TriggerNode("al'ar boss spawns embers of alar",
         NextAction::array(0,
-            new NextAction("al'ar assist tanks pick up embers", ACTION_RAID + 4),
+            new NextAction("al'ar assist tanks pick up embers", ACTION_RAID + 3),
             new NextAction("al'ar ranged dps prioritize embers", ACTION_RAID + 2), nullptr)
     ));
     triggers.push_back(new TriggerNode("al'ar incoming flame quills",
@@ -36,6 +36,9 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     ));
     triggers.push_back(new TriggerNode("al'ar phase 2 encounter is at room center",
         NextAction::array(0, new NextAction("al'ar return to room center", ACTION_RAID + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("al'ar strategy changes between phases",
+        NextAction::array(0, new NextAction("al'ar manage phase tracker", ACTION_EMERGENCY + 10), nullptr)
     ));
 
     // Void Reaver

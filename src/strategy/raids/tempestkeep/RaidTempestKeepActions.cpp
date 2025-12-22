@@ -1,6 +1,6 @@
 #include "RaidTempestKeepActions.h"
 #include "RaidTempestKeepHelpers.h"
-#include "RaidTempestKeepBossAI.h"
+#include "RaidTempestKeepKaelthasBossAI.h"
 #include "AiFactory.h"
 #include "LootAction.h"
 #include "LootObjectStack.h"
@@ -254,67 +254,69 @@ bool AlarAssistTanksPickUpEmbersAction::Execute(Event event)
     if (!alar)
         return false;
 
-    boss_alar* alarAI = dynamic_cast<boss_alar*>(alar->GetAI());
-    if (alarAI)
-    {
-        if (!alarAI->HasPretendedToDie())
-            return HandlePhase1Embers(alar, alarAI);
-        else
-            return HandlePhase2Embers(alar, alarAI);
-    }
+    if (!isAlarInPhase2[alar->GetMap()->GetInstanceId()])
+        return HandlePhase1Embers(alar);
+    else
+        return HandlePhase2Embers(alar);
 
     return false;
 }
 
 // Embers will be tanked by the second assist tank only in Phase 1
-bool AlarAssistTanksPickUpEmbersAction::HandlePhase1Embers(Unit* alar, boss_alar* alarAI)
+bool AlarAssistTanksPickUpEmbersAction::HandlePhase1Embers(Unit* alar)
 {
     if (!botAI->IsAssistTankOfIndex(bot, 1))
         return false;
 
     Unit* ember = AI_VALUE2(Unit*, "find target", "ember of al'ar");
-    if (!ember)
-        return false;
-
-    MarkTargetWithSquare(bot, ember);
-    SetRtiTarget(botAI, "square", ember);
-
-    if (bot->GetTarget() != ember->GetGUID())
-        return Attack(ember);
-
-    if (ember->GetVictim() == bot)
+    if (ember)
     {
-        int8 locationIndex = GetAlarCurrentLocationIndex(alar);
-        if (locationIndex == LOCATION_NONE)
+        MarkTargetWithSquare(bot, ember);
+        SetRtiTarget(botAI, "square", ember);
+
+        if (bot->GetTarget() != ember->GetGUID())
+            return Attack(ember);
+
+        if (ember->GetVictim() == bot)
         {
-            Position dest;
-            locationIndex = GetAlarDestinationLocationIndex(alar, dest);
+            int8 locationIndex = GetAlarCurrentLocationIndex(alar);
+            if (locationIndex == LOCATION_NONE)
+            {
+                Position dest;
+                locationIndex = GetAlarDestinationLocationIndex(alar, dest);
+            }
+
+            if (locationIndex >= PLATFORM_0_IDX && locationIndex <= PLATFORM_3_IDX)
+            {
+                // Pick up Ember and move it to 25 yards from the ranged group
+                const Position& groundTarget = GROUND_POSITIONS[locationIndex];
+                const Position& center = ALAR_POINT_MIDDLE;
+                float dx = center.GetPositionX() - groundTarget.GetPositionX();
+                float dy = center.GetPositionY() - groundTarget.GetPositionY();
+                float distToCenter = groundTarget.GetExactDist2d(center.GetPositionX(), center.GetPositionY());
+
+                float moveDist = 25.0f; // distance from groundTarget toward center
+                float targetX = groundTarget.GetPositionX() + (dx / distToCenter) * moveDist;
+                float targetY = groundTarget.GetPositionY() + (dy / distToCenter) * moveDist;
+                float targetZ = groundTarget.GetPositionZ();
+
+                return MoveTo(TEMPEST_KEEP_MAP_ID, targetX, targetY, targetZ, false, false, false, false,
+                              MovementPriority::MOVEMENT_COMBAT, true, false);
+            }
+            else
+            {
+                // Flame Quills: Move Ember generally away from the group
+                const float safeDistance = 15.0f;
+                Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
+                if (nearestPlayer)
+                    return MoveFromGroup(safeDistance + 1.0f);
+            }
         }
-
-        if (locationIndex >= PLATFORM_0_IDX && locationIndex <= PLATFORM_3_IDX)
+        else if (!bot->IsWithinMeleeRange(ember))
         {
-            // Pick up Ember and move it to 25 yards from the ranged group
-            const Position& groundTarget = GROUND_POSITIONS[locationIndex];
-            const Position& center = ALAR_POINT_MIDDLE;
-            float dx = center.GetPositionX() - groundTarget.GetPositionX();
-            float dy = center.GetPositionY() - groundTarget.GetPositionY();
-            float distToCenter = groundTarget.GetExactDist2d(center.GetPositionX(), center.GetPositionY());
-
-            float moveDist = 25.0f; // distance from groundTarget toward center
-            float targetX = groundTarget.GetPositionX() + (dx / distToCenter) * moveDist;
-            float targetY = groundTarget.GetPositionY() + (dy / distToCenter) * moveDist;
-            float targetZ = groundTarget.GetPositionZ();
-
-            return MoveTo(TEMPEST_KEEP_MAP_ID, targetX, targetY, targetZ, false, false, false, false,
-                            MovementPriority::MOVEMENT_COMBAT, true, false);
-        }
-        else
-        {
-            // Flame Quills: Move Ember generally away from the group
-            const float safeDistance = 15.0f;
-            Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
-            if (nearestPlayer)
-                return MoveFromGroup(safeDistance + 1.0f);
+            return MoveTo(TEMPEST_KEEP_MAP_ID, ember->GetPositionX(), ember->GetPositionY(),
+                          ember->GetPositionZ(), false, false, false, false,
+                          MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
 
@@ -323,7 +325,7 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase1Embers(Unit* alar, boss_alar
 
 // One Ember will be tanked by the second assist tank in Phase 2, and the other by
 // the main tank or first assist tank (whichever is not tanking Al'ar)
-bool AlarAssistTanksPickUpEmbersAction::HandlePhase2Embers(Unit* alar, boss_alar* alarAI)
+bool AlarAssistTanksPickUpEmbersAction::HandlePhase2Embers(Unit* alar)
 {
     auto [firstEmber, secondEmber] = GetFirstTwoEmbersOfAlar(botAI);
 
@@ -347,7 +349,7 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase2Embers(Unit* alar, boss_alar
         else if (bot->IsWithinMeleeRange(firstEmber))
         {
             const float safeDistance = 15.0f;
-            Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
+            Unit* nearestPlayer = GetNearestNonTankPlayerInRadius(bot, safeDistance);
             if (nearestPlayer)
                 return MoveFromGroup(safeDistance + 1.0f);
         }
@@ -375,7 +377,7 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase2Embers(Unit* alar, boss_alar
             else if (bot->IsWithinMeleeRange(secondEmber))
             {
                 const float safeDistance = 15.0f;
-                Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
+                Unit* nearestPlayer = GetNearestNonTankPlayerInRadius(bot, safeDistance);
                 if (nearestPlayer)
                     return MoveFromGroup(safeDistance + 1.0f);
             }
@@ -545,7 +547,8 @@ bool AlarSwapTanksOnBossAction::Execute(Event event)
         }
     }
 
-    if (mainTank && bot == mainTank && !mainTank->HasAura(SPELL_MELT_ARMOR))
+    // This block is to restart combat in Phase 2 since tank assist is disabled
+    if (alar->GetHealth() == alar->GetMaxHealth())
     {
         SetRtiTarget(botAI, "star", alar);
 
@@ -632,48 +635,25 @@ bool AlarAvoidFlamePatchesAndDiveBombsAction::HandleDiveBomb(Unit* alar)
         locationIndex = GetAlarDestinationLocationIndex(alar, dest);
     }
 
-    boss_alar* alarAI = dynamic_cast<boss_alar*>(alar->GetAI());
-    if (locationIndex != POINT_QUILL_OR_DIVE_IDX &&
-        !(alarAI && alarAI->IsNoMelee() && !alarAI->IsPassive()) &&
-        !alar->HasAura(SPELL_DIVE_BOMB_VISUAL))
-        return false;
-
-    float currentDistance = bot->GetDistance2d(alar);
-    const float safeDistance = 20.0f;
-    if (currentDistance < safeDistance)
+    if (locationIndex == POINT_QUILL_OR_DIVE_IDX)
     {
-        bot->AttackStop();
-        bot->InterruptNonMeleeSpells(true);
-        return MoveAway(alar, safeDistance - currentDistance);
-    }
-    else
-    {
-        Group* group = bot->GetGroup();
-        if (!group)
-            return false;
-
-        auto const& members = AI_VALUE(GuidVector, "group members");
-        Unit* closestMember = nullptr;
-        float closestDist = std::numeric_limits<float>::max();
-
-        for (auto& member : members)
+        Unit* nearestPlayer = GetNearestPlayerInRadius(bot, 10.0f);
+        if (nearestPlayer)
         {
-            Unit* unit = botAI->GetUnit(member);
-            if (!unit || bot->GetGUID() == member)
-                continue;
-
-            float dist = bot->GetExactDist2d(unit);
-            if (dist < closestDist)
-            {
-                closestDist = dist;
-                closestMember = unit;
-            }
+            return FleePosition(Position(nearestPlayer->GetPositionX(), nearestPlayer->GetPositionY(),
+                                         nearestPlayer->GetPositionZ()), 11.0f);
         }
-
-        if (closestMember)
+    }
+    else if (alar->HasUnitState(UNIT_STATE_CASTING) &&
+             alar->FindCurrentSpellBySpellId(SPELL_REBIRTH_DIVE))
+    {
+        float currentDistance = bot->GetDistance2d(alar);
+        const float safeDistance = 20.0f;
+        if (currentDistance < safeDistance)
         {
-            return FleePosition(Position(closestMember->GetPositionX(), closestMember->GetPositionY(),
-                                         closestMember->GetPositionZ()), 11.0f);
+            bot->AttackStop();
+            bot->InterruptNonMeleeSpells(true);
+            return MoveAway(alar, safeDistance - currentDistance);
         }
     }
 
@@ -685,11 +665,34 @@ bool AlarReturnToRoomCenterAction::Execute(Event event)
 {
     const Position& center = ALAR_ROOM_CENTER;
     if (bot->GetVictim() == nullptr &&
-        bot->GetExactDist2d(center.GetPositionX(), center.GetPositionY()) > 40.0f)
+        bot->GetExactDist2d(center.GetPositionX(), center.GetPositionY()) > 50.0f)
     {
         return MoveInside(TEMPEST_KEEP_MAP_ID, center.GetPositionX(), center.GetPositionY(),
-                          center.GetPositionZ(), 40.0f, MovementPriority::MOVEMENT_COMBAT);
+                          center.GetPositionZ(), 50.0f, MovementPriority::MOVEMENT_COMBAT);
     }
+
+    return false;
+}
+
+bool AlarManagePhaseTrackerAction::Execute(Event event)
+{
+    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+    if (!alar)
+        return false;
+
+    const uint32 instanceId = alar->GetMap()->GetInstanceId();
+
+    if (alar->GetHealthPct() > 99.5f && alar->GetPositionZ() >= ALAR_BALCONY_Z)
+        isAlarInPhase2[instanceId] = false;
+
+    bool rebirthActive = alar->HasUnitState(UNIT_STATE_CASTING) &&
+                         alar->FindCurrentSpellBySpellId(SPELL_REBIRTH_PHASE2);
+    bool lastRebirth = lastRebirthState[instanceId];
+
+    if (lastRebirth && !rebirthActive)
+        isAlarInPhase2[instanceId] = true;
+
+    lastRebirthState[instanceId] = rebirthActive;
 
     return false;
 }

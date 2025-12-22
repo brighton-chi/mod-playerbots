@@ -1,7 +1,7 @@
 #include "RaidTempestKeepMultipliers.h"
 #include "RaidTempestKeepActions.h"
 #include "RaidTempestKeepHelpers.h"
-#include "RaidTempestKeepBossAI.h"
+#include "RaidTempestKeepKaelthasBossAI.h"
 #include "ChooseTargetActions.h"
 #include "DKActions.h"
 #include "DruidBearActions.h"
@@ -24,16 +24,10 @@ float AlarMoveBetweenPlatformsMultiplier::GetValue(Action* action)
     if (!alar)
         return 1.0f;
 
-    boss_alar* alarAI = dynamic_cast<boss_alar*>(alar->GetAI());
-    if (!alarAI || alarAI->HasPretendedToDie())
+    if (isAlarInPhase2[alar->GetMap()->GetInstanceId()])
         return 1.0f;
 
-    if (botAI->IsAssistTankOfIndex(bot, 1))
-        return 1.0f;
-
-    if (dynamic_cast<FleeAction*>(action) ||
-        dynamic_cast<FollowAction*>(action) ||
-        dynamic_cast<ReachTargetAction*>(action) ||
+    if (dynamic_cast<ReachTargetAction*>(action) ||
         dynamic_cast<TankFaceAction*>(action) ||
         dynamic_cast<CastKillingSpreeAction*>(action) ||
         dynamic_cast<CastDisengageAction*>(action) ||
@@ -60,6 +54,10 @@ float AlarDisableDisperseMultiplier::GetValue(Action* action)
         !dynamic_cast<SetBehindTargetAction*>(action))
         return 0.0f;
 
+    if (dynamic_cast<FollowAction*>(action) ||
+        dynamic_cast<FleeAction*>(action))
+        return 0.0f;
+
     return 1.0f;
 }
 
@@ -72,11 +70,7 @@ float AlarDisableTankAssistMultiplier::GetValue(Action* action)
     if (!alar)
         return 1.0f;
 
-    /* boss_alar* alarAI = dynamic_cast<boss_alar*>(alar->GetAI());
-    if (!alarAI)
-        return 1.0f; */
-
-    if (bot->IsInCombat() /* && !alarAI->HasPretendedToDie() */)
+    if (bot->GetVictim() != nullptr)
     {
         if (dynamic_cast<TankAssistAction*>(action))
             return 0.0f;
@@ -91,12 +85,13 @@ float AlarStayAwayFromRebirthMultiplier::GetValue(Action* action)
     if (!alar)
         return 1.0f;
 
-    boss_alar* alarAI = dynamic_cast<boss_alar*>(alar->GetAI());
-    if (alarAI && alarAI->IsPassive())
+    Creature* alarCreature = alar->ToCreature();
+    if (alarCreature && alarCreature->GetReactState() == REACT_PASSIVE)
     {
         if (dynamic_cast<MovementAction*>(action) &&
-            !(dynamic_cast<AlarMoveAwayFromRebirthAction*>(action)))
-              return 0.0f;
+            !dynamic_cast<AlarMoveAwayFromRebirthAction*>(action) &&
+            !dynamic_cast<AlarAvoidFlamePatchesAndDiveBombsAction*>(action))
+            return 0.0f;
     }
 
     return 1.0f;

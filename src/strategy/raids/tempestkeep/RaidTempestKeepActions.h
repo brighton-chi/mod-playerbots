@@ -2,7 +2,6 @@
 #define _PLAYERBOT_RAIDTEMPESTKEEPACTIONS_H
 
 #include "RaidTempestKeepHelpers.h"
-#include "RaidTempestKeepBossAI.h"
 #include "Action.h"
 #include "AttackAction.h"
 #include "MovementActions.h"
@@ -65,8 +64,8 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool HandlePhase1Embers(Unit* alar, boss_alar* alarAI);
-    bool HandlePhase2Embers(Unit* alar, boss_alar* alarAI);
+    bool HandlePhase1Embers(Unit* alar);
+    bool HandlePhase2Embers(Unit* alar);
 };
 
 class AlarRangedDpsPrioritizeEmbersAction : public AttackAction
@@ -118,6 +117,14 @@ class AlarReturnToRoomCenterAction : public MovementAction
 public:
     AlarReturnToRoomCenterAction(
         PlayerbotAI* botAI, std::string const name = "al'ar return to room center") : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class AlarManagePhaseTrackerAction : public Action
+{
+public:
+    AlarManagePhaseTrackerAction(
+        PlayerbotAI* botAI, std::string const name = "al'ar manage phase tracker") : Action(botAI, name) {}
     bool Execute(Event event) override;
 };
 

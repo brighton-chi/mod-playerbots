@@ -71,6 +71,14 @@ public:
     bool IsActive() override;
 };
 
+class AlarStrategyChangesBetweenPhasesTrigger : public Trigger
+{
+public:
+    AlarStrategyChangesBetweenPhasesTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "al'ar strategy changes between phases") {}
+    bool IsActive() override;
+};
+
 // Void Reaver
 
 class VoidReaverKnockAwayReducesTankAggroTrigger : public Trigger
