@@ -58,7 +58,7 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("high astromancer solarian bot has wrath of the astromancer",
         NextAction::array(0, new NextAction("high astromancer solarian move away from group", ACTION_EMERGENCY + 6), nullptr)
     ));
-    triggers.push_back(new TriggerNode("high astromancer solarian solarium agents spawned",
+    triggers.push_back(new TriggerNode("high astromancer solarian boss has vanished",
         NextAction::array(0, new NextAction("high astromancer solarian stack for aoe", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("high astromancer solarian solarium priests spawned",

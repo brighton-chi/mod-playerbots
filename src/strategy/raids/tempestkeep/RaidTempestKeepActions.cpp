@@ -705,26 +705,21 @@ bool VoidReaverTanksPositionBossAction::Execute(Event event)
     if (!voidReaver)
         return false;
 
-    if (bot->GetTarget() != voidReaver->GetGUID())
-        return Attack(voidReaver);
+    const Position& tankPosition = VOID_REAVER_TANK_POSITION;
 
-    if (voidReaver->GetVictim() == bot)
+    float dX = tankPosition.GetPositionX() - bot->GetPositionX();
+    float dY = tankPosition.GetPositionY() - bot->GetPositionY();
+    float distanceToTankPosition = bot->GetExactDist2d(tankPosition.GetPositionX(),
+                                                       tankPosition.GetPositionY());
+
+    if (bot->IsWithinMeleeRange(voidReaver) && distanceToTankPosition > 2.0f)
     {
-        const Position& tankPosition = VOID_REAVER_TANK_POSITION;
-
-        float dX = tankPosition.GetPositionX() - bot->GetPositionX();
-        float dY = tankPosition.GetPositionY() - bot->GetPositionY();
-        float distanceToTankPosition = bot->GetExactDist2d(tankPosition.GetPositionX(),
-                                                           tankPosition.GetPositionY());
-
-        if (distanceToTankPosition > 2.0f)
-        {
-            float moveDist = std::min(5.0f, distanceToTankPosition);
-            float moveX = bot->GetPositionX() + (dX / distanceToTankPosition) * moveDist;
-            float moveY = bot->GetPositionY() + (dY / distanceToTankPosition) * moveDist;
-            return MoveTo(TEMPEST_KEEP_MAP_ID, moveX, moveY, tankPosition.GetPositionZ(), false,
-                          false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
-        }
+        float moveDist = std::min(5.0f, distanceToTankPosition);
+        float moveX = bot->GetPositionX() + (dX / distanceToTankPosition) * moveDist;
+        float moveY = bot->GetPositionY() + (dY / distanceToTankPosition) * moveDist;
+        
+        return MoveTo(TEMPEST_KEEP_MAP_ID, moveX, moveY, tankPosition.GetPositionZ(), false,
+                      false, false, false, MovementPriority::MOVEMENT_FORCED, true, true);
     }
 
     return false;

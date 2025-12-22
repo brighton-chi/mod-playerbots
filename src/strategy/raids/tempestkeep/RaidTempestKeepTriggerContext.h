@@ -52,8 +52,8 @@ public:
         creators["high astromancer solarian bot has wrath of the astromancer"] =
             &RaidTempestKeepTriggerContext::high_astromancer_solarian_bot_has_wrath_of_the_astromancer;
 
-        creators["high astromancer solarian solarium agents spawned"] =
-            &RaidTempestKeepTriggerContext::high_astromancer_solarian_solarium_agents_spawned;
+        creators["high astromancer solarian boss has vanished"] =
+            &RaidTempestKeepTriggerContext::high_astromancer_solarian_boss_has_vanished;
 
         creators["high astromancer solarian solarium priests spawned"] =
             &RaidTempestKeepTriggerContext::high_astromancer_solarian_solarium_priests_spawned;
@@ -170,8 +170,8 @@ private:
     static Trigger* high_astromancer_solarian_bot_has_wrath_of_the_astromancer(
         PlayerbotAI* botAI) { return new HighAstromancerSolarianBotHasWrathOfTheAstromancerTrigger(botAI); }
 
-    static Trigger* high_astromancer_solarian_solarium_agents_spawned(
-        PlayerbotAI* botAI) { return new HighAstromancerSolarianSolariumAgentsSpawnedTrigger(botAI); }
+    static Trigger* high_astromancer_solarian_boss_has_vanished(
+        PlayerbotAI* botAI) { return new HighAstromancerSolarianBossHasVanishedTrigger(botAI); }
 
     static Trigger* high_astromancer_solarian_solarium_priests_spawned(
         PlayerbotAI* botAI) { return new HighAstromancerSolarianSolariumPriestsSpawnedTrigger(botAI); }

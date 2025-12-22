@@ -115,11 +115,11 @@ public:
     bool IsActive() override;
 };
 
-class HighAstromancerSolarianSolariumAgentsSpawnedTrigger : public Trigger
+class HighAstromancerSolarianBossHasVanishedTrigger : public Trigger
 {
 public:
-    HighAstromancerSolarianSolariumAgentsSpawnedTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "high astromancer solarian solarium agents spawned") {}
+    HighAstromancerSolarianBossHasVanishedTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "high astromancer solarian boss has vanished") {}
     bool IsActive() override;
 };
 

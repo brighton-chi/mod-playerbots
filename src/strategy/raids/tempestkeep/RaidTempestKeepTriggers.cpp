@@ -152,7 +152,7 @@ bool AlarStrategyChangesBetweenPhasesTrigger::IsActive()
 
 bool VoidReaverKnockAwayReducesTankAggroTrigger::IsActive()
 {
-    if (botAI->IsMelee(bot) && botAI->IsDps(bot))
+    if (!botAI->IsRanged(bot) && !botAI->IsTank(bot))
         return false;
 
     Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
@@ -161,7 +161,7 @@ bool VoidReaverKnockAwayReducesTankAggroTrigger::IsActive()
 
 bool VoidReaverBossLaunchesArcaneOrbsTrigger::IsActive()
 {
-    if (botAI->IsMelee(bot))
+    if (!botAI->IsRanged(bot))
         return false;
 
     Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
@@ -187,13 +187,18 @@ bool HighAstromancerSolarianBotHasWrathOfTheAstromancerTrigger::IsActive()
     return bot->HasAura(SPELL_WRATH_OF_THE_ASTROMANCER);
 }
 
-bool HighAstromancerSolarianSolariumAgentsSpawnedTrigger::IsActive()
+bool HighAstromancerSolarianBossHasVanishedTrigger::IsActive()
 {
     if (bot->HasAura(SPELL_WRATH_OF_THE_ASTROMANCER))
         return false;
 
-    Unit* solariumAgent = AI_VALUE2(Unit*, "find target", "solarium agent");
-    return solariumAgent != nullptr;
+    Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
+    if (!astromancer)
+        return false;
+
+    Creature* astromancerCreature = astromancer->ToCreature();
+    return astromancerCreature && 
+           astromancerCreature->GetReactState() == REACT_PASSIVE;
 }
 
 bool HighAstromancerSolarianSolariumPriestsSpawnedTrigger::IsActive()
