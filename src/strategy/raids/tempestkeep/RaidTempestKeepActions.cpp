@@ -717,7 +717,7 @@ bool VoidReaverTanksPositionBossAction::Execute(Event event)
         float moveDist = std::min(5.0f, distanceToTankPosition);
         float moveX = bot->GetPositionX() + (dX / distanceToTankPosition) * moveDist;
         float moveY = bot->GetPositionY() + (dY / distanceToTankPosition) * moveDist;
-        
+
         return MoveTo(TEMPEST_KEEP_MAP_ID, moveX, moveY, tankPosition.GetPositionZ(), false,
                       false, false, false, MovementPriority::MOVEMENT_FORCED, true, true);
     }
@@ -1472,7 +1472,7 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event eve
             (botAI->IsAssistTank(bot) && (mace && mace->GetVictim() == bot ||
              dagger && dagger->GetVictim() == bot || sword && sword->GetVictim() == bot)))
         {
-            const float safeDistance = 10.0f;
+            const float safeDistance = botAI->IsAssistTank(bot) ? 15.0f : 10.0f;
             float currentDistance = bot->GetExactDist2d(axe);
             if (currentDistance < safeDistance)
                 return MoveAway(axe, safeDistance - currentDistance + 1.0f);
@@ -1891,7 +1891,7 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
     Player* capernianTank = GetCapernianTank(botAI, bot);
     if (botAI->IsRanged(bot) && bot != capernianTank)
     {
-        const float safeDistance = 7.0f;
+        const float safeDistance = 6.0f;
         Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
         if (nearestPlayer)
         {
@@ -2006,7 +2006,7 @@ bool KaelthasSunstriderMainTankPositionBossAction::Execute(Event event)
         float distToPosition =
             bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
 
-        if (distToPosition > 2.0f)
+        if (distToPosition > 4.0f)
         {
             float dX = position.GetPositionX() - bot->GetPositionX();
             float dY = position.GetPositionY() - bot->GetPositionY();
@@ -2015,7 +2015,7 @@ bool KaelthasSunstriderMainTankPositionBossAction::Execute(Event event)
             float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
             return MoveTo(TEMPEST_KEEP_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
-                          false, false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
+                          false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
 
@@ -2253,7 +2253,7 @@ bool KaelthasSunstriderSpreadOutInMidairAction::Execute(Event event)
     if (!group)
         return false;
 
-    const float minSpreadDistance = 15.0f;
+    const float minSpreadDistance = 13.0f;
 
     std::vector<Player*> nearbyPlayers;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
