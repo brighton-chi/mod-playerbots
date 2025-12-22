@@ -83,14 +83,17 @@ public:
         creators["kael'thas sunstrider capernian engaged by warlock tank"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_capernian_engaged_by_warlock_tank;
 
-        creators["kael'thas sunstrider capernian casts arcane burst"] =
-            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_capernian_casts_arcane_burst;
+        creators["kael'thas sunstrider capernian casts arcane burst and conflagration"] =
+            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_capernian_casts_arcane_burst_and_conflagration;
 
         creators["kael'thas sunstrider telonicus engaged by first assist tank"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_telonicus_engaged_by_first_assist_tank;
 
         creators["kael'thas sunstrider melee tanks need dedicated healer in phase 3"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_melee_tanks_need_dedicated_healer_in_phase_3;
+
+        creators["kael'thas sunstrider determining advisor kill order"] =
+            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_determining_advisor_kill_order;
 
         creators["kael'thas sunstrider waiting for tanks to get aggro on advisors"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_waiting_for_tanks_to_get_aggro_on_advisors;
@@ -106,9 +109,6 @@ public:
 
         creators["kael'thas sunstrider legendary weapons were lost"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_legendary_weapons_were_lost;
-
-        creators["kael'thas sunstrider determining advisor kill order"] =
-            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_determining_advisor_kill_order;
 
         creators["kael'thas sunstrider boss has entered the fight"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_boss_has_entered_the_fight;
@@ -201,14 +201,17 @@ private:
     static Trigger* kaelthas_sunstrider_capernian_engaged_by_warlock_tank(
         PlayerbotAI* botAI) { return new KaelthasSunstriderCapernianEngagedByWarlockTankTrigger(botAI); }
 
-    static Trigger* kaelthas_sunstrider_capernian_casts_arcane_burst(
-        PlayerbotAI* botAI) { return new KaelthasSunstriderCapernianCastsArcaneBurstTrigger(botAI); }
+    static Trigger* kaelthas_sunstrider_capernian_casts_arcane_burst_and_conflagration(
+        PlayerbotAI* botAI) { return new KaelthasSunstriderCapernianCastsArcaneBurstAndConflagrationTrigger(botAI); }
 
     static Trigger* kaelthas_sunstrider_telonicus_engaged_by_first_assist_tank(
         PlayerbotAI* botAI) { return new KaelthasSunstriderTelonicusEngagedByFirstAssistTankTrigger(botAI); }
 
     static Trigger* kaelthas_sunstrider_melee_tanks_need_dedicated_healer_in_phase_3(
         PlayerbotAI* botAI) { return new KaelthasSunstriderMeleeTanksNeedDedicatedHealerInPhase3Trigger(botAI); }
+
+    static Trigger* kaelthas_sunstrider_determining_advisor_kill_order(
+        PlayerbotAI* botAI) { return new KaelthasSunstriderDeterminingAdvisorKillOrderTrigger(botAI); }
 
     static Trigger* kaelthas_sunstrider_waiting_for_tanks_to_get_aggro_on_advisors(
         PlayerbotAI* botAI) { return new KaelthasSunstriderWaitingForTanksToGetAggroOnAdvisorsTrigger(botAI); }
@@ -224,9 +227,6 @@ private:
 
     static Trigger* kaelthas_sunstrider_legendary_weapons_were_lost(
         PlayerbotAI* botAI) { return new KaelthasSunstriderLegendaryWeaponsWereLostTrigger(botAI); }
-
-    static Trigger* kaelthas_sunstrider_determining_advisor_kill_order(
-        PlayerbotAI* botAI) { return new KaelthasSunstriderDeterminingAdvisorKillOrderTrigger(botAI); }
 
     static Trigger* kaelthas_sunstrider_boss_has_entered_the_fight(
         PlayerbotAI* botAI) { return new KaelthasSunstriderBossHasEnteredTheFightTrigger(botAI); }

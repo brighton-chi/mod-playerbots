@@ -2,6 +2,7 @@
 #define _PLAYERBOT_RAIDTEMPESTKEEPACTIONS_H
 
 #include "RaidTempestKeepHelpers.h"
+#include "RaidTempestKeepKaelthasBossAI.h"
 #include "Action.h"
 #include "AttackAction.h"
 #include "MovementActions.h"
@@ -263,12 +264,16 @@ public:
     bool Execute(Event event) override;
 };
 
-class KaelthasSunstriderMoveAwayFromCapernianAction : public MovementAction
+class KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction : public MovementAction
 {
 public:
-    KaelthasSunstriderMoveAwayFromCapernianAction(
-        PlayerbotAI* botAI, std::string const name = "kael'thas sunstrider move away from capernian") : MovementAction(botAI, name) {}
+    KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction(
+        PlayerbotAI* botAI, std::string const name = "kael'thas sunstrider spread and move away from capernian") : MovementAction(botAI, name) {}
     bool Execute(Event event) override;
+
+private:
+    bool RangedBotsDisperse(boss_kaelthas* kaelAI);
+    bool StayBackFromCapernian();
 };
 
 class KaelthasSunstriderFirstAssistTankPositionTelonicusAction : public AttackAction
@@ -284,6 +289,14 @@ class KaelthasSunstriderPositionPhase3TankHealerAction : public AttackAction
 public:
     KaelthasSunstriderPositionPhase3TankHealerAction(
         PlayerbotAI* botAI, std::string const name = "kael'thas sunstrider position phase 3 tank healer") : AttackAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class KaelthasSunstriderAssignAdvisorDpsPriorityAction : public AttackAction
+{
+public:
+    KaelthasSunstriderAssignAdvisorDpsPriorityAction(
+        PlayerbotAI* botAI, std::string const name = "kael'thas sunstrider assign advisor dps priority") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 
@@ -350,14 +363,6 @@ class KaelthasSunstriderReequipGearAction : public Action
 public:
     KaelthasSunstriderReequipGearAction(
         PlayerbotAI* botAI) : Action(botAI, "kael'thas sunstrider reequip gear") {}
-    bool Execute(Event event) override;
-};
-
-class KaelthasSunstriderAssignAdvisorDpsPriorityAction : public AttackAction
-{
-public:
-    KaelthasSunstriderAssignAdvisorDpsPriorityAction(
-        PlayerbotAI* botAI, std::string const name = "kael'thas sunstrider assign advisor dps priority") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 

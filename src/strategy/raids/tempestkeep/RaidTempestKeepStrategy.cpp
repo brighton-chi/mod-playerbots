@@ -90,14 +90,17 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kael'thas sunstrider capernian engaged by warlock tank",
         NextAction::array(0, new NextAction("kael'thas sunstrider warlock tank position capernian", ACTION_RAID + 1), nullptr)
     ));
-    triggers.push_back(new TriggerNode("kael'thas sunstrider capernian casts arcane burst",
-        NextAction::array(0, new NextAction("kael'thas sunstrider move away from capernian", ACTION_RAID + 3), nullptr)
+    triggers.push_back(new TriggerNode("kael'thas sunstrider capernian casts arcane burst and conflagration",
+        NextAction::array(0, new NextAction("kael'thas sunstrider spread and move away from capernian", ACTION_RAID + 3), nullptr)
     ));
     triggers.push_back(new TriggerNode("kael'thas sunstrider telonicus engaged by first assist tank",
         NextAction::array(0, new NextAction("kael'thas sunstrider first assist tank position telonicus", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("kael'thas sunstrider melee tanks need dedicated healer in phase 3",
         NextAction::array(0, new NextAction("kael'thas sunstrider position phase 3 tank healer", ACTION_RAID + 2), nullptr)
+    ));
+        triggers.push_back(new TriggerNode("kael'thas sunstrider determining advisor kill order",
+        NextAction::array(0, new NextAction("kael'thas sunstrider assign advisor dps priority", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("kael'thas sunstrider waiting for tanks to get aggro on advisors",
         NextAction::array(0, new NextAction("kael'thas sunstrider manage advisor dps timer", ACTION_EMERGENCY + 10), nullptr)
@@ -116,9 +119,6 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     ));
     triggers.push_back(new TriggerNode("kael'thas sunstrider legendary weapons were lost",
         NextAction::array(0, new NextAction("kael'thas sunstrider reequip gear", ACTION_EMERGENCY + 11), nullptr)
-    ));
-    triggers.push_back(new TriggerNode("kael'thas sunstrider determining advisor kill order",
-        NextAction::array(0, new NextAction("kael'thas sunstrider assign advisor dps priority", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("kael'thas sunstrider boss has entered the fight",
         NextAction::array(0,

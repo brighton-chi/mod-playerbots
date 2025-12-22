@@ -197,11 +197,11 @@ public:
     bool IsActive() override;
 };
 
-class KaelthasSunstriderCapernianCastsArcaneBurstTrigger : public Trigger
+class KaelthasSunstriderCapernianCastsArcaneBurstAndConflagrationTrigger : public Trigger
 {
 public:
-    KaelthasSunstriderCapernianCastsArcaneBurstTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider capernian casts arcane burst") {}
+    KaelthasSunstriderCapernianCastsArcaneBurstAndConflagrationTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider capernian casts arcane burst and conflagration") {}
     bool IsActive() override;
 };
 
@@ -218,6 +218,14 @@ class KaelthasSunstriderMeleeTanksNeedDedicatedHealerInPhase3Trigger : public Tr
 public:
     KaelthasSunstriderMeleeTanksNeedDedicatedHealerInPhase3Trigger(
         PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider melee tanks need dedicated healer in phase 3") {}
+    bool IsActive() override;
+};
+
+class KaelthasSunstriderDeterminingAdvisorKillOrderTrigger : public Trigger
+{
+public:
+    KaelthasSunstriderDeterminingAdvisorKillOrderTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider determining advisor kill order") {}
     bool IsActive() override;
 };
 
@@ -258,14 +266,6 @@ class KaelthasSunstriderLegendaryWeaponsWereLostTrigger : public Trigger
 public:
     KaelthasSunstriderLegendaryWeaponsWereLostTrigger(
         PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider legendary weapons were lost") {}
-    bool IsActive() override;
-};
-
-class KaelthasSunstriderDeterminingAdvisorKillOrderTrigger : public Trigger
-{
-public:
-    KaelthasSunstriderDeterminingAdvisorKillOrderTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider determining advisor kill order") {}
     bool IsActive() override;
 };
 

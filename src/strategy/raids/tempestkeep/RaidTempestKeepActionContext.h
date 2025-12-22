@@ -83,6 +83,9 @@ public:
         creators["kael'thas sunstrider kite thaladred"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_kite_thaladred;
 
+        creators["kael'thas sunstrider misdirect advisors to tanks"] =
+            &RaidTempestKeepActionContext::kaelthas_sunstrider_misdirect_advisors_to_tanks;
+
         creators["kael'thas sunstrider main tank position sanguinar"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_main_tank_position_sanguinar;
 
@@ -95,8 +98,8 @@ public:
         creators["kael'thas sunstrider warlock tank position capernian"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_warlock_tank_position_capernian;
 
-        creators["kael'thas sunstrider move away from capernian"] =
-            &RaidTempestKeepActionContext::kaelthas_sunstrider_move_away_from_capernian;
+        creators["kael'thas sunstrider spread and move away from capernian"] =
+            &RaidTempestKeepActionContext::kaelthas_sunstrider_spread_and_move_away_from_capernian;
 
         creators["kael'thas sunstrider first assist tank position telonicus"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_first_assist_tank_position_telonicus;
@@ -104,8 +107,8 @@ public:
         creators["kael'thas sunstrider position phase 3 tank healer"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_position_phase_3_tank_healer;
 
-        creators["kael'thas sunstrider misdirect advisors to tanks"] =
-            &RaidTempestKeepActionContext::kaelthas_sunstrider_misdirect_advisors_to_tanks;
+        creators["kael'thas sunstrider assign advisor dps priority"] =
+            &RaidTempestKeepActionContext::kaelthas_sunstrider_assign_advisor_dps_priority;
 
         creators["kael'thas sunstrider manage advisor dps timer"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_manage_advisor_dps_timer;
@@ -124,9 +127,6 @@ public:
 
         creators["kael'thas sunstrider use legendary weapons"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_use_legendary_weapons;
-
-        creators["kael'thas sunstrider assign advisor dps priority"] =
-            &RaidTempestKeepActionContext::kaelthas_sunstrider_assign_advisor_dps_priority;
 
         creators["kael'thas sunstrider reequip gear"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_reequip_gear;
@@ -225,6 +225,9 @@ private:
     static Action* kaelthas_sunstrider_kite_thaladred(
         PlayerbotAI* botAI) { return new KaelthasSunstriderKiteThaladredAction(botAI); }
 
+    static Action* kaelthas_sunstrider_misdirect_advisors_to_tanks(
+        PlayerbotAI* botAI) { return new KaelthasSunstriderMisdirectAdvisorsToTanksAction(botAI); }
+
     static Action* kaelthas_sunstrider_main_tank_position_sanguinar(
         PlayerbotAI* botAI) { return new KaelthasSunstriderMainTankPositionSanguinarAction(botAI); }
 
@@ -237,8 +240,8 @@ private:
     static Action* kaelthas_sunstrider_warlock_tank_position_capernian(
         PlayerbotAI* botAI) { return new KaelthasSunstriderWarlockTankPositionCapernianAction(botAI); }
 
-    static Action* kaelthas_sunstrider_move_away_from_capernian(
-        PlayerbotAI* botAI) { return new KaelthasSunstriderMoveAwayFromCapernianAction(botAI); }
+    static Action* kaelthas_sunstrider_spread_and_move_away_from_capernian(
+        PlayerbotAI* botAI) { return new KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction(botAI); }
 
     static Action* kaelthas_sunstrider_first_assist_tank_position_telonicus(
         PlayerbotAI* botAI) { return new KaelthasSunstriderFirstAssistTankPositionTelonicusAction(botAI); }
@@ -246,8 +249,8 @@ private:
     static Action* kaelthas_sunstrider_position_phase_3_tank_healer(
         PlayerbotAI* botAI) { return new KaelthasSunstriderPositionPhase3TankHealerAction(botAI); }
 
-    static Action* kaelthas_sunstrider_misdirect_advisors_to_tanks(
-        PlayerbotAI* botAI) { return new KaelthasSunstriderMisdirectAdvisorsToTanksAction(botAI); }
+    static Action* kaelthas_sunstrider_assign_advisor_dps_priority(
+        PlayerbotAI* botAI) { return new KaelthasSunstriderAssignAdvisorDpsPriorityAction(botAI); }
 
     static Action* kaelthas_sunstrider_manage_advisor_dps_timer(
         PlayerbotAI* botAI) { return new KaelthasSunstriderManageAdvisorDpsTimerAction(botAI); }
@@ -266,9 +269,6 @@ private:
 
     static Action* kaelthas_sunstrider_use_legendary_weapons(
         PlayerbotAI* botAI) { return new KaelthasSunstriderUseLegendaryWeaponsAction(botAI); }
-
-    static Action* kaelthas_sunstrider_assign_advisor_dps_priority(
-        PlayerbotAI* botAI) { return new KaelthasSunstriderAssignAdvisorDpsPriorityAction(botAI); }
 
     static Action* kaelthas_sunstrider_reequip_gear(
         PlayerbotAI* botAI) { return new KaelthasSunstriderReequipGearAction(botAI); }

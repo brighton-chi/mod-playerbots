@@ -211,7 +211,7 @@ float KaelthasSunstriderWaitForDpsMultiplier::GetValue(Action* action)
         return 1.0f;
 
     const time_t now = std::time(nullptr);
-    const uint8 dpsWaitSeconds = 12;
+    const uint8 dpsWaitSeconds = 10;
 
     auto it = advisorDpsWaitTimer.find(kaelthas->GetMap()->GetInstanceId());
     if (it == advisorDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
@@ -370,9 +370,6 @@ float KaelthasSunstriderDisableDisperseMultiplier::GetValue(Action* action)
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     if (!kaelthas)
         return 1.0f;
-
-    if (dynamic_cast<FollowAction*>(action))
-        return 0.0f;
 
     if (dynamic_cast<CombatFormationMoveAction*>(action) &&
         !dynamic_cast<TankFaceAction*>(action) &&

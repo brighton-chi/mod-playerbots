@@ -197,7 +197,7 @@ bool HighAstromancerSolarianBossHasVanishedTrigger::IsActive()
         return false;
 
     Creature* astromancerCreature = astromancer->ToCreature();
-    return astromancerCreature && 
+    return astromancerCreature &&
            astromancerCreature->GetReactState() == REACT_PASSIVE;
 }
 
@@ -360,18 +360,10 @@ bool KaelthasSunstriderCapernianEngagedByWarlockTankTrigger::IsActive()
            !capernian->HasAura(SPELL_PERMANENT_FEIGN_DEATH);
 }
 
-bool KaelthasSunstriderCapernianCastsArcaneBurstTrigger::IsActive()
+bool KaelthasSunstriderCapernianCastsArcaneBurstAndConflagrationTrigger::IsActive()
 {
     Player* capernianTank = GetCapernianTank(botAI, bot);
     if (capernianTank && capernianTank == bot)
-        return false;
-
-    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
-    if (!kaelthas)
-        return false;
-
-    boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
-    if (!kaelAI || kaelAI->GetPhase() != PHASE_SINGLE_ADVISOR)
         return false;
 
     Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
@@ -411,6 +403,21 @@ bool KaelthasSunstriderMeleeTanksNeedDedicatedHealerInPhase3Trigger::IsActive()
         return true;
 
     return false;
+}
+
+bool KaelthasSunstriderDeterminingAdvisorKillOrderTrigger::IsActive()
+{
+    if (botAI->IsHeal(bot) || botAI->IsMainTank(bot) ||
+        botAI->IsAssistTankOfIndex(bot, 0))
+        return false;
+
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    if (!kaelthas)
+        return false;
+
+    boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
+    return kaelAI && (kaelAI->GetPhase() == PHASE_SINGLE_ADVISOR ||
+           kaelAI->GetPhase() == PHASE_ALL_ADVISORS);
 }
 
 bool KaelthasSunstriderWaitingForTanksToGetAggroOnAdvisorsTrigger::IsActive()
@@ -494,20 +501,6 @@ bool KaelthasSunstriderLegendaryWeaponsWereLostTrigger::IsActive()
     }
 
     return false;
-}
-
-bool KaelthasSunstriderDeterminingAdvisorKillOrderTrigger::IsActive()
-{
-    if (botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0))
-        return false;
-
-    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
-    if (!kaelthas)
-        return false;
-
-    boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
-    return kaelAI && (kaelAI->GetPhase() == PHASE_SINGLE_ADVISOR ||
-           kaelAI->GetPhase() == PHASE_ALL_ADVISORS);
 }
 
 bool KaelthasSunstriderBossHasEnteredTheFightTrigger::IsActive()
