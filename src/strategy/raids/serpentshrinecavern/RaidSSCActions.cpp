@@ -943,7 +943,7 @@ bool FathomLordKarathressMainTankPositionBossAction::Execute(Event event)
         float distToPosition =
             bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
 
-        if (distToPosition > 3.0f)
+        if (distToPosition > 2.0f)
         {
             float dX = position.GetPositionX() - bot->GetPositionX();
             float dY = position.GetPositionY() - bot->GetPositionY();
@@ -979,7 +979,7 @@ bool FathomLordKarathressFirstAssistTankPositionCaribdisAction::Execute(Event ev
         float distToPosition =
             bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
 
-        if (distToPosition > 3.0f)
+        if (distToPosition > 2.0f)
         {
             float dX = position.GetPositionX() - bot->GetPositionX();
             float dY = position.GetPositionY() - bot->GetPositionY();
@@ -1014,7 +1014,7 @@ bool FathomLordKarathressSecondAssistTankPositionSharkkisAction::Execute(Event e
         float distToPosition =
             bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
 
-        if (distToPosition > 3.0f)
+        if (distToPosition > 2.0f)
         {
             float dX = position.GetPositionX() - bot->GetPositionX();
             float dY = position.GetPositionY() - bot->GetPositionY();
@@ -1049,7 +1049,7 @@ bool FathomLordKarathressThirdAssistTankPositionTidalvessAction::Execute(Event e
         float distToPosition =
             bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
 
-        if (distToPosition > 3.0f)
+        if (distToPosition > 2.0f)
         {
             float dX = position.GetPositionX() - bot->GetPositionX();
             float dY = position.GetPositionY() - bot->GetPositionY();
@@ -1619,7 +1619,6 @@ bool LadyVashjPhase1SpreadRangedInArcAction::Execute(Event event)
 }
 
 // For absorbing Shock Burst
-// For some reason, if you use an Enhancement Shaman for this method, they will not dps
 bool LadyVashjSetGroundingTotemInMainTankGroupAction::Execute(Event event)
 {
     Player* mainTank = nullptr;
@@ -1645,8 +1644,8 @@ bool LadyVashjSetGroundingTotemInMainTankGroupAction::Execute(Event event)
                           mainTank->GetPositionZ(), 20.0f, MovementPriority::MOVEMENT_COMBAT);
     }
 
-    if (!botAI->HasStrategy("grounding totem", BotState::BOT_STATE_COMBAT))
-        botAI->ChangeStrategy("+grounding totem", BotState::BOT_STATE_COMBAT);
+    if (!botAI->HasStrategy("grounding", BotState::BOT_STATE_COMBAT))
+        botAI->ChangeStrategy("+grounding", BotState::BOT_STATE_COMBAT);
 
     if (!bot->HasAura(SPELL_GROUNDING_TOTEM_EFFECT) &&
         botAI->CanCastSpell("grounding totem", bot))
@@ -1847,6 +1846,7 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event event)
         {
             targets = { enchanted, strider, elite, vashj };
             // Prior iteration: ranged, other than Priests and Warlocks, prioritize Toxic Sporebats
+            // Shelved for now because it causes bots to walk in midair to reach their targets
             /* if (bot->getClass() == CLASS_PRIEST || bot->getClass() == CLASS_WARLOCK)
                 targets = { enchanted, strider, elite, vashj };
             else

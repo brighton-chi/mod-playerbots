@@ -1590,7 +1590,6 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event eve
     if (longBowTank && longBowTank == bot)
         return false;
 
-    // Clear targets for assist tanks at start of weapon phase (better to pick up adds?)
     if (botAI->IsAssistTank(bot))
         SetRtiTarget(botAI, "moon", nullptr);
 
@@ -1668,23 +1667,23 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event eve
 
             return false;
         }
-        // Priority 5: Netherstrand Longbow (Cross--marked by hunter tank)
-        if (Unit* longbow = AI_VALUE2(Unit*, "find target", "netherstrand longbow"))
-        {
-            SetRtiTarget(botAI, "cross", longbow);
-
-            if (bot->GetTarget() != longbow->GetGUID())
-                return Attack(longbow);
-
-            return false;
-        }
-        // Priority 6: Devastation - Ranged DPS only (Diamond--marked by main tank)
+        // Priority 5: Devastation - Ranged DPS only (Diamond--marked by main tank)
         if (axe && botAI->IsRangedDps(bot))
         {
             SetRtiTarget(botAI, "diamond", axe);
 
             if (bot->GetTarget() != axe->GetGUID())
                 return Attack(axe);
+
+            return false;
+        }
+        // Priority 6: Netherstrand Longbow (Cross--marked by hunter tank)
+        if (Unit* longbow = AI_VALUE2(Unit*, "find target", "netherstrand longbow"))
+        {
+            SetRtiTarget(botAI, "cross", longbow);
+
+            if (bot->GetTarget() != longbow->GetGUID())
+                return Attack(longbow);
 
             return false;
         }
@@ -1817,7 +1816,7 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::ShouldBotLootWeapon(uint32 we
             return bot->getClass() == CLASS_ROGUE ||
                    bot->getClass() == CLASS_HUNTER ||
                    (bot->getClass() == CLASS_SHAMAN && tab == SHAMAN_TAB_ENHANCEMENT) ||
-                   (bot->getClass() == CLASS_WARRIOR && tab == WARRIOR_TAB_PROTECTION);
+                   (bot->getClass() == CLASS_WARRIOR && tab != WARRIOR_TAB_ARMS);
 
         case NPC_WARP_SLICER:
             return bot->getClass() == CLASS_ROGUE && tab != ROGUE_TAB_ASSASSINATION ||
@@ -1957,7 +1956,7 @@ bool KaelthasSunstriderUseLegendaryWeaponsAction::UseNetherstrandLongbow()
     if (!ranged || ranged->GetEntry() != ITEM_NETHERSTRAND_LONGBOW)
         return false;
 
-    if (bot->HasItemCount(ITEM_NETHER_SPIKES, 201, false))
+    if (bot->HasItemCount(ITEM_NETHER_SPIKES, 401, false))
         return false;
 
     return UseEquippedItemWithPacket(ranged);
@@ -2268,7 +2267,7 @@ bool KaelthasSunstriderSpreadOutInMidairAction::Execute(Event event)
     if (!group)
         return false;
 
-    const float minSpreadDistance = 13.0f;
+    const float minSpreadDistance = 15.0f;
 
     std::vector<Player*> nearbyPlayers;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())

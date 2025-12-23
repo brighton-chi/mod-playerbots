@@ -554,4 +554,55 @@ namespace TempestKeepHelpers
 
         return false;
     }
+
+    bool HasEquippableItemForSlot(Player* bot, uint8 slot)
+    {
+        for (uint8 bag = INVENTORY_SLOT_BAG_START; bag < INVENTORY_SLOT_BAG_END; ++bag)
+        {
+            for (uint8 bagSlot = 0; bagSlot < MAX_BAG_SIZE; ++bagSlot)
+            {
+                Item* item = bot->GetItemByPos(bag, bagSlot);
+                if (!item)
+                    continue;
+
+                ItemTemplate const* proto = item->GetTemplate();
+                if (!proto)
+                    continue;
+
+                uint16 dest = 0;
+                if (bot->CanEquipItem(slot, dest, item, false))
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    bool HasEquippableOffhand(Player* bot)
+    {
+        for (uint8 bag = INVENTORY_SLOT_BAG_START; bag < INVENTORY_SLOT_BAG_END; ++bag)
+        {
+            for (uint8 bagSlot = 0; bagSlot < MAX_BAG_SIZE; ++bagSlot)
+            {
+                Item* item = bot->GetItemByPos(bag, bagSlot);
+                if (!item)
+                    continue;
+
+                ItemTemplate const* proto = item->GetTemplate();
+                if (!proto)
+                    continue;
+
+                if (proto->InventoryType == INVTYPE_SHIELD ||
+                    proto->InventoryType == INVTYPE_WEAPONOFFHAND ||
+                    proto->InventoryType == INVTYPE_HOLDABLE)
+                {
+                    uint16 dest = 0;
+                    if (bot->CanEquipItem(EQUIPMENT_SLOT_OFFHAND, dest, item, false))
+                        return true;
+                }
+            }
+        }
+
+        return false;
+    }
 }

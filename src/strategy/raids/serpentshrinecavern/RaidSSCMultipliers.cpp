@@ -3,6 +3,8 @@
 #include "RaidSSCHelpers.h"
 #include "ChooseTargetActions.h"
 #include "DestroyItemAction.h"
+#include "DKActions.h"
+#include "DruidBearActions.h"
 #include "FollowActions.h"
 #include "GenericSpellActions.h"
 #include "HunterActions.h"
@@ -14,6 +16,7 @@
 #include "RogueActions.h"
 #include "ShamanActions.h"
 #include "WarlockActions.h"
+#include "WarriorActions.h"
 #include "WipeAction.h"
 
 using namespace SerpentShrineCavernHelpers;
@@ -414,7 +417,20 @@ float FathomLordKarathressDisableTankActionsMultiplier::GetValue(Action* action)
         return 1.0f;
 
     if ((bot->GetVictim() != nullptr && dynamic_cast<TankAssistAction*>(action)) ||
-        dynamic_cast<CombatFormationMoveAction*>(action))
+        dynamic_cast<CastTauntAction*>(action) ||
+        dynamic_cast<CastChallengingShoutAction*>(action) ||
+        dynamic_cast<CastThunderClapAction*>(action) ||
+        dynamic_cast<CastShockwaveAction*>(action) ||
+        dynamic_cast<CastCleaveAction*>(action) ||
+        dynamic_cast<CastGrowlAction*>(action) ||
+        dynamic_cast<CastSwipeAction*>(action) ||
+        dynamic_cast<CastHandOfReckoningAction*>(action) ||
+        dynamic_cast<CastAvengersShieldAction*>(action) ||
+        dynamic_cast<CastConsecrationAction*>(action) ||
+        dynamic_cast<CastDarkCommandAction*>(action) ||
+        dynamic_cast<CastDeathAndDecayAction*>(action) ||
+        dynamic_cast<CastPestilenceAction*>(action) ||
+        dynamic_cast<CastBloodBoilAction*>(action))
         return 0.0f;
 
     return 1.0f;
@@ -460,7 +476,7 @@ float FathomLordKarathressWaitForDpsMultiplier::GetValue(Action* action)
         return 1.0f;
 
     const time_t now = std::time(nullptr);
-    const uint8 dpsWaitSeconds = 10;
+    const uint8 dpsWaitSeconds = 12;
 
     auto it = karathressDpsWaitTimer.find(karathress->GetMap()->GetInstanceId());
     if (it == karathressDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)

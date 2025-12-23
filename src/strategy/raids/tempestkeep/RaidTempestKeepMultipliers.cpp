@@ -186,7 +186,7 @@ float HighAstromancerSolarianDisableTankAssistMultiplier::GetValue(Action* actio
         return 1.0f;
 
     Unit* solariumPriest = AI_VALUE2(Unit*, "find target", "solarium priest");
-    if (solariumPriest && bot->IsInCombat())
+    if (solariumPriest && bot->GetVictim() != nullptr)
     {
         if (dynamic_cast<TankAssistAction*>(action))
             return 0.0f;
@@ -353,18 +353,19 @@ float KaelthasSunstriderManageTankTargetingMultiplier::GetValue(Action* action)
             return 0.0f;
     }
 
-    // Will this break auto aggro on relevant target in Phase 1 and 3?
     if (kaelAI->GetPhase() == PHASE_SINGLE_ADVISOR ||
         kaelAI->GetPhase() == PHASE_ALL_ADVISORS)
     {
-        if (dynamic_cast<TankAssistAction*>(action))
-            return 0.0f;
+        if (bot->GetVictim() != nullptr)
+        {
+            if (dynamic_cast<TankAssistAction*>(action))
+                return 0.0f;
+        }
     }
 
     return 1.0f;
 }
 
-// Test disperse disable
 float KaelthasSunstriderDisableDisperseMultiplier::GetValue(Action* action)
 {
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");

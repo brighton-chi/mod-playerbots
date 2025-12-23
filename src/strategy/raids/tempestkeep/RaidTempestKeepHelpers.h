@@ -168,6 +168,8 @@ namespace TempestKeepHelpers
     Player* GetCapernianTank(PlayerbotAI* botAI, Player* bot);
     Player* GetNetherstrandLongbowTank(PlayerbotAI* botAI, Player* bot);
     bool IsAnyLegendaryWeaponDead(PlayerbotAI* botAI, Player* bot);
+    bool HasEquippableItemForSlot(Player* bot, uint8 slot);
+    bool HasEquippableOffhand(Player* bot);
 }
 
 #endif

@@ -466,7 +466,6 @@ bool KaelthasSunstriderLegendaryWeaponsWereLostTrigger::IsActive()
         return false;
 
     const uint32 KAELTHAS_DB_GUID = 158218;
-
     Map* map = bot->GetMap();
     if (!map)
         return false;
@@ -479,11 +478,9 @@ bool KaelthasSunstriderLegendaryWeaponsWereLostTrigger::IsActive()
     if (!kaelthas)
         return false;
 
-    float distance = bot->GetExactDist2d(kaelthas);
-    if (distance > 150.0f)
+    if (bot->GetExactDist2d(kaelthas) > 150.0f)
         return false;
 
-    // Check if bot has a 2H weapon equipped in mainhand
     Item* mainHand = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
     bool has2HWeapon = mainHand && mainHand->GetTemplate()->InventoryType == INVTYPE_2HWEAPON;
 
@@ -492,12 +489,21 @@ bool KaelthasSunstriderLegendaryWeaponsWereLostTrigger::IsActive()
         if (slot == EQUIPMENT_SLOT_BODY || slot == EQUIPMENT_SLOT_TABARD)
             continue;
 
-        // Skip offhand check if bot has 2H weapon equipped
         if (slot == EQUIPMENT_SLOT_OFFHAND && has2HWeapon)
             continue;
 
         if (!bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
-            return true;
+        {
+            if (slot == EQUIPMENT_SLOT_OFFHAND)
+            {
+                if (!mainHand || mainHand->GetTemplate()->InventoryType != INVTYPE_WEAPON)
+                    continue;
+                if (HasEquippableOffhand(bot))
+                    return true;
+            }
+            else if (HasEquippableItemForSlot(bot, slot))
+                return true;
+        }
     }
 
     return false;
