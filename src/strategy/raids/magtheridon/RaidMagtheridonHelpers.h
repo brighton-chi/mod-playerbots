@@ -54,8 +54,7 @@ namespace MagtheridonHelpers
     void MarkTargetWithTriangle(Player* bot, Unit* target);
     void MarkTargetWithCross(Player* bot, Unit* target);
     void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target);
-    bool IsSafeFromMagtheridonHazards(
-        PlayerbotAI* botAI, Player* bot, float x, float y, float z);
+    bool IsSafeFromMagtheridonHazards(PlayerbotAI* botAI, Player* bot, float x, float y, float z);
     bool IsInstanceTimerManager(PlayerbotAI* botAI, Player* bot);
 
     extern const Position WAITING_FOR_MAGTHERIDON_POSITION;
@@ -73,9 +72,9 @@ namespace MagtheridonHelpers
     void AssignBotsToCubesByGuidAndCoords(
         Group* group, const std::vector<CubeInfo>& cubes, PlayerbotAI* botAI);
     extern std::unordered_map<uint32, bool> lastBlastNovaState;
-    extern std::unordered_map<uint32, time_t> magtheridonBlastNovaTimer;
-    extern std::unordered_map<uint32, time_t> magtheridonSpreadWaitTimer;
-    extern std::unordered_map<uint32, time_t> magtheridonAggroWaitTimer;
+    extern std::unordered_map<uint32, time_t> blastNovaTimer;
+    extern std::unordered_map<uint32, time_t> spreadWaitTimer;
+    extern std::unordered_map<uint32, time_t> dpsWaitTimer;
 }
 
 #endif

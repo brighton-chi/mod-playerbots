@@ -167,9 +167,9 @@ namespace MagtheridonHelpers
     }
 
     std::unordered_map<uint32, bool> lastBlastNovaState;
-    std::unordered_map<uint32, time_t> magtheridonBlastNovaTimer;
-    std::unordered_map<uint32, time_t> magtheridonSpreadWaitTimer;
-    std::unordered_map<uint32, time_t> magtheridonAggroWaitTimer;
+    std::unordered_map<uint32, time_t> blastNovaTimer;
+    std::unordered_map<uint32, time_t> spreadWaitTimer;
+    std::unordered_map<uint32, time_t> dpsWaitTimer;
 
     bool IsSafeFromMagtheridonHazards(PlayerbotAI* botAI, Player* bot, float x, float y, float z)
     {

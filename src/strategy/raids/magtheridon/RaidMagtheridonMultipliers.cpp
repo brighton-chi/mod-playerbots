@@ -44,10 +44,10 @@ float MagtheridonWaitToAttackMultiplier::GetValue(Action* action)
     if (!magtheridon || magtheridon->HasAura(SPELL_SHADOW_CAGE))
         return 1.0f;
 
-    const uint8 aggroWaitSeconds = 6;
-    auto it = magtheridonAggroWaitTimer.find(magtheridon->GetMap()->GetInstanceId());
-    if (it == magtheridonAggroWaitTimer.end() ||
-        (time(nullptr) - it->second) < aggroWaitSeconds)
+    const uint8 dpsWaitSeconds = 6;
+    auto it = dpsWaitTimer.find(magtheridon->GetMap()->GetInstanceId());
+    if (it == dpsWaitTimer.end() ||
+        (time(nullptr) - it->second) < dpsWaitSeconds)
     {
         if (dynamic_cast<AttackAction*>(action) ||
             (dynamic_cast<CastSpellAction*>(action) &&
