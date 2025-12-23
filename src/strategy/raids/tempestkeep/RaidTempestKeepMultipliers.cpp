@@ -179,7 +179,6 @@ float HighAstromancerSolarianMaintainPositionMultiplier::GetValue(Action* action
     return 1.0f;
 }
 
-// Disable Tank Assist when Solarium Priest is present
 float HighAstromancerSolarianDisableTankAssistMultiplier::GetValue(Action* action)
 {
     if (!botAI->IsTank(bot))
@@ -304,7 +303,7 @@ float KaelthasSunstriderControlMisdirectionMultiplier::GetValue(Action* action)
 }
 
 // For disabling Capernian Tank's Shadow Ward, which is part of the standard
-// tank strategy for Warlocks (for Twin Emps but useless here)
+// tank strategy for Warlocks (made for Twin Emps but useless here)
 float KaelthasSunstriderDisableShadowWardMultiplier::GetValue(Action* action)
 {
     if (bot->getClass() != CLASS_WARLOCK)
@@ -333,6 +332,7 @@ float KaelthasSunstriderManageTankTargetingMultiplier::GetValue(Action* action)
     if (!kaelAI)
         return 1.0f;
 
+    // Try to keep main tank from grabbing aggro on any weapon other than the axe
     if (botAI->IsMainTank(bot) && kaelAI->GetPhase() == PHASE_WEAPONS)
     {
         if (dynamic_cast<TankAssistAction*>(action) ||
@@ -380,6 +380,7 @@ float KaelthasSunstriderDisableDisperseMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+// Bloodlust/Heroism should be used at the start of Phase 3
 float KaelthasSunstriderDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
 {
     if (bot->getClass() != CLASS_SHAMAN)

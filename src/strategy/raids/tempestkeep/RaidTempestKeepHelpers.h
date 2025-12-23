@@ -69,7 +69,7 @@ namespace TempestKeepHelpers
         NPC_WARP_SLICER                 = 21272,
         NPC_PHASESHIFT_BULWARK          = 21273,
         NPC_STAFF_OF_DISINTEGRATION     = 21274,
-        // NPC_NETHER_VAPOR             = 21002, // Improperly implemented in AC; method needed if fixed
+        // NPC_NETHER_VAPOR             = 21002, // Unimplemented in AC; method needed if fixed
         NPC_PHOENIX                     = 21362,
         NPC_FLAME_STRIKE_TRIGGER        = 21369,
     };

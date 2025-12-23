@@ -262,7 +262,7 @@ bool AlarAssistTanksPickUpEmbersAction::Execute(Event event)
     return false;
 }
 
-// Embers will be tanked by the second assist tank only in Phase 1
+// Embers will be tanked by only the second assist tank in Phase 1
 bool AlarAssistTanksPickUpEmbersAction::HandlePhase1Embers(Unit* alar)
 {
     if (!botAI->IsAssistTankOfIndex(bot, 1))
@@ -288,14 +288,13 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase1Embers(Unit* alar)
 
             if (locationIndex >= PLATFORM_0_IDX && locationIndex <= PLATFORM_3_IDX)
             {
-                // Pick up Ember and move it to 25 yards from the ranged group
                 const Position& groundTarget = GROUND_POSITIONS[locationIndex];
                 const Position& center = ALAR_POINT_MIDDLE;
                 float dx = center.GetPositionX() - groundTarget.GetPositionX();
                 float dy = center.GetPositionY() - groundTarget.GetPositionY();
                 float distToCenter = groundTarget.GetExactDist2d(center.GetPositionX(), center.GetPositionY());
 
-                float moveDist = 25.0f; // distance from groundTarget toward center
+                float moveDist = 25.0f;
                 float targetX = groundTarget.GetPositionX() + (dx / distToCenter) * moveDist;
                 float targetY = groundTarget.GetPositionY() + (dy / distToCenter) * moveDist;
                 float targetZ = groundTarget.GetPositionZ();
@@ -305,7 +304,6 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase1Embers(Unit* alar)
             }
             else
             {
-                // Flame Quills: Move Ember generally away from the group
                 const float safeDistance = 15.0f;
                 Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
                 if (nearestPlayer)
@@ -547,7 +545,6 @@ bool AlarSwapTanksOnBossAction::Execute(Event event)
         }
     }
 
-    // This block is to restart combat in Phase 2 since tank assist is disabled
     if (alar->GetHealth() == alar->GetMaxHealth())
     {
         SetRtiTarget(botAI, "star", alar);
@@ -845,7 +842,6 @@ Position VoidReaverSpreadRangedAction::GetRangedBotPosition(const Position& cent
 
 // High Astromancer Solarian
 
-// Give melee bots some space to run away if they get Wrath of the Astromancer
 bool HighAstromancerSolarianRangedLeaveSpaceForMeleeAction::Execute(Event event)
 {
     Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
@@ -874,7 +870,6 @@ bool HighAstromancerSolarianMoveAwayFromGroupAction::Execute(Event event)
     return false;
 }
 
-// If any agent is present, all bots stack on first alive ranged group member
 bool HighAstromancerSolarianStackForAoeAction::Execute(Event event)
 {
     Group* group = bot->GetGroup();
@@ -1187,6 +1182,7 @@ bool KaelthasSunstriderCastFearWardOnSanguinarTankAction::Execute(Event event)
     return false;
 }
 
+// Use tank strategy only when necessary to tank Capernian; otherwise, use DPS strategies
 bool KaelthasSunstriderManageWarlockTankStrategyAction::Execute(Event event)
 {
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
@@ -1199,7 +1195,7 @@ bool KaelthasSunstriderManageWarlockTankStrategyAction::Execute(Event event)
 
     bool currentlyTank = botAI->HasStrategy("tank", BotState::BOT_STATE_COMBAT);
 
-    // Phase 1: Single advisor phase - switch to tank after Sanguinar is dead
+    // Phase 1: Switch to tank after Sanguinar is "dead" (feign death)
     if (kaelAI->GetPhase() == PHASE_SINGLE_ADVISOR)
     {
         if (!currentlyTank)
@@ -1211,7 +1207,7 @@ bool KaelthasSunstriderManageWarlockTankStrategyAction::Execute(Event event)
         return false;
     }
 
-    // Phase 2: Weapons phase - reset to DPS
+    // Phase 2: Switch to DPS
     if (kaelAI->GetPhase() == PHASE_WEAPONS)
     {
         if (currentlyTank)
@@ -1227,15 +1223,16 @@ bool KaelthasSunstriderManageWarlockTankStrategyAction::Execute(Event event)
         return false;
     }
 
-    // Phase 3: All advisors phase
+    // Phase 3
     if (kaelAI->GetPhase() == PHASE_ALL_ADVISORS)
     {
         Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
 
-        // If Capernian is alive, add tank strategy (applicable only if not all weapons are down)
+        // If Capernian is alive, switch to tank strategy
+        // (fallback in case not all weapons were down before Phase 3)
         if (capernian && !currentlyTank)
             botAI->ChangeStrategy("+tank", BotState::BOT_STATE_COMBAT);
-        // If Capernian is dead, reset to DPS
+        // If Capernian is dead, reset to DPS for remainder of encounter
         else if (!capernian && currentlyTank)
             botAI->ResetStrategies(false);
     }
@@ -1265,35 +1262,13 @@ bool KaelthasSunstriderWarlockTankPositionCapernianAction::Execute(Event event)
 
     if (capernian->GetVictim() == bot && kaelAI->GetPhase() == PHASE_SINGLE_ADVISOR)
     {
-        // Keep distance from Capernian in Phase 1 to avoid Conflagration
-        // Don't bother in Phase 3 since the bot should have the Staff of Disintegration aura
         float currentDist = bot->GetDistance2d(capernian);
         if (currentDist == 0.0f)
             return false;
 
         const float minDistance = 20.0f;
         if (currentDist < minDistance)
-        {
-            /* float dx = bot->GetPositionX() - capernian->GetPositionX();
-            float dy = bot->GetPositionY() - capernian->GetPositionY();
-
-            dx /= currentDist;
-            dy /= currentDist;
-            float targetX = capernian->GetPositionX() + dx * minDistance;
-            float targetY = capernian->GetPositionY() + dy * minDistance;
-
-            if (bot->GetExactDist2d(targetX, targetY) > 1.0f)
-            {
-                bot->AttackStop();
-                bot->InterruptNonMeleeSpells(true);
-                return MoveTo(TEMPEST_KEEP_MAP_ID, targetX, targetY, capernian->GetPositionZ(), false,
-                              false, false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
-            } */
             return MoveAway(capernian, minDistance - currentDist + 1.0f);
-        }
-        /* float orientation = atan2(capernian->GetPositionY() - bot->GetPositionY(),
-                                  capernian->GetPositionX() - bot->GetPositionX());
-        bot->SetFacingTo(orientation); */
     }
 
     return false;
@@ -1375,7 +1350,7 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::StayBackFromCaperni
                           false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
         }
 
-        return false;
+        return true;
     }
 
     float safeDistance;
@@ -1467,7 +1442,7 @@ bool KaelthasSunstriderReequipGearAction::Execute(Event event)
 
 bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
 {
-    // Target priority 1: Thaladred for all dps except Capernian tank
+    // Target priority 1: Thaladred, except Capernian tank
     Player* capernianTank = GetCapernianTank(botAI, bot);
     bool isCapernianTank = capernianTank && bot == capernianTank;
 
@@ -1484,7 +1459,7 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
         return false;
     }
 
-    // Target priority 2: Capernian for ranged, except longbow tank
+    // Target priority 2: Capernian for ranged only (excluding longbow tank)
     Player* longBowTank = GetNetherstrandLongbowTank(botAI, bot);
 
     Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
@@ -1499,7 +1474,7 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
         return false;
     }
 
-    // Target priority 3: Sanguinar for all dps
+    // Target priority 3: Sanguinar (longbow tank and melee move here after Thaladred)
     Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
     if (sanguinar && sanguinar->IsAlive() &&
         !sanguinar->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) && !sanguinar->HasAura(SPELL_PERMANENT_FEIGN_DEATH))
@@ -1512,7 +1487,7 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
         return false;
     }
 
-    // Target priority 4: Telonicus for all dps
+    // Target priority 4: Telonicus
     Unit* telonicus = AI_VALUE2(Unit*, "find target", "master engineer telonicus");
     if (telonicus && telonicus->IsAlive() &&
         !telonicus->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) && !telonicus->HasAura(SPELL_PERMANENT_FEIGN_DEATH))
@@ -1522,7 +1497,7 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
         if (bot->GetTarget() != telonicus->GetGUID())
             return Attack(telonicus);
 
-        // Melee DPS positioning: stay at max-ish melee range behind Telonicus (god damn bombs)
+        // Melee DPS need to stay at max-ish melee range behind Telonicus (god damn bombs)
         if (botAI->IsMelee(bot) && botAI->IsDps(bot) && telonicus->GetVictim() != bot)
         {
             float maxMeleeRange = bot->GetMeleeRange(telonicus);
@@ -1593,8 +1568,8 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event eve
     if (botAI->IsAssistTank(bot))
         SetRtiTarget(botAI, "moon", nullptr);
 
-    // Priority 0: Stay away from Devastation (other than main tank)
-    // Applies to assist tanks only if they need to pull away the mace, dagger, or sword
+    // Priority 0: Everybody other than the main tank needs to stay away from the axe
+    // But this applies to assist tanks only after they get aggro on the mace, dagger, or sword
     Unit* axe = AI_VALUE2(Unit*, "find target", "devastation");
     Unit* mace = AI_VALUE2(Unit*, "find target", "cosmic infuser");
     Unit* dagger = AI_VALUE2(Unit*, "find target", "infinity blades");
@@ -1667,7 +1642,7 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event eve
 
             return false;
         }
-        // Priority 5: Devastation - Ranged DPS only (Diamond--marked by main tank)
+        // Priority 5: Devastation - ranged only (Diamond--marked in other method by main tank)
         if (axe && botAI->IsRangedDps(bot))
         {
             SetRtiTarget(botAI, "diamond", axe);
@@ -1677,7 +1652,7 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event eve
 
             return false;
         }
-        // Priority 6: Netherstrand Longbow (Cross--marked by hunter tank)
+        // Priority 6: Netherstrand Longbow (Cross--marked in other method by longbow tank)
         if (Unit* longbow = AI_VALUE2(Unit*, "find target", "netherstrand longbow"))
         {
             SetRtiTarget(botAI, "cross", longbow);
@@ -1807,6 +1782,8 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::ShouldBotLootWeapon(uint32 we
         case NPC_COSMIC_INFUSER:
             return botAI->IsHeal(bot);
 
+        // Fury Warriors could use the axe, but their DPS is terrible at appropriate gear levels
+        // So they're better off looting only the dagger to MH it and break MCs
         case NPC_DEVASTATION:
             return (bot->getClass() == CLASS_WARRIOR && tab == WARRIOR_TAB_ARMS) ||
                    (bot->getClass() == CLASS_PALADIN && tab == PALADIN_TAB_RETRIBUTION) ||
@@ -2093,14 +2070,12 @@ bool KaelthasSunstriderRoundUpPhoenixesAndFocusDownEggsAction::Execute(Event eve
         Unit* targetPhoenix = nullptr;
         if (botAI->IsAssistTankOfIndex(bot, 0))
         {
-            // Assist Tank 0: Take first phoenix (Square)
             targetPhoenix = phoenixes[0];
             MarkTargetWithSquare(bot, targetPhoenix);
             SetRtiTarget(botAI, "square", targetPhoenix);
         }
         else if (botAI->IsAssistTankOfIndex(bot, 1) && phoenixes.size() >= 2)
         {
-            // Assist Tank 1: Take second phoenix (Circle)
             targetPhoenix = phoenixes[1];
             MarkTargetWithCircle(bot, targetPhoenix);
             SetRtiTarget(botAI, "circle", targetPhoenix);
@@ -2224,8 +2199,7 @@ bool KaelthasSunstriderBreakMindControlWithInfinityBladeAction::Execute(Event ev
     return false;
 }
 
-// Focus on Kael'thas when Shock Barrier is up
-// Cast interrupt as soon as Shock Barrier is broken
+// Shock Barrier needs to be #1 focus, even if there is a Phoenix Egg up
 bool KaelthasSunstriderBreakThroughShockBarrierAction::Execute(Event event)
 {
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
@@ -2261,6 +2235,8 @@ bool KaelthasSunstriderBreakThroughShockBarrierAction::Execute(Event event)
     return false;
 }
 
+// Bots immediately fall to the ground after Gravity Lapse, so this action
+// name is kind of a misnomer (though bots are still in a flying state)
 bool KaelthasSunstriderSpreadOutInMidairAction::Execute(Event event)
 {
     Group* group = bot->GetGroup();

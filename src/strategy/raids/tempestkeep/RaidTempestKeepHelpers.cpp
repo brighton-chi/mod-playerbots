@@ -503,7 +503,7 @@ namespace TempestKeepHelpers
                 return member;
         }
 
-        // (2) Fallback to any bot Hunter
+        // (2) Fall back to any bot Hunter
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
@@ -532,11 +532,13 @@ namespace TempestKeepHelpers
 
         for (auto const& [name, entry] : weapons)
         {
-            Unit* weapon = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", name)->Get();
+            Unit* weapon =
+                botAI->GetAiObjectContext()->GetValue<Unit*>("find target", name)->Get();
             if (weapon && weapon->IsAlive())
                 continue;
 
-            GuidVector corpses = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest corpses")->Get();
+            auto const& corpses =
+                botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest corpses")->Get();
             for (auto const& guid : corpses)
             {
                 LootObject loot(bot, guid);
