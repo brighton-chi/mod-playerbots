@@ -1051,7 +1051,6 @@ bool KaelthasSunstriderKiteThaladredAction::Execute(Event event)
     return false;
 }
 
-
 // Misdirect order: (1) Capernian, (2) Telonicus, (3) Capernian (again for good measure)
 bool KaelthasSunstriderMisdirectAdvisorsToTanksAction::Execute(Event event)
 {
@@ -1353,7 +1352,7 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::StayBackFromCaperni
         return true;
     }
 
-    float safeDistance;
+    float safeDistance = 0.0f;
     if (botAI->IsMelee(bot))
         safeDistance = 45.0f;
     else if (botAI->IsRangedDps(bot))
