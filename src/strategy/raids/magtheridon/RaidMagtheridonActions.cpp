@@ -380,15 +380,9 @@ bool MagtheridonSpreadRangedAction::Execute(Event event)
     if (!magtheridon)
         return false;
 
-    Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
-    if (!magtheridon)
-        return false;
-
     Group* group = bot->GetGroup();
     if (!group)
         return false;
-
-    const uint32 instanceId = magtheridon->GetMap()->GetInstanceId();
 
     const uint32 instanceId = magtheridon->GetMap()->GetInstanceId();
 
