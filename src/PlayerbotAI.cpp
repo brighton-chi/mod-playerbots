@@ -242,8 +242,8 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
         nextAICheckDelay = 0;
 
     // Early return if bot is in invalid state
-    if (!bot || !bot->IsInWorld() || !bot->GetSession() || bot->GetSession()->isLogingOut() ||
-        bot->IsDuringRemoveFromWorld())
+    if (!bot || !bot->GetSession() || !bot->IsInWorld() || bot->IsBeingTeleported() ||
+        bot->GetSession()->isLogingOut() || bot->IsDuringRemoveFromWorld())
         return;
 
     // Handle cheat options (set bot health and power if cheats are enabled)
@@ -713,39 +713,59 @@ void PlayerbotAI::HandleTeleportAck()
     if (IsRealPlayer())
         return;
 
+    // Clearing motion generators and stopping movement which prevents
+    // conflicts between teleport and any active motion (walk, run, swim, flight, etc.)
     bot->GetMotionMaster()->Clear(true);
     bot->StopMoving();
+
+    // Near teleport (within map/instance)
     if (bot->IsBeingTeleportedNear())
     {
-        // Temporary fix for instance can not enter
-        if (!bot->IsInWorld())
-        {
-            bot->GetMap()->AddPlayerToMap(bot);
-        }
-        while (bot->IsInWorld() && bot->IsBeingTeleportedNear())
-        {
-            Player* plMover = bot->m_mover->ToPlayer();
-            if (!plMover)
-                return;
-            WorldPacket p = WorldPacket(MSG_MOVE_TELEPORT_ACK, 20);
-            p << plMover->GetPackGUID();
-            p << (uint32)0;  // supposed to be flags? not used currently
-            p << (uint32)0;  // time - not currently used
-            bot->GetSession()->HandleMoveTeleportAck(p);
-        };
+        // Previous versions manually added the bot to the map if it was not in the world.
+        // not needed: HandleMoveTeleportAckOpcode() safely attaches the player to the map
+        // and clears IsBeingTeleportedNear().
+
+        Player* plMover = bot->m_mover->ToPlayer();
+        if (!plMover)
+            return;
+
+        // Send the near teleport ACK packet
+        WorldPacket p(MSG_MOVE_TELEPORT_ACK, 20);
+        p << plMover->GetPackGUID();
+        p << uint32(0);
+        p << uint32(0);
+        bot->GetSession()->HandleMoveTeleportAck(p);
+
+        // Simulate teleport latency and prevent AI from running too early (used cmangos delays)
+        SetNextCheckDelay(urand(1000, 2000));
     }
+
+    // Far teleport (worldport / different map)
     if (bot->IsBeingTeleportedFar())
     {
-        while (bot->IsBeingTeleportedFar())
+        // Handle far teleport ACK:
+        // Moves the bot to the new map, clears IsBeingTeleportedFar(), updates session/map references
+        bot->GetSession()->HandleMoveWorldportAck();
+
+        // Ensure bot now has a valid map. If this fails, there is a core/session bug?
+        if (!bot->GetMap())
         {
-            bot->GetSession()->HandleMoveWorldportAck();
+            LOG_ERROR("playerbot", "Bot {} has no map after worldport ACK", bot->GetGUID().ToString());
         }
-        // SetNextCheckDelay(urand(2000, 5000));
+
+        // Instance strategies after teleport
         if (sPlayerbotAIConfig->applyInstanceStrategies)
             ApplyInstanceStrategies(bot->GetMapId(), true);
+
+        // healer DPS strategies if restrictions are enabled
         if (sPlayerbotAIConfig->restrictHealerDPS)
             EvaluateHealerDpsStrategy();
+
+        // Reset AI state to to before teleport conditions
         Reset(true);
+
+        // Slightly longer delay to simulate far teleport latency (used cmangos delays)
+        SetNextCheckDelay(urand(2000, 5000));
     }
 
     SetNextCheckDelay(sPlayerbotAIConfig->globalCoolDown);
@@ -988,10 +1008,10 @@ void PlayerbotAI::HandleBotOutgoingPacket(WorldPacket const& packet)
 {
     if (packet.empty())
         return;
+
     if (!bot || !bot->IsInWorld() || bot->IsDuringRemoveFromWorld())
-    {
         return;
-    }
+
     switch (packet.GetOpcode())
     {
         case SMSG_SPELL_FAILURE:
@@ -4124,8 +4144,7 @@ Player* PlayerbotAI::FindNewMaster()
     for (GroupReference* gref = group->GetFirstMember(); gref; gref = gref->next())
     {
         Player* member = gref->GetSource();
-        if (!member || member == bot || !member->IsInWorld() ||
-            !member->IsInSameRaidWith(bot))
+        if (!member || member == bot || !member->IsInWorld() || !member->IsInSameRaidWith(bot))
             continue;
 
         PlayerbotAI* memberBotAI = GET_PLAYERBOT_AI(member);
@@ -4360,6 +4379,11 @@ inline bool ZoneHasRealPlayers(Player* bot)
 
 bool PlayerbotAI::AllowActive(ActivityType activityType)
 {
+    // Early return if bot is in invalid state
+    if (!bot || !bot->GetSession() || !bot->IsInWorld() || bot->IsBeingTeleported() ||
+        bot->GetSession()->isLogingOut() || bot->IsDuringRemoveFromWorld())
+        return false;
+
     // when botActiveAlone is 100% and smartScale disabled
     if (sPlayerbotAIConfig->botActiveAlone >= 100 && !sPlayerbotAIConfig->botActiveAloneSmartScale)
     {
@@ -4450,10 +4474,8 @@ bool PlayerbotAI::AllowActive(ActivityType activityType)
         for (GroupReference* gref = group->GetFirstMember(); gref; gref = gref->next())
         {
             Player* member = gref->GetSource();
-            if ((!member || !member->IsInWorld()) && member->GetMapId() != bot->GetMapId())
-            {
+            if (!member || !member->IsInWorld() || member->GetMapId() != bot->GetMapId())
                 continue;
-            }
 
             if (member == bot)
             {
@@ -4504,23 +4526,23 @@ bool PlayerbotAI::AllowActive(ActivityType activityType)
     // HasFriend
     if (sPlayerbotAIConfig->BotActiveAloneForceWhenIsFriend)
     {
-        if (!bot || !bot->IsInWorld() || !bot->GetGUID())
+        // shouldnt be needed analyse in future
+        if (!bot->GetGUID())
             return false;
 
         for (auto& player : sRandomPlayerbotMgr->GetPlayers())
         {
-            if (!player || !player->IsInWorld())
+            if (!player || !player->GetSession() || !player->IsInWorld() || player->IsDuringRemoveFromWorld() ||
+                player->GetSession()->isLogingOut())
                 continue;
 
-            Player* connectedPlayer = ObjectAccessor::FindPlayer(player->GetGUID());
-            if (!connectedPlayer)
+            PlayerbotAI* playerAI = GET_PLAYERBOT_AI(player);
+            if (!playerAI || !playerAI->IsRealPlayer())
                 continue;
 
+            // if a real player has the bot as a friend
             PlayerSocial* social = player->GetSocial();
-            if (!social)
-                continue;
-
-            if (social->HasFriend(bot->GetGUID()))
+            if (social && social->HasFriend(bot->GetGUID()))
                 return true;
         }
     }
@@ -4534,7 +4556,7 @@ bool PlayerbotAI::AllowActive(ActivityType activityType)
         }
     }
 
-    // Bots don't need to move using PathGenerator.
+    // Bots don't need react to PathGenerator activities
     if (activityType == DETAILED_MOVE_ACTIVITY)
     {
         return false;
@@ -4570,15 +4592,25 @@ bool PlayerbotAI::AllowActive(ActivityType activityType)
 
 bool PlayerbotAI::AllowActivity(ActivityType activityType, bool checkNow)
 {
-    if (!allowActiveCheckTimer[activityType])
-        allowActiveCheckTimer[activityType] = time(nullptr);
+    const int activityIndex = static_cast<int>(activityType);
 
-    if (!checkNow && time(nullptr) < (allowActiveCheckTimer[activityType] + 5))
-        return allowActive[activityType];
+    // Unknown/out-of-range avoid blocking, added logging for further analysing should not happen in the first place.
+    if (activityIndex <= 0 || activityIndex >= MAX_ACTIVITY_TYPE)
+    {
+        LOG_ERROR("playerbots", "AllowActivity received invalid activity type value: {}", activityIndex);
+        return true;
+    }
 
-    bool allowed = AllowActive(activityType);
-    allowActive[activityType] = allowed;
-    allowActiveCheckTimer[activityType] = time(nullptr);
+    if (!allowActiveCheckTimer[activityIndex])
+        allowActiveCheckTimer[activityIndex] = time(nullptr);
+
+    if (!checkNow && time(nullptr) < (allowActiveCheckTimer[activityIndex] + 5))
+        return allowActive[activityIndex];
+
+    const bool allowed = AllowActive(activityType);
+    allowActive[activityIndex] = allowed;
+    allowActiveCheckTimer[activityIndex] = time(nullptr);
+
     return allowed;
 }
 
@@ -5362,15 +5394,13 @@ Item* PlayerbotAI::FindStoneFor(Item* weapon) const
     if (!item_template)
         return nullptr;
 
-static const std::vector<uint32_t> uPrioritizedSharpStoneIds = {
-    ADAMANTITE_SHARPENING_STONE, FEL_SHARPENING_STONE, ELEMENTAL_SHARPENING_STONE, DENSE_SHARPENING_STONE,
-    SOLID_SHARPENING_STONE, HEAVY_SHARPENING_STONE, COARSE_SHARPENING_STONE, ROUGH_SHARPENING_STONE
-};
+    static const std::vector<uint32_t> uPrioritizedSharpStoneIds = {
+        ADAMANTITE_SHARPENING_STONE, FEL_SHARPENING_STONE,   ELEMENTAL_SHARPENING_STONE, DENSE_SHARPENING_STONE,
+        SOLID_SHARPENING_STONE,      HEAVY_SHARPENING_STONE, COARSE_SHARPENING_STONE,    ROUGH_SHARPENING_STONE};
 
-static const std::vector<uint32_t> uPrioritizedWeightStoneIds = {
-    ADAMANTITE_WEIGHTSTONE, FEL_WEIGHTSTONE, DENSE_WEIGHTSTONE, SOLID_WEIGHTSTONE,
-    HEAVY_WEIGHTSTONE, COARSE_WEIGHTSTONE, ROUGH_WEIGHTSTONE
-};
+    static const std::vector<uint32_t> uPrioritizedWeightStoneIds = {
+        ADAMANTITE_WEIGHTSTONE, FEL_WEIGHTSTONE,    DENSE_WEIGHTSTONE, SOLID_WEIGHTSTONE,
+        HEAVY_WEIGHTSTONE,      COARSE_WEIGHTSTONE, ROUGH_WEIGHTSTONE};
 
     Item* stone = nullptr;
     ItemTemplate const* pProto = weapon->GetTemplate();
@@ -5406,7 +5436,6 @@ static const std::vector<uint32_t> uPrioritizedWeightStoneIds = {
 
 Item* PlayerbotAI::FindOilFor(Item* weapon) const
 {
-
     if (!weapon)
         return nullptr;
 
@@ -5415,12 +5444,12 @@ Item* PlayerbotAI::FindOilFor(Item* weapon) const
         return nullptr;
 
     static const std::vector<uint32_t> uPrioritizedWizardOilIds = {
-        BRILLIANT_WIZARD_OIL, SUPERIOR_WIZARD_OIL, WIZARD_OIL, LESSER_WIZARD_OIL, MINOR_WIZARD_OIL,
-        BRILLIANT_MANA_OIL, SUPERIOR_MANA_OIL, LESSER_MANA_OIL, MINOR_MANA_OIL};
+        BRILLIANT_WIZARD_OIL, SUPERIOR_WIZARD_OIL, WIZARD_OIL,      LESSER_WIZARD_OIL, MINOR_WIZARD_OIL,
+        BRILLIANT_MANA_OIL,   SUPERIOR_MANA_OIL,   LESSER_MANA_OIL, MINOR_MANA_OIL};
 
     static const std::vector<uint32_t> uPrioritizedManaOilIds = {
-        BRILLIANT_MANA_OIL, SUPERIOR_MANA_OIL, LESSER_MANA_OIL, MINOR_MANA_OIL,
-        BRILLIANT_WIZARD_OIL, SUPERIOR_WIZARD_OIL, WIZARD_OIL, LESSER_WIZARD_OIL, MINOR_WIZARD_OIL};
+        BRILLIANT_MANA_OIL,  SUPERIOR_MANA_OIL, LESSER_MANA_OIL,   MINOR_MANA_OIL,  BRILLIANT_WIZARD_OIL,
+        SUPERIOR_WIZARD_OIL, WIZARD_OIL,        LESSER_WIZARD_OIL, MINOR_WIZARD_OIL};
 
     Item* oil = nullptr;
     int botClass = bot->getClass();
@@ -5436,22 +5465,22 @@ Item* PlayerbotAI::FindOilFor(Item* weapon) const
             prioritizedOils = &uPrioritizedWizardOilIds;
             break;
         case CLASS_DRUID:
-            if (specTab == 0) // Balance
+            if (specTab == 0)  // Balance
                 prioritizedOils = &uPrioritizedWizardOilIds;
-            else if (specTab == 1) // Feral
+            else if (specTab == 1)  // Feral
                 prioritizedOils = nullptr;
-            else // Restoration (specTab == 2) or any other/unspecified spec
+            else  // Restoration (specTab == 2) or any other/unspecified spec
                 prioritizedOils = &uPrioritizedManaOilIds;
             break;
         case CLASS_HUNTER:
             prioritizedOils = &uPrioritizedManaOilIds;
             break;
         case CLASS_PALADIN:
-            if (specTab == 1) // Protection
+            if (specTab == 1)  // Protection
                 prioritizedOils = &uPrioritizedWizardOilIds;
-            else if (specTab == 2) // Retribution
+            else if (specTab == 2)  // Retribution
                 prioritizedOils = nullptr;
-            else // Holy (specTab == 0) or any other/unspecified spec
+            else  // Holy (specTab == 0) or any other/unspecified spec
                 prioritizedOils = &uPrioritizedManaOilIds;
             break;
         default:
