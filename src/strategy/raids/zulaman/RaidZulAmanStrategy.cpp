@@ -103,7 +103,7 @@ void RaidZulAmanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new NalorakkDisableTankActionsMultiplier(botAI));
     multipliers.push_back(new NalorakkControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new JanalaiDisableTankActionsMultiplier(botAI));
-    multipliers.push_back(new JanalaiDisableDispersalMultiplier(botAI));
+    multipliers.push_back(new JanalaiDisableCombatFormationMoveMultiplier(botAI));
     multipliers.push_back(new JanalaiStayAwayFromFireBombsMultiplier(botAI));
     multipliers.push_back(new JanalaiDoNotCrowdControlHatchersMultiplier(botAI));
     multipliers.push_back(new JanalaiDelayBloodlustAndHeroismMultiplier(botAI));

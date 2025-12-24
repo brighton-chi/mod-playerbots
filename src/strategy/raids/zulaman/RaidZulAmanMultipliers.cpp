@@ -23,13 +23,11 @@ using namespace ZulAmanHelpers;
 
 float AkilzonDisableCombatFormationMoveMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsTank(bot) && !botAI->IsRanged(bot))
-        return 1.0f;
-
     Unit* akilzon = AI_VALUE2(Unit*, "find target", "akil'zon");
     if (akilzon)
     {
-        if (dynamic_cast<CombatFormationMoveAction*>(action))
+        if (dynamic_cast<CombatFormationMoveAction*>(action) &&
+            !dynamic_cast<SetBehindTargetAction*>(action))
             return 0.0f;
     }
 
@@ -42,7 +40,7 @@ float AkilzonStayInEyeOfTheStormMultiplier::GetValue(Action* action)
     if (!akilzon)
         return 1.0f;
 
-    if (!IsElectricalStormWindowActive(akilzon))
+    if (!AnyGroupMemberHasElectricalStorm(bot))
         return 1.0f;
 
     if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
@@ -69,7 +67,7 @@ float NalorakkDisableTankActionsMultiplier::GetValue(Action* action)
     if (!nalorakk)
         return 1.0f;
 
-    if (dynamic_cast<CombatFormationMoveAction*>(action))
+    if (dynamic_cast<TankFaceAction*>(action))
         return 0.0f;
 
     if (!nalorakk->HasAura(SPELL_BEARFORM) && bot->GetVictim() != nullptr &&
@@ -125,13 +123,14 @@ float JanalaiDisableTankActionsMultiplier::GetValue(Action* action)
     if (dynamic_cast<TankFaceAction*>(action))
         return 0.0f;
 
-    if (botAI->IsMainTank(bot))
+    if (botAI->IsMainTank(bot) && bot->GetVictim() != nullptr)
     {
         if (dynamic_cast<TankAssistAction*>(action))
             return 0.0f;
     }
 
-    Unit* hatchling = GetFirstAliveUnitByEntry(botAI, NPC_AMANI_DRAGONHAWK_HATCHLING);
+    Unit* hatchling =
+        GetFirstAliveUnitByEntry(botAI, NPC_AMANI_DRAGONHAWK_HATCHLING);
     if (!hatchling)
     {
         if (botAI->IsAssistTank(bot) && bot->GetVictim() != nullptr)
@@ -144,7 +143,7 @@ float JanalaiDisableTankActionsMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float JanalaiDisableDispersalMultiplier::GetValue(Action* action)
+float JanalaiDisableCombatFormationMoveMultiplier::GetValue(Action* action)
 {
     if (!botAI->IsRanged(bot))
         return 1.0f;
@@ -152,7 +151,8 @@ float JanalaiDisableDispersalMultiplier::GetValue(Action* action)
     Unit* janalai = AI_VALUE2(Unit*, "find target", "jan'alai");
     if (janalai)
     {
-        if (dynamic_cast<CombatFormationMoveAction*>(action))
+        if (dynamic_cast<CombatFormationMoveAction*>(action) &&
+            !dynamic_cast<SetBehindTargetAction*>(action))
             return 0.0f;
     }
 
@@ -182,7 +182,8 @@ float JanalaiDoNotCrowdControlHatchersMultiplier::GetValue(Action* action)
     Unit* hatcher = AI_VALUE2(Unit*, "find target", "amani'shi hatcher");
     if (hatcher)
     {
-        if (dynamic_cast<CastCrowdControlSpellAction*>(action))
+        if (dynamic_cast<CastCrowdControlSpellAction*>(action) ||
+            dynamic_cast<CastPolymorphAction*>(action))
             return 0.0f;
     }
 
@@ -228,8 +229,11 @@ float HalazziDisableTankActionsMultiplier::GetValue(Action* action)
         if (!lynx)
             return 1.0f;
 
-        if (dynamic_cast<TankAssistAction*>(action) ||
-            dynamic_cast<CastTauntAction*>(action) ||
+        if (bot->GetVictim() != nullptr &&
+            dynamic_cast<TankAssistAction*>(action))
+            return 0.0f;
+
+        if (dynamic_cast<CastTauntAction*>(action) ||
             dynamic_cast<CastGrowlAction*>(action) ||
             dynamic_cast<CastHandOfReckoningAction*>(action) ||
             dynamic_cast<CastDarkCommandAction*>(action))

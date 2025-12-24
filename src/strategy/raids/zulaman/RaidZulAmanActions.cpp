@@ -59,7 +59,7 @@ bool AkilzonMainTankPositionBossAction::Execute(Event event)
     if (!akilzon)
         return false;
 
-    if (bot->GetVictim() != akilzon)
+    if (bot->GetTarget() != akilzon->GetGUID())
         return Attack(akilzon);
 
     if (akilzon->GetVictim() == bot)
@@ -90,8 +90,6 @@ bool AkilzonSpreadRangedAction::Execute(Event event)
     if (nearestPlayer)
     {
         const uint32 minInterval = 1000;
-        bot->AttackStop();
-        bot->InterruptNonMeleeSpells(true);
         return FleePosition(nearestPlayer->GetPosition(), minDistance + 0.5f, minInterval);
     }
 
@@ -121,8 +119,7 @@ bool AkilzonMoveToEyeOfTheStormAction::Execute(Event event)
     float distanceFromStorm = bot->GetExactDist2d(stormTarget);
     if (distanceFromStorm > 2.0f)
     {
-        bot->AttackStop();
-        bot->InterruptNonMeleeSpells(true);
+        botAI->Reset();
         return MoveTo(ZULAMAN_MAP_ID, stormTarget->GetPositionX(), stormTarget->GetPositionY(),
                       stormTarget->GetPositionZ(), false, false, false, true,
                       MovementPriority::MOVEMENT_FORCED, true, false);
@@ -191,7 +188,7 @@ bool NalorakkTanksPositionBossAction::MainTankPositionTrollForm(
 
     if (!nalorakk->HasAura(SPELL_BEARFORM))
     {
-        if (mainTank->GetVictim() != nalorakk)
+        if (mainTank->GetTarget() != nalorakk->GetGUID())
         {
             return Attack(nalorakk);
         }
@@ -258,7 +255,7 @@ bool NalorakkTanksPositionBossAction::FirstAssistTankPositionBearForm(
 
     if (nalorakk->HasAura(SPELL_BEARFORM))
     {
-        if (assistTank->GetVictim() != nalorakk)
+        if (assistTank->GetTarget() != nalorakk->GetGUID())
         {
             return Attack(nalorakk);
         }
@@ -326,8 +323,6 @@ bool NalorakkSpreadRangedAction::Execute(Event event)
     if (nearestPlayer)
     {
         const uint32 minInterval = 1000;
-        bot->AttackStop();
-        bot->InterruptNonMeleeSpells(true);
         return FleePosition(nearestPlayer->GetPosition(), minDistance + 1.0f, minInterval);
     }
 
@@ -375,7 +370,7 @@ bool JanalaiMainTankPositionBossAction::Execute(Event event)
     if (!janalai)
         return false;
 
-    if (bot->GetVictim() != janalai)
+    if (bot->GetTarget() != janalai->GetGUID())
         return Attack(janalai);
 
     if (janalai->GetVictim() == bot && bot->IsWithinMeleeRange(janalai))
@@ -670,7 +665,7 @@ bool HalazziMainTankPositionBossAction::Execute(Event event)
     MarkTargetWithStar(bot, halazzi);
     SetRtiTarget(botAI, "star", halazzi);
 
-    if (bot->GetVictim() != halazzi)
+    if (bot->GetTarget() != halazzi->GetGUID())
         return Attack(halazzi);
 
     if (halazzi->GetVictim() == bot && bot->IsWithinMeleeRange(halazzi))
@@ -701,7 +696,7 @@ bool HalazziFirstAssistTankAttackSpiritLynxAction::Execute(Event event)
         MarkTargetWithCircle(bot, lynx);
         SetRtiTarget(botAI, "circle", lynx);
 
-        if (bot->GetVictim() != lynx)
+        if (bot->GetTarget() != lynx->GetGUID())
         {
             return Attack(lynx);
         }
@@ -719,7 +714,7 @@ bool HalazziFirstAssistTankAttackSpiritLynxAction::Execute(Event event)
     {
         SetRtiTarget(botAI, "star", halazzi);
 
-        if (bot->GetVictim() != halazzi)
+        if (bot->GetTarget() != halazzi->GetGUID())
             return Attack(halazzi);
 
         float bossX = halazzi->GetPositionX();
@@ -935,7 +930,7 @@ bool ZuljinMainTankPositionBossAction::Execute(Event event)
     if (!zuljin)
         return false;
 
-    if (bot->GetVictim() != zuljin)
+    if (bot->GetTarget() != zuljin->GetGUID())
         return Attack(zuljin);
 
     if (zuljin->GetVictim() == bot && bot->IsWithinMeleeRange(zuljin))
@@ -988,8 +983,6 @@ bool ZuljinSpreadRangedAction::Execute(Event event)
     if (nearestPlayer)
     {
         const uint32 minInterval = 1000;
-        bot->AttackStop();
-        bot->InterruptNonMeleeSpells(true);
         return FleePosition(nearestPlayer->GetPosition(), minDistance + 1.0f, minInterval);
     }
 
