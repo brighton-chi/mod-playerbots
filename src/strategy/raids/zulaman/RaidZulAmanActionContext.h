@@ -23,9 +23,6 @@ public:
         creators["akil'zon spread ranged"] =
             &RaidZulAmanActionContext::akilzon_spread_ranged;
 
-        creators["akil'zon start electrical storm timer"] =
-            &RaidZulAmanActionContext::akilzon_start_electrical_storm_timer;
-
         creators["akil'zon move to eye of the storm"] =
             &RaidZulAmanActionContext::akilzon_move_to_eye_of_the_storm;
 
@@ -112,9 +109,6 @@ private:
 
     static Action* akilzon_spread_ranged(
         PlayerbotAI* botAI) { return new AkilzonSpreadRangedAction(botAI); }
-
-    static Action* akilzon_start_electrical_storm_timer(
-        PlayerbotAI* botAI) { return new AkilzonStartElectricalStormTimerAction(botAI); }
 
     static Action* akilzon_move_to_eye_of_the_storm(
         PlayerbotAI* botAI) { return new AkilzonMoveToEyeOfTheStormAction(botAI); }

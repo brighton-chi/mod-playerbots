@@ -23,9 +23,6 @@ public:
         creators["akil'zon boss casts static disruption"] =
             &RaidZulAmanTriggerContext::akilzon_boss_casts_static_disruption;
 
-        creators["akil'zon electrical storm forms every 60 seconds"] =
-            &RaidZulAmanTriggerContext::akilzon_electrical_storm_forms_every_60_seconds;
-
         creators["akil'zon electrical storm has formed"] =
             &RaidZulAmanTriggerContext::akilzon_electrical_storm_has_formed;
 
@@ -114,9 +111,6 @@ private:
 
     static Trigger* akilzon_boss_casts_static_disruption(
         PlayerbotAI* botAI) { return new AkilzonBossCastsStaticDisruptionTrigger(botAI); }
-
-    static Trigger* akilzon_electrical_storm_forms_every_60_seconds(
-        PlayerbotAI* botAI) { return new AkilzonElectricalStormFormsEvery60SecondsTrigger(botAI); }
 
     static Trigger* akilzon_electrical_storm_has_formed(
         PlayerbotAI* botAI) { return new AkilzonElectricalStormHasFormedTrigger(botAI); }

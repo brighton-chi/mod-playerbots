@@ -12,7 +12,7 @@ namespace ZulAmanHelpers
     enum ZulAmanSpells
     {
         // Akil'zon <Eagle Avatar>
-        // SPELL_ELECTRICAL_STORM         = 43648,
+        SPELL_ELECTRICAL_STORM         = 43648,
 
         // Nalorakk <Bear Avatar>
         SPELL_BEARFORM                 = 42377,
@@ -77,10 +77,7 @@ namespace ZulAmanHelpers
 
     // Akil'zon <Eagle Avatar>
     extern const Position AKILZON_TANK_POSITION;
-    extern std::unordered_map<uint32, time_t> electricalStormTimer;
-    bool IsElectricalStormTimerManager(PlayerbotAI* botAI, Player* bot);
-    bool IsElectricalStormWindowActive(Unit* akilzon);
-    // bool AnyGroupMemberHasElectricalStorm(Player* bot);
+    bool AnyGroupMemberHasElectricalStorm(Player* bot);
 
     // Nalorakk <Bear Avatar>
     extern const Position NALORAKK_TANK_POSITION;

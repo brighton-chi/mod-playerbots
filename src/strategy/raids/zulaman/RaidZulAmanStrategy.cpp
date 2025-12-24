@@ -18,9 +18,6 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("akil'zon boss casts static disruption",
         NextAction::array(0, new NextAction("akil'zon spread ranged", ACTION_RAID + 1), nullptr)
     ));
-    triggers.push_back(new TriggerNode("akil'zon electrical storm forms every 60 seconds",
-        NextAction::array(0, new NextAction("akil'zon start electrical storm timer", ACTION_EMERGENCY + 10), nullptr)
-    ));
     triggers.push_back(new TriggerNode("akil'zon electrical storm has formed",
         NextAction::array(0, new NextAction("akil'zon move to eye of the storm", ACTION_EMERGENCY + 6), nullptr)
     ));
@@ -106,7 +103,7 @@ void RaidZulAmanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new NalorakkDisableTankActionsMultiplier(botAI));
     multipliers.push_back(new NalorakkControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new JanalaiDisableTankActionsMultiplier(botAI));
-    multipliers.push_back(new JanalaiDisableRangedDispersalMultiplier(botAI));
+    multipliers.push_back(new JanalaiDisableDispersalMultiplier(botAI));
     multipliers.push_back(new JanalaiStayAwayFromFireBombsMultiplier(botAI));
     multipliers.push_back(new JanalaiDoNotCrowdControlHatchersMultiplier(botAI));
     multipliers.push_back(new JanalaiDelayBloodlustAndHeroismMultiplier(botAI));

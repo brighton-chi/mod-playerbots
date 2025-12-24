@@ -49,11 +49,11 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class JanalaiDisableRangedDispersalMultiplier : public Multiplier
+class JanalaiDisableDispersalMultiplier : public Multiplier
 {
 public:
-    JanalaiDisableRangedDispersalMultiplier(PlayerbotAI* botAI) : Multiplier(
-        botAI, "jan'alai disable ranged dispersal") {}
+    JanalaiDisableDispersalMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "jan'alai disable dispersal") {}
     virtual float GetValue(Action* action);
 };
 
