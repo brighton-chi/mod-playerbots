@@ -382,8 +382,10 @@ namespace TempestKeepHelpers
                 Player* member = ref->GetSource();
                 if (!member)
                     continue;
+
                 if (botAI->IsMainTank(member))
                     mainTank = member;
+
                 if (botAI->IsAssistTankOfIndex(member, 0))
                     assistTank = member;
             }
@@ -394,8 +396,10 @@ namespace TempestKeepHelpers
 
         if (!mainTankHasMelt && !assistTankHasMelt)
             return assistTank;
+
         if (mainTankHasMelt)
             return mainTank;
+
         if (assistTankHasMelt)
             return assistTank;
 

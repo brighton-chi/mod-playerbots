@@ -527,24 +527,6 @@ bool AlarSwapTanksOnBossAction::Execute(Event event)
     if (!alar)
         return false;
 
-    Player* mainTank = nullptr;
-    Player* assistTank = nullptr;
-    if (Group* group = bot->GetGroup())
-    {
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member)
-                continue;
-
-            if (botAI->IsMainTank(member))
-                mainTank = member;
-
-            if (botAI->IsAssistTankOfIndex(member, 0))
-                assistTank = member;
-        }
-    }
-
     if (alar->GetHealth() == alar->GetMaxHealth())
     {
         SetRtiTarget(botAI, "star", alar);
@@ -553,36 +535,22 @@ bool AlarSwapTanksOnBossAction::Execute(Event event)
             return Attack(alar);
     }
 
-    if (mainTank && assistTank && alar->GetVictim() == mainTank &&
-        mainTank->HasAura(SPELL_MELT_ARMOR) && bot == assistTank)
+    Player* secondEmberTank = GetSecondEmberTank(botAI, alar);
+    if (secondEmberTank && secondEmberTank != bot)
     {
         SetRtiTarget(botAI, "star", alar);
 
-        const char* taunts[] = { "taunt", "growl", "hand of reckoning", "dark command" };
-        for (const char* spellName : taunts)
+        if (alar->GetVictim() != bot)
         {
-            if (botAI->CanCastSpell(spellName, alar))
-                return botAI->CastSpell(spellName, alar);
+            const char* taunts[] = { "taunt", "growl", "hand of reckoning", "dark command" };
+            for (const char* spellName : taunts)
+            {
+                if (botAI->CanCastSpell(spellName, alar))
+                    return botAI->CastSpell(spellName, alar);
+            }
         }
-
-        if (bot->GetTarget() != alar->GetGUID())
-            return Attack(alar);
-    }
-
-    if (mainTank && assistTank && alar->GetVictim() == assistTank &&
-        assistTank->HasAura(SPELL_MELT_ARMOR) && bot == mainTank)
-    {
-        SetRtiTarget(botAI, "star", alar);
-
-        const char* taunts[] = { "taunt", "growl", "hand of reckoning", "dark command" };
-        for (const char* spellName : taunts)
-        {
-            if (botAI->CanCastSpell(spellName, alar))
-                return botAI->CastSpell(spellName, alar);
-        }
-
-        if (bot->GetTarget() != alar->GetGUID())
-            return Attack(alar);
+        else if (bot->GetTarget() != alar->GetGUID())
+                return Attack(alar);
     }
 
     return false;
@@ -662,10 +630,10 @@ bool AlarReturnToRoomCenterAction::Execute(Event event)
 {
     const Position& center = ALAR_ROOM_CENTER;
     if (bot->GetVictim() == nullptr &&
-        bot->GetExactDist2d(center.GetPositionX(), center.GetPositionY()) > 50.0f)
+        bot->GetExactDist2d(center.GetPositionX(), center.GetPositionY()) > 45.0f)
     {
         return MoveInside(TEMPEST_KEEP_MAP_ID, center.GetPositionX(), center.GetPositionY(),
-                          center.GetPositionZ(), 50.0f, MovementPriority::MOVEMENT_COMBAT);
+                          center.GetPositionZ(), 40.0f, MovementPriority::MOVEMENT_COMBAT);
     }
 
     return false;
@@ -728,8 +696,7 @@ bool VoidReaverRangedUseAggroDumpAbilityAction::Execute(Event event)
     if (!voidReaver)
         return false;
 
-    bot->AttackStop();
-    bot->InterruptNonMeleeSpells(true);
+    botAI->Reset();
     static const std::array<const char*, 6> spells =
     {
         "divine protection",
@@ -862,8 +829,7 @@ bool HighAstromancerSolarianMoveAwayFromGroupAction::Execute(Event event)
     Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
     if (nearestPlayer)
     {
-        bot->AttackStop();
-        bot->InterruptNonMeleeSpells(true);
+        botAI->Reset();
         return MoveFromGroup(safeDistance + 1.0f);
     }
 
@@ -1040,12 +1006,11 @@ bool KaelthasSunstriderKiteThaladredAction::Execute(Event event)
         return false;
 
     float currentDistance = bot->GetExactDist2d(thaladred);
-    const float safeDistance = 25.0f;
+    const float safeDistance = 20.0f;
     if (currentDistance < safeDistance)
     {
-        bot->AttackStop();
-        bot->InterruptNonMeleeSpells(true);
-        return MoveAway(thaladred, safeDistance - currentDistance + 5.0f);
+        botAI->Reset();
+        return MoveAway(thaladred, safeDistance - currentDistance);
     }
 
     return false;
