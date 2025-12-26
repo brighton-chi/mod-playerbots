@@ -206,8 +206,8 @@ bool LeotherasTheBlindBossTransformedIntoDemonFormTrigger::IsActive()
     if (!demonFormTank || bot != demonFormTank)
         return false;
 
-    Unit* leotherasDemon = GetActiveLeotherasDemon(botAI);
-    return leotherasDemon != nullptr;
+    Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
+    return leotheras != nullptr;
 }
 
 bool LeotherasTheBlindBossEngagedByRangedTrigger::IsActive()
@@ -236,10 +236,6 @@ bool LeotherasTheBlindBossChannelingWhirlwindTrigger::IsActive()
 
 bool LeotherasTheBlindBotHasTooManyChaosBlastStacksTrigger::IsActive()
 {
-    Player* demonFormTank = GetLeotherasDemonFormTank(botAI, bot);
-    if (!demonFormTank)
-        return false;
-
     if (!botAI->IsMelee(bot) && !botAI->IsDps(bot))
         return false;
 

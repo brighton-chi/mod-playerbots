@@ -681,20 +681,26 @@ bool LeotherasTheBlindTargetSpellbindersAction::Execute(Event event)
 }
 
 // Warlock tank action--see GetLeotherasDemonFormTank in RaidSSCHelpers.cpp
+// Use tank strategy for Demon Form and DPS strategy for Human Form
 bool LeotherasTheBlindDemonFormTankAttackBossAction::Execute(Event event)
 {
     Unit* leotherasDemon = GetActiveLeotherasDemon(botAI);
-    if (!leotherasDemon)
-        return false;
+    if (leotherasDemon)
+    {
+        if (!botAI->HasStrategy("tank", BotState::BOT_STATE_COMBAT))
+            botAI->ChangeStrategy("+tank", BotState::BOT_STATE_COMBAT);
 
-    if (!botAI->HasStrategy("tank", BotState::BOT_STATE_COMBAT))
-        botAI->ChangeStrategy("+tank", BotState::BOT_STATE_COMBAT);
+        MarkTargetWithSquare(bot, leotherasDemon);
+        SetRtiTarget(botAI, "square", leotherasDemon);
 
-    MarkTargetWithSquare(bot, leotherasDemon);
-    SetRtiTarget(botAI, "square", leotherasDemon);
-
-    if (bot->GetTarget() != leotherasDemon->GetGUID())
-        return Attack(leotherasDemon);
+        if (bot->GetTarget() != leotherasDemon->GetGUID())
+            return Attack(leotherasDemon);
+    }
+    else if (Unit* leotherasHuman = GetLeotherasHuman(botAI))
+    {
+        if (botAI->HasStrategy("tank", BotState::BOT_STATE_COMBAT))
+            botAI->ChangeStrategy("-tank", BotState::BOT_STATE_COMBAT);
+    }
 
     return false;
 }
@@ -828,29 +834,28 @@ bool LeotherasTheBlindFinalPhaseAssignDpsPriorityAction::Execute(Event event)
     if (!leotherasHuman)
         return false;
 
-    Unit* leotherasDemon = GetPhase3LeotherasDemon(botAI);
-    if (!leotherasDemon)
-        return false;
-
     MarkTargetWithStar(bot, leotherasHuman);
     SetRtiTarget(botAI, "star", leotherasHuman);
 
     if (bot->GetTarget() != leotherasHuman->GetGUID())
         return Attack(leotherasHuman);
 
-    if (botAI->IsTank(bot) && leotherasHuman->GetVictim() == bot &&
-        bot->IsWithinMeleeRange(leotherasHuman))
+    Unit* leotherasDemon = GetPhase3LeotherasDemon(botAI);
+    if (leotherasDemon)
     {
-        Unit* demonTarget = leotherasDemon->GetVictim();
-        if (demonTarget && leotherasHuman->GetExactDist2d(demonTarget) < 20.0f)
+        if (leotherasHuman->GetVictim() == bot)
         {
-            float angle = atan2(bot->GetPositionY() - demonTarget->GetPositionY(),
-                                bot->GetPositionX() - demonTarget->GetPositionX());
-            float targetX = bot->GetPositionX() + 21.0f * std::cos(angle);
-            float targetY = bot->GetPositionY() + 21.0f * std::sin(angle);
+            Unit* demonTarget = leotherasDemon->GetVictim();
+            if (demonTarget && leotherasHuman->GetExactDist2d(demonTarget) < 20.0f)
+            {
+                float angle = atan2(bot->GetPositionY() - demonTarget->GetPositionY(),
+                                    bot->GetPositionX() - demonTarget->GetPositionX());
+                float targetX = bot->GetPositionX() + 25.0f * std::cos(angle);
+                float targetY = bot->GetPositionY() + 25.0f * std::sin(angle);
 
-            return MoveTo(SSC_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false,
-                          false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+                return MoveTo(SSC_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false,
+                              false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+            }
         }
     }
 
@@ -944,7 +949,7 @@ bool FathomLordKarathressMainTankPositionBossAction::Execute(Event event)
         float distToPosition =
             bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
 
-        if (distToPosition > 2.0f)
+        if (distToPosition > 3.0f)
         {
             float dX = position.GetPositionX() - bot->GetPositionX();
             float dY = position.GetPositionY() - bot->GetPositionY();
@@ -980,7 +985,7 @@ bool FathomLordKarathressFirstAssistTankPositionCaribdisAction::Execute(Event ev
         float distToPosition =
             bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
 
-        if (distToPosition > 2.0f)
+        if (distToPosition > 3.0f)
         {
             float dX = position.GetPositionX() - bot->GetPositionX();
             float dY = position.GetPositionY() - bot->GetPositionY();
@@ -1015,7 +1020,7 @@ bool FathomLordKarathressSecondAssistTankPositionSharkkisAction::Execute(Event e
         float distToPosition =
             bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
 
-        if (distToPosition > 2.0f)
+        if (distToPosition > 3.0f)
         {
             float dX = position.GetPositionX() - bot->GetPositionX();
             float dY = position.GetPositionY() - bot->GetPositionY();
@@ -1050,7 +1055,7 @@ bool FathomLordKarathressThirdAssistTankPositionTidalvessAction::Execute(Event e
         float distToPosition =
             bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
 
-        if (distToPosition > 2.0f)
+        if (distToPosition > 3.0f)
         {
             float dX = position.GetPositionX() - bot->GetPositionX();
             float dY = position.GetPositionY() - bot->GetPositionY();
@@ -1078,7 +1083,7 @@ bool FathomLordKarathressPositionCaribdisTankHealerAction::Execute(Event event)
     float distToPosition =
         bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
 
-    if (distToPosition > 2.0f)
+    if (distToPosition > 3.0f)
     {
         float dX = position.GetPositionX() - bot->GetPositionX();
         float dY = position.GetPositionY() - bot->GetPositionY();

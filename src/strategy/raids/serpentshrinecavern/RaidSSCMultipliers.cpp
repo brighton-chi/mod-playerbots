@@ -282,7 +282,7 @@ float LeotherasTheBlindDisableTankActionsMultiplier::GetValue(Action* action)
         if ((dynamic_cast<AttackAction*>(action) &&
              !dynamic_cast<LeotherasTheBlindInnerDemonCheatAction*>(action)) ||
              dynamic_cast<CastSpellAction*>(action))
-            return 0.0f;
+             return 0.0f;
     }
 
     return 1.0f;
@@ -303,7 +303,8 @@ float LeotherasTheBlindMeleeDpsAvoidChaosBlastMultiplier::GetValue(Action* actio
         if (dynamic_cast<AttackAction*>(action) ||
             dynamic_cast<ReachTargetAction*>(action) ||
             dynamic_cast<CombatFormationMoveAction*>(action) ||
-            dynamic_cast<CastReachTargetSpellAction*>(action))
+            dynamic_cast<CastReachTargetSpellAction*>(action) ||
+            dynamic_cast<CastKillingSpreeAction*>(action))
             return 0.0f;
     }
 
@@ -342,7 +343,7 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValue(Action* action)
         }
     }
 
-    const uint8 dpsWaitSecondsPhase2 = 10;
+    const uint8 dpsWaitSecondsPhase2 = 12;
     Unit* leotherasPhase2Demon = GetPhase2LeotherasDemon(botAI);
     Player* demonFormTank = GetLeotherasDemonFormTank(botAI, bot);
     if (leotherasPhase2Demon)
@@ -484,7 +485,7 @@ float FathomLordKarathressWaitForDpsMultiplier::GetValue(Action* action)
         if (dynamic_cast<AttackAction*>(action) ||
             (dynamic_cast<CastSpellAction*>(action) &&
              !dynamic_cast<CastHealingSpellAction*>(action)))
-            return 0.0f;
+             return 0.0f;
     }
 
     return 1.0f;
@@ -496,7 +497,7 @@ float FathomLordKarathressCaribdisTankHealerMaintainPositionMultiplier::GetValue
         return 1.0f;
 
     Unit* caribdis = AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
-    if (caribdis && caribdis->IsAlive())
+    if (caribdis)
     {
         if (dynamic_cast<FleeAction*>(action) ||
             dynamic_cast<FollowAction*>(action))

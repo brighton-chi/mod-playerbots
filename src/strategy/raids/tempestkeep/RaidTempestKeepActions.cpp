@@ -1175,7 +1175,7 @@ bool KaelthasSunstriderManageWarlockTankStrategyAction::Execute(Event event)
     if (kaelAI->GetPhase() == PHASE_WEAPONS)
     {
         if (currentlyTank)
-            botAI->ResetStrategies(false);
+            botAI->ChangeStrategy("-tank", BotState::BOT_STATE_COMBAT);
         return false;
     }
 
@@ -1198,7 +1198,7 @@ bool KaelthasSunstriderManageWarlockTankStrategyAction::Execute(Event event)
             botAI->ChangeStrategy("+tank", BotState::BOT_STATE_COMBAT);
         // If Capernian is dead, reset to DPS for remainder of encounter
         else if (!capernian && currentlyTank)
-            botAI->ResetStrategies(false);
+            botAI->ChangeStrategy("-tank", BotState::BOT_STATE_COMBAT);
     }
 
     return false;
