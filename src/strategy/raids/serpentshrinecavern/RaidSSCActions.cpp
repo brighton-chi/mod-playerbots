@@ -73,8 +73,7 @@ bool UnderbogColossusEscapeToxicPoolAction::Execute(Event event)
         moveY = dynObj->GetPositionY() + (dy * invDist) * safeDist;
     }
 
-    bot->AttackStop();
-    bot->InterruptNonMeleeSpells(true);
+    botAI->Reset();
     return MoveTo(SSC_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false,
                   true, MovementPriority::MOVEMENT_FORCED, true, false);
 }
@@ -482,7 +481,7 @@ bool TheLurkerBelowRunAroundBehindBossAction::Execute(Event event)
 
     if (bot->GetExactDist2d(targetX, targetY) > 1.0f)
     {
-        bot->InterruptNonMeleeSpells(true);
+        botAI->Reset();
         return MoveTo(SSC_MAP_ID, targetX, targetY, lurker->GetPositionZ(), false, false,
                       false, false, MovementPriority::MOVEMENT_FORCED, true, false);
     }
@@ -688,6 +687,9 @@ bool LeotherasTheBlindDemonFormTankAttackBossAction::Execute(Event event)
     if (!leotherasDemon)
         return false;
 
+    if (!botAI->HasStrategy("tank", BotState::BOT_STATE_COMBAT))
+        botAI->ChangeStrategy("+tank", BotState::BOT_STATE_COMBAT);
+
     MarkTargetWithSquare(bot, leotherasDemon);
     SetRtiTarget(botAI, "square", leotherasDemon);
 
@@ -779,8 +781,7 @@ bool LeotherasTheBlindMeleeDpsRunAwayFromBossAction::Execute(Event event)
         const float safeDistance = 10.0f;
         if (currentDistance < safeDistance)
         {
-            bot->AttackStop();
-            bot->InterruptNonMeleeSpells(true);
+            botAI->Reset();
             return MoveAway(demonVictim, safeDistance - currentDistance + 1.0f);
         }
     }
@@ -1922,8 +1923,6 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event event)
         const Position& center = VASHJ_PLATFORM_CENTER_POSITION;
         if (bot->GetExactDist2d(center.GetPositionX(), center.GetPositionY()) > 35.0f)
         {
-            bot->AttackStop();
-            bot->InterruptNonMeleeSpells(true);
             return MoveInside(SSC_MAP_ID, center.GetPositionX(), center.GetPositionY(),
                               center.GetPositionZ(), 30.0f, MovementPriority::MOVEMENT_COMBAT);
         }
