@@ -374,7 +374,7 @@ namespace SerpentShrineCavernHelpers
         {
             return entry == NPC_TAINTED_ELEMENTAL || entry == NPC_ENCHANTED_ELEMENTAL ||
                    entry == NPC_COILFANG_ELITE || entry == NPC_COILFANG_STRIDER ||
-                   /* entry == NPC_TOXIC_SPOREBAT || */ entry == NPC_LADY_VASHJ;
+                   entry == NPC_TOXIC_SPOREBAT || entry == NPC_LADY_VASHJ;
         }
 
         return false;

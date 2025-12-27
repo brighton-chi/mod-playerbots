@@ -418,6 +418,7 @@ float FathomLordKarathressDisableTankActionsMultiplier::GetValue(Action* action)
         return 1.0f;
 
     if ((bot->GetVictim() != nullptr && dynamic_cast<TankAssistAction*>(action)) ||
+        dynamic_cast<CombatFormationMoveAction*>(action) ||
         dynamic_cast<CastTauntAction*>(action) ||
         dynamic_cast<CastChallengingShoutAction*>(action) ||
         dynamic_cast<CastThunderClapAction*>(action) ||
@@ -696,7 +697,8 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
 
     if (AnyRecentCoreInInventory(group, botAI))
     {
-        if (!dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action))
+        if (dynamic_cast<MovementAction*>(action) &&
+            !dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action))
             return 0.0f;
     }
 
@@ -741,21 +743,16 @@ float LadyVashjDisableAutomaticTargetingAndMovementModifier::GetValue(Action *ac
             dynamic_cast<FleeAction*>(action))
             return 0.0f;
 
-        Unit* strider = AI_VALUE2(Unit*, "find target", "coilfang strider");
-        Unit* elite = AI_VALUE2(Unit*, "find target", "coilfang elite");
         Unit* enchanted = AI_VALUE2(Unit*, "find target", "enchanted elemental");
-
-        if (enchanted && enchanted->IsAlive())
+        if (enchanted && enchanted->IsAlive() && bot->GetVictim() == enchanted)
         {
-            if (bot->GetVictim() == enchanted)
-            {
-                if (dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
+            if (dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
                 return 0.0f;
-            }
         }
 
-        if ((!enchanted || !enchanted->IsAlive()) && (!strider || !strider->IsAlive()) &&
-            (!elite || !elite->IsAlive()))
+        Unit* strider = AI_VALUE2(Unit*, "find target", "coilfang strider");
+        Unit* elite = AI_VALUE2(Unit*, "find target", "coilfang elite");
+        if (!strider && !elite)
         {
             if (dynamic_cast<CombatFormationMoveAction*>(action))
                 return 0.0f;

@@ -149,6 +149,11 @@ bool HydrossTheUnstablePositionFrostTankAction::Execute(Event event)
                 return MoveTo(SSC_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
                               false, true, MovementPriority::MOVEMENT_COMBAT, true, true);
             }
+            else
+            {
+                botAI->Reset();
+                return true;
+            }
         }
     }
 
@@ -228,8 +233,7 @@ bool HydrossTheUnstablePositionNatureTankAction::Execute(Event event)
             }
             else
             {
-                bot->AttackStop();
-                bot->InterruptNonMeleeSpells(true);
+                botAI->Reset();
                 return true;
             }
         }
@@ -415,8 +419,7 @@ bool HydrossTheUnstableStopDpsUponPhaseChangeAction::Execute(Event event)
 
     if (shouldStopDps)
     {
-        bot->AttackStop();
-        bot->InterruptNonMeleeSpells(true);
+        botAI->Reset();
         return true;
     }
 
@@ -757,8 +760,7 @@ bool LeotherasTheBlindRunAwayFromWhirlwindAction::Execute(Event event)
         const float safeDistance = 20.0f;
         if (currentDistance < safeDistance)
         {
-            bot->AttackStop();
-            bot->InterruptNonMeleeSpells(true);
+            botAI->Reset();
             return MoveAway(leotherasHuman, safeDistance - currentDistance + 5.0f);
         }
     }
@@ -1716,7 +1718,7 @@ bool LadyVashjStaticChargeMoveAwayFromGroupAction::Execute(Event event)
         float currentDistance = bot->GetExactDist2d(mainTank);
         const float safeDistance = 10.0f;
         if (currentDistance < safeDistance)
-            return MoveFromGroup(safeDistance + 0.5f);
+            return MoveAway(mainTank, safeDistance - currentDistance + 0.5f);
     }
 
     // If any other bot has Static Charge, it should move away from other group members
@@ -1740,6 +1742,9 @@ bool LadyVashjStaticChargeMoveAwayFromGroupAction::Execute(Event event)
 
 bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event event)
 {
+    if (botAI->IsHeal(bot))
+        return false;
+
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     if (!vashj)
         return false;
@@ -1747,11 +1752,10 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event event)
     auto const& attackers =
         botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
     Unit* target = nullptr;
-    Unit* tainted = nullptr;
     Unit* enchanted = nullptr;
     Unit* elite = nullptr;
     Unit* strider = nullptr;
-    // Unit* sporebat = nullptr;
+    Unit* sporebat = nullptr;
 
     // Search and attack radius are intended to keep bots on the platform (not go down the stairs)
     const Position& center = VASHJ_PLATFORM_CENTER_POSITION;
@@ -1771,11 +1775,6 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event event)
 
         switch (unit->GetEntry())
         {
-            case NPC_TAINTED_ELEMENTAL:
-            if (!tainted)
-                tainted = unit;
-            break;
-
             case NPC_ENCHANTED_ELEMENTAL:
                 if (!enchanted || vashj->GetExactDist2d(unit) < vashj->GetExactDist2d(enchanted))
                     enchanted = unit;
@@ -1791,10 +1790,10 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event event)
                     strider = unit;
                 break;
 
-            /* case NPC_TOXIC_SPOREBAT:
-                if (!sporebat || unit->GetHealthPct() < sporebat->GetHealthPct())
+            case NPC_TOXIC_SPOREBAT:
+                if (!sporebat || bot->GetExactDist2d(unit) < bot->GetExactDist2d(sporebat))
                     sporebat = unit;
-                break; */
+                break;
 
             case NPC_LADY_VASHJ:
                 vashj = unit;
@@ -1813,12 +1812,12 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event event)
             // Hunters and Mages prioritize Enchanted Elementals,
             // while other ranged DPS prioritize Striders
             if (bot->getClass() == CLASS_HUNTER || bot->getClass() == CLASS_MAGE)
-                targets = { tainted, enchanted, strider, elite };
+                targets = { enchanted, strider, elite };
             else
-                targets = { tainted, strider, elite, enchanted };
+                targets = { strider, elite, enchanted };
         }
         else if (botAI->IsMelee(bot) && botAI->IsDps(bot))
-            targets = { tainted, enchanted, elite };
+            targets = { enchanted, elite };
         else if (botAI->IsTank(bot))
         {
             if (botAI->HasCheat(BotCheatMask::raid) && botAI->IsAssistTankOfIndex(bot, 0))
@@ -1850,13 +1849,11 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event event)
         }
         else if (botAI->IsRanged(bot))
         {
-            targets = { enchanted, strider, elite, vashj };
-            // Prior iteration: ranged, other than Priests and Warlocks, prioritize Toxic Sporebats
-            // Shelved for now because it causes bots to walk in midair to reach their targets
-            /* if (bot->getClass() == CLASS_PRIEST || bot->getClass() == CLASS_WARLOCK)
-                targets = { enchanted, strider, elite, vashj };
+            // targets = { enchanted, strider, elite, vashj };
+            if (bot->getClass() == CLASS_HUNTER)
+                targets = { sporebat, enchanted, strider, elite, vashj };
             else
-                targets = { enchanted, sporebat, strider, elite, vashj }; */
+                targets = { enchanted, strider, elite, vashj };
         }
         else if (botAI->IsMelee(bot) && botAI->IsDps(bot))
             targets = { enchanted, elite, vashj };
@@ -1882,7 +1879,7 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event event)
             bot->SetTarget(ObjectGuid::Empty);
             bot->SetSelection(ObjectGuid());
         }
-        else if (IsLadyVashjInPhase3(botAI) && !botAI->IsMainTank(bot))
+        /* else if (IsLadyVashjInPhase3(botAI) && !botAI->IsMainTank(bot))
         {
             if ((enchanted && enchanted->IsAlive()) ||
                 (elite && elite->IsAlive()) ||
@@ -1893,7 +1890,7 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event event)
                 bot->SetTarget(ObjectGuid::Empty);
                 bot->SetSelection(ObjectGuid());
             }
-        }
+        } */
     }
 
     Unit* currentTarget = context->GetValue<Unit*>("current target")->Get();
@@ -1902,12 +1899,9 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event event)
 
     if (target && bot->GetExactDist2d(target) <= maxPursueRange &&
         bot->GetTarget() != target->GetGUID())
-    {
         return Attack(target);
-    }
 
-    if (currentTarget && (!currentTarget->IsAlive() ||
-        !IsValidLadyVashjCombatNpc(currentTarget, botAI)))
+    if (currentTarget && !IsValidLadyVashjCombatNpc(currentTarget, botAI))
     {
         context->GetValue<Unit*>("current target")->Set(nullptr);
         bot->SetTarget(ObjectGuid::Empty);
@@ -1915,15 +1909,18 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event event)
     }
 
     // If bots have wandered too far from the center and are not attacking anything, move them back
-    if (!bot->GetVictim())
+    if (bot->GetVictim() == nullptr)
     {
         Player* designatedLooter = GetDesignatedCoreLooter(bot->GetGroup(), botAI);
         Player* firstCorePasser = GetFirstTaintedCorePasser(bot->GetGroup(), botAI);
         // A bot will not move back to the middle if (1) there is a Tainted Elemental, and
         // (2) the bot is either the designated looter or the first core passer
-        if (tainted && ((designatedLooter && designatedLooter == bot) ||
-            (firstCorePasser && firstCorePasser == bot)))
-            return false;
+        if (Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental"))
+        {
+            if ((designatedLooter && designatedLooter == bot) ||
+                (firstCorePasser && firstCorePasser == bot))
+                return false;
+        }
 
         const Position& center = VASHJ_PLATFORM_CENTER_POSITION;
         if (bot->GetExactDist2d(center.GetPositionX(), center.GetPositionY()) > 35.0f)
@@ -2003,7 +2000,7 @@ bool LadyVashjTankAttackAndMoveAwayStriderAction::Execute(Event event)
             const float safeDistance = 25.0f;
 
             if (currentDistance < safeDistance)
-                return MoveAway(vashj, safeDistance - currentDistance + 5.0f);
+                return MoveAway(vashj, safeDistance - currentDistance);
         }
 
         return false;
@@ -2435,7 +2432,7 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpSecondCorePasser(
     intendedLineup.insert_or_assign(bot->GetGUID(), Position(targetX, targetY, targetZ));
 
     bot->AttackStop();
-    bot->InterruptNonMeleeSpells(false);
+    bot->InterruptNonMeleeSpells(true);
     return MoveTo(SSC_MAP_ID, targetX, targetY, targetZ, false, false, false, true,
                   MovementPriority::MOVEMENT_FORCED, true, false);
 }
@@ -2487,7 +2484,7 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpThirdCorePasser(
     intendedLineup.insert_or_assign(bot->GetGUID(), Position(targetX, targetY, targetZ));
 
     bot->AttackStop();
-    bot->InterruptNonMeleeSpells(false);
+    bot->InterruptNonMeleeSpells(true);
     return MoveTo(SSC_MAP_ID, targetX, targetY, targetZ, false, false, false, true,
                   MovementPriority::MOVEMENT_FORCED, true, false);
 
@@ -2530,7 +2527,7 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpFourthCorePasser(
     intendedLineup.insert_or_assign(bot->GetGUID(), Position(targetX, targetY, targetZ));
 
     bot->AttackStop();
-    bot->InterruptNonMeleeSpells(false);
+    bot->InterruptNonMeleeSpells(true);
     return MoveTo(SSC_MAP_ID, targetX, targetY, targetZ, false, false, false, true,
                   MovementPriority::MOVEMENT_FORCED, true, false);
 }
