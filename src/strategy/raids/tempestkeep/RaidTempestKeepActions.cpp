@@ -439,7 +439,8 @@ bool AlarJumpFromPlatformAction::Execute(Event event)
         Position ground;
         GetClosestPlatformAndGround(bot->GetPosition(), closestPlatform, ground);
 
-        botAI->Reset();
+        bot->AttackStop();
+        bot->InterruptNonMeleeSpells(true);
         return JumpTo(TEMPEST_KEEP_MAP_ID, ground.GetPositionX(), ground.GetPositionY(),
                       ground.GetPositionZ(), MovementPriority::MOVEMENT_FORCED);
     }
@@ -501,7 +502,8 @@ bool AlarMoveAwayFromRebirthAction::Execute(Event event)
         Position ground;
         GetClosestPlatformAndGround(bot->GetPosition(), closestPlatform, ground);
 
-        botAI->Reset();
+        bot->AttackStop();
+        bot->InterruptNonMeleeSpells(true);
         return JumpTo(TEMPEST_KEEP_MAP_ID, ground.GetPositionX(), ground.GetPositionY(),
                       ground.GetPositionZ(), MovementPriority::MOVEMENT_FORCED);
     }
