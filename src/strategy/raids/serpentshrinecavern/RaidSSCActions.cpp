@@ -1790,7 +1790,7 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event event)
                 break;
 
             case NPC_TOXIC_SPOREBAT:
-                if (!sporebat || bot->GetExactDist2d(unit) < bot->GetExactDist2d(sporebat))
+                if (!sporebat || bot->GetDistance(unit) < bot->GetDistance(sporebat))
                     sporebat = unit;
                 break;
 
