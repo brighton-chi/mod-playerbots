@@ -29,7 +29,47 @@ public:
     bool IsActive() override;
 };
 
+class HighWarlordNajentusPlayerIsImpaledTrigger : public Trigger
+{
+public:
+    HighWarlordNajentusPlayerIsImpaledTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "high warlord naj'entus player is impaled") {}
+    bool IsActive() override;
+};
+
+class HighWarlordNajentusBossHasTidalShieldTrigger : public Trigger
+{
+public:
+    HighWarlordNajentusBossHasTidalShieldTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "high warlord naj'entus boss has tidal shield") {}
+    bool IsActive() override;
+};
+
 // Supremus
+
+class SupremusPullingBossOrChangingPhaseTrigger : public Trigger
+{
+public:
+    SupremusPullingBossOrChangingPhaseTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "supremus pulling boss or changing phase") {}
+    bool IsActive() override;
+};
+
+class SupremusBossEngagedByMainTankTrigger : public Trigger
+{
+public:
+    SupremusBossEngagedByMainTankTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "supremus boss engaged by main tank") {}
+    bool IsActive() override;
+};
+
+class SupremusBossEngagedByRangedTrigger : public Trigger
+{
+public:
+    SupremusBossEngagedByRangedTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "supremus boss engaged by ranged") {}
+    bool IsActive() override;
+};
 
 // Shade of Akama
 

@@ -12,8 +12,11 @@ namespace BlackTempleHelpers
     enum BlackTempleSpells
     {
         // High Warlord Naj'entus
+        SPELL_IMPALING_SPINE            = 39837,
+        SPELL_TIDAL_SHIELD              = 39872,
 
         // Supremus
+        SPELL_SNARE_SELF                = 41922,
 
         // Shade of Akama
 
@@ -57,6 +60,18 @@ namespace BlackTempleHelpers
         // Illidan Stormrage <The Betrayer>
     };
 
+    enum BlackTempleItems
+    {
+        // High Warlord Naj'entus
+        ITEM_NAJENTUS_SPINE             = 32408,
+    };
+
+    enum BlackTempleObjects
+    {
+        // High Warlord Naj'entus
+        GO_NAJENTUS_SPINE = 185584,
+    };
+
     // General
     const uint32 BLACK_TEMPLE_MAP_ID = 564;
     void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);
@@ -70,10 +85,13 @@ namespace BlackTempleHelpers
     extern const Position NAJENTUS_TANK_POSITION;
 
     // Supremus
+    extern const Position SUPREMUS_TANK_POSITION;
+    extern std::unordered_map<ObjectGuid, Position> supremusRangedPositions;
 
     // Shade of Akama
 
     // Teron Gorefiend
+    extern const Position GOREFIEND_TANK_POSITION;
 
     // Gurtogg Bloodboil
 

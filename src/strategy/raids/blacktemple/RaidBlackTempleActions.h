@@ -31,7 +31,47 @@ public:
     bool Execute(Event event) override;
 };
 
+class HighWarlordNajentusRemoveImpalingSpineAction : public MovementAction
+{
+public:
+    HighWarlordNajentusRemoveImpalingSpineAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "high warlord naj'entus remove impaling spine") {}
+    bool Execute(Event event) override;
+};
+
+class HighWarlordNajentusThrowImpalingSpineAction : public MovementAction
+{
+public:
+    HighWarlordNajentusThrowImpalingSpineAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "high warlord naj'entus throw impaling spine") {}
+    bool Execute(Event event) override;
+};
+
 // Supremus
+
+class SupremusMisdirectBossToMainTankAction : public AttackAction
+{
+public:
+    SupremusMisdirectBossToMainTankAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "supremus misdirect boss to main tank") {}
+    bool Execute(Event event) override;
+};
+
+class SupremusMainTankPositionBossAction : public AttackAction
+{
+public:
+    SupremusMainTankPositionBossAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "supremus main tank position boss") {}
+    bool Execute(Event event) override;
+};
+
+class SupremusSpreadRangedInArcAction : public MovementAction
+{
+public:
+    SupremusSpreadRangedInArcAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "supremus spread ranged in arc") {}
+    bool Execute(Event event) override;
+};
 
 // Shade of Akama
 

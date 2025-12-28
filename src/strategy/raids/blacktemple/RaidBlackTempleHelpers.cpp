@@ -90,10 +90,13 @@ namespace BlackTempleHelpers
     const Position NAJENTUS_TANK_POSITION = { 0.0f, 0.0f, 0.0f };
 
     // Supremus
+    const Position SUPREMUS_TANK_POSITION = { 0.0f, 0.0f, 0.0f };
+    std::unordered_map<ObjectGuid, Position> supremusRangedPositions;
 
     // Shade of Akama
 
     // Teron Gorefiend
+    const Position GOREFIEND_TANK_POSITION = { 0.0f, 0.0f, 0.0f };
 
     // Gurtogg Bloodboil
 
