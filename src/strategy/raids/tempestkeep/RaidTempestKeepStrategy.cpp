@@ -65,12 +65,10 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction::array(0, new NextAction("high astromancer solarian target solarium priests", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("high astromancer solarian transformed into voidwalker",
-        NextAction::array(0, new NextAction("high astromancer solarian tank voidwalker", ACTION_EMERGENCY + 1), nullptr)
+        NextAction::array(0,
+            new NextAction("high astromancer solarian tank voidwalker", ACTION_EMERGENCY + 1),
+            new NextAction("high astromancer solarian cast fear ward on main tank", ACTION_RAID + 2), nullptr)
     ));
-    triggers.push_back(new TriggerNode("high astromancer solarian boss casts psychic scream",
-        NextAction::array(0, new NextAction("high astromancer solarian cast fear ward on main tank", ACTION_RAID + 2), nullptr)
-    ));
-
     // Kael'thas Sunstrider <Lord of the Blood Elves>
     triggers.push_back(new TriggerNode("kael'thas sunstrider thaladred is fixated on bot",
         NextAction::array(0, new NextAction("kael'thas sunstrider kite thaladred", ACTION_EMERGENCY + 6), nullptr)
@@ -84,11 +82,10 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kael'thas sunstrider sanguinar casts bellowing roar",
         NextAction::array(0, new NextAction("kael'thas sunstrider cast fear ward on sanguinar tank", ACTION_RAID + 2), nullptr)
     ));
-    triggers.push_back(new TriggerNode("kael'thas sunstrider capernian requires a warlock tank",
-        NextAction::array(0, new NextAction("kael'thas sunstrider manage warlock tank strategy", ACTION_EMERGENCY + 10), nullptr)
-    ));
-    triggers.push_back(new TriggerNode("kael'thas sunstrider capernian engaged by warlock tank",
-        NextAction::array(0, new NextAction("kael'thas sunstrider warlock tank position capernian", ACTION_RAID + 1), nullptr)
+    triggers.push_back(new TriggerNode("kael'thas sunstrider capernian should be tanked by a warlock",
+        NextAction::array(0,
+            new NextAction("kael'thas sunstrider manage warlock tank strategy", ACTION_EMERGENCY + 10),
+            new NextAction("kael'thas sunstrider warlock tank position capernian", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("kael'thas sunstrider capernian casts arcane burst and conflagration",
         NextAction::array(0, new NextAction("kael'thas sunstrider spread and move away from capernian", ACTION_RAID + 3), nullptr)
@@ -145,7 +142,7 @@ void RaidTempestKeepStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new AlarDisableDisperseMultiplier(botAI));
     multipliers.push_back(new AlarDisableTankAssistMultiplier(botAI));
     multipliers.push_back(new AlarStayAwayFromRebirthMultiplier(botAI));
-    // multipliers.push_back(new AlarPhase2NoTankingIfArmorMeltedMultiplier(botAI));
+    multipliers.push_back(new AlarPhase2NoTankingIfArmorMeltedMultiplier(botAI));
 
     multipliers.push_back(new VoidReaverDisableTankActionsMultiplier(botAI));
     multipliers.push_back(new VoidReaverMaintainPositionsMultiplier(botAI));

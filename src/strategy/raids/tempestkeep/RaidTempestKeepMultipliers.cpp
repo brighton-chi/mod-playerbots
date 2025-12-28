@@ -103,7 +103,7 @@ float AlarPhase2NoTankingIfArmorMeltedMultiplier::GetValue(Action* action)
         return 1.0f;
 
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    if (alar)
+    if (alar && bot->GetTarget() == alar->GetGUID())
     {
         if (dynamic_cast<CastTauntAction*>(action) ||
             dynamic_cast<CastGrowlAction*>(action) ||

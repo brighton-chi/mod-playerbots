@@ -61,9 +61,6 @@ public:
         creators["high astromancer solarian transformed into voidwalker"] =
             &RaidTempestKeepTriggerContext::high_astromancer_solarian_transformed_into_voidwalker;
 
-        creators["high astromancer solarian boss casts psychic scream"] =
-            &RaidTempestKeepTriggerContext::high_astromancer_solarian_boss_casts_psychic_scream;
-
         // Kael'thas Sunstrider <Lord of the Blood Elves>
         creators["kael'thas sunstrider thaladred is fixated on bot"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_thaladred_is_fixated_on_bot;
@@ -77,11 +74,8 @@ public:
         creators["kael'thas sunstrider sanguinar casts bellowing roar"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_sanguinar_casts_bellowing_roar;
 
-        creators["kael'thas sunstrider capernian requires a warlock tank"] =
-            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_capernian_requires_a_warlock_tank;
-
-        creators["kael'thas sunstrider capernian engaged by warlock tank"] =
-            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_capernian_engaged_by_warlock_tank;
+        creators["kael'thas sunstrider capernian should be tanked by a warlock"] =
+            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_capernian_should_be_tanked_by_a_warlock;
 
         creators["kael'thas sunstrider capernian casts arcane burst and conflagration"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_capernian_casts_arcane_burst_and_conflagration;
@@ -179,9 +173,6 @@ private:
     static Trigger* high_astromancer_solarian_transformed_into_voidwalker(
         PlayerbotAI* botAI) { return new HighAstromancerSolarianTransformedIntoVoidwalkerTrigger(botAI); }
 
-    static Trigger* high_astromancer_solarian_boss_casts_psychic_scream(
-        PlayerbotAI* botAI) { return new HighAstromancerSolarianBossCastsPsychicScreamTrigger(botAI); }
-
     // Kael'thas Sunstrider <Lord of the Blood Elves>
     static Trigger* kaelthas_sunstrider_thaladred_is_fixated_on_bot(
         PlayerbotAI* botAI) { return new KaelthasSunstriderThaladredIsFixatedOnBotTrigger(botAI); }
@@ -195,11 +186,8 @@ private:
     static Trigger* kaelthas_sunstrider_sanguinar_casts_bellowing_roar(
         PlayerbotAI* botAI) { return new KaelthasSunstriderSanguinarCastsBellowingRoarTrigger(botAI); }
 
-    static Trigger* kaelthas_sunstrider_capernian_requires_a_warlock_tank(
-        PlayerbotAI* botAI) { return new KaelthasSunstriderCapernianRequiresAWarlockTankTrigger(botAI); }
-
-    static Trigger* kaelthas_sunstrider_capernian_engaged_by_warlock_tank(
-        PlayerbotAI* botAI) { return new KaelthasSunstriderCapernianEngagedByWarlockTankTrigger(botAI); }
+    static Trigger* kaelthas_sunstrider_capernian_should_be_tanked_by_a_warlock(
+        PlayerbotAI* botAI) { return new KaelthasSunstriderCapernianShouldBeTankedByAWarlockTrigger(botAI); }
 
     static Trigger* kaelthas_sunstrider_capernian_casts_arcane_burst_and_conflagration(
         PlayerbotAI* botAI) { return new KaelthasSunstriderCapernianCastsArcaneBurstAndConflagrationTrigger(botAI); }

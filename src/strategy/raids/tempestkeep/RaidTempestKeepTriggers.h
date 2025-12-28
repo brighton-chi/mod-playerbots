@@ -139,14 +139,6 @@ public:
     bool IsActive() override;
 };
 
-class HighAstromancerSolarianBossCastsPsychicScreamTrigger : public Trigger
-{
-public:
-    HighAstromancerSolarianBossCastsPsychicScreamTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "high astromancer solarian boss casts psychic scream") {}
-    bool IsActive() override;
-};
-
 // Kael'thas Sunstrider <Lord of the Blood Elves>
 
 class KaelthasSunstriderThaladredIsFixatedOnBotTrigger : public Trigger
@@ -181,19 +173,11 @@ public:
     bool IsActive() override;
 };
 
-class KaelthasSunstriderCapernianRequiresAWarlockTankTrigger : public Trigger
+class KaelthasSunstriderCapernianShouldBeTankedByAWarlockTrigger : public Trigger
 {
 public:
-    KaelthasSunstriderCapernianRequiresAWarlockTankTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider capernian requires a warlock tank") {}
-    bool IsActive() override;
-};
-
-class KaelthasSunstriderCapernianEngagedByWarlockTankTrigger : public Trigger
-{
-public:
-    KaelthasSunstriderCapernianEngagedByWarlockTankTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider capernian engaged by warlock tank") {}
+    KaelthasSunstriderCapernianShouldBeTankedByAWarlockTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider capernian should be tanked by a warlock") {}
     bool IsActive() override;
 };
 

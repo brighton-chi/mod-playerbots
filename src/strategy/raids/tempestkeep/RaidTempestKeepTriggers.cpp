@@ -206,49 +206,17 @@ bool HighAstromancerSolarianSolariumPriestsSpawnedTrigger::IsActive()
     if (!botAI->IsMelee(bot))
         return false;
 
-    Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
-    if (!astromancer)
-        return false;
-
     Unit* solariumPriest = AI_VALUE2(Unit*, "find target", "solarium priest");
     return solariumPriest != nullptr;
 }
 
 bool HighAstromancerSolarianTransformedIntoVoidwalkerTrigger::IsActive()
 {
-    if (!botAI->IsMainTank(bot))
+    if (!botAI->IsMainTank(bot) && bot->getClass() != CLASS_PRIEST)
         return false;
 
     Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
     return astromancer && astromancer->HasAura(SPELL_SOLARIAN_TRANSFORM);
-}
-
-bool HighAstromancerSolarianBossCastsPsychicScreamTrigger::IsActive()
-{
-    if (bot->getClass() != CLASS_PRIEST)
-        return false;
-
-    Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
-    if (!astromancer || !astromancer->HasAura(SPELL_SOLARIAN_TRANSFORM))
-        return false;
-
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    Player* mainTank = nullptr;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (member && botAI->IsMainTank(member))
-        {
-            mainTank = member;
-            break;
-        }
-    }
-
-    return mainTank && !mainTank->HasAura(SPELL_FEAR_WARD) &&
-           botAI->CanCastSpell("fear ward", mainTank);
 }
 
 // Kael'thas Sunstrider <Lord of the Blood Elves>
@@ -333,7 +301,7 @@ bool KaelthasSunstriderSanguinarCastsBellowingRoarTrigger::IsActive()
            botAI->CanCastSpell("fear ward", mainTank);
 }
 
-bool KaelthasSunstriderCapernianRequiresAWarlockTankTrigger::IsActive()
+bool KaelthasSunstriderCapernianShouldBeTankedByAWarlockTrigger::IsActive()
 {
     if (bot->getClass() != CLASS_WARLOCK)
         return false;
@@ -344,20 +312,6 @@ bool KaelthasSunstriderCapernianRequiresAWarlockTankTrigger::IsActive()
 
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     return kaelthas != nullptr;
-}
-
-bool KaelthasSunstriderCapernianEngagedByWarlockTankTrigger::IsActive()
-{
-    if (bot->getClass() != CLASS_WARLOCK)
-        return false;
-
-    Player* capernianTank = GetCapernianTank(botAI, bot);
-    if (!capernianTank || capernianTank != bot)
-        return false;
-
-    Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
-    return capernian && !capernian->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
-           !capernian->HasAura(SPELL_PERMANENT_FEIGN_DEATH);
 }
 
 bool KaelthasSunstriderCapernianCastsArcaneBurstAndConflagrationTrigger::IsActive()
@@ -521,13 +475,15 @@ bool KaelthasSunstriderBossHasEnteredTheFightTrigger::IsActive()
 
 bool KaelthasSunstriderPhoenixesAndEggsAreSpawningTrigger::IsActive()
 {
-    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
-    if (!kaelthas)
-        return false;
-
     Unit* phoenix = AI_VALUE2(Unit*, "find target", "phoenix");
+    if (phoenix != nullptr)
+        return true;
+
     Unit* phoenixEgg = AI_VALUE2(Unit*, "find target", "phoenix egg");
-    return phoenix != nullptr || phoenixEgg != nullptr;
+    if (phoenixEgg != nullptr)
+        return true;
+
+    return false;
 }
 
 bool KaelthasSunstriderRaidMemberIsMindControlledTrigger::IsActive()

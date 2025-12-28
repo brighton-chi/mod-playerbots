@@ -957,6 +957,9 @@ Unit* HighAstromancerSolarianTargetSolariumPriestsAction::AssignSolariumPriestsT
 
 bool HighAstromancerSolarianTankVoidwalkerAction::Execute(Event event)
 {
+    if (!botAI->IsMainTank(bot))
+        return false;
+
     Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
     if (!astromancer)
         return false;
@@ -979,6 +982,9 @@ bool HighAstromancerSolarianTankVoidwalkerAction::Execute(Event event)
 
 bool HighAstromancerSolarianCastFearWardOnMainTankAction::Execute(Event event)
 {
+    if (bot->getClass() != CLASS_PRIEST)
+        return false;
+
     Player* mainTank = nullptr;
     if (Group* group = bot->GetGroup())
     {
@@ -1217,7 +1223,8 @@ bool KaelthasSunstriderWarlockTankPositionCapernianAction::Execute(Event event)
         return false;
 
     Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
-    if (!capernian)
+    if (!capernian || capernian->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) ||
+        capernian->HasAura(SPELL_PERMANENT_FEIGN_DEATH))
         return false;
 
     MarkTargetWithCircle(bot, capernian);
