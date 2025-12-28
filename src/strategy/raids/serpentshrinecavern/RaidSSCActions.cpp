@@ -773,9 +773,8 @@ bool LeotherasTheBlindRunAwayFromWhirlwindAction::Execute(Event event)
 bool LeotherasTheBlindMeleeDpsRunAwayFromBossAction::Execute(Event event)
 {
     Unit* leotherasPhase2Demon = GetPhase2LeotherasDemon(botAI);
-    /* Player* demonFormTank = GetLeotherasDemonFormTank(botAI, bot); */
 
-    if (!leotherasPhase2Demon /* || demonFormTank != nullptr */)
+    if (!leotherasPhase2Demon)
         return false;
 
     Aura* chaosBlast = bot->GetAura(SPELL_CHAOS_BLAST);
@@ -1870,27 +1869,12 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event event)
         }
     }
 
-    if (bot->GetVictim() == vashj)
+    if (bot->GetVictim() == vashj && IsLadyVashjInPhase2(botAI))
     {
-        if (IsLadyVashjInPhase2(botAI))
-        {
-            bot->AttackStop();
-            bot->InterruptNonMeleeSpells(true);
-            bot->SetTarget(ObjectGuid::Empty);
-            bot->SetSelection(ObjectGuid());
-        }
-        /* else if (IsLadyVashjInPhase3(botAI) && !botAI->IsMainTank(bot))
-        {
-            if ((enchanted && enchanted->IsAlive()) ||
-                (elite && elite->IsAlive()) ||
-                (strider && strider->IsAlive()))
-            {
-                bot->AttackStop();
-                bot->InterruptNonMeleeSpells(true);
-                bot->SetTarget(ObjectGuid::Empty);
-                bot->SetSelection(ObjectGuid());
-            }
-        } */
+        bot->AttackStop();
+        bot->InterruptNonMeleeSpells(true);
+        bot->SetTarget(ObjectGuid::Empty);
+        bot->SetSelection(ObjectGuid());
     }
 
     Unit* currentTarget = context->GetValue<Unit*>("current target")->Get();
