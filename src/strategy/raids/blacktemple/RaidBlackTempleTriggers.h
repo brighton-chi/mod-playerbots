@@ -71,6 +71,22 @@ public:
     bool IsActive() override;
 };
 
+class SupremusBossIsFixatedOnBotTrigger : public Trigger
+{
+public:
+    SupremusBossIsFixatedOnBotTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "supremus boss is fixated on bot") {}
+    bool IsActive() override;
+};
+
+class SupremusChangesPhaseEvery60SecondsTrigger : public Trigger
+{
+public:
+    SupremusChangesPhaseEvery60SecondsTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "supremus changes phase every 60 seconds") {}
+    bool IsActive() override;
+};
+
 // Shade of Akama
 
 // Teron Gorefiend

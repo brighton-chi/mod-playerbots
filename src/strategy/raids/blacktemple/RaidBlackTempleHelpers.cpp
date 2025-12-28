@@ -87,16 +87,17 @@ namespace BlackTempleHelpers
     }
 
     // High Warlord Naj'entus
-    const Position NAJENTUS_TANK_POSITION = { 0.0f, 0.0f, 0.0f };
+    const Position NAJENTUS_TANK_POSITION = { 437.838f, 789.927f, 12.028f, 4.738f };
 
     // Supremus
-    const Position SUPREMUS_TANK_POSITION = { 0.0f, 0.0f, 0.0f };
+    const Position SUPREMUS_TANK_POSITION = { 704.651f, 684.401f, 72.608f, 4.681f };
     std::unordered_map<ObjectGuid, Position> supremusRangedPositions;
+    std::unordered_map<uint32, time_t> supremusPhaseTimer;
 
     // Shade of Akama
 
     // Teron Gorefiend
-    const Position GOREFIEND_TANK_POSITION = { 0.0f, 0.0f, 0.0f };
+    const Position GOREFIEND_TANK_POSITION = { 597.653f, 402.284f, 187.090f, 6.269f };
 
     // Gurtogg Bloodboil
 

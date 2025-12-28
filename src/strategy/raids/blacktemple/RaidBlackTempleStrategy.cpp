@@ -24,8 +24,20 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("supremus pulling boss or changing phase",
         NextAction::array(0, new NextAction("supremus misdirect boss to main tank", ACTION_RAID + 2), nullptr)
     ));
-    triggers.push_back(new TriggerNode("supremus boss engaged by main tank",
+    /* triggers.push_back(new TriggerNode("supremus boss engaged by main tank",
         NextAction::array(0, new NextAction("supremus main tank position boss", ACTION_RAID + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("supremus boss engaged by ranged",
+        NextAction::array(0, new NextAction("supremus spread ranged in arc", ACTION_RAID + 1), nullptr)
+    )); */
+    triggers.push_back(new TriggerNode("supremus boss engaged by ranged",
+        NextAction::array(0, new NextAction("supremus disperse ranged", ACTION_RAID + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("supremus boss is fixated on bot",
+        NextAction::array(0, new NextAction("supremus kite boss", ACTION_EMERGENCY + 6), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("supremus changes phase every 60 seconds",
+        NextAction::array(0, new NextAction("supremus manage phase timer", ACTION_EMERGENCY + 10), nullptr)
     ));
 
     // Shade of Akama
@@ -45,5 +57,22 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
 void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
+    // High Warlord Naj'entus
 
+    // Supremus
+    multipliers.push_back(new SupremusKiteBossMultiplier(botAI));
+
+    // Shade of Akama
+
+    // Teron Gorefiend
+
+    // Gurtogg Bloodboil
+
+    // Reliquary of Souls
+
+    // Mother Shahraz
+
+    // Illidari Council
+
+    // Illidan Stormrage <The Betrayer>
 }

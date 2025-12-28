@@ -6,6 +6,13 @@
 // High Warlord Naj'entus
 
 // Supremus
+class SupremusKiteBossMultiplier : public Multiplier
+{
+public:
+    SupremusKiteBossMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "supremus kite boss multiplier") {}
+    virtual float GetValue(Action* action);
+};
 
 // Shade of Akama
 

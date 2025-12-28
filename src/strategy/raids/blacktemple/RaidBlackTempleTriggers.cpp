@@ -108,7 +108,21 @@ bool SupremusPullingBossOrChangingPhaseTrigger::IsActive()
         return false;
 
     Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
-    return supremus && supremus->GetHealthPct() > 95.0f; // NEED TO ADDRESS PHASE CHANGE
+    if (!supremus)
+        return false;
+
+    auto it = supremusPhaseTimer.find(supremus->GetMap()->GetInstanceId());
+    if (it == supremusPhaseTimer.end())
+        return false; // Timer not started yet
+
+    time_t now = time(nullptr);
+    time_t elapsed = now - it->second;
+
+    // Fire during first 10 seconds, or during 60-70, 120-130, etc.
+    if ((elapsed < 10) || ((elapsed % 60) < 10 && elapsed >= 60))
+        return true;
+
+    return false;
 }
 
 bool SupremusBossEngagedByMainTankTrigger::IsActive()
@@ -127,6 +141,22 @@ bool SupremusBossEngagedByRangedTrigger::IsActive()
 
     Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
     return supremus && !supremus->HasAura(SPELL_SNARE_SELF);
+}
+
+bool SupremusBossIsFixatedOnBotTrigger::IsActive()
+{
+    Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
+    return supremus && supremus->HasAura(SPELL_SNARE_SELF) &&
+           supremus->GetVictim() == bot;
+}
+
+bool SupremusChangesPhaseEvery60SecondsTrigger::IsActive()
+{
+    if (!IsInstanceTimerManager(botAI, bot))
+        return false;
+
+    Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
+    return supremus != nullptr;
 }
 
 // Shade of Akama

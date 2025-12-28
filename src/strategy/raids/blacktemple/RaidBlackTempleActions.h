@@ -73,6 +73,30 @@ public:
     bool Execute(Event event) override;
 };
 
+class SupremusDisperseRangedAction : public MovementAction
+{
+public:
+    SupremusDisperseRangedAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "supremus disperse ranged") {}
+    bool Execute(Event event) override;
+};
+
+class SupremusKiteBossAction : public MovementAction
+{
+public:
+    SupremusKiteBossAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "supremus kite boss") {}
+    bool Execute(Event event) override;
+};
+
+class SupremusManagePhaseTimerAction : public Action
+{
+public:
+    SupremusManagePhaseTimerAction(
+        PlayerbotAI* botAI) : Action(botAI, "supremus manage phase timer") {}
+    bool Execute(Event event) override;
+};
+
 // Shade of Akama
 
 // Teron Gorefiend

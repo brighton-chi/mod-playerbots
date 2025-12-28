@@ -37,6 +37,15 @@ public:
         creators["supremus spread ranged in arc"] =
             &RaidBlackTempleActionContext::supremus_spread_ranged_in_arc;
 
+        creators["supremus disperse ranged"] =
+            &RaidBlackTempleActionContext::supremus_disperse_ranged;
+
+        creators["supremus kite boss"] =
+            &RaidBlackTempleActionContext::supremus_kite_boss;
+
+        creators["supremus manage phase timer"] =
+            &RaidBlackTempleActionContext::supremus_manage_phase_timer;
+
         // Shade of Akama
 
         // Teron Gorefiend
@@ -80,6 +89,15 @@ private:
 
     static Action* supremus_spread_ranged_in_arc(
         PlayerbotAI* botAI) { return new SupremusSpreadRangedInArcAction(botAI); }
+
+    static Action* supremus_disperse_ranged(
+        PlayerbotAI* botAI) { return new SupremusDisperseRangedAction(botAI); }
+
+    static Action* supremus_kite_boss(
+        PlayerbotAI* botAI) { return new SupremusKiteBossAction(botAI); }
+
+    static Action* supremus_manage_phase_timer(
+        PlayerbotAI* botAI) { return new SupremusManagePhaseTimerAction(botAI); }
 
     // Shade of Akama
 

@@ -87,6 +87,7 @@ namespace BlackTempleHelpers
     // Supremus
     extern const Position SUPREMUS_TANK_POSITION;
     extern std::unordered_map<ObjectGuid, Position> supremusRangedPositions;
+    extern std::unordered_map<uint32, time_t> supremusPhaseTimer;
 
     // Shade of Akama
 

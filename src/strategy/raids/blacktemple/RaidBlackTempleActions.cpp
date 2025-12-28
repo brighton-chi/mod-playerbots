@@ -116,7 +116,7 @@ bool HighWarlordNajentusRemoveImpalingSpineAction::Execute(Event event)
     if (!impaledPlayer)
         return false;
 
-    // 2. Find the Naj'entus Spine GameObject near the impaled player using Playerbots context
+    // 2. Find the Naj'entus Spine GameObject near the impaled player
     GuidVector gos = AI_VALUE(GuidVector, "nearest game objects");
     GameObject* spineGo = nullptr;
     for (ObjectGuid const& guid : gos)
@@ -124,7 +124,7 @@ bool HighWarlordNajentusRemoveImpalingSpineAction::Execute(Event event)
         GameObject* go = botAI->GetGameObject(guid);
         if (!go || !go->isSpawned())
             continue;
-        if (go->GetEntry() != GO_NAJENTUS_SPINE) // Replace with actual entry ID
+        if (go->GetEntry() != GO_NAJENTUS_SPINE)
             continue;
         spineGo = go;
         break;
@@ -140,9 +140,11 @@ bool HighWarlordNajentusRemoveImpalingSpineAction::Execute(Event event)
                       false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
     }
     else
+    {
         // 4. Interact with the spine GameObject
         spineGo->Use(bot);
         return true;
+    }
 
     return false;
 }
@@ -161,7 +163,7 @@ bool HighWarlordNajentusThrowImpalingSpineAction::Execute(Event event)
         float targetY = najentus->GetPositionY() + 23.0f * std::sin(angle);
 
         return MoveTo(BLACK_TEMPLE_MAP_ID, targetX, targetY, najentus->GetPositionZ(),
-                      false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+                      false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
     Item* spine = bot->GetItemByEntry(ITEM_NAJENTUS_SPINE);
@@ -205,6 +207,7 @@ bool SupremusMisdirectBossToMainTankAction::Execute(Event event)
         Player* member = ref->GetSource();
         if (!member || !member->IsAlive())
             continue;
+
         if (!mainTank && botAI->IsMainTank(member))
             mainTank = member;
         else if (!firstAssistTank && botAI->IsAssistTankOfIndex(member, 0))
@@ -341,6 +344,63 @@ bool SupremusSpreadRangedInArcAction::Execute(Event event)
                       target.GetPositionZ(), false, false, false, false,
                       MovementPriority::MOVEMENT_COMBAT, true, false);
     }
+
+    return false;
+}
+
+bool SupremusDisperseRangedAction::Execute(Event event)
+{
+    Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
+    if (!supremus)
+        return false;
+
+    // Flee if within 5 yards of any other player
+    Group* group = bot->GetGroup();
+    if (group)
+    {
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+
+            if (!member || member == bot || !member->IsAlive())
+                continue;
+
+            if (bot->GetExactDist2d(member) < 5.0f)
+                return FleePosition(Position(member->GetPositionX(), member->GetPositionY(),
+                                    member->GetPositionZ()), 5.5f, 1000);
+        }
+    }
+
+    return false;
+}
+
+bool SupremusKiteBossAction::Execute(Event event)
+{
+    Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
+    if (!supremus)
+        return false;
+
+    float currentDistance = bot->GetExactDist2d(supremus);
+    const float safeDistance = 20.0f;
+    if (currentDistance < safeDistance)
+    {
+        botAI->Reset();
+        return MoveAway(supremus, safeDistance - currentDistance);
+    }
+
+    return false;
+}
+
+bool SupremusManagePhaseTimerAction::Execute(Event event)
+{
+    Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
+    if (!supremus)
+        return false;
+
+    const time_t now = std::time(nullptr);
+
+    if (supremus->GetHealthPct() > 99.8f)
+        supremusPhaseTimer.insert_or_assign(supremus->GetMap()->GetInstanceId(), now);
 
     return false;
 }
