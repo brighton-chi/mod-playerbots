@@ -1198,6 +1198,14 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event event)
         if (bot->GetTarget() != totem->GetGUID())
             return Attack(totem);
 
+        // Direct movement order due to path between Sharkkis and totem sometimes being screwy
+        if (!bot->IsWithinMeleeRange(totem))
+        {
+            return MoveTo(SSC_MAP_ID, totem->GetPositionX(), totem->GetPositionY(),
+                          totem->GetPositionZ(), false, false, false, true,
+                          MovementPriority::MOVEMENT_COMBAT, true, false);
+        }
+
         return false;
     }
 
