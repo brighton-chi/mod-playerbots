@@ -100,9 +100,9 @@ void RaidHyjalSummitStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
 {
     multipliers.push_back(new HyjalSummitTimeBloodlustAndHeroismMultiplier(botAI));
     multipliers.push_back(new RageWinterchillDisableMainTankAvoidAoeMultiplier(botAI));
-    multipliers.push_back(new RageWinterchillDisableCombatFormationMoveMultiplier(botAI));
+    // multipliers.push_back(new RageWinterchillDisableCombatFormationMoveMultiplier(botAI));
     multipliers.push_back(new AnetheronDisableTankActionsMultiplier(botAI));
-    multipliers.push_back(new AnetheronDisableCombatFormationMoveMultiplier(botAI));
+    // multipliers.push_back(new AnetheronDisableCombatFormationMoveMultiplier(botAI));
     multipliers.push_back(new AnetheronInfernalTankMaintainPositionMultiplier(botAI));
     multipliers.push_back(new AnetheronControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new KazrogalLowManaBotStayAwayFromGroupMultiplier(botAI));

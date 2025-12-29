@@ -100,6 +100,7 @@ bool AnetheronInfernalsNeedToBeKeptAwayFromRaidTrigger::IsActive()
 
 bool AnetheronInfernalsDespawnWhenBossDiesTrigger::IsActive()
 {
+    // if (botAI->IsHeal(bot) || botAI->IsAssistTankOfIndex(bot, 0))
     if (!botAI->IsDps(bot))
         return false;
 

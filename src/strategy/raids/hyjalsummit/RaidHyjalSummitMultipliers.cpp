@@ -3,9 +3,13 @@
 #include "RaidHyjalSummitHelpers.h"
 #include "AiFactory.h"
 #include "ChooseTargetActions.h"
+#include "DKActions.h"
+#include "DruidBearActions.h"
 #include "HunterActions.h"
+#include "PaladinActions.h"
 #include "ReachTargetActions.h"
 #include "ShamanActions.h"
+#include "WarriorActions.h"
 
 using namespace HyjalSummitHelpers;
 
@@ -89,7 +93,7 @@ float RageWinterchillDisableCombatFormationMoveMultiplier::GetValue(Action* acti
 
 float AnetheronDisableTankActionsMultiplier::GetValue(Action* action)
 {
-    if (botAI->IsDps(bot) || botAI->IsHeal(bot))
+    if (!botAI->IsTank(bot))
         return 1.0f;
 
     Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
@@ -100,7 +104,11 @@ float AnetheronDisableTankActionsMultiplier::GetValue(Action* action)
 
         if (!botAI->IsAssistTankOfIndex(bot, 0))
         {
-            if (dynamic_cast<TankAssistAction*>(action))
+            if (bot->GetVictim() != nullptr && dynamic_cast<TankAssistAction*>(action) ||
+                dynamic_cast<CastTauntAction*>(action) ||
+                dynamic_cast<CastGrowlAction*>(action) ||
+                dynamic_cast<CastHandOfReckoningAction*>(action) ||
+                dynamic_cast<CastDarkCommandAction*>(action))
                 return 0.0f;
         }
     }
