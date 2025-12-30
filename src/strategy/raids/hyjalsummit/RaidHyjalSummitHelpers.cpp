@@ -116,14 +116,16 @@ namespace HyjalSummitHelpers
 
     // Kaz'rogal
 
-    // const Position KAZROGAL_TANK_POSITION = { 5481.656f, -2719.316f, 1482.882f };
-    const Position KAZROGAL_TANK_POSITION = { 5474.108f, -2716.995f, 1483.079f };
+    const Position KAZROGAL_TANK_POSITION = { 5469.371f, -2715.533f, 1483.744f };
+    // const Position KAZROGAL_TANK_POSITION = { 5474.108f, -2716.995f, 1483.079f };
     std::unordered_map<ObjectGuid, Position> kazrogalRangedPositions;
 
     // Azgalor
 
-    const Position AZGALOR_MAIN_TANK_POSITION = { 5496.211f, -2713.713f, 1482.272f };
+    // const Position AZGALOR_MAIN_TANK_POSITION = { 5496.211f, -2713.713f, 1482.272f };
+    const Position AZGALOR_MAIN_TANK_POSITION = { 5504.281f, -2682.223f, 1480.610f };
     const Position AZGALOR_DOOMGUARD_TANK_POSITION = { 5445.848f, -2694.923f, 1485.965f };
+    std::unordered_map<ObjectGuid, Position> azgalorRangedPositions;
 
     bool AnyGroupMemberHasDoom(Player* bot)
     {

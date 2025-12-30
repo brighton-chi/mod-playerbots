@@ -106,6 +106,7 @@ void RaidHyjalSummitStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new AnetheronInfernalTankMaintainPositionMultiplier(botAI));
     multipliers.push_back(new AnetheronControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new KazrogalLowManaBotStayAwayFromGroupMultiplier(botAI));
+    multipliers.push_back(new KazrogalDisableCombatFormationMoveMultiplier(botAI));
     multipliers.push_back(new AzgalorDisableTankAssistMultiplier(botAI));
     multipliers.push_back(new AzgalorTanksMaintainPositionMultiplier(botAI));
     multipliers.push_back(new AzgalorDoomedBotPrioritizePositioningMultiplier(botAI));

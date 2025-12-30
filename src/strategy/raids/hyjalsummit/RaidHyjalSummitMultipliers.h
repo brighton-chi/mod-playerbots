@@ -73,6 +73,14 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class KazrogalDisableCombatFormationMoveMultiplier : public Multiplier
+{
+public:
+    KazrogalDisableCombatFormationMoveMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "kaz'rogal disable combat formation move multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
 // Azgalor
 
 class AzgalorDisableTankAssistMultiplier : public Multiplier

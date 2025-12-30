@@ -72,6 +72,7 @@ namespace HyjalSummitHelpers
     // Azgalor
     extern const Position AZGALOR_MAIN_TANK_POSITION;
     extern const Position AZGALOR_DOOMGUARD_TANK_POSITION;
+    extern std::unordered_map<ObjectGuid, Position> azgalorRangedPositions;
     bool AnyGroupMemberHasDoom(Player* bot);
 
     // Archimonde

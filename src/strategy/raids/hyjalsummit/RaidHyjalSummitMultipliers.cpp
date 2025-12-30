@@ -76,13 +76,11 @@ float RageWinterchillDisableMainTankAvoidAoeMultiplier::GetValue(Action* action)
 
 float RageWinterchillDisableCombatFormationMoveMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsTank(bot) && !botAI->IsRanged(bot))
-        return 1.0f;
-
     Unit* winterchill = AI_VALUE2(Unit*, "find target", "rage winterchill");
     if (winterchill)
     {
-        if (dynamic_cast<CombatFormationMoveAction*>(action))
+        if (dynamic_cast<CombatFormationMoveAction*>(action) &&
+            !dynamic_cast<SetBehindTargetAction*>(action))
             return 0.0f;
     }
 
@@ -118,13 +116,11 @@ float AnetheronDisableTankActionsMultiplier::GetValue(Action* action)
 
 float AnetheronDisableCombatFormationMoveMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsTank(bot) && !botAI->IsRanged(bot))
-        return 1.0f;
-
     Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
     if (anetheron)
     {
-        if (dynamic_cast<CombatFormationMoveAction*>(action))
+        if (dynamic_cast<CombatFormationMoveAction*>(action) &&
+            !dynamic_cast<SetBehindTargetAction*>(action))
             return 0.0f;
     }
 
@@ -189,6 +185,19 @@ float KazrogalLowManaBotStayAwayFromGroupMultiplier::GetValue(Action* action)
              !dynamic_cast<AttackAction*>(action) &&
              !dynamic_cast<KazrogalLowManaBotMoveFromGroupAction*>(action)))
              return 0.0f;
+    }
+
+    return 1.0f;
+}
+
+float KazrogalDisableCombatFormationMoveMultiplier::GetValue(Action* action)
+{
+    Unit* kazrogal = AI_VALUE2(Unit*, "find target", "kaz'rogal");
+    if (kazrogal)
+    {
+        if (dynamic_cast<CombatFormationMoveAction*>(action) &&
+            !dynamic_cast<SetBehindTargetAction*>(action))
+            return 0.0f;
     }
 
     return 1.0f;
