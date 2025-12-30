@@ -116,6 +116,22 @@ public:
     bool Execute(Event event) override;
 };
 
+class TeronGorefiendPositionRangedOnBalconyAction : public MovementAction
+{
+public:
+    TeronGorefiendPositionRangedOnBalconyAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "teron gorefiend position ranged on balcony") {}
+    bool Execute(Event event) override;
+};
+
+class TeronGorefiendAvoidShadowOfDeathAction : public Action
+{
+public:
+    TeronGorefiendAvoidShadowOfDeathAction(
+        PlayerbotAI* botAI) : Action(botAI, "teron gorefiend avoid shadow of death") {}
+    bool Execute(Event event) override;
+};
+
 class TeronGorefiendMoveToCornerToDieAction : public MovementAction
 {
 public:

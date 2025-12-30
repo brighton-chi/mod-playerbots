@@ -25,6 +25,11 @@ namespace BlackTempleHelpers
         SPELL_SHADOW_OF_DEATH = 40251, // 55s duration
         SPELL_SPIRITUAL_VENGEANCE = 40268,
 
+        SPELL_SPIRIT_LANCE = 40157,
+        SPELL_SPIRIT_CHAINS = 40175,
+        SPELL_SPIRIT_VOLLEY = 40314,
+        SPELL_SPIRIT_STRIKE = 40325,
+
         // Gurtogg Bloodboil
 
         // Reliquary of Souls
@@ -103,6 +108,7 @@ namespace BlackTempleHelpers
     // Teron Gorefiend
     extern const Position GOREFIEND_TANK_POSITION;
     extern const Position GOREFIEND_DIE_POSITION;
+    extern std::unordered_map<ObjectGuid, Position> gorefiendRangedPositions;
 
     // Gurtogg Bloodboil
 

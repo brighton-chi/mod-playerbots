@@ -465,6 +465,9 @@ bool TeronGorefiendMisdirectBossToMainTankAction::Execute(Event event)
 
 bool TeronGorefiendMainTankPositionBossAction::Execute(Event event)
 {
+    if (!botAI->IsMainTank(bot))
+        return false;
+
     Unit* gorefiend = AI_VALUE2(Unit*, "find target", "teron gorefiend");
     if (!gorefiend)
         return false;
@@ -475,14 +478,14 @@ bool TeronGorefiendMainTankPositionBossAction::Execute(Event event)
     if (gorefiend->GetVictim() == bot && bot->IsWithinMeleeRange(gorefiend))
     {
         const Position& position = GOREFIEND_TANK_POSITION;
-        float dist = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
-        if (dist > 2.0f)
+        float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+        if (distToPosition > 2.0f)
         {
             float dX = position.GetPositionX() - bot->GetPositionX();
             float dY = position.GetPositionY() - bot->GetPositionY();
-            float moveDist = std::min(5.0f, dist);
-            float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
-            float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
+            float moveDist = std::min(5.0f, distToPosition);
+            float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
             return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
                           false, false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
@@ -492,7 +495,94 @@ bool TeronGorefiendMainTankPositionBossAction::Execute(Event event)
     return false;
 }
 
-bool TeronGorefiendMoveToCornerToDieAction::Execute(Event event)
+bool TeronGorefiendPositionRangedOnBalconyAction::Execute(Event event)
+{
+    if (!botAI->IsRanged(bot))
+        return false;
+
+    Unit* gorefiend = AI_VALUE2(Unit*, "find target", "teron gorefiend");
+    if (!gorefiend)
+        return false;
+
+    if (gorefiend->GetHealthPct() > 99.5f)
+        gorefiendRangedPositions.clear();
+
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    std::vector<Player*> rangedMembers;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive() || !botAI->IsRanged(member))
+            continue;
+        rangedMembers.push_back(member);
+    }
+
+    if (rangedMembers.empty())
+        return false;
+
+    const ObjectGuid guid = bot->GetGUID();
+
+    auto it = gorefiendRangedPositions.find(guid);
+    if (it == gorefiendRangedPositions.end())
+    {
+        size_t count = rangedMembers.size();
+        auto findIt = std::find(rangedMembers.begin(), rangedMembers.end(), bot);
+        size_t botIndex = (findIt != rangedMembers.end()) ?
+            std::distance(rangedMembers.begin(), findIt) : 0;
+
+        const float arcSpan = 2.0f * M_PI / 5.0f;
+        const float arcCenter = 6.279f;
+        const float arcStart = arcCenter - arcSpan / 2.0f;
+
+        const float radius = 12.0f;
+        float angle = (count == 1) ? arcCenter :
+            (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
+
+        float targetX = GOREFIEND_TANK_POSITION.GetPositionX() + radius * std::sin(angle + M_PI_2);
+        float targetY = GOREFIEND_TANK_POSITION.GetPositionY() + radius * std::cos(angle + M_PI_2);
+
+        gorefiendRangedPositions.try_emplace(guid, Position(targetX, targetY, bot->GetPositionZ()));
+        it = gorefiendRangedPositions.find(guid);
+    }
+
+    if (it == gorefiendRangedPositions.end())
+        return false;
+
+    const Position& target = it->second;
+    float distToTarget = bot->GetExactDist2d(target.GetPositionX(), target.GetPositionY());
+    if (distToTarget > 2.0f)
+    {
+        float dX = target.GetPositionX() - bot->GetPositionX();
+        float dY = target.GetPositionY() - bot->GetPositionY();
+        float moveDist = std::min(10.0f, distToTarget);
+        float moveX = bot->GetPositionX() + (dX / distToTarget) * moveDist;
+        float moveY = bot->GetPositionY() + (dY / distToTarget) * moveDist;
+
+        return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY, target.GetPositionZ(), false,
+                      false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
+    }
+
+    return false;
+}
+
+bool TeronGorefiendAvoidShadowOfDeathAction::Execute(Event event)
+{
+    botAI->Reset();
+
+    const char* abilities[] = { "divine shield", "feign death", "ice block", "vanish" };
+    for (const char* spellName : abilities)
+    {
+        if (botAI->CanCastSpell(spellName, bot))
+            return botAI->CastSpell(spellName, bot);
+    }
+
+    return false;
+}
+
+/* bool TeronGorefiendMoveToCornerToDieAction::Execute(Event event)
 {
     const Position& position = GOREFIEND_DIE_POSITION;
     float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
@@ -504,11 +594,55 @@ bool TeronGorefiendMoveToCornerToDieAction::Execute(Event event)
     }
 
     return false;
+} */
+bool TeronGorefiendMoveToCornerToDieAction::Execute(Event event)
+{
+    const Position& position = GOREFIEND_DIE_POSITION;
+    float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+
+    LOG_DEBUG("playerbots", "TeronGorefiendMoveToCornerToDieAction: distToPosition={}", distToPosition);
+
+    if (distToPosition > 2.0f)
+    {
+        LOG_DEBUG("playerbots", "Attempting MoveTo: mapId={}, x={}, y={}, z={}",
+            BLACK_TEMPLE_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ());
+
+        // Diagnostic: check IsMovingAllowed
+        if (!MovementAction::IsMovingAllowed(BLACK_TEMPLE_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ()))
+        {
+            LOG_DEBUG("playerbots", "MoveTo failed: IsMovingAllowed returned false");
+            return false;
+        }
+
+        // Diagnostic: check IsDuplicateMove
+        if (MovementAction::IsDuplicateMove(BLACK_TEMPLE_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ()))
+        {
+            LOG_DEBUG("playerbots", "MoveTo failed: IsDuplicateMove returned true");
+            return false;
+        }
+
+        // Diagnostic: check IsWaitingForLastMove
+        if (MovementAction::IsWaitingForLastMove(MovementPriority::MOVEMENT_FORCED))
+        {
+            LOG_DEBUG("playerbots", "MoveTo failed: IsWaitingForLastMove returned true");
+            return false;
+        }
+
+        bool result = MoveTo(BLACK_TEMPLE_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                             position.GetPositionZ(), false, false, false, true,
+                             MovementPriority::MOVEMENT_FORCED, true, false);
+
+        LOG_DEBUG("playerbots", "MoveTo returned {}", result);
+        return result;
+    }
+
+    LOG_DEBUG("playerbots", "Already at die position, no move needed");
+    return false;
 }
 
-bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event event)
+/* bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event event)
 {
-    /* Unit* gorefiend = AI_VALUE2(Unit*, "find target", "teron gorefiend");
+    Unit* gorefiend = AI_VALUE2(Unit*, "find target", "teron gorefiend");
     if (!gorefiend)
         return false;
 
@@ -537,8 +671,11 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event event
     if (!priorityTarget)
         return false;
 
-    // Spell/ability priority checks (placeholders)
-    if (botAI->CanCastSpell("spirit volley", priorityTarget))
+    if (bot->GetExactDist2d(priorityTarget) > 11.0f)
+    {
+        return MoveTo(priorityTarget, 10.0f, MovementPriority::MOVEMENT_FORCED);
+    }
+    else if (botAI->CanCastSpell("spirit volley", priorityTarget))
     {
         return botAI->CastSpell("spirit volley", priorityTarget);
     }
@@ -550,11 +687,120 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event event
     {
         return botAI->CastSpell("spirit lance", priorityTarget);
     }
+    else if (bot->GetExactDist2d(gorefiend) > 5.0f)
+    {
+        return MoveTo(gorefiend, 5.0f, MovementPriority::MOVEMENT_FORCED);
+    }
     else if (botAI->CanCastSpell("spirit strike", gorefiend))
     {
         return botAI->CastSpell("spirit strike", gorefiend);
-    } */
+    }
 
+    return false;
+} */
+
+bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event event)
+{
+    LOG_DEBUG("playerbots", "TeronGorefiendControlAndDestroyShadowyConstructsAction: Start");
+
+    Unit* gorefiend = AI_VALUE2(Unit*, "find target", "teron gorefiend");
+    if (!gorefiend)
+    {
+        LOG_DEBUG("playerbots", "No Teron Gorefiend found");
+        return false;
+    }
+
+    auto const& npcs =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
+
+    Unit* priorityTarget = nullptr;
+    float bestDist = std::numeric_limits<float>::max();
+
+    for (auto guid : npcs)
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        if (!unit || !unit->IsAlive())
+            continue;
+        if (unit->GetEntry() != NPC_SHADOWY_CONSTRUCT)
+            continue;
+
+        float distToGorefiend = gorefiend->GetExactDist2d(unit);
+        if (distToGorefiend < bestDist)
+        {
+            bestDist = distToGorefiend;
+            priorityTarget = unit;
+        }
+    }
+
+    if (!priorityTarget)
+    {
+        LOG_DEBUG("playerbots", "No shadowy construct found");
+        return false;
+    }
+
+    for (auto const& spell : bot->GetSpellMap())
+    LOG_DEBUG("playerbots", "Bot has spell: id={}", spell.first);
+
+    float distToTarget = bot->GetExactDist2d(priorityTarget);
+    LOG_DEBUG("playerbots", "Priority target GUID: {}, Distance to bot: {}", priorityTarget->GetGUID().ToString(), distToTarget);
+
+    if (distToTarget > 11.0f)
+    {
+        LOG_DEBUG("playerbots", "Moving to shadowy construct (distance: {})", distToTarget);
+
+        // Diagnostic: check IsMovingAllowed
+        if (!MovementAction::IsMovingAllowed(BLACK_TEMPLE_MAP_ID, priorityTarget->GetPositionX(), priorityTarget->GetPositionY(), priorityTarget->GetPositionZ()))
+        {
+            LOG_DEBUG("playerbots", "MoveTo failed: IsMovingAllowed returned false");
+            return false;
+        }
+
+        // Diagnostic: check IsDuplicateMove
+        if (MovementAction::IsDuplicateMove(BLACK_TEMPLE_MAP_ID, priorityTarget->GetPositionX(), priorityTarget->GetPositionY(), priorityTarget->GetPositionZ()))
+        {
+            LOG_DEBUG("playerbots", "MoveTo failed: IsDuplicateMove returned true");
+            return false;
+        }
+
+        // Diagnostic: check IsWaitingForLastMove
+        if (MovementAction::IsWaitingForLastMove(MovementPriority::MOVEMENT_FORCED))
+        {
+            LOG_DEBUG("playerbots", "MoveTo failed: IsWaitingForLastMove returned true");
+            return false;
+        }
+
+        bool result = MoveTo(priorityTarget, 10.0f, MovementPriority::MOVEMENT_FORCED);
+        LOG_DEBUG("playerbots", "MoveTo returned {}", result);
+        return result;
+    }
+    else if (!bot->HasSpellCooldown(SPELL_SPIRIT_VOLLEY))
+    {
+        LOG_DEBUG("playerbots", "Casting spirit volley on shadowy construct");
+        return bot->CastSpell(priorityTarget, SPELL_SPIRIT_VOLLEY);
+    }
+    else if (!bot->HasSpellCooldown(SPELL_SPIRIT_CHAINS))
+    {
+        LOG_DEBUG("playerbots", "Casting spirit chains on shadowy construct");
+        return bot->CastSpell(priorityTarget, SPELL_SPIRIT_CHAINS);
+    }
+    else if (!bot->HasSpellCooldown(SPELL_SPIRIT_LANCE))
+    {
+        LOG_DEBUG("playerbots", "Casting spirit lance on shadowy construct");
+        return bot->CastSpell(priorityTarget, SPELL_SPIRIT_LANCE);
+    }
+    else if (bot->GetExactDist2d(gorefiend) > 5.0f)
+    {
+        float distToGorefiend = bot->GetExactDist2d(gorefiend);
+        LOG_DEBUG("playerbots", "Moving to Teron Gorefiend (distance: {})", distToGorefiend);
+        return MoveTo(gorefiend, 5.0f, MovementPriority::MOVEMENT_FORCED);
+    }
+    else if (!bot->HasSpellCooldown(SPELL_SPIRIT_STRIKE))
+    {
+        LOG_DEBUG("playerbots", "Casting spirit strike on Teron Gorefiend");
+        return bot->CastSpell(gorefiend, SPELL_SPIRIT_STRIKE);
+    }
+
+    LOG_DEBUG("playerbots", "No action taken");
     return false;
 }
 

@@ -54,6 +54,12 @@ public:
         creators["teron gorefiend main tank position boss"] =
             &RaidBlackTempleActionContext::teron_gorefiend_main_tank_position_boss;
 
+        creators["teron gorefiend position ranged on balcony"] =
+            &RaidBlackTempleActionContext::teron_gorefiend_position_ranged_on_balcony;
+
+        creators["teron gorefiend avoid shadow of death"] =
+            &RaidBlackTempleActionContext::teron_gorefiend_avoid_shadow_of_death;
+
         creators["teron gorefiend move to corner to die"] =
             &RaidBlackTempleActionContext::teron_gorefiend_move_to_corner_to_die;
 
@@ -116,6 +122,12 @@ private:
 
     static Action* teron_gorefiend_main_tank_position_boss(
         PlayerbotAI* botAI) { return new TeronGorefiendMainTankPositionBossAction(botAI); }
+
+    static Action* teron_gorefiend_position_ranged_on_balcony(
+        PlayerbotAI* botAI) { return new TeronGorefiendPositionRangedOnBalconyAction(botAI); }
+
+    static Action* teron_gorefiend_avoid_shadow_of_death(
+        PlayerbotAI* botAI) { return new TeronGorefiendAvoidShadowOfDeathAction(botAI); }
 
     static Action* teron_gorefiend_move_to_corner_to_die(
         PlayerbotAI* botAI) { return new TeronGorefiendMoveToCornerToDieAction(botAI); }

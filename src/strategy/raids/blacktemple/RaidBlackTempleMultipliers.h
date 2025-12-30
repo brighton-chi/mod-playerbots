@@ -18,11 +18,19 @@ public:
 // Shade of Akama
 
 // Teron Gorefiend
-class TeronGorefiendDisableCombatFormationMoveMultiplier : public Multiplier
+class TeronGorefiendDisableMovementMultiplier : public Multiplier
 {
 public:
-    TeronGorefiendDisableCombatFormationMoveMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "teron gorefiend disable combat formation move multiplier") {}
+    TeronGorefiendDisableMovementMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "teron gorefiend disable movement multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
+class TeronGorefiendMarkedBotOnlyMoveToDieMultiplier : public Multiplier
+{
+public:
+    TeronGorefiendMarkedBotOnlyMoveToDieMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "teron gorefiend marked bot only move to die multiplier") {}
     virtual float GetValue(Action* action);
 };
 
@@ -31,6 +39,14 @@ class TeronGorefiendSpiritsAttackOnlyShadowyConstructsMultiplier : public Multip
 public:
     TeronGorefiendSpiritsAttackOnlyShadowyConstructsMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "teron gorefiend spirits attack only shadowy constructs multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
+class TeronGorefiendDisableAttackingConstructsMultiplier : public Multiplier
+{
+public:
+    TeronGorefiendDisableAttackingConstructsMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "teron gorefiend disable attacking constructs multiplier") {}
     virtual float GetValue(Action* action);
 };
 

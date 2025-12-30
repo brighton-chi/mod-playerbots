@@ -169,19 +169,39 @@ bool TeronGorefiendPullingBossTrigger::IsActive()
     return gorefiend && gorefiend->GetHealthPct() > 95.0f;
 }
 
-bool TeronGorefiendBossEngagedByMainTankTrigger::IsActive()
+bool TeronGorefiendBossEngagedTrigger::IsActive()
 {
-    if (!botAI->IsMainTank(bot))
+    if (!botAI->IsMainTank(bot) && !botAI->IsRanged(bot))
         return false;
 
     Unit* gorefiend = AI_VALUE2(Unit*, "find target", "teron gorefiend");
     return gorefiend != nullptr;
 }
 
+bool TeronGorefiendBossIsCastingShadowOfDeathTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_HUNTER &&
+        bot->getClass() != CLASS_MAGE &&
+        bot->getClass() != CLASS_PALADIN &&
+        bot->getClass() != CLASS_ROGUE)
+        return false;
+
+    Unit* gorefiend = AI_VALUE2(Unit*, "find target", "teron gorefiend");
+    if (!gorefiend || !gorefiend->HasUnitState(UNIT_STATE_CASTING))
+        return false;
+
+    Spell* spell = gorefiend->GetCurrentSpell(CURRENT_GENERIC_SPELL);
+    if (!spell || spell->m_spellInfo->Id != SPELL_SHADOW_OF_DEATH)
+        return false;
+
+    Unit* target = spell->m_targets.GetUnitTarget();
+    return target && target->GetGUID() == bot->GetGUID();
+}
+
 bool TeronGorefiendBotHasShadowOfDeathTrigger::IsActive()
 {
     Aura* aura = bot->GetAura(SPELL_SHADOW_OF_DEATH);
-    return aura && aura->GetDuration() < 20000; // less than 20 seconds remaining
+    return aura && aura->GetDuration() < 12000; // less than 12 seconds remaining
 }
 
 bool TeronGorefiendBotTransformedIntoVengefulSpiritTrigger::IsActive()
