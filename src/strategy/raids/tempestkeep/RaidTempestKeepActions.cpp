@@ -18,15 +18,21 @@ bool CrimsonHandCenturionCastPolymorphAction::Execute(Event event)
     if (!centurion)
         return false;
 
-    if (centurion->GetHealth() == centurion->GetMaxHealth() &&
-        !centurion->HasAura(SPELL_POLYMORPH_SHEEP) &&
-        !centurion->HasAura(SPELL_POLYMORPH_TURTLE) &&
-        !centurion->HasAura(SPELL_POLYMORPH_PIG))
+    if (centurion->GetHealth() == centurion->GetMaxHealth())
     {
-        return botAI->CastSpell("polymorph", centurion);
+        if (!centurion->HasAura(SPELL_POLYMORPH_SHEEP) &&
+            !centurion->HasAura(SPELL_POLYMORPH_TURTLE) &&
+            !centurion->HasAura(SPELL_POLYMORPH_PIG))
+            {
+                if (botAI->CanCastSpell("polymorph", centurion))
+                    return botAI->CastSpell("polymorph", centurion);
+            }
     }
-    else if (botAI->CanCastSpell("polymorph", centurion))
-        return botAI->CastSpell("polymorph", centurion);
+    else if (centurion->HasAura(SPELL_ARCANE_FLURRY))
+    {
+        if (botAI->CanCastSpell("polymorph", centurion))
+            return botAI->CastSpell("polymorph", centurion);
+    }
 
     return false;
 }

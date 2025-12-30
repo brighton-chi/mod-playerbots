@@ -14,7 +14,7 @@ bool CrimsonHandCenturionCastsArcaneVolleyTrigger::IsActive()
         return false;
 
     Unit* centurion = AI_VALUE2(Unit*, "find target", "crimson hand centurion");
-    return centurion && centurion->HasAura(SPELL_ARCANE_FLURRY);
+    return centurion != nullptr;
 }
 
 // Al'ar <Phoenix God>
