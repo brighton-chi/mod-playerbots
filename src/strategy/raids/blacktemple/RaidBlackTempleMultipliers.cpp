@@ -21,7 +21,8 @@ float SupremusKiteBossMultiplier::GetValue(Action* action)
     if (supremus->GetVictim() == bot)
     {
         if (dynamic_cast<MovementAction*>(action) &&
-            !dynamic_cast<SupremusKiteBossAction*>(action))
+            !dynamic_cast<SupremusKiteBossAction*>(action) &&
+            !dynamic_cast<SupremusMoveAwayFromVolcanosAction*>(action))
             return 0.0f;
     }
 

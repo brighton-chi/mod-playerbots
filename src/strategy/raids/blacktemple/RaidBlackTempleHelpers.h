@@ -44,6 +44,7 @@ namespace BlackTempleHelpers
         // High Warlord Naj'entus
 
         // Supremus
+        NPC_SUPREMUS_VOLCANO = 23085,
 
         // Shade of Akama
 

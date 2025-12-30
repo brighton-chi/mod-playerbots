@@ -34,14 +34,14 @@ public:
         creators["supremus main tank position boss"] =
             &RaidBlackTempleActionContext::supremus_main_tank_position_boss;
 
-        creators["supremus spread ranged in arc"] =
-            &RaidBlackTempleActionContext::supremus_spread_ranged_in_arc;
-
         creators["supremus disperse ranged"] =
             &RaidBlackTempleActionContext::supremus_disperse_ranged;
 
         creators["supremus kite boss"] =
             &RaidBlackTempleActionContext::supremus_kite_boss;
+
+        creators["supremus move away from volcanos"] =
+            &RaidBlackTempleActionContext::supremus_move_away_from_volcanos;
 
         creators["supremus manage phase timer"] =
             &RaidBlackTempleActionContext::supremus_manage_phase_timer;
@@ -87,14 +87,14 @@ private:
     static Action* supremus_main_tank_position_boss(
         PlayerbotAI* botAI) { return new SupremusMainTankPositionBossAction(botAI); }
 
-    static Action* supremus_spread_ranged_in_arc(
-        PlayerbotAI* botAI) { return new SupremusSpreadRangedInArcAction(botAI); }
-
     static Action* supremus_disperse_ranged(
         PlayerbotAI* botAI) { return new SupremusDisperseRangedAction(botAI); }
 
     static Action* supremus_kite_boss(
         PlayerbotAI* botAI) { return new SupremusKiteBossAction(botAI); }
+
+    static Action* supremus_move_away_from_volcanos(
+        PlayerbotAI* botAI) { return new SupremusMoveAwayFromVolcanosAction(botAI); }
 
     static Action* supremus_manage_phase_timer(
         PlayerbotAI* botAI) { return new SupremusManagePhaseTimerAction(botAI); }

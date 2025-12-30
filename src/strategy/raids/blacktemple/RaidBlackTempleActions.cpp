@@ -265,96 +265,12 @@ bool SupremusMainTankPositionBossAction::Execute(Event event)
     return false;
 }
 
-bool SupremusSpreadRangedInArcAction::Execute(Event event)
-{
-    Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
-    if (!supremus)
-        return false;
-
-    if (supremus->GetHealth() == supremus->GetMaxHealth())
-        supremusRangedPositions.clear();
-
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    std::vector<Player*> healers;
-    std::vector<Player*> rangedDps;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || !botAI->IsRanged(member))
-            continue;
-        if (botAI->IsHeal(member))
-            healers.push_back(member);
-        else
-            rangedDps.push_back(member);
-    }
-
-    if (healers.empty() && rangedDps.empty())
-        return false;
-
-    const ObjectGuid guid = bot->GetGUID();
-
-    auto it = supremusRangedPositions.find(guid);
-    if (it == supremusRangedPositions.end())
-    {
-        size_t count = healers.size() + rangedDps.size();
-        size_t botIndex = 0;
-        float radius = 0.0f;
-        float angle = 0.0f;
-
-        const float arcSpan = 2.0f * M_PI / 3.0f; // 120 degrees
-        const float arcCenter = 0.165f;
-        const float arcStart = arcCenter - arcSpan / 2.0f;
-
-        if (botAI->IsHeal(bot))
-        {
-            auto findIt = std::find(healers.begin(), healers.end(), bot);
-            botIndex = (findIt != healers.end()) ? std::distance(healers.begin(), findIt) : 0;
-            radius = 30.0f;
-            count = healers.size();
-        }
-        else
-        {
-            auto findIt = std::find(rangedDps.begin(), rangedDps.end(), bot);
-            botIndex = (findIt != rangedDps.end()) ? std::distance(rangedDps.begin(), findIt) : 0;
-            radius = 25.0f;
-            count = rangedDps.size();
-        }
-
-        angle = (count == 1) ? arcCenter :
-            (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
-
-        float targetX = SUPREMUS_TANK_POSITION.GetPositionX() + radius * std::sin(angle);
-        float targetY = SUPREMUS_TANK_POSITION.GetPositionY() + radius * std::cos(angle);
-        float targetZ = bot->GetMap()->GetHeight(targetX, targetY, SUPREMUS_TANK_POSITION.GetPositionZ());
-
-        supremusRangedPositions.try_emplace(guid, Position(targetX, targetY, targetZ));
-        it = supremusRangedPositions.find(guid);
-    }
-
-    if (it == supremusRangedPositions.end())
-        return false;
-
-    const Position& target = it->second;
-    if (bot->GetExactDist2d(target.GetPositionX(), target.GetPositionY()) > 2.0f)
-    {
-        return MoveTo(BLACK_TEMPLE_MAP_ID, target.GetPositionX(), target.GetPositionY(),
-                      target.GetPositionZ(), false, false, false, false,
-                      MovementPriority::MOVEMENT_COMBAT, true, false);
-    }
-
-    return false;
-}
-
 bool SupremusDisperseRangedAction::Execute(Event event)
 {
     Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
     if (!supremus)
         return false;
 
-    // Flee if within 5 yards of any other player
     Group* group = bot->GetGroup();
     if (group)
     {
@@ -365,9 +281,9 @@ bool SupremusDisperseRangedAction::Execute(Event event)
             if (!member || member == bot || !member->IsAlive())
                 continue;
 
-            if (bot->GetExactDist2d(member) < 5.0f)
+            if (bot->GetExactDist2d(member) < 8.0f)
                 return FleePosition(Position(member->GetPositionX(), member->GetPositionY(),
-                                    member->GetPositionZ()), 5.5f, 1000);
+                                    member->GetPositionZ()), 8.0f, 1000);
         }
     }
 
@@ -377,11 +293,11 @@ bool SupremusDisperseRangedAction::Execute(Event event)
 bool SupremusKiteBossAction::Execute(Event event)
 {
     Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
-    if (!supremus)
+    if (!supremus || supremus->GetVictim() != bot)
         return false;
 
     float currentDistance = bot->GetExactDist2d(supremus);
-    const float safeDistance = 20.0f;
+    const float safeDistance = 25.0f;
     if (currentDistance < safeDistance)
     {
         botAI->Reset();
@@ -389,6 +305,140 @@ bool SupremusKiteBossAction::Execute(Event event)
     }
 
     return false;
+}
+
+bool SupremusMoveAwayFromVolcanosAction::Execute(Event event)
+{
+    auto const& volcanos = GetAllSupremusVolcanos(botAI, bot);
+    if (volcanos.empty())
+        return false;
+
+    const float hazardRadius = 10.0f;
+    bool inDanger = false;
+    for (Unit* volcano : volcanos)
+    {
+        if (bot->GetDistance2d(volcano) < hazardRadius)
+        {
+            inDanger = true;
+            break;
+        }
+    }
+
+    if (!inDanger)
+        return false;
+
+    const float maxRadius = 30.0f;
+    Position safestPos = FindSafestNearbyPosition(volcanos, maxRadius, hazardRadius);
+
+    bot->AttackStop();
+    bot->InterruptNonMeleeSpells(true);
+    return MoveTo(BLACK_TEMPLE_MAP_ID, safestPos.GetPositionX(), safestPos.GetPositionY(),
+                  safestPos.GetPositionZ(), false, false, false, true,
+                  MovementPriority::MOVEMENT_COMBAT, true, false);
+}
+
+Position SupremusMoveAwayFromVolcanosAction::FindSafestNearbyPosition(
+    const std::vector<Unit*>& volcanos, float maxRadius, float hazardRadius)
+{
+    const float searchStep = M_PI / 8.0f;
+    const float minDistance = 2.0f;
+    const float maxDistance = maxRadius;
+    const float distanceStep = 1.0f;
+
+    Position bestPos;
+    float minMoveDistance = std::numeric_limits<float>::max();
+    bool foundSafe = false;
+
+    for (float distance = minDistance;
+         distance <= maxDistance; distance += distanceStep)
+    {
+        for (float angle = 0.0f; angle < 2 * M_PI; angle += searchStep)
+        {
+            float x = bot->GetPositionX() + distance * std::cos(angle);
+            float y = bot->GetPositionY() + distance * std::sin(angle);
+
+            bool isSafe = true;
+            for (Unit* volcano : volcanos)
+            {
+                if (volcano->GetDistance2d(x, y) < hazardRadius)
+                {
+                    isSafe = false;
+                    break;
+                }
+            }
+
+            if (!isSafe)
+                continue;
+
+            Position testPos(x, y, bot->GetPositionZ());
+
+            bool pathSafe =
+                IsPathSafeFromVolcanos(bot->GetPosition(), testPos, volcanos, hazardRadius);
+            if (pathSafe || !foundSafe)
+            {
+                float moveDistance = bot->GetExactDist2d(x, y);
+
+                if (pathSafe && (!foundSafe || moveDistance < minMoveDistance))
+                {
+                    bestPos = testPos;
+                    minMoveDistance = moveDistance;
+                    foundSafe = true;
+                }
+                else if (!foundSafe && moveDistance < minMoveDistance)
+                {
+                    bestPos = testPos;
+                    minMoveDistance = moveDistance;
+                }
+            }
+        }
+
+        if (foundSafe)
+            break;
+    }
+
+    return bestPos;
+}
+
+bool SupremusMoveAwayFromVolcanosAction::IsPathSafeFromVolcanos(const Position& start,
+    const Position& end, const std::vector<Unit*>& volcanos, float hazardRadius)
+{
+    const uint8 numChecks = 10;
+    float dx = end.GetPositionX() - start.GetPositionX();
+    float dy = end.GetPositionY() - start.GetPositionY();
+
+    for (uint8 i = 1; i <= numChecks; ++i)
+    {
+        float ratio = static_cast<float>(i) / numChecks;
+        float checkX = start.GetPositionX() + dx * ratio;
+        float checkY = start.GetPositionY() + dy * ratio;
+
+        for (Unit* volcano : volcanos)
+        {
+            float distToVol = volcano->GetDistance2d(checkX, checkY);
+            if (distToVol < hazardRadius)
+                return false;
+        }
+    }
+
+    return true;
+}
+
+std::vector<Unit*> SupremusMoveAwayFromVolcanosAction::GetAllSupremusVolcanos(
+    PlayerbotAI* botAI, Player* bot)
+{
+    std::vector<Unit*> volcanos;
+    auto const& npcs =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
+    for (auto const& npcGuid : npcs)
+    {
+        const float maxSearchRadius = 40.0f;
+        Unit* unit = botAI->GetUnit(npcGuid);
+        if (unit && unit->GetEntry() == NPC_SUPREMUS_VOLCANO &&
+            bot->GetDistance2d(unit) < maxSearchRadius)
+            volcanos.push_back(unit);
+    }
+
+    return volcanos;
 }
 
 bool SupremusManagePhaseTimerAction::Execute(Event event)

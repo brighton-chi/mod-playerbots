@@ -49,11 +49,11 @@ bool HighWarlordNajentusPlayerIsImpaledTrigger::IsActive()
         return false;
 
     Player* impaledPlayer = nullptr;
-    // Find any player with Impaling Spine
+    // Find any player with Impaling Spine (other than bot itself, duh)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive())
+        if (!member || member == bot)
             continue;
 
         if (member->HasAura(SPELL_IMPALING_SPINE))
@@ -143,7 +143,7 @@ bool SupremusBossEngagedByRangedTrigger::IsActive()
     return supremus && !supremus->HasAura(SPELL_SNARE_SELF);
 }
 
-bool SupremusBossIsFixatedOnBotTrigger::IsActive()
+bool SupremusEncounterIsInPhase2Trigger::IsActive()
 {
     Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
     return supremus && supremus->HasAura(SPELL_SNARE_SELF) &&

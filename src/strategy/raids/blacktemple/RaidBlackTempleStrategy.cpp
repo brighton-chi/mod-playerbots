@@ -26,15 +26,14 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     ));
     /* triggers.push_back(new TriggerNode("supremus boss engaged by main tank",
         NextAction::array(0, new NextAction("supremus main tank position boss", ACTION_RAID + 1), nullptr)
-    ));
-    triggers.push_back(new TriggerNode("supremus boss engaged by ranged",
-        NextAction::array(0, new NextAction("supremus spread ranged in arc", ACTION_RAID + 1), nullptr)
-    )); */
+    ));*/
     triggers.push_back(new TriggerNode("supremus boss engaged by ranged",
         NextAction::array(0, new NextAction("supremus disperse ranged", ACTION_RAID + 1), nullptr)
     ));
-    triggers.push_back(new TriggerNode("supremus boss is fixated on bot",
-        NextAction::array(0, new NextAction("supremus kite boss", ACTION_EMERGENCY + 6), nullptr)
+    triggers.push_back(new TriggerNode("supremus encounter is in phase 2",
+        NextAction::array(0,
+            new NextAction("supremus kite boss", ACTION_EMERGENCY + 7),
+            new NextAction("supremus move away from volcanos", ACTION_EMERGENCY + 6), nullptr)
     ));
     triggers.push_back(new TriggerNode("supremus changes phase every 60 seconds",
         NextAction::array(0, new NextAction("supremus manage phase timer", ACTION_EMERGENCY + 10), nullptr)

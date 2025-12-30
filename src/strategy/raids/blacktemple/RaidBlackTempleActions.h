@@ -65,14 +65,6 @@ public:
     bool Execute(Event event) override;
 };
 
-class SupremusSpreadRangedInArcAction : public MovementAction
-{
-public:
-    SupremusSpreadRangedInArcAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "supremus spread ranged in arc") {}
-    bool Execute(Event event) override;
-};
-
 class SupremusDisperseRangedAction : public MovementAction
 {
 public:
@@ -87,6 +79,21 @@ public:
     SupremusKiteBossAction(
         PlayerbotAI* botAI) : MovementAction(botAI, "supremus kite boss") {}
     bool Execute(Event event) override;
+};
+
+class SupremusMoveAwayFromVolcanosAction : public MovementAction
+{
+public:
+    SupremusMoveAwayFromVolcanosAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "supremus move away from volcanos") {}
+    bool Execute(Event event) override;
+
+private:
+    Position FindSafestNearbyPosition(
+        const std::vector<Unit*>& volcanos, float maxRadius, float hazardRadius);
+    bool IsPathSafeFromVolcanos(const Position& start,
+        const Position& end, const std::vector<Unit*>& volcanos, float hazardRadius);
+    std::vector<Unit*> GetAllSupremusVolcanos(PlayerbotAI* botAI, Player* bot);
 };
 
 class SupremusManagePhaseTimerAction : public Action

@@ -37,8 +37,8 @@ public:
         creators["supremus boss engaged by ranged"] =
             &RaidBlackTempleTriggerContext::supremus_boss_engaged_by_ranged;
 
-        creators["supremus boss is fixated on bot"] =
-            &RaidBlackTempleTriggerContext::supremus_boss_is_fixated_on_bot;
+        creators["supremus encounter is in phase 2"] =
+            &RaidBlackTempleTriggerContext::supremus_encounter_is_in_phase_2;
 
         creators["supremus changes phase every 60 seconds"] =
             &RaidBlackTempleTriggerContext::supremus_changes_phase_every_60_seconds;
@@ -87,8 +87,8 @@ private:
     static Trigger* supremus_boss_engaged_by_ranged(
         PlayerbotAI* botAI) { return new SupremusBossEngagedByRangedTrigger(botAI); }
 
-    static Trigger* supremus_boss_is_fixated_on_bot(
-        PlayerbotAI* botAI) { return new SupremusBossIsFixatedOnBotTrigger(botAI); }
+    static Trigger* supremus_encounter_is_in_phase_2(
+        PlayerbotAI* botAI) { return new SupremusEncounterIsInPhase2Trigger(botAI); }
 
     static Trigger* supremus_changes_phase_every_60_seconds(
         PlayerbotAI* botAI) { return new SupremusChangesPhaseEvery60SecondsTrigger(botAI); }

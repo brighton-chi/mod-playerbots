@@ -71,11 +71,11 @@ public:
     bool IsActive() override;
 };
 
-class SupremusBossIsFixatedOnBotTrigger : public Trigger
+class SupremusEncounterIsInPhase2Trigger : public Trigger
 {
 public:
-    SupremusBossIsFixatedOnBotTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "supremus boss is fixated on bot") {}
+    SupremusEncounterIsInPhase2Trigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "supremus encounter is in phase 2") {}
     bool IsActive() override;
 };
 
