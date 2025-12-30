@@ -31,21 +31,34 @@ public:
         creators["supremus pulling boss or changing phase"] =
             &RaidBlackTempleTriggerContext::supremus_pulling_boss_or_changing_phase;
 
-        creators["supremus boss engaged by main tank"] =
-            &RaidBlackTempleTriggerContext::supremus_boss_engaged_by_main_tank;
-
         creators["supremus boss engaged by ranged"] =
             &RaidBlackTempleTriggerContext::supremus_boss_engaged_by_ranged;
 
-        creators["supremus encounter is in phase 2"] =
-            &RaidBlackTempleTriggerContext::supremus_encounter_is_in_phase_2;
+        creators["supremus boss is fixated on bot"] =
+            &RaidBlackTempleTriggerContext::supremus_boss_is_fixated_on_bot;
+
+        creators["supremus volcano is nearby"] =
+            &RaidBlackTempleTriggerContext::supremus_volcano_is_nearby;
 
         creators["supremus changes phase every 60 seconds"] =
             &RaidBlackTempleTriggerContext::supremus_changes_phase_every_60_seconds;
 
         // Shade of Akama
+        // N/A
 
         // Teron Gorefiend
+
+        creators["teron gorefiend pulling boss"] =
+            &RaidBlackTempleTriggerContext::teron_gorefiend_pulling_boss;
+
+        creators["teron gorefiend boss engaged by main tank"] =
+            &RaidBlackTempleTriggerContext::teron_gorefiend_boss_engaged_by_main_tank;
+
+        creators["teron gorefiend bot has shadow of death"] =
+            &RaidBlackTempleTriggerContext::teron_gorefiend_bot_has_shadow_of_death;
+
+        creators["teron gorefiend bot transformed into vengeful spirit"] =
+            &RaidBlackTempleTriggerContext::teron_gorefiend_bot_transformed_into_vengeful_spirit;
 
         // Gurtogg Bloodboil
 
@@ -81,21 +94,34 @@ private:
     static Trigger* supremus_pulling_boss_or_changing_phase(
         PlayerbotAI* botAI) { return new SupremusPullingBossOrChangingPhaseTrigger(botAI); }
 
-    static Trigger* supremus_boss_engaged_by_main_tank(
-        PlayerbotAI* botAI) { return new SupremusBossEngagedByMainTankTrigger(botAI); }
-
     static Trigger* supremus_boss_engaged_by_ranged(
         PlayerbotAI* botAI) { return new SupremusBossEngagedByRangedTrigger(botAI); }
 
-    static Trigger* supremus_encounter_is_in_phase_2(
-        PlayerbotAI* botAI) { return new SupremusEncounterIsInPhase2Trigger(botAI); }
+    static Trigger* supremus_boss_is_fixated_on_bot(
+        PlayerbotAI* botAI) { return new SupremusBossIsFixatedOnBotTrigger(botAI); }
+
+    static Trigger* supremus_volcano_is_nearby(
+        PlayerbotAI* botAI) { return new SupremusVolcanoIsNearbyTrigger(botAI); }
 
     static Trigger* supremus_changes_phase_every_60_seconds(
         PlayerbotAI* botAI) { return new SupremusChangesPhaseEvery60SecondsTrigger(botAI); }
 
     // Shade of Akama
+    // N/A
 
     // Teron Gorefiend
+
+    static Trigger* teron_gorefiend_pulling_boss(
+        PlayerbotAI* botAI) { return new TeronGorefiendPullingBossTrigger(botAI); }
+
+    static Trigger* teron_gorefiend_boss_engaged_by_main_tank(
+        PlayerbotAI* botAI) { return new TeronGorefiendBossEngagedByMainTankTrigger(botAI); }
+
+    static Trigger* teron_gorefiend_bot_has_shadow_of_death(
+        PlayerbotAI* botAI) { return new TeronGorefiendBotHasShadowOfDeathTrigger(botAI); }
+
+    static Trigger* teron_gorefiend_bot_transformed_into_vengeful_spirit(
+        PlayerbotAI* botAI) { return new TeronGorefiendBotTransformedIntoVengefulSpiritTrigger(botAI); }
 
     // Gurtogg Bloodboil
 

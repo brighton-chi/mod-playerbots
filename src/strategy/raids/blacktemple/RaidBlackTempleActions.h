@@ -57,14 +57,6 @@ public:
     bool Execute(Event event) override;
 };
 
-class SupremusMainTankPositionBossAction : public AttackAction
-{
-public:
-    SupremusMainTankPositionBossAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "supremus main tank position boss") {}
-    bool Execute(Event event) override;
-};
-
 class SupremusDisperseRangedAction : public MovementAction
 {
 public:
@@ -105,8 +97,40 @@ public:
 };
 
 // Shade of Akama
+// N/A
 
 // Teron Gorefiend
+class TeronGorefiendMisdirectBossToMainTankAction : public AttackAction
+{
+public:
+    TeronGorefiendMisdirectBossToMainTankAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "teron gorefiend misdirect boss to main tank") {}
+    bool Execute(Event event) override;
+};
+
+class TeronGorefiendMainTankPositionBossAction : public AttackAction
+{
+public:
+    TeronGorefiendMainTankPositionBossAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "teron gorefiend main tank position boss") {}
+    bool Execute(Event event) override;
+};
+
+class TeronGorefiendMoveToCornerToDieAction : public MovementAction
+{
+public:
+    TeronGorefiendMoveToCornerToDieAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "teron gorefiend move to corner to die") {}
+    bool Execute(Event event) override;
+};
+
+class TeronGorefiendControlAndDestroyShadowyConstructsAction : public MovementAction
+{
+public:
+    TeronGorefiendControlAndDestroyShadowyConstructsAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "teron gorefiend control and destroy shadowy constructs") {}
+    bool Execute(Event event) override;
+};
 
 // Gurtogg Bloodboil
 

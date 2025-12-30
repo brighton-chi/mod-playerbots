@@ -19,8 +19,11 @@ namespace BlackTempleHelpers
         SPELL_SNARE_SELF                = 41922,
 
         // Shade of Akama
+        // N/A
 
         // Teron Gorefiend
+        SPELL_SHADOW_OF_DEATH = 40251, // 55s duration
+        SPELL_SPIRITUAL_VENGEANCE = 40268,
 
         // Gurtogg Bloodboil
 
@@ -42,13 +45,16 @@ namespace BlackTempleHelpers
     enum BlackTempleNPCs
     {
         // High Warlord Naj'entus
+        // N/A
 
         // Supremus
         NPC_SUPREMUS_VOLCANO = 23085,
 
         // Shade of Akama
+        // N/A
 
         // Teron Gorefiend
+        NPC_SHADOWY_CONSTRUCT = 23111,
 
         // Gurtogg Bloodboil
 
@@ -89,11 +95,14 @@ namespace BlackTempleHelpers
     extern const Position SUPREMUS_TANK_POSITION;
     extern std::unordered_map<ObjectGuid, Position> supremusRangedPositions;
     extern std::unordered_map<uint32, time_t> supremusPhaseTimer;
+    bool HasSupremusVolcanoNearby(PlayerbotAI* botAI, Player* bot);
 
     // Shade of Akama
+    // N/A
 
     // Teron Gorefiend
     extern const Position GOREFIEND_TANK_POSITION;
+    extern const Position GOREFIEND_DIE_POSITION;
 
     // Gurtogg Bloodboil
 

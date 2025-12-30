@@ -94,10 +94,26 @@ namespace BlackTempleHelpers
     std::unordered_map<ObjectGuid, Position> supremusRangedPositions;
     std::unordered_map<uint32, time_t> supremusPhaseTimer;
 
+    bool HasSupremusVolcanoNearby(PlayerbotAI* botAI, Player* bot)
+    {
+        auto const& npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
+        for (auto const& npcGuid : npcs)
+        {
+            Unit* unit = botAI->GetUnit(npcGuid);
+            if (unit && unit->GetEntry() == NPC_SUPREMUS_VOLCANO &&
+                bot->GetDistance2d(unit) < 50.0f)
+                return true;
+        }
+
+        return false;
+    }
+
     // Shade of Akama
+    // N/A
 
     // Teron Gorefiend
     const Position GOREFIEND_TANK_POSITION = { 597.653f, 402.284f, 187.090f, 6.269f };
+    const Position GOREFIEND_DIE_POSITION = { 580.0f, 400.0f, 187.0f };
 
     // Gurtogg Bloodboil
 

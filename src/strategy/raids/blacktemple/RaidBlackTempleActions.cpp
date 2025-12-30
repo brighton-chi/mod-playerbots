@@ -48,7 +48,7 @@ bool HighWarlordNajentusMainTankPositionBossAction::Execute(Event event)
     if (bot->GetVictim() != najentus)
         return Attack(najentus);
 
-    if (najentus->GetVictim() == bot)
+    if (najentus->GetVictim() == bot && bot->IsWithinMeleeRange(najentus))
     {
         const Position& position = NAJENTUS_TANK_POSITION;
         float dist = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
@@ -236,35 +236,6 @@ bool SupremusMisdirectBossToMainTankAction::Execute(Event event)
     return false;
 }
 
-bool SupremusMainTankPositionBossAction::Execute(Event event)
-{
-    Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
-    if (!supremus)
-        return false;
-
-    if (bot->GetVictim() != supremus)
-        return Attack(supremus);
-
-    if (supremus->GetVictim() == bot)
-    {
-        const Position& position = SUPREMUS_TANK_POSITION;
-        float dist = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
-        if (dist > 2.0f)
-        {
-            float dX = position.GetPositionX() - bot->GetPositionX();
-            float dY = position.GetPositionY() - bot->GetPositionY();
-            float moveDist = std::min(5.0f, dist);
-            float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
-            float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
-
-            return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
-                          false, false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
-        }
-    }
-
-    return false;
-}
-
 bool SupremusDisperseRangedAction::Execute(Event event)
 {
     Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
@@ -293,10 +264,10 @@ bool SupremusDisperseRangedAction::Execute(Event event)
 bool SupremusKiteBossAction::Execute(Event event)
 {
     Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
-    if (!supremus || supremus->GetVictim() != bot)
+    if (!supremus)
         return false;
 
-    float currentDistance = bot->GetExactDist2d(supremus);
+    float currentDistance = bot->GetDistance2d(supremus);
     const float safeDistance = 25.0f;
     if (currentDistance < safeDistance)
     {
@@ -313,7 +284,7 @@ bool SupremusMoveAwayFromVolcanosAction::Execute(Event event)
     if (volcanos.empty())
         return false;
 
-    const float hazardRadius = 10.0f;
+    const float hazardRadius = 14.0f;
     bool inDanger = false;
     for (Unit* volcano : volcanos)
     {
@@ -327,14 +298,14 @@ bool SupremusMoveAwayFromVolcanosAction::Execute(Event event)
     if (!inDanger)
         return false;
 
-    const float maxRadius = 30.0f;
+    const float maxRadius = 35.0f;
     Position safestPos = FindSafestNearbyPosition(volcanos, maxRadius, hazardRadius);
 
     bot->AttackStop();
     bot->InterruptNonMeleeSpells(true);
     return MoveTo(BLACK_TEMPLE_MAP_ID, safestPos.GetPositionX(), safestPos.GetPositionY(),
                   safestPos.GetPositionZ(), false, false, false, true,
-                  MovementPriority::MOVEMENT_COMBAT, true, false);
+                  MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 Position SupremusMoveAwayFromVolcanosAction::FindSafestNearbyPosition(
@@ -431,7 +402,7 @@ std::vector<Unit*> SupremusMoveAwayFromVolcanosAction::GetAllSupremusVolcanos(
         botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
     for (auto const& npcGuid : npcs)
     {
-        const float maxSearchRadius = 40.0f;
+        const float maxSearchRadius = 50.0f;
         Unit* unit = botAI->GetUnit(npcGuid);
         if (unit && unit->GetEntry() == NPC_SUPREMUS_VOLCANO &&
             bot->GetDistance2d(unit) < maxSearchRadius)
@@ -456,8 +427,136 @@ bool SupremusManagePhaseTimerAction::Execute(Event event)
 }
 
 // Shade of Akama
+// N/A
 
 // Teron Gorefiend
+
+bool TeronGorefiendMisdirectBossToMainTankAction::Execute(Event event)
+{
+    Unit* gorefiend = AI_VALUE2(Unit*, "find target", "teron gorefiend");
+    if (!gorefiend)
+        return false;
+
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    Player* mainTank = nullptr;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && member->IsAlive() && botAI->IsMainTank(member))
+        {
+            mainTank = member;
+            break;
+        }
+    }
+
+    if (!mainTank)
+        return false;
+
+    if (botAI->CanCastSpell("misdirection", mainTank))
+        return botAI->CastSpell("misdirection", mainTank);
+
+    if (bot->HasAura(SPELL_MISDIRECTION) && botAI->CanCastSpell("steady shot", gorefiend))
+        return botAI->CastSpell("steady shot", gorefiend);
+    return false;
+}
+
+bool TeronGorefiendMainTankPositionBossAction::Execute(Event event)
+{
+    Unit* gorefiend = AI_VALUE2(Unit*, "find target", "teron gorefiend");
+    if (!gorefiend)
+        return false;
+
+    if (bot->GetVictim() != gorefiend)
+        return Attack(gorefiend);
+
+    if (gorefiend->GetVictim() == bot && bot->IsWithinMeleeRange(gorefiend))
+    {
+        const Position& position = GOREFIEND_TANK_POSITION;
+        float dist = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+        if (dist > 2.0f)
+        {
+            float dX = position.GetPositionX() - bot->GetPositionX();
+            float dY = position.GetPositionY() - bot->GetPositionY();
+            float moveDist = std::min(5.0f, dist);
+            float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
+
+            return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
+                          false, false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
+        }
+    }
+
+    return false;
+}
+
+bool TeronGorefiendMoveToCornerToDieAction::Execute(Event event)
+{
+    const Position& position = GOREFIEND_DIE_POSITION;
+    float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+    if (distToPosition > 2.0f)
+    {
+        return MoveTo(BLACK_TEMPLE_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                      position.GetPositionZ(), false, false, false, true,
+                      MovementPriority::MOVEMENT_FORCED, true, false);
+    }
+
+    return false;
+}
+
+bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event event)
+{
+    /* Unit* gorefiend = AI_VALUE2(Unit*, "find target", "teron gorefiend");
+    if (!gorefiend)
+        return false;
+
+    auto const& npcs =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
+
+    Unit* priorityTarget = nullptr;
+    float bestDist = std::numeric_limits<float>::max();
+
+    for (auto guid : npcs)
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        if (!unit || !unit->IsAlive())
+            continue;
+        if (unit->GetEntry() != NPC_SHADOWY_CONSTRUCT)
+            continue;
+
+        float distToGorefiend = gorefiend->GetExactDist2d(unit);
+        if (distToGorefiend < bestDist)
+        {
+            bestDist = distToGorefiend;
+            priorityTarget = unit;
+        }
+    }
+
+    if (!priorityTarget)
+        return false;
+
+    // Spell/ability priority checks (placeholders)
+    if (botAI->CanCastSpell("spirit volley", priorityTarget))
+    {
+        return botAI->CastSpell("spirit volley", priorityTarget);
+    }
+    else if (botAI->CanCastSpell("spirit chains", priorityTarget))
+    {
+        return botAI->CastSpell("spirit chains", priorityTarget);
+    }
+    else if (botAI->CanCastSpell("spirit lance", priorityTarget))
+    {
+        return botAI->CastSpell("spirit lance", priorityTarget);
+    }
+    else if (botAI->CanCastSpell("spirit strike", gorefiend))
+    {
+        return botAI->CastSpell("spirit strike", gorefiend);
+    } */
+
+    return false;
+}
 
 // Gurtogg Bloodboil
 

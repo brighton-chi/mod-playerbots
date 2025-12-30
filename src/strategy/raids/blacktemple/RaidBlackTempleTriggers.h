@@ -55,14 +55,6 @@ public:
     bool IsActive() override;
 };
 
-class SupremusBossEngagedByMainTankTrigger : public Trigger
-{
-public:
-    SupremusBossEngagedByMainTankTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "supremus boss engaged by main tank") {}
-    bool IsActive() override;
-};
-
 class SupremusBossEngagedByRangedTrigger : public Trigger
 {
 public:
@@ -71,11 +63,19 @@ public:
     bool IsActive() override;
 };
 
-class SupremusEncounterIsInPhase2Trigger : public Trigger
+class SupremusBossIsFixatedOnBotTrigger : public Trigger
 {
 public:
-    SupremusEncounterIsInPhase2Trigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "supremus encounter is in phase 2") {}
+    SupremusBossIsFixatedOnBotTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "supremus boss is fixated on bot") {}
+    bool IsActive() override;
+};
+
+class SupremusVolcanoIsNearbyTrigger : public Trigger
+{
+public:
+    SupremusVolcanoIsNearbyTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "supremus volcano is nearby") {}
     bool IsActive() override;
 };
 
@@ -88,8 +88,40 @@ public:
 };
 
 // Shade of Akama
+// N/A
 
 // Teron Gorefiend
+class TeronGorefiendPullingBossTrigger : public Trigger
+{
+public:
+    TeronGorefiendPullingBossTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "teron gorefiend pulling boss") {}
+    bool IsActive() override;
+};
+
+class TeronGorefiendBossEngagedByMainTankTrigger : public Trigger
+{
+public:
+    TeronGorefiendBossEngagedByMainTankTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "teron gorefiend boss engaged by main tank") {}
+    bool IsActive() override;
+};
+
+class TeronGorefiendBotHasShadowOfDeathTrigger : public Trigger
+{
+public:
+    TeronGorefiendBotHasShadowOfDeathTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "teron gorefiend bot has shadow of death") {}
+    bool IsActive() override;
+};
+
+class TeronGorefiendBotTransformedIntoVengefulSpiritTrigger : public Trigger
+{
+public:
+    TeronGorefiendBotTransformedIntoVengefulSpiritTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "teron gorefiend bot transformed into vengeful spirit") {}
+    bool IsActive() override;
+};
 
 // Gurtogg Bloodboil
 

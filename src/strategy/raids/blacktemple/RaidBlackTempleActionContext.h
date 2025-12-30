@@ -31,9 +31,6 @@ public:
         creators["supremus misdirect boss to main tank"] =
             &RaidBlackTempleActionContext::supremus_misdirect_boss_to_main_tank;
 
-        creators["supremus main tank position boss"] =
-            &RaidBlackTempleActionContext::supremus_main_tank_position_boss;
-
         creators["supremus disperse ranged"] =
             &RaidBlackTempleActionContext::supremus_disperse_ranged;
 
@@ -47,8 +44,21 @@ public:
             &RaidBlackTempleActionContext::supremus_manage_phase_timer;
 
         // Shade of Akama
+        // N/A
 
         // Teron Gorefiend
+
+        creators["teron gorefiend misdirect boss to main tank"] =
+            &RaidBlackTempleActionContext::teron_gorefiend_misdirect_boss_to_main_tank;
+
+        creators["teron gorefiend main tank position boss"] =
+            &RaidBlackTempleActionContext::teron_gorefiend_main_tank_position_boss;
+
+        creators["teron gorefiend move to corner to die"] =
+            &RaidBlackTempleActionContext::teron_gorefiend_move_to_corner_to_die;
+
+        creators["teron gorefiend control and destroy shadowy constructs"] =
+            &RaidBlackTempleActionContext::teron_gorefiend_control_and_destroy_shadowy_constructs;
 
         // Gurtogg Bloodboil
 
@@ -84,9 +94,6 @@ private:
     static Action* supremus_misdirect_boss_to_main_tank(
         PlayerbotAI* botAI) { return new SupremusMisdirectBossToMainTankAction(botAI); }
 
-    static Action* supremus_main_tank_position_boss(
-        PlayerbotAI* botAI) { return new SupremusMainTankPositionBossAction(botAI); }
-
     static Action* supremus_disperse_ranged(
         PlayerbotAI* botAI) { return new SupremusDisperseRangedAction(botAI); }
 
@@ -100,8 +107,21 @@ private:
         PlayerbotAI* botAI) { return new SupremusManagePhaseTimerAction(botAI); }
 
     // Shade of Akama
+    // N/A
 
     // Teron Gorefiend
+
+    static Action* teron_gorefiend_misdirect_boss_to_main_tank(
+        PlayerbotAI* botAI) { return new TeronGorefiendMisdirectBossToMainTankAction(botAI); }
+
+    static Action* teron_gorefiend_main_tank_position_boss(
+        PlayerbotAI* botAI) { return new TeronGorefiendMainTankPositionBossAction(botAI); }
+
+    static Action* teron_gorefiend_move_to_corner_to_die(
+        PlayerbotAI* botAI) { return new TeronGorefiendMoveToCornerToDieAction(botAI); }
+
+    static Action* teron_gorefiend_control_and_destroy_shadowy_constructs(
+        PlayerbotAI* botAI) { return new TeronGorefiendControlAndDestroyShadowyConstructsAction(botAI); }
 
     // Gurtogg Bloodboil
 

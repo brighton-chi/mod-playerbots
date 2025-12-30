@@ -24,24 +24,35 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("supremus pulling boss or changing phase",
         NextAction::array(0, new NextAction("supremus misdirect boss to main tank", ACTION_RAID + 2), nullptr)
     ));
-    /* triggers.push_back(new TriggerNode("supremus boss engaged by main tank",
-        NextAction::array(0, new NextAction("supremus main tank position boss", ACTION_RAID + 1), nullptr)
-    ));*/
     triggers.push_back(new TriggerNode("supremus boss engaged by ranged",
         NextAction::array(0, new NextAction("supremus disperse ranged", ACTION_RAID + 1), nullptr)
     ));
-    triggers.push_back(new TriggerNode("supremus encounter is in phase 2",
-        NextAction::array(0,
-            new NextAction("supremus kite boss", ACTION_EMERGENCY + 7),
-            new NextAction("supremus move away from volcanos", ACTION_EMERGENCY + 6), nullptr)
+    triggers.push_back(new TriggerNode("supremus boss is fixated on bot",
+        NextAction::array(0, new NextAction("supremus kite boss", ACTION_EMERGENCY + 7), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("supremus volcano is nearby",
+        NextAction::array(0, new NextAction("supremus move away from volcanos", ACTION_EMERGENCY + 6), nullptr)
     ));
     triggers.push_back(new TriggerNode("supremus changes phase every 60 seconds",
         NextAction::array(0, new NextAction("supremus manage phase timer", ACTION_EMERGENCY + 10), nullptr)
     ));
 
     // Shade of Akama
+    // N/A
 
     // Teron Gorefiend
+    triggers.push_back(new TriggerNode("teron gorefiend pulling boss",
+        NextAction::array(0, new NextAction("teron gorefiend misdirect boss to main tank", ACTION_RAID + 2), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("teron gorefiend boss engaged by main tank",
+        NextAction::array(0, new NextAction("teron gorefiend main tank position boss", ACTION_RAID + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("teron gorefiend bot has shadow of death",
+        NextAction::array(0, new NextAction("teron gorefiend move to corner to die", ACTION_EMERGENCY + 10), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("teron gorefiend bot transformed into vengeful spirit",
+        NextAction::array(0, new NextAction("teron gorefiend control and destroy shadowy constructs", ACTION_EMERGENCY + 10), nullptr)
+    ));
 
     // Gurtogg Bloodboil
 
@@ -57,13 +68,17 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     // High Warlord Naj'entus
+    // N/A
 
     // Supremus
-    multipliers.push_back(new SupremusKiteBossMultiplier(botAI));
+    multipliers.push_back(new SupremusFocusOnAvoidanceInPhase2Multiplier(botAI));
 
     // Shade of Akama
+    // N/A
 
     // Teron Gorefiend
+    multipliers.push_back(new TeronGorefiendDisableCombatFormationMoveMultiplier(botAI));
+    multipliers.push_back(new TeronGorefiendSpiritsAttackOnlyShadowyConstructsMultiplier(botAI));
 
     // Gurtogg Bloodboil
 

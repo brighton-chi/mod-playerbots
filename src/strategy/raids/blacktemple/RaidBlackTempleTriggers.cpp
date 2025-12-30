@@ -125,15 +125,6 @@ bool SupremusPullingBossOrChangingPhaseTrigger::IsActive()
     return false;
 }
 
-bool SupremusBossEngagedByMainTankTrigger::IsActive()
-{
-    if (!botAI->IsMainTank(bot))
-        return false;
-
-    Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
-    return supremus && !supremus->HasAura(SPELL_SNARE_SELF);
-}
-
 bool SupremusBossEngagedByRangedTrigger::IsActive()
 {
     if (!botAI->IsRanged(bot))
@@ -143,11 +134,16 @@ bool SupremusBossEngagedByRangedTrigger::IsActive()
     return supremus && !supremus->HasAura(SPELL_SNARE_SELF);
 }
 
-bool SupremusEncounterIsInPhase2Trigger::IsActive()
+bool SupremusBossIsFixatedOnBotTrigger::IsActive()
 {
     Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
-    return supremus && supremus->HasAura(SPELL_SNARE_SELF) &&
-           supremus->GetVictim() == bot;
+    return supremus && supremus->HasAura(SPELL_SNARE_SELF)
+           && supremus->GetVictim() == bot;
+}
+
+bool SupremusVolcanoIsNearbyTrigger::IsActive()
+{
+    return HasSupremusVolcanoNearby(botAI, bot);
 }
 
 bool SupremusChangesPhaseEvery60SecondsTrigger::IsActive()
@@ -160,8 +156,38 @@ bool SupremusChangesPhaseEvery60SecondsTrigger::IsActive()
 }
 
 // Shade of Akama
+// N/A
 
 // Teron Gorefiend
+
+bool TeronGorefiendPullingBossTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_HUNTER)
+        return false;
+
+    Unit* gorefiend = AI_VALUE2(Unit*, "find target", "teron gorefiend");
+    return gorefiend && gorefiend->GetHealthPct() > 95.0f;
+}
+
+bool TeronGorefiendBossEngagedByMainTankTrigger::IsActive()
+{
+    if (!botAI->IsMainTank(bot))
+        return false;
+
+    Unit* gorefiend = AI_VALUE2(Unit*, "find target", "teron gorefiend");
+    return gorefiend != nullptr;
+}
+
+bool TeronGorefiendBotHasShadowOfDeathTrigger::IsActive()
+{
+    Aura* aura = bot->GetAura(SPELL_SHADOW_OF_DEATH);
+    return aura && aura->GetDuration() < 20000; // less than 20 seconds remaining
+}
+
+bool TeronGorefiendBotTransformedIntoVengefulSpiritTrigger::IsActive()
+{
+    return bot->HasAura(SPELL_SPIRITUAL_VENGEANCE);
+}
 
 // Gurtogg Bloodboil
 
