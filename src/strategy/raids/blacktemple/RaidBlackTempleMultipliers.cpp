@@ -6,6 +6,7 @@
 #include "FollowActions.h"
 #include "HunterActions.h"
 #include "MageActions.h"
+#include "PriestActions.h"
 #include "ReachTargetActions.h"
 #include "ShamanActions.h"
 #include "WipeAction.h"
@@ -112,6 +113,22 @@ float TeronGorefiendDisableAttackingConstructsMultiplier::GetValue(Action* actio
 // Gurtogg Bloodboil
 
 // Reliquary of Souls
+
+float ReliquaryOfSoulsDontWasteHealingMultiplier::GetValue(Action* action)
+{
+    Unit* suffering = AI_VALUE2(Unit*, "find target", "essence of suffering");
+    if (!suffering)
+        return 1.0f;
+
+    if (dynamic_cast<CastHealingSpellAction*>(action) &&
+        !dynamic_cast<CastPowerWordShieldOnAlmostFullHealthBelowAction*>(action) &&
+        !dynamic_cast<CastPowerWordShieldOnNotFullAction*>(action) &&
+        !dynamic_cast<CastPowerWordShieldAction*>(action) &&
+        !dynamic_cast<CastPowerWordShieldOnPartyAction*>(action))
+        return 0.0f;
+
+    return 1.0f;
+}
 
 // Mother Shahraz
 

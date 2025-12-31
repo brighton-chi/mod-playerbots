@@ -808,6 +808,26 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event event
 
 // Reliquary of Souls
 
+bool ReliquaryOfSoulsSpellstealRuneShieldAction::Execute(Event event)
+{
+    Unit* desire = AI_VALUE2(Unit*, "find target", "essence of desire");
+    if (!desire)
+        return false;
+
+    if (botAI->CanCastSpell("spellsteal", desire))
+        return botAI->CastSpell("spellsteal", desire);
+
+    return false;
+}
+
+bool ReliquaryOfSoulsSpellReflectDeadenAction::Execute(Event event)
+{
+    if (botAI->CanCastSpell("spell reflection", bot))
+        return botAI->CastSpell("spell reflection", bot);
+
+    return false;
+}
+
 // Mother Shahraz
 
 // Illidari Council

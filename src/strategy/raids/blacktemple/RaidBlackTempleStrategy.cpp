@@ -62,6 +62,12 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     // Gurtogg Bloodboil
 
     // Reliquary of Souls
+    triggers.push_back(new TriggerNode("reliquary of souls essence of desire has rune shield",
+        NextAction::array(0, new NextAction("reliquary of souls spellsteal rune shield", ACTION_EMERGENCY + 6), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("reliquary of souls essence of desire casting deaden",
+        NextAction::array(0, new NextAction("reliquary of souls spell reflect deaden", ACTION_EMERGENCY + 10), nullptr)
+    ));
 
     // Mother Shahraz
 
@@ -90,6 +96,7 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     // Gurtogg Bloodboil
 
     // Reliquary of Souls
+    multipliers.push_back(new ReliquaryOfSoulsDontWasteHealingMultiplier(botAI));
 
     // Mother Shahraz
 

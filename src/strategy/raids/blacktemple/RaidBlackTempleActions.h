@@ -152,6 +152,22 @@ public:
 
 // Reliquary of Souls
 
+class ReliquaryOfSoulsSpellstealRuneShieldAction : public Action
+{
+public:
+    ReliquaryOfSoulsSpellstealRuneShieldAction(
+        PlayerbotAI* botAI) : Action(botAI, "reliquary of souls spellsteal rune shield") {}
+    bool Execute(Event event) override;
+};
+
+class ReliquaryOfSoulsSpellReflectDeadenAction : public Action
+{
+public:
+    ReliquaryOfSoulsSpellReflectDeadenAction(
+        PlayerbotAI* botAI) : Action(botAI, "reliquary of souls spell reflect deaden") {}
+    bool Execute(Event event) override;
+};
+
 // Mother Shahraz
 
 // Illidari Council

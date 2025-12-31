@@ -67,6 +67,12 @@ public:
 
         // Reliquary of Souls
 
+        creators["reliquary of souls essence of desire has rune shield"] =
+            &RaidBlackTempleTriggerContext::reliquary_of_souls_essence_of_desire_has_rune_shield;
+
+        creators["reliquary of souls essence of desire casting deaden"] =
+            &RaidBlackTempleTriggerContext::reliquary_of_souls_essence_of_desire_casting_deaden;
+
         // Mother Shahraz
 
         // Illidari Council
@@ -132,6 +138,12 @@ private:
     // Gurtogg Bloodboil
 
     // Reliquary of Souls
+
+    static Trigger* reliquary_of_souls_essence_of_desire_has_rune_shield(
+        PlayerbotAI* botAI) { return new ReliquaryOfSoulsEssenceOfDesireHasRuneShieldTrigger(botAI); }
+
+    static Trigger* reliquary_of_souls_essence_of_desire_casting_deaden(
+        PlayerbotAI* botAI) { return new ReliquaryOfSoulsEssenceOfDesireCastingDeadenTrigger(botAI); }
 
     // Mother Shahraz
 

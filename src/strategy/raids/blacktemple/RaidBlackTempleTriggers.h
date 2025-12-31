@@ -135,6 +135,22 @@ public:
 
 // Reliquary of Souls
 
+class ReliquaryOfSoulsEssenceOfDesireHasRuneShieldTrigger : public Trigger
+{
+public:
+    ReliquaryOfSoulsEssenceOfDesireHasRuneShieldTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "reliquary of souls essence of desire has rune shield") {}
+    bool IsActive() override;
+};
+
+class ReliquaryOfSoulsEssenceOfDesireCastingDeadenTrigger : public Trigger
+{
+public:
+    ReliquaryOfSoulsEssenceOfDesireCastingDeadenTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "reliquary of souls essence of desire casting deaden") {}
+    bool IsActive() override;
+};
+
 // Mother Shahraz
 
 // Illidari Council

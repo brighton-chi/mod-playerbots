@@ -33,6 +33,8 @@ namespace BlackTempleHelpers
         // Gurtogg Bloodboil
 
         // Reliquary of Souls
+        SPELL_DEADEN = 41410,
+        SPELL_RUNE_SHIELD               = 41431,
 
         // Mother Shahraz
 

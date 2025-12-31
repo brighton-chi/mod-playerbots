@@ -54,6 +54,14 @@ public:
 
 // Reliquary of Souls
 
+class ReliquaryOfSoulsDontWasteHealingMultiplier : public Multiplier
+{
+public:
+    ReliquaryOfSoulsDontWasteHealingMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "reliquary of souls don't waste healing multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
 // Mother Shahraz
 
 // Illidari Council

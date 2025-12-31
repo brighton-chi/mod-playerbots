@@ -70,6 +70,12 @@ public:
 
         // Reliquary of Souls
 
+        creators["reliquary of souls spellsteal rune shield"] =
+            &RaidBlackTempleActionContext::reliquary_of_souls_spellsteal_rune_shield;
+
+        creators["reliquary of souls spell reflect deaden"] =
+            &RaidBlackTempleActionContext::reliquary_of_souls_spell_reflect_deaden;
+
         // Mother Shahraz
 
         // Illidari Council
@@ -138,6 +144,12 @@ private:
     // Gurtogg Bloodboil
 
     // Reliquary of Souls
+
+    static Action* reliquary_of_souls_spellsteal_rune_shield(
+        PlayerbotAI* botAI) { return new ReliquaryOfSoulsSpellstealRuneShieldAction(botAI); }
+
+    static Action* reliquary_of_souls_spell_reflect_deaden(
+        PlayerbotAI* botAI) { return new ReliquaryOfSoulsSpellReflectDeadenAction(botAI); }
 
     // Mother Shahraz
 

@@ -213,6 +213,29 @@ bool TeronGorefiendBotTransformedIntoVengefulSpiritTrigger::IsActive()
 
 // Reliquary of Souls
 
+bool ReliquaryOfSoulsEssenceOfDesireHasRuneShieldTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_MAGE)
+        return false;
+
+    Unit* desire = AI_VALUE2(Unit*, "find target", "essence of desire");
+    return desire && desire->HasAura(SPELL_RUNE_SHIELD);
+}
+
+bool ReliquaryOfSoulsEssenceOfDesireCastingDeadenTrigger::IsActive()
+{
+    Unit* desire = AI_VALUE2(Unit*, "find target", "essence of desire");
+    if (!desire || !desire->HasUnitState(UNIT_STATE_CASTING))
+        return false;
+
+    Spell* spell = desire->GetCurrentSpell(CURRENT_GENERIC_SPELL);
+    if (!spell || spell->m_spellInfo->Id != SPELL_DEADEN)
+        return false;
+
+    Unit* target = spell->m_targets.GetUnitTarget();
+    return target && target->GetGUID() == bot->GetGUID();
+}
+
 // Mother Shahraz
 
 // Illidari Council
