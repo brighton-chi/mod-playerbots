@@ -172,12 +172,13 @@ bool NalorakkTanksPositionBossAction::Execute(Event event)
     if (!nalorakk)
         return false;
 
-    bool mtAction = MainTankPositionTrollForm(botAI->IsMainTank(bot)
-        ? bot : nullptr, nalorakk);
-    bool atAction = FirstAssistTankPositionBearForm(botAI->IsAssistTankOfIndex(bot, 0)
-        ? bot : nullptr, nalorakk);
+    if (botAI->IsMainTank(bot) && MainTankPositionTrollForm(bot, nalorakk))
+        return true;
 
-    return mtAction || atAction;
+    if (botAI->IsAssistTankOfIndex(bot, 0) && FirstAssistTankPositionBearForm(bot, nalorakk))
+        return true;
+
+    return false;
 }
 
 bool NalorakkTanksPositionBossAction::MainTankPositionTrollForm(

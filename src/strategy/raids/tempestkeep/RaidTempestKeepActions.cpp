@@ -87,12 +87,13 @@ bool AlarBossTanksMoveBetweenPlatformsAction::Execute(Event event)
         locationIndex = GetAlarDestinationLocationIndex(alar, dest);
     }
 
-    bool mtAction = PositionMainTank(botAI->IsMainTank(bot)
-        ? bot : nullptr, alar, locationIndex);
-    bool atAction = PositionAssistTank(botAI->IsAssistTankOfIndex(bot, 0)
-        ? bot : nullptr, alar, locationIndex);
+    if (botAI->IsMainTank(bot) && PositionMainTank(bot, alar, locationIndex))
+        return true;
 
-    return mtAction || atAction;
+    if (botAI->IsAssistTankOfIndex(bot, 0) && PositionAssistTank(bot, alar, locationIndex))
+        return true;
+
+    return false;
 }
 
 bool AlarBossTanksMoveBetweenPlatformsAction::PositionMainTank(

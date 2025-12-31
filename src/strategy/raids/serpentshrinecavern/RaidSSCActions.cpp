@@ -2712,18 +2712,10 @@ bool LadyVashjAvoidToxicSporesAction::Execute(Event event)
     Position safestPos = FindSafestNearbyPosition(spores, vashjCenter, maxRadius, hazardRadius);
 
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    if (vashj && vashj->GetVictim() == bot)
-    {
-        return MoveTo(SSC_MAP_ID, safestPos.GetPositionX(), safestPos.GetPositionY(),
-                      safestPos.GetPositionZ(), false, false, false, true,
-                      MovementPriority::MOVEMENT_COMBAT, true, true);
-    }
-    else
-    {
-        return MoveTo(SSC_MAP_ID, safestPos.GetPositionX(), safestPos.GetPositionY(),
-                      safestPos.GetPositionZ(), false, false, false, true,
-                      MovementPriority::MOVEMENT_COMBAT, true, false);
-    }
+    bool backwards = (vashj && vashj->GetVictim() == bot);
+    return MoveTo(SSC_MAP_ID, safestPos.GetPositionX(), safestPos.GetPositionY(),
+                  safestPos.GetPositionZ(), false, false, false, true,
+                  MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
 Position LadyVashjAvoidToxicSporesAction::FindSafestNearbyPosition(
