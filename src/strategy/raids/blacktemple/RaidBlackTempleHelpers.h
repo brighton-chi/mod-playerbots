@@ -40,6 +40,7 @@ namespace BlackTempleHelpers
         SPELL_RUNE_SHIELD               = 41431,
 
         // Mother Shahraz
+        SPELL_FATAL_ATTRACTION          = 41001,
 
         // Illidari Council
 
@@ -126,6 +127,8 @@ namespace BlackTempleHelpers
     extern std::unordered_map<uint32, time_t> reliquaryDpsWaitTimer;
 
     // Mother Shahraz
+    extern const Position SHAHRAZ_TANK_POSITION;
+    extern const Position SHAHRAZ_RANGED_POSITION;
 
     // Illidari Council
 

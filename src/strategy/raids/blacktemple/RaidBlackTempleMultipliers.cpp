@@ -71,8 +71,7 @@ float TeronGorefiendMarkedBotOnlyMoveToDieMultiplier::GetValue(Action* action)
     {
         if (dynamic_cast<WipeAction*>(action))
             return 1.0f;
-
-        if (!dynamic_cast<TeronGorefiendMoveToCornerToDieAction*>(action))
+        else if (!dynamic_cast<TeronGorefiendMoveToCornerToDieAction*>(action))
             return 0.0f;
     }
 
@@ -85,8 +84,7 @@ float TeronGorefiendSpiritsAttackOnlyShadowyConstructsMultiplier::GetValue(Actio
     {
         if (dynamic_cast<WipeAction*>(action))
             return 1.0f;
-
-        if (!dynamic_cast<TeronGorefiendControlAndDestroyShadowyConstructsAction*>(action))
+        else if (!dynamic_cast<TeronGorefiendControlAndDestroyShadowyConstructsAction*>(action))
             return 0.0f;
     }
 
@@ -118,8 +116,8 @@ float TeronGorefiendDisableAttackingConstructsMultiplier::GetValue(Action* actio
 
 float GurtoggBloodboilDisableMovementMultiplier::GetValue(Action* action)
 {
-    Unit* bloodboil = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
-    if (bloodboil)
+    Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
+    if (gurtogg)
     {
         if (dynamic_cast<CombatFormationMoveAction*>(action) &&
             !dynamic_cast<SetBehindTargetAction*>(action))
@@ -230,6 +228,38 @@ float ReliquaryOfSoulsDontInterruptDeadenIfReflectableMultiplier::GetValue(Actio
 }
 
 // Mother Shahraz
+
+float MotherShahrazDisableMovementMultiplier::GetValue(Action* action)
+{
+    Unit* shahraz = AI_VALUE2(Unit*, "find target", "mother shahraz");
+    if (shahraz)
+    {
+        if (dynamic_cast<CombatFormationMoveAction*>(action) &&
+            !dynamic_cast<SetBehindTargetAction*>(action))
+            return 0.0f;
+
+        if (dynamic_cast<FollowAction*>(action) ||
+            dynamic_cast<FleeAction*>(action) ||
+            dynamic_cast<CastDisengageAction*>(action) ||
+            dynamic_cast<CastBlinkBackAction*>(action))
+            return 0.0f;
+    }
+
+    return 1.0f;
+}
+
+float MotherShahrazBotsWithFatalAttractionOnlyRunAwayMultiplier::GetValue(Action* action)
+{
+    if (bot->HasAura(SPELL_FATAL_ATTRACTION))
+    {
+        if (dynamic_cast<WipeAction*>(action))
+            return 1.0f;
+        else if (!dynamic_cast<MotherShahrazRunAwayToBreakFatalAttractionAction*>(action))
+            return 0.0f;
+    }
+
+    return 1.0f;
+}
 
 // Illidari Council
 

@@ -367,8 +367,37 @@ bool ReliquaryOfSoulsNeedToManageDpsTimerTrigger::IsActive()
     return AI_VALUE2(Unit*, "find target", "reliquary of the lost");
 }
 
-
 // Mother Shahraz
+
+bool MotherShahrazPullingBossTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_HUNTER)
+        return false;
+
+    Unit* shahraz = AI_VALUE2(Unit*, "find target", "mother shahraz");
+    return shahraz && shahraz->GetHealthPct() > 95.0f;
+}
+
+bool MotherShahrazBossEngagedByTanksTrigger::IsActive()
+{
+    if (!botAI->IsTank(bot) || bot->HasAura(SPELL_FATAL_ATTRACTION))
+        return false;
+
+    return AI_VALUE2(Unit*, "find target", "mother shahraz") != nullptr;
+}
+
+bool MotherShahrazSinisterBeamKnocksBackPlayersTrigger::IsActive()
+{
+    if (!botAI->IsRanged(bot) || bot->HasAura(SPELL_FATAL_ATTRACTION))
+        return false;
+
+    return AI_VALUE2(Unit*, "find target", "mother shahraz") != nullptr;
+}
+
+bool MotherShahrazBotsAreLinkedByFatalAttractionTrigger::IsActive()
+{
+    return bot->HasAura(SPELL_FATAL_ATTRACTION);
+}
 
 // Illidari Council
 

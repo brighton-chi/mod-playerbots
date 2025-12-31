@@ -105,6 +105,18 @@ public:
 
         // Mother Shahraz
 
+        creators["mother shahraz pulling boss"] =
+            &RaidBlackTempleTriggerContext::mother_shahraz_pulling_boss;
+
+        creators["mother shahraz boss engaged by tanks"] =
+            &RaidBlackTempleTriggerContext::mother_shahraz_boss_engaged_by_tanks;
+
+        creators["mother shahraz sinister beam knocks back players"] =
+            &RaidBlackTempleTriggerContext::mother_shahraz_sinister_beam_knocks_back_players;
+
+        creators["mother shahraz bots are linked by fatal attraction"] =
+            &RaidBlackTempleTriggerContext::mother_shahraz_bots_are_linked_by_fatal_attraction;
+
         // Illidari Council
 
         // Illidan Stormrage <The Betrayer>
@@ -206,6 +218,18 @@ private:
         PlayerbotAI* botAI) { return new ReliquaryOfSoulsNeedToManageDpsTimerTrigger(botAI); }
 
     // Mother Shahraz
+
+    static Trigger* mother_shahraz_pulling_boss(
+        PlayerbotAI* botAI) { return new MotherShahrazPullingBossTrigger(botAI); }
+
+    static Trigger* mother_shahraz_boss_engaged_by_tanks(
+        PlayerbotAI* botAI) { return new MotherShahrazBossEngagedByTanksTrigger(botAI); }
+
+    static Trigger* mother_shahraz_sinister_beam_knocks_back_players(
+        PlayerbotAI* botAI) { return new MotherShahrazSinisterBeamKnocksBackPlayersTrigger(botAI); }
+
+    static Trigger* mother_shahraz_bots_are_linked_by_fatal_attraction(
+        PlayerbotAI* botAI) { return new MotherShahrazBotsAreLinkedByFatalAttractionTrigger(botAI); }
 
     // Illidari Council
 

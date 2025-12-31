@@ -1109,6 +1109,127 @@ bool ReliquaryOfSoulsManageDpsTimerAction::Execute(Event event)
 
 // Mother Shahraz
 
+bool MotherShahrazMisdirectBossToMainTankAction::Execute(Event event)
+{
+    Unit* shahraz = AI_VALUE2(Unit*, "find target", "mother shahraz");
+    if (!shahraz)
+        return false;
+
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    Player* mainTank = nullptr;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && member->IsAlive() && botAI->IsMainTank(member))
+        {
+            mainTank = member;
+            break;
+        }
+    }
+
+    if (!mainTank)
+        return false;
+
+    if (botAI->CanCastSpell("misdirection", mainTank))
+        return botAI->CastSpell("misdirection", mainTank);
+
+    if (bot->HasAura(SPELL_MISDIRECTION) && botAI->CanCastSpell("steady shot", shahraz))
+        return botAI->CastSpell("steady shot", shahraz);
+
+    return false;
+}
+
+bool MotherShahrazTanksPositionBossAction::Execute(Event event)
+{
+    Unit* shahraz = AI_VALUE2(Unit*, "find target", "mother shahraz");
+    if (!shahraz)
+        return false;
+
+    if (bot->GetVictim() != shahraz)
+        return Attack(shahraz);
+
+    Unit* victim = shahraz->GetVictim();
+    if (victim && botAI->IsTank(victim))
+    {
+        const Position& position = SHAHRAZ_TANK_POSITION;
+        float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+        if (distToPosition > 2.0f)
+        {
+            float dX = position.GetPositionX() - bot->GetPositionX();
+            float dY = position.GetPositionY() - bot->GetPositionY();
+            float moveDist = std::min(5.0f, distToPosition);
+            float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
+
+            return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
+                          false, false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
+        }
+    }
+
+    return false;
+}
+
+bool MotherShahrazPositionRangedUnderStatueAction::Execute(Event event)
+{
+    Unit* shahraz = AI_VALUE2(Unit*, "find target", "mother shahraz");
+    if (!shahraz)
+        return false;
+
+    const Position& position = SHAHRAZ_RANGED_POSITION;
+    float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+    if (distToPosition > 1.0f)
+    {
+        float dX = position.GetPositionX() - bot->GetPositionX();
+        float dY = position.GetPositionY() - bot->GetPositionY();
+        float moveDist = std::min(10.0f, distToPosition);
+        float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+        float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
+
+        return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
+                        false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+    }
+
+    return false;
+}
+
+bool MotherShahrazRunAwayToBreakFatalAttractionAction::Execute(Event event)
+{
+    Unit* shahraz = AI_VALUE2(Unit*, "find target", "mother shahraz");
+    if (!shahraz)
+        return false;
+
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    Player* nearestAttracted = nullptr;
+    float nearestDist = std::numeric_limits<float>::max();
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || member == bot || !member->IsAlive())
+            continue;
+        if (!member->HasAura(SPELL_FATAL_ATTRACTION))
+            continue;
+
+        float dist = bot->GetExactDist2d(member);
+        if (dist < nearestDist)
+        {
+            nearestDist = dist;
+            nearestAttracted = member;
+        }
+    }
+
+    if (!nearestAttracted)
+        return false;
+
+    return MoveAway(nearestAttracted, 30.0f);
+}
+
 // Illidari Council
 
 // Illidan Stormrage <The Betrayer>

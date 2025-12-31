@@ -108,6 +108,18 @@ public:
 
         // Mother Shahraz
 
+        creators["mother shahraz misdirect boss to main tank"] =
+            &RaidBlackTempleActionContext::mother_shahraz_misdirect_boss_to_main_tank;
+
+        creators["mother shahraz tanks position boss"] =
+            &RaidBlackTempleActionContext::mother_shahraz_tanks_position_boss;
+
+        creators["mother shahraz position ranged under statue"] =
+            &RaidBlackTempleActionContext::mother_shahraz_position_ranged_under_statue;
+
+        creators["mother shahraz run away to break fatal attraction"] =
+            &RaidBlackTempleActionContext::mother_shahraz_run_away_to_break_fatal_attraction;
+
         // Illidari Council
 
         // Illidan Stormrage <The Betrayer>
@@ -212,6 +224,18 @@ private:
         PlayerbotAI* botAI) { return new ReliquaryOfSoulsManageDpsTimerAction(botAI); }
 
     // Mother Shahraz
+
+    static Action* mother_shahraz_misdirect_boss_to_main_tank(
+        PlayerbotAI* botAI) { return new MotherShahrazMisdirectBossToMainTankAction(botAI); }
+
+    static Action* mother_shahraz_tanks_position_boss(
+        PlayerbotAI* botAI) { return new MotherShahrazTanksPositionBossAction(botAI); }
+
+    static Action* mother_shahraz_position_ranged_under_statue(
+        PlayerbotAI* botAI) { return new MotherShahrazPositionRangedUnderStatueAction(botAI); }
+
+    static Action* mother_shahraz_run_away_to_break_fatal_attraction(
+        PlayerbotAI* botAI) { return new MotherShahrazRunAwayToBreakFatalAttractionAction(botAI); }
 
     // Illidari Council
 

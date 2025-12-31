@@ -233,6 +233,38 @@ public:
 
 // Mother Shahraz
 
+class MotherShahrazPullingBossTrigger : public Trigger
+{
+public:
+    MotherShahrazPullingBossTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "mother shahraz pulling boss") {}
+    bool IsActive() override;
+};
+
+class MotherShahrazBossEngagedByTanksTrigger : public Trigger
+{
+public:
+    MotherShahrazBossEngagedByTanksTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "mother shahraz boss engaged by tanks") {}
+    bool IsActive() override;
+};
+
+class MotherShahrazSinisterBeamKnocksBackPlayersTrigger : public Trigger
+{
+public:
+    MotherShahrazSinisterBeamKnocksBackPlayersTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "mother shahraz sinister beam knocks back players") {}
+    bool IsActive() override;
+};
+
+class MotherShahrazBotsAreLinkedByFatalAttractionTrigger : public Trigger
+{
+public:
+    MotherShahrazBotsAreLinkedByFatalAttractionTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "mother shahraz bots are linked by fatal attraction") {}
+    bool IsActive() override;
+};
+
 // Illidari Council
 
 // Illidan Stormrage <The Betrayer>

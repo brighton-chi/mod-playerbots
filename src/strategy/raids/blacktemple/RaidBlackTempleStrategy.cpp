@@ -100,6 +100,18 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     ));
 
     // Mother Shahraz
+    triggers.push_back(new TriggerNode("mother shahraz pulling boss",
+        NextAction::array(0, new NextAction("mother shahraz misdirect boss to main tank", ACTION_RAID + 2), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("mother shahraz boss engaged by tanks",
+        NextAction::array(0, new NextAction("mother shahraz tanks position boss", ACTION_RAID + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("mother shahraz sinister beam knocks back players",
+        NextAction::array(0, new NextAction("mother shahraz position ranged under statue", ACTION_RAID + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("mother shahraz bots are linked by fatal attraction",
+        NextAction::array(0, new NextAction("mother shahraz run away to break fatal attraction", ACTION_EMERGENCY + 10), nullptr)
+    ));
 
     // Illidari Council
 
@@ -132,6 +144,8 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new ReliquaryOfSoulsDontInterruptDeadenIfReflectableMultiplier(botAI));
 
     // Mother Shahraz
+    multipliers.push_back(new MotherShahrazDisableMovementMultiplier(botAI));
+    multipliers.push_back(new MotherShahrazBotsWithFatalAttractionOnlyRunAwayMultiplier(botAI));
 
     // Illidari Council
 

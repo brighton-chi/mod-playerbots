@@ -88,6 +88,22 @@ public:
 
 // Mother Shahraz
 
+class MotherShahrazDisableMovementMultiplier : public Multiplier
+{
+public:
+    MotherShahrazDisableMovementMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "mother shahraz disable movement multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
+class MotherShahrazBotsWithFatalAttractionOnlyRunAwayMultiplier : public Multiplier
+{
+public:
+    MotherShahrazBotsWithFatalAttractionOnlyRunAwayMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "mother shahraz bots with fatal attraction only run away multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
 // Illidari Council
 
 // Illidan Stormrage <The Betrayer>

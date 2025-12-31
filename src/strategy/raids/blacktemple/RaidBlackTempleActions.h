@@ -250,6 +250,38 @@ public:
 
 // Mother Shahraz
 
+class MotherShahrazMisdirectBossToMainTankAction : public AttackAction
+{
+public:
+    MotherShahrazMisdirectBossToMainTankAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "mother shahraz misdirect boss to main tank") {}
+    bool Execute(Event event) override;
+};
+
+class MotherShahrazTanksPositionBossAction : public AttackAction
+{
+public:
+    MotherShahrazTanksPositionBossAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "mother shahraz tanks position boss") {}
+    bool Execute(Event event) override;
+};
+
+class MotherShahrazPositionRangedUnderStatueAction : public MovementAction
+{
+public:
+    MotherShahrazPositionRangedUnderStatueAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "mother shahraz position ranged under statue") {}
+    bool Execute(Event event) override;
+};
+
+class MotherShahrazRunAwayToBreakFatalAttractionAction : public MovementAction
+{
+public:
+    MotherShahrazRunAwayToBreakFatalAttractionAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "mother shahraz run away to break fatal attraction") {}
+    bool Execute(Event event) override;
+};
+
 // Illidari Council
 
 // Illidan Stormrage <The Betrayer>
