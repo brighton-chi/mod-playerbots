@@ -1491,7 +1491,7 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
                 float targetX = telonicus->GetPositionX() + desiredDist * std::cos(behindAngle);
                 float targetY = telonicus->GetPositionY() + desiredDist * std::sin(behindAngle);
 
-                if (bot->GetExactDist2d(targetX, targetY) > 1.0f)
+                if (bot->GetExactDist2d(targetX, targetY) > tolerance)
                 {
                     return MoveTo(TEMPEST_KEEP_MAP_ID, targetX, targetY, telonicus->GetPositionZ(), false,
                                   false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
