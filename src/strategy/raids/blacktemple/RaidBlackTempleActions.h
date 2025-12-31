@@ -152,6 +152,30 @@ public:
 
 // Reliquary of Souls
 
+class ReliquaryOfSoulsMisdirectBossToMainTankAction : public AttackAction
+{
+public:
+    ReliquaryOfSoulsMisdirectBossToMainTankAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "reliquary of souls misdirect boss to main tank") {}
+    bool Execute(Event event) override;
+};
+
+class ReliquaryOfSoulsMeleeDpsStayAtMaxRangeFromEssenceOfSufferingAction : public MovementAction
+{
+public:
+    ReliquaryOfSoulsMeleeDpsStayAtMaxRangeFromEssenceOfSufferingAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "reliquary of souls melee dps stay at max range from essence of suffering") {}
+    bool Execute(Event event) override;
+};
+
+class ReliquaryOfSoulsHealersDpsEssenceOfSufferingAction : public Action
+{
+public:
+    ReliquaryOfSoulsHealersDpsEssenceOfSufferingAction(
+        PlayerbotAI* botAI) : Action(botAI, "reliquary of souls healers dps essence of suffering") {}
+    bool Execute(Event event) override;
+};
+
 class ReliquaryOfSoulsSpellstealRuneShieldAction : public Action
 {
 public:
@@ -165,6 +189,14 @@ class ReliquaryOfSoulsSpellReflectDeadenAction : public Action
 public:
     ReliquaryOfSoulsSpellReflectDeadenAction(
         PlayerbotAI* botAI) : Action(botAI, "reliquary of souls spell reflect deaden") {}
+    bool Execute(Event event) override;
+};
+
+class ReliquaryOfSoulsManageDpsTimerAction : public Action
+{
+public:
+    ReliquaryOfSoulsManageDpsTimerAction(
+        PlayerbotAI* botAI) : Action(botAI, "reliquary of souls manage dps timer") {}
     bool Execute(Event event) override;
 };
 

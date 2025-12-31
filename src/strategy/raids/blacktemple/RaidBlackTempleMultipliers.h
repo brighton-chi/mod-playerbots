@@ -54,6 +54,14 @@ public:
 
 // Reliquary of Souls
 
+class ReliquaryOfSoulsWaitForDpsMultiplier : public Multiplier
+{
+public:
+    ReliquaryOfSoulsWaitForDpsMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "reliquary of souls wait for dps multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
 class ReliquaryOfSoulsDontWasteHealingMultiplier : public Multiplier
 {
 public:
@@ -61,6 +69,15 @@ public:
         PlayerbotAI* botAI) : Multiplier(botAI, "reliquary of souls don't waste healing multiplier") {}
     virtual float GetValue(Action* action);
 };
+
+class ReliquaryOfSoulsDontInterruptDeadenIfReflectableMultiplier : public Multiplier
+{
+public:
+    ReliquaryOfSoulsDontInterruptDeadenIfReflectableMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "reliquary of souls don't interrupt deaden if reflectable multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
 
 // Mother Shahraz
 

@@ -70,11 +70,23 @@ public:
 
         // Reliquary of Souls
 
+        creators["reliquary of souls misdirect boss to main tank"] =
+            &RaidBlackTempleActionContext::reliquary_of_souls_misdirect_boss_to_main_tank;
+
+        creators["reliquary of souls melee dps stay at max range from essence of suffering"] =
+            &RaidBlackTempleActionContext::reliquary_of_souls_melee_dps_stay_at_max_range_from_essence_of_suffering;
+
+        creators["reliquary of souls healers dps essence of suffering"] =
+            &RaidBlackTempleActionContext::reliquary_of_souls_healers_dps_essence_of_suffering;
+
         creators["reliquary of souls spellsteal rune shield"] =
             &RaidBlackTempleActionContext::reliquary_of_souls_spellsteal_rune_shield;
 
         creators["reliquary of souls spell reflect deaden"] =
             &RaidBlackTempleActionContext::reliquary_of_souls_spell_reflect_deaden;
+
+        creators["reliquary of souls manage dps timer"] =
+            &RaidBlackTempleActionContext::reliquary_of_souls_manage_dps_timer;
 
         // Mother Shahraz
 
@@ -145,11 +157,23 @@ private:
 
     // Reliquary of Souls
 
+    static Action* reliquary_of_souls_misdirect_boss_to_main_tank(
+        PlayerbotAI* botAI) { return new ReliquaryOfSoulsMisdirectBossToMainTankAction(botAI); }
+
+    static Action* reliquary_of_souls_melee_dps_stay_at_max_range_from_essence_of_suffering(
+        PlayerbotAI* botAI) { return new ReliquaryOfSoulsMeleeDpsStayAtMaxRangeFromEssenceOfSufferingAction(botAI); }
+
+    static Action* reliquary_of_souls_healers_dps_essence_of_suffering(
+        PlayerbotAI* botAI) { return new ReliquaryOfSoulsHealersDpsEssenceOfSufferingAction(botAI); }
+
     static Action* reliquary_of_souls_spellsteal_rune_shield(
         PlayerbotAI* botAI) { return new ReliquaryOfSoulsSpellstealRuneShieldAction(botAI); }
 
     static Action* reliquary_of_souls_spell_reflect_deaden(
         PlayerbotAI* botAI) { return new ReliquaryOfSoulsSpellReflectDeadenAction(botAI); }
+
+    static Action* reliquary_of_souls_manage_dps_timer(
+        PlayerbotAI* botAI) { return new ReliquaryOfSoulsManageDpsTimerAction(botAI); }
 
     // Mother Shahraz
 

@@ -119,6 +119,7 @@ namespace BlackTempleHelpers
     // Gurtogg Bloodboil
 
     // Reliquary of Souls
+    std::unordered_map<uint32, time_t> reliquaryDpsWaitTimer;
 
     // Mother Shahraz
 

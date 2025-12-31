@@ -808,14 +808,103 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event event
 
 // Reliquary of Souls
 
-bool ReliquaryOfSoulsSpellstealRuneShieldAction::Execute(Event event)
+bool ReliquaryOfSoulsMisdirectBossToMainTankAction::Execute(Event event)
 {
     Unit* desire = AI_VALUE2(Unit*, "find target", "essence of desire");
-    if (!desire)
+    Unit* anger = AI_VALUE2(Unit*, "find target", "essence of anger");
+    if (desire == nullptr && anger == nullptr)
         return false;
 
-    if (botAI->CanCastSpell("spellsteal", desire))
-        return botAI->CastSpell("spellsteal", desire);
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    Player* mainTank = nullptr;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && member->IsAlive() && botAI->IsMainTank(member))
+        {
+            mainTank = member;
+            break;
+        }
+    }
+
+    if (!mainTank)
+        return false;
+
+    Unit* target = desire ? desire : anger;
+
+    if (target->GetHealthPct() > 95.0f)
+    {
+        if (botAI->CanCastSpell("misdirection", mainTank))
+            return botAI->CastSpell("misdirection", mainTank);
+
+        if (bot->HasAura(SPELL_MISDIRECTION) && botAI->CanCastSpell("steady shot", target))
+            return botAI->CastSpell("steady shot", target);
+    }
+
+    return false;
+}
+
+bool ReliquaryOfSoulsHealersDpsEssenceOfSufferingAction::Execute(Event event)
+{
+    if (AI_VALUE2(Unit*, "find target", "essence of suffering"))
+    {
+        if (!botAI->HasStrategy("healer dps", BotState::BOT_STATE_COMBAT))
+        {
+            botAI->ChangeStrategy("+healer dps", BotState::BOT_STATE_COMBAT);
+            return true;
+        }
+    }
+    else if (AI_VALUE2(Unit*, "find target", "reliquary of the lost"))
+    {
+        if (botAI->HasStrategy("healer dps", BotState::BOT_STATE_COMBAT))
+        {
+            botAI->ChangeStrategy("-healer dps", BotState::BOT_STATE_COMBAT);
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool ReliquaryOfSoulsMeleeDpsStayAtMaxRangeFromEssenceOfSufferingAction::Execute(Event event)
+{
+    Unit* suffering = AI_VALUE2(Unit*, "find target", "essence of suffering");
+    if (!suffering)
+        return false;
+
+    float maxMeleeRange = bot->GetMeleeRange(suffering);
+    const float meleeRangeBuffer = 0.5f;
+    const float tolerance = 0.75f;
+
+    float desiredDist = std::max(2.0f, maxMeleeRange - meleeRangeBuffer);
+    float currentDist = bot->GetExactDist2d(suffering);
+
+    if (fabs(currentDist - desiredDist) > tolerance)
+    {
+        float behindAngle = Position::NormalizeOrientation(suffering->GetOrientation() + M_PI);
+        float targetX = suffering->GetPositionX() + desiredDist * std::cos(behindAngle);
+        float targetY = suffering->GetPositionY() + desiredDist * std::sin(behindAngle);
+
+        if (bot->GetExactDist2d(targetX, targetY) > tolerance)
+        {
+            return MoveTo(BLACK_TEMPLE_MAP_ID, targetX, targetY, suffering->GetPositionZ(), false,
+                          false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+        }
+    }
+
+    return false;
+}
+
+bool ReliquaryOfSoulsSpellstealRuneShieldAction::Execute(Event event)
+{
+    if (Unit* desire = AI_VALUE2(Unit*, "find target", "essence of desire"))
+    {
+        if (botAI->CanCastSpell("spellsteal", desire))
+            return botAI->CastSpell("spellsteal", desire);
+    }
 
     return false;
 }
@@ -824,6 +913,33 @@ bool ReliquaryOfSoulsSpellReflectDeadenAction::Execute(Event event)
 {
     if (botAI->CanCastSpell("spell reflection", bot))
         return botAI->CastSpell("spell reflection", bot);
+
+    return false;
+}
+
+bool ReliquaryOfSoulsManageDpsTimerAction::Execute(Event event)
+{
+    Unit* reliquary = AI_VALUE2(Unit*, "find target", "reliquary of the lost");
+    if (!reliquary)
+        return false;
+
+    const time_t now = std::time(nullptr);
+
+    if (Unit* suffering = AI_VALUE2(Unit*, "find target", "essence of suffering"))
+    {
+        if (suffering && suffering->GetHealthPct() > 99.8f)
+        reliquaryDpsWaitTimer.insert_or_assign(reliquary->GetMap()->GetInstanceId(), now);
+    }
+    else if (Unit* desire = AI_VALUE2(Unit*, "find target", "essence of desire"))
+    {
+        if (desire && desire->GetHealthPct() > 99.8f)
+        reliquaryDpsWaitTimer.insert_or_assign(reliquary->GetMap()->GetInstanceId(), now);
+    }
+    else if (Unit* anger = AI_VALUE2(Unit*, "find target", "essence of anger"))
+    {
+        if (anger && anger->GetHealthPct() > 99.8f)
+        reliquaryDpsWaitTimer.insert_or_assign(reliquary->GetMap()->GetInstanceId(), now);
+    }
 
     return false;
 }

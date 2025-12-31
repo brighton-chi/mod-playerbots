@@ -67,11 +67,23 @@ public:
 
         // Reliquary of Souls
 
+        creators["reliquary of souls aggro resets upon phase change"] =
+            &RaidBlackTempleTriggerContext::reliquary_of_souls_aggro_resets_upon_phase_change;
+
+        creators["reliquary of souls essence of suffering fixates on closest target"] =
+            &RaidBlackTempleTriggerContext::reliquary_of_souls_essence_of_suffering_fixates_on_closest_target;
+
+        creators["reliquary of souls essence of suffering disables healing"] =
+            &RaidBlackTempleTriggerContext::reliquary_of_souls_essence_of_suffering_disables_healing;
+
         creators["reliquary of souls essence of desire has rune shield"] =
             &RaidBlackTempleTriggerContext::reliquary_of_souls_essence_of_desire_has_rune_shield;
 
         creators["reliquary of souls essence of desire casting deaden"] =
             &RaidBlackTempleTriggerContext::reliquary_of_souls_essence_of_desire_casting_deaden;
+
+        creators["reliquary of souls need to manage dps timer"] =
+            &RaidBlackTempleTriggerContext::reliquary_of_souls_need_to_manage_dps_timer;
 
         // Mother Shahraz
 
@@ -139,11 +151,23 @@ private:
 
     // Reliquary of Souls
 
+    static Trigger* reliquary_of_souls_aggro_resets_upon_phase_change(
+        PlayerbotAI* botAI) { return new ReliquaryOfSoulsAggroResetsUponPhaseChangeTrigger(botAI); }
+
+    static Trigger* reliquary_of_souls_essence_of_suffering_fixates_on_closest_target(
+        PlayerbotAI* botAI) { return new ReliquaryOfSoulsEssenceOfSufferingFixatesOnClosestTargetTrigger(botAI); }
+
+    static Trigger* reliquary_of_souls_essence_of_suffering_disables_healing(
+        PlayerbotAI* botAI) { return new ReliquaryOfSoulsEssenceOfSufferingDisablesHealingTrigger(botAI); }
+
     static Trigger* reliquary_of_souls_essence_of_desire_has_rune_shield(
         PlayerbotAI* botAI) { return new ReliquaryOfSoulsEssenceOfDesireHasRuneShieldTrigger(botAI); }
 
     static Trigger* reliquary_of_souls_essence_of_desire_casting_deaden(
         PlayerbotAI* botAI) { return new ReliquaryOfSoulsEssenceOfDesireCastingDeadenTrigger(botAI); }
+
+    static Trigger* reliquary_of_souls_need_to_manage_dps_timer(
+        PlayerbotAI* botAI) { return new ReliquaryOfSoulsNeedToManageDpsTimerTrigger(botAI); }
 
     // Mother Shahraz
 

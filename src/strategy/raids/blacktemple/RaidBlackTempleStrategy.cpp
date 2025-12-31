@@ -61,12 +61,24 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     // Gurtogg Bloodboil
 
-    // Reliquary of Souls
+    // Reliquary of Souls // NOTE: UNTESTED
+    triggers.push_back(new TriggerNode("reliquary of souls aggro resets upon phase change",
+        NextAction::array(0, new NextAction("reliquary of souls misdirect boss to main tank", ACTION_RAID + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("reliquary of souls essence of suffering fixates on closest target",
+        NextAction::array(0, new NextAction("reliquary of souls melee dps stay at max range from essence of suffering", ACTION_RAID + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("reliquary of souls essence of suffering disables healing",
+        NextAction::array(0, new NextAction("reliquary of souls healers dps essence of suffering", ACTION_RAID + 1), nullptr)
+    ));
     triggers.push_back(new TriggerNode("reliquary of souls essence of desire has rune shield",
         NextAction::array(0, new NextAction("reliquary of souls spellsteal rune shield", ACTION_EMERGENCY + 6), nullptr)
     ));
     triggers.push_back(new TriggerNode("reliquary of souls essence of desire casting deaden",
         NextAction::array(0, new NextAction("reliquary of souls spell reflect deaden", ACTION_EMERGENCY + 10), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("reliquary of souls need to manage dps timer",
+        NextAction::array(0, new NextAction("reliquary of souls manage dps timer", ACTION_EMERGENCY + 10), nullptr)
     ));
 
     // Mother Shahraz
@@ -96,7 +108,9 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     // Gurtogg Bloodboil
 
     // Reliquary of Souls
+    multipliers.push_back(new ReliquaryOfSoulsWaitForDpsMultiplier(botAI));
     multipliers.push_back(new ReliquaryOfSoulsDontWasteHealingMultiplier(botAI));
+    multipliers.push_back(new ReliquaryOfSoulsDontInterruptDeadenIfReflectableMultiplier(botAI));
 
     // Mother Shahraz
 

@@ -213,6 +213,32 @@ bool TeronGorefiendBotTransformedIntoVengefulSpiritTrigger::IsActive()
 
 // Reliquary of Souls
 
+bool ReliquaryOfSoulsAggroResetsUponPhaseChangeTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_HUNTER)
+        return false;
+
+    Unit* reliquary = AI_VALUE2(Unit*, "find target", "reliquary of the lost");
+    return reliquary != nullptr;
+}
+
+bool ReliquaryOfSoulsEssenceOfSufferingFixatesOnClosestTargetTrigger::IsActive()
+{
+    if (!botAI->IsDps(bot) && !botAI->IsMelee(bot))
+        return false;
+
+    Unit* suffering = AI_VALUE2(Unit*, "find target", "essence of suffering");
+    return suffering && suffering->GetVictim() != bot;
+}
+
+bool ReliquaryOfSoulsEssenceOfSufferingDisablesHealingTrigger::IsActive()
+{
+    if (!botAI->IsHeal(bot) || bot->getClass() == CLASS_PRIEST)
+        return false;
+
+    return AI_VALUE2(Unit*, "find target", "reliquary of the lost");
+}
+
 bool ReliquaryOfSoulsEssenceOfDesireHasRuneShieldTrigger::IsActive()
 {
     if (bot->getClass() != CLASS_MAGE)
@@ -224,6 +250,9 @@ bool ReliquaryOfSoulsEssenceOfDesireHasRuneShieldTrigger::IsActive()
 
 bool ReliquaryOfSoulsEssenceOfDesireCastingDeadenTrigger::IsActive()
 {
+    if (!botAI->IsTank(bot) || bot->getClass() != CLASS_WARRIOR)
+        return false;
+
     Unit* desire = AI_VALUE2(Unit*, "find target", "essence of desire");
     if (!desire || !desire->HasUnitState(UNIT_STATE_CASTING))
         return false;
@@ -235,6 +264,15 @@ bool ReliquaryOfSoulsEssenceOfDesireCastingDeadenTrigger::IsActive()
     Unit* target = spell->m_targets.GetUnitTarget();
     return target && target->GetGUID() == bot->GetGUID();
 }
+
+bool ReliquaryOfSoulsNeedToManageDpsTimerTrigger::IsActive()
+{
+    if (!IsInstanceTimerManager(botAI, bot))
+        return false;
+
+    return AI_VALUE2(Unit*, "find target", "reliquary of the lost");
+}
+
 
 // Mother Shahraz
 

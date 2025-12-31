@@ -135,6 +135,30 @@ public:
 
 // Reliquary of Souls
 
+class ReliquaryOfSoulsAggroResetsUponPhaseChangeTrigger : public Trigger
+{
+public:
+    ReliquaryOfSoulsAggroResetsUponPhaseChangeTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "reliquary of souls aggro resets upon phase change") {}
+    bool IsActive() override;
+};
+
+class ReliquaryOfSoulsEssenceOfSufferingFixatesOnClosestTargetTrigger : public Trigger
+{
+public:
+    ReliquaryOfSoulsEssenceOfSufferingFixatesOnClosestTargetTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "reliquary of souls essence of suffering fixates on closest target") {}
+    bool IsActive() override;
+};
+
+class ReliquaryOfSoulsEssenceOfSufferingDisablesHealingTrigger : public Trigger
+{
+public:
+    ReliquaryOfSoulsEssenceOfSufferingDisablesHealingTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "reliquary of souls essence of suffering disables healing") {}
+    bool IsActive() override;
+};
+
 class ReliquaryOfSoulsEssenceOfDesireHasRuneShieldTrigger : public Trigger
 {
 public:
@@ -148,6 +172,14 @@ class ReliquaryOfSoulsEssenceOfDesireCastingDeadenTrigger : public Trigger
 public:
     ReliquaryOfSoulsEssenceOfDesireCastingDeadenTrigger(
         PlayerbotAI* botAI) : Trigger(botAI, "reliquary of souls essence of desire casting deaden") {}
+    bool IsActive() override;
+};
+
+class ReliquaryOfSoulsNeedToManageDpsTimerTrigger : public Trigger
+{
+public:
+    ReliquaryOfSoulsNeedToManageDpsTimerTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "reliquary of souls need to manage dps timer") {}
     bool IsActive() override;
 };
 
