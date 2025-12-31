@@ -150,6 +150,54 @@ public:
 
 // Gurtogg Bloodboil
 
+class GurtoggBloodboilMisdirectBossToMainTankAction : public AttackAction
+{
+public:
+    GurtoggBloodboilMisdirectBossToMainTankAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "gurtogg bloodboil misdirect boss to main tank") {}
+    bool Execute(Event event) override;
+};
+
+class GurtoggBloodboilTanksPositionBossAction : public AttackAction
+{
+public:
+    GurtoggBloodboilTanksPositionBossAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "gurtogg bloodboil tanks position boss") {}
+    bool Execute(Event event) override;
+};
+
+class GurtoggBloodboilDisperseRangedAction : public MovementAction
+{
+public:
+    GurtoggBloodboilDisperseRangedAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "gurtogg bloodboil disperse ranged") {}
+    bool Execute(Event event) override;
+};
+
+class GurtoggBloodboilRangedMoveToAbsorbBloodboilPositionAction : public MovementAction
+{
+public:
+    GurtoggBloodboilRangedMoveToAbsorbBloodboilPositionAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "gurtogg bloodboil ranged move to absorb bloodboil position") {}
+    bool Execute(Event event) override;
+};
+
+class GurtoggBloodboilFelRagedBotMoveToTankPositionAction : public MovementAction
+{
+public:
+    GurtoggBloodboilFelRagedBotMoveToTankPositionAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "gurtogg bloodboil fel raged bot move to tank position") {}
+    bool Execute(Event event) override;
+};
+
+class GurtoggBloodboilManagePhaseTimerAction : public Action
+{
+public:
+    GurtoggBloodboilManagePhaseTimerAction(
+        PlayerbotAI* botAI) : Action(botAI, "gurtogg bloodboil manage phase timer") {}
+    bool Execute(Event event) override;
+};
+
 // Reliquary of Souls
 
 class ReliquaryOfSoulsMisdirectBossToMainTankAction : public AttackAction

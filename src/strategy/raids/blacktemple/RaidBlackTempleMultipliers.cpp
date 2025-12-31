@@ -116,6 +116,25 @@ float TeronGorefiendDisableAttackingConstructsMultiplier::GetValue(Action* actio
 
 // Gurtogg Bloodboil
 
+float GurtoggBloodboilDisableMovementMultiplier::GetValue(Action* action)
+{
+    Unit* bloodboil = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
+    if (bloodboil)
+    {
+        if (dynamic_cast<CombatFormationMoveAction*>(action) &&
+            !dynamic_cast<SetBehindTargetAction*>(action))
+            return 0.0f;
+
+        if (dynamic_cast<FollowAction*>(action) ||
+            dynamic_cast<FleeAction*>(action) ||
+            dynamic_cast<CastDisengageAction*>(action) ||
+            dynamic_cast<CastBlinkBackAction*>(action))
+            return 0.0f;
+    }
+
+    return 1.0f;
+}
+
 // Reliquary of Souls
 
 float ReliquaryOfSoulsWaitForDpsMultiplier::GetValue(Action* action)
@@ -130,8 +149,10 @@ float ReliquaryOfSoulsWaitForDpsMultiplier::GetValue(Action* action)
     if (dynamic_cast<ReliquaryOfSoulsMisdirectBossToMainTankAction*>(action))
         return 1.0f;
 
+    const time_t now = std::time(nullptr);
+
     auto it = reliquaryDpsWaitTimer.find(reliquary->GetMap()->GetInstanceId());
-    if (it == reliquaryDpsWaitTimer.end() || (std::time(nullptr) - it->second) < 5)
+    if (it == reliquaryDpsWaitTimer.end() || (now - it->second) < 5)
     {
         Unit* suffering = AI_VALUE2(Unit*, "find target", "essence of suffering");
         Unit* desire = AI_VALUE2(Unit*, "find target", "essence of desire");
@@ -184,9 +205,9 @@ float ReliquaryOfSoulsDontInterruptDeadenIfReflectableMultiplier::GetValue(Actio
         Spell* spell = desire->GetCurrentSpell(CURRENT_GENERIC_SPELL);
         if (spell && spell->m_spellInfo->Id == SPELL_DEADEN)
         {
-
             Unit* target = spell->m_targets.GetUnitTarget();
             Player* playerTarget = target ? target->ToPlayer() : nullptr;
+
             if (playerTarget && botAI->IsTank(playerTarget) &&
                 playerTarget->getClass() == CLASS_WARRIOR)
             {

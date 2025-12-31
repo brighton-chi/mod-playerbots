@@ -33,7 +33,7 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("supremus volcano is nearby",
         NextAction::array(0, new NextAction("supremus move away from volcanos", ACTION_EMERGENCY + 6), nullptr)
     ));
-    triggers.push_back(new TriggerNode("supremus changes phase every 60 seconds",
+    triggers.push_back(new TriggerNode("supremus need to manage phase timer",
         NextAction::array(0, new NextAction("supremus manage phase timer", ACTION_EMERGENCY + 10), nullptr)
     ));
 
@@ -60,6 +60,24 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     )); */
 
     // Gurtogg Bloodboil
+    triggers.push_back(new TriggerNode("gurtogg bloodboil pulling boss",
+        NextAction::array(0, new NextAction("gurtogg bloodboil misdirect boss to main tank", ACTION_RAID + 2), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("gurtogg bloodboil boss engaged by tanks",
+        NextAction::array(0, new NextAction("gurtogg bloodboil tanks position boss", ACTION_RAID + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("gurtogg bloodboil boss casts aoe spells",
+        NextAction::array(0, new NextAction("gurtogg bloodboil disperse ranged", ACTION_RAID + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("gurtogg bloodboil boss casts bloodboil on five farthest players",
+        NextAction::array(0, new NextAction("gurtogg bloodboil ranged move to absorb bloodboil position", ACTION_RAID + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("gurtogg bloodboil bot has fel rage",
+        NextAction::array(0, new NextAction("gurtogg bloodboil fel raged bot move to tank position", ACTION_RAID + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("gurtogg bloodboil need to manage phase timer",
+        NextAction::array(0, new NextAction("gurtogg bloodboil manage phase timer", ACTION_EMERGENCY + 10), nullptr)
+    ));
 
     // Reliquary of Souls // NOTE: UNTESTED
     triggers.push_back(new TriggerNode("reliquary of souls aggro resets upon phase change",
@@ -106,6 +124,7 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new TeronGorefiendDisableAttackingConstructsMultiplier(botAI));
 
     // Gurtogg Bloodboil
+    multipliers.push_back(new GurtoggBloodboilDisableMovementMultiplier(botAI));
 
     // Reliquary of Souls
     multipliers.push_back(new ReliquaryOfSoulsWaitForDpsMultiplier(botAI));

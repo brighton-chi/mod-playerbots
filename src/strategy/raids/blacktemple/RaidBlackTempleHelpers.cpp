@@ -117,6 +117,57 @@ namespace BlackTempleHelpers
     std::unordered_map<ObjectGuid, Position> gorefiendRangedPositions;
 
     // Gurtogg Bloodboil
+    const Position GURTOGG_TANK_POSITION = { 735.987f, 272.451f, 63.554f, 0.048f };
+    const Position GURTOGG_ABSORB_BLOODBOIL_POSITION = { 777.279f, 274.639f, 63.732f, 3.166f };
+    std::unordered_map<uint32, time_t> gurtoggPhaseTimer;
+
+    std::vector<std::vector<Player*>> GetGurtoggRangedRotationGroups(Player* bot)
+    {
+        Group* group = bot->GetGroup();
+        std::vector<Player*> rangedMembers;
+        std::vector<std::vector<Player*>> groups(3);
+
+        if (!group)
+            return groups;
+
+        // Collect all alive ranged members
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (member && member->IsAlive())
+            {
+                PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
+                if (memberAI && memberAI->IsRanged(member))
+                    rangedMembers.push_back(member);
+            }
+        }
+
+        // Split into 3 groups of 5
+        for (size_t i = 0; i < rangedMembers.size(); ++i)
+        {
+            groups[i / 5].push_back(rangedMembers[i]);
+            if (groups[2].size() == 5)
+                break; // Only fill up to 15
+        }
+
+        return groups;
+    }
+
+    int GetGurtoggActiveRotationGroup(Unit* gurtogg)
+    {
+        if (!gurtogg)
+            return -1;
+
+        auto it = gurtoggPhaseTimer.find(gurtogg->GetMap()->GetInstanceId());
+        if (it == gurtoggPhaseTimer.end())
+            return -1;
+
+        time_t now = std::time(nullptr);
+        time_t elapsed = now - it->second;
+        int groupIndex = (elapsed % 30) / 10; // 0 for 0-9s, 1 for 10-19s, 2 for 20-29s
+
+        return groupIndex;
+    }
 
     // Reliquary of Souls
     std::unordered_map<uint32, time_t> reliquaryDpsWaitTimer;

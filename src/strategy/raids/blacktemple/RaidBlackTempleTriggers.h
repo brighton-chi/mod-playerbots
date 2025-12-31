@@ -79,11 +79,11 @@ public:
     bool IsActive() override;
 };
 
-class SupremusChangesPhaseEvery60SecondsTrigger : public Trigger
+class SupremusNeedToManagePhaseTimerTrigger : public Trigger
 {
 public:
-    SupremusChangesPhaseEvery60SecondsTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "supremus changes phase every 60 seconds") {}
+    SupremusNeedToManagePhaseTimerTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "supremus need to manage phase timer") {}
     bool IsActive() override;
 };
 
@@ -132,6 +132,54 @@ public:
 };
 
 // Gurtogg Bloodboil
+
+class GurtoggBloodboilPullingBossTrigger : public Trigger
+{
+public:
+    GurtoggBloodboilPullingBossTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "gurtogg bloodboil pulling boss") {}
+    bool IsActive() override;
+};
+
+class GurtoggBloodboilBossEngagedByTanksTrigger : public Trigger
+{
+public:
+    GurtoggBloodboilBossEngagedByTanksTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "gurtogg bloodboil boss engaged by tanks") {}
+    bool IsActive() override;
+};
+
+class GurtoggBloodboilBossCastsAoeSpellsTrigger : public Trigger
+{
+public:
+    GurtoggBloodboilBossCastsAoeSpellsTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "gurtogg bloodboil boss casts aoe spells") {}
+    bool IsActive() override;
+};
+
+class GurtoggBloodboilBossCastsBloodboilOnFiveFarthestPlayersTrigger : public Trigger
+{
+public:
+    GurtoggBloodboilBossCastsBloodboilOnFiveFarthestPlayersTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "gurtogg bloodboil boss casts bloodboil on five farthest players") {}
+    bool IsActive() override;
+};
+
+class GurtoggBloodboilBotHasFelRageTrigger : public Trigger
+{
+public:
+    GurtoggBloodboilBotHasFelRageTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "gurtogg bloodboil bot has fel rage") {}
+    bool IsActive() override;
+};
+
+class GurtoggBloodboilNeedToManagePhaseTimerTrigger : public Trigger
+{
+public:
+    GurtoggBloodboilNeedToManagePhaseTimerTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "gurtogg bloodboil need to manage phase timer") {}
+    bool IsActive() override;
+};
 
 // Reliquary of Souls
 

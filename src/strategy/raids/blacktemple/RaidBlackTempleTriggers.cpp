@@ -146,7 +146,7 @@ bool SupremusVolcanoIsNearbyTrigger::IsActive()
     return HasSupremusVolcanoNearby(botAI, bot);
 }
 
-bool SupremusChangesPhaseEvery60SecondsTrigger::IsActive()
+bool SupremusNeedToManagePhaseTimerTrigger::IsActive()
 {
     if (!IsInstanceTimerManager(botAI, bot))
         return false;
@@ -210,6 +210,100 @@ bool TeronGorefiendBotTransformedIntoVengefulSpiritTrigger::IsActive()
 }
 
 // Gurtogg Bloodboil
+
+bool GurtoggBloodboilPullingBossTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_HUNTER)
+        return false;
+
+    Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
+    if (!gurtogg)
+        return false;
+
+    auto it = gurtoggPhaseTimer.find(gurtogg->GetMap()->GetInstanceId());
+    if (it == gurtoggPhaseTimer.end())
+        return false;
+
+    time_t elapsed = std::time(nullptr) - it->second;
+
+    // Trigger if in first 10s, or in 120-130s, or in the first 10s of any 90s cycle after 120s
+    if ((elapsed < 10) ||
+        (elapsed >= 120 && elapsed < 130) ||
+        (elapsed > 130 && ((elapsed - 120) % 90) < 10))
+    {
+        return true;
+    }
+
+    return false;
+}
+
+bool GurtoggBloodboilBossEngagedByTanksTrigger::IsActive()
+{
+    if (!botAI->IsTank(bot))
+        return false;
+
+    Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
+    return gurtogg && !gurtogg->HasAura(SPELL_BOSS_FEL_RAGE);
+}
+
+bool GurtoggBloodboilBossCastsAoeSpellsTrigger::IsActive()
+{
+    if (!botAI->IsRanged(bot) || bot->HasAura(SPELL_PLAYER_FEL_RAGE))
+        return false;
+
+    Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
+    if (!gurtogg)
+        return false;
+
+    // Get rotation groups and active group index
+    auto groups = GetGurtoggRangedRotationGroups(bot);
+    int8 activeGroup = GetGurtoggActiveRotationGroup(gurtogg);
+
+    // Exclude bots in the active rotation group
+    if (activeGroup >= 0 && activeGroup < groups.size())
+    {
+        const auto& group = groups[activeGroup];
+        if (std::find(group.begin(), group.end(), bot) != group.end())
+            return false;
+    }
+
+    return true;
+}
+
+bool GurtoggBloodboilBossCastsBloodboilOnFiveFarthestPlayersTrigger::IsActive()
+{
+    if (!botAI->IsRanged(bot))
+        return false;
+
+    Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
+    if (!gurtogg)
+        return false;
+
+    auto groups = GetGurtoggRangedRotationGroups(bot);
+    int activeGroup = GetGurtoggActiveRotationGroup(gurtogg);
+
+    if (activeGroup >= 0 && activeGroup < groups.size())
+    {
+        const auto& group = groups[activeGroup];
+        if (std::find(group.begin(), group.end(), bot) != group.end())
+            return true;
+    }
+
+    return false;
+}
+
+bool GurtoggBloodboilBotHasFelRageTrigger::IsActive()
+{
+    return bot->HasAura(SPELL_PLAYER_FEL_RAGE);
+}
+
+bool GurtoggBloodboilNeedToManagePhaseTimerTrigger::IsActive()
+{
+    if (!IsInstanceTimerManager(botAI, bot))
+        return false;
+
+    return AI_VALUE2(Unit*, "find target", "gurtogg bloodboil") != nullptr;
+}
 
 // Reliquary of Souls
 

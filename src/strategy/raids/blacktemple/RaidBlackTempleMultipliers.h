@@ -52,6 +52,14 @@ public:
 
 // Gurtogg Bloodboil
 
+class GurtoggBloodboilDisableMovementMultiplier : public Multiplier
+{
+public:
+    GurtoggBloodboilDisableMovementMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "gurtogg bloodboil disable movement multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
 // Reliquary of Souls
 
 class ReliquaryOfSoulsWaitForDpsMultiplier : public Multiplier
@@ -77,7 +85,6 @@ public:
         PlayerbotAI* botAI) : Multiplier(botAI, "reliquary of souls don't interrupt deaden if reflectable multiplier") {}
     virtual float GetValue(Action* action);
 };
-
 
 // Mother Shahraz
 

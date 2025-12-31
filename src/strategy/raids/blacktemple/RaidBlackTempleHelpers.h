@@ -31,6 +31,9 @@ namespace BlackTempleHelpers
         SPELL_SPIRIT_STRIKE = 40325,
 
         // Gurtogg Bloodboil
+        SPELL_BOSS_FEL_RAGE = 40594,
+        SPELL_PLAYER_FEL_RAGE = 40604,
+        SPELL_BLOODBOIL = 42005,
 
         // Reliquary of Souls
         SPELL_DEADEN = 41410,
@@ -113,6 +116,11 @@ namespace BlackTempleHelpers
     extern std::unordered_map<ObjectGuid, Position> gorefiendRangedPositions;
 
     // Gurtogg Bloodboil
+    extern const Position GURTOGG_TANK_POSITION;
+    extern const Position GURTOGG_ABSORB_BLOODBOIL_POSITION;
+    extern std::unordered_map<uint32, time_t> gurtoggPhaseTimer;
+    std::vector<std::vector<Player*>> GetGurtoggRangedRotationGroups(Player* bot);
+    int GetGurtoggActiveRotationGroup(Unit* gurtogg);
 
     // Reliquary of Souls
     extern std::unordered_map<uint32, time_t> reliquaryDpsWaitTimer;

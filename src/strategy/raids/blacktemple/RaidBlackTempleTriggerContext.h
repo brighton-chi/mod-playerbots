@@ -40,8 +40,8 @@ public:
         creators["supremus volcano is nearby"] =
             &RaidBlackTempleTriggerContext::supremus_volcano_is_nearby;
 
-        creators["supremus changes phase every 60 seconds"] =
-            &RaidBlackTempleTriggerContext::supremus_changes_phase_every_60_seconds;
+        creators["supremus need to manage phase timer"] =
+            &RaidBlackTempleTriggerContext::supremus_need_to_manage_phase_timer;
 
         // Shade of Akama
         // N/A
@@ -64,6 +64,24 @@ public:
             &RaidBlackTempleTriggerContext::teron_gorefiend_bot_transformed_into_vengeful_spirit;
 
         // Gurtogg Bloodboil
+
+        creators["gurtogg bloodboil pulling boss"] =
+            &RaidBlackTempleTriggerContext::gurtogg_bloodboil_pulling_boss;
+
+        creators["gurtogg bloodboil boss engaged by tanks"] =
+            &RaidBlackTempleTriggerContext::gurtogg_bloodboil_boss_engaged_by_tanks;
+
+        creators["gurtogg bloodboil boss casts aoe spells"] =
+            &RaidBlackTempleTriggerContext::gurtogg_bloodboil_boss_casts_aoe_spells;
+
+        creators["gurtogg bloodboil boss casts bloodboil on five farthest players"] =
+            &RaidBlackTempleTriggerContext::gurtogg_bloodboil_boss_casts_bloodboil_on_five_farthest_players;
+
+        creators["gurtogg bloodboil bot has fel rage"] =
+            &RaidBlackTempleTriggerContext::gurtogg_bloodboil_bot_has_fel_rage;
+
+        creators["gurtogg bloodboil need to manage phase timer"] =
+            &RaidBlackTempleTriggerContext::gurtogg_bloodboil_need_to_manage_phase_timer;
 
         // Reliquary of Souls
 
@@ -124,8 +142,8 @@ private:
     static Trigger* supremus_volcano_is_nearby(
         PlayerbotAI* botAI) { return new SupremusVolcanoIsNearbyTrigger(botAI); }
 
-    static Trigger* supremus_changes_phase_every_60_seconds(
-        PlayerbotAI* botAI) { return new SupremusChangesPhaseEvery60SecondsTrigger(botAI); }
+    static Trigger* supremus_need_to_manage_phase_timer(
+        PlayerbotAI* botAI) { return new SupremusNeedToManagePhaseTimerTrigger(botAI); }
 
     // Shade of Akama
     // N/A
@@ -148,6 +166,24 @@ private:
         PlayerbotAI* botAI) { return new TeronGorefiendBotTransformedIntoVengefulSpiritTrigger(botAI); }
 
     // Gurtogg Bloodboil
+
+    static Trigger* gurtogg_bloodboil_pulling_boss(
+        PlayerbotAI* botAI) { return new GurtoggBloodboilPullingBossTrigger(botAI); }
+
+    static Trigger* gurtogg_bloodboil_boss_engaged_by_tanks(
+        PlayerbotAI* botAI) { return new GurtoggBloodboilBossEngagedByTanksTrigger(botAI); }
+
+    static Trigger* gurtogg_bloodboil_boss_casts_aoe_spells(
+        PlayerbotAI* botAI) { return new GurtoggBloodboilBossCastsAoeSpellsTrigger(botAI); }
+
+    static Trigger* gurtogg_bloodboil_boss_casts_bloodboil_on_five_farthest_players(
+        PlayerbotAI* botAI) { return new GurtoggBloodboilBossCastsBloodboilOnFiveFarthestPlayersTrigger(botAI); }
+
+    static Trigger* gurtogg_bloodboil_bot_has_fel_rage(
+        PlayerbotAI* botAI) { return new GurtoggBloodboilBotHasFelRageTrigger(botAI); }
+
+    static Trigger* gurtogg_bloodboil_need_to_manage_phase_timer(
+        PlayerbotAI* botAI) { return new GurtoggBloodboilNeedToManagePhaseTimerTrigger(botAI); }
 
     // Reliquary of Souls
 

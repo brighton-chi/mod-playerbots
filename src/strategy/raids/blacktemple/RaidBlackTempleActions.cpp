@@ -51,14 +51,14 @@ bool HighWarlordNajentusMainTankPositionBossAction::Execute(Event event)
     if (najentus->GetVictim() == bot && bot->IsWithinMeleeRange(najentus))
     {
         const Position& position = NAJENTUS_TANK_POSITION;
-        float dist = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
-        if (dist > 2.0f)
+        float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+        if (distToPosition > 2.0f)
         {
             float dX = position.GetPositionX() - bot->GetPositionX();
             float dY = position.GetPositionY() - bot->GetPositionY();
-            float moveDist = std::min(5.0f, dist);
-            float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
-            float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
+            float moveDist = std::min(5.0f, distToPosition);
+            float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
             return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
                           false, false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
@@ -460,6 +460,7 @@ bool TeronGorefiendMisdirectBossToMainTankAction::Execute(Event event)
 
     if (bot->HasAura(SPELL_MISDIRECTION) && botAI->CanCastSpell("steady shot", gorefiend))
         return botAI->CastSpell("steady shot", gorefiend);
+
     return false;
 }
 
@@ -806,6 +807,168 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event event
 
 // Gurtogg Bloodboil
 
+bool GurtoggBloodboilMisdirectBossToMainTankAction::Execute(Event event)
+{
+    Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
+    if (!gurtogg)
+        return false;
+
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    Player* mainTank = nullptr;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && member->IsAlive() && botAI->IsMainTank(member))
+        {
+            mainTank = member;
+            break;
+        }
+    }
+
+    if (!mainTank)
+        return false;
+
+    if (botAI->CanCastSpell("misdirection", mainTank))
+        return botAI->CastSpell("misdirection", mainTank);
+
+    if (bot->HasAura(SPELL_MISDIRECTION) && botAI->CanCastSpell("steady shot", gurtogg))
+        return botAI->CastSpell("steady shot", gurtogg);
+
+    return false;
+}
+
+bool GurtoggBloodboilTanksPositionBossAction::Execute(Event event)
+{
+    Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
+    if (!gurtogg)
+        return false;
+
+    if (bot->GetVictim() != gurtogg)
+        return Attack(gurtogg);
+
+    Unit* victim = gurtogg->GetVictim();
+    if (victim && botAI->IsTank(victim))
+    {
+        const Position& position = GURTOGG_TANK_POSITION;
+        float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+        if (distToPosition > 2.0f)
+        {
+            float dX = position.GetPositionX() - bot->GetPositionX();
+            float dY = position.GetPositionY() - bot->GetPositionY();
+            float moveDist = std::min(5.0f, distToPosition);
+            float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
+
+            return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
+                          false, false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
+        }
+    }
+
+    return false;
+}
+
+bool GurtoggBloodboilDisperseRangedAction::Execute(Event event)
+{
+    Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
+    if (!gurtogg)
+        return false;
+
+    const uint32 minInterval = 1000;
+    const float minRange = 10.0f;
+    const float maxRange = 20.0f;
+    const float rangeBuffer = 0.5f;
+
+    float distToGurtogg = bot->GetExactDist2d(gurtogg);
+
+    if (distToGurtogg < (minRange - rangeBuffer))
+    {
+        return MoveTo(gurtogg, minRange, MovementPriority::MOVEMENT_FORCED);
+    }
+    else if (distToGurtogg > (maxRange + rangeBuffer))
+    {
+        return MoveTo(gurtogg, maxRange, MovementPriority::MOVEMENT_FORCED);
+    }
+    else if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, 5.0f))
+    {
+        return FleePosition(Position(nearestPlayer->GetPositionX(), nearestPlayer->GetPositionY(),
+                                     nearestPlayer->GetPositionZ()), 5.0f, minInterval);
+    }
+
+    return false;
+}
+
+bool GurtoggBloodboilRangedMoveToAbsorbBloodboilPositionAction::Execute(Event event)
+{
+    const Position& position = GURTOGG_ABSORB_BLOODBOIL_POSITION;
+    /* float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+    if (distToPosition > 2.0f)
+    {
+        float dX = position.GetPositionX() - bot->GetPositionX();
+        float dY = position.GetPositionY() - bot->GetPositionY();
+        float moveDist = std::min(10.0f, distToPosition);
+        float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+        float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
+
+        return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
+                      false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
+    } */
+    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
+    {
+        return MoveInside(BLACK_TEMPLE_MAP_ID, position.GetPositionX(),
+               position.GetPositionY(), position.GetPositionZ(),
+               3.0f, MovementPriority::MOVEMENT_FORCED);
+    }
+
+    return false;
+}
+
+bool GurtoggBloodboilFelRagedBotMoveToTankPositionAction::Execute(Event event)
+{
+    Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
+    if (!gurtogg)
+        return false;
+
+    const Position& position = GURTOGG_TANK_POSITION;
+    float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+    if (distToPosition > 2.0f)
+    {
+        float dX = position.GetPositionX() - bot->GetPositionX();
+        float dY = position.GetPositionY() - bot->GetPositionY();
+        float moveDist = std::min(5.0f, distToPosition);
+        float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+        float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
+
+        return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
+                      false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+    }
+    else
+        bot->SetFacingTo(position.GetOrientation());
+
+    return false;
+}
+
+bool GurtoggBloodboilManagePhaseTimerAction::Execute(Event event)
+{
+    Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
+    if (!gurtogg)
+        return false;
+
+    const time_t now = std::time(nullptr);
+    const uint32 instanceId = gurtogg->GetMap()->GetInstanceId();
+
+    if (gurtogg->GetHealthPct() > 99.8f)
+        gurtoggPhaseTimer.insert_or_assign(instanceId, now);
+    else if (gurtogg->HasAura(SPELL_BOSS_FEL_RAGE))
+        gurtoggPhaseTimer.erase(instanceId);
+    else if (!gurtogg->HasAura(SPELL_BOSS_FEL_RAGE))
+        gurtoggPhaseTimer.try_emplace(instanceId, now);
+
+    return false;
+}
+
 // Reliquary of Souls
 
 bool ReliquaryOfSoulsMisdirectBossToMainTankAction::Execute(Event event)
@@ -928,17 +1091,17 @@ bool ReliquaryOfSoulsManageDpsTimerAction::Execute(Event event)
     if (Unit* suffering = AI_VALUE2(Unit*, "find target", "essence of suffering"))
     {
         if (suffering && suffering->GetHealthPct() > 99.8f)
-        reliquaryDpsWaitTimer.insert_or_assign(reliquary->GetMap()->GetInstanceId(), now);
+            reliquaryDpsWaitTimer.insert_or_assign(reliquary->GetMap()->GetInstanceId(), now);
     }
     else if (Unit* desire = AI_VALUE2(Unit*, "find target", "essence of desire"))
     {
         if (desire && desire->GetHealthPct() > 99.8f)
-        reliquaryDpsWaitTimer.insert_or_assign(reliquary->GetMap()->GetInstanceId(), now);
+            reliquaryDpsWaitTimer.insert_or_assign(reliquary->GetMap()->GetInstanceId(), now);
     }
     else if (Unit* anger = AI_VALUE2(Unit*, "find target", "essence of anger"))
     {
         if (anger && anger->GetHealthPct() > 99.8f)
-        reliquaryDpsWaitTimer.insert_or_assign(reliquary->GetMap()->GetInstanceId(), now);
+            reliquaryDpsWaitTimer.insert_or_assign(reliquary->GetMap()->GetInstanceId(), now);
     }
 
     return false;

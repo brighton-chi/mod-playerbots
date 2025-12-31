@@ -68,6 +68,24 @@ public:
 
         // Gurtogg Bloodboil
 
+        creators["gurtogg bloodboil misdirect boss to main tank"] =
+            &RaidBlackTempleActionContext::gurtogg_bloodboil_misdirect_boss_to_main_tank;
+
+        creators["gurtogg bloodboil tanks position boss"] =
+            &RaidBlackTempleActionContext::gurtogg_bloodboil_tanks_position_boss;
+
+        creators["gurtogg bloodboil disperse ranged"] =
+            &RaidBlackTempleActionContext::gurtogg_bloodboil_disperse_ranged;
+
+        creators["gurtogg bloodboil ranged move to absorb bloodboil position"] =
+            &RaidBlackTempleActionContext::gurtogg_bloodboil_ranged_move_to_absorb_bloodboil_position;
+
+        creators["gurtogg bloodboil fel raged bot move to tank position"] =
+            &RaidBlackTempleActionContext::gurtogg_bloodboil_fel_raged_bot_move_to_tank_position;
+
+        creators["gurtogg bloodboil manage phase timer"] =
+            &RaidBlackTempleActionContext::gurtogg_bloodboil_manage_phase_timer;
+
         // Reliquary of Souls
 
         creators["reliquary of souls misdirect boss to main tank"] =
@@ -154,6 +172,24 @@ private:
         PlayerbotAI* botAI) { return new TeronGorefiendControlAndDestroyShadowyConstructsAction(botAI); }
 
     // Gurtogg Bloodboil
+
+    static Action* gurtogg_bloodboil_misdirect_boss_to_main_tank(
+        PlayerbotAI* botAI) { return new GurtoggBloodboilMisdirectBossToMainTankAction(botAI); }
+
+    static Action* gurtogg_bloodboil_tanks_position_boss(
+        PlayerbotAI* botAI) { return new GurtoggBloodboilTanksPositionBossAction(botAI); }
+
+    static Action* gurtogg_bloodboil_disperse_ranged(
+        PlayerbotAI* botAI) { return new GurtoggBloodboilDisperseRangedAction(botAI); }
+
+    static Action* gurtogg_bloodboil_ranged_move_to_absorb_bloodboil_position(
+        PlayerbotAI* botAI) { return new GurtoggBloodboilRangedMoveToAbsorbBloodboilPositionAction(botAI); }
+
+    static Action* gurtogg_bloodboil_fel_raged_bot_move_to_tank_position(
+        PlayerbotAI* botAI) { return new GurtoggBloodboilFelRagedBotMoveToTankPositionAction(botAI); }
+
+    static Action* gurtogg_bloodboil_manage_phase_timer(
+        PlayerbotAI* botAI) { return new GurtoggBloodboilManagePhaseTimerAction(botAI); }
 
     // Reliquary of Souls
 
