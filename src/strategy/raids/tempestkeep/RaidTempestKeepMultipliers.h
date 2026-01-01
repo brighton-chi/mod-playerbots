@@ -43,14 +43,6 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class VoidReaverDisableTankActionsMultiplier : public Multiplier
-{
-public:
-    VoidReaverDisableTankActionsMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "void reaver disable tank actions multiplier") {}
-    virtual float GetValue(Action* action);
-};
-
 class VoidReaverMaintainPositionsMultiplier : public Multiplier
 {
 public:

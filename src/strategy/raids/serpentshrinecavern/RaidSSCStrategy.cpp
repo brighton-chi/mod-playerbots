@@ -166,26 +166,39 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
 void RaidSSCStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
+    // Trash Mobs
     multipliers.push_back(new UnderbogColossusEscapeToxicPoolMultiplier(botAI));
+
+    // Hydross the Unstable <Duke of Currents>
     multipliers.push_back(new HydrossTheUnstableDisableTankActionsMultiplier(botAI));
     multipliers.push_back(new HydrossTheUnstableWaitForDpsMultiplier(botAI));
     multipliers.push_back(new HydrossTheUnstableControlMisdirectionMultiplier(botAI));
+
+    // The Lurker Below
     multipliers.push_back(new TheLurkerBelowStayAwayFromSpoutMultiplier(botAI));
     multipliers.push_back(new TheLurkerBelowMaintainRangedSpreadMultiplier(botAI));
     multipliers.push_back(new TheLurkerBelowDisableTankAssistMultiplier(botAI));
+
+    // Leotheras the Blind
     multipliers.push_back(new LeotherasTheBlindAvoidWhirlwindMultiplier(botAI));
     multipliers.push_back(new LeotherasTheBlindDisableTankActionsMultiplier(botAI));
     multipliers.push_back(new LeotherasTheBlindMeleeDpsAvoidChaosBlastMultiplier(botAI));
     multipliers.push_back(new LeotherasTheBlindWaitForDpsMultiplier(botAI));
     multipliers.push_back(new LeotherasTheBlindDelayBloodlustAndHeroismMultiplier(botAI));
+
+    // Fathom-Lord Karathress
     multipliers.push_back(new FathomLordKarathressDisableTankActionsMultiplier(botAI));
     multipliers.push_back(new FathomLordKarathressDisableAoeMultiplier(botAI));
     multipliers.push_back(new FathomLordKarathressControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new FathomLordKarathressWaitForDpsMultiplier(botAI));
     multipliers.push_back(new FathomLordKarathressCaribdisTankHealerMaintainPositionMultiplier(botAI));
+
+    // Morogrim Tidewalker
     multipliers.push_back(new MorogrimTidewalkerDelayBloodlustAndHeroismMultiplier(botAI));
     multipliers.push_back(new MorogrimTidewalkerDisableTankActionsMultiplier(botAI));
     multipliers.push_back(new MorogrimTidewalkerMaintainPhase2StackingMultiplier(botAI));
+
+    // Lady Vashj <Coilfang Matron>
     multipliers.push_back(new LadyVashjDelayBloodlustAndHeroismMultiplier(botAI));
     multipliers.push_back(new LadyVashjMaintainPhase1RangedSpreadMultiplier(botAI));
     multipliers.push_back(new LadyVashjStaticChargeStayAwayFromGroupMultiplier(botAI));

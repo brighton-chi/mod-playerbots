@@ -13,8 +13,7 @@ bool CrimsonHandCenturionCastsArcaneVolleyTrigger::IsActive()
     if (bot->getClass() != CLASS_MAGE)
         return false;
 
-    Unit* centurion = AI_VALUE2(Unit*, "find target", "crimson hand centurion");
-    return centurion != nullptr;
+    return AI_VALUE2(Unit*, "find target", "crimson hand centurion");
 }
 
 // Al'ar <Phoenix God>
@@ -53,12 +52,10 @@ bool AlarBossIsFlyingBetweenPlatformsTrigger::IsActive()
 
 bool AlarBossSpawnsEmbersOfAlarTrigger::IsActive()
 {
-    if (!botAI->IsTank(bot) &&
-        !botAI->IsRangedDps(bot))
+    if (!botAI->IsTank(bot) && !botAI->IsRangedDps(bot))
         return false;
 
-    Unit* ember = AI_VALUE2(Unit*, "find target", "ember of al'ar");
-    return ember != nullptr;
+    return AI_VALUE2(Unit*, "find target", "ember of al'ar");
 }
 
 bool AlarIncomingFlameQuillsTrigger::IsActive()
@@ -130,8 +127,7 @@ bool AlarPhase2EncounterIsAtRoomCenterTrigger::IsActive()
 
 bool AlarStrategyChangesBetweenPhasesTrigger::IsActive()
 {
-    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    if (!alar)
+    if (!AI_VALUE2(Unit*, "find target", "al'ar"))
         return false;
 
     if (Group* group = bot->GetGroup())
@@ -164,8 +160,7 @@ bool VoidReaverBossLaunchesArcaneOrbsTrigger::IsActive()
     if (!botAI->IsRanged(bot))
         return false;
 
-    Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
-    return voidReaver != nullptr;
+    return AI_VALUE2(Unit*, "find target", "void reaver");
 }
 
 // High Astromancer Solarian
@@ -206,8 +201,7 @@ bool HighAstromancerSolarianSolariumPriestsSpawnedTrigger::IsActive()
     if (!botAI->IsMelee(bot))
         return false;
 
-    Unit* solariumPriest = AI_VALUE2(Unit*, "find target", "solarium priest");
-    return solariumPriest != nullptr;
+    return AI_VALUE2(Unit*, "find target", "solarium priest");
 }
 
 bool HighAstromancerSolarianTransformedIntoVoidwalkerTrigger::IsActive()
@@ -306,18 +300,15 @@ bool KaelthasSunstriderCapernianShouldBeTankedByAWarlockTrigger::IsActive()
     if (bot->getClass() != CLASS_WARLOCK)
         return false;
 
-    Player* capernianTank = GetCapernianTank(botAI, bot);
-    if (!capernianTank || capernianTank != bot)
+    if (GetCapernianTank(botAI, bot) != bot)
         return false;
 
-    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
-    return kaelthas != nullptr;
+    return AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
 }
 
 bool KaelthasSunstriderCapernianCastsArcaneBurstAndConflagrationTrigger::IsActive()
 {
-    Player* capernianTank = GetCapernianTank(botAI, bot);
-    if (capernianTank && capernianTank == bot)
+    if (GetCapernianTank(botAI, bot) == bot)
         return false;
 
     Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
@@ -348,12 +339,8 @@ bool KaelthasSunstriderMeleeTanksNeedDedicatedHealerInPhase3Trigger::IsActive()
     if (!kaelAI || kaelAI->GetPhase() != PHASE_ALL_ADVISORS)
         return false;
 
-    Unit* telonicus = AI_VALUE2(Unit*, "find target", "master engineer telonicus");
-    if (telonicus && telonicus->IsAlive())
-        return true;
-
-    Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
-    if (sanguinar && sanguinar->IsAlive())
+    if (AI_VALUE2(Unit*, "find target", "master engineer telonicus") ||
+        AI_VALUE2(Unit*, "find target", "lord sanguinar"))
         return true;
 
     return false;
@@ -405,8 +392,7 @@ bool KaelthasSunstriderLegendaryWeaponsAreDeadAndLootableTrigger::IsActive()
 
 bool KaelthasSunstriderLegendaryWeaponsAreEquippedTrigger::IsActive()
 {
-    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
-    if (!kaelthas)
+    if (!AI_VALUE2(Unit*, "find target", "kael'thas sunstrider"))
         return false;
 
     return bot->HasItemCount(ITEM_STAFF_OF_DISINTEGRATION, 1, false) ||
@@ -475,12 +461,10 @@ bool KaelthasSunstriderBossHasEnteredTheFightTrigger::IsActive()
 
 bool KaelthasSunstriderPhoenixesAndEggsAreSpawningTrigger::IsActive()
 {
-    Unit* phoenix = AI_VALUE2(Unit*, "find target", "phoenix");
-    if (phoenix != nullptr)
+    if (AI_VALUE2(Unit*, "find target", "phoenix"))
         return true;
 
-    Unit* phoenixEgg = AI_VALUE2(Unit*, "find target", "phoenix egg");
-    if (phoenixEgg != nullptr)
+    if (AI_VALUE2(Unit*, "find target", "phoenix egg"))
         return true;
 
     return false;
