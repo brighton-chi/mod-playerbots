@@ -1178,6 +1178,9 @@ bool MotherShahrazTanksPositionBossAction::Execute(Event event)
     if (!shahraz)
         return false;
 
+    if (shahraz->GetHealthPct() > 99.8f)
+        shahrazTankStep.clear();
+
     if (bot->GetVictim() != shahraz)
         return Attack(shahraz);
 
