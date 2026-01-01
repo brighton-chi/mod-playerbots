@@ -62,7 +62,7 @@ float AlarDisableDisperseMultiplier::GetValue(Action* action)
 
 float AlarDisableTankAssistMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsMainTank(bot) && !botAI->IsAssistTankOfIndex(bot, 0))
+    if (!botAI->IsTank(bot))
         return 1.0f;
 
     if (!AI_VALUE2(Unit*, "find target", "al'ar"))
@@ -97,7 +97,7 @@ float AlarStayAwayFromRebirthMultiplier::GetValue(Action* action)
 
 float AlarPhase2NoTankingIfArmorMeltedMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsTank(bot) || !bot->HasAura(SPELL_MELT_ARMOR))
+    if (!bot->HasAura(SPELL_MELT_ARMOR))
         return 1.0f;
 
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
@@ -214,25 +214,9 @@ float KaelthasSunstriderWaitForDpsMultiplier::GetValue(Action* action)
                    !advisor->HasAura(SPELL_PERMANENT_FEIGN_DEATH);
         };
 
-        if (isAdvisorActive(sanguinar) && !botAI->IsMainTank(bot))
-        {
-            if (dynamic_cast<AttackAction*>(action) ||
-                (dynamic_cast<CastSpellAction*>(action) &&
-                 !dynamic_cast<CastHealingSpellAction*>(action)))
-                 return 0.0f;
-        }
-
-        if (isAdvisorActive(telonicus) && !botAI->IsAssistTankOfIndex(bot, 0))
-        {
-            if (dynamic_cast<AttackAction*>(action) ||
-                (dynamic_cast<CastSpellAction*>(action) &&
-                 !dynamic_cast<CastHealingSpellAction*>(action)))
-                 return 0.0f;
-        }
-
-        Player* capernianTank = GetCapernianTank(botAI, bot);
-        if (isAdvisorActive(capernian) && capernianTank && capernianTank != bot &&
-            !botAI->IsMainTank(bot))
+        if ((isAdvisorActive(sanguinar) && !botAI->IsMainTank(bot)) ||
+            (isAdvisorActive(telonicus) && !botAI->IsAssistTankOfIndex(bot, 0)) ||
+            (isAdvisorActive(capernian) && !botAI->IsMainTank(bot) && GetCapernianTank(botAI, bot) != bot))
         {
             if (dynamic_cast<AttackAction*>(action) ||
                 (dynamic_cast<CastSpellAction*>(action) &&
@@ -297,11 +281,11 @@ float KaelthasSunstriderDisableShadowWardMultiplier::GetValue(Action* action)
     if (bot->getClass() != CLASS_WARLOCK)
         return 1.0f;
 
-    if (!AI_VALUE2(Unit*, "find target", "kael'thas sunstrider"))
-        return 1.0f;
-
-    if (dynamic_cast<CastShadowWardAction*>(action))
-        return 0.0f;
+    if (AI_VALUE2(Unit*, "find target", "kael'thas sunstrider"))
+    {
+        if (dynamic_cast<CastShadowWardAction*>(action))
+            return 0.0f;
+    }
 
     return 1.0f;
 }
@@ -424,7 +408,7 @@ float KaelthasSunstriderTryNonfatalBreakingOfMindControlMultiplier::GetValue(Act
     if (hasMindControlledPlayer)
     {
         if (dynamic_cast<AttackAction*>(action) &&
-            !dynamic_cast<KaelthasSunstriderBreakMindControlWithInfinityBladeAction*>(action))
+            !dynamic_cast<KaelthasSunstriderBreakMindControlAction*>(action))
             return 0.0f;
     }
 
@@ -442,7 +426,7 @@ float KaelthasSunstriderAllDpsOnBossDuringPyroblastMultiplier::GetValue(Action* 
 
     if (kaelthas->HasAura(SPELL_SHOCK_BARRIER))
     {
-        if (dynamic_cast<KaelthasSunstriderRoundUpPhoenixesAndFocusDownEggsAction*>(action))
+        if (dynamic_cast<KaelthasSunstriderHandlePhoenixesAndEggsAction*>(action))
             return 0.0f;
     }
 

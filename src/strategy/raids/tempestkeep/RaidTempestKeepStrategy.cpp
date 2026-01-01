@@ -124,10 +124,10 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             new NextAction("kael'thas sunstrider avoid flame strike", ACTION_EMERGENCY + 8), nullptr)
     ));
     triggers.push_back(new TriggerNode("kael'thas sunstrider phoenixes and eggs are spawning",
-        NextAction::array(0, new NextAction("kael'thas sunstrider round up phoenixes and focus down eggs", ACTION_RAID + 1), nullptr)
+        NextAction::array(0, new NextAction("kael'thas sunstrider handle phoenixes and eggs", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("kael'thas sunstrider raid member is mind controlled",
-        NextAction::array(0, new NextAction("kael'thas sunstrider break mind control with infinity blade", ACTION_EMERGENCY + 1), nullptr)
+        NextAction::array(0, new NextAction("kael'thas sunstrider break mind control", ACTION_EMERGENCY + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("kael'thas sunstrider boss is casting pyroblast",
         NextAction::array(0, new NextAction("kael'thas sunstrider break through shock barrier", ACTION_EMERGENCY + 7), nullptr)

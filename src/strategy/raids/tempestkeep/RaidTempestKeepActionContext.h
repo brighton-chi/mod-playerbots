@@ -137,11 +137,11 @@ public:
         creators["kael'thas sunstrider avoid flame strike"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_avoid_flame_strike;
 
-        creators["kael'thas sunstrider round up phoenixes and focus down eggs"] =
-            &RaidTempestKeepActionContext::kaelthas_sunstrider_round_up_phoenixes_and_focus_down_eggs;
+        creators["kael'thas sunstrider handle phoenixes and eggs"] =
+            &RaidTempestKeepActionContext::kaelthas_sunstrider_handle_phoenixes_and_eggs;
 
-        creators["kael'thas sunstrider break mind control with infinity blade"] =
-            &RaidTempestKeepActionContext::kaelthas_sunstrider_break_mind_control_with_infinity_blade;
+        creators["kael'thas sunstrider break mind control"] =
+            &RaidTempestKeepActionContext::kaelthas_sunstrider_break_mind_control;
 
         creators["kael'thas sunstrider break through shock barrier"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_break_through_shock_barrier;
@@ -279,11 +279,11 @@ private:
     static Action* kaelthas_sunstrider_avoid_flame_strike(
         PlayerbotAI* botAI) { return new KaelthasSunstriderAvoidFlameStrikeAction(botAI); }
 
-    static Action* kaelthas_sunstrider_round_up_phoenixes_and_focus_down_eggs(
-        PlayerbotAI* botAI) { return new KaelthasSunstriderRoundUpPhoenixesAndFocusDownEggsAction(botAI); }
+    static Action* kaelthas_sunstrider_handle_phoenixes_and_eggs(
+        PlayerbotAI* botAI) { return new KaelthasSunstriderHandlePhoenixesAndEggsAction(botAI); }
 
-    static Action* kaelthas_sunstrider_break_mind_control_with_infinity_blade(
-        PlayerbotAI* botAI) { return new KaelthasSunstriderBreakMindControlWithInfinityBladeAction(botAI); }
+    static Action* kaelthas_sunstrider_break_mind_control(
+        PlayerbotAI* botAI) { return new KaelthasSunstriderBreakMindControlAction(botAI); }
 
     static Action* kaelthas_sunstrider_break_through_shock_barrier(
         PlayerbotAI* botAI) { return new KaelthasSunstriderBreakThroughShockBarrierAction(botAI); }
