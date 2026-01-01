@@ -23,10 +23,10 @@ bool CrimsonHandCenturionCastPolymorphAction::Execute(Event event)
         if (!centurion->HasAura(SPELL_POLYMORPH_SHEEP) &&
             !centurion->HasAura(SPELL_POLYMORPH_TURTLE) &&
             !centurion->HasAura(SPELL_POLYMORPH_PIG))
-            {
-                if (botAI->CanCastSpell("polymorph", centurion))
-                    return botAI->CastSpell("polymorph", centurion);
-            }
+        {
+            if (botAI->CanCastSpell("polymorph", centurion))
+                return botAI->CastSpell("polymorph", centurion);
+        }
     }
     else if (centurion->HasAura(SPELL_ARCANE_FLURRY))
     {
@@ -359,33 +359,29 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase2Embers(Unit* alar)
                 return MoveFromGroup(safeDistance + 1.0f);
         }
     }
-    else
+    else if (GetSecondEmberTank(botAI, alar) == bot && secondEmber)
     {
-        Player* secondEmberTank = GetSecondEmberTank(botAI, alar);
-        if (secondEmberTank && bot == secondEmberTank && secondEmber)
+        MarkTargetWithCircle(bot, secondEmber);
+        SetRtiTarget(botAI, "circle", secondEmber);
+
+        if (secondEmber->GetVictim() != bot)
         {
-            MarkTargetWithCircle(bot, secondEmber);
-            SetRtiTarget(botAI, "circle", secondEmber);
+            if (bot->GetTarget() != secondEmber->GetGUID())
+                return Attack(secondEmber);
 
-            if (secondEmber->GetVictim() != bot)
+            const char* taunts[] = { "taunt", "growl", "hand of reckoning", "dark command" };
+            for (const char* spellName : taunts)
             {
-                if (bot->GetTarget() != secondEmber->GetGUID())
-                    return Attack(secondEmber);
-
-                const char* taunts[] = { "taunt", "growl", "hand of reckoning", "dark command" };
-                for (const char* spellName : taunts)
-                {
-                    if (botAI->CanCastSpell(spellName, secondEmber))
-                        return botAI->CastSpell(spellName, secondEmber);
-                }
+                if (botAI->CanCastSpell(spellName, secondEmber))
+                    return botAI->CastSpell(spellName, secondEmber);
             }
-            else if (bot->IsWithinMeleeRange(secondEmber))
-            {
-                const float safeDistance = 15.0f;
-                Unit* nearestPlayer = GetNearestNonTankPlayerInRadius(bot, safeDistance);
-                if (nearestPlayer)
-                    return MoveFromGroup(safeDistance + 1.0f);
-            }
+        }
+        else if (bot->IsWithinMeleeRange(secondEmber))
+        {
+            const float safeDistance = 15.0f;
+            Unit* nearestPlayer = GetNearestNonTankPlayerInRadius(bot, safeDistance);
+            if (nearestPlayer)
+                return MoveFromGroup(safeDistance + 1.0f);
         }
     }
 
