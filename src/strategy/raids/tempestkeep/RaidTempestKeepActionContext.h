@@ -104,8 +104,8 @@ public:
         creators["kael'thas sunstrider first assist tank position telonicus"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_first_assist_tank_position_telonicus;
 
-        creators["kael'thas sunstrider position phase 3 tank healer"] =
-            &RaidTempestKeepActionContext::kaelthas_sunstrider_position_phase_3_tank_healer;
+        creators["kael'thas sunstrider handle sanguinar and telonicus in phase 3"] =
+            &RaidTempestKeepActionContext::kaelthas_sunstrider_handle_sanguinar_and_telonicus_in_phase_3;
 
         creators["kael'thas sunstrider assign advisor dps priority"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_assign_advisor_dps_priority;
@@ -246,8 +246,8 @@ private:
     static Action* kaelthas_sunstrider_first_assist_tank_position_telonicus(
         PlayerbotAI* botAI) { return new KaelthasSunstriderFirstAssistTankPositionTelonicusAction(botAI); }
 
-    static Action* kaelthas_sunstrider_position_phase_3_tank_healer(
-        PlayerbotAI* botAI) { return new KaelthasSunstriderPositionPhase3TankHealerAction(botAI); }
+    static Action* kaelthas_sunstrider_handle_sanguinar_and_telonicus_in_phase_3(
+        PlayerbotAI* botAI) { return new KaelthasSunstriderHandleSanguinarAndTelonicusInPhase3Action(botAI); }
 
     static Action* kaelthas_sunstrider_assign_advisor_dps_priority(
         PlayerbotAI* botAI) { return new KaelthasSunstriderAssignAdvisorDpsPriorityAction(botAI); }

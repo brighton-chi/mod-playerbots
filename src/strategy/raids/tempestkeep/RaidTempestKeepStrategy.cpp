@@ -94,10 +94,10 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kael'thas sunstrider telonicus engaged by first assist tank",
         NextAction::array(0, new NextAction("kael'thas sunstrider first assist tank position telonicus", ACTION_RAID + 1), nullptr)
     ));
-    triggers.push_back(new TriggerNode("kael'thas sunstrider melee tanks need dedicated healer in phase 3",
-        NextAction::array(0, new NextAction("kael'thas sunstrider position phase 3 tank healer", ACTION_RAID + 2), nullptr)
+    triggers.push_back(new TriggerNode("kael'thas sunstrider need dedicated bots for sanguinar and telonicus in phase 3",
+        NextAction::array(0, new NextAction("kael'thas sunstrider handle sanguinar and telonicus in phase 3", ACTION_RAID + 2), nullptr)
     ));
-        triggers.push_back(new TriggerNode("kael'thas sunstrider determining advisor kill order",
+    triggers.push_back(new TriggerNode("kael'thas sunstrider determining advisor kill order",
         NextAction::array(0, new NextAction("kael'thas sunstrider assign advisor dps priority", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("kael'thas sunstrider waiting for tanks to get aggro on advisors",

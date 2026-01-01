@@ -326,9 +326,11 @@ bool KaelthasSunstriderTelonicusEngagedByFirstAssistTankTrigger::IsActive()
            !telonicus->HasAura(SPELL_PERMANENT_FEIGN_DEATH);
 }
 
-bool KaelthasSunstriderMeleeTanksNeedDedicatedHealerInPhase3Trigger::IsActive()
+bool KaelthasSunstriderNeedDedicatedBotsForSanguinarAndTelonicusInPhase3Trigger::IsActive()
 {
-    if (!botAI->IsHealAssistantOfIndex(bot, 0))
+    if (!botAI->IsHealAssistantOfIndex(bot, 0) &&
+        !botAI->IsMainTank(bot) &&
+        !botAI->IsAssistTankOfIndex(bot, 0))
         return false;
 
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");

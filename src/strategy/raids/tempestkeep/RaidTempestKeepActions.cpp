@@ -1019,7 +1019,7 @@ bool KaelthasSunstriderKiteThaladredAction::Execute(Event event)
         return false;
 
     float currentDistance = bot->GetExactDist2d(thaladred);
-    const float safeDistance = 20.0f;
+    const float safeDistance = 22.0f;
     if (currentDistance < safeDistance)
     {
         botAI->Reset();
@@ -1379,17 +1379,38 @@ bool KaelthasSunstriderFirstAssistTankPositionTelonicusAction::Execute(Event eve
     return false;
 }
 
-bool KaelthasSunstriderPositionPhase3TankHealerAction::Execute(Event event)
+// This is a little confusing, but I combined a couple of different actions into a single method
+// because from a code perspective, they are almost identical
+bool KaelthasSunstriderHandleSanguinarAndTelonicusInPhase3Action::Execute(Event event)
 {
-    const Position& position = ADVISOR_HEAL_POSITION;
-    float distToPosition =
-        bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
-
-    if (distToPosition > 2.0f)
+    bool shouldMove = false;
+    // The heal assistant moves to heal position next to Sanguinar and Telonicus tank positions
+    // And remains there to heal the main tank and first assistant tank
+    if (botAI->IsHealAssistantOfIndex(bot, 0))
+        shouldMove = true;
+    // The main tank and first assistant tank move to the heal position at the beginning of Phase 3
+    // Before the advisors aggro so they are available to pick up Sanguinar and Telonicus
+    // Once they aggro, the tanks move to their respective tank positions (per the dedicated tanking actions above)
+    else if (botAI->IsTank(bot))
     {
-        return MoveTo(TEMPEST_KEEP_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-                      position.GetPositionZ(), false, false, false, false,
-                      MovementPriority::MOVEMENT_COMBAT, true, false);
+        // No Telonicus check is included since only a single advisor needs to be checked to
+        // determine if Phase 3 has started but advisors have not aggroed yet
+        Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
+        if (sanguinar && sanguinar->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE))
+            shouldMove = true;
+    }
+
+    if (shouldMove)
+    {
+        const Position& position = ADVISOR_HEAL_POSITION;
+        float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+
+        if (distToPosition > 2.0f)
+        {
+            return MoveTo(TEMPEST_KEEP_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                          position.GetPositionZ(), false, false, false, false,
+                          MovementPriority::MOVEMENT_FORCED, true, false);
+        }
     }
 
     return false;

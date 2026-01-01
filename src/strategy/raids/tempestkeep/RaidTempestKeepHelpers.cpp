@@ -228,10 +228,10 @@ namespace TempestKeepHelpers
 
     // Al'ar <Phoenix God>
 
-    const Position ALAR_PLATFORM_0 = { 335.638f, 59.4879f, 17.9319f }; // West Platform
-    const Position ALAR_PLATFORM_1 = { 388.751f, 31.7312f, 20.2636f }; // Northwest Platform
+    const Position ALAR_PLATFORM_0 = { 335.638f,  59.4879f, 17.9319f }; // West Platform
+    const Position ALAR_PLATFORM_1 = { 388.751f,  31.7312f, 20.2636f }; // Northwest Platform
     const Position ALAR_PLATFORM_2 = { 388.791f, -33.1059f, 20.2636f }; // Northeast Platform
-    const Position ALAR_PLATFORM_3 = { 332.723f, -61.159f, 17.9791f }; // East Platform
+    const Position ALAR_PLATFORM_3 = { 332.723f,  -61.159f, 17.9791f }; // East Platform
     const Position PLATFORM_POSITIONS[] =
     {
         ALAR_PLATFORM_0,
@@ -239,8 +239,8 @@ namespace TempestKeepHelpers
         ALAR_PLATFORM_2,
         ALAR_PLATFORM_3
     };
-    const Position ALAR_GROUND_0 = { 336.439f, 48.181f, -2.389f }; // Ground counterpart to West Platform
-    const Position ALAR_GROUND_1 = { 379.122f, 25.146f, -2.385f }; // Ground counterpart to Northwest Platform
+    const Position ALAR_GROUND_0 = { 336.439f,  48.181f, -2.389f }; // Ground counterpart to West Platform
+    const Position ALAR_GROUND_1 = { 379.122f,  25.146f, -2.385f }; // Ground counterpart to Northwest Platform
     const Position ALAR_GROUND_2 = { 378.583f, -27.481f, -2.385f }; // Ground counterpart to Northeast Platform
     const Position ALAR_GROUND_3 = { 331.631f, -49.716f, -2.389f }; // Ground counterpart to East Platform
     const Position GROUND_POSITIONS[] =
@@ -250,12 +250,12 @@ namespace TempestKeepHelpers
         ALAR_GROUND_2,
         ALAR_GROUND_3
     };
-    const Position ALAR_ROOM_CENTER = { 330.611f, -2.540f, -2.389f };
-    const Position ALAR_POINT_QUILL_OR_DIVE = {332.0f, 0.01f, 43.0f, 0.0f};
-    const Position ALAR_POINT_MIDDLE = {331.0f, 0.01f, -2.38f, 0.0f};
-    const Position ALAR_SE_RAMP_BASE = { 281.064f, -36.590f, -2.389f };
-    const Position ALAR_SW_RAMP_BASE = { 281.064f, 36.590f, -2.389f };
-    const Position ALAR_ROOM_S_CENTER = { 281.064f, 0.0f, -2.389f };
+    const Position ALAR_ROOM_CENTER =         { 330.611f,  -2.540f, -2.389f };
+    const Position ALAR_POINT_QUILL_OR_DIVE = { 332.000f,   0.010f, 43.000f };
+    const Position ALAR_POINT_MIDDLE =        { 331.000f,   0.010f, -2.380f };
+    const Position ALAR_SE_RAMP_BASE =        { 281.064f, -36.590f, -2.389f };
+    const Position ALAR_SW_RAMP_BASE =        { 281.064f,  36.590f, -2.389f };
+    const Position ALAR_ROOM_S_CENTER =       { 281.064f,   0.000f, -2.389f };
 
     std::unordered_map<uint32, bool> lastRebirthState;
     std::unordered_map<uint32, bool> isAlarInPhase2;

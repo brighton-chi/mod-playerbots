@@ -197,11 +197,11 @@ public:
     bool IsActive() override;
 };
 
-class KaelthasSunstriderMeleeTanksNeedDedicatedHealerInPhase3Trigger : public Trigger
+class KaelthasSunstriderNeedDedicatedBotsForSanguinarAndTelonicusInPhase3Trigger : public Trigger
 {
 public:
-    KaelthasSunstriderMeleeTanksNeedDedicatedHealerInPhase3Trigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider melee tanks need dedicated healer in phase 3") {}
+    KaelthasSunstriderNeedDedicatedBotsForSanguinarAndTelonicusInPhase3Trigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider need dedicated bots for sanguinar and telonicus in phase 3") {}
     bool IsActive() override;
 };
 

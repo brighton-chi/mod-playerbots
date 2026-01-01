@@ -83,8 +83,8 @@ public:
         creators["kael'thas sunstrider telonicus engaged by first assist tank"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_telonicus_engaged_by_first_assist_tank;
 
-        creators["kael'thas sunstrider melee tanks need dedicated healer in phase 3"] =
-            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_melee_tanks_need_dedicated_healer_in_phase_3;
+        creators["kael'thas sunstrider need dedicated bots for sanguinar and telonicus in phase 3"] =
+            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_need_dedicated_bots_for_sanguinar_and_telonicus_in_phase_3;
 
         creators["kael'thas sunstrider determining advisor kill order"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_determining_advisor_kill_order;
@@ -195,8 +195,8 @@ private:
     static Trigger* kaelthas_sunstrider_telonicus_engaged_by_first_assist_tank(
         PlayerbotAI* botAI) { return new KaelthasSunstriderTelonicusEngagedByFirstAssistTankTrigger(botAI); }
 
-    static Trigger* kaelthas_sunstrider_melee_tanks_need_dedicated_healer_in_phase_3(
-        PlayerbotAI* botAI) { return new KaelthasSunstriderMeleeTanksNeedDedicatedHealerInPhase3Trigger(botAI); }
+    static Trigger* kaelthas_sunstrider_need_dedicated_bots_for_sanguinar_and_telonicus_in_phase_3(
+        PlayerbotAI* botAI) { return new KaelthasSunstriderNeedDedicatedBotsForSanguinarAndTelonicusInPhase3Trigger(botAI); }
 
     static Trigger* kaelthas_sunstrider_determining_advisor_kill_order(
         PlayerbotAI* botAI) { return new KaelthasSunstriderDeterminingAdvisorKillOrderTrigger(botAI); }

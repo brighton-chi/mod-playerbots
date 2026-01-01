@@ -326,7 +326,13 @@ float KaelthasSunstriderManageTankTargetingMultiplier::GetValue(Action* action)
                 return 0.0f;
         }
     }
-    else if (kaelAI->GetPhase() == PHASE_SINGLE_ADVISOR ||
+    else
+    {
+        if (dynamic_cast<TankFaceAction*>(action))
+            return 0.0f;
+    }
+
+    if (kaelAI->GetPhase() == PHASE_SINGLE_ADVISOR ||
         kaelAI->GetPhase() == PHASE_ALL_ADVISORS)
     {
         if (bot->GetVictim() != nullptr)
@@ -334,11 +340,6 @@ float KaelthasSunstriderManageTankTargetingMultiplier::GetValue(Action* action)
             if (dynamic_cast<TankAssistAction*>(action))
                 return 0.0f;
         }
-    }
-    else if (kaelAI->GetPhase() == PHASE_FINAL)
-    {
-        if (dynamic_cast<TankFaceAction*>(action))
-            return 0.0f;
     }
 
     return 1.0f;

@@ -284,11 +284,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class KaelthasSunstriderPositionPhase3TankHealerAction : public AttackAction
+class KaelthasSunstriderHandleSanguinarAndTelonicusInPhase3Action : public MovementAction
 {
 public:
-    KaelthasSunstriderPositionPhase3TankHealerAction(
-        PlayerbotAI* botAI, std::string const name = "kael'thas sunstrider position phase 3 tank healer") : AttackAction(botAI, name) {}
+    KaelthasSunstriderHandleSanguinarAndTelonicusInPhase3Action(
+        PlayerbotAI* botAI, std::string const name = "kael'thas sunstrider handle sanguinar and telonicus in phase 3") : MovementAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 
