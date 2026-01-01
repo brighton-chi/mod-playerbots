@@ -238,12 +238,7 @@ bool SupremusMisdirectBossToMainTankAction::Execute(Event event)
 
 bool SupremusDisperseRangedAction::Execute(Event event)
 {
-    Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
-    if (!supremus)
-        return false;
-
-    Group* group = bot->GetGroup();
-    if (group)
+    if (Group* group = bot->GetGroup())
     {
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
@@ -850,7 +845,8 @@ bool GurtoggBloodboilTanksPositionBossAction::Execute(Event event)
         return Attack(gurtogg);
 
     Unit* victim = gurtogg->GetVictim();
-    if (victim && botAI->IsTank(victim))
+    Player* playerVictim = victim ? victim->ToPlayer() : nullptr;
+    if (playerVictim && botAI->IsTank(playerVictim))
     {
         const Position& position = GURTOGG_TANK_POSITION;
         float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
@@ -941,8 +937,10 @@ bool GurtoggBloodboilFelRagedBotMoveToTankPositionAction::Execute(Event event)
         float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
         float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
+        bool backwards = (gurtogg->GetVictim() == bot);
+        MovementPriority priority = backwards ? MovementPriority::MOVEMENT_COMBAT : MovementPriority::MOVEMENT_FORCED;
         return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
-                      false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+                      false, false, false, priority, true, backwards);
     }
     else
         bot->SetFacingTo(position.GetOrientation());
@@ -975,7 +973,7 @@ bool ReliquaryOfSoulsMisdirectBossToMainTankAction::Execute(Event event)
 {
     Unit* desire = AI_VALUE2(Unit*, "find target", "essence of desire");
     Unit* anger = AI_VALUE2(Unit*, "find target", "essence of anger");
-    if (desire == nullptr && anger == nullptr)
+    if (!desire && !anger)
         return false;
 
     Group* group = bot->GetGroup();
@@ -1142,7 +1140,7 @@ bool MotherShahrazMisdirectBossToMainTankAction::Execute(Event event)
     return false;
 }
 
-bool MotherShahrazTanksPositionBossAction::Execute(Event event)
+/* bool MotherShahrazTanksPositionBossAction::Execute(Event event)
 {
     Unit* shahraz = AI_VALUE2(Unit*, "find target", "mother shahraz");
     if (!shahraz)
@@ -1152,7 +1150,8 @@ bool MotherShahrazTanksPositionBossAction::Execute(Event event)
         return Attack(shahraz);
 
     Unit* victim = shahraz->GetVictim();
-    if (victim && botAI->IsTank(victim))
+    Player* playerVictim = victim ? victim->ToPlayer() : nullptr;
+    if (playerVictim && botAI->IsTank(playerVictim))
     {
         const Position& position = SHAHRAZ_TANK_POSITION;
         float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
@@ -1164,8 +1163,56 @@ bool MotherShahrazTanksPositionBossAction::Execute(Event event)
             float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
             float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
+            bool backwards = (shahraz->GetVictim() == bot);
+            MovementPriority priority = backwards ? MovementPriority::MOVEMENT_COMBAT : MovementPriority::MOVEMENT_FORCED;
             return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
-                          false, false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
+                          false, false, false, priority, true, backwards);
+        }
+    }
+
+    return false;
+} */
+bool MotherShahrazTanksPositionBossAction::Execute(Event event)
+{
+    Unit* shahraz = AI_VALUE2(Unit*, "find target", "mother shahraz");
+    if (!shahraz)
+        return false;
+
+    if (bot->GetVictim() != shahraz)
+        return Attack(shahraz);
+
+    Unit* victim = shahraz->GetVictim();
+    Player* playerVictim = victim ? victim->ToPlayer() : nullptr;
+    if (playerVictim && botAI->IsTank(playerVictim))
+    {
+        const ObjectGuid botGuid = bot->GetGUID();
+        uint8 step = shahrazTankStep.count(botGuid) ? shahrazTankStep[botGuid] : 0;
+
+        const Position tankPositions[2] =
+        {
+            SHAHRAZ_TRANSITION_POSITION,
+            SHAHRAZ_TANK_POSITION
+        };
+        const float maxDistance = 0.5f;
+        const Position& position = tankPositions[step];
+        float distanceToTarget = bot->GetExactDist2d(position);
+
+        if ((distanceToTarget > maxDistance) && bot->IsWithinMeleeRange(shahraz))
+        {
+            bool backwards = (shahraz->GetVictim() == bot);
+            MovementPriority priority = backwards ? MovementPriority::MOVEMENT_COMBAT : MovementPriority::MOVEMENT_FORCED;
+            return MoveTo(BLACK_TEMPLE_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
+                          false, false, false, false, priority, true, backwards);
+        }
+
+        if (step == 0 && distanceToTarget <= maxDistance)
+            shahrazTankStep[botGuid] = 1;
+
+        if (step == 1 && distanceToTarget <= maxDistance)
+        {
+            float orientation = atan2(shahraz->GetPositionY() - bot->GetPositionY(),
+                                      shahraz->GetPositionX() - bot->GetPositionX());
+            bot->SetFacingTo(orientation);
         }
     }
 
@@ -1174,10 +1221,6 @@ bool MotherShahrazTanksPositionBossAction::Execute(Event event)
 
 bool MotherShahrazPositionRangedUnderStatueAction::Execute(Event event)
 {
-    Unit* shahraz = AI_VALUE2(Unit*, "find target", "mother shahraz");
-    if (!shahraz)
-        return false;
-
     const Position& position = SHAHRAZ_RANGED_POSITION;
     float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
     if (distToPosition > 1.0f)
@@ -1189,18 +1232,14 @@ bool MotherShahrazPositionRangedUnderStatueAction::Execute(Event event)
         float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
         return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
-                        false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+                      false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
     return false;
 }
 
-bool MotherShahrazRunAwayToBreakFatalAttractionAction::Execute(Event event)
+/* bool MotherShahrazRunAwayToBreakFatalAttractionAction::Execute(Event event)
 {
-    Unit* shahraz = AI_VALUE2(Unit*, "find target", "mother shahraz");
-    if (!shahraz)
-        return false;
-
     Group* group = bot->GetGroup();
     if (!group)
         return false;
@@ -1224,10 +1263,84 @@ bool MotherShahrazRunAwayToBreakFatalAttractionAction::Execute(Event event)
         }
     }
 
-    if (!nearestAttracted)
+    if (nearestAttracted)
+    {
+        uint32 minInterval = 0;
+        return FleePosition(nearestAttracted->GetPosition(), 30.0f, minInterval);
+    }
+
+    return false;
+} */
+bool MotherShahrazRunAwayToBreakFatalAttractionAction::Execute(Event event)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
         return false;
 
-    return MoveAway(nearestAttracted, 30.0f);
+    std::vector<Player*> attractedPlayers;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && member->HasAura(SPELL_FATAL_ATTRACTION))
+            attractedPlayers.push_back(member);
+    }
+
+    if (attractedPlayers.size() < 2)
+        return false;
+
+    // Calculate center point
+    float centerX = 0.0f, centerY = 0.0f;
+    for (Player* member : attractedPlayers)
+    {
+        centerX += member->GetPositionX();
+        centerY += member->GetPositionY();
+    }
+    centerX /= attractedPlayers.size();
+    centerY /= attractedPlayers.size();
+
+    // Sort for deterministic assignment
+    std::sort(attractedPlayers.begin(), attractedPlayers.end(),
+        [](Player* firstPlayer, Player* secondPlayer)
+        {
+            return firstPlayer->GetGUID().GetCounter() < secondPlayer->GetGUID().GetCounter();
+        });
+
+    // Find this bot's index
+    auto botIt = std::find(attractedPlayers.begin(), attractedPlayers.end(), bot);
+    if (botIt == attractedPlayers.end())
+        return false;
+
+    size_t botIndex = std::distance(attractedPlayers.begin(), botIt);
+    float spreadAngle = 2.0f * M_PI * botIndex / attractedPlayers.size(); // Evenly spaced directions
+
+    float maxSpreadDistance = 35.0f;
+    float distanceStep = 1.0f;
+    float lastValidX = bot->GetPositionX();
+    float lastValidY = bot->GetPositionY();
+    float lastValidZ = bot->GetPositionZ();
+
+    for (float currentDistance = distanceStep;
+         currentDistance <= maxSpreadDistance;
+         currentDistance += distanceStep)
+    {
+        float testX = centerX + std::cos(spreadAngle) * currentDistance;
+        float testY = centerY + std::sin(spreadAngle) * currentDistance;
+        float testZ = bot->GetPositionZ();
+
+        // Check collision
+        if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, bot->GetPositionX(), bot->GetPositionY(),
+                                                            bot->GetPositionZ(), testX, testY, testZ))
+        {
+            break;
+        }
+        lastValidX = testX;
+        lastValidY = testY;
+        lastValidZ = testZ;
+    }
+
+    // Move to the farthest valid point
+    return MoveTo(BLACK_TEMPLE_MAP_ID, lastValidX, lastValidY, lastValidZ, false,
+                  false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 // Illidari Council

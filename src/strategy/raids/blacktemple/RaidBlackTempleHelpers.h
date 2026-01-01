@@ -128,7 +128,9 @@ namespace BlackTempleHelpers
 
     // Mother Shahraz
     extern const Position SHAHRAZ_TANK_POSITION;
+    extern const Position SHAHRAZ_TRANSITION_POSITION;
     extern const Position SHAHRAZ_RANGED_POSITION;
+    extern std::unordered_map<ObjectGuid, uint8> shahrazTankStep;
 
     // Illidari Council
 

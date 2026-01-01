@@ -173,8 +173,11 @@ namespace BlackTempleHelpers
     std::unordered_map<uint32, time_t> reliquaryDpsWaitTimer;
 
     // Mother Shahraz
-    const Position SHAHRAZ_TANK_POSITION = { 933.881f, 178.022f, 192.824f, 6.234f };
-    const Position SHAHRAZ_RANGED_POSITION = { 957.749f, 176.927f, 192.822f, 3.079f };
+    const Position SHAHRAZ_TANK_POSITION = { 925.683f, 179.920f, 192.833f, 0.102f };
+    const Position SHAHRAZ_TRANSITION_POSITION = { 941.557f, 182.719f, 192.418f, 4.943f };
+    // const Position SHAHRAZ_RANGED_POSITION = { 957.749f, 176.927f, 192.822f, 3.079f };
+    const Position SHAHRAZ_RANGED_POSITION = { 957.937f, 176.187f, 192.822f, 2.966f }; // UNTESTED
+    std::unordered_map<ObjectGuid, uint8> shahrazTankStep;
 
     // Illidari Council
 

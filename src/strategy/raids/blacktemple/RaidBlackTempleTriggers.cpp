@@ -22,8 +22,7 @@ bool HighWarlordNajentusBossEngagedByMainTankTrigger::IsActive()
     if (!botAI->IsMainTank(bot))
         return false;
 
-    Unit* najentus = AI_VALUE2(Unit*, "find target", "high warlord naj'entus");
-    return najentus != nullptr;
+    return AI_VALUE2(Unit*, "find target", "high warlord naj'entus");
 }
 
 bool HighWarlordNajentusCastsNeedleSpinesTrigger::IsActive()
@@ -31,8 +30,7 @@ bool HighWarlordNajentusCastsNeedleSpinesTrigger::IsActive()
     if (!botAI->IsRanged(bot))
         return false;
 
-    Unit* najentus = AI_VALUE2(Unit*, "find target", "high warlord naj'entus");
-    return najentus != nullptr;
+    return AI_VALUE2(Unit*, "find target", "high warlord naj'entus");
 }
 
 bool HighWarlordNajentusPlayerIsImpaledTrigger::IsActive()
@@ -40,8 +38,7 @@ bool HighWarlordNajentusPlayerIsImpaledTrigger::IsActive()
     if (botAI->IsTank(bot))
         return false;
 
-    Unit* najentus = AI_VALUE2(Unit*, "find target", "high warlord naj'entus");
-    if (!najentus)
+    if (!AI_VALUE2(Unit*, "find target", "high warlord naj'entus"))
         return false;
 
     Group* group = bot->GetGroup();
@@ -151,8 +148,7 @@ bool SupremusNeedToManagePhaseTimerTrigger::IsActive()
     if (!IsInstanceTimerManager(botAI, bot))
         return false;
 
-    Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
-    return supremus != nullptr;
+    return AI_VALUE2(Unit*, "find target", "supremus");
 }
 
 // Shade of Akama
@@ -174,8 +170,7 @@ bool TeronGorefiendBossEngagedTrigger::IsActive()
     if (!botAI->IsMainTank(bot) && !botAI->IsRanged(bot))
         return false;
 
-    Unit* gorefiend = AI_VALUE2(Unit*, "find target", "teron gorefiend");
-    return gorefiend != nullptr;
+    return AI_VALUE2(Unit*, "find target", "teron gorefiend");
 }
 
 bool TeronGorefiendBossIsCastingShadowOfDeathTrigger::IsActive()
@@ -201,7 +196,7 @@ bool TeronGorefiendBossIsCastingShadowOfDeathTrigger::IsActive()
 bool TeronGorefiendBotHasShadowOfDeathTrigger::IsActive()
 {
     Aura* aura = bot->GetAura(SPELL_SHADOW_OF_DEATH);
-    return aura && aura->GetDuration() < 12000; // less than 12 seconds remaining
+    return aura && aura->GetDuration() < 12000;
 }
 
 bool TeronGorefiendBotTransformedIntoVengefulSpiritTrigger::IsActive()
@@ -302,7 +297,7 @@ bool GurtoggBloodboilNeedToManagePhaseTimerTrigger::IsActive()
     if (!IsInstanceTimerManager(botAI, bot))
         return false;
 
-    return AI_VALUE2(Unit*, "find target", "gurtogg bloodboil") != nullptr;
+    return AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
 }
 
 // Reliquary of Souls
@@ -312,8 +307,7 @@ bool ReliquaryOfSoulsAggroResetsUponPhaseChangeTrigger::IsActive()
     if (bot->getClass() != CLASS_HUNTER)
         return false;
 
-    Unit* reliquary = AI_VALUE2(Unit*, "find target", "reliquary of the lost");
-    return reliquary != nullptr;
+    return AI_VALUE2(Unit*, "find target", "reliquary of the lost");
 }
 
 bool ReliquaryOfSoulsEssenceOfSufferingFixatesOnClosestTargetTrigger::IsActive()
@@ -383,7 +377,7 @@ bool MotherShahrazBossEngagedByTanksTrigger::IsActive()
     if (!botAI->IsTank(bot) || bot->HasAura(SPELL_FATAL_ATTRACTION))
         return false;
 
-    return AI_VALUE2(Unit*, "find target", "mother shahraz") != nullptr;
+    return AI_VALUE2(Unit*, "find target", "mother shahraz");
 }
 
 bool MotherShahrazSinisterBeamKnocksBackPlayersTrigger::IsActive()
@@ -391,7 +385,7 @@ bool MotherShahrazSinisterBeamKnocksBackPlayersTrigger::IsActive()
     if (!botAI->IsRanged(bot) || bot->HasAura(SPELL_FATAL_ATTRACTION))
         return false;
 
-    return AI_VALUE2(Unit*, "find target", "mother shahraz") != nullptr;
+    return AI_VALUE2(Unit*, "find target", "mother shahraz");
 }
 
 bool MotherShahrazBotsAreLinkedByFatalAttractionTrigger::IsActive()

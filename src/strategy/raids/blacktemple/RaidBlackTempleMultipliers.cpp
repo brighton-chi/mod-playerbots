@@ -24,7 +24,8 @@ using namespace BlackTempleHelpers;
 float SupremusFocusOnAvoidanceInPhase2Multiplier::GetValue(Action* action)
 {
     Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
-    if (supremus && supremus->HasAura(SPELL_SNARE_SELF) && supremus->GetVictim() == bot)
+    if (supremus && supremus->HasAura(SPELL_SNARE_SELF) &&
+        supremus->GetVictim() == bot)
     {
         if (dynamic_cast<MovementAction*>(action) &&
             !dynamic_cast<SupremusKiteBossAction*>(action) &&
@@ -41,8 +42,7 @@ float SupremusFocusOnAvoidanceInPhase2Multiplier::GetValue(Action* action)
 // Teron Gorefiend
 float TeronGorefiendDisableMovementMultiplier::GetValue(Action* action)
 {
-    Unit* gorefiend = AI_VALUE2(Unit*, "find target", "teron gorefiend");
-    if (gorefiend)
+    if (AI_VALUE2(Unit*, "find target", "teron gorefiend"))
     {
         if (dynamic_cast<CombatFormationMoveAction*>(action) &&
             !dynamic_cast<SetBehindTargetAction*>(action))
@@ -96,8 +96,7 @@ float TeronGorefiendDisableAttackingConstructsMultiplier::GetValue(Action* actio
     if (botAI->IsHeal(bot))
         return 1.0f;
 
-    Unit* gorefiend = AI_VALUE2(Unit*, "find target", "teron gorefiend");
-    if (!gorefiend)
+    if (!AI_VALUE2(Unit*, "find target", "teron gorefiend"))
         return 1.0f;
 
     if (dynamic_cast<TankAssistAction*>(action))
@@ -116,8 +115,7 @@ float TeronGorefiendDisableAttackingConstructsMultiplier::GetValue(Action* actio
 
 float GurtoggBloodboilDisableMovementMultiplier::GetValue(Action* action)
 {
-    Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
-    if (gurtogg)
+    if (AI_VALUE2(Unit*, "find target", "gurtogg bloodboil"))
     {
         if (dynamic_cast<CombatFormationMoveAction*>(action) &&
             !dynamic_cast<SetBehindTargetAction*>(action))
@@ -171,19 +169,18 @@ float ReliquaryOfSoulsWaitForDpsMultiplier::GetValue(Action* action)
 
 float ReliquaryOfSoulsDontWasteHealingMultiplier::GetValue(Action* action)
 {
-    Unit* suffering = AI_VALUE2(Unit*, "find target", "essence of suffering");
-    if (!suffering)
-        return 1.0f;
-
-    if (dynamic_cast<CastPowerWordShieldOnAlmostFullHealthBelowAction*>(action) ||
-        dynamic_cast<CastPowerWordShieldOnNotFullAction*>(action) ||
-        dynamic_cast<CastPowerWordShieldAction*>(action) ||
-        dynamic_cast<CastPowerWordShieldOnPartyAction*>(action))
+    if (AI_VALUE2(Unit*, "find target", "essence of suffering"))
     {
-        return 10.0f;
+        if (dynamic_cast<CastPowerWordShieldOnAlmostFullHealthBelowAction*>(action) ||
+            dynamic_cast<CastPowerWordShieldOnNotFullAction*>(action) ||
+            dynamic_cast<CastPowerWordShieldAction*>(action) ||
+            dynamic_cast<CastPowerWordShieldOnPartyAction*>(action))
+        {
+            return 10.0f;
+        }
+        else if (dynamic_cast<CastHealingSpellAction*>(action))
+            return 0.0f;
     }
-    else if (dynamic_cast<CastHealingSpellAction*>(action))
-        return 0.0f;
 
     return 1.0f;
 }
@@ -231,8 +228,7 @@ float ReliquaryOfSoulsDontInterruptDeadenIfReflectableMultiplier::GetValue(Actio
 
 float MotherShahrazDisableMovementMultiplier::GetValue(Action* action)
 {
-    Unit* shahraz = AI_VALUE2(Unit*, "find target", "mother shahraz");
-    if (shahraz)
+    if (AI_VALUE2(Unit*, "find target", "mother shahraz"))
     {
         if (dynamic_cast<CombatFormationMoveAction*>(action) &&
             !dynamic_cast<SetBehindTargetAction*>(action))
