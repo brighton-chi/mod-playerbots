@@ -824,7 +824,7 @@ bool HexLordMalacrassAssignDpsPriorityAction::Execute(Event event)
         NPC_HEX_LORD_MALACRASS
     };
 
-    if (GetFirstAliveUnitByEntries(botAI, priorityEntries))
+    if (Unit* target = GetFirstAliveUnitByEntries(botAI, priorityEntries))
     {
         MarkTargetWithSkull(bot, target);
         SetRtiTarget(botAI, "skull", target);
