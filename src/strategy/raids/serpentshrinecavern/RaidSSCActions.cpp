@@ -674,9 +674,6 @@ bool TheLurkerBelowManageSpoutTimerAction::Execute(Event event)
 
 bool LeotherasTheBlindTargetSpellbindersAction::Execute(Event event)
 {
-    /* Unit* spellbinder = GetFirstAliveUnitByEntry(botAI, NPC_GREYHEART_SPELLBINDER);
-    if (spellbinder && spellbinder->IsInCombat())
-        MarkTargetWithSkull(bot, spellbinder); */
     if (Unit* spellbinder = GetFirstAliveUnitByEntry(botAI, NPC_GREYHEART_SPELLBINDER))
         MarkTargetWithSkull(bot, spellbinder);
 
