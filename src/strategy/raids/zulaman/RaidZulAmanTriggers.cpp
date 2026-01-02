@@ -9,8 +9,7 @@ using namespace ZulAmanHelpers;
 
 bool AmanishiMedicineManSummonedWardTrigger::IsActive()
 {
-    Unit* medicineMan = AI_VALUE2(Unit*, "find target", "amani'shi medicine man");
-    return medicineMan != nullptr;
+    return AI_VALUE2(Unit*, "find target", "amani'shi medicine man");
 }
 
 // Akil'zon <Eagle Avatar>
@@ -29,8 +28,7 @@ bool AkilzonBossEngagedByMainTankTrigger::IsActive()
     if (!botAI->IsMainTank(bot))
         return false;
 
-    Unit* akilzon = AI_VALUE2(Unit*, "find target", "akil'zon");
-    if (!akilzon)
+    if (!AI_VALUE2(Unit*, "find target", "akil'zon"))
         return false;
 
     return !AnyGroupMemberHasElectricalStorm(bot);
@@ -41,8 +39,7 @@ bool AkilzonBossCastsStaticDisruptionTrigger::IsActive()
     if (!botAI->IsRanged(bot))
         return false;
 
-    Unit* akilzon = AI_VALUE2(Unit*, "find target", "akil'zon");
-    if (!akilzon)
+    if (!AI_VALUE2(Unit*, "find target", "akil'zon"))
         return false;
 
     return !AnyGroupMemberHasElectricalStorm(bot);
@@ -50,8 +47,7 @@ bool AkilzonBossCastsStaticDisruptionTrigger::IsActive()
 
 bool AkilzonElectricalStormHasFormedTrigger::IsActive()
 {
-    Unit* akilzon = AI_VALUE2(Unit*, "find target", "akil'zon");
-    if (!akilzon)
+    if (!AI_VALUE2(Unit*, "find target", "akil'zon"))
         return false;
 
     return AnyGroupMemberHasElectricalStorm(bot);
@@ -73,8 +69,7 @@ bool NalorakkBossSwitchesFormsTrigger::IsActive()
     if (!botAI->IsMainTank(bot) && !botAI->IsAssistTankOfIndex(bot, 0))
         return false;
 
-    Unit* nalorakk = AI_VALUE2(Unit*, "find target", "nalorakk");
-    return nalorakk != nullptr;
+    return AI_VALUE2(Unit*, "find target", "nalorakk");
 }
 
 bool NalorakkBossCastsSurgeTrigger::IsActive()
@@ -82,8 +77,7 @@ bool NalorakkBossCastsSurgeTrigger::IsActive()
     if (!botAI->IsRanged(bot))
         return false;
 
-    Unit* nalorakk = AI_VALUE2(Unit*, "find target", "nalorakk");
-    return nalorakk != nullptr;
+    return AI_VALUE2(Unit*, "find target", "nalorakk");
 }
 
 // Jan'alai <Dragonhawk Avatar>
@@ -102,8 +96,7 @@ bool JanalaiBossEngagedByMainTankTrigger::IsActive()
     if (!botAI->IsMainTank(bot))
         return false;
 
-    Unit* janalai = AI_VALUE2(Unit*, "find target", "jan'alai");
-    if (!janalai)
+    if (!AI_VALUE2(Unit*, "find target", "jan'alai"))
         return false;
 
     if (AnyNearbyNpcWithEntry(botAI, NPC_FIRE_BOMB))
@@ -117,12 +110,10 @@ bool JanalaiBossCastsFlameBreathTrigger::IsActive()
     if (!botAI->IsRanged(bot))
         return false;
 
-    Unit* janalai = AI_VALUE2(Unit*, "find target", "jan'alai");
-    if (!janalai)
+    if (!AI_VALUE2(Unit*, "find target", "jan'alai"))
         return false;
 
-    Unit* hatchling = GetFirstAliveUnitByEntry(botAI, NPC_AMANI_DRAGONHAWK_HATCHLING);
-    if (hatchling)
+    if (GetFirstAliveUnitByEntry(botAI, NPC_AMANI_DRAGONHAWK_HATCHLING))
         return false;
 
     if (AnyNearbyNpcWithEntry(botAI, NPC_FIRE_BOMB))
@@ -133,8 +124,7 @@ bool JanalaiBossCastsFlameBreathTrigger::IsActive()
 
 bool JanalaiBossSummoningFireBombsTrigger::IsActive()
 {
-    Unit* janalai = AI_VALUE2(Unit*, "find target", "jan'alai");
-    if (!janalai)
+    if (!AI_VALUE2(Unit*, "find target", "jan'alai"))
         return false;
 
     return AnyNearbyNpcWithEntry(botAI, NPC_FIRE_BOMB);
@@ -145,8 +135,7 @@ bool JanalaiAmaniHatchersSpawnedTrigger::IsActive()
     if (!botAI->IsDps(bot))
         return false;
 
-    Unit* hatcher = GetFirstAliveUnitByEntry(botAI, NPC_AMANI_HATCHER);
-    return hatcher != nullptr;
+    return GetFirstAliveUnitByEntry(botAI, NPC_AMANI_HATCHER);
 }
 
 // Halazzi <Lynx Avatar>
@@ -165,8 +154,7 @@ bool HalazziBossEngagedByMainTankTrigger::IsActive()
     if (!botAI->IsMainTank(bot))
         return false;
 
-    Unit* halazzi = AI_VALUE2(Unit*, "find target", "halazzi");
-    return halazzi != nullptr;
+    return AI_VALUE2(Unit*, "find target", "halazzi");
 }
 
 bool HalazziBossSummonsSpiritLynxTrigger::IsActive()
@@ -174,8 +162,7 @@ bool HalazziBossSummonsSpiritLynxTrigger::IsActive()
     if (!botAI->IsAssistTankOfIndex(bot, 0))
         return false;
 
-    Unit* halazzi = AI_VALUE2(Unit*, "find target", "halazzi");
-    return halazzi != nullptr;
+    return AI_VALUE2(Unit*, "find target", "halazzi");
 }
 
 bool HalazziDeterminingDpsTargetTrigger::IsActive()
@@ -183,8 +170,7 @@ bool HalazziDeterminingDpsTargetTrigger::IsActive()
     if (!botAI->IsDps(bot))
         return false;
 
-    Unit* halazzi = AI_VALUE2(Unit*, "find target", "halazzi");
-    return halazzi != nullptr;
+    return AI_VALUE2(Unit*, "find target", "halazzi");
 }
 
 // Hex Lord Malacrass
@@ -203,8 +189,7 @@ bool HexLordMalacrassDeterminingKillOrderTrigger::IsActive()
     if (!botAI->IsDps(bot))
         return false;
 
-    Unit* malacrass = AI_VALUE2(Unit*, "find target", "hex lord malacrass");
-    return malacrass != nullptr;
+    return AI_VALUE2(Unit*, "find target", "hex lord malacrass");
 }
 
 bool HexLordMalacrassBossHasSiphonedBuffTrigger::IsActive()

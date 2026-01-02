@@ -23,8 +23,7 @@ using namespace ZulAmanHelpers;
 
 float AkilzonDisableCombatFormationMoveMultiplier::GetValue(Action* action)
 {
-    Unit* akilzon = AI_VALUE2(Unit*, "find target", "akil'zon");
-    if (akilzon)
+    if (AI_VALUE2(Unit*, "find target", "akil'zon"))
     {
         if (dynamic_cast<CombatFormationMoveAction*>(action) &&
             !dynamic_cast<SetBehindTargetAction*>(action))
@@ -36,8 +35,7 @@ float AkilzonDisableCombatFormationMoveMultiplier::GetValue(Action* action)
 
 float AkilzonStayInEyeOfTheStormMultiplier::GetValue(Action* action)
 {
-    Unit* akilzon = AI_VALUE2(Unit*, "find target", "akil'zon");
-    if (!akilzon)
+    if (!AI_VALUE2(Unit*, "find target", "akil'zon"))
         return 1.0f;
 
     if (!AnyGroupMemberHasElectricalStorm(bot))
@@ -99,8 +97,7 @@ float NalorakkControlMisdirectionMultiplier::GetValue(Action* action)
     if (bot->getClass() != CLASS_HUNTER)
         return 1.0f;
 
-    Unit* nalorakk = AI_VALUE2(Unit*, "find target", "nalorakk");
-    if (nalorakk)
+    if (AI_VALUE2(Unit*, "find target", "nalorakk"))
     {
         if (dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
             return 0.0f;
@@ -116,8 +113,7 @@ float JanalaiDisableTankActionsMultiplier::GetValue(Action* action)
     if (!botAI->IsTank(bot))
         return 1.0f;
 
-    Unit* janalai = AI_VALUE2(Unit*, "find target", "jan'alai");
-    if (!janalai)
+    if (!AI_VALUE2(Unit*, "find target", "jan'alai"))
         return 1.0f;
 
     if (dynamic_cast<TankFaceAction*>(action))
@@ -129,9 +125,7 @@ float JanalaiDisableTankActionsMultiplier::GetValue(Action* action)
             return 0.0f;
     }
 
-    Unit* hatchling =
-        GetFirstAliveUnitByEntry(botAI, NPC_AMANI_DRAGONHAWK_HATCHLING);
-    if (!hatchling)
+    if (!GetFirstAliveUnitByEntry(botAI, NPC_AMANI_DRAGONHAWK_HATCHLING))
     {
         if (botAI->IsAssistTank(bot) && bot->GetVictim() != nullptr)
         {
@@ -148,8 +142,7 @@ float JanalaiDisableCombatFormationMoveMultiplier::GetValue(Action* action)
     if (!botAI->IsRanged(bot))
         return 1.0f;
 
-    Unit* janalai = AI_VALUE2(Unit*, "find target", "jan'alai");
-    if (janalai)
+    if (AI_VALUE2(Unit*, "find target", "jan'alai"))
     {
         if (dynamic_cast<CombatFormationMoveAction*>(action) &&
             !dynamic_cast<SetBehindTargetAction*>(action))
@@ -179,8 +172,7 @@ float JanalaiStayAwayFromFireBombsMultiplier::GetValue(Action* action)
 
 float JanalaiDoNotCrowdControlHatchersMultiplier::GetValue(Action* action)
 {
-    Unit* hatcher = AI_VALUE2(Unit*, "find target", "amani'shi hatcher");
-    if (hatcher)
+    if (AI_VALUE2(Unit*, "find target", "amani'shi hatcher"))
     {
         if (dynamic_cast<CastCrowdControlSpellAction*>(action) ||
             dynamic_cast<CastPolymorphAction*>(action))
@@ -213,8 +205,7 @@ float JanalaiDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
 
 float HalazziDisableTankActionsMultiplier::GetValue(Action* action)
 {
-    Unit* halazzi = AI_VALUE2(Unit*, "find target", "halazzi");
-    if (!halazzi)
+    if (!AI_VALUE2(Unit*, "find target", "halazzi"))
         return 1.0f;
 
     if (!botAI->IsTank(bot))
@@ -225,8 +216,7 @@ float HalazziDisableTankActionsMultiplier::GetValue(Action* action)
 
     if (!botAI->IsMainTank(bot))
     {
-        Unit* lynx = AI_VALUE2(Unit*, "find target", "spirit of the lynx");
-        if (!lynx)
+        if (!AI_VALUE2(Unit*, "find target", "spirit of the lynx"))
             return 1.0f;
 
         if (bot->GetVictim() != nullptr &&
@@ -248,8 +238,7 @@ float HalazziControlMisdirectionMultiplier::GetValue(Action* action)
     if (bot->getClass() != CLASS_HUNTER)
         return 1.0f;
 
-    Unit* halazzi = AI_VALUE2(Unit*, "find target", "halazzi");
-    if (halazzi)
+    if (AI_VALUE2(Unit*, "find target", "halazzi"))
     {
         if (dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
             return 0.0f;
@@ -267,8 +256,7 @@ float HexLordMalacrassDoNotDispelUnstableAfflictionMultiplier::GetValue(Action* 
         bot->getClass() != CLASS_WARLOCK)
         return 1.0f;
 
-    Unit* malacrass = AI_VALUE2(Unit*, "find target", "hex lord malacrass");
-    if (!malacrass)
+    if (!AI_VALUE2(Unit*, "find target", "hex lord malacrass"))
         return 1.0f;
 
     bool hasUnstableAffliction = false;
@@ -308,8 +296,7 @@ float ZuljinDisableTankFaceMultiplier::GetValue(Action* action)
     if (!botAI->IsTank(bot))
         return 1.0f;
 
-    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
-    if (zuljin)
+    if (AI_VALUE2(Unit*, "find target", "zul'jin"))
     {
         if (dynamic_cast<TankFaceAction*>(action))
             return 0.0f;

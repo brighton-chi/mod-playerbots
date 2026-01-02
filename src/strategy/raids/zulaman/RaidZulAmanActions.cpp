@@ -9,8 +9,7 @@ using namespace ZulAmanHelpers;
 
 bool AmanishiMedicineManMarkWardAction::Execute(Event event)
 {
-    Unit* protectiveWard = GetFirstAliveUnitByEntry(botAI, NPC_AMANI_PROTECTIVE_WARD);
-    if (protectiveWard)
+    if (Unit* protectiveWard = GetFirstAliveUnitByEntry(botAI, NPC_AMANI_PROTECTIVE_WARD))
         MarkTargetWithSkull(bot, protectiveWard);
     else if (Unit* healingWard = GetFirstAliveUnitByEntry(botAI, NPC_AMANI_HEALING_WARD))
         MarkTargetWithSkull(bot, healingWard);
@@ -85,9 +84,7 @@ bool AkilzonMainTankPositionBossAction::Execute(Event event)
 bool AkilzonSpreadRangedAction::Execute(Event event)
 {
     const float minDistance = 13.0f;
-    Unit* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance);
-
-    if (nearestPlayer)
+    if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance))
     {
         const uint32 minInterval = 1000;
         return FleePosition(nearestPlayer->GetPosition(), minDistance + 0.5f, minInterval);
@@ -116,8 +113,7 @@ bool AkilzonMoveToEyeOfTheStormAction::Execute(Event event)
     if (!stormTarget)
         return false;
 
-    float distanceFromStorm = bot->GetExactDist2d(stormTarget);
-    if (distanceFromStorm > 2.0f)
+    if (bot->GetExactDist2d(stormTarget) > 2.0f)
     {
         botAI->Reset();
         return MoveTo(ZULAMAN_MAP_ID, stormTarget->GetPositionX(), stormTarget->GetPositionY(),
@@ -828,9 +824,7 @@ bool HexLordMalacrassAssignDpsPriorityAction::Execute(Event event)
         NPC_HEX_LORD_MALACRASS
     };
 
-    Unit* target = GetFirstAliveUnitByEntries(botAI, priorityEntries);
-
-    if (target)
+    if (GetFirstAliveUnitByEntries(botAI, priorityEntries))
     {
         MarkTargetWithSkull(bot, target);
         SetRtiTarget(botAI, "skull", target);
@@ -956,8 +950,7 @@ bool ZuljinMainTankPositionBossAction::Execute(Event event)
 
 bool ZuljinRunAwayFromWhirlwindAction::Execute(Event event)
 {
-    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
-    if (zuljin)
+    if (Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin"))
     {
         float currentDistance = bot->GetExactDist2d(zuljin);
         const float safeDistance = 10.0f;
@@ -979,9 +972,7 @@ bool ZuljinSpreadRangedAction::Execute(Event event)
         return false;
 
     const float minDistance = zuljin->HasAura(SPELL_SHAPE_OF_THE_EAGLE) ? 14.0f : 5.0f;
-    Unit* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance);
-
-    if (nearestPlayer)
+    if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance))
     {
         const uint32 minInterval = 1000;
         return FleePosition(nearestPlayer->GetPosition(), minDistance + 1.0f, minInterval);
