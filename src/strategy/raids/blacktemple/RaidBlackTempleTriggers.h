@@ -267,6 +267,14 @@ public:
 
 // Illidari Council
 
+class IllidariCouncilPullingBossesTrigger : public Trigger
+{
+public:
+    IllidariCouncilPullingBossesTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "illidari council pulling bosses") {}
+    bool IsActive() override;
+};
+
 // Illidan Stormrage <The Betrayer>
 
 #endif

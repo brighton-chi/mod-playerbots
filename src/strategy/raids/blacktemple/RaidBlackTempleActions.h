@@ -284,6 +284,14 @@ public:
 
 // Illidari Council
 
+class IllidariCouncilMisdirectBossesToTanksAction : public AttackAction
+{
+public:
+    IllidariCouncilMisdirectBossesToTanksAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "illidari council misdirect bosses to tanks") {}
+    bool Execute(Event event) override;
+};
+
 // Illidan Stormrage <The Betrayer>
 
 #endif

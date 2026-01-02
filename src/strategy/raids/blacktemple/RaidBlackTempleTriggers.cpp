@@ -395,4 +395,13 @@ bool MotherShahrazBotsAreLinkedByFatalAttractionTrigger::IsActive()
 
 // Illidari Council
 
+bool IllidariCouncilPullingBossesTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_HUNTER)
+        return false;
+
+    Unit* gathios = AI_VALUE2(Unit*, "find target", "gathios the shatterer");
+    return gathios && gathios->GetHealthPct() > 95.0f;
+}
+
 // Illidan Stormrage <The Betrayer>

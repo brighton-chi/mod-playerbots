@@ -259,4 +259,20 @@ float MotherShahrazBotsWithFatalAttractionOnlyRunAwayMultiplier::GetValue(Action
 
 // Illidari Council
 
+float IllidariCouncilDisableArcaneShotOnZerevorMultiplier::GetValue(Action* action)
+{
+    Unit* zerevor = AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");
+    if (!zerevor)
+        return 1.0f;
+
+    Unit* target = AI_VALUE(Unit*, "current target");
+    if (target && target->GetGUID() == zerevor->GetGUID())
+    {
+        if (dynamic_cast<CastArcaneShotAction*>(action))
+            return 0.0f;
+    }
+
+    return 1.0f;
+}
+
 // Illidan Stormrage <The Betrayer>

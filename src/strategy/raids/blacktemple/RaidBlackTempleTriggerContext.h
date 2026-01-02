@@ -119,6 +119,9 @@ public:
 
         // Illidari Council
 
+        creators["illidari council pulling bosses"] =
+            &RaidBlackTempleTriggerContext::illidari_council_pulling_bosses;
+
         // Illidan Stormrage <The Betrayer>
     }
 
@@ -232,6 +235,9 @@ private:
         PlayerbotAI* botAI) { return new MotherShahrazBotsAreLinkedByFatalAttractionTrigger(botAI); }
 
     // Illidari Council
+
+    static Trigger* illidari_council_pulling_bosses(
+        PlayerbotAI* botAI) { return new IllidariCouncilPullingBossesTrigger(botAI); }
 
     // Illidan Stormrage <The Betrayer>
 };

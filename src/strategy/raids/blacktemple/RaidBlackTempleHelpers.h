@@ -133,6 +133,7 @@ namespace BlackTempleHelpers
     extern std::unordered_map<ObjectGuid, uint8> shahrazTankStep;
 
     // Illidari Council
+    Player* GetMageTank(PlayerbotAI* botAI, Player* bot);
 
     // Illidan Stormrage <The Betrayer>
 }

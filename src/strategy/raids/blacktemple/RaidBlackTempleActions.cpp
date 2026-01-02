@@ -1348,4 +1348,96 @@ bool MotherShahrazRunAwayToBreakFatalAttractionAction::Execute(Event event)
 
 // Illidari Council
 
+bool IllidariCouncilMisdirectBossesToTanksAction::Execute(Event event)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    std::vector<Player*> hunters;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && member->IsAlive() && member->getClass() == CLASS_HUNTER && GET_PLAYERBOT_AI(member))
+            hunters.push_back(member);
+
+        if (hunters.size() >= 4)
+            break;
+    }
+
+    int8 hunterIndex = -1;
+    for (size_t i = 0; i < hunters.size(); ++i)
+    {
+        if (hunters[i] == bot)
+        {
+            hunterIndex = static_cast<int8>(i);
+            break;
+        }
+    }
+    if (hunterIndex == -1)
+        return false;
+
+    Unit* councilTarget = nullptr;
+    Player* tankTarget = nullptr;
+    if (hunterIndex == 0)
+    {
+        councilTarget = AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");
+        tankTarget = GetMageTank(botAI, bot);
+    }
+    else if (hunterIndex == 1)
+    {
+        councilTarget = AI_VALUE2(Unit*, "find target", "lady malande");
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (member && member->IsAlive() && GET_PLAYERBOT_AI(member)->IsAssistTankOfIndex(member, 0))
+            {
+                tankTarget = member;
+                break;
+            }
+        }
+    }
+    else if (hunterIndex == 2)
+    {
+        councilTarget = AI_VALUE2(Unit*, "find target", "gathios the shatterer");
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (member && member->IsAlive() && GET_PLAYERBOT_AI(member)->IsMainTank(member))
+            {
+                tankTarget = member;
+                break;
+            }
+        }
+    }
+    else if (hunterIndex == 3)
+    {
+        councilTarget = AI_VALUE2(Unit*, "find target", "veras darkshadow");
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (member && member->IsAlive() && GET_PLAYERBOT_AI(member)->IsAssistTankOfIndex(member, 1))
+            {
+                tankTarget = member;
+                break;
+            }
+        }
+    }
+
+    if (!councilTarget)
+        return false;
+
+    if (!tankTarget || !tankTarget->IsAlive())
+        return false;
+
+    if (botAI->CanCastSpell("misdirection", tankTarget))
+        return botAI->CastSpell("misdirection", tankTarget);
+
+    if (bot->HasAura(SPELL_MISDIRECTION) && botAI->CanCastSpell("steady shot", councilTarget))
+        return botAI->CastSpell("steady shot", councilTarget);
+
+    return false;
+}
+
+
 // Illidan Stormrage <The Betrayer>

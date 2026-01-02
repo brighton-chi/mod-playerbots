@@ -114,6 +114,9 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     ));
 
     // Illidari Council
+    triggers.push_back(new TriggerNode("illidari council pulling bosses",
+        NextAction::array(0, new NextAction("illidari council misdirect bosses to tanks", ACTION_RAID + 2), nullptr)
+    ));
 
     // Illidan Stormrage <The Betrayer>
 }
@@ -148,6 +151,7 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new MotherShahrazBotsWithFatalAttractionOnlyRunAwayMultiplier(botAI));
 
     // Illidari Council
+    multipliers.push_back(new IllidariCouncilDisableArcaneShotOnZerevorMultiplier(botAI));
 
     // Illidan Stormrage <The Betrayer>
 }

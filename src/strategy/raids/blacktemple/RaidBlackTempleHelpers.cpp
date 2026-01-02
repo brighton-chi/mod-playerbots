@@ -181,6 +181,46 @@ namespace BlackTempleHelpers
 
     // Illidari Council
 
+    Player* GetMageTank(PlayerbotAI* botAI, Player* bot)
+    {
+        Group* group = bot->GetGroup();
+        if (!group)
+            return nullptr;
+
+        // (1) Look for an assistant Mage (real player or bot)
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || member->getClass() != CLASS_MAGE)
+                continue;
+
+            if (group->IsAssistant(member->GetGUID()))
+                return member;
+        }
+
+        // (2) Fall back to bot Mage with highest HP
+        Player* highestHpMage = nullptr;
+        uint32 highestHp = 0;
+
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) ||
+                member->getClass() != CLASS_MAGE)
+                continue;
+
+            uint32 hp = member->GetMaxHealth();
+            if (!highestHpMage || hp > highestHp)
+            {
+                highestHpMage = member;
+                highestHp = hp;
+            }
+        }
+
+        // (3) Return the found Mage tank, or nullptr if none found
+        return highestHpMage;
+    }
+
     // Illidan Stormrage <The Betrayer>
 
 }

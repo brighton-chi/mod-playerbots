@@ -122,6 +122,9 @@ public:
 
         // Illidari Council
 
+        creators["illidari council misdirect bosses to tanks"] =
+            &RaidBlackTempleActionContext::illidari_council_misdirect_bosses_to_tanks;
+
         // Illidan Stormrage <The Betrayer>
     }
 
@@ -238,6 +241,9 @@ private:
         PlayerbotAI* botAI) { return new MotherShahrazRunAwayToBreakFatalAttractionAction(botAI); }
 
     // Illidari Council
+
+    static Action* illidari_council_misdirect_bosses_to_tanks(
+        PlayerbotAI* botAI) { return new IllidariCouncilMisdirectBossesToTanksAction(botAI); }
 
     // Illidan Stormrage <The Betrayer>
 };

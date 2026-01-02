@@ -106,6 +106,14 @@ public:
 
 // Illidari Council
 
+class IllidariCouncilDisableArcaneShotOnZerevorMultiplier : public Multiplier
+{
+public:
+    IllidariCouncilDisableArcaneShotOnZerevorMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "illidari council disable arcane shot on zerevor multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
 // Illidan Stormrage <The Betrayer>
 
 #endif
