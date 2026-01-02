@@ -122,6 +122,27 @@ public:
         creators["illidari council pulling bosses"] =
             &RaidBlackTempleTriggerContext::illidari_council_pulling_bosses;
 
+        creators["illidari council gathios engaged by main tank"] =
+            &RaidBlackTempleTriggerContext::illidari_council_gathios_engaged_by_main_tank;
+
+        creators["illidari council gathios casting judgement of command"] =
+            &RaidBlackTempleTriggerContext::illidari_council_gathios_casting_judgement_of_command;
+
+        creators["illidari council malande engaged by first assist tank"] =
+            &RaidBlackTempleTriggerContext::illidari_council_malande_engaged_by_first_assist_tank;
+
+        creators["illidari council darkshadow engaged by second assist tank"] =
+            &RaidBlackTempleTriggerContext::illidari_council_darkshadow_engaged_by_second_assist_tank;
+
+        creators["illidari council zerevor engaged by mage tank"] =
+            &RaidBlackTempleTriggerContext::illidari_council_zerevor_engaged_by_mage_tank;
+
+        creators["illidari council determining dps assignments"] =
+            &RaidBlackTempleTriggerContext::illidari_council_determining_dps_assignments;
+
+        creators["illidari council need to manage dps timer"] =
+            &RaidBlackTempleTriggerContext::illidari_council_need_to_manage_dps_timer;
+
         // Illidan Stormrage <The Betrayer>
     }
 
@@ -238,6 +259,27 @@ private:
 
     static Trigger* illidari_council_pulling_bosses(
         PlayerbotAI* botAI) { return new IllidariCouncilPullingBossesTrigger(botAI); }
+
+    static Trigger* illidari_council_gathios_engaged_by_main_tank(
+        PlayerbotAI* botAI) { return new IllidariCouncilGathiosEngagedByMainTankTrigger(botAI); }
+
+    static Trigger* illidari_council_gathios_casting_judgement_of_command(
+        PlayerbotAI* botAI) { return new IllidariCouncilGathiosCastingJudgementOfCommandTrigger(botAI); }
+
+    static Trigger* illidari_council_malande_engaged_by_first_assist_tank(
+        PlayerbotAI* botAI) { return new IllidariCouncilMalandeEngagedByFirstAssistTankTrigger(botAI); }
+
+    static Trigger* illidari_council_darkshadow_engaged_by_second_assist_tank(
+        PlayerbotAI* botAI) { return new IllidariCouncilDarkshadowEngagedBySecondAssistTankTrigger(botAI); }
+
+    static Trigger* illidari_council_zerevor_engaged_by_mage_tank(
+        PlayerbotAI* botAI) { return new IllidariCouncilZerevorEngagedByMageTankTrigger(botAI); }
+
+    static Trigger* illidari_council_determining_dps_assignments(
+        PlayerbotAI* botAI) { return new IllidariCouncilDeterminingDpsAssignmentsTrigger(botAI); }
+
+    static Trigger* illidari_council_need_to_manage_dps_timer(
+        PlayerbotAI* botAI) { return new IllidariCouncilNeedToManageDpsTimerTrigger(botAI); }
 
     // Illidan Stormrage <The Betrayer>
 };

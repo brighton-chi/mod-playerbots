@@ -8,6 +8,7 @@
 #include "FollowActions.h"
 #include "HunterActions.h"
 #include "MageActions.h"
+#include "PaladinActions.h"
 #include "PriestActions.h"
 #include "ReachTargetActions.h"
 #include "RogueActions.h"
@@ -259,6 +260,67 @@ float MotherShahrazBotsWithFatalAttractionOnlyRunAwayMultiplier::GetValue(Action
 
 // Illidari Council
 
+float IllidariCouncilDisableTankActionsMultiplier::GetValue(Action* action)
+{
+    if (!botAI->IsTank(bot))
+        return 1.0f;
+
+    if (!AI_VALUE2(Unit*, "find target", "gathios the shatterer"))
+        return 1.0f;
+
+    if ((bot->GetVictim() != nullptr && dynamic_cast<TankAssistAction*>(action)) ||
+        dynamic_cast<CombatFormationMoveAction*>(action) ||
+        dynamic_cast<AvoidAoeAction*>(action) ||
+        dynamic_cast<CastTauntAction*>(action) ||
+        dynamic_cast<CastChallengingShoutAction*>(action) ||
+        dynamic_cast<CastThunderClapAction*>(action) ||
+        dynamic_cast<CastShockwaveAction*>(action) ||
+        dynamic_cast<CastCleaveAction*>(action) ||
+        dynamic_cast<CastGrowlAction*>(action) ||
+        dynamic_cast<CastSwipeAction*>(action) ||
+        dynamic_cast<CastHandOfReckoningAction*>(action) ||
+        dynamic_cast<CastAvengersShieldAction*>(action) ||
+        dynamic_cast<CastConsecrationAction*>(action) ||
+        dynamic_cast<CastDarkCommandAction*>(action) ||
+        dynamic_cast<CastDeathAndDecayAction*>(action) ||
+        dynamic_cast<CastPestilenceAction*>(action) ||
+        dynamic_cast<CastBloodBoilAction*>(action))
+        return 0.0f;
+
+    return 1.0f;
+}
+
+float IllidariCouncilDisableAoeMultiplier::GetValue(Action* action)
+{
+    if (botAI->IsHeal(bot))
+        return 1.0f;
+
+    if (!AI_VALUE2(Unit*, "find target", "gathios the shatterer"))
+        return 1.0f;
+
+    if (auto castSpellAction = dynamic_cast<CastSpellAction*>(action))
+    {
+        if (castSpellAction->getThreatType() == Action::ActionThreatType::Aoe)
+            return 0.0f;
+    }
+
+    return 1.0f;
+}
+
+float IllidariCouncilControlMisdirectionMultiplier::GetValue(Action* action)
+{
+    if (bot->getClass() != CLASS_HUNTER)
+        return 1.0f;
+
+    if (AI_VALUE2(Unit*, "find target", "high nethermancer zerevor"))
+    {
+        if (dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
+            return 0.0f;
+    }
+
+    return 1.0f;
+}
+
 float IllidariCouncilDisableArcaneShotOnZerevorMultiplier::GetValue(Action* action)
 {
     Unit* zerevor = AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");
@@ -270,6 +332,63 @@ float IllidariCouncilDisableArcaneShotOnZerevorMultiplier::GetValue(Action* acti
     {
         if (dynamic_cast<CastArcaneShotAction*>(action))
             return 0.0f;
+    }
+
+    return 1.0f;
+}
+
+float IllidariCouncilManageInterruptsMultiplier::GetValue(Action* action)
+{
+    if (bot->getClass() != CLASS_ROGUE &&
+        (bot->getClass() != CLASS_SHAMAN && botAI->IsDps(bot)) &&
+        (bot->getClass() == CLASS_WARRIOR && botAI->IsDps(bot) && !botAI->IsAssistTankOfIndex(bot, 0)))
+        return 1.0f;
+
+    Unit* malande = AI_VALUE2(Unit*, "find target", "lady malande");
+    if (malande)
+    {
+        if (malande->HasAura(SPELL_BLESSING_OF_PROTECTION))
+        {
+            if (dynamic_cast<CastKickAction*>(action) ||
+                dynamic_cast<CastPummelAction*>(action) ||
+                dynamic_cast<CastShieldBashAction*>(action))
+                return 0.0f;
+        }
+        else if (malande->HasAura(SPELL_BLESSING_OF_SPELL_WARDING))
+        {
+            if (dynamic_cast<CastWindShearAction*>(action))
+                return 0.0f;
+        }
+    }
+
+    return 1.0f;
+}
+
+float IllidariCouncilWaitForDpsMultiplier::GetValue(Action* action)
+{
+    if (botAI->IsMainTank(bot) ||
+        botAI->IsAssistTankOfIndex(bot, 0) ||
+        botAI->IsAssistTankOfIndex(bot, 1) ||
+        GetMageTank(botAI, bot) == bot)
+        return 1.0f;
+
+    Unit* gathios = AI_VALUE2(Unit*, "find target", "gathios the shatterer");
+    if (!gathios)
+        return 1.0f;
+
+    if (dynamic_cast<IllidariCouncilMisdirectBossesToTanksAction*>(action))
+        return 1.0f;
+
+    const time_t now = std::time(nullptr);
+    const uint8 dpsWaitSeconds = 8;
+
+    auto it = councilDpsWaitTimer.find(bot->GetMap()->GetInstanceId());
+    if (it == councilDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
+    {
+        if (dynamic_cast<AttackAction*>(action) ||
+            (dynamic_cast<CastSpellAction*>(action) &&
+             !dynamic_cast<CastHealingSpellAction*>(action)))
+             return 0.0f;
     }
 
     return 1.0f;

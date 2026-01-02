@@ -404,4 +404,73 @@ bool IllidariCouncilPullingBossesTrigger::IsActive()
     return gathios && gathios->GetHealthPct() > 95.0f;
 }
 
+bool IllidariCouncilGathiosEngagedByMainTankTrigger::IsActive()
+{
+    return botAI->IsMainTank(bot) &&
+           AI_VALUE2(Unit*, "find target", "gathios the shatterer");
+}
+
+bool IllidariCouncilGathiosCastingJudgementOfCommandTrigger::IsActive()
+{
+    if (!botAI->IsMainTank(bot))
+        return false;
+
+    Unit* gathios = AI_VALUE2(Unit*, "find target", "gathios the shatterer");
+    if (!gathios || !gathios->HasAura(SPELL_SEAL_OF_COMMAND) ||
+        !gathios->HasUnitState(UNIT_STATE_CASTING))
+        return false;
+
+    Spell* spell = gathios->GetCurrentSpell(CURRENT_GENERIC_SPELL);
+    if (!spell || spell->m_spellInfo->Id != SPELL_JUDGEMENT)
+        return false;
+
+    Unit* target = spell->m_targets.GetUnitTarget();
+    return target && target->GetGUID() == bot->GetGUID();
+}
+
+bool IllidariCouncilMalandeEngagedByFirstAssistTankTrigger::IsActive()
+{
+    return botAI->IsAssistTankOfIndex(bot, 0) &&
+           AI_VALUE2(Unit*, "find target", "lady malande");
+}
+
+bool IllidariCouncilDarkshadowEngagedBySecondAssistTankTrigger::IsActive()
+{
+    if (!botAI->IsAssistTankOfIndex(bot, 1))
+        return false;
+
+    Unit* darkshadow = AI_VALUE2(Unit*, "find target", "veras darkshadow");
+    return darkshadow && !darkshadow->HasAura(SPELL_VANISH);
+}
+
+bool IllidariCouncilZerevorEngagedByMageTankTrigger::IsActive()
+{
+    return GetMageTank(botAI, bot) == bot &&
+           AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");
+}
+
+bool IllidariCouncilDeterminingDpsAssignmentsTrigger::IsActive()
+{
+    if (botAI->IsHeal(bot) || botAI->IsMainTank(bot) ||
+        botAI->IsAssistTankOfIndex(bot, 0) ||
+        GetMageTank(botAI, bot) == bot)
+        return false;
+
+    Unit* darkshadow = AI_VALUE2(Unit*, "find target", "veras darkshadow");
+    if (botAI->IsAssistTankOfIndex(bot, 1) &&
+        darkshadow && !darkshadow->HasAura(SPELL_VANISH))
+        return false;
+
+    return AI_VALUE2(Unit*, "find target", "lady malande") &&
+           AI_VALUE2(Unit*, "find target", "gathios the shatterer");
+}
+
+bool IllidariCouncilNeedToManageDpsTimerTrigger::IsActive()
+{
+    if (!IsInstanceTimerManager(botAI, bot))
+        return false;
+
+    return AI_VALUE2(Unit*, "find target", "gathios the shatterer");
+}
+
 // Illidan Stormrage <The Betrayer>

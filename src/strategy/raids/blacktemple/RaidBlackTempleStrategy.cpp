@@ -117,6 +117,27 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("illidari council pulling bosses",
         NextAction::array(0, new NextAction("illidari council misdirect bosses to tanks", ACTION_RAID + 2), nullptr)
     ));
+    triggers.push_back(new TriggerNode("illidari council gathios engaged by main tank",
+        NextAction::array(0, new NextAction("illidari council main tank position gathios", ACTION_RAID + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("illidari council gathios casting judgement of command",
+        NextAction::array(0, new NextAction("illidari council main tank reflect judgement of command", ACTION_EMERGENCY + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("illidari council malande engaged by first assist tank",
+        NextAction::array(0, new NextAction("illidari council first assist tank position malande", ACTION_RAID + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("illidari council darkshadow engaged by second assist tank",
+        NextAction::array(0, new NextAction("illidari council second assist tank position darkshadow", ACTION_RAID + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("illidari council zerevor engaged by mage tank",
+        NextAction::array(0, new NextAction("illidari council mage tank position zerevor", ACTION_EMERGENCY + 6), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("illidari council determining dps assignments",
+        NextAction::array(0, new NextAction("illidari council assign dps targets", ACTION_RAID + 1), nullptr)
+    ));
+    triggers.push_back(new TriggerNode("illidari council need to manage dps timer",
+        NextAction::array(0, new NextAction("illidari council manage dps timer", ACTION_EMERGENCY + 10), nullptr)
+    ));
 
     // Illidan Stormrage <The Betrayer>
 }
@@ -151,7 +172,12 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new MotherShahrazBotsWithFatalAttractionOnlyRunAwayMultiplier(botAI));
 
     // Illidari Council
+    multipliers.push_back(new IllidariCouncilDisableTankActionsMultiplier(botAI));
+    multipliers.push_back(new IllidariCouncilDisableAoeMultiplier(botAI));
+    multipliers.push_back(new IllidariCouncilControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new IllidariCouncilDisableArcaneShotOnZerevorMultiplier(botAI));
+    multipliers.push_back(new IllidariCouncilManageInterruptsMultiplier(botAI));
+    multipliers.push_back(new IllidariCouncilWaitForDpsMultiplier(botAI));
 
     // Illidan Stormrage <The Betrayer>
 }

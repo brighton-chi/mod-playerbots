@@ -106,11 +106,51 @@ public:
 
 // Illidari Council
 
+class IllidariCouncilDisableTankActionsMultiplier : public Multiplier
+{
+public:
+    IllidariCouncilDisableTankActionsMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "illidari council disable tank actions multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
+class IllidariCouncilDisableAoeMultiplier : public Multiplier
+{
+public:
+    IllidariCouncilDisableAoeMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "illidari council disable aoe multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
+class IllidariCouncilControlMisdirectionMultiplier : public Multiplier
+{
+public:
+    IllidariCouncilControlMisdirectionMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "illidari council control misdirection multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
 class IllidariCouncilDisableArcaneShotOnZerevorMultiplier : public Multiplier
 {
 public:
     IllidariCouncilDisableArcaneShotOnZerevorMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "illidari council disable arcane shot on zerevor multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
+class IllidariCouncilManageInterruptsMultiplier : public Multiplier
+{
+public:
+    IllidariCouncilManageInterruptsMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "illidari council manage interrupts multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
+class IllidariCouncilWaitForDpsMultiplier : public Multiplier
+{
+public:
+    IllidariCouncilWaitForDpsMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "illidari council wait for dps multiplier") {}
     virtual float GetValue(Action* action);
 };
 

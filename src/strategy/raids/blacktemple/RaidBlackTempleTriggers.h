@@ -275,6 +275,62 @@ public:
     bool IsActive() override;
 };
 
+class IllidariCouncilGathiosEngagedByMainTankTrigger : public Trigger
+{
+public:
+    IllidariCouncilGathiosEngagedByMainTankTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "illidari council gathios engaged by main tank") {}
+    bool IsActive() override;
+};
+
+class IllidariCouncilGathiosCastingJudgementOfCommandTrigger : public Trigger
+{
+public:
+    IllidariCouncilGathiosCastingJudgementOfCommandTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "illidari council gathios casting judgement of command") {}
+    bool IsActive() override;
+};
+
+class IllidariCouncilMalandeEngagedByFirstAssistTankTrigger : public Trigger
+{
+public:
+    IllidariCouncilMalandeEngagedByFirstAssistTankTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "illidari council malande engaged by first assist tank") {}
+    bool IsActive() override;
+};
+
+class IllidariCouncilDarkshadowEngagedBySecondAssistTankTrigger : public Trigger
+{
+public:
+    IllidariCouncilDarkshadowEngagedBySecondAssistTankTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "illidari council darkshadow engaged by second assist tank") {}
+    bool IsActive() override;
+};
+
+class IllidariCouncilZerevorEngagedByMageTankTrigger : public Trigger
+{
+public:
+    IllidariCouncilZerevorEngagedByMageTankTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "illidari council zerevor engaged by mage tank") {}
+    bool IsActive() override;
+};
+
+class IllidariCouncilDeterminingDpsAssignmentsTrigger : public Trigger
+{
+public:
+    IllidariCouncilDeterminingDpsAssignmentsTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "illidari council determining dps assignments") {}
+    bool IsActive() override;
+};
+
+class IllidariCouncilNeedToManageDpsTimerTrigger : public Trigger
+{
+public:
+    IllidariCouncilNeedToManageDpsTimerTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "illidari council need to manage dps timer") {}
+    bool IsActive() override;
+};
+
 // Illidan Stormrage <The Betrayer>
 
 #endif

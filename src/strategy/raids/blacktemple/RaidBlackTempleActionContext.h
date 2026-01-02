@@ -125,6 +125,27 @@ public:
         creators["illidari council misdirect bosses to tanks"] =
             &RaidBlackTempleActionContext::illidari_council_misdirect_bosses_to_tanks;
 
+        creators["illidari council main tank position gathios"] =
+            &RaidBlackTempleActionContext::illidari_council_main_tank_position_gathios;
+
+        creators["illidari council main tank reflect judgement of command"] =
+            &RaidBlackTempleActionContext::illidari_council_main_tank_reflect_judgement_of_command;
+
+        creators["illidari council first assist tank position malande"] =
+            &RaidBlackTempleActionContext::illidari_council_first_assist_tank_position_malande;
+
+        creators["illidari council second assist tank position darkshadow"] =
+            &RaidBlackTempleActionContext::illidari_council_second_assist_tank_position_darkshadow;
+
+        creators["illidari council mage tank position zerevor"] =
+            &RaidBlackTempleActionContext::illidari_council_mage_tank_position_zerevor;
+
+        creators["illidari council assign dps targets"] =
+            &RaidBlackTempleActionContext::illidari_council_assign_dps_targets;
+
+        creators["illidari council manage dps timer"] =
+            &RaidBlackTempleActionContext::illidari_council_manage_dps_timer;
+
         // Illidan Stormrage <The Betrayer>
     }
 
@@ -244,6 +265,27 @@ private:
 
     static Action* illidari_council_misdirect_bosses_to_tanks(
         PlayerbotAI* botAI) { return new IllidariCouncilMisdirectBossesToTanksAction(botAI); }
+
+    static Action* illidari_council_main_tank_position_gathios(
+        PlayerbotAI* botAI) { return new IllidariCouncilMainTankPositionGathiosAction(botAI); }
+
+    static Action* illidari_council_main_tank_reflect_judgement_of_command(
+        PlayerbotAI* botAI) { return new IllidariCouncilMainTankReflectJudgementOfCommandAction(botAI); }
+
+    static Action* illidari_council_first_assist_tank_position_malande(
+        PlayerbotAI* botAI) { return new IllidariCouncilFirstAssistTankPositionMalandeAction(botAI); }
+
+    static Action* illidari_council_second_assist_tank_position_darkshadow(
+        PlayerbotAI* botAI) { return new IllidariCouncilSecondAssistTankPositionDarkshadowAction(botAI); }
+
+    static Action* illidari_council_mage_tank_position_zerevor(
+        PlayerbotAI* botAI) { return new IllidariCouncilMageTankPositionZerevorAction(botAI); }
+
+    static Action* illidari_council_assign_dps_targets(
+        PlayerbotAI* botAI) { return new IllidariCouncilAssignDpsTargetsAction(botAI); }
+
+    static Action* illidari_council_manage_dps_timer(
+        PlayerbotAI* botAI) { return new IllidariCouncilManageDpsTimerAction(botAI); }
 
     // Illidan Stormrage <The Betrayer>
 };

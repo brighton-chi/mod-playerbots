@@ -30,6 +30,21 @@ namespace BlackTempleHelpers
         MarkTargetWithIcon(bot, target, RtiTargetValue::squareIndex);
     }
 
+    void MarkTargetWithStar(Player* bot, Unit* target)
+    {
+        MarkTargetWithIcon(bot, target, RtiTargetValue::starIndex);
+    }
+
+    void MarkTargetWithCircle(Player* bot, Unit* target)
+    {
+        MarkTargetWithIcon(bot, target, RtiTargetValue::circleIndex);
+    }
+
+    void MarkTargetWithTriangle(Player* bot, Unit* target)
+    {
+        MarkTargetWithIcon(bot, target, RtiTargetValue::triangleIndex);
+    }
+
     void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target)
     {
         if (!target)
@@ -180,6 +195,15 @@ namespace BlackTempleHelpers
     std::unordered_map<ObjectGuid, uint8> shahrazTankStep;
 
     // Illidari Council
+    const Position GATHIOS_TANK_POSITION_1 = { 662.977f, 296.246f, 271.688f, 6.275f };
+    const Position GATHIOS_TANK_POSITION_2 = { 636.238f, 283.719f, 271.629f, 0.357f };
+    const Position GATHIOS_TANK_POSITION_3 = { 655.571f, 261.377f, 271.687f, 2.141f };
+    const Position GATHIOS_TANK_POSITION_4 = { 673.789f, 274.139f, 271.689f, 3.411f };
+    const Position ZEREVOR_TANK_POSITION = { 680.924f, 351.857f, 271.701f, 5.051f };
+    const Position MALANDE_TANK_POSITION = { 690.101f, 305.166f, 277.443f, 0.000f };
+    const Position DARKSHADOW_TANK_POSITION = { 644.156f, 338.085f, 271.688f, 5.669f };
+    std::unordered_map<uint32, time_t> councilDpsWaitTimer;
+    std::unordered_map<ObjectGuid, uint8> gathiosTankStep;
 
     Player* GetMageTank(PlayerbotAI* botAI, Player* bot)
     {

@@ -292,6 +292,62 @@ public:
     bool Execute(Event event) override;
 };
 
+class IllidariCouncilMainTankPositionGathiosAction : public AttackAction
+{
+public:
+    IllidariCouncilMainTankPositionGathiosAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "illidari council main tank position gathios") {}
+    bool Execute(Event event) override;
+};
+
+class IllidariCouncilMainTankReflectJudgementOfCommandAction : public Action
+{
+public:
+    IllidariCouncilMainTankReflectJudgementOfCommandAction(
+        PlayerbotAI* botAI) : Action(botAI, "illidari council main tank reflect judgement of command") {}
+    bool Execute(Event event) override;
+};
+
+class IllidariCouncilFirstAssistTankPositionMalandeAction : public AttackAction
+{
+public:
+    IllidariCouncilFirstAssistTankPositionMalandeAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "illidari council first assist tank position malande") {}
+    bool Execute(Event event) override;
+};
+
+class IllidariCouncilSecondAssistTankPositionDarkshadowAction : public AttackAction
+{
+public:
+    IllidariCouncilSecondAssistTankPositionDarkshadowAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "illidari council second assist tank position darkshadow") {}
+    bool Execute(Event event) override;
+};
+
+class IllidariCouncilMageTankPositionZerevorAction : public AttackAction
+{
+public:
+    IllidariCouncilMageTankPositionZerevorAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "illidari council mage tank position zerevor") {}
+    bool Execute(Event event) override;
+};
+
+class IllidariCouncilAssignDpsTargetsAction : public AttackAction
+{
+public:
+    IllidariCouncilAssignDpsTargetsAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "illidari council assign dps targets") {}
+    bool Execute(Event event) override;
+};
+
+class IllidariCouncilManageDpsTimerAction : public Action
+{
+public:
+    IllidariCouncilManageDpsTimerAction(
+        PlayerbotAI* botAI) : Action(botAI, "illidari council manage dps timer") {}
+    bool Execute(Event event) override;
+};
+
 // Illidan Stormrage <The Betrayer>
 
 #endif

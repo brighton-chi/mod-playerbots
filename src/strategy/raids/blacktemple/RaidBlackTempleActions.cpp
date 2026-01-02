@@ -1424,10 +1424,7 @@ bool IllidariCouncilMisdirectBossesToTanksAction::Execute(Event event)
         }
     }
 
-    if (!councilTarget)
-        return false;
-
-    if (!tankTarget || !tankTarget->IsAlive())
+    if (!councilTarget || !tankTarget || !tankTarget->IsAlive())
         return false;
 
     if (botAI->CanCastSpell("misdirection", tankTarget))
@@ -1439,5 +1436,238 @@ bool IllidariCouncilMisdirectBossesToTanksAction::Execute(Event event)
     return false;
 }
 
+bool IllidariCouncilMainTankPositionGathiosAction::Execute(Event event)
+{
+    Unit* gathios = AI_VALUE2(Unit*, "find target", "gathios the shatterer");
+    if (!gathios)
+        return false;
+
+    if (gathios->GetHealth() == gathios->GetMaxHealth())
+        gathiosTankStep.clear();
+
+    MarkTargetWithSquare(bot, gathios);
+    SetRtiTarget(botAI, "square", gathios);
+
+    if (bot->GetTarget() != gathios->GetGUID())
+        return Attack(gathios);
+
+    static const uint32 dangerousAuras[] = { SPELL_CONSECRATION, SPELL_BLIZZARD, SPELL_FLAMESTRIKE };
+
+    const ObjectGuid botGuid = bot->GetGUID();
+    uint8 index = gathiosTankStep.count(botGuid) ? gathiosTankStep[botGuid] : 0;
+
+    const Position tankPositions[4] =
+    {
+        GATHIOS_TANK_POSITION_1,
+        GATHIOS_TANK_POSITION_2,
+        GATHIOS_TANK_POSITION_3,
+        GATHIOS_TANK_POSITION_4
+    };
+    const Position& position = tankPositions[index];
+    const float maxDistance = 2.0f;
+    float distanceToTarget = bot->GetExactDist2d(position);
+
+    // Rotate position if standing in a dangerous aura
+    bool hasDangerousAura = false;
+    for (uint32 aura : dangerousAuras)
+    {
+        if (bot->HasAura(aura))
+        {
+            hasDangerousAura = true;
+            break;
+        }
+    }
+
+    if (gathios->GetVictim() == bot && bot->IsWithinMeleeRange(gathios))
+    {
+        if (distanceToTarget <= maxDistance && hasDangerousAura)
+        {
+            index = (index + 1) % 4;
+            gathiosTankStep[botGuid] = index;
+            const Position& newPosition = tankPositions[index];
+            float newDistanceToTarget = bot->GetExactDist2d(newPosition);
+            if (newDistanceToTarget > maxDistance)
+            {
+                bot->AttackStop();
+                bot->InterruptNonMeleeSpells(true);
+                return MoveTo(BLACK_TEMPLE_MAP_ID, newPosition.GetPositionX(), newPosition.GetPositionY(),
+                              newPosition.GetPositionZ(), false, false, false, true,
+                              MovementPriority::MOVEMENT_FORCED, true, false);
+            }
+            return false;
+        }
+        else if (distanceToTarget > maxDistance)
+        {
+            bot->AttackStop();
+            bot->InterruptNonMeleeSpells(true);
+            return MoveTo(BLACK_TEMPLE_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                          position.GetPositionZ(), false, false, false, true,
+                          MovementPriority::MOVEMENT_FORCED, true, false);
+        }
+    }
+
+    return false;
+}
+
+bool IllidariCouncilMainTankReflectJudgementOfCommandAction::Execute(Event event)
+{
+    if (botAI->CanCastSpell("spell reflection", bot))
+        return botAI->CastSpell("spell reflection", bot);
+
+    return false;
+}
+
+bool IllidariCouncilFirstAssistTankPositionMalandeAction::Execute(Event event)
+{
+    Unit* malande = AI_VALUE2(Unit*, "find target", "lady malande");
+    if (!malande)
+        return false;
+
+    MarkTargetWithStar(bot, malande);
+    SetRtiTarget(botAI, "star", malande);
+
+    if (bot->GetTarget() != malande->GetGUID())
+        return Attack(malande);
+
+    if (malande->GetVictim() == bot && bot->IsWithinMeleeRange(malande))
+    {
+        const Position& position = MALANDE_TANK_POSITION;
+        float distToPosition =
+            bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+
+        if (distToPosition > 2.0f)
+        {
+            float dX = position.GetPositionX() - bot->GetPositionX();
+            float dY = position.GetPositionY() - bot->GetPositionY();
+            float moveDist = std::min(10.0f, distToPosition);
+            float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
+
+            return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
+                          false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
+        }
+    }
+
+    return false;
+}
+
+bool IllidariCouncilSecondAssistTankPositionDarkshadowAction::Execute(Event event)
+{
+    Unit* darkshadow = AI_VALUE2(Unit*, "find target", "veras darkshadow");
+    if (!darkshadow)
+        return false;
+
+    MarkTargetWithCircle(bot, darkshadow);
+    SetRtiTarget(botAI, "circle", darkshadow);
+
+    if (bot->GetTarget() != darkshadow->GetGUID())
+        return Attack(darkshadow);
+
+    if (darkshadow->GetVictim() == bot && bot->IsWithinMeleeRange(darkshadow))
+    {
+        const Position& position = DARKSHADOW_TANK_POSITION;
+        float distToPosition =
+            bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+
+        if (distToPosition > 2.0f)
+        {
+            float dX = position.GetPositionX() - bot->GetPositionX();
+            float dY = position.GetPositionY() - bot->GetPositionY();
+            float moveDist = std::min(10.0f, distToPosition);
+            float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
+
+            return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
+                          false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
+        }
+    }
+
+    return false;
+}
+
+bool IllidariCouncilMageTankPositionZerevorAction::Execute(Event event)
+{
+    Unit* zerevor = AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");
+    if (zerevor->HasAura(SPELL_DAMPEN_MAGIC) && botAI->CanCastSpell("spellsteal", zerevor))
+        return botAI->CastSpell("spellsteal", zerevor);
+
+    MarkTargetWithTriangle(bot, zerevor);
+    SetRtiTarget(botAI, "triangle", zerevor);
+
+    if (bot->GetTarget() != zerevor->GetGUID())
+        return Attack(zerevor);
+
+    if (zerevor->GetVictim() == bot)
+    {
+        const Position& position = ZEREVOR_TANK_POSITION;
+        float distanceToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+
+        if (distanceToPosition > 2.0f)
+        {
+            return MoveTo(BLACK_TEMPLE_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                          position.GetPositionZ(), false, false, false, false,
+                          MovementPriority::MOVEMENT_COMBAT, true, false);
+        }
+    }
+
+    return false;
+}
+
+bool IllidariCouncilAssignDpsTargetsAction::Execute(Event event)
+{
+    bool shouldAttackMalande = false;
+
+    if (bot->getClass() == CLASS_ROGUE ||
+        (bot->getClass() == CLASS_WARRIOR && botAI->IsDps(bot)))
+    {
+        Unit* malande = AI_VALUE2(Unit*, "find target", "lady malande");
+        if (malande && !malande->HasAura(SPELL_BLESSING_OF_PROTECTION))
+            shouldAttackMalande = true;
+    }
+    else if (bot->getClass() == CLASS_SHAMAN && botAI->IsDps(bot))
+    {
+        Unit* malande = AI_VALUE2(Unit*, "find target", "lady malande");
+        if (malande && !malande->HasAura(SPELL_BLESSING_OF_SPELL_WARDING))
+            shouldAttackMalande = true;
+    }
+
+    if (shouldAttackMalande)
+    {
+        Unit* malande = AI_VALUE2(Unit*, "find target", "lady malande");
+        if (malande)
+        {
+            SetRtiTarget(botAI, "star", malande);
+
+            if (bot->GetTarget() != malande->GetGUID())
+                return Attack(malande);
+        }
+    }
+    else
+    {
+        Unit* gathios = AI_VALUE2(Unit*, "find target", "gathios the shatterer");
+        if (gathios)
+        {
+            SetRtiTarget(botAI, "square", gathios);
+
+            if (bot->GetTarget() != gathios->GetGUID())
+                return Attack(gathios);
+        }
+    }
+
+    return false;
+}
+
+bool IllidariCouncilManageDpsTimerAction::Execute(Event event)
+{
+    Unit* gathios = AI_VALUE2(Unit*, "find target", "gathios the shatterer");
+    if (gathios && gathios->GetHealth() == gathios->GetMaxHealth())
+    {
+        councilDpsWaitTimer.insert_or_assign(
+            gathios->GetMap()->GetInstanceId(), std::time(nullptr));
+            return true;
+    }
+
+    return false;
+}
 
 // Illidan Stormrage <The Betrayer>
