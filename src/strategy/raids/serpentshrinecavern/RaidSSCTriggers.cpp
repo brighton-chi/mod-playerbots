@@ -404,7 +404,7 @@ bool MorogrimTidewalkerWaterGlobulesAreIncomingTrigger::IsActive()
 bool MorogrimTidewalkerEncounterResetTrigger::IsActive()
 {
     Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
-    return tidewalker && tidewalker->GetHealth() == tidewalker->GetMaxHealth();
+    return tidewalker && tidewalker->GetHealthPct() > 99.8f;
 }
 
 // Lady Vashj <Coilfang Matron>
@@ -423,8 +423,7 @@ bool LadyVashjBossEngagedByRangedInPhase1Trigger::IsActive()
     if (!botAI->IsRanged(bot))
         return false;
 
-    return AI_VALUE2(Unit*, "find target", "lady vashj") &&
-           IsLadyVashjInPhase1(botAI);
+    return IsLadyVashjInPhase1(botAI);
 }
 
 bool LadyVashjCastsShockBlastOnHighestAggroTrigger::IsActive()
@@ -610,8 +609,7 @@ bool LadyVashjTaintedCoreIsUnusableTrigger::IsActive()
 
 bool LadyVashjToxicSporebatsAreSpewingPoisonCloudsTrigger::IsActive()
 {
-    return AI_VALUE2(Unit*, "find target", "lady vashj") &&
-           IsLadyVashjInPhase3(botAI);
+    return IsLadyVashjInPhase3(botAI);
 }
 
 bool LadyVashjBotIsEntangledInToxicSporesOrStaticChargeTrigger::IsActive()
@@ -638,5 +636,5 @@ bool LadyVashjBotIsEntangledInToxicSporesOrStaticChargeTrigger::IsActive()
 bool LadyVashjNeedToManageTrackersTrigger::IsActive()
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    return vashj && vashj->GetHealth() == vashj->GetMaxHealth();
+    return vashj && vashj->GetHealthPct() > 99.8f;
 }
