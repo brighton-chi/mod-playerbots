@@ -506,7 +506,7 @@ bool IllidanStormrageBossSummonedFlamesOfAzzinothTrigger::IsActive()
     if (!illidan)
         return false;
 
-    return GetIllidanPhase(illidan) == 2;
+    return GetIllidanPhase(illidan) == 1 || GetIllidanPhase(illidan) == 2;
 }
 
 bool IllidanStormrageGrateIsSafeFromFlamesTrigger::IsActive()
@@ -544,9 +544,6 @@ bool IllidanStormrageThisExpansionHatesMeleeTrigger::IsActive()
     if (!illidan)
         return false;
 
-    if (GetIllidanPhase(illidan) == 2)
-        return false;
-
     return true;
 }
 
@@ -572,4 +569,12 @@ bool IllidanStormrageBossSummonsAddsTrigger::IsActive()
         return true;
 
     return AI_VALUE2(Unit*, "find target", "parasitic shadowfiend");
+}
+
+bool IllidanStormrageNeedToManageDpsTimerTrigger::IsActive()
+{
+    if (!IsInstanceTimerManager(botAI, bot))
+        return false;
+
+    return AI_VALUE2(Unit*, "find target", "illidan stormrage");
 }

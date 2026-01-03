@@ -382,7 +382,7 @@ float IllidariCouncilWaitForDpsMultiplier::GetValue(Action* action)
     const time_t now = std::time(nullptr);
     const uint8 dpsWaitSeconds = 8;
 
-    auto it = councilDpsWaitTimer.find(bot->GetMap()->GetInstanceId());
+    auto it = councilDpsWaitTimer.find(gathios->GetMap()->GetInstanceId());
     if (it == councilDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
     {
         if (dynamic_cast<AttackAction*>(action) ||
@@ -424,7 +424,7 @@ float IllidanStormrageDisableMovementMultiplier::GetValue(Action* action)
         }
         else if (dynamic_cast<CombatFormationMoveAction*>(action) ||
                  dynamic_cast<CastKillingSpreeAction*>(action))
-            return 0.0f;
+                 return 0.0f;
 
         if (dynamic_cast<FleeAction*>(action) ||
             dynamic_cast<CastDisengageAction*>(action) ||
@@ -522,6 +522,52 @@ float IllidanStormrageMeleeCannotAttackDemonFormMultiplier::GetValue(Action* act
         if (dynamic_cast<MovementAction*>(action) &&
             !dynamic_cast<IllidanStormragePositionMeleeAction*>(action))
             return 1.0f;
+    }
+
+    return 1.0f;
+}
+
+float IllidanStormrageWaitForDpsMultiplier::GetValue(Action* action)
+{
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    if (!illidan)
+        return 1.0f;
+
+    if (dynamic_cast<IllidanStormrageMisdirectToTankAction*>(action))
+        return 1.0f;
+
+    const time_t now = std::time(nullptr);
+    const uint32 instanceId = illidan->GetMap()->GetInstanceId();
+    const uint8 dpsWaitSeconds = 8;
+
+    if (AI_VALUE2(Unit*, "find target", "flame of azzinoth"))
+    {
+        if (botAI->IsAssistTankOfIndex(bot, 0) ||
+            botAI->IsAssistTankOfIndex(bot, 1))
+            return 1.0f;
+
+        auto it = illidanDpsWaitTimer.find(instanceId);
+        if (it == illidanDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
+        {
+            if (dynamic_cast<AttackAction*>(action) ||
+                (dynamic_cast<CastSpellAction*>(action) &&
+                 !dynamic_cast<CastHealingSpellAction*>(action)))
+                 return 0.0f;
+        }
+    }
+    else if (GetIllidanPhase(illidan) == 4)
+    {
+        if (GetIllidanWarlockTank(botAI, bot) == bot)
+            return 1.0f;
+
+        auto it = illidanDpsWaitTimer.find(instanceId);
+        if (it == illidanDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
+        {
+            if (dynamic_cast<AttackAction*>(action) ||
+                (dynamic_cast<CastSpellAction*>(action) &&
+                 !dynamic_cast<CastHealingSpellAction*>(action)))
+                 return 0.0f;
+        }
     }
 
     return 1.0f;

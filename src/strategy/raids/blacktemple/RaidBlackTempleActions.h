@@ -436,4 +436,12 @@ public:
     bool Execute(Event event) override;
 };
 
+class IllidanStormrageManageDpsTimerAction : public Action
+{
+public:
+    IllidanStormrageManageDpsTimerAction(
+        PlayerbotAI* botAI) : Action(botAI, "illidan stormrage manage dps timer") {}
+    bool Execute(Event event) override;
+};
+
 #endif

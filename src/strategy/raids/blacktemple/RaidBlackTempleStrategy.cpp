@@ -52,9 +52,9 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("teron gorefiend boss is casting shadow of death",
         NextAction::array(0, new NextAction("teron gorefiend avoid shadow of death", ACTION_EMERGENCY + 10), nullptr)
     ));
-    triggers.push_back(new TriggerNode("teron gorefiend bot has shadow of death",
+    /* triggers.push_back(new TriggerNode("teron gorefiend bot has shadow of death",
         NextAction::array(0, new NextAction("teron gorefiend move to corner to die", ACTION_EMERGENCY + 10), nullptr)
-    ));
+    )); */
     /* triggers.push_back(new TriggerNode("teron gorefiend bot transformed into vengeful spirit",
         NextAction::array(0, new NextAction("teron gorefiend control and destroy shadowy constructs", ACTION_EMERGENCY + 10), nullptr)
     )); */
@@ -164,6 +164,9 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("illidan stormrage boss summons adds",
         NextAction::array(0, new NextAction("illidan stormrage dps prioritize adds", ACTION_RAID + 2), nullptr)
     ));
+    triggers.push_back(new TriggerNode("illidan stormrage need to manage dps timer",
+        NextAction::array(0, new NextAction("illidan stormrage manage dps timer", ACTION_EMERGENCY + 10), nullptr)
+    ));
 }
 
 void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
@@ -209,4 +212,5 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new IllidanStormrageDisableTankAssistMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageRangedMustStayAboveGrateMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageMeleeCannotAttackDemonFormMultiplier(botAI));
+    multipliers.push_back(new IllidanStormrageWaitForDpsMultiplier(botAI));
 }

@@ -397,4 +397,12 @@ public:
     bool IsActive() override;
 };
 
+class IllidanStormrageNeedToManageDpsTimerTrigger : public Trigger
+{
+public:
+    IllidanStormrageNeedToManageDpsTimerTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage need to manage dps timer") {}
+    bool IsActive() override;
+};
+
 #endif

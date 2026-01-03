@@ -268,34 +268,54 @@ namespace BlackTempleHelpers
     }
 
     // Illidan Stormrage <The Betrayer>
-    const Position ILLIDAN_NORMAL_TANK_POSITION_1 = { 700.798f, 284.190f, 353.634f, 1.325f };
-    const Position ILLIDAN_NORMAL_TANK_POSITION_2 = { 686.952f, 273.588f, 353.553f, 0.814f };
-    const Position ILLIDAN_NORMAL_TANK_POSITION_3 = { 670.559f, 268.723f, 353.365f, 0.337f };
-    const Position ILLIDAN_NORMAL_TANK_POSITION_4 = { 650.803f, 265.510f, 352.997f, 0.337f };
-    const Position ILLIDAN_SUMMIT_CENTER_POSITION = { 676.021f, 305.455f, 353.582f, 0.000f }; // edge of grate is ~12 yards away
-    const Position ILLIDAN_NORTH_GRATE_POSITION = { 688.295f, 305.129f, 353.192f, 0.000f };
-    const Position ILLIDAN_SOUTH_GRATE_POSITION = { 664.598f, 305.359f, 353.192f, 0.000f };
-    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_1 = { 677.925f, 280.277f, 354.401f, 1.630f };
-    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_2 = { 693.772f, 296.704f, 354.104f, 3.790f };
-    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_3 = { 689.716f, 270.898f, 353.379f, 0.621f };
-    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_4 = { 666.222f, 270.484f, 353.401f, 6.275f };
-    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_5 = { 651.053f, 279.798f, 353.424f, 5.883f };
-    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_6 = { 661.993f, 290.861f, 354.260f, 4.178f };
-    const Position ILLIDAN_E_GLAIVE_TANK_POSITIONS[6] =
+    const Position ILLIDAN_SUMMIT_CENTER_POSITION = { 676.021f, 305.455f, 353.582f }; // edge of grate is ~12 yards away
+    const Position ILLIDAN_N_GRATE_POSITION = { 688.295f, 305.129f, 353.192f };
+    const Position ILLIDAN_SW_GRATE_POSITION = { 667.655f, 313.290f, 353.192f };
+    const Position ILLIDAN_SE_GRATE_POSITION = { 668.270f, 297.033f, 353.192f };
+    // const Position ILLIDAN_S_GRATE_POSITION = { 664.598f, 305.359f, 353.192f };
+    const Position* gratePositions[3] =
+    {
+        &ILLIDAN_N_GRATE_POSITION,
+        &ILLIDAN_SW_GRATE_POSITION,
+        &ILLIDAN_SE_GRATE_POSITION
+    };
+    const Position ILLIDAN_E_GLAIVE_WAITING_POSITION = { 684.394f, 285.573f, 354.188f };
+    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_1 = { 697.682f, 297.309f, 354.226f };
+    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_2 = { 690.844f, 291.632f, 354.233f };
+    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_3 = { 679.844f, 287.743f, 354.148f };
+    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_4 = { 670.146f, 286.681f, 354.154f };
+    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_5 = { 661.770f, 290.312f, 354.284f };
+    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_6 = { 657.713f, 282.339f, 353.766f };
+    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_7 = { 663.996f, 276.446f, 353.647f };
+    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_8 = { 673.198f, 274.463f, 353.722f };
+    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_9 = { 681.451f, 274.675f, 353.671f };
+    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_10 = { 690.208f, 277.480f, 353.680f };
+    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_11 = { 697.173f, 282.615f, 353.737f };
+    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_12 = { 703.258f, 290.301f, 353.685f };
+    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_13 = { 706.356f, 299.093f, 353.684f };
+    const Position ILLIDAN_E_GLAIVE_TANK_POSITIONS[13] =
     {
         ILLIDAN_E_GLAIVE_TANK_POSITION_1,
         ILLIDAN_E_GLAIVE_TANK_POSITION_2,
         ILLIDAN_E_GLAIVE_TANK_POSITION_3,
         ILLIDAN_E_GLAIVE_TANK_POSITION_4,
         ILLIDAN_E_GLAIVE_TANK_POSITION_5,
-        ILLIDAN_E_GLAIVE_TANK_POSITION_6
+        ILLIDAN_E_GLAIVE_TANK_POSITION_6,
+        ILLIDAN_E_GLAIVE_TANK_POSITION_7,
+        ILLIDAN_E_GLAIVE_TANK_POSITION_8,
+        ILLIDAN_E_GLAIVE_TANK_POSITION_9,
+        ILLIDAN_E_GLAIVE_TANK_POSITION_10,
+        ILLIDAN_E_GLAIVE_TANK_POSITION_11,
+        ILLIDAN_E_GLAIVE_TANK_POSITION_12,
+        ILLIDAN_E_GLAIVE_TANK_POSITION_13
     };
-    const Position ILLIDAN_W_GLAIVE_TANK_POSITION_1 = { 676.216f, 329.071f, 354.350f, 4.760f };
-    const Position ILLIDAN_W_GLAIVE_TANK_POSITION_2 = { 693.294f, 318.945f, 354.270f, 2.748f };
-    const Position ILLIDAN_W_GLAIVE_TANK_POSITION_3 = { 686.253f, 339.716f, 353.391f, 5.688f };
-    const Position ILLIDAN_W_GLAIVE_TANK_POSITION_4 = { 665.731f, 339.034f, 353.362f, 0.184f };
-    const Position ILLIDAN_W_GLAIVE_TANK_POSITION_5 = { 655.590f, 330.008f, 353.558f, 0.635f };
-    const Position ILLIDAN_W_GLAIVE_TANK_POSITION_6 = { 663.750f, 318.102f, 354.159f, 2.211f };
+    const Position ILLIDAN_W_GLAIVE_WAITING_POSITION = { 672.034f, 324.812f, 354.144f };
+    const Position ILLIDAN_W_GLAIVE_TANK_POSITION_1 = { 676.216f, 329.071f, 354.350f }; // need to redo W tank positions
+    const Position ILLIDAN_W_GLAIVE_TANK_POSITION_2 = { 693.294f, 318.945f, 354.270f };
+    const Position ILLIDAN_W_GLAIVE_TANK_POSITION_3 = { 686.253f, 339.716f, 353.391f };
+    const Position ILLIDAN_W_GLAIVE_TANK_POSITION_4 = { 665.731f, 339.034f, 353.362f };
+    const Position ILLIDAN_W_GLAIVE_TANK_POSITION_5 = { 655.590f, 330.008f, 353.558f };
+    const Position ILLIDAN_W_GLAIVE_TANK_POSITION_6 = { 663.750f, 318.102f, 354.159f };
     const Position ILLIDAN_W_GLAIVE_TANK_POSITIONS[6] =
     {
         ILLIDAN_W_GLAIVE_TANK_POSITION_1,
@@ -305,7 +325,6 @@ namespace BlackTempleHelpers
         ILLIDAN_W_GLAIVE_TANK_POSITION_5,
         ILLIDAN_W_GLAIVE_TANK_POSITION_6
     };
-    const Position ILLIDAN_DEMON_TANK_POSITION = { 649.958f, 330.996f, 14.505f, 353.337f };
     const Position eyeBeamPos[MAX_EYE_BEAM_POS * 2] =
     {
         {639.97f, 301.63f, 354.0f, 0.0f},
@@ -319,6 +338,7 @@ namespace BlackTempleHelpers
         {705.92f, 337.14f, 354.0f, 0.0f}
     };
     std::unordered_map<ObjectGuid, size_t> flameTankWaypointIndex;
+    std::unordered_map<uint32, time_t> illidanDpsWaitTimer;
 
     int GetIllidanPhase(Unit* illidan)
     {
@@ -394,32 +414,48 @@ namespace BlackTempleHelpers
         return Position(targetX, targetY, bossZ, clampedAngle);
     } */
 
+    ObjectGuid eastFlameGuid;
+    ObjectGuid westFlameGuid;
+
     std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(PlayerbotAI* botAI)
     {
         Unit* eastFlame = nullptr;
         Unit* westFlame = nullptr;
-        float minEastDist = std::numeric_limits<float>::max();
-        float minWestDist = std::numeric_limits<float>::max();
 
+        // Gather all flames
+        std::vector<Unit*> flames;
         for (auto const& guid : botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get())
         {
             Unit* unit = botAI->GetUnit(guid);
             if (unit && unit->GetEntry() == NPC_FLAME_OF_AZZINOTH)
-            {
-                float eastDist = unit->GetExactDist2d(ILLIDAN_E_GLAIVE_TANK_POSITION_1);
-                float westDist = unit->GetExactDist2d(ILLIDAN_W_GLAIVE_TANK_POSITION_1);
+                flames.push_back(unit);
+        }
 
-                if (eastDist < minEastDist)
-                {
-                    minEastDist = eastDist;
-                    eastFlame = unit;
-                }
-                if (westDist < minWestDist)
-                {
-                    minWestDist = westDist;
-                    westFlame = unit;
-                }
+        // If both GUIDs are not set and there are exactly 2 flames, assign by position
+        if (eastFlameGuid.IsEmpty() && westFlameGuid.IsEmpty() && flames.size() == 2)
+        {
+            float eastDist0 = flames[0]->GetExactDist2d(ILLIDAN_E_GLAIVE_WAITING_POSITION);
+            float eastDist1 = flames[1]->GetExactDist2d(ILLIDAN_E_GLAIVE_WAITING_POSITION);
+
+            if (eastDist0 < eastDist1)
+            {
+                eastFlameGuid = flames[0]->GetGUID();
+                westFlameGuid = flames[1]->GetGUID();
             }
+            else
+            {
+                eastFlameGuid = flames[1]->GetGUID();
+                westFlameGuid = flames[0]->GetGUID();
+            }
+        }
+
+        // Always return the flames by their snapshotted GUIDs
+        for (Unit* unit : flames)
+        {
+            if (unit->GetGUID() == eastFlameGuid)
+                eastFlame = unit;
+            else if (unit->GetGUID() == westFlameGuid)
+                westFlame = unit;
         }
 
         return { eastFlame, westFlame };

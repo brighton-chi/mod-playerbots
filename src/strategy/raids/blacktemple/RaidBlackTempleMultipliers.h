@@ -196,4 +196,12 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class IllidanStormrageWaitForDpsMultiplier : public Multiplier
+{
+public:
+    IllidanStormrageWaitForDpsMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "illidan stormrage wait for dps multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
 #endif
