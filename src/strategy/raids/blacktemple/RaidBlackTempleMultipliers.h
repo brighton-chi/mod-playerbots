@@ -156,4 +156,44 @@ public:
 
 // Illidan Stormrage <The Betrayer>
 
+class IllidanStormrageDelayBloodlustAndHeroismMultiplier : public Multiplier
+{
+public:
+    IllidanStormrageDelayBloodlustAndHeroismMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "illidan stormrage delay bloodlust and heroism multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
+class IllidanStormrageDisableMovementMultiplier : public Multiplier
+{
+public:
+    IllidanStormrageDisableMovementMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "illidan stormrage disable movement multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
+class IllidanStormrageDisableTankAssistMultiplier : public Multiplier
+{
+public:
+    IllidanStormrageDisableTankAssistMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "illidan stormrage disable tank assist multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
+class IllidanStormrageRangedMustStayAboveGrateMultiplier : public Multiplier
+{
+public:
+    IllidanStormrageRangedMustStayAboveGrateMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "illidan stormrage ranged must stay above grate multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
+class IllidanStormrageMeleeCannotAttackDemonFormMultiplier : public Multiplier
+{
+public:
+    IllidanStormrageMeleeCannotAttackDemonFormMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "illidan stormrage melee cannot attack demon form multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
 #endif

@@ -445,7 +445,7 @@ bool IllidariCouncilDarkshadowEngagedBySecondAssistTankTrigger::IsActive()
 
 bool IllidariCouncilZerevorEngagedByMageTankTrigger::IsActive()
 {
-    return GetMageTank(botAI, bot) == bot &&
+    return GetZerevorMageTank(botAI, bot) == bot &&
            AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");
 }
 
@@ -453,7 +453,7 @@ bool IllidariCouncilDeterminingDpsAssignmentsTrigger::IsActive()
 {
     if (botAI->IsHeal(bot) || botAI->IsMainTank(bot) ||
         botAI->IsAssistTankOfIndex(bot, 0) ||
-        GetMageTank(botAI, bot) == bot)
+        GetZerevorMageTank(botAI, bot) == bot)
         return false;
 
     Unit* darkshadow = AI_VALUE2(Unit*, "find target", "veras darkshadow");
@@ -474,3 +474,102 @@ bool IllidariCouncilNeedToManageDpsTimerTrigger::IsActive()
 }
 
 // Illidan Stormrage <The Betrayer>
+
+bool IllidanStormrageTankNeedsAggroTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_HUNTER)
+        return false;
+
+    return AI_VALUE2(Unit*, "find target", "illidan stormrage");
+}
+
+bool IllidanStormrageBossCastsFlameCrashTrigger::IsActive()
+{
+    if (!botAI->IsMainTank(bot))
+        return false;
+
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    if (!illidan)
+        return false;
+
+    return GetIllidanPhase(illidan) == 1 ||
+           GetIllidanPhase(illidan) == 3 ||
+           GetIllidanPhase(illidan) == 5;
+}
+
+bool IllidanStormrageBossSummonedFlamesOfAzzinothTrigger::IsActive()
+{
+    if (!botAI->IsTank(bot))
+        return false;
+
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    if (!illidan)
+        return false;
+
+    return GetIllidanPhase(illidan) == 2;
+}
+
+bool IllidanStormrageGrateIsSafeFromFlamesTrigger::IsActive()
+{
+    if (!botAI->IsRanged(bot))
+        return false;
+
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    if (!illidan)
+        return false;
+
+    return GetIllidanPhase(illidan) == 2;
+}
+
+bool IllidanStormrageBossDealsSplashDamageTrigger::IsActive()
+{
+    if (!botAI->IsRanged(bot))
+        return false;
+
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    if (!illidan)
+        return false;
+
+    return GetIllidanPhase(illidan) == 3 ||
+           GetIllidanPhase(illidan) == 4 ||
+           GetIllidanPhase(illidan) == 5;
+}
+
+bool IllidanStormrageThisExpansionHatesMeleeTrigger::IsActive()
+{
+    if (!botAI->IsMelee(bot))
+        return false;
+
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    if (!illidan)
+        return false;
+
+    if (GetIllidanPhase(illidan) == 2)
+        return false;
+
+    return true;
+}
+
+bool IllidanStormrageBossTransformsIntoDemonTrigger::IsActive()
+{
+    if (GetIllidanWarlockTank(botAI, bot) != bot)
+        return false;
+
+    return AI_VALUE2(Unit*, "find target", "illidan stormrage");
+}
+
+bool IllidanStormrageBossSummonsAddsTrigger::IsActive()
+{
+    if (!botAI->IsDps(bot))
+        return false;
+
+    Unit* flame = AI_VALUE2(Unit*, "find target", "flame of azzinoth");
+    if (flame)
+        return true;
+
+    Unit* shadowDemon = AI_VALUE2(Unit*, "find target", "shadow demon");
+    if (shadowDemon)
+        return true;
+
+    return AI_VALUE2(Unit*, "find target", "parasitic shadowfiend");
+}

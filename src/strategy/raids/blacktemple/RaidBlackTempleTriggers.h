@@ -333,4 +333,68 @@ public:
 
 // Illidan Stormrage <The Betrayer>
 
+class IllidanStormrageTankNeedsAggroTrigger : public Trigger
+{
+public:
+    IllidanStormrageTankNeedsAggroTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage tank needs aggro") {}
+    bool IsActive() override;
+};
+
+class IllidanStormrageBossCastsFlameCrashTrigger : public Trigger
+{
+public:
+    IllidanStormrageBossCastsFlameCrashTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage boss casts flame crash") {}
+    bool IsActive() override;
+};
+
+class IllidanStormrageBossSummonedFlamesOfAzzinothTrigger : public Trigger
+{
+public:
+    IllidanStormrageBossSummonedFlamesOfAzzinothTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage boss summoned flames of azzinoth") {}
+    bool IsActive() override;
+};
+
+class IllidanStormrageGrateIsSafeFromFlamesTrigger : public Trigger
+{
+public:
+    IllidanStormrageGrateIsSafeFromFlamesTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage grate is safe from flames") {}
+    bool IsActive() override;
+};
+
+class IllidanStormrageBossDealsSplashDamageTrigger : public Trigger
+{
+public:
+    IllidanStormrageBossDealsSplashDamageTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage boss deals splash damage") {}
+    bool IsActive() override;
+};
+
+class IllidanStormrageThisExpansionHatesMeleeTrigger : public Trigger
+{
+public:
+    IllidanStormrageThisExpansionHatesMeleeTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage this expansion hates melee") {}
+    bool IsActive() override;
+};
+
+class IllidanStormrageBossTransformsIntoDemonTrigger : public Trigger
+{
+public:
+    IllidanStormrageBossTransformsIntoDemonTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage boss transforms into demon") {}
+    bool IsActive() override;
+};
+
+class IllidanStormrageBossSummonsAddsTrigger : public Trigger
+{
+public:
+    IllidanStormrageBossSummonsAddsTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage boss summons adds") {}
+    bool IsActive() override;
+};
+
 #endif

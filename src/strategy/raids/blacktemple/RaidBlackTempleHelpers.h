@@ -3,6 +3,7 @@
 
 #include <unordered_map>
 
+#include "RaidBlackTempleIllidanBossAI.h"
 #include "AiObject.h"
 #include "Position.h"
 #include "Unit.h"
@@ -58,6 +59,9 @@ namespace BlackTempleHelpers
         SPELL_BLIZZARD                      = 41482,
 
         // Illidan Stormrage <The Betrayer>
+        SPELL_DEMON_FORM = 40506,
+        SPELL_SHADOW_PRISON                 = 40647,
+        SPELL_PARASITIC_SHADOWFIEND = 41917,
 
         // Hunter
         SPELL_MISDIRECTION             = 35079,
@@ -89,6 +93,12 @@ namespace BlackTempleHelpers
         // Illidari Council
 
         // Illidan Stormrage <The Betrayer>
+        NPC_FLAME_OF_AZZINOTH = 22997,
+        NPC_ILLIDAN_DB_TARGET = 23070, // For Eye Blast targeting
+        NPC_BLAZE           = 23259,
+        NPC_FLAME_CRASH = 23336,
+        NPC_SHADOW_DEMON = 23375,
+        NPC_PARASITIC_SHADOWFIEND = 23498,
     };
 
     enum BlackTempleItems
@@ -101,6 +111,9 @@ namespace BlackTempleHelpers
     {
         // High Warlord Naj'entus
         GO_NAJENTUS_SPINE = 185584,
+
+        // Illidan Stormrage <The Betrayer>
+        GO_CAGE_TRAP                        = 185916,
     };
 
     // General
@@ -111,8 +124,10 @@ namespace BlackTempleHelpers
     void MarkTargetWithStar(Player* bot, Unit* target);
     void MarkTargetWithCircle(Player* bot, Unit* target);
     void MarkTargetWithTriangle(Player* bot, Unit* target);
+    void MarkTargetWithDiamond(Player* bot, Unit* target);
     void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target);
     Unit* GetNearestPlayerInRadius(Player* bot, float radius);
+    Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry);
     bool IsInstanceTimerManager(PlayerbotAI* botAI, Player* bot);
 
     // High Warlord Naj'entus
@@ -158,9 +173,44 @@ namespace BlackTempleHelpers
     extern const Position DARKSHADOW_TANK_POSITION;
     extern std::unordered_map<uint32, time_t> councilDpsWaitTimer;
     extern std::unordered_map<ObjectGuid, uint8> gathiosTankStep;
-    Player* GetMageTank(PlayerbotAI* botAI, Player* bot);
+    Player* GetZerevorMageTank(PlayerbotAI* botAI, Player* bot);
 
     // Illidan Stormrage <The Betrayer>
+    extern const Position ILLIDAN_NORMAL_TANK_POSITION_1;
+    extern const Position ILLIDAN_NORMAL_TANK_POSITION_2;
+    extern const Position ILLIDAN_NORMAL_TANK_POSITION_3;
+    extern const Position ILLIDAN_NORMAL_TANK_POSITION_4;
+    extern const Position ILLIDAN_SUMMIT_CENTER_POSITION;
+    extern const Position ILLIDAN_NORTH_GRATE_POSITION;
+    extern const Position ILLIDAN_SOUTH_GRATE_POSITION;
+    extern const Position ILLIDAN_E_GLAIVE_TANK_POSITION_1;
+    extern const Position ILLIDAN_E_GLAIVE_TANK_POSITION_2;
+    extern const Position ILLIDAN_E_GLAIVE_TANK_POSITION_3;
+    extern const Position ILLIDAN_E_GLAIVE_TANK_POSITION_4;
+    extern const Position ILLIDAN_E_GLAIVE_TANK_POSITION_5;
+    extern const Position ILLIDAN_E_GLAIVE_TANK_POSITION_6;
+    extern const Position ILLIDAN_E_GLAIVE_TANK_POSITIONS[6];
+    extern const Position ILLIDAN_W_GLAIVE_TANK_POSITION_1;
+    extern const Position ILLIDAN_W_GLAIVE_TANK_POSITION_2;
+    extern const Position ILLIDAN_W_GLAIVE_TANK_POSITION_3;
+    extern const Position ILLIDAN_W_GLAIVE_TANK_POSITION_4;
+    extern const Position ILLIDAN_W_GLAIVE_TANK_POSITION_5;
+    extern const Position ILLIDAN_W_GLAIVE_TANK_POSITION_6;
+    extern const Position ILLIDAN_W_GLAIVE_TANK_POSITIONS[6];
+    extern const Position ILLIDAN_DEMON_TANK_POSITION;
+    extern const Position eyeBeamPos[MAX_EYE_BEAM_POS * 2];
+    extern std::unordered_map<ObjectGuid, size_t> flameTankWaypointIndex;
+    int GetIllidanPhase(Unit* illidan);
+    std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(PlayerbotAI* botAI);
+    Player* GetIllidanWarlockTank(PlayerbotAI* botAI, Player* bot);
+    struct EyeBlastDangerArea
+    {
+        Position start;
+        Position end;
+        float width; // Half-width of the danger area (e.g., 6.0f for 12 yards total)
+    };
+    EyeBlastDangerArea GetEyeBlastDangerArea(PlayerbotAI* botAI, Unit* illidan);
+    bool IsPositionInEyeBlastDangerArea(const Position& pos, const EyeBlastDangerArea& area);
 }
 
 #endif

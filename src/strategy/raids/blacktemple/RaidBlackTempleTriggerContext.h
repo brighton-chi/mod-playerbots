@@ -144,6 +144,30 @@ public:
             &RaidBlackTempleTriggerContext::illidari_council_need_to_manage_dps_timer;
 
         // Illidan Stormrage <The Betrayer>
+
+        creators["illidan stormrage tank needs aggro"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_tank_needs_aggro;
+
+        creators["illidan stormrage boss casts flame crash"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_boss_casts_flame_crash;
+
+        creators["illidan stormrage boss summoned flames of azzinoth"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_boss_summoned_flames_of_azzinoth;
+
+        creators["illidan stormrage grate is safe from flames"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_grate_is_safe_from_flames;
+
+        creators["illidan stormrage boss deals splash damage"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_boss_deals_splash_damage;
+
+        creators["illidan stormrage this expansion hates melee"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_this_expansion_hates_melee;
+
+        creators["illidan stormrage boss transforms into demon"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_boss_transforms_into_demon;
+
+        creators["illidan stormrage boss summons adds"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_boss_summons_adds;
     }
 
 private:
@@ -282,6 +306,30 @@ private:
         PlayerbotAI* botAI) { return new IllidariCouncilNeedToManageDpsTimerTrigger(botAI); }
 
     // Illidan Stormrage <The Betrayer>
+
+    static Trigger* illidan_stormrage_tank_needs_aggro(
+        PlayerbotAI* botAI) { return new IllidanStormrageTankNeedsAggroTrigger(botAI); }
+
+    static Trigger* illidan_stormrage_boss_casts_flame_crash(
+        PlayerbotAI* botAI) { return new IllidanStormrageBossCastsFlameCrashTrigger(botAI); }
+
+    static Trigger* illidan_stormrage_boss_summoned_flames_of_azzinoth(
+        PlayerbotAI* botAI) { return new IllidanStormrageBossSummonedFlamesOfAzzinothTrigger(botAI); }
+
+    static Trigger* illidan_stormrage_grate_is_safe_from_flames(
+        PlayerbotAI* botAI) { return new IllidanStormrageGrateIsSafeFromFlamesTrigger(botAI); }
+
+    static Trigger* illidan_stormrage_boss_deals_splash_damage(
+        PlayerbotAI* botAI) { return new IllidanStormrageBossDealsSplashDamageTrigger(botAI); }
+
+    static Trigger* illidan_stormrage_this_expansion_hates_melee(
+        PlayerbotAI* botAI) { return new IllidanStormrageThisExpansionHatesMeleeTrigger(botAI); }
+
+    static Trigger* illidan_stormrage_boss_transforms_into_demon(
+        PlayerbotAI* botAI) { return new IllidanStormrageBossTransformsIntoDemonTrigger(botAI); }
+
+    static Trigger* illidan_stormrage_boss_summons_adds(
+        PlayerbotAI* botAI) { return new IllidanStormrageBossSummonsAddsTrigger(botAI); }
 };
 
 #endif

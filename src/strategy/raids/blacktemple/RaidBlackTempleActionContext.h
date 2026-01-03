@@ -147,6 +147,30 @@ public:
             &RaidBlackTempleActionContext::illidari_council_manage_dps_timer;
 
         // Illidan Stormrage <The Betrayer>
+
+        creators["illidan stormrage misdirect to tank"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_misdirect_to_tank;
+
+        creators["illidan stormrage main tank move away from flame crash"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_main_tank_move_away_from_flame_crash;
+
+        creators["illidan stormrage assist tanks handle flames of azzinoth"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_assist_tanks_handle_flames_of_azzinoth;
+
+        creators["illidan stormrage ranged spread above grate"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_ranged_spread_above_grate;
+
+        creators["illidan stormrage disperse ranged"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_disperse_ranged;
+
+        creators["illidan stormrage position melee"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_position_melee;
+
+        creators["illidan stormrage warlock tank handle demon boss"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_warlock_tank_handle_demon_boss;
+
+        creators["illidan stormrage dps prioritize adds"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_dps_prioritize_adds;
     }
 
 private:
@@ -288,6 +312,30 @@ private:
         PlayerbotAI* botAI) { return new IllidariCouncilManageDpsTimerAction(botAI); }
 
     // Illidan Stormrage <The Betrayer>
+
+    static Action* illidan_stormrage_misdirect_to_tank(
+        PlayerbotAI* botAI) { return new IllidanStormrageMisdirectToTankAction(botAI); }
+
+    static Action* illidan_stormrage_main_tank_move_away_from_flame_crash(
+        PlayerbotAI* botAI) { return new IllidanStormrageMainTankMoveAwayFromFlameCrashAction(botAI); }
+
+    static Action* illidan_stormrage_assist_tanks_handle_flames_of_azzinoth(
+        PlayerbotAI* botAI) { return new IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction(botAI); }
+
+    static Action* illidan_stormrage_ranged_spread_above_grate(
+        PlayerbotAI* botAI) { return new IllidanStormrageRangedSpreadAboveGrateAction(botAI); }
+
+    static Action* illidan_stormrage_disperse_ranged(
+        PlayerbotAI* botAI) { return new IllidanStormrageDisperseRangedAction(botAI); }
+
+    static Action* illidan_stormrage_position_melee(
+        PlayerbotAI* botAI) { return new IllidanStormragePositionMeleeAction(botAI); }
+
+    static Action* illidan_stormrage_warlock_tank_handle_demon_boss(
+        PlayerbotAI* botAI) { return new IllidanStormrageWarlockTankHandleDemonBossAction(botAI); }
+
+    static Action* illidan_stormrage_dps_prioritize_adds(
+        PlayerbotAI* botAI) { return new IllidanStormrageDpsPrioritizeAddsAction(botAI); }
 };
 
 #endif

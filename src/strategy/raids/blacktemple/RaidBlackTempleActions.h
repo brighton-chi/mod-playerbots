@@ -85,7 +85,7 @@ private:
         const std::vector<Unit*>& volcanos, float maxRadius, float hazardRadius);
     bool IsPathSafeFromVolcanos(const Position& start,
         const Position& end, const std::vector<Unit*>& volcanos, float hazardRadius);
-    std::vector<Unit*> GetAllSupremusVolcanos(PlayerbotAI* botAI, Player* bot);
+    std::vector<Unit*> GetAllSupremusVolcanos();
 };
 
 class SupremusManagePhaseTimerAction : public Action
@@ -349,5 +349,91 @@ public:
 };
 
 // Illidan Stormrage <The Betrayer>
+
+class IllidanStormrageMisdirectToTankAction : public AttackAction
+{
+public:
+    IllidanStormrageMisdirectToTankAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "illidan stormrage misdirect to tank") {}
+    bool Execute(Event event) override;
+
+private:
+    bool TryMisdirectToFlameTanks(Group* group);
+    bool TryMisdirectToWarlockTank(Unit* illidan, Group* group);
+};
+
+class IllidanStormrageMainTankMoveAwayFromFlameCrashAction : public MovementAction
+{
+public:
+    IllidanStormrageMainTankMoveAwayFromFlameCrashAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "illidan stormrage main tank move away from flame crash") {}
+    bool Execute(Event event) override;
+
+private:
+    Position GetPointBeyondTrap(
+        GameObject* nearestTrap, float extraDistance = 5.0f);
+    Position FindSafestNearbyPosition(
+        const std::vector<Unit*>& flameCrashes, float maxRadius, float hazardRadius);
+    bool IsPathSafeFromFlameCrashes(const Position& start,
+        const Position& end, const std::vector<Unit*>& flameCrashes, float hazardRadius);
+    std::vector<Unit*> GetAllFlameCrashes();
+};
+
+class IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction : public AttackAction
+{
+public:
+    IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "illidan stormrage assist tanks handle flames of azzinoth") {}
+    bool Execute(Event event) override;
+
+private:
+    bool RepositionToAvoidEyeBlast(Unit* illidan);
+    bool RepositionToAvoidBlaze(Unit* eastFlame, Unit* westFlame);
+};
+
+class IllidanStormrageRangedSpreadAboveGrateAction : public MovementAction
+{
+public:
+    IllidanStormrageRangedSpreadAboveGrateAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "illidan stormrage ranged spread above grate") {}
+    bool Execute(Event event) override;
+};
+
+class IllidanStormrageDisperseRangedAction : public MovementAction
+{
+public:
+    IllidanStormrageDisperseRangedAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "illidan stormrage disperse ranged") {}
+    bool Execute(Event event) override;
+};
+
+class IllidanStormragePositionMeleeAction : public MovementAction
+{
+public:
+    IllidanStormragePositionMeleeAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "illidan stormrage position melee") {}
+    bool Execute(Event event) override;
+
+private:
+    bool MoveAwayFromEyeBlast(Unit* illidan);
+    bool StayAwayFromDemonBoss(Unit* illidan);
+    bool PositionBehindBoss(Unit* illidan);
+};
+
+class IllidanStormrageWarlockTankHandleDemonBossAction : public AttackAction
+{
+public:
+    IllidanStormrageWarlockTankHandleDemonBossAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "illidan stormrage warlock tank handle demon boss") {}
+    bool Execute(Event event) override;
+};
+
+class IllidanStormrageDpsPrioritizeAddsAction : public AttackAction
+{
+public:
+    IllidanStormrageDpsPrioritizeAddsAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "illidan stormrage dps prioritize adds") {}
+    bool Execute(Event event) override;
+};
 
 #endif
