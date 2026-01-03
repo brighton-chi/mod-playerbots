@@ -174,7 +174,7 @@ namespace ZulAmanHelpers
              botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get())
         {
             Unit* unit = botAI->GetUnit(guid);
-            if (unit && unit->IsAlive() && unit->GetEntry() == NPC_AMANI_HATCHER)
+            if (unit && unit->GetEntry() == NPC_AMANI_HATCHER)
             {
                 if (!lowest || unit->GetGUID().GetRawValue() < lowest->GetGUID().GetRawValue())
                     lowest = unit;

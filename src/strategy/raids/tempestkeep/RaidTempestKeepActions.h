@@ -193,9 +193,9 @@ public:
     bool Execute(Event event) override;
 
 private:
-    std::vector<Unit*> GetSolariumPriests();
+    std::pair<Unit*, Unit*> GetSolariumPriests(PlayerbotAI* botAI);
     std::vector<Player*> GetMeleeBots(Group* group);
-    Unit* AssignSolariumPriestsToBots(const std::vector<Unit*>& solariumPriests, const std::vector<Player*>& meleeMembers);
+    Unit* AssignSolariumPriestsToBots(const std::pair<Unit*, Unit*>& priestsPair, const std::vector<Player*>& meleeMembers);
 };
 
 class HighAstromancerSolarianTankVoidwalkerAction : public AttackAction

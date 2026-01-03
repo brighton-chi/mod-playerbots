@@ -873,24 +873,30 @@ bool HighAstromancerSolarianStackForAoeAction::Execute(Event event)
 // Split melee into two groups, one on each Solarium Priest
 bool HighAstromancerSolarianTargetSolariumPriestsAction::Execute(Event event)
 {
-    Unit* solariumPriest = AI_VALUE2(Unit*, "find target", "solarium priest");
-    if (!solariumPriest)
+    auto priestsPair = GetSolariumPriests(botAI);
+    if (!priestsPair.first || !priestsPair.second)
         return false;
 
     Group* group = bot->GetGroup();
     if (!group)
         return false;
 
-    auto solariumPriests = GetSolariumPriests();
     auto meleeMembers = GetMeleeBots(group);
-    Unit* targetPriest = AssignSolariumPriestsToBots(solariumPriests, meleeMembers);
+    if (meleeMembers.empty())
+        return false;
+
+    Unit* targetPriest = AssignSolariumPriestsToBots(priestsPair, meleeMembers);
     if (!targetPriest)
         return false;
 
     auto it = std::find(meleeMembers.begin(), meleeMembers.end(), bot);
+    if (it == meleeMembers.end())
+        return false;
+
     size_t botIndex = std::distance(meleeMembers.begin(), it);
     size_t totalMelee = meleeMembers.size();
-    if (botIndex < totalMelee / 2)
+
+    if (targetPriest == priestsPair.first)
     {
         MarkTargetWithSquare(bot, targetPriest);
         SetRtiTarget(botAI, "square", targetPriest);
@@ -907,18 +913,26 @@ bool HighAstromancerSolarianTargetSolariumPriestsAction::Execute(Event event)
     return false;
 }
 
-std::vector<Unit*> HighAstromancerSolarianTargetSolariumPriestsAction::GetSolariumPriests()
+std::pair<Unit*, Unit*> HighAstromancerSolarianTargetSolariumPriestsAction::GetSolariumPriests(PlayerbotAI* botAI)
 {
-    std::vector<Unit*> solariumPriests;
-    auto const& npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
-    for (auto const& npcGuid : npcs)
+    Unit* lowest = nullptr;
+    Unit* highest = nullptr;
+
+    for (auto const& guid :
+         botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get())
     {
-        Unit* unit = botAI->GetUnit(npcGuid);
-        if (unit && unit->GetEntry() == NPC_SOLARIUM_PRIEST && unit->IsAlive())
-            solariumPriests.push_back(unit);
+        Unit* unit = botAI->GetUnit(guid);
+        if (unit && unit->GetEntry() == NPC_SOLARIUM_PRIEST)
+        {
+            if (!lowest || unit->GetGUID().GetRawValue() < lowest->GetGUID().GetRawValue())
+                lowest = unit;
+
+            if (!highest || unit->GetGUID().GetRawValue() > highest->GetGUID().GetRawValue())
+                highest = unit;
+        }
     }
 
-    return solariumPriests;
+    return {lowest, highest};
 }
 
 std::vector<Player*> HighAstromancerSolarianTargetSolariumPriestsAction::GetMeleeBots(Group* group)
@@ -938,14 +952,10 @@ std::vector<Player*> HighAstromancerSolarianTargetSolariumPriestsAction::GetMele
 }
 
 Unit* HighAstromancerSolarianTargetSolariumPriestsAction::AssignSolariumPriestsToBots(
-    const std::vector<Unit*>& solariumPriests, const std::vector<Player*>& meleeMembers)
+    const std::pair<Unit*, Unit*>& priestsPair, const std::vector<Player*>& meleeMembers)
 {
-    if (solariumPriests.size() < 2 || meleeMembers.empty())
+    if (!priestsPair.first || !priestsPair.second || meleeMembers.empty())
         return nullptr;
-
-    std::vector<Unit*> sortedPriests = solariumPriests;
-    std::sort(sortedPriests.begin(), sortedPriests.end(),
-              [](Unit* left, Unit* right) { return left->GetGUID() < right->GetGUID(); });
 
     auto it = std::find(meleeMembers.begin(), meleeMembers.end(), bot);
     if (it == meleeMembers.end())
@@ -954,10 +964,14 @@ Unit* HighAstromancerSolarianTargetSolariumPriestsAction::AssignSolariumPriestsT
     size_t botIndex = std::distance(meleeMembers.begin(), it);
     size_t totalMelee = meleeMembers.size();
 
-    if (botIndex < totalMelee / 2)
-        return sortedPriests[0];
+    if (totalMelee == 1)
+        return priestsPair.first;
+
+    size_t split = totalMelee / 2;
+    if (botIndex < split)
+        return priestsPair.first;
     else
-        return sortedPriests[1];
+        return priestsPair.second;
 }
 
 bool HighAstromancerSolarianTankVoidwalkerAction::Execute(Event event)

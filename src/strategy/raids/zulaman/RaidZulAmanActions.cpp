@@ -600,7 +600,7 @@ bool JanalaiMarkAmaniHatchersAction::Execute(Event event)
     auto [hatcherLow, hatcherHigh] = GetAmaniHatcherPair(botAI);
 
     // When hatchers spawn, mark one with Skull and the other with Moon
-    if (hatcherLow && hatcherHigh && hatcherLow != hatcherHigh)
+    if (hatcherLow && hatcherHigh)
     {
         MarkTargetWithSkull(bot, hatcherLow);
         MarkTargetWithMoon(bot, hatcherHigh);
@@ -608,7 +608,7 @@ bool JanalaiMarkAmaniHatchersAction::Execute(Event event)
     // Only one hatcher alive: mark with Moon unless already marked with Skull
     // This allows the player to override the mark when it is time to kill
     // the second hatcher (i.e., after all eggs are hatched for one side)
-    else if (hatcherHigh && hatcherHigh->IsAlive() && group)
+    else if (hatcherHigh)
     {
         ObjectGuid guid = hatcherHigh->GetGUID();
         if (group->GetTargetIcon(RtiTargetValue::skullIndex) != guid)
