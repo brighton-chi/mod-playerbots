@@ -362,11 +362,11 @@ private:
     bool TryMisdirectToWarlockTank(Unit* illidan, Group* group);
 };
 
-class IllidanStormrageMainTankMoveAwayFromFlameCrashAction : public MovementAction
+class IllidanStormrageMainTankMoveAwayFromFlameCrashAction : public AttackAction
 {
 public:
     IllidanStormrageMainTankMoveAwayFromFlameCrashAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "illidan stormrage main tank move away from flame crash") {}
+        PlayerbotAI* botAI) : AttackAction(botAI, "illidan stormrage main tank move away from flame crash") {}
     bool Execute(Event event) override;
 
 private:
@@ -377,6 +377,14 @@ private:
     bool IsPathSafeFromFlameCrashes(const Position& start,
         const Position& end, const std::vector<Unit*>& flameCrashes, float hazardRadius);
     std::vector<Unit*> GetAllFlameCrashes();
+};
+
+class IllidanStormrageBotWithParasiteRunAwayFromGroupAction : public MovementAction
+{
+public:
+    IllidanStormrageBotWithParasiteRunAwayFromGroupAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "illidan stormrage bot with parasite run away from group") {}
+    bool Execute(Event event) override;
 };
 
 class IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction : public AttackAction

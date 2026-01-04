@@ -176,11 +176,10 @@ namespace BlackTempleHelpers
     Player* GetZerevorMageTank(PlayerbotAI* botAI, Player* bot);
 
     // Illidan Stormrage <The Betrayer>
-    extern const Position ILLIDAN_SUMMIT_CENTER_POSITION;
+    extern const Position ILLIDAN_C_GRATE_POSITION;
     extern const Position ILLIDAN_N_GRATE_POSITION;
     extern const Position ILLIDAN_SW_GRATE_POSITION;
     extern const Position ILLIDAN_SE_GRATE_POSITION;
-    // extern const Position ILLIDAN_S_GRATE_POSITION;
     extern const Position* gratePositions[3];
     extern const Position ILLIDAN_E_GLAIVE_WAITING_POSITION;
     extern const Position ILLIDAN_E_GLAIVE_TANK_POSITION_1;
@@ -194,9 +193,7 @@ namespace BlackTempleHelpers
     extern const Position ILLIDAN_E_GLAIVE_TANK_POSITION_9;
     extern const Position ILLIDAN_E_GLAIVE_TANK_POSITION_10;
     extern const Position ILLIDAN_E_GLAIVE_TANK_POSITION_11;
-    extern const Position ILLIDAN_E_GLAIVE_TANK_POSITION_12;
-    extern const Position ILLIDAN_E_GLAIVE_TANK_POSITION_13;
-    extern const Position ILLIDAN_E_GLAIVE_TANK_POSITIONS[13];
+    extern const Position ILLIDAN_E_GLAIVE_TANK_POSITIONS[11];
     extern const Position ILLIDAN_W_GLAIVE_WAITING_POSITION;
     extern const Position ILLIDAN_W_GLAIVE_TANK_POSITION_1;
     extern const Position ILLIDAN_W_GLAIVE_TANK_POSITION_2;
@@ -204,7 +201,12 @@ namespace BlackTempleHelpers
     extern const Position ILLIDAN_W_GLAIVE_TANK_POSITION_4;
     extern const Position ILLIDAN_W_GLAIVE_TANK_POSITION_5;
     extern const Position ILLIDAN_W_GLAIVE_TANK_POSITION_6;
-    extern const Position ILLIDAN_W_GLAIVE_TANK_POSITIONS[6];
+    extern const Position ILLIDAN_W_GLAIVE_TANK_POSITION_7;
+    extern const Position ILLIDAN_W_GLAIVE_TANK_POSITION_8;
+    extern const Position ILLIDAN_W_GLAIVE_TANK_POSITION_9;
+    extern const Position ILLIDAN_W_GLAIVE_TANK_POSITION_10;
+    extern const Position ILLIDAN_W_GLAIVE_TANK_POSITION_11;
+    extern const Position ILLIDAN_W_GLAIVE_TANK_POSITIONS[11];
     extern const Position eyeBeamPos[MAX_EYE_BEAM_POS * 2];
     extern std::unordered_map<ObjectGuid, size_t> flameTankWaypointIndex;
     extern std::unordered_map<uint32, time_t> illidanDpsWaitTimer;

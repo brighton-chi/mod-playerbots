@@ -497,6 +497,21 @@ bool IllidanStormrageBossCastsFlameCrashTrigger::IsActive()
            GetIllidanPhase(illidan) == 5;
 }
 
+bool IllidanStormrageBotHasParasiticShadowfiendTrigger::IsActive()
+{
+    if (botAI->IsMelee(bot))
+        return false;
+
+    if (!bot->HasAura(SPELL_PARASITIC_SHADOWFIEND))
+        return false;
+
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    if (!illidan)
+        return false;
+
+    return GetIllidanPhase(illidan) == 1;
+}
+
 bool IllidanStormrageBossSummonedFlamesOfAzzinothTrigger::IsActive()
 {
     if (!botAI->IsTank(bot))
@@ -506,12 +521,14 @@ bool IllidanStormrageBossSummonedFlamesOfAzzinothTrigger::IsActive()
     if (!illidan)
         return false;
 
-    return GetIllidanPhase(illidan) == 1 || GetIllidanPhase(illidan) == 2;
+    return GetIllidanPhase(illidan) == 2;
 }
 
 bool IllidanStormrageGrateIsSafeFromFlamesTrigger::IsActive()
 {
-    if (!botAI->IsRanged(bot))
+    /* if (!botAI->IsRanged(bot))
+        return false; */
+    if (botAI->IsTank(bot))
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");

@@ -154,6 +154,9 @@ public:
         creators["illidan stormrage main tank move away from flame crash"] =
             &RaidBlackTempleActionContext::illidan_stormrage_main_tank_move_away_from_flame_crash;
 
+        creators["illidan stormrage bot with parasite run away from group"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_bot_with_parasite_run_away_from_group;
+
         creators["illidan stormrage assist tanks handle flames of azzinoth"] =
             &RaidBlackTempleActionContext::illidan_stormrage_assist_tanks_handle_flames_of_azzinoth;
 
@@ -321,6 +324,9 @@ private:
 
     static Action* illidan_stormrage_main_tank_move_away_from_flame_crash(
         PlayerbotAI* botAI) { return new IllidanStormrageMainTankMoveAwayFromFlameCrashAction(botAI); }
+
+    static Action* illidan_stormrage_bot_with_parasite_run_away_from_group(
+        PlayerbotAI* botAI) { return new IllidanStormrageBotWithParasiteRunAwayFromGroupAction(botAI); }
 
     static Action* illidan_stormrage_assist_tanks_handle_flames_of_azzinoth(
         PlayerbotAI* botAI) { return new IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction(botAI); }

@@ -349,6 +349,14 @@ public:
     bool IsActive() override;
 };
 
+class IllidanStormrageBotHasParasiticShadowfiendTrigger : public Trigger
+{
+public:
+    IllidanStormrageBotHasParasiticShadowfiendTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage bot has parasitic shadowfiend") {}
+    bool IsActive() override;
+};
+
 class IllidanStormrageBossSummonedFlamesOfAzzinothTrigger : public Trigger
 {
 public:

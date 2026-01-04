@@ -402,8 +402,10 @@ float IllidanStormrageDelayBloodlustAndHeroismMultiplier::GetValue(Action* actio
     if (bot->getClass() != CLASS_SHAMAN)
         return 1.0f;
 
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (illidan && GetIllidanPhase(illidan) < 2)
+    if (!AI_VALUE2(Unit*, "find target", "illidan stormrage"))
+        return 1.0f;
+
+    if (!AI_VALUE2(Unit*, "find target", "flame of azzinoth"))
     {
         if (dynamic_cast<CastHeroismAction*>(action) ||
             dynamic_cast<CastBloodlustAction*>(action))
@@ -462,19 +464,19 @@ float IllidanStormrageDisableTankAssistMultiplier::GetValue(Action* action)
 
     if (Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage"))
     {
-        if ((bot->GetVictim() != nullptr && dynamic_cast<TankAssistAction*>(action)))
+        if (dynamic_cast<TankAssistAction*>(action))
         {
             if (GetIllidanPhase(illidan) == 1 ||
                 GetIllidanPhase(illidan) == 3 ||
                 GetIllidanPhase(illidan) == 5)
             {
-                if (!botAI->IsMainTank(bot))
+                if (botAI->IsMainTank(bot))
                     return 0.0f;
             }
             else if (GetIllidanPhase(illidan) == 2)
             {
-                if (!botAI->IsAssistTankOfIndex(bot, 0) &&
-                    !botAI->IsAssistTankOfIndex(bot, 1))
+                if (botAI->IsAssistTankOfIndex(bot, 0) ||
+                    botAI->IsAssistTankOfIndex(bot, 1))
                     return 0.0f;
             }
             else if (GetIllidanPhase(illidan) == 4)
@@ -514,6 +516,13 @@ float IllidanStormrageMeleeCannotAttackDemonFormMultiplier::GetValue(Action* act
     if (!illidan)
         return 1.0f;
 
+    if (GetIllidanPhase(illidan) == 2)
+    {
+        if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
+            dynamic_cast<ReachTargetAction*>(action))
+            return 0.0f;
+    }
+
     if (GetIllidanPhase(illidan) == 4)
     {
         if (dynamic_cast<CastReachTargetSpellAction*>(action))
@@ -538,34 +547,33 @@ float IllidanStormrageWaitForDpsMultiplier::GetValue(Action* action)
 
     const time_t now = std::time(nullptr);
     const uint32 instanceId = illidan->GetMap()->GetInstanceId();
-    const uint8 dpsWaitSeconds = 8;
 
-    if (AI_VALUE2(Unit*, "find target", "flame of azzinoth"))
+    if (GetIllidanPhase(illidan) == 4)
+    {
+        if (GetIllidanWarlockTank(botAI, bot) == bot)
+            return 1.0f;
+
+        const uint8 phase4DpsWaitSeconds = 10;
+        auto it = illidanDpsWaitTimer.find(instanceId);
+        if (it == illidanDpsWaitTimer.end() || (now - it->second) < phase4DpsWaitSeconds)
+        {
+            if (dynamic_cast<AttackAction*>(action) ||
+                (dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<CastHealingSpellAction*>(action)))
+                 return 0.0f;
+        }
+    }
+    else if (AI_VALUE2(Unit*, "find target", "flame of azzinoth"))
     {
         if (botAI->IsAssistTankOfIndex(bot, 0) ||
             botAI->IsAssistTankOfIndex(bot, 1))
             return 1.0f;
 
+        const uint8 phase2DpsWaitSeconds = 10;
         auto it = illidanDpsWaitTimer.find(instanceId);
-        if (it == illidanDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
+        if (it == illidanDpsWaitTimer.end() || (now - it->second) < phase2DpsWaitSeconds)
         {
             if (dynamic_cast<AttackAction*>(action) ||
-                (dynamic_cast<CastSpellAction*>(action) &&
-                 !dynamic_cast<CastHealingSpellAction*>(action)))
-                 return 0.0f;
-        }
-    }
-    else if (GetIllidanPhase(illidan) == 4)
-    {
-        if (GetIllidanWarlockTank(botAI, bot) == bot)
-            return 1.0f;
-
-        auto it = illidanDpsWaitTimer.find(instanceId);
-        if (it == illidanDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
-        {
-            if (dynamic_cast<AttackAction*>(action) ||
-                (dynamic_cast<CastSpellAction*>(action) &&
-                 !dynamic_cast<CastHealingSpellAction*>(action)))
+                (dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<CastHealingSpellAction*>(action)))
                  return 0.0f;
         }
     }
