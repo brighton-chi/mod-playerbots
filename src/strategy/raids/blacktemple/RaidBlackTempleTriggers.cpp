@@ -60,13 +60,11 @@ bool HighWarlordNajentusPlayerIsImpaledTrigger::IsActive()
         }
     }
 
-    // Only fire for the closest non-tank bot to the impaled player
+    Player* closestBot = nullptr;
+    float closestDist = std::numeric_limits<float>::max();
+    // Find the closest non-tank bot to the impaled player
     if (impaledPlayer)
     {
-        // Check if this bot is the closest non-tank bot to the impaled player
-        float myDist = bot->GetDistance(impaledPlayer);
-        bool isClosest = true;
-
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
@@ -74,18 +72,17 @@ bool HighWarlordNajentusPlayerIsImpaledTrigger::IsActive()
                 !GET_PLAYERBOT_AI(member) || botAI->IsTank(member))
                 continue;
 
-            float otherDist = member->GetDistance(impaledPlayer);
-            if (otherDist < myDist)
+            float dist = member->GetDistance(impaledPlayer);
+            if (dist < closestDist)
             {
-                isClosest = false;
-                break;
+                closestDist = dist;
+                closestBot = member;
             }
         }
-
-        return isClosest;
     }
 
-    return false;
+    // Only fire for the closest non-tank bot
+    return closestBot == bot;
 }
 
 bool HighWarlordNajentusBossHasTidalShieldTrigger::IsActive()
