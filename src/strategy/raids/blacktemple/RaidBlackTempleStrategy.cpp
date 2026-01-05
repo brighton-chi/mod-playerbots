@@ -52,12 +52,12 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("teron gorefiend boss is casting shadow of death",
         NextAction::array(0, new NextAction("teron gorefiend avoid shadow of death", ACTION_EMERGENCY + 10), nullptr)
     ));
-    /* triggers.push_back(new TriggerNode("teron gorefiend bot has shadow of death",
+    triggers.push_back(new TriggerNode("teron gorefiend bot has shadow of death",
         NextAction::array(0, new NextAction("teron gorefiend move to corner to die", ACTION_EMERGENCY + 10), nullptr)
-    )); */
-    /* triggers.push_back(new TriggerNode("teron gorefiend bot transformed into vengeful spirit",
+    ));
+    triggers.push_back(new TriggerNode("teron gorefiend bot transformed into vengeful spirit",
         NextAction::array(0, new NextAction("teron gorefiend control and destroy shadowy constructs", ACTION_EMERGENCY + 10), nullptr)
-    )); */
+    ));
 
     // Gurtogg Bloodboil
     triggers.push_back(new TriggerNode("gurtogg bloodboil pulling boss",

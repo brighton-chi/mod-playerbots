@@ -268,8 +268,8 @@ namespace BlackTempleHelpers
     }
 
     // Illidan Stormrage <The Betrayer>
+    const Position ILLIDAN_LANDING_POSITION = { 676.648f, 304.761f, 354.189f };
     const Position ILLIDAN_C_GRATE_POSITION = { 683.569f, 305.245f, 353.192f };
-    // const Position ILLIDAN_N_GRATE_POSITION = { 684.115f, 305.215f, 353.192f };
     const Position ILLIDAN_N_GRATE_POSITION = { 682.884f, 305.06f, 353.192f };
     const Position ILLIDAN_SW_GRATE_POSITION = { 672.828f, 311.496f, 353.192f };
     const Position ILLIDAN_SE_GRATE_POSITION = { 672.928f, 298.357f, 353.192f };
@@ -362,6 +362,13 @@ namespace BlackTempleHelpers
     {
         if (!illidan)
             return -1;
+
+        // Transitioning from Phase 2 to Phase 3
+        float x, y, z;
+        illidan->GetMotionMaster()->GetDestination(x, y, z);
+        Position dest(x, y, z);
+        if (dest.GetExactDist2d(ILLIDAN_LANDING_POSITION) < 1.0f)
+            return 0;
 
         // Phase 1: Health > 65%
         if (illidan->GetHealthPct() > 65.0f)

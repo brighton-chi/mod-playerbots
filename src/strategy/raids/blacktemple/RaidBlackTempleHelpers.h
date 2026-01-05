@@ -178,6 +178,7 @@ namespace BlackTempleHelpers
     Player* GetZerevorMageTank(PlayerbotAI* botAI, Player* bot);
 
     // Illidan Stormrage <The Betrayer>
+    extern const Position ILLIDAN_LANDING_POSITION;
     extern const Position ILLIDAN_C_GRATE_POSITION;
     extern const Position ILLIDAN_N_GRATE_POSITION;
     extern const Position ILLIDAN_SW_GRATE_POSITION;

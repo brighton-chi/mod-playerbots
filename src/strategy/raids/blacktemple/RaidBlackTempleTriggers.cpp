@@ -538,7 +538,8 @@ bool IllidanStormrageGrateIsSafeFromFlamesTrigger::IsActive()
 
 bool IllidanStormrageBossDealsSplashDamageTrigger::IsActive()
 {
-    if (!botAI->IsRanged(bot) || bot->HasAura(SPELL_PARASITIC_SHADOWFIEND))
+    if (!botAI->IsRanged(bot) || bot->HasAura(SPELL_PARASITIC_SHADOWFIEND) ||
+        GetIllidanTrapperHunter(botAI, bot) == bot)
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
