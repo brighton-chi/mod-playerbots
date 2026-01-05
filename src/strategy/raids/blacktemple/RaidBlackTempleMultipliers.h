@@ -188,6 +188,14 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class IllidanStormrageAssistTanksPrioritizeFlamesMultiplier : public Multiplier
+{
+public:
+    IllidanStormrageAssistTanksPrioritizeFlamesMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "illidan stormrage assist tanks prioritize flames multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
 class IllidanStormrageMeleeCannotAttackDemonFormMultiplier : public Multiplier
 {
 public:

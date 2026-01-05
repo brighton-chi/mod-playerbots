@@ -147,13 +147,16 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction::array(0, new NextAction("illidan stormrage main tank move away from flame crash", ACTION_EMERGENCY + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("illidan stormrage bot has parasitic shadowfiend",
-        NextAction::array(0, new NextAction("illidan stormrage bot with parasite run away from group", ACTION_RAID + 2), nullptr)
+        NextAction::array(0, new NextAction("illidan stormrage isolate bot with parasite", ACTION_RAID + 2), nullptr)
     ));
     triggers.push_back(new TriggerNode("illidan stormrage boss summoned flames of azzinoth",
         NextAction::array(0, new NextAction("illidan stormrage assist tanks handle flames of azzinoth", ACTION_EMERGENCY + 1), nullptr)
     ));
+    triggers.push_back(new TriggerNode("illidan stormrage pets die to fire",
+        NextAction::array(0, new NextAction("illidan stormrage control pet aggression", ACTION_RAID + 3), nullptr)
+    ));
     triggers.push_back(new TriggerNode("illidan stormrage grate is safe from flames",
-        NextAction::array(0, new NextAction("illidan stormrage ranged spread above grate", ACTION_EMERGENCY + 1), nullptr)
+        NextAction::array(0, new NextAction("illidan stormrage bots spread above grate", ACTION_EMERGENCY + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("illidan stormrage boss deals splash damage",
         NextAction::array(0, new NextAction("illidan stormrage disperse ranged", ACTION_RAID + 1), nullptr)
@@ -165,7 +168,7 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction::array(0, new NextAction("illidan stormrage warlock tank handle demon boss", ACTION_EMERGENCY + 10), nullptr)
     ));
     triggers.push_back(new TriggerNode("illidan stormrage boss summons adds",
-        NextAction::array(0, new NextAction("illidan stormrage dps prioritize adds", ACTION_RAID + 2), nullptr)
+        NextAction::array(0, new NextAction("illidan stormrage dps prioritize adds", ACTION_EMERGENCY + 2), nullptr)
     ));
     triggers.push_back(new TriggerNode("illidan stormrage need to manage dps timer",
         NextAction::array(0, new NextAction("illidan stormrage manage dps timer", ACTION_EMERGENCY + 10), nullptr)
@@ -214,6 +217,7 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new IllidanStormrageDisableMovementMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageDisableTankAssistMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageRangedMustStayAboveGrateMultiplier(botAI));
+    multipliers.push_back(new IllidanStormrageAssistTanksPrioritizeFlamesMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageMeleeCannotAttackDemonFormMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageWaitForDpsMultiplier(botAI));
 }

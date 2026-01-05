@@ -379,11 +379,11 @@ private:
     std::vector<Unit*> GetAllFlameCrashes();
 };
 
-class IllidanStormrageBotWithParasiteRunAwayFromGroupAction : public MovementAction
+class IllidanStormrageIsolateBotWithParasiteAction : public MovementAction
 {
 public:
-    IllidanStormrageBotWithParasiteRunAwayFromGroupAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "illidan stormrage bot with parasite run away from group") {}
+    IllidanStormrageIsolateBotWithParasiteAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "illidan stormrage isolate bot with parasite") {}
     bool Execute(Event event) override;
 };
 
@@ -399,11 +399,19 @@ private:
     bool RepositionToAvoidBlaze(Unit* eastFlame, Unit* westFlame);
 };
 
-class IllidanStormrageRangedSpreadAboveGrateAction : public MovementAction
+class IllidanStormrageControlPetAggressionAction : public Action
 {
 public:
-    IllidanStormrageRangedSpreadAboveGrateAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "illidan stormrage ranged spread above grate") {}
+    IllidanStormrageControlPetAggressionAction(
+        PlayerbotAI* botAI) : Action(botAI, "illidan stormrage control pet aggression") {}
+    bool Execute(Event event) override;
+};
+
+class IllidanStormrageBotsSpreadAboveGrateAction : public MovementAction
+{
+public:
+    IllidanStormrageBotsSpreadAboveGrateAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "illidan stormrage bots spread above grate") {}
     bool Execute(Event event) override;
 };
 
@@ -423,7 +431,6 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool MoveAwayFromEyeBlast(Unit* illidan);
     bool StayAwayFromDemonBoss(Unit* illidan);
     bool PositionBehindBoss(Unit* illidan);
 };

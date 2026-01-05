@@ -365,6 +365,14 @@ public:
     bool IsActive() override;
 };
 
+class IllidanStormragePetsDieToFireTrigger : public Trigger
+{
+public:
+    IllidanStormragePetsDieToFireTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage pets die to fire") {}
+    bool IsActive() override;
+};
+
 class IllidanStormrageGrateIsSafeFromFlamesTrigger : public Trigger
 {
 public:

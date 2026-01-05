@@ -154,14 +154,17 @@ public:
         creators["illidan stormrage main tank move away from flame crash"] =
             &RaidBlackTempleActionContext::illidan_stormrage_main_tank_move_away_from_flame_crash;
 
-        creators["illidan stormrage bot with parasite run away from group"] =
-            &RaidBlackTempleActionContext::illidan_stormrage_bot_with_parasite_run_away_from_group;
+        creators["illidan stormrage isolate bot with parasite"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_isolate_bot_with_parasite;
 
         creators["illidan stormrage assist tanks handle flames of azzinoth"] =
             &RaidBlackTempleActionContext::illidan_stormrage_assist_tanks_handle_flames_of_azzinoth;
 
-        creators["illidan stormrage ranged spread above grate"] =
-            &RaidBlackTempleActionContext::illidan_stormrage_ranged_spread_above_grate;
+        creators["illidan stormrage control pet aggression"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_control_pet_aggression;
+
+        creators["illidan stormrage bots spread above grate"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_bots_spread_above_grate;
 
         creators["illidan stormrage disperse ranged"] =
             &RaidBlackTempleActionContext::illidan_stormrage_disperse_ranged;
@@ -325,14 +328,17 @@ private:
     static Action* illidan_stormrage_main_tank_move_away_from_flame_crash(
         PlayerbotAI* botAI) { return new IllidanStormrageMainTankMoveAwayFromFlameCrashAction(botAI); }
 
-    static Action* illidan_stormrage_bot_with_parasite_run_away_from_group(
-        PlayerbotAI* botAI) { return new IllidanStormrageBotWithParasiteRunAwayFromGroupAction(botAI); }
+    static Action* illidan_stormrage_isolate_bot_with_parasite(
+        PlayerbotAI* botAI) { return new IllidanStormrageIsolateBotWithParasiteAction(botAI); }
 
     static Action* illidan_stormrage_assist_tanks_handle_flames_of_azzinoth(
         PlayerbotAI* botAI) { return new IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction(botAI); }
 
-    static Action* illidan_stormrage_ranged_spread_above_grate(
-        PlayerbotAI* botAI) { return new IllidanStormrageRangedSpreadAboveGrateAction(botAI); }
+    static Action* illidan_stormrage_control_pet_aggression(
+        PlayerbotAI* botAI) { return new IllidanStormrageControlPetAggressionAction(botAI); }
+
+    static Action* illidan_stormrage_bots_spread_above_grate(
+        PlayerbotAI* botAI) { return new IllidanStormrageBotsSpreadAboveGrateAction(botAI); }
 
     static Action* illidan_stormrage_disperse_ranged(
         PlayerbotAI* botAI) { return new IllidanStormrageDisperseRangedAction(botAI); }

@@ -157,6 +157,9 @@ public:
         creators["illidan stormrage boss summoned flames of azzinoth"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_boss_summoned_flames_of_azzinoth;
 
+        creators["illidan stormrage pets die to fire"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_pets_die_to_fire;
+
         creators["illidan stormrage grate is safe from flames"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_grate_is_safe_from_flames;
 
@@ -324,6 +327,9 @@ private:
 
     static Trigger* illidan_stormrage_boss_summoned_flames_of_azzinoth(
         PlayerbotAI* botAI) { return new IllidanStormrageBossSummonedFlamesOfAzzinothTrigger(botAI); }
+
+    static Trigger* illidan_stormrage_pets_die_to_fire(
+        PlayerbotAI* botAI) { return new IllidanStormragePetsDieToFireTrigger(botAI); }
 
     static Trigger* illidan_stormrage_grate_is_safe_from_flames(
         PlayerbotAI* botAI) { return new IllidanStormrageGrateIsSafeFromFlamesTrigger(botAI); }

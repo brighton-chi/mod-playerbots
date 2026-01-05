@@ -268,9 +268,9 @@ namespace BlackTempleHelpers
     }
 
     // Illidan Stormrage <The Betrayer>
-    const Position ILLIDAN_C_GRATE_POSITION = { 676.021f, 305.455f, 353.582f };
-    // const Position ILLIDAN_N_GRATE_POSITION = { 684.966f, 305.201f, 353.191f };
-    const Position ILLIDAN_N_GRATE_POSITION = { 685.349f, 305.325f, 353.192f };
+    const Position ILLIDAN_C_GRATE_POSITION = { 683.569f, 305.245f, 353.192f };
+    // const Position ILLIDAN_N_GRATE_POSITION = { 684.115f, 305.215f, 353.192f };
+    const Position ILLIDAN_N_GRATE_POSITION = { 682.884f, 305.06f, 353.192f };
     const Position ILLIDAN_SW_GRATE_POSITION = { 672.828f, 311.496f, 353.192f };
     const Position ILLIDAN_SE_GRATE_POSITION = { 672.928f, 298.357f, 353.192f };
     const Position* gratePositions[3] =
@@ -280,7 +280,7 @@ namespace BlackTempleHelpers
         &ILLIDAN_SE_GRATE_POSITION
     };
     const Position ILLIDAN_E_GLAIVE_WAITING_POSITION = { 682.140f, 287.685f, 354.135f };
-    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_1 = { 694.867f, 300.910f, 354.186f };
+    /* const Position ILLIDAN_E_GLAIVE_TANK_POSITION_1 = { 694.867f, 300.910f, 354.186f };
     const Position ILLIDAN_E_GLAIVE_TANK_POSITION_2 = { 689.861f, 293.783f, 354.149f };
     const Position ILLIDAN_E_GLAIVE_TANK_POSITION_3 = { 682.190f, 289.148f, 354.136f };
     const Position ILLIDAN_E_GLAIVE_TANK_POSITION_4 = { 673.610f, 288.028f, 354.140f };
@@ -290,7 +290,19 @@ namespace BlackTempleHelpers
     const Position ILLIDAN_E_GLAIVE_TANK_POSITION_8 = { 670.698f, 279.068f, 353.848f };
     const Position ILLIDAN_E_GLAIVE_TANK_POSITION_9 = { 680.054f, 279.540f, 354.089f };
     const Position ILLIDAN_E_GLAIVE_TANK_POSITION_10 = { 689.442f, 282.678f, 354.303f };
-    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_11 = { 697.097f, 287.966f, 353.983f };
+    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_11 = { 697.097f, 287.966f, 353.983f }; */
+    // BELOW IS FLIPPED ORDER (so start outside first)
+    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_1 = { 697.097f, 287.966f, 353.983f };
+    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_2 = { 689.442f, 282.678f, 354.303f };
+    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_3 = { 680.054f, 279.540f, 354.089f };
+    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_4 = { 670.698f, 279.068f, 353.848f };
+    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_5 = { 661.933f, 282.331f, 354.848f };
+    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_6 = { 659.002f, 298.441f, 354.110f };
+    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_7 = { 664.911f, 291.331f, 354.225f };
+    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_8 = { 673.610f, 288.028f, 354.140f };
+    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_9 = { 682.190f, 289.148f, 354.136f };
+    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_10 = { 689.861f, 293.783f, 354.149f };
+    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_11 = { 694.867f, 300.910f, 354.186f };
     const Position ILLIDAN_E_GLAIVE_TANK_POSITIONS[11] =
     {
         ILLIDAN_E_GLAIVE_TANK_POSITION_1,
@@ -505,6 +517,59 @@ namespace BlackTempleHelpers
 
         // (3) Return the found Warlock tank, or nullptr if none found
         return highestHpWarlock;
+    }
+
+    Player* GetIllidanTrapperHunter(PlayerbotAI* botAI, Player* bot)
+    {
+        Group* group = bot->GetGroup();
+        if (!group)
+            return nullptr;
+
+        // (1) Look for an assistant Hunter (real player or bot)
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || member->getClass() != CLASS_HUNTER)
+                continue;
+
+            if (group->IsAssistant(member->GetGUID()))
+                return member;
+        }
+
+        // (2) Fall back to any bot Hunter
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) ||
+                member->getClass() != CLASS_HUNTER)
+                continue;
+
+            return member;
+        }
+
+        // (3) Return the found Hunter, or nullptr if none found
+        return nullptr;
+    }
+
+    Player* HasParasiticShadowfiend(PlayerbotAI* botAI, Player* bot)
+    {
+        Group* group = bot->GetGroup();
+        if (!group)
+            return nullptr;
+
+        Player* infectedPlayer = nullptr;
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
+            if (!member || !member->IsAlive() || memberAI && memberAI->IsMainTank(member))
+                continue;
+
+            if (member->HasAura(SPELL_PARASITIC_SHADOWFIEND))
+                return member;
+        }
+
+        return nullptr;
     }
 
     EyeBlastDangerArea GetEyeBlastDangerArea(PlayerbotAI* botAI, Unit* illidan)

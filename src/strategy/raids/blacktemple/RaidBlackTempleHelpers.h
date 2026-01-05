@@ -59,6 +59,7 @@ namespace BlackTempleHelpers
         SPELL_BLIZZARD                      = 41482,
 
         // Illidan Stormrage <The Betrayer>
+        SPELL_DEMON_FIRE = 40030,
         SPELL_DEMON_FORM = 40506,
         SPELL_SHADOW_PRISON                 = 40647,
         SPELL_PARASITIC_SHADOWFIEND = 41917,
@@ -94,6 +95,7 @@ namespace BlackTempleHelpers
 
         // Illidan Stormrage <The Betrayer>
         NPC_FLAME_OF_AZZINOTH = 22997,
+        NPC_DEMON_FIRE = 23069,
         NPC_ILLIDAN_DB_TARGET = 23070, // For Eye Blast targeting
         NPC_BLAZE           = 23259,
         NPC_FLAME_CRASH = 23336,
@@ -215,6 +217,8 @@ namespace BlackTempleHelpers
     extern ObjectGuid westFlameGuid;
     std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(PlayerbotAI* botAI);
     Player* GetIllidanWarlockTank(PlayerbotAI* botAI, Player* bot);
+    Player* GetIllidanTrapperHunter(PlayerbotAI* botAI, Player* bot);
+    Player* HasParasiticShadowfiend(PlayerbotAI* botAI, Player* bot);
     struct EyeBlastDangerArea
     {
         Position start;

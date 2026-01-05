@@ -499,17 +499,7 @@ bool IllidanStormrageBossCastsFlameCrashTrigger::IsActive()
 
 bool IllidanStormrageBotHasParasiticShadowfiendTrigger::IsActive()
 {
-    if (botAI->IsMelee(bot))
-        return false;
-
-    if (!bot->HasAura(SPELL_PARASITIC_SHADOWFIEND))
-        return false;
-
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan)
-        return false;
-
-    return GetIllidanPhase(illidan) == 1;
+    return HasParasiticShadowfiend(botAI, bot);
 }
 
 bool IllidanStormrageBossSummonedFlamesOfAzzinothTrigger::IsActive()
@@ -524,10 +514,18 @@ bool IllidanStormrageBossSummonedFlamesOfAzzinothTrigger::IsActive()
     return GetIllidanPhase(illidan) == 2;
 }
 
+bool IllidanStormragePetsDieToFireTrigger::IsActive()
+{
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    if (!illidan)
+        return false;
+
+    Pet* pet = bot->GetPet();
+    return pet && pet->IsAlive();
+}
+
 bool IllidanStormrageGrateIsSafeFromFlamesTrigger::IsActive()
 {
-    /* if (!botAI->IsRanged(bot))
-        return false; */
     if (botAI->IsTank(bot))
         return false;
 
@@ -540,7 +538,7 @@ bool IllidanStormrageGrateIsSafeFromFlamesTrigger::IsActive()
 
 bool IllidanStormrageBossDealsSplashDamageTrigger::IsActive()
 {
-    if (!botAI->IsRanged(bot))
+    if (!botAI->IsRanged(bot) || bot->HasAura(SPELL_PARASITIC_SHADOWFIEND))
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -554,7 +552,7 @@ bool IllidanStormrageBossDealsSplashDamageTrigger::IsActive()
 
 bool IllidanStormrageThisExpansionHatesMeleeTrigger::IsActive()
 {
-    if (!botAI->IsMelee(bot))
+    if (!botAI->IsMelee(bot) || bot->HasAura(SPELL_PARASITIC_SHADOWFIEND))
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");

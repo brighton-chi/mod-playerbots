@@ -396,16 +396,14 @@ float IllidariCouncilWaitForDpsMultiplier::GetValue(Action* action)
 
 // Illidan Stormrage <The Betrayer>
 
-// Save Bloodlust/Heroism for Phase 2 (or later)
+// Save Bloodlust/Heroism for Phase 3 (or later)
 float IllidanStormrageDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
 {
     if (bot->getClass() != CLASS_SHAMAN)
         return 1.0f;
 
-    if (!AI_VALUE2(Unit*, "find target", "illidan stormrage"))
-        return 1.0f;
-
-    if (!AI_VALUE2(Unit*, "find target", "flame of azzinoth"))
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    if (illidan && illidan->GetHealthPct() > 60.0f)
     {
         if (dynamic_cast<CastHeroismAction*>(action) ||
             dynamic_cast<CastBloodlustAction*>(action))
@@ -421,16 +419,19 @@ float IllidanStormrageDisableMovementMultiplier::GetValue(Action* action)
     {
         if (dynamic_cast<TankFaceAction*>(action))
         {
-            if (!botAI->IsMainTank(bot))
-                return 0.0f;
+            if (GetIllidanPhase(illidan) != 2)
+            {
+                if (!botAI->IsMainTank(bot))
+                    return 0.0f;
+            }
         }
-        else if (dynamic_cast<CombatFormationMoveAction*>(action) ||
-                 dynamic_cast<CastKillingSpreeAction*>(action))
+        else if (dynamic_cast<CombatFormationMoveAction*>(action))
                  return 0.0f;
 
         if (dynamic_cast<FleeAction*>(action) ||
             dynamic_cast<CastDisengageAction*>(action) ||
-            dynamic_cast<CastBlinkBackAction*>(action))
+            dynamic_cast<CastBlinkBackAction*>(action) ||
+            dynamic_cast<CastKillingSpreeAction*>(action))
         {
             if (GetIllidanPhase(illidan) == 2)
                 return 0.0f;
@@ -445,12 +446,6 @@ float IllidanStormrageDisableMovementMultiplier::GetValue(Action* action)
                 if (botAI->IsMainTank(bot))
                     return 0.0f;
             }
-            else if (GetIllidanPhase(illidan) == 2)
-            {
-                if (botAI->IsAssistTankOfIndex(bot, 0) ||
-                    botAI->IsAssistTankOfIndex(bot, 1))
-                    return 0.0f;
-            }
         }
     }
 
@@ -460,6 +455,9 @@ float IllidanStormrageDisableMovementMultiplier::GetValue(Action* action)
 float IllidanStormrageDisableTankAssistMultiplier::GetValue(Action* action)
 {
     if (!botAI->IsTank(bot))
+        return 1.0f;
+
+    if (bot->GetVictim() == nullptr)
         return 1.0f;
 
     if (Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage"))
@@ -473,13 +471,7 @@ float IllidanStormrageDisableTankAssistMultiplier::GetValue(Action* action)
                 if (botAI->IsMainTank(bot))
                     return 0.0f;
             }
-            else if (GetIllidanPhase(illidan) == 2)
-            {
-                if (botAI->IsAssistTankOfIndex(bot, 0) ||
-                    botAI->IsAssistTankOfIndex(bot, 1))
-                    return 0.0f;
-            }
-            else if (GetIllidanPhase(illidan) == 4)
+            else
                 return 0.0f;
         }
     }
@@ -489,7 +481,8 @@ float IllidanStormrageDisableTankAssistMultiplier::GetValue(Action* action)
 
 float IllidanStormrageRangedMustStayAboveGrateMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsRanged(bot))
+    if (botAI->IsAssistTankOfIndex(bot, 0) ||
+        botAI->IsAssistTankOfIndex(bot, 1))
         return 1.0f;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -500,7 +493,25 @@ float IllidanStormrageRangedMustStayAboveGrateMultiplier::GetValue(Action* actio
     {
         if (dynamic_cast<MovementAction*>(action) &&
             !dynamic_cast<AttackAction*>(action) &&
-            !dynamic_cast<IllidanStormrageRangedSpreadAboveGrateAction*>(action))
+            !dynamic_cast<IllidanStormrageBotsSpreadAboveGrateAction*>(action))
+            return 0.0f;
+    }
+
+    return 1.0f;
+}
+
+float IllidanStormrageAssistTanksPrioritizeFlamesMultiplier::GetValue(Action* action)
+{
+    if (!botAI->IsAssistTankOfIndex(bot, 0) &&
+        !botAI->IsAssistTankOfIndex(bot, 1))
+        return 1.0f;
+
+    Unit* flame = AI_VALUE2(Unit*, "find target", "flame of azzinoth");
+    if (flame)
+    {
+        if (dynamic_cast<MovementAction*>(action) &&
+            !dynamic_cast<TankFaceAction*>(action) &&
+            !dynamic_cast<IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction*>(action))
             return 0.0f;
     }
 
