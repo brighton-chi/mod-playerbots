@@ -73,7 +73,7 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction::array(0, new NextAction("gurtogg bloodboil ranged move to absorb bloodboil position", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("gurtogg bloodboil bot has fel rage",
-        NextAction::array(0, new NextAction("gurtogg bloodboil fel raged bot move to tank position", ACTION_RAID + 1), nullptr)
+        NextAction::array(0, new NextAction("gurtogg bloodboil ranged move away from enraged player", ACTION_RAID + 1), nullptr)
     ));
     triggers.push_back(new TriggerNode("gurtogg bloodboil need to manage phase timer",
         NextAction::array(0, new NextAction("gurtogg bloodboil manage phase timer", ACTION_EMERGENCY + 10), nullptr)

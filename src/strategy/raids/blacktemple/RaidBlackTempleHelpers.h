@@ -29,6 +29,7 @@ namespace BlackTempleHelpers
         SPELL_SPIRIT_LANCE = 40157,
         SPELL_SPIRIT_CHAINS = 40175,
         SPELL_SPIRIT_VOLLEY = 40314,
+        SPELL_SPIRIT_SHIELD = 40322,
         SPELL_SPIRIT_STRIKE = 40325,
 
         // Gurtogg Bloodboil

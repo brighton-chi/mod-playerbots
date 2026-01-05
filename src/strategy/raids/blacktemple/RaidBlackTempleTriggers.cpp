@@ -240,11 +240,11 @@ bool GurtoggBloodboilBossEngagedByTanksTrigger::IsActive()
 
 bool GurtoggBloodboilBossCastsAoeSpellsTrigger::IsActive()
 {
-    if (!botAI->IsRanged(bot) || bot->HasAura(SPELL_PLAYER_FEL_RAGE))
+    if (!botAI->IsRanged(bot))
         return false;
 
     Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
-    if (!gurtogg)
+    if (!gurtogg || gurtogg->HasAura(SPELL_BOSS_FEL_RAGE))
         return false;
 
     // Get rotation groups and active group index
@@ -268,7 +268,7 @@ bool GurtoggBloodboilBossCastsBloodboilOnFiveFarthestPlayersTrigger::IsActive()
         return false;
 
     Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
-    if (!gurtogg)
+    if (!gurtogg || gurtogg->HasAura(SPELL_BOSS_FEL_RAGE))
         return false;
 
     auto groups = GetGurtoggRangedRotationGroups(bot);
@@ -286,7 +286,24 @@ bool GurtoggBloodboilBossCastsBloodboilOnFiveFarthestPlayersTrigger::IsActive()
 
 bool GurtoggBloodboilBotHasFelRageTrigger::IsActive()
 {
-    return bot->HasAura(SPELL_PLAYER_FEL_RAGE);
+    if (!botAI->IsRanged(bot))
+        return false;
+
+    Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
+    if (!gurtogg || !gurtogg->HasAura(SPELL_BOSS_FEL_RAGE))
+        return false;
+
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (member && member->HasAura(SPELL_PLAYER_FEL_RAGE))
+                return true;
+        }
+    }
+
+    return false;
 }
 
 bool GurtoggBloodboilNeedToManagePhaseTimerTrigger::IsActive()

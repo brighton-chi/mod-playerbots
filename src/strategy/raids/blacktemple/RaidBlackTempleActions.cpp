@@ -250,7 +250,7 @@ bool SupremusDisperseRangedAction::Execute(Event event)
 
             if (bot->GetExactDist2d(member) < 8.0f)
                 return FleePosition(Position(member->GetPositionX(), member->GetPositionY(),
-                                    member->GetPositionZ()), 8.0f, 1000);
+                                             member->GetPositionZ()), 8.0f, 1000);
         }
     }
 
@@ -468,6 +468,8 @@ bool TeronGorefiendMainTankPositionBossAction::Execute(Event event)
     if (!gorefiend)
         return false;
 
+    MarkTargetWithSkull(bot, gorefiend);
+
     if (bot->GetVictim() != gorefiend)
         return Attack(gorefiend);
 
@@ -598,12 +600,10 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event event
     if (!gorefiend)
         return false;
 
-    // Get the charmed spirit unit
     Unit* spirit = bot->GetCharm();
     if (!spirit)
         return false;
 
-    // Find nearest Shadowy Construct
     auto const& npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
 
     Unit* priorityTarget = nullptr;
@@ -625,146 +625,107 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event event
         }
     }
 
-    /* if (!priorityTarget)
-    {
-        // No constructs found, move to Gorefiend
-        if (spirit->GetExactDist2d(gorefiend) > 5.0f)
-        {
-            spirit->GetMotionMaster()->Clear();
-            spirit->GetMotionMaster()->MoveChase(gorefiend, 5.0f);
-        }
-        return true;
-    }
-
-    // Control the spirit to attack constructs
-    if (spirit->GetExactDist2d(priorityTarget) > 11.0f)
-    {
-        // Move spirit closer to the construct
-        if (spirit->GetMotionMaster()->GetMotionSlotType(MOTION_SLOT_ACTIVE) == NULL_MOTION_TYPE)
-        {
-            spirit->GetMotionMaster()->Clear();
-            spirit->GetMotionMaster()->MoveChase(priorityTarget, 10.0f);
-        }
-    }
-    else
-    {
-        // Spirit is in range - cast abilities on constructs
-        // Cast Spirit Volley (AoE damage) - prioritize this
-        if (!spirit->HasSpellCooldown(SPELL_SPIRIT_VOLLEY))
-        {
-            spirit->CastSpell(priorityTarget, SPELL_SPIRIT_VOLLEY, true);
-            spirit->AddSpellCooldown(SPELL_SPIRIT_VOLLEY, 0, 10 * 1000);
-            return true;
-        }
-
-        // Cast Spirit Chains (slow) if no cooldown
-        if (!spirit->HasSpellCooldown(SPELL_SPIRIT_CHAINS))
-        {
-            spirit->CastSpell(priorityTarget, SPELL_SPIRIT_CHAINS, true);
-            spirit->AddSpellCooldown(SPELL_SPIRIT_CHAINS, 0, 10 * 1000);
-            return true;
-        }
-
-        // Cast Spirit Lance (ranged damage)
-        if (!spirit->HasSpellCooldown(SPELL_SPIRIT_LANCE))
-        {
-            spirit->CastSpell(priorityTarget, SPELL_SPIRIT_LANCE, true);
-            spirit->AddSpellCooldown(SPELL_SPIRIT_LANCE, 0, 2 * 1000);
-            return true;
-        }
-
-        // If all construct abilities are on cooldown, move to Gorefiend and use Spirit Strike
-        if (spirit->GetExactDist2d(gorefiend) > 5.0f)
-        {
-            spirit->GetMotionMaster()->Clear();
-            spirit->GetMotionMaster()->MoveChase(gorefiend, 5.0f);
-        }
-        else if (!spirit->HasSpellCooldown(SPELL_SPIRIT_STRIKE))
-        {
-            spirit->CastSpell(gorefiend, SPELL_SPIRIT_STRIKE, true);
-            spirit->AddSpellCooldown(SPELL_SPIRIT_STRIKE, 0, 1 * 1000);
-        }
-    } */
     if (!priorityTarget)
     {
-        // No constructs found, move to Gorefiend to damage him with Spirit Strike
-        if (spirit->GetExactDist2d(gorefiend) > 5.0f)
+        float dist = spirit->GetExactDist2d(gorefiend);
+        LOG_DEBUG("playerbots", "ShadowyConstructsAction: No constructs found. Spirit distance to Gorefiend: {}", dist);
+
+        if (dist > 5.0f)
         {
-            spirit->GetMotionMaster()->MoveChase(gorefiend, 5.0f, std::nullopt);
+            LOG_DEBUG("playerbots", "ShadowyConstructsAction: Spirit moving to Gorefiend.");
+            float moveX = gorefiend->GetPositionX();
+            float moveY = gorefiend->GetPositionY();
+            float moveZ = gorefiend->GetPositionZ();
+            spirit->GetMotionMaster()->MovePoint(0, moveX, moveY, moveZ);
+            return true;
         }
-        else if (!spirit->HasSpellCooldown(SPELL_SPIRIT_STRIKE))
+        else
         {
-            // Cast Spirit Strike on Gorefiend
-            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(SPELL_SPIRIT_STRIKE);
-            if (spellInfo)
-            {
-                spirit->CastSpell(gorefiend, SPELL_SPIRIT_STRIKE, false);
-            }
+            LOG_DEBUG("playerbots", "ShadowyConstructsAction: Spirit attempting to cast Spirit Strike on Gorefiend.");
+            spirit->CastSpell(gorefiend, SPELL_SPIRIT_STRIKE, true);
+            spirit->AddSpellCooldown(SPELL_SPIRIT_STRIKE, 0, 1000);
+            LOG_DEBUG("playerbots", "ShadowyConstructsAction: Added cooldown for Spirit Strike");
+            return true;
         }
-        return true;
+        return false;
     }
 
-    // Control the spirit to attack constructs
     float distToTarget = spirit->GetExactDist2d(priorityTarget);
+    LOG_DEBUG("playerbots", "ShadowyConstructsAction: Spirit distance to construct: {}", distToTarget);
 
-    // If too far, move closer
     if (distToTarget > 11.0f)
     {
-        // Use MoveChase to follow the construct at 10 yards
-        spirit->GetMotionMaster()->MoveChase(priorityTarget, 10.0f, std::nullopt);
+        LOG_DEBUG("playerbots", "ShadowyConstructsAction: Spirit moving to construct at distance {}", distToTarget);
+        float moveX = priorityTarget->GetPositionX();
+        float moveY = priorityTarget->GetPositionY();
+        float moveZ = priorityTarget->GetPositionZ();
+        spirit->GetMotionMaster()->MovePoint(0, moveX, moveY, moveZ);
+        return true;
     }
     else
     {
-        // Spirit is in range - cast abilities on constructs
-        // Cast Spirit Volley (AoE damage) - prioritize this
         if (!spirit->HasSpellCooldown(SPELL_SPIRIT_VOLLEY))
         {
-            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(SPELL_SPIRIT_VOLLEY);
-            if (spellInfo)
-            {
-                spirit->CastSpell(priorityTarget, SPELL_SPIRIT_VOLLEY, false);
-                return true;
-            }
+            LOG_DEBUG("playerbots", "ShadowyConstructsAction: Spirit attempting Spirit Volley on construct.");
+            spirit->CastSpell(priorityTarget, SPELL_SPIRIT_VOLLEY, true);
+            spirit->AddSpellCooldown(SPELL_SPIRIT_VOLLEY, 0, 15000);
+            LOG_DEBUG("playerbots", "ShadowyConstructsAction: Added 15s cooldown for Spirit Volley");
+            return true;
+        }
+        else
+        {
+            LOG_DEBUG("playerbots", "ShadowyConstructsAction: Spirit Volley on cooldown");
         }
 
-        // Cast Spirit Chains (slow) if no cooldown
         if (!spirit->HasSpellCooldown(SPELL_SPIRIT_CHAINS))
         {
-            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(SPELL_SPIRIT_CHAINS);
-            if (spellInfo)
-            {
-                spirit->CastSpell(priorityTarget, SPELL_SPIRIT_CHAINS, false);
-                return true;
-            }
+            LOG_DEBUG("playerbots", "ShadowyConstructsAction: Spirit attempting Spirit Chains on construct.");
+            spirit->CastSpell(priorityTarget, SPELL_SPIRIT_CHAINS, true);
+            spirit->AddSpellCooldown(SPELL_SPIRIT_CHAINS, 0, 15000);
+            LOG_DEBUG("playerbots", "ShadowyConstructsAction: Added 15s cooldown for Spirit Chains");
+            return true;
+        }
+        else
+        {
+            LOG_DEBUG("playerbots", "ShadowyConstructsAction: Spirit Chains on cooldown");
         }
 
-        // Cast Spirit Lance (ranged damage)
         if (!spirit->HasSpellCooldown(SPELL_SPIRIT_LANCE))
         {
-            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(SPELL_SPIRIT_LANCE);
-            if (spellInfo)
-            {
-                spirit->CastSpell(priorityTarget, SPELL_SPIRIT_LANCE, false);
-                return true;
-            }
+            LOG_DEBUG("playerbots", "ShadowyConstructsAction: Spirit attempting Spirit Lance on construct.");
+            spirit->CastSpell(priorityTarget, SPELL_SPIRIT_LANCE, true);
+            spirit->AddSpellCooldown(SPELL_SPIRIT_LANCE, 0, 1000);
+            LOG_DEBUG("playerbots", "ShadowyConstructsAction: Added 1s cooldown for Spirit Lance");
+            return true;
+        }
+        else
+        {
+            LOG_DEBUG("playerbots", "ShadowyConstructsAction: Spirit Lance on cooldown");
         }
 
-        // If all construct abilities are on cooldown, move to Gorefiend and use Spirit Strike
-        if (spirit->GetExactDist2d(gorefiend) > 5.0f)
+        float dist = spirit->GetExactDist2d(gorefiend);
+        LOG_DEBUG("playerbots", "ShadowyConstructsAction: All construct spells on cooldown. Spirit distance to Gorefiend: {}", dist);
+
+        if (dist > 5.0f)
         {
-            spirit->GetMotionMaster()->MoveChase(gorefiend, 5.0f, std::nullopt);
+            LOG_DEBUG("playerbots", "ShadowyConstructsAction: Spirit moving to Gorefiend (fallback).");
+            float moveX = gorefiend->GetPositionX();
+            float moveY = gorefiend->GetPositionY();
+            float moveZ = gorefiend->GetPositionZ();
+            spirit->GetMotionMaster()->MovePoint(0, moveX, moveY, moveZ);
+            return true;
         }
-        else if (!spirit->HasSpellCooldown(SPELL_SPIRIT_STRIKE))
+        else
         {
-            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(SPELL_SPIRIT_STRIKE);
-            if (spellInfo)
-            {
-                spirit->CastSpell(gorefiend, SPELL_SPIRIT_STRIKE, false);
-            }
+            LOG_DEBUG("playerbots", "ShadowyConstructsAction: Spirit attempting Spirit Strike on Gorefiend (fallback).");
+            spirit->CastSpell(gorefiend, SPELL_SPIRIT_STRIKE, true);
+            spirit->AddSpellCooldown(SPELL_SPIRIT_STRIKE, 0, 1000);
+            LOG_DEBUG("playerbots", "ShadowyConstructsAction: Added 1s cooldown for Spirit Strike (fallback)");
+            return true;
         }
+
+        return false;
     }
-
-    return true;
 }
 
 // Gurtogg Bloodboil
@@ -888,29 +849,33 @@ bool GurtoggBloodboilRangedMoveToAbsorbBloodboilPositionAction::Execute(Event ev
     return false;
 }
 
-bool GurtoggBloodboilFelRagedBotMoveToTankPositionAction::Execute(Event event)
+bool GurtoggBloodboilRangedMoveAwayFromEnragedPlayerAction::Execute(Event event)
 {
-    Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
-    if (!gurtogg)
+    Group* group = bot->GetGroup();
+    if (!group)
         return false;
 
-    const Position& position = GURTOGG_TANK_POSITION;
-    float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
-    if (distToPosition > 2.0f)
+    Player* enragedPlayer = nullptr;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
-        float dX = position.GetPositionX() - bot->GetPositionX();
-        float dY = position.GetPositionY() - bot->GetPositionY();
-        float moveDist = std::min(5.0f, distToPosition);
-        float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
-        float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
-
-        bool backwards = (gurtogg->GetVictim() == bot);
-        MovementPriority priority = backwards ? MovementPriority::MOVEMENT_COMBAT : MovementPriority::MOVEMENT_FORCED;
-        return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
-                      false, false, false, priority, true, backwards);
+        Player* member = ref->GetSource();
+        if (member && member->HasAura(SPELL_PLAYER_FEL_RAGE))
+        {
+            enragedPlayer = member;
+            break;
+        }
     }
-    else
-        bot->SetFacingTo(position.GetOrientation());
+
+    if (!enragedPlayer)
+        return false;
+
+    const float safeDistance = 20.0f;
+    if (bot->GetExactDist2d(enragedPlayer) < safeDistance)
+    {
+        const uint32 minInterval = 500;
+        return FleePosition(Position(enragedPlayer->GetPositionX(), enragedPlayer->GetPositionY(),
+                                     enragedPlayer->GetPositionZ()), 12.0f, minInterval);
+    }
 
     return false;
 }
@@ -1968,7 +1933,7 @@ bool IllidanStormrageIsolateBotWithParasiteAction::Execute(Event event)
             {
                 const uint32 minInterval = 0;
                 return FleePosition(Position(nearestPlayer->GetPositionX(), nearestPlayer->GetPositionY(),
-                                            nearestPlayer->GetPositionZ()), 12.0f, minInterval);
+                                             nearestPlayer->GetPositionZ()), 12.0f, minInterval);
             }
             else if (trapper && trapper == bot && botAI->CanCastSpell("frost trap", bot))
             {
@@ -2332,7 +2297,7 @@ bool IllidanStormrageDisperseRangedAction::Execute(Event event)
             if (bot->GetDistance2d(warlockTank) < 21.0f)
             {
                 return FleePosition(Position(warlockTank->GetPositionX(), warlockTank->GetPositionY(),
-                                            warlockTank->GetPositionZ()), 21.0f, minInterval);
+                                             warlockTank->GetPositionZ()), 21.0f, minInterval);
             }
         }
         // Flee from Illidan if within 16 yards

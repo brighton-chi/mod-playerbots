@@ -182,11 +182,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class GurtoggBloodboilFelRagedBotMoveToTankPositionAction : public MovementAction
+class GurtoggBloodboilRangedMoveAwayFromEnragedPlayerAction : public MovementAction
 {
 public:
-    GurtoggBloodboilFelRagedBotMoveToTankPositionAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "gurtogg bloodboil fel raged bot move to tank position") {}
+    GurtoggBloodboilRangedMoveAwayFromEnragedPlayerAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "gurtogg bloodboil ranged move away from enraged player") {}
     bool Execute(Event event) override;
 };
 

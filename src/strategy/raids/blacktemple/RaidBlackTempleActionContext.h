@@ -80,8 +80,8 @@ public:
         creators["gurtogg bloodboil ranged move to absorb bloodboil position"] =
             &RaidBlackTempleActionContext::gurtogg_bloodboil_ranged_move_to_absorb_bloodboil_position;
 
-        creators["gurtogg bloodboil fel raged bot move to tank position"] =
-            &RaidBlackTempleActionContext::gurtogg_bloodboil_fel_raged_bot_move_to_tank_position;
+        creators["gurtogg bloodboil ranged move away from enraged player"] =
+            &RaidBlackTempleActionContext::gurtogg_bloodboil_ranged_move_away_from_enraged_player;
 
         creators["gurtogg bloodboil manage phase timer"] =
             &RaidBlackTempleActionContext::gurtogg_bloodboil_manage_phase_timer;
@@ -254,8 +254,8 @@ private:
     static Action* gurtogg_bloodboil_ranged_move_to_absorb_bloodboil_position(
         PlayerbotAI* botAI) { return new GurtoggBloodboilRangedMoveToAbsorbBloodboilPositionAction(botAI); }
 
-    static Action* gurtogg_bloodboil_fel_raged_bot_move_to_tank_position(
-        PlayerbotAI* botAI) { return new GurtoggBloodboilFelRagedBotMoveToTankPositionAction(botAI); }
+    static Action* gurtogg_bloodboil_ranged_move_away_from_enraged_player(
+        PlayerbotAI* botAI) { return new GurtoggBloodboilRangedMoveAwayFromEnragedPlayerAction(botAI); }
 
     static Action* gurtogg_bloodboil_manage_phase_timer(
         PlayerbotAI* botAI) { return new GurtoggBloodboilManagePhaseTimerAction(botAI); }
