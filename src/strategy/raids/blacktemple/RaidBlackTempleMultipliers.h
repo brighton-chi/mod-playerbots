@@ -4,7 +4,13 @@
 #include "Multiplier.h"
 
 // High Warlord Naj'entus
-// N/A
+class HighWarlordNajentusDisableCombatFormationMoveMultiplier : public Multiplier
+{
+public:
+    HighWarlordNajentusDisableCombatFormationMoveMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "high warlord naj'entus disable combat formation move multiplier") {}
+    virtual float GetValue(Action* action);
+};
 
 // Supremus
 class SupremusFocusOnAvoidanceInPhase2Multiplier : public Multiplier

@@ -19,7 +19,18 @@
 using namespace BlackTempleHelpers;
 
 // High Warlord Naj'entus
-// N/A
+float HighWarlordNajentusDisableCombatFormationMoveMultiplier::GetValue(Action* action)
+{
+    Unit* najentus = AI_VALUE2(Unit*, "find target", "high warlord naj'entus");
+    if (najentus)
+    {
+        if (dynamic_cast<CombatFormationMoveAction*>(action) &&
+            !dynamic_cast<SetBehindTargetAction*>(action))
+            return 0.0f;
+    }
+
+    return 1.0f;
+}
 
 // Supremus
 float SupremusFocusOnAvoidanceInPhase2Multiplier::GetValue(Action* action)
@@ -177,7 +188,8 @@ float ReliquaryOfSoulsDontWasteHealingMultiplier::GetValue(Action* action)
             dynamic_cast<CastPowerWordShieldAction*>(action) ||
             dynamic_cast<CastPowerWordShieldOnPartyAction*>(action))
         {
-            return 10.0f;
+            if (bot->getClass() == CLASS_PRIEST && botAI->IsHeal(bot))
+                return 10.0f;
         }
         else if (dynamic_cast<CastHealingSpellAction*>(action))
             return 0.0f;

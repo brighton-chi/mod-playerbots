@@ -178,7 +178,7 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     // High Warlord Naj'entus
-    // N/A
+    multipliers.push_back(new HighWarlordNajentusDisableCombatFormationMoveMultiplier(botAI));
 
     // Supremus
     multipliers.push_back(new SupremusFocusOnAvoidanceInPhase2Multiplier(botAI));
@@ -189,7 +189,7 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     // Teron Gorefiend
     multipliers.push_back(new TeronGorefiendDisableMovementMultiplier(botAI));
     multipliers.push_back(new TeronGorefiendMarkedBotOnlyMoveToDieMultiplier(botAI));
-    // multipliers.push_back(new TeronGorefiendSpiritsAttackOnlyShadowyConstructsMultiplier(botAI));
+    multipliers.push_back(new TeronGorefiendSpiritsAttackOnlyShadowyConstructsMultiplier(botAI));
     multipliers.push_back(new TeronGorefiendDisableAttackingConstructsMultiplier(botAI));
 
     // Gurtogg Bloodboil
