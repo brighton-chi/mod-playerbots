@@ -31,16 +31,16 @@ void RaidGruulsLairStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("high king maulgar wild felstalker spawned", {
         NextAction("high king maulgar banish felstalker", ACTION_RAID + 2) }));
 
-    triggers.push_back(new TriggerNode("high king maulgar pulling olm and blindeye", NextAction::array(0,
-        new NextAction("high king maulgar misdirect olm and blindeye", ACTION_RAID + 2), nullptr)));
+    triggers.push_back(new TriggerNode("high king maulgar pulling olm and blindeye", {
+        NextAction("high king maulgar misdirect olm and blindeye", ACTION_RAID + 2) }));
 
-    triggers.push_back(new TriggerNode("high king maulgar need to manage dps timer", NextAction::array(0,
-        new NextAction("high king maulgar manage dps timer", ACTION_EMERGENCY + 10), nullptr)));
+    triggers.push_back(new TriggerNode("high king maulgar need to manage dps timer", {
+        NextAction("high king maulgar manage dps timer", ACTION_EMERGENCY + 10) }));
 
     // Gruul the Dragonkiller
-    triggers.push_back(new TriggerNode("gruul the dragonkiller boss is active", NextAction::array(0,
-        new NextAction("gruul the dragonkiller tank position boss", ACTION_RAID + 1),
-        new NextAction("gruul the dragonkiller spread ranged", ACTION_RAID + 1), nullptr)));
+    triggers.push_back(new TriggerNode("gruul the dragonkiller boss is active", {
+        NextAction("gruul the dragonkiller tank position boss", ACTION_RAID + 1),
+        NextAction("gruul the dragonkiller spread ranged", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("gruul the dragonkiller incoming shatter", {
         NextAction("gruul the dragonkiller shatter spread", ACTION_EMERGENCY + 6) }));

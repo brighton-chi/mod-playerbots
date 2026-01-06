@@ -3,6 +3,8 @@
 
 #include "Multiplier.h"
 
+// Trash
+
 class UnderbogColossusEscapeToxicPoolMultiplier : public Multiplier
 {
 public:
@@ -10,6 +12,8 @@ public:
         PlayerbotAI* botAI) : Multiplier(botAI, "underbog colossus escape toxic pool") {}
     virtual float GetValue(Action* action);
 };
+
+// Hydross the Unstable <Duke of Currents>
 
 class HydrossTheUnstableDisableTankActionsMultiplier : public Multiplier
 {
@@ -35,6 +39,8 @@ public:
     virtual float GetValue(Action* action);
 };
 
+// The Lurker Below
+
 class TheLurkerBelowStayAwayFromSpoutMultiplier : public Multiplier
 {
 public:
@@ -58,6 +64,8 @@ public:
         PlayerbotAI* botAI) : Multiplier(botAI, "the lurker below disable tank assist") {}
     virtual float GetValue(Action* action);
 };
+
+// Leotheras the Blind
 
 class LeotherasTheBlindAvoidWhirlwindMultiplier : public Multiplier
 {
@@ -99,6 +107,8 @@ public:
     virtual float GetValue(Action* action);
 };
 
+// Fathom-Lord Karathress
+
 class FathomLordKarathressDisableTankActionsMultiplier : public Multiplier
 {
 public:
@@ -139,6 +149,8 @@ public:
     virtual float GetValue(Action* action);
 };
 
+// Morogrim Tidewalker
+
 class MorogrimTidewalkerDelayBloodlustAndHeroismMultiplier : public Multiplier
 {
 public:
@@ -162,6 +174,8 @@ public:
         PlayerbotAI* botAI) : Multiplier(botAI, "morogrim tidewalker maintain phase2 stacking") {}
     virtual float GetValue(Action* action);
 };
+
+// Lady Vashj <Coilfang Matron>
 
 class LadyVashjDelayBloodlustAndHeroismMultiplier : public Multiplier
 {
