@@ -717,7 +717,7 @@ bool LeotherasTheBlindPositionRangedAction::Execute(Event event)
         return FleePosition(leotherasHuman->GetPosition(), 12.0f, minInterval);
     }
 
-    Group* group = bot->GetGroup());
+    Group* group = bot->GetGroup();
     if (!group)
         return false;
 

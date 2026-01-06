@@ -114,5 +114,5 @@ void RaidHyjalSummitStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new AzgalorDoomedBotPrioritizePositioningMultiplier(botAI));
 
     // Archimonde
-    N/A
+    // N/A
 }

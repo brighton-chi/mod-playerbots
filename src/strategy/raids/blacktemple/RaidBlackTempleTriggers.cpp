@@ -519,7 +519,7 @@ bool IllidanStormrageBotHasParasiticShadowfiendTrigger::IsActive()
 
 bool IllidanStormrageBossSummonedFlamesOfAzzinothTrigger::IsActive()
 {
-    if (!botAI->IsAssistTankOfIndex(bot, 0, true) && 
+    if (!botAI->IsAssistTankOfIndex(bot, 0, true) &&
         !botAI->IsAssistTankOfIndex(bot, 1, true))
         return false;
 
@@ -542,7 +542,7 @@ bool IllidanStormragePetsDieToFireTrigger::IsActive()
 
 bool IllidanStormrageGrateIsSafeFromFlamesTrigger::IsActive()
 {
-    if (botAI->IsAssistTankOfIndex(bot, 0, true) || 
+    if (botAI->IsAssistTankOfIndex(bot, 0, true) ||
         botAI->IsAssistTankOfIndex(bot, 1, true))
         return false;
 
@@ -557,10 +557,10 @@ bool IllidanStormrageBotStruckByDarkBarrageTrigger::IsActive()
 {
     if (bot->getClass() != CLASS_MAGE &&
         bot->getClass() != CLASS_PALADIN &&
-        bot->getClass() != CLASS_Rogue)
+        bot->getClass() != CLASS_ROGUE)
         return false;
-    
-    return bot-HasAura(SPELL_DARK_BARRAGE);
+
+    return bot->HasAura(SPELL_DARK_BARRAGE);
 }
 
 bool IllidanStormrageBossDealsSplashDamageTrigger::IsActive()
@@ -595,8 +595,8 @@ bool IllidanStormrageBossTransformsIntoDemonTrigger::IsActive()
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     if (!illidan || illidan->GetHealth() == 1)
         return false;
-    
-    return GetIllidanWarlockTank(botAI, bot) == bot);
+
+    return GetIllidanWarlockTank(botAI, bot) == bot;
 }
 
 bool IllidanStormrageBossSummonsAddsTrigger::IsActive()

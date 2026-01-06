@@ -382,6 +382,7 @@ public:
 };
 
 class IllidanStormrageBotStruckByDarkBarrageTrigger : public Trigger
+{
 public:
     IllidanStormrageBotStruckByDarkBarrageTrigger(
         PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage bot struck by dark barrage") {}

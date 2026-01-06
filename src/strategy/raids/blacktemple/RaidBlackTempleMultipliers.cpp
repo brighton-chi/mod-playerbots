@@ -459,10 +459,10 @@ float IllidanStormrageDisableTankAssistMultiplier::GetValue(Action* action)
     if (!botAI->IsTank(bot))
         return 1.0f;
 
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage")
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     if (!illidan || illidan->GetHealth() == 1)
         return 1.0f;
-    
+
     if (bot->GetVictim() == nullptr)
         return 1.0f;
 
@@ -496,7 +496,7 @@ float IllidanStormrageStayWithinGrateMultiplier::GetValue(Action* action)
             !dynamic_cast<IllidanStormrageBotsSpreadAboveGrateAction*>(action))
             return 0.0f;
 
-        if (dynamic_cast<ReachTargetSpellAction*>(action) ||
+        if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
             dynamic_cast<CastDisengageAction*>(action) ||
             dynamic_cast<CastBlinkBackAction*>(action) ||
             dynamic_cast<CastKillingSpreeAction*>(action))

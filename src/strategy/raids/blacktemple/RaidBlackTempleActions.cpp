@@ -1680,9 +1680,9 @@ bool IllidanStormrageMainTankMoveAwayFromFlameCrashAction::Execute(Event event)
         float dy = (bot->GetPositionY() - illidan->GetPositionY()) / length;
         float perpDx = -dy;
         float perpDy = dx;
-        float sideX = bot.GetPositionX() + perpDx * 10.0f;
-        float sideY = bot.GetPositionY() + perpDy * 10.0f;
-        float sideZ = bot.GetPositionZ();
+        float sideX = bot->GetPositionX() + perpDx * 10.0f;
+        float sideY = bot->GetPositionY() + perpDy * 10.0f;
+        float sideZ = bot->GetPositionZ();
 
         return MoveTo(BLACK_TEMPLE_MAP_ID, sideX, sideY, sideZ, false, false, false, false,
                       MovementPriority::MOVEMENT_FORCED, true, false);
@@ -1923,8 +1923,8 @@ bool IllidanStormrageIsolateBotWithParasiteAction::Execute(Event event)
                     float moveDist = std::min(7.0f, distToTarget);
                     float moveX = bot->GetPositionX() + (dX / distToTarget) * moveDist;
                     float moveY = bot->GetPositionY() + (dY / distToTarget) * moveDist;
-                    
-                    bot->AttackStop;
+
+                    bot->AttackStop();
                     bot->InterruptNonMeleeSpells(true);
                     return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY, parasiteTarget->GetPositionZ(), false, false,
                                   false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
@@ -2232,7 +2232,7 @@ bool IllidanStormrageBotsSpreadAboveGrateAction::Execute(Event event)
         if (Unit* flame = AI_VALUE2(Unit*, "find target", "flame of azzinoth"))
         {
             if (bot->GetTarget() != flame->GetGUID())
-                bot->Attack(flame);
+                bot->SetTarget(flame->GetGUID());
 
             return botAI->DoSpecificAction("shoot");
         }
@@ -2273,7 +2273,7 @@ bool IllidanStormrageDisperseRangedAction::Execute(Event event)
         {
             if (bot->GetExactDist2d(warlockTank) < 21.0f)
             {
-                bot->AttackStop;
+                bot->AttackStop();
                 bot->InterruptNonMeleeSpells(true);
                 return FleePosition(Position(warlockTank->GetPositionX(), warlockTank->GetPositionY(),
                                              warlockTank->GetPositionZ()), 21.0f, minInterval);
@@ -2282,7 +2282,7 @@ bool IllidanStormrageDisperseRangedAction::Execute(Event event)
         // Flee from Illidan if within 16 yards
         else if (bot->GetExactDist2d(illidan) < 16.0f)
         {
-            bot->AttackStop;
+            bot->AttackStop();
             bot->InterruptNonMeleeSpells(true);
             return FleePosition(Position(illidan->GetPositionX(), illidan->GetPositionY(),
                                          illidan->GetPositionZ()), 16.0f, minInterval);
@@ -2296,7 +2296,7 @@ bool IllidanStormrageDisperseRangedAction::Execute(Event event)
     Unit* nearestPlayer = GetNearestPlayerInRadius(bot, 6.0f);
     if (nearestPlayer)
     {
-        bot->AttackStop;
+        bot->AttackStop();
         bot->InterruptNonMeleeSpells(true);
         return FleePosition(Position(nearestPlayer->GetPositionX(), nearestPlayer->GetPositionY(),
                                      nearestPlayer->GetPositionZ()), 6.0f, minInterval);
@@ -2332,11 +2332,11 @@ bool IllidanStormragePositionMeleeAction::StayAwayFromDemonBoss(Unit* illidan)
 {
     Unit* shadowDemon = AI_VALUE2(Unit*, "find target", "shadow demon");
     float currentDistance = bot->GetExactDist2d(illidan);
-    float safeDistance = shadowDemon != nullptr ? 30.0f : 16.0f
+    float safeDistance = shadowDemon != nullptr ? 30.0f : 16.0f;
 
     if (currentDistance < safeDistance)
     {
-        bot->AttackStop;
+        bot->AttackStop();
         bot->InterruptNonMeleeSpells(true);
         return MoveAway(illidan, safeDistance - currentDistance);
     }
@@ -2348,7 +2348,7 @@ bool IllidanStormragePositionMeleeAction::StayAwayFromDemonBoss(Unit* illidan)
 
         if (bot->GetVictim() != shadowDemon)
             return Attack(shadowDemon);
-    }   
+    }
 
     return false;
 }
@@ -2398,8 +2398,8 @@ bool IllidanStormragePositionMeleeAction::PositionBehindBoss(Unit* illidan)
         assignedAngle = Position::NormalizeOrientation(illidan->GetOrientation() + behindAngle - angleOffset); // right
 
     /* const float desiredDist = 9.1f;
-    const float tolerance = 0.2f; 
-    
+    const float tolerance = 0.2f;
+
     float targetX = illidan->GetPositionX() + desiredDist * std::cos(assignedAngle);
     float targetY = illidan->GetPositionY() + desiredDist * std::sin(assignedAngle);
 
@@ -2479,10 +2479,10 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event event)
     {
         if (bot->getClass() == CLASS_MAGE && bot->GetExactDist2d(shadowfiend) < 10.0f)
         {
-            if (botAI->CanCastSpell("frost nova", bot)
-                return CastSpell("frost nova", bot);
+            if (botAI->CanCastSpell("frost nova", bot))
+                return botAI->CastSpell("frost nova", bot);
         }
-        
+
         if (IsInstanceTimerManager(botAI, bot))
             MarkTargetWithTriangle(bot, shadowfiend);
 
