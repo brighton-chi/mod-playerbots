@@ -43,6 +43,7 @@
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotDbStore.h"
 #include "PlayerbotMgr.h"
+#include "PlayerbotGuildMgr.h"
 #include "Playerbots.h"
 #include "PointMovementGenerator.h"
 #include "PositionValue.h"
@@ -5886,26 +5887,12 @@ bool PlayerbotAI::CanMove()
     return bot->GetMotionMaster()->GetCurrentMovementGeneratorType() != FLIGHT_MOTION_TYPE;
 }
 
-bool PlayerbotAI::IsRealGuild(uint32 guildId)
-{
-    Guild* guild = sGuildMgr->GetGuildById(guildId);
-    if (!guild)
-    {
-        return false;
-    }
-    uint32 leaderAccount = sCharacterCache->GetCharacterAccountIdByGuid(guild->GetLeaderGUID());
-    if (!leaderAccount)
-        return false;
-
-    return !(sPlayerbotAIConfig->IsInRandomAccountList(leaderAccount));
-}
-
 bool PlayerbotAI::IsInRealGuild()
 {
     if (!bot->GetGuildId())
         return false;
 
-    return IsRealGuild(bot->GetGuildId());
+    return sPlayerbotGuildMgr->IsRealGuild(bot->GetGuildId());
 }
 
 void PlayerbotAI::QueueChatResponse(const ChatQueuedReply chatReply) { chatReplies.push_back(std::move(chatReply)); }
