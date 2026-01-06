@@ -13,7 +13,6 @@
 #include "RaidHyjalSummitStrategy.h"
 #include "RaidBlackTempleStrategy.h"
 #include "RaidZulAmanStrategy.h"
-#include "RaidNaxxStrategy.h"
 #include "RaidOsStrategy.h"
 #include "RaidEoEStrategy.h"
 #include "RaidVoAStrategy.h"
@@ -37,7 +36,6 @@ public:
         creators["hyjalsummit"] = &RaidStrategyContext::hyjalsummit;
         creators["blacktemple"] = &RaidStrategyContext::blacktemple;
         creators["zulaman"] = &RaidStrategyContext::zulaman;
-        creators["naxx"] = &RaidStrategyContext::naxx;
         creators["wotlk-os"] = &RaidStrategyContext::wotlk_os;
         creators["wotlk-eoe"] = &RaidStrategyContext::wotlk_eoe;
         creators["voa"] = &RaidStrategyContext::voa;
@@ -58,7 +56,6 @@ private:
     static Strategy* hyjalsummit(PlayerbotAI* botAI) { return new RaidHyjalSummitStrategy(botAI); }
     static Strategy* blacktemple(PlayerbotAI* botAI) { return new RaidBlackTempleStrategy(botAI); }
     static Strategy* zulaman(PlayerbotAI* botAI) { return new RaidZulAmanStrategy(botAI); }
-    static Strategy* naxx(PlayerbotAI* botAI) { return new RaidNaxxStrategy(botAI); }
     static Strategy* wotlk_os(PlayerbotAI* botAI) { return new RaidOsStrategy(botAI); }
     static Strategy* wotlk_eoe(PlayerbotAI* botAI) { return new RaidEoEStrategy(botAI); }
     static Strategy* voa(PlayerbotAI* botAI) { return new RaidVoAStrategy(botAI); }
