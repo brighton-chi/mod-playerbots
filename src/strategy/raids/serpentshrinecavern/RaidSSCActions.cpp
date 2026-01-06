@@ -709,17 +709,19 @@ bool LeotherasTheBlindDemonFormTankAttackBossAction::Execute(Event event)
 // And stay away from the Warlock tank to avoid Chaos Blasts
 bool LeotherasTheBlindPositionRangedAction::Execute(Event event)
 {
-    const uint32 minInterval = 500;
-
     Unit* leotherasHuman = GetLeotherasHuman(botAI);
     if (leotherasHuman && bot->GetExactDist2d(leotherasHuman) < 10.0f &&
         leotherasHuman->GetVictim() != bot)
+    {
+        const uint32 minInterval = 500;
         return FleePosition(leotherasHuman->GetPosition(), 12.0f, minInterval);
+    }
 
-    if (!GetActiveLeotherasDemon(botAI))
+    Group* group = bot->GetGroup());
+    if (!group)
         return false;
 
-    if (Group* group = bot->GetGroup())
+    if (GetActiveLeotherasDemon(botAI))
     {
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
@@ -727,6 +729,7 @@ bool LeotherasTheBlindPositionRangedAction::Execute(Event event)
             if (!member || member == bot || !member->IsAlive())
                 continue;
 
+            const uint32 minInterval = 0;
             if (GetLeotherasDemonFormTank(botAI, bot) == member)
             {
                 if (bot->GetExactDist2d(member) < 10.0f)
@@ -765,21 +768,19 @@ bool LeotherasTheBlindMeleeDpsRunAwayFromBossAction::Execute(Event event)
     if (!leotherasPhase2Demon)
         return false;
 
-    Aura* chaosBlast = bot->GetAura(SPELL_CHAOS_BLAST);
-    if (chaosBlast && chaosBlast->GetStackAmount() >= 4)
-    {
-        Unit* demonVictim = leotherasPhase2Demon->GetVictim();
-        if (!demonVictim)
-            return false;
+    Unit* demonVictim = leotherasPhase2Demon->GetVictim();
+    if (!demonVictim)
+        return false;
 
-        float currentDistance = bot->GetExactDist2d(demonVictim);
-        const float safeDistance = 10.0f;
-        if (currentDistance < safeDistance)
-        {
-            botAI->Reset();
-            return MoveAway(demonVictim, safeDistance - currentDistance + 1.0f);
-        }
+    float currentDistance = bot->GetExactDist2d(demonVictim);
+    const float safeDistance = 10.0f;
+    if (currentDistance < safeDistance)
+    {
+        botAI->Reset();
+        return MoveAway(demonVictim, safeDistance - currentDistance + 1.0f);
     }
+    else
+        return true;
 
     return false;
 }
@@ -795,7 +796,7 @@ bool LeotherasTheBlindInnerDemonCheatAction::Execute(Event event)
     {
         Unit* unit = botAI->GetUnit(guid);
         Creature* creature = unit ? unit->ToCreature() : nullptr;
-        if (creature && creature->IsAlive() && creature->GetEntry() == NPC_INNER_DEMON
+        if (creature && creature->GetEntry() == NPC_INNER_DEMON
             && creature->GetSummonerGUID() == bot->GetGUID())
         {
             innerDemon = creature;
@@ -1199,7 +1200,7 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event event)
 
     // Target priority 2: Tidalvess for all dps
     Unit* tidalvess = AI_VALUE2(Unit*, "find target", "fathom-guard tidalvess");
-    if (tidalvess && tidalvess->IsAlive())
+    if (tidalvess)
     {
         MarkTargetWithCircle(bot, tidalvess);
         SetRtiTarget(botAI, "circle", tidalvess);
@@ -1212,7 +1213,7 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event event)
 
     // Target priority 3: Caribdis for ranged dps
     Unit* caribdis = AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
-    if (botAI->IsRangedDps(bot) && caribdis && caribdis->IsAlive())
+    if (botAI->IsRangedDps(bot) && caribdis)
     {
         MarkTargetWithDiamond(bot, caribdis);
         SetRtiTarget(botAI, "diamond", caribdis);
@@ -1232,7 +1233,7 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event event)
 
     // Target priority 4: Sharkkis for melee dps and, after Caribdis is down, ranged dps also
     Unit* sharkkis = AI_VALUE2(Unit*, "find target", "fathom-guard sharkkis");
-    if (sharkkis && sharkkis->IsAlive())
+    if (sharkkis)
     {
         MarkTargetWithStar(bot, sharkkis);
         SetRtiTarget(botAI, "star", sharkkis);
@@ -1245,7 +1246,7 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event event)
 
     // Target priority 5: Sharkkis pets for all dps
     Unit* fathomSporebat = AI_VALUE2(Unit*, "find target", "fathom sporebat");
-    if (fathomSporebat && fathomSporebat->IsAlive() && botAI->IsMelee(bot))
+    if (fathomSporebat && botAI->IsMelee(bot))
     {
         MarkTargetWithCross(bot, fathomSporebat);
         SetRtiTarget(botAI, "cross", fathomSporebat);
@@ -1257,7 +1258,7 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event event)
     }
 
     Unit* fathomLurker = AI_VALUE2(Unit*, "find target", "fathom lurker");
-    if (fathomLurker && fathomLurker->IsAlive() && botAI->IsMelee(bot))
+    if (fathomLurker && botAI->IsMelee(bot))
     {
         MarkTargetWithSquare(bot, fathomLurker);
         SetRtiTarget(botAI, "square", fathomLurker);
@@ -1270,7 +1271,7 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event event)
 
     // Target priority 6: Karathress for all dps
     Unit* karathress = AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
-    if (karathress && karathress->IsAlive())
+    if (karathress)
     {
         MarkTargetWithTriangle(bot, karathress);
         SetRtiTarget(botAI, "triangle", karathress);
@@ -1858,7 +1859,7 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event event)
 
     for (Unit* candidate : targets)
     {
-        if (candidate && candidate->IsAlive())
+        if (candidate)
         {
             target = candidate;
             break;

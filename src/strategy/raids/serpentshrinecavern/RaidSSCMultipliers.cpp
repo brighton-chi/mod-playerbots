@@ -50,28 +50,14 @@ float HydrossTheUnstableDisableTankActionsMultiplier::GetValue(Action* action)
         dynamic_cast<CombatFormationMoveAction*>(action))
         return 0.0f;
 
-    if (botAI->IsMainTank(bot))
+    if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
+        dynamic_cast<ReachTargetAction*>(action) ||
+        (dynamic_cast<AttackAction*>(action) &&
+         !dynamic_cast<HydrossTheUnstablePositionFrostTankAction*>(action)))
     {
-        if (hydross->HasAura(SPELL_CORRUPTION))
-        {
-            if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
-                dynamic_cast<ReachTargetAction*>(action) ||
-                (dynamic_cast<AttackAction*>(action) &&
-                 !dynamic_cast<HydrossTheUnstablePositionFrostTankAction*>(action)))
-                 return 0.0f;
-        }
-    }
-
-    if (botAI->IsAssistTankOfIndex(bot, 0))
-    {
-        if (!hydross->HasAura(SPELL_CORRUPTION))
-        {
-            if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
-                dynamic_cast<ReachTargetAction*>(action) ||
-                (dynamic_cast<AttackAction*>(action) &&
-                 !dynamic_cast<HydrossTheUnstablePositionNatureTankAction*>(action)))
-                 return 0.0f;
-        }
+        if ((botAI->IsMainTank(bot) && hydross->HasAura(SPELL_CORRUPTION)) ||
+            (botAI->IsAssistTankOfIndex(bot, 0) && !hydross->HasAura(SPELL_CORRUPTION))
+            return 0.0f;
     }
 
     return 1.0f;
@@ -105,7 +91,7 @@ float HydrossTheUnstableWaitForDpsMultiplier::GetValue(Action* action)
         bool justChanged = (itDps == hydrossFrostDpsWaitTimer.end() ||
                             (now - itDps->second) < dpsWaitSeconds);
         bool aboutToChange = (itPhase != hydrossChangeToFrostPhaseTimer.end() &&
-                            (now - itPhase->second) > phaseChangeWaitSeconds);
+                              (now - itPhase->second) > phaseChangeWaitSeconds);
 
         if (justChanged || aboutToChange)
         {
@@ -124,7 +110,7 @@ float HydrossTheUnstableWaitForDpsMultiplier::GetValue(Action* action)
         bool justChanged = (itDps == hydrossNatureDpsWaitTimer.end() ||
                             (now - itDps->second) < dpsWaitSeconds);
         bool aboutToChange = (itPhase != hydrossChangeToNaturePhaseTimer.end() &&
-                            (now - itPhase->second) > phaseChangeWaitSeconds);
+                              (now - itPhase->second) > phaseChangeWaitSeconds);
 
 
         if (justChanged || aboutToChange)
