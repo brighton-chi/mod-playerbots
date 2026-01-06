@@ -186,11 +186,11 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class IllidanStormrageRangedMustStayAboveGrateMultiplier : public Multiplier
+class IllidanStormrageStayWithinGrateMultiplier : public Multiplier
 {
 public:
-    IllidanStormrageRangedMustStayAboveGrateMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "illidan stormrage ranged must stay above grate multiplier") {}
+    IllidanStormrageStayWithinGrateMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "illidan stormrage stay within grate multiplier") {}
     virtual float GetValue(Action* action);
 };
 
@@ -199,14 +199,6 @@ class IllidanStormrageAssistTanksPrioritizeFlamesMultiplier : public Multiplier
 public:
     IllidanStormrageAssistTanksPrioritizeFlamesMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "illidan stormrage assist tanks prioritize flames multiplier") {}
-    virtual float GetValue(Action* action);
-};
-
-class IllidanStormrageMeleeCannotAttackDemonFormMultiplier : public Multiplier
-{
-public:
-    IllidanStormrageMeleeCannotAttackDemonFormMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "illidan stormrage melee cannot attack demon form multiplier") {}
     virtual float GetValue(Action* action);
 };
 

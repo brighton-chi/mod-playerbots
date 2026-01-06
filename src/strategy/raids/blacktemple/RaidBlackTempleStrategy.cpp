@@ -150,6 +150,9 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("illidan stormrage grate is safe from flames", {
         NextAction("illidan stormrage bots spread above grate", ACTION_EMERGENCY + 1) }));
 
+    triggers.push_back(new TriggerNode("illidan stormrage bot struck by dark barrage", {
+        NextAction("illidan stormrage remove dark barrage", ACTION_EMERGENCY + 6) }));
+
     triggers.push_back(new TriggerNode("illidan stormrage boss deals splash damage", {
         NextAction("illidan stormrage disperse ranged", ACTION_RAID + 1) }));
 
@@ -207,8 +210,7 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new IllidanStormrageDelayBloodlustAndHeroismMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageDisableMovementMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageDisableTankAssistMultiplier(botAI));
-    multipliers.push_back(new IllidanStormrageRangedMustStayAboveGrateMultiplier(botAI));
+    multipliers.push_back(new IllidanStormrageStayWithinGrateMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageAssistTanksPrioritizeFlamesMultiplier(botAI));
-    multipliers.push_back(new IllidanStormrageMeleeCannotAttackDemonFormMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageWaitForDpsMultiplier(botAI));
 }

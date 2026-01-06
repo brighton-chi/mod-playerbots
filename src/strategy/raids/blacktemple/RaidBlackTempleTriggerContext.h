@@ -163,6 +163,9 @@ public:
         creators["illidan stormrage grate is safe from flames"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_grate_is_safe_from_flames;
 
+        creators["illidan stormrage bot struck by dark barrage"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_bot_struck_by_dark_barrage;
+
         creators["illidan stormrage boss deals splash damage"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_boss_deals_splash_damage;
 
@@ -333,6 +336,9 @@ private:
 
     static Trigger* illidan_stormrage_grate_is_safe_from_flames(
         PlayerbotAI* botAI) { return new IllidanStormrageGrateIsSafeFromFlamesTrigger(botAI); }
+
+    static Trigger* illidan_stormrage_bot_struck_by_dark_barrage(
+        PlayerbotAI* botAI) { return new IllidanStormrageBotStruckByDarkBarrageTrigger(botAI); }
 
     static Trigger* illidan_stormrage_boss_deals_splash_damage(
         PlayerbotAI* botAI) { return new IllidanStormrageBossDealsSplashDamageTrigger(botAI); }

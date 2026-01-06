@@ -62,6 +62,7 @@ namespace BlackTempleHelpers
         // Illidan Stormrage <The Betrayer>
         SPELL_DEMON_FIRE = 40030,
         SPELL_DEMON_FORM = 40506,
+        SPELL_DARK_BARRAGE = 40585,
         SPELL_SHADOW_PRISON                 = 40647,
         SPELL_PARASITIC_SHADOWFIEND = 41917,
 

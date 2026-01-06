@@ -166,6 +166,9 @@ public:
         creators["illidan stormrage bots spread above grate"] =
             &RaidBlackTempleActionContext::illidan_stormrage_bots_spread_above_grate;
 
+        creators["illidan stormrage remove dark barrage"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_remove_dark_barrage;
+
         creators["illidan stormrage disperse ranged"] =
             &RaidBlackTempleActionContext::illidan_stormrage_disperse_ranged;
 
@@ -339,6 +342,9 @@ private:
 
     static Action* illidan_stormrage_bots_spread_above_grate(
         PlayerbotAI* botAI) { return new IllidanStormrageBotsSpreadAboveGrateAction(botAI); }
+
+    static Action* illidan_stormrage_remove_dark_barrage(
+        PlayerbotAI* botAI) { return new IllidanStormrageRemoveDarkBarrageAction(botAI); }
 
     static Action* illidan_stormrage_disperse_ranged(
         PlayerbotAI* botAI) { return new IllidanStormrageDisperseRangedAction(botAI); }

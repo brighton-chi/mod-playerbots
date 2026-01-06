@@ -360,7 +360,7 @@ namespace BlackTempleHelpers
 
     int GetIllidanPhase(Unit* illidan)
     {
-        if (!illidan)
+        if (!illidan || illidan->GetHealth() == 1)
             return -1;
 
         // Transitioning from Phase 2 to Phase 3

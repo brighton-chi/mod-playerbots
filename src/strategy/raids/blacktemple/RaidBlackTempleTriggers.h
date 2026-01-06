@@ -381,6 +381,13 @@ public:
     bool IsActive() override;
 };
 
+class IllidanStormrageBotStruckByDarkBarrageTrigger : public Trigger
+public:
+    IllidanStormrageBotStruckByDarkBarrageTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage bot struck by dark barrage") {}
+    bool IsActive() override;
+};
+
 class IllidanStormrageBossDealsSplashDamageTrigger : public Trigger
 {
 public:

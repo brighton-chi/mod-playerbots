@@ -415,6 +415,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class IllidanStormrageRemoveDarkBarrageAction : public Action
+{
+public:
+    IllidanStormrageRemoveDarkBarrageAction(
+        PlayerbotAI* botAI) : Action(botAI, "illidan stormrage remove dark barrage") {}
+    bool Execute(Event event) override;
+};
+
 class IllidanStormrageDisperseRangedAction : public MovementAction
 {
 public:

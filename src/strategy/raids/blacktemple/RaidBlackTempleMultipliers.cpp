@@ -24,7 +24,10 @@ float HighWarlordNajentusDisableCombatFormationMoveMultiplier::GetValue(Action* 
     Unit* najentus = AI_VALUE2(Unit*, "find target", "high warlord naj'entus");
     if (najentus)
     {
+        // If I make the position leeway large enough, will the tank be able to rotate the boss?
+        // If not, remove carveout for tank face
         if (dynamic_cast<CombatFormationMoveAction*>(action) &&
+            !dynamic_cast<TankFaceAction*>(action) &&
             !dynamic_cast<SetBehindTargetAction*>(action))
             return 0.0f;
     }
@@ -56,7 +59,10 @@ float TeronGorefiendDisableMovementMultiplier::GetValue(Action* action)
 {
     if (AI_VALUE2(Unit*, "find target", "teron gorefiend"))
     {
+        // If I make the position leeway large enough, will the tank be able to rotate the boss?
+        // If not, remove carveout for tank face
         if (dynamic_cast<CombatFormationMoveAction*>(action) &&
+            !dynamic_cast<TankFaceAction*>(action) &&
             !dynamic_cast<SetBehindTargetAction*>(action))
             return 0.0f;
 
@@ -427,37 +433,21 @@ float IllidanStormrageDelayBloodlustAndHeroismMultiplier::GetValue(Action* actio
 
 float IllidanStormrageDisableMovementMultiplier::GetValue(Action* action)
 {
-    if (Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage"))
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    if (illidan && illidan->GetHealth() > 1)
     {
         if (dynamic_cast<TankFaceAction*>(action))
         {
-            if (GetIllidanPhase(illidan) != 2)
-            {
-                if (!botAI->IsMainTank(bot))
-                    return 0.0f;
-            }
-        }
-        else if (dynamic_cast<CombatFormationMoveAction*>(action))
-                 return 0.0f;
-
-        if (dynamic_cast<FleeAction*>(action) ||
-            dynamic_cast<CastDisengageAction*>(action) ||
-            dynamic_cast<CastBlinkBackAction*>(action) ||
-            dynamic_cast<CastKillingSpreeAction*>(action))
-        {
-            if (GetIllidanPhase(illidan) == 2)
+            if (!botAI->IsMainTank(bot))
                 return 0.0f;
         }
+        else if (dynamic_cast<CombatFormationMoveAction*>(action))
+            return 0.0f;
 
         if (dynamic_cast<AvoidAoeAction*>(action))
         {
-            if (GetIllidanPhase(illidan) == 1 ||
-                GetIllidanPhase(illidan) == 3 ||
-                GetIllidanPhase(illidan) == 5)
-            {
-                if (botAI->IsMainTank(bot))
-                    return 0.0f;
-            }
+            if (botAI->IsMelee(bot))
+                return 0.0f;
         }
     }
 
@@ -469,43 +459,47 @@ float IllidanStormrageDisableTankAssistMultiplier::GetValue(Action* action)
     if (!botAI->IsTank(bot))
         return 1.0f;
 
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage")
+    if (!illidan || illidan->GetHealth() == 1)
+        return 1.0f;
+    
     if (bot->GetVictim() == nullptr)
         return 1.0f;
 
-    if (Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage"))
+    if (dynamic_cast<TankAssistAction*>(action))
     {
-        if (dynamic_cast<TankAssistAction*>(action))
+        if (GetIllidanPhase(illidan) == 1 ||
+            GetIllidanPhase(illidan) == 3 ||
+            GetIllidanPhase(illidan) == 5)
         {
-            if (GetIllidanPhase(illidan) == 1 ||
-                GetIllidanPhase(illidan) == 3 ||
-                GetIllidanPhase(illidan) == 5)
-            {
-                if (botAI->IsMainTank(bot))
-                    return 0.0f;
-            }
-            else
+            if (botAI->IsMainTank(bot))
                 return 0.0f;
         }
+        else
+            return 0.0f;
     }
 
     return 1.0f;
 }
 
-float IllidanStormrageRangedMustStayAboveGrateMultiplier::GetValue(Action* action)
+float IllidanStormrageStayWithinGrateMultiplier::GetValue(Action* action)
 {
     if (botAI->IsAssistTankOfIndex(bot, 0) ||
         botAI->IsAssistTankOfIndex(bot, 1))
         return 1.0f;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan)
-        return 1.0f;
-
-    if (GetIllidanPhase(illidan) == 2)
+    if (illidan && GetIllidanPhase(illidan) == 2)
     {
         if (dynamic_cast<MovementAction*>(action) &&
             !dynamic_cast<AttackAction*>(action) &&
             !dynamic_cast<IllidanStormrageBotsSpreadAboveGrateAction*>(action))
+            return 0.0f;
+
+        if (dynamic_cast<ReachTargetSpellAction*>(action) ||
+            dynamic_cast<CastDisengageAction*>(action) ||
+            dynamic_cast<CastBlinkBackAction*>(action) ||
+            dynamic_cast<CastKillingSpreeAction*>(action))
             return 0.0f;
     }
 
@@ -530,35 +524,6 @@ float IllidanStormrageAssistTanksPrioritizeFlamesMultiplier::GetValue(Action* ac
     return 1.0f;
 }
 
-float IllidanStormrageMeleeCannotAttackDemonFormMultiplier::GetValue(Action* action)
-{
-    if (!botAI->IsMelee(bot))
-        return 1.0f;
-
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan)
-        return 1.0f;
-
-    if (GetIllidanPhase(illidan) == 2)
-    {
-        if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
-            dynamic_cast<ReachTargetAction*>(action))
-            return 0.0f;
-    }
-
-    if (GetIllidanPhase(illidan) == 4)
-    {
-        if (dynamic_cast<CastReachTargetSpellAction*>(action))
-            return 0.0f;
-
-        if (dynamic_cast<MovementAction*>(action) &&
-            !dynamic_cast<IllidanStormragePositionMeleeAction*>(action))
-            return 1.0f;
-    }
-
-    return 1.0f;
-}
-
 float IllidanStormrageWaitForDpsMultiplier::GetValue(Action* action)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -576,7 +541,7 @@ float IllidanStormrageWaitForDpsMultiplier::GetValue(Action* action)
         if (GetIllidanWarlockTank(botAI, bot) == bot)
             return 1.0f;
 
-        const uint8 phase4DpsWaitSeconds = 10;
+        const uint8 phase4DpsWaitSeconds = 8;
         auto it = illidanDpsWaitTimer.find(instanceId);
         if (it == illidanDpsWaitTimer.end() || (now - it->second) < phase4DpsWaitSeconds)
         {
