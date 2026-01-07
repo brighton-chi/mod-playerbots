@@ -5,6 +5,7 @@
 
 #include "EquipAction.h"
 #include <utility>
+#include <chrono>
 
 #include "Event.h"
 #include "ItemCountValue.h"
@@ -330,6 +331,8 @@ void EquipAction::EquipItem(Item* item)
 
 bool EquipUpgradesAction::Execute(Event event)
 {
+    auto start = std::chrono::high_resolution_clock::now();
+
     if (!sPlayerbotAIConfig->autoEquipUpgradeLoot && !sRandomPlayerbotMgr->IsRandomBot(bot))
         return false;
 
@@ -367,6 +370,7 @@ bool EquipUpgradesAction::Execute(Event event)
 
     CollectItemsVisitor visitor;
     IterateItems(&visitor, ITERATE_ITEMS_IN_BAGS);
+    LOG_INFO("playerbots", "Bot {} has {} items in inventory for upgrade check", bot->GetName(), visitor.items.size());
 
     ItemIds items;
     for (auto i = visitor.items.begin(); i != visitor.items.end(); ++i)
@@ -385,7 +389,14 @@ bool EquipUpgradesAction::Execute(Event event)
         {
             itemUsageParam = std::to_string(itemId);
         }
+
+        auto itemStart = std::chrono::high_resolution_clock::now();
         ItemUsage usage = AI_VALUE2(ItemUsage, "item usage", itemUsageParam);
+        auto itemEnd = std::chrono::high_resolution_clock::now();
+        auto itemDuration = std::chrono::duration_cast<std::chrono::milliseconds>(itemEnd - itemStart).count();
+
+        if (itemDuration > 50) // Log only slow items (>50ms)
+            LOG_INFO("playerbots", "ItemUsage for item {} took {} ms for bot {}", itemId, itemDuration, bot->GetName());
 
         if (usage == ITEM_USAGE_EQUIP || usage == ITEM_USAGE_REPLACE || usage == ITEM_USAGE_BAD_EQUIP)
         {
@@ -393,7 +404,11 @@ bool EquipUpgradesAction::Execute(Event event)
         }
     }
 
+    LOG_INFO("playerbots", "Bot {} will try to equip {} items", bot->GetName(), items.size());
     EquipItems(items);
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+    LOG_INFO("playerbots", "EquipUpgradesAction::Execute took {} ms for bot {}", duration, bot->GetName());
     return true;
 }
 
