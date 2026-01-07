@@ -2386,16 +2386,15 @@ bool IllidanStormragePositionMeleeAction::PositionBehindBoss(Unit* illidan)
         return false;
 
     size_t botIndex = std::distance(melee.begin(), it);
-    size_t third = melee.size() / 3;
+    size_t groupIndex = botIndex % 3; // 0: left, 1: center, 2: right
 
-    // Assign left, center, or right group
     float assignedAngle;
-    if (botIndex < third)
-        assignedAngle = Position::NormalizeOrientation(illidan->GetOrientation() + behindAngle + angleOffset); // left
-    else if (botIndex < 2 * third)
-        assignedAngle = Position::NormalizeOrientation(illidan->GetOrientation() + behindAngle); // center
+    if (groupIndex == 0)
+        assignedAngle = Position::NormalizeOrientation(illidan->GetOrientation() + M_PI + angleOffset); // left
+    else if (groupIndex == 1)
+        assignedAngle = Position::NormalizeOrientation(illidan->GetOrientation() + M_PI); // center
     else
-        assignedAngle = Position::NormalizeOrientation(illidan->GetOrientation() + behindAngle - angleOffset); // right
+        assignedAngle = Position::NormalizeOrientation(illidan->GetOrientation() + M_PI - angleOffset); // right
 
     /* const float desiredDist = 9.1f;
     const float tolerance = 0.2f;
@@ -2411,17 +2410,13 @@ bool IllidanStormragePositionMeleeAction::PositionBehindBoss(Unit* illidan)
     // test max range for sideways movement
     const float tolerance = 0.25f;
     float desiredDist = bot->GetMeleeRange(illidan) - 0.5f;
-    if (fabs(bot->GetExactDist2d(illidan) - desiredDist) > tolerance)
-    {
-        float behindAngle = Position::NormalizeOrientation(illidan->GetOrientation() + M_PI);
-        float targetX = illidan->GetPositionX() + desiredDist * std::cos(behindAngle);
-        float targetY = illidan->GetPositionY() + desiredDist * std::sin(behindAngle);
+    float targetX = illidan->GetPositionX() + desiredDist * std::cos(assignedAngle);
+    float targetY = illidan->GetPositionY() + desiredDist * std::sin(assignedAngle);
 
-        if (bot->GetExactDist2d(targetX, targetY) > tolerance)
-        {
-            return MoveTo(BLACK_TEMPLE_MAP_ID, targetX, targetY, bot->GetPositionZ(), false,
-                          false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
-        }
+    if (fabs(bot->GetExactDist2d(targetX, targetY) - desiredDist) > tolerance)
+    {
+        return MoveTo(BLACK_TEMPLE_MAP_ID, targetX, targetY, illidan->GetPositionZ(), false,
+                      false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
     }
     // end test
 
