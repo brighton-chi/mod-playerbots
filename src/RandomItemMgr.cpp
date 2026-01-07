@@ -2831,37 +2831,30 @@ inline bool ContainsInternal(ItemTemplate const* proto, uint32 skillId)
             return true;
     }
 
-    auto start = std::chrono::high_resolution_clock::now();
-    size_t trainerCount = 0, spellCount = 0, recipeCount = 0;
-
     CreatureTemplateContainer const* creatures = sObjectMgr->GetCreatureTemplates();
     for (CreatureTemplateContainer::const_iterator itr = creatures->begin(); itr != creatures->end(); ++itr)
     {
         Trainer::Trainer* trainer = sObjectMgr->GetTrainer(itr->first);
-        if (!trainer) continue;
-        if (trainer->GetTrainerType() != Trainer::Type::Tradeskill) continue;
-        trainerCount++;
+
+        if (!trainer)
+            continue;
+
+        if (trainer->GetTrainerType() != Trainer::Type::Tradeskill)
+            continue;
 
         for (auto& spell : trainer->GetSpells())
         {
-            spellCount++;
-            if (spell.ReqSkillLine != skillId) continue;
+            if (spell.ReqSkillLine != skillId)
+                continue;
+
             if (IsCraftedBy(proto, spell.SpellId))
-            {
-                LOG_INFO("playerbots", "ContainsInternal: item {} matched by trainer {} spell {}", proto->ItemId, itr->first, spell.SpellId);
-                auto end = std::chrono::high_resolution_clock::now();
-                LOG_INFO("playerbots", "ContainsInternal: checked {} trainers, {} spells in {} ms", trainerCount, spellCount, std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count());
                 return true;
-            }
         }
     }
-
 
     std::vector<ItemTemplate*> const* itemTemplates = sObjectMgr->GetItemTemplateStoreFast();
     for (ItemTemplate const* recipe : *itemTemplates)
     {
-        recipeCount++;
-
         if (!recipe)
             continue;
 
@@ -2885,9 +2878,6 @@ inline bool ContainsInternal(ItemTemplate const* proto, uint32 skillId)
         }
     }
 
-    auto end = std::chrono::high_resolution_clock::now();
-    LOG_INFO("playerbots", "ContainsInternal: checked {} trainers, {} spells, {} recipes in {} ms", trainerCount, spellCount, recipeCount, std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count());
-
     return false;
 }
 
@@ -2907,10 +2897,7 @@ bool RandomItemMgr::IsUsedBySkill(ItemTemplate const* proto, uint32 skillId)
             return false;
     }
 
-    auto start = std::chrono::high_resolution_clock::now();
     bool contains = ContainsInternal(proto, skillId);
-    auto end = std::chrono::high_resolution_clock::now();
-    LOG_INFO("playerbots", "IsUsedBySkill: item {} skill {} result {} in {} ms", proto->ItemId, skillId, contains, std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count());
     if (contains)
         itemCache.insert(proto->ItemId);
 
