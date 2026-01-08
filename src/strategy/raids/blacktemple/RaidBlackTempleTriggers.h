@@ -99,11 +99,19 @@ public:
     bool IsActive() override;
 };
 
-class TeronGorefiendBossEngagedTrigger : public Trigger
+class TeronGorefiendBossEngagedByMainTankTrigger : public Trigger
 {
 public:
-    TeronGorefiendBossEngagedTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "teron gorefiend boss engaged") {}
+    TeronGorefiendBossEngagedByMainTankTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "teron gorefiend boss engaged by main tank") {}
+    bool IsActive() override;
+};
+
+class TeronGorefiendBossEngagedByRangedTrigger : public Trigger
+{
+public:
+    TeronGorefiendBossEngagedByRangedTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "teron gorefiend boss engaged by ranged") {}
     bool IsActive() override;
 };
 

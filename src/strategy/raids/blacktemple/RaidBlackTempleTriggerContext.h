@@ -51,8 +51,11 @@ public:
         creators["teron gorefiend pulling boss"] =
             &RaidBlackTempleTriggerContext::teron_gorefiend_pulling_boss;
 
-        creators["teron gorefiend boss engaged"] =
-            &RaidBlackTempleTriggerContext::teron_gorefiend_boss_engaged;
+        creators["teron gorefiend boss engaged by main tank"] =
+            &RaidBlackTempleTriggerContext::teron_gorefiend_boss_engaged_by_main_tank;
+
+        creators["teron gorefiend boss engaged by ranged"] =
+            &RaidBlackTempleTriggerContext::teron_gorefiend_boss_engaged_by_ranged;
 
         creators["teron gorefiend boss is casting shadow of death"] =
             &RaidBlackTempleTriggerContext::teron_gorefiend_boss_is_casting_shadow_of_death;
@@ -225,8 +228,11 @@ private:
     static Trigger* teron_gorefiend_pulling_boss(
         PlayerbotAI* botAI) { return new TeronGorefiendPullingBossTrigger(botAI); }
 
-    static Trigger* teron_gorefiend_boss_engaged(
-        PlayerbotAI* botAI) { return new TeronGorefiendBossEngagedTrigger(botAI); }
+    static Trigger* teron_gorefiend_boss_engaged_by_main_tank(
+        PlayerbotAI* botAI) { return new TeronGorefiendBossEngagedByMainTankTrigger(botAI); }
+
+    static Trigger* teron_gorefiend_boss_engaged_by_ranged(
+        PlayerbotAI* botAI) { return new TeronGorefiendBossEngagedByRangedTrigger(botAI); }
 
     static Trigger* teron_gorefiend_boss_is_casting_shadow_of_death(
         PlayerbotAI* botAI) { return new TeronGorefiendBossIsCastingShadowOfDeathTrigger(botAI); }

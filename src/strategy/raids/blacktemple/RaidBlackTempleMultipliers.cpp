@@ -207,14 +207,7 @@ float ReliquaryOfSoulsDontWasteHealingMultiplier::GetValue(Action* action)
 float ReliquaryOfSoulsDontInterruptDeadenIfReflectableMultiplier::GetValue(Action* action)
 {
     Unit* desire = AI_VALUE2(Unit*, "find target", "essence of desire");
-    if (!desire)
-        return 1.0f;
-
-    Group* group = bot->GetGroup();
-    if (!group)
-        return 1.0f;
-
-    if (desire->HasUnitState(UNIT_STATE_CASTING))
+    if (desire && desire->HasUnitState(UNIT_STATE_CASTING))
     {
         Spell* spell = desire->GetCurrentSpell(CURRENT_GENERIC_SPELL);
         if (spell && spell->m_spellInfo->Id == SPELL_DEADEN)
@@ -359,8 +352,8 @@ float IllidariCouncilDisableArcaneShotOnZerevorMultiplier::GetValue(Action* acti
 float IllidariCouncilManageInterruptsMultiplier::GetValue(Action* action)
 {
     if (bot->getClass() != CLASS_ROGUE &&
-        (bot->getClass() != CLASS_SHAMAN && botAI->IsDps(bot)) &&
-        (bot->getClass() == CLASS_WARRIOR && botAI->IsDps(bot) && !botAI->IsAssistTankOfIndex(bot, 0)))
+        bot->getClass() != CLASS_SHAMAN &&
+        bot->getClass() != CLASS_WARRIOR)
         return 1.0f;
 
     Unit* malande = AI_VALUE2(Unit*, "find target", "lady malande");
@@ -514,8 +507,7 @@ float IllidanStormrageAssistTanksPrioritizeFlamesMultiplier::GetValue(Action* ac
         !botAI->IsAssistTankOfIndex(bot, 1))
         return 1.0f;
 
-    Unit* flame = AI_VALUE2(Unit*, "find target", "flame of azzinoth");
-    if (flame)
+    if (AI_VALUE2(Unit*, "find target", "flame of azzinoth"))
     {
         if (dynamic_cast<MovementAction*>(action) &&
             !dynamic_cast<TankFaceAction*>(action) &&

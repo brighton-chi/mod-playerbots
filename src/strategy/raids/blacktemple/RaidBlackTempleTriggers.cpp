@@ -81,7 +81,6 @@ bool HighWarlordNajentusPlayerIsImpaledTrigger::IsActive()
         }
     }
 
-    // Only fire for the closest non-tank bot
     return closestBot == bot;
 }
 
@@ -162,9 +161,17 @@ bool TeronGorefiendPullingBossTrigger::IsActive()
     return gorefiend && gorefiend->GetHealthPct() > 95.0f;
 }
 
-bool TeronGorefiendBossEngagedTrigger::IsActive()
+bool TeronGorefiendBossEngagedByMainTankTrigger::IsActive()
 {
-    if (!botAI->IsMainTank(bot) && !botAI->IsRanged(bot))
+    if (!botAI->IsMainTank(bot))
+        return false;
+
+    return AI_VALUE2(Unit*, "find target", "teron gorefiend");
+}
+
+bool TeronGorefiendBossEngagedByRangedTrigger::IsActive()
+{
+    if (!botAI->IsRanged(bot))
         return false;
 
     return AI_VALUE2(Unit*, "find target", "teron gorefiend");
@@ -481,10 +488,8 @@ bool IllidariCouncilDeterminingDpsAssignmentsTrigger::IsActive()
 
 bool IllidariCouncilNeedToManageDpsTimerTrigger::IsActive()
 {
-    if (!IsInstanceTimerManager(botAI, bot))
-        return false;
-
-    return AI_VALUE2(Unit*, "find target", "gathios the shatterer");
+    return IsInstanceTimerManager(botAI, bot) && 
+           AI_VALUE2(Unit*, "find target", "gathios the shatterer");
 }
 
 // Illidan Stormrage <The Betrayer>
@@ -514,6 +519,9 @@ bool IllidanStormrageBossCastsFlameCrashTrigger::IsActive()
 
 bool IllidanStormrageBotHasParasiticShadowfiendTrigger::IsActive()
 {
+    if (!AI_VALUE2(Unit*, "find target", "illidan stormrage"))
+        return false;
+
     return HasParasiticShadowfiend(botAI, bot);
 }
 
@@ -524,10 +532,7 @@ bool IllidanStormrageBossSummonedFlamesOfAzzinothTrigger::IsActive()
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan)
-        return false;
-
-    return GetIllidanPhase(illidan) == 2;
+    return illidan && GetIllidanPhase(illidan) == 2;
 }
 
 bool IllidanStormragePetsDieToFireTrigger::IsActive()
@@ -547,10 +552,7 @@ bool IllidanStormrageGrateIsSafeFromFlamesTrigger::IsActive()
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan)
-        return false;
-
-    return GetIllidanPhase(illidan) == 2;
+    return illidan && GetIllidanPhase(illidan) == 2;
 }
 
 bool IllidanStormrageBotStruckByDarkBarrageTrigger::IsActive()
@@ -584,10 +586,7 @@ bool IllidanStormrageThisExpansionHatesMeleeTrigger::IsActive()
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan || illidan->GetHealth() == 1)
-        return false;
-
-    return true;
+    return illidan && illidan->GetHealth() > 1
 }
 
 bool IllidanStormrageBossTransformsIntoDemonTrigger::IsActive()
@@ -604,12 +603,9 @@ bool IllidanStormrageBossSummonsAddsTrigger::IsActive()
     if (!botAI->IsDps(bot))
         return false;
 
-    if (AI_VALUE2(Unit*, "find target", "shadow demon") ||
-        AI_VALUE2(Unit*, "find target", "parasitic shadowfiend") ||
-        AI_VALUE2(Unit*, "find target", "flame of azzinoth"))
-        return true;
-
-    return false;
+    return AI_VALUE2(Unit*, "find target", "shadow demon") ||
+           AI_VALUE2(Unit*, "find target", "parasitic shadowfiend") ||
+           AI_VALUE2(Unit*, "find target", "flame of azzinoth")
 }
 
 bool IllidanStormrageNeedToManageDpsTimerTrigger::IsActive()

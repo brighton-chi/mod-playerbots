@@ -42,8 +42,10 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("teron gorefiend pulling boss", {
         NextAction("teron gorefiend misdirect boss to main tank", ACTION_RAID + 2) }));
 
-    triggers.push_back(new TriggerNode("teron gorefiend boss engaged", {
-        NextAction("teron gorefiend main tank position boss", ACTION_RAID + 1),
+    triggers.push_back(new TriggerNode("teron gorefiend boss engaged by main tank", {
+        NextAction("teron gorefiend main tank position boss", ACTION_RAID + 1) }));
+
+    triggers.push_back(new TriggerNode("teron gorefiend boss engaged by ranged", {
         NextAction("teron gorefiend position ranged on balcony", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("teron gorefiend boss is casting shadow of death", {
