@@ -141,8 +141,10 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("lady vashj destroy tainted core", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("lady vashj adds spawn in phase 2 and phase 3", {
-        NextAction("lady vashj assign phase 2 and phase 3 dps priority", ACTION_RAID + 1),
-        NextAction("lady vashj misdirect strider to first assist tank", ACTION_EMERGENCY + 1),
+        NextAction("lady vashj assign phase 2 and phase 3 dps priority", ACTION_RAID + 1) }));
+
+    triggers.push_back(new TriggerNode("lady vashj coilfang strider is approaching", {
+        NextAction("lady vashj misdirect strider to first assist tank", ACTION_EMERGENCY + 2),
         NextAction("lady vashj tank attack and move away strider", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("lady vashj toxic sporebats are spewing poison clouds", {

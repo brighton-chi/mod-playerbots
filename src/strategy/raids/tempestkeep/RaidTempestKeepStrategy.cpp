@@ -16,8 +16,10 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("al'ar melee dps move between platforms", ACTION_RAID + 1),
         NextAction("al'ar ranged and ember tank move under platforms", ACTION_RAID + 4) }));
 
-    triggers.push_back(new TriggerNode("al'ar boss spawns embers of alar", {
-        NextAction("al'ar assist tanks pick up embers", ACTION_RAID + 3),
+    triggers.push_back(new TriggerNode("al'ar embers of al'ar explode upon death", {
+        NextAction("al'ar assist tanks pick up embers", ACTION_RAID + 3) }));
+
+    triggers.push_back(new TriggerNode("al'ar killing embers of al'ar damages boss", {
         NextAction("al'ar ranged dps prioritize embers", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("al'ar incoming flame quills", {
@@ -37,8 +39,10 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("al'ar manage phase tracker", ACTION_EMERGENCY + 10) }));
 
     // Void Reaver
+    triggers.push_back(new TriggerNode("void reaver boss casts pounding", {
+        NextAction("void reaver tanks position boss", ACTION_RAID + 1) }));
+    
     triggers.push_back(new TriggerNode("void reaver knock away reduces tank aggro", {
-        NextAction("void reaver tanks position boss", ACTION_RAID + 1),
         NextAction("void reaver ranged use aggro dump ability", ACTION_EMERGENCY + 6) }));
 
     triggers.push_back(new TriggerNode("void reaver boss launches arcane orbs", {
@@ -57,8 +61,10 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("high astromancer solarian solarium priests spawned", {
         NextAction("high astromancer solarian target solarium priests", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("high astromancer solarian transformed into voidwalker", {
-        NextAction("high astromancer solarian tank voidwalker", ACTION_EMERGENCY + 1),
+    triggers.push_back(new TriggerNode("high astromancer solarian boss transformed into voidwalker", {
+        NextAction("high astromancer solarian tank voidwalker", ACTION_EMERGENCY + 1), }));
+
+    triggers.push_back(new TriggerNode("high astromancer solarian boss casts psychic scream", {
         NextAction("high astromancer solarian cast fear ward on main tank", ACTION_RAID + 2) }));
 
     // Kael'thas Sunstrider <Lord of the Blood Elves>

@@ -353,6 +353,14 @@ public:
     bool IsActive() override;
 };
 
+class LadyVashjCoilfangStriderIsApproachingTrigger : public Trigger
+{
+public:
+    LadyVashjCoilfangStriderIsApproachingTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "lady vashj coilfang strider is approaching") {}
+    bool IsActive() override;
+};
+
 class LadyVashjTaintedElementalCheatTrigger : public Trigger
 {
 public:

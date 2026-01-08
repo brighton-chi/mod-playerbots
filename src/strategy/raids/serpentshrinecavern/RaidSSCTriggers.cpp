@@ -472,8 +472,16 @@ bool LadyVashjPullingBossInPhase1AndPhase3Trigger::IsActive()
 
 bool LadyVashjAddsSpawnInPhase2AndPhase3Trigger::IsActive()
 {
+    if (botAI->IsHeal(bot))
+        return false;
+    
     return AI_VALUE2(Unit*, "find target", "lady vashj") &&
            !IsLadyVashjInPhase1(botAI);
+}
+
+bool LadyVashjCoilfangStriderIsApproachingTrigger::IsActive()
+{
+    return AI_VALUE2(Unit*, "find target", "coilfang strider");
 }
 
 bool LadyVashjTaintedElementalCheatTrigger::IsActive()

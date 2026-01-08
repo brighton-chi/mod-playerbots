@@ -20,8 +20,11 @@ public:
         creators["al'ar boss is flying between platforms"] =
             &RaidTempestKeepTriggerContext::alar_boss_is_flying_between_platforms;
 
-        creators["al'ar boss spawns embers of alar"] =
-            &RaidTempestKeepTriggerContext::alar_boss_spawns_embers_of_alar;
+        creators["al'ar embers of al'ar explode upon death"] =
+            &RaidTempestKeepTriggerContext::alar_embers_of_alar_explode_upon_death;
+
+        creators["al'ar killing embers of al'ar damages boss"] =
+            &RaidTempestKeepTriggerContext::alar_killing_embers_of_alar_damages_boss;
 
         creators["al'ar incoming flame quills"] =
             &RaidTempestKeepTriggerContext::alar_incoming_flame_quills;
@@ -39,6 +42,9 @@ public:
             &RaidTempestKeepTriggerContext::alar_strategy_changes_between_phases;
 
         // Void Reaver
+        creators["void reaver boss casts pounding"] =
+            &RaidTempestKeepTriggerContext::void_reaver_boss_casts_pounding;
+        
         creators["void reaver knock away reduces tank aggro"] =
             &RaidTempestKeepTriggerContext::void_reaver_knock_away_reduces_tank_aggro;
 
@@ -58,8 +64,11 @@ public:
         creators["high astromancer solarian solarium priests spawned"] =
             &RaidTempestKeepTriggerContext::high_astromancer_solarian_solarium_priests_spawned;
 
-        creators["high astromancer solarian transformed into voidwalker"] =
-            &RaidTempestKeepTriggerContext::high_astromancer_solarian_transformed_into_voidwalker;
+        creators["high astromancer solarian boss transformed into voidwalker"] =
+            &RaidTempestKeepTriggerContext::high_astromancer_solarian_boss_transformed_into_voidwalker;
+
+        creators["high astromancer solarian boss casts psychic scream"] =
+            &RaidTempestKeepTriggerContext::high_astromancer_solarian_boss_casts_psychic_scream;
 
         // Kael'thas Sunstrider <Lord of the Blood Elves>
         creators["kael'thas sunstrider thaladred is fixated on bot"] =
@@ -132,8 +141,11 @@ private:
     static Trigger* alar_boss_is_flying_between_platforms(
         PlayerbotAI* botAI) { return new AlarBossIsFlyingBetweenPlatformsTrigger(botAI); }
 
-    static Trigger* alar_boss_spawns_embers_of_alar(
-        PlayerbotAI* botAI) { return new AlarBossSpawnsEmbersOfAlarTrigger(botAI); }
+    static Trigger* alar_embers_of_alar_explode_upon_death(
+        PlayerbotAI* botAI) { return new AlarEmbersOfAlarExplodeUponDeathTrigger(botAI); }
+
+    static Trigger* alar_killing_embers_of_alar_damages_boss(
+        PlayerbotAI* botAI) { return new AlarKillingEmbersOfAlarDamagesBossTrigger(botAI); }
 
     static Trigger* alar_incoming_flame_quills(
         PlayerbotAI* botAI) { return new AlarIncomingFlameQuillsTrigger(botAI); }
@@ -151,6 +163,9 @@ private:
         PlayerbotAI* botAI) { return new AlarStrategyChangesBetweenPhasesTrigger(botAI); }
 
     // Void Reaver
+    static Trigger* void_reaver_boss_casts_pounding(
+        PlayerbotAI* botAI) { return new VoidReaverBossCastsPoundingTrigger(botAI); }
+
     static Trigger* void_reaver_knock_away_reduces_tank_aggro(
         PlayerbotAI* botAI) { return new VoidReaverKnockAwayReducesTankAggroTrigger(botAI); }
 
@@ -170,8 +185,11 @@ private:
     static Trigger* high_astromancer_solarian_solarium_priests_spawned(
         PlayerbotAI* botAI) { return new HighAstromancerSolarianSolariumPriestsSpawnedTrigger(botAI); }
 
-    static Trigger* high_astromancer_solarian_transformed_into_voidwalker(
-        PlayerbotAI* botAI) { return new HighAstromancerSolarianTransformedIntoVoidwalkerTrigger(botAI); }
+    static Trigger* high_astromancer_solarian_boss_transformed_into_voidwalker(
+        PlayerbotAI* botAI) { return new HighAstromancerSolarianBossTransformedIntoVoidwalkerTrigger(botAI); }
+
+    static Trigger* high_astromancer_solarian_boss_casts_psychic_scream(
+        PlayerbotAI* botAI) { return new HighAstromancerSolarianBossCastsPsychicScreamTrigger(botAI); }
 
     // Kael'thas Sunstrider <Lord of the Blood Elves>
     static Trigger* kaelthas_sunstrider_thaladred_is_fixated_on_bot(

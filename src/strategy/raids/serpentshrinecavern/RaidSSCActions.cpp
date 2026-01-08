@@ -339,10 +339,7 @@ bool HydrossTheUnstableMisdirectBossToTankAction::TryMisdirectToFrostTank(
         if (botAI->CanCastSpell("misdirection", frostTank))
             return botAI->CastSpell("misdirection", frostTank);
 
-        if (!bot->HasAura(SPELL_MISDIRECTION))
-            return false;
-
-        if (botAI->CanCastSpell("steady shot", hydross))
+        if (bot->HasAura(SPELL_MISDIRECTION) && botAI->CanCastSpell("steady shot", hydross))
             return botAI->CastSpell("steady shot", hydross);
     }
 
@@ -368,10 +365,7 @@ bool HydrossTheUnstableMisdirectBossToTankAction::TryMisdirectToNatureTank(
         if (botAI->CanCastSpell("misdirection", natureTank))
             return botAI->CastSpell("misdirection", natureTank);
 
-        if (!bot->HasAura(SPELL_MISDIRECTION))
-            return false;
-
-        if (botAI->CanCastSpell("steady shot", hydross))
+        if (bot->HasAura(SPELL_MISDIRECTION) && botAI->CanCastSpell("steady shot", hydross))
             return botAI->CastSpell("steady shot", hydross);
     }
 
@@ -865,8 +859,7 @@ bool LeotherasTheBlindMisdirectBossToDemonFormTankAction::Execute(Event event)
     if (botAI->CanCastSpell("misdirection", demonFormTank))
         return botAI->CastSpell("misdirection", demonFormTank);
 
-    if (bot->HasAura(SPELL_MISDIRECTION) &&
-        botAI->CanCastSpell("steady shot", leotherasDemon))
+    if (bot->HasAura(SPELL_MISDIRECTION) && botAI->CanCastSpell("steady shot", leotherasDemon))
         return botAI->CastSpell("steady shot", leotherasDemon);
 
     return false;
@@ -1173,8 +1166,8 @@ bool FathomLordKarathressMisdirectBossesToTanksAction::Execute(Event event)
     return false;
 }
 
-// Kill order is non-standard because bots handle Caribdis Cyclones poorly and need more time to
-// get her down than real players (standard approach is ranged DPS would help with Sharkkis first)
+// Kill order is non-standard because bots handle Cyclones poorly and need more time 
+// to get her down than real players (standard is ranged DPS help with Sharkkis first)
 bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event event)
 {
     // Target priority 1: Spitfire Totems for melee dps
@@ -1738,9 +1731,6 @@ bool LadyVashjStaticChargeMoveAwayFromGroupAction::Execute(Event event)
 
 bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event event)
 {
-    if (botAI->IsHeal(bot))
-        return false;
-
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     if (!vashj)
         return false;
@@ -1845,7 +1835,6 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event event)
         }
         else if (botAI->IsRanged(bot))
         {
-            // targets = { enchanted, strider, elite, vashj };
             if (bot->getClass() == CLASS_HUNTER)
                 targets = { sporebat, enchanted, strider, elite, vashj };
             else

@@ -50,9 +50,17 @@ bool AlarBossIsFlyingBetweenPlatformsTrigger::IsActive()
     return true;
 }
 
-bool AlarBossSpawnsEmbersOfAlarTrigger::IsActive()
+bool AlarEmbersOfAlarExplodeUponDeathTrigger::IsActive()
 {
-    if (!botAI->IsTank(bot) && !botAI->IsRangedDps(bot))
+    if (!botAI->IsTank(bot))
+        return false;
+
+    return AI_VALUE2(Unit*, "find target", "ember of al'ar");
+}
+
+bool AlarKillingEmbersOfAlarDamagesBossTrigger::IsActive()
+{
+    if (!botAI->IsRangedDps(bot))
         return false;
 
     return AI_VALUE2(Unit*, "find target", "ember of al'ar");
@@ -67,14 +75,9 @@ bool AlarIncomingFlameQuillsTrigger::IsActive()
     if (isAlarInPhase2[alar->GetMap()->GetInstanceId()])
         return false;
 
-    int8 locationIndex = GetAlarCurrentLocationIndex(alar);
-    if (locationIndex == LOCATION_NONE)
-    {
-        Position dest;
-        locationIndex = GetAlarDestinationLocationIndex(alar, dest);
-    }
-
-    return locationIndex == POINT_QUILL_OR_DIVE_IDX;
+    Position dest;
+    return GetAlarCurrentLocationIndex(alar) == POINT_QUILL_OR_DIVE_IDX ||
+           GetAlarDestinationLocationIndex(alar, dest) == POINT_QUILL_OR_DIVE_IDX;
 }
 
 bool AlarRisingFromTheAshesTrigger::IsActive()
@@ -115,14 +118,9 @@ bool AlarPhase2EncounterIsAtRoomCenterTrigger::IsActive()
     if (alarCreature && alarCreature->GetReactState() == REACT_PASSIVE)
         return false;
 
-    int8 locationIndex = GetAlarCurrentLocationIndex(alar);
-    if (locationIndex == LOCATION_NONE)
-    {
-        Position dest;
-        locationIndex = GetAlarDestinationLocationIndex(alar, dest);
-    }
-
-    return locationIndex != POINT_QUILL_OR_DIVE_IDX;
+    Position dest;
+    return GetAlarCurrentLocationIndex(alar) != POINT_QUILL_OR_DIVE_IDX &&
+           GetAlarDestinationLocationIndex(alar, dest) != POINT_QUILL_OR_DIVE_IDX;
 }
 
 bool AlarStrategyChangesBetweenPhasesTrigger::IsActive()
@@ -146,9 +144,18 @@ bool AlarStrategyChangesBetweenPhasesTrigger::IsActive()
 
 // Void Reaver
 
+bool VoidReaverBossCastsPoundingTrigger::IsActive()
+{
+    if (!botAI->IsTank(bot))
+        return false;
+
+    Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
+    return voidReaver && voidReaver->GetVictim() == bot;
+}
+
 bool VoidReaverKnockAwayReducesTankAggroTrigger::IsActive()
 {
-    if (!botAI->IsRanged(bot) && !botAI->IsTank(bot))
+    if (!botAI->IsRanged(bot))
         return false;
 
     Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
@@ -204,9 +211,18 @@ bool HighAstromancerSolarianSolariumPriestsSpawnedTrigger::IsActive()
     return AI_VALUE2(Unit*, "find target", "solarium priest");
 }
 
-bool HighAstromancerSolarianTransformedIntoVoidwalkerTrigger::IsActive()
+bool HighAstromancerSolarianBossTransformedIntoVoidwalkerTrigger::IsActive()
 {
-    if (!botAI->IsMainTank(bot) && bot->getClass() != CLASS_PRIEST)
+    if (!botAI->IsMainTank(bot))
+        return false;
+
+    Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
+    return astromancer && astromancer->HasAura(SPELL_SOLARIAN_TRANSFORM);
+}
+
+bool HighAstromancerSolarianBossCastsPsychicScreamTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_PRIEST)
         return false;
 
     Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
