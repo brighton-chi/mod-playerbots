@@ -22,8 +22,7 @@ bool RageWinterchillBossEngagedByMainTankTrigger::IsActive()
     if (!botAI->IsMainTank(bot))
         return false;
 
-    Unit* winterchill = AI_VALUE2(Unit*, "find target", "rage winterchill");
-    return winterchill != nullptr;
+    return AI_VALUE2(Unit*, "find target", "rage winterchill");
 }
 
 bool RageWinterchillBossCastsDeathAndDecayTrigger::IsActive()
@@ -31,8 +30,7 @@ bool RageWinterchillBossCastsDeathAndDecayTrigger::IsActive()
     if (!botAI->IsRanged(bot))
         return false;
 
-    Unit* winterchill = AI_VALUE2(Unit*, "find target", "rage winterchill");
-    return winterchill != nullptr;
+    return AI_VALUE2(Unit*, "find target", "rage winterchill");
 }
 
 // Anetheron
@@ -51,8 +49,7 @@ bool AnetheronBossEngagedByMainTankTrigger::IsActive()
     if (!botAI->IsMainTank(bot))
         return false;
 
-    Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
-    return anetheron != nullptr;
+    return AI_VALUE2(Unit*, "find target", "anetheron");
 }
 
 bool AnetheronBossCastsCarrionSwarmTrigger::IsActive()
@@ -64,10 +61,7 @@ bool AnetheronBossCastsCarrionSwarmTrigger::IsActive()
     if (!anetheron)
         return false;
 
-    if (IsBotTargetedByInferno(anetheron, bot))
-        return false;
-
-    return true;
+    return !IsBotTargetedByInferno(anetheron, bot);
 }
 
 bool AnetheronBotIsTargetedByInfernalTrigger::IsActive()
@@ -83,29 +77,23 @@ bool AnetheronBotIsTargetedByInfernalTrigger::IsActive()
         return true;
 
     Unit* infernal = AI_VALUE2(Unit*, "find target", "towering infernal");
-    if (infernal && infernal->GetVictim() == bot)
-        return true;
-
-    return false;
+    return infernal && infernal->GetVictim() == bot);
 }
 
 bool AnetheronInfernalsNeedToBeKeptAwayFromRaidTrigger::IsActive()
 {
-    if (!botAI->IsAssistTankOfIndex(bot, 0))
+    if (!botAI->IsAssistTankOfIndex(bot, 0, true))
         return false;
 
-    Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
-    return anetheron != nullptr;
+    return AI_VALUE2(Unit*, "find target", "anetheron");
 }
 
 bool AnetheronInfernalsDespawnWhenBossDiesTrigger::IsActive()
 {
-    // if (botAI->IsHeal(bot) || botAI->IsAssistTankOfIndex(bot, 0))
-    if (!botAI->IsDps(bot))
+    if (botAI->IsMainTank(bot))
         return false;
 
-    Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
-    return anetheron != nullptr;
+    return AI_VALUE2(Unit*, "find target", "anetheron");
 }
 
 // Kaz'rogal
@@ -124,8 +112,7 @@ bool KazrogalBossEngagedByMainTankTrigger::IsActive()
     if (!botAI->IsMainTank(bot))
         return false;
 
-    Unit* kazrogal = AI_VALUE2(Unit*, "find target", "kaz'rogal");
-    return kazrogal != nullptr;
+    return AI_VALUE2(Unit*, "find target", "kaz'rogal");
 }
 
 bool KazrogalBossEngagedByAssistTanksTrigger::IsActive()
@@ -149,11 +136,8 @@ bool KazrogalLowManaBotsNeedEscapePathTrigger::IsActive()
     if (!kazrogal)
         return false;
 
-    if (bot->GetPower(POWER_MANA) <= 2000 ||
-        (bot->GetPower(POWER_MANA) <= 3000 && bot->HasAura(SPELL_MARK_OF_KAZROGAL)))
-        return false;
-
-    return true;
+    return bot->GetPower(POWER_MANA) > 2000 ||
+           (bot->GetPower(POWER_MANA) > 3000 && bot->HasAura(SPELL_MARK_OF_KAZROGAL))
 }
 
 bool KazrogalBotIsLowOnManaTrigger::IsActive()
@@ -180,10 +164,6 @@ bool KazrogalMageOrPaladinHasMarkOfKazrogalTrigger::IsActive()
         bot->getClass() != CLASS_PALADIN)
         return false;
 
-    Unit* kazrogal = AI_VALUE2(Unit*, "find target", "kaz'rogal");
-    if (!kazrogal)
-        return false;
-
     return bot->HasAura(SPELL_MARK_OF_KAZROGAL);
 }
 
@@ -203,8 +183,7 @@ bool AzgalorBossEngagedByMainTankTrigger::IsActive()
     if (!botAI->IsMainTank(bot))
         return false;
 
-    Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
-    return azgalor != nullptr;
+    return AI_VALUE2(Unit*, "find target", "azgalor");
 }
 
 // Spread to mitigate Rain of Fire, but GTFO if Rain of Fire is on the bot
@@ -216,19 +195,32 @@ bool AzgalorBossCastsRainOfFireTrigger::IsActive()
     if (bot->HasAura(SPELL_RAIN_OF_FIRE) || bot->HasAura(SPELL_DOOM))
         return false;
 
-    Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
-    return azgalor != nullptr;
+    return AI_VALUE2(Unit*, "find target", "azgalor");
 }
 
 bool AzgalorBotIsDoomedTrigger::IsActive()
 {
-    return AnyGroupMemberHasDoom(bot);
+    return botAI->HasAura(SPELL_DOOM));
 }
 
-bool AzgalorDoomguardSpawnedTrigger::IsActive()
+bool AzgalorDoomguardsMustBeControlledTrigger::IsActive()
 {
-    Unit* doomguard = AI_VALUE2(Unit*, "find target", "lesser doomguard");
-    return doomguard != nullptr;
+    if (!botAI->IsAssistTankOfIndex(bot, 0, true))
+        return false;
+
+    if (AI_VALUE2(Unit*, "find target", "azgalor"))
+        return false;
+
+    return AI_VALUE2(Unit*, "find target", "lesser doomguard") ||
+           AnyGroupMemberHasDoom(bot);
+}
+
+bool AzgalorDoomguardsContinueToSpawnTrigger::IsActive()
+{
+    if (!botAI->IsDps(bot))
+        return false;
+
+    return AI_VALUE2(Unit*, "find target", "azgalor");
 }
 
 // Archimonde
@@ -240,15 +232,6 @@ bool ArchimondePullingBossTrigger::IsActive()
 
     Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
     return archimonde && archimonde->GetHealthPct() > 95.0f;
-}
-
-bool ArchimondeBossEngagedByMainTankTrigger::IsActive()
-{
-    if (!botAI->IsMainTank(bot))
-        return false;
-
-    Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
-    return archimonde != nullptr;
 }
 
 bool ArchimondeBossCastsFearTrigger::IsActive()
@@ -287,14 +270,12 @@ bool ArchimondeBossCastsAirBurstTrigger::IsActive()
     if (bot->HasAura(SPELL_DOOMFIRE))
         return false;
 
-    Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
-    return archimonde != nullptr;
+    return AI_VALUE2(Unit*, "find target", "archimonde");
 }
 
 bool ArchimondeBossSummonedDoomfireTrigger::IsActive()
 {
-    Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
-    return archimonde != nullptr;
+    return AI_VALUE2(Unit*, "find target", "archimonde");
 }
 
 bool ArchimondeBotStoodInDoomfireTrigger::IsActive()
@@ -304,9 +285,5 @@ bool ArchimondeBotStoodInDoomfireTrigger::IsActive()
         bot->getClass() != CLASS_PALADIN)
         return false;
 
-    if (!bot->HasAura(SPELL_DOOMFIRE))
-        return false;
-
-    Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
-    return archimonde != nullptr;
+    return bot->HasAura(SPELL_DOOMFIRE);
 }

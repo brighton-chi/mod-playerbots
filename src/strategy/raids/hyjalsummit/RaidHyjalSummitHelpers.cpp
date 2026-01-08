@@ -20,14 +20,19 @@ namespace HyjalSummitHelpers
         }
     }
 
-    void MarkTargetWithSkull(Player* bot, Unit* target)
-    {
-        MarkTargetWithIcon(bot, target, RtiTargetValue::skullIndex);
-    }
-
     void MarkTargetWithSquare(Player* bot, Unit* target)
     {
         MarkTargetWithIcon(bot, target, RtiTargetValue::squareIndex);
+    }
+
+    void MarkTargetWithStar(Player* bot, Unit* target)
+    {
+        MarkTargetWithIcon(bot, target, RtiTargetValue::starIndex);
+    }
+
+    void MarkTargetWithCircle(Player* bot, Unit* target)
+    {
+        MarkTargetWithIcon(bot, target, RtiTargetValue::circleIndex);
     }
 
     void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target)
@@ -117,15 +122,12 @@ namespace HyjalSummitHelpers
     // Kaz'rogal
 
     const Position KAZROGAL_TANK_POSITION = { 5469.371f, -2715.533f, 1483.744f };
-    // const Position KAZROGAL_TANK_POSITION = { 5474.108f, -2716.995f, 1483.079f };
     std::unordered_map<ObjectGuid, Position> kazrogalRangedPositions;
 
     // Azgalor
 
-    // const Position AZGALOR_MAIN_TANK_POSITION = { 5496.211f, -2713.713f, 1482.272f };
     const Position AZGALOR_MAIN_TANK_POSITION = { 5504.281f, -2682.223f, 1480.610f };
     const Position AZGALOR_DOOMGUARD_TANK_POSITION = { 5445.848f, -2694.923f, 1485.965f };
-    std::unordered_map<ObjectGuid, Position> azgalorRangedPositions;
 
     bool AnyGroupMemberHasDoom(Player* bot)
     {
@@ -146,6 +148,5 @@ namespace HyjalSummitHelpers
     }
 
     // Archimonde
-
-    const Position ARCHIMONDE_TANK_POSITION = { 5643.303f, -3447.171f, 1586.494f };
+    // N/A
 }

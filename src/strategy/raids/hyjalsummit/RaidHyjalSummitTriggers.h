@@ -163,11 +163,19 @@ public:
     bool IsActive() override;
 };
 
-class AzgalorDoomguardSpawnedTrigger : public Trigger
+class AzgalorDoomguardsMustBeControlledTrigger : public Trigger
 {
 public:
-    AzgalorDoomguardSpawnedTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "azgalor doomguard spawned") {}
+    AzgalorDoomguardsMustBeControlledTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "azgalor doomguards must be controlled") {}
+    bool IsActive() override;
+};
+
+class AzgalorDoomguardsContinueToSpawnTrigger : public Trigger
+{
+public:
+    AzgalorDoomguardsContinueToSpawnTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "azgalor doomguards continue to spawn") {}
     bool IsActive() override;
 };
 
@@ -178,14 +186,6 @@ class ArchimondePullingBossTrigger : public Trigger
 public:
     ArchimondePullingBossTrigger(
         PlayerbotAI* botAI) : Trigger(botAI, "archimonde pulling boss") {}
-    bool IsActive() override;
-};
-
-class ArchimondeBossEngagedByMainTankTrigger : public Trigger
-{
-public:
-    ArchimondeBossEngagedByMainTankTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "archimonde boss engaged by main tank") {}
     bool IsActive() override;
 };
 

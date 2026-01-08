@@ -70,15 +70,15 @@ public:
         creators["azgalor bot is doomed"] =
             &RaidHyjalSummitTriggerContext::azgalor_bot_is_doomed;
 
-        creators["azgalor doomguard spawned"] =
-            &RaidHyjalSummitTriggerContext::azgalor_doomguard_spawned;
+        creators["azgalor doomguards must be controlled"] =
+            &RaidHyjalSummitTriggerContext::azgalor_doomguards_must_be_controlled;
+
+        creators["azgalor doomguards continue to spawn"] =
+            &RaidHyjalSummitTriggerContext::azgalor_doomguards_continue_to_spawn;
 
         // Archimonde
         creators["archimonde pulling boss"] =
             &RaidHyjalSummitTriggerContext::archimonde_pulling_boss;
-
-        creators["archimonde boss engaged by main tank"] =
-            &RaidHyjalSummitTriggerContext::archimonde_boss_engaged_by_main_tank;
 
         creators["archimonde boss casts fear"] =
             &RaidHyjalSummitTriggerContext::archimonde_boss_casts_fear;
@@ -155,15 +155,15 @@ private:
     static Trigger* azgalor_bot_is_doomed(
         PlayerbotAI* botAI) { return new AzgalorBotIsDoomedTrigger(botAI); }
 
-    static Trigger* azgalor_doomguard_spawned(
-        PlayerbotAI* botAI) { return new AzgalorDoomguardSpawnedTrigger(botAI); }
+    static Trigger* azgalor_doomguards_must_be_controlled(
+        PlayerbotAI* botAI) { return new AzgalorDoomguardsMustBeControlledTrigger(botAI); }
+
+    static Trigger* azgalor_doomguards_continue_to_spawn(
+        PlayerbotAI* botAI) { return new AzgalorDoomguardsContinueToSpawnTrigger(botAI); }
 
     // Archimonde
     static Trigger* archimonde_pulling_boss(
         PlayerbotAI* botAI) { return new ArchimondePullingBossTrigger(botAI); }
-
-    static Trigger* archimonde_boss_engaged_by_main_tank(
-        PlayerbotAI* botAI) { return new ArchimondeBossEngagedByMainTankTrigger(botAI); }
 
     static Trigger* archimonde_boss_casts_fear(
         PlayerbotAI* botAI) { return new ArchimondeBossCastsFearTrigger(botAI); }

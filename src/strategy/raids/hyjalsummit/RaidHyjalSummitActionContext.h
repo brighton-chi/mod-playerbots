@@ -73,15 +73,12 @@ public:
         creators["azgalor first assist tank position doomguard"] =
             &RaidHyjalSummitActionContext::azgalor_first_assist_tank_position_doomguard;
 
-        creators["azgalor melee dps prioritize doomguards"] =
-            &RaidHyjalSummitActionContext::azgalor_melee_dps_prioritize_doomguards;
+        creators["azgalor assign dps priority"] =
+            &RaidHyjalSummitActionContext::azgalor_assign_dps_priority;
 
         // Archimonde
         creators["archimonde misdirect boss to main tank"] =
             &RaidHyjalSummitActionContext::archimonde_misdirect_boss_to_main_tank;
-
-        creators["archimonde main tank position boss"] =
-            &RaidHyjalSummitActionContext::archimonde_main_tank_position_boss;
 
         creators["archimonde cast fear ward on main tank"] =
             &RaidHyjalSummitActionContext::archimonde_cast_fear_ward_on_main_tank;
@@ -161,15 +158,12 @@ private:
     static Action* azgalor_first_assist_tank_position_doomguard(
         PlayerbotAI* botAI) { return new AzgalorFirstAssistTankPositionDoomguardAction(botAI); }
 
-    static Action* azgalor_melee_dps_prioritize_doomguards(
-        PlayerbotAI* botAI) { return new AzgalorMeleeDpsPrioritizeDoomguardsAction(botAI); }
+    static Action* azgalor_assign_dps_priority(
+        PlayerbotAI* botAI) { return new AzgalorAssignDpsPriorityAction(botAI); }
 
     // Archimonde
     static Action* archimonde_misdirect_boss_to_main_tank(
         PlayerbotAI* botAI) { return new ArchimondeMisdirectBossToMainTankAction(botAI); }
-
-    static Action* archimonde_main_tank_position_boss(
-        PlayerbotAI* botAI) { return new ArchimondeMainTankPositionBossAction(botAI); }
 
     static Action* archimonde_cast_fear_ward_on_main_tank(
         PlayerbotAI* botAI) { return new ArchimondeCastFearWardOnMainTankAction(botAI); }

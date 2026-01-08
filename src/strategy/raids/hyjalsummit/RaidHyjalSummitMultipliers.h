@@ -109,4 +109,12 @@ public:
 
 // Archimonde
 
+class ArchimondeDisableCombatFormationMoveMultiplier : public Multiplier
+{
+public:
+    ArchimondeDisableCombatFormationMoveMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "archimonde disable combat formation move multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
 #endif

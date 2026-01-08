@@ -173,11 +173,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class AzgalorMeleeDpsPrioritizeDoomguardsAction : public AttackAction
+class AzgalorAssignDpsPriorityAction : public AttackAction
 {
 public:
-    AzgalorMeleeDpsPrioritizeDoomguardsAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "azgalor melee dps prioritize doomguards") {}
+    AzgalorAssignDpsPriorityAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "azgalor assign dps priority") {}
     bool Execute(Event event) override;
 };
 
@@ -188,14 +188,6 @@ class ArchimondeMisdirectBossToMainTankAction : public AttackAction
 public:
     ArchimondeMisdirectBossToMainTankAction(
         PlayerbotAI* botAI) : AttackAction(botAI, "archimonde misdirect boss to main tank") {}
-    bool Execute(Event event) override;
-};
-
-class ArchimondeMainTankPositionBossAction : public AttackAction
-{
-public:
-    ArchimondeMainTankPositionBossAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "archimonde main tank position boss") {}
     bool Execute(Event event) override;
 };
 

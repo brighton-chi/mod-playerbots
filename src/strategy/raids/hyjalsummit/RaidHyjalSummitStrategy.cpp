@@ -62,19 +62,17 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("azgalor disperse ranged", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("azgalor bot is doomed", {
-        NextAction("azgalor move to doomguard tank", ACTION_EMERGENCY + 2),
-        NextAction("azgalor first assist tank position doomguard", ACTION_RAID + 1) }));
+        NextAction("azgalor move to doomguard tank", ACTION_EMERGENCY + 2) }));
 
-    triggers.push_back(new TriggerNode("azgalor doomguard spawned", {
-        NextAction("azgalor melee dps prioritize doomguards", ACTION_RAID + 1),
-        NextAction("azgalor first assist tank position doomguard", ACTION_RAID + 1) }));
+    triggers.push_back(new TriggerNode("azgalor doomguards must be controlled", {
+        NextAction("azgalor first assist tank position doomguards", ACTION_RAID + 1) }));
+
+    triggers.push_back(new TriggerNode("azgalor doomguards continue to spawn", {
+        NextAction("azgalor assign dps priority", ACTION_RAID + 1) }));
 
     // Archimonde
     triggers.push_back(new TriggerNode("archimonde pulling boss", {
         NextAction("archimonde misdirect boss to main tank", ACTION_RAID + 2) }));
-
-    // triggers.push_back(new TriggerNode("archimonde boss engaged by main tank", {
-    //     NextAction("archimonde main tank position boss", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("archimonde boss casts fear", {
         NextAction("archimonde cast fear ward on main tank", ACTION_RAID + 2) }));
@@ -82,11 +80,11 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("archimonde boss casts air burst", {
         NextAction("archimonde disperse ranged bots", ACTION_RAID + 1) }));
 
-    // triggers.push_back(new TriggerNode("archimonde boss summoned doomfire", {
-    //     NextAction("archimonde avoid doomfire", ACTION_EMERGENCY + 6) }));
+    triggers.push_back(new TriggerNode("archimonde boss summoned doomfire", {
+        NextAction("archimonde avoid doomfire", ACTION_EMERGENCY + 6) }));
 
     triggers.push_back(new TriggerNode("archimonde bot stood in doomfire", {
-        NextAction("archimonde remove doomfire dot", ACTION_EMERGENCY + 6) }));
+        NextAction("archimonde remove doomfire dot", ACTION_EMERGENCY + 7) }));
 }
 
 void RaidHyjalSummitStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
@@ -96,11 +94,11 @@ void RaidHyjalSummitStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
 
     // Rage Winterchill
     multipliers.push_back(new RageWinterchillDisableMainTankAvoidAoeMultiplier(botAI));
-    // multipliers.push_back(new RageWinterchillDisableCombatFormationMoveMultiplier(botAI));
+    multipliers.push_back(new RageWinterchillDisableCombatFormationMoveMultiplier(botAI));
 
     // Anetheron
     multipliers.push_back(new AnetheronDisableTankActionsMultiplier(botAI));
-    // multipliers.push_back(new AnetheronDisableCombatFormationMoveMultiplier(botAI));
+    multipliers.push_back(new AnetheronDisableCombatFormationMoveMultiplier(botAI));
     multipliers.push_back(new AnetheronInfernalTankMaintainPositionMultiplier(botAI));
     multipliers.push_back(new AnetheronControlMisdirectionMultiplier(botAI));
 
@@ -114,5 +112,5 @@ void RaidHyjalSummitStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new AzgalorDoomedBotPrioritizePositioningMultiplier(botAI));
 
     // Archimonde
-    // N/A
+    multipliers.push_back(new ArchimondeDisableCombatFormationMoveMultiplier(botAI));
 }
