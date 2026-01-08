@@ -578,8 +578,9 @@ bool LadyVashjTaintedCoreWasLootedTrigger::IsActive()
 
 bool LadyVashjTaintedCoreIsUnusableTrigger::IsActive()
 {
-    if (IsLadyVashjInPhase3(botAI))
-        return true;
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (!vashj)
+        return false;
 
     Group* group = bot->GetGroup();
     if (!group)
@@ -603,6 +604,9 @@ bool LadyVashjTaintedCoreIsUnusableTrigger::IsActive()
         }
         return true;
     }
+
+    if (IsLadyVashjInPhase3(botAI))
+        return true;
 
     return false;
 }

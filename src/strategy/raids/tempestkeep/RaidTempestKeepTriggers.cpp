@@ -477,6 +477,10 @@ bool KaelthasSunstriderRaidMemberIsMindControlledTrigger::IsActive()
     if (!bot->HasItemCount(ITEM_INFINITY_BLADE, 1, true) || botAI->IsTank(bot))
         return false;
 
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    if (!kaelthas)
+        return false;
+
     if (Group* group = bot->GetGroup())
     {
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
