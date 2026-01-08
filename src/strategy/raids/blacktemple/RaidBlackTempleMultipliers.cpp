@@ -232,6 +232,7 @@ float ReliquaryOfSoulsDontInterruptDeadenIfReflectableMultiplier::GetValue(Actio
                     dynamic_cast<CastKickAction*>(action) ||
                     dynamic_cast<CastSilencingShotAction*>(action) ||
                     dynamic_cast<CastWindShearAction*>(action) ||
+                    dynamic_cast<CastWindShearOnEnemyHealerAction*>(action) ||
                     dynamic_cast<CastMindFreezeAction*>(action))
                 {
                     return 0.0f;
@@ -374,7 +375,8 @@ float IllidariCouncilManageInterruptsMultiplier::GetValue(Action* action)
         }
         else if (malande->HasAura(SPELL_BLESSING_OF_SPELL_WARDING))
         {
-            if (dynamic_cast<CastWindShearAction*>(action))
+            if (dynamic_cast<CastWindShearAction*>(action) ||
+                dynamic_cast<CastWindShearOnEnemyHealerAction*>(action))
                 return 0.0f;
         }
     }
