@@ -611,7 +611,7 @@ bool AlarAvoidFlamePatchesAndDiveBombsAction::HandleDiveBomb(Unit* alar)
             return MoveAway(alar, safeDistance - currentDistance);
         }
     }
-    else 
+    else
     {
         Position dest;
         if (GetAlarCurrentLocationIndex(alar) == POINT_QUILL_OR_DIVE_IDX ||
@@ -672,6 +672,10 @@ bool AlarManagePhaseTrackerAction::Execute(Event event)
 
 bool VoidReaverTanksPositionBossAction::Execute(Event event)
 {
+    Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
+    if (!voidReaver)
+        return false;
+
     const Position& position = VOID_REAVER_TANK_POSITION;
 
     float dX = position.GetPositionX() - bot->GetPositionX();

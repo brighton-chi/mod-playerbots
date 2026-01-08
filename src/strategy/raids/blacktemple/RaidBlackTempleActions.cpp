@@ -248,10 +248,12 @@ bool SupremusDisperseRangedAction::Execute(Event event)
                 continue;
 
             const float safeDistance = 8.0f;
-            const uint32 minInterval = 
-            if (bot->GetExactDist2d(member) < 8.0f)
+            const uint32 minInterval = 1000;
+            if (bot->GetExactDist2d(member) < safeDistance)
+            {
                 return FleePosition(Position(member->GetPositionX(), member->GetPositionY(),
-                                             member->GetPositionZ()), 8.0f, 1000);
+                                             member->GetPositionZ()), safeDistance, minInterval);
+            }
         }
     }
 
@@ -1271,6 +1273,9 @@ bool IllidariCouncilMainTankPositionGathiosAction::Execute(Event event)
         }
     }
 
+    const ObjectGuid botGuid = bot->GetGUID();
+    uint8 index = gathiosTankStep.count(botGuid) ? gathiosTankStep[botGuid] : 0;
+
     const Position tankPositions[4] =
     {
         GATHIOS_TANK_POSITION_1,
@@ -1279,11 +1284,9 @@ bool IllidariCouncilMainTankPositionGathiosAction::Execute(Event event)
         GATHIOS_TANK_POSITION_4
     };
     const Position& position = tankPositions[index];
-    
+
     const float maxDistance = 2.0f;
     float distanceToTarget = bot->GetExactDist2d(position);
-    const ObjectGuid botGuid = bot->GetGUID();
-    uint8 index = gathiosTankStep.count(botGuid) ? gathiosTankStep[botGuid] : 0;
 
     if (gathios->GetVictim() == bot && bot->IsWithinMeleeRange(gathios))
     {
@@ -1420,7 +1423,7 @@ bool IllidariCouncilAssignDpsTargetsAction::Execute(Event event)
     Unit* malande = AI_VALUE2(Unit*, "find target", "lady malande");
     if (!malande)
         return false;
-    
+
     bool shouldAttackMalande = false;
 
     if (bot->getClass() == CLASS_ROGUE ||
@@ -2189,7 +2192,7 @@ bool IllidanStormrageBotsSpreadAboveGrateAction::Execute(Event event)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member && !botAI->IsAssistTankOfIndex(member, 0) && 
+        if (member && !botAI->IsAssistTankOfIndex(member, 0) &&
             !botAI->IsAssistTankOfIndex(member, 1))
             bots.push_back(member);
     }
@@ -2199,7 +2202,7 @@ bool IllidanStormrageBotsSpreadAboveGrateAction::Execute(Event event)
 
     // Sort for deterministic assignment
     std::sort(bots.begin(), bots.end(),
-        [](Player* firstPlayer, Player* secondPlayer) { 
+        [](Player* firstPlayer, Player* secondPlayer) {
             return firstPlayer->GetGUID() < secondPlayer->GetGUID(); });
 
     auto it = std::find(bots.begin(), bots.end(), bot);
@@ -2210,7 +2213,7 @@ bool IllidanStormrageBotsSpreadAboveGrateAction::Execute(Event event)
     size_t groupIndex = botIndex % 3; // Assign to N, SW, SE in round-robin
 
     const Position& position = *gratePositions[groupIndex];
-    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY() > 0.2f)
+    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 0.2f)
     {
         return MoveTo(BLACK_TEMPLE_MAP_ID, position.GetPositionX(), position.GetPositionY(),
                       position.GetPositionZ(), false, false, false, false,
@@ -2366,7 +2369,7 @@ bool IllidanStormragePositionMeleeAction::PositionBehindBoss(Unit* illidan)
 
     // Sort for deterministic assignment
     std::sort(melee.begin(), melee.end(),
-        [](Player* firstPlayer, Player* secondPlayer) { 
+        [](Player* firstPlayer, Player* secondPlayer) {
             return firstPlayer->GetGUID() < secondPlayer->GetGUID(); });
 
     auto it = std::find(melee.begin(), melee.end(), bot);

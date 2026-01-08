@@ -51,14 +51,14 @@ bool RageWinterchillMainTankPositionBossAction::Execute(Event event)
     if (winterchill->GetVictim() == bot)
     {
         const Position& position = RAGE_WINTERCHILL_TANK_POSITION;
-        float dist = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
-        if (dist > 4.0f)
+        float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+        if (distToPosition > 4.0f)
         {
             float dX = position.GetPositionX() - bot->GetPositionX();
             float dY = position.GetPositionY() - bot->GetPositionY();
-            float moveDist = std::min(10.0f, dist);
-            float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
-            float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
+            float moveDist = std::min(10.0f, distToPosition);
+            float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
             return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
                           false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
@@ -210,14 +210,14 @@ bool AnetheronMainTankPositionBossAction::Execute(Event event)
     if (anetheron->GetVictim() == bot)
     {
         const Position& position = ANETHERON_MAIN_TANK_POSITION;
-        float dist = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
-        if (dist > 4.0f)
+        float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+        if (distToPosition > 4.0f)
         {
             float dX = position.GetPositionX() - bot->GetPositionX();
             float dY = position.GetPositionY() - bot->GetPositionY();
-            float moveDist = std::min(10.0f, dist);
-            float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
-            float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
+            float moveDist = std::min(10.0f, distToPosition);
+            float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
             return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
                           false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
@@ -229,6 +229,10 @@ bool AnetheronMainTankPositionBossAction::Execute(Event event)
 
 bool AnetheronSpreadRangedInArcAction::Execute(Event event)
 {
+    Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
+    if (!anetheron)
+        return false;
+
     if (anetheron->GetHealth() == anetheron->GetMaxHealth())
         anetheronRangedPositions.clear();
 
@@ -340,7 +344,7 @@ bool AnetheronBringInfernalToInfernalTankAction::Execute(Event event)
 
 bool AnetheronFirstAssistTankPickUpInfernalsAction::Execute(Event event)
 {
-    const Position& tankPosition = ANETHERON_INFERNAL_TANK_POSITION;
+    const Position& position = ANETHERON_INFERNAL_TANK_POSITION;
     if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 10.0f)
     {
         return MoveTo(HYJAL_SUMMIT_MAP_ID, position.GetPositionX(), position.GetPositionY(),
@@ -356,7 +360,7 @@ bool AnetheronFirstAssistTankPickUpInfernalsAction::Execute(Event event)
             continue;
         if (unit->GetEntry() != NPC_TOWERING_INFERNAL)
             continue;
-        if (unit->GetExactDist2d(tankPosition.GetPositionX(), tankPosition.GetPositionY()) > 15.0f)
+        if (unit->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 15.0f)
             continue;
         infernals.push_back(unit);
     }
@@ -443,14 +447,14 @@ bool KazrogalMainTankPositionBossAction::Execute(Event event)
     if (kazrogal->GetVictim() == bot)
     {
         const Position& position = KAZROGAL_TANK_POSITION;
-        float dist = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
-        if (dist > 4.0f)
+        float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+        if (distToPosition > 4.0f)
         {
             float dX = position.GetPositionX() - bot->GetPositionX();
             float dY = position.GetPositionY() - bot->GetPositionY();
-            float moveDist = std::min(5.0f, dist);
-            float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
-            float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
+            float moveDist = std::min(5.0f, distToPosition);
+            float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
             return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
                           false, false, true, MovementPriority::MOVEMENT_FORCED, true, true);
@@ -463,14 +467,14 @@ bool KazrogalMainTankPositionBossAction::Execute(Event event)
 bool KazrogalAssistTanksMoveInFrontOfBossAction::Execute(Event event)
 {
     const Position& position = KAZROGAL_TANK_POSITION;
-    float dist = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
-    if (dist > 4.0f)
+    float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+    if (distToPosition > 4.0f)
     {
         float dX = position.GetPositionX() - bot->GetPositionX();
         float dY = position.GetPositionY() - bot->GetPositionY();
-        float moveDist = std::min(10.0f, dist);
-        float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
-        float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
+        float moveDist = std::min(10.0f, distToPosition);
+        float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+        float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
         return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
                       false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
@@ -622,14 +626,14 @@ bool AzgalorMainTankPositionBossAction::Execute(Event event)
     if (azgalor->GetVictim() == bot)
     {
         const Position& position = AZGALOR_MAIN_TANK_POSITION;
-        float dist = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
-        if (dist > 4.0f)
+        float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+        if (distToPosition > 4.0f)
         {
             float dX = position.GetPositionX() - bot->GetPositionX();
             float dY = position.GetPositionY() - bot->GetPositionY();
-            float moveDist = std::min(5.0f, dist);
-            float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
-            float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
+            float moveDist = std::min(5.0f, distToPosition);
+            float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
             return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
                           false, false, true, MovementPriority::MOVEMENT_FORCED, true, true);
@@ -653,7 +657,7 @@ bool AzgalorDisperseRangedAction::Execute(Event event)
                                      azgalor->GetPositionZ()), 25.0f, minInterval);
     }
 
-    if (GetNearestPlayerInRadius(bot, 6.0f))
+    if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, 6.0f))
     {
         return FleePosition(Position(nearestPlayer->GetPositionX(), nearestPlayer->GetPositionY(),
                                      nearestPlayer->GetPositionZ()), 6.0f, minInterval);
@@ -669,8 +673,8 @@ bool AzgalorMoveToDoomguardTankAction::Execute(Event event)
     {
         bot->AttackStop();
         bot->InterruptNonMeleeSpells(false);
-        return MoveTo(HYJAL_SUMMIT_MAP_ID, tankPosition.GetPositionX(), tankPosition.GetPositionY(),
-                      tankPosition.GetPositionZ(), false, false, false, true,
+        return MoveTo(HYJAL_SUMMIT_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                      position.GetPositionZ(), false, false, false, true,
                       MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
@@ -740,7 +744,7 @@ bool AzgalorAssignDpsPriorityAction::Execute(Event event)
         if (Unit* doomguard = AI_VALUE2(Unit*, "find target", "lesser doomguard"))
         {
             SetRtiTarget(botAI, "circle", doomguard);
-    
+
             if (bot->GetTarget() != doomguard->GetGUID())
                 return Attack(doomguard);
         }
@@ -750,7 +754,7 @@ bool AzgalorAssignDpsPriorityAction::Execute(Event event)
         if (Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor"))
         {
             SetRtiTarget(botAI, "star", azgalor);
-    
+
             if (bot->GetTarget() != azgalor->GetGUID())
                 return Attack(azgalor);
         }
@@ -824,13 +828,13 @@ bool ArchimondeDisperseRangedBotsAction::Execute(Event event)
 
     const uint32 minInterval = 1000;
 
-    if (bot->GetExactDist2d(archimonde) < 20.0f)
+    /* if (bot->GetExactDist2d(archimonde) < 20.0f)
     {
         return FleePosition(Position(archimonde->GetPositionX(), archimonde->GetPositionY(),
                                      archimonde->GetPositionZ()), 20.0f, minInterval);
-    }
+    } */
 
-    if (GetNearestPlayerInRadius(bot, 8.0f))
+    if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, 8.0f))
     {
         return FleePosition(Position(nearestPlayer->GetPositionX(), nearestPlayer->GetPositionY(),
                                      nearestPlayer->GetPositionZ()), 8.0f, minInterval);
@@ -841,15 +845,38 @@ bool ArchimondeDisperseRangedBotsAction::Execute(Event event)
 
 bool ArchimondeAvoidDoomfireAction::Execute(Event event)
 {
-    auto const& doomfires = GetAllDoomfires(botAI, bot);
+    std::vector<Unit*> doomfires;
+    auto const& npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
+    for (auto const& npcGuid : npcs)
+    {
+        Unit* unit = botAI->GetUnit(npcGuid);
+        if (unit && unit->GetEntry() == NPC_DOOMFIRE)
+            doomfires.push_back(unit);
+    }
+
     if (doomfires.empty())
         return false;
 
-    const float hazardRadius = 8.0f;
-    bool inDanger = false;
+    // For each doomfire, get its target position from MotionMaster
+    std::vector<DoomfireLine> hazardLines;
     for (Unit* doomfire : doomfires)
     {
-        if (bot->GetExactDist2d(doomfire) < hazardRadius)
+        Position start = doomfire->GetPosition();
+        float destX, destY, destZ;
+        if (doomfire->GetMotionMaster()->GetDestination(destX, destY, destZ))
+        {
+            Position end(destX, destY, destZ);
+            hazardLines.push_back({start, end});
+        }
+    }
+
+    // Check if bot is within 15 yards of any hazard line
+    const float hazardWidth = 15.0f;
+    bool inDanger = false;
+    for (auto const& line : hazardLines)
+    {
+        float dist = DistanceToDoomfireLine(bot->GetPosition(), line.start, line.end);
+        if (dist < hazardWidth)
         {
             inDanger = true;
             break;
@@ -859,41 +886,59 @@ bool ArchimondeAvoidDoomfireAction::Execute(Event event)
     if (!inDanger)
         return false;
 
-    const Position& archimondeCenter = ARCHIMONDE_TANK_POSITION;
-    const float maxRadius = 50.0f;
+    // Find a safe position away from all doomfire lines
+    Position safePos = FindSafePositionFromDoomfires(bot, hazardLines, hazardWidth);
 
-    Position safestPos = FindSafestNearbyPosition(doomfires, archimondeCenter, maxRadius, hazardRadius);
+    float distToSafePos = bot->GetExactDist2d(safePos.GetPositionX(), safePos.GetPositionY());
+    if (distToSafePos > 1.0f)
+    {
+        float dx = safePos.GetPositionX() - bot->GetPositionX();
+        float dy = safePos.GetPositionY() - bot->GetPositionY();
+        float moveDist = std::min(5.0f, distToSafePos);
+        float moveX = bot->GetPositionX() + (dx / distToSafePos) * moveDist;
+        float moveY = bot->GetPositionY() + (dy / distToSafePos) * moveDist;
 
-    Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
-    if (archimonde && archimonde->GetVictim() == bot)
-    {
-        return MoveTo(HYJAL_SUMMIT_MAP_ID, safestPos.GetPositionX(), safestPos.GetPositionY(),
-                      safestPos.GetPositionZ(), false, false, false, true,
-                      MovementPriority::MOVEMENT_FORCED, true, true);
+        Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
+        bool backwards = (archimonde && archimonde->GetVictim() == bot);
+
+        bot->InterruptNonMeleeSpells(true);
+        return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, safePos.GetPositionZ(), false, false, false, true,
+                      MovementPriority::MOVEMENT_FORCED, true, backwards);
     }
-    else
-    {
-        return MoveTo(HYJAL_SUMMIT_MAP_ID, safestPos.GetPositionX(), safestPos.GetPositionY(),
-                      safestPos.GetPositionZ(), false, false, false, true,
-                      MovementPriority::MOVEMENT_FORCED, true, false);
-    }
+
+    return false;
 }
 
-Position ArchimondeAvoidDoomfireAction::FindSafestNearbyPosition(
-    const std::vector<Unit*>& doomfires, const Position& archimondeCenter,
-    float maxRadius, float hazardRadius)
+float ArchimondeAvoidDoomfireAction::DistanceToDoomfireLine(
+    const Position& testPosition, const Position& lineStartPosition, const Position& lineEndPosition)
+{
+    float dx = lineEndPosition.GetPositionX() - lineStartPosition.GetPositionX();
+    float dy = lineEndPosition.GetPositionY() - lineStartPosition.GetPositionY();
+    float lengthSq = dx*dx + dy*dy;
+    if (lengthSq == 0.0f)
+        return testPosition.GetExactDist2d(lineStartPosition.GetPositionX(), lineStartPosition.GetPositionY());
+
+    float projectionFactor = ((testPosition.GetPositionX() - lineStartPosition.GetPositionX()) * dx +
+                              (testPosition.GetPositionY() - lineStartPosition.GetPositionY()) * dy) / lengthSq;
+    projectionFactor = std::max(0.0f, std::min(1.0f, projectionFactor));
+    float projX = lineStartPosition.GetPositionX() + projectionFactor * dx;
+    float projY = lineStartPosition.GetPositionY() + projectionFactor * dy;
+
+    return testPosition.GetExactDist2d(projX, projY);
+}
+
+Position ArchimondeAvoidDoomfireAction::FindSafePositionFromDoomfires(
+    Player* bot, const std::vector<DoomfireLine>& lines, float hazardWidth)
 {
     const float searchStep = M_PI / 8.0f;
     const float minDistance = 2.0f;
     const float maxDistance = 40.0f;
     const float distanceStep = 1.0f;
 
-    Position bestPos;
+    Position bestPos = bot->GetPosition();
     float minMoveDistance = std::numeric_limits<float>::max();
-    bool foundSafe = false;
 
-    for (float distance = minDistance;
-         distance <= maxDistance; distance += distanceStep)
+    for (float distance = minDistance; distance <= maxDistance; distance += distanceStep)
     {
         for (float angle = 0.0f; angle < 2 * M_PI; angle += searchStep)
         {
@@ -901,13 +946,10 @@ Position ArchimondeAvoidDoomfireAction::FindSafestNearbyPosition(
             float y = bot->GetPositionY() + distance * std::cos(angle);
             float z = bot->GetPositionZ();
 
-            if (archimondeCenter.GetExactDist2d(x, y) > maxRadius)
-                continue;
-
             bool isSafe = true;
-            for (Unit* doomfire : doomfires)
+            for (auto const& line : lines)
             {
-                if (doomfire->GetExactDist2d(x, y) < hazardRadius)
+                if (DistanceToDoomfireLine(Position(x, y, z), line.start, line.end) < hazardWidth)
                 {
                     isSafe = false;
                     break;
@@ -917,75 +959,16 @@ Position ArchimondeAvoidDoomfireAction::FindSafestNearbyPosition(
             if (!isSafe)
                 continue;
 
-            Position testPos(x, y, z);
-
-            bool pathSafe =
-                IsPathSafeFromDoomfires(bot->GetPosition(), testPos, doomfires, hazardRadius);
-            if (pathSafe || !foundSafe)
+            float moveDistance = bot->GetExactDist2d(x, y);
+            if (moveDistance < minMoveDistance)
             {
-                float moveDistance = bot->GetExactDist2d(x, y);
-
-                if (pathSafe && (!foundSafe || moveDistance < minMoveDistance))
-                {
-                    bestPos = testPos;
-                    minMoveDistance = moveDistance;
-                    foundSafe = true;
-                }
-                else if (!foundSafe && moveDistance < minMoveDistance)
-                {
-                    bestPos = testPos;
-                    minMoveDistance = moveDistance;
-                }
+                bestPos = Position(x, y, z);
+                minMoveDistance = moveDistance;
             }
         }
-
-        if (foundSafe)
-            break;
     }
 
     return bestPos;
-}
-
-bool ArchimondeAvoidDoomfireAction::IsPathSafeFromDoomfires(const Position& start,
-    const Position& end, const std::vector<Unit*>& doomfires, float hazardRadius)
-{
-    const int numChecks = 10;
-    float dx = end.GetPositionX() - start.GetPositionX();
-    float dy = end.GetPositionY() - start.GetPositionY();
-
-    for (int i = 1; i <= numChecks; ++i)
-    {
-        float ratio = static_cast<float>(i) / numChecks;
-        float checkX = start.GetPositionX() + dx * ratio;
-        float checkY = start.GetPositionY() + dy * ratio;
-
-        for (Unit* doomfire : doomfires)
-        {
-            float distToDoomfire = doomfire->GetExactDist2d(checkX, checkY);
-            if (distToDoomfire < hazardRadius)
-                return false;
-        }
-    }
-
-    return true;
-}
-
-std::vector<Unit*> ArchimondeAvoidDoomfireAction::GetAllDoomfires(
-    PlayerbotAI* botAI, Player* bot)
-{
-    std::vector<Unit*> doomfires;
-    auto const& npcs =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
-    for (auto const& npcGuid : npcs)
-    {
-        const float maxSearchRadius = 40.0f;
-        Unit* unit = botAI->GetUnit(npcGuid);
-        if (unit && unit->GetEntry() == NPC_DOOMFIRE &&
-            bot->GetExactDist2d(unit) < maxSearchRadius)
-            doomfires.push_back(unit);
-    }
-
-    return doomfires;
 }
 
 bool ArchimondeRemoveDoomfireDotAction::Execute(Event event)

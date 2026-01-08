@@ -488,7 +488,7 @@ bool IllidariCouncilDeterminingDpsAssignmentsTrigger::IsActive()
 
 bool IllidariCouncilNeedToManageDpsTimerTrigger::IsActive()
 {
-    return IsInstanceTimerManager(botAI, bot) && 
+    return IsInstanceTimerManager(botAI, bot) &&
            AI_VALUE2(Unit*, "find target", "gathios the shatterer");
 }
 
@@ -586,7 +586,7 @@ bool IllidanStormrageThisExpansionHatesMeleeTrigger::IsActive()
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    return illidan && illidan->GetHealth() > 1
+    return illidan && illidan->GetHealth() > 1;
 }
 
 bool IllidanStormrageBossTransformsIntoDemonTrigger::IsActive()
@@ -605,7 +605,7 @@ bool IllidanStormrageBossSummonsAddsTrigger::IsActive()
 
     return AI_VALUE2(Unit*, "find target", "shadow demon") ||
            AI_VALUE2(Unit*, "find target", "parasitic shadowfiend") ||
-           AI_VALUE2(Unit*, "find target", "flame of azzinoth")
+           AI_VALUE2(Unit*, "find target", "flame of azzinoth");
 }
 
 bool IllidanStormrageNeedToManageDpsTimerTrigger::IsActive()

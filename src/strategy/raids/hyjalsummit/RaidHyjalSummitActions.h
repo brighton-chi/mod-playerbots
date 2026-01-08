@@ -207,6 +207,12 @@ public:
     bool Execute(Event event) override;
 };
 
+struct DoomfireLine
+{
+    Position start;
+    Position end;
+};
+
 class ArchimondeAvoidDoomfireAction : public MovementAction
 {
 public:
@@ -215,11 +221,10 @@ public:
     bool Execute(Event event) override;
 
 private:
-    std::vector<Unit*> GetAllDoomfires(PlayerbotAI* botAI, Player* bot);
-    bool IsPathSafeFromDoomfires(const Position& start, const Position& end,
-        const std::vector<Unit*>& doomfires, float hazardRadius);
-    Position FindSafestNearbyPosition(const std::vector<Unit*>& doomfires,
-        const Position& archimondeCenter, float maxRadius, float hazardRadius);
+    float DistanceToDoomfireLine(const Position& testPosition,
+        const Position& lineStartPosition, const Position& lineEndPosition);
+    Position FindSafePositionFromDoomfires(
+        Player* bot, const std::vector<DoomfireLine>& lines, float hazardWidth);
 };
 
 class ArchimondeRemoveDoomfireDotAction : public Action

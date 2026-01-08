@@ -77,7 +77,7 @@ bool AnetheronBotIsTargetedByInfernalTrigger::IsActive()
         return true;
 
     Unit* infernal = AI_VALUE2(Unit*, "find target", "towering infernal");
-    return infernal && infernal->GetVictim() == bot);
+    return infernal && infernal->GetVictim() == bot;
 }
 
 bool AnetheronInfernalsNeedToBeKeptAwayFromRaidTrigger::IsActive()
@@ -137,7 +137,7 @@ bool KazrogalLowManaBotsNeedEscapePathTrigger::IsActive()
         return false;
 
     return bot->GetPower(POWER_MANA) > 2000 ||
-           (bot->GetPower(POWER_MANA) > 3000 && bot->HasAura(SPELL_MARK_OF_KAZROGAL))
+           (bot->GetPower(POWER_MANA) > 3000 && bot->HasAura(SPELL_MARK_OF_KAZROGAL));
 }
 
 bool KazrogalBotIsLowOnManaTrigger::IsActive()
@@ -200,7 +200,7 @@ bool AzgalorBossCastsRainOfFireTrigger::IsActive()
 
 bool AzgalorBotIsDoomedTrigger::IsActive()
 {
-    return botAI->HasAura(SPELL_DOOM));
+    return bot->HasAura(SPELL_DOOM);
 }
 
 bool AzgalorDoomguardsMustBeControlledTrigger::IsActive()
