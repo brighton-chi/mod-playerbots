@@ -153,7 +153,6 @@ bool KazrogalBotIsLowOnManaTrigger::IsActive()
     if (!kazrogal)
         return false;
 
-    // Try to see if I can keep bots in for longer unless they have mark (if not, just move away at <=3000 mana)
     return bot->GetPower(POWER_MANA) <= 2000 ||
            (bot->GetPower(POWER_MANA) <= 3000 && bot->HasAura(SPELL_MARK_OF_KAZROGAL));
 }

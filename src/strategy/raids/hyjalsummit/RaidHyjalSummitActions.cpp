@@ -68,7 +68,6 @@ bool RageWinterchillMainTankPositionBossAction::Execute(Event event)
     return false;
 }
 
-// Right now, this is just a one-time deal--no returning to positions
 bool RageWinterchillSpreadRangedInCircleAction::Execute(Event event)
 {
     Unit* winterchill = AI_VALUE2(Unit*, "find target", "rage winterchill");
@@ -111,7 +110,7 @@ bool RageWinterchillSpreadRangedInCircleAction::Execute(Event event)
         float radius = 0.0f;
         float angle = 0.0f;
 
-        const float arcSpan = 2.0f * M_PI; // 360 degrees for a full circle
+        const float arcSpan = 2.0f * M_PI;
         const float arcCenter = 0.0f;
         const float arcStart = arcCenter - arcSpan / 2.0f;
 
@@ -266,7 +265,7 @@ bool AnetheronSpreadRangedInArcAction::Execute(Event event)
         float radius = 0.0f;
         float angle = 0.0f;
 
-        const float arcSpan = 3.0f * M_PI / 2.0f; // 270 degrees
+        const float arcSpan = 3.0f * M_PI / 2.0f;
         const float arcCenter = 0.165f;
         const float arcStart = arcCenter - arcSpan / 2.0f;
 
@@ -307,25 +306,6 @@ bool AnetheronSpreadRangedInArcAction::Execute(Event event)
     }
 
     return false;
-    /* Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
-    if (!anetheron)
-        return false;
-
-    const uint32 minInterval = 1000;
-
-    if (bot->GetExactDist2d(anetheron) < 15.0f)
-    {
-        return FleePosition(Position(anetheron->GetPositionX(), anetheron->GetPositionY(),
-                                     anetheron->GetPositionZ()), 15.0f, minInterval);
-    }
-
-    if (GetNearestPlayerInRadius(bot, 12.0f))
-    {
-        return FleePosition(Position(nearestPlayer->GetPositionX(), nearestPlayer->GetPositionY(),
-                                     nearestPlayer->GetPositionZ()), 12.0f, minInterval);
-    }
-
-    return false; */
 }
 
 bool AnetheronBringInfernalToInfernalTankAction::Execute(Event event)
@@ -342,48 +322,6 @@ bool AnetheronBringInfernalToInfernalTankAction::Execute(Event event)
     return false;
 }
 
-/* bool AnetheronFirstAssistTankPickUpInfernalsAction::Execute(Event event)
-{
-    std::vector<Unit*> infernals;
-    for (auto const& guid : AI_VALUE(GuidVector, "possible targets no los"))
-    {
-        Unit* unit = botAI->GetUnit(guid);
-        if (!unit || unit->GetEntry() != NPC_TOWERING_INFERNAL)
-            continue;
-        infernals.push_back(unit);
-    }
-
-    for (Unit* infernal : infernals)
-    {
-        if (infernal->GetVictim() != bot)
-        {
-            if (bot->GetVictim() != infernal)
-                return Attack(infernal);
-            else
-            {
-                const char* taunts[] = { "taunt", "growl", "hand of reckoning", "dark command" };
-                for (const char* spellName : taunts)
-                {
-                    if (botAI->CanCastSpell(spellName, infernal))
-                        return botAI->CastSpell(spellName, infernal);
-                }
-            }
-        }
-        else
-        {
-            const Position& position = ANETHERON_INFERNAL_TANK_POSITION;
-            if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 10.0f)
-            {
-                return MoveTo(HYJAL_SUMMIT_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-                              position.GetPositionZ(), false, false, false, true,
-                              MovementPriority::MOVEMENT_FORCED, true, false);
-            }
-        }
-    }
-
-    return false;
-} */
-// modified version: have to pick up all infernals before moving to position
 bool AnetheronFirstAssistTankPickUpInfernalsAction::Execute(Event event)
 {
     std::vector<Unit*> infernals;
@@ -395,7 +333,6 @@ bool AnetheronFirstAssistTankPickUpInfernalsAction::Execute(Event event)
         infernals.push_back(unit);
     }
 
-    // First, handle any infernal not attacking the tank
     for (Unit* infernal : infernals)
     {
         if (infernal->GetVictim() != bot)
@@ -411,12 +348,10 @@ bool AnetheronFirstAssistTankPickUpInfernalsAction::Execute(Event event)
                         return botAI->CastSpell(spellName, infernal);
                 }
             }
-            // If any infernal is not on the tank, do not proceed to movement
             return false;
         }
     }
 
-    // Only if all infernals are attacking the tank, check position and move if needed
     if (!infernals.empty())
     {
         const Position& position = ANETHERON_INFERNAL_TANK_POSITION;
@@ -875,7 +810,7 @@ bool ArchimondeDisperseRangedBotsAction::Execute(Event event)
         return FleePosition(Position(archimonde->GetPositionX(), archimonde->GetPositionY(),
                                      archimonde->GetPositionZ()), 20.0f, minInterval);
     } */
-
+    // Try closer?
     if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, 8.0f))
     {
         return FleePosition(Position(nearestPlayer->GetPositionX(), nearestPlayer->GetPositionY(),
@@ -899,7 +834,6 @@ bool ArchimondeAvoidDoomfireAction::Execute(Event event)
     if (doomfires.empty())
         return false;
 
-    // For each doomfire, get its target position from MotionMaster
     std::vector<DoomfireLine> hazardLines;
     for (Unit* doomfire : doomfires)
     {
@@ -912,7 +846,7 @@ bool ArchimondeAvoidDoomfireAction::Execute(Event event)
         }
     }
 
-    // Check if bot is within 15 yards of any hazard line
+    // Is 15 farther than needed?
     const float hazardWidth = 15.0f;
     bool inDanger = false;
     for (auto const& line : hazardLines)
@@ -928,7 +862,6 @@ bool ArchimondeAvoidDoomfireAction::Execute(Event event)
     if (!inDanger)
         return false;
 
-    // Find a safe position away from all doomfire lines
     Position safePos = FindSafePositionFromDoomfires(bot, hazardLines, hazardWidth);
 
     float distToSafePos = bot->GetExactDist2d(safePos.GetPositionX(), safePos.GetPositionY());
