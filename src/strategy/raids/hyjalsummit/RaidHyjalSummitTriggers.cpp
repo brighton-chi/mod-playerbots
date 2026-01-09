@@ -90,7 +90,7 @@ bool AnetheronInfernalsNeedToBeKeptAwayFromRaidTrigger::IsActive()
 
 bool AnetheronInfernalsDespawnWhenBossDiesTrigger::IsActive()
 {
-    if (botAI->IsMainTank(bot))
+    if (botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0, true))
         return false;
 
     return AI_VALUE2(Unit*, "find target", "anetheron");

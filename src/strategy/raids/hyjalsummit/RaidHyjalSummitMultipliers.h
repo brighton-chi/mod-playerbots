@@ -47,14 +47,6 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class AnetheronInfernalTankMaintainPositionMultiplier : public Multiplier
-{
-public:
-    AnetheronInfernalTankMaintainPositionMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "anetheron infernal tank maintain position multiplier") {}
-    virtual float GetValue(Action* action);
-};
-
 class AnetheronControlMisdirectionMultiplier : public Multiplier
 {
 public:

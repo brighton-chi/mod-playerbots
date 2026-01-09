@@ -99,7 +99,6 @@ void RaidHyjalSummitStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     // Anetheron
     multipliers.push_back(new AnetheronDisableTankActionsMultiplier(botAI));
     multipliers.push_back(new AnetheronDisableCombatFormationMoveMultiplier(botAI));
-    multipliers.push_back(new AnetheronInfernalTankMaintainPositionMultiplier(botAI));
     multipliers.push_back(new AnetheronControlMisdirectionMultiplier(botAI));
 
     // Kaz'rogal

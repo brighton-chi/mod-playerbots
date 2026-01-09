@@ -97,12 +97,10 @@ float AnetheronDisableTankActionsMultiplier::GetValue(Action* action)
         if (dynamic_cast<AvoidAoeAction*>(action))
             return 0.0f;
 
-        if (bot->GetVictim() != nullptr && dynamic_cast<TankAssistAction*>(action))
-            return 0.0f;
-
-        if (botAI->IsMainTank(bot))
+        if (!botAI->IsAssistTankOfIndex(bot, 0, true))
         {
-            if (dynamic_cast<CastTauntAction*>(action) ||
+            if (bot->GetVictim() != nullptr && dynamic_cast<TankAssistAction*>(action) ||
+                dynamic_cast<CastTauntAction*>(action) ||
                 dynamic_cast<CastGrowlAction*>(action) ||
                 dynamic_cast<CastHandOfReckoningAction*>(action) ||
                 dynamic_cast<CastDarkCommandAction*>(action))
@@ -119,25 +117,6 @@ float AnetheronDisableCombatFormationMoveMultiplier::GetValue(Action* action)
     {
         if (dynamic_cast<CombatFormationMoveAction*>(action) &&
             !dynamic_cast<SetBehindTargetAction*>(action))
-            return 0.0f;
-    }
-
-    return 1.0f;
-}
-
-float AnetheronInfernalTankMaintainPositionMultiplier::GetValue(Action* action)
-{
-    if (!botAI->IsAssistTankOfIndex(bot, 0, true))
-        return 1.0f;
-
-    if (!AI_VALUE2(Unit*, "find target", "anetheron"))
-        return 1.0f;
-
-    if (!AI_VALUE2(Unit*, "find target", "towering infernal"))
-    {
-        if (dynamic_cast<ReachTargetAction*>(action) ||
-            dynamic_cast<TankAssistAction*>(action) ||
-            dynamic_cast<CastReachTargetSpellAction*>(action))
             return 0.0f;
     }
 

@@ -342,25 +342,13 @@ bool AnetheronBringInfernalToInfernalTankAction::Execute(Event event)
     return false;
 }
 
-bool AnetheronFirstAssistTankPickUpInfernalsAction::Execute(Event event)
+/* bool AnetheronFirstAssistTankPickUpInfernalsAction::Execute(Event event)
 {
-    const Position& position = ANETHERON_INFERNAL_TANK_POSITION;
-    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 10.0f)
-    {
-        return MoveTo(HYJAL_SUMMIT_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-                      position.GetPositionZ(), false, false, false, true,
-                      MovementPriority::MOVEMENT_FORCED, true, false);
-    }
-
     std::vector<Unit*> infernals;
     for (auto const& guid : AI_VALUE(GuidVector, "possible targets no los"))
     {
         Unit* unit = botAI->GetUnit(guid);
-        if (!unit || !unit->IsAlive())
-            continue;
-        if (unit->GetEntry() != NPC_TOWERING_INFERNAL)
-            continue;
-        if (unit->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 15.0f)
+        if (!unit || unit->GetEntry() != NPC_TOWERING_INFERNAL)
             continue;
         infernals.push_back(unit);
     }
@@ -369,7 +357,7 @@ bool AnetheronFirstAssistTankPickUpInfernalsAction::Execute(Event event)
     {
         if (infernal->GetVictim() != bot)
         {
-            if (bot->GetTarget() != infernal->GetGUID())
+            if (bot->GetVictim() != infernal)
                 return Attack(infernal);
             else
             {
@@ -380,6 +368,63 @@ bool AnetheronFirstAssistTankPickUpInfernalsAction::Execute(Event event)
                         return botAI->CastSpell(spellName, infernal);
                 }
             }
+        }
+        else
+        {
+            const Position& position = ANETHERON_INFERNAL_TANK_POSITION;
+            if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 10.0f)
+            {
+                return MoveTo(HYJAL_SUMMIT_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                              position.GetPositionZ(), false, false, false, true,
+                              MovementPriority::MOVEMENT_FORCED, true, false);
+            }
+        }
+    }
+
+    return false;
+} */
+// modified version: have to pick up all infernals before moving to position
+bool AnetheronFirstAssistTankPickUpInfernalsAction::Execute(Event event)
+{
+    std::vector<Unit*> infernals;
+    for (auto const& guid : AI_VALUE(GuidVector, "possible targets no los"))
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        if (!unit || unit->GetEntry() != NPC_TOWERING_INFERNAL)
+            continue;
+        infernals.push_back(unit);
+    }
+
+    // First, handle any infernal not attacking the tank
+    for (Unit* infernal : infernals)
+    {
+        if (infernal->GetVictim() != bot)
+        {
+            if (bot->GetVictim() != infernal)
+                return Attack(infernal);
+            else
+            {
+                const char* taunts[] = { "taunt", "growl", "hand of reckoning", "dark command" };
+                for (const char* spellName : taunts)
+                {
+                    if (botAI->CanCastSpell(spellName, infernal))
+                        return botAI->CastSpell(spellName, infernal);
+                }
+            }
+            // If any infernal is not on the tank, do not proceed to movement
+            return false;
+        }
+    }
+
+    // Only if all infernals are attacking the tank, check position and move if needed
+    if (!infernals.empty())
+    {
+        const Position& position = ANETHERON_INFERNAL_TANK_POSITION;
+        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 10.0f)
+        {
+            return MoveTo(HYJAL_SUMMIT_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                          position.GetPositionZ(), false, false, false, true,
+                          MovementPriority::MOVEMENT_FORCED, true, false);
         }
     }
 
