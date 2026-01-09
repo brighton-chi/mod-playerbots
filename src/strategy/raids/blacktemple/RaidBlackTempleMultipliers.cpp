@@ -24,10 +24,7 @@ float HighWarlordNajentusDisableCombatFormationMoveMultiplier::GetValue(Action* 
     Unit* najentus = AI_VALUE2(Unit*, "find target", "high warlord naj'entus");
     if (najentus)
     {
-        // If I make the position leeway large enough, will the tank be able to rotate the boss?
-        // If not, remove carveout for tank face
         if (dynamic_cast<CombatFormationMoveAction*>(action) &&
-            !dynamic_cast<TankFaceAction*>(action) &&
             !dynamic_cast<SetBehindTargetAction*>(action))
             return 0.0f;
     }
@@ -59,10 +56,7 @@ float TeronGorefiendDisableMovementMultiplier::GetValue(Action* action)
 {
     if (AI_VALUE2(Unit*, "find target", "teron gorefiend"))
     {
-        // If I make the position leeway large enough, will the tank be able to rotate the boss?
-        // If not, remove carveout for tank face
         if (dynamic_cast<CombatFormationMoveAction*>(action) &&
-            !dynamic_cast<TankFaceAction*>(action) &&
             !dynamic_cast<SetBehindTargetAction*>(action))
             return 0.0f;
 
@@ -409,7 +403,6 @@ float IllidariCouncilWaitForDpsMultiplier::GetValue(Action* action)
 
 // Illidan Stormrage <The Betrayer>
 
-// Save Bloodlust/Heroism for Phase 3 (or later)
 float IllidanStormrageDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
 {
     if (bot->getClass() != CLASS_SHAMAN)

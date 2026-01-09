@@ -53,7 +53,7 @@ bool HighWarlordNajentusMainTankPositionBossAction::Execute(Event event)
     {
         const Position& position = NAJENTUS_TANK_POSITION;
         float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
-        if (distToPosition > 15.0f) // Test big distance to see if tank face works
+        if (distToPosition > 3.0f)
         {
             float dX = position.GetPositionX() - bot->GetPositionX();
             float dY = position.GetPositionY() - bot->GetPositionY();
@@ -480,7 +480,7 @@ bool TeronGorefiendMainTankPositionBossAction::Execute(Event event)
     {
         const Position& position = GOREFIEND_TANK_POSITION;
         float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
-        if (distToPosition > 10.0f) // Test big distance to see if tank face works
+        if (distToPosition > 3.0f)
         {
             float dX = position.GetPositionX() - bot->GetPositionX();
             float dY = position.GetPositionY() - bot->GetPositionY();
@@ -496,6 +496,7 @@ bool TeronGorefiendMainTankPositionBossAction::Execute(Event event)
     return false;
 }
 
+// Assume positions in arc at the edge of the balcony (farthest from Constructs)
 bool TeronGorefiendPositionRangedOnBalconyAction::Execute(Event event)
 {
     if (!botAI->IsRanged(bot))
@@ -1288,7 +1289,7 @@ bool IllidariCouncilMainTankPositionGathiosAction::Execute(Event event)
     const float maxDistance = 2.0f;
     float distanceToTarget = bot->GetExactDist2d(position);
 
-    if (gathios->GetVictim() == bot && bot->IsWithinMeleeRange(gathios))
+    if (gathios->GetVictim() == bot)
     {
         if (distanceToTarget <= maxDistance && hasDangerousAura)
         {
@@ -1334,7 +1335,7 @@ bool IllidariCouncilFirstAssistTankPositionMalandeAction::Execute(Event event)
     if (bot->GetTarget() != malande->GetGUID())
         return Attack(malande);
 
-    if (malande->GetVictim() == bot && bot->IsWithinMeleeRange(malande))
+    if (malande->GetVictim() == bot)
     {
         const Position& position = MALANDE_TANK_POSITION;
         float distToPosition =
@@ -1368,7 +1369,7 @@ bool IllidariCouncilSecondAssistTankPositionDarkshadowAction::Execute(Event even
     if (bot->GetTarget() != darkshadow->GetGUID())
         return Attack(darkshadow);
 
-    if (darkshadow->GetVictim() == bot && bot->IsWithinMeleeRange(darkshadow))
+    if (darkshadow->GetVictim() == bot)
     {
         const Position& position = DARKSHADOW_TANK_POSITION;
         float distToPosition =
@@ -1462,7 +1463,7 @@ bool IllidariCouncilAssignDpsTargetsAction::Execute(Event event)
 bool IllidariCouncilManageDpsTimerAction::Execute(Event event)
 {
     Unit* gathios = AI_VALUE2(Unit*, "find target", "gathios the shatterer");
-    if (gathios && gathios->GetHealth() == gathios->GetMaxHealth())
+    if (gathios && gathios->GetHealth() > 99.8f)
     {
         councilDpsWaitTimer.insert_or_assign(
             gathios->GetMap()->GetInstanceId(), std::time(nullptr));

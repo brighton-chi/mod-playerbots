@@ -433,7 +433,7 @@ bool IllidariCouncilGathiosEngagedByMainTankTrigger::IsActive()
 
 bool IllidariCouncilGathiosCastingJudgementOfCommandTrigger::IsActive()
 {
-    if (!botAI->IsMainTank(bot))
+    if (bot->getClass() != CLASS_WARRIOR || !botAI->IsMainTank(bot))
         return false;
 
     Unit* gathios = AI_VALUE2(Unit*, "find target", "gathios the shatterer");

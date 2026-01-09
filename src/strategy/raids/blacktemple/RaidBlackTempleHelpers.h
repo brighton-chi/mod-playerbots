@@ -42,35 +42,35 @@ namespace BlackTempleHelpers
         SPELL_RUNE_SHIELD               = 41431,
 
         // Mother Shahraz
-        SPELL_FATAL_ATTRACTION          = 41001,
+        SPELL_FATAL_ATTRACTION              = 41001,
 
         // Gathios the Shatterer
-        SPELL_BLESSING_OF_PROTECTION        = 41450,
-        SPELL_BLESSING_OF_SPELL_WARDING     = 41451,
-        SPELL_JUDGEMENT                     = 41467,
-        SPELL_SEAL_OF_COMMAND               = 41469,
+        SPELL_BLESSING_OF_PROTECTION    = 41450,
+        SPELL_BLESSING_OF_SPELL_WARDING = 41451,
+        SPELL_JUDGEMENT                 = 41467,
+        SPELL_SEAL_OF_COMMAND           = 41469,
         SPELL_CONSECRATION              = 41541,
 
         // Veras Darkshadow
-        SPELL_VANISH                        = 41476,
+        SPELL_VANISH                    = 41476,
 
         // High Nethermancer Zerevor
-        SPELL_DAMPEN_MAGIC            = 41478,
-        SPELL_FLAMESTRIKE                   = 41481,
-        SPELL_BLIZZARD                      = 41482,
+        SPELL_DAMPEN_MAGIC              = 41478,
+        SPELL_FLAMESTRIKE               = 41481,
+        SPELL_BLIZZARD                  = 41482,
 
         // Illidan Stormrage <The Betrayer>
         SPELL_DEMON_FIRE = 40030,
         SPELL_DEMON_FORM = 40506,
         SPELL_DARK_BARRAGE = 40585,
-        SPELL_SHADOW_PRISON                 = 40647,
+        SPELL_SHADOW_PRISON             = 40647,
         SPELL_PARASITIC_SHADOWFIEND = 41917,
 
         // Hunter
-        SPELL_MISDIRECTION             = 35079,
+        SPELL_MISDIRECTION              = 35079,
 
         // Priest
-        // SPELL_FEAR_WARD                 =  6346,
+        // SPELL_FEAR_WARD              =  6346,
     };
 
     enum BlackTempleNPCs
@@ -226,7 +226,7 @@ namespace BlackTempleHelpers
     {
         Position start;
         Position end;
-        float width; // Half-width of the danger area (e.g., 6.0f for 12 yards total)
+        float width;
     };
     EyeBlastDangerArea GetEyeBlastDangerArea(PlayerbotAI* botAI, Unit* illidan);
     bool IsPositionInEyeBlastDangerArea(const Position& pos, const EyeBlastDangerArea& area);

@@ -208,12 +208,9 @@ namespace BlackTempleHelpers
     std::unordered_map<uint32, time_t> reliquaryDpsWaitTimer;
 
     // Mother Shahraz
-    // const Position SHAHRAZ_TANK_POSITION = { 925.683f, 179.920f, 192.833f, 0.102f };
-    const Position SHAHRAZ_TANK_POSITION = { 926.761f, 179.666f, 192.831f, 6.215f }; // UNTESTED
+    const Position SHAHRAZ_TANK_POSITION = { 926.761f, 179.666f, 192.831f, 6.215f };
     const Position SHAHRAZ_TRANSITION_POSITION = { 941.557f, 182.719f, 192.418f, 4.943f };
-    // const Position SHAHRAZ_MELEE_POSITION = { 930.534f, 179.791f, 192.827f, 3.384f };
-    // const Position SHAHRAZ_RANGED_POSITION = { 957.749f, 176.927f, 192.822f, 3.079f };
-    const Position SHAHRAZ_RANGED_POSITION = { 958.632f, 180.111f, 192.826f, 3.266f }; // UNTESTED
+    const Position SHAHRAZ_RANGED_POSITION = { 958.632f, 180.111f, 192.826f, 3.266f };
     std::unordered_map<ObjectGuid, uint8> shahrazTankStep;
 
     // Illidari Council
@@ -221,7 +218,8 @@ namespace BlackTempleHelpers
     const Position GATHIOS_TANK_POSITION_2 = { 636.238f, 283.719f, 271.629f, 0.357f };
     const Position GATHIOS_TANK_POSITION_3 = { 655.571f, 261.377f, 271.687f, 2.141f };
     const Position GATHIOS_TANK_POSITION_4 = { 673.789f, 274.139f, 271.689f, 3.411f };
-    const Position ZEREVOR_TANK_POSITION = { 680.924f, 351.857f, 271.701f, 5.051f };
+    // const Position ZEREVOR_TANK_POSITION = { 680.924f, 351.857f, 271.701f, 5.051f };
+    const Position ZEREVOR_TANK_POSITION = { 667.204f, 345.466f, 271.690f, 5.896f };
     const Position MALANDE_TANK_POSITION = { 690.101f, 305.166f, 277.443f, 0.000f };
     const Position DARKSHADOW_TANK_POSITION = { 644.156f, 338.085f, 271.688f, 5.669f };
     std::unordered_map<uint32, time_t> councilDpsWaitTimer;
