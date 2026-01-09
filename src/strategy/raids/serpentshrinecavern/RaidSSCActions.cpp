@@ -353,7 +353,7 @@ bool HydrossTheUnstableMisdirectBossToTankAction::TryMisdirectToNatureTank(
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member && member->IsAlive() && botAI->IsAssistTankOfIndex(member, 0))
+        if (member && botAI->IsAssistTankOfIndex(member, 0, true))
         {
             natureTank = member;
             break;
@@ -587,9 +587,9 @@ bool TheLurkerBelowTanksPickUpAddsAction::Execute(Event event)
 
             if (!mainTank && botAI->IsMainTank(member))
                 mainTank = member;
-            else if (!firstAssistTank && botAI->IsAssistTankOfIndex(member, 0))
+            else if (!firstAssistTank && botAI->IsAssistTankOfIndex(member, 0, true))
                 firstAssistTank = member;
-            else if (!secondAssistTank && botAI->IsAssistTankOfIndex(member, 1))
+            else if (!secondAssistTank && botAI->IsAssistTankOfIndex(member, 1, true))
                 secondAssistTank = member;
         }
     }
@@ -1120,7 +1120,7 @@ bool FathomLordKarathressMisdirectBossesToTanksAction::Execute(Event event)
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (member && member->IsAlive() && botAI->IsAssistTankOfIndex(member, 0))
+            if (member && member->IsAlive() && botAI->IsAssistTankOfIndex(member, 0, false))
             {
                 tankTarget = member;
                 break;
@@ -1133,7 +1133,7 @@ bool FathomLordKarathressMisdirectBossesToTanksAction::Execute(Event event)
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (member && member->IsAlive() && botAI->IsAssistTankOfIndex(member, 2))
+            if (member && member->IsAlive() && botAI->IsAssistTankOfIndex(member, 2, false))
             {
                 tankTarget = member;
                 break;
@@ -1146,7 +1146,7 @@ bool FathomLordKarathressMisdirectBossesToTanksAction::Execute(Event event)
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (member && member->IsAlive() && botAI->IsAssistTankOfIndex(member, 1))
+            if (member && member->IsAlive() && botAI->IsAssistTankOfIndex(member, 1, false))
             {
                 tankTarget = member;
                 break;
@@ -1166,7 +1166,7 @@ bool FathomLordKarathressMisdirectBossesToTanksAction::Execute(Event event)
     return false;
 }
 
-// Kill order is non-standard because bots handle Cyclones poorly and need more time 
+// Kill order is non-standard because bots handle Cyclones poorly and need more time
 // to get her down than real players (standard is ranged DPS help with Sharkkis first)
 bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event event)
 {
@@ -1806,7 +1806,7 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event event)
             targets = { enchanted, elite };
         else if (botAI->IsTank(bot))
         {
-            if (botAI->HasCheat(BotCheatMask::raid) && botAI->IsAssistTankOfIndex(bot, 0))
+            if (botAI->HasCheat(BotCheatMask::raid) && botAI->IsAssistTankOfIndex(bot, 0, true))
                 targets = { strider, elite, enchanted };
             else
                 targets = { elite, strider, enchanted };
@@ -1825,7 +1825,7 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event event)
                 SetRtiTarget(botAI, "diamond", vashj);
                 targets = { vashj };
             }
-            else if (botAI->IsAssistTankOfIndex(bot, 0))
+            else if (botAI->IsAssistTankOfIndex(bot, 0, true))
             {
                 if (botAI->HasCheat(BotCheatMask::raid))
                     targets = { strider, elite, enchanted, vashj };
@@ -1923,7 +1923,7 @@ bool LadyVashjMisdirectStriderToFirstAssistTankAction::Execute(Event event)
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (member && member->IsAlive() && botAI->IsAssistTankOfIndex(member, 0))
+            if (member && botAI->IsAssistTankOfIndex(member, 0, true))
             {
                 firstAssistTank = member;
                 break;
@@ -1961,7 +1961,8 @@ bool LadyVashjTankAttackAndMoveAwayStriderAction::Execute(Event event)
         if (!bot->HasAura(SPELL_FEAR_WARD))
             bot->AddAura(SPELL_FEAR_WARD, bot);
 
-        if (botAI->IsAssistTankOfIndex(bot, 0) && bot->GetTarget() != strider->GetGUID())
+        if (botAI->IsAssistTankOfIndex(bot, 0, true) &&
+            bot->GetTarget() != strider->GetGUID())
             return Attack(strider);
 
         if (strider->GetVictim() == bot)

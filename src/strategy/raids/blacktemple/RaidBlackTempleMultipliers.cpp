@@ -380,8 +380,8 @@ float IllidariCouncilManageInterruptsMultiplier::GetValue(Action* action)
 float IllidariCouncilWaitForDpsMultiplier::GetValue(Action* action)
 {
     if (botAI->IsMainTank(bot) ||
-        botAI->IsAssistTankOfIndex(bot, 0) ||
-        botAI->IsAssistTankOfIndex(bot, 1) ||
+        botAI->IsAssistTankOfIndex(bot, 0, false) ||
+        botAI->IsAssistTankOfIndex(bot, 1, false) ||
         GetZerevorMageTank(botAI, bot) == bot)
         return 1.0f;
 
@@ -479,8 +479,8 @@ float IllidanStormrageDisableTankAssistMultiplier::GetValue(Action* action)
 
 float IllidanStormrageStayWithinGrateMultiplier::GetValue(Action* action)
 {
-    if (botAI->IsAssistTankOfIndex(bot, 0) ||
-        botAI->IsAssistTankOfIndex(bot, 1))
+    if (botAI->IsAssistTankOfIndex(bot, 0, true) ||
+        botAI->IsAssistTankOfIndex(bot, 1, true))
         return 1.0f;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -503,16 +503,27 @@ float IllidanStormrageStayWithinGrateMultiplier::GetValue(Action* action)
 
 float IllidanStormrageAssistTanksPrioritizeFlamesMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsAssistTankOfIndex(bot, 0) &&
-        !botAI->IsAssistTankOfIndex(bot, 1))
+    if (!botAI->IsAssistTankOfIndex(bot, 0, true) &&
+        !botAI->IsAssistTankOfIndex(bot, 1, true))
         return 1.0f;
 
-    if (AI_VALUE2(Unit*, "find target", "flame of azzinoth"))
+    Unit* flame = AI_VALUE2(Unit*, "find target", "flame of azzinoth");
+    if (flame)
     {
         if (dynamic_cast<MovementAction*>(action) &&
             !dynamic_cast<TankFaceAction*>(action) &&
             !dynamic_cast<IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction*>(action))
             return 0.0f;
+    }
+    else
+    {
+        Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+        if (illidan && GetIllidanPhase(illidan) == 2 && !flame)
+        {
+            if (dynamic_cast<ReachTargetAction*>(action) ||
+                dynamic_cast<CastReachTargetSpellAction*>(action))
+                return 0.0f;
+        }
     }
 
     return 1.0f;
@@ -546,8 +557,8 @@ float IllidanStormrageWaitForDpsMultiplier::GetValue(Action* action)
     }
     else if (AI_VALUE2(Unit*, "find target", "flame of azzinoth"))
     {
-        if (botAI->IsAssistTankOfIndex(bot, 0) ||
-            botAI->IsAssistTankOfIndex(bot, 1))
+        if (botAI->IsAssistTankOfIndex(bot, 0, true) ||
+            botAI->IsAssistTankOfIndex(bot, 1, true))
             return 1.0f;
 
         const uint8 phase2DpsWaitSeconds = 10;

@@ -210,9 +210,9 @@ bool SupremusMisdirectBossToMainTankAction::Execute(Event event)
 
         if (!mainTank && botAI->IsMainTank(member))
             mainTank = member;
-        else if (!firstAssistTank && botAI->IsAssistTankOfIndex(member, 0))
+        else if (!firstAssistTank && botAI->IsAssistTankOfIndex(member, 0, true))
             firstAssistTank = member;
-        else if (!secondAssistTank && botAI->IsAssistTankOfIndex(member, 1))
+        else if (!secondAssistTank && botAI->IsAssistTankOfIndex(member, 1, true))
             secondAssistTank = member;
     }
 
@@ -1201,7 +1201,7 @@ bool IllidariCouncilMisdirectBossesToTanksAction::Execute(Event event)
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (member && member->IsAlive() && GET_PLAYERBOT_AI(member)->IsAssistTankOfIndex(member, 0))
+            if (member && GET_PLAYERBOT_AI(member)->IsAssistTankOfIndex(member, 0, false))
             {
                 tankTarget = member;
                 break;
@@ -1214,7 +1214,7 @@ bool IllidariCouncilMisdirectBossesToTanksAction::Execute(Event event)
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (member && member->IsAlive() && GET_PLAYERBOT_AI(member)->IsMainTank(member))
+            if (member && GET_PLAYERBOT_AI(member)->IsMainTank(member))
             {
                 tankTarget = member;
                 break;
@@ -1227,7 +1227,7 @@ bool IllidariCouncilMisdirectBossesToTanksAction::Execute(Event event)
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (member && member->IsAlive() && GET_PLAYERBOT_AI(member)->IsAssistTankOfIndex(member, 1))
+            if (member && GET_PLAYERBOT_AI(member)->IsAssistTankOfIndex(member, 1, false))
             {
                 tankTarget = member;
                 break;
@@ -2192,8 +2192,8 @@ bool IllidanStormrageBotsSpreadAboveGrateAction::Execute(Event event)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member && !botAI->IsAssistTankOfIndex(member, 0) &&
-            !botAI->IsAssistTankOfIndex(member, 1))
+        if (member && !botAI->IsAssistTankOfIndex(member, 0, true) &&
+            !botAI->IsAssistTankOfIndex(member, 1, true))
             bots.push_back(member);
     }
 

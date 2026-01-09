@@ -451,13 +451,13 @@ bool IllidariCouncilGathiosCastingJudgementOfCommandTrigger::IsActive()
 
 bool IllidariCouncilMalandeEngagedByFirstAssistTankTrigger::IsActive()
 {
-    return botAI->IsAssistTankOfIndex(bot, 0) &&
+    return botAI->IsAssistTankOfIndex(bot, 0, false) &&
            AI_VALUE2(Unit*, "find target", "lady malande");
 }
 
 bool IllidariCouncilDarkshadowEngagedBySecondAssistTankTrigger::IsActive()
 {
-    if (!botAI->IsAssistTankOfIndex(bot, 1))
+    if (!botAI->IsAssistTankOfIndex(bot, 1, false))
         return false;
 
     Unit* darkshadow = AI_VALUE2(Unit*, "find target", "veras darkshadow");
@@ -473,12 +473,12 @@ bool IllidariCouncilZerevorEngagedByMageTankTrigger::IsActive()
 bool IllidariCouncilDeterminingDpsAssignmentsTrigger::IsActive()
 {
     if (botAI->IsHeal(bot) || botAI->IsMainTank(bot) ||
-        botAI->IsAssistTankOfIndex(bot, 0) ||
+        botAI->IsAssistTankOfIndex(bot, 0, false) ||
         GetZerevorMageTank(botAI, bot) == bot)
         return false;
 
     Unit* darkshadow = AI_VALUE2(Unit*, "find target", "veras darkshadow");
-    if (botAI->IsAssistTankOfIndex(bot, 1) &&
+    if (botAI->IsAssistTankOfIndex(bot, 1, false) &&
         darkshadow && !darkshadow->HasAura(SPELL_VANISH))
         return false;
 

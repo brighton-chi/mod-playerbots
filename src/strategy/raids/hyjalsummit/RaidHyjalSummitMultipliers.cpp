@@ -97,10 +97,12 @@ float AnetheronDisableTankActionsMultiplier::GetValue(Action* action)
         if (dynamic_cast<AvoidAoeAction*>(action))
             return 0.0f;
 
-        if (!botAI->IsAssistTankOfIndex(bot, 0, true))
+        if (bot->GetVictim() != nullptr && dynamic_cast<TankAssistAction*>(action))
+            return 0.0f;
+
+        if (botAI->IsMainTank(bot))
         {
-            if (bot->GetVictim() != nullptr && dynamic_cast<TankAssistAction*>(action) ||
-                dynamic_cast<CastTauntAction*>(action) ||
+            if (dynamic_cast<CastTauntAction*>(action) ||
                 dynamic_cast<CastGrowlAction*>(action) ||
                 dynamic_cast<CastHandOfReckoningAction*>(action) ||
                 dynamic_cast<CastDarkCommandAction*>(action))
@@ -223,7 +225,7 @@ float AzgalorTanksMaintainPositionMultiplier::GetValue(Action* action)
             return 0.0f;
     }
 
-    if (AI_VALUE2(Unit*, "find target", "lesser doomguard") || 
+    if (AI_VALUE2(Unit*, "find target", "lesser doomguard") ||
         AnyGroupMemberHasDoom(bot))
     {
         if (botAI->IsAssistTankOfIndex(bot, 0, true))

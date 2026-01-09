@@ -683,9 +683,6 @@ bool AzgalorMoveToDoomguardTankAction::Execute(Event event)
 
 bool AzgalorFirstAssistTankPositionDoomguardAction::Execute(Event event)
 {
-    if (!botAI->IsAssistTankOfIndex(bot, 0, true))
-        return false;
-
     const Position& position = AZGALOR_DOOMGUARD_TANK_POSITION;
     float distToPosition =
         bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());

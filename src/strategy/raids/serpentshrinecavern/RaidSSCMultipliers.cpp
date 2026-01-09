@@ -39,7 +39,7 @@ float UnderbogColossusEscapeToxicPoolMultiplier::GetValue(Action* action)
 
 float HydrossTheUnstableDisableTankActionsMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsMainTank(bot) && !botAI->IsAssistTankOfIndex(bot, 0))
+    if (!botAI->IsMainTank(bot) && !botAI->IsAssistTankOfIndex(bot, 0, true))
         return 1.0f;
 
     Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
@@ -56,7 +56,7 @@ float HydrossTheUnstableDisableTankActionsMultiplier::GetValue(Action* action)
          !dynamic_cast<HydrossTheUnstablePositionFrostTankAction*>(action)))
     {
         if ((botAI->IsMainTank(bot) && hydross->HasAura(SPELL_CORRUPTION)) ||
-            (botAI->IsAssistTankOfIndex(bot, 0) && !hydross->HasAura(SPELL_CORRUPTION)))
+            (botAI->IsAssistTankOfIndex(bot, 0, true) && !hydross->HasAura(SPELL_CORRUPTION)))
             return 0.0f;
     }
 
@@ -71,7 +71,7 @@ float HydrossTheUnstableWaitForDpsMultiplier::GetValue(Action* action)
 
     Unit* waterElemental = AI_VALUE2(Unit*, "find target", "pure spawn of hydross");
     Unit* natureElemental = AI_VALUE2(Unit*, "find target", "tainted spawn of hydross");
-    if (botAI->IsAssistTank(bot) && !botAI->IsAssistTankOfIndex(bot, 0) &&
+    if (botAI->IsAssistTank(bot) && !botAI->IsAssistTankOfIndex(bot, 0, true) &&
         (waterElemental || natureElemental))
         return 1.0f;
 
@@ -102,7 +102,7 @@ float HydrossTheUnstableWaitForDpsMultiplier::GetValue(Action* action)
         }
     }
 
-    if (hydross->HasAura(SPELL_CORRUPTION) && !botAI->IsAssistTankOfIndex(bot, 0))
+    if (hydross->HasAura(SPELL_CORRUPTION) && !botAI->IsAssistTankOfIndex(bot, 0, true))
     {
         auto itDps = hydrossNatureDpsWaitTimer.find(instanceId);
         auto itPhase = hydrossChangeToNaturePhaseTimer.find(instanceId);
