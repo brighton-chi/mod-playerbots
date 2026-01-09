@@ -564,7 +564,7 @@ bool KazrogalSpreadRangedInArcAction::Execute(Event event)
             std::distance(rangedMembers.begin(), findIt) : 0;
 
         const float arcSpan = 2.0f * M_PI / 4.0f; // 90 degrees
-        const float arcCenter = 4.750f;
+        const float arcCenter = /* 4.75f; */ 4.5f;
         const float arcStart = arcCenter - arcSpan / 2.0f;
 
         const float radius = 25.0f;
