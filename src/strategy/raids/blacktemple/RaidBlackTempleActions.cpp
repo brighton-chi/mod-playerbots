@@ -1830,6 +1830,8 @@ bool IllidanStormrageIsolateBotWithParasiteAction::Execute(Event event)
     {
         if (bot->HasAura(SPELL_PARASITIC_SHADOWFIEND))
             bot->RemoveAura(SPELL_PARASITIC_SHADOWFIEND);
+
+        return false;
     }
 
     if (botAI->IsMainTank(bot))
@@ -2473,14 +2475,20 @@ bool IllidanStormrageManageDpsTimerAction::Execute(Event event)
                     unit->Kill(bot, unit);
             }
         }
-        else if (GetIllidanPhase(illidan) == 0 || GetIllidanPhase(illidan) == 3)
+        else
         {
-            auto const& npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
-            for (auto const& guid : npcs)
+            Unit* flame = AI_VALUE2(Unit*, "find target", "flame of azzinoth");
+            if (GetIllidanPhase(illidan) == 0 ||
+                GetIllidanPhase(illidan) == 3 ||
+                GetIllidanPhase(illidan) == 2 && flame == nullptr)
             {
-                Unit* unit = botAI->GetUnit(guid);
-                if (unit && (unit->GetEntry() == NPC_DEMON_FIRE || unit->GetEntry() == NPC_BLAZE))
-                    unit->Kill(bot, unit);
+                auto const& npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
+                for (auto const& guid : npcs)
+                {
+                    Unit* unit = botAI->GetUnit(guid);
+                    if (unit && (unit->GetEntry() == NPC_DEMON_FIRE || unit->GetEntry() == NPC_BLAZE))
+                        unit->Kill(bot, unit);
+                }
             }
         }
     }
@@ -2505,8 +2513,10 @@ bool IllidanStormrageManageDpsTimerAction::Execute(Event event)
     else
     {
         Unit* flame = AI_VALUE2(Unit*, "find target", "flame of azzinoth");
-        if (flame && flame->GetHealth() == flame->GetMaxHealth())
+        if (GetIllidanPhase(illidan) == 2 && flame == nullptr)
+        {
             illidanDpsWaitTimer.insert_or_assign(instanceId, now);
+        }
     }
 
     return false;

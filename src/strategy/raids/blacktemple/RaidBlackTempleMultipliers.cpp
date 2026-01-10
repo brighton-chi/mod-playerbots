@@ -447,6 +447,8 @@ float IllidanStormrageDelayCooldownsMultiplier::GetValue(Action* action)
                     dynamic_cast<CastAvengingWrathAction*>(action) ||
                     dynamic_cast<CastElementalMasteryAction*>(action) ||
                     dynamic_cast<CastFeralSpiritAction*>(action) ||
+                    dynamic_cast<CastFireElementalTotemAction*>(action) ||
+                    dynamic_cast<CastFireElementalTotemMeleeAction*>(action) ||
                     dynamic_cast<CastForceOfNatureAction*>(action) ||
                     dynamic_cast<CastArmyOfTheDeadAction*>(action) ||
                     dynamic_cast<CastSummonGargoyleAction*>(action) ||
@@ -600,7 +602,7 @@ float IllidanStormrageWaitForDpsMultiplier::GetValue(Action* action)
         if (botAI->IsMainTank(bot))
             return 1.0f;
 
-        const uint8 phase1DpsWaitSeconds = 3;
+        const uint8 phase1DpsWaitSeconds = 1;
         auto it = illidanDpsWaitTimer.find(instanceId);
         if (it == illidanDpsWaitTimer.end() || (now - it->second) < phase1DpsWaitSeconds)
         {
@@ -609,8 +611,7 @@ float IllidanStormrageWaitForDpsMultiplier::GetValue(Action* action)
                  return 0.0f;
         }
     }
-    else
-    if (GetIllidanPhase(illidan) == 4)
+    else if (GetIllidanPhase(illidan) == 4)
     {
         if (GetIllidanWarlockTank(botAI, bot) == bot)
             return 1.0f;
@@ -624,13 +625,13 @@ float IllidanStormrageWaitForDpsMultiplier::GetValue(Action* action)
                  return 0.0f;
         }
     }
-    else if (AI_VALUE2(Unit*, "find target", "flame of azzinoth"))
+    else if (GetIllidanPhase(illidan) == 2)
     {
         if (botAI->IsAssistTankOfIndex(bot, 0, true) ||
             botAI->IsAssistTankOfIndex(bot, 1, true))
             return 1.0f;
 
-        const uint8 phase2DpsWaitSeconds = 12;
+        const uint8 phase2DpsWaitSeconds = 5;
         auto it = illidanDpsWaitTimer.find(instanceId);
         if (it == illidanDpsWaitTimer.end() || (now - it->second) < phase2DpsWaitSeconds)
         {
