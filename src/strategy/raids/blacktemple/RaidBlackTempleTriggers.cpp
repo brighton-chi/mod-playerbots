@@ -86,11 +86,11 @@ bool HighWarlordNajentusPlayerIsImpaledTrigger::IsActive()
 
 bool HighWarlordNajentusBossHasTidalShieldTrigger::IsActive()
 {
-    if (!botAI->HasItemInInventory(ITEM_NAJENTUS_SPINE))
+    Unit* najentus = AI_VALUE2(Unit*, "find target", "high warlord naj'entus");
+    if (!najentus || !najentus->HasAura(SPELL_TIDAL_SHIELD))
         return false;
 
-    Unit* najentus = AI_VALUE2(Unit*, "find target", "high warlord naj'entus");
-    return najentus && najentus->HasAura(SPELL_TIDAL_SHIELD);
+    return botAI->HasItemInInventory(ITEM_NAJENTUS_SPINE);
 }
 
 // Supremus
@@ -136,6 +136,9 @@ bool SupremusBossIsFixatedOnBotTrigger::IsActive()
 
 bool SupremusVolcanoIsNearbyTrigger::IsActive()
 {
+    if (!AI_VALUE2(Unit*, "find target", "supremus"))
+        return false;
+
     return HasSupremusVolcanoNearby(botAI, bot);
 }
 

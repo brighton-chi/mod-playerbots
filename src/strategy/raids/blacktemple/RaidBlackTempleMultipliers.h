@@ -162,11 +162,11 @@ public:
 
 // Illidan Stormrage <The Betrayer>
 
-class IllidanStormrageDelayBloodlustAndHeroismMultiplier : public Multiplier
+class IllidanStormrageDelayCooldownsMultiplier : public Multiplier
 {
 public:
-    IllidanStormrageDelayBloodlustAndHeroismMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "illidan stormrage delay bloodlust and heroism multiplier") {}
+    IllidanStormrageDelayCooldownsMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "illidan stormrage delay cooldowns multiplier") {}
     virtual float GetValue(Action* action);
 };
 
@@ -191,6 +191,14 @@ class IllidanStormrageStayWithinGrateMultiplier : public Multiplier
 public:
     IllidanStormrageStayWithinGrateMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "illidan stormrage stay within grate multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
+class IllidanStormrageDisableMeleeAttackingMultiplier : public Multiplier
+{
+public:
+    IllidanStormrageDisableMeleeAttackingMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "illidan stormrage disable melee attacking multiplier") {}
     virtual float GetValue(Action* action);
 };
 

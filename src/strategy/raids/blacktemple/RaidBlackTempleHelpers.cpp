@@ -361,16 +361,18 @@ namespace BlackTempleHelpers
         if (!illidan || illidan->GetHealth() == 1)
             return -1;
 
+        // Phase 1: Health > 65%
+        if (illidan->GetHealthPct() > 65.0f)
+            return 1;
+
         // Transitioning from Phase 2 to Phase 3
         float x, y, z;
         illidan->GetMotionMaster()->GetDestination(x, y, z);
         Position dest(x, y, z);
-        if (dest.GetExactDist2d(ILLIDAN_LANDING_POSITION) < 1.0f)
+        if ((dest.GetExactDist2d(ILLIDAN_LANDING_POSITION) < 1.0f ||
+            illidan->GetExactDist2d(ILLIDAN_LANDING_POSITION) < 1.0f) &&
+            illidan->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE) && !illidan->HasAura(SPELL_SHADOW_PRISON))
             return 0;
-
-        // Phase 1: Health > 65%
-        if (illidan->GetHealthPct() > 65.0f)
-            return 1;
 
         // Phase 2: Flying
         if (illidan->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE) && !illidan->HasAura(SPELL_SHADOW_PRISON))
@@ -388,7 +390,7 @@ namespace BlackTempleHelpers
         if (illidan->GetHealthPct() <= 30.0f)
             return 5;
 
-        return 0;
+        return -1;
     }
 
     /* Position GetClosestPointInDrawSoulSafeSector(
