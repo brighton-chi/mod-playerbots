@@ -2089,7 +2089,7 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidE
 bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidBlaze(Unit* eastFlame, Unit* westFlame)
 {
     const Position* waypoints = nullptr;
-    size_t numWaypoints = 11;
+    size_t numWaypoints = 7;
 
     // Determine which tank and assign waypoints
     if (botAI->IsAssistTankOfIndex(bot, 1, true))
@@ -2113,7 +2113,7 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidB
     for (auto const& guid : npcs)
     {
         Unit* unit = botAI->GetUnit(guid);
-        if (unit && unit->GetEntry() == NPC_BLAZE && bot->GetDistance2d(unit) <= 8.0f)
+        if (unit && unit->GetEntry() == NPC_BLAZE && bot->GetDistance2d(unit) <= 9.0f)
         {
             waypointIndex = (waypointIndex + 1) % numWaypoints;
             break;
@@ -2161,11 +2161,10 @@ bool IllidanStormrageControlPetAggressionAction::Execute(Event event)
 
 bool IllidanStormrageBotsSpreadAboveGrateAction::Execute(Event event)
 {
-    const Position* gratePositions[3] =
+    const Position* gratePositions[2] =
     {
         &ILLIDAN_N_GRATE_POSITION,
-        &ILLIDAN_SW_GRATE_POSITION,
-        &ILLIDAN_SE_GRATE_POSITION
+        &ILLIDAN_S_GRATE_POSITION
     };
 
     std::vector<Player*> bots;
@@ -2194,7 +2193,7 @@ bool IllidanStormrageBotsSpreadAboveGrateAction::Execute(Event event)
         return false;
 
     size_t botIndex = std::distance(bots.begin(), it);
-    size_t groupIndex = botIndex % 3; // Assign to N, SW, SE in round-robin
+    size_t groupIndex = botIndex % 2; // Assign to N, S in round-robin
 
     // If bot has blaze aura and is at its assigned position, move clockwise
     if (bot->HasAura(SPELL_BLAZE))
@@ -2202,7 +2201,7 @@ bool IllidanStormrageBotsSpreadAboveGrateAction::Execute(Event event)
         const Position& currentPos = *gratePositions[groupIndex];
         if (bot->GetExactDist2d(currentPos.GetPositionX(), currentPos.GetPositionY()) <= 0.2f)
         {
-            groupIndex = (groupIndex + 1) % 3; // Move clockwise: N->SE, SE->SW, SW->N
+            groupIndex = (groupIndex + 1) % 2; // Move N->S, S->N
         }
     }
 
