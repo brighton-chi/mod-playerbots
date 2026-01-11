@@ -10,6 +10,33 @@
 
 using namespace TempestKeepHelpers;
 
+// General
+
+bool TempestKeepClearTimersAndTrackersAction::Execute(Event event)
+{
+    bool cleared = false;
+
+    if (!initialVoidReaverPositions.empty())
+    {
+        initialVoidReaverPositions.clear();
+        cleared = true;
+    }
+
+    if (!hasReachedInitialVoidReaverPosition.empty())
+    {
+        hasReachedInitialVoidReaverPosition.clear();
+        cleared = true;
+    }
+
+    if (!advisorDpsWaitTimer.empty())
+    {
+        advisorDpsWaitTimer.clear();
+        cleared = true;
+    }
+
+    return cleared;
+}
+
 // Trash
 
 bool CrimsonHandCenturionCastPolymorphAction::Execute(Event event)
@@ -725,12 +752,6 @@ bool VoidReaverSpreadRangedAction::Execute(Event event)
     Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
     if (!voidReaver)
         return false;
-
-    if (voidReaver->GetHealthPct() > 99.8f)
-    {
-        initialVoidReaverPositions.clear();
-        hasReachedInitialVoidReaverPosition.clear();
-    }
 
     if (initialVoidReaverPositions.empty())
     {

@@ -9,6 +9,12 @@
 
 using namespace SerpentShrineCavernHelpers;
 
+// General
+bool SerpentShrineCavernTimerBotIsNotInCombatTrigger::IsActive()
+{
+    return IsInstanceTimerManager(botAI, bot) && !bot->IsInCombat();
+}
+
 // Trash Mobs
 
 bool UnderbogColossusSpawnedToxicPoolAfterDeathTrigger::IsActive()
@@ -400,12 +406,6 @@ bool MorogrimTidewalkerWaterGlobulesAreIncomingTrigger::IsActive()
 
     Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
     return tidewalker && tidewalker->GetHealthPct() < 25.0f;
-}
-
-bool MorogrimTidewalkerEncounterResetTrigger::IsActive()
-{
-    Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
-    return tidewalker && tidewalker->GetHealthPct() > 99.8f;
 }
 
 // Lady Vashj <Coilfang Matron>

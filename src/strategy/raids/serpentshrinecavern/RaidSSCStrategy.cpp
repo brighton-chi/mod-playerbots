@@ -3,6 +3,10 @@
 
 void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
+    // General
+    triggers.push_back(new TriggerNode("serpent shrine cavern timer bot is not in combat", {
+        NextAction("serpent shrine cavern clear timers and trackers", ACTION_EMERGENCY + 11) }));
+
     // Trash Mobs
     triggers.push_back(new TriggerNode("underbog colossus spawned toxic pool after death", {
         NextAction("underbog colossus escape toxic pool", ACTION_EMERGENCY + 10) }));
@@ -110,9 +114,6 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("morogrim tidewalker pulling boss", {
         NextAction("morogrim tidewalker misdirect boss to main tank", ACTION_RAID + 1) }));
-
-    triggers.push_back(new TriggerNode("morogrim tidewalker encounter reset", {
-        NextAction("morogrim tidewalker reset phase transition steps", ACTION_RAID + 2) }));
 
     // Lady Vashj <Coilfang Matron>
     triggers.push_back(new TriggerNode("lady vashj boss engaged by main tank", {

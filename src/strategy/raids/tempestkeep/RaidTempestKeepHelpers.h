@@ -100,6 +100,7 @@ namespace TempestKeepHelpers
 
     // General
     const uint32 TEMPEST_KEEP_MAP_ID = 550;
+    bool IsInstanceTimerManager(PlayerbotAI* botAI, Player* bot);
     void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);
     void MarkTargetWithSkull(Player* bot, Unit* target);
     void MarkTargetWithSquare(Player* bot, Unit* target);

@@ -3,6 +3,16 @@
 
 #include "Trigger.h"
 
+// General
+
+class TempestKeepTimerBotIsNotInCombatTrigger : public Trigger
+{
+public:
+    TempestKeepTimerBotIsNotInCombatTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "tempest keep timer bot is not in combat") {}
+    bool IsActive() override;
+};
+
 // Trash
 
 class CrimsonHandCenturionCastsArcaneVolleyTrigger : public Trigger

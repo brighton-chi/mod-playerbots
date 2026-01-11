@@ -9,6 +9,10 @@ class RaidTempestKeepTriggerContext : public NamedObjectContext<Trigger>
 public:
     RaidTempestKeepTriggerContext()
     {
+        // General
+        creators["tempest keep timer bot is not in combat"] =
+            &RaidTempestKeepTriggerContext::tempest_keep_timer_bot_is_not_in_combat;
+
         // Trash
         creators["crimson hand centurion casts arcane volley"] =
             &RaidTempestKeepTriggerContext::crimson_hand_centurion_casts_arcane_volley;
@@ -44,7 +48,7 @@ public:
         // Void Reaver
         creators["void reaver boss casts pounding"] =
             &RaidTempestKeepTriggerContext::void_reaver_boss_casts_pounding;
-        
+
         creators["void reaver knock away reduces tank aggro"] =
             &RaidTempestKeepTriggerContext::void_reaver_knock_away_reduces_tank_aggro;
 
@@ -130,6 +134,10 @@ public:
     }
 
 private:
+    // General
+    static Trigger* tempest_keep_timer_bot_is_not_in_combat(
+        PlayerbotAI* botAI) { return new TempestKeepTimerBotIsNotInCombatTrigger(botAI); }
+
     // Trash
     static Trigger* crimson_hand_centurion_casts_arcane_volley(
         PlayerbotAI* botAI) { return new CrimsonHandCenturionCastsArcaneVolleyTrigger(botAI); }

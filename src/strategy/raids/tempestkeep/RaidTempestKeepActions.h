@@ -9,6 +9,16 @@
 
 using namespace TempestKeepHelpers;
 
+// General
+
+class TempestKeepClearTimersAndTrackersAction : public Action
+{
+public:
+    TempestKeepClearTimersAndTrackersAction(
+        PlayerbotAI* botAI, std::string const name = "tempest keep clear timers and trackers") : Action(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 // Trash
 
 class CrimsonHandCenturionCastPolymorphAction : public Action

@@ -5,6 +5,16 @@
 #include "AttackAction.h"
 #include "MovementActions.h"
 
+// General
+
+class SerpentShrineCavernClearTimersAndTrackersAction : public Action
+{
+public:
+    SerpentShrineCavernClearTimersAndTrackersAction(
+        PlayerbotAI* botAI, std::string const name = "serpent shrine cavern clear timers and trackers") : Action(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 // Trash
 
 class UnderbogColossusEscapeToxicPoolAction : public MovementAction
@@ -294,14 +304,6 @@ class MorogrimTidewalkerPhase2RepositionRangedAction : public MovementAction
 public:
     MorogrimTidewalkerPhase2RepositionRangedAction(
         PlayerbotAI* botAI, std::string const name = "morogrim tidewalker phase 2 reposition ranged") : MovementAction(botAI, name) {}
-    bool Execute(Event event) override;
-};
-
-class MorogrimTidewalkerResetPhaseTransitionStepsAction : public Action
-{
-public:
-    MorogrimTidewalkerResetPhaseTransitionStepsAction(
-        PlayerbotAI* botAI, std::string const name = "morogrim tidewalker reset phase transition steps") : Action(botAI, name) {}
     bool Execute(Event event) override;
 };
 

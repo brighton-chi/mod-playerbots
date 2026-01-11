@@ -9,6 +9,10 @@ class RaidSSCActionContext : public NamedObjectContext<Action>
 public:
     RaidSSCActionContext()
     {
+        // General
+        creators["serpent shrine cavern clear timers and trackers"] =
+            &RaidSSCActionContext::serpent_shrine_cavern_clear_timers_and_trackers;
+
         // Trash
         creators["underbog colossus escape toxic pool"] =
             &RaidSSCActionContext::underbog_colossus_escape_toxic_pool;
@@ -117,9 +121,6 @@ public:
         creators["morogrim tidewalker phase 2 reposition ranged"] =
             &RaidSSCActionContext::morogrim_tidewalker_phase_2_reposition_ranged;
 
-        creators["morogrim tidewalker reset phase transition steps"] =
-            &RaidSSCActionContext::morogrim_tidewalker_reset_phase_transition_steps;
-
         // Lady Vashj <Coilfang Matron>
         creators["lady vashj main tank position boss"] =
             &RaidSSCActionContext::lady_vashj_main_tank_position_boss;
@@ -168,6 +169,10 @@ public:
     }
 
 private:
+    // General
+    static Action* serpent_shrine_cavern_clear_timers_and_trackers(
+        PlayerbotAI* botAI) { return new SerpentShrineCavernClearTimersAndTrackersAction(botAI); }
+
     // Trash
     static Action* underbog_colossus_escape_toxic_pool(
         PlayerbotAI* botAI) { return new UnderbogColossusEscapeToxicPoolAction(botAI); }
@@ -275,9 +280,6 @@ private:
 
     static Action* morogrim_tidewalker_phase_2_reposition_ranged(
         PlayerbotAI* botAI) { return new MorogrimTidewalkerPhase2RepositionRangedAction(botAI); }
-
-    static Action* morogrim_tidewalker_reset_phase_transition_steps(
-        PlayerbotAI* botAI) { return new MorogrimTidewalkerResetPhaseTransitionStepsAction(botAI); }
 
     // Lady Vashj <Coilfang Matron>
     static Action* lady_vashj_main_tank_position_boss(

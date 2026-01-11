@@ -9,6 +9,69 @@
 
 using namespace SerpentShrineCavernHelpers;
 
+// General
+
+bool SerpentShrineCavernClearTimersAndTrackersAction::Execute(Event event)
+{
+    bool cleared = false;
+
+    if (!hydrossChangeToNaturePhaseTimer.empty())
+    {
+        hydrossChangeToNaturePhaseTimer.clear();
+        cleared = true;
+    }
+
+    if (!hydrossChangeToFrostPhaseTimer.empty())
+    {
+        hydrossChangeToFrostPhaseTimer.clear();
+        cleared = true;
+    }
+
+    if (!hydrossNatureDpsWaitTimer.empty())
+    {
+        hydrossNatureDpsWaitTimer.clear();
+        cleared = true;
+    }
+
+    if (!hydrossFrostDpsWaitTimer.empty())
+    {
+        hydrossFrostDpsWaitTimer.clear();
+        cleared = true;
+    }
+
+    if (!lurkerSpoutTimer.empty())
+    {
+        lurkerSpoutTimer.clear();
+        cleared = true;
+    }
+
+    if (!lurkerRangedPositions.empty())
+    {
+        lurkerRangedPositions.clear();
+        cleared = true;
+    }
+
+    if (!karathressDpsWaitTimer.empty())
+    {
+        karathressDpsWaitTimer.clear();
+        cleared = true;
+    }
+
+    if (!tidewalkerTankStep.empty())
+    {
+        tidewalkerTankStep.clear();
+        cleared = true;
+    }
+
+    if (!tidewalkerRangedStep.empty())
+    {
+        tidewalkerRangedStep.clear();
+        cleared = true;
+    }
+
+    return cleared;
+}
+
 // Trash Mobs
 
 // Non-combat method (some colossi leave a toxic pool upon death)
@@ -427,14 +490,6 @@ bool HydrossTheUnstableManageTimersAction::Execute(Event event)
     const uint32 instanceId = hydross->GetMap()->GetInstanceId();
     const time_t now = std::time(nullptr);
 
-    if (hydross->GetHealth() == hydross->GetMaxHealth())
-    {
-        hydrossFrostDpsWaitTimer.erase(instanceId);
-        hydrossNatureDpsWaitTimer.erase(instanceId);
-        hydrossChangeToFrostPhaseTimer.erase(instanceId);
-        hydrossChangeToNaturePhaseTimer.erase(instanceId);
-    }
-
     if (!hydross->HasAura(SPELL_CORRUPTION))
     {
         hydrossFrostDpsWaitTimer.try_emplace(instanceId, now);
@@ -510,9 +565,6 @@ bool TheLurkerBelowSpreadRangedInArcAction::Execute(Event event)
     Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
     if (!lurker)
         return false;
-
-    if (lurker->GetHealth() == lurker->GetMaxHealth())
-        lurkerRangedPositions.clear();
 
     std::vector<Player*> rangedMembers;
     if (Group* group = bot->GetGroup())
@@ -643,12 +695,6 @@ bool TheLurkerBelowManageSpoutTimerAction::Execute(Event event)
 
     const uint32 instanceId = lurker->GetMap()->GetInstanceId();
     const time_t now = std::time(nullptr);
-
-    if (lurker->GetHealth() == lurker->GetMaxHealth())
-    {
-        lurkerSpoutTimer.erase(instanceId);
-        return false;
-    }
 
     auto it = lurkerSpoutTimer.find(instanceId);
     if (it != lurkerSpoutTimer.end() && it->second <= now)
@@ -1282,10 +1328,8 @@ bool FathomLordKarathressManageDpsTimerAction::Execute(Event event)
     if (!karathress)
         return false;
 
-    const time_t now = std::time(nullptr);
-
-    if (karathress->GetHealth() == karathress->GetMaxHealth())
-        karathressDpsWaitTimer.insert_or_assign(karathress->GetMap()->GetInstanceId(), now);
+    karathressDpsWaitTimer.try_emplace(
+        karathress->GetMap()->GetInstanceId(), std::time(nullptr));
 
     return false;
 }
@@ -1471,23 +1515,6 @@ bool MorogrimTidewalkerPhase2RepositionRangedAction::Execute(Event event)
             return MoveTo(SSC_MAP_ID, moveX, moveY, phase2.GetPositionZ(), false, false,
                           false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
-    }
-
-    return false;
-}
-
-bool MorogrimTidewalkerResetPhaseTransitionStepsAction::Execute(Event event)
-{
-    Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
-    if (!tidewalker)
-        return false;
-
-    const ObjectGuid botGuid = bot->GetGUID();
-
-    if (tidewalker->GetHealth() == tidewalker->GetMaxHealth())
-    {
-        tidewalkerTankStep.erase(botGuid);
-        tidewalkerRangedStep.erase(botGuid);
     }
 
     return false;
@@ -1777,7 +1804,10 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event event)
                 break;
 
             case NPC_TOXIC_SPOREBAT:
-                if (!sporebat || bot->GetDistance(unit) < bot->GetDistance(sporebat))
+                // Lower distance for sporebats is needed because bots will fly into the air to chase them if they
+                // are out of z-axis range (which is the case for sporebats hovering over the edge of the platform)
+                if (!sporebat || (bot->GetDistance(unit) < bot->GetDistance(sporebat) && distFromCenter < 45.0f &&
+                    sporebat->GetExactDist2d(center.GetPositionX(), center.GetPositionY()) < 45.0f))
                     sporebat = unit;
                 break;
 

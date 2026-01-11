@@ -3,6 +3,10 @@
 
 void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
+    // General
+    triggers.push_back(new TriggerNode("tempest keep timer bot is not in combat", {
+        NextAction("tempest keep clear timers and trackers", ACTION_EMERGENCY + 11) }));
+
     // Trash
     triggers.push_back(new TriggerNode("crimson hand centurion casts arcane volley", {
         NextAction("crimson hand centurion cast polymorph", ACTION_RAID + 1) }));
@@ -41,7 +45,7 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     // Void Reaver
     triggers.push_back(new TriggerNode("void reaver boss casts pounding", {
         NextAction("void reaver tanks position boss", ACTION_RAID + 1) }));
-    
+
     triggers.push_back(new TriggerNode("void reaver knock away reduces tank aggro", {
         NextAction("void reaver ranged use aggro dump ability", ACTION_EMERGENCY + 6) }));
 

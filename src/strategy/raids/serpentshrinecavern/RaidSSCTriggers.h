@@ -3,6 +3,16 @@
 
 #include "Trigger.h"
 
+// General
+
+class SerpentShrineCavernTimerBotIsNotInCombatTrigger : public Trigger
+{
+public:
+    SerpentShrineCavernTimerBotIsNotInCombatTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "serpent shrine cavern timer bot is not in combat") {}
+    bool IsActive() override;
+};
+
 // Trash
 
 class UnderbogColossusSpawnedToxicPoolAfterDeathTrigger : public Trigger
@@ -292,14 +302,6 @@ class MorogrimTidewalkerWaterGlobulesAreIncomingTrigger : public Trigger
 public:
     MorogrimTidewalkerWaterGlobulesAreIncomingTrigger(
         PlayerbotAI* botAI) : Trigger(botAI, "morogrim tidewalker water globules are incoming") {}
-    bool IsActive() override;
-};
-
-class MorogrimTidewalkerEncounterResetTrigger : public Trigger
-{
-public:
-    MorogrimTidewalkerEncounterResetTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "morogrim tidewalker encounter reset") {}
     bool IsActive() override;
 };
 
