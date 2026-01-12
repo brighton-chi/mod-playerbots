@@ -1804,10 +1804,7 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event event)
                 break;
 
             case NPC_TOXIC_SPOREBAT:
-                // Lower distance for sporebats is needed because bots will fly into the air to chase them if they
-                // are out of z-axis range (which is the case for sporebats hovering over the edge of the platform)
-                if (!sporebat || (bot->GetDistance(unit) < bot->GetDistance(sporebat) && distFromCenter < 45.0f &&
-                    sporebat->GetExactDist2d(center.GetPositionX(), center.GetPositionY()) < 45.0f))
+                if (!sporebat || bot->GetDistance(unit) < bot->GetDistance(sporebat))
                     sporebat = unit;
                 break;
 
