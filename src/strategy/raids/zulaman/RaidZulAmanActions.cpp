@@ -396,9 +396,6 @@ bool JanalaiSpreadRangedInCircleAction::Execute(Event event)
     if (!janalai)
         return false;
 
-    if (janalai->GetHealth() == janalai->GetMaxHealth())
-        janalaiRangedPositions.clear();
-
     std::vector<Player*> rangedMembers;
     if (Group* group = bot->GetGroup())
     {
@@ -446,6 +443,17 @@ bool JanalaiSpreadRangedInCircleAction::Execute(Event event)
         return MoveTo(ZULAMAN_MAP_ID, target.GetPositionX(), target.GetPositionY(),
                       target.GetPositionZ(), false, false, false, false,
                       MovementPriority::MOVEMENT_COMBAT, true, false);
+    }
+
+    return false;
+}
+
+bool JanalaiClearRangedPositionTrackerAction::Execute(Event event)
+{
+    if (!janalaiRangedPositions.empty())
+    {
+        janalaiRangedPositions.clear();
+        return true;
     }
 
     return false;
