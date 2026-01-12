@@ -1804,7 +1804,7 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event event)
                 break;
 
             case NPC_TOXIC_SPOREBAT:
-                if (!sporebat || bot->GetDistance(unit) < bot->GetDistance(sporebat))
+                if (!sporebat || bot->GetExactDist2d(unit) < bot->GetExactDist2d(sporebat))
                     sporebat = unit;
                 break;
 
@@ -1862,6 +1862,7 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event event)
         }
         else if (botAI->IsRanged(bot))
         {
+            // Hunters are specifically assigned to kill Sporebats in Phase 3
             if (bot->getClass() == CLASS_HUNTER)
                 targets = { sporebat, enchanted, strider, elite, vashj };
             else
@@ -1926,6 +1927,18 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event event)
                               center.GetPositionZ(), 30.0f, MovementPriority::MOVEMENT_COMBAT);
         }
     }
+
+    // Sporebat testing: get bots to return to the ground
+    float platformZ = center.GetPositionZ();
+    if (bot->GetPositionZ() - platformZ > 3.0f)
+    {
+        // Snap bot back to ground
+        bot->AttackStop();
+        bot->InterruptNonMeleeSpells(true);
+        bot->TeleportTo(SSC_MAP_ID, bot->GetPositionX(), bot->GetPositionY(),
+                        platformZ, bot->GetOrientation());
+    }
+    // end Sporebat testing
 
     return false;
 }
