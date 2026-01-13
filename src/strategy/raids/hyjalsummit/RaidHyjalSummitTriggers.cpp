@@ -149,15 +149,17 @@ bool KazrogalLowManaBotsNeedEscapePathTrigger::IsActive()
 
 bool KazrogalBotIsLowOnManaTrigger::IsActive()
 {
-    uint8 tab = AiFactory::GetPlayerSpecTab(bot);
     if (bot->getClass() == CLASS_WARRIOR ||
         bot->getClass() == CLASS_ROGUE ||
-        bot->getClass() == CLASS_DEATH_KNIGHT ||
-        (bot->getClass() == CLASS_DRUID && tab == DRUID_TAB_FERAL))
+        bot->getClass() == CLASS_DEATH_KNIGHT)
         return false;
 
     Unit* kazrogal = AI_VALUE2(Unit*, "find target", "kaz'rogal");
     if (!kazrogal)
+        return false;
+
+    uint8 tab = AiFactory::GetPlayerSpecTab(bot);
+    if (bot->getClass() == CLASS_DRUID && tab == DRUID_TAB_FERAL)
         return false;
 
     return bot->GetPower(POWER_MANA) <= 2000 ||
@@ -209,12 +211,13 @@ bool AzgalorBotIsDoomedTrigger::IsActive()
     return bot->HasAura(SPELL_DOOM);
 }
 
+// Lol did this fight without this trigger--maybe should just ignore doomguards?
 bool AzgalorDoomguardsMustBeControlledTrigger::IsActive()
 {
     if (!botAI->IsAssistTankOfIndex(bot, 0, true))
         return false;
 
-    if (AI_VALUE2(Unit*, "find target", "azgalor"))
+    if (!AI_VALUE2(Unit*, "find target", "azgalor"))
         return false;
 
     return AI_VALUE2(Unit*, "find target", "lesser doomguard") ||
