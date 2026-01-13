@@ -2141,9 +2141,18 @@ bool KaelthasSunstriderBreakMindControlAction::Execute(Event event)
 
     if (!bot->IsWithinMeleeRange(mcTarget))
     {
-        return MoveTo(TEMPEST_KEEP_MAP_ID, mcTarget->GetPositionX(), mcTarget->GetPositionY(),
-                      mcTarget->GetPositionZ(), false, false, false, false,
-                      MovementPriority::MOVEMENT_COMBAT, true, false);
+        uint32 delay = urand(1500, 2500); // 1.5 to 2.5 seconds
+        float x = mcTarget->GetPositionX();
+        float y = mcTarget->GetPositionY();
+        float z = mcTarget->GetPositionZ();
+        botAI->AddTimedEvent(
+            [this, x, y, z]() {
+                MoveTo(TEMPEST_KEEP_MAP_ID, x, y, z, false, false, false, false,
+                       MovementPriority::MOVEMENT_COMBAT, true, false);
+            },
+            delay);
+        botAI->SetNextCheckDelay(delay + 50);
+        return true;
     }
 
     static const std::array<const char*, 4> spells =

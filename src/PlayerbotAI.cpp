@@ -1247,9 +1247,9 @@ void PlayerbotAI::HandleBotOutgoingPacket(WorldPacket const& packet)
                 horizontalSpeed = 0.11f;
             }
             verticalSpeed = -verticalSpeed;
-            // high vertical may result in stuck as bot can not handle gravity
-            if (verticalSpeed > 100.0f)
-                break;
+            /* // high vertical may result in stuck as bot can not handle gravity
+            if (verticalSpeed > 35.0f)
+                break; */
             // stop casting
             InterruptSpell();
 

@@ -181,8 +181,15 @@ bool HighWarlordNajentusRemoveImpalingSpineAction::Execute(Event event)
     }
     else
     {
-        // 4. Interact with the spine to remove it
-        spineGo->Use(bot);
+        // 4. Interact with the spine to remove it, with a random delay
+        uint32 delay = urand(1000, 2000); // 1 to 2 seconds
+        botAI->AddTimedEvent(
+            [this, spineGo]() {
+                if (spineGo && bot)
+                    spineGo->Use(bot);
+            },
+            delay);
+        botAI->SetNextCheckDelay(delay + 50);
         return true;
     }
 
@@ -208,7 +215,14 @@ bool HighWarlordNajentusThrowImpalingSpineAction::Execute(Event event)
 
     if (Item* spine = bot->GetItemByEntry(ITEM_NAJENTUS_SPINE))
     {
-        botAI->ImbueItem(spine, najentus);
+        uint32 delay = urand(1000, 2000); // 1 to 2 seconds
+        botAI->AddTimedEvent(
+            [this, spine, najentus]() {
+                if (spine && najentus)
+                    botAI->ImbueItem(spine, najentus);
+            },
+            delay);
+        botAI->SetNextCheckDelay(delay + 50);
         return true;
     }
 
