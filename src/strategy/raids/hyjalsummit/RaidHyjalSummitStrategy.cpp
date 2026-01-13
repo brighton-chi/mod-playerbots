@@ -3,6 +3,10 @@
 
 void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
+    // General
+    triggers.push_back(new TriggerNode("hyjal summit tracker bot is not in combat", {
+        NextAction("hyjal summit clear trackers", ACTION_EMERGENCY + 11) }));
+
     // Rage Winterchill
     triggers.push_back(new TriggerNode("rage winterchill pulling boss", {
         NextAction("rage winterchill misdirect boss to main tank", ACTION_RAID + 2) }));

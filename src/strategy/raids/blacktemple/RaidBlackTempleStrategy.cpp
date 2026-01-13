@@ -3,6 +3,10 @@
 
 void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
+    // General
+    triggers.push_back(new TriggerNode("black temple timer bot is not in combat", {
+        NextAction("black temple clear timers and trackers", ACTION_EMERGENCY + 11) }));
+
     // High Warlord Naj'entus
     triggers.push_back(new TriggerNode("high warlord naj'entus pulling boss", {
         NextAction("high warlord naj'entus misdirect boss to main tank", ACTION_RAID + 2) }));

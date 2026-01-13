@@ -3,6 +3,16 @@
 
 #include "Trigger.h"
 
+// General
+
+class BlackTempleTimerBotIsNotInCombatTrigger : public Trigger
+{
+public:
+    BlackTempleTimerBotIsNotInCombatTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "black temple timer bot is not in combat") {}
+    bool IsActive() override;
+};
+
 // High Warlord Naj'entus
 
 class HighWarlordNajentusPullingBossTrigger : public Trigger

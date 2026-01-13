@@ -5,6 +5,16 @@
 #include "AttackAction.h"
 #include "MovementActions.h"
 
+// General
+
+class HyjalSummitClearTrackersAction : public Action
+{
+public:
+    HyjalSummitClearTrackersAction(
+        PlayerbotAI* botAI) : Action(botAI, "hyjal summit clear trackers") {}
+    bool Execute(Event event) override;
+};
+
 // Rage Winterchill
 
 class RageWinterchillMisdirectBossToMainTankAction : public AttackAction

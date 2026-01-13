@@ -75,7 +75,7 @@ namespace HyjalSummitHelpers
         return nearestPlayer;
     }
 
-    bool IsInstanceTimerManager(PlayerbotAI* botAI, Player* bot)
+    bool IsInstanceTrackerManager(PlayerbotAI* botAI, Player* bot)
     {
         if (Group* group = bot->GetGroup())
         {

@@ -9,6 +9,10 @@ class RaidHyjalSummitActionContext : public NamedObjectContext<Action>
 public:
     RaidHyjalSummitActionContext()
     {
+        // General
+        creators["hyjal summit clear trackers"] =
+            &RaidHyjalSummitActionContext::hyjal_summit_clear_trackers;
+
         // Rage Winterchill
         creators["rage winterchill misdirect boss to main tank"] =
             &RaidHyjalSummitActionContext::rage_winterchill_misdirect_boss_to_main_tank;
@@ -94,6 +98,10 @@ public:
     }
 
 private:
+    // General
+    static Action* hyjal_summit_clear_trackers(
+        PlayerbotAI* botAI) { return new HyjalSummitClearTrackersAction(botAI); }
+
     // Rage Winterchill
     static Action* rage_winterchill_misdirect_boss_to_main_tank(
         PlayerbotAI* botAI) { return new RageWinterchillMisdirectBossToMainTankAction(botAI); }

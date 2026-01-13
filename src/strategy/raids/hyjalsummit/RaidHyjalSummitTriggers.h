@@ -3,6 +3,16 @@
 
 #include "Trigger.h"
 
+// General
+
+class HyjalSummitTrackerBotIsNotInCombatTrigger : public Trigger
+{
+public:
+    HyjalSummitTrackerBotIsNotInCombatTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "hyjal summit tracker bot is not in combat") {}
+    bool IsActive() override;
+};
+
 // Rage Winterchill
 
 class RageWinterchillPullingBossTrigger : public Trigger

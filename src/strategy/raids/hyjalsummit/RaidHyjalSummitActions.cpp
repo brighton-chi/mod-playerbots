@@ -4,6 +4,39 @@
 
 using namespace HyjalSummitHelpers;
 
+// General
+
+bool HyjalSummitClearTrackersAction::Execute(Event event)
+{
+    bool cleared = false;
+
+    if (!winterchillRangedPositions.empty())
+    {
+        winterchillRangedPositions.clear();
+        cleared = true;
+    }
+
+    if (!hasReachedWinterchillPosition.empty())
+    {
+        hasReachedWinterchillPosition.clear();
+        cleared = true;
+    }
+
+    if (!anetheronRangedPositions.empty())
+    {
+        anetheronRangedPositions.clear();
+        cleared = true;
+    }
+
+    if (!kazrogalRangedPositions.empty())
+    {
+        kazrogalRangedPositions.clear();
+        cleared = true;
+    }
+
+    return false;
+}
+
 // Rage Winterchill
 
 bool RageWinterchillMisdirectBossToMainTankAction::Execute(Event event)
@@ -70,16 +103,6 @@ bool RageWinterchillMainTankPositionBossAction::Execute(Event event)
 
 bool RageWinterchillSpreadRangedInCircleAction::Execute(Event event)
 {
-    Unit* winterchill = AI_VALUE2(Unit*, "find target", "rage winterchill");
-    if (!winterchill)
-        return false;
-
-    if (winterchill->GetHealth() == winterchill->GetMaxHealth())
-    {
-        winterchillRangedPositions.clear();
-        hasReachedWinterchillPosition.clear();
-    }
-
     Group* group = bot->GetGroup();
     if (!group)
         return false;
@@ -231,9 +254,6 @@ bool AnetheronSpreadRangedInArcAction::Execute(Event event)
     Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
     if (!anetheron)
         return false;
-
-    if (anetheron->GetHealth() == anetheron->GetMaxHealth())
-        anetheronRangedPositions.clear();
 
     Group* group = bot->GetGroup();
     if (!group)
@@ -465,13 +485,6 @@ bool KazrogalAssistTanksMoveInFrontOfBossAction::Execute(Event event)
 
 bool KazrogalSpreadRangedInArcAction::Execute(Event event)
 {
-    Unit* kazrogal = AI_VALUE2(Unit*, "find target", "kaz'rogal");
-    if (!kazrogal)
-        return false;
-
-    if (kazrogal->GetHealth() == kazrogal->GetMaxHealth())
-        kazrogalRangedPositions.clear();
-
     Group* group = bot->GetGroup();
     if (!group)
         return false;

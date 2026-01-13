@@ -9,8 +9,11 @@ class RaidBlackTempleTriggerContext : public NamedObjectContext<Trigger>
 public:
     RaidBlackTempleTriggerContext()
     {
-        // High Warlord Naj'entus
+        // General
+        creators["black temple timer bot is not in combat"] =
+            &RaidBlackTempleTriggerContext::black_temple_timer_bot_is_not_in_combat;
 
+        // High Warlord Naj'entus
         creators["high warlord naj'entus pulling boss"] =
             &RaidBlackTempleTriggerContext::high_warlord_najentus_pulling_boss;
 
@@ -27,7 +30,6 @@ public:
             &RaidBlackTempleTriggerContext::high_warlord_najentus_boss_has_tidal_shield;
 
         // Supremus
-
         creators["supremus pulling boss or changing phase"] =
             &RaidBlackTempleTriggerContext::supremus_pulling_boss_or_changing_phase;
 
@@ -47,7 +49,6 @@ public:
         // N/A
 
         // Teron Gorefiend
-
         creators["teron gorefiend pulling boss"] =
             &RaidBlackTempleTriggerContext::teron_gorefiend_pulling_boss;
 
@@ -67,7 +68,6 @@ public:
             &RaidBlackTempleTriggerContext::teron_gorefiend_bot_transformed_into_vengeful_spirit;
 
         // Gurtogg Bloodboil
-
         creators["gurtogg bloodboil pulling boss"] =
             &RaidBlackTempleTriggerContext::gurtogg_bloodboil_pulling_boss;
 
@@ -87,7 +87,6 @@ public:
             &RaidBlackTempleTriggerContext::gurtogg_bloodboil_need_to_manage_phase_timer;
 
         // Reliquary of Souls
-
         creators["reliquary of souls aggro resets upon phase change"] =
             &RaidBlackTempleTriggerContext::reliquary_of_souls_aggro_resets_upon_phase_change;
 
@@ -107,7 +106,6 @@ public:
             &RaidBlackTempleTriggerContext::reliquary_of_souls_need_to_manage_dps_timer;
 
         // Mother Shahraz
-
         creators["mother shahraz pulling boss"] =
             &RaidBlackTempleTriggerContext::mother_shahraz_pulling_boss;
 
@@ -121,7 +119,6 @@ public:
             &RaidBlackTempleTriggerContext::mother_shahraz_bots_are_linked_by_fatal_attraction;
 
         // Illidari Council
-
         creators["illidari council pulling bosses"] =
             &RaidBlackTempleTriggerContext::illidari_council_pulling_bosses;
 
@@ -147,7 +144,6 @@ public:
             &RaidBlackTempleTriggerContext::illidari_council_need_to_manage_dps_timer;
 
         // Illidan Stormrage <The Betrayer>
-
         creators["illidan stormrage tank needs aggro"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_tank_needs_aggro;
 
@@ -186,8 +182,11 @@ public:
     }
 
 private:
-    // High Warlord Naj'entus
+    // General
+    static Trigger* black_temple_timer_bot_is_not_in_combat(
+        PlayerbotAI* botAI) { return new BlackTempleTimerBotIsNotInCombatTrigger(botAI); }
 
+    // High Warlord Naj'entus
     static Trigger* high_warlord_najentus_pulling_boss(
         PlayerbotAI* botAI) { return new HighWarlordNajentusPullingBossTrigger(botAI); }
 
@@ -204,7 +203,6 @@ private:
         PlayerbotAI* botAI) { return new HighWarlordNajentusBossHasTidalShieldTrigger(botAI); }
 
     // Supremus
-
     static Trigger* supremus_pulling_boss_or_changing_phase(
         PlayerbotAI* botAI) { return new SupremusPullingBossOrChangingPhaseTrigger(botAI); }
 
@@ -224,7 +222,6 @@ private:
     // N/A
 
     // Teron Gorefiend
-
     static Trigger* teron_gorefiend_pulling_boss(
         PlayerbotAI* botAI) { return new TeronGorefiendPullingBossTrigger(botAI); }
 
@@ -244,7 +241,6 @@ private:
         PlayerbotAI* botAI) { return new TeronGorefiendBotTransformedIntoVengefulSpiritTrigger(botAI); }
 
     // Gurtogg Bloodboil
-
     static Trigger* gurtogg_bloodboil_pulling_boss(
         PlayerbotAI* botAI) { return new GurtoggBloodboilPullingBossTrigger(botAI); }
 
@@ -264,7 +260,6 @@ private:
         PlayerbotAI* botAI) { return new GurtoggBloodboilNeedToManagePhaseTimerTrigger(botAI); }
 
     // Reliquary of Souls
-
     static Trigger* reliquary_of_souls_aggro_resets_upon_phase_change(
         PlayerbotAI* botAI) { return new ReliquaryOfSoulsAggroResetsUponPhaseChangeTrigger(botAI); }
 
@@ -284,7 +279,6 @@ private:
         PlayerbotAI* botAI) { return new ReliquaryOfSoulsNeedToManageDpsTimerTrigger(botAI); }
 
     // Mother Shahraz
-
     static Trigger* mother_shahraz_pulling_boss(
         PlayerbotAI* botAI) { return new MotherShahrazPullingBossTrigger(botAI); }
 
@@ -298,7 +292,6 @@ private:
         PlayerbotAI* botAI) { return new MotherShahrazBotsAreLinkedByFatalAttractionTrigger(botAI); }
 
     // Illidari Council
-
     static Trigger* illidari_council_pulling_bosses(
         PlayerbotAI* botAI) { return new IllidariCouncilPullingBossesTrigger(botAI); }
 
@@ -324,7 +317,6 @@ private:
         PlayerbotAI* botAI) { return new IllidariCouncilNeedToManageDpsTimerTrigger(botAI); }
 
     // Illidan Stormrage <The Betrayer>
-
     static Trigger* illidan_stormrage_tank_needs_aggro(
         PlayerbotAI* botAI) { return new IllidanStormrageTankNeedsAggroTrigger(botAI); }
 

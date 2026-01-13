@@ -5,6 +5,15 @@
 #include "AttackAction.h"
 #include "MovementActions.h"
 
+// General
+class BlackTempleClearTimersAndTrackersAction : public Action
+{
+public:
+    BlackTempleClearTimersAndTrackersAction(
+        PlayerbotAI* botAI) : Action(botAI, "black temple clear timers and trackers") {}
+    bool Execute(Event event) override;
+};
+
 // High Warlord Naj'entus
 
 class HighWarlordNajentusMisdirectBossToMainTankAction : public AttackAction

@@ -6,6 +6,13 @@
 
 using namespace HyjalSummitHelpers;
 
+// General
+
+bool HyjalSummitTrackerBotIsNotInCombatTrigger::IsActive()
+{
+    return IsInstanceTrackerManager(botAI, bot) && !bot->IsInCombat();
+}
+
 // Rage Winterchill
 
 bool RageWinterchillPullingBossTrigger::IsActive()

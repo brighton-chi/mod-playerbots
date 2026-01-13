@@ -9,6 +9,10 @@ class RaidHyjalSummitTriggerContext : public NamedObjectContext<Trigger>
 public:
     RaidHyjalSummitTriggerContext()
     {
+        // General
+        creators["hyjal summit tracker bot is not in combat"] =
+            &RaidHyjalSummitTriggerContext::hyjal_summit_tracker_bot_is_not_in_combat;
+
         // Rage Winterchill
         creators["rage winterchill pulling boss"] =
             &RaidHyjalSummitTriggerContext::rage_winterchill_pulling_boss;
@@ -94,6 +98,10 @@ public:
     }
 
 private:
+    // General
+    static Trigger* hyjal_summit_tracker_bot_is_not_in_combat(
+        PlayerbotAI* botAI) { return new HyjalSummitTrackerBotIsNotInCombatTrigger(botAI); }
+
     // Rage Winterchill
     static Trigger* rage_winterchill_pulling_boss(
         PlayerbotAI* botAI) { return new RageWinterchillPullingBossTrigger(botAI); }

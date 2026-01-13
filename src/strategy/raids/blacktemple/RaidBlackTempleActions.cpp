@@ -5,6 +5,45 @@
 
 using namespace BlackTempleHelpers;
 
+// General
+
+bool BlackTempleClearTimersAndTrackersAction::Execute(Event event)
+{
+    bool cleared = false;
+
+    if (!supremusPhaseTimer.empty())
+    {
+        supremusPhaseTimer.clear();
+        cleared = true;
+    }
+
+    if (!gorefiendRangedPositions.empty())
+    {
+        gorefiendRangedPositions.clear();
+        cleared = true;
+    }
+
+    if (!gurtoggPhaseTimer.empty())
+    {
+        gurtoggPhaseTimer.clear();
+        cleared = true;
+    }
+
+    if (!reliquaryDpsWaitTimer.empty())
+    {
+        reliquaryDpsWaitTimer.clear();
+        cleared = true;
+    }
+
+    if (!illidanDpsWaitTimer.empty())
+    {
+        illidanDpsWaitTimer.clear();
+        cleared = true;
+    }
+
+    return cleared;
+}
+
 // High Warlord Naj'entus
 
 bool HighWarlordNajentusMisdirectBossToMainTankAction::Execute(Event event)
@@ -416,10 +455,8 @@ bool SupremusManagePhaseTimerAction::Execute(Event event)
     if (!supremus)
         return false;
 
-    const time_t now = std::time(nullptr);
-
-    if (supremus->GetHealthPct() > 99.9f)
-        supremusPhaseTimer.insert_or_assign(supremus->GetMap()->GetInstanceId(), now);
+    supremusPhaseTimer.try_emplace(
+        supremus->GetMap()->GetInstanceId(), std::time(nullptr));
 
     return false;
 }
@@ -505,9 +542,6 @@ bool TeronGorefiendPositionRangedOnBalconyAction::Execute(Event event)
     Unit* gorefiend = AI_VALUE2(Unit*, "find target", "teron gorefiend");
     if (!gorefiend)
         return false;
-
-    if (gorefiend->GetHealthPct() > 99.9f)
-        gorefiendRangedPositions.clear();
 
     Group* group = bot->GetGroup();
     if (!group)
@@ -842,14 +876,20 @@ bool GurtoggBloodboilManagePhaseTimerAction::Execute(Event event)
     const time_t now = std::time(nullptr);
     const uint32 instanceId = gurtogg->GetMap()->GetInstanceId();
 
-    if (gurtogg->GetHealthPct() > 99.9f)
-        gurtoggPhaseTimer.insert_or_assign(instanceId, now);
-    else if (gurtogg->HasAura(SPELL_BOSS_FEL_RAGE))
-        gurtoggPhaseTimer.erase(instanceId);
-    else if (!gurtogg->HasAura(SPELL_BOSS_FEL_RAGE))
-        gurtoggPhaseTimer.try_emplace(instanceId, now);
-
-    return false;
+    if (gurtogg->HasAura(SPELL_BOSS_FEL_RAGE))
+    {
+        if (gurtoggPhaseTimer.count(instanceId))
+        {
+            gurtoggPhaseTimer.erase(instanceId);
+            return true;
+        }
+        return false;
+    }
+    else
+    {
+        auto [it, inserted] = reliquaryDpsWaitTimer.try_emplace(instanceId, now);
+        return inserted;
+    }
 }
 
 // Reliquary of Souls
@@ -964,25 +1004,27 @@ bool ReliquaryOfSoulsManageDpsTimerAction::Execute(Event event)
     if (!reliquary)
         return false;
 
+    const uint32 instanceId = reliquary->GetMap()->GetInstanceId();
     const time_t now = std::time(nullptr);
 
-    if (Unit* suffering = AI_VALUE2(Unit*, "find target", "essence of suffering"))
-    {
-        if (suffering && suffering->GetHealthPct() > 99.9f)
-            reliquaryDpsWaitTimer.insert_or_assign(reliquary->GetMap()->GetInstanceId(), now);
-    }
-    else if (Unit* desire = AI_VALUE2(Unit*, "find target", "essence of desire"))
-    {
-        if (desire && desire->GetHealthPct() > 99.9f)
-            reliquaryDpsWaitTimer.insert_or_assign(reliquary->GetMap()->GetInstanceId(), now);
-    }
-    else if (Unit* anger = AI_VALUE2(Unit*, "find target", "essence of anger"))
-    {
-        if (anger && anger->GetHealthPct() > 99.9f)
-            reliquaryDpsWaitTimer.insert_or_assign(reliquary->GetMap()->GetInstanceId(), now);
-    }
+    Unit* suffering = AI_VALUE2(Unit*, "find target", "essence of suffering");
+    Unit* desire = AI_VALUE2(Unit*, "find target", "essence of desire");
+    Unit* anger = AI_VALUE2(Unit*, "find target", "essence of anger");
 
-    return false;
+    if (!suffering && !desire && !anger)
+    {
+        if (reliquaryDpsWaitTimer.count(instanceId))
+        {
+            reliquaryDpsWaitTimer.erase(instanceId);
+            return true;
+        }
+        return false;
+    }
+    else
+    {
+        auto [it, inserted] = reliquaryDpsWaitTimer.try_emplace(instanceId, now);
+        return inserted;
+    }
 }
 
 // Mother Shahraz
@@ -2494,29 +2536,46 @@ bool IllidanStormrageManageDpsTimerAction::Execute(Event event)
 
     const time_t now = std::time(nullptr);
     const uint32 instanceId = illidan->GetMap()->GetInstanceId();
+    bool changed = false;
 
-    if (illidan->GetHealth() == illidan->GetMaxHealth() ||
-        GetIllidanPhase(illidan) == 3 ||
-        GetIllidanPhase(illidan) == 5)
+    if (GetIllidanPhase(illidan) == 3 || GetIllidanPhase(illidan) == 5)
     {
-        illidanDpsWaitTimer.erase(instanceId);
-        flameTankWaypointIndex.clear();
-        eastFlameGuid.Clear();
-        westFlameGuid.Clear();
+        if (!illidanDpsWaitTimer.empty())
+        {
+            illidanDpsWaitTimer.clear();
+            changed = true;
+        }
+        if (!flameTankWaypointIndex.empty())
+        {
+            flameTankWaypointIndex.clear();
+            changed = true;
+        }
+        if (!eastFlameGuid.IsEmpty())
+        {
+            eastFlameGuid.Clear();
+            changed = true;
+        }
+        if (!westFlameGuid.IsEmpty())
+        {
+            westFlameGuid.Clear();
+            changed = true;
+        }
     }
-    else if (GetIllidanPhase(illidan) == 1 ||
-             GetIllidanPhase(illidan) == 4)
+    else if (GetIllidanPhase(illidan) == 1 || GetIllidanPhase(illidan) == 4)
     {
-        illidanDpsWaitTimer.try_emplace(instanceId, now);
+        auto [it, inserted] = illidanDpsWaitTimer.try_emplace(instanceId, now);
+        if (inserted)
+            changed = true;
     }
     else
     {
         Unit* flame = AI_VALUE2(Unit*, "find target", "flame of azzinoth");
-        if (GetIllidanPhase(illidan) == 2 && flame == nullptr)
+        if (GetIllidanPhase(illidan) == 2 && flame)
         {
-            illidanDpsWaitTimer.insert_or_assign(instanceId, now);
+            illidanDpsWaitTimer.try_emplace(instanceId, now);
+            changed = true;
         }
     }
 
-    return false;
+    return changed;
 }

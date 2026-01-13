@@ -50,7 +50,7 @@ namespace HyjalSummitHelpers
     void MarkTargetWithCircle(Player* bot, Unit* target);
     void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target);
     Unit* GetNearestPlayerInRadius(Player* bot, float radius);
-    bool IsInstanceTimerManager(PlayerbotAI* botAI, Player* bot);
+    bool IsInstanceTrackerManager(PlayerbotAI* botAI, Player* bot);
 
     // Rage Winterchill
     extern const Position RAGE_WINTERCHILL_TANK_POSITION;

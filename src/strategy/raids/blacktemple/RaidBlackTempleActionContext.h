@@ -9,8 +9,11 @@ class RaidBlackTempleActionContext : public NamedObjectContext<Action>
 public:
     RaidBlackTempleActionContext()
     {
-        // High Warlord Naj'entus
+        // General
+        creators["black temple clear timers and trackers"] =
+            &RaidBlackTempleActionContext::black_temple_clear_timers_and_trackers;
 
+        // High Warlord Naj'entus
         creators["high warlord naj'entus misdirect boss to main tank"] =
             &RaidBlackTempleActionContext::high_warlord_najentus_misdirect_boss_to_main_tank;
 
@@ -27,7 +30,6 @@ public:
             &RaidBlackTempleActionContext::high_warlord_najentus_throw_impaling_spine;
 
         // Supremus
-
         creators["supremus misdirect boss to main tank"] =
             &RaidBlackTempleActionContext::supremus_misdirect_boss_to_main_tank;
 
@@ -47,7 +49,6 @@ public:
         // N/A
 
         // Teron Gorefiend
-
         creators["teron gorefiend misdirect boss to main tank"] =
             &RaidBlackTempleActionContext::teron_gorefiend_misdirect_boss_to_main_tank;
 
@@ -67,7 +68,6 @@ public:
             &RaidBlackTempleActionContext::teron_gorefiend_control_and_destroy_shadowy_constructs;
 
         // Gurtogg Bloodboil
-
         creators["gurtogg bloodboil misdirect boss to main tank"] =
             &RaidBlackTempleActionContext::gurtogg_bloodboil_misdirect_boss_to_main_tank;
 
@@ -87,7 +87,6 @@ public:
             &RaidBlackTempleActionContext::gurtogg_bloodboil_manage_phase_timer;
 
         // Reliquary of Souls
-
         creators["reliquary of souls misdirect boss to main tank"] =
             &RaidBlackTempleActionContext::reliquary_of_souls_misdirect_boss_to_main_tank;
 
@@ -107,7 +106,6 @@ public:
             &RaidBlackTempleActionContext::reliquary_of_souls_manage_dps_timer;
 
         // Mother Shahraz
-
         creators["mother shahraz misdirect boss to main tank"] =
             &RaidBlackTempleActionContext::mother_shahraz_misdirect_boss_to_main_tank;
 
@@ -121,7 +119,6 @@ public:
             &RaidBlackTempleActionContext::mother_shahraz_run_away_to_break_fatal_attraction;
 
         // Illidari Council
-
         creators["illidari council misdirect bosses to tanks"] =
             &RaidBlackTempleActionContext::illidari_council_misdirect_bosses_to_tanks;
 
@@ -147,7 +144,6 @@ public:
             &RaidBlackTempleActionContext::illidari_council_manage_dps_timer;
 
         // Illidan Stormrage <The Betrayer>
-
         creators["illidan stormrage misdirect to tank"] =
             &RaidBlackTempleActionContext::illidan_stormrage_misdirect_to_tank;
 
@@ -186,8 +182,11 @@ public:
     }
 
 private:
-    // High Warlord Naj'entus
+    // General
+    static Action* black_temple_clear_timers_and_trackers(
+        PlayerbotAI* botAI) { return new BlackTempleClearTimersAndTrackersAction(botAI); }
 
+    // High Warlord Naj'entus
     static Action* high_warlord_najentus_misdirect_boss_to_main_tank(
         PlayerbotAI* botAI) { return new HighWarlordNajentusMisdirectBossToMainTankAction(botAI); }
 
@@ -204,7 +203,6 @@ private:
         PlayerbotAI* botAI) { return new HighWarlordNajentusThrowImpalingSpineAction(botAI); }
 
     // Supremus
-
     static Action* supremus_misdirect_boss_to_main_tank(
         PlayerbotAI* botAI) { return new SupremusMisdirectBossToMainTankAction(botAI); }
 
@@ -224,7 +222,6 @@ private:
     // N/A
 
     // Teron Gorefiend
-
     static Action* teron_gorefiend_misdirect_boss_to_main_tank(
         PlayerbotAI* botAI) { return new TeronGorefiendMisdirectBossToMainTankAction(botAI); }
 
@@ -244,7 +241,6 @@ private:
         PlayerbotAI* botAI) { return new TeronGorefiendControlAndDestroyShadowyConstructsAction(botAI); }
 
     // Gurtogg Bloodboil
-
     static Action* gurtogg_bloodboil_misdirect_boss_to_main_tank(
         PlayerbotAI* botAI) { return new GurtoggBloodboilMisdirectBossToMainTankAction(botAI); }
 
@@ -264,7 +260,6 @@ private:
         PlayerbotAI* botAI) { return new GurtoggBloodboilManagePhaseTimerAction(botAI); }
 
     // Reliquary of Souls
-
     static Action* reliquary_of_souls_misdirect_boss_to_main_tank(
         PlayerbotAI* botAI) { return new ReliquaryOfSoulsMisdirectBossToMainTankAction(botAI); }
 
@@ -284,7 +279,6 @@ private:
         PlayerbotAI* botAI) { return new ReliquaryOfSoulsManageDpsTimerAction(botAI); }
 
     // Mother Shahraz
-
     static Action* mother_shahraz_misdirect_boss_to_main_tank(
         PlayerbotAI* botAI) { return new MotherShahrazMisdirectBossToMainTankAction(botAI); }
 
@@ -298,7 +292,6 @@ private:
         PlayerbotAI* botAI) { return new MotherShahrazRunAwayToBreakFatalAttractionAction(botAI); }
 
     // Illidari Council
-
     static Action* illidari_council_misdirect_bosses_to_tanks(
         PlayerbotAI* botAI) { return new IllidariCouncilMisdirectBossesToTanksAction(botAI); }
 
@@ -324,7 +317,6 @@ private:
         PlayerbotAI* botAI) { return new IllidariCouncilManageDpsTimerAction(botAI); }
 
     // Illidan Stormrage <The Betrayer>
-
     static Action* illidan_stormrage_misdirect_to_tank(
         PlayerbotAI* botAI) { return new IllidanStormrageMisdirectToTankAction(botAI); }
 

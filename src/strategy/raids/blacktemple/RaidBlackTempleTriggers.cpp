@@ -6,6 +6,13 @@
 
 using namespace BlackTempleHelpers;
 
+// General
+
+bool BlackTempleTimerBotIsNotInCombatTrigger::IsActive()
+{
+    return IsInstanceTimerManager(botAI, bot) && !bot->IsInCombat();
+}
+
 // High Warlord Naj'entus
 
 bool HighWarlordNajentusPullingBossTrigger::IsActive()
