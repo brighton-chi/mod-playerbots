@@ -135,18 +135,7 @@ bool AlarStrategyChangesBetweenPhasesTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "al'ar"))
         return false;
 
-    if (Group* group = bot->GetGroup())
-    {
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (member && member->IsAlive() && botAI->IsDps(member) &&
-                GET_PLAYERBOT_AI(member))
-                return member == bot;
-        }
-    }
-
-    return false;
+    return IsInstanceTimerManager(botAI, bot);
 }
 
 // Void Reaver
@@ -392,7 +381,7 @@ bool KaelthasSunstriderDeterminingAdvisorKillOrderTrigger::IsActive()
 
 bool KaelthasSunstriderWaitingForTanksToGetAggroOnAdvisorsTrigger::IsActive()
 {
-    if (!IsKaelthasInstanceTimerManager(botAI, bot))
+    if (!IsInstanceTimerManager(botAI, bot))
         return false;
 
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");

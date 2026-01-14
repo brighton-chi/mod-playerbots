@@ -70,6 +70,28 @@ namespace TempestKeepHelpers
         }
     }
 
+    bool IsInstanceTimerManager(PlayerbotAI* botAI, Player* bot)
+    {
+        if (Group* group = bot->GetGroup())
+        {
+            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+            {
+                Player* member = ref->GetSource();
+                if (!member || !member->IsAlive() || !botAI->IsDps(member) ||
+                    !GET_PLAYERBOT_AI(member))
+                    continue;
+
+                Player* capernianTank = GetCapernianTank(botAI, member);
+                if (capernianTank && capernianTank == member)
+                    continue;
+
+                return member == bot;
+            }
+        }
+
+        return false;
+    }
+
     Unit* GetNearestPlayerInRadius(Player* bot, float radius)
     {
         Unit* nearestPlayer = nullptr;
@@ -419,39 +441,18 @@ namespace TempestKeepHelpers
     // Kael'thas Sunstrider <Lord of the Blood Elves>
 
     const Position SANGUINAR_TANK_POSITION = { 775.478f, 39.888f, 46.780f };
-    const Position SANGUINAR_WAITING_POSITION = { 0.0f, 0.0f, 0.0f };
+    const Position SANGUINAR_WAITING_POSITION = { 761.850f, 27.459f, 46.779f };
     const Position TELONICUS_TANK_POSITION = { 773.717f, 44.091f, 46.780f };
-    const Position TELONICUS_WAITING_POSITION = { 0.0f, 0.0f, 0.0f };
-    const Position ADVISOR_HEAL_POSITION = {  749.443f, 26.927f, 46.780f };
-    const Position CAPERNIAN_WAITING_POSITION = { 0.0f, 0.0f, 0.0f };
+    const Position TELONICUS_WAITING_POSITION = { 754.347f, 31.739f, 46.796f };
+    // const Position ADVISOR_HEAL_POSITION = { 749.443f, 26.927f, 46.780f };
+    const Position ADVISOR_HEAL_POSITION = { 748.475f, 17.983f, 46.779f };
+    const Position CAPERNIAN_WAITING_POSITION = { 743.897f, -11.575f, 46.779f };
     const Position KAELTHAS_WEAPON_STACK_POSITION = { 775.296f, -0.822f, 48.729f };
     const Position KAELTHAS_AXE_TANK_POSITION = { 775.621f, 20.717f, 48.729f };
     const Position KAELTHAS_BOW_TANK_POSITION = { 777.713f, -28.857f, 48.729f };
     const Position KAELTHAS_TANK_POSITION = { 799.390f, -0.837f, 48.729f };
 
     std::unordered_map<uint32, time_t> advisorDpsWaitTimer;
-
-    bool IsKaelthasInstanceTimerManager(PlayerbotAI* botAI, Player* bot)
-    {
-        if (Group* group = bot->GetGroup())
-        {
-            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-            {
-                Player* member = ref->GetSource();
-                if (!member || !member->IsAlive() || !botAI->IsDps(member) ||
-                    !GET_PLAYERBOT_AI(member))
-                    continue;
-
-                Player* capernianTank = GetCapernianTank(botAI, member);
-                if (capernianTank && capernianTank == member)
-                    continue;
-
-                return member == bot;
-            }
-        }
-
-        return false;
-    }
 
     Player* GetCapernianTank(PlayerbotAI* botAI, Player* bot)
     {

@@ -17,16 +17,23 @@ bool TempestKeepEraseTimersAndTrackersAction::Execute(Event event)
     const uint32 instanceId = bot->GetMap()->GetInstanceId();
 
     bool erased = false;
-    if (lastRebirthState.erase(instanceId))
-        erased = true;
-    if (isAlarInPhase2.erase(instanceId))
-        erased = true;
     if (initialVoidReaverPositions.erase(bot->GetGUID()))
         erased = true;
     if (hasReachedInitialVoidReaverPosition.erase(bot->GetGUID()))
         erased = true;
-    if (advisorDpsWaitTimer.erase(instanceId))
-        erased = true;
+    if (IsInstanceTimerManager(botAI, bot))
+    {
+        if (advisorDpsWaitTimer.erase(instanceId))
+            erased = true;
+
+        if (!AI_VALUE2(Unit*, "find target", "al'ar"))
+        {
+            if (lastRebirthState.erase(instanceId))
+                erased = true;
+            if (isAlarInPhase2.erase(instanceId))
+                erased = true;
+        }
+    }
 
     return erased;
 }
@@ -674,8 +681,6 @@ bool AlarManagePhaseTrackerAction::Execute(Event event)
         return false;
 
     const uint32 instanceId = alar->GetMap()->GetInstanceId();
-
-    isAlarInPhase2[instanceId] = false;
 
     bool rebirthActive = alar->HasUnitState(UNIT_STATE_CASTING) &&
                          alar->FindCurrentSpellBySpellId(SPELL_REBIRTH_PHASE2);

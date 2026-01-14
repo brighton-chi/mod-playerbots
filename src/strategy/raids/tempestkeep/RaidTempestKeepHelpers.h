@@ -109,6 +109,7 @@ namespace TempestKeepHelpers
     void MarkTargetWithDiamond(Player* bot, Unit* target);
     void MarkTargetWithCross(Player* bot, Unit* target);
     void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target);
+    bool IsInstanceTimerManager(PlayerbotAI* botAI, Player* bot);
     Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry);
     Unit* GetNearestPlayerInRadius(Player* bot, float radius);
     Unit* GetNearestNonTankPlayerInRadius(Player* bot, float radius);
@@ -167,7 +168,6 @@ namespace TempestKeepHelpers
     extern const Position KAELTHAS_BOW_TANK_POSITION;
     extern const Position KAELTHAS_TANK_POSITION;
     extern std::unordered_map<uint32, time_t> advisorDpsWaitTimer;
-    bool IsKaelthasInstanceTimerManager(PlayerbotAI* botAI, Player* bot);
     Player* GetCapernianTank(PlayerbotAI* botAI, Player* bot);
     Player* GetNetherstrandLongbowTank(PlayerbotAI* botAI, Player* bot);
     bool IsAnyLegendaryWeaponDead(PlayerbotAI* botAI, Player* bot);
