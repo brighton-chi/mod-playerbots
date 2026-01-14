@@ -387,6 +387,14 @@ public:
     bool IsActive() override;
 };
 
+class LadyVashjNeedToResetCorePassingTrackersTrigger : public Trigger
+{
+public:
+    LadyVashjNeedToResetCorePassingTrackersTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "lady vashj need to reset core passing trackers") {}
+    bool IsActive() override;
+};
+
 class LadyVashjToxicSporebatsAreSpewingPoisonCloudsTrigger : public Trigger
 {
 public:

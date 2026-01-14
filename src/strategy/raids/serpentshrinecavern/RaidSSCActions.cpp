@@ -39,12 +39,6 @@ bool SerpentShrineCavernEraseTimersAndTrackersAction::Execute(Event event)
         erased = true;
     if (hasReachedVashjRangedPosition.erase(guid))
         erased = true;
-    if (nearestTriggerGuid.erase(instanceId))
-        erased = true;
-    if (lastImbueAttempt.erase(instanceId))
-        erased = true;
-    if (intendedLineup.erase(guid))
-        erased = true;
 
     return erased;
 }
@@ -1737,6 +1731,20 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event event)
     if (!vashj)
         return false;
 
+    const Position& center = VASHJ_PLATFORM_CENTER_POSITION;
+    float platformZ = center.GetPositionZ();
+    if (bot->GetPositionZ() - platformZ > 2.0f)
+    {
+        // This block is needed to prevent bots from floating into the air to attack sporebats
+        bot->AttackStop();
+        bot->InterruptNonMeleeSpells(true);
+        bot->StopMoving();
+        bot->GetMotionMaster()->Clear();
+        bot->TeleportTo(SSC_MAP_ID, bot->GetPositionX(), bot->GetPositionY(),
+                        platformZ, bot->GetOrientation());
+        return true;
+    }
+
     auto const& attackers =
         botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
     Unit* target = nullptr;
@@ -1746,9 +1754,8 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event event)
     Unit* sporebat = nullptr;
 
     // Search and attack radius are intended to keep bots on the platform (not go down the stairs)
-    const Position& center = VASHJ_PLATFORM_CENTER_POSITION;
     const float maxSearchRange =
-        botAI->IsRangedDps(bot) ? 60.0f : (botAI->IsMelee(bot) ? 55.0f : 40.0f);
+        botAI->IsRanged(bot) ? 60.0f : 55.0f;
     const float maxPursueRange = maxSearchRange - 5.0f;
 
     for (auto guid : attackers)
@@ -1837,7 +1844,7 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event event)
         }
         else if (botAI->IsRanged(bot))
         {
-            // Hunters are specifically assigned to kill Sporebats in Phase 3
+            // Hunters are assigned to kill Sporebats in Phase 3
             if (bot->getClass() == CLASS_HUNTER)
                 targets = { sporebat, enchanted, strider, elite, vashj };
             else
@@ -1851,38 +1858,30 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event event)
 
     for (Unit* candidate : targets)
     {
-        if (candidate)
+        if (candidate && bot->GetExactDist2d(candidate) <= maxPursueRange)
         {
             target = candidate;
             break;
         }
     }
 
-    if (bot->GetVictim() == vashj && IsLadyVashjInPhase2(botAI))
-    {
-        bot->AttackStop();
-        bot->InterruptNonMeleeSpells(true);
-        bot->SetTarget(ObjectGuid::Empty);
-        bot->SetSelection(ObjectGuid());
-    }
-
     Unit* currentTarget = context->GetValue<Unit*>("current target")->Get();
-    if (target && currentTarget == target && IsValidLadyVashjCombatNpc(currentTarget, botAI))
-        return false;
-
-    if (target && bot->GetExactDist2d(target) <= maxPursueRange &&
-        bot->GetTarget() != target->GetGUID())
-        return Attack(target);
 
     if (currentTarget && !IsValidLadyVashjCombatNpc(currentTarget, botAI))
     {
+        bot->AttackStop();
+        bot->InterruptNonMeleeSpells(true);
         context->GetValue<Unit*>("current target")->Set(nullptr);
         bot->SetTarget(ObjectGuid::Empty);
         bot->SetSelection(ObjectGuid());
+        currentTarget = nullptr;
     }
 
-    // If bots have wandered too far from the center and are not attacking anything, move them back
-    if (bot->GetVictim() == nullptr)
+    if (target && currentTarget != target && bot->GetTarget() != target->GetGUID())
+        return Attack(target);
+
+    // If bots have wandered too far from the center, move them back
+    if (bot->GetExactDist2d(center.GetPositionX(), center.GetPositionY()) > 55.0f)
     {
         Player* designatedLooter = GetDesignatedCoreLooter(bot->GetGroup(), botAI);
         Player* firstCorePasser = GetFirstTaintedCorePasser(bot->GetGroup(), botAI);
@@ -1895,25 +1894,9 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event event)
                 return false;
         }
 
-        const Position& center = VASHJ_PLATFORM_CENTER_POSITION;
-        if (bot->GetExactDist2d(center.GetPositionX(), center.GetPositionY()) > 35.0f)
-        {
-            return MoveInside(SSC_MAP_ID, center.GetPositionX(), center.GetPositionY(),
-                              center.GetPositionZ(), 30.0f, MovementPriority::MOVEMENT_COMBAT);
-        }
+        return MoveInside(SSC_MAP_ID, center.GetPositionX(), center.GetPositionY(),
+                          center.GetPositionZ(), 40.0f, MovementPriority::MOVEMENT_COMBAT);
     }
-
-    // Sporebat testing: get bots to return to the ground
-    float platformZ = center.GetPositionZ();
-    if (bot->GetPositionZ() - platformZ > 3.0f)
-    {
-        // Snap bot back to ground
-        bot->AttackStop();
-        bot->InterruptNonMeleeSpells(true);
-        bot->TeleportTo(SSC_MAP_ID, bot->GetPositionX(), bot->GetPositionY(),
-                        platformZ, bot->GetOrientation());
-    }
-    // end Sporebat testing
 
     return false;
 }
@@ -2090,7 +2073,8 @@ bool LadyVashjLootTaintedCoreAction::Execute(Event)
             return MoveTo(object, 2.0f, MovementPriority::MOVEMENT_FORCED);
 
         OpenLootAction open(botAI);
-        return open.Execute(Event());
+        if (!open.Execute(Event()))
+            return false;
 
         if (Group* group = bot->GetGroup())
         {
@@ -2228,16 +2212,16 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
                 auto [it, inserted] = lastImbueAttempt.try_emplace(instanceId, now);
                 if (inserted)
                 {
-                    botAI->ImbueItem(item, firstCorePasser);
                     lastCoreInInventoryTime[instanceId] = now;
+                    botAI->ImbueItem(item, firstCorePasser);
                     ScheduleStoreCoreAfterImbue(botAI, bot, firstCorePasser);
                     return true;
                 }
                 if ((now - it->second) >= 2)
                 {
                     it->second = now;
-                    botAI->ImbueItem(item, firstCorePasser);
                     lastCoreInInventoryTime[instanceId] = now;
+                    botAI->ImbueItem(item, firstCorePasser);
                     ScheduleStoreCoreAfterImbue(botAI, bot, firstCorePasser);
                     return true;
                 }
@@ -2255,8 +2239,8 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
                 auto [it, inserted] = lastImbueAttempt.try_emplace(instanceId, now);
                 if (inserted)
                 {
-                    botAI->ImbueItem(item, secondCorePasser);
                     lastCoreInInventoryTime[instanceId] = now;
+                    botAI->ImbueItem(item, secondCorePasser);
                     intendedLineup.erase(bot->GetGUID());
                     ScheduleStoreCoreAfterImbue(botAI, bot, secondCorePasser);
                     return true;
@@ -2264,8 +2248,8 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
                 if ((now - it->second) >= 2)
                 {
                     it->second = now;
-                    botAI->ImbueItem(item, secondCorePasser);
                     lastCoreInInventoryTime[instanceId] = now;
+                    botAI->ImbueItem(item, secondCorePasser);
                     intendedLineup.erase(bot->GetGUID());
                     ScheduleStoreCoreAfterImbue(botAI, bot, secondCorePasser);
                     return true;
@@ -2287,8 +2271,8 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
                     auto [it, inserted] = lastImbueAttempt.try_emplace(instanceId, now);
                     if (inserted)
                     {
-                        botAI->ImbueItem(item, thirdCorePasser);
                         lastCoreInInventoryTime[instanceId] = now;
+                        botAI->ImbueItem(item, thirdCorePasser);
                         intendedLineup.erase(bot->GetGUID());
                         ScheduleStoreCoreAfterImbue(botAI, bot, thirdCorePasser);
                         return true;
@@ -2296,8 +2280,8 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
                     if ((now - it->second) >= 2)
                     {
                         it->second = now;
-                        botAI->ImbueItem(item, thirdCorePasser);
                         lastCoreInInventoryTime[instanceId] = now;
+                        botAI->ImbueItem(item, thirdCorePasser);
                         intendedLineup.erase(bot->GetGUID());
                         ScheduleStoreCoreAfterImbue(botAI, bot, thirdCorePasser);
                         return true;
@@ -2320,8 +2304,8 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
                     auto [it, inserted] = lastImbueAttempt.try_emplace(instanceId, now);
                     if (inserted)
                     {
-                        botAI->ImbueItem(item, fourthCorePasser);
                         lastCoreInInventoryTime[instanceId] = now;
+                        botAI->ImbueItem(item, fourthCorePasser);
                         intendedLineup.erase(bot->GetGUID());
                         ScheduleStoreCoreAfterImbue(botAI, bot, fourthCorePasser);
                         return true;
@@ -2329,8 +2313,8 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
                     if ((now - it->second) >= 2)
                     {
                         it->second = now;
-                        botAI->ImbueItem(item, fourthCorePasser);
                         lastCoreInInventoryTime[instanceId] = now;
+                        botAI->ImbueItem(item, fourthCorePasser);
                         intendedLineup.erase(bot->GetGUID());
                         ScheduleStoreCoreAfterImbue(botAI, bot, fourthCorePasser);
                         return true;
@@ -2341,9 +2325,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
         // Fourth core passer: the fourth passer is rarely needed and no more than
         // four ever should be, so it should use the Core on the nearest generator
         else if (bot == fourthCorePasser)
-        {
             UseCoreOnNearestGenerator();
-        }
     }
 
     return false;
@@ -2642,8 +2624,6 @@ bool LadyVashjPassTheTaintedCoreAction::UseCoreOnNearestGenerator()
         if (core->GetTemplate()->Spells[i].SpellId > 0)
         {
             spellId = core->GetTemplate()->Spells[i].SpellId;
-            if (!botAI->CanCastSpell(spellId, bot, false, nullptr, core))
-                return false;
             break;
         }
     }
@@ -2678,6 +2658,29 @@ bool LadyVashjDestroyTaintedCoreAction::Execute(Event event)
     }
 
     return false;
+}
+
+// This needs to be separate from the general map erasing logic because somehow
+// Bots tend to end up out of combat during the Vashj encounter
+bool LadyVashjEraseCorePassingTrackersAction::Execute(Event event)
+{
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (!vashj)
+        return false;
+
+    const uint32 instanceId = vashj->GetMap()->GetInstanceId();
+
+    bool erased = false;
+    if (nearestTriggerGuid.erase(instanceId))
+        erased = true;
+    if (lastImbueAttempt.erase(instanceId))
+        erased = true;
+    if (lastCoreInInventoryTime.erase(instanceId))
+        erased = true;
+    if (intendedLineup.erase(bot->GetGUID()))
+        erased = true;
+
+    return erased;
 }
 
 // The standard "avoid aoe" strategy does work for Toxic Spores, but this method

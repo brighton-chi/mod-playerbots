@@ -177,11 +177,11 @@ public:
 
 // Lady Vashj <Coilfang Matron>
 
-class LadyVashjDelayBloodlustAndHeroismMultiplier : public Multiplier
+class LadyVashjDelayCooldownsMultiplier : public Multiplier
 {
 public:
-    LadyVashjDelayBloodlustAndHeroismMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "lady vashj delay bloodlust and heroism") {}
+    LadyVashjDelayCooldownsMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "lady vashj delay cooldowns") {}
     virtual float GetValue(Action* action);
 };
 

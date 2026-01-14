@@ -4,6 +4,7 @@
 #include "ChooseTargetActions.h"
 #include "DestroyItemAction.h"
 #include "DKActions.h"
+#include "DruidActions.h"
 #include "DruidBearActions.h"
 #include "FollowActions.h"
 #include "GenericSpellActions.h"
@@ -545,18 +546,45 @@ float MorogrimTidewalkerMaintainPhase2StackingMultiplier::GetValue(Action* actio
 }
 
 // Wait until phase 3 to use Bloodlust/Heroism
-float LadyVashjDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
+// Don't use other major cooldowns in Phase 1, either
+float LadyVashjDelayCooldownsMultiplier::GetValue(Action* action)
 {
-    if (bot->getClass() != CLASS_SHAMAN)
-        return 1.0f;
+    if (bot->getClass() == CLASS_SHAMAN)
+    {
+        if (!AI_VALUE2(Unit*, "find target", "lady vashj") ||
+            IsLadyVashjInPhase3(botAI))
+            return 1.0f;
 
-    if (!AI_VALUE2(Unit*, "find target", "lady vashj") ||
-        IsLadyVashjInPhase3(botAI))
-        return 1.0f;
+        if (dynamic_cast<CastBloodlustAction*>(action) ||
+            dynamic_cast<CastHeroismAction*>(action))
+            return 0.0f;
+    }
 
-    if (dynamic_cast<CastBloodlustAction*>(action) ||
-        dynamic_cast<CastHeroismAction*>(action))
-        return 0.0f;
+    if (botAI->IsDps(bot) && !IsLadyVashjInPhase1(botAI))
+    {
+        if (dynamic_cast<CastMetamorphosisAction*>(action) ||
+            dynamic_cast<CastAdrenalineRushAction*>(action) ||
+            dynamic_cast<CastBladeFlurryAction*>(action) ||
+            dynamic_cast<CastIcyVeinsAction*>(action) ||
+            dynamic_cast<CastColdSnapAction*>(action) ||
+            dynamic_cast<CastArcanePowerAction*>(action) ||
+            dynamic_cast<CastPresenceOfMindAction*>(action) ||
+            dynamic_cast<CastCombustionAction*>(action) ||
+            dynamic_cast<CastRapidFireAction*>(action) ||
+            dynamic_cast<CastReadinessAction*>(action) ||
+            dynamic_cast<CastAvengingWrathAction*>(action) ||
+            dynamic_cast<CastElementalMasteryAction*>(action) ||
+            dynamic_cast<CastFeralSpiritAction*>(action) ||
+            dynamic_cast<CastFireElementalTotemAction*>(action) ||
+            dynamic_cast<CastFireElementalTotemMeleeAction*>(action) ||
+            dynamic_cast<CastForceOfNatureAction*>(action) ||
+            dynamic_cast<CastArmyOfTheDeadAction*>(action) ||
+            dynamic_cast<CastSummonGargoyleAction*>(action) ||
+            dynamic_cast<CastBerserkingAction*>(action) ||
+            dynamic_cast<CastBloodFuryAction*>(action) ||
+            dynamic_cast<UseTrinketAction*>(action))
+            return 0.0f;
+    }
 
     return 1.0f;
 }
