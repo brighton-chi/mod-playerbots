@@ -10,9 +10,9 @@
 using namespace SerpentShrineCavernHelpers;
 
 // General
-bool SerpentShrineCavernTimerBotIsNotInCombatTrigger::IsActive()
+bool SerpentShrineCavernBotIsNotInCombatTrigger::IsActive()
 {
-    return IsInstanceTimerManager(botAI, bot) && !bot->IsInCombat();
+    return !bot->IsInCombat();
 }
 
 // Trash Mobs
@@ -644,10 +644,4 @@ bool LadyVashjBotIsEntangledInToxicSporesOrStaticChargeTrigger::IsActive()
     }
 
     return false;
-}
-
-bool LadyVashjNeedToManageTrackersTrigger::IsActive()
-{
-    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    return vashj && vashj->GetHealthPct() > 99.8f;
 }

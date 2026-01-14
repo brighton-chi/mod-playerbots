@@ -7,11 +7,11 @@
 
 // General
 
-class SerpentShrineCavernClearTimersAndTrackersAction : public Action
+class SerpentShrineCavernEraseTimersAndTrackersAction : public Action
 {
 public:
-    SerpentShrineCavernClearTimersAndTrackersAction(
-        PlayerbotAI* botAI, std::string const name = "serpent shrine cavern clear timers and trackers") : Action(botAI, name) {}
+    SerpentShrineCavernEraseTimersAndTrackersAction(
+        PlayerbotAI* botAI, std::string const name = "serpent shrine cavern erase timers and trackers") : Action(botAI, name) {}
     bool Execute(Event event) override;
 };
 
@@ -432,13 +432,6 @@ class LadyVashjUseFreeActionAbilitiesAction : public Action
 {
 public:
     LadyVashjUseFreeActionAbilitiesAction(PlayerbotAI* botAI, std::string const name = "lady vashj use free action abilities") : Action(botAI, name) {}
-    bool Execute(Event event) override;
-};
-
-class LadyVashjManageTrackersAction : public Action
-{
-public:
-    LadyVashjManageTrackersAction(PlayerbotAI* botAI, std::string const name = "lady vashj manage trackers") : Action(botAI, name) {}
     bool Execute(Event event) override;
 };
 

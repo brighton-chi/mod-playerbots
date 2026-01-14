@@ -10,8 +10,8 @@ public:
     RaidTempestKeepTriggerContext()
     {
         // General
-        creators["tempest keep timer bot is not in combat"] =
-            &RaidTempestKeepTriggerContext::tempest_keep_timer_bot_is_not_in_combat;
+        creators["tempest keep bot is not in combat"] =
+            &RaidTempestKeepTriggerContext::tempest_keep_bot_is_not_in_combat;
 
         // Trash
         creators["crimson hand centurion casts arcane volley"] =
@@ -96,8 +96,8 @@ public:
         creators["kael'thas sunstrider telonicus engaged by first assist tank"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_telonicus_engaged_by_first_assist_tank;
 
-        creators["kael'thas sunstrider need dedicated bots for sanguinar and telonicus in phase 3"] =
-            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_need_dedicated_bots_for_sanguinar_and_telonicus_in_phase_3;
+        creators["kael'thas sunstrider bots have specific roles in phase 3"] =
+            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_bots_have_specific_roles_in_phase_3;
 
         creators["kael'thas sunstrider determining advisor kill order"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_determining_advisor_kill_order;
@@ -107,6 +107,12 @@ public:
 
         creators["kael'thas sunstrider legendary weapons are alive"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_legendary_weapons_are_alive;
+
+        creators["kael'thas sunstrider legendary axe casts whirlwind"] =
+            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_legendary_axe_casts_whirlwind;
+
+        creators["kael'thas sunstrider legendary bow casts multishot"] =
+            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_legendary_bow_casts_multishot;
 
         creators["kael'thas sunstrider legendary weapons are dead and lootable"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_legendary_weapons_are_dead_and_lootable;
@@ -135,8 +141,8 @@ public:
 
 private:
     // General
-    static Trigger* tempest_keep_timer_bot_is_not_in_combat(
-        PlayerbotAI* botAI) { return new TempestKeepTimerBotIsNotInCombatTrigger(botAI); }
+    static Trigger* tempest_keep_bot_is_not_in_combat(
+        PlayerbotAI* botAI) { return new TempestKeepBotIsNotInCombatTrigger(botAI); }
 
     // Trash
     static Trigger* crimson_hand_centurion_casts_arcane_volley(
@@ -221,8 +227,8 @@ private:
     static Trigger* kaelthas_sunstrider_telonicus_engaged_by_first_assist_tank(
         PlayerbotAI* botAI) { return new KaelthasSunstriderTelonicusEngagedByFirstAssistTankTrigger(botAI); }
 
-    static Trigger* kaelthas_sunstrider_need_dedicated_bots_for_sanguinar_and_telonicus_in_phase_3(
-        PlayerbotAI* botAI) { return new KaelthasSunstriderNeedDedicatedBotsForSanguinarAndTelonicusInPhase3Trigger(botAI); }
+    static Trigger* kaelthas_sunstrider_bots_have_specific_roles_in_phase_3(
+        PlayerbotAI* botAI) { return new KaelthasSunstriderBotsHaveSpecificRolesInPhase3Trigger(botAI); }
 
     static Trigger* kaelthas_sunstrider_determining_advisor_kill_order(
         PlayerbotAI* botAI) { return new KaelthasSunstriderDeterminingAdvisorKillOrderTrigger(botAI); }
@@ -232,6 +238,12 @@ private:
 
     static Trigger* kaelthas_sunstrider_legendary_weapons_are_alive(
         PlayerbotAI* botAI) { return new KaelthasSunstriderLegendaryWeaponsAreAliveTrigger(botAI); }
+
+    static Trigger* kaelthas_sunstrider_legendary_axe_casts_whirlwind(
+        PlayerbotAI* botAI) { return new KaelthasSunstriderLegendaryAxeCastsWhirlwindTrigger(botAI); }
+
+    static Trigger* kaelthas_sunstrider_legendary_bow_casts_multishot(
+        PlayerbotAI* botAI) { return new KaelthasSunstriderLegendaryBowCastsMultiShotTrigger(botAI); }
 
     static Trigger* kaelthas_sunstrider_legendary_weapons_are_dead_and_lootable(
         PlayerbotAI* botAI) { return new KaelthasSunstriderLegendaryWeaponsAreDeadAndLootableTrigger(botAI); }

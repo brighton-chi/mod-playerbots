@@ -7,11 +7,11 @@
 
 // General
 
-class HyjalSummitClearTrackersAction : public Action
+class HyjalSummitEraseTrackersAction : public Action
 {
 public:
-    HyjalSummitClearTrackersAction(
-        PlayerbotAI* botAI) : Action(botAI, "hyjal summit clear trackers") {}
+    HyjalSummitEraseTrackersAction(
+        PlayerbotAI* botAI) : Action(botAI, "hyjal summit erase trackers") {}
     bool Execute(Event event) override;
 };
 

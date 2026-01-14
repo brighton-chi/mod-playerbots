@@ -4,8 +4,8 @@
 void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // General
-    triggers.push_back(new TriggerNode("serpent shrine cavern timer bot is not in combat", {
-        NextAction("serpent shrine cavern clear timers and trackers", ACTION_EMERGENCY + 11) }));
+    triggers.push_back(new TriggerNode("serpent shrine cavern bot is not in combat", {
+        NextAction("serpent shrine cavern erase timers and trackers", ACTION_EMERGENCY + 11) }));
 
     // Trash Mobs
     triggers.push_back(new TriggerNode("underbog colossus spawned toxic pool after death", {
@@ -153,9 +153,6 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("lady vashj bot is entangled in toxic spores or static charge", {
         NextAction("lady vashj use free action abilities", ACTION_EMERGENCY + 7) }));
-
-    triggers.push_back(new TriggerNode("lady vashj need to manage trackers", {
-        NextAction("lady vashj manage trackers", ACTION_EMERGENCY + 10) }));
 }
 
 void RaidSSCStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)

@@ -5,11 +5,11 @@
 
 // General
 
-class TempestKeepTimerBotIsNotInCombatTrigger : public Trigger
+class TempestKeepBotIsNotInCombatTrigger : public Trigger
 {
 public:
-    TempestKeepTimerBotIsNotInCombatTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "tempest keep timer bot is not in combat") {}
+    TempestKeepBotIsNotInCombatTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "tempest keep bot is not in combat") {}
     bool IsActive() override;
 };
 
@@ -231,11 +231,11 @@ public:
     bool IsActive() override;
 };
 
-class KaelthasSunstriderNeedDedicatedBotsForSanguinarAndTelonicusInPhase3Trigger : public Trigger
+class KaelthasSunstriderBotsHaveSpecificRolesInPhase3Trigger : public Trigger
 {
 public:
-    KaelthasSunstriderNeedDedicatedBotsForSanguinarAndTelonicusInPhase3Trigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider need dedicated bots for sanguinar and telonicus in phase 3") {}
+    KaelthasSunstriderBotsHaveSpecificRolesInPhase3Trigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider bots have specific roles in phase 3") {}
     bool IsActive() override;
 };
 
@@ -260,6 +260,22 @@ class KaelthasSunstriderLegendaryWeaponsAreAliveTrigger : public Trigger
 public:
     KaelthasSunstriderLegendaryWeaponsAreAliveTrigger(
         PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider legendary weapons are alive") {}
+    bool IsActive() override;
+};
+
+class KaelthasSunstriderLegendaryAxeCastsWhirlwindTrigger : public Trigger
+{
+public:
+    KaelthasSunstriderLegendaryAxeCastsWhirlwindTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider legendary axe casts whirlwind") {}
+    bool IsActive() override;
+};
+
+class KaelthasSunstriderLegendaryBowCastsMultiShotTrigger : public Trigger
+{
+public:
+    KaelthasSunstriderLegendaryBowCastsMultiShotTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider legendary bow casts multi shot") {}
     bool IsActive() override;
 };
 

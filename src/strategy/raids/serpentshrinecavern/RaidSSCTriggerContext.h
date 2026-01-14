@@ -10,8 +10,8 @@ public:
     RaidSSCTriggerContext()
     {
         // General
-        creators["serpent shrine cavern timer bot is not in combat"] =
-            &RaidSSCTriggerContext::serpent_shrine_cavern_timer_bot_is_not_in_combat;
+        creators["serpent shrine cavern bot is not in combat"] =
+            &RaidSSCTriggerContext::serpent_shrine_cavern_bot_is_not_in_combat;
 
         // Trash
         creators["underbog colossus spawned toxic pool after death"] =
@@ -157,15 +157,12 @@ public:
 
         creators["lady vashj bot is entangled in toxic spores or static charge"] =
             &RaidSSCTriggerContext::lady_vashj_bot_is_entangled_in_toxic_spores_or_static_charge;
-
-        creators["lady vashj need to manage trackers"] =
-            &RaidSSCTriggerContext::lady_vashj_need_to_manage_trackers;
     }
 
 private:
     // General
-    static Trigger* serpent_shrine_cavern_timer_bot_is_not_in_combat(
-        PlayerbotAI* botAI) { return new SerpentShrineCavernTimerBotIsNotInCombatTrigger(botAI); }
+    static Trigger* serpent_shrine_cavern_bot_is_not_in_combat(
+        PlayerbotAI* botAI) { return new SerpentShrineCavernBotIsNotInCombatTrigger(botAI); }
 
     // Trash
     static Trigger* underbog_colossus_spawned_toxic_pool_after_death(
@@ -311,9 +308,6 @@ private:
 
     static Trigger* lady_vashj_bot_is_entangled_in_toxic_spores_or_static_charge(
         PlayerbotAI* botAI) { return new LadyVashjBotIsEntangledInToxicSporesOrStaticChargeTrigger(botAI); }
-
-    static Trigger* lady_vashj_need_to_manage_trackers(
-        PlayerbotAI* botAI) { return new LadyVashjNeedToManageTrackersTrigger(botAI); }
 };
 
 #endif

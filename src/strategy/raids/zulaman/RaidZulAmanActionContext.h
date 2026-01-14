@@ -46,8 +46,8 @@ public:
         creators["jan'alai spread ranged in circle"] =
             &RaidZulAmanActionContext::janalai_spread_ranged_in_circle;
 
-        creators["jan'alai clear ranged position tracker"] =
-            &RaidZulAmanActionContext::janalai_clear_ranged_position_tracker;
+        creators["jan'alai erase ranged position tracker"] =
+            &RaidZulAmanActionContext::janalai_erase_ranged_position_tracker;
 
         creators["jan'alai move away from fire bombs"] =
             &RaidZulAmanActionContext::janalai_move_away_from_fire_bombs;
@@ -136,8 +136,8 @@ private:
     static Action* janalai_spread_ranged_in_circle(
         PlayerbotAI* botAI) { return new JanalaiSpreadRangedInCircleAction(botAI); }
 
-    static Action* janalai_clear_ranged_position_tracker(
-        PlayerbotAI* botAI) { return new JanalaiClearRangedPositionTrackerAction(botAI); }
+    static Action* janalai_erase_ranged_position_tracker(
+        PlayerbotAI* botAI) { return new JanalaiEraseRangedPositionTrackerAction(botAI); }
 
     static Action* janalai_move_away_from_fire_bombs(
         PlayerbotAI* botAI) { return new JanalaiMoveAwayFromFireBombsAction(botAI); }

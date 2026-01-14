@@ -8,9 +8,9 @@ using namespace TempestKeepHelpers;
 
 // General
 
-bool TempestKeepTimerBotIsNotInCombatTrigger::IsActive()
+bool TempestKeepBotIsNotInCombatTrigger::IsActive()
 {
-    return IsInstanceTimerManager(botAI, bot) && !bot->IsInCombat();
+    return !bot->IsInCombat();
 }
 
 // Trash
@@ -349,7 +349,7 @@ bool KaelthasSunstriderTelonicusEngagedByFirstAssistTankTrigger::IsActive()
     return botAI->IsAssistTankOfIndex(bot, 0);
 }
 
-bool KaelthasSunstriderNeedDedicatedBotsForSanguinarAndTelonicusInPhase3Trigger::IsActive()
+bool KaelthasSunstriderBotsHaveSpecificRolesInPhase3Trigger::IsActive()
 {
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     if (!kaelthas)
@@ -357,7 +357,8 @@ bool KaelthasSunstriderNeedDedicatedBotsForSanguinarAndTelonicusInPhase3Trigger:
 
     if (!botAI->IsHealAssistantOfIndex(bot, 0) &&
         !botAI->IsMainTank(bot) &&
-        !botAI->IsAssistTankOfIndex(bot, 0))
+        !botAI->IsAssistTankOfIndex(bot, 0) &&
+        GetCapernianTank(botAI, bot) != bot)
         return false;
 
     boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
@@ -408,8 +409,27 @@ bool KaelthasSunstriderLegendaryWeaponsAreAliveTrigger::IsActive()
     if (!kaelthas)
         return false;
 
+    if (botAI->IsMainTank(bot) || GetNetherstrandLongbowTank(botAI, bot) == bot)
+        return false;
+
     boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
     return kaelAI && kaelAI->GetPhase() == PHASE_WEAPONS;
+}
+
+bool KaelthasSunstriderLegendaryAxeCastsWhirlwindTrigger::IsActive()
+{
+    if (!AI_VALUE2(Unit*, "find target", "devastation"))
+        return false;
+
+    return botAI->IsMainTank(bot);
+}
+
+bool KaelthasSunstriderLegendaryBowCastsMultiShotTrigger::IsActive()
+{
+    if (!AI_VALUE2(Unit*, "find target", "netherstrand longbow"))
+        return false;
+
+    return GetNetherstrandLongbowTank(botAI, bot) == bot;
 }
 
 bool KaelthasSunstriderLegendaryWeaponsAreDeadAndLootableTrigger::IsActive()

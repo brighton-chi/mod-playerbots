@@ -349,6 +349,8 @@ namespace BlackTempleHelpers
     };
     std::unordered_map<ObjectGuid, size_t> flameTankWaypointIndex;
     std::unordered_map<uint32, time_t> illidanDpsWaitTimer;
+    std::unordered_map<uint32, ObjectGuid> eastFlameGuid;
+    std::unordered_map<uint32, ObjectGuid> westFlameGuid;
 
     int GetIllidanPhase(Unit* illidan)
     {
@@ -433,10 +435,7 @@ namespace BlackTempleHelpers
         return Position(targetX, targetY, bossZ, clampedAngle);
     } */
 
-    ObjectGuid eastFlameGuid;
-    ObjectGuid westFlameGuid;
-
-    std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(PlayerbotAI* botAI)
+    std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(PlayerbotAI* botAI, Player* bot)
     {
         Unit* eastFlame = nullptr;
         Unit* westFlame = nullptr;
@@ -450,30 +449,35 @@ namespace BlackTempleHelpers
                 flames.push_back(unit);
         }
 
+        const uint32 instanceId = bot->GetMap()->GetInstanceId();
         // If both GUIDs are not set and there are exactly 2 flames, assign by position
-        if (eastFlameGuid.IsEmpty() && westFlameGuid.IsEmpty() && flames.size() == 2)
+        if (eastFlameGuid.find(instanceId) == eastFlameGuid.end() &&
+            westFlameGuid.find(instanceId) == westFlameGuid.end() &&
+            flames.size() == 2)
         {
             float eastDist0 = flames[0]->GetExactDist2d(ILLIDAN_E_GLAIVE_WAITING_POSITION);
             float eastDist1 = flames[1]->GetExactDist2d(ILLIDAN_E_GLAIVE_WAITING_POSITION);
 
             if (eastDist0 < eastDist1)
             {
-                eastFlameGuid = flames[0]->GetGUID();
-                westFlameGuid = flames[1]->GetGUID();
+                eastFlameGuid[instanceId] = flames[0]->GetGUID();
+                westFlameGuid[instanceId] = flames[1]->GetGUID();
             }
             else
             {
-                eastFlameGuid = flames[1]->GetGUID();
-                westFlameGuid = flames[0]->GetGUID();
+                eastFlameGuid[instanceId] = flames[1]->GetGUID();
+                westFlameGuid[instanceId] = flames[0]->GetGUID();
             }
         }
 
         // Always return the flames by their snapshotted GUIDs
         for (Unit* unit : flames)
         {
-            if (unit->GetGUID() == eastFlameGuid)
+            if (eastFlameGuid.find(instanceId) != eastFlameGuid.end() &&
+                unit->GetGUID() == eastFlameGuid[instanceId])
                 eastFlame = unit;
-            else if (unit->GetGUID() == westFlameGuid)
+            else if (westFlameGuid.find(instanceId) != westFlameGuid.end() &&
+                unit->GetGUID() == westFlameGuid[instanceId])
                 westFlame = unit;
         }
 

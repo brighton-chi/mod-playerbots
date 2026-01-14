@@ -10,8 +10,8 @@ public:
     RaidBlackTempleTriggerContext()
     {
         // General
-        creators["black temple timer bot is not in combat"] =
-            &RaidBlackTempleTriggerContext::black_temple_timer_bot_is_not_in_combat;
+        creators["black temple bot is not in combat"] =
+            &RaidBlackTempleTriggerContext::black_temple_bot_is_not_in_combat;
 
         // High Warlord Naj'entus
         creators["high warlord naj'entus pulling boss"] =
@@ -179,12 +179,15 @@ public:
 
         creators["illidan stormrage need to manage dps timer"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_need_to_manage_dps_timer;
+
+        creators["illidan stormrage cheat"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_cheat;
     }
 
 private:
     // General
-    static Trigger* black_temple_timer_bot_is_not_in_combat(
-        PlayerbotAI* botAI) { return new BlackTempleTimerBotIsNotInCombatTrigger(botAI); }
+    static Trigger* black_temple_bot_is_not_in_combat(
+        PlayerbotAI* botAI) { return new BlackTempleBotIsNotInCombatTrigger(botAI); }
 
     // High Warlord Naj'entus
     static Trigger* high_warlord_najentus_pulling_boss(
@@ -352,6 +355,9 @@ private:
 
     static Trigger* illidan_stormrage_need_to_manage_dps_timer(
         PlayerbotAI* botAI) { return new IllidanStormrageNeedToManageDpsTimerTrigger(botAI); }
+
+    static Trigger* illidan_stormrage_cheat(
+        PlayerbotAI* botAI) { return new IllidanStormrageCheatTrigger(botAI); }
 };
 
 #endif

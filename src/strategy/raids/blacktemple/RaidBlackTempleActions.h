@@ -6,11 +6,11 @@
 #include "MovementActions.h"
 
 // General
-class BlackTempleClearTimersAndTrackersAction : public Action
+class BlackTempleEraseTimersAndTrackersAction : public Action
 {
 public:
-    BlackTempleClearTimersAndTrackersAction(
-        PlayerbotAI* botAI) : Action(botAI, "black temple clear timers and trackers") {}
+    BlackTempleEraseTimersAndTrackersAction(
+        PlayerbotAI* botAI) : Action(botAI, "black temple erase timers and trackers") {}
     bool Execute(Event event) override;
 };
 
@@ -473,6 +473,14 @@ class IllidanStormrageManageDpsTimerAction : public Action
 public:
     IllidanStormrageManageDpsTimerAction(
         PlayerbotAI* botAI) : Action(botAI, "illidan stormrage manage dps timer") {}
+    bool Execute(Event event) override;
+};
+
+class IllidanStormrageDestroyHazardsCheatAction : public Action
+{
+public:
+    IllidanStormrageDestroyHazardsCheatAction(
+        PlayerbotAI* botAI) : Action(botAI, "illidan stormrage destroy hazards cheat") {}
     bool Execute(Event event) override;
 };
 

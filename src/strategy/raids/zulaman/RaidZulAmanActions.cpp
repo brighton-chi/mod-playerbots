@@ -448,13 +448,10 @@ bool JanalaiSpreadRangedInCircleAction::Execute(Event event)
     return false;
 }
 
-bool JanalaiClearRangedPositionTrackerAction::Execute(Event event)
+bool JanalaiEraseRangedPositionTrackerAction::Execute(Event event)
 {
-    if (!janalaiRangedPositions.empty())
-    {
-        janalaiRangedPositions.clear();
+    if (janalaiRangedPositions.erase(bot->GetGUID()))
         return true;
-    }
 
     return false;
 }

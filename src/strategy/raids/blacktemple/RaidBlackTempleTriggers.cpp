@@ -8,9 +8,9 @@ using namespace BlackTempleHelpers;
 
 // General
 
-bool BlackTempleTimerBotIsNotInCombatTrigger::IsActive()
+bool BlackTempleBotIsNotInCombatTrigger::IsActive()
 {
-    return IsInstanceTimerManager(botAI, bot) && !bot->IsInCombat();
+    return !bot->IsInCombat();
 }
 
 // High Warlord Naj'entus
@@ -625,4 +625,13 @@ bool IllidanStormrageNeedToManageDpsTimerTrigger::IsActive()
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     return illidan && illidan->GetHealth() > 1;
+}
+
+bool IllidanStormrageCheatTrigger::IsActive()
+{
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    if (!illidan || illidan->GetHealth() == 1)
+        return false;
+
+    return botAI->HasCheat(BotCheatMask::raid);
 }

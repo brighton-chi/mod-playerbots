@@ -10,8 +10,8 @@ public:
     RaidSSCActionContext()
     {
         // General
-        creators["serpent shrine cavern clear timers and trackers"] =
-            &RaidSSCActionContext::serpent_shrine_cavern_clear_timers_and_trackers;
+        creators["serpent shrine cavern erase timers and trackers"] =
+            &RaidSSCActionContext::serpent_shrine_cavern_erase_timers_and_trackers;
 
         // Trash
         creators["underbog colossus escape toxic pool"] =
@@ -163,15 +163,12 @@ public:
 
         creators["lady vashj use free action abilities"] =
             &RaidSSCActionContext::lady_vashj_use_free_action_abilities;
-
-        creators["lady vashj manage trackers"] =
-            &RaidSSCActionContext::lady_vashj_manage_trackers;
     }
 
 private:
     // General
-    static Action* serpent_shrine_cavern_clear_timers_and_trackers(
-        PlayerbotAI* botAI) { return new SerpentShrineCavernClearTimersAndTrackersAction(botAI); }
+    static Action* serpent_shrine_cavern_erase_timers_and_trackers(
+        PlayerbotAI* botAI) { return new SerpentShrineCavernEraseTimersAndTrackersAction(botAI); }
 
     // Trash
     static Action* underbog_colossus_escape_toxic_pool(
@@ -323,9 +320,6 @@ private:
 
     static Action* lady_vashj_use_free_action_abilities(
         PlayerbotAI* botAI) { return new LadyVashjUseFreeActionAbilitiesAction(botAI); }
-
-    static Action* lady_vashj_manage_trackers(
-        PlayerbotAI* botAI) { return new LadyVashjManageTrackersAction(botAI); }
 };
 
 #endif

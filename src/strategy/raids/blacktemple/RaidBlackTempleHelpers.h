@@ -217,10 +217,10 @@ namespace BlackTempleHelpers
     extern const Position eyeBeamPos[MAX_EYE_BEAM_POS * 2];
     extern std::unordered_map<ObjectGuid, size_t> flameTankWaypointIndex;
     extern std::unordered_map<uint32, time_t> illidanDpsWaitTimer;
+    extern std::unordered_map<uint32, ObjectGuid> eastFlameGuid;
+    extern std::unordered_map<uint32, ObjectGuid> westFlameGuid;
     int GetIllidanPhase(Unit* illidan);
-    extern ObjectGuid eastFlameGuid;
-    extern ObjectGuid westFlameGuid;
-    std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(PlayerbotAI* botAI);
+    std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(PlayerbotAI* botAI, Player* bot);
     Player* GetIllidanWarlockTank(PlayerbotAI* botAI, Player* bot);
     Player* GetIllidanTrapperHunter(PlayerbotAI* botAI, Player* bot);
     Player* HasParasiticShadowfiend(PlayerbotAI* botAI, Player* bot);

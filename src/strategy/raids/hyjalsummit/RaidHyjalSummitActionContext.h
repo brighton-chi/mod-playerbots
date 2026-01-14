@@ -10,8 +10,8 @@ public:
     RaidHyjalSummitActionContext()
     {
         // General
-        creators["hyjal summit clear trackers"] =
-            &RaidHyjalSummitActionContext::hyjal_summit_clear_trackers;
+        creators["hyjal summit erase trackers"] =
+            &RaidHyjalSummitActionContext::hyjal_summit_erase_trackers;
 
         // Rage Winterchill
         creators["rage winterchill misdirect boss to main tank"] =
@@ -99,8 +99,8 @@ public:
 
 private:
     // General
-    static Action* hyjal_summit_clear_trackers(
-        PlayerbotAI* botAI) { return new HyjalSummitClearTrackersAction(botAI); }
+    static Action* hyjal_summit_erase_trackers(
+        PlayerbotAI* botAI) { return new HyjalSummitEraseTrackersAction(botAI); }
 
     // Rage Winterchill
     static Action* rage_winterchill_misdirect_boss_to_main_tank(

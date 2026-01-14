@@ -5,11 +5,11 @@
 
 // General
 
-class BlackTempleTimerBotIsNotInCombatTrigger : public Trigger
+class BlackTempleBotIsNotInCombatTrigger : public Trigger
 {
 public:
-    BlackTempleTimerBotIsNotInCombatTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "black temple timer bot is not in combat") {}
+    BlackTempleBotIsNotInCombatTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "black temple bot is not in combat") {}
     bool IsActive() override;
 };
 
@@ -444,6 +444,14 @@ class IllidanStormrageNeedToManageDpsTimerTrigger : public Trigger
 public:
     IllidanStormrageNeedToManageDpsTimerTrigger(
         PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage need to manage dps timer") {}
+    bool IsActive() override;
+};
+
+class IllidanStormrageCheatTrigger : public Trigger
+{
+public:
+    IllidanStormrageCheatTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage cheat") {}
     bool IsActive() override;
 };
 

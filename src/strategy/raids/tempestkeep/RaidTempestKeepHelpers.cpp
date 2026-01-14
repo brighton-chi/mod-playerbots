@@ -10,24 +10,6 @@ namespace TempestKeepHelpers
 {
     // General Helpers
 
-    bool IsInstanceTimerManager(PlayerbotAI* botAI, Player* bot)
-    {
-        if (Group* group = bot->GetGroup())
-        {
-            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-            {
-                Player* member = ref->GetSource();
-                if (!member || !member->IsAlive() || !botAI->IsDps(member) ||
-                    !GET_PLAYERBOT_AI(member))
-                    continue;
-
-                return member == bot;
-            }
-        }
-
-        return false;
-    }
-
     void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId)
     {
         if (!target)
@@ -437,8 +419,11 @@ namespace TempestKeepHelpers
     // Kael'thas Sunstrider <Lord of the Blood Elves>
 
     const Position SANGUINAR_TANK_POSITION = { 775.478f, 39.888f, 46.780f };
+    const Position SANGUINAR_WAITING_POSITION = { 0.0f, 0.0f, 0.0f };
     const Position TELONICUS_TANK_POSITION = { 773.717f, 44.091f, 46.780f };
+    const Position TELONICUS_WAITING_POSITION = { 0.0f, 0.0f, 0.0f };
     const Position ADVISOR_HEAL_POSITION = {  749.443f, 26.927f, 46.780f };
+    const Position CAPERNIAN_WAITING_POSITION = { 0.0f, 0.0f, 0.0f };
     const Position KAELTHAS_WEAPON_STACK_POSITION = { 775.296f, -0.822f, 48.729f };
     const Position KAELTHAS_AXE_TANK_POSITION = { 775.621f, 20.717f, 48.729f };
     const Position KAELTHAS_BOW_TANK_POSITION = { 777.713f, -28.857f, 48.729f };

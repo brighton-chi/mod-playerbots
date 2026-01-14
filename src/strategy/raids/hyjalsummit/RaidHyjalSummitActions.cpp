@@ -6,35 +6,21 @@ using namespace HyjalSummitHelpers;
 
 // General
 
-bool HyjalSummitClearTrackersAction::Execute(Event event)
+bool HyjalSummitEraseTrackersAction::Execute(Event event)
 {
-    bool cleared = false;
+    const ObjectGuid guid = bot->GetGUID();
 
-    if (!winterchillRangedPositions.empty())
-    {
-        winterchillRangedPositions.clear();
-        cleared = true;
-    }
+    bool erased = false;
+    if (winterchillRangedPositions.erase(guid))
+        erased = true;
+    if (hasReachedWinterchillPosition.erase(guid))
+        erased = true;
+    if (anetheronRangedPositions.erase(guid))
+        erased = true;
+    if (kazrogalRangedPositions.erase(guid))
+        erased = true;
 
-    if (!hasReachedWinterchillPosition.empty())
-    {
-        hasReachedWinterchillPosition.clear();
-        cleared = true;
-    }
-
-    if (!anetheronRangedPositions.empty())
-    {
-        anetheronRangedPositions.clear();
-        cleared = true;
-    }
-
-    if (!kazrogalRangedPositions.empty())
-    {
-        kazrogalRangedPositions.clear();
-        cleared = true;
-    }
-
-    return false;
+    return erased;
 }
 
 // Rage Winterchill

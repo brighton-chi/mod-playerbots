@@ -122,20 +122,9 @@ bool JanalaiBossCastsFlameBreathTrigger::IsActive()
     return true;
 }
 
-bool JanalaiRangedPositionTrackerBotIsNotInCombatTrigger::IsActive()
+bool JanalaiRangedBotIsNotInCombatTrigger::IsActive()
 {
-    if (Group* group = bot->GetGroup())
-    {
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (member && member->IsAlive() && botAI->IsDps(member) &&
-                GET_PLAYERBOT_AI(member))
-                return member == bot;
-        }
-    }
-
-    return !bot->IsInCombat();
+    return botAI->IsRanged(bot) && !bot->IsInCombat();
 }
 
 bool JanalaiBossSummoningFireBombsTrigger::IsActive()

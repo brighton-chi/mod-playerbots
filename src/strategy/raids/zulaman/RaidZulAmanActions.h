@@ -105,11 +105,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class JanalaiClearRangedPositionTrackerAction : public Action
+class JanalaiEraseRangedPositionTrackerAction : public Action
 {
 public:
-    JanalaiClearRangedPositionTrackerAction(
-        PlayerbotAI* botAI, std::string const name = "jan'alai clear ranged position tracker") : Action(botAI, name) {}
+    JanalaiEraseRangedPositionTrackerAction(
+        PlayerbotAI* botAI, std::string const name = "jan'alai erase ranged position tracker") : Action(botAI, name) {}
     bool Execute(Event event) override;
 };
 

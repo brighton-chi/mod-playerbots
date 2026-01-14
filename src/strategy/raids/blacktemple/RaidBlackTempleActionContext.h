@@ -10,8 +10,8 @@ public:
     RaidBlackTempleActionContext()
     {
         // General
-        creators["black temple clear timers and trackers"] =
-            &RaidBlackTempleActionContext::black_temple_clear_timers_and_trackers;
+        creators["black temple erase timers and trackers"] =
+            &RaidBlackTempleActionContext::black_temple_erase_timers_and_trackers;
 
         // High Warlord Naj'entus
         creators["high warlord naj'entus misdirect boss to main tank"] =
@@ -179,12 +179,15 @@ public:
 
         creators["illidan stormrage manage dps timer"] =
             &RaidBlackTempleActionContext::illidan_stormrage_manage_dps_timer;
+
+        creators["illidan stormrage destroy hazards cheat"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_destroy_hazards_cheat;
     }
 
 private:
     // General
-    static Action* black_temple_clear_timers_and_trackers(
-        PlayerbotAI* botAI) { return new BlackTempleClearTimersAndTrackersAction(botAI); }
+    static Action* black_temple_erase_timers_and_trackers(
+        PlayerbotAI* botAI) { return new BlackTempleEraseTimersAndTrackersAction(botAI); }
 
     // High Warlord Naj'entus
     static Action* high_warlord_najentus_misdirect_boss_to_main_tank(
@@ -352,6 +355,9 @@ private:
 
     static Action* illidan_stormrage_manage_dps_timer(
         PlayerbotAI* botAI) { return new IllidanStormrageManageDpsTimerAction(botAI); }
+
+    static Action* illidan_stormrage_destroy_hazards_cheat(
+        PlayerbotAI* botAI) { return new IllidanStormrageDestroyHazardsCheatAction(botAI); }
 };
 
 #endif

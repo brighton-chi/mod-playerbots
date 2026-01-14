@@ -5,11 +5,11 @@
 
 // General
 
-class SerpentShrineCavernTimerBotIsNotInCombatTrigger : public Trigger
+class SerpentShrineCavernBotIsNotInCombatTrigger : public Trigger
 {
 public:
-    SerpentShrineCavernTimerBotIsNotInCombatTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "serpent shrine cavern timer bot is not in combat") {}
+    SerpentShrineCavernBotIsNotInCombatTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "serpent shrine cavern bot is not in combat") {}
     bool IsActive() override;
 };
 
@@ -400,14 +400,6 @@ class LadyVashjBotIsEntangledInToxicSporesOrStaticChargeTrigger : public Trigger
 public:
     LadyVashjBotIsEntangledInToxicSporesOrStaticChargeTrigger(
         PlayerbotAI* botAI) : Trigger(botAI, "lady vashj bot is entangled in toxic spores or static charge") {}
-    bool IsActive() override;
-};
-
-class LadyVashjNeedToManageTrackersTrigger : public Trigger
-{
-public:
-    LadyVashjNeedToManageTrackersTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "lady vashj need to manage trackers") {}
     bool IsActive() override;
 };
 

@@ -4,8 +4,8 @@
 void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // General
-    triggers.push_back(new TriggerNode("black temple timer bot is not in combat", {
-        NextAction("black temple clear timers and trackers", ACTION_EMERGENCY + 11) }));
+    triggers.push_back(new TriggerNode("black temple bot is not in combat", {
+        NextAction("black temple erase timers and trackers", ACTION_EMERGENCY + 11) }));
 
     // High Warlord Naj'entus
     triggers.push_back(new TriggerNode("high warlord naj'entus pulling boss", {
@@ -173,6 +173,9 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("illidan stormrage need to manage dps timer", {
         NextAction("illidan stormrage manage dps timer", ACTION_EMERGENCY + 10) }));
+
+    triggers.push_back(new TriggerNode("illidan stormrage cheat", {
+        NextAction("illidan stormrage destroy hazards cheat", ACTION_EMERGENCY + 11) }));
 }
 
 void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)

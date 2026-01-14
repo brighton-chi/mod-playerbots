@@ -4,8 +4,8 @@
 void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // General
-    triggers.push_back(new TriggerNode("tempest keep timer bot is not in combat", {
-        NextAction("tempest keep clear timers and trackers", ACTION_EMERGENCY + 11) }));
+    triggers.push_back(new TriggerNode("tempest keep bot is not in combat", {
+        NextAction("tempest keep erase timers and trackers", ACTION_EMERGENCY + 11) }));
 
     // Trash
     triggers.push_back(new TriggerNode("crimson hand centurion casts arcane volley", {
@@ -94,8 +94,8 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kael'thas sunstrider telonicus engaged by first assist tank", {
         NextAction("kael'thas sunstrider first assist tank position telonicus", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("kael'thas sunstrider need dedicated bots for sanguinar and telonicus in phase 3", {
-        NextAction("kael'thas sunstrider handle sanguinar and telonicus in phase 3", ACTION_RAID + 2) }));
+    triggers.push_back(new TriggerNode("kael'thas sunstrider bots have specific roles in phase 3", {
+        NextAction("kael'thas sunstrider handle advisor roles in phase 3", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("kael'thas sunstrider determining advisor kill order", {
         NextAction("kael'thas sunstrider assign advisor dps priority", ACTION_RAID + 1) }));
@@ -104,8 +104,12 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("kael'thas sunstrider manage advisor dps timer", ACTION_EMERGENCY + 10) }));
 
     triggers.push_back(new TriggerNode("kael'thas sunstrider legendary weapons are alive", {
-        NextAction("kael'thas sunstrider assign legendary weapon dps priority", ACTION_RAID + 1),
-        NextAction("kael'thas sunstrider main tank move devastation away", ACTION_EMERGENCY + 1),
+        NextAction("kael'thas sunstrider assign legendary weapon dps priority", ACTION_RAID + 1) }));
+
+    triggers.push_back(new TriggerNode("kael'thas sunstrider legendary axe casts whirlwind", {
+        NextAction("kael'thas sunstrider main tank move devastation away", ACTION_EMERGENCY + 1) }));
+
+    triggers.push_back(new TriggerNode("kael'thas sunstrider legendary bow casts multishot", {
         NextAction("kael'thas sunstrider hunter turn away netherstrand longbow", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("kael'thas sunstrider legendary weapons are dead and lootable", {

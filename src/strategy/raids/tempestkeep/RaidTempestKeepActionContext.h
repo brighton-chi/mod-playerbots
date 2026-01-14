@@ -10,8 +10,8 @@ public:
     RaidTempestKeepActionContext()
     {
         // General
-        creators["tempest keep clear timers and trackers"] =
-            &RaidTempestKeepActionContext::tempest_keep_clear_timers_and_trackers;
+        creators["tempest keep erase timers and trackers"] =
+            &RaidTempestKeepActionContext::tempest_keep_erase_timers_and_trackers;
 
         // Trash
         creators["crimson hand centurion cast polymorph"] =
@@ -108,8 +108,8 @@ public:
         creators["kael'thas sunstrider first assist tank position telonicus"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_first_assist_tank_position_telonicus;
 
-        creators["kael'thas sunstrider handle sanguinar and telonicus in phase 3"] =
-            &RaidTempestKeepActionContext::kaelthas_sunstrider_handle_sanguinar_and_telonicus_in_phase_3;
+        creators["kael'thas sunstrider handle advisor roles in phase 3"] =
+            &RaidTempestKeepActionContext::kaelthas_sunstrider_handle_advisor_roles_in_phase_3;
 
         creators["kael'thas sunstrider assign advisor dps priority"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_assign_advisor_dps_priority;
@@ -156,8 +156,8 @@ public:
 
 private:
     // General
-    static Action* tempest_keep_clear_timers_and_trackers(
-        PlayerbotAI* botAI) { return new TempestKeepClearTimersAndTrackersAction(botAI); }
+    static Action* tempest_keep_erase_timers_and_trackers(
+        PlayerbotAI* botAI) { return new TempestKeepEraseTimersAndTrackersAction(botAI); }
 
     // Trash
     static Action* crimson_hand_centurion_cast_polymorph(
@@ -254,8 +254,8 @@ private:
     static Action* kaelthas_sunstrider_first_assist_tank_position_telonicus(
         PlayerbotAI* botAI) { return new KaelthasSunstriderFirstAssistTankPositionTelonicusAction(botAI); }
 
-    static Action* kaelthas_sunstrider_handle_sanguinar_and_telonicus_in_phase_3(
-        PlayerbotAI* botAI) { return new KaelthasSunstriderHandleSanguinarAndTelonicusInPhase3Action(botAI); }
+    static Action* kaelthas_sunstrider_handle_advisor_roles_in_phase_3(
+        PlayerbotAI* botAI) { return new KaelthasSunstriderHandleAdvisorRolesInPhase3Action(botAI); }
 
     static Action* kaelthas_sunstrider_assign_advisor_dps_priority(
         PlayerbotAI* botAI) { return new KaelthasSunstriderAssignAdvisorDpsPriorityAction(botAI); }

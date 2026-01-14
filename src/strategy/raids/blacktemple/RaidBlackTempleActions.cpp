@@ -7,41 +7,33 @@ using namespace BlackTempleHelpers;
 
 // General
 
-bool BlackTempleClearTimersAndTrackersAction::Execute(Event event)
+bool BlackTempleEraseTimersAndTrackersAction::Execute(Event event)
 {
-    bool cleared = false;
+    const uint32 instanceId = bot->GetMap()->GetInstanceId();
 
-    if (!supremusPhaseTimer.empty())
-    {
-        supremusPhaseTimer.clear();
-        cleared = true;
-    }
+    bool erased = false;
+    if (supremusPhaseTimer.erase(instanceId))
+        erased = true;
+    if (gorefiendRangedPositions.erase(bot->GetGUID()))
+        erased = true;
+    if (gurtoggPhaseTimer.erase(instanceId))
+        erased = true;
+    if (reliquaryDpsWaitTimer.erase(instanceId))
+        erased = true;
+    if (shahrazTankStep.erase(bot->GetGUID()))
+        erased = true;
+    if (gathiosTankStep.erase(bot->GetGUID()))
+        erased = true;
+    if (illidanDpsWaitTimer.erase(instanceId))
+        erased = true;
+    if (westFlameGuid.erase(instanceId))
+        erased = true;
+    if (eastFlameGuid.erase(instanceId))
+        erased = true;
+    if (flameTankWaypointIndex.erase(bot->GetGUID()))
+        erased = true;
 
-    if (!gorefiendRangedPositions.empty())
-    {
-        gorefiendRangedPositions.clear();
-        cleared = true;
-    }
-
-    if (!gurtoggPhaseTimer.empty())
-    {
-        gurtoggPhaseTimer.clear();
-        cleared = true;
-    }
-
-    if (!reliquaryDpsWaitTimer.empty())
-    {
-        reliquaryDpsWaitTimer.clear();
-        cleared = true;
-    }
-
-    if (!illidanDpsWaitTimer.empty())
-    {
-        illidanDpsWaitTimer.clear();
-        cleared = true;
-    }
-
-    return cleared;
+    return erased;
 }
 
 // High Warlord Naj'entus
@@ -1082,9 +1074,6 @@ bool MotherShahrazTanksPositionBossAction::Execute(Event event)
     if (!shahraz)
         return false;
 
-    if (shahraz->GetHealthPct() > 99.9f)
-        shahrazTankStep.clear();
-
     if (bot->GetVictim() != shahraz)
         return Attack(shahraz);
 
@@ -1092,8 +1081,8 @@ bool MotherShahrazTanksPositionBossAction::Execute(Event event)
     Player* playerVictim = victim ? victim->ToPlayer() : nullptr;
     if (playerVictim && botAI->IsTank(playerVictim))
     {
-        const ObjectGuid botGuid = bot->GetGUID();
-        uint8 step = shahrazTankStep.count(botGuid) ? shahrazTankStep[botGuid] : 0;
+        const ObjectGuid guid = bot->GetGUID();
+        uint8 step = shahrazTankStep.count(guid) ? shahrazTankStep[guid] : 0;
 
         const Position tankPositions[2] =
         {
@@ -1113,7 +1102,7 @@ bool MotherShahrazTanksPositionBossAction::Execute(Event event)
         }
 
         if (step == 0 && distanceToTarget <= maxDistance)
-            shahrazTankStep[botGuid] = 1;
+            shahrazTankStep[guid] = 1;
 
         if (step == 1 && distanceToTarget <= maxDistance)
         {
@@ -1310,9 +1299,6 @@ bool IllidariCouncilMainTankPositionGathiosAction::Execute(Event event)
     if (!gathios)
         return false;
 
-    if (gathios->GetHealthPct() > 99.9f)
-        gathiosTankStep.clear();
-
     MarkTargetWithSquare(bot, gathios);
     SetRtiTarget(botAI, "square", gathios);
 
@@ -1330,8 +1316,8 @@ bool IllidariCouncilMainTankPositionGathiosAction::Execute(Event event)
         }
     }
 
-    const ObjectGuid botGuid = bot->GetGUID();
-    uint8 index = gathiosTankStep.count(botGuid) ? gathiosTankStep[botGuid] : 0;
+    const ObjectGuid guid = bot->GetGUID();
+    uint8 index = gathiosTankStep.count(guid) ? gathiosTankStep[guid] : 0;
 
     const Position tankPositions[4] =
     {
@@ -1350,7 +1336,7 @@ bool IllidariCouncilMainTankPositionGathiosAction::Execute(Event event)
         if (distanceToTarget <= maxDistance && hasDangerousAura)
         {
             index = (index + 1) % 4;
-            gathiosTankStep[botGuid] = index;
+            gathiosTankStep[guid] = index;
             const Position& newPosition = tankPositions[index];
             float newDistanceToTarget = bot->GetExactDist2d(newPosition);
             if (newDistanceToTarget > maxDistance)
@@ -1580,7 +1566,7 @@ bool IllidanStormrageMisdirectToTankAction::TryMisdirectToFlameTanks(Group* grou
     if (hunterIndex == -1)
         return false;
 
-    auto [eastFlame, westFlame] = GetFlamesOfAzzinoth(botAI);
+    auto [eastFlame, westFlame] = GetFlamesOfAzzinoth(botAI, bot);
     // If only one flame, do nothing
     if (!eastFlame || !westFlame || eastFlame == westFlame)
         return false;
@@ -1982,7 +1968,7 @@ bool IllidanStormrageIsolateBotWithParasiteAction::Execute(Event event)
 
 bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event event)
 {
-    auto [eastFlame, westFlame] = GetFlamesOfAzzinoth(botAI);
+    auto [eastFlame, westFlame] = GetFlamesOfAzzinoth(botAI, bot);
 
     // The second assist tank's flame is killed first; this is so that if the tank
     // for the second flame dies after the first flame is down, the dead flame's
@@ -2459,7 +2445,7 @@ bool IllidanStormrageWarlockTankHandleDemonBossAction::Execute(Event event)
 
 bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event event)
 {
-    auto [eastFlame, westFlame] = GetFlamesOfAzzinoth(botAI);
+    auto [eastFlame, westFlame] = GetFlamesOfAzzinoth(botAI, bot);
 
     if (Unit* shadowDemon = GetFirstAliveUnitByEntry(botAI, NPC_SHADOW_DEMON))
     {
@@ -2514,82 +2500,73 @@ bool IllidanStormrageManageDpsTimerAction::Execute(Event event)
     if (!illidan)
         return false;
 
-    if (botAI->HasCheat(BotCheatMask::raid))
+    const time_t now = std::time(nullptr);
+    const uint32 instanceId = illidan->GetMap()->GetInstanceId();
+
+    if (GetIllidanPhase(illidan) == 3 || GetIllidanPhase(illidan) == 5)
     {
-        if (Unit* shadowfiend = AI_VALUE2(Unit*, "find target", "parasitic shadowfiend"))
+        if (illidanDpsWaitTimer.erase(instanceId))
+            return true;
+    }
+    else if (GetIllidanPhase(illidan) == 1 || GetIllidanPhase(illidan) == 4)
+    {
+        if (illidanDpsWaitTimer.try_emplace(instanceId, now).second)
+            return true;
+    }
+    else if (GetIllidanPhase(illidan) == 2 &&
+             AI_VALUE2(Unit*, "find target", "flame of azzinoth"))
+    {
+        if (illidanDpsWaitTimer.try_emplace(instanceId, now).second)
+            return true;
+    }
+
+    return false;
+}
+
+bool IllidanStormrageDestroyHazardsCheatAction::Execute(Event event)
+{
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    if (!illidan)
+        return false;
+
+    bool destroyed = false;
+    if (Unit* shadowfiend = AI_VALUE2(Unit*, "find target", "parasitic shadowfiend"))
+    {
+        shadowfiend->Kill(bot, shadowfiend);
+        destroyed = true;
+    }
+    if (GetIllidanPhase(illidan) == 2 || GetIllidanPhase(illidan) == 4)
+    {
+        auto const& npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
+        for (auto const& guid : npcs)
         {
-            shadowfiend->Kill(bot, shadowfiend);
+            Unit* unit = botAI->GetUnit(guid);
+            if (unit && unit->GetEntry() == NPC_FLAME_CRASH)
+            {
+                unit->Kill(bot, unit);
+                destroyed = true;
+            }
         }
-        if (GetIllidanPhase(illidan) == 2)
+    }
+    else
+    {
+        Unit* flame = AI_VALUE2(Unit*, "find target", "flame of azzinoth");
+        if (GetIllidanPhase(illidan) == 0 ||
+            GetIllidanPhase(illidan) == 3 ||
+            (GetIllidanPhase(illidan) == 2 && flame == nullptr))
         {
             auto const& npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
             for (auto const& guid : npcs)
             {
                 Unit* unit = botAI->GetUnit(guid);
-                if (unit && unit->GetEntry() == NPC_FLAME_CRASH)
-                    unit->Kill(bot, unit);
-            }
-        }
-        else
-        {
-            Unit* flame = AI_VALUE2(Unit*, "find target", "flame of azzinoth");
-            if (GetIllidanPhase(illidan) == 0 ||
-                GetIllidanPhase(illidan) == 3 ||
-                GetIllidanPhase(illidan) == 2 && flame == nullptr)
-            {
-                auto const& npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
-                for (auto const& guid : npcs)
+                if (unit && (unit->GetEntry() == NPC_DEMON_FIRE || unit->GetEntry() == NPC_BLAZE))
                 {
-                    Unit* unit = botAI->GetUnit(guid);
-                    if (unit && (unit->GetEntry() == NPC_DEMON_FIRE || unit->GetEntry() == NPC_BLAZE))
-                        unit->Kill(bot, unit);
+                    unit->Kill(bot, unit);
+                    destroyed = true;
                 }
             }
         }
     }
 
-    const time_t now = std::time(nullptr);
-    const uint32 instanceId = illidan->GetMap()->GetInstanceId();
-    bool changed = false;
-
-    if (GetIllidanPhase(illidan) == 3 || GetIllidanPhase(illidan) == 5)
-    {
-        if (!illidanDpsWaitTimer.empty())
-        {
-            illidanDpsWaitTimer.clear();
-            changed = true;
-        }
-        if (!flameTankWaypointIndex.empty())
-        {
-            flameTankWaypointIndex.clear();
-            changed = true;
-        }
-        if (!eastFlameGuid.IsEmpty())
-        {
-            eastFlameGuid.Clear();
-            changed = true;
-        }
-        if (!westFlameGuid.IsEmpty())
-        {
-            westFlameGuid.Clear();
-            changed = true;
-        }
-    }
-    else if (GetIllidanPhase(illidan) == 1 || GetIllidanPhase(illidan) == 4)
-    {
-        auto [it, inserted] = illidanDpsWaitTimer.try_emplace(instanceId, now);
-        if (inserted)
-            changed = true;
-    }
-    else
-    {
-        Unit* flame = AI_VALUE2(Unit*, "find target", "flame of azzinoth");
-        if (GetIllidanPhase(illidan) == 2 && flame)
-        {
-            illidanDpsWaitTimer.try_emplace(instanceId, now);
-            changed = true;
-        }
-    }
-
-    return changed;
+    return destroyed;
 }

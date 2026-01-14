@@ -46,8 +46,8 @@ public:
         creators["jan'alai boss casts flame breath"] =
             &RaidZulAmanTriggerContext::janalai_boss_casts_flame_breath;
 
-        creators["jan'alai ranged position tracker bot is not in combat"] =
-            &RaidZulAmanTriggerContext::janalai_ranged_position_tracker_bot_is_not_in_combat;
+        creators["jan'alai ranged bot is not in combat"] =
+            &RaidZulAmanTriggerContext::janalai_ranged_bot_is_not_in_combat;
 
         creators["jan'alai boss summoning fire bombs"] =
             &RaidZulAmanTriggerContext::janalai_boss_summoning_fire_bombs;
@@ -138,8 +138,8 @@ private:
     static Trigger* janalai_boss_casts_flame_breath(
         PlayerbotAI* botAI) { return new JanalaiBossCastsFlameBreathTrigger(botAI); }
 
-    static Trigger* janalai_ranged_position_tracker_bot_is_not_in_combat(
-        PlayerbotAI* botAI) { return new JanalaiRangedPositionTrackerBotIsNotInCombatTrigger(botAI); }
+    static Trigger* janalai_ranged_bot_is_not_in_combat(
+        PlayerbotAI* botAI) { return new JanalaiRangedBotIsNotInCombatTrigger(botAI); }
 
     static Trigger* janalai_boss_summoning_fire_bombs(
         PlayerbotAI* botAI) { return new JanalaiBossSummoningFireBombsTrigger(botAI); }

@@ -11,11 +11,11 @@ using namespace TempestKeepHelpers;
 
 // General
 
-class TempestKeepClearTimersAndTrackersAction : public Action
+class TempestKeepEraseTimersAndTrackersAction : public Action
 {
 public:
-    TempestKeepClearTimersAndTrackersAction(
-        PlayerbotAI* botAI, std::string const name = "tempest keep clear timers and trackers") : Action(botAI, name) {}
+    TempestKeepEraseTimersAndTrackersAction(
+        PlayerbotAI* botAI, std::string const name = "tempest keep erase timers and trackers") : Action(botAI, name) {}
     bool Execute(Event event) override;
 };
 
@@ -294,11 +294,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class KaelthasSunstriderHandleSanguinarAndTelonicusInPhase3Action : public MovementAction
+class KaelthasSunstriderHandleAdvisorRolesInPhase3Action : public MovementAction
 {
 public:
-    KaelthasSunstriderHandleSanguinarAndTelonicusInPhase3Action(
-        PlayerbotAI* botAI, std::string const name = "kael'thas sunstrider handle sanguinar and telonicus in phase 3") : MovementAction(botAI, name) {}
+    KaelthasSunstriderHandleAdvisorRolesInPhase3Action(
+        PlayerbotAI* botAI, std::string const name = "kael'thas sunstrider handle advisor roles in phase 3") : MovementAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 

@@ -12,29 +12,23 @@ using namespace TempestKeepHelpers;
 
 // General
 
-bool TempestKeepClearTimersAndTrackersAction::Execute(Event event)
+bool TempestKeepEraseTimersAndTrackersAction::Execute(Event event)
 {
-    bool cleared = false;
+    const uint32 instanceId = bot->GetMap()->GetInstanceId();
 
-    if (!initialVoidReaverPositions.empty())
-    {
-        initialVoidReaverPositions.clear();
-        cleared = true;
-    }
+    bool erased = false;
+    if (lastRebirthState.erase(instanceId))
+        erased = true;
+    if (isAlarInPhase2.erase(instanceId))
+        erased = true;
+    if (initialVoidReaverPositions.erase(bot->GetGUID()))
+        erased = true;
+    if (hasReachedInitialVoidReaverPosition.erase(bot->GetGUID()))
+        erased = true;
+    if (advisorDpsWaitTimer.erase(instanceId))
+        erased = true;
 
-    if (!hasReachedInitialVoidReaverPosition.empty())
-    {
-        hasReachedInitialVoidReaverPosition.clear();
-        cleared = true;
-    }
-
-    if (!advisorDpsWaitTimer.empty())
-    {
-        advisorDpsWaitTimer.clear();
-        cleared = true;
-    }
-
-    return cleared;
+    return erased;
 }
 
 // Trash
@@ -626,8 +620,9 @@ bool AlarAvoidFlamePatchesAndDiveBombsAction::AvoidFlamePatch()
 
 bool AlarAvoidFlamePatchesAndDiveBombsAction::HandleDiveBomb(Unit* alar)
 {
-    if (alar->HasUnitState(UNIT_STATE_CASTING) &&
-        alar->FindCurrentSpellBySpellId(SPELL_REBIRTH_DIVE))
+    if ((alar->HasUnitState(UNIT_STATE_CASTING) &&
+        alar->FindCurrentSpellBySpellId(SPELL_REBIRTH_DIVE)) ||
+        !alar->IsVisible())
     {
         float currentDistance = bot->GetDistance2d(alar);
         const float safeDistance = 20.0f;
@@ -680,8 +675,7 @@ bool AlarManagePhaseTrackerAction::Execute(Event event)
 
     const uint32 instanceId = alar->GetMap()->GetInstanceId();
 
-    if (alar->GetHealthPct() > 99.5f && alar->GetPositionZ() >= ALAR_BALCONY_Z)
-        isAlarInPhase2[instanceId] = false;
+    isAlarInPhase2[instanceId] = false;
 
     bool rebirthActive = alar->HasUnitState(UNIT_STATE_CASTING) &&
                          alar->FindCurrentSpellBySpellId(SPELL_REBIRTH_PHASE2);
@@ -1403,36 +1397,37 @@ bool KaelthasSunstriderFirstAssistTankPositionTelonicusAction::Execute(Event eve
     return false;
 }
 
-// This is a little confusing, but I combined a couple of different actions into a single method
-// because from a code perspective, they are almost identical
-bool KaelthasSunstriderHandleSanguinarAndTelonicusInPhase3Action::Execute(Event event)
+bool KaelthasSunstriderHandleAdvisorRolesInPhase3Action::Execute(Event event)
 {
-    bool shouldMove = false;
-    // The heal assistant moves to heal position next to Sanguinar and Telonicus tank positions
-    // And remains there to heal the main tank and first assistant tank
+    const Position* movePosition = nullptr;
+
     if (botAI->IsHealAssistantOfIndex(bot, 0))
-        shouldMove = true;
-    // The main tank and first assistant tank move to the heal position at the beginning of Phase 3
-    // Before the advisors aggro so they are available to pick up Sanguinar and Telonicus
-    // Once they aggro, the tanks move to their respective tank positions (per the dedicated tanking actions above)
-    else if (botAI->IsTank(bot))
+        movePosition = &ADVISOR_HEAL_POSITION;
+    else if (botAI->IsMainTank(bot))
     {
-        // No Telonicus check is included since only a single advisor needs to be checked to
-        // determine if Phase 3 has started but advisors have not aggroed yet
         Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
         if (sanguinar && sanguinar->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE))
-            shouldMove = true;
+            movePosition = &SANGUINAR_WAITING_POSITION;
+    }
+    else if (botAI->IsAssistTankOfIndex(bot, 0))
+    {
+        Unit* telonicus = AI_VALUE2(Unit*, "find target", "master engineer telonicus");
+        if (telonicus && telonicus->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE))
+            movePosition = &TELONICUS_WAITING_POSITION;
+    }
+    else if (GetCapernianTank(botAI, bot) == bot)
+    {
+        Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
+        if (capernian && capernian->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE))
+            movePosition = &CAPERNIAN_WAITING_POSITION;
     }
 
-    if (shouldMove)
+    if (movePosition)
     {
-        const Position& position = ADVISOR_HEAL_POSITION;
-        float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
-
-        if (distToPosition > 2.0f)
+        if (bot->GetExactDist2d(movePosition->GetPositionX(), movePosition->GetPositionY()) > 2.0f)
         {
-            return MoveTo(TEMPEST_KEEP_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-                          position.GetPositionZ(), false, false, false, false,
+            return MoveTo(TEMPEST_KEEP_MAP_ID, movePosition->GetPositionX(), movePosition->GetPositionY(),
+                          movePosition->GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_FORCED, true, false);
         }
     }
@@ -1563,9 +1558,6 @@ bool KaelthasSunstriderManageAdvisorDpsTimerAction::Execute(Event event)
 
 bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event event)
 {
-    if (botAI->IsMainTank(bot) || GetNetherstrandLongbowTank(botAI, bot) == bot)
-        return false;
-
     if (botAI->IsAssistTank(bot))
         SetRtiTarget(botAI, "moon", nullptr);
 
@@ -1658,9 +1650,6 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event eve
 
 bool KaelthasSunstriderMoveDevastationAwayAction::Execute(Event event)
 {
-    if (!botAI->IsMainTank(bot))
-        return false;
-
     Unit* axe = AI_VALUE2(Unit*, "find target", "devastation");
     if (!axe)
         return false;
@@ -1687,12 +1676,8 @@ bool KaelthasSunstriderMoveDevastationAwayAction::Execute(Event event)
 
 bool KaelthasSunstriderHunterTurnAwayNetherstrandLongbowAction::Execute(Event event)
 {
-    Player* longBowTank = GetNetherstrandLongbowTank(botAI, bot);
-    if (!longBowTank || longBowTank != bot)
-        return false;
-
     Unit* longbow = AI_VALUE2(Unit*, "find target", "netherstrand longbow");
-    if (!longbow || !longbow->IsAlive())
+    if (!longbow)
         return false;
 
     MarkTargetWithCross(bot, longbow);

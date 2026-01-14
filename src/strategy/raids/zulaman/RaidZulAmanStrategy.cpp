@@ -40,8 +40,8 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("jan'alai boss casts flame breath", {
         NextAction("jan'alai spread ranged in circle", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("jan'alai ranged position tracker bot is not in combat", {
-        NextAction("jan'alai clear ranged position tracker", ACTION_EMERGENCY + 11) }));
+    triggers.push_back(new TriggerNode("jan'alai ranged bot is not in combat", {
+        NextAction("jan'alai erase ranged position tracker", ACTION_EMERGENCY + 11) }));
 
     triggers.push_back(new TriggerNode("jan'alai boss summoning fire bombs", {
         NextAction("jan'alai move away from fire bombs", ACTION_EMERGENCY + 6) }));

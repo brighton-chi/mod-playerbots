@@ -11,65 +11,42 @@ using namespace SerpentShrineCavernHelpers;
 
 // General
 
-bool SerpentShrineCavernClearTimersAndTrackersAction::Execute(Event event)
+bool SerpentShrineCavernEraseTimersAndTrackersAction::Execute(Event event)
 {
-    bool cleared = false;
+    const uint32 instanceId = bot->GetMap()->GetInstanceId();
+    const ObjectGuid guid = bot->GetGUID();
 
-    if (!hydrossChangeToNaturePhaseTimer.empty())
-    {
-        hydrossChangeToNaturePhaseTimer.clear();
-        cleared = true;
-    }
+    bool erased = false;
+    if (hydrossChangeToNaturePhaseTimer.erase(instanceId))
+        erased = true;
+    if (hydrossChangeToFrostPhaseTimer.erase(instanceId))
+        erased = true;
+    if (hydrossNatureDpsWaitTimer.erase(instanceId))
+        erased = true;
+    if (hydrossFrostDpsWaitTimer.erase(instanceId))
+        erased = true;
+    if (lurkerSpoutTimer.erase(instanceId))
+        erased = true;
+    if (lurkerRangedPositions.erase(guid))
+        erased = true;
+    if (karathressDpsWaitTimer.erase(instanceId))
+        erased = true;
+    if (tidewalkerTankStep.erase(guid))
+        erased = true;
+    if (tidewalkerRangedStep.erase(guid))
+        erased = true;
+    if (vashjRangedPositions.erase(guid))
+        erased = true;
+    if (hasReachedVashjRangedPosition.erase(guid))
+        erased = true;
+    if (nearestTriggerGuid.erase(instanceId))
+        erased = true;
+    if (lastImbueAttempt.erase(instanceId))
+        erased = true;
+    if (intendedLineup.erase(guid))
+        erased = true;
 
-    if (!hydrossChangeToFrostPhaseTimer.empty())
-    {
-        hydrossChangeToFrostPhaseTimer.clear();
-        cleared = true;
-    }
-
-    if (!hydrossNatureDpsWaitTimer.empty())
-    {
-        hydrossNatureDpsWaitTimer.clear();
-        cleared = true;
-    }
-
-    if (!hydrossFrostDpsWaitTimer.empty())
-    {
-        hydrossFrostDpsWaitTimer.clear();
-        cleared = true;
-    }
-
-    if (!lurkerSpoutTimer.empty())
-    {
-        lurkerSpoutTimer.clear();
-        cleared = true;
-    }
-
-    if (!lurkerRangedPositions.empty())
-    {
-        lurkerRangedPositions.clear();
-        cleared = true;
-    }
-
-    if (!karathressDpsWaitTimer.empty())
-    {
-        karathressDpsWaitTimer.clear();
-        cleared = true;
-    }
-
-    if (!tidewalkerTankStep.empty())
-    {
-        tidewalkerTankStep.clear();
-        cleared = true;
-    }
-
-    if (!tidewalkerRangedStep.empty())
-    {
-        tidewalkerRangedStep.clear();
-        cleared = true;
-    }
-
-    return cleared;
+    return erased;
 }
 
 // Trash Mobs
@@ -1416,8 +1393,7 @@ bool MorogrimTidewalkerMoveBossToTankPositionAction::MoveToPhase2TankPosition(Un
     const Position& phase2 = TIDEWALKER_PHASE_2_TANK_POSITION;
     const Position& transition = TIDEWALKER_PHASE_TRANSITION_WAYPOINT;
 
-    const ObjectGuid botGuid = bot->GetGUID();
-    auto itStep = tidewalkerTankStep.find(botGuid);
+    auto itStep = tidewalkerTankStep.find(bot->GetGUID());
     uint8 step = (itStep != tidewalkerTankStep.end()) ? itStep->second : 0;
 
     if (step == 0)
@@ -1437,7 +1413,7 @@ bool MorogrimTidewalkerMoveBossToTankPositionAction::MoveToPhase2TankPosition(Un
                           false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
         }
         else
-            tidewalkerTankStep.try_emplace(botGuid, 1);
+            tidewalkerTankStep.try_emplace(bot->GetGUID(), 1);
     }
 
     if (step == 1)
@@ -1472,8 +1448,7 @@ bool MorogrimTidewalkerPhase2RepositionRangedAction::Execute(Event event)
     const Position& phase2 = TIDEWALKER_PHASE_2_RANGED_POSITION;
     const Position& transition = TIDEWALKER_PHASE_TRANSITION_WAYPOINT;
 
-    const ObjectGuid botGuid = bot->GetGUID();
-    auto itStep = tidewalkerRangedStep.find(botGuid);
+    auto itStep = tidewalkerRangedStep.find(bot->GetGUID());
     uint8 step = (itStep != tidewalkerRangedStep.end()) ? itStep->second : 0;
 
     if (step == 0)
@@ -1494,7 +1469,7 @@ bool MorogrimTidewalkerPhase2RepositionRangedAction::Execute(Event event)
         }
         else
         {
-            tidewalkerRangedStep.try_emplace(botGuid, 1);
+            tidewalkerRangedStep.try_emplace(bot->GetGUID(), 1);
             step = 1;
         }
     }
@@ -2115,10 +2090,7 @@ bool LadyVashjLootTaintedCoreAction::Execute(Event)
             return MoveTo(object, 2.0f, MovementPriority::MOVEMENT_FORCED);
 
         OpenLootAction open(botAI);
-        bool opened = open.Execute(Event());
-
-        if (!opened)
-            return opened;
+        return open.Execute(Event());
 
         if (Group* group = bot->GetGroup())
         {
@@ -2185,9 +2157,8 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
     Player* fourthCorePasser = GetFourthTaintedCorePasser(group, botAI);
     const uint32 instanceId = vashj->GetMap()->GetInstanceId();
 
-    Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
     Unit* closestTrigger = nullptr;
-    if (tainted)
+    if (AI_VALUE2(Unit*, "find target", "tainted elemental"))
     {
         closestTrigger = GetNearestActiveShieldGeneratorTriggerByEntry(tainted);
         if (closestTrigger)
@@ -2201,7 +2172,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
         if (snapUnit)
             closestTrigger = snapUnit;
         else
-            nearestTriggerGuid.clear();
+            nearestTriggerGuid.erase(instanceId);
     }
 
     if (!firstCorePasser || !secondCorePasser || !thirdCorePasser ||
@@ -2941,21 +2912,6 @@ bool LadyVashjUseFreeActionAbilitiesAction::Execute(Event event)
                 return botAI->CastSpell("hand of freedom", staticTarget);
         }
     }
-
-    return false;
-}
-
-bool LadyVashjManageTrackersAction::Execute(Event event)
-{
-    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    if (!vashj)
-        return false;
-
-    vashjRangedPositions.clear();
-    hasReachedVashjRangedPosition.clear();
-    nearestTriggerGuid.clear();
-    lastImbueAttempt.clear();
-    intendedLineup.clear();
 
     return false;
 }
