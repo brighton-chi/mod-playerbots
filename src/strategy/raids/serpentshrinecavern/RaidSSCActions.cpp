@@ -17,19 +17,8 @@ bool SerpentShrineCavernEraseTimersAndTrackersAction::Execute(Event event)
     const ObjectGuid guid = bot->GetGUID();
 
     bool erased = false;
-    if (hydrossChangeToNaturePhaseTimer.erase(instanceId))
-        erased = true;
-    if (hydrossChangeToFrostPhaseTimer.erase(instanceId))
-        erased = true;
-    if (hydrossNatureDpsWaitTimer.erase(instanceId))
-        erased = true;
-    if (hydrossFrostDpsWaitTimer.erase(instanceId))
-        erased = true;
-    if (lurkerSpoutTimer.erase(instanceId))
-        erased = true;
+
     if (lurkerRangedPositions.erase(guid))
-        erased = true;
-    if (karathressDpsWaitTimer.erase(instanceId))
         erased = true;
     if (tidewalkerTankStep.erase(guid))
         erased = true;
@@ -39,6 +28,22 @@ bool SerpentShrineCavernEraseTimersAndTrackersAction::Execute(Event event)
         erased = true;
     if (hasReachedVashjRangedPosition.erase(guid))
         erased = true;
+
+    if (IsInstanceTimerManager(botAI, bot))
+    {
+        if (hydrossChangeToNaturePhaseTimer.erase(instanceId))
+            erased = true;
+        if (hydrossChangeToFrostPhaseTimer.erase(instanceId))
+            erased = true;
+        if (hydrossNatureDpsWaitTimer.erase(instanceId))
+            erased = true;
+        if (hydrossFrostDpsWaitTimer.erase(instanceId))
+            erased = true;
+        if (lurkerSpoutTimer.erase(instanceId))
+            erased = true;
+        if (karathressDpsWaitTimer.erase(instanceId))
+            erased = true;
+    }
 
     return erased;
 }
