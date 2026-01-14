@@ -277,9 +277,7 @@ bool ZuljinBossCastsAoeAbilitiesTrigger::IsActive()
         return false;
 
     Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
-    return zuljin &&
-           (zuljin->HasAura(SPELL_SHAPE_OF_THE_EAGLE) ||
-            zuljin->HasAura(SPELL_SHAPE_OF_THE_DRAGONHAWK));
+    return zuljin && zuljin->HasAura(SPELL_SHAPE_OF_THE_DRAGONHAWK);
 }
 
 bool ZuljinBossIsChargingPlayersInLynxFormTrigger::IsActive()

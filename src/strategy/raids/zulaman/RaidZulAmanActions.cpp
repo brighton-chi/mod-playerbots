@@ -87,7 +87,7 @@ bool AkilzonSpreadRangedAction::Execute(Event event)
     if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance))
     {
         const uint32 minInterval = 1000;
-        return FleePosition(nearestPlayer->GetPosition(), minDistance + 0.5f, minInterval);
+        return FleePosition(nearestPlayer->GetPosition(), minDistance, minInterval);
     }
 
     return false;
@@ -315,12 +315,10 @@ bool NalorakkTanksPositionBossAction::FirstAssistTankPositionBearForm(
 bool NalorakkSpreadRangedAction::Execute(Event event)
 {
     const float minDistance = 11.0f;
-    Unit* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance);
-
-    if (nearestPlayer)
+    if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance))
     {
         const uint32 minInterval = 1000;
-        return FleePosition(nearestPlayer->GetPosition(), minDistance + 1.0f, minInterval);
+        return FleePosition(nearestPlayer->GetPosition(), minDistance, minInterval);
     }
 
     return false;
@@ -392,10 +390,6 @@ bool JanalaiMainTankPositionBossAction::Execute(Event event)
 
 bool JanalaiSpreadRangedInCircleAction::Execute(Event event)
 {
-    Unit* janalai = AI_VALUE2(Unit*, "find target", "jan'alai");
-    if (!janalai)
-        return false;
-
     std::vector<Player*> rangedMembers;
     if (Group* group = bot->GetGroup())
     {
@@ -450,10 +444,7 @@ bool JanalaiSpreadRangedInCircleAction::Execute(Event event)
 
 bool JanalaiEraseRangedPositionTrackerAction::Execute(Event event)
 {
-    if (janalaiRangedPositions.erase(bot->GetGUID()))
-        return true;
-
-    return false;
+    return janalaiRangedPositions.erase(bot->GetGUID());
 }
 
 bool JanalaiMoveAwayFromFireBombsAction::Execute(Event event)
@@ -692,8 +683,7 @@ bool HalazziMainTankPositionBossAction::Execute(Event event)
 
 bool HalazziFirstAssistTankAttackSpiritLynxAction::Execute(Event event)
 {
-    Unit* lynx = AI_VALUE2(Unit*, "find target", "spirit of the lynx");
-    if (lynx != nullptr)
+    if (Unit* lynx = AI_VALUE2(Unit*, "find target", "spirit of the lynx"))
     {
         MarkTargetWithCircle(bot, lynx);
         SetRtiTarget(botAI, "circle", lynx);
@@ -748,8 +738,7 @@ bool HalazziFirstAssistTankAttackSpiritLynxAction::Execute(Event event)
 bool HalazziAssignDpsPriorityAction::Execute(Event event)
 {
     // Target priority 1: Corrupted Lightning Totems
-    Unit* totem = GetFirstAliveUnitByEntry(botAI, NPC_CORRUPTED_LIGHTNING_TOTEM);
-    if (totem)
+    if (Unit* totem = GetFirstAliveUnitByEntry(botAI, NPC_CORRUPTED_LIGHTNING_TOTEM))
     {
         MarkTargetWithSkull(bot, totem);
         SetRtiTarget(botAI, "skull", totem);
@@ -764,8 +753,7 @@ bool HalazziAssignDpsPriorityAction::Execute(Event event)
     }
 
     // Target priority 2: Halazzi
-    Unit* halazzi = AI_VALUE2(Unit*, "find target", "halazzi");
-    if (halazzi)
+    if (Unit* halazzi = AI_VALUE2(Unit*, "find target", "halazzi"))
     {
         SetRtiTarget(botAI, "star", halazzi);
 
@@ -972,15 +960,11 @@ bool ZuljinRunAwayFromWhirlwindAction::Execute(Event event)
 
 bool ZuljinSpreadRangedAction::Execute(Event event)
 {
-    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
-    if (!zuljin)
-        return false;
-
-    const float minDistance = zuljin->HasAura(SPELL_SHAPE_OF_THE_EAGLE) ? 14.0f : 5.0f;
+    const float minDistance = 6.0f;
     if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance))
     {
         const uint32 minInterval = 1000;
-        return FleePosition(nearestPlayer->GetPosition(), minDistance + 1.0f, minInterval);
+        return FleePosition(nearestPlayer->GetPosition(), minDistance, minInterval);
     }
 
     return false;
@@ -992,7 +976,7 @@ bool ZuljinMoveNearGroupAction::Execute(Event event)
     if (!zuljin)
         return false;
 
-    if (bot->GetExactDist2d(zuljin) > 16.0f)
+    if (bot->GetExactDist2d(zuljin) > 15.0f)
     {
         return MoveInside(ZULAMAN_MAP_ID, zuljin->GetPositionX(), zuljin->GetPositionY(),
                           zuljin->GetPositionZ(), 15.0f, MovementPriority::MOVEMENT_COMBAT);

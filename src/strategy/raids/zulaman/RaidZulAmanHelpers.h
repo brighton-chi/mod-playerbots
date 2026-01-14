@@ -90,9 +90,6 @@ namespace ZulAmanHelpers
     // Halazzi <Lynx Avatar>
     extern const Position HALAZZI_TANK_POSITION;
 
-    // Hex Lord Malacrass
-    // extern const Position MALACRASS_TANK_POSITION;
-
     // Zul'jin
     extern const Position ZULJIN_TANK_POSITION;
 }

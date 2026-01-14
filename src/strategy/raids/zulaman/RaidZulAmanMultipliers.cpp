@@ -45,7 +45,7 @@ float AkilzonStayInEyeOfTheStormMultiplier::GetValue(Action* action)
         dynamic_cast<CastKillingSpreeAction*>(action) ||
         dynamic_cast<CastBlinkBackAction*>(action) ||
         dynamic_cast<CastDisengageAction*>(action) ||
-        dynamic_cast<CombatFormationMoveAction*>(action) ||
+        dynamic_cast<SetBehindTargetAction*>(action) ||
         dynamic_cast<FleeAction*>(action) ||
         dynamic_cast<FollowAction*>(action) ||
         dynamic_cast<ReachTargetAction*>(action))
@@ -65,21 +65,14 @@ float NalorakkDisableTankActionsMultiplier::GetValue(Action* action)
     if (!nalorakk)
         return 1.0f;
 
+    if (bot->GetVictim() == nullptr)
+        return 1.0f;
+
     if (dynamic_cast<TankFaceAction*>(action))
         return 0.0f;
 
-    if (!nalorakk->HasAura(SPELL_BEARFORM) && bot->GetVictim() != nullptr &&
-        botAI->IsAssistTankOfIndex(bot, 0))
-    {
-        if (dynamic_cast<TankAssistAction*>(action) ||
-            dynamic_cast<CastTauntAction*>(action) ||
-            dynamic_cast<CastGrowlAction*>(action) ||
-            dynamic_cast<CastHandOfReckoningAction*>(action) ||
-            dynamic_cast<CastDarkCommandAction*>(action))
-            return 0.0f;
-    }
-    else if (nalorakk->HasAura(SPELL_BEARFORM) && bot->GetVictim() != nullptr &&
-             botAI->IsMainTank(bot))
+    if ((!nalorakk->HasAura(SPELL_BEARFORM) && botAI->IsAssistTankOfIndex(bot, 0)) ||
+        (nalorakk->HasAura(SPELL_BEARFORM) && botAI->IsMainTank(bot)))
     {
         if (dynamic_cast<TankAssistAction*>(action) ||
             dynamic_cast<CastTauntAction*>(action) ||
@@ -116,22 +109,18 @@ float JanalaiDisableTankActionsMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "jan'alai"))
         return 1.0f;
 
+    if (bot->GetVictim() == nullptr)
+        return 1.0f;
+
     if (dynamic_cast<TankFaceAction*>(action))
         return 0.0f;
 
-    if (botAI->IsMainTank(bot) && bot->GetVictim() != nullptr)
+    if (botAI->IsMainTank(bot) ||
+        (botAI->IsAssistTank(bot) &&
+         !GetFirstAliveUnitByEntry(botAI, NPC_AMANI_DRAGONHAWK_HATCHLING)))
     {
         if (dynamic_cast<TankAssistAction*>(action))
             return 0.0f;
-    }
-
-    if (!GetFirstAliveUnitByEntry(botAI, NPC_AMANI_DRAGONHAWK_HATCHLING))
-    {
-        if (botAI->IsAssistTank(bot) && bot->GetVictim() != nullptr)
-        {
-            if (dynamic_cast<TankAssistAction*>(action))
-                return 0.0f;
-        }
     }
 
     return 1.0f;
@@ -139,9 +128,6 @@ float JanalaiDisableTankActionsMultiplier::GetValue(Action* action)
 
 float JanalaiDisableCombatFormationMoveMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsRanged(bot))
-        return 1.0f;
-
     if (AI_VALUE2(Unit*, "find target", "jan'alai"))
     {
         if (dynamic_cast<CombatFormationMoveAction*>(action) &&
@@ -311,10 +297,7 @@ float ZuljinAvoidWhirlwindMultiplier::GetValue(Action* action)
         return 1.0f;
 
     Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
-    if (!zuljin)
-        return 1.0f;
-
-    if (zuljin->HasAura(SPELL_WHIRLWIND))
+    if (zuljin && zuljin->HasAura(SPELL_WHIRLWIND))
     {
         if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
             dynamic_cast<CastKillingSpreeAction*>(action) ||

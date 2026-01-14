@@ -189,9 +189,6 @@ namespace ZulAmanHelpers
     // Halazzi <Lynx Avatar>
     const Position HALAZZI_TANK_POSITION = { 370.733f, 1131.202f, 6.516f };
 
-    // Hex Lord Malacrass
-    // const Position MALACRASS_TANK_POSITION = { 118.713f, 996.234f, 30.624f };
-
     // Zul'jin
     const Position ZULJIN_TANK_POSITION = { 120.210f, 705.564f, 45.111f };
 }
