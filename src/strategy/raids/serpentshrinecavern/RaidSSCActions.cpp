@@ -2158,7 +2158,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
     const uint32 instanceId = vashj->GetMap()->GetInstanceId();
 
     Unit* closestTrigger = nullptr;
-    if (AI_VALUE2(Unit*, "find target", "tainted elemental"))
+    if (Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental"))
     {
         closestTrigger = GetNearestActiveShieldGeneratorTriggerByEntry(tainted);
         if (closestTrigger)
@@ -2622,42 +2622,49 @@ bool LadyVashjPassTheTaintedCoreAction::UseCoreOnNearestGenerator()
     if (bot->GetExactDist2d(generator) > 4.5f)
         return false;
 
-    if (Item* core = bot->GetItemByEntry(ITEM_TAINTED_CORE))
+    Item* core = bot->GetItemByEntry(ITEM_TAINTED_CORE);
+    if (!core)
+        return false;
+
+    if (bot->CanUseItem(core) != EQUIP_ERR_OK)
+        return false;
+
+    if (bot->IsNonMeleeSpellCast(false))
+        return false;
+
+    const uint8 bagIndex = core->GetBagSlot();
+    const uint8 slot = core->GetSlot();
+    const uint8 cast_count = 0;
+    uint32 spellId = 0;
+
+    for (uint8 i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
     {
-        const uint8 bagIndex = core->GetBagSlot();
-        const uint8 slot = core->GetSlot();
-        const uint8 cast_count = 0;
-        uint32 spellId = 0;
-
-        for (uint8 i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
+        if (core->GetTemplate()->Spells[i].SpellId > 0)
         {
-            if (core->GetTemplate()->Spells[i].SpellId > 0)
-            {
-                spellId = core->GetTemplate()->Spells[i].SpellId;
-                break;
-            }
+            spellId = core->GetTemplate()->Spells[i].SpellId;
+            if (!botAI->CanCastSpell(spellId, bot, false, nullptr, core))
+                return false;
+            break;
         }
-
-        const ObjectGuid item_guid = core->GetGUID();
-        const uint32 glyphIndex = 0;
-        const uint8 castFlags = 0;
-
-        WorldPacket packet(CMSG_USE_ITEM);
-        packet << bagIndex;
-        packet << slot;
-        packet << cast_count;
-        packet << spellId;
-        packet << item_guid;
-        packet << glyphIndex;
-        packet << castFlags;
-        packet << (uint32)TARGET_FLAG_GAMEOBJECT;
-        packet << generator->GetGUID().WriteAsPacked();
-
-        bot->GetSession()->HandleUseItemOpcode(packet);
-        return true;
     }
 
-    return false;
+    const ObjectGuid item_guid = core->GetGUID();
+    const uint32 glyphIndex = 0;
+    const uint8 castFlags = 0;
+
+    WorldPacket packet(CMSG_USE_ITEM);
+    packet << bagIndex;
+    packet << slot;
+    packet << cast_count;
+    packet << spellId;
+    packet << item_guid;
+    packet << glyphIndex;
+    packet << castFlags;
+    packet << (uint32)TARGET_FLAG_GAMEOBJECT;
+    packet << generator->GetGUID().WriteAsPacked();
+
+    bot->GetSession()->HandleUseItemOpcode(packet);
+    return true;
 }
 
 // For dead bots to destroy their cores so the logic can reset for the next attempt
