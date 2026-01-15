@@ -161,7 +161,7 @@ void RaidTempestKeepStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new KaelthasSunstriderDisableShadowWardMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderManageTankTargetingMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderDisableDisperseMultiplier(botAI));
-    multipliers.push_back(new KaelthasSunstriderDelayBloodlustAndHeroismMultiplier(botAI));
+    multipliers.push_back(new KaelthasSunstriderDelayCooldownsMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderTryNonfatalBreakingOfMindControlMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderAllDpsOnBossDuringPyroblastMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderStaySpreadDuringGravityLapseMultiplier(botAI));

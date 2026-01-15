@@ -123,11 +123,11 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class KaelthasSunstriderDelayBloodlustAndHeroismMultiplier : public Multiplier
+class KaelthasSunstriderDelayCooldownsMultiplier : public Multiplier
 {
 public:
-    KaelthasSunstriderDelayBloodlustAndHeroismMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "kael'thas sunstrider delay bloodlust and heroism multiplier") {}
+    KaelthasSunstriderDelayCooldownsMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "kael'thas sunstrider delay cooldowns multiplier") {}
     virtual float GetValue(Action* action);
 };
 
