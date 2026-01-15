@@ -14,25 +14,28 @@ using namespace TempestKeepHelpers;
 
 bool TempestKeepEraseTimersAndTrackersAction::Execute(Event event)
 {
+    const ObjectGuid guid = bot->GetGUID();
     const uint32 instanceId = bot->GetMap()->GetInstanceId();
 
     bool erased = false;
-    if (initialVoidReaverPositions.erase(bot->GetGUID()))
-        erased = true;
-    if (hasReachedInitialVoidReaverPosition.erase(bot->GetGUID()))
-        erased = true;
-    if (IsInstanceTimerManager(botAI, bot))
+    if (!AI_VALUE2(Unit*, "find target", "al'ar"))
+    {
+        if (lastRebirthState.erase(instanceId))
+            erased = true;
+        if (isAlarInPhase2.erase(instanceId))
+            erased = true;
+    }
+    else if (!AI_VALUE2(Unit*, "find target", "void reaver"))
+    {
+        if (initialVoidReaverPositions.erase(guid))
+            erased = true;
+        if (hasReachedInitialVoidReaverPosition.erase(guid))
+            erased = true;
+    }
+    else if (!AI_VALUE2(Unit*, "find target", "kael'thas sunstrider"))
     {
         if (advisorDpsWaitTimer.erase(instanceId))
             erased = true;
-
-        if (!AI_VALUE2(Unit*, "find target", "al'ar"))
-        {
-            if (lastRebirthState.erase(instanceId))
-                erased = true;
-            if (isAlarInPhase2.erase(instanceId))
-                erased = true;
-        }
     }
 
     return erased;
@@ -58,8 +61,8 @@ bool CrimsonHandCenturionCastPolymorphAction::Execute(Event event)
     }
     else if (centurion->HasAura(SPELL_ARCANE_FLURRY))
     {
-        if (botAI->CanCastSpell("polymorph", centurion))
-            return botAI->CastSpell("polymorph", centurion);
+        botAI->Reset();
+        return botAI->CastSpell("polymorph", centurion);
     }
 
     return false;

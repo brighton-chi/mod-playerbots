@@ -17,19 +17,7 @@ bool SerpentShrineCavernEraseTimersAndTrackersAction::Execute(Event event)
     const ObjectGuid guid = bot->GetGUID();
 
     bool erased = false;
-
-    if (lurkerRangedPositions.erase(guid))
-        erased = true;
-    if (tidewalkerTankStep.erase(guid))
-        erased = true;
-    if (tidewalkerRangedStep.erase(guid))
-        erased = true;
-    if (vashjRangedPositions.erase(guid))
-        erased = true;
-    if (hasReachedVashjRangedPosition.erase(guid))
-        erased = true;
-
-    if (IsInstanceTimerManager(botAI, bot))
+    if (!AI_VALUE2(Unit*, "find target", "hydross the unstable"))
     {
         if (hydrossChangeToNaturePhaseTimer.erase(instanceId))
             erased = true;
@@ -39,9 +27,31 @@ bool SerpentShrineCavernEraseTimersAndTrackersAction::Execute(Event event)
             erased = true;
         if (hydrossFrostDpsWaitTimer.erase(instanceId))
             erased = true;
+    }
+    else if (!AI_VALUE2(Unit*, "find target", "the lurker below"))
+    {
+        if (lurkerRangedPositions.erase(guid))
+            erased = true;
         if (lurkerSpoutTimer.erase(instanceId))
             erased = true;
+    }
+    else if (!AI_VALUE2(Unit*, "find target", "fathom-lord karathress"))
+    {
         if (karathressDpsWaitTimer.erase(instanceId))
+            erased = true;
+    }
+    else if (!AI_VALUE2(Unit*, "find target", "morogrim tidewalker"))
+    {
+        if (tidewalkerTankStep.erase(guid))
+            erased = true;
+        if (tidewalkerRangedStep.erase(guid))
+            erased = true;
+    }
+    else if (!AI_VALUE2(Unit*, "find target", "lady vashj"))
+    {
+        if (vashjRangedPositions.erase(guid))
+            erased = true;
+        if (hasReachedVashjRangedPosition.erase(guid))
             erased = true;
     }
 

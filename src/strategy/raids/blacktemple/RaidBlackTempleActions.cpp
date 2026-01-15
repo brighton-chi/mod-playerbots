@@ -9,29 +9,51 @@ using namespace BlackTempleHelpers;
 
 bool BlackTempleEraseTimersAndTrackersAction::Execute(Event event)
 {
+    const ObjectGuid guid = bot->GetGUID();
     const uint32 instanceId = bot->GetMap()->GetInstanceId();
 
     bool erased = false;
-    if (supremusPhaseTimer.erase(instanceId))
-        erased = true;
-    if (gorefiendRangedPositions.erase(bot->GetGUID()))
-        erased = true;
-    if (gurtoggPhaseTimer.erase(instanceId))
-        erased = true;
-    if (reliquaryDpsWaitTimer.erase(instanceId))
-        erased = true;
-    if (shahrazTankStep.erase(bot->GetGUID()))
-        erased = true;
-    if (gathiosTankStep.erase(bot->GetGUID()))
-        erased = true;
-    if (illidanDpsWaitTimer.erase(instanceId))
-        erased = true;
-    if (westFlameGuid.erase(instanceId))
-        erased = true;
-    if (eastFlameGuid.erase(instanceId))
-        erased = true;
-    if (flameTankWaypointIndex.erase(bot->GetGUID()))
-        erased = true;
+    if (!AI_VALUE2(Unit*, "find target", "supremus"))
+    {
+        if (supremusPhaseTimer.erase(instanceId))
+            erased = true;
+    }
+    else if (!AI_VALUE2(Unit*, "find target", "teron gorefiend"))
+    {
+        if (gorefiendRangedPositions.erase(guid))
+            erased = true;
+    }
+    else if (!AI_VALUE2(Unit*, "find target", "gurtogg bloodboil"))
+    {
+        if (gurtoggPhaseTimer.erase(instanceId))
+            erased = true;
+    }
+    else if (!AI_VALUE2(Unit*, "find target", "reliquary of the lost"))
+    {
+        if (reliquaryDpsWaitTimer.erase(instanceId))
+            erased = true;
+    }
+    else if (!AI_VALUE2(Unit*, "find target", "mother shahraz"))
+    {
+        if (shahrazTankStep.erase(guid))
+            erased = true;
+    }
+    else if (!AI_VALUE2(Unit*, "find target", "gathios the shatterer"))
+    {
+        if (gathiosTankStep.erase(guid))
+            erased = true;
+    }
+    else if (!AI_VALUE2(Unit*, "find target", "illidan stormrage"))
+    {
+        if (illidanDpsWaitTimer.erase(instanceId))
+            erased = true;
+        if (westFlameGuid.erase(instanceId))
+            erased = true;
+        if (eastFlameGuid.erase(instanceId))
+            erased = true;
+        if (flameTankWaypointIndex.erase(guid))
+            erased = true;
+    }
 
     return erased;
 }
