@@ -217,12 +217,16 @@ public:
     bool Execute(Event event) override;
 };
 
-class ReliquaryOfSoulsMeleeDpsStayAtMaxRangeFromEssenceOfSufferingAction : public MovementAction
+class ReliquaryOfSoulsKeepDistanceFromEssenceOfSufferingAction : public MovementAction
 {
 public:
-    ReliquaryOfSoulsMeleeDpsStayAtMaxRangeFromEssenceOfSufferingAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "reliquary of souls melee dps stay at max range from essence of suffering") {}
+    ReliquaryOfSoulsKeepDistanceFromEssenceOfSufferingAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "reliquary of souls keep distance from essence of suffering") {}
     bool Execute(Event event) override;
+
+private:
+    bool MeleeDpsStayAtMaxRange(Unit* suffering);
+    bool RangedMoveAwayFromBoss(Unit* suffering);
 };
 
 class ReliquaryOfSoulsHealersDpsEssenceOfSufferingAction : public Action

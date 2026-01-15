@@ -90,8 +90,8 @@ public:
         creators["reliquary of souls misdirect boss to main tank"] =
             &RaidBlackTempleActionContext::reliquary_of_souls_misdirect_boss_to_main_tank;
 
-        creators["reliquary of souls melee dps stay at max range from essence of suffering"] =
-            &RaidBlackTempleActionContext::reliquary_of_souls_melee_dps_stay_at_max_range_from_essence_of_suffering;
+        creators["reliquary of souls keep distance from essence of suffering"] =
+            &RaidBlackTempleActionContext::reliquary_of_souls_keep_distance_from_essence_of_suffering;
 
         creators["reliquary of souls healers dps essence of suffering"] =
             &RaidBlackTempleActionContext::reliquary_of_souls_healers_dps_essence_of_suffering;
@@ -266,8 +266,8 @@ private:
     static Action* reliquary_of_souls_misdirect_boss_to_main_tank(
         PlayerbotAI* botAI) { return new ReliquaryOfSoulsMisdirectBossToMainTankAction(botAI); }
 
-    static Action* reliquary_of_souls_melee_dps_stay_at_max_range_from_essence_of_suffering(
-        PlayerbotAI* botAI) { return new ReliquaryOfSoulsMeleeDpsStayAtMaxRangeFromEssenceOfSufferingAction(botAI); }
+    static Action* reliquary_of_souls_keep_distance_from_essence_of_suffering(
+        PlayerbotAI* botAI) { return new ReliquaryOfSoulsKeepDistanceFromEssenceOfSufferingAction(botAI); }
 
     static Action* reliquary_of_souls_healers_dps_essence_of_suffering(
         PlayerbotAI* botAI) { return new ReliquaryOfSoulsHealersDpsEssenceOfSufferingAction(botAI); }

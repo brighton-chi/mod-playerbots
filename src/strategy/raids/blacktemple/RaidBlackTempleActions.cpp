@@ -983,12 +983,23 @@ bool ReliquaryOfSoulsHealersDpsEssenceOfSufferingAction::Execute(Event event)
     return false;
 }
 
-bool ReliquaryOfSoulsMeleeDpsStayAtMaxRangeFromEssenceOfSufferingAction::Execute(Event event)
+bool ReliquaryOfSoulsKeepDistanceFromEssenceOfSufferingAction::Execute(Event event)
 {
     Unit* suffering = AI_VALUE2(Unit*, "find target", "essence of suffering");
     if (!suffering)
         return false;
 
+    if (botAI->IsMelee(bot) && bot->GetVictim() != suffering)
+        return MeleeDpsStayAtMaxRange(suffering);
+
+    if (botAI->IsRanged(bot))
+        return RangedMoveAwayFromBoss(suffering);
+
+    return false;
+}
+
+bool ReliquaryOfSoulsKeepDistanceFromEssenceOfSufferingAction::MeleeDpsStayAtMaxRange(Unit* suffering)
+{
     float desiredDist = bot->GetMeleeRange(suffering) - 0.5f;
     const float tolerance = 0.25f;
     if (fabs(bot->GetExactDist2d(suffering) - desiredDist) > tolerance)
@@ -1002,6 +1013,19 @@ bool ReliquaryOfSoulsMeleeDpsStayAtMaxRangeFromEssenceOfSufferingAction::Execute
             return MoveTo(BLACK_TEMPLE_MAP_ID, targetX, targetY, bot->GetPositionZ(), false,
                           false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
         }
+    }
+
+    return false;
+}
+
+bool ReliquaryOfSoulsKeepDistanceFromEssenceOfSufferingAction::RangedMoveAwayFromBoss(Unit* suffering)
+{
+    const float safeDistance = 10.0f;
+    if (bot->GetDistance2d(suffering) < safeDistance)
+    {
+        const uint32 minInterval = 1000;
+        return FleePosition(Position(suffering->GetPositionX(), suffering->GetPositionY(),
+                                     suffering->GetPositionZ()), safeDistance, minInterval);
     }
 
     return false;

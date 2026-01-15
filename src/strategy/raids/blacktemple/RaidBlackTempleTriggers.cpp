@@ -343,11 +343,11 @@ bool ReliquaryOfSoulsAggroResetsUponPhaseChangeTrigger::IsActive()
 
 bool ReliquaryOfSoulsEssenceOfSufferingFixatesOnClosestTargetTrigger::IsActive()
 {
-    if (!botAI->IsDps(bot) || !botAI->IsMelee(bot))
+    if (botAI->IsTank(bot))
         return false;
 
     Unit* suffering = AI_VALUE2(Unit*, "find target", "essence of suffering");
-    return suffering && suffering->GetVictim() != bot;
+    return suffering;
 }
 
 bool ReliquaryOfSoulsEssenceOfSufferingDisablesHealingTrigger::IsActive()

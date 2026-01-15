@@ -85,7 +85,7 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("reliquary of souls misdirect boss to main tank", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("reliquary of souls essence of suffering fixates on closest target", {
-        NextAction("reliquary of souls melee dps stay at max range from essence of suffering", ACTION_RAID + 1) }));
+        NextAction("reliquary of souls keep distance from essence of suffering", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("reliquary of souls essence of suffering disables healing", {
         NextAction("reliquary of souls healers dps essence of suffering", ACTION_RAID + 1) }));
