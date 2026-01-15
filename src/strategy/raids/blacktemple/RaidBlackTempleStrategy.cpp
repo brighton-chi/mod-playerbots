@@ -185,6 +185,7 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
 
     // Supremus
     multipliers.push_back(new SupremusFocusOnAvoidanceInPhase2Multiplier(botAI));
+    multipliers.push_back(new SupremusHitboxIsBuggedMultiplier(botAI));
 
     // Shade of Akama
     // N/A

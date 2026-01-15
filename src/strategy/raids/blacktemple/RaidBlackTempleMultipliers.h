@@ -21,6 +21,14 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class SupremusHitboxIsBuggedMultiplier : public Multiplier
+{
+public:
+    SupremusHitboxIsBuggedMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "supremus hitbox is bugged multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
 // Shade of Akama
 
 // Teron Gorefiend

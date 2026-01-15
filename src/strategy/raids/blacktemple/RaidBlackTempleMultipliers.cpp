@@ -50,6 +50,17 @@ float SupremusFocusOnAvoidanceInPhase2Multiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+float SupremusHitboxIsBuggedMultiplier::GetValue(Action* action)
+{
+    if (AI_VALUE2(Unit*, "find target", "supremus"))
+    {
+        if (dynamic_cast<CastKillingSpreeAction*>(action))
+            return 0.0f;
+    }
+
+    return 1.0f;
+}
+
 // Shade of Akama
 // N/A
 

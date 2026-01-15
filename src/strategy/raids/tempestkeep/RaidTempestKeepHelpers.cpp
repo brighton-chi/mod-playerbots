@@ -444,8 +444,7 @@ namespace TempestKeepHelpers
     const Position SANGUINAR_WAITING_POSITION = { 761.850f, 27.459f, 46.779f };
     const Position TELONICUS_TANK_POSITION = { 773.717f, 44.091f, 46.780f };
     const Position TELONICUS_WAITING_POSITION = { 754.347f, 31.739f, 46.796f };
-    // const Position ADVISOR_HEAL_POSITION = { 749.443f, 26.927f, 46.780f };
-    const Position ADVISOR_HEAL_POSITION = { 748.475f, 17.983f, 46.779f };
+    const Position ADVISOR_HEAL_POSITION = { 757.425f, 13.011f, 46.779f };
     const Position CAPERNIAN_WAITING_POSITION = { 743.897f, -11.575f, 46.779f };
     const Position KAELTHAS_WEAPON_STACK_POSITION = { 775.296f, -0.822f, 48.729f };
     const Position KAELTHAS_AXE_TANK_POSITION = { 775.621f, 20.717f, 48.729f };
