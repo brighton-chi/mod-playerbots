@@ -124,6 +124,9 @@ bool JanalaiBossCastsFlameBreathTrigger::IsActive()
 
 bool JanalaiRangedBotIsNotInCombatTrigger::IsActive()
 {
+    if (AI_VALUE2(Unit*, "find target", "jan'alai"))
+        return false;
+
     return botAI->IsRanged(bot) && !bot->IsInCombat();
 }
 
