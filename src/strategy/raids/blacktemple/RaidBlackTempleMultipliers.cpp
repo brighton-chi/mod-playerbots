@@ -613,12 +613,13 @@ float IllidanStormrageWaitForDpsMultiplier::GetValue(Action* action)
         if (botAI->IsMainTank(bot))
             return 1.0f;
 
-        const uint8 phase1DpsWaitSeconds = 1;
+        const uint8 phase1DpsWaitSeconds = 3;
         auto it = illidanDpsWaitTimer.find(instanceId);
         if (it == illidanDpsWaitTimer.end() || (now - it->second) < phase1DpsWaitSeconds)
         {
             if (dynamic_cast<AttackAction*>(action) ||
-                (dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<CastHealingSpellAction*>(action)))
+                (dynamic_cast<CastSpellAction*>(action) &&
+                 !dynamic_cast<CastHealingSpellAction*>(action)))
                  return 0.0f;
         }
     }
@@ -632,22 +633,24 @@ float IllidanStormrageWaitForDpsMultiplier::GetValue(Action* action)
         if (it == illidanDpsWaitTimer.end() || (now - it->second) < phase4DpsWaitSeconds)
         {
             if (dynamic_cast<AttackAction*>(action) ||
-                (dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<CastHealingSpellAction*>(action)))
+                (dynamic_cast<CastSpellAction*>(action) &&
+                 !dynamic_cast<CastHealingSpellAction*>(action)))
                  return 0.0f;
         }
     }
-    else if (GetIllidanPhase(illidan) == 2)
+    else if (AI_VALUE2(Unit*, "find target", "flame of azzinoth"))
     {
         if (botAI->IsAssistTankOfIndex(bot, 0, true) ||
             botAI->IsAssistTankOfIndex(bot, 1, true))
             return 1.0f;
 
-        const uint8 phase2DpsWaitSeconds = 5;
+        const uint8 phase2DpsWaitSeconds = 7;
         auto it = illidanDpsWaitTimer.find(instanceId);
         if (it == illidanDpsWaitTimer.end() || (now - it->second) < phase2DpsWaitSeconds)
         {
             if (dynamic_cast<AttackAction*>(action) ||
-                (dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<CastHealingSpellAction*>(action)))
+                (dynamic_cast<CastSpellAction*>(action) &&
+                 !dynamic_cast<CastHealingSpellAction*>(action)))
                  return 0.0f;
         }
     }

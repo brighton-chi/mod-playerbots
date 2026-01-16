@@ -14,45 +14,23 @@ bool BlackTempleEraseTimersAndTrackersAction::Execute(Event event)
 
     bool erased = false;
     if (!AI_VALUE2(Unit*, "find target", "supremus"))
+        erased |= supremusPhaseTimer.erase(instanceId);
+    if (!AI_VALUE2(Unit*, "find target", "teron gorefiend"))
+        erased |= gorefiendRangedPositions.erase(guid);
+    if (!AI_VALUE2(Unit*, "find target", "gurtogg bloodboil"))
+        erased |= gurtoggPhaseTimer.erase(instanceId);
+    if (!AI_VALUE2(Unit*, "find target", "reliquary of the lost"))
+        erased |= reliquaryDpsWaitTimer.erase(instanceId);
+    if (!AI_VALUE2(Unit*, "find target", "mother shahraz"))
+        erased |= shahrazTankStep.erase(guid);
+    if (!AI_VALUE2(Unit*, "find target", "gathios the shatterer"))
+        erased |= gathiosTankStep.erase(guid);
+    if (!AI_VALUE2(Unit*, "find target", "illidan stormrage"))
     {
-        if (supremusPhaseTimer.erase(instanceId))
-            erased = true;
-    }
-    else if (!AI_VALUE2(Unit*, "find target", "teron gorefiend"))
-    {
-        if (gorefiendRangedPositions.erase(guid))
-            erased = true;
-    }
-    else if (!AI_VALUE2(Unit*, "find target", "gurtogg bloodboil"))
-    {
-        if (gurtoggPhaseTimer.erase(instanceId))
-            erased = true;
-    }
-    else if (!AI_VALUE2(Unit*, "find target", "reliquary of the lost"))
-    {
-        if (reliquaryDpsWaitTimer.erase(instanceId))
-            erased = true;
-    }
-    else if (!AI_VALUE2(Unit*, "find target", "mother shahraz"))
-    {
-        if (shahrazTankStep.erase(guid))
-            erased = true;
-    }
-    else if (!AI_VALUE2(Unit*, "find target", "gathios the shatterer"))
-    {
-        if (gathiosTankStep.erase(guid))
-            erased = true;
-    }
-    else if (!AI_VALUE2(Unit*, "find target", "illidan stormrage"))
-    {
-        if (illidanDpsWaitTimer.erase(instanceId))
-            erased = true;
-        if (westFlameGuid.erase(instanceId))
-            erased = true;
-        if (eastFlameGuid.erase(instanceId))
-            erased = true;
-        if (flameTankWaypointIndex.erase(guid))
-            erased = true;
+        erased |= illidanDpsWaitTimer.erase(instanceId);
+        erased |= westFlameGuid.erase(instanceId);
+        erased |= eastFlameGuid.erase(instanceId);
+        erased |= flameTankWaypointIndex.erase(guid);
     }
 
     return erased;
@@ -1914,13 +1892,13 @@ std::vector<Unit*> IllidanStormrageMainTankMoveAwayFromFlameCrashAction::GetAllF
 
 bool IllidanStormrageIsolateBotWithParasiteAction::Execute(Event event)
 {
-    if (botAI->HasCheat(BotCheatMask::raid))
+    /* if (botAI->HasCheat(BotCheatMask::raid))
     {
         if (bot->HasAura(SPELL_PARASITIC_SHADOWFIEND))
             bot->RemoveAura(SPELL_PARASITIC_SHADOWFIEND);
 
         return false;
-    }
+    } */
 
     if (botAI->IsMainTank(bot))
         return false;
@@ -2549,7 +2527,8 @@ bool IllidanStormrageManageDpsTimerAction::Execute(Event event)
     const time_t now = std::time(nullptr);
     const uint32 instanceId = illidan->GetMap()->GetInstanceId();
 
-    if (GetIllidanPhase(illidan) == 3 || GetIllidanPhase(illidan) == 5)
+    if (GetIllidanPhase(illidan) == 3 || GetIllidanPhase(illidan) == 5 ||
+        GetIllidanPhase(illidan) == 0)
     {
         if (illidanDpsWaitTimer.erase(instanceId))
             return true;
@@ -2560,9 +2539,9 @@ bool IllidanStormrageManageDpsTimerAction::Execute(Event event)
             return true;
     }
     else if (GetIllidanPhase(illidan) == 2 &&
-             AI_VALUE2(Unit*, "find target", "flame of azzinoth"))
+             !AI_VALUE2(Unit*, "find target", "flame of azzinoth"))
     {
-        if (illidanDpsWaitTimer.try_emplace(instanceId, now).second)
+        if (illidanDpsWaitTimer.insert_or_assign(instanceId, now).second)
             return true;
     }
 
