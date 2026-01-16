@@ -42,8 +42,6 @@ bool BlackTempleEraseTimersAndTrackersAction::Execute(Event event)
     {
         if (gathiosTankStep.erase(guid))
             erased = true;
-        if (malandeTankStep.erase(guid))
-            erased = true;
     }
     else if (!AI_VALUE2(Unit*, "find target", "illidan stormrage"))
     {
@@ -1415,7 +1413,7 @@ bool IllidariCouncilMainTankReflectJudgementOfCommandAction::Execute(Event event
 
 bool IllidariCouncilFirstAssistTankPositionMalandeAction::Execute(Event event)
 {
-    /* Unit* malande = AI_VALUE2(Unit*, "find target", "lady malande");
+    Unit* malande = AI_VALUE2(Unit*, "find target", "lady malande");
     if (!malande)
         return false;
 
@@ -1441,66 +1439,6 @@ bool IllidariCouncilFirstAssistTankPositionMalandeAction::Execute(Event event)
 
             return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
                           false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
-        }
-    }
-
-    return false; */
-    Unit* malande = AI_VALUE2(Unit*, "find target", "lady malande");
-    if (!malande)
-        return false;
-
-    MarkTargetWithStar(bot, malande);
-    SetRtiTarget(botAI, "star", malande);
-
-    if (bot->GetTarget() != malande->GetGUID())
-        return Attack(malande);
-
-    static const uint32 dangerousAuras[] = { SPELL_CONSECRATION, SPELL_BLIZZARD, SPELL_FLAMESTRIKE };
-    bool hasDangerousAura = false;
-    for (uint32 aura : dangerousAuras)
-    {
-        if (bot->HasAura(aura))
-        {
-            hasDangerousAura = true;
-            break;
-        }
-    }
-
-    const ObjectGuid guid = bot->GetGUID();
-    uint8 index = malandeTankStep.count(guid) ? malandeTankStep[guid] : 0;
-
-    const Position tankPositions[4] =
-    {
-        MALANDE_TANK_POSITION_1,
-        MALANDE_TANK_POSITION_2,
-        MALANDE_TANK_POSITION_3,
-        MALANDE_TANK_POSITION_4
-    };
-    const Position& position = tankPositions[index];
-
-    const float maxDistance = 2.0f;
-    float distanceToTarget = bot->GetExactDist2d(position);
-
-    if (malande->GetVictim() == bot)
-    {
-        if (distanceToTarget <= maxDistance && hasDangerousAura)
-        {
-            index = (index + 1) % 4;
-            gathiosTankStep[guid] = index;
-            const Position& newPosition = tankPositions[index];
-            float newDistanceToTarget = bot->GetExactDist2d(newPosition);
-            if (newDistanceToTarget > maxDistance)
-            {
-                return MoveTo(BLACK_TEMPLE_MAP_ID, newPosition.GetPositionX(), newPosition.GetPositionY(),
-                              newPosition.GetPositionZ(), false, false, false, false,
-                              MovementPriority::MOVEMENT_FORCED, true, false);
-            }
-        }
-        else if (distanceToTarget > maxDistance)
-        {
-            return MoveTo(BLACK_TEMPLE_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-                          position.GetPositionZ(), false, false, false, false,
-                          MovementPriority::MOVEMENT_FORCED, true, false);
         }
     }
 
