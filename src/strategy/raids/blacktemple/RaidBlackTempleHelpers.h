@@ -216,7 +216,8 @@ namespace BlackTempleHelpers
     extern const Position ILLIDAN_W_GLAIVE_TANK_POSITIONS[7];
     extern const Position eyeBeamPos[MAX_EYE_BEAM_POS * 2];
     extern std::unordered_map<ObjectGuid, size_t> flameTankWaypointIndex;
-    extern std::unordered_map<uint32, time_t> illidanDpsWaitTimer;
+    extern std::unordered_map<uint32, time_t> illidanBossDpsWaitTimer;
+    extern std::unordered_map<uint32, time_t> illidanFlameDpsWaitTimer;
     extern std::unordered_map<uint32, ObjectGuid> eastFlameGuid;
     extern std::unordered_map<uint32, ObjectGuid> westFlameGuid;
     int GetIllidanPhase(Unit* illidan);

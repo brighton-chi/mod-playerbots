@@ -614,8 +614,8 @@ float IllidanStormrageWaitForDpsMultiplier::GetValue(Action* action)
             return 1.0f;
 
         const uint8 phase1DpsWaitSeconds = 3;
-        auto it = illidanDpsWaitTimer.find(instanceId);
-        if (it == illidanDpsWaitTimer.end() || (now - it->second) < phase1DpsWaitSeconds)
+        auto it = illidanBossDpsWaitTimer.find(instanceId);
+        if (it == illidanBossDpsWaitTimer.end() || (now - it->second) < phase1DpsWaitSeconds)
         {
             if (dynamic_cast<AttackAction*>(action) ||
                 (dynamic_cast<CastSpellAction*>(action) &&
@@ -629,8 +629,8 @@ float IllidanStormrageWaitForDpsMultiplier::GetValue(Action* action)
             return 1.0f;
 
         const uint8 phase4DpsWaitSeconds = 8;
-        auto it = illidanDpsWaitTimer.find(instanceId);
-        if (it == illidanDpsWaitTimer.end() || (now - it->second) < phase4DpsWaitSeconds)
+        auto it = illidanBossDpsWaitTimer.find(instanceId);
+        if (it == illidanBossDpsWaitTimer.end() || (now - it->second) < phase4DpsWaitSeconds)
         {
             if (dynamic_cast<AttackAction*>(action) ||
                 (dynamic_cast<CastSpellAction*>(action) &&
@@ -645,8 +645,8 @@ float IllidanStormrageWaitForDpsMultiplier::GetValue(Action* action)
             return 1.0f;
 
         const uint8 phase2DpsWaitSeconds = 7;
-        auto it = illidanDpsWaitTimer.find(instanceId);
-        if (it == illidanDpsWaitTimer.end() || (now - it->second) < phase2DpsWaitSeconds)
+        auto it = illidanFlameDpsWaitTimer.find(instanceId);
+        if (it == illidanFlameDpsWaitTimer.end() || (now - it->second) < phase2DpsWaitSeconds)
         {
             if (dynamic_cast<AttackAction*>(action) ||
                 (dynamic_cast<CastSpellAction*>(action) &&

@@ -24,13 +24,29 @@ bool BlackTempleEraseTimersAndTrackersAction::Execute(Event event)
     if (!AI_VALUE2(Unit*, "find target", "mother shahraz"))
         erased |= shahrazTankStep.erase(guid) > 0;
     if (!AI_VALUE2(Unit*, "find target", "gathios the shatterer"))
+        erased |= councilDpsWaitTimer.erase(instanceId) > 0;
         erased |= gathiosTankStep.erase(guid) > 0;
-    if (!AI_VALUE2(Unit*, "find target", "illidan stormrage"))
+    if (!AI_VALUE2(Unit*, "find target", "illidan stormrage") &&
+        !AI_VALUE2(Unit*, "find target", "flames of azzinoth"))
     {
-        erased |= illidanDpsWaitTimer.erase(instanceId) > 0;
-        erased |= westFlameGuid.erase(instanceId) > 0;
-        erased |= eastFlameGuid.erase(instanceId) > 0;
-        erased |= flameTankWaypointIndex.erase(guid) > 0;
+        bool erasedIllidan = false;
+        erasedIllidan |= illidanBossDpsWaitTimer.erase(instanceId) > 0;
+        if (erasedIllidan)
+            LOG_DEBUG("playerbots", "Erased illidanBossDpsWaitTimer for instance {}", instanceId);
+
+        erasedIllidan |= westFlameGuid.erase(instanceId) > 0;
+        if (westFlameGuid.erase(instanceId) > 0)
+            LOG_DEBUG("playerbots", "Erased westFlameGuid for instance {}", instanceId);
+
+        erasedIllidan |= eastFlameGuid.erase(instanceId) > 0;
+        if (eastFlameGuid.erase(instanceId) > 0)
+            LOG_DEBUG("playerbots", "Erased eastFlameGuid for instance {}", instanceId);
+
+        erasedIllidan |= flameTankWaypointIndex.erase(guid) > 0;
+        if (flameTankWaypointIndex.erase(guid) > 0)
+            LOG_DEBUG("playerbots", "Erased flameTankWaypointIndex for bot {}", guid.ToString());
+
+        erased |= erasedIllidan;
     }
 
     return erased;
@@ -1514,10 +1530,9 @@ bool IllidariCouncilAssignDpsTargetsAction::Execute(Event event)
 
 bool IllidariCouncilManageDpsTimerAction::Execute(Event event)
 {
-    Unit* gathios = AI_VALUE2(Unit*, "find target", "gathios the shatterer");
-    if (gathios->GetHealthPct() > 99.9f)
+    if (Unit* gathios = AI_VALUE2(Unit*, "find target", "gathios the shatterer"))
     {
-        councilDpsWaitTimer.insert_or_assign(
+        councilDpsWaitTimer.try_emplace(
             gathios->GetMap()->GetInstanceId(), std::time(nullptr));
             return true;
     }
@@ -1619,15 +1634,11 @@ bool IllidanStormrageMisdirectToTankAction::TryMisdirectToFlameTanks(Group* grou
 
     if (hunterIndex == 0)
     {
-        if (eastFlame->GetHealthPct() < 90.0f)
-            return false;
         tankTarget = secondAssistTank;
         flame = eastFlame;
     }
     else if (hunterIndex == 1)
     {
-        if (westFlame->GetHealthPct() < 98.0f)
-            return false;
         tankTarget = firstAssistTank;
         flame = westFlame;
     }
@@ -1700,7 +1711,7 @@ bool IllidanStormrageMainTankMoveAwayFromFlameCrashAction::Execute(Event event)
     if (flameCrashes.empty())
         return false;
 
-    const float hazardRadius = 13.0f;
+    const float hazardRadius = 12.0f;
     bool inDanger = false;
     for (Unit* flameCrash : flameCrashes)
     {
@@ -2165,7 +2176,7 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidB
     for (auto const& guid : npcs)
     {
         Unit* unit = botAI->GetUnit(guid);
-        if (unit && unit->GetEntry() == NPC_BLAZE && bot->GetDistance2d(unit) <= 9.0f)
+        if (unit && unit->GetEntry() == NPC_BLAZE && bot->GetDistance2d(unit) <= 8.0f)
         {
             waypointIndex = (waypointIndex + 1) % numWaypoints;
             break;
@@ -2237,23 +2248,22 @@ bool IllidanStormrageBotsSpreadAboveGrateAction::Execute(Event event)
 
     // Sort for deterministic assignment
     std::sort(bots.begin(), bots.end(),
-        [](Player* firstPlayer, Player* secondPlayer) {
-            return firstPlayer->GetGUID() < secondPlayer->GetGUID(); });
+        [](Player* a, Player* b) { return a->GetGUID() < b->GetGUID(); });
 
     auto it = std::find(bots.begin(), bots.end(), bot);
     if (it == bots.end())
         return false;
 
     size_t botIndex = std::distance(bots.begin(), it);
-    size_t groupIndex = botIndex % 2; // Assign to N, S in round-robin
+    size_t groupIndex = botIndex % 2; // 0 = north, 1 = south
 
-    // If bot has blaze aura and is at its assigned position, move clockwise
+    // If bot has blaze aura and is at its assigned position, move to the other grate
     if (bot->HasAura(SPELL_BLAZE))
     {
         const Position& currentPos = *gratePositions[groupIndex];
         if (bot->GetExactDist2d(currentPos.GetPositionX(), currentPos.GetPositionY()) <= 0.2f)
         {
-            groupIndex = (groupIndex + 1) % 2; // Move N->S, S->N
+            groupIndex = (groupIndex + 1) % 2; // Switch grates
         }
     }
 
@@ -2513,19 +2523,34 @@ bool IllidanStormrageManageDpsTimerAction::Execute(Event event)
     const time_t now = std::time(nullptr);
     const uint32 instanceId = illidan->GetMap()->GetInstanceId();
 
-    if (GetIllidanPhase(illidan) == 3 || GetIllidanPhase(illidan) == 5 ||
-        GetIllidanPhase(illidan) == 0)
+    if (GetIllidanPhase(illidan) == 3 || GetIllidanPhase(illidan) == 5)
     {
-        return illidanDpsWaitTimer.erase(instanceId) > 0;
+        bool erased = illidanBossDpsWaitTimer.erase(instanceId) > 0;
+        if (erased)
+            LOG_DEBUG("playerbots", "Erased illidanBossDpsWaitTimer for instance {}", instanceId);
+        return erased;
     }
     else if (GetIllidanPhase(illidan) == 1 || GetIllidanPhase(illidan) == 4)
     {
-        return illidanDpsWaitTimer.try_emplace(instanceId, now).second;
+        bool changed = false;
+
+        bool emplaced = illidanBossDpsWaitTimer.try_emplace(instanceId, now).second;
+        if (emplaced)
+            LOG_DEBUG("playerbots", "Set illidanBossDpsWaitTimer for instance {} to {}", instanceId, now);
+        changed |= emplaced;
+
+        bool erased = illidanFlameDpsWaitTimer.erase(instanceId) > 0;
+        if (erased)
+            LOG_DEBUG("playerbots", "Erased illidanFlameDpsWaitTimer for instance {}", instanceId);
+        changed |= erased;
+
+        return changed;
     }
-    else if (GetIllidanPhase(illidan) == 2 &&
-             !AI_VALUE2(Unit*, "find target", "flame of azzinoth"))
+    else if (GetIllidanPhase(illidan) == 2 && !AI_VALUE2(Unit*, "find target", "flame of azzinoth"))
     {
-        return illidanDpsWaitTimer.insert_or_assign(instanceId, now).second;
+        bool inserted = illidanFlameDpsWaitTimer.insert_or_assign(instanceId, now).second;
+        if (inserted)
+            LOG_DEBUG("playerbots", "Inserted illidanFlameDpsWaitTimer for instance {} to {}", instanceId, now);
     }
 
     return false;
