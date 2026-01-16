@@ -411,7 +411,7 @@ float IllidariCouncilWaitForDpsMultiplier::GetValue(Action* action)
         return 1.0f;
 
     const time_t now = std::time(nullptr);
-    const uint8 dpsWaitSeconds = 6;
+    const uint8 dpsWaitSeconds = 5;
 
     auto it = councilDpsWaitTimer.find(gathios->GetMap()->GetInstanceId());
     if (it == councilDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)

@@ -1389,14 +1389,14 @@ bool IllidariCouncilMainTankPositionGathiosAction::Execute(Event event)
             {
                 return MoveTo(BLACK_TEMPLE_MAP_ID, newPosition.GetPositionX(), newPosition.GetPositionY(),
                               newPosition.GetPositionZ(), false, false, false, false,
-                              MovementPriority::MOVEMENT_FORCED, true, false);
+                              MovementPriority::MOVEMENT_FORCED, true, true);
             }
         }
         else if (distanceToTarget > maxDistance)
         {
             return MoveTo(BLACK_TEMPLE_MAP_ID, position.GetPositionX(), position.GetPositionY(),
                           position.GetPositionZ(), false, false, false, false,
-                          MovementPriority::MOVEMENT_FORCED, true, false);
+                          MovementPriority::MOVEMENT_FORCED, true, true);
         }
     }
 
@@ -1472,7 +1472,7 @@ bool IllidariCouncilSecondAssistTankPositionDarkshadowAction::Execute(Event even
             float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
             return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
-                          false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+                          false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
         }
     }
 
