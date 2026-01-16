@@ -14,23 +14,23 @@ bool BlackTempleEraseTimersAndTrackersAction::Execute(Event event)
 
     bool erased = false;
     if (!AI_VALUE2(Unit*, "find target", "supremus"))
-        erased |= supremusPhaseTimer.erase(instanceId);
+        erased |= supremusPhaseTimer.erase(instanceId) > 0;
     if (!AI_VALUE2(Unit*, "find target", "teron gorefiend"))
-        erased |= gorefiendRangedPositions.erase(guid);
+        erased |= gorefiendRangedPositions.erase(guid) > 0;
     if (!AI_VALUE2(Unit*, "find target", "gurtogg bloodboil"))
-        erased |= gurtoggPhaseTimer.erase(instanceId);
+        erased |= gurtoggPhaseTimer.erase(instanceId) > 0;
     if (!AI_VALUE2(Unit*, "find target", "reliquary of the lost"))
-        erased |= reliquaryDpsWaitTimer.erase(instanceId);
+        erased |= reliquaryDpsWaitTimer.erase(instanceId) > 0;
     if (!AI_VALUE2(Unit*, "find target", "mother shahraz"))
-        erased |= shahrazTankStep.erase(guid);
+        erased |= shahrazTankStep.erase(guid) > 0;
     if (!AI_VALUE2(Unit*, "find target", "gathios the shatterer"))
-        erased |= gathiosTankStep.erase(guid);
+        erased |= gathiosTankStep.erase(guid) > 0;
     if (!AI_VALUE2(Unit*, "find target", "illidan stormrage"))
     {
-        erased |= illidanDpsWaitTimer.erase(instanceId);
-        erased |= westFlameGuid.erase(instanceId);
-        erased |= eastFlameGuid.erase(instanceId);
-        erased |= flameTankWaypointIndex.erase(guid);
+        erased |= illidanDpsWaitTimer.erase(instanceId) > 0;
+        erased |= westFlameGuid.erase(instanceId) > 0;
+        erased |= eastFlameGuid.erase(instanceId) > 0;
+        erased |= flameTankWaypointIndex.erase(guid) > 0;
     }
 
     return erased;
@@ -883,14 +883,7 @@ bool GurtoggBloodboilManagePhaseTimerAction::Execute(Event event)
     const uint32 instanceId = gurtogg->GetMap()->GetInstanceId();
 
     if (gurtogg->HasAura(SPELL_BOSS_FEL_RAGE))
-    {
-        if (gurtoggPhaseTimer.count(instanceId))
-        {
-            gurtoggPhaseTimer.erase(instanceId);
-            return true;
-        }
-        return false;
-    }
+        return gurtoggPhaseTimer.erase(instanceId) > 0;
     else
     {
         auto [it, inserted] = reliquaryDpsWaitTimer.try_emplace(instanceId, now);
@@ -1042,14 +1035,7 @@ bool ReliquaryOfSoulsManageDpsTimerAction::Execute(Event event)
     Unit* anger = AI_VALUE2(Unit*, "find target", "essence of anger");
 
     if (!suffering && !desire && !anger)
-    {
-        if (reliquaryDpsWaitTimer.count(instanceId))
-        {
-            reliquaryDpsWaitTimer.erase(instanceId);
-            return true;
-        }
-        return false;
-    }
+        return reliquaryDpsWaitTimer.erase(instanceId) > 0;
     else
     {
         auto [it, inserted] = reliquaryDpsWaitTimer.try_emplace(instanceId, now);
@@ -2530,19 +2516,16 @@ bool IllidanStormrageManageDpsTimerAction::Execute(Event event)
     if (GetIllidanPhase(illidan) == 3 || GetIllidanPhase(illidan) == 5 ||
         GetIllidanPhase(illidan) == 0)
     {
-        if (illidanDpsWaitTimer.erase(instanceId))
-            return true;
+        return illidanDpsWaitTimer.erase(instanceId) > 0;
     }
     else if (GetIllidanPhase(illidan) == 1 || GetIllidanPhase(illidan) == 4)
     {
-        if (illidanDpsWaitTimer.try_emplace(instanceId, now).second)
-            return true;
+        return illidanDpsWaitTimer.try_emplace(instanceId, now).second;
     }
     else if (GetIllidanPhase(illidan) == 2 &&
              !AI_VALUE2(Unit*, "find target", "flame of azzinoth"))
     {
-        if (illidanDpsWaitTimer.insert_or_assign(instanceId, now).second)
-            return true;
+        return illidanDpsWaitTimer.insert_or_assign(instanceId, now).second;
     }
 
     return false;

@@ -19,40 +19,29 @@ bool SerpentShrineCavernEraseTimersAndTrackersAction::Execute(Event event)
     bool erased = false;
     if (!AI_VALUE2(Unit*, "find target", "hydross the unstable"))
     {
-        if (hydrossChangeToNaturePhaseTimer.erase(instanceId))
-            erased = true;
-        if (hydrossChangeToFrostPhaseTimer.erase(instanceId))
-            erased = true;
-        if (hydrossNatureDpsWaitTimer.erase(instanceId))
-            erased = true;
-        if (hydrossFrostDpsWaitTimer.erase(instanceId))
-            erased = true;
+        erased |= hydrossChangeToNaturePhaseTimer.erase(instanceId) > 0;
+        erased |= hydrossChangeToFrostPhaseTimer.erase(instanceId) > 0;
+        erased |= hydrossNatureDpsWaitTimer.erase(instanceId) > 0;
+        erased |= hydrossFrostDpsWaitTimer.erase(instanceId) > 0;
     }
-    else if (!AI_VALUE2(Unit*, "find target", "the lurker below"))
+    if (!AI_VALUE2(Unit*, "find target", "the lurker below"))
     {
-        if (lurkerRangedPositions.erase(guid))
-            erased = true;
-        if (lurkerSpoutTimer.erase(instanceId))
-            erased = true;
+        erased |= lurkerRangedPositions.erase(guid) > 0;
+        erased |= lurkerSpoutTimer.erase(instanceId) > 0;
     }
-    else if (!AI_VALUE2(Unit*, "find target", "fathom-lord karathress"))
+    if (!AI_VALUE2(Unit*, "find target", "fathom-lord karathress"))
     {
-        if (karathressDpsWaitTimer.erase(instanceId))
-            erased = true;
+        erased |= karathressDpsWaitTimer.erase(instanceId) > 0;
     }
-    else if (!AI_VALUE2(Unit*, "find target", "morogrim tidewalker"))
+    if (!AI_VALUE2(Unit*, "find target", "morogrim tidewalker"))
     {
-        if (tidewalkerTankStep.erase(guid))
-            erased = true;
-        if (tidewalkerRangedStep.erase(guid))
-            erased = true;
+        erased |= tidewalkerTankStep.erase(guid) > 0;
+        erased |= tidewalkerRangedStep.erase(guid) > 0;
     }
-    else if (!AI_VALUE2(Unit*, "find target", "lady vashj"))
+    if (!AI_VALUE2(Unit*, "find target", "lady vashj"))
     {
-        if (vashjRangedPositions.erase(guid))
-            erased = true;
-        if (hasReachedVashjRangedPosition.erase(guid))
-            erased = true;
+        erased |= vashjRangedPositions.erase(guid) > 0;
+        erased |= hasReachedVashjRangedPosition.erase(guid) > 0;
     }
 
     return erased;
@@ -476,26 +465,26 @@ bool HydrossTheUnstableManageTimersAction::Execute(Event event)
     const uint32 instanceId = hydross->GetMap()->GetInstanceId();
     const time_t now = std::time(nullptr);
 
+    bool changed = false;
     if (!hydross->HasAura(SPELL_CORRUPTION))
     {
-        hydrossFrostDpsWaitTimer.try_emplace(instanceId, now);
-        hydrossNatureDpsWaitTimer.erase(instanceId);
-        hydrossChangeToFrostPhaseTimer.erase(instanceId);
+        changed |= hydrossFrostDpsWaitTimer.try_emplace(instanceId, now).second;
+        changed |= hydrossNatureDpsWaitTimer.erase(instanceId) > 0;
+        changed |= hydrossChangeToFrostPhaseTimer.erase(instanceId) > 0;
 
         if (HasMarkOfHydrossAt100Percent(bot))
-            hydrossChangeToNaturePhaseTimer.try_emplace(instanceId, now);
+            changed |= hydrossChangeToNaturePhaseTimer.try_emplace(instanceId, now).second;
     }
     else
     {
-        hydrossNatureDpsWaitTimer.try_emplace(instanceId, now);
-        hydrossFrostDpsWaitTimer.erase(instanceId);
-        hydrossChangeToNaturePhaseTimer.erase(instanceId);
-
+        changed |= hydrossNatureDpsWaitTimer.try_emplace(instanceId, now).second;
+        changed |= hydrossFrostDpsWaitTimer.erase(instanceId) > 0;
+        changed |= hydrossChangeToNaturePhaseTimer.erase(instanceId) > 0;
         if (HasMarkOfCorruptionAt100Percent(bot))
-            hydrossChangeToFrostPhaseTimer.try_emplace(instanceId, now);
+            changed |= hydrossChangeToFrostPhaseTimer.try_emplace(instanceId, now).second;
     }
 
-    return false;
+    return changed;
 }
 
 // The Lurker Below
@@ -907,13 +896,13 @@ bool LeotherasTheBlindManageDpsWaitTimersAction::Execute(Event event)
     const uint32 instanceId = leotheras->GetMap()->GetInstanceId();
     const time_t now = std::time(nullptr);
 
+    bool changed = false;
     // Encounter start/reset: clear all timers
     if (leotheras->HasAura(SPELL_LEOTHERAS_BANISHED))
     {
-        leotherasHumanFormDpsWaitTimer.erase(instanceId);
-        leotherasDemonFormDpsWaitTimer.erase(instanceId);
-        leotherasFinalPhaseDpsWaitTimer.erase(instanceId);
-        return false;
+        changed |= leotherasHumanFormDpsWaitTimer.erase(instanceId) > 0;
+        changed |= leotherasDemonFormDpsWaitTimer.erase(instanceId) > 0;
+        changed |= leotherasFinalPhaseDpsWaitTimer.erase(instanceId) > 0;
     }
 
     // Human Phase
@@ -921,24 +910,24 @@ bool LeotherasTheBlindManageDpsWaitTimersAction::Execute(Event event)
     Unit* leotherasPhase3Demon = GetPhase3LeotherasDemon(botAI);
     if (leotherasHuman && !leotherasPhase3Demon)
     {
-        leotherasHumanFormDpsWaitTimer.try_emplace(instanceId, now);
-        leotherasDemonFormDpsWaitTimer.erase(instanceId);
+        changed |= leotherasHumanFormDpsWaitTimer.try_emplace(instanceId, now).second;
+        changed |= leotherasDemonFormDpsWaitTimer.erase(instanceId) > 0;
     }
     // Demon Phase
     else if (Unit* leotherasPhase2Demon = GetPhase2LeotherasDemon(botAI))
     {
-        leotherasDemonFormDpsWaitTimer.try_emplace(instanceId, now);
-        leotherasHumanFormDpsWaitTimer.erase(instanceId);
+        changed |= leotherasDemonFormDpsWaitTimer.try_emplace(instanceId, now).second;
+        changed |= leotherasHumanFormDpsWaitTimer.erase(instanceId) > 0;
     }
     // Final Phase (<15% HP)
     else if (leotherasHuman && leotherasPhase3Demon)
     {
-        leotherasFinalPhaseDpsWaitTimer.try_emplace(instanceId, now);
-        leotherasHumanFormDpsWaitTimer.erase(instanceId);
-        leotherasDemonFormDpsWaitTimer.erase(instanceId);
+        changed |= leotherasFinalPhaseDpsWaitTimer.try_emplace(instanceId, now).second;
+        changed |= leotherasHumanFormDpsWaitTimer.erase(instanceId) > 0;
+        changed |= leotherasDemonFormDpsWaitTimer.erase(instanceId) > 0;
     }
 
-    return false;
+    return changed;
 }
 
 // Fathom-Lord Karathress
@@ -2686,14 +2675,10 @@ bool LadyVashjEraseCorePassingTrackersAction::Execute(Event event)
     const uint32 instanceId = vashj->GetMap()->GetInstanceId();
 
     bool erased = false;
-    if (nearestTriggerGuid.erase(instanceId))
-        erased = true;
-    if (lastImbueAttempt.erase(instanceId))
-        erased = true;
-    if (lastCoreInInventoryTime.erase(instanceId))
-        erased = true;
-    if (intendedLineup.erase(bot->GetGUID()))
-        erased = true;
+    erased |= nearestTriggerGuid.erase(instanceId) > 0;
+    erased |= lastImbueAttempt.erase(instanceId) > 0;
+    erased |= lastCoreInInventoryTime.erase(instanceId) > 0;
+    erased |= intendedLineup.erase(bot->GetGUID()) > 0;
 
     return erased;
 }

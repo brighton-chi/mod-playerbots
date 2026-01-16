@@ -20,23 +20,16 @@ bool TempestKeepEraseTimersAndTrackersAction::Execute(Event event)
     bool erased = false;
     if (!AI_VALUE2(Unit*, "find target", "al'ar"))
     {
-        if (lastRebirthState.erase(instanceId))
-            erased = true;
-        if (isAlarInPhase2.erase(instanceId))
-            erased = true;
+        erased |= lastRebirthState.erase(instanceId) > 0;
+        erased |= isAlarInPhase2.erase(instanceId) > 0;
     }
-    else if (!AI_VALUE2(Unit*, "find target", "void reaver"))
+    if (!AI_VALUE2(Unit*, "find target", "void reaver"))
     {
-        if (initialVoidReaverPositions.erase(guid))
-            erased = true;
-        if (hasReachedInitialVoidReaverPosition.erase(guid))
-            erased = true;
+        erased |= initialVoidReaverPositions.erase(guid) > 0;
+        erased |= hasReachedInitialVoidReaverPosition.erase(guid) > 0;
     }
-    else if (!AI_VALUE2(Unit*, "find target", "kael'thas sunstrider"))
-    {
-        if (advisorDpsWaitTimer.erase(instanceId))
-            erased = true;
-    }
+    if (!AI_VALUE2(Unit*, "find target", "kael'thas sunstrider"))
+        erased |= advisorDpsWaitTimer.erase(instanceId) > 0;
 
     return erased;
 }
