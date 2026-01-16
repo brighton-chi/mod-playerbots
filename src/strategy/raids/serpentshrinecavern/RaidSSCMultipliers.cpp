@@ -225,6 +225,9 @@ float LeotherasTheBlindAvoidWhirlwindMultiplier::GetValue(Action* action)
     if (botAI->IsTank(bot))
         return 1.0f;
 
+    if (bot->HasAura(SPELL_INSIDIOUS_WHISPER))
+        return 1.0f;
+
     Unit* leotherasHuman = GetLeotherasHuman(botAI);
     if (!leotherasHuman)
         return 1.0f;
@@ -260,13 +263,35 @@ float LeotherasTheBlindDisableTankActionsMultiplier::GetValue(Action* action)
     if (dynamic_cast<CastShadowWardAction*>(action))
         return 0.0f;
 
-    // (2) Phase 2 only: Tanks other than the Warlock tank should do absolutely nothing
+    // (2) Phase 2 only: disable tank assist for non-demon form tanks
+    // This is a fallback since there is an action that switches them to dps strategy
     if (botAI->IsTank(bot) && bot != demonFormTank && GetPhase2LeotherasDemon(botAI))
     {
-        if ((dynamic_cast<AttackAction*>(action) &&
+        /* if ((dynamic_cast<AttackAction*>(action) &&
              !dynamic_cast<LeotherasTheBlindInnerDemonCheatAction*>(action)) ||
              dynamic_cast<CastSpellAction*>(action))
-             return 0.0f;
+             return 0.0f; */
+
+        if (dynamic_cast<TankAssistAction*>(action))
+            return 0.0f;
+    }
+
+    return 1.0f;
+}
+
+float LeotherasTheBlindFocusOnInnerDemonMultiplier::GetValue(Action* action)
+{
+    if (bot->HasAura(SPELL_INSIDIOUS_WHISPER))
+    {
+        if (dynamic_cast<TankAssistAction*>(action) ||
+            dynamic_cast<DpsAssistAction*>(action) ||
+            dynamic_cast<CastHealingSpellAction*>(action) ||
+            dynamic_cast<CastCureSpellAction*>(action) ||
+            dynamic_cast<CurePartyMemberAction*>(action) ||
+            dynamic_cast<CastBuffSpellAction*>(action) ||
+            dynamic_cast<ResurrectPartyMemberAction*>(action) ||
+            dynamic_cast<PartyMemberActionNameSupport*>(action))
+            return 0.0f;
     }
 
     return 1.0f;
@@ -274,7 +299,7 @@ float LeotherasTheBlindDisableTankActionsMultiplier::GetValue(Action* action)
 
 float LeotherasTheBlindMeleeDpsAvoidChaosBlastMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsMelee(bot) || botAI->IsTank(bot))
+    if (botAI->IsRanged(bot) || botAI->IsTank(bot))
         return 1.0f;
 
     if (!GetPhase2LeotherasDemon(botAI))
@@ -298,6 +323,9 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValue(Action* action)
 {
     Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
     if (!leotheras)
+        return 1.0f;
+
+    if (bot->HasAura(SPELL_INSIDIOUS_WHISPER))
         return 1.0f;
 
     if (dynamic_cast<LeotherasTheBlindMisdirectBossToDemonFormTankAction*>(action))

@@ -179,11 +179,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class LeotherasTheBlindInnerDemonCheatAction : public AttackAction
+class LeotherasTheBlindDestroyInnerDemonAction : public AttackAction
 {
 public:
-    LeotherasTheBlindInnerDemonCheatAction(
-        PlayerbotAI* botAI, std::string const name = "leotheras the blind inner demon cheat") : AttackAction(botAI, name) {}
+    LeotherasTheBlindDestroyInnerDemonAction(
+        PlayerbotAI* botAI, std::string const name = "leotheras the blind destroy inner demon") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 

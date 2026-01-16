@@ -181,11 +181,11 @@ public:
     bool IsActive() override;
 };
 
-class LeotherasTheBlindInnerDemonCheatTrigger : public Trigger
+class LeotherasTheBlindInnerDemonHasAwakenedTrigger : public Trigger
 {
 public:
-    LeotherasTheBlindInnerDemonCheatTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "leotheras the blind inner demon cheat") {}
+    LeotherasTheBlindInnerDemonHasAwakenedTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "leotheras the blind inner demon has awakened") {}
     bool IsActive() override;
 };
 

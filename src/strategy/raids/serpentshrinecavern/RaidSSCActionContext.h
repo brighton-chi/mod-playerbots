@@ -74,8 +74,8 @@ public:
         creators["leotheras the blind melee dps run away from boss"] =
             &RaidSSCActionContext::leotheras_the_blind_melee_dps_run_away_from_boss;
 
-        creators["leotheras the blind inner demon cheat"] =
-            &RaidSSCActionContext::leotheras_the_blind_inner_demon_cheat;
+        creators["leotheras the blind destroy inner demon"] =
+            &RaidSSCActionContext::leotheras_the_blind_destroy_inner_demon;
 
         creators["leotheras the blind final phase assign dps priority"] =
             &RaidSSCActionContext::leotheras_the_blind_final_phase_assign_dps_priority;
@@ -234,8 +234,8 @@ private:
     static Action* leotheras_the_blind_melee_dps_run_away_from_boss(
         PlayerbotAI* botAI) { return new LeotherasTheBlindMeleeDpsRunAwayFromBossAction(botAI); }
 
-    static Action* leotheras_the_blind_inner_demon_cheat(
-        PlayerbotAI* botAI) { return new LeotherasTheBlindInnerDemonCheatAction(botAI); }
+    static Action* leotheras_the_blind_destroy_inner_demon(
+        PlayerbotAI* botAI) { return new LeotherasTheBlindDestroyInnerDemonAction(botAI); }
 
     static Action* leotheras_the_blind_misdirect_boss_to_demon_form_tank(
         PlayerbotAI* botAI) { return new LeotherasTheBlindMisdirectBossToDemonFormTankAction(botAI); }

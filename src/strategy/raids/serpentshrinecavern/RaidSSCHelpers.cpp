@@ -86,7 +86,7 @@ namespace SerpentShrineCavernHelpers
             {
                 Player* member = ref->GetSource();
                 if (member && member->IsAlive() && botAI->IsDps(member) &&
-                    GET_PLAYERBOT_AI(member))
+                    GET_PLAYERBOT_AI(member) && !member->HasAura(SPELL_INSIDIOUS_WHISPER))
                     return member == bot;
             }
         }

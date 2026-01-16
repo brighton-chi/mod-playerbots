@@ -74,8 +74,8 @@ public:
         creators["leotheras the blind bot has too many chaos blast stacks"] =
             &RaidSSCTriggerContext::leotheras_the_blind_bot_has_too_many_chaos_blast_stacks;
 
-        creators["leotheras the blind inner demon cheat"] =
-            &RaidSSCTriggerContext::leotheras_the_blind_inner_demon_cheat;
+        creators["leotheras the blind inner demon has awakened"] =
+            &RaidSSCTriggerContext::leotheras_the_blind_inner_demon_has_awakened;
 
         creators["leotheras the blind entered final phase"] =
             &RaidSSCTriggerContext::leotheras_the_blind_entered_final_phase;
@@ -228,8 +228,8 @@ private:
     static Trigger* leotheras_the_blind_bot_has_too_many_chaos_blast_stacks(
         PlayerbotAI* botAI) { return new LeotherasTheBlindBotHasTooManyChaosBlastStacksTrigger(botAI); }
 
-    static Trigger* leotheras_the_blind_inner_demon_cheat(
-        PlayerbotAI* botAI) { return new LeotherasTheBlindInnerDemonCheatTrigger(botAI); }
+    static Trigger* leotheras_the_blind_inner_demon_has_awakened(
+        PlayerbotAI* botAI) { return new LeotherasTheBlindInnerDemonHasAwakenedTrigger(botAI); }
 
     static Trigger* leotheras_the_blind_entered_final_phase(
         PlayerbotAI* botAI) { return new LeotherasTheBlindEnteredFinalPhaseTrigger(botAI); }

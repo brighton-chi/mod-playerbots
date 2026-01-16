@@ -68,8 +68,8 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("leotheras the blind bot has too many chaos blast stacks", {
         NextAction("leotheras the blind melee dps run away from boss", ACTION_EMERGENCY + 7) }));
 
-    triggers.push_back(new TriggerNode("leotheras the blind inner demon cheat", {
-        NextAction("leotheras the blind inner demon cheat", ACTION_EMERGENCY + 6) }));
+    triggers.push_back(new TriggerNode("leotheras the blind inner demon has awakened", {
+        NextAction("leotheras the blind destroy inner demon", ACTION_EMERGENCY + 6) }));
 
     triggers.push_back(new TriggerNode("leotheras the blind entered final phase", {
         NextAction("leotheras the blind final phase assign dps priority", ACTION_RAID + 2) }));
@@ -177,6 +177,7 @@ void RaidSSCStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new LeotherasTheBlindAvoidWhirlwindMultiplier(botAI));
     multipliers.push_back(new LeotherasTheBlindDisableTankActionsMultiplier(botAI));
     multipliers.push_back(new LeotherasTheBlindMeleeDpsAvoidChaosBlastMultiplier(botAI));
+    multipliers.push_back(new LeotherasTheBlindFocusOnInnerDemonMultiplier(botAI));
     multipliers.push_back(new LeotherasTheBlindWaitForDpsMultiplier(botAI));
     multipliers.push_back(new LeotherasTheBlindDelayBloodlustAndHeroismMultiplier(botAI));
 

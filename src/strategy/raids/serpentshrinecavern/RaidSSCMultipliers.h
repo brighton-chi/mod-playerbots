@@ -91,6 +91,14 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class LeotherasTheBlindFocusOnInnerDemonMultiplier : public Multiplier
+{
+public:
+    LeotherasTheBlindFocusOnInnerDemonMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "leotheras the blind focus on inner demon") {}
+    virtual float GetValue(Action* action);
+};
+
 class LeotherasTheBlindWaitForDpsMultiplier : public Multiplier
 {
 public:
