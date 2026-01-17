@@ -215,10 +215,10 @@ bool AzgalorBotIsDoomedTrigger::IsActive()
 // Lol did this fight without this trigger--maybe should just ignore doomguards?
 bool AzgalorDoomguardsMustBeControlledTrigger::IsActive()
 {
-    if (!botAI->IsAssistTankOfIndex(bot, 0, true))
+    if (!AI_VALUE2(Unit*, "find target", "azgalor"))
         return false;
 
-    if (!AI_VALUE2(Unit*, "find target", "azgalor"))
+    if (!botAI->IsAssistTankOfIndex(bot, 0, true))
         return false;
 
     return AI_VALUE2(Unit*, "find target", "lesser doomguard") ||
@@ -227,10 +227,7 @@ bool AzgalorDoomguardsMustBeControlledTrigger::IsActive()
 
 bool AzgalorDoomguardsContinueToSpawnTrigger::IsActive()
 {
-    if (!botAI->IsDps(bot))
-        return false;
-
-    return AI_VALUE2(Unit*, "find target", "azgalor");
+    return botAI->IsDps(bot) && AI_VALUE2(Unit*, "find target", "azgalor");
 }
 
 // Archimonde

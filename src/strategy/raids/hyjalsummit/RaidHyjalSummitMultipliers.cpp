@@ -97,10 +97,12 @@ float AnetheronDisableTankActionsMultiplier::GetValue(Action* action)
         if (dynamic_cast<AvoidAoeAction*>(action))
             return 0.0f;
 
+        if (bot->GetVictim() != nullptr && dynamic_cast<TankAssistAction*>(action))
+            return 0.0f;
+
         if (!botAI->IsAssistTankOfIndex(bot, 0, true))
         {
-            if (bot->GetVictim() != nullptr && dynamic_cast<TankAssistAction*>(action) ||
-                dynamic_cast<CastTauntAction*>(action) ||
+            if (dynamic_cast<CastTauntAction*>(action) ||
                 dynamic_cast<CastGrowlAction*>(action) ||
                 dynamic_cast<CastHandOfReckoningAction*>(action) ||
                 dynamic_cast<CastDarkCommandAction*>(action))

@@ -69,7 +69,7 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("azgalor move to doomguard tank", ACTION_EMERGENCY + 2) }));
 
     triggers.push_back(new TriggerNode("azgalor doomguards must be controlled", {
-        NextAction("azgalor first assist tank position doomguards", ACTION_RAID + 1) }));
+        NextAction("azgalor first assist tank position doomguard", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("azgalor doomguards continue to spawn", {
         NextAction("azgalor assign dps priority", ACTION_RAID + 1) }));

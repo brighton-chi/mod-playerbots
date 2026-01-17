@@ -298,8 +298,10 @@ float IllidariCouncilDisableTankActionsMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "gathios the shatterer"))
         return 1.0f;
 
-    if ((bot->GetVictim() != nullptr && dynamic_cast<TankAssistAction*>(action)) ||
-        dynamic_cast<CombatFormationMoveAction*>(action) ||
+    if (bot->GetVictim() != nullptr && dynamic_cast<TankAssistAction*>(action))
+        return 0.0f;
+
+    if (dynamic_cast<CombatFormationMoveAction*>(action) ||
         dynamic_cast<AvoidAoeAction*>(action) ||
         dynamic_cast<CastTauntAction*>(action) ||
         dynamic_cast<CastChallengingShoutAction*>(action) ||
