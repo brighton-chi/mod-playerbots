@@ -272,15 +272,17 @@ bool ArchimondeBossCastsFearTrigger::IsActive()
            botAI->CanCastSpell("fear ward", mainTank);
 }
 
-bool ArchimondeBossCastsAirBurstTrigger::IsActive()
+bool ArchimondeBossIsCastingAirBurstTrigger::IsActive()
 {
-    if (!botAI->IsRanged(bot))
+    if (botAI->IsMainTank(bot))
         return false;
 
     if (bot->HasAura(SPELL_DOOMFIRE))
         return false;
 
-    return AI_VALUE2(Unit*, "find target", "archimonde");
+    Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
+    return archimonde && archimonde->HasUnitState(UNIT_STATE_CASTING) &&
+           archimonde->FindCurrentSpellBySpellId(SPELL_AIR_BURST);
 }
 
 bool ArchimondeBossSummonedDoomfireTrigger::IsActive()

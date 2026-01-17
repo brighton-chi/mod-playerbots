@@ -797,24 +797,24 @@ bool ArchimondeCastFearWardOnMainTankAction::Execute(Event event)
     return false;
 }
 
-bool ArchimondeDisperseRangedBotsAction::Execute(Event event)
+bool ArchimondeMoveAwayFromAirBurstTargetAction::Execute(Event event)
 {
     Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
-    if (!archimonde)
+    if (!archimonde || !archimonde->HasUnitState(UNIT_STATE_CASTING))
         return false;
 
-    const uint32 minInterval = 1000;
+    Spell* spell = archimonde->GetCurrentSpell(CURRENT_GENERIC_SPELL);
+    if (!spell || spell->m_spellInfo->Id != SPELL_AIR_BURST)
+        return false;
 
-    /* if (bot->GetExactDist2d(archimonde) < 20.0f)
+    Unit* target = spell->m_targets.GetUnitTarget();
+    if (target && target->GetGUID() != bot->GetGUID())
     {
-        return FleePosition(Position(archimonde->GetPositionX(), archimonde->GetPositionY(),
-                                     archimonde->GetPositionZ()), 20.0f, minInterval);
-    } */
-    // Try closer?
-    if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, 8.0f))
-    {
-        return FleePosition(Position(nearestPlayer->GetPositionX(), nearestPlayer->GetPositionY(),
-                                     nearestPlayer->GetPositionZ()), 8.0f, minInterval);
+        const uint32 minInterval = 0;
+        bot->AttackStop();
+        bot->InterruptNonMeleeSpells(true);
+        return FleePosition(Position(target->GetPositionX(), target->GetPositionY(),
+                            target->GetPositionZ()), 14.0f, minInterval);
     }
 
     return false;

@@ -87,8 +87,8 @@ public:
         creators["archimonde boss casts fear"] =
             &RaidHyjalSummitTriggerContext::archimonde_boss_casts_fear;
 
-        creators["archimonde boss casts air burst"] =
-            &RaidHyjalSummitTriggerContext::archimonde_boss_casts_air_burst;
+        creators["archimonde boss is casting air burst"] =
+            &RaidHyjalSummitTriggerContext::archimonde_boss_is_casting_air_burst;
 
         creators["archimonde boss summoned doomfire"] =
             &RaidHyjalSummitTriggerContext::archimonde_boss_summoned_doomfire;
@@ -176,8 +176,8 @@ private:
     static Trigger* archimonde_boss_casts_fear(
         PlayerbotAI* botAI) { return new ArchimondeBossCastsFearTrigger(botAI); }
 
-    static Trigger* archimonde_boss_casts_air_burst(
-        PlayerbotAI* botAI) { return new ArchimondeBossCastsAirBurstTrigger(botAI); }
+    static Trigger* archimonde_boss_is_casting_air_burst(
+        PlayerbotAI* botAI) { return new ArchimondeBossIsCastingAirBurstTrigger(botAI); }
 
     static Trigger* archimonde_boss_summoned_doomfire(
         PlayerbotAI* botAI) { return new ArchimondeBossSummonedDoomfireTrigger(botAI); }

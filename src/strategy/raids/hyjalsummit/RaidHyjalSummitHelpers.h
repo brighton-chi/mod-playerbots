@@ -24,6 +24,7 @@ namespace HyjalSummitHelpers
 
         // Archimonde
         SPELL_DOOMFIRE = 31944,
+        SPELL_AIR_BURST = 32014,
 
         // Hunter
         SPELL_MISDIRECTION             = 35079,

@@ -81,8 +81,8 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("archimonde boss casts fear", {
         NextAction("archimonde cast fear ward on main tank", ACTION_RAID + 2) }));
 
-    triggers.push_back(new TriggerNode("archimonde boss casts air burst", {
-        NextAction("archimonde disperse ranged bots", ACTION_RAID + 1) }));
+    triggers.push_back(new TriggerNode("archimonde boss is casting air burst", {
+        NextAction("archimonde move away from air burst target", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("archimonde boss summoned doomfire", {
         NextAction("archimonde avoid doomfire", ACTION_EMERGENCY + 6) }));

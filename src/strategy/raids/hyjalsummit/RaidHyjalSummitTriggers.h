@@ -207,11 +207,11 @@ public:
     bool IsActive() override;
 };
 
-class ArchimondeBossCastsAirBurstTrigger : public Trigger
+class ArchimondeBossIsCastingAirBurstTrigger : public Trigger
 {
 public:
-    ArchimondeBossCastsAirBurstTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "archimonde boss casts air burst") {}
+    ArchimondeBossIsCastingAirBurstTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "archimonde boss is casting air burst") {}
     bool IsActive() override;
 };
 
