@@ -1260,6 +1260,10 @@ bool IllidariCouncilMisdirectBossesToTanksAction::Execute(Event event)
     if (hunterIndex == -1)
         return false;
 
+    Unit* gathios = AI_VALUE2(Unit*, "find target", "gathios the shatterer");
+    if (!gathios)
+        return false;
+
     Unit* councilTarget = nullptr;
     Player* tankTarget = nullptr;
     if (hunterIndex == 0)
@@ -1282,7 +1286,7 @@ bool IllidariCouncilMisdirectBossesToTanksAction::Execute(Event event)
     }
     else if (hunterIndex == 2)
     {
-        councilTarget = AI_VALUE2(Unit*, "find target", "gathios the shatterer");
+        councilTarget = gathios;
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
@@ -1313,8 +1317,30 @@ bool IllidariCouncilMisdirectBossesToTanksAction::Execute(Event event)
     if (botAI->CanCastSpell("misdirection", tankTarget))
         return botAI->CastSpell("misdirection", tankTarget);
 
-    if (bot->HasAura(SPELL_MISDIRECTION) && botAI->CanCastSpell("steady shot", councilTarget))
-        return botAI->CastSpell("steady shot", councilTarget);
+    if (bot->HasAura(SPELL_MISDIRECTION))
+    {
+        Pet* pet = bot->GetPet();
+        if (pet && pet->IsAlive() && pet->GetVictim() != gathios)
+        {
+            pet->ClearUnitState(UNIT_STATE_FOLLOW);
+            pet->AttackStop();
+            pet->SetTarget(gathios->GetGUID());
+
+            if (pet->GetCharmInfo())
+            {
+                pet->GetCharmInfo()->SetIsCommandAttack(true);
+                pet->GetCharmInfo()->SetIsAtStay(false);
+                pet->GetCharmInfo()->SetIsFollowing(false);
+                pet->GetCharmInfo()->SetIsCommandFollow(false);
+                pet->GetCharmInfo()->SetIsReturning(false);
+            }
+
+            pet->ToCreature()->AI()->AttackStart(gathios);
+        }
+
+        if (botAI->CanCastSpell("steady shot", councilTarget))
+            return botAI->CastSpell("steady shot", councilTarget);
+    }
 
     return false;
 }
