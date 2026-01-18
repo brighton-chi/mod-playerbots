@@ -902,7 +902,7 @@ bool GurtoggBloodboilManagePhaseTimerAction::Execute(Event event)
         return gurtoggPhaseTimer.erase(instanceId) > 0;
     else
     {
-        auto [it, inserted] = reliquaryDpsWaitTimer.try_emplace(instanceId, now);
+        auto [it, inserted] = gurtoggPhaseTimer.try_emplace(instanceId, now);
         return inserted;
     }
 }
@@ -1532,9 +1532,8 @@ bool IllidariCouncilManageDpsTimerAction::Execute(Event event)
 {
     if (Unit* gathios = AI_VALUE2(Unit*, "find target", "gathios the shatterer"))
     {
-        councilDpsWaitTimer.try_emplace(
-            gathios->GetMap()->GetInstanceId(), std::time(nullptr));
-            return true;
+        return councilDpsWaitTimer.try_emplace(
+            gathios->GetMap()->GetInstanceId(), std::time(nullptr)).second;
     }
 
     return false;
