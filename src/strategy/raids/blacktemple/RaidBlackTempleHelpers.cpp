@@ -122,10 +122,10 @@ namespace BlackTempleHelpers
     }
 
     // High Warlord Naj'entus
-    const Position NAJENTUS_TANK_POSITION = { 437.838f, 789.927f, 12.028f, 4.738f };
+    const Position NAJENTUS_TANK_POSITION = { 437.838f, 789.927f, 12.028f };
 
     // Supremus
-    const Position SUPREMUS_TANK_POSITION = { 704.651f, 684.401f, 72.608f, 4.681f };
+    const Position SUPREMUS_TANK_POSITION = { 704.651f, 684.401f, 72.608f };
     std::unordered_map<ObjectGuid, Position> supremusRangedPositions;
     std::unordered_map<uint32, time_t> supremusPhaseTimer;
 
@@ -147,13 +147,13 @@ namespace BlackTempleHelpers
     // N/A
 
     // Teron Gorefiend
-    const Position GOREFIEND_TANK_POSITION = { 597.653f, 402.284f, 187.090f, 6.269f };
-    const Position GOREFIEND_DIE_POSITION = { 525.709f, 377.177f, 193.203f, 3.879f };
+    const Position GOREFIEND_TANK_POSITION = { 597.653f, 402.284f, 187.090f };
+    const Position GOREFIEND_DIE_POSITION = { 525.709f, 377.177f, 193.203f };
     std::unordered_map<ObjectGuid, Position> gorefiendRangedPositions;
 
     // Gurtogg Bloodboil
-    const Position GURTOGG_TANK_POSITION = { 735.987f, 272.451f, 63.554f, 0.048f };
-    const Position GURTOGG_ABSORB_BLOODBOIL_POSITION = { 777.279f, 274.639f, 63.732f, 3.166f };
+    const Position GURTOGG_TANK_POSITION = { 735.987f, 272.451f, 63.554f };
+    const Position GURTOGG_ABSORB_BLOODBOIL_POSITION = { 777.279f, 274.639f, 63.732f };
     std::unordered_map<uint32, time_t> gurtoggPhaseTimer;
 
     std::vector<std::vector<Player*>> GetGurtoggRangedRotationGroups(Player* bot)
@@ -208,22 +208,25 @@ namespace BlackTempleHelpers
     std::unordered_map<uint32, time_t> reliquaryDpsWaitTimer;
 
     // Mother Shahraz
-    const Position SHAHRAZ_TANK_POSITION = { 926.761f, 179.666f, 192.831f, 6.215f };
-    const Position SHAHRAZ_TRANSITION_POSITION = { 941.557f, 182.719f, 192.418f, 4.943f };
-    const Position SHAHRAZ_RANGED_POSITION = { 958.632f, 180.111f, 192.826f, 3.266f };
+    const Position SHAHRAZ_TANK_POSITION = { 926.761f, 179.666f, 192.831f };
+    const Position SHAHRAZ_TRANSITION_POSITION = { 941.557f, 182.719f, 192.418f };
+    const Position SHAHRAZ_RANGED_POSITION = { 958.632f, 180.111f, 192.826f };
     std::unordered_map<ObjectGuid, uint8> shahrazTankStep;
 
     // Illidari Council
-    const Position GATHIOS_TANK_POSITION_1 = { 662.977f, 296.246f, 271.688f, 6.275f };
-    const Position GATHIOS_TANK_POSITION_2 = { 636.238f, 283.719f, 271.629f, 0.357f };
-    const Position GATHIOS_TANK_POSITION_3 = { 655.571f, 261.377f, 271.687f, 2.141f };
-    const Position GATHIOS_TANK_POSITION_4 = { 673.789f, 274.139f, 271.689f, 3.411f };
-    // const Position ZEREVOR_TANK_POSITION = { 680.924f, 351.857f, 271.701f, 5.051f };
-    const Position ZEREVOR_TANK_POSITION = { 667.204f, 345.466f, 271.690f, 5.896f };
-    const Position MALANDE_TANK_POSITION = { 690.101f, 305.166f, 277.443f, 0.000f };
-    const Position DARKSHADOW_TANK_POSITION = { 644.156f, 338.085f, 271.688f, 5.669f };
+    const Position GATHIOS_TANK_POSITION_1 = { 662.977f, 296.246f, 271.688f };
+    const Position GATHIOS_TANK_POSITION_2 = { 636.238f, 283.719f, 271.629f };
+    const Position GATHIOS_TANK_POSITION_3 = { 655.571f, 261.377f, 271.687f };
+    const Position GATHIOS_TANK_POSITION_4 = { 673.789f, 274.139f, 271.689f };
+    const Position ZEREVOR_TANK_POSITION = { 686.219f, 377.644f, 271.689f };
+    const Position ZEREVOR_HEALER_POSITION_1 = { 661.385f, 351.219f, 271.690f };
+    const Position ZEREVOR_HEALER_POSITION_2 = { 667.003f, 363.768f, 271.690f };
+    const Position MALANDE_TANK_POSITION = { 690.101f, 305.166f, 277.443f };
+    const Position DARKSHADOW_TANK_POSITION = { 644.156f, 338.085f, 271.688f };
     std::unordered_map<uint32, time_t> councilDpsWaitTimer;
     std::unordered_map<ObjectGuid, uint8> gathiosTankStep;
+    std::unordered_map<ObjectGuid, uint8> zerevorHealStep;
+
 
     Player* GetZerevorMageTank(PlayerbotAI* botAI, Player* bot)
     {
@@ -263,6 +266,20 @@ namespace BlackTempleHelpers
 
         // (3) Return the found Mage tank, or nullptr if none found
         return highestHpMage;
+    }
+
+    bool HasDangerousCouncilAura(Unit* unit)
+    {
+        static const uint32 dangerousAuras[] =
+            { SPELL_CONSECRATION, SPELL_BLIZZARD, SPELL_FLAMESTRIKE };
+
+        for (uint32 aura : dangerousAuras)
+        {
+            if (unit->HasAura(aura))
+                return true;
+        }
+
+        return false;
     }
 
     // Illidan Stormrage <The Betrayer>
@@ -389,52 +406,6 @@ namespace BlackTempleHelpers
 
         return -1;
     }
-
-    /* Position GetClosestPointInDrawSoulSafeSector(
-        Unit* illidan, Position botPos, float angleOffset, int direction, float minRadius, float maxRadius, float sectorAngleWidth)
-    {
-        if (!illidan)
-            return Position();
-
-        float bossX = illidan->GetPositionX();
-        float bossY = illidan->GetPositionY();
-        float bossZ = illidan->GetPositionZ();
-        float bossFacing = illidan->GetOrientation();
-
-        // Center angle of the cone
-        float centerAngle = bossFacing + direction * angleOffset;
-
-        // Vector from boss to bot
-        float dx = botPos.GetPositionX() - bossX;
-        float dy = botPos.GetPositionY() - bossY;
-        float distance = std::sqrt(dx * dx + dy * dy);
-
-        // Clamp distance to [minRadius, maxRadius]
-        float clampedDist = std::min(std::max(distance, minRadius), maxRadius);
-
-        // Angle from boss to bot
-        float angleToBot = std::atan2(dy, dx);
-        float deltaAngle = angleToBot - centerAngle;
-        // Normalize to [-pi, pi]
-        while (deltaAngle > M_PI) deltaAngle -= 2.0f * M_PI;
-        while (deltaAngle < -M_PI) deltaAngle += 2.0f * M_PI;
-
-        // Clamp angle to cone
-        float halfCone = sectorAngleWidth / 2.0f;
-        float clampedAngle = centerAngle;
-        if (deltaAngle > halfCone)
-            clampedAngle = centerAngle + halfCone;
-        else if (deltaAngle < -halfCone)
-            clampedAngle = centerAngle - halfCone;
-        else
-            clampedAngle = angleToBot;
-
-        // Calculate target position
-        float targetX = bossX + clampedDist * std::cos(clampedAngle);
-        float targetY = bossY + clampedDist * std::sin(clampedAngle);
-
-        return Position(targetX, targetY, bossZ, clampedAngle);
-    } */
 
     std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(PlayerbotAI* botAI, Player* bot)
     {

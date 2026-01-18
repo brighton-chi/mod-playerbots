@@ -476,8 +476,14 @@ bool IllidariCouncilDarkshadowEngagedBySecondAssistTankTrigger::IsActive()
 
 bool IllidariCouncilZerevorEngagedByMageTankTrigger::IsActive()
 {
-    return GetZerevorMageTank(botAI, bot) == bot &&
-           AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");
+    return AI_VALUE2(Unit*, "find target", "high nethermancer zerevor") &&
+           GetZerevorMageTank(botAI, bot) == bot;
+}
+
+bool IllidariCouncilMageTankNeedsDedicatedHealerTrigger::IsActive()
+{
+    return AI_VALUE2(Unit*, "find target", "high nethermancer zerevor") &&
+           botAI->IsHealAssistantOfIndex(bot, 0);
 }
 
 bool IllidariCouncilDeterminingDpsAssignmentsTrigger::IsActive()
@@ -496,10 +502,23 @@ bool IllidariCouncilDeterminingDpsAssignmentsTrigger::IsActive()
            AI_VALUE2(Unit*, "find target", "gathios the shatterer");
 }
 
+bool IllidariCouncilPetsScrewUpThePullTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_HUNTER &&
+        bot->getClass() != CLASS_WARLOCK)
+        return false;
+
+    Pet* pet = bot->GetPet();
+    if (!pet || !pet->IsAlive())
+        return false;
+
+    return AI_VALUE2(Unit*, "find target", "gathios the shatterer");
+}
+
 bool IllidariCouncilNeedToManageDpsTimerTrigger::IsActive()
 {
-    return IsInstanceTimerManager(botAI, bot) &&
-           AI_VALUE2(Unit*, "find target", "gathios the shatterer");
+    return AI_VALUE2(Unit*, "find target", "gathios the shatterer") &&
+           IsInstanceTimerManager(botAI, bot);
 }
 
 // Illidan Stormrage <The Betrayer>
@@ -614,7 +633,7 @@ bool IllidanStormrageBossSummonsAddsTrigger::IsActive()
         return false;
 
     return AI_VALUE2(Unit*, "find target", "shadow demon") ||
-           AI_VALUE2(Unit*, "find target", "parasitic shadowfiend") ||
+           /* AI_VALUE2(Unit*, "find target", "parasitic shadowfiend") || */
            AI_VALUE2(Unit*, "find target", "flame of azzinoth");
 }
 
@@ -629,9 +648,12 @@ bool IllidanStormrageNeedToManageDpsTimerTrigger::IsActive()
 
 bool IllidanStormrageCheatTrigger::IsActive()
 {
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan || illidan->GetHealth() == 1)
+    if (!botAI->HasCheat(BotCheatMask::raid))
         return false;
 
-    return botAI->HasCheat(BotCheatMask::raid);
+    if (botAI->IsTank(bot))
+        return false;
+
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    return illidan && illidan->GetHealth() > 1;
 }

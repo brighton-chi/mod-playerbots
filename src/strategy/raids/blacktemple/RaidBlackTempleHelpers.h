@@ -175,10 +175,14 @@ namespace BlackTempleHelpers
     extern const Position GATHIOS_TANK_POSITION_4;
     extern const Position MALANDE_TANK_POSITION;
     extern const Position ZEREVOR_TANK_POSITION;
+    extern const Position ZEREVOR_HEALER_POSITION_1;
+    extern const Position ZEREVOR_HEALER_POSITION_2;
     extern const Position DARKSHADOW_TANK_POSITION;
     extern std::unordered_map<uint32, time_t> councilDpsWaitTimer;
     extern std::unordered_map<ObjectGuid, uint8> gathiosTankStep;
+    extern std::unordered_map<ObjectGuid, uint8> zerevorHealStep;
     Player* GetZerevorMageTank(PlayerbotAI* botAI, Player* bot);
+    bool HasDangerousCouncilAura(Unit* unit);
 
     // Illidan Stormrage <The Betrayer>
     extern const Position ILLIDAN_LANDING_POSITION;

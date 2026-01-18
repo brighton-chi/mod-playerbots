@@ -65,7 +65,7 @@ float SupremusHitboxIsBuggedMultiplier::GetValue(Action* action)
 // N/A
 
 // Teron Gorefiend
-float TeronGorefiendDisableMovementMultiplier::GetValue(Action* action)
+float TeronGorefiendControlMovementMultiplier::GetValue(Action* action)
 {
     if (AI_VALUE2(Unit*, "find target", "teron gorefiend"))
     {
@@ -138,7 +138,7 @@ float TeronGorefiendDisableAttackingConstructsMultiplier::GetValue(Action* actio
 
 // Gurtogg Bloodboil
 
-float GurtoggBloodboilDisableMovementMultiplier::GetValue(Action* action)
+float GurtoggBloodboilControlMovementMultiplier::GetValue(Action* action)
 {
     if (AI_VALUE2(Unit*, "find target", "gurtogg bloodboil"))
     {
@@ -257,7 +257,7 @@ float ReliquaryOfSoulsDontInterruptDeadenIfReflectableMultiplier::GetValue(Actio
 
 // Mother Shahraz
 
-float MotherShahrazDisableMovementMultiplier::GetValue(Action* action)
+float MotherShahrazControlMovementMultiplier::GetValue(Action* action)
 {
     if (AI_VALUE2(Unit*, "find target", "mother shahraz"))
     {
@@ -301,9 +301,7 @@ float IllidariCouncilDisableTankActionsMultiplier::GetValue(Action* action)
     if (bot->GetVictim() != nullptr && dynamic_cast<TankAssistAction*>(action))
         return 0.0f;
 
-    if (dynamic_cast<CombatFormationMoveAction*>(action) ||
-        dynamic_cast<AvoidAoeAction*>(action) ||
-        dynamic_cast<CastTauntAction*>(action) ||
+    if (dynamic_cast<CastTauntAction*>(action) ||
         dynamic_cast<CastChallengingShoutAction*>(action) ||
         dynamic_cast<CastThunderClapAction*>(action) ||
         dynamic_cast<CastShockwaveAction*>(action) ||
@@ -318,6 +316,40 @@ float IllidariCouncilDisableTankActionsMultiplier::GetValue(Action* action)
         dynamic_cast<CastPestilenceAction*>(action) ||
         dynamic_cast<CastBloodBoilAction*>(action))
         return 0.0f;
+
+    return 1.0f;
+}
+
+float IllidariCouncilControlMovementMultiplier::GetValue(Action* action)
+{
+    if (AI_VALUE2(Unit*, "find target", "high nethermancer zerevor"))
+    {
+        if (dynamic_cast<CombatFormationMoveAction*>(action) &&
+            !dynamic_cast<SetBehindTargetAction*>(action))
+            return 0.0f;
+
+        if (dynamic_cast<FollowAction*>(action) ||
+            dynamic_cast<FleeAction*>(action) ||
+            dynamic_cast<CastDisengageAction*>(action) ||
+            dynamic_cast<CastBlinkBackAction*>(action))
+            return 0.0f;
+
+        if (botAI->IsHealAssistantOfIndex(bot, 0))
+        {
+            if (dynamic_cast<MovementAction*>(action) &&
+                !dynamic_cast<IllidariCouncilPositionMageTankHealerAction*>(action))
+                return 0.0f;
+        }
+
+        if (botAI->IsMainTank(bot) ||
+            botAI->IsAssistTankOfIndex(bot, 0, false) ||
+            botAI->IsAssistTankOfIndex(bot, 1, false) ||
+            GetZerevorMageTank(botAI, bot) == bot)
+        {
+            if (dynamic_cast<AvoidAoeAction*>(action))
+                return 0.0f;
+        }
+    }
 
     return 1.0f;
 }
@@ -476,7 +508,7 @@ float IllidanStormrageDelayCooldownsMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float IllidanStormrageDisableMovementMultiplier::GetValue(Action* action)
+float IllidanStormrageControlMovementMultiplier::GetValue(Action* action)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     if (illidan && illidan->GetHealth() > 1)
@@ -489,11 +521,11 @@ float IllidanStormrageDisableMovementMultiplier::GetValue(Action* action)
         else if (dynamic_cast<CombatFormationMoveAction*>(action))
             return 0.0f;
 
-        if (dynamic_cast<AvoidAoeAction*>(action))
+        /* if (dynamic_cast<AvoidAoeAction*>(action))
         {
             if (botAI->IsMelee(bot))
                 return 0.0f;
-        }
+        } */
     }
 
     return 1.0f;

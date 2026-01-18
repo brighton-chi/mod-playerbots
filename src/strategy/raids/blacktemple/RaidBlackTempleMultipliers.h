@@ -32,11 +32,11 @@ public:
 // Shade of Akama
 
 // Teron Gorefiend
-class TeronGorefiendDisableMovementMultiplier : public Multiplier
+class TeronGorefiendControlMovementMultiplier : public Multiplier
 {
 public:
-    TeronGorefiendDisableMovementMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "teron gorefiend disable movement multiplier") {}
+    TeronGorefiendControlMovementMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "teron gorefiend control movement multiplier") {}
     virtual float GetValue(Action* action);
 };
 
@@ -66,11 +66,11 @@ public:
 
 // Gurtogg Bloodboil
 
-class GurtoggBloodboilDisableMovementMultiplier : public Multiplier
+class GurtoggBloodboilControlMovementMultiplier : public Multiplier
 {
 public:
-    GurtoggBloodboilDisableMovementMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "gurtogg bloodboil disable movement multiplier") {}
+    GurtoggBloodboilControlMovementMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "gurtogg bloodboil control movement multiplier") {}
     virtual float GetValue(Action* action);
 };
 
@@ -102,11 +102,11 @@ public:
 
 // Mother Shahraz
 
-class MotherShahrazDisableMovementMultiplier : public Multiplier
+class MotherShahrazControlMovementMultiplier : public Multiplier
 {
 public:
-    MotherShahrazDisableMovementMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "mother shahraz disable movement multiplier") {}
+    MotherShahrazControlMovementMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "mother shahraz control movement multiplier") {}
     virtual float GetValue(Action* action);
 };
 
@@ -125,6 +125,14 @@ class IllidariCouncilDisableTankActionsMultiplier : public Multiplier
 public:
     IllidariCouncilDisableTankActionsMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "illidari council disable tank actions multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
+class IllidariCouncilControlMovementMultiplier : public Multiplier
+{
+public:
+    IllidariCouncilControlMovementMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "illidari council control movement multiplier") {}
     virtual float GetValue(Action* action);
 };
 
@@ -178,11 +186,11 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class IllidanStormrageDisableMovementMultiplier : public Multiplier
+class IllidanStormrageControlMovementMultiplier : public Multiplier
 {
 public:
-    IllidanStormrageDisableMovementMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "illidan stormrage disable movement multiplier") {}
+    IllidanStormrageControlMovementMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "illidan stormrage control movement multiplier") {}
     virtual float GetValue(Action* action);
 };
 

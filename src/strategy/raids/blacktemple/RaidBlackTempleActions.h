@@ -345,11 +345,27 @@ public:
     bool Execute(Event event) override;
 };
 
+class IllidariCouncilPositionMageTankHealerAction : public AttackAction
+{
+public:
+    IllidariCouncilPositionMageTankHealerAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "illidari council position mage tank healer") {}
+    bool Execute(Event event) override;
+};
+
 class IllidariCouncilAssignDpsTargetsAction : public AttackAction
 {
 public:
     IllidariCouncilAssignDpsTargetsAction(
         PlayerbotAI* botAI) : AttackAction(botAI, "illidari council assign dps targets") {}
+    bool Execute(Event event) override;
+};
+
+class IllidariCouncilCommandPetsToAttackGathiosAction : public AttackAction
+{
+public:
+    IllidariCouncilCommandPetsToAttackGathiosAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "illidari council command pets to attack gathios") {}
     bool Execute(Event event) override;
 };
 

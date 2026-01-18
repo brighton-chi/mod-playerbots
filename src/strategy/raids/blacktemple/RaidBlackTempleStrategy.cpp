@@ -131,8 +131,14 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("illidari council zerevor engaged by mage tank", {
         NextAction("illidari council mage tank position zerevor", ACTION_EMERGENCY + 6) }));
 
+    triggers.push_back(new TriggerNode("illidari council mage tank needs dedicated healer", {
+        NextAction("illidari council position mage tank healer", ACTION_RAID + 1) }));
+
     triggers.push_back(new TriggerNode("illidari council determining dps assignments", {
         NextAction("illidari council assign dps targets", ACTION_RAID + 1) }));
+
+    triggers.push_back(new TriggerNode("illidari council pets screw up the pull", {
+        NextAction("illidari council command pets to attack gathios", ACTION_RAID + 3) }));
 
     triggers.push_back(new TriggerNode("illidari council need to manage dps timer", {
         NextAction("illidari council manage dps timer", ACTION_EMERGENCY + 10) }));
@@ -144,8 +150,8 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("illidan stormrage boss casts flame crash", {
         NextAction("illidan stormrage main tank move away from flame crash", ACTION_EMERGENCY + 1) }));
 
-    triggers.push_back(new TriggerNode("illidan stormrage bot has parasitic shadowfiend", {
-        NextAction("illidan stormrage isolate bot with parasite", ACTION_RAID + 2) }));
+    /* triggers.push_back(new TriggerNode("illidan stormrage bot has parasitic shadowfiend", {
+        NextAction("illidan stormrage isolate bot with parasite", ACTION_RAID + 2) })); */
 
     triggers.push_back(new TriggerNode("illidan stormrage boss summoned flames of azzinoth", {
         NextAction("illidan stormrage assist tanks handle flames of azzinoth", ACTION_EMERGENCY + 1) }));
@@ -191,13 +197,13 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     // N/A
 
     // Teron Gorefiend
-    multipliers.push_back(new TeronGorefiendDisableMovementMultiplier(botAI));
+    multipliers.push_back(new TeronGorefiendControlMovementMultiplier(botAI));
     multipliers.push_back(new TeronGorefiendMarkedBotOnlyMoveToDieMultiplier(botAI));
     multipliers.push_back(new TeronGorefiendSpiritsAttackOnlyShadowyConstructsMultiplier(botAI));
     multipliers.push_back(new TeronGorefiendDisableAttackingConstructsMultiplier(botAI));
 
     // Gurtogg Bloodboil
-    multipliers.push_back(new GurtoggBloodboilDisableMovementMultiplier(botAI));
+    multipliers.push_back(new GurtoggBloodboilControlMovementMultiplier(botAI));
 
     // Reliquary of Souls
     multipliers.push_back(new ReliquaryOfSoulsWaitForDpsMultiplier(botAI));
@@ -205,11 +211,12 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new ReliquaryOfSoulsDontInterruptDeadenIfReflectableMultiplier(botAI));
 
     // Mother Shahraz
-    multipliers.push_back(new MotherShahrazDisableMovementMultiplier(botAI));
+    multipliers.push_back(new MotherShahrazControlMovementMultiplier(botAI));
     multipliers.push_back(new MotherShahrazBotsWithFatalAttractionOnlyRunAwayMultiplier(botAI));
 
     // Illidari Council
     multipliers.push_back(new IllidariCouncilDisableTankActionsMultiplier(botAI));
+    multipliers.push_back(new IllidariCouncilControlMovementMultiplier(botAI));
     multipliers.push_back(new IllidariCouncilDisableAoeMultiplier(botAI));
     multipliers.push_back(new IllidariCouncilControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new IllidariCouncilDisableArcaneShotOnZerevorMultiplier(botAI));
@@ -218,7 +225,7 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
 
     // Illidan Stormrage <The Betrayer>
     multipliers.push_back(new IllidanStormrageDelayCooldownsMultiplier(botAI));
-    multipliers.push_back(new IllidanStormrageDisableMovementMultiplier(botAI));
+    multipliers.push_back(new IllidanStormrageControlMovementMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageDisableTankAssistMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageStayWithinGrateMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageDisableMeleeAttackingMultiplier(botAI));

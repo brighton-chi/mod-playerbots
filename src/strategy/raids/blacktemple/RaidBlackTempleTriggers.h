@@ -333,11 +333,27 @@ public:
     bool IsActive() override;
 };
 
+class IllidariCouncilMageTankNeedsDedicatedHealerTrigger : public Trigger
+{
+public:
+    IllidariCouncilMageTankNeedsDedicatedHealerTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "illidari council mage tank needs dedicated healer") {}
+    bool IsActive() override;
+};
+
 class IllidariCouncilDeterminingDpsAssignmentsTrigger : public Trigger
 {
 public:
     IllidariCouncilDeterminingDpsAssignmentsTrigger(
         PlayerbotAI* botAI) : Trigger(botAI, "illidari council determining dps assignments") {}
+    bool IsActive() override;
+};
+
+class IllidariCouncilPetsScrewUpThePullTrigger : public Trigger
+{
+public:
+    IllidariCouncilPetsScrewUpThePullTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "illidari council pets screw up the pull") {}
     bool IsActive() override;
 };
 
