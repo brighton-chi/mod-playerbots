@@ -186,12 +186,18 @@ namespace BlackTempleHelpers
 
     // Illidan Stormrage <The Betrayer>
     extern const Position ILLIDAN_LANDING_POSITION;
+    extern const Position ILLIDAN_MAIN_TANK_POSITION_1;
+    extern const Position ILLIDAN_MAIN_TANK_POSITION_2;
+    extern const Position ILLIDAN_MAIN_TANK_POSITION_3;
+    extern const Position ILLIDAN_MAIN_TANK_POSITION_4;
+    extern const Position ILLIDAN_MAIN_TANK_POSITION_5;
+    extern const Position MAIN_TANK_POSITIONS[5];
     extern const Position ILLIDAN_C_GRATE_POSITION;
     extern const Position ILLIDAN_N_GRATE_POSITION;
     extern const Position ILLIDAN_S_GRATE_POSITION;
     extern const Position ILLIDAN_SW_GRATE_POSITION;
     extern const Position ILLIDAN_SE_GRATE_POSITION;
-    extern const Position* gratePositions[2];
+    extern const Position GRATE_POSITIONS[2];
     extern const Position ILLIDAN_E_GLAIVE_WAITING_POSITION;
     extern const Position ILLIDAN_E_GLAIVE_TANK_POSITION_1;
     extern const Position ILLIDAN_E_GLAIVE_TANK_POSITION_2;
@@ -204,7 +210,7 @@ namespace BlackTempleHelpers
     extern const Position ILLIDAN_E_GLAIVE_TANK_POSITION_9;
     extern const Position ILLIDAN_E_GLAIVE_TANK_POSITION_10;
     extern const Position ILLIDAN_E_GLAIVE_TANK_POSITION_11; */
-    extern const Position ILLIDAN_E_GLAIVE_TANK_POSITIONS[7];
+    extern const Position E_GLAIVE_TANK_POSITIONS[7];
     extern const Position ILLIDAN_W_GLAIVE_WAITING_POSITION;
     extern const Position ILLIDAN_W_GLAIVE_TANK_POSITION_1;
     extern const Position ILLIDAN_W_GLAIVE_TANK_POSITION_2;
@@ -217,13 +223,32 @@ namespace BlackTempleHelpers
     extern const Position ILLIDAN_W_GLAIVE_TANK_POSITION_9;
     extern const Position ILLIDAN_W_GLAIVE_TANK_POSITION_10;
     extern const Position ILLIDAN_W_GLAIVE_TANK_POSITION_11; */
-    extern const Position ILLIDAN_W_GLAIVE_TANK_POSITIONS[7];
+    extern const Position W_GLAIVE_TANK_POSITIONS[7];
+    extern const Position ILLIDAN_P4_WARLOCK_TANK_POSITION;
+    extern const Position ILLIDAN_P4_RANGED_POSITION_1;
+    extern const Position ILLIDAN_P4_RANGED_POSITION_2;
+    extern const Position ILLIDAN_P4_RANGED_POSITION_3;
+    extern const Position ILLIDAN_P4_RANGED_POSITION_4;
+    extern const Position ILLIDAN_P4_RANGED_POSITION_5;
+    extern const Position ILLIDAN_P4_RANGED_POSITION_6;
+    extern const Position ILLIDAN_P4_RANGED_POSITION_7;
+    extern const Position ILLIDAN_P4_RANGED_POSITION_8;
+    extern const Position ILLIDAN_P4_RANGED_POSITION_9;
+    extern const Position ILLIDAN_P4_RANGED_POSITION_10;
+    extern const Position P4_RANGED_POSITIONS[10];
+    extern const Position ILLIDAN_P4_MELEE_POSITION_1;
+    extern const Position ILLIDAN_P4_MELEE_POSITION_2;
+    extern const Position ILLIDAN_P4_MELEE_POSITION_3;
+    extern const Position ILLIDAN_P4_MELEE_POSITION_4;
+    extern const Position ILLIDAN_P4_MELEE_POSITION_5;
+    extern const Position P4_MELEE_POSITIONS[5];
     extern const Position eyeBeamPos[MAX_EYE_BEAM_POS * 2];
     extern std::unordered_map<ObjectGuid, size_t> flameTankWaypointIndex;
     extern std::unordered_map<uint32, time_t> illidanBossDpsWaitTimer;
     extern std::unordered_map<uint32, time_t> illidanFlameDpsWaitTimer;
     extern std::unordered_map<uint32, ObjectGuid> eastFlameGuid;
     extern std::unordered_map<uint32, ObjectGuid> westFlameGuid;
+    extern std::unordered_map<ObjectGuid, uint8> illidanGrateStep;
     int GetIllidanPhase(Unit* illidan);
     std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(PlayerbotAI* botAI, Player* bot);
     Player* GetIllidanWarlockTank(PlayerbotAI* botAI, Player* bot);

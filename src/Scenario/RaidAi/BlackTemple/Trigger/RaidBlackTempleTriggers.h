@@ -367,6 +367,53 @@ public:
 
 // Illidan Stormrage <The Betrayer>
 
+class IllidanStormrageBossEngagedByMainTankTrigger : public Trigger
+{
+public:
+    IllidanStormrageBossEngagedByMainTankTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage boss engaged by main tank") {}
+    bool IsActive() override;
+};
+
+class IllidanStormrageBossEngagedByFlameTanksTrigger : public Trigger
+{
+public:
+    IllidanStormrageBossEngagedByFlameTanksTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage boss engaged by flame tanks") {}
+    bool IsActive() override;
+};
+
+class IllidanStormrageBossEngagedByMeleeDpsTrigger : public Trigger
+{
+public:
+    IllidanStormrageBossEngagedByMeleeDpsTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage boss engaged by melee dps") {}
+    bool IsActive() override;
+};
+
+class IllidanStormrageBossEngagedByWarlockTankTrigger : public Trigger
+{
+public:
+    IllidanStormrageBossEngagedByWarlockTankTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage boss engaged by warlock tank") {}
+    bool IsActive() override;
+};
+
+class IllidanStormrageBossEngagedByRangedDpsTrigger : public Trigger
+{
+public:
+    IllidanStormrageBossEngagedByRangedDpsTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage boss engaged by ranged dps") {}
+    bool IsActive() override;
+};
+
+class IllidanStormrageBossEngagedByHealersTrigger : public Trigger
+{
+public:
+    IllidanStormrageBossEngagedByHealersTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage boss engaged by healers") {}
+    bool IsActive() override;
+};
 class IllidanStormrageTankNeedsAggroTrigger : public Trigger
 {
 public:

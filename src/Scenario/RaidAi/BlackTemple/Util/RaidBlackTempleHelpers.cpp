@@ -284,15 +284,32 @@ namespace BlackTempleHelpers
 
     // Illidan Stormrage <The Betrayer>
     const Position ILLIDAN_LANDING_POSITION = { 676.648f, 304.761f, 354.189f };
-    const Position ILLIDAN_C_GRATE_POSITION = { 683.569f, 305.245f, 353.192f };
-    const Position ILLIDAN_N_GRATE_POSITION = { 682.884f, 305.06f, 353.192f };
-    const Position ILLIDAN_S_GRATE_POSITION = { 670.103f, 305.348f, 353.192f };
+    const Position ILLIDAN_MAIN_TANK_POSITION_1 = { 0.0f, 0.0f, 0.0f, };
+    const Position ILLIDAN_MAIN_TANK_POSITION_2 = { 0.0f, 0.0f, 0.0f, };
+    const Position ILLIDAN_MAIN_TANK_POSITION_3 = { 0.0f, 0.0f, 0.0f, };
+    const Position ILLIDAN_MAIN_TANK_POSITION_4 = { 0.0f, 0.0f, 0.0f, };
+    const Position ILLIDAN_MAIN_TANK_POSITION_5 = { 0.0f, 0.0f, 0.0f, };
+    const Position MAIN_TANK_POSITIONS[5] =
+    {
+        ILLIDAN_MAIN_TANK_POSITION_1,
+        ILLIDAN_MAIN_TANK_POSITION_2,
+        ILLIDAN_MAIN_TANK_POSITION_3,
+        ILLIDAN_MAIN_TANK_POSITION_4,
+        ILLIDAN_MAIN_TANK_POSITION_5,
+    };
+    const Position ILLIDAN_C_GRATE_POSITION = { 676.000f, 305.000f, 353.192f };
+    const Position ILLIDAN_N_GRATE_POSITION = { 682.500f, 305.000f, 353.192f };
+    const Position ILLIDAN_S_GRATE_POSITION = { 670.000f, 305.000f, 353.192f };
+    const Position ILLIDAN_E_GRATE_POSITION = { 0.0f, 0.0f, 0.0f };
+    const Position ILLIDAN_W_GRATE_POSITION = { 0.0f, 0.0f, 0.0f };
     const Position ILLIDAN_SW_GRATE_POSITION = { 672.828f, 311.496f, 353.192f };
     const Position ILLIDAN_SE_GRATE_POSITION = { 672.928f, 298.357f, 353.192f };
-    const Position* gratePositions[2] =
+    const Position GRATE_POSITIONS[2] =
     {
-        &ILLIDAN_N_GRATE_POSITION,
-        &ILLIDAN_S_GRATE_POSITION
+        ILLIDAN_N_GRATE_POSITION,
+        ILLIDAN_S_GRATE_POSITION,
+        // ILLIDAN_E_GRATE_POSITION,
+        // ILLIDAN_W_GRATE_POSITION,
     };
     const Position ILLIDAN_E_GLAIVE_WAITING_POSITION = { 682.140f, 287.685f, 354.135f };
     /* const Position ILLIDAN_E_GLAIVE_TANK_POSITION_1 = { 697.097f, 287.966f, 353.983f };
@@ -313,7 +330,7 @@ namespace BlackTempleHelpers
     const Position ILLIDAN_E_GLAIVE_TANK_POSITION_5 = { 656.826f, 295.113f, 354.165f };
     const Position ILLIDAN_E_GLAIVE_TANK_POSITION_6 = { 670.884f, 293.726f, 353.907f };
     const Position ILLIDAN_E_GLAIVE_TANK_POSITION_7 = { 681.942f, 293.551f, 353.192f };
-    const Position ILLIDAN_E_GLAIVE_TANK_POSITIONS[7] =
+    const Position E_GLAIVE_TANK_POSITIONS[7] =
     {
         ILLIDAN_E_GLAIVE_TANK_POSITION_1,
         ILLIDAN_E_GLAIVE_TANK_POSITION_2,
@@ -342,7 +359,7 @@ namespace BlackTempleHelpers
     const Position ILLIDAN_W_GLAIVE_TANK_POSITION_5 = { 697.208f, 313.475f, 354.234f };
     const Position ILLIDAN_W_GLAIVE_TANK_POSITION_6 = { 682.285f, 316.558f, 353.187f };
     const Position ILLIDAN_W_GLAIVE_TANK_POSITION_7 = { 670.187f, 316.777f, 353.192f };
-    const Position ILLIDAN_W_GLAIVE_TANK_POSITIONS[7] =
+    const Position W_GLAIVE_TANK_POSITIONS[7] =
     {
         ILLIDAN_W_GLAIVE_TANK_POSITION_1,
         ILLIDAN_W_GLAIVE_TANK_POSITION_2,
@@ -351,6 +368,43 @@ namespace BlackTempleHelpers
         ILLIDAN_W_GLAIVE_TANK_POSITION_5,
         ILLIDAN_W_GLAIVE_TANK_POSITION_6,
         ILLIDAN_W_GLAIVE_TANK_POSITION_7,
+    };
+    const Position ILLIDAN_P4_WARLOCK_TANK_POSITION = { 0.0f, 0.0f, 0.0f };
+    const Position ILLIDAN_P4_RANGED_POSITION_1 = { 0.0f, 0.0f, 0.0f };
+    const Position ILLIDAN_P4_RANGED_POSITION_2 = { 0.0f, 0.0f, 0.0f };
+    const Position ILLIDAN_P4_RANGED_POSITION_3 = { 0.0f, 0.0f, 0.0f };
+    const Position ILLIDAN_P4_RANGED_POSITION_4 = { 0.0f, 0.0f, 0.0f };
+    const Position ILLIDAN_P4_RANGED_POSITION_5 = { 0.0f, 0.0f, 0.0f };
+    const Position ILLIDAN_P4_RANGED_POSITION_6 = { 0.0f, 0.0f, 0.0f };
+    const Position ILLIDAN_P4_RANGED_POSITION_7 = { 0.0f, 0.0f, 0.0f };
+    const Position ILLIDAN_P4_RANGED_POSITION_8 = { 0.0f, 0.0f, 0.0f };
+    const Position ILLIDAN_P4_RANGED_POSITION_9 = { 0.0f, 0.0f, 0.0f };
+    const Position ILLIDAN_P4_RANGED_POSITION_10 = { 0.0f, 0.0f, 0.0f };
+    const Position P4_RANGED_POSITIONS[10] =
+    {
+        ILLIDAN_P4_RANGED_POSITION_1,
+        ILLIDAN_P4_RANGED_POSITION_2,
+        ILLIDAN_P4_RANGED_POSITION_3,
+        ILLIDAN_P4_RANGED_POSITION_4,
+        ILLIDAN_P4_RANGED_POSITION_5,
+        ILLIDAN_P4_RANGED_POSITION_6,
+        ILLIDAN_P4_RANGED_POSITION_7,
+        ILLIDAN_P4_RANGED_POSITION_8,
+        ILLIDAN_P4_RANGED_POSITION_9,
+        ILLIDAN_P4_RANGED_POSITION_10,
+    };
+    const Position ILLIDAN_P4_MELEE_POSITION_1 = { 0.0f, 0.0f, 0.0f };
+    const Position ILLIDAN_P4_MELEE_POSITION_2 = { 0.0f, 0.0f, 0.0f };
+    const Position ILLIDAN_P4_MELEE_POSITION_3 = { 0.0f, 0.0f, 0.0f };
+    const Position ILLIDAN_P4_MELEE_POSITION_4 = { 0.0f, 0.0f, 0.0f };
+    const Position ILLIDAN_P4_MELEE_POSITION_5 = { 0.0f, 0.0f, 0.0f };
+    const Position P4_MELEE_POSITIONS[5] =
+    {
+        ILLIDAN_P4_MELEE_POSITION_1,
+        ILLIDAN_P4_MELEE_POSITION_2,
+        ILLIDAN_P4_MELEE_POSITION_3,
+        ILLIDAN_P4_MELEE_POSITION_4,
+        ILLIDAN_P4_MELEE_POSITION_5,
     };
     const Position eyeBeamPos[MAX_EYE_BEAM_POS * 2] =
     {
@@ -369,6 +423,7 @@ namespace BlackTempleHelpers
     std::unordered_map<uint32, time_t> illidanFlameDpsWaitTimer;
     std::unordered_map<uint32, ObjectGuid> eastFlameGuid;
     std::unordered_map<uint32, ObjectGuid> westFlameGuid;
+    std::unordered_map<ObjectGuid, uint8> illidanGrateStep;
 
     int GetIllidanPhase(Unit* illidan)
     {
@@ -378,15 +433,6 @@ namespace BlackTempleHelpers
         // Phase 1: Health > 65%
         if (illidan->GetHealthPct() > 65.0f)
             return 1;
-
-        // Transitioning from Phase 2 to Phase 3
-        float x, y, z;
-        illidan->GetMotionMaster()->GetDestination(x, y, z);
-        Position dest(x, y, z);
-        if ((dest.GetExactDist2d(ILLIDAN_LANDING_POSITION) < 1.0f ||
-            illidan->GetExactDist2d(ILLIDAN_LANDING_POSITION) < 1.0f) &&
-            illidan->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE) && !illidan->HasAura(SPELL_SHADOW_PRISON))
-            return 0;
 
         // Phase 2: Flying
         if (illidan->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE) && !illidan->HasAura(SPELL_SHADOW_PRISON))

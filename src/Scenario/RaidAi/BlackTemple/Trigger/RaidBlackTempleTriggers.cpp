@@ -523,6 +523,44 @@ bool IllidariCouncilNeedToManageDpsTimerTrigger::IsActive()
 
 // Illidan Stormrage <The Betrayer>
 
+bool IllidanStormrageBossEngagedByMainTankTrigger::IsActive()
+{
+    return botAI->IsMainTank(bot) &&
+           AI_VALUE2(Unit*, "find target", "illidan stormrage");
+}
+
+bool IllidanStormrageBossEngagedByFlameTanksTrigger::IsActive()
+{
+    return (botAI->IsAssistTankOfIndex(bot, 0, true) ||
+            botAI->IsAssistTankOfIndex(bot, 1, true)) &&
+            AI_VALUE2(Unit*, "find target", "illidan stormrage");
+}
+
+bool IllidanStormrageBossEngagedByMeleeDpsTrigger::IsActive()
+{
+    return botAI->IsMelee(bot) && botAI->IsDps(bot) &&
+           AI_VALUE2(Unit*, "find target", "illidan stormrage");
+}
+
+bool IllidanStormrageBossEngagedByWarlockTankTrigger::IsActive()
+{
+    return GetIllidanWarlockTank(botAI, bot) == bot &&
+           AI_VALUE2(Unit*, "find target", "illidan stormrage");
+}
+
+bool IllidanStormrageBossEngagedByRangedDpsTrigger::IsActive()
+{
+    return botAI->IsRangedDps(bot) && GetIllidanWarlockTank(botAI, bot) != bot &&
+           AI_VALUE2(Unit*, "find target", "illidan stormrage");
+}
+
+bool IllidanStormrageBossEngagedByHealersTrigger::IsActive()
+{
+    return botAI->IsHeal(bot) &&
+           AI_VALUE2(Unit*, "find target", "illidan stormrage");
+}
+
+
 bool IllidanStormrageTankNeedsAggroTrigger::IsActive()
 {
     if (bot->getClass() != CLASS_HUNTER)

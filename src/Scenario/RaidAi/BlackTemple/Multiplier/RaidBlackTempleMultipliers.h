@@ -194,11 +194,11 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class IllidanStormrageDisableTankAssistMultiplier : public Multiplier
+class IllidanStormrageDisableDefaultTargetingMultiplier : public Multiplier
 {
 public:
-    IllidanStormrageDisableTankAssistMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "illidan stormrage disable tank assist multiplier") {}
+    IllidanStormrageDisableDefaultTargetingMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "illidan stormrage disable default targeting multiplier") {}
     virtual float GetValue(Action* action);
 };
 
@@ -215,14 +215,6 @@ class IllidanStormrageDisableMeleeAttackingMultiplier : public Multiplier
 public:
     IllidanStormrageDisableMeleeAttackingMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "illidan stormrage disable melee attacking multiplier") {}
-    virtual float GetValue(Action* action);
-};
-
-class IllidanStormrageAssistTanksPrioritizeFlamesMultiplier : public Multiplier
-{
-public:
-    IllidanStormrageAssistTanksPrioritizeFlamesMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "illidan stormrage assist tanks prioritize flames multiplier") {}
     virtual float GetValue(Action* action);
 };
 

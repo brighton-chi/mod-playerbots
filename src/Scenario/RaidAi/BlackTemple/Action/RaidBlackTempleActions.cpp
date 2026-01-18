@@ -47,6 +47,10 @@ bool BlackTempleEraseTimersAndTrackersAction::Execute(Event event)
         if (flameTankWaypointIndex.erase(guid) > 0)
             LOG_DEBUG("playerbots", "Erased flameTankWaypointIndex for bot {}", guid.ToString());
 
+        erasedIllidan |= illidanGrateStep.erase(guid) > 0;
+        if (illidanGrateStep.erase(guid) > 0)
+            LOG_DEBUG("playerbots", "Erased illidanGrateStep for bot {}", guid.ToString());
+
         erased |= erasedIllidan;
     }
 
@@ -1738,7 +1742,7 @@ bool IllidanStormrageMainTankMoveAwayFromFlameCrashAction::Execute(Event event)
     {
         auto const& gos = AI_VALUE(GuidVector, "nearest game objects");
         GameObject* nearestTrap = nullptr;
-        float minDist = 30.0f; // Need to test what distance is worth it in terms of traps
+        float minDist = 20.0f; // Need to test what distance is worth it in terms of traps
         for (ObjectGuid const& guid : gos)
         {
             GameObject* go = botAI->GetGameObject(guid);
@@ -2049,12 +2053,8 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event even
             if (bot->GetVictim() != eastFlame)
                 return Attack(eastFlame);
 
-            if (!bot->IsWithinMeleeRange(eastFlame))
-            {
-                return MoveTo(BLACK_TEMPLE_MAP_ID, eastFlame->GetPositionX(), eastFlame->GetPositionY(),
-                              eastFlame->GetPositionZ(), false, false, false, false,
-                              MovementPriority::MOVEMENT_FORCED, true, false);
-            }
+            if (eastFlame->GetVictim() != bot)
+                return false;
         }
         else if (!eastFlame && !westFlame)
         {
@@ -2086,12 +2086,8 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event even
             if (bot->GetVictim() != westFlame)
                 return Attack(westFlame);
 
-            if (!bot->IsWithinMeleeRange(westFlame))
-            {
-                return MoveTo(BLACK_TEMPLE_MAP_ID, westFlame->GetPositionX(), westFlame->GetPositionY(),
-                              westFlame->GetPositionZ(), false, false, false, false,
-                              MovementPriority::MOVEMENT_FORCED, true, false);
-            }
+            if (westFlame->GetVictim() != bot)
+                return false;
         }
         else
         {
@@ -2204,32 +2200,45 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidB
     {
         if (!eastFlame || eastFlame->GetVictim() != bot)
             return false;
-        waypoints = ILLIDAN_E_GLAIVE_TANK_POSITIONS;
+        waypoints = E_GLAIVE_TANK_POSITIONS;
     }
     else if (botAI->IsAssistTankOfIndex(bot, 0, true))
     {
         if (!westFlame || westFlame->GetVictim() != bot)
             return false;
-        waypoints = ILLIDAN_W_GLAIVE_TANK_POSITIONS;
+        waypoints = W_GLAIVE_TANK_POSITIONS;
     }
 
-    // Track current waypoint index for this bot using the shared map in the helpers namespace
     size_t& waypointIndex = flameTankWaypointIndex[bot->GetGUID()];
+    const Position& target = waypoints[waypointIndex];
 
-    // Check for nearby blaze
+    // Check for nearby blaze and increment only if bot is at current waypoint
     auto const& npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
+    bool blazeNearby = false;
     for (auto const& guid : npcs)
     {
         Unit* unit = botAI->GetUnit(guid);
         if (unit && unit->GetEntry() == NPC_BLAZE && bot->GetDistance2d(unit) <= 8.0f)
         {
-            waypointIndex = (waypointIndex + 1) % numWaypoints;
+            blazeNearby = true;
             break;
         }
     }
 
-    // Move to current waypoint
-    const Position& target = waypoints[waypointIndex];
+    if (blazeNearby && bot->GetExactDist2d(target.GetPositionX(), target.GetPositionY()) <= 0.2f)
+    {
+        waypointIndex = (waypointIndex + 1) % numWaypoints;
+        // Update target after increment
+        const Position& newTarget = waypoints[waypointIndex];
+        if (bot->GetExactDist2d(newTarget.GetPositionX(), newTarget.GetPositionY()) > 0.2f)
+        {
+            return MoveTo(BLACK_TEMPLE_MAP_ID, newTarget.GetPositionX(), newTarget.GetPositionY(), newTarget.GetPositionZ(),
+                          false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, true);
+        }
+        return false;
+    }
+
+    // Move to current waypoint if not already there
     if (bot->GetExactDist2d(target.GetPositionX(), target.GetPositionY()) > 0.2f)
     {
         return MoveTo(BLACK_TEMPLE_MAP_ID, target.GetPositionX(), target.GetPositionY(), target.GetPositionZ(),
@@ -2269,11 +2278,8 @@ bool IllidanStormrageControlPetAggressionAction::Execute(Event event)
 
 bool IllidanStormrageBotsSpreadAboveGrateAction::Execute(Event event)
 {
-    const Position* gratePositions[2] =
-    {
-        &ILLIDAN_N_GRATE_POSITION,
-        &ILLIDAN_S_GRATE_POSITION
-    };
+    const Position* gratePositions = GRATE_POSITIONS;
+    const ObjectGuid botGuid = bot->GetGUID();
 
     std::vector<Player*> bots;
     Group* group = bot->GetGroup();
@@ -2291,7 +2297,6 @@ bool IllidanStormrageBotsSpreadAboveGrateAction::Execute(Event event)
     if (bots.empty())
         return false;
 
-    // Sort for deterministic assignment
     std::sort(bots.begin(), bots.end(),
         [](Player* a, Player* b) { return a->GetGUID() < b->GetGUID(); });
 
@@ -2300,19 +2305,29 @@ bool IllidanStormrageBotsSpreadAboveGrateAction::Execute(Event event)
         return false;
 
     size_t botIndex = std::distance(bots.begin(), it);
-    size_t groupIndex = botIndex % 2; // 0 = north, 1 = south
+    uint8 assignedStep = botIndex % 2; // 0 = north, 1 = south
 
-    // If bot has blaze aura and is at its assigned position, move to the other grate
-    if (bot->HasAura(SPELL_BLAZE))
+    // Initialize each bot's step to its assignedStep if not already set
+    uint8 index;
+    auto stepIt = illidanGrateStep.find(botGuid);
+    if (stepIt == illidanGrateStep.end())
     {
-        const Position& currentPos = *gratePositions[groupIndex];
-        if (bot->GetExactDist2d(currentPos.GetPositionX(), currentPos.GetPositionY()) <= 0.2f)
-        {
-            groupIndex = (groupIndex + 1) % 2; // Switch grates
-        }
+        index = assignedStep;
+        illidanGrateStep[botGuid] = index;
+    }
+    else
+        index = stepIt->second;
+
+    // If bot has blaze aura and is at its assigned position, increment step to switch grates
+    const Position& currentPos = gratePositions[index];
+    if (bot->HasAura(SPELL_BLAZE) &&
+        bot->GetExactDist2d(currentPos.GetPositionX(), currentPos.GetPositionY()) <= 0.2f)
+    {
+        index = (index + 1) % 2;
+        illidanGrateStep[botGuid] = index;
     }
 
-    const Position& position = *gratePositions[groupIndex];
+    const Position& position = gratePositions[index];
     if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 0.2f)
     {
         return MoveTo(BLACK_TEMPLE_MAP_ID, position.GetPositionX(), position.GetPositionY(),
@@ -2568,14 +2583,15 @@ bool IllidanStormrageManageDpsTimerAction::Execute(Event event)
     const time_t now = std::time(nullptr);
     const uint32 instanceId = illidan->GetMap()->GetInstanceId();
 
-    if (GetIllidanPhase(illidan) == 3 || GetIllidanPhase(illidan) == 5)
+    if ((GetIllidanPhase(illidan) == 2 && AI_VALUE2(Unit*, "find target", "flame of azzinoth")) ||
+        GetIllidanPhase(illidan) == 5)
     {
         bool erased = illidanBossDpsWaitTimer.erase(instanceId) > 0;
         if (erased)
             LOG_DEBUG("playerbots", "Erased illidanBossDpsWaitTimer for instance {}", instanceId);
         return erased;
     }
-    else if (GetIllidanPhase(illidan) == 1 || GetIllidanPhase(illidan) == 4)
+    else if (GetIllidanPhase(illidan) == 1 || GetIllidanPhase(illidan) == 3 || GetIllidanPhase(illidan) == 4)
     {
         bool changed = false;
 
@@ -2628,10 +2644,7 @@ bool IllidanStormrageDestroyHazardsCheatAction::Execute(Event event)
     }
     else
     {
-        Unit* flame = AI_VALUE2(Unit*, "find target", "flame of azzinoth");
-        if (GetIllidanPhase(illidan) == 0 ||
-            GetIllidanPhase(illidan) == 3 ||
-            (GetIllidanPhase(illidan) == 2 && flame == nullptr))
+        if (!AI_VALUE2(Unit*, "find target", "flame of azzinoth"))
         {
             auto const& npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
             for (auto const& guid : npcs)
