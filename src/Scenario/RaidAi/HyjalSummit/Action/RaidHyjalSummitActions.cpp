@@ -543,6 +543,13 @@ bool KazrogalLowManaBotMoveFromGroupAction::Execute(Event event)
         return MoveFromGroup(safeDistance + 1.0f);
     }
 
+    if (bot->getClass() == CLASS_HUNTER &&
+    bot->GetPower(POWER_MANA) < 6000)
+    {
+        if (!botAI->HasAura("aspect of the viper", bot))
+            return botAI->CastSpell("aspect of the viper", bot);
+    }
+
     return false;
 }
 

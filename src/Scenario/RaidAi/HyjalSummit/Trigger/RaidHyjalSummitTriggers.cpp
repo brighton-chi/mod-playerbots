@@ -144,8 +144,7 @@ bool KazrogalLowManaBotsNeedEscapePathTrigger::IsActive()
     if (!kazrogal)
         return false;
 
-    return bot->GetPower(POWER_MANA) > 2000 ||
-           (bot->GetPower(POWER_MANA) > 3000 && bot->HasAura(SPELL_MARK_OF_KAZROGAL));
+    return !IsBotLowOnMana(bot);
 }
 
 bool KazrogalBotIsLowOnManaTrigger::IsActive()
@@ -163,8 +162,13 @@ bool KazrogalBotIsLowOnManaTrigger::IsActive()
     if (bot->getClass() == CLASS_DRUID && tab == DRUID_TAB_FERAL)
         return false;
 
-    return bot->GetPower(POWER_MANA) <= 2000 ||
-           (bot->GetPower(POWER_MANA) <= 3000 && bot->HasAura(SPELL_MARK_OF_KAZROGAL));
+    if (IsBotLowOnMana(bot))
+        return true;
+
+    if (bot->getClass() == CLASS_HUNTER && bot->GetPower(POWER_MANA) < 6000)
+        return true;
+
+    return false;
 }
 
 bool KazrogalMageOrPaladinHasMarkOfKazrogalTrigger::IsActive()

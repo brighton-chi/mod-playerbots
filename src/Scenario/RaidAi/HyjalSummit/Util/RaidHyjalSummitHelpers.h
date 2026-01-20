@@ -67,6 +67,7 @@ namespace HyjalSummitHelpers
     // Kaz'rogal
     extern const Position KAZROGAL_TANK_POSITION;
     extern std::unordered_map<ObjectGuid, Position> kazrogalRangedPositions;
+    bool IsBotLowOnMana(Player* bot);
 
     // Azgalor
     extern const Position AZGALOR_MAIN_TANK_POSITION;

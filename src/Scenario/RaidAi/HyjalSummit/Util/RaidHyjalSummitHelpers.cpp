@@ -124,6 +124,12 @@ namespace HyjalSummitHelpers
     const Position KAZROGAL_TANK_POSITION = { 5503.475f, -2660.343f, 1480.398f };
     std::unordered_map<ObjectGuid, Position> kazrogalRangedPositions;
 
+    bool IsBotLowOnMana(Player* bot)
+    {
+        return bot->GetPower(POWER_MANA) > 2000 ||
+        (bot->GetPower(POWER_MANA) > 3000 && bot->HasAura(SPELL_MARK_OF_KAZROGAL));
+    }
+
     // Azgalor
 
     const Position AZGALOR_MAIN_TANK_POSITION = { 5504.281f, -2682.223f, 1480.610f };
