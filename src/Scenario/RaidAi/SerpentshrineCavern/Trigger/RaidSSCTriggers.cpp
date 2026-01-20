@@ -195,26 +195,50 @@ bool LeotherasTheBlindBossTransformedIntoDemonFormTrigger::IsActive()
            GetLeotherasDemonFormTank(botAI, bot) == bot;
 }
 
+bool LeotherasTheBlindOnlyWarlockShouldTankDemonFormTrigger::IsActive()
+{
+    if (bot->HasAura(SPELL_INSIDIOUS_WHISPER))
+        return false;
+
+    if (!botAI->IsTank(bot))
+        return false;
+
+    if (!GetPhase2LeotherasDemon(botAI))
+        return false;
+
+    Aura* chaosBlast = bot->GetAura(SPELL_CHAOS_BLAST);
+    if (chaosBlast && chaosBlast->GetStackAmount() >= 5)
+        return false;
+
+    if (!GetLeotherasDemonFormTank(botAI, bot))
+        return false;
+
+    return true;
+}
+
 bool LeotherasTheBlindBossEngagedByRangedTrigger::IsActive()
 {
+    if (bot->HasAura(SPELL_INSIDIOUS_WHISPER))
+        return false;
+
     if (!botAI->IsRanged(bot))
         return false;
 
-
-
     Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
-    if (!leotheras ||
-        leotheras->HasAura(SPELL_LEOTHERAS_BANISHED) ||
-        leotheras->HasAura(SPELL_WHIRLWIND) ||
-        leotheras->HasAura(SPELL_WHIRLWIND_CHANNEL))
+    if (!leotheras)
         return false;
 
-    return GetLeotherasDemonFormTank(botAI, bot) != bot;
+    return !leotheras->HasAura(SPELL_LEOTHERAS_BANISHED) &&
+           !leotheras->HasAura(SPELL_WHIRLWIND) &&
+           !leotheras->HasAura(SPELL_WHIRLWIND_CHANNEL);
 }
 
 bool LeotherasTheBlindBossChannelingWhirlwindTrigger::IsActive()
 {
-    if (botAI->IsTank(bot, true) && botAI->IsMelee(bot))
+    if (bot->HasAura(SPELL_INSIDIOUS_WHISPER))
+        return false;
+
+    if (botAI->IsTank(bot) && botAI->IsMelee(bot))
         return false;
 
     Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
@@ -227,23 +251,29 @@ bool LeotherasTheBlindBossChannelingWhirlwindTrigger::IsActive()
 
 bool LeotherasTheBlindBotHasTooManyChaosBlastStacksTrigger::IsActive()
 {
-    if (botAI->IsRanged(bot) || botAI->IsTank(bot, true))
+    if (bot->HasAura(SPELL_INSIDIOUS_WHISPER))
+        return false;
+
+    if (botAI->IsRanged(bot))
         return false;
 
     Aura* chaosBlast = bot->GetAura(SPELL_CHAOS_BLAST);
-    if (!chaosBlast || chaosBlast->GetStackAmount() < 4)
+    if (!chaosBlast || chaosBlast->GetStackAmount() < 5)
         return false;
 
-    return GetPhase2LeotherasDemon(botAI);
+    if (!GetPhase2LeotherasDemon(botAI))
+        return false;
+
+    Player* demonFormTank = GetLeotherasDemonFormTank(botAI, bot);
+    if (!demonFormTank && botAI->IsMainTank(bot))
+        return false;
+
+    return true;
 }
 
 bool LeotherasTheBlindInnerDemonHasAwakenedTrigger::IsActive()
 {
-    /* if (!botAI->HasCheat(BotCheatMask::raid))
-        return false;
-
-    return bot->HasAura(SPELL_INSIDIOUS_WHISPER); */
-    if (!AI_VALUE2(Unit*, "find target", "leotheras the blind"))
+    if (!bot->HasAura(SPELL_INSIDIOUS_WHISPER))
         return false;
 
     return GetLeotherasDemonFormTank(botAI, bot) != bot;
@@ -254,7 +284,7 @@ bool LeotherasTheBlindEnteredFinalPhaseTrigger::IsActive()
     if (bot->HasAura(SPELL_INSIDIOUS_WHISPER))
         return false;
 
-    if (botAI->IsHeal(bot, true))
+    if (botAI->IsHeal(bot))
         return false;
 
     if (GetLeotherasDemonFormTank(botAI, bot) == bot)
@@ -266,10 +296,10 @@ bool LeotherasTheBlindEnteredFinalPhaseTrigger::IsActive()
 
 bool LeotherasTheBlindDemonFormTankNeedsAggro::IsActive()
 {
-    if (bot->getClass() != CLASS_HUNTER)
+    if (bot->HasAura(SPELL_INSIDIOUS_WHISPER))
         return false;
 
-    if (bot->HasAura(SPELL_INSIDIOUS_WHISPER))
+    if (bot->getClass() != CLASS_HUNTER)
         return false;
 
     return AI_VALUE2(Unit*, "find target", "leotheras the blind");

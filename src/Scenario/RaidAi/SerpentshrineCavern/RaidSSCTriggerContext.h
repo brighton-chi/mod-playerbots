@@ -65,6 +65,9 @@ public:
         creators["leotheras the blind boss transformed into demon form"] =
             &RaidSSCTriggerContext::leotheras_the_blind_boss_transformed_into_demon_form;
 
+        creators["leotheras the blind only warlock should tank demon form"] =
+            &RaidSSCTriggerContext::leotheras_the_blind_only_warlock_should_tank_demon_form;
+
         creators["leotheras the blind boss engaged by ranged"] =
             &RaidSSCTriggerContext::leotheras_the_blind_boss_engaged_by_ranged;
 
@@ -218,6 +221,9 @@ private:
 
     static Trigger* leotheras_the_blind_boss_transformed_into_demon_form(
         PlayerbotAI* botAI) { return new LeotherasTheBlindBossTransformedIntoDemonFormTrigger(botAI); }
+
+    static Trigger* leotheras_the_blind_only_warlock_should_tank_demon_form(
+        PlayerbotAI* botAI) { return new LeotherasTheBlindOnlyWarlockShouldTankDemonFormTrigger(botAI); }
 
     static Trigger* leotheras_the_blind_boss_engaged_by_ranged(
         PlayerbotAI* botAI) { return new LeotherasTheBlindBossEngagedByRangedTrigger(botAI); }

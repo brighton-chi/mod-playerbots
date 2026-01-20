@@ -246,20 +246,27 @@ namespace SerpentShrineCavernHelpers
                 return member;
         }
 
-        // (2) Second loop: Return the first Warlock bot with the tank strategy
+        // (2) Fall back to bot Warlock with highest HP
+        Player* highestHpWarlock = nullptr;
+        uint32 highestHp = 0;
+
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || member->getClass() != CLASS_WARLOCK)
+            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) ||
+                member->getClass() != CLASS_WARLOCK)
                 continue;
 
-            PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
-            if (memberAI && memberAI->HasStrategy("tank", BotState::BOT_STATE_COMBAT))
-                return member;
+            uint32 hp = member->GetMaxHealth();
+            if (!highestHpWarlock || hp > highestHp)
+            {
+                highestHpWarlock = member;
+                highestHp = hp;
+            }
         }
 
-        // (3) If no assistant or tank Warlock found, return nullptr
-        return nullptr;
+        // (3) Return the found Warlock tank, or nullptr if none found
+        return highestHpWarlock;
     }
 
     // Fathom-Lord Karathress

@@ -48,6 +48,8 @@ namespace SerpentShrineCavernHelpers
         SPELL_ENTANGLE               = 38316,
 
         // Druid
+        SPELL_CAT_FORM               =   768,
+        SPELL_BEAR_FORM              =  5487,
         SPELL_DIRE_BEAR_FORM         =  9634,
         SPELL_TREE_OF_LIFE           = 33891,
 
@@ -59,7 +61,6 @@ namespace SerpentShrineCavernHelpers
 
         // Shaman
         SPELL_GROUNDING_TOTEM_EFFECT =  8178,
-        SPELL_FROST_SHOCK            = 25464,
 
         // Warlock
         SPELL_CURSE_OF_EXHAUSTION    = 18223,

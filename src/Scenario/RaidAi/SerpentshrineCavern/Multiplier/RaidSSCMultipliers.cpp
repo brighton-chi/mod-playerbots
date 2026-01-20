@@ -6,6 +6,7 @@
 #include "DKActions.h"
 #include "DruidActions.h"
 #include "DruidBearActions.h"
+#include "DruidShapeshiftActions.h"
 #include "FollowActions.h"
 #include "GenericSpellActions.h"
 #include "HunterActions.h"
@@ -248,31 +249,26 @@ float LeotherasTheBlindAvoidWhirlwindMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-// Applies only if there is a Warlock tank
 float LeotherasTheBlindDisableTankActionsMultiplier::GetValue(Action* action)
 {
     if (!GetActiveLeotherasDemon(botAI))
         return 1.0f;
 
-    Player* demonFormTank = GetLeotherasDemonFormTank(botAI, bot);
-    if (!demonFormTank)
-        return 1.0f;
-
-    // (1) Warlock tank will not use Shadow Ward
-    // Shadow Ward is coded into the Warlock tank strategy (for Twin Emps) but is useless here
-    if (dynamic_cast<CastShadowWardAction*>(action))
-        return 0.0f;
-
-    // (2) Phase 2 only: disable tank assist for non-demon form tanks
-    // This is a fallback since there is an action that switches them to dps strategy
-    if (botAI->IsTank(bot) && bot != demonFormTank && GetPhase2LeotherasDemon(botAI))
+    if (GetLeotherasDemonFormTank(botAI, bot) == bot)
     {
-        /* if ((dynamic_cast<AttackAction*>(action) &&
-             !dynamic_cast<LeotherasTheBlindInnerDemonCheatAction*>(action)) ||
-             dynamic_cast<CastSpellAction*>(action))
-             return 0.0f; */
+        // (1) Warlock tank will not use Shadow Ward
+        // Shadow Ward is coded into the Warlock tank strategy (for Twin Emps) but is useless here
+        if (dynamic_cast<CastShadowWardAction*>(action))
+            return 0.0f;
 
-        if (dynamic_cast<TankAssistAction*>(action))
+        return 1.0f;
+    }
+
+    // (2) Phase 2 only: non-Warlock tanks should not attack Leotheras
+    if (botAI->IsTank(bot) && GetPhase2LeotherasDemon(botAI) &&
+        !bot->HasAura(SPELL_INSIDIOUS_WHISPER))
+    {
+        if (dynamic_cast<AttackAction*>(action))
             return 0.0f;
     }
 
@@ -290,7 +286,10 @@ float LeotherasTheBlindFocusOnInnerDemonMultiplier::GetValue(Action* action)
             dynamic_cast<CurePartyMemberAction*>(action) ||
             dynamic_cast<CastBuffSpellAction*>(action) ||
             dynamic_cast<ResurrectPartyMemberAction*>(action) ||
-            dynamic_cast<PartyMemberActionNameSupport*>(action))
+            dynamic_cast<PartyMemberActionNameSupport*>(action) ||
+            dynamic_cast<CastBearFormAction*>(action) ||
+            dynamic_cast<CastDireBearFormAction*>(action) ||
+            dynamic_cast<CastTreeFormAction*>(action))
             return 0.0f;
     }
 
@@ -580,10 +579,12 @@ float MorogrimTidewalkerMaintainPhase2StackingMultiplier::GetValue(Action* actio
 // Don't use other major cooldowns in Phase 1, either
 float LadyVashjDelayCooldownsMultiplier::GetValue(Action* action)
 {
+    if (!AI_VALUE2(Unit*, "find target", "lady vashj"))
+        return 1.0f;
+
     if (bot->getClass() == CLASS_SHAMAN)
     {
-        if (!AI_VALUE2(Unit*, "find target", "lady vashj") ||
-            IsLadyVashjInPhase3(botAI))
+        if (IsLadyVashjInPhase3(botAI))
             return 1.0f;
 
         if (dynamic_cast<CastBloodlustAction*>(action) ||
@@ -591,7 +592,7 @@ float LadyVashjDelayCooldownsMultiplier::GetValue(Action* action)
             return 0.0f;
     }
 
-    if (botAI->IsDps(bot) && !IsLadyVashjInPhase1(botAI))
+    if (botAI->IsDps(bot) && IsLadyVashjInPhase1(botAI))
     {
         if (dynamic_cast<CastMetamorphosisAction*>(action) ||
             dynamic_cast<CastAdrenalineRushAction*>(action) ||

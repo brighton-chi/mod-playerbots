@@ -149,6 +149,14 @@ public:
     bool IsActive() override;
 };
 
+class LeotherasTheBlindOnlyWarlockShouldTankDemonFormTrigger : public Trigger
+{
+public:
+    LeotherasTheBlindOnlyWarlockShouldTankDemonFormTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "leotheras the blind only warlock should tank demon form") {}
+    bool IsActive() override;
+};
+
 class LeotherasTheBlindBossTransformedIntoDemonFormTrigger : public Trigger
 {
 public:

@@ -59,6 +59,9 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("leotheras the blind boss transformed into demon form", {
         NextAction("leotheras the blind demon form tank attack boss", ACTION_EMERGENCY + 6) }));
 
+    triggers.push_back(new TriggerNode("leotheras the blind only warlock should tank demon form", {
+        NextAction("leotheras the blind melee tanks don't attack demon form", ACTION_RAID + 1) }));
+
     triggers.push_back(new TriggerNode("leotheras the blind boss engaged by ranged", {
         NextAction("leotheras the blind position ranged", ACTION_RAID + 1) }));
 
@@ -66,16 +69,16 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("leotheras the blind run away from whirlwind", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("leotheras the blind bot has too many chaos blast stacks", {
-        NextAction("leotheras the blind melee dps run away from boss", ACTION_EMERGENCY + 7) }));
+        NextAction("leotheras the blind melee dps run away from boss", ACTION_EMERGENCY + 6) }));
 
     triggers.push_back(new TriggerNode("leotheras the blind inner demon has awakened", {
-        NextAction("leotheras the blind destroy inner demon", ACTION_EMERGENCY + 6) }));
+        NextAction("leotheras the blind destroy inner demon", ACTION_EMERGENCY + 7) }));
 
     triggers.push_back(new TriggerNode("leotheras the blind entered final phase", {
-        NextAction("leotheras the blind final phase assign dps priority", ACTION_RAID + 2) }));
+        NextAction("leotheras the blind final phase assign dps priority", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("leotheras the blind demon form tank needs aggro", {
-        NextAction("leotheras the blind misdirect boss to demon form tank", ACTION_RAID + 3) }));
+        NextAction("leotheras the blind misdirect boss to demon form tank", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("leotheras the blind boss wipes aggro upon phase change", {
         NextAction("leotheras the blind manage dps wait timers", ACTION_EMERGENCY + 10) }));

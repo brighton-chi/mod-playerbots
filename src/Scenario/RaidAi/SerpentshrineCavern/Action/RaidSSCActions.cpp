@@ -14,47 +14,6 @@ using namespace SerpentShrineCavernHelpers;
 
 bool SerpentShrineCavernEraseTimersAndTrackersAction::Execute(Event event)
 {
-    if (botAI->IsHeal(bot, true))
-    {
-        if (bot->getClass() == CLASS_DRUID)
-        {
-            if (botAI->HasStrategy("caster", BotState::BOT_STATE_COMBAT))
-            {
-                botAI->ChangeStrategy("-caster", BotState::BOT_STATE_COMBAT);
-                botAI->ChangeStrategy("+heal", BotState::BOT_STATE_COMBAT);
-            }
-        }
-        if (bot->getClass() == CLASS_PALADIN)
-        {
-            if (botAI->HasStrategy("dps", BotState::BOT_STATE_COMBAT))
-            {
-                botAI->ChangeStrategy("-dps", BotState::BOT_STATE_COMBAT);
-                botAI->ChangeStrategy("+heal", BotState::BOT_STATE_COMBAT);
-            }
-        }
-        if (bot->getClass() == CLASS_PRIEST)
-        {
-            if (botAI->HasStrategy("holy dps", BotState::BOT_STATE_COMBAT))
-            {
-                botAI->ChangeStrategy("-holy dps", BotState::BOT_STATE_COMBAT);
-
-                uint8 tab = AiFactory::GetPlayerSpecTab(bot);
-                if (tab == PRIEST_TAB_DISCIPLINE)
-                    botAI->ChangeStrategy("+heal", BotState::BOT_STATE_COMBAT);
-                else
-                    botAI->ChangeStrategy("+holy heal", BotState::BOT_STATE_COMBAT);
-            }
-        }
-        if (bot->getClass() == CLASS_SHAMAN)
-        {
-            if (botAI->HasStrategy("ele", BotState::BOT_STATE_COMBAT))
-            {
-                botAI->ChangeStrategy("-ele", BotState::BOT_STATE_COMBAT);
-                botAI->ChangeStrategy("+resto", BotState::BOT_STATE_COMBAT);
-            }
-        }
-    }
-
     const uint32 instanceId = bot->GetMap()->GetInstanceId();
     const ObjectGuid guid = bot->GetGUID();
 
@@ -373,9 +332,10 @@ bool HydrossTheUnstableFrostPhaseSpreadOutAction::Execute(Event event)
             if (!member || member == bot || !member->IsAlive())
                 continue;
 
+            const float safeDistance = 6.0f;
             const uint32 minInterval = 1000;
-            if (bot->GetExactDist2d(member) < 6.0f)
-                return FleePosition(member->GetPosition(), 8.0f, minInterval);
+            if (bot->GetExactDist2d(member) < safeDistance)
+                return FleePosition(member->GetPosition(), safeDistance, minInterval);
         }
     }
 
@@ -778,7 +738,7 @@ bool LeotherasTheBlindDemonFormTankAttackBossAction::Execute(Event event)
         if (bot->GetTarget() != leotherasDemon->GetGUID())
             return Attack(leotherasDemon);
     }
-    else if (!GetLeotherasHuman(botAI))
+    else if (GetLeotherasHuman(botAI))
     {
         if (botAI->HasStrategy("tank", BotState::BOT_STATE_COMBAT))
             botAI->ChangeStrategy("-tank", BotState::BOT_STATE_COMBAT);
@@ -787,16 +747,26 @@ bool LeotherasTheBlindDemonFormTankAttackBossAction::Execute(Event event)
     return false;
 }
 
+// Stop melee tanks from attacking upon transformation so they don't take aggro
+// Applies only if there is a Warlock tank present
+bool LeotherasTheBlindMeleeTanksDontAttackDemonFormAction::Execute(Event event)
+{
+    bot->AttackStop();
+    botAI->Reset();
+    return true;
+}
+
 // Intent is to keep enough distance from Leotheras and spread to prepare for Whirlwind
 // And stay away from the Warlock tank to avoid Chaos Blasts
 bool LeotherasTheBlindPositionRangedAction::Execute(Event event)
 {
+    const float safeDistFromBoss = 15.0f;
     Unit* leotherasHuman = GetLeotherasHuman(botAI);
-    if (leotherasHuman && bot->GetExactDist2d(leotherasHuman) < 10.0f &&
-        leotherasHuman->GetVictim() != bot && !bot->HasAura(SPELL_INSIDIOUS_WHISPER))
+    if (leotherasHuman && bot->GetExactDist2d(leotherasHuman) < safeDistFromBoss &&
+        leotherasHuman->GetVictim() != bot)
     {
         const uint32 minInterval = 500;
-        return FleePosition(leotherasHuman->GetPosition(), 12.0f, minInterval);
+        return FleePosition(leotherasHuman->GetPosition(), safeDistFromBoss, minInterval);
     }
 
     Group* group = bot->GetGroup();
@@ -814,11 +784,16 @@ bool LeotherasTheBlindPositionRangedAction::Execute(Event event)
             const uint32 minInterval = 0;
             if (GetLeotherasDemonFormTank(botAI, bot) == member)
             {
-                if (bot->GetExactDist2d(member) < 10.0f)
-                    return FleePosition(member->GetPosition(), 12.0f, minInterval);
+                const float safeDistFromTank = 10.0f;
+                if (bot->GetExactDist2d(member) < safeDistFromTank)
+                    return FleePosition(member->GetPosition(), safeDistFromTank, minInterval);
             }
-            else if (!bot->HasAura(SPELL_INSIDIOUS_WHISPER) && bot->GetExactDist2d(member) < 5.0f)
-                return FleePosition(member->GetPosition(), 6.0f, minInterval);
+            else
+            {
+                const float safeDistFromMember = 6.0f;
+                if (bot->GetExactDist2d(member) < safeDistFromMember)
+                    return FleePosition(member->GetPosition(), safeDistFromMember, minInterval);
+            }
         }
     }
 
@@ -830,11 +805,11 @@ bool LeotherasTheBlindRunAwayFromWhirlwindAction::Execute(Event event)
     if (Unit* leotherasHuman = GetLeotherasHuman(botAI))
     {
         float currentDistance = bot->GetExactDist2d(leotherasHuman);
-        const float safeDistance = 20.0f;
+        const float safeDistance = 25.0f;
         if (currentDistance < safeDistance)
         {
             botAI->Reset();
-            return MoveAway(leotherasHuman, safeDistance - currentDistance + 5.0f);
+            return MoveAway(leotherasHuman, safeDistance - currentDistance);
         }
     }
 
@@ -859,102 +834,15 @@ bool LeotherasTheBlindMeleeDpsRunAwayFromBossAction::Execute(Event event)
     {
         botAI->Reset();
         if (demonVictim != bot)
-            return MoveAway(demonVictim, safeDistance - currentDistance + 1.0f);
+            return MoveAway(demonVictim, safeDistance - currentDistance);
     }
-    else if (!bot->HasAura(SPELL_INSIDIOUS_WHISPER))
-        return true;
 
     return false;
 }
 
-// (1) When leotheras is in phase 2, bots with a tank strategy will switch to a dps strategy
-// (2) When leotheras is not in phase 2, bots with a tank spec will switch to a tank strategy
-// (3) When an inner demon is found that is associated with a bot's guid, bots with a healing strategy
-//     will switch to a dps strategy, and all bots will attack their associated inner demon
-// (4) When an inner demon is not found that is associated with a bot's guid,
-//     bots with a healing spec will switch to a healing strategy
-// Note: Second parameter of role checks is true if determined by strategy, false if determined by spec
+// Hardcoded actions for healers and bear tanks to kill Inner Demons
 bool LeotherasTheBlindDestroyInnerDemonAction::Execute(Event event)
 {
-    if (GetPhase2LeotherasDemon(botAI))
-    {
-        if (botAI->IsTank(bot, false))
-        {
-            if (bot->getClass() == CLASS_DEATH_KNIGHT)
-            {
-                if (botAI->HasStrategy("blood", BotState::BOT_STATE_COMBAT))
-                {
-                    botAI->ChangeStrategy("-blood", BotState::BOT_STATE_COMBAT);
-                    botAI->ChangeStrategy("+frost", BotState::BOT_STATE_COMBAT);
-                }
-            }
-            if (bot->getClass() == CLASS_DRUID)
-            {
-                if (botAI->HasStrategy("bear", BotState::BOT_STATE_COMBAT))
-                {
-                    botAI->ChangeStrategy("-bear", BotState::BOT_STATE_COMBAT);
-                    botAI->ChangeStrategy("+cat", BotState::BOT_STATE_COMBAT);
-                }
-                if (bot->HasAura(SPELL_DIRE_BEAR_FORM))
-                    bot->RemoveAura(SPELL_DIRE_BEAR_FORM);
-            }
-            if (bot->getClass() == CLASS_PALADIN)
-            {
-                if (botAI->HasStrategy("tank", BotState::BOT_STATE_COMBAT))
-                {
-                    botAI->ChangeStrategy("-tank", BotState::BOT_STATE_COMBAT);
-                    botAI->ChangeStrategy("+dps", BotState::BOT_STATE_COMBAT);
-                }
-            }
-            if (bot->getClass() == CLASS_WARRIOR)
-            {
-                if (botAI->HasStrategy("tank", BotState::BOT_STATE_COMBAT))
-                {
-                    botAI->ChangeStrategy("-tank", BotState::BOT_STATE_COMBAT);
-                    botAI->ChangeStrategy("+arms", BotState::BOT_STATE_COMBAT);
-                }
-            }
-        }
-    }
-    else
-    {
-        if (botAI->IsTank(bot, true))
-        {
-            if (bot->getClass() == CLASS_DEATH_KNIGHT)
-            {
-                if (botAI->HasStrategy("frost", BotState::BOT_STATE_COMBAT))
-                {
-                    botAI->ChangeStrategy("-frost", BotState::BOT_STATE_COMBAT);
-                    botAI->ChangeStrategy("+blood", BotState::BOT_STATE_COMBAT);
-                }
-            }
-            if (bot->getClass() == CLASS_DRUID)
-            {
-                if (botAI->HasStrategy("cat", BotState::BOT_STATE_COMBAT))
-                {
-                    botAI->ChangeStrategy("-cat", BotState::BOT_STATE_COMBAT);
-                    botAI->ChangeStrategy("+bear", BotState::BOT_STATE_COMBAT);
-                }
-            }
-            if (bot->getClass() == CLASS_PALADIN)
-            {
-                if (botAI->HasStrategy("dps", BotState::BOT_STATE_COMBAT))
-                {
-                    botAI->ChangeStrategy("-dps", BotState::BOT_STATE_COMBAT);
-                    botAI->ChangeStrategy("+tank", BotState::BOT_STATE_COMBAT);
-                }
-            }
-            if (bot->getClass() == CLASS_WARRIOR)
-            {
-                if (botAI->HasStrategy("arms", BotState::BOT_STATE_COMBAT))
-                {
-                    botAI->ChangeStrategy("-arms", BotState::BOT_STATE_COMBAT);
-                    botAI->ChangeStrategy("+tank", BotState::BOT_STATE_COMBAT);
-                }
-            }
-        }
-    }
-
     Unit* innerDemon = nullptr;
     auto const& npcs =
         botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
@@ -972,92 +860,109 @@ bool LeotherasTheBlindDestroyInnerDemonAction::Execute(Event event)
 
     if (innerDemon)
     {
-        // False = determine role by current strategy
-        if (botAI->IsHeal(bot, false))
-        {
-            if (bot->getClass() == CLASS_DRUID)
-            {
-                if (botAI->HasStrategy("heal", BotState::BOT_STATE_COMBAT))
-                {
-                    botAI->ChangeStrategy("-heal", BotState::BOT_STATE_COMBAT);
-                    botAI->ChangeStrategy("+caster", BotState::BOT_STATE_COMBAT);
-                }
-                if (bot->HasAura(SPELL_TREE_OF_LIFE))
-                    bot->RemoveAura(SPELL_TREE_OF_LIFE);
-            }
-            if (bot->getClass() == CLASS_PALADIN)
-            {
-                if (botAI->HasStrategy("heal", BotState::BOT_STATE_COMBAT))
-                {
-                    botAI->ChangeStrategy("-heal", BotState::BOT_STATE_COMBAT);
-                    botAI->ChangeStrategy("+dps", BotState::BOT_STATE_COMBAT);
-                }
-            }
-            if (bot->getClass() == CLASS_PRIEST)
-            {
-                if (botAI->HasStrategy("heal", BotState::BOT_STATE_COMBAT) ||
-                    botAI->HasStrategy("holy heal", BotState::BOT_STATE_COMBAT))
-                {
-                    botAI->ChangeStrategy("-heal", BotState::BOT_STATE_COMBAT);
-                    botAI->ChangeStrategy("-holy heal", BotState::BOT_STATE_COMBAT);
-                    botAI->ChangeStrategy("+holy dps", BotState::BOT_STATE_COMBAT);
-                }
-            }
-            if (bot->getClass() == CLASS_SHAMAN)
-            {
-                if (botAI->HasStrategy("resto", BotState::BOT_STATE_COMBAT))
-                {
-                    botAI->ChangeStrategy("-resto", BotState::BOT_STATE_COMBAT);
-                    botAI->ChangeStrategy("+ele", BotState::BOT_STATE_COMBAT);
-                }
-            }
-        }
-
+        // Everybody needs to focus on their Inner Demons; dps assist is disabled
+        // via multipliers
         if (bot->GetTarget() != innerDemon->GetGUID())
             return Attack(innerDemon);
-    }
-    else
-    {
-        if (botAI->IsHeal(bot, true))
-        {
-            if (bot->getClass() == CLASS_DRUID)
-            {
-                if (botAI->HasStrategy("caster", BotState::BOT_STATE_COMBAT))
-                {
-                    botAI->ChangeStrategy("-caster", BotState::BOT_STATE_COMBAT);
-                    botAI->ChangeStrategy("+heal", BotState::BOT_STATE_COMBAT);
-                }
-            }
-            if (bot->getClass() == CLASS_PALADIN)
-            {
-                if (botAI->HasStrategy("dps", BotState::BOT_STATE_COMBAT))
-                {
-                    botAI->ChangeStrategy("-dps", BotState::BOT_STATE_COMBAT);
-                    botAI->ChangeStrategy("+heal", BotState::BOT_STATE_COMBAT);
-                }
-            }
-            if (bot->getClass() == CLASS_PRIEST)
-            {
-                if (botAI->HasStrategy("holy dps", BotState::BOT_STATE_COMBAT))
-                {
-                    botAI->ChangeStrategy("-holy dps", BotState::BOT_STATE_COMBAT);
 
-                    uint8 tab = AiFactory::GetPlayerSpecTab(bot);
-                    if (tab == PRIEST_TAB_DISCIPLINE)
-                        botAI->ChangeStrategy("+heal", BotState::BOT_STATE_COMBAT);
-                    else
-                        botAI->ChangeStrategy("+holy heal", BotState::BOT_STATE_COMBAT);
-                }
-            }
-            if (bot->getClass() == CLASS_SHAMAN)
-            {
-                if (botAI->HasStrategy("ele", BotState::BOT_STATE_COMBAT))
-                {
-                    botAI->ChangeStrategy("-ele", BotState::BOT_STATE_COMBAT);
-                    botAI->ChangeStrategy("+resto", BotState::BOT_STATE_COMBAT);
-                }
-            }
-        }
+        if (botAI->IsTank(bot) && bot->getClass() == CLASS_DRUID)
+            return HandleFeralTankStrategy(innerDemon);
+
+        if (botAI->IsHeal(bot))
+            return HandleHealerStrategy(innerDemon);
+    }
+
+    return false;
+}
+
+// At 50% nerfed damage, bears have trouble killing their Inner Demons without a specific strategy
+// Warrior and Paladin tanks have no trouble in my experience (Prot Warriors have high DPS, and
+// Prot Paladins have an advantage in that Inner Demons are weak to Holy)
+bool LeotherasTheBlindDestroyInnerDemonAction::HandleFeralTankStrategy(Unit* innerDemon)
+{
+    if (bot->HasAura(SPELL_DIRE_BEAR_FORM))
+        bot->RemoveAura(SPELL_DIRE_BEAR_FORM);
+
+    if (bot->HasAura(SPELL_BEAR_FORM))
+        bot->RemoveAura(SPELL_BEAR_FORM);
+
+    bool casted = false;
+
+    if (!bot->HasAura(SPELL_CAT_FORM) && botAI->CanCastSpell("cat form", bot))
+        casted |= botAI->CastSpell("cat form", bot);
+
+    if (bot->GetComboPoints() >= 4 && botAI->CanCastSpell("ferocious bite", innerDemon))
+        casted |= botAI->CastSpell("ferocious bite", innerDemon);
+
+    if (!botAI->HasAura("rake", innerDemon) && botAI->CanCastSpell("rake", innerDemon))
+        casted |= botAI->CastSpell("rake", innerDemon);
+
+    if (botAI->CanCastSpell("mangle (cat)", innerDemon))
+        casted |= botAI->CastSpell("mangle (cat)", innerDemon);
+
+    return casted;
+}
+
+bool LeotherasTheBlindDestroyInnerDemonAction::HandleHealerStrategy(Unit* innerDemon)
+{
+    if (bot->getClass() == CLASS_DRUID)
+    {
+        if (bot->HasAura(SPELL_TREE_OF_LIFE))
+            bot->RemoveAura(SPELL_TREE_OF_LIFE);
+
+        bool casted = false;
+
+        if (botAI->CanCastSpell("barkskin", bot))
+            casted |= botAI->CastSpell("barkskin", bot);
+
+        if (botAI->CanCastSpell("wrath", innerDemon))
+            casted |= botAI->CastSpell("wrath", innerDemon);
+
+        return casted;
+    }
+    else if (bot->getClass() == CLASS_PALADIN)
+    {
+        bool casted = false;
+
+        if (botAI->CanCastSpell("avenging wrath", bot))
+            casted |= botAI->CastSpell("avenging wrath", bot);
+
+        if (botAI->CanCastSpell("consecration", bot))
+            casted |= botAI->CastSpell("consecration", bot);
+
+        if (botAI->CanCastSpell("exorcism", innerDemon))
+            casted |= botAI->CastSpell("exorcism", innerDemon);
+
+        if (botAI->CanCastSpell("hammer of wrath", innerDemon))
+            casted |= botAI->CastSpell("hammer of wrath", innerDemon);
+
+        if (botAI->CanCastSpell("holy shock", innerDemon))
+            casted |= botAI->CastSpell("holy shock", innerDemon);
+
+        if (botAI->CanCastSpell("judgment of light", innerDemon))
+            casted |= botAI->CastSpell("judgment of light", innerDemon);
+
+        return casted;
+    }
+    else if (bot->getClass() == CLASS_PRIEST)
+    {
+        if (botAI->CanCastSpell("smite", innerDemon))
+            return botAI->CastSpell("smite", innerDemon);
+    }
+    else if (bot->getClass() == CLASS_SHAMAN)
+    {
+        bool casted = false;
+
+        if (botAI->CanCastSpell("earth shock", innerDemon))
+            casted |= botAI->CastSpell("earth shock", innerDemon);
+
+        if (botAI->CanCastSpell("chain lightning", innerDemon))
+            casted |= botAI->CastSpell("chain lightning", innerDemon);
+
+        if (botAI->CanCastSpell("lightning bolt", innerDemon))
+            casted |= botAI->CastSpell("lightning bolt", innerDemon);
+
+        return casted;
     }
 
     return false;
@@ -1098,6 +1003,7 @@ bool LeotherasTheBlindFinalPhaseAssignDpsPriorityAction::Execute(Event event)
     return false;
 }
 
+// Will Misdirect to main tank if there is no Warlock tank
 bool LeotherasTheBlindMisdirectBossToDemonFormTankAction::Execute(Event event)
 {
     Unit* leotherasDemon = GetActiveLeotherasDemon(botAI);
@@ -1105,11 +1011,29 @@ bool LeotherasTheBlindMisdirectBossToDemonFormTankAction::Execute(Event event)
         return false;
 
     Player* demonFormTank = GetLeotherasDemonFormTank(botAI, bot);
-    if (!demonFormTank)
+    Player* targetTank = demonFormTank;
+
+    if (!targetTank)
+    {
+        if (Group* group = bot->GetGroup())
+        {
+            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+            {
+                Player* member = ref->GetSource();
+                if (member && member->IsAlive() && botAI->IsMainTank(member))
+                {
+                    targetTank = member;
+                    break;
+                }
+            }
+        }
+    }
+
+    if (!targetTank)
         return false;
 
-    if (botAI->CanCastSpell("misdirection", demonFormTank))
-        return botAI->CastSpell("misdirection", demonFormTank);
+    if (botAI->CanCastSpell("misdirection", targetTank))
+        return botAI->CastSpell("misdirection", targetTank);
 
     if (bot->HasAura(SPELL_MISDIRECTION) && botAI->CanCastSpell("steady shot", leotherasDemon))
         return botAI->CastSpell("steady shot", leotherasDemon);
@@ -2230,7 +2154,7 @@ bool LadyVashjTankAttackAndMoveAwayStriderAction::Execute(Event event)
                 return botAI->CastSpell("heavy netherweave net", strider);
         }
 
-        if (!strider->HasAura(SPELL_FROST_SHOCK) && bot->getClass() == CLASS_SHAMAN &&
+        if (!botAI->HasAura("frost shock", strider) && bot->getClass() == CLASS_SHAMAN &&
             botAI->CanCastSpell("frost shock", strider))
             return botAI->CastSpell("frost shock", strider);
 

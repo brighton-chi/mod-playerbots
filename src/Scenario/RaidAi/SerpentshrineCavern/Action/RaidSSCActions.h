@@ -163,6 +163,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class LeotherasTheBlindMeleeTanksDontAttackDemonFormAction : public Action
+{
+public:
+    LeotherasTheBlindMeleeTanksDontAttackDemonFormAction(
+        PlayerbotAI* botAI, std::string const name = "leotheras the blind melee tanks don't attack demon form") : Action(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 class LeotherasTheBlindRunAwayFromWhirlwindAction : public MovementAction
 {
 public:
@@ -185,6 +193,10 @@ public:
     LeotherasTheBlindDestroyInnerDemonAction(
         PlayerbotAI* botAI, std::string const name = "leotheras the blind destroy inner demon") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
+
+private:
+    bool HandleFeralTankStrategy(Unit* innerDemon);
+    bool HandleHealerStrategy(Unit* innerDemon);
 };
 
 class LeotherasTheBlindFinalPhaseAssignDpsPriorityAction : public AttackAction
