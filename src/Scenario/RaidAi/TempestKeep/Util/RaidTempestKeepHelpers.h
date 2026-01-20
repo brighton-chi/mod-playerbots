@@ -38,11 +38,6 @@ namespace TempestKeepHelpers
         // Hunter
         SPELL_MISDIRECTION              = 35079,
 
-        // Mage
-        SPELL_POLYMORPH_SHEEP           = 12826,
-        SPELL_POLYMORPH_TURTLE          = 28271,
-        SPELL_POLYMORPH_PIG             = 28272,
-
         // Priest
         SPELL_FEAR_WARD                 =  6346,
     };

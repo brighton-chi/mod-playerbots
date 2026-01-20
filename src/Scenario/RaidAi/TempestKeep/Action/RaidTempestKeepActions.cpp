@@ -39,9 +39,7 @@ bool CrimsonHandCenturionCastPolymorphAction::Execute(Event event)
 
     if (centurion->GetHealth() == centurion->GetMaxHealth())
     {
-        if (!centurion->HasAura(SPELL_POLYMORPH_SHEEP) &&
-            !centurion->HasAura(SPELL_POLYMORPH_TURTLE) &&
-            !centurion->HasAura(SPELL_POLYMORPH_PIG))
+        if (!botAI->HasAura("polymorph", centurion))
         {
             if (botAI->CanCastSpell("polymorph", centurion))
                 return botAI->CastSpell("polymorph", centurion);
@@ -674,7 +672,10 @@ bool AlarManagePhaseTrackerAction::Execute(Event event)
     const uint32 instanceId = alar->GetMap()->GetInstanceId();
 
     if (alar->GetHealthPct() > 99.5f && alar->GetPositionZ() >= ALAR_BALCONY_Z)
-        isAlarInPhase2[instanceId] = false;
+    {
+        isAlarInPhase2.erase(instanceId);
+        lastRebirthState.erase(instanceId);
+    }
 
     bool rebirthActive = alar->HasUnitState(UNIT_STATE_CASTING) &&
                          alar->FindCurrentSpellBySpellId(SPELL_REBIRTH_PHASE2);
@@ -1436,7 +1437,7 @@ bool KaelthasSunstriderHandleAdvisorRolesInPhase3Action::Execute(Event event)
 
 bool KaelthasSunstriderReequipGearAction::Execute(Event event)
 {
-    return botAI->DoSpecificAction("equip upgrades", Event(), true);
+    return botAI->DoSpecificAction("equip upgrade", Event(), true);
 }
 
 bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
@@ -1836,7 +1837,7 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::LootWeapon(
             receiver->GetSession()->QueuePacket(packet);
         }, 600);
 
-        botAI->DoSpecificAction("equip upgrades", Event(), true);
+        botAI->DoSpecificAction("equip upgrade", Event(), true);
         return true;
     }
 
