@@ -54,7 +54,7 @@ bool AlarBossIsFlyingBetweenPlatformsTrigger::IsActive()
 
 bool AlarEmbersOfAlarExplodeUponDeathTrigger::IsActive()
 {
-    return !botAI->IsTank(bot) &&
+    return botAI->IsTank(bot) &&
            AI_VALUE2(Unit*, "find target", "ember of al'ar");
 }
 
