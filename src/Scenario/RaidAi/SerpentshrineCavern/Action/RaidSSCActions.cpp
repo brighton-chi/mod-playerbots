@@ -820,6 +820,9 @@ bool LeotherasTheBlindRunAwayFromWhirlwindAction::Execute(Event event)
 // If a melee tank is used, other melee needs to run away after too many Chaos Blast stacks
 bool LeotherasTheBlindMeleeDpsRunAwayFromBossAction::Execute(Event event)
 {
+    if (botAI->CanCastSpell("cloak of shadows", bot))
+        return botAI->CastSpell("cloak of shadows", bot);
+
     Unit* leotherasPhase2Demon = GetPhase2LeotherasDemon(botAI);
     if (!leotherasPhase2Demon)
         return false;
@@ -894,7 +897,8 @@ bool LeotherasTheBlindDestroyInnerDemonAction::HandleFeralTankStrategy(Unit* inn
     if (bot->GetComboPoints() >= 4 && botAI->CanCastSpell("ferocious bite", innerDemon))
         casted |= botAI->CastSpell("ferocious bite", innerDemon);
 
-    if (!botAI->HasAura("rake", innerDemon) && botAI->CanCastSpell("rake", innerDemon))
+    if (bot->GetComboPoints() == 0 && innerDemon->GetHealthPct() > 20.0f &&
+        botAI->CanCastSpell("rake", innerDemon))
         casted |= botAI->CastSpell("rake", innerDemon);
 
     if (botAI->CanCastSpell("mangle (cat)", innerDemon))
@@ -1003,7 +1007,7 @@ bool LeotherasTheBlindFinalPhaseAssignDpsPriorityAction::Execute(Event event)
     return false;
 }
 
-// Will Misdirect to main tank if there is no Warlock tank
+// Misdirect to Warlock tank or to main tank if there is no Warlock tank
 bool LeotherasTheBlindMisdirectBossToDemonFormTankAction::Execute(Event event)
 {
     Unit* leotherasDemon = GetActiveLeotherasDemon(botAI);
