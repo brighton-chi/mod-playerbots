@@ -641,12 +641,11 @@ bool AlarAvoidFlamePatchesAndDiveBombsAction::HandleDiveBomb(Unit* alar)
             GetAlarDestinationLocationIndex(alar, dest) == POINT_QUILL_OR_DIVE_IDX)
         {
             const float safeDistance = 10.0f;
-            Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
-            if (nearestPlayer)
+            if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
             {
                 const uint32 minInterval = 0;
-                return FleePosition(Position(nearestPlayer->GetPositionX(), nearestPlayer->GetPositionY(),
-                                             nearestPlayer->GetPositionZ()), safeDistance, minInterval);
+                return FleePosition(Position(nearestPlayer->GetPosition()), 
+                                    safeDistance, minInterval);
             }
         }
     }
@@ -1302,12 +1301,11 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::RangedBotsDisperse(
     }
 
     const float safeDistance = 6.0f;
-    Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
-    if (nearestPlayer)
+    if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
     {
         const uint32 minInterval = 1000;
-        return FleePosition(Position(nearestPlayer->GetPositionX(), nearestPlayer->GetPositionY(),
-                                     nearestPlayer->GetPositionZ()), safeDistance, minInterval);
+        return FleePosition(Position(nearestPlayer->GetPosition()), 
+                            safeDistance, minInterval);
     }
 
     return false;
