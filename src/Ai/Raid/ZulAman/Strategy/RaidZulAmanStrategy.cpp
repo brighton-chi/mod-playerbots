@@ -88,8 +88,8 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("zul'jin boss casts aoe abilities", {
         NextAction("zul'jin spread ranged", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("zul'jin boss is charging players in lynx form", {
-        NextAction("zul'jin move near group", ACTION_RAID + 1) }));
+    // triggers.push_back(new TriggerNode("zul'jin boss is charging players in lynx form", {
+    //     NextAction("zul'jin move near group", ACTION_RAID + 1) }));
 }
 
 void RaidZulAmanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
@@ -120,5 +120,5 @@ void RaidZulAmanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new ZuljinDisableTankFaceMultiplier(botAI));
     multipliers.push_back(new ZuljinAvoidWhirlwindMultiplier(botAI));
     multipliers.push_back(new ZuljinDelayBloodlustAndHeroismMultiplier(botAI));
-    multipliers.push_back(new ZuljinStayCloseToLynxFormMultiplier(botAI));
+    // multipliers.push_back(new ZuljinStayCloseToLynxFormMultiplier(botAI));
 }

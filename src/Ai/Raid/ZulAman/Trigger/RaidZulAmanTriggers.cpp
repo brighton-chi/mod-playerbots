@@ -25,10 +25,10 @@ bool AkilzonPullingBossTrigger::IsActive()
 
 bool AkilzonBossEngagedByMainTankTrigger::IsActive()
 {
-    if (!botAI->IsMainTank(bot))
+    if (!AI_VALUE2(Unit*, "find target", "akil'zon"))
         return false;
 
-    if (!AI_VALUE2(Unit*, "find target", "akil'zon"))
+    if (!botAI->IsMainTank(bot))
         return false;
 
     return !AnyGroupMemberHasElectricalStorm(bot);
@@ -66,10 +66,10 @@ bool NalorakkPullingBossTrigger::IsActive()
 
 bool NalorakkBossSwitchesFormsTrigger::IsActive()
 {
-    if (!botAI->IsMainTank(bot) && !botAI->IsAssistTankOfIndex(bot, 0))
+    if (!AI_VALUE2(Unit*, "find target", "nalorakk"))
         return false;
 
-    return AI_VALUE2(Unit*, "find target", "nalorakk");
+    return botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0);
 }
 
 bool NalorakkBossCastsSurgeTrigger::IsActive()
@@ -93,16 +93,13 @@ bool JanalaiPullingBossTrigger::IsActive()
 
 bool JanalaiBossEngagedByMainTankTrigger::IsActive()
 {
-    if (!botAI->IsMainTank(bot))
-        return false;
-
     if (!AI_VALUE2(Unit*, "find target", "jan'alai"))
         return false;
 
-    if (AnyNearbyNpcWithEntry(botAI, NPC_FIRE_BOMB))
+    if (!botAI->IsMainTank(bot))
         return false;
 
-    return true;
+    return !AnyNearbyNpcWithEntry(botAI, NPC_FIRE_BOMB);
 }
 
 bool JanalaiBossCastsFlameBreathTrigger::IsActive()
@@ -116,18 +113,15 @@ bool JanalaiBossCastsFlameBreathTrigger::IsActive()
     if (GetFirstAliveUnitByEntry(botAI, NPC_AMANI_DRAGONHAWK_HATCHLING))
         return false;
 
-    if (AnyNearbyNpcWithEntry(botAI, NPC_FIRE_BOMB))
-        return false;
-
-    return true;
+    return !AnyNearbyNpcWithEntry(botAI, NPC_FIRE_BOMB);
 }
 
 bool JanalaiRangedBotIsNotInCombatTrigger::IsActive()
 {
-    if (AI_VALUE2(Unit*, "find target", "jan'alai"))
+    if (bot->IsInCombat() || !botAI->IsRanged(bot))
         return false;
 
-    return botAI->IsRanged(bot) && !bot->IsInCombat();
+    return !AI_VALUE2(Unit*, "find target", "jan'alai");
 }
 
 bool JanalaiBossSummoningFireBombsTrigger::IsActive()
@@ -159,18 +153,18 @@ bool HalazziPullingBossTrigger::IsActive()
 
 bool HalazziBossEngagedByMainTankTrigger::IsActive()
 {
-    if (!botAI->IsMainTank(bot))
+    if (!AI_VALUE2(Unit*, "find target", "halazzi"))
         return false;
 
-    return AI_VALUE2(Unit*, "find target", "halazzi");
+    return botAI->IsMainTank(bot);
 }
 
 bool HalazziBossSummonsSpiritLynxTrigger::IsActive()
 {
-    if (!botAI->IsAssistTankOfIndex(bot, 0))
+    if (!AI_VALUE2(Unit*, "find target", "halazzi"))
         return false;
 
-    return AI_VALUE2(Unit*, "find target", "halazzi");
+    return botAI->IsAssistTankOfIndex(bot, 0, true);
 }
 
 bool HalazziDeterminingDpsTargetTrigger::IsActive()
@@ -258,20 +252,20 @@ bool ZuljinMainTankNeedsAggroUponPullOrPhaseChangeTrigger::IsActive()
 
 bool ZuljinBossEngagedByMainTankTrigger::IsActive()
 {
-    if (!botAI->IsMainTank(bot))
+    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
+    if (!zuljin || zuljin->HasAura(SPELL_SHAPE_OF_THE_EAGLE))
         return false;
 
-    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
-    return zuljin && !zuljin->HasAura(SPELL_SHAPE_OF_THE_EAGLE);
+    return botAI->IsMainTank(bot);
 }
 
 bool ZuljinBossIsChannelingWhirlwindInTrollFormTrigger::IsActive()
 {
-    if (botAI->IsMainTank(bot))
+    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
+    if (!zuljin || !zuljin->HasAura(SPELL_WHIRLWIND)
         return false;
 
-    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
-    return zuljin && zuljin->HasAura(SPELL_WHIRLWIND);
+    return !botAI->IsMainTank(bot);
 }
 
 bool ZuljinBossCastsAoeAbilitiesTrigger::IsActive()
@@ -285,9 +279,9 @@ bool ZuljinBossCastsAoeAbilitiesTrigger::IsActive()
 
 bool ZuljinBossIsChargingPlayersInLynxFormTrigger::IsActive()
 {
-    if (botAI->IsMainTank(bot))
+    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
+    if (!zuljin || !zuljin->HasAura(SPELL_SHAPE_OF_THE_LYNX))
         return false;
 
-    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
-    return zuljin && zuljin->HasAura(SPELL_SHAPE_OF_THE_LYNX);
+    return !botAI->IsMainTank(bot);
 }

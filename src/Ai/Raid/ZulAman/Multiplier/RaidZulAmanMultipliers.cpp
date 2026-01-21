@@ -65,11 +65,11 @@ float NalorakkDisableTankActionsMultiplier::GetValue(Action* action)
     if (!nalorakk)
         return 1.0f;
 
-    if (bot->GetVictim() == nullptr)
-        return 1.0f;
-
     if (dynamic_cast<TankFaceAction*>(action))
         return 0.0f;
+    
+    if (bot->GetVictim() == nullptr)
+        return 1.0f;
 
     if ((!nalorakk->HasAura(SPELL_BEARFORM) && botAI->IsAssistTankOfIndex(bot, 0)) ||
         (nalorakk->HasAura(SPELL_BEARFORM) && botAI->IsMainTank(bot)))
@@ -109,11 +109,11 @@ float JanalaiDisableTankActionsMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "jan'alai"))
         return 1.0f;
 
-    if (bot->GetVictim() == nullptr)
-        return 1.0f;
-
     if (dynamic_cast<TankFaceAction*>(action))
         return 0.0f;
+    
+    if (bot->GetVictim() == nullptr)
+        return 1.0f;
 
     if (botAI->IsMainTank(bot) ||
         (botAI->IsAssistTank(bot) &&
