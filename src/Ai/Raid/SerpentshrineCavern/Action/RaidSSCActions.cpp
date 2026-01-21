@@ -20,29 +20,40 @@ bool SerpentShrineCavernEraseTimersAndTrackersAction::Execute(Event event)
     bool erased = false;
     if (!AI_VALUE2(Unit*, "find target", "hydross the unstable"))
     {
-        erased |= hydrossChangeToNaturePhaseTimer.erase(instanceId) > 0;
-        erased |= hydrossChangeToFrostPhaseTimer.erase(instanceId) > 0;
-        erased |= hydrossNatureDpsWaitTimer.erase(instanceId) > 0;
-        erased |= hydrossFrostDpsWaitTimer.erase(instanceId) > 0;
+        if (hydrossChangeToNaturePhaseTimer.erase(instanceId) > 0)
+            erased = true;
+        if (hydrossChangeToFrostPhaseTimer.erase(instanceId) > 0)
+            erased = true;
+        if (hydrossNatureDpsWaitTimer.erase(instanceId) > 0)
+            erased = true;
+        if (hydrossFrostDpsWaitTimer.erase(instanceId) > 0)
+            erased = true;
     }
     if (!AI_VALUE2(Unit*, "find target", "the lurker below"))
     {
-        erased |= lurkerRangedPositions.erase(guid) > 0;
-        erased |= lurkerSpoutTimer.erase(instanceId) > 0;
+        if (lurkerRangedPositions.erase(guid) > 0)
+            erased = true;
+        if (lurkerSpoutTimer.erase(instanceId) > 0)
+            erased = true;
     }
     if (!AI_VALUE2(Unit*, "find target", "fathom-lord karathress"))
     {
-        erased |= karathressDpsWaitTimer.erase(instanceId) > 0;
+        if (karathressDpsWaitTimer.erase(instanceId) > 0)
+            erased = true;
     }
     if (!AI_VALUE2(Unit*, "find target", "morogrim tidewalker"))
     {
-        erased |= tidewalkerTankStep.erase(guid) > 0;
-        erased |= tidewalkerRangedStep.erase(guid) > 0;
+        if (tidewalkerTankStep.erase(guid) > 0)
+            erased = true;
+        if (tidewalkerRangedStep.erase(guid) > 0)
+            erased = true;
     }
     if (!AI_VALUE2(Unit*, "find target", "lady vashj"))
     {
-        erased |= vashjRangedPositions.erase(guid) > 0;
-        erased |= hasReachedVashjRangedPosition.erase(guid) > 0;
+        if (vashjRangedPositions.erase(guid) > 0)
+            erased = true;
+        if (hasReachedVashjRangedPosition.erase(guid) > 0)
+            erased = true;
     }
 
     return erased;
@@ -470,20 +481,31 @@ bool HydrossTheUnstableManageTimersAction::Execute(Event event)
     bool changed = false;
     if (!hydross->HasAura(SPELL_CORRUPTION))
     {
-        changed |= hydrossFrostDpsWaitTimer.try_emplace(instanceId, now).second;
-        changed |= hydrossNatureDpsWaitTimer.erase(instanceId) > 0;
-        changed |= hydrossChangeToFrostPhaseTimer.erase(instanceId) > 0;
-
+        if (hydrossFrostDpsWaitTimer.try_emplace(instanceId, now).second)
+            changed = true;
+        if (hydrossNatureDpsWaitTimer.erase(instanceId) > 0)
+            changed = true;
+        if (hydrossChangeToFrostPhaseTimer.erase(instanceId) > 0)
+            changed = true;
         if (HasMarkOfHydrossAt100Percent(bot))
-            changed |= hydrossChangeToNaturePhaseTimer.try_emplace(instanceId, now).second;
+        {
+            if (hydrossChangeToNaturePhaseTimer.try_emplace(instanceId, now).second)
+                changed = true;
+        }
     }
     else
     {
-        changed |= hydrossNatureDpsWaitTimer.try_emplace(instanceId, now).second;
-        changed |= hydrossFrostDpsWaitTimer.erase(instanceId) > 0;
-        changed |= hydrossChangeToNaturePhaseTimer.erase(instanceId) > 0;
+        if (hydrossNatureDpsWaitTimer.try_emplace(instanceId, now).second)
+            changed = true;
+        if (hydrossFrostDpsWaitTimer.erase(instanceId) > 0)
+            changed = true;
+        if (hydrossChangeToNaturePhaseTimer.erase(instanceId) > 0)
+            changed = true;
         if (HasMarkOfCorruptionAt100Percent(bot))
-            changed |= hydrossChangeToFrostPhaseTimer.try_emplace(instanceId, now).second;
+        {
+            if (hydrossChangeToFrostPhaseTimer.try_emplace(instanceId, now).second)
+                changed = true;
+        }
     }
 
     return changed;
@@ -890,19 +912,27 @@ bool LeotherasTheBlindDestroyInnerDemonAction::HandleFeralTankStrategy(Unit* inn
         bot->RemoveAura(SPELL_BEAR_FORM);
 
     bool casted = false;
-
     if (!bot->HasAura(SPELL_CAT_FORM) && botAI->CanCastSpell("cat form", bot))
-        casted |= botAI->CastSpell("cat form", bot);
-
+    {
+        if (botAI->CastSpell("cat form", bot))
+            casted = true;
+    }
     if (bot->GetComboPoints() >= 4 && botAI->CanCastSpell("ferocious bite", innerDemon))
-        casted |= botAI->CastSpell("ferocious bite", innerDemon);
-
-    if (bot->GetComboPoints() == 0 && innerDemon->GetHealthPct() > 20.0f &&
+    {
+        if (botAI->CastSpell("ferocious bite", innerDemon))
+            casted = true;
+    }
+    if (bot->GetComboPoints() == 0 && innerDemon->GetHealthPct() > 25.0f &&
         botAI->CanCastSpell("rake", innerDemon))
-        casted |= botAI->CastSpell("rake", innerDemon);
-
+    {
+        if (botAI->CastSpell("rake", innerDemon))
+            casted = true;
+    }
     if (botAI->CanCastSpell("mangle (cat)", innerDemon))
-        casted |= botAI->CastSpell("mangle (cat)", innerDemon);
+    {
+        if (botAI->CastSpell("mangle (cat)", innerDemon))
+            casted = true;
+    }
 
     return casted;
 }
@@ -915,36 +945,52 @@ bool LeotherasTheBlindDestroyInnerDemonAction::HandleHealerStrategy(Unit* innerD
             bot->RemoveAura(SPELL_TREE_OF_LIFE);
 
         bool casted = false;
-
         if (botAI->CanCastSpell("barkskin", bot))
-            casted |= botAI->CastSpell("barkskin", bot);
-
+        {
+            if (botAI->CastSpell("barkskin", bot))
+                casted = true;
+        }
         if (botAI->CanCastSpell("wrath", innerDemon))
-            casted |= botAI->CastSpell("wrath", innerDemon);
+        {
+            if (botAI->CastSpell("wrath", innerDemon))
+                casted = true;
+        }
 
         return casted;
     }
     else if (bot->getClass() == CLASS_PALADIN)
     {
         bool casted = false;
-
         if (botAI->CanCastSpell("avenging wrath", bot))
-            casted |= botAI->CastSpell("avenging wrath", bot);
-
+        {
+            if (botAI->CastSpell("avenging wrath", bot))
+                casted = true;
+        }
         if (botAI->CanCastSpell("consecration", bot))
-            casted |= botAI->CastSpell("consecration", bot);
-
+        {
+            if (botAI->CastSpell("consecration", bot))
+                casted = true;
+        }
         if (botAI->CanCastSpell("exorcism", innerDemon))
-            casted |= botAI->CastSpell("exorcism", innerDemon);
-
+        {
+            if (botAI->CastSpell("exorcism", innerDemon))
+                casted = true;
+        }
         if (botAI->CanCastSpell("hammer of wrath", innerDemon))
-            casted |= botAI->CastSpell("hammer of wrath", innerDemon);
-
+        {
+            if (botAI->CastSpell("hammer of wrath", innerDemon))
+                casted = true;
+        }
         if (botAI->CanCastSpell("holy shock", innerDemon))
-            casted |= botAI->CastSpell("holy shock", innerDemon);
-
+        {
+            if (botAI->CastSpell("holy shock", innerDemon))
+                casted = true;
+        }
         if (botAI->CanCastSpell("judgment of light", innerDemon))
-            casted |= botAI->CastSpell("judgment of light", innerDemon);
+        {
+            if (botAI->CastSpell("judgment of light", innerDemon))
+                casted = true;
+        }
 
         return casted;
     }
@@ -956,15 +1002,21 @@ bool LeotherasTheBlindDestroyInnerDemonAction::HandleHealerStrategy(Unit* innerD
     else if (bot->getClass() == CLASS_SHAMAN)
     {
         bool casted = false;
-
         if (botAI->CanCastSpell("earth shock", innerDemon))
-            casted |= botAI->CastSpell("earth shock", innerDemon);
-
+        {
+            if (botAI->CastSpell("earth shock", innerDemon))
+                casted = true;
+        }
         if (botAI->CanCastSpell("chain lightning", innerDemon))
-            casted |= botAI->CastSpell("chain lightning", innerDemon);
-
+        {
+            if (botAI->CastSpell("chain lightning", innerDemon))
+                casted = true;
+        }
         if (botAI->CanCastSpell("lightning bolt", innerDemon))
-            casted |= botAI->CastSpell("lightning bolt", innerDemon);
+        {
+            if (botAI->CastSpell("lightning bolt", innerDemon))
+                casted = true;
+        }
 
         return casted;
     }
@@ -1059,9 +1111,12 @@ bool LeotherasTheBlindManageDpsWaitTimersAction::Execute(Event event)
     // Encounter start/reset: clear all timers
     if (leotheras->HasAura(SPELL_LEOTHERAS_BANISHED))
     {
-        changed |= leotherasHumanFormDpsWaitTimer.erase(instanceId) > 0;
-        changed |= leotherasDemonFormDpsWaitTimer.erase(instanceId) > 0;
-        changed |= leotherasFinalPhaseDpsWaitTimer.erase(instanceId) > 0;
+        if (leotherasHumanFormDpsWaitTimer.erase(instanceId) > 0)
+            changed = true;
+        if (leotherasDemonFormDpsWaitTimer.erase(instanceId) > 0)
+            changed = true;
+        if (leotherasFinalPhaseDpsWaitTimer.erase(instanceId) > 0)
+            changed = true;
     }
 
     // Human Phase
@@ -1069,21 +1124,28 @@ bool LeotherasTheBlindManageDpsWaitTimersAction::Execute(Event event)
     Unit* leotherasPhase3Demon = GetPhase3LeotherasDemon(botAI);
     if (leotherasHuman && !leotherasPhase3Demon)
     {
-        changed |= leotherasHumanFormDpsWaitTimer.try_emplace(instanceId, now).second;
-        changed |= leotherasDemonFormDpsWaitTimer.erase(instanceId) > 0;
+        if (leotherasHumanFormDpsWaitTimer.try_emplace(instanceId, now).second)
+            changed = true;
+        if (leotherasDemonFormDpsWaitTimer.erase(instanceId) > 0)
+            changed = true;
     }
     // Demon Phase
     else if (Unit* leotherasPhase2Demon = GetPhase2LeotherasDemon(botAI))
     {
-        changed |= leotherasDemonFormDpsWaitTimer.try_emplace(instanceId, now).second;
-        changed |= leotherasHumanFormDpsWaitTimer.erase(instanceId) > 0;
+        if (leotherasDemonFormDpsWaitTimer.try_emplace(instanceId, now).second)
+            changed = true;
+        if (leotherasHumanFormDpsWaitTimer.erase(instanceId) > 0)
+            changed = true;
     }
     // Final Phase (<15% HP)
     else if (leotherasHuman && leotherasPhase3Demon)
     {
-        changed |= leotherasFinalPhaseDpsWaitTimer.try_emplace(instanceId, now).second;
-        changed |= leotherasHumanFormDpsWaitTimer.erase(instanceId) > 0;
-        changed |= leotherasDemonFormDpsWaitTimer.erase(instanceId) > 0;
+        if (leotherasFinalPhaseDpsWaitTimer.try_emplace(instanceId, now).second)
+            changed = true;
+        if (leotherasHumanFormDpsWaitTimer.erase(instanceId) > 0)
+            changed = true;
+        if (leotherasDemonFormDpsWaitTimer.erase(instanceId) > 0)
+            changed = true;
     }
 
     return changed;
@@ -2834,10 +2896,14 @@ bool LadyVashjEraseCorePassingTrackersAction::Execute(Event event)
     const uint32 instanceId = vashj->GetMap()->GetInstanceId();
 
     bool erased = false;
-    erased |= nearestTriggerGuid.erase(instanceId) > 0;
-    erased |= lastImbueAttempt.erase(instanceId) > 0;
-    erased |= lastCoreInInventoryTime.erase(instanceId) > 0;
-    erased |= intendedLineup.erase(bot->GetGUID()) > 0;
+    if (nearestTriggerGuid.erase(instanceId) > 0)
+        erased = true;
+    if (lastImbueAttempt.erase(instanceId) > 0)
+        erased = true;
+    if (lastCoreInInventoryTime.erase(instanceId))
+        erased = true;
+    if (intendedLineup.erase(bot->GetGUID()) > 0)
+        erased = true;
 
     return erased;
 }

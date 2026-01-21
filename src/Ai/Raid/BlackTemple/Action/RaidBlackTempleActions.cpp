@@ -14,44 +14,52 @@ bool BlackTempleEraseTimersAndTrackersAction::Execute(Event event)
 
     bool erased = false;
     if (!AI_VALUE2(Unit*, "find target", "supremus"))
-        erased |= supremusPhaseTimer.erase(instanceId) > 0;
+    {
+        if (supremusPhaseTimer.erase(instanceId) > 0)
+            erased = true;
+    }
     if (!AI_VALUE2(Unit*, "find target", "teron gorefiend"))
-        erased |= gorefiendRangedPositions.erase(guid) > 0;
+    {
+        if (gorefiendRangedPositions.erase(guid) > 0)
+            erased = true;
+    }
     if (!AI_VALUE2(Unit*, "find target", "gurtogg bloodboil"))
-        erased |= gurtoggPhaseTimer.erase(instanceId) > 0;
+    {
+        if (gurtoggPhaseTimer.erase(instanceId) > 0)
+            erased = true;
+    }
     if (!AI_VALUE2(Unit*, "find target", "reliquary of the lost"))
-        erased |= reliquaryDpsWaitTimer.erase(instanceId) > 0;
+    {
+        if (reliquaryDpsWaitTimer.erase(instanceId) > 0)
+            erased = true;
+    }
     if (!AI_VALUE2(Unit*, "find target", "mother shahraz"))
-        erased |= shahrazTankStep.erase(guid) > 0;
+    {
+        if (shahrazTankStep.erase(guid) > 0)
+            erased = true;
+    }
     if (!AI_VALUE2(Unit*, "find target", "gathios the shatterer"))
-        erased |= councilDpsWaitTimer.erase(instanceId) > 0;
-        erased |= gathiosTankStep.erase(guid) > 0;
-        erased |= zerevorHealStep.erase(guid) > 0;
+    {
+        if (councilDpsWaitTimer.erase(instanceId) > 0)
+            erased = true;
+        if (gathiosTankStep.erase(guid) > 0)
+            erased = true;
+        if (zerevorHealStep.erase(guid) > 0)
+            erased = true;
+    }
     if (!AI_VALUE2(Unit*, "find target", "illidan stormrage") &&
         !AI_VALUE2(Unit*, "find target", "flames of azzinoth"))
     {
-        bool erasedIllidan = false;
-        erasedIllidan |= illidanBossDpsWaitTimer.erase(instanceId) > 0;
-        if (erasedIllidan)
-            LOG_DEBUG("playerbots", "Erased illidanBossDpsWaitTimer for instance {}", instanceId);
-
-        erasedIllidan |= westFlameGuid.erase(instanceId) > 0;
+        if (illidanBossDpsWaitTimer.erase(instanceId) > 0)
+            erased = true;
         if (westFlameGuid.erase(instanceId) > 0)
-            LOG_DEBUG("playerbots", "Erased westFlameGuid for instance {}", instanceId);
-
-        erasedIllidan |= eastFlameGuid.erase(instanceId) > 0;
+            erased = true;
         if (eastFlameGuid.erase(instanceId) > 0)
-            LOG_DEBUG("playerbots", "Erased eastFlameGuid for instance {}", instanceId);
-
-        erasedIllidan |= flameTankWaypointIndex.erase(guid) > 0;
+            erased = true;
         if (flameTankWaypointIndex.erase(guid) > 0)
-            LOG_DEBUG("playerbots", "Erased flameTankWaypointIndex for bot {}", guid.ToString());
-
-        erasedIllidan |= illidanGrateStep.erase(guid) > 0;
+            erased = true;
         if (illidanGrateStep.erase(guid) > 0)
-            LOG_DEBUG("playerbots", "Erased illidanGrateStep for bot {}", guid.ToString());
-
-        erased |= erasedIllidan;
+            erased = true;
     }
 
     return erased;

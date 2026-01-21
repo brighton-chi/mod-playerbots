@@ -13,13 +13,21 @@ bool HyjalSummitEraseTrackersAction::Execute(Event event)
     bool erased = false;
     if (!AI_VALUE2(Unit*, "find target", "rage winterchill"))
     {
-        erased |= winterchillRangedPositions.erase(guid) > 0;
-        erased |= hasReachedWinterchillPosition.erase(guid) > 0;
+        if (winterchillRangedPositions.erase(guid) > 0)
+            erased = true;
+        if (hasReachedWinterchillPosition.erase(guid) > 0)
+            erased = true;
     }
     if (!AI_VALUE2(Unit*, "find target", "anetheron"))
-        erased |= anetheronRangedPositions.erase(guid) > 0;
+    {
+        if (anetheronRangedPositions.erase(guid) > 0)
+            erased = true;
+    }
     if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
-        erased |= kazrogalRangedPositions.erase(guid) > 0;
+    {
+        if (kazrogalRangedPositions.erase(guid) > 0)
+            erased = true;
+    }
 
     return erased;
 }
