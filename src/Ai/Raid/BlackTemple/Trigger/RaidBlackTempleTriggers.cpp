@@ -589,6 +589,10 @@ bool IllidanStormrageBotHasParasiticShadowfiendTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "illidan stormrage"))
         return false;
 
+    // try limit to phase 1 for now
+    if (GetIllidanPhase(illidan != 1))
+        return false;
+
     return HasParasiticShadowfiend(botAI, bot);
 }
 

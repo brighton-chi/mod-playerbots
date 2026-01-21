@@ -150,8 +150,8 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("illidan stormrage boss casts flame crash", {
         NextAction("illidan stormrage main tank move away from flame crash", ACTION_EMERGENCY + 1) }));
 
-    /* triggers.push_back(new TriggerNode("illidan stormrage bot has parasitic shadowfiend", {
-        NextAction("illidan stormrage isolate bot with parasite", ACTION_RAID + 2) })); */
+    triggers.push_back(new TriggerNode("illidan stormrage bot has parasitic shadowfiend", {
+        NextAction("illidan stormrage isolate bot with parasite", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("illidan stormrage boss summoned flames of azzinoth", {
         NextAction("illidan stormrage assist tanks handle flames of azzinoth", ACTION_EMERGENCY + 1) }));

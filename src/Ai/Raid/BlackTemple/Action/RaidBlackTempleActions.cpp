@@ -1945,14 +1945,14 @@ bool IllidanStormrageIsolateBotWithParasiteAction::Execute(Event event)
     if (!group)
         return false;
 
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    /* Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     if (!illidan || GetIllidanPhase(illidan) == 2 || GetIllidanPhase(illidan) == 4)
         return false;
 
     Player* trapper = GetIllidanTrapperHunter(botAI, bot);
 
     if (GetIllidanPhase(illidan) == 1)
-    {
+    { */
         if (bot->HasAura(SPELL_PARASITIC_SHADOWFIEND))
         {
             Unit* nearestPlayer = nullptr;
@@ -1981,7 +1981,7 @@ bool IllidanStormrageIsolateBotWithParasiteAction::Execute(Event event)
                 return FleePosition(Position(nearestPlayer->GetPosition()), safeDistance, minInterval);
             }
         }
-    }
+    /* }
 
     if (GetIllidanPhase(illidan) == 1 || GetIllidanPhase(illidan) == 3 || GetIllidanPhase(illidan) == 5)
     {
@@ -2023,7 +2023,7 @@ bool IllidanStormrageIsolateBotWithParasiteAction::Execute(Event event)
                 }
             }
         }
-    }
+    } */
 
     return false;
 }
