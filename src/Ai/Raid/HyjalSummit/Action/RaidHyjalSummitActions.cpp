@@ -563,7 +563,7 @@ bool KazrogalLowManaBotMoveFromGroupAction::Execute(Event event)
         {
             bot->AttackStop();
             bot->InterruptNonMeleeSpells(true);
-            return MoveFromGroup(safeDistance + 1.0f);
+            return MoveFromGroup(safeDistance);
         }
     }
 
@@ -655,17 +655,13 @@ bool AzgalorDisperseRangedAction::Execute(Event event)
 
     const uint32 minInterval = 1000;
 
-    if (bot->GetExactDist2d(azgalor) < 25.0f)
-    {
-        return FleePosition(Position(azgalor->GetPositionX(), azgalor->GetPositionY(),
-                                     azgalor->GetPositionZ()), 25.0f, minInterval);
-    }
+    const float safeDistFromBoss = 25.0f;
+    if (bot->GetExactDist2d(azgalor) < safeDistFromBoss)
+        return FleePosition(Position(azgalor->GetPosition()), safeDistFromBoss, minInterval);
 
-    if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, 6.0f))
-    {
-        return FleePosition(Position(nearestPlayer->GetPositionX(), nearestPlayer->GetPositionY(),
-                                     nearestPlayer->GetPositionZ()), 6.0f, minInterval);
-    }
+    const float safeDistFromPlayer = 6.0f;
+    if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
+        return FleePosition(Position(nearestPlayer->GetPosition()), safeDistFromPlayer, minInterval);
 
     return false;
 }
@@ -688,8 +684,7 @@ bool AzgalorMoveToDoomguardTankAction::Execute(Event event)
 bool AzgalorFirstAssistTankPositionDoomguardAction::Execute(Event event)
 {
     const Position& position = AZGALOR_DOOMGUARD_TANK_POSITION;
-    float distToPosition =
-        bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+    float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
 
     float moveDist = 0.0f;
     bool shouldMove = false;
@@ -834,12 +829,18 @@ bool ArchimondeAirBurstTargetMoveAwayAction::Execute(Event event)
     Unit* target = spell->m_targets.GetUnitTarget();
     if (target && target->GetGUID() == bot->GetGUID())
     {
-        const float safeDistance = 15.0f;
+        const float safeDistance = 14.0f;
         if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
         {
-            const uint32 minInterval = 0;
+            /* const uint32 minInterval = 0;
             botAI->Reset();
-            return FleePosition(nearestPlayer->GetPosition(), 14.0f, minInterval);
+            return FleePosition(nearestPlayer->GetPosition(), safeDistance, minInterval); */
+            float currentDistance = bot->GetExactDist2d(nearestPlayer);
+            if (currentDistance < safeDistance)
+            {
+                botAI->Reset();
+                return MoveAway(nearestPlayer, safeDistance - currentDistance);
+            }
         }
     }
 

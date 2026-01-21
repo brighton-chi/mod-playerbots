@@ -137,20 +137,13 @@ bool HighWarlordNajentusDisperseRangedAction::Execute(Event event)
 
     const uint32 minInterval = 1000;
 
-    // Flee if within 10 yards of Naj'entus
-    if (bot->GetExactDist2d(najentus) < 10.0f)
-    {
-        return FleePosition(Position(najentus->GetPositionX(), najentus->GetPositionY(),
-                                     najentus->GetPositionZ()), 10.0f, minInterval);
-    }
+    const float safeDistFromBoss = 10.0f;
+    if (bot->GetExactDist2d(najentus) < safeDistFromBoss)
+        return FleePosition(Position(najentus->GetPosition()), safeDistFromBoss, minInterval);
 
-    // Flee if within 7 yards of any other player
-    Unit* nearestPlayer = GetNearestPlayerInRadius(bot, 7.0f);
-    if (nearestPlayer)
-    {
-        return FleePosition(Position(nearestPlayer->GetPositionX(), nearestPlayer->GetPositionY(),
-                                     nearestPlayer->GetPositionZ()), 7.0f, minInterval);
-    }
+    const float safeDistFromPlayer = 7.0f;
+    if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
+        return FleePosition(Position(nearestPlayer->GetPosition()), safeDistFromPlayer, minInterval);
 
     return false;
 }
@@ -322,11 +315,10 @@ bool SupremusDisperseRangedAction::Execute(Event event)
                 continue;
 
             const float safeDistance = 8.0f;
-            const uint32 minInterval = 1000;
             if (bot->GetExactDist2d(member) < safeDistance)
             {
-                return FleePosition(Position(member->GetPositionX(), member->GetPositionY(),
-                                             member->GetPositionZ()), safeDistance, minInterval);
+                const uint32 minInterval = 1000;
+                return FleePosition(Position(member->GetPosition()), safeDistance, minInterval);
             }
         }
     }
@@ -820,26 +812,21 @@ bool GurtoggBloodboilDisperseRangedAction::Execute(Event event)
     if (!gurtogg)
         return false;
 
-    const float minRange = 10.0f;
-    const float maxRange = 20.0f;
-    const float rangeBuffer = 0.5f;
-    const uint32 minInterval = 1000;
-    const float safeDistance = 5.0f;
-
     float distToGurtogg = bot->GetExactDist2d(gurtogg);
 
-    if (distToGurtogg < (minRange - rangeBuffer))
-    {
+    const float minRange = 10.0f;
+    if (distToGurtogg < minRange)
         return MoveTo(gurtogg, minRange, MovementPriority::MOVEMENT_FORCED);
-    }
-    else if (distToGurtogg > (maxRange + rangeBuffer))
-    {
+
+    const float maxRange = 20.0f;
+    if (distToGurtogg > maxRange)
         return MoveTo(gurtogg, maxRange, MovementPriority::MOVEMENT_FORCED);
-    }
-    else if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
+
+    const float safeDistance = 5.0f;
+    if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
     {
-        return FleePosition(Position(nearestPlayer->GetPositionX(), nearestPlayer->GetPositionY(),
-                                     nearestPlayer->GetPositionZ()), safeDistance, minInterval);
+        const uint32 minInterval = 1000;
+        return FleePosition(Position(nearestPlayer->GetPosition()), safeDistance, minInterval);
     }
 
     return false;
@@ -863,9 +850,8 @@ bool GurtoggBloodboilRangedMoveToAbsorbBloodboilPositionAction::Execute(Event ev
     const float distToPosition = 3.0f;
     if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > distToPosition)
     {
-        return MoveInside(BLACK_TEMPLE_MAP_ID, position.GetPositionX(),
-               position.GetPositionY(), position.GetPositionZ(),
-               distToPosition, MovementPriority::MOVEMENT_FORCED);
+        return MoveInside(BLACK_TEMPLE_MAP_ID, position.GetPositionX(), position.GetPositionY(), 
+                          position.GetPositionZ(), distToPosition, MovementPriority::MOVEMENT_FORCED);
     }
 
     return false;
@@ -894,8 +880,7 @@ bool GurtoggBloodboilRangedMoveAwayFromEnragedPlayerAction::Execute(Event event)
         if (bot->GetExactDist2d(enragedPlayer) < safeDistance)
         {
             const uint32 minInterval = 0;
-            return FleePosition(Position(enragedPlayer->GetPositionX(), enragedPlayer->GetPositionY(),
-                                         enragedPlayer->GetPositionZ()), safeDistance, minInterval);
+            return FleePosition(Position(enragedPlayer->GetPosition()), safeDistance, minInterval);
         }
     }
 
@@ -1024,8 +1009,7 @@ bool ReliquaryOfSoulsKeepDistanceFromEssenceOfSufferingAction::RangedMoveAwayFro
     if (bot->GetDistance2d(suffering) < safeDistance)
     {
         const uint32 minInterval = 1000;
-        return FleePosition(Position(suffering->GetPositionX(), suffering->GetPositionY(),
-                                     suffering->GetPositionZ()), safeDistance, minInterval);
+        return FleePosition(Position(suffering->GetPosition()), safeDistance, minInterval);
     }
 
     return false;
@@ -1991,10 +1975,10 @@ bool IllidanStormrageIsolateBotWithParasiteAction::Execute(Event event)
 
             if (nearestPlayer)
             {
+                const float safeDistance = 12.0f;
                 const uint32 minInterval = 0;
                 botAI->Reset();
-                return FleePosition(Position(nearestPlayer->GetPositionX(), nearestPlayer->GetPositionY(),
-                                             nearestPlayer->GetPositionZ()), 12.0f, minInterval);
+                return FleePosition(Position(nearestPlayer->GetPosition()), safeDistance, minInterval);
             }
         }
     }
@@ -2366,40 +2350,34 @@ bool IllidanStormrageDisperseRangedAction::Execute(Event event)
     if (!illidan)
         return false;
 
-    const uint32 minInterval = 1000;
-
-    // In Phase 4
-    Player* warlockTank = GetIllidanWarlockTank(botAI, bot);
+        // In Phase 4
     if (GetIllidanPhase(illidan) == 4)
     {
-        // Flee from warlock tank if within 21 yards
-        if (warlockTank && warlockTank != bot)
+        const uint32 minInterval = 0;
+        if (Player* warlockTank = GetIllidanWarlockTank(botAI, bot))
         {
-            if (bot->GetDistance2d(warlockTank) < 21.0f)
+            const float safeDistFromTank = 21.0f;
+            if (bot->GetDistance2d(warlockTank) < safeDistFromTank)
             {
-                bot->AttackStop();
-                bot->InterruptNonMeleeSpells(true);
-                return FleePosition(Position(warlockTank->GetPositionX(), warlockTank->GetPositionY(),
-                                             warlockTank->GetPositionZ()), 21.0f, minInterval);
+                botAI->Reset();
+                return FleePosition(Position(warlockTank->GetPosition()), safeDistFromTank, minInterval);
             }
         }
-        // Flee from Illidan if within 16 yards
-        else if (bot->GetDistance2d(illidan) < 16.0f)
+
+        const float safeDistFromBoss = 16.0f;
+        if (bot->GetDistance2d(illidan) < safeDistFromBoss)
         {
-            bot->AttackStop();
-            bot->InterruptNonMeleeSpells(true);
-            return FleePosition(Position(illidan->GetPositionX(), illidan->GetPositionY(),
-                                         illidan->GetPositionZ()), 16.0f, minInterval);
+            botAI->Reset();
+            return FleePosition(Position(illidan->GetPosition()), safeDistFromBoss, minInterval);
         }
-        else if (warlockTank && warlockTank == bot)
-            return false;
     }
 
-    // Excluding warlock tank during phase 4, flee if within 6 yards of any other player
-    if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, 6.0f))
+    // Phase 3, 4, or 5
+    const float safeDistFromPlayer
+    if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
     {
-        return FleePosition(Position(nearestPlayer->GetPositionX(), nearestPlayer->GetPositionY(),
-                                     nearestPlayer->GetPositionZ()), 6.0f, minInterval);
+        const uint32 minInterval = 1000;
+        return FleePosition(Position(nearestPlayer->GetPosition()), safeDistFromPlayer, minInterval);
     }
 
     return false;
@@ -2432,7 +2410,6 @@ bool IllidanStormragePositionMeleeAction::StayAwayFromDemonBoss(Unit* illidan)
 {
     float currentDistance = bot->GetDistance2d(illidan);
     float safeDistance = 30.0f;
-
     if (currentDistance < safeDistance)
     {
         botAI->Reset();
@@ -2515,11 +2492,11 @@ bool IllidanStormrageWarlockTankHandleDemonBossAction::Execute(Event event)
         if (bot->GetTarget() != illidan->GetGUID())
             return Attack(illidan);
 
-        if (bot->GetDistance2d(illidan) < 16.0f)
+        const float safeDistFromBoss = 16.0f;
+        if (bot->GetDistance2d(illidan) < safeDistFromBoss)
         {
             uint32 minInterval = 0;
-            return FleePosition(Position(illidan->GetPositionX(), illidan->GetPositionY(),
-                                         illidan->GetPositionZ()), 16.0f, 0);
+            return FleePosition(Position(illidan->GetPosition()), safeDistFromBoss, minInterval);
         }
     }
     else
