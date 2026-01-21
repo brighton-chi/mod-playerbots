@@ -36,11 +36,11 @@ public:
         creators["anetheron bring infernal to infernal tank"] =
             &RaidHyjalSummitActionContext::anetheron_bring_infernal_to_infernal_tank;
 
-        creators["anetheron first assist tank pick up infernals"] =
-            &RaidHyjalSummitActionContext::anetheron_first_assist_tank_pick_up_infernals;
+        creators["anetheron assist tanks pick up infernals"] =
+            &RaidHyjalSummitActionContext::anetheron_assist_tanks_pick_up_infernals;
 
-        creators["anetheron focus all dps on boss"] =
-            &RaidHyjalSummitActionContext::anetheron_focus_all_dps_on_boss;
+        creators["anetheron assign dps priority"] =
+            &RaidHyjalSummitActionContext::anetheron_assign_dps_priority;
 
         // Kaz'rogal
         creators["kaz'rogal misdirect boss to main tank"] =
@@ -87,8 +87,8 @@ public:
         creators["archimonde cast fear ward on main tank"] =
             &RaidHyjalSummitActionContext::archimonde_cast_fear_ward_on_main_tank;
 
-        creators["archimonde move away from air burst target"] =
-            &RaidHyjalSummitActionContext::archimonde_move_away_from_air_burst_target;
+        creators["archimonde air burst target move away"] =
+            &RaidHyjalSummitActionContext::archimonde_air_burst_target_move_away;
 
         creators["archimonde avoid doomfire"] =
             &RaidHyjalSummitActionContext::archimonde_avoid_doomfire;
@@ -125,11 +125,11 @@ private:
     static Action* anetheron_bring_infernal_to_infernal_tank(
         PlayerbotAI* botAI) { return new AnetheronBringInfernalToInfernalTankAction(botAI); }
 
-    static Action* anetheron_first_assist_tank_pick_up_infernals(
-        PlayerbotAI* botAI) { return new AnetheronFirstAssistTankPickUpInfernalsAction(botAI); }
+    static Action* anetheron_assist_tanks_pick_up_infernals(
+        PlayerbotAI* botAI) { return new AnetheronAssistTanksPickUpInfernalsAction(botAI); }
 
-    static Action* anetheron_focus_all_dps_on_boss(
-        PlayerbotAI* botAI) { return new AnetheronFocusAllDpsOnBossAction(botAI); }
+    static Action* anetheron_assign_dps_priority(
+        PlayerbotAI* botAI) { return new AnetheronAssignDpsPriorityAction(botAI); }
 
     // Kaz'rogal
     static Action* kazrogal_misdirect_boss_to_main_tank(
@@ -176,8 +176,8 @@ private:
     static Action* archimonde_cast_fear_ward_on_main_tank(
         PlayerbotAI* botAI) { return new ArchimondeCastFearWardOnMainTankAction(botAI); }
 
-    static Action* archimonde_move_away_from_air_burst_target(
-        PlayerbotAI* botAI) { return new ArchimondeMoveAwayFromAirBurstTargetAction(botAI); }
+    static Action* archimonde_air_burst_target_move_away(
+        PlayerbotAI* botAI) { return new ArchimondeAirBurstTargetMoveAwayAction(botAI); }
 
     static Action* archimonde_avoid_doomfire(
         PlayerbotAI* botAI) { return new ArchimondeAvoidDoomfireAction(botAI); }

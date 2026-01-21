@@ -329,59 +329,67 @@ bool AnetheronBringInfernalToInfernalTankAction::Execute(Event event)
     return false;
 }
 
-bool AnetheronFirstAssistTankPickUpInfernalsAction::Execute(Event event)
+bool AnetheronAssistTanksPickUpInfernalsAction::Execute(Event event)
 {
-    std::vector<Unit*> infernals;
-    for (auto const& guid : AI_VALUE(GuidVector, "possible targets no los"))
-    {
-        Unit* unit = botAI->GetUnit(guid);
-        if (!unit || unit->GetEntry() != NPC_TOWERING_INFERNAL)
-            continue;
-        infernals.push_back(unit);
-    }
+    Unit* infernal = AI_VALUE2(Unit*, "find target", "towering infernal");
+    if (!infernal)
+        return false;
 
-    for (Unit* infernal : infernals)
-    {
-        if (infernal->GetVictim() != bot)
-        {
-            if (bot->GetVictim() != infernal)
-                return Attack(infernal);
-            else
-            {
-                const char* taunts[] = { "taunt", "growl", "hand of reckoning", "dark command" };
-                for (const char* spellName : taunts)
-                {
-                    if (botAI->CanCastSpell(spellName, infernal))
-                        return botAI->CastSpell(spellName, infernal);
-                }
-            }
-            return false;
-        }
-    }
-
-    if (!infernals.empty())
+    if (infernal->GetVictim() == bot)
     {
         const Position& position = ANETHERON_INFERNAL_TANK_POSITION;
-        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 10.0f)
+        float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+        if (distToPosition > 2.0f)
         {
-            return MoveTo(HYJAL_SUMMIT_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-                          position.GetPositionZ(), false, false, false, true,
-                          MovementPriority::MOVEMENT_FORCED, true, false);
+            float dX = position.GetPositionX() - bot->GetPositionX();
+            float dY = position.GetPositionY() - bot->GetPositionY();
+            float moveDist = std::min(5.0f, distToPosition);
+            float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
+
+            return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
+                          false, false, true, MovementPriority::MOVEMENT_FORCED, true, true);
         }
     }
 
     return false;
 }
 
-bool AnetheronFocusAllDpsOnBossAction::Execute(Event event)
+bool AnetheronAssignDpsPriorityAction::Execute(Event event)
 {
     Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
     if (!anetheron)
         return false;
 
-    SetRtiTarget(botAI, "square", anetheron);
+    if (botAI->IsMelee(bot))
+    {
+        SetRtiTarget(botAI, "square", anetheron);
 
-    if (!botAI->IsHeal(bot) && bot->GetTarget() != anetheron->GetGUID())
+        if (bot->GetTarget() != anetheron->GetGUID())
+            return Attack(anetheron);
+
+        return false;
+    }
+
+    Unit* infernal = AI_VALUE2(Unit*, "find target", "towering infernal");
+    if (infernal)
+    {
+        Player* victim = dynamic_cast<Player*>(infernal->GetVictim());
+        if (victim && botAI->IsTank(victim) &&
+            bot->GetDistance2d(infernal) < 40.0f)
+        {
+            MarkTargetWithTriangle(bot, infernal);
+            SetRtiTarget(botAI, "triangle", infernal);
+
+            if (bot->GetTarget() != infernal->GetGUID())
+                return Attack(infernal);
+
+            return false;
+        }
+    }
+
+    SetRtiTarget(botAI, "square", anetheron);
+    if (bot->GetTarget() != anetheron->GetGUID())
         return Attack(anetheron);
 
     return false;
@@ -535,19 +543,20 @@ bool KazrogalSpreadRangedInArcAction::Execute(Event event)
 
 bool KazrogalLowManaBotMoveFromGroupAction::Execute(Event event)
 {
-    const float safeDistance = 15.0f;
-    if (GetNearestPlayerInRadius(bot, safeDistance))
-    {
-        bot->AttackStop();
-        bot->InterruptNonMeleeSpells(true);
-        return MoveFromGroup(safeDistance + 1.0f);
-    }
-
-    if (bot->getClass() == CLASS_HUNTER &&
-    bot->GetPower(POWER_MANA) < 6000)
+    if (bot->getClass() == CLASS_HUNTER)
     {
         if (!botAI->HasAura("aspect of the viper", bot))
             return botAI->CastSpell("aspect of the viper", bot);
+    }
+    else
+    {
+        const float safeDistance = 15.0f;
+        if (GetNearestPlayerInRadius(bot, safeDistance))
+        {
+            bot->AttackStop();
+            bot->InterruptNonMeleeSpells(true);
+            return MoveFromGroup(safeDistance + 1.0f);
+        }
     }
 
     return false;
@@ -723,7 +732,7 @@ bool AzgalorFirstAssistTankPositionDoomguardAction::Execute(Event event)
 
 bool AzgalorAssignDpsPriorityAction::Execute(Event event)
 {
-    if (botAI->IsMelee(bot))
+    if (botAI->IsRanged(bot))
     {
         if (Unit* doomguard = AI_VALUE2(Unit*, "find target", "lesser doomguard"))
         {
@@ -733,7 +742,7 @@ bool AzgalorAssignDpsPriorityAction::Execute(Event event)
                 return Attack(doomguard);
         }
     }
-    else if (botAI->IsRanged(bot))
+    else if (botAI->IsMelee(bot))
     {
         if (Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor"))
         {
@@ -804,7 +813,7 @@ bool ArchimondeCastFearWardOnMainTankAction::Execute(Event event)
     return false;
 }
 
-bool ArchimondeMoveAwayFromAirBurstTargetAction::Execute(Event event)
+bool ArchimondeAirBurstTargetMoveAwayAction::Execute(Event event)
 {
     Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
     if (!archimonde || !archimonde->HasUnitState(UNIT_STATE_CASTING))
@@ -815,13 +824,15 @@ bool ArchimondeMoveAwayFromAirBurstTargetAction::Execute(Event event)
         return false;
 
     Unit* target = spell->m_targets.GetUnitTarget();
-    if (target && target->GetGUID() != bot->GetGUID())
+    if (target && target->GetGUID() == bot->GetGUID())
     {
-        const uint32 minInterval = 0;
-        bot->AttackStop();
-        bot->InterruptNonMeleeSpells(true);
-        return FleePosition(Position(target->GetPositionX(), target->GetPositionY(),
-                            target->GetPositionZ()), 14.0f, minInterval);
+        const float safeDistance = 15.0f;
+        if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
+        {
+            const uint32 minInterval = 0;
+            botAI->Reset();
+            return FleePosition(nearestPlayer->GetPosition(), 14.0f, minInterval);
+        }
     }
 
     return false;

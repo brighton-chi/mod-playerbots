@@ -13,7 +13,6 @@ namespace HyjalSummitHelpers
     {
         // Anetheron
         SPELL_INFERNO = 31299,
-        SPELL_IMMOLATION = 31303,
 
         // Kaz'rogal
         SPELL_MARK_OF_KAZROGAL         = 31447,
@@ -49,6 +48,7 @@ namespace HyjalSummitHelpers
     void MarkTargetWithSquare(Player* bot, Unit* target);
     void MarkTargetWithStar(Player* bot, Unit* target);
     void MarkTargetWithCircle(Player* bot, Unit* target);
+    void MarkTargetWithTriangle(Player* bot, Unit* target);
     void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target);
     Unit* GetNearestPlayerInRadius(Player* bot, float radius);
     bool IsInstanceTrackerManager(PlayerbotAI* botAI, Player* bot);
@@ -67,7 +67,6 @@ namespace HyjalSummitHelpers
     // Kaz'rogal
     extern const Position KAZROGAL_TANK_POSITION;
     extern std::unordered_map<ObjectGuid, Position> kazrogalRangedPositions;
-    bool IsBotLowOnMana(Player* bot);
 
     // Azgalor
     extern const Position AZGALOR_MAIN_TANK_POSITION;

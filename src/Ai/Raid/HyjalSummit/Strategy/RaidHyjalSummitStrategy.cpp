@@ -31,10 +31,10 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("anetheron bring infernal to infernal tank", ACTION_EMERGENCY + 2) }));
 
     triggers.push_back(new TriggerNode("anetheron infernals need to be kept away from raid", {
-        NextAction("anetheron first assist tank pick up infernals", ACTION_EMERGENCY + 1) }));
+        NextAction("anetheron assist tanks pick up infernals", ACTION_EMERGENCY + 1) }));
 
-    triggers.push_back(new TriggerNode("anetheron infernals despawn when boss dies", {
-        NextAction("anetheron focus all dps on boss", ACTION_RAID + 1) }));
+    triggers.push_back(new TriggerNode("anetheron infernals continue to spawn", {
+        NextAction("anetheron assign dps priority", ACTION_RAID + 1) }));
 
     // Kaz'rogal
     triggers.push_back(new TriggerNode("kaz'rogal pulling boss", {
@@ -82,7 +82,7 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("archimonde cast fear ward on main tank", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("archimonde boss is casting air burst", {
-        NextAction("archimonde move away from air burst target", ACTION_RAID + 1) }));
+        NextAction("archimonde air burst target move away", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("archimonde boss summoned doomfire", {
         NextAction("archimonde avoid doomfire", ACTION_EMERGENCY + 6) }));

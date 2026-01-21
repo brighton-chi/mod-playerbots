@@ -39,8 +39,8 @@ public:
         creators["anetheron infernals need to be kept away from raid"] =
             &RaidHyjalSummitTriggerContext::anetheron_infernals_need_to_be_kept_away_from_raid;
 
-        creators["anetheron infernals despawn when boss dies"] =
-            &RaidHyjalSummitTriggerContext::anetheron_infernals_despawn_when_boss_dies;
+        creators["anetheron infernals continue to spawn"] =
+            &RaidHyjalSummitTriggerContext::anetheron_infernals_continue_to_spawn;
 
         // Kaz'rogal
         creators["kaz'rogal pulling boss"] =
@@ -128,8 +128,8 @@ private:
     static Trigger* anetheron_infernals_need_to_be_kept_away_from_raid(
         PlayerbotAI* botAI) { return new AnetheronInfernalsNeedToBeKeptAwayFromRaidTrigger(botAI); }
 
-    static Trigger* anetheron_infernals_despawn_when_boss_dies(
-        PlayerbotAI* botAI) { return new AnetheronInfernalsDespawnWhenBossDiesTrigger(botAI); }
+    static Trigger* anetheron_infernals_continue_to_spawn(
+        PlayerbotAI* botAI) { return new AnetheronInfernalsContinueToSpawnTrigger(botAI); }
 
     // Kaz'rogal
     static Trigger* kazrogal_pulling_boss(

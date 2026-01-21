@@ -62,14 +62,18 @@ bool AnetheronBossEngagedByMainTankTrigger::IsActive()
 
 bool AnetheronBossCastsCarrionSwarmTrigger::IsActive()
 {
-    if (!botAI->IsRanged(bot) || bot->HasAura(SPELL_IMMOLATION))
+    if (!botAI->IsRanged(bot))
         return false;
 
     Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
     if (!anetheron)
         return false;
 
-    return !IsBotTargetedByInferno(anetheron, bot);
+    Unit* infernal = AI_VALUE2(Unit*, "find target", "towering infernal");
+    if (infernal || IsBotTargetedByInferno(anetheron, bot))
+        return false;
+
+    return true;
 }
 
 bool AnetheronBotIsTargetedByInfernalTrigger::IsActive()
@@ -81,24 +85,20 @@ bool AnetheronBotIsTargetedByInfernalTrigger::IsActive()
     if (!anetheron)
         return false;
 
-    if (IsBotTargetedByInferno(anetheron, bot))
-        return true;
-
-    Unit* infernal = AI_VALUE2(Unit*, "find target", "towering infernal");
-    return infernal && infernal->GetVictim() == bot;
+    return IsBotTargetedByInferno(anetheron, bot);
 }
 
 bool AnetheronInfernalsNeedToBeKeptAwayFromRaidTrigger::IsActive()
 {
-    if (!botAI->IsAssistTankOfIndex(bot, 0, true))
+    if (!botAI->IsAssistTank(bot))
         return false;
 
-    return AI_VALUE2(Unit*, "find target", "anetheron");
+    return AI_VALUE2(Unit*, "find target", "towering infernal");
 }
 
-bool AnetheronInfernalsDespawnWhenBossDiesTrigger::IsActive()
+bool AnetheronInfernalsContinueToSpawnTrigger::IsActive()
 {
-    if (botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0, true))
+    if (!botAI->IsDps(bot))
         return false;
 
     return AI_VALUE2(Unit*, "find target", "anetheron");
@@ -144,7 +144,12 @@ bool KazrogalLowManaBotsNeedEscapePathTrigger::IsActive()
     if (!kazrogal)
         return false;
 
-    return !IsBotLowOnMana(bot);
+    if (bot->getClass() == CLASS_HUNTER)
+        return true;
+    else if (bot->GetPower(POWER_MANA) > 3000)
+        return true;
+
+    return false;
 }
 
 bool KazrogalBotIsLowOnManaTrigger::IsActive()
@@ -162,10 +167,9 @@ bool KazrogalBotIsLowOnManaTrigger::IsActive()
     if (bot->getClass() == CLASS_DRUID && tab == DRUID_TAB_FERAL)
         return false;
 
-    if (IsBotLowOnMana(bot))
+    if (bot->getClass() == CLASS_HUNTER && bot->GetPower(POWER_MANA) <= 6000)
         return true;
-
-    if (bot->getClass() == CLASS_HUNTER && bot->GetPower(POWER_MANA) < 6000)
+    else if (bot->GetPower(POWER_MANA) <= 3000)
         return true;
 
     return false;
@@ -276,9 +280,6 @@ bool ArchimondeBossCastsFearTrigger::IsActive()
 bool ArchimondeBossIsCastingAirBurstTrigger::IsActive()
 {
     if (botAI->IsMainTank(bot))
-        return false;
-
-    if (bot->HasAura(SPELL_DOOMFIRE))
         return false;
 
     Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");

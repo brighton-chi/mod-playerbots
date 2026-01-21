@@ -81,11 +81,11 @@ public:
     bool IsActive() override;
 };
 
-class AnetheronInfernalsDespawnWhenBossDiesTrigger : public Trigger
+class AnetheronInfernalsContinueToSpawnTrigger : public Trigger
 {
 public:
-    AnetheronInfernalsDespawnWhenBossDiesTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "anetheron infernals despawn when boss dies") {}
+    AnetheronInfernalsContinueToSpawnTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "anetheron infernals continue to spawn") {}
     bool IsActive() override;
 };
 

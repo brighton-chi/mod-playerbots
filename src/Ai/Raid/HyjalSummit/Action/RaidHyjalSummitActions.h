@@ -75,19 +75,19 @@ public:
     bool Execute(Event event) override;
 };
 
-class AnetheronFirstAssistTankPickUpInfernalsAction : public AttackAction
+class AnetheronAssistTanksPickUpInfernalsAction : public MovementAction
 {
 public:
-    AnetheronFirstAssistTankPickUpInfernalsAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "anetheron first assist tank pick up infernals") {}
+    AnetheronAssistTanksPickUpInfernalsAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "anetheron assist tanks pick up infernals") {}
     bool Execute(Event event) override;
 };
 
-class AnetheronFocusAllDpsOnBossAction : public AttackAction
+class AnetheronAssignDpsPriorityAction : public AttackAction
 {
 public:
-    AnetheronFocusAllDpsOnBossAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "anetheron focus all dps on boss") {}
+    AnetheronAssignDpsPriorityAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "anetheron assign dps priority") {}
     bool Execute(Event event) override;
 };
 
@@ -209,11 +209,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class ArchimondeMoveAwayFromAirBurstTargetAction : public MovementAction
+class ArchimondeAirBurstTargetMoveAwayAction : public MovementAction
 {
 public:
-    ArchimondeMoveAwayFromAirBurstTargetAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "archimonde move away from air burst target") {}
+    ArchimondeAirBurstTargetMoveAwayAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "archimonde air burst target move away") {}
     bool Execute(Event event) override;
 };
 

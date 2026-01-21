@@ -35,6 +35,11 @@ namespace HyjalSummitHelpers
         MarkTargetWithIcon(bot, target, RtiTargetValue::circleIndex);
     }
 
+    void MarkTargetWithTriangle(Player* bot, Unit* target)
+    {
+        MarkTargetWithIcon(bot, target, RtiTargetValue::triangleIndex);
+    }
+
     void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target)
     {
         if (!target)
@@ -100,7 +105,9 @@ namespace HyjalSummitHelpers
     // Anetheron
 
     const Position ANETHERON_MAIN_TANK_POSITION = { 5026.900f, -1757.163f, 1323.403f };
-    const Position ANETHERON_INFERNAL_TANK_POSITION = { 5024.107f, -1787.967f, 1321.832f };
+    const Position ANETHERON_INFERNAL_TANK_POSITION = { 5021.879f, -1776.768f, 1322.390f };
+    // const Position ANETHERON_INFERNAL_TANK_POSITION = { 5024.107f, -1787.967f, 1321.832f }; original medium location
+    // const Position ANETHERON_INFERNAL_TANK_POSITION = { 5028.010f, -1800.134f, 1321.557f }; farther location
     std::unordered_map<ObjectGuid, Position> anetheronRangedPositions;
 
     bool IsBotTargetedByInferno(Unit* anetheron, Player* bot)
@@ -123,12 +130,6 @@ namespace HyjalSummitHelpers
 
     const Position KAZROGAL_TANK_POSITION = { 5503.475f, -2660.343f, 1480.398f };
     std::unordered_map<ObjectGuid, Position> kazrogalRangedPositions;
-
-    bool IsBotLowOnMana(Player* bot)
-    {
-        return bot->GetPower(POWER_MANA) > 2000 ||
-        (bot->GetPower(POWER_MANA) > 3000 && bot->HasAura(SPELL_MARK_OF_KAZROGAL));
-    }
 
     // Azgalor
 
