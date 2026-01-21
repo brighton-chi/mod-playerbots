@@ -885,16 +885,16 @@ bool LeotherasTheBlindDestroyInnerDemonAction::Execute(Event event)
 
     if (innerDemon)
     {
-        // Everybody needs to focus on their Inner Demons; dps assist is disabled
-        // via multipliers
-        if (bot->GetTarget() != innerDemon->GetGUID())
-            return Attack(innerDemon);
-
         if (botAI->IsTank(bot) && bot->getClass() == CLASS_DRUID)
             return HandleFeralTankStrategy(innerDemon);
 
         if (botAI->IsHeal(bot))
             return HandleHealerStrategy(innerDemon);
+
+        // Roles without a strategy need to affirmatively attack their Inner Demons
+        // Because DPS assist is disabled via multipliers
+        if (bot->GetTarget() != innerDemon->GetGUID())
+            return Attack(innerDemon);
     }
 
     return false;
@@ -915,6 +915,16 @@ bool LeotherasTheBlindDestroyInnerDemonAction::HandleFeralTankStrategy(Unit* inn
     if (!bot->HasAura(SPELL_CAT_FORM) && botAI->CanCastSpell("cat form", bot))
     {
         if (botAI->CastSpell("cat form", bot))
+            casted = true;
+    }
+    if (botAI->CanCastSpell("berserk", bot))
+    {
+        if (botAI->CastSpell("berserk", bot))
+            casted = true;
+    }
+    if (bot->GetPower(POWER_ENERGY) < 30 && botAI->CanCastSpell("tiger's fury", bot))
+    {
+        if (botAI->CastSpell("tiger's fury", bot))
             casted = true;
     }
     if (bot->GetComboPoints() >= 4 && botAI->CanCastSpell("ferocious bite", innerDemon))
