@@ -634,12 +634,15 @@ bool IllidanStormrageBotStruckByDarkBarrageTrigger::IsActive()
 
 bool IllidanStormrageBossDealsSplashDamageTrigger::IsActive()
 {
-    if (!botAI->IsRanged(bot) || bot->HasAura(SPELL_PARASITIC_SHADOWFIEND) ||
-        GetIllidanTrapperHunter(botAI, bot) == bot)
+    if (!botAI->IsRanged(bot) || bot->HasAura(SPELL_PARASITIC_SHADOWFIEND))
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     if (!illidan)
+        return false;
+
+    if (GetIllidanTrapperHunter(botAI, bot) == bot ||
+        GetIllidanWarlockTank(botAI, bot) == bot)
         return false;
 
     return GetIllidanPhase(illidan) == 3 ||
