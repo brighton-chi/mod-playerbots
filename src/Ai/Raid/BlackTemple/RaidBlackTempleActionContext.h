@@ -102,9 +102,6 @@ public:
         creators["reliquary of souls spell reflect deaden"] =
             &RaidBlackTempleActionContext::reliquary_of_souls_spell_reflect_deaden;
 
-        creators["reliquary of souls manage dps timer"] =
-            &RaidBlackTempleActionContext::reliquary_of_souls_manage_dps_timer;
-
         // Mother Shahraz
         creators["mother shahraz misdirect boss to main tank"] =
             &RaidBlackTempleActionContext::mother_shahraz_misdirect_boss_to_main_tank;
@@ -283,9 +280,6 @@ private:
 
     static Action* reliquary_of_souls_spell_reflect_deaden(
         PlayerbotAI* botAI) { return new ReliquaryOfSoulsSpellReflectDeadenAction(botAI); }
-
-    static Action* reliquary_of_souls_manage_dps_timer(
-        PlayerbotAI* botAI) { return new ReliquaryOfSoulsManageDpsTimerAction(botAI); }
 
     // Mother Shahraz
     static Action* mother_shahraz_misdirect_boss_to_main_tank(

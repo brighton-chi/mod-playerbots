@@ -384,14 +384,6 @@ bool ReliquaryOfSoulsEssenceOfDesireCastingDeadenTrigger::IsActive()
     return target && target->GetGUID() == bot->GetGUID();
 }
 
-bool ReliquaryOfSoulsNeedToManageDpsTimerTrigger::IsActive()
-{
-    if (!IsInstanceTimerManager(botAI, bot))
-        return false;
-
-    return AI_VALUE2(Unit*, "find target", "reliquary of the lost");
-}
-
 // Mother Shahraz
 
 bool MotherShahrazPullingBossTrigger::IsActive()
@@ -586,11 +578,10 @@ bool IllidanStormrageBossCastsFlameCrashTrigger::IsActive()
 
 bool IllidanStormrageBotHasParasiticShadowfiendTrigger::IsActive()
 {
-    if (!AI_VALUE2(Unit*, "find target", "illidan stormrage"))
-        return false;
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
 
     // try limit to phase 1 for now
-    if (GetIllidanPhase(illidan != 1))
+    if (!illidan || GetIllidanPhase(illidan) != 1)
         return false;
 
     return HasParasiticShadowfiend(botAI, bot);

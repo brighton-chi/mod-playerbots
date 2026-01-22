@@ -160,7 +160,7 @@ namespace BlackTempleHelpers
     int GetGurtoggActiveRotationGroup(Unit* gurtogg);
 
     // Reliquary of Souls
-    extern std::unordered_map<uint32, time_t> reliquaryDpsWaitTimer;
+    // N/A
 
     // Mother Shahraz
     extern const Position SHAHRAZ_TANK_POSITION;

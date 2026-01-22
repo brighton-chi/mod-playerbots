@@ -102,9 +102,6 @@ public:
         creators["reliquary of souls essence of desire casting deaden"] =
             &RaidBlackTempleTriggerContext::reliquary_of_souls_essence_of_desire_casting_deaden;
 
-        creators["reliquary of souls need to manage dps timer"] =
-            &RaidBlackTempleTriggerContext::reliquary_of_souls_need_to_manage_dps_timer;
-
         // Mother Shahraz
         creators["mother shahraz pulling boss"] =
             &RaidBlackTempleTriggerContext::mother_shahraz_pulling_boss;
@@ -301,9 +298,6 @@ private:
 
     static Trigger* reliquary_of_souls_essence_of_desire_casting_deaden(
         PlayerbotAI* botAI) { return new ReliquaryOfSoulsEssenceOfDesireCastingDeadenTrigger(botAI); }
-
-    static Trigger* reliquary_of_souls_need_to_manage_dps_timer(
-        PlayerbotAI* botAI) { return new ReliquaryOfSoulsNeedToManageDpsTimerTrigger(botAI); }
 
     // Mother Shahraz
     static Trigger* mother_shahraz_pulling_boss(

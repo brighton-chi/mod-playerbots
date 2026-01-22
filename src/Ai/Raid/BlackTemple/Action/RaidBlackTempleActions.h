@@ -253,14 +253,6 @@ public:
     bool Execute(Event event) override;
 };
 
-class ReliquaryOfSoulsManageDpsTimerAction : public Action
-{
-public:
-    ReliquaryOfSoulsManageDpsTimerAction(
-        PlayerbotAI* botAI) : Action(botAI, "reliquary of souls manage dps timer") {}
-    bool Execute(Event event) override;
-};
-
 // Mother Shahraz
 
 class MotherShahrazMisdirectBossToMainTankAction : public AttackAction

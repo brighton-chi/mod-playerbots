@@ -205,7 +205,7 @@ namespace BlackTempleHelpers
     }
 
     // Reliquary of Souls
-    std::unordered_map<uint32, time_t> reliquaryDpsWaitTimer;
+    // N/A
 
     // Mother Shahraz
     const Position SHAHRAZ_TANK_POSITION = { 926.761f, 179.666f, 192.831f };

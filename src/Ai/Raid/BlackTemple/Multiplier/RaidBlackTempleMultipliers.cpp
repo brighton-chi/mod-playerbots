@@ -154,12 +154,8 @@ float GurtoggBloodboilControlMovementMultiplier::GetValue(Action* action)
 
         if (bot->HasAura(SPELL_PLAYER_FEL_RAGE))
         {
-            if (dynamic_cast<FleeAction*>(action) ||
-                dynamic_cast<SetBehindTargetAction*>(action) ||
-                dynamic_cast<ReachTargetAction*>(action) ||
-                dynamic_cast<CastReachTargetSpellAction*>(action) ||
-                dynamic_cast<CastBlinkBackAction*>(action) ||
-                dynamic_cast<CastDisengageAction*>(action))
+            if (dynamic_cast<MovementAction*>(action) &&
+                !dynamic_cast<AttackAction*>(action))
                 return 0.0f;
         }
     }
@@ -168,40 +164,6 @@ float GurtoggBloodboilControlMovementMultiplier::GetValue(Action* action)
 }
 
 // Reliquary of Souls
-
-float ReliquaryOfSoulsWaitForDpsMultiplier::GetValue(Action* action)
-{
-    if (botAI->IsTank(bot))
-        return 1.0f;
-
-    Unit* reliquary = AI_VALUE2(Unit*, "find target", "reliquary of souls");
-    if (!reliquary)
-        return 1.0f;
-
-    if (dynamic_cast<ReliquaryOfSoulsMisdirectBossToMainTankAction*>(action))
-        return 1.0f;
-
-    const time_t now = std::time(nullptr);
-
-    auto it = reliquaryDpsWaitTimer.find(reliquary->GetMap()->GetInstanceId());
-    if (it == reliquaryDpsWaitTimer.end() || (now - it->second) < 5)
-    {
-        Unit* suffering = AI_VALUE2(Unit*, "find target", "essence of suffering");
-        Unit* desire = AI_VALUE2(Unit*, "find target", "essence of desire");
-        Unit* anger = AI_VALUE2(Unit*, "find target", "essence of anger");
-        if ((suffering && suffering->GetHealthPct() > 99.8f) ||
-            (desire && desire->GetHealthPct() > 99.8f) ||
-            (anger && anger->GetHealthPct() > 99.8f))
-        {
-            if (dynamic_cast<AttackAction*>(action) ||
-                (dynamic_cast<CastSpellAction*>(action) &&
-                 !dynamic_cast<CastHealingSpellAction*>(action)))
-                 return 0.0f;
-        }
-    }
-
-    return 1.0f;
-}
 
 float ReliquaryOfSoulsDontWasteHealingMultiplier::GetValue(Action* action)
 {
@@ -217,39 +179,6 @@ float ReliquaryOfSoulsDontWasteHealingMultiplier::GetValue(Action* action)
         }
         else if (dynamic_cast<CastHealingSpellAction*>(action))
             return 0.0f;
-    }
-
-    return 1.0f;
-}
-
-float ReliquaryOfSoulsDontInterruptDeadenIfReflectableMultiplier::GetValue(Action* action)
-{
-    Unit* desire = AI_VALUE2(Unit*, "find target", "essence of desire");
-    if (desire && desire->HasUnitState(UNIT_STATE_CASTING))
-    {
-        Spell* spell = desire->GetCurrentSpell(CURRENT_GENERIC_SPELL);
-        if (spell && spell->m_spellInfo->Id == SPELL_DEADEN)
-        {
-            Unit* target = spell->m_targets.GetUnitTarget();
-            Player* playerTarget = target ? target->ToPlayer() : nullptr;
-
-            if (playerTarget && botAI->IsTank(playerTarget) &&
-                playerTarget->getClass() == CLASS_WARRIOR)
-            {
-                if (dynamic_cast<CastBashAction*>(action) ||
-                    dynamic_cast<CastShieldBashAction*>(action) ||
-                    dynamic_cast<CastPummelAction*>(action) ||
-                    dynamic_cast<CastCounterspellAction*>(action) ||
-                    dynamic_cast<CastKickAction*>(action) ||
-                    dynamic_cast<CastSilencingShotAction*>(action) ||
-                    dynamic_cast<CastWindShearAction*>(action) ||
-                    dynamic_cast<CastWindShearOnEnemyHealerAction*>(action) ||
-                    dynamic_cast<CastMindFreezeAction*>(action))
-                {
-                    return 0.0f;
-                }
-            }
-        }
     }
 
     return 1.0f;

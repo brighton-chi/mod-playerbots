@@ -241,14 +241,6 @@ public:
     bool IsActive() override;
 };
 
-class ReliquaryOfSoulsNeedToManageDpsTimerTrigger : public Trigger
-{
-public:
-    ReliquaryOfSoulsNeedToManageDpsTimerTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "reliquary of souls need to manage dps timer") {}
-    bool IsActive() override;
-};
-
 // Mother Shahraz
 
 class MotherShahrazPullingBossTrigger : public Trigger

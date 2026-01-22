@@ -96,9 +96,6 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("reliquary of souls essence of desire casting deaden", {
         NextAction("reliquary of souls spell reflect deaden", ACTION_EMERGENCY + 10) }));
 
-    triggers.push_back(new TriggerNode("reliquary of souls need to manage dps timer", {
-        NextAction("reliquary of souls manage dps timer", ACTION_EMERGENCY + 10) }));
-
     // Mother Shahraz
     triggers.push_back(new TriggerNode("mother shahraz pulling boss", {
         NextAction("mother shahraz misdirect boss to main tank", ACTION_RAID + 2) }));
@@ -206,9 +203,7 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new GurtoggBloodboilControlMovementMultiplier(botAI));
 
     // Reliquary of Souls
-    multipliers.push_back(new ReliquaryOfSoulsWaitForDpsMultiplier(botAI));
     multipliers.push_back(new ReliquaryOfSoulsDontWasteHealingMultiplier(botAI));
-    multipliers.push_back(new ReliquaryOfSoulsDontInterruptDeadenIfReflectableMultiplier(botAI));
 
     // Mother Shahraz
     multipliers.push_back(new MotherShahrazControlMovementMultiplier(botAI));

@@ -28,11 +28,6 @@ bool BlackTempleEraseTimersAndTrackersAction::Execute(Event event)
         if (gurtoggPhaseTimer.erase(instanceId) > 0)
             erased = true;
     }
-    if (!AI_VALUE2(Unit*, "find target", "reliquary of the lost"))
-    {
-        if (reliquaryDpsWaitTimer.erase(instanceId) > 0)
-            erased = true;
-    }
     if (!AI_VALUE2(Unit*, "find target", "mother shahraz"))
     {
         if (shahrazTankStep.erase(guid) > 0)
@@ -818,7 +813,7 @@ bool GurtoggBloodboilDisperseRangedAction::Execute(Event event)
     if (distToGurtogg < minRange)
         return MoveTo(gurtogg, minRange, MovementPriority::MOVEMENT_FORCED);
 
-    const float maxRange = 20.0f;
+    const float maxRange = 18.0f;
     if (distToGurtogg > maxRange)
         return MoveTo(gurtogg, maxRange, MovementPriority::MOVEMENT_FORCED);
 
@@ -835,22 +830,12 @@ bool GurtoggBloodboilDisperseRangedAction::Execute(Event event)
 bool GurtoggBloodboilRangedMoveToAbsorbBloodboilPositionAction::Execute(Event event)
 {
     const Position& position = GURTOGG_ABSORB_BLOODBOIL_POSITION;
-    /* float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
-    if (distToPosition > 2.0f)
-    {
-        float dX = position.GetPositionX() - bot->GetPositionX();
-        float dY = position.GetPositionY() - bot->GetPositionY();
-        float moveDist = std::min(10.0f, distToPosition);
-        float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
-        float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
-
-        return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
-                      false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
-    } */
     const float distToPosition = 3.0f;
     if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > distToPosition)
     {
-        return MoveInside(BLACK_TEMPLE_MAP_ID, position.GetPositionX(), position.GetPositionY(), 
+        bot->AttackStop();
+        bot->InterruptNonMeleeSpells(true);
+        return MoveInside(BLACK_TEMPLE_MAP_ID, position.GetPositionX(), position.GetPositionY(),
                           position.GetPositionZ(), distToPosition, MovementPriority::MOVEMENT_FORCED);
     }
 
@@ -1032,28 +1017,6 @@ bool ReliquaryOfSoulsSpellReflectDeadenAction::Execute(Event event)
         return botAI->CastSpell("spell reflection", bot);
 
     return false;
-}
-
-bool ReliquaryOfSoulsManageDpsTimerAction::Execute(Event event)
-{
-    Unit* reliquary = AI_VALUE2(Unit*, "find target", "reliquary of the lost");
-    if (!reliquary)
-        return false;
-
-    const uint32 instanceId = reliquary->GetMap()->GetInstanceId();
-    const time_t now = std::time(nullptr);
-
-    Unit* suffering = AI_VALUE2(Unit*, "find target", "essence of suffering");
-    Unit* desire = AI_VALUE2(Unit*, "find target", "essence of desire");
-    Unit* anger = AI_VALUE2(Unit*, "find target", "essence of anger");
-
-    if (!suffering && !desire && !anger)
-        return reliquaryDpsWaitTimer.erase(instanceId) > 0;
-    else
-    {
-        auto [it, inserted] = reliquaryDpsWaitTimer.try_emplace(instanceId, now);
-        return inserted;
-    }
 }
 
 // Mother Shahraz
@@ -1961,8 +1924,8 @@ bool IllidanStormrageIsolateBotWithParasiteAction::Execute(Event event)
             for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
             {
                 Player* member = ref->GetSource();
-                if (!member || !member->IsAlive() || member == bot ||
-                    member == trapper)
+                if (!member || !member->IsAlive() || member == bot /* ||
+                    member == trapper */)
                     continue;
 
                 float distance = bot->GetExactDist2d(member);
@@ -2373,7 +2336,7 @@ bool IllidanStormrageDisperseRangedAction::Execute(Event event)
     }
 
     // Phase 3, 4, or 5
-    const float safeDistFromPlayer
+    const float safeDistFromPlayer = 6.0f;
     if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
     {
         const uint32 minInterval = 1000;
