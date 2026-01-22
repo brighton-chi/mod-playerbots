@@ -6,6 +6,7 @@
 #include "DKActions.h"
 #include "DruidActions.h"
 #include "DruidBearActions.h"
+#include "DruidCatActions.h"
 #include "DruidShapeshiftActions.h"
 #include "FollowActions.h"
 #include "GenericSpellActions.h"
@@ -256,8 +257,8 @@ float LeotherasTheBlindDisableTankActionsMultiplier::GetValue(Action* action)
 
     if (GetLeotherasDemonFormTank(botAI, bot) == bot)
     {
-        // (1) Warlock tank will not use Shadow Ward
-        // Shadow Ward is coded into the Warlock tank strategy (for Twin Emps) but is useless here
+        // (1) Warlock tank will not use Shadow Ward, which is coded into the
+        // Warlock tank strategy (for Twin Emps) but is useless here
         if (dynamic_cast<CastShadowWardAction*>(action))
             return 0.0f;
 
@@ -265,10 +266,12 @@ float LeotherasTheBlindDisableTankActionsMultiplier::GetValue(Action* action)
     }
 
     // (2) Phase 2 only: non-Warlock tanks should not attack Leotheras
-    if (botAI->IsTank(bot) && GetPhase2LeotherasDemon(botAI) &&
-        !bot->HasAura(SPELL_INSIDIOUS_WHISPER))
+    if (botAI->IsTank(bot) && !bot->HasAura(SPELL_INSIDIOUS_WHISPER))
     {
-        if (dynamic_cast<AttackAction*>(action))
+        if (GetPhase2LeotherasDemon(botAI) && dynamic_cast<AttackAction*>(action))
+            return 0.0f;
+
+        if (!GetPhase3LeotherasDemon(botAI) && dynamic_cast<CastBerserkAction*>(action))
             return 0.0f;
     }
 
