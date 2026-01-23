@@ -2410,7 +2410,7 @@ bool IllidanStormrageDisperseRangedAction::Execute(Event event)
     return false;
 }
 
-bool IllidanStormragePositionMeleeAction::Execute(Event event)
+bool IllidanStormrageMeleeGoSomewhereToNotDieAction::Execute(Event event)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     if (!illidan)
@@ -2433,7 +2433,7 @@ bool IllidanStormragePositionMeleeAction::Execute(Event event)
     return false;
 }
 
-bool IllidanStormragePositionMeleeAction::StayAwayFromDemonBoss(Unit* illidan)
+bool IllidanStormrageMeleeGoSomewhereToNotDieAction::StayAwayFromDemonBoss(Unit* illidan)
 {
     float currentDistance = bot->GetDistance2d(illidan);
     float safeDistFromBoss = 35.0f;
@@ -2447,7 +2447,7 @@ bool IllidanStormragePositionMeleeAction::StayAwayFromDemonBoss(Unit* illidan)
         return true;
 }
 
-bool IllidanStormragePositionMeleeAction::PositionBehindBoss(Unit* illidan)
+bool IllidanStormrageMeleeGoSomewhereToNotDieAction::PositionBehindBoss(Unit* illidan)
 {
     if (illidan->GetVictim() == bot)
         return false;

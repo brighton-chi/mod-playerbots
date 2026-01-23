@@ -445,11 +445,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class IllidanStormragePositionMeleeAction : public MovementAction
+class IllidanStormrageMeleeGoSomewhereToNotDieAction : public MovementAction
 {
 public:
-    IllidanStormragePositionMeleeAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "illidan stormrage position melee") {}
+    IllidanStormrageMeleeGoSomewhereToNotDieAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "illidan stormrage melee go somewhere to not die") {}
     bool Execute(Event event) override;
 
 private:

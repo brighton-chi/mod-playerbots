@@ -168,8 +168,8 @@ public:
         creators["illidan stormrage disperse ranged"] =
             &RaidBlackTempleActionContext::illidan_stormrage_disperse_ranged;
 
-        creators["illidan stormrage position melee"] =
-            &RaidBlackTempleActionContext::illidan_stormrage_position_melee;
+        creators["illidan stormrage melee go somewhere to not die"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_melee_go_somewhere_to_not_die;
 
         creators["illidan stormrage warlock tank handle demon boss"] =
             &RaidBlackTempleActionContext::illidan_stormrage_warlock_tank_handle_demon_boss;
@@ -344,8 +344,8 @@ private:
     static Action* illidan_stormrage_disperse_ranged(
         PlayerbotAI* botAI) { return new IllidanStormrageDisperseRangedAction(botAI); }
 
-    static Action* illidan_stormrage_position_melee(
-        PlayerbotAI* botAI) { return new IllidanStormragePositionMeleeAction(botAI); }
+    static Action* illidan_stormrage_melee_go_somewhere_to_not_die(
+        PlayerbotAI* botAI) { return new IllidanStormrageMeleeGoSomewhereToNotDieAction(botAI); }
 
     static Action* illidan_stormrage_warlock_tank_handle_demon_boss(
         PlayerbotAI* botAI) { return new IllidanStormrageWarlockTankHandleDemonBossAction(botAI); }
