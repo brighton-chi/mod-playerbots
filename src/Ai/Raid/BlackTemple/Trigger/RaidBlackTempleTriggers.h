@@ -167,19 +167,11 @@ public:
     bool IsActive() override;
 };
 
-class GurtoggBloodboilBossCastsAoeSpellsTrigger : public Trigger
+class GurtoggBloodboilBossCastsBloodboilAndGeyserTrigger : public Trigger
 {
 public:
-    GurtoggBloodboilBossCastsAoeSpellsTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "gurtogg bloodboil boss casts aoe spells") {}
-    bool IsActive() override;
-};
-
-class GurtoggBloodboilBossCastsBloodboilOnFiveFarthestPlayersTrigger : public Trigger
-{
-public:
-    GurtoggBloodboilBossCastsBloodboilOnFiveFarthestPlayersTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "gurtogg bloodboil boss casts bloodboil on five farthest players") {}
+    GurtoggBloodboilBossCastsBloodboilAndGeyserTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "gurtogg bloodboil boss casts bloodboil and geyser") {}
     bool IsActive() override;
 };
 

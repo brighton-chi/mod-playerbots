@@ -153,7 +153,6 @@ namespace BlackTempleHelpers
 
     // Gurtogg Bloodboil
     const Position GURTOGG_TANK_POSITION = { 735.987f, 272.451f, 63.554f };
-    const Position GURTOGG_ABSORB_BLOODBOIL_POSITION = { 777.279f, 274.639f, 63.732f };
     std::unordered_map<uint32, time_t> gurtoggPhaseTimer;
 
     std::vector<std::vector<Player*>> GetGurtoggRangedRotationGroups(Player* bot)
@@ -301,7 +300,7 @@ namespace BlackTempleHelpers
     const Position ILLIDAN_N_GRATE_POSITION = { 682.500f, 305.000f, 353.192f };
     const Position ILLIDAN_S_GRATE_POSITION = { 670.000f, 305.000f, 353.192f };
     const Position ILLIDAN_E_GRATE_POSITION = { 0.0f, 0.0f, 0.0f };
-    const Position ILLIDAN_W_GRATE_POSITION = { 0.0f, 0.0f, 0.0f };
+    const Position ILLIDAN_W_GRATE_POSITION = { 676.114f, 311.830f, 353.192f }; // as far out as I can get but too close to N and S spots
     const Position ILLIDAN_SW_GRATE_POSITION = { 672.828f, 311.496f, 353.192f };
     const Position ILLIDAN_SE_GRATE_POSITION = { 672.928f, 298.357f, 353.192f };
     const Position GRATE_POSITIONS[2] =
@@ -311,7 +310,7 @@ namespace BlackTempleHelpers
         // ILLIDAN_E_GRATE_POSITION,
         // ILLIDAN_W_GRATE_POSITION,
     };
-    const Position ILLIDAN_E_GLAIVE_WAITING_POSITION = { 682.140f, 287.685f, 354.135f };
+    const Position ILLIDAN_E_GLAIVE_WAITING_POSITION = { 677.656f, 294.066f, 353.192f };
     /* const Position ILLIDAN_E_GLAIVE_TANK_POSITION_1 = { 697.097f, 287.966f, 353.983f };
     const Position ILLIDAN_E_GLAIVE_TANK_POSITION_2 = { 689.442f, 282.678f, 354.303f };
     const Position ILLIDAN_E_GLAIVE_TANK_POSITION_3 = { 680.054f, 279.540f, 354.089f };
@@ -340,7 +339,7 @@ namespace BlackTempleHelpers
         ILLIDAN_E_GLAIVE_TANK_POSITION_6,
         ILLIDAN_E_GLAIVE_TANK_POSITION_7,
     };
-    const Position ILLIDAN_W_GLAIVE_WAITING_POSITION = { 679.849f, 322.339f, 354.118f };
+    const Position ILLIDAN_W_GLAIVE_WAITING_POSITION = { 676.102f, 316.305f, 353.192f };
     /* const Position ILLIDAN_W_GLAIVE_TANK_POSITION_1 = { 697.363f, 323.860f, 353.948f };
     const Position ILLIDAN_W_GLAIVE_TANK_POSITION_2 = { 690.218f, 329.326f, 353.868f };
     const Position ILLIDAN_W_GLAIVE_TANK_POSITION_3 = { 681.647f, 322.243f, 353.813f };
@@ -434,16 +433,43 @@ namespace BlackTempleHelpers
         if (illidan->GetHealthPct() > 65.0f)
             return 1;
 
+        // Transitioning from Phase 2 to Phase 3
+        float x, y, z;
+        illidan->GetMotionMaster()->GetDestination(x, y, z);
+        Position dest(x, y, z);
+        if ((dest.GetExactDist2d(ILLIDAN_LANDING_POSITION) < 0.2f ||
+             illidan->GetExactDist2d(ILLIDAN_LANDING_POSITION) < 0.2f) &&
+             illidan->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE) && !illidan->HasAura(SPELL_SHADOW_PRISON))
+             return 0;
+
         // Phase 2: Flying
         if (illidan->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE) && !illidan->HasAura(SPELL_SHADOW_PRISON))
             return 2;
 
         // Phase 3: Normal (ground, 65-30%, not demon)
-        if (illidan->GetHealthPct() > 30.0f && !illidan->HasAura(SPELL_DEMON_FORM))
+        if (illidan->GetHealthPct() > 30.0f && !illidan->HasAura(SPELL_DEMON_FORM) && !illidan->HasAura(SPELL_DEMON_TRANSFORM_1) &&
+            !illidan->HasAura(SPELL_DEMON_TRANSFORM_2) && !illidan->HasAura(SPELL_DEMON_TRANSFORM_3))
             return 3;
 
         // Phase 4: Demon Form
         if (illidan->HasAura(SPELL_DEMON_FORM))
+        {
+            LOG_DEBUG("playerbots", "Illidan has SPELL_DEMON_FORM");
+        }
+        if (illidan->HasAura(SPELL_DEMON_TRANSFORM_1))
+        {
+            LOG_DEBUG("playerbots", "Illidan has SPELL_DEMON_TRANSFORM_1");
+        }
+        if (illidan->HasAura(SPELL_DEMON_TRANSFORM_2))
+        {
+            LOG_DEBUG("playerbots", "Illidan has SPELL_DEMON_TRANSFORM_2");
+        }
+        if (illidan->HasAura(SPELL_DEMON_TRANSFORM_3))
+        {
+            LOG_DEBUG("playerbots", "Illidan has SPELL_DEMON_TRANSFORM_3");
+        }
+        if (illidan->HasAura(SPELL_DEMON_FORM) || illidan->HasAura(SPELL_DEMON_TRANSFORM_1) ||
+            illidan->HasAura(SPELL_DEMON_TRANSFORM_2) || illidan->HasAura(SPELL_DEMON_TRANSFORM_3))
             return 4;
 
         // Phase 5: Health <= 30%
@@ -621,7 +647,7 @@ namespace BlackTempleHelpers
         Position startPos = Position(eyeBlastTrigger->GetPositionX(), eyeBlastTrigger->GetPositionY(), eyeBlastTrigger->GetPositionZ());
         Position endPos = eyeBeamPos[beamPosId + MAX_EYE_BEAM_POS];
 
-        float eyeBlastWidth = 10.0f;
+        float eyeBlastWidth = 9.0f; // Was using 10, trying 9
         return { startPos, endPos, eyeBlastWidth };
     }
 

@@ -61,7 +61,10 @@ namespace BlackTempleHelpers
 
         // Illidan Stormrage <The Betrayer>
         SPELL_DEMON_FIRE = 40030,
-        SPELL_DEMON_FORM = 40506,
+        SPELL_DEMON_TRANSFORM_1             = 40511,
+        SPELL_DEMON_TRANSFORM_2             = 40398,
+        SPELL_DEMON_TRANSFORM_3             = 40510,
+        SPELL_DEMON_FORM = 40506, // using only this one will trigger the moment the transformation is complete
         SPELL_DARK_BARRAGE = 40585,
         SPELL_BLAZE = 40611,
         SPELL_SHADOW_PRISON             = 40647,
@@ -154,7 +157,6 @@ namespace BlackTempleHelpers
 
     // Gurtogg Bloodboil
     extern const Position GURTOGG_TANK_POSITION;
-    extern const Position GURTOGG_ABSORB_BLOODBOIL_POSITION;
     extern std::unordered_map<uint32, time_t> gurtoggPhaseTimer;
     std::vector<std::vector<Player*>> GetGurtoggRangedRotationGroups(Player* bot);
     int GetGurtoggActiveRotationGroup(Unit* gurtogg);

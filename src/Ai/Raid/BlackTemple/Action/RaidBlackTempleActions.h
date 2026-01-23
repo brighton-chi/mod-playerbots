@@ -175,19 +175,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class GurtoggBloodboilDisperseRangedAction : public MovementAction
+class GurtoggBloodboilPositionRangedAction : public MovementAction
 {
 public:
-    GurtoggBloodboilDisperseRangedAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "gurtogg bloodboil disperse ranged") {}
-    bool Execute(Event event) override;
-};
-
-class GurtoggBloodboilRangedMoveToAbsorbBloodboilPositionAction : public MovementAction
-{
-public:
-    GurtoggBloodboilRangedMoveToAbsorbBloodboilPositionAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "gurtogg bloodboil ranged move to absorb bloodboil position") {}
+    GurtoggBloodboilPositionRangedAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "gurtogg bloodboil position ranged") {}
     bool Execute(Event event) override;
 };
 
@@ -217,15 +209,16 @@ public:
     bool Execute(Event event) override;
 };
 
-class ReliquaryOfSoulsKeepDistanceFromEssenceOfSufferingAction : public MovementAction
+class ReliquaryOfSoulsAdjustDistanceFromEssenceOfSufferingAction : public MovementAction
 {
 public:
-    ReliquaryOfSoulsKeepDistanceFromEssenceOfSufferingAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "reliquary of souls keep distance from essence of suffering") {}
+    ReliquaryOfSoulsAdjustDistanceFromEssenceOfSufferingAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "reliquary of souls adjust distance from essence of suffering") {}
     bool Execute(Event event) override;
 
 private:
-    bool MeleeDpsStayAtMaxRange(Unit* suffering);
+    bool TanksMoveToMinimumRange(Unit* suffering);
+    bool MeleeDpsStayAtMaximumRange(Unit* suffering);
     bool RangedMoveAwayFromBoss(Unit* suffering);
 };
 
@@ -452,11 +445,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class IllidanStormragePositionMeleeAction : public AttackAction
+class IllidanStormragePositionMeleeAction : public MovementAction
 {
 public:
     IllidanStormragePositionMeleeAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "illidan stormrage position melee") {}
+        PlayerbotAI* botAI) : MovementAction(botAI, "illidan stormrage position melee") {}
     bool Execute(Event event) override;
 
 private:

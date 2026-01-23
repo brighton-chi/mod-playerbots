@@ -74,11 +74,8 @@ public:
         creators["gurtogg bloodboil boss engaged by tanks"] =
             &RaidBlackTempleTriggerContext::gurtogg_bloodboil_boss_engaged_by_tanks;
 
-        creators["gurtogg bloodboil boss casts aoe spells"] =
-            &RaidBlackTempleTriggerContext::gurtogg_bloodboil_boss_casts_aoe_spells;
-
-        creators["gurtogg bloodboil boss casts bloodboil on five farthest players"] =
-            &RaidBlackTempleTriggerContext::gurtogg_bloodboil_boss_casts_bloodboil_on_five_farthest_players;
+        creators["gurtogg bloodboil boss casts bloodboil and geyser"] =
+            &RaidBlackTempleTriggerContext::gurtogg_bloodboil_boss_casts_bloodboil_and_geyser;
 
         creators["gurtogg bloodboil bot has fel rage"] =
             &RaidBlackTempleTriggerContext::gurtogg_bloodboil_bot_has_fel_rage;
@@ -271,11 +268,8 @@ private:
     static Trigger* gurtogg_bloodboil_boss_engaged_by_tanks(
         PlayerbotAI* botAI) { return new GurtoggBloodboilBossEngagedByTanksTrigger(botAI); }
 
-    static Trigger* gurtogg_bloodboil_boss_casts_aoe_spells(
-        PlayerbotAI* botAI) { return new GurtoggBloodboilBossCastsAoeSpellsTrigger(botAI); }
-
-    static Trigger* gurtogg_bloodboil_boss_casts_bloodboil_on_five_farthest_players(
-        PlayerbotAI* botAI) { return new GurtoggBloodboilBossCastsBloodboilOnFiveFarthestPlayersTrigger(botAI); }
+    static Trigger* gurtogg_bloodboil_boss_casts_bloodboil_and_geyser(
+        PlayerbotAI* botAI) { return new GurtoggBloodboilBossCastsBloodboilAndGeyserTrigger(botAI); }
 
     static Trigger* gurtogg_bloodboil_bot_has_fel_rage(
         PlayerbotAI* botAI) { return new GurtoggBloodboilBotHasFelRageTrigger(botAI); }

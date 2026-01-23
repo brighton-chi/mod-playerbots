@@ -444,17 +444,28 @@ float IllidanStormrageControlMovementMultiplier::GetValue(Action* action)
     {
         if (dynamic_cast<TankFaceAction*>(action))
         {
-            // if (!botAI->IsMainTank(bot))
+            if (!botAI->IsMainTank(bot))
                 return 0.0f;
         }
         else if (dynamic_cast<CombatFormationMoveAction*>(action) &&
                  !dynamic_cast<SetBehindTargetAction*>(action))
                  return 0.0f;
 
-        if (GetIllidanPhase(illidan) == 2 &&
-            dynamic_cast<AvoidAoeAction*>(action))
+        if (GetIllidanPhase(illidan) == 2)
         {
-            return 0.0f;
+            if (dynamic_cast<AvoidAoeAction*>(action))
+                return 0.0f;
+
+            if (botAI->IsAssistTankOfIndex(bot, 0, true) ||
+                botAI->IsAssistTankOfIndex(bot, 1, true))
+            {
+                if (dynamic_cast<MovementAction*>(action) &&
+                    !dynamic_cast<IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction*>(action))
+                    return 0.0f;
+
+                if (dynamic_cast<CastHealingSpellAction*>(action))
+                    return 0.0f;
+            }
         }
     }
 
@@ -463,9 +474,6 @@ float IllidanStormrageControlMovementMultiplier::GetValue(Action* action)
 
 float IllidanStormrageDisableDefaultTargetingMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsTank(bot))
-        return 1.0f;
-
     if (bot->GetVictim() == nullptr)
         return 1.0f;
 
@@ -497,23 +505,27 @@ float IllidanStormrageStayWithinGrateMultiplier::GetValue(Action* action)
         return 1.0f;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (illidan && GetIllidanPhase(illidan) == 2)
+    if (illidan)
     {
-        if (dynamic_cast<ReachTargetAction*>(action) ||
-            dynamic_cast<FleeAction*>(action) ||
-            dynamic_cast<FollowAction*>(action) ||
-            dynamic_cast<SetBehindTargetAction*>(action) ||
-            dynamic_cast<CastReachTargetSpellAction*>(action) ||
-            dynamic_cast<CastDisengageAction*>(action) ||
-            dynamic_cast<CastBlinkBackAction*>(action) ||
-            dynamic_cast<CastKillingSpreeAction*>(action))
-            return 0.0f;
-
-        if (botAI->IsMainTank(bot))
+        if (GetIllidanPhase(illidan) == 2 ||
+            (GetIllidanPhase(illidan) == 1 && bot->HasAura(SPELL_PARASITIC_SHADOWFIEND)))
         {
-            if (dynamic_cast<AttackAction*>(action) ||
-                dynamic_cast<CastMeleeSpellAction*>(action))
+            if (dynamic_cast<ReachTargetAction*>(action) ||
+                dynamic_cast<FleeAction*>(action) ||
+                dynamic_cast<FollowAction*>(action) ||
+                dynamic_cast<SetBehindTargetAction*>(action) ||
+                dynamic_cast<CastReachTargetSpellAction*>(action) ||
+                dynamic_cast<CastDisengageAction*>(action) ||
+                dynamic_cast<CastBlinkBackAction*>(action) ||
+                dynamic_cast<CastKillingSpreeAction*>(action))
                 return 0.0f;
+
+            if (botAI->IsMainTank(bot))
+            {
+                if (dynamic_cast<AttackAction*>(action) ||
+                    dynamic_cast<CastMeleeSpellAction*>(action))
+                    return 0.0f;
+            }
         }
     }
 

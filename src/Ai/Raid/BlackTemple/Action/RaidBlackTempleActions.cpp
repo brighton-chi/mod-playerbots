@@ -717,11 +717,16 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event event
         }
     }
 
-    if (spirit->GetDistance2d(gorefiend) > 5.0f)
+    float distToGorefiend = spirit->GetDistance2d(gorefiend);
+    if (distToGorefiend > 5.0f)
     {
-        float moveX = gorefiend->GetPositionX();
-        float moveY = gorefiend->GetPositionY();
+        float moveDist = std::min(5.0f, distToGorefiend - 5.0f);
+        float moveX = spirit->GetPositionX() + (
+            gorefiend->GetPositionX() - spirit->GetPositionX()) / distToGorefiend * moveDist;
+        float moveY = spirit->GetPositionY() + (
+            gorefiend->GetPositionY() - spirit->GetPositionY()) / distToGorefiend * moveDist;
         float moveZ = gorefiend->GetPositionZ();
+
         spirit->GetMotionMaster()->MovePoint(0, moveX, moveY, moveZ);
         return true;
     }
@@ -781,7 +786,7 @@ bool GurtoggBloodboilTanksPositionBossAction::Execute(Event event)
 
     Unit* victim = gurtogg->GetVictim();
     Player* playerVictim = victim ? victim->ToPlayer() : nullptr;
-    if (playerVictim && botAI->IsTank(playerVictim))
+    if (playerVictim && botAI->IsTank(playerVictim) && bot->IsWithinMeleeRange(gurtogg))
     {
         const Position& position = GURTOGG_TANK_POSITION;
         float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
@@ -801,42 +806,50 @@ bool GurtoggBloodboilTanksPositionBossAction::Execute(Event event)
     return false;
 }
 
-bool GurtoggBloodboilDisperseRangedAction::Execute(Event event)
+bool GurtoggBloodboilPositionRangedAction::Execute(Event event)
 {
     Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
     if (!gurtogg)
         return false;
 
-    float distToGurtogg = bot->GetExactDist2d(gurtogg);
+    auto groups = GetGurtoggRangedRotationGroups(bot);
+    int activeGroup = GetGurtoggActiveRotationGroup(gurtogg);
 
-    const float minRange = 10.0f;
-    if (distToGurtogg < minRange)
-        return MoveTo(gurtogg, minRange, MovementPriority::MOVEMENT_FORCED);
-
-    const float maxRange = 18.0f;
-    if (distToGurtogg > maxRange)
-        return MoveTo(gurtogg, maxRange, MovementPriority::MOVEMENT_FORCED);
-
-    const float safeDistance = 5.0f;
-    if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
+    bool inActiveGroup = false;
+    if (activeGroup >= 0 && activeGroup < groups.size())
     {
-        const uint32 minInterval = 1000;
-        return FleePosition(Position(nearestPlayer->GetPosition()), safeDistance, minInterval);
+        const auto& group = groups[activeGroup];
+        inActiveGroup = std::find(group.begin(), group.end(), bot) != group.end();
     }
 
-    return false;
-}
+    float distToGurtogg = bot->GetDistance2d(gurtogg);
 
-bool GurtoggBloodboilRangedMoveToAbsorbBloodboilPositionAction::Execute(Event event)
-{
-    const Position& position = GURTOGG_ABSORB_BLOODBOIL_POSITION;
-    const float distToPosition = 3.0f;
-    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > distToPosition)
+    if (inActiveGroup)
     {
-        bot->AttackStop();
-        bot->InterruptNonMeleeSpells(true);
-        return MoveInside(BLACK_TEMPLE_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-                          position.GetPositionZ(), distToPosition, MovementPriority::MOVEMENT_FORCED);
+        const float desiredDistance = 20.0f;
+        if (distToGurtogg < desiredDistance)
+        {
+            const uint32 minInterval = 0;
+            botAI->Reset();
+            return FleePosition(Position(gurtogg->GetPosition()), desiredDistance, minInterval);
+        }
+    }
+    else
+    {
+        const float minRange = 10.0f;
+        if (distToGurtogg < minRange)
+            return MoveTo(gurtogg, minRange, MovementPriority::MOVEMENT_FORCED);
+
+        const float maxRange = 15.0f;
+        if (distToGurtogg > maxRange)
+            return MoveTo(gurtogg, maxRange, MovementPriority::MOVEMENT_FORCED);
+
+        const float safeDistance = 5.0f;
+        if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
+        {
+            const uint32 minInterval = 1000;
+            return FleePosition(Position(nearestPlayer->GetPosition()), safeDistance, minInterval);
+        }
     }
 
     return false;
@@ -861,8 +874,8 @@ bool GurtoggBloodboilRangedMoveAwayFromEnragedPlayerAction::Execute(Event event)
 
     if (enragedPlayer)
     {
-        const float safeDistance = 20.0f;
-        if (bot->GetExactDist2d(enragedPlayer) < safeDistance)
+        const float safeDistance = 19.0f;
+        if (bot->GetDistance2d(enragedPlayer) < safeDistance)
         {
             const uint32 minInterval = 0;
             return FleePosition(Position(enragedPlayer->GetPosition()), safeDistance, minInterval);
@@ -941,7 +954,7 @@ bool ReliquaryOfSoulsHealersDpsEssenceOfSufferingAction::Execute(Event event)
             return true;
         }
     }
-    else if (AI_VALUE2(Unit*, "find target", "reliquary of the lost"))
+    else
     {
         if (botAI->HasStrategy("healer dps", BotState::BOT_STATE_COMBAT))
         {
@@ -953,32 +966,50 @@ bool ReliquaryOfSoulsHealersDpsEssenceOfSufferingAction::Execute(Event event)
     return false;
 }
 
-bool ReliquaryOfSoulsKeepDistanceFromEssenceOfSufferingAction::Execute(Event event)
+bool ReliquaryOfSoulsAdjustDistanceFromEssenceOfSufferingAction::Execute(Event event)
 {
     Unit* suffering = AI_VALUE2(Unit*, "find target", "essence of suffering");
     if (!suffering)
         return false;
 
-    if (botAI->IsMelee(bot) && bot->GetVictim() != suffering)
-        return MeleeDpsStayAtMaxRange(suffering);
-
-    if (botAI->IsRanged(bot))
+    if (botAI->IsTank(bot))
+        return TanksMoveToMinimumRange(suffering);
+    else if (botAI->IsMelee(bot) && bot->GetVictim() != suffering)
+        return MeleeDpsStayAtMaximumRange(suffering);
+    else if (botAI->IsRanged(bot))
         return RangedMoveAwayFromBoss(suffering);
 
     return false;
 }
 
-bool ReliquaryOfSoulsKeepDistanceFromEssenceOfSufferingAction::MeleeDpsStayAtMaxRange(Unit* suffering)
+bool ReliquaryOfSoulsAdjustDistanceFromEssenceOfSufferingAction::TanksMoveToMinimumRange(Unit* suffering)
+{
+    const float desiredDist = 2.0f;
+    float distanceToBoss = bot->GetExactDist2d(suffering);
+    if (distanceToBoss > desiredDist)
+    {
+        float dX = suffering->GetPositionX() - bot->GetPositionX();
+        float dY = suffering->GetPositionY() - bot->GetPositionY();
+        float targetX = bot->GetPositionX() + (dX / distanceToBoss);
+        float targetY = bot->GetPositionY() + (dY / distanceToBoss);
+
+        return MoveTo(BLACK_TEMPLE_MAP_ID, targetX, targetY, bot->GetPositionZ(), false,
+                      false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+    }
+
+    return false;
+}
+
+bool ReliquaryOfSoulsAdjustDistanceFromEssenceOfSufferingAction::MeleeDpsStayAtMaximumRange(Unit* suffering)
 {
     float desiredDist = bot->GetMeleeRange(suffering) - 0.5f;
-    const float tolerance = 0.25f;
-    if (fabs(bot->GetExactDist2d(suffering) - desiredDist) > tolerance)
+    if (fabs(bot->GetDistance2d(suffering) - desiredDist))
     {
         float behindAngle = Position::NormalizeOrientation(suffering->GetOrientation() + M_PI);
         float targetX = suffering->GetPositionX() + desiredDist * std::cos(behindAngle);
         float targetY = suffering->GetPositionY() + desiredDist * std::sin(behindAngle);
 
-        if (bot->GetExactDist2d(targetX, targetY) > tolerance)
+        if (bot->GetExactDist2d(targetX, targetY))
         {
             return MoveTo(BLACK_TEMPLE_MAP_ID, targetX, targetY, bot->GetPositionZ(), false,
                           false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
@@ -988,7 +1019,7 @@ bool ReliquaryOfSoulsKeepDistanceFromEssenceOfSufferingAction::MeleeDpsStayAtMax
     return false;
 }
 
-bool ReliquaryOfSoulsKeepDistanceFromEssenceOfSufferingAction::RangedMoveAwayFromBoss(Unit* suffering)
+bool ReliquaryOfSoulsAdjustDistanceFromEssenceOfSufferingAction::RangedMoveAwayFromBoss(Unit* suffering)
 {
     const float safeDistance = 10.0f;
     if (bot->GetDistance2d(suffering) < safeDistance)
@@ -2009,7 +2040,15 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event even
                 return Attack(eastFlame);
 
             if (eastFlame->GetVictim() != bot)
+            {
+                if (!bot->IsWithinMeleeRange(eastFlame))
+                {
+                    return MoveTo(BLACK_TEMPLE_MAP_ID, eastFlame->GetPositionX(), eastFlame->GetPositionY(),
+                                  eastFlame->GetPositionZ(), false, false, false, false,
+                                  MovementPriority::MOVEMENT_COMBAT, true, false);
+                }
                 return false;
+            }
         }
         else if (!eastFlame && !westFlame)
         {
@@ -2042,7 +2081,15 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event even
                 return Attack(westFlame);
 
             if (westFlame->GetVictim() != bot)
+            {
+                if (!bot->IsWithinMeleeRange(westFlame))
+                {
+                    return MoveTo(BLACK_TEMPLE_MAP_ID, westFlame->GetPositionX(), westFlame->GetPositionY(),
+                                  westFlame->GetPositionZ(), false, false, false, false,
+                                  MovementPriority::MOVEMENT_COMBAT, true, false);
+                }
                 return false;
+            }
         }
         else
         {
@@ -2141,8 +2188,12 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidE
         return MoveTo(BLACK_TEMPLE_MAP_ID, safeX, safeY, safeZ,
                       false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
     }
-
-    return false;
+    else
+    {
+        // Eye Blast is still present, but bot is already safe: "hold" position
+        LOG_DEBUG("playerbots", "EyeBlast Bot is safe but Eye Blast is still present, holding position.");
+        return true; // Prevents other movement actions from running
+    }
 }
 
 bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidBlaze(Unit* eastFlame, Unit* westFlame)
@@ -2180,22 +2231,35 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidB
         }
     }
 
-    if (blazeNearby && bot->GetExactDist2d(target.GetPositionX(), target.GetPositionY()) <= 0.2f)
+    float distToTarget = bot->GetExactDist2d(target.GetPositionX(), target.GetPositionY());
+    // Move to next waypoint if blaze is nearby and bot is at current waypoint
+    if (blazeNearby && distToTarget <= 0.2f)
     {
         waypointIndex = (waypointIndex + 1) % numWaypoints;
-        // Update target after increment
         const Position& newTarget = waypoints[waypointIndex];
-        if (bot->GetExactDist2d(newTarget.GetPositionX(), newTarget.GetPositionY()) > 0.2f)
+        float distToNewTarget = bot->GetExactDist2d(newTarget.GetPositionX(), newTarget.GetPositionY());
+
+        if (distToNewTarget > 0.2f)
         {
+            float dX = newTarget.GetPositionX() - bot->GetPositionX();
+            float dY = newTarget.GetPositionY() - bot->GetPositionY();
+            float moveDist = std::min(5.0f, distToNewTarget);
+            float moveX = bot->GetPositionX() + (dX / distToNewTarget) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / distToNewTarget) * moveDist;
+
             return MoveTo(BLACK_TEMPLE_MAP_ID, newTarget.GetPositionX(), newTarget.GetPositionY(), newTarget.GetPositionZ(),
                           false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, true);
         }
-        return false;
     }
-
-    // Move to current waypoint if not already there
-    if (bot->GetExactDist2d(target.GetPositionX(), target.GetPositionY()) > 0.2f)
+    // Move to current waypoint if no blaze nearby
+    else if (distToTarget > 0.2f)
     {
+        float dX = target.GetPositionX() - bot->GetPositionX();
+        float dY = target.GetPositionY() - bot->GetPositionY();
+        float moveDist = std::min(5.0f, distToTarget);
+        float moveX = bot->GetPositionX() + (dX / distToTarget) * moveDist;
+        float moveY = bot->GetPositionY() + (dY / distToTarget) * moveDist;
+
         return MoveTo(BLACK_TEMPLE_MAP_ID, target.GetPositionX(), target.GetPositionY(), target.GetPositionZ(),
                       false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, true);
     }
@@ -2319,7 +2383,7 @@ bool IllidanStormrageDisperseRangedAction::Execute(Event event)
         const uint32 minInterval = 0;
         if (Player* warlockTank = GetIllidanWarlockTank(botAI, bot))
         {
-            const float safeDistFromTank = 21.0f;
+            const float safeDistFromTank = 22.0f;
             if (bot->GetDistance2d(warlockTank) < safeDistFromTank)
             {
                 botAI->Reset();
@@ -2372,14 +2436,15 @@ bool IllidanStormragePositionMeleeAction::Execute(Event event)
 bool IllidanStormragePositionMeleeAction::StayAwayFromDemonBoss(Unit* illidan)
 {
     float currentDistance = bot->GetDistance2d(illidan);
-    float safeDistance = 30.0f;
-    if (currentDistance < safeDistance)
+    float safeDistFromBoss = 35.0f;
+    if (currentDistance < safeDistFromBoss)
     {
+        const uint32 minInterval = 0;
         botAI->Reset();
-        return MoveAway(illidan, safeDistance - currentDistance);
+        return FleePosition(Position(illidan->GetPosition()), safeDistFromBoss, minInterval);
     }
-
-    return false;
+    else
+        return true;
 }
 
 bool IllidanStormragePositionMeleeAction::PositionBehindBoss(Unit* illidan)
@@ -2577,6 +2642,13 @@ bool IllidanStormrageDestroyHazardsCheatAction::Execute(Event event)
         shadowfiend->Kill(bot, shadowfiend);
         destroyed = true;
     }
+
+    if (Unit* shadowDemon = AI_VALUE2(Unit*, "find target", "shadow demon"))
+    {
+        shadowDemon->Kill(bot, shadowDemon);
+        destroyed = true;
+    }
+
     if (GetIllidanPhase(illidan) == 2 || GetIllidanPhase(illidan) == 4)
     {
         auto const& npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
@@ -2592,7 +2664,7 @@ bool IllidanStormrageDestroyHazardsCheatAction::Execute(Event event)
     }
     else
     {
-        if (!AI_VALUE2(Unit*, "find target", "flame of azzinoth"))
+        if (GetIllidanPhase(illidan) == 0)
         {
             auto const& npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
             for (auto const& guid : npcs)

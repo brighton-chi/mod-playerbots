@@ -68,11 +68,8 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("gurtogg bloodboil boss engaged by tanks", {
         NextAction("gurtogg bloodboil tanks position boss", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("gurtogg bloodboil boss casts aoe spells", {
-        NextAction("gurtogg bloodboil disperse ranged", ACTION_RAID + 1) }));
-
-    triggers.push_back(new TriggerNode("gurtogg bloodboil boss casts bloodboil on five farthest players", {
-        NextAction("gurtogg bloodboil ranged move to absorb bloodboil position", ACTION_RAID + 1) }));
+    triggers.push_back(new TriggerNode("gurtogg bloodboil boss casts bloodboil and geyser", {
+        NextAction("gurtogg bloodboil position ranged", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("gurtogg bloodboil bot has fel rage", {
         NextAction("gurtogg bloodboil ranged move away from enraged player", ACTION_RAID + 1) }));
@@ -82,10 +79,10 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     // Reliquary of Souls
     triggers.push_back(new TriggerNode("reliquary of souls aggro resets upon phase change", {
-        NextAction("reliquary of souls misdirect boss to main tank", ACTION_RAID + 1) }));
+        NextAction("reliquary of souls misdirect boss to main tank", ACTION_RAID + 3) }));
 
     triggers.push_back(new TriggerNode("reliquary of souls essence of suffering fixates on closest target", {
-        NextAction("reliquary of souls keep distance from essence of suffering", ACTION_RAID + 1) }));
+        NextAction("reliquary of souls adjust distance from essence of suffering", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("reliquary of souls essence of suffering disables healing", {
         NextAction("reliquary of souls healers dps essence of suffering", ACTION_RAID + 1) }));
@@ -94,7 +91,7 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("reliquary of souls spellsteal rune shield", ACTION_EMERGENCY + 6) }));
 
     triggers.push_back(new TriggerNode("reliquary of souls essence of desire casting deaden", {
-        NextAction("reliquary of souls spell reflect deaden", ACTION_EMERGENCY + 10) }));
+        NextAction("reliquary of souls spell reflect deaden", ACTION_EMERGENCY + 6) }));
 
     // Mother Shahraz
     triggers.push_back(new TriggerNode("mother shahraz pulling boss", {

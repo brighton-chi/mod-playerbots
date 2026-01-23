@@ -74,11 +74,8 @@ public:
         creators["gurtogg bloodboil tanks position boss"] =
             &RaidBlackTempleActionContext::gurtogg_bloodboil_tanks_position_boss;
 
-        creators["gurtogg bloodboil disperse ranged"] =
-            &RaidBlackTempleActionContext::gurtogg_bloodboil_disperse_ranged;
-
-        creators["gurtogg bloodboil ranged move to absorb bloodboil position"] =
-            &RaidBlackTempleActionContext::gurtogg_bloodboil_ranged_move_to_absorb_bloodboil_position;
+        creators["gurtogg bloodboil position ranged"] =
+            &RaidBlackTempleActionContext::gurtogg_bloodboil_position_ranged;
 
         creators["gurtogg bloodboil ranged move away from enraged player"] =
             &RaidBlackTempleActionContext::gurtogg_bloodboil_ranged_move_away_from_enraged_player;
@@ -90,8 +87,8 @@ public:
         creators["reliquary of souls misdirect boss to main tank"] =
             &RaidBlackTempleActionContext::reliquary_of_souls_misdirect_boss_to_main_tank;
 
-        creators["reliquary of souls keep distance from essence of suffering"] =
-            &RaidBlackTempleActionContext::reliquary_of_souls_keep_distance_from_essence_of_suffering;
+        creators["reliquary of souls adjust distance from essence of suffering"] =
+            &RaidBlackTempleActionContext::reliquary_of_souls_adjust_distance_from_essence_of_suffering;
 
         creators["reliquary of souls healers dps essence of suffering"] =
             &RaidBlackTempleActionContext::reliquary_of_souls_healers_dps_essence_of_suffering;
@@ -253,11 +250,8 @@ private:
     static Action* gurtogg_bloodboil_tanks_position_boss(
         PlayerbotAI* botAI) { return new GurtoggBloodboilTanksPositionBossAction(botAI); }
 
-    static Action* gurtogg_bloodboil_disperse_ranged(
-        PlayerbotAI* botAI) { return new GurtoggBloodboilDisperseRangedAction(botAI); }
-
-    static Action* gurtogg_bloodboil_ranged_move_to_absorb_bloodboil_position(
-        PlayerbotAI* botAI) { return new GurtoggBloodboilRangedMoveToAbsorbBloodboilPositionAction(botAI); }
+    static Action* gurtogg_bloodboil_position_ranged(
+        PlayerbotAI* botAI) { return new GurtoggBloodboilPositionRangedAction(botAI); }
 
     static Action* gurtogg_bloodboil_ranged_move_away_from_enraged_player(
         PlayerbotAI* botAI) { return new GurtoggBloodboilRangedMoveAwayFromEnragedPlayerAction(botAI); }
@@ -269,8 +263,8 @@ private:
     static Action* reliquary_of_souls_misdirect_boss_to_main_tank(
         PlayerbotAI* botAI) { return new ReliquaryOfSoulsMisdirectBossToMainTankAction(botAI); }
 
-    static Action* reliquary_of_souls_keep_distance_from_essence_of_suffering(
-        PlayerbotAI* botAI) { return new ReliquaryOfSoulsKeepDistanceFromEssenceOfSufferingAction(botAI); }
+    static Action* reliquary_of_souls_adjust_distance_from_essence_of_suffering(
+        PlayerbotAI* botAI) { return new ReliquaryOfSoulsAdjustDistanceFromEssenceOfSufferingAction(botAI); }
 
     static Action* reliquary_of_souls_healers_dps_essence_of_suffering(
         PlayerbotAI* botAI) { return new ReliquaryOfSoulsHealersDpsEssenceOfSufferingAction(botAI); }

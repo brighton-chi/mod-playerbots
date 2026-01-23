@@ -234,16 +234,7 @@ bool GurtoggBloodboilPullingBossTrigger::IsActive()
         return false;
 
     time_t elapsed = std::time(nullptr) - it->second;
-
-    // Trigger if in first 10s, or in 120-130s, or in the first 10s of any 90s cycle after 120s
-    if ((elapsed < 10) ||
-        (elapsed >= 120 && elapsed < 130) ||
-        (elapsed > 130 && ((elapsed - 120) % 90) < 10))
-    {
-        return true;
-    }
-
-    return false;
+    return elapsed < 10;
 }
 
 bool GurtoggBloodboilBossEngagedByTanksTrigger::IsActive()
@@ -255,50 +246,13 @@ bool GurtoggBloodboilBossEngagedByTanksTrigger::IsActive()
     return gurtogg && !gurtogg->HasAura(SPELL_BOSS_FEL_RAGE);
 }
 
-bool GurtoggBloodboilBossCastsAoeSpellsTrigger::IsActive()
+bool GurtoggBloodboilBossCastsBloodboilAndGeyserTrigger::IsActive()
 {
     if (!botAI->IsRanged(bot))
         return false;
 
     Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
-    if (!gurtogg || gurtogg->HasAura(SPELL_BOSS_FEL_RAGE))
-        return false;
-
-    // Get rotation groups and active group index
-    auto groups = GetGurtoggRangedRotationGroups(bot);
-    int8 activeGroup = GetGurtoggActiveRotationGroup(gurtogg);
-
-    // Exclude bots in the active rotation group
-    if (activeGroup >= 0 && activeGroup < groups.size())
-    {
-        const auto& group = groups[activeGroup];
-        if (std::find(group.begin(), group.end(), bot) != group.end())
-            return false;
-    }
-
-    return true;
-}
-
-bool GurtoggBloodboilBossCastsBloodboilOnFiveFarthestPlayersTrigger::IsActive()
-{
-    if (!botAI->IsRanged(bot))
-        return false;
-
-    Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
-    if (!gurtogg || gurtogg->HasAura(SPELL_BOSS_FEL_RAGE))
-        return false;
-
-    auto groups = GetGurtoggRangedRotationGroups(bot);
-    int activeGroup = GetGurtoggActiveRotationGroup(gurtogg);
-
-    if (activeGroup >= 0 && activeGroup < groups.size())
-    {
-        const auto& group = groups[activeGroup];
-        if (std::find(group.begin(), group.end(), bot) != group.end())
-            return true;
-    }
-
-    return false;
+    return gurtogg && !gurtogg->HasAura(SPELL_BOSS_FEL_RAGE);
 }
 
 bool GurtoggBloodboilBotHasFelRageTrigger::IsActive()
@@ -343,11 +297,7 @@ bool ReliquaryOfSoulsAggroResetsUponPhaseChangeTrigger::IsActive()
 
 bool ReliquaryOfSoulsEssenceOfSufferingFixatesOnClosestTargetTrigger::IsActive()
 {
-    if (botAI->IsTank(bot))
-        return false;
-
-    Unit* suffering = AI_VALUE2(Unit*, "find target", "essence of suffering");
-    return suffering;
+    return AI_VALUE2(Unit*, "find target", "essence of suffering");
 }
 
 bool ReliquaryOfSoulsEssenceOfSufferingDisablesHealingTrigger::IsActive()
@@ -647,7 +597,7 @@ bool IllidanStormrageBossDealsSplashDamageTrigger::IsActive()
 
 bool IllidanStormrageThisExpansionHatesMeleeTrigger::IsActive()
 {
-    if (!botAI->IsMelee(bot) || bot->HasAura(SPELL_PARASITIC_SHADOWFIEND))
+    if (!botAI->IsMelee(bot))
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
