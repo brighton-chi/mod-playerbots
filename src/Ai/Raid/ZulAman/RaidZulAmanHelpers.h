@@ -60,6 +60,9 @@ namespace ZulAmanHelpers
         NPC_FENSTALKER                 = 24245,
         NPC_DARKHEART                  = 24246,
         NPC_KORAGG                     = 24247,
+
+        // Zul'jin
+        NPC_FEATHER_VORTEX             = 24136,
     };
 
     // General

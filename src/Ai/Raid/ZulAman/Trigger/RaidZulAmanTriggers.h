@@ -217,11 +217,19 @@ public:
     bool IsActive() override;
 };
 
-class ZuljinBossCastsAoeAbilitiesTrigger : public Trigger
+class ZuljinBossIsSummoningCyclonesInEagleFormTrigger : public Trigger
 {
 public:
-    ZuljinBossCastsAoeAbilitiesTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "zul'jin boss casts aoe abilities") {}
+    ZuljinBossIsSummoningCyclonesInEagleFormTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "zul'jin boss is summoning cyclones in eagle form") {}
+    bool IsActive() override;
+};
+
+class ZuljinBossCastsAoeAbilitiesInDragonhawkFormTrigger : public Trigger
+{
+public:
+ZuljinBossCastsAoeAbilitiesInDragonhawkFormTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "zul'jin boss casts aoe abilities in dragonhawk form") {}
     bool IsActive() override;
 };
 

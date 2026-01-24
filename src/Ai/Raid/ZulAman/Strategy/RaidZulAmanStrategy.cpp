@@ -44,7 +44,7 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("jan'alai erase ranged position tracker", ACTION_EMERGENCY + 11) }));
 
     triggers.push_back(new TriggerNode("jan'alai boss summoning fire bombs", {
-        NextAction("jan'alai move away from fire bombs", ACTION_EMERGENCY + 6) }));
+        NextAction("jan'alai avoid fire bombs", ACTION_EMERGENCY + 6) }));
 
     triggers.push_back(new TriggerNode("jan'alai amani hatchers spawned", {
         NextAction("jan'alai mark amani hatchers", ACTION_RAID + 2) }));
@@ -85,7 +85,10 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("zul'jin boss is channeling whirlwind in troll form", {
         NextAction("zul'jin run away from whirlwind", ACTION_EMERGENCY + 6) }));
 
-    triggers.push_back(new TriggerNode("zul'jin boss casts aoe abilities", {
+    triggers.push_back(new TriggerNode("zul'jin boss is summoning cyclones in eagle form", {
+        NextAction("zul'jin avoid cyclones", ACTION_EMERGENCY + 6) }));
+
+    triggers.push_back(new TriggerNode("zul'jin boss casts aoe abilities in dragonhawk form", {
         NextAction("zul'jin spread ranged", ACTION_RAID + 1) }));
 
     // triggers.push_back(new TriggerNode("zul'jin boss is charging players in lynx form", {

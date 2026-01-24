@@ -67,7 +67,7 @@ float NalorakkDisableTankActionsMultiplier::GetValue(Action* action)
 
     if (dynamic_cast<TankFaceAction*>(action))
         return 0.0f;
-    
+
     if (bot->GetVictim() == nullptr)
         return 1.0f;
 
@@ -111,9 +111,6 @@ float JanalaiDisableTankActionsMultiplier::GetValue(Action* action)
 
     if (dynamic_cast<TankFaceAction*>(action))
         return 0.0f;
-    
-    if (bot->GetVictim() == nullptr)
-        return 1.0f;
 
     if (botAI->IsMainTank(bot) ||
         (botAI->IsAssistTank(bot) &&

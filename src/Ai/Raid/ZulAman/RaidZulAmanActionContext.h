@@ -49,8 +49,8 @@ public:
         creators["jan'alai erase ranged position tracker"] =
             &RaidZulAmanActionContext::janalai_erase_ranged_position_tracker;
 
-        creators["jan'alai move away from fire bombs"] =
-            &RaidZulAmanActionContext::janalai_move_away_from_fire_bombs;
+        creators["jan'alai avoid fire bombs"] =
+            &RaidZulAmanActionContext::janalai_avoid_fire_bombs;
 
         creators["jan'alai mark amani hatchers"] =
             &RaidZulAmanActionContext::janalai_mark_amani_hatchers;
@@ -90,6 +90,9 @@ public:
 
         creators["zul'jin run away from whirlwind"] =
             &RaidZulAmanActionContext::zuljin_run_away_from_whirlwind;
+
+        creators["zul'jin avoid cyclones"] =
+            &RaidZulAmanActionContext::zuljin_avoid_cyclones;
 
         creators["zul'jin spread ranged"] =
             &RaidZulAmanActionContext::zuljin_spread_ranged;
@@ -139,8 +142,8 @@ private:
     static Action* janalai_erase_ranged_position_tracker(
         PlayerbotAI* botAI) { return new JanalaiEraseRangedPositionTrackerAction(botAI); }
 
-    static Action* janalai_move_away_from_fire_bombs(
-        PlayerbotAI* botAI) { return new JanalaiMoveAwayFromFireBombsAction(botAI); }
+    static Action* janalai_avoid_fire_bombs(
+        PlayerbotAI* botAI) { return new JanalaiAvoidFireBombsAction(botAI); }
 
     static Action* janalai_mark_amani_hatchers(
         PlayerbotAI* botAI) { return new JanalaiMarkAmaniHatchersAction(botAI); }
@@ -180,6 +183,9 @@ private:
 
     static Action* zuljin_run_away_from_whirlwind(
         PlayerbotAI* botAI) { return new ZuljinRunAwayFromWhirlwindAction(botAI); }
+
+    static Action* zuljin_avoid_cyclones(
+        PlayerbotAI* botAI) { return new ZuljinAvoidCyclonesAction(botAI); }
 
     static Action* zuljin_spread_ranged(
         PlayerbotAI* botAI) { return new ZuljinSpreadRangedAction(botAI); }

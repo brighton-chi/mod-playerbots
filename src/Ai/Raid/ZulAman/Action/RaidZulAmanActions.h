@@ -113,10 +113,10 @@ public:
     bool Execute(Event event) override;
 };
 
-class JanalaiMoveAwayFromFireBombsAction : public MovementAction
+class JanalaiAvoidFireBombsAction : public MovementAction
 {
 public:
-    JanalaiMoveAwayFromFireBombsAction(PlayerbotAI* botAI, std::string const name = "jan'alai move away from fire bombs") : MovementAction(botAI, name) {}
+    JanalaiAvoidFireBombsAction(PlayerbotAI* botAI, std::string const name = "jan'alai avoid fire bombs") : MovementAction(botAI, name) {}
     bool Execute(Event event) override;
 
 private:
@@ -225,6 +225,18 @@ public:
     ZuljinRunAwayFromWhirlwindAction(
         PlayerbotAI* botAI, std::string const name = "zul'jin run away from whirlwind") : MovementAction(botAI, name) {}
     bool Execute(Event event) override;
+};
+
+class ZuljinAvoidCyclonesAction : public MovementAction
+{
+public:
+    ZuljinAvoidCyclonesAction(PlayerbotAI* botAI, std::string const name = "zul'jin avoid cyclones") : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+
+private:
+    Position FindSafestNearbyPosition(const std::vector<Unit*>& cyclones, const Position& position, float maxRadius, float hazardRadius);
+    bool IsPathSafeFromCyclones(const Position& start, const Position& end, const std::vector<Unit*>& cyclones, float hazardRadius);
+    std::vector<Unit*> GetAllCycloneTriggers(PlayerbotAI* botAI, Player* bot);
 };
 
 class ZuljinSpreadRangedAction : public MovementAction

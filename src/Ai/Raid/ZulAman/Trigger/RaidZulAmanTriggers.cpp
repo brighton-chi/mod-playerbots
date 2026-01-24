@@ -268,7 +268,16 @@ bool ZuljinBossIsChannelingWhirlwindInTrollFormTrigger::IsActive()
     return !botAI->IsMainTank(bot);
 }
 
-bool ZuljinBossCastsAoeAbilitiesTrigger::IsActive()
+bool ZuljinBossIsSummoningCyclonesInEagleFormTrigger::IsActive()
+{
+    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
+    if (!zuljin || !zuljin->HasAura(SPELL_SHAPE_OF_THE_EAGLE))
+        return false;
+
+    return AnyNearbyNpcWithEntry(botAI, NPC_FEATHER_VORTEX);
+}
+
+bool ZuljinBossCastsAoeAbilitiesInDragonhawkFormTrigger::IsActive()
 {
     if (!botAI->IsRanged(bot))
         return false;
