@@ -592,22 +592,15 @@ bool JanalaiMarkAmaniHatchersAction::Execute(Event event)
     auto [hatcherLow, hatcherHigh] = GetAmaniHatcherPair(botAI);
 
     // When hatchers spawn, mark one with Skull and the other with Moon
-    if (hatcherLow && hatcherHigh)
+    bool marked = false;
+    if (hatcherLow && hatcherHigh && hatcherHigh != hatcherLow)
     {
         MarkTargetWithSkull(bot, hatcherLow);
         MarkTargetWithMoon(bot, hatcherHigh);
-    }
-    // Only one hatcher alive: mark with Moon unless already marked with Skull
-    // This allows the player to override the mark when it is time to kill
-    // the second hatcher (i.e., after all eggs are hatched for one side)
-    else if (hatcherHigh)
-    {
-        ObjectGuid guid = hatcherHigh->GetGUID();
-        if (group->GetTargetIcon(RtiTargetValue::skullIndex) != guid)
-            MarkTargetWithMoon(bot, hatcherHigh);
+        marked = true;
     }
 
-    return false;
+    return marked;
 }
 
 // Halazzi <Lynx Avatar>
