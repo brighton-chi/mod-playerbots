@@ -26,18 +26,14 @@ bool HighWarlordNajentusPullingBossTrigger::IsActive()
 
 bool HighWarlordNajentusBossEngagedByMainTankTrigger::IsActive()
 {
-    if (!botAI->IsMainTank(bot))
-        return false;
-
-    return AI_VALUE2(Unit*, "find target", "high warlord naj'entus");
+    return AI_VALUE2(Unit*, "find target", "high warlord naj'entus") &&
+           botAI->IsMainTank(bot);
 }
 
 bool HighWarlordNajentusCastsNeedleSpinesTrigger::IsActive()
 {
-    if (!botAI->IsRanged(bot))
-        return false;
-
-    return AI_VALUE2(Unit*, "find target", "high warlord naj'entus");
+    return botAI->IsRanged(bot) &&
+           AI_VALUE2(Unit*, "find target", "high warlord naj'entus");
 }
 
 bool HighWarlordNajentusPlayerIsImpaledTrigger::IsActive()
@@ -143,18 +139,14 @@ bool SupremusBossIsFixatedOnBotTrigger::IsActive()
 
 bool SupremusVolcanoIsNearbyTrigger::IsActive()
 {
-    if (!AI_VALUE2(Unit*, "find target", "supremus"))
-        return false;
-
-    return HasSupremusVolcanoNearby(botAI, bot);
+    return AI_VALUE2(Unit*, "find target", "supremus") &&
+           HasSupremusVolcanoNearby(botAI, bot);
 }
 
 bool SupremusNeedToManagePhaseTimerTrigger::IsActive()
 {
-    if (!IsInstanceTimerManager(botAI, bot))
-        return false;
-
-    return AI_VALUE2(Unit*, "find target", "supremus");
+    return AI_VALUE2(Unit*, "find target", "supremus") &&
+           IsInstanceTimerManager(botAI, bot);
 }
 
 // Shade of Akama
@@ -173,18 +165,14 @@ bool TeronGorefiendPullingBossTrigger::IsActive()
 
 bool TeronGorefiendBossEngagedByMainTankTrigger::IsActive()
 {
-    if (!botAI->IsMainTank(bot))
-        return false;
-
-    return AI_VALUE2(Unit*, "find target", "teron gorefiend");
+    return AI_VALUE2(Unit*, "find target", "teron gorefiend") &&
+           botAI->IsMainTank(bot);
 }
 
 bool TeronGorefiendBossEngagedByRangedTrigger::IsActive()
 {
-    if (!botAI->IsRanged(bot))
-        return false;
-
-    return AI_VALUE2(Unit*, "find target", "teron gorefiend");
+    return botAI->IsRanged(bot) &&
+           AI_VALUE2(Unit*, "find target", "teron gorefiend");
 }
 
 bool TeronGorefiendBossIsCastingShadowOfDeathTrigger::IsActive()
@@ -279,20 +267,16 @@ bool GurtoggBloodboilBotHasFelRageTrigger::IsActive()
 
 bool GurtoggBloodboilNeedToManagePhaseTimerTrigger::IsActive()
 {
-    if (!IsInstanceTimerManager(botAI, bot))
-        return false;
-
-    return AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
+    return AI_VALUE2(Unit*, "find target", "gurtogg bloodboil") &&
+           IsInstanceTimerManager(botAI, bot);
 }
 
 // Reliquary of Souls
 
 bool ReliquaryOfSoulsAggroResetsUponPhaseChangeTrigger::IsActive()
 {
-    if (bot->getClass() != CLASS_HUNTER)
-        return false;
-
-    return AI_VALUE2(Unit*, "find target", "reliquary of the lost");
+    return bot->getClass() == CLASS_HUNTER &&
+           AI_VALUE2(Unit*, "find target", "reliquary of the lost");
 }
 
 bool ReliquaryOfSoulsEssenceOfSufferingFixatesOnClosestTargetTrigger::IsActive()
@@ -403,17 +387,17 @@ bool IllidariCouncilGathiosCastingJudgementOfCommandTrigger::IsActive()
 
 bool IllidariCouncilMalandeEngagedByFirstAssistTankTrigger::IsActive()
 {
-    return botAI->IsAssistTankOfIndex(bot, 0, false) &&
-           AI_VALUE2(Unit*, "find target", "lady malande");
+    return AI_VALUE2(Unit*, "find target", "lady malande") &&
+           botAI->IsAssistTankOfIndex(bot, 0, false);
 }
 
 bool IllidariCouncilDarkshadowEngagedBySecondAssistTankTrigger::IsActive()
 {
-    if (!botAI->IsAssistTankOfIndex(bot, 1, false))
+    Unit* darkshadow = AI_VALUE2(Unit*, "find target", "veras darkshadow");
+    if (!darkshadow || darkshadow->HasAura(SPELL_VANISH))
         return false;
 
-    Unit* darkshadow = AI_VALUE2(Unit*, "find target", "veras darkshadow");
-    return darkshadow && !darkshadow->HasAura(SPELL_VANISH);
+    return botAI->IsAssistTankOfIndex(bot, 1, false);
 }
 
 bool IllidariCouncilZerevorEngagedByMageTankTrigger::IsActive()
@@ -467,15 +451,15 @@ bool IllidariCouncilNeedToManageDpsTimerTrigger::IsActive()
 
 bool IllidanStormrageBossEngagedByMainTankTrigger::IsActive()
 {
-    return botAI->IsMainTank(bot) &&
-           AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    return AI_VALUE2(Unit*, "find target", "illidan stormrage") &&
+           botAI->IsMainTank(bot);
 }
 
 bool IllidanStormrageBossEngagedByFlameTanksTrigger::IsActive()
 {
-    return (botAI->IsAssistTankOfIndex(bot, 0, true) ||
-            botAI->IsAssistTankOfIndex(bot, 1, true)) &&
-            AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    return AI_VALUE2(Unit*, "find target", "illidan stormrage") &&
+           (botAI->IsAssistTankOfIndex(bot, 0, true) ||
+            botAI->IsAssistTankOfIndex(bot, 1, true));
 }
 
 bool IllidanStormrageBossEngagedByMeleeDpsTrigger::IsActive()
@@ -486,14 +470,15 @@ bool IllidanStormrageBossEngagedByMeleeDpsTrigger::IsActive()
 
 bool IllidanStormrageBossEngagedByWarlockTankTrigger::IsActive()
 {
-    return GetIllidanWarlockTank(botAI, bot) == bot &&
-           AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    return AI_VALUE2(Unit*, "find target", "illidan stormrage") &&
+           GetIllidanWarlockTank(botAI, bot) == bot;
 }
 
 bool IllidanStormrageBossEngagedByRangedDpsTrigger::IsActive()
 {
-    return botAI->IsRangedDps(bot) && GetIllidanWarlockTank(botAI, bot) != bot &&
-           AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    return botAI->IsRangedDps(bot) &&
+           AI_VALUE2(Unit*, "find target", "illidan stormrage") &&
+           GetIllidanWarlockTank(botAI, bot) != bot;
 }
 
 bool IllidanStormrageBossEngagedByHealersTrigger::IsActive()

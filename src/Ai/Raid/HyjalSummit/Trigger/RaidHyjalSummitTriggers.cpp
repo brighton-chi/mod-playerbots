@@ -27,18 +27,14 @@ bool RageWinterchillPullingBossTrigger::IsActive()
 
 bool RageWinterchillBossEngagedByMainTankTrigger::IsActive()
 {
-    if (!botAI->IsMainTank(bot))
-        return false;
-
-    return AI_VALUE2(Unit*, "find target", "rage winterchill");
+    return AI_VALUE2(Unit*, "find target", "rage winterchill") &&
+           botAI->IsMainTank(bot);
 }
 
 bool RageWinterchillBossCastsDeathAndDecayTrigger::IsActive()
 {
-    if (!botAI->IsRanged(bot))
-        return false;
-
-    return AI_VALUE2(Unit*, "find target", "rage winterchill");
+    return botAI->IsRanged(bot) &&
+           AI_VALUE2(Unit*, "find target", "rage winterchill");
 }
 
 // Anetheron
@@ -54,10 +50,8 @@ bool AnetheronPullingBossTrigger::IsActive()
 
 bool AnetheronBossEngagedByMainTankTrigger::IsActive()
 {
-    if (!botAI->IsMainTank(bot))
-        return false;
-
-    return AI_VALUE2(Unit*, "find target", "anetheron");
+    return AI_VALUE2(Unit*, "find target", "anetheron") &&
+           botAI->IsMainTank(bot);
 }
 
 bool AnetheronBossCastsCarrionSwarmTrigger::IsActive()
@@ -90,18 +84,14 @@ bool AnetheronBotIsTargetedByInfernalTrigger::IsActive()
 
 bool AnetheronInfernalsNeedToBeKeptAwayFromRaidTrigger::IsActive()
 {
-    if (!botAI->IsAssistTank(bot))
-        return false;
-
-    return AI_VALUE2(Unit*, "find target", "towering infernal");
+    return AI_VALUE2(Unit*, "find target", "towering infernal") &&
+           botAI->IsAssistTank(bot);
 }
 
 bool AnetheronInfernalsContinueToSpawnTrigger::IsActive()
 {
-    if (!botAI->IsDps(bot))
-        return false;
-
-    return AI_VALUE2(Unit*, "find target", "anetheron");
+    return botAI->IsDps(bot) &&
+           AI_VALUE2(Unit*, "find target", "anetheron");
 }
 
 // Kaz'rogal
@@ -117,10 +107,8 @@ bool KazrogalPullingBossTrigger::IsActive()
 
 bool KazrogalBossEngagedByMainTankTrigger::IsActive()
 {
-    if (!botAI->IsMainTank(bot))
-        return false;
-
-    return AI_VALUE2(Unit*, "find target", "kaz'rogal");
+    return AI_VALUE2(Unit*, "find target", "kaz'rogal") &&
+           botAI->IsMainTank(bot);
 }
 
 bool KazrogalBossEngagedByAssistTanksTrigger::IsActive()
