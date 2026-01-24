@@ -511,7 +511,7 @@ float FathomLordKarathressWaitForDpsMultiplier::GetValue(Action* action)
 
 float FathomLordKarathressCaribdisTankHealerMaintainPositionMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsHealAssistantOfIndex(bot, 0))
+    if (!botAI->IsAssistHealOfIndex(bot, 0, true))
         return 1.0f;
 
     if (AI_VALUE2(Unit*, "find target", "fathom-guard caribdis"))

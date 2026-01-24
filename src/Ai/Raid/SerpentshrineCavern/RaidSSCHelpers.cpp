@@ -468,7 +468,7 @@ namespace SerpentShrineCavernHelpers
             if (!memberAI)
                 continue;
 
-            if (memberAI->IsHealAssistantOfIndex(member, 0))
+            if (memberAI->IsAssistHealOfIndex(member, 0, true))
                 return member;
         }
 
@@ -503,7 +503,7 @@ namespace SerpentShrineCavernHelpers
             if (!memberAI)
                 continue;
 
-            if (memberAI->IsHealAssistantOfIndex(member, 1))
+            if (memberAI->IsAssistHealOfIndex(member, 1, true))
                 return member;
         }
 
@@ -540,7 +540,7 @@ namespace SerpentShrineCavernHelpers
             if (!memberAI)
                 continue;
 
-            if (memberAI->IsHealAssistantOfIndex(member, 2))
+            if (memberAI->IsAssistHealOfIndex(member, 2, true))
                 return member;
         }
 
@@ -579,7 +579,7 @@ namespace SerpentShrineCavernHelpers
             if (!memberAI)
                 continue;
 
-            if (memberAI->IsRangedDpsAssistantOfIndex(member, 0))
+            if (memberAI->IsAssistRangedDpsOfIndex(member, 0, true))
                 return member;
         }
 

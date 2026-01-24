@@ -308,7 +308,7 @@ bool KaelthasSunstriderTelonicusEngagedByFirstAssistTankTrigger::IsActive()
         telonicus->HasAura(SPELL_PERMANENT_FEIGN_DEATH))
         return false;
 
-    return botAI->IsAssistTankOfIndex(bot, 0);
+    return botAI->IsAssistTankOfIndex(bot, 0, true);
 }
 
 bool KaelthasSunstriderBotsHaveSpecificRolesInPhase3Trigger::IsActive()
@@ -321,9 +321,9 @@ bool KaelthasSunstriderBotsHaveSpecificRolesInPhase3Trigger::IsActive()
         !AI_VALUE2(Unit*, "find target", "lord sanguinar"))
         return false;
 
-    if (!botAI->IsHealAssistantOfIndex(bot, 0) &&
+    if (!botAI->IsAssistHealOfIndex(bot, 0, true) &&
         !botAI->IsMainTank(bot) &&
-        !botAI->IsAssistTankOfIndex(bot, 0) &&
+        !botAI->IsAssistTankOfIndex(bot, 0, true) &&
         GetCapernianTank(botAI, bot) != bot)
         return false;
 
@@ -341,7 +341,7 @@ bool KaelthasSunstriderDeterminingAdvisorKillOrderTrigger::IsActive()
         return false;
 
     if (botAI->IsMainTank(bot) ||
-        botAI->IsAssistTankOfIndex(bot, 0))
+        botAI->IsAssistTankOfIndex(bot, 0, true))
         return false;
 
     boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());

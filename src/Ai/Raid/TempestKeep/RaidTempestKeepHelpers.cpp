@@ -408,7 +408,7 @@ namespace TempestKeepHelpers
                 if (botAI->IsMainTank(member))
                     mainTank = member;
 
-                if (botAI->IsAssistTankOfIndex(member, 0))
+                if (botAI->IsAssistTankOfIndex(member, 0, false))
                     assistTank = member;
             }
         }

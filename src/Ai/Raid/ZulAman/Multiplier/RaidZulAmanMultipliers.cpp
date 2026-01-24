@@ -71,7 +71,7 @@ float NalorakkDisableTankActionsMultiplier::GetValue(Action* action)
     if (bot->GetVictim() == nullptr)
         return 1.0f;
 
-    if ((!nalorakk->HasAura(SPELL_BEARFORM) && botAI->IsAssistTankOfIndex(bot, 0)) ||
+    if ((!nalorakk->HasAura(SPELL_BEARFORM) && botAI->IsAssistTankOfIndex(bot, 0, true)) ||
         (nalorakk->HasAura(SPELL_BEARFORM) && botAI->IsMainTank(bot)))
     {
         if (dynamic_cast<TankAssistAction*>(action) ||

@@ -425,7 +425,7 @@ bool IllidariCouncilZerevorEngagedByMageTankTrigger::IsActive()
 bool IllidariCouncilMageTankNeedsDedicatedHealerTrigger::IsActive()
 {
     return AI_VALUE2(Unit*, "find target", "high nethermancer zerevor") &&
-           botAI->IsHealAssistantOfIndex(bot, 0);
+           botAI->IsAssistHealOfIndex(bot, 0, true);
 }
 
 bool IllidariCouncilDeterminingDpsAssignmentsTrigger::IsActive()

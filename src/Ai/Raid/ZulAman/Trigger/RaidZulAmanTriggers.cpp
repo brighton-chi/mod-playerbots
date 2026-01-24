@@ -69,7 +69,7 @@ bool NalorakkBossSwitchesFormsTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "nalorakk"))
         return false;
 
-    return botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0);
+    return botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0, true);
 }
 
 bool NalorakkBossCastsSurgeTrigger::IsActive()

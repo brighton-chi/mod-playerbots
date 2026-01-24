@@ -161,18 +161,17 @@ bool NalorakkMisdirectBossToMainTankAction::Execute(Event event)
 
 bool NalorakkTanksPositionBossAction::Execute(Event event)
 {
-    if (!botAI->IsMainTank(bot) && !botAI->IsAssistTankOfIndex(bot, 0))
+    if (!botAI->IsMainTank(bot) && !botAI->IsAssistTankOfIndex(bot, 0, true))
         return false;
 
     Unit* nalorakk = AI_VALUE2(Unit*, "find target", "nalorakk");
     if (!nalorakk)
         return false;
 
-    if (botAI->IsMainTank(bot) && MainTankPositionTrollForm(bot, nalorakk))
-        return true;
-
-    if (botAI->IsAssistTankOfIndex(bot, 0) && FirstAssistTankPositionBearForm(bot, nalorakk))
-        return true;
+    if (botAI->IsMainTank(bot))
+        return MainTankPositionTrollForm(bot, nalorakk);
+    else if (botAI->IsAssistTankOfIndex(bot, 0, true))
+        return FirstAssistTankPositionBearForm(bot, nalorakk);
 
     return false;
 }

@@ -263,7 +263,7 @@ float IllidariCouncilControlMovementMultiplier::GetValue(Action* action)
             dynamic_cast<CastBlinkBackAction*>(action))
             return 0.0f;
 
-        if (botAI->IsHealAssistantOfIndex(bot, 0))
+        if (botAI->IsAssistHealOfIndex(bot, 0, true))
         {
             if (dynamic_cast<MovementAction*>(action) &&
                 !dynamic_cast<IllidariCouncilPositionMageTankHealerAction*>(action))
@@ -271,8 +271,8 @@ float IllidariCouncilControlMovementMultiplier::GetValue(Action* action)
         }
 
         if (botAI->IsMainTank(bot) ||
-            botAI->IsAssistTankOfIndex(bot, 0, false) ||
-            botAI->IsAssistTankOfIndex(bot, 1, false) ||
+            botAI->IsAssistTankOfIndex(bot, 0, true) ||
+            botAI->IsAssistTankOfIndex(bot, 1, true) ||
             GetZerevorMageTank(botAI, bot) == bot)
         {
             if (dynamic_cast<AvoidAoeAction*>(action))
@@ -361,8 +361,8 @@ float IllidariCouncilManageInterruptsMultiplier::GetValue(Action* action)
 float IllidariCouncilWaitForDpsMultiplier::GetValue(Action* action)
 {
     if (botAI->IsMainTank(bot) ||
-        botAI->IsAssistTankOfIndex(bot, 0, false) ||
-        botAI->IsAssistTankOfIndex(bot, 1, false) ||
+        botAI->IsAssistTankOfIndex(bot, 0, true) ||
+        botAI->IsAssistTankOfIndex(bot, 1, true) ||
         GetZerevorMageTank(botAI, bot) == bot)
         return 1.0f;
 
