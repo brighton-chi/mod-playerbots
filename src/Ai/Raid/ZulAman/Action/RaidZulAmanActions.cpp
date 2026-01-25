@@ -2,7 +2,7 @@
 #include "RaidZulAmanHelpers.h"
 #include "RaidZulAmanZuljinBossAi.h"
 #include "Playerbots.h"
-#include "RtiTargetValue.h"
+#include "RaidBossHelpers.h"
 
 using namespace ZulAmanHelpers;
 
@@ -594,6 +594,7 @@ bool JanalaiMarkAmaniHatchersAction::Execute(Event event)
     {
         MarkTargetWithSkull(bot, hatcherLow);
         MarkTargetWithMoon(bot, hatcherHigh);
+        SetRtiTarget(botAI, "skull", hatcherLow);
         marked = true;
     }
 

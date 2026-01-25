@@ -43,15 +43,7 @@ namespace HyjalSummitHelpers
     };
 
     // General
-    const uint32 HYJAL_SUMMIT_MAP_ID = 534;
-    void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);
-    void MarkTargetWithSquare(Player* bot, Unit* target);
-    void MarkTargetWithStar(Player* bot, Unit* target);
-    void MarkTargetWithCircle(Player* bot, Unit* target);
-    void MarkTargetWithTriangle(Player* bot, Unit* target);
-    void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target);
-    Unit* GetNearestPlayerInRadius(Player* bot, float radius);
-    bool IsInstanceTrackerManager(PlayerbotAI* botAI, Player* bot);
+    constexpr uint32 HYJAL_SUMMIT_MAP_ID = 534;
 
     // Rage Winterchill
     extern const Position RAGE_WINTERCHILL_TANK_POSITION;

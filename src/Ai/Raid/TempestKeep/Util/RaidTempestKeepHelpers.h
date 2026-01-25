@@ -94,19 +94,7 @@ namespace TempestKeepHelpers
     };
 
     // General
-    const uint32 TEMPEST_KEEP_MAP_ID = 550;
-    void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);
-    void MarkTargetWithSkull(Player* bot, Unit* target);
-    void MarkTargetWithSquare(Player* bot, Unit* target);
-    void MarkTargetWithStar(Player* bot, Unit* target);
-    void MarkTargetWithCircle(Player* bot, Unit* target);
-    void MarkTargetWithTriangle(Player* bot, Unit* target);
-    void MarkTargetWithDiamond(Player* bot, Unit* target);
-    void MarkTargetWithCross(Player* bot, Unit* target);
-    void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target);
-    bool IsInstanceTimerManager(PlayerbotAI* botAI, Player* bot);
-    Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry);
-    Unit* GetNearestPlayerInRadius(Player* bot, float radius);
+    constexpr uint32 TEMPEST_KEEP_MAP_ID = 550;
     Unit* GetNearestNonTankPlayerInRadius(Player* bot, float radius);
     std::vector<Unit*> GetAllHazardTriggers(
         PlayerbotAI* botAI, Player* bot, uint32 npcEntry, float maxSearchRadius);
@@ -117,7 +105,7 @@ namespace TempestKeepHelpers
         float hazardRadius);
 
     // Al'ar <Phoenix God>
-    const float ALAR_BALCONY_Z = 17.0f;
+    constexpr float ALAR_BALCONY_Z = 17.0f;
     extern const Position ALAR_PLATFORM_0;
     extern const Position ALAR_PLATFORM_1;
     extern const Position ALAR_PLATFORM_2;

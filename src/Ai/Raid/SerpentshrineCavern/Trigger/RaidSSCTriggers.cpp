@@ -6,6 +6,7 @@
 #include "LootObjectStack.h"
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
+#include "RaidBossHelpers.h"
 
 using namespace SerpentShrineCavernHelpers;
 
@@ -82,7 +83,7 @@ bool HydrossTheUnstableAggroResetsUponPhaseChangeTrigger::IsActive()
 bool HydrossTheUnstableNeedToManageTimersTrigger::IsActive()
 {
     return AI_VALUE2(Unit*, "find target", "hydross the unstable") &&
-           IsInstanceTimerManager(botAI, bot);
+           IsMechanicTrackerBot(botAI, bot, SSC_MAP_ID, nullptr);
 }
 
 // The Lurker Below
@@ -173,7 +174,7 @@ bool TheLurkerBelowBossIsSubmergedTrigger::IsActive()
 bool TheLurkerBelowNeedToPrepareTimerForSpoutTrigger::IsActive()
 {
     return AI_VALUE2(Unit*, "find target", "the lurker below") &&
-           IsInstanceTimerManager(botAI, bot);
+           IsMechanicTrackerBot(botAI, bot, SSC_MAP_ID, nullptr);
 }
 
 // Leotheras the Blind
@@ -298,7 +299,7 @@ bool LeotherasTheBlindDemonFormTankNeedsAggro::IsActive()
 bool LeotherasTheBlindBossWipesAggroUponPhaseChangeTrigger::IsActive()
 {
     return AI_VALUE2(Unit*, "find target", "leotheras the blind") &&
-           IsInstanceTimerManager(botAI, bot);
+           IsMechanicTrackerBot(botAI, bot, SSC_MAP_ID, nullptr);
 }
 
 // Fathom-Lord Karathress
@@ -387,8 +388,8 @@ bool FathomLordKarathressDeterminingKillOrderTrigger::IsActive()
 
 bool FathomLordKarathressTanksNeedToEstablishAggroTrigger::IsActive()
 {
-    return IsInstanceTimerManager(botAI, bot) &&
-           AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
+    return AI_VALUE2(Unit*, "find target", "fathom-lord karathress") &&
+           IsMechanicTrackerBot(botAI, bot, SSC_MAP_ID, nullptr);
 }
 
 // Morogrim Tidewalker
@@ -635,7 +636,7 @@ bool LadyVashjNeedToResetCorePassingTrackersTrigger::IsActive()
     if (!group)
         return false;
 
-    return IsInstanceTimerManager(botAI, bot) ||
+    return IsMechanicTrackerBot(botAI, bot, SSC_MAP_ID, nullptr) ||
            GetDesignatedCoreLooter(group, botAI) == bot ||
            GetFirstTaintedCorePasser(group, botAI) == bot ||
            GetSecondTaintedCorePasser(group, botAI) == bot ||

@@ -8,7 +8,6 @@
 #include "Group.h"
 #include "ObjectGuid.h"
 #include "PlayerbotAI.h"
-#include "RtiTargetValue.h"
 
 namespace MagtheridonHelpers
 {
@@ -46,16 +45,7 @@ namespace MagtheridonHelpers
     constexpr uint32 NORTHEAST_CHANNELER = 90981;
 
     Creature* GetChanneler(Player* bot, uint32 dbGuid);
-    void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);
-    void MarkTargetWithSquare(Player* bot, Unit* target);
-    void MarkTargetWithStar(Player* bot, Unit* target);
-    void MarkTargetWithCircle(Player* bot, Unit* target);
-    void MarkTargetWithDiamond(Player* bot, Unit* target);
-    void MarkTargetWithTriangle(Player* bot, Unit* target);
-    void MarkTargetWithCross(Player* bot, Unit* target);
-    void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target);
     bool IsSafeFromMagtheridonHazards(PlayerbotAI* botAI, Player* bot, float x, float y, float z);
-    bool IsInstanceTimerManager(PlayerbotAI* botAI, Player* bot);
 
     extern const Position WAITING_FOR_MAGTHERIDON_POSITION;
     extern const Position MAGTHERIDON_TANK_POSITION;

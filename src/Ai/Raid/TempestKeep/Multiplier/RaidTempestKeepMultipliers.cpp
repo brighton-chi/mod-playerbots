@@ -199,7 +199,7 @@ float KaelthasSunstriderWaitForDpsMultiplier::GetValue(Action* action)
         return 1.0f;
 
     const time_t now = std::time(nullptr);
-    const uint8 dpsWaitSeconds = 10;
+    constexpr uint8 dpsWaitSeconds = 10;
 
     auto it = advisorDpsWaitTimer.find(kaelthas->GetMap()->GetInstanceId());
     if (it == advisorDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)

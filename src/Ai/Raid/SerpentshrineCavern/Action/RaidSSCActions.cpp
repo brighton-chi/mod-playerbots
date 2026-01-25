@@ -6,6 +6,7 @@
 #include "LootObjectStack.h"
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
+#include "RaidBossHelpers.h"
 #include "RtiTargetValue.h"
 
 using namespace SerpentShrineCavernHelpers;
@@ -95,8 +96,8 @@ bool UnderbogColossusEscapeToxicPoolAction::Execute(Event event)
     if (radius <= 0.0f)
         return false;
 
-    const float bufferDist = 3.0f;
-    const float centerThreshold = 1.0f;
+    constexpr float bufferDist = 3.0f;
+    constexpr float centerThreshold = 1.0f;
 
     float dx = bot->GetPositionX() - dynObj->GetPositionX();
     float dy = bot->GetPositionY() - dynObj->GetPositionY();
@@ -307,7 +308,7 @@ bool HydrossTheUnstablePrioritizeElementalAddsAction::Execute(Event event)
     Unit* waterElemental = GetFirstAliveUnitByEntry(botAI, NPC_PURE_SPAWN_OF_HYDROSS);
     if (waterElemental)
     {
-        if (IsInstanceTimerManager(botAI, bot))
+        if (IsMechanicTrackerBot(botAI, bot, SSC_MAP_ID, nullptr))
             MarkTargetWithSkull(bot, waterElemental);
 
         SetRtiTarget(botAI, "skull", waterElemental);
@@ -317,7 +318,7 @@ bool HydrossTheUnstablePrioritizeElementalAddsAction::Execute(Event event)
     }
     else if (Unit* natureElemental = GetFirstAliveUnitByEntry(botAI, NPC_TAINTED_SPAWN_OF_HYDROSS))
     {
-        if (IsInstanceTimerManager(botAI, bot))
+        if (IsMechanicTrackerBot(botAI, bot, SSC_MAP_ID, nullptr))
             MarkTargetWithSkull(bot, natureElemental);
 
         SetRtiTarget(botAI, "skull", natureElemental);
@@ -343,8 +344,8 @@ bool HydrossTheUnstableFrostPhaseSpreadOutAction::Execute(Event event)
             if (!member || member == bot || !member->IsAlive())
                 continue;
 
-            const float safeDistance = 6.0f;
-            const uint32 minInterval = 1000;
+            constexpr float safeDistance = 6.0f;
+            constexpr uint32 minInterval = 1000;
             if (bot->GetExactDist2d(member) < safeDistance)
                 return FleePosition(member->GetPosition(), safeDistance, minInterval);
         }
@@ -431,8 +432,8 @@ bool HydrossTheUnstableStopDpsUponPhaseChangeAction::Execute(Event event)
 
     const uint32 instanceId = hydross->GetMap()->GetInstanceId();
     const time_t now = std::time(nullptr);
-    const int phaseStartStopSeconds = 5;
-    const int phaseEndStopSeconds = 1;
+    constexpr uint8 phaseStartStopSeconds = 5;
+    constexpr uint8 phaseEndStopSeconds = 1;
 
     bool shouldStopDps = false;
 
@@ -594,9 +595,9 @@ bool TheLurkerBelowSpreadRangedInArcAction::Execute(Event event)
         size_t botIndex = (findIt != rangedMembers.end()) ?
             std::distance(rangedMembers.begin(), findIt) : 0;
 
-        const float arcSpan = 2.0f * M_PI / 3.0f;
-        const float arcCenter = 2.262f;
-        const float arcStart = arcCenter - arcSpan / 2.0f;
+        constexpr float arcSpan = 2.0f * M_PI / 3.0f;
+        constexpr float arcCenter = 2.262f;
+        constexpr float arcStart = arcCenter - arcSpan / 2.0f;
 
         float angle = (count == 1) ? arcCenter :
             (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
@@ -782,12 +783,12 @@ bool LeotherasTheBlindMeleeTanksDontAttackDemonFormAction::Execute(Event event)
 // And stay away from the Warlock tank to avoid Chaos Blasts
 bool LeotherasTheBlindPositionRangedAction::Execute(Event event)
 {
-    const float safeDistFromBoss = 15.0f;
+    constexpr float safeDistFromBoss = 15.0f;
     Unit* leotherasHuman = GetLeotherasHuman(botAI);
     if (leotherasHuman && bot->GetExactDist2d(leotherasHuman) < safeDistFromBoss &&
         leotherasHuman->GetVictim() != bot)
     {
-        const uint32 minInterval = 500;
+        constexpr uint32 minInterval = 500;
         return FleePosition(leotherasHuman->GetPosition(), safeDistFromBoss, minInterval);
     }
 
@@ -803,16 +804,16 @@ bool LeotherasTheBlindPositionRangedAction::Execute(Event event)
             if (!member || member == bot || !member->IsAlive())
                 continue;
 
-            const uint32 minInterval = 0;
+            constexpr uint32 minInterval = 0;
             if (GetLeotherasDemonFormTank(botAI, bot) == member)
             {
-                const float safeDistFromTank = 10.0f;
+                constexpr float safeDistFromTank = 10.0f;
                 if (bot->GetExactDist2d(member) < safeDistFromTank)
                     return FleePosition(member->GetPosition(), safeDistFromTank, minInterval);
             }
             else
             {
-                const float safeDistFromMember = 6.0f;
+                constexpr float safeDistFromMember = 6.0f;
                 if (bot->GetExactDist2d(member) < safeDistFromMember)
                     return FleePosition(member->GetPosition(), safeDistFromMember, minInterval);
             }
@@ -827,7 +828,7 @@ bool LeotherasTheBlindRunAwayFromWhirlwindAction::Execute(Event event)
     if (Unit* leotherasHuman = GetLeotherasHuman(botAI))
     {
         float currentDistance = bot->GetExactDist2d(leotherasHuman);
-        const float safeDistance = 25.0f;
+        constexpr float safeDistance = 25.0f;
         if (currentDistance < safeDistance)
         {
             botAI->Reset();
@@ -854,7 +855,7 @@ bool LeotherasTheBlindMeleeDpsRunAwayFromBossAction::Execute(Event event)
         return false;
 
     float currentDistance = bot->GetExactDist2d(demonVictim);
-    const float safeDistance = 10.0f;
+    constexpr float safeDistance = 10.0f;
     if (currentDistance < safeDistance)
     {
         botAI->Reset();
@@ -1763,7 +1764,7 @@ bool LadyVashjMainTankPositionBossAction::Execute(Event event)
             if (enchanted)
             {
                 float currentDistance = bot->GetExactDist2d(enchanted);
-                const float safeDistance = 10.0f;
+                constexpr float safeDistance = 10.0f;
                 if (currentDistance < safeDistance)
                     return MoveAway(enchanted, safeDistance - currentDistance + 5.0f);
             }
@@ -1804,12 +1805,12 @@ bool LadyVashjPhase1SpreadRangedInArcAction::Execute(Event event)
             return false;
 
         const Position& center = VASHJ_PLATFORM_CENTER_POSITION;
-        const float minRadius = 20.0f;
-        const float maxRadius = 30.0f;
+        constexpr float minRadius = 20.0f;
+        constexpr float maxRadius = 30.0f;
 
-        const float arcCenter = M_PI / 2.0f; // North
-        const float arcSpan = M_PI; // 180°
-        const float arcStart = arcCenter - arcSpan / 2.0f;
+        constexpr float arcCenter = M_PI / 2.0f; // North
+        constexpr float arcSpan = M_PI; // 180°
+        constexpr float arcStart = arcCenter - arcSpan / 2.0f;
 
         float angle;
         if (count == 1)
@@ -1936,7 +1937,7 @@ bool LadyVashjStaticChargeMoveAwayFromGroupAction::Execute(Event event)
     if (mainTank && bot != mainTank)
     {
         float currentDistance = bot->GetExactDist2d(mainTank);
-        const float safeDistance = 10.0f;
+        constexpr float safeDistance = 10.0f;
         if (currentDistance < safeDistance)
             return MoveAway(mainTank, safeDistance - currentDistance + 0.5f);
     }
@@ -1951,7 +1952,7 @@ bool LadyVashjStaticChargeMoveAwayFromGroupAction::Execute(Event event)
                 continue;
 
             float currentDistance = bot->GetExactDist2d(member);
-            const float safeDistance = 10.0f;
+            constexpr float safeDistance = 10.0f;
             if (currentDistance < safeDistance)
                 return MoveFromGroup(safeDistance + 0.5f);
         }
@@ -2201,7 +2202,7 @@ bool LadyVashjTankAttackAndMoveAwayStriderAction::Execute(Event event)
         if (strider->GetVictim() == bot)
         {
             float currentDistance = bot->GetExactDist2d(vashj);
-            const float safeDistance = 25.0f;
+            constexpr float safeDistance = 25.0f;
 
             if (currentDistance < safeDistance)
                 return MoveAway(vashj, safeDistance - currentDistance);
@@ -2214,7 +2215,7 @@ bool LadyVashjTankAttackAndMoveAwayStriderAction::Execute(Event event)
     if (!botAI->HasCheat(BotCheatMask::raid) || !botAI->IsTank(bot))
     {
         float currentDistance = bot->GetExactDist2d(strider);
-        const float safeDistance = 15.0f;
+        constexpr float safeDistance = 15.0f;
         if (currentDistance < safeDistance)
             return MoveAway(strider, safeDistance - currentDistance + 5.0f);
     }
@@ -2323,7 +2324,7 @@ bool LadyVashjLootTaintedCoreAction::Execute(Event)
 
         const ObjectGuid botGuid = bot->GetGUID();
         const ObjectGuid corpseGuid = guid;
-        const uint8 coreIndex = 0;
+        constexpr uint8 coreIndex = 0;
 
         botAI->AddTimedEvent([botGuid, corpseGuid, coreIndex, vashj]()
         {
@@ -2571,7 +2572,7 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpFirstCorePasser(
 {
     const float centerX = VASHJ_PLATFORM_CENTER_POSITION.GetPositionX();
     const float centerY = VASHJ_PLATFORM_CENTER_POSITION.GetPositionY();
-    const float radius = 57.5f;
+    constexpr float radius = 57.5f;
 
     float mx = designatedLooter->GetPositionX();
     float my = designatedLooter->GetPositionY();
@@ -2579,7 +2580,7 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpFirstCorePasser(
 
     float targetX = centerX + radius * std::cos(angle);
     float targetY = centerY + radius * std::sin(angle);
-    const float targetZ = 41.097f;
+    constexpr float targetZ = 41.097f;
 
     intendedLineup.insert_or_assign(bot->GetGUID(), Position(targetX, targetY, targetZ));
 
@@ -2608,11 +2609,11 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpSecondCorePasser(
     float targetX, targetY, targetZ;
     // If firstCorePasser is within thresholdDist of closestTrigger,
     // go to nearTriggerDist short of closestTrigger
-    const float thresholdDist = 40.0f;
-    const float nearTriggerDist = 1.5f;
+    constexpr float thresholdDist = 40.0f;
+    constexpr float nearTriggerDist = 1.5f;
     // If firstCorePasser is not thresholdDist yards from closestTrigger,
     // go to farDistance from firstCorePasser
-    const float farDistance = 38.0f;
+    constexpr float farDistance = 38.0f;
 
     if (distToTrigger <= thresholdDist)
     {
@@ -2662,9 +2663,9 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpThirdCorePasser(
     dx /= distToTrigger; dy /= distToTrigger;
 
     float targetX, targetY, targetZ;
-    const float thresholdDist = 40.0f;
-    const float nearTriggerDist = 1.5f;
-    const float farDistance = 38.0f;
+    constexpr float thresholdDist = 40.0f;
+    constexpr float nearTriggerDist = 1.5f;
+    constexpr float farDistance = 38.0f;
 
     if (distToTrigger <= thresholdDist)
     {
@@ -2718,10 +2719,10 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpFourthCorePasser(
 
     dx /= distToTrigger; dy /= distToTrigger;
 
-    const float nearTriggerDist = 1.5f;
+    constexpr float nearTriggerDist = 1.5f;
     float targetX = tx - dx * nearTriggerDist;
     float targetY = ty - dy * nearTriggerDist;
-    const float targetZ = 42.985f;
+    constexpr float targetZ = 42.985f;
 
     intendedLineup.insert_or_assign(bot->GetGUID(), Position(targetX, targetY, targetZ));
 
@@ -2798,7 +2799,7 @@ void LadyVashjPassTheTaintedCoreAction::ScheduleStoreCoreAfterImbue(
     if (!receiver)
         return;
 
-    const uint32 delayMs = 1500;
+    constexpr uint32 delayMs = 1500;
     const ObjectGuid receiverGuid = receiver->GetGUID();
 
     botAI->AddTimedEvent([receiverGuid]()
@@ -2851,7 +2852,7 @@ bool LadyVashjPassTheTaintedCoreAction::UseCoreOnNearestGenerator()
 
     const uint8 bagIndex = core->GetBagSlot();
     const uint8 slot = core->GetSlot();
-    const uint8 cast_count = 0;
+    constexpr uint8 cast_count = 0;
     uint32 spellId = 0;
 
     for (uint8 i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
@@ -2864,8 +2865,8 @@ bool LadyVashjPassTheTaintedCoreAction::UseCoreOnNearestGenerator()
     }
 
     const ObjectGuid item_guid = core->GetGUID();
-    const uint32 glyphIndex = 0;
-    const uint8 castFlags = 0;
+    constexpr uint32 glyphIndex = 0;
+    constexpr uint8 castFlags = 0;
 
     WorldPacket packet(CMSG_USE_ITEM);
     packet << bagIndex;
@@ -2927,7 +2928,7 @@ bool LadyVashjAvoidToxicSporesAction::Execute(Event event)
     if (spores.empty())
         return false;
 
-    const float hazardRadius = 7.0f;
+    constexpr float hazardRadius = 7.0f;
     bool inDanger = false;
     for (Unit* spore : spores)
     {
@@ -2942,7 +2943,7 @@ bool LadyVashjAvoidToxicSporesAction::Execute(Event event)
         return false;
 
     const Position& vashjCenter = VASHJ_PLATFORM_CENTER_POSITION;
-    const float maxRadius = 60.0f;
+    constexpr float maxRadius = 60.0f;
 
     Position safestPos = FindSafestNearbyPosition(spores, vashjCenter, maxRadius, hazardRadius);
 
@@ -2957,10 +2958,10 @@ Position LadyVashjAvoidToxicSporesAction::FindSafestNearbyPosition(
     const std::vector<Unit*>& spores, const Position& vashjCenter,
     float maxRadius, float hazardRadius)
 {
-    const float searchStep = M_PI / 8.0f;
-    const float minDistance = 2.0f;
-    const float maxDistance = 40.0f;
-    const float distanceStep = 1.0f;
+    constexpr float searchStep = M_PI / 8.0f;
+    constexpr float minDistance = 2.0f;
+    constexpr float maxDistance = 40.0f;
+    constexpr float distanceStep = 1.0f;
 
     Position bestPos;
     float minMoveDistance = std::numeric_limits<float>::max();
@@ -3023,7 +3024,7 @@ Position LadyVashjAvoidToxicSporesAction::FindSafestNearbyPosition(
 bool LadyVashjAvoidToxicSporesAction::IsPathSafeFromSpores(const Position& start,
     const Position& end, const std::vector<Unit*>& spores, float hazardRadius)
 {
-    const uint8 numChecks = 10;
+    constexpr uint8 numChecks = 10;
     float dx = end.GetPositionX() - start.GetPositionX();
     float dy = end.GetPositionY() - start.GetPositionY();
 
@@ -3054,7 +3055,7 @@ std::vector<Unit*> LadyVashjAvoidToxicSporesAction::GetAllSporeDropTriggers(
         botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
     for (auto const& npcGuid : npcs)
     {
-        const float maxSearchRadius = 40.0f;
+        constexpr float maxSearchRadius = 40.0f;
         Unit* unit = botAI->GetUnit(npcGuid);
         if (unit && unit->GetEntry() == NPC_SPORE_DROP_TRIGGER &&
             bot->GetExactDist2d(unit) < maxSearchRadius)
@@ -3072,7 +3073,7 @@ bool LadyVashjUseFreeActionAbilitiesAction::Execute(Event event)
 
     auto const& spores =
         LadyVashjAvoidToxicSporesAction::GetAllSporeDropTriggers(botAI, bot);
-    const float toxicSporeRadius = 6.0f;
+    constexpr float toxicSporeRadius = 6.0f;
 
     // If Rogues are Entangled and either have Static Charge or
     // are near a spore, use Cloak of Shadows

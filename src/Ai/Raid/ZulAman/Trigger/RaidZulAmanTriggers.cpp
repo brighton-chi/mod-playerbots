@@ -2,6 +2,7 @@
 #include "RaidZulAmanHelpers.h"
 #include "RaidZulAmanActions.h"
 #include "Playerbots.h"
+#include "RaidBossHelpers.h"
 
 using namespace ZulAmanHelpers;
 
@@ -124,7 +125,7 @@ bool JanalaiBossSummoningFireBombsTrigger::IsActive()
 
 bool JanalaiAmaniHatchersSpawnedTrigger::IsActive()
 {
-    return botAI->IsDps(bot) &&
+    return botAI->IsRangedDps(bot) &&
            GetFirstAliveUnitByEntry(botAI, NPC_AMANI_HATCHER);
 }
 

@@ -125,18 +125,7 @@ namespace BlackTempleHelpers
     };
 
     // General
-    const uint32 BLACK_TEMPLE_MAP_ID = 564;
-    void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);
-    void MarkTargetWithSkull(Player* bot, Unit* target);
-    void MarkTargetWithSquare(Player* bot, Unit* target);
-    void MarkTargetWithStar(Player* bot, Unit* target);
-    void MarkTargetWithCircle(Player* bot, Unit* target);
-    void MarkTargetWithTriangle(Player* bot, Unit* target);
-    void MarkTargetWithDiamond(Player* bot, Unit* target);
-    void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target);
-    Unit* GetNearestPlayerInRadius(Player* bot, float radius);
-    Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry);
-    bool IsInstanceTimerManager(PlayerbotAI* botAI, Player* bot);
+    constexpr uint32 BLACK_TEMPLE_MAP_ID = 564;
 
     // High Warlord Naj'entus
     extern const Position NAJENTUS_TANK_POSITION;

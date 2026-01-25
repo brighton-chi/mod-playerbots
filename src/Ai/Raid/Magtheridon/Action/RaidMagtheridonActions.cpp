@@ -4,6 +4,7 @@
 #include "ObjectAccessor.h"
 #include "ObjectGuid.h"
 #include "Playerbots.h"
+#include "RaidBossHelpers.h"
 
 using namespace MagtheridonHelpers;
 
@@ -637,14 +638,14 @@ bool MagtheridonManageTimersAndAssignmentsAction::Execute(Event event)
                            magtheridon->FindCurrentSpellBySpellId(SPELL_BLAST_NOVA);
     bool lastBlastNova = lastBlastNovaState[instanceId];
 
-    if (lastBlastNova && !blastNovaActive && IsInstanceTimerManager(botAI, bot))
+    if (lastBlastNova && !blastNovaActive && IsMechanicTrackerBot(botAI, bot, MAGTHERIDON_MAP_ID, nullptr))
         blastNovaTimer[instanceId] = now;
 
     lastBlastNovaState[instanceId] = blastNovaActive;
 
     if (!magtheridon->HasAura(SPELL_SHADOW_CAGE))
     {
-        if (IsInstanceTimerManager(botAI, bot))
+        if (IsMechanicTrackerBot(botAI, bot, MAGTHERIDON_MAP_ID, nullptr))
         {
             spreadWaitTimer.try_emplace(instanceId, now);
             blastNovaTimer.try_emplace(instanceId, now);
@@ -653,11 +654,12 @@ bool MagtheridonManageTimersAndAssignmentsAction::Execute(Event event)
     }
     else
     {
-        MagtheridonSpreadRangedAction::initialPositions.clear();
-        MagtheridonSpreadRangedAction::hasReachedInitialPosition.clear();
-        botToCubeAssignment.clear();
+        ObjectGuid guid = bot->GetGUID();
+        MagtheridonSpreadRangedAction::initialPositions.erase(guid);
+        MagtheridonSpreadRangedAction::hasReachedInitialPosition.erase(guid);
+        botToCubeAssignment.erase(guid);
 
-        if (IsInstanceTimerManager(botAI, bot))
+        if (IsMechanicTrackerBot(botAI, bot, MAGTHERIDON_MAP_ID, nullptr))
         {
             spreadWaitTimer.erase(instanceId);
             blastNovaTimer.erase(instanceId);

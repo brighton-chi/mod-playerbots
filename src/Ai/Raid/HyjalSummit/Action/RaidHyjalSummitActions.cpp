@@ -1,6 +1,7 @@
 #include "RaidHyjalSummitActions.h"
 #include "RaidHyjalSummitHelpers.h"
 #include "Playerbots.h"
+#include "RaidBossHelpers.h"
 
 using namespace HyjalSummitHelpers;
 

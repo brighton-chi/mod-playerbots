@@ -6,7 +6,7 @@
 #include "LootObjectStack.h"
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
-#include "SharedDefines.h"
+#include "RaidBossHelpers.h"
 
 using namespace TempestKeepHelpers;
 
@@ -642,7 +642,7 @@ bool AlarAvoidFlamePatchesAndDiveBombsAction::HandleDiveBomb(Unit* alar)
             const float safeDistance = 10.0f;
             if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
             {
-                const uint32 minInterval = 0;
+                constexpr uint32 minInterval = 0;
                 return FleePosition(Position(nearestPlayer->GetPosition()),
                                     safeDistance, minInterval);
             }
@@ -769,9 +769,9 @@ bool VoidReaverSpreadRangedAction::Execute(Event event)
         }
 
         const Position& position = VOID_REAVER_TANK_POSITION;
-        const float radius = 30.0f;
-        const float offsetArc = 1.0f;
-        const uint8 botsPerRing = 8;
+        constexpr float radius = 30.0f;
+        constexpr float offsetArc = 1.0f;
+        constexpr uint8 botsPerRing = 8;
 
         std::vector<Player*> rangedBots = healers;
         rangedBots.insert(rangedBots.end(), rangedDps.begin(), rangedDps.end());
@@ -836,7 +836,7 @@ bool HighAstromancerSolarianRangedLeaveSpaceForMeleeAction::Execute(Event event)
         return false;
 
     float currentDistance = bot->GetExactDist2d(astromancer);
-    const float minDistance = 20.0f;
+    constexpr float minDistance = 20.0f;
     if (currentDistance < minDistance)
         return MoveAway(astromancer, minDistance - currentDistance + 2.0f);
 
@@ -845,7 +845,7 @@ bool HighAstromancerSolarianRangedLeaveSpaceForMeleeAction::Execute(Event event)
 
 bool HighAstromancerSolarianMoveAwayFromGroupAction::Execute(Event event)
 {
-    const float safeDistance = 15.0f;
+    constexpr float safeDistance = 15.0f;
     Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
     if (nearestPlayer)
     {
@@ -1040,7 +1040,7 @@ bool KaelthasSunstriderKiteThaladredAction::Execute(Event event)
         return false;
 
     float currentDistance = bot->GetExactDist2d(thaladred);
-    const float safeDistance = 22.0f;
+    constexpr float safeDistance = 22.0f;
     if (currentDistance < safeDistance)
     {
         botAI->Reset();
@@ -1259,7 +1259,7 @@ bool KaelthasSunstriderWarlockTankPositionCapernianAction::Execute(Event event)
         if (currentDist == 0.0f)
             return false;
 
-        const float minDistance = 20.0f;
+        constexpr float minDistance = 20.0f;
         if (currentDist < minDistance)
             return MoveAway(capernian, minDistance - currentDist + 1.0f);
     }
@@ -1300,10 +1300,10 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::RangedBotsDisperse(
             return false;
     }
 
-    const float safeDistance = 6.0f;
+    constexpr float safeDistance = 6.0f;
     if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
     {
-        const uint32 minInterval = 1000;
+        constexpr uint32 minInterval = 1000;
         return FleePosition(Position(nearestPlayer->GetPosition()),
                             safeDistance, minInterval);
     }
@@ -1320,7 +1320,7 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::StayBackFromCaperni
     // Main tank purposely stays in range to bait Conflagration in Phase 1
     if (botAI->IsMainTank(bot))
     {
-        const float desiredDist = 15.0f;
+        constexpr float desiredDist = 15.0f;
         if (fabs(bot->GetExactDist2d(capernian) - desiredDist))
         {
             float dx = bot->GetPositionX() - capernian->GetPositionX();
@@ -1504,8 +1504,8 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
         if (botAI->IsMelee(bot) && botAI->IsDps(bot) && telonicus->GetVictim() != bot)
         {
             float maxMeleeRange = bot->GetMeleeRange(telonicus);
-            const float meleeRangeBuffer = 0.5f;
-            const float tolerance = 0.75f;
+            constexpr float meleeRangeBuffer = 0.5f;
+            constexpr float tolerance = 0.75f;
 
             float desiredDist = std::max(2.0f, maxMeleeRange - meleeRangeBuffer);
             float currentDist = bot->GetExactDist2d(telonicus);
@@ -1665,7 +1665,7 @@ bool KaelthasSunstriderMoveDevastationAwayAction::Execute(Event event)
 
     if (axe->GetVictim() == bot)
     {
-        const float safeDistance = 12.0f;
+        constexpr float safeDistance = 12.0f;
         Unit* nearestPlayer = GetNearestNonTankPlayerInRadius(bot, safeDistance);
         if (nearestPlayer)
         {
@@ -1691,7 +1691,7 @@ bool KaelthasSunstriderHunterTurnAwayNetherstrandLongbowAction::Execute(Event ev
 
     if (longbow->GetVictim() == bot)
     {
-        const float dangerZone = 15.0f;
+        constexpr float dangerZone = 15.0f;
         Unit* nearestPlayer = GetNearestNonTankPlayerInRadius(bot, dangerZone);
         if (nearestPlayer)
         {
@@ -1822,7 +1822,7 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::LootWeapon(
 
         const ObjectGuid botGuid = bot->GetGUID();
         const ObjectGuid corpseGuid = guid;
-        const uint8 weaponIndex = 0;
+        constexpr uint8 weaponIndex = 0;
 
         botAI->AddTimedEvent([this, botGuid, corpseGuid, weaponIndex, itemId, weaponName]()
         {
@@ -1983,7 +1983,7 @@ bool KaelthasSunstriderAvoidFlameStrikeAction::Execute(Event event)
     if (flameStrikes.empty())
         return false;
 
-    const float hazardRadius = 12.0f;
+    constexpr float hazardRadius = 12.0f;
     bool inDanger = false;
     for (Unit* flameStrike : flameStrikes)
     {
@@ -2047,7 +2047,7 @@ bool KaelthasSunstriderHandlePhoenixesAndEggsAction::Execute(Event event)
 
         if (targetPhoenix->GetVictim() == bot)
         {
-            const float safeDistance = 10.0f;
+            constexpr float safeDistance = 10.0f;
 
             Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
             if (Group* group = bot->GetGroup())
@@ -2081,7 +2081,7 @@ bool KaelthasSunstriderHandlePhoenixesAndEggsAction::Execute(Event event)
             return false;
 
         float currentDistance = bot->GetExactDist2d(phoenix);
-        const float safeDistance = 10.0f;
+        constexpr float safeDistance = 10.0f;
         if (currentDistance < safeDistance)
             return MoveAway(phoenix, safeDistance - currentDistance + 2.0f);
     }
@@ -2206,7 +2206,7 @@ bool KaelthasSunstriderSpreadOutInMidairAction::Execute(Event event)
     if (!group)
         return false;
 
-    const float minSpreadDistance = 16.0f;
+    constexpr float minSpreadDistance = 16.0f;
 
     std::vector<Player*> nearbyPlayers;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())

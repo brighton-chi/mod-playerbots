@@ -29,62 +29,6 @@ namespace MagtheridonHelpers
         return it->second;
     }
 
-    void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId)
-    {
-        Group* group = bot->GetGroup();
-        if (!target || !group)
-            return;
-
-        ObjectGuid currentGuid = group->GetTargetIcon(iconId);
-        if (currentGuid != target->GetGUID())
-            group->SetTargetIcon(iconId, bot->GetGUID(), target->GetGUID());
-    }
-
-    void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target)
-    {
-        if (!target)
-            return;
-
-        std::string currentRti = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
-        Unit* currentTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
-
-        if (currentRti != rtiName || currentTarget != target)
-        {
-            botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set(rtiName);
-            botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(target);
-        }
-    }
-
-    void MarkTargetWithSquare(Player* bot, Unit* target)
-    {
-        MarkTargetWithIcon(bot, target, RtiTargetValue::squareIndex);
-    }
-
-    void MarkTargetWithStar(Player* bot, Unit* target)
-    {
-        MarkTargetWithIcon(bot, target, RtiTargetValue::starIndex);
-    }
-
-    void MarkTargetWithCircle(Player* bot, Unit* target)
-    {
-        MarkTargetWithIcon(bot, target, RtiTargetValue::circleIndex);
-    }
-
-    void MarkTargetWithDiamond(Player* bot, Unit* target)
-    {
-        MarkTargetWithIcon(bot, target, RtiTargetValue::diamondIndex);
-    }
-
-    void MarkTargetWithTriangle(Player* bot, Unit* target)
-    {
-        MarkTargetWithIcon(bot, target, RtiTargetValue::triangleIndex);
-    }
-
-    void MarkTargetWithCross(Player* bot, Unit* target)
-    {
-        MarkTargetWithIcon(bot, target, RtiTargetValue::crossIndex);
-    }
-
     const std::vector<uint32> MANTICRON_CUBE_DB_GUIDS = { 43157, 43158, 43159, 43160, 43161 };
 
     // Get the positions of all Manticron Cubes by their database GUIDs

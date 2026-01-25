@@ -1,101 +1,10 @@
 #include "RaidHyjalSummitHelpers.h"
 #include "Group.h"
 #include "Playerbots.h"
-#include "RtiTargetValue.h"
+#include "RaidBossHelpers.h"
 
 namespace HyjalSummitHelpers
 {
-    // General Helpers
-
-    void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId)
-    {
-        if (!target)
-            return;
-
-        if (Group* group = bot->GetGroup())
-        {
-            ObjectGuid currentGuid = group->GetTargetIcon(iconId);
-            if (currentGuid != target->GetGUID())
-                group->SetTargetIcon(iconId, bot->GetGUID(), target->GetGUID());
-        }
-    }
-
-    void MarkTargetWithSquare(Player* bot, Unit* target)
-    {
-        MarkTargetWithIcon(bot, target, RtiTargetValue::squareIndex);
-    }
-
-    void MarkTargetWithStar(Player* bot, Unit* target)
-    {
-        MarkTargetWithIcon(bot, target, RtiTargetValue::starIndex);
-    }
-
-    void MarkTargetWithCircle(Player* bot, Unit* target)
-    {
-        MarkTargetWithIcon(bot, target, RtiTargetValue::circleIndex);
-    }
-
-    void MarkTargetWithTriangle(Player* bot, Unit* target)
-    {
-        MarkTargetWithIcon(bot, target, RtiTargetValue::triangleIndex);
-    }
-
-    void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target)
-    {
-        if (!target)
-            return;
-
-        std::string currentRti = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
-        Unit* currentTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
-
-        if (currentRti != rtiName || currentTarget != target)
-        {
-            botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set(rtiName);
-            botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(target);
-        }
-    }
-
-    Unit* GetNearestPlayerInRadius(Player* bot, float radius)
-    {
-        Unit* nearestPlayer = nullptr;
-        float nearestDistance = radius;
-
-        if (Group* group = bot->GetGroup())
-        {
-            for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
-            {
-                Player* member = ref->GetSource();
-                if (!member || !member->IsAlive() || member == bot)
-                    continue;
-
-                float distance = bot->GetExactDist2d(member);
-                if (distance < nearestDistance)
-                {
-                    nearestDistance = distance;
-                    nearestPlayer = member;
-                }
-            }
-        }
-
-        return nearestPlayer;
-    }
-
-    bool IsInstanceTrackerManager(PlayerbotAI* botAI, Player* bot)
-    {
-        if (Group* group = bot->GetGroup())
-        {
-            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-            {
-                Player* member = ref->GetSource();
-                if (member && member->IsAlive() && botAI->IsDps(member) &&
-                    GET_PLAYERBOT_AI(member))
-                    return member == bot;
-            }
-        }
-
-        return false;
-    }
-
     // Rage Winterchill
 
     const Position RAGE_WINTERCHILL_TANK_POSITION = { 5031.061f, -1784.521f, 1321.626f };

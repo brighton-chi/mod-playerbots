@@ -3,6 +3,7 @@
 #include "RaidTempestKeepActions.h"
 #include "RaidTempestKeepKaelthasBossAI.h"
 #include "Playerbots.h"
+#include "RaidBossHelpers.h"
 
 using namespace TempestKeepHelpers;
 
@@ -115,7 +116,7 @@ bool AlarPhase2EncounterIsAtRoomCenterTrigger::IsActive()
 bool AlarStrategyChangesBetweenPhasesTrigger::IsActive()
 {
     return AI_VALUE2(Unit*, "find target", "al'ar") &&
-           IsInstanceTimerManager(botAI, bot);
+           IsMechanicTrackerBot(botAI, bot, TEMPEST_KEEP_MAP_ID, nullptr);
 }
 
 // Void Reaver
@@ -355,7 +356,7 @@ bool KaelthasSunstriderWaitingForTanksToGetAggroOnAdvisorsTrigger::IsActive()
     if (!kaelthas)
         return false;
 
-    if (!IsInstanceTimerManager(botAI, bot))
+    if (!IsMechanicTrackerBot(botAI, bot, TEMPEST_KEEP_MAP_ID, GetCapernianTank(botAI, bot)))
         return false;
 
     boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
@@ -408,7 +409,7 @@ bool KaelthasSunstriderLegendaryWeaponsWereLostTrigger::IsActive()
     if (bot->GetMapId() != TEMPEST_KEEP_MAP_ID)
         return false;
 
-    const uint32 KAELTHAS_DB_GUID = 158218;
+    constexpr uint32 KAELTHAS_DB_GUID = 158218;
     Map* map = bot->GetMap();
     if (!map)
         return false;

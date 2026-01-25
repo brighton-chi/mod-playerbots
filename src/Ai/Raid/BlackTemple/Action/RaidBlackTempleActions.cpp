@@ -2,6 +2,7 @@
 #include "RaidBlackTempleHelpers.h"
 #include "RaidBlackTempleIllidanBossAI.h"
 #include "Playerbots.h"
+#include "RaidBossHelpers.h"
 
 using namespace BlackTempleHelpers;
 
@@ -2542,7 +2543,7 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event event)
 
     if (Unit* shadowDemon = GetFirstAliveUnitByEntry(botAI, NPC_SHADOW_DEMON))
     {
-        if (IsInstanceTimerManager(botAI, bot))
+        if (IsMechanicTrackerBot(botAI, bot, BLACK_TEMPLE_MAP_ID, GetIllidanWarlockTank(botAI, bot)))
             MarkTargetWithSquare(bot, shadowDemon);
 
         SetRtiTarget(botAI, "square", shadowDemon);
@@ -2558,7 +2559,7 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event event)
                 return botAI->CastSpell("frost nova", bot);
         }
 
-        if (IsInstanceTimerManager(botAI, bot))
+        if (IsMechanicTrackerBot(botAI, bot, BLACK_TEMPLE_MAP_ID, nullptr))
             MarkTargetWithTriangle(bot, shadowfiend);
 
         if (botAI->IsRanged(bot))

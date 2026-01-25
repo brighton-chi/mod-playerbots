@@ -3,6 +3,7 @@
 #include "RaidBlackTempleActions.h"
 #include "AiFactory.h"
 #include "Playerbots.h"
+#include "RaidBossHelpers.h"
 
 using namespace BlackTempleHelpers;
 
@@ -146,7 +147,7 @@ bool SupremusVolcanoIsNearbyTrigger::IsActive()
 bool SupremusNeedToManagePhaseTimerTrigger::IsActive()
 {
     return AI_VALUE2(Unit*, "find target", "supremus") &&
-           IsInstanceTimerManager(botAI, bot);
+           IsMechanicTrackerBot(botAI, bot, BLACK_TEMPLE_MAP_ID, nullptr);
 }
 
 // Shade of Akama
@@ -268,7 +269,7 @@ bool GurtoggBloodboilBotHasFelRageTrigger::IsActive()
 bool GurtoggBloodboilNeedToManagePhaseTimerTrigger::IsActive()
 {
     return AI_VALUE2(Unit*, "find target", "gurtogg bloodboil") &&
-           IsInstanceTimerManager(botAI, bot);
+           IsMechanicTrackerBot(botAI, bot, BLACK_TEMPLE_MAP_ID, nullptr);
 }
 
 // Reliquary of Souls
@@ -444,7 +445,7 @@ bool IllidariCouncilPetsScrewUpThePullTrigger::IsActive()
 bool IllidariCouncilNeedToManageDpsTimerTrigger::IsActive()
 {
     return AI_VALUE2(Unit*, "find target", "gathios the shatterer") &&
-           IsInstanceTimerManager(botAI, bot);
+           IsMechanicTrackerBot(botAI, bot, BLACK_TEMPLE_MAP_ID, GetZerevorMageTank(botAI, bot));
 }
 
 // Illidan Stormrage <The Betrayer>
@@ -610,7 +611,7 @@ bool IllidanStormrageBossSummonsAddsTrigger::IsActive()
 
 bool IllidanStormrageNeedToManageDpsTimerTrigger::IsActive()
 {
-    if (!IsInstanceTimerManager(botAI, bot))
+    if (!IsMechanicTrackerBot(botAI, bot, BLACK_TEMPLE_MAP_ID, GetIllidanWarlockTank(botAI, bot)))
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");

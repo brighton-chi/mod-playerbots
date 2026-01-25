@@ -15,7 +15,7 @@ bool MagtheridonFirstThreeChannelersEngagedByMainTankTrigger::IsActive()
 
 bool MagtheridonNWChannelerEngagedByFirstAssistTankTrigger::IsActive()
 {
-    if (!botAI->IsAssistTankOfIndex(bot, 0))
+    if (!botAI->IsAssistTankOfIndex(bot, 0, false))
         return false;
 
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
@@ -28,7 +28,7 @@ bool MagtheridonNWChannelerEngagedByFirstAssistTankTrigger::IsActive()
 
 bool MagtheridonNEChannelerEngagedBySecondAssistTankTrigger::IsActive()
 {
-    if (!botAI->IsAssistTankOfIndex(bot, 1))
+    if (!botAI->IsAssistTankOfIndex(bot, 1, false))
         return false;
 
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
@@ -60,14 +60,14 @@ bool MagtheridonDeterminingKillOrderTrigger::IsActive()
     if (botAI->IsHeal(bot) || botAI->IsMainTank(bot))
         return false;
 
-    if (botAI->IsAssistTankOfIndex(bot, 0))
+    if (botAI->IsAssistTankOfIndex(bot, 0, false))
     {
         Creature* channelerDiamond  = GetChanneler(bot, NORTHWEST_CHANNELER);
         if (channelerDiamond && channelerDiamond->IsAlive())
             return false;
     }
 
-    if (botAI->IsAssistTankOfIndex(bot, 1))
+    if (botAI->IsAssistTankOfIndex(bot, 1, false))
     {
         Creature* channelerTriangle = GetChanneler(bot, NORTHEAST_CHANNELER);
         if (channelerTriangle && channelerTriangle->IsAlive())

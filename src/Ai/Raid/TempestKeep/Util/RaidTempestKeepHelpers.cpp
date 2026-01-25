@@ -1,121 +1,11 @@
-#include <algorithm>
-
 #include "RaidTempestKeepHelpers.h"
 #include "RaidTempestKeepActions.h"
 #include "LootObjectStack.h"
 #include "Playerbots.h"
-#include "RtiTargetValue.h"
 
 namespace TempestKeepHelpers
 {
-    // General Helpers
-
-    void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId)
-    {
-        if (!target)
-            return;
-
-        if (Group* group = bot->GetGroup())
-        {
-            ObjectGuid currentGuid = group->GetTargetIcon(iconId);
-            if (currentGuid != target->GetGUID())
-                group->SetTargetIcon(iconId, bot->GetGUID(), target->GetGUID());
-        }
-    }
-
-    void MarkTargetWithSkull(Player* bot, Unit* target)
-    {
-        MarkTargetWithIcon(bot, target, RtiTargetValue::skullIndex);
-    }
-
-    void MarkTargetWithSquare(Player* bot, Unit* target)
-    {
-        MarkTargetWithIcon(bot, target, RtiTargetValue::squareIndex);
-    }
-
-    void MarkTargetWithStar(Player* bot, Unit* target)
-    {
-        MarkTargetWithIcon(bot, target, RtiTargetValue::starIndex);
-    }
-
-    void MarkTargetWithCircle(Player* bot, Unit* target)
-    {
-        MarkTargetWithIcon(bot, target, RtiTargetValue::circleIndex);
-    }
-
-    void MarkTargetWithTriangle(Player* bot, Unit* target)
-    {
-        MarkTargetWithIcon(bot, target, RtiTargetValue::triangleIndex);
-    }
-
-    void MarkTargetWithDiamond(Player* bot, Unit* target)
-    {
-        MarkTargetWithIcon(bot, target, RtiTargetValue::diamondIndex);
-    }
-
-    void MarkTargetWithCross(Player* bot, Unit* target)
-    {
-        MarkTargetWithIcon(bot, target, RtiTargetValue::crossIndex);
-    }
-
-    void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target)
-    {
-        std::string currentRti = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
-        Unit* currentTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
-
-        if (currentRti != rtiName || currentTarget != target)
-        {
-            botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set(rtiName);
-            botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(target);
-        }
-    }
-
-    bool IsInstanceTimerManager(PlayerbotAI* botAI, Player* bot)
-    {
-        if (Group* group = bot->GetGroup())
-        {
-            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-            {
-                Player* member = ref->GetSource();
-                if (!member || !member->IsAlive() || !botAI->IsDps(member) ||
-                    !GET_PLAYERBOT_AI(member))
-                    continue;
-
-                Player* capernianTank = GetCapernianTank(botAI, member);
-                if (capernianTank && capernianTank == member)
-                    continue;
-
-                return member == bot;
-            }
-        }
-
-        return false;
-    }
-
-    Unit* GetNearestPlayerInRadius(Player* bot, float radius)
-    {
-        Unit* nearestPlayer = nullptr;
-        float nearestDistance = radius;
-
-        if (Group* group = bot->GetGroup())
-        {
-            for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
-            {
-                Player* member = ref->GetSource();
-                if (!member || !member->IsAlive() || member == bot)
-                    continue;
-
-                float distance = bot->GetExactDist2d(member);
-                if (distance < nearestDistance)
-                {
-                    nearestDistance = distance;
-                    nearestPlayer = member;
-                }
-            }
-        }
-
-        return nearestPlayer;
-    }
+    // General
 
     Unit* GetNearestNonTankPlayerInRadius(Player* bot, float radius)
     {
@@ -166,10 +56,10 @@ namespace TempestKeepHelpers
     Position FindSafestNearbyPosition(Player* bot, const std::vector<Unit*>& hazards,
         float maxRadius, float hazardRadius, const Position* center)
     {
-        const float searchStep = M_PI / 8.0f;
-        const float minDistance = 2.0f;
-        const float maxDistance = 30.0f;
-        const float distanceStep = 1.0f;
+        constexpr float searchStep = M_PI / 8.0f;
+        constexpr float minDistance = 2.0f;
+        constexpr float maxDistance = 30.0f;
+        constexpr float distanceStep = 1.0f;
 
         Position bestPos;
         float minMoveDistance = std::numeric_limits<float>::max();
@@ -227,7 +117,7 @@ namespace TempestKeepHelpers
     bool IsPathSafeFromHazards(
         const Position& start, const Position& end, const std::vector<Unit*>& hazards, float hazardRadius)
     {
-        const uint8 numChecks = 10;
+        constexpr uint8 numChecks = 10;
         float dx = end.GetPositionX() - start.GetPositionX();
         float dy = end.GetPositionY() - start.GetPositionY();
 

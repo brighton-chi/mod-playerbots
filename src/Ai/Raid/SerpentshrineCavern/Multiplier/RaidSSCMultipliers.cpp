@@ -83,8 +83,8 @@ float HydrossTheUnstableWaitForDpsMultiplier::GetValue(Action* action)
 
     const uint32 instanceId = hydross->GetMap()->GetInstanceId();
     const time_t now = std::time(nullptr);
-    const uint8 phaseChangeWaitSeconds = 1;
-    const uint8 dpsWaitSeconds = 5;
+    constexpr uint8 phaseChangeWaitSeconds = 1;
+    constexpr uint8 dpsWaitSeconds = 5;
 
     if (!hydross->HasAura(SPELL_CORRUPTION) && !botAI->IsMainTank(bot))
     {
@@ -335,7 +335,7 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValue(Action* action)
     const uint32 instanceId = leotheras->GetMap()->GetInstanceId();
     const time_t now = std::time(nullptr);
 
-    const uint8 dpsWaitSecondsPhase1 = 5;
+    constexpr uint8 dpsWaitSecondsPhase1 = 5;
     Unit* leotherasHuman = GetLeotherasHuman(botAI);
     Unit* leotherasPhase3Demon = GetPhase3LeotherasDemon(botAI);
     if (leotherasHuman && !leotherasHuman->HasAura(SPELL_LEOTHERAS_BANISHED) &&
@@ -355,7 +355,7 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValue(Action* action)
         }
     }
 
-    const uint8 dpsWaitSecondsPhase2 = 12;
+    constexpr uint8 dpsWaitSecondsPhase2 = 12;
     Unit* leotherasPhase2Demon = GetPhase2LeotherasDemon(botAI);
     Player* demonFormTank = GetLeotherasDemonFormTank(botAI, bot);
     if (leotherasPhase2Demon)
@@ -377,7 +377,7 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValue(Action* action)
         }
     }
 
-    const uint8 dpsWaitSecondsPhase3 = 8;
+    constexpr uint8 dpsWaitSecondsPhase3 = 8;
     if (leotherasPhase3Demon)
     {
         if ((demonFormTank && demonFormTank == bot) || botAI->IsTank(bot))
@@ -494,7 +494,7 @@ float FathomLordKarathressWaitForDpsMultiplier::GetValue(Action* action)
         return 1.0f;
 
     const time_t now = std::time(nullptr);
-    const uint8 dpsWaitSeconds = 12;
+    constexpr uint8 dpsWaitSeconds = 12;
 
     auto it = karathressDpsWaitTimer.find(karathress->GetMap()->GetInstanceId());
     if (it == karathressDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)

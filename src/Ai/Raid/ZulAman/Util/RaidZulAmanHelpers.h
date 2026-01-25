@@ -67,17 +67,9 @@ namespace ZulAmanHelpers
     };
 
     // General
-    const uint32 ZULAMAN_MAP_ID = 568;
-    void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);
-    void MarkTargetWithSkull(Player* bot, Unit* target);
-    void MarkTargetWithStar(Player* bot, Unit* target);
-    void MarkTargetWithCircle(Player* bot, Unit* target);
-    void MarkTargetWithMoon(Player* bot, Unit* target);
-    void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target);
-    Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry);
+    constexpr uint32 ZULAMAN_MAP_ID = 568;
     Unit* GetFirstAliveUnitByEntries(PlayerbotAI* botAI, const std::vector<uint32>& entries);
     bool AnyNearbyNpcWithEntry(PlayerbotAI* botAI, uint32 entry);
-    Unit* GetNearestPlayerInRadius(Player* bot, float radius);
 
     // Akil'zon <Eagle Avatar>
     extern const Position AKILZON_TANK_POSITION;
