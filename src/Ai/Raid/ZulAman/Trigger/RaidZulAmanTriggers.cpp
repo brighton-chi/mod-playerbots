@@ -233,7 +233,8 @@ bool ZuljinMainTankNeedsAggroUponPullOrPhaseChangeTrigger::IsActive()
 bool ZuljinBossEngagedByMainTankTrigger::IsActive()
 {
     Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
-    if (!zuljin || zuljin->HasAura(SPELL_SHAPE_OF_THE_EAGLE))
+    if (!zuljin || zuljin->HasAura(SPELL_SHAPE_OF_THE_EAGLE) ||
+        zuljin->HasAura(SPELL_SHAPE_OF_THE_DRAGONHAWK))
         return false;
 
     return botAI->IsMainTank(bot);
@@ -257,6 +258,18 @@ bool ZuljinBossIsSummoningCyclonesInEagleFormTrigger::IsActive()
     return AnyNearbyNpcWithEntry(botAI, NPC_FEATHER_VORTEX);
 }
 
+bool ZuljinBossCastsClawRageOnRandomTargetsInLynxFormTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_HUNTER &&
+        bot->getClass() != CLASS_MAGE &&
+        bot->getClass() != CLASS_PALADIN &&
+        bot->getClass() != CLASS_ROGUE)
+        return false;
+
+    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
+    return zuljin && zuljin->HasAura(SPELL_SHAPE_OF_THE_LYNX);
+}
+
 bool ZuljinBossCastsAoeAbilitiesInDragonhawkFormTrigger::IsActive()
 {
     if (!botAI->IsRanged(bot))
@@ -264,13 +277,4 @@ bool ZuljinBossCastsAoeAbilitiesInDragonhawkFormTrigger::IsActive()
 
     Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
     return zuljin && zuljin->HasAura(SPELL_SHAPE_OF_THE_DRAGONHAWK);
-}
-
-bool ZuljinBossIsChargingPlayersInLynxFormTrigger::IsActive()
-{
-    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
-    if (!zuljin || !zuljin->HasAura(SPELL_SHAPE_OF_THE_LYNX))
-        return false;
-
-    return !botAI->IsMainTank(bot);
 }

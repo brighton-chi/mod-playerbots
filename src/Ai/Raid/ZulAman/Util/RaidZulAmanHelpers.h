@@ -30,6 +30,7 @@ namespace ZulAmanHelpers
         SPELL_SHAPE_OF_THE_EAGLE       = 42606,
         SPELL_SHAPE_OF_THE_LYNX        = 42607,
         SPELL_SHAPE_OF_THE_DRAGONHAWK  = 42608,
+        SPELL_CLAW_RAGE                = 43149,
 
         // Hunter
         SPELL_MISDIRECTION             = 35079,

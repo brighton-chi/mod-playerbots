@@ -279,7 +279,8 @@ float ZuljinDisableTankFaceMultiplier::GetValue(Action* action)
     if (!botAI->IsTank(bot))
         return 1.0f;
 
-    if (AI_VALUE2(Unit*, "find target", "zul'jin"))
+    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
+    if (zuljin && !zuljin->HasAura(SPELL_SHAPE_OF_THE_DRAGONHAWK))
     {
         if (dynamic_cast<TankFaceAction*>(action))
             return 0.0f;
@@ -310,6 +311,18 @@ float ZuljinAvoidWhirlwindMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+float ZuljinDisableAvoidAoeMultiplier::GetValue(Action* action)
+{
+    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
+    if (zuljin && zuljin->HasAura(SPELL_SHAPE_OF_THE_EAGLE))
+    {
+        if (dynamic_cast<AvoidAoeAction*>(action))
+            return 0.0f;
+    }
+
+    return 1.0f;
+}
+
 float ZuljinDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
 {
     if (bot->getClass() != CLASS_SHAMAN)
@@ -320,19 +333,6 @@ float ZuljinDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
     {
         if (dynamic_cast<CastBloodlustAction*>(action) ||
             dynamic_cast<CastHeroismAction*>(action))
-            return 0.0f;
-    }
-
-    return 1.0f;
-}
-
-float ZuljinStayCloseToLynxFormMultiplier::GetValue(Action* action)
-{
-    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
-    if (zuljin && zuljin->HasAura(SPELL_SHAPE_OF_THE_LYNX))
-    {
-        if (dynamic_cast<FleeAction*>(action) ||
-            dynamic_cast<FollowAction*>(action))
             return 0.0f;
     }
 

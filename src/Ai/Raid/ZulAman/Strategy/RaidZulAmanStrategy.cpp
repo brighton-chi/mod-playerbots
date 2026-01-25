@@ -86,13 +86,13 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("zul'jin run away from whirlwind", ACTION_EMERGENCY + 6) }));
 
     triggers.push_back(new TriggerNode("zul'jin boss is summoning cyclones in eagle form", {
-        NextAction("zul'jin avoid cyclones", ACTION_EMERGENCY + 6) }));
+        NextAction("zul'jin avoid cyclones", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("zul'jin boss casts aoe abilities in dragonhawk form", {
         NextAction("zul'jin spread ranged", ACTION_RAID + 1) }));
 
-    // triggers.push_back(new TriggerNode("zul'jin boss is charging players in lynx form", {
-    //     NextAction("zul'jin move near group", ACTION_RAID + 1) }));
+    triggers.push_back(new TriggerNode("zul'jin boss casts claw rage on random targets in lynx form", {
+        NextAction("zul'jin escape claw rage with immunity spell", ACTION_EMERGENCY + 6) }));
 }
 
 void RaidZulAmanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
@@ -122,6 +122,6 @@ void RaidZulAmanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     // Zul'jin
     multipliers.push_back(new ZuljinDisableTankFaceMultiplier(botAI));
     multipliers.push_back(new ZuljinAvoidWhirlwindMultiplier(botAI));
+    multipliers.push_back(new ZuljinDisableAvoidAoeMultiplier(botAI));
     multipliers.push_back(new ZuljinDelayBloodlustAndHeroismMultiplier(botAI));
-    // multipliers.push_back(new ZuljinStayCloseToLynxFormMultiplier(botAI));
 }

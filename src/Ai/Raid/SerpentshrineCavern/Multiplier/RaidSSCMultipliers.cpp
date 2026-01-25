@@ -115,7 +115,6 @@ float HydrossTheUnstableWaitForDpsMultiplier::GetValue(Action* action)
         bool aboutToChange = (itPhase != hydrossChangeToNaturePhaseTimer.end() &&
                               (now - itPhase->second) > phaseChangeWaitSeconds);
 
-
         if (justChanged || aboutToChange)
         {
             if (dynamic_cast<AttackAction*>(action) ||

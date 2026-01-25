@@ -225,19 +225,19 @@ public:
     bool IsActive() override;
 };
 
+class ZuljinBossCastsClawRageOnRandomTargetsInLynxFormTrigger : public Trigger
+{
+public:
+    ZuljinBossCastsClawRageOnRandomTargetsInLynxFormTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "zul'jin boss casts claw rage on random targets in lynx form") {}
+    bool IsActive() override;
+};
+
 class ZuljinBossCastsAoeAbilitiesInDragonhawkFormTrigger : public Trigger
 {
 public:
 ZuljinBossCastsAoeAbilitiesInDragonhawkFormTrigger(
         PlayerbotAI* botAI) : Trigger(botAI, "zul'jin boss casts aoe abilities in dragonhawk form") {}
-    bool IsActive() override;
-};
-
-class ZuljinBossIsChargingPlayersInLynxFormTrigger : public Trigger
-{
-public:
-    ZuljinBossIsChargingPlayersInLynxFormTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "zul'jin boss is charging players in lynx form") {}
     bool IsActive() override;
 };
 

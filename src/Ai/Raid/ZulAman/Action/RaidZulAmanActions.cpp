@@ -1,5 +1,6 @@
 #include "RaidZulAmanActions.h"
 #include "RaidZulAmanHelpers.h"
+#include "RaidZulAmanZuljinBossAi.h"
 #include "Playerbots.h"
 #include "RtiTargetValue.h"
 
@@ -911,7 +912,7 @@ bool ZuljinMainTankPositionBossAction::Execute(Event event)
             float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
             return MoveTo(ZULAMAN_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
-                          false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+                          false, false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
         }
     }
 
@@ -941,7 +942,7 @@ bool ZuljinAvoidCyclonesAction::Execute(Event event)
     if (cyclones.empty())
         return false;
 
-    const float hazardRadius = 5.0f;
+    const float hazardRadius = 6.0f;
     bool inDanger = false;
     for (Unit* cyclone : cyclones)
     {
@@ -1065,7 +1066,7 @@ std::vector<Unit*> ZuljinAvoidCyclonesAction::GetAllCycloneTriggers(
         botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
     for (auto const& npcGuid : npcs)
     {
-        const float maxSearchRadius = 40.0f;
+        const float maxSearchRadius = 30.0f;
         Unit* unit = botAI->GetUnit(npcGuid);
         if (unit && unit->GetEntry() == NPC_FEATHER_VORTEX &&
             bot->GetExactDist2d(unit) < maxSearchRadius)
@@ -1075,6 +1076,96 @@ std::vector<Unit*> ZuljinAvoidCyclonesAction::GetAllCycloneTriggers(
     return cyclones;
 }
 
+bool ZuljinEscapeClawRageWithImmunitySpellAction::Execute(Event event)
+{
+    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
+    if (!zuljin)
+        return false;
+
+    boss_zuljin* zuljinAI = dynamic_cast<boss_zuljin*>(zuljin->GetAI());
+    if (!zuljinAI)
+        return false;
+
+    if (zuljin->HasAura(SPELL_CLAW_RAGE))
+    {
+        bool escaped = false;
+        if (zuljinAI->GetChargeTarget() == bot->GetGUID() && !botAI->IsTank(bot))
+        {
+            if (bot->getClass() == CLASS_HUNTER)
+            {
+                if (botAI->CanCastSpell("feign death", bot))
+                {
+                    if (botAI->CastSpell("feign death", bot))
+                        escaped = true;
+                }
+                if (botAI->CanCastSpell("deterrence", bot))
+                {
+                    if (botAI->CastSpell("deterrence", bot))
+                        escaped = true;
+                }
+            }
+            else if (bot->getClass() == CLASS_MAGE)
+            {
+                if (botAI->CanCastSpell("ice block", bot))
+                {
+                    if (botAI->CastSpell("ice block", bot))
+                        escaped = true;
+                }
+            }
+            else if (bot->getClass() == CLASS_PALADIN)
+            {
+                if (botAI->CanCastSpell("divine shield", bot))
+                {
+                    if (botAI->CastSpell("divine shield", bot))
+                        escaped = true;
+                }
+            }
+            else if (bot->getClass() == CLASS_ROGUE)
+            {
+                if (botAI->CanCastSpell("vanish", bot))
+                {
+                    if (botAI->CastSpell("vanish", bot))
+                        escaped = true;
+                }
+                if (botAI->CanCastSpell("evasion", bot))
+                {
+                    if (botAI->CastSpell("evasion", bot))
+                        escaped = true;
+                }
+            }
+            return escaped;
+        }
+        else if (bot->getClass() == CLASS_PALADIN)
+        {
+            ObjectGuid chargeTargetGuid = zuljinAI->GetChargeTarget();
+            Player* playerVictim = ObjectAccessor::FindPlayer(chargeTargetGuid);
+            if (playerVictim && !botAI->IsTank(playerVictim))
+            {
+                if (botAI->CanCastSpell("hand of protection", playerVictim))
+                    return botAI->CastSpell("hand of protection", playerVictim);
+            }
+        }
+    }
+    else
+    {
+        bool removed = false;
+        const char* immunitySpells[] = {
+            "feign death", "vanish", "ice block", "divine shield", "hand of protection"
+        };
+        for (const char* spellName : immunitySpells)
+        {
+            if (botAI->HasAura(spellName, bot))
+            {
+                botAI->RemoveAura(spellName);
+                removed = true;
+            }
+        }
+        return removed;
+    }
+
+    return false;
+}
+
 bool ZuljinSpreadRangedAction::Execute(Event event)
 {
     const float minDistance = 6.0f;
@@ -1082,22 +1173,6 @@ bool ZuljinSpreadRangedAction::Execute(Event event)
     {
         const uint32 minInterval = 1000;
         return FleePosition(nearestPlayer->GetPosition(), minDistance, minInterval);
-    }
-
-    return false;
-}
-
-bool ZuljinMoveNearGroupAction::Execute(Event event)
-{
-    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
-    if (!zuljin)
-        return false;
-
-    const float maxDistance = 15.0f;
-    if (bot->GetExactDist2d(zuljin) > maxDistance)
-    {
-        return MoveInside(ZULAMAN_MAP_ID, zuljin->GetPositionX(), zuljin->GetPositionY(),
-                          zuljin->GetPositionZ(), maxDistance, MovementPriority::MOVEMENT_COMBAT);
     }
 
     return false;

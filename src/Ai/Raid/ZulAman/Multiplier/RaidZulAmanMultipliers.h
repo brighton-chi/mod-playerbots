@@ -127,19 +127,19 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class ZuljinDisableAvoidAoeMultiplier : public Multiplier
+{
+public:
+    ZuljinDisableAvoidAoeMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "zul'jin disable avoid aoe") {}
+    virtual float GetValue(Action* action);
+};
+
 class ZuljinDelayBloodlustAndHeroismMultiplier : public Multiplier
 {
 public:
     ZuljinDelayBloodlustAndHeroismMultiplier(PlayerbotAI* botAI) : Multiplier(
         botAI, "zul'jin delay bloodlust and heroism") {}
-    virtual float GetValue(Action* action);
-};
-
-class ZuljinStayCloseToLynxFormMultiplier : public Multiplier
-{
-public:
-    ZuljinStayCloseToLynxFormMultiplier(PlayerbotAI* botAI) : Multiplier(
-        botAI, "zul'jin stay close to lynx form") {}
     virtual float GetValue(Action* action);
 };
 

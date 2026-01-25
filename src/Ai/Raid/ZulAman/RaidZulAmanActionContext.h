@@ -94,11 +94,11 @@ public:
         creators["zul'jin avoid cyclones"] =
             &RaidZulAmanActionContext::zuljin_avoid_cyclones;
 
+        creators["zul'jin escape claw rage with immunity spell"] =
+            &RaidZulAmanActionContext::zuljin_escape_claw_rage_with_immunity_spell;
+
         creators["zul'jin spread ranged"] =
             &RaidZulAmanActionContext::zuljin_spread_ranged;
-
-        creators["zul'jin move near group"] =
-            &RaidZulAmanActionContext::zuljin_move_near_group;
     }
 
 private:
@@ -187,11 +187,11 @@ private:
     static Action* zuljin_avoid_cyclones(
         PlayerbotAI* botAI) { return new ZuljinAvoidCyclonesAction(botAI); }
 
+    static Action* zuljin_escape_claw_rage_with_immunity_spell(
+        PlayerbotAI* botAI) { return new ZuljinEscapeClawRageWithImmunitySpellAction(botAI); }
+
     static Action* zuljin_spread_ranged(
         PlayerbotAI* botAI) { return new ZuljinSpreadRangedAction(botAI); }
-
-    static Action* zuljin_move_near_group(
-        PlayerbotAI* botAI) { return new ZuljinMoveNearGroupAction(botAI); }
 };
 
 #endif
