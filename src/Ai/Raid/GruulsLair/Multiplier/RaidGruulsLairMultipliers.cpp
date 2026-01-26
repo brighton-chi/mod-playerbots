@@ -4,7 +4,6 @@
 #include "ChooseTargetActions.h"
 #include "DruidBearActions.h"
 #include "DruidCatActions.h"
-#include "FollowActions.h"
 #include "GenericSpellActions.h"
 #include "HunterActions.h"
 #include "MageActions.h"
@@ -14,64 +13,10 @@
 
 using namespace GruulsLairHelpers;
 
-float HighKingMaulgarWaitForDpsMultiplier::GetValue(Action* action)
-{
-    Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
-    if (!maulgar)
-        return 1.0f;
-
-    if (botAI->IsTank(bot) || IsKroshMageTank(botAI, bot) ||
-        IsKigglerMoonkinTank(botAI, bot))
-        return 1.0f;
-
-    if (dynamic_cast<HighKingMaulgarMisdirectOlmAndBlindeyeAction*>(action))
-        return 1.0f;
-
-    const time_t now = std::time(nullptr);
-    const uint8 dpsWaitSeconds = 8;
-
-    auto it = maulgarDpsWaitTimer.find(maulgar->GetMap()->GetInstanceId());
-    if (it == maulgarDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
-    {
-        if (dynamic_cast<AttackAction*>(action) ||
-            (dynamic_cast<CastSpellAction*>(action) &&
-             !dynamic_cast<CastHealingSpellAction*>(action)))
-             return 0.0f;
-    }
-
-    return 1.0f;
-}
-
 float HighKingMaulgarDisableTankAssistMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsTank(bot))
-        return 1.0f;
-
-    Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
-    if (maulgar)
-    {
-        if (bot->IsInCombat() &&
-            dynamic_cast<TankAssistAction*>(action))
-            return 0.0f;
-    }
-
-    return 1.0f;
-}
-
-float HighKingMaulgarDisableMovementActionsMultiplier::GetValue(Action* action)
-{
-    Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
-    if (maulgar)
-    {
-        if (dynamic_cast<FollowAction*>(action) ||
-            dynamic_cast<FleeAction*>(action))
-            return 0.0f;
-
-        if (dynamic_cast<CombatFormationMoveAction*>(action) &&
-            !dynamic_cast<TankFaceAction*>(action) &&
-            !dynamic_cast<SetBehindTargetAction*>(action))
-            return 0.0f;
-    }
+    if (IsAnyOgreBossAlive(botAI) && dynamic_cast<TankAssistAction*>(action))
+        return 0.0f;
 
     return 1.0f;
 }
@@ -86,16 +31,12 @@ float HighKingMaulgarAvoidWhirlwindMultiplier::GetValue(Action* action)
     Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
 
     if (maulgar && maulgar->HasAura(SPELL_WHIRLWIND) &&
-        (!kiggler || !kiggler->IsAlive()) &&
-        (!krosh || !krosh->IsAlive()) &&
-        (!olm || !olm->IsAlive()) &&
-        (!blindeye || !blindeye->IsAlive()))
+        !kiggler && !krosh && !olm && !blindeye)
     {
         if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
             (dynamic_cast<MovementAction*>(action) &&
-             !dynamic_cast<AttackAction*>(action) &&
-             !dynamic_cast<HighKingMaulgarRunAwayFromWhirlwindAction*>(action)))
-             return 0.0f;
+            !dynamic_cast<HighKingMaulgarRunAwayFromWhirlwindAction*>(action)))
+            return 0.0f;
     }
 
     return 1.0f;
@@ -105,44 +46,38 @@ float HighKingMaulgarAvoidWhirlwindMultiplier::GetValue(Action* action)
 float HighKingMaulgarDisableArcaneShotOnKroshMultiplier::GetValue(Action* action)
 {
     Unit* krosh = AI_VALUE2(Unit*, "find target", "krosh firehand");
-    if (!krosh)
-        return 1.0f;
-
     Unit* target = AI_VALUE(Unit*, "current target");
-    if (target && target->GetGUID() == krosh->GetGUID())
-    {
-        if (dynamic_cast<CastArcaneShotAction*>(action))
-            return 0.0f;
-    }
+
+    if (krosh && target && target->GetGUID() == krosh->GetGUID() &&
+        dynamic_cast<CastArcaneShotAction*>(action))
+        return 0.0f;
 
     return 1.0f;
 }
 
-float HighKingMaulgarDisableMageTankAoeMultiplier::GetValue(Action* action)
+float HighKingMaulgarDisableMageTankAOEMultiplier::GetValue(Action* action)
 {
-    if (IsKroshMageTank(botAI, bot))
-    {
-        if (dynamic_cast<CastFrostNovaAction*>(action) ||
-            dynamic_cast<CastBlizzardAction*>(action) ||
-            dynamic_cast<CastConeOfColdAction*>(action) ||
-            dynamic_cast<CastFlamestrikeAction*>(action) ||
-            dynamic_cast<CastDragonsBreathAction*>(action) ||
-            dynamic_cast<CastBlastWaveAction*>(action))
-            return 0.0f;
-    }
+    if (IsKroshMageTank(botAI, bot) &&
+        (dynamic_cast<CastFrostNovaAction*>(action) || dynamic_cast<CastBlizzardAction*>(action) ||
+        dynamic_cast<CastConeOfColdAction*>(action) || dynamic_cast<CastFlamestrikeAction*>(action) ||
+        dynamic_cast<CastDragonsBreathAction*>(action) || dynamic_cast<CastBlastWaveAction*>(action)))
+        return 0.0f;
 
     return 1.0f;
 }
 
-float GruulTheDragonkillerDisableTankFaceMultiplier::GetValue(Action* action)
+float GruulTheDragonkillerMainTankMovementMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsTank(bot))
+    Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
+    if (!gruul)
         return 1.0f;
 
-    Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
-    if (gruul)
+    if (botAI->IsMainTank(bot))
     {
-        if (dynamic_cast<TankFaceAction*>(action))
+        if (gruul->GetVictim() == bot && dynamic_cast<CombatFormationMoveAction*>(action))
+            return 0.0f;
+
+        if (dynamic_cast<AvoidAoeAction*>(action))
             return 0.0f;
     }
 
@@ -158,10 +93,10 @@ float GruulTheDragonkillerGroundSlamMultiplier::GetValue(Action* action)
     if (bot->HasAura(SPELL_GROUND_SLAM_1) ||
         bot->HasAura(SPELL_GROUND_SLAM_2))
     {
-        if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
-            (dynamic_cast<MovementAction*>(action) &&
-             !dynamic_cast<GruulTheDragonkillerShatterSpreadAction*>(action)))
-             return 0.0f;
+        if ((dynamic_cast<MovementAction*>(action) &&
+            !dynamic_cast<GruulTheDragonkillerShatterSpreadAction*>(action)) ||
+            dynamic_cast<CastReachTargetSpellAction*>(action))
+            return 0.0f;
     }
 
     return 1.0f;
