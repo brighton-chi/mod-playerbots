@@ -1,23 +1,22 @@
+#include <unordered_map>
+#include <ctime>
+
 #include "RaidMagtheridonMultipliers.h"
 #include "RaidMagtheridonActions.h"
 #include "RaidMagtheridonHelpers.h"
 #include "ChooseTargetActions.h"
 #include "GenericSpellActions.h"
 #include "Playerbots.h"
-#include "ReachTargetActions.h"
 #include "WarlockActions.h"
 #include "WipeAction.h"
 
 using namespace MagtheridonHelpers;
 
 // Don't do anything other than clicking cubes when Magtheridon is casting Blast Nova
-float MagtheridonOnlyUseManticronCubeMultiplier::GetValue(Action* action)
+float MagtheridonUseManticronCubeMultiplier::GetValue(Action* action)
 {
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
     if (!magtheridon)
-        return 1.0f;
-
-    if (dynamic_cast<WipeAction*>(action))
         return 1.0f;
 
     if (magtheridon->HasUnitState(UNIT_STATE_CASTING) &&
@@ -26,7 +25,9 @@ float MagtheridonOnlyUseManticronCubeMultiplier::GetValue(Action* action)
         auto it = botToCubeAssignment.find(bot->GetGUID());
         if (it != botToCubeAssignment.end())
         {
-            if (!dynamic_cast<MagtheridonUseManticronCubeAction*>(action))
+            if (dynamic_cast<WipeAction*>(action))
+                return 1.0f;
+            else if (!dynamic_cast<MagtheridonUseManticronCubeAction*>(action))
                 return 0.0f;
         }
     }
@@ -37,11 +38,11 @@ float MagtheridonOnlyUseManticronCubeMultiplier::GetValue(Action* action)
 // Bots will wait for 6 seconds after Magtheridon becomes attackable before engaging
 float MagtheridonWaitToAttackMultiplier::GetValue(Action* action)
 {
-    if (botAI->IsMainTank(bot))
-        return 1.0f;
-
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
     if (!magtheridon || magtheridon->HasAura(SPELL_SHADOW_CAGE))
+        return 1.0f;
+
+    if (botAI->IsMainTank(bot))
         return 1.0f;
 
     const uint8 dpsWaitSeconds = 6;
@@ -50,24 +51,23 @@ float MagtheridonWaitToAttackMultiplier::GetValue(Action* action)
         (time(nullptr) - it->second) < dpsWaitSeconds)
     {
         if (dynamic_cast<AttackAction*>(action) ||
-            (dynamic_cast<CastSpellAction*>(action) &&
-             !dynamic_cast<CastHealingSpellAction*>(action)))
-             return 0.0f;
+            (!botAI->IsHeal(bot) && dynamic_cast<CastSpellAction*>(action)))
+            return 0.0f;
     }
 
     return 1.0f;
 }
 
-float MagtheridonDisableTankActionsMultiplier::GetValue(Action* action)
+float MagtheridonDisableOffTankAssistMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsTank(bot))
-        return 1.0f;
-
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
-    if (!magtheridon || !magtheridon->HasAura(SPELL_SHADOW_CAGE))
+    if (!magtheridon)
         return 1.0f;
 
-    if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
+    if (bot->GetVictim() == nullptr)
+        return 1.0f;
+
+    if ((botAI->IsAssistTankOfIndex(bot, 0) || botAI->IsAssistTankOfIndex(bot, 1)) &&
         dynamic_cast<TankAssistAction*>(action))
         return 0.0f;
 

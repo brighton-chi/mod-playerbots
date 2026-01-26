@@ -18,10 +18,6 @@ namespace MagtheridonHelpers
         SPELL_BLAST_NOVA    = 30616,
         SPELL_SHADOW_GRASP  = 30410,
 
-        // Warlock
-        SPELL_BANISH        = 18647,
-        SPELL_FEAR          =  6215,
-
         // Hunter
         SPELL_MISDIRECTION  = 35079,
     };
@@ -54,13 +50,16 @@ namespace MagtheridonHelpers
     extern const Position RANGED_SPREAD_POSITION;
     extern const Position HEALER_SPREAD_POSITION;
 
-    struct CubeInfo { ObjectGuid guid; float x, y, z; };
+    struct CubeInfo
+    {
+        ObjectGuid guid;
+        float x, y, z;
+    };
+
     extern const std::vector<uint32> MANTICRON_CUBE_DB_GUIDS;
     extern std::unordered_map<ObjectGuid, CubeInfo> botToCubeAssignment;
-    std::vector<CubeInfo> GetAllCubeInfosByDbGuids(
-        Map* map, const std::vector<uint32>& cubeDbGuids);
-    void AssignBotsToCubesByGuidAndCoords(
-        Group* group, const std::vector<CubeInfo>& cubes, PlayerbotAI* botAI);
+    std::vector<CubeInfo> GetAllCubeInfosByDbGuids(Map* map, const std::vector<uint32>& cubeDbGuids);
+    void AssignBotsToCubesByGuidAndCoords(Group* group, const std::vector<CubeInfo>& cubes, PlayerbotAI* botAI);
     extern std::unordered_map<uint32, bool> lastBlastNovaState;
     extern std::unordered_map<uint32, time_t> blastNovaTimer;
     extern std::unordered_map<uint32, time_t> spreadWaitTimer;

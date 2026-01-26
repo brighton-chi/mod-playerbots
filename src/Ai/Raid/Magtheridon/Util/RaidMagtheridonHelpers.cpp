@@ -1,7 +1,6 @@
 #include "RaidMagtheridonHelpers.h"
 #include "Creature.h"
 #include "GameObject.h"
-#include "GroupReference.h"
 #include "Map.h"
 #include "ObjectGuid.h"
 #include "Playerbots.h"
@@ -26,7 +25,11 @@ namespace MagtheridonHelpers
         if (it == map->GetCreatureBySpawnIdStore().end())
             return nullptr;
 
-        return it->second;
+        Creature* channeler = it->second;
+        if (!channeler->IsAlive())
+            return nullptr;
+
+        return channeler;
     }
 
     const std::vector<uint32> MANTICRON_CUBE_DB_GUIDS = { 43157, 43158, 43159, 43160, 43161 };
@@ -148,20 +151,5 @@ namespace MagtheridonHelpers
         }
 
         return true;
-    }
-
-    bool IsInstanceTimerManager(PlayerbotAI* botAI, Player* bot)
-    {
-        if (Group* group = bot->GetGroup())
-        {
-            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-            {
-                Player* member = ref->GetSource();
-                if (member && member->IsAlive() && botAI->IsDps(member) && GET_PLAYERBOT_AI(member))
-                    return member == bot;
-            }
-        }
-
-        return false;
     }
 }
