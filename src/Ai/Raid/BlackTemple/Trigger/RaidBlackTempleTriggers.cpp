@@ -604,9 +604,29 @@ bool IllidanStormrageBossSummonsAddsTrigger::IsActive()
     if (!botAI->IsDps(bot))
         return false;
 
-    return AI_VALUE2(Unit*, "find target", "shadow demon") ||
-           /* AI_VALUE2(Unit*, "find target", "parasitic shadowfiend") || */
+    return /* AI_VALUE2(Unit*, "find target", "shadow demon") ||
+           AI_VALUE2(Unit*, "find target", "parasitic shadowfiend") || */
            AI_VALUE2(Unit*, "find target", "flame of azzinoth");
+}
+
+bool IllidanStormrageBossSummonsShadowDemonsTrigger::IsActive()
+{
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    if (!illidan || GetIllidanPhase(illidan) != 4)
+        return false;
+
+    auto it = illidanShadowDemonTimer.find(illidan->GetMap()->GetInstanceId());
+    if (it == illidanShadowDemonTimer.end())
+        return false; // Timer not started yet
+
+    time_t now = time(nullptr);
+    time_t elapsed = now - it->second;
+
+    // Fire during first 10 seconds, or during 60-70, 120-130, etc.
+    if (elapsed > 40 || elapsed < 50)
+        return true;
+
+    return false;
 }
 
 bool IllidanStormrageNeedToManageDpsTimerTrigger::IsActive()

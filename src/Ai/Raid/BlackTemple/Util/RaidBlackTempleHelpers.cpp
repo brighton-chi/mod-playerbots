@@ -6,7 +6,8 @@
 namespace BlackTempleHelpers
 {
     // High Warlord Naj'entus
-    const Position NAJENTUS_TANK_POSITION = { 437.838f, 789.927f, 12.028f };
+    // const Position NAJENTUS_TANK_POSITION = { 437.838f, 789.927f, 12.028f };
+    const Position NAJENTUS_TANK_POSITION = { 438.515f, 772.436f, 11.931f };
 
     // Supremus
     const Position SUPREMUS_TANK_POSITION = { 704.651f, 684.401f, 72.608f };
@@ -307,6 +308,7 @@ namespace BlackTempleHelpers
     std::unordered_map<uint32, ObjectGuid> eastFlameGuid;
     std::unordered_map<uint32, ObjectGuid> westFlameGuid;
     std::unordered_map<ObjectGuid, uint8> illidanGrateStep;
+    std::unordered_map<uint32, time_t> illidanShadowDemonTimer;
 
     int GetIllidanPhase(Unit* illidan)
     {

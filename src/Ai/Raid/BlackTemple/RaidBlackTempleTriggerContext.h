@@ -195,6 +195,9 @@ public:
         creators["illidan stormrage boss summons adds"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_boss_summons_adds;
 
+        creators["illidan stormrage boss summons shadow demons"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_boss_summons_shadow_demons;
+
         creators["illidan stormrage need to manage dps timer"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_need_to_manage_dps_timer;
 
@@ -388,6 +391,9 @@ private:
 
     static Trigger* illidan_stormrage_boss_summons_adds(
         PlayerbotAI* botAI) { return new IllidanStormrageBossSummonsAddsTrigger(botAI); }
+
+    static Trigger* illidan_stormrage_boss_summons_shadow_demons(
+        PlayerbotAI* botAI) { return new IllidanStormrageBossSummonsShadowDemonsTrigger(botAI); }
 
     static Trigger* illidan_stormrage_need_to_manage_dps_timer(
         PlayerbotAI* botAI) { return new IllidanStormrageNeedToManageDpsTimerTrigger(botAI); }
