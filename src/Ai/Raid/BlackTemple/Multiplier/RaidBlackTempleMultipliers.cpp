@@ -235,7 +235,7 @@ float IllidariCouncilDisableTankActionsMultiplier::GetValue(Action* action)
 
     if (dynamic_cast<CastTauntAction*>(action) ||
         dynamic_cast<CastChallengingShoutAction*>(action) ||
-        dynamic_cast<CastThunderClapAction*>(action) ||
+        // dynamic_cast<CastThunderClapAction*>(action) ||
         dynamic_cast<CastShockwaveAction*>(action) ||
         dynamic_cast<CastCleaveAction*>(action) ||
         dynamic_cast<CastGrowlAction*>(action) ||
