@@ -477,9 +477,14 @@ bool IllidanStormrageBossEngagedByWarlockTankTrigger::IsActive()
 
 bool IllidanStormrageBossEngagedByRangedDpsTrigger::IsActive()
 {
-    return botAI->IsRangedDps(bot) &&
-           AI_VALUE2(Unit*, "find target", "illidan stormrage") &&
-           GetIllidanWarlockTank(botAI, bot) != bot;
+    if (!botAI->IsRangedDps(bot))
+        return false;
+
+    if (!AI_VALUE2(Unit*, "find target", "illidan stormrage") ||
+        AI_VALUE2(Unit*, "find target", "shadow demon"))
+        return false;
+
+    return GetIllidanWarlockTank(botAI, bot) != bot;
 }
 
 bool IllidanStormrageBossEngagedByHealersTrigger::IsActive()
@@ -572,7 +577,7 @@ bool IllidanStormrageBossDealsSplashDamageTrigger::IsActive()
     if (!illidan)
         return false;
 
-    if (GetIllidanTrapperHunter(botAI, bot) == bot ||
+    if (/* GetIllidanTrapperHunter(botAI, bot) == bot || */
         GetIllidanWarlockTank(botAI, bot) == bot)
         return false;
 
@@ -612,21 +617,7 @@ bool IllidanStormrageBossSummonsAddsTrigger::IsActive()
 bool IllidanStormrageBossSummonsShadowDemonsTrigger::IsActive()
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan || GetIllidanPhase(illidan) != 4)
-        return false;
-
-    auto it = illidanShadowDemonTimer.find(illidan->GetMap()->GetInstanceId());
-    if (it == illidanShadowDemonTimer.end())
-        return false; // Timer not started yet
-
-    time_t now = time(nullptr);
-    time_t elapsed = now - it->second;
-
-    // Fire during first 10 seconds, or during 60-70, 120-130, etc.
-    if (elapsed > 40 || elapsed < 50)
-        return true;
-
-    return false;
+    return illidan && GetIllidanPhase(illidan) == 4;
 }
 
 bool IllidanStormrageNeedToManageDpsTimerTrigger::IsActive()

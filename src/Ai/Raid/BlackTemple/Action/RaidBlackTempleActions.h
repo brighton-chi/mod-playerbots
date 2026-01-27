@@ -1,9 +1,15 @@
 #ifndef _PLAYERBOT_RAIDBLACKTEMPLEACTIONS_H
 #define _PLAYERBOT_RAIDBLACKTEMPLEACTIONS_H
 
+#include "RaidBlackTempleHelpers.h"
 #include "Action.h"
 #include "AttackAction.h"
 #include "MovementActions.h"
+
+namespace BlackTempleHelpers
+{
+    struct EyeBlastDangerArea;
+}
 
 // General
 class BlackTempleEraseTimersAndTrackersAction : public Action
@@ -409,7 +415,7 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool RepositionToAvoidEyeBlast(Unit* illidan);
+    bool RepositionToAvoidEyeBlast(Unit* illidan, const BlackTempleHelpers::EyeBlastDangerArea& dangerArea);
     bool RepositionToAvoidBlaze(Unit* eastFlame, Unit* westFlame);
 };
 

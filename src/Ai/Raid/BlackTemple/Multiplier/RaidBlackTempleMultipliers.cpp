@@ -486,17 +486,10 @@ float IllidanStormrageDisableDefaultTargetingMultiplier::GetValue(Action* action
 
     if (GetIllidanPhase(illidan) == 4)
     {
-        if (dynamic_cast<TankAssistAction*>(action))
+        if (dynamic_cast<TankAssistAction*>(action) ||
+            dynamic_cast<DpsAssistAction*>(action)) // Trying disable DPS assist just for shadow demons
             return 0.0f;
     }
-
-    /* Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (illidan && illidan->GetHealth() > 1)
-    {
-        if (dynamic_cast<TankAssistAction*>(action) ||
-            dynamic_cast<DpsAssistAction*>(action))
-            return 0.0f;
-    } */
 
     return 1.0f;
 }
