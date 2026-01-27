@@ -1729,7 +1729,28 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::Execute(Event event)
         if (ShouldBotLootWeapon(weapon.npcEntry))
         {
             if (bot->HasItemCount(weapon.itemId, 1, false))
+            {
+                // need to test below re: equipping after looting
+                bool equipped = false;
+                for (uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
+                {
+                    if (Item* item = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
+                    {
+                        if (item->GetEntry() == weapon.itemId)
+                        {
+                            equipped = true;
+                            break;
+                        }
+                    }
+                }
+                if (!equipped)
+                {
+                    botAI->DoSpecificAction("equip upgrade", Event(), true);
+                    return true; // Stop after first equip attempt
+                }
+
                 continue;
+            }
 
             return LootWeapon(weapon.npcEntry, weapon.itemId, weapon.name);
         }
@@ -1839,8 +1860,6 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::LootWeapon(
             *packet << weaponIndex;
             receiver->GetSession()->QueuePacket(packet);
         }, 600);
-
-        botAI->DoSpecificAction("equip upgrade", Event(), true);
         return true;
     }
 
@@ -2145,18 +2164,26 @@ bool KaelthasSunstriderBreakMindControlAction::Execute(Event event)
         return true;
     }
 
-    static const std::array<const char*, 4> spells =
+    if (AiFactory::GetPlayerSpecTab(bot) == ROGUE_TAB_COMBAT) // UNTESTED
     {
-        "hamstring",
-        "wing clip",
-        "shiv",
-        "stormstrike"
-    };
+        if (botAI->CanCastSpell("sinister strike", mcTarget))
+            return botAI->CastSpell("sinister strike", mcTarget);
+    }
+    else
+    {
+        static const std::array<const char*, 4> spells =
+        {
+            "hamstring",
+            "wing clip",
+            "shiv",
+            "stormstrike"
+        };
 
-    for (const char* spell : spells)
-    {
-        if (botAI->CanCastSpell(spell, mcTarget))
-            return botAI->CastSpell(spell, mcTarget);
+        for (const char* spell : spells)
+        {
+            if (botAI->CanCastSpell(spell, mcTarget))
+                return botAI->CastSpell(spell, mcTarget);
+        }
     }
 
     return false;
