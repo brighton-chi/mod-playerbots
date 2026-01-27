@@ -87,8 +87,8 @@ public:
         creators["archimonde cast fear ward on main tank"] =
             &RaidHyjalSummitActionContext::archimonde_cast_fear_ward_on_main_tank;
 
-        creators["archimonde air burst target move away"] =
-            &RaidHyjalSummitActionContext::archimonde_air_burst_target_move_away;
+        creators["archimonde spread to avoid air burst"] =
+            &RaidHyjalSummitActionContext::archimonde_spread_to_avoid_air_burst;
 
         creators["archimonde avoid doomfire"] =
             &RaidHyjalSummitActionContext::archimonde_avoid_doomfire;
@@ -176,8 +176,8 @@ private:
     static Action* archimonde_cast_fear_ward_on_main_tank(
         PlayerbotAI* botAI) { return new ArchimondeCastFearWardOnMainTankAction(botAI); }
 
-    static Action* archimonde_air_burst_target_move_away(
-        PlayerbotAI* botAI) { return new ArchimondeAirBurstTargetMoveAwayAction(botAI); }
+    static Action* archimonde_spread_to_avoid_air_burst(
+        PlayerbotAI* botAI) { return new ArchimondeSpreadToAvoidAirBurstAction(botAI); }
 
     static Action* archimonde_avoid_doomfire(
         PlayerbotAI* botAI) { return new ArchimondeAvoidDoomfireAction(botAI); }

@@ -817,32 +817,28 @@ bool ArchimondeCastFearWardOnMainTankAction::Execute(Event event)
     return false;
 }
 
-bool ArchimondeAirBurstTargetMoveAwayAction::Execute(Event event)
+// Untested w/r/t keeping distance from Archimonde's target
+bool ArchimondeSpreadToAvoidAirBurstAction::Execute(Event event)
 {
     Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
-    if (!archimonde || !archimonde->HasUnitState(UNIT_STATE_CASTING))
+    if (!archimonde)
         return false;
 
-    Spell* spell = archimonde->GetCurrentSpell(CURRENT_GENERIC_SPELL);
-    if (!spell || spell->m_spellInfo->Id != SPELL_AIR_BURST)
-        return false;
+    const uint32 minInterval = 1000;
 
-    Unit* target = spell->m_targets.GetUnitTarget();
-    if (target && target->GetGUID() == bot->GetGUID())
+    Unit* victim = archimonde->GetVictim();
+    if (victim && victim != bot)
     {
-        const float safeDistance = 14.0f;
-        if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
-        {
-            /* const uint32 minInterval = 0;
-            botAI->Reset();
-            return FleePosition(nearestPlayer->GetPosition(), safeDistance, minInterval); */
-            float currentDistance = bot->GetExactDist2d(nearestPlayer);
-            if (currentDistance < safeDistance)
-            {
-                botAI->Reset();
-                return MoveAway(nearestPlayer, safeDistance - currentDistance);
-            }
-        }
+        const float safeDistFromVictim = 14.0f;
+        if (bot->GetDistance2d(victim) < safeDistFromVictim)
+            return FleePosition(Position(victim->GetPosition()), safeDistFromVictim, minInterval);
+    }
+
+    if (botAI->IsRanged(bot))
+    {
+        const float safeDistFromPlayer = 8.0f;
+        if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
+            return FleePosition(Position(nearestPlayer->GetPosition()), safeDistFromPlayer, minInterval);
     }
 
     return false;

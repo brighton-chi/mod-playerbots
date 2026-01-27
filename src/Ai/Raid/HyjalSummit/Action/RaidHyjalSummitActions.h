@@ -209,11 +209,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class ArchimondeAirBurstTargetMoveAwayAction : public MovementAction
+class ArchimondeSpreadToAvoidAirBurstAction : public MovementAction
 {
 public:
-    ArchimondeAirBurstTargetMoveAwayAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "archimonde air burst target move away") {}
+    ArchimondeSpreadToAvoidAirBurstAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "archimonde spread to avoid air burst") {}
     bool Execute(Event event) override;
 };
 
