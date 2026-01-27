@@ -124,6 +124,9 @@ float TeronGorefiendDisableAttackingConstructsMultiplier::GetValue(Action* actio
     if (!AI_VALUE2(Unit*, "find target", "teron gorefiend"))
         return 1.0f;
 
+    if (bot->GetVictim() == nullptr)
+        return 1.0f;
+
     if (dynamic_cast<TankAssistAction*>(action))
         return 0.0f;
 

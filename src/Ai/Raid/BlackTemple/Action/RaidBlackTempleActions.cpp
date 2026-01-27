@@ -688,11 +688,13 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event event
 
     if (priorityTarget)
     {
-        if (spirit->GetDistance2d(priorityTarget) > 11.0f)
+        bool movedToConstruct = false;
+        if (spirit->GetDistance2d(priorityTarget) > 5.0f)
         {
             float moveX = priorityTarget->GetPositionX();
             float moveY = priorityTarget->GetPositionY();
             float moveZ = priorityTarget->GetPositionZ();
+
             spirit->GetMotionMaster()->MovePoint(0, moveX, moveY, moveZ);
             return true;
         }
@@ -717,12 +719,15 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event event
                 return true;
             }
         }
+        if (movedToConstruct)
+            return true;
     }
 
     float distToGorefiend = spirit->GetDistance2d(gorefiend);
+    bool movedToGorefiend = false;
     if (distToGorefiend > 5.0f)
     {
-        float moveDist = std::min(5.0f, distToGorefiend - 5.0f);
+        float moveDist = std::min(3.0f, distToGorefiend - 5.0f);
         float moveX = spirit->GetPositionX() + (
             gorefiend->GetPositionX() - spirit->GetPositionX()) / distToGorefiend * moveDist;
         float moveY = spirit->GetPositionY() + (
@@ -732,7 +737,7 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event event
         spirit->GetMotionMaster()->MovePoint(0, moveX, moveY, moveZ);
         return true;
     }
-    else
+    else if (!spirit->HasSpellCooldown(SPELL_SPIRIT_STRIKE)) // UNTESTED CONDITION
     {
         spirit->CastSpell(gorefiend, SPELL_SPIRIT_STRIKE, true);
         spirit->AddSpellCooldown(SPELL_SPIRIT_STRIKE, 0, 1000);
