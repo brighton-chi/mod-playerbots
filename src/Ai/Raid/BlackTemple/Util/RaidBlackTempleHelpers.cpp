@@ -168,52 +168,22 @@ namespace BlackTempleHelpers
 
     // Illidan Stormrage <The Betrayer>
     const Position ILLIDAN_LANDING_POSITION = { 676.648f, 304.761f, 354.189f };
-    const Position ILLIDAN_MAIN_TANK_POSITION_1 = { 0.0f, 0.0f, 0.0f, };
-    const Position ILLIDAN_MAIN_TANK_POSITION_2 = { 0.0f, 0.0f, 0.0f, };
-    const Position ILLIDAN_MAIN_TANK_POSITION_3 = { 0.0f, 0.0f, 0.0f, };
-    const Position ILLIDAN_MAIN_TANK_POSITION_4 = { 0.0f, 0.0f, 0.0f, };
-    const Position ILLIDAN_MAIN_TANK_POSITION_5 = { 0.0f, 0.0f, 0.0f, };
-    const Position MAIN_TANK_POSITIONS[5] =
-    {
-        ILLIDAN_MAIN_TANK_POSITION_1,
-        ILLIDAN_MAIN_TANK_POSITION_2,
-        ILLIDAN_MAIN_TANK_POSITION_3,
-        ILLIDAN_MAIN_TANK_POSITION_4,
-        ILLIDAN_MAIN_TANK_POSITION_5,
-    };
     const Position ILLIDAN_C_GRATE_POSITION = { 676.000f, 305.000f, 353.192f };
     const Position ILLIDAN_N_GRATE_POSITION = { 682.500f, 305.000f, 353.192f };
     const Position ILLIDAN_S_GRATE_POSITION = { 670.000f, 305.000f, 353.192f };
-    const Position ILLIDAN_E_GRATE_POSITION = { 0.0f, 0.0f, 0.0f };
-    const Position ILLIDAN_W_GRATE_POSITION = { 676.114f, 311.830f, 353.192f }; // as far out as I can get but too close to N and S spots
-    const Position ILLIDAN_SW_GRATE_POSITION = { 672.828f, 311.496f, 353.192f };
-    const Position ILLIDAN_SE_GRATE_POSITION = { 672.928f, 298.357f, 353.192f };
     const Position GRATE_POSITIONS[2] =
     {
         ILLIDAN_N_GRATE_POSITION,
         ILLIDAN_S_GRATE_POSITION,
-        // ILLIDAN_E_GRATE_POSITION,
-        // ILLIDAN_W_GRATE_POSITION,
     };
     const Position ILLIDAN_E_GLAIVE_WAITING_POSITION = { 677.656f, 294.066f, 353.192f };
-    /* const Position ILLIDAN_E_GLAIVE_TANK_POSITION_1 = { 697.097f, 287.966f, 353.983f };
-    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_2 = { 689.442f, 282.678f, 354.303f };
-    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_3 = { 680.054f, 279.540f, 354.089f };
-    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_4 = { 670.698f, 279.068f, 353.848f };
-    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_5 = { 661.933f, 282.331f, 354.848f };
-    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_6 = { 659.002f, 298.441f, 354.110f };
-    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_7 = { 664.911f, 291.331f, 354.225f };
-    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_8 = { 673.610f, 288.028f, 354.140f };
-    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_9 = { 682.190f, 289.148f, 354.136f };
-    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_10 = { 689.861f, 293.783f, 354.149f };
-    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_11 = { 694.867f, 300.910f, 354.186f }; */
-    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_1 = { 696.969f, 300.982f, 354.302f };
-    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_2 = { 691.112f, 287.461f, 354.363f };
-    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_3 = { 676.674f, 280.797f, 354.268f };
-    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_4 = { 664.414f, 284.834f, 354.271f };
-    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_5 = { 656.826f, 295.113f, 354.165f };
-    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_6 = { 670.884f, 293.726f, 353.907f };
-    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_7 = { 681.942f, 293.551f, 353.192f };
+    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_1 =  { 696.969f, 300.982f, 354.302f };
+    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_2 =  { 691.112f, 287.461f, 354.363f };
+    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_3 =  { 676.674f, 280.797f, 354.268f };
+    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_4 =  { 664.414f, 284.834f, 354.271f };
+    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_5 =  { 656.826f, 295.113f, 354.165f };
+    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_6 =  { 670.884f, 293.726f, 353.907f };
+    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_7 =  { 681.942f, 293.551f, 353.192f };
     const Position E_GLAIVE_TANK_POSITIONS[7] =
     {
         ILLIDAN_E_GLAIVE_TANK_POSITION_1,
@@ -225,24 +195,13 @@ namespace BlackTempleHelpers
         ILLIDAN_E_GLAIVE_TANK_POSITION_7,
     };
     const Position ILLIDAN_W_GLAIVE_WAITING_POSITION = { 676.102f, 316.305f, 353.192f };
-    /* const Position ILLIDAN_W_GLAIVE_TANK_POSITION_1 = { 697.363f, 323.860f, 353.948f };
-    const Position ILLIDAN_W_GLAIVE_TANK_POSITION_2 = { 690.218f, 329.326f, 353.868f };
-    const Position ILLIDAN_W_GLAIVE_TANK_POSITION_3 = { 681.647f, 322.243f, 353.813f };
-    const Position ILLIDAN_W_GLAIVE_TANK_POSITION_4 = { 672.612f, 331.890f, 353.865f };
-    const Position ILLIDAN_W_GLAIVE_TANK_POSITION_5 = { 663.833f, 329.083f, 353.783f };
-    const Position ILLIDAN_W_GLAIVE_TANK_POSITION_6 = { 656.462f, 324.135f, 353.834f };
-    const Position ILLIDAN_W_GLAIVE_TANK_POSITION_7 = { 657.054f, 314.865f, 354.156f };
-    const Position ILLIDAN_W_GLAIVE_TANK_POSITION_8 = { 665.202f, 319.824f, 354.108f };
-    const Position ILLIDAN_W_GLAIVE_TANK_POSITION_9 = { 674.817f, 322.193f, 354.125f };
-    const Position ILLIDAN_W_GLAIVE_TANK_POSITION_10 = { 684.370f, 322.058f, 354.063f };
-    const Position ILLIDAN_W_GLAIVE_TANK_POSITION_11 = { 692.023f, 315.866f, 354.127f }; */
-    const Position ILLIDAN_W_GLAIVE_TANK_POSITION_1 = { 656.161f, 314.132f, 354.092f };
-    const Position ILLIDAN_W_GLAIVE_TANK_POSITION_2 = { 665.080f, 326.905f, 354.128f };
-    const Position ILLIDAN_W_GLAIVE_TANK_POSITION_3 = { 678.809f, 329.968f, 354.387f };
-    const Position ILLIDAN_W_GLAIVE_TANK_POSITION_4 = { 690.889f, 324.277f, 354.204f };
-    const Position ILLIDAN_W_GLAIVE_TANK_POSITION_5 = { 697.208f, 313.475f, 354.234f };
-    const Position ILLIDAN_W_GLAIVE_TANK_POSITION_6 = { 682.285f, 316.558f, 353.187f };
-    const Position ILLIDAN_W_GLAIVE_TANK_POSITION_7 = { 670.187f, 316.777f, 353.192f };
+    const Position ILLIDAN_W_GLAIVE_TANK_POSITION_1 =  { 656.161f, 314.132f, 354.092f };
+    const Position ILLIDAN_W_GLAIVE_TANK_POSITION_2 =  { 665.080f, 326.905f, 354.128f };
+    const Position ILLIDAN_W_GLAIVE_TANK_POSITION_3 =  { 678.809f, 329.968f, 354.387f };
+    const Position ILLIDAN_W_GLAIVE_TANK_POSITION_4 =  { 690.889f, 324.277f, 354.204f };
+    const Position ILLIDAN_W_GLAIVE_TANK_POSITION_5 =  { 697.208f, 313.475f, 354.234f };
+    const Position ILLIDAN_W_GLAIVE_TANK_POSITION_6 =  { 682.285f, 316.558f, 353.187f };
+    const Position ILLIDAN_W_GLAIVE_TANK_POSITION_7 =  { 670.187f, 316.777f, 353.192f };
     const Position W_GLAIVE_TANK_POSITIONS[7] =
     {
         ILLIDAN_W_GLAIVE_TANK_POSITION_1,
@@ -252,43 +211,6 @@ namespace BlackTempleHelpers
         ILLIDAN_W_GLAIVE_TANK_POSITION_5,
         ILLIDAN_W_GLAIVE_TANK_POSITION_6,
         ILLIDAN_W_GLAIVE_TANK_POSITION_7,
-    };
-    const Position ILLIDAN_P4_WARLOCK_TANK_POSITION = { 0.0f, 0.0f, 0.0f };
-    const Position ILLIDAN_P4_RANGED_POSITION_1 = { 0.0f, 0.0f, 0.0f };
-    const Position ILLIDAN_P4_RANGED_POSITION_2 = { 0.0f, 0.0f, 0.0f };
-    const Position ILLIDAN_P4_RANGED_POSITION_3 = { 0.0f, 0.0f, 0.0f };
-    const Position ILLIDAN_P4_RANGED_POSITION_4 = { 0.0f, 0.0f, 0.0f };
-    const Position ILLIDAN_P4_RANGED_POSITION_5 = { 0.0f, 0.0f, 0.0f };
-    const Position ILLIDAN_P4_RANGED_POSITION_6 = { 0.0f, 0.0f, 0.0f };
-    const Position ILLIDAN_P4_RANGED_POSITION_7 = { 0.0f, 0.0f, 0.0f };
-    const Position ILLIDAN_P4_RANGED_POSITION_8 = { 0.0f, 0.0f, 0.0f };
-    const Position ILLIDAN_P4_RANGED_POSITION_9 = { 0.0f, 0.0f, 0.0f };
-    const Position ILLIDAN_P4_RANGED_POSITION_10 = { 0.0f, 0.0f, 0.0f };
-    const Position P4_RANGED_POSITIONS[10] =
-    {
-        ILLIDAN_P4_RANGED_POSITION_1,
-        ILLIDAN_P4_RANGED_POSITION_2,
-        ILLIDAN_P4_RANGED_POSITION_3,
-        ILLIDAN_P4_RANGED_POSITION_4,
-        ILLIDAN_P4_RANGED_POSITION_5,
-        ILLIDAN_P4_RANGED_POSITION_6,
-        ILLIDAN_P4_RANGED_POSITION_7,
-        ILLIDAN_P4_RANGED_POSITION_8,
-        ILLIDAN_P4_RANGED_POSITION_9,
-        ILLIDAN_P4_RANGED_POSITION_10,
-    };
-    const Position ILLIDAN_P4_MELEE_POSITION_1 = { 0.0f, 0.0f, 0.0f };
-    const Position ILLIDAN_P4_MELEE_POSITION_2 = { 0.0f, 0.0f, 0.0f };
-    const Position ILLIDAN_P4_MELEE_POSITION_3 = { 0.0f, 0.0f, 0.0f };
-    const Position ILLIDAN_P4_MELEE_POSITION_4 = { 0.0f, 0.0f, 0.0f };
-    const Position ILLIDAN_P4_MELEE_POSITION_5 = { 0.0f, 0.0f, 0.0f };
-    const Position P4_MELEE_POSITIONS[5] =
-    {
-        ILLIDAN_P4_MELEE_POSITION_1,
-        ILLIDAN_P4_MELEE_POSITION_2,
-        ILLIDAN_P4_MELEE_POSITION_3,
-        ILLIDAN_P4_MELEE_POSITION_4,
-        ILLIDAN_P4_MELEE_POSITION_5,
     };
     const Position eyeBeamPos[MAX_EYE_BEAM_POS * 2] =
     {

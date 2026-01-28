@@ -150,9 +150,6 @@ bool SupremusNeedToManagePhaseTimerTrigger::IsActive()
            IsMechanicTrackerBot(botAI, bot, BLACK_TEMPLE_MAP_ID, nullptr);
 }
 
-// Shade of Akama
-// N/A
-
 // Teron Gorefiend
 
 bool TeronGorefiendPullingBossTrigger::IsActive()
@@ -480,8 +477,7 @@ bool IllidanStormrageBossEngagedByRangedDpsTrigger::IsActive()
     if (!botAI->IsRangedDps(bot))
         return false;
 
-    if (!AI_VALUE2(Unit*, "find target", "illidan stormrage") ||
-        AI_VALUE2(Unit*, "find target", "shadow demon"))
+    if (!AI_VALUE2(Unit*, "find target", "illidan stormrage"))
         return false;
 
     return GetIllidanWarlockTank(botAI, bot) != bot;
@@ -492,7 +488,6 @@ bool IllidanStormrageBossEngagedByHealersTrigger::IsActive()
     return botAI->IsHeal(bot) &&
            AI_VALUE2(Unit*, "find target", "illidan stormrage");
 }
-
 
 bool IllidanStormrageTankNeedsAggroTrigger::IsActive()
 {
@@ -521,7 +516,6 @@ bool IllidanStormrageBotHasParasiticShadowfiendTrigger::IsActive()
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
 
-    // try limit to phase 1 for now
     if (!illidan || GetIllidanPhase(illidan) != 1)
         return false;
 
@@ -592,7 +586,7 @@ bool IllidanStormrageThisExpansionHatesMeleeTrigger::IsActive()
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    return illidan && illidan->GetHealth() > 1;
+    return GetIllidanPhase(illidan) == 4;
 }
 
 bool IllidanStormrageBossTransformsIntoDemonTrigger::IsActive()
@@ -612,12 +606,6 @@ bool IllidanStormrageBossSummonsAddsTrigger::IsActive()
     return AI_VALUE2(Unit*, "find target", "shadow demon") ||
            // AI_VALUE2(Unit*, "find target", "parasitic shadowfiend") ||
            AI_VALUE2(Unit*, "find target", "flame of azzinoth");
-}
-
-bool IllidanStormrageBossSummonsShadowDemonsTrigger::IsActive()
-{
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    return illidan && GetIllidanPhase(illidan) == 4;
 }
 
 bool IllidanStormrageNeedToManageDpsTimerTrigger::IsActive()

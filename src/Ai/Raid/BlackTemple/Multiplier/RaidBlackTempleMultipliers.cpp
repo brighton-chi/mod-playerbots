@@ -61,9 +61,6 @@ float SupremusHitboxIsBuggedMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-// Shade of Akama
-// N/A
-
 // Teron Gorefiend
 float TeronGorefiendControlMovementMultiplier::GetValue(Action* action)
 {

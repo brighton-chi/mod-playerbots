@@ -29,8 +29,6 @@ public:
     virtual float GetValue(Action* action);
 };
 
-// Shade of Akama
-
 // Teron Gorefiend
 class TeronGorefiendControlMovementMultiplier : public Multiplier
 {

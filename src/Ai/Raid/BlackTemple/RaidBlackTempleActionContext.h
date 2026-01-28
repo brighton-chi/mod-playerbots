@@ -45,9 +45,6 @@ public:
         creators["supremus manage phase timer"] =
             &RaidBlackTempleActionContext::supremus_manage_phase_timer;
 
-        // Shade of Akama
-        // N/A
-
         // Teron Gorefiend
         creators["teron gorefiend misdirect boss to main tank"] =
             &RaidBlackTempleActionContext::teron_gorefiend_misdirect_boss_to_main_tank;
@@ -159,8 +156,8 @@ public:
         creators["illidan stormrage control pet aggression"] =
             &RaidBlackTempleActionContext::illidan_stormrage_control_pet_aggression;
 
-        creators["illidan stormrage bots spread above grate"] =
-            &RaidBlackTempleActionContext::illidan_stormrage_bots_spread_above_grate;
+        creators["illidan stormrage position bots above grate"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_position_bots_above_grate;
 
         creators["illidan stormrage remove dark barrage"] =
             &RaidBlackTempleActionContext::illidan_stormrage_remove_dark_barrage;
@@ -176,9 +173,6 @@ public:
 
         creators["illidan stormrage dps prioritize adds"] =
             &RaidBlackTempleActionContext::illidan_stormrage_dps_prioritize_adds;
-
-        creators["illidan stormrage prioritize shadow demons"] =
-            &RaidBlackTempleActionContext::illidan_stormrage_prioritize_shadow_demons;
 
         creators["illidan stormrage manage dps timer"] =
             &RaidBlackTempleActionContext::illidan_stormrage_manage_dps_timer;
@@ -223,9 +217,6 @@ private:
 
     static Action* supremus_manage_phase_timer(
         PlayerbotAI* botAI) { return new SupremusManagePhaseTimerAction(botAI); }
-
-    // Shade of Akama
-    // N/A
 
     // Teron Gorefiend
     static Action* teron_gorefiend_misdirect_boss_to_main_tank(
@@ -338,8 +329,8 @@ private:
     static Action* illidan_stormrage_control_pet_aggression(
         PlayerbotAI* botAI) { return new IllidanStormrageControlPetAggressionAction(botAI); }
 
-    static Action* illidan_stormrage_bots_spread_above_grate(
-        PlayerbotAI* botAI) { return new IllidanStormrageBotsSpreadAboveGrateAction(botAI); }
+    static Action* illidan_stormrage_position_bots_above_grate(
+        PlayerbotAI* botAI) { return new IllidanStormragePositionBotsAboveGrateAction(botAI); }
 
     static Action* illidan_stormrage_remove_dark_barrage(
         PlayerbotAI* botAI) { return new IllidanStormrageRemoveDarkBarrageAction(botAI); }
@@ -355,9 +346,6 @@ private:
 
     static Action* illidan_stormrage_dps_prioritize_adds(
         PlayerbotAI* botAI) { return new IllidanStormrageDpsPrioritizeAddsAction(botAI); }
-
-    static Action* illidan_stormrage_prioritize_shadow_demons(
-        PlayerbotAI* botAI) { return new IllidanStormragePrioritizeShadowDemonsAction(botAI); }
 
     static Action* illidan_stormrage_manage_dps_timer(
         PlayerbotAI* botAI) { return new IllidanStormrageManageDpsTimerAction(botAI); }

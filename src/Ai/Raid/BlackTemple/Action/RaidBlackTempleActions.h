@@ -427,12 +427,15 @@ public:
     bool Execute(Event event) override;
 };
 
-class IllidanStormrageBotsSpreadAboveGrateAction : public MovementAction
+class IllidanStormragePositionBotsAboveGrateAction : public AttackAction
 {
 public:
-    IllidanStormrageBotsSpreadAboveGrateAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "illidan stormrage bots spread above grate") {}
+    IllidanStormragePositionBotsAboveGrateAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "illidan stormrage position bots above grate") {}
     bool Execute(Event event) override;
+
+private:
+    bool AttackFlamesOfAzzinoth();
 };
 
 class IllidanStormrageRemoveDarkBarrageAction : public Action
@@ -457,9 +460,6 @@ public:
     IllidanStormrageMeleeGoSomewhereToNotDieAction(
         PlayerbotAI* botAI) : MovementAction(botAI, "illidan stormrage melee go somewhere to not die") {}
     bool Execute(Event event) override;
-
-private:
-    bool StayAwayFromDemonBoss(Unit* illidan);
 };
 
 class IllidanStormrageWarlockTankHandleDemonBossAction : public AttackAction
@@ -475,14 +475,6 @@ class IllidanStormrageDpsPrioritizeAddsAction : public AttackAction
 public:
     IllidanStormrageDpsPrioritizeAddsAction(
         PlayerbotAI* botAI) : AttackAction(botAI, "illidan stormrage dps prioritize adds") {}
-    bool Execute(Event event) override;
-};
-
-class IllidanStormragePrioritizeShadowDemonsAction : public AttackAction
-{
-public:
-    IllidanStormragePrioritizeShadowDemonsAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "illidan stormrage prioritize shadow demons") {}
     bool Execute(Event event) override;
 };
 

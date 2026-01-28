@@ -97,9 +97,6 @@ public:
     bool IsActive() override;
 };
 
-// Shade of Akama
-// N/A
-
 // Teron Gorefiend
 class TeronGorefiendPullingBossTrigger : public Trigger
 {
@@ -483,14 +480,6 @@ class IllidanStormrageBossSummonsAddsTrigger : public Trigger
 public:
     IllidanStormrageBossSummonsAddsTrigger(
         PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage boss summons adds") {}
-    bool IsActive() override;
-};
-
-class IllidanStormrageBossSummonsShadowDemonsTrigger : public Trigger
-{
-public:
-    IllidanStormrageBossSummonsShadowDemonsTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage boss summons shadow demons") {}
     bool IsActive() override;
 };
 

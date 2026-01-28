@@ -39,9 +39,6 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("supremus need to manage phase timer", {
         NextAction("supremus manage phase timer", ACTION_EMERGENCY + 10) }));
 
-    // Shade of Akama
-    // N/A
-
     // Teron Gorefiend
     triggers.push_back(new TriggerNode("teron gorefiend pulling boss", {
         NextAction("teron gorefiend misdirect boss to main tank", ACTION_RAID + 2) }));
@@ -154,7 +151,7 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("illidan stormrage control pet aggression", ACTION_RAID + 3) }));
 
     triggers.push_back(new TriggerNode("illidan stormrage grate is safe from flames", {
-        NextAction("illidan stormrage bots spread above grate", ACTION_EMERGENCY + 1) }));
+        NextAction("illidan stormrage position bots above grate", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("illidan stormrage bot struck by dark barrage", {
         NextAction("illidan stormrage remove dark barrage", ACTION_EMERGENCY + 6) }));
@@ -168,11 +165,8 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("illidan stormrage boss transforms into demon", {
         NextAction("illidan stormrage warlock tank handle demon boss", ACTION_EMERGENCY + 10) }));
 
-    triggers.push_back(new TriggerNode("illidan stormrage boss summons adds", {
-        NextAction("illidan stormrage dps prioritize adds", ACTION_EMERGENCY + 2) }));
-
-    // triggers.push_back(new TriggerNode("illidan stormrage boss summons shadow demons", {
-    //    NextAction("illidan stormrage prioritize shadow demons", ACTION_EMERGENCY + 3) }));
+    // triggers.push_back(new TriggerNode("illidan stormrage boss summons adds", {
+    //    NextAction("illidan stormrage dps prioritize adds", ACTION_EMERGENCY + 2) }));
 
     triggers.push_back(new TriggerNode("illidan stormrage need to manage dps timer", {
         NextAction("illidan stormrage manage dps timer", ACTION_EMERGENCY + 10) }));
@@ -189,9 +183,6 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     // Supremus
     multipliers.push_back(new SupremusFocusOnAvoidanceInPhase2Multiplier(botAI));
     multipliers.push_back(new SupremusHitboxIsBuggedMultiplier(botAI));
-
-    // Shade of Akama
-    // N/A
 
     // Teron Gorefiend
     multipliers.push_back(new TeronGorefiendControlMovementMultiplier(botAI));

@@ -45,9 +45,6 @@ public:
         creators["supremus need to manage phase timer"] =
             &RaidBlackTempleTriggerContext::supremus_need_to_manage_phase_timer;
 
-        // Shade of Akama
-        // N/A
-
         // Teron Gorefiend
         creators["teron gorefiend pulling boss"] =
             &RaidBlackTempleTriggerContext::teron_gorefiend_pulling_boss;
@@ -195,9 +192,6 @@ public:
         creators["illidan stormrage boss summons adds"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_boss_summons_adds;
 
-        creators["illidan stormrage boss summons shadow demons"] =
-            &RaidBlackTempleTriggerContext::illidan_stormrage_boss_summons_shadow_demons;
-
         creators["illidan stormrage need to manage dps timer"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_need_to_manage_dps_timer;
 
@@ -241,9 +235,6 @@ private:
 
     static Trigger* supremus_need_to_manage_phase_timer(
         PlayerbotAI* botAI) { return new SupremusNeedToManagePhaseTimerTrigger(botAI); }
-
-    // Shade of Akama
-    // N/A
 
     // Teron Gorefiend
     static Trigger* teron_gorefiend_pulling_boss(
@@ -391,9 +382,6 @@ private:
 
     static Trigger* illidan_stormrage_boss_summons_adds(
         PlayerbotAI* botAI) { return new IllidanStormrageBossSummonsAddsTrigger(botAI); }
-
-    static Trigger* illidan_stormrage_boss_summons_shadow_demons(
-        PlayerbotAI* botAI) { return new IllidanStormrageBossSummonsShadowDemonsTrigger(botAI); }
 
     static Trigger* illidan_stormrage_need_to_manage_dps_timer(
         PlayerbotAI* botAI) { return new IllidanStormrageNeedToManageDpsTimerTrigger(botAI); }
