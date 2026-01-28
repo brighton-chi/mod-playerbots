@@ -609,8 +609,8 @@ bool IllidanStormrageBossSummonsAddsTrigger::IsActive()
     if (!botAI->IsDps(bot))
         return false;
 
-    return /* AI_VALUE2(Unit*, "find target", "shadow demon") ||
-           AI_VALUE2(Unit*, "find target", "parasitic shadowfiend") || */
+    return AI_VALUE2(Unit*, "find target", "shadow demon") ||
+           // AI_VALUE2(Unit*, "find target", "parasitic shadowfiend") ||
            AI_VALUE2(Unit*, "find target", "flame of azzinoth");
 }
 

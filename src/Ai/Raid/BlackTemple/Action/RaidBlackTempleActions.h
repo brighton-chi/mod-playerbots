@@ -460,7 +460,6 @@ public:
 
 private:
     bool StayAwayFromDemonBoss(Unit* illidan);
-    bool PositionBehindBoss(Unit* illidan);
 };
 
 class IllidanStormrageWarlockTankHandleDemonBossAction : public AttackAction

@@ -475,6 +475,7 @@ float IllidanStormrageControlMovementMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+// For now, just tank assist in Phase 4
 float IllidanStormrageDisableDefaultTargetingMultiplier::GetValue(Action* action)
 {
     if (bot->GetVictim() == nullptr)
@@ -486,8 +487,7 @@ float IllidanStormrageDisableDefaultTargetingMultiplier::GetValue(Action* action
 
     if (GetIllidanPhase(illidan) == 4)
     {
-        if (dynamic_cast<TankAssistAction*>(action) ||
-            dynamic_cast<DpsAssistAction*>(action)) // Trying disable DPS assist just for shadow demons
+        if (dynamic_cast<TankAssistAction*>(action))
             return 0.0f;
     }
 

@@ -171,8 +171,8 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("illidan stormrage boss summons adds", {
         NextAction("illidan stormrage dps prioritize adds", ACTION_EMERGENCY + 2) }));
 
-    triggers.push_back(new TriggerNode("illidan stormrage boss summons shadow demons", {
-        NextAction("illidan stormrage prioritize shadow demons", ACTION_EMERGENCY + 3) }));
+    // triggers.push_back(new TriggerNode("illidan stormrage boss summons shadow demons", {
+    //    NextAction("illidan stormrage prioritize shadow demons", ACTION_EMERGENCY + 3) }));
 
     triggers.push_back(new TriggerNode("illidan stormrage need to manage dps timer", {
         NextAction("illidan stormrage manage dps timer", ACTION_EMERGENCY + 10) }));

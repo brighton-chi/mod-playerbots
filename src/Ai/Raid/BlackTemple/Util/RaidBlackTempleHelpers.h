@@ -240,7 +240,6 @@ namespace BlackTempleHelpers
     extern std::unordered_map<uint32, ObjectGuid> eastFlameGuid;
     extern std::unordered_map<uint32, ObjectGuid> westFlameGuid;
     extern std::unordered_map<ObjectGuid, uint8> illidanGrateStep;
-    extern std::unordered_map<uint32, time_t> illidanShadowDemonTimer;
     int GetIllidanPhase(Unit* illidan);
     std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(PlayerbotAI* botAI, Player* bot);
     Player* GetIllidanWarlockTank(PlayerbotAI* botAI, Player* bot);

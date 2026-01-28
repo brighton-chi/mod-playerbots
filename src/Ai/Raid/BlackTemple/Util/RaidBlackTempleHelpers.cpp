@@ -308,7 +308,6 @@ namespace BlackTempleHelpers
     std::unordered_map<uint32, ObjectGuid> eastFlameGuid;
     std::unordered_map<uint32, ObjectGuid> westFlameGuid;
     std::unordered_map<ObjectGuid, uint8> illidanGrateStep;
-    std::unordered_map<uint32, time_t> illidanShadowDemonTimer;
 
     int GetIllidanPhase(Unit* illidan)
     {

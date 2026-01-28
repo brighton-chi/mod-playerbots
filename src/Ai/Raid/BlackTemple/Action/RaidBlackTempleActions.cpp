@@ -1834,7 +1834,6 @@ Position IllidanStormrageMainTankMoveAwayFromFlameCrashAction::FindSafestNearbyP
     {
         for (float angleOffset = 0.0f; angleOffset < 2 * M_PI; angleOffset += searchStep)
         {
-            // Try both directions from straight backwards
             for (int sign = -1; sign <= 1; sign += 2)
             {
                 float testAngle = Position::NormalizeOrientation(backwardsAngle + sign * angleOffset);
@@ -1842,15 +1841,6 @@ Position IllidanStormrageMainTankMoveAwayFromFlameCrashAction::FindSafestNearbyP
                 float y = bot->GetPositionY() + distance * std::sin(testAngle);
 
                 Position testPos(x, y, bot->GetPositionZ());
-
-                /* if (GetIllidanPhase(illidan) == 1)
-                {
-                    const Position& invalidPos = ILLIDAN_C_GRATE_POSITION;
-                    const float invalidRadius = 20.0f;
-
-                    if (testPos.GetExactDist2d(invalidPos.GetPositionX(), invalidPos.GetPositionY()) < invalidRadius)
-                        continue;
-                } */
 
                 bool isSafe = true;
                 for (Unit* flameCrash : flameCrashes)
@@ -2407,23 +2397,11 @@ bool IllidanStormrageMeleeGoSomewhereToNotDieAction::Execute(Event event)
     if (!illidan)
         return false;
 
-    Unit* shadowDemon = AI_VALUE2(Unit*, "find target", "shadow demon");
-    if (shadowDemon && shadowDemon->GetDistance2d(illidan) > 15.0f)
-        return false;
-
     if (GetIllidanPhase(illidan) == 4)
     {
         if (StayAwayFromDemonBoss(illidan))
             return true;
     }
-    /* else if (GetIllidanPhase(illidan) != 2)
-    {
-        if (botAI->IsMainTank(bot))
-            return false;
-
-        if (PositionBehindBoss(illidan))
-            return true;
-    } */
 
     return false;
 }
@@ -2440,62 +2418,6 @@ bool IllidanStormrageMeleeGoSomewhereToNotDieAction::StayAwayFromDemonBoss(Unit*
     }
     else
         return true;
-}
-
-bool IllidanStormrageMeleeGoSomewhereToNotDieAction::PositionBehindBoss(Unit* illidan)
-{
-    if (illidan->GetVictim() == bot)
-        return false;
-
-    const float behindAngle = M_PI;
-    const float angleOffset = M_PI / 2.25f; // 80 degrees
-
-    std::vector<Player*> melee;
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (member && member->IsAlive() && botAI->IsMelee(member) && !botAI->IsMainTank(member))
-            melee.push_back(member);
-    }
-
-    if (melee.empty())
-        return false;
-
-    // Sort for deterministic assignment
-    std::sort(melee.begin(), melee.end(),
-        [](Player* firstPlayer, Player* secondPlayer) {
-            return firstPlayer->GetGUID() < secondPlayer->GetGUID(); });
-
-    auto it = std::find(melee.begin(), melee.end(), bot);
-    if (it == melee.end())
-        return false;
-
-    size_t botIndex = std::distance(melee.begin(), it);
-    size_t groupIndex = botIndex % 2; // 0: left, 1: right
-
-    float assignedAngle;
-    if (groupIndex == 0)
-        assignedAngle = Position::NormalizeOrientation(illidan->GetOrientation() + M_PI + angleOffset); // left
-    else if (groupIndex == 1)
-        assignedAngle = Position::NormalizeOrientation(illidan->GetOrientation() + M_PI - angleOffset); // right
-
-    const float desiredDist = 3.5f;
-    const float tolerance = 0.2f;
-
-    float targetX = illidan->GetPositionX() + desiredDist * std::cos(assignedAngle);
-    float targetY = illidan->GetPositionY() + desiredDist * std::sin(assignedAngle);
-
-    if (fabs(bot->GetExactDist2d(targetX, targetY) - desiredDist) > tolerance)
-    {
-        return MoveTo(BLACK_TEMPLE_MAP_ID, targetX, targetY, illidan->GetPositionZ(), false,
-                      false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
-    }
-
-    return false;
 }
 
 bool IllidanStormrageWarlockTankHandleDemonBossAction::Execute(Event event)
@@ -2534,7 +2456,7 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event event)
 
     /* if (Unit* shadowDemon = GetFirstAliveUnitByEntry(botAI, NPC_SHADOW_DEMON))
     {
-        if (IsMechanicTrackerBot(botAI, bot, BLACK_TEMPLE_MAP_ID, GetIllidanWarlockTank(botAI, bot)))
+        if (GetIllidanWarlockTank(botAI, bot) == bot)
             MarkTargetWithSquare(bot, shadowDemon);
 
         SetRtiTarget(botAI, "square", shadowDemon);
@@ -2585,66 +2507,6 @@ bool IllidanStormragePrioritizeShadowDemonsAction::Execute(Event event)
     if (!illidan)
         return false;
 
-    bool isAoeClass =
-        bot->getClass() == CLASS_MAGE ||
-        bot->getClass() == CLASS_WARLOCK ||
-        bot->getClass() == CLASS_HUNTER ||
-        (bot->getClass() == CLASS_DRUID && AiFactory::GetPlayerSpecTab(bot) == DRUID_TAB_BALANCE);
-
-    if (isAoeClass)
-    {
-        auto it = illidanShadowDemonTimer.find(illidan->GetMap()->GetInstanceId());
-        time_t elapsed = 0;
-        if (it != illidanShadowDemonTimer.end())
-        {
-            time_t now = time(nullptr);
-            elapsed = now - it->second;
-        }
-
-        if (elapsed > 40 && elapsed < 50)
-        {
-            bool casted = false;
-            if (bot->getClass() == CLASS_MAGE)
-            {
-                uint32 spellId = botAI->GetAiObjectContext()->GetValue<uint32>("spell id", "blizzard")->Get();
-                if (botAI->CanCastSpell(spellId, illidan->GetPositionX(), illidan->GetPositionY(), illidan->GetPositionZ()))
-                {
-                    if (botAI->CastSpell(spellId, illidan->GetPositionX(), illidan->GetPositionY(), illidan->GetPositionZ()))
-                        casted = true;
-                }
-            }
-            else if (bot->getClass() == CLASS_WARLOCK)
-            {
-                if (botAI->CanCastSpell("seed of corruption", illidan))
-                {
-                    if (botAI->CastSpell("seed of corruption", illidan))
-                        casted = true;
-                }
-            }
-            else if (bot->getClass() == CLASS_HUNTER)
-            {
-                uint32 spellId = botAI->GetAiObjectContext()->GetValue<uint32>("spell id", "volley")->Get();
-                if (botAI->CanCastSpell(spellId, illidan->GetPositionX(), illidan->GetPositionY(), illidan->GetPositionZ()))
-                {
-                    if (botAI->CastSpell(spellId, illidan->GetPositionX(), illidan->GetPositionY(), illidan->GetPositionZ()))
-                        casted = true;
-                }
-            }
-            else if (bot->getClass() == CLASS_DRUID && AiFactory::GetPlayerSpecTab(bot) == DRUID_TAB_BALANCE)
-            {
-                uint32 spellId = botAI->GetAiObjectContext()->GetValue<uint32>("spell id", "hurricane")->Get();
-                if (botAI->CanCastSpell(spellId, illidan->GetPositionX(), illidan->GetPositionY(), illidan->GetPositionZ()))
-                {
-                    if (botAI->CastSpell(spellId, illidan->GetPositionX(), illidan->GetPositionY(), illidan->GetPositionZ()))
-                        casted = true;
-                }
-            }
-            if (casted)
-                return true;
-        }
-    }
-
-    // Default: attack shadow demon or illidan logic for all other classes (and for aoe classes outside timer window)
     if (GetIllidanWarlockTank(botAI, bot) == bot)
         return false;
 
@@ -2653,12 +2515,14 @@ bool IllidanStormragePrioritizeShadowDemonsAction::Execute(Event event)
     {
         if (botAI->IsRanged(bot) || shadowDemon->GetDistance2d(illidan) > 15.0f)
         {
+            MarkTargetWithMoon(bot, illidan);
             if (bot->GetTarget() != shadowDemon->GetGUID())
                 return Attack(shadowDemon);
         }
     }
     else if (botAI->IsRanged(bot))
     {
+        MarkTargetWithSkull(bot, illidan);
         if (bot->GetTarget() != illidan->GetGUID())
             return Attack(illidan);
     }
@@ -2674,18 +2538,6 @@ bool IllidanStormrageManageDpsTimerAction::Execute(Event event)
 
     const time_t now = std::time(nullptr);
     const uint32 instanceId = illidan->GetMap()->GetInstanceId();
-
-    if (illidan->HasAura(SPELL_DEMON_TRANSFORM_1) || illidan->HasAura(SPELL_DEMON_TRANSFORM_2) ||
-        illidan->HasAura(SPELL_DEMON_TRANSFORM_3) || illidan->HasAura(SPELL_DEMON_FORM))
-    {
-        illidanShadowDemonTimer.try_emplace(instanceId, now);
-    }
-    else
-    {
-        bool erased = illidanShadowDemonTimer.erase(instanceId) > 0;
-        if (erased)
-            LOG_DEBUG("playerbots", "Erased illidanShadowDemonTimer for instance {}", instanceId);
-    }
 
     if ((GetIllidanPhase(illidan) == 2 && AI_VALUE2(Unit*, "find target", "flame of azzinoth")) ||
         GetIllidanPhase(illidan) == 5)
@@ -2734,11 +2586,11 @@ bool IllidanStormrageDestroyHazardsCheatAction::Execute(Event event)
         destroyed = true;
     }
 
-    /* if (Unit* shadowDemon = AI_VALUE2(Unit*, "find target", "shadow demon"))
+    if (Unit* shadowDemon = AI_VALUE2(Unit*, "find target", "shadow demon"))
     {
         shadowDemon->Kill(bot, shadowDemon);
         destroyed = true;
-    } */
+    }
 
     if (GetIllidanPhase(illidan) == 2 || GetIllidanPhase(illidan) == 4)
     {
