@@ -88,9 +88,9 @@ namespace ZulAmanHelpers
             Unit* unit = botAI->GetUnit(guid);
             if (unit && unit->GetEntry() == NPC_AMANI_HATCHER)
             {
-                if (!lowest || unit->GetGUID().GetRawValue() < lowest->GetGUID().GetRawValue())
+                if (!lowest || unit->GetGUID().GetCounter() < lowest->GetGUID().GetCounter())
                     lowest = unit;
-                if (!highest || unit->GetGUID().GetRawValue() > highest->GetGUID().GetRawValue())
+                if (!highest || unit->GetGUID().GetCounter() > highest->GetGUID().GetCounter())
                     highest = unit;
             }
         }
