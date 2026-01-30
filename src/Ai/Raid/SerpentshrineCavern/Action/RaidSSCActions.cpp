@@ -2286,7 +2286,7 @@ bool LadyVashjLootTaintedCoreAction::Execute(Event)
         return false;
 
     auto const& corpses = context->GetValue<GuidVector>("nearest corpses")->Get();
-    const float maxLootRange = sPlayerbotAIConfig->lootDistance;
+    const float maxLootRange = sPlayerbotAIConfig.lootDistance;
 
     for (auto const& guid : corpses)
     {
