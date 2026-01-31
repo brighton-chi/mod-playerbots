@@ -522,11 +522,7 @@ bool TheLurkerBelowRunAroundBehindBossAction::Execute(Event event)
     if (!lurker)
         return false;
 
-    if (bot->HasAura(SPELL_TREE_OF_LIFE))
-        bot->RemoveAura(SPELL_TREE_OF_LIFE);
-
-    float bossFacing = lurker->GetOrientation();
-    float behindAngle = bossFacing + M_PI + frand(-0.5f, 0.5f) * (M_PI / 2.0f);
+    float behindAngle = lurker->GetOrientation() + M_PI + frand(-0.5f, 0.5f) * (M_PI / 2.0f);
     float radius = frand(20.0f, 24.0f);
 
     float targetX = lurker->GetPositionX() + radius * std::cos(behindAngle);
@@ -535,8 +531,8 @@ bool TheLurkerBelowRunAroundBehindBossAction::Execute(Event event)
     if (bot->GetExactDist2d(targetX, targetY) > 1.0f)
     {
         botAI->Reset();
-        return MoveTo(SSC_MAP_ID, targetX, targetY, lurker->GetPositionZ(), false, false,
-                      false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+        return MoveTo(SSC_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false,
+                      false, true, MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
     return false;

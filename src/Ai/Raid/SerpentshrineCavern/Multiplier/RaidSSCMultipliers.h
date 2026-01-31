@@ -41,6 +41,14 @@ public:
 
 // The Lurker Below
 
+class TheLurkerBelowStopFishingAndFightMultiplier : public Multiplier
+{
+public:
+    TheLurkerBelowStopFishingAndFightMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "the lurker below stop fishing and fight") {}
+    virtual float GetValue(Action* action);
+};
+
 class TheLurkerBelowStayAwayFromSpoutMultiplier : public Multiplier
 {
 public:

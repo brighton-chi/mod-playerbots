@@ -8,6 +8,7 @@
 #include "DruidBearActions.h"
 #include "DruidCatActions.h"
 #include "DruidShapeshiftActions.h"
+#include "FishingAction.h"
 #include "FollowActions.h"
 #include "GenericSpellActions.h"
 #include "HunterActions.h"
@@ -143,6 +144,20 @@ float HydrossTheUnstableControlMisdirectionMultiplier::GetValue(Action* action)
 
 // The Lurker Below
 
+float TheLurkerBelowStopFishingAndFightMultiplier::GetValue(Action* action)
+{
+    if (AI_VALUE2(Unit*, "find target", "the lurker below"))
+    {
+        if (dynamic_cast<FishingAction*>(action) ||
+            dynamic_cast<EquipFishingPoleAction*>(action) ||
+            dynamic_cast<MoveNearWaterAction*>(action) ||
+            dynamic_cast<UseBobberAction*>(action))
+            return 0.0f;
+    }
+
+    return 1.0f;
+}
+
 float TheLurkerBelowStayAwayFromSpoutMultiplier::GetValue(Action* action)
 {
     Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
@@ -191,6 +206,9 @@ float TheLurkerBelowDisableTankAssistMultiplier::GetValue(Action* action)
     if (!botAI->IsTank(bot))
         return 1.0f;
 
+    if (bot->GetVictim() == nullptr)
+        return 1.0f;
+
     Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
     if (!lurker || lurker->getStandState() != UNIT_STAND_STATE_SUBMERGED)
         return 1.0f;
@@ -212,7 +230,7 @@ float TheLurkerBelowDisableTankAssistMultiplier::GetValue(Action* action)
 
     if (tankCount >= 3)
     {
-        if (!bot->GetVictim() && dynamic_cast<TankAssistAction*>(action))
+        if (dynamic_cast<TankAssistAction*>(action))
             return 0.0f;
     }
 
@@ -397,16 +415,14 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-// Wait until the final phase to use Bloodlust/Heroism
+// Don't use Bloodlust/Heroism during the Channeler phase
 float LeotherasTheBlindDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
 {
     if (bot->getClass() != CLASS_SHAMAN)
         return 1.0f;
 
-    if (!AI_VALUE2(Unit*, "find target", "leotheras the blind"))
-        return 1.0f;
-
-    if (!GetPhase3LeotherasDemon(botAI))
+    Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
+    if (leotheras && leotheras->HasAura(SPELL_LEOTHERAS_BANISHED))
     {
         if (dynamic_cast<CastHeroismAction*>(action) ||
             dynamic_cast<CastBloodlustAction*>(action))
