@@ -1704,7 +1704,6 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::Execute(Event event)
         {
             if (bot->HasItemCount(weapon.itemId, 1, false))
             {
-                // need to test below re: equipping after looting
                 bool equipped = false;
                 for (uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
                 {
@@ -1717,10 +1716,11 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::Execute(Event event)
                         }
                     }
                 }
+
                 if (!equipped)
                 {
                     botAI->DoSpecificAction("equip upgrade", Event(), true);
-                    return true; // Stop after first equip attempt
+                    return true;
                 }
 
                 continue;
@@ -2124,21 +2124,13 @@ bool KaelthasSunstriderBreakMindControlAction::Execute(Event event)
 
     if (!bot->IsWithinMeleeRange(mcTarget))
     {
-        uint32 delay = urand(1500, 2500); // 1.5 to 2.5 seconds
-        float x = mcTarget->GetPositionX();
-        float y = mcTarget->GetPositionY();
-        float z = mcTarget->GetPositionZ();
-        botAI->AddTimedEvent(
-            [this, x, y, z]() {
-                MoveTo(TEMPEST_KEEP_MAP_ID, x, y, z, false, false, false, false,
-                       MovementPriority::MOVEMENT_COMBAT, true, false);
-            },
-            delay);
-        botAI->SetNextCheckDelay(delay + 50);
-        return true;
+        return MoveTo(TEMPEST_KEEP_MAP_ID, mcTarget->GetPositionX(), mcTarget->GetPositionY(),
+                      mcTarget->GetPositionZ(), false, false, false, false,
+                      MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
-    if (AiFactory::GetPlayerSpecTab(bot) == ROGUE_TAB_COMBAT) // UNTESTED
+    if (bot->getClass() == CLASS_ROGUE &&
+        AiFactory::GetPlayerSpecTab(bot) != ROGUE_TAB_COMBAT)
     {
         if (botAI->CanCastSpell("sinister strike", mcTarget))
             return botAI->CastSpell("sinister strike", mcTarget);

@@ -411,10 +411,18 @@ float KaelthasSunstriderDelayCooldownsMultiplier::GetValue(Action* action)
 
 float KaelthasSunstriderTryNonfatalBreakingOfMindControlMultiplier::GetValue(Action* action)
 {
-    if (botAI->IsTank(bot) || !bot->HasItemCount(ITEM_INFINITY_BLADE, 1, true))
+    if (botAI->IsTank(bot))
         return 1.0f;
 
-    if (!AI_VALUE2(Unit*, "find target", "kael'thas sunstrider"))
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    if (!kaelthas)
+        return 1.0f;
+
+    if (!bot->HasItemCount(ITEM_INFINITY_BLADE, 1, true))
+        return 1.0f;
+
+    boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
+    if (!kaelAI || kaelAI->GetPhase() != PHASE_FINAL)
         return 1.0f;
 
     Group* group = bot->GetGroup();
