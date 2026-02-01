@@ -539,6 +539,8 @@ float FathomLordKarathressCaribdisTankHealerMaintainPositionMultiplier::GetValue
     return 1.0f;
 }
 
+// Morogrim Tidewalker
+
 // Use Bloodlust/Heroism after the first Murloc spawn
 float MorogrimTidewalkerDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
 {
@@ -592,6 +594,8 @@ float MorogrimTidewalkerMaintainPhase2StackingMultiplier::GetValue(Action* actio
 
     return 1.0f;
 }
+
+// Lady Vashj <Coilfang Matron>
 
 // Wait until phase 3 to use Bloodlust/Heroism
 // Don't use other major cooldowns in Phase 1, either

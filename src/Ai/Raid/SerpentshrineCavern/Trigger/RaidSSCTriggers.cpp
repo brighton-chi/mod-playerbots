@@ -377,11 +377,11 @@ bool FathomLordKarathressDeterminingKillOrderTrigger::IsActive()
     if (botAI->IsDps(bot))
         return true;
     else if (botAI->IsAssistTankOfIndex(bot, 0, false))
-        return AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
+        return !AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
     else if (botAI->IsAssistTankOfIndex(bot, 1, false))
-        return AI_VALUE2(Unit*, "find target", "fathom-guard sharkkis");
+        return !AI_VALUE2(Unit*, "find target", "fathom-guard sharkkis");
     else if (botAI->IsAssistTankOfIndex(bot, 2, false))
-        return AI_VALUE2(Unit*, "find target", "fathom-guard tidalvess");
+        return !AI_VALUE2(Unit*, "find target", "fathom-guard tidalvess");
     else
         return false;
 }
