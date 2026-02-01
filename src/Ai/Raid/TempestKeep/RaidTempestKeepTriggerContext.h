@@ -111,9 +111,6 @@ public:
         creators["kael'thas sunstrider legendary axe casts whirlwind"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_legendary_axe_casts_whirlwind;
 
-        creators["kael'thas sunstrider legendary bow casts multishot"] =
-            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_legendary_bow_casts_multishot;
-
         creators["kael'thas sunstrider legendary weapons are dead and lootable"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_legendary_weapons_are_dead_and_lootable;
 
@@ -241,9 +238,6 @@ private:
 
     static Trigger* kaelthas_sunstrider_legendary_axe_casts_whirlwind(
         PlayerbotAI* botAI) { return new KaelthasSunstriderLegendaryAxeCastsWhirlwindTrigger(botAI); }
-
-    static Trigger* kaelthas_sunstrider_legendary_bow_casts_multishot(
-        PlayerbotAI* botAI) { return new KaelthasSunstriderLegendaryBowCastsMultiShotTrigger(botAI); }
 
     static Trigger* kaelthas_sunstrider_legendary_weapons_are_dead_and_lootable(
         PlayerbotAI* botAI) { return new KaelthasSunstriderLegendaryWeaponsAreDeadAndLootableTrigger(botAI); }

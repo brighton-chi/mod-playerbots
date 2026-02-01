@@ -369,7 +369,7 @@ bool KaelthasSunstriderLegendaryWeaponsAreAliveTrigger::IsActive()
     if (!kaelthas)
         return false;
 
-    if (botAI->IsMainTank(bot) || GetNetherstrandLongbowTank(botAI, bot) == bot)
+    if (botAI->IsMainTank(bot))
         return false;
 
     boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
@@ -380,12 +380,6 @@ bool KaelthasSunstriderLegendaryAxeCastsWhirlwindTrigger::IsActive()
 {
     return AI_VALUE2(Unit*, "find target", "devastation") &&
            botAI->IsMainTank(bot);
-}
-
-bool KaelthasSunstriderLegendaryBowCastsMultiShotTrigger::IsActive()
-{
-    return AI_VALUE2(Unit*, "find target", "netherstrand longbow") &&
-           GetNetherstrandLongbowTank(botAI, bot) == bot;
 }
 
 bool KaelthasSunstriderLegendaryWeaponsAreDeadAndLootableTrigger::IsActive()

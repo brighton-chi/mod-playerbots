@@ -1462,10 +1462,10 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
     }
 
     // Target priority 2: Capernian for ranged only (excluding longbow tank)
-    Player* longBowTank = GetNetherstrandLongbowTank(botAI, bot);
+    Player* debuffHunter = GetDebuffHunter(botAI, bot);
 
     Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
-    if (botAI->IsRangedDps(bot) && (!longBowTank || bot != longBowTank) &&
+    if (botAI->IsRangedDps(bot) && (!debuffHunter || bot != debuffHunter) &&
         capernian && !capernian->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
         !capernian->HasAura(SPELL_PERMANENT_FEIGN_DEATH))
     {
@@ -1477,7 +1477,7 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
         return false;
     }
 
-    // Target priority 3: Sanguinar (longbow tank and melee move here after Thaladred)
+    // Target priority 3: Sanguinar (debuff hunter and melee move here after Thaladred)
     Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
     if (sanguinar && !sanguinar->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
         !sanguinar->HasAura(SPELL_PERMANENT_FEIGN_DEATH))
@@ -1629,9 +1629,10 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event eve
             if (bot->GetTarget() != axe->GetGUID())
                 return Attack(axe);
         }
-        // Priority 6: Netherstrand Longbow (Cross--marked in other method by longbow tank)
+        // Priority 6: Netherstrand Longbow (Cross)
         else if (Unit* longbow = AI_VALUE2(Unit*, "find target", "netherstrand longbow"))
         {
+            MarkTargetWithCross(bot, longbow);
             SetRtiTarget(botAI, "cross", longbow);
 
             if (bot->GetTarget() != longbow->GetGUID())
@@ -1671,33 +1672,6 @@ bool KaelthasSunstriderMoveDevastationAwayAction::Execute(Event event)
         {
             float currentDistance = bot->GetExactDist2d(nearestPlayer);
             return MoveFromGroup(safeDistance + 1.0f);
-        }
-    }
-
-    return false;
-}
-
-bool KaelthasSunstriderHunterTurnAwayNetherstrandLongbowAction::Execute(Event event)
-{
-    Unit* longbow = AI_VALUE2(Unit*, "find target", "netherstrand longbow");
-    if (!longbow)
-        return false;
-
-    MarkTargetWithCross(bot, longbow);
-    SetRtiTarget(botAI, "cross", longbow);
-
-    if (bot->GetTarget() != longbow->GetGUID())
-        return Attack(longbow);
-
-    if (longbow->GetVictim() == bot)
-    {
-        constexpr float dangerZone = 15.0f;
-        Unit* nearestPlayer = GetNearestNonTankPlayerInRadius(bot, dangerZone);
-        if (nearestPlayer)
-        {
-            float currentDistance = bot->GetExactDist2d(nearestPlayer);
-            if (currentDistance < dangerZone)
-                return MoveFromGroup(dangerZone);
         }
     }
 

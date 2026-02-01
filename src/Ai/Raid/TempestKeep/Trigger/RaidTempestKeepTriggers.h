@@ -271,14 +271,6 @@ public:
     bool IsActive() override;
 };
 
-class KaelthasSunstriderLegendaryBowCastsMultiShotTrigger : public Trigger
-{
-public:
-    KaelthasSunstriderLegendaryBowCastsMultiShotTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider legendary bow casts multi shot") {}
-    bool IsActive() override;
-};
-
 class KaelthasSunstriderLegendaryWeaponsAreDeadAndLootableTrigger : public Trigger
 {
 public:

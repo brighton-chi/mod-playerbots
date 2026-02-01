@@ -123,9 +123,6 @@ public:
         creators["kael'thas sunstrider main tank move devastation away"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_main_tank_move_devastation_away;
 
-        creators["kael'thas sunstrider hunter turn away netherstrand longbow"] =
-            &RaidTempestKeepActionContext::kaelthas_sunstrider_hunter_turn_away_netherstrand_longbow;
-
         creators["kael'thas sunstrider loot legendary weapons"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_loot_legendary_weapons;
 
@@ -268,9 +265,6 @@ private:
 
     static Action* kaelthas_sunstrider_main_tank_move_devastation_away(
         PlayerbotAI* botAI) { return new KaelthasSunstriderMoveDevastationAwayAction(botAI); }
-
-    static Action* kaelthas_sunstrider_hunter_turn_away_netherstrand_longbow(
-        PlayerbotAI* botAI) { return new KaelthasSunstriderHunterTurnAwayNetherstrandLongbowAction(botAI); }
 
     static Action* kaelthas_sunstrider_loot_legendary_weapons(
         PlayerbotAI* botAI) { return new KaelthasSunstriderLootLegendaryWeaponsAction(botAI); }

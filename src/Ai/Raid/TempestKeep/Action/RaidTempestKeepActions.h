@@ -334,14 +334,6 @@ public:
     bool Execute(Event event) override;
 };
 
-class KaelthasSunstriderHunterTurnAwayNetherstrandLongbowAction : public AttackAction
-{
-public:
-    KaelthasSunstriderHunterTurnAwayNetherstrandLongbowAction(
-        PlayerbotAI* botAI, std::string const name = "kael'thas sunstrider hunter turn away netherstrand longbow") : AttackAction(botAI, name) {}
-    bool Execute(Event event) override;
-};
-
 class KaelthasSunstriderLootLegendaryWeaponsAction : public MovementAction
 {
 public:

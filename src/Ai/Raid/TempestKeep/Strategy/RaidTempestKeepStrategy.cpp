@@ -109,9 +109,6 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kael'thas sunstrider legendary axe casts whirlwind", {
         NextAction("kael'thas sunstrider main tank move devastation away", ACTION_EMERGENCY + 1) }));
 
-    triggers.push_back(new TriggerNode("kael'thas sunstrider legendary bow casts multishot", {
-        NextAction("kael'thas sunstrider hunter turn away netherstrand longbow", ACTION_EMERGENCY + 1) }));
-
     triggers.push_back(new TriggerNode("kael'thas sunstrider legendary weapons are dead and lootable", {
         NextAction("kael'thas sunstrider loot legendary weapons", ACTION_RAID + 1) }));
 
