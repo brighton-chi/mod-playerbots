@@ -42,9 +42,12 @@ namespace HyjalSummitHelpers
 
     // Azgalor
 
-    const Position AZGALOR_MAIN_TANK_POSITION = { 5504.281f, -2682.223f, 1480.610f };
-    // const Position AZGALOR_DOOMGUARD_TANK_POSITION = { 5445.848f, -2694.923f, 1485.965f }; // Far location
-    const Position AZGALOR_DOOMGUARD_TANK_POSITION = { 5467.278f, -2699.219f, 1485.328f };
+    /* const Position AZGALOR_MAIN_TANK_POSITION = { 5504.281f, -2682.223f, 1480.610f };
+    const Position AZGALOR_DOOMGUARD_TANK_POSITION = { 5467.278f, -2699.219f, 1485.328f }; */ // Tested positions
+    const Position AZGALOR_MAIN_TANK_TRANSITION_POSITION = { 5504.281f, -2682.223f, 1480.610f }; // this was the single tank location, trying it as transition
+    const Position AZGALOR_MAIN_TANK_FINAL_POSITION = { 5493.910f, -2678.707f, 1480.795f };
+    const Position AZGALOR_DOOMGUARD_TANK_POSITION = { 5509.107f, -2695.247f, 1480.408f };
+    std::unordered_map<ObjectGuid, uint8> azgalorTankStep;
 
     bool AnyGroupMemberHasDoom(Player* bot)
     {

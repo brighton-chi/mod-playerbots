@@ -29,6 +29,11 @@ bool HyjalSummitEraseTrackersAction::Execute(Event event)
         if (kazrogalRangedPositions.erase(guid) > 0)
             erased = true;
     }
+    if (!AI_VALUE2(Unit*, "find target", "azgalor"))
+    {
+        if (azgalorTankStep.erase(guid) > 0)
+            erased = true;
+    }
 
     return erased;
 }
@@ -616,7 +621,7 @@ bool AzgalorMisdirectBossToMainTankAction::Execute(Event event)
     return false;
 }
 
-bool AzgalorMainTankPositionBossAction::Execute(Event event)
+/* bool AzgalorMainTankPositionBossAction::Execute(Event event)
 {
     Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
     if (!azgalor)
@@ -642,6 +647,57 @@ bool AzgalorMainTankPositionBossAction::Execute(Event event)
 
             return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
                           false, false, true, MovementPriority::MOVEMENT_FORCED, true, true);
+        }
+    }
+
+    return false;
+} */
+bool AzgalorMainTankPositionBossAction::Execute(Event event)
+{
+    Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
+    if (!azgalor)
+        return false;
+
+    MarkTargetWithStar(bot, azgalor);
+    SetRtiTarget(botAI, "star", azgalor);
+
+    if (bot->GetTarget() != azgalor->GetGUID())
+        return Attack(azgalor);
+
+    if (azgalor->GetVictim() == bot)
+    {
+        const ObjectGuid guid = bot->GetGUID();
+        uint8 step = azgalorTankStep.count(guid) ? azgalorTankStep[guid] : 0;
+
+        const Position positions[2] =
+        {
+            AZGALOR_MAIN_TANK_TRANSITION_POSITION,
+            AZGALOR_MAIN_TANK_FINAL_POSITION
+        };
+        const float maxDistance = 2.0f;
+        const Position& position = positions[step];
+        float distanceToTarget = bot->GetExactDist2d(position);
+
+        if ((distanceToTarget > maxDistance) && bot->IsWithinMeleeRange(azgalor))
+        {
+            float dX = position.GetPositionX() - bot->GetPositionX();
+            float dY = position.GetPositionY() - bot->GetPositionY();
+            float moveDist = std::min(5.0f, distanceToTarget);
+            float moveX = bot->GetPositionX() + (dX / distanceToTarget) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / distanceToTarget) * moveDist;
+
+            return MoveTo(HYJAL_SUMMIT_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
+                          false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, true);
+        }
+
+        if (step == 0 && distanceToTarget <= maxDistance)
+            azgalorTankStep[guid] = 1;
+
+        if (step == 1 && distanceToTarget <= maxDistance)
+        {
+            float orientation = atan2(azgalor->GetPositionY() - bot->GetPositionY(),
+                                      azgalor->GetPositionX() - bot->GetPositionX());
+            bot->SetFacingTo(orientation);
         }
     }
 
