@@ -1704,7 +1704,7 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::Execute(Event event)
         {
             if (bot->HasItemCount(weapon.itemId, 1, false))
             {
-                bool equipped = false;
+                /* bool equipped = false;
                 for (uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
                 {
                     if (Item* item = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
@@ -1721,8 +1721,14 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::Execute(Event event)
                 {
                     botAI->DoSpecificAction("equip upgrade", Event(), true);
                     return true;
-                }
+                } */
 
+                // Use DoSpecificAction to equip the specific item
+                std::string itemParam = std::to_string(weapon.itemId);
+                Event equipEvent("equip", itemParam);
+                if (botAI->DoSpecificAction("equip", equipEvent, false))
+                    return true;
+                // If already equipped or equip failed, continue to next weapon
                 continue;
             }
 
