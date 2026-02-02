@@ -538,17 +538,17 @@ bool KazrogalSpreadRangedInArcAction::Execute(Event event)
     if (it == kazrogalRangedPositions.end())
         return false;
 
-    const Position& target = it->second;
-    float distToTarget = bot->GetExactDist2d(target.GetPositionX(), target.GetPositionY());
-    if (distToTarget > 2.0f)
+    const Position& position = it->second;
+    float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+    if (distToPosition > 2.0f)
     {
-        float dX = target.GetPositionX() - bot->GetPositionX();
-        float dY = target.GetPositionY() - bot->GetPositionY();
-        float moveDist = std::min(10.0f, distToTarget);
-        float moveX = bot->GetPositionX() + (dX / distToTarget) * moveDist;
-        float moveY = bot->GetPositionY() + (dY / distToTarget) * moveDist;
+        float dX = position.GetPositionX() - bot->GetPositionX();
+        float dY = position.GetPositionY() - bot->GetPositionY();
+        float moveDist = std::min(10.0f, distToPosition);
+        float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+        float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
-        return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, target.GetPositionZ(), false,
+        return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
                       false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
@@ -676,24 +676,24 @@ bool AzgalorMainTankPositionBossAction::Execute(Event event)
         };
         const float maxDistance = 2.0f;
         const Position& position = positions[step];
-        float distanceToTarget = bot->GetExactDist2d(position);
+        float distToPosition = bot->GetExactDist2d(position);
 
-        if ((distanceToTarget > maxDistance) && bot->IsWithinMeleeRange(azgalor))
+        if ((distToPosition > maxDistance) && bot->IsWithinMeleeRange(azgalor))
         {
             float dX = position.GetPositionX() - bot->GetPositionX();
             float dY = position.GetPositionY() - bot->GetPositionY();
-            float moveDist = std::min(5.0f, distanceToTarget);
-            float moveX = bot->GetPositionX() + (dX / distanceToTarget) * moveDist;
-            float moveY = bot->GetPositionY() + (dY / distanceToTarget) * moveDist;
+            float moveDist = std::min(5.0f, distToPosition);
+            float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
             return MoveTo(HYJAL_SUMMIT_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
                           false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, true);
         }
 
-        if (step == 0 && distanceToTarget <= maxDistance)
+        if (step == 0 && distToPosition <= maxDistance)
             azgalorTankStep[guid] = 1;
 
-        if (step == 1 && distanceToTarget <= maxDistance)
+        if (step == 1 && distToPosition <= maxDistance)
         {
             float orientation = atan2(azgalor->GetPositionY() - bot->GetPositionY(),
                                       azgalor->GetPositionX() - bot->GetPositionX());

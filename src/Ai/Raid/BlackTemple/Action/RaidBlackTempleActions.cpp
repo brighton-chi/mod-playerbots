@@ -609,14 +609,14 @@ bool TeronGorefiendPositionRangedOnBalconyAction::Execute(Event event)
         return false;
 
     const Position& target = it->second;
-    float distToTarget = bot->GetExactDist2d(target.GetPositionX(), target.GetPositionY());
-    if (distToTarget > 2.0f)
+    float distToPosition = bot->GetExactDist2d(target.GetPositionX(), target.GetPositionY());
+    if (distToPosition > 2.0f)
     {
         float dX = target.GetPositionX() - bot->GetPositionX();
         float dY = target.GetPositionY() - bot->GetPositionY();
-        float moveDist = std::min(10.0f, distToTarget);
-        float moveX = bot->GetPositionX() + (dX / distToTarget) * moveDist;
-        float moveY = bot->GetPositionY() + (dY / distToTarget) * moveDist;
+        float moveDist = std::min(10.0f, distToPosition);
+        float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+        float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
         return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY, target.GetPositionZ(), false,
                       false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
@@ -1105,16 +1105,16 @@ bool MotherShahrazTanksPositionBossAction::Execute(Event event)
         const ObjectGuid guid = bot->GetGUID();
         uint8 step = shahrazTankStep.count(guid) ? shahrazTankStep[guid] : 0;
 
-        const Position tankPositions[2] =
+        const Position positions[2] =
         {
             SHAHRAZ_TRANSITION_POSITION,
             SHAHRAZ_TANK_POSITION
         };
         const float maxDistance = 0.5f;
-        const Position& position = tankPositions[step];
-        float distanceToTarget = bot->GetExactDist2d(position);
+        const Position& position = positions[step];
+        float distToPosition = bot->GetExactDist2d(position);
 
-        if ((distanceToTarget > maxDistance) && bot->IsWithinMeleeRange(shahraz))
+        if ((distToPosition > maxDistance) && bot->IsWithinMeleeRange(shahraz))
         {
             bool backwards = (shahraz->GetVictim() == bot);
             MovementPriority priority = backwards ? MovementPriority::MOVEMENT_COMBAT : MovementPriority::MOVEMENT_FORCED;
@@ -1122,10 +1122,10 @@ bool MotherShahrazTanksPositionBossAction::Execute(Event event)
                           false, false, false, false, priority, true, backwards);
         }
 
-        if (step == 0 && distanceToTarget <= maxDistance)
+        if (step == 0 && distToPosition <= maxDistance)
             shahrazTankStep[guid] = 1;
 
-        if (step == 1 && distanceToTarget <= maxDistance)
+        if (step == 1 && distToPosition <= maxDistance)
         {
             float orientation = atan2(shahraz->GetPositionY() - bot->GetPositionY(),
                                       shahraz->GetPositionX() - bot->GetPositionX());
@@ -1336,28 +1336,40 @@ bool IllidariCouncilMainTankPositionGathiosAction::Execute(Event event)
     const Position& position = positions[index];
 
     const float maxDistance = 2.0f;
-    float distanceToTarget = bot->GetExactDist2d(position);
+    float distToPosition = bot->GetExactDist2d(position);
 
-    if (gathios->GetVictim() == bot)
+    if (gathios->GetVictim() == bot && bot->IsWithinMeleeRange(gathios))
     {
-        if (distanceToTarget <= maxDistance && HasDangerousCouncilAura(bot))
+        if (distToPosition <= maxDistance && HasDangerousCouncilAura(bot))
         {
             index = (index + 1) % 4;
             gathiosTankStep[guid] = index;
             const Position& newPosition = positions[index];
-            float newDistanceToTarget = bot->GetExactDist2d(newPosition);
-            if (newDistanceToTarget > maxDistance)
+            float newDistToPosition = bot->GetExactDist2d(newPosition);
+            if (newDistToPosition > maxDistance)
             {
-                return MoveTo(BLACK_TEMPLE_MAP_ID, newPosition.GetPositionX(), newPosition.GetPositionY(),
-                              newPosition.GetPositionZ(), false, false, false, false,
-                              MovementPriority::MOVEMENT_FORCED, true, true);
+                float dX = position.GetPositionX() - bot->GetPositionX();
+                float dY = position.GetPositionY() - bot->GetPositionY();
+                float moveDist = std::min(5.0f, newDistToPosition);
+                float moveX = bot->GetPositionX() + (dX / newDistToPosition) * moveDist;
+                float moveY = bot->GetPositionY() + (dY / newDistToPosition) * moveDist;
+
+                return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY, newPosition.GetPositionZ(),
+                              false, false, false, false, MovementPriority::MOVEMENT_FORCED,
+                              true, true);
             }
         }
-        else if (distanceToTarget > maxDistance)
+        else if (distToPosition > maxDistance)
         {
-            return MoveTo(BLACK_TEMPLE_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-                          position.GetPositionZ(), false, false, false, false,
-                          MovementPriority::MOVEMENT_FORCED, true, true);
+            float dX = position.GetPositionX() - bot->GetPositionX();
+            float dY = position.GetPositionY() - bot->GetPositionY();
+            float moveDist = std::min(5.0f, distToPosition);
+            float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
+
+            return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY, position.GetPositionZ(),
+                          false, false, false, false, MovementPriority::MOVEMENT_FORCED,
+                          true, true);
         }
     }
 
@@ -1484,22 +1496,22 @@ bool IllidariCouncilPositionMageTankHealerAction::Execute(Event event)
     const Position& position = positions[index];
 
     const float maxDistance = 1.0f;
-    float distanceToTarget = bot->GetExactDist2d(position);
+    float distToPosition = bot->GetExactDist2d(position);
 
-    if (distanceToTarget <= maxDistance && HasDangerousCouncilAura(bot))
+    if (distToPosition <= maxDistance && HasDangerousCouncilAura(bot))
     {
         index = (index + 1) % 2;
         zerevorHealStep[guid] = index;
         const Position& newPosition = positions[index];
-        float newDistanceToTarget = bot->GetExactDist2d(newPosition);
-        if (newDistanceToTarget > maxDistance)
+        float newDistToPosition = bot->GetExactDist2d(newPosition);
+        if (newDistToPosition > maxDistance)
         {
             return MoveTo(BLACK_TEMPLE_MAP_ID, newPosition.GetPositionX(), newPosition.GetPositionY(),
                           newPosition.GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_FORCED, true, false);
         }
     }
-    else if (distanceToTarget > maxDistance)
+    else if (distToPosition > maxDistance)
     {
         return MoveTo(BLACK_TEMPLE_MAP_ID, position.GetPositionX(), position.GetPositionY(),
                       position.GetPositionZ(), false, false, false, false,
@@ -1983,15 +1995,15 @@ bool IllidanStormrageIsolateBotWithParasiteAction::Execute(Event event)
 
             if (parasiteAura && parasiteAura->GetDuration() < 6000)
             {
-                float distToTarget = bot->GetExactDist2d(parasiteTarget);
-                if (distToTarget > 5.0f && botAI->CanCastSpell("frost trap", bot))
+                float distToPosition = bot->GetExactDist2d(parasiteTarget);
+                if (distToPosition > 5.0f && botAI->CanCastSpell("frost trap", bot))
                 {
                     // Only move to the target if trap is ready
                     float dX = parasiteTarget->GetPositionX() - bot->GetPositionX();
                     float dY = parasiteTarget->GetPositionY() - bot->GetPositionY();
-                    float moveDist = std::min(7.0f, distToTarget);
-                    float moveX = bot->GetPositionX() + (dX / distToTarget) * moveDist;
-                    float moveY = bot->GetPositionY() + (dY / distToTarget) * moveDist;
+                    float moveDist = std::min(7.0f, distToPosition);
+                    float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+                    float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
                     bot->AttackStop();
                     bot->InterruptNonMeleeSpells(true);
@@ -2209,34 +2221,34 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidB
         }
     }
 
-    float distToTarget = bot->GetExactDist2d(target.GetPositionX(), target.GetPositionY());
+    float distToPosition = bot->GetExactDist2d(target.GetPositionX(), target.GetPositionY());
     // Move to next waypoint if blaze is nearby and bot is at current waypoint
-    if (blazeNearby && distToTarget <= 0.2f)
+    if (blazeNearby && distToPosition <= 0.2f)
     {
         waypointIndex = (waypointIndex + 1) % numWaypoints;
         const Position& newTarget = waypoints[waypointIndex];
-        float distToNewTarget = bot->GetExactDist2d(newTarget.GetPositionX(), newTarget.GetPositionY());
+        float distToNewPosition = bot->GetExactDist2d(newTarget.GetPositionX(), newTarget.GetPositionY());
 
-        if (distToNewTarget > 0.2f)
+        if (distToNewPosition > 0.2f)
         {
             float dX = newTarget.GetPositionX() - bot->GetPositionX();
             float dY = newTarget.GetPositionY() - bot->GetPositionY();
-            float moveDist = std::min(5.0f, distToNewTarget);
-            float moveX = bot->GetPositionX() + (dX / distToNewTarget) * moveDist;
-            float moveY = bot->GetPositionY() + (dY / distToNewTarget) * moveDist;
+            float moveDist = std::min(5.0f, distToNewPosition);
+            float moveX = bot->GetPositionX() + (dX / distToNewPosition) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / distToNewPosition) * moveDist;
 
             return MoveTo(BLACK_TEMPLE_MAP_ID, newTarget.GetPositionX(), newTarget.GetPositionY(), newTarget.GetPositionZ(),
                           false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, true);
         }
     }
     // Move to current waypoint if no blaze nearby
-    else if (distToTarget > 0.2f)
+    else if (distToPosition > 0.2f)
     {
         float dX = target.GetPositionX() - bot->GetPositionX();
         float dY = target.GetPositionY() - bot->GetPositionY();
-        float moveDist = std::min(5.0f, distToTarget);
-        float moveX = bot->GetPositionX() + (dX / distToTarget) * moveDist;
-        float moveY = bot->GetPositionY() + (dY / distToTarget) * moveDist;
+        float moveDist = std::min(5.0f, distToPosition);
+        float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+        float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
         return MoveTo(BLACK_TEMPLE_MAP_ID, target.GetPositionX(), target.GetPositionY(), target.GetPositionZ(),
                       false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, true);

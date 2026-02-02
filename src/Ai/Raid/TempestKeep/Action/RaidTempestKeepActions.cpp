@@ -704,14 +704,14 @@ bool VoidReaverTanksPositionBossAction::Execute(Event event)
 
     float dX = position.GetPositionX() - bot->GetPositionX();
     float dY = position.GetPositionY() - bot->GetPositionY();
-    float distanceToPosition = bot->GetExactDist2d(position.GetPositionX(),
+    float distToPosition = bot->GetExactDist2d(position.GetPositionX(),
                                                        position.GetPositionY());
 
-    if (bot->IsWithinMeleeRange(voidReaver) && distanceToPosition > 2.0f)
+    if (bot->IsWithinMeleeRange(voidReaver) && distToPosition > 2.0f)
     {
-        float moveDist = std::min(5.0f, distanceToPosition);
-        float moveX = bot->GetPositionX() + (dX / distanceToPosition) * moveDist;
-        float moveY = bot->GetPositionY() + (dY / distanceToPosition) * moveDist;
+        float moveDist = std::min(5.0f, distToPosition);
+        float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+        float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
         return MoveTo(TEMPEST_KEEP_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
                       false, false, false, MovementPriority::MOVEMENT_FORCED, true, true);
