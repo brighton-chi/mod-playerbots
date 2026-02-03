@@ -512,12 +512,14 @@ float IllidanStormrageStayWithinGrateMultiplier::GetValue(Action* action)
                 dynamic_cast<CastKillingSpreeAction*>(action))
                 return 0.0f;
 
-            if (botAI->IsMainTank(bot))
+            // Something is causing MT to idle between Phase 1 and 2, though he responds to follow
+            // Is this it?
+            /* if (botAI->IsMainTank(bot))
             {
                 if (dynamic_cast<AttackAction*>(action) ||
                     dynamic_cast<CastMeleeSpellAction*>(action))
                     return 0.0f;
-            }
+            } */
         }
     }
 

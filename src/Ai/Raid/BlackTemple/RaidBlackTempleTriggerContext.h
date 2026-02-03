@@ -141,24 +141,6 @@ public:
             &RaidBlackTempleTriggerContext::illidari_council_need_to_manage_dps_timer;
 
         // Illidan Stormrage <The Betrayer>
-        creators["illidan stormrage boss engaged by main tank"] =
-            &RaidBlackTempleTriggerContext::illidan_stormrage_boss_engaged_by_main_tank;
-
-        creators["illidan stormrage boss engaged by flame tanks"] =
-            &RaidBlackTempleTriggerContext::illidan_stormrage_boss_engaged_by_flame_tanks;
-
-        creators["illidan stormrage boss engaged by melee dps"] =
-            &RaidBlackTempleTriggerContext::illidan_stormrage_boss_engaged_by_melee_dps;
-
-        creators["illidan stormrage boss engaged by warlock tank"] =
-            &RaidBlackTempleTriggerContext::illidan_stormrage_boss_engaged_by_warlock_tank;
-
-        creators["illidan stormrage boss engaged by ranged dps"] =
-            &RaidBlackTempleTriggerContext::illidan_stormrage_boss_engaged_by_ranged_dps;
-
-        creators["illidan stormrage boss engaged by healers"] =
-            &RaidBlackTempleTriggerContext::illidan_stormrage_boss_engaged_by_healers;
-
         creators["illidan stormrage tank needs aggro"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_tank_needs_aggro;
 
@@ -329,24 +311,6 @@ private:
         PlayerbotAI* botAI) { return new IllidariCouncilNeedToManageDpsTimerTrigger(botAI); }
 
     // Illidan Stormrage <The Betrayer>
-    static Trigger* illidan_stormrage_boss_engaged_by_main_tank(
-        PlayerbotAI* botAI) { return new IllidanStormrageBossEngagedByMainTankTrigger(botAI); }
-
-    static Trigger* illidan_stormrage_boss_engaged_by_flame_tanks(
-        PlayerbotAI* botAI) { return new IllidanStormrageBossEngagedByFlameTanksTrigger(botAI); }
-
-    static Trigger* illidan_stormrage_boss_engaged_by_melee_dps(
-        PlayerbotAI* botAI) { return new IllidanStormrageBossEngagedByMeleeDpsTrigger(botAI); }
-
-    static Trigger* illidan_stormrage_boss_engaged_by_warlock_tank(
-        PlayerbotAI* botAI) { return new IllidanStormrageBossEngagedByWarlockTankTrigger(botAI); }
-
-    static Trigger* illidan_stormrage_boss_engaged_by_ranged_dps(
-        PlayerbotAI* botAI) { return new IllidanStormrageBossEngagedByRangedDpsTrigger(botAI); }
-
-    static Trigger* illidan_stormrage_boss_engaged_by_healers(
-        PlayerbotAI* botAI) { return new IllidanStormrageBossEngagedByHealersTrigger(botAI); }
-
     static Trigger* illidan_stormrage_tank_needs_aggro(
         PlayerbotAI* botAI) { return new IllidanStormrageTankNeedsAggroTrigger(botAI); }
 
