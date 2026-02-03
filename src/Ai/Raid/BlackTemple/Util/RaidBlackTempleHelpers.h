@@ -181,8 +181,6 @@ namespace BlackTempleHelpers
     int GetIllidanPhase(Unit* illidan);
     std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(PlayerbotAI* botAI, Player* bot);
     Player* GetIllidanWarlockTank(PlayerbotAI* botAI, Player* bot);
-    Player* GetIllidanTrapperHunter(PlayerbotAI* botAI, Player* bot);
-    Player* HasParasiticShadowfiend(PlayerbotAI* botAI, Player* bot);
     struct EyeBlastDangerArea
     {
         Position start;

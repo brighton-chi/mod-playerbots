@@ -238,8 +238,8 @@ float IllidariCouncilDisableTankActionsMultiplier::GetValue(Action* action)
         dynamic_cast<CastGrowlAction*>(action) ||
         dynamic_cast<CastSwipeAction*>(action) ||
         dynamic_cast<CastHandOfReckoningAction*>(action) ||
-        dynamic_cast<CastAvengersShieldAction*>(action) ||
-        dynamic_cast<CastConsecrationAction*>(action) ||
+        // dynamic_cast<CastAvengersShieldAction*>(action) ||
+        // dynamic_cast<CastConsecrationAction*>(action) ||
         dynamic_cast<CastDarkCommandAction*>(action) ||
         dynamic_cast<CastDeathAndDecayAction*>(action) ||
         dynamic_cast<CastPestilenceAction*>(action) ||

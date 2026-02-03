@@ -165,9 +165,6 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("illidan stormrage boss transforms into demon", {
         NextAction("illidan stormrage warlock tank handle demon boss", ACTION_EMERGENCY + 10) }));
 
-    // triggers.push_back(new TriggerNode("illidan stormrage boss summons adds", {
-    //    NextAction("illidan stormrage dps prioritize adds", ACTION_EMERGENCY + 2) }));
-
     triggers.push_back(new TriggerNode("illidan stormrage need to manage dps timer", {
         NextAction("illidan stormrage manage dps timer", ACTION_EMERGENCY + 10) }));
 

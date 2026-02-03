@@ -375,59 +375,6 @@ namespace BlackTempleHelpers
         return highestHpWarlock;
     }
 
-    Player* GetIllidanTrapperHunter(PlayerbotAI* botAI, Player* bot)
-    {
-        Group* group = bot->GetGroup();
-        if (!group)
-            return nullptr;
-
-        // (1) Look for an assistant Hunter (real player or bot)
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || member->getClass() != CLASS_HUNTER)
-                continue;
-
-            if (group->IsAssistant(member->GetGUID()))
-                return member;
-        }
-
-        // (2) Fall back to any bot Hunter
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) ||
-                member->getClass() != CLASS_HUNTER)
-                continue;
-
-            return member;
-        }
-
-        // (3) Return the found Hunter, or nullptr if none found
-        return nullptr;
-    }
-
-    Player* HasParasiticShadowfiend(PlayerbotAI* botAI, Player* bot)
-    {
-        Group* group = bot->GetGroup();
-        if (!group)
-            return nullptr;
-
-        Player* infectedPlayer = nullptr;
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
-            if (!member || !member->IsAlive() || memberAI && memberAI->IsMainTank(member))
-                continue;
-
-            if (member->HasAura(SPELL_PARASITIC_SHADOWFIEND))
-                return member;
-        }
-
-        return nullptr;
-    }
-
     EyeBlastDangerArea GetEyeBlastDangerArea(PlayerbotAI* botAI, Unit* illidan)
     {
         boss_illidan_stormrage* illidanAI = dynamic_cast<boss_illidan_stormrage*>(illidan->GetAI());

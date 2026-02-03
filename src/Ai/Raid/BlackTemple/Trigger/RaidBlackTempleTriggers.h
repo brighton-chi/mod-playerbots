@@ -475,14 +475,6 @@ public:
     bool IsActive() override;
 };
 
-class IllidanStormrageBossSummonsAddsTrigger : public Trigger
-{
-public:
-    IllidanStormrageBossSummonsAddsTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage boss summons adds") {}
-    bool IsActive() override;
-};
-
 class IllidanStormrageNeedToManageDpsTimerTrigger : public Trigger
 {
 public:

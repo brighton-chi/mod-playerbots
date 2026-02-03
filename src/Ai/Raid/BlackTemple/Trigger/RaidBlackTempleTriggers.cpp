@@ -514,12 +514,11 @@ bool IllidanStormrageBossCastsFlameCrashTrigger::IsActive()
 
 bool IllidanStormrageBotHasParasiticShadowfiendTrigger::IsActive()
 {
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-
-    if (!illidan || GetIllidanPhase(illidan) != 1)
+    if (!bot->HasAura(SPELL_PARASITIC_SHADOWFIEND))
         return false;
 
-    return HasParasiticShadowfiend(botAI, bot);
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    return illidan && GetIllidanPhase(illidan) == 1;
 }
 
 bool IllidanStormrageBossSummonedFlamesOfAzzinothTrigger::IsActive()
@@ -571,8 +570,7 @@ bool IllidanStormrageBossDealsSplashDamageTrigger::IsActive()
     if (!illidan)
         return false;
 
-    if (/* GetIllidanTrapperHunter(botAI, bot) == bot || */
-        GetIllidanWarlockTank(botAI, bot) == bot)
+    if (GetIllidanWarlockTank(botAI, bot) == bot)
         return false;
 
     return GetIllidanPhase(illidan) == 3 ||
@@ -596,16 +594,6 @@ bool IllidanStormrageBossTransformsIntoDemonTrigger::IsActive()
         return false;
 
     return GetIllidanWarlockTank(botAI, bot) == bot;
-}
-
-bool IllidanStormrageBossSummonsAddsTrigger::IsActive()
-{
-    if (!botAI->IsDps(bot))
-        return false;
-
-    return AI_VALUE2(Unit*, "find target", "shadow demon") ||
-           // AI_VALUE2(Unit*, "find target", "parasitic shadowfiend") ||
-           AI_VALUE2(Unit*, "find target", "flame of azzinoth");
 }
 
 bool IllidanStormrageNeedToManageDpsTimerTrigger::IsActive()
