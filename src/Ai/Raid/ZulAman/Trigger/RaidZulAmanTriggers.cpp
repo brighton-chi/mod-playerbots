@@ -24,12 +24,12 @@ bool AkilzonPullingBossTrigger::IsActive()
     return akilzon && akilzon->GetHealthPct() > 95.0f;
 }
 
-bool AkilzonBossEngagedByMainTankTrigger::IsActive()
+bool AkilzonBossEngagedByTanksTrigger::IsActive()
 {
-    if (!AI_VALUE2(Unit*, "find target", "akil'zon"))
+    if (!botAI->IsTank(bot))
         return false;
 
-    if (!botAI->IsMainTank(bot))
+    if (!AI_VALUE2(Unit*, "find target", "akil'zon"))
         return false;
 
     return !AnyGroupMemberHasElectricalStorm(bot);
@@ -86,12 +86,12 @@ bool JanalaiPullingBossTrigger::IsActive()
     return janalai && janalai->GetHealthPct() > 95.0f;
 }
 
-bool JanalaiBossEngagedByMainTankTrigger::IsActive()
+bool JanalaiBossEngagedByTanksTrigger::IsActive()
 {
-    if (!AI_VALUE2(Unit*, "find target", "jan'alai"))
+    if (!botAI->IsTank(bot))
         return false;
 
-    if (!botAI->IsMainTank(bot))
+    if (!AI_VALUE2(Unit*, "find target", "jan'alai"))
         return false;
 
     return !AnyNearbyNpcWithEntry(botAI, NPC_FIRE_BOMB);
@@ -231,14 +231,14 @@ bool ZuljinMainTankNeedsAggroUponPullOrPhaseChangeTrigger::IsActive()
            (hp <= 20.0f && hp > 15.0f && zuljin->HasAura(SPELL_SHAPE_OF_THE_DRAGONHAWK));
 }
 
-bool ZuljinBossEngagedByMainTankTrigger::IsActive()
+bool ZuljinBossEngagedByTanksTrigger::IsActive()
 {
-    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
-    if (!zuljin || zuljin->HasAura(SPELL_SHAPE_OF_THE_EAGLE) ||
-        zuljin->HasAura(SPELL_SHAPE_OF_THE_DRAGONHAWK))
+    if (!botAI->IsTank(bot))
         return false;
 
-    return botAI->IsMainTank(bot);
+    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
+    return zuljin && !zuljin->HasAura(SPELL_SHAPE_OF_THE_EAGLE) &&
+           !zuljin->HasAura(SPELL_SHAPE_OF_THE_DRAGONHAWK);
 }
 
 bool ZuljinBossIsChannelingWhirlwindInTrollFormTrigger::IsActive()
@@ -247,7 +247,10 @@ bool ZuljinBossIsChannelingWhirlwindInTrollFormTrigger::IsActive()
     if (!zuljin || !zuljin->HasAura(SPELL_WHIRLWIND))
         return false;
 
-    return !botAI->IsMainTank(bot);
+    if (botAI->IsTank(bot) && zuljin->GetVictim() == bot)
+        return false;
+
+    return true;
 }
 
 bool ZuljinBossIsSummoningCyclonesInEagleFormTrigger::IsActive()

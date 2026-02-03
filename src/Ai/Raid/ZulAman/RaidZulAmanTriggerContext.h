@@ -17,8 +17,8 @@ public:
         creators["akil'zon pulling boss"] =
             &RaidZulAmanTriggerContext::akilzon_pulling_boss;
 
-        creators["akil'zon boss engaged by main tank"] =
-            &RaidZulAmanTriggerContext::akilzon_boss_engaged_by_main_tank;
+        creators["akil'zon boss engaged by tanks"] =
+            &RaidZulAmanTriggerContext::akilzon_boss_engaged_by_tanks;
 
         creators["akil'zon boss casts static disruption"] =
             &RaidZulAmanTriggerContext::akilzon_boss_casts_static_disruption;
@@ -40,8 +40,8 @@ public:
         creators["jan'alai pulling boss"] =
             &RaidZulAmanTriggerContext::janalai_pulling_boss;
 
-        creators["jan'alai boss engaged by main tank"] =
-            &RaidZulAmanTriggerContext::janalai_boss_engaged_by_main_tank;
+        creators["jan'alai boss engaged by tanks"] =
+            &RaidZulAmanTriggerContext::janalai_boss_engaged_by_tanks;
 
         creators["jan'alai boss casts flame breath"] =
             &RaidZulAmanTriggerContext::janalai_boss_casts_flame_breath;
@@ -87,8 +87,8 @@ public:
         creators["zul'jin main tank needs aggro upon pull or phase change"] =
             &RaidZulAmanTriggerContext::zuljin_main_tank_needs_aggro_upon_pull_or_phase_change;
 
-        creators["zul'jin boss engaged by main tank"] =
-            &RaidZulAmanTriggerContext::zuljin_boss_engaged_by_main_tank;
+        creators["zul'jin boss engaged by tanks"] =
+            &RaidZulAmanTriggerContext::zuljin_boss_engaged_by_tanks;
 
         creators["zul'jin boss is channeling whirlwind in troll form"] =
             &RaidZulAmanTriggerContext::zuljin_boss_is_channeling_whirlwind_in_troll_form;
@@ -112,8 +112,8 @@ private:
     static Trigger* akilzon_pulling_boss(
         PlayerbotAI* botAI) { return new AkilzonPullingBossTrigger(botAI); }
 
-    static Trigger* akilzon_boss_engaged_by_main_tank(
-        PlayerbotAI* botAI) { return new AkilzonBossEngagedByMainTankTrigger(botAI); }
+    static Trigger* akilzon_boss_engaged_by_tanks(
+        PlayerbotAI* botAI) { return new AkilzonBossEngagedByTanksTrigger(botAI); }
 
     static Trigger* akilzon_boss_casts_static_disruption(
         PlayerbotAI* botAI) { return new AkilzonBossCastsStaticDisruptionTrigger(botAI); }
@@ -135,8 +135,8 @@ private:
     static Trigger* janalai_pulling_boss(
         PlayerbotAI* botAI) { return new JanalaiPullingBossTrigger(botAI); }
 
-    static Trigger* janalai_boss_engaged_by_main_tank(
-        PlayerbotAI* botAI) { return new JanalaiBossEngagedByMainTankTrigger(botAI); }
+    static Trigger* janalai_boss_engaged_by_tanks(
+        PlayerbotAI* botAI) { return new JanalaiBossEngagedByTanksTrigger(botAI); }
 
     static Trigger* janalai_boss_casts_flame_breath(
         PlayerbotAI* botAI) { return new JanalaiBossCastsFlameBreathTrigger(botAI); }
@@ -179,8 +179,8 @@ private:
 
     // Zul'jin
 
-    static Trigger* zuljin_boss_engaged_by_main_tank(
-        PlayerbotAI* botAI) { return new ZuljinBossEngagedByMainTankTrigger(botAI); }
+    static Trigger* zuljin_boss_engaged_by_tanks(
+        PlayerbotAI* botAI) { return new ZuljinBossEngagedByTanksTrigger(botAI); }
 
     static Trigger* zuljin_main_tank_needs_aggro_upon_pull_or_phase_change(
         PlayerbotAI* botAI) { return new ZuljinMainTankNeedsAggroUponPullOrPhaseChangeTrigger(botAI); }

@@ -53,7 +53,7 @@ bool AkilzonMisdirectBossToMainTankAction::Execute(Event event)
     return false;
 }
 
-bool AkilzonMainTankPositionBossAction::Execute(Event event)
+bool AkilzonTanksPositionBossAction::Execute(Event event)
 {
     Unit* akilzon = AI_VALUE2(Unit*, "find target", "akil'zon");
     if (!akilzon)
@@ -376,7 +376,7 @@ bool JanalaiMisdirectBossToMainTankAction::Execute(Event event)
     return false;
 }
 
-bool JanalaiMainTankPositionBossAction::Execute(Event event)
+bool JanalaiTanksPositionBossAction::Execute(Event event)
 {
     Unit* janalai = AI_VALUE2(Unit*, "find target", "jan'alai");
     if (!janalai)
@@ -613,16 +613,15 @@ bool JanalaiMarkAmaniHatchersAction::Execute(Event event)
     auto [hatcherLow, hatcherHigh] = GetAmaniHatcherPair(botAI);
 
     // When hatchers spawn, mark one with Skull and the other with Moon
-    bool marked = false;
     if (hatcherLow && hatcherHigh && hatcherHigh != hatcherLow)
     {
         MarkTargetWithSkull(bot, hatcherLow);
         MarkTargetWithMoon(bot, hatcherHigh);
         SetRtiTarget(botAI, "skull", hatcherLow);
-        marked = true;
+        return true;
     }
 
-    return marked;
+    return false;
 }
 
 // Halazzi <Lynx Avatar>
@@ -928,7 +927,7 @@ bool ZuljinMisdirectBossToMainTankAction::Execute(Event event)
     return false;
 }
 
-bool ZuljinMainTankPositionBossAction::Execute(Event event)
+bool ZuljinTanksPositionBossAction::Execute(Event event)
 {
     Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
     if (!zuljin)

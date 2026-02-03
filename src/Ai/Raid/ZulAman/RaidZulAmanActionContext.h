@@ -17,8 +17,8 @@ public:
         creators["akil'zon misdirect boss to main tank"] =
             &RaidZulAmanActionContext::akilzon_misdirect_boss_to_main_tank;
 
-        creators["akil'zon main tank position boss"] =
-            &RaidZulAmanActionContext::akilzon_main_tank_position_boss;
+        creators["akil'zon tanks position boss"] =
+            &RaidZulAmanActionContext::akilzon_tanks_position_boss;
 
         creators["akil'zon spread ranged"] =
             &RaidZulAmanActionContext::akilzon_spread_ranged;
@@ -40,8 +40,8 @@ public:
         creators["jan'alai misdirect boss to main tank"] =
             &RaidZulAmanActionContext::janalai_misdirect_boss_to_main_tank;
 
-        creators["jan'alai main tank position boss"] =
-            &RaidZulAmanActionContext::janalai_main_tank_position_boss;
+        creators["jan'alai tanks position boss"] =
+            &RaidZulAmanActionContext::janalai_tanks_position_boss;
 
         creators["jan'alai spread ranged in circle"] =
             &RaidZulAmanActionContext::janalai_spread_ranged_in_circle;
@@ -85,8 +85,8 @@ public:
         creators["zul'jin misdirect boss to main tank"] =
             &RaidZulAmanActionContext::zuljin_misdirect_boss_to_main_tank;
 
-        creators["zul'jin main tank position boss"] =
-            &RaidZulAmanActionContext::zuljin_main_tank_position_boss;
+        creators["zul'jin tanks position boss"] =
+            &RaidZulAmanActionContext::zuljin_tanks_position_boss;
 
         creators["zul'jin run away from whirlwind"] =
             &RaidZulAmanActionContext::zuljin_run_away_from_whirlwind;
@@ -110,8 +110,8 @@ private:
     static Action* akilzon_misdirect_boss_to_main_tank(
         PlayerbotAI* botAI) { return new AkilzonMisdirectBossToMainTankAction(botAI); }
 
-    static Action* akilzon_main_tank_position_boss(
-        PlayerbotAI* botAI) { return new AkilzonMainTankPositionBossAction(botAI); }
+    static Action* akilzon_tanks_position_boss(
+        PlayerbotAI* botAI) { return new AkilzonTanksPositionBossAction(botAI); }
 
     static Action* akilzon_spread_ranged(
         PlayerbotAI* botAI) { return new AkilzonSpreadRangedAction(botAI); }
@@ -133,8 +133,8 @@ private:
     static Action* janalai_misdirect_boss_to_main_tank(
         PlayerbotAI* botAI) { return new JanalaiMisdirectBossToMainTankAction(botAI); }
 
-    static Action* janalai_main_tank_position_boss(
-        PlayerbotAI* botAI) { return new JanalaiMainTankPositionBossAction(botAI); }
+    static Action* janalai_tanks_position_boss(
+        PlayerbotAI* botAI) { return new JanalaiTanksPositionBossAction(botAI); }
 
     static Action* janalai_spread_ranged_in_circle(
         PlayerbotAI* botAI) { return new JanalaiSpreadRangedInCircleAction(botAI); }
@@ -178,8 +178,8 @@ private:
     static Action* zuljin_misdirect_boss_to_main_tank(
         PlayerbotAI* botAI) { return new ZuljinMisdirectBossToMainTankAction(botAI); }
 
-    static Action* zuljin_main_tank_position_boss(
-        PlayerbotAI* botAI) { return new ZuljinMainTankPositionBossAction(botAI); }
+    static Action* zuljin_tanks_position_boss(
+        PlayerbotAI* botAI) { return new ZuljinTanksPositionBossAction(botAI); }
 
     static Action* zuljin_run_away_from_whirlwind(
         PlayerbotAI* botAI) { return new ZuljinRunAwayFromWhirlwindAction(botAI); }

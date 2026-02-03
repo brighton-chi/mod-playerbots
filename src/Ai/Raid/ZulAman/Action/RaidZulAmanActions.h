@@ -25,11 +25,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class AkilzonMainTankPositionBossAction : public AttackAction
+class AkilzonTanksPositionBossAction : public AttackAction
 {
 public:
-    AkilzonMainTankPositionBossAction(
-        PlayerbotAI* botAI, std::string const name = "akil'zon main tank position boss") : AttackAction(botAI, name) {}
+    AkilzonTanksPositionBossAction(
+        PlayerbotAI* botAI, std::string const name = "akil'zon tanks position boss") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 
@@ -89,11 +89,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class JanalaiMainTankPositionBossAction : public AttackAction
+class JanalaiTanksPositionBossAction : public AttackAction
 {
 public:
-    JanalaiMainTankPositionBossAction(
-        PlayerbotAI* botAI, std::string const name = "jan'alai main tank position boss") : AttackAction(botAI, name) {}
+    JanalaiTanksPositionBossAction(
+        PlayerbotAI* botAI, std::string const name = "jan'alai tanks position boss") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 
@@ -211,11 +211,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class ZuljinMainTankPositionBossAction : public AttackAction
+class ZuljinTanksPositionBossAction : public AttackAction
 {
 public:
-    ZuljinMainTankPositionBossAction(
-        PlayerbotAI* botAI, std::string const name = "zul'jin main tank position boss") : AttackAction(botAI, name) {}
+    ZuljinTanksPositionBossAction(
+        PlayerbotAI* botAI, std::string const name = "zul'jin tanks position boss") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 

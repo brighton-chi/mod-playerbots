@@ -23,11 +23,11 @@ public:
     bool IsActive() override;
 };
 
-class AkilzonBossEngagedByMainTankTrigger : public Trigger
+class AkilzonBossEngagedByTanksTrigger : public Trigger
 {
 public:
-    AkilzonBossEngagedByMainTankTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "akil'zon boss engaged by main tank") {}
+    AkilzonBossEngagedByTanksTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "akil'zon boss engaged by tanks") {}
     bool IsActive() override;
 };
 
@@ -83,11 +83,11 @@ public:
     bool IsActive() override;
 };
 
-class JanalaiBossEngagedByMainTankTrigger : public Trigger
+class JanalaiBossEngagedByTanksTrigger : public Trigger
 {
 public:
-    JanalaiBossEngagedByMainTankTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "jan'alai boss engaged by main tank") {}
+    JanalaiBossEngagedByTanksTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "jan'alai boss engaged by tanks") {}
     bool IsActive() override;
 };
 
@@ -201,11 +201,11 @@ public:
     bool IsActive() override;
 };
 
-class ZuljinBossEngagedByMainTankTrigger : public Trigger
+class ZuljinBossEngagedByTanksTrigger : public Trigger
 {
 public:
-    ZuljinBossEngagedByMainTankTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "zul'jin boss engaged by main tank") {}
+    ZuljinBossEngagedByTanksTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "zul'jin boss engaged by tanks") {}
     bool IsActive() override;
 };
 
