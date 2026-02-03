@@ -132,13 +132,13 @@ bool HighWarlordNajentusDisperseRangedAction::Execute(Event event)
     if (!najentus)
         return false;
 
-    const uint32 minInterval = 1000;
+    constexpr uint32 minInterval = 1000;
 
-    const float safeDistFromBoss = 10.0f;
+    constexpr float safeDistFromBoss = 10.0f;
     if (bot->GetExactDist2d(najentus) < safeDistFromBoss)
         return FleePosition(Position(najentus->GetPosition()), safeDistFromBoss, minInterval);
 
-    const float safeDistFromPlayer = 7.0f;
+    constexpr float safeDistFromPlayer = 7.0f;
     if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
         return FleePosition(Position(nearestPlayer->GetPosition()), safeDistFromPlayer, minInterval);
 
@@ -311,10 +311,10 @@ bool SupremusDisperseRangedAction::Execute(Event event)
             if (!member || member == bot || !member->IsAlive())
                 continue;
 
-            const float safeDistance = 8.0f;
+            constexpr float safeDistance = 8.0f;
             if (bot->GetExactDist2d(member) < safeDistance)
             {
-                const uint32 minInterval = 1000;
+                constexpr uint32 minInterval = 1000;
                 return FleePosition(Position(member->GetPosition()), safeDistance, minInterval);
             }
         }
@@ -330,7 +330,7 @@ bool SupremusKiteBossAction::Execute(Event event)
         return false;
 
     float currentDistance = bot->GetDistance2d(supremus);
-    const float safeDistance = 25.0f;
+    constexpr float safeDistance = 25.0f;
     if (currentDistance < safeDistance)
     {
         botAI->Reset();
@@ -346,7 +346,7 @@ bool SupremusMoveAwayFromVolcanosAction::Execute(Event event)
     if (volcanos.empty())
         return false;
 
-    const float hazardRadius = 14.0f;
+    constexpr float hazardRadius = 14.0f;
     bool inDanger = false;
     for (Unit* volcano : volcanos)
     {
@@ -360,7 +360,7 @@ bool SupremusMoveAwayFromVolcanosAction::Execute(Event event)
     if (!inDanger)
         return false;
 
-    const float maxRadius = 35.0f;
+    constexpr float maxRadius = 35.0f;
     Position safestPos = FindSafestNearbyPosition(volcanos, maxRadius, hazardRadius);
 
     bot->AttackStop();
@@ -373,17 +373,16 @@ bool SupremusMoveAwayFromVolcanosAction::Execute(Event event)
 Position SupremusMoveAwayFromVolcanosAction::FindSafestNearbyPosition(
     const std::vector<Unit*>& volcanos, float maxRadius, float hazardRadius)
 {
-    const float searchStep = M_PI / 8.0f;
-    const float minDistance = 2.0f;
-    const float maxDistance = maxRadius;
-    const float distanceStep = 1.0f;
+    constexpr float searchStep = M_PI / 8.0f;
+    constexpr float minDistance = 2.0f;
+    constexpr float distanceStep = 1.0f;
 
     Position bestPos;
     float minMoveDistance = std::numeric_limits<float>::max();
     bool foundSafe = false;
 
     for (float distance = minDistance;
-         distance <= maxDistance; distance += distanceStep)
+         distance <= maxRadius; distance += distanceStep)
     {
         for (float angle = 0.0f; angle < 2 * M_PI; angle += searchStep)
         {
@@ -435,7 +434,7 @@ Position SupremusMoveAwayFromVolcanosAction::FindSafestNearbyPosition(
 bool SupremusMoveAwayFromVolcanosAction::IsPathSafeFromVolcanos(const Position& start,
     const Position& end, const std::vector<Unit*>& volcanos, float hazardRadius)
 {
-    const uint8 numChecks = 10;
+    constexpr uint8 numChecks = 10;
     float dx = end.GetPositionX() - start.GetPositionX();
     float dy = end.GetPositionY() - start.GetPositionY();
 
@@ -463,7 +462,7 @@ std::vector<Unit*> SupremusMoveAwayFromVolcanosAction::GetAllSupremusVolcanos()
         botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
     for (auto const& npcGuid : npcs)
     {
-        const float maxSearchRadius = 50.0f;
+        constexpr float maxSearchRadius = 50.0f;
         Unit* unit = botAI->GetUnit(npcGuid);
         if (unit && unit->GetEntry() == NPC_SUPREMUS_VOLCANO &&
             bot->GetDistance2d(unit) < maxSearchRadius)
@@ -590,11 +589,11 @@ bool TeronGorefiendPositionRangedOnBalconyAction::Execute(Event event)
         size_t botIndex = (findIt != rangedMembers.end()) ?
             std::distance(rangedMembers.begin(), findIt) : 0;
 
-        const float arcSpan = 2.0f * M_PI / 5.0f;
-        const float arcCenter = 6.279f;
-        const float arcStart = arcCenter - arcSpan / 2.0f;
+        constexpr float arcSpan = 2.0f * M_PI / 5.0f;
+        constexpr float arcCenter = 6.279f;
+        constexpr float arcStart = arcCenter - arcSpan / 2.0f;
 
-        const float radius = 12.0f;
+        constexpr float radius = 12.0f;
         float angle = (count == 1) ? arcCenter :
             (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
 
@@ -830,28 +829,28 @@ bool GurtoggBloodboilPositionRangedAction::Execute(Event event)
 
     if (inActiveGroup)
     {
-        const float desiredDistance = 20.0f;
+        constexpr float desiredDistance = 20.0f;
         if (distToGurtogg < desiredDistance)
         {
-            const uint32 minInterval = 0;
+            constexpr uint32 minInterval = 0;
             botAI->Reset();
             return FleePosition(Position(gurtogg->GetPosition()), desiredDistance, minInterval);
         }
     }
     else
     {
-        const float minRange = 10.0f;
+        constexpr float minRange = 10.0f;
         if (distToGurtogg < minRange)
             return MoveTo(gurtogg, minRange, MovementPriority::MOVEMENT_FORCED);
 
-        const float maxRange = 15.0f;
+        constexpr float maxRange = 15.0f;
         if (distToGurtogg > maxRange)
             return MoveTo(gurtogg, maxRange, MovementPriority::MOVEMENT_FORCED);
 
-        const float safeDistance = 5.0f;
+        constexpr float safeDistance = 5.0f;
         if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
         {
-            const uint32 minInterval = 1000;
+            constexpr uint32 minInterval = 1000;
             return FleePosition(Position(nearestPlayer->GetPosition()), safeDistance, minInterval);
         }
     }
@@ -878,10 +877,10 @@ bool GurtoggBloodboilRangedMoveAwayFromEnragedPlayerAction::Execute(Event event)
 
     if (enragedPlayer)
     {
-        const float safeDistance = 19.0f;
+        constexpr float safeDistance = 19.0f;
         if (bot->GetDistance2d(enragedPlayer) < safeDistance)
         {
-            const uint32 minInterval = 0;
+            constexpr uint32 minInterval = 0;
             return FleePosition(Position(enragedPlayer->GetPosition()), safeDistance, minInterval);
         }
     }
@@ -988,7 +987,7 @@ bool ReliquaryOfSoulsAdjustDistanceFromEssenceOfSufferingAction::Execute(Event e
 
 bool ReliquaryOfSoulsAdjustDistanceFromEssenceOfSufferingAction::TanksMoveToMinimumRange(Unit* suffering)
 {
-    const float desiredDist = 2.0f;
+    constexpr float desiredDist = 2.0f;
     float distanceToBoss = bot->GetExactDist2d(suffering);
     if (distanceToBoss > desiredDist)
     {
@@ -1025,10 +1024,10 @@ bool ReliquaryOfSoulsAdjustDistanceFromEssenceOfSufferingAction::MeleeDpsStayAtM
 
 bool ReliquaryOfSoulsAdjustDistanceFromEssenceOfSufferingAction::RangedMoveAwayFromBoss(Unit* suffering)
 {
-    const float safeDistance = 10.0f;
+    constexpr float safeDistance = 10.0f;
     if (bot->GetDistance2d(suffering) < safeDistance)
     {
-        const uint32 minInterval = 1000;
+        constexpr uint32 minInterval = 1000;
         return FleePosition(Position(suffering->GetPosition()), safeDistance, minInterval);
     }
 
@@ -1110,7 +1109,7 @@ bool MotherShahrazTanksPositionBossAction::Execute(Event event)
             SHAHRAZ_TRANSITION_POSITION,
             SHAHRAZ_TANK_POSITION
         };
-        const float maxDistance = 0.5f;
+        constexpr float maxDistance = 0.5f;
         const Position& position = positions[step];
         float distToPosition = bot->GetExactDist2d(position);
 
@@ -1335,7 +1334,7 @@ bool IllidariCouncilMainTankPositionGathiosAction::Execute(Event event)
     };
     const Position& position = positions[index];
 
-    const float maxDistance = 2.0f;
+    constexpr float maxDistance = 2.0f;
     float distToPosition = bot->GetExactDist2d(position);
 
     if (gathios->GetVictim() == bot && bot->IsWithinMeleeRange(gathios))
@@ -1489,7 +1488,7 @@ bool IllidariCouncilPositionMageTankHealerAction::Execute(Event event)
     };
     const Position& position = positions[index];
 
-    const float maxDistance = 1.0f;
+    constexpr float maxDistance = 1.0f;
     float distToPosition = bot->GetExactDist2d(position);
 
     if (distToPosition <= maxDistance && HasDangerousCouncilAura(bot))
@@ -1769,7 +1768,7 @@ bool IllidanStormrageMainTankMoveAwayFromFlameCrashAction::Execute(Event event)
     if (flameCrashes.empty())
         return false;
 
-    const float hazardRadius = 12.0f;
+    constexpr float hazardRadius = 12.0f;
     bool inDanger = false;
     for (Unit* flameCrash : flameCrashes)
     {
@@ -1783,7 +1782,7 @@ bool IllidanStormrageMainTankMoveAwayFromFlameCrashAction::Execute(Event event)
     if (!inDanger)
         return false;
 
-    const float maxRadius = 30.0f;
+    constexpr float maxRadius = 30.0f;
     Position safestPos = FindSafestNearbyPosition(flameCrashes, maxRadius, hazardRadius);
 
     return MoveTo(BLACK_TEMPLE_MAP_ID, safestPos.GetPositionX(), safestPos.GetPositionY(),
@@ -1822,15 +1821,14 @@ Position IllidanStormrageMainTankMoveAwayFromFlameCrashAction::GetPointBeyondTra
 Position IllidanStormrageMainTankMoveAwayFromFlameCrashAction::FindSafestNearbyPosition(
     const std::vector<Unit*>& flameCrashes, float maxRadius, float hazardRadius)
 {
-    const float searchStep = M_PI / 16.0f;
-    const float minDistance = 2.0f;
-    const float maxDistance = maxRadius;
-    const float distanceStep = 1.0f;
+    constexpr float searchStep = M_PI / 16.0f;
+    constexpr float minDistance = 2.0f;
+    constexpr float distanceStep = 1.0f;
 
     float backwardsAngle = Position::NormalizeOrientation(bot->GetOrientation() + M_PI);
 
     Position bestPos;
-    float bestAngleDiff = M_PI * 2.0f;
+    constexpr float bestAngleDiff = M_PI * 2.0f;
     float bestDistance = std::numeric_limits<float>::max();
     bool foundSafe = false;
 
@@ -1838,7 +1836,7 @@ Position IllidanStormrageMainTankMoveAwayFromFlameCrashAction::FindSafestNearbyP
     if (!illidan)
         return bestPos;
 
-    for (float distance = minDistance; distance <= maxDistance; distance += distanceStep)
+    for (float distance = minDistance; distance <= maxRadius; distance += distanceStep)
     {
         for (float angleOffset = 0.0f; angleOffset < 2 * M_PI; angleOffset += searchStep)
         {
@@ -1868,7 +1866,6 @@ Position IllidanStormrageMainTankMoveAwayFromFlameCrashAction::FindSafestNearbyP
                 if (angleDiff > M_PI)
                     angleDiff = 2 * M_PI - angleDiff;
 
-                // Prefer pathSafe, then smallest angle difference, then closest distance
                 if (pathSafe && (!foundSafe || angleDiff < bestAngleDiff ||
                     (angleDiff == bestAngleDiff && distance < bestDistance)))
                 {
@@ -1897,7 +1894,7 @@ Position IllidanStormrageMainTankMoveAwayFromFlameCrashAction::FindSafestNearbyP
 bool IllidanStormrageMainTankMoveAwayFromFlameCrashAction::IsPathSafeFromFlameCrashes(const Position& start,
     const Position& end, const std::vector<Unit*>& flameCrashes, float hazardRadius)
 {
-    const uint8 numChecks = 10;
+    constexpr uint8 numChecks = 10;
     float dx = end.GetPositionX() - start.GetPositionX();
     float dy = end.GetPositionY() - start.GetPositionY();
 
@@ -1925,7 +1922,7 @@ std::vector<Unit*> IllidanStormrageMainTankMoveAwayFromFlameCrashAction::GetAllF
         botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
     for (auto const& npcGuid : npcs)
     {
-        const float maxSearchRadius = 40.0f;
+        constexpr float maxSearchRadius = 40.0f;
         Unit* unit = botAI->GetUnit(npcGuid);
         if (unit && unit->GetEntry() == NPC_FLAME_CRASH &&
             bot->GetDistance2d(unit) < maxSearchRadius)
@@ -1965,8 +1962,8 @@ bool IllidanStormrageIsolateBotWithParasiteAction::Execute(Event event)
 
         if (nearestPlayer)
         {
-            const float safeDistance = 12.0f;
-            const uint32 minInterval = 0;
+            constexpr float safeDistance = 12.0f;
+            constexpr uint32 minInterval = 0;
             botAI->Reset();
             return FleePosition(Position(nearestPlayer->GetPosition()), safeDistance, minInterval);
         }
@@ -2071,17 +2068,8 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event even
 bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidEyeBlast(
     Unit* illidan, const EyeBlastDangerArea& dangerArea)
 {
-    LOG_DEBUG("playerbots", "EyeBlast Bot pos: ({}, {}) | Danger start: ({}, {}) end: ({}, {})",
-        bot->GetPositionX(), bot->GetPositionY(),
-        dangerArea.start.GetPositionX(), dangerArea.start.GetPositionY(),
-        dangerArea.end.GetPositionX(), dangerArea.end.GetPositionY());
-
-    bool inDanger = IsPositionInEyeBlastDangerArea(bot->GetPosition(), dangerArea);
-    LOG_DEBUG("playerbots", "EyeBlast Is bot in Eye Blast danger area? {}", inDanger);
-
-    if (inDanger)
+    if (IsPositionInEyeBlastDangerArea(bot->GetPosition(), dangerArea))
     {
-        // Find closest point on the line
         float dx = dangerArea.end.GetPositionX() - dangerArea.start.GetPositionX();
         float dy = dangerArea.end.GetPositionY() - dangerArea.start.GetPositionY();
         float length = std::sqrt(dx * dx + dy * dy);
@@ -2100,21 +2088,14 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidE
         float distToLine = bot->GetExactDist2d(closestX, closestY);
         float moveDist = (dangerArea.width - distToLine) + 0.5f;
 
-        LOG_DEBUG("playerbots", "EyeBlast distToLine: {}, moveDist: {}", distToLine, moveDist);
-
         if (moveDist <= 0.0f)
-        {
-            LOG_DEBUG("playerbots", "EyeBlast Bot already outside danger area, no move needed.");
             return false;
-        }
 
-        // Move directly outward from the line
         float dirX = px - closestX;
         float dirY = py - closestY;
         float dirLength = std::sqrt(dirX * dirX + dirY * dirY);
         if (dirLength == 0.0f)
         {
-            // If bot is exactly on the line, pick a default direction (perpendicular)
             dirX = -(dy / length);
             dirY = dx / length;
             dirLength = 1.0f;
@@ -2124,7 +2105,17 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidE
         float safeY = py + (dirY / dirLength) * moveDist;
         float safeZ = bot->GetPositionZ();
 
-        LOG_DEBUG("playerbots", "EyeBlast Moving bot to safe position: ({}, {}, {})", safeX, safeY, safeZ);
+        // Test excluding areas too close to grate positions
+        constexpr float minGrateDistance = 10.0f;
+        bool tooCloseToNorthGrate = Position(safeX, safeY, safeZ).GetExactDist2d(ILLIDAN_N_GRATE_POSITION) < minGrateDistance;
+        bool tooCloseToSouthGrate = Position(safeX, safeY, safeZ).GetExactDist2d(ILLIDAN_S_GRATE_POSITION) < minGrateDistance;
+
+        if (tooCloseToNorthGrate || tooCloseToSouthGrate)
+        {
+            LOG_DEBUG("playerbots", "EyeBlast candidate position too close to a grate: ({}, {}, {})", safeX, safeY, safeZ);
+            return false;
+        }
+        // End test
 
         return MoveTo(BLACK_TEMPLE_MAP_ID, safeX, safeY, safeZ,
                       false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
@@ -2136,7 +2127,7 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidE
 bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidBlaze(Unit* eastFlame, Unit* westFlame)
 {
     const Position* waypoints = nullptr;
-    size_t numWaypoints = 7;
+    constexpr size_t numWaypoints = 7;
 
     // Determine which tank and assign waypoints
     if (botAI->IsAssistTankOfIndex(bot, 1, true))
@@ -2340,10 +2331,10 @@ bool IllidanStormrageDisperseRangedAction::Execute(Event event)
     // Phase 4: Keep distance from Warlock Tank (Shadow Blast) and Illidan (Aura of Dread)
     if (GetIllidanPhase(illidan) == 4)
     {
-        const uint32 minInterval = 0;
+        constexpr uint32 minInterval = 0;
         if (Player* warlockTank = GetIllidanWarlockTank(botAI, bot))
         {
-            const float safeDistFromTank = 22.0f;
+            constexpr float safeDistFromTank = 22.0f;
             if (bot->GetDistance2d(warlockTank) < safeDistFromTank)
             {
                 botAI->Reset();
@@ -2351,7 +2342,7 @@ bool IllidanStormrageDisperseRangedAction::Execute(Event event)
             }
         }
 
-        const float safeDistFromBoss = 16.0f;
+        constexpr float safeDistFromBoss = 16.0f;
         if (bot->GetDistance2d(illidan) < safeDistFromBoss)
         {
             botAI->Reset();
@@ -2360,10 +2351,10 @@ bool IllidanStormrageDisperseRangedAction::Execute(Event event)
     }
 
     // Phase 3, 4, and 5: Keep distance from other players (Agonizing Flames, Flame Burst)
-    const float safeDistFromPlayer = 6.0f;
+    constexpr float safeDistFromPlayer = 6.0f;
     if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
     {
-        const uint32 minInterval = 1000;
+        constexpr uint32 minInterval = 1000;
         return FleePosition(Position(nearestPlayer->GetPosition()), safeDistFromPlayer, minInterval);
     }
 
@@ -2409,7 +2400,7 @@ bool IllidanStormrageWarlockTankHandleDemonBossAction::Execute(Event event)
         if (bot->GetTarget() != illidan->GetGUID())
             return Attack(illidan);
 
-        const float safeDistFromBoss = 16.0f;
+        constexpr float safeDistFromBoss = 16.0f;
         if (bot->GetDistance2d(illidan) < safeDistFromBoss)
         {
             constexpr uint32 minInterval = 0;
@@ -2434,29 +2425,28 @@ bool IllidanStormrageManageDpsTimerAction::Execute(Event event)
     const time_t now = std::time(nullptr);
     const uint32 instanceId = illidan->GetMap()->GetInstanceId();
 
+    bool updated = false;
     if ((GetIllidanPhase(illidan) == 2 && AI_VALUE2(Unit*, "find target", "flame of azzinoth")) ||
         GetIllidanPhase(illidan) == 5)
     {
         if (illidanBossDpsWaitTimer.erase(instanceId) > 0)
-            return true;
+            updated = true;
     }
     else if (GetIllidanPhase(illidan) == 1 || GetIllidanPhase(illidan) == 3 || GetIllidanPhase(illidan) == 4)
     {
-        bool updated = false;
+
         if (illidanBossDpsWaitTimer.try_emplace(instanceId, now).second)
             updated = true;
         if (illidanFlameDpsWaitTimer.erase(instanceId) > 0)
             updated = true;
-
-        return updated;
     }
     else if (GetIllidanPhase(illidan) == 2 && !AI_VALUE2(Unit*, "find target", "flame of azzinoth"))
     {
         if (illidanFlameDpsWaitTimer.insert_or_assign(instanceId, now).second)
-            return true;
+            updated = true;
     }
 
-    return false;
+    return updated;
 }
 
 bool IllidanStormrageDestroyHazardsCheatAction::Execute(Event event)

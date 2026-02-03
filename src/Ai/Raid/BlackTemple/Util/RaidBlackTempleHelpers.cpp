@@ -401,7 +401,7 @@ namespace BlackTempleHelpers
         Position startPos = Position(eyeBlastTrigger->GetPositionX(), eyeBlastTrigger->GetPositionY(), eyeBlastTrigger->GetPositionZ());
         Position endPos = eyeBeamPos[beamPosId + MAX_EYE_BEAM_POS];
 
-        float eyeBlastWidth = 9.0f; // Was using 10, trying 9
+        constexpr float eyeBlastWidth = 9.0f;
         return { startPos, endPos, eyeBlastWidth };
     }
 

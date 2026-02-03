@@ -23,8 +23,7 @@ using namespace BlackTempleHelpers;
 // High Warlord Naj'entus
 float HighWarlordNajentusDisableCombatFormationMoveMultiplier::GetValue(Action* action)
 {
-    Unit* najentus = AI_VALUE2(Unit*, "find target", "high warlord naj'entus");
-    if (najentus)
+    if (AI_VALUE2(Unit*, "find target", "high warlord naj'entus"))
     {
         if (dynamic_cast<CombatFormationMoveAction*>(action) &&
             !dynamic_cast<SetBehindTargetAction*>(action))
@@ -374,7 +373,7 @@ float IllidariCouncilWaitForDpsMultiplier::GetValue(Action* action)
         return 1.0f;
 
     const time_t now = std::time(nullptr);
-    const uint8 dpsWaitSeconds = 5;
+    constexpr uint8 dpsWaitSeconds = 5;
 
     auto it = councilDpsWaitTimer.find(gathios->GetMap()->GetInstanceId());
     if (it == councilDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
@@ -561,7 +560,7 @@ float IllidanStormrageWaitForDpsMultiplier::GetValue(Action* action)
         if (botAI->IsMainTank(bot))
             return 1.0f;
 
-        const uint8 elfPhaseDpsWaitSeconds = 3;
+        constexpr uint8 elfPhaseDpsWaitSeconds = 3;
         auto it = illidanBossDpsWaitTimer.find(instanceId);
         if (it == illidanBossDpsWaitTimer.end() || (now - it->second) < elfPhaseDpsWaitSeconds)
         {
@@ -576,7 +575,7 @@ float IllidanStormrageWaitForDpsMultiplier::GetValue(Action* action)
         if (GetIllidanWarlockTank(botAI, bot) == bot)
             return 1.0f;
 
-        const uint8 demonPhaseDpsWaitSeconds = 8;
+        constexpr uint8 demonPhaseDpsWaitSeconds = 8;
         auto it = illidanBossDpsWaitTimer.find(instanceId);
         if (it == illidanBossDpsWaitTimer.end() || (now - it->second) < demonPhaseDpsWaitSeconds)
         {
@@ -592,7 +591,7 @@ float IllidanStormrageWaitForDpsMultiplier::GetValue(Action* action)
             botAI->IsAssistTankOfIndex(bot, 1, true))
             return 1.0f;
 
-        const uint8 flamePhaseDpsWaitSeconds = 7;
+        constexpr uint8 flamePhaseDpsWaitSeconds = 7;
         auto it = illidanFlameDpsWaitTimer.find(instanceId);
         if (it == illidanFlameDpsWaitTimer.end() || (now - it->second) < flamePhaseDpsWaitSeconds)
         {
