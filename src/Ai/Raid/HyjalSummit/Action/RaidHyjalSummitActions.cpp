@@ -131,25 +131,25 @@ bool RageWinterchillSpreadRangedInCircleAction::Execute(Event event)
     {
         size_t count = healers.size() + rangedDps.size();
         size_t botIndex = 0;
-        float radius = 0.0f;
-        float angle = 0.0f;
+        constexpr float radius = 0.0f;
+        constexpr float angle = 0.0f;
 
-        const float arcSpan = 2.0f * M_PI;
-        const float arcCenter = 0.0f;
-        const float arcStart = arcCenter - arcSpan / 2.0f;
+        constexpr float arcSpan = 2.0f * M_PI;
+        constexpr float arcCenter = 0.0f;
+        constexpr float arcStart = arcCenter - arcSpan / 2.0f;
 
         if (botAI->IsHeal(bot))
         {
             auto findIt = std::find(healers.begin(), healers.end(), bot);
             botIndex = (findIt != healers.end()) ? std::distance(healers.begin(), findIt) : 0;
-            radius = 25.0f;
+            constexpr float radius = 25.0f;
             count = healers.size();
         }
         else
         {
             auto findIt = std::find(rangedDps.begin(), rangedDps.end(), bot);
             botIndex = (findIt != rangedDps.end()) ? std::distance(rangedDps.begin(), findIt) : 0;
-            radius = 20.0f;
+            constexpr float radius = 20.0f;
             count = rangedDps.size();
         }
 
@@ -283,25 +283,25 @@ bool AnetheronSpreadRangedInArcAction::Execute(Event event)
     {
         size_t count = healers.size() + rangedDps.size();
         size_t botIndex = 0;
-        float radius = 0.0f;
-        float angle = 0.0f;
+        constexpr float radius = 0.0f;
+        constexpr float angle = 0.0f;
 
-        const float arcSpan = 3.0f * M_PI / 2.0f;
-        const float arcCenter = 0.165f;
-        const float arcStart = arcCenter - arcSpan / 2.0f;
+        constexpr float arcSpan = 3.0f * M_PI / 2.0f;
+        constexpr float arcCenter = 0.165f;
+        constexpr float arcStart = arcCenter - arcSpan / 2.0f;
 
         if (botAI->IsHeal(bot))
         {
             auto findIt = std::find(healers.begin(), healers.end(), bot);
             botIndex = (findIt != healers.end()) ? std::distance(healers.begin(), findIt) : 0;
-            radius = 25.0f;
+            constexpr float radius = 25.0f;
             count = healers.size();
         }
         else
         {
             auto findIt = std::find(rangedDps.begin(), rangedDps.end(), bot);
             botIndex = (findIt != rangedDps.end()) ? std::distance(rangedDps.begin(), findIt) : 0;
-            radius = 30.0f;
+            constexpr float radius = 30.0f;
             count = rangedDps.size();
         }
 
@@ -520,11 +520,11 @@ bool KazrogalSpreadRangedInArcAction::Execute(Event event)
         size_t botIndex = (findIt != rangedMembers.end()) ?
             std::distance(rangedMembers.begin(), findIt) : 0;
 
-        const float arcSpan = 2.0f * M_PI / 4.0f; // 90 degrees
-        const float arcCenter = /* 4.75f; */ 4.5f;
-        const float arcStart = arcCenter - arcSpan / 2.0f;
+        constexpr float arcSpan = 2.0f * M_PI / 4.0f;
+        constexpr float arcCenter = 4.5f;
+        constexpr float arcStart = arcCenter - arcSpan / 2.0f;
 
-        const float radius = 25.0f;
+        constexpr float radius = 25.0f;
         float angle = (count == 1) ? arcCenter :
             (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
 
@@ -564,7 +564,7 @@ bool KazrogalLowManaBotMoveFromGroupAction::Execute(Event event)
     }
     else
     {
-        const float safeDistance = 15.0f;
+        constexpr float safeDistance = 15.0f;
         if (GetNearestPlayerInRadius(bot, safeDistance))
         {
             bot->AttackStop();
@@ -674,7 +674,7 @@ bool AzgalorMainTankPositionBossAction::Execute(Event event)
             AZGALOR_MAIN_TANK_TRANSITION_POSITION,
             AZGALOR_MAIN_TANK_FINAL_POSITION
         };
-        const float maxDistance = 2.0f;
+        constexpr float maxDistance = 2.0f;
         const Position& position = positions[step];
         float distToPosition = bot->GetExactDist2d(position);
 
@@ -710,13 +710,13 @@ bool AzgalorDisperseRangedAction::Execute(Event event)
     if (!azgalor)
         return false;
 
-    const uint32 minInterval = 1000;
+    constexpr uint32 minInterval = 1000;
 
-    const float safeDistFromBoss = 25.0f;
+    constexpr float safeDistFromBoss = 25.0f;
     if (bot->GetExactDist2d(azgalor) < safeDistFromBoss)
         return FleePosition(Position(azgalor->GetPosition()), safeDistFromBoss, minInterval);
 
-    const float safeDistFromPlayer = 6.0f;
+    constexpr float safeDistFromPlayer = 6.0f;
     if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
         return FleePosition(Position(nearestPlayer->GetPosition()), safeDistFromPlayer, minInterval);
 
@@ -873,26 +873,25 @@ bool ArchimondeCastFearWardOnMainTankAction::Execute(Event event)
     return false;
 }
 
-// Untested w/r/t keeping distance from Archimonde's target
 bool ArchimondeSpreadToAvoidAirBurstAction::Execute(Event event)
 {
     Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
     if (!archimonde)
         return false;
 
-    const uint32 minInterval = 1000;
+    constexpr uint32 minInterval = 1000;
 
     Unit* victim = archimonde->GetVictim();
     if (victim && victim != bot)
     {
-        const float safeDistFromVictim = 14.0f;
+        constexpr float safeDistFromVictim = 14.0f;
         if (bot->GetDistance2d(victim) < safeDistFromVictim)
             return FleePosition(Position(victim->GetPosition()), safeDistFromVictim, minInterval);
     }
 
     if (botAI->IsRanged(bot))
     {
-        const float safeDistFromPlayer = 8.0f;
+        constexpr float safeDistFromPlayer = 8.0f;
         if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
             return FleePosition(Position(nearestPlayer->GetPosition()), safeDistFromPlayer, minInterval);
     }
@@ -926,8 +925,7 @@ bool ArchimondeAvoidDoomfireAction::Execute(Event event)
         }
     }
 
-    // Is 15 farther than needed?
-    const float hazardWidth = 15.0f;
+    constexpr float hazardWidth = 15.0f;
     bool inDanger = false;
     for (auto const& line : hazardLines)
     {
@@ -985,10 +983,10 @@ float ArchimondeAvoidDoomfireAction::DistanceToDoomfireLine(
 Position ArchimondeAvoidDoomfireAction::FindSafePositionFromDoomfires(
     Player* bot, const std::vector<DoomfireLine>& lines, float hazardWidth)
 {
-    const float searchStep = M_PI / 8.0f;
-    const float minDistance = 2.0f;
-    const float maxDistance = 40.0f;
-    const float distanceStep = 1.0f;
+    constexpr float searchStep = M_PI / 8.0f;
+    constexpr float minDistance = 2.0f;
+    constexpr float maxDistance = 40.0f;
+    constexpr float distanceStep = 1.0f;
 
     Position bestPos = bot->GetPosition();
     float minMoveDistance = std::numeric_limits<float>::max();

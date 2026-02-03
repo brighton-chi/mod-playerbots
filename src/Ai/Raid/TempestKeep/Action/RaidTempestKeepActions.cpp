@@ -332,7 +332,7 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase1Embers(Unit* alar)
             }
             else
             {
-                const float safeDistance = 15.0f;
+                constexpr float safeDistance = 15.0f;
                 Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
                 if (nearestPlayer)
                     return MoveFromGroup(safeDistance + 1.0f);
@@ -374,7 +374,7 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase2Embers(Unit* alar)
         }
         else if (bot->IsWithinMeleeRange(firstEmber))
         {
-            const float safeDistance = 15.0f;
+            constexpr float safeDistance = 15.0f;
             Unit* nearestPlayer = GetNearestNonTankPlayerInRadius(bot, safeDistance);
             if (nearestPlayer)
                 return MoveFromGroup(safeDistance + 1.0f);
@@ -399,7 +399,7 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase2Embers(Unit* alar)
         }
         else if (bot->IsWithinMeleeRange(secondEmber))
         {
-            const float safeDistance = 15.0f;
+            constexpr float safeDistance = 15.0f;
             Unit* nearestPlayer = GetNearestNonTankPlayerInRadius(bot, safeDistance);
             if (nearestPlayer)
                 return MoveFromGroup(safeDistance + 1.0f);
@@ -413,7 +413,7 @@ bool AlarRangedDpsPrioritizeEmbersAction::Execute(Event event)
 {
     auto [firstEmber, secondEmber] = GetFirstTwoEmbersOfAlar(botAI);
 
-    const float safeDistance = 15.0f;
+    constexpr float safeDistance = 15.0f;
     if (firstEmber)
     {
         if (bot->GetDistance2d(firstEmber) < safeDistance)
@@ -531,7 +531,7 @@ bool AlarMoveAwayFromRebirthAction::Execute(Event event)
     else
     {
         float currentDistance = bot->GetDistance2d(alar);
-        const float safeDistance = 20.0f;
+        constexpr float safeDistance = 20.0f;
         if (currentDistance < safeDistance)
         {
             botAI->Reset();
@@ -601,7 +601,7 @@ bool AlarAvoidFlamePatchesAndDiveBombsAction::Execute(Event event)
 bool AlarAvoidFlamePatchesAndDiveBombsAction::AvoidFlamePatch()
 {
     std::vector<Unit*> flamePatches = GetAllHazardTriggers(botAI, bot, NPC_FLAME_PATCH, 40.0f);
-    const float hazardRadius = 8.0f;
+    constexpr float hazardRadius = 8.0f;
     for (Unit* flamePatch : flamePatches)
     {
         if (bot->GetExactDist2d(flamePatch) < hazardRadius)
@@ -625,7 +625,7 @@ bool AlarAvoidFlamePatchesAndDiveBombsAction::HandleDiveBomb(Unit* alar)
         !alar->IsVisible())
     {
         float currentDistance = bot->GetDistance2d(alar);
-        const float safeDistance = 20.0f;
+        constexpr float safeDistance = 20.0f;
         if (currentDistance < safeDistance)
         {
             bot->AttackStop();
@@ -639,7 +639,7 @@ bool AlarAvoidFlamePatchesAndDiveBombsAction::HandleDiveBomb(Unit* alar)
         if (GetAlarCurrentLocationIndex(alar) == POINT_QUILL_OR_DIVE_IDX ||
             GetAlarDestinationLocationIndex(alar, dest) == POINT_QUILL_OR_DIVE_IDX)
         {
-            const float safeDistance = 10.0f;
+            constexpr float safeDistance = 10.0f;
             if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
             {
                 constexpr uint32 minInterval = 0;
@@ -1504,10 +1504,9 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
         if (botAI->IsMelee(bot) && botAI->IsDps(bot) && telonicus->GetVictim() != bot)
         {
             float maxMeleeRange = bot->GetMeleeRange(telonicus);
-            constexpr float meleeRangeBuffer = 0.5f;
-            constexpr float tolerance = 0.75f;
+            constexpr float tolerance = 0.25f;
 
-            float desiredDist = std::max(2.0f, maxMeleeRange - meleeRangeBuffer);
+            float desiredDist = std::max(2.0f, maxMeleeRange - tolerance);
             float currentDist = bot->GetExactDist2d(telonicus);
 
             if (fabs(currentDist - desiredDist) > tolerance)

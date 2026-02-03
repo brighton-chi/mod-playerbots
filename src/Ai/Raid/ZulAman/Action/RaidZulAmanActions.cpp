@@ -84,10 +84,10 @@ bool AkilzonMainTankPositionBossAction::Execute(Event event)
 
 bool AkilzonSpreadRangedAction::Execute(Event event)
 {
-    const float minDistance = 13.0f;
+    constexpr float minDistance = 13.0f;
     if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance))
     {
-        const uint32 minInterval = 1000;
+        constexpr uint32 minInterval = 1000;
         return FleePosition(nearestPlayer->GetPosition(), minDistance, minInterval);
     }
 
@@ -212,13 +212,12 @@ bool NalorakkTanksPositionBossAction::MainTankPositionTrollForm(
     }
     else
     {
-        // Move in front of Nalorakk in Bear Form
-        float bossX = nalorakk->GetPositionX();
+        /* float bossX = nalorakk->GetPositionX();
         float bossY = nalorakk->GetPositionY();
         float bossZ = nalorakk->GetPositionZ();
         float bossO = nalorakk->GetOrientation();
 
-        float frontDist = 3.0f;
+        constexpr float frontDist = 3.0f;
         float targetX = bossX + std::cos(bossO) * frontDist;
         float targetY = bossY + std::sin(bossO) * frontDist;
 
@@ -233,6 +232,19 @@ bool NalorakkTanksPositionBossAction::MainTankPositionTrollForm(
 
             return MoveTo(ZULAMAN_MAP_ID, moveX, moveY, bossZ, false, false, false,
                           false, MovementPriority::MOVEMENT_COMBAT, true, false);
+        } */
+        const Position& position = NALORAKK_TANK_POSITION;
+        float distToPosition = mainTank->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+        if (distToPosition > 2.0f)
+        {
+            float dX = position.GetPositionX() - mainTank->GetPositionX();
+            float dY = position.GetPositionY() - mainTank->GetPositionY();
+            float moveDist = std::min(10.0f, distToPosition);
+            float moveX = mainTank->GetPositionX() + (dX / distToPosition) * moveDist;
+            float moveY = mainTank->GetPositionY() + (dY / distToPosition) * moveDist;
+
+            return MoveTo(ZULAMAN_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
+                          false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
 
@@ -277,13 +289,12 @@ bool NalorakkTanksPositionBossAction::FirstAssistTankPositionBearForm(
     }
     else
     {
-        // Move in front of Nalorakk in Troll Form
-        float bossX = nalorakk->GetPositionX();
+        /* float bossX = nalorakk->GetPositionX();
         float bossY = nalorakk->GetPositionY();
         float bossZ = nalorakk->GetPositionZ();
         float bossO = nalorakk->GetOrientation();
 
-        float frontDist = 3.0f;
+        constexpr float frontDist = 3.0f;
         float targetX = bossX + std::cos(bossO) * frontDist;
         float targetY = bossY + std::sin(bossO) * frontDist;
 
@@ -298,6 +309,19 @@ bool NalorakkTanksPositionBossAction::FirstAssistTankPositionBearForm(
 
             return MoveTo(ZULAMAN_MAP_ID, moveX, moveY, bossZ, false, false, false,
                           false, MovementPriority::MOVEMENT_COMBAT, true, false);
+        } */
+        const Position& position = NALORAKK_TANK_POSITION;
+        float distToPosition = assistTank->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+        if (distToPosition > 2.0f)
+        {
+            float dX = position.GetPositionX() - assistTank->GetPositionX();
+            float dY = position.GetPositionY() - assistTank->GetPositionY();
+            float moveDist = std::min(10.0f, distToPosition);
+            float moveX = assistTank->GetPositionX() + (dX / distToPosition) * moveDist;
+            float moveY = assistTank->GetPositionY() + (dY / distToPosition) * moveDist;
+
+            return MoveTo(ZULAMAN_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
+                        false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
 
@@ -307,10 +331,10 @@ bool NalorakkTanksPositionBossAction::FirstAssistTankPositionBearForm(
 
 bool NalorakkSpreadRangedAction::Execute(Event event)
 {
-    const float minDistance = 11.0f;
+    constexpr float minDistance = 11.0f;
     if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance))
     {
-        const uint32 minInterval = 1000;
+        constexpr uint32 minInterval = 1000;
         return FleePosition(nearestPlayer->GetPosition(), minDistance, minInterval);
     }
 
@@ -411,7 +435,7 @@ bool JanalaiSpreadRangedInCircleAction::Execute(Event event)
         if (count == 0)
             return false;
 
-        const float radius = 15.0f;
+        constexpr float radius = 15.0f;
         float angle = (count == 1) ? 0.0f : (2.0f * M_PI * static_cast<float>(botIndex) / static_cast<float>(count));
 
         float tx = JANALAI_TANK_POSITION.GetPositionX() + radius * std::cos(angle);
@@ -446,7 +470,7 @@ bool JanalaiAvoidFireBombsAction::Execute(Event event)
     if (bombs.empty())
         return false;
 
-    const float hazardRadius = 6.0f;
+    constexpr float hazardRadius = 6.0f;
     bool inDanger = false;
     for (Unit* bomb : bombs)
     {
@@ -461,7 +485,7 @@ bool JanalaiAvoidFireBombsAction::Execute(Event event)
         return false;
 
     const Position& janalaiCenter = JANALAI_TANK_POSITION;
-    const float maxRadius = 30.0f;
+    constexpr float maxRadius = 30.0f;
 
     Position safestPos = FindSafestNearbyPosition(bombs, janalaiCenter, maxRadius, hazardRadius);
 
@@ -476,10 +500,10 @@ Position JanalaiAvoidFireBombsAction::FindSafestNearbyPosition(
     const std::vector<Unit*>& bombs, const Position& janalaiCenter,
     float maxRadius, float hazardRadius)
 {
-    const float searchStep = M_PI / 8.0f;
-    const float minDistance = 2.0f;
-    const float maxDistance = 30.0f;
-    const float distanceStep = 1.0f;
+    constexpr float searchStep = M_PI / 8.0f;
+    constexpr float minDistance = 2.0f;
+    constexpr float maxDistance = 30.0f;
+    constexpr float distanceStep = 1.0f;
 
     Position bestPos;
     float minMoveDistance = std::numeric_limits<float>::max();
@@ -541,7 +565,7 @@ Position JanalaiAvoidFireBombsAction::FindSafestNearbyPosition(
 bool JanalaiAvoidFireBombsAction::IsPathSafeFromFireBombs(const Position& start,
     const Position& end, const std::vector<Unit*>& bombs, float hazardRadius)
 {
-    const uint8 numChecks = 10;
+    constexpr uint8 numChecks = 10;
     float dx = end.GetPositionX() - start.GetPositionX();
     float dy = end.GetPositionY() - start.GetPositionY();
 
@@ -570,7 +594,7 @@ std::vector<Unit*> JanalaiAvoidFireBombsAction::GetAllFireBombTriggers(
         botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
     for (auto const& npcGuid : npcs)
     {
-        const float maxSearchRadius = 40.0f;
+        constexpr float maxSearchRadius = 40.0f;
         Unit* unit = botAI->GetUnit(npcGuid);
         if (unit && unit->GetEntry() == NPC_FIRE_BOMB &&
             bot->GetExactDist2d(unit) < maxSearchRadius)
@@ -694,7 +718,7 @@ bool HalazziFirstAssistTankAttackSpiritLynxAction::Execute(Event event)
         if (bot->GetTarget() != halazzi->GetGUID())
             return Attack(halazzi);
 
-        float bossX = halazzi->GetPositionX();
+        /* float bossX = halazzi->GetPositionX();
         float bossY = halazzi->GetPositionY();
         float bossZ = halazzi->GetPositionZ();
         float bossO = halazzi->GetOrientation();
@@ -714,6 +738,19 @@ bool HalazziFirstAssistTankAttackSpiritLynxAction::Execute(Event event)
 
             return MoveTo(ZULAMAN_MAP_ID, moveX, moveY, bossZ, false, false, false,
                           false, MovementPriority::MOVEMENT_COMBAT, true, false);
+        } */
+        const Position& position = HALAZZI_TANK_POSITION;
+        float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+        if (distToPosition > 2.0f)
+        {
+            float dX = position.GetPositionX() - bot->GetPositionX();
+            float dY = position.GetPositionY() - bot->GetPositionY();
+            float moveDist = std::min(10.0f, distToPosition);
+            float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
+
+            return MoveTo(ZULAMAN_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
+                          false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
 
@@ -925,7 +962,7 @@ bool ZuljinRunAwayFromWhirlwindAction::Execute(Event event)
     if (Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin"))
     {
         float currentDistance = bot->GetExactDist2d(zuljin);
-        const float safeDistance = 10.0f;
+        constexpr float safeDistance = 10.0f;
         if (currentDistance < safeDistance)
         {
             bot->AttackStop();
@@ -958,7 +995,7 @@ bool ZuljinAvoidCyclonesAction::Execute(Event event)
         return false;
 
     const Position& zuljinCenter = ZULJIN_TANK_POSITION;
-    const float maxRadius = 30.0f;
+    constexpr float maxRadius = 30.0f;
 
     Position safestPos = FindSafestNearbyPosition(cyclones, zuljinCenter, maxRadius, hazardRadius);
 
@@ -973,10 +1010,10 @@ Position ZuljinAvoidCyclonesAction::FindSafestNearbyPosition(
     const std::vector<Unit*>& cyclones, const Position& zuljinCenter,
     float maxRadius, float hazardRadius)
 {
-    const float searchStep = M_PI / 8.0f;
-    const float minDistance = 2.0f;
-    const float maxDistance = 30.0f;
-    const float distanceStep = 1.0f;
+    constexpr float searchStep = M_PI / 8.0f;
+    constexpr float minDistance = 2.0f;
+    constexpr float maxDistance = 30.0f;
+    constexpr float distanceStep = 1.0f;
 
     Position bestPos;
     float minMoveDistance = std::numeric_limits<float>::max();
@@ -1038,7 +1075,7 @@ Position ZuljinAvoidCyclonesAction::FindSafestNearbyPosition(
 bool ZuljinAvoidCyclonesAction::IsPathSafeFromCyclones(const Position& start,
     const Position& end, const std::vector<Unit*>& cyclones, float hazardRadius)
 {
-    const uint8 numChecks = 10;
+    constexpr uint8 numChecks = 10;
     float dx = end.GetPositionX() - start.GetPositionX();
     float dy = end.GetPositionY() - start.GetPositionY();
 
@@ -1067,7 +1104,7 @@ std::vector<Unit*> ZuljinAvoidCyclonesAction::GetAllCycloneTriggers(
         botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
     for (auto const& npcGuid : npcs)
     {
-        const float maxSearchRadius = 30.0f;
+        constexpr float maxSearchRadius = 30.0f;
         Unit* unit = botAI->GetUnit(npcGuid);
         if (unit && unit->GetEntry() == NPC_FEATHER_VORTEX &&
             bot->GetExactDist2d(unit) < maxSearchRadius)
@@ -1169,10 +1206,10 @@ bool ZuljinEscapeClawRageWithImmunitySpellAction::Execute(Event event)
 
 bool ZuljinSpreadRangedAction::Execute(Event event)
 {
-    const float minDistance = 6.0f;
+    constexpr float minDistance = 6.0f;
     if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance))
     {
-        const uint32 minInterval = 1000;
+        constexpr uint32 minInterval = 1000;
         return FleePosition(nearestPlayer->GetPosition(), minDistance, minInterval);
     }
 
