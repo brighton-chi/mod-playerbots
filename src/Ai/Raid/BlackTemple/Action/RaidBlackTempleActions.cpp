@@ -1828,7 +1828,7 @@ Position IllidanStormrageMainTankMoveAwayFromFlameCrashAction::FindSafestNearbyP
     float backwardsAngle = Position::NormalizeOrientation(bot->GetOrientation() + M_PI);
 
     Position bestPos;
-    constexpr float bestAngleDiff = M_PI * 2.0f;
+    float bestAngleDiff = M_PI * 2.0f;
     float bestDistance = std::numeric_limits<float>::max();
     bool foundSafe = false;
 

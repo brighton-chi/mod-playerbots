@@ -132,7 +132,7 @@ bool RageWinterchillSpreadRangedInCircleAction::Execute(Event event)
         size_t count = healers.size() + rangedDps.size();
         size_t botIndex = 0;
         constexpr float radius = 0.0f;
-        constexpr float angle = 0.0f;
+        float angle = 0.0f;
 
         constexpr float arcSpan = 2.0f * M_PI;
         constexpr float arcCenter = 0.0f;
@@ -284,7 +284,7 @@ bool AnetheronSpreadRangedInArcAction::Execute(Event event)
         size_t count = healers.size() + rangedDps.size();
         size_t botIndex = 0;
         constexpr float radius = 0.0f;
-        constexpr float angle = 0.0f;
+        float angle = 0.0f;
 
         constexpr float arcSpan = 3.0f * M_PI / 2.0f;
         constexpr float arcCenter = 0.165f;
