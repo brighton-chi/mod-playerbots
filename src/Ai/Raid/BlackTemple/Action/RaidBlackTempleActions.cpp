@@ -2456,13 +2456,13 @@ bool IllidanStormrageDestroyHazardsCheatAction::Execute(Event event)
         return false;
 
     bool destroyed = false;
-    if (Unit* shadowfiend = AI_VALUE2(Unit*, "find target", "parasitic shadowfiend"))
+    if (Unit* shadowfiend = GetFirstAliveUnitByEntry(botAI, NPC_PARASITIC_SHADOWFIEND))
     {
         shadowfiend->Kill(bot, shadowfiend);
         destroyed = true;
     }
 
-    if (Unit* shadowDemon = AI_VALUE2(Unit*, "find target", "shadow demon"))
+    if (Unit* shadowDemon = GetFirstAliveUnitByEntry(botAI, NPC_SHADOW_DEMON))
     {
         shadowDemon->Kill(bot, shadowDemon);
         destroyed = true;

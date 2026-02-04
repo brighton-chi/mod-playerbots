@@ -73,18 +73,19 @@ namespace BlackTempleHelpers
     enum BlackTempleNPCs
     {
         // Supremus
-        NPC_SUPREMUS_VOLCANO  = 23085,
+        NPC_SUPREMUS_VOLCANO      = 23085,
 
         // Teron Gorefiend
-        NPC_SHADOWY_CONSTRUCT = 23111,
+        NPC_SHADOWY_CONSTRUCT     = 23111,
 
         // Illidan Stormrage <The Betrayer>
-        NPC_FLAME_OF_AZZINOTH = 22997,
-        NPC_DEMON_FIRE        = 23069,
-        NPC_ILLIDAN_DB_TARGET = 23070,
-        NPC_BLAZE             = 23259,
-        NPC_FLAME_CRASH       = 23336,
-        // NPC_SHADOW_DEMON   = 23375,
+        NPC_FLAME_OF_AZZINOTH     = 22997,
+        NPC_DEMON_FIRE            = 23069,
+        NPC_ILLIDAN_DB_TARGET     = 23070,
+        NPC_BLAZE                 = 23259,
+        NPC_FLAME_CRASH           = 23336,
+        NPC_SHADOW_DEMON          = 23375,
+        NPC_PARASITIC_SHADOWFIEND = 23498,
     };
 
     enum BlackTempleItems
