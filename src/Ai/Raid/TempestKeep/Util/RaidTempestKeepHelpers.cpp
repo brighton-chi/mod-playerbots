@@ -336,9 +336,6 @@ namespace TempestKeepHelpers
     const Position TELONICUS_WAITING_POSITION = { 754.347f, 31.739f, 46.796f };
     const Position ADVISOR_HEAL_POSITION = { 757.425f, 13.011f, 46.779f };
     const Position CAPERNIAN_WAITING_POSITION = { 743.897f, -11.575f, 46.779f };
-    const Position KAELTHAS_WEAPON_STACK_POSITION = { 775.296f, -0.822f, 48.729f };
-    const Position KAELTHAS_AXE_TANK_POSITION = { 775.621f, 20.717f, 48.729f };
-    const Position KAELTHAS_BOW_TANK_POSITION = { 777.713f, -28.857f, 48.729f };
     const Position KAELTHAS_TANK_POSITION = { 799.390f, -0.837f, 48.729f };
 
     std::unordered_map<uint32, time_t> advisorDpsWaitTimer;
