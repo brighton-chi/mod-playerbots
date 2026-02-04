@@ -44,6 +44,7 @@ namespace TempestKeepHelpers
 
     enum TempestKeepNPCs
     {
+        // Trash
         NPC_CRIMSON_HAND_CENTURION      = 20048,
 
         // Al'ar
@@ -90,17 +91,6 @@ namespace TempestKeepHelpers
         ITEM_NETHER_SPIKES              = 30319,
     };
 
-    enum AlarLocationIndex
-    {
-        PLATFORM_0_IDX,
-        PLATFORM_1_IDX,
-        PLATFORM_2_IDX,
-        PLATFORM_3_IDX,
-        POINT_QUILL_OR_DIVE_IDX,
-        POINT_MIDDLE_IDX,
-        LOCATION_NONE = -1
-    };
-
     // General
     constexpr uint32 TEMPEST_KEEP_MAP_ID = 550;
     Unit* GetNearestNonTankPlayerInRadius(Player* bot, float radius);
@@ -113,6 +103,16 @@ namespace TempestKeepHelpers
         float hazardRadius);
 
     // Al'ar <Phoenix God>
+    enum AlarLocationIndex
+    {
+        PLATFORM_0_IDX,
+        PLATFORM_1_IDX,
+        PLATFORM_2_IDX,
+        PLATFORM_3_IDX,
+        POINT_QUILL_OR_DIVE_IDX,
+        POINT_MIDDLE_IDX,
+        LOCATION_NONE = -1
+    };
     constexpr float ALAR_BALCONY_Z = 17.0f;
     extern const Position ALAR_PLATFORM_0;
     extern const Position ALAR_PLATFORM_1;
@@ -144,9 +144,6 @@ namespace TempestKeepHelpers
     extern std::unordered_map<ObjectGuid, Position> initialVoidReaverPositions;
     extern std::unordered_map<ObjectGuid, bool> hasReachedInitialVoidReaverPosition;
 
-    // High Astromancer Solarian
-    // N/A
-
     // Kael'thas Sunstrider <Lord of the Blood Elves>
     extern const Position SANGUINAR_TANK_POSITION;
     extern const Position SANGUINAR_WAITING_POSITION;
@@ -154,9 +151,6 @@ namespace TempestKeepHelpers
     extern const Position TELONICUS_WAITING_POSITION;
     extern const Position CAPERNIAN_WAITING_POSITION;
     extern const Position ADVISOR_HEAL_POSITION;
-    extern const Position KAELTHAS_WEAPON_STACK_POSITION;
-    extern const Position KAELTHAS_AXE_TANK_POSITION;
-    extern const Position KAELTHAS_BOW_TANK_POSITION;
     extern const Position KAELTHAS_TANK_POSITION;
     extern std::unordered_map<uint32, time_t> advisorDpsWaitTimer;
     Player* GetCapernianTank(PlayerbotAI* botAI, Player* bot);
