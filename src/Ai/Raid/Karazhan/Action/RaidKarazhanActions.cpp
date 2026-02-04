@@ -470,9 +470,10 @@ bool TheCuratorSpreadRangedAction::Execute(Event event)
 // Prioritize (1) Demon Chains, (2) Kil'rek, (3) Illhoof
 bool TerestianIllhoofMarkTargetAction::Execute(Event event)
 {
-    Unit* demonChains = AI_VALUE2(Unit*, "find target", "demon chains");
-    Unit* kilrek = AI_VALUE2(Unit*, "find target", "kil'rek");
+    Unit* demonChains = GetFirstAliveUnitByEntry(botAI, NPC_DEMON_CHAINS);
+    Unit* kilrek = GetFirstAliveUnitByEntry(botAI, NPC_KILREK);
     Unit* illhoof = AI_VALUE2(Unit*, "find target", "terestian illhoof");
+
     Unit* target = GetFirstAliveUnit({demonChains, kilrek, illhoof});
 
     if (target)
