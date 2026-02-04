@@ -18,14 +18,14 @@ bool TempestKeepEraseTimersAndTrackersAction::Execute(Event event)
     const uint32 instanceId = bot->GetMap()->GetInstanceId();
 
     bool erased = false;
-    if (!AI_VALUE2(Unit*, "find target", "void reaver"))
+    if (!GetFirstAliveUnitByEntry(botAI, NPC_VOID_REAVER))
     {
         if (initialVoidReaverPositions.erase(guid) > 0)
             erased = true;
         if (hasReachedInitialVoidReaverPosition.erase(guid) > 0)
             erased = true;
     }
-    if (!AI_VALUE2(Unit*, "find target", "kael'thas sunstrider"))
+    if (!GetFirstAliveUnitByEntry(botAI, NPC_KAELTHAS_SUNSTRIDER))
     {
         if (advisorDpsWaitTimer.erase(instanceId) > 0)
             erased = true;
@@ -332,10 +332,9 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase1Embers(Unit* alar)
             }
             else
             {
-                constexpr float safeDistance = 15.0f;
-                Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
-                if (nearestPlayer)
-                    return MoveFromGroup(safeDistance + 1.0f);
+                constexpr float safeDistance = 16.0f;
+                if (GetNearestPlayerInRadius(bot, safeDistance))
+                    return MoveFromGroup(safeDistance);
             }
         }
         else if (!bot->IsWithinMeleeRange(ember))
@@ -374,10 +373,9 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase2Embers(Unit* alar)
         }
         else if (bot->IsWithinMeleeRange(firstEmber))
         {
-            constexpr float safeDistance = 15.0f;
-            Unit* nearestPlayer = GetNearestNonTankPlayerInRadius(bot, safeDistance);
-            if (nearestPlayer)
-                return MoveFromGroup(safeDistance + 1.0f);
+            constexpr float safeDistance = 16.0f;
+            if (GetNearestNonTankPlayerInRadius(bot, safeDistance))
+                return MoveFromGroup(safeDistance);
         }
     }
     else if (GetSecondEmberTank(botAI, alar) == bot && secondEmber)
@@ -399,10 +397,9 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase2Embers(Unit* alar)
         }
         else if (bot->IsWithinMeleeRange(secondEmber))
         {
-            constexpr float safeDistance = 15.0f;
-            Unit* nearestPlayer = GetNearestNonTankPlayerInRadius(bot, safeDistance);
-            if (nearestPlayer)
-                return MoveFromGroup(safeDistance + 1.0f);
+            constexpr float safeDistance = 16.0f;
+            if (GetNearestNonTankPlayerInRadius(bot, safeDistance))
+                return MoveFromGroup(safeDistance);
         }
     }
 
@@ -732,7 +729,6 @@ bool VoidReaverRangedUseAggroDumpAbilityAction::Execute(Event event)
         "soulshatter",
         "vanish",
     };
-
     for (const char* spell : spells)
     {
         if (botAI->CanCastSpell(spell, bot))
@@ -838,7 +834,7 @@ bool HighAstromancerSolarianRangedLeaveSpaceForMeleeAction::Execute(Event event)
     float currentDistance = bot->GetExactDist2d(astromancer);
     constexpr float minDistance = 20.0f;
     if (currentDistance < minDistance)
-        return MoveAway(astromancer, minDistance - currentDistance + 2.0f);
+        return MoveAway(astromancer, minDistance - currentDistance);
 
     return false;
 }
@@ -846,11 +842,10 @@ bool HighAstromancerSolarianRangedLeaveSpaceForMeleeAction::Execute(Event event)
 bool HighAstromancerSolarianMoveAwayFromGroupAction::Execute(Event event)
 {
     constexpr float safeDistance = 15.0f;
-    Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
-    if (nearestPlayer)
+    if (GetNearestPlayerInRadius(bot, safeDistance))
     {
         botAI->Reset();
-        return MoveFromGroup(safeDistance + 1.0f);
+        return MoveFromGroup(safeDistance);
     }
 
     return false;
@@ -1161,17 +1156,18 @@ bool KaelthasSunstriderMainTankPositionSanguinarAction::Execute(Event event)
 
 bool KaelthasSunstriderCastFearWardOnSanguinarTankAction::Execute(Event event)
 {
+    Group* group = bot->GetGroup()
+    if (!group)
+        return false;
+
     Player* mainTank = nullptr;
-    if (Group* group = bot->GetGroup())
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        Player* member = ref->GetSource();
+        if (member && botAI->IsMainTank(member))
         {
-            Player* member = ref->GetSource();
-            if (member && botAI->IsMainTank(member))
-            {
-                mainTank = member;
-                break;
-            }
+            mainTank = member;
+            break;
         }
     }
 
@@ -1193,7 +1189,6 @@ bool KaelthasSunstriderManageWarlockTankStrategyAction::Execute(Event event)
         return false;
 
     bool currentlyTank = botAI->HasStrategy("tank", BotState::BOT_STATE_COMBAT);
-
     // Phase 1: Switch to tank after Sanguinar is "dead" (feign death)
     if (kaelAI->GetPhase() == PHASE_SINGLE_ADVISOR)
     {
@@ -1256,9 +1251,6 @@ bool KaelthasSunstriderWarlockTankPositionCapernianAction::Execute(Event event)
     if (capernian->GetVictim() == bot && kaelAI->GetPhase() == PHASE_SINGLE_ADVISOR)
     {
         float currentDist = bot->GetDistance2d(capernian);
-        if (currentDist == 0.0f)
-            return false;
-
         constexpr float minDistance = 20.0f;
         if (currentDist < minDistance)
             return MoveAway(capernian, minDistance - currentDist + 1.0f);
@@ -1403,7 +1395,6 @@ bool KaelthasSunstriderFirstAssistTankPositionTelonicusAction::Execute(Event eve
 bool KaelthasSunstriderHandleAdvisorRolesInPhase3Action::Execute(Event event)
 {
     const Position* movePosition = nullptr;
-
     if (botAI->IsAssistHealOfIndex(bot, 0, true))
         movePosition = &ADVISOR_HEAL_POSITION;
     else if (botAI->IsMainTank(bot))
@@ -1575,10 +1566,10 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event eve
             (botAI->IsAssistTank(bot) && (mace && mace->GetVictim() == bot ||
              dagger && dagger->GetVictim() == bot || sword && sword->GetVictim() == bot)))
         {
-            const float safeDistance = botAI->IsAssistTank(bot) ? 15.0f : 10.0f;
+            const float safeDistance = botAI->IsAssistTank(bot) ? 17.0f : 13.0f;
             float currentDistance = bot->GetExactDist2d(axe);
             if (currentDistance < safeDistance)
-                return MoveAway(axe, safeDistance - currentDistance + 1.0f);
+                return MoveAway(axe, safeDistance - currentDistance);
         }
     }
 
@@ -1665,13 +1656,9 @@ bool KaelthasSunstriderMoveDevastationAwayAction::Execute(Event event)
 
     if (axe->GetVictim() == bot)
     {
-        constexpr float safeDistance = 12.0f;
-        Unit* nearestPlayer = GetNearestNonTankPlayerInRadius(bot, safeDistance);
-        if (nearestPlayer)
-        {
-            float currentDistance = bot->GetExactDist2d(nearestPlayer);
-            return MoveFromGroup(safeDistance + 1.0f);
-        }
+        constexpr float safeDistance = 13.0f;
+        if (GetNearestNonTankPlayerInRadius(bot, safeDistance))
+            return MoveFromGroup(safeDistance);
     }
 
     return false;
@@ -1750,7 +1737,7 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::ShouldBotLootWeapon(uint32 we
             return botAI->IsHeal(bot);
 
         // Fury Warriors could use the axe, but their DPS is terrible at appropriate gear levels
-        // So they're better off looting only the dagger to MH it and break MCs
+        // So IMO they're better off looting only the dagger to MH it and break MCs
         case NPC_DEVASTATION:
             return (bot->getClass() == CLASS_WARRIOR && tab == WARRIOR_TAB_ARMS) ||
                    (bot->getClass() == CLASS_PALADIN && tab == PALADIN_TAB_RETRIBUTION) ||
@@ -2044,55 +2031,34 @@ bool KaelthasSunstriderHandlePhoenixesAndEggsAction::Execute(Event event)
 
         if (targetPhoenix->GetVictim() == bot)
         {
-            constexpr float safeDistance = 10.0f;
-
-            Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
-            if (Group* group = bot->GetGroup())
-            {
-                if (nearestPlayer && group)
-                {
-                    PlayerbotAI* nearestAI = GET_PLAYERBOT_AI(nearestPlayer->ToPlayer());
-                    if (nearestAI &&
-                        (nearestAI->IsAssistTankOfIndex(nearestPlayer->ToPlayer(), 0, true) ||
-                         nearestAI->IsAssistTankOfIndex(nearestPlayer->ToPlayer(), 1, true)))
-                    {
-                        nearestPlayer = nullptr;
-                    }
-                }
-            }
-
-            if (nearestPlayer)
-            {
-                float closestDist = bot->GetExactDist2d(nearestPlayer);
-                if (closestDist < safeDistance)
-                    return MoveFromGroup(safeDistance + 2.0f);
-            }
+            constexpr float safeDistance = 12.0f;
+            if (GetNearestNonTankPlayerInRadius(bot, safeDistance))
+                return MoveFromGroup(safeDistance);
         }
 
         return false;
     }
     else if (!botAI->IsTank(bot))
     {
-        Unit* phoenix = GetFirstAliveUnitByEntry(botAI, NPC_PHOENIX);
-        if (!phoenix)
-            return false;
-
-        float currentDistance = bot->GetExactDist2d(phoenix);
-        constexpr float safeDistance = 10.0f;
-        if (currentDistance < safeDistance)
-            return MoveAway(phoenix, safeDistance - currentDistance + 2.0f);
-    }
-    else if (botAI->IsRangedDps(bot))
-    {
-        Unit* phoenixEgg = GetFirstAliveUnitByEntry(botAI, NPC_PHOENIX_EGG);
-        if (!phoenixEgg)
-            return false;
-
-        MarkTargetWithDiamond(bot, phoenixEgg);
-        SetRtiTarget(botAI, "diamond", phoenixEgg);
-
-        if (bot->GetTarget() != phoenixEgg->GetGUID())
-            return Attack (phoenixEgg);
+        if (Unit* phoenix = GetFirstAliveUnitByEntry(botAI, NPC_PHOENIX))
+        {
+            float currentDistance = bot->GetExactDist2d(phoenix);
+            constexpr float safeDistance = 12.0f;
+            if (currentDistance < safeDistance)
+                return MoveAway(phoenix, safeDistance - currentDistance);
+        }
+    
+        if (botAI->IsDps(bot))
+        {
+            if (Unit* phoenixEgg = GetFirstAliveUnitByEntry(botAI, NPC_PHOENIX_EGG))
+            {
+                MarkTargetWithDiamond(bot, phoenixEgg);
+                SetRtiTarget(botAI, "diamond", phoenixEgg);
+        
+                if (bot->GetTarget() != phoenixEgg->GetGUID())
+                    return Attack (phoenixEgg);
+            }
+        }
     }
 
     return false;
@@ -2103,22 +2069,23 @@ bool KaelthasSunstriderBreakMindControlAction::Execute(Event event)
     Player* mcTarget = nullptr;
     float closestDist = std::numeric_limits<float>::max();
 
-    if (Group* group = bot->GetGroup())
-    {
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || member == bot)
-                continue;
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
 
-            if (member->HasAura(SPELL_KAELTHAS_MIND_CONTROL))
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || member == bot)
+            continue;
+
+        if (member->HasAura(SPELL_KAELTHAS_MIND_CONTROL))
+        {
+            float dist = bot->GetExactDist2d(member);
+            if (dist < closestDist)
             {
-                float dist = bot->GetExactDist2d(member);
-                if (dist < closestDist)
-                {
-                    closestDist = dist;
-                    mcTarget = member;
-                }
+                closestDist = dist;
+                mcTarget = member;
             }
         }
     }
@@ -2148,7 +2115,6 @@ bool KaelthasSunstriderBreakMindControlAction::Execute(Event event)
             "shiv",
             "stormstrike"
         };
-
         for (const char* spell : spells)
         {
             if (botAI->CanCastSpell(spell, mcTarget))
@@ -2179,7 +2145,6 @@ bool KaelthasSunstriderBreakThroughShockBarrierAction::Execute(Event event)
             "silencing shot",
             "wind shear",
         };
-
         for (const char* spell : spells)
         {
             if (botAI->CanCastSpell(spell, kaelthas))
@@ -2195,7 +2160,7 @@ bool KaelthasSunstriderBreakThroughShockBarrierAction::Execute(Event event)
     return false;
 }
 
-// Bots immediately fall to the ground after Gravity Lapse, so this action
+// Bots generally immediately fall to the ground after Gravity Lapse, so this action
 // name is kind of a misnomer (though bots are still in a flying state)
 bool KaelthasSunstriderSpreadOutInMidairAction::Execute(Event event)
 {
