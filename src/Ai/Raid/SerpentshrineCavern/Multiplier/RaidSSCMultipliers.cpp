@@ -25,6 +25,22 @@
 
 using namespace SerpentShrineCavernHelpers;
 
+// General
+
+float NoFishingInSerpentShrineCavernMultiplier::GetValue(Action* action)
+{
+    if (bot->GetMapId() == SSC_MAP_ID)
+    {
+        if (dynamic_cast<FishingAction*>(action) ||
+            dynamic_cast<EquipFishingPoleAction*>(action) ||
+            dynamic_cast<MoveNearWaterAction*>(action) ||
+            dynamic_cast<UseBobberAction*>(action))
+            return 0.0f;
+    }
+
+    return 1.0f;
+}
+
 // Trash
 
 float UnderbogColossusEscapeToxicPoolMultiplier::GetValue(Action* action)
@@ -144,7 +160,7 @@ float HydrossTheUnstableControlMisdirectionMultiplier::GetValue(Action* action)
 
 // The Lurker Below
 
-float TheLurkerBelowStopFishingAndFightMultiplier::GetValue(Action* action)
+/* float TheLurkerBelowStopFishingAndFightMultiplier::GetValue(Action* action)
 {
     if (AI_VALUE2(Unit*, "find target", "the lurker below"))
     {
@@ -156,7 +172,7 @@ float TheLurkerBelowStopFishingAndFightMultiplier::GetValue(Action* action)
     }
 
     return 1.0f;
-}
+} */
 
 float TheLurkerBelowStayAwayFromSpoutMultiplier::GetValue(Action* action)
 {
