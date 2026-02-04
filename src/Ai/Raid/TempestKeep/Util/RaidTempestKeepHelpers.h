@@ -44,11 +44,18 @@ namespace TempestKeepHelpers
 
     enum TempestKeepNPCs
     {
+        NPC_CRIMSON_HAND_CENTURION      = 20048,
+
         // Al'ar
+        NPC_ALAR                        = 19514,
         NPC_EMBER_OF_ALAR               = 19551,
         NPC_FLAME_PATCH                 = 20602,
 
+        // Void Reaver
+        NPC_VOID_REAVER                 = 19516,
+
         // High Astromancer Solarian
+        NPC_HIGH_ASTROMANCER_SOLARIAN   = 18805,
         NPC_SOLARIUM_PRIEST             = 18806,
 
         // Kael'thas Sunstrider
@@ -66,6 +73,7 @@ namespace TempestKeepHelpers
         NPC_STAFF_OF_DISINTEGRATION     = 21274,
         // NPC_NETHER_VAPOR             = 21002, // Unimplemented in AC; method needed if fixed
         NPC_PHOENIX                     = 21362,
+        NPC_PHOENIX_EGG                 = 21364,
         NPC_FLAME_STRIKE_TRIGGER        = 21369,
     };
 

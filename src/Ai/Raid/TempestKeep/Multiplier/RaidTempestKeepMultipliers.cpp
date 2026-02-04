@@ -333,14 +333,13 @@ float KaelthasSunstriderManageTankTargetingMultiplier::GetValue(Action* action)
             return 0.0f;
     }
 
-    if (kaelAI->GetPhase() == PHASE_SINGLE_ADVISOR ||
-        kaelAI->GetPhase() == PHASE_ALL_ADVISORS)
+    if (bot->GetVictim() == nullptr)
+        return 1.0f;
+    else if (kaelAI->GetPhase() == PHASE_SINGLE_ADVISOR ||
+             kaelAI->GetPhase() == PHASE_ALL_ADVISORS)
     {
-        if (bot->GetVictim() != nullptr)
-        {
-            if (dynamic_cast<TankAssistAction*>(action))
-                return 0.0f;
-        }
+        if (dynamic_cast<TankAssistAction*>(action))
+            return 0.0f;
     }
 
     return 1.0f;

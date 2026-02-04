@@ -343,7 +343,7 @@ public:
 
 private:
     bool ShouldBotLootWeapon(uint32 weaponEntry);
-    bool LootWeapon(uint32 weaponEntry, uint32 itemId, const char* weaponName);
+    bool LootWeapon(uint32 weaponEntry, uint32 itemId);
 };
 
 class KaelthasSunstriderUseLegendaryWeaponsAction : public Action

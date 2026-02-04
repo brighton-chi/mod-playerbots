@@ -38,7 +38,7 @@ bool TempestKeepEraseTimersAndTrackersAction::Execute(Event event)
 
 bool CrimsonHandCenturionCastPolymorphAction::Execute(Event event)
 {
-    Unit* centurion = AI_VALUE2(Unit*, "find target", "crimson hand centurion");
+    Unit* centurion = GetFirstAliveUnitByEntry(botAI, NPC_CRIMSON_HAND_CENTURION);
     if (!centurion)
         return false;
 
@@ -63,7 +63,7 @@ bool CrimsonHandCenturionCastPolymorphAction::Execute(Event event)
 
 bool AlarMisdirectBossToMainTankAction::Execute(Event event)
 {
-    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+    Unit* alar = GetFirstAliveUnitByEntry(botAI, NPC_ALAR);
     if (!alar)
         return false;
 
@@ -95,7 +95,7 @@ bool AlarBossTanksMoveBetweenPlatformsAction::Execute(Event event)
     if (!botAI->IsMainTank(bot) && !botAI->IsAssistTankOfIndex(bot, 0, true))
         return false;
 
-    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+    Unit* alar = GetFirstAliveUnitByEntry(botAI, NPC_ALAR);
     if (!alar)
         return false;
 
@@ -194,7 +194,7 @@ bool AlarMeleeDpsMoveBetweenPlatformsAction::Execute(Event event)
     if (!botAI->IsMelee(bot) || !botAI->IsDps(bot))
         return false;
 
-    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+    Unit* alar = GetFirstAliveUnitByEntry(botAI, NPC_ALAR);
     if (!alar)
         return false;
 
@@ -230,7 +230,7 @@ bool AlarRangedAndEmberTankMoveUnderPlatformsAction::Execute(Event event)
     if (!botAI->IsRanged(bot) && !botAI->IsAssistTankOfIndex(bot, 1, true))
         return false;
 
-    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+    Unit* alar = GetFirstAliveUnitByEntry(botAI, NPC_ALAR);
     if (!alar)
         return false;
 
@@ -259,7 +259,7 @@ bool AlarRangedAndEmberTankMoveUnderPlatformsAction::Execute(Event event)
         }
         else if (botAI->IsAssistTankOfIndex(bot, 1, true))
         {
-            Unit* ember = AI_VALUE2(Unit*, "find target", "ember of al'ar");
+            Unit* ember = GetFirstAliveUnitByEntry(botAI, NPC_EMBER_OF_ALAR);
             if (!ember && bot->GetExactDist2d(
                 groundTarget.GetPositionX(), groundTarget.GetPositionY()) > 20.0f)
             {
@@ -278,7 +278,7 @@ bool AlarAssistTanksPickUpEmbersAction::Execute(Event event)
     if (!botAI->IsTank(bot))
         return false;
 
-    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+    Unit* alar = GetFirstAliveUnitByEntry(botAI, NPC_ALAR);
     if (!alar)
         return false;
 
@@ -296,7 +296,7 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase1Embers(Unit* alar)
     if (!botAI->IsAssistTankOfIndex(bot, 1, true))
         return false;
 
-    Unit* ember = AI_VALUE2(Unit*, "find target", "ember of al'ar");
+    Unit* ember = GetFirstAliveUnitByEntry(botAI, NPC_EMBER_OF_ALAR);
     if (ember)
     {
         MarkTargetWithSquare(bot, ember);
@@ -440,7 +440,7 @@ bool AlarRangedDpsPrioritizeEmbersAction::Execute(Event event)
         if (bot->GetTarget() != secondEmber->GetGUID())
             return Attack(secondEmber);
     }
-    else if (Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar"))
+    else if (Unit* alar = GetFirstAliveUnitByEntry(botAI, NPC_ALAR))
     {
         SetRtiTarget(botAI, "star", alar);
 
@@ -513,7 +513,7 @@ bool AlarJumpFromPlatformAction::Execute(Event event)
 
 bool AlarMoveAwayFromRebirthAction::Execute(Event event)
 {
-    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+    Unit* alar = GetFirstAliveUnitByEntry(botAI, NPC_ALAR);
     if (!alar)
         return false;
 
@@ -548,7 +548,7 @@ bool AlarSwapTanksOnBossAction::Execute(Event event)
     if (!botAI->IsMainTank(bot) && !botAI->IsAssistTankOfIndex(bot, 0, true))
         return false;
 
-    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+    Unit* alar = GetFirstAliveUnitByEntry(botAI, NPC_ALAR);
     if (!alar)
         return false;
 
@@ -585,7 +585,7 @@ bool AlarSwapTanksOnBossAction::Execute(Event event)
 
 bool AlarAvoidFlamePatchesAndDiveBombsAction::Execute(Event event)
 {
-    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+    Unit* alar = GetFirstAliveUnitByEntry(botAI, NPC_ALAR);
     if (!alar)
         return false;
 
@@ -668,7 +668,7 @@ bool AlarReturnToRoomCenterAction::Execute(Event event)
 
 bool AlarManagePhaseTrackerAction::Execute(Event event)
 {
-    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+    Unit* alar = GetFirstAliveUnitByEntry(botAI, NPC_ALAR);
     if (!alar)
         return false;
 
@@ -696,7 +696,7 @@ bool AlarManagePhaseTrackerAction::Execute(Event event)
 
 bool VoidReaverTanksPositionBossAction::Execute(Event event)
 {
-    Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
+    Unit* voidReaver = GetFirstAliveUnitByEntry(botAI, NPC_VOID_REAVER);
     if (!voidReaver)
         return false;
 
@@ -746,7 +746,7 @@ bool VoidReaverRangedUseAggroDumpAbilityAction::Execute(Event event)
 // Therefore, this spreads out the ranged bots so as few of them as possible get hit
 bool VoidReaverSpreadRangedAction::Execute(Event event)
 {
-    Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
+    Unit* voidReaver = GetFirstAliveUnitByEntry(botAI, NPC_VOID_REAVER);
     if (!voidReaver)
         return false;
 
@@ -831,7 +831,7 @@ Position VoidReaverSpreadRangedAction::GetRangedBotPosition(const Position& cent
 
 bool HighAstromancerSolarianRangedLeaveSpaceForMeleeAction::Execute(Event event)
 {
-    Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
+    Unit* astromancer = GetFirstAliveUnitByEntry(botAI, NPC_HIGH_ASTROMANCER_SOLARIAN);
     if (!astromancer)
         return false;
 
@@ -989,7 +989,7 @@ Unit* HighAstromancerSolarianTargetSolariumPriestsAction::AssignSolariumPriestsT
 
 bool HighAstromancerSolarianTankVoidwalkerAction::Execute(Event event)
 {
-    Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
+    Unit* astromancer = GetFirstAliveUnitByEntry(botAI, NPC_HIGH_ASTROMANCER_SOLARIAN);
     if (!astromancer)
         return false;
 
@@ -1035,7 +1035,7 @@ bool HighAstromancerSolarianCastFearWardOnMainTankAction::Execute(Event event)
 
 bool KaelthasSunstriderKiteThaladredAction::Execute(Event event)
 {
-    Unit* thaladred = AI_VALUE2(Unit*, "find target", "thaladred the darkener");
+    Unit* thaladred = GetFirstAliveUnitByEntry(botAI, NPC_THALADRED_THE_DARKENER);
     if (!thaladred)
         return false;
 
@@ -1084,12 +1084,12 @@ bool KaelthasSunstriderMisdirectAdvisorsToTanksAction::Execute(Event event)
     Player* tankTarget = nullptr;
     if (hunterIndex == 0)
     {
-        advisorTarget = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
+        advisorTarget = GetFirstAliveUnitByEntry(botAI, NPC_GRAND_ASTROMANCER_CAPERNIAN);
         tankTarget = GetCapernianTank(botAI, bot);
     }
     else if (hunterIndex == 1)
     {
-        advisorTarget = AI_VALUE2(Unit*, "find target", "master engineer telonicus");
+        advisorTarget = GetFirstAliveUnitByEntry(botAI, NPC_MASTER_ENGINEER_TELONICUS);
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
@@ -1103,7 +1103,7 @@ bool KaelthasSunstriderMisdirectAdvisorsToTanksAction::Execute(Event event)
     }
     else if (hunterIndex == 2)
     {
-        advisorTarget = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
+        advisorTarget = GetFirstAliveUnitByEntry(botAI, NPC_GRAND_ASTROMANCER_CAPERNIAN);
         tankTarget = GetCapernianTank(botAI, bot);
     }
 
@@ -1127,7 +1127,7 @@ bool KaelthasSunstriderMisdirectAdvisorsToTanksAction::Execute(Event event)
 
 bool KaelthasSunstriderMainTankPositionSanguinarAction::Execute(Event event)
 {
-    Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
+    Unit* sanguinar = GetFirstAliveUnitByEntry(botAI, NPC_LORD_SANGUINAR);
     if (!sanguinar)
         return false;
 
@@ -1184,7 +1184,7 @@ bool KaelthasSunstriderCastFearWardOnSanguinarTankAction::Execute(Event event)
 // Use tank strategy only when necessary to tank Capernian; otherwise, use DPS strategies
 bool KaelthasSunstriderManageWarlockTankStrategyAction::Execute(Event event)
 {
-    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    Unit* kaelthas = GetFirstAliveUnitByEntry(botAI, NPC_KAELTHAS_SUNSTRIDER);
     if (!kaelthas)
         return false;
 
@@ -1199,7 +1199,7 @@ bool KaelthasSunstriderManageWarlockTankStrategyAction::Execute(Event event)
     {
         if (!currentlyTank)
         {
-            Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
+            Unit* sanguinar = GetFirstAliveUnitByEntry(botAI, NPC_LORD_SANGUINAR);
             if (sanguinar && sanguinar->HasAura(SPELL_PERMANENT_FEIGN_DEATH))
                 botAI->ChangeStrategy("+tank", BotState::BOT_STATE_COMBAT);
         }
@@ -1219,7 +1219,7 @@ bool KaelthasSunstriderManageWarlockTankStrategyAction::Execute(Event event)
     // Phase 3
     else if (kaelAI->GetPhase() == PHASE_ALL_ADVISORS)
     {
-        Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
+        Unit* capernian = GetFirstAliveUnitByEntry(botAI, NPC_GRAND_ASTROMANCER_CAPERNIAN);
         // If Capernian is alive, switch to tank strategy
         // (fallback in case not all weapons were down before Phase 3)
         if (capernian && !currentlyTank)
@@ -1234,7 +1234,7 @@ bool KaelthasSunstriderManageWarlockTankStrategyAction::Execute(Event event)
 
 bool KaelthasSunstriderWarlockTankPositionCapernianAction::Execute(Event event)
 {
-    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    Unit* kaelthas = GetFirstAliveUnitByEntry(botAI, NPC_KAELTHAS_SUNSTRIDER);
     if (!kaelthas)
         return false;
 
@@ -1242,7 +1242,7 @@ bool KaelthasSunstriderWarlockTankPositionCapernianAction::Execute(Event event)
     if (!kaelAI)
         return false;
 
-    Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
+    Unit* capernian = GetFirstAliveUnitByEntry(botAI, NPC_GRAND_ASTROMANCER_CAPERNIAN);
     if (!capernian || capernian->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) ||
         capernian->HasAura(SPELL_PERMANENT_FEIGN_DEATH))
         return false;
@@ -1269,7 +1269,7 @@ bool KaelthasSunstriderWarlockTankPositionCapernianAction::Execute(Event event)
 
 bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::Execute(Event event)
 {
-    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    Unit* kaelthas = GetFirstAliveUnitByEntry(botAI, NPC_KAELTHAS_SUNSTRIDER);
     if (!kaelthas)
         return false;
 
@@ -1296,7 +1296,7 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::RangedBotsDisperse(
 {
     if (kaelAI->GetPhase() == PHASE_ALL_ADVISORS)
     {
-        if (AI_VALUE2(Unit*, "find target", "thaladred the darkener"))
+        if (GetFirstAliveEntryByUnit(botAI, NPC_THALADRED_THE_DARKENER))
             return false;
     }
 
@@ -1313,7 +1313,7 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::RangedBotsDisperse(
 
 bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::StayBackFromCapernian()
 {
-    Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
+    Unit* capernian = GetFirstAliveUnitByEntry(botAI, NPC_GRAND_ASTROMANCER_CAPERNIAN);
     if (!capernian)
         return false;
 
@@ -1368,7 +1368,7 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::StayBackFromCaperni
 
 bool KaelthasSunstriderFirstAssistTankPositionTelonicusAction::Execute(Event event)
 {
-    Unit* telonicus = AI_VALUE2(Unit*, "find target", "master engineer telonicus");
+    Unit* telonicus = GetFirstAliveUnitByEntry(botAI, NPC_MASTER_ENGINEER_TELONICUS);
     if (!telonicus)
         return false;
 
@@ -1408,19 +1408,19 @@ bool KaelthasSunstriderHandleAdvisorRolesInPhase3Action::Execute(Event event)
         movePosition = &ADVISOR_HEAL_POSITION;
     else if (botAI->IsMainTank(bot))
     {
-        Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
+        Unit* sanguinar = GetFirstAliveUnitByEntry(botAI, NPC_LORD_SANGUINAR);
         if (sanguinar && sanguinar->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE))
             movePosition = &SANGUINAR_WAITING_POSITION;
     }
     else if (botAI->IsAssistTankOfIndex(bot, 0, true))
     {
-        Unit* telonicus = AI_VALUE2(Unit*, "find target", "master engineer telonicus");
+        Unit* telonicus = GetFirstAliveUnitByEntry(botAI, NPC_MASTER_ENGINEER_TELONICUS);
         if (telonicus && telonicus->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE))
             movePosition = &TELONICUS_WAITING_POSITION;
     }
     else if (GetCapernianTank(botAI, bot) == bot)
     {
-        Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
+        Unit* capernian = GetFirstAliveUnitByEntry(botAI, NPC_GRAND_ASTROMANCER_CAPERNIAN);
         if (capernian && capernian->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE))
             movePosition = &CAPERNIAN_WAITING_POSITION;
     }
@@ -1447,7 +1447,7 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
 {
     // Target priority 1: Thaladred, except Capernian tank
     Player* capernianTank = GetCapernianTank(botAI, bot);
-    Unit* thaladred = AI_VALUE2(Unit*, "find target", "thaladred the darkener");
+    Unit* thaladred = GetFirstAliveUnitByEntry(botAI, NPC_THALADRED_THE_DARKENER);
     if ((!capernianTank || bot != capernianTank) &&
         thaladred && !thaladred->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
         !thaladred->HasAura(SPELL_PERMANENT_FEIGN_DEATH))
@@ -1464,7 +1464,7 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
     // Target priority 2: Capernian for ranged only (excluding longbow tank)
     Player* debuffHunter = GetDebuffHunter(botAI, bot);
 
-    Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
+    Unit* capernian = GetFirstAliveUnitByEntry(botAI, NPC_GRAND_ASTROMANCER_CAPERNIAN);
     if (botAI->IsRangedDps(bot) && (!debuffHunter || bot != debuffHunter) &&
         capernian && !capernian->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
         !capernian->HasAura(SPELL_PERMANENT_FEIGN_DEATH))
@@ -1478,7 +1478,7 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
     }
 
     // Target priority 3: Sanguinar (debuff hunter and melee move here after Thaladred)
-    Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
+    Unit* sanguinar = GetFirstAliveUnitByEntry(botAI, NPC_LORD_SANGUINAR);
     if (sanguinar && !sanguinar->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
         !sanguinar->HasAura(SPELL_PERMANENT_FEIGN_DEATH))
     {
@@ -1491,7 +1491,7 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
     }
 
     // Target priority 4: Telonicus
-    Unit* telonicus = AI_VALUE2(Unit*, "find target", "master engineer telonicus");
+    Unit* telonicus = GetFirstAliveUnitByEntry(botAI, NPC_MASTER_ENGINEER_TELONICUS);
     if (telonicus && !telonicus->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
         !telonicus->HasAura(SPELL_PERMANENT_FEIGN_DEATH))
     {
@@ -1529,20 +1529,20 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
 
 bool KaelthasSunstriderManageAdvisorDpsTimerAction::Execute(Event event)
 {
-    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    Unit* kaelthas = GetFirstAliveUnitByEntry(botAI, NPC_KAELTHAS_SUNSTRIDER);
     if (!kaelthas)
         return false;
 
-    const char* advisorNames[] =
+    const uint32 advisorEntries[] =
     {
-        "grand astromancer capernian",
-        "master engineer telonicus",
-        "lord sanguinar"
+        NPC_GRAND_ASTROMANCER_CAPERNIAN,
+        NPC_MASTER_ENGINEER_TELONICUS,
+        NPC_LORD_SANGUINAR
     };
 
-    for (const char* name : advisorNames)
+    for (const uint32 entry : advisorEntries)
     {
-        Unit* advisor = AI_VALUE2(Unit*, "find target", name);
+        Unit* advisor = GetFirstAliveUnitByEntry(botAI, entry);
         if (!advisor)
             continue;
 
@@ -1565,10 +1565,10 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event eve
 
     // Priority 0: Everybody other than the main tank needs to stay away from the axe
     // But this applies to assist tanks only after they get aggro on the mace, dagger, or sword
-    Unit* axe = AI_VALUE2(Unit*, "find target", "devastation");
-    Unit* mace = AI_VALUE2(Unit*, "find target", "cosmic infuser");
-    Unit* dagger = AI_VALUE2(Unit*, "find target", "infinity blades");
-    Unit* sword = AI_VALUE2(Unit*, "find target", "warp slicer");
+    Unit* axe = GetFirstAliveUnitByEntry(botAI, NPC_DEVASTATION);
+    Unit* mace = GetFirstAliveUnitByEntry(botAI, NPC_COSMIC_INFUSER);
+    Unit* dagger = GetFirstAliveUnitByEntry(botAI, NPC_INFINITY_BLADES);
+    Unit* sword = GetFirstAliveUnitByEntry(botAI, NPC_WARP_SLICER);
     if (axe)
     {
         if (botAI->IsDps(bot) || botAI->IsHeal(bot) ||
@@ -1585,7 +1585,7 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event eve
     if (botAI->IsDps(bot))
     {
         // Priority 1: Staff of Disintegration (Skull)
-        if (Unit* staff = AI_VALUE2(Unit*, "find target", "staff of disintegration"))
+        if (Unit* staff = GetFirstAliveUnitByEntry(botAI, NPC_STAFF_OF_DISINTEGRATION))
         {
             MarkTargetWithSkull(bot, staff);
             SetRtiTarget(botAI, "skull", staff);
@@ -1629,7 +1629,7 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event eve
                 return Attack(axe);
         }
         // Priority 6: Netherstrand Longbow (Cross)
-        else if (Unit* longbow = AI_VALUE2(Unit*, "find target", "netherstrand longbow"))
+        else if (Unit* longbow = GetFirstAliveUnitByEntry(botAI, NPC_NETHERSTRAND_LONGBOW))
         {
             MarkTargetWithCross(bot, longbow);
             SetRtiTarget(botAI, "cross", longbow);
@@ -1638,7 +1638,7 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event eve
                 return Attack(longbow);
         }
         // Priority 7: Phaseshift Bulwark (Skull)
-        else if (Unit* shield = AI_VALUE2(Unit*, "find target", "phaseshift bulwark"))
+        else if (Unit* shield = GetFirstAliveUnitByEntry(botAI, NPC_PHASESHIFT_BULWARK))
         {
             MarkTargetWithSkull(bot, shield);
             SetRtiTarget(botAI, "skull", shield);
@@ -1653,7 +1653,7 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event eve
 
 bool KaelthasSunstriderMoveDevastationAwayAction::Execute(Event event)
 {
-    Unit* axe = AI_VALUE2(Unit*, "find target", "devastation");
+    Unit* axe = GetFirstAliveUnitByEntry(botAI, NPC_DEVASTATION);
     if (!axe)
         return false;
 
@@ -1683,18 +1683,17 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::Execute(Event event)
     {
         uint32 npcEntry;
         uint32 itemId;
-        const char* name;
     };
 
     const WeaponInfo weapons[] =
     {
-        { NPC_NETHERSTRAND_LONGBOW, ITEM_NETHERSTRAND_LONGBOW, "netherstrand longbow" },
-        { NPC_COSMIC_INFUSER, ITEM_COSMIC_INFUSER, "cosmic infuser" },
-        { NPC_DEVASTATION, ITEM_DEVASTATION, "devastation" },
-        { NPC_INFINITY_BLADES, ITEM_INFINITY_BLADE, "infinity blade" },
-        { NPC_WARP_SLICER, ITEM_WARP_SLICER, "warp slicer" },
-        { NPC_STAFF_OF_DISINTEGRATION, ITEM_STAFF_OF_DISINTEGRATION, "staff of disintegration" },
-        { NPC_PHASESHIFT_BULWARK, ITEM_PHASESHIFT_BULWARK, "phaseshift bulwark" }
+        { NPC_NETHERSTRAND_LONGBOW, ITEM_NETHERSTRAND_LONGBOW },
+        { NPC_COSMIC_INFUSER, ITEM_COSMIC_INFUSER },
+        { NPC_DEVASTATION, ITEM_DEVASTATION },
+        { NPC_INFINITY_BLADES, ITEM_INFINITY_BLADE },
+        { NPC_WARP_SLICER, ITEM_WARP_SLICER },
+        { NPC_STAFF_OF_DISINTEGRATION, ITEM_STAFF_OF_DISINTEGRATION },
+        { NPC_PHASESHIFT_BULWARK, ITEM_PHASESHIFT_BULWARK }
     };
 
     for (auto const& weapon : weapons)
@@ -1731,7 +1730,7 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::Execute(Event event)
                 continue;
             }
 
-            return LootWeapon(weapon.npcEntry, weapon.itemId, weapon.name);
+            return LootWeapon(weapon.npcEntry, weapon.itemId);
         }
     }
 
@@ -1785,7 +1784,7 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::ShouldBotLootWeapon(uint32 we
 }
 
 bool KaelthasSunstriderLootLegendaryWeaponsAction::LootWeapon(
-    uint32 weaponEntry, uint32 itemId, const char* weaponName)
+    uint32 weaponEntry, uint32 itemId)
 {
     auto const& corpses = context->GetValue<GuidVector>("nearest corpses")->Get();
     const float maxLootRange = sPlayerbotAIConfig.lootDistance;
@@ -1824,7 +1823,7 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::LootWeapon(
         const ObjectGuid corpseGuid = guid;
         constexpr uint8 weaponIndex = 0;
 
-        botAI->AddTimedEvent([this, botGuid, corpseGuid, weaponIndex, itemId, weaponName]()
+        botAI->AddTimedEvent([this, botGuid, corpseGuid, weaponIndex, itemId]()
         {
             Player* receiver = botGuid.IsEmpty() ? nullptr : ObjectAccessor::FindPlayer(botGuid);
             if (!receiver || !receiver->IsInWorld())
@@ -1858,7 +1857,7 @@ bool KaelthasSunstriderUseLegendaryWeaponsAction::UsePhaseshiftBulwark()
     if (!offHand || offHand->GetEntry() != ITEM_PHASESHIFT_BULWARK)
         return false;
 
-    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    Unit* kaelthas = GetFirstAliveUnitByEntry(botAI, NPC_KAELTHAS_SUNSTRIDER);
     if (!kaelthas || !kaelthas->HasAura(SPELL_SHOCK_BARRIER))
         return false;
 
@@ -1942,7 +1941,7 @@ bool KaelthasSunstriderMainTankPositionBossAction::Execute(Event event)
     if (!botAI->IsMainTank(bot))
         return false;
 
-    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    Unit* kaelthas = GetFirstAliveUnitByEntry(botAI, NPC_KAELTHAS_SUNSTRIDER);
     if (!kaelthas)
         return false;
 
@@ -2074,7 +2073,7 @@ bool KaelthasSunstriderHandlePhoenixesAndEggsAction::Execute(Event event)
     }
     else if (!botAI->IsTank(bot))
     {
-        Unit* phoenix = AI_VALUE2(Unit*, "find target", "phoenix");
+        Unit* phoenix = GetFirstAliveUnitByEntry(botAI, NPC_PHOENIX);
         if (!phoenix)
             return false;
 
@@ -2085,7 +2084,7 @@ bool KaelthasSunstriderHandlePhoenixesAndEggsAction::Execute(Event event)
     }
     else if (botAI->IsRangedDps(bot))
     {
-        Unit* phoenixEgg = AI_VALUE2(Unit*, "find target", "phoenix egg");
+        Unit* phoenixEgg = GetFirstAliveUnitByEntry(botAI, NPC_PHOENIX_EGG);
         if (!phoenixEgg)
             return false;
 
@@ -2163,7 +2162,7 @@ bool KaelthasSunstriderBreakMindControlAction::Execute(Event event)
 // Shock Barrier needs to be #1 focus, even if there is a Phoenix Egg up
 bool KaelthasSunstriderBreakThroughShockBarrierAction::Execute(Event event)
 {
-    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    Unit* kaelthas = GetFirstAliveUnitByEntry(botAI, NPC_KAELTHAS_SUNSTRIDER);
     if (!kaelthas)
         return false;
 
