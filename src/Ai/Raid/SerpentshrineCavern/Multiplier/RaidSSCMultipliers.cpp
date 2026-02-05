@@ -73,7 +73,8 @@ float HydrossTheUnstableDisableTankActionsMultiplier::GetValue(Action* action)
     if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
         dynamic_cast<ReachTargetAction*>(action) ||
         (dynamic_cast<AttackAction*>(action) &&
-         !dynamic_cast<HydrossTheUnstablePositionFrostTankAction*>(action)))
+         !dynamic_cast<HydrossTheUnstablePositionFrostTankAction*>(action) &&
+         !dynamic_cast<HydrossTheUnstablePositionNatureTankAction*>(action)))
     {
         if ((botAI->IsMainTank(bot) && hydross->HasAura(SPELL_CORRUPTION)) ||
             (botAI->IsAssistTankOfIndex(bot, 0, true) && !hydross->HasAura(SPELL_CORRUPTION)))
