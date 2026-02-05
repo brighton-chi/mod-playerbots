@@ -19,7 +19,7 @@ bool TempestKeepBotIsNotInCombatTrigger::IsActive()
 bool CrimsonHandCenturionCastsArcaneVolleyTrigger::IsActive()
 {
     return bot->getClass() == CLASS_MAGE &&
-           GetFirstAliveUnitByEntry(botAI, NPC_CRIMSON_HAND_CENTURION);
+           AI_VALUE2(Unit*, "find target", "crimson hand centurion");
 }
 
 // Al'ar <Phoenix God>
@@ -29,13 +29,13 @@ bool AlarPullingBossTrigger::IsActive()
     if (bot->getClass() != CLASS_HUNTER)
         return false;
 
-    Unit* alar = GetFirstAliveUnitByEntry(botAI, NPC_ALAR);
+    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
     return alar && alar->GetHealthPct() > 98.0f;
 }
 
 bool AlarBossIsFlyingBetweenPlatformsTrigger::IsActive()
 {
-    Unit* alar = GetFirstAliveUnitByEntry(botAI, NPC_ALAR);
+    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
     if (!alar || !alar->IsVisible())
         return false;
 
@@ -67,7 +67,7 @@ bool AlarKillingEmbersOfAlarDamagesBossTrigger::IsActive()
 
 bool AlarIncomingFlameQuillsTrigger::IsActive()
 {
-    Unit* alar = GetFirstAliveUnitByEntry(botAI, NPC_ALAR);
+    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
     if (!alar || isAlarInPhase2[alar->GetMap()->GetInstanceId()])
         return false;
 
@@ -78,7 +78,7 @@ bool AlarIncomingFlameQuillsTrigger::IsActive()
 
 bool AlarRisingFromTheAshesTrigger::IsActive()
 {
-    Unit* alar = GetFirstAliveUnitByEntry(botAI, NPC_ALAR);
+    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
     if (!alar)
         return false;
 
@@ -91,7 +91,7 @@ bool AlarRisingFromTheAshesTrigger::IsActive()
 
 bool AlarEverythingIsOnFireInPhase2Trigger::IsActive()
 {
-    Unit* alar = GetFirstAliveUnitByEntry(botAI, NPC_ALAR);
+    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
     return alar && isAlarInPhase2[alar->GetMap()->GetInstanceId()];
 }
 
@@ -100,7 +100,7 @@ bool AlarPhase2EncounterIsAtRoomCenterTrigger::IsActive()
     if (bot->GetVictim())
         return false;
 
-    Unit* alar = GetFirstAliveUnitByEntry(botAI, NPC_ALAR);
+    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
     if (!alar || !isAlarInPhase2[alar->GetMap()->GetInstanceId()])
         return false;
 
@@ -115,7 +115,7 @@ bool AlarPhase2EncounterIsAtRoomCenterTrigger::IsActive()
 
 bool AlarStrategyChangesBetweenPhasesTrigger::IsActive()
 {
-    return GetFirstAliveUnitByEntry(botAI, NPC_ALAR) &&
+    return AI_VALUE2(Unit*, "find target", "al'ar") &&
            IsMechanicTrackerBot(botAI, bot, TEMPEST_KEEP_MAP_ID, nullptr);
 }
 
@@ -126,7 +126,7 @@ bool VoidReaverBossCastsPoundingTrigger::IsActive()
     if (!botAI->IsTank(bot))
         return false;
 
-    Unit* voidReaver = GetFirstAliveUnitByEntry(botAI, NPC_VOID_REAVER);
+    Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
     return voidReaver && voidReaver->GetVictim() == bot;
 }
 
@@ -135,14 +135,14 @@ bool VoidReaverKnockAwayReducesTankAggroTrigger::IsActive()
     if (!botAI->IsRanged(bot))
         return false;
 
-    Unit* voidReaver = GetFirstAliveUnitByEntry(botAI, NPC_VOID_REAVER);
+    Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
     return voidReaver && voidReaver->GetVictim() == bot;
 }
 
 bool VoidReaverBossLaunchesArcaneOrbsTrigger::IsActive()
 {
     return botAI->IsRanged(bot) &&
-           GetFirstAliveUnitByEntry(botAI, NPC_VOID_REAVER);
+           AI_VALUE2(Unit*, "find target", "void reaver");
 }
 
 // High Astromancer Solarian
@@ -155,7 +155,7 @@ bool HighAstromancerSolarianBossCastsWrathOfTheAstromancerTrigger::IsActive()
     if (!botAI->IsRanged(bot))
         return false;
 
-    Unit* astromancer = GetFirstAliveUnitByEntry(botAI, NPC_HIGH_ASTROMANCER_SOLARIAN);
+    Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
     return astromancer && !astromancer->HasAura(SPELL_SOLARIAN_TRANSFORM);
 }
 
@@ -169,7 +169,7 @@ bool HighAstromancerSolarianBossHasVanishedTrigger::IsActive()
     if (bot->HasAura(SPELL_WRATH_OF_THE_ASTROMANCER))
         return false;
 
-    Unit* astromancer = GetFirstAliveUnitByEntry(botAI, NPC_HIGH_ASTROMANCER_SOLARIAN);
+    Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
     if (!astromancer)
         return false;
 
@@ -189,7 +189,7 @@ bool HighAstromancerSolarianBossTransformedIntoVoidwalkerTrigger::IsActive()
     if (!botAI->IsMainTank(bot))
         return false;
 
-    Unit* astromancer = GetFirstAliveUnitByEntry(botAI, NPC_HIGH_ASTROMANCER_SOLARIAN);
+    Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
     return astromancer && astromancer->HasAura(SPELL_SOLARIAN_TRANSFORM);
 }
 
@@ -198,7 +198,7 @@ bool HighAstromancerSolarianBossCastsPsychicScreamTrigger::IsActive()
     if (bot->getClass() != CLASS_PRIEST)
         return false;
 
-    Unit* astromancer = GetFirstAliveUnitByEntry(botAI, NPC_HIGH_ASTROMANCER_SOLARIAN);
+    Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
     return astromancer && astromancer->HasAura(SPELL_SOLARIAN_TRANSFORM);
 }
 
@@ -206,12 +206,12 @@ bool HighAstromancerSolarianBossCastsPsychicScreamTrigger::IsActive()
 
 bool KaelthasSunstriderThaladredIsFixatedOnBotTrigger::IsActive()
 {
-    Unit* thaladred = GetFirstAliveUnitByEntry(botAI, NPC_THALADRED_THE_DARKENER);
-    if (!thaladred || thaladred->GetVictim() != bot)
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    if (!kaelthas)
         return false;
 
-    Unit* kaelthas = GetFirstAliveUnitByEntry(botAI, NPC_KAELTHAS_SUNSTRIDER);
-    if (!kaelthas)
+    Unit* thaladred = AI_VALUE2(Unit*, "find target", "thaladred the darkener");
+    if (!thaladred || thaladred->GetVictim() != bot)
         return false;
 
     boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
@@ -226,7 +226,7 @@ bool KaelthasSunstriderPullingTankableAdvisorsTrigger::IsActive()
     if (bot->getClass() != CLASS_HUNTER)
         return false;
 
-    Unit* kaelthas = GetFirstAliveUnitByEntry(botAI, NPC_KAELTHAS_SUNSTRIDER);
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     if (!kaelthas)
         return false;
 
@@ -237,7 +237,7 @@ bool KaelthasSunstriderPullingTankableAdvisorsTrigger::IsActive()
 
 bool KaelthasSunstriderSanguinarEngagedByMainTankTrigger::IsActive()
 {
-    Unit* sanguinar = GetFirstAliveUnitByEntry(botAI, NPC_LORD_SANGUINAR);
+    Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
     if (!sanguinar || sanguinar->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) ||
         sanguinar->HasAura(SPELL_PERMANENT_FEIGN_DEATH))
         return false;
@@ -250,7 +250,7 @@ bool KaelthasSunstriderSanguinarCastsBellowingRoarTrigger::IsActive()
     if (bot->getClass() != CLASS_PRIEST)
         return false;
 
-    Unit* kaelthas = GetFirstAliveUnitByEntry(botAI, NPC_KAELTHAS_SUNSTRIDER);
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     if (!kaelthas)
         return false;
 
@@ -286,7 +286,7 @@ bool KaelthasSunstriderCapernianShouldBeTankedByAWarlockTrigger::IsActive()
     if (bot->getClass() != CLASS_WARLOCK)
         return false;
 
-    if (!GetFirstAliveUnitByEntry(botAI, NPC_KAELTHAS_SUNSTRIDER))
+    if (!AI_VALUE2(Unit*, "find target", "kael'thas sunstrider"))
         return false;
 
     return GetCapernianTank(botAI, bot) == bot;
@@ -294,7 +294,7 @@ bool KaelthasSunstriderCapernianShouldBeTankedByAWarlockTrigger::IsActive()
 
 bool KaelthasSunstriderCapernianCastsArcaneBurstAndConflagrationTrigger::IsActive()
 {
-    Unit* capernian = GetFirstAliveUnitByEntry(botAI, NPC_GRAND_ASTROMANCER_CAPERNIAN);
+    Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
     if (!capernian || capernian->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) ||
         capernian->HasAura(SPELL_PERMANENT_FEIGN_DEATH))
         return false;
@@ -304,7 +304,7 @@ bool KaelthasSunstriderCapernianCastsArcaneBurstAndConflagrationTrigger::IsActiv
 
 bool KaelthasSunstriderTelonicusEngagedByFirstAssistTankTrigger::IsActive()
 {
-    Unit* telonicus = GetFirstAliveUnitByEntry(botAI, NPC_MASTER_ENGINEER_TELONICUS);
+    Unit* telonicus = AI_VALUE2(Unit*, "find target", "master engineer telonicus");
     if (!telonicus || telonicus->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) ||
         telonicus->HasAura(SPELL_PERMANENT_FEIGN_DEATH))
         return false;
@@ -314,12 +314,12 @@ bool KaelthasSunstriderTelonicusEngagedByFirstAssistTankTrigger::IsActive()
 
 bool KaelthasSunstriderBotsHaveSpecificRolesInPhase3Trigger::IsActive()
 {
-    Unit* kaelthas = GetFirstAliveUnitByEntry(botAI, NPC_KAELTHAS_SUNSTRIDER);
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     if (!kaelthas)
         return false;
 
-    if (!GetFirstAliveUnitByEntry(botAI, NPC_MASTER_ENGINEER_TELONICUS) &&
-        !GetFirstAliveUnitByEntry(botAI, NPC_LORD_SANGUINAR))
+    if (!AI_VALUE2(Unit*, "find target", "master engineer telonicus") &&
+        !AI_VALUE2(Unit*, "find target", "lord sanguinar"))
         return false;
 
     if (!botAI->IsAssistHealOfIndex(bot, 0, true) &&
@@ -337,7 +337,7 @@ bool KaelthasSunstriderDeterminingAdvisorKillOrderTrigger::IsActive()
     if (botAI->IsHeal(bot))
         return false;
 
-    Unit* kaelthas = GetFirstAliveUnitByEntry(botAI, NPC_KAELTHAS_SUNSTRIDER);
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     if (!kaelthas)
         return false;
 
@@ -352,7 +352,7 @@ bool KaelthasSunstriderDeterminingAdvisorKillOrderTrigger::IsActive()
 
 bool KaelthasSunstriderWaitingForTanksToGetAggroOnAdvisorsTrigger::IsActive()
 {
-    Unit* kaelthas = GetFirstAliveUnitByEntry(botAI, NPC_KAELTHAS_SUNSTRIDER);
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     if (!kaelthas)
         return false;
 
@@ -365,7 +365,7 @@ bool KaelthasSunstriderWaitingForTanksToGetAggroOnAdvisorsTrigger::IsActive()
 
 bool KaelthasSunstriderLegendaryWeaponsAreAliveTrigger::IsActive()
 {
-    Unit* kaelthas = GetFirstAliveUnitByEntry(botAI, NPC_KAELTHAS_SUNSTRIDER);
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     if (!kaelthas)
         return false;
 
@@ -378,19 +378,19 @@ bool KaelthasSunstriderLegendaryWeaponsAreAliveTrigger::IsActive()
 
 bool KaelthasSunstriderLegendaryAxeCastsWhirlwindTrigger::IsActive()
 {
-    return GetFirstAliveUnitByEntry(botAI, NPC_DEVASTATION) &&
+    return AI_VALUE2(Unit*, "find target", "devastation") &&
            botAI->IsMainTank(bot);
 }
 
 bool KaelthasSunstriderLegendaryWeaponsAreDeadAndLootableTrigger::IsActive()
 {
-    return GetFirstAliveUnitByEntry(botAI, NPC_KAELTHAS_SUNSTRIDER) &&
+    return AI_VALUE2(Unit*, "find target", "kael'thas sunstrider") &&
            IsAnyLegendaryWeaponDead(botAI, bot);
 }
 
 bool KaelthasSunstriderLegendaryWeaponsAreEquippedTrigger::IsActive()
 {
-    if (!GetFirstAliveUnitByEntry(botAI, NPC_KAELTHAS_SUNSTRIDER))
+    if (!AI_VALUE2(Unit*, "find target", "kael'thas sunstrider"))
         return false;
 
     return bot->HasItemCount(ITEM_STAFF_OF_DISINTEGRATION, 1, false) ||
@@ -446,7 +446,7 @@ bool KaelthasSunstriderLegendaryWeaponsWereLostTrigger::IsActive()
 
 bool KaelthasSunstriderBossHasEnteredTheFightTrigger::IsActive()
 {
-    Unit* kaelthas = GetFirstAliveUnitByEntry(botAI, NPC_KAELTHAS_SUNSTRIDER);
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     if (!kaelthas)
         return false;
 
@@ -462,7 +462,7 @@ bool KaelthasSunstriderPhoenixesAndEggsAreSpawningTrigger::IsActive()
 
 bool KaelthasSunstriderRaidMemberIsMindControlledTrigger::IsActive()
 {
-    Unit* kaelthas = GetFirstAliveUnitByEntry(botAI, NPC_KAELTHAS_SUNSTRIDER);
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     if (!kaelthas)
         return false;
 
@@ -493,7 +493,7 @@ bool KaelthasSunstriderBossIsCastingPyroblastTrigger::IsActive()
     if (!botAI->IsDps(bot))
         return false;
 
-    Unit* kaelthas = GetFirstAliveUnitByEntry(botAI, NPC_KAELTHAS_SUNSTRIDER);
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     return kaelthas && kaelthas->HasAura(SPELL_SHOCK_BARRIER);
 }
 
