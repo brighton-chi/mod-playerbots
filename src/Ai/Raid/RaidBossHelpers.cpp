@@ -103,7 +103,7 @@ Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry)
     for (auto const& npcGuid : npcs)
     {
         Unit* unit = botAI->GetUnit(npcGuid);
-        if (unit && unit->IsAlive() && unit->GetEntry() == entry)
+        if (unit && unit->IsAlive() && unit->IsInCombat() && unit->GetEntry() == entry)
             return unit;
     }
 
