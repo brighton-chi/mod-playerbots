@@ -18,14 +18,14 @@ bool TempestKeepEraseTimersAndTrackersAction::Execute(Event event)
     const uint32 instanceId = bot->GetMap()->GetInstanceId();
 
     bool erased = false;
-    if (!AI_VALUE2(Unit*, "find target", "void reaver"))
+    if (!GetFirstAliveUnitByEntry(botAI, NPC_VOID_REAVER))
     {
         if (initialVoidReaverPositions.erase(guid) > 0)
             erased = true;
         if (hasReachedInitialVoidReaverPosition.erase(guid) > 0)
             erased = true;
     }
-    if (!AI_VALUE2(Unit*, "find target", "kael'thas sunstrider"))
+    if (!GetFirstAliveUnitByEntry(botAI, NPC_KAELTHAS_SUNSTRIDER))
     {
         if (advisorDpsWaitTimer.erase(instanceId) > 0)
             erased = true;
