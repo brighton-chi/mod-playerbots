@@ -12,6 +12,7 @@
 #include "MageActions.h"
 #include "PaladinActions.h"
 #include "Playerbots.h"
+#include "RaidBossHelpers.h"
 #include "RogueActions.h"
 #include "ShamanActions.h"
 #include "WarlockActions.h"
@@ -118,7 +119,7 @@ float AlarPhase2NoTankingIfArmorMeltedMultiplier::GetValue(Action* action)
 
 float VoidReaverMaintainPositionsMultiplier::GetValue(Action* action)
 {
-    if (!GetFirstAliveUnitByEntry(botAI, NPC_VOID_REAVER)
+    if (!GetFirstAliveUnitByEntry(botAI, NPC_VOID_REAVER))
         return 1.0f;
 
     if (botAI->IsTank(bot))
@@ -189,7 +190,7 @@ float HighAstromancerSolarianDisableTankAssistMultiplier::GetValue(Action* actio
 
 float KaelthasSunstriderWaitForDpsMultiplier::GetValue(Action* action)
 {
-    Unit* kaelthas = GetFirstAliveUnitByEntry(botAI, NPC_KAELTHAS_SUNSTRIDER));
+    Unit* kaelthas = GetFirstAliveUnitByEntry(botAI, NPC_KAELTHAS_SUNSTRIDER);
     if (!kaelthas)
         return 1.0f;
 

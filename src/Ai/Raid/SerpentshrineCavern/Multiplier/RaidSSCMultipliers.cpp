@@ -27,7 +27,7 @@ using namespace SerpentShrineCavernHelpers;
 
 // General
 
-float NoFishingInSerpentShrineCavernMultiplier::GetValue(Action* action)
+float SerpentShrineCavernNoFishingMultiplier::GetValue(Action* action)
 {
     if (bot->GetMapId() == SSC_MAP_ID)
     {

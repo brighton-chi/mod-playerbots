@@ -1156,7 +1156,7 @@ bool KaelthasSunstriderMainTankPositionSanguinarAction::Execute(Event event)
 
 bool KaelthasSunstriderCastFearWardOnSanguinarTankAction::Execute(Event event)
 {
-    Group* group = bot->GetGroup()
+    Group* group = bot->GetGroup();
     if (!group)
         return false;
 
@@ -1288,7 +1288,7 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::RangedBotsDisperse(
 {
     if (kaelAI->GetPhase() == PHASE_ALL_ADVISORS)
     {
-        if (GetFirstAliveEntryByUnit(botAI, NPC_THALADRED_THE_DARKENER))
+        if (GetFirstAliveUnitByEntry(botAI, NPC_THALADRED_THE_DARKENER))
             return false;
     }
 
@@ -2047,14 +2047,14 @@ bool KaelthasSunstriderHandlePhoenixesAndEggsAction::Execute(Event event)
             if (currentDistance < safeDistance)
                 return MoveAway(phoenix, safeDistance - currentDistance);
         }
-    
+
         if (botAI->IsDps(bot))
         {
             if (Unit* phoenixEgg = GetFirstAliveUnitByEntry(botAI, NPC_PHOENIX_EGG))
             {
                 MarkTargetWithDiamond(bot, phoenixEgg);
                 SetRtiTarget(botAI, "diamond", phoenixEgg);
-        
+
                 if (bot->GetTarget() != phoenixEgg->GetGUID())
                     return Attack (phoenixEgg);
             }
