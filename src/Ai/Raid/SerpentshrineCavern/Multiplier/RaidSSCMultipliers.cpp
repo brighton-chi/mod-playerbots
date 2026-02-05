@@ -285,7 +285,7 @@ float LeotherasTheBlindAvoidWhirlwindMultiplier::GetValue(Action* action)
 
 float LeotherasTheBlindDisableTankActionsMultiplier::GetValue(Action* action)
 {
-    if (!GetActiveLeotherasDemon(botAI))
+    /* if (!GetActiveLeotherasDemon(botAI))
         return 1.0f;
 
     if (GetLeotherasDemonFormTank(botAI, bot) == bot)
@@ -298,7 +298,7 @@ float LeotherasTheBlindDisableTankActionsMultiplier::GetValue(Action* action)
         return 1.0f;
     }
 
-    // (2) Phase 2 only: non-Warlock tanks should not attack Leotheras
+    // Phase 2 only: non-Warlock tanks should not attack Leotheras
     if (botAI->IsTank(bot) && !bot->HasAura(SPELL_INSIDIOUS_WHISPER))
     {
         if (GetPhase2LeotherasDemon(botAI) && dynamic_cast<AttackAction*>(action))
@@ -306,7 +306,18 @@ float LeotherasTheBlindDisableTankActionsMultiplier::GetValue(Action* action)
 
         if (!GetPhase3LeotherasDemon(botAI) && dynamic_cast<CastBerserkAction*>(action))
             return 0.0f;
-    }
+    } */
+    if (!botAI->IsTank(bot) || bot->HasAura(SPELL_INSIDIOUS_WHISPER))
+        return 1.0f;
+
+    if (!AI_VALUE2(Unit*, "find target", "leotheras the blind"))
+        return 1.0f;
+
+    if (GetPhase2LeotherasDemon(botAI) && dynamic_cast<AttackAction*>(action))
+        return 0.0f;
+
+    if (!GetPhase3LeotherasDemon(botAI) && dynamic_cast<CastBerserkAction*>(action))
+        return 0.0f;
 
     return 1.0f;
 }

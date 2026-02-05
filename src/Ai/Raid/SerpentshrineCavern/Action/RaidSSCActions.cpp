@@ -740,28 +740,31 @@ bool LeotherasTheBlindDemonFormTankAttackBossAction::Execute(Event event)
 
     if (innerDemon)
     {
-        if (botAI->HasStrategy("tank", BotState::BOT_STATE_COMBAT))
+        /* if (botAI->HasStrategy("tank", BotState::BOT_STATE_COMBAT))
             botAI->ChangeStrategy("-tank", BotState::BOT_STATE_COMBAT);
 
         if (bot->GetTarget() != innerDemon->GetGUID())
-            return Attack(innerDemon);
+            return Attack(innerDemon); */
+            return false;
     }
     else if (Unit* leotherasDemon = GetActiveLeotherasDemon(botAI))
     {
-        if (!botAI->HasStrategy("tank", BotState::BOT_STATE_COMBAT))
-            botAI->ChangeStrategy("+tank", BotState::BOT_STATE_COMBAT);
+        /* if (!botAI->HasStrategy("tank", BotState::BOT_STATE_COMBAT))
+            botAI->ChangeStrategy("+tank", BotState::BOT_STATE_COMBAT); */
 
         MarkTargetWithSquare(bot, leotherasDemon);
         SetRtiTarget(botAI, "square", leotherasDemon);
 
-        if (bot->GetTarget() != leotherasDemon->GetGUID())
-            return Attack(leotherasDemon);
+        /* if (bot->GetTarget() != leotherasDemon->GetGUID())
+            return Attack(leotherasDemon); */
+        if (botAI->CanCastSpell("searing pain", leotherasDemon))
+            return botAI->CastSpell("searing pain", leotherasDemon);
     }
-    else if (GetLeotherasHuman(botAI))
+    /* else if (GetLeotherasHuman(botAI))
     {
         if (botAI->HasStrategy("tank", BotState::BOT_STATE_COMBAT))
             botAI->ChangeStrategy("-tank", BotState::BOT_STATE_COMBAT);
-    }
+    } */
 
     return false;
 }
@@ -842,11 +845,11 @@ bool LeotherasTheBlindMeleeDpsRunAwayFromBossAction::Execute(Event event)
     if (botAI->CanCastSpell("cloak of shadows", bot))
         return botAI->CastSpell("cloak of shadows", bot);
 
-    Unit* leotherasPhase2Demon = GetPhase2LeotherasDemon(botAI);
-    if (!leotherasPhase2Demon)
+    Unit* leotheras = GetPhase2LeotherasDemon(botAI);
+    if (!leotheras)
         return false;
 
-    Unit* demonVictim = leotherasPhase2Demon->GetVictim();
+    Unit* demonVictim = leotheras->GetVictim();
     if (!demonVictim)
         return false;
 
@@ -1869,8 +1872,10 @@ bool LadyVashjSetGroundingTotemInMainTankGroupAction::Execute(Event event)
                           mainTank->GetPositionZ(), 20.0f, MovementPriority::MOVEMENT_COMBAT);
     }
 
+    /* Will Shaman override grounding if I don't change their strategy?
     if (!botAI->HasStrategy("grounding", BotState::BOT_STATE_COMBAT))
         botAI->ChangeStrategy("+grounding", BotState::BOT_STATE_COMBAT);
+    */
 
     if (!bot->HasAura(SPELL_GROUNDING_TOTEM_EFFECT) &&
         botAI->CanCastSpell("grounding totem", bot))

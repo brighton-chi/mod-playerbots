@@ -57,7 +57,7 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("leotheras the blind target spellbinders", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("leotheras the blind boss transformed into demon form", {
-        NextAction("leotheras the blind demon form tank attack boss", ACTION_EMERGENCY + 6) }));
+        NextAction("leotheras the blind demon form tank attack boss", /* ACTION_EMERGENCY + 6 */ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("leotheras the blind only warlock should tank demon form", {
         NextAction("leotheras the blind melee tanks don't attack demon form", ACTION_RAID + 1) }));

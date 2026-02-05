@@ -186,27 +186,30 @@ bool LeotherasTheBlindBossIsInactiveTrigger::IsActive()
 
 bool LeotherasTheBlindBossTransformedIntoDemonFormTrigger::IsActive()
 {
-    return AI_VALUE2(Unit*, "find target", "leotheras the blind") &&
-           GetLeotherasDemonFormTank(botAI, bot) == bot;
+    if (!AI_VALUE2(Unit*, "find target", "leotheras the blind"))
+        return false;
+
+    if (GetLeotherasDemonFormTank(botAI, bot) != bot)
+        return false;
+
+    return GetActiveLeotherasDemon(botAI);
 }
 
 bool LeotherasTheBlindOnlyWarlockShouldTankDemonFormTrigger::IsActive()
 {
+    if (botAI->IsRanged(bot) || !botAI->IsTank(bot))
+        return false;
+
+    if (!AI_VALUE2(Unit*, "find target", "leotheras the blind"))
+        return false;
+
     if (bot->HasAura(SPELL_INSIDIOUS_WHISPER))
         return false;
 
-    if (!botAI->IsTank(bot))
+    if (!GetLeotherasDemonFormTank(botAI, bot))
         return false;
 
-    Aura* chaosBlast = bot->GetAura(SPELL_CHAOS_BLAST);
-    if (chaosBlast && chaosBlast->GetStackAmount() >= 5)
-        return false;
-
-    if (!GetPhase2LeotherasDemon(botAI))
-        return false;
-
-    return GetLeotherasDemonFormTank(botAI, bot) &&
-           GetLeotherasDemonFormTank(botAI, bot) != bot;
+    return GetPhase2LeotherasDemon(botAI);
 }
 
 bool LeotherasTheBlindBossEngagedByRangedTrigger::IsActive()
@@ -254,14 +257,10 @@ bool LeotherasTheBlindBotHasTooManyChaosBlastStacksTrigger::IsActive()
     if (!chaosBlast || chaosBlast->GetStackAmount() < 5)
         return false;
 
-    if (!GetPhase2LeotherasDemon(botAI))
+    if (!GetLeotherasDemonFormTank(botAI, bot) && botAI->IsMainTank(bot))
         return false;
 
-    Player* demonFormTank = GetLeotherasDemonFormTank(botAI, bot);
-    if (!demonFormTank && botAI->IsMainTank(bot))
-        return false;
-
-    return true;
+    return GetPhase2LeotherasDemon(botAI);
 }
 
 bool LeotherasTheBlindInnerDemonHasAwakenedTrigger::IsActive()
