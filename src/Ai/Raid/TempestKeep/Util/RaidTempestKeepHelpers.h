@@ -44,27 +44,15 @@ namespace TempestKeepHelpers
 
     enum TempestKeepNPCs
     {
-        // Trash
-        NPC_CRIMSON_HAND_CENTURION      = 20048,
-
         // Al'ar
-        NPC_ALAR                        = 19514,
         NPC_EMBER_OF_ALAR               = 19551,
         NPC_FLAME_PATCH                 = 20602,
 
-        // Void Reaver
-        NPC_VOID_REAVER                 = 19516,
-
         // High Astromancer Solarian
-        NPC_HIGH_ASTROMANCER_SOLARIAN   = 18805,
         NPC_SOLARIUM_PRIEST             = 18806,
 
         // Kael'thas Sunstrider
         NPC_KAELTHAS_SUNSTRIDER         = 19622,
-        NPC_LORD_SANGUINAR              = 20060,
-        NPC_GRAND_ASTROMANCER_CAPERNIAN = 20062,
-        NPC_MASTER_ENGINEER_TELONICUS   = 20063,
-        NPC_THALADRED_THE_DARKENER      = 20064,
         NPC_NETHERSTRAND_LONGBOW        = 21268,
         NPC_DEVASTATION                 = 21269,
         NPC_COSMIC_INFUSER              = 21270,

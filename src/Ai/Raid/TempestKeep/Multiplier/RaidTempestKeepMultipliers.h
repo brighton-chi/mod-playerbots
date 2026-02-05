@@ -99,14 +99,6 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class KaelthasSunstriderDisableShadowWardMultiplier : public Multiplier
-{
-public:
-    KaelthasSunstriderDisableShadowWardMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "kael'thas sunstrider disable shadow ward multiplier") {}
-    virtual float GetValue(Action* action);
-};
-
 class KaelthasSunstriderManageTankTargetingMultiplier : public Multiplier
 {
 public:
@@ -128,14 +120,6 @@ class KaelthasSunstriderDelayCooldownsMultiplier : public Multiplier
 public:
     KaelthasSunstriderDelayCooldownsMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "kael'thas sunstrider delay cooldowns multiplier") {}
-    virtual float GetValue(Action* action);
-};
-
-class KaelthasSunstriderTryNonfatalBreakingOfMindControlMultiplier : public Multiplier
-{
-public:
-    KaelthasSunstriderTryNonfatalBreakingOfMindControlMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "kael'thas sunstrider try nonfatal breaking of mind control multiplier") {}
     virtual float GetValue(Action* action);
 };
 

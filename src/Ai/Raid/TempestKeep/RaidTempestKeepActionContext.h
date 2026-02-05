@@ -96,9 +96,6 @@ public:
         creators["kael'thas sunstrider cast fear ward on sanguinar tank"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_cast_fear_ward_on_sanguinar_tank;
 
-        creators["kael'thas sunstrider manage warlock tank strategy"] =
-            &RaidTempestKeepActionContext::kaelthas_sunstrider_manage_warlock_tank_strategy;
-
         creators["kael'thas sunstrider warlock tank position capernian"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_warlock_tank_position_capernian;
 
@@ -235,9 +232,6 @@ private:
 
     static Action* kaelthas_sunstrider_main_tank_position_sanguinar(
         PlayerbotAI* botAI) { return new KaelthasSunstriderMainTankPositionSanguinarAction(botAI); }
-
-    static Action* kaelthas_sunstrider_manage_warlock_tank_strategy(
-        PlayerbotAI* botAI) { return new KaelthasSunstriderManageWarlockTankStrategyAction(botAI); }
 
     static Action* kaelthas_sunstrider_cast_fear_ward_on_sanguinar_tank(
         PlayerbotAI* botAI) { return new KaelthasSunstriderCastFearWardOnSanguinarTankAction(botAI); }

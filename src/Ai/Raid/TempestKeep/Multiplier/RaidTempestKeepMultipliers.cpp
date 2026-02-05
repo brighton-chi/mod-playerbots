@@ -12,7 +12,6 @@
 #include "MageActions.h"
 #include "PaladinActions.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
 #include "RogueActions.h"
 #include "ShamanActions.h"
 #include "WarlockActions.h"
@@ -207,9 +206,9 @@ float KaelthasSunstriderWaitForDpsMultiplier::GetValue(Action* action)
     auto it = advisorDpsWaitTimer.find(kaelthas->GetMap()->GetInstanceId());
     if (it == advisorDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
     {
-        Unit* sanguinar = GetFirstAliveUnitByEntry(botAI, NPC_LORD_SANGUINAR);
-        Unit* capernian = GetFirstAliveUnitByEntry(botAI, NPC_GRAND_ASTROMANCER_CAPERNIAN);
-        Unit* telonicus = GetFirstAliveUnitByEntry(botAI, NPC_MASTER_ENGINEER_TELONICUS);
+        Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
+        Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
+        Unit* telonicus = AI_VALUE2(Unit*, "find target", "master engineer telonicus");
 
         auto isAdvisorActive = [](Unit* advisor)
         {
@@ -271,22 +270,6 @@ float KaelthasSunstriderControlMisdirectionMultiplier::GetValue(Action* action)
     if (kaelAI && kaelAI->GetPhase() != PHASE_FINAL)
     {
         if (dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
-            return 0.0f;
-    }
-
-    return 1.0f;
-}
-
-// For disabling Capernian Tank's Shadow Ward, which is part of the standard
-// tank strategy for Warlocks (made for Twin Emps but useless here)
-float KaelthasSunstriderDisableShadowWardMultiplier::GetValue(Action* action)
-{
-    if (bot->getClass() != CLASS_WARLOCK)
-        return 1.0f;
-
-    if (AI_VALUE2(Unit*, "find target", "kael'thas sunstrider"))
-    {
-        if (dynamic_cast<CastShadowWardAction*>(action))
             return 0.0f;
     }
 
@@ -405,50 +388,6 @@ float KaelthasSunstriderDelayCooldownsMultiplier::GetValue(Action* action)
                 dynamic_cast<UseTrinketAction*>(action))
                 return 0.0f;
         }
-    }
-
-    return 1.0f;
-}
-
-float KaelthasSunstriderTryNonfatalBreakingOfMindControlMultiplier::GetValue(Action* action)
-{
-    if (botAI->IsTank(bot))
-        return 1.0f;
-
-    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
-    if (!kaelthas)
-        return 1.0f;
-
-    if (!bot->HasItemCount(ITEM_INFINITY_BLADE, 1, true))
-        return 1.0f;
-
-    boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
-    if (!kaelAI || kaelAI->GetPhase() != PHASE_FINAL)
-        return 1.0f;
-
-    Group* group = bot->GetGroup();
-    if (!group)
-        return 1.0f;
-
-    bool hasMindControlledPlayer = false;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || !member->IsAlive())
-            continue;
-
-        if (member->HasAura(SPELL_KAELTHAS_MIND_CONTROL))
-        {
-            hasMindControlledPlayer = true;
-            break;
-        }
-    }
-
-    if (hasMindControlledPlayer)
-    {
-        if (dynamic_cast<AttackAction*>(action) &&
-            !dynamic_cast<KaelthasSunstriderBreakMindControlAction*>(action))
-            return 0.0f;
     }
 
     return 1.0f;

@@ -258,14 +258,6 @@ public:
     bool Execute(Event event) override;
 };
 
-class KaelthasSunstriderManageWarlockTankStrategyAction : public Action
-{
-public:
-    KaelthasSunstriderManageWarlockTankStrategyAction(
-        PlayerbotAI* botAI, std::string const name = "kael'thas sunstrider manage warlock tank strategy") : Action(botAI, name) {}
-    bool Execute(Event event) override;
-};
-
 class KaelthasSunstriderWarlockTankPositionCapernianAction : public AttackAction
 {
 public:
