@@ -8,7 +8,6 @@
 #include "DruidBearActions.h"
 #include "DruidCatActions.h"
 #include "DruidShapeshiftActions.h"
-#include "FishingAction.h"
 #include "FollowActions.h"
 #include "GenericSpellActions.h"
 #include "HunterActions.h"
@@ -24,22 +23,6 @@
 #include "WipeAction.h"
 
 using namespace SerpentShrineCavernHelpers;
-
-// General
-
-float SerpentShrineCavernNoFishingMultiplier::GetValue(Action* action)
-{
-    if (bot->GetMapId() == SSC_MAP_ID)
-    {
-        if (dynamic_cast<FishingAction*>(action) ||
-            dynamic_cast<EquipFishingPoleAction*>(action) ||
-            dynamic_cast<MoveNearWaterAction*>(action) ||
-            dynamic_cast<UseBobberAction*>(action))
-            return 0.0f;
-    }
-
-    return 1.0f;
-}
 
 // Trash
 
@@ -161,20 +144,6 @@ float HydrossTheUnstableControlMisdirectionMultiplier::GetValue(Action* action)
 
 // The Lurker Below
 
-/* float TheLurkerBelowStopFishingAndFightMultiplier::GetValue(Action* action)
-{
-    if (AI_VALUE2(Unit*, "find target", "the lurker below"))
-    {
-        if (dynamic_cast<FishingAction*>(action) ||
-            dynamic_cast<EquipFishingPoleAction*>(action) ||
-            dynamic_cast<MoveNearWaterAction*>(action) ||
-            dynamic_cast<UseBobberAction*>(action))
-            return 0.0f;
-    }
-
-    return 1.0f;
-} */
-
 float TheLurkerBelowStayAwayFromSpoutMultiplier::GetValue(Action* action)
 {
     Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
@@ -189,11 +158,12 @@ float TheLurkerBelowStayAwayFromSpoutMultiplier::GetValue(Action* action)
         if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
             dynamic_cast<CastKillingSpreeAction*>(action) ||
             dynamic_cast<CastBlinkBackAction*>(action) ||
-            dynamic_cast<CastDisengageAction*>(action) ||
-            dynamic_cast<CombatFormationMoveAction*>(action) ||
-            dynamic_cast<FleeAction*>(action) ||
-            dynamic_cast<FollowAction*>(action) ||
-            dynamic_cast<ReachTargetAction*>(action))
+            dynamic_cast<CastDisengageAction*>(action))
+            return 0.0f;
+
+        if (dynamic_cast<MovementAction*>(action) &&
+            !dynamic_cast<AttackAction*>(action) &&
+            !dynamic_cast<TheLurkerBelowRunAroundBehindBossAction*>(action))
             return 0.0f;
     }
 

@@ -437,7 +437,7 @@ bool HydrossTheUnstableStopDpsUponPhaseChangeAction::Execute(Event event)
 
     bool shouldStopDps = false;
 
-    // 1 second after 100% Mark of Hydross, stop DPS until transition into nature phase
+    // 1 second after 100% Mark of Hydross, stop DPS
     auto itNature = hydrossChangeToNaturePhaseTimer.find(instanceId);
     if (itNature != hydrossChangeToNaturePhaseTimer.end() &&
         (now - itNature->second) >= phaseEndStopSeconds)
@@ -449,7 +449,7 @@ bool HydrossTheUnstableStopDpsUponPhaseChangeAction::Execute(Event event)
         (now - itNatureDps->second) < phaseStartStopSeconds)
         shouldStopDps = true;
 
-    // 1 second after 100% Mark of Corruption, stop DPS until transition into frost phase
+    // 1 second after 100% Mark of Corruption, stop DPS
     auto itFrost = hydrossChangeToFrostPhaseTimer.find(instanceId);
     if (itFrost != hydrossChangeToFrostPhaseTimer.end() &&
         (now - itFrost->second) >= phaseEndStopSeconds)
@@ -514,25 +514,39 @@ bool HydrossTheUnstableManageTimersAction::Execute(Event event)
 
 // The Lurker Below
 
-// Run around behind Lurker during Spout, maintaining distance of 20-24 yards
-// Stay within 90-degree arc behind Lurker
+// Run around behind Lurker during Spout
 bool TheLurkerBelowRunAroundBehindBossAction::Execute(Event event)
 {
     Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
     if (!lurker)
         return false;
 
-    float behindAngle = lurker->GetOrientation() + M_PI + frand(-0.5f, 0.5f) * (M_PI / 2.0f);
-    float radius = frand(20.0f, 24.0f);
+    float radius = frand(20.0f, 21.0f);
+    float botAngle = std::atan2(
+        bot->GetPositionY() - lurker->GetPositionY(), bot->GetPositionX() - lurker->GetPositionX());
+    float relativeAngle = Position::NormalizeOrientation(botAngle - lurker->GetOrientation());
+    constexpr float safeArc = M_PI / 2.0f;
 
-    float targetX = lurker->GetPositionX() + radius * std::cos(behindAngle);
-    float targetY = lurker->GetPositionY() + radius * std::sin(behindAngle);
-
-    if (bot->GetExactDist2d(targetX, targetY) > 1.0f)
+    if (std::fabs(Position::NormalizeOrientation(relativeAngle - M_PI)) > safeArc / 2.0f)
     {
+        float tangentAngle = botAngle + (relativeAngle > M_PI ? -0.1f : 0.1f);
+        float moveX = lurker->GetPositionX() + radius * std::cos(tangentAngle);
+        float moveY = lurker->GetPositionY() + radius * std::sin(tangentAngle);
         botAI->Reset();
-        return MoveTo(SSC_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false,
-                      false, true, MovementPriority::MOVEMENT_FORCED, true, false);
+        return MoveTo(SSC_MAP_ID, moveX, moveY, lurker->GetPositionZ(), false, false,
+                      false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+    }
+    else
+    {
+        float behindAngle = lurker->GetOrientation() + M_PI + frand(-0.5f, 0.5f) * safeArc;
+        float targetX = lurker->GetPositionX() + radius * std::cos(behindAngle);
+        float targetY = lurker->GetPositionY() + radius * std::sin(behindAngle);
+        if (bot->GetExactDist2d(targetX, targetY) > 2.0f)
+        {
+            botAI->Reset();
+            return MoveTo(SSC_MAP_ID, targetX, targetY, lurker->GetPositionZ(), false, false,
+                          false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+        }
     }
 
     return false;

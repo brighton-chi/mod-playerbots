@@ -3,16 +3,6 @@
 
 #include "Multiplier.h"
 
-// General
-
-class SerpentShrineCavernNoFishingMultiplier : public Multiplier
-{
-public:
-    SerpentShrineCavernNoFishingMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "serpentshrine cavern no fishing") {}
-    virtual float GetValue(Action* action);
-};
-
 // Trash
 
 class UnderbogColossusEscapeToxicPoolMultiplier : public Multiplier
@@ -50,14 +40,6 @@ public:
 };
 
 // The Lurker Below
-
-/* class TheLurkerBelowStopFishingAndFightMultiplier : public Multiplier
-{
-public:
-    TheLurkerBelowStopFishingAndFightMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "the lurker below stop fishing and fight") {}
-    virtual float GetValue(Action* action);
-}; */
 
 class TheLurkerBelowStayAwayFromSpoutMultiplier : public Multiplier
 {
