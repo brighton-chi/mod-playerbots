@@ -769,31 +769,14 @@ float LadyVashjDisableAutomaticTargetingAndMovementModifier::GetValue(Action *ac
         }
     }
 
-    /* if (IsLadyVashjInPhase3(botAI))
-    {
-        if (dynamic_cast<DpsAssistAction*>(action) ||
-            dynamic_cast<TankAssistAction*>(action) ||
-            dynamic_cast<FollowAction*>(action) ||
-            dynamic_cast<FleeAction*>(action))
-            return 0.0f;
-
-        Unit* enchanted = AI_VALUE2(Unit*, "find target", "enchanted elemental");
-        if (enchanted && bot->GetVictim() == enchanted)
-        {
-            if (dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
-                return 0.0f;
-        }
-
-        Unit* strider = AI_VALUE2(Unit*, "find target", "coilfang strider");
-        Unit* elite = AI_VALUE2(Unit*, "find target", "coilfang elite");
-        if (!strider && !elite)
-        {
-            if (dynamic_cast<CombatFormationMoveAction*>(action))
-                return 0.0f;
-        }
-    } */ //TRY NEW VERSION
     if (IsLadyVashjInPhase3(botAI))
     {
+        if (bot->getClass() == CLASS_HUNTER)
+        {
+            if (dynamic_cast<DpsAssistAction*>(action))
+                return 0.0f;
+        }
+
         Unit* enchanted = AI_VALUE2(Unit*, "find target", "enchanted elemental");
         Unit* strider = AI_VALUE2(Unit*, "find target", "coilfang strider");
         Unit* elite = AI_VALUE2(Unit*, "find target", "coilfang elite");

@@ -2199,7 +2199,7 @@ bool LadyVashjTankAttackAndMoveAwayStriderAction::Execute(Event event)
         if (strider->GetVictim() == bot)
         {
             float currentDistance = bot->GetExactDist2d(vashj);
-            constexpr float safeDistance = 25.0f;
+            constexpr float safeDistance = 28.0f;
 
             if (currentDistance < safeDistance)
                 return MoveAway(vashj, safeDistance - currentDistance);
@@ -2448,6 +2448,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
                     lastCoreInInventoryTime[instanceId] = now;
                     botAI->ImbueItem(item, firstCorePasser);
                     ScheduleStoreCoreAfterImbue(botAI, bot, firstCorePasser);
+                    DestroyCoreAfterImbue(item);
                     return true;
                 }
                 if ((now - it->second) >= 2)
@@ -2456,6 +2457,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
                     lastCoreInInventoryTime[instanceId] = now;
                     botAI->ImbueItem(item, firstCorePasser);
                     ScheduleStoreCoreAfterImbue(botAI, bot, firstCorePasser);
+                    DestroyCoreAfterImbue(item);
                     return true;
                 }
             }
@@ -2476,6 +2478,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
                     botAI->ImbueItem(item, secondCorePasser);
                     intendedLineup.erase(bot->GetGUID());
                     ScheduleStoreCoreAfterImbue(botAI, bot, secondCorePasser);
+                    DestroyCoreAfterImbue(item);
                     return true;
                 }
                 if ((now - it->second) >= 2)
@@ -2485,6 +2488,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
                     botAI->ImbueItem(item, secondCorePasser);
                     intendedLineup.erase(bot->GetGUID());
                     ScheduleStoreCoreAfterImbue(botAI, bot, secondCorePasser);
+                    DestroyCoreAfterImbue(item);
                     return true;
                 }
             }
@@ -2494,7 +2498,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
         // possible to the generator while staying in passing range
         else if (bot == secondCorePasser)
         {
-            if (!UseCoreOnNearestGenerator())
+            if (!UseCoreOnNearestGenerator(instanceId))
             {
                 if (IsThirdCorePasserInIntendedPosition(
                     secondCorePasser, thirdCorePasser, closestTrigger))
@@ -2508,6 +2512,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
                         botAI->ImbueItem(item, thirdCorePasser);
                         intendedLineup.erase(bot->GetGUID());
                         ScheduleStoreCoreAfterImbue(botAI, bot, thirdCorePasser);
+                        DestroyCoreAfterImbue(item);
                         return true;
                     }
                     if ((now - it->second) >= 2)
@@ -2517,6 +2522,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
                         botAI->ImbueItem(item, thirdCorePasser);
                         intendedLineup.erase(bot->GetGUID());
                         ScheduleStoreCoreAfterImbue(botAI, bot, thirdCorePasser);
+                        DestroyCoreAfterImbue(item);
                         return true;
                     }
                 }
@@ -2527,7 +2533,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
         // possible to the generator while staying in passing range
         else if (bot == thirdCorePasser)
         {
-            if (!UseCoreOnNearestGenerator())
+            if (!UseCoreOnNearestGenerator(instanceId))
             {
                 if (IsFourthCorePasserInIntendedPosition(
                     thirdCorePasser, fourthCorePasser, closestTrigger))
@@ -2541,6 +2547,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
                         botAI->ImbueItem(item, fourthCorePasser);
                         intendedLineup.erase(bot->GetGUID());
                         ScheduleStoreCoreAfterImbue(botAI, bot, fourthCorePasser);
+                        DestroyCoreAfterImbue(item);
                         return true;
                     }
                     if ((now - it->second) >= 2)
@@ -2550,6 +2557,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
                         botAI->ImbueItem(item, fourthCorePasser);
                         intendedLineup.erase(bot->GetGUID());
                         ScheduleStoreCoreAfterImbue(botAI, bot, fourthCorePasser);
+                        DestroyCoreAfterImbue(item);
                         return true;
                     }
                 }
@@ -2558,7 +2566,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
         // Fourth core passer: the fourth passer is rarely needed and no more than
         // four ever should be, so it should use the Core on the nearest generator
         else if (bot == fourthCorePasser)
-            UseCoreOnNearestGenerator();
+            UseCoreOnNearestGenerator(instanceId);
     }
 
     return false;
@@ -2787,9 +2795,15 @@ bool LadyVashjPassTheTaintedCoreAction::IsFourthCorePasserInIntendedPosition(
     return false;
 }
 
+void LadyVashjPassTheTaintedCoreAction::DestroyCoreAfterImbue(Item* item)
+{
+    if (bot->HasItemCount(ITEM_TAINTED_CORE, 1, false))
+        bot->DestroyItem(item->GetBagSlot(), item->GetSlot(), true);
+}
+
 // ImbueItem() is inconsistent in causing the receiving bot to receive the core
 // So ScheduleStoreCoreAfterImbue() simulates the passing mechanic by creating the core
-// on the receiver (note that ImbueItem() does always take away the core from the passer)
+// on the receiver
 void LadyVashjPassTheTaintedCoreAction::ScheduleStoreCoreAfterImbue(
     PlayerbotAI* botAI, Player* giver, Player* receiver)
 {
@@ -2822,7 +2836,7 @@ void LadyVashjPassTheTaintedCoreAction::ScheduleStoreCoreAfterImbue(
     }, delayMs);
 }
 
-bool LadyVashjPassTheTaintedCoreAction::UseCoreOnNearestGenerator()
+bool LadyVashjPassTheTaintedCoreAction::UseCoreOnNearestGenerator(const uint32 instanceId)
 {
     auto const& generators =
         GetAllGeneratorInfosByDbGuids(bot->GetMap(), SHIELD_GENERATOR_DB_GUIDS);
@@ -2877,6 +2891,9 @@ bool LadyVashjPassTheTaintedCoreAction::UseCoreOnNearestGenerator()
     packet << generator->GetGUID().WriteAsPacked();
 
     bot->GetSession()->HandleUseItemOpcode(packet);
+    nearestTriggerGuid.erase(instanceId);
+    lastImbueAttempt.erase(instanceId);
+    lastCoreInInventoryTime.erase(instanceId);
     return true;
 }
 
@@ -2908,7 +2925,7 @@ bool LadyVashjEraseCorePassingTrackersAction::Execute(Event event)
         erased = true;
     if (lastImbueAttempt.erase(instanceId) > 0)
         erased = true;
-    if (lastCoreInInventoryTime.erase(instanceId))
+    if (lastCoreInInventoryTime.erase(instanceId) > 0)
         erased = true;
     if (intendedLineup.erase(bot->GetGUID()) > 0)
         erased = true;
@@ -3085,9 +3102,11 @@ bool LadyVashjUseFreeActionAbilitiesAction::Execute(Event event)
                 break;
             }
         }
-        if ((bot->HasAura(SPELL_STATIC_CHARGE) || nearSpore) &&
-            botAI->CanCastSpell("cloak of shadows", bot))
-            return botAI->CastSpell("cloak of shadows", bot);
+        if (bot->HasAura(SPELL_STATIC_CHARGE) || nearSpore)
+        {
+            if (botAI->CanCastSpell("cloak of shadows", bot))
+                return botAI->CastSpell("cloak of shadows", bot);
+        }
     }
 
     // The remainder of the logic is for Paladins to use Hand of Freedom
@@ -3099,13 +3118,8 @@ bool LadyVashjUseFreeActionAbilitiesAction::Execute(Event event)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive())
-            continue;
-
-        if (!member->HasAura(SPELL_ENTANGLE))
-            continue;
-
-        if (!botAI->IsMelee(member))
+        if (!member || !member->IsAlive() || !member->HasAura(SPELL_ENTANGLE) ||
+            !botAI->IsMelee(member))
             continue;
 
         bool nearToxicSpore = false;

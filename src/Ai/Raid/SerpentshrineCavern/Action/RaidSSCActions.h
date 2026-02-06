@@ -417,8 +417,9 @@ private:
     bool IsSecondCorePasserInIntendedPosition(Player* firstCorePasser, Player* secondCorePasser, Unit* closestTrigger);
     bool IsThirdCorePasserInIntendedPosition(Player* secondCorePasser, Player* thirdCorePasser, Unit* closestTrigger);
     bool IsFourthCorePasserInIntendedPosition(Player* thirdCorePasser, Player* fourthCorePasser, Unit* closestTrigger);
+    void DestroyCoreAfterImbue(Item* item);
     void ScheduleStoreCoreAfterImbue(PlayerbotAI* botAI, Player* giver, Player* receiver);
-    bool UseCoreOnNearestGenerator();
+    bool UseCoreOnNearestGenerator(const uint32 instanceId);
 };
 
 class LadyVashjDestroyTaintedCoreAction : public Action
