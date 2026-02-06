@@ -56,7 +56,7 @@ bool AlarBossIsFlyingBetweenPlatformsTrigger::IsActive()
 bool AlarEmbersOfAlarExplodeUponDeathTrigger::IsActive()
 {
     return botAI->IsTank(bot) &&
-           GetFirstAliveUnitByEntry(botAI, NPC_EMBER_OF_ALAR);
+           AI_VALUE2(Unit*, "find target", "ember of alar");
 }
 
 bool AlarKillingEmbersOfAlarDamagesBossTrigger::IsActive()
