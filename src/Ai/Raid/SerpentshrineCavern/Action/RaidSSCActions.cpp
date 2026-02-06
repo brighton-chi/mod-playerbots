@@ -1305,7 +1305,7 @@ bool FathomLordKarathressThirdAssistTankPositionTidalvessAction::Execute(Event e
 }
 
 // Caribdis's tank spot is far away so a dedicated healer is needed
-// Use the assistant flag to select the healer (Paladin recommended)
+// Use the assistant flag to select the healer
 bool FathomLordKarathressPositionCaribdisTankHealerAction::Execute(Event event)
 {
     Unit* caribdis = AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
@@ -2345,7 +2345,9 @@ bool LadyVashjLootTaintedCoreAction::Execute(Event)
             *packet << coreIndex;
             receiver->GetSession()->QueuePacket(packet);
 
-            lastCoreInInventoryTime[vashj->GetMap()->GetInstanceId()] = std::time(nullptr);
+            const uint32 instanceId = vashj->GetMap()->GetInstanceId();
+            const time_t now = std::time(nullptr);
+            lastCoreInInventoryTime.insert_or_assign(instanceId, now);
         }, 600);
 
         return true;
@@ -2439,25 +2441,14 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
                 designatedLooter, firstCorePasser, closestTrigger))
             {
                 const time_t now = std::time(nullptr);
-
-                // Track lastImbueAttempt is to prevent repeated throwing animations
-                // from multiple imbue attempts
-                auto [it, inserted] = lastImbueAttempt.try_emplace(instanceId, now);
-                if (inserted)
+                auto it = lastImbueAttempt.find(instanceId);
+                if (it == lastImbueAttempt.end() || (now - it->second) >= 2)
                 {
-                    lastCoreInInventoryTime[instanceId] = now;
+                    lastImbueAttempt.insert_or_assign(instanceId, now);
+                    lastCoreInInventoryTime.insert_or_assign(instanceId, now);
                     botAI->ImbueItem(item, firstCorePasser);
-                    ScheduleStoreCoreAfterImbue(botAI, bot, firstCorePasser);
-                    DestroyCoreAfterImbue(item);
-                    return true;
-                }
-                if ((now - it->second) >= 2)
-                {
-                    it->second = now;
-                    lastCoreInInventoryTime[instanceId] = now;
-                    botAI->ImbueItem(item, firstCorePasser);
-                    ScheduleStoreCoreAfterImbue(botAI, bot, firstCorePasser);
-                    DestroyCoreAfterImbue(item);
+                    intendedLineup.erase(bot->GetGUID());
+                    ScheduleTransferCoreAfterImbue(botAI, bot, firstCorePasser);
                     return true;
                 }
             }
@@ -2466,31 +2457,16 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
         // pass to second core passer
         else if (bot == firstCorePasser)
         {
-            if (IsSecondCorePasserInIntendedPosition(
-                firstCorePasser, secondCorePasser, closestTrigger))
+            const time_t now = std::time(nullptr);
+            auto it = lastImbueAttempt.find(instanceId);
+            if (it == lastImbueAttempt.end() || (now - it->second) >= 2)
             {
-                const time_t now = std::time(nullptr);
-
-                auto [it, inserted] = lastImbueAttempt.try_emplace(instanceId, now);
-                if (inserted)
-                {
-                    lastCoreInInventoryTime[instanceId] = now;
-                    botAI->ImbueItem(item, secondCorePasser);
-                    intendedLineup.erase(bot->GetGUID());
-                    ScheduleStoreCoreAfterImbue(botAI, bot, secondCorePasser);
-                    DestroyCoreAfterImbue(item);
-                    return true;
-                }
-                if ((now - it->second) >= 2)
-                {
-                    it->second = now;
-                    lastCoreInInventoryTime[instanceId] = now;
-                    botAI->ImbueItem(item, secondCorePasser);
-                    intendedLineup.erase(bot->GetGUID());
-                    ScheduleStoreCoreAfterImbue(botAI, bot, secondCorePasser);
-                    DestroyCoreAfterImbue(item);
-                    return true;
-                }
+                lastImbueAttempt.insert_or_assign(instanceId, now);
+                lastCoreInInventoryTime.insert_or_assign(instanceId, now);
+                botAI->ImbueItem(item, secondCorePasser);
+                intendedLineup.erase(bot->GetGUID());
+                ScheduleTransferCoreAfterImbue(botAI, bot, secondCorePasser);
+                return true;
             }
         }
         // Second core passer: if closest usable generator is within passing distance
@@ -2504,25 +2480,14 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
                     secondCorePasser, thirdCorePasser, closestTrigger))
                 {
                     const time_t now = std::time(nullptr);
-
-                    auto [it, inserted] = lastImbueAttempt.try_emplace(instanceId, now);
-                    if (inserted)
+                    auto it = lastImbueAttempt.find(instanceId);
+                    if (it == lastImbueAttempt.end() || (now - it->second) >= 2)
                     {
-                        lastCoreInInventoryTime[instanceId] = now;
+                        lastImbueAttempt.insert_or_assign(instanceId, now);
+                        lastCoreInInventoryTime.insert_or_assign(instanceId, now);
                         botAI->ImbueItem(item, thirdCorePasser);
                         intendedLineup.erase(bot->GetGUID());
-                        ScheduleStoreCoreAfterImbue(botAI, bot, thirdCorePasser);
-                        DestroyCoreAfterImbue(item);
-                        return true;
-                    }
-                    if ((now - it->second) >= 2)
-                    {
-                        it->second = now;
-                        lastCoreInInventoryTime[instanceId] = now;
-                        botAI->ImbueItem(item, thirdCorePasser);
-                        intendedLineup.erase(bot->GetGUID());
-                        ScheduleStoreCoreAfterImbue(botAI, bot, thirdCorePasser);
-                        DestroyCoreAfterImbue(item);
+                        ScheduleTransferCoreAfterImbue(botAI, bot, thirdCorePasser);
                         return true;
                     }
                 }
@@ -2539,25 +2504,14 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
                     thirdCorePasser, fourthCorePasser, closestTrigger))
                 {
                     const time_t now = std::time(nullptr);
-
-                    auto [it, inserted] = lastImbueAttempt.try_emplace(instanceId, now);
-                    if (inserted)
+                    auto it = lastImbueAttempt.find(instanceId);
+                    if (it == lastImbueAttempt.end() || (now - it->second) >= 2)
                     {
-                        lastCoreInInventoryTime[instanceId] = now;
+                        lastImbueAttempt.insert_or_assign(instanceId, now);
+                        lastCoreInInventoryTime.insert_or_assign(instanceId, now);
                         botAI->ImbueItem(item, fourthCorePasser);
                         intendedLineup.erase(bot->GetGUID());
-                        ScheduleStoreCoreAfterImbue(botAI, bot, fourthCorePasser);
-                        DestroyCoreAfterImbue(item);
-                        return true;
-                    }
-                    if ((now - it->second) >= 2)
-                    {
-                        it->second = now;
-                        lastCoreInInventoryTime[instanceId] = now;
-                        botAI->ImbueItem(item, fourthCorePasser);
-                        intendedLineup.erase(bot->GetGUID());
-                        ScheduleStoreCoreAfterImbue(botAI, bot, fourthCorePasser);
-                        DestroyCoreAfterImbue(item);
+                        ScheduleTransferCoreAfterImbue(botAI, bot, fourthCorePasser);
                         return true;
                     }
                 }
@@ -2625,20 +2579,18 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpSecondCorePasser(
         float moveDist = std::max(distToTrigger - nearTriggerDist, 0.0f);
         targetX = fx + dx * moveDist;
         targetY = fy + dy * moveDist;
-        targetZ = 42.985f;
     }
     else
     {
         targetX = fx + dx * farDistance;
         targetY = fy + dy * farDistance;
-        targetZ = 42.985f;
     }
 
-    intendedLineup.insert_or_assign(bot->GetGUID(), Position(targetX, targetY, targetZ));
+    intendedLineup.insert_or_assign(bot->GetGUID(), Position(targetX, targetY, VASHJ_PLATFORM_Z));
 
     bot->AttackStop();
     bot->InterruptNonMeleeSpells(true);
-    return MoveTo(SSC_MAP_ID, targetX, targetY, targetZ, false, false, false, true,
+    return MoveTo(SSC_MAP_ID, targetX, targetY, VASHJ_PLATFORM_Z, false, false, false, true,
                   MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
@@ -2677,20 +2629,18 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpThirdCorePasser(
         float moveDist = std::max(distToTrigger - nearTriggerDist, 0.0f);
         targetX = sx + dx * moveDist;
         targetY = sy + dy * moveDist;
-        targetZ = 42.985f;
     }
     else
     {
         targetX = sx + dx * farDistance;
         targetY = sy + dy * farDistance;
-        targetZ = 42.985f;
     }
 
-    intendedLineup.insert_or_assign(bot->GetGUID(), Position(targetX, targetY, targetZ));
+    intendedLineup.insert_or_assign(bot->GetGUID(), Position(targetX, targetY, VASHJ_PLATFORM_Z));
 
     bot->AttackStop();
     bot->InterruptNonMeleeSpells(true);
-    return MoveTo(SSC_MAP_ID, targetX, targetY, targetZ, false, false, false, true,
+    return MoveTo(SSC_MAP_ID, targetX, targetY, VASHJ_PLATFORM_Z, false, false, false, true,
                   MovementPriority::MOVEMENT_FORCED, true, false);
 
     return false;
@@ -2727,13 +2677,12 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpFourthCorePasser(
     constexpr float nearTriggerDist = 1.5f;
     float targetX = tx - dx * nearTriggerDist;
     float targetY = ty - dy * nearTriggerDist;
-    constexpr float targetZ = 42.985f;
 
-    intendedLineup.insert_or_assign(bot->GetGUID(), Position(targetX, targetY, targetZ));
+    intendedLineup.insert_or_assign(bot->GetGUID(), Position(targetX, targetY, VASHJ_PLATFORM_Z));
 
     bot->AttackStop();
     bot->InterruptNonMeleeSpells(true);
-    return MoveTo(SSC_MAP_ID, targetX, targetY, targetZ, false, false, false, true,
+    return MoveTo(SSC_MAP_ID, targetX, targetY, VASHJ_PLATFORM_Z, false, false, false, true,
                   MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
@@ -2795,43 +2744,48 @@ bool LadyVashjPassTheTaintedCoreAction::IsFourthCorePasserInIntendedPosition(
     return false;
 }
 
-void LadyVashjPassTheTaintedCoreAction::DestroyCoreAfterImbue(Item* item)
-{
-    if (bot->HasItemCount(ITEM_TAINTED_CORE, 1, false))
-        bot->DestroyItem(item->GetBagSlot(), item->GetSlot(), true);
-}
-
-// ImbueItem() is inconsistent in causing the receiving bot to receive the core
-// So ScheduleStoreCoreAfterImbue() simulates the passing mechanic by creating the core
-// on the receiver
-void LadyVashjPassTheTaintedCoreAction::ScheduleStoreCoreAfterImbue(
+// ImbueItem() is inconsistent in causing the receiver bot to receive the core and the giver
+// bot to remove the core, so ScheduleTransferCoreAfterImbue() creates the core on the receiver
+// and removes it from the giver, with ImbueItem() called primarily for the throwing animation
+void LadyVashjPassTheTaintedCoreAction::ScheduleTransferCoreAfterImbue(
     PlayerbotAI* botAI, Player* giver, Player* receiver)
 {
-    if (!receiver)
+    if (!receiver || !giver)
         return;
 
     constexpr uint32 delayMs = 1500;
     const ObjectGuid receiverGuid = receiver->GetGUID();
+    const ObjectGuid giverGuid = giver->GetGUID();
 
-    botAI->AddTimedEvent([receiverGuid]()
+    botAI->AddTimedEvent([receiverGuid, giverGuid]()
     {
         Player* receiverPlayer =
             receiverGuid.IsEmpty() ? nullptr : ObjectAccessor::FindPlayer(receiverGuid);
+        Player* giverPlayer =
+            giverGuid.IsEmpty() ? nullptr : ObjectAccessor::FindPlayer(giverGuid);
+
         if (!receiverPlayer)
             return;
 
-        if (receiverPlayer->HasItemCount(ITEM_TAINTED_CORE, 1, false))
-            return;
-
-        ItemPosCountVec dest;
-        uint32 count = 1;
-        int canStore =
-            receiverPlayer->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, ITEM_TAINTED_CORE, count);
-
-        if (canStore == EQUIP_ERR_OK)
+        if (!receiverPlayer->HasItemCount(ITEM_TAINTED_CORE, 1, false))
         {
-            receiverPlayer->StoreNewItem(dest, ITEM_TAINTED_CORE, true,
-                Item::GenerateItemRandomPropertyId(ITEM_TAINTED_CORE));
+            ItemPosCountVec dest;
+            uint32 count = 1;
+            int canStore =
+                receiverPlayer->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, ITEM_TAINTED_CORE, count);
+
+            if (canStore == EQUIP_ERR_OK)
+            {
+                receiverPlayer->StoreNewItem(dest, ITEM_TAINTED_CORE, true,
+                    Item::GenerateItemRandomPropertyId(ITEM_TAINTED_CORE));
+            }
+        }
+
+        if (giverPlayer)
+        {
+            Item* item = giverPlayer->GetItemByEntry(ITEM_TAINTED_CORE);
+            if (item && giverPlayer->HasItemCount(ITEM_TAINTED_CORE, 1, false))
+                giverPlayer->DestroyItem(item->GetBagSlot(), item->GetSlot(), true);
         }
     }, delayMs);
 }
@@ -2897,8 +2851,8 @@ bool LadyVashjPassTheTaintedCoreAction::UseCoreOnNearestGenerator(const uint32 i
     return true;
 }
 
-// For dead bots to destroy their cores so the logic can reset for the next attempt
-// Or residual cores to be destroyed in Phase 3
+// Fallback for residual cores to be destroyed in Phase 3 in case
+// ScheduleTransferCoreAfterImbue() fails to remove the core from the giver
 bool LadyVashjDestroyTaintedCoreAction::Execute(Event event)
 {
     if (Item* core = bot->GetItemByEntry(ITEM_TAINTED_CORE))
@@ -2910,8 +2864,8 @@ bool LadyVashjDestroyTaintedCoreAction::Execute(Event event)
     return false;
 }
 
-// This needs to be separate from the general map erasing logic because somehow
-// Bots tend to end up out of combat during the Vashj encounter
+// This needs to be separate from the general map erasing logic because
+// Bots may end up out of combat during the Vashj encounter
 bool LadyVashjEraseCorePassingTrackersAction::Execute(Event event)
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");

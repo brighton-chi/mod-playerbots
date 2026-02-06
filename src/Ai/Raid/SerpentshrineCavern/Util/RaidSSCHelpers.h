@@ -158,6 +158,7 @@ namespace SerpentShrineCavernHelpers
     extern std::unordered_map<ObjectGuid, uint8> tidewalkerRangedStep;
 
     // Lady Vashj <Coilfang Matron>
+    constexpr float VASHJ_PLATFORM_Z = 42.985f;
     extern const Position VASHJ_PLATFORM_CENTER_POSITION;
     extern std::unordered_map<ObjectGuid, Position> vashjRangedPositions;
     extern std::unordered_map<ObjectGuid, bool> hasReachedVashjRangedPosition;

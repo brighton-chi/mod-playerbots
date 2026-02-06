@@ -645,8 +645,7 @@ float LadyVashjStaticChargeStayAwayFromGroupMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "lady vashj"))
         return 1.0f;
 
-    if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
-        dynamic_cast<CombatFormationMoveAction*>(action) ||
+    if (dynamic_cast<CombatFormationMoveAction*>(action) ||
         dynamic_cast<ReachTargetAction*>(action) ||
         dynamic_cast<FollowAction*>(action) ||
         dynamic_cast<CastKillingSpreeAction*>(action) ||
@@ -697,6 +696,12 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
     {
         return player && player->HasItemCount(ITEM_TAINTED_CORE, 1, false);
     };
+
+    if (hasCore(bot))
+    {
+        if (!dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action))
+            return 0.0f;
+    }
 
     if (bot == designatedLooter)
     {
@@ -771,19 +776,15 @@ float LadyVashjDisableAutomaticTargetingAndMovementModifier::GetValue(Action *ac
 
     if (IsLadyVashjInPhase3(botAI))
     {
-        if (bot->getClass() == CLASS_HUNTER)
-        {
-            if (dynamic_cast<DpsAssistAction*>(action))
-                return 0.0f;
-        }
+        if (dynamic_cast<DpsAssistAction*>(action))
+            return 0.0f;
 
         Unit* enchanted = AI_VALUE2(Unit*, "find target", "enchanted elemental");
         Unit* strider = AI_VALUE2(Unit*, "find target", "coilfang strider");
         Unit* elite = AI_VALUE2(Unit*, "find target", "coilfang elite");
         if (enchanted || strider || elite)
         {
-            if (dynamic_cast<DpsAssistAction*>(action) ||
-                dynamic_cast<TankAssistAction*>(action) ||
+            if (dynamic_cast<TankAssistAction*>(action) ||
                 dynamic_cast<FollowAction*>(action) ||
                 dynamic_cast<FleeAction*>(action))
                 return 0.0f;
