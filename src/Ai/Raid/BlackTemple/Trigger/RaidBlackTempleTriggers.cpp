@@ -461,7 +461,8 @@ bool IllidanStormrageBossCastsFlameCrashTrigger::IsActive()
     if (!botAI->IsMainTank(bot))
         return false;
 
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    // Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    Unit* illidan = GetFirstAliveUnitByEntry(botAI, NPC_ILLIDAN_STORMRAGE);
     if (!illidan)
         return false;
 
@@ -551,7 +552,10 @@ bool IllidanStormrageBossTransformsIntoDemonTrigger::IsActive()
     if (!illidan || illidan->GetHealth() == 1)
         return false;
 
-    return GetIllidanWarlockTank(botAI, bot) == bot;
+    if (GetIllidanWarlockTank(botAI, bot) != bot)
+        return false;
+
+    return GetIllidanPhase(illidan) == 4;
 }
 
 bool IllidanStormrageNeedToManageDpsTimerTrigger::IsActive()

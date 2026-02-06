@@ -478,11 +478,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class IllidanStormrageDestroyHazardsCheatAction : public Action
+class IllidanStormrageDestroyHazardsCheatAction : public AttackAction
 {
 public:
     IllidanStormrageDestroyHazardsCheatAction(
-        PlayerbotAI* botAI) : Action(botAI, "illidan stormrage destroy hazards cheat") {}
+        PlayerbotAI* botAI) : AttackAction(botAI, "illidan stormrage destroy hazards cheat") {}
     bool Execute(Event event) override;
 };
 

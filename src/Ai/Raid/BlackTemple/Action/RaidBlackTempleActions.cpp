@@ -1731,7 +1731,8 @@ bool IllidanStormrageMisdirectToTankAction::TryMisdirectToWarlockTank(Unit* illi
 
 bool IllidanStormrageMainTankMoveAwayFromFlameCrashAction::Execute(Event event)
 {
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    // Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    Unit* illidan = GetFirstAliveUnitByEntry(botAI, NPC_ILLIDAN_STORMRAGE);
     if (!illidan)
         return false;
 
@@ -2288,6 +2289,9 @@ bool IllidanStormragePositionBotsAboveGrateAction::Execute(Event event)
 
 bool IllidanStormragePositionBotsAboveGrateAction::AttackFlamesOfAzzinoth()
 {
+    if (GetFirstAliveUnitByEntry(botAI, NPC_PARASITIC_SHADOWFIEND))
+        return false;
+
     auto [eastFlame, westFlame] = GetFlamesOfAzzinoth(botAI, bot);
 
     if (eastFlame)
@@ -2392,26 +2396,20 @@ bool IllidanStormrageWarlockTankHandleDemonBossAction::Execute(Event event)
     if (!illidan)
         return false;
 
-    if (GetIllidanPhase(illidan) == 4)
-    {
-        if (!botAI->HasStrategy("tank", BotState::BOT_STATE_COMBAT))
-            botAI->ChangeStrategy("+tank", BotState::BOT_STATE_COMBAT);
-
-        if (bot->GetTarget() != illidan->GetGUID())
-            return Attack(illidan);
-
+    // if (GetIllidanPhase(illidan) == 4)
+    // {
         constexpr float safeDistFromBoss = 16.0f;
         if (bot->GetDistance2d(illidan) < safeDistFromBoss)
         {
             constexpr uint32 minInterval = 0;
             return FleePosition(Position(illidan->GetPosition()), safeDistFromBoss, minInterval);
         }
-    }
-    else
-    {
-        if (botAI->HasStrategy("tank", BotState::BOT_STATE_COMBAT))
-            botAI->ChangeStrategy("-tank", BotState::BOT_STATE_COMBAT);
-    }
+
+        /* if (bot->GetTarget() != illidan->GetGUID())
+            return Attack(illidan);
+        else*/ if (botAI->CanCastSpell("searing pain", illidan))
+            return botAI->CastSpell("searing pain", illidan);
+    // }
 
     return false;
 }
@@ -2458,14 +2456,23 @@ bool IllidanStormrageDestroyHazardsCheatAction::Execute(Event event)
     bool destroyed = false;
     if (Unit* shadowfiend = GetFirstAliveUnitByEntry(botAI, NPC_PARASITIC_SHADOWFIEND))
     {
-        shadowfiend->Kill(bot, shadowfiend);
-        destroyed = true;
+        /* shadowfiend->Kill(bot, shadowfiend);
+        destroyed = true; */
+        if (IsMechanicTrackerBot(botAI, bot, BLACK_TEMPLE_MAP_ID))
+            MarkTargetWithSkull(bot, shadowfiend);
+
+        SetRtiTarget(botAI, "skull", shadowfiend);
+        if (bot->GetTarget() != shadowfiend->GetGUID())
+            return Attack(shadowfiend);
     }
 
-    if (Unit* shadowDemon = GetFirstAliveUnitByEntry(botAI, NPC_SHADOW_DEMON))
+    if (GetIllidanPhase(illidan) == 4)
     {
-        shadowDemon->Kill(bot, shadowDemon);
-        destroyed = true;
+        if (Unit* shadowDemon = GetFirstAliveUnitByEntry(botAI, NPC_SHADOW_DEMON))
+        {
+            shadowDemon->Kill(bot, shadowDemon);
+            destroyed = true;
+        }
     }
 
     if (GetIllidanPhase(illidan) == 2 || GetIllidanPhase(illidan) == 4)
