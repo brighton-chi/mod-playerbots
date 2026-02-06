@@ -596,6 +596,9 @@ bool LadyVashjTaintedCoreIsUnusableTrigger::IsActive()
     if (!vashj)
         return false;
 
+    if (!IsLadyVashjInPhase2(botAI))
+        return bot->HasItemCount(ITEM_TAINTED_CORE, 1, false);
+
     Group* group = bot->GetGroup();
     if (!group)
         return false;
@@ -618,9 +621,6 @@ bool LadyVashjTaintedCoreIsUnusableTrigger::IsActive()
         }
         return true;
     }
-
-    if (!IsLadyVashjInPhase2(botAI))
-        return bot->HasItemCount(ITEM_TAINTED_CORE, 1, false);
 
     return false;
 }
