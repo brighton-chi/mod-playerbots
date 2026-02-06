@@ -62,7 +62,7 @@ bool SerpentShrineCavernEraseTimersAndTrackersAction::Execute(Event event)
 
 // Trash Mobs
 
-// Non-combat method (some colossi leave a toxic pool upon death)
+// Move out of toxic pool left behind by some colossi upon death
 bool UnderbogColossusEscapeToxicPoolAction::Execute(Event event)
 {
     Aura* aura = bot->GetAura(SPELL_TOXIC_POOL);
@@ -753,32 +753,16 @@ bool LeotherasTheBlindDemonFormTankAttackBossAction::Execute(Event event)
     }
 
     if (innerDemon)
-    {
-        /* if (botAI->HasStrategy("tank", BotState::BOT_STATE_COMBAT))
-            botAI->ChangeStrategy("-tank", BotState::BOT_STATE_COMBAT);
+        return false;
 
-        if (bot->GetTarget() != innerDemon->GetGUID())
-            return Attack(innerDemon); */
-            return false;
-    }
-    else if (Unit* leotherasDemon = GetActiveLeotherasDemon(botAI))
+    if (Unit* leotherasDemon = GetActiveLeotherasDemon(botAI))
     {
-        /* if (!botAI->HasStrategy("tank", BotState::BOT_STATE_COMBAT))
-            botAI->ChangeStrategy("+tank", BotState::BOT_STATE_COMBAT); */
-
         MarkTargetWithSquare(bot, leotherasDemon);
         SetRtiTarget(botAI, "square", leotherasDemon);
 
-        /* if (bot->GetTarget() != leotherasDemon->GetGUID())
-            return Attack(leotherasDemon); */
         if (botAI->CanCastSpell("searing pain", leotherasDemon))
             return botAI->CastSpell("searing pain", leotherasDemon);
     }
-    /* else if (GetLeotherasHuman(botAI))
-    {
-        if (botAI->HasStrategy("tank", BotState::BOT_STATE_COMBAT))
-            botAI->ChangeStrategy("-tank", BotState::BOT_STATE_COMBAT);
-    } */
 
     return false;
 }
@@ -1779,7 +1763,7 @@ bool LadyVashjMainTankPositionBossAction::Execute(Event event)
                 float currentDistance = bot->GetExactDist2d(enchanted);
                 constexpr float safeDistance = 10.0f;
                 if (currentDistance < safeDistance)
-                    return MoveAway(enchanted, safeDistance - currentDistance + 5.0f);
+                    return MoveAway(enchanted, safeDistance - currentDistance);
             }
         }
     }
@@ -1886,10 +1870,8 @@ bool LadyVashjSetGroundingTotemInMainTankGroupAction::Execute(Event event)
                           mainTank->GetPositionZ(), 20.0f, MovementPriority::MOVEMENT_COMBAT);
     }
 
-    /* Will Shaman override grounding if I don't change their strategy?
     if (!botAI->HasStrategy("grounding", BotState::BOT_STATE_COMBAT))
         botAI->ChangeStrategy("+grounding", BotState::BOT_STATE_COMBAT);
-    */
 
     if (!bot->HasAura(SPELL_GROUNDING_TOTEM_EFFECT) &&
         botAI->CanCastSpell("grounding totem", bot))
@@ -1952,9 +1934,9 @@ bool LadyVashjStaticChargeMoveAwayFromGroupAction::Execute(Event event)
     if (mainTank && bot != mainTank)
     {
         float currentDistance = bot->GetExactDist2d(mainTank);
-        constexpr float safeDistance = 10.0f;
+        constexpr float safeDistance = 11.0f;
         if (currentDistance < safeDistance)
-            return MoveAway(mainTank, safeDistance - currentDistance + 0.5f);
+            return MoveAway(mainTank, safeDistance - currentDistance);
     }
 
     // If any other bot has Static Charge, it should move away from other group members
@@ -1967,9 +1949,9 @@ bool LadyVashjStaticChargeMoveAwayFromGroupAction::Execute(Event event)
                 continue;
 
             float currentDistance = bot->GetExactDist2d(member);
-            constexpr float safeDistance = 10.0f;
+            constexpr float safeDistance = 11.0f;
             if (currentDistance < safeDistance)
-                return MoveFromGroup(safeDistance + 0.5f);
+                return MoveFromGroup(safeDistance);
         }
     }
 
@@ -2004,7 +1986,7 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event event)
     Unit* strider = nullptr;
     Unit* sporebat = nullptr;
 
-    // Search and attack radius are intended to keep bots on the platform (not go down the stairs)
+    // Search and attack radius are intended to keep bots from going down the stairs
     const float maxSearchRange =
         botAI->IsRanged(bot) ? 60.0f : 55.0f;
     const float maxPursueRange = maxSearchRange - 5.0f;
@@ -2230,9 +2212,9 @@ bool LadyVashjTankAttackAndMoveAwayStriderAction::Execute(Event event)
     if (!botAI->HasCheat(BotCheatMask::raid) || !botAI->IsTank(bot))
     {
         float currentDistance = bot->GetExactDist2d(strider);
-        constexpr float safeDistance = 15.0f;
+        constexpr float safeDistance = 20.0f;
         if (currentDistance < safeDistance)
-            return MoveAway(strider, safeDistance - currentDistance + 5.0f);
+            return MoveAway(strider, safeDistance - currentDistance);
     }
 
     // Try to root/slow the Strider if it is not tankable (poor man's kiting strategy)

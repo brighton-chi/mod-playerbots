@@ -256,28 +256,6 @@ float LeotherasTheBlindAvoidWhirlwindMultiplier::GetValue(Action* action)
 
 float LeotherasTheBlindDisableTankActionsMultiplier::GetValue(Action* action)
 {
-    /* if (!GetActiveLeotherasDemon(botAI))
-        return 1.0f;
-
-    if (GetLeotherasDemonFormTank(botAI, bot) == bot)
-    {
-        // (1) Warlock tank will not use Shadow Ward, which is coded into the
-        // Warlock tank strategy (for Twin Emps) but is useless here
-        if (dynamic_cast<CastShadowWardAction*>(action))
-            return 0.0f;
-
-        return 1.0f;
-    }
-
-    // Phase 2 only: non-Warlock tanks should not attack Leotheras
-    if (botAI->IsTank(bot) && !bot->HasAura(SPELL_INSIDIOUS_WHISPER))
-    {
-        if (GetPhase2LeotherasDemon(botAI) && dynamic_cast<AttackAction*>(action))
-            return 0.0f;
-
-        if (!GetPhase3LeotherasDemon(botAI) && dynamic_cast<CastBerserkAction*>(action))
-            return 0.0f;
-    } */
     if (!botAI->IsTank(bot) || bot->HasAura(SPELL_INSIDIOUS_WHISPER))
         return 1.0f;
 
