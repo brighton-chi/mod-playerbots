@@ -131,7 +131,7 @@ bool RageWinterchillSpreadRangedInCircleAction::Execute(Event event)
     {
         size_t count = healers.size() + rangedDps.size();
         size_t botIndex = 0;
-        constexpr float radius = 0.0f;
+        float radius = 0.0f;
         float angle = 0.0f;
 
         constexpr float arcSpan = 2.0f * M_PI;
@@ -142,14 +142,14 @@ bool RageWinterchillSpreadRangedInCircleAction::Execute(Event event)
         {
             auto findIt = std::find(healers.begin(), healers.end(), bot);
             botIndex = (findIt != healers.end()) ? std::distance(healers.begin(), findIt) : 0;
-            constexpr float radius = 25.0f;
+            radius = 25.0f;
             count = healers.size();
         }
         else
         {
             auto findIt = std::find(rangedDps.begin(), rangedDps.end(), bot);
             botIndex = (findIt != rangedDps.end()) ? std::distance(rangedDps.begin(), findIt) : 0;
-            constexpr float radius = 20.0f;
+            radius = 20.0f;
             count = rangedDps.size();
         }
 
@@ -159,7 +159,8 @@ bool RageWinterchillSpreadRangedInCircleAction::Execute(Event event)
         float targetX = RAGE_WINTERCHILL_TANK_POSITION.GetPositionX() + radius * std::cos(angle);
         float targetY = RAGE_WINTERCHILL_TANK_POSITION.GetPositionY() + radius * std::sin(angle);
 
-        winterchillRangedPositions.try_emplace(guid, Position(targetX, targetY, RAGE_WINTERCHILL_TANK_POSITION.GetPositionZ()));
+        winterchillRangedPositions.try_emplace(guid, Position(
+            targetX, targetY, RAGE_WINTERCHILL_TANK_POSITION.GetPositionZ()));
         hasReachedWinterchillPosition[guid] = false;
         it = winterchillRangedPositions.find(guid);
     }
@@ -283,7 +284,7 @@ bool AnetheronSpreadRangedInArcAction::Execute(Event event)
     {
         size_t count = healers.size() + rangedDps.size();
         size_t botIndex = 0;
-        constexpr float radius = 0.0f;
+        float radius = 0.0f;
         float angle = 0.0f;
 
         constexpr float arcSpan = 3.0f * M_PI / 2.0f;
@@ -294,14 +295,14 @@ bool AnetheronSpreadRangedInArcAction::Execute(Event event)
         {
             auto findIt = std::find(healers.begin(), healers.end(), bot);
             botIndex = (findIt != healers.end()) ? std::distance(healers.begin(), findIt) : 0;
-            constexpr float radius = 25.0f;
+            radius = 25.0f;
             count = healers.size();
         }
         else
         {
             auto findIt = std::find(rangedDps.begin(), rangedDps.end(), bot);
             botIndex = (findIt != rangedDps.end()) ? std::distance(rangedDps.begin(), findIt) : 0;
-            constexpr float radius = 30.0f;
+            radius = 30.0f;
             count = rangedDps.size();
         }
 
@@ -311,7 +312,8 @@ bool AnetheronSpreadRangedInArcAction::Execute(Event event)
         float targetX = ANETHERON_MAIN_TANK_POSITION.GetPositionX() + radius * std::sin(angle);
         float targetY = ANETHERON_MAIN_TANK_POSITION.GetPositionY() + radius * std::cos(angle);
 
-        anetheronRangedPositions.try_emplace(guid, Position(targetX, targetY, ANETHERON_MAIN_TANK_POSITION.GetPositionZ()));
+        anetheronRangedPositions.try_emplace(guid, Position(
+            targetX, targetY, ANETHERON_MAIN_TANK_POSITION.GetPositionZ()));
         it = anetheronRangedPositions.find(guid);
     }
 
@@ -686,8 +688,9 @@ bool AzgalorMainTankPositionBossAction::Execute(Event event)
             float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
             float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
-            return MoveTo(HYJAL_SUMMIT_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
-                          false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, true);
+            return MoveTo(HYJAL_SUMMIT_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                          position.GetPositionZ(), false, false, false, true,
+                          MovementPriority::MOVEMENT_FORCED, true, true);
         }
 
         if (step == 0 && distToPosition <= maxDistance)

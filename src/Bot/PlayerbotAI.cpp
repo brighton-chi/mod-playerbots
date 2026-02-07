@@ -1552,7 +1552,7 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
             strategyName = "karazhan";  // Karazhan
             break;
         case 534:
-            strategyName = "hyjalsummit";  // Hyjal Summit
+            strategyName = "hyjal";  // Hyjal Summit
             break;
         case 544:
             strategyName = "magtheridon";  // Magtheridon's Lair

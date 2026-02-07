@@ -33,7 +33,7 @@ public:
         creators["magtheridon"] = &RaidStrategyContext::magtheridon;
         creators["ssc"] = &RaidStrategyContext::ssc;
         creators["tempestkeep"] = &RaidStrategyContext::tempestkeep;
-        creators["hyjalsummit"] = &RaidStrategyContext::hyjalsummit;
+        creators["hyjal"] = &RaidStrategyContext::hyjal;
         creators["blacktemple"] = &RaidStrategyContext::blacktemple;
         creators["zulaman"] = &RaidStrategyContext::zulaman;
         creators["wotlk-os"] = &RaidStrategyContext::wotlk_os;
@@ -53,7 +53,7 @@ private:
     static Strategy* magtheridon(PlayerbotAI* botAI) { return new RaidMagtheridonStrategy(botAI); }
     static Strategy* ssc(PlayerbotAI* botAI) { return new RaidSSCStrategy(botAI); }
     static Strategy* tempestkeep(PlayerbotAI* botAI) { return new RaidTempestKeepStrategy(botAI); }
-    static Strategy* hyjalsummit(PlayerbotAI* botAI) { return new RaidHyjalSummitStrategy(botAI); }
+    static Strategy* hyjal(PlayerbotAI* botAI) { return new RaidHyjalSummitStrategy(botAI); }
     static Strategy* blacktemple(PlayerbotAI* botAI) { return new RaidBlackTempleStrategy(botAI); }
     static Strategy* zulaman(PlayerbotAI* botAI) { return new RaidZulAmanStrategy(botAI); }
     static Strategy* wotlk_os(PlayerbotAI* botAI) { return new RaidOsStrategy(botAI); }
