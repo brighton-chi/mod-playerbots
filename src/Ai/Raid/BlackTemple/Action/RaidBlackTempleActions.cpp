@@ -9,7 +9,7 @@ using namespace BlackTempleHelpers;
 
 // General
 
-bool BlackTempleEraseTimersAndTrackersAction::Execute(Event event)
+bool BlackTempleEraseTimersAndTrackersAction::Execute(Event /*event*/)
 {
     const ObjectGuid guid = bot->GetGUID();
     const uint32 instanceId = bot->GetMap()->GetInstanceId();
@@ -64,7 +64,7 @@ bool BlackTempleEraseTimersAndTrackersAction::Execute(Event event)
 
 // High Warlord Naj'entus
 
-bool HighWarlordNajentusMisdirectBossToMainTankAction::Execute(Event event)
+bool HighWarlordNajentusMisdirectBossToMainTankAction::Execute(Event /*event*/)
 {
     Unit* najentus = AI_VALUE2(Unit*, "find target", "high warlord naj'entus");
     if (!najentus)
@@ -97,7 +97,7 @@ bool HighWarlordNajentusMisdirectBossToMainTankAction::Execute(Event event)
     return false;
 }
 
-bool HighWarlordNajentusMainTankPositionBossAction::Execute(Event event)
+bool HighWarlordNajentusMainTankPositionBossAction::Execute(Event /*event*/)
 {
     Unit* najentus = AI_VALUE2(Unit*, "find target", "high warlord naj'entus");
     if (!najentus)
@@ -126,7 +126,7 @@ bool HighWarlordNajentusMainTankPositionBossAction::Execute(Event event)
     return false;
 }
 
-bool HighWarlordNajentusDisperseRangedAction::Execute(Event event)
+bool HighWarlordNajentusDisperseRangedAction::Execute(Event /*event*/)
 {
     Unit* najentus = AI_VALUE2(Unit*, "find target", "high warlord naj'entus");
     if (!najentus)
@@ -145,7 +145,7 @@ bool HighWarlordNajentusDisperseRangedAction::Execute(Event event)
     return false;
 }
 
-bool HighWarlordNajentusRemoveImpalingSpineAction::Execute(Event event)
+bool HighWarlordNajentusRemoveImpalingSpineAction::Execute(Event /*event*/)
 {
     // 1. Find the impaled player
     Group* group = bot->GetGroup();
@@ -207,7 +207,7 @@ bool HighWarlordNajentusRemoveImpalingSpineAction::Execute(Event event)
     return false;
 }
 
-bool HighWarlordNajentusThrowImpalingSpineAction::Execute(Event event)
+bool HighWarlordNajentusThrowImpalingSpineAction::Execute(Event /*event*/)
 {
     Unit* najentus = AI_VALUE2(Unit*, "find target", "high warlord naj'entus");
     if (!najentus)
@@ -242,7 +242,7 @@ bool HighWarlordNajentusThrowImpalingSpineAction::Execute(Event event)
 
 // Supremus
 
-bool SupremusMisdirectBossToMainTankAction::Execute(Event event)
+bool SupremusMisdirectBossToMainTankAction::Execute(Event /*event*/)
 {
     Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
     if (!supremus)
@@ -300,7 +300,7 @@ bool SupremusMisdirectBossToMainTankAction::Execute(Event event)
     return false;
 }
 
-bool SupremusDisperseRangedAction::Execute(Event event)
+bool SupremusDisperseRangedAction::Execute(Event /*event*/)
 {
     if (Group* group = bot->GetGroup())
     {
@@ -323,7 +323,7 @@ bool SupremusDisperseRangedAction::Execute(Event event)
     return false;
 }
 
-bool SupremusKiteBossAction::Execute(Event event)
+bool SupremusKiteBossAction::Execute(Event /*event*/)
 {
     Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
     if (!supremus)
@@ -340,7 +340,7 @@ bool SupremusKiteBossAction::Execute(Event event)
     return false;
 }
 
-bool SupremusMoveAwayFromVolcanosAction::Execute(Event event)
+bool SupremusMoveAwayFromVolcanosAction::Execute(Event /*event*/)
 {
     auto const& volcanos = GetAllSupremusVolcanos();
     if (volcanos.empty())
@@ -472,7 +472,7 @@ std::vector<Unit*> SupremusMoveAwayFromVolcanosAction::GetAllSupremusVolcanos()
     return volcanos;
 }
 
-bool SupremusManagePhaseTimerAction::Execute(Event event)
+bool SupremusManagePhaseTimerAction::Execute(Event /*event*/)
 {
     Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
     if (!supremus)
@@ -486,7 +486,7 @@ bool SupremusManagePhaseTimerAction::Execute(Event event)
 
 // Teron Gorefiend
 
-bool TeronGorefiendMisdirectBossToMainTankAction::Execute(Event event)
+bool TeronGorefiendMisdirectBossToMainTankAction::Execute(Event /*event*/)
 {
     Unit* gorefiend = AI_VALUE2(Unit*, "find target", "teron gorefiend");
     if (!gorefiend)
@@ -519,7 +519,7 @@ bool TeronGorefiendMisdirectBossToMainTankAction::Execute(Event event)
     return false;
 }
 
-bool TeronGorefiendMainTankPositionBossAction::Execute(Event event)
+bool TeronGorefiendMainTankPositionBossAction::Execute(Event /*event*/)
 {
     if (!botAI->IsMainTank(bot))
         return false;
@@ -554,7 +554,7 @@ bool TeronGorefiendMainTankPositionBossAction::Execute(Event event)
 }
 
 // Assume positions in arc at the edge of the balcony (farthest from Constructs)
-bool TeronGorefiendPositionRangedOnBalconyAction::Execute(Event event)
+bool TeronGorefiendPositionRangedOnBalconyAction::Execute(Event /*event*/)
 {
     if (!botAI->IsRanged(bot))
         return false;
@@ -624,7 +624,7 @@ bool TeronGorefiendPositionRangedOnBalconyAction::Execute(Event event)
     return false;
 }
 
-bool TeronGorefiendAvoidShadowOfDeathAction::Execute(Event event)
+bool TeronGorefiendAvoidShadowOfDeathAction::Execute(Event /*event*/)
 {
     botAI->Reset();
 
@@ -638,7 +638,7 @@ bool TeronGorefiendAvoidShadowOfDeathAction::Execute(Event event)
     return false;
 }
 
-bool TeronGorefiendMoveToCornerToDieAction::Execute(Event event)
+bool TeronGorefiendMoveToCornerToDieAction::Execute(Event /*event*/)
 {
     const Position& position = GOREFIEND_DIE_POSITION;
     if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
@@ -651,7 +651,7 @@ bool TeronGorefiendMoveToCornerToDieAction::Execute(Event event)
     return false;
 }
 
-bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event event)
+bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event /*event*/)
 {
     Unit* gorefiend = AI_VALUE2(Unit*, "find target", "teron gorefiend");
     if (!gorefiend)
@@ -745,7 +745,7 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event event
 
 // Gurtogg Bloodboil
 
-bool GurtoggBloodboilMisdirectBossToMainTankAction::Execute(Event event)
+bool GurtoggBloodboilMisdirectBossToMainTankAction::Execute(Event /*event*/)
 {
     Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
     if (!gurtogg)
@@ -778,7 +778,7 @@ bool GurtoggBloodboilMisdirectBossToMainTankAction::Execute(Event event)
     return false;
 }
 
-bool GurtoggBloodboilTanksPositionBossAction::Execute(Event event)
+bool GurtoggBloodboilTanksPositionBossAction::Execute(Event /*event*/)
 {
     Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
     if (!gurtogg)
@@ -809,7 +809,7 @@ bool GurtoggBloodboilTanksPositionBossAction::Execute(Event event)
     return false;
 }
 
-bool GurtoggBloodboilPositionRangedAction::Execute(Event event)
+bool GurtoggBloodboilPositionRangedAction::Execute(Event /*event*/)
 {
     Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
     if (!gurtogg)
@@ -858,7 +858,7 @@ bool GurtoggBloodboilPositionRangedAction::Execute(Event event)
     return false;
 }
 
-bool GurtoggBloodboilRangedMoveAwayFromEnragedPlayerAction::Execute(Event event)
+bool GurtoggBloodboilRangedMoveAwayFromEnragedPlayerAction::Execute(Event /*event*/)
 {
     Group* group = bot->GetGroup();
     if (!group)
@@ -888,7 +888,7 @@ bool GurtoggBloodboilRangedMoveAwayFromEnragedPlayerAction::Execute(Event event)
     return false;
 }
 
-bool GurtoggBloodboilManagePhaseTimerAction::Execute(Event event)
+bool GurtoggBloodboilManagePhaseTimerAction::Execute(Event /*event*/)
 {
     Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
     if (!gurtogg)
@@ -908,7 +908,7 @@ bool GurtoggBloodboilManagePhaseTimerAction::Execute(Event event)
 
 // Reliquary of Souls
 
-bool ReliquaryOfSoulsMisdirectBossToMainTankAction::Execute(Event event)
+bool ReliquaryOfSoulsMisdirectBossToMainTankAction::Execute(Event /*event*/)
 {
     Unit* desire = AI_VALUE2(Unit*, "find target", "essence of desire");
     Unit* anger = AI_VALUE2(Unit*, "find target", "essence of anger");
@@ -947,7 +947,7 @@ bool ReliquaryOfSoulsMisdirectBossToMainTankAction::Execute(Event event)
     return false;
 }
 
-bool ReliquaryOfSoulsHealersDpsEssenceOfSufferingAction::Execute(Event event)
+bool ReliquaryOfSoulsHealersDpsEssenceOfSufferingAction::Execute(Event /*event*/)
 {
     if (AI_VALUE2(Unit*, "find target", "essence of suffering"))
     {
@@ -969,7 +969,7 @@ bool ReliquaryOfSoulsHealersDpsEssenceOfSufferingAction::Execute(Event event)
     return false;
 }
 
-bool ReliquaryOfSoulsAdjustDistanceFromEssenceOfSufferingAction::Execute(Event event)
+bool ReliquaryOfSoulsAdjustDistanceFromEssenceOfSufferingAction::Execute(Event /*event*/)
 {
     Unit* suffering = AI_VALUE2(Unit*, "find target", "essence of suffering");
     if (!suffering)
@@ -1034,7 +1034,7 @@ bool ReliquaryOfSoulsAdjustDistanceFromEssenceOfSufferingAction::RangedMoveAwayF
     return false;
 }
 
-bool ReliquaryOfSoulsSpellstealRuneShieldAction::Execute(Event event)
+bool ReliquaryOfSoulsSpellstealRuneShieldAction::Execute(Event /*event*/)
 {
     if (Unit* desire = AI_VALUE2(Unit*, "find target", "essence of desire"))
     {
@@ -1045,7 +1045,7 @@ bool ReliquaryOfSoulsSpellstealRuneShieldAction::Execute(Event event)
     return false;
 }
 
-bool ReliquaryOfSoulsSpellReflectDeadenAction::Execute(Event event)
+bool ReliquaryOfSoulsSpellReflectDeadenAction::Execute(Event /*event*/)
 {
     if (botAI->CanCastSpell("spell reflection", bot))
         return botAI->CastSpell("spell reflection", bot);
@@ -1055,7 +1055,7 @@ bool ReliquaryOfSoulsSpellReflectDeadenAction::Execute(Event event)
 
 // Mother Shahraz
 
-bool MotherShahrazMisdirectBossToMainTankAction::Execute(Event event)
+bool MotherShahrazMisdirectBossToMainTankAction::Execute(Event /*event*/)
 {
     Unit* shahraz = AI_VALUE2(Unit*, "find target", "mother shahraz");
     if (!shahraz)
@@ -1088,7 +1088,7 @@ bool MotherShahrazMisdirectBossToMainTankAction::Execute(Event event)
     return false;
 }
 
-bool MotherShahrazTanksPositionBossAction::Execute(Event event)
+bool MotherShahrazTanksPositionBossAction::Execute(Event /*event*/)
 {
     Unit* shahraz = AI_VALUE2(Unit*, "find target", "mother shahraz");
     if (!shahraz)
@@ -1137,7 +1137,7 @@ bool MotherShahrazTanksPositionBossAction::Execute(Event event)
 
 // This doesn't actually work for bots--they don't obey the collision of the statue...
 // But it's still cool to get them to go to the right place!
-bool MotherShahrazPositionRangedUnderStatueAction::Execute(Event event)
+bool MotherShahrazPositionRangedUnderStatueAction::Execute(Event /*event*/)
 {
     const Position& position = SHAHRAZ_RANGED_POSITION;
     float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
@@ -1156,7 +1156,7 @@ bool MotherShahrazPositionRangedUnderStatueAction::Execute(Event event)
     return false;
 }
 
-bool MotherShahrazRunAwayToBreakFatalAttractionAction::Execute(Event event)
+bool MotherShahrazRunAwayToBreakFatalAttractionAction::Execute(Event /*event*/)
 {
     Group* group = bot->GetGroup();
     if (!group)
@@ -1222,7 +1222,7 @@ bool MotherShahrazRunAwayToBreakFatalAttractionAction::Execute(Event event)
 
 // Illidari Council
 
-bool IllidariCouncilMisdirectBossesToTanksAction::Execute(Event event)
+bool IllidariCouncilMisdirectBossesToTanksAction::Execute(Event /*event*/)
 {
     Group* group = bot->GetGroup();
     if (!group)
@@ -1256,7 +1256,7 @@ bool IllidariCouncilMisdirectBossesToTanksAction::Execute(Event event)
     if (hunterIndex == 0)
     {
         councilTarget = AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");
-        tankTarget = GetZerevorMageTank(botAI, bot);
+        tankTarget = GetZerevorMageTank(bot);
     }
     else if (hunterIndex == 1)
     {
@@ -1310,7 +1310,7 @@ bool IllidariCouncilMisdirectBossesToTanksAction::Execute(Event event)
     return false;
 }
 
-bool IllidariCouncilMainTankPositionGathiosAction::Execute(Event event)
+bool IllidariCouncilMainTankPositionGathiosAction::Execute(Event /*event*/)
 {
     Unit* gathios = AI_VALUE2(Unit*, "find target", "gathios the shatterer");
     if (!gathios)
@@ -1375,7 +1375,7 @@ bool IllidariCouncilMainTankPositionGathiosAction::Execute(Event event)
     return false;
 }
 
-bool IllidariCouncilMainTankReflectJudgementOfCommandAction::Execute(Event event)
+bool IllidariCouncilMainTankReflectJudgementOfCommandAction::Execute(Event /*event*/)
 {
     if (botAI->CanCastSpell("spell reflection", bot))
         return botAI->CastSpell("spell reflection", bot);
@@ -1383,7 +1383,7 @@ bool IllidariCouncilMainTankReflectJudgementOfCommandAction::Execute(Event event
     return false;
 }
 
-bool IllidariCouncilFirstAssistTankPositionMalandeAction::Execute(Event event)
+bool IllidariCouncilFirstAssistTankPositionMalandeAction::Execute(Event /*event*/)
 {
     Unit* malande = AI_VALUE2(Unit*, "find target", "lady malande");
     if (!malande)
@@ -1411,7 +1411,7 @@ bool IllidariCouncilFirstAssistTankPositionMalandeAction::Execute(Event event)
     return false;
 }
 
-bool IllidariCouncilSecondAssistTankPositionDarkshadowAction::Execute(Event event)
+bool IllidariCouncilSecondAssistTankPositionDarkshadowAction::Execute(Event /*event*/)
 {
     Unit* darkshadow = AI_VALUE2(Unit*, "find target", "veras darkshadow");
     if (!darkshadow)
@@ -1445,7 +1445,7 @@ bool IllidariCouncilSecondAssistTankPositionDarkshadowAction::Execute(Event even
     return false;
 }
 
-bool IllidariCouncilMageTankPositionZerevorAction::Execute(Event event)
+bool IllidariCouncilMageTankPositionZerevorAction::Execute(Event /*event*/)
 {
     Unit* zerevor = AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");
     if (!zerevor)
@@ -1476,7 +1476,7 @@ bool IllidariCouncilMageTankPositionZerevorAction::Execute(Event event)
     return false;
 }
 
-bool IllidariCouncilPositionMageTankHealerAction::Execute(Event event)
+bool IllidariCouncilPositionMageTankHealerAction::Execute(Event /*event*/)
 {
     const ObjectGuid guid = bot->GetGUID();
     uint8 index = zerevorHealStep.count(guid) ? zerevorHealStep[guid] : 0;
@@ -1514,7 +1514,7 @@ bool IllidariCouncilPositionMageTankHealerAction::Execute(Event event)
     return false;
 }
 
-bool IllidariCouncilCommandPetsToAttackGathiosAction::Execute(Event event)
+bool IllidariCouncilCommandPetsToAttackGathiosAction::Execute(Event /*event*/)
 {
     Unit* gathios = AI_VALUE2(Unit*, "find target", "gathios the shatterer");
     if (!gathios)
@@ -1543,7 +1543,7 @@ bool IllidariCouncilCommandPetsToAttackGathiosAction::Execute(Event event)
     return false;
 }
 
-bool IllidariCouncilAssignDpsTargetsAction::Execute(Event event)
+bool IllidariCouncilAssignDpsTargetsAction::Execute(Event /*event*/)
 {
     Unit* malande = AI_VALUE2(Unit*, "find target", "lady malande");
     if (!malande)
@@ -1586,7 +1586,7 @@ bool IllidariCouncilAssignDpsTargetsAction::Execute(Event event)
     return false;
 }
 
-bool IllidariCouncilManageDpsTimerAction::Execute(Event event)
+bool IllidariCouncilManageDpsTimerAction::Execute(Event /*event*/)
 {
     if (Unit* gathios = AI_VALUE2(Unit*, "find target", "gathios the shatterer"))
     {
@@ -1599,7 +1599,7 @@ bool IllidariCouncilManageDpsTimerAction::Execute(Event event)
 
 // Illidan Stormrage <The Betrayer>
 
-bool IllidanStormrageMisdirectToTankAction::Execute(Event event)
+bool IllidanStormrageMisdirectToTankAction::Execute(Event /*event*/)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     if (!illidan)
@@ -1716,7 +1716,7 @@ bool IllidanStormrageMisdirectToTankAction::TryMisdirectToFlameTanks(Group* grou
 
 bool IllidanStormrageMisdirectToTankAction::TryMisdirectToWarlockTank(Unit* illidan, Group* group)
 {
-    Player* warlockTank = GetIllidanWarlockTank(botAI, bot);
+    Player* warlockTank = GetIllidanWarlockTank(bot);
     if (!warlockTank)
         return false;
 
@@ -1729,7 +1729,7 @@ bool IllidanStormrageMisdirectToTankAction::TryMisdirectToWarlockTank(Unit* illi
     return false;
 }
 
-bool IllidanStormrageMainTankMoveAwayFromFlameCrashAction::Execute(Event event)
+bool IllidanStormrageMainTankMoveAwayFromFlameCrashAction::Execute(Event /*event*/)
 {
     // Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     Unit* illidan = GetFirstAliveUnitByEntry(botAI, NPC_ILLIDAN_STORMRAGE);
@@ -1933,7 +1933,7 @@ std::vector<Unit*> IllidanStormrageMainTankMoveAwayFromFlameCrashAction::GetAllF
     return flameCrashes;
 }
 
-bool IllidanStormrageIsolateBotWithParasiteAction::Execute(Event event)
+bool IllidanStormrageIsolateBotWithParasiteAction::Execute(Event /*event*/)
 {
     if (botAI->IsMainTank(bot))
         return false;
@@ -1973,7 +1973,7 @@ bool IllidanStormrageIsolateBotWithParasiteAction::Execute(Event event)
     return false;
 }
 
-bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event event)
+bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*event*/)
 {
     auto [eastFlame, westFlame] = GetFlamesOfAzzinoth(botAI, bot);
 
@@ -2197,7 +2197,7 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidB
 }
 
 // Pets grab aggro right away during Phase 2 and wipe the raid if not put on passive
-bool IllidanStormrageControlPetAggressionAction::Execute(Event event)
+bool IllidanStormrageControlPetAggressionAction::Execute(Event /*event*/)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     if (!illidan)
@@ -2224,7 +2224,7 @@ bool IllidanStormrageControlPetAggressionAction::Execute(Event event)
     return false;
 }
 
-bool IllidanStormragePositionBotsAboveGrateAction::Execute(Event event)
+bool IllidanStormragePositionBotsAboveGrateAction::Execute(Event /*event*/)
 {
     const Position* gratePositions = GRATE_POSITIONS;
     const ObjectGuid guid = bot->GetGUID();
@@ -2312,7 +2312,7 @@ bool IllidanStormragePositionBotsAboveGrateAction::AttackFlamesOfAzzinoth()
     return false;
 }
 
-bool IllidanStormrageRemoveDarkBarrageAction::Execute(Event event)
+bool IllidanStormrageRemoveDarkBarrageAction::Execute(Event /*event*/)
 {
     botAI->Reset();
 
@@ -2326,7 +2326,7 @@ bool IllidanStormrageRemoveDarkBarrageAction::Execute(Event event)
     return false;
 }
 
-bool IllidanStormrageDisperseRangedAction::Execute(Event event)
+bool IllidanStormrageDisperseRangedAction::Execute(Event /*event*/)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     if (!illidan)
@@ -2336,7 +2336,7 @@ bool IllidanStormrageDisperseRangedAction::Execute(Event event)
     if (GetIllidanPhase(illidan) == 4)
     {
         constexpr uint32 minInterval = 0;
-        if (Player* warlockTank = GetIllidanWarlockTank(botAI, bot))
+        if (Player* warlockTank = GetIllidanWarlockTank(bot))
         {
             constexpr float safeDistFromTank = 22.0f;
             if (bot->GetDistance2d(warlockTank) < safeDistFromTank)
@@ -2366,7 +2366,7 @@ bool IllidanStormrageDisperseRangedAction::Execute(Event event)
 }
 
 // Melee cannot attack Demon Form Illidan
-bool IllidanStormrageMeleeGoSomewhereToNotDieAction::Execute(Event event)
+bool IllidanStormrageMeleeGoSomewhereToNotDieAction::Execute(Event /*event*/)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     if (!illidan)
@@ -2390,7 +2390,7 @@ bool IllidanStormrageMeleeGoSomewhereToNotDieAction::Execute(Event event)
     return true;
 }
 
-bool IllidanStormrageWarlockTankHandleDemonBossAction::Execute(Event event)
+bool IllidanStormrageWarlockTankHandleDemonBossAction::Execute(Event /*event*/)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     if (!illidan)
@@ -2414,7 +2414,7 @@ bool IllidanStormrageWarlockTankHandleDemonBossAction::Execute(Event event)
     return false;
 }
 
-bool IllidanStormrageManageDpsTimerAction::Execute(Event event)
+bool IllidanStormrageManageDpsTimerAction::Execute(Event /*event*/)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     if (!illidan)
@@ -2447,7 +2447,7 @@ bool IllidanStormrageManageDpsTimerAction::Execute(Event event)
     return updated;
 }
 
-bool IllidanStormrageDestroyHazardsCheatAction::Execute(Event event)
+bool IllidanStormrageDestroyHazardsCheatAction::Execute(Event /*event*/)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     if (!illidan)

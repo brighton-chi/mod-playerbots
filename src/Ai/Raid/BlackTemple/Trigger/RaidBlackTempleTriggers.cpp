@@ -401,7 +401,7 @@ bool IllidariCouncilDarkshadowEngagedBySecondAssistTankTrigger::IsActive()
 bool IllidariCouncilZerevorEngagedByMageTankTrigger::IsActive()
 {
     return AI_VALUE2(Unit*, "find target", "high nethermancer zerevor") &&
-           GetZerevorMageTank(botAI, bot) == bot;
+           GetZerevorMageTank(bot) == bot;
 }
 
 bool IllidariCouncilMageTankNeedsDedicatedHealerTrigger::IsActive()
@@ -414,7 +414,7 @@ bool IllidariCouncilDeterminingDpsAssignmentsTrigger::IsActive()
 {
     if (botAI->IsHeal(bot) || botAI->IsMainTank(bot) ||
         botAI->IsAssistTankOfIndex(bot, 0, false) ||
-        GetZerevorMageTank(botAI, bot) == bot)
+        GetZerevorMageTank(bot) == bot)
         return false;
 
     Unit* darkshadow = AI_VALUE2(Unit*, "find target", "veras darkshadow");
@@ -442,7 +442,7 @@ bool IllidariCouncilPetsScrewUpThePullTrigger::IsActive()
 bool IllidariCouncilNeedToManageDpsTimerTrigger::IsActive()
 {
     return AI_VALUE2(Unit*, "find target", "gathios the shatterer") &&
-           IsMechanicTrackerBot(botAI, bot, BLACK_TEMPLE_MAP_ID, GetZerevorMageTank(botAI, bot));
+           IsMechanicTrackerBot(botAI, bot, BLACK_TEMPLE_MAP_ID, GetZerevorMageTank(bot));
 }
 
 // Illidan Stormrage <The Betrayer>
@@ -529,7 +529,7 @@ bool IllidanStormrageBossDealsSplashDamageTrigger::IsActive()
     if (!illidan)
         return false;
 
-    if (GetIllidanWarlockTank(botAI, bot) == bot)
+    if (GetIllidanWarlockTank(bot) == bot)
         return false;
 
     return GetIllidanPhase(illidan) == 3 ||
@@ -552,7 +552,7 @@ bool IllidanStormrageBossTransformsIntoDemonTrigger::IsActive()
     if (!illidan || illidan->GetHealth() == 1)
         return false;
 
-    if (GetIllidanWarlockTank(botAI, bot) != bot)
+    if (GetIllidanWarlockTank(bot) != bot)
         return false;
 
     return GetIllidanPhase(illidan) == 4;
@@ -560,7 +560,7 @@ bool IllidanStormrageBossTransformsIntoDemonTrigger::IsActive()
 
 bool IllidanStormrageNeedToManageDpsTimerTrigger::IsActive()
 {
-    if (!IsMechanicTrackerBot(botAI, bot, BLACK_TEMPLE_MAP_ID, GetIllidanWarlockTank(botAI, bot)))
+    if (!IsMechanicTrackerBot(botAI, bot, BLACK_TEMPLE_MAP_ID, GetIllidanWarlockTank(bot)))
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");

@@ -112,7 +112,7 @@ namespace BlackTempleHelpers
     std::unordered_map<ObjectGuid, uint8> zerevorHealStep;
 
 
-    Player* GetZerevorMageTank(PlayerbotAI* botAI, Player* bot)
+    Player* GetZerevorMageTank(Player* bot)
     {
         Group* group = bot->GetGroup();
         if (!group)
@@ -129,10 +129,7 @@ namespace BlackTempleHelpers
                 return member;
         }
 
-        // (2) Fall back to bot Mage with highest HP
-        Player* highestHpMage = nullptr;
-        uint32 highestHp = 0;
-
+        // (2) Fall back to first bot Mage found
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
@@ -140,16 +137,11 @@ namespace BlackTempleHelpers
                 member->getClass() != CLASS_MAGE)
                 continue;
 
-            uint32 hp = member->GetMaxHealth();
-            if (!highestHpMage || hp > highestHp)
-            {
-                highestHpMage = member;
-                highestHp = hp;
-            }
+            return member;
         }
 
-        // (3) Return the found Mage tank, or nullptr if none found
-        return highestHpMage;
+        // (3) Return nullptr if none found
+        return nullptr;
     }
 
     bool HasDangerousCouncilAura(Unit* unit)
@@ -326,16 +318,20 @@ namespace BlackTempleHelpers
         {
             if (eastFlameGuid.find(instanceId) != eastFlameGuid.end() &&
                 unit->GetGUID() == eastFlameGuid[instanceId])
+            {
                 eastFlame = unit;
+            }
             else if (westFlameGuid.find(instanceId) != westFlameGuid.end() &&
                 unit->GetGUID() == westFlameGuid[instanceId])
+            {
                 westFlame = unit;
+            }
         }
 
         return { eastFlame, westFlame };
     }
 
-    Player* GetIllidanWarlockTank(PlayerbotAI* botAI, Player* bot)
+    Player* GetIllidanWarlockTank(Player* bot)
     {
         Group* group = bot->GetGroup();
         if (!group)
@@ -352,10 +348,7 @@ namespace BlackTempleHelpers
                 return member;
         }
 
-        // (2) Fall back to bot Warlock with highest HP
-        Player* highestHpWarlock = nullptr;
-        uint32 highestHp = 0;
-
+        // (2) Fall back to first bot Warlock found
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
@@ -363,16 +356,11 @@ namespace BlackTempleHelpers
                 member->getClass() != CLASS_WARLOCK)
                 continue;
 
-            uint32 hp = member->GetMaxHealth();
-            if (!highestHpWarlock || hp > highestHp)
-            {
-                highestHpWarlock = member;
-                highestHp = hp;
-            }
+            return member;
         }
 
-        // (3) Return the found Warlock tank, or nullptr if none found
-        return highestHpWarlock;
+        // (3) Return nullptr if none found
+        return nullptr;
     }
 
     EyeBlastDangerArea GetEyeBlastDangerArea(PlayerbotAI* botAI, Unit* illidan)
@@ -398,7 +386,8 @@ namespace BlackTempleHelpers
         if (!eyeBlastTrigger)
             return {};
 
-        Position startPos = Position(eyeBlastTrigger->GetPositionX(), eyeBlastTrigger->GetPositionY(), eyeBlastTrigger->GetPositionZ());
+        Position startPos = Position(eyeBlastTrigger->GetPositionX(), eyeBlastTrigger->GetPositionY(),
+                                     eyeBlastTrigger->GetPositionZ());
         Position endPos = eyeBeamPos[beamPosId + MAX_EYE_BEAM_POS];
 
         constexpr float eyeBlastWidth = 9.0f;

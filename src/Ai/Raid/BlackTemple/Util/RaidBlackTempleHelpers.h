@@ -146,7 +146,7 @@ namespace BlackTempleHelpers
     extern std::unordered_map<uint32, time_t> councilDpsWaitTimer;
     extern std::unordered_map<ObjectGuid, uint8> gathiosTankStep;
     extern std::unordered_map<ObjectGuid, uint8> zerevorHealStep;
-    Player* GetZerevorMageTank(PlayerbotAI* botAI, Player* bot);
+    Player* GetZerevorMageTank(Player* bot);
     bool HasDangerousCouncilAura(Unit* unit);
 
     // Illidan Stormrage <The Betrayer>
@@ -182,7 +182,7 @@ namespace BlackTempleHelpers
     extern std::unordered_map<ObjectGuid, uint8> illidanGrateStep;
     int GetIllidanPhase(Unit* illidan);
     std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(PlayerbotAI* botAI, Player* bot);
-    Player* GetIllidanWarlockTank(PlayerbotAI* botAI, Player* bot);
+    Player* GetIllidanWarlockTank(Player* bot);
     struct EyeBlastDangerArea
     {
         Position start;

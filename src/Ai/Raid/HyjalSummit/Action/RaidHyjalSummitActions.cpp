@@ -7,7 +7,7 @@ using namespace HyjalSummitHelpers;
 
 // General
 
-bool HyjalSummitEraseTrackersAction::Execute(Event event)
+bool HyjalSummitEraseTrackersAction::Execute(Event /*event*/)
 {
     const ObjectGuid guid = bot->GetGUID();
 
@@ -40,7 +40,7 @@ bool HyjalSummitEraseTrackersAction::Execute(Event event)
 
 // Rage Winterchill
 
-bool RageWinterchillMisdirectBossToMainTankAction::Execute(Event event)
+bool RageWinterchillMisdirectBossToMainTankAction::Execute(Event /*event*/)
 {
     Unit* winterchill = AI_VALUE2(Unit*, "find target", "rage winterchill");
     if (!winterchill)
@@ -73,7 +73,7 @@ bool RageWinterchillMisdirectBossToMainTankAction::Execute(Event event)
     return false;
 }
 
-bool RageWinterchillMainTankPositionBossAction::Execute(Event event)
+bool RageWinterchillMainTankPositionBossAction::Execute(Event /*event*/)
 {
     Unit* winterchill = AI_VALUE2(Unit*, "find target", "rage winterchill");
     if (!winterchill)
@@ -102,7 +102,7 @@ bool RageWinterchillMainTankPositionBossAction::Execute(Event event)
     return false;
 }
 
-bool RageWinterchillSpreadRangedInCircleAction::Execute(Event event)
+bool RageWinterchillSpreadRangedInCircleAction::Execute(Event /*event*/)
 {
     Group* group = bot->GetGroup();
     if (!group)
@@ -186,7 +186,7 @@ bool RageWinterchillSpreadRangedInCircleAction::Execute(Event event)
 
 // Anetheron
 
-bool AnetheronMisdirectBossToMainTankAction::Execute(Event event)
+bool AnetheronMisdirectBossToMainTankAction::Execute(Event /*event*/)
 {
     Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
     if (!anetheron)
@@ -219,7 +219,7 @@ bool AnetheronMisdirectBossToMainTankAction::Execute(Event event)
     return false;
 }
 
-bool AnetheronMainTankPositionBossAction::Execute(Event event)
+bool AnetheronMainTankPositionBossAction::Execute(Event /*event*/)
 {
     Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
     if (!anetheron)
@@ -251,7 +251,7 @@ bool AnetheronMainTankPositionBossAction::Execute(Event event)
     return false;
 }
 
-bool AnetheronSpreadRangedInArcAction::Execute(Event event)
+bool AnetheronSpreadRangedInArcAction::Execute(Event /*event*/)
 {
     Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
     if (!anetheron)
@@ -331,7 +331,7 @@ bool AnetheronSpreadRangedInArcAction::Execute(Event event)
     return false;
 }
 
-bool AnetheronBringInfernalToInfernalTankAction::Execute(Event event)
+bool AnetheronBringInfernalToInfernalTankAction::Execute(Event /*event*/)
 {
     const Position& position = ANETHERON_INFERNAL_TANK_POSITION;
     if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
@@ -345,7 +345,7 @@ bool AnetheronBringInfernalToInfernalTankAction::Execute(Event event)
     return false;
 }
 
-bool AnetheronAssistTanksPickUpInfernalsAction::Execute(Event event)
+bool AnetheronAssistTanksPickUpInfernalsAction::Execute(Event /*event*/)
 {
     Unit* infernal = AI_VALUE2(Unit*, "find target", "towering infernal");
     if (!infernal)
@@ -371,7 +371,7 @@ bool AnetheronAssistTanksPickUpInfernalsAction::Execute(Event event)
     return false;
 }
 
-bool AnetheronAssignDpsPriorityAction::Execute(Event event)
+bool AnetheronAssignDpsPriorityAction::Execute(Event /*event*/)
 {
     Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
     if (!anetheron)
@@ -413,7 +413,7 @@ bool AnetheronAssignDpsPriorityAction::Execute(Event event)
 
 // Kaz'rogal
 
-bool KazrogalMisdirectBossToMainTankAction::Execute(Event event)
+bool KazrogalMisdirectBossToMainTankAction::Execute(Event /*event*/)
 {
     Unit* kazrogal = AI_VALUE2(Unit*, "find target", "kaz'rogal");
     if (!kazrogal)
@@ -446,7 +446,7 @@ bool KazrogalMisdirectBossToMainTankAction::Execute(Event event)
     return false;
 }
 
-bool KazrogalMainTankPositionBossAction::Execute(Event event)
+bool KazrogalMainTankPositionBossAction::Execute(Event /*event*/)
 {
     Unit* kazrogal = AI_VALUE2(Unit*, "find target", "kaz'rogal");
     if (!kazrogal)
@@ -475,7 +475,7 @@ bool KazrogalMainTankPositionBossAction::Execute(Event event)
     return false;
 }
 
-bool KazrogalAssistTanksMoveInFrontOfBossAction::Execute(Event event)
+bool KazrogalAssistTanksMoveInFrontOfBossAction::Execute(Event /*event*/)
 {
     const Position& position = KAZROGAL_TANK_POSITION;
     float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
@@ -494,7 +494,7 @@ bool KazrogalAssistTanksMoveInFrontOfBossAction::Execute(Event event)
     return false;
 }
 
-bool KazrogalSpreadRangedInArcAction::Execute(Event event)
+bool KazrogalSpreadRangedInArcAction::Execute(Event /*event*/)
 {
     Group* group = bot->GetGroup();
     if (!group)
@@ -557,7 +557,7 @@ bool KazrogalSpreadRangedInArcAction::Execute(Event event)
     return false;
 }
 
-bool KazrogalLowManaBotMoveFromGroupAction::Execute(Event event)
+bool KazrogalLowManaBotMoveFromGroupAction::Execute(Event /*event*/)
 {
     if (bot->getClass() == CLASS_HUNTER)
     {
@@ -578,7 +578,7 @@ bool KazrogalLowManaBotMoveFromGroupAction::Execute(Event event)
     return false;
 }
 
-bool KazrogalRemoveMarkOfKazrogalAction::Execute(Event event)
+bool KazrogalRemoveMarkOfKazrogalAction::Execute(Event /*event*/)
 {
     if (botAI->CanCastSpell("ice block", bot))
         return botAI->CastSpell("ice block", bot);
@@ -590,7 +590,7 @@ bool KazrogalRemoveMarkOfKazrogalAction::Execute(Event event)
 
 // Azgalor
 
-bool AzgalorMisdirectBossToMainTankAction::Execute(Event event)
+bool AzgalorMisdirectBossToMainTankAction::Execute(Event /*event*/)
 {
     Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
     if (!azgalor)
@@ -623,38 +623,7 @@ bool AzgalorMisdirectBossToMainTankAction::Execute(Event event)
     return false;
 }
 
-/* bool AzgalorMainTankPositionBossAction::Execute(Event event)
-{
-    Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
-    if (!azgalor)
-        return false;
-
-    MarkTargetWithStar(bot, azgalor);
-    SetRtiTarget(botAI, "star", azgalor);
-
-    if (bot->GetTarget() != azgalor->GetGUID())
-        return Attack(azgalor);
-
-    if (azgalor->GetVictim() == bot)
-    {
-        const Position& position = AZGALOR_MAIN_TANK_POSITION;
-        float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
-        if (distToPosition > 4.0f)
-        {
-            float dX = position.GetPositionX() - bot->GetPositionX();
-            float dY = position.GetPositionY() - bot->GetPositionY();
-            float moveDist = std::min(5.0f, distToPosition);
-            float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
-            float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
-
-            return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
-                          false, false, true, MovementPriority::MOVEMENT_FORCED, true, true);
-        }
-    }
-
-    return false;
-} */
-bool AzgalorMainTankPositionBossAction::Execute(Event event)
+bool AzgalorMainTankPositionBossAction::Execute(Event /*event*/)
 {
     Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
     if (!azgalor)
@@ -707,7 +676,7 @@ bool AzgalorMainTankPositionBossAction::Execute(Event event)
     return false;
 }
 
-bool AzgalorDisperseRangedAction::Execute(Event event)
+bool AzgalorDisperseRangedAction::Execute(Event /*event*/)
 {
     Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
     if (!azgalor)
@@ -726,7 +695,7 @@ bool AzgalorDisperseRangedAction::Execute(Event event)
     return false;
 }
 
-bool AzgalorMoveToDoomguardTankAction::Execute(Event event)
+bool AzgalorMoveToDoomguardTankAction::Execute(Event /*event*/)
 {
     const Position& position = AZGALOR_DOOMGUARD_TANK_POSITION;
     if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 5.0f)
@@ -741,7 +710,7 @@ bool AzgalorMoveToDoomguardTankAction::Execute(Event event)
     return false;
 }
 
-bool AzgalorFirstAssistTankPositionDoomguardAction::Execute(Event event)
+bool AzgalorFirstAssistTankPositionDoomguardAction::Execute(Event /*event*/)
 {
     const Position& position = AZGALOR_DOOMGUARD_TANK_POSITION;
     float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
@@ -793,7 +762,7 @@ bool AzgalorFirstAssistTankPositionDoomguardAction::Execute(Event event)
     return false;
 }
 
-bool AzgalorAssignDpsPriorityAction::Execute(Event event)
+bool AzgalorAssignDpsPriorityAction::Execute(Event /*event*/)
 {
     if (botAI->IsRanged(bot))
     {
@@ -821,7 +790,7 @@ bool AzgalorAssignDpsPriorityAction::Execute(Event event)
 
 // Archimonde
 
-bool ArchimondeMisdirectBossToMainTankAction::Execute(Event event)
+bool ArchimondeMisdirectBossToMainTankAction::Execute(Event /*event*/)
 {
     Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
     if (!archimonde)
@@ -854,7 +823,7 @@ bool ArchimondeMisdirectBossToMainTankAction::Execute(Event event)
     return false;
 }
 
-bool ArchimondeCastFearWardOnMainTankAction::Execute(Event event)
+bool ArchimondeCastFearWardOnMainTankAction::Execute(Event /*event*/)
 {
     Player* mainTank = nullptr;
     if (Group* group = bot->GetGroup())
@@ -876,7 +845,7 @@ bool ArchimondeCastFearWardOnMainTankAction::Execute(Event event)
     return false;
 }
 
-bool ArchimondeSpreadToAvoidAirBurstAction::Execute(Event event)
+bool ArchimondeSpreadToAvoidAirBurstAction::Execute(Event /*event*/)
 {
     Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
     if (!archimonde)
@@ -902,7 +871,7 @@ bool ArchimondeSpreadToAvoidAirBurstAction::Execute(Event event)
     return false;
 }
 
-bool ArchimondeAvoidDoomfireAction::Execute(Event event)
+bool ArchimondeAvoidDoomfireAction::Execute(Event /*event*/)
 {
     std::vector<Unit*> doomfires;
     auto const& npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
@@ -1027,7 +996,7 @@ Position ArchimondeAvoidDoomfireAction::FindSafePositionFromDoomfires(
     return bestPos;
 }
 
-bool ArchimondeRemoveDoomfireDotAction::Execute(Event event)
+bool ArchimondeRemoveDoomfireDotAction::Execute(Event /*event*/)
 {
     if (bot->GetHealthPct() > 40.0f)
         return false;

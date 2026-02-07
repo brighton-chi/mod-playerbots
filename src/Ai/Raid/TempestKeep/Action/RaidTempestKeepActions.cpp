@@ -13,7 +13,7 @@ using namespace TempestKeepHelpers;
 
 // General
 
-bool TempestKeepEraseTimersAndTrackersAction::Execute(Event event)
+bool TempestKeepEraseTimersAndTrackersAction::Execute(Event /*event*/)
 {
     const ObjectGuid guid = bot->GetGUID();
     const uint32 instanceId = bot->GetMap()->GetInstanceId();
@@ -37,7 +37,7 @@ bool TempestKeepEraseTimersAndTrackersAction::Execute(Event event)
 
 // Trash
 
-bool CrimsonHandCenturionCastPolymorphAction::Execute(Event event)
+bool CrimsonHandCenturionCastPolymorphAction::Execute(Event /*event*/)
 {
     Unit* centurion = AI_VALUE2(Unit*, "find target", "crimson hand centurion");
     if (!centurion)
@@ -62,7 +62,7 @@ bool CrimsonHandCenturionCastPolymorphAction::Execute(Event event)
 
 // Al'ar <Phoenix God>
 
-bool AlarMisdirectBossToMainTankAction::Execute(Event event)
+bool AlarMisdirectBossToMainTankAction::Execute(Event /*event*/)
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
     if (!alar)
@@ -91,7 +91,7 @@ bool AlarMisdirectBossToMainTankAction::Execute(Event event)
     return false;
 }
 
-bool AlarBossTanksMoveBetweenPlatformsAction::Execute(Event event)
+bool AlarBossTanksMoveBetweenPlatformsAction::Execute(Event /*event*/)
 {
     if (!botAI->IsMainTank(bot) && !botAI->IsAssistTankOfIndex(bot, 0, true))
         return false;
@@ -190,7 +190,7 @@ bool AlarBossTanksMoveBetweenPlatformsAction::PositionAssistTank(
     return false;
 }
 
-bool AlarMeleeDpsMoveBetweenPlatformsAction::Execute(Event event)
+bool AlarMeleeDpsMoveBetweenPlatformsAction::Execute(Event /*event*/)
 {
     if (!botAI->IsMelee(bot) || !botAI->IsDps(bot))
         return false;
@@ -226,7 +226,7 @@ bool AlarMeleeDpsMoveBetweenPlatformsAction::Execute(Event event)
     return false;
 }
 
-bool AlarRangedAndEmberTankMoveUnderPlatformsAction::Execute(Event event)
+bool AlarRangedAndEmberTankMoveUnderPlatformsAction::Execute(Event /*event*/)
 {
     if (!botAI->IsRanged(bot) && !botAI->IsAssistTankOfIndex(bot, 1, true))
         return false;
@@ -274,7 +274,7 @@ bool AlarRangedAndEmberTankMoveUnderPlatformsAction::Execute(Event event)
     return false;
 }
 
-bool AlarAssistTanksPickUpEmbersAction::Execute(Event event)
+bool AlarAssistTanksPickUpEmbersAction::Execute(Event /*event*/)
 {
     if (!botAI->IsTank(bot))
         return false;
@@ -407,7 +407,7 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase2Embers(Unit* alar)
     return false;
 }
 
-bool AlarRangedDpsPrioritizeEmbersAction::Execute(Event event)
+bool AlarRangedDpsPrioritizeEmbersAction::Execute(Event /*event*/)
 {
     auto [firstEmber, secondEmber] = GetFirstTwoEmbersOfAlar(botAI);
 
@@ -450,7 +450,7 @@ bool AlarRangedDpsPrioritizeEmbersAction::Execute(Event event)
 }
 
 // Jump from platform during Flame Quills and wait at assigned position after landing
-bool AlarJumpFromPlatformAction::Execute(Event event)
+bool AlarJumpFromPlatformAction::Execute(Event /*event*/)
 {
     if (bot->GetPositionZ() > ALAR_BALCONY_Z)
     {
@@ -509,7 +509,7 @@ bool AlarJumpFromPlatformAction::Execute(Event event)
     return false;
 }
 
-bool AlarMoveAwayFromRebirthAction::Execute(Event event)
+bool AlarMoveAwayFromRebirthAction::Execute(Event /*event*/)
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
     if (!alar)
@@ -541,7 +541,7 @@ bool AlarMoveAwayFromRebirthAction::Execute(Event event)
 }
 
 // Main tank and first assist tank will swap tanking Al'ar when Melt Armor is applied
-bool AlarSwapTanksOnBossAction::Execute(Event event)
+bool AlarSwapTanksOnBossAction::Execute(Event /*event*/)
 {
     if (!botAI->IsMainTank(bot) && !botAI->IsAssistTankOfIndex(bot, 0, true))
         return false;
@@ -581,7 +581,7 @@ bool AlarSwapTanksOnBossAction::Execute(Event event)
     return false;
 }
 
-bool AlarAvoidFlamePatchesAndDiveBombsAction::Execute(Event event)
+bool AlarAvoidFlamePatchesAndDiveBombsAction::Execute(Event /*event*/)
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
     if (!alar)
@@ -651,7 +651,7 @@ bool AlarAvoidFlamePatchesAndDiveBombsAction::HandleDiveBomb(Unit* alar)
 }
 
 // For Phase 2, ensure that bots don't get too far away and become inactive
-bool AlarReturnToRoomCenterAction::Execute(Event event)
+bool AlarReturnToRoomCenterAction::Execute(Event /*event*/)
 {
     const Position& center = ALAR_ROOM_CENTER;
     if (bot->GetVictim() == nullptr &&
@@ -664,7 +664,7 @@ bool AlarReturnToRoomCenterAction::Execute(Event event)
     return false;
 }
 
-bool AlarManagePhaseTrackerAction::Execute(Event event)
+bool AlarManagePhaseTrackerAction::Execute(Event /*event*/)
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
     if (!alar)
@@ -692,7 +692,7 @@ bool AlarManagePhaseTrackerAction::Execute(Event event)
 
 // Void Reaver
 
-bool VoidReaverTanksPositionBossAction::Execute(Event event)
+bool VoidReaverTanksPositionBossAction::Execute(Event /*event*/)
 {
     Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
     if (!voidReaver)
@@ -718,7 +718,7 @@ bool VoidReaverTanksPositionBossAction::Execute(Event event)
     return false;
 }
 
-bool VoidReaverRangedUseAggroDumpAbilityAction::Execute(Event event)
+bool VoidReaverRangedUseAggroDumpAbilityAction::Execute(Event /*event*/)
 {
     botAI->Reset();
     static const std::array<const char*, 6> spells =
@@ -741,7 +741,7 @@ bool VoidReaverRangedUseAggroDumpAbilityAction::Execute(Event event)
 
 // As far as I can tell, it is not possible for bots to detect Arcane Orbs
 // Therefore, this spreads out the ranged bots so as few of them as possible get hit
-bool VoidReaverSpreadRangedAction::Execute(Event event)
+bool VoidReaverSpreadRangedAction::Execute(Event /*event*/)
 {
     Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
     if (!voidReaver)
@@ -826,7 +826,7 @@ Position VoidReaverSpreadRangedAction::GetRangedBotPosition(const Position& cent
 
 // High Astromancer Solarian
 
-bool HighAstromancerSolarianRangedLeaveSpaceForMeleeAction::Execute(Event event)
+bool HighAstromancerSolarianRangedLeaveSpaceForMeleeAction::Execute(Event /*event*/)
 {
     Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
     if (!astromancer)
@@ -840,7 +840,7 @@ bool HighAstromancerSolarianRangedLeaveSpaceForMeleeAction::Execute(Event event)
     return false;
 }
 
-bool HighAstromancerSolarianMoveAwayFromGroupAction::Execute(Event event)
+bool HighAstromancerSolarianMoveAwayFromGroupAction::Execute(Event /*event*/)
 {
     constexpr float safeDistance = 15.0f;
     if (GetNearestPlayerInRadius(bot, safeDistance))
@@ -852,7 +852,7 @@ bool HighAstromancerSolarianMoveAwayFromGroupAction::Execute(Event event)
     return false;
 }
 
-bool HighAstromancerSolarianStackForAoeAction::Execute(Event event)
+bool HighAstromancerSolarianStackForAoeAction::Execute(Event /*event*/)
 {
     Group* group = bot->GetGroup();
     if (!group)
@@ -880,7 +880,7 @@ bool HighAstromancerSolarianStackForAoeAction::Execute(Event event)
 }
 
 // Split melee into two groups, one on each Solarium Priest
-bool HighAstromancerSolarianTargetSolariumPriestsAction::Execute(Event event)
+bool HighAstromancerSolarianTargetSolariumPriestsAction::Execute(Event /*event*/)
 {
     auto priestsPair = GetSolariumPriests(botAI);
     if (!priestsPair.first || !priestsPair.second)
@@ -983,7 +983,7 @@ Unit* HighAstromancerSolarianTargetSolariumPriestsAction::AssignSolariumPriestsT
         return priestsPair.second;
 }
 
-bool HighAstromancerSolarianTankVoidwalkerAction::Execute(Event event)
+bool HighAstromancerSolarianTankVoidwalkerAction::Execute(Event /*event*/)
 {
     Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
     if (!astromancer)
@@ -1005,7 +1005,7 @@ bool HighAstromancerSolarianTankVoidwalkerAction::Execute(Event event)
     return false;
 }
 
-bool HighAstromancerSolarianCastFearWardOnMainTankAction::Execute(Event event)
+bool HighAstromancerSolarianCastFearWardOnMainTankAction::Execute(Event /*event*/)
 {
     Player* mainTank = nullptr;
     if (Group* group = bot->GetGroup())
@@ -1029,7 +1029,7 @@ bool HighAstromancerSolarianCastFearWardOnMainTankAction::Execute(Event event)
 
 // Kael'thas Sunstrider <Lord of the Blood Elves>
 
-bool KaelthasSunstriderKiteThaladredAction::Execute(Event event)
+bool KaelthasSunstriderKiteThaladredAction::Execute(Event /*event*/)
 {
     Unit* thaladred = AI_VALUE2(Unit*, "find target", "thaladred the darkener");
     if (!thaladred)
@@ -1047,7 +1047,7 @@ bool KaelthasSunstriderKiteThaladredAction::Execute(Event event)
 }
 
 // Misdirect order: (1) Capernian, (2) Telonicus, (3) Capernian (again for good measure)
-bool KaelthasSunstriderMisdirectAdvisorsToTanksAction::Execute(Event event)
+bool KaelthasSunstriderMisdirectAdvisorsToTanksAction::Execute(Event /*event*/)
 {
     Group* group = bot->GetGroup();
     if (!group)
@@ -1121,7 +1121,7 @@ bool KaelthasSunstriderMisdirectAdvisorsToTanksAction::Execute(Event event)
     return false;
 }
 
-bool KaelthasSunstriderMainTankPositionSanguinarAction::Execute(Event event)
+bool KaelthasSunstriderMainTankPositionSanguinarAction::Execute(Event /*event*/)
 {
     Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
     if (!sanguinar)
@@ -1155,7 +1155,7 @@ bool KaelthasSunstriderMainTankPositionSanguinarAction::Execute(Event event)
     return false;
 }
 
-bool KaelthasSunstriderCastFearWardOnSanguinarTankAction::Execute(Event event)
+bool KaelthasSunstriderCastFearWardOnSanguinarTankAction::Execute(Event /*event*/)
 {
     Group* group = bot->GetGroup();
     if (!group)
@@ -1178,7 +1178,7 @@ bool KaelthasSunstriderCastFearWardOnSanguinarTankAction::Execute(Event event)
     return false;
 }
 
-bool KaelthasSunstriderWarlockTankPositionCapernianAction::Execute(Event event)
+bool KaelthasSunstriderWarlockTankPositionCapernianAction::Execute(Event /*event*/)
 {
     Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
     if (!capernian)
@@ -1207,7 +1207,7 @@ bool KaelthasSunstriderWarlockTankPositionCapernianAction::Execute(Event event)
     return false;
 }
 
-bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::Execute(Event event)
+bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::Execute(Event /*event*/)
 {
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     if (!kaelthas)
@@ -1306,7 +1306,7 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::StayBackFromCaperni
     return false;
 }
 
-bool KaelthasSunstriderFirstAssistTankPositionTelonicusAction::Execute(Event event)
+bool KaelthasSunstriderFirstAssistTankPositionTelonicusAction::Execute(Event /*event*/)
 {
     Unit* telonicus = AI_VALUE2(Unit*, "find target", "master engineer telonicus");
     if (!telonicus)
@@ -1340,7 +1340,7 @@ bool KaelthasSunstriderFirstAssistTankPositionTelonicusAction::Execute(Event eve
     return false;
 }
 
-bool KaelthasSunstriderHandleAdvisorRolesInPhase3Action::Execute(Event event)
+bool KaelthasSunstriderHandleAdvisorRolesInPhase3Action::Execute(Event /*event*/)
 {
     const Position* movePosition = nullptr;
     if (botAI->IsAssistHealOfIndex(bot, 0, true))
@@ -1377,12 +1377,12 @@ bool KaelthasSunstriderHandleAdvisorRolesInPhase3Action::Execute(Event event)
     return false;
 }
 
-bool KaelthasSunstriderReequipGearAction::Execute(Event event)
+bool KaelthasSunstriderReequipGearAction::Execute(Event /*event*/)
 {
     return botAI->DoSpecificAction("equip upgrade", Event(), true);
 }
 
-bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
+bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event /*event*/)
 {
     // Target priority 1: Thaladred, except Capernian tank
     Player* capernianTank = GetCapernianTank(botAI, bot);
@@ -1466,7 +1466,7 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event event)
     return false;
 }
 
-bool KaelthasSunstriderManageAdvisorDpsTimerAction::Execute(Event event)
+bool KaelthasSunstriderManageAdvisorDpsTimerAction::Execute(Event /*event*/)
 {
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     if (!kaelthas)
@@ -1497,7 +1497,7 @@ bool KaelthasSunstriderManageAdvisorDpsTimerAction::Execute(Event event)
     return false;
 }
 
-bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event event)
+bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*event*/)
 {
     if (botAI->IsAssistTank(bot))
         SetRtiTarget(botAI, "moon", nullptr);
@@ -1590,7 +1590,7 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event eve
     return false;
 }
 
-bool KaelthasSunstriderMoveDevastationAwayAction::Execute(Event event)
+bool KaelthasSunstriderMoveDevastationAwayAction::Execute(Event /*event*/)
 {
     Unit* axe = AI_VALUE2(Unit*, "find target", "devastation");
     if (!axe)
@@ -1612,7 +1612,7 @@ bool KaelthasSunstriderMoveDevastationAwayAction::Execute(Event event)
     return false;
 }
 
-bool KaelthasSunstriderLootLegendaryWeaponsAction::Execute(Event event)
+bool KaelthasSunstriderLootLegendaryWeaponsAction::Execute(Event /*event*/)
 {
     struct WeaponInfo
     {
@@ -1761,7 +1761,7 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::LootWeapon(
     return false;
 }
 
-bool KaelthasSunstriderUseLegendaryWeaponsAction::Execute(Event event)
+bool KaelthasSunstriderUseLegendaryWeaponsAction::Execute(Event /*event*/)
 {
     return UsePhaseshiftBulwark() ||
            UseStaffOfDisintegration() ||
@@ -1853,7 +1853,7 @@ bool KaelthasSunstriderUseLegendaryWeaponsAction::UseEquippedItemWithPacket(Item
     return true;
 }
 
-bool KaelthasSunstriderMainTankPositionBossAction::Execute(Event event)
+bool KaelthasSunstriderMainTankPositionBossAction::Execute(Event /*event*/)
 {
     if (!botAI->IsMainTank(bot))
         return false;
@@ -1890,7 +1890,7 @@ bool KaelthasSunstriderMainTankPositionBossAction::Execute(Event event)
     return false;
 }
 
-bool KaelthasSunstriderAvoidFlameStrikeAction::Execute(Event event)
+bool KaelthasSunstriderAvoidFlameStrikeAction::Execute(Event /*event*/)
 {
     std::vector<Unit*> flameStrikes =
         GetAllHazardTriggers(botAI, bot, NPC_FLAME_STRIKE_TRIGGER, 40.0f);
@@ -1919,7 +1919,7 @@ bool KaelthasSunstriderAvoidFlameStrikeAction::Execute(Event event)
                   MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
-bool KaelthasSunstriderHandlePhoenixesAndEggsAction::Execute(Event event)
+bool KaelthasSunstriderHandlePhoenixesAndEggsAction::Execute(Event /*event*/)
 {
     if (botAI->IsAssistTankOfIndex(bot, 0, true) ||
         botAI->IsAssistTankOfIndex(bot, 1, true))
@@ -1994,7 +1994,7 @@ bool KaelthasSunstriderHandlePhoenixesAndEggsAction::Execute(Event event)
     return false;
 }
 
-bool KaelthasSunstriderBreakMindControlAction::Execute(Event event)
+bool KaelthasSunstriderBreakMindControlAction::Execute(Event /*event*/)
 {
     Player* mcTarget = nullptr;
     float closestDist = std::numeric_limits<float>::max();
@@ -2056,7 +2056,7 @@ bool KaelthasSunstriderBreakMindControlAction::Execute(Event event)
 }
 
 // Shock Barrier needs to be #1 focus, even if there is a Phoenix Egg up
-bool KaelthasSunstriderBreakThroughShockBarrierAction::Execute(Event event)
+bool KaelthasSunstriderBreakThroughShockBarrierAction::Execute(Event /*event*/)
 {
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     if (!kaelthas)
@@ -2092,7 +2092,7 @@ bool KaelthasSunstriderBreakThroughShockBarrierAction::Execute(Event event)
 
 // Bots generally immediately fall to the ground after Gravity Lapse, so this action
 // name is kind of a misnomer (though bots are still in a flying state)
-bool KaelthasSunstriderSpreadOutInMidairAction::Execute(Event event)
+bool KaelthasSunstriderSpreadOutInMidairAction::Execute(Event /*event*/)
 {
     Group* group = bot->GetGroup();
     if (!group)
