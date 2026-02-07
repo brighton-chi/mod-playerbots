@@ -1254,9 +1254,9 @@ void PlayerbotAI::HandleBotOutgoingPacket(WorldPacket const& packet)
                 horizontalSpeed = 0.11f;
             }
             verticalSpeed = -verticalSpeed;
-            // high vertical may result in stuck as bot can not handle gravity
+            /* // high vertical may result in stuck as bot can not handle gravity
             if (verticalSpeed > 35.0f)
-                break;
+                break; */
             // stop casting
             InterruptSpell();
 
@@ -1551,11 +1551,26 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
         case 532:
             strategyName = "karazhan";  // Karazhan
             break;
+        case 534:
+            strategyName = "hyjal";  // Hyjal Summit
+            break;
         case 544:
             strategyName = "magtheridon";  // Magtheridon's Lair
             break;
+        case 548:
+            strategyName = "ssc";  // Serpentshrine Cavern
+            break;
+        case 550:
+            strategyName = "tempestkeep";  // Tempest Keep
+            break;
+        case 564:
+            strategyName = "blacktemple";  // Black Temple
+            break;
         case 565:
             strategyName = "gruulslair";  // Gruul's Lair
+            break;
+        case 568:
+            strategyName = "zulaman";  // Zul'Aman
             break;
         case 574:
             strategyName = "wotlk-uk";  // Utgarde Keep

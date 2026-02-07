@@ -374,6 +374,11 @@ bool EquipUpgradesAction::Execute(Event event)
         Item* item = *i;
         if (!item)
             break;
+
+        const ItemTemplate* itemProto = item->GetTemplate();
+        if (!itemProto || itemProto->InventoryType == INVTYPE_NON_EQUIP)
+            continue;
+
         int32 randomProperty = item->GetItemRandomPropertyId();
         uint32 itemId = item->GetTemplate()->ItemId;
         std::string itemUsageParam;
@@ -408,6 +413,7 @@ bool EquipUpgradeAction::Execute(Event event)
         Item* item = *i;
         if (!item)
             break;
+
         int32 randomProperty = item->GetItemRandomPropertyId();
         uint32 itemId = item->GetTemplate()->ItemId;
         std::string itemUsageParam;
