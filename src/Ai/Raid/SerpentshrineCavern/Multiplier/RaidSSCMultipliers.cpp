@@ -655,13 +655,9 @@ float LadyVashjStaticChargeStayAwayFromGroupMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-// If raid cheat (which enables bot looting of the core) is not enabled
-// Bots should not loot the core
+// Bots should not loot the core with normal looting logic
 float LadyVashjDoNotLootTheTaintedCoreMultiplier::GetValue(Action* action)
 {
-    if (!botAI->HasCheat(BotCheatMask::raid))
-        return 1.0f;
-
     if (AI_VALUE2(Unit*, "find target", "lady vashj"))
     {
         if (dynamic_cast<LootAction*>(action))
