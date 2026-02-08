@@ -1779,16 +1779,16 @@ bool IllidanStormrageMainTankMoveAwayFromFlameCrashAction::Execute(Event /*event
         // End logging
 
         GameObject* nearestTrap = nullptr;
-        float minDist = 20.0f; // Need to test what distance is worth it in terms of traps
+        float maxDist = 30.0f; // Need to test what distance is worth it in terms of traps
         for (ObjectGuid const& guid : gos)
         {
             GameObject* go = botAI->GetGameObject(guid);
             if (!go || !go->isSpawned() || go->GetEntry() != GO_CAGE_TRAP)
                 continue;
             float distToTrap = bot->GetExactDist2d(go);
-            if (distToTrap < minDist)
+            if (distToTrap < maxDist)
             {
-                minDist = distToTrap;
+                maxDist = distToTrap;
                 nearestTrap = go;
             }
         }
@@ -2368,7 +2368,7 @@ bool IllidanStormrageDisperseRangedAction::Execute(Event /*event*/)
     if (!illidan)
         return false;
 
-    // Phase 4: Keep distance from Warlock Tank (Shadow Blast) and Illidan (Aura of Dread)
+    /* // Phase 4: Keep distance from Warlock Tank (Shadow Blast) and Illidan (Aura of Dread)
     if (GetIllidanPhase(illidan) == 4)
     {
         constexpr uint32 minInterval = 0;
@@ -2396,6 +2396,36 @@ bool IllidanStormrageDisperseRangedAction::Execute(Event /*event*/)
     {
         constexpr uint32 minInterval = 1000;
         return FleePosition(Position(nearestPlayer->GetPosition()), safeDistFromPlayer, minInterval);
+    } */
+
+    if (GetIllidanPhase(illidan) == 4)
+    {
+        if (Player* warlockTank = GetIllidanWarlockTank(bot))
+        {
+            constexpr float safeDistFromTank = 22.0f;
+            if (bot->GetDistance2d(warlockTank) < safeDistFromTank)
+            {
+                constexpr uint32 minInterval = 0;
+                if (FleePosition(Position(warlockTank->GetPosition()), safeDistFromTank, minInterval));
+                    return true;
+            }
+        }
+    }
+
+    // Phase 3, 4, and 5: Keep distance from Illidan and other players (Agonizing Flames, Flame Burst)
+    constexpr float safeDistFromBoss = 16.0f;
+    if (bot->GetDistance2d(illidan) < safeDistFromBoss)
+    {
+        constexpr uint32 minInterval = 0;
+        if (FleePosition(Position(illidan->GetPosition()), safeDistFromBoss, minInterval));
+            return true;
+    }
+
+    constexpr float safeDistFromPlayer = 6.0f;
+    if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
+    {
+        constexpr uint32 minInterval = 1000;
+        return FleePosition(Position(nearestPlayer->GetPosition()), safeDistFromPlayer, minInterval);
     }
 
     return false;
@@ -2413,7 +2443,8 @@ bool IllidanStormrageMeleeGoSomewhereToNotDieAction::Execute(Event /*event*/)
     if (currentDistFromBoss < safeDistFromBoss)
     {
         botAI->Reset();
-        return MoveAway(illidan, safeDistFromBoss - currentDistFromBoss);
+        if (MoveAway(illidan, safeDistFromBoss - currentDistFromBoss));
+            return false;
     }
 
     constexpr float safeDistFromPlayer = 6.0f;
@@ -2438,7 +2469,8 @@ bool IllidanStormrageWarlockTankHandleDemonBossAction::Execute(Event /*event*/)
         if (bot->GetDistance2d(illidan) < safeDistFromBoss)
         {
             constexpr uint32 minInterval = 0;
-            return FleePosition(Position(illidan->GetPosition()), safeDistFromBoss, minInterval);
+            if (FleePosition(Position(illidan->GetPosition()), safeDistFromBoss, minInterval));
+                return true;
         }
 
         /* if (bot->GetTarget() != illidan->GetGUID())
