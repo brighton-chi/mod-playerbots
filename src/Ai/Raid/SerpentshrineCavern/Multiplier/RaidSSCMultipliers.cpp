@@ -351,7 +351,7 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValue(Action* action)
 
     constexpr uint8 dpsWaitSecondsPhase2 = 12;
     Unit* leotherasPhase2Demon = GetPhase2LeotherasDemon(botAI);
-    Player* demonFormTank = GetLeotherasDemonFormTank(botAI, bot);
+    Player* demonFormTank = GetLeotherasDemonFormTank(bot);
     if (leotherasPhase2Demon)
     {
         if (demonFormTank && demonFormTank == bot)

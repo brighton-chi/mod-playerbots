@@ -802,7 +802,7 @@ bool LeotherasTheBlindPositionRangedAction::Execute(Event /*event*/)
                 continue;
 
             constexpr uint32 minInterval = 0;
-            if (GetLeotherasDemonFormTank(botAI, bot) == member)
+            if (GetLeotherasDemonFormTank(bot) == member)
             {
                 constexpr float safeDistFromTank = 10.0f;
                 if (bot->GetExactDist2d(member) < safeDistFromTank)
@@ -1074,7 +1074,7 @@ bool LeotherasTheBlindMisdirectBossToDemonFormTankAction::Execute(Event /*event*
     if (!leotherasDemon)
         return false;
 
-    Player* demonFormTank = GetLeotherasDemonFormTank(botAI, bot);
+    Player* demonFormTank = GetLeotherasDemonFormTank(bot);
     Player* targetTank = demonFormTank;
 
     if (!targetTank)
