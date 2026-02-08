@@ -171,6 +171,9 @@ public:
         creators["illidan stormrage boss transforms into demon"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_boss_transforms_into_demon;
 
+        creators["illidan stormrage boss spawns adds"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_boss_spawns_adds;
+
         creators["illidan stormrage need to manage dps timer"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_need_to_manage_dps_timer;
 
@@ -340,6 +343,9 @@ private:
 
     static Trigger* illidan_stormrage_boss_transforms_into_demon(
         PlayerbotAI* botAI) { return new IllidanStormrageBossTransformsIntoDemonTrigger(botAI); }
+
+    static Trigger* illidan_stormrage_boss_spawns_adds(
+        PlayerbotAI* botAI) { return new IllidanStormrageBossSpawnsAddsTrigger(botAI); }
 
     static Trigger* illidan_stormrage_need_to_manage_dps_timer(
         PlayerbotAI* botAI) { return new IllidanStormrageNeedToManageDpsTimerTrigger(botAI); }

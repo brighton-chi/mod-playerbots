@@ -461,8 +461,7 @@ bool IllidanStormrageBossCastsFlameCrashTrigger::IsActive()
     if (!botAI->IsMainTank(bot))
         return false;
 
-    // Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    Unit* illidan = GetFirstAliveUnitByEntry(botAI, NPC_ILLIDAN_STORMRAGE);
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     if (!illidan)
         return false;
 
@@ -476,8 +475,11 @@ bool IllidanStormrageBotHasParasiticShadowfiendTrigger::IsActive()
     if (!bot->HasAura(SPELL_PARASITIC_SHADOWFIEND))
         return false;
 
+    if (botAI->IsMainTank(bot))
+        return false;
+
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    return illidan && GetIllidanPhase(illidan) == 1;
+    return illidan && GetIllidanPhase(illidan) != 2 && GetIllidanPhase(illidan) != 4;
 }
 
 bool IllidanStormrageBossSummonedFlamesOfAzzinothTrigger::IsActive()
@@ -529,7 +531,7 @@ bool IllidanStormrageBossDealsSplashDamageTrigger::IsActive()
     if (!illidan)
         return false;
 
-    if (GetIllidanWarlockTank(bot) == bot)
+    if (GetIllidanPhase(illidan) == 4 && GetIllidanWarlockTank(bot) == bot)
         return false;
 
     return GetIllidanPhase(illidan) == 3 ||
@@ -558,6 +560,15 @@ bool IllidanStormrageBossTransformsIntoDemonTrigger::IsActive()
     return GetIllidanPhase(illidan) == 4;
 }
 
+bool IllidanStormrageBossSpawnsAddsTrigger::IsActive()
+{
+    if (!botAI->IsDps(bot))
+        return false;
+
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    return illidan && illidan->GetHealth() > 1;
+}
+
 bool IllidanStormrageNeedToManageDpsTimerTrigger::IsActive()
 {
     if (!IsMechanicTrackerBot(botAI, bot, BLACK_TEMPLE_MAP_ID, GetIllidanWarlockTank(bot)))
@@ -572,7 +583,7 @@ bool IllidanStormrageCheatTrigger::IsActive()
     if (!botAI->HasCheat(BotCheatMask::raid))
         return false;
 
-    if (botAI->IsTank(bot))
+    if (!botAI->IsDps(bot))
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");

@@ -1747,12 +1747,14 @@ bool IllidanStormrageMisdirectToTankAction::TryMisdirectToWarlockTank(Unit* illi
 
 bool IllidanStormrageMainTankMoveAwayFromFlameCrashAction::Execute(Event /*event*/)
 {
-    // Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    Unit* illidan = GetFirstAliveUnitByEntry(botAI, NPC_ILLIDAN_STORMRAGE);
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     if (!illidan)
         return false;
 
-    if (bot->GetVictim() != illidan)
+    // MarkTargetWithCross(bot, illidan);
+    // SetRtiTarget(botAI, "cross", illidan);
+
+    if (bot->GetTarget() != illidan->GetGUID())
         return Attack(illidan);
 
     if (GetIllidanPhase(illidan) == 5) // I don't think this works right now
@@ -1971,39 +1973,12 @@ std::vector<Unit*> IllidanStormrageMainTankMoveAwayFromFlameCrashAction::GetAllF
 
 bool IllidanStormrageIsolateBotWithParasiteAction::Execute(Event /*event*/)
 {
-    if (botAI->IsMainTank(bot))
-        return false;
-
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    if (bot->HasAura(SPELL_PARASITIC_SHADOWFIEND))
+    constexpr float safeDistance = 8.0f;
+    if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
     {
-        Unit* nearestPlayer = nullptr;
-        float distToNearest = 12.0f;
-
-        for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || member == bot)
-                continue;
-
-            float distance = bot->GetExactDist2d(member);
-            if (distance < distToNearest)
-            {
-                distToNearest = distance;
-                nearestPlayer = member;
-            }
-        }
-
-        if (nearestPlayer)
-        {
-            constexpr float safeDistance = 12.0f;
-            constexpr uint32 minInterval = 0;
-            botAI->Reset();
-            return FleePosition(Position(nearestPlayer->GetPosition()), safeDistance, minInterval);
-        }
+        constexpr uint32 minInterval = 0;
+        botAI->Reset();
+        return FleePosition(Position(nearestPlayer->GetPosition()), safeDistance, minInterval);
     }
 
     return false;
@@ -2166,16 +2141,15 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidB
     const Position* waypoints = nullptr;
     constexpr size_t numWaypoints = 7;
 
-    // Determine which tank and assign waypoints
     if (botAI->IsAssistTankOfIndex(bot, 1, true))
     {
-        if (!eastFlame || eastFlame->GetVictim() != bot)
+        if (!eastFlame || eastFlame->GetVictim() != bot || !bot->IsWithinMeleeRange(eastFlame))
             return false;
         waypoints = E_GLAIVE_TANK_POSITIONS;
     }
     else if (botAI->IsAssistTankOfIndex(bot, 0, true))
     {
-        if (!westFlame || westFlame->GetVictim() != bot)
+        if (!westFlame || westFlame->GetVictim() != bot || !bot->IsWithinMeleeRange(westFlame))
             return false;
         waypoints = W_GLAIVE_TANK_POSITIONS;
     }
@@ -2233,6 +2207,7 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidB
 }
 
 // Pets grab aggro right away during Phase 2 and wipe the raid if not put on passive
+// Just like players, pets cannot melee Illidan during Phase 4
 bool IllidanStormrageControlPetAggressionAction::Execute(Event /*event*/)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -2243,7 +2218,7 @@ bool IllidanStormrageControlPetAggressionAction::Execute(Event /*event*/)
     if (!pet)
         return false;
 
-    if (GetIllidanPhase(illidan) == 2)
+    if (GetIllidanPhase(illidan) == 2 || GetIllidanPhase(illidan) == 4)
     {
         if (pet->GetReactState() != REACT_PASSIVE)
         {
@@ -2260,7 +2235,7 @@ bool IllidanStormrageControlPetAggressionAction::Execute(Event /*event*/)
     return false;
 }
 
-bool IllidanStormragePositionBotsAboveGrateAction::Execute(Event /*event*/)
+bool IllidanStormragePositionAboveGrateAction::Execute(Event /*event*/)
 {
     const Position* gratePositions = GRATE_POSITIONS;
     const ObjectGuid guid = bot->GetGUID();
@@ -2315,34 +2290,6 @@ bool IllidanStormragePositionBotsAboveGrateAction::Execute(Event /*event*/)
         return MoveTo(BLACK_TEMPLE_MAP_ID, position.GetPositionX(), position.GetPositionY(),
                       position.GetPositionZ(), false, false, false, false,
                       MovementPriority::MOVEMENT_COMBAT, true, false);
-    }
-
-    if (AttackFlamesOfAzzinoth())
-        return true;
-
-    return false;
-}
-
-bool IllidanStormragePositionBotsAboveGrateAction::AttackFlamesOfAzzinoth()
-{
-    if (GetFirstAliveUnitByEntry(botAI, NPC_PARASITIC_SHADOWFIEND))
-        return false;
-
-    auto [eastFlame, westFlame] = GetFlamesOfAzzinoth(botAI, bot);
-
-    if (eastFlame)
-    {
-        SetRtiTarget(botAI, "star", eastFlame);
-
-        if (bot->GetTarget() != eastFlame->GetGUID())
-            return Attack(eastFlame);
-    }
-    else if (westFlame)
-    {
-        SetRtiTarget(botAI, "circle", westFlame);
-
-        if (bot->GetTarget() != westFlame->GetGUID())
-            return Attack(westFlame);
     }
 
     return false;
@@ -2412,7 +2359,7 @@ bool IllidanStormrageDisperseRangedAction::Execute(Event /*event*/)
         }
     }
 
-    // Phase 3, 4, and 5: Keep distance from Illidan and other players (Agonizing Flames, Flame Burst)
+    // Phase 3, 4, and 5: Keep distance from Illidan and other players (Draw Soul, Agonizing Flames, Flame Burst)
     constexpr float safeDistFromBoss = 16.0f;
     if (bot->GetDistance2d(illidan) < safeDistFromBoss)
     {
@@ -2443,8 +2390,7 @@ bool IllidanStormrageMeleeGoSomewhereToNotDieAction::Execute(Event /*event*/)
     if (currentDistFromBoss < safeDistFromBoss)
     {
         botAI->Reset();
-        if (MoveAway(illidan, safeDistFromBoss - currentDistFromBoss));
-            return false;
+        return MoveAway(illidan, safeDistFromBoss - currentDistFromBoss);
     }
 
     constexpr float safeDistFromPlayer = 6.0f;
@@ -2463,21 +2409,69 @@ bool IllidanStormrageWarlockTankHandleDemonBossAction::Execute(Event /*event*/)
     if (!illidan)
         return false;
 
-    // if (GetIllidanPhase(illidan) == 4)
-    // {
-        constexpr float safeDistFromBoss = 16.0f;
-        if (bot->GetDistance2d(illidan) < safeDistFromBoss)
-        {
-            constexpr uint32 minInterval = 0;
-            if (FleePosition(Position(illidan->GetPosition()), safeDistFromBoss, minInterval));
-                return true;
-        }
+    constexpr float safeDistFromBoss = 16.0f;
+    if (bot->GetDistance2d(illidan) < safeDistFromBoss)
+    {
+        constexpr uint32 minInterval = 0;
+        if (FleePosition(Position(illidan->GetPosition()), safeDistFromBoss, minInterval));
+            return true;
+    }
 
-        /* if (bot->GetTarget() != illidan->GetGUID())
-            return Attack(illidan);
-        else*/ if (botAI->CanCastSpell("searing pain", illidan))
+    if (GetIllidanPhase(illidan) == 4)
+    {
+        if (botAI->CanCastSpell("searing pain", illidan))
             return botAI->CastSpell("searing pain", illidan);
-    // }
+    }
+
+    return false;
+}
+
+bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
+{
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    if (!illidan)
+        return false;
+
+    if (Unit* shadowfiend = GetFirstAliveUnitByEntry(botAI, NPC_PARASITIC_SHADOWFIEND))
+    {
+        if (IsMechanicTrackerBot(botAI, bot, BLACK_TEMPLE_MAP_ID, GetIllidanWarlockTank(bot)))
+            MarkTargetWithSkull(bot, shadowfiend);
+
+        if (botAI->IsRanged(bot) ||
+            (botAI->IsMelee(bot) && bot->IsWithinMeleeRange(shadowfiend)))
+        {
+            // SetRtiTarget(botAI, "skull", shadowfiend);
+
+            if (bot->GetTarget() != shadowfiend->GetGUID())
+                return Attack(shadowfiend);
+        }
+    }
+    else if (GetIllidanPhase(illidan) == 2)
+    {
+        /* if (IsMechanicTrackerBot(botAI, bot, BLACK_TEMPLE_MAP_ID, GetIllidanWarlockTank(bot)))
+            MarkTargetWithMoon(bot, illidan); */
+
+        auto [eastFlame, westFlame] = GetFlamesOfAzzinoth(botAI, bot);
+        if (eastFlame)
+        {
+            SetRtiTarget(botAI, "star", eastFlame);
+
+            if (bot->GetTarget() != eastFlame->GetGUID())
+                return Attack(eastFlame);
+        }
+        else if (westFlame)
+        {
+            SetRtiTarget(botAI, "circle", westFlame);
+
+            if (bot->GetTarget() != westFlame->GetGUID())
+                return Attack(westFlame);
+        }
+    }
+    else
+    {
+        if (bot->GetTarget() != illidan->GetGUID())
+            return Attack(illidan);
+    }
 
     return false;
 }
@@ -2522,17 +2516,11 @@ bool IllidanStormrageDestroyHazardsCheatAction::Execute(Event /*event*/)
         return false;
 
     bool destroyed = false;
-    if (Unit* shadowfiend = GetFirstAliveUnitByEntry(botAI, NPC_PARASITIC_SHADOWFIEND))
+    /* if (Unit* shadowfiend = GetFirstAliveUnitByEntry(botAI, NPC_PARASITIC_SHADOWFIEND))
     {
-        /* shadowfiend->Kill(bot, shadowfiend);
-        destroyed = true; */
-        if (IsMechanicTrackerBot(botAI, bot, BLACK_TEMPLE_MAP_ID))
-            MarkTargetWithSkull(bot, shadowfiend);
-
-        SetRtiTarget(botAI, "skull", shadowfiend);
-        if (bot->GetTarget() != shadowfiend->GetGUID())
-            return Attack(shadowfiend);
-    }
+        shadowfiend->Kill(bot, shadowfiend);
+        destroyed = true;
+    } */
 
     if (GetIllidanPhase(illidan) == 4)
     {

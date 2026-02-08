@@ -427,15 +427,12 @@ public:
     bool Execute(Event event) override;
 };
 
-class IllidanStormragePositionBotsAboveGrateAction : public AttackAction
+class IllidanStormragePositionAboveGrateAction : public MovementAction
 {
 public:
-    IllidanStormragePositionBotsAboveGrateAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "illidan stormrage position bots above grate") {}
+    IllidanStormragePositionAboveGrateAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "illidan stormrage position above grate") {}
     bool Execute(Event event) override;
-
-private:
-    bool AttackFlamesOfAzzinoth();
 };
 
 class IllidanStormrageRemoveDarkBarrageAction : public Action
@@ -470,6 +467,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class IllidanStormrageDpsPrioritizeAddsAction : public AttackAction
+{
+public:
+    IllidanStormrageDpsPrioritizeAddsAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "illidan stormrage dps prioritize adds") {}
+    bool Execute(Event event) override;
+};
+
 class IllidanStormrageManageDpsTimerAction : public Action
 {
 public:
@@ -478,11 +483,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class IllidanStormrageDestroyHazardsCheatAction : public AttackAction
+class IllidanStormrageDestroyHazardsCheatAction : public Action
 {
 public:
     IllidanStormrageDestroyHazardsCheatAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "illidan stormrage destroy hazards cheat") {}
+        PlayerbotAI* botAI) : Action(botAI, "illidan stormrage destroy hazards cheat") {}
     bool Execute(Event event) override;
 };
 

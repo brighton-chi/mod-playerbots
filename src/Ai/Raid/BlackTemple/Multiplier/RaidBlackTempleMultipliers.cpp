@@ -484,61 +484,71 @@ float IllidanStormrageControlMovementMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-// For now, just tank assist in Phase 4
 float IllidanStormrageDisableDefaultTargetingMultiplier::GetValue(Action* action)
 {
-    if (bot->GetVictim() == nullptr)
+    if (botAI->IsTank(bot) && bot->GetVictim() == nullptr)
         return 1.0f;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     if (!illidan || illidan->GetHealth() == 1)
         return 1.0f;
 
-    if (GetIllidanPhase(illidan) == 4)
-    {
-        if (dynamic_cast<TankAssistAction*>(action))
-            return 0.0f;
-    }
+    if (dynamic_cast<TankAssistAction*>(action) ||
+        dynamic_cast<DpsAssistAction*>(action))
+        return 0.0f;
 
     return 1.0f;
 }
 
+// Testing more of a generic movement suppression multiplier
 float IllidanStormrageStayWithinGrateMultiplier::GetValue(Action* action)
 {
-    if (botAI->IsAssistTankOfIndex(bot, 0, true) ||
-        botAI->IsAssistTankOfIndex(bot, 1, true))
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    if (!illidan || illidan->GetHealth() == 1)
         return 1.0f;
 
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (illidan)
+    if (botAI->IsMainTank(bot))
     {
-        if (GetIllidanPhase(illidan) == 2 ||
-            (GetIllidanPhase(illidan) == 1 && bot->HasAura(SPELL_PARASITIC_SHADOWFIEND)))
+        if (GetIllidanPhase(illidan) == 2)
+        {
+            if (dynamic_cast<AttackAction*>(action) ||
+                dynamic_cast<CastMeleeSpellAction*>(action) ||
+                dynamic_cast<ReachTargetAction*>(action) ||
+                dynamic_cast<CastReachTargetSpellAction*>(action))
+                return 0.0f;
+        }
+    }
+    else if (botAI->IsRanged(bot))
+    {
+        if (GetIllidanPhase(illidan) != 1 || bot->HasAura(SPELL_PARASITIC_SHADOWFIEND))
+        {
+            if (dynamic_cast<ReachTargetAction*>(action) ||
+                dynamic_cast<FleeAction*>(action) ||
+                dynamic_cast<FollowAction*>(action) ||
+                dynamic_cast<CastDisengageAction*>(action) ||
+                dynamic_cast<CastBlinkBackAction*>(action))
+                return 0.0f;
+        }
+    }
+    else if (botAI->IsMelee(bot))
+    {
+        if (GetIllidanPhase(illidan) == 2 || GetIllidanPhase(illidan) == 4 ||
+            bot->HasAura(SPELL_PARASITIC_SHADOWFIEND))
         {
             if (dynamic_cast<ReachTargetAction*>(action) ||
                 dynamic_cast<FleeAction*>(action) ||
                 dynamic_cast<FollowAction*>(action) ||
                 dynamic_cast<SetBehindTargetAction*>(action) ||
                 dynamic_cast<CastReachTargetSpellAction*>(action) ||
-                dynamic_cast<CastDisengageAction*>(action) ||
-                dynamic_cast<CastBlinkBackAction*>(action) ||
                 dynamic_cast<CastKillingSpreeAction*>(action))
                 return 0.0f;
-
-            // Something is causing MT to idle between Phase 1 and 2, though he responds to follow
-            // Is this it?
-            /* if (botAI->IsMainTank(bot))
-            {
-                if (dynamic_cast<AttackAction*>(action) ||
-                    dynamic_cast<CastMeleeSpellAction*>(action))
-                    return 0.0f;
-            } */
         }
     }
 
     return 1.0f;
 }
 
+// Commented out for now in strategies--not needed if i go for broader control per above
 float IllidanStormrageDisableMeleeAttackingMultiplier::GetValue(Action* action)
 {
     if (!botAI->IsMelee(bot))

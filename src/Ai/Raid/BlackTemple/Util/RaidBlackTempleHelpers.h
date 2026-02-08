@@ -79,7 +79,6 @@ namespace BlackTempleHelpers
         NPC_SHADOWY_CONSTRUCT     = 23111,
 
         // Illidan Stormrage <The Betrayer>
-        NPC_ILLIDAN_STORMRAGE     = 22917,
         NPC_FLAME_OF_AZZINOTH     = 22997,
         NPC_DEMON_FIRE            = 23069,
         NPC_ILLIDAN_DB_TARGET     = 23070,

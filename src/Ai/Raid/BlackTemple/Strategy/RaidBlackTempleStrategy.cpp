@@ -151,7 +151,7 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("illidan stormrage control pet aggression", ACTION_RAID + 3) }));
 
     triggers.push_back(new TriggerNode("illidan stormrage grate is safe from flames", {
-        NextAction("illidan stormrage position bots above grate", ACTION_EMERGENCY + 1) }));
+        NextAction("illidan stormrage position above grate", ACTION_EMERGENCY + 2) }));
 
     triggers.push_back(new TriggerNode("illidan stormrage bot struck by dark barrage", {
         NextAction("illidan stormrage remove dark barrage", ACTION_EMERGENCY + 6) }));
@@ -163,13 +163,16 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("illidan stormrage melee go somewhere to not die", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("illidan stormrage boss transforms into demon", {
-        NextAction("illidan stormrage warlock tank handle demon boss", ACTION_EMERGENCY + 10) }));
+        NextAction("illidan stormrage warlock tank handle demon boss", ACTION_EMERGENCY + 9) }));
+
+    triggers.push_back(new TriggerNode("illidan stormrage boss spawns adds", {
+        NextAction("illidan stormrage dps prioritize adds", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("illidan stormrage need to manage dps timer", {
-        NextAction("illidan stormrage manage dps timer", ACTION_EMERGENCY + 10) }));
+        NextAction("illidan stormrage manage dps timer", ACTION_EMERGENCY + 11) }));
 
     triggers.push_back(new TriggerNode("illidan stormrage cheat", {
-        NextAction("illidan stormrage destroy hazards cheat", ACTION_EMERGENCY + 11) }));
+        NextAction("illidan stormrage destroy hazards cheat", ACTION_EMERGENCY + 10) }));
 }
 
 void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
@@ -212,6 +215,6 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new IllidanStormrageControlMovementMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageDisableDefaultTargetingMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageStayWithinGrateMultiplier(botAI));
-    multipliers.push_back(new IllidanStormrageDisableMeleeAttackingMultiplier(botAI));
+    // multipliers.push_back(new IllidanStormrageDisableMeleeAttackingMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageWaitForDpsMultiplier(botAI));
 }
