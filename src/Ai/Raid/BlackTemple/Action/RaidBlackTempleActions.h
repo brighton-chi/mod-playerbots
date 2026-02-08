@@ -30,11 +30,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class HighWarlordNajentusMainTankPositionBossAction : public AttackAction
+class HighWarlordNajentusTanksPositionBossAction : public AttackAction
 {
 public:
-    HighWarlordNajentusMainTankPositionBossAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "high warlord naj'entus main tank position boss") {}
+    HighWarlordNajentusTanksPositionBossAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "high warlord naj'entus tanks position boss") {}
     bool Execute(Event event) override;
 };
 
@@ -123,11 +123,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class TeronGorefiendMainTankPositionBossAction : public AttackAction
+class TeronGorefiendTanksPositionBossAction : public AttackAction
 {
 public:
-    TeronGorefiendMainTankPositionBossAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "teron gorefiend main tank position boss") {}
+    TeronGorefiendTanksPositionBossAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "teron gorefiend tanks position boss") {}
     bool Execute(Event event) override;
 };
 
@@ -262,19 +262,19 @@ public:
     bool Execute(Event event) override;
 };
 
-class MotherShahrazTanksPositionBossAction : public AttackAction
+class MotherShahrazTanksPositionBossUnderPillarAction : public AttackAction
 {
 public:
-    MotherShahrazTanksPositionBossAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "mother shahraz tanks position boss") {}
+    MotherShahrazTanksPositionBossUnderPillarAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "mother shahraz tanks position boss under pillar") {}
     bool Execute(Event event) override;
 };
 
-class MotherShahrazPositionRangedUnderStatueAction : public MovementAction
+class MotherShahrazPositionRangedUnderPillarAction : public MovementAction
 {
 public:
-    MotherShahrazPositionRangedUnderStatueAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "mother shahraz position ranged under statue") {}
+    MotherShahrazPositionRangedUnderPillarAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "mother shahraz position ranged under pillar") {}
     bool Execute(Event event) override;
 };
 

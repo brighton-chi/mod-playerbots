@@ -97,7 +97,7 @@ bool HighWarlordNajentusMisdirectBossToMainTankAction::Execute(Event /*event*/)
     return false;
 }
 
-bool HighWarlordNajentusMainTankPositionBossAction::Execute(Event /*event*/)
+bool HighWarlordNajentusTanksPositionBossAction::Execute(Event /*event*/)
 {
     Unit* najentus = AI_VALUE2(Unit*, "find target", "high warlord naj'entus");
     if (!najentus)
@@ -519,11 +519,8 @@ bool TeronGorefiendMisdirectBossToMainTankAction::Execute(Event /*event*/)
     return false;
 }
 
-bool TeronGorefiendMainTankPositionBossAction::Execute(Event /*event*/)
+bool TeronGorefiendTanksPositionBossAction::Execute(Event /*event*/)
 {
-    if (!botAI->IsMainTank(bot))
-        return false;
-
     Unit* gorefiend = AI_VALUE2(Unit*, "find target", "teron gorefiend");
     if (!gorefiend)
         return false;
@@ -653,18 +650,13 @@ bool TeronGorefiendMoveToCornerToDieAction::Execute(Event /*event*/)
 
 bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event /*event*/)
 {
-    Unit* gorefiend = AI_VALUE2(Unit*, "find target", "teron gorefiend");
-    if (!gorefiend)
-        return false;
-
     Unit* spirit = bot->GetCharm();
     if (!spirit)
         return false;
 
-    auto const& npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
-
+    auto const& npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
     Unit* priorityTarget = nullptr;
-    float bestDist = std::numeric_limits<float>::max();
+    uint32 highestHp = std::numeric_limits<uint32>::min();
 
     for (auto guid : npcs)
     {
@@ -674,70 +666,77 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event /*eve
         if (unit->GetEntry() != NPC_SHADOWY_CONSTRUCT)
             continue;
 
-        float distToGorefiend = gorefiend->GetExactDist2d(unit);
-        if (distToGorefiend < bestDist)
+        uint32 hp = unit->GetHealth();
+        if (hp > highestHp)
         {
-            bestDist = distToGorefiend;
+            highestHp = hp;
             priorityTarget = unit;
         }
     }
 
     if (priorityTarget)
     {
-        bool movedToConstruct = false;
-        if (spirit->GetDistance2d(priorityTarget) > 5.0f)
+        float distToTarget = spirit->GetExactDist2d(priorityTarget);
+        float desiredDist = 10.0f;
+        if (distToTarget > desiredDist)
         {
-            float moveX = priorityTarget->GetPositionX();
-            float moveY = priorityTarget->GetPositionY();
-            float moveZ = priorityTarget->GetPositionZ();
+            float moveDist = distToTarget - desiredDist + 2.0f;
+            float dX = priorityTarget->GetPositionX() - spirit->GetPositionX();
+            float dY = priorityTarget->GetPositionY() - spirit->GetPositionY();
+            float moveX = spirit->GetPositionX() + (dX / distToTarget) * moveDist;
+            float moveY = spirit->GetPositionY() + (dY / distToTarget) * moveDist;
 
-            spirit->GetMotionMaster()->MovePoint(0, moveX, moveY, moveZ);
+            spirit->GetMotionMaster()->MovePoint(
+                0, moveX, moveY, priorityTarget->GetPositionZ());
             return true;
         }
-        else
+
+        if (!spirit->HasSpellCooldown(SPELL_SPIRIT_VOLLEY))
         {
-            if (!spirit->HasSpellCooldown(SPELL_SPIRIT_VOLLEY))
-            {
-                spirit->CastSpell(priorityTarget, SPELL_SPIRIT_VOLLEY, true);
-                spirit->AddSpellCooldown(SPELL_SPIRIT_VOLLEY, 0, 15000);
-                return true;
-            }
-            else if (!spirit->HasSpellCooldown(SPELL_SPIRIT_CHAINS))
-            {
-                spirit->CastSpell(priorityTarget, SPELL_SPIRIT_CHAINS, true);
-                spirit->AddSpellCooldown(SPELL_SPIRIT_CHAINS, 0, 15000);
-                return true;
-            }
-            else if (!spirit->HasSpellCooldown(SPELL_SPIRIT_LANCE))
-            {
-                spirit->CastSpell(priorityTarget, SPELL_SPIRIT_LANCE, true);
-                spirit->AddSpellCooldown(SPELL_SPIRIT_LANCE, 0, 1000);
-                return true;
-            }
-        }
-        if (movedToConstruct)
+            spirit->CastSpell(priorityTarget, SPELL_SPIRIT_VOLLEY, true);
+            spirit->AddSpellCooldown(SPELL_SPIRIT_VOLLEY, 0, 15000);
             return true;
+        }
+        else if (!spirit->HasSpellCooldown(SPELL_SPIRIT_LANCE))
+        {
+            spirit->CastSpell(priorityTarget, SPELL_SPIRIT_LANCE, true);
+            spirit->AddSpellCooldown(SPELL_SPIRIT_LANCE, 0, 1000);
+            return true;
+        }
+        else if (!spirit->HasSpellCooldown(SPELL_SPIRIT_CHAINS))
+        {
+            spirit->CastSpell(priorityTarget, SPELL_SPIRIT_CHAINS, true);
+            spirit->AddSpellCooldown(SPELL_SPIRIT_CHAINS, 0, 15000);
+            return true;
+        }
     }
-
-    float distToGorefiend = spirit->GetDistance2d(gorefiend);
-    bool movedToGorefiend = false;
-    if (distToGorefiend > 5.0f)
+    else
     {
-        float moveDist = std::min(3.0f, distToGorefiend - 5.0f);
-        float moveX = spirit->GetPositionX() + (
-            gorefiend->GetPositionX() - spirit->GetPositionX()) / distToGorefiend * moveDist;
-        float moveY = spirit->GetPositionY() + (
-            gorefiend->GetPositionY() - spirit->GetPositionY()) / distToGorefiend * moveDist;
-        float moveZ = gorefiend->GetPositionZ();
+        Unit* gorefiend = AI_VALUE2(Unit*, "find target", "teron gorefiend");
+        if (!gorefiend)
+            return false;
+        // Constructs are no longer recognized as valid targets when they get too close to Gorefiend
+        // I think it is because they get out of the bot's LoS, which is still used for targeting and not the spirit's LoS
+        float distToGorefiend = spirit->GetExactDist2d(gorefiend);
+        float targetDist = 5.0f;
+        if (distToGorefiend > targetDist)
+        {
+            float moveDist = distToGorefiend - targetDist;
+            float dX = gorefiend->GetPositionX() - spirit->GetPositionX();
+            float dY = gorefiend->GetPositionY() - spirit->GetPositionY();
+            float moveX = spirit->GetPositionX() + (dX / distToGorefiend) * moveDist;
+            float moveY = spirit->GetPositionY() + (dY / distToGorefiend) * moveDist;
 
-        spirit->GetMotionMaster()->MovePoint(0, moveX, moveY, moveZ);
-        return true;
-    }
-    else if (!spirit->HasSpellCooldown(SPELL_SPIRIT_STRIKE)) // UNTESTED CONDITION
-    {
-        spirit->CastSpell(gorefiend, SPELL_SPIRIT_STRIKE, true);
-        spirit->AddSpellCooldown(SPELL_SPIRIT_STRIKE, 0, 1000);
-        return true;
+            spirit->GetMotionMaster()->MovePoint(
+                0, moveX, moveY, gorefiend->GetPositionZ());
+            return true;
+        }
+        else if (!spirit->HasSpellCooldown(SPELL_SPIRIT_STRIKE))
+        {
+            spirit->CastSpell(gorefiend, SPELL_SPIRIT_STRIKE, true);
+            spirit->AddSpellCooldown(SPELL_SPIRIT_STRIKE, 0, 1000);
+            return true;
+        }
     }
 
     return false;
@@ -1088,7 +1087,7 @@ bool MotherShahrazMisdirectBossToMainTankAction::Execute(Event /*event*/)
     return false;
 }
 
-bool MotherShahrazTanksPositionBossAction::Execute(Event /*event*/)
+bool MotherShahrazTanksPositionBossUnderPillarAction::Execute(Event /*event*/)
 {
     Unit* shahraz = AI_VALUE2(Unit*, "find target", "mother shahraz");
     if (!shahraz)
@@ -1135,9 +1134,9 @@ bool MotherShahrazTanksPositionBossAction::Execute(Event /*event*/)
     return false;
 }
 
-// This doesn't actually work for bots--they don't obey the collision of the statue...
-// But it's still cool to get them to go to the right place!
-bool MotherShahrazPositionRangedUnderStatueAction::Execute(Event /*event*/)
+// This doesn't actually matter for bots since they don't take fall damage
+// But I still want to simulate actual player behavior
+bool MotherShahrazPositionRangedUnderPillarAction::Execute(Event /*event*/)
 {
     const Position& position = SHAHRAZ_RANGED_POSITION;
     float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
@@ -1206,8 +1205,8 @@ bool MotherShahrazRunAwayToBreakFatalAttractionAction::Execute(Event /*event*/)
         float testY = centerY + std::sin(spreadAngle) * currentDistance;
         float testZ = bot->GetPositionZ();
 
-        if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, bot->GetPositionX(), bot->GetPositionY(),
-                                                            bot->GetPositionZ(), testX, testY, testZ))
+        if (!bot->GetMap()->CheckCollisionAndGetValidCoords(
+            bot, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), testX, testY, testZ))
         {
             break;
         }
@@ -1216,8 +1215,25 @@ bool MotherShahrazRunAwayToBreakFatalAttractionAction::Execute(Event /*event*/)
         lastValidZ = testZ;
     }
 
-    return MoveTo(BLACK_TEMPLE_MAP_ID, lastValidX, lastValidY, lastValidZ, false,
-                  false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
+    if (MoveTo(BLACK_TEMPLE_MAP_ID, lastValidX, lastValidY, lastValidZ, false, false, false, true,
+               MovementPriority::MOVEMENT_FORCED, true, false))
+    {
+        return true;
+    }
+    else
+    {
+        // Failsafe: try a 5-yard random move if main MoveTo fails
+        float angle = frand(0.0f, 2.0f * M_PI);
+        constexpr float dist = 5.0f;
+        float randX = bot->GetPositionX() + std::cos(angle) * dist;
+        float randY = bot->GetPositionY() + std::sin(angle) * dist;
+        float randZ = bot->GetPositionZ();
+        bot->GetMap()->CheckCollisionAndGetValidCoords(
+            bot, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), randX, randY, randZ);
+
+        return MoveTo(BLACK_TEMPLE_MAP_ID, randX, randY, randZ, false, false, false, true,
+                    MovementPriority::MOVEMENT_FORCED, true, false);
+    }
 }
 
 // Illidari Council
@@ -1742,6 +1758,26 @@ bool IllidanStormrageMainTankMoveAwayFromFlameCrashAction::Execute(Event /*event
     if (GetIllidanPhase(illidan) == 5) // I don't think this works right now
     {
         auto const& gos = AI_VALUE(GuidVector, "nearest game objects");
+
+        // Log details about all nearest game objects
+        std::ostringstream oss;
+        oss << "Nearest game objects for bot " << bot->GetName() << ":";
+        for (ObjectGuid const& guid : gos)
+        {
+            GameObject* go = botAI->GetGameObject(guid);
+            if (!go)
+            {
+                oss << "\n  [guid=" << guid.ToString() << "] (nullptr)";
+                continue;
+            }
+            oss << "\n  [guid=" << guid.ToString()
+                << ", entry=" << go->GetEntry()
+                << ", spawned=" << go->isSpawned()
+                << ", dist=" << bot->GetExactDist2d(go) << "]";
+        }
+        LOG_DEBUG("playerbots", "{}", oss.str());
+        // End logging
+
         GameObject* nearestTrap = nullptr;
         float minDist = 20.0f; // Need to test what distance is worth it in terms of traps
         for (ObjectGuid const& guid : gos)

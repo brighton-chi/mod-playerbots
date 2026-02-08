@@ -216,6 +216,23 @@ float MotherShahrazBotsWithFatalAttractionOnlyRunAwayMultiplier::GetValue(Action
     return 1.0f;
 }
 
+// Delay is to allow bots to get positioned first
+float MotherShahrazDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
+{
+    if (bot->getClass() != CLASS_SHAMAN)
+        return 1.0f;
+
+    Unit* shahraz = AI_VALUE2(Unit*, "find target", "mother shahraz");
+    if (shahraz && shahraz->GetHealthPct() > 85.0f)
+    {
+        if (dynamic_cast<CastBloodlustAction*>(action) ||
+            dynamic_cast<CastHeroismAction*>(action))
+            return 0.0f;
+    }
+
+    return 1.0f;
+}
+
 // Illidari Council
 
 float IllidariCouncilDisableTankActionsMultiplier::GetValue(Action* action)
@@ -231,17 +248,13 @@ float IllidariCouncilDisableTankActionsMultiplier::GetValue(Action* action)
 
     if (dynamic_cast<CastTauntAction*>(action) ||
         dynamic_cast<CastChallengingShoutAction*>(action) ||
-        // dynamic_cast<CastThunderClapAction*>(action) ||
         dynamic_cast<CastShockwaveAction*>(action) ||
         dynamic_cast<CastCleaveAction*>(action) ||
         dynamic_cast<CastGrowlAction*>(action) ||
         dynamic_cast<CastSwipeAction*>(action) ||
         dynamic_cast<CastHandOfReckoningAction*>(action) ||
-        // dynamic_cast<CastAvengersShieldAction*>(action) ||
-        // dynamic_cast<CastConsecrationAction*>(action) ||
         dynamic_cast<CastDarkCommandAction*>(action) ||
         dynamic_cast<CastDeathAndDecayAction*>(action) ||
-        dynamic_cast<CastPestilenceAction*>(action) ||
         dynamic_cast<CastBloodBoilAction*>(action))
         return 0.0f;
 

@@ -23,11 +23,11 @@ public:
     bool IsActive() override;
 };
 
-class HighWarlordNajentusBossEngagedByMainTankTrigger : public Trigger
+class HighWarlordNajentusBossEngagedByTanksTrigger : public Trigger
 {
 public:
-    HighWarlordNajentusBossEngagedByMainTankTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "high warlord naj'entus boss engaged by main tank") {}
+    HighWarlordNajentusBossEngagedByTanksTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "high warlord naj'entus boss engaged by tanks") {}
     bool IsActive() override;
 };
 
@@ -106,11 +106,11 @@ public:
     bool IsActive() override;
 };
 
-class TeronGorefiendBossEngagedByMainTankTrigger : public Trigger
+class TeronGorefiendBossEngagedByTanksTrigger : public Trigger
 {
 public:
-    TeronGorefiendBossEngagedByMainTankTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "teron gorefiend boss engaged by main tank") {}
+    TeronGorefiendBossEngagedByTanksTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "teron gorefiend boss engaged by tanks") {}
     bool IsActive() override;
 };
 

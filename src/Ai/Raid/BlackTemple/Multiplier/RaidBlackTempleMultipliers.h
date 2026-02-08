@@ -100,6 +100,14 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class MotherShahrazDelayBloodlustAndHeroismMultiplier : public Multiplier
+{
+public:
+    MotherShahrazDelayBloodlustAndHeroismMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "mother shahraz delay bloodlust and heroism multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
 // Illidari Council
 
 class IllidariCouncilDisableTankActionsMultiplier : public Multiplier

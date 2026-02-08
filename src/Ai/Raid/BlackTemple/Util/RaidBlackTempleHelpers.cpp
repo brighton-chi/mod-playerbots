@@ -92,9 +92,9 @@ namespace BlackTempleHelpers
     // N/A
 
     // Mother Shahraz
-    const Position SHAHRAZ_TANK_POSITION = { 926.761f, 179.666f, 192.831f };
-    const Position SHAHRAZ_TRANSITION_POSITION = { 941.557f, 182.719f, 192.418f };
-    const Position SHAHRAZ_RANGED_POSITION = { 958.632f, 180.111f, 192.826f };
+    const Position SHAHRAZ_TANK_POSITION = { 928.553f, 219.060f, 192.846f };
+    const Position SHAHRAZ_TRANSITION_POSITION = { 941.899f, 184.689f, 192.328f };
+    const Position SHAHRAZ_RANGED_POSITION = { 959.963f, 210.571f, 192.849f };
     std::unordered_map<ObjectGuid, uint8> shahrazTankStep;
 
     // Illidari Council

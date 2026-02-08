@@ -25,10 +25,10 @@ bool HighWarlordNajentusPullingBossTrigger::IsActive()
     return najentus && najentus->GetHealthPct() > 95.0f;
 }
 
-bool HighWarlordNajentusBossEngagedByMainTankTrigger::IsActive()
+bool HighWarlordNajentusBossEngagedByTanksTrigger::IsActive()
 {
-    return AI_VALUE2(Unit*, "find target", "high warlord naj'entus") &&
-           botAI->IsMainTank(bot);
+    return botAI->IsTank(bot) &&
+           AI_VALUE2(Unit*, "find target", "high warlord naj'entus");
 }
 
 bool HighWarlordNajentusCastsNeedleSpinesTrigger::IsActive()
@@ -161,15 +161,15 @@ bool TeronGorefiendPullingBossTrigger::IsActive()
     return gorefiend && gorefiend->GetHealthPct() > 95.0f;
 }
 
-bool TeronGorefiendBossEngagedByMainTankTrigger::IsActive()
+bool TeronGorefiendBossEngagedByTanksTrigger::IsActive()
 {
-    return AI_VALUE2(Unit*, "find target", "teron gorefiend") &&
-           botAI->IsMainTank(bot);
+    return botAI->IsTank(bot) &&
+           AI_VALUE2(Unit*, "find target", "teron gorefiend");
 }
 
 bool TeronGorefiendBossEngagedByRangedTrigger::IsActive()
 {
-    return botAI->IsRanged(bot) &&
+    return botAI->IsRanged(bot) && !bot->HasAura(SPELL_SPIRITUAL_VENGEANCE) &&
            AI_VALUE2(Unit*, "find target", "teron gorefiend");
 }
 

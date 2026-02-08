@@ -17,8 +17,8 @@ public:
         creators["high warlord naj'entus pulling boss"] =
             &RaidBlackTempleTriggerContext::high_warlord_najentus_pulling_boss;
 
-        creators["high warlord naj'entus boss engaged by main tank"] =
-            &RaidBlackTempleTriggerContext::high_warlord_najentus_boss_engaged_by_main_tank;
+        creators["high warlord naj'entus boss engaged by tanks"] =
+            &RaidBlackTempleTriggerContext::high_warlord_najentus_boss_engaged_by_tanks;
 
         creators["high warlord naj'entus casts needle spines"] =
             &RaidBlackTempleTriggerContext::high_warlord_najentus_casts_needle_spines;
@@ -49,8 +49,8 @@ public:
         creators["teron gorefiend pulling boss"] =
             &RaidBlackTempleTriggerContext::teron_gorefiend_pulling_boss;
 
-        creators["teron gorefiend boss engaged by main tank"] =
-            &RaidBlackTempleTriggerContext::teron_gorefiend_boss_engaged_by_main_tank;
+        creators["teron gorefiend boss engaged by tanks"] =
+            &RaidBlackTempleTriggerContext::teron_gorefiend_boss_engaged_by_tanks;
 
         creators["teron gorefiend boss engaged by ranged"] =
             &RaidBlackTempleTriggerContext::teron_gorefiend_boss_engaged_by_ranged;
@@ -187,8 +187,8 @@ private:
     static Trigger* high_warlord_najentus_pulling_boss(
         PlayerbotAI* botAI) { return new HighWarlordNajentusPullingBossTrigger(botAI); }
 
-    static Trigger* high_warlord_najentus_boss_engaged_by_main_tank(
-        PlayerbotAI* botAI) { return new HighWarlordNajentusBossEngagedByMainTankTrigger(botAI); }
+    static Trigger* high_warlord_najentus_boss_engaged_by_tanks(
+        PlayerbotAI* botAI) { return new HighWarlordNajentusBossEngagedByTanksTrigger(botAI); }
 
     static Trigger* high_warlord_najentus_casts_needle_spines(
         PlayerbotAI* botAI) { return new HighWarlordNajentusCastsNeedleSpinesTrigger(botAI); }
@@ -219,8 +219,8 @@ private:
     static Trigger* teron_gorefiend_pulling_boss(
         PlayerbotAI* botAI) { return new TeronGorefiendPullingBossTrigger(botAI); }
 
-    static Trigger* teron_gorefiend_boss_engaged_by_main_tank(
-        PlayerbotAI* botAI) { return new TeronGorefiendBossEngagedByMainTankTrigger(botAI); }
+    static Trigger* teron_gorefiend_boss_engaged_by_tanks(
+        PlayerbotAI* botAI) { return new TeronGorefiendBossEngagedByTanksTrigger(botAI); }
 
     static Trigger* teron_gorefiend_boss_engaged_by_ranged(
         PlayerbotAI* botAI) { return new TeronGorefiendBossEngagedByRangedTrigger(botAI); }

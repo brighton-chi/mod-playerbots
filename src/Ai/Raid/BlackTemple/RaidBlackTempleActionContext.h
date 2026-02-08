@@ -17,8 +17,8 @@ public:
         creators["high warlord naj'entus misdirect boss to main tank"] =
             &RaidBlackTempleActionContext::high_warlord_najentus_misdirect_boss_to_main_tank;
 
-        creators["high warlord naj'entus main tank position boss"] =
-            &RaidBlackTempleActionContext::high_warlord_najentus_main_tank_position_boss;
+        creators["high warlord naj'entus tanks position boss"] =
+            &RaidBlackTempleActionContext::high_warlord_najentus_tanks_position_boss;
 
         creators["high warlord naj'entus disperse ranged"] =
             &RaidBlackTempleActionContext::high_warlord_najentus_disperse_ranged;
@@ -49,8 +49,8 @@ public:
         creators["teron gorefiend misdirect boss to main tank"] =
             &RaidBlackTempleActionContext::teron_gorefiend_misdirect_boss_to_main_tank;
 
-        creators["teron gorefiend main tank position boss"] =
-            &RaidBlackTempleActionContext::teron_gorefiend_main_tank_position_boss;
+        creators["teron gorefiend tanks position boss"] =
+            &RaidBlackTempleActionContext::teron_gorefiend_tanks_position_boss;
 
         creators["teron gorefiend position ranged on balcony"] =
             &RaidBlackTempleActionContext::teron_gorefiend_position_ranged_on_balcony;
@@ -100,11 +100,11 @@ public:
         creators["mother shahraz misdirect boss to main tank"] =
             &RaidBlackTempleActionContext::mother_shahraz_misdirect_boss_to_main_tank;
 
-        creators["mother shahraz tanks position boss"] =
-            &RaidBlackTempleActionContext::mother_shahraz_tanks_position_boss;
+        creators["mother shahraz tanks position boss under pillar"] =
+            &RaidBlackTempleActionContext::mother_shahraz_tanks_position_boss_under_pillar;
 
-        creators["mother shahraz position ranged under statue"] =
-            &RaidBlackTempleActionContext::mother_shahraz_position_ranged_under_statue;
+        creators["mother shahraz position ranged under pillar"] =
+            &RaidBlackTempleActionContext::mother_shahraz_position_ranged_under_pillar;
 
         creators["mother shahraz run away to break fatal attraction"] =
             &RaidBlackTempleActionContext::mother_shahraz_run_away_to_break_fatal_attraction;
@@ -187,8 +187,8 @@ private:
     static Action* high_warlord_najentus_misdirect_boss_to_main_tank(
         PlayerbotAI* botAI) { return new HighWarlordNajentusMisdirectBossToMainTankAction(botAI); }
 
-    static Action* high_warlord_najentus_main_tank_position_boss(
-        PlayerbotAI* botAI) { return new HighWarlordNajentusMainTankPositionBossAction(botAI); }
+    static Action* high_warlord_najentus_tanks_position_boss(
+        PlayerbotAI* botAI) { return new HighWarlordNajentusTanksPositionBossAction(botAI); }
 
     static Action* high_warlord_najentus_disperse_ranged(
         PlayerbotAI* botAI) { return new HighWarlordNajentusDisperseRangedAction(botAI); }
@@ -219,8 +219,8 @@ private:
     static Action* teron_gorefiend_misdirect_boss_to_main_tank(
         PlayerbotAI* botAI) { return new TeronGorefiendMisdirectBossToMainTankAction(botAI); }
 
-    static Action* teron_gorefiend_main_tank_position_boss(
-        PlayerbotAI* botAI) { return new TeronGorefiendMainTankPositionBossAction(botAI); }
+    static Action* teron_gorefiend_tanks_position_boss(
+        PlayerbotAI* botAI) { return new TeronGorefiendTanksPositionBossAction(botAI); }
 
     static Action* teron_gorefiend_position_ranged_on_balcony(
         PlayerbotAI* botAI) { return new TeronGorefiendPositionRangedOnBalconyAction(botAI); }
@@ -270,11 +270,11 @@ private:
     static Action* mother_shahraz_misdirect_boss_to_main_tank(
         PlayerbotAI* botAI) { return new MotherShahrazMisdirectBossToMainTankAction(botAI); }
 
-    static Action* mother_shahraz_tanks_position_boss(
-        PlayerbotAI* botAI) { return new MotherShahrazTanksPositionBossAction(botAI); }
+    static Action* mother_shahraz_tanks_position_boss_under_pillar(
+        PlayerbotAI* botAI) { return new MotherShahrazTanksPositionBossUnderPillarAction(botAI); }
 
-    static Action* mother_shahraz_position_ranged_under_statue(
-        PlayerbotAI* botAI) { return new MotherShahrazPositionRangedUnderStatueAction(botAI); }
+    static Action* mother_shahraz_position_ranged_under_pillar(
+        PlayerbotAI* botAI) { return new MotherShahrazPositionRangedUnderPillarAction(botAI); }
 
     static Action* mother_shahraz_run_away_to_break_fatal_attraction(
         PlayerbotAI* botAI) { return new MotherShahrazRunAwayToBreakFatalAttractionAction(botAI); }

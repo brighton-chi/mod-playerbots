@@ -11,8 +11,8 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("high warlord naj'entus pulling boss", {
         NextAction("high warlord naj'entus misdirect boss to main tank", ACTION_RAID + 2) }));
 
-    triggers.push_back(new TriggerNode("high warlord naj'entus boss engaged by main tank", {
-        NextAction("high warlord naj'entus main tank position boss", ACTION_RAID + 1) }));
+    triggers.push_back(new TriggerNode("high warlord naj'entus boss engaged by tanks", {
+        NextAction("high warlord naj'entus tanks position boss", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("high warlord naj'entus casts needle spines", {
         NextAction("high warlord naj'entus disperse ranged", ACTION_RAID + 1) }));
@@ -43,8 +43,8 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("teron gorefiend pulling boss", {
         NextAction("teron gorefiend misdirect boss to main tank", ACTION_RAID + 2) }));
 
-    triggers.push_back(new TriggerNode("teron gorefiend boss engaged by main tank", {
-        NextAction("teron gorefiend main tank position boss", ACTION_RAID + 1) }));
+    triggers.push_back(new TriggerNode("teron gorefiend boss engaged by tanks", {
+        NextAction("teron gorefiend tanks position boss", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("teron gorefiend boss engaged by ranged", {
         NextAction("teron gorefiend position ranged on balcony", ACTION_RAID + 1) }));
@@ -95,10 +95,10 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("mother shahraz misdirect boss to main tank", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("mother shahraz boss engaged by tanks", {
-        NextAction("mother shahraz tanks position boss", ACTION_RAID + 1) }));
+        NextAction("mother shahraz tanks position boss under pillar", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("mother shahraz sinister beam knocks back players", {
-        NextAction("mother shahraz position ranged under statue", ACTION_RAID + 1) }));
+        NextAction("mother shahraz position ranged under pillar", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("mother shahraz bots are linked by fatal attraction", {
         NextAction("mother shahraz run away to break fatal attraction", ACTION_EMERGENCY + 10) }));
@@ -196,6 +196,7 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     // Mother Shahraz
     multipliers.push_back(new MotherShahrazControlMovementMultiplier(botAI));
     multipliers.push_back(new MotherShahrazBotsWithFatalAttractionOnlyRunAwayMultiplier(botAI));
+    multipliers.push_back(new MotherShahrazDelayBloodlustAndHeroismMultiplier(botAI));
 
     // Illidari Council
     multipliers.push_back(new IllidariCouncilDisableTankActionsMultiplier(botAI));
