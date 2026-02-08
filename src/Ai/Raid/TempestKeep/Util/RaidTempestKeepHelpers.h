@@ -141,8 +141,8 @@ namespace TempestKeepHelpers
     extern const Position ADVISOR_HEAL_POSITION;
     extern const Position KAELTHAS_TANK_POSITION;
     extern std::unordered_map<uint32, time_t> advisorDpsWaitTimer;
-    Player* GetCapernianTank(PlayerbotAI* botAI, Player* bot);
-    Player* GetDebuffHunter(PlayerbotAI* botAI, Player* bot);
+    Player* GetCapernianTank(Player* bot);
+    Player* GetDebuffHunter(Player* bot);
     bool IsAnyLegendaryWeaponDead(PlayerbotAI* botAI, Player* bot);
     bool HasEquippableItemForSlot(Player* bot, uint8 slot);
     bool HasEquippableOffhand(Player* bot);

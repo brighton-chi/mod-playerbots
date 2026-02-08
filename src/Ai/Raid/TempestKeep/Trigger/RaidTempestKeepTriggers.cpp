@@ -286,7 +286,7 @@ bool KaelthasSunstriderCapernianShouldBeTankedByAWarlockTrigger::IsActive()
     if (bot->getClass() != CLASS_WARLOCK)
         return false;
 
-    if (GetCapernianTank(botAI, bot) != bot)
+    if (GetCapernianTank(bot) != bot)
         return false;
 
     Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
@@ -296,7 +296,7 @@ bool KaelthasSunstriderCapernianShouldBeTankedByAWarlockTrigger::IsActive()
 
 bool KaelthasSunstriderCapernianCastsArcaneBurstAndConflagrationTrigger::IsActive()
 {
-    if (GetCapernianTank(botAI, bot) == bot)
+    if (GetCapernianTank(bot) == bot)
         return false;
 
     Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
@@ -327,7 +327,7 @@ bool KaelthasSunstriderBotsHaveSpecificRolesInPhase3Trigger::IsActive()
     if (!botAI->IsAssistHealOfIndex(bot, 0, true) &&
         !botAI->IsMainTank(bot) &&
         !botAI->IsAssistTankOfIndex(bot, 0, true) &&
-        GetCapernianTank(botAI, bot) != bot)
+        GetCapernianTank(bot) != bot)
         return false;
 
     boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
@@ -358,7 +358,7 @@ bool KaelthasSunstriderWaitingForTanksToGetAggroOnAdvisorsTrigger::IsActive()
     if (!kaelthas)
         return false;
 
-    if (!IsMechanicTrackerBot(botAI, bot, TEMPEST_KEEP_MAP_ID, GetCapernianTank(botAI, bot)))
+    if (!IsMechanicTrackerBot(botAI, bot, TEMPEST_KEEP_MAP_ID, GetCapernianTank(bot)))
         return false;
 
     boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());

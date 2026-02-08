@@ -1081,7 +1081,7 @@ bool KaelthasSunstriderMisdirectAdvisorsToTanksAction::Execute(Event /*event*/)
     if (hunterIndex == 0)
     {
         advisorTarget = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
-        tankTarget = GetCapernianTank(botAI, bot);
+        tankTarget = GetCapernianTank(bot);
     }
     else if (hunterIndex == 1)
     {
@@ -1100,7 +1100,7 @@ bool KaelthasSunstriderMisdirectAdvisorsToTanksAction::Execute(Event /*event*/)
     else if (hunterIndex == 2)
     {
         advisorTarget = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
-        tankTarget = GetCapernianTank(botAI, bot);
+        tankTarget = GetCapernianTank(bot);
     }
 
     if (!advisorTarget ||
@@ -1357,7 +1357,7 @@ bool KaelthasSunstriderHandleAdvisorRolesInPhase3Action::Execute(Event /*event*/
         if (telonicus && telonicus->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE))
             movePosition = &TELONICUS_WAITING_POSITION;
     }
-    else if (GetCapernianTank(botAI, bot) == bot)
+    else if (GetCapernianTank(bot) == bot)
     {
         Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
         if (capernian && capernian->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE))
@@ -1385,7 +1385,7 @@ bool KaelthasSunstriderReequipGearAction::Execute(Event /*event*/)
 bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event /*event*/)
 {
     // Target priority 1: Thaladred, except Capernian tank
-    Player* capernianTank = GetCapernianTank(botAI, bot);
+    Player* capernianTank = GetCapernianTank(bot);
     Unit* thaladred = AI_VALUE2(Unit*, "find target", "thaladred the darkener");
     if ((!capernianTank || bot != capernianTank) &&
         thaladred && !thaladred->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
@@ -1401,7 +1401,7 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event /*event*/)
     }
 
     // Target priority 2: Capernian for ranged only (excluding longbow tank)
-    Player* debuffHunter = GetDebuffHunter(botAI, bot);
+    Player* debuffHunter = GetDebuffHunter(bot);
 
     Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
     if (botAI->IsRangedDps(bot) && (!debuffHunter || bot != debuffHunter) &&

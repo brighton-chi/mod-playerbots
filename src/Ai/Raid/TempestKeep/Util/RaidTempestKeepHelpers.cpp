@@ -340,7 +340,7 @@ namespace TempestKeepHelpers
 
     std::unordered_map<uint32, time_t> advisorDpsWaitTimer;
 
-    Player* GetCapernianTank(PlayerbotAI* botAI, Player* bot)
+    Player* GetCapernianTank(Player* bot)
     {
         Group* group = bot->GetGroup();
         if (!group)
@@ -373,7 +373,7 @@ namespace TempestKeepHelpers
     }
 
     // One Hunter will start on Sanguinar in Phase 3 with Melee to apply Armor Disruption
-    Player* GetDebuffHunter(PlayerbotAI* botAI, Player* bot)
+    Player* GetDebuffHunter(Player* bot)
     {
         Group* group = bot->GetGroup();
         if (!group)

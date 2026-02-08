@@ -218,7 +218,7 @@ float KaelthasSunstriderWaitForDpsMultiplier::GetValue(Action* action)
 
         if ((isAdvisorActive(sanguinar) && !botAI->IsMainTank(bot)) ||
             (isAdvisorActive(telonicus) && !botAI->IsAssistTankOfIndex(bot, 0, true)) ||
-            (isAdvisorActive(capernian) && !botAI->IsMainTank(bot) && GetCapernianTank(botAI, bot) != bot))
+            (isAdvisorActive(capernian) && !botAI->IsMainTank(bot) && GetCapernianTank(bot) != bot))
         {
             if (dynamic_cast<AttackAction*>(action) ||
                 (dynamic_cast<CastSpellAction*>(action) &&
