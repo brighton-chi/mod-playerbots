@@ -147,7 +147,7 @@ bool SupremusVolcanoIsNearbyTrigger::IsActive()
 bool SupremusNeedToManagePhaseTimerTrigger::IsActive()
 {
     return AI_VALUE2(Unit*, "find target", "supremus") &&
-           IsMechanicTrackerBot(botAI, bot, BLACK_TEMPLE_MAP_ID, nullptr);
+           IsMechanicTrackerBot(botAI, bot, BLACK_TEMPLE_MAP_ID);
 }
 
 // Teron Gorefiend
@@ -266,7 +266,7 @@ bool GurtoggBloodboilBotHasFelRageTrigger::IsActive()
 bool GurtoggBloodboilNeedToManagePhaseTimerTrigger::IsActive()
 {
     return AI_VALUE2(Unit*, "find target", "gurtogg bloodboil") &&
-           IsMechanicTrackerBot(botAI, bot, BLACK_TEMPLE_MAP_ID, nullptr);
+           IsMechanicTrackerBot(botAI, bot, BLACK_TEMPLE_MAP_ID);
 }
 
 // Reliquary of Souls
@@ -479,7 +479,17 @@ bool IllidanStormrageBotHasParasiticShadowfiendTrigger::IsActive()
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    return illidan && GetIllidanPhase(illidan) != 2 && GetIllidanPhase(illidan) != 4;
+    if (!illidan)
+        return false;
+
+    if (GetIllidanPhase(illidan) == 2 || GetIllidanPhase(illidan) == 4)
+        return false;
+
+    if (botAI->IsRanged(bot) &&
+        (GetIllidanPhase(illidan) == 3 || GetIllidanPhase(illidan) == 5))
+        return false;
+
+    return true;
 }
 
 bool IllidanStormrageBossSummonedFlamesOfAzzinothTrigger::IsActive()
@@ -522,9 +532,18 @@ bool IllidanStormrageBotStruckByDarkBarrageTrigger::IsActive()
     return bot->HasAura(SPELL_DARK_BARRAGE);
 }
 
+bool IllidanStormrageBossIsPreparingToLandTrigger::IsActive()
+{
+    if (botAI->IsMainTank(bot))
+        return false;
+
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    return illidan && GetIllidanPhase(illidan) == 0;
+}
+
 bool IllidanStormrageBossDealsSplashDamageTrigger::IsActive()
 {
-    if (!botAI->IsRanged(bot) || bot->HasAura(SPELL_PARASITIC_SHADOWFIEND))
+    if (!botAI->IsRanged(bot))
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -571,11 +590,12 @@ bool IllidanStormrageBossSpawnsAddsTrigger::IsActive()
 
 bool IllidanStormrageNeedToManageDpsTimerTrigger::IsActive()
 {
-    if (!IsMechanicTrackerBot(botAI, bot, BLACK_TEMPLE_MAP_ID, GetIllidanWarlockTank(bot)))
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    if (!illidan || illidan->GetHealth() == 1)
         return false;
 
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    return illidan && illidan->GetHealth() > 1;
+    return IsMechanicTrackerBot(
+        botAI, bot, BLACK_TEMPLE_MAP_ID, GetIllidanWarlockTank(bot));
 }
 
 bool IllidanStormrageCheatTrigger::IsActive()
@@ -583,9 +603,10 @@ bool IllidanStormrageCheatTrigger::IsActive()
     if (!botAI->HasCheat(BotCheatMask::raid))
         return false;
 
-    if (!botAI->IsDps(bot))
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    if (!illidan || illidan->GetHealth() == 1)
         return false;
 
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    return illidan && illidan->GetHealth() > 1;
+    return IsMechanicTrackerBot(
+        botAI, bot, BLACK_TEMPLE_MAP_ID, GetIllidanWarlockTank(bot));
 }

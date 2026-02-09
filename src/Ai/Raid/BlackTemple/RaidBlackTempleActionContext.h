@@ -162,6 +162,9 @@ public:
         creators["illidan stormrage remove dark barrage"] =
             &RaidBlackTempleActionContext::illidan_stormrage_remove_dark_barrage;
 
+        creators["illidan stormrage move away from landing point"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_move_away_from_landing_point;
+
         creators["illidan stormrage disperse ranged"] =
             &RaidBlackTempleActionContext::illidan_stormrage_disperse_ranged;
 
@@ -334,6 +337,9 @@ private:
 
     static Action* illidan_stormrage_remove_dark_barrage(
         PlayerbotAI* botAI) { return new IllidanStormrageRemoveDarkBarrageAction(botAI); }
+
+    static Action* illidan_stormrage_move_away_from_landing_point(
+        PlayerbotAI* botAI) { return new IllidanStormrageMoveAwayFromLandingPointAction(botAI); }
 
     static Action* illidan_stormrage_disperse_ranged(
         PlayerbotAI* botAI) { return new IllidanStormrageDisperseRangedAction(botAI); }

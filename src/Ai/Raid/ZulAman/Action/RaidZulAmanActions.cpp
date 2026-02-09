@@ -8,7 +8,7 @@ using namespace ZulAmanHelpers;
 
 // Trash
 
-bool AmanishiMedicineManMarkWardAction::Execute(Event /*event*/)
+bool AmanishiMedicineManMarkWardAction::Execute(Event event)
 {
     if (Unit* protectiveWard = GetFirstAliveUnitByEntry(botAI, NPC_AMANI_PROTECTIVE_WARD))
         MarkTargetWithSkull(bot, protectiveWard);
@@ -20,7 +20,7 @@ bool AmanishiMedicineManMarkWardAction::Execute(Event /*event*/)
 
 // Akil'zon <Eagle Avatar>
 
-bool AkilzonMisdirectBossToMainTankAction::Execute(Event /*event*/)
+bool AkilzonMisdirectBossToMainTankAction::Execute(Event event)
 {
     Unit* akilzon = AI_VALUE2(Unit*, "find target", "akil'zon");
     if (!akilzon)
@@ -53,7 +53,7 @@ bool AkilzonMisdirectBossToMainTankAction::Execute(Event /*event*/)
     return false;
 }
 
-bool AkilzonTanksPositionBossAction::Execute(Event /*event*/)
+bool AkilzonTanksPositionBossAction::Execute(Event event)
 {
     Unit* akilzon = AI_VALUE2(Unit*, "find target", "akil'zon");
     if (!akilzon)
@@ -82,7 +82,7 @@ bool AkilzonTanksPositionBossAction::Execute(Event /*event*/)
     return false;
 }
 
-bool AkilzonSpreadRangedAction::Execute(Event /*event*/)
+bool AkilzonSpreadRangedAction::Execute(Event event)
 {
     constexpr float minDistance = 13.0f;
     if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance))
@@ -94,7 +94,7 @@ bool AkilzonSpreadRangedAction::Execute(Event /*event*/)
     return false;
 }
 
-bool AkilzonMoveToEyeOfTheStormAction::Execute(Event /*event*/)
+bool AkilzonMoveToEyeOfTheStormAction::Execute(Event event)
 {
     Group* group = bot->GetGroup();
     if (!group)
@@ -124,7 +124,7 @@ bool AkilzonMoveToEyeOfTheStormAction::Execute(Event /*event*/)
 
 // Nalorakk <Bear Avatar>
 
-bool NalorakkMisdirectBossToMainTankAction::Execute(Event /*event*/)
+bool NalorakkMisdirectBossToMainTankAction::Execute(Event event)
 {
     Unit* nalorakk = AI_VALUE2(Unit*, "find target", "nalorakk");
     if (!nalorakk)
@@ -157,7 +157,7 @@ bool NalorakkMisdirectBossToMainTankAction::Execute(Event /*event*/)
     return false;
 }
 
-bool NalorakkTanksPositionBossAction::Execute(Event /*event*/)
+bool NalorakkTanksPositionBossAction::Execute(Event event)
 {
     if (!botAI->IsMainTank(bot) && !botAI->IsAssistTankOfIndex(bot, 0, true))
         return false;
@@ -329,7 +329,7 @@ bool NalorakkTanksPositionBossAction::FirstAssistTankPositionBearForm(
     return false;
 }
 
-bool NalorakkSpreadRangedAction::Execute(Event /*event*/)
+bool NalorakkSpreadRangedAction::Execute(Event event)
 {
     constexpr float minDistance = 11.0f;
     if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance))
@@ -343,7 +343,7 @@ bool NalorakkSpreadRangedAction::Execute(Event /*event*/)
 
 // Jan'alai <Dragonhawk Avatar>
 
-bool JanalaiMisdirectBossToMainTankAction::Execute(Event /*event*/)
+bool JanalaiMisdirectBossToMainTankAction::Execute(Event event)
 {
     Unit* janalai = AI_VALUE2(Unit*, "find target", "jan'alai");
     if (!janalai)
@@ -376,7 +376,7 @@ bool JanalaiMisdirectBossToMainTankAction::Execute(Event /*event*/)
     return false;
 }
 
-bool JanalaiTanksPositionBossAction::Execute(Event /*event*/)
+bool JanalaiTanksPositionBossAction::Execute(Event event)
 {
     Unit* janalai = AI_VALUE2(Unit*, "find target", "jan'alai");
     if (!janalai)
@@ -405,7 +405,7 @@ bool JanalaiTanksPositionBossAction::Execute(Event /*event*/)
     return false;
 }
 
-bool JanalaiSpreadRangedInCircleAction::Execute(Event /*event*/)
+bool JanalaiSpreadRangedInCircleAction::Execute(Event event)
 {
     std::vector<Player*> rangedMembers;
     if (Group* group = bot->GetGroup())
@@ -459,12 +459,12 @@ bool JanalaiSpreadRangedInCircleAction::Execute(Event /*event*/)
     return false;
 }
 
-bool JanalaiEraseRangedPositionTrackerAction::Execute(Event /*event*/)
+bool JanalaiEraseRangedPositionTrackerAction::Execute(Event event)
 {
     return janalaiRangedPositions.erase(bot->GetGUID());
 }
 
-bool JanalaiAvoidFireBombsAction::Execute(Event /*event*/)
+bool JanalaiAvoidFireBombsAction::Execute(Event event)
 {
     auto const& bombs = GetAllFireBombTriggers(botAI, bot);
     if (bombs.empty())
@@ -604,7 +604,7 @@ std::vector<Unit*> JanalaiAvoidFireBombsAction::GetAllFireBombTriggers(
     return fireBombs;
 }
 
-bool JanalaiMarkAmaniHatchersAction::Execute(Event /*event*/)
+bool JanalaiMarkAmaniHatchersAction::Execute(Event event)
 {
     Group* group = bot->GetGroup();
     if (!group)
@@ -626,7 +626,7 @@ bool JanalaiMarkAmaniHatchersAction::Execute(Event /*event*/)
 
 // Halazzi <Lynx Avatar>
 
-bool HalazziMisdirectBossToMainTankAction::Execute(Event /*event*/)
+bool HalazziMisdirectBossToMainTankAction::Execute(Event event)
 {
     Unit* halazzi = AI_VALUE2(Unit*, "find target", "halazzi");
     if (!halazzi)
@@ -659,7 +659,7 @@ bool HalazziMisdirectBossToMainTankAction::Execute(Event /*event*/)
     return false;
 }
 
-bool HalazziMainTankPositionBossAction::Execute(Event /*event*/)
+bool HalazziMainTankPositionBossAction::Execute(Event event)
 {
     Unit* halazzi = AI_VALUE2(Unit*, "find target", "halazzi");
     if (!halazzi)
@@ -691,7 +691,7 @@ bool HalazziMainTankPositionBossAction::Execute(Event /*event*/)
     return false;
 }
 
-bool HalazziFirstAssistTankAttackSpiritLynxAction::Execute(Event /*event*/)
+bool HalazziFirstAssistTankAttackSpiritLynxAction::Execute(Event event)
 {
     if (Unit* lynx = AI_VALUE2(Unit*, "find target", "spirit of the lynx"))
     {
@@ -756,7 +756,7 @@ bool HalazziFirstAssistTankAttackSpiritLynxAction::Execute(Event /*event*/)
     return false;
 }
 
-bool HalazziAssignDpsPriorityAction::Execute(Event /*event*/)
+bool HalazziAssignDpsPriorityAction::Execute(Event event)
 {
     // Target priority 1: Corrupted Lightning Totems
     if (Unit* totem = GetFirstAliveUnitByEntry(botAI, NPC_CORRUPTED_LIGHTNING_TOTEM))
@@ -784,7 +784,7 @@ bool HalazziAssignDpsPriorityAction::Execute(Event /*event*/)
 
 // Hex Lord Malacrass
 
-bool HexLordMalacrassMisdirectBossToMainTankAction::Execute(Event /*event*/)
+bool HexLordMalacrassMisdirectBossToMainTankAction::Execute(Event event)
 {
     Unit* malacrass = AI_VALUE2(Unit*, "find target", "hex lord malacrass");
     if (!malacrass)
@@ -817,7 +817,7 @@ bool HexLordMalacrassMisdirectBossToMainTankAction::Execute(Event /*event*/)
     return false;
 }
 
-bool HexLordMalacrassAssignDpsPriorityAction::Execute(Event /*event*/)
+bool HexLordMalacrassAssignDpsPriorityAction::Execute(Event event)
 {
     std::vector<uint32> priorityEntries =
     {
@@ -841,7 +841,7 @@ bool HexLordMalacrassAssignDpsPriorityAction::Execute(Event /*event*/)
     return false;
 }
 
-bool HexLordMalacrassPurgeBuffFromBossAction::Execute(Event /*event*/)
+bool HexLordMalacrassPurgeBuffFromBossAction::Execute(Event event)
 {
     Unit* malacrass = AI_VALUE2(Unit*, "find target", "hex lord malacrass");
     if (!malacrass)
@@ -858,7 +858,7 @@ bool HexLordMalacrassPurgeBuffFromBossAction::Execute(Event /*event*/)
     return false;
 }
 
-bool HexLordMalacrassDispelMindControlAction::Execute(Event /*event*/)
+bool HexLordMalacrassDispelMindControlAction::Execute(Event event)
 {
     Group* group = bot->GetGroup();
     if (!group)
@@ -894,7 +894,7 @@ bool HexLordMalacrassDispelMindControlAction::Execute(Event /*event*/)
 
 // Zul'jin
 
-bool ZuljinMisdirectBossToMainTankAction::Execute(Event /*event*/)
+bool ZuljinMisdirectBossToMainTankAction::Execute(Event event)
 {
     Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
     if (!zuljin)
@@ -927,7 +927,7 @@ bool ZuljinMisdirectBossToMainTankAction::Execute(Event /*event*/)
     return false;
 }
 
-bool ZuljinTanksPositionBossAction::Execute(Event /*event*/)
+bool ZuljinTanksPositionBossAction::Execute(Event event)
 {
     Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
     if (!zuljin)
@@ -956,7 +956,7 @@ bool ZuljinTanksPositionBossAction::Execute(Event /*event*/)
     return false;
 }
 
-bool ZuljinRunAwayFromWhirlwindAction::Execute(Event /*event*/)
+bool ZuljinRunAwayFromWhirlwindAction::Execute(Event event)
 {
     if (Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin"))
     {
@@ -973,7 +973,7 @@ bool ZuljinRunAwayFromWhirlwindAction::Execute(Event /*event*/)
     return false;
 }
 
-bool ZuljinAvoidCyclonesAction::Execute(Event /*event*/)
+bool ZuljinAvoidCyclonesAction::Execute(Event event)
 {
     auto const& cyclones = GetAllCycloneTriggers(botAI, bot);
     if (cyclones.empty())
@@ -1113,7 +1113,7 @@ std::vector<Unit*> ZuljinAvoidCyclonesAction::GetAllCycloneTriggers(
     return cyclones;
 }
 
-bool ZuljinEscapeClawRageWithImmunitySpellAction::Execute(Event /*event*/)
+bool ZuljinEscapeClawRageWithImmunitySpellAction::Execute(Event event)
 {
     Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
     if (!zuljin)
@@ -1203,7 +1203,7 @@ bool ZuljinEscapeClawRageWithImmunitySpellAction::Execute(Event /*event*/)
     return false;
 }
 
-bool ZuljinSpreadRangedAction::Execute(Event /*event*/)
+bool ZuljinSpreadRangedAction::Execute(Event event)
 {
     constexpr float minDistance = 6.0f;
     if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance))

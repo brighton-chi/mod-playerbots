@@ -150,7 +150,6 @@ namespace BlackTempleHelpers
 
     // Illidan Stormrage <The Betrayer>
     extern const Position ILLIDAN_LANDING_POSITION;
-    extern const Position ILLIDAN_C_GRATE_POSITION;
     extern const Position ILLIDAN_N_GRATE_POSITION;
     extern const Position ILLIDAN_S_GRATE_POSITION;
     extern const Position GRATE_POSITIONS[2];
@@ -180,6 +179,7 @@ namespace BlackTempleHelpers
     extern std::unordered_map<uint32, ObjectGuid> westFlameGuid;
     extern std::unordered_map<ObjectGuid, uint8> illidanGrateStep;
     int GetIllidanPhase(Unit* illidan);
+    std::vector<Unit*> GetAllFlameCrashes(PlayerbotAI* botAI, Player* bot);
     std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(PlayerbotAI* botAI, Player* bot);
     Player* GetIllidanWarlockTank(Player* bot);
     struct EyeBlastDangerArea

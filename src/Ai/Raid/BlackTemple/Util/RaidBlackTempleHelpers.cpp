@@ -160,7 +160,6 @@ namespace BlackTempleHelpers
 
     // Illidan Stormrage <The Betrayer>
     const Position ILLIDAN_LANDING_POSITION = { 676.648f, 304.761f, 354.189f };
-    const Position ILLIDAN_C_GRATE_POSITION = { 676.000f, 305.000f, 353.192f };
     const Position ILLIDAN_N_GRATE_POSITION = { 682.500f, 305.000f, 353.192f };
     const Position ILLIDAN_S_GRATE_POSITION = { 670.000f, 305.000f, 353.192f };
     const Position GRATE_POSITIONS[2] =
@@ -225,12 +224,8 @@ namespace BlackTempleHelpers
 
     int GetIllidanPhase(Unit* illidan)
     {
-        if (!illidan || illidan->GetHealth() == 1)
+        if (!illidan || illidan->GetHealth() == 1 || illidan->HasAura(SPELL_SHADOW_PRISON))
             return -1;
-
-        // Phase 1: Health > 65%
-        if (illidan->GetHealthPct() > 65.0f)
-            return 1;
 
         // Transitioning from Phase 2 to Phase 3
         float x, y, z;
@@ -238,44 +233,48 @@ namespace BlackTempleHelpers
         Position dest(x, y, z);
         if ((dest.GetExactDist2d(ILLIDAN_LANDING_POSITION) < 0.2f ||
              illidan->GetExactDist2d(ILLIDAN_LANDING_POSITION) < 0.2f) &&
-             illidan->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE) && !illidan->HasAura(SPELL_SHADOW_PRISON))
+             illidan->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE))
              return 0;
 
         // Phase 2: Flying
-        if (illidan->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE) && !illidan->HasAura(SPELL_SHADOW_PRISON))
+        if (illidan->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE))
             return 2;
 
-        // Phase 3: Normal (ground, 65-30%, not demon)
-        if (illidan->GetHealthPct() > 30.0f && !illidan->HasAura(SPELL_DEMON_FORM) && !illidan->HasAura(SPELL_DEMON_TRANSFORM_1) &&
-            !illidan->HasAura(SPELL_DEMON_TRANSFORM_2) && !illidan->HasAura(SPELL_DEMON_TRANSFORM_3))
-            return 3;
+        // Phase 1: Health > 65%
+        if (illidan->GetHealthPct() > 65.0f)
+            return 1;
 
         // Phase 4: Demon Form
-        if (illidan->HasAura(SPELL_DEMON_FORM))
-        {
-            LOG_DEBUG("playerbots", "Illidan has SPELL_DEMON_FORM");
-        }
-        if (illidan->HasAura(SPELL_DEMON_TRANSFORM_1))
-        {
-            LOG_DEBUG("playerbots", "Illidan has SPELL_DEMON_TRANSFORM_1");
-        }
-        if (illidan->HasAura(SPELL_DEMON_TRANSFORM_2))
-        {
-            LOG_DEBUG("playerbots", "Illidan has SPELL_DEMON_TRANSFORM_2");
-        }
-        if (illidan->HasAura(SPELL_DEMON_TRANSFORM_3))
-        {
-            LOG_DEBUG("playerbots", "Illidan has SPELL_DEMON_TRANSFORM_3");
-        }
         if (illidan->HasAura(SPELL_DEMON_FORM) || illidan->HasAura(SPELL_DEMON_TRANSFORM_1) ||
             illidan->HasAura(SPELL_DEMON_TRANSFORM_2) || illidan->HasAura(SPELL_DEMON_TRANSFORM_3))
             return 4;
+
+        // Phase 3: Normal (ground, 65-30%, not demon)
+        if (illidan->GetHealthPct() > 30.0f)
+            return 3;
 
         // Phase 5: Health <= 30%
         if (illidan->GetHealthPct() <= 30.0f)
             return 5;
 
         return -1;
+    }
+
+    std::vector<Unit*> GetAllFlameCrashes(PlayerbotAI* botAI, Player* bot)
+    {
+        std::vector<Unit*> flameCrashes;
+        auto const& npcs =
+            botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
+        for (auto const& npcGuid : npcs)
+        {
+            constexpr float maxSearchRadius = 30.0f;
+            Unit* unit = botAI->GetUnit(npcGuid);
+            if (unit && unit->GetEntry() == NPC_FLAME_CRASH &&
+                bot->GetDistance2d(unit) < maxSearchRadius)
+                flameCrashes.push_back(unit);
+        }
+
+        return flameCrashes;
     }
 
     std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(PlayerbotAI* botAI, Player* bot)

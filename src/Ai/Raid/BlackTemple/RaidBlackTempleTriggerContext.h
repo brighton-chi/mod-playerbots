@@ -162,6 +162,9 @@ public:
         creators["illidan stormrage bot struck by dark barrage"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_bot_struck_by_dark_barrage;
 
+        creators["illidan stormrage boss is preparing to land"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_boss_is_preparing_to_land;
+
         creators["illidan stormrage boss deals splash damage"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_boss_deals_splash_damage;
 
@@ -334,6 +337,9 @@ private:
 
     static Trigger* illidan_stormrage_bot_struck_by_dark_barrage(
         PlayerbotAI* botAI) { return new IllidanStormrageBotStruckByDarkBarrageTrigger(botAI); }
+
+    static Trigger* illidan_stormrage_boss_is_preparing_to_land(
+        PlayerbotAI* botAI) { return new IllidanStormrageBossIsPreparingToLandTrigger(botAI); }
 
     static Trigger* illidan_stormrage_boss_deals_splash_damage(
         PlayerbotAI* botAI) { return new IllidanStormrageBossDealsSplashDamageTrigger(botAI); }

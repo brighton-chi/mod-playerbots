@@ -484,18 +484,24 @@ float IllidanStormrageControlMovementMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+// RENAME TO TANK ASSIST IF DPS ASSIST DISABLE APPROACH NOT TAKEN
 float IllidanStormrageDisableDefaultTargetingMultiplier::GetValue(Action* action)
 {
-    if (botAI->IsTank(bot) && bot->GetVictim() == nullptr)
+    if (bot->GetVictim() == nullptr)
+        return 1.0f;
+
+    if (!botAI->IsTank(bot))
         return 1.0f;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     if (!illidan || illidan->GetHealth() == 1)
         return 1.0f;
 
-    if (dynamic_cast<TankAssistAction*>(action) ||
-        dynamic_cast<DpsAssistAction*>(action))
-        return 0.0f;
+    if (GetIllidanPhase(illidan) == 2 || GetIllidanPhase(illidan) == 4)
+    {
+        if (dynamic_cast<TankAssistAction*>(action))
+            return 0.0f;
+    }
 
     return 1.0f;
 }
@@ -511,9 +517,11 @@ float IllidanStormrageStayWithinGrateMultiplier::GetValue(Action* action)
     {
         if (GetIllidanPhase(illidan) == 2)
         {
-            if (dynamic_cast<AttackAction*>(action) ||
-                dynamic_cast<CastMeleeSpellAction*>(action) ||
-                dynamic_cast<ReachTargetAction*>(action) ||
+            if (dynamic_cast<MovementAction*>(action) &&
+                !dynamic_cast<IllidanStormragePositionAboveGrateAction*>(action))
+                return 0.0f;
+
+            if (dynamic_cast<CastMeleeSpellAction*>(action) ||
                 dynamic_cast<CastReachTargetSpellAction*>(action))
                 return 0.0f;
         }

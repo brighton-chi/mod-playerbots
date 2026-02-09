@@ -404,6 +404,14 @@ public:
     bool IsActive() override;
 };
 
+class IllidanStormrageBossIsPreparingToLandTrigger : public Trigger
+{
+public:
+    IllidanStormrageBossIsPreparingToLandTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage boss is preparing to land") {}
+    bool IsActive() override;
+};
+
 class IllidanStormrageBossDealsSplashDamageTrigger : public Trigger
 {
 public:

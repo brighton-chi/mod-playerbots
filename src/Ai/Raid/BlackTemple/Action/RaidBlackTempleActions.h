@@ -396,7 +396,6 @@ private:
         const std::vector<Unit*>& flameCrashes, float maxRadius, float hazardRadius);
     bool IsPathSafeFromFlameCrashes(const Position& start,
         const Position& end, const std::vector<Unit*>& flameCrashes, float hazardRadius);
-    std::vector<Unit*> GetAllFlameCrashes();
 };
 
 class IllidanStormrageIsolateBotWithParasiteAction : public MovementAction
@@ -440,6 +439,14 @@ class IllidanStormrageRemoveDarkBarrageAction : public Action
 public:
     IllidanStormrageRemoveDarkBarrageAction(
         PlayerbotAI* botAI) : Action(botAI, "illidan stormrage remove dark barrage") {}
+    bool Execute(Event event) override;
+};
+
+class IllidanStormrageMoveAwayFromLandingPointAction : public MovementAction
+{
+public:
+    IllidanStormrageMoveAwayFromLandingPointAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "illidan stormrage move away from landing point") {}
     bool Execute(Event event) override;
 };
 
