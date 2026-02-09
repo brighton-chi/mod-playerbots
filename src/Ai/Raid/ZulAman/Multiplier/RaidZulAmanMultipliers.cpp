@@ -145,7 +145,6 @@ float JanalaiStayAwayFromFireBombsMultiplier::GetValue(Action* action)
         dynamic_cast<CastKillingSpreeAction*>(action) ||
         dynamic_cast<CastBlinkBackAction*>(action) ||
         dynamic_cast<CastDisengageAction*>(action) ||
-        dynamic_cast<CombatFormationMoveAction*>(action) ||
         dynamic_cast<FleeAction*>(action) ||
         dynamic_cast<FollowAction*>(action) ||
         dynamic_cast<ReachTargetAction*>(action))
@@ -175,7 +174,7 @@ float JanalaiDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
     if (!janalai)
         return 1.0f;
 
-    if (janalai->GetHealthPct() > 35.0f)
+    if (!AI_VALUE2(Unit*, "find target", "amani dragonhawk hatchling"))
     {
         if (dynamic_cast<CastBloodlustAction*>(action) ||
             dynamic_cast<CastHeroismAction*>(action))
