@@ -987,9 +987,8 @@ bool ReliquaryOfSoulsAdjustDistanceFromEssenceOfSufferingAction::Execute(Event /
 
 bool ReliquaryOfSoulsAdjustDistanceFromEssenceOfSufferingAction::TanksMoveToMinimumRange(Unit* suffering)
 {
-    constexpr float desiredDist = 2.0f;
     float distanceToBoss = bot->GetExactDist2d(suffering);
-    if (distanceToBoss > desiredDist)
+    if (distanceToBoss > 2.0f)
     {
         float dX = suffering->GetPositionX() - bot->GetPositionX();
         float dY = suffering->GetPositionY() - bot->GetPositionY();
@@ -1005,18 +1004,15 @@ bool ReliquaryOfSoulsAdjustDistanceFromEssenceOfSufferingAction::TanksMoveToMini
 
 bool ReliquaryOfSoulsAdjustDistanceFromEssenceOfSufferingAction::MeleeDpsStayAtMaximumRange(Unit* suffering)
 {
-    float desiredDist = bot->GetMeleeRange(suffering) - 0.5f;
-    if (fabs(bot->GetDistance2d(suffering) - desiredDist))
-    {
-        float behindAngle = Position::NormalizeOrientation(suffering->GetOrientation() + M_PI);
-        float targetX = suffering->GetPositionX() + desiredDist * std::cos(behindAngle);
-        float targetY = suffering->GetPositionY() + desiredDist * std::sin(behindAngle);
+    float desiredDist = bot->GetMeleeRange(suffering);
+    float behindAngle = Position::NormalizeOrientation(suffering->GetOrientation() + M_PI);
+    float targetX = suffering->GetPositionX() + desiredDist * std::cos(behindAngle);
+    float targetY = suffering->GetPositionY() + desiredDist * std::sin(behindAngle);
 
-        if (bot->GetExactDist2d(targetX, targetY))
-        {
-            return MoveTo(BLACK_TEMPLE_MAP_ID, targetX, targetY, bot->GetPositionZ(), false,
-                          false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
-        }
+    if (bot->GetExactDist2d(targetX, targetY) > 0.25f)
+    {
+        return MoveTo(BLACK_TEMPLE_MAP_ID, targetX, targetY, bot->GetPositionZ(), false,
+                      false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
     return false;

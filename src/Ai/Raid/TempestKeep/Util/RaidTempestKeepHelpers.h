@@ -118,6 +118,7 @@ namespace TempestKeepHelpers
     extern const Position ALAR_SE_RAMP_BASE;
     extern const Position ALAR_SW_RAMP_BASE;
     extern const Position ALAR_ROOM_S_CENTER;
+    constexpr uint8 TOTAL_ALAR_LOCATIONS = 6;
     extern std::unordered_map<uint32, bool> lastRebirthState;
     extern std::unordered_map<uint32, bool> isAlarInPhase2;
     int8 GetAlarDestinationLocationIndex(Unit* alar, Position& dest);
@@ -125,12 +126,11 @@ namespace TempestKeepHelpers
     void GetClosestPlatformAndGround(
         const Position& botPos, int8& closestPlatform, Position& ground);
     std::pair<Unit*, Unit*> GetFirstTwoEmbersOfAlar(PlayerbotAI* botAI);
-    Player* GetSecondEmberTank(PlayerbotAI* botAI, Unit* alar);
+    Player* GetSecondEmberTank(PlayerbotAI* botAI);
 
     // Void Reaver
     extern const Position VOID_REAVER_TANK_POSITION;
     extern std::unordered_map<ObjectGuid, Position> initialVoidReaverPositions;
-    extern std::unordered_map<ObjectGuid, bool> hasReachedInitialVoidReaverPosition;
 
     // Kael'thas Sunstrider <Lord of the Blood Elves>
     extern const Position SANGUINAR_TANK_POSITION;

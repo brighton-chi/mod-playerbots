@@ -449,11 +449,9 @@ float FathomLordKarathressDisableAoeMultiplier::GetValue(Action* action)
 
     if (AI_VALUE2(Unit*, "find target", "fathom-lord karathress"))
     {
-        if (auto castSpellAction = dynamic_cast<CastSpellAction*>(action))
-        {
-            if (castSpellAction->getThreatType() == Action::ActionThreatType::Aoe)
-                return 0.0f;
-        }
+        auto castSpellAction = dynamic_cast<CastSpellAction*>(action);
+        if (castSpellAction && castSpellAction->getThreatType() == Action::ActionThreatType::Aoe)
+            return 0.0f;
     }
 
     return 1.0f;
@@ -556,10 +554,7 @@ float MorogrimTidewalkerMaintainPhase2StackingMultiplier::GetValue(Action* actio
         return 1.0f;
 
     Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
-    if (!tidewalker)
-        return 1.0f;
-
-    if (tidewalker->GetHealthPct() < 25.0f)
+    if (tidewalker && tidewalker->GetHealthPct() < 25.0f)
     {
         if (dynamic_cast<CombatFormationMoveAction*>(action) ||
             dynamic_cast<FleeAction*>(action) ||
@@ -613,6 +608,25 @@ float LadyVashjDelayCooldownsMultiplier::GetValue(Action* action)
             dynamic_cast<CastBerserkingAction*>(action) ||
             dynamic_cast<CastBloodFuryAction*>(action) ||
             dynamic_cast<UseTrinketAction*>(action))
+            return 0.0f;
+    }
+
+    return 1.0f;
+}
+
+float LadyVashjMainTankGroupShamanUseGroundingTotemMultiplier::GetValue(Action* action)
+{
+    if (bot->getClass() != CLASS_SHAMAN)
+        return 1.0f;
+
+    if (!AI_VALUE2(Unit*, "find target", "lady vashj"))
+        return 1.0f;
+
+    if (IsMainTankInSameSubgroup(bot))
+    {
+        if (dynamic_cast<CastWindfuryTotemAction*>(action) ||
+            dynamic_cast<CastWrathOfAirTotemAction*>(action) ||
+            dynamic_cast<CastNatureResistanceTotemAction*>(action))
             return 0.0f;
     }
 

@@ -198,6 +198,7 @@ void RaidSSCStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 
     // Lady Vashj <Coilfang Matron>
     multipliers.push_back(new LadyVashjDelayCooldownsMultiplier(botAI));
+    multipliers.push_back(new LadyVashjMainTankGroupShamanUseGroundingTotemMultiplier(botAI));
     multipliers.push_back(new LadyVashjMaintainPhase1RangedSpreadMultiplier(botAI));
     multipliers.push_back(new LadyVashjStaticChargeStayAwayFromGroupMultiplier(botAI));
     multipliers.push_back(new LadyVashjDoNotLootTheTaintedCoreMultiplier(botAI));

@@ -210,11 +210,9 @@ namespace SerpentShrineCavernHelpers
             if (group->GetMemberGroup(member->GetGUID()) != botSubGroup)
                 continue;
 
-            if (PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member))
-            {
-                if (memberAI->IsMainTank(member))
-                    return true;
-            }
+            PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
+            if (memberAI && memberAI->IsMainTank(member))
+                return true;
         }
 
         return false;
@@ -355,20 +353,18 @@ namespace SerpentShrineCavernHelpers
                 continue;
 
             PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
-            if (!memberAI)
-                continue;
-
-            if (memberAI->IsAssistHealOfIndex(member, 0, true))
+            if (memberAI && memberAI->IsAssistHealOfIndex(member, 0, true))
                 return member;
         }
 
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) ||
-                botAI->IsTank(member) || member == designatedLooter)
-                continue;
-            return member;
+            if (member && member->IsAlive() && GET_PLAYERBOT_AI(member) &&
+                !botAI->IsTank(member) && member != designatedLooter)
+            {
+                return member;
+            }
         }
 
         return nullptr;
@@ -390,21 +386,19 @@ namespace SerpentShrineCavernHelpers
                 continue;
 
             PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
-            if (!memberAI)
-                continue;
-
-            if (memberAI->IsAssistHealOfIndex(member, 1, true))
+            if (memberAI && memberAI->IsAssistHealOfIndex(member, 1, true))
                 return member;
         }
 
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) ||
-                botAI->IsTank(member) || member == designatedLooter ||
-                member == firstCorePasser)
-                continue;
-            return member;
+            if (member && member->IsAlive() && GET_PLAYERBOT_AI(member) &&
+                !botAI->IsTank(member) && member != designatedLooter &&
+                member != firstCorePasser)
+            {
+                return member;
+            }
         }
 
         return nullptr;
@@ -427,21 +421,19 @@ namespace SerpentShrineCavernHelpers
                 continue;
 
             PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
-            if (!memberAI)
-                continue;
-
-            if (memberAI->IsAssistHealOfIndex(member, 2, true))
+            if (memberAI && memberAI->IsAssistHealOfIndex(member, 2, true))
                 return member;
         }
 
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) ||
-                botAI->IsTank(member) || member == designatedLooter ||
-                member == firstCorePasser || member == secondCorePasser)
-                continue;
-            return member;
+            if (member && member->IsAlive() && GET_PLAYERBOT_AI(member) &&
+                !botAI->IsTank(member) && member != designatedLooter &&
+                member != firstCorePasser && member != secondCorePasser)
+            {
+                return member;
+            }
         }
 
         return nullptr;
@@ -466,22 +458,20 @@ namespace SerpentShrineCavernHelpers
                 continue;
 
             PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
-            if (!memberAI)
-                continue;
-
-            if (memberAI->IsAssistRangedDpsOfIndex(member, 0, true))
+            if (memberAI && memberAI->IsAssistRangedDpsOfIndex(member, 0, true))
                 return member;
         }
 
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) ||
-                botAI->IsTank(member) || member == designatedLooter ||
-                member == firstCorePasser || member == secondCorePasser ||
-                member == thirdCorePasser)
-                continue;
-            return member;
+            if (member && member->IsAlive() && GET_PLAYERBOT_AI(member) &&
+                !botAI->IsTank(member) && member != designatedLooter &&
+                member != firstCorePasser && member != secondCorePasser &&
+                member != thirdCorePasser)
+            {
+                return member;
+            }
         }
 
         return nullptr;
@@ -510,10 +500,7 @@ namespace SerpentShrineCavernHelpers
                 continue;
 
             GameObject* go = bounds.first->second;
-            if (!go)
-                continue;
-
-            if (go->GetGoState() != GO_STATE_READY)
+            if (!go || go->GetGoState() != GO_STATE_READY)
                 continue;
 
             GeneratorInfo info;
