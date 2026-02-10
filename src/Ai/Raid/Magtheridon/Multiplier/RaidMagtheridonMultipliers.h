@@ -24,4 +24,11 @@ public:
     float GetValue(Action* action) override;
 };
 
+class MagtheridonDisableMainTankMovementMultiplier : public Multiplier
+{
+public:
+    MagtheridonDisableMainTankMovementMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "magtheridon disable main tank movement multiplier") {}
+    float GetValue(Action* action) override;
+};
+
 #endif
