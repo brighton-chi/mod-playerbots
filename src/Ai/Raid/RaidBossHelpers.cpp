@@ -82,8 +82,11 @@ bool IsMechanicTrackerBot(PlayerbotAI* botAI, Player* bot, uint32 mapId, Player*
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || member->GetMapId() != mapId ||
-                !GET_PLAYERBOT_AI(member) || !botAI->IsDps(member))
+            if (!member || !member->IsAlive() || member->GetMapId() != mapId)
+                continue;
+
+            PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
+            if (!memberAI || !memberAI->IsDps(member))
                 continue;
 
             if (member != exclude)
