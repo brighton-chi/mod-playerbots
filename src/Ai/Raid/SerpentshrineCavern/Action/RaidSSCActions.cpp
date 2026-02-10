@@ -352,20 +352,17 @@ bool HydrossTheUnstableMisdirectBossToTankAction::Execute(Event /*event*/)
     if (!hydross)
         return false;
 
-    if (Group* group = bot->GetGroup())
-    {
-        if (TryMisdirectToFrostTank(hydross, group))
-            return true;
+    if (TryMisdirectToFrostTank(hydross))
+        return true;
 
-        if (TryMisdirectToNatureTank(hydross, group))
-            return true;
-    }
+    if (TryMisdirectToNatureTank(hydross))
+        return true;
 
     return false;
 }
 
 bool HydrossTheUnstableMisdirectBossToTankAction::TryMisdirectToFrostTank(
-    Unit* hydross, Group* group)
+    Unit* hydross)
 {
     Player* frostTank = GetGroupMainTank(botAI, bot);
     if (!frostTank)
@@ -384,7 +381,7 @@ bool HydrossTheUnstableMisdirectBossToTankAction::TryMisdirectToFrostTank(
 }
 
 bool HydrossTheUnstableMisdirectBossToTankAction::TryMisdirectToNatureTank(
-    Unit* hydross, Group* group)
+    Unit* hydross)
 {
     Player* natureTank = GetGroupFirstAssistTank(botAI, bot);
     if (!natureTank)
@@ -2037,20 +2034,7 @@ bool LadyVashjMisdirectStriderToFirstAssistTankAction::Execute(Event /*event*/)
     if (!strider)
         return false;
 
-    Player* firstAssistTank = nullptr;
-    if (Group* group = bot->GetGroup())
-    {
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (member && member->IsAlive() && botAI->IsAssistTankOfIndex(member, 0, true))
-            {
-                firstAssistTank = member;
-                break;
-            }
-        }
-    }
-
+    Player* firstAssistTank = GetGroupFirstAssistTank(botAI, bot);
     if (!firstAssistTank || strider->GetVictim() == firstAssistTank)
         return false;
 

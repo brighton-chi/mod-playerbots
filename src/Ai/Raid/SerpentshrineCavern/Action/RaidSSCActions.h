@@ -75,8 +75,8 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool TryMisdirectToFrostTank(Unit* hydross, Group* group);
-    bool TryMisdirectToNatureTank(Unit* hydross, Group* group);
+    bool TryMisdirectToFrostTank(Unit* hydross);
+    bool TryMisdirectToNatureTank(Unit* hydross);
 };
 
 class HydrossTheUnstableStopDpsUponPhaseChangeAction : public Action

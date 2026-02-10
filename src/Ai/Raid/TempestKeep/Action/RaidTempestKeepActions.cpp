@@ -963,16 +963,7 @@ bool KaelthasSunstriderMisdirectAdvisorsToTanksAction::Execute(Event /*event*/)
     else if (hunterIndex == 1)
     {
         advisorTarget = AI_VALUE2(Unit*, "find target", "master engineer telonicus");
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (member && member->IsAlive() &&
-                GET_PLAYERBOT_AI(member)->IsAssistTankOfIndex(member, 0, true))
-            {
-                tankTarget = member;
-                break;
-            }
-        }
+        tankTarget = GetGroupFirstAssistTank(botAI, bot);
     }
 
     if (!advisorTarget ||
@@ -1031,10 +1022,6 @@ bool KaelthasSunstriderMainTankPositionSanguinarAction::Execute(Event /*event*/)
 
 bool KaelthasSunstriderCastFearWardOnSanguinarTankAction::Execute(Event /*event*/)
 {
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
     Player* mainTank = GetGroupMainTank(botAI, bot);
     if (mainTank && botAI->CanCastSpell("fear ward", mainTank))
         return botAI->CastSpell("fear ward", mainTank);
