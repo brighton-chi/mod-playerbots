@@ -57,6 +57,8 @@ bool BlackTempleEraseTimersAndTrackersAction::Execute(Event /*event*/)
             erased = true;
         if (illidanGrateStep.erase(guid) > 0)
             erased = true;
+        if (illidanDemonRangedPositions.erase(guid) > 0)
+            erased = true;
     }
 
     return erased;
@@ -2401,42 +2403,56 @@ bool IllidanStormrageDisperseRangedAction::Execute(Event /*event*/)
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (member && member->IsAlive() && botAI->IsRanged(member))
-                rangedBots.push_back(member);
+            if (!member || !member->IsAlive() || !botAI->IsRanged(member))
+                continue;
+            rangedBots.push_back(member);
         }
 
-        std::sort(rangedBots.begin(), rangedBots.end(),
-            [](Player* a, Player* b) { return a->GetGUID() < b->GetGUID(); });
+        if (rangedBots.empty())
+            return false;
 
-        // Calculate angle from Illidan to warlock tank
-        float dx = warlockTank->GetPositionX() - illidan->GetPositionX();
-        float dy = warlockTank->GetPositionY() - illidan->GetPositionY();
-        float warlockAngle = std::atan2(dy, dx);
+        const ObjectGuid guid = bot->GetGUID();
 
-        constexpr float forbiddenArc = (2.0f / 3.0f) * M_PI; // 120 degrees in radians
-        constexpr float allowedArc = (4.0f / 3.0f) * M_PI;   // 240 degrees in radians
-
-        // Forbidden arc is centered on warlockAngle, so allowed arc starts just after forbidden
-        float arcStart = Position::NormalizeOrientation(warlockAngle + forbiddenArc / 2.0f);
-        float arcSpan = allowedArc;
-
-        constexpr float radius = 25.0f;
-
-        size_t count = rangedBots.size();
-        auto findIt = std::find(rangedBots.begin(), rangedBots.end(), bot);
-        size_t botIndex = (findIt != rangedBots.end()) ? std::distance(rangedBots.begin(), findIt) : 0;
-
-        float angle = (count == 1) ? Position::NormalizeOrientation(arcStart + arcSpan / 2.0f) :
-            Position::NormalizeOrientation(arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
-
-        float targetX = illidan->GetPositionX() + radius * std::cos(angle);
-        float targetY = illidan->GetPositionY() + radius * std::sin(angle);
-
-        if (bot->GetExactDist2d(targetX, targetY) > 1.0f)
+        auto it = illidanDemonRangedPositions.find(guid);
+        if (it == illidanDemonRangedPositions.end())
         {
-            return MoveTo(BLACK_TEMPLE_MAP_ID, targetX, targetY, illidan->GetPositionZ(),
-                          false, false, false, true, MovementPriority::MOVEMENT_FORCED,
-                          true, false);
+            std::sort(rangedBots.begin(), rangedBots.end(),
+                [](Player* a, Player* b) { return a->GetGUID() < b->GetGUID(); });
+
+            size_t count = rangedBots.size();
+            auto findIt = std::find(rangedBots.begin(), rangedBots.end(), bot);
+            size_t botIndex = (findIt != rangedBots.end()) ? std::distance(rangedBots.begin(), findIt) : 0;
+
+            // Calculate angle from Illidan to warlock tank
+            float dx = warlockTank->GetPositionX() - illidan->GetPositionX();
+            float dy = warlockTank->GetPositionY() - illidan->GetPositionY();
+            float warlockAngle = std::atan2(dy, dx);
+
+            constexpr float forbiddenArc = (2.0f / 3.0f) * M_PI; // 120 degrees
+            constexpr float allowedArc = (4.0f / 3.0f) * M_PI;   // 240 degrees
+
+            float arcStart = Position::NormalizeOrientation(warlockAngle + forbiddenArc / 2.0f);
+            float arcSpan = allowedArc;
+            constexpr float radius = 25.0f;
+
+            float angle = (count == 1) ? Position::NormalizeOrientation(arcStart + arcSpan / 2.0f) :
+                Position::NormalizeOrientation(arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
+
+            float targetX = illidan->GetPositionX() + radius * std::cos(angle);
+            float targetY = illidan->GetPositionY() + radius * std::sin(angle);
+
+            illidanDemonRangedPositions.try_emplace(guid, Position(targetX, targetY, illidan->GetPositionZ()));
+            it = illidanDemonRangedPositions.find(guid);
+        }
+
+        if (it == illidanDemonRangedPositions.end())
+            return false;
+
+        const Position& target = it->second;
+        if (bot->GetExactDist2d(target.GetPositionX(), target.GetPositionY()) > 1.0f)
+        {
+            return MoveTo(BLACK_TEMPLE_MAP_ID, target.GetPositionX(), target.GetPositionY(), target.GetPositionZ(),
+                          false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
         }
     }
 
@@ -2489,7 +2505,7 @@ bool IllidanStormrageWarlockTankHandleDemonBossAction::Execute(Event /*event*/)
     if (bot->GetExactDist2d(illidan) < safeDistFromBoss)
     {
         constexpr uint32 minInterval = 0;
-        if (FleePosition(Position(illidan->GetPosition()), safeDistFromBoss, minInterval));
+        if (FleePosition(Position(illidan->GetPosition()), safeDistFromBoss, minInterval))
             return true;
     }
 
