@@ -271,9 +271,7 @@ namespace TempestKeepHelpers
             if (unit && unit->IsAlive() && unit->GetEntry() == NPC_EMBER_OF_ALAR)
             {
                 if (!firstEmber)
-                {
                     firstEmber = unit;
-                }
                 else if (!secondEmber)
                 {
                     secondEmber = unit;

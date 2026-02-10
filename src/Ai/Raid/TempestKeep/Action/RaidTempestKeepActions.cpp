@@ -1180,9 +1180,7 @@ bool KaelthasSunstriderHandleAdvisorRolesInPhase3Action::Execute(Event /*event*/
 {
     const Position* movePosition = nullptr;
     if (botAI->IsAssistHealOfIndex(bot, 0, true))
-    {
         movePosition = &ADVISOR_HEAL_POSITION;
-    }
     else if (botAI->IsMainTank(bot))
     {
         Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
