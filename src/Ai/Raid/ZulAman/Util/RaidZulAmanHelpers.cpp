@@ -52,22 +52,20 @@ namespace ZulAmanHelpers
     // Akil'zon <Eagle Avatar>
     const Position AKILZON_TANK_POSITION = { 378.369f, 1407.718f, 74.797f };
 
-    bool AnyGroupMemberHasElectricalStorm(Player* bot)
+    Player* GetElectricalStormTarget(Player* bot)
     {
         Group* group = bot->GetGroup();
         if (!group)
-            return false;
+            return nullptr;
 
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (!member || !member->IsAlive())
-                continue;
-
-            if (member->HasAura(SPELL_ELECTRICAL_STORM))
-                return true;
+            if (member && member->IsAlive() && member->HasAura(SPELL_ELECTRICAL_STORM))
+                return member;
         }
-        return false;
+
+        return nullptr;
     }
 
     // Nalorakk <Bear Avatar>
@@ -90,6 +88,7 @@ namespace ZulAmanHelpers
             {
                 if (!lowest || unit->GetGUID().GetCounter() < lowest->GetGUID().GetCounter())
                     lowest = unit;
+
                 if (!highest || unit->GetGUID().GetCounter() > highest->GetGUID().GetCounter())
                     highest = unit;
             }

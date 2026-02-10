@@ -73,7 +73,7 @@ namespace ZulAmanHelpers
 
     // Akil'zon <Eagle Avatar>
     extern const Position AKILZON_TANK_POSITION;
-    bool AnyGroupMemberHasElectricalStorm(Player* bot);
+    Player* GetElectricalStormTarget(Player* bot);
 
     // Nalorakk <Bear Avatar>
     extern const Position NALORAKK_TANK_POSITION;

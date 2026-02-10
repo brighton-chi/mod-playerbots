@@ -32,7 +32,7 @@ bool AkilzonBossEngagedByTanksTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "akil'zon"))
         return false;
 
-    return !AnyGroupMemberHasElectricalStorm(bot);
+    return !GetElectricalStormTarget(bot);
 }
 
 bool AkilzonBossCastsStaticDisruptionTrigger::IsActive()
@@ -43,13 +43,16 @@ bool AkilzonBossCastsStaticDisruptionTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "akil'zon"))
         return false;
 
-    return !AnyGroupMemberHasElectricalStorm(bot);
+    return !GetElectricalStormTarget(bot);
 }
 
 bool AkilzonElectricalStormHasFormedTrigger::IsActive()
 {
-    return AI_VALUE2(Unit*, "find target", "akil'zon") &&
-           AnyGroupMemberHasElectricalStorm(bot);
+    if (!AI_VALUE2(Unit*, "find target", "akil'zon"))
+        return false;
+
+    Player* stormTarget = GetElectricalStormTarget(bot);
+    return stormTarget && stormTarget != bot;
 }
 
 // Nalorakk <Bear Avatar>

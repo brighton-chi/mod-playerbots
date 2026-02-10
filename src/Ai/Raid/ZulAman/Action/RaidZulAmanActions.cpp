@@ -30,17 +30,7 @@ bool AkilzonMisdirectBossToMainTankAction::Execute(Event event)
     if (!group)
         return false;
 
-    Player* mainTank = nullptr;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (member && member->IsAlive() && botAI->IsMainTank(member))
-        {
-            mainTank = member;
-            break;
-        }
-    }
-
+    Player* mainTank = GetGroupMainTank(botAI, bot);
     if (!mainTank)
         return false;
 
@@ -96,21 +86,7 @@ bool AkilzonSpreadRangedAction::Execute(Event event)
 
 bool AkilzonMoveToEyeOfTheStormAction::Execute(Event event)
 {
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    Player* stormTarget = nullptr;
-    for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member)
-            continue;
-
-        if (member->HasAura(SPELL_ELECTRICAL_STORM))
-            stormTarget = member;
-    }
-
+    Player* stormTarget = GetElectricalStormTarget(bot);
     if (stormTarget && bot->GetExactDist2d(stormTarget) > 2.0f)
     {
         botAI->Reset();
@@ -130,21 +106,7 @@ bool NalorakkMisdirectBossToMainTankAction::Execute(Event event)
     if (!nalorakk)
         return false;
 
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    Player* mainTank = nullptr;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (member && member->IsAlive() && botAI->IsMainTank(member))
-        {
-            mainTank = member;
-            break;
-        }
-    }
-
+    Player* mainTank = GetGroupMainTank(botAI, bot);
     if (!mainTank)
         return false;
 
@@ -184,30 +146,22 @@ bool NalorakkTanksPositionBossAction::MainTankPositionTrollForm(
     {
         if (mainTank->GetTarget() != nalorakk->GetGUID())
             return Attack(nalorakk);
-        else if (nalorakk->GetVictim() != mainTank)
-        {
-            const char* taunts[] = { "taunt", "growl", "hand of reckoning", "dark command" };
-            for (const char* spellName : taunts)
-            {
-                if (botAI->CanCastSpell(spellName, nalorakk))
-                    return botAI->CastSpell(spellName, nalorakk);
-            }
-        }
-        else if (nalorakk->GetVictim() == mainTank)
-        {
-            const Position& position = NALORAKK_TANK_POSITION;
-            float distToPosition = mainTank->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
-            if (distToPosition > 2.0f)
-            {
-                float dX = position.GetPositionX() - mainTank->GetPositionX();
-                float dY = position.GetPositionY() - mainTank->GetPositionY();
-                float moveDist = std::min(10.0f, distToPosition);
-                float moveX = mainTank->GetPositionX() + (dX / distToPosition) * moveDist;
-                float moveY = mainTank->GetPositionY() + (dY / distToPosition) * moveDist;
 
-                return MoveTo(ZULAMAN_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
-                              false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
-            }
+        if (nalorakk->GetVictim() != mainTank)
+            return botAI->DoSpecificAction("taunt spell", Event(), false);
+
+        const Position& position = NALORAKK_TANK_POSITION;
+        float distToPosition = mainTank->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+        if (distToPosition > 2.0f)
+        {
+            float dX = position.GetPositionX() - mainTank->GetPositionX();
+            float dY = position.GetPositionY() - mainTank->GetPositionY();
+            float moveDist = std::min(10.0f, distToPosition);
+            float moveX = mainTank->GetPositionX() + (dX / distToPosition) * moveDist;
+            float moveY = mainTank->GetPositionY() + (dY / distToPosition) * moveDist;
+
+            return MoveTo(ZULAMAN_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
+                            false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
     else
@@ -261,30 +215,22 @@ bool NalorakkTanksPositionBossAction::FirstAssistTankPositionBearForm(
     {
         if (assistTank->GetTarget() != nalorakk->GetGUID())
             return Attack(nalorakk);
-        else if (nalorakk->GetVictim() != assistTank)
-        {
-            const char* taunts[] = { "taunt", "growl", "hand of reckoning", "dark command" };
-            for (const char* spellName : taunts)
-            {
-                if (botAI->CanCastSpell(spellName, nalorakk))
-                    return botAI->CastSpell(spellName, nalorakk);
-            }
-        }
-        else if (nalorakk->GetVictim() == assistTank)
-        {
-            const Position& position = NALORAKK_TANK_POSITION;
-            float distToPosition = assistTank->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
-            if (distToPosition > 2.0f)
-            {
-                float dX = position.GetPositionX() - assistTank->GetPositionX();
-                float dY = position.GetPositionY() - assistTank->GetPositionY();
-                float moveDist = std::min(10.0f, distToPosition);
-                float moveX = assistTank->GetPositionX() + (dX / distToPosition) * moveDist;
-                float moveY = assistTank->GetPositionY() + (dY / distToPosition) * moveDist;
 
-                return MoveTo(ZULAMAN_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
-                            false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
-            }
+        if (nalorakk->GetVictim() != assistTank)
+            return botAI->DoSpecificAction("taunt spell", Event(), false);
+
+        const Position& position = NALORAKK_TANK_POSITION;
+        float distToPosition = assistTank->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+        if (distToPosition > 2.0f)
+        {
+            float dX = position.GetPositionX() - assistTank->GetPositionX();
+            float dY = position.GetPositionY() - assistTank->GetPositionY();
+            float moveDist = std::min(10.0f, distToPosition);
+            float moveX = assistTank->GetPositionX() + (dX / distToPosition) * moveDist;
+            float moveY = assistTank->GetPositionY() + (dY / distToPosition) * moveDist;
+
+            return MoveTo(ZULAMAN_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
+                        false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
     else
@@ -349,21 +295,7 @@ bool JanalaiMisdirectBossToMainTankAction::Execute(Event event)
     if (!janalai)
         return false;
 
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    Player* mainTank = nullptr;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (member && member->IsAlive() && botAI->IsMainTank(member))
-        {
-            mainTank = member;
-            break;
-        }
-    }
-
+    Player* mainTank = GetGroupMainTank(botAI, bot);
     if (!mainTank)
         return false;
 
@@ -496,9 +428,8 @@ bool JanalaiAvoidFireBombsAction::Execute(Event event)
                   MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
-Position JanalaiAvoidFireBombsAction::FindSafestNearbyPosition(
-    const std::vector<Unit*>& bombs, const Position& janalaiCenter,
-    float maxRadius, float hazardRadius)
+Position JanalaiAvoidFireBombsAction::FindSafestNearbyPosition(const std::vector<Unit*>& bombs,
+    const Position& janalaiCenter, float maxRadius, float hazardRadius)
 {
     constexpr float searchStep = M_PI / 8.0f;
     constexpr float minDistance = 2.0f;
@@ -606,10 +537,6 @@ std::vector<Unit*> JanalaiAvoidFireBombsAction::GetAllFireBombTriggers(
 
 bool JanalaiMarkAmaniHatchersAction::Execute(Event event)
 {
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
     auto [hatcherLow, hatcherHigh] = GetAmaniHatcherPair(botAI);
 
     // When hatchers spawn, mark one with Skull and the other with Moon
@@ -632,21 +559,7 @@ bool HalazziMisdirectBossToMainTankAction::Execute(Event event)
     if (!halazzi)
         return false;
 
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    Player* mainTank = nullptr;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (member && member->IsAlive() && botAI->IsMainTank(member))
-        {
-            mainTank = member;
-            break;
-        }
-    }
-
+    Player* mainTank = GetGroupMainTank(botAI, bot);
     if (!mainTank)
         return false;
 
@@ -700,14 +613,22 @@ bool HalazziFirstAssistTankAttackSpiritLynxAction::Execute(Event event)
 
         if (bot->GetTarget() != lynx->GetGUID())
             return Attack(lynx);
-        else if (lynx->GetVictim() != bot)
+
+        if (lynx->GetVictim() != bot)
+            return botAI->DoSpecificAction("taunt spell", Event(), false);
+
+        const Position& position = HALAZZI_TANK_POSITION;
+        float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+        if (distToPosition > 2.0f)
         {
-            const char* taunts[] = { "taunt", "growl", "hand of reckoning", "dark command" };
-            for (const char* spellName : taunts)
-            {
-                if (botAI->CanCastSpell(spellName, lynx))
-                    return botAI->CastSpell(spellName, lynx);
-            }
+            float dX = position.GetPositionX() - bot->GetPositionX();
+            float dY = position.GetPositionY() - bot->GetPositionY();
+            float moveDist = std::min(10.0f, distToPosition);
+            float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
+
+            return MoveTo(ZULAMAN_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
+                            false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
     else if (Unit* halazzi = AI_VALUE2(Unit*, "find target", "halazzi"))
@@ -717,27 +638,6 @@ bool HalazziFirstAssistTankAttackSpiritLynxAction::Execute(Event event)
         if (bot->GetTarget() != halazzi->GetGUID())
             return Attack(halazzi);
 
-        /* float bossX = halazzi->GetPositionX();
-        float bossY = halazzi->GetPositionY();
-        float bossZ = halazzi->GetPositionZ();
-        float bossO = halazzi->GetOrientation();
-
-        float frontDist = 3.0f;
-        float targetX = bossX + std::cos(bossO) * frontDist;
-        float targetY = bossY + std::sin(bossO) * frontDist;
-
-        float distToPosition = bot->GetExactDist2d(targetX, targetY);
-        if (distToPosition > 2.0f)
-        {
-            float dX = targetX - bot->GetPositionX();
-            float dY = targetY - bot->GetPositionY();
-            float moveDist = std::min(10.0f, distToPosition);
-            float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
-            float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
-
-            return MoveTo(ZULAMAN_MAP_ID, moveX, moveY, bossZ, false, false, false,
-                          false, MovementPriority::MOVEMENT_COMBAT, true, false);
-        } */
         const Position& position = HALAZZI_TANK_POSITION;
         float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
         if (distToPosition > 2.0f)
@@ -790,21 +690,7 @@ bool HexLordMalacrassMisdirectBossToMainTankAction::Execute(Event event)
     if (!malacrass)
         return false;
 
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    Player* mainTank = nullptr;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (member && member->IsAlive() && botAI->IsMainTank(member))
-        {
-            mainTank = member;
-            break;
-        }
-    }
-
+    Player* mainTank = GetGroupMainTank(botAI, bot);
     if (!mainTank)
         return false;
 
@@ -900,21 +786,7 @@ bool ZuljinMisdirectBossToMainTankAction::Execute(Event event)
     if (!zuljin)
         return false;
 
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    Player* mainTank = nullptr;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (member && member->IsAlive() && botAI->IsMainTank(member))
-        {
-            mainTank = member;
-            break;
-        }
-    }
-
+    Player* mainTank = GetGroupMainTank(botAI, bot);
     if (!mainTank)
         return false;
 
@@ -1107,7 +979,9 @@ std::vector<Unit*> ZuljinAvoidCyclonesAction::GetAllCycloneTriggers(
         Unit* unit = botAI->GetUnit(npcGuid);
         if (unit && unit->GetEntry() == NPC_FEATHER_VORTEX &&
             bot->GetExactDist2d(unit) < maxSearchRadius)
+        {
             cyclones.push_back(unit);
+        }
     }
 
     return cyclones;
@@ -1130,45 +1004,35 @@ bool ZuljinEscapeClawRageWithImmunitySpellAction::Execute(Event event)
         {
             if (bot->getClass() == CLASS_HUNTER)
             {
-                if (botAI->CanCastSpell("feign death", bot))
-                {
-                    if (botAI->CastSpell("feign death", bot))
-                        escaped = true;
-                }
-                if (botAI->CanCastSpell("deterrence", bot))
-                {
-                    if (botAI->CastSpell("deterrence", bot))
-                        escaped = true;
-                }
+                if (botAI->CanCastSpell("feign death", bot) &&
+                    botAI->CastSpell("feign death", bot))
+                    escaped = true;
+
+                if (botAI->CanCastSpell("deterrence", bot) &&
+                    botAI->CastSpell("deterrence", bot))
+                    escaped = true;
             }
             else if (bot->getClass() == CLASS_MAGE)
             {
-                if (botAI->CanCastSpell("ice block", bot))
-                {
-                    if (botAI->CastSpell("ice block", bot))
-                        escaped = true;
-                }
+                if (botAI->CanCastSpell("ice block", bot) &&
+                    botAI->CastSpell("ice block", bot))
+                    escaped = true;
             }
             else if (bot->getClass() == CLASS_PALADIN)
             {
-                if (botAI->CanCastSpell("divine shield", bot))
-                {
-                    if (botAI->CastSpell("divine shield", bot))
-                        escaped = true;
-                }
+                if (botAI->CanCastSpell("divine shield", bot) &&
+                    botAI->CastSpell("divine shield", bot))
+                    escaped = true;
             }
             else if (bot->getClass() == CLASS_ROGUE)
             {
-                if (botAI->CanCastSpell("vanish", bot))
-                {
-                    if (botAI->CastSpell("vanish", bot))
-                        escaped = true;
-                }
-                if (botAI->CanCastSpell("evasion", bot))
-                {
-                    if (botAI->CastSpell("evasion", bot))
-                        escaped = true;
-                }
+                if (botAI->CanCastSpell("vanish", bot) &&
+                     botAI->CastSpell("vanish", bot))
+                     escaped = true;
+
+                if (botAI->CanCastSpell("evasion", bot) &&
+                     botAI->CastSpell("evasion", bot))
+                     escaped = true;
             }
             return escaped;
         }
