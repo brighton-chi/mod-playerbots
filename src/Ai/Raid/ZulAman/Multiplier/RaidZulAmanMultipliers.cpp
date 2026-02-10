@@ -39,7 +39,7 @@ float AkilzonStayInEyeOfTheStormMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "akil'zon"))
         return 1.0f;
 
-    if (!AnyGroupMemberHasElectricalStorm(bot))
+    if (!GetElectricalStormTarget(bot))
         return 1.0f;
 
     if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
