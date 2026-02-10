@@ -2475,6 +2475,8 @@ bool IllidanStormrageMeleeGoSomewhereToNotDieAction::Execute(Event /*event*/)
         if (MoveAway(nearestPlayer, safeDistFromPlayer - bot->GetDistance2d(nearestPlayer)))
             return true;
     }
+
+    return false;
 }
 
 bool IllidanStormrageWarlockTankHandleDemonBossAction::Execute(Event /*event*/)
