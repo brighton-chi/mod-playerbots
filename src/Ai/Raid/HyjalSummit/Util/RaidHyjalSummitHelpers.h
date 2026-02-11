@@ -47,7 +47,6 @@ namespace HyjalSummitHelpers
 
     // Rage Winterchill
     extern const Position RAGE_WINTERCHILL_TANK_POSITION;
-    extern std::unordered_map<ObjectGuid, Position> winterchillRangedPositions;
     extern std::unordered_map<ObjectGuid, bool> hasReachedWinterchillPosition;
 
     // Anetheron

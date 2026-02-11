@@ -8,7 +8,6 @@ namespace HyjalSummitHelpers
     // Rage Winterchill
 
     const Position RAGE_WINTERCHILL_TANK_POSITION = { 5031.061f, -1784.521f, 1321.626f };
-    std::unordered_map<ObjectGuid, Position> winterchillRangedPositions;
     std::unordered_map<ObjectGuid, bool> hasReachedWinterchillPosition;
 
     // Anetheron

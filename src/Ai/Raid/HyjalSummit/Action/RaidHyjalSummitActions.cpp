@@ -14,8 +14,6 @@ bool HyjalSummitEraseTrackersAction::Execute(Event /*event*/)
     bool erased = false;
     if (!AI_VALUE2(Unit*, "find target", "rage winterchill"))
     {
-        if (winterchillRangedPositions.erase(guid) > 0)
-            erased = true;
         if (hasReachedWinterchillPosition.erase(guid) > 0)
             erased = true;
     }
@@ -115,6 +113,7 @@ bool RageWinterchillSpreadRangedInCircleAction::Execute(Event /*event*/)
         Player* member = ref->GetSource();
         if (!member || !member->IsAlive() || !botAI->IsRanged(member))
             continue;
+
         if (botAI->IsHeal(member))
             healers.push_back(member);
         else
@@ -126,8 +125,7 @@ bool RageWinterchillSpreadRangedInCircleAction::Execute(Event /*event*/)
 
     const ObjectGuid guid = bot->GetGUID();
 
-    auto it = winterchillRangedPositions.find(guid);
-    if (it == winterchillRangedPositions.end())
+    if (!hasReachedWinterchillPosition[guid])
     {
         size_t count = healers.size() + rangedDps.size();
         size_t botIndex = 0;
@@ -158,23 +156,11 @@ bool RageWinterchillSpreadRangedInCircleAction::Execute(Event /*event*/)
 
         float targetX = RAGE_WINTERCHILL_TANK_POSITION.GetPositionX() + radius * std::cos(angle);
         float targetY = RAGE_WINTERCHILL_TANK_POSITION.GetPositionY() + radius * std::sin(angle);
+        float targetZ = RAGE_WINTERCHILL_TANK_POSITION.GetPositionZ();
 
-        winterchillRangedPositions.try_emplace(guid, Position(
-            targetX, targetY, RAGE_WINTERCHILL_TANK_POSITION.GetPositionZ()));
-        hasReachedWinterchillPosition[guid] = false;
-        it = winterchillRangedPositions.find(guid);
-    }
-
-    if (it == winterchillRangedPositions.end())
-        return false;
-
-    if (!hasReachedWinterchillPosition[guid])
-    {
-        const Position& target = it->second;
-        if (bot->GetExactDist2d(target.GetPositionX(), target.GetPositionY()) > 2.0f)
+        if (bot->GetExactDist2d(targetX, targetY) > 2.0f)
         {
-            return MoveTo(HYJAL_SUMMIT_MAP_ID, target.GetPositionX(), target.GetPositionY(),
-                          target.GetPositionZ(), false, false, false, true,
+            return MoveTo(HYJAL_SUMMIT_MAP_ID, targetX, targetY, targetZ, false, false, false, true,
                           MovementPriority::MOVEMENT_FORCED, true, false);
         }
         else
