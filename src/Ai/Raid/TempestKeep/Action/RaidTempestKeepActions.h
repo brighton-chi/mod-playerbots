@@ -139,11 +139,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class VoidReaverRangedUseAggroDumpAbilityAction : public Action
+class VoidReaverUseAggroDumpAbilityAction : public Action
 {
 public:
-    VoidReaverRangedUseAggroDumpAbilityAction(
-        PlayerbotAI* botAI, std::string const name = "void reaver ranged use aggro dump ability") : Action(botAI, name) {}
+    VoidReaverUseAggroDumpAbilityAction(
+        PlayerbotAI* botAI, std::string const name = "void reaver use aggro dump ability") : Action(botAI, name) {}
     bool Execute(Event event) override;
 };
 
@@ -364,6 +364,10 @@ public:
     KaelthasSunstriderHandlePhoenixesAndEggsAction(
         PlayerbotAI* botAI, std::string const name = "kael'thas sunstrider handle phoenixes and eggs") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
+
+private:
+    bool AssistTanksPickUpPhoenixes();
+    bool NonTanksDestroyEggsAndAvoidPhoenixes();
 };
 
 class KaelthasSunstriderBreakMindControlAction : public AttackAction

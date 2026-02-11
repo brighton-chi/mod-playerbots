@@ -64,8 +64,8 @@ bool AkilzonTanksPositionBossAction::Execute(Event event)
             float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
             float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
-            return MoveTo(ZULAMAN_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
-                          false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+            return MoveTo(ZULAMAN_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
+                          false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
 
@@ -129,39 +129,33 @@ bool NalorakkTanksPositionBossAction::Execute(Event event)
         return false;
 
     if (botAI->IsMainTank(bot))
-        return MainTankPositionTrollForm(bot, nalorakk);
-    else if (botAI->IsAssistTankOfIndex(bot, 0, true))
-        return FirstAssistTankPositionBearForm(bot, nalorakk);
-
-    return false;
+        return MainTankPositionTrollForm(nalorakk);
+    else
+        return FirstAssistTankPositionBearForm(nalorakk);
 }
 
-bool NalorakkTanksPositionBossAction::MainTankPositionTrollForm(
-    Player* mainTank, Unit* nalorakk)
+bool NalorakkTanksPositionBossAction::MainTankPositionTrollForm(Unit* nalorakk)
 {
-    if (!mainTank)
-        return false;
-
     if (!nalorakk->HasAura(SPELL_BEARFORM))
     {
-        if (mainTank->GetTarget() != nalorakk->GetGUID())
+        if (bot->GetTarget() != nalorakk->GetGUID())
             return Attack(nalorakk);
 
-        if (nalorakk->GetVictim() != mainTank)
+        if (nalorakk->GetVictim() != bot)
             return botAI->DoSpecificAction("taunt spell", Event(), false);
 
         const Position& position = NALORAKK_TANK_POSITION;
-        float distToPosition = mainTank->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+        float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
         if (distToPosition > 2.0f)
         {
-            float dX = position.GetPositionX() - mainTank->GetPositionX();
-            float dY = position.GetPositionY() - mainTank->GetPositionY();
+            float dX = position.GetPositionX() - bot->GetPositionX();
+            float dY = position.GetPositionY() - bot->GetPositionY();
             float moveDist = std::min(10.0f, distToPosition);
-            float moveX = mainTank->GetPositionX() + (dX / distToPosition) * moveDist;
-            float moveY = mainTank->GetPositionY() + (dY / distToPosition) * moveDist;
+            float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
-            return MoveTo(ZULAMAN_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
-                            false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+            return MoveTo(ZULAMAN_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
+                          false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
     else
@@ -175,62 +169,58 @@ bool NalorakkTanksPositionBossAction::MainTankPositionTrollForm(
         float targetX = bossX + std::cos(bossO) * frontDist;
         float targetY = bossY + std::sin(bossO) * frontDist;
 
-        float dist = mainTank->GetExactDist2d(targetX, targetY);
+        float dist = bot->GetExactDist2d(targetX, targetY);
         if (dist > 2.0f)
         {
-            float dX = targetX - mainTank->GetPositionX();
-            float dY = targetY - mainTank->GetPositionY();
+            float dX = targetX - bot->GetPositionX();
+            float dY = targetY - bot->GetPositionY();
             float moveDist = std::min(10.0f, dist);
-            float moveX = mainTank->GetPositionX() + (dX / dist) * moveDist;
-            float moveY = mainTank->GetPositionY() + (dY / dist) * moveDist;
+            float moveX = bot->GetPositionX() + (dX / dist) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / dist) * moveDist;
 
             return MoveTo(ZULAMAN_MAP_ID, moveX, moveY, bossZ, false, false, false,
                           false, MovementPriority::MOVEMENT_COMBAT, true, false);
         } */
         const Position& position = NALORAKK_TANK_POSITION;
-        float distToPosition = mainTank->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+        float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
         if (distToPosition > 2.0f)
         {
-            float dX = position.GetPositionX() - mainTank->GetPositionX();
-            float dY = position.GetPositionY() - mainTank->GetPositionY();
+            float dX = position.GetPositionX() - bot->GetPositionX();
+            float dY = position.GetPositionY() - bot->GetPositionY();
             float moveDist = std::min(10.0f, distToPosition);
-            float moveX = mainTank->GetPositionX() + (dX / distToPosition) * moveDist;
-            float moveY = mainTank->GetPositionY() + (dY / distToPosition) * moveDist;
+            float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
-            return MoveTo(ZULAMAN_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
-                          false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+            return MoveTo(ZULAMAN_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
+                          false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
 
     return false;
 }
 
-bool NalorakkTanksPositionBossAction::FirstAssistTankPositionBearForm(
-    Player* assistTank, Unit* nalorakk)
+bool NalorakkTanksPositionBossAction::FirstAssistTankPositionBearForm(Unit* nalorakk)
 {
-    if (!assistTank)
-        return false;
-
     if (nalorakk->HasAura(SPELL_BEARFORM))
     {
-        if (assistTank->GetTarget() != nalorakk->GetGUID())
+        if (bot->GetTarget() != nalorakk->GetGUID())
             return Attack(nalorakk);
 
-        if (nalorakk->GetVictim() != assistTank)
+        if (nalorakk->GetVictim() != bot)
             return botAI->DoSpecificAction("taunt spell", Event(), false);
 
         const Position& position = NALORAKK_TANK_POSITION;
-        float distToPosition = assistTank->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+        float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
         if (distToPosition > 2.0f)
         {
-            float dX = position.GetPositionX() - assistTank->GetPositionX();
-            float dY = position.GetPositionY() - assistTank->GetPositionY();
+            float dX = position.GetPositionX() - bot->GetPositionX();
+            float dY = position.GetPositionY() - bot->GetPositionY();
             float moveDist = std::min(10.0f, distToPosition);
-            float moveX = assistTank->GetPositionX() + (dX / distToPosition) * moveDist;
-            float moveY = assistTank->GetPositionY() + (dY / distToPosition) * moveDist;
+            float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
-            return MoveTo(ZULAMAN_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
-                        false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+            return MoveTo(ZULAMAN_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
+                          false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
     else
@@ -244,33 +234,32 @@ bool NalorakkTanksPositionBossAction::FirstAssistTankPositionBearForm(
         float targetX = bossX + std::cos(bossO) * frontDist;
         float targetY = bossY + std::sin(bossO) * frontDist;
 
-        float distToPosition = assistTank->GetExactDist2d(targetX, targetY);
+        float distToPosition = bot->GetExactDist2d(targetX, targetY);
         if (distToPosition > 2.0f)
         {
-            float dX = targetX - assistTank->GetPositionX();
-            float dY = targetY - assistTank->GetPositionY();
+            float dX = targetX - bot->GetPositionX();
+            float dY = targetY - bot->GetPositionY();
             float moveDist = std::min(10.0f, distToPosition);
-            float moveX = assistTank->GetPositionX() + (dX / distToPosition) * moveDist;
-            float moveY = assistTank->GetPositionY() + (dY / distToPosition) * moveDist;
+            float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
             return MoveTo(ZULAMAN_MAP_ID, moveX, moveY, bossZ, false, false, false,
                           false, MovementPriority::MOVEMENT_COMBAT, true, false);
         } */
         const Position& position = NALORAKK_TANK_POSITION;
-        float distToPosition = assistTank->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+        float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
         if (distToPosition > 2.0f)
         {
-            float dX = position.GetPositionX() - assistTank->GetPositionX();
-            float dY = position.GetPositionY() - assistTank->GetPositionY();
+            float dX = position.GetPositionX() - bot->GetPositionX();
+            float dY = position.GetPositionY() - bot->GetPositionY();
             float moveDist = std::min(10.0f, distToPosition);
-            float moveX = assistTank->GetPositionX() + (dX / distToPosition) * moveDist;
-            float moveY = assistTank->GetPositionY() + (dY / distToPosition) * moveDist;
+            float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
-            return MoveTo(ZULAMAN_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
-                        false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+            return MoveTo(ZULAMAN_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
+                          false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
-
 
     return false;
 }
@@ -278,11 +267,9 @@ bool NalorakkTanksPositionBossAction::FirstAssistTankPositionBearForm(
 bool NalorakkSpreadRangedAction::Execute(Event event)
 {
     constexpr float minDistance = 11.0f;
+    constexpr uint32 minInterval = 1000;
     if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance))
-    {
-        constexpr uint32 minInterval = 1000;
         return FleePosition(nearestPlayer->GetPosition(), minDistance, minInterval);
-    }
 
     return false;
 }
@@ -329,8 +316,8 @@ bool JanalaiTanksPositionBossAction::Execute(Event event)
             float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
             float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
-            return MoveTo(ZULAMAN_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
-                          false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+            return MoveTo(ZULAMAN_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
+                          false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
 
@@ -368,7 +355,8 @@ bool JanalaiSpreadRangedInCircleAction::Execute(Event event)
             return false;
 
         constexpr float radius = 15.0f;
-        float angle = (count == 1) ? 0.0f : (2.0f * M_PI * static_cast<float>(botIndex) / static_cast<float>(count));
+        float angle = (count == 1) ? 0.0f :
+            (2.0f * M_PI * static_cast<float>(botIndex) / static_cast<float>(count));
 
         float tx = JANALAI_TANK_POSITION.GetPositionX() + radius * std::cos(angle);
         float ty = JANALAI_TANK_POSITION.GetPositionY() + radius * std::sin(angle);
@@ -596,8 +584,8 @@ bool HalazziMainTankPositionBossAction::Execute(Event event)
             float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
             float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
-            return MoveTo(ZULAMAN_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
-                          false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+            return MoveTo(ZULAMAN_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
+                          false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
 
@@ -627,8 +615,8 @@ bool HalazziFirstAssistTankAttackSpiritLynxAction::Execute(Event event)
             float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
             float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
-            return MoveTo(ZULAMAN_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
-                            false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+            return MoveTo(ZULAMAN_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
+            false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
     else if (Unit* halazzi = AI_VALUE2(Unit*, "find target", "halazzi"))
@@ -648,8 +636,8 @@ bool HalazziFirstAssistTankAttackSpiritLynxAction::Execute(Event event)
             float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
             float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
-            return MoveTo(ZULAMAN_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
-                          false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+            return MoveTo(ZULAMAN_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
+                          false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
 
@@ -820,8 +808,8 @@ bool ZuljinTanksPositionBossAction::Execute(Event event)
             float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
             float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
-            return MoveTo(ZULAMAN_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
-                          false, false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
+            return MoveTo(ZULAMAN_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
+                          false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
         }
     }
 
@@ -979,9 +967,7 @@ std::vector<Unit*> ZuljinAvoidCyclonesAction::GetAllCycloneTriggers(
         Unit* unit = botAI->GetUnit(npcGuid);
         if (unit && unit->GetEntry() == NPC_FEATHER_VORTEX &&
             bot->GetExactDist2d(unit) < maxSearchRadius)
-        {
             cyclones.push_back(unit);
-        }
     }
 
     return cyclones;
@@ -1012,19 +998,18 @@ bool ZuljinEscapeClawRageWithImmunitySpellAction::Execute(Event event)
                     botAI->CastSpell("deterrence", bot))
                     escaped = true;
             }
-            else if (bot->getClass() == CLASS_MAGE)
-            {
-                if (botAI->CanCastSpell("ice block", bot) &&
-                    botAI->CastSpell("ice block", bot))
-                    escaped = true;
-            }
-            else if (bot->getClass() == CLASS_PALADIN)
-            {
-                if (botAI->CanCastSpell("divine shield", bot) &&
-                    botAI->CastSpell("divine shield", bot))
-                    escaped = true;
-            }
-            else if (bot->getClass() == CLASS_ROGUE)
+
+            if (bot->getClass() == CLASS_MAGE &&
+                botAI->CanCastSpell("ice block", bot) &&
+                botAI->CastSpell("ice block", bot))
+                escaped = true;
+
+            if (bot->getClass() == CLASS_PALADIN &&
+                botAI->CanCastSpell("divine shield", bot) &&
+                botAI->CastSpell("divine shield", bot))
+                escaped = true;
+
+            if (bot->getClass() == CLASS_ROGUE)
             {
                 if (botAI->CanCastSpell("vanish", bot) &&
                      botAI->CastSpell("vanish", bot))
@@ -1034,17 +1019,17 @@ bool ZuljinEscapeClawRageWithImmunitySpellAction::Execute(Event event)
                      botAI->CastSpell("evasion", bot))
                      escaped = true;
             }
+
             return escaped;
         }
         else if (bot->getClass() == CLASS_PALADIN)
         {
             ObjectGuid chargeTargetGuid = zuljinAI->GetChargeTarget();
             Player* playerVictim = ObjectAccessor::FindPlayer(chargeTargetGuid);
-            if (playerVictim && !botAI->IsTank(playerVictim))
-            {
-                if (botAI->CanCastSpell("hand of protection", playerVictim))
-                    return botAI->CastSpell("hand of protection", playerVictim);
-            }
+
+            if (playerVictim && !botAI->IsTank(playerVictim) &&
+                botAI->CanCastSpell("hand of protection", playerVictim))
+                return botAI->CastSpell("hand of protection", playerVictim);
         }
     }
     else
@@ -1070,11 +1055,9 @@ bool ZuljinEscapeClawRageWithImmunitySpellAction::Execute(Event event)
 bool ZuljinSpreadRangedAction::Execute(Event event)
 {
     constexpr float minDistance = 6.0f;
+    constexpr uint32 minInterval = 1000;
     if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance))
-    {
-        constexpr uint32 minInterval = 1000;
         return FleePosition(nearestPlayer->GetPosition(), minDistance, minInterval);
-    }
 
     return false;
 }

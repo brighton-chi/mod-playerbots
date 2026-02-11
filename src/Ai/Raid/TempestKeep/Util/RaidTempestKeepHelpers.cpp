@@ -55,7 +55,7 @@ namespace TempestKeepHelpers
     }
 
     Position FindSafestNearbyPosition(Player* bot, const std::vector<Unit*>& hazards,
-        float maxRadius, float hazardRadius, const Position* center)
+        float hazardRadius, const Position* center)
     {
         constexpr float searchStep = M_PI / 8.0f;
         constexpr float minDistance = 2.0f;
@@ -310,7 +310,7 @@ namespace TempestKeepHelpers
     const Position SANGUINAR_WAITING_POSITION = { 761.850f, 27.459f, 46.779f };
     const Position TELONICUS_TANK_POSITION = { 773.717f, 44.091f, 46.780f };
     const Position TELONICUS_WAITING_POSITION = { 754.347f, 31.739f, 46.796f };
-    const Position ADVISOR_HEAL_POSITION = { 757.425f, 13.011f, 46.779f };
+    const Position ADVISOR_HEAL_POSITION = { 744.894f, 23.136f, 46.779f };
     const Position CAPERNIAN_WAITING_POSITION = { 743.897f, -11.575f, 46.779f };
     const Position KAELTHAS_TANK_POSITION = { 799.390f, -0.837f, 48.729f };
 
@@ -328,9 +328,7 @@ namespace TempestKeepHelpers
             Player* member = ref->GetSource();
             if (member && member->IsAlive() && member->getClass() == CLASS_WARLOCK &&
                 group->IsAssistant(member->GetGUID()))
-            {
                 return member;
-            }
         }
 
         // (2) Fall back to first found bot Warlock
@@ -339,9 +337,7 @@ namespace TempestKeepHelpers
             Player* member = ref->GetSource();
             if (member && member->IsAlive() && GET_PLAYERBOT_AI(member) &&
                 member->getClass() == CLASS_WARLOCK)
-            {
                 return member;
-            }
         }
 
         // (3) Return nullptr if none found
@@ -361,9 +357,7 @@ namespace TempestKeepHelpers
             Player* member = ref->GetSource();
             if (member && member->IsAlive() && member->getClass() == CLASS_HUNTER &&
                 group->IsAssistant(member->GetGUID()))
-            {
                 return member;
-            }
         }
 
         // (2) Fall back to first found bot Hunter
@@ -372,9 +366,7 @@ namespace TempestKeepHelpers
             Player* member = ref->GetSource();
             if (member && member->IsAlive() && GET_PLAYERBOT_AI(member) &&
                 member->getClass() == CLASS_HUNTER)
-            {
                 return member;
-            }
         }
 
         return nullptr;

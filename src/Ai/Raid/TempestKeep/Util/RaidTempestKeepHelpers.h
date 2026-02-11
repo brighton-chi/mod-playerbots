@@ -85,7 +85,7 @@ namespace TempestKeepHelpers
     std::vector<Unit*> GetAllHazardTriggers(
         PlayerbotAI* botAI, Player* bot, uint32 npcEntry, float maxSearchRadius);
     Position FindSafestNearbyPosition(Player* bot, const std::vector<Unit*>& hazards,
-        float maxRadius, float hazardRadius, const Position* center = nullptr);
+        float hazardRadius, const Position* center = nullptr);
     bool IsPathSafeFromHazards(
         const Position& start, const Position& end, const std::vector<Unit*>& hazards,
         float hazardRadius);

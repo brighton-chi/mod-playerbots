@@ -67,8 +67,8 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool MainTankPositionTrollForm(Player* mainTank, Unit* nalorakk);
-    bool FirstAssistTankPositionBearForm(Player* assistTank, Unit* nalorakk);
+    bool MainTankPositionTrollForm(Unit* nalorakk);
+    bool FirstAssistTankPositionBearForm(Unit* nalorakk);
 };
 
 class NalorakkSpreadRangedAction : public MovementAction

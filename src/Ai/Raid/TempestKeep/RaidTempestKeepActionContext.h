@@ -54,8 +54,8 @@ public:
         creators["void reaver tanks position boss"] =
             &RaidTempestKeepActionContext::void_reaver_tanks_position_boss;
 
-        creators["void reaver ranged use aggro dump ability"] =
-            &RaidTempestKeepActionContext::void_reaver_ranged_use_aggro_dump_ability;
+        creators["void reaver use aggro dump ability"] =
+            &RaidTempestKeepActionContext::void_reaver_use_aggro_dump_ability;
 
         creators["void reaver spread ranged"] =
             &RaidTempestKeepActionContext::void_reaver_spread_ranged;
@@ -187,8 +187,8 @@ private:
     static Action* void_reaver_tanks_position_boss(
         PlayerbotAI* botAI) { return new VoidReaverTanksPositionBossAction(botAI); }
 
-    static Action* void_reaver_ranged_use_aggro_dump_ability(
-        PlayerbotAI* botAI) { return new VoidReaverRangedUseAggroDumpAbilityAction(botAI); }
+    static Action* void_reaver_use_aggro_dump_ability(
+        PlayerbotAI* botAI) { return new VoidReaverUseAggroDumpAbilityAction(botAI); }
 
     static Action* void_reaver_spread_ranged(
         PlayerbotAI* botAI) { return new VoidReaverSpreadRangedAction(botAI); }

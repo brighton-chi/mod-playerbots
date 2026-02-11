@@ -125,7 +125,13 @@ bool VoidReaverBossCastsPoundingTrigger::IsActive()
 
 bool VoidReaverKnockAwayReducesTankAggroTrigger::IsActive()
 {
-    if (!botAI->IsRanged(bot))
+    if (botAI->IsTank(bot))
+        return false;
+
+    if (bot->getClass() == CLASS_DEATH_KNIGHT ||
+        bot->getClass() == CLASS_DRUID ||
+        bot->getClass() == CLASS_SHAMAN ||
+        bot->getClass() == CLASS_WARRIOR)
         return false;
 
     Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
@@ -441,6 +447,13 @@ bool KaelthasSunstriderBossHasEnteredTheFightTrigger::IsActive()
 
 bool KaelthasSunstriderPhoenixesAndEggsAreSpawningTrigger::IsActive()
 {
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    if (!kaelthas)
+        return false;
+
+    if (botAI->IsTank(bot) && kaelthas->GetVictim() == bot)
+        return false;
+
     return AI_VALUE2(Unit*, "find target", "phoenix") ||
            AI_VALUE2(Unit*, "find target", "phoenix egg");
 }

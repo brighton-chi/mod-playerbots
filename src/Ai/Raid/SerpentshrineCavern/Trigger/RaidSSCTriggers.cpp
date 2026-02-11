@@ -33,8 +33,8 @@ bool GreyheartTidecallerWaterElementalTotemSpawnedTrigger::IsActive()
 
 bool HydrossTheUnstableBotIsFrostTankTrigger::IsActive()
 {
-    return AI_VALUE2(Unit*, "find target", "hydross the unstable") &&
-           botAI->IsMainTank(bot);
+    return botAI->IsMainTank(bot) &&
+           AI_VALUE2(Unit*, "find target", "hydross the unstable");
 }
 
 bool HydrossTheUnstableBotIsNatureTankTrigger::IsActive()
@@ -336,24 +336,7 @@ bool FathomLordKarathressCaribdisTankNeedsDedicatedHealerTrigger::IsActive()
     if (!botAI->IsAssistHealOfIndex(bot, 0, true))
         return false;
 
-    Player* firstAssistTank = nullptr;
-    if (Group* group = bot->GetGroup())
-    {
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || !member->IsAlive())
-                continue;
-
-            if (botAI->IsAssistTankOfIndex(member, 0, false))
-            {
-                firstAssistTank = member;
-                break;
-            }
-        }
-    }
-
-    return firstAssistTank;
+    return GetGroupFirstAssistTank(botAI, bot);
 }
 
 bool FathomLordKarathressPullingBossesTrigger::IsActive()
@@ -531,7 +514,7 @@ bool LadyVashjTaintedElementalCheatTrigger::IsActive()
     if (!group)
         return false;
 
-    return (GetDesignatedCoreLooter(group, botAI) == bot &&
+    return (GetDesignatedCoreLooter(botAI, bot) == bot &&
             !bot->HasItemCount(ITEM_TAINTED_CORE, 1, false));
 }
 
@@ -540,51 +523,37 @@ bool LadyVashjTaintedCoreWasLootedTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "lady vashj") || !IsLadyVashjInPhase2(botAI))
         return false;
 
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    Player* designatedLooter = GetDesignatedCoreLooter(group, botAI);
-    Player* firstCorePasser = GetFirstTaintedCorePasser(group, botAI);
-    Player* secondCorePasser = GetSecondTaintedCorePasser(group, botAI);
-    Player* thirdCorePasser = GetThirdTaintedCorePasser(group, botAI);
-    Player* fourthCorePasser = GetFourthTaintedCorePasser(group, botAI);
+    Player* designatedLooter = GetDesignatedCoreLooter(botAI, bot);
+    Player* firstCorePasser = GetFirstTaintedCorePasser(botAI, bot);
+    Player* secondCorePasser = GetSecondTaintedCorePasser(botAI, bot);
+    Player* thirdCorePasser = GetThirdTaintedCorePasser(botAI, bot);
+    Player* fourthCorePasser = GetFourthTaintedCorePasser(botAI, bot);
 
     auto hasCore = [](Player* player) -> bool
     {
         return player && player->HasItemCount(ITEM_TAINTED_CORE, 1, false);
     };
 
-    if (bot == designatedLooter)
-    {
-        if (!hasCore(bot))
-            return false;
-    }
-    else if (bot == firstCorePasser)
-    {
-        if (hasCore(secondCorePasser) || hasCore(thirdCorePasser) ||
-            hasCore(fourthCorePasser))
-            return false;
-    }
-    else if (bot == secondCorePasser)
-    {
-        if (hasCore(thirdCorePasser) || hasCore(fourthCorePasser))
-            return false;
-    }
-    else if (bot == thirdCorePasser)
-    {
-        if (hasCore(fourthCorePasser))
-            return false;
-    }
+    if (GetDesignatedCoreLooter(botAI, bot) == bot && !hasCore(bot))
+        return false;
+    else if (bot == firstCorePasser &&
+        (hasCore(secondCorePasser) || hasCore(thirdCorePasser) ||
+         hasCore(fourthCorePasser)))
+         return false;
+    else if (bot == secondCorePasser &&
+        (hasCore(thirdCorePasser) || hasCore(fourthCorePasser)))
+        return false;
+    else if (bot == thirdCorePasser && hasCore(fourthCorePasser))
+        return false;
     else if (bot != fourthCorePasser)
         return false;
-
-    if (AnyRecentCoreInInventory(group, botAI))
-        return true;
 
     // First and second passers move to positions as soon as the elemental appears
     if (AI_VALUE2(Unit*, "find target", "tainted elemental") &&
         (bot == firstCorePasser || bot == secondCorePasser))
+        return true;
+
+    if (AnyRecentCoreInInventory(botAI, bot))
         return true;
 
     return false;
@@ -599,17 +568,13 @@ bool LadyVashjTaintedCoreIsUnusableTrigger::IsActive()
     if (!IsLadyVashjInPhase2(botAI))
         return bot->HasItemCount(ITEM_TAINTED_CORE, 1, false);
 
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
     Player* coreHandlers[] =
     {
-        GetDesignatedCoreLooter(group, botAI),
-        GetFirstTaintedCorePasser(group, botAI),
-        GetSecondTaintedCorePasser(group, botAI),
-        GetThirdTaintedCorePasser(group, botAI),
-        GetFourthTaintedCorePasser(group, botAI)
+        GetDesignatedCoreLooter(botAI, bot),
+        GetFirstTaintedCorePasser(botAI, bot),
+        GetSecondTaintedCorePasser(botAI, bot),
+        GetThirdTaintedCorePasser(botAI, bot),
+        GetFourthTaintedCorePasser(botAI, bot)
     };
 
     if (bot->HasItemCount(ITEM_TAINTED_CORE, 1, false))
@@ -631,16 +596,12 @@ bool LadyVashjNeedToResetCorePassingTrackersTrigger::IsActive()
     if (!vashj || IsLadyVashjInPhase2(botAI))
         return false;
 
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
     return IsMechanicTrackerBot(botAI, bot, SSC_MAP_ID, nullptr) ||
-           GetDesignatedCoreLooter(group, botAI) == bot ||
-           GetFirstTaintedCorePasser(group, botAI) == bot ||
-           GetSecondTaintedCorePasser(group, botAI) == bot ||
-           GetThirdTaintedCorePasser(group, botAI) == bot ||
-           GetFourthTaintedCorePasser(group, botAI) == bot;
+           GetDesignatedCoreLooter(botAI, bot) == bot ||
+           GetFirstTaintedCorePasser(botAI, bot) == bot ||
+           GetSecondTaintedCorePasser(botAI, bot) == bot ||
+           GetThirdTaintedCorePasser(botAI, bot) == bot ||
+           GetFourthTaintedCorePasser(botAI, bot) == bot;
 }
 
 bool LadyVashjToxicSporebatsAreSpewingPoisonCloudsTrigger::IsActive()

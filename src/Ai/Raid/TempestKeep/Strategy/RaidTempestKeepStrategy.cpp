@@ -43,7 +43,7 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("void reaver tanks position boss", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("void reaver knock away reduces tank aggro", {
-        NextAction("void reaver ranged use aggro dump ability", ACTION_EMERGENCY + 6) }));
+        NextAction("void reaver use aggro dump ability", ACTION_EMERGENCY + 6) }));
 
     triggers.push_back(new TriggerNode("void reaver boss launches arcane orbs", {
         NextAction("void reaver spread ranged", ACTION_RAID + 1) }));
@@ -102,7 +102,7 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("kael'thas sunstrider main tank move devastation away", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("kael'thas sunstrider legendary weapons are dead and lootable", {
-        NextAction("kael'thas sunstrider loot legendary weapons", ACTION_NORMAL) }));
+        NextAction("kael'thas sunstrider loot legendary weapons", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("kael'thas sunstrider legendary weapons are equipped", {
         NextAction("kael'thas sunstrider use legendary weapons", ACTION_EMERGENCY + 6) }));
@@ -147,9 +147,9 @@ void RaidTempestKeepStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new KaelthasSunstriderKiteThaladredMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderWaitForDpsMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderControlMisdirectionMultiplier(botAI));
-    multipliers.push_back(new KaelthasSunstriderManageTankTargetingMultiplier(botAI));
+    multipliers.push_back(new KaelthasSunstriderManageWeaponTankingMultiplier(botAI));
+    multipliers.push_back(new KaelthasSunstriderDisableAdvisorTankAssistMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderDisableDisperseMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderDelayCooldownsMultiplier(botAI));
-    multipliers.push_back(new KaelthasSunstriderAllDpsOnBossDuringPyroblastMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderStaySpreadDuringGravityLapseMultiplier(botAI));
 }
