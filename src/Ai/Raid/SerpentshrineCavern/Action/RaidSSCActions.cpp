@@ -469,30 +469,22 @@ bool HydrossTheUnstableManageTimersAction::Execute(Event /*event*/)
         if (hydrossFrostDpsWaitTimer.try_emplace(instanceId, now).second ||
             hydrossNatureDpsWaitTimer.erase(instanceId) > 0 ||
             hydrossChangeToFrostPhaseTimer.erase(instanceId) > 0)
-        {
             changed = true;
-        }
 
         if (HasMarkOfHydrossAt100Percent(bot) &&
             hydrossChangeToNaturePhaseTimer.try_emplace(instanceId, now).second)
-        {
             changed = true;
-        }
     }
     else
     {
         if (hydrossNatureDpsWaitTimer.try_emplace(instanceId, now).second ||
             hydrossFrostDpsWaitTimer.erase(instanceId) > 0 ||
             hydrossChangeToNaturePhaseTimer.erase(instanceId) > 0)
-        {
             changed = true;
-        }
 
         if (HasMarkOfCorruptionAt100Percent(bot) &&
             hydrossChangeToFrostPhaseTimer.try_emplace(instanceId, now).second)
-        {
             changed = true;
-        }
     }
 
     return changed;

@@ -47,8 +47,8 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool PositionMainTank(Player* mainTank, Unit* alar, int8 locationIndex);
-    bool PositionAssistTank(Player* assistTank, Unit* alar, int8 locationIndex);
+    bool PositionMainTank(Unit* alar, int8 locationIndex);
+    bool PositionAssistTank(Unit* alar, int8 locationIndex);
 };
 
 class AlarMeleeDpsMoveBetweenPlatformsAction : public AttackAction
