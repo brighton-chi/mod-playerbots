@@ -5,14 +5,6 @@
 
 // General
 
-class TempestKeepBotIsNotInCombatTrigger : public Trigger
-{
-public:
-    TempestKeepBotIsNotInCombatTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "tempest keep bot is not in combat") {}
-    bool IsActive() override;
-};
-
 // Trash
 
 class CrimsonHandCenturionCastsArcaneVolleyTrigger : public Trigger

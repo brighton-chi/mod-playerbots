@@ -7,13 +7,6 @@
 
 using namespace TempestKeepHelpers;
 
-// General
-
-bool TempestKeepBotIsNotInCombatTrigger::IsActive()
-{
-    return !bot->IsInCombat();
-}
-
 // Trash
 
 bool CrimsonHandCenturionCastsArcaneVolleyTrigger::IsActive()
@@ -141,8 +134,11 @@ bool VoidReaverKnockAwayReducesTankAggroTrigger::IsActive()
 
 bool VoidReaverBossLaunchesArcaneOrbsTrigger::IsActive()
 {
-    return botAI->IsRanged(bot) &&
-           AI_VALUE2(Unit*, "find target", "void reaver");
+    if (!botAI->IsRanged(bot))
+        return false;
+
+    Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
+    return voidReaver && voidReaver->GetVictim() != bot;
 }
 
 // High Astromancer Solarian

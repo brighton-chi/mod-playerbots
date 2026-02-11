@@ -9,10 +9,6 @@ class RaidTempestKeepTriggerContext : public NamedObjectContext<Trigger>
 public:
     RaidTempestKeepTriggerContext()
     {
-        // General
-        creators["tempest keep bot is not in combat"] =
-            &RaidTempestKeepTriggerContext::tempest_keep_bot_is_not_in_combat;
-
         // Trash
         creators["crimson hand centurion casts arcane volley"] =
             &RaidTempestKeepTriggerContext::crimson_hand_centurion_casts_arcane_volley;
@@ -137,10 +133,6 @@ public:
     }
 
 private:
-    // General
-    static Trigger* tempest_keep_bot_is_not_in_combat(
-        PlayerbotAI* botAI) { return new TempestKeepBotIsNotInCombatTrigger(botAI); }
-
     // Trash
     static Trigger* crimson_hand_centurion_casts_arcane_volley(
         PlayerbotAI* botAI) { return new CrimsonHandCenturionCastsArcaneVolleyTrigger(botAI); }

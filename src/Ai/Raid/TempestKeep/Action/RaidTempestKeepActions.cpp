@@ -11,30 +11,6 @@
 
 using namespace TempestKeepHelpers;
 
-// General
-
-bool TempestKeepEraseTimersAndTrackersAction::Execute(Event /*event*/)
-{
-    const ObjectGuid guid = bot->GetGUID();
-    const uint32 instanceId = bot->GetMap()->GetInstanceId();
-
-    bool erased = false;
-
-    if (!AI_VALUE2(Unit*, "find target", "void reaver") &&
-        initialVoidReaverPositions.erase(guid) > 0)
-    {
-        erased = true;
-    }
-
-    if (!AI_VALUE2(Unit*, "find target", "kael'thas sunstrider") &&
-        advisorDpsWaitTimer.erase(instanceId) > 0)
-    {
-        erased = true;
-    }
-
-    return erased;
-}
-
 // Trash
 
 bool CrimsonHandCenturionCastPolymorphAction::Execute(Event /*event*/)
@@ -665,59 +641,76 @@ bool VoidReaverSpreadRangedAction::Execute(Event /*event*/)
     if (!voidReaver)
         return false;
 
-    if (initialVoidReaverPositions.empty())
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    int healerCount = 0, rangedDpsCount = 0;
+    int healerIndex = GetHealerIndex(group, healerCount);
+    int rangedDpsIndex = GetRangedDpsIndex(group, rangedDpsCount);
+
+    // VR's hitbox is 16.5y so 41y ensures that bots are <25 yards of spell range
+    constexpr float radius = 41.0f;
+    float targetX = 0.0f;
+    float targetY = 0.0f;
+
+    if (healerIndex != -1 && healerCount > 0)
     {
-        std::vector<Player*> healers;
-        std::vector<Player*> rangedDps;
-        if (Group* group = bot->GetGroup())
-        {
-            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-            {
-                Player* member = ref->GetSource();
-                if (!member || !member->IsAlive() || !botAI->IsRanged(member))
-                    continue;
+        float angle = 2 * M_PI * healerIndex / healerCount;
+        targetX = voidReaver->GetPositionX() + radius * std::cos(angle);
+        targetY = voidReaver->GetPositionY() + radius * std::sin(angle);
+    }
+    else if (rangedDpsIndex != -1 && rangedDpsCount > 0)
+    {
+        float angle = 2 * M_PI * rangedDpsIndex / rangedDpsCount;
+        if (healerCount > 0)
+            angle += M_PI / rangedDpsCount;
 
-                if (botAI->IsHeal(member))
-                    healers.push_back(member);
-                else
-                    rangedDps.push_back(member);
-            }
-        }
-
-        constexpr float radius = 30.0f;
-        constexpr float offsetArc = 1.0f;
-        constexpr uint8 botsPerRing = 8;
-
-        std::vector<Player*> rangedBots = healers;
-        rangedBots.insert(rangedBots.end(), rangedDps.begin(), rangedDps.end());
-
-        for (size_t i = 0; i < rangedBots.size(); ++i)
-        {
-            Player* ranged = rangedBots[i];
-            uint8 ringIndex = i / botsPerRing;
-            uint8 posInRing = i % botsPerRing;
-            float ringRadius = radius + (ringIndex * offsetArc);
-            float angle = 2 * M_PI * posInRing / botsPerRing;
-
-            float targetX = voidReaver->GetPositionX() + ringRadius * std::cos(angle);
-            float targetY = voidReaver->GetPositionY() + ringRadius * std::sin(angle);
-
-            Position pos(targetX, targetY, ranged->GetPositionZ());
-            initialVoidReaverPositions[ranged->GetGUID()] = pos;
-        }
+        targetX = voidReaver->GetPositionX() + radius * std::cos(angle);
+        targetY = voidReaver->GetPositionY() + radius * std::sin(angle);
     }
 
-    Position targetPosition = initialVoidReaverPositions[bot->GetGUID()];
-    float destX = targetPosition.GetPositionX();
-    float destY = targetPosition.GetPositionY();
-
-    if (bot->GetExactDist2d(destX, destY) > 1.0f)
+    if (bot->GetExactDist2d(targetX, targetY) > 2.0f)
     {
-        return MoveTo(TEMPEST_KEEP_MAP_ID, destX, destY, targetPosition.GetPositionZ(), false,
+        return MoveTo(TEMPEST_KEEP_MAP_ID, targetX, targetY, bot->GetPositionZ(), false,
                       false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
     return false;
+}
+
+int VoidReaverSpreadRangedAction::GetHealerIndex(Group* group, int& healerCount)
+{
+    std::vector<Player*> healers;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !botAI->IsHeal(member))
+            continue;
+
+        healers.push_back(member);
+    }
+
+    healerCount = healers.size();
+    auto it = std::find(healers.begin(), healers.end(), bot);
+    return (it != healers.end()) ? std::distance(healers.begin(), it) : -1;
+}
+
+int VoidReaverSpreadRangedAction::GetRangedDpsIndex(Group* group, int& rangedDpsCount)
+{
+    std::vector<Player*> rangedDps;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !botAI->IsRanged(member) || botAI->IsHeal(member))
+            continue;
+
+        rangedDps.push_back(member);
+    }
+
+    rangedDpsCount = rangedDps.size();
+    auto it = std::find(rangedDps.begin(), rangedDps.end(), bot);
+    return (it != rangedDps.end()) ? std::distance(rangedDps.begin(), it) : -1;
 }
 
 // High Astromancer Solarian
@@ -847,9 +840,6 @@ std::vector<Player*> HighAstromancerSolarianTargetSolariumPriestsAction::GetMele
             meleeMembers.push_back(member);
     }
 
-    std::sort(meleeMembers.begin(), meleeMembers.end(),
-              [](Player* left, Player* right) { return left->GetGUID() < right->GetGUID(); });
-
     return meleeMembers;
 }
 
@@ -887,7 +877,13 @@ bool HighAstromancerSolarianTankVoidwalkerAction::Execute(Event /*event*/)
         return Attack(astromancer);
 
     if (astromancer->GetVictim() != bot)
-        return botAI->DoSpecificAction("taunt spell", Event(), true);
+    {
+        bool taunted = botAI->DoSpecificAction("taunt spell", Event(), true);
+        LOG_DEBUG("playerbots", "Bot {}: taunt on High Astromancer Solarian {}", bot->GetName(),
+                    taunted ? "succeeded" : "failed");
+        return taunted;
+    }
+
 
     return false;
 }

@@ -9,10 +9,6 @@ class RaidTempestKeepActionContext : public NamedObjectContext<Action>
 public:
     RaidTempestKeepActionContext()
     {
-        // General
-        creators["tempest keep erase timers and trackers"] =
-            &RaidTempestKeepActionContext::tempest_keep_erase_timers_and_trackers;
-
         // Trash
         creators["crimson hand centurion cast polymorph"] =
             &RaidTempestKeepActionContext::crimson_hand_centurion_cast_polymorph;
@@ -149,10 +145,6 @@ public:
     }
 
 private:
-    // General
-    static Action* tempest_keep_erase_timers_and_trackers(
-        PlayerbotAI* botAI) { return new TempestKeepEraseTimersAndTrackersAction(botAI); }
-
     // Trash
     static Action* crimson_hand_centurion_cast_polymorph(
         PlayerbotAI* botAI) { return new CrimsonHandCenturionCastPolymorphAction(botAI); }

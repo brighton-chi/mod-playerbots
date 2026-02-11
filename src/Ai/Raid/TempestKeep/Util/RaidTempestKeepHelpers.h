@@ -130,7 +130,6 @@ namespace TempestKeepHelpers
 
     // Void Reaver
     extern const Position VOID_REAVER_TANK_POSITION;
-    extern std::unordered_map<ObjectGuid, Position> initialVoidReaverPositions;
 
     // Kael'thas Sunstrider <Lord of the Blood Elves>
     extern const Position SANGUINAR_TANK_POSITION;

@@ -3,10 +3,6 @@
 
 void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    // General
-    triggers.push_back(new TriggerNode("tempest keep bot is not in combat", {
-        NextAction("tempest keep erase timers and trackers", ACTION_EMERGENCY + 11) }));
-
     // Trash
     triggers.push_back(new TriggerNode("crimson hand centurion casts arcane volley", {
         NextAction("crimson hand centurion cast polymorph", ACTION_RAID + 1) }));

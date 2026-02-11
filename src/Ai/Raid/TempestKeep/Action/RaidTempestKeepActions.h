@@ -9,16 +9,6 @@
 
 using namespace TempestKeepHelpers;
 
-// General
-
-class TempestKeepEraseTimersAndTrackersAction : public Action
-{
-public:
-    TempestKeepEraseTimersAndTrackersAction(
-        PlayerbotAI* botAI, std::string const name = "tempest keep erase timers and trackers") : Action(botAI, name) {}
-    bool Execute(Event event) override;
-};
-
 // Trash
 
 class CrimsonHandCenturionCastPolymorphAction : public Action
@@ -165,8 +155,8 @@ public:
     bool Execute(Event event) override;
 
 private:
-    Position GetRangedBotPosition(
-        const Position& center, float radius, uint8 botsPerRing, float offsetArc, uint8 botIndex, float botZ);
+    int GetHealerIndex(Group* group, int& healerCount);
+    int GetRangedDpsIndex(Group* group, int& rangedDpsCount);
 };
 
 // High Astromancer Solarian
