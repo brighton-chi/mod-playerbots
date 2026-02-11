@@ -1355,7 +1355,9 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*e
         // Priority 1: Staff of Disintegration (Skull)
         if (Unit* staff = AI_VALUE2(Unit*, "find target", "staff of disintegration"))
         {
-            MarkTargetWithSkull(bot, staff);
+            if (IsMechanicTrackerBot(botAI, bot, TEMPEST_KEEP_MAP_ID, nullptr))
+                MarkTargetWithSkull(bot, staff);
+
             SetRtiTarget(botAI, "skull", staff);
 
             if (bot->GetTarget() != staff->GetGUID())
@@ -1364,7 +1366,9 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*e
         // Priority 2: Cosmic Infuser (Skull)
         else if (mace)
         {
-            MarkTargetWithSkull(bot, mace);
+            if (IsMechanicTrackerBot(botAI, bot, TEMPEST_KEEP_MAP_ID, nullptr))
+                MarkTargetWithSkull(bot, mace);
+
             SetRtiTarget(botAI, "skull", mace);
 
             if (bot->GetTarget() != mace->GetGUID())
@@ -1373,7 +1377,9 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*e
         // Priority 3: Warp Slicer (Skull)
         else if (sword)
         {
-            MarkTargetWithSkull(bot, sword);
+            if (IsMechanicTrackerBot(botAI, bot, TEMPEST_KEEP_MAP_ID, nullptr))
+                MarkTargetWithSkull(bot, sword);
+
             SetRtiTarget(botAI, "skull", sword);
 
             if (bot->GetTarget() != sword->GetGUID())
@@ -1382,7 +1388,9 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*e
         // Priority 4: Infinity Blades (Skull)
         else if (dagger)
         {
-            MarkTargetWithSkull(bot, dagger);
+            if (IsMechanicTrackerBot(botAI, bot, TEMPEST_KEEP_MAP_ID, nullptr))
+                MarkTargetWithSkull(bot, dagger);
+
             SetRtiTarget(botAI, "skull", dagger);
 
             if (bot->GetTarget() != dagger->GetGUID())
@@ -1399,7 +1407,9 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*e
         // Priority 6: Netherstrand Longbow (Cross)
         else if (Unit* longbow = AI_VALUE2(Unit*, "find target", "netherstrand longbow"))
         {
-            MarkTargetWithCross(bot, longbow);
+            if (IsMechanicTrackerBot(botAI, bot, TEMPEST_KEEP_MAP_ID, nullptr))
+                MarkTargetWithCross(bot, longbow);
+
             SetRtiTarget(botAI, "cross", longbow);
 
             if (bot->GetTarget() != longbow->GetGUID())
@@ -1408,7 +1418,9 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*e
         // Priority 7: Phaseshift Bulwark (Skull)
         else if (Unit* shield = AI_VALUE2(Unit*, "find target", "phaseshift bulwark"))
         {
-            MarkTargetWithSkull(bot, shield);
+            if (IsMechanicTrackerBot(botAI, bot, TEMPEST_KEEP_MAP_ID, nullptr))
+                MarkTargetWithSkull(bot, shield);
+
             SetRtiTarget(botAI, "skull", shield);
 
             if (bot->GetTarget() != shield->GetGUID())

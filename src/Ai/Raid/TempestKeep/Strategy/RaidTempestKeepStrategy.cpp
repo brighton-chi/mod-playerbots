@@ -105,7 +105,7 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("kael'thas sunstrider main tank move devastation away", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("kael'thas sunstrider legendary weapons are dead and lootable", {
-        NextAction("kael'thas sunstrider loot legendary weapons", ACTION_RAID + 1) }));
+        NextAction("kael'thas sunstrider loot legendary weapons", ACTION_NORMAL) }));
 
     triggers.push_back(new TriggerNode("kael'thas sunstrider legendary weapons are equipped", {
         NextAction("kael'thas sunstrider use legendary weapons", ACTION_EMERGENCY + 6) }));
