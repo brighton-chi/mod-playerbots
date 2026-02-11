@@ -64,9 +64,6 @@ public:
         creators["high astromancer solarian solarium priests spawned"] =
             &RaidTempestKeepTriggerContext::high_astromancer_solarian_solarium_priests_spawned;
 
-        creators["high astromancer solarian boss transformed into voidwalker"] =
-            &RaidTempestKeepTriggerContext::high_astromancer_solarian_boss_transformed_into_voidwalker;
-
         creators["high astromancer solarian boss casts psychic scream"] =
             &RaidTempestKeepTriggerContext::high_astromancer_solarian_boss_casts_psychic_scream;
 
@@ -187,9 +184,6 @@ private:
 
     static Trigger* high_astromancer_solarian_solarium_priests_spawned(
         PlayerbotAI* botAI) { return new HighAstromancerSolarianSolariumPriestsSpawnedTrigger(botAI); }
-
-    static Trigger* high_astromancer_solarian_boss_transformed_into_voidwalker(
-        PlayerbotAI* botAI) { return new HighAstromancerSolarianBossTransformedIntoVoidwalkerTrigger(botAI); }
 
     static Trigger* high_astromancer_solarian_boss_casts_psychic_scream(
         PlayerbotAI* botAI) { return new HighAstromancerSolarianBossCastsPsychicScreamTrigger(botAI); }

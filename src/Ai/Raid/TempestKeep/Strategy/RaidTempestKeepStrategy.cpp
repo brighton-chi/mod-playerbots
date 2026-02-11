@@ -61,9 +61,6 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("high astromancer solarian solarium priests spawned", {
         NextAction("high astromancer solarian target solarium priests", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("high astromancer solarian boss transformed into voidwalker", {
-        NextAction("high astromancer solarian tank voidwalker", ACTION_EMERGENCY + 1), }));
-
     triggers.push_back(new TriggerNode("high astromancer solarian boss casts psychic scream", {
         NextAction("high astromancer solarian cast fear ward on main tank", ACTION_RAID + 2) }));
 

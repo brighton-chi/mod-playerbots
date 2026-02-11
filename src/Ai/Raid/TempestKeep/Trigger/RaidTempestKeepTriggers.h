@@ -149,14 +149,6 @@ public:
     bool IsActive() override;
 };
 
-class HighAstromancerSolarianBossTransformedIntoVoidwalkerTrigger : public Trigger
-{
-public:
-    HighAstromancerSolarianBossTransformedIntoVoidwalkerTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "high astromancer solarian boss transformed into voidwalker") {}
-    bool IsActive() override;
-};
-
 class HighAstromancerSolarianBossCastsPsychicScreamTrigger : public Trigger
 {
 public:

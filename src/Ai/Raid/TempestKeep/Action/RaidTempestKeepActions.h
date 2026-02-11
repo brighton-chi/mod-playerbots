@@ -198,14 +198,6 @@ private:
     Unit* AssignSolariumPriestsToBots(const std::pair<Unit*, Unit*>& priestsPair, const std::vector<Player*>& meleeMembers);
 };
 
-class HighAstromancerSolarianTankVoidwalkerAction : public AttackAction
-{
-public:
-    HighAstromancerSolarianTankVoidwalkerAction(
-        PlayerbotAI* botAI, std::string const name = "high astromancer solarian tank voidwalker") : AttackAction(botAI, name) {}
-    bool Execute(Event event) override;
-};
-
 class HighAstromancerSolarianCastFearWardOnMainTankAction : public Action
 {
 public:
