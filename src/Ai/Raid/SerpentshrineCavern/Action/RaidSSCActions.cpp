@@ -1701,16 +1701,15 @@ bool LadyVashjSetGroundingTotemInMainTankGroupAction::Execute(Event /*event*/)
     if (!mainTank)
         return false;
 
-    constexpr float maxDistance = 25.0f;
-    constexpr float distFromTank = 20.0f;
-    if (bot->GetDistance2d(mainTank) > maxDistance)
-        return MoveTo(mainTank, maxDistance, MovementPriority::MOVEMENT_COMBAT);
+    if (!mainTank->HasAura(SPELL_GROUNDING_TOTEM_EFFECT))
+        return false;
 
-    if (!bot->HasAura(SPELL_GROUNDING_TOTEM_EFFECT) &&
-        botAI->CanCastSpell("grounding totem", bot))
-        return botAI->CastSpell("grounding totem", bot);
+    constexpr float distFromTank = 25.0f;
+    if (bot->GetDistance(mainTank) > distFromTank)
+        return MoveTo(mainTank, distFromTank, MovementPriority::MOVEMENT_COMBAT);
 
-    return false;
+    return botAI->CanCastSpell("grounding totem", bot) &&
+           botAI->CastSpell("grounding totem", bot);
 }
 
 bool LadyVashjMisdirectBossToMainTankAction::Execute(Event /*event*/)
