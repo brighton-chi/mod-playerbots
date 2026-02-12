@@ -682,10 +682,15 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
         dynamic_cast<LadyVashjDestroyTaintedCoreAction*>(action))
         return 1.0f;
 
+    Player* designatedLooter = GetDesignatedCoreLooter(botAI, bot);
     Player* firstCorePasser = GetFirstTaintedCorePasser(botAI, bot);
     Player* secondCorePasser = GetSecondTaintedCorePasser(botAI, bot);
     Player* thirdCorePasser = GetThirdTaintedCorePasser(botAI, bot);
     Player* fourthCorePasser = GetFourthTaintedCorePasser(botAI, bot);
+
+    if (bot != designatedLooter && bot != firstCorePasser && bot != secondCorePasser &&
+        bot != thirdCorePasser && bot != fourthCorePasser)
+        return 1.0f;
 
     auto hasCore = [](Player* player)
     {
@@ -696,18 +701,22 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
         !dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action))
         return 0.0f;
 
-    if (GetDesignatedCoreLooter(botAI, bot) == bot && !hasCore(bot))
+    if (designatedLooter == bot && !hasCore(bot))
+    {
         return 1.0f;
+    }
     else if (bot == firstCorePasser &&
-        (hasCore(secondCorePasser) || hasCore(thirdCorePasser) ||
-         hasCore(fourthCorePasser)))
-         return 1.0f;
+             (hasCore(secondCorePasser) || hasCore(thirdCorePasser) ||
+              hasCore(fourthCorePasser)))
+    {
+        return 1.0f;
+    }
     else if (bot == secondCorePasser &&
-        (hasCore(thirdCorePasser) || hasCore(fourthCorePasser)))
+             (hasCore(thirdCorePasser) || hasCore(fourthCorePasser)))
+    {
         return 1.0f;
+    }
     else if (bot == thirdCorePasser && hasCore(fourthCorePasser))
-        return 1.0f;
-    else if (bot != fourthCorePasser)
         return 1.0f;
 
     if (AI_VALUE2(Unit*, "find target", "tainted elemental") &&

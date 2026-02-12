@@ -1706,9 +1706,6 @@ bool LadyVashjSetGroundingTotemInMainTankGroupAction::Execute(Event /*event*/)
     if (bot->GetDistance2d(mainTank) > maxDistance)
         return MoveTo(mainTank, maxDistance, MovementPriority::MOVEMENT_COMBAT);
 
-    // if (!botAI->HasStrategy("grounding", BotState::BOT_STATE_COMBAT))
-    //    botAI->ChangeStrategy("+grounding", BotState::BOT_STATE_COMBAT);
-
     if (!bot->HasAura(SPELL_GROUNDING_TOTEM_EFFECT) &&
         botAI->CanCastSpell("grounding totem", bot))
         return botAI->CastSpell("grounding totem", bot);

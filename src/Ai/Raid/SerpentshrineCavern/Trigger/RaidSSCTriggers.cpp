@@ -484,7 +484,9 @@ bool LadyVashjTaintedElementalCheatTrigger::IsActive()
     bool taintedPresent = false;
     Unit* taintedUnit = AI_VALUE2(Unit*, "find target", "tainted elemental");
     if (taintedUnit)
+    {
         taintedPresent = true;
+    }
     else
     {
         GuidVector corpses = AI_VALUE(GuidVector, "nearest corpses");
@@ -509,12 +511,8 @@ bool LadyVashjTaintedElementalCheatTrigger::IsActive()
     if (!taintedPresent)
         return false;
 
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    return (GetDesignatedCoreLooter(botAI, bot) == bot &&
-            !bot->HasItemCount(ITEM_TAINTED_CORE, 1, false));
+    return GetDesignatedCoreLooter(botAI, bot) == bot &&
+           !bot->HasItemCount(ITEM_TAINTED_CORE, 1, false);
 }
 
 bool LadyVashjTaintedCoreWasLootedTrigger::IsActive()
@@ -528,23 +526,31 @@ bool LadyVashjTaintedCoreWasLootedTrigger::IsActive()
     Player* thirdCorePasser = GetThirdTaintedCorePasser(botAI, bot);
     Player* fourthCorePasser = GetFourthTaintedCorePasser(botAI, bot);
 
+    if (bot != designatedLooter && bot != firstCorePasser && bot != secondCorePasser &&
+        bot != thirdCorePasser && bot != fourthCorePasser)
+        return false;
+
     auto hasCore = [](Player* player) -> bool
     {
         return player && player->HasItemCount(ITEM_TAINTED_CORE, 1, false);
     };
 
     if (designatedLooter == bot && !hasCore(bot))
+    {
         return false;
+    }
     else if (bot == firstCorePasser &&
-        (hasCore(secondCorePasser) || hasCore(thirdCorePasser) ||
-         hasCore(fourthCorePasser)))
-         return false;
+             (hasCore(secondCorePasser) || hasCore(thirdCorePasser) ||
+              hasCore(fourthCorePasser)))
+    {
+        return false;
+    }
     else if (bot == secondCorePasser &&
-        (hasCore(thirdCorePasser) || hasCore(fourthCorePasser)))
+             (hasCore(thirdCorePasser) || hasCore(fourthCorePasser)))
+    {
         return false;
+    }
     else if (bot == thirdCorePasser && hasCore(fourthCorePasser))
-        return false;
-    else if (bot != fourthCorePasser)
         return false;
 
     // First and second passers move to positions as soon as the elemental appears
