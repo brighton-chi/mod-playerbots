@@ -49,12 +49,11 @@ bool SerpentShrineCavernEraseTimersAndTrackersAction::Execute(Event /*event*/)
         erased = true;
     }
 
-    /* if (!AI_VALUE2(Unit*, "find target", "lady vashj") &&
-        (vashjRangedPositions.erase(guid) > 0 ||
-         hasReachedVashjRangedPosition.erase(guid) > 0))
+    if (!AI_VALUE2(Unit*, "find target", "lady vashj") &&
+         hasReachedVashjRangedPosition.erase(guid) > 0)
     {
         erased = true;
-    } */
+    }
 
     return erased;
 }
@@ -1413,12 +1412,10 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event /*event*/)
 
 bool FathomLordKarathressManageDpsTimerAction::Execute(Event /*event*/)
 {
-    if (Unit* karathress = AI_VALUE2(Unit*, "find target", "fathom-lord karathress"))
-    {
-        karathressDpsWaitTimer.try_emplace(
-            karathress->GetMap()->GetInstanceId(), std::time(nullptr));
+    Unit* karathress = AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
+    if (karathress && karathressDpsWaitTimer.try_emplace(
+        karathress->GetMap()->GetInstanceId(), std::time(nullptr)).second)
         return true;
-    }
 
     return false;
 }
@@ -1644,106 +1641,29 @@ bool LadyVashjMainTankPositionBossAction::Execute(Event /*event*/)
 
 // Semicircle around center of the room (to allow escape paths by Static Charged bots)
 bool LadyVashjPhase1SpreadRangedInArcAction::Execute(Event /*event*/)
-/* {
-    std::vector<Player*> spreadMembers;
-    if (Group* group = bot->GetGroup())
-    {
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (member && member->IsAlive() && GET_PLAYERBOT_AI(member))
-            {
-                if (botAI->IsRanged(member))
-                    spreadMembers.push_back(member);
-            }
-        }
-    }
-
-    const ObjectGuid guid = bot->GetGUID();
-
-    auto itPos = vashjRangedPositions.find(guid);
-    auto itReached = hasReachedVashjRangedPosition.find(guid);
-    if (itPos == vashjRangedPositions.end())
-    {
-        auto it = std::find(spreadMembers.begin(), spreadMembers.end(), bot);
-        size_t botIndex = (it != spreadMembers.end()) ?
-            std::distance(spreadMembers.begin(), it) : 0;
-        size_t count = spreadMembers.size();
-        if (count == 0)
-            return false;
-
-        const Position& center = VASHJ_PLATFORM_CENTER_POSITION;
-        constexpr float minRadius = 20.0f;
-        constexpr float maxRadius = 30.0f;
-
-        constexpr float arcCenter = M_PI / 2.0f; // North
-        constexpr float arcSpan = M_PI; // 180°
-        constexpr float arcStart = arcCenter - arcSpan / 2.0f;
-
-        float angle;
-        if (count == 1)
-            angle = arcCenter;
-        else
-            angle = arcStart + (static_cast<float>(botIndex) / (count - 1)) * arcSpan;
-
-        float radius = frand(minRadius, maxRadius);
-        float targetX = center.GetPositionX() + radius * std::cos(angle);
-        float targetY = center.GetPositionY() + radius * std::sin(angle);
-
-        auto res = vashjRangedPositions.try_emplace(
-            guid, Position(targetX, targetY, center.GetPositionZ()));
-        itPos = res.first;
-        hasReachedVashjRangedPosition.try_emplace(guid, false);
-        itReached = hasReachedVashjRangedPosition.find(guid);
-    }
-
-    if (itPos == vashjRangedPositions.end())
-        return false;
-
-    Position position = itPos->second;
-    if (itReached == hasReachedVashjRangedPosition.end() || !(itReached->second))
-    {
-        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
-        {
-            return MoveTo(SSC_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-                          position.GetPositionZ(), false, false, false, false,
-                          MovementPriority::MOVEMENT_COMBAT, true, false);
-        }
-        if (itReached != hasReachedVashjRangedPosition.end())
-            itReached->second = true;
-    }
-
-    return false;
-} */
 {
-    // IF KEEPING THIS, DELETE MAPS
+    std::vector<Player*> spreadMembers;
     Group* group = bot->GetGroup();
     if (!group)
         return false;
 
-    std::vector<Player*> spreadMembers;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (member && GET_PLAYERBOT_AI(member) && botAI->IsRanged(member))
-                spreadMembers.push_back(member);
-        }
+        Player* member = ref->GetSource();
+        if (member && GET_PLAYERBOT_AI(member) && botAI->IsRanged(member))
+            spreadMembers.push_back(member);
     }
 
-    size_t count = spreadMembers.size();
-    if (count == 0)
-        return false;
+    const ObjectGuid guid = bot->GetGUID();
+    auto itReached = hasReachedVashjRangedPosition.find(guid);
 
     auto it = std::find(spreadMembers.begin(), spreadMembers.end(), bot);
     size_t botIndex = (it != spreadMembers.end()) ?
         std::distance(spreadMembers.begin(), it) : 0;
-
-    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    if (!vashj)
+    size_t count = spreadMembers.size();
+    if (count == 0)
         return false;
 
-    constexpr float radius = 30.0f;
     constexpr float arcCenter = M_PI / 2.0f; // North
     constexpr float arcSpan = M_PI; // 180°
     constexpr float arcStart = arcCenter - arcSpan / 2.0f;
@@ -1754,14 +1674,21 @@ bool LadyVashjPhase1SpreadRangedInArcAction::Execute(Event /*event*/)
     else
         angle = arcStart + (static_cast<float>(botIndex) / (count - 1)) * arcSpan;
 
-    float targetX = vashj->GetPositionX() + radius * std::cos(angle);
-    float targetY = vashj->GetPositionY() + radius * std::sin(angle);
-    float targetZ = vashj->GetPositionZ();
+    const Position& center = VASHJ_PLATFORM_CENTER_POSITION;
+    float radius = 25.0f;
+    float targetX = center.GetPositionX() + radius * std::cos(angle);
+    float targetY = center.GetPositionY() + radius * std::sin(angle);
+    float targetZ = center.GetPositionZ();
 
-    if (bot->GetExactDist2d(targetX, targetY) > 2.0f)
+    if (itReached == hasReachedVashjRangedPosition.end() || !(itReached->second))
     {
-        return MoveTo(SSC_MAP_ID, targetX, targetY, targetZ, false, false, false, false,
-                      MovementPriority::MOVEMENT_COMBAT, true, false);
+        if (bot->GetExactDist2d(targetX, targetY) > 2.0f)
+        {
+            hasReachedVashjRangedPosition.try_emplace(guid, false);
+            return MoveTo(SSC_MAP_ID, targetX, targetY, targetZ, false, false, false, false,
+                          MovementPriority::MOVEMENT_COMBAT, true, false);
+        }
+        hasReachedVashjRangedPosition[guid] = true;
     }
 
     return false;
@@ -1774,12 +1701,9 @@ bool LadyVashjSetGroundingTotemInMainTankGroupAction::Execute(Event /*event*/)
     if (!mainTank)
         return false;
 
-    constexpr float distFromMainTank = 20.0f;
-    if (bot->GetExactDist2d(mainTank) > distFromMainTank)
-    {
-        return MoveInside(SSC_MAP_ID, mainTank->GetPositionX(), mainTank->GetPositionY(),
-                          mainTank->GetPositionZ(), distFromMainTank, MovementPriority::MOVEMENT_FORCED);
-    }
+    constexpr float desiredDist = 25.0f;
+    if (bot->GetExactDist2d(mainTank) > desiredDist)
+        return MoveTo(mainTank, desiredDist, MovementPriority::MOVEMENT_COMBAT);
 
     // if (!botAI->HasStrategy("grounding", BotState::BOT_STATE_COMBAT))
     //    botAI->ChangeStrategy("+grounding", BotState::BOT_STATE_COMBAT);

@@ -184,7 +184,6 @@ namespace SerpentShrineCavernHelpers
 
     const Position VASHJ_PLATFORM_CENTER_POSITION = { 29.634f, -923.541f, 42.985f };
 
-    std::unordered_map<ObjectGuid, Position> vashjRangedPositions;
     std::unordered_map<ObjectGuid, bool> hasReachedVashjRangedPosition;
     std::unordered_map<uint32, ObjectGuid> nearestTriggerGuid;
     std::unordered_map<ObjectGuid, Position> intendedLineup;

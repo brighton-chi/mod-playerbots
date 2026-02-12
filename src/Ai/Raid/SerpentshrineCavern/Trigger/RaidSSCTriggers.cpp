@@ -26,7 +26,7 @@ bool UnderbogColossusSpawnedToxicPoolAfterDeathTrigger::IsActive()
 bool GreyheartTidecallerWaterElementalTotemSpawnedTrigger::IsActive()
 {
     return botAI->IsDps(bot) &&
-           GetFirstAliveUnitByEntry(botAI, NPC_WATER_ELEMENTAL_TOTEM);
+           AI_VALUE2(Unit*, "find target", "greyheart tidecaller");
 }
 
 // Hydross the Unstable <Duke of Currents>
@@ -46,7 +46,7 @@ bool HydrossTheUnstableBotIsNatureTankTrigger::IsActive()
 bool HydrossTheUnstableElementalsSpawnedTrigger::IsActive()
 {
     Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
-    if (hydross && hydross->GetHealthPct() < 10.0f)
+    if (!hydross || hydross->GetHealthPct() < 10.0f)
         return false;
 
     if (!AI_VALUE2(Unit*, "find target", "pure spawn of hydross") &&
@@ -280,8 +280,10 @@ bool LeotherasTheBlindEnteredFinalPhaseTrigger::IsActive()
     if (GetLeotherasDemonFormTank(bot) == bot)
         return false;
 
-    return GetPhase3LeotherasDemon(botAI) &&
-           GetLeotherasHuman(botAI);
+    if (!AI_VALUE2(Unit*, "find target", "leotheras the blind"))
+        return false;
+
+    return GetPhase3LeotherasDemon(botAI);
 }
 
 bool LeotherasTheBlindDemonFormTankNeedsAggro::IsActive()
