@@ -1702,7 +1702,7 @@ bool LadyVashjSetGroundingTotemInMainTankGroupAction::Execute(Event /*event*/)
     if (!mainTank)
         return false;
 
-    if (!mainTank->HasAura(SPELL_GROUNDING_TOTEM_EFFECT))
+    if (mainTank->HasAura(SPELL_GROUNDING_TOTEM_EFFECT))
         return false;
 
     constexpr float distFromTank = 25.0f;
@@ -1924,7 +1924,7 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
 
     // If bots have wandered too far from the center, move them back
     if (bot->GetExactDist2d(vashj) > maxPursueRange)
-        return MoveTo(vashj, maxPursueRange - 10.0f, MovementPriority::MOVEMENT_COMBAT)
+        return MoveTo(vashj, maxPursueRange - 10.0f, MovementPriority::MOVEMENT_COMBAT);
 
     return false;
 }
@@ -1962,7 +1962,7 @@ bool LadyVashjTankAttackAndMoveAwayStriderAction::Execute(Event /*event*/)
     if (!vashj)
         return false;
 
-    Unit* strider = Unit* strider = AI_VALUE2(Unit*, "find target", "coilfang strider");
+    Unit* strider = AI_VALUE2(Unit*, "find target", "coilfang strider");
     if (!strider)
         return false;
 
@@ -2191,7 +2191,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
     {
         // Designated core looter logic
         // Applicable only if cheat mode is on and thus looter is a bot
-        if (bot == designatedLooter && 
+        if (bot == designatedLooter &&
             IsFirstCorePasserInPosition(designatedLooter, firstCorePasser, closestTrigger))
         {
             const time_t now = std::time(nullptr);
@@ -2207,7 +2207,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
         }
         // First core passer: receive core from looter at the top of the stairs,
         // pass to second core passer
-        else if (bot == firstCorePasser && 
+        else if (bot == firstCorePasser &&
                  IsSecondCorePasserInPosition(firstCorePasser, secondCorePasser, closestTrigger))
         {
             const time_t now = std::time(nullptr);
@@ -2296,8 +2296,8 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpSecondCorePasser(
     if (itSnap == intendedLineup.end())
         return false;
 
-    fx = itSnap->second.GetPositionX();
-    fy = itSnap->second.GetPositionY();
+    float fx = itSnap->second.GetPositionX();
+    float fy = itSnap->second.GetPositionY();
 
     float dx = closestTrigger->GetPositionX() - fx;
     float dy = closestTrigger->GetPositionY() - fy;
@@ -2335,12 +2335,12 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpSecondCorePasser(
 
     bot->AttackStop();
     bot->InterruptNonMeleeSpells(true);
-    return MoveTo(SSC_MAP_ID, targetX, targetY, targetZ, false, false, false, true, 
+    return MoveTo(SSC_MAP_ID, targetX, targetY, targetZ, false, false, false, true,
                   MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 bool LadyVashjPassTheTaintedCoreAction::LineUpThirdCorePasser(
-    Player* designatedLooter, Player* firstCorePasser, 
+    Player* designatedLooter, Player* firstCorePasser,
     Player* secondCorePasser, Unit* closestTrigger)
 {
     // Wait to move until it is clear that a third passer is needed
@@ -2392,7 +2392,7 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpThirdCorePasser(
 }
 
 bool LadyVashjPassTheTaintedCoreAction::LineUpFourthCorePasser(
-    Player* firstCorePasser, Player* secondCorePasser, 
+    Player* firstCorePasser, Player* secondCorePasser,
     Player* thirdCorePasser, Unit* closestTrigger)
 {
     // Wait to move until it is clear that a fourth passer is needed

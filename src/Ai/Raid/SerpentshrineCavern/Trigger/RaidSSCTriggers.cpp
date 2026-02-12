@@ -39,7 +39,7 @@ bool HydrossTheUnstableBotIsFrostTankTrigger::IsActive()
 
 bool HydrossTheUnstableBotIsNatureTankTrigger::IsActive()
 {
-    return botAI->IsAssistTankOfIndex(bot, 0, true) && 
+    return botAI->IsAssistTankOfIndex(bot, 0, true) &&
            AI_VALUE2(Unit*, "find target", "hydross the unstable");
 }
 
@@ -82,7 +82,7 @@ bool HydrossTheUnstableAggroResetsUponPhaseChangeTrigger::IsActive()
 
 bool HydrossTheUnstableNeedToManageTimersTrigger::IsActive()
 {
-    return IsMechanicTrackerBot(botAI, bot, SSC_MAP_ID, nullptr) && 
+    return IsMechanicTrackerBot(botAI, bot, SSC_MAP_ID, nullptr) &&
            AI_VALUE2(Unit*, "find target", "hydross the unstable");
 }
 
@@ -504,10 +504,10 @@ bool LadyVashjTaintedCoreWasLootedTrigger::IsActive()
     Player* thirdCorePasser = GetThirdTaintedCorePasser(botAI, bot);
     Player* fourthCorePasser = GetFourthTaintedCorePasser(botAI, bot);
 
-    if (!designatedLooter || !firstCorePasser || !secondCorePasser || 
+    if (!designatedLooter || !firstCorePasser || !secondCorePasser ||
         !thirdCorePasser || !fourthCorePasser)
         return false;
-    
+
     if (bot != designatedLooter && bot != firstCorePasser && bot != secondCorePasser &&
         bot != thirdCorePasser && bot != fourthCorePasser)
         return false;
@@ -586,7 +586,7 @@ bool LadyVashjNeedToResetCorePassingTrackersTrigger::IsActive()
     if (!vashj)
         return false;
 
-    if (!IsLadyVashjInPhase2(botAI)
+    if (!IsLadyVashjInPhase2(botAI))
         return true;
     else
         return !AnyRecentCoreInInventory(botAI, bot);
