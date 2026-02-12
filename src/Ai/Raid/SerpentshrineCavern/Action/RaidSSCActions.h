@@ -413,10 +413,10 @@ private:
     bool LineUpSecondCorePasser(Player* firstCorePasser, Unit* closestTrigger);
     bool LineUpThirdCorePasser(Player* designatedLooter, Player* firstCorePasser, Player* secondCorePasser, Unit* closestTrigger);
     bool LineUpFourthCorePasser(Player* firstCorePasser, Player* secondCorePasser, Player* thirdCorePasser, Unit* closestTrigger);
-    bool IsFirstCorePasserInIntendedPosition(Player* designatedLooter, Player* firstCorePasser, Unit* closestTrigger);
-    bool IsSecondCorePasserInIntendedPosition(Player* firstCorePasser, Player* secondCorePasser, Unit* closestTrigger);
-    bool IsThirdCorePasserInIntendedPosition(Player* secondCorePasser, Player* thirdCorePasser, Unit* closestTrigger);
-    bool IsFourthCorePasserInIntendedPosition(Player* thirdCorePasser, Player* fourthCorePasser, Unit* closestTrigger);
+    bool IsFirstCorePasserInPosition(Player* designatedLooter, Player* firstCorePasser, Unit* closestTrigger);
+    bool IsSecondCorePasserInPosition(Player* firstCorePasser, Player* secondCorePasser, Unit* closestTrigger);
+    bool IsThirdCorePasserInPosition(Player* secondCorePasser, Player* thirdCorePasser, Unit* closestTrigger);
+    bool IsFourthCorePasserInPosition(Player* thirdCorePasser, Player* fourthCorePasser, Unit* closestTrigger);
     void ScheduleTransferCoreAfterImbue(PlayerbotAI* botAI, Player* giver, Player* receiver);
     bool UseCoreOnNearestGenerator(const uint32 instanceId);
 };
