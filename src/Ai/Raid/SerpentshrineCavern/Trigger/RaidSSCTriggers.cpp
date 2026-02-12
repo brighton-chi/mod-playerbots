@@ -597,16 +597,17 @@ bool LadyVashjTaintedCoreIsUnusableTrigger::IsActive()
 
 bool LadyVashjNeedToResetCorePassingTrackersTrigger::IsActive()
 {
-    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    if (!vashj || IsLadyVashjInPhase2(botAI))
+    if (botAI->IsTank(bot))
         return false;
 
-    return IsMechanicTrackerBot(botAI, bot, SSC_MAP_ID, nullptr) ||
-           GetDesignatedCoreLooter(botAI, bot) == bot ||
-           GetFirstTaintedCorePasser(botAI, bot) == bot ||
-           GetSecondTaintedCorePasser(botAI, bot) == bot ||
-           GetThirdTaintedCorePasser(botAI, bot) == bot ||
-           GetFourthTaintedCorePasser(botAI, bot) == bot;
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (!vashj)
+        return false;
+
+    if (!IsLadyVashjInPhase2(botAI)
+        return true;
+    else
+        return !AnyRecentCoreInInventory(botAI, bot);
 }
 
 bool LadyVashjToxicSporebatsAreSpewingPoisonCloudsTrigger::IsActive()
