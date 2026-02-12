@@ -1701,9 +1701,10 @@ bool LadyVashjSetGroundingTotemInMainTankGroupAction::Execute(Event /*event*/)
     if (!mainTank)
         return false;
 
-    constexpr float desiredDist = 25.0f;
-    if (bot->GetExactDist2d(mainTank) > desiredDist)
-        return MoveTo(mainTank, desiredDist, MovementPriority::MOVEMENT_COMBAT);
+    constexpr float maxDistance = 25.0f;
+    constexpr float distFromTank = 20.0f;
+    if (bot->GetDistance2d(mainTank) > maxDistance)
+        return MoveTo(mainTank, maxDistance, MovementPriority::MOVEMENT_COMBAT);
 
     // if (!botAI->HasStrategy("grounding", BotState::BOT_STATE_COMBAT))
     //    botAI->ChangeStrategy("+grounding", BotState::BOT_STATE_COMBAT);

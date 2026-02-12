@@ -614,8 +614,11 @@ float LadyVashjMainTankGroupShamanUseGroundingTotemMultiplier::GetValue(Action* 
         return 1.0f;
 
     if (dynamic_cast<CastWindfuryTotemAction*>(action) ||
+        dynamic_cast<SetWindfuryTotemAction*>(action) ||
         dynamic_cast<CastWrathOfAirTotemAction*>(action) ||
-        dynamic_cast<CastNatureResistanceTotemAction*>(action))
+        dynamic_cast<SetWrathOfAirTotemAction*>(action) ||
+        dynamic_cast<CastNatureResistanceTotemAction*>(action) ||
+        dynamic_cast<SetNatureResistanceTotemAction*>(action))
         return 0.0f;
 
     return 1.0f;

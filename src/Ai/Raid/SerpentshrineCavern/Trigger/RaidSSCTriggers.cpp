@@ -424,10 +424,7 @@ bool LadyVashjCastsShockBlastOnHighestAggroTrigger::IsActive()
         IsLadyVashjInPhase2(botAI))
         return false;
 
-    if (!IsMainTankInSameSubgroup(bot))
-        return false;
-
-    return true;
+    return IsMainTankInSameSubgroup(bot);
 }
 
 bool LadyVashjBotHasStaticChargeTrigger::IsActive()
@@ -536,7 +533,7 @@ bool LadyVashjTaintedCoreWasLootedTrigger::IsActive()
         return player && player->HasItemCount(ITEM_TAINTED_CORE, 1, false);
     };
 
-    if (GetDesignatedCoreLooter(botAI, bot) == bot && !hasCore(bot))
+    if (designatedLooter == bot && !hasCore(bot))
         return false;
     else if (bot == firstCorePasser &&
         (hasCore(secondCorePasser) || hasCore(thirdCorePasser) ||
