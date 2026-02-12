@@ -474,13 +474,14 @@ bool TheLurkerBelowRunAroundBehindBossAction::Execute(Event /*event*/)
     if (!lurker)
         return false;
 
-    float radius = frand(20.0f, 21.0f);
+    float radius = frand(19.0f, 20.0f);
     float botAngle = std::atan2(
         bot->GetPositionY() - lurker->GetPositionY(), bot->GetPositionX() - lurker->GetPositionX());
     float relativeAngle = Position::NormalizeOrientation(botAngle - lurker->GetOrientation());
     constexpr float safeArc = M_PI / 2.0f;
 
-    if (std::fabs(Position::NormalizeOrientation(relativeAngle - M_PI)) > safeArc / 2.0f)
+    if (!botAI->IsMainTank(bot) &&
+        std::fabs(Position::NormalizeOrientation(relativeAngle - M_PI)) > safeArc / 2.0f)
     {
         float tangentAngle = botAngle + (relativeAngle > M_PI ? -0.1f : 0.1f);
         float moveX = lurker->GetPositionX() + radius * std::cos(tangentAngle);
