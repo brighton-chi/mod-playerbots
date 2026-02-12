@@ -58,15 +58,10 @@ namespace HyjalSummitHelpers
                 Player* member = ref->GetSource();
                 if (member && member->IsAlive() &&
                     member->HasAura(SPELL_DOOM))
-                {
                     return true;
-                }
             }
         }
 
         return false;
     }
-
-    // Archimonde
-    // N/A
 }

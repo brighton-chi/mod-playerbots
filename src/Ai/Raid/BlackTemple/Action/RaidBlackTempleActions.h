@@ -379,7 +379,7 @@ public:
 
 private:
     bool TryMisdirectToFlameTanks(Group* group);
-    bool TryMisdirectToWarlockTank(Unit* illidan, Group* group);
+    bool TryMisdirectToWarlockTank(Unit* illidan);
 };
 
 class IllidanStormrageMainTankMoveAwayFromFlameCrashAction : public AttackAction

@@ -12,34 +12,33 @@ namespace HyjalSummitHelpers
     enum HyjalSummitSpells
     {
         // Anetheron
-        SPELL_INFERNO = 31299,
+        SPELL_INFERNO          = 31299,
 
         // Kaz'rogal
-        SPELL_MARK_OF_KAZROGAL         = 31447,
+        SPELL_MARK_OF_KAZROGAL = 31447,
 
         // Azgalor
-        SPELL_RAIN_OF_FIRE             = 31340,
-        SPELL_DOOM                     = 31347,
+        SPELL_RAIN_OF_FIRE     = 31340,
+        SPELL_DOOM             = 31347,
 
         // Archimonde
-        SPELL_DOOMFIRE = 31944,
-        SPELL_AIR_BURST = 32014,
+        SPELL_DOOMFIRE         = 31944,
+        SPELL_AIR_BURST        = 32014,
 
         // Hunter
-        SPELL_MISDIRECTION             = 35079,
+        SPELL_MISDIRECTION     = 35079,
 
         // Priest
-        SPELL_FEAR_WARD                 =  6346,
+        SPELL_FEAR_WARD        =  6346,
     };
 
     enum HyjalSummitNPCs
     {
         // Anetheron
-        NPC_TOWERING_INFERNAL = 17818,
+        NPC_TOWERING_INFERNAL  = 17818,
 
         // Archimonde
         NPC_DOOMFIRE           = 18095,
-        // NPC_DOOMFIRE_TARGETING    = 18104, // Known as "DOOMFIRE_SPIRIT" in the boss script
     };
 
     // General
@@ -65,9 +64,6 @@ namespace HyjalSummitHelpers
     extern const Position AZGALOR_DOOMGUARD_TANK_POSITION;
     extern std::unordered_map<ObjectGuid, uint8> azgalorTankStep;
     bool AnyGroupMemberHasDoom(Player* bot);
-
-    // Archimonde
-    // N/A
 }
 
 #endif

@@ -72,21 +72,7 @@ bool HighWarlordNajentusMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (!najentus)
         return false;
 
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    Player* mainTank = nullptr;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (member && member->IsAlive() && botAI->IsMainTank(member))
-        {
-            mainTank = member;
-            break;
-        }
-    }
-
+    Player* mainTank = GetGroupMainTank(botAI, bot);
     if (!mainTank)
         return false;
 
@@ -265,22 +251,9 @@ bool SupremusMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (hunters.empty())
         return false;
 
-    Player* mainTank = nullptr;
-    Player* firstAssistTank = nullptr;
-    Player* secondAssistTank = nullptr;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || !member->IsAlive())
-            continue;
-
-        if (!mainTank && botAI->IsMainTank(member))
-            mainTank = member;
-        else if (!firstAssistTank && botAI->IsAssistTankOfIndex(member, 0, true))
-            firstAssistTank = member;
-        else if (!secondAssistTank && botAI->IsAssistTankOfIndex(member, 1, true))
-            secondAssistTank = member;
-    }
+    Player* mainTank = GetGroupMainTank(botAI, bot);
+    Player* firstAssistTank = GetGroupFirstAssistTank(botAI, bot);
+    Player* secondAssistTank = GetGroupSecondAssistTank(botAI, bot);
 
     Player* misdirectTarget = nullptr;
     if (bot == hunters[0] && mainTank)
@@ -494,21 +467,7 @@ bool TeronGorefiendMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (!gorefiend)
         return false;
 
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    Player* mainTank = nullptr;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (member && member->IsAlive() && botAI->IsMainTank(member))
-        {
-            mainTank = member;
-            break;
-        }
-    }
-
+    Player* mainTank = GetGroupMainTank(botAI, bot);
     if (!mainTank)
         return false;
 
@@ -757,17 +716,7 @@ bool GurtoggBloodboilMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (!group)
         return false;
 
-    Player* mainTank = nullptr;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (member && member->IsAlive() && botAI->IsMainTank(member))
-        {
-            mainTank = member;
-            break;
-        }
-    }
-
+    Player* mainTank = GetGroupMainTank(botAI, bot);
     if (!mainTank)
         return false;
 
@@ -917,21 +866,7 @@ bool ReliquaryOfSoulsMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (!desire && !anger)
         return false;
 
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    Player* mainTank = nullptr;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (member && member->IsAlive() && botAI->IsMainTank(member))
-        {
-            mainTank = member;
-            break;
-        }
-    }
-
+    Player* mainTank = GetGroupMainTank(botAI, bot);
     if (!mainTank)
         return false;
 
@@ -1059,21 +994,7 @@ bool MotherShahrazMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (!shahraz)
         return false;
 
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    Player* mainTank = nullptr;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (member && member->IsAlive() && botAI->IsMainTank(member))
-        {
-            mainTank = member;
-            break;
-        }
-    }
-
+    Player* mainTank = GetGroupMainTank(botAI, bot);
     if (!mainTank)
         return false;
 
@@ -1278,8 +1199,7 @@ bool IllidariCouncilMisdirectBossesToTanksAction::Execute(Event /*event*/)
         councilTarget = AI_VALUE2(Unit*, "find target", "lady malande");
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
-            Player* member = ref->GetSource();
-            if (member && GET_PLAYERBOT_AI(member)->IsAssistTankOfIndex(member, 0, false))
+            if (Player* member = GetGroupFirstAssistTank(botAI, bot))
             {
                 tankTarget = member;
                 break;
@@ -1291,8 +1211,7 @@ bool IllidariCouncilMisdirectBossesToTanksAction::Execute(Event /*event*/)
         councilTarget = AI_VALUE2(Unit*, "find target", "gathios the shatterer");
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
-            Player* member = ref->GetSource();
-            if (member && GET_PLAYERBOT_AI(member)->IsMainTank(member))
+            if (Player* member = GetGroupMainTank(botAI, bot))
             {
                 tankTarget = member;
                 break;
@@ -1304,8 +1223,7 @@ bool IllidariCouncilMisdirectBossesToTanksAction::Execute(Event /*event*/)
         councilTarget = AI_VALUE2(Unit*, "find target", "veras darkshadow");
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
-            Player* member = ref->GetSource();
-            if (member && GET_PLAYERBOT_AI(member)->IsAssistTankOfIndex(member, 1, false))
+            if (Player* member = GetGroupSecondAssistTank(botAI, bot))
             {
                 tankTarget = member;
                 break;
@@ -1631,7 +1549,7 @@ bool IllidanStormrageMisdirectToTankAction::Execute(Event /*event*/)
     }
     else if (GetIllidanPhase(illidan) == 4)
     {
-        if (TryMisdirectToWarlockTank(illidan, group))
+        if (TryMisdirectToWarlockTank(illidan))
             return true;
     }
 
@@ -1644,7 +1562,8 @@ bool IllidanStormrageMisdirectToTankAction::TryMisdirectToFlameTanks(Group* grou
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member && member->IsAlive() && member->getClass() == CLASS_HUNTER && GET_PLAYERBOT_AI(member))
+        if (member && member->IsAlive() && member->getClass() == CLASS_HUNTER &&
+            GET_PLAYERBOT_AI(member))
             hunters.push_back(member);
 
         if (hunters.size() >= 2)
@@ -1668,20 +1587,8 @@ bool IllidanStormrageMisdirectToTankAction::TryMisdirectToFlameTanks(Group* grou
     if (!eastFlame || !westFlame || eastFlame == westFlame)
         return false;
 
-    Player* firstAssistTank = nullptr;
-    Player* secondAssistTank = nullptr;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || !member->IsAlive())
-            continue;
-
-        if (!firstAssistTank && GET_PLAYERBOT_AI(member)->IsAssistTankOfIndex(member, 0, true))
-            firstAssistTank = member;
-        else if (!secondAssistTank && GET_PLAYERBOT_AI(member)->IsAssistTankOfIndex(member, 1, true))
-            secondAssistTank = member;
-    }
-
+    Player* firstAssistTank = GetGroupFirstAssistTank(botAI, bot);
+    Player* secondAssistTank = GetGroupSecondAssistTank(botAI, bot);
     if (!firstAssistTank || !secondAssistTank)
         return false;
 
@@ -1729,7 +1636,7 @@ bool IllidanStormrageMisdirectToTankAction::TryMisdirectToFlameTanks(Group* grou
     return false;
 }
 
-bool IllidanStormrageMisdirectToTankAction::TryMisdirectToWarlockTank(Unit* illidan, Group* group)
+bool IllidanStormrageMisdirectToTankAction::TryMisdirectToWarlockTank(Unit* illidan)
 {
     Player* warlockTank = GetIllidanWarlockTank(bot);
     if (!warlockTank)

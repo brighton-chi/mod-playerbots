@@ -44,21 +44,7 @@ bool RageWinterchillMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (!winterchill)
         return false;
 
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    Player* mainTank = nullptr;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (member && member->IsAlive() && botAI->IsMainTank(member))
-        {
-            mainTank = member;
-            break;
-        }
-    }
-
+    Player* mainTank = GetGroupMainTank(botAI, bot);
     if (!mainTank)
         return false;
 
@@ -178,21 +164,7 @@ bool AnetheronMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (!anetheron)
         return false;
 
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    Player* mainTank = nullptr;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (member && member->IsAlive() && botAI->IsMainTank(member))
-        {
-            mainTank = member;
-            break;
-        }
-    }
-
+    Player* mainTank = GetGroupMainTank(botAI, bot);
     if (!mainTank)
         return false;
 
@@ -254,6 +226,7 @@ bool AnetheronSpreadRangedInArcAction::Execute(Event /*event*/)
         Player* member = ref->GetSource();
         if (!member || !member->IsAlive() || !botAI->IsRanged(member))
             continue;
+
         if (botAI->IsHeal(member))
             healers.push_back(member);
         else
@@ -373,8 +346,7 @@ bool AnetheronAssignDpsPriorityAction::Execute(Event /*event*/)
         return false;
     }
 
-    Unit* infernal = AI_VALUE2(Unit*, "find target", "towering infernal");
-    if (infernal)
+    if (Unit* infernal = AI_VALUE2(Unit*, "find target", "towering infernal"))
     {
         Player* victim = dynamic_cast<Player*>(infernal->GetVictim());
         if (victim && botAI->IsTank(victim) &&
@@ -405,21 +377,7 @@ bool KazrogalMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (!kazrogal)
         return false;
 
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    Player* mainTank = nullptr;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (member && member->IsAlive() && botAI->IsMainTank(member))
-        {
-            mainTank = member;
-            break;
-        }
-    }
-
+    Player* mainTank = GetGroupMainTank(botAI, bot);
     if (!mainTank)
         return false;
 
@@ -492,6 +450,7 @@ bool KazrogalSpreadRangedInArcAction::Execute(Event /*event*/)
         Player* member = ref->GetSource();
         if (!member || !member->IsAlive() || !botAI->IsRanged(member))
             continue;
+
         rangedMembers.push_back(member);
     }
 
@@ -545,10 +504,11 @@ bool KazrogalSpreadRangedInArcAction::Execute(Event /*event*/)
 
 bool KazrogalLowManaBotMoveFromGroupAction::Execute(Event /*event*/)
 {
-    if (bot->getClass() == CLASS_HUNTER)
+    if (bot->getClass() == CLASS_HUNTER &&
+        !botAI->HasAura("aspect of the viper", bot)
+        && botAI->CanCastSpell("aspect of the viper", bot))
     {
-        if (!botAI->HasAura("aspect of the viper", bot))
-            return botAI->CastSpell("aspect of the viper", bot);
+        return botAI->CastSpell("aspect of the viper", bot);
     }
     else
     {
@@ -582,21 +542,7 @@ bool AzgalorMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (!azgalor)
         return false;
 
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    Player* mainTank = nullptr;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (member && member->IsAlive() && botAI->IsMainTank(member))
-        {
-            mainTank = member;
-            break;
-        }
-    }
-
+    Player* mainTank = GetGroupMainTank(botAI, bot);
     if (!mainTank)
         return false;
 
@@ -723,14 +669,11 @@ bool AzgalorFirstAssistTankPositionDoomguardAction::Execute(Event /*event*/)
             }
         }
     }
-    else
+    else if (distToPosition > 2.0f)
     {
-        if (distToPosition > 2.0f)
-        {
-            moveDist = std::min(10.0f, distToPosition);
-            shouldMove = true;
-            moveBackwards = false;
-        }
+        moveDist = std::min(10.0f, distToPosition);
+        shouldMove = true;
+        moveBackwards = false;
     }
 
     if (shouldMove)
@@ -782,21 +725,7 @@ bool ArchimondeMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (!archimonde)
         return false;
 
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    Player* mainTank = nullptr;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (member && member->IsAlive() && botAI->IsMainTank(member))
-        {
-            mainTank = member;
-            break;
-        }
-    }
-
+    Player* mainTank = GetGroupMainTank(botAI, bot);
     if (!mainTank)
         return false;
 
@@ -811,20 +740,7 @@ bool ArchimondeMisdirectBossToMainTankAction::Execute(Event /*event*/)
 
 bool ArchimondeCastFearWardOnMainTankAction::Execute(Event /*event*/)
 {
-    Player* mainTank = nullptr;
-    if (Group* group = bot->GetGroup())
-    {
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (member && botAI->IsMainTank(member))
-            {
-                mainTank = member;
-                break;
-            }
-        }
-    }
-
+    Player* mainTank = GetGroupMainTank(botAI, bot);
     if (mainTank && botAI->CanCastSpell("fear ward", mainTank))
         return botAI->CastSpell("fear ward", mainTank);
 
@@ -837,22 +753,19 @@ bool ArchimondeSpreadToAvoidAirBurstAction::Execute(Event /*event*/)
     if (!archimonde)
         return false;
 
+    constexpr float safeDistFromVictim = 14.0f;
+    constexpr float safeDistFromPlayer = 8.0f;
     constexpr uint32 minInterval = 1000;
 
     Unit* victim = archimonde->GetVictim();
-    if (victim && victim != bot)
-    {
-        constexpr float safeDistFromVictim = 14.0f;
-        if (bot->GetDistance2d(victim) < safeDistFromVictim)
-            return FleePosition(Position(victim->GetPosition()), safeDistFromVictim, minInterval);
-    }
+    if (victim && victim != bot && bot->GetDistance2d(victim) < safeDistFromVictim &&
+        FleePosition(Position(victim->GetPosition()), safeDistFromVictim, minInterval))
+        return true;
 
-    if (botAI->IsRanged(bot))
-    {
-        constexpr float safeDistFromPlayer = 8.0f;
-        if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
-            return FleePosition(Position(nearestPlayer->GetPosition()), safeDistFromPlayer, minInterval);
-    }
+    Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer);
+    if (nearestPlayer && botAI->IsRanged(bot) &&
+        FleePosition(Position(nearestPlayer->GetPosition()), safeDistFromPlayer, minInterval))
+        return true;
 
     return false;
 }
