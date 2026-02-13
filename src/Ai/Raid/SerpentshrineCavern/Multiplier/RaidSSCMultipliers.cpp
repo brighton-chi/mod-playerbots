@@ -738,7 +738,6 @@ float LadyVashjDisableAutomaticTargetingAndMovementModifier::GetValue(Action *ac
     {
         if (dynamic_cast<DpsAssistAction*>(action) ||
             dynamic_cast<TankAssistAction*>(action) ||
-            // dynamic_cast<FollowAction*>(action) ||
             dynamic_cast<FleeAction*>(action))
             return 0.0f;
 
