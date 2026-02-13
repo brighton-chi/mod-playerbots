@@ -684,7 +684,6 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
 
     auto coreHandlers = GetCoreHandlers(botAI, bot);
 
-    // Only core handlers should be affected
     bool isCoreHandler = false;
     int myIndex = -1;
     for (int i = 0; i < static_cast<int>(coreHandlers.size()); ++i)
@@ -703,18 +702,11 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
         return player && player->HasItemCount(ITEM_TAINTED_CORE, 1, false);
     };
 
-    // If this bot has the core and isn't passing it, block other movement
+    // If the bot actually has the core, only allow core handling
     if (hasCore(bot) && !dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action))
         return 0.0f;
 
-    // If any later handler has the core, this bot should not prioritize positioning
-    for (int i = myIndex + 1; i < static_cast<int>(coreHandlers.size()); ++i)
-    {
-        if (hasCore(coreHandlers[i]))
-            return 1.0f;
-    }
-
-    // First and second passers move to positions as soon as the elemental appears
+    // First and second passers block movement when the looter teleports to the elemental
     Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
     if (tainted && coreHandlers[0]->GetExactDist2d(tainted) < 5.0f &&
         (bot == coreHandlers[1] || bot == coreHandlers[2]) &&
@@ -722,7 +714,7 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
          !dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action)))
          return 0.0f;
 
-    // If any predecessor (including self) recently had the core, block other movement
+    // If any prior handler (including self) recently had the core, block other movement
     if (AnyRecentCoreInInventory(botAI, bot) &&
         dynamic_cast<MovementAction*>(action) &&
         !dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action))
