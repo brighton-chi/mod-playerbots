@@ -682,14 +682,20 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
         dynamic_cast<LadyVashjDestroyTaintedCoreAction*>(action))
         return 1.0f;
 
-    Player* designatedLooter = GetDesignatedCoreLooter(botAI, bot);
-    Player* firstCorePasser = GetFirstTaintedCorePasser(botAI, bot);
-    Player* secondCorePasser = GetSecondTaintedCorePasser(botAI, bot);
-    Player* thirdCorePasser = GetThirdTaintedCorePasser(botAI, bot);
-    Player* fourthCorePasser = GetFourthTaintedCorePasser(botAI, bot);
+    auto coreHandlers = GetCoreHandlers(botAI, bot);
 
-    if (bot != designatedLooter && bot != firstCorePasser && bot != secondCorePasser &&
-        bot != thirdCorePasser && bot != fourthCorePasser)
+    // Only core handlers should be affected
+    bool isCoreHandler = false;
+    int myIndex = -1;
+    for (int i = 0; i < static_cast<int>(coreHandlers.size()); ++i)
+    {
+        if (coreHandlers[i] && coreHandlers[i] == bot)
+        {
+            isCoreHandler = true;
+            myIndex = i;
+        }
+    }
+    if (!isCoreHandler)
         return 1.0f;
 
     auto hasCore = [](Player* player)
@@ -697,34 +703,26 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
         return player && player->HasItemCount(ITEM_TAINTED_CORE, 1, false);
     };
 
-    if (hasCore(bot) &&
-        !dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action))
+    // If this bot has the core and isn't passing it, block other movement
+    if (hasCore(bot) && !dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action))
         return 0.0f;
 
-    if (designatedLooter == bot && !hasCore(bot))
+    // If any later handler has the core, this bot should not prioritize positioning
+    for (int i = myIndex + 1; i < static_cast<int>(coreHandlers.size()); ++i)
     {
-        return 1.0f;
+        if (hasCore(coreHandlers[i]))
+            return 1.0f;
     }
-    else if (bot == firstCorePasser &&
-             (hasCore(secondCorePasser) || hasCore(thirdCorePasser) ||
-              hasCore(fourthCorePasser)))
-    {
-        return 1.0f;
-    }
-    else if (bot == secondCorePasser &&
-             (hasCore(thirdCorePasser) || hasCore(fourthCorePasser)))
-    {
-        return 1.0f;
-    }
-    else if (bot == thirdCorePasser && hasCore(fourthCorePasser))
-        return 1.0f;
 
-    if (AI_VALUE2(Unit*, "find target", "tainted elemental") &&
-        (bot == firstCorePasser || bot == secondCorePasser) &&
+    // First and second passers move to positions as soon as the elemental appears
+    Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
+    if (tainted && coreHandlers[0]->GetExactDist2d(tainted) < 5.0f &&
+        (bot == coreHandlers[1] || bot == coreHandlers[2]) &&
         (dynamic_cast<MovementAction*>(action) &&
          !dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action)))
          return 0.0f;
 
+    // If any predecessor (including self) recently had the core, block other movement
     if (AnyRecentCoreInInventory(botAI, bot) &&
         dynamic_cast<MovementAction*>(action) &&
         !dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action))
@@ -737,7 +735,8 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
 // So the standard target selection system must be disabled
 float LadyVashjDisableAutomaticTargetingAndMovementModifier::GetValue(Action *action)
 {
-    if (!AI_VALUE2(Unit*, "find target", "lady vashj"))
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (!vashj)
         return 1.0f;
 
     if (dynamic_cast<AvoidAoeAction*>(action))
@@ -747,8 +746,12 @@ float LadyVashjDisableAutomaticTargetingAndMovementModifier::GetValue(Action *ac
     {
         if (dynamic_cast<DpsAssistAction*>(action) ||
             dynamic_cast<TankAssistAction*>(action) ||
-            dynamic_cast<FollowAction*>(action) ||
+            // dynamic_cast<FollowAction*>(action) ||
             dynamic_cast<FleeAction*>(action))
+            return 0.0f;
+
+        if (bot->GetExactDist2d(vashj) < 60.0f &&
+            dynamic_cast<FollowAction*>(action))
             return 0.0f;
 
         if (!botAI->IsHeal(bot) && dynamic_cast<CastHealingSpellAction*>(action))

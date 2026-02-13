@@ -428,13 +428,6 @@ public:
     bool Execute(Event event) override;
 };
 
-class LadyVashjEraseCorePassingTrackersAction : public Action
-{
-public:
-    LadyVashjEraseCorePassingTrackersAction(PlayerbotAI* botAI, std::string const name = "lady vashj erase core passing trackers") : Action(botAI, name) {}
-    bool Execute(Event event) override;
-};
-
 class LadyVashjAvoidToxicSporesAction : public MovementAction
 {
 public:

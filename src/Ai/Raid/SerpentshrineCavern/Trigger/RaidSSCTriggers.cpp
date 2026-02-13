@@ -412,14 +412,15 @@ bool LadyVashjBotHasStaticChargeTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "lady vashj"))
         return false;
 
-    if (Group* group = bot->GetGroup())
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (member && member->HasAura(SPELL_STATIC_CHARGE))
-                return true;
-        }
+        Player* member = ref->GetSource();
+        if (member && member->HasAura(SPELL_STATIC_CHARGE))
+            return true;
     }
 
     return false;
@@ -462,8 +463,7 @@ bool LadyVashjTaintedElementalCheatTrigger::IsActive()
         return false;
 
     bool taintedPresent = false;
-    Unit* taintedUnit = AI_VALUE2(Unit*, "find target", "tainted elemental");
-    if (taintedUnit)
+    if (AI_VALUE2(Unit*, "find target", "tainted elemental"))
     {
         taintedPresent = true;
     }
@@ -498,52 +498,25 @@ bool LadyVashjTaintedCoreWasLootedTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "lady vashj") || !IsLadyVashjInPhase2(botAI))
         return false;
 
-    Player* designatedLooter = GetDesignatedCoreLooter(botAI, bot);
-    Player* firstCorePasser = GetFirstTaintedCorePasser(botAI, bot);
-    Player* secondCorePasser = GetSecondTaintedCorePasser(botAI, bot);
-    Player* thirdCorePasser = GetThirdTaintedCorePasser(botAI, bot);
-    Player* fourthCorePasser = GetFourthTaintedCorePasser(botAI, bot);
+    auto coreHandlers = GetCoreHandlers(botAI, bot);
 
-    if (!designatedLooter || !firstCorePasser || !secondCorePasser ||
-        !thirdCorePasser || !fourthCorePasser)
-        return false;
+    // Only core handlers should be active
+    bool isCoreHandler = false;
+    for (Player* handler : coreHandlers)
+        if (handler == bot)
+            isCoreHandler = true;
 
-    if (bot != designatedLooter && bot != firstCorePasser && bot != secondCorePasser &&
-        bot != thirdCorePasser && bot != fourthCorePasser)
-        return false;
-
-    auto hasCore = [](Player* player) -> bool
-    {
-        return player && player->HasItemCount(ITEM_TAINTED_CORE, 1, false);
-    };
-
-    if (designatedLooter == bot && !hasCore(bot))
-    {
-        return false;
-    }
-    else if (bot == firstCorePasser &&
-             (hasCore(secondCorePasser) || hasCore(thirdCorePasser) ||
-              hasCore(fourthCorePasser)))
-    {
-        return false;
-    }
-    else if (bot == secondCorePasser &&
-             (hasCore(thirdCorePasser) || hasCore(fourthCorePasser)))
-    {
-        return false;
-    }
-    else if (bot == thirdCorePasser && hasCore(fourthCorePasser))
+    if (!isCoreHandler)
         return false;
 
     // First and second passers move to positions as soon as the elemental appears
-    if (AI_VALUE2(Unit*, "find target", "tainted elemental") &&
-        (bot == firstCorePasser || bot == secondCorePasser))
+    Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
+    if (tainted && coreHandlers[0]->GetExactDist2d(tainted) < 5.0f &&
+        (bot == coreHandlers[1] || bot == coreHandlers[2]))
         return true;
 
-    if (AnyRecentCoreInInventory(botAI, bot))
-        return true;
-
-    return false;
+    // Main logic: core is in play for this bot or a predecessor
+    return AnyRecentCoreInInventory(botAI, bot);
 }
 
 bool LadyVashjTaintedCoreIsUnusableTrigger::IsActive()
@@ -555,14 +528,7 @@ bool LadyVashjTaintedCoreIsUnusableTrigger::IsActive()
     if (!IsLadyVashjInPhase2(botAI))
         return bot->HasItemCount(ITEM_TAINTED_CORE, 1, false);
 
-    Player* coreHandlers[] =
-    {
-        GetDesignatedCoreLooter(botAI, bot),
-        GetFirstTaintedCorePasser(botAI, bot),
-        GetSecondTaintedCorePasser(botAI, bot),
-        GetThirdTaintedCorePasser(botAI, bot),
-        GetFourthTaintedCorePasser(botAI, bot)
-    };
+    auto coreHandlers = GetCoreHandlers(botAI, bot);
 
     if (bot->HasItemCount(ITEM_TAINTED_CORE, 1, false))
     {
@@ -577,21 +543,6 @@ bool LadyVashjTaintedCoreIsUnusableTrigger::IsActive()
     return false;
 }
 
-bool LadyVashjNeedToResetCorePassingTrackersTrigger::IsActive()
-{
-    if (botAI->IsTank(bot))
-        return false;
-
-    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    if (!vashj)
-        return false;
-
-    if (!IsLadyVashjInPhase2(botAI))
-        return true;
-    else
-        return !AnyRecentCoreInInventory(botAI, bot);
-}
-
 bool LadyVashjToxicSporebatsAreSpewingPoisonCloudsTrigger::IsActive()
 {
     return IsLadyVashjInPhase3(botAI);
@@ -602,17 +553,18 @@ bool LadyVashjBotIsEntangledInToxicSporesOrStaticChargeTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "lady vashj"))
         return false;
 
-    if (Group* group = bot->GetGroup())
-    {
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || !member->HasAura(SPELL_ENTANGLE))
-                continue;
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
 
-            if (botAI->IsMelee(member))
-                return true;
-        }
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !member->HasAura(SPELL_ENTANGLE))
+            continue;
+
+        if (botAI->IsMelee(member))
+            return true;
     }
 
     return false;

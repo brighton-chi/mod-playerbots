@@ -182,13 +182,13 @@ namespace SerpentShrineCavernHelpers
 
     // Lady Vashj <Coilfang Matron>
 
-    const Position VASHJ_PLATFORM_CENTER_POSITION = { 29.634f, -923.541f, 42.985f };
+    const Position VASHJ_PLATFORM_CENTER_POSITION = { 29.634f, -923.541f, 42.902f };
 
     std::unordered_map<ObjectGuid, bool> hasReachedVashjRangedPosition;
     std::unordered_map<uint32, ObjectGuid> nearestTriggerGuid;
     std::unordered_map<ObjectGuid, Position> intendedLineup;
     std::unordered_map<uint32, time_t> lastImbueAttempt;
-    std::unordered_map<uint32, time_t> lastCoreInInventoryTime;
+    std::unordered_map<ObjectGuid, time_t> lastCoreInInventoryTime;
 
     bool IsMainTankInSameSubgroup(Player* bot)
     {
@@ -269,37 +269,6 @@ namespace SerpentShrineCavernHelpers
             return entry == NPC_TAINTED_ELEMENTAL || entry == NPC_ENCHANTED_ELEMENTAL ||
                    entry == NPC_COILFANG_ELITE || entry == NPC_COILFANG_STRIDER ||
                    entry == NPC_TOXIC_SPOREBAT || entry == NPC_LADY_VASHJ;
-        }
-
-        return false;
-    }
-
-    bool AnyRecentCoreInInventory(PlayerbotAI* botAI, Player* bot, uint32 graceSeconds)
-    {
-        Unit* vashj =
-            botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "lady vashj")->Get();
-        if (!vashj)
-            return false;
-
-        Group* group = bot->GetGroup();
-        if (!group)
-            return false;
-
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (member && member->HasItemCount(ITEM_TAINTED_CORE, 1, false))
-                return true;
-        }
-
-        const uint32 instanceId = vashj->GetMap()->GetInstanceId();
-        const time_t now = std::time(nullptr);
-
-        auto it = lastCoreInInventoryTime.find(instanceId);
-        if (it != lastCoreInInventoryTime.end())
-        {
-            if ((now - it->second) <= static_cast<time_t>(graceSeconds))
-                return true;
         }
 
         return false;
@@ -474,6 +443,58 @@ namespace SerpentShrineCavernHelpers
         return nullptr;
     }
 
+    std::array<Player*, 5> GetCoreHandlers(PlayerbotAI* botAI, Player* bot)
+    {
+        return
+        {
+            GetDesignatedCoreLooter(botAI, bot),
+            GetFirstTaintedCorePasser(botAI, bot),
+            GetSecondTaintedCorePasser(botAI, bot),
+            GetThirdTaintedCorePasser(botAI, bot),
+            GetFourthTaintedCorePasser(botAI, bot)
+        };
+    }
+
+    // Checks if any bot from earlier in the passing sequence has the Tainted Core or
+    // had it within the prior 3 seconds so the chain is not broken when the Core is in transit
+    bool AnyRecentCoreInInventory(PlayerbotAI* botAI, Player* bot)
+    {
+        Unit* vashj =
+            botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "lady vashj")->Get();
+        if (!vashj)
+            return false;
+
+        auto coreHandlers = GetCoreHandlers(botAI, bot);
+
+        int8 myIndex = -1;
+        for (int8 i = 0; i < 5; ++i)
+            if (coreHandlers[i] && coreHandlers[i] == bot)
+                myIndex = i;
+
+        if (myIndex == -1)
+            return false;
+
+        const time_t now = std::time(nullptr);
+        constexpr uint8 lookbackSeconds = 3;
+
+        for (int8 i = 0; i <= myIndex; ++i)
+        {
+            Player* handler = coreHandlers[i];
+            if (!handler)
+                continue;
+
+            if (handler->HasItemCount(ITEM_TAINTED_CORE, 1, false))
+                return true;
+
+            auto it = lastCoreInInventoryTime.find(handler->GetGUID());
+            if (it != lastCoreInInventoryTime.end() &&
+                (now - it->second) <= static_cast<time_t>(lookbackSeconds))
+                return true;
+        }
+
+        return false;
+    }
+
     const std::vector<uint32> SHIELD_GENERATOR_DB_GUIDS =
     {
         47482, // NW
@@ -513,7 +534,7 @@ namespace SerpentShrineCavernHelpers
 
     // Returns the nearest active Shield Generator to the bot
     // Active generators are powered by NPC_WORLD_INVISIBLE_TRIGGER creatures,
-    // which depawn after use
+    // which despawn after use
     Unit* GetNearestActiveShieldGeneratorTriggerByEntry(Unit* reference)
     {
         if (!reference)
