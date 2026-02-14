@@ -74,11 +74,9 @@ bool AkilzonTanksPositionBossAction::Execute(Event event)
 bool AkilzonSpreadRangedAction::Execute(Event event)
 {
     constexpr float minDistance = 13.0f;
+    constexpr uint32 minInterval = 1000;
     if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance))
-    {
-        constexpr uint32 minInterval = 1000;
         return FleePosition(nearestPlayer->GetPosition(), minDistance, minInterval);
-    }
 
     return false;
 }
@@ -283,17 +281,18 @@ bool JanalaiTanksPositionBossAction::Execute(Event event)
 
 bool JanalaiSpreadRangedInCircleAction::Execute(Event event)
 {
-    std::vector<Player*> rangedMembers;
-    if (Group* group = bot->GetGroup())
-    {
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || !botAI->IsRanged(member))
-                continue;
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
 
-            rangedMembers.push_back(member);
-        }
+    std::vector<Player*> rangedMembers;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive() || !botAI->IsRanged(member))
+            continue;
+
+        rangedMembers.push_back(member);
     }
 
     if (rangedMembers.empty())

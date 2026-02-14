@@ -2267,11 +2267,9 @@ bool IllidanStormrageDisperseRangedAction::Execute(Event /*event*/)
             }
 
             constexpr float safeDistFromPlayer = 6.0f;
+            constexpr uint32 minInterval = 1000;
             if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
-            {
-                constexpr uint32 minInterval = 1000;
                 return FleePosition(Position(nearestPlayer->GetPosition()), safeDistFromPlayer, minInterval);
-            }
         }
 
         std::vector<Player*> rangedBots;

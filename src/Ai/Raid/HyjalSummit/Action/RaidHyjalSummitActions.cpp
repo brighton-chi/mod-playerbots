@@ -305,7 +305,7 @@ bool AnetheronBringInfernalToInfernalTankAction::Execute(Event /*event*/)
     return false;
 }
 
-bool AnetheronFirstAssistTankPickUpInfernalsAction::Execute(Event /*event*/)
+bool AnetheronAssistTankPickUpInfernalsAction::Execute(Event /*event*/)
 {
     Unit* infernal = AI_VALUE2(Unit*, "find target", "towering infernal");
     if (!infernal)
@@ -367,9 +367,11 @@ bool AnetheronAssignDpsPriorityAction::Execute(Event /*event*/)
             }
         }
         else
+        {
             SetRtiTarget(botAI, "square", anetheron);
             if (bot->GetTarget() != anetheron->GetGUID())
                 return Attack(anetheron);
+        }
     }
 
     return false;
@@ -454,7 +456,7 @@ bool KazrogalSpreadRangedInArcAction::Execute(Event /*event*/)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || !botAI->IsRanged(member))
+        if (!member || !botAI->IsRanged(member))
             continue;
 
         rangedMembers.push_back(member);
@@ -651,14 +653,12 @@ bool AzgalorFirstAssistTankPositionDoomguardAction::Execute(Event /*event*/)
         if (bot->GetTarget() != doomguard->GetGUID())
             return Attack(doomguard);
 
-        if (doomguard->GetVictim() == bot && bot->IsWithinMeleeRange(doomguard))
+        if (doomguard->GetVictim() == bot && bot->IsWithinMeleeRange(doomguard) &&
+            distToPosition > 2.0f)
         {
-            if (distToPosition > 2.0f)
-            {
-                moveDist = std::min(5.0f, distToPosition);
-                shouldMove = true;
-                moveBackwards = true;
-            }
+            moveDist = std::min(5.0f, distToPosition);
+            shouldMove = true;
+            moveBackwards = true;
         }
     }
     else if (distToPosition > 2.0f)
@@ -687,7 +687,8 @@ bool AzgalorAssignDpsPriorityAction::Execute(Event /*event*/)
 {
     if (botAI->IsRanged(bot))
     {
-        if (Unit* doomguard = AI_VALUE2(Unit*, "find target", "lesser doomguard"))
+        if (Unit* doomguard = AI_VALUE2(Unit*, "find target", "lesser doomguard");
+            doomguard && bot->GetDistance2d(doomguard) < 35.0f)
         {
             SetRtiTarget(botAI, "circle", doomguard);
 
@@ -695,15 +696,12 @@ bool AzgalorAssignDpsPriorityAction::Execute(Event /*event*/)
                 return Attack(doomguard);
         }
     }
-    else if (botAI->IsMelee(bot))
+    else if (Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor"))
     {
-        if (Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor"))
-        {
-            SetRtiTarget(botAI, "star", azgalor);
+        SetRtiTarget(botAI, "star", azgalor);
 
-            if (bot->GetTarget() != azgalor->GetGUID())
-                return Attack(azgalor);
-        }
+        if (bot->GetTarget() != azgalor->GetGUID())
+            return Attack(azgalor);
     }
 
     return false;

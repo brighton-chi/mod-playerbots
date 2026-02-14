@@ -84,7 +84,7 @@ bool AnetheronBotIsTargetedByInfernalTrigger::IsActive()
 
 bool AnetheronInfernalsNeedToBeKeptAwayFromRaidTrigger::IsActive()
 {
-    return botAI->IsAssistTankOfIndex(bot, 0, true) &&
+    return botAI->IsAssistTank(bot) &&
            AI_VALUE2(Unit*, "find target", "towering infernal");
 }
 

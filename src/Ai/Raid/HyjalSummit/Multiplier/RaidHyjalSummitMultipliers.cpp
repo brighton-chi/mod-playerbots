@@ -80,16 +80,19 @@ float AnetheronDisableTankActionsMultiplier::GetValue(Action* action)
     if (!botAI->IsTank(bot))
         return 1.0f;
 
-    if (bot->GetVictim() == nullptr)
-        return 1.0f;
-
     if (!AI_VALUE2(Unit*, "find target", "anetheron"))
         return 1.0f;
 
     if (dynamic_cast<AvoidAoeAction*>(action))
         return 0.0f;
 
-    if (botAI->IsMainTank(bot) && dynamic_cast<TankAssistAction*>(action))
+    if (bot->GetVictim() == nullptr)
+        return 1.0f;
+
+    if (!botAI->IsMainTank(bot))
+        return 1.0f;
+
+    if (dynamic_cast<TankAssistAction*>(action))
         return 0.0f;
 
     return 1.0f;
