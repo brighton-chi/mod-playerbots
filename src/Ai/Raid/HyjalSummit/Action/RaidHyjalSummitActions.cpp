@@ -12,25 +12,29 @@ bool HyjalSummitEraseTrackersAction::Execute(Event /*event*/)
     const ObjectGuid guid = bot->GetGUID();
 
     bool erased = false;
-    if (!AI_VALUE2(Unit*, "find target", "rage winterchill"))
+
+    if (!AI_VALUE2(Unit*, "find target", "rage winterchill") &&
+        hasReachedWinterchillPosition.erase(guid) > 0)
     {
-        if (hasReachedWinterchillPosition.erase(guid) > 0)
-            erased = true;
+        erased = true;
     }
-    if (!AI_VALUE2(Unit*, "find target", "anetheron"))
+
+    if (!AI_VALUE2(Unit*, "find target", "anetheron") &&
+        hasReachedAnetheronPosition.erase(guid) > 0)
     {
-        if (hasReachedAnetheronPosition.erase(guid) > 0)
-            erased = true;
+        erased = true;
     }
-    if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
+
+    if (!AI_VALUE2(Unit*, "find target", "kaz'rogal") &&
+        hasReachedKazrogalPosition.erase(guid) > 0)
     {
-        if (hasReachedKazrogalPosition.erase(guid) > 0)
-            erased = true;
+        erased = true;
     }
-    if (!AI_VALUE2(Unit*, "find target", "azgalor"))
+
+    if (!AI_VALUE2(Unit*, "find target", "azgalor") &&
+        azgalorTankStep.erase(guid) > 0)
     {
-        if (azgalorTankStep.erase(guid) > 0)
-            erased = true;
+        erased = true;
     }
 
     return erased;
@@ -97,7 +101,7 @@ bool RageWinterchillSpreadRangedInCircleAction::Execute(Event /*event*/)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || !botAI->IsRanged(member))
+        if (!member || !botAI->IsRanged(member))
             continue;
 
         if (botAI->IsHeal(member))
@@ -654,14 +658,14 @@ bool AzgalorFirstAssistTankPositionDoomguardAction::Execute(Event /*event*/)
             return Attack(doomguard);
 
         if (doomguard->GetVictim() == bot && bot->IsWithinMeleeRange(doomguard) &&
-            distToPosition > 2.0f)
+            distToPosition > 3.0f)
         {
             moveDist = std::min(5.0f, distToPosition);
             shouldMove = true;
             moveBackwards = true;
         }
     }
-    else if (distToPosition > 2.0f)
+    else if (distToPosition > 3.0f)
     {
         moveDist = std::min(10.0f, distToPosition);
         shouldMove = true;

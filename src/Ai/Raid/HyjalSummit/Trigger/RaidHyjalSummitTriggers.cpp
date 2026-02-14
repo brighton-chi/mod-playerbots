@@ -9,10 +9,9 @@ using namespace HyjalSummitHelpers;
 
 // General
 
-bool HyjalSummitRangedBotIsNotInCombatTrigger::IsActive()
+bool HyjalSummitBotIsNotInCombatTrigger::IsActive()
 {
-    // For Hyjal, the only maps are for ranged bot positioning
-    return botAI->IsRanged(bot) && !bot->IsInCombat();
+    return !bot->IsInCombat();
 }
 
 // Rage Winterchill

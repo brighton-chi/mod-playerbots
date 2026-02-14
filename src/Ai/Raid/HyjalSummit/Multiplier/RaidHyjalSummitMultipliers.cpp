@@ -23,7 +23,7 @@ float HyjalSummitTimeBloodlustAndHeroismMultiplier::GetValue(Action* action)
         return 1.0f;
 
     Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
-    if (anetheron && anetheron->GetHealthPct() < 80.0f)
+    if (anetheron && anetheron->GetHealthPct() < 85.0f)
         return 1.0f;
 
     Unit* kazrogal = AI_VALUE2(Unit*, "find target", "kaz'rogal");
@@ -115,8 +115,7 @@ float AnetheronControlMisdirectionMultiplier::GetValue(Action* action)
     if (bot->getClass() != CLASS_HUNTER)
         return 1.0f;
 
-    Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
-    if (!anetheron)
+    if (!AI_VALUE2(Unit*, "find target", "anetheron"))
         return 1.0f;
 
     if (dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
@@ -167,7 +166,11 @@ float KazrogalDisableCombatFormationMoveMultiplier::GetValue(Action* action)
 
 float AzgalorDisableTankAssistMultiplier::GetValue(Action* action)
 {
-    if (botAI->IsTank(bot) && !botAI->IsAssistTankOfIndex(bot, 0, true))
+    if (bot->GetVictim() == nullptr)
+        return 1.0f;
+
+    if (!botAI->IsTank(bot) ||
+        botAI->IsAssistTankOfIndex(bot, 0, true))
         return 1.0f;
 
     if (!AI_VALUE2(Unit*, "find target", "lesser doomguard"))
@@ -201,9 +204,6 @@ float AzgalorTanksMaintainPositionMultiplier::GetValue(Action* action)
     if (dynamic_cast<MovementAction*>(action) &&
         !dynamic_cast<AttackAction*>(action) &&
         !dynamic_cast<AzgalorFirstAssistTankPositionDoomguardAction*>(action))
-        return 0.0f;
-
-    if (dynamic_cast<CastReachTargetSpellAction*>(action))
         return 0.0f;
 
     return 1.0f;
