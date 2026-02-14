@@ -265,18 +265,6 @@ bool ZuljinBossIsSummoningCyclonesInEagleFormTrigger::IsActive()
     return AnyNearbyNpcWithEntry(botAI, NPC_FEATHER_VORTEX);
 }
 
-bool ZuljinBossCastsClawRageOnRandomTargetsInLynxFormTrigger::IsActive()
-{
-    if (bot->getClass() != CLASS_HUNTER &&
-        bot->getClass() != CLASS_MAGE &&
-        bot->getClass() != CLASS_PALADIN &&
-        bot->getClass() != CLASS_ROGUE)
-        return false;
-
-    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
-    return zuljin && zuljin->HasAura(SPELL_SHAPE_OF_THE_LYNX);
-}
-
 bool ZuljinBossCastsAoeAbilitiesInDragonhawkFormTrigger::IsActive()
 {
     if (!botAI->IsRanged(bot))

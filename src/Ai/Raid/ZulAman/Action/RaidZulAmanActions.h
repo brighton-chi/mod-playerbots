@@ -239,14 +239,6 @@ private:
     std::vector<Unit*> GetAllCycloneTriggers(PlayerbotAI* botAI, Player* bot);
 };
 
-class ZuljinEscapeClawRageWithImmunitySpellAction : public Action
-{
-public:
-    ZuljinEscapeClawRageWithImmunitySpellAction(
-        PlayerbotAI* botAI, std::string const name = "zul'jin escape claw rage with immunity spell") : Action(botAI, name) {}
-    bool Execute(Event event) override;
-};
-
 class ZuljinSpreadRangedAction : public MovementAction
 {
 public:

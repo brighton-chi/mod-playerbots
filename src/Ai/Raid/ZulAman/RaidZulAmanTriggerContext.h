@@ -96,9 +96,6 @@ public:
         creators["zul'jin boss is summoning cyclones in eagle form"] =
             &RaidZulAmanTriggerContext::zuljin_boss_is_summoning_cyclones_in_eagle_form;
 
-        creators["zul'jin boss casts claw rage on random targets in lynx form"] =
-            &RaidZulAmanTriggerContext::zuljin_boss_casts_claw_rage_on_random_targets_in_lynx_form;
-
         creators["zul'jin boss casts aoe abilities in dragonhawk form"] =
             &RaidZulAmanTriggerContext::zuljin_boss_casts_aoe_abilities_in_dragonhawk_form;
     }
@@ -190,9 +187,6 @@ private:
 
     static Trigger* zuljin_boss_is_summoning_cyclones_in_eagle_form(
         PlayerbotAI* botAI) { return new ZuljinBossIsSummoningCyclonesInEagleFormTrigger(botAI); }
-
-    static Trigger* zuljin_boss_casts_claw_rage_on_random_targets_in_lynx_form(
-        PlayerbotAI* botAI) { return new ZuljinBossCastsClawRageOnRandomTargetsInLynxFormTrigger(botAI); }
 
     static Trigger* zuljin_boss_casts_aoe_abilities_in_dragonhawk_form(
         PlayerbotAI* botAI) { return new ZuljinBossCastsAoeAbilitiesInDragonhawkFormTrigger(botAI); }
