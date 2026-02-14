@@ -36,8 +36,8 @@ public:
         creators["anetheron bring infernal to infernal tank"] =
             &RaidHyjalSummitActionContext::anetheron_bring_infernal_to_infernal_tank;
 
-        creators["anetheron assist tanks pick up infernals"] =
-            &RaidHyjalSummitActionContext::anetheron_assist_tanks_pick_up_infernals;
+        creators["anetheron first assist tank pick up infernals"] =
+            &RaidHyjalSummitActionContext::anetheron_first_assist_tank_pick_up_infernals;
 
         creators["anetheron assign dps priority"] =
             &RaidHyjalSummitActionContext::anetheron_assign_dps_priority;
@@ -125,8 +125,8 @@ private:
     static Action* anetheron_bring_infernal_to_infernal_tank(
         PlayerbotAI* botAI) { return new AnetheronBringInfernalToInfernalTankAction(botAI); }
 
-    static Action* anetheron_assist_tanks_pick_up_infernals(
-        PlayerbotAI* botAI) { return new AnetheronAssistTanksPickUpInfernalsAction(botAI); }
+    static Action* anetheron_first_assist_tank_pick_up_infernals(
+        PlayerbotAI* botAI) { return new AnetheronFirstAssistTankPickUpInfernalsAction(botAI); }
 
     static Action* anetheron_assign_dps_priority(
         PlayerbotAI* botAI) { return new AnetheronAssignDpsPriorityAction(botAI); }

@@ -12,11 +12,12 @@ namespace HyjalSummitHelpers
 
     // Anetheron
 
-    const Position ANETHERON_MAIN_TANK_POSITION = { 5026.900f, -1757.163f, 1323.403f };
-    const Position ANETHERON_INFERNAL_TANK_POSITION = { 5021.879f, -1776.768f, 1322.390f };
+    // const Position ANETHERON_MAIN_TANK_POSITION = { 5026.900f, -1757.163f, 1323.403f };
+    const Position ANETHERON_MAIN_TANK_POSITION = { 5033.177f, -1765.996f, 1324.195f };
+    const Position ANETHERON_INFERNAL_TANK_POSITION = { 5022.587f, -1802.805f, 1322.026f };
     // const Position ANETHERON_INFERNAL_TANK_POSITION = { 5024.107f, -1787.967f, 1321.832f }; original medium location
     // const Position ANETHERON_INFERNAL_TANK_POSITION = { 5028.010f, -1800.134f, 1321.557f }; farther location
-    std::unordered_map<ObjectGuid, Position> anetheronRangedPositions;
+    std::unordered_map<ObjectGuid, bool> hasReachedAnetheronPosition;
 
     bool IsBotTargetedByInferno(Unit* anetheron, Player* bot)
     {
@@ -37,7 +38,8 @@ namespace HyjalSummitHelpers
     // Kaz'rogal
 
     const Position KAZROGAL_TANK_POSITION = { 5503.475f, -2660.343f, 1480.398f };
-    std::unordered_map<ObjectGuid, Position> kazrogalRangedPositions;
+    // std::unordered_map<ObjectGuid, Position> kazrogalRangedPositions;
+    std::unordered_map<ObjectGuid, bool> hasReachedKazrogalPosition;
 
     // Azgalor
 

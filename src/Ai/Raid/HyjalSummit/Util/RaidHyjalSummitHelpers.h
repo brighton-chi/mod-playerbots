@@ -51,12 +51,13 @@ namespace HyjalSummitHelpers
     // Anetheron
     extern const Position ANETHERON_MAIN_TANK_POSITION;
     extern const Position ANETHERON_INFERNAL_TANK_POSITION;
-    extern std::unordered_map<ObjectGuid, Position> anetheronRangedPositions;
+    extern std::unordered_map<ObjectGuid, bool> hasReachedAnetheronPosition;
     bool IsBotTargetedByInferno(Unit* anetheron, Player* bot);
 
     // Kaz'rogal
     extern const Position KAZROGAL_TANK_POSITION;
-    extern std::unordered_map<ObjectGuid, Position> kazrogalRangedPositions;
+    // extern std::unordered_map<ObjectGuid, Position> kazrogalRangedPositions;
+    extern std::unordered_map<ObjectGuid, bool> hasReachedKazrogalPosition;
 
     // Azgalor
     extern const Position AZGALOR_MAIN_TANK_TRANSITION_POSITION;

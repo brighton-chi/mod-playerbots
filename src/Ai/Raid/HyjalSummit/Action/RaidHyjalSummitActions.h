@@ -75,11 +75,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class AnetheronAssistTanksPickUpInfernalsAction : public MovementAction
+class AnetheronFirstAssistTankPickUpInfernalsAction : public AttackAction
 {
 public:
-    AnetheronAssistTanksPickUpInfernalsAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "anetheron assist tanks pick up infernals") {}
+    AnetheronFirstAssistTankPickUpInfernalsAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "anetheron first assist tank pick up infernals") {}
     bool Execute(Event event) override;
 };
 

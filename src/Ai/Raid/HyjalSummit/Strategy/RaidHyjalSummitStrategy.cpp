@@ -31,7 +31,7 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("anetheron bring infernal to infernal tank", ACTION_EMERGENCY + 2) }));
 
     triggers.push_back(new TriggerNode("anetheron infernals need to be kept away from raid", {
-        NextAction("anetheron assist tanks pick up infernals", ACTION_EMERGENCY + 1) }));
+        NextAction("anetheron first assist tank pick up infernals", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("anetheron infernals continue to spawn", {
         NextAction("anetheron assign dps priority", ACTION_RAID + 1) }));

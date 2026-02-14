@@ -64,8 +64,7 @@ bool AnetheronBossCastsCarrionSwarmTrigger::IsActive()
     if (!anetheron)
         return false;
 
-    Unit* infernal = AI_VALUE2(Unit*, "find target", "towering infernal");
-    if (infernal || IsBotTargetedByInferno(anetheron, bot))
+    if (IsBotTargetedByInferno(anetheron, bot))
         return false;
 
     return true;
@@ -85,7 +84,7 @@ bool AnetheronBotIsTargetedByInfernalTrigger::IsActive()
 
 bool AnetheronInfernalsNeedToBeKeptAwayFromRaidTrigger::IsActive()
 {
-    return botAI->IsAssistTank(bot) &&
+    return botAI->IsAssistTankOfIndex(bot, 0, true) &&
            AI_VALUE2(Unit*, "find target", "towering infernal");
 }
 
