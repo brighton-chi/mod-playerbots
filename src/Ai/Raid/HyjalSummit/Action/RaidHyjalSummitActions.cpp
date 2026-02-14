@@ -417,8 +417,8 @@ bool KazrogalMainTankPositionBossAction::Execute(Event /*event*/)
             float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
             float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
-            return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, bot->GetPositionZ(), false,
-                          false, false, true, MovementPriority::MOVEMENT_FORCED, true, true);
+            return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
+                          false, true, MovementPriority::MOVEMENT_FORCED, true, true);
         }
     }
 
@@ -437,8 +437,8 @@ bool KazrogalAssistTanksMoveInFrontOfBossAction::Execute(Event /*event*/)
         float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
         float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
-        return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, bot->GetPositionZ(), false,
-                      false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
+        return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
+                      false, true, MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
     return false;
@@ -484,8 +484,8 @@ bool KazrogalSpreadRangedInArcAction::Execute(Event /*event*/)
 
         if (bot->GetExactDist2d(targetX, targetY) > 2.0f)
         {
-            return MoveTo(HYJAL_SUMMIT_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false, false, true,
-                          MovementPriority::MOVEMENT_FORCED, true, false);
+            return MoveTo(HYJAL_SUMMIT_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false,
+                          false, true, MovementPriority::MOVEMENT_FORCED, true, false);
         }
         else
             hasReachedKazrogalPosition[guid] = true;
@@ -818,8 +818,8 @@ bool ArchimondeAvoidDoomfireAction::Execute(Event /*event*/)
         bool backwards = (archimonde && archimonde->GetVictim() == bot);
 
         bot->InterruptNonMeleeSpells(true);
-        return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, true,
-                      MovementPriority::MOVEMENT_FORCED, true, backwards);
+        return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
+                      false, true, MovementPriority::MOVEMENT_FORCED, true, backwards);
     }
 
     return false;
@@ -832,7 +832,8 @@ float ArchimondeAvoidDoomfireAction::DistanceToDoomfireLine(
     float dy = lineEndPosition.GetPositionY() - lineStartPosition.GetPositionY();
     float lengthSq = dx*dx + dy*dy;
     if (lengthSq == 0.0f)
-        return testPosition.GetExactDist2d(lineStartPosition.GetPositionX(), lineStartPosition.GetPositionY());
+        return testPosition.GetExactDist2d(lineStartPosition.GetPositionX(),
+                                           lineStartPosition.GetPositionY());
 
     float projectionFactor = ((testPosition.GetPositionX() - lineStartPosition.GetPositionX()) * dx +
                               (testPosition.GetPositionY() - lineStartPosition.GetPositionY()) * dy) / lengthSq;
