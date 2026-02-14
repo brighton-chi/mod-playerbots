@@ -114,12 +114,6 @@ bool JanalaiBossCastsFlameBreathTrigger::IsActive()
     return !AnyNearbyNpcWithEntry(botAI, NPC_FIRE_BOMB);
 }
 
-bool JanalaiRangedBotIsNotInCombatTrigger::IsActive()
-{
-    return !bot->IsInCombat() && botAI->IsRanged(bot) &&
-           !AI_VALUE2(Unit*, "find target", "jan'alai");
-}
-
 bool JanalaiBossSummoningFireBombsTrigger::IsActive()
 {
     return AI_VALUE2(Unit*, "find target", "jan'alai") &&

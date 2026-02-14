@@ -25,10 +25,6 @@ bool AkilzonMisdirectBossToMainTankAction::Execute(Event event)
     if (!akilzon)
         return false;
 
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
     Player* mainTank = GetGroupMainTank(botAI, bot);
     if (!mainTank)
         return false;
@@ -289,7 +285,7 @@ bool JanalaiSpreadRangedInCircleAction::Execute(Event event)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || !botAI->IsRanged(member))
+        if (!member || !botAI->IsRanged(member))
             continue;
 
         rangedMembers.push_back(member);
@@ -298,46 +294,27 @@ bool JanalaiSpreadRangedInCircleAction::Execute(Event event)
     if (rangedMembers.empty())
         return false;
 
-    const ObjectGuid guid = bot->GetGUID();
-
-    auto it = janalaiRangedPositions.find(guid);
-    if (it == janalaiRangedPositions.end())
-    {
-        auto findIt = std::find(rangedMembers.begin(), rangedMembers.end(), bot);
-        size_t botIndex =
-            (findIt != rangedMembers.end()) ? std::distance(rangedMembers.begin(), findIt) : 0;
-        size_t count = rangedMembers.size();
-        if (count == 0)
-            return false;
-
-        constexpr float radius = 15.0f;
-        float angle = (count == 1) ? 0.0f :
-            (2.0f * M_PI * static_cast<float>(botIndex) / static_cast<float>(count));
-
-        float tx = JANALAI_TANK_POSITION.GetPositionX() + radius * std::cos(angle);
-        float ty = JANALAI_TANK_POSITION.GetPositionY() + radius * std::sin(angle);
-
-        janalaiRangedPositions.try_emplace(guid, Position(tx, ty, JANALAI_TANK_POSITION.GetPositionZ()));
-        it = janalaiRangedPositions.find(guid);
-    }
-
-    if (it == janalaiRangedPositions.end())
+    auto findIt = std::find(rangedMembers.begin(), rangedMembers.end(), bot);
+    size_t botIndex =
+        (findIt != rangedMembers.end()) ? std::distance(rangedMembers.begin(), findIt) : 0;
+    size_t count = rangedMembers.size();
+    if (count == 0)
         return false;
 
-    const Position& target = it->second;
-    if (bot->GetExactDist2d(target.GetPositionX(), target.GetPositionY()) > 2.0f)
+    constexpr float radius = 15.0f;
+    float angle = (count == 1) ? 0.0f :
+            (2.0f * M_PI * static_cast<float>(botIndex) / static_cast<float>(count));
+
+    float targetX = JANALAI_TANK_POSITION.GetPositionX() + radius * std::cos(angle);
+    float targetY = JANALAI_TANK_POSITION.GetPositionY() + radius * std::sin(angle);
+
+    if (bot->GetExactDist2d(targetX, targetY) > 2.0f)
     {
-        return MoveTo(ZULAMAN_MAP_ID, target.GetPositionX(), target.GetPositionY(),
-                      bot->GetPositionZ(), false, false, false, false,
+        return MoveTo(ZULAMAN_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false, false, true,
                       MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
     return false;
-}
-
-bool JanalaiEraseRangedPositionTrackerAction::Execute(Event event)
-{
-    return janalaiRangedPositions.erase(bot->GetGUID());
 }
 
 bool JanalaiAvoidFireBombsAction::Execute(Event event)
@@ -711,8 +688,7 @@ bool HexLordMalacrassDispelMindControlAction::Execute(Event event)
     if (!mcTarget)
         return false;
 
-    const char* dispelSpells[] = {
-        "devour magic", "dispel magic", "purge" };
+    const char* dispelSpells[] = { "devour magic", "dispel magic", "purge" };
     for (const char* spellName : dispelSpells)
     {
         if (botAI->CanCastSpell(spellName, mcTarget))
@@ -812,7 +788,8 @@ bool ZuljinAvoidCyclonesAction::Execute(Event event)
     const Position& zuljinCenter = ZULJIN_TANK_POSITION;
     constexpr float maxRadius = 30.0f;
 
-    Position safestPos = FindSafestNearbyPosition(cyclones, zuljinCenter, maxRadius, hazardRadius);
+    Position safestPos =
+        FindSafestNearbyPosition(cyclones, zuljinCenter, maxRadius, hazardRadius);
 
     bot->AttackStop();
     bot->InterruptNonMeleeSpells(true);
@@ -923,7 +900,9 @@ std::vector<Unit*> ZuljinAvoidCyclonesAction::GetAllCycloneTriggers(
         Unit* unit = botAI->GetUnit(npcGuid);
         if (unit && unit->GetEntry() == NPC_FEATHER_VORTEX &&
             bot->GetExactDist2d(unit) < maxSearchRadius)
+        {
             cyclones.push_back(unit);
+        }
     }
 
     return cyclones;

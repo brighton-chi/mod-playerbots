@@ -99,14 +99,6 @@ public:
     bool IsActive() override;
 };
 
-class JanalaiRangedBotIsNotInCombatTrigger : public Trigger
-{
-public:
-    JanalaiRangedBotIsNotInCombatTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "jan'alai ranged bot is not in combat") {}
-    bool IsActive() override;
-};
-
 class JanalaiBossSummoningFireBombsTrigger : public Trigger
 {
 public:

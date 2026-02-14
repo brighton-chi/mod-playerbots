@@ -197,30 +197,32 @@ float JanalaiDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
 
 float HalazziDisableTankActionsMultiplier::GetValue(Action* action)
 {
-    if (!AI_VALUE2(Unit*, "find target", "halazzi"))
+    if (!botAI->IsTank(bot))
         return 1.0f;
 
-    if (!botAI->IsTank(bot))
+    if (!AI_VALUE2(Unit*, "find target", "halazzi"))
         return 1.0f;
 
     if (dynamic_cast<TankFaceAction*>(action))
         return 0.0f;
 
-    if (botAI->IsMainTank(bot))
+    if (bot->GetVictim() == nullptr)
+        return 1.0f;
+
+    /* if (!botAI->IsMainTank(bot))
         return 1.0f;
 
     if (!AI_VALUE2(Unit*, "find target", "spirit of the lynx"))
-        return 1.0f;
+        return 1.0f; */
 
-    if (bot->GetVictim() != nullptr &&
-        dynamic_cast<TankAssistAction*>(action))
+    if (dynamic_cast<TankAssistAction*>(action))
         return 0.0f;
 
-    if (dynamic_cast<CastTauntAction*>(action) ||
+    /* if (dynamic_cast<CastTauntAction*>(action) ||
         dynamic_cast<CastGrowlAction*>(action) ||
         dynamic_cast<CastHandOfReckoningAction*>(action) ||
         dynamic_cast<CastDarkCommandAction*>(action))
-        return 0.0f;
+        return 0.0f; */
 
     return 1.0f;
 }
@@ -251,20 +253,21 @@ float HexLordMalacrassDoNotDispelUnstableAfflictionMultiplier::GetValue(Action* 
     if (!AI_VALUE2(Unit*, "find target", "hex lord malacrass"))
         return 1.0f;
 
-    bool hasUnstableAffliction = false;
-    if (Group* group = bot->GetGroup())
-    {
-        for (GroupReference* ref = bot->GetGroup()->GetFirstMember(); ref != nullptr; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || !member->IsAlive())
-                continue;
+    Group* group = bot->GetGroup();
+    if (!group)
+        return 1.0f;
 
-            if (member->HasAura(SPELL_UNSTABLE_AFFLICTION))
-            {
-                hasUnstableAffliction = true;
-                break;
-            }
+    bool hasUnstableAffliction = false;
+    for (GroupReference* ref = bot->GetGroup()->GetFirstMember(); ref != nullptr; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive())
+            continue;
+
+        if (member->HasAura(SPELL_UNSTABLE_AFFLICTION))
+        {
+            hasUnstableAffliction = true;
+            break;
         }
     }
 
@@ -309,11 +312,6 @@ float ZuljinAvoidWhirlwindMultiplier::GetValue(Action* action)
 
     if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
         dynamic_cast<CastKillingSpreeAction*>(action) ||
-        dynamic_cast<CastBlinkBackAction*>(action) ||
-        dynamic_cast<CastDisengageAction*>(action) ||
-        dynamic_cast<CombatFormationMoveAction*>(action) ||
-        dynamic_cast<FleeAction*>(action) ||
-        dynamic_cast<FollowAction*>(action) ||
         dynamic_cast<ReachTargetAction*>(action))
         return 0.0f;
 
@@ -323,7 +321,7 @@ float ZuljinAvoidWhirlwindMultiplier::GetValue(Action* action)
 float ZuljinDisableAvoidAoeMultiplier::GetValue(Action* action)
 {
     Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
-    if (zuljin || !zuljin->HasAura(SPELL_SHAPE_OF_THE_EAGLE))
+    if (!zuljin || !zuljin->HasAura(SPELL_SHAPE_OF_THE_EAGLE))
         return 1.0f;
 
     if (dynamic_cast<AvoidAoeAction*>(action))
