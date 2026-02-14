@@ -118,7 +118,6 @@ namespace BlackTempleHelpers
     // Teron Gorefiend
     extern const Position GOREFIEND_TANK_POSITION;
     extern const Position GOREFIEND_DIE_POSITION;
-    extern std::unordered_map<ObjectGuid, Position> gorefiendRangedPositions;
 
     // Gurtogg Bloodboil
     extern const Position GURTOGG_TANK_POSITION;

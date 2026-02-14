@@ -34,7 +34,6 @@ namespace BlackTempleHelpers
     // Teron Gorefiend
     const Position GOREFIEND_TANK_POSITION = { 597.653f, 402.284f, 187.090f };
     const Position GOREFIEND_DIE_POSITION = { 525.709f, 377.177f, 193.203f };
-    std::unordered_map<ObjectGuid, Position> gorefiendRangedPositions;
 
     // Gurtogg Bloodboil
     const Position GURTOGG_TANK_POSITION = { 735.987f, 272.451f, 63.554f };
