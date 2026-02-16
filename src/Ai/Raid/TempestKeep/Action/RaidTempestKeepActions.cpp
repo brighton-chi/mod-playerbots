@@ -659,7 +659,7 @@ bool VoidReaverSpreadRangedAction::Execute(Event /*event*/)
     int healerIndex = GetHealerIndex(group, healerCount);
     int rangedDpsIndex = GetRangedDpsIndex(group, rangedDpsCount);
 
-    // VR's hitbox is 16.5y so 41y ensures that bots are <25 yards of spell range
+    // Void Reaver's hitbox is 15 yards (GetDistance2d() of 16.5 yards for non-Tauren)
     constexpr float radius = 41.0f;
     float targetX = 0.0f;
     float targetY = 0.0f;
@@ -1093,7 +1093,7 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::RangedBotsDisperse(
         constexpr float arcCenter = 2.3f + M_PI;
         float arcStart = arcCenter - arcSpan / 2.0f;
 
-        // Capernian's hitbox is 6 yards
+        // Capernian's hitbox is 4.5 yards (GetDistance2d of 6.0f for non-Tauren)
         if (botAI->IsHeal(bot))
         {
             auto findIt = std::find(healers.begin(), healers.end(), bot);
@@ -1142,6 +1142,7 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::MeleeStayBackFromCa
     // Main tank purposely stays in range to bait Conflagration in Phase 1
     if (botAI->IsMainTank(bot))
     {
+        // MoveTo called for a WorldObj is a GetDistance() check so both hitboxes are account for
         constexpr float desiredDist = 15.0f;
         botAI->Reset();
         return MoveTo(capernian, desiredDist, MovementPriority::MOVEMENT_FORCED);
