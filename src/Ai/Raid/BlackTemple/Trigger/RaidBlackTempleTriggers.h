@@ -164,11 +164,11 @@ public:
     bool IsActive() override;
 };
 
-class GurtoggBloodboilBossCastsBloodboilAndGeyserTrigger : public Trigger
+class GurtoggBloodboilBossCastsBloodboilTrigger : public Trigger
 {
 public:
-    GurtoggBloodboilBossCastsBloodboilAndGeyserTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "gurtogg bloodboil boss casts bloodboil and geyser") {}
+    GurtoggBloodboilBossCastsBloodboilTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "gurtogg bloodboil boss casts bloodboil") {}
     bool IsActive() override;
 };
 

@@ -71,8 +71,8 @@ public:
         creators["gurtogg bloodboil tanks position boss"] =
             &RaidBlackTempleActionContext::gurtogg_bloodboil_tanks_position_boss;
 
-        creators["gurtogg bloodboil position ranged"] =
-            &RaidBlackTempleActionContext::gurtogg_bloodboil_position_ranged;
+        creators["gurtogg bloodboil rotate ranged groups"] =
+            &RaidBlackTempleActionContext::gurtogg_bloodboil_rotate_ranged_groups;
 
         creators["gurtogg bloodboil ranged move away from enraged player"] =
             &RaidBlackTempleActionContext::gurtogg_bloodboil_ranged_move_away_from_enraged_player;
@@ -247,8 +247,8 @@ private:
     static Action* gurtogg_bloodboil_tanks_position_boss(
         PlayerbotAI* botAI) { return new GurtoggBloodboilTanksPositionBossAction(botAI); }
 
-    static Action* gurtogg_bloodboil_position_ranged(
-        PlayerbotAI* botAI) { return new GurtoggBloodboilPositionRangedAction(botAI); }
+    static Action* gurtogg_bloodboil_rotate_ranged_groups(
+        PlayerbotAI* botAI) { return new GurtoggBloodboilRotateRangedGroupsAction(botAI); }
 
     static Action* gurtogg_bloodboil_ranged_move_away_from_enraged_player(
         PlayerbotAI* botAI) { return new GurtoggBloodboilRangedMoveAwayFromEnragedPlayerAction(botAI); }

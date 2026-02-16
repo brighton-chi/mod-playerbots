@@ -181,11 +181,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class GurtoggBloodboilPositionRangedAction : public MovementAction
+class GurtoggBloodboilRotateRangedGroupsAction : public MovementAction
 {
 public:
-    GurtoggBloodboilPositionRangedAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "gurtogg bloodboil position ranged") {}
+    GurtoggBloodboilRotateRangedGroupsAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "gurtogg bloodboil rotate ranged groups") {}
     bool Execute(Event event) override;
 };
 
