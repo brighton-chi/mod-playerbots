@@ -623,18 +623,20 @@ bool AzgalorDisperseRangedAction::Execute(Event /*event*/)
 
     constexpr uint32 minInterval = 1000;
 
-    constexpr float safeDistFromBoss = 20.0f;
-    if (bot->GetDistance2d(azgalor) < safeDistFromBoss)
-        return FleePosition(Position(azgalor->GetPosition()), safeDistFromBoss, minInterval);
+    // Azgalor's hitbox is 8.8 yards
+    constexpr float safeDistFromBoss = 29.0f;
+    if (bot->GetExactDist2d(azgalor) < safeDistFromBoss)
+        return FleePosition(azgalor->GetPosition(), safeDistFromBoss, minInterval);
 
-    constexpr float safeDistFromDoomguard = 11.0f;
+    // Lesser Doomguard's hitbox is 3.75 yards
+    constexpr float safeDistFromDoomguard = 14.0f;
     if (Unit* doomguard = AI_VALUE2(Unit*, "find target", "lesser doomguard");
-        doomguard && bot->GetDistance2d(doomguard) < safeDistFromDoomguard)
-        return FleePosition(Position(doomguard->GetPosition()), safeDistFromDoomguard, minInterval);
+        doomguard && bot->GetExactDist2d(doomguard) < safeDistFromDoomguard)
+        return FleePosition(doomguard->GetPosition(), safeDistFromDoomguard, minInterval);
 
     constexpr float safeDistFromPlayer = 6.0f;
     if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
-        return FleePosition(Position(nearestPlayer->GetPosition()), safeDistFromPlayer, minInterval);
+        return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer, minInterval);
 
     return false;
 }
@@ -759,12 +761,12 @@ bool ArchimondeSpreadToAvoidAirBurstAction::Execute(Event /*event*/)
     if (!archimonde)
         return false;
 
-    constexpr float safeDistFromVictim = 14.0f;
+    constexpr float safeDistFromVictim = 16.0f;
     constexpr float safeDistFromPlayer = 8.0f;
     constexpr uint32 minInterval = 1000;
 
     Unit* victim = archimonde->GetVictim();
-    if (victim && victim != bot && bot->GetDistance2d(victim) < safeDistFromVictim &&
+    if (victim && victim != bot && bot->GetExactDist2d(victim) < safeDistFromVictim &&
         FleePosition(Position(victim->GetPosition()), safeDistFromVictim, minInterval))
         return true;
 
