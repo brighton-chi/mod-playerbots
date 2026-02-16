@@ -451,12 +451,8 @@ bool AlarMoveAwayFromRebirthAction::Execute(Event /*event*/)
     {
         float currentDistance = bot->GetDistance2d(alar);
         constexpr float safeDistance = 20.0f;
-        /* if (currentDistance < safeDistance)
-        {
-            botAI->Reset();
+        if (currentDistance < safeDistance)
             return MoveAway(alar, safeDistance - currentDistance);
-        } */
-        return MoveAway(alar, safeDistance - currentDistance);
     }
 
     return false;
@@ -901,10 +897,6 @@ bool KaelthasSunstriderKiteThaladredAction::Execute(Event /*event*/)
     float currentDistance = bot->GetExactDist2d(thaladred);
     constexpr float safeDistance = 25.0f;
     if (currentDistance < safeDistance)
-    /* {
-        botAI->Reset();
-        return MoveAway(thaladred, safeDistance - currentDistance);
-    } */
         return MoveAway(thaladred, safeDistance - currentDistance);
 
     return false;
