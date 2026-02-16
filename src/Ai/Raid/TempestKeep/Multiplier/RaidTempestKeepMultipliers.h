@@ -75,14 +75,6 @@ public:
 
 // Kael'thas Sunstrider <Lord of the Blood Elves>
 
-class KaelthasSunstriderKiteThaladredMultiplier : public Multiplier
-{
-public:
-    KaelthasSunstriderKiteThaladredMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "kael'thas sunstrider kite thaladred multiplier") {}
-    virtual float GetValue(Action* action);
-};
-
 class KaelthasSunstriderWaitForDpsMultiplier : public Multiplier
 {
 public:
@@ -91,11 +83,27 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class KaelthasSunstriderKiteThaladredMultiplier : public Multiplier
+{
+public:
+    KaelthasSunstriderKiteThaladredMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "kael'thas sunstrider kite thaladred multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
 class KaelthasSunstriderControlMisdirectionMultiplier : public Multiplier
 {
 public:
     KaelthasSunstriderControlMisdirectionMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "kael'thas sunstrider control misdirection multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
+class KaelthasSunstriderKeepDistanceFromCapernianMultiplier : public Multiplier
+{
+public:
+    KaelthasSunstriderKeepDistanceFromCapernianMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "kael'thas sunstrider keep distance from capernian multiplier") {}
     virtual float GetValue(Action* action);
 };
 

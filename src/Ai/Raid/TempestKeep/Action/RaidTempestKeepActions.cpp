@@ -327,7 +327,7 @@ bool AlarRangedDpsPrioritizeEmbersAction::Execute(Event /*event*/)
 {
     auto [firstEmber, secondEmber] = GetFirstTwoEmbersOfAlar(botAI);
 
-    constexpr float safeDistance = 15.0f;
+    constexpr float safeDistance = 16.0f;
     if (firstEmber)
     {
         if (bot->GetDistance2d(firstEmber) < safeDistance)
@@ -451,11 +451,12 @@ bool AlarMoveAwayFromRebirthAction::Execute(Event /*event*/)
     {
         float currentDistance = bot->GetDistance2d(alar);
         constexpr float safeDistance = 20.0f;
-        if (currentDistance < safeDistance)
+        /* if (currentDistance < safeDistance)
         {
             botAI->Reset();
             return MoveAway(alar, safeDistance - currentDistance);
-        }
+        } */
+        return MoveAway(alar, safeDistance - currentDistance);
     }
 
     return false;
@@ -903,10 +904,11 @@ bool KaelthasSunstriderKiteThaladredAction::Execute(Event /*event*/)
     float currentDistance = bot->GetExactDist2d(thaladred);
     constexpr float safeDistance = 25.0f;
     if (currentDistance < safeDistance)
-    {
+    /* {
         botAI->Reset();
         return MoveAway(thaladred, safeDistance - currentDistance);
-    }
+    } */
+        return MoveAway(thaladred, safeDistance - currentDistance);
 
     return false;
 }
@@ -1045,6 +1047,10 @@ bool KaelthasSunstriderWarlockTankPositionCapernianAction::Execute(Event /*event
 
 bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::Execute(Event /*event*/)
 {
+    Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
+    if (!capernian)
+        return false;
+
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     if (!kaelthas)
         return false;
@@ -1053,69 +1059,115 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::Execute(Event /*eve
     if (!kaelAI)
         return false;
 
-    if (botAI->IsRanged(bot) && RangedBotsDisperse(kaelAI))
+    if (botAI->IsRanged(bot) && capernian->GetVictim() != bot &&
+        RangedBotsDisperse(kaelAI, capernian))
         return true;
-
-    if (kaelAI->GetPhase() == PHASE_SINGLE_ADVISOR && StayBackFromCapernian())
+    else if (botAI->IsMelee(bot) && kaelAI->GetPhase() == PHASE_SINGLE_ADVISOR &&
+             MeleeStayBackFromCapernian(capernian))
         return true;
 
     return false;
 }
 
-bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::RangedBotsDisperse(boss_kaelthas* kaelAI)
+bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::RangedBotsDisperse(boss_kaelthas* kaelAI, Unit* capernian)
 {
-    if (kaelAI->GetPhase() == PHASE_ALL_ADVISORS &&
-        AI_VALUE2(Unit*, "find target", "thaladred the darkener"))
-        return false;
-
-    constexpr float safeDistance = 6.0f;
-    constexpr uint32 minInterval = 1000;
-    if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
+    if (kaelAI->GetPhase() == PHASE_SINGLE_ADVISOR)
     {
-        return FleePosition(Position(nearestPlayer->GetPosition()),
-                            safeDistance, minInterval);
+        Group* group = bot->GetGroup();
+        if (!group)
+            return false;
+
+        std::vector<Player*> healers;
+        std::vector<Player*> rangedDps;
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !botAI->IsRanged(member))
+                continue;
+
+            if (botAI->IsHeal(member))
+                healers.push_back(member);
+            else
+                rangedDps.push_back(member);
+        }
+
+        if (healers.empty() && rangedDps.empty())
+            return false;
+
+        size_t count = healers.size() + rangedDps.size();
+        size_t botIndex = 0;
+        float radius = 0.0f;
+        float angle = 0.0f;
+
+        constexpr float arcSpan = 2.0f * M_PI / 3.0f;
+        constexpr float arcCenter = 2.3f;
+        constexpr float arcStart = arcCenter - arcSpan / 2.0f;
+
+        // Capernian's hitbox is 6 yards
+        if (botAI->IsHeal(bot))
+        {
+            auto findIt = std::find(healers.begin(), healers.end(), bot);
+            botIndex = (findIt != healers.end()) ? std::distance(healers.begin(), findIt) : 0;
+            radius = 42.0f;
+            count = healers.size();
+        }
+        else
+        {
+            auto findIt = std::find(rangedDps.begin(), rangedDps.end(), bot);
+            botIndex = (findIt != rangedDps.end()) ? std::distance(rangedDps.begin(), findIt) : 0;
+            radius = 34.0f;
+            count = rangedDps.size();
+        }
+
+        angle = (count == 1) ? arcCenter :
+            (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
+
+        float targetX = capernian->GetPositionX() + radius * std::sin(angle);
+        float targetY = capernian->GetPositionY() + radius * std::cos(angle);
+
+        if (bot->GetExactDist2d(targetX, targetY) > 1.0f)
+        {
+            bot->AttackStop();
+            bot->InterruptNonMeleeSpells(true);
+            return MoveTo(TEMPEST_KEEP_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false,
+                          false, true, MovementPriority::MOVEMENT_FORCED, true, false);
+        }
+    }
+    else
+    {
+        if (AI_VALUE2(Unit*, "find target", "thaladred the darkener"))
+            return false;
+
+        const float safeDistFromCapernian = 28.0f;
+        constexpr uint32 minInterval = 0;
+        if (bot->GetDistance2d(capernian) < safeDistFromCapernian)
+            return FleePosition(capernian->GetPosition(), safeDistFromCapernian, minInterval);
     }
 
     return false;
 }
 
-bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::StayBackFromCapernian()
+bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::MeleeStayBackFromCapernian(Unit* capernian)
 {
-    Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
-    if (!capernian)
-        return false;
-
     // Main tank purposely stays in range to bait Conflagration in Phase 1
     if (botAI->IsMainTank(bot))
     {
         constexpr float desiredDist = 15.0f;
+        botAI->Reset();
         return MoveTo(capernian, desiredDist, MovementPriority::MOVEMENT_FORCED);
     }
     else
     {
-        float safeDistance = 0.0f;
-        if (botAI->IsMelee(bot))
-            safeDistance = 40.0f;
-        else if (botAI->IsRangedDps(bot))
-            safeDistance = 25.0f;
-        else if (botAI->IsHeal(bot))
-            safeDistance = 35.0f;
-
+        constexpr float safeDistance = 42.0f;
         float currentDistance = bot->GetDistance2d(capernian);
         if (currentDistance < safeDistance)
         {
             botAI->Reset();
             return MoveAway(capernian, safeDistance - currentDistance);
         }
+        else
+            return true;
     }
-
-    if (botAI->IsMelee(bot))
-    {
-        botAI->Reset();
-        return true;
-    }
-
-    return false;
 }
 
 bool KaelthasSunstriderFirstAssistTankPositionTelonicusAction::Execute(Event /*event*/)

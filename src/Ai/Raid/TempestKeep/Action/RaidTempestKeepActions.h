@@ -256,8 +256,8 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool RangedBotsDisperse(boss_kaelthas* kaelAI);
-    bool StayBackFromCapernian();
+    bool RangedBotsDisperse(boss_kaelthas* kaelAI, Unit* capernian);
+    bool MeleeStayBackFromCapernian(Unit* capernian);
 };
 
 class KaelthasSunstriderFirstAssistTankPositionTelonicusAction : public AttackAction

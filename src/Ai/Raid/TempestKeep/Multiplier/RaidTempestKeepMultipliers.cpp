@@ -271,6 +271,29 @@ float KaelthasSunstriderControlMisdirectionMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+float KaelthasSunstriderKeepDistanceFromCapernianMultiplier::GetValue(Action* action)
+{
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    if (!kaelthas)
+        return 1.0f;
+
+    boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
+    if (!kaelAI || kaelAI->GetPhase() != PHASE_SINGLE_ADVISOR)
+        return 1.0f;
+
+    Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
+    if (!capernian || capernian->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) ||
+        capernian->HasAura(SPELL_PERMANENT_FEIGN_DEATH))
+        return 1.0f;
+
+    if (dynamic_cast<MovementAction*>(action) &&
+        !dynamic_cast<AttackAction*>(action) &&
+        !dynamic_cast<KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction*>(action))
+         return 0.0f;
+
+    return 1.0f;
+}
+
 float KaelthasSunstriderManageWeaponTankingMultiplier::GetValue(Action* action)
 {
     if (!botAI->IsTank(bot))

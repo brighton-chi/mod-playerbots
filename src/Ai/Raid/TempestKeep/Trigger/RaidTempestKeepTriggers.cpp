@@ -48,8 +48,7 @@ bool AlarBossIsFlyingBetweenPlatformsTrigger::IsActive()
 
 bool AlarEmbersOfAlarExplodeUponDeathTrigger::IsActive()
 {
-    return botAI->IsTank(bot) &&
-           AI_VALUE2(Unit*, "find target", "ember of al'ar");
+    return botAI->IsTank(bot) && AI_VALUE2(Unit*, "find target", "ember of al'ar");
 }
 
 bool AlarKillingEmbersOfAlarDamagesBossTrigger::IsActive()
@@ -182,8 +181,7 @@ bool HighAstromancerSolarianBossHasVanishedTrigger::IsActive()
 
 bool HighAstromancerSolarianSolariumPriestsSpawnedTrigger::IsActive()
 {
-    return botAI->IsMelee(bot) &&
-           AI_VALUE2(Unit*, "find target", "solarium priest");
+    return botAI->IsMelee(bot) && AI_VALUE2(Unit*, "find target", "solarium priest");
 }
 
 bool HighAstromancerSolarianBossCastsPsychicScreamTrigger::IsActive()
@@ -298,18 +296,18 @@ bool KaelthasSunstriderTelonicusEngagedByFirstAssistTankTrigger::IsActive()
 
 bool KaelthasSunstriderBotsHaveSpecificRolesInPhase3Trigger::IsActive()
 {
+    if (!botAI->IsAssistHealOfIndex(bot, 0, true) &&
+        !botAI->IsMainTank(bot) &&
+        !botAI->IsAssistTankOfIndex(bot, 0, true) &&
+        GetCapernianTank(bot) != bot)
+        return false;
+
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     if (!kaelthas)
         return false;
 
     if (!AI_VALUE2(Unit*, "find target", "master engineer telonicus") &&
         !AI_VALUE2(Unit*, "find target", "lord sanguinar"))
-        return false;
-
-    if (!botAI->IsAssistHealOfIndex(bot, 0, true) &&
-        !botAI->IsMainTank(bot) &&
-        !botAI->IsAssistTankOfIndex(bot, 0, true) &&
-        GetCapernianTank(bot) != bot)
         return false;
 
     boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
@@ -333,11 +331,11 @@ bool KaelthasSunstriderDeterminingAdvisorKillOrderTrigger::IsActive()
 
 bool KaelthasSunstriderWaitingForTanksToGetAggroOnAdvisorsTrigger::IsActive()
 {
-    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
-    if (!kaelthas)
+    if (!IsMechanicTrackerBot(botAI, bot, TEMPEST_KEEP_MAP_ID, GetCapernianTank(bot)))
         return false;
 
-    if (!IsMechanicTrackerBot(botAI, bot, TEMPEST_KEEP_MAP_ID, GetCapernianTank(bot)))
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    if (!kaelthas)
         return false;
 
     boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
@@ -359,8 +357,7 @@ bool KaelthasSunstriderLegendaryWeaponsAreAliveTrigger::IsActive()
 
 bool KaelthasSunstriderLegendaryAxeCastsWhirlwindTrigger::IsActive()
 {
-    return AI_VALUE2(Unit*, "find target", "devastation") &&
-           botAI->IsMainTank(bot);
+    return botAI->IsMainTank(bot) && AI_VALUE2(Unit*, "find target", "devastation");
 }
 
 bool KaelthasSunstriderLegendaryWeaponsAreDeadAndLootableTrigger::IsActive()
@@ -370,9 +367,12 @@ bool KaelthasSunstriderLegendaryWeaponsAreDeadAndLootableTrigger::IsActive()
         return false;
 
     boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
-    if (!kaelAI || kaelAI->GetPhase() == PHASE_NONE ||
-        kaelAI->GetPhase() == PHASE_SINGLE_ADVISOR ||
-        kaelAI->GetPhase() == PHASE_FINAL)
+    if (!kaelAI ||
+        (kaelAI->GetPhase() != PHASE_WEAPONS && kaelAI->GetPhase() != PHASE_ALL_ADVISORS))
+        return false;
+
+    Unit* axe = AI_VALUE2(Unit*, "find target", "devastation");
+    if (axe && axe->GetVictim() == bot)
         return false;
 
     return IsAnyLegendaryWeaponDead(botAI, bot);
@@ -411,10 +411,8 @@ bool KaelthasSunstriderLegendaryWeaponsWereLostTrigger::IsActive()
 
     for (uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
     {
-        if (slot == EQUIPMENT_SLOT_BODY || slot == EQUIPMENT_SLOT_TABARD)
-            continue;
-
-        if (slot == EQUIPMENT_SLOT_OFFHAND && has2HWeapon)
+        if (slot == EQUIPMENT_SLOT_BODY || slot == EQUIPMENT_SLOT_TABARD ||
+            (slot == EQUIPMENT_SLOT_OFFHAND && has2HWeapon))
             continue;
 
         if (!bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
