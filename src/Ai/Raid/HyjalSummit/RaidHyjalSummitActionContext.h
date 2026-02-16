@@ -58,9 +58,6 @@ public:
         creators["kaz'rogal low mana bot move from group"] =
             &RaidHyjalSummitActionContext::kazrogal_low_mana_bot_move_from_group;
 
-        creators["kaz'rogal remove mark of kaz'rogal"] =
-            &RaidHyjalSummitActionContext::kazrogal_remove_mark_of_kazrogal;
-
         // Azgalor
         creators["azgalor misdirect boss to main tank"] =
             &RaidHyjalSummitActionContext::azgalor_misdirect_boss_to_main_tank;
@@ -146,9 +143,6 @@ private:
 
     static Action* kazrogal_low_mana_bot_move_from_group(
         PlayerbotAI* botAI) { return new KazrogalLowManaBotMoveFromGroupAction(botAI); }
-
-    static Action* kazrogal_remove_mark_of_kazrogal(
-        PlayerbotAI* botAI) { return new KazrogalRemoveMarkOfKazrogalAction(botAI); }
 
     // Azgalor
     static Action* azgalor_misdirect_boss_to_main_tank(

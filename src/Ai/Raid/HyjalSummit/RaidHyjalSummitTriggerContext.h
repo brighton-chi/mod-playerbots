@@ -58,9 +58,6 @@ public:
         creators["kaz'rogal low mana bots need escape path"] =
             &RaidHyjalSummitTriggerContext::kazrogal_low_mana_bots_need_escape_path;
 
-        creators["kaz'rogal mage or paladin has mark of kaz'rogal"] =
-            &RaidHyjalSummitTriggerContext::kazrogal_mage_or_paladin_has_mark_of_kazrogal;
-
         // Azgalor
         creators["azgalor pulling boss"] =
             &RaidHyjalSummitTriggerContext::azgalor_pulling_boss;
@@ -146,9 +143,6 @@ private:
 
     static Trigger* kazrogal_bot_is_low_on_mana(
         PlayerbotAI* botAI) { return new KazrogalBotIsLowOnManaTrigger(botAI); }
-
-    static Trigger* kazrogal_mage_or_paladin_has_mark_of_kazrogal(
-        PlayerbotAI* botAI) { return new KazrogalMageOrPaladinHasMarkOfKazrogalTrigger(botAI); }
 
     // Azgalor
     static Trigger* azgalor_pulling_boss(

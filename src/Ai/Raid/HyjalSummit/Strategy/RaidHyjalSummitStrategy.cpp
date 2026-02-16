@@ -52,9 +52,6 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kaz'rogal bot is low on mana", {
         NextAction("kaz'rogal low mana bot move from group", ACTION_EMERGENCY + 1) }));
 
-    triggers.push_back(new TriggerNode("kaz'rogal mage or paladin has mark of kaz'rogal", {
-        NextAction("kaz'rogal remove mark of kaz'rogal", ACTION_EMERGENCY + 6) }));
-
     // Azgalor
     triggers.push_back(new TriggerNode("azgalor pulling boss", {
         NextAction("azgalor misdirect boss to main tank", ACTION_RAID + 3) }));
@@ -106,7 +103,7 @@ void RaidHyjalSummitStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new AnetheronControlMisdirectionMultiplier(botAI));
 
     // Kaz'rogal
-    multipliers.push_back(new KazrogalLowManaBotStayAwayFromGroupMultiplier(botAI));
+    // multipliers.push_back(new KazrogalLowManaBotStayAwayFromGroupMultiplier(botAI)); // how does it look w/o this, using fleepos?
     multipliers.push_back(new KazrogalDisableCombatFormationMoveMultiplier(botAI));
 
     // Azgalor

@@ -131,14 +131,6 @@ public:
     bool IsActive() override;
 };
 
-class KazrogalMageOrPaladinHasMarkOfKazrogalTrigger : public Trigger
-{
-public:
-    KazrogalMageOrPaladinHasMarkOfKazrogalTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kaz'rogal mage or paladin has mark of kaz'rogal") {}
-    bool IsActive() override;
-};
-
 // Azgalor
 
 class AzgalorPullingBossTrigger : public Trigger

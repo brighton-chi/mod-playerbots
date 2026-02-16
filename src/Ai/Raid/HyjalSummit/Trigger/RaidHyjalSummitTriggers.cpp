@@ -146,6 +146,9 @@ bool KazrogalBotIsLowOnManaTrigger::IsActive()
         bot->getClass() == CLASS_DEATH_KNIGHT)
         return false;
 
+    if (botAI->HasAnyAuraOf(bot, "ice block", "divine shield", nullptr))
+        return false;
+
     Unit* kazrogal = AI_VALUE2(Unit*, "find target", "kaz'rogal");
     if (!kazrogal)
         return false;
@@ -154,21 +157,12 @@ bool KazrogalBotIsLowOnManaTrigger::IsActive()
     if (bot->getClass() == CLASS_DRUID && tab == DRUID_TAB_FERAL)
         return false;
 
-    if (bot->getClass() == CLASS_HUNTER && bot->GetPower(POWER_MANA) <= 6000)
+    if (bot->getClass() == CLASS_HUNTER && bot->GetPower(POWER_MANA) <= 4000)
         return true;
     else if (bot->GetPower(POWER_MANA) <= 3000)
         return true;
 
     return false;
-}
-
-bool KazrogalMageOrPaladinHasMarkOfKazrogalTrigger::IsActive()
-{
-    if (bot->getClass() != CLASS_MAGE &&
-        bot->getClass() != CLASS_PALADIN)
-        return false;
-
-    return bot->HasAura(SPELL_MARK_OF_KAZROGAL);
 }
 
 // Azgalor

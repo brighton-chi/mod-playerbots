@@ -133,14 +133,6 @@ public:
     bool Execute(Event event) override;
 };
 
-class KazrogalRemoveMarkOfKazrogalAction : public Action
-{
-public:
-    KazrogalRemoveMarkOfKazrogalAction(
-        PlayerbotAI* botAI) : Action(botAI, "kaz'rogal remove mark of kaz'rogal") {}
-    bool Execute(Event event) override;
-};
-
 // Azgalor
 
 class AzgalorMisdirectBossToMainTankAction : public AttackAction

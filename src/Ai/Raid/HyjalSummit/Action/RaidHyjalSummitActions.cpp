@@ -478,10 +478,10 @@ bool KazrogalSpreadRangedInArcAction::Execute(Event /*event*/)
         size_t botIndex = (findIt != rangedMembers.end()) ? std::distance(rangedMembers.begin(), findIt) : 0;
 
         constexpr float arcSpan = 2.0f * M_PI / 4.0f;
-        constexpr float arcCenter = 4.5f;
+        constexpr float arcCenter = /* 4.5f; */ 4.65f;
         constexpr float arcStart = arcCenter - arcSpan / 2.0f;
 
-        constexpr float radius = 25.0f;
+        constexpr float radius = /* 25.0f; */ 20.0f;
         float angle = (count == 1) ? arcCenter :
             (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
 
@@ -502,32 +502,39 @@ bool KazrogalSpreadRangedInArcAction::Execute(Event /*event*/)
 
 bool KazrogalLowManaBotMoveFromGroupAction::Execute(Event /*event*/)
 {
-    if (bot->getClass() == CLASS_HUNTER &&
-        !botAI->HasAura("aspect of the viper", bot)
-        && botAI->CanCastSpell("aspect of the viper", bot))
+    if (bot->getClass() == CLASS_HUNTER)
     {
-        return botAI->CastSpell("aspect of the viper", bot);
+        if (!botAI->HasAura("aspect of the viper", bot) &&
+            botAI->CanCastSpell("aspect of the viper", bot))
+        {
+            return botAI->CastSpell("aspect of the viper", bot);
+        }
     }
     else
     {
-        constexpr float safeDistance = 15.0f;
-        if (GetNearestPlayerInRadius(bot, safeDistance))
+        if (bot->getClass() == CLASS_MAGE &&
+            botAI->CanCastSpell("ice block", bot) &&
+            botAI->CastSpell("ice block", bot))
         {
-            bot->AttackStop();
+            return true;
+        }
+        else if (bot->getClass() == CLASS_PALADIN &&
+                 botAI->CanCastSpell("divine shield", bot) &&
+                 botAI->CastSpell("divine shield", bot))
+        {
+            return true;
+        }
+
+        constexpr float safeDistance = 16.0f;
+        constexpr uint32 minInterval = 2000;
+        if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
+        {
+            /* bot->AttackStop();
             bot->InterruptNonMeleeSpells(true);
-            return MoveFromGroup(safeDistance);
+            return MoveFromGroup(safeDistance); */
+            return FleePosition(Position(nearestPlayer->GetPosition()), safeDistance, minInterval);
         }
     }
-
-    return false;
-}
-
-bool KazrogalRemoveMarkOfKazrogalAction::Execute(Event /*event*/)
-{
-    if (botAI->CanCastSpell("ice block", bot))
-        return botAI->CastSpell("ice block", bot);
-    else if (botAI->CanCastSpell("divine shield", bot))
-        return botAI->CastSpell("divine shield", bot);
 
     return false;
 }
@@ -593,9 +600,10 @@ bool AzgalorMainTankPositionBossAction::Execute(Event /*event*/)
         }
 
         if (step == 0 && distToPosition <= maxDistance)
+        {
             azgalorTankStep[guid] = 1;
-
-        if (step == 1 && distToPosition <= maxDistance)
+        }
+        else if (step == 1 && distToPosition <= maxDistance)
         {
             float orientation = atan2(azgalor->GetPositionY() - bot->GetPositionY(),
                                       azgalor->GetPositionX() - bot->GetPositionX());
@@ -618,6 +626,11 @@ bool AzgalorDisperseRangedAction::Execute(Event /*event*/)
     if (bot->GetDistance2d(azgalor) < safeDistFromBoss)
         return FleePosition(Position(azgalor->GetPosition()), safeDistFromBoss, minInterval);
 
+    constexpr float safeDistFromDoomguard = 11.0f;
+    if (Unit* doomguard = AI_VALUE2(Unit*, "find target", "lesser doomguard");
+        doomguard && bot->GetDistance2d(doomguard) < safeDistFromDoomguard)
+        return FleePosition(Position(doomguard->GetPosition()), safeDistFromDoomguard, minInterval);
+
     constexpr float safeDistFromPlayer = 6.0f;
     if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
         return FleePosition(Position(nearestPlayer->GetPosition()), safeDistFromPlayer, minInterval);
@@ -630,8 +643,6 @@ bool AzgalorMoveToDoomguardTankAction::Execute(Event /*event*/)
     const Position& position = AZGALOR_DOOMGUARD_TANK_POSITION;
     if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 5.0f)
     {
-        bot->AttackStop();
-        bot->InterruptNonMeleeSpells(false);
         return MoveTo(HYJAL_SUMMIT_MAP_ID, position.GetPositionX(), position.GetPositionY(),
                       position.GetPositionZ(), false, false, false, true,
                       MovementPriority::MOVEMENT_FORCED, true, false);
@@ -692,7 +703,7 @@ bool AzgalorAssignDpsPriorityAction::Execute(Event /*event*/)
     if (botAI->IsRanged(bot))
     {
         if (Unit* doomguard = AI_VALUE2(Unit*, "find target", "lesser doomguard");
-            doomguard && bot->GetDistance2d(doomguard) < 35.0f)
+            doomguard && bot->GetDistance2d(doomguard) < 40.0f)
         {
             SetRtiTarget(botAI, "circle", doomguard);
 
