@@ -411,7 +411,7 @@ bool KazrogalMainTankPositionBossAction::Execute(Event /*event*/)
     if (bot->GetTarget() != kazrogal->GetGUID())
         return Attack(kazrogal);
 
-    if (kazrogal->GetVictim() == bot)
+    if (kazrogal->GetVictim() == bot && bot->IsWithinMeleeRange(kazrogal))
     {
         const Position& position = KAZROGAL_TANK_POSITION;
         float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
@@ -477,8 +477,8 @@ bool KazrogalSpreadRangedInArcAction::Execute(Event /*event*/)
         auto findIt = std::find(rangedMembers.begin(), rangedMembers.end(), bot);
         size_t botIndex = (findIt != rangedMembers.end()) ? std::distance(rangedMembers.begin(), findIt) : 0;
 
-        constexpr float arcSpan = 2.0f * M_PI / 4.0f;
-        constexpr float arcCenter = /* 4.5f; */ 4.65f;
+        constexpr float arcSpan = 2.0f * M_PI / 3.0f;
+        constexpr float arcCenter = 4.65f;
         constexpr float arcStart = arcCenter - arcSpan / 2.0f;
 
         constexpr float radius = /* 25.0f; */ 20.0f;
@@ -512,27 +512,28 @@ bool KazrogalLowManaBotMoveFromGroupAction::Execute(Event /*event*/)
     }
     else
     {
-        if (bot->getClass() == CLASS_MAGE &&
-            botAI->CanCastSpell("ice block", bot) &&
-            botAI->CastSpell("ice block", bot))
+        if (bot->HasAura(SPELL_MARK_OF_KAZROGAL))
         {
-            return true;
-        }
-        else if (bot->getClass() == CLASS_PALADIN &&
-                 botAI->CanCastSpell("divine shield", bot) &&
-                 botAI->CastSpell("divine shield", bot))
-        {
-            return true;
+            if (bot->getClass() == CLASS_MAGE &&
+                botAI->CanCastSpell("ice block", bot) &&
+                botAI->CastSpell("ice block", bot))
+            {
+                return true;
+            }
+            else if (bot->getClass() == CLASS_PALADIN &&
+                     botAI->CanCastSpell("divine shield", bot) &&
+                     botAI->CastSpell("divine shield", bot))
+            {
+                return true;
+            }
         }
 
         constexpr float safeDistance = 16.0f;
-        constexpr uint32 minInterval = 2000;
         if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
         {
-            /* bot->AttackStop();
+            bot->AttackStop();
             bot->InterruptNonMeleeSpells(true);
-            return MoveFromGroup(safeDistance); */
-            return FleePosition(Position(nearestPlayer->GetPosition()), safeDistance, minInterval);
+            return MoveFromGroup(safeDistance);
         }
     }
 

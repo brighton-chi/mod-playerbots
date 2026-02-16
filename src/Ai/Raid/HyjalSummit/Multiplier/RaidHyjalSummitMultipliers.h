@@ -65,6 +65,14 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class KazrogalKeepAspectOfTheViperActiveMultiplier : public Multiplier
+{
+public:
+    KazrogalKeepAspectOfTheViperActiveMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "kaz'rogal keep aspect of the viper active multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
 class KazrogalDisableCombatFormationMoveMultiplier : public Multiplier
 {
 public:
@@ -96,6 +104,14 @@ class AzgalorDoomedBotPrioritizePositioningMultiplier : public Multiplier
 public:
     AzgalorDoomedBotPrioritizePositioningMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "azgalor doomed bot prioritize positioning multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
+class AzgalorMeleeJustStandInFireMultiplier : public Multiplier
+{
+public:
+    AzgalorMeleeJustStandInFireMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "azgalor melee just stand in fire multiplier") {}
     virtual float GetValue(Action* action);
 };
 

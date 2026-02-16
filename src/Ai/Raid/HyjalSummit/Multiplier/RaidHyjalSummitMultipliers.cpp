@@ -128,17 +128,20 @@ float AnetheronControlMisdirectionMultiplier::GetValue(Action* action)
 
 float KazrogalLowManaBotStayAwayFromGroupMultiplier::GetValue(Action* action)
 {
-    uint8 tab = AiFactory::GetPlayerSpecTab(bot);
     if (bot->getClass() == CLASS_WARRIOR ||
         bot->getClass() == CLASS_ROGUE ||
         bot->getClass() == CLASS_DEATH_KNIGHT ||
-        (bot->getClass() == CLASS_DRUID && tab == DRUID_TAB_FERAL))
+        bot->getClass() == CLASS_HUNTER)
+        return 1.0f;
+
+    uint8 tab = AiFactory::GetPlayerSpecTab(bot);
+    if (bot->getClass() == CLASS_DRUID && tab == DRUID_TAB_FERAL)
         return 1.0f;
 
     if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
         return 1.0f;
 
-    if (bot->GetPower(POWER_MANA) > 3000)
+    if (bot->GetPower(POWER_MANA) > 4000)
         return 1.0f;
 
     if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
@@ -146,6 +149,28 @@ float KazrogalLowManaBotStayAwayFromGroupMultiplier::GetValue(Action* action)
          !dynamic_cast<AttackAction*>(action) &&
          !dynamic_cast<KazrogalLowManaBotMoveFromGroupAction*>(action)))
          return 0.0f;
+
+    return 1.0f;
+}
+
+float KazrogalKeepAspectOfTheViperActiveMultiplier::GetValue(Action* action)
+{
+    if (bot->getClass() != CLASS_HUNTER)
+        return 1.0f;
+
+    if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
+        return 1.0f;
+
+    if (bot->GetPower(POWER_MANA) > 4000)
+        return 1.0f;
+
+    if (dynamic_cast<CastAspectOfTheHawkAction*>(action) ||
+        dynamic_cast<CastAspectOfTheWildAction*>(action) ||
+        dynamic_cast<CastAspectOfTheDragonhawkAction*>(action) ||
+        dynamic_cast<CastAspectOfTheCheetahAction*>(action) ||
+        dynamic_cast<CastAspectOfThePackAction*>(action) ||
+        dynamic_cast<CastAspectOfTheMonkeyAction*>(action))
+        return 0.0f;
 
     return 1.0f;
 }
@@ -190,8 +215,7 @@ float AzgalorTanksMaintainPositionMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "azgalor"))
         return 1.0f;
 
-    if (dynamic_cast<TankFaceAction*>(action) ||
-        dynamic_cast<AvoidAoeAction*>(action))
+    if (dynamic_cast<TankFaceAction*>(action))
         return 0.0f;
 
     if (!AI_VALUE2(Unit*, "find target", "lesser doomguard") &&
@@ -221,6 +245,18 @@ float AzgalorDoomedBotPrioritizePositioningMultiplier::GetValue(Action* action)
         return 0.0f;
 
     return 1.0f;
+}
+
+float AzgalorMeleeJustStandInFireMultiplier::GetValue(Action* action)
+{
+    if (!botAI->IsMelee(bot))
+        return 1.0f;
+
+    if (!AI_VALUE2(Unit*, "find target", "azgalor"))
+        return 1.0f;
+
+    if (dynamic_cast<AvoidAoeAction*>(action))
+        return 0.0f;
 }
 
 // Archimonde

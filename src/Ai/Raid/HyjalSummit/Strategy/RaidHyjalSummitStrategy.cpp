@@ -103,13 +103,15 @@ void RaidHyjalSummitStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new AnetheronControlMisdirectionMultiplier(botAI));
 
     // Kaz'rogal
-    // multipliers.push_back(new KazrogalLowManaBotStayAwayFromGroupMultiplier(botAI)); // how does it look w/o this, using fleepos?
+    multipliers.push_back(new KazrogalLowManaBotStayAwayFromGroupMultiplier(botAI));
+    multipliers.push_back(new KazrogalKeepAspectOfTheViperActiveMultiplier(botAI));
     multipliers.push_back(new KazrogalDisableCombatFormationMoveMultiplier(botAI));
 
     // Azgalor
     multipliers.push_back(new AzgalorDisableTankAssistMultiplier(botAI));
     multipliers.push_back(new AzgalorTanksMaintainPositionMultiplier(botAI));
     multipliers.push_back(new AzgalorDoomedBotPrioritizePositioningMultiplier(botAI));
+    multipliers.push_back(new AzgalorMeleeJustStandInFireMultiplier(botAI));
 
     // Archimonde
     multipliers.push_back(new ArchimondeDisableCombatFormationMoveMultiplier(botAI));

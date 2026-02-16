@@ -131,7 +131,7 @@ bool KazrogalLowManaBotsNeedEscapePathTrigger::IsActive()
     if (!kazrogal)
         return false;
 
-    if (bot->getClass() == CLASS_HUNTER)
+    if (bot->getClass() == CLASS_HUNTER && bot->GetPower(POWER_MANA) > 4000)
         return true;
     else if (bot->GetPower(POWER_MANA) > 3000)
         return true;
@@ -157,9 +157,7 @@ bool KazrogalBotIsLowOnManaTrigger::IsActive()
     if (bot->getClass() == CLASS_DRUID && tab == DRUID_TAB_FERAL)
         return false;
 
-    if (bot->getClass() == CLASS_HUNTER && bot->GetPower(POWER_MANA) <= 4000)
-        return true;
-    else if (bot->GetPower(POWER_MANA) <= 3000)
+    if (bot->GetPower(POWER_MANA) <= 3000)
         return true;
 
     return false;
