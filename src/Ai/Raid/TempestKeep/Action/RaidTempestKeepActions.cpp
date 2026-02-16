@@ -1034,7 +1034,7 @@ bool KaelthasSunstriderWarlockTankPositionCapernianAction::Execute(Event /*event
     if (capernian->GetVictim() == bot)
     {
         float currentDist = bot->GetDistance2d(capernian);
-        constexpr float minDistance = 29.0f;
+        constexpr float minDistance = 28.0f;
         if (currentDist < minDistance)
             return MoveAway(capernian, minDistance - currentDist);
     }
@@ -1099,9 +1099,10 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::RangedBotsDisperse(
         float radius = 0.0f;
         float angle = 0.0f;
 
-        constexpr float arcSpan = 2.0f * M_PI / 3.0f;
-        constexpr float arcCenter = 2.3f;
-        constexpr float arcStart = arcCenter - arcSpan / 2.0f;
+        // Spread is 90-degree arc for healers and 120-degree arc for ranged DPS
+        float arcSpan = botAI->IsHeal(bot) ? M_PI / 2.0f : 2.0f * M_PI / 3.0f;
+        constexpr float arcCenter = 2.3f + M_PI;
+        float arcStart = arcCenter - arcSpan / 2.0f;
 
         // Capernian's hitbox is 6 yards
         if (botAI->IsHeal(bot))
@@ -1138,10 +1139,10 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::RangedBotsDisperse(
         if (AI_VALUE2(Unit*, "find target", "thaladred the darkener"))
             return false;
 
-        const float safeDistFromCapernian = 28.0f;
-        constexpr uint32 minInterval = 0;
-        if (bot->GetDistance2d(capernian) < safeDistFromCapernian)
-            return FleePosition(capernian->GetPosition(), safeDistFromCapernian, minInterval);
+        const float safeDistance = 6.0f;
+        constexpr uint32 minInterval = 1000;
+        if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
+            return FleePosition(nearestPlayer->GetPosition(), safeDistance, minInterval);
     }
 
     return false;
