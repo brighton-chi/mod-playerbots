@@ -481,7 +481,7 @@ bool KazrogalSpreadRangedInArcAction::Execute(Event /*event*/)
         constexpr float arcCenter = 4.65f;
         constexpr float arcStart = arcCenter - arcSpan / 2.0f;
 
-        constexpr float radius = /* 25.0f; */ 20.0f;
+        constexpr float radius = 20.0f;
         float angle = (count == 1) ? arcCenter :
             (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
 
