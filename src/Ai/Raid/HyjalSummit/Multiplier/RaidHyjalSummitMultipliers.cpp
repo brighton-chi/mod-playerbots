@@ -257,6 +257,8 @@ float AzgalorMeleeJustStandInFireMultiplier::GetValue(Action* action)
 
     if (dynamic_cast<AvoidAoeAction*>(action))
         return 0.0f;
+
+    return 1.0f;
 }
 
 // Archimonde
