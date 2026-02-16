@@ -52,8 +52,6 @@ bool BlackTempleEraseTimersAndTrackersAction::Execute(Event /*event*/)
             erased = true;
         if (illidanGrateStep.erase(guid) > 0)
             erased = true;
-        if (illidanDemonRangedPositions.erase(guid) > 0)
-            erased = true;
     }
 
     return erased;
@@ -119,11 +117,17 @@ bool HighWarlordNajentusDisperseRangedAction::Execute(Event /*event*/)
 
     constexpr float safeDistFromBoss = 10.0f;
     if (bot->GetExactDist2d(najentus) < safeDistFromBoss)
-        return FleePosition(Position(najentus->GetPosition()), safeDistFromBoss, minInterval);
+    {
+        return FleePosition(Position(najentus->GetPosition()),
+                            safeDistFromBoss, minInterval);
+    }
 
     constexpr float safeDistFromPlayer = 7.0f;
     if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
-        return FleePosition(Position(nearestPlayer->GetPosition()), safeDistFromPlayer, minInterval);
+    {
+        return FleePosition(Position(nearestPlayer->GetPosition()),
+                            safeDistFromPlayer, minInterval);
+    }
 
     return false;
 }
@@ -152,29 +156,26 @@ bool HighWarlordNajentusRemoveImpalingSpineAction::Execute(Event /*event*/)
         return false;
 
     // 2. Find the Naj'entus Spine GameObject near the impaled player
-    GuidVector gos = AI_VALUE(GuidVector, "nearest game objects");
+    auto gos = AI_VALUE(GuidVector, "nearest game objects");
     GameObject* spineGo = nullptr;
     for (ObjectGuid const& guid : gos)
     {
         GameObject* go = botAI->GetGameObject(guid);
-        if (!go || !go->isSpawned())
-            continue;
-
-        if (go->GetEntry() != GO_NAJENTUS_SPINE)
-            continue;
-
-        spineGo = go;
-        break;
+        if (go && go->isSpawned() && go->GetEntry() == GO_NAJENTUS_SPINE)
+        {
+            spineGo = go;
+            break;
+        }
     }
     if (!spineGo)
         return false;
 
     // 3. Move to the spine if not close enough
-    float distToSpine = bot->GetExactDist2d(spineGo);
-    if (distToSpine > 3.0f)
+    if (bot->GetExactDist2d(spineGo) > 3.0f)
     {
-        return MoveTo(BLACK_TEMPLE_MAP_ID, spineGo->GetPositionX(), spineGo->GetPositionY(), bot->GetPositionZ(),
-                      false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+        return MoveTo(BLACK_TEMPLE_MAP_ID, spineGo->GetPositionX(), spineGo->GetPositionY(),
+                      bot->GetPositionZ(), false, false, false, false,
+                      MovementPriority::MOVEMENT_FORCED, true, false);
     }
     else
     {
@@ -294,10 +295,7 @@ bool SupremusKiteBossAction::Execute(Event /*event*/)
     float currentDistance = bot->GetDistance2d(supremus);
     constexpr float safeDistance = 25.0f;
     if (currentDistance < safeDistance)
-    {
-        botAI->Reset();
         return MoveAway(supremus, safeDistance - currentDistance);
-    }
 
     return false;
 }
@@ -758,12 +756,15 @@ bool GurtoggBloodboilPositionRangedAction::Execute(Event /*event*/)
 
     if (inActiveGroup)
     {
-        constexpr float desiredDistance = 20.0f;
-        if (distToGurtogg < desiredDistance)
+        constexpr float minDistance = 20.0f;
+        if (distToGurtogg < minDistance)
         {
-            constexpr uint32 minInterval = 0;
+            /* constexpr uint32 minInterval = 0;
             botAI->Reset();
-            return FleePosition(Position(gurtogg->GetPosition()), desiredDistance, minInterval);
+            return FleePosition(Position(gurtogg->GetPosition()), minDistance, minInterval); */
+            float currentDistance = bot->GetExactDist2d(gurtogg);
+            if (currentDistance < minDistance)
+                return MoveAway(gurtogg, minDistance - currentDistance);
         }
     }
     else
@@ -823,7 +824,9 @@ bool GurtoggBloodboilManagePhaseTimerAction::Execute(Event /*event*/)
     const uint32 instanceId = gurtogg->GetMap()->GetInstanceId();
 
     if (gurtogg->HasAura(SPELL_BOSS_FEL_RAGE))
+    {
         return gurtoggPhaseTimer.erase(instanceId) > 0;
+    }
     else
     {
         auto [it, inserted] = gurtoggPhaseTimer.try_emplace(instanceId, now);
@@ -1099,9 +1102,8 @@ bool MotherShahrazRunAwayToBreakFatalAttractionAction::Execute(Event /*event*/)
 
         if (!bot->GetMap()->CheckCollisionAndGetValidCoords(
             bot, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), testX, testY, testZ))
-        {
             break;
-        }
+
         lastValidX = testX;
         lastValidY = testY;
         lastValidZ = testZ;
@@ -1455,23 +1457,14 @@ bool IllidariCouncilAssignDpsTargetsAction::Execute(Event /*event*/)
         return false;
 
     bool shouldAttackMalande = false;
-
     Unit* zerevor = AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");
     if (zerevor && zerevor->GetExactDist2d(malande) < 15.0f)
-    {
         shouldAttackMalande = false;
-    }
     else if (bot->getClass() == CLASS_ROGUE ||
-        (bot->getClass() == CLASS_WARRIOR && botAI->IsDps(bot)))
-    {
-        if (!malande->HasAura(SPELL_BLESSING_OF_PROTECTION))
-            shouldAttackMalande = true;
-    }
+             (bot->getClass() == CLASS_WARRIOR && botAI->IsDps(bot)))
+        shouldAttackMalande = !malande->HasAura(SPELL_BLESSING_OF_PROTECTION);
     else if (bot->getClass() == CLASS_SHAMAN && botAI->IsDps(bot))
-    {
-        if (!malande->HasAura(SPELL_BLESSING_OF_SPELL_WARDING))
-            shouldAttackMalande = true;
-    }
+        shouldAttackMalande = !malande->HasAura(SPELL_BLESSING_OF_SPELL_WARDING);
 
     if (shouldAttackMalande)
     {
@@ -1514,16 +1507,10 @@ bool IllidanStormrageMisdirectToTankAction::Execute(Event /*event*/)
     if (!group)
         return false;
 
-    if (GetIllidanPhase(illidan) == 2)
-    {
-        if (TryMisdirectToFlameTanks(group))
-            return true;
-    }
-    else if (GetIllidanPhase(illidan) == 4)
-    {
-        if (TryMisdirectToWarlockTank(illidan))
-            return true;
-    }
+    if (GetIllidanPhase(illidan) == 2 && TryMisdirectToFlameTanks(group))
+        return true;
+    else if (GetIllidanPhase(illidan) == 4 && TryMisdirectToWarlockTank(illidan))
+        return true;
 
     return false;
 }
@@ -1835,10 +1822,11 @@ bool IllidanStormrageMainTankMoveAwayFromFlameCrashAction::IsPathSafeFromFlameCr
 bool IllidanStormrageIsolateBotWithParasiteAction::Execute(Event /*event*/)
 {
     constexpr float safeDistance = 10.0f;
+    constexpr uint32 minInterval = 0;
     if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
     {
-        constexpr uint32 minInterval = 0;
-        botAI->Reset();
+        bot->AttackStop();
+        bot->InterruptNonMeleeSpells(true);
         return FleePosition(Position(nearestPlayer->GetPosition()), safeDistance, minInterval);
     }
 
@@ -2087,10 +2075,9 @@ bool IllidanStormrageControlPetAggressionAction::Execute(Event /*event*/)
             pet->SetReactState(REACT_PASSIVE);
         }
     }
-    else
+    else if (pet->GetReactState() == REACT_PASSIVE)
     {
-        if (pet->GetReactState() == REACT_PASSIVE)
-            pet->SetReactState(REACT_DEFENSIVE);
+        pet->SetReactState(REACT_DEFENSIVE);
     }
 
     return false;
@@ -2158,8 +2145,6 @@ bool IllidanStormragePositionAboveGrateAction::Execute(Event /*event*/)
 
 bool IllidanStormrageRemoveDarkBarrageAction::Execute(Event /*event*/)
 {
-    botAI->Reset();
-
     const char* abilities[] = { "divine shield", "ice block", "cloak of shadows" };
     for (const char* spellName : abilities)
     {
@@ -2179,10 +2164,7 @@ bool IllidanStormrageMoveAwayFromLandingPointAction::Execute(Event /*event*/)
     float currentDistance = bot->GetExactDist2d(illidan);
     constexpr float safeDistance = 20.0f;
     if (currentDistance < safeDistance)
-    {
-        botAI->Reset();
         return MoveAway(illidan, safeDistance - currentDistance);
-    }
 
     return false;
 }
@@ -2285,45 +2267,33 @@ bool IllidanStormrageDisperseRangedAction::Execute(Event /*event*/)
         if (rangedBots.empty())
             return false;
 
-        const ObjectGuid guid = bot->GetGUID();
+        size_t count = rangedBots.size();
+        auto findIt = std::find(rangedBots.begin(), rangedBots.end(), bot);
+        size_t botIndex = (findIt != rangedBots.end()) ? std::distance(rangedBots.begin(), findIt) : 0;
 
-        auto it = illidanDemonRangedPositions.find(guid);
-        if (it == illidanDemonRangedPositions.end())
+        // Calculate angle from Illidan to warlock tank
+        float dx = warlockTank->GetPositionX() - illidan->GetPositionX();
+        float dy = warlockTank->GetPositionY() - illidan->GetPositionY();
+        float warlockAngle = std::atan2(dy, dx);
+
+        constexpr float forbiddenArc = (2.0f / 3.0f) * M_PI; // 120 degrees
+        constexpr float allowedArc = (4.0f / 3.0f) * M_PI;   // 240 degrees
+
+        float arcStart = Position::NormalizeOrientation(warlockAngle + forbiddenArc / 2.0f);
+        float arcSpan = allowedArc;
+        constexpr float radius = 25.0f;
+
+        float angle = (count == 1) ? Position::NormalizeOrientation(arcStart + arcSpan / 2.0f) :
+            Position::NormalizeOrientation(
+                arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
+
+        float targetX = illidan->GetPositionX() + radius * std::cos(angle);
+        float targetY = illidan->GetPositionY() + radius * std::sin(angle);
+
+        if (bot->GetExactDist2d(targetX, targetY) > 1.0f)
         {
-            size_t count = rangedBots.size();
-            auto findIt = std::find(rangedBots.begin(), rangedBots.end(), bot);
-            size_t botIndex = (findIt != rangedBots.end()) ? std::distance(rangedBots.begin(), findIt) : 0;
-
-            // Calculate angle from Illidan to warlock tank
-            float dx = warlockTank->GetPositionX() - illidan->GetPositionX();
-            float dy = warlockTank->GetPositionY() - illidan->GetPositionY();
-            float warlockAngle = std::atan2(dy, dx);
-
-            constexpr float forbiddenArc = (2.0f / 3.0f) * M_PI; // 120 degrees
-            constexpr float allowedArc = (4.0f / 3.0f) * M_PI;   // 240 degrees
-
-            float arcStart = Position::NormalizeOrientation(warlockAngle + forbiddenArc / 2.0f);
-            float arcSpan = allowedArc;
-            constexpr float radius = 25.0f;
-
-            float angle = (count == 1) ? Position::NormalizeOrientation(arcStart + arcSpan / 2.0f) :
-                Position::NormalizeOrientation(arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
-
-            float targetX = illidan->GetPositionX() + radius * std::cos(angle);
-            float targetY = illidan->GetPositionY() + radius * std::sin(angle);
-
-            illidanDemonRangedPositions.try_emplace(guid, Position(targetX, targetY, bot->GetPositionZ()));
-            it = illidanDemonRangedPositions.find(guid);
-        }
-
-        if (it == illidanDemonRangedPositions.end())
-            return false;
-
-        const Position& target = it->second;
-        if (bot->GetExactDist2d(target.GetPositionX(), target.GetPositionY()) > 1.0f)
-        {
-            return MoveTo(BLACK_TEMPLE_MAP_ID, target.GetPositionX(), target.GetPositionY(), bot->GetPositionZ(),
-                          false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
+            return MoveTo(BLACK_TEMPLE_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false,
+                          false, true, MovementPriority::MOVEMENT_FORCED, true, false);
         }
     }
 
@@ -2339,21 +2309,17 @@ bool IllidanStormrageMeleeGoSomewhereToNotDieAction::Execute(Event /*event*/)
 
     float currentDistFromBoss = bot->GetExactDist2d(illidan);
     constexpr float safeDistFromBoss = 35.0f;
-    if (currentDistFromBoss < safeDistFromBoss)
-    {
-        if (MoveAway(illidan, safeDistFromBoss - currentDistFromBoss))
-            return true;
-    }
+    if (currentDistFromBoss < safeDistFromBoss &&
+        MoveAway(illidan, safeDistFromBoss - currentDistFromBoss))
+        return true;
 
     if (Player* warlockTank = GetIllidanWarlockTank(bot))
     {
         float currentDistFromTank = bot->GetExactDist2d(warlockTank);
         constexpr float safeDistFromTank = 25.0f;
-        if (currentDistFromTank < safeDistFromTank)
-        {
-            if (MoveAway(warlockTank, safeDistFromTank - currentDistFromTank))
-                return true;
-        }
+        if (currentDistFromTank < safeDistFromTank &&
+            MoveAway(warlockTank, safeDistFromTank - currentDistFromTank))
+            return true;
     }
 
     constexpr float safeDistFromPlayer = 6.0f;
@@ -2373,12 +2339,10 @@ bool IllidanStormrageWarlockTankHandleDemonBossAction::Execute(Event /*event*/)
         return false;
 
     constexpr float safeDistFromBoss = 25.0f;
-    if (bot->GetExactDist2d(illidan) < safeDistFromBoss)
-    {
-        constexpr uint32 minInterval = 0;
-        if (FleePosition(Position(illidan->GetPosition()), safeDistFromBoss, minInterval))
-            return true;
-    }
+    constexpr uint32 minInterval = 0;
+    if (bot->GetExactDist2d(illidan) < safeDistFromBoss &&
+        FleePosition(Position(illidan->GetPosition()), safeDistFromBoss, minInterval))
+        return true;
 
     if (botAI->CanCastSpell("searing pain", illidan))
         return botAI->CastSpell("searing pain", illidan);
