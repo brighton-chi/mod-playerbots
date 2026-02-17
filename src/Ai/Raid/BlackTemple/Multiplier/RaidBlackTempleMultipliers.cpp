@@ -51,10 +51,8 @@ float SupremusFocusOnAvoidanceInPhase2Multiplier::GetValue(Action* action)
 
 float SupremusHitboxIsBuggedMultiplier::GetValue(Action* action)
 {
-    if (bot->getClass() != CLASS_ROGUE)
-        return 1.0f;
-
-    if (!AI_VALUE2(Unit*, "find target", "supremus"))
+    if (bot->getClass() != CLASS_ROGUE ||
+        !AI_VALUE2(Unit*, "find target", "supremus"))
         return 1.0f;
 
     if (dynamic_cast<CastKillingSpreeAction*>(action))
@@ -114,13 +112,8 @@ float TeronGorefiendSpiritsAttackOnlyShadowyConstructsMultiplier::GetValue(Actio
 
 float TeronGorefiendDisableAttackingConstructsMultiplier::GetValue(Action* action)
 {
-    if (bot->GetVictim() == nullptr)
-        return 1.0f;
-
-    if (botAI->IsHeal(bot))
-        return 1.0f;
-
-    if (!AI_VALUE2(Unit*, "find target", "teron gorefiend"))
+    if (bot->GetVictim() == nullptr || botAI->IsHeal(bot) ||
+        !AI_VALUE2(Unit*, "find target", "teron gorefiend"))
         return 1.0f;
 
     if (dynamic_cast<TankAssistAction*>(action))
@@ -234,10 +227,8 @@ float MotherShahrazDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
 
 float IllidariCouncilDisableTankActionsMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsTank(bot))
-        return 1.0f;
-
-    if (!AI_VALUE2(Unit*, "find target", "gathios the shatterer"))
+    if (!botAI->IsTank(bot) ||
+        !AI_VALUE2(Unit*, "find target", "gathios the shatterer"))
         return 1.0f;
 
     if (bot->GetVictim() != nullptr && dynamic_cast<TankAssistAction*>(action))
@@ -290,10 +281,8 @@ float IllidariCouncilControlMovementMultiplier::GetValue(Action* action)
 
 float IllidariCouncilDisableAoeMultiplier::GetValue(Action* action)
 {
-    if (botAI->IsHeal(bot))
-        return 1.0f;
-
-    if (!AI_VALUE2(Unit*, "find target", "gathios the shatterer"))
+    if (botAI->IsHeal(bot) ||
+        !AI_VALUE2(Unit*, "find target", "gathios the shatterer"))
         return 1.0f;
 
     auto castSpellAction = dynamic_cast<CastSpellAction*>(action);
@@ -306,10 +295,8 @@ float IllidariCouncilDisableAoeMultiplier::GetValue(Action* action)
 
 float IllidariCouncilControlMisdirectionMultiplier::GetValue(Action* action)
 {
-    if (bot->getClass() != CLASS_HUNTER)
-        return 1.0f;
-
-    if (!AI_VALUE2(Unit*, "find target", "high nethermancer zerevor"))
+    if (bot->getClass() != CLASS_HUNTER ||
+        !AI_VALUE2(Unit*, "find target", "high nethermancer zerevor"))
         return 1.0f;
 
      if (dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
@@ -402,8 +389,8 @@ float IllidanStormrageDelayCooldownsMultiplier::GetValue(Action* action)
 
     if (illidan->GetHealthPct() > 62.0f &&
         (dynamic_cast<CastHeroismAction*>(action) ||
-            dynamic_cast<CastBloodlustAction*>(action)))
-            return 0.0f;
+         dynamic_cast<CastBloodlustAction*>(action)))
+         return 0.0f;
 
     if (illidan->GetHealthPct() <= 62.0f || illidan->GetHealthPct() > 95.0f)
         return 1.0f;
@@ -443,30 +430,27 @@ float IllidanStormrageControlMovementMultiplier::GetValue(Action* action)
     if (!illidan || illidan->GetHealth() == 1)
         return 1.0f;
 
-    if (dynamic_cast<TankFaceAction*>(action))
-    {
-        if (!botAI->IsMainTank(bot))
-            return 0.0f;
-    }
-    else if (dynamic_cast<CombatFormationMoveAction*>(action) &&
-                !dynamic_cast<SetBehindTargetAction*>(action))
-                return 0.0f;
+    if (!botAI->IsMainTank(bot) && dynamic_cast<TankFaceAction*>(action))
+        return 0.0f;
+
+    if (dynamic_cast<CombatFormationMoveAction*>(action) &&
+        !dynamic_cast<TankFaceAction*>(action) &&
+        !dynamic_cast<SetBehindTargetAction*>(action))
+        return 0.0f;
 
     if (GetIllidanPhase(illidan) == 2)
     {
         if (dynamic_cast<AvoidAoeAction*>(action))
             return 0.0f;
 
-        if (botAI->IsAssistTankOfIndex(bot, 0, true) ||
-            botAI->IsAssistTankOfIndex(bot, 1, true))
-        {
-            if (dynamic_cast<MovementAction*>(action) &&
-                !dynamic_cast<IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction*>(action))
-                return 0.0f;
+        if (!botAI->IsAssistTankOfIndex(bot, 0, true) &&
+            !botAI->IsAssistTankOfIndex(bot, 1, true))
+            return 1.0f;
 
-            if (dynamic_cast<CastHealingSpellAction*>(action))
-                return 0.0f;
-        }
+        if  ((dynamic_cast<MovementAction*>(action) &&
+              !dynamic_cast<IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction*>(action)) ||
+              dynamic_cast<CastHealingSpellAction*>(action))
+              return 0.0f;
     }
 
     return 1.0f;
@@ -502,45 +486,30 @@ float IllidanStormrageStayWithinGrateMultiplier::GetValue(Action* action)
     if (!illidan || illidan->GetHealth() == 1)
         return 1.0f;
 
-    if (botAI->IsMainTank(bot))
-    {
-        if (GetIllidanPhase(illidan) == 2)
-        {
-            if (dynamic_cast<MovementAction*>(action) &&
-                !dynamic_cast<IllidanStormragePositionAboveGrateAction*>(action))
-                return 0.0f;
+    if (botAI->IsMainTank(bot) && GetIllidanPhase(illidan) == 2 &&
+        ((dynamic_cast<MovementAction*>(action) &&
+          !dynamic_cast<IllidanStormragePositionAboveGrateAction*>(action)) ||
+          dynamic_cast<CastMeleeSpellAction*>(action) ||
+          dynamic_cast<CastReachTargetSpellAction*>(action)))
+          return 0.0f;
 
-            if (dynamic_cast<CastMeleeSpellAction*>(action) ||
-                dynamic_cast<CastReachTargetSpellAction*>(action))
-                return 0.0f;
-        }
-    }
-    else if (botAI->IsRanged(bot))
-    {
-        if (GetIllidanPhase(illidan) != 1 || bot->HasAura(SPELL_PARASITIC_SHADOWFIEND))
-        {
-            if (dynamic_cast<ReachTargetAction*>(action) ||
-                dynamic_cast<FleeAction*>(action) ||
-                dynamic_cast<FollowAction*>(action) ||
-                dynamic_cast<CastDisengageAction*>(action) ||
-                dynamic_cast<CastBlinkBackAction*>(action))
-                return 0.0f;
-        }
-    }
-    else if (botAI->IsMelee(bot))
-    {
-        if (GetIllidanPhase(illidan) == 2 || GetIllidanPhase(illidan) == 4 ||
-            bot->HasAura(SPELL_PARASITIC_SHADOWFIEND))
-        {
-            if (dynamic_cast<ReachTargetAction*>(action) ||
-                dynamic_cast<FleeAction*>(action) ||
-                dynamic_cast<FollowAction*>(action) ||
-                dynamic_cast<SetBehindTargetAction*>(action) ||
-                dynamic_cast<CastReachTargetSpellAction*>(action) ||
-                dynamic_cast<CastKillingSpreeAction*>(action))
-                return 0.0f;
-        }
-    }
+    if (botAI->IsRanged(bot) && (GetIllidanPhase(illidan) != 1 || bot->HasAura(SPELL_PARASITIC_SHADOWFIEND)) &&
+        (dynamic_cast<ReachTargetAction*>(action) ||
+         dynamic_cast<FleeAction*>(action) ||
+         dynamic_cast<FollowAction*>(action) ||
+         dynamic_cast<CastDisengageAction*>(action) ||
+         dynamic_cast<CastBlinkBackAction*>(action)))
+         return 0.0f;
+
+    if (botAI->IsMelee(bot) && (GetIllidanPhase(illidan) == 2 || GetIllidanPhase(illidan) == 4 ||
+        bot->HasAura(SPELL_PARASITIC_SHADOWFIEND)) &&
+        (dynamic_cast<ReachTargetAction*>(action) ||
+         dynamic_cast<FleeAction*>(action) ||
+         dynamic_cast<FollowAction*>(action) ||
+         dynamic_cast<SetBehindTargetAction*>(action) ||
+         dynamic_cast<CastReachTargetSpellAction*>(action) ||
+         dynamic_cast<CastKillingSpreeAction*>(action)))
+         return 0.0f;
 
     return 1.0f;
 }
@@ -575,51 +544,40 @@ float IllidanStormrageWaitForDpsMultiplier::GetValue(Action* action)
     const time_t now = std::time(nullptr);
     const uint32 instanceId = illidan->GetMap()->GetInstanceId();
 
-    if (GetIllidanPhase(illidan) == 1 || GetIllidanPhase(illidan) == 3)
+    if ((GetIllidanPhase(illidan) == 1 || GetIllidanPhase(illidan) == 3) &&
+        !botAI->IsMainTank(bot))
     {
-        if (botAI->IsMainTank(bot))
-            return 1.0f;
-
         constexpr uint8 elfPhaseDpsWaitSeconds = 3;
         auto it = illidanBossDpsWaitTimer.find(instanceId);
-        if (it == illidanBossDpsWaitTimer.end() || (now - it->second) < elfPhaseDpsWaitSeconds)
-        {
-            if (dynamic_cast<AttackAction*>(action) ||
-                (dynamic_cast<CastSpellAction*>(action) &&
-                 !dynamic_cast<CastHealingSpellAction*>(action)))
-                 return 0.0f;
-        }
-    }
-    else if (GetIllidanPhase(illidan) == 4)
-    {
-        if (GetIllidanWarlockTank(bot) == bot)
-            return 1.0f;
 
+        if ((it == illidanBossDpsWaitTimer.end() || (now - it->second) < elfPhaseDpsWaitSeconds) &&
+            (dynamic_cast<AttackAction*>(action) ||
+             (dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<CastHealingSpellAction*>(action))))
+            return 0.0f;
+    }
+
+    if (GetIllidanPhase(illidan) == 4 && GetIllidanWarlockTank(bot) != bot)
+    {
         constexpr uint8 demonPhaseDpsWaitSeconds = 8;
         auto it = illidanBossDpsWaitTimer.find(instanceId);
-        if (it == illidanBossDpsWaitTimer.end() || (now - it->second) < demonPhaseDpsWaitSeconds)
-        {
-            if (dynamic_cast<AttackAction*>(action) ||
-                (dynamic_cast<CastSpellAction*>(action) &&
-                 !dynamic_cast<CastHealingSpellAction*>(action)))
-                 return 0.0f;
-        }
-    }
-    else if (AI_VALUE2(Unit*, "find target", "flame of azzinoth"))
-    {
-        if (botAI->IsAssistTankOfIndex(bot, 0, true) ||
-            botAI->IsAssistTankOfIndex(bot, 1, true))
-            return 1.0f;
 
+        if ((it == illidanBossDpsWaitTimer.end() || (now - it->second) < demonPhaseDpsWaitSeconds) &&
+            (dynamic_cast<AttackAction*>(action) ||
+             (dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<CastHealingSpellAction*>(action))))
+            return 0.0f;
+    }
+
+    if (AI_VALUE2(Unit*, "find target", "flame of azzinoth") &&
+        !botAI->IsAssistTankOfIndex(bot, 0, true) &&
+        !botAI->IsAssistTankOfIndex(bot, 1, true))
+    {
         constexpr uint8 flamePhaseDpsWaitSeconds = 7;
         auto it = illidanFlameDpsWaitTimer.find(instanceId);
-        if (it == illidanFlameDpsWaitTimer.end() || (now - it->second) < flamePhaseDpsWaitSeconds)
-        {
-            if (dynamic_cast<AttackAction*>(action) ||
-                (dynamic_cast<CastSpellAction*>(action) &&
-                 !dynamic_cast<CastHealingSpellAction*>(action)))
-                 return 0.0f;
-        }
+
+        if ((it == illidanFlameDpsWaitTimer.end() || (now - it->second) < flamePhaseDpsWaitSeconds) &&
+            (dynamic_cast<AttackAction*>(action) ||
+             (dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<CastHealingSpellAction*>(action))))
+            return 0.0f;
     }
 
     return 1.0f;
