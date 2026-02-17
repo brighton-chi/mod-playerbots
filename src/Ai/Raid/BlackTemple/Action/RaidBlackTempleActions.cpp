@@ -2225,7 +2225,7 @@ bool IllidanStormrageDisperseRangedAction::Execute(Event /*event*/)
             if (bot->GetExactDist2d(illidan) < safeDistFromBoss)
             {
                 constexpr uint32 minInterval = 0;
-                if (FleePosition(illidan->GetPosition()), safeDistFromBoss, minInterval)
+                if (FleePosition(illidan->GetPosition(), safeDistFromBoss, minInterval))
                     return true;
             }
 

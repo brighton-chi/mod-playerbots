@@ -66,7 +66,7 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("gurtogg bloodboil tanks position boss", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("gurtogg bloodboil boss casts bloodboil", {
-        NextAction("gurtogg bloodboil position ranged", ACTION_RAID + 1) }));
+        NextAction("gurtogg bloodboil rotate ranged groups", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("gurtogg bloodboil bot has fel rage", {
         NextAction("gurtogg bloodboil ranged move away from enraged player", ACTION_RAID + 1) }));
