@@ -747,13 +747,10 @@ bool GurtoggBloodboilRotateRangedGroupsAction::Execute(Event /*event*/)
     }
 
     float distToGurtogg = bot->GetDistance2d(gurtogg);
-    constexpr float bloodboilDistance = 20.0f;
-    // constexpr uint32 minInterval = 0;
 
+    constexpr float bloodboilDistance = 20.0f;
     if (inActiveGroup && distToGurtogg < bloodboilDistance)
     {
-        // botAI->Reset();
-        // return FleePosition(gurtogg->GetPosition(), bloodboilDistance, minInterval); */
         return MoveAway(gurtogg, bloodboilDistance - distToGurtogg);
     }
     else
@@ -2105,6 +2102,7 @@ bool IllidanStormragePositionAboveGrateAction::Execute(Event /*event*/)
     else
         index = stepIt->second;
 
+    // Rotation doesn't work, need to troubleshoot this more if I want to use it
     const Position& currentPos = gratePositions[index];
     if (bot->HasAura(SPELL_BLAZE) &&
         bot->GetExactDist2d(currentPos.GetPositionX(), currentPos.GetPositionY()) <= 0.2f)
