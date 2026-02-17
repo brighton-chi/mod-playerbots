@@ -2160,118 +2160,131 @@ bool IllidanStormrageDisperseRangedAction::Execute(Event /*event*/)
         return false;
 
     if (GetIllidanPhase(illidan) == 3 || GetIllidanPhase(illidan) == 5)
+        return FanOutBehindInHumanPhase(illidan, group);
+    else if (GetIllidanPhase(illidan) == 4)
+        return SpreadInCircleInDemonPhase(illidan, group);
+
+    return false;
+}
+
+bool IllidanStormrageDisperseRangedAction::FanOutBehindInHumanPhase(Unit* illidan, Group* group)
+{
+    if (illidan->GetPositionZ() > 354.0f) // see if this fixes bots running into Illidan during Flame Crash
+        return false;
+
+    auto const& flameCrashes = GetAllFlameCrashes(botAI, bot);
+
+    std::vector<Player*> healers;
+    std::vector<Player*> rangedDps;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
-        auto const& flameCrashes = GetAllFlameCrashes(botAI, bot);
+        Player* member = ref->GetSource();
+        if (!member || !botAI->IsRanged(member))
+            continue;
 
-        std::vector<Player*> healers;
-        std::vector<Player*> rangedDps;
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        if (botAI->IsHeal(member))
+            healers.push_back(member);
+        else
+            rangedDps.push_back(member);
+    }
+
+    constexpr float arcSpan = M_PI; // 180 degrees
+    float arcCenter = illidan->GetOrientation() + M_PI; // Behind Illidan
+    float arcStart = arcCenter - arcSpan / 2.0f;
+
+    float radius = botAI->IsHeal(bot) ? 18.0f : 25.0f;
+    auto& bots = botAI->IsHeal(bot) ? healers : rangedDps;
+    size_t count = bots.size();
+    auto findIt = std::find(bots.begin(), bots.end(), bot);
+    size_t botIndex = (findIt != bots.end()) ? std::distance(bots.begin(), findIt) : 0;
+
+    // Try to find a safe position for this bot
+    float angle = (count == 1) ? arcCenter :
+        (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
+
+    float targetX = illidan->GetPositionX() + radius * std::cos(angle);
+    float targetY = illidan->GetPositionY() + radius * std::sin(angle);
+
+    bool safe = true;
+    for (Unit* flameCrash : flameCrashes)
+    {
+        if (flameCrash->GetDistance2d(targetX, targetY) < 12.0f)
         {
-            Player* member = ref->GetSource();
-            if (!member || !botAI->IsRanged(member))
-                continue;
-
-            if (botAI->IsHeal(member))
-                healers.push_back(member);
-            else
-                rangedDps.push_back(member);
-        }
-
-        constexpr float arcSpan = M_PI; // 180 degrees
-        float arcCenter = illidan->GetOrientation() + M_PI; // Behind Illidan
-        float arcStart = arcCenter - arcSpan / 2.0f;
-
-        float radius = botAI->IsHeal(bot) ? 18.0f : 25.0f;
-        auto& bots = botAI->IsHeal(bot) ? healers : rangedDps;
-        size_t count = bots.size();
-        auto findIt = std::find(bots.begin(), bots.end(), bot);
-        size_t botIndex = (findIt != bots.end()) ? std::distance(bots.begin(), findIt) : 0;
-
-        // Try to find a safe position for this bot
-        float angle = (count == 1) ? arcCenter :
-            (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
-
-        float targetX = illidan->GetPositionX() + radius * std::cos(angle);
-        float targetY = illidan->GetPositionY() + radius * std::sin(angle);
-
-        bool safe = true;
-        for (Unit* flameCrash : flameCrashes)
-        {
-            if (flameCrash->GetDistance2d(targetX, targetY) < 12.0f)
-            {
-                safe = false;
-                break;
-            }
-        }
-
-        if (!safe)
-            return false; // right now, this doesn't loop
-
-        if (bot->GetExactDist2d(targetX, targetY) > 1.0f)
-        {
-            return MoveTo(BLACK_TEMPLE_MAP_ID, targetX, targetY, bot->GetPositionZ(),
-                          false, false, false, true, MovementPriority::MOVEMENT_FORCED,
-                          true, false);
+            safe = false;
+            break;
         }
     }
-    else if (GetIllidanPhase(illidan) == 4)
+
+    if (!safe)
+        return false; // right now, this doesn't loop
+
+    if (bot->GetExactDist2d(targetX, targetY) > 1.0f)
     {
-        Player* warlockTank = GetIllidanWarlockTank(bot);
-        if (!warlockTank)
-        {
-            constexpr float safeDistFromBoss = 23.0f;
-            if (bot->GetExactDist2d(illidan) < safeDistFromBoss)
-            {
-                constexpr uint32 minInterval = 0;
-                if (FleePosition(illidan->GetPosition(), safeDistFromBoss, minInterval))
-                    return true;
-            }
+        return MoveTo(BLACK_TEMPLE_MAP_ID, targetX, targetY, bot->GetPositionZ(),
+                      false, false, false, true, MovementPriority::MOVEMENT_FORCED,
+                      true, false);
+    }
 
-            constexpr float safeDistFromPlayer = 6.0f;
-            constexpr uint32 minInterval = 1000;
-            if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
-                return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer, minInterval);
+    return false;
+}
+
+bool IllidanStormrageDisperseRangedAction::SpreadInCircleInDemonPhase(Unit* illidan, Group* group)
+{
+    Player* warlockTank = GetIllidanWarlockTank(bot);
+    if (!warlockTank)
+    {
+        constexpr float safeDistFromBoss = 23.0f;
+        if (bot->GetExactDist2d(illidan) < safeDistFromBoss)
+        {
+            constexpr uint32 minInterval = 0;
+            if (FleePosition(illidan->GetPosition(), safeDistFromBoss, minInterval))
+                return true;
         }
 
-        std::vector<Player*> rangedBots;
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || !botAI->IsRanged(member))
-                continue;
+        constexpr float safeDistFromPlayer = 6.0f;
+        constexpr uint32 minInterval = 1000;
+        if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
+            return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer, minInterval);
+    }
 
-            rangedBots.push_back(member);
-        }
+    std::vector<Player*> rangedBots;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !botAI->IsRanged(member))
+            continue;
 
-        if (rangedBots.empty())
-            return false;
+        rangedBots.push_back(member);
+    }
 
-        size_t count = rangedBots.size();
-        auto findIt = std::find(rangedBots.begin(), rangedBots.end(), bot);
-        size_t botIndex = (findIt != rangedBots.end()) ? std::distance(rangedBots.begin(), findIt) : 0;
+    if (rangedBots.empty())
+        return false;
 
-        float dx = warlockTank->GetPositionX() - illidan->GetPositionX();
-        float dy = warlockTank->GetPositionY() - illidan->GetPositionY();
-        float warlockAngle = std::atan2(dy, dx);
+    size_t count = rangedBots.size();
+    auto findIt = std::find(rangedBots.begin(), rangedBots.end(), bot);
+    size_t botIndex = (findIt != rangedBots.end()) ? std::distance(rangedBots.begin(), findIt) : 0;
 
-        constexpr float forbiddenArc = (2.0f / 3.0f) * M_PI; // 120 degrees
-        constexpr float allowedArc = (4.0f / 3.0f) * M_PI;   // 240 degrees
+    float dx = warlockTank->GetPositionX() - illidan->GetPositionX();
+    float dy = warlockTank->GetPositionY() - illidan->GetPositionY();
+    float warlockAngle = std::atan2(dy, dx);
 
-        float arcStart = Position::NormalizeOrientation(warlockAngle + forbiddenArc / 2.0f);
-        constexpr float radius = 25.0f;
+    constexpr float forbiddenArc = (2.0f / 3.0f) * M_PI; // 120 degrees
+    constexpr float allowedArc = (4.0f / 3.0f) * M_PI;   // 240 degrees
 
-        float angle = (count == 1) ? Position::NormalizeOrientation(arcStart + allowedArc / 2.0f) :
-            Position::NormalizeOrientation(
-                arcStart + allowedArc * static_cast<float>(botIndex) / static_cast<float>(count - 1));
+    float arcStart = Position::NormalizeOrientation(warlockAngle + forbiddenArc / 2.0f);
+    constexpr float radius = 25.0f;
 
-        float targetX = illidan->GetPositionX() + radius * std::cos(angle);
-        float targetY = illidan->GetPositionY() + radius * std::sin(angle);
+    float angle = (count == 1) ? Position::NormalizeOrientation(arcStart + allowedArc / 2.0f) :
+        Position::NormalizeOrientation(
+            arcStart + allowedArc * static_cast<float>(botIndex) / static_cast<float>(count - 1));
 
-        if (bot->GetExactDist2d(targetX, targetY) > 1.0f)
-        {
-            return MoveTo(BLACK_TEMPLE_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false,
-                          false, true, MovementPriority::MOVEMENT_FORCED, true, false);
-        }
+    float targetX = illidan->GetPositionX() + radius * std::cos(angle);
+    float targetY = illidan->GetPositionY() + radius * std::sin(angle);
+
+    if (bot->GetExactDist2d(targetX, targetY) > 1.0f)
+    {
+        return MoveTo(BLACK_TEMPLE_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false,
+                      false, true, MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
     return false;

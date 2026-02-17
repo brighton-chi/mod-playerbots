@@ -456,6 +456,10 @@ public:
     IllidanStormrageDisperseRangedAction(
         PlayerbotAI* botAI) : MovementAction(botAI, "illidan stormrage disperse ranged") {}
     bool Execute(Event event) override;
+
+private:
+    bool FanOutBehindInHumanPhase(Unit* illidan, Group* group);
+    bool SpreadInCircleInDemonPhase(Unit* illidan, Group* group);
 };
 
 class IllidanStormrageMeleeGoSomewhereToNotDieAction : public MovementAction
