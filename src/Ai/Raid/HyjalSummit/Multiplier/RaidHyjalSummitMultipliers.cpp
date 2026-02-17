@@ -49,10 +49,8 @@ float HyjalSummitTimeBloodlustAndHeroismMultiplier::GetValue(Action* action)
 
 float RageWinterchillDisableMainTankAvoidAoeMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsMainTank(bot))
-        return 1.0f;
-
-    if (!AI_VALUE2(Unit*, "find target", "rage winterchill"))
+    if (!botAI->IsMainTank(bot) ||
+        !AI_VALUE2(Unit*, "find target", "rage winterchill"))
         return 1.0f;
 
     if (dynamic_cast<AvoidAoeAction*>(action))
@@ -77,10 +75,8 @@ float RageWinterchillDisableCombatFormationMoveMultiplier::GetValue(Action* acti
 
 float AnetheronDisableTankActionsMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsTank(bot))
-        return 1.0f;
-
-    if (!AI_VALUE2(Unit*, "find target", "anetheron"))
+    if (!botAI->IsTank(bot) ||
+        !AI_VALUE2(Unit*, "find target", "anetheron"))
         return 1.0f;
 
     if (dynamic_cast<AvoidAoeAction*>(action))
@@ -89,10 +85,8 @@ float AnetheronDisableTankActionsMultiplier::GetValue(Action* action)
     if (bot->GetVictim() == nullptr)
         return 1.0f;
 
-    if (!botAI->IsMainTank(bot))
-        return 1.0f;
-
-    if (dynamic_cast<TankAssistAction*>(action))
+    if (botAI->IsMainTank(bot) &&
+        dynamic_cast<TankAssistAction*>(action))
         return 0.0f;
 
     return 1.0f;
@@ -112,10 +106,8 @@ float AnetheronDisableCombatFormationMoveMultiplier::GetValue(Action* action)
 
 float AnetheronControlMisdirectionMultiplier::GetValue(Action* action)
 {
-    if (bot->getClass() != CLASS_HUNTER)
-        return 1.0f;
-
-    if (!AI_VALUE2(Unit*, "find target", "anetheron"))
+    if (bot->getClass() != CLASS_HUNTER ||
+        !AI_VALUE2(Unit*, "find target", "anetheron"))
         return 1.0f;
 
     if (dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
@@ -138,10 +130,8 @@ float KazrogalLowManaBotStayAwayFromGroupMultiplier::GetValue(Action* action)
     if (bot->getClass() == CLASS_DRUID && tab == DRUID_TAB_FERAL)
         return 1.0f;
 
-    if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
-        return 1.0f;
-
-    if (bot->GetPower(POWER_MANA) > 4000)
+    if (!AI_VALUE2(Unit*, "find target", "kaz'rogal") ||
+        bot->GetPower(POWER_MANA) > 4000)
         return 1.0f;
 
     if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
@@ -155,13 +145,9 @@ float KazrogalLowManaBotStayAwayFromGroupMultiplier::GetValue(Action* action)
 
 float KazrogalKeepAspectOfTheViperActiveMultiplier::GetValue(Action* action)
 {
-    if (bot->getClass() != CLASS_HUNTER)
-        return 1.0f;
-
-    if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
-        return 1.0f;
-
-    if (bot->GetPower(POWER_MANA) > 4000)
+    if (bot->getClass() != CLASS_HUNTER ||
+        !AI_VALUE2(Unit*, "find target", "kaz'rogal") ||
+        bot->GetPower(POWER_MANA) > 4000)
         return 1.0f;
 
     if (dynamic_cast<CastAspectOfTheHawkAction*>(action) ||
@@ -191,14 +177,10 @@ float KazrogalDisableCombatFormationMoveMultiplier::GetValue(Action* action)
 
 float AzgalorDisableTankAssistMultiplier::GetValue(Action* action)
 {
-    if (bot->GetVictim() == nullptr)
-        return 1.0f;
-
-    if (!botAI->IsTank(bot) ||
-        botAI->IsAssistTankOfIndex(bot, 0, true))
-        return 1.0f;
-
-    if (!AI_VALUE2(Unit*, "find target", "lesser doomguard"))
+    if (bot->GetVictim() == nullptr ||
+        !botAI->IsTank(bot) ||
+        botAI->IsAssistTankOfIndex(bot, 0, true) ||
+        !AI_VALUE2(Unit*, "find target", "lesser doomguard"))
         return 1.0f;
 
     if (dynamic_cast<TankAssistAction*>(action))
@@ -209,10 +191,8 @@ float AzgalorDisableTankAssistMultiplier::GetValue(Action* action)
 
 float AzgalorTanksMaintainPositionMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsMainTank(bot) && !botAI->IsAssistTankOfIndex(bot, 0, true))
-        return 1.0f;
-
-    if (!AI_VALUE2(Unit*, "find target", "azgalor"))
+    if ((!botAI->IsMainTank(bot) && !botAI->IsAssistTankOfIndex(bot, 0, true)) ||
+        !AI_VALUE2(Unit*, "find target", "azgalor"))
         return 1.0f;
 
     if (dynamic_cast<TankFaceAction*>(action))
@@ -249,10 +229,8 @@ float AzgalorDoomedBotPrioritizePositioningMultiplier::GetValue(Action* action)
 
 float AzgalorMeleeJustStandInFireMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsMelee(bot))
-        return 1.0f;
-
-    if (!AI_VALUE2(Unit*, "find target", "azgalor"))
+    if (!botAI->IsMelee(bot) ||
+        !AI_VALUE2(Unit*, "find target", "azgalor"))
         return 1.0f;
 
     if (dynamic_cast<AvoidAoeAction*>(action))
