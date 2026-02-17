@@ -1090,7 +1090,7 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::RangedBotsDisperse(
 
         // Spread is 90-degree arc for healers and 120-degree arc for ranged DPS
         float arcSpan = botAI->IsHeal(bot) ? M_PI / 2.0f : 2.0f * M_PI / 3.0f;
-        constexpr float arcCenter = 2.3f + M_PI;
+        constexpr float arcCenter = 2.9f;
         float arcStart = arcCenter - arcSpan / 2.0f;
 
         // Capernian's hitbox is 4.5 yards (GetDistance2d of 6.0f for non-Tauren)
@@ -1112,8 +1112,8 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::RangedBotsDisperse(
         angle = (count == 1) ? arcCenter :
             (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
 
-        float targetX = capernian->GetPositionX() + radius * std::sin(angle);
-        float targetY = capernian->GetPositionY() + radius * std::cos(angle);
+        float targetX = capernian->GetPositionX() + radius * std::cos(angle);
+        float targetY = capernian->GetPositionY() + radius * std::sin(angle);
 
         if (bot->GetExactDist2d(targetX, targetY) > 1.0f)
         {
