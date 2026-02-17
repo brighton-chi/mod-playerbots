@@ -533,8 +533,10 @@ bool TeronGorefiendPositionRangedOnBalconyAction::Execute(Event /*event*/)
     float angle = (count == 1) ? arcCenter :
         (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
 
-    float targetX = GOREFIEND_TANK_POSITION.GetPositionX() + radius * std::sin(angle + M_PI_2);
-    float targetY = GOREFIEND_TANK_POSITION.GetPositionY() + radius * std::cos(angle + M_PI_2);
+    // float targetX = GOREFIEND_TANK_POSITION.GetPositionX() + radius * std::sin(angle + M_PI_2);
+    // float targetY = GOREFIEND_TANK_POSITION.GetPositionY() + radius * std::cos(angle + M_PI_2);
+    float targetX = GOREFIEND_TANK_POSITION.GetPositionX() + radius * std::cos(angle); // is this the same?
+    float targetY = GOREFIEND_TANK_POSITION.GetPositionY() + radius * std::sin(angle);
 
     float distToPosition = bot->GetExactDist2d(targetX, targetY);
     if (distToPosition > 2.0f)
