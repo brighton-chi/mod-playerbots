@@ -36,10 +36,8 @@ float AkilzonDisableCombatFormationMoveMultiplier::GetValue(Action* action)
 
 float AkilzonStayInEyeOfTheStormMultiplier::GetValue(Action* action)
 {
-    if (!AI_VALUE2(Unit*, "find target", "akil'zon"))
-        return 1.0f;
-
-    if (!GetElectricalStormTarget(bot))
+    if (!AI_VALUE2(Unit*, "find target", "akil'zon") ||
+        !GetElectricalStormTarget(bot))
         return 1.0f;
 
     if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
@@ -93,10 +91,8 @@ float NalorakkDisableTankActionsMultiplier::GetValue(Action* action)
 
 float NalorakkControlMisdirectionMultiplier::GetValue(Action* action)
 {
-    if (bot->getClass() != CLASS_HUNTER)
-        return 1.0f;
-
-    if (!AI_VALUE2(Unit*, "find target", "nalorakk"))
+    if (bot->getClass() != CLASS_HUNTER ||
+        !AI_VALUE2(Unit*, "find target", "nalorakk"))
         return 1.0f;
 
     if (dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
@@ -109,10 +105,8 @@ float NalorakkControlMisdirectionMultiplier::GetValue(Action* action)
 
 float JanalaiDisableTankActionsMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsTank(bot))
-        return 1.0f;
-
-    if (!AI_VALUE2(Unit*, "find target", "jan'alai"))
+    if (!botAI->IsTank(bot) ||
+        !AI_VALUE2(Unit*, "find target", "jan'alai"))
         return 1.0f;
 
     if (dynamic_cast<TankFaceAction*>(action))
@@ -197,10 +191,8 @@ float JanalaiDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
 
 float HalazziDisableTankActionsMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsTank(bot))
-        return 1.0f;
-
-    if (!AI_VALUE2(Unit*, "find target", "halazzi"))
+    if (!botAI->IsTank(bot) ||
+        !AI_VALUE2(Unit*, "find target", "halazzi"))
         return 1.0f;
 
     if (dynamic_cast<TankFaceAction*>(action))
@@ -229,10 +221,8 @@ float HalazziDisableTankActionsMultiplier::GetValue(Action* action)
 
 float HalazziControlMisdirectionMultiplier::GetValue(Action* action)
 {
-    if (bot->getClass() != CLASS_HUNTER)
-        return 1.0f;
-
-    if (!AI_VALUE2(Unit*, "find target", "halazzi"))
+    if (bot->getClass() != CLASS_HUNTER ||
+        !AI_VALUE2(Unit*, "find target", "halazzi"))
         return 1.0f;
 
     if (dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
