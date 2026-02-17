@@ -533,9 +533,7 @@ bool TeronGorefiendPositionRangedOnBalconyAction::Execute(Event /*event*/)
     float angle = (count == 1) ? arcCenter :
         (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
 
-    // float targetX = GOREFIEND_TANK_POSITION.GetPositionX() + radius * std::sin(angle + M_PI_2);
-    // float targetY = GOREFIEND_TANK_POSITION.GetPositionY() + radius * std::cos(angle + M_PI_2);
-    float targetX = GOREFIEND_TANK_POSITION.GetPositionX() + radius * std::cos(angle); // is this the same?
+    float targetX = GOREFIEND_TANK_POSITION.GetPositionX() + radius * std::cos(angle);
     float targetY = GOREFIEND_TANK_POSITION.GetPositionY() + radius * std::sin(angle);
 
     float distToPosition = bot->GetExactDist2d(targetX, targetY);
@@ -595,10 +593,7 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event /*eve
     for (auto guid : npcs)
     {
         Unit* unit = botAI->GetUnit(guid);
-        if (!unit || !unit->IsAlive())
-            continue;
-
-        if (unit->GetEntry() != NPC_SHADOWY_CONSTRUCT)
+        if (!unit || !unit->IsAlive() || unit->GetEntry() != NPC_SHADOWY_CONSTRUCT)
             continue;
 
         uint32 hp = unit->GetHealth();
@@ -651,7 +646,8 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event /*eve
         if (!gorefiend)
             return false;
         // Constructs are no longer recognized as valid targets when they get too close to Gorefiend
-        // I think it is because they get out of the bot's LoS, which is still used for targeting and not the spirit's LoS
+        // I think it is because they get out of the bot's LoS, which might be being used for
+        // targeting instead of the spirit's LoS (which would be the case for a player)
         float distToGorefiend = spirit->GetExactDist2d(gorefiend);
         float targetDist = 5.0f;
         if (distToGorefiend > targetDist)
