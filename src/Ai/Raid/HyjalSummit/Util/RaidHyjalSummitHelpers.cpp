@@ -13,8 +13,8 @@ namespace HyjalSummitHelpers
     // Anetheron
 
     const Position ANETHERON_MAIN_TANK_POSITION = { 5033.177f, -1765.996f, 1324.195f };
-    const Position ANETHERON_INFERNAL_TANK_POSITION = { 5022.587f, -1802.805f, 1322.026f };
-    // const Position ANETHERON_W_INFERNAL_TANK_POSITION = { 5050.234f, -1728.384f, 1320.622f }; // consider splitting into 2 infernal spots based on distance when targeted
+    const Position ANETHERON_E_INFERNAL_TANK_POSITION = { 5022.587f, -1802.805f, 1322.026f };
+    const Position ANETHERON_W_INFERNAL_TANK_POSITION = { 5050.234f, -1728.384f, 1320.622f }; // consider splitting into 2 infernal spots based on distance when targeted, E is the OG
     std::unordered_map<ObjectGuid, bool> hasReachedAnetheronPosition;
 
     bool IsBotTargetedByInferno(Unit* anetheron, Player* bot)
@@ -31,6 +31,15 @@ namespace HyjalSummitHelpers
         }
 
         return false;
+    }
+
+    const Position& GetClosestInfernalTankPosition(Player* bot)
+    {
+        const Position& east = ANETHERON_E_INFERNAL_TANK_POSITION;
+        const Position& west = ANETHERON_W_INFERNAL_TANK_POSITION;
+        return (bot->GetExactDist2d(east.GetPositionX(), east.GetPositionY()) <=
+                bot->GetExactDist2d(west.GetPositionX(), west.GetPositionY()))
+                ? east : west;
     }
 
     // Kaz'rogal

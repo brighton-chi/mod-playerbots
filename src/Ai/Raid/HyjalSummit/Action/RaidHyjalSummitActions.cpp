@@ -285,10 +285,7 @@ bool AnetheronSpreadRangedInArcAction::Execute(Event /*event*/)
             constexpr float safeDistFromPlayer = 6.0f;
             constexpr float minInterval = 2000.0f;
             if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
-            {
-                return FleePosition(Position(nearestPlayer->GetPosition()),
-                                    safeDistFromPlayer, minInterval);
-            }
+                return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer, minInterval);
         }
     }
 
@@ -297,7 +294,7 @@ bool AnetheronSpreadRangedInArcAction::Execute(Event /*event*/)
 
 bool AnetheronBringInfernalToInfernalTankAction::Execute(Event /*event*/)
 {
-    const Position& position = ANETHERON_INFERNAL_TANK_POSITION;
+    const Position& position = GetClosestInfernalTankPosition(bot);
     if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
     {
         botAI->Reset();
@@ -323,18 +320,18 @@ bool AnetheronAssistTankPickUpInfernalsAction::Execute(Event /*event*/)
 
     if (infernal->GetVictim() == bot)
     {
-        const Position& position = ANETHERON_INFERNAL_TANK_POSITION;
+        const Position& position = GetClosestInfernalTankPosition(bot);
         float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
         if (distToPosition > 3.0f)
         {
             float dX = position.GetPositionX() - bot->GetPositionX();
             float dY = position.GetPositionY() - bot->GetPositionY();
-            float moveDist = std::min(10.0f, distToPosition);
+            float moveDist = std::min(5.0f, distToPosition);
             float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
             float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
             return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-                          false, true, MovementPriority::MOVEMENT_FORCED, true, false);
+                          false, true, MovementPriority::MOVEMENT_FORCED, true, true);
         }
     }
 
@@ -356,8 +353,7 @@ bool AnetheronAssignDpsPriorityAction::Execute(Event /*event*/)
 
         return false;
     }
-
-    if (botAI->IsRanged(bot))
+    else if (botAI->IsRanged(bot))
     {
         if (Unit* infernal = AI_VALUE2(Unit*, "find target", "towering infernal"))
         {
@@ -767,12 +763,12 @@ bool ArchimondeSpreadToAvoidAirBurstAction::Execute(Event /*event*/)
 
     Unit* victim = archimonde->GetVictim();
     if (victim && victim != bot && bot->GetExactDist2d(victim) < safeDistFromVictim &&
-        FleePosition(Position(victim->GetPosition()), safeDistFromVictim, minInterval))
+        FleePosition(victim->GetPosition(), safeDistFromVictim, minInterval))
         return true;
 
     Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer);
     if (nearestPlayer && botAI->IsRanged(bot) &&
-        FleePosition(Position(nearestPlayer->GetPosition()), safeDistFromPlayer, minInterval))
+        FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer, minInterval))
         return true;
 
     return false;
