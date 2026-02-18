@@ -39,13 +39,12 @@ bool RageWinterchillBossCastsDeathAndDecayTrigger::IsActive()
 
 // Anetheron
 
-bool AnetheronPullingBossTrigger::IsActive()
+bool AnetheronPullingBossOrInfernalTrigger::IsActive()
 {
     if (bot->getClass() != CLASS_HUNTER)
         return false;
 
-    Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
-    return anetheron && anetheron->GetHealthPct() > 95.0f;
+    return AI_VALUE2(Unit*, "find target", "anetheron");
 }
 
 bool AnetheronBossEngagedByMainTankTrigger::IsActive()
@@ -63,7 +62,7 @@ bool AnetheronBossCastsCarrionSwarmTrigger::IsActive()
     if (!anetheron)
         return false;
 
-    if (IsBotTargetedByInferno(anetheron, bot))
+    if (GetInfernoTarget(anetheron) == bot)
         return false;
 
     return true;
@@ -78,18 +77,18 @@ bool AnetheronBotIsTargetedByInfernalTrigger::IsActive()
     if (!anetheron)
         return false;
 
-    return IsBotTargetedByInferno(anetheron, bot);
+    return GetInfernoTarget(anetheron) == bot;
 }
 
 bool AnetheronInfernalsNeedToBeKeptAwayFromRaidTrigger::IsActive()
 {
-    return botAI->IsAssistTank(bot) &&
+    return botAI->IsAssistTankOfIndex(bot, 0, true) &&
            AI_VALUE2(Unit*, "find target", "towering infernal");
 }
 
 bool AnetheronInfernalsContinueToSpawnTrigger::IsActive()
 {
-    return botAI->IsDps(bot) &&
+    return !botAI->IsTank(bot) &&
            AI_VALUE2(Unit*, "find target", "anetheron");
 }
 

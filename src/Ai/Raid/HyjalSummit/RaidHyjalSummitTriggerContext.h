@@ -24,8 +24,8 @@ public:
             &RaidHyjalSummitTriggerContext::rage_winterchill_boss_casts_death_and_decay;
 
         // Anetheron
-        creators["anetheron pulling boss"] =
-            &RaidHyjalSummitTriggerContext::anetheron_pulling_boss;
+        creators["anetheron pulling boss or infernal"] =
+            &RaidHyjalSummitTriggerContext::anetheron_pulling_boss_or_infernal;
 
         creators["anetheron boss engaged by main tank"] =
             &RaidHyjalSummitTriggerContext::anetheron_boss_engaged_by_main_tank;
@@ -110,8 +110,8 @@ private:
         PlayerbotAI* botAI) { return new RageWinterchillBossCastsDeathAndDecayTrigger(botAI); }
 
     // Anetheron
-    static Trigger* anetheron_pulling_boss(
-        PlayerbotAI* botAI) { return new AnetheronPullingBossTrigger(botAI); }
+    static Trigger* anetheron_pulling_boss_or_infernal(
+        PlayerbotAI* botAI) { return new AnetheronPullingBossOrInfernalTrigger(botAI); }
 
     static Trigger* anetheron_boss_engaged_by_main_tank(
         PlayerbotAI* botAI) { return new AnetheronBossEngagedByMainTankTrigger(botAI); }

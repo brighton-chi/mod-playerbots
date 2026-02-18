@@ -41,11 +41,11 @@ public:
 
 // Anetheron
 
-class AnetheronPullingBossTrigger : public Trigger
+class AnetheronPullingBossOrInfernalTrigger : public Trigger
 {
 public:
-    AnetheronPullingBossTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "anetheron pulling boss") {}
+    AnetheronPullingBossOrInfernalTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "anetheron pulling boss or infernal") {}
     bool IsActive() override;
 };
 

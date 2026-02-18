@@ -43,11 +43,11 @@ public:
 
 // Anetheron
 
-class AnetheronMisdirectBossToMainTankAction : public AttackAction
+class AnetheronMisdirectBossAndInfernalsToTanksAction : public AttackAction
 {
 public:
-    AnetheronMisdirectBossToMainTankAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "anetheron misdirect boss to main tank") {}
+    AnetheronMisdirectBossAndInfernalsToTanksAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "anetheron misdirect boss and infernals to tanks") {}
     bool Execute(Event event) override;
 };
 
@@ -75,11 +75,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class AnetheronAssistTankPickUpInfernalsAction : public AttackAction
+class AnetheronFirstAssistTankPickUpInfernalsAction : public AttackAction
 {
 public:
-    AnetheronAssistTankPickUpInfernalsAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "anetheron assist tank pick up infernals") {}
+    AnetheronFirstAssistTankPickUpInfernalsAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "anetheron first assist tank pick up infernals") {}
     bool Execute(Event event) override;
 };
 

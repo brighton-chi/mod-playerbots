@@ -161,21 +161,38 @@ bool RageWinterchillSpreadRangedInCircleAction::Execute(Event /*event*/)
 
 // Anetheron
 
-bool AnetheronMisdirectBossToMainTankAction::Execute(Event /*event*/)
+bool AnetheronMisdirectBossAndInfernalsToTanksAction::Execute(Event /*event*/)
 {
     Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
     if (!anetheron)
         return false;
 
-    Player* mainTank = GetGroupMainTank(botAI, bot);
-    if (!mainTank)
-        return false;
+    if (anetheron->GetHealthPct() > 95.0f)
+    {
+        Player* mainTank = GetGroupMainTank(botAI, bot);
+        if (!mainTank)
+            return false;
 
-    if (botAI->CanCastSpell("misdirection", mainTank))
-        return botAI->CastSpell("misdirection", mainTank);
+        if (botAI->CanCastSpell("misdirection", mainTank))
+            return botAI->CastSpell("misdirection", mainTank);
 
-    if (bot->HasAura(SPELL_MISDIRECTION) && botAI->CanCastSpell("steady shot", anetheron))
-        return botAI->CastSpell("steady shot", anetheron);
+        if (bot->HasAura(SPELL_MISDIRECTION) && botAI->CanCastSpell("steady shot", anetheron))
+            return botAI->CastSpell("steady shot", anetheron);
+    }
+
+    if (Unit* infernal = AI_VALUE2(Unit*, "find target", "towering infernal");
+        infernal && infernal->GetHealthPct() > 50.0f)
+    {
+        Player* firstAssistTank = GetGroupFirstAssistTank(botAI, bot);
+        if (!firstAssistTank)
+            return false;
+
+        if (botAI->CanCastSpell("misdirection", firstAssistTank))
+            return botAI->CastSpell("misdirection", firstAssistTank);
+
+        if (bot->HasAura(SPELL_MISDIRECTION) && botAI->CanCastSpell("steady shot", infernal))
+            return botAI->CastSpell("steady shot", infernal);
+    }
 
     return false;
 }
@@ -279,14 +296,14 @@ bool AnetheronSpreadRangedInArcAction::Execute(Event /*event*/)
                           false, true, MovementPriority::MOVEMENT_FORCED, true, false);
         }
         else
-        {
             hasReachedAnetheronPosition[guid] = true;
-
-            constexpr float safeDistFromPlayer = 6.0f;
-            constexpr float minInterval = 2000.0f;
-            if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
-                return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer, minInterval);
-        }
+    }
+    else // untested--what should happen after reaching position?
+    {
+        constexpr float safeDistFromPlayer = 6.0f;
+        constexpr float minInterval = 2000.0f;
+        if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
+            return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer, minInterval);
     }
 
     return false;
@@ -306,8 +323,26 @@ bool AnetheronBringInfernalToInfernalTankAction::Execute(Event /*event*/)
     return false;
 }
 
-bool AnetheronAssistTankPickUpInfernalsAction::Execute(Event /*event*/)
+bool AnetheronFirstAssistTankPickUpInfernalsAction::Execute(Event /*event*/)
 {
+    Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
+    if (!anetheron)
+        return false;
+
+    Player* infernoTarget = GetInfernoTarget(anetheron);
+    if (infernoTarget && infernoTarget != bot)
+    {
+        float distToInfernoTarget = bot->GetExactDist2d(infernoTarget);
+        if (distToInfernoTarget > 5.0f)
+        {
+            bot->AttackStop();
+            bot->InterruptNonMeleeSpells(true);
+            return MoveTo(HYJAL_SUMMIT_MAP_ID, infernoTarget->GetPositionX(), infernoTarget->GetPositionY(),
+                          bot->GetPositionZ(), false, false, false, true,
+                          MovementPriority::MOVEMENT_FORCED, true, false);
+        }
+    }
+
     Unit* infernal = AI_VALUE2(Unit*, "find target", "towering infernal");
     if (!infernal)
         return false;
@@ -318,7 +353,7 @@ bool AnetheronAssistTankPickUpInfernalsAction::Execute(Event /*event*/)
     if (bot->GetTarget() != infernal->GetGUID())
         return Attack(infernal);
 
-    if (infernal->GetVictim() == bot)
+    if (infernal->GetVictim() == bot && bot->IsWithinMeleeRange(infernal))
     {
         const Position& position = GetClosestInfernalTankPosition(bot);
         float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
@@ -357,16 +392,27 @@ bool AnetheronAssignDpsPriorityAction::Execute(Event /*event*/)
     {
         if (Unit* infernal = AI_VALUE2(Unit*, "find target", "towering infernal"))
         {
-            Player* victim = dynamic_cast<Player*>(infernal->GetVictim());
-            if (victim && botAI->IsTank(victim) && bot->GetDistance2d(infernal) < 40.0f)
+            constexpr float safeDistFromInfernal = 10.0f;
+            constexpr uint32 minInterval = 0;
+            if (infernal->GetVictim() != bot &&
+                bot->GetDistance2d(infernal) < safeDistFromInfernal)
             {
-                SetRtiTarget(botAI, "diamond", infernal);
+                return FleePosition(infernal->GetPosition(), safeDistFromInfernal, minInterval);
+            }
 
-                if (bot->GetTarget() != infernal->GetGUID())
-                    return Attack(infernal);
+            if (botAI->IsRangedDps(bot) && bot->GetDistance2d(infernal) < 35.0f)
+            {
+                if (Player* firstAssistTank = GetGroupFirstAssistTank(botAI, bot);
+                    !firstAssistTank || (firstAssistTank && infernal->GetVictim() == firstAssistTank))
+                {
+                    SetRtiTarget(botAI, "diamond", infernal);
+
+                    if (bot->GetTarget() != infernal->GetGUID())
+                        return Attack(infernal);
+                }
             }
         }
-        else
+        else if (botAI->IsRangedDps(bot))
         {
             SetRtiTarget(botAI, "square", anetheron);
             if (bot->GetTarget() != anetheron->GetGUID())
@@ -446,6 +492,8 @@ bool KazrogalAssistTanksMoveInFrontOfBossAction::Execute(Event /*event*/)
     return false;
 }
 
+// NEED TO TRY SOMETHING NEW: (1) POSITION AROUND KAZ'ROGAL,
+// (2) USE MAP TO TRACK MANA, THOSE WHO FALL BELOW MAX MANA BREAK FORMATION AND EITHER DON'T COME BACK OR NEED TO REACH SOME THRESHOLD
 bool KazrogalSpreadRangedInArcAction::Execute(Event /*event*/)
 {
     Group* group = bot->GetGroup();
@@ -477,7 +525,7 @@ bool KazrogalSpreadRangedInArcAction::Execute(Event /*event*/)
         constexpr float arcCenter = 4.65f;
         constexpr float arcStart = arcCenter - arcSpan / 2.0f;
 
-        constexpr float radius = 20.0f;
+        constexpr float radius = 15.0f;
         float angle = (count == 1) ? arcCenter :
             (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
 

@@ -24,8 +24,8 @@ public:
             &RaidHyjalSummitActionContext::rage_winterchill_spread_ranged_in_circle;
 
         // Anetheron
-        creators["anetheron misdirect boss to main tank"] =
-            &RaidHyjalSummitActionContext::anetheron_misdirect_boss_to_main_tank;
+        creators["anetheron misdirect boss and infernals to tanks"] =
+            &RaidHyjalSummitActionContext::anetheron_misdirect_boss_and_infernals_to_tanks;
 
         creators["anetheron main tank position boss"] =
             &RaidHyjalSummitActionContext::anetheron_main_tank_position_boss;
@@ -36,8 +36,8 @@ public:
         creators["anetheron bring infernal to infernal tank"] =
             &RaidHyjalSummitActionContext::anetheron_bring_infernal_to_infernal_tank;
 
-        creators["anetheron assist tank pick up infernals"] =
-            &RaidHyjalSummitActionContext::anetheron_assist_tank_pick_up_infernals;
+        creators["anetheron first assist tank pick up infernals"] =
+            &RaidHyjalSummitActionContext::anetheron_first_assist_tank_pick_up_infernals;
 
         creators["anetheron assign dps priority"] =
             &RaidHyjalSummitActionContext::anetheron_assign_dps_priority;
@@ -110,8 +110,8 @@ private:
         PlayerbotAI* botAI) { return new RageWinterchillSpreadRangedInCircleAction(botAI); }
 
     // Anetheron
-    static Action* anetheron_misdirect_boss_to_main_tank(
-        PlayerbotAI* botAI) { return new AnetheronMisdirectBossToMainTankAction(botAI); }
+    static Action* anetheron_misdirect_boss_and_infernals_to_tanks(
+        PlayerbotAI* botAI) { return new AnetheronMisdirectBossAndInfernalsToTanksAction(botAI); }
 
     static Action* anetheron_main_tank_position_boss(
         PlayerbotAI* botAI) { return new AnetheronMainTankPositionBossAction(botAI); }
@@ -122,8 +122,8 @@ private:
     static Action* anetheron_bring_infernal_to_infernal_tank(
         PlayerbotAI* botAI) { return new AnetheronBringInfernalToInfernalTankAction(botAI); }
 
-    static Action* anetheron_assist_tank_pick_up_infernals(
-        PlayerbotAI* botAI) { return new AnetheronAssistTankPickUpInfernalsAction(botAI); }
+    static Action* anetheron_first_assist_tank_pick_up_infernals(
+        PlayerbotAI* botAI) { return new AnetheronFirstAssistTankPickUpInfernalsAction(botAI); }
 
     static Action* anetheron_assign_dps_priority(
         PlayerbotAI* botAI) { return new AnetheronAssignDpsPriorityAction(botAI); }

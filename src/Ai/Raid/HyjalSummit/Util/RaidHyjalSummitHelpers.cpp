@@ -14,23 +14,23 @@ namespace HyjalSummitHelpers
 
     const Position ANETHERON_MAIN_TANK_POSITION = { 5033.177f, -1765.996f, 1324.195f };
     const Position ANETHERON_E_INFERNAL_TANK_POSITION = { 5022.587f, -1802.805f, 1322.026f };
-    const Position ANETHERON_W_INFERNAL_TANK_POSITION = { 5050.234f, -1728.384f, 1320.622f }; // consider splitting into 2 infernal spots based on distance when targeted, E is the OG
+    const Position ANETHERON_W_INFERNAL_TANK_POSITION = { 5048.911f, -1722.164f, 1321.408f }; // consider splitting into 2 infernal spots based on distance when targeted, E is the OG
     std::unordered_map<ObjectGuid, bool> hasReachedAnetheronPosition;
 
-    bool IsBotTargetedByInferno(Unit* anetheron, Player* bot)
+    Player* GetInfernoTarget(Unit* anetheron)
     {
         if (!anetheron)
-            return false;
+            return nullptr;
 
         Spell* spell = anetheron->GetCurrentSpell(CURRENT_GENERIC_SPELL);
         if (spell && spell->m_spellInfo->Id == SPELL_INFERNO)
         {
             Unit* spellTarget = spell->m_targets.GetUnitTarget();
-            if (spellTarget && spellTarget->GetGUID() == bot->GetGUID())
-                return true;
+            if (spellTarget && spellTarget->GetTypeId() == TYPEID_PLAYER)
+                return static_cast<Player*>(spellTarget);
         }
 
-        return false;
+        return nullptr;
     }
 
     const Position& GetClosestInfernalTankPosition(Player* bot)
