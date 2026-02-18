@@ -654,8 +654,11 @@ bool HexLordMalacrassPurgeBuffFromBossAction::Execute(Event event)
     if (!malacrass)
         return false;
 
-    const char* dispelSpells[] = {
-        "arcane shot", "devour magic", "dispel magic", "purge", "spellsteal" };
+    static const std::array<const char*, 5> dispelSpells =
+    {
+        "arcane shot", "devour magic", "dispel magic", "purge", "spellsteal"
+    };
+
     for (const char* spellName : dispelSpells)
     {
         if (botAI->CanCastSpell(spellName, malacrass))
@@ -688,7 +691,11 @@ bool HexLordMalacrassDispelMindControlAction::Execute(Event event)
     if (!mcTarget)
         return false;
 
-    const char* dispelSpells[] = { "devour magic", "dispel magic", "purge" };
+    static const std::array<const char*, 3> dispelSpells =
+    {
+        "devour magic", "dispel magic", "purge"
+    };
+
     for (const char* spellName : dispelSpells)
     {
         if (botAI->CanCastSpell(spellName, mcTarget))

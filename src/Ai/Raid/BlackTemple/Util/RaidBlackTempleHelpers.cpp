@@ -145,8 +145,10 @@ namespace BlackTempleHelpers
 
     bool HasDangerousCouncilAura(Unit* unit)
     {
-        static const uint32 dangerousAuras[] =
-            { SPELL_CONSECRATION, SPELL_BLIZZARD, SPELL_FLAMESTRIKE };
+        static const std::array<uint32, 3> dangerousAuras =
+        {
+            SPELL_CONSECRATION, SPELL_BLIZZARD, SPELL_FLAMESTRIKE
+        };
 
         for (uint32 aura : dangerousAuras)
         {
@@ -320,7 +322,7 @@ namespace BlackTempleHelpers
                 eastFlame = unit;
             }
             else if (westFlameGuid.find(instanceId) != westFlameGuid.end() &&
-                unit->GetGUID() == westFlameGuid[instanceId])
+                     unit->GetGUID() == westFlameGuid[instanceId])
             {
                 westFlame = unit;
             }

@@ -106,12 +106,12 @@ namespace TempestKeepHelpers
     extern const Position ALAR_PLATFORM_1;
     extern const Position ALAR_PLATFORM_2;
     extern const Position ALAR_PLATFORM_3;
-    extern const Position PLATFORM_POSITIONS[4];
+    extern const std::array<Position, 4> PLATFORM_POSITIONS;
     extern const Position ALAR_GROUND_0;
     extern const Position ALAR_GROUND_1;
     extern const Position ALAR_GROUND_2;
     extern const Position ALAR_GROUND_3;
-    extern const Position GROUND_POSITIONS[4];
+    extern const std::array<Position, 4> GROUND_POSITIONS;
     extern const Position ALAR_ROOM_CENTER;
     extern const Position ALAR_POINT_QUILL_OR_DIVE;
     extern const Position ALAR_POINT_MIDDLE;

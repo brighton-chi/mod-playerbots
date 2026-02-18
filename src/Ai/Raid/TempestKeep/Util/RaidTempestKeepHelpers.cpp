@@ -145,7 +145,7 @@ namespace TempestKeepHelpers
     const Position ALAR_PLATFORM_1 = { 388.751f,  31.7312f, 20.2636f }; // Northwest Platform
     const Position ALAR_PLATFORM_2 = { 388.791f, -33.1059f, 20.2636f }; // Northeast Platform
     const Position ALAR_PLATFORM_3 = { 332.723f,  -61.159f, 17.9791f }; // East Platform
-    const Position PLATFORM_POSITIONS[] =
+    const std::array<Position, 4> PLATFORM_POSITIONS =
     {
         ALAR_PLATFORM_0,
         ALAR_PLATFORM_1,
@@ -156,7 +156,7 @@ namespace TempestKeepHelpers
     const Position ALAR_GROUND_1 = { 379.122f,  25.146f, -2.385f }; // Ground counterpart to Northwest Platform
     const Position ALAR_GROUND_2 = { 378.583f, -27.481f, -2.385f }; // Ground counterpart to Northeast Platform
     const Position ALAR_GROUND_3 = { 331.631f, -49.716f, -2.389f }; // Ground counterpart to East Platform
-    const Position GROUND_POSITIONS[] =
+    const std::array<Position, 4> GROUND_POSITIONS =
     {
         ALAR_GROUND_0,
         ALAR_GROUND_1,
@@ -184,7 +184,7 @@ namespace TempestKeepHelpers
 
         dest.Relocate(x, y, z);
 
-        const Position locations[] =
+        const std::array<Position, 6> locations =
         {
             ALAR_PLATFORM_0,
             ALAR_PLATFORM_1,
@@ -216,7 +216,7 @@ namespace TempestKeepHelpers
         if (!alar)
             return LOCATION_NONE;
 
-        const Position locations[] =
+        const std::array<Position, 6> locations =
         {
             ALAR_PLATFORM_0,
             ALAR_PLATFORM_1,
@@ -374,15 +374,15 @@ namespace TempestKeepHelpers
 
     bool IsAnyLegendaryWeaponDead(PlayerbotAI* botAI, Player* bot)
     {
-        const std::pair<const char*, uint32> weapons[] =
+        static const std::array<std::pair<const char*, uint32>, 7> weapons =
         {
-            { "staff of disintegration", NPC_STAFF_OF_DISINTEGRATION },
-            { "cosmic infuser", NPC_COSMIC_INFUSER },
-            { "infinity blade", NPC_INFINITY_BLADES },
-            { "warp slicer", NPC_WARP_SLICER },
-            { "phaseshift bulwark", NPC_PHASESHIFT_BULWARK },
-            { "netherstrand longbow", NPC_NETHERSTRAND_LONGBOW },
-            { "devastation", NPC_DEVASTATION },
+            std::make_pair("staff of disintegration", NPC_STAFF_OF_DISINTEGRATION),
+            std::make_pair("cosmic infuser", NPC_COSMIC_INFUSER),
+            std::make_pair("infinity blade", NPC_INFINITY_BLADES),
+            std::make_pair("warp slicer", NPC_WARP_SLICER),
+            std::make_pair("phaseshift bulwark", NPC_PHASESHIFT_BULWARK),
+            std::make_pair("netherstrand longbow", NPC_NETHERSTRAND_LONGBOW),
+            std::make_pair("devastation", NPC_DEVASTATION)
         };
 
         for (auto const& [name, entry] : weapons)
@@ -401,11 +401,9 @@ namespace TempestKeepHelpers
                 if (!object)
                     continue;
 
-                if (Creature* creature = object->ToCreature())
-                {
-                    if (creature->GetEntry() == entry && !creature->IsAlive())
-                        return true;
-                }
+                if (Creature* creature = object->ToCreature();
+                    creature && creature->GetEntry() == entry && !creature->IsAlive())
+                    return true;
             }
         }
 

@@ -556,7 +556,11 @@ bool TeronGorefiendAvoidShadowOfDeathAction::Execute(Event /*event*/)
 {
     botAI->Reset();
 
-    const char* abilities[] = { "divine shield", "feign death", "ice block", "vanish" };
+    static const std::array<const char*, 4> abilities =
+    {
+        "divine shield", "feign death", "ice block", "vanish"
+    };
+
     for (const char* spellName : abilities)
     {
         if (botAI->CanCastSpell(spellName, bot))
@@ -2122,7 +2126,11 @@ bool IllidanStormragePositionAboveGrateAction::Execute(Event /*event*/)
 
 bool IllidanStormrageRemoveDarkBarrageAction::Execute(Event /*event*/)
 {
-    const char* abilities[] = { "divine shield", "ice block", "cloak of shadows" };
+    static const std::array<const char*, 3> abilities =
+    {
+        "divine shield", "ice block", "cloak of shadows"
+    };
+
     for (const char* spellName : abilities)
     {
         if (botAI->CanCastSpell(spellName, bot))

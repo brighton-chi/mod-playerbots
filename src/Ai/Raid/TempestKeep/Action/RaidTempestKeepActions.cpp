@@ -177,9 +177,7 @@ bool AlarRangedAndEmberTankMoveUnderPlatformsAction::Execute(Event /*event*/)
 
     if (locationIndex >= PLATFORM_0_IDX && locationIndex <= PLATFORM_3_IDX)
     {
-        const Position groundPositions[] =
-            {ALAR_GROUND_0, ALAR_GROUND_1, ALAR_GROUND_2, ALAR_GROUND_3};
-        const Position& groundTarget = groundPositions[locationIndex];
+        const Position& groundTarget = GROUND_POSITIONS[locationIndex];
 
         constexpr float distRangedFromTarget = 8.0f;
         constexpr float distTankFromTarget = 20.0f;
@@ -1321,7 +1319,7 @@ bool KaelthasSunstriderManageAdvisorDpsTimerAction::Execute(Event /*event*/)
     if (!kaelthas)
         return false;
 
-    const char* advisorNames[] =
+    static const std::array<const char*, 3> advisorNames =
     {
         "grand astromancer capernian",
         "master engineer telonicus",
@@ -1469,15 +1467,15 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::Execute(Event /*event*/)
         uint32 itemId;
     };
 
-    const WeaponInfo weapons[] =
+    static const std::array<WeaponInfo, 7> weapons =
     {
-        { NPC_NETHERSTRAND_LONGBOW, ITEM_NETHERSTRAND_LONGBOW },
-        { NPC_COSMIC_INFUSER, ITEM_COSMIC_INFUSER },
-        { NPC_DEVASTATION, ITEM_DEVASTATION },
-        { NPC_INFINITY_BLADES, ITEM_INFINITY_BLADE },
-        { NPC_WARP_SLICER, ITEM_WARP_SLICER },
-        { NPC_STAFF_OF_DISINTEGRATION, ITEM_STAFF_OF_DISINTEGRATION },
-        { NPC_PHASESHIFT_BULWARK, ITEM_PHASESHIFT_BULWARK }
+        WeaponInfo{ NPC_NETHERSTRAND_LONGBOW, ITEM_NETHERSTRAND_LONGBOW },
+        WeaponInfo{ NPC_COSMIC_INFUSER, ITEM_COSMIC_INFUSER },
+        WeaponInfo{ NPC_DEVASTATION, ITEM_DEVASTATION },
+        WeaponInfo{ NPC_INFINITY_BLADES, ITEM_INFINITY_BLADE },
+        WeaponInfo{ NPC_WARP_SLICER, ITEM_WARP_SLICER },
+        WeaponInfo{ NPC_STAFF_OF_DISINTEGRATION, ITEM_STAFF_OF_DISINTEGRATION },
+        WeaponInfo{ NPC_PHASESHIFT_BULWARK, ITEM_PHASESHIFT_BULWARK }
     };
 
     for (auto const& weapon : weapons)
