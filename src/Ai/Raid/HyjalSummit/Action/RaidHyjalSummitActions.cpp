@@ -73,7 +73,9 @@ bool RageWinterchillMainTankPositionBossAction::Execute(Event /*event*/)
     if (winterchill->GetVictim() == bot)
     {
         const Position& position = RAGE_WINTERCHILL_TANK_POSITION;
-        float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+        float distToPosition =
+            bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+
         if (distToPosition > 4.0f)
         {
             float dX = position.GetPositionX() - bot->GetPositionX();
@@ -212,7 +214,9 @@ bool AnetheronMainTankPositionBossAction::Execute(Event /*event*/)
     if (anetheron->GetVictim() == bot)
     {
         const Position& position = ANETHERON_MAIN_TANK_POSITION;
-        float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+        float distToPosition =
+            bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+
         if (distToPosition > 4.0f)
         {
             float dX = position.GetPositionX() - bot->GetPositionX();
@@ -337,9 +341,10 @@ bool AnetheronFirstAssistTankPickUpInfernalsAction::Execute(Event /*event*/)
         {
             bot->AttackStop();
             bot->InterruptNonMeleeSpells(true);
-            return MoveTo(HYJAL_SUMMIT_MAP_ID, infernoTarget->GetPositionX(), infernoTarget->GetPositionY(),
-                          bot->GetPositionZ(), false, false, false, true,
-                          MovementPriority::MOVEMENT_FORCED, true, false);
+            return MoveTo(HYJAL_SUMMIT_MAP_ID, infernoTarget->GetPositionX(),
+                          infernoTarget->GetPositionY(), bot->GetPositionZ(),
+                          false, false, false, true, MovementPriority::MOVEMENT_FORCED,
+                          true, false);
         }
     }
 
@@ -356,7 +361,9 @@ bool AnetheronFirstAssistTankPickUpInfernalsAction::Execute(Event /*event*/)
     if (infernal->GetVictim() == bot && bot->IsWithinMeleeRange(infernal))
     {
         const Position& position = GetClosestInfernalTankPosition(bot);
-        float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+        float distToPosition =
+            bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+
         if (distToPosition > 3.0f)
         {
             float dX = position.GetPositionX() - bot->GetPositionX();
@@ -456,7 +463,9 @@ bool KazrogalMainTankPositionBossAction::Execute(Event /*event*/)
     if (kazrogal->GetVictim() == bot && bot->IsWithinMeleeRange(kazrogal))
     {
         const Position& position = KAZROGAL_TANK_POSITION;
-        float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+        float distToPosition =
+            bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+
         if (distToPosition > 4.0f)
         {
             float dX = position.GetPositionX() - bot->GetPositionX();
@@ -493,7 +502,8 @@ bool KazrogalAssistTanksMoveInFrontOfBossAction::Execute(Event /*event*/)
 }
 
 // NEED TO TRY SOMETHING NEW: (1) POSITION AROUND KAZ'ROGAL,
-// (2) USE MAP TO TRACK MANA, THOSE WHO FALL BELOW MAX MANA BREAK FORMATION AND EITHER DON'T COME BACK OR NEED TO REACH SOME THRESHOLD
+// (2) USE MAP TO TRACK MANA, THOSE WHO FALL BELOW MAX MANA BREAK FORMATION AND
+// EITHER DON'T COME BACK OR NEED TO REACH SOME THRESHOLD
 bool KazrogalSpreadRangedInArcAction::Execute(Event /*event*/)
 {
     Group* group = bot->GetGroup();
@@ -950,9 +960,6 @@ Position ArchimondeAvoidDoomfireAction::FindSafePositionFromDoomfires(
 
 bool ArchimondeRemoveDoomfireDotAction::Execute(Event /*event*/)
 {
-    if (bot->GetHealthPct() > 40.0f)
-        return false;
-
     if (botAI->CanCastSpell("ice block", bot))
         return botAI->CastSpell("ice block", bot);
     else if (botAI->CanCastSpell("cloak of shadows", bot))

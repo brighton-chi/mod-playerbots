@@ -493,7 +493,8 @@ float IllidanStormrageStayWithinGrateMultiplier::GetValue(Action* action)
           dynamic_cast<CastReachTargetSpellAction*>(action)))
           return 0.0f;
 
-    if (botAI->IsRanged(bot) && (GetIllidanPhase(illidan) != 1 || bot->HasAura(SPELL_PARASITIC_SHADOWFIEND)) &&
+    if (botAI->IsRanged(bot) &&
+        (GetIllidanPhase(illidan) != 1 || bot->HasAura(SPELL_PARASITIC_SHADOWFIEND)) &&
         (dynamic_cast<ReachTargetAction*>(action) ||
          dynamic_cast<FleeAction*>(action) ||
          dynamic_cast<FollowAction*>(action) ||
@@ -552,8 +553,9 @@ float IllidanStormrageWaitForDpsMultiplier::GetValue(Action* action)
 
         if ((it == illidanBossDpsWaitTimer.end() || (now - it->second) < elfPhaseDpsWaitSeconds) &&
             (dynamic_cast<AttackAction*>(action) ||
-             (dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<CastHealingSpellAction*>(action))))
-            return 0.0f;
+             (dynamic_cast<CastSpellAction*>(action) &&
+              !dynamic_cast<CastHealingSpellAction*>(action))))
+              return 0.0f;
     }
 
     if (GetIllidanPhase(illidan) == 4 && GetIllidanWarlockTank(bot) != bot)
@@ -563,8 +565,9 @@ float IllidanStormrageWaitForDpsMultiplier::GetValue(Action* action)
 
         if ((it == illidanBossDpsWaitTimer.end() || (now - it->second) < demonPhaseDpsWaitSeconds) &&
             (dynamic_cast<AttackAction*>(action) ||
-             (dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<CastHealingSpellAction*>(action))))
-            return 0.0f;
+             (dynamic_cast<CastSpellAction*>(action) &&
+              !dynamic_cast<CastHealingSpellAction*>(action))))
+              return 0.0f;
     }
 
     if (AI_VALUE2(Unit*, "find target", "flame of azzinoth") &&
@@ -576,8 +579,9 @@ float IllidanStormrageWaitForDpsMultiplier::GetValue(Action* action)
 
         if ((it == illidanFlameDpsWaitTimer.end() || (now - it->second) < flamePhaseDpsWaitSeconds) &&
             (dynamic_cast<AttackAction*>(action) ||
-             (dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<CastHealingSpellAction*>(action))))
-            return 0.0f;
+             (dynamic_cast<CastSpellAction*>(action) &&
+              !dynamic_cast<CastHealingSpellAction*>(action))))
+              return 0.0f;
     }
 
     return 1.0f;

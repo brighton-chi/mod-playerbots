@@ -51,7 +51,7 @@ namespace HyjalSummitHelpers
     // Anetheron
     extern const Position ANETHERON_MAIN_TANK_POSITION;
     extern const Position ANETHERON_E_INFERNAL_TANK_POSITION;
-    extern const Position ANETHERON_W_INFERNAL_TANK_POSITION; // consider splitting into 2 infernal spots based on distance when targeted
+    extern const Position ANETHERON_W_INFERNAL_TANK_POSITION;
     extern std::unordered_map<ObjectGuid, bool> hasReachedAnetheronPosition;
     Player* GetInfernoTarget(Unit* anetheron);
     const Position& GetClosestInfernalTankPosition(Player* bot);

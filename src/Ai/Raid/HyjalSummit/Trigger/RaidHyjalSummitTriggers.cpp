@@ -259,5 +259,5 @@ bool ArchimondeBotStoodInDoomfireTrigger::IsActive()
         bot->getClass() != CLASS_PALADIN)
         return false;
 
-    return bot->HasAura(SPELL_DOOMFIRE);
+    return bot->HasAura(SPELL_DOOMFIRE) && bot->GetHealthPct() < 40.0f;
 }

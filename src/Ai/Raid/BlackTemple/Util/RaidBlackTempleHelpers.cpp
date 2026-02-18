@@ -6,7 +6,6 @@
 namespace BlackTempleHelpers
 {
     // High Warlord Naj'entus
-    // const Position NAJENTUS_TANK_POSITION = { 437.838f, 789.927f, 12.028f };
     const Position NAJENTUS_TANK_POSITION = { 438.515f, 772.436f, 11.931f };
 
     // Supremus
@@ -16,7 +15,8 @@ namespace BlackTempleHelpers
 
     bool HasSupremusVolcanoNearby(PlayerbotAI* botAI, Player* bot)
     {
-        auto const& npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
+        auto const& npcs =
+            botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
         for (auto const& npcGuid : npcs)
         {
             Unit* unit = botAI->GetUnit(npcGuid);
@@ -27,9 +27,6 @@ namespace BlackTempleHelpers
 
         return false;
     }
-
-    // Shade of Akama
-    // N/A
 
     // Teron Gorefiend
     const Position GOREFIEND_TANK_POSITION = { 597.653f, 402.284f, 187.090f };
@@ -87,9 +84,6 @@ namespace BlackTempleHelpers
         return groupIndex;
     }
 
-    // Reliquary of Souls
-    // N/A
-
     // Mother Shahraz
     const Position SHAHRAZ_TANK_POSITION = { 928.553f, 219.060f, 192.846f };
     const Position SHAHRAZ_TRANSITION_POSITION = { 941.899f, 184.689f, 192.328f };
@@ -109,7 +103,6 @@ namespace BlackTempleHelpers
     std::unordered_map<uint32, time_t> councilDpsWaitTimer;
     std::unordered_map<ObjectGuid, uint8> gathiosTankStep;
     std::unordered_map<ObjectGuid, uint8> zerevorHealStep;
-
 
     Player* GetZerevorMageTank(Player* bot)
     {
@@ -168,6 +161,7 @@ namespace BlackTempleHelpers
         ILLIDAN_N_GRATE_POSITION,
         ILLIDAN_S_GRATE_POSITION,
     };
+
     const Position ILLIDAN_E_GLAIVE_WAITING_POSITION = { 677.656f, 294.066f, 353.192f };
     const Position ILLIDAN_E_GLAIVE_TANK_POSITION_1 =  { 696.969f, 300.982f, 354.302f };
     const Position ILLIDAN_E_GLAIVE_TANK_POSITION_2 =  { 691.112f, 287.461f, 354.363f };
@@ -186,6 +180,7 @@ namespace BlackTempleHelpers
         ILLIDAN_E_GLAIVE_TANK_POSITION_6,
         ILLIDAN_E_GLAIVE_TANK_POSITION_7,
     };
+
     const Position ILLIDAN_W_GLAIVE_WAITING_POSITION = { 676.102f, 316.305f, 353.192f };
     const Position ILLIDAN_W_GLAIVE_TANK_POSITION_1 =  { 656.161f, 314.132f, 354.092f };
     const Position ILLIDAN_W_GLAIVE_TANK_POSITION_2 =  { 665.080f, 326.905f, 354.128f };
@@ -204,6 +199,7 @@ namespace BlackTempleHelpers
         ILLIDAN_W_GLAIVE_TANK_POSITION_6,
         ILLIDAN_W_GLAIVE_TANK_POSITION_7,
     };
+
     const std::array<Position, MAX_EYE_BEAM_POS * 2> eyeBeamPos =
     {{
         {639.97f, 301.63f, 354.0f, 0.0f},
@@ -215,6 +211,7 @@ namespace BlackTempleHelpers
         {718.06f, 286.08f, 354.0f, 0.0f},
         {705.92f, 337.14f, 354.0f, 0.0f}
     }};
+
     std::unordered_map<ObjectGuid, size_t> flameTankWaypointIndex;
     std::unordered_map<uint32, time_t> illidanBossDpsWaitTimer;
     std::unordered_map<uint32, time_t> illidanFlameDpsWaitTimer;
@@ -283,7 +280,8 @@ namespace BlackTempleHelpers
 
         // Gather all flames
         std::vector<Unit*> flames;
-        for (auto const& guid : botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get())
+        for (auto const& guid :
+            botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get())
         {
             Unit* unit = botAI->GetUnit(guid);
             if (unit && unit->GetEntry() == NPC_FLAME_OF_AZZINOTH)
