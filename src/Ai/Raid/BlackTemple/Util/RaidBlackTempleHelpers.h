@@ -62,7 +62,6 @@ namespace BlackTempleHelpers
         SPELL_DEMON_TRANSFORM_3         = 40510,
         SPELL_DEMON_FORM                = 40506,
         SPELL_DARK_BARRAGE              = 40585,
-        SPELL_BLAZE                     = 40611,
         SPELL_SHADOW_PRISON             = 40647,
         SPELL_PARASITIC_SHADOWFIEND     = 41917,
 
@@ -151,7 +150,7 @@ namespace BlackTempleHelpers
     extern const Position ILLIDAN_LANDING_POSITION;
     extern const Position ILLIDAN_N_GRATE_POSITION;
     extern const Position ILLIDAN_S_GRATE_POSITION;
-    extern const Position GRATE_POSITIONS[2];
+    extern const std::array<Position, 2> GRATE_POSITIONS;
     extern const Position ILLIDAN_E_GLAIVE_WAITING_POSITION;
     extern const Position ILLIDAN_E_GLAIVE_TANK_POSITION_1;
     extern const Position ILLIDAN_E_GLAIVE_TANK_POSITION_2;
@@ -160,7 +159,7 @@ namespace BlackTempleHelpers
     extern const Position ILLIDAN_E_GLAIVE_TANK_POSITION_5;
     extern const Position ILLIDAN_E_GLAIVE_TANK_POSITION_6;
     extern const Position ILLIDAN_E_GLAIVE_TANK_POSITION_7;
-    extern const Position E_GLAIVE_TANK_POSITIONS[7];
+    extern const std::array<Position, 7> E_GLAIVE_TANK_POSITIONS;
     extern const Position ILLIDAN_W_GLAIVE_WAITING_POSITION;
     extern const Position ILLIDAN_W_GLAIVE_TANK_POSITION_1;
     extern const Position ILLIDAN_W_GLAIVE_TANK_POSITION_2;
@@ -169,14 +168,13 @@ namespace BlackTempleHelpers
     extern const Position ILLIDAN_W_GLAIVE_TANK_POSITION_5;
     extern const Position ILLIDAN_W_GLAIVE_TANK_POSITION_6;
     extern const Position ILLIDAN_W_GLAIVE_TANK_POSITION_7;
-    extern const Position W_GLAIVE_TANK_POSITIONS[7];
-    extern const Position eyeBeamPos[MAX_EYE_BEAM_POS * 2];
+    extern const std::array<Position, 7> W_GLAIVE_TANK_POSITIONS;
+    extern const std::array<Position, MAX_EYE_BEAM_POS * 2> eyeBeamPos;
     extern std::unordered_map<ObjectGuid, size_t> flameTankWaypointIndex;
     extern std::unordered_map<uint32, time_t> illidanBossDpsWaitTimer;
     extern std::unordered_map<uint32, time_t> illidanFlameDpsWaitTimer;
     extern std::unordered_map<uint32, ObjectGuid> eastFlameGuid;
     extern std::unordered_map<uint32, ObjectGuid> westFlameGuid;
-    extern std::unordered_map<ObjectGuid, uint8> illidanGrateStep;
     int GetIllidanPhase(Unit* illidan);
     std::vector<Unit*> GetAllFlameCrashes(PlayerbotAI* botAI, Player* bot);
     std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(PlayerbotAI* botAI, Player* bot);

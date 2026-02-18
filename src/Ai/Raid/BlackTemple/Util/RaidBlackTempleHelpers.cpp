@@ -163,7 +163,7 @@ namespace BlackTempleHelpers
     const Position ILLIDAN_LANDING_POSITION = { 676.648f, 304.761f, 354.189f };
     const Position ILLIDAN_N_GRATE_POSITION = { 682.500f, 305.000f, 353.192f };
     const Position ILLIDAN_S_GRATE_POSITION = { 670.000f, 305.000f, 353.192f };
-    const Position GRATE_POSITIONS[2] =
+    const std::array<Position, 2> GRATE_POSITIONS =
     {
         ILLIDAN_N_GRATE_POSITION,
         ILLIDAN_S_GRATE_POSITION,
@@ -176,7 +176,7 @@ namespace BlackTempleHelpers
     const Position ILLIDAN_E_GLAIVE_TANK_POSITION_5 =  { 656.826f, 295.113f, 354.165f };
     const Position ILLIDAN_E_GLAIVE_TANK_POSITION_6 =  { 670.884f, 293.726f, 353.907f };
     const Position ILLIDAN_E_GLAIVE_TANK_POSITION_7 =  { 681.942f, 293.551f, 353.192f };
-    const Position E_GLAIVE_TANK_POSITIONS[7] =
+    const std::array<Position, 7> E_GLAIVE_TANK_POSITIONS =
     {
         ILLIDAN_E_GLAIVE_TANK_POSITION_1,
         ILLIDAN_E_GLAIVE_TANK_POSITION_2,
@@ -194,7 +194,7 @@ namespace BlackTempleHelpers
     const Position ILLIDAN_W_GLAIVE_TANK_POSITION_5 =  { 697.208f, 313.475f, 354.234f };
     const Position ILLIDAN_W_GLAIVE_TANK_POSITION_6 =  { 682.285f, 316.558f, 353.187f };
     const Position ILLIDAN_W_GLAIVE_TANK_POSITION_7 =  { 670.187f, 316.777f, 353.192f };
-    const Position W_GLAIVE_TANK_POSITIONS[7] =
+    const std::array<Position, 7> W_GLAIVE_TANK_POSITIONS =
     {
         ILLIDAN_W_GLAIVE_TANK_POSITION_1,
         ILLIDAN_W_GLAIVE_TANK_POSITION_2,
@@ -204,24 +204,22 @@ namespace BlackTempleHelpers
         ILLIDAN_W_GLAIVE_TANK_POSITION_6,
         ILLIDAN_W_GLAIVE_TANK_POSITION_7,
     };
-    const Position eyeBeamPos[MAX_EYE_BEAM_POS * 2] =
-    {
+    const std::array<Position, MAX_EYE_BEAM_POS * 2> eyeBeamPos =
+    {{
         {639.97f, 301.63f, 354.0f, 0.0f},
         {658.83f, 265.10f, 354.0f, 0.0f},
         {656.86f, 344.07f, 354.0f, 0.0f},
         {640.70f, 310.47f, 354.0f, 0.0f},
-
         {706.22f, 273.26f, 354.0f, 0.0f},
         {717.55f, 328.33f, 354.0f, 0.0f},
         {718.06f, 286.08f, 354.0f, 0.0f},
         {705.92f, 337.14f, 354.0f, 0.0f}
-    };
+    }};
     std::unordered_map<ObjectGuid, size_t> flameTankWaypointIndex;
     std::unordered_map<uint32, time_t> illidanBossDpsWaitTimer;
     std::unordered_map<uint32, time_t> illidanFlameDpsWaitTimer;
     std::unordered_map<uint32, ObjectGuid> eastFlameGuid;
     std::unordered_map<uint32, ObjectGuid> westFlameGuid;
-    std::unordered_map<ObjectGuid, uint8> illidanGrateStep;
 
     int GetIllidanPhase(Unit* illidan)
     {

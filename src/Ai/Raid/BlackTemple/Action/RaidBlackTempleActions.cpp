@@ -50,8 +50,6 @@ bool BlackTempleEraseTimersAndTrackersAction::Execute(Event /*event*/)
             erased = true;
         if (flameTankWaypointIndex.erase(guid) > 0)
             erased = true;
-        if (illidanGrateStep.erase(guid) > 0)
-            erased = true;
     }
 
     return erased;
@@ -1967,24 +1965,24 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidE
 
 bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidBlaze(Unit* eastFlame, Unit* westFlame)
 {
-    const Position* waypoints = nullptr;
+    const std::array<Position, 7>* waypoints = nullptr;
     constexpr size_t numWaypoints = 7;
 
     if (botAI->IsAssistTankOfIndex(bot, 1, true))
     {
         if (!eastFlame || eastFlame->GetVictim() != bot || !bot->IsWithinMeleeRange(eastFlame))
             return false;
-        waypoints = E_GLAIVE_TANK_POSITIONS;
+        waypoints = &E_GLAIVE_TANK_POSITIONS;
     }
     else if (botAI->IsAssistTankOfIndex(bot, 0, true))
     {
         if (!westFlame || westFlame->GetVictim() != bot || !bot->IsWithinMeleeRange(westFlame))
             return false;
-        waypoints = W_GLAIVE_TANK_POSITIONS;
+        waypoints = &W_GLAIVE_TANK_POSITIONS;
     }
 
     size_t& waypointIndex = flameTankWaypointIndex[bot->GetGUID()];
-    const Position& target = waypoints[waypointIndex];
+    const Position& target = (*waypoints)[waypointIndex];
 
     // Check for nearby blaze and increment only if bot is at current waypoint
     auto const& npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
@@ -2004,7 +2002,7 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidB
     if (blazeNearby && distToPosition <= 0.2f)
     {
         waypointIndex = (waypointIndex + 1) % numWaypoints;
-        const Position& newTarget = waypoints[waypointIndex];
+        const Position& newTarget = (*waypoints)[waypointIndex];
         float distToNewPosition = bot->GetExactDist2d(newTarget.GetPositionX(), newTarget.GetPositionY());
 
         if (distToNewPosition > 0.2f)
@@ -2047,13 +2045,11 @@ bool IllidanStormrageControlPetAggressionAction::Execute(Event /*event*/)
     if (!pet)
         return false;
 
-    if (GetIllidanPhase(illidan) == 2 || GetIllidanPhase(illidan) == 4)
+    if ((GetIllidanPhase(illidan) == 2 || GetIllidanPhase(illidan) == 4) &&
+        pet->GetReactState() != REACT_PASSIVE)
     {
-        if (pet->GetReactState() != REACT_PASSIVE)
-        {
-            pet->AttackStop();
-            pet->SetReactState(REACT_PASSIVE);
-        }
+        pet->AttackStop();
+        pet->SetReactState(REACT_PASSIVE);
     }
     else if (pet->GetReactState() == REACT_PASSIVE)
     {
@@ -2065,14 +2061,12 @@ bool IllidanStormrageControlPetAggressionAction::Execute(Event /*event*/)
 
 bool IllidanStormragePositionAboveGrateAction::Execute(Event /*event*/)
 {
-    const Position* gratePositions = GRATE_POSITIONS;
-    const ObjectGuid guid = bot->GetGUID();
-
-    std::vector<Player*> bots;
+    const std::array<Position, 2>& gratePositions = GRATE_POSITIONS;
     Group* group = bot->GetGroup();
     if (!group)
         return false;
 
+    std::vector<Player*> bots;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
@@ -2092,33 +2086,14 @@ bool IllidanStormragePositionAboveGrateAction::Execute(Event /*event*/)
         return false;
 
     size_t botIndex = std::distance(bots.begin(), it);
-    uint8 assignedStep = botIndex % 2; // 0 = north, 1 = south
-
-    uint8 index;
-    auto stepIt = illidanGrateStep.find(guid);
-    if (stepIt == illidanGrateStep.end())
-    {
-        index = assignedStep;
-        illidanGrateStep[guid] = index;
-    }
-    else
-        index = stepIt->second;
-
-    // Rotation doesn't work, need to troubleshoot this more if I want to use it
-    const Position& currentPos = gratePositions[index];
-    if (bot->HasAura(SPELL_BLAZE) &&
-        bot->GetExactDist2d(currentPos.GetPositionX(), currentPos.GetPositionY()) <= 0.2f)
-    {
-        index = (index + 1) % 2;
-        illidanGrateStep[guid] = index;
-    }
+    uint8 index = botIndex % 2; // 0 = north, 1 = south
 
     const Position& position = gratePositions[index];
     if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 0.2f)
     {
         return MoveTo(BLACK_TEMPLE_MAP_ID, position.GetPositionX(), position.GetPositionY(),
                       position.GetPositionZ(), false, false, false, false,
-                      MovementPriority::MOVEMENT_COMBAT, true, false);
+                      MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
     return false;
@@ -2195,7 +2170,7 @@ bool IllidanStormrageDisperseRangedAction::FanOutBehindInHumanPhase(Unit* illida
     }
 
     constexpr float arcSpan = M_PI; // 180 degrees
-    float arcCenter = illidan->GetOrientation() + M_PI; // Behind Illidan
+    float arcCenter = illidan->GetOrientation() + M_PI;
     float arcStart = arcCenter - arcSpan / 2.0f;
 
     float radius = botAI->IsHeal(bot) ? 18.0f : 25.0f;
@@ -2222,7 +2197,7 @@ bool IllidanStormrageDisperseRangedAction::FanOutBehindInHumanPhase(Unit* illida
     }
 
     if (!safe)
-        return false; // right now, this doesn't loop
+        return false;
 
     if (bot->GetExactDist2d(targetX, targetY) > 1.0f)
     {
