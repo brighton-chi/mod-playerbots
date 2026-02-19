@@ -785,24 +785,6 @@ bool GurtoggBloodboilRotateRangedGroupsAction::Execute(Event /*event*/)
         inActiveGroup = std::find(group.begin(), group.end(), bot) != group.end();
     }
 
-    /* float distToGurtogg = bot->GetDistance2d(gurtogg);
-
-    constexpr float bloodboilDistance = 20.0f;
-    if (inActiveGroup && distToGurtogg < bloodboilDistance)
-    {
-        return MoveAway(gurtogg, bloodboilDistance - distToGurtogg);
-    }
-    else
-    {
-        constexpr float minRange = 10.0f;
-        if (distToGurtogg < minRange)
-            return MoveTo(gurtogg, minRange, MovementPriority::MOVEMENT_COMBAT);
-
-        constexpr float maxRange = 15.0f;
-        if (distToGurtogg > maxRange)
-            return MoveTo(gurtogg, maxRange, MovementPriority::MOVEMENT_FORCED);
-    } */
-
     const Position& nearPosition = GURTOGG_RANGED_POSITION;
     const Position& farPosition = GURTOGG_SOAKER_POSITION;
     constexpr float distFromPos = 2.0f;

@@ -180,6 +180,9 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
 void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
+    // Trash
+    multipliers.push_back(new ShadowmoonReaverDontBuildChaoticChargesMultiplier(botAI));
+
     // High Warlord Naj'entus
     multipliers.push_back(new HighWarlordNajentusDisableCombatFormationMoveMultiplier(botAI));
 
