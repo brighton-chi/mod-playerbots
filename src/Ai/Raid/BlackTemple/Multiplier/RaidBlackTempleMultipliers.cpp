@@ -32,8 +32,12 @@ float ShadowmoonReaverDontBuildChaoticChargesMultiplier::GetValue(Action* action
 
     auto castSpellAction = dynamic_cast<CastSpellAction*>(action);
     if (castSpellAction &&
-        castSpellAction->getThreatType() == Action::ActionThreatType::Aoe)
+        (castSpellAction->getThreatType() == Action::ActionThreatType::Aoe ||
+         (bot->GetVictim() == reaver &&
+          castSpellAction->getThreatType() == Action::ActionThreatType::Single)))
+    {
         return 0.0f;
+    }
 
     return 1.0f;
 }

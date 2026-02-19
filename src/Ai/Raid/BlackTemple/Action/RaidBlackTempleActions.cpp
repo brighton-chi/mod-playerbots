@@ -660,11 +660,15 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event /*eve
             return true;
         }
 
-        if (!spirit->HasSpellCooldown(SPELL_SPIRIT_VOLLEY) &&
-            !priorityTarget->HasAura(SPELL_SPIRIT_CHAINS))
+        // Due to the charmed creature not observing GCDs, this sequence is intended
+        // to try to create an authentic rotation (having a sequence with just one of
+        // each ability results in Chains breaking immediately upon cast, even if
+        // Volley is scheduled to occur before Chains (maybe due to projectile travel time?)
+        if (!spirit->HasSpellCooldown(SPELL_SPIRIT_CHAINS) &&
+            priorityTarget->GetHealthPct() == 100.0f)
         {
-            spirit->CastSpell(priorityTarget, SPELL_SPIRIT_VOLLEY, true);
-            spirit->AddSpellCooldown(SPELL_SPIRIT_VOLLEY, 0, 15000);
+            spirit->CastSpell(priorityTarget, SPELL_SPIRIT_CHAINS, true);
+            spirit->AddSpellCooldown(SPELL_SPIRIT_CHAINS, 0, 15000);
             return true;
         }
         else if (!spirit->HasSpellCooldown(SPELL_SPIRIT_LANCE))
@@ -679,15 +683,22 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event /*eve
             spirit->AddSpellCooldown(SPELL_SPIRIT_CHAINS, 0, 15000);
             return true;
         }
+        else if (!spirit->HasSpellCooldown(SPELL_SPIRIT_LANCE))
+        {
+            spirit->CastSpell(priorityTarget, SPELL_SPIRIT_LANCE, true);
+            spirit->AddSpellCooldown(SPELL_SPIRIT_LANCE, 0, 1000);
+            return true;
+        }
+        else if (!spirit->HasSpellCooldown(SPELL_SPIRIT_VOLLEY) &&
+                 !priorityTarget->HasAura(SPELL_SPIRIT_CHAINS))
+        {
+            spirit->CastSpell(priorityTarget, SPELL_SPIRIT_VOLLEY, true);
+            spirit->AddSpellCooldown(SPELL_SPIRIT_VOLLEY, 0, 15000);
+            return true;
+        }
     }
     else
     {
-        // Unit* gorefiend = AI_VALUE2(Unit*, "find target", "teron gorefiend");
-        // if (!gorefiend)
-        //     return false;
-        // Constructs are no longer recognized as valid targets when they get too close to Gorefiend
-        // I think it is because they get out of the bot's LoS, which might be being used for
-        // targeting instead of the spirit's LoS (which would be the case for a player)
         float distToGorefiend = spirit->GetExactDist2d(gorefiend);
         float targetDist = 5.0f;
         if (distToGorefiend > targetDist)
