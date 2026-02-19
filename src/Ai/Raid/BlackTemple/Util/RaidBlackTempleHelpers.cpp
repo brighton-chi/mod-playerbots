@@ -34,6 +34,8 @@ namespace BlackTempleHelpers
 
     // Gurtogg Bloodboil
     const Position GURTOGG_TANK_POSITION = { 735.987f, 272.451f, 63.554f };
+    const Position GURTOGG_RANGED_POSITION = { 762.265f, 277.183f, 63.781f };
+    const Position GURTOGG_SOAKER_POSITION = { 769.348f, 280.116f, 63.780f };
     std::unordered_map<uint32, time_t> gurtoggPhaseTimer;
 
     std::vector<std::vector<Player*>> GetGurtoggRangedRotationGroups(Player* bot)

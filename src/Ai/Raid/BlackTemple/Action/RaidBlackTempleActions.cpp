@@ -321,7 +321,7 @@ bool SupremusMoveAwayFromVolcanosAction::Execute(Event /*event*/)
     if (!inDanger)
         return false;
 
-    constexpr float maxRadius = 35.0f;
+    constexpr float maxRadius = 40.0f;
     Position safestPos = FindSafestNearbyPosition(volcanos, maxRadius, hazardRadius);
 
     bot->AttackStop();
@@ -593,6 +593,10 @@ bool TeronGorefiendMoveToCornerToDieAction::Execute(Event /*event*/)
 
 bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event /*event*/)
 {
+    Unit* gorefiend = AI_VALUE2(Unit*, "find target", "teron gorefiend");
+    if (!gorefiend)
+        return false;
+
     Unit* spirit = bot->GetCharm();
     if (!spirit)
         return false;
@@ -602,7 +606,7 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event /*eve
     Unit* priorityTarget = nullptr;
     uint32 highestHp = std::numeric_limits<uint32>::min();
 
-    for (auto guid : npcs)
+    /* for (auto guid : npcs)
     {
         Unit* unit = botAI->GetUnit(guid);
         if (!unit || !unit->IsAlive() || unit->GetEntry() != NPC_SHADOWY_CONSTRUCT)
@@ -613,6 +617,29 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event /*eve
         {
             highestHp = hp;
             priorityTarget = unit;
+        }
+    } */
+    float closestToGorefiend = std::numeric_limits<float>::max();
+
+    for (auto guid : npcs)
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        if (!unit || !unit->IsAlive() || unit->GetEntry() != NPC_SHADOWY_CONSTRUCT)
+            continue;
+
+        uint32 hp = unit->GetHealth();
+        float distToGorefiend = gorefiend->GetExactDist2d(unit);
+
+        if (hp > highestHp)
+        {
+            highestHp = hp;
+            priorityTarget = unit;
+            closestToGorefiend = distToGorefiend;
+        }
+        else if ((hp == highestHp) && (distToGorefiend < closestToGorefiend))
+        {
+            priorityTarget = unit;
+            closestToGorefiend = distToGorefiend;
         }
     }
 
@@ -633,7 +660,8 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event /*eve
             return true;
         }
 
-        if (!spirit->HasSpellCooldown(SPELL_SPIRIT_VOLLEY))
+        if (!spirit->HasSpellCooldown(SPELL_SPIRIT_VOLLEY) &&
+            !priorityTarget->HasAura(SPELL_SPIRIT_CHAINS))
         {
             spirit->CastSpell(priorityTarget, SPELL_SPIRIT_VOLLEY, true);
             spirit->AddSpellCooldown(SPELL_SPIRIT_VOLLEY, 0, 15000);
@@ -654,9 +682,9 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event /*eve
     }
     else
     {
-        Unit* gorefiend = AI_VALUE2(Unit*, "find target", "teron gorefiend");
-        if (!gorefiend)
-            return false;
+        // Unit* gorefiend = AI_VALUE2(Unit*, "find target", "teron gorefiend");
+        // if (!gorefiend)
+        //     return false;
         // Constructs are no longer recognized as valid targets when they get too close to Gorefiend
         // I think it is because they get out of the bot's LoS, which might be being used for
         // targeting instead of the spirit's LoS (which would be the case for a player)
@@ -757,7 +785,7 @@ bool GurtoggBloodboilRotateRangedGroupsAction::Execute(Event /*event*/)
         inActiveGroup = std::find(group.begin(), group.end(), bot) != group.end();
     }
 
-    float distToGurtogg = bot->GetDistance2d(gurtogg);
+    /* float distToGurtogg = bot->GetDistance2d(gurtogg);
 
     constexpr float bloodboilDistance = 20.0f;
     if (inActiveGroup && distToGurtogg < bloodboilDistance)
@@ -773,6 +801,23 @@ bool GurtoggBloodboilRotateRangedGroupsAction::Execute(Event /*event*/)
         constexpr float maxRange = 15.0f;
         if (distToGurtogg > maxRange)
             return MoveTo(gurtogg, maxRange, MovementPriority::MOVEMENT_FORCED);
+    } */
+
+    const Position& nearPosition = GURTOGG_RANGED_POSITION;
+    const Position& farPosition = GURTOGG_SOAKER_POSITION;
+    constexpr float distFromPos = 2.0f;
+
+    if (inActiveGroup && bot->GetExactDist2d(farPosition) > distFromPos)
+    {
+        return MoveInside(BLACK_TEMPLE_MAP_ID, farPosition.GetPositionX(),
+                          farPosition.GetPositionY(), bot->GetPositionZ(),
+                          distFromPos, MovementPriority::MOVEMENT_FORCED);
+    }
+    else if (!inActiveGroup && bot->GetExactDist2d(nearPosition) > distFromPos)
+    {
+        return MoveInside(BLACK_TEMPLE_MAP_ID, nearPosition.GetPositionX(),
+                          nearPosition.GetPositionY(), bot->GetPositionZ(),
+                          distFromPos, MovementPriority::MOVEMENT_FORCED);
     }
 
     return false;

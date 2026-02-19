@@ -120,6 +120,8 @@ namespace BlackTempleHelpers
 
     // Gurtogg Bloodboil
     extern const Position GURTOGG_TANK_POSITION;
+    extern const Position GURTOGG_RANGED_POSITION;
+    extern const Position GURTOGG_SOAKER_POSITION;
     extern std::unordered_map<uint32, time_t> gurtoggPhaseTimer;
     std::vector<std::vector<Player*>> GetGurtoggRangedRotationGroups(Player* bot);
     int GetGurtoggActiveRotationGroup(Unit* gurtogg);
