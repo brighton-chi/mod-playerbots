@@ -46,7 +46,8 @@ namespace HyjalSummitHelpers
 
     const Position KAZROGAL_TANK_POSITION = { 5500.721f, -2666.152f, 1480.911f };
     // std::unordered_map<ObjectGuid, Position> kazrogalRangedPositions;
-    std::unordered_map<ObjectGuid, bool> hasReachedKazrogalPosition;
+    // std::unordered_map<ObjectGuid, bool> hasReachedKazrogalPosition;
+    std::unordered_map<ObjectGuid, bool> isBelowManaThreshold;
 
     // Azgalor
 

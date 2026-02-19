@@ -123,26 +123,47 @@ bool KazrogalBossEngagedByAssistTanksTrigger::IsActive()
 
 bool KazrogalLowManaBotsNeedEscapePathTrigger::IsActive()
 {
-    if (!botAI->IsRanged(bot))
+    if (bot->getClass() == CLASS_WARRIOR ||
+        bot->getClass() == CLASS_ROGUE ||
+        bot->getClass() == CLASS_DEATH_KNIGHT)
+        return false;
+
+    uint8 tab = AiFactory::GetPlayerSpecTab(bot);
+    if (bot->getClass() == CLASS_DRUID && tab == DRUID_TAB_FERAL)
         return false;
 
     Unit* kazrogal = AI_VALUE2(Unit*, "find target", "kaz'rogal");
     if (!kazrogal)
         return false;
 
-    if (bot->getClass() == CLASS_HUNTER && bot->GetPower(POWER_MANA) > 4000)
+    if (bot->getClass() == CLASS_HUNTER)
+    {
         return true;
-    else if (bot->GetPower(POWER_MANA) > 3000)
-        return true;
+    }
+    else if (bot->GetPower(POWER_MANA) > 4000)
+    {
+        isBelowManaThreshold.erase(bot->GetGUID());
+        if (botAI->IsMelee(bot))
+            return false;
+        else
+            return true;
+    }
 
     return false;
 }
 
 bool KazrogalBotIsLowOnManaTrigger::IsActive()
 {
+    if (isBelowManaThreshold[bot->GetGUID()])
+        return true;
+
     if (bot->getClass() == CLASS_WARRIOR ||
         bot->getClass() == CLASS_ROGUE ||
         bot->getClass() == CLASS_DEATH_KNIGHT)
+        return false;
+
+    uint8 tab = AiFactory::GetPlayerSpecTab(bot);
+    if (bot->getClass() == CLASS_DRUID && tab == DRUID_TAB_FERAL)
         return false;
 
     if (botAI->HasAnyAuraOf(bot, "ice block", "divine shield", nullptr))
@@ -150,10 +171,6 @@ bool KazrogalBotIsLowOnManaTrigger::IsActive()
 
     Unit* kazrogal = AI_VALUE2(Unit*, "find target", "kaz'rogal");
     if (!kazrogal)
-        return false;
-
-    uint8 tab = AiFactory::GetPlayerSpecTab(bot);
-    if (bot->getClass() == CLASS_DRUID && tab == DRUID_TAB_FERAL)
         return false;
 
     if (bot->GetPower(POWER_MANA) <= 3000)

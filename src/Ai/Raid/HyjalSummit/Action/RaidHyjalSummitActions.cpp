@@ -26,7 +26,7 @@ bool HyjalSummitEraseTrackersAction::Execute(Event /*event*/)
     }
 
     if (!AI_VALUE2(Unit*, "find target", "kaz'rogal") &&
-        hasReachedKazrogalPosition.erase(guid) > 0)
+        isBelowManaThreshold.erase(guid) > 0)
     {
         erased = true;
     }
@@ -506,6 +506,10 @@ bool KazrogalAssistTanksMoveInFrontOfBossAction::Execute(Event /*event*/)
 // EITHER DON'T COME BACK OR NEED TO REACH SOME THRESHOLD
 bool KazrogalSpreadRangedInArcAction::Execute(Event /*event*/)
 {
+    Unit* kazrogal = AI_VALUE2(Unit*, "find target", "kaz'rogal");
+    if (!kazrogal)
+        return false;
+
     Group* group = bot->GetGroup();
     if (!group)
         return false;
@@ -523,32 +527,26 @@ bool KazrogalSpreadRangedInArcAction::Execute(Event /*event*/)
     if (rangedMembers.empty())
         return false;
 
-    const ObjectGuid guid = bot->GetGUID();
+    size_t count = rangedMembers.size();
+    auto findIt = std::find(rangedMembers.begin(), rangedMembers.end(), bot);
+    size_t botIndex = (findIt != rangedMembers.end()) ? std::distance(rangedMembers.begin(), findIt) : 0;
 
-    if (!hasReachedKazrogalPosition[guid])
+    constexpr float arcSpan = 2.0f * M_PI / 3.0f;
+    constexpr float arcCenter = 4.65f;
+    constexpr float arcStart = arcCenter - arcSpan / 2.0f;
+
+    // Kaz'rogal's hitbox is 7.875 yards
+    constexpr float radius = 24.0f;
+    float angle = (count == 1) ? arcCenter :
+        (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
+
+    float targetX = kazrogal->GetPositionX() + radius * std::cos(angle);
+    float targetY = kazrogal->GetPositionY() + radius * std::sin(angle);
+
+    if (bot->GetExactDist2d(targetX, targetY) > 0.5f)
     {
-        size_t count = rangedMembers.size();
-        auto findIt = std::find(rangedMembers.begin(), rangedMembers.end(), bot);
-        size_t botIndex = (findIt != rangedMembers.end()) ? std::distance(rangedMembers.begin(), findIt) : 0;
-
-        constexpr float arcSpan = 2.0f * M_PI / 3.0f;
-        constexpr float arcCenter = 4.65f;
-        constexpr float arcStart = arcCenter - arcSpan / 2.0f;
-
-        constexpr float radius = 15.0f;
-        float angle = (count == 1) ? arcCenter :
-            (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
-
-        float targetX = KAZROGAL_TANK_POSITION.GetPositionX() + radius * std::cos(angle);
-        float targetY = KAZROGAL_TANK_POSITION.GetPositionY() + radius * std::sin(angle);
-
-        if (bot->GetExactDist2d(targetX, targetY) > 2.0f)
-        {
-            return MoveTo(HYJAL_SUMMIT_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false,
-                          false, true, MovementPriority::MOVEMENT_FORCED, true, false);
-        }
-        else
-            hasReachedKazrogalPosition[guid] = true;
+        return MoveTo(HYJAL_SUMMIT_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false,
+                        false, true, MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
     return false;
@@ -566,7 +564,10 @@ bool KazrogalLowManaBotMoveFromGroupAction::Execute(Event /*event*/)
     }
     else
     {
-        if (bot->HasAura(SPELL_MARK_OF_KAZROGAL))
+        if (bot->GetPower(POWER_MANA) <= 3000)
+            isBelowManaThreshold.try_emplace(bot->GetGUID(), true);
+
+        if (bot->HasAura(SPELL_MARK_OF_KAZROGAL) && bot->GetPower(POWER_MANA) <= 1200)
         {
             if (bot->getClass() == CLASS_MAGE &&
                 botAI->CanCastSpell("ice block", bot) &&
@@ -583,11 +584,11 @@ bool KazrogalLowManaBotMoveFromGroupAction::Execute(Event /*event*/)
         }
 
         constexpr float safeDistance = 16.0f;
+        constexpr uint32 minInterval = 1000;
         if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
         {
-            bot->AttackStop();
-            bot->InterruptNonMeleeSpells(true);
-            return MoveFromGroup(safeDistance);
+            return FleePosition(nearestPlayer->GetPosition(), safeDistance, minInterval);
+            //return MoveFromGroup(safeDistance);
         }
     }
 

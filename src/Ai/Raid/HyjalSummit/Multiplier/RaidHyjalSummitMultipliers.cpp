@@ -129,8 +129,10 @@ float KazrogalLowManaBotStayAwayFromGroupMultiplier::GetValue(Action* action)
     if (bot->getClass() == CLASS_DRUID && tab == DRUID_TAB_FERAL)
         return 1.0f;
 
-    if (!AI_VALUE2(Unit*, "find target", "kaz'rogal") ||
-        bot->GetPower(POWER_MANA) > 4000)
+    if (botAI->IsRanged(bot) && !isBelowManaThreshold[bot->GetGUID()])
+        return 1.0f;
+
+    if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
         return 1.0f;
 
     if (dynamic_cast<CastReachTargetSpellAction*>(action) ||

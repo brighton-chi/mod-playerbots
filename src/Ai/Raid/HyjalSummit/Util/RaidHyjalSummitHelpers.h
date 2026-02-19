@@ -59,7 +59,8 @@ namespace HyjalSummitHelpers
     // Kaz'rogal
     extern const Position KAZROGAL_TANK_POSITION;
     // extern std::unordered_map<ObjectGuid, Position> kazrogalRangedPositions;
-    extern std::unordered_map<ObjectGuid, bool> hasReachedKazrogalPosition;
+    // extern std::unordered_map<ObjectGuid, bool> hasReachedKazrogalPosition;
+    extern std::unordered_map<ObjectGuid, bool> isBelowManaThreshold;
 
     // Azgalor
     extern const Position AZGALOR_MAIN_TANK_TRANSITION_POSITION;
