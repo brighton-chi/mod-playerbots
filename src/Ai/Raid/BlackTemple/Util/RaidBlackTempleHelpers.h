@@ -136,15 +136,17 @@ namespace BlackTempleHelpers
     extern std::unordered_map<ObjectGuid, uint8> shahrazTankStep;
 
     // Illidari Council
+    constexpr float COUNCIL_FLOOR_Z_THRESHOLD = 271.000f;
     extern const Position GATHIOS_TANK_POSITION_1;
     extern const Position GATHIOS_TANK_POSITION_2;
     extern const Position GATHIOS_TANK_POSITION_3;
     extern const Position GATHIOS_TANK_POSITION_4;
+    extern const std::array<Position, 4> GATHIOS_TANK_POSITIONS;
     extern const Position MALANDE_TANK_POSITION;
     extern const Position ZEREVOR_TANK_POSITION;
     extern const Position ZEREVOR_HEALER_POSITION_1;
     extern const Position ZEREVOR_HEALER_POSITION_2;
-    extern const Position DARKSHADOW_TANK_POSITION;
+    extern const std::array<Position, 2> ZEREVOR_HEALER_POSITIONS;
     extern std::unordered_map<uint32, time_t> councilDpsWaitTimer;
     extern std::unordered_map<ObjectGuid, uint8> gathiosTankStep;
     extern std::unordered_map<ObjectGuid, uint8> zerevorHealStep;

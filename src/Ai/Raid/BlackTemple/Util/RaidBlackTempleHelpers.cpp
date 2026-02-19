@@ -97,11 +97,22 @@ namespace BlackTempleHelpers
     const Position GATHIOS_TANK_POSITION_2 = { 636.238f, 283.719f, 271.629f };
     const Position GATHIOS_TANK_POSITION_3 = { 655.571f, 261.377f, 271.687f };
     const Position GATHIOS_TANK_POSITION_4 = { 673.789f, 274.139f, 271.689f };
+    const std::array<Position, 4> GATHIOS_TANK_POSITIONS =
+    {
+        GATHIOS_TANK_POSITION_1,
+        GATHIOS_TANK_POSITION_2,
+        GATHIOS_TANK_POSITION_3,
+        GATHIOS_TANK_POSITION_4
+    };
     const Position ZEREVOR_TANK_POSITION = { 686.219f, 377.644f, 271.689f };
     const Position ZEREVOR_HEALER_POSITION_1 = { 661.385f, 351.219f, 271.690f };
     const Position ZEREVOR_HEALER_POSITION_2 = { 667.003f, 363.768f, 271.690f };
+    const std::array<Position, 2> ZEREVOR_HEALER_POSITIONS =
+    {
+        ZEREVOR_HEALER_POSITION_1,
+        ZEREVOR_HEALER_POSITION_2
+    };
     const Position MALANDE_TANK_POSITION = { 690.101f, 305.166f, 277.443f };
-    const Position DARKSHADOW_TANK_POSITION = { 644.156f, 338.085f, 271.688f };
     std::unordered_map<uint32, time_t> councilDpsWaitTimer;
     std::unordered_map<ObjectGuid, uint8> gathiosTankStep;
     std::unordered_map<ObjectGuid, uint8> zerevorHealStep;

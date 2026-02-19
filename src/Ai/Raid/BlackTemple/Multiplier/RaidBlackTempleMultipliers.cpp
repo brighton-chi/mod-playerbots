@@ -134,12 +134,14 @@ float TeronGorefiendSpiritsAttackOnlyShadowyConstructsMultiplier::GetValue(Actio
 
 float TeronGorefiendDisableAttackingConstructsMultiplier::GetValue(Action* action)
 {
-    if (bot->GetVictim() == nullptr || botAI->IsHeal(bot) ||
-        !AI_VALUE2(Unit*, "find target", "teron gorefiend"))
+    if (!AI_VALUE2(Unit*, "find target", "teron gorefiend"))
         return 1.0f;
 
-    if (dynamic_cast<TankAssistAction*>(action))
+    if (bot->GetVictim() != nullptr && dynamic_cast<TankAssistAction*>(action))
         return 0.0f;
+
+    if (!botAI->IsRangedDps(bot))
+        return 1.0f;
 
     auto castSpellAction = dynamic_cast<CastSpellAction*>(action);
     if (castSpellAction &&
@@ -246,6 +248,22 @@ float MotherShahrazDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
 }
 
 // Illidari Council
+
+float IllidariCouncilDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
+{
+    if (bot->getClass() != CLASS_SHAMAN)
+        return 1.0f;
+
+    Unit* gathios = AI_VALUE2(Unit*, "find target", "gathios the shatterer");
+    if (!gathios || gathios->GetHealthPct() < 90.0f)
+        return 1.0f;
+
+    if (dynamic_cast<CastBloodlustAction*>(action) ||
+        dynamic_cast<CastHeroismAction*>(action))
+        return 0.0f;
+
+    return 1.0f;
+}
 
 float IllidariCouncilDisableTankActionsMultiplier::GetValue(Action* action)
 {

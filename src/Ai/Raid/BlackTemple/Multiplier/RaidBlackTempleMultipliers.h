@@ -119,6 +119,14 @@ public:
 
 // Illidari Council
 
+class IllidariCouncilDelayBloodlustAndHeroismMultiplier : public Multiplier
+{
+public:
+    IllidariCouncilDelayBloodlustAndHeroismMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "illidari council delay bloodlust and heroism multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
 class IllidariCouncilDisableTankActionsMultiplier : public Multiplier
 {
 public:

@@ -1251,6 +1251,14 @@ bool IllidariCouncilMainTankPositionGathiosAction::Execute(Event /*event*/)
     if (!gathios)
         return false;
 
+    // Failsafe for if bot falls through the floor, which tends to happen upon the pull
+    if (bot->GetPositionZ() < COUNCIL_FLOOR_Z_THRESHOLD)
+    {
+        bot->TeleportTo(BLACK_TEMPLE_MAP_ID, gathios->GetPositionX(), gathios->GetPositionY(),
+                        gathios->GetPositionZ(), bot->GetOrientation());
+        return true;
+    }
+
     MarkTargetWithSquare(bot, gathios);
     SetRtiTarget(botAI, "square", gathios);
 
@@ -1260,14 +1268,7 @@ bool IllidariCouncilMainTankPositionGathiosAction::Execute(Event /*event*/)
     const ObjectGuid guid = bot->GetGUID();
     uint8 index = gathiosTankStep.count(guid) ? gathiosTankStep[guid] : 0;
 
-    const Position positions[4] =
-    {
-        GATHIOS_TANK_POSITION_1,
-        GATHIOS_TANK_POSITION_2,
-        GATHIOS_TANK_POSITION_3,
-        GATHIOS_TANK_POSITION_4
-    };
-    const Position& position = positions[index];
+    const Position& position = GATHIOS_TANK_POSITIONS[index];
 
     constexpr float maxDistance = 2.0f;
     float distToPosition = bot->GetExactDist2d(position);
@@ -1278,12 +1279,12 @@ bool IllidariCouncilMainTankPositionGathiosAction::Execute(Event /*event*/)
         {
             index = (index + 1) % 4;
             gathiosTankStep[guid] = index;
-            const Position& newPosition = positions[index];
+            const Position& newPosition = GATHIOS_TANK_POSITIONS[index];
             float newDistToPosition = bot->GetExactDist2d(newPosition);
             if (newDistToPosition > maxDistance)
             {
-                float dX = position.GetPositionX() - bot->GetPositionX();
-                float dY = position.GetPositionY() - bot->GetPositionY();
+                float dX = newPosition.GetPositionX() - bot->GetPositionX();
+                float dY = newPosition.GetPositionY() - bot->GetPositionY();
                 float moveDist = std::min(5.0f, newDistToPosition);
                 float moveX = bot->GetPositionX() + (dX / newDistToPosition) * moveDist;
                 float moveY = bot->GetPositionY() + (dY / newDistToPosition) * moveDist;
@@ -1324,6 +1325,14 @@ bool IllidariCouncilFirstAssistTankPositionMalandeAction::Execute(Event /*event*
     if (!malande)
         return false;
 
+    // Failsafe for if bot falls through the floor, which tends to happen upon the pull
+    if (bot->GetPositionZ() < COUNCIL_FLOOR_Z_THRESHOLD)
+    {
+        bot->TeleportTo(BLACK_TEMPLE_MAP_ID, malande->GetPositionX(), malande->GetPositionY(),
+                        malande->GetPositionZ(), bot->GetOrientation());
+        return true;
+    }
+
     MarkTargetWithStar(bot, malande);
     SetRtiTarget(botAI, "star", malande);
 
@@ -1339,7 +1348,7 @@ bool IllidariCouncilFirstAssistTankPositionMalandeAction::Execute(Event /*event*
         if (distToPosition > 10.0f)
         {
             return MoveTo(BLACK_TEMPLE_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-                          bot->GetPositionZ(), false, false, false, false,
+                          bot->GetPositionZ(), false, false, false, true,
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
@@ -1353,6 +1362,14 @@ bool IllidariCouncilSecondAssistTankPositionDarkshadowAction::Execute(Event /*ev
     if (!darkshadow)
         return false;
 
+    // Failsafe for if bot falls through the floor, which tends to happen upon the pull
+    if (bot->GetPositionZ() < COUNCIL_FLOOR_Z_THRESHOLD)
+    {
+        bot->TeleportTo(BLACK_TEMPLE_MAP_ID, darkshadow->GetPositionX(), darkshadow->GetPositionY(),
+                        darkshadow->GetPositionZ(), bot->GetOrientation());
+        return true;
+    }
+
     MarkTargetWithCircle(bot, darkshadow);
     SetRtiTarget(botAI, "circle", darkshadow);
 
@@ -1361,20 +1378,24 @@ bool IllidariCouncilSecondAssistTankPositionDarkshadowAction::Execute(Event /*ev
 
     if (darkshadow->GetVictim() == bot)
     {
-        const Position& position = DARKSHADOW_TANK_POSITION;
+        Player* mainTank = GetGroupMainTank(botAI, bot);
+        if (!mainTank)
+            return false;
+
         float distToPosition =
-            bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+            bot->GetExactDist2d(mainTank->GetPositionX(), mainTank->GetPositionY());
 
         if (distToPosition > 2.0f)
         {
-            float dX = position.GetPositionX() - bot->GetPositionX();
-            float dY = position.GetPositionY() - bot->GetPositionY();
+            float dX = mainTank->GetPositionX() - bot->GetPositionX();
+            float dY = mainTank->GetPositionY() - bot->GetPositionY();
             float moveDist = std::min(5.0f, distToPosition);
             float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
             float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
+            bool backwards = bot->GetExactDist2d(mainTank) < 10.0f;
             return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-                          false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
+                          false, true, MovementPriority::MOVEMENT_COMBAT, true, backwards);
         }
     }
 
@@ -1404,9 +1425,15 @@ bool IllidariCouncilMageTankPositionZerevorAction::Execute(Event /*event*/)
 
         if (distToPosition > 2.0f)
         {
-            return MoveTo(BLACK_TEMPLE_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-                          bot->GetPositionZ(), false, false, false, false,
-                          MovementPriority::MOVEMENT_COMBAT, true, false);
+            float dX = position.GetPositionX() - bot->GetPositionX();
+            float dY = position.GetPositionY() - bot->GetPositionY();
+            float moveDist = std::min(10.0f, distToPosition);
+            float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
+
+            return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY, bot->GetPositionZ(),
+                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT,
+                          true, false);
         }
     }
 
@@ -1415,15 +1442,18 @@ bool IllidariCouncilMageTankPositionZerevorAction::Execute(Event /*event*/)
 
 bool IllidariCouncilPositionMageTankHealerAction::Execute(Event /*event*/)
 {
+    Player* mageTank = GetZerevorMageTank(bot);
+    if (!mageTank)
+        return false;
+
+    Unit* zerevor = AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");
+    if (!zerevor || zerevor->GetVictim() != mageTank)
+        return false;
+
     const ObjectGuid guid = bot->GetGUID();
     uint8 index = zerevorHealStep.count(guid) ? zerevorHealStep[guid] : 0;
 
-    const Position positions[2] =
-    {
-        ZEREVOR_HEALER_POSITION_1,
-        ZEREVOR_HEALER_POSITION_2,
-    };
-    const Position& position = positions[index];
+    const Position& position = ZEREVOR_HEALER_POSITIONS[index];
 
     constexpr float maxDistance = 1.0f;
     float distToPosition = bot->GetExactDist2d(position);
@@ -1432,7 +1462,7 @@ bool IllidariCouncilPositionMageTankHealerAction::Execute(Event /*event*/)
     {
         index = (index + 1) % 2;
         zerevorHealStep[guid] = index;
-        const Position& newPosition = positions[index];
+        const Position& newPosition = ZEREVOR_HEALER_POSITIONS[index];
         float newDistToPosition = bot->GetExactDist2d(newPosition);
         if (newDistToPosition > maxDistance)
         {
@@ -1443,8 +1473,14 @@ bool IllidariCouncilPositionMageTankHealerAction::Execute(Event /*event*/)
     }
     else if (distToPosition > maxDistance)
     {
-        return MoveTo(BLACK_TEMPLE_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-                      bot->GetPositionZ(), false, false, false, false,
+        float dX = position.GetPositionX() - bot->GetPositionX();
+        float dY = position.GetPositionY() - bot->GetPositionY();
+        float moveDist = std::min(10.0f, distToPosition);
+        float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+        float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
+
+        return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY, bot->GetPositionZ(),
+                      false, false, false, false,
                       MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
@@ -1502,6 +1538,14 @@ bool IllidariCouncilAssignDpsTargetsAction::Execute(Event /*event*/)
 
         if (bot->GetTarget() != malande->GetGUID())
             return Attack(malande);
+    }
+    else if (Unit* darkshadow = AI_VALUE2(Unit*, "find target", "veras darkshadow");
+             darkshadow && !darkshadow->HasAura(SPELL_VANISH))
+    {
+        SetRtiTarget(botAI, "circle", darkshadow);
+
+        if (bot->GetTarget() != darkshadow->GetGUID())
+            return Attack(darkshadow);
     }
     else if (Unit* gathios = AI_VALUE2(Unit*, "find target", "gathios the shatterer"))
     {
