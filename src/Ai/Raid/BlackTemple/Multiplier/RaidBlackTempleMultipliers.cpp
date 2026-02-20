@@ -319,20 +319,6 @@ float IllidariCouncilControlMovementMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float IllidariCouncilDisableAoeMultiplier::GetValue(Action* action)
-{
-    if (botAI->IsHeal(bot) ||
-        !AI_VALUE2(Unit*, "find target", "gathios the shatterer"))
-        return 1.0f;
-
-    auto castSpellAction = dynamic_cast<CastSpellAction*>(action);
-    if (castSpellAction &&
-        castSpellAction->getThreatType() == Action::ActionThreatType::Aoe)
-        return 0.0f;
-
-    return 1.0f;
-}
-
 float IllidariCouncilControlMisdirectionMultiplier::GetValue(Action* action)
 {
     if (bot->getClass() != CLASS_HUNTER ||

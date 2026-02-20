@@ -143,14 +143,6 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class IllidariCouncilDisableAoeMultiplier : public Multiplier
-{
-public:
-    IllidariCouncilDisableAoeMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "illidari council disable aoe multiplier") {}
-    virtual float GetValue(Action* action);
-};
-
 class IllidariCouncilControlMisdirectionMultiplier : public Multiplier
 {
 public:
