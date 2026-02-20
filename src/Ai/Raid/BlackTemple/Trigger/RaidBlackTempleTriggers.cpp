@@ -564,10 +564,7 @@ bool IllidanStormrageThisExpansionHatesMeleeTrigger::IsActive()
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan || GetIllidanPhase(illidan) != 4)
-        return false;
-
-    return !AI_VALUE2(Unit*, "find target", "shadow demon");
+    return illidan && GetIllidanPhase(illidan) == 4;
 }
 
 bool IllidanStormrageBossTransformsIntoDemonTrigger::IsActive()
@@ -576,10 +573,7 @@ bool IllidanStormrageBossTransformsIntoDemonTrigger::IsActive()
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan || illidan->GetHealth() == 1)
-        return false;
-
-    return GetIllidanPhase(illidan) == 4;
+    return illidan && GetIllidanPhase(illidan) == 4;
 }
 
 bool IllidanStormrageBossSpawnsAddsTrigger::IsActive()
@@ -611,5 +605,10 @@ bool IllidanStormrageCheatTrigger::IsActive()
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    return illidan && illidan->GetHealth() > 1;
+    if (!illidan || illidan->GetHealth() == 1)
+        return false;
+
+    return GetIllidanPhase(illidan) == 0 ||
+           GetIllidanPhase(illidan) == 2 ||
+           GetIllidanPhase(illidan) == 4;
 }

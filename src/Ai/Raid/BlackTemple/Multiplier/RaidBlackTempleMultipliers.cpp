@@ -530,10 +530,7 @@ float IllidanStormrageStayWithinGrateMultiplier::GetValue(Action* action)
          dynamic_cast<CastBlinkBackAction*>(action)))
          return 0.0f;
 
-    if (AI_VALUE2(Unit*, "find target", "shadow demon"))
-        return 1.0f;
-
-    if (botAI->IsMelee(bot) && (GetIllidanPhase(illidan) == 2 || GetIllidanPhase(illidan) == 4 ||
+    if (botAI->IsMelee(bot) && (GetIllidanPhase(illidan) == 2 ||
         bot->HasAura(SPELL_PARASITIC_SHADOWFIEND)) &&
         (dynamic_cast<ReachTargetAction*>(action) ||
          dynamic_cast<FleeAction*>(action) ||
@@ -542,24 +539,6 @@ float IllidanStormrageStayWithinGrateMultiplier::GetValue(Action* action)
          dynamic_cast<CastReachTargetSpellAction*>(action) ||
          dynamic_cast<CastKillingSpreeAction*>(action)))
          return 0.0f;
-
-    return 1.0f;
-}
-
-// Commented out for now in strategies--not needed if I go for broader control per above
-float IllidanStormrageDisableMeleeAttackingMultiplier::GetValue(Action* action)
-{
-    if (!botAI->IsMelee(bot))
-        return 1.0f;
-
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan || GetIllidanPhase(illidan) != 4)
-        return 1.0f;
-
-    if (dynamic_cast<AttackAction*>(action) ||
-        dynamic_cast<ReachTargetAction*>(action) ||
-        dynamic_cast<CastReachTargetSpellAction*>(action))
-        return 0.0f;
 
     return 1.0f;
 }

@@ -155,6 +155,7 @@ namespace BlackTempleHelpers
     bool HasDangerousCouncilAura(Unit* unit);
 
     // Illidan Stormrage <The Betrayer>
+    constexpr float ILLIDAN_FLOOR_Z_THRESHOLD = 355.000f;
     extern const Position ILLIDAN_LANDING_POSITION;
     extern const Position ILLIDAN_N_GRATE_POSITION;
     extern const Position ILLIDAN_S_GRATE_POSITION;

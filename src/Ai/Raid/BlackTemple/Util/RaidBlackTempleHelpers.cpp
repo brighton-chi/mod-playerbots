@@ -314,7 +314,6 @@ namespace BlackTempleHelpers
         }
 
         const uint32 instanceId = bot->GetMap()->GetInstanceId();
-        // If both GUIDs are not set and there are exactly 2 flames, assign by position
         if (eastFlameGuid.find(instanceId) == eastFlameGuid.end() &&
             westFlameGuid.find(instanceId) == westFlameGuid.end() &&
             flames.size() == 2)
@@ -334,7 +333,6 @@ namespace BlackTempleHelpers
             }
         }
 
-        // Always return the flames by their snapshotted GUIDs
         for (Unit* unit : flames)
         {
             if (eastFlameGuid.find(instanceId) != eastFlameGuid.end() &&
