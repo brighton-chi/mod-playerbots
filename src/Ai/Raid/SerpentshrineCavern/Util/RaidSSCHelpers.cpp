@@ -1,8 +1,6 @@
 #include "RaidSSCHelpers.h"
 #include "AiFactory.h"
-#include "CellImpl.h"
 #include "Creature.h"
-#include "GridNotifiersImpl.h"
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
@@ -84,54 +82,32 @@ namespace SerpentShrineCavernHelpers
     Unit* GetLeotherasHuman(Player* bot)
     {
         constexpr float searchRadius = 100.0f;
+        Creature* leotheras =
+            bot->FindNearestCreature(NPC_LEOTHERAS_THE_BLIND, searchRadius, true);
 
-        std::list<Creature*> targets;
-        Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, searchRadius);
-        Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
-        Cell::VisitObjects(bot, searcher, searchRadius);
+        if (leotheras && leotheras->IsInCombat() &&
+            !leotheras->HasAura(SPELL_METAMORPHOSIS))
+            return leotheras;
 
-        for (Creature* creature : targets)
-        {
-            if (creature && creature->GetEntry() == NPC_LEOTHERAS_THE_BLIND &&
-                creature->IsInCombat() && !creature->HasAura(SPELL_METAMORPHOSIS))
-                return creature;
-        }
         return nullptr;
     }
 
     Unit* GetPhase2LeotherasDemon(Player* bot)
     {
         constexpr float searchRadius = 100.0f;
+        Creature* leotheras =
+            bot->FindNearestCreature(NPC_LEOTHERAS_THE_BLIND, searchRadius, true);
 
-        std::list<Creature*> targets;
-        Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, searchRadius);
-        Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
-        Cell::VisitObjects(bot, searcher, searchRadius);
+        if (leotheras && leotheras->HasAura(SPELL_METAMORPHOSIS))
+            return leotheras;
 
-        for (Creature* creature : targets)
-        {
-            if (creature && creature->GetEntry() == NPC_LEOTHERAS_THE_BLIND &&
-                creature->HasAura(SPELL_METAMORPHOSIS))
-                return creature;
-        }
         return nullptr;
     }
 
     Unit* GetPhase3LeotherasDemon(Player* bot)
     {
         constexpr float searchRadius = 100.0f;
-
-        std::list<Creature*> targets;
-        Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, searchRadius);
-        Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
-        Cell::VisitObjects(bot, searcher, searchRadius);
-
-        for (Creature* creature : targets)
-        {
-            if (creature && creature->GetEntry() == NPC_SHADOW_OF_LEOTHERAS)
-                return creature;
-        }
-        return nullptr;
+        return bot->FindNearestCreature(NPC_SHADOW_OF_LEOTHERAS, searchRadius, true);
     }
 
     Unit* GetActiveLeotherasDemon(Player* bot)

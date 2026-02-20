@@ -2,8 +2,6 @@
 #include "RaidBlackTempleHelpers.h"
 #include "RaidBlackTempleIllidanBossAI.h"
 #include "AiFactory.h"
-#include "CellImpl.h"
-#include "GridNotifiersImpl.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
 
@@ -424,14 +422,12 @@ std::vector<Unit*> SupremusMoveAwayFromVolcanosAction::GetAllSupremusVolcanos()
     std::vector<Unit*> volcanos;
     constexpr float searchRadius = 40.0f;
 
-    std::list<Creature*> targets;
-    Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, searchRadius);
-    Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
-    Cell::VisitObjects(bot, searcher, searchRadius);
+    std::list<Creature*> creatureList;
+    bot->GetCreatureListWithEntryInGrid(creatureList, NPC_SUPREMUS_VOLCANO, searchRadius);
 
-    for (Creature* creature : targets)
+    for (Creature* creature : creatureList)
     {
-        if (creature && creature->GetEntry() == NPC_SUPREMUS_VOLCANO)
+        if (creature && creature->IsAlive())
             volcanos.push_back(creature);
     }
 
@@ -2376,17 +2372,6 @@ bool IllidanStormrageDisperseRangedAction::SpreadInCircleInDemonPhase(
 // Melee cannot attack Demon Form Illidan
 bool IllidanStormrageMeleeGoSomewhereToNotDieAction::Execute(Event /*event*/)
 {
-    /* std::list<Creature*> targets;
-    Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, 100.0f);
-    Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
-    Cell::VisitObjects(bot, searcher, 100.0f);
-
-    for (Creature* creature : targets)
-    {
-        if (creature && creature->IsAlive() && creature->GetEntry() == NPC_SHADOW_DEMON)
-            return false;
-    } */
-
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     if (!illidan)
         return false;
@@ -2561,29 +2546,35 @@ bool IllidanStormrageDestroyHazardsCheatAction::Execute(Event /*event*/)
         return false;
 
     int phase = GetIllidanPhase(illidan);
+    constexpr float searchRadius = 100.0f;
+    std::list<Creature*> hazards;
 
-    std::list<Creature*> targets;
-    Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, 100.0f);
-    Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
-    Cell::VisitObjects(bot, searcher, 100.0f);
-
-    for (Creature* creature : targets)
+    if (phase == 2)
     {
-        if (!creature)
-            continue;
+        bot->GetCreatureListWithEntryInGrid(hazards, NPC_PARASITIC_SHADOWFIEND, searchRadius);
+        bot->GetCreatureListWithEntryInGrid(hazards, NPC_FLAME_CRASH, searchRadius);
+    }
+    else if (phase == 4)
+    {
+        bot->GetCreatureListWithEntryInGrid(hazards, NPC_SHADOW_DEMON, searchRadius);
+        bot->GetCreatureListWithEntryInGrid(hazards, NPC_FLAME_CRASH, searchRadius);
+    }
+    else if (phase == 0)
+    {
+        bot->GetCreatureListWithEntryInGrid(hazards, NPC_DEMON_FIRE, searchRadius);
+        bot->GetCreatureListWithEntryInGrid(hazards, NPC_BLAZE, searchRadius);
+    }
 
-        uint32 entry = creature->GetEntry();
+    bool destroyed = false;
 
-        if ((entry == NPC_PARASITIC_SHADOWFIEND && phase == 2 && creature->IsAlive()) ||
-            (entry == NPC_SHADOW_DEMON && creature->IsAlive()) ||
-            (entry == NPC_FLAME_CRASH && (phase == 2 || phase == 4)) ||
-            (entry == NPC_DEMON_FIRE && phase == 0) ||
-            (entry == NPC_BLAZE && phase == 0))
+    for (Creature* creature : hazards)
+    {
+        if (creature && creature->IsAlive())
         {
             creature->Kill(bot, creature);
-            return true;
+            destroyed = true;
         }
     }
 
-    return false;
+    return destroyed;
 }

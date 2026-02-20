@@ -1,7 +1,5 @@
 #include "RaidBlackTempleHelpers.h"
 #include "RaidBlackTempleIllidanBossAI.h"
-#include "CellImpl.h"
-#include "GridNotifiersImpl.h"
 #include "Group.h"
 #include "Playerbots.h"
 
@@ -18,19 +16,7 @@ namespace BlackTempleHelpers
     bool HasSupremusVolcanoNearby(PlayerbotAI* botAI, Player* bot)
     {
         constexpr float searchRadius = 40.0f;
-
-        std::list<Creature*> targets;
-        Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, searchRadius);
-        Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
-        Cell::VisitObjects(bot, searcher, searchRadius);
-
-        for (Creature* creature : targets)
-        {
-            if (creature && creature->GetEntry() == NPC_SUPREMUS_VOLCANO)
-                return true;
-        }
-
-        return false;
+        return bot->FindNearestCreature(NPC_SUPREMUS_VOLCANO, searchRadius, false);
     }
 
     // Teron Gorefiend
@@ -277,16 +263,13 @@ namespace BlackTempleHelpers
     std::vector<Unit*> GetAllFlameCrashes(Player* bot)
     {
         std::vector<Unit*> flameCrashes;
+        std::list<Creature*> creatureList;
         constexpr float searchRadius = 30.0f;
+        bot->GetCreatureListWithEntryInGrid(creatureList, NPC_FLAME_CRASH, searchRadius);
 
-        std::list<Creature*> targets;
-        Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, searchRadius);
-        Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
-        Cell::VisitObjects(bot, searcher, searchRadius);
-
-        for (Creature* creature : targets)
+        for (Creature* creature : creatureList)
         {
-            if (creature && creature->GetEntry() == NPC_FLAME_CRASH)
+            if (creature && creature->IsAlive())
                 flameCrashes.push_back(creature);
         }
 
@@ -300,16 +283,13 @@ namespace BlackTempleHelpers
 
         // Gather all flames
         std::vector<Unit*> flames;
+        std::list<Creature*> creatureList;
         constexpr float searchRadius = 100.0f;
+        bot->GetCreatureListWithEntryInGrid(creatureList, NPC_FLAME_OF_AZZINOTH, searchRadius);
 
-        std::list<Creature*> targets;
-        Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, searchRadius);
-        Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
-        Cell::VisitObjects(bot, searcher, searchRadius);
-
-        for (Creature* creature : targets)
+        for (Creature* creature : creatureList)
         {
-            if (creature && creature->GetEntry() == NPC_FLAME_OF_AZZINOTH)
+            if (creature && creature->IsAlive())
                 flames.push_back(creature);
         }
 
@@ -390,22 +370,8 @@ namespace BlackTempleHelpers
 
         uint8 beamPosId = illidanAI->GetBeamPosId();
 
-        Unit* eyeBlastTrigger = nullptr;
         constexpr float searchRadius = 100.0f;
-
-        std::list<Creature*> targets;
-        Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, searchRadius);
-        Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
-        Cell::VisitObjects(bot, searcher, searchRadius);
-
-        for (Creature* creature : targets)
-        {
-            if (creature && creature->GetEntry() == NPC_ILLIDAN_DB_TARGET)
-            {
-                eyeBlastTrigger = creature;
-                break;
-            }
-        }
+        Unit* eyeBlastTrigger = bot->FindNearestCreature(NPC_ILLIDAN_DB_TARGET, searchRadius, false);
 
         if (!eyeBlastTrigger)
             return {};

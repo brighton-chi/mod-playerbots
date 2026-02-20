@@ -1,6 +1,4 @@
 #include "RaidKarazhanHelpers.h"
-#include "CellImpl.h"
-#include "GridNotifiersImpl.h"
 #include "Playerbots.h"
 
 namespace KarazhanHelpers
@@ -258,16 +256,14 @@ namespace KarazhanHelpers
     std::vector<Unit*> GetAllVoidZones(Player* bot)
     {
         std::vector<Unit*> voidZones;
+        std::list<Creature*> creatureList;
         constexpr float searchRadius = 30.0f;
 
-        std::list<Creature*> targets;
-        Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, searchRadius);
-        Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
-        Cell::VisitObjects(bot, searcher, searchRadius);
+        bot->GetCreatureListWithEntryInGrid(creatureList, NPC_VOID_ZONE, searchRadius);
 
-        for (Creature* creature : targets)
+        for (Creature* creature : creatureList)
         {
-            if (creature && creature->GetEntry() == NPC_VOID_ZONE)
+            if (creature && creature->IsAlive())
                 voidZones.push_back(creature);
         }
 
@@ -289,16 +285,14 @@ namespace KarazhanHelpers
     std::vector<Unit*> GetSpawnedInfernals(Player* bot)
     {
         std::vector<Unit*> infernals;
+        std::list<Creature*> creatureList;
         constexpr float searchRadius = 100.0f;
 
-        std::list<Creature*> targets;
-        Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, searchRadius);
-        Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
-        Cell::VisitObjects(bot, searcher, searchRadius);
+        bot->GetCreatureListWithEntryInGrid(creatureList, NPC_NETHERSPITE_INFERNAL, searchRadius);
 
-        for (Creature* creature : targets)
+        for (Creature* creature : creatureList)
         {
-            if (creature && creature->GetEntry() == NPC_NETHERSPITE_INFERNAL)
+            if (creature && creature->IsAlive())
                 infernals.push_back(creature);
         }
 

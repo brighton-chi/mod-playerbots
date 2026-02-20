@@ -1,8 +1,6 @@
 #include "RaidMagtheridonActions.h"
 #include "RaidMagtheridonHelpers.h"
-#include "CellImpl.h"
 #include "Creature.h"
-#include "GridNotifiersImpl.h"
 #include "ObjectAccessor.h"
 #include "ObjectGuid.h"
 #include "Playerbots.h"
@@ -294,16 +292,14 @@ bool MagtheridonWarlockCCBurningAbyssalAction::Execute(Event /*event*/)
         return false;
 
     std::vector<Unit*> abyssals;
+    std::list<Creature*> creatureList;
     constexpr float searchRadius = 100.0f;
 
-    std::list<Creature*> targets;
-    Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, searchRadius);
-    Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
-    Cell::VisitObjects(bot, searcher, searchRadius);
+    bot->GetCreatureListWithEntryInGrid(creatureList, NPC_BURNING_ABYSSAL, searchRadius);
 
-    for (Creature* creature : targets)
+    for (Creature* creature : creatureList)
     {
-        if (creature && creature->IsAlive() && creature->GetEntry() == NPC_BURNING_ABYSSAL)
+        if (creature && creature->IsAlive())
             abyssals.push_back(creature);
     }
 

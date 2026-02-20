@@ -1,48 +1,9 @@
 #include "RaidZulAmanHelpers.h"
-#include "CellImpl.h"
-#include "GridNotifiersImpl.h"
 #include "Group.h"
 #include "Playerbots.h"
 
 namespace ZulAmanHelpers
 {
-    // General Helpers
-
-    Unit* GetFirstAliveUnitByEntries(PlayerbotAI* botAI, Player* bot, const std::vector<uint32>& entries)
-    {
-        std::list<Creature*> targets;
-        Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, 100.0f);
-        Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
-        Cell::VisitObjects(bot, searcher, 100.0f);
-
-        for (uint32 entry : entries)
-        {
-            for (Creature* creature : targets)
-            {
-                if (creature && creature->IsAlive() && creature->GetEntry() == entry)
-                    return creature;
-            }
-        }
-
-        return nullptr;
-    }
-
-    bool AnyNearbyNpcWithEntry(PlayerbotAI* botAI, Player* bot, uint32 entry)
-    {
-        std::list<Creature*> targets;
-        Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, 100.0f);
-        Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
-        Cell::VisitObjects(bot, searcher, 40.0f);
-
-        for (Creature* creature : targets)
-        {
-            if (creature && creature->IsAlive() && creature->GetEntry() == entry)
-                return true;
-        }
-
-        return false;
-    }
-
     // Akil'zon <Eagle Avatar>
     const Position AKILZON_TANK_POSITION = { 378.369f, 1407.718f, 74.797f };
 

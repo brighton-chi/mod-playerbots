@@ -1,9 +1,7 @@
 #include "RaidSSCActions.h"
 #include "RaidSSCHelpers.h"
 #include "AiFactory.h"
-#include "CellImpl.h"
 #include "Corpse.h"
-#include "GridNotifiersImpl.h"
 #include "LootAction.h"
 #include "LootObjectStack.h"
 #include "ObjectAccessor.h"
@@ -602,16 +600,13 @@ bool TheLurkerBelowTanksPickUpAddsAction::Execute(Event /*event*/)
         return false;
 
     std::vector<Unit*> guardians;
+    std::list<Creature* > creatureList;
     constexpr float searchRadius = 100.0f;
+    bot->GetCreatureListWithEntryInGrid(creatureList, NPC_COILFANG_GUARDIAN, searchRadius);
 
-    std::list<Creature*> targets;
-    Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, searchRadius);
-    Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
-    Cell::VisitObjects(bot, searcher, searchRadius);
-
-    for (Creature* creature : targets)
+    for (Creature* creature : creatureList)
     {
-        if (creature && creature->IsAlive() && creature->GetEntry() == NPC_COILFANG_GUARDIAN)
+        if (creature && creature->IsAlive())
             guardians.push_back(creature);
     }
 
@@ -688,14 +683,12 @@ bool LeotherasTheBlindTargetSpellbindersAction::Execute(Event /*event*/)
 bool LeotherasTheBlindDemonFormTankAttackBossAction::Execute(Event /*event*/)
 {
     Unit* innerDemon = nullptr;
+    std::list<Creature*> creatureList;
     constexpr float searchRadius = 50.0f;
 
-    std::list<Creature*> targets;
-    Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, searchRadius);
-    Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
-    Cell::VisitObjects(bot, searcher, searchRadius);
+    bot->GetCreatureListWithEntryInGrid(creatureList, NPC_INNER_DEMON, searchRadius);
 
-    for (Creature* creature : targets)
+    for (Creature* creature : creatureList)
     {
         if (creature && creature->GetEntry() == NPC_INNER_DEMON &&
             creature->GetSummonerGUID() == bot->GetGUID())
@@ -815,14 +808,12 @@ bool LeotherasTheBlindMeleeDpsRunAwayFromBossAction::Execute(Event /*event*/)
 bool LeotherasTheBlindDestroyInnerDemonAction::Execute(Event /*event*/)
 {
     Unit* innerDemon = nullptr;
+    std::list<Creature*> creatureList;
     constexpr float searchRadius = 50.0f;
 
-    std::list<Creature*> targets;
-    Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, searchRadius);
-    Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
-    Cell::VisitObjects(bot, searcher, searchRadius);
+    bot->GetCreatureListWithEntryInGrid(creatureList, NPC_INNER_DEMON, searchRadius);
 
-    for (Creature* creature : targets)
+    for (Creature* creature : creatureList)
     {
         if (creature && creature->GetEntry() == NPC_INNER_DEMON &&
             creature->GetSummonerGUID() == bot->GetGUID())
@@ -2797,16 +2788,14 @@ bool LadyVashjAvoidToxicSporesAction::IsPathSafeFromSpores(const Position& start
 std::vector<Unit*> LadyVashjAvoidToxicSporesAction::GetAllSporeDropTriggers(Player* bot)
 {
     std::vector<Unit*> sporeDropTriggers;
+    std::list<Creature*> creatureList;
     constexpr float searchRadius = 30.0f;
 
-    std::list<Creature*> targets;
-    Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, searchRadius);
-    Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
-    Cell::VisitObjects(bot, searcher, searchRadius);
+    bot->GetCreatureListWithEntryInGrid(creatureList, NPC_SPORE_DROP_TRIGGER, searchRadius);
 
-    for (Creature* creature : targets)
+    for (Creature* creature : creatureList)
     {
-        if (creature && creature->GetEntry() == NPC_SPORE_DROP_TRIGGER)
+        if (creature && creature->IsAlive())
             sporeDropTriggers.push_back(creature);
     }
 

@@ -1,7 +1,5 @@
 #include "RaidTempestKeepHelpers.h"
 #include "RaidTempestKeepActions.h"
-#include "CellImpl.h"
-#include "GridNotifiersImpl.h"
 #include "LootObjectStack.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
@@ -45,14 +43,12 @@ namespace TempestKeepHelpers
     {
         std::vector<Unit*> hazardTriggers;
 
-        std::list<Creature*> targets;
-        Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, searchRadius);
-        Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
-        Cell::VisitObjects(bot, searcher, searchRadius);
+        std::list<Creature*> creatureList;
+        bot->GetCreatureListWithEntryInGrid(creatureList, npcEntry, searchRadius);
 
-        for (Creature* creature : targets)
+        for (Creature* creature : creatureList)
         {
-            if (creature && creature->GetEntry() == npcEntry)
+            if (creature && creature->IsAlive())
                 hazardTriggers.push_back(creature);
         }
 
@@ -264,25 +260,24 @@ namespace TempestKeepHelpers
         ground = GROUND_POSITIONS[closestPlatform];
     }
 
-    std::pair<Unit*, Unit*> GetFirstTwoEmbersOfAlar(Player* bot)
+    std::pair<Unit*, Unit*> GetFirstTwoEmbersOfAlar(PlayerbotAI* botAI)
     {
         Unit* firstEmber = nullptr;
         Unit* secondEmber = nullptr;
 
-        std::list<Creature*> targets;
-        Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, 100.0f);
-        Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
-        Cell::VisitObjects(bot, searcher, 100.0f);
-
-        for (Creature* creature : targets)
+        for (auto const& guid :
+            botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get())
         {
-            if (creature && creature->IsAlive() && creature->GetEntry() == NPC_EMBER_OF_ALAR)
+            Unit* unit = botAI->GetUnit(guid);
+            if (unit && unit->IsAlive() && unit->GetEntry() == NPC_EMBER_OF_ALAR)
             {
                 if (!firstEmber)
-                    firstEmber = creature;
+                {
+                    firstEmber = unit;
+                }
                 else if (!secondEmber)
                 {
-                    secondEmber = creature;
+                    secondEmber = unit;
                     break;
                 }
             }

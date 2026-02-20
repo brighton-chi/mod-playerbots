@@ -141,7 +141,8 @@ float JanalaiDisableCombatFormationMoveMultiplier::GetValue(Action* action)
 
 float JanalaiStayAwayFromFireBombsMultiplier::GetValue(Action* action)
 {
-    if (!AnyNearbyNpcWithEntry(botAI, bot, NPC_FIRE_BOMB))
+    constexpr float searchRadius = 40.0f;
+    if (!bot->FindNearestCreature(NPC_FIRE_BOMB, searchRadius, true))
         return 1.0f;
 
     if (dynamic_cast<CastReachTargetSpellAction*>(action) ||

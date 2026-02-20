@@ -277,7 +277,7 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase1Embers(Unit* alar)
 // the main tank or first assist tank (whichever is not tanking Al'ar)
 bool AlarAssistTanksPickUpEmbersAction::HandlePhase2Embers(Unit* alar)
 {
-    auto [firstEmber, secondEmber] = GetFirstTwoEmbersOfAlar(bot);
+    auto [firstEmber, secondEmber] = GetFirstTwoEmbersOfAlar(botAI);
 
     if (botAI->IsAssistTankOfIndex(bot, 1, true) && firstEmber)
     {
@@ -323,7 +323,7 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase2Embers(Unit* alar)
 
 bool AlarRangedDpsPrioritizeEmbersAction::Execute(Event /*event*/)
 {
-    auto [firstEmber, secondEmber] = GetFirstTwoEmbersOfAlar(bot);
+    auto [firstEmber, secondEmber] = GetFirstTwoEmbersOfAlar(botAI);
 
     constexpr float safeDistance = 16.0f;
     if (firstEmber)

@@ -97,7 +97,8 @@ bool JanalaiBossEngagedByTanksTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "jan'alai"))
         return false;
 
-    return !AnyNearbyNpcWithEntry(botAI, bot, NPC_FIRE_BOMB);
+    constexpr float searchRadius = 40.0f;
+    return !bot->FindNearestCreature(NPC_FIRE_BOMB, searchRadius, true);
 }
 
 bool JanalaiBossCastsFlameBreathTrigger::IsActive()
@@ -111,13 +112,15 @@ bool JanalaiBossCastsFlameBreathTrigger::IsActive()
     if (GetFirstAliveUnitByEntry(botAI, NPC_AMANI_DRAGONHAWK_HATCHLING))
         return false;
 
-    return !AnyNearbyNpcWithEntry(botAI, bot, NPC_FIRE_BOMB);
+    constexpr float searchRadius = 40.0f;
+    return !bot->FindNearestCreature(NPC_FIRE_BOMB, searchRadius, true);
 }
 
 bool JanalaiBossSummoningFireBombsTrigger::IsActive()
 {
+    constexpr float searchRadius = 40.0f;
     return AI_VALUE2(Unit*, "find target", "jan'alai") &&
-           AnyNearbyNpcWithEntry(botAI, bot, NPC_FIRE_BOMB);
+           bot->FindNearestCreature(NPC_FIRE_BOMB, searchRadius, true);
 }
 
 bool JanalaiAmaniHatchersSpawnedTrigger::IsActive()
@@ -256,7 +259,8 @@ bool ZuljinBossIsSummoningCyclonesInEagleFormTrigger::IsActive()
     if (!zuljin || !zuljin->HasAura(SPELL_SHAPE_OF_THE_EAGLE))
         return false;
 
-    return AnyNearbyNpcWithEntry(botAI, bot, NPC_FEATHER_VORTEX);
+    constexpr float searchRadius = 40.0f;
+    return bot->FindNearestCreature(NPC_FEATHER_VORTEX, searchRadius, true);
 }
 
 bool ZuljinBossCastsAoeAbilitiesInDragonhawkFormTrigger::IsActive()

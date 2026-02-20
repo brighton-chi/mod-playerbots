@@ -1,7 +1,5 @@
 #include "RaidHyjalSummitActions.h"
 #include "RaidHyjalSummitHelpers.h"
-#include "CellImpl.h"
-#include "GridNotifiersImpl.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
 
@@ -837,18 +835,15 @@ bool ArchimondeSpreadToAvoidAirBurstAction::Execute(Event /*event*/)
 
 bool ArchimondeAvoidDoomfireAction::Execute(Event /*event*/)
 {
+    std::vector<DoomfireLine> hazardLines;
+    std::list<Creature*> doomfires;
     constexpr float searchRadius = 40.0f;
 
-    std::list<Creature*> targets;
-    Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, searchRadius);
-    Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
-    Cell::VisitObjects(bot, searcher, searchRadius);
+    bot->GetCreatureListWithEntryInGrid(doomfires, NPC_DOOMFIRE, searchRadius);
 
-    std::vector<DoomfireLine> hazardLines;
-
-    for (Creature* creature : targets)
+    for (Creature* creature : doomfires)
     {
-        if (creature && creature->GetEntry() == NPC_DOOMFIRE)
+        if (creature)
         {
             Position start = creature->GetPosition();
             float destX, destY, destZ;

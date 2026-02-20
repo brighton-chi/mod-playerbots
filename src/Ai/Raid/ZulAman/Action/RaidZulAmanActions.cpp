@@ -1,7 +1,5 @@
 #include "RaidZulAmanActions.h"
 #include "RaidZulAmanHelpers.h"
-#include "CellImpl.h"
-#include "GridNotifiersImpl.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
 
@@ -444,15 +442,12 @@ std::vector<Unit*> JanalaiAvoidFireBombsAction::GetAllFireBombTriggers()
 {
     std::vector<Unit*> fireBombs;
     constexpr float searchRadius = 40.0f;
+    std::list<Creature*> creatureList;
+    bot->GetCreatureListWithEntryInGrid(creatureList, NPC_FIRE_BOMB, searchRadius);
 
-    std::list<Creature*> targets;
-    Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, searchRadius);
-    Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
-    Cell::VisitObjects(bot, searcher, searchRadius);
-
-    for (Creature* creature : targets)
+    for (Creature* creature : creatureList)
     {
-        if (creature && creature->GetEntry() == NPC_FIRE_BOMB)
+        if (creature && creature->IsAlive())
             fireBombs.push_back(creature);
     }
 
@@ -642,10 +637,30 @@ bool HexLordMalacrassAssignDpsPriorityAction::Execute(Event event)
         NPC_HEX_LORD_MALACRASS
     };
 
-    if (Unit* target = GetFirstAliveUnitByEntries(botAI, bot, priorityEntries))
+    auto const& targets =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
+    Unit* bestTarget = nullptr;
+
+    for (uint32 entry : priorityEntries)
     {
-        MarkTargetWithSkull(bot, target);
-        SetRtiTarget(botAI, "skull", target);
+        for (auto const& guid : targets)
+        {
+            Unit* unit = botAI->GetUnit(guid);
+            if (unit && unit->IsAlive() && unit->GetEntry() == entry)
+            {
+                bestTarget = unit;
+                break;
+            }
+        }
+
+        if (bestTarget)
+            break;
+    }
+
+    if (bestTarget)
+    {
+        MarkTargetWithSkull(bot, bestTarget);
+        SetRtiTarget(botAI, "skull", bestTarget);
     }
 
     return false;
@@ -902,15 +917,12 @@ std::vector<Unit*> ZuljinAvoidCyclonesAction::GetAllCycloneTriggers()
 {
     std::vector<Unit*> cyclones;
     constexpr float searchRadius = 40.0f;
+    std::list<Creature*> creatureList;
+    bot->GetCreatureListWithEntryInGrid(creatureList, NPC_FIRE_BOMB, searchRadius);
 
-    std::list<Creature*> targets;
-    Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, searchRadius);
-    Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
-    Cell::VisitObjects(bot, searcher, searchRadius);
-
-    for (Creature* creature : targets)
+    for (Creature* creature : creatureList)
     {
-        if (creature && creature->GetEntry() == NPC_FEATHER_VORTEX)
+        if (creature && creature->IsAlive())
             cyclones.push_back(creature);
     }
 

@@ -1,8 +1,6 @@
 #include "RaidMagtheridonHelpers.h"
-#include "CellImpl.h"
 #include "Creature.h"
 #include "GameObject.h"
-#include "GridNotifiersImpl.h"
 #include "Map.h"
 #include "ObjectGuid.h"
 #include "Playerbots.h"
@@ -123,22 +121,25 @@ namespace MagtheridonHelpers
     bool IsSafeFromMagtheridonHazards(PlayerbotAI* botAI, Player* bot, float x, float y, float z)
     {
         // Debris
-        std::list<Creature*> debrisHazards;
-        Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, 100.0f);
-        Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, debrisHazards, u_check);
-        Cell::VisitObjects(bot, searcher, 100.0f);
+        std::list<Creature*> debrisList;
+        constexpr float searchRadius = 40.0f;
 
-        for (Creature* hazard : debrisHazards)
+        constexpr float debrisHazardRadius = 9.0f;
+        bot->GetCreatureListWithEntryInGrid(debrisList, NPC_TARGET_TRIGGER, searchRadius);
+
+        for (Creature* creature : debrisList)
         {
-            if (hazard && hazard->GetEntry() == NPC_TARGET_TRIGGER)
+            if (creature && creature->IsAlive())
             {
-                float dist = std::sqrt(std::pow(x - hazard->GetPositionX(), 2) + std::pow(y - hazard->GetPositionY(), 2));
-                if (dist < 9.0f)
+                float dx = x - creature->GetPositionX();
+                float dy = y - creature->GetPositionY();
+                if ((dx * dx + dy * dy) < (debrisHazardRadius * debrisHazardRadius))
                     return false;
             }
         }
 
         // Conflagration
+        constexpr float conflagrationHazardRadius = 5.0f;
         GuidVector gos = *botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest game objects");
         for (auto const& goGuid : gos)
         {
@@ -146,8 +147,9 @@ namespace MagtheridonHelpers
             if (!go || go->GetEntry() != GO_BLAZE)
                 continue;
 
-            float dist = std::sqrt(std::pow(x - go->GetPositionX(), 2) + std::pow(y - go->GetPositionY(), 2));
-            if (dist < 5.0f)
+            float dx = x - go->GetPositionX();
+            float dy = y - go->GetPositionY();
+            if ((dx * dx + dy * dy) < (conflagrationHazardRadius * conflagrationHazardRadius))
                 return false;
         }
 

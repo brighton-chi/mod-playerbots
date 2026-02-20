@@ -1,8 +1,6 @@
 #include "RaidGruulsLairActions.h"
 #include "RaidGruulsLairHelpers.h"
-#include "CellImpl.h"
 #include "CreatureAI.h"
-#include "GridNotifiersImpl.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
 #include "Unit.h"
@@ -374,17 +372,13 @@ bool HighKingMaulgarBanishFelstalkerAction::Execute(Event /*event*/)
     if (!group)
         return false;
 
-    constexpr float searchRadius = 100.0f;
-
     std::vector<Unit*> felStalkers;
-    std::list<Creature*> targets;
-    Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, searchRadius);
-    Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
-    Cell::VisitObjects(bot, searcher, searchRadius);
-
-    for (Creature* creature : targets)
+    std::list<Creature*> creatureList;
+    constexpr float searchRadius = 100.0f;
+    bot->GetCreatureListWithEntryInGrid(creatureList, NPC_WILD_FEL_STALKER, searchRadius);
+    for (Creature* creature : creatureList)
     {
-        if (creature && creature->IsAlive() && creature->GetEntry() == NPC_WILD_FEL_STALKER)
+        if (creature && creature->IsAlive())
             felStalkers.push_back(creature);
     }
 
