@@ -170,7 +170,7 @@ bool KazrogalBotIsLowOnManaTrigger::IsActive()
     if (!kazrogal)
         return false;
 
-    if (isBelowManaThreshold[bot->GetGUID()] ||
+    if (isBelowManaThreshold.count(bot->GetGUID()) ||
         bot->GetPower(POWER_MANA) <= 3000)
         return true;
 
