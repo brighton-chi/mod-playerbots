@@ -63,12 +63,7 @@ bool MagtheridonBurningAbyssalSpawnedTrigger::IsActive()
     if (!magtheridon || bot->getClass() != CLASS_WARLOCK)
         return false;
 
-    const GuidVector& npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
-        return std::any_of(npcs.begin(), npcs.end(), [this](const ObjectGuid& npc)
-        {
-            Unit* unit = botAI->GetUnit(npc);
-            return unit && unit->GetEntry() == NPC_BURNING_ABYSSAL;
-        });
+    return AI_VALUE2(Unit*, "find target", "burning abyssal");
 }
 
 bool MagtheridonBossEngagedByMainTankTrigger::IsActive()

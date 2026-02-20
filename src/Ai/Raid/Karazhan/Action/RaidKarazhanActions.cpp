@@ -719,7 +719,7 @@ bool NetherspiteBlockBlueBeamAction::Execute(Event /*event*/)
         _wasBlockingBlueBeam[botGuid] = true;
 
         float idealDistance = botAI->IsRanged(bot) ? 25.0f : 18.0f;
-        std::vector<Unit*> voidZones = GetAllVoidZones(botAI, bot);
+        std::vector<Unit*> voidZones = GetAllVoidZones(bot);
 
         float bx = netherspite->GetPositionX();
         float by = netherspite->GetPositionY();
@@ -811,7 +811,7 @@ bool NetherspiteBlockGreenBeamAction::Execute(Event /*event*/)
         }
         _wasBlockingGreenBeam[botGuid] = true;
 
-        std::vector<Unit*> voidZones = GetAllVoidZones(botAI, bot);
+        std::vector<Unit*> voidZones = GetAllVoidZones(bot);
 
         float bx = netherspite->GetPositionX();
         float by = netherspite->GetPositionY();
@@ -871,7 +871,7 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event /*event*/)
         return false;
 
     auto [redBlocker, greenBlocker, blueBlocker] = GetCurrentBeamBlockers(botAI, bot);
-    std::vector<Unit*> voidZones = GetAllVoidZones(botAI, bot);
+    std::vector<Unit*> voidZones = GetAllVoidZones(bot);
 
     bool nearVoidZone = !IsSafePosition(bot->GetPositionX(), bot->GetPositionY(),
                                         bot->GetPositionZ(), voidZones, 4.0f);
@@ -982,7 +982,7 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::IsAwayFromBeams(
 
 bool NetherspiteBanishPhaseAvoidVoidZoneAction::Execute(Event /*event*/)
 {
-    std::vector<Unit*> voidZones = GetAllVoidZones(botAI, bot);
+    std::vector<Unit*> voidZones = GetAllVoidZones(bot);
 
     for (Unit* vz : voidZones)
     {
@@ -1051,7 +1051,7 @@ bool PrinceMalchezaarEnfeebledAvoidHazardAction::Execute(Event /*event*/)
     if (!malchezaar)
         return false;
 
-    std::vector<Unit*> infernals = GetSpawnedInfernals(botAI);
+    std::vector<Unit*> infernals = GetSpawnedInfernals(bot);
 
     const float minSafeBossDistance = 34.0f;
     const float minSafeBossDistanceSq = minSafeBossDistance * minSafeBossDistance;
@@ -1127,7 +1127,7 @@ bool PrinceMalchezaarNonTankAvoidInfernalAction::Execute(Event /*event*/)
     if (!malchezaar)
         return false;
 
-    std::vector<Unit*> infernals = GetSpawnedInfernals(botAI);
+    std::vector<Unit*> infernals = GetSpawnedInfernals(bot);
 
     const float safeInfernalDistance = 23.0f;
     const float safeInfernalDistanceSq = safeInfernalDistance * safeInfernalDistance;
@@ -1197,7 +1197,7 @@ bool PrinceMalchezaarMainTankMovementAction::Execute(Event /*event*/)
     if (bot->GetVictim() != malchezaar)
         return Attack(malchezaar);
 
-    std::vector<Unit*> infernals = GetSpawnedInfernals(botAI);
+    std::vector<Unit*> infernals = GetSpawnedInfernals(bot);
 
     const float safeInfernalDistance = 30.0f;
     const float safeInfernalDistanceSq = safeInfernalDistance * safeInfernalDistance;

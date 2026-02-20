@@ -1,4 +1,6 @@
 #include "RaidKarazhanHelpers.h"
+#include "CellImpl.h"
+#include "GridNotifiersImpl.h"
 #include "Playerbots.h"
 
 namespace KarazhanHelpers
@@ -253,20 +255,20 @@ namespace KarazhanHelpers
         return std::make_tuple(redBlocker, greenBlocker, blueBlocker);
     }
 
-    std::vector<Unit*> GetAllVoidZones(PlayerbotAI* botAI, Player* bot)
+    std::vector<Unit*> GetAllVoidZones(Player* bot)
     {
         std::vector<Unit*> voidZones;
-        const float radius = 30.0f;
-        const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
-        for (auto const& npcGuid : npcs)
-        {
-            Unit* unit = botAI->GetUnit(npcGuid);
-            if (!unit || unit->GetEntry() != NPC_VOID_ZONE)
-                continue;
+        constexpr float searchRadius = 30.0f;
 
-            float dist = bot->GetExactDist2d(unit);
-            if (dist < radius)
-                voidZones.push_back(unit);
+        std::list<Creature*> targets;
+        Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, searchRadius);
+        Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
+        Cell::VisitObjects(bot, searcher, searchRadius);
+
+        for (Creature* creature : targets)
+        {
+            if (creature && creature->GetEntry() == NPC_VOID_ZONE)
+                voidZones.push_back(creature);
         }
 
         return voidZones;
@@ -284,15 +286,20 @@ namespace KarazhanHelpers
         return true;
     }
 
-    std::vector<Unit*> GetSpawnedInfernals(PlayerbotAI* botAI)
+    std::vector<Unit*> GetSpawnedInfernals(Player* bot)
     {
         std::vector<Unit*> infernals;
-        const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
-        for (auto const& npcGuid : npcs)
+        constexpr float searchRadius = 100.0f;
+
+        std::list<Creature*> targets;
+        Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, searchRadius);
+        Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
+        Cell::VisitObjects(bot, searcher, searchRadius);
+
+        for (Creature* creature : targets)
         {
-            Unit* unit = botAI->GetUnit(npcGuid);
-            if (unit && unit->GetEntry() == NPC_NETHERSPITE_INFERNAL)
-                infernals.push_back(unit);
+            if (creature && creature->GetEntry() == NPC_NETHERSPITE_INFERNAL)
+                infernals.push_back(creature);
         }
 
         return infernals;

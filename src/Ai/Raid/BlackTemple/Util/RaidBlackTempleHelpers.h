@@ -81,6 +81,7 @@ namespace BlackTempleHelpers
         NPC_SHADOWY_CONSTRUCT     = 23111,
 
         // Illidan Stormrage <The Betrayer>
+        NPC_ILLIDAN_STORMRAGE     = 22917,
         NPC_FLAME_OF_AZZINOTH     = 22997,
         NPC_DEMON_FIRE            = 23069,
         NPC_ILLIDAN_DB_TARGET     = 23070,
@@ -183,7 +184,7 @@ namespace BlackTempleHelpers
     extern std::unordered_map<uint32, ObjectGuid> eastFlameGuid;
     extern std::unordered_map<uint32, ObjectGuid> westFlameGuid;
     int GetIllidanPhase(Unit* illidan);
-    std::vector<Unit*> GetAllFlameCrashes(PlayerbotAI* botAI, Player* bot);
+    std::vector<Unit*> GetAllFlameCrashes(Player* bot);
     std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(PlayerbotAI* botAI, Player* bot);
     Player* GetIllidanWarlockTank(Player* bot);
     struct EyeBlastDangerArea
@@ -192,7 +193,7 @@ namespace BlackTempleHelpers
         Position end;
         float width;
     };
-    EyeBlastDangerArea GetEyeBlastDangerArea(PlayerbotAI* botAI, Unit* illidan);
+    EyeBlastDangerArea GetEyeBlastDangerArea(PlayerbotAI* botAI, Player* bot, Unit* illidan);
     bool IsPositionInEyeBlastDangerArea(const Position& pos, const EyeBlastDangerArea& area);
 }
 

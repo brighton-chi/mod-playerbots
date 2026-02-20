@@ -502,7 +502,9 @@ float IllidanStormrageDisableDefaultTargetingMultiplier::GetValue(Action* action
     if (bot->GetVictim() == nullptr)
         return 1.0f;
 
-    if (!botAI->IsTank(bot))
+    // if (!botAI->IsTank(bot))
+    //     return 1.0f;
+    if (botAI->IsHeal(bot))
         return 1.0f;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -513,7 +515,7 @@ float IllidanStormrageDisableDefaultTargetingMultiplier::GetValue(Action* action
     // if (GetIllidanPhase(illidan) != 2 && GetIllidanPhase(illidan) != 4)
     //     return 1.0f;
 
-    if (dynamic_cast<TankAssistAction*>(action))
+    if (dynamic_cast<TankAssistAction*>(action) || dynamic_cast<DpsAssistAction*>(action))
         return 0.0f;
 
     return 1.0f;
@@ -541,6 +543,9 @@ float IllidanStormrageStayWithinGrateMultiplier::GetValue(Action* action)
          dynamic_cast<CastDisengageAction*>(action) ||
          dynamic_cast<CastBlinkBackAction*>(action)))
          return 0.0f;
+
+    if (AI_VALUE2(Unit*, "find target", "shadow demon"))
+        return 1.0f;
 
     if (botAI->IsMelee(bot) && (GetIllidanPhase(illidan) == 2 || GetIllidanPhase(illidan) == 4 ||
         bot->HasAura(SPELL_PARASITIC_SHADOWFIEND)) &&

@@ -1,6 +1,8 @@
 #include "RaidGruulsLairActions.h"
 #include "RaidGruulsLairHelpers.h"
+#include "CellImpl.h"
 #include "CreatureAI.h"
+#include "GridNotifiersImpl.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
 #include "Unit.h"
@@ -372,13 +374,18 @@ bool HighKingMaulgarBanishFelstalkerAction::Execute(Event /*event*/)
     if (!group)
         return false;
 
-    const GuidVector& npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
+    constexpr float searchRadius = 100.0f;
+
     std::vector<Unit*> felStalkers;
-    for (auto const& npc : npcs)
+    std::list<Creature*> targets;
+    Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, searchRadius);
+    Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
+    Cell::VisitObjects(bot, searcher, searchRadius);
+
+    for (Creature* creature : targets)
     {
-        Unit* unit = botAI->GetUnit(npc);
-        if (unit && unit->GetEntry() == NPC_WILD_FEL_STALKER && unit->IsAlive())
-            felStalkers.push_back(unit);
+        if (creature && creature->IsAlive() && creature->GetEntry() == NPC_WILD_FEL_STALKER)
+            felStalkers.push_back(creature);
     }
 
     std::vector<Player*> warlocks;

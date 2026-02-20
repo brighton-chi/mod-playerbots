@@ -1,5 +1,7 @@
 #include "RaidZulAmanActions.h"
 #include "RaidZulAmanHelpers.h"
+#include "CellImpl.h"
+#include "GridNotifiersImpl.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
 
@@ -319,7 +321,7 @@ bool JanalaiSpreadRangedInCircleAction::Execute(Event event)
 
 bool JanalaiAvoidFireBombsAction::Execute(Event event)
 {
-    auto const& bombs = GetAllFireBombTriggers(botAI, bot);
+    auto const& bombs = GetAllFireBombTriggers();
     if (bombs.empty())
         return false;
 
@@ -438,19 +440,20 @@ bool JanalaiAvoidFireBombsAction::IsPathSafeFromFireBombs(const Position& start,
     return true;
 }
 
-std::vector<Unit*> JanalaiAvoidFireBombsAction::GetAllFireBombTriggers(
-    PlayerbotAI* botAI, Player* bot)
+std::vector<Unit*> JanalaiAvoidFireBombsAction::GetAllFireBombTriggers()
 {
     std::vector<Unit*> fireBombs;
-    auto const& npcs =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
-    for (auto const& npcGuid : npcs)
+    constexpr float searchRadius = 40.0f;
+
+    std::list<Creature*> targets;
+    Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, searchRadius);
+    Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
+    Cell::VisitObjects(bot, searcher, searchRadius);
+
+    for (Creature* creature : targets)
     {
-        constexpr float maxSearchRadius = 40.0f;
-        Unit* unit = botAI->GetUnit(npcGuid);
-        if (unit && unit->GetEntry() == NPC_FIRE_BOMB &&
-            bot->GetExactDist2d(unit) < maxSearchRadius)
-            fireBombs.push_back(unit);
+        if (creature && creature->GetEntry() == NPC_FIRE_BOMB)
+            fireBombs.push_back(creature);
     }
 
     return fireBombs;
@@ -639,7 +642,7 @@ bool HexLordMalacrassAssignDpsPriorityAction::Execute(Event event)
         NPC_HEX_LORD_MALACRASS
     };
 
-    if (Unit* target = GetFirstAliveUnitByEntries(botAI, priorityEntries))
+    if (Unit* target = GetFirstAliveUnitByEntries(botAI, bot, priorityEntries))
     {
         MarkTargetWithSkull(bot, target);
         SetRtiTarget(botAI, "skull", target);
@@ -774,7 +777,7 @@ bool ZuljinRunAwayFromWhirlwindAction::Execute(Event event)
 
 bool ZuljinAvoidCyclonesAction::Execute(Event event)
 {
-    auto const& cyclones = GetAllCycloneTriggers(botAI, bot);
+    auto const& cyclones = GetAllCycloneTriggers();
     if (cyclones.empty())
         return false;
 
@@ -895,21 +898,20 @@ bool ZuljinAvoidCyclonesAction::IsPathSafeFromCyclones(const Position& start,
     return true;
 }
 
-std::vector<Unit*> ZuljinAvoidCyclonesAction::GetAllCycloneTriggers(
-    PlayerbotAI* botAI, Player* bot)
+std::vector<Unit*> ZuljinAvoidCyclonesAction::GetAllCycloneTriggers()
 {
     std::vector<Unit*> cyclones;
-    auto const& npcs =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
-    for (auto const& npcGuid : npcs)
+    constexpr float searchRadius = 40.0f;
+
+    std::list<Creature*> targets;
+    Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, searchRadius);
+    Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
+    Cell::VisitObjects(bot, searcher, searchRadius);
+
+    for (Creature* creature : targets)
     {
-        constexpr float maxSearchRadius = 30.0f;
-        Unit* unit = botAI->GetUnit(npcGuid);
-        if (unit && unit->GetEntry() == NPC_FEATHER_VORTEX &&
-            bot->GetExactDist2d(unit) < maxSearchRadius)
-        {
-            cyclones.push_back(unit);
-        }
+        if (creature && creature->GetEntry() == NPC_FEATHER_VORTEX)
+            cyclones.push_back(creature);
     }
 
     return cyclones;

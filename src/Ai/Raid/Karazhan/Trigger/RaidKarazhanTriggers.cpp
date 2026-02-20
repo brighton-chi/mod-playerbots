@@ -268,7 +268,7 @@ bool NetherspiteBossIsBanishedTrigger::IsActive()
     if (!netherspite || !netherspite->HasAura(SPELL_NETHERSPITE_BANISHED))
         return false;
 
-    std::vector<Unit*> voidZones = GetAllVoidZones(botAI, bot);
+    std::vector<Unit*> voidZones = GetAllVoidZones(bot);
     for (Unit* vz : voidZones)
     {
         if (bot->GetExactDist2d(vz) < 4.0f)

@@ -1,4 +1,6 @@
 #include "RaidZulAmanHelpers.h"
+#include "CellImpl.h"
+#include "GridNotifiersImpl.h"
 #include "Group.h"
 #include "Playerbots.h"
 
@@ -6,43 +8,35 @@ namespace ZulAmanHelpers
 {
     // General Helpers
 
-    Unit* GetFirstAliveUnitByEntries(PlayerbotAI* botAI, const std::vector<uint32>& entries)
+    Unit* GetFirstAliveUnitByEntries(PlayerbotAI* botAI, Player* bot, const std::vector<uint32>& entries)
     {
-        if (!botAI)
-            return nullptr;
+        std::list<Creature*> targets;
+        Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, 100.0f);
+        Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
+        Cell::VisitObjects(bot, searcher, 100.0f);
 
-        auto npcValue = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs");
-        if (!npcValue)
-            return nullptr;
-
-        auto const& npcs = npcValue->Get();
         for (uint32 entry : entries)
         {
-            for (auto const& guid : npcs)
+            for (Creature* creature : targets)
             {
-                Unit* unit = botAI->GetUnit(guid);
-                if (unit && unit->IsAlive() && unit->GetEntry() == entry)
-                    return unit;
+                if (creature && creature->IsAlive() && creature->GetEntry() == entry)
+                    return creature;
             }
         }
 
         return nullptr;
     }
 
-    bool AnyNearbyNpcWithEntry(PlayerbotAI* botAI, uint32 entry)
+    bool AnyNearbyNpcWithEntry(PlayerbotAI* botAI, Player* bot, uint32 entry)
     {
-        if (!botAI)
-            return false;
+        std::list<Creature*> targets;
+        Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, 100.0f);
+        Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
+        Cell::VisitObjects(bot, searcher, 40.0f);
 
-        auto npcValue = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs");
-        if (!npcValue)
-            return false;
-
-        auto const& npcs = npcValue->Get();
-        for (auto const& guid : npcs)
+        for (Creature* creature : targets)
         {
-            Unit* unit = botAI->GetUnit(guid);
-            if (unit && unit->IsAlive() && unit->GetEntry() == entry)
+            if (creature && creature->IsAlive() && creature->GetEntry() == entry)
                 return true;
         }
 

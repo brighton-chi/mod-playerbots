@@ -114,7 +114,7 @@ public:
 private:
     Position FindSafestNearbyPosition(const std::vector<Unit*>& fireBombs, const Position& position, float maxRadius, float hazardRadius);
     bool IsPathSafeFromFireBombs(const Position& start, const Position& end, const std::vector<Unit*>& fireBombs, float hazardRadius);
-    std::vector<Unit*> GetAllFireBombTriggers(PlayerbotAI* botAI, Player* bot);
+    std::vector<Unit*> GetAllFireBombTriggers();
 };
 
 class JanalaiMarkAmaniHatchersAction : public Action
@@ -228,7 +228,7 @@ public:
 private:
     Position FindSafestNearbyPosition(const std::vector<Unit*>& cyclones, const Position& position, float maxRadius, float hazardRadius);
     bool IsPathSafeFromCyclones(const Position& start, const Position& end, const std::vector<Unit*>& cyclones, float hazardRadius);
-    std::vector<Unit*> GetAllCycloneTriggers(PlayerbotAI* botAI, Player* bot);
+    std::vector<Unit*> GetAllCycloneTriggers();
 };
 
 class ZuljinSpreadRangedAction : public MovementAction

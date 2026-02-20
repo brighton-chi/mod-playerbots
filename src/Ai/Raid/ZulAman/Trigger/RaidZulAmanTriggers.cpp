@@ -97,7 +97,7 @@ bool JanalaiBossEngagedByTanksTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "jan'alai"))
         return false;
 
-    return !AnyNearbyNpcWithEntry(botAI, NPC_FIRE_BOMB);
+    return !AnyNearbyNpcWithEntry(botAI, bot, NPC_FIRE_BOMB);
 }
 
 bool JanalaiBossCastsFlameBreathTrigger::IsActive()
@@ -111,13 +111,13 @@ bool JanalaiBossCastsFlameBreathTrigger::IsActive()
     if (GetFirstAliveUnitByEntry(botAI, NPC_AMANI_DRAGONHAWK_HATCHLING))
         return false;
 
-    return !AnyNearbyNpcWithEntry(botAI, NPC_FIRE_BOMB);
+    return !AnyNearbyNpcWithEntry(botAI, bot, NPC_FIRE_BOMB);
 }
 
 bool JanalaiBossSummoningFireBombsTrigger::IsActive()
 {
     return AI_VALUE2(Unit*, "find target", "jan'alai") &&
-           AnyNearbyNpcWithEntry(botAI, NPC_FIRE_BOMB);
+           AnyNearbyNpcWithEntry(botAI, bot, NPC_FIRE_BOMB);
 }
 
 bool JanalaiAmaniHatchersSpawnedTrigger::IsActive()
@@ -256,7 +256,7 @@ bool ZuljinBossIsSummoningCyclonesInEagleFormTrigger::IsActive()
     if (!zuljin || !zuljin->HasAura(SPELL_SHAPE_OF_THE_EAGLE))
         return false;
 
-    return AnyNearbyNpcWithEntry(botAI, NPC_FEATHER_VORTEX);
+    return AnyNearbyNpcWithEntry(botAI, bot, NPC_FEATHER_VORTEX);
 }
 
 bool ZuljinBossCastsAoeAbilitiesInDragonhawkFormTrigger::IsActive()

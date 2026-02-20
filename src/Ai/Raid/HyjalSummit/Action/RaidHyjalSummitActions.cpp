@@ -1,5 +1,7 @@
 #include "RaidHyjalSummitActions.h"
 #include "RaidHyjalSummitHelpers.h"
+#include "CellImpl.h"
+#include "GridNotifiersImpl.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
 
@@ -835,29 +837,31 @@ bool ArchimondeSpreadToAvoidAirBurstAction::Execute(Event /*event*/)
 
 bool ArchimondeAvoidDoomfireAction::Execute(Event /*event*/)
 {
-    std::vector<Unit*> doomfires;
-    auto const& npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
-    for (auto const& npcGuid : npcs)
-    {
-        Unit* unit = botAI->GetUnit(npcGuid);
-        if (unit && unit->GetEntry() == NPC_DOOMFIRE)
-            doomfires.push_back(unit);
-    }
+    constexpr float searchRadius = 40.0f;
 
-    if (doomfires.empty())
-        return false;
+    std::list<Creature*> targets;
+    Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, searchRadius);
+    Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
+    Cell::VisitObjects(bot, searcher, searchRadius);
 
     std::vector<DoomfireLine> hazardLines;
-    for (Unit* doomfire : doomfires)
+
+    for (Creature* creature : targets)
     {
-        Position start = doomfire->GetPosition();
-        float destX, destY, destZ;
-        if (doomfire->GetMotionMaster()->GetDestination(destX, destY, destZ))
+        if (creature && creature->GetEntry() == NPC_DOOMFIRE)
         {
-            Position end(destX, destY, destZ);
-            hazardLines.push_back({start, end});
+            Position start = creature->GetPosition();
+            float destX, destY, destZ;
+            if (creature->GetMotionMaster()->GetDestination(destX, destY, destZ))
+            {
+                Position end(destX, destY, destZ);
+                hazardLines.push_back({start, end});
+            }
         }
     }
+
+    if (hazardLines.empty())
+        return false;
 
     constexpr float hazardWidth = 15.0f;
     bool inDanger = false;

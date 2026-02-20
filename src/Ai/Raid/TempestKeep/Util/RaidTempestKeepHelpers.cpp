@@ -1,5 +1,7 @@
 #include "RaidTempestKeepHelpers.h"
 #include "RaidTempestKeepActions.h"
+#include "CellImpl.h"
+#include "GridNotifiersImpl.h"
 #include "LootObjectStack.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
@@ -39,16 +41,19 @@ namespace TempestKeepHelpers
         return nearestPlayer;
     }
 
-    std::vector<Unit*> GetAllHazardTriggers(
-        PlayerbotAI* botAI, Player* bot, uint32 npcEntry, float maxSearchRadius)
+    std::vector<Unit*> GetAllHazardTriggers(Player* bot, uint32 npcEntry, float searchRadius)
     {
         std::vector<Unit*> hazardTriggers;
-        auto const& npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
-        for (auto const& npcGuid : npcs)
+
+        std::list<Creature*> targets;
+        Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, searchRadius);
+        Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
+        Cell::VisitObjects(bot, searcher, searchRadius);
+
+        for (Creature* creature : targets)
         {
-            Unit* unit = botAI->GetUnit(npcGuid);
-            if (unit && unit->GetEntry() == npcEntry && bot->GetExactDist2d(unit) < maxSearchRadius)
-                hazardTriggers.push_back(unit);
+            if (creature && creature->GetEntry() == npcEntry)
+                hazardTriggers.push_back(creature);
         }
 
         return hazardTriggers;
@@ -259,22 +264,25 @@ namespace TempestKeepHelpers
         ground = GROUND_POSITIONS[closestPlatform];
     }
 
-    std::pair<Unit*, Unit*> GetFirstTwoEmbersOfAlar(PlayerbotAI* botAI)
+    std::pair<Unit*, Unit*> GetFirstTwoEmbersOfAlar(Player* bot)
     {
         Unit* firstEmber = nullptr;
         Unit* secondEmber = nullptr;
 
-        for (auto const& guid :
-             botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get())
+        std::list<Creature*> targets;
+        Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, 100.0f);
+        Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
+        Cell::VisitObjects(bot, searcher, 100.0f);
+
+        for (Creature* creature : targets)
         {
-            Unit* unit = botAI->GetUnit(guid);
-            if (unit && unit->IsAlive() && unit->GetEntry() == NPC_EMBER_OF_ALAR)
+            if (creature && creature->IsAlive() && creature->GetEntry() == NPC_EMBER_OF_ALAR)
             {
                 if (!firstEmber)
-                    firstEmber = unit;
+                    firstEmber = creature;
                 else if (!secondEmber)
                 {
-                    secondEmber = unit;
+                    secondEmber = creature;
                     break;
                 }
             }

@@ -1,6 +1,8 @@
 #include "RaidMagtheridonHelpers.h"
+#include "CellImpl.h"
 #include "Creature.h"
 #include "GameObject.h"
+#include "GridNotifiersImpl.h"
 #include "Map.h"
 #include "ObjectGuid.h"
 #include "Playerbots.h"
@@ -121,20 +123,19 @@ namespace MagtheridonHelpers
     bool IsSafeFromMagtheridonHazards(PlayerbotAI* botAI, Player* bot, float x, float y, float z)
     {
         // Debris
-        std::vector<Unit*> debrisHazards;
-        const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
-        for (auto const& npcGuid : npcs)
+        std::list<Creature*> debrisHazards;
+        Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, 100.0f);
+        Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, debrisHazards, u_check);
+        Cell::VisitObjects(bot, searcher, 100.0f);
+
+        for (Creature* hazard : debrisHazards)
         {
-            Unit* unit = botAI->GetUnit(npcGuid);
-            if (!unit || unit->GetEntry() != NPC_TARGET_TRIGGER)
-                continue;
-            debrisHazards.push_back(unit);
-        }
-        for (Unit* hazard : debrisHazards)
-        {
-            float dist = std::sqrt(std::pow(x - hazard->GetPositionX(), 2) + std::pow(y - hazard->GetPositionY(), 2));
-            if (dist < 9.0f)
-                return false;
+            if (hazard && hazard->GetEntry() == NPC_TARGET_TRIGGER)
+            {
+                float dist = std::sqrt(std::pow(x - hazard->GetPositionX(), 2) + std::pow(y - hazard->GetPositionY(), 2));
+                if (dist < 9.0f)
+                    return false;
+            }
         }
 
         // Conflagration

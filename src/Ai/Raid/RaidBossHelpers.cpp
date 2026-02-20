@@ -1,4 +1,6 @@
 #include "RaidBossHelpers.h"
+#include "CellImpl.h"
+#include "GridNotifiersImpl.h"
 #include "Playerbots.h"
 #include "RtiTargetValue.h"
 
@@ -177,20 +179,30 @@ Player* GetGroupThirdAssistTank(PlayerbotAI* botAI, Player* bot)
     return nullptr;
 }
 
-// Return the first matching alive unit from the nearest npcs list
-// Depending on usage, other lists may be more appropriate (e.g., possible targets no los)
-// Note that some units are never considered in combat (e.g., totems)
-Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry, bool requireInCombat)
+// Return the first matching alive unit from a CreatureListSearcher
+Unit* GetFirstAliveUnitByEntry(
+    PlayerbotAI* botAI, uint32 entry, bool requireInCombat, float searchRadius)
 {
-    auto const& npcs =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
-    for (auto const& npcGuid : npcs)
+    Player* bot = botAI->GetBot();
+    if (!bot)
+        return nullptr;
+
+    // If no searchRadius is provided, default to the bot's configured sight distance
+    if (searchRadius <= 0.0f)
+        searchRadius = sPlayerbotAIConfig.sightDistance;
+
+    std::list<Creature*> targets;
+    Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, searchRadius);
+    Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
+    Cell::VisitObjects(bot, searcher, searchRadius);
+
+    for (Creature* creature : targets)
     {
-        Unit* unit = botAI->GetUnit(npcGuid);
-        if (unit && unit->IsAlive() && unit->GetEntry() == entry)
+        if (creature && creature->IsAlive() && creature->GetEntry() == entry)
         {
-            if (!requireInCombat || unit->IsInCombat())
-                return unit;
+            // Note that some units are never considered in combat (e.g., totems)
+            if (!requireInCombat || creature->IsInCombat())
+                return creature;
         }
     }
 
@@ -198,10 +210,10 @@ Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry, bool requireInC
 }
 
 // Return the nearest alive player (human or bot) within the specified radius
-Unit* GetNearestPlayerInRadius(Player* bot, float radius)
+Unit* GetNearestPlayerInRadius(Player* bot, float searchRadius)
 {
     Unit* nearestPlayer = nullptr;
-    float nearestDistance = radius;
+    float nearestDistance = searchRadius;
 
     if (Group* group = bot->GetGroup())
     {

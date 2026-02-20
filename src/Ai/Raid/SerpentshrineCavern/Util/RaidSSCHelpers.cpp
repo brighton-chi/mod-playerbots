@@ -1,6 +1,8 @@
 #include "RaidSSCHelpers.h"
 #include "AiFactory.h"
+#include "CellImpl.h"
 #include "Creature.h"
+#include "GridNotifiersImpl.h"
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
@@ -79,51 +81,63 @@ namespace SerpentShrineCavernHelpers
     std::unordered_map<uint32, time_t> leotherasDemonFormDpsWaitTimer;
     std::unordered_map<uint32, time_t> leotherasFinalPhaseDpsWaitTimer;
 
-    Unit* GetLeotherasHuman(PlayerbotAI* botAI)
+    Unit* GetLeotherasHuman(Player* bot)
     {
-        auto const& npcs =
-            botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
-        for (auto const& guid : npcs)
+        constexpr float searchRadius = 100.0f;
+
+        std::list<Creature*> targets;
+        Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, searchRadius);
+        Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
+        Cell::VisitObjects(bot, searcher, searchRadius);
+
+        for (Creature* creature : targets)
         {
-            Unit* unit = botAI->GetUnit(guid);
-            if (unit && unit->GetEntry() == NPC_LEOTHERAS_THE_BLIND &&
-                unit->IsInCombat() && !unit->HasAura(SPELL_METAMORPHOSIS))
-                return unit;
+            if (creature && creature->GetEntry() == NPC_LEOTHERAS_THE_BLIND &&
+                creature->IsInCombat() && !creature->HasAura(SPELL_METAMORPHOSIS))
+                return creature;
         }
         return nullptr;
     }
 
-    Unit* GetPhase2LeotherasDemon(PlayerbotAI* botAI)
+    Unit* GetPhase2LeotherasDemon(Player* bot)
     {
-        auto const& npcs =
-            botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
-        for (auto const& guid : npcs)
+        constexpr float searchRadius = 100.0f;
+
+        std::list<Creature*> targets;
+        Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, searchRadius);
+        Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
+        Cell::VisitObjects(bot, searcher, searchRadius);
+
+        for (Creature* creature : targets)
         {
-            Unit* unit = botAI->GetUnit(guid);
-            if (unit && unit->GetEntry() == NPC_LEOTHERAS_THE_BLIND &&
-                unit->HasAura(SPELL_METAMORPHOSIS))
-                return unit;
+            if (creature && creature->GetEntry() == NPC_LEOTHERAS_THE_BLIND &&
+                creature->HasAura(SPELL_METAMORPHOSIS))
+                return creature;
         }
         return nullptr;
     }
 
-    Unit* GetPhase3LeotherasDemon(PlayerbotAI* botAI)
+    Unit* GetPhase3LeotherasDemon(Player* bot)
     {
-        auto const& npcs =
-            botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
-        for (auto const& guid : npcs)
+        constexpr float searchRadius = 100.0f;
+
+        std::list<Creature*> targets;
+        Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, searchRadius);
+        Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
+        Cell::VisitObjects(bot, searcher, searchRadius);
+
+        for (Creature* creature : targets)
         {
-            Unit* unit = botAI->GetUnit(guid);
-            if (unit && unit->GetEntry() == NPC_SHADOW_OF_LEOTHERAS)
-                return unit;
+            if (creature && creature->GetEntry() == NPC_SHADOW_OF_LEOTHERAS)
+                return creature;
         }
         return nullptr;
     }
 
-    Unit* GetActiveLeotherasDemon(PlayerbotAI* botAI)
+    Unit* GetActiveLeotherasDemon(Player* bot)
     {
-        Unit* phase2 = GetPhase2LeotherasDemon(botAI);
-        Unit* phase3 = GetPhase3LeotherasDemon(botAI);
+        Unit* phase2 = GetPhase2LeotherasDemon(bot);
+        Unit* phase3 = GetPhase3LeotherasDemon(bot);
         return phase2 ? phase2 : phase3;
     }
 

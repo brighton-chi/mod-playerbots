@@ -1,5 +1,7 @@
 #include "RaidBlackTempleHelpers.h"
 #include "RaidBlackTempleIllidanBossAI.h"
+#include "CellImpl.h"
+#include "GridNotifiersImpl.h"
 #include "Group.h"
 #include "Playerbots.h"
 
@@ -15,13 +17,16 @@ namespace BlackTempleHelpers
 
     bool HasSupremusVolcanoNearby(PlayerbotAI* botAI, Player* bot)
     {
-        auto const& npcs =
-            botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
-        for (auto const& npcGuid : npcs)
+        constexpr float searchRadius = 40.0f;
+
+        std::list<Creature*> targets;
+        Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, searchRadius);
+        Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
+        Cell::VisitObjects(bot, searcher, searchRadius);
+
+        for (Creature* creature : targets)
         {
-            Unit* unit = botAI->GetUnit(npcGuid);
-            if (unit && unit->GetEntry() == NPC_SUPREMUS_VOLCANO &&
-                bot->GetDistance2d(unit) < 50.0f)
+            if (creature && creature->GetEntry() == NPC_SUPREMUS_VOLCANO)
                 return true;
         }
 
@@ -269,18 +274,20 @@ namespace BlackTempleHelpers
         return -1;
     }
 
-    std::vector<Unit*> GetAllFlameCrashes(PlayerbotAI* botAI, Player* bot)
+    std::vector<Unit*> GetAllFlameCrashes(Player* bot)
     {
         std::vector<Unit*> flameCrashes;
-        auto const& npcs =
-            botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
-        for (auto const& npcGuid : npcs)
+        constexpr float searchRadius = 30.0f;
+
+        std::list<Creature*> targets;
+        Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, searchRadius);
+        Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
+        Cell::VisitObjects(bot, searcher, searchRadius);
+
+        for (Creature* creature : targets)
         {
-            constexpr float maxSearchRadius = 30.0f;
-            Unit* unit = botAI->GetUnit(npcGuid);
-            if (unit && unit->GetEntry() == NPC_FLAME_CRASH &&
-                bot->GetDistance2d(unit) < maxSearchRadius)
-                flameCrashes.push_back(unit);
+            if (creature && creature->GetEntry() == NPC_FLAME_CRASH)
+                flameCrashes.push_back(creature);
         }
 
         return flameCrashes;
@@ -293,12 +300,17 @@ namespace BlackTempleHelpers
 
         // Gather all flames
         std::vector<Unit*> flames;
-        for (auto const& guid :
-            botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get())
+        constexpr float searchRadius = 100.0f;
+
+        std::list<Creature*> targets;
+        Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, searchRadius);
+        Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
+        Cell::VisitObjects(bot, searcher, searchRadius);
+
+        for (Creature* creature : targets)
         {
-            Unit* unit = botAI->GetUnit(guid);
-            if (unit && unit->GetEntry() == NPC_FLAME_OF_AZZINOTH)
-                flames.push_back(unit);
+            if (creature && creature->GetEntry() == NPC_FLAME_OF_AZZINOTH)
+                flames.push_back(creature);
         }
 
         const uint32 instanceId = bot->GetMap()->GetInstanceId();
@@ -372,7 +384,7 @@ namespace BlackTempleHelpers
         return nullptr;
     }
 
-    EyeBlastDangerArea GetEyeBlastDangerArea(PlayerbotAI* botAI, Unit* illidan)
+    EyeBlastDangerArea GetEyeBlastDangerArea(PlayerbotAI* botAI, Player* bot, Unit* illidan)
     {
         boss_illidan_stormrage* illidanAI = dynamic_cast<boss_illidan_stormrage*>(illidan->GetAI());
         if (!illidanAI)
@@ -381,13 +393,18 @@ namespace BlackTempleHelpers
         uint8 beamPosId = illidanAI->GetBeamPosId();
 
         Unit* eyeBlastTrigger = nullptr;
-        auto const& npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
-        for (ObjectGuid const& guid : npcs)
+        constexpr float searchRadius = 100.0f;
+
+        std::list<Creature*> targets;
+        Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, searchRadius);
+        Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
+        Cell::VisitObjects(bot, searcher, searchRadius);
+
+        for (Creature* creature : targets)
         {
-            Unit* unit = botAI->GetUnit(guid);
-            if (unit && unit->GetEntry() == NPC_ILLIDAN_DB_TARGET)
+            if (creature && creature->GetEntry() == NPC_ILLIDAN_DB_TARGET)
             {
-                eyeBlastTrigger = unit;
+                eyeBlastTrigger = creature;
                 break;
             }
         }

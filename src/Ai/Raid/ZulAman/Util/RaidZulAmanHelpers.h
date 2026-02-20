@@ -68,8 +68,8 @@ namespace ZulAmanHelpers
 
     // General
     constexpr uint32 ZULAMAN_MAP_ID = 568;
-    Unit* GetFirstAliveUnitByEntries(PlayerbotAI* botAI, const std::vector<uint32>& entries);
-    bool AnyNearbyNpcWithEntry(PlayerbotAI* botAI, uint32 entry);
+    Unit* GetFirstAliveUnitByEntries(PlayerbotAI* botAI, Player* bot, const std::vector<uint32>& entries);
+    bool AnyNearbyNpcWithEntry(PlayerbotAI* botAI, Player* bot, uint32 entry);
 
     // Akil'zon <Eagle Avatar>
     extern const Position AKILZON_TANK_POSITION;

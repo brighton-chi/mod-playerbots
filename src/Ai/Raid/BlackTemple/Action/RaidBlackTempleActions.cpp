@@ -2,6 +2,8 @@
 #include "RaidBlackTempleHelpers.h"
 #include "RaidBlackTempleIllidanBossAI.h"
 #include "AiFactory.h"
+#include "CellImpl.h"
+#include "GridNotifiersImpl.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
 
@@ -419,18 +421,17 @@ bool SupremusMoveAwayFromVolcanosAction::IsPathSafeFromVolcanos(const Position& 
 std::vector<Unit*> SupremusMoveAwayFromVolcanosAction::GetAllSupremusVolcanos()
 {
     std::vector<Unit*> volcanos;
-    auto const& npcs =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
+    constexpr float searchRadius = 40.0f;
 
-    for (auto const& npcGuid : npcs)
+    std::list<Creature*> targets;
+    Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, searchRadius);
+    Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
+    Cell::VisitObjects(bot, searcher, searchRadius);
+
+    for (Creature* creature : targets)
     {
-        constexpr float maxSearchRadius = 40.0f;
-        Unit* unit = botAI->GetUnit(npcGuid);
-        if (unit && unit->GetEntry() == NPC_SUPREMUS_VOLCANO &&
-            bot->GetDistance2d(unit) < maxSearchRadius)
-        {
-            volcanos.push_back(unit);
-        }
+        if (creature && creature->GetEntry() == NPC_SUPREMUS_VOLCANO)
+            volcanos.push_back(creature);
     }
 
     return volcanos;
@@ -602,7 +603,7 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event /*eve
         return false;
 
     auto const& npcs =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
     Unit* priorityTarget = nullptr;
     uint32 highestHp = std::numeric_limits<uint32>::min();
 
@@ -1743,7 +1744,7 @@ bool IllidanStormrageMainTankMoveAwayFromFlameCrashAction::Execute(Event /*event
         }
     }
 
-    auto const& flameCrashes = GetAllFlameCrashes(botAI, bot);
+    auto const& flameCrashes = GetAllFlameCrashes(bot);
     if (flameCrashes.empty())
         return false;
 
@@ -2000,7 +2001,7 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*ev
     if (!illidan)
         return false;
 
-    EyeBlastDangerArea dangerArea = GetEyeBlastDangerArea(botAI, illidan);
+    EyeBlastDangerArea dangerArea = GetEyeBlastDangerArea(botAI, bot, illidan);
     if (dangerArea.width > 0.0f)
         return RepositionToAvoidEyeBlast(illidan, dangerArea);
     else
@@ -2088,7 +2089,7 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidB
     const Position& target = (*waypoints)[waypointIndex];
 
     // Check for nearby blaze and increment only if bot is at current waypoint
-    auto const& npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
+    auto const& npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("possible triggers")->Get();
     bool blazeNearby = false;
     for (auto const& guid : npcs)
     {
@@ -2259,7 +2260,7 @@ bool IllidanStormrageDisperseRangedAction::FanOutBehindInHumanPhase(
     if (illidan->GetPositionZ() > 354.0f) // see if this fixes bots running into Illidan during Flame Crash
         return false;
 
-    auto const& flameCrashes = GetAllFlameCrashes(botAI, bot);
+    auto const& flameCrashes = GetAllFlameCrashes(bot);
 
     std::vector<Player*> healers;
     std::vector<Player*> rangedDps;
@@ -2333,6 +2334,8 @@ bool IllidanStormrageDisperseRangedAction::SpreadInCircleInDemonPhase(
         constexpr uint32 minInterval = 1000;
         if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
             return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer, minInterval);
+
+        return false;
     }
 
     std::vector<Player*> rangedBots;
@@ -2417,6 +2420,9 @@ bool IllidanStormrageWarlockTankHandleDemonBossAction::Execute(Event /*event*/)
         FleePosition(illidan->GetPosition(), safeDistFromBoss, minInterval))
         return true;
 
+    if (AI_VALUE2(Unit*, "find target", "shadow demon"))
+        return false;
+
     if (botAI->CanCastSpell("searing pain", illidan))
         return botAI->CastSpell("searing pain", illidan);
 
@@ -2425,7 +2431,7 @@ bool IllidanStormrageWarlockTankHandleDemonBossAction::Execute(Event /*event*/)
 
 bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
 {
-    if (Unit* shadowfiend = GetFirstAliveUnitByEntry(botAI, NPC_PARASITIC_SHADOWFIEND))
+    /* if (Unit* shadowfiend = GetFirstAliveUnitByEntry(botAI, NPC_PARASITIC_SHADOWFIEND))
     {
         if (IsMechanicTrackerBot(botAI, bot, BLACK_TEMPLE_MAP_ID, GetIllidanWarlockTank(bot)))
             MarkTargetWithCross(bot, shadowfiend);
@@ -2469,6 +2475,116 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
             if (bot->GetTarget() != illidan->GetGUID())
                 return Attack(illidan);
         }
+    }
+
+    return false; */
+    auto const& attackers =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
+
+    Unit* shadowfiend = nullptr;
+    Unit* shadowDemon = nullptr;
+    Unit* illidan = nullptr;
+
+    // 1. Find the closest of each specific add type
+    for (auto guid : attackers)
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        if (!unit || !unit->IsAlive())
+            continue;
+
+        switch (unit->GetEntry())
+        {
+            case NPC_SHADOW_DEMON:
+                if (!shadowDemon || bot->GetExactDist2d(unit) < bot->GetExactDist2d(shadowDemon))
+                    shadowDemon = unit;
+                break;
+
+            case NPC_PARASITIC_SHADOWFIEND:
+                if (!shadowfiend || bot->GetExactDist2d(unit) < bot->GetExactDist2d(shadowfiend))
+                    shadowfiend = unit;
+                break;
+
+            case NPC_ILLIDAN_STORMRAGE:
+                illidan = unit;
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    auto [eastFlame, westFlame] = GetFlamesOfAzzinoth(botAI, bot);
+    Player* warlockTank = GetIllidanWarlockTank(bot);
+
+    // 2. Build the priority list based on Phase and Role
+    std::vector<Unit*> targets;
+
+    int phase = GetIllidanPhase(illidan);
+    if (phase == 2)
+    {
+        if (botAI->IsAssistTankOfIndex(bot, 1, true))
+            targets = { eastFlame, westFlame };
+        else if (botAI->IsAssistTankOfIndex(bot, 0, true))
+            targets = { westFlame, eastFlame };
+        else if (botAI->IsRanged(bot))
+            targets = { shadowfiend, eastFlame, westFlame };
+        else
+            targets = { eastFlame, westFlame };
+    }
+    else if (phase == 4)
+    {
+        // In Phase 4, melee run away (handled by another action) and nobody melees Illidan
+        if (botAI->IsRanged(bot) && bot != warlockTank)
+            targets = { shadowDemon, shadowfiend, illidan };
+        else if (bot == warlockTank)
+            targets = { shadowDemon, illidan };
+        else
+            targets = { shadowDemon };
+    }
+    else if (phase == 1 || phase == 3 || phase == 5)
+    {
+        if (botAI->IsRanged(bot))
+            targets = { shadowfiend, illidan };
+        else
+            targets = { illidan };
+    }
+
+    // 3. Select the highest priority valid target
+    Unit* target = nullptr;
+    for (Unit* candidate : targets)
+    {
+        if (candidate && candidate->IsAlive())
+        {
+            target = candidate;
+            break;
+        }
+    }
+
+    // 4. Apply marks (Mechanic Tracker Bot only)
+    if (IsMechanicTrackerBot(botAI, bot, BLACK_TEMPLE_MAP_ID, warlockTank))
+    {
+        if (target == shadowDemon)
+            MarkTargetWithSkull(bot, shadowDemon);
+        if (target == shadowfiend)
+            MarkTargetWithCross(bot, shadowfiend);
+    }
+
+    // 5. Set personal RTI target and attack
+    if (target)
+    {
+        if (target == shadowDemon)
+            SetRtiTarget(botAI, "skull", shadowDemon);
+        else if (target == shadowfiend)
+            SetRtiTarget(botAI, "cross", shadowfiend);
+        else if (target == eastFlame)
+            SetRtiTarget(botAI, "star", eastFlame);
+        else if (target == westFlame)
+            SetRtiTarget(botAI, "circle", westFlame);
+        else if (target == illidan && phase != 4)
+            SetRtiTarget(botAI, "diamond", illidan);
+
+        if (bot->GetTarget() != target->GetGUID())
+            return Attack(target);
     }
 
     return false;
@@ -2516,53 +2632,55 @@ bool IllidanStormrageDestroyHazardsCheatAction::Execute(Event /*event*/)
         return false;
 
     bool destroyed = false;
-    if (GetIllidanPhase(illidan) == 2)
+    int phase = GetIllidanPhase(illidan);
+
+    if (phase == 2 || phase == 4)
     {
-        auto const& npcs =
-            botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
-        for (auto const& guid : npcs)
+        // 1. Handle hostile creatures (Targets)
+        auto const& targets =
+            botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
+        for (auto const& guid : targets)
         {
             Unit* unit = botAI->GetUnit(guid);
-            if (!unit)
+            if (!unit || !unit->IsAlive())
                 continue;
 
-            if ((unit->GetEntry() == NPC_PARASITIC_SHADOWFIEND && unit->IsAlive()) ||
-                 unit->GetEntry() == NPC_FLAME_CRASH)
+            if ((phase == 2 && unit->GetEntry() == NPC_PARASITIC_SHADOWFIEND) /* ||
+                (phase == 4 && unit->GetEntry() == NPC_SHADOW_DEMON)*/)
             {
                 unit->Kill(bot, unit);
                 destroyed = true;
             }
         }
-    }
-    else if (GetIllidanPhase(illidan) == 4)
-    {
-        auto const& npcs =
-            botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
-        for (auto const& guid : npcs)
-        {
-            Unit* unit = botAI->GetUnit(guid);
-            if (!unit)
-                continue;
 
-            if ((unit->GetEntry() == NPC_SHADOW_DEMON && unit->IsAlive()) ||
-                 unit->GetEntry() == NPC_FLAME_CRASH)
+        // 2. Handle environmental hazards (Triggers)
+        std::list<Creature*> triggers;
+        Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, 100.0f);
+        Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, triggers, u_check);
+        Cell::VisitObjects(bot, searcher, 100.0f);
+
+        for (Creature* creature : triggers)
+        {
+            if (creature && creature->GetEntry() == NPC_FLAME_CRASH)
             {
-                unit->Kill(bot, unit);
+                creature->Kill(bot, creature);
                 destroyed = true;
             }
         }
     }
-    else if (GetIllidanPhase(illidan) == 0)
+    else if (phase == 0)
     {
-        auto const& npcs =
-            botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
-        for (auto const& guid : npcs)
+        std::list<Creature*> triggers;
+        Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, 100.0f);
+        Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, triggers, u_check);
+        Cell::VisitObjects(bot, searcher, 100.0f);
+
+        for (Creature* creature : triggers)
         {
-            Unit* unit = botAI->GetUnit(guid);
-            if (unit &&
-                (unit->GetEntry() == NPC_DEMON_FIRE || unit->GetEntry() == NPC_BLAZE))
+            if (creature &&
+                (creature->GetEntry() == NPC_DEMON_FIRE || creature->GetEntry() == NPC_BLAZE))
             {
-                unit->Kill(bot, unit);
+                creature->Kill(bot, creature);
                 destroyed = true;
             }
         }

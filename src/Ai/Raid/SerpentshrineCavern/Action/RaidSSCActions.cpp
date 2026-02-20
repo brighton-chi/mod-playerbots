@@ -1,7 +1,9 @@
 #include "RaidSSCActions.h"
 #include "RaidSSCHelpers.h"
 #include "AiFactory.h"
+#include "CellImpl.h"
 #include "Corpse.h"
+#include "GridNotifiersImpl.h"
 #include "LootAction.h"
 #include "LootObjectStack.h"
 #include "ObjectAccessor.h"
@@ -600,13 +602,17 @@ bool TheLurkerBelowTanksPickUpAddsAction::Execute(Event /*event*/)
         return false;
 
     std::vector<Unit*> guardians;
-    auto const& npcs =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
-    for (auto guid : npcs)
+    constexpr float searchRadius = 100.0f;
+
+    std::list<Creature*> targets;
+    Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, searchRadius);
+    Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
+    Cell::VisitObjects(bot, searcher, searchRadius);
+
+    for (Creature* creature : targets)
     {
-        Unit* unit = botAI->GetUnit(guid);
-        if (unit && unit->IsAlive() && unit->GetEntry() == NPC_COILFANG_GUARDIAN)
-            guardians.push_back(unit);
+        if (creature && creature->IsAlive() && creature->GetEntry() == NPC_COILFANG_GUARDIAN)
+            guardians.push_back(creature);
     }
 
     if (guardians.size() < 3)
@@ -682,14 +688,17 @@ bool LeotherasTheBlindTargetSpellbindersAction::Execute(Event /*event*/)
 bool LeotherasTheBlindDemonFormTankAttackBossAction::Execute(Event /*event*/)
 {
     Unit* innerDemon = nullptr;
-    auto const& npcs =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
-    for (auto const& guid : npcs)
+    constexpr float searchRadius = 50.0f;
+
+    std::list<Creature*> targets;
+    Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, searchRadius);
+    Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
+    Cell::VisitObjects(bot, searcher, searchRadius);
+
+    for (Creature* creature : targets)
     {
-        Unit* unit = botAI->GetUnit(guid);
-        Creature* creature = unit ? unit->ToCreature() : nullptr;
-        if (creature && creature->GetEntry() == NPC_INNER_DEMON
-            && creature->GetSummonerGUID() == bot->GetGUID())
+        if (creature && creature->GetEntry() == NPC_INNER_DEMON &&
+            creature->GetSummonerGUID() == bot->GetGUID())
         {
             innerDemon = creature;
             break;
@@ -699,7 +708,7 @@ bool LeotherasTheBlindDemonFormTankAttackBossAction::Execute(Event /*event*/)
     if (innerDemon)
         return false;
 
-    if (Unit* leotherasDemon = GetActiveLeotherasDemon(botAI))
+    if (Unit* leotherasDemon = GetActiveLeotherasDemon(bot))
     {
         MarkTargetWithSquare(bot, leotherasDemon);
         SetRtiTarget(botAI, "square", leotherasDemon);
@@ -725,7 +734,7 @@ bool LeotherasTheBlindMeleeTanksDontAttackDemonFormAction::Execute(Event /*event
 bool LeotherasTheBlindPositionRangedAction::Execute(Event /*event*/)
 {
     constexpr float safeDistFromBoss = 15.0f;
-    Unit* leotherasHuman = GetLeotherasHuman(botAI);
+    Unit* leotherasHuman = GetLeotherasHuman(bot);
     if (leotherasHuman && bot->GetExactDist2d(leotherasHuman) < safeDistFromBoss &&
         leotherasHuman->GetVictim() != bot)
     {
@@ -733,7 +742,7 @@ bool LeotherasTheBlindPositionRangedAction::Execute(Event /*event*/)
         return FleePosition(leotherasHuman->GetPosition(), safeDistFromBoss, minInterval);
     }
 
-    if (!GetActiveLeotherasDemon(botAI))
+    if (!GetActiveLeotherasDemon(bot))
         return false;
 
     if (Group* group = bot->GetGroup())
@@ -765,7 +774,7 @@ bool LeotherasTheBlindPositionRangedAction::Execute(Event /*event*/)
 
 bool LeotherasTheBlindRunAwayFromWhirlwindAction::Execute(Event /*event*/)
 {
-    if (Unit* leotherasHuman = GetLeotherasHuman(botAI))
+    if (Unit* leotherasHuman = GetLeotherasHuman(bot))
     {
         float currentDistance = bot->GetExactDist2d(leotherasHuman);
         constexpr float safeDistance = 25.0f;
@@ -786,7 +795,7 @@ bool LeotherasTheBlindMeleeDpsRunAwayFromBossAction::Execute(Event /*event*/)
     if (botAI->CanCastSpell("cloak of shadows", bot))
         return botAI->CastSpell("cloak of shadows", bot);
 
-    Unit* leotheras = GetPhase2LeotherasDemon(botAI);
+    Unit* leotheras = GetPhase2LeotherasDemon(bot);
     if (!leotheras)
         return false;
 
@@ -806,14 +815,17 @@ bool LeotherasTheBlindMeleeDpsRunAwayFromBossAction::Execute(Event /*event*/)
 bool LeotherasTheBlindDestroyInnerDemonAction::Execute(Event /*event*/)
 {
     Unit* innerDemon = nullptr;
-    auto const& npcs =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
-    for (auto const& guid : npcs)
+    constexpr float searchRadius = 50.0f;
+
+    std::list<Creature*> targets;
+    Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, searchRadius);
+    Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
+    Cell::VisitObjects(bot, searcher, searchRadius);
+
+    for (Creature* creature : targets)
     {
-        Unit* unit = botAI->GetUnit(guid);
-        Creature* creature = unit ? unit->ToCreature() : nullptr;
-        if (creature && creature->GetEntry() == NPC_INNER_DEMON
-            && creature->GetSummonerGUID() == bot->GetGUID())
+        if (creature && creature->GetEntry() == NPC_INNER_DEMON &&
+            creature->GetSummonerGUID() == bot->GetGUID())
         {
             innerDemon = creature;
             break;
@@ -960,7 +972,7 @@ bool LeotherasTheBlindDestroyInnerDemonAction::HandleHealerStrategy(Unit* innerD
 // Everybody except the Warlock tank should focus on Leotheras in Phase 3
 bool LeotherasTheBlindFinalPhaseAssignDpsPriorityAction::Execute(Event /*event*/)
 {
-    Unit* leotherasHuman = GetLeotherasHuman(botAI);
+    Unit* leotherasHuman = GetLeotherasHuman(bot);
     if (!leotherasHuman)
         return false;
 
@@ -970,7 +982,7 @@ bool LeotherasTheBlindFinalPhaseAssignDpsPriorityAction::Execute(Event /*event*/
     if (bot->GetTarget() != leotherasHuman->GetGUID())
         return Attack(leotherasHuman);
 
-    Unit* leotherasDemon = GetPhase3LeotherasDemon(botAI);
+    Unit* leotherasDemon = GetPhase3LeotherasDemon(bot);
     if (!leotherasDemon)
         return false;
 
@@ -999,7 +1011,7 @@ bool LeotherasTheBlindFinalPhaseAssignDpsPriorityAction::Execute(Event /*event*/
 // Misdirect to Warlock tank or to main tank if there is no Warlock tank
 bool LeotherasTheBlindMisdirectBossToDemonFormTankAction::Execute(Event /*event*/)
 {
-    Unit* leotherasDemon = GetActiveLeotherasDemon(botAI);
+    Unit* leotherasDemon = GetActiveLeotherasDemon(bot);
     if (!leotherasDemon)
         return false;
 
@@ -1040,8 +1052,8 @@ bool LeotherasTheBlindManageDpsWaitTimersAction::Execute(Event /*event*/)
     }
 
     // Human Phase
-    Unit* leotherasHuman = GetLeotherasHuman(botAI);
-    Unit* leotherasPhase3Demon = GetPhase3LeotherasDemon(botAI);
+    Unit* leotherasHuman = GetLeotherasHuman(bot);
+    Unit* leotherasPhase3Demon = GetPhase3LeotherasDemon(bot);
     if (leotherasHuman && !leotherasPhase3Demon &&
         (leotherasHumanFormDpsWaitTimer.try_emplace(instanceId, now).second ||
          leotherasDemonFormDpsWaitTimer.erase(instanceId) > 0))
@@ -1049,7 +1061,7 @@ bool LeotherasTheBlindManageDpsWaitTimersAction::Execute(Event /*event*/)
         changed = true;
     }
     // Demon Phase
-    else if (GetPhase2LeotherasDemon(botAI) &&
+    else if (GetPhase2LeotherasDemon(bot) &&
              (leotherasDemonFormDpsWaitTimer.try_emplace(instanceId, now).second ||
               leotherasHumanFormDpsWaitTimer.erase(instanceId) > 0))
     {
@@ -1787,7 +1799,7 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
     }
 
     auto const& attackers =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
     Unit* target = nullptr;
     Unit* enchanted = nullptr;
     Unit* elite = nullptr;
@@ -2659,7 +2671,7 @@ bool LadyVashjDestroyTaintedCoreAction::Execute(Event /*event*/)
 // so that they do not go down the stairs
 bool LadyVashjAvoidToxicSporesAction::Execute(Event /*event*/)
 {
-    auto const& spores = GetAllSporeDropTriggers(botAI, bot);
+    auto const& spores = GetAllSporeDropTriggers(bot);
     if (spores.empty())
         return false;
 
@@ -2782,19 +2794,20 @@ bool LadyVashjAvoidToxicSporesAction::IsPathSafeFromSpores(const Position& start
 
 // When Toxic Sporebats spit poison, they summon "Spore Drop Trigger" NPCs
 // that create the toxic pools
-std::vector<Unit*> LadyVashjAvoidToxicSporesAction::GetAllSporeDropTriggers(
-    PlayerbotAI* botAI, Player* bot)
+std::vector<Unit*> LadyVashjAvoidToxicSporesAction::GetAllSporeDropTriggers(Player* bot)
 {
     std::vector<Unit*> sporeDropTriggers;
-    auto const& npcs =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
-    for (auto const& npcGuid : npcs)
+    constexpr float searchRadius = 30.0f;
+
+    std::list<Creature*> targets;
+    Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, searchRadius);
+    Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
+    Cell::VisitObjects(bot, searcher, searchRadius);
+
+    for (Creature* creature : targets)
     {
-        constexpr float maxSearchRadius = 40.0f;
-        Unit* unit = botAI->GetUnit(npcGuid);
-        if (unit && unit->GetEntry() == NPC_SPORE_DROP_TRIGGER &&
-            bot->GetExactDist2d(unit) < maxSearchRadius)
-            sporeDropTriggers.push_back(unit);
+        if (creature && creature->GetEntry() == NPC_SPORE_DROP_TRIGGER)
+            sporeDropTriggers.push_back(creature);
     }
 
     return sporeDropTriggers;
@@ -2807,7 +2820,7 @@ bool LadyVashjUseFreeActionAbilitiesAction::Execute(Event /*event*/)
         return false;
 
     auto const& spores =
-        LadyVashjAvoidToxicSporesAction::GetAllSporeDropTriggers(botAI, bot);
+        LadyVashjAvoidToxicSporesAction::GetAllSporeDropTriggers(bot);
     constexpr float toxicSporeRadius = 6.0f;
 
     // If Rogues are Entangled and either have Static Charge or

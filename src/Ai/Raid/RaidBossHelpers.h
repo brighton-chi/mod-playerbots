@@ -19,7 +19,8 @@ Player* GetGroupMainTank(PlayerbotAI* botAI, Player* bot);
 Player* GetGroupFirstAssistTank(PlayerbotAI* botAI, Player* bot);
 Player* GetGroupSecondAssistTank(PlayerbotAI* botAI, Player* bot);
 Player* GetGroupThirdAssistTank(PlayerbotAI* botAI, Player* bot);
-Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry, bool requireInCombat = false);
-Unit* GetNearestPlayerInRadius(Player* bot, float radius);
+Unit* GetFirstAliveUnitByEntry(
+    PlayerbotAI* botAI, uint32 entry, bool requireInCombat = false, float searchRadius = 0.0f);
+Unit* GetNearestPlayerInRadius(Player* bot, float searchRadius);
 
 #endif

@@ -170,7 +170,7 @@ bool LeotherasTheBlindBossTransformedIntoDemonFormTrigger::IsActive()
     if (GetLeotherasDemonFormTank(bot) != bot)
         return false;
 
-    return GetActiveLeotherasDemon(botAI);
+    return GetActiveLeotherasDemon(bot);
 }
 
 bool LeotherasTheBlindOnlyWarlockShouldTankDemonFormTrigger::IsActive()
@@ -187,7 +187,7 @@ bool LeotherasTheBlindOnlyWarlockShouldTankDemonFormTrigger::IsActive()
     if (!GetLeotherasDemonFormTank(bot))
         return false;
 
-    return GetPhase2LeotherasDemon(botAI);
+    return GetPhase2LeotherasDemon(bot);
 }
 
 bool LeotherasTheBlindBossEngagedByRangedTrigger::IsActive()
@@ -238,7 +238,7 @@ bool LeotherasTheBlindBotHasTooManyChaosBlastStacksTrigger::IsActive()
     if (!GetLeotherasDemonFormTank(bot) && botAI->IsMainTank(bot))
         return false;
 
-    return GetPhase2LeotherasDemon(botAI);
+    return GetPhase2LeotherasDemon(bot);
 }
 
 bool LeotherasTheBlindInnerDemonHasAwakenedTrigger::IsActive()
@@ -261,7 +261,7 @@ bool LeotherasTheBlindEnteredFinalPhaseTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "leotheras the blind"))
         return false;
 
-    return GetPhase3LeotherasDemon(botAI);
+    return GetPhase3LeotherasDemon(bot);
 }
 
 bool LeotherasTheBlindDemonFormTankNeedsAggro::IsActive()

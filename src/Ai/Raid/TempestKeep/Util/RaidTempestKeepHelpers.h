@@ -82,8 +82,7 @@ namespace TempestKeepHelpers
     // General
     constexpr uint32 TEMPEST_KEEP_MAP_ID = 550;
     Unit* GetNearestNonTankPlayerInRadius(Player* bot, float radius);
-    std::vector<Unit*> GetAllHazardTriggers(
-        PlayerbotAI* botAI, Player* bot, uint32 npcEntry, float maxSearchRadius);
+    std::vector<Unit*> GetAllHazardTriggers(Player* bot, uint32 npcEntry, float searchRadius);
     Position FindSafestNearbyPosition(Player* bot, const std::vector<Unit*>& hazards,
         float hazardRadius, const Position* center = nullptr);
     bool IsPathSafeFromHazards(
@@ -125,7 +124,7 @@ namespace TempestKeepHelpers
     int8 GetAlarCurrentLocationIndex(Unit* alar);
     void GetClosestPlatformAndGround(
         const Position& botPos, int8& closestPlatform, Position& ground);
-    std::pair<Unit*, Unit*> GetFirstTwoEmbersOfAlar(PlayerbotAI* botAI);
+    std::pair<Unit*, Unit*> GetFirstTwoEmbersOfAlar(Player* bot);
     Player* GetSecondEmberTank(PlayerbotAI* botAI);
 
     // Void Reaver

@@ -1,6 +1,8 @@
 #include "RaidMagtheridonActions.h"
 #include "RaidMagtheridonHelpers.h"
+#include "CellImpl.h"
 #include "Creature.h"
+#include "GridNotifiersImpl.h"
 #include "ObjectAccessor.h"
 #include "ObjectGuid.h"
 #include "Playerbots.h"
@@ -291,14 +293,18 @@ bool MagtheridonWarlockCCBurningAbyssalAction::Execute(Event /*event*/)
     if (!group)
         return false;
 
-    const GuidVector& npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
-
     std::vector<Unit*> abyssals;
-    for (auto const& npc : npcs)
+    constexpr float searchRadius = 100.0f;
+
+    std::list<Creature*> targets;
+    Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, searchRadius);
+    Acore::CreatureListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
+    Cell::VisitObjects(bot, searcher, searchRadius);
+
+    for (Creature* creature : targets)
     {
-        Unit* unit = botAI->GetUnit(npc);
-        if (unit && unit->GetEntry() == NPC_BURNING_ABYSSAL && unit->IsAlive())
-            abyssals.push_back(unit);
+        if (creature && creature->IsAlive() && creature->GetEntry() == NPC_BURNING_ABYSSAL)
+            abyssals.push_back(creature);
     }
 
     std::vector<Player*> warlocks;

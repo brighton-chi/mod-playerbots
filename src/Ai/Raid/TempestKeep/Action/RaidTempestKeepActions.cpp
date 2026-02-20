@@ -277,7 +277,7 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase1Embers(Unit* alar)
 // the main tank or first assist tank (whichever is not tanking Al'ar)
 bool AlarAssistTanksPickUpEmbersAction::HandlePhase2Embers(Unit* alar)
 {
-    auto [firstEmber, secondEmber] = GetFirstTwoEmbersOfAlar(botAI);
+    auto [firstEmber, secondEmber] = GetFirstTwoEmbersOfAlar(bot);
 
     if (botAI->IsAssistTankOfIndex(bot, 1, true) && firstEmber)
     {
@@ -323,7 +323,7 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase2Embers(Unit* alar)
 
 bool AlarRangedDpsPrioritizeEmbersAction::Execute(Event /*event*/)
 {
-    auto [firstEmber, secondEmber] = GetFirstTwoEmbersOfAlar(botAI);
+    auto [firstEmber, secondEmber] = GetFirstTwoEmbersOfAlar(bot);
 
     constexpr float safeDistance = 16.0f;
     if (firstEmber)
@@ -497,11 +497,11 @@ bool AlarAvoidFlamePatchesAndDiveBombsAction::Execute(Event /*event*/)
 
 bool AlarAvoidFlamePatchesAndDiveBombsAction::AvoidFlamePatch()
 {
-    constexpr float maxSearchRadius = 40.0f;
+    constexpr float searchRadius = 40.0f;
     constexpr float hazardRadius = 8.0f;
 
     std::vector<Unit*> flamePatches =
-        GetAllHazardTriggers(botAI, bot, NPC_FLAME_PATCH, maxSearchRadius);
+        GetAllHazardTriggers(bot, NPC_FLAME_PATCH, searchRadius);
 
     for (Unit* flamePatch : flamePatches)
     {
@@ -1718,9 +1718,9 @@ bool KaelthasSunstriderMainTankPositionBossAction::Execute(Event /*event*/)
 
 bool KaelthasSunstriderAvoidFlameStrikeAction::Execute(Event /*event*/)
 {
-    constexpr float maxSearchRadius = 40.0f;
+    constexpr float searchRadius = 40.0f;
     std::vector<Unit*> flameStrikes =
-        GetAllHazardTriggers(botAI, bot, NPC_FLAME_STRIKE_TRIGGER, maxSearchRadius);
+        GetAllHazardTriggers(bot, NPC_FLAME_STRIKE_TRIGGER, searchRadius);
 
     if (flameStrikes.empty())
         return false;
@@ -1758,7 +1758,7 @@ bool KaelthasSunstriderHandlePhoenixesAndEggsAction::Execute(Event /*event*/)
 bool KaelthasSunstriderHandlePhoenixesAndEggsAction::AssistTanksPickUpPhoenixes()
 {
     std::vector<Unit*> phoenixes;
-    auto const& npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
+    auto const& npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
     for (auto const& npcGuid : npcs)
     {
         Unit* unit = botAI->GetUnit(npcGuid);
