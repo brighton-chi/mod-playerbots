@@ -154,9 +154,6 @@ bool KazrogalLowManaBotsNeedEscapePathTrigger::IsActive()
 
 bool KazrogalBotIsLowOnManaTrigger::IsActive()
 {
-    if (isBelowManaThreshold[bot->GetGUID()])
-        return true;
-
     if (bot->getClass() == CLASS_WARRIOR ||
         bot->getClass() == CLASS_ROGUE ||
         bot->getClass() == CLASS_DEATH_KNIGHT)
@@ -173,7 +170,8 @@ bool KazrogalBotIsLowOnManaTrigger::IsActive()
     if (!kazrogal)
         return false;
 
-    if (bot->GetPower(POWER_MANA) <= 3000)
+    if (isBelowManaThreshold[bot->GetGUID()] ||
+        bot->GetPower(POWER_MANA) <= 3000)
         return true;
 
     return false;
@@ -213,7 +211,6 @@ bool AzgalorBotIsDoomedTrigger::IsActive()
     return bot->HasAura(SPELL_DOOM);
 }
 
-// Lol did this fight without this trigger--maybe should just ignore doomguards?
 bool AzgalorDoomguardsMustBeControlledTrigger::IsActive()
 {
     if (!botAI->IsAssistTankOfIndex(bot, 0, true))
