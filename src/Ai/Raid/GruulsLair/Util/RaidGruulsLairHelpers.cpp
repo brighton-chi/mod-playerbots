@@ -146,8 +146,8 @@ namespace GruulsLairHelpers
 
     bool TryGetNewSafePosition(PlayerbotAI* botAI, Player* bot, Position& outPos)
     {
-        const float SEARCH_RADIUS = 30.0f;
-        const uint8 NUM_POSITIONS = 32;
+        constexpr float SEARCH_RADIUS = 30.0f;
+        constexpr uint8 NUM_POSITIONS = 32;
 
         outPos = { bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ() };
         if (IsPositionSafe(botAI, bot, outPos))

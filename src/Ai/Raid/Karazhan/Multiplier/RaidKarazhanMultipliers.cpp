@@ -64,7 +64,7 @@ float AttumenTheHuntsmanWaitForDpsMultiplier::GetValue(Action* action)
 
     const uint32 instanceId = attumenMounted->GetMap()->GetInstanceId();
     const time_t now = std::time(nullptr);
-    const uint8 dpsWaitSeconds = 8;
+    constexpr uint8 dpsWaitSeconds = 8;
 
     auto it = attumenDpsWaitTimer.find(instanceId);
     if (it == attumenDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
@@ -100,12 +100,12 @@ float TheCuratorDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
     if (!curator)
         return 1.0f;
 
-    if (!curator->HasAura(SPELL_CURATOR_EVOCATION))
-    {
-        if (dynamic_cast<CastBloodlustAction*>(action) ||
-            dynamic_cast<CastHeroismAction*>(action))
-            return 0.0f;
-    }
+    if (curator->HasAura(SPELL_CURATOR_EVOCATION))
+        return 1.0f;
+
+    if (dynamic_cast<CastBloodlustAction*>(action) ||
+        dynamic_cast<CastHeroismAction*>(action))
+        return 0.0f;
 
     return 1.0f;
 }
@@ -205,7 +205,7 @@ float NetherspiteWaitForDpsMultiplier::GetValue(Action* action)
 
     const uint32 instanceId = netherspite->GetMap()->GetInstanceId();
     const time_t now = std::time(nullptr);
-    const uint8 dpsWaitSeconds = 5;
+    constexpr uint8 dpsWaitSeconds = 5;
 
     auto it = netherspiteDpsWaitTimer.find(instanceId);
     if (it == netherspiteDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
@@ -214,7 +214,7 @@ float NetherspiteWaitForDpsMultiplier::GetValue(Action* action)
         {
             if (dynamic_cast<AttackAction*>(action) || (dynamic_cast<CastSpellAction*>(action) &&
                 !dynamic_cast<CastHealingSpellAction*>(action)))
-            return 0.0f;
+                return 0.0f;
         }
     }
 
@@ -224,8 +224,7 @@ float NetherspiteWaitForDpsMultiplier::GetValue(Action* action)
 // Disable standard "avoid aoe" strategy, which may interfere with scripted avoidance
 float PrinceMalchezaarDisableAvoidAoeMultiplier::GetValue(Action* action)
 {
-    Unit* malchezaar = AI_VALUE2(Unit*, "find target", "prince malchezaar");
-    if (!malchezaar)
+    if (!AI_VALUE2(Unit*, "find target", "prince malchezaar"))
         return 1.0f;
 
     if (dynamic_cast<AvoidAoeAction*>(action))
@@ -237,19 +236,18 @@ float PrinceMalchezaarDisableAvoidAoeMultiplier::GetValue(Action* action)
 // Don't run back into Shadow Nova when Enfeebled
 float PrinceMalchezaarEnfeebleKeepDistanceMultiplier::GetValue(Action* action)
 {
-    Unit* malchezaar = AI_VALUE2(Unit*, "find target", "prince malchezaar");
-    if (!malchezaar)
+    if (!AI_VALUE2(Unit*, "find target", "prince malchezaar"))
         return 1.0f;
 
-    if (bot->HasAura(SPELL_ENFEEBLE))
-    {
-        if (dynamic_cast<CastReachTargetSpellAction*>(action))
-            return 0.0f;
+    if (!bot->HasAura(SPELL_ENFEEBLE))
+        return 1.0f;
 
-        if (dynamic_cast<MovementAction*>(action) &&
-            !dynamic_cast<PrinceMalchezaarEnfeebledAvoidHazardAction*>(action))
-            return 0.0f;
-    }
+    if (dynamic_cast<CastReachTargetSpellAction*>(action))
+        return 0.0f;
+
+    if (dynamic_cast<MovementAction*>(action) &&
+        !dynamic_cast<PrinceMalchezaarEnfeebledAvoidHazardAction*>(action))
+        return 0.0f;
 
     return 1.0f;
 }
@@ -258,15 +256,12 @@ float PrinceMalchezaarEnfeebleKeepDistanceMultiplier::GetValue(Action* action)
 float PrinceMalchezaarDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
 {
     Unit* malchezaar = AI_VALUE2(Unit*, "find target", "prince malchezaar");
-    if (!malchezaar)
+    if (!malchezaar || malchezaar->GetHealthPct() <= 30.0f)
         return 1.0f;
 
-    if (malchezaar->GetHealthPct() > 30.0f)
-    {
-        if (dynamic_cast<CastBloodlustAction*>(action) ||
-            dynamic_cast<CastHeroismAction*>(action))
-            return 0.0f;
-    }
+    if (dynamic_cast<CastBloodlustAction*>(action) ||
+        dynamic_cast<CastHeroismAction*>(action))
+        return 0.0f;
 
     return 1.0f;
 }
@@ -307,7 +302,7 @@ float NightbaneWaitForDpsMultiplier::GetValue(Action* action)
 
     const uint32 instanceId = nightbane->GetMap()->GetInstanceId();
     const time_t now = std::time(nullptr);
-    const uint8 dpsWaitSeconds = 8;
+    constexpr uint8 dpsWaitSeconds = 8;
 
     auto it = nightbaneDpsWaitTimer.find(instanceId);
     if (it == nightbaneDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)

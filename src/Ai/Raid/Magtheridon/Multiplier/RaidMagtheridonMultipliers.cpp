@@ -1,6 +1,3 @@
-#include <unordered_map>
-#include <ctime>
-
 #include "RaidMagtheridonMultipliers.h"
 #include "RaidMagtheridonActions.h"
 #include "RaidMagtheridonHelpers.h"
@@ -44,10 +41,13 @@ float MagtheridonWaitToAttackMultiplier::GetValue(Action* action)
     if (!magtheridon || magtheridon->HasAura(SPELL_SHADOW_CAGE))
         return 1.0f;
 
-    if (botAI->IsMainTank(bot) || botAI->IsHeal(bot))
+    if (botAI->IsHeal(bot))
         return 1.0f;
 
-    const uint8 dpsWaitSeconds = 6;
+    if (botAI->IsTank(bot) && botAI->IsMainTank(bot))
+        return 1.0f;
+
+    constexpr uint8 dpsWaitSeconds = 6;
     auto it = dpsWaitTimer.find(magtheridon->GetMap()->GetInstanceId());
     if (it == dpsWaitTimer.end() ||
         (time(nullptr) - it->second) < dpsWaitSeconds)
@@ -78,20 +78,19 @@ float MagtheridonDisableOffTankAssistMultiplier::GetValue(Action* action)
 
 float MagtheridonDisableMainTankMovementMultiplier::GetValue(Action* action)
 {
-    Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
-    if (!magtheridon)
+    if (!AI_VALUE2(Unit*, "find target", "magtheridon"))
         return 1.0f;
 
     if (bot->GetVictim() == nullptr)
         return 1.0f;
 
-    if (botAI->IsMainTank(bot))
-    {
-        if (dynamic_cast<TankAssistAction*>(action) ||
-            dynamic_cast<TankFaceAction*>(action) ||
-            dynamic_cast<AvoidAoeAction*>(action))
-            return 0.0f;
-    }
+    if (!botAI->IsTank(bot) || !botAI->IsMainTank(bot))
+        return 1.0f;
+
+    if (dynamic_cast<TankAssistAction*>(action) ||
+        dynamic_cast<TankFaceAction*>(action) ||
+        dynamic_cast<AvoidAoeAction*>(action))
+        return 0.0f;
 
     return 1.0f;
 }

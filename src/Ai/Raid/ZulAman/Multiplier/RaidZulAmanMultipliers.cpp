@@ -84,7 +84,7 @@ float NalorakkDisableTankActionsMultiplier::GetValue(Action* action)
          dynamic_cast<CastGrowlAction*>(action) ||
          dynamic_cast<CastHandOfReckoningAction*>(action) ||
          dynamic_cast<CastDarkCommandAction*>(action)))
-         return 0.0f;
+        return 0.0f;
 
     return 1.0f;
 }

@@ -60,7 +60,7 @@ float HydrossTheUnstableDisableTankActionsMultiplier::GetValue(Action* action)
         (dynamic_cast<AttackAction*>(action) &&
          !dynamic_cast<HydrossTheUnstablePositionFrostTankAction*>(action) &&
          !dynamic_cast<HydrossTheUnstablePositionNatureTankAction*>(action)))
-         return 0.0f;
+        return 0.0f;
 
     return 1.0f;
 }
@@ -101,7 +101,7 @@ float HydrossTheUnstableWaitForDpsMultiplier::GetValue(Action* action)
         if (dynamic_cast<AttackAction*>(action) ||
             (dynamic_cast<CastSpellAction*>(action) &&
              !dynamic_cast<CastHealingSpellAction*>(action)))
-             return 0.0f;
+            return 0.0f;
     }
 
     if (hydross->HasAura(SPELL_CORRUPTION) && !botAI->IsAssistTankOfIndex(bot, 0, true))
@@ -120,7 +120,7 @@ float HydrossTheUnstableWaitForDpsMultiplier::GetValue(Action* action)
         if (dynamic_cast<AttackAction*>(action) ||
             (dynamic_cast<CastSpellAction*>(action) &&
              !dynamic_cast<CastHealingSpellAction*>(action)))
-             return 0.0f;
+            return 0.0f;
     }
 
     return 1.0f;
@@ -337,7 +337,7 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValue(Action* action)
             if (dynamic_cast<AttackAction*>(action) ||
                 (dynamic_cast<CastSpellAction*>(action) &&
                  !dynamic_cast<CastHealingSpellAction*>(action)))
-                 return 0.0f;
+                return 0.0f;
         }
     }
 
@@ -359,7 +359,7 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValue(Action* action)
             if (dynamic_cast<AttackAction*>(action) ||
                 (dynamic_cast<CastSpellAction*>(action) &&
                  !dynamic_cast<CastHealingSpellAction*>(action)))
-                 return 0.0f;
+                return 0.0f;
         }
     }
 
@@ -376,7 +376,7 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValue(Action* action)
             if (dynamic_cast<AttackAction*>(action) ||
                 (dynamic_cast<CastSpellAction*>(action) &&
                  !dynamic_cast<CastHealingSpellAction*>(action)))
-                 return 0.0f;
+                return 0.0f;
         }
     }
 
@@ -484,7 +484,7 @@ float FathomLordKarathressWaitForDpsMultiplier::GetValue(Action* action)
         if (dynamic_cast<AttackAction*>(action) ||
             (dynamic_cast<CastSpellAction*>(action) &&
              !dynamic_cast<CastHealingSpellAction*>(action)))
-             return 0.0f;
+            return 0.0f;
     }
 
     return 1.0f;
@@ -571,7 +571,7 @@ float LadyVashjDelayCooldownsMultiplier::GetValue(Action* action)
         !IsLadyVashjInPhase3(botAI) &&
         (dynamic_cast<CastBloodlustAction*>(action) ||
          dynamic_cast<CastHeroismAction*>(action)))
-         return 0.0f;
+        return 0.0f;
 
     if (!botAI->IsDps(bot) || !IsLadyVashjInPhase1(botAI))
         return 1.0f;
@@ -712,7 +712,7 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
         (bot == coreHandlers[1] || bot == coreHandlers[2]) &&
         (dynamic_cast<MovementAction*>(action) &&
          !dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action)))
-         return 0.0f;
+        return 0.0f;
 
     // If any prior handler (including self) recently had the core, block other movement
     if (AnyRecentCoreInInventory(botAI, bot) &&

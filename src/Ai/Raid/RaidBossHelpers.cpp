@@ -178,7 +178,6 @@ Player* GetGroupThirdAssistTank(PlayerbotAI* botAI, Player* bot)
 }
 
 // Return the first matching alive unit from PossibleTargetsValue within sightDistance from config
-// This intentionally does not work outside of combat
 Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry)
 {
     auto const& npcs =

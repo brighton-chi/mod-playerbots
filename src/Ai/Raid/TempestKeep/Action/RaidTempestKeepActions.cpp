@@ -1048,10 +1048,14 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::Execute(Event /*eve
 
     if (botAI->IsRanged(bot) && capernian->GetVictim() != bot &&
         RangedBotsDisperse(kaelAI, capernian))
+    {
         return true;
+    }
     else if (botAI->IsMelee(bot) && kaelAI->GetPhase() == PHASE_SINGLE_ADVISOR &&
              MeleeStayBackFromCapernian(capernian))
+    {
         return true;
+    }
 
     return false;
 }
@@ -1155,7 +1159,9 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::MeleeStayBackFromCa
             return MoveAway(capernian, safeDistance - currentDistance);
         }
         else
+        {
             return true;
+        }
     }
 }
 

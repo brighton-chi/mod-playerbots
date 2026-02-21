@@ -146,7 +146,7 @@ bool SupremusVolcanoIsNearbyTrigger::IsActive()
 
 bool SupremusNeedToManagePhaseTimerTrigger::IsActive()
 {
-    return IsMechanicTrackerBot(botAI, bot, BLACK_TEMPLE_MAP_ID) &&
+    return botAI->IsDps(bot) && IsMechanicTrackerBot(botAI, bot, BLACK_TEMPLE_MAP_ID) &&
            AI_VALUE2(Unit*, "find target", "supremus");
 }
 
@@ -265,7 +265,7 @@ bool GurtoggBloodboilBotHasFelRageTrigger::IsActive()
 
 bool GurtoggBloodboilNeedToManagePhaseTimerTrigger::IsActive()
 {
-    return IsMechanicTrackerBot(botAI, bot, BLACK_TEMPLE_MAP_ID) &&
+    return botAI->IsDps(bot) && IsMechanicTrackerBot(botAI, bot, BLACK_TEMPLE_MAP_ID) &&
            AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
 }
 
@@ -361,7 +361,7 @@ bool IllidariCouncilPullingBossesTrigger::IsActive()
 
 bool IllidariCouncilGathiosEngagedByMainTankTrigger::IsActive()
 {
-    return botAI->IsMainTank(bot) &&
+    return botAI->IsTank(bot) && botAI->IsMainTank(bot) &&
            AI_VALUE2(Unit*, "find target", "gathios the shatterer");
 }
 
@@ -385,13 +385,13 @@ bool IllidariCouncilGathiosCastingJudgementOfCommandTrigger::IsActive()
 
 bool IllidariCouncilMalandeEngagedByFirstAssistTankTrigger::IsActive()
 {
-    return botAI->IsAssistTankOfIndex(bot, 0, false) &&
+    return botAI->IsTank(bot) && botAI->IsAssistTankOfIndex(bot, 0, false) &&
            AI_VALUE2(Unit*, "find target", "lady malande");
 }
 
 bool IllidariCouncilDarkshadowEngagedBySecondAssistTankTrigger::IsActive()
 {
-    if (!botAI->IsAssistTankOfIndex(bot, 1, false))
+    if (!botAI->IsTank(bot) || !botAI->IsAssistTankOfIndex(bot, 1, false))
         return false;
 
     Unit* darkshadow = AI_VALUE2(Unit*, "find target", "veras darkshadow");
@@ -400,25 +400,31 @@ bool IllidariCouncilDarkshadowEngagedBySecondAssistTankTrigger::IsActive()
 
 bool IllidariCouncilZerevorEngagedByMageTankTrigger::IsActive()
 {
-    return GetZerevorMageTank(bot) == bot &&
+    return bot->getClass() == CLASS_MAGE && GetZerevorMageTank(bot) == bot &&
            AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");
 }
 
 bool IllidariCouncilMageTankNeedsDedicatedHealerTrigger::IsActive()
 {
-    return botAI->IsAssistHealOfIndex(bot, 0, true) &&
+    return botAI->IsHeal(bot) && botAI->IsAssistHealOfIndex(bot, 0, true) &&
            AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");
 }
 
 bool IllidariCouncilDeterminingDpsAssignmentsTrigger::IsActive()
 {
-    if (botAI->IsHeal(bot) || botAI->IsMainTank(bot) ||
-        botAI->IsAssistTankOfIndex(bot, 0, false) ||
+    if (botAI->IsHeal(bot))
+        return false;
+
+    if (botAI->IsTank(bot) &&
+        (botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0, false)))
+        return false;
+
+    if (bot->getClass() == CLASS_MAGE &&
         GetZerevorMageTank(bot) == bot)
         return false;
 
     Unit* darkshadow = AI_VALUE2(Unit*, "find target", "veras darkshadow");
-    if (botAI->IsAssistTankOfIndex(bot, 1, false) &&
+    if (botAI->IsTank(bot) && botAI->IsAssistTankOfIndex(bot, 1, false) &&
         darkshadow && !darkshadow->HasAura(SPELL_VANISH))
         return false;
 
@@ -441,8 +447,9 @@ bool IllidariCouncilPetsScrewUpThePullTrigger::IsActive()
 
 bool IllidariCouncilNeedToManageDpsTimerTrigger::IsActive()
 {
-    return AI_VALUE2(Unit*, "find target", "gathios the shatterer") &&
-           IsMechanicTrackerBot(botAI, bot, BLACK_TEMPLE_MAP_ID, GetZerevorMageTank(bot));
+    return botAI->IsDps(bot) &&
+           IsMechanicTrackerBot(botAI, bot, BLACK_TEMPLE_MAP_ID, GetZerevorMageTank(bot)) &&
+           AI_VALUE2(Unit*, "find target", "gathios the shatterer");
 }
 
 // Illidan Stormrage <The Betrayer>
@@ -458,7 +465,7 @@ bool IllidanStormrageTankNeedsAggroTrigger::IsActive()
 
 bool IllidanStormrageBossCastsFlameCrashTrigger::IsActive()
 {
-    if (!botAI->IsMainTank(bot))
+    if (!botAI->IsTank(bot) || !botAI->IsMainTank(bot))
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -475,7 +482,7 @@ bool IllidanStormrageBotHasParasiticShadowfiendTrigger::IsActive()
     if (!bot->HasAura(SPELL_PARASITIC_SHADOWFIEND))
         return false;
 
-    if (botAI->IsMainTank(bot))
+    if (botAI->IsTank(bot) && botAI->IsMainTank(bot))
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -494,9 +501,10 @@ bool IllidanStormrageBotHasParasiticShadowfiendTrigger::IsActive()
 
 bool IllidanStormrageBossSummonedFlamesOfAzzinothTrigger::IsActive()
 {
-    if (!botAI->IsAssistTankOfIndex(bot, 0, true) &&
-        !botAI->IsAssistTankOfIndex(bot, 1, true))
-        return false;
+    if (!botAI->IsTank(bot) ||
+        (!botAI->IsAssistTankOfIndex(bot, 0, true) &&
+         !botAI->IsAssistTankOfIndex(bot, 1, true)))
+         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     return illidan && GetIllidanPhase(illidan) == 2;
@@ -514,9 +522,10 @@ bool IllidanStormragePetsDieToFireTrigger::IsActive()
 
 bool IllidanStormrageGrateIsSafeFromFlamesTrigger::IsActive()
 {
-    if (botAI->IsAssistTankOfIndex(bot, 0, true) ||
-        botAI->IsAssistTankOfIndex(bot, 1, true))
-        return false;
+    if (botAI->IsTank(bot) &&
+        (botAI->IsAssistTankOfIndex(bot, 0, true) ||
+         botAI->IsAssistTankOfIndex(bot, 1, true)))
+         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     return illidan && GetIllidanPhase(illidan) == 2;
@@ -534,7 +543,7 @@ bool IllidanStormrageBotStruckByDarkBarrageTrigger::IsActive()
 
 bool IllidanStormrageBossIsPreparingToLandTrigger::IsActive()
 {
-    if (botAI->IsMainTank(bot))
+    if (botAI->IsTank(bot) && botAI->IsMainTank(bot))
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -569,7 +578,8 @@ bool IllidanStormrageThisExpansionHatesMeleeTrigger::IsActive()
 
 bool IllidanStormrageBossTransformsIntoDemonTrigger::IsActive()
 {
-    if (GetIllidanWarlockTank(bot) != bot)
+    if (bot->getClass() != CLASS_WARLOCK ||
+        GetIllidanWarlockTank(bot) != bot)
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -591,7 +601,7 @@ bool IllidanStormrageNeedToManageDpsTimerTrigger::IsActive()
     if (!illidan || illidan->GetHealth() == 1)
         return false;
 
-    return IsMechanicTrackerBot(
+    return botAI->IsDps(bot) && IsMechanicTrackerBot(
         botAI, bot, BLACK_TEMPLE_MAP_ID, GetIllidanWarlockTank(bot));
 }
 
@@ -600,7 +610,7 @@ bool IllidanStormrageCheatTrigger::IsActive()
     if (!botAI->HasCheat(BotCheatMask::raid))
         return false;
 
-    if (!IsMechanicTrackerBot(
+    if (!botAI->IsDps(bot) || !IsMechanicTrackerBot(
         botAI, bot, BLACK_TEMPLE_MAP_ID, GetIllidanWarlockTank(bot)))
         return false;
 

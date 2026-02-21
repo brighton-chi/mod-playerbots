@@ -566,7 +566,7 @@ bool TheLurkerBelowSpreadRangedInArcAction::Execute(Event /*event*/)
 
         float angle = (count == 1) ? arcCenter :
             (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
-        float radius = 28.0f;
+        constexpr float radius = 28.0f;
 
         float targetX = lurker->GetPositionX() + radius * std::sin(angle);
         float targetY = lurker->GetPositionY() + radius * std::cos(angle);

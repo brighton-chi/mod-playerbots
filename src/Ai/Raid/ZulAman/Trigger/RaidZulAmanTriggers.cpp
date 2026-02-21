@@ -68,8 +68,13 @@ bool NalorakkPullingBossTrigger::IsActive()
 
 bool NalorakkBossSwitchesFormsTrigger::IsActive()
 {
-    return AI_VALUE2(Unit*, "find target", "nalorakk") &&
-           (botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0, true));
+    if (!botAI->IsTank(bot))
+        return false;
+
+    if (!AI_VALUE2(Unit*, "find target", "nalorakk"))
+        return false;
+
+    return botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0, true);
 }
 
 bool NalorakkBossCastsSurgeTrigger::IsActive()
@@ -118,15 +123,22 @@ bool JanalaiBossCastsFlameBreathTrigger::IsActive()
 
 bool JanalaiBossSummoningFireBombsTrigger::IsActive()
 {
+    if (!AI_VALUE2(Unit*, "find target", "jan'alai"))
+        return false;
+
     constexpr float searchRadius = 40.0f;
-    return AI_VALUE2(Unit*, "find target", "jan'alai") &&
-           bot->FindNearestCreature(NPC_FIRE_BOMB, searchRadius, true);
+    return bot->FindNearestCreature(NPC_FIRE_BOMB, searchRadius, true);
 }
 
 bool JanalaiAmaniHatchersSpawnedTrigger::IsActive()
 {
-    return botAI->IsRangedDps(bot) &&
-           GetFirstAliveUnitByEntry(botAI, NPC_AMANI_HATCHER);
+    if (!botAI->IsRangedDps(bot))
+        return false;
+
+    if (!AI_VALUE2(Unit*, "find target", "jan'alai"))
+        return false;
+
+    return GetFirstAliveUnitByEntry(botAI, NPC_AMANI_HATCHER) != nullptr;
 }
 
 // Halazzi <Lynx Avatar>
@@ -142,14 +154,24 @@ bool HalazziPullingBossTrigger::IsActive()
 
 bool HalazziBossEngagedByMainTankTrigger::IsActive()
 {
-    return AI_VALUE2(Unit*, "find target", "halazzi") &&
-           botAI->IsMainTank(bot);
+    if (!botAI->IsTank(bot))
+        return false;
+
+    if (!AI_VALUE2(Unit*, "find target", "halazzi"))
+        return false;
+
+    return botAI->IsMainTank(bot);
 }
 
 bool HalazziBossSummonsSpiritLynxTrigger::IsActive()
 {
-    return AI_VALUE2(Unit*, "find target", "halazzi") &&
-           botAI->IsAssistTankOfIndex(bot, 0, true);
+    if (!botAI->IsTank(bot))
+        return false;
+
+    if (!AI_VALUE2(Unit*, "find target", "halazzi"))
+        return false;
+
+    return botAI->IsAssistTankOfIndex(bot, 0, true);
 }
 
 bool HalazziDeterminingDpsTargetTrigger::IsActive()
@@ -196,17 +218,21 @@ bool HexLordMalacrassPartyMemberIsMindControlledTrigger::IsActive()
         bot->getClass() != CLASS_WARLOCK)
         return false;
 
-    if (Group* group = bot->GetGroup())
-    {
-        for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || member == bot)
-                continue;
+    if (!AI_VALUE2(Unit*, "find target", "hex lord malacrass"))
+        return false;
 
-            if (member->HasAura(SPELL_MIND_CONTROL))
-                return true;
-        }
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive() || member == bot)
+            continue;
+
+        if (member->HasAura(SPELL_MIND_CONTROL))
+            return true;
     }
 
     return false;
