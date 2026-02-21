@@ -141,9 +141,8 @@ namespace TempestKeepHelpers
     extern std::unordered_map<uint32, time_t> advisorDpsWaitTimer;
     Player* GetCapernianTank(Player* bot);
     Player* GetDebuffHunter(Player* bot);
-    bool IsAnyLegendaryWeaponDead(PlayerbotAI* botAI, Player* bot);
+    bool IsAnyLegendaryWeaponDead(Player* bot);
     bool HasEquippableItemForSlot(Player* bot, uint8 slot);
-    bool HasEquippableOffhand(Player* bot);
 }
 
 #endif

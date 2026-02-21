@@ -375,7 +375,7 @@ bool KaelthasSunstriderLegendaryWeaponsAreDeadAndLootableTrigger::IsActive()
     if (axe && axe->GetVictim() == bot)
         return false;
 
-    return IsAnyLegendaryWeaponDead(botAI, bot);
+    return IsAnyLegendaryWeaponDead(bot);
 }
 
 bool KaelthasSunstriderLegendaryWeaponsAreEquippedTrigger::IsActive()
@@ -393,41 +393,32 @@ bool KaelthasSunstriderLegendaryWeaponsWereLostTrigger::IsActive()
     if (bot->GetMapId() != TEMPEST_KEEP_MAP_ID)
         return false;
 
-    constexpr uint32 KAELTHAS_DB_GUID = 158218;
     Map* map = bot->GetMap();
     if (!map)
         return false;
 
-    auto it = map->GetCreatureBySpawnIdStore().find(KAELTHAS_DB_GUID);
-    if (it == map->GetCreatureBySpawnIdStore().end())
+    constexpr uint32 KAELTHAS_DB_GUID = 158218;
+    auto const& creatureStore = map->GetCreatureBySpawnIdStore();
+    auto it = creatureStore.find(KAELTHAS_DB_GUID);
+    if (it == creatureStore.end())
         return false;
 
     Creature* kaelthas = it->second;
     if (!kaelthas || bot->GetExactDist2d(kaelthas) > 150.0f)
         return false;
 
-    Item* mainHand = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
-    bool has2HWeapon = mainHand && mainHand->GetTemplate()->InventoryType == INVTYPE_2HWEAPON;
-
-    for (uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
+    const std::array<uint8, 3> weaponSlots =
     {
-        if (slot == EQUIPMENT_SLOT_BODY || slot == EQUIPMENT_SLOT_TABARD ||
-            (slot == EQUIPMENT_SLOT_OFFHAND && has2HWeapon))
-            continue;
+        EQUIPMENT_SLOT_MAINHAND,
+        EQUIPMENT_SLOT_OFFHAND,
+        EQUIPMENT_SLOT_RANGED
+    };
 
-        if (!bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
-        {
-            if (slot == EQUIPMENT_SLOT_OFFHAND)
-            {
-                if (!mainHand || mainHand->GetTemplate()->InventoryType != INVTYPE_WEAPON)
-                    continue;
-
-                if (HasEquippableOffhand(bot))
-                    return true;
-            }
-            else if (HasEquippableItemForSlot(bot, slot))
-                return true;
-        }
+    for (uint8 slot : weaponSlots)
+    {
+        if (!bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot) &&
+            HasEquippableItemForSlot(bot, slot))
+            return true;
     }
 
     return false;
