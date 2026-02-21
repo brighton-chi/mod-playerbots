@@ -124,7 +124,7 @@ namespace TempestKeepHelpers
     int8 GetAlarCurrentLocationIndex(Unit* alar);
     void GetClosestPlatformAndGround(
         const Position& botPos, int8& closestPlatform, Position& ground);
-    std::pair<Unit*, Unit*> GetFirstTwoEmbersOfAlar(PlayerbotAI* bot);
+    std::pair<Unit*, Unit*> GetFirstTwoEmbersOfAlar(PlayerbotAI* botAI);
     Player* GetSecondEmberTank(PlayerbotAI* botAI);
 
     // Void Reaver
