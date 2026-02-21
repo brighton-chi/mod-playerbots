@@ -1506,7 +1506,7 @@ bool IllidariCouncilCommandPetsToAttackGathiosAction::Execute(Event /*event*/)
             pet->GetCharmInfo()->SetIsCommandFollow(false);
             pet->GetCharmInfo()->SetIsReturning(false);
 
-            pet->ToCreature()->AI()->AttackStart(gathios);
+            pet->AI()->AttackStart(gathios);
             return true;
         }
     }
