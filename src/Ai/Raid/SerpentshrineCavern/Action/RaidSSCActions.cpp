@@ -2048,8 +2048,8 @@ bool LadyVashjTeleportToTaintedElementalAction::Execute(Event /*event*/)
     return false;
 }
 
-bool LadyVashjLootTaintedCoreAction::Execute(Event)
-{
+bool LadyVashjLootTaintedCoreAction::Execute(Event /*event*/)
+/*{
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     if (!vashj)
         return false;
@@ -2123,6 +2123,55 @@ bool LadyVashjLootTaintedCoreAction::Execute(Event)
     }
 
     return false;
+} */
+{
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (!vashj)
+        return false;
+
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && member->HasItemCount(ITEM_TAINTED_CORE, 1, false))
+            return false;
+    }
+
+    constexpr float searchRadius = 150.0f;
+    Creature* elemental = bot->FindNearestCreature(NPC_TAINTED_ELEMENTAL, searchRadius, false);
+
+    if (!elemental || elemental->IsAlive())
+        return false;
+
+    LootObject loot(bot, elemental->GetGUID());
+    if (!loot.IsLootPossible(bot))
+        return false;
+
+    context->GetValue<LootObject>("loot target")->Set(loot);
+
+    const float maxLootRange = sPlayerbotAIConfig.lootDistance;
+    constexpr float distFromObject = 2.0f;
+
+    if (bot->GetDistance(elemental) > maxLootRange)
+        return MoveTo(elemental, distFromObject, MovementPriority::MOVEMENT_FORCED);
+
+    OpenLootAction open(botAI);
+    if (!open.Execute(Event()))
+        return false;
+
+    bot->SetLootGUID(elemental->GetGUID());
+    constexpr uint8 coreIndex = 0;
+    WorldPacket* packet = new WorldPacket(CMSG_AUTOSTORE_LOOT_ITEM, 1);
+    *packet << coreIndex;
+    bot->GetSession()->QueuePacket(packet);
+
+    const time_t now = std::time(nullptr);
+    lastCoreInInventoryTime.insert_or_assign(bot->GetGUID(), now);
+
+    return true;
 }
 
 bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
