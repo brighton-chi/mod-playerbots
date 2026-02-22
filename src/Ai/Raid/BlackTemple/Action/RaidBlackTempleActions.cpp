@@ -1579,9 +1579,10 @@ bool IllidanStormrageMisdirectToTankAction::Execute(Event /*event*/)
     if (!group)
         return false;
 
-    if (GetIllidanPhase(illidan) == 2 && TryMisdirectToFlameTanks(group))
+    int phase = GetIllidanPhase(illidan);
+    if (phase == 2 && TryMisdirectToFlameTanks(group))
         return true;
-    else if (GetIllidanPhase(illidan) == 4 && TryMisdirectToWarlockTank(illidan))
+    else if (phase == 4 && TryMisdirectToWarlockTank(illidan))
         return true;
 
     return false;
@@ -2139,7 +2140,8 @@ bool IllidanStormrageControlPetAggressionAction::Execute(Event /*event*/)
     if (!pet)
         return false;
 
-    if ((GetIllidanPhase(illidan) == 2 || GetIllidanPhase(illidan) == 4) &&
+    int phase = GetIllidanPhase(illidan);
+    if ((phase == 2 || phase == 4) &&
         pet->GetReactState() != REACT_PASSIVE)
     {
         pet->AttackStop();
@@ -2234,9 +2236,10 @@ bool IllidanStormrageDisperseRangedAction::Execute(Event /*event*/)
     if (!group)
         return false;
 
-    if (GetIllidanPhase(illidan) == 3 || GetIllidanPhase(illidan) == 5)
+    int phase = GetIllidanPhase(illidan);
+    if (phase == 3 || phase == 5)
         return FanOutBehindInHumanPhase(illidan, group);
-    else if (GetIllidanPhase(illidan) == 4)
+    else if (phase == 4)
         return SpreadInCircleInDemonPhase(illidan, group);
 
     return false;
@@ -2514,23 +2517,22 @@ bool IllidanStormrageManageDpsTimerAction::Execute(Event /*event*/)
     const uint32 instanceId = illidan->GetMap()->GetInstanceId();
 
     bool updated = false;
-    if ((GetIllidanPhase(illidan) == 2 &&
-         AI_VALUE2(Unit*, "find target", "flame of azzinoth")) ||
-         GetIllidanPhase(illidan) == 5)
+    int phase = GetIllidanPhase(illidan);
+
+    if ((phase == 2 && AI_VALUE2(Unit*, "find target", "flame of azzinoth")) ||
+         phase == 5)
     {
         if (illidanBossDpsWaitTimer.erase(instanceId) > 0)
             updated = true;
     }
-    else if (GetIllidanPhase(illidan) == 1 || GetIllidanPhase(illidan) == 3 ||
-             GetIllidanPhase(illidan) == 4)
+    else if (phase == 1 || phase == 3 || phase == 4)
     {
         if (illidanBossDpsWaitTimer.try_emplace(instanceId, now).second)
             updated = true;
         if (illidanFlameDpsWaitTimer.erase(instanceId) > 0)
             updated = true;
     }
-    else if (GetIllidanPhase(illidan) == 2 &&
-             !AI_VALUE2(Unit*, "find target", "flame of azzinoth"))
+    else if (phase == 2 && !AI_VALUE2(Unit*, "find target", "flame of azzinoth"))
     {
         if (illidanFlameDpsWaitTimer.insert_or_assign(instanceId, now).second)
             updated = true;
