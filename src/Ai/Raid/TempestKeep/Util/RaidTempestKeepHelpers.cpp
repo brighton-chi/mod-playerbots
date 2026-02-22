@@ -8,31 +8,26 @@ namespace TempestKeepHelpers
 {
     // General
 
-    Unit* GetNearestNonTankPlayerInRadius(Player* bot, float radius)
+    Unit* GetNearestNonTankPlayerInRadius(PlayerbotAI* botAI, Player* bot, float radius)
     {
         Unit* nearestPlayer = nullptr;
         float nearestDistance = radius;
 
-        if (Group* group = bot->GetGroup())
+        Group* group = bot->GetGroup();
+        if (!group)
+            return nullptr;
+
+        for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
         {
-            for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || member == bot || botAI->IsTank(member))
+                continue;
+
+            float distance = bot->GetExactDist2d(member);
+            if (distance < nearestDistance)
             {
-                Player* member = ref->GetSource();
-                if (!member || !member->IsAlive() || member == bot)
-                    continue;
-
-                if (PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member))
-                {
-                    if (memberAI->IsTank(member))
-                        continue;
-                }
-
-                float distance = bot->GetExactDist2d(member);
-                if (distance < nearestDistance)
-                {
-                    nearestDistance = distance;
-                    nearestPlayer = member;
-                }
+                nearestDistance = distance;
+                nearestPlayer = member;
             }
         }
 
@@ -289,7 +284,7 @@ namespace TempestKeepHelpers
     Player* GetSecondEmberTank(PlayerbotAI* botAI)
     {
         Player* mainTank = GetGroupMainTank(botAI, botAI->GetBot());
-        Player* assistTank = GetGroupFirstAssistTank(botAI, botAI->GetBot());
+        Player* assistTank = GetGroupAssistTank(botAI, botAI->GetBot(), 0);
 
         bool mainTankHasMelt = mainTank && mainTank->HasAura(SPELL_MELT_ARMOR);
         bool assistTankHasMelt = assistTank && assistTank->HasAura(SPELL_MELT_ARMOR);
@@ -305,74 +300,74 @@ namespace TempestKeepHelpers
 
     // Void Reaver
 
-    const Position VOID_REAVER_TANK_POSITION = { 423.845f, 371.733f, 14.897f };
+    const Position VOID_REAVER_TANK_POSITION =  { 423.845f, 371.733f, 14.897f };
 
     // Kael'thas Sunstrider <Lord of the Blood Elves>
 
-    const Position SANGUINAR_TANK_POSITION = { 775.478f, 39.888f, 46.780f };
-    const Position SANGUINAR_WAITING_POSITION = { 761.850f, 27.459f, 46.779f };
-    const Position TELONICUS_TANK_POSITION = { 773.717f, 44.091f, 46.780f };
-    const Position TELONICUS_WAITING_POSITION = { 754.347f, 31.739f, 46.796f };
-    const Position ADVISOR_HEAL_POSITION = { 752.171f, 19.494f, 46.779f };
+    const Position SANGUINAR_TANK_POSITION =    { 775.478f,  39.888f, 46.780f };
+    const Position SANGUINAR_WAITING_POSITION = { 761.850f,  27.459f, 46.779f };
+    const Position TELONICUS_TANK_POSITION =    { 773.717f,  44.091f, 46.780f };
+    const Position TELONICUS_WAITING_POSITION = { 754.347f,  31.739f, 46.796f };
+    const Position ADVISOR_HEAL_POSITION =      { 752.171f,  19.494f, 46.779f };
     const Position CAPERNIAN_WAITING_POSITION = { 743.897f, -11.575f, 46.779f };
-    const Position KAELTHAS_TANK_POSITION = { 799.390f, -0.837f, 48.729f };
+    const Position KAELTHAS_TANK_POSITION =     { 799.390f,  -0.837f, 48.729f };
 
     std::unordered_map<uint32, time_t> advisorDpsWaitTimer;
 
+    // (1) First priority is an assistant Warlock (real player or bot)
+    // (2) If no assistant Warlock, then look for any Warlock bot
     Player* GetCapernianTank(Player* bot)
     {
         Group* group = bot->GetGroup();
         if (!group)
             return nullptr;
 
-        // (1) Look for an assistant Warlock (real player or bot)
+        Player* fallbackWarlock = nullptr;
+
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (member && member->IsAlive() && member->getClass() == CLASS_WARLOCK &&
-                group->IsAssistant(member->GetGUID()))
+            if (!member || !member->IsAlive() || member->getClass() != CLASS_WARLOCK)
+                continue;
+
+            if (group->IsAssistant(member->GetGUID()))
                 return member;
+
+            if (!fallbackWarlock && GET_PLAYERBOT_AI(member))
+                fallbackWarlock = member;
         }
 
-        // (2) Fall back to first found bot Warlock
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (member && member->IsAlive() && GET_PLAYERBOT_AI(member) &&
-                member->getClass() == CLASS_WARLOCK)
-                return member;
-        }
-
-        // (3) Return nullptr if none found
-        return nullptr;
+        return fallbackWarlock;
     }
 
     // One Hunter will start on Sanguinar in Phase 3 with Melee to apply Armor Disruption
-    Player* GetDebuffHunter(Player* bot)
+    // (1) First priority is an assistant Hunter (real player or bot)
+    // (2) If no assistant Hunter, then look for any Hunter bot
+    bool IsDebuffHunter(Player* bot)
     {
+        if (bot->getClass() != CLASS_HUNTER || !bot->IsAlive())
+            return false;
+
         Group* group = bot->GetGroup();
         if (!group)
-            return nullptr;
+            return false;
 
-        // (1) Look for an assistant Hunter (real player or bot)
+        Player* fallbackHunter = nullptr;
+
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (member && member->IsAlive() && member->getClass() == CLASS_HUNTER &&
-                group->IsAssistant(member->GetGUID()))
-                return member;
+            if (!member || !member->IsAlive() || member->getClass() != CLASS_HUNTER)
+                continue;
+
+            if (group->IsAssistant(member->GetGUID()))
+                return member == bot;
+
+            if (!fallbackHunter && GET_PLAYERBOT_AI(member))
+                fallbackHunter = member;
         }
 
-        // (2) Fall back to first found bot Hunter
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (member && member->IsAlive() && GET_PLAYERBOT_AI(member) &&
-                member->getClass() == CLASS_HUNTER)
-                return member;
-        }
-
-        return nullptr;
+        return fallbackHunter == bot;
     }
 
     bool IsAnyLegendaryWeaponDead(Player* bot)

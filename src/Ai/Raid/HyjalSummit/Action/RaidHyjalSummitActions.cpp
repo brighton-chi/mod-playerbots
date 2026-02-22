@@ -187,7 +187,7 @@ bool AnetheronMisdirectBossAndInfernalsToTanksAction::Execute(Event /*event*/)
     if (Unit* infernal = AI_VALUE2(Unit*, "find target", "towering infernal");
         infernal && infernal->GetHealthPct() > 50.0f)
     {
-        Player* firstAssistTank = GetGroupFirstAssistTank(botAI, bot);
+        Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
         if (!firstAssistTank)
             return false;
 
@@ -413,7 +413,7 @@ bool AnetheronAssignDpsPriorityAction::Execute(Event /*event*/)
 
             if (botAI->IsRangedDps(bot) && bot->GetDistance2d(infernal) < 35.0f)
             {
-                if (Player* firstAssistTank = GetGroupFirstAssistTank(botAI, bot);
+                if (Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
                     !firstAssistTank || (firstAssistTank && infernal->GetVictim() == firstAssistTank))
                 {
                     SetRtiTarget(botAI, "diamond", infernal);

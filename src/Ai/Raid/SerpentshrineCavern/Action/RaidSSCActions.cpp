@@ -365,7 +365,7 @@ bool HydrossTheUnstableMisdirectBossToTankAction::TryMisdirectToFrostTank(
 bool HydrossTheUnstableMisdirectBossToTankAction::TryMisdirectToNatureTank(
     Unit* hydross)
 {
-    Player* natureTank = GetGroupFirstAssistTank(botAI, bot);
+    Player* natureTank = GetGroupAssistTank(botAI, bot, 0);
     if (!natureTank)
         return false;
 
@@ -594,8 +594,8 @@ bool TheLurkerBelowSpreadRangedInArcAction::Execute(Event /*event*/)
 bool TheLurkerBelowTanksPickUpAddsAction::Execute(Event /*event*/)
 {
     Player* mainTank = GetGroupMainTank(botAI, bot);
-    Player* firstAssistTank = GetGroupFirstAssistTank(botAI, bot);
-    Player* secondAssistTank = GetGroupSecondAssistTank(botAI, bot);
+    Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
+    Player* secondAssistTank = GetGroupAssistTank(botAI, bot, 1);
     if (!mainTank || !firstAssistTank || !secondAssistTank)
         return false;
 
@@ -1278,17 +1278,17 @@ bool FathomLordKarathressMisdirectBossesToTanksAction::Execute(Event /*event*/)
     if (hunterIndex == 0)
     {
         bossTarget = AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
-        tankTarget = GetGroupFirstAssistTank(botAI, bot);
+        tankTarget = GetGroupAssistTank(botAI, bot, 0);
     }
     else if (hunterIndex == 1)
     {
         bossTarget = AI_VALUE2(Unit*, "find target", "fathom-guard tidalvess");
-        tankTarget = GetGroupThirdAssistTank(botAI, bot);
+        tankTarget = GetGroupAssistTank(botAI, bot, 2);
     }
     else if (hunterIndex == 2)
     {
         bossTarget = AI_VALUE2(Unit*, "find target", "fathom-guard sharkkis");
-        tankTarget = GetGroupSecondAssistTank(botAI, bot);
+        tankTarget = GetGroupAssistTank(botAI, bot, 1);
     }
 
     if (!bossTarget || !tankTarget)
@@ -1945,7 +1945,7 @@ bool LadyVashjMisdirectStriderToFirstAssistTankAction::Execute(Event /*event*/)
     if (!strider)
         return false;
 
-    Player* firstAssistTank = GetGroupFirstAssistTank(botAI, bot);
+    Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
     if (!firstAssistTank || strider->GetVictim() == firstAssistTank)
         return false;
 
@@ -2895,11 +2895,8 @@ bool LadyVashjUseFreeActionAbilitiesAction::Execute(Event /*event*/)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || !member->HasAura(SPELL_ENTANGLE))
-            continue;
-
-        PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
-        if (!memberAI || !memberAI->IsMelee(member))
+        if (!member || !member->IsAlive() || !member->HasAura(SPELL_ENTANGLE) ||
+            !botAI->IsMelee(member))
             continue;
 
         bool nearToxicSpore = false;
@@ -2914,7 +2911,7 @@ bool LadyVashjUseFreeActionAbilitiesAction::Execute(Event /*event*/)
 
         if (nearToxicSpore)
         {
-            if (memberAI->IsMainTank(member))
+            if (botAI->IsMainTank(member))
                 mainTankToxic = member;
 
             if (!anyToxic)
@@ -2923,7 +2920,7 @@ bool LadyVashjUseFreeActionAbilitiesAction::Execute(Event /*event*/)
 
         if (member->HasAura(SPELL_STATIC_CHARGE))
         {
-            if (memberAI->IsMainTank(member))
+            if (botAI->IsMainTank(member))
                 mainTankStatic = member;
 
             if (!anyStatic)

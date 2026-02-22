@@ -258,7 +258,7 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase1Embers(Unit* alar)
             else
             {
                 constexpr float safeDistance = 16.0f;
-                if (GetNearestPlayerInRadius(bot, safeDistance))
+                if (GetNearestNonTankPlayerInRadius(botAI, bot, safeDistance))
                     return MoveFromGroup(safeDistance);
             }
         }
@@ -294,7 +294,7 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase2Embers(Unit* alar)
         else if (bot->IsWithinMeleeRange(firstEmber))
         {
             constexpr float safeDistance = 16.0f;
-            if (GetNearestNonTankPlayerInRadius(bot, safeDistance))
+            if (GetNearestNonTankPlayerInRadius(botAI, bot, safeDistance))
                 return MoveFromGroup(safeDistance);
         }
     }
@@ -313,7 +313,7 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase2Embers(Unit* alar)
         else if (bot->IsWithinMeleeRange(secondEmber))
         {
             constexpr float safeDistance = 16.0f;
-            if (GetNearestNonTankPlayerInRadius(bot, safeDistance))
+            if (GetNearestNonTankPlayerInRadius(botAI, bot, safeDistance))
                 return MoveFromGroup(safeDistance);
         }
     }
@@ -940,7 +940,7 @@ bool KaelthasSunstriderMisdirectAdvisorsToTanksAction::Execute(Event /*event*/)
     else if (hunterIndex == 1)
     {
         advisorTarget = AI_VALUE2(Unit*, "find target", "master engineer telonicus");
-        tankTarget = GetGroupFirstAssistTank(botAI, bot);
+        tankTarget = GetGroupAssistTank(botAI, bot, 0);
     }
 
     if (!advisorTarget ||
@@ -1261,10 +1261,9 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event /*event*/)
     }
 
     // Target priority 2: Capernian for ranged only (excluding longbow tank)
-    Player* debuffHunter = GetDebuffHunter(bot);
     Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
 
-    if (botAI->IsRangedDps(bot) && (!debuffHunter || bot != debuffHunter) &&
+    if (botAI->IsRangedDps(bot) && !IsDebuffHunter(bot) &&
         capernian && !capernian->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
         !capernian->HasAura(SPELL_PERMANENT_FEIGN_DEATH))
     {
@@ -1459,7 +1458,7 @@ bool KaelthasSunstriderMoveDevastationAwayAction::Execute(Event /*event*/)
         return Attack(axe);
 
     constexpr float safeDistance = 13.0f;
-    if (axe->GetVictim() == bot && GetNearestNonTankPlayerInRadius(bot, safeDistance))
+    if (axe->GetVictim() == bot && GetNearestNonTankPlayerInRadius(botAI, bot, safeDistance))
         return MoveFromGroup(safeDistance);
 
     return false;
@@ -1791,7 +1790,7 @@ bool KaelthasSunstriderHandlePhoenixesAndEggsAction::AssistTanksPickUpPhoenixes(
 
     constexpr float safeDistance = 12.0f;
     if (targetPhoenix->GetVictim() == bot &&
-        GetNearestNonTankPlayerInRadius(bot, safeDistance))
+        GetNearestNonTankPlayerInRadius(botAI, bot, safeDistance))
         return MoveFromGroup(safeDistance);
 
     return false;

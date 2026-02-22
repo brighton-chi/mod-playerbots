@@ -73,9 +73,9 @@ bool HydrossTheUnstableTankNeedsAggroUponPhaseChangeTrigger::IsActive()
 
 bool HydrossTheUnstableAggroResetsUponPhaseChangeTrigger::IsActive()
 {
-    if (bot->getClass() == CLASS_HUNTER || 
+    if (bot->getClass() == CLASS_HUNTER ||
         botAI->IsHeal(bot) ||
-        botAI->IsMainTank(bot) || 
+        botAI->IsMainTank(bot) ||
         botAI->IsAssistTankOfIndex(bot, 0, true))
         return false;
 
@@ -145,8 +145,8 @@ bool TheLurkerBelowBossIsSubmergedTrigger::IsActive()
         return false;
 
     Player* mainTank = GetGroupMainTank(botAI, bot);
-    Player* firstAssistTank = GetGroupFirstAssistTank(botAI, bot);
-    Player* secondAssistTank = GetGroupSecondAssistTank(botAI, bot);
+    Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
+    Player* secondAssistTank = GetGroupAssistTank(botAI, bot, 1);
 
     if (!mainTank || !firstAssistTank || !secondAssistTank)
         return false;
@@ -411,7 +411,7 @@ bool LadyVashjCastsShockBlastOnHighestAggroTrigger::IsActive()
         IsLadyVashjInPhase2(botAI))
         return false;
 
-    return IsMainTankInSameSubgroup(bot);
+    return IsMainTankInSameSubgroup(botAI, bot);
 }
 
 bool LadyVashjBotHasStaticChargeTrigger::IsActive()

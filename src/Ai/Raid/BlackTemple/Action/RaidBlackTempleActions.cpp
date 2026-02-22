@@ -255,8 +255,8 @@ bool SupremusMisdirectBossToMainTankAction::Execute(Event /*event*/)
         return false;
 
     Player* mainTank = GetGroupMainTank(botAI, bot);
-    Player* firstAssistTank = GetGroupFirstAssistTank(botAI, bot);
-    Player* secondAssistTank = GetGroupSecondAssistTank(botAI, bot);
+    Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
+    Player* secondAssistTank = GetGroupAssistTank(botAI, bot, 1);
 
     Player* misdirectTarget = nullptr;
     if (bot == hunters[0] && mainTank)
@@ -1199,7 +1199,7 @@ bool IllidariCouncilMisdirectBossesToTanksAction::Execute(Event /*event*/)
         councilTarget = AI_VALUE2(Unit*, "find target", "lady malande");
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
-            if (Player* member = GetGroupFirstAssistTank(botAI, bot))
+            if (Player* member = GetGroupAssistTank(botAI, bot, 0))
             {
                 tankTarget = member;
                 break;
@@ -1223,7 +1223,7 @@ bool IllidariCouncilMisdirectBossesToTanksAction::Execute(Event /*event*/)
         councilTarget = AI_VALUE2(Unit*, "find target", "veras darkshadow");
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
-            if (Player* member = GetGroupSecondAssistTank(botAI, bot))
+            if (Player* member = GetGroupAssistTank(botAI, bot, 1))
             {
                 tankTarget = member;
                 break;
@@ -1619,8 +1619,8 @@ bool IllidanStormrageMisdirectToTankAction::TryMisdirectToFlameTanks(Group* grou
     if (!eastFlame || !westFlame || eastFlame == westFlame)
         return false;
 
-    Player* firstAssistTank = GetGroupFirstAssistTank(botAI, bot);
-    Player* secondAssistTank = GetGroupSecondAssistTank(botAI, bot);
+    Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
+    Player* secondAssistTank = GetGroupAssistTank(botAI, bot, 1);
     if (!firstAssistTank || !secondAssistTank)
         return false;
 

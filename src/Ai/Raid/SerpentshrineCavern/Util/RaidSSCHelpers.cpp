@@ -180,7 +180,7 @@ namespace SerpentShrineCavernHelpers
     std::unordered_map<uint32, time_t> lastImbueAttempt;
     std::unordered_map<ObjectGuid, time_t> lastCoreInInventoryTime;
 
-    bool IsMainTankInSameSubgroup(Player* bot)
+    bool IsMainTankInSameSubgroup(PlayerbotAI* botAI, Player* bot)
     {
         Group* group = bot->GetGroup();
         if (!group || !group->isRaidGroup())
@@ -199,8 +199,7 @@ namespace SerpentShrineCavernHelpers
             if (group->GetMemberGroup(member->GetGUID()) != botSubGroup)
                 continue;
 
-            PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
-            if (memberAI && memberAI->IsMainTank(member))
+            if (botAI->IsMainTank(member))
                 return true;
         }
 

@@ -81,7 +81,7 @@ namespace TempestKeepHelpers
 
     // General
     constexpr uint32 TEMPEST_KEEP_MAP_ID = 550;
-    Unit* GetNearestNonTankPlayerInRadius(Player* bot, float radius);
+    Unit* GetNearestNonTankPlayerInRadius(PlayerbotAI* botAI, Player* bot, float radius);
     std::vector<Unit*> GetAllHazardTriggers(Player* bot, uint32 npcEntry, float searchRadius);
     Position FindSafestNearbyPosition(Player* bot, const std::vector<Unit*>& hazards,
         float hazardRadius, const Position* center = nullptr);
@@ -140,7 +140,7 @@ namespace TempestKeepHelpers
     extern const Position KAELTHAS_TANK_POSITION;
     extern std::unordered_map<uint32, time_t> advisorDpsWaitTimer;
     Player* GetCapernianTank(Player* bot);
-    Player* GetDebuffHunter(Player* bot);
+    bool IsDebuffHunter(Player* bot);
     bool IsAnyLegendaryWeaponDead(Player* bot);
     bool HasEquippableItemForSlot(Player* bot, uint8 slot);
 }
