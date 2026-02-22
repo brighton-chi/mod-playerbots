@@ -1170,7 +1170,7 @@ bool PrinceMalchezaarNonTankAvoidInfernalAction::Execute(Event /*event*/)
             bot->AttackStop();
             bot->InterruptNonMeleeSpells(true);
             return MoveTo(KARAZHAN_MAP_ID, bestDestX, bestDestY, bestDestZ, false, false, false, false,
-                          MovementPriority::MOVEMENT_FORCED, true, false);
+                          MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
 
