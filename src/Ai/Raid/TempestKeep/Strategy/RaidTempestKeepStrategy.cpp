@@ -48,6 +48,9 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("void reaver boss launches arcane orbs", {
         NextAction("void reaver spread ranged", ACTION_RAID + 1) }));
 
+    triggers.push_back(new TriggerNode("void reaver arcane orb is incoming", {
+        NextAction("void reaver avoid arcane orb", ACTION_EMERGENCY + 1) }));
+
     // High Astromancer Solarian
     triggers.push_back(new TriggerNode("high astromancer solarian boss casts wrath of the astromancer", {
         NextAction("high astromancer solarian ranged leave space for melee", ACTION_RAID + 1) }));

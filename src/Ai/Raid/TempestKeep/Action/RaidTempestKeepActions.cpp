@@ -653,6 +653,10 @@ bool VoidReaverSpreadRangedAction::Execute(Event /*event*/)
     if (!group)
         return false;
 
+    ObjectGuid guid = bot->GetGUID();
+    if (hasReachedVoidReaverPosition[guid])
+        return false;
+
     int healerCount = 0, rangedDpsCount = 0;
     int healerIndex = GetHealerIndex(group, healerCount);
     int rangedDpsIndex = GetRangedDpsIndex(group, rangedDpsCount);
@@ -681,7 +685,11 @@ bool VoidReaverSpreadRangedAction::Execute(Event /*event*/)
     if (bot->GetExactDist2d(targetX, targetY) > 2.0f)
     {
         return MoveTo(TEMPEST_KEEP_MAP_ID, targetX, targetY, bot->GetPositionZ(), false,
-                      false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+                    false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+    }
+    else
+    {
+        hasReachedVoidReaverPosition[guid] = true;
     }
 
     return false;
@@ -719,6 +727,54 @@ int VoidReaverSpreadRangedAction::GetRangedDpsIndex(Group* group, int& rangedDps
     rangedDpsCount = rangedDps.size();
     auto it = std::find(rangedDps.begin(), rangedDps.end(), bot);
     return (it != rangedDps.end()) ? std::distance(rangedDps.begin(), it) : -1;
+}
+
+bool VoidReaverAvoidArcaneOrbAction::Execute(Event /*event*/)
+{
+    auto it = voidReaverArcaneOrbs.find(bot->GetMap()->GetInstanceId());
+    if (it == voidReaverArcaneOrbs.end() || it->second.empty())
+        return false;
+
+    uint32 currentTime = getMSTime();
+    constexpr uint32 orbDuration = 8000;
+    constexpr float safeDistance = 22.0f;
+    bool shouldFlee = false;
+    Position fleeDest;
+
+    // Check all active orbs in this instance
+    for (const auto& orb : it->second)
+    {
+        if (getMSTimeDiff(orb.castTime, currentTime) <= orbDuration)
+        {
+            if (bot->GetExactDist2d(orb.destination.GetPositionX(),
+                                    orb.destination.GetPositionY()) < safeDistance)
+            {
+                shouldFlee = true;
+                fleeDest = orb.destination;
+                break; // Found a threat, no need to check the rest for fleeing
+            }
+        }
+    }
+
+    // Clean up the expired orbs
+    it->second.erase(std::remove_if(it->second.begin(), it->second.end(),
+        [currentTime](const ArcaneOrbData& orb) {
+            return getMSTimeDiff(orb.castTime, currentTime) > orbDuration;
+        }), it->second.end());
+
+    // If the map entry is completely empty, we can remove the instanceId entirely to prevent memory leaks over time
+    if (it->second.empty())
+        voidReaverArcaneOrbs.erase(it);
+
+    if (shouldFlee)
+    {
+        constexpr uint32 minInterval = 0;
+        bot->AttackStop();
+        bot->InterruptNonMeleeSpells(true);
+        return FleePosition(fleeDest, safeDistance, minInterval);
+    }
+
+    return false;
 }
 
 // High Astromancer Solarian

@@ -115,6 +115,14 @@ public:
     bool IsActive() override;
 };
 
+class VoidReaverArcaneOrbIsIncomingTrigger : public Trigger
+{
+public:
+    VoidReaverArcaneOrbIsIncomingTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "void reaver arcane orb is incoming") {}
+    bool IsActive() override;
+};
+
 // High Astromancer Solarian
 
 class HighAstromancerSolarianBossCastsWrathOfTheAstromancerTrigger : public Trigger

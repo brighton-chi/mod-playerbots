@@ -151,6 +151,36 @@ bool VoidReaverBossLaunchesArcaneOrbsTrigger::IsActive()
     return voidReaver && voidReaver->GetVictim() != bot;
 }
 
+bool VoidReaverArcaneOrbIsIncomingTrigger::IsActive()
+{
+    if (botAI->IsTank(bot))
+        return false;
+
+    Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
+    if (!voidReaver || voidReaver->GetVictim() == bot)
+        return false;
+
+    auto it = voidReaverArcaneOrbs.find(bot->GetMap()->GetInstanceId());
+    if (it == voidReaverArcaneOrbs.end() || it->second.empty())
+        return false;
+
+    uint32 currentTime = getMSTime();
+    constexpr uint32 orbDuration = 8000;
+    constexpr float safeDistance = 22.0f;
+
+    for (const auto& orb : it->second)
+    {
+        if (getMSTimeDiff(orb.castTime, currentTime) <= orbDuration)
+        {
+            if (bot->GetExactDist2d(orb.destination.GetPositionX(),
+                                    orb.destination.GetPositionY()) < safeDistance)
+                return true;
+        }
+    }
+
+    return false;
+}
+
 // High Astromancer Solarian
 
 bool HighAstromancerSolarianBossCastsWrathOfTheAstromancerTrigger::IsActive()
