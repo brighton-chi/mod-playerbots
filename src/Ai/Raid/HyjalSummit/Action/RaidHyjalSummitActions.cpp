@@ -155,7 +155,9 @@ bool RageWinterchillSpreadRangedInCircleAction::Execute(Event /*event*/)
                           false, true, MovementPriority::MOVEMENT_FORCED, true, false);
         }
         else
+        {
             hasReachedWinterchillPosition[guid] = true;
+        }
     }
 
     return false;
@@ -300,7 +302,9 @@ bool AnetheronSpreadRangedInArcAction::Execute(Event /*event*/)
                           false, true, MovementPriority::MOVEMENT_FORCED, true, false);
         }
         else
+        {
             hasReachedAnetheronPosition[guid] = true;
+        }
     }
     else // untested--what should happen after reaching position?
     {

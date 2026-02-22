@@ -139,7 +139,7 @@ float KazrogalLowManaBotStayAwayFromGroupMultiplier::GetValue(Action* action)
         (dynamic_cast<MovementAction*>(action) &&
          !dynamic_cast<AttackAction*>(action) &&
          !dynamic_cast<KazrogalLowManaBotMoveFromGroupAction*>(action)))
-         return 0.0f;
+        return 0.0f;
 
     return 1.0f;
 }
