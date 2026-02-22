@@ -85,7 +85,7 @@ bool HydrossTheUnstableAggroResetsUponPhaseChangeTrigger::IsActive()
 
 bool HydrossTheUnstableNeedToManageTimersTrigger::IsActive()
 {
-    return botAI->IsDps(bot) && IsMechanicTrackerBot(botAI, bot, SSC_MAP_ID, nullptr) &&
+    return botAI->IsDps(bot) && IsMechanicTrackerBot(botAI, bot, SSC_MAP_ID) &&
            AI_VALUE2(Unit*, "find target", "hydross the unstable");
 }
 
@@ -157,7 +157,7 @@ bool TheLurkerBelowBossIsSubmergedTrigger::IsActive()
 
 bool TheLurkerBelowNeedToPrepareTimerForSpoutTrigger::IsActive()
 {
-    return botAI->IsDps(bot) && IsMechanicTrackerBot(botAI, bot, SSC_MAP_ID, nullptr) &&
+    return botAI->IsDps(bot) && IsMechanicTrackerBot(botAI, bot, SSC_MAP_ID) &&
            AI_VALUE2(Unit*, "find target", "the lurker below");
 }
 
@@ -171,7 +171,7 @@ bool LeotherasTheBlindBossIsInactiveTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "greyheart spellbinder"))
         return false;
 
-    return IsMechanicTrackerBot(botAI, bot, SSC_MAP_ID, nullptr);
+    return IsMechanicTrackerBot(botAI, bot, SSC_MAP_ID);
 }
 
 bool LeotherasTheBlindBossTransformedIntoDemonFormTrigger::IsActive()
@@ -289,7 +289,7 @@ bool LeotherasTheBlindDemonFormTankNeedsAggro::IsActive()
 
 bool LeotherasTheBlindBossWipesAggroUponPhaseChangeTrigger::IsActive()
 {
-    return botAI->IsDps(bot) && IsMechanicTrackerBot(botAI, bot, SSC_MAP_ID, nullptr) &&
+    return botAI->IsDps(bot) && IsMechanicTrackerBot(botAI, bot, SSC_MAP_ID) &&
            AI_VALUE2(Unit*, "find target", "leotheras the blind");
 }
 
@@ -361,7 +361,7 @@ bool FathomLordKarathressDeterminingKillOrderTrigger::IsActive()
 
 bool FathomLordKarathressTanksNeedToEstablishAggroTrigger::IsActive()
 {
-    return botAI->IsDps(bot) && IsMechanicTrackerBot(botAI, bot, SSC_MAP_ID, nullptr) &&
+    return botAI->IsDps(bot) && IsMechanicTrackerBot(botAI, bot, SSC_MAP_ID) &&
            AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
 }
 

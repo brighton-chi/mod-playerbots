@@ -138,7 +138,7 @@ bool JanalaiAmaniHatchersSpawnedTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "jan'alai"))
         return false;
 
-    return GetFirstAliveUnitByEntry(botAI, NPC_AMANI_HATCHER) != nullptr;
+    return GetFirstAliveUnitByEntry(botAI, NPC_AMANI_HATCHER);
 }
 
 // Halazzi <Lynx Avatar>

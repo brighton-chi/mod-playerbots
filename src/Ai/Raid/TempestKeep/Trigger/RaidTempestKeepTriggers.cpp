@@ -113,7 +113,7 @@ bool AlarStrategyChangesBetweenPhasesTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "al'ar"))
         return false;
 
-    return IsMechanicTrackerBot(botAI, bot, TEMPEST_KEEP_MAP_ID, nullptr);
+    return IsMechanicTrackerBot(botAI, bot, TEMPEST_KEEP_MAP_ID);
 }
 
 // Void Reaver
