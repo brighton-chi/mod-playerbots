@@ -68,13 +68,8 @@ bool NalorakkPullingBossTrigger::IsActive()
 
 bool NalorakkBossSwitchesFormsTrigger::IsActive()
 {
-    if (!botAI->IsTank(bot))
-        return false;
-
-    if (!AI_VALUE2(Unit*, "find target", "nalorakk"))
-        return false;
-
-    return botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0, true);
+    return (botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0, true)) &&
+           AI_VALUE2(Unit*, "find target", "nalorakk");
 }
 
 bool NalorakkBossCastsSurgeTrigger::IsActive()
@@ -154,24 +149,14 @@ bool HalazziPullingBossTrigger::IsActive()
 
 bool HalazziBossEngagedByMainTankTrigger::IsActive()
 {
-    if (!botAI->IsTank(bot))
-        return false;
-
-    if (!AI_VALUE2(Unit*, "find target", "halazzi"))
-        return false;
-
-    return botAI->IsMainTank(bot);
+    return botAI->IsMainTank(bot) &&
+           AI_VALUE2(Unit*, "find target", "halazzi");
 }
 
 bool HalazziBossSummonsSpiritLynxTrigger::IsActive()
 {
-    if (!botAI->IsTank(bot))
-        return false;
-
-    if (!AI_VALUE2(Unit*, "find target", "halazzi"))
-        return false;
-
-    return botAI->IsAssistTankOfIndex(bot, 0, true);
+    return botAI->IsAssistTankOfIndex(bot, 0, true) &&
+           AI_VALUE2(Unit*, "find target", "halazzi");
 }
 
 bool HalazziDeterminingDpsTargetTrigger::IsActive()
@@ -273,10 +258,7 @@ bool ZuljinBossIsChannelingWhirlwindInTrollFormTrigger::IsActive()
     if (!zuljin || !zuljin->HasAura(SPELL_WHIRLWIND))
         return false;
 
-    if (botAI->IsTank(bot) && zuljin->GetVictim() == bot)
-        return false;
-
-    return true;
+    return (botAI->IsTank(bot) && zuljin->GetVictim() == bot);
 }
 
 bool ZuljinBossIsSummoningCyclonesInEagleFormTrigger::IsActive()

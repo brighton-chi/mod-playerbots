@@ -27,13 +27,8 @@ bool RageWinterchillPullingBossTrigger::IsActive()
 
 bool RageWinterchillBossEngagedByMainTankTrigger::IsActive()
 {
-    if (!botAI->IsTank(bot))
-        return false;
-
-    if (!AI_VALUE2(Unit*, "find target", "rage winterchill"))
-        return false;
-
-    return botAI->IsMainTank(bot);
+    return botAI->IsMainTank(bot) &&
+           AI_VALUE2(Unit*, "find target", "rage winterchill");
 }
 
 bool RageWinterchillBossCastsDeathAndDecayTrigger::IsActive()
@@ -46,21 +41,14 @@ bool RageWinterchillBossCastsDeathAndDecayTrigger::IsActive()
 
 bool AnetheronPullingBossOrInfernalTrigger::IsActive()
 {
-    if (bot->getClass() != CLASS_HUNTER)
-        return false;
-
-    return AI_VALUE2(Unit*, "find target", "anetheron");
+    return bot->getClass() == CLASS_HUNTER &&
+           AI_VALUE2(Unit*, "find target", "anetheron");
 }
 
 bool AnetheronBossEngagedByMainTankTrigger::IsActive()
 {
-    if (!botAI->IsTank(bot))
-        return false;
-
-    if (!AI_VALUE2(Unit*, "find target", "anetheron"))
-        return false;
-
-    return botAI->IsMainTank(bot);
+    return botAI->IsMainTank(bot) &&
+           AI_VALUE2(Unit*, "find target", "anetheron");
 }
 
 bool AnetheronBossCastsCarrionSwarmTrigger::IsActive()
@@ -84,7 +72,7 @@ bool AnetheronBotIsTargetedByInfernalTrigger::IsActive()
     if (!anetheron)
         return false;
 
-    if (botAI->IsTank(bot) && botAI->IsMainTank(bot))
+    if (botAI->IsMainTank(bot))
         return false;
 
     return GetInfernoTarget(anetheron) == bot;
@@ -92,13 +80,8 @@ bool AnetheronBotIsTargetedByInfernalTrigger::IsActive()
 
 bool AnetheronInfernalsNeedToBeKeptAwayFromRaidTrigger::IsActive()
 {
-    if (!botAI->IsTank(bot))
-        return false;
-
-    if (!AI_VALUE2(Unit*, "find target", "towering infernal"))
-        return false;
-
-    return botAI->IsAssistTankOfIndex(bot, 0, true);
+    return botAI->IsAssistTankOfIndex(bot, 0, true) &&
+           AI_VALUE2(Unit*, "find target", "towering infernal");
 }
 
 bool AnetheronInfernalsContinueToSpawnTrigger::IsActive()
@@ -120,18 +103,13 @@ bool KazrogalPullingBossTrigger::IsActive()
 
 bool KazrogalBossEngagedByMainTankTrigger::IsActive()
 {
-    if (!botAI->IsTank(bot))
-        return false;
-
-    if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
-        return false;
-
-    return botAI->IsMainTank(bot);
+    return botAI->IsMainTank(bot) &&
+           AI_VALUE2(Unit*, "find target", "kaz'rogal");
 }
 
 bool KazrogalBossEngagedByAssistTanksTrigger::IsActive()
 {
-    if (!botAI->IsTank(bot) || !botAI->IsAssistTank(bot))
+    if (!botAI->IsAssistTank(bot))
         return false;
 
     Unit* kazrogal = AI_VALUE2(Unit*, "find target", "kaz'rogal");
@@ -210,13 +188,8 @@ bool AzgalorPullingBossTrigger::IsActive()
 
 bool AzgalorBossEngagedByMainTankTrigger::IsActive()
 {
-    if (!botAI->IsTank(bot))
-        return false;
-
-    if (!AI_VALUE2(Unit*, "find target", "azgalor"))
-        return false;
-
-    return botAI->IsMainTank(bot);
+    return botAI->IsMainTank(bot) &&
+           AI_VALUE2(Unit*, "find target", "azgalor");
 }
 
 // Spread to mitigate Rain of Fire, but GTFO if Rain of Fire is on the bot
@@ -225,10 +198,10 @@ bool AzgalorBossCastsRainOfFireTrigger::IsActive()
     if (!botAI->IsRanged(bot))
         return false;
 
-    if (bot->HasAura(SPELL_RAIN_OF_FIRE) || bot->HasAura(SPELL_DOOM))
+    if (!AI_VALUE2(Unit*, "find target", "azgalor"))
         return false;
 
-    return AI_VALUE2(Unit*, "find target", "azgalor");
+    return !bot->HasAura(SPELL_DOOM);
 }
 
 bool AzgalorBotIsDoomedTrigger::IsActive()
@@ -238,15 +211,11 @@ bool AzgalorBotIsDoomedTrigger::IsActive()
 
 bool AzgalorDoomguardsMustBeControlledTrigger::IsActive()
 {
-    if (!botAI->IsTank(bot))
+    if (!botAI->IsAssistTankOfIndex(bot, 0, true))
         return false;
 
-    if (!AI_VALUE2(Unit*, "find target", "lesser doomguard") &&
-        !AnyGroupMemberHasDoom(bot))
-        return false;
-
-    // Expensive role check last
-    return botAI->IsAssistTankOfIndex(bot, 0, true);
+    return AI_VALUE2(Unit*, "find target", "lesser doomguard") &&
+           AnyGroupMemberHasDoom(bot);
 }
 
 bool AzgalorDoomguardsContinueToSpawnTrigger::IsActive()
@@ -286,7 +255,7 @@ bool ArchimondeBossCastsAirBurstTrigger::IsActive()
         archimonde->GetVictim() == bot)
         return false;
 
-    return !(botAI->IsTank(bot) && botAI->IsMainTank(bot));
+    return !botAI->IsMainTank(bot);
 }
 
 bool ArchimondeBossSummonedDoomfireTrigger::IsActive()

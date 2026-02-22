@@ -568,10 +568,10 @@ float IllidanStormrageWaitForDpsMultiplier::GetValue(Action* action)
     if ((phase == 1 || phase == 3) &&
         !botAI->IsMainTank(bot))
     {
-        constexpr uint8 elfPhaseDpsWaitSeconds = 3;
+        constexpr uint8 humanPhaseDpsWaitSeconds = 3;
         auto it = illidanBossDpsWaitTimer.find(instanceId);
 
-        if ((it == illidanBossDpsWaitTimer.end() || (now - it->second) < elfPhaseDpsWaitSeconds) &&
+        if ((it == illidanBossDpsWaitTimer.end() || (now - it->second) < humanPhaseDpsWaitSeconds) &&
             (dynamic_cast<AttackAction*>(action) ||
              (dynamic_cast<CastSpellAction*>(action) &&
               !dynamic_cast<CastHealingSpellAction*>(action))))

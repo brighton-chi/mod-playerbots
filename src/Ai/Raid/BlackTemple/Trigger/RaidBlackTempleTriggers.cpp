@@ -174,7 +174,7 @@ bool TeronGorefiendBossEngagedByTanksTrigger::IsActive()
 
 bool TeronGorefiendBossEngagedByRangedTrigger::IsActive()
 {
-    return botAI->IsRanged(bot) && !bot->HasAura(SPELL_SPIRITUAL_VENGEANCE) &&
+    return botAI->IsRanged(bot) /* && !bot->HasAura(SPELL_SPIRITUAL_VENGEANCE)*/ &&
            AI_VALUE2(Unit*, "find target", "teron gorefiend");
 }
 
@@ -270,13 +270,8 @@ bool GurtoggBloodboilBotHasFelRageTrigger::IsActive()
 
 bool GurtoggBloodboilNeedToManagePhaseTimerTrigger::IsActive()
 {
-    if (!botAI->IsDps(bot))
-        return false;
-
-    if (!AI_VALUE2(Unit*, "find target", "gurtogg bloodboil"))
-        return false;
-
-    return IsMechanicTrackerBot(botAI, bot, BLACK_TEMPLE_MAP_ID);
+    return IsMechanicTrackerBot(botAI, bot, BLACK_TEMPLE_MAP_ID) &&
+           AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
 }
 
 // Reliquary of Souls
@@ -339,18 +334,24 @@ bool MotherShahrazPullingBossTrigger::IsActive()
 
 bool MotherShahrazBossEngagedByTanksTrigger::IsActive()
 {
-    if (!botAI->IsTank(bot) || bot->HasAura(SPELL_FATAL_ATTRACTION))
+    if (!botAI->IsTank(bot))
         return false;
 
-    return AI_VALUE2(Unit*, "find target", "mother shahraz");
+    if (!AI_VALUE2(Unit*, "find target", "mother shahraz"))
+        return false;
+
+    return !bot->HasAura(SPELL_FATAL_ATTRACTION);
 }
 
 bool MotherShahrazSinisterBeamKnocksBackPlayersTrigger::IsActive()
 {
-    if (!botAI->IsRanged(bot) || bot->HasAura(SPELL_FATAL_ATTRACTION))
+    if (!botAI->IsRanged(bot))
         return false;
 
-    return AI_VALUE2(Unit*, "find target", "mother shahraz");
+    if (!AI_VALUE2(Unit*, "find target", "mother shahraz"))
+        return false;
+
+    return !bot->HasAura(SPELL_FATAL_ATTRACTION);
 }
 
 bool MotherShahrazBotsAreLinkedByFatalAttractionTrigger::IsActive()
@@ -371,26 +372,18 @@ bool IllidariCouncilPullingBossesTrigger::IsActive()
 
 bool IllidariCouncilGathiosEngagedByMainTankTrigger::IsActive()
 {
-    if (!botAI->IsTank(bot))
-        return false;
-
-    if (!AI_VALUE2(Unit*, "find target", "gathios the shatterer"))
-        return false;
-
-    return botAI->IsMainTank(bot);
+    return botAI->IsMainTank(bot) &&
+           AI_VALUE2(Unit*, "find target", "gathios the shatterer");
 }
 
 bool IllidariCouncilGathiosCastingJudgementOfCommandTrigger::IsActive()
 {
-    if (bot->getClass() != CLASS_WARRIOR)
+    if (bot->getClass() != CLASS_WARRIOR || !botAI->IsMainTank(bot))
         return false;
 
     Unit* gathios = AI_VALUE2(Unit*, "find target", "gathios the shatterer");
     if (!gathios || !gathios->HasAura(SPELL_SEAL_OF_COMMAND) ||
         !gathios->HasUnitState(UNIT_STATE_CASTING))
-        return false;
-
-    if (!botAI->IsMainTank(bot))
         return false;
 
     Spell* spell = gathios->GetCurrentSpell(CURRENT_GENERIC_SPELL);
@@ -403,47 +396,31 @@ bool IllidariCouncilGathiosCastingJudgementOfCommandTrigger::IsActive()
 
 bool IllidariCouncilMalandeEngagedByFirstAssistTankTrigger::IsActive()
 {
-    if (!botAI->IsTank(bot))
-        return false;
-
-    if (!AI_VALUE2(Unit*, "find target", "lady malande"))
-        return false;
-
-    return botAI->IsAssistTankOfIndex(bot, 0, false);
+    return botAI->IsAssistTankOfIndex(bot, 0, false) &&
+           AI_VALUE2(Unit*, "find target", "lady malande");
 }
 
 bool IllidariCouncilDarkshadowEngagedBySecondAssistTankTrigger::IsActive()
 {
-    if (!botAI->IsTank(bot))
+    if (!botAI->IsAssistTankOfIndex(bot, 1, false))
         return false;
 
     Unit* darkshadow = AI_VALUE2(Unit*, "find target", "veras darkshadow");
-    if (!darkshadow || darkshadow->HasAura(SPELL_VANISH))
-        return false;
-
-    return botAI->IsAssistTankOfIndex(bot, 1, false);
+    return darkshadow && !darkshadow->HasAura(SPELL_VANISH);
 }
 
 bool IllidariCouncilZerevorEngagedByMageTankTrigger::IsActive()
 {
-    if (bot->getClass() != CLASS_MAGE)
+    if (bot->getClass() != CLASS_MAGE || GetZerevorMageTank(bot) != bot)
         return false;
 
-    if (!AI_VALUE2(Unit*, "find target", "high nethermancer zerevor"))
-        return false;
-
-    return GetZerevorMageTank(bot) == bot;
+    return AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");
 }
 
 bool IllidariCouncilMageTankNeedsDedicatedHealerTrigger::IsActive()
 {
-    if (!botAI->IsHeal(bot))
-        return false;
-
-    if (!AI_VALUE2(Unit*, "find target", "high nethermancer zerevor"))
-        return false;
-
-    return botAI->IsAssistHealOfIndex(bot, 0, true);
+    return botAI->IsAssistHealOfIndex(bot, 0, true) &&
+           AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");
 }
 
 bool IllidariCouncilDeterminingDpsAssignmentsTrigger::IsActive()
