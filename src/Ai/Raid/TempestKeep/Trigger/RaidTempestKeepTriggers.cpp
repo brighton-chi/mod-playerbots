@@ -165,7 +165,7 @@ bool VoidReaverArcaneOrbIsIncomingTrigger::IsActive()
         return false;
 
     uint32 currentTime = getMSTime();
-    constexpr uint32 orbDuration = 8000;
+    constexpr uint32 orbDuration = 7000;
     constexpr float safeDistance = 22.0f;
 
     for (const auto& orb : it->second)
@@ -179,6 +179,11 @@ bool VoidReaverArcaneOrbIsIncomingTrigger::IsActive()
     }
 
     return false;
+}
+
+bool VoidReaverBotIsNotInCombatTrigger::IsActive()
+{
+    return !bot->IsInCombat();
 }
 
 // High Astromancer Solarian

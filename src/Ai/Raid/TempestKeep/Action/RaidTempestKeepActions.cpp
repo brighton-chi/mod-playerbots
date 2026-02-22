@@ -641,8 +641,6 @@ bool VoidReaverUseAggroDumpAbilityAction::Execute(Event /*event*/)
     return false;
 }
 
-// As far as I can tell, it is not possible for bots to detect Arcane Orbs
-// Therefore, this spreads out the ranged bots so as few of them as possible get hit
 bool VoidReaverSpreadRangedAction::Execute(Event /*event*/)
 {
     Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
@@ -654,42 +652,50 @@ bool VoidReaverSpreadRangedAction::Execute(Event /*event*/)
         return false;
 
     ObjectGuid guid = bot->GetGUID();
-    if (hasReachedVoidReaverPosition[guid])
-        return false;
 
-    int healerCount = 0, rangedDpsCount = 0;
-    int healerIndex = GetHealerIndex(group, healerCount);
-    int rangedDpsIndex = GetRangedDpsIndex(group, rangedDpsCount);
-
-    // Void Reaver's hitbox is 15 yards (GetDistance2d() of 16.5 yards for non-Tauren)
-    constexpr float radius = 41.0f;
-    float targetX = 0.0f;
-    float targetY = 0.0f;
-
-    if (healerIndex != -1 && healerCount > 0)
+    if (!hasReachedVoidReaverPosition[guid])
     {
-        float angle = 2 * M_PI * healerIndex / healerCount;
-        targetX = voidReaver->GetPositionX() + radius * std::cos(angle);
-        targetY = voidReaver->GetPositionY() + radius * std::sin(angle);
-    }
-    else if (rangedDpsIndex != -1 && rangedDpsCount > 0)
-    {
-        float angle = 2 * M_PI * rangedDpsIndex / rangedDpsCount;
-        if (healerCount > 0)
-            angle += M_PI / rangedDpsCount;
+        int healerCount = 0, rangedDpsCount = 0;
+        int healerIndex = GetHealerIndex(group, healerCount);
+        int rangedDpsIndex = GetRangedDpsIndex(group, rangedDpsCount);
 
-        targetX = voidReaver->GetPositionX() + radius * std::cos(angle);
-        targetY = voidReaver->GetPositionY() + radius * std::sin(angle);
-    }
+        // Void Reaver's hitbox is 15 yards (GetDistance2d() of 16.5 yards for non-Tauren)
+        constexpr float radius = 45.0f;
+        float targetX = 0.0f;
+        float targetY = 0.0f;
 
-    if (bot->GetExactDist2d(targetX, targetY) > 2.0f)
-    {
-        return MoveTo(TEMPEST_KEEP_MAP_ID, targetX, targetY, bot->GetPositionZ(), false,
-                    false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+        if (healerIndex != -1 && healerCount > 0)
+        {
+            float angle = 2 * M_PI * healerIndex / healerCount;
+            targetX = voidReaver->GetPositionX() + radius * std::cos(angle);
+            targetY = voidReaver->GetPositionY() + radius * std::sin(angle);
+        }
+        else if (rangedDpsIndex != -1 && rangedDpsCount > 0)
+        {
+            float angle = 2 * M_PI * rangedDpsIndex / rangedDpsCount;
+            if (healerCount > 0)
+                angle += M_PI / rangedDpsCount;
+
+            targetX = voidReaver->GetPositionX() + radius * std::cos(angle);
+            targetY = voidReaver->GetPositionY() + radius * std::sin(angle);
+        }
+
+        if (bot->GetExactDist2d(targetX, targetY) > 2.0f)
+        {
+            return MoveTo(TEMPEST_KEEP_MAP_ID, targetX, targetY, bot->GetPositionZ(), false,
+                          false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+        }
+        else
+        {
+            hasReachedVoidReaverPosition[guid] = true;
+        }
     }
     else
     {
-        hasReachedVoidReaverPosition[guid] = true;
+        constexpr float safeDistance = 20.0f;
+        constexpr uint32 minInterval = 1000;
+        if (bot->GetDistance2d(voidReaver) < safeDistance)
+            return FleePosition(voidReaver->GetPosition(), safeDistance, minInterval);
     }
 
     return false;
@@ -731,17 +737,20 @@ int VoidReaverSpreadRangedAction::GetRangedDpsIndex(Group* group, int& rangedDps
 
 bool VoidReaverAvoidArcaneOrbAction::Execute(Event /*event*/)
 {
+    Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
+    if (!voidReaver)
+        return false;
+
     auto it = voidReaverArcaneOrbs.find(bot->GetMap()->GetInstanceId());
     if (it == voidReaverArcaneOrbs.end() || it->second.empty())
         return false;
 
     uint32 currentTime = getMSTime();
-    constexpr uint32 orbDuration = 8000;
+    constexpr uint32 orbDuration = 7000;
     constexpr float safeDistance = 22.0f;
     bool shouldFlee = false;
     Position fleeDest;
 
-    // Check all active orbs in this instance
     for (const auto& orb : it->second)
     {
         if (getMSTimeDiff(orb.castTime, currentTime) <= orbDuration)
@@ -751,20 +760,15 @@ bool VoidReaverAvoidArcaneOrbAction::Execute(Event /*event*/)
             {
                 shouldFlee = true;
                 fleeDest = orb.destination;
-                break; // Found a threat, no need to check the rest for fleeing
+                break;
             }
         }
     }
 
-    // Clean up the expired orbs
     it->second.erase(std::remove_if(it->second.begin(), it->second.end(),
         [currentTime](const ArcaneOrbData& orb) {
             return getMSTimeDiff(orb.castTime, currentTime) > orbDuration;
         }), it->second.end());
-
-    // If the map entry is completely empty, we can remove the instanceId entirely to prevent memory leaks over time
-    if (it->second.empty())
-        voidReaverArcaneOrbs.erase(it);
 
     if (shouldFlee)
     {
@@ -775,6 +779,23 @@ bool VoidReaverAvoidArcaneOrbAction::Execute(Event /*event*/)
     }
 
     return false;
+}
+
+bool VoidReaverEraseTrackersAction::Execute(Event /*event*/)
+{
+    Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
+    if (voidReaver)
+        return false;
+
+    bool erased = false;
+
+    if (voidReaverArcaneOrbs.erase(bot->GetMap()->GetInstanceId()))
+        erased = true;
+
+    if (hasReachedVoidReaverPosition.erase(bot->GetGUID()))
+        erased = true;
+
+    return erased;
 }
 
 // High Astromancer Solarian

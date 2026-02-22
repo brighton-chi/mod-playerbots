@@ -123,13 +123,6 @@ float VoidReaverMaintainPositionsMultiplier::GetValue(Action* action)
         !dynamic_cast<SetBehindTargetAction*>(action))
         return 0.0f;
 
-    if (botAI->IsRanged(bot) &&
-        (dynamic_cast<FleeAction*>(action) ||
-         dynamic_cast<CastBlinkBackAction*>(action) ||
-         dynamic_cast<CastDisengageAction*>(action) ||
-         dynamic_cast<ReachTargetAction*>(action)))
-        return 0.0f;
-
     return 1.0f;
 }
 

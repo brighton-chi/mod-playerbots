@@ -123,6 +123,14 @@ public:
     bool IsActive() override;
 };
 
+class VoidReaverBotIsNotInCombatTrigger : public Trigger
+{
+public:
+    VoidReaverBotIsNotInCombatTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "void reaver bot is not in combat") {}
+    bool IsActive() override;
+};
+
 // High Astromancer Solarian
 
 class HighAstromancerSolarianBossCastsWrathOfTheAstromancerTrigger : public Trigger

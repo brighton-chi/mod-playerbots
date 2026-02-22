@@ -54,6 +54,9 @@ public:
         creators["void reaver arcane orb is incoming"] =
             &RaidTempestKeepTriggerContext::void_reaver_arcane_orb_is_incoming;
 
+        creators["void reaver bot is not in combat"] =
+            &RaidTempestKeepTriggerContext::void_reaver_bot_is_not_in_combat;
+
         // High Astromancer Solarian
         creators["high astromancer solarian boss casts wrath of the astromancer"] =
             &RaidTempestKeepTriggerContext::high_astromancer_solarian_boss_casts_wrath_of_the_astromancer;
@@ -177,6 +180,9 @@ private:
 
     static Trigger* void_reaver_arcane_orb_is_incoming(
         PlayerbotAI* botAI) { return new VoidReaverArcaneOrbIsIncomingTrigger(botAI); }
+
+    static Trigger* void_reaver_bot_is_not_in_combat(
+        PlayerbotAI* botAI) { return new VoidReaverBotIsNotInCombatTrigger(botAI); }
 
     // High Astromancer Solarian
     static Trigger* high_astromancer_solarian_boss_casts_wrath_of_the_astromancer(
