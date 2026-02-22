@@ -566,7 +566,7 @@ bool TheLurkerBelowSpreadRangedInArcAction::Execute(Event /*event*/)
 
         float angle = (count == 1) ? arcCenter :
             (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
-        constexpr float radius = 28.0f;
+        constexpr float radius = 27.0f;
 
         float targetX = lurker->GetPositionX() + radius * std::sin(angle);
         float targetY = lurker->GetPositionY() + radius * std::cos(angle);
@@ -1830,7 +1830,7 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
                 break;
 
             case NPC_TOXIC_SPOREBAT:
-                if (!sporebat || bot->GetExactDist2d(unit) < bot->GetExactDist2d(sporebat))
+                if (!sporebat || bot->GetDistance(unit) < bot->GetDistance(sporebat))
                     sporebat = unit;
                 break;
 
@@ -1926,7 +1926,7 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
 
     // If bots have wandered too far from the center, move them back
     if (bot->GetExactDist2d(vashj) > maxPursueRange)
-        return MoveTo(vashj, maxPursueRange - 10.0f, MovementPriority::MOVEMENT_COMBAT);
+        return MoveTo(vashj, maxPursueRange - 10.0f, MovementPriority::MOVEMENT_FORCED);
 
     return false;
 }
@@ -2729,16 +2729,21 @@ bool LadyVashjAvoidToxicSporesAction::Execute(Event /*event*/)
     if (!inDanger)
         return false;
 
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (!vashj)
+        return false;
+
     const Position& vashjCenter = VASHJ_PLATFORM_CENTER_POSITION;
     constexpr float maxRadius = 60.0f;
 
     Position safestPos = FindSafestNearbyPosition(spores, vashjCenter, maxRadius, hazardRadius);
+    bool backwards = vashj->GetVictim() == bot;
+    MovementPriority priority = backwards ?
+        MovementPriority::MOVEMENT_FORCED : MovementPriority::MOVEMENT_COMBAT;
 
-    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    bool backwards = (vashj && vashj->GetVictim() == bot);
     return MoveTo(SSC_MAP_ID, safestPos.GetPositionX(), safestPos.GetPositionY(),
                   safestPos.GetPositionZ(), false, false, false, true,
-                  MovementPriority::MOVEMENT_COMBAT, true, backwards);
+                  priority, true, backwards);
 }
 
 Position LadyVashjAvoidToxicSporesAction::FindSafestNearbyPosition(
@@ -2838,7 +2843,7 @@ std::vector<Unit*> LadyVashjAvoidToxicSporesAction::GetAllSporeDropTriggers(Play
 {
     std::vector<Unit*> sporeDropTriggers;
     std::list<Creature*> creatureList;
-    constexpr float searchRadius = 30.0f;
+    constexpr float searchRadius = 50.0f;
 
     bot->GetCreatureListWithEntryInGrid(creatureList, NPC_SPORE_DROP_TRIGGER, searchRadius);
 

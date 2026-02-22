@@ -613,7 +613,7 @@ bool VoidReaverTanksPositionBossAction::Execute(Event /*event*/)
         float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
         return MoveTo(TEMPEST_KEEP_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
-                      false, false, false, MovementPriority::MOVEMENT_FORCED, true, true);
+                      false, false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
     }
 
     return false;
@@ -1571,7 +1571,7 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::LootWeapon(
     constexpr float distFromObject = 2.0f;
 
     if (bot->GetDistance(weapon) > maxLootRange)
-        return MoveTo(weapon, distFromObject, MovementPriority::MOVEMENT_FORCED);
+        return MoveTo(weapon, distFromObject, MovementPriority::MOVEMENT_COMBAT);
 
     OpenLootAction open(botAI);
     bool opened = open.Execute(Event());

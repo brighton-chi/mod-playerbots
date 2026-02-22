@@ -756,7 +756,8 @@ float LadyVashjDisableAutomaticTargetingAndMovementModifier::GetValue(Action *ac
 
     if (IsLadyVashjInPhase3(botAI))
     {
-        if (dynamic_cast<DpsAssistAction*>(action))
+        if (dynamic_cast<DpsAssistAction*>(action) ||
+            dynamic_cast<TankAssistAction*>(action))
             return 0.0f;
 
         Unit* enchanted = AI_VALUE2(Unit*, "find target", "enchanted elemental");
@@ -764,8 +765,7 @@ float LadyVashjDisableAutomaticTargetingAndMovementModifier::GetValue(Action *ac
         Unit* elite = AI_VALUE2(Unit*, "find target", "coilfang elite");
         if (enchanted || strider || elite)
         {
-            if (dynamic_cast<TankAssistAction*>(action) ||
-                dynamic_cast<FollowAction*>(action) ||
+            if (dynamic_cast<FollowAction*>(action) ||
                 dynamic_cast<FleeAction*>(action))
                 return 0.0f;
 
