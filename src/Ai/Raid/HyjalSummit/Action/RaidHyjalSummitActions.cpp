@@ -237,10 +237,6 @@ bool AnetheronMainTankPositionBossAction::Execute(Event /*event*/)
 
 bool AnetheronSpreadRangedInArcAction::Execute(Event /*event*/)
 {
-    Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
-    if (!anetheron)
-        return false;
-
     Group* group = bot->GetGroup();
     if (!group)
         return false;
@@ -306,7 +302,7 @@ bool AnetheronSpreadRangedInArcAction::Execute(Event /*event*/)
             hasReachedAnetheronPosition[guid] = true;
         }
     }
-    else // untested--what should happen after reaching position?
+    else
     {
         constexpr float safeDistFromPlayer = 6.0f;
         constexpr float minInterval = 2000.0f;
@@ -700,13 +696,20 @@ bool AzgalorDisperseRangedAction::Execute(Event /*event*/)
     return false;
 }
 
+bool AzgalorMeleeDpsWaitAtSafePositionAction::Execute(Event /*event*/)
+{
+    return MoveTo(HYJAL_SUMMIT_MAP_ID, AZGALOR_DOOMGUARD_TANK_POSITION.GetPositionX(),
+                  AZGALOR_DOOMGUARD_TANK_POSITION.GetPositionY(), bot->GetPositionZ(),
+                  false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
+}
+
 bool AzgalorMoveToDoomguardTankAction::Execute(Event /*event*/)
 {
     const Position& position = AZGALOR_DOOMGUARD_TANK_POSITION;
     if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 5.0f)
     {
         return MoveTo(HYJAL_SUMMIT_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-                      position.GetPositionZ(), false, false, false, true,
+                      bot->GetPositionZ(), false, false, false, true,
                       MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
@@ -773,7 +776,8 @@ bool AzgalorAssignDpsPriorityAction::Execute(Event /*event*/)
                 return Attack(doomguard);
         }
     }
-    else if (Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor"))
+
+    if (Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor"))
     {
         SetRtiTarget(botAI, "star", azgalor);
 
@@ -829,10 +833,13 @@ bool ArchimondeSpreadToAvoidAirBurstAction::Execute(Event /*event*/)
         FleePosition(victim->GetPosition(), safeDistFromVictim, minInterval))
         return true;
 
-    Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer);
-    if (nearestPlayer && botAI->IsRanged(bot) &&
-        FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer, minInterval))
-        return true;
+    if (botAI->IsRanged(bot))
+    {
+        Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer);
+        if (nearestPlayer &&
+            FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer, minInterval))
+            return true;
+    }
 
     return false;
 }

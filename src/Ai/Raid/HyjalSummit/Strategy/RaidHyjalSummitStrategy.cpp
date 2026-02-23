@@ -59,6 +59,9 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("azgalor boss engaged by main tank", {
         NextAction("azgalor main tank position boss", ACTION_RAID + 1) }));
 
+    triggers.push_back(new TriggerNode("azgalor main tank is positioning boss", {
+        NextAction("azgalor melee dps wait at safe position", ACTION_EMERGENCY + 1) }));
+
     triggers.push_back(new TriggerNode("azgalor boss casts rain of fire", {
         NextAction("azgalor disperse ranged", ACTION_RAID + 2) }));
 

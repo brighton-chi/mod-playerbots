@@ -1054,22 +1054,34 @@ bool MotherShahrazTanksPositionBossUnderPillarAction::Execute(Event /*event*/)
     return false;
 }
 
+bool MotherShahrazMeleeDpsWaitAtSafePositionAction::Execute(Event /*event*/)
+{
+    return MoveTo(BLACK_TEMPLE_MAP_ID, SHAHRAZ_RANGED_POSITION.GetPositionX(),
+                  SHAHRAZ_RANGED_POSITION.GetPositionY(), bot->GetPositionZ(),
+                  false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
+}
+
 // This doesn't actually matter for bots since they don't take fall damage
 // But I still want to simulate actual player behavior
 bool MotherShahrazPositionRangedUnderPillarAction::Execute(Event /*event*/)
 {
     const Position& position = SHAHRAZ_RANGED_POSITION;
-    float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
-    if (distToPosition > 1.0f)
+    /* float distToPosition =
+        bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()); */
+
+    if (/* distToPosition */bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY() > 1.0f))
     {
-        float dX = position.GetPositionX() - bot->GetPositionX();
+        /* float dX = position.GetPositionX() - bot->GetPositionX();
         float dY = position.GetPositionY() - bot->GetPositionY();
         float moveDist = std::min(10.0f, distToPosition);
         float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
         float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
         return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY, bot->GetPositionZ(), false,
-                      false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+                      false, false, false, MovementPriority::MOVEMENT_FORCED, true, false); */
+        return MoveTo(BLACK_TEMPLE_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                      bot->GetPositionZ(), false, false, false, true,
+                      MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
     return false;

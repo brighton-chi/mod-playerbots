@@ -343,6 +343,19 @@ bool MotherShahrazBossEngagedByTanksTrigger::IsActive()
     return !bot->HasAura(SPELL_FATAL_ATTRACTION);
 }
 
+bool MotherShahrazTanksArePositioningBossTrigger::IsActive()
+{
+    if (!botAI->IsMelee(bot) || !botAI->IsDps(bot))
+        return false;
+
+    Unit* shahraz = AI_VALUE2(Unit*, "find target", "mother shahraz");
+    if (!shahraz || shahraz->GetHealthPct() < 90.0f)
+        return false;
+
+    return shahraz->GetDistance2d(SHAHRAZ_TANK_POSITION.GetPositionX(), 
+                                  SHAHRAZ_TANK_POSITION.GetPositionY()) > 10.0f;
+}
+
 bool MotherShahrazSinisterBeamKnocksBackPlayersTrigger::IsActive()
 {
     if (!botAI->IsRanged(bot))

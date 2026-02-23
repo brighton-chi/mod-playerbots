@@ -103,6 +103,9 @@ public:
         creators["mother shahraz tanks position boss under pillar"] =
             &RaidBlackTempleActionContext::mother_shahraz_tanks_position_boss_under_pillar;
 
+        creators["mother shahraz melee dps wait at safe position"] =
+            &RaidBlackTempleActionContext::mother_shahraz_melee_dps_wait_at_safe_position;
+
         creators["mother shahraz position ranged under pillar"] =
             &RaidBlackTempleActionContext::mother_shahraz_position_ranged_under_pillar;
 
@@ -278,6 +281,9 @@ private:
 
     static Action* mother_shahraz_tanks_position_boss_under_pillar(
         PlayerbotAI* botAI) { return new MotherShahrazTanksPositionBossUnderPillarAction(botAI); }
+
+    static Action* mother_shahraz_melee_dps_wait_at_safe_position(
+        PlayerbotAI* botAI) { return new MotherShahrazMeleeDpsWaitAtSafePositionAction(botAI); }
 
     static Action* mother_shahraz_position_ranged_under_pillar(
         PlayerbotAI* botAI) { return new MotherShahrazPositionRangedUnderPillarAction(botAI); }

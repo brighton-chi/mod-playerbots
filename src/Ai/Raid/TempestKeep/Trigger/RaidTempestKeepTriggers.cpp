@@ -165,12 +165,10 @@ bool VoidReaverArcaneOrbIsIncomingTrigger::IsActive()
 
     for (const auto& orb : it->second)
     {
-        if (getMSTimeDiff(orb.castTime, currentTime) <= orbDuration)
-        {
-            if (bot->GetExactDist2d(orb.destination.GetPositionX(),
-                                    orb.destination.GetPositionY()) < safeDistance)
-                return true;
-        }
+        if (getMSTimeDiff(orb.castTime, currentTime) <= orbDuration &&
+            bot->GetExactDist2d(orb.destination.GetPositionX(),
+                                orb.destination.GetPositionY()) < safeDistance)
+            return true;
     }
 
     return false;

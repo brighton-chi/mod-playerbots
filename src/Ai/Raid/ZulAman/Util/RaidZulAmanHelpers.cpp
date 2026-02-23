@@ -16,7 +16,7 @@ namespace ZulAmanHelpers
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (member && member->IsAlive() && member->HasAura(SPELL_ELECTRICAL_STORM))
+            if (member && member->HasAura(SPELL_ELECTRICAL_STORM))
                 return member;
         }
 

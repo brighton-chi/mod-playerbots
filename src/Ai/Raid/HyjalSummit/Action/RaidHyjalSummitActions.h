@@ -151,6 +151,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class AzgalorMeleeDpsWaitAtSafePositionAction : public MovementAction
+{
+public:
+    AzgalorMeleeDpsWaitAtSafePositionAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "azgalor melee dps wait at safe position") {}
+    bool Execute(Event event) override;
+};
+
 class AzgalorDisperseRangedAction : public MovementAction
 {
 public:

@@ -103,6 +103,9 @@ public:
         creators["mother shahraz boss engaged by tanks"] =
             &RaidBlackTempleTriggerContext::mother_shahraz_boss_engaged_by_tanks;
 
+        creators["mother shahraz tanks are positioning boss"] =
+            &RaidBlackTempleTriggerContext::mother_shahraz_tanks_are_positioning_boss;
+
         creators["mother shahraz sinister beam knocks back players"] =
             &RaidBlackTempleTriggerContext::mother_shahraz_sinister_beam_knocks_back_players;
 
@@ -278,6 +281,9 @@ private:
 
     static Trigger* mother_shahraz_boss_engaged_by_tanks(
         PlayerbotAI* botAI) { return new MotherShahrazBossEngagedByTanksTrigger(botAI); }
+
+    static Trigger* mother_shahraz_tanks_are_positioning_boss(
+        PlayerbotAI* botAI) { return new MotherShahrazTanksArePositioningBossTrigger(botAI); }
 
     static Trigger* mother_shahraz_sinister_beam_knocks_back_players(
         PlayerbotAI* botAI) { return new MotherShahrazSinisterBeamKnocksBackPlayersTrigger(botAI); }

@@ -149,6 +149,14 @@ public:
     bool IsActive() override;
 };
 
+class AzgalorMainTankIsPositioningBossTrigger : public Trigger
+{
+public:
+    AzgalorMainTankIsPositioningBossTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "azgalor main tank is positioning boss") {}
+    bool IsActive() override;
+};
+
 class AzgalorBossCastsRainOfFireTrigger : public Trigger
 {
 public:

@@ -97,6 +97,9 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("mother shahraz boss engaged by tanks", {
         NextAction("mother shahraz tanks position boss under pillar", ACTION_RAID + 1) }));
 
+    triggers.push_back(new TriggerNode("mother shahraz tanks are positioning boss", {
+        NextAction("mother shahraz melee dps wait at safe position", ACTION_EMERGENCY + 1) }));
+
     triggers.push_back(new TriggerNode("mother shahraz sinister beam knocks back players", {
         NextAction("mother shahraz position ranged under pillar", ACTION_RAID + 1) }));
 

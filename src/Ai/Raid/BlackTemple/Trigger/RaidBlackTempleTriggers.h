@@ -248,6 +248,14 @@ public:
     bool IsActive() override;
 };
 
+class MotherShahrazTanksArePositioningBossTrigger : public Trigger
+{
+public:
+    MotherShahrazTanksArePositioningBossTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "mother shahraz tanks are positioning boss") {}
+    bool IsActive() override;
+};
+
 class MotherShahrazSinisterBeamKnocksBackPlayersTrigger : public Trigger
 {
 public:

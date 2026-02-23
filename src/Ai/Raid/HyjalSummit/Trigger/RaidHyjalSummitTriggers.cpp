@@ -60,10 +60,7 @@ bool AnetheronBossCastsCarrionSwarmTrigger::IsActive()
     if (!anetheron)
         return false;
 
-    if (GetInfernoTarget(anetheron) == bot)
-        return false;
-
-    return true;
+    return GetInfernoTarget(anetheron) != bot;
 }
 
 bool AnetheronBotIsTargetedByInfernalTrigger::IsActive()
@@ -112,8 +109,7 @@ bool KazrogalBossEngagedByAssistTanksTrigger::IsActive()
     if (!botAI->IsAssistTank(bot))
         return false;
 
-    Unit* kazrogal = AI_VALUE2(Unit*, "find target", "kaz'rogal");
-    if (!kazrogal)
+    if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
         return false;
 
     return bot->GetPower(POWER_MANA) > 3000;
@@ -130,8 +126,7 @@ bool KazrogalLowManaBotsNeedEscapePathTrigger::IsActive()
     if (bot->getClass() == CLASS_DRUID && tab == DRUID_TAB_FERAL)
         return false;
 
-    Unit* kazrogal = AI_VALUE2(Unit*, "find target", "kaz'rogal");
-    if (!kazrogal)
+    if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
         return false;
 
     if (bot->getClass() == CLASS_HUNTER)
@@ -161,11 +156,10 @@ bool KazrogalBotIsLowOnManaTrigger::IsActive()
     if (bot->getClass() == CLASS_DRUID && tab == DRUID_TAB_FERAL)
         return false;
 
-    if (botAI->HasAnyAuraOf(bot, "ice block", "divine shield", nullptr))
+    if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
         return false;
 
-    Unit* kazrogal = AI_VALUE2(Unit*, "find target", "kaz'rogal");
-    if (!kazrogal)
+    if (botAI->HasAnyAuraOf(bot, "ice block", "divine shield", nullptr))
         return false;
 
     if (isBelowManaThreshold.count(bot->GetGUID()) ||
@@ -190,6 +184,19 @@ bool AzgalorBossEngagedByMainTankTrigger::IsActive()
 {
     return botAI->IsMainTank(bot) &&
            AI_VALUE2(Unit*, "find target", "azgalor");
+}
+
+bool AzgalorMainTankIsPositioningBossTrigger::IsActive()
+{
+    if (!botAI->IsMelee(bot) || !botAI->IsDps(bot))
+        return false;
+
+    Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
+    if (!azgalor || azgalor->GetHealthPct() < 90.0f)
+        return false;
+
+    return azgalor->GetDistance2d(AZGALOR_MAIN_TANK_FINAL_POSITION.GetPositionX(), 
+                                  AZGALOR_MAIN_TANK_FINAL_POSITION.GetPositionY()) > 10.0f;
 }
 
 // Spread to mitigate Rain of Fire, but GTFO if Rain of Fire is on the bot

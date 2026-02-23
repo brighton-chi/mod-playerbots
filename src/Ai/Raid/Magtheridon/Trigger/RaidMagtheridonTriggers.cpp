@@ -6,7 +6,7 @@ using namespace MagtheridonHelpers;
 
 bool MagtheridonFirstThreeChannelersEngagedByMainTankTrigger::IsActive()
 {
-    if (!botAI->IsTank(bot) || !botAI->IsMainTank(bot))
+    if (!botAI->IsMainTank(bot))
         return false;
 
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
@@ -15,7 +15,7 @@ bool MagtheridonFirstThreeChannelersEngagedByMainTankTrigger::IsActive()
 
 bool MagtheridonNWChannelerEngagedByFirstAssistTankTrigger::IsActive()
 {
-    if (!botAI->IsTank(bot) || !botAI->IsAssistTankOfIndex(bot, 0, false))
+    if (!botAI->IsAssistTankOfIndex(bot, 0, false))
         return false;
 
     return AI_VALUE2(Unit*, "find target", "magtheridon") &&
@@ -24,7 +24,7 @@ bool MagtheridonNWChannelerEngagedByFirstAssistTankTrigger::IsActive()
 
 bool MagtheridonNEChannelerEngagedBySecondAssistTankTrigger::IsActive()
 {
-    if (!botAI->IsTank(bot) || !botAI->IsAssistTankOfIndex(bot, 1, false))
+    if (!botAI->IsAssistTankOfIndex(bot, 1, false))
         return false;
 
     return AI_VALUE2(Unit*, "find target", "magtheridon") &&
@@ -66,7 +66,7 @@ bool MagtheridonBurningAbyssalSpawnedTrigger::IsActive()
 
 bool MagtheridonBossEngagedByMainTankTrigger::IsActive()
 {
-    if (!botAI->IsTank(bot) || !botAI->IsMainTank(bot))
+    if (!botAI->IsMainTank(bot))
         return false;
 
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
@@ -117,5 +117,6 @@ bool MagtheridonIncomingBlastNovaTrigger::IsActive()
 
 bool MagtheridonNeedToManageTimersAndAssignmentsTrigger::IsActive()
 {
-    return AI_VALUE2(Unit*, "find target", "magtheridon");
+    return !botAI->IsTank(bot) &&
+           AI_VALUE2(Unit*, "find target", "magtheridon");
 }

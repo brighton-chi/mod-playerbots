@@ -65,6 +65,9 @@ public:
         creators["azgalor main tank position boss"] =
             &RaidHyjalSummitActionContext::azgalor_main_tank_position_boss;
 
+        creators["azgalor melee dps wait at safe position"] =
+            &RaidHyjalSummitActionContext::azgalor_melee_dps_wait_at_safe_position;
+
         creators["azgalor disperse ranged"] =
             &RaidHyjalSummitActionContext::azgalor_disperse_ranged;
 
@@ -150,6 +153,9 @@ private:
 
     static Action* azgalor_main_tank_position_boss(
         PlayerbotAI* botAI) { return new AzgalorMainTankPositionBossAction(botAI); }
+
+    static Action* azgalor_melee_dps_wait_at_safe_position(
+        PlayerbotAI* botAI) { return new AzgalorMeleeDpsWaitAtSafePositionAction(botAI); }
 
     static Action* azgalor_disperse_ranged(
         PlayerbotAI* botAI) { return new AzgalorDisperseRangedAction(botAI); }

@@ -109,7 +109,7 @@ bool JanalaiBossCastsFlameBreathTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "jan'alai"))
         return false;
 
-    if (GetFirstAliveUnitByEntry(botAI, NPC_AMANI_DRAGONHAWK_HATCHLING))
+    if (AI_VALUE2(Unit*, "find target", "amani dragonhawk hatchling"))
         return false;
 
     constexpr float searchRadius = 40.0f;
@@ -133,7 +133,7 @@ bool JanalaiAmaniHatchersSpawnedTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "jan'alai"))
         return false;
 
-    return GetFirstAliveUnitByEntry(botAI, NPC_AMANI_HATCHER);
+    return AI_VALUE2(Unit*, "find target", "amani hatcher");
 }
 
 // Halazzi <Lynx Avatar>

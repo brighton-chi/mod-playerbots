@@ -270,6 +270,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class MotherShahrazMeleeDpsWaitAtSafePositionAction : public MovementAction
+{
+public:
+    MotherShahrazMeleeDpsWaitAtSafePositionAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "mother shahraz melee dps wait at safe position") {}
+    bool Execute(Event event) override;
+};
+
 class MotherShahrazPositionRangedUnderPillarAction : public MovementAction
 {
 public:

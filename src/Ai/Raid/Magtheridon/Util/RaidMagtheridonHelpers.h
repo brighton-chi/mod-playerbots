@@ -50,9 +50,6 @@ namespace MagtheridonHelpers
     extern const Position RANGED_SPREAD_POSITION;
     extern const Position HEALER_SPREAD_POSITION;
 
-    extern std::unordered_map<ObjectGuid, Position> initialPositions;
-    extern std::unordered_map<ObjectGuid, bool> hasReachedInitialPosition;
-
     struct CubeInfo
     {
         ObjectGuid guid;

@@ -32,9 +32,6 @@ namespace MagtheridonHelpers
         return channeler;
     }
 
-    std::unordered_map<ObjectGuid, Position> initialPositions;
-    std::unordered_map<ObjectGuid, bool> hasReachedInitialPosition;
-
     const std::vector<uint32> MANTICRON_CUBE_DB_GUIDS = { 43157, 43158, 43159, 43160, 43161 };
 
     // Get the positions of all Manticron Cubes by their database GUIDs
