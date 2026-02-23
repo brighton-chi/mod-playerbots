@@ -391,7 +391,7 @@ float IllidariCouncilWaitForDpsMultiplier::GetValue(Action* action)
     constexpr uint8 dpsWaitSeconds = 5;
 
     auto it = councilDpsWaitTimer.find(gathios->GetMap()->GetInstanceId());
-    if (it != councilDpsWaitTimer.end() || (now - it->second) >= dpsWaitSeconds)
+    if (it == councilDpsWaitTimer.end() || (now - it->second) >= dpsWaitSeconds)
         return 1.0f;
 
     if (dynamic_cast<AttackAction*>(action) ||
