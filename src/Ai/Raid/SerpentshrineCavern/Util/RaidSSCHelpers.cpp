@@ -117,13 +117,16 @@ namespace SerpentShrineCavernHelpers
         return phase2 ? phase2 : phase3;
     }
 
+    // (1) First priority is an assistant Warlock (real player or bot)
+    // (2) If no assistant Warlock, then look for any Warlock bot
     Player* GetLeotherasDemonFormTank(Player* bot)
     {
         Group* group = bot->GetGroup();
         if (!group)
             return nullptr;
 
-        // (1) First loop: Return the first assistant Warlock (real player or bot)
+        Player* fallbackWarlock = nullptr;
+
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
@@ -132,21 +135,12 @@ namespace SerpentShrineCavernHelpers
 
             if (group->IsAssistant(member->GetGUID()))
                 return member;
+
+            if (!fallbackWarlock && GET_PLAYERBOT_AI(member))
+                fallbackWarlock = member;
         }
 
-        // (2) Fall back to first found bot Warlock
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) ||
-                member->getClass() != CLASS_WARLOCK)
-                continue;
-
-            return member;
-        }
-
-        // (3) Return nullptr if none found
-        return nullptr;
+        return fallbackWarlock;
     }
 
     // Fathom-Lord Karathress

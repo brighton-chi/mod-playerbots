@@ -108,13 +108,16 @@ namespace BlackTempleHelpers
     std::unordered_map<ObjectGuid, uint8> gathiosTankStep;
     std::unordered_map<ObjectGuid, uint8> zerevorHealStep;
 
+    // (1) First priority is an assistant Mage (real player or bot)
+    // (2) If no assistant Mage, then look for any Mage bot
     Player* GetZerevorMageTank(Player* bot)
     {
         Group* group = bot->GetGroup();
         if (!group)
             return nullptr;
 
-        // (1) Look for an assistant Mage (real player or bot)
+        Player* fallbackMage = nullptr;
+
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
@@ -123,21 +126,12 @@ namespace BlackTempleHelpers
 
             if (group->IsAssistant(member->GetGUID()))
                 return member;
+
+            if (!fallbackMage && GET_PLAYERBOT_AI(member))
+                fallbackMage = member;
         }
 
-        // (2) Fall back to first bot Mage found
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) ||
-                member->getClass() != CLASS_MAGE)
-                continue;
-
-            return member;
-        }
-
-        // (3) Return nullptr if none found
-        return nullptr;
+        return fallbackMage;
     }
 
     bool HasDangerousCouncilAura(Unit* unit)
@@ -330,13 +324,16 @@ namespace BlackTempleHelpers
         return { eastFlame, westFlame };
     }
 
+    // (1) First priority is an assistant Warlock (real player or bot)
+    // (2) If no assistant Warlock, then look for any Warlock bot
     Player* GetIllidanWarlockTank(Player* bot)
     {
         Group* group = bot->GetGroup();
         if (!group)
             return nullptr;
 
-        // (1) Look for an assistant Warlock (real player or bot)
+        Player* fallbackWarlock = nullptr;
+
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
@@ -345,21 +342,12 @@ namespace BlackTempleHelpers
 
             if (group->IsAssistant(member->GetGUID()))
                 return member;
+
+            if (!fallbackWarlock && GET_PLAYERBOT_AI(member))
+                fallbackWarlock = member;
         }
 
-        // (2) Fall back to first bot Warlock found
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) ||
-                member->getClass() != CLASS_WARLOCK)
-                continue;
-
-            return member;
-        }
-
-        // (3) Return nullptr if none found
-        return nullptr;
+        return fallbackWarlock;
     }
 
     EyeBlastDangerArea GetEyeBlastDangerArea(PlayerbotAI* botAI, Player* bot, Unit* illidan)

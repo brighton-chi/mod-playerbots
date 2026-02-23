@@ -362,12 +362,12 @@ float IllidariCouncilManageInterruptsMultiplier::GetValue(Action* action)
         (dynamic_cast<CastKickAction*>(action) ||
          dynamic_cast<CastPummelAction*>(action) ||
          dynamic_cast<CastShieldBashAction*>(action)))
-         return 0.0f;
+        return 0.0f;
 
     if (malande->HasAura(SPELL_BLESSING_OF_SPELL_WARDING) &&
         (dynamic_cast<CastWindShearAction*>(action) ||
          dynamic_cast<CastWindShearOnEnemyHealerAction*>(action)))
-         return 0.0f;
+        return 0.0f;
 
     return 1.0f;
 }
@@ -397,7 +397,7 @@ float IllidariCouncilWaitForDpsMultiplier::GetValue(Action* action)
     if (dynamic_cast<AttackAction*>(action) ||
         (dynamic_cast<CastSpellAction*>(action) &&
          !dynamic_cast<CastHealingSpellAction*>(action)))
-         return 0.0f;
+        return 0.0f;
 
     return 1.0f;
 }
@@ -416,7 +416,7 @@ float IllidanStormrageDelayCooldownsMultiplier::GetValue(Action* action)
     if (illidan->GetHealthPct() > 62.0f &&
         (dynamic_cast<CastHeroismAction*>(action) ||
          dynamic_cast<CastBloodlustAction*>(action)))
-         return 0.0f;
+        return 0.0f;
 
     if (illidan->GetHealthPct() <= 62.0f || illidan->GetHealthPct() > 95.0f)
         return 1.0f;
@@ -476,7 +476,9 @@ float IllidanStormrageControlMovementMultiplier::GetValue(Action* action)
         if  ((dynamic_cast<MovementAction*>(action) &&
               !dynamic_cast<IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction*>(action)) ||
               dynamic_cast<CastHealingSpellAction*>(action))
-              return 0.0f;
+        {
+            return 0.0f;
+        }
     }
 
     return 1.0f;
