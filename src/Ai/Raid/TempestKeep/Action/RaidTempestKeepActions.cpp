@@ -258,7 +258,7 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase1Embers(Unit* alar)
             else
             {
                 constexpr float safeDistance = 16.0f;
-                if (GetNearestNonTankPlayerInRadius(botAI, bot, safeDistance))
+                if (GetNearestPlayerInRadius(bot, safeDistance))
                     return MoveFromGroup(safeDistance);
             }
         }

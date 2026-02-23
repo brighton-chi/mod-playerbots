@@ -107,13 +107,8 @@ bool AlarPhase2EncounterIsAtRoomCenterTrigger::IsActive()
 
 bool AlarStrategyChangesBetweenPhasesTrigger::IsActive()
 {
-    if (!botAI->IsDps(bot))
-        return false;
-
-    if (!AI_VALUE2(Unit*, "find target", "al'ar"))
-        return false;
-
-    return IsMechanicTrackerBot(botAI, bot, TEMPEST_KEEP_MAP_ID);
+    return botAI->IsDps(bot) && IsMechanicTrackerBot(botAI, bot, TEMPEST_KEEP_MAP_ID) &&
+           AI_VALUE2(Unit*, "find target", "al'ar");
 }
 
 // Void Reaver
@@ -348,9 +343,8 @@ bool KaelthasSunstriderBotsHaveSpecificRolesInPhase3Trigger::IsActive()
     if (!kaelAI || kaelAI->GetPhase() != PHASE_ALL_ADVISORS)
         return false;
 
-    return (botAI->IsHeal(bot) && botAI->IsAssistHealOfIndex(bot, 0, true)) ||
-           (botAI->IsTank(bot) &&
-            (botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0, true))) ||
+    return botAI->IsAssistHealOfIndex(bot, 0, true) ||
+           botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0, true) ||
            (bot->getClass() == CLASS_WARLOCK && GetCapernianTank(bot) == bot);
 }
 
