@@ -151,11 +151,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class AzgalorMeleeDpsWaitAtSafePositionAction : public MovementAction
+class AzgalorMeleeWaitAtSafePositionAction : public MovementAction
 {
 public:
-    AzgalorMeleeDpsWaitAtSafePositionAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "azgalor melee dps wait at safe position") {}
+    AzgalorMeleeWaitAtSafePositionAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "azgalor melee wait at safe position") {}
     bool Execute(Event event) override;
 };
 

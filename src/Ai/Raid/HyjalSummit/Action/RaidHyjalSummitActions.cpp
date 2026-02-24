@@ -85,7 +85,7 @@ bool RageWinterchillMainTankPositionBossAction::Execute(Event /*event*/)
             float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
             return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, bot->GetPositionZ(), false,
-                          false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
+                          false, false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
 
@@ -121,7 +121,7 @@ bool RageWinterchillSpreadRangedInCircleAction::Execute(Event /*event*/)
     {
         size_t count = healers.size() + rangedDps.size();
         size_t botIndex = 0;
-        float radius = 0.0f;
+        const float radius = botAI->IsHeal(bot) ? 25.0f : 35.0f;
         float angle = 0.0f;
 
         constexpr float arcSpan = 2.0f * M_PI;
@@ -132,14 +132,12 @@ bool RageWinterchillSpreadRangedInCircleAction::Execute(Event /*event*/)
         {
             auto findIt = std::find(healers.begin(), healers.end(), bot);
             botIndex = (findIt != healers.end()) ? std::distance(healers.begin(), findIt) : 0;
-            radius = 25.0f;
             count = healers.size();
         }
         else
         {
             auto findIt = std::find(rangedDps.begin(), rangedDps.end(), bot);
             botIndex = (findIt != rangedDps.end()) ? std::distance(rangedDps.begin(), findIt) : 0;
-            radius = 35.0f;
             count = rangedDps.size();
         }
 
@@ -228,7 +226,7 @@ bool AnetheronMainTankPositionBossAction::Execute(Event /*event*/)
             float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
             return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-                          false, true, MovementPriority::MOVEMENT_FORCED, true, false);
+                          false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
 
@@ -264,7 +262,7 @@ bool AnetheronSpreadRangedInArcAction::Execute(Event /*event*/)
     {
         size_t count = healers.size() + rangedDps.size();
         size_t botIndex = 0;
-        float radius = 0.0f;
+        const float radius = botAI->IsHeal(bot) ? 27.0f : 34.0f;
         float angle = 0.0f;
 
         constexpr float arcSpan = 3.0f * M_PI / 2.0f;
@@ -275,14 +273,12 @@ bool AnetheronSpreadRangedInArcAction::Execute(Event /*event*/)
         {
             auto findIt = std::find(healers.begin(), healers.end(), bot);
             botIndex = (findIt != healers.end()) ? std::distance(healers.begin(), findIt) : 0;
-            radius = 27.0f;
             count = healers.size();
         }
         else
         {
             auto findIt = std::find(rangedDps.begin(), rangedDps.end(), bot);
             botIndex = (findIt != rangedDps.end()) ? std::distance(rangedDps.begin(), findIt) : 0;
-            radius = 34.0f;
             count = rangedDps.size();
         }
 
@@ -305,7 +301,7 @@ bool AnetheronSpreadRangedInArcAction::Execute(Event /*event*/)
     else
     {
         constexpr float safeDistFromPlayer = 6.0f;
-        constexpr float minInterval = 2000.0f;
+        constexpr uint32 minInterval = 2000;
         if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
             return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer, minInterval);
     }
@@ -373,7 +369,7 @@ bool AnetheronFirstAssistTankPickUpInfernalsAction::Execute(Event /*event*/)
             float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
             return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-                          false, true, MovementPriority::MOVEMENT_FORCED, true, true);
+                          false, true, MovementPriority::MOVEMENT_COMBAT, true, true);
         }
     }
 
@@ -475,7 +471,7 @@ bool KazrogalMainTankPositionBossAction::Execute(Event /*event*/)
             float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
             return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-                          false, true, MovementPriority::MOVEMENT_FORCED, true, true);
+                          false, true, MovementPriority::MOVEMENT_COMBAT, true, true);
         }
     }
 
@@ -501,9 +497,6 @@ bool KazrogalAssistTanksMoveInFrontOfBossAction::Execute(Event /*event*/)
     return false;
 }
 
-// NEED TO TRY SOMETHING NEW: (1) POSITION AROUND KAZ'ROGAL,
-// (2) USE MAP TO TRACK MANA, THOSE WHO FALL BELOW MAX MANA BREAK FORMATION AND
-// EITHER DON'T COME BACK OR NEED TO REACH SOME THRESHOLD
 bool KazrogalSpreadRangedInArcAction::Execute(Event /*event*/)
 {
     Unit* kazrogal = AI_VALUE2(Unit*, "find target", "kaz'rogal");
@@ -529,7 +522,8 @@ bool KazrogalSpreadRangedInArcAction::Execute(Event /*event*/)
 
     size_t count = rangedMembers.size();
     auto findIt = std::find(rangedMembers.begin(), rangedMembers.end(), bot);
-    size_t botIndex = (findIt != rangedMembers.end()) ? std::distance(rangedMembers.begin(), findIt) : 0;
+    size_t botIndex = (findIt != rangedMembers.end()) ?
+        std::distance(rangedMembers.begin(), findIt) : 0;
 
     constexpr float arcSpan = 2.0f * M_PI / 3.0f;
     constexpr float arcCenter = 4.65f;
@@ -546,7 +540,7 @@ bool KazrogalSpreadRangedInArcAction::Execute(Event /*event*/)
     if (bot->GetExactDist2d(targetX, targetY) > 0.5f)
     {
         return MoveTo(HYJAL_SUMMIT_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false,
-                        false, true, MovementPriority::MOVEMENT_FORCED, true, false);
+                      false, true, MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
     return false;
@@ -584,12 +578,8 @@ bool KazrogalLowManaBotMoveFromGroupAction::Execute(Event /*event*/)
         }
 
         constexpr float safeDistance = 16.0f;
-        constexpr uint32 minInterval = 1000;
         if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
-        {
-            return FleePosition(nearestPlayer->GetPosition(), safeDistance, minInterval);
-            //return MoveFromGroup(safeDistance);
-        }
+            return MoveFromGroup(safeDistance);
     }
 
     return false;
@@ -642,7 +632,7 @@ bool AzgalorMainTankPositionBossAction::Execute(Event /*event*/)
         const Position& position = positions[step];
         float distToPosition = bot->GetExactDist2d(position);
 
-        if ((distToPosition > maxDistance) && bot->IsWithinMeleeRange(azgalor))
+        if (distToPosition > maxDistance && bot->IsWithinMeleeRange(azgalor))
         {
             float dX = position.GetPositionX() - bot->GetPositionX();
             float dY = position.GetPositionY() - bot->GetPositionY();
@@ -676,31 +666,54 @@ bool AzgalorDisperseRangedAction::Execute(Event /*event*/)
     if (!azgalor)
         return false;
 
-    constexpr uint32 minInterval = 1000;
+    const Position& position = AZGALOR_WAITING_POSITION; // tested with Doomguard position, try this one now
 
-    // Azgalor's hitbox is 8.8 yards
-    constexpr float safeDistFromBoss = 29.0f;
-    if (bot->GetExactDist2d(azgalor) < safeDistFromBoss)
-        return FleePosition(azgalor->GetPosition(), safeDistFromBoss, minInterval);
+    if (GetAzgalorTankStep(botAI, bot) < 1 && azgalor->GetHealthPct() >= 85.0f &&
+        bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 5.0f)
+    {
+        if (botAI->IsAssistHealOfIndex(bot, 0, true))
+        {
+            constexpr float safeDistFromBoss = 30.0f;
+            constexpr uint32 minInterval = 0;
+            if (bot->GetExactDist2d(azgalor) < safeDistFromBoss)
+                return FleePosition(azgalor->GetPosition(), safeDistFromBoss, minInterval);
+        }
+        else
+        {
+            return MoveTo(HYJAL_SUMMIT_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                        position.GetPositionZ(), false, false, false, true,
+                        MovementPriority::MOVEMENT_COMBAT, true, false);
+        }
+    }
+    else
+    {
+        constexpr uint32 minInterval = 1000;
 
-    // Lesser Doomguard's hitbox is 3.75 yards
-    constexpr float safeDistFromDoomguard = 14.0f;
-    if (Unit* doomguard = AI_VALUE2(Unit*, "find target", "lesser doomguard");
-        doomguard && bot->GetExactDist2d(doomguard) < safeDistFromDoomguard)
-        return FleePosition(doomguard->GetPosition(), safeDistFromDoomguard, minInterval);
+        // Azgalor's hitbox is 8.8 yards
+        constexpr float safeDistFromBoss = 29.0f;
+        if (bot->GetExactDist2d(azgalor) < safeDistFromBoss)
+            return FleePosition(azgalor->GetPosition(), safeDistFromBoss, minInterval);
 
-    constexpr float safeDistFromPlayer = 6.0f;
-    if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
-        return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer, minInterval);
+        // Lesser Doomguard's hitbox is 3.75 yards
+        constexpr float safeDistFromDoomguard = 14.0f;
+        if (Unit* doomguard = AI_VALUE2(Unit*, "find target", "lesser doomguard");
+            doomguard && bot->GetExactDist2d(doomguard) < safeDistFromDoomguard)
+            return FleePosition(doomguard->GetPosition(), safeDistFromDoomguard, minInterval);
+
+        constexpr float safeDistFromPlayer = 6.0f;
+        if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
+            return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer, minInterval);
+    }
 
     return false;
 }
 
-bool AzgalorMeleeDpsWaitAtSafePositionAction::Execute(Event /*event*/)
+bool AzgalorMeleeWaitAtSafePositionAction::Execute(Event /*event*/)
 {
-    return MoveTo(HYJAL_SUMMIT_MAP_ID, AZGALOR_DOOMGUARD_TANK_POSITION.GetPositionX(),
-                  AZGALOR_DOOMGUARD_TANK_POSITION.GetPositionY(), bot->GetPositionZ(),
-                  false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
+    const Position& position = AZGALOR_WAITING_POSITION; // tested with Doomguard position, try this one now
+    return MoveTo(HYJAL_SUMMIT_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                  position.GetPositionZ(), false, false, false, true,
+                  MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 bool AzgalorMoveToDoomguardTankAction::Execute(Event /*event*/)
@@ -709,7 +722,7 @@ bool AzgalorMoveToDoomguardTankAction::Execute(Event /*event*/)
     if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 5.0f)
     {
         return MoveTo(HYJAL_SUMMIT_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-                      bot->GetPositionZ(), false, false, false, true,
+                      position.GetPositionZ(), false, false, false, true,
                       MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
@@ -755,9 +768,8 @@ bool AzgalorFirstAssistTankPositionDoomguardAction::Execute(Event /*event*/)
         float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
         float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
-        return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, bot->GetPositionZ(),
-                      false, false, false, true, MovementPriority::MOVEMENT_FORCED,
-                      true, moveBackwards);
+        return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
+                      false, true, MovementPriority::MOVEMENT_COMBAT, true, moveBackwards);
     }
 
     return false;
@@ -776,8 +788,7 @@ bool AzgalorAssignDpsPriorityAction::Execute(Event /*event*/)
                 return Attack(doomguard);
         }
     }
-
-    if (Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor"))
+    else if (Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor"))
     {
         SetRtiTarget(botAI, "star", azgalor);
 
@@ -896,7 +907,7 @@ bool ArchimondeAvoidDoomfireAction::Execute(Event /*event*/)
         float moveY = bot->GetPositionY() + (dy / distToSafePos) * moveDist;
 
         Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
-        bool backwards = (archimonde && archimonde->GetVictim() == bot);
+        bool backwards = archimonde && archimonde->GetVictim() == bot;
 
         bot->InterruptNonMeleeSpells(true);
         return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,

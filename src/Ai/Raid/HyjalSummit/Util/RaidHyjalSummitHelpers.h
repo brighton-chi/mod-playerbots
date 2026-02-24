@@ -58,15 +58,15 @@ namespace HyjalSummitHelpers
 
     // Kaz'rogal
     extern const Position KAZROGAL_TANK_POSITION;
-    // extern std::unordered_map<ObjectGuid, Position> kazrogalRangedPositions;
-    // extern std::unordered_map<ObjectGuid, bool> hasReachedKazrogalPosition;
     extern std::unordered_map<ObjectGuid, bool> isBelowManaThreshold;
 
     // Azgalor
     extern const Position AZGALOR_MAIN_TANK_TRANSITION_POSITION;
     extern const Position AZGALOR_MAIN_TANK_FINAL_POSITION;
     extern const Position AZGALOR_DOOMGUARD_TANK_POSITION;
+    extern const Position AZGALOR_WAITING_POSITION;
     extern std::unordered_map<ObjectGuid, uint8> azgalorTankStep;
+    int GetAzgalorTankStep(PlayerbotAI* botAI, Player* bot);
     bool AnyGroupMemberHasDoom(Player* bot);
 }
 

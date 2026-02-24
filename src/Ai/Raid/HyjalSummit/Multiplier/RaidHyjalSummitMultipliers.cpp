@@ -75,8 +75,7 @@ float RageWinterchillDisableCombatFormationMoveMultiplier::GetValue(Action* acti
 
 float AnetheronDisableTankActionsMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsTank(bot) ||
-        !AI_VALUE2(Unit*, "find target", "anetheron"))
+    if (!botAI->IsTank(bot) || !AI_VALUE2(Unit*, "find target", "anetheron"))
         return 1.0f;
 
     if (dynamic_cast<AvoidAoeAction*>(action))
@@ -117,20 +116,18 @@ float AnetheronControlMisdirectionMultiplier::GetValue(Action* action)
 
 float KazrogalLowManaBotStayAwayFromGroupMultiplier::GetValue(Action* action)
 {
-    if (bot->getClass() == CLASS_WARRIOR ||
-        bot->getClass() == CLASS_ROGUE ||
-        bot->getClass() == CLASS_DEATH_KNIGHT ||
-        bot->getClass() == CLASS_HUNTER)
+    if (bot->getClass() == CLASS_WARRIOR || bot->getClass() == CLASS_ROGUE ||
+        bot->getClass() == CLASS_DEATH_KNIGHT || bot->getClass() == CLASS_HUNTER)
         return 1.0f;
 
     uint8 tab = AiFactory::GetPlayerSpecTab(bot);
     if (bot->getClass() == CLASS_DRUID && tab == DRUID_TAB_FERAL)
         return 1.0f;
-    
+
     if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
         return 1.0f;
 
-    if (botAI->IsRanged(bot) && !isBelowManaThreshold.count(bot->GetGUID()))
+    if (!isBelowManaThreshold.count(bot->GetGUID()))
         return 1.0f;
 
     if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
@@ -160,7 +157,7 @@ float KazrogalKeepAspectOfTheViperActiveMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float KazrogalDisableCombatFormationMoveMultiplier::GetValue(Action* action)
+float KazrogalControlMovementMultiplier::GetValue(Action* action)
 {
     if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
         return 1.0f;
@@ -169,35 +166,27 @@ float KazrogalDisableCombatFormationMoveMultiplier::GetValue(Action* action)
         !dynamic_cast<SetBehindTargetAction*>(action))
         return 0.0f;
 
+    if (dynamic_cast<FleeAction*>(action))
+        return 0.0f;
+
     return 1.0f;
 }
 
 // Azgalor
 
-float AzgalorDisableTankAssistMultiplier::GetValue(Action* action)
+float AzgalorDisableTankActionsMultiplier::GetValue(Action* action)
 {
-    if (bot->GetVictim() == nullptr ||
-        !botAI->IsTank(bot) ||
-        botAI->IsAssistTankOfIndex(bot, 0, true) ||
-        !AI_VALUE2(Unit*, "find target", "lesser doomguard"))
+    if (bot->GetVictim() == nullptr)
         return 1.0f;
 
-    if (dynamic_cast<TankAssistAction*>(action))
-        return 0.0f;
-
-    return 1.0f;
-}
-
-float AzgalorTanksMaintainPositionMultiplier::GetValue(Action* action)
-{
-    if ((!botAI->IsMainTank(bot) && !botAI->IsAssistTankOfIndex(bot, 0, true)) ||
-        !AI_VALUE2(Unit*, "find target", "azgalor"))
+    if (!botAI->IsTank(bot) || !AI_VALUE2(Unit*, "find target", "azgalor"))
         return 1.0f;
- 
-    if (dynamic_cast<TankFaceAction*>(action))
+
+    if (dynamic_cast<TankFaceAction*>(action) ||
+        dynamic_cast<TankAssistAction*>(action))
         return 0.0f;
 
-    if (botAI->IsMainTank(bot))
+    if (!botAI->IsAssistTankOfIndex(bot, 0, true))
         return 1.0f;
 
     if (!AI_VALUE2(Unit*, "find target", "lesser doomguard") &&
@@ -226,10 +215,10 @@ float AzgalorDoomedBotPrioritizePositioningMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+// The alternative is running in front of Azgalor and getting cleaved
 float AzgalorMeleeJustStandInFireMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsMelee(bot) ||
-        !AI_VALUE2(Unit*, "find target", "azgalor"))
+    if (!botAI->IsMelee(bot) || !AI_VALUE2(Unit*, "find target", "azgalor"))
         return 1.0f;
 
     if (dynamic_cast<AvoidAoeAction*>(action))

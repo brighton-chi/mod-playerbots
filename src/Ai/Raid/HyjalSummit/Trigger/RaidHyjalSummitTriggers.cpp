@@ -188,15 +188,14 @@ bool AzgalorBossEngagedByMainTankTrigger::IsActive()
 
 bool AzgalorMainTankIsPositioningBossTrigger::IsActive()
 {
-    if (!botAI->IsMelee(bot) || !botAI->IsDps(bot))
+    if (!botAI->IsMelee(bot) || botAI->IsMainTank(bot))
         return false;
 
     Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
-    if (!azgalor || azgalor->GetHealthPct() < 90.0f)
+    if (!azgalor || azgalor->GetHealthPct() < 85.0f || azgalor->GetVictim() == bot)
         return false;
 
-    return azgalor->GetDistance2d(AZGALOR_MAIN_TANK_FINAL_POSITION.GetPositionX(), 
-                                  AZGALOR_MAIN_TANK_FINAL_POSITION.GetPositionY()) > 10.0f;
+    return GetAzgalorTankStep(botAI, bot) < 1;
 }
 
 // Spread to mitigate Rain of Fire, but GTFO if Rain of Fire is on the bot
@@ -221,7 +220,7 @@ bool AzgalorDoomguardsMustBeControlledTrigger::IsActive()
     if (!botAI->IsAssistTankOfIndex(bot, 0, true))
         return false;
 
-    return AI_VALUE2(Unit*, "find target", "lesser doomguard") &&
+    return AI_VALUE2(Unit*, "find target", "lesser doomguard") ||
            AnyGroupMemberHasDoom(bot);
 }
 
