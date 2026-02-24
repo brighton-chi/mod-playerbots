@@ -835,6 +835,25 @@ bool ArchimondeSpreadToAvoidAirBurstAction::Execute(Event /*event*/)
     if (!archimonde)
         return false;
 
+    if (archimonde->HasUnitState(UNIT_STATE_CASTING))
+    {
+        Spell* spell = archimonde->GetCurrentSpell(CURRENT_GENERIC_SPELL);
+        if (spell && spell->m_spellInfo->Id == SPELL_AIR_BURST)
+        {
+            Player* mainTank = GetGroupMainTank(botAI, bot);
+            if (mainTank && spell->m_targets.GetUnitTarget() == mainTank)
+            {
+                float currentDistance = bot->GetDistance2d(mainTank);
+                constexpr float safeDistance = 14.0f;
+                if (currentDistance < safeDistance)
+                {
+                    botAI->Reset();
+                    return MoveAway(mainTank, safeDistance - currentDistance);
+                }
+            }
+        }
+    }
+
     constexpr float safeDistFromVictim = 16.0f;
     constexpr float safeDistFromPlayer = 8.0f;
     constexpr uint32 minInterval = 1000;
