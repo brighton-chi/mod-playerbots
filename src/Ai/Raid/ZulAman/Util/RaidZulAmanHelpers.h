@@ -79,6 +79,7 @@ namespace ZulAmanHelpers
     // Jan'alai <Dragonhawk Avatar>
     extern const Position JANALAI_TANK_POSITION;
     extern std::unordered_map<ObjectGuid, Position> janalaiRangedPositions;
+    bool HasFireBombNearby(PlayerbotAI* botAI, Player* bot);
     std::pair<Unit*, Unit*> GetAmaniHatcherPair(PlayerbotAI* botAI);
 
     // Halazzi <Lynx Avatar>

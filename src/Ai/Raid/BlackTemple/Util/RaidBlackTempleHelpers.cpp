@@ -15,8 +15,17 @@ namespace BlackTempleHelpers
 
     bool HasSupremusVolcanoNearby(PlayerbotAI* botAI, Player* bot)
     {
-        constexpr float searchRadius = 40.0f;
-        return bot->FindNearestCreature(NPC_SUPREMUS_VOLCANO, searchRadius, false);
+        constexpr float searchRadius = 20.0f;
+        std::list<Creature*> creatureList;
+        bot->GetCreatureListWithEntryInGrid(creatureList, NPC_SUPREMUS_VOLCANO, searchRadius);
+
+        for (Creature* creature : creatureList)
+        {
+            if (creature && creature->IsAlive())
+                return true;
+        }
+
+        return false;
     }
 
     // Teron Gorefiend
@@ -359,7 +368,18 @@ namespace BlackTempleHelpers
         uint8 beamPosId = illidanAI->GetBeamPosId();
 
         constexpr float searchRadius = 100.0f;
-        Unit* eyeBlastTrigger = bot->FindNearestCreature(NPC_ILLIDAN_DB_TARGET, searchRadius, false);
+        std::list<Creature*> creatureList;
+        bot->GetCreatureListWithEntryInGrid(creatureList, NPC_ILLIDAN_DB_TARGET, searchRadius);
+
+        Creature* eyeBlastTrigger = nullptr;
+        for (Creature* creature : creatureList)
+        {
+            if (creature && creature->IsAlive())
+            {
+                eyeBlastTrigger = creature;
+                break;
+            }
+        }
 
         if (!eyeBlastTrigger)
             return {};

@@ -30,6 +30,21 @@ namespace ZulAmanHelpers
     const Position JANALAI_TANK_POSITION = { -33.873f, 1149.571f, 19.146f };
     std::unordered_map<ObjectGuid, Position> janalaiRangedPositions;
 
+    bool HasFireBombNearby(PlayerbotAI* botAI, Player* bot)
+    {
+        constexpr float searchRadius = 20.0f;
+        std::list<Creature*> creatureList;
+        bot->GetCreatureListWithEntryInGrid(creatureList, NPC_FIRE_BOMB, searchRadius);
+
+        for (Creature* creature : creatureList)
+        {
+            if (creature && creature->IsAlive())
+                return true;
+        }
+
+        return false;
+    }
+
     std::pair<Unit*, Unit*> GetAmaniHatcherPair(PlayerbotAI* botAI)
     {
         Unit* lowest = nullptr;

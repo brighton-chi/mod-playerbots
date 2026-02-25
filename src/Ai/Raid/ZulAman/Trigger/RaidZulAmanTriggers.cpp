@@ -97,8 +97,7 @@ bool JanalaiBossEngagedByTanksTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "jan'alai"))
         return false;
 
-    constexpr float searchRadius = 40.0f;
-    return !bot->FindNearestCreature(NPC_FIRE_BOMB, searchRadius, true);
+    return !HasFireBombNearby(botAI, bot);
 }
 
 bool JanalaiBossCastsFlameBreathTrigger::IsActive()
@@ -112,8 +111,7 @@ bool JanalaiBossCastsFlameBreathTrigger::IsActive()
     if (AI_VALUE2(Unit*, "find target", "amani dragonhawk hatchling"))
         return false;
 
-    constexpr float searchRadius = 40.0f;
-    return !bot->FindNearestCreature(NPC_FIRE_BOMB, searchRadius, true);
+    return !HasFireBombNearby(botAI, bot);
 }
 
 bool JanalaiBossSummoningFireBombsTrigger::IsActive()
@@ -121,8 +119,7 @@ bool JanalaiBossSummoningFireBombsTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "jan'alai"))
         return false;
 
-    constexpr float searchRadius = 40.0f;
-    return bot->FindNearestCreature(NPC_FIRE_BOMB, searchRadius, true);
+    return HasFireBombNearby(botAI, bot);
 }
 
 bool JanalaiAmaniHatchersSpawnedTrigger::IsActive()
