@@ -103,7 +103,7 @@ namespace BlackTempleHelpers
         GO_NAJENTUS_SPINE = 185584,
 
         // Illidan Stormrage <The Betrayer>
-        GO_CAGE_TRAP      = 185916, // Not working, need to decide if worth it
+        GO_CAGE_TRAP      = 185916,
     };
 
     // General

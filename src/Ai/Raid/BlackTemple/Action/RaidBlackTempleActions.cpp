@@ -1066,19 +1066,8 @@ bool MotherShahrazMeleeDpsWaitAtSafePositionAction::Execute(Event /*event*/)
 bool MotherShahrazPositionRangedUnderPillarAction::Execute(Event /*event*/)
 {
     const Position& position = SHAHRAZ_RANGED_POSITION;
-    /* float distToPosition =
-        bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()); */
-
-    if (/* distToPosition */bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY() > 1.0f))
+    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY() > 1.0f))
     {
-        /* float dX = position.GetPositionX() - bot->GetPositionX();
-        float dY = position.GetPositionY() - bot->GetPositionY();
-        float moveDist = std::min(10.0f, distToPosition);
-        float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
-        float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
-
-        return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY, bot->GetPositionZ(), false,
-                      false, false, false, MovementPriority::MOVEMENT_FORCED, true, false); */
         return MoveTo(BLACK_TEMPLE_MAP_ID, position.GetPositionX(), position.GetPositionY(),
                       bot->GetPositionZ(), false, false, false, false,
                       MovementPriority::MOVEMENT_FORCED, true, false);
@@ -1728,7 +1717,7 @@ bool IllidanStormrageMainTankMoveAwayFromFlameCrashAction::Execute(Event /*event
         // End logging
 
         GameObject* nearestTrap = nullptr;
-        float maxDist = 30.0f; // Need to test what distance is worth it in terms of traps
+        float maxDist = 20.0f; // Need to test what distance is worth it in terms of traps, 30 seems too far
         for (ObjectGuid const& guid : gos)
         {
             GameObject* go = botAI->GetGameObject(guid);
@@ -2377,8 +2366,21 @@ bool IllidanStormrageDisperseRangedAction::SpreadInCircleInDemonPhase(
 
     if (bot->GetExactDist2d(targetX, targetY) > 1.0f)
     {
-        return MoveTo(BLACK_TEMPLE_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false,
-                      false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+        /* return MoveTo(BLACK_TEMPLE_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false,
+                      false, false, MovementPriority::MOVEMENT_COMBAT, true, false); */
+        // BELOW: Try a failsafe in case illidan is not centered, at least get away from Warlock tank
+        if (MoveTo(BLACK_TEMPLE_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false,
+            false, false, MovementPriority::MOVEMENT_COMBAT, true, false))
+        {
+            return true;
+        }
+        else
+        {
+            float currentDistFromTank = bot->GetExactDist2d(warlockTank);
+            constexpr float safeDistFromTank = 25.0f;
+            if (currentDistFromTank < safeDistFromTank)
+                return MoveAway(warlockTank, safeDistFromTank - currentDistFromTank);
+        }
     }
 
     return false;
@@ -2436,9 +2438,11 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
 
     Unit* shadowfiend = nullptr;
     Unit* shadowDemon = nullptr;
-    Unit* illidan = nullptr;
+    // Unit* illidan = nullptr;
 
     // 1. Find the closest of each specific add type
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+
     for (auto guid : attackers)
     {
         Unit* unit = botAI->GetUnit(guid);
@@ -2457,9 +2461,9 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
                     shadowfiend = unit;
                 break;
 
-            case NPC_ILLIDAN_STORMRAGE:
+            /* case NPC_ILLIDAN_STORMRAGE:
                 illidan = unit;
-                break;
+                break; */ // see if find target works better for melee to acquire, then i won't need the constant
 
             default:
                 break;
@@ -2513,8 +2517,13 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
     }
 
     // 4. Attack
-    if (target && bot->GetTarget() != target->GetGUID())
-        return Attack(target);
+    if (target)
+    {
+        if (botAI->IsRanged(bot) && bot->GetTarget() != target->GetGUID())
+            return Attack(target);
+        else if (bot->GetVictim() != target)
+            return Attack(target);
+    }
 
     return false;
 }

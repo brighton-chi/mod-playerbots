@@ -490,18 +490,12 @@ float IllidanStormrageDisableDefaultTargetingMultiplier::GetValue(Action* action
     if (bot->GetVictim() == nullptr)
         return 1.0f;
 
-    // if (!botAI->IsTank(bot))
-    //     return 1.0f;
     if (botAI->IsHeal(bot))
         return 1.0f;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     if (!illidan || illidan->GetHealth() == 1)
         return 1.0f;
-
-    // Issue with limit to 2/4 is it makes tanks go after Shadowfiends; can I get away with disabling?
-    // if (GetIllidanPhase(illidan) != 2 && GetIllidanPhase(illidan) != 4)
-    //     return 1.0f;
 
     if (dynamic_cast<TankAssistAction*>(action) || dynamic_cast<DpsAssistAction*>(action))
         return 0.0f;
@@ -570,10 +564,10 @@ float IllidanStormrageWaitForDpsMultiplier::GetValue(Action* action)
     if ((phase == 1 || phase == 3) &&
         !botAI->IsMainTank(bot))
     {
-        constexpr uint8 humanPhaseDpsWaitSeconds = 3;
+        constexpr uint8 humanoidPhaseDpsWaitSeconds = 2;
         auto it = illidanBossDpsWaitTimer.find(instanceId);
 
-        if ((it == illidanBossDpsWaitTimer.end() || (now - it->second) < humanPhaseDpsWaitSeconds) &&
+        if ((it == illidanBossDpsWaitTimer.end() || (now - it->second) < humanoidPhaseDpsWaitSeconds) &&
             (dynamic_cast<AttackAction*>(action) ||
              (dynamic_cast<CastSpellAction*>(action) &&
               !dynamic_cast<CastHealingSpellAction*>(action))))
