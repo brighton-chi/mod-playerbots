@@ -2431,39 +2431,41 @@ bool IllidanStormrageWarlockTankHandleDemonBossAction::Execute(Event /*event*/)
     return false;
 }
 
+// Trying using CreatureListSearcher; previous was "possible targets no los"
+// with potential "find target" for Illidan
 bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
 {
-    auto const& attackers =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets")->Get();
+    std::list<Creature*> creatureList;
+    constexpr float searchRadius = 60.0f;
+    std::vector<uint32> entries =
+        { NPC_SHADOW_DEMON, NPC_PARASITIC_SHADOWFIEND, NPC_ILLIDAN_STORMRAGE };
+    bot->GetCreatureListWithEntryInGrid(creatureList, entries, searchRadius);
 
-    Unit* shadowfiend = nullptr;
-    Unit* shadowDemon = nullptr;
-    // Unit* illidan = nullptr;
+    Creature* shadowDemon = nullptr;
+    Creature* shadowfiend = nullptr;
+    Creature* illidan = nullptr;
 
     // 1. Find the closest of each specific add type
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-
-    for (auto guid : attackers)
+    for (Creature* creature : creatureList)
     {
-        Unit* unit = botAI->GetUnit(guid);
-        if (!unit || !unit->IsAlive())
+        if (!creature || !creature->IsAlive())
             continue;
 
-        switch (unit->GetEntry())
+        switch (creature->GetEntry())
         {
             case NPC_SHADOW_DEMON:
-                if (!shadowDemon || bot->GetExactDist2d(unit) < bot->GetExactDist2d(shadowDemon))
-                    shadowDemon = unit;
+                if (!shadowDemon || bot->GetExactDist2d(creature) < bot->GetExactDist2d(shadowDemon))
+                    shadowDemon = creature;
                 break;
 
             case NPC_PARASITIC_SHADOWFIEND:
-                if (!shadowfiend || bot->GetExactDist2d(unit) < bot->GetExactDist2d(shadowfiend))
-                    shadowfiend = unit;
+                if (!shadowfiend || bot->GetExactDist2d(creature) < bot->GetExactDist2d(shadowfiend))
+                    shadowfiend = creature;
                 break;
 
-            /* case NPC_ILLIDAN_STORMRAGE:
-                illidan = unit;
-                break; */ // see if find target works better for melee to acquire, then i won't need the constant
+            case NPC_ILLIDAN_STORMRAGE:
+                illidan = creature;
+                break;
 
             default:
                 break;
@@ -2471,31 +2473,22 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
     }
 
     auto [eastFlame, westFlame] = GetFlamesOfAzzinoth(botAI, bot);
-    Player* warlockTank = GetIllidanWarlockTank(bot);
 
     // 2. Build the priority list based on Phase and Role
     std::vector<Unit*> targets;
 
     int phase = GetIllidanPhase(illidan);
-    if (phase == 2)
+    if (phase == 2 && !botAI->IsTank(bot))
     {
-        if (botAI->IsAssistTankOfIndex(bot, 1, true))
+        /* if (botAI->IsAssistTankOfIndex(bot, 1, true))
             targets = { eastFlame, westFlame };
         else if (botAI->IsAssistTankOfIndex(bot, 0, true))
             targets = { westFlame, eastFlame };
         else if (botAI->IsRanged(bot))
             targets = { shadowfiend, eastFlame, westFlame };
         else
-            targets = { eastFlame, westFlame };
-    }
-    else if (phase == 4)
-    {
-        if (botAI->IsRanged(bot) && bot != warlockTank)
-            targets = { /*shadowDemon,*/ shadowfiend, illidan };
-        else if (bot == warlockTank)
-            targets = { illidan };
-        else
-            targets = { /*shadowDemon*/ };
+            targets = { eastFlame, westFlame }; */
+        targets = { shadowfiend, eastFlame, westFlame };
     }
     else if (phase == 1 || phase == 3 || phase == 5)
     {
@@ -2503,6 +2496,15 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
             targets = { shadowfiend, illidan };
         else
             targets = { illidan };
+    }
+    else if (phase == 4)
+    {
+        if (GetIllidanWarlockTank(bot) == bot)
+            targets = { illidan };
+        else if (botAI->IsRanged(bot))
+            targets = { /*shadowDemon,*/ shadowfiend, illidan };
+        else
+            targets = { /*shadowDemon*/ };
     }
 
     // 3. Select the highest priority valid target
@@ -2571,22 +2573,17 @@ bool IllidanStormrageDestroyHazardsCheatAction::Execute(Event /*event*/)
     int phase = GetIllidanPhase(illidan);
     constexpr float searchRadius = 100.0f;
     std::list<Creature*> hazards;
+    std::vector<uint32> entries;
 
     if (phase == 2)
-    {
-        bot->GetCreatureListWithEntryInGrid(hazards, NPC_PARASITIC_SHADOWFIEND, searchRadius);
-        bot->GetCreatureListWithEntryInGrid(hazards, NPC_FLAME_CRASH, searchRadius);
-    }
+        entries = { NPC_PARASITIC_SHADOWFIEND, NPC_FLAME_CRASH };
     else if (phase == 4)
-    {
-        bot->GetCreatureListWithEntryInGrid(hazards, NPC_SHADOW_DEMON, searchRadius);
-        bot->GetCreatureListWithEntryInGrid(hazards, NPC_FLAME_CRASH, searchRadius);
-    }
+        entries = { NPC_SHADOW_DEMON, NPC_FLAME_CRASH };
     else if (phase == 0)
-    {
-        bot->GetCreatureListWithEntryInGrid(hazards, NPC_DEMON_FIRE, searchRadius);
-        bot->GetCreatureListWithEntryInGrid(hazards, NPC_BLAZE, searchRadius);
-    }
+        entries = { NPC_DEMON_FIRE, NPC_BLAZE };
+
+    if (!entries.empty())
+        bot->GetCreatureListWithEntryInGrid(hazards, entries, searchRadius);
 
     bool destroyed = false;
 
