@@ -195,7 +195,7 @@ bool AzgalorMainTankIsPositioningBossTrigger::IsActive()
     if (!azgalor || azgalor->GetHealthPct() < 85.0f || azgalor->GetVictim() == bot)
         return false;
 
-    return GetAzgalorTankStep(botAI, bot) < 1;
+    return GetAzgalorTankStep(botAI, bot) < 2;
 }
 
 // Spread to mitigate Rain of Fire, but GTFO if Rain of Fire is on the bot
