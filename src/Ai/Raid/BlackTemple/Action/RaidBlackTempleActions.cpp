@@ -308,7 +308,7 @@ bool SupremusMoveAwayFromVolcanosAction::Execute(Event /*event*/)
     if (volcanos.empty())
         return false;
 
-    constexpr float hazardRadius = 14.0f;
+    constexpr float hazardRadius = 16.0f;
     bool inDanger = false;
     for (Unit* volcano : volcanos)
     {
