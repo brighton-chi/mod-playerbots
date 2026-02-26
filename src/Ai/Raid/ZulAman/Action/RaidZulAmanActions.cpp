@@ -666,63 +666,6 @@ bool HexLordMalacrassAssignDpsPriorityAction::Execute(Event event)
     return false;
 }
 
-bool HexLordMalacrassPurgeBuffFromBossAction::Execute(Event event)
-{
-    Unit* malacrass = AI_VALUE2(Unit*, "find target", "hex lord malacrass");
-    if (!malacrass)
-        return false;
-
-    static const std::array<const char*, 5> dispelSpells =
-    {
-        "arcane shot", "devour magic", "dispel magic", "purge", "spellsteal"
-    };
-
-    for (const char* spellName : dispelSpells)
-    {
-        if (botAI->CanCastSpell(spellName, malacrass))
-            return botAI->CastSpell(spellName, malacrass);
-    }
-
-    return false;
-}
-
-bool HexLordMalacrassDispelMindControlAction::Execute(Event event)
-{
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    Player* mcTarget = nullptr;
-    for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || member == bot)
-            continue;
-
-        if (member->HasAura(SPELL_MIND_CONTROL))
-        {
-            mcTarget = member;
-            break;
-        }
-    }
-
-    if (!mcTarget)
-        return false;
-
-    static const std::array<const char*, 3> dispelSpells =
-    {
-        "devour magic", "dispel magic", "purge"
-    };
-
-    for (const char* spellName : dispelSpells)
-    {
-        if (botAI->CanCastSpell(spellName, mcTarget))
-            return botAI->CastSpell(spellName, mcTarget);
-    }
-
-    return false;
-}
-
 // Zul'jin
 
 bool ZuljinMisdirectBossToMainTankAction::Execute(Event event)

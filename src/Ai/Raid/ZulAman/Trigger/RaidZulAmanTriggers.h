@@ -167,22 +167,6 @@ public:
     bool IsActive() override;
 };
 
-class HexLordMalacrassBossHasSiphonedBuffTrigger : public Trigger
-{
-public:
-    HexLordMalacrassBossHasSiphonedBuffTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "hex lord malacrass boss has siphoned buff") {}
-    bool IsActive() override;
-};
-
-class HexLordMalacrassPartyMemberIsMindControlledTrigger : public Trigger
-{
-public:
-    HexLordMalacrassPartyMemberIsMindControlledTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "hex lord malacrass party member is mind controlled") {}
-    bool IsActive() override;
-};
-
 // Zul'jin
 
 class ZuljinMainTankNeedsAggroUponPullOrPhaseChangeTrigger : public Trigger

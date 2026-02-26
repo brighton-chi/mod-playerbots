@@ -179,47 +179,6 @@ bool HexLordMalacrassDeterminingKillOrderTrigger::IsActive()
            AI_VALUE2(Unit*, "find target", "hex lord malacrass");
 }
 
-bool HexLordMalacrassBossHasSiphonedBuffTrigger::IsActive()
-{
-    if (bot->getClass() != CLASS_HUNTER &&
-        bot->getClass() != CLASS_MAGE &&
-        bot->getClass() != CLASS_PRIEST &&
-        bot->getClass() != CLASS_SHAMAN &&
-        bot->getClass() != CLASS_WARLOCK)
-        return false;
-
-    Unit* malacrass = AI_VALUE2(Unit*, "find target", "hex lord malacrass");
-    return malacrass &&
-           (malacrass->HasAura(SPELL_LIFEBLOOM) || malacrass->HasAura(SPELL_AVENGING_WRATH));
-}
-
-bool HexLordMalacrassPartyMemberIsMindControlledTrigger::IsActive()
-{
-    if (bot->getClass() != CLASS_PRIEST &&
-        bot->getClass() != CLASS_SHAMAN &&
-        bot->getClass() != CLASS_WARLOCK)
-        return false;
-
-    if (!AI_VALUE2(Unit*, "find target", "hex lord malacrass"))
-        return false;
-
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || member == bot)
-            continue;
-
-        if (member->HasAura(SPELL_MIND_CONTROL))
-            return true;
-    }
-
-    return false;
-}
-
 // Zul'jin
 
 bool ZuljinMainTankNeedsAggroUponPullOrPhaseChangeTrigger::IsActive()

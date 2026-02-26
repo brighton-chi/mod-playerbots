@@ -66,12 +66,6 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("hex lord malacrass determining kill order", {
         NextAction("hex lord malacrass assign dps priority", ACTION_RAID + 1) }));
 
-    /* triggers.push_back(new TriggerNode("hex lord malacrass boss has siphoned buff", {
-        NextAction("hex lord malacrass purge buff from boss", ACTION_EMERGENCY + 1) }));
-
-    triggers.push_back(new TriggerNode("hex lord malacrass party member is mind controlled", {
-        NextAction("hex lord malacrass dispel mind control", ACTION_EMERGENCY + 2) })); */
-
     // Zul'jin
     triggers.push_back(new TriggerNode("zul'jin main tank needs aggro upon pull or phase change", {
         NextAction("zul'jin misdirect boss to main tank", ACTION_RAID + 2) }));
@@ -87,9 +81,6 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("zul'jin boss casts aoe abilities in dragonhawk form", {
         NextAction("zul'jin spread ranged", ACTION_RAID + 1) }));
-
-    triggers.push_back(new TriggerNode("zul'jin boss casts claw rage on random targets in lynx form", {
-        NextAction("zul'jin escape claw rage with immunity spell", ACTION_EMERGENCY + 6) }));
 }
 
 void RaidZulAmanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)

@@ -73,12 +73,6 @@ public:
         creators["hex lord malacrass determining kill order"] =
             &RaidZulAmanTriggerContext::hex_lord_malacrass_determining_kill_order;
 
-        creators["hex lord malacrass boss has siphoned buff"] =
-            &RaidZulAmanTriggerContext::hex_lord_malacrass_boss_has_siphoned_buff;
-
-        creators["hex lord malacrass party member is mind controlled"] =
-            &RaidZulAmanTriggerContext::hex_lord_malacrass_party_member_is_mind_controlled;
-
         // Zul'jin
 
         creators["zul'jin main tank needs aggro upon pull or phase change"] =
@@ -161,12 +155,6 @@ private:
 
     static Trigger* hex_lord_malacrass_determining_kill_order(
         PlayerbotAI* botAI) { return new HexLordMalacrassDeterminingKillOrderTrigger(botAI); }
-
-    static Trigger* hex_lord_malacrass_boss_has_siphoned_buff(
-        PlayerbotAI* botAI) { return new HexLordMalacrassBossHasSiphonedBuffTrigger(botAI); }
-
-    static Trigger* hex_lord_malacrass_party_member_is_mind_controlled(
-        PlayerbotAI* botAI) { return new HexLordMalacrassPartyMemberIsMindControlledTrigger(botAI); }
 
     // Zul'jin
 

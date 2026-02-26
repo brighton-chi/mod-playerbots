@@ -72,12 +72,6 @@ public:
         creators["hex lord malacrass assign dps priority"] =
             &RaidZulAmanActionContext::hex_lord_malacrass_assign_dps_priority;
 
-        creators["hex lord malacrass purge buff from boss"] =
-            &RaidZulAmanActionContext::hex_lord_malacrass_purge_buff_from_boss;
-
-        creators["hex lord malacrass dispel mind control"] =
-            &RaidZulAmanActionContext::hex_lord_malacrass_dispel_mind_control;
-
         // Zul'jin
         creators["zul'jin misdirect boss to main tank"] =
             &RaidZulAmanActionContext::zuljin_misdirect_boss_to_main_tank;
@@ -158,12 +152,6 @@ private:
 
     static Action* hex_lord_malacrass_assign_dps_priority(
         PlayerbotAI* botAI) { return new HexLordMalacrassAssignDpsPriorityAction(botAI); }
-
-    static Action* hex_lord_malacrass_purge_buff_from_boss(
-        PlayerbotAI* botAI) { return new HexLordMalacrassPurgeBuffFromBossAction(botAI); }
-
-    static Action* hex_lord_malacrass_dispel_mind_control(
-        PlayerbotAI* botAI) { return new HexLordMalacrassDispelMindControlAction(botAI); }
 
     // Zul'jin
     static Action* zuljin_misdirect_boss_to_main_tank(

@@ -177,22 +177,6 @@ public:
     bool Execute(Event event) override;
 };
 
-class HexLordMalacrassPurgeBuffFromBossAction : public Action
-{
-public:
-    HexLordMalacrassPurgeBuffFromBossAction(
-        PlayerbotAI* botAI, std::string const name = "hex lord malacrass purge buff from boss") : Action(botAI, name) {}
-    bool Execute(Event event) override;
-};
-
-class HexLordMalacrassDispelMindControlAction : public Action
-{
-public:
-    HexLordMalacrassDispelMindControlAction(
-        PlayerbotAI* botAI, std::string const name = "hex lord malacrass dispel mind control") : Action(botAI, name) {}
-    bool Execute(Event event) override;
-};
-
 // Zul'jin
 
 class ZuljinMisdirectBossToMainTankAction : public AttackAction
