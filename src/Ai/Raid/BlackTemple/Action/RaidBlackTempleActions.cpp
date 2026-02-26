@@ -336,14 +336,13 @@ Position SupremusMoveAwayFromVolcanosAction::FindSafestNearbyPosition(
     const std::vector<Unit*>& volcanos, float maxRadius, float hazardRadius)
 {
     constexpr float searchStep = M_PI / 8.0f;
-    constexpr float minDistance = 2.0f;
     constexpr float distanceStep = 1.0f;
 
     Position bestPos;
     float minMoveDistance = std::numeric_limits<float>::max();
     bool foundSafe = false;
 
-    for (float distance = minDistance;
+    for (float distance = 0.0f;
          distance <= maxRadius; distance += distanceStep)
     {
         for (float angle = 0.0f; angle < 2 * M_PI; angle += searchStep)
