@@ -4,6 +4,107 @@
 
 namespace ZulAmanHelpers
 {
+    // General
+    Position FindSafestNearbyPosition(Player* bot, const std::vector<Unit*>& hazards,
+        const Position& safeZoneCenter, float safeZoneRadius, float hazardRadius, bool requireSafePath)
+    {
+        constexpr float searchStep = M_PI / 8.0f;
+        constexpr float distanceStep = 1.0f;
+
+        Position bestPos;
+        float minMoveDistance = std::numeric_limits<float>::max();
+        bool foundSafe = false;
+
+        for (float distance = 0.0f;
+             distance <= safeZoneRadius; distance += distanceStep)
+        {
+            for (float angle = 0.0f; angle < 2 * M_PI; angle += searchStep)
+            {
+                float x = bot->GetPositionX() + distance * std::cos(angle);
+                float y = bot->GetPositionY() + distance * std::sin(angle);
+
+                if (safeZoneCenter.GetExactDist2d(x, y) > safeZoneRadius)
+                    continue;
+
+                bool isSafe = true;
+                for (Unit* hazard : hazards)
+                {
+                    if (hazard->GetDistance2d(x, y) < hazardRadius)
+                    {
+                        isSafe = false;
+                        break;
+                    }
+                }
+
+                if (!isSafe)
+                    continue;
+
+                Position testPos(x, y, bot->GetPositionZ());
+
+                bool pathSafe = true;
+                if (requireSafePath)
+                {
+                    pathSafe =
+                        IsPathSafeFromHazards(bot->GetPosition(), testPos, hazards, hazardRadius);
+                    if (!pathSafe)
+                        continue;
+                }
+
+                float moveDistance = bot->GetExactDist2d(x, y);
+                if (!foundSafe || moveDistance < minMoveDistance)
+                {
+                    bestPos = testPos;
+                    minMoveDistance = moveDistance;
+                    foundSafe = pathSafe;
+                }
+            }
+
+            if (foundSafe)
+                break;
+        }
+
+        return bestPos;
+    }
+
+    bool IsPathSafeFromHazards(const Position& start, const Position& end,
+        const std::vector<Unit*>& hazards, float hazardRadius)
+    {
+        constexpr uint8 numChecks = 10;
+        float dx = end.GetPositionX() - start.GetPositionX();
+        float dy = end.GetPositionY() - start.GetPositionY();
+
+        for (uint8 i = 1; i <= numChecks; ++i)
+        {
+            float ratio = static_cast<float>(i) / numChecks;
+            float checkX = start.GetPositionX() + dx * ratio;
+            float checkY = start.GetPositionY() + dy * ratio;
+
+            for (Unit* hazard : hazards)
+            {
+                float distToHazard = hazard->GetDistance2d(checkX, checkY);
+                if (distToHazard < hazardRadius)
+                    return false;
+            }
+        }
+
+        return true;
+    }
+
+    std::vector<Unit*> GetAllHazardTriggers(Player* bot, uint32 entry, float searchRadius)
+    {
+        std::vector<Unit*> triggers;
+        std::list<Creature*> creatureList;
+        bot->GetCreatureListWithEntryInGrid(creatureList, entry, searchRadius);
+
+        for (Creature* creature : creatureList)
+        {
+            if (creature && creature->IsAlive())
+                triggers.push_back(creature);
+        }
+
+        return triggers;
+    }
+
     // Akil'zon <Eagle Avatar>
     const Position AKILZON_TANK_POSITION = { 378.369f, 1407.718f, 74.797f };
 

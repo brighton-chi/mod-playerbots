@@ -220,11 +220,7 @@ bool ZuljinBossIsChannelingWhirlwindInTrollFormTrigger::IsActive()
 bool ZuljinBossIsSummoningCyclonesInEagleFormTrigger::IsActive()
 {
     Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
-    if (!zuljin || !zuljin->HasAura(SPELL_SHAPE_OF_THE_EAGLE))
-        return false;
-
-    constexpr float searchRadius = 40.0f;
-    return bot->FindNearestCreature(NPC_FEATHER_VORTEX, searchRadius, true);
+    return zuljin && zuljin->HasAura(SPELL_SHAPE_OF_THE_EAGLE);
 }
 
 bool ZuljinBossCastsAoeAbilitiesInDragonhawkFormTrigger::IsActive()

@@ -68,6 +68,14 @@ namespace ZulAmanHelpers
 
     // General
     constexpr uint32 ZULAMAN_MAP_ID = 568;
+    Position FindSafestNearbyPosition(
+        Player* bot, const std::vector<Unit*>& hazards, const Position& center,
+        float safeZoneRadius, float hazardRadius, bool requireSafePath);
+    bool IsPathSafeFromHazards(
+        const Position& start, const Position& end,
+        const std::vector<Unit*>& hazards, float hazardRadius);
+    std::vector<Unit*> GetAllHazardTriggers(
+        Player* bot, uint32 entry, float searchRadius);
 
     // Akil'zon <Eagle Avatar>
     extern const Position AKILZON_TANK_POSITION;

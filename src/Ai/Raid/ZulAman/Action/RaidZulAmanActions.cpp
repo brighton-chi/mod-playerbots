@@ -84,7 +84,7 @@ bool AkilzonMoveToEyeOfTheStormAction::Execute(Event event)
     {
         botAI->Reset();
         return MoveTo(ZULAMAN_MAP_ID, stormTarget->GetPositionX(), stormTarget->GetPositionY(),
-                      bot->GetPositionZ(), false, false, false, true,
+                      bot->GetPositionZ(), false, false, false, false,
                       MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
@@ -310,8 +310,8 @@ bool JanalaiSpreadRangedInCircleAction::Execute(Event event)
 
     if (bot->GetExactDist2d(targetX, targetY) > 2.0f)
     {
-        return MoveTo(ZULAMAN_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false, false, true,
-                      MovementPriority::MOVEMENT_COMBAT, true, false);
+        return MoveTo(ZULAMAN_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false,
+                      false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
     return false;
@@ -319,15 +319,15 @@ bool JanalaiSpreadRangedInCircleAction::Execute(Event event)
 
 bool JanalaiAvoidFireBombsAction::Execute(Event event)
 {
-    auto const& bombs = GetAllFireBombTriggers();
+    auto const& bombs = GetAllHazardTriggers(bot, NPC_FIRE_BOMB, 50.0f);
     if (bombs.empty())
         return false;
 
-    constexpr float hazardRadius = 6.0f;
+    constexpr float hazardRadius = 5.0f;
     bool inDanger = false;
     for (Unit* bomb : bombs)
     {
-        if (bot->GetExactDist2d(bomb) < hazardRadius)
+        if (bot->GetDistance2d(bomb) < hazardRadius)
         {
             inDanger = true;
             break;
@@ -338,120 +338,16 @@ bool JanalaiAvoidFireBombsAction::Execute(Event event)
         return false;
 
     const Position& janalaiCenter = JANALAI_TANK_POSITION;
-    constexpr float maxRadius = 30.0f;
+    constexpr float safeZoneRadius = 25.0f;
 
-    Position safestPos = FindSafestNearbyPosition(bombs, janalaiCenter, maxRadius, hazardRadius);
+    Position safestPos =
+        FindSafestNearbyPosition(bot, bombs, janalaiCenter, safeZoneRadius, hazardRadius, false);
 
     bot->AttackStop();
     bot->InterruptNonMeleeSpells(true);
     return MoveTo(ZULAMAN_MAP_ID, safestPos.GetPositionX(), safestPos.GetPositionY(),
-                  bot->GetPositionZ(), false, false, false, true,
-                  MovementPriority::MOVEMENT_COMBAT, true, false);
-}
-
-Position JanalaiAvoidFireBombsAction::FindSafestNearbyPosition(const std::vector<Unit*>& bombs,
-    const Position& janalaiCenter, float maxRadius, float hazardRadius)
-{
-    constexpr float searchStep = M_PI / 8.0f;
-    constexpr float minDistance = 2.0f;
-    constexpr float maxDistance = 30.0f;
-    constexpr float distanceStep = 1.0f;
-
-    Position bestPos;
-    float minMoveDistance = std::numeric_limits<float>::max();
-    bool foundSafe = false;
-
-    for (float distance = minDistance;
-         distance <= maxDistance; distance += distanceStep)
-    {
-        for (float angle = 0.0f; angle < 2 * M_PI; angle += searchStep)
-        {
-            float x = bot->GetPositionX() + distance * std::cos(angle);
-            float y = bot->GetPositionY() + distance * std::sin(angle);
-
-            if (janalaiCenter.GetExactDist2d(x, y) > maxRadius)
-                continue;
-
-            bool isSafe = true;
-            for (Unit* bomb : bombs)
-            {
-                if (bomb->GetExactDist2d(x, y) < hazardRadius)
-                {
-                    isSafe = false;
-                    break;
-                }
-            }
-
-            if (!isSafe)
-                continue;
-
-            Position testPos(x, y, bot->GetPositionZ());
-
-            bool pathSafe =
-                IsPathSafeFromFireBombs(bot->GetPosition(), testPos, bombs, hazardRadius);
-            if (pathSafe || !foundSafe)
-            {
-                float moveDistance = bot->GetExactDist2d(x, y);
-
-                if (pathSafe && (!foundSafe || moveDistance < minMoveDistance))
-                {
-                    bestPos = testPos;
-                    minMoveDistance = moveDistance;
-                    foundSafe = true;
-                }
-                else if (!foundSafe && moveDistance < minMoveDistance)
-                {
-                    bestPos = testPos;
-                    minMoveDistance = moveDistance;
-                }
-            }
-        }
-
-        if (foundSafe)
-            break;
-    }
-
-    return bestPos;
-}
-
-bool JanalaiAvoidFireBombsAction::IsPathSafeFromFireBombs(const Position& start,
-    const Position& end, const std::vector<Unit*>& bombs, float hazardRadius)
-{
-    constexpr uint8 numChecks = 10;
-    float dx = end.GetPositionX() - start.GetPositionX();
-    float dy = end.GetPositionY() - start.GetPositionY();
-
-    for (uint8 i = 1; i <= numChecks; ++i)
-    {
-        float ratio = static_cast<float>(i) / numChecks;
-        float checkX = start.GetPositionX() + dx * ratio;
-        float checkY = start.GetPositionY() + dy * ratio;
-
-        for (Unit* bomb : bombs)
-        {
-            float distToBomb = bomb->GetExactDist2d(checkX, checkY);
-            if (distToBomb < hazardRadius)
-                return false;
-        }
-    }
-
-    return true;
-}
-
-std::vector<Unit*> JanalaiAvoidFireBombsAction::GetAllFireBombTriggers()
-{
-    std::vector<Unit*> fireBombs;
-    constexpr float searchRadius = 40.0f;
-    std::list<Creature*> creatureList;
-    bot->GetCreatureListWithEntryInGrid(creatureList, NPC_FIRE_BOMB, searchRadius);
-
-    for (Creature* creature : creatureList)
-    {
-        if (creature && creature->IsAlive())
-            fireBombs.push_back(creature);
-    }
-
-    return fireBombs;
+                  bot->GetPositionZ(), false, false, false, false,
+                  MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 bool JanalaiMarkAmanishiHatchersAction::Execute(Event event)
@@ -735,15 +631,15 @@ bool ZuljinRunAwayFromWhirlwindAction::Execute(Event event)
 
 bool ZuljinAvoidCyclonesAction::Execute(Event event)
 {
-    auto const& cyclones = GetAllCycloneTriggers();
+    auto const& cyclones = GetAllHazardTriggers(bot, NPC_FEATHER_VORTEX, 50.0f);
     if (cyclones.empty())
         return false;
 
-    const float hazardRadius = 6.0f;
+    constexpr float hazardRadius = 6.0f;
     bool inDanger = false;
     for (Unit* cyclone : cyclones)
     {
-        if (bot->GetExactDist2d(cyclone) < hazardRadius)
+        if (bot->GetDistance2d(cyclone) < hazardRadius)
         {
             inDanger = true;
             break;
@@ -754,122 +650,16 @@ bool ZuljinAvoidCyclonesAction::Execute(Event event)
         return false;
 
     const Position& zuljinCenter = ZULJIN_TANK_POSITION;
-    constexpr float maxRadius = 30.0f;
+    constexpr float safeZoneRadius = 30.0f;
 
     Position safestPos =
-        FindSafestNearbyPosition(cyclones, zuljinCenter, maxRadius, hazardRadius);
+        FindSafestNearbyPosition(bot, cyclones, zuljinCenter, safeZoneRadius, hazardRadius, true);
 
     bot->AttackStop();
     bot->InterruptNonMeleeSpells(true);
     return MoveTo(ZULAMAN_MAP_ID, safestPos.GetPositionX(), safestPos.GetPositionY(),
-                  bot->GetPositionZ(), false, false, false, true,
-                  MovementPriority::MOVEMENT_COMBAT, true, false);
-}
-
-Position ZuljinAvoidCyclonesAction::FindSafestNearbyPosition(
-    const std::vector<Unit*>& cyclones, const Position& zuljinCenter,
-    float maxRadius, float hazardRadius)
-{
-    constexpr float searchStep = M_PI / 8.0f;
-    constexpr float minDistance = 2.0f;
-    constexpr float maxDistance = 30.0f;
-    constexpr float distanceStep = 1.0f;
-
-    Position bestPos;
-    float minMoveDistance = std::numeric_limits<float>::max();
-    bool foundSafe = false;
-
-    for (float distance = minDistance;
-         distance <= maxDistance; distance += distanceStep)
-    {
-        for (float angle = 0.0f; angle < 2 * M_PI; angle += searchStep)
-        {
-            float x = bot->GetPositionX() + distance * std::cos(angle);
-            float y = bot->GetPositionY() + distance * std::sin(angle);
-
-            if (zuljinCenter.GetExactDist2d(x, y) > maxRadius)
-                continue;
-
-            bool isSafe = true;
-            for (Unit* cyclone : cyclones)
-            {
-                if (cyclone->GetExactDist2d(x, y) < hazardRadius)
-                {
-                    isSafe = false;
-                    break;
-                }
-            }
-
-            if (!isSafe)
-                continue;
-
-            Position testPos(x, y, bot->GetPositionZ());
-
-            bool pathSafe =
-                IsPathSafeFromCyclones(bot->GetPosition(), testPos, cyclones, hazardRadius);
-            if (pathSafe || !foundSafe)
-            {
-                float moveDistance = bot->GetExactDist2d(x, y);
-
-                if (pathSafe && (!foundSafe || moveDistance < minMoveDistance))
-                {
-                    bestPos = testPos;
-                    minMoveDistance = moveDistance;
-                    foundSafe = true;
-                }
-                else if (!foundSafe && moveDistance < minMoveDistance)
-                {
-                    bestPos = testPos;
-                    minMoveDistance = moveDistance;
-                }
-            }
-        }
-
-        if (foundSafe)
-            break;
-    }
-
-    return bestPos;
-}
-
-bool ZuljinAvoidCyclonesAction::IsPathSafeFromCyclones(const Position& start,
-    const Position& end, const std::vector<Unit*>& cyclones, float hazardRadius)
-{
-    constexpr uint8 numChecks = 10;
-    float dx = end.GetPositionX() - start.GetPositionX();
-    float dy = end.GetPositionY() - start.GetPositionY();
-
-    for (uint8 i = 1; i <= numChecks; ++i)
-    {
-        float ratio = static_cast<float>(i) / numChecks;
-        float checkX = start.GetPositionX() + dx * ratio;
-        float checkY = start.GetPositionY() + dy * ratio;
-
-        for (Unit* cyclone : cyclones)
-        {
-            float distToCyclone = cyclone->GetExactDist2d(checkX, checkY);
-            if (distToCyclone < hazardRadius)
-                return false;
-        }
-    }
-
-    return true;
-}
-
-std::vector<Unit*> ZuljinAvoidCyclonesAction::GetAllCycloneTriggers()
-{
-    std::vector<Unit*> cyclones;
-    constexpr float searchRadius = 40.0f;
-    std::list<Creature*> creatureList;
-    bot->GetCreatureListWithEntryInGrid(creatureList, NPC_FIRE_BOMB, searchRadius);
-
-    for (Creature* creature : creatureList)
-    {
-        if (creature && creature->IsAlive())
-            cyclones.push_back(creature);
-    }
-
-    return cyclones;
+                  bot->GetPositionZ(), false, false, false, false,
+                  MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 bool ZuljinSpreadRangedAction::Execute(Event event)
