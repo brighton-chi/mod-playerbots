@@ -40,7 +40,7 @@ bool BlackTempleEraseTimersAndTrackersAction::Execute(Event /*event*/)
             erased = true;
     }
     if (!AI_VALUE2(Unit*, "find target", "illidan stormrage") &&
-        !AI_VALUE2(Unit*, "find target", "flames of azzinoth"))
+        !AI_VALUE2(Unit*, "find target", "flame of azzinoth"))
     {
         if (illidanBossDpsWaitTimer.erase(instanceId) > 0)
             erased = true;
@@ -88,7 +88,8 @@ bool HighWarlordNajentusTanksPositionBossAction::Execute(Event /*event*/)
     if (najentus->GetVictim() == bot && bot->IsWithinMeleeRange(najentus))
     {
         const Position& position = NAJENTUS_TANK_POSITION;
-        float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+        float distToPosition = bot->GetExactDist2d(position.GetPositionX(),
+                                                   position.GetPositionY());
         if (distToPosition > 3.0f)
         {
             float dX = position.GetPositionX() - bot->GetPositionX();
@@ -1340,9 +1341,8 @@ bool IllidariCouncilFirstAssistTankPositionMalandeAction::Execute(Event /*event*
     if (malande->GetVictim() == bot)
     {
         const Position& position = MALANDE_TANK_POSITION;
-        float distToPosition =
-            bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
-
+        float distToPosition = bot->GetExactDist2d(position.GetPositionX(),
+                                                   position.GetPositionY());
         if (distToPosition > 10.0f)
         {
             return MoveTo(BLACK_TEMPLE_MAP_ID, position.GetPositionX(), position.GetPositionY(),
@@ -1380,9 +1380,8 @@ bool IllidariCouncilSecondAssistTankPositionDarkshadowAction::Execute(Event /*ev
         if (!mainTank)
             return false;
 
-        float distToPosition =
-            bot->GetExactDist2d(mainTank->GetPositionX(), mainTank->GetPositionY());
-
+        float distToPosition = bot->GetExactDist2d(mainTank->GetPositionX(),
+                                                   mainTank->GetPositionY());
         if (distToPosition > 2.0f)
         {
             float dX = mainTank->GetPositionX() - bot->GetPositionX();
@@ -1418,9 +1417,8 @@ bool IllidariCouncilMageTankPositionZerevorAction::Execute(Event /*event*/)
     if (zerevor->GetVictim() == bot)
     {
         const Position& position = ZEREVOR_TANK_POSITION;
-        float distToPosition =
-            bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
-
+        float distToPosition = bot->GetExactDist2d(position.GetPositionX(),
+                                                   position.GetPositionY());
         if (distToPosition > 2.0f)
         {
             float dX = position.GetPositionX() - bot->GetPositionX();
