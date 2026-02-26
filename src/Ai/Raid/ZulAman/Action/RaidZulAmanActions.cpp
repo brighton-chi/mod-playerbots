@@ -135,7 +135,7 @@ bool NalorakkTanksPositionBossAction::MainTankPositionTrollForm(Unit* nalorakk)
             return Attack(nalorakk);
 
         if (nalorakk->GetVictim() != bot)
-            return botAI->DoSpecificAction("taunt spell", Event(), false);
+            return botAI->DoSpecificAction("taunt spell", Event(), true);
 
         const Position& position = NALORAKK_TANK_POSITION;
         float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
@@ -179,7 +179,7 @@ bool NalorakkTanksPositionBossAction::FirstAssistTankPositionBearForm(Unit* nalo
             return Attack(nalorakk);
 
         if (nalorakk->GetVictim() != bot)
-            return botAI->DoSpecificAction("taunt spell", Event(), false);
+            return botAI->DoSpecificAction("taunt spell", Event(), true);
 
         const Position& position = NALORAKK_TANK_POSITION;
         float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
@@ -454,9 +454,9 @@ std::vector<Unit*> JanalaiAvoidFireBombsAction::GetAllFireBombTriggers()
     return fireBombs;
 }
 
-bool JanalaiMarkAmaniHatchersAction::Execute(Event event)
+bool JanalaiMarkAmanishiHatchersAction::Execute(Event event)
 {
-    auto [hatcherLow, hatcherHigh] = GetAmaniHatcherPair(botAI);
+    auto [hatcherLow, hatcherHigh] = GetAmanishiHatcherPair(botAI);
 
     // When hatchers spawn, mark one with Skull and the other with Moon
     if (hatcherLow && hatcherHigh && hatcherHigh != hatcherLow)
@@ -534,7 +534,7 @@ bool HalazziFirstAssistTankAttackSpiritLynxAction::Execute(Event event)
             return Attack(lynx);
 
         if (lynx->GetVictim() != bot)
-            return botAI->DoSpecificAction("taunt spell", Event(), false);
+            return botAI->DoSpecificAction("taunt spell", Event(), true);
 
         const Position& position = HALAZZI_TANK_POSITION;
         float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());

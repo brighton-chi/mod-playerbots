@@ -28,11 +28,10 @@ namespace ZulAmanHelpers
 
     // Jan'alai <Dragonhawk Avatar>
     const Position JANALAI_TANK_POSITION = { -33.873f, 1149.571f, 19.146f };
-    std::unordered_map<ObjectGuid, Position> janalaiRangedPositions;
 
     bool HasFireBombNearby(PlayerbotAI* botAI, Player* bot)
     {
-        constexpr float searchRadius = 20.0f;
+        constexpr float searchRadius = 30.0f;
         std::list<Creature*> creatureList;
         bot->GetCreatureListWithEntryInGrid(creatureList, NPC_FIRE_BOMB, searchRadius);
 
@@ -45,7 +44,7 @@ namespace ZulAmanHelpers
         return false;
     }
 
-    std::pair<Unit*, Unit*> GetAmaniHatcherPair(PlayerbotAI* botAI)
+    std::pair<Unit*, Unit*> GetAmanishiHatcherPair(PlayerbotAI* botAI)
     {
         Unit* lowest = nullptr;
         Unit* highest = nullptr;
@@ -54,7 +53,7 @@ namespace ZulAmanHelpers
              botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get())
         {
             Unit* unit = botAI->GetUnit(guid);
-            if (unit && unit->GetEntry() == NPC_AMANI_HATCHER)
+            if (unit && unit->GetEntry() == NPC_AMANISHI_HATCHER)
             {
                 if (!lowest || unit->GetGUID().GetCounter() < lowest->GetGUID().GetCounter())
                     lowest = unit;

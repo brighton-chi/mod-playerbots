@@ -49,8 +49,8 @@ public:
         creators["jan'alai boss summoning fire bombs"] =
             &RaidZulAmanTriggerContext::janalai_boss_summoning_fire_bombs;
 
-        creators["jan'alai amani hatchers spawned"] =
-            &RaidZulAmanTriggerContext::janalai_amani_hatchers_spawned;
+        creators["jan'alai amani'shi hatchers spawned"] =
+            &RaidZulAmanTriggerContext::janalai_amanishi_hatchers_spawned;
 
         // Halazzi <Lynx Avatar>
         creators["halazzi pulling boss"] =
@@ -138,8 +138,8 @@ private:
     static Trigger* janalai_boss_summoning_fire_bombs(
         PlayerbotAI* botAI) { return new JanalaiBossSummoningFireBombsTrigger(botAI); }
 
-    static Trigger* janalai_amani_hatchers_spawned(
-        PlayerbotAI* botAI) { return new JanalaiAmaniHatchersSpawnedTrigger(botAI); }
+    static Trigger* janalai_amanishi_hatchers_spawned(
+        PlayerbotAI* botAI) { return new JanalaiAmanishiHatchersSpawnedTrigger(botAI); }
 
     // Halazzi <Lynx Avatar>
     static Trigger* halazzi_pulling_boss(

@@ -122,7 +122,7 @@ bool JanalaiBossSummoningFireBombsTrigger::IsActive()
     return HasFireBombNearby(botAI, bot);
 }
 
-bool JanalaiAmaniHatchersSpawnedTrigger::IsActive()
+bool JanalaiAmanishiHatchersSpawnedTrigger::IsActive()
 {
     if (!botAI->IsRangedDps(bot))
         return false;
@@ -130,7 +130,7 @@ bool JanalaiAmaniHatchersSpawnedTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "jan'alai"))
         return false;
 
-    return AI_VALUE2(Unit*, "find target", "amani hatcher");
+    return bot->FindNearestCreature(NPC_AMANISHI_HATCHER, 40.0f);
 }
 
 // Halazzi <Lynx Avatar>

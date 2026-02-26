@@ -30,7 +30,7 @@ namespace ZulAmanHelpers
         SPELL_SHAPE_OF_THE_EAGLE       = 42606,
         SPELL_SHAPE_OF_THE_LYNX        = 42607,
         SPELL_SHAPE_OF_THE_DRAGONHAWK  = 42608,
-        SPELL_CLAW_RAGE                = 43149,
+        // SPELL_CLAW_RAGE             = 43149,
 
         // Hunter
         SPELL_MISDIRECTION             = 35079,
@@ -44,8 +44,8 @@ namespace ZulAmanHelpers
 
         // Jan'alai <Dragonhawk Avatar>
         NPC_AMANI_DRAGONHAWK_HATCHLING = 23598,
-        NPC_EGG                        = 23817,
-        NPC_AMANI_HATCHER              = 23818,
+        // NPC_EGG                     = 23817,
+        NPC_AMANISHI_HATCHER           = 23818,
         NPC_FIRE_BOMB                  = 23920,
 
         // Halazzi <Lynx Avatar>
@@ -78,9 +78,8 @@ namespace ZulAmanHelpers
 
     // Jan'alai <Dragonhawk Avatar>
     extern const Position JANALAI_TANK_POSITION;
-    extern std::unordered_map<ObjectGuid, Position> janalaiRangedPositions;
     bool HasFireBombNearby(PlayerbotAI* botAI, Player* bot);
-    std::pair<Unit*, Unit*> GetAmaniHatcherPair(PlayerbotAI* botAI);
+    std::pair<Unit*, Unit*> GetAmanishiHatcherPair(PlayerbotAI* botAI);
 
     // Halazzi <Lynx Avatar>
     extern const Position HALAZZI_TANK_POSITION;

@@ -49,8 +49,8 @@ public:
         creators["jan'alai avoid fire bombs"] =
             &RaidZulAmanActionContext::janalai_avoid_fire_bombs;
 
-        creators["jan'alai mark amani hatchers"] =
-            &RaidZulAmanActionContext::janalai_mark_amani_hatchers;
+        creators["jan'alai mark amani'shi hatchers"] =
+            &RaidZulAmanActionContext::janalai_mark_amanishi_hatchers;
 
         // Halazzi <Lynx Avatar>
         creators["halazzi misdirect boss to main tank"] =
@@ -136,8 +136,8 @@ private:
     static Action* janalai_avoid_fire_bombs(
         PlayerbotAI* botAI) { return new JanalaiAvoidFireBombsAction(botAI); }
 
-    static Action* janalai_mark_amani_hatchers(
-        PlayerbotAI* botAI) { return new JanalaiMarkAmaniHatchersAction(botAI); }
+    static Action* janalai_mark_amanishi_hatchers(
+        PlayerbotAI* botAI) { return new JanalaiMarkAmanishiHatchersAction(botAI); }
 
     // Halazzi <Lynx Avatar>
     static Action* halazzi_misdirect_boss_to_main_tank(

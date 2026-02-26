@@ -43,8 +43,8 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("jan'alai boss summoning fire bombs", {
         NextAction("jan'alai avoid fire bombs", ACTION_EMERGENCY + 6) }));
 
-    triggers.push_back(new TriggerNode("jan'alai amani hatchers spawned", {
-        NextAction("jan'alai mark amani hatchers", ACTION_RAID + 2) }));
+    triggers.push_back(new TriggerNode("jan'alai amani'shi hatchers spawned", {
+        NextAction("jan'alai mark amani'shi hatchers", ACTION_RAID + 2) }));
 
     // Halazzi <Lynx Avatar>
     triggers.push_back(new TriggerNode("halazzi pulling boss", {

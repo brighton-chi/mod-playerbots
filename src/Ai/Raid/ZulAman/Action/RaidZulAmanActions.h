@@ -117,11 +117,11 @@ private:
     std::vector<Unit*> GetAllFireBombTriggers();
 };
 
-class JanalaiMarkAmaniHatchersAction : public Action
+class JanalaiMarkAmanishiHatchersAction : public Action
 {
 public:
-    JanalaiMarkAmaniHatchersAction(
-        PlayerbotAI* botAI, std::string const name = "jan'alai mark amani hatchers") : Action(botAI, name) {}
+    JanalaiMarkAmanishiHatchersAction(
+        PlayerbotAI* botAI, std::string const name = "jan'alai mark amani'shi hatchers") : Action(botAI, name) {}
     bool Execute(Event event) override;
 };
 

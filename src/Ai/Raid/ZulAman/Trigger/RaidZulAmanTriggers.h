@@ -107,11 +107,11 @@ public:
     bool IsActive() override;
 };
 
-class JanalaiAmaniHatchersSpawnedTrigger : public Trigger
+class JanalaiAmanishiHatchersSpawnedTrigger : public Trigger
 {
 public:
-    JanalaiAmaniHatchersSpawnedTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "jan'alai amani hatchers spawned") {}
+    JanalaiAmanishiHatchersSpawnedTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "jan'alai amani'shi hatchers spawned") {}
     bool IsActive() override;
 };
 
