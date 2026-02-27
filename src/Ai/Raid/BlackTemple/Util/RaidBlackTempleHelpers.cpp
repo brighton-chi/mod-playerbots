@@ -328,6 +328,13 @@ namespace BlackTempleHelpers
             {
                 westFlame = unit;
             }
+
+            LOG_DEBUG("playerbots", "[BT] Bot {} (GUID: {}) identifies eastFlameGuid={} westFlameGuid={}",
+                bot->GetName(),
+                bot->GetGUID().ToString(),
+                eastFlameGuid.count(instanceId) ? eastFlameGuid[instanceId].ToString() : "NONE",
+                westFlameGuid.count(instanceId) ? westFlameGuid[instanceId].ToString() : "NONE"
+            );
         }
 
         return { eastFlame, westFlame };
