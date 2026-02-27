@@ -19,7 +19,7 @@ bool AttumenTheHuntsmanNeedTargetPriorityTrigger::IsActive()
 
 bool AttumenTheHuntsmanAttumenSpawnedTrigger::IsActive()
 {
-    if (!botAI->IsTank(bot) || !botAI->IsAssistTankOfIndex(bot, 0, true))
+    if (!botAI->IsAssistTankOfIndex(bot, 0, true))
         return false;
 
     return GetFirstAliveUnitByEntry(botAI, NPC_ATTUMEN_THE_HUNTSMAN);
@@ -27,7 +27,7 @@ bool AttumenTheHuntsmanAttumenSpawnedTrigger::IsActive()
 
 bool AttumenTheHuntsmanAttumenIsMountedTrigger::IsActive()
 {
-    if (botAI->IsTank(bot) && botAI->IsMainTank(bot))
+    if (botAI->IsMainTank(bot))
         return false;
 
     Unit* attumenMounted = GetFirstAliveUnitByEntry(botAI, NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED);
@@ -36,14 +36,13 @@ bool AttumenTheHuntsmanAttumenIsMountedTrigger::IsActive()
 
 bool AttumenTheHuntsmanBossWipesAggroWhenMountingTrigger::IsActive()
 {
-    return botAI->IsDps(bot) &&
-           IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr) &&
+    return IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr) &&
            AI_VALUE2(Unit*, "find target", "midnight");
 }
 
 bool MoroesBossEngagedByMainTankTrigger::IsActive()
 {
-    if (!botAI->IsTank(bot) || !botAI->IsMainTank(bot))
+    if (!botAI->IsMainTank(bot))
         return false;
 
     return AI_VALUE2(Unit*, "find target", "moroes");
@@ -94,8 +93,7 @@ bool BigBadWolfBossIsChasingLittleRedRidingHoodTrigger::IsActive()
 
 bool RomuloAndJulianneBothBossesRevivedTrigger::IsActive()
 {
-    if (!botAI->IsDps(bot) ||
-        !IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr))
+    if (!IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr))
         return false;
 
     return AI_VALUE2(Unit*, "find target", "romulo") &&
@@ -104,8 +102,7 @@ bool RomuloAndJulianneBothBossesRevivedTrigger::IsActive()
 
 bool WizardOfOzNeedTargetPriorityTrigger::IsActive()
 {
-    if (!botAI->IsDps(bot) ||
-        !IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr))
+    if (!IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr))
         return false;
 
     Unit* dorothee = AI_VALUE2(Unit*, "find target", "dorothee");
@@ -132,8 +129,7 @@ bool TheCuratorAstralFlareSpawnedTrigger::IsActive()
 
 bool TheCuratorBossEngagedByTanksTrigger::IsActive()
 {
-    if (!botAI->IsTank(bot) ||
-        (!botAI->IsMainTank(bot) && !botAI->IsAssistTankOfIndex(bot, 0)))
+    if (!botAI->IsMainTank(bot) && !botAI->IsAssistTankOfIndex(bot, 0))
         return false;
 
     return AI_VALUE2(Unit*, "find target", "the curator");;
@@ -147,8 +143,7 @@ bool TheCuratorBossAstralFlaresCastArcingSearTrigger::IsActive()
 
 bool TerestianIllhoofNeedTargetPriorityTrigger::IsActive()
 {
-    return botAI->IsDps(bot) &&
-           IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr) &&
+    return IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr) &&
            AI_VALUE2(Unit*, "find target", "terestian illhoof");
 }
 
@@ -169,8 +164,7 @@ bool ShadeOfAranFlameWreathIsActiveTrigger::IsActive()
 // Exclusion of Banish is so the player may Banish elementals if they wish
 bool ShadeOfAranConjuredElementalsSummonedTrigger::IsActive()
 {
-    if (!botAI->IsDps(bot) ||
-        !IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr))
+    if (!IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr))
         return false;
 
     Unit* elemental = AI_VALUE2(Unit*, "find target", "conjured elemental");
@@ -248,7 +242,7 @@ bool NetherspiteBossIsBanishedTrigger::IsActive()
 bool NetherspiteNeedToManageTimersAndTrackersTrigger::IsActive()
 {
     if (!botAI->IsTank(bot) &&
-        (!botAI->IsDps(bot) || !IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr)))
+        !IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr))
         return false;
 
     return AI_VALUE2(Unit*, "find target", "netherspite");
@@ -261,7 +255,7 @@ bool PrinceMalchezaarBotIsEnfeebledTrigger::IsActive()
 
 bool PrinceMalchezaarInfernalsAreSpawnedTrigger::IsActive()
 {
-    if (botAI->IsTank(bot) && botAI->IsMainTank(bot))
+    if (botAI->IsMainTank(bot))
         return false;
 
     if (bot->HasAura(SPELL_ENFEEBLE))
@@ -272,7 +266,7 @@ bool PrinceMalchezaarInfernalsAreSpawnedTrigger::IsActive()
 
 bool PrinceMalchezaarBossEngagedByMainTankTrigger::IsActive()
 {
-    if (!botAI->IsTank(bot) || !botAI->IsMainTank(bot))
+    if (!botAI->IsMainTank(bot))
         return false;
 
     return AI_VALUE2(Unit*, "find target", "prince malchezaar");
@@ -280,7 +274,7 @@ bool PrinceMalchezaarBossEngagedByMainTankTrigger::IsActive()
 
 bool NightbaneBossEngagedByMainTankTrigger::IsActive()
 {
-    if (!botAI->IsTank(bot) || !botAI->IsMainTank(bot))
+    if (!botAI->IsMainTank(bot))
         return false;
 
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
@@ -301,8 +295,7 @@ bool NightbaneMainTankIsSusceptibleToFearTrigger::IsActive()
     if (bot->getClass() != CLASS_PRIEST)
         return false;
 
-    Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
-    if (!nightbane)
+    if (!AI_VALUE2(Unit*, "find target", "nightbane"))
         return false;
 
     Player* mainTank = GetGroupMainTank(botAI, bot);
@@ -312,8 +305,10 @@ bool NightbaneMainTankIsSusceptibleToFearTrigger::IsActive()
 
 bool NightbanePetsIgnoreCollisionToChaseFlyingBossTrigger::IsActive()
 {
-    Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
-    if (!nightbane)
+    if (bot->getClass() != CLASS_HUNTER && bot->getClass() != CLASS_WARLOCK)
+        return false;
+
+    if (!AI_VALUE2(Unit*, "find target", "nightbane"))
         return false;
 
     Pet* pet = bot->GetPet();

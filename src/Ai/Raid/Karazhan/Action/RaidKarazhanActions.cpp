@@ -30,8 +30,9 @@ bool ManaWarpStunCreatureBeforeWarpBreachAction::Execute(Event /*event*/)
 
     for (const char* spell : spells)
     {
-        if (botAI->CanCastSpell(spell, manaWarp))
-            return botAI->CastSpell(spell, manaWarp);
+        if (botAI->CanCastSpell(spell, manaWarp) &&
+            botAI->CastSpell(spell, manaWarp))
+            return true;
     }
 
     return false;
@@ -42,8 +43,8 @@ bool ManaWarpStunCreatureBeforeWarpBreachAction::Execute(Event /*event*/)
 // Prioritize Midnight until Attumen is mounted
 bool AttumenTheHuntsmanMarkTargetAction::Execute(Event /*event*/)
 {
-    Unit* attumenMounted = GetFirstAliveUnitByEntry(botAI, NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED);
-    if (attumenMounted)
+    if (Unit* attumenMounted =
+        GetFirstAliveUnitByEntry(botAI, NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED))
     {
         if (IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr))
             MarkTargetWithStar(bot, attumenMounted);
@@ -116,10 +117,10 @@ bool AttumenTheHuntsmanStackBehindAction::Execute(Event /*event*/)
     float rearX = attumenMounted->GetPositionX() + std::cos(orientation) * distanceBehind;
     float rearY = attumenMounted->GetPositionY() + std::sin(orientation) * distanceBehind;
 
-    if (bot->GetExactDist2d(rearX, rearY) > 1.0f)
+    if (bot->GetDistance2d(rearX, rearY) > 1.0f)
     {
-        return MoveTo(KARAZHAN_MAP_ID, rearX, rearY, attumenMounted->GetPositionZ(), false, false, false, false,
-                      MovementPriority::MOVEMENT_FORCED, true, false);
+        return MoveTo(KARAZHAN_MAP_ID, rearX, rearY, bot->GetPositionZ(), false, false, false, false,
+                      MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
     return false;
@@ -137,15 +138,10 @@ bool AttumenTheHuntsmanManageDpsTimerAction::Execute(Event /*event*/)
     if (midnight && midnight->GetHealth() == midnight->GetMaxHealth())
         attumenDpsWaitTimer.erase(instanceId);
 
-    // Midnight is still present as a separate (invisible) unit after Attumen mounts
-    // So this block can be reached
-    Unit* attumenMounted = GetFirstAliveUnitByEntry(botAI, NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED);
-    if (!attumenMounted)
-        return false;
-
     const time_t now = std::time(nullptr);
 
-    if (attumenMounted)
+    // Midnight is still present as a separate (invisible) unit after Attumen mounts
+    if (GetFirstAliveUnitByEntry(botAI, NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED))
         attumenDpsWaitTimer.try_emplace(instanceId, now);
 
     return false;
@@ -177,9 +173,8 @@ bool MoroesMarkTargetAction::Execute(Event /*event*/)
     Unit* rafe = AI_VALUE2(Unit*, "find target", "baron rafe dreuger");
     Unit* robin = AI_VALUE2(Unit*, "find target", "lord robin daris");
     Unit* crispin = AI_VALUE2(Unit*, "find target", "lord crispin ference");
-    Unit* target = GetFirstAliveUnit({dorothea, catriona, keira, rafe, robin, crispin});
 
-    if (target)
+    if (Unit* target = GetFirstAliveUnit({dorothea, catriona, keira, rafe, robin, crispin}))
     {
         if (IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr))
             MarkTargetWithSkull(bot, target);
