@@ -66,6 +66,7 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("hex lord malacrass determining kill order", {
         NextAction("hex lord malacrass assign dps priority", ACTION_RAID + 1) }));
 
+    // UNTESTED
     triggers.push_back(new TriggerNode("hex lord malacrass boss is channeling whirlwind", {
         NextAction("hex lord malacrass run away from whirlwind", ACTION_EMERGENCY + 6) }));
 
@@ -74,6 +75,7 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("hex lord malacrass boss placed freezing trap", {
         NextAction("hex lord malacrass move away from freezing trap", ACTION_EMERGENCY + 1) }));
+    // END UNTESTED
 
     // Zul'jin
     triggers.push_back(new TriggerNode("zul'jin main tank needs aggro upon pull or phase change", {

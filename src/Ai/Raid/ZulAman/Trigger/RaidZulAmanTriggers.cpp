@@ -238,7 +238,7 @@ bool ZuljinBossEngagedByTanksTrigger::IsActive()
 bool ZuljinBossIsChannelingWhirlwindInTrollFormTrigger::IsActive()
 {
     Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
-    if (!zuljin || !zuljin->HasAura(SPELL_WHIRLWIND))
+    if (!zuljin || !zuljin->HasAura(SPELL_ZULJIN_WHIRLWIND))
         return false;
 
     return (botAI->IsTank(bot) && zuljin->GetVictim() == bot);
