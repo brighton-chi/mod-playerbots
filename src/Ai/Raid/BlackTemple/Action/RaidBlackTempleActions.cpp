@@ -150,7 +150,7 @@ bool HighWarlordNajentusRemoveImpalingSpineAction::Execute(Event /*event*/)
         return false;
 
     // 2. Find the Naj'entus Spine GameObject near the impaled player
-    auto gos = AI_VALUE(GuidVector, "nearest game objects");
+    /* auto gos = AI_VALUE(GuidVector, "nearest game objects");
     GameObject* spineGo = nullptr;
     for (ObjectGuid const& guid : gos)
     {
@@ -161,6 +161,9 @@ bool HighWarlordNajentusRemoveImpalingSpineAction::Execute(Event /*event*/)
             break;
         }
     }
+    if (!spineGo)
+        return false; */
+    GameObject* spineGo = bot->FindNearestGameObject(GO_NAJENTUS_SPINE, 30.0f, true);
     if (!spineGo)
         return false;
 
