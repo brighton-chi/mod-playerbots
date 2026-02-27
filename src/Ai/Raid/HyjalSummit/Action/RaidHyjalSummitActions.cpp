@@ -147,11 +147,20 @@ bool RageWinterchillSpreadRangedInCircleAction::Execute(Event /*event*/)
         float targetX = RAGE_WINTERCHILL_TANK_POSITION.GetPositionX() + radius * std::cos(angle);
         float targetY = RAGE_WINTERCHILL_TANK_POSITION.GetPositionY() + radius * std::sin(angle);
 
-        if (bot->GetExactDist2d(targetX, targetY) > 2.0f)
+        // START TEST: Calculate the actual ground level at the target X, Y
+        float targetZ = bot->GetMapWaterOrGroundLevel(targetX, targetY, RAGE_WINTERCHILL_TANK_POSITION.GetPositionZ());
+        if (targetZ <= INVALID_HEIGHT)
+            targetZ = RAGE_WINTERCHILL_TANK_POSITION.GetPositionZ();
+
+        // Ensure the path is walkable and adjust coordinates if there is a collision
+        bot->GetMap()->CheckCollisionAndGetValidCoords(bot, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(),
+                                                       targetX, targetY, targetZ, false);
+
+        if (bot->GetExactDist(targetX, targetY, targetZ) > 2.0f)
         {
-            return MoveTo(HYJAL_SUMMIT_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false,
-                          false, false, MovementPriority::MOVEMENT_FORCED, true, false);
-        }
+            return MoveTo(HYJAL_SUMMIT_MAP_ID, targetX, targetY, targetZ, false, false,
+                          false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+        } // END TEST
         else
         {
             hasReachedWinterchillPosition[guid] = true;
@@ -288,11 +297,6 @@ bool AnetheronSpreadRangedInArcAction::Execute(Event /*event*/)
         float targetX = ANETHERON_MAIN_TANK_POSITION.GetPositionX() + radius * std::sin(angle);
         float targetY = ANETHERON_MAIN_TANK_POSITION.GetPositionY() + radius * std::cos(angle);
 
-        /* if (bot->GetExactDist2d(targetX, targetY) > 2.0f)
-        {
-            return MoveTo(HYJAL_SUMMIT_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false,
-                          false, false, MovementPriority::MOVEMENT_FORCED, true, false);
-        } */
         // START TEST: Calculate the actual ground level at the target X, Y
         float targetZ = bot->GetMapWaterOrGroundLevel(targetX, targetY, ANETHERON_MAIN_TANK_POSITION.GetPositionZ());
         if (targetZ <= INVALID_HEIGHT)
@@ -306,7 +310,7 @@ bool AnetheronSpreadRangedInArcAction::Execute(Event /*event*/)
         {
             // Set exact_waypoint (8th parameter) to false to ensure pathfinding is used
             return MoveTo(HYJAL_SUMMIT_MAP_ID, targetX, targetY, targetZ, false, false,
-                          false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+                          false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         } //END TEST
         else
         {
@@ -418,7 +422,7 @@ bool AnetheronAssignDpsPriorityAction::Execute(Event /*event*/)
                 return FleePosition(infernal->GetPosition(), safeDistFromInfernal, minInterval);
             }
 
-            if (botAI->IsRangedDps(bot) && bot->GetDistance2d(infernal) < 35.0f)
+            if (botAI->IsRangedDps(bot) && bot->GetDistance2d(infernal) < 50.0f)
             {
                 if (Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
                     !firstAssistTank || (firstAssistTank && infernal->GetVictim() == firstAssistTank))
@@ -506,7 +510,7 @@ bool KazrogalAssistTanksMoveInFrontOfBossAction::Execute(Event /*event*/)
         float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
         return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-                      false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+                      false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
     return false;
@@ -522,43 +526,6 @@ bool KazrogalSpreadRangedInArcAction::Execute(Event /*event*/)
     if (!group)
         return false;
 
-    /* std::vector<Player*> rangedMembers;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || !botAI->IsRanged(member))
-            continue;
-
-        rangedMembers.push_back(member);
-    }
-
-    if (rangedMembers.empty())
-        return false;
-
-    size_t count = rangedMembers.size();
-    auto findIt = std::find(rangedMembers.begin(), rangedMembers.end(), bot);
-    size_t botIndex = (findIt != rangedMembers.end()) ?
-        std::distance(rangedMembers.begin(), findIt) : 0;
-
-    constexpr float arcSpan = 2.0f * M_PI / 3.0f;
-    constexpr float arcCenter = 4.65f;
-    constexpr float arcStart = arcCenter - arcSpan / 2.0f;
-
-    // Kaz'rogal's hitbox is 7.875 yards
-    constexpr float radius = 24.0f;
-    float angle = (count == 1) ? arcCenter :
-        (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
-
-    float targetX = kazrogal->GetPositionX() + radius * std::cos(angle);
-    float targetY = kazrogal->GetPositionY() + radius * std::sin(angle);
-
-    if (bot->GetExactDist2d(targetX, targetY) > 0.5f)
-    {
-        return MoveTo(HYJAL_SUMMIT_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false,
-                      false, false, MovementPriority::MOVEMENT_FORCED, true, false);
-    } */
-
-    // TEST TWO ARCS
     std::vector<Player*> healers;
     std::vector<Player*> rangedDps;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
@@ -580,9 +547,8 @@ bool KazrogalSpreadRangedInArcAction::Execute(Event /*event*/)
     size_t botIndex = 0;
     constexpr float radius = 24.0f;
 
-    constexpr float arcSpan = 3.0f * M_PI / 2.0f;
-    float arcCenter = botAI->IsHeal(bot) ? 3.08f : 4.65f;
-    float arcStart = arcCenter - arcSpan / 2.0f;
+    constexpr float arcSpan = 2.0f * M_PI; // 360 degrees
+    float arcStart = 0.2f; // slight offset for starting point
 
     float angle = 0.0f;
 
@@ -592,8 +558,8 @@ bool KazrogalSpreadRangedInArcAction::Execute(Event /*event*/)
         botIndex = (findIt != healers.end()) ? std::distance(healers.begin(), findIt) : 0;
         count = healers.size();
 
-        angle = (count == 1) ? arcCenter :
-            (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
+        angle = (count == 1) ? arcStart :
+            (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count));
     }
     else
     {
@@ -601,19 +567,27 @@ bool KazrogalSpreadRangedInArcAction::Execute(Event /*event*/)
         botIndex = (findIt != rangedDps.end()) ? std::distance(rangedDps.begin(), findIt) : 0;
         count = rangedDps.size();
 
-        angle = (count == 1) ? arcCenter :
-            (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
+        angle = (count == 1) ? (arcStart + M_PI) : // offset opposite healers if solo
+            (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count));
     }
 
     float targetX = kazrogal->GetPositionX() + radius * std::cos(angle);
     float targetY = kazrogal->GetPositionY() + radius * std::sin(angle);
 
+    // Terrain check and collision adjustment
+    float targetZ = bot->GetMapWaterOrGroundLevel(targetX, targetY, kazrogal->GetPositionZ());
+    if (targetZ <= INVALID_HEIGHT)
+        targetZ = kazrogal->GetPositionZ();
+
+    bot->GetMap()->CheckCollisionAndGetValidCoords(bot, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(),
+                                                   targetX, targetY, targetZ, false);
+    // End test
+
     if (bot->GetExactDist2d(targetX, targetY) > 0.5f)
     {
-        return MoveTo(HYJAL_SUMMIT_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false,
-                        false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+        return MoveTo(HYJAL_SUMMIT_MAP_ID, targetX, targetY, targetZ, false, false,
+                      false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
     }
-    // END TEST TWO ARCS
 
     return false;
 }
