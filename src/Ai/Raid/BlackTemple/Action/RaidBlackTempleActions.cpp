@@ -1930,7 +1930,7 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*ev
                     return MoveTo(BLACK_TEMPLE_MAP_ID, eastFlame->GetPositionX(),
                                   eastFlame->GetPositionY(), bot->GetPositionZ(),
                                   false, false, false, false,
-                                  MovementPriority::MOVEMENT_COMBAT, true, false);
+                                  MovementPriority::MOVEMENT_COMBAT, true, true);
                 }
                 return false;
             }
@@ -1970,7 +1970,7 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*ev
                 {
                     return MoveTo(BLACK_TEMPLE_MAP_ID, westFlame->GetPositionX(), bot->GetPositionY(),
                                   bot->GetPositionZ(), false, false, false, false,
-                                  MovementPriority::MOVEMENT_COMBAT, true, false);
+                                  MovementPriority::MOVEMENT_COMBAT, true, true);
                 }
                 return false;
             }
