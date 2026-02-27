@@ -73,6 +73,15 @@ public:
         creators["hex lord malacrass determining kill order"] =
             &RaidZulAmanTriggerContext::hex_lord_malacrass_determining_kill_order;
 
+        creators["hex lord malacrass boss is channeling whirlwind"] =
+            &RaidZulAmanTriggerContext::hex_lord_malacrass_boss_is_channeling_whirlwind;
+
+        creators["hex lord malacrass boss has spell reflection"] =
+            &RaidZulAmanTriggerContext::hex_lord_malacrass_boss_has_spell_reflection;
+
+        creators["hex lord malacrass boss placed freezing trap"] =
+            &RaidZulAmanTriggerContext::hex_lord_malacrass_boss_placed_freezing_trap;
+
         // Zul'jin
 
         creators["zul'jin main tank needs aggro upon pull or phase change"] =
@@ -155,6 +164,15 @@ private:
 
     static Trigger* hex_lord_malacrass_determining_kill_order(
         PlayerbotAI* botAI) { return new HexLordMalacrassDeterminingKillOrderTrigger(botAI); }
+
+    static Trigger* hex_lord_malacrass_boss_is_channeling_whirlwind(
+        PlayerbotAI* botAI) { return new HexLordMalacrassBossIsChannelingWhirlwindTrigger(botAI); }
+
+    static Trigger* hex_lord_malacrass_boss_has_spell_reflection(
+        PlayerbotAI* botAI) { return new HexLordMalacrassBossHasSpellReflectionTrigger(botAI); }
+
+    static Trigger* hex_lord_malacrass_boss_placed_freezing_trap(
+        PlayerbotAI* botAI) { return new HexLordMalacrassBossPlacedFreezingTrapTrigger(botAI); }
 
     // Zul'jin
 

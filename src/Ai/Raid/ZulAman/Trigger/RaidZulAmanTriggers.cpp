@@ -179,6 +179,33 @@ bool HexLordMalacrassDeterminingKillOrderTrigger::IsActive()
            AI_VALUE2(Unit*, "find target", "hex lord malacrass");
 }
 
+bool HexLordMalacrassBossIsChannelingWhirlwindTrigger::IsActive()
+{
+    Unit* malacrass = AI_VALUE2(Unit*, "find target", "hex lord malacrass");
+    if (!malacrass)
+        return false;
+
+    return !botAI->IsMainTank(bot) && malacrass->HasAura(SPELL_HEX_LORD_WHIRLWIND);
+}
+
+bool HexLordMalacrassBossHasSpellReflectionTrigger::IsActive()
+{
+    if (!botAI->IsCaster(bot))
+        return false;
+
+    Unit* malacrass = AI_VALUE2(Unit*, "find target", "hex lord malacrass");
+    return malacrass && malacrass->HasAura(SPELL_HEX_LORD_SPELL_REFLECTION);
+}
+
+bool HexLordMalacrassBossPlacedFreezingTrapTrigger::IsActive()
+{
+    Unit* malacrass = AI_VALUE2(Unit*, "find target", "hex lord malacrass");
+    if (!malacrass)
+        return false;
+
+    return bot->FindNearestGameObject(GO_FREEZING_TRAP, 20.0f, true);
+}
+
 // Zul'jin
 
 bool ZuljinMainTankNeedsAggroUponPullOrPhaseChangeTrigger::IsActive()

@@ -66,6 +66,15 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("hex lord malacrass determining kill order", {
         NextAction("hex lord malacrass assign dps priority", ACTION_RAID + 1) }));
 
+    triggers.push_back(new TriggerNode("hex lord malacrass boss is channeling whirlwind", {
+        NextAction("hex lord malacrass run away from whirlwind", ACTION_EMERGENCY + 6) }));
+
+    triggers.push_back(new TriggerNode("hex lord malacrass boss has spell reflection", {
+        NextAction("hex lord malacrass casters stop attacking", ACTION_EMERGENCY + 6) }));
+
+    triggers.push_back(new TriggerNode("hex lord malacrass boss placed freezing trap", {
+        NextAction("hex lord malacrass move away from freezing trap", ACTION_EMERGENCY + 1) }));
+
     // Zul'jin
     triggers.push_back(new TriggerNode("zul'jin main tank needs aggro upon pull or phase change", {
         NextAction("zul'jin misdirect boss to main tank", ACTION_RAID + 2) }));
@@ -105,6 +114,8 @@ void RaidZulAmanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new HalazziControlMisdirectionMultiplier(botAI));
 
     // Hex Lord Malacrass
+    multipliers.push_back(new HexLordMalacrassAvoidWhirlwindMultiplier(botAI));
+    multipliers.push_back(new HexLordMalacrassStopAttackingDuringSpellReflectionMultiplier(botAI));
     multipliers.push_back(new HexLordMalacrassDoNotDispelUnstableAfflictionMultiplier(botAI));
 
     // Zul'jin

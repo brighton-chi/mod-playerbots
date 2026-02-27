@@ -101,11 +101,27 @@ public:
 
 // Hex Lord Malacrass
 
+class HexLordMalacrassAvoidWhirlwindMultiplier : public Multiplier
+{
+public:
+    HexLordMalacrassAvoidWhirlwindMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "hex lord malacrass avoid whirlwind") {}
+    virtual float GetValue(Action* action);
+};
+
 class HexLordMalacrassDoNotDispelUnstableAfflictionMultiplier : public Multiplier
 {
 public:
     HexLordMalacrassDoNotDispelUnstableAfflictionMultiplier(PlayerbotAI* botAI) : Multiplier(
         botAI, "hex lord malacrass do not dispel unstable affliction") {}
+    virtual float GetValue(Action* action);
+};
+
+class HexLordMalacrassStopAttackingDuringSpellReflectionMultiplier : public Multiplier
+{
+public:
+    HexLordMalacrassStopAttackingDuringSpellReflectionMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "hex lord malacrass stop attacking during spell reflection") {}
     virtual float GetValue(Action* action);
 };
 

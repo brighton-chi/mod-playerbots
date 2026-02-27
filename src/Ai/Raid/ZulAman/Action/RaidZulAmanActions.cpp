@@ -562,6 +562,54 @@ bool HexLordMalacrassAssignDpsPriorityAction::Execute(Event event)
     return false;
 }
 
+bool HexLordMalacrassRunAwayFromWhirlwindAction::Execute(Event event)
+{
+    if (Unit* malacrass = AI_VALUE2(Unit*, "find target", "hex lord malacrass"))
+    {
+        float currentDistance = bot->GetDistance2d(malacrass);
+        constexpr float safeDistance = 9.0f;
+        if (currentDistance < safeDistance)
+        {
+            bot->AttackStop();
+            bot->InterruptNonMeleeSpells(true);
+            return MoveAway(malacrass, safeDistance - currentDistance);
+        }
+    }
+
+    return false;
+}
+
+bool HexLordMalacrassCastersStopAttackingAction::Execute(Event event)
+{
+    Unit* malacrass = AI_VALUE2(Unit*, "find target", "hex lord malacrass");
+    if (!malacrass || !malacrass->HasAura(SPELL_HEX_LORD_SPELL_REFLECTION))
+        return false;
+
+    if (bot->GetVictim() == malacrass)
+    {
+        bot->AttackStop();
+        bot->InterruptNonMeleeSpells(true);
+        return true;
+    }
+
+    return false;
+}
+
+bool HexLordMalacrassMoveAwayFromFreezingTrapAction::Execute(Event event)
+{
+    GameObject* trapGo = bot->FindNearestGameObject(GO_FREEZING_TRAP, 20.0f, true);
+    if (!trapGo)
+        return false;
+
+    float currentDistance = bot->GetDistance2d(trapGo);
+    constexpr float safeDistance = 6.0f;
+    constexpr uint32 minInterval = 0;
+    if (currentDistance < safeDistance)
+        return FleePosition(trapGo->GetPosition(), safeDistance, minInterval);
+
+    return false;
+}
+
 // Zul'jin
 
 bool ZuljinMisdirectBossToMainTankAction::Execute(Event event)

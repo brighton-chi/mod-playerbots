@@ -72,6 +72,15 @@ public:
         creators["hex lord malacrass assign dps priority"] =
             &RaidZulAmanActionContext::hex_lord_malacrass_assign_dps_priority;
 
+        creators["hex lord malacrass run away from whirlwind"] =
+            &RaidZulAmanActionContext::hex_lord_malacrass_run_away_from_whirlwind;
+
+        creators["hex lord malacrass casters stop attacking"] =
+            &RaidZulAmanActionContext::hex_lord_malacrass_casters_stop_attacking;
+
+        creators["hex lord malacrass move away from freezing trap"] =
+            &RaidZulAmanActionContext::hex_lord_malacrass_move_away_from_freezing_trap;
+
         // Zul'jin
         creators["zul'jin misdirect boss to main tank"] =
             &RaidZulAmanActionContext::zuljin_misdirect_boss_to_main_tank;
@@ -152,6 +161,15 @@ private:
 
     static Action* hex_lord_malacrass_assign_dps_priority(
         PlayerbotAI* botAI) { return new HexLordMalacrassAssignDpsPriorityAction(botAI); }
+
+    static Action* hex_lord_malacrass_run_away_from_whirlwind(
+        PlayerbotAI* botAI) { return new HexLordMalacrassRunAwayFromWhirlwindAction(botAI); }
+
+    static Action* hex_lord_malacrass_casters_stop_attacking(
+        PlayerbotAI* botAI) { return new HexLordMalacrassCastersStopAttackingAction(botAI); }
+
+    static Action* hex_lord_malacrass_move_away_from_freezing_trap(
+        PlayerbotAI* botAI) { return new HexLordMalacrassMoveAwayFromFreezingTrapAction(botAI); }
 
     // Zul'jin
     static Action* zuljin_misdirect_boss_to_main_tank(

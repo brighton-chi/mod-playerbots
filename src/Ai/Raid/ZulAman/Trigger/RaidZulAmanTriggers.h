@@ -167,6 +167,30 @@ public:
     bool IsActive() override;
 };
 
+class HexLordMalacrassBossIsChannelingWhirlwindTrigger : public Trigger
+{
+public:
+    HexLordMalacrassBossIsChannelingWhirlwindTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "hex lord malacrass boss is channeling whirlwind") {}
+    bool IsActive() override;
+};
+
+class HexLordMalacrassBossHasSpellReflectionTrigger : public Trigger
+{
+public:
+    HexLordMalacrassBossHasSpellReflectionTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "hex lord malacrass boss has spell reflection") {}
+    bool IsActive() override;
+};
+
+class HexLordMalacrassBossPlacedFreezingTrapTrigger : public Trigger
+{
+public:
+    HexLordMalacrassBossPlacedFreezingTrapTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "hex lord malacrass boss placed freezing trap") {}
+    bool IsActive() override;
+};
+
 // Zul'jin
 
 class ZuljinMainTankNeedsAggroUponPullOrPhaseChangeTrigger : public Trigger

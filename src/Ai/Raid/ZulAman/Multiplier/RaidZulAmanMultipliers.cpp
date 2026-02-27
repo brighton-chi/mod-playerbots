@@ -236,6 +236,46 @@ float HalazziControlMisdirectionMultiplier::GetValue(Action* action)
 
 // Hex Lord Malacrass
 
+float HexLordMalacrassAvoidWhirlwindMultiplier::GetValue(Action* action)
+{
+    if (botAI->IsMainTank(bot))
+        return 1.0f;
+
+    Unit* malacrass = AI_VALUE2(Unit*, "find target", "hex lord malacrass");
+    if (!malacrass || !malacrass->HasAura(SPELL_HEX_LORD_WHIRLWIND))
+        return 1.0f;
+
+    if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
+        dynamic_cast<CastKillingSpreeAction*>(action) ||
+        dynamic_cast<ReachTargetAction*>(action))
+        return 0.0f;
+
+    return 1.0f;
+}
+
+float HexLordMalacrassStopAttackingDuringSpellReflectionMultiplier::GetValue(Action* action)
+{
+    if (!botAI->IsCaster(bot))
+        return 1.0f;
+
+    Unit* malacrass = AI_VALUE2(Unit*, "find target", "hex lord malacrass");
+    if (!malacrass || !malacrass->HasAura(SPELL_HEX_LORD_SPELL_REFLECTION))
+        return 1.0f;
+
+    auto castSpellAction = dynamic_cast<CastSpellAction*>(action);
+    if (!castSpellAction)
+        return 1.0f;
+
+    if (castSpellAction->getThreatType() == Action::ActionThreatType::Aoe ||
+        (bot->GetVictim() == malacrass &&
+         castSpellAction->getThreatType() == Action::ActionThreatType::Single))
+    {
+        return 0.0f;
+    }
+
+    return 1.0f;
+}
+
 float HexLordMalacrassDoNotDispelUnstableAfflictionMultiplier::GetValue(Action* action)
 {
     if (bot->getClass() != CLASS_PRIEST &&
@@ -300,7 +340,7 @@ float ZuljinAvoidWhirlwindMultiplier::GetValue(Action* action)
         return 1.0f;
 
     Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
-    if (!zuljin || !zuljin->HasAura(SPELL_WHIRLWIND))
+    if (!zuljin || !zuljin->HasAura(SPELL_ZULJIN_WHIRLWIND))
         return 1.0f;
 
     if (dynamic_cast<CastReachTargetSpellAction*>(action) ||

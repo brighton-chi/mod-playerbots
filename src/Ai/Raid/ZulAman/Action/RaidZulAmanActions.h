@@ -172,6 +172,30 @@ public:
     bool Execute(Event event) override;
 };
 
+class HexLordMalacrassRunAwayFromWhirlwindAction : public MovementAction
+{
+public:
+    HexLordMalacrassRunAwayFromWhirlwindAction(
+        PlayerbotAI* botAI, std::string const name = "hex lord malacrass run away from whirlwind") : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class HexLordMalacrassCastersStopAttackingAction : public Action
+{
+public:
+    HexLordMalacrassCastersStopAttackingAction(
+        PlayerbotAI* botAI, std::string const name = "hex lord malacrass casters stop attacking") : Action(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class HexLordMalacrassMoveAwayFromFreezingTrapAction : public MovementAction
+{
+public:
+    HexLordMalacrassMoveAwayFromFreezingTrapAction(
+        PlayerbotAI* botAI, std::string const name = "hex lord malacrass move away from freezing trap") : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 // Zul'jin
 
 class ZuljinMisdirectBossToMainTankAction : public AttackAction
