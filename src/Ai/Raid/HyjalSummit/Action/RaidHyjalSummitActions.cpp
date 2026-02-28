@@ -632,17 +632,19 @@ bool KazrogalLowManaBotMoveFromGroupAction::Execute(Event /*event*/)
         }
 
         constexpr float safeDistance = 16.0f;
-        /* if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
-            return MoveFromGroup(safeDistance); */
-        // test moveaway
+        constexpr uint32 minInterval = 1000;
         Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
         if (nearestPlayer)
         {
             float currentDistance = bot->GetDistance2d(nearestPlayer);
             if (currentDistance < safeDistance)
-                return MoveAway(nearestPlayer, safeDistance - currentDistance);
+            {
+                if (botAI->IsRanged(bot)) // TEST USING FLEEPOSITION FOR RANGED INSTEAD
+                    return FleePosition(nearestPlayer->GetPosition(), safeDistance, minInterval);
+                else
+                    return MoveAway(nearestPlayer, safeDistance - currentDistance);
+            }
         }
-        // end test moveaway
     }
 
     return false;
