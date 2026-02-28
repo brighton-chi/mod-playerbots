@@ -192,7 +192,8 @@ bool AzgalorMainTankIsPositioningBossTrigger::IsActive()
         return false;
 
     Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
-    if (!azgalor || azgalor->GetHealthPct() < 85.0f || azgalor->GetVictim() == bot)
+    if (!azgalor || azgalor->GetHealthPct() < 85.0f ||
+        azgalor->GetVictim() == bot)
         return false;
 
     return GetAzgalorTankStep(botAI, bot) < 2;
