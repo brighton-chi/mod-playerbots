@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
+ */
+
 #include "RaidBlackTempleTriggers.h"
 #include "RaidBlackTempleHelpers.h"
 #include "RaidBlackTempleActions.h"
@@ -352,7 +357,7 @@ bool MotherShahrazTanksArePositioningBossTrigger::IsActive()
     if (!shahraz || shahraz->GetHealthPct() < 90.0f)
         return false;
 
-    return shahraz->GetDistance2d(SHAHRAZ_TANK_POSITION.GetPositionX(), 
+    return shahraz->GetDistance2d(SHAHRAZ_TANK_POSITION.GetPositionX(),
                                   SHAHRAZ_TANK_POSITION.GetPositionY()) > 10.0f;
 }
 
