@@ -273,10 +273,15 @@ namespace SerpentShrineCavernHelpers
         if (!leaderGuid.IsEmpty())
             leader = ObjectAccessor::FindPlayer(leaderGuid);
 
+        // If cheats are disabled, the group leader will be the designated looter
         if (!botAI->HasCheat(BotCheatMask::raid))
             return leader;
 
-        Player* fallback = leader;
+        // Priority: (1) assistant melee DPS, (2) other melee DPS, (3) any ranged DPS
+        Player* meleeDpsAssistant = nullptr;
+        Player* meleeDps = nullptr;
+        Player* rangedDps = nullptr;
+
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
@@ -287,14 +292,27 @@ namespace SerpentShrineCavernHelpers
             if (!memberAI)
                 continue;
 
-            if (memberAI->IsMelee(member) && memberAI->IsDps(member))
-                return member;
+            if (!meleeDpsAssistant && memberAI->IsMelee(member) &&
+                memberAI->IsDps(member) && group->IsAssistant(member->GetGUID()))
+            {
+                meleeDpsAssistant = member;
+                break;
+            }
 
-            if (!fallback && memberAI->IsRangedDps(member))
-                fallback = member;
+            if (!meleeDps && memberAI->IsMelee(member) && memberAI->IsDps(member))
+                meleeDps = member;
+
+            if (!rangedDps && memberAI->IsRangedDps(member))
+                rangedDps = member;
         }
 
-        return fallback ? fallback : leader;
+        if (meleeDpsAssistant)
+            return meleeDpsAssistant;
+        if (meleeDps)
+            return meleeDps;
+        if (rangedDps)
+            return rangedDps;
+        return leader;
     }
 
     Player* GetFirstTaintedCorePasser(PlayerbotAI* botAI, Player* bot)
