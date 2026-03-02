@@ -155,19 +155,6 @@ bool HighWarlordNajentusRemoveImpalingSpineAction::Execute(Event /*event*/)
         return false;
 
     // 2. Find the Naj'entus Spine GameObject near the impaled player
-    /* auto gos = AI_VALUE(GuidVector, "nearest game objects");
-    GameObject* spineGo = nullptr;
-    for (ObjectGuid const& guid : gos)
-    {
-        GameObject* go = botAI->GetGameObject(guid);
-        if (go && go->isSpawned() && go->GetEntry() == GO_NAJENTUS_SPINE)
-        {
-            spineGo = go;
-            break;
-        }
-    }
-    if (!spineGo)
-        return false; */
     GameObject* spineGo = bot->FindNearestGameObject(GO_NAJENTUS_SPINE, 30.0f, true);
     if (!spineGo)
         return false;
@@ -2436,40 +2423,36 @@ bool IllidanStormrageWarlockTankHandleDemonBossAction::Execute(Event /*event*/)
     return false;
 }
 
-// Trying using CreatureListSearcher; previous was "possible targets no los"
-// with potential "find target" for Illidan
 bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
 {
-    std::list<Creature*> creatureList;
-    constexpr float searchRadius = 60.0f;
-    std::vector<uint32> entries =
-        { NPC_SHADOW_DEMON, NPC_PARASITIC_SHADOWFIEND, NPC_ILLIDAN_STORMRAGE };
-    bot->GetCreatureListWithEntryInGrid(creatureList, entries, searchRadius);
+    auto const& attackers =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
 
-    Creature* shadowDemon = nullptr;
-    Creature* shadowfiend = nullptr;
-    Creature* illidan = nullptr;
+     // Unit* shadowDemon = nullptr;
+    Unit* shadowfiend = nullptr;
+    Unit* illidan = nullptr;
 
     // 1. Find the closest of each specific add type
-    for (Creature* creature : creatureList)
+    for (auto guid : attackers)
     {
-        if (!creature || !creature->IsAlive())
+        Unit* unit = botAI->GetUnit(guid);
+        if (!unit || !unit->IsAlive())
             continue;
 
-        switch (creature->GetEntry())
+        switch (unit->GetEntry())
         {
-            case NPC_SHADOW_DEMON:
-                if (!shadowDemon || bot->GetExactDist2d(creature) < bot->GetExactDist2d(shadowDemon))
-                    shadowDemon = creature;
-                break;
+            /* case NPC_SHADOW_DEMON:
+                if (!shadowDemon || bot->GetExactDist2d(unit) < bot->GetExactDist2d(shadowDemon))
+                    shadowDemon = unit;
+                break; */
 
             case NPC_PARASITIC_SHADOWFIEND:
-                if (!shadowfiend || bot->GetExactDist2d(creature) < bot->GetExactDist2d(shadowfiend))
-                    shadowfiend = creature;
+                if (!shadowfiend || bot->GetExactDist2d(unit) < bot->GetExactDist2d(shadowfiend))
+                    shadowfiend = unit;
                 break;
 
             case NPC_ILLIDAN_STORMRAGE:
-                illidan = creature;
+                illidan = unit;
                 break;
 
             default:
@@ -2480,22 +2463,10 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
     auto [eastFlame, westFlame] = GetFlamesOfAzzinoth(botAI, bot);
 
     // 2. Build the priority list based on Phase and Role
-    std::vector<Unit*> targets;
+    /* std::vector<Unit*> targets;
 
     int phase = GetIllidanPhase(illidan);
-    if (phase == 2 && !botAI->IsTank(bot))
-    {
-        /* if (botAI->IsAssistTankOfIndex(bot, 1, true))
-            targets = { eastFlame, westFlame };
-        else if (botAI->IsAssistTankOfIndex(bot, 0, true))
-            targets = { westFlame, eastFlame };
-        else if (botAI->IsRanged(bot))
-            targets = { shadowfiend, eastFlame, westFlame };
-        else
-            targets = { eastFlame, westFlame }; */
-        targets = { shadowfiend, eastFlame, westFlame };
-    }
-    else if (phase == 1 || phase == 3 || phase == 5)
+    if (phase == 1 || phase == 3 || phase == 5)
     {
         if (botAI->IsRanged(bot))
             targets = { shadowfiend, illidan };
@@ -2507,9 +2478,13 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
         if (GetIllidanWarlockTank(bot) == bot)
             targets = { illidan };
         else if (botAI->IsRanged(bot))
-            targets = { /*shadowDemon,*/ shadowfiend, illidan };
+            targets = { shadowfiend, illidan };
         else
-            targets = { /*shadowDemon*/ };
+            targets = { nullptr };
+    }
+    else if (phase == 2 && !botAI->IsTank(bot))
+    {
+        targets = { shadowfiend, eastFlame, westFlame };
     }
 
     // 3. Select the highest priority valid target
@@ -2521,6 +2496,46 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
             target = candidate;
             break;
         }
+    } */
+    Unit* target = nullptr;
+
+    auto SelectTarget = [](std::initializer_list<Unit*> candidates) -> Unit* {
+        for (Unit* candidate : candidates)
+        {
+            if (candidate && candidate->IsAlive())
+                return candidate;
+        }
+        return nullptr;
+    };
+
+    int phase = GetIllidanPhase(illidan);
+    if (phase == 1 || phase == 3 || phase == 5)
+    {
+        if (botAI->IsRanged(bot))
+            target = SelectTarget({ shadowfiend, illidan });
+        else
+            target = SelectTarget({ illidan });
+    }
+    else if (phase == 4)
+    {
+        if (GetIllidanWarlockTank(bot) == bot)
+            target = SelectTarget({ illidan });
+        else if (botAI->IsRanged(bot))
+            target = SelectTarget({ /*shadowDemon,*/ shadowfiend, illidan });
+        else
+            target = SelectTarget({ /*shadowDemon*/ });
+    }
+    else if (phase == 2 && !botAI->IsTank(bot))
+    {
+        /* if (botAI->IsAssistTankOfIndex(bot, 1, true))
+            target = SelectTarget({ eastFlame, westFlame });
+        else if (botAI->IsAssistTankOfIndex(bot, 0, true))
+            target = SelectTarget({ westFlame, eastFlame });
+        else if (botAI->IsRanged(bot))
+            target = SelectTarget({ shadowfiend, eastFlame, westFlame });
+        else
+            target = SelectTarget({ eastFlame, westFlame }); */
+        target = SelectTarget({ shadowfiend, eastFlame, westFlame });
     }
 
     // 4. Attack
