@@ -605,14 +605,17 @@ bool TheLurkerBelowTanksPickUpAddsAction::Execute(Event /*event*/)
         return false;
 
     std::vector<Unit*> guardians;
-    std::list<Creature* > creatureList;
-    constexpr float searchRadius = 100.0f;
-    bot->GetCreatureListWithEntryInGrid(creatureList, NPC_COILFANG_GUARDIAN, searchRadius);
+    auto const& attackers =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
 
-    for (Creature* creature : creatureList)
+    for (auto guid : attackers)
     {
-        if (creature && creature->IsAlive())
-            guardians.push_back(creature);
+        Unit* unit = bot->GetUnit(guid);
+        if (unit && unit->IsAlive() &&
+            unit->GetEntry() == NPC_COILFANG_GUARDIAN)
+        {
+            guardians.push_back(unit);
+        }
     }
 
     if (guardians.size() < 3)
@@ -636,7 +639,7 @@ bool TheLurkerBelowTanksPickUpAddsAction::Execute(Event /*event*/)
             MarkTargetWithIcon(bot, guardian, rtiIndices[i]);
             SetRtiTarget(botAI, rtiNames[i], guardian);
 
-            if (bot->GetTarget() != guardian->GetGUID())
+            if (bot->GetVictim() != guardian)
                 return Attack(guardian);
         }
     }
@@ -687,18 +690,17 @@ bool LeotherasTheBlindTargetSpellbindersAction::Execute(Event /*event*/)
 // Use tank strategy for Demon Form and DPS strategy for Human Form
 bool LeotherasTheBlindDemonFormTankAttackBossAction::Execute(Event /*event*/)
 {
+    auto const& attackers =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
+
     Unit* innerDemon = nullptr;
-    std::list<Creature*> creatureList;
-    constexpr float searchRadius = 50.0f;
-
-    bot->GetCreatureListWithEntryInGrid(creatureList, NPC_INNER_DEMON, searchRadius);
-
-    for (Creature* creature : creatureList)
+    for (auto guid : attackers)
     {
-        if (creature && creature->GetEntry() == NPC_INNER_DEMON &&
-            creature->GetSummonerGUID() == bot->GetGUID())
+        Unit* unit = bot->GetUnit(guid);
+        if (unit && unit->GetEntry() == NPC_INNER_DEMON &&
+            unit->GetSummonerGUID() == bot->GetGUID())
         {
-            innerDemon = creature;
+            innerDemon = unit;
             break;
         }
     }
@@ -812,18 +814,17 @@ bool LeotherasTheBlindMeleeDpsRunAwayFromBossAction::Execute(Event /*event*/)
 // Hardcoded actions for healers and bear tanks to kill Inner Demons
 bool LeotherasTheBlindDestroyInnerDemonAction::Execute(Event /*event*/)
 {
+    auto const& attackers =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
+
     Unit* innerDemon = nullptr;
-    std::list<Creature*> creatureList;
-    constexpr float searchRadius = 50.0f;
-
-    bot->GetCreatureListWithEntryInGrid(creatureList, NPC_INNER_DEMON, searchRadius);
-
-    for (Creature* creature : creatureList)
+    for (auto guid : attackers)
     {
-        if (creature && creature->GetEntry() == NPC_INNER_DEMON &&
-            creature->GetSummonerGUID() == bot->GetGUID())
+        Unit* unit = bot->GetUnit(guid);
+        if (unit && unit->GetEntry() == NPC_INNER_DEMON &&
+            unit->GetSummonerGUID() == bot->GetGUID())
         {
-            innerDemon = creature;
+            innerDemon = unit;
             break;
         }
     }
