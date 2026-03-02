@@ -610,7 +610,7 @@ bool TheLurkerBelowTanksPickUpAddsAction::Execute(Event /*event*/)
 
     for (auto guid : attackers)
     {
-        Unit* unit = bot->GetUnit(guid);
+        Unit* unit = botAI->GetUnit(guid);
         if (unit && unit->IsAlive() &&
             unit->GetEntry() == NPC_COILFANG_GUARDIAN)
         {
@@ -696,11 +696,12 @@ bool LeotherasTheBlindDemonFormTankAttackBossAction::Execute(Event /*event*/)
     Unit* innerDemon = nullptr;
     for (auto guid : attackers)
     {
-        Unit* unit = bot->GetUnit(guid);
-        if (unit && unit->GetEntry() == NPC_INNER_DEMON &&
-            unit->GetSummonerGUID() == bot->GetGUID())
+        Unit* unit = botAI->GetUnit(guid);
+        Creature* creature = unit ? unit->ToCreature() : nullptr;
+        if (creature && creature->GetEntry() == NPC_INNER_DEMON &&
+            creature->GetSummonerGUID() == bot->GetGUID())
         {
-            innerDemon = unit;
+            innerDemon = creature;
             break;
         }
     }
@@ -820,11 +821,12 @@ bool LeotherasTheBlindDestroyInnerDemonAction::Execute(Event /*event*/)
     Unit* innerDemon = nullptr;
     for (auto guid : attackers)
     {
-        Unit* unit = bot->GetUnit(guid);
-        if (unit && unit->GetEntry() == NPC_INNER_DEMON &&
-            unit->GetSummonerGUID() == bot->GetGUID())
+        Unit* unit = botAI->GetUnit(guid);
+        Creature* creature = unit ? unit->ToCreature() : nullptr;
+        if (creature && creature->GetEntry() == NPC_INNER_DEMON &&
+            creature->GetSummonerGUID() == bot->GetGUID())
         {
-            innerDemon = unit;
+            innerDemon = creature;
             break;
         }
     }
