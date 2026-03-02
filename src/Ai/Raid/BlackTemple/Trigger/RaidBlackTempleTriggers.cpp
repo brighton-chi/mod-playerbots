@@ -623,7 +623,7 @@ bool IllidanStormrageBossTransformsIntoDemonTrigger::IsActive()
 
 bool IllidanStormrageBossSpawnsAddsTrigger::IsActive()
 {
-    if (botAI->IsHeal(bot))
+    if (!botAI->IsRangedDps(bot))
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");

@@ -504,7 +504,10 @@ float IllidanStormrageDisableDefaultTargetingMultiplier::GetValue(Action* action
     if (!illidan || illidan->GetHealth() == 1)
         return 1.0f;
 
-    if (dynamic_cast<TankAssistAction*>(action) || dynamic_cast<DpsAssistAction*>(action))
+    if (dynamic_cast<TankAssistAction*>(action) /* || dynamic_cast<DpsAssistAction*>(action)*/)
+        return 0.0f;
+
+    if (botAI->IsRanged(bot) && dynamic_cast<DpsAssistAction*>(action))
         return 0.0f;
 
     return 1.0f;
