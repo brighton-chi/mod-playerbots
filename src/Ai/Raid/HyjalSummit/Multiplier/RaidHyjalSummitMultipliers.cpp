@@ -196,12 +196,10 @@ float AzgalorDisableTankActionsMultiplier::GetValue(Action* action)
 
     // Only move to Doomguard position if a player has Doom
     // Exception: if a prior Doomguard is still up
-    if (AI_VALUE2(Unit*, "find target", "lesser doomguard") ||
-        !AnyGroupMemberHasDoom(bot))
-        return 1.0f;
-
-    if (dynamic_cast<MovementAction*>(action) &&
-        !dynamic_cast<AzgalorFirstAssistTankPositionDoomguardAction*>(action))
+    if (AnyGroupMemberHasDoom(bot) &&
+        (dynamic_cast<ReachTargetAction*>(action) ||
+         dynamic_cast<CastReachTargetSpellAction*>(action) ||
+         dynamic_cast<CombatFormationMoveAction*>(action)))
         return 0.0f;
 
     return 1.0f;
