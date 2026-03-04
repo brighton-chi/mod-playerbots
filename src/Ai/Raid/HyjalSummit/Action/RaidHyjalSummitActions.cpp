@@ -989,10 +989,15 @@ bool ArchimondeAvoidDoomfireAction::Execute(Event /*event*/)
 
         Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
         bool backwards = archimonde && archimonde->GetVictim() == bot;
+        // Healers need to be allowed to go through fire to reach healing targets so
+        // don't set movement priority to forced for them
+        MovementPriority movePriority = botAI->IsHeal(bot) ?
+            MovementPriority::MOVEMENT_COMBAT : MovementPriority::MOVEMENT_FORCED;
 
+        bot->AttackStop();
         bot->InterruptNonMeleeSpells(true);
         return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-                      false, false, MovementPriority::MOVEMENT_FORCED, true, backwards);
+                      false, false, movePriority, true, backwards);
     }
 
     return false;
