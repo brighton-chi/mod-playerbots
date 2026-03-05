@@ -456,35 +456,40 @@ float IllidanStormrageDelayCooldownsMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float IllidanStormrageControlMovementMultiplier::GetValue(Action* action)
+float IllidanStormrageControlTankActionsMultiplier::GetValue(Action* action)
 {
+    if (!botAI->IsTank(bot))
+        return 1.0f;
+
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     if (!illidan || illidan->GetHealth() == 1)
         return 1.0f;
 
-    if (!botAI->IsMainTank(bot) && dynamic_cast<TankFaceAction*>(action))
+    if (dynamic_cast<TankFaceAction*>(action))
         return 0.0f;
 
-    if (dynamic_cast<CombatFormationMoveAction*>(action) &&
-        !dynamic_cast<TankFaceAction*>(action) &&
-        !dynamic_cast<SetBehindTargetAction*>(action))
-        return 0.0f;
+    if (GetIllidanPhase(illidan) != 2)
+        return 1.0f;
 
-    if (GetIllidanPhase(illidan) == 2)
+    if (botAI->IsMainTank(bot))
     {
-        if (dynamic_cast<AvoidAoeAction*>(action))
+        if (dynamic_cast<MovementAction*>(action) &&
+            !dynamic_cast<IllidanStormragePositionAboveGrateAction*>(action))
             return 0.0f;
 
-        if (!botAI->IsAssistTankOfIndex(bot, 0, true) &&
-            !botAI->IsAssistTankOfIndex(bot, 1, true))
-            return 1.0f;
-
-        if  ((dynamic_cast<MovementAction*>(action) &&
-              !dynamic_cast<IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction*>(action)) ||
-              dynamic_cast<CastHealingSpellAction*>(action))
-        {
+        if (dynamic_cast<CastMeleeSpellAction*>(action) ||
+            dynamic_cast<CastReachTargetSpellAction*>(action))
             return 0.0f;
-        }
+    }
+    else if (botAI->IsAssistTankOfIndex(bot, 0, false) ||
+             botAI->IsAssistTankOfIndex(bot, 1, false))
+    {
+        if (dynamic_cast<MovementAction*>(action) &&
+            !dynamic_cast<IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction*>(action))
+            return 0.0f;
+
+        if (dynamic_cast<CastHealingSpellAction*>(action))
+            return 0.0f;
     }
 
     return 1.0f;
@@ -512,46 +517,31 @@ float IllidanStormrageDisableDefaultTargetingMultiplier::GetValue(Action* action
     return 1.0f;
 }
 
-// Testing more of a generic movement suppression multiplier
-float IllidanStormrageStayWithinGrateMultiplier::GetValue(Action* action)
+float IllidanStormrageControlNonTankMovementMultiplier::GetValue(Action* action)
 {
+    if (botAI->IsTank(bot))
+        return 1.0f;
+
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     if (!illidan || illidan->GetHealth() == 1)
         return 1.0f;
 
+    if (dynamic_cast<CombatFormationMoveAction*>(action) &&
+        !dynamic_cast<SetBehindTargetAction*>(action))
+        return 0.0f;
+
+    if (dynamic_cast<CastDisengageAction*>(action) ||
+        dynamic_cast<CastBlinkBackAction*>(action) ||
+        dynamic_cast<FleeAction*>(action) ||
+        dynamic_cast<FollowAction*>(action))
+        return 0.0f;
+
     int phase = GetIllidanPhase(illidan);
 
-    if (botAI->IsMainTank(bot) && phase == 2 &&
-        ((dynamic_cast<MovementAction*>(action) &&
-          !dynamic_cast<IllidanStormragePositionAboveGrateAction*>(action)) ||
-          dynamic_cast<CastMeleeSpellAction*>(action) ||
-          dynamic_cast<CastReachTargetSpellAction*>(action)))
-    {
+    if (phase == 2 &&
+        (dynamic_cast<CastKillingSpreeAction*>(action) ||
+         dynamic_cast<ReachTargetAction*>(action)))
         return 0.0f;
-    }
-
-    if (botAI->IsRanged(bot) &&
-        (phase != 1 || bot->HasAura(SPELL_PARASITIC_SHADOWFIEND)) &&
-        (dynamic_cast<ReachTargetAction*>(action) ||
-         dynamic_cast<FleeAction*>(action) ||
-         dynamic_cast<FollowAction*>(action) ||
-         dynamic_cast<CastDisengageAction*>(action) ||
-         dynamic_cast<CastBlinkBackAction*>(action)))
-    {
-        return 0.0f;
-    }
-
-    if (botAI->IsMelee(bot) && (phase == 2 ||
-        bot->HasAura(SPELL_PARASITIC_SHADOWFIEND)) &&
-        (dynamic_cast<ReachTargetAction*>(action) ||
-         dynamic_cast<FleeAction*>(action) ||
-         dynamic_cast<FollowAction*>(action) ||
-         dynamic_cast<SetBehindTargetAction*>(action) ||
-         dynamic_cast<CastReachTargetSpellAction*>(action) ||
-         dynamic_cast<CastKillingSpreeAction*>(action)))
-    {
-        return 0.0f;
-    }
 
     return 1.0f;
 }

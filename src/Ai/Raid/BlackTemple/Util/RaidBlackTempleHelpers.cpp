@@ -289,61 +289,38 @@ namespace BlackTempleHelpers
         return flameCrashes;
     }
 
-    std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(PlayerbotAI* botAI, Player* bot)
+    std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(PlayerbotAI* /*botAI*/, Player* bot)
     {
         Unit* eastFlame = nullptr;
         Unit* westFlame = nullptr;
 
-        // Gather all flames
-        std::vector<Unit*> flames;
-        std::list<Creature*> creatureList;
-        constexpr float searchRadius = 100.0f;
-        bot->GetCreatureListWithEntryInGrid(creatureList, NPC_FLAME_OF_AZZINOTH, searchRadius);
-
-        for (Creature* creature : creatureList)
-        {
-            if (creature && creature->IsAlive())
-                flames.push_back(creature);
-        }
-
         const uint32 instanceId = bot->GetMap()->GetInstanceId();
-        if (eastFlameGuid.find(instanceId) == eastFlameGuid.end() &&
-            westFlameGuid.find(instanceId) == westFlameGuid.end() &&
-            flames.size() == 2)
-        {
-            float eastDist0 = flames[0]->GetExactDist2d(ILLIDAN_E_GLAIVE_WAITING_POSITION);
-            float eastDist1 = flames[1]->GetExactDist2d(ILLIDAN_E_GLAIVE_WAITING_POSITION);
 
-            if (eastDist0 < eastDist1)
+        if (eastFlameGuid.find(instanceId) != eastFlameGuid.end())
+        {
+            if (Unit* unit = ObjectAccessor::GetUnit(*bot, eastFlameGuid[instanceId]))
             {
-                eastFlameGuid[instanceId] = flames[0]->GetGUID();
-                westFlameGuid[instanceId] = flames[1]->GetGUID();
-            }
-            else
-            {
-                eastFlameGuid[instanceId] = flames[1]->GetGUID();
-                westFlameGuid[instanceId] = flames[0]->GetGUID();
+                if (unit->IsAlive())
+                    eastFlame = unit;
             }
         }
 
-        for (Unit* unit : flames)
+        if (westFlameGuid.find(instanceId) != westFlameGuid.end())
         {
-            if (eastFlameGuid.find(instanceId) != eastFlameGuid.end() &&
-                unit->GetGUID() == eastFlameGuid[instanceId])
+            if (Unit* unit = ObjectAccessor::GetUnit(*bot, westFlameGuid[instanceId]))
             {
-                eastFlame = unit;
+                if (unit->IsAlive())
+                    westFlame = unit;
             }
-            else if (westFlameGuid.find(instanceId) != westFlameGuid.end() &&
-                     unit->GetGUID() == westFlameGuid[instanceId])
-            {
-                westFlame = unit;
-            }
+        }
 
-            LOG_DEBUG("playerbots", "[BT] Bot {} (GUID: {}) identifies eastFlameGuid={} westFlameGuid={}",
+        if (!eastFlame || !westFlame)
+        {
+            LOG_DEBUG("playerbots", "[BT] Bot {} (GUID: {}) GetFlamesOfAzzinoth missing flames! eastFlame={} westFlame={}",
                 bot->GetName(),
                 bot->GetGUID().ToString(),
-                eastFlameGuid.count(instanceId) ? eastFlameGuid[instanceId].ToString() : "NONE",
-                westFlameGuid.count(instanceId) ? westFlameGuid[instanceId].ToString() : "NONE"
+                eastFlame ? "FOUND" : "NONE",
+                westFlame ? "FOUND" : "NONE"
             );
         }
 

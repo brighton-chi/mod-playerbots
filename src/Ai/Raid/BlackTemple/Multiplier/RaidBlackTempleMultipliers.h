@@ -190,11 +190,11 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class IllidanStormrageControlMovementMultiplier : public Multiplier
+class IllidanStormrageControlTankActionsMultiplier : public Multiplier
 {
 public:
-    IllidanStormrageControlMovementMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "illidan stormrage control movement multiplier") {}
+    IllidanStormrageControlTankActionsMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "illidan stormrage control tank actions multiplier") {}
     virtual float GetValue(Action* action);
 };
 
@@ -206,19 +206,11 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class IllidanStormrageStayWithinGrateMultiplier : public Multiplier
+class IllidanStormrageControlNonTankMovementMultiplier : public Multiplier
 {
 public:
-    IllidanStormrageStayWithinGrateMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "illidan stormrage stay within grate multiplier") {}
-    virtual float GetValue(Action* action);
-};
-
-class IllidanStormrageDisableMeleeAttackingMultiplier : public Multiplier
-{
-public:
-    IllidanStormrageDisableMeleeAttackingMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "illidan stormrage disable melee attacking multiplier") {}
+    IllidanStormrageControlNonTankMovementMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "illidan stormrage control non-tank movement multiplier") {}
     virtual float GetValue(Action* action);
 };
 

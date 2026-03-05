@@ -2565,6 +2565,50 @@ bool IllidanStormrageManageDpsTimerAction::Execute(Event /*event*/)
             updated = true;
     }
 
+    // Try get flames with just one bot
+    if (phase == 2)
+    {
+        if (eastFlameGuid.find(instanceId) == eastFlameGuid.end() &&
+            westFlameGuid.find(instanceId) == westFlameGuid.end())
+        {
+            std::list<Creature*> creatureList;
+            constexpr float searchRadius = 100.0f;
+            illidan->GetCreatureListWithEntryInGrid(creatureList, NPC_FLAME_OF_AZZINOTH, searchRadius);
+
+            std::vector<Creature*> flames;
+            for (Creature* creature : creatureList)
+            {
+                if (creature && creature->IsAlive())
+                    flames.push_back(creature);
+            }
+
+            if (flames.size() == 2)
+            {
+                float eastDist0 = flames[0]->GetExactDist2d(ILLIDAN_E_GLAIVE_WAITING_POSITION);
+                float eastDist1 = flames[1]->GetExactDist2d(ILLIDAN_E_GLAIVE_WAITING_POSITION);
+
+                if (eastDist0 < eastDist1)
+                {
+                    eastFlameGuid[instanceId] = flames[0]->GetGUID();
+                    westFlameGuid[instanceId] = flames[1]->GetGUID();
+                }
+                else
+                {
+                    eastFlameGuid[instanceId] = flames[1]->GetGUID();
+                    westFlameGuid[instanceId] = flames[0]->GetGUID();
+                }
+
+                LOG_DEBUG("playerbots", "[BT] IllidanStormrageManageDpsTimerAction bot {} initialized flame guids", bot->GetName());
+                updated = true;
+            }
+        }
+    }
+    else
+    {
+        if (eastFlameGuid.erase(instanceId) > 0) updated = true;
+        if (westFlameGuid.erase(instanceId) > 0) updated = true;
+    }
+
     return updated;
 }
 
