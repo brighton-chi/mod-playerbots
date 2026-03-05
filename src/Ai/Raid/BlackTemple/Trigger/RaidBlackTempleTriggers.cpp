@@ -441,6 +441,30 @@ bool IllidariCouncilMageTankNeedsDedicatedHealerTrigger::IsActive()
            AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");
 }
 
+bool IllidariCouncilZerevorCastsDangerousAoesTrigger::IsActive()
+{
+    if (!botAI->IsRanged(bot))
+        return false;
+
+    if (!AI_VALUE2(Unit*, "find target", "high nethermancer zerevor"))
+        return false;
+
+    return !HasDangerousCouncilAura(bot);
+}
+
+bool IllidariCouncilPetsScrewUpThePullTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_HUNTER &&
+        bot->getClass() != CLASS_WARLOCK)
+        return false;
+
+    Pet* pet = bot->GetPet();
+    if (!pet || !pet->IsAlive())
+        return false;
+
+    return AI_VALUE2(Unit*, "find target", "gathios the shatterer");
+}
+
 bool IllidariCouncilDeterminingDpsAssignmentsTrigger::IsActive()
 {
     if (botAI->IsHeal(bot))
@@ -461,19 +485,6 @@ bool IllidariCouncilDeterminingDpsAssignmentsTrigger::IsActive()
         return false;
 
     return true;
-}
-
-bool IllidariCouncilPetsScrewUpThePullTrigger::IsActive()
-{
-    if (bot->getClass() != CLASS_HUNTER &&
-        bot->getClass() != CLASS_WARLOCK)
-        return false;
-
-    Pet* pet = bot->GetPet();
-    if (!pet || !pet->IsAlive())
-        return false;
-
-    return AI_VALUE2(Unit*, "find target", "gathios the shatterer");
 }
 
 bool IllidariCouncilNeedToManageDpsTimerTrigger::IsActive()

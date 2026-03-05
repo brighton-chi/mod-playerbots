@@ -15,6 +15,7 @@ namespace BlackTempleHelpers
 
     // Supremus
     const Position SUPREMUS_TANK_POSITION = { 704.651f, 684.401f, 72.608f };
+
     std::unordered_map<ObjectGuid, Position> supremusRangedPositions;
     std::unordered_map<uint32, time_t> supremusPhaseTimer;
 
@@ -41,6 +42,7 @@ namespace BlackTempleHelpers
     const Position GURTOGG_TANK_POSITION = { 735.987f, 272.451f, 63.554f };
     const Position GURTOGG_RANGED_POSITION = { 762.265f, 277.183f, 63.781f };
     const Position GURTOGG_SOAKER_POSITION = { 769.348f, 280.116f, 63.780f };
+
     std::unordered_map<uint32, time_t> gurtoggPhaseTimer;
 
     std::vector<std::vector<Player*>> GetGurtoggRangedRotationGroups(Player* bot)
@@ -117,7 +119,10 @@ namespace BlackTempleHelpers
         ZEREVOR_HEALER_POSITION_1,
         ZEREVOR_HEALER_POSITION_2
     };
-    const Position MALANDE_TANK_POSITION = { 690.101f, 305.166f, 277.443f };
+    // const Position MALANDE_TANK_POSITION = { 690.101f, 305.166f, 277.443f };
+    const Position MALANDE_TANK_POSITION = { 701.059f, 287.306f, 277.443f };
+    const Position MALANDE_PULL_POSITION = {712.401f, 264.761f, 277.443f };
+
     std::unordered_map<uint32, time_t> councilDpsWaitTimer;
     std::unordered_map<ObjectGuid, uint8> gathiosTankStep;
     std::unordered_map<ObjectGuid, uint8> zerevorHealStep;

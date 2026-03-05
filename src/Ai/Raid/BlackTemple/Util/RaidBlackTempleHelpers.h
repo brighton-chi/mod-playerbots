@@ -149,6 +149,7 @@ namespace BlackTempleHelpers
     extern const Position GATHIOS_TANK_POSITION_4;
     extern const std::array<Position, 4> GATHIOS_TANK_POSITIONS;
     extern const Position MALANDE_TANK_POSITION;
+    extern const Position MALANDE_PULL_POSITION;
     extern const Position ZEREVOR_TANK_POSITION;
     extern const Position ZEREVOR_HEALER_POSITION_1;
     extern const Position ZEREVOR_HEALER_POSITION_2;

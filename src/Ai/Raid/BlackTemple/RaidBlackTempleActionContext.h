@@ -139,11 +139,14 @@ public:
         creators["illidari council position mage tank healer"] =
             &RaidBlackTempleActionContext::illidari_council_position_mage_tank_healer;
 
-        creators["illidari council assign dps targets"] =
-            &RaidBlackTempleActionContext::illidari_council_assign_dps_targets;
+        creators["illidari council disperse ranged"] =
+            &RaidBlackTempleActionContext::illidari_council_disperse_ranged;
 
         creators["illidari council command pets to attack gathios"] =
             &RaidBlackTempleActionContext::illidari_council_command_pets_to_attack_gathios;
+
+        creators["illidari council assign dps targets"] =
+            &RaidBlackTempleActionContext::illidari_council_assign_dps_targets;
 
         creators["illidari council manage dps timer"] =
             &RaidBlackTempleActionContext::illidari_council_manage_dps_timer;
@@ -318,11 +321,14 @@ private:
     static Action* illidari_council_position_mage_tank_healer(
         PlayerbotAI* botAI) { return new IllidariCouncilPositionMageTankHealerAction(botAI); }
 
-    static Action* illidari_council_assign_dps_targets(
-        PlayerbotAI* botAI) { return new IllidariCouncilAssignDpsTargetsAction(botAI); }
+    static Action* illidari_council_disperse_ranged(
+        PlayerbotAI* botAI) { return new IllidariCouncilDisperseRangedAction(botAI); }
 
     static Action* illidari_council_command_pets_to_attack_gathios(
         PlayerbotAI* botAI) { return new IllidariCouncilCommandPetsToAttackGathiosAction(botAI); }
+
+    static Action* illidari_council_assign_dps_targets(
+        PlayerbotAI* botAI) { return new IllidariCouncilAssignDpsTargetsAction(botAI); }
 
     static Action* illidari_council_manage_dps_timer(
         PlayerbotAI* botAI) { return new IllidariCouncilManageDpsTimerAction(botAI); }

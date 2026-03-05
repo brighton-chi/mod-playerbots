@@ -113,7 +113,7 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     // Illidari Council
     triggers.push_back(new TriggerNode("illidari council pulling bosses", {
-        NextAction("illidari council misdirect bosses to tanks", ACTION_RAID + 2) }));
+        NextAction("illidari council misdirect bosses to tanks", ACTION_RAID + 4) }));
 
     triggers.push_back(new TriggerNode("illidari council gathios engaged by main tank", {
         NextAction("illidari council main tank position gathios", ACTION_RAID + 1) }));
@@ -133,11 +133,14 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("illidari council mage tank needs dedicated healer", {
         NextAction("illidari council position mage tank healer", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("illidari council determining dps assignments", {
-        NextAction("illidari council assign dps targets", ACTION_RAID + 1) }));
+    triggers.push_back(new TriggerNode("illidari council zerevor casts dangerous aoes", {
+        NextAction("illidari council disperse ranged", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("illidari council pets screw up the pull", {
         NextAction("illidari council command pets to attack gathios", ACTION_RAID + 3) }));
+
+    triggers.push_back(new TriggerNode("illidari council determining dps assignments", {
+        NextAction("illidari council assign dps targets", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("illidari council need to manage dps timer", {
         NextAction("illidari council manage dps timer", ACTION_EMERGENCY + 10) }));

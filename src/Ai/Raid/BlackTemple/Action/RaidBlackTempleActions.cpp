@@ -1335,14 +1335,24 @@ bool IllidariCouncilFirstAssistTankPositionMalandeAction::Execute(Event /*event*
 
     if (malande->GetVictim() == bot)
     {
-        const Position& position = MALANDE_TANK_POSITION;
-        float distToPosition = bot->GetExactDist2d(position.GetPositionX(),
-                                                   position.GetPositionY());
-        if (distToPosition > 10.0f)
+        const Position& tankPosition = MALANDE_TANK_POSITION;
+        float distToTankPosition = malande->GetExactDist2d(tankPosition.GetPositionX(),
+                                                           tankPosition.GetPositionY());
+
+        const Position& pullPosition = MALANDE_PULL_POSITION;
+        float distToPullPosition = bot->GetExactDist2d(pullPosition.GetPositionX(),
+                                                       pullPosition.GetPositionY());
+        // Olm v2: Just another janky approach needed to pull a caster who won't chase
+        if (distToTankPosition > 5.0f)
         {
-            return MoveTo(BLACK_TEMPLE_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-                          bot->GetPositionZ(), false, false, false, false,
-                          MovementPriority::MOVEMENT_COMBAT, true, false);
+            float dX = pullPosition.GetPositionX() - bot->GetPositionX();
+            float dY = pullPosition.GetPositionY() - bot->GetPositionY();
+            float moveDist = std::min(5.0f, distToPullPosition);
+            float moveX = bot->GetPositionX() + (dX / distToPullPosition) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / distToPullPosition) * moveDist;
+            return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY, pullPosition.GetPositionZ(),
+                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT,
+                          true, false);
         }
     }
 
@@ -1474,6 +1484,16 @@ bool IllidariCouncilPositionMageTankHealerAction::Execute(Event /*event*/)
                       false, false, false, false,
                       MovementPriority::MOVEMENT_COMBAT, true, false);
     }
+
+    return false;
+}
+
+bool IllidariCouncilDisperseRangedAction::Execute(Event /*event*/)
+{
+    constexpr float safeDistance = 4.0f;
+    constexpr uint32 minInterval = 1000;
+    if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
+        return FleePosition(nearestPlayer->GetPosition(), safeDistance, minInterval);
 
     return false;
 }

@@ -365,6 +365,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class IllidariCouncilDisperseRangedAction : public MovementAction
+{
+public:
+    IllidariCouncilDisperseRangedAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "illidari council disperse ranged") {}
+    bool Execute(Event event) override;
+};
+
 class IllidariCouncilCommandPetsToAttackGathiosAction : public AttackAction
 {
 public:

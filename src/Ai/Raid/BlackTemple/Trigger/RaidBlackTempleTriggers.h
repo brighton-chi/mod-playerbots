@@ -335,11 +335,11 @@ public:
     bool IsActive() override;
 };
 
-class IllidariCouncilDeterminingDpsAssignmentsTrigger : public Trigger
+class IllidariCouncilZerevorCastsDangerousAoesTrigger : public Trigger
 {
 public:
-    IllidariCouncilDeterminingDpsAssignmentsTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "illidari council determining dps assignments") {}
+    IllidariCouncilZerevorCastsDangerousAoesTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "illidari council zerevor casts dangerous aoes") {}
     bool IsActive() override;
 };
 
@@ -358,6 +358,15 @@ public:
         PlayerbotAI* botAI) : Trigger(botAI, "illidari council need to manage dps timer") {}
     bool IsActive() override;
 };
+
+class IllidariCouncilDeterminingDpsAssignmentsTrigger : public Trigger
+{
+public:
+    IllidariCouncilDeterminingDpsAssignmentsTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "illidari council determining dps assignments") {}
+    bool IsActive() override;
+};
+
 
 // Illidan Stormrage <The Betrayer>
 

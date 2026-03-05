@@ -139,11 +139,14 @@ public:
         creators["illidari council mage tank needs dedicated healer"] =
             &RaidBlackTempleTriggerContext::illidari_council_mage_tank_needs_dedicated_healer;
 
-        creators["illidari council determining dps assignments"] =
-            &RaidBlackTempleTriggerContext::illidari_council_determining_dps_assignments;
+        creators["illidari council zerevor casts dangerous aoes"] =
+            &RaidBlackTempleTriggerContext::illidari_council_zerevor_casts_dangerous_aoes;
 
         creators["illidari council pets screw up the pull"] =
             &RaidBlackTempleTriggerContext::illidari_council_pets_screw_up_the_pull;
+
+        creators["illidari council determining dps assignments"] =
+            &RaidBlackTempleTriggerContext::illidari_council_determining_dps_assignments;
 
         creators["illidari council need to manage dps timer"] =
             &RaidBlackTempleTriggerContext::illidari_council_need_to_manage_dps_timer;
@@ -318,11 +321,14 @@ private:
     static Trigger* illidari_council_mage_tank_needs_dedicated_healer(
         PlayerbotAI* botAI) { return new IllidariCouncilMageTankNeedsDedicatedHealerTrigger(botAI); }
 
-    static Trigger* illidari_council_determining_dps_assignments(
-        PlayerbotAI* botAI) { return new IllidariCouncilDeterminingDpsAssignmentsTrigger(botAI); }
+    static Trigger* illidari_council_zerevor_casts_dangerous_aoes(
+        PlayerbotAI* botAI) { return new IllidariCouncilZerevorCastsDangerousAoesTrigger(botAI); }
 
     static Trigger* illidari_council_pets_screw_up_the_pull(
         PlayerbotAI* botAI) { return new IllidariCouncilPetsScrewUpThePullTrigger(botAI); }
+
+    static Trigger* illidari_council_determining_dps_assignments(
+        PlayerbotAI* botAI) { return new IllidariCouncilDeterminingDpsAssignmentsTrigger(botAI); }
 
     static Trigger* illidari_council_need_to_manage_dps_timer(
         PlayerbotAI* botAI) { return new IllidariCouncilNeedToManageDpsTimerTrigger(botAI); }

@@ -195,8 +195,7 @@ float ReliquaryOfSoulsDontWasteHealingMultiplier::GetValue(Action* action)
         dynamic_cast<CastPowerWordShieldAction*>(action) ||
         dynamic_cast<CastPowerWordShieldOnPartyAction*>(action))
     {
-        if (bot->getClass() == CLASS_PRIEST && botAI->IsHeal(bot))
-            return 10.0f;
+        return 1.0f;
     }
     else if (dynamic_cast<CastHealingSpellAction*>(action))
         return 0.0f;
@@ -314,12 +313,12 @@ float IllidariCouncilControlMovementMultiplier::GetValue(Action* action)
     if (botAI->IsAssistHealOfIndex(bot, 0, true) &&
         (dynamic_cast<MovementAction*>(action) &&
          !dynamic_cast<IllidariCouncilPositionMageTankHealerAction*>(action)))
-         return 0.0f;
+        return 0.0f;
 
     if ((botAI->IsMainTank(bot) ||
-        botAI->IsAssistTankOfIndex(bot, 0, false) ||
-        botAI->IsAssistTankOfIndex(bot, 1, false) ||
-        GetZerevorMageTank(bot) == bot) &&
+         botAI->IsAssistTankOfIndex(bot, 0, false) ||
+         botAI->IsAssistTankOfIndex(bot, 1, false) ||
+         GetZerevorMageTank(bot) == bot) &&
         dynamic_cast<AvoidAoeAction*>(action))
         return 0.0f;
 
