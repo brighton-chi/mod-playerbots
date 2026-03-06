@@ -511,8 +511,14 @@ float IllidanStormrageDisableDefaultTargetingMultiplier::GetValue(Action* action
     if (dynamic_cast<TankAssistAction*>(action) /* || dynamic_cast<DpsAssistAction*>(action)*/)
         return 0.0f;
 
-    if (botAI->IsRanged(bot) && dynamic_cast<DpsAssistAction*>(action))
-        return 0.0f;
+    if (botAI->IsRanged(bot))
+    {
+        if (GetIllidanPhase(illidan) != 2)
+            context->GetValue<bool>("neglect threat")->Set(true);
+
+        if (dynamic_cast<DpsAssistAction*>(action))
+            return 0.0f;
+    }
 
     return 1.0f;
 }
