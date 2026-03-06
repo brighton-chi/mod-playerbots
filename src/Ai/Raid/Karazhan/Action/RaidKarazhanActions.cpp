@@ -855,7 +855,7 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event /*event*/)
     if (!netherspite)
         return false;
 
-    std::vector<Unit*> voidZones = GetAllVoidZones(botAI, bot);
+    std::vector<Unit*> voidZones = GetAllVoidZones(bot);
 
     bool nearVoidZone = !IsSafePosition(bot->GetPositionX(), bot->GetPositionY(),
                                         bot->GetPositionZ(), voidZones, 4.0f);
