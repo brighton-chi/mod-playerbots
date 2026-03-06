@@ -163,7 +163,7 @@ bool VoidReaverArcaneOrbIsIncomingTrigger::IsActive()
     constexpr uint32 orbDuration = 7000;
     constexpr float safeDistance = 22.0f;
 
-    for (const auto& orb : it->second)
+    for (auto const& orb : it->second)
     {
         if (getMSTimeDiff(orb.castTime, currentTime) <= orbDuration &&
             bot->GetExactDist2d(orb.destination.GetPositionX(),

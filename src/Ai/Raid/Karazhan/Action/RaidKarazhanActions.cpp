@@ -855,8 +855,7 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event /*event*/)
     if (!netherspite)
         return false;
 
-    auto [redBlocker, greenBlocker, blueBlocker] = GetCurrentBeamBlockers(botAI, bot);
-    std::vector<Unit*> voidZones = GetAllVoidZones(bot);
+    std::vector<Unit*> voidZones = GetAllVoidZones(botAI, bot);
 
     bool nearVoidZone = !IsSafePosition(bot->GetPositionX(), bot->GetPositionY(),
                                         bot->GetPositionZ(), voidZones, 4.0f);

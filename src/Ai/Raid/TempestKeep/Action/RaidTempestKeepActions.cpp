@@ -751,7 +751,7 @@ bool VoidReaverAvoidArcaneOrbAction::Execute(Event /*event*/)
     bool shouldFlee = false;
     Position fleeDest;
 
-    for (const auto& orb : it->second)
+    for (auto const& orb : it->second)
     {
         if (getMSTimeDiff(orb.castTime, currentTime) <= orbDuration)
         {
