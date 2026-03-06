@@ -53,11 +53,11 @@ bool HydrossTheUnstableElementalsSpawnedTrigger::IsActive()
     if (botAI->IsHeal(bot))
         return false;
 
-    if (botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0, true))
-        return false;
-
     Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
     if (!hydross || hydross->GetHealthPct() < 10.0f)
+        return false;
+
+    if (botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0, true))
         return false;
 
     return AI_VALUE2(Unit*, "find target", "pure spawn of hydross") ||
