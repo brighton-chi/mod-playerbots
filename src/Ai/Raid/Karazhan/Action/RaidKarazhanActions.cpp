@@ -120,7 +120,7 @@ bool AttumenTheHuntsmanStackBehindAction::Execute(Event /*event*/)
     if (bot->GetDistance2d(rearX, rearY) > 1.0f)
     {
         return MoveTo(KARAZHAN_MAP_ID, rearX, rearY, bot->GetPositionZ(), false, false, false, false,
-                      MovementPriority::MOVEMENT_COMBAT, true, false);
+                      MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
     return false;
@@ -1230,7 +1230,7 @@ bool PrinceMalchezaarMainTankMovementAction::Execute(Event /*event*/)
         {
             bot->AttackStop();
             return MoveTo(KARAZHAN_MAP_ID, bestDestX, bestDestY, bestDestZ, false, false, false, false,
-                          MovementPriority::MOVEMENT_FORCED, true, false);
+                          MovementPriority::MOVEMENT_COMBAT, true, true);
         }
     }
 

@@ -79,6 +79,7 @@ float AttumenTheHuntsmanWaitForDpsMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+// Disables co +disperse and co +tank face
 float MaidenOfVirtueDisableCombatFormationMoveMultiplier::GetValue(Action* action)
 {
     if (!AI_VALUE2(Unit*, "find target", "maiden of virtue"))
@@ -103,6 +104,7 @@ float TheCuratorDisableTankAssistMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+// Disables co +disperse and co +tank face
 float TheCuratorDisableCombatFormationMoveMultiplier::GetValue(Action* action)
 {
     if (!AI_VALUE2(Unit*, "find target", "the curator"))
