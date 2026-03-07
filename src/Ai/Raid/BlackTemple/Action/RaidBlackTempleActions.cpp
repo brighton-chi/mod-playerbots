@@ -163,10 +163,12 @@ bool HighWarlordNajentusRemoveImpalingSpineAction::Execute(Event /*event*/)
     if (bot->GetExactDist2d(spineGo) > 3.0f)
     {
         uint32 delay = urand(2000, 3000); // 1 to 2 seconds
+        ObjectGuid spineGuid = spineGo->GetGUID();
+
         botAI->AddTimedEvent(
-            [this, spineGo]() {
-                if (spineGo && bot)
-                    MoveTo(BLACK_TEMPLE_MAP_ID, spineGo->GetPositionX(), spineGo->GetPositionY(),
+            [this, spineGuid]() {
+                if (GameObject* targetSpine = botAI->GetGameObject(spineGuid))
+                    MoveTo(BLACK_TEMPLE_MAP_ID, targetSpine->GetPositionX(), targetSpine->GetPositionY(),
                            bot->GetPositionZ(), false, false, false, false,
                            MovementPriority::MOVEMENT_FORCED, true, false);
             },
@@ -179,10 +181,12 @@ bool HighWarlordNajentusRemoveImpalingSpineAction::Execute(Event /*event*/)
     {
         // 4. Interact with the spine to remove it, with a random delay
         uint32 delay = urand(1000, 2000); // 1 to 2 seconds
+        ObjectGuid spineGuid = spineGo->GetGUID();
+
         botAI->AddTimedEvent(
-            [this, spineGo]() {
-                if (spineGo && bot)
-                    spineGo->Use(bot);
+            [this, spineGuid]() {
+                if (GameObject* targetSpine = botAI->GetGameObject(spineGuid))
+                    targetSpine->Use(bot);
             },
             delay);
 
@@ -210,13 +214,17 @@ bool HighWarlordNajentusThrowImpalingSpineAction::Execute(Event /*event*/)
                       false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
-    if (Item* spine = bot->GetItemByEntry(ITEM_NAJENTUS_SPINE))
+    if (bot->GetItemByEntry(ITEM_NAJENTUS_SPINE))
     {
         uint32 delay = urand(1000, 2000); // 1 to 2 seconds
+        ObjectGuid najentusGuid = najentus->GetGUID();
+
         botAI->AddTimedEvent(
-            [this, spine, najentus]() {
-                if (spine && najentus)
-                    botAI->ImbueItem(spine, najentus);
+            [this, najentusGuid]() {
+                Item* targetSpine = bot->GetItemByEntry(ITEM_NAJENTUS_SPINE);
+                Unit* targetNajentus = botAI->GetUnit(najentusGuid);
+                if (targetSpine && targetNajentus)
+                    botAI->ImbueItem(targetSpine, targetNajentus);
             },
             delay);
 
