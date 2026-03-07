@@ -10,6 +10,7 @@
 #include "RaidMagtheridonStrategy.h"
 #include "RaidSSCStrategy.h"
 #include "RaidTempestKeepStrategy.h"
+#include "RaidHyjalSummitStrategy.h"
 #include "RaidOsStrategy.h"
 #include "RaidEoEStrategy.h"
 #include "RaidVoAStrategy.h"
@@ -30,6 +31,7 @@ public:
         creators["magtheridon"] = &RaidStrategyContext::magtheridon;
         creators["ssc"] = &RaidStrategyContext::ssc;
         creators["tempestkeep"] = &RaidStrategyContext::tempestkeep;
+        creators["hyjal"] = &RaidStrategyContext::hyjal;
         creators["wotlk-os"] = &RaidStrategyContext::wotlk_os;
         creators["wotlk-eoe"] = &RaidStrategyContext::wotlk_eoe;
         creators["voa"] = &RaidStrategyContext::voa;
@@ -47,6 +49,7 @@ private:
     static Strategy* magtheridon(PlayerbotAI* botAI) { return new RaidMagtheridonStrategy(botAI); }
     static Strategy* ssc(PlayerbotAI* botAI) { return new RaidSSCStrategy(botAI); }
     static Strategy* tempestkeep(PlayerbotAI* botAI) { return new RaidTempestKeepStrategy(botAI); }
+    static Strategy* hyjal(PlayerbotAI* botAI) { return new RaidHyjalSummitStrategy(botAI); }
     static Strategy* wotlk_os(PlayerbotAI* botAI) { return new RaidOsStrategy(botAI); }
     static Strategy* wotlk_eoe(PlayerbotAI* botAI) { return new RaidEoEStrategy(botAI); }
     static Strategy* voa(PlayerbotAI* botAI) { return new RaidVoAStrategy(botAI); }

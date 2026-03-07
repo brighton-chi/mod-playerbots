@@ -1550,6 +1550,9 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
         case 532:
             strategyName = "karazhan";  // Karazhan
             break;
+        case 534:
+            strategyName = "hyjal";  // Hyjal Summit (Battle for Mount Hyjal)
+            break;
         case 544:
             strategyName = "magtheridon";  // Magtheridon's Lair
             break;
@@ -1557,7 +1560,7 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
             strategyName = "ssc";  // Serpentshrine Cavern
             break;
         case 550:
-            strategyName = "tempestkeep";  // Tempest Keep
+            strategyName = "tempestkeep";  // Tempest Keep: The Eye
             break;
         case 565:
             strategyName = "gruulslair";  // Gruul's Lair
