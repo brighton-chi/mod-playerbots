@@ -1534,11 +1534,11 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
 {
     static const std::vector<std::string> allInstanceStrategies =
     {
-        "onyxia", "moltencore", "bwl", "aq20", "karazhan", "hyjal", "magtheridon", "ssc",
-        "tempestkeep", "blacktemple", "gruulslair", "zulaman", "wotlk-uk", "wotlk-up", "wotlk-nex", "wotlk-occ",
-        "wotlk-cos", "wotlk-hos", "wotlk-dtk", "wotlk-an", "wotlk-hol", "ulduar", "wotlk-gd", "wotlk-vh",
-        "wotlk-os", "wotlk-eoe", "wotlk-ok", "voa", "icc", "wotlk-fos", "wotlk-toc", "wotlk-pos",
-        "wotlk-hor"
+        "aq20", "bwl", "karazhan", "gruulslair", "icc", "magtheridon", "moltencore",
+        "naxx", "onyxia", "ssc", "tempestkeep", "ulduar", "voa", "wotlk-an", "wotlk-cos",
+        "wotlk-dtk", "wotlk-eoe", "wotlk-fos", "wotlk-gd", "wotlk-hol", "wotlk-hor",
+        "wotlk-hos", "wotlk-nex", "wotlk-occ", "wotlk-ok", "wotlk-os", "wotlk-pos",
+        "wotlk-toc", "wotlk-uk", "wotlk-up", "wotlk-vh"
     };
 
     for (const std::string& strat : allInstanceStrategies)
@@ -1661,6 +1661,7 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
 
     engines[BOT_STATE_COMBAT]->addStrategy(strategyName);
     engines[BOT_STATE_NON_COMBAT]->addStrategy(strategyName);
+
     if (tellMaster && !strategyName.empty())
 
     {
