@@ -1253,9 +1253,9 @@ void PlayerbotAI::HandleBotOutgoingPacket(WorldPacket const& packet)
                 horizontalSpeed = 0.11f;
             }
             verticalSpeed = -verticalSpeed;
-            /* // high vertical may result in stuck as bot can not handle gravity
+            // high vertical may result in stuck as bot can not handle gravity
             if (verticalSpeed > 35.0f)
-                break; */
+                break;
             // stop casting
             InterruptSpell();
 
@@ -1534,12 +1534,11 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
 {
     static const std::vector<std::string> allInstanceStrategies =
     {
-        "aq20", "blacktemple", "bwl", "karazhan", "gruulslair", "hyjal", "icc",
-        "magtheridon", "moltencore", "naxx", "onyxia", "ssc", "tempestkeep",
-        "ulduar", "voa", "wotlk-an", "wotlk-cos", "wotlk-dtk", "wotlk-eoe",
-        "wotlk-fos", "wotlk-gd", "wotlk-hol", "wotlk-hor", "wotlk-hos",
-        "wotlk-nex", "wotlk-occ", "wotlk-ok", "wotlk-os", "wotlk-pos",
-        "wotlk-toc", "wotlk-uk", "wotlk-up", "wotlk-vh", "zulaman"
+        "aq20", "bwl", "karazhan", "gruulslair", "icc", "magtheridon", "moltencore",
+        "naxx", "onyxia", "ssc", "tempestkeep", "ulduar", "voa", "wotlk-an", "wotlk-cos",
+        "wotlk-dtk", "wotlk-eoe", "wotlk-fos", "wotlk-gd", "wotlk-hol", "wotlk-hor",
+        "wotlk-hos", "wotlk-nex", "wotlk-occ", "wotlk-ok", "wotlk-os", "wotlk-pos",
+        "wotlk-toc", "wotlk-uk", "wotlk-up", "wotlk-vh"
     };
 
     for (const std::string& strat : allInstanceStrategies)
@@ -1569,9 +1568,6 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
         case 533:
             strategyName = "naxx";  // Naxxramas
             break;
-        case 534:
-            strategyName = "hyjal";  // Hyjal Summit
-            break;
         case 544:
             strategyName = "magtheridon";  // Magtheridon's Lair
             break;
@@ -1581,14 +1577,8 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
         case 550:
             strategyName = "tempestkeep";  // Tempest Keep
             break;
-        case 564:
-            strategyName = "blacktemple";  // Black Temple
-            break;
         case 565:
             strategyName = "gruulslair";  // Gruul's Lair
-            break;
-        case 568:
-            strategyName = "zulaman";  // Zul'Aman
             break;
         case 574:
             strategyName = "wotlk-uk";  // Utgarde Keep
@@ -1664,7 +1654,6 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
     engines[BOT_STATE_NON_COMBAT]->addStrategy(strategyName);
 
     if (tellMaster && !strategyName.empty())
-
     {
         std::ostringstream out;
         out << "Added " << strategyName << " instance strategy";
