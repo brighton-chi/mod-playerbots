@@ -501,9 +501,6 @@ float IllidanStormrageDisableDefaultTargetingMultiplier::GetValue(Action* action
     if (bot->GetVictim() == nullptr)
         return 1.0f;
 
-    if (botAI->IsHeal(bot))
-        return 1.0f;
-
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     if (!illidan || illidan->GetHealth() == 1)
         return 1.0f;
@@ -511,7 +508,12 @@ float IllidanStormrageDisableDefaultTargetingMultiplier::GetValue(Action* action
     if (dynamic_cast<TankAssistAction*>(action) /* || dynamic_cast<DpsAssistAction*>(action)*/)
         return 0.0f;
 
-    if (botAI->IsRanged(bot))
+    Unit* shadowfiend = AI_VALUE2(Unit*, "find target", "parasitic shadowfiend");
+    if (shadowfiend && bot->GetVictim() == shadowfiend &&
+        dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
+        return 0.0f;
+
+    if (botAI->IsRangedDps(bot))
     {
         if (GetIllidanPhase(illidan) != 2)
             context->GetValue<bool>("neglect threat")->Set(true);
