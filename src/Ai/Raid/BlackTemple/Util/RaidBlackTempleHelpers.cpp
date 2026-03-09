@@ -314,15 +314,13 @@ namespace BlackTempleHelpers
             }
         }
 
-        if (!eastFlame || !westFlame)
-        {
-            LOG_DEBUG("playerbots", "[BT] Bot {} (GUID: {}) GetFlamesOfAzzinoth missing flames! eastFlame={} westFlame={}",
-                bot->GetName(),
-                bot->GetGUID().ToString(),
-                eastFlame ? "FOUND" : "NONE",
-                westFlame ? "FOUND" : "NONE"
-            );
-        }
+        LOG_DEBUG("playerbots", "[BT] Bot {} identifies eastFlame={}, which is attacking {}; westFlame={}, which is attacking {}",
+            bot->GetName(),
+            eastFlame ? eastFlame->GetGUID().ToString() : "NONE",
+            eastFlame ? (eastFlame->GetVictim() == bot->GetName().ToString()) : "N/A",
+            westFlame ? westFlame->GetGUID().ToString() : "NONE",
+            westFlame ? (westFlame->GetVictim() == bot->GetName().ToString()) : "N/A"
+        );
 
         return { eastFlame, westFlame };
     }

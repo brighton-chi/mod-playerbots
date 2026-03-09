@@ -508,7 +508,7 @@ float IllidanStormrageDisableDefaultTargetingMultiplier::GetValue(Action* action
     if (dynamic_cast<TankAssistAction*>(action) /* || dynamic_cast<DpsAssistAction*>(action)*/)
         return 0.0f;
 
-    Unit* shadowfiend = AI_VALUE2(Unit*, "find target", "parasitic shadowfiend");
+    /* Unit* shadowfiend = AI_VALUE2(Unit*, "find target", "parasitic shadowfiend");
     if (shadowfiend && bot->GetVictim() == shadowfiend &&
         dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
         return 0.0f;
@@ -520,7 +520,19 @@ float IllidanStormrageDisableDefaultTargetingMultiplier::GetValue(Action* action
 
         if (dynamic_cast<DpsAssistAction*>(action))
             return 0.0f;
+    } */
+
+    Unit* shadowfiend = AI_VALUE2(Unit*, "find target", "parasitic shadowfiend");
+    if (shadowfiend && bot->GetVictim() == shadowfiend)
+    {
+        context->GetValue<bool>("neglect threat")->Set(true);
+
+        if (dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
+            return 0.0f;
     }
+
+    if (botAI->IsDps(bot) && dynamic_cast<DpsAssistAction*>(action))
+        return 0.0f;
 
     return 1.0f;
 }
