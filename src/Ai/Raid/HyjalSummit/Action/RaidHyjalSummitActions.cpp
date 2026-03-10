@@ -843,7 +843,7 @@ bool AzgalorAssignDpsPriorityAction::Execute(Event /*event*/)
     if (botAI->IsRanged(bot))
     {
         if (Unit* doomguard = AI_VALUE2(Unit*, "find target", "lesser doomguard");
-            doomguard && bot->GetDistance2d(doomguard) < 40.0f)
+            doomguard && bot->GetDistance2d(doomguard) < 50.0f)
         {
             SetRtiTarget(botAI, "circle", doomguard);
 
