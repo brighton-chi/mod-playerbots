@@ -478,6 +478,7 @@ bool KazrogalMisdirectBossToMainTankAction::Execute(Event /*event*/)
     return false;
 }
 
+// Maybe try location by base entrance?
 bool KazrogalMainTankPositionBossAction::Execute(Event /*event*/)
 {
     Unit* kazrogal = AI_VALUE2(Unit*, "find target", "kaz'rogal");
@@ -528,6 +529,9 @@ bool KazrogalAssistTanksMoveInFrontOfBossAction::Execute(Event /*event*/)
     return false;
 }
 
+// If position at base entrance, can do small arc with MoveFromGroup, 
+// or maybe stack with FleePosition (could then still do emergency fallback with MoveFromGroup)
+// Right now this is actually a circle
 bool KazrogalSpreadRangedInArcAction::Execute(Event /*event*/)
 {
     Unit* kazrogal = AI_VALUE2(Unit*, "find target", "kaz'rogal");
@@ -727,54 +731,49 @@ bool AzgalorDisperseRangedAction::Execute(Event /*event*/)
     if (!azgalor)
         return false;
 
-    const Position& position = AZGALOR_DOOMGUARD_TANK_POSITION;
+    constexpr uint32 minInterval = 1000;
 
-    if (GetAzgalorTankStep(botAI, bot) < 1 && azgalor->GetHealthPct() >= 85.0f &&
-        bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 5.0f)
-    {
-        if (botAI->IsAssistHealOfIndex(bot, 0, true))
-        {
-            constexpr float safeDistFromBoss = 30.0f;
-            constexpr uint32 minInterval = 0;
-            if (bot->GetExactDist2d(azgalor) < safeDistFromBoss)
-                return FleePosition(azgalor->GetPosition(), safeDistFromBoss, minInterval);
-        }
-        else
-        {
-            return MoveTo(HYJAL_SUMMIT_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-                          position.GetPositionZ(), false, false, false, false,
-                          MovementPriority::MOVEMENT_COMBAT, true, false);
-        }
-    }
-    else
-    {
-        constexpr uint32 minInterval = 1000;
+    // Azgalor's hitbox is 8.8 yards
+    constexpr float safeDistFromBoss = 29.0f;
+    if (bot->GetExactDist2d(azgalor) < safeDistFromBoss)
+        return FleePosition(azgalor->GetPosition(), safeDistFromBoss, minInterval);
 
-        // Azgalor's hitbox is 8.8 yards
-        constexpr float safeDistFromBoss = 29.0f;
-        if (bot->GetExactDist2d(azgalor) < safeDistFromBoss)
-            return FleePosition(azgalor->GetPosition(), safeDistFromBoss, minInterval);
+    // Lesser Doomguard's hitbox is 3.75 yards
+    constexpr float safeDistFromDoomguard = 14.0f;
+    if (Unit* doomguard = AI_VALUE2(Unit*, "find target", "lesser doomguard");
+        doomguard && bot->GetExactDist2d(doomguard) < safeDistFromDoomguard)
+        return FleePosition(doomguard->GetPosition(), safeDistFromDoomguard, minInterval);
 
-        // Lesser Doomguard's hitbox is 3.75 yards
-        constexpr float safeDistFromDoomguard = 14.0f;
-        if (Unit* doomguard = AI_VALUE2(Unit*, "find target", "lesser doomguard");
-            doomguard && bot->GetExactDist2d(doomguard) < safeDistFromDoomguard)
-            return FleePosition(doomguard->GetPosition(), safeDistFromDoomguard, minInterval);
-
-        constexpr float safeDistFromPlayer = 6.0f;
-        if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
-            return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer, minInterval);
-    }
+    constexpr float safeDistFromPlayer = 6.0f;
+    if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
+        return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer, minInterval);
 
     return false;
 }
 
+// Now everybody waits except for MT, Azgalor target, and first two healers
+// If this works, need to change name of method
 bool AzgalorMeleeWaitAtSafePositionAction::Execute(Event /*event*/)
 {
-    const Position& position = AZGALOR_WAITING_POSITION;
-    return MoveTo(HYJAL_SUMMIT_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-                  position.GetPositionZ(), false, false, false, false,
-                  MovementPriority::MOVEMENT_FORCED, true, false);
+    // Two healers run with the MT to keep MT up while Azgalor is getting positioned
+    if (botAI->IsAssistHealOfIndex(bot, 0, true) || botAI->IsAssistHealOfIndex(bot, 1, true))
+    {
+        Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
+        if (!azgalor)
+            return false;
+
+        constexpr uint32 minInterval = 0;
+        constexpr float safeDistFromBoss = 35.0f;
+        if (bot->GetExactDist2d(azgalor) < safeDistFromBoss)
+            return FleePosition(azgalor->GetPosition(), safeDistFromBoss, minInterval);
+    }
+    else
+    {
+        const Position& position = AZGALOR_WAITING_POSITION;
+        return MoveTo(HYJAL_SUMMIT_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                      position.GetPositionZ(), false, false, false, false,
+                      MovementPriority::MOVEMENT_FORCED, true, false);
+    }
 }
 
 bool AzgalorMoveToDoomguardTankAction::Execute(Event /*event*/)

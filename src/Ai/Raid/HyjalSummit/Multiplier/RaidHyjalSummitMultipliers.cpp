@@ -191,7 +191,14 @@ float AzgalorDisableTankActionsMultiplier::GetValue(Action* action)
         dynamic_cast<TankAssistAction*>(action))
         return 0.0f;
 
-    if (!botAI->IsAssistTankOfIndex(bot, 0, true))
+    if (!botAI->IsAssistTankOfIndex(bot, 0, true) && 
+        !botAI->IsAssistTankOfIndex(bot, 1, true))
+        return 1.0f;
+
+    // Exclude second assist tank also, unless first assist tank has Doom
+    Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
+    if (firstAssistTank && !firstAssistTank->HasAura(SPELL_DOOM) && 
+        botAI->IsAssistTankOfIndex(bot, 1, true))
         return 1.0f;
 
     // Only move to Doomguard position if a player has Doom

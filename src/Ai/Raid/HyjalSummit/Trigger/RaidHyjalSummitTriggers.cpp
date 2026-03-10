@@ -193,13 +193,25 @@ bool AzgalorBossEngagedByMainTankTrigger::IsActive()
 
 bool AzgalorMainTankIsPositioningBossTrigger::IsActive()
 {
-    if (!botAI->IsMelee(bot) || botAI->IsMainTank(bot))
-        return false;
-
     Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
     if (!azgalor || azgalor->GetHealthPct() < 85.0f ||
         azgalor->GetVictim() == bot)
         return false;
+
+    if (botAI->IsMainTank(bot))
+        return false;
+
+    Player* mainTank = GetGroupMainTank(botAI, bot);
+    if (!mainTank)
+        return false;
+
+    if (!GET_PLAYERBOT_AI(mainTank))
+    {
+        if (botAI->IsMelee(bot) && azgalor->GetHealthPct() > 95.0f)
+            return true;
+        else
+            return false;
+    }
 
     return GetAzgalorTankStep(botAI, bot) < 2;
 }
@@ -210,10 +222,18 @@ bool AzgalorBossCastsRainOfFireTrigger::IsActive()
     if (!botAI->IsRanged(bot))
         return false;
 
-    if (!AI_VALUE2(Unit*, "find target", "azgalor"))
+    Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
+    if (!azgalor || bot->HasAura(SPELL_DOOM))
         return false;
 
-    return !bot->HasAura(SPELL_DOOM);
+    if (azgalor->GetHealthPct() < 85.0f)
+        return true;
+
+    Player* mainTank = GetGroupMainTank(botAI, bot);
+    if (mainTank && GET_PLAYERBOT_AI(mainTank))
+        return GetAzgalorTankStep(botAI, bot) == 2;
+    else
+        return true;
 }
 
 bool AzgalorBotIsDoomedTrigger::IsActive()
@@ -223,7 +243,14 @@ bool AzgalorBotIsDoomedTrigger::IsActive()
 
 bool AzgalorDoomguardsMustBeControlledTrigger::IsActive()
 {
-    if (!botAI->IsAssistTankOfIndex(bot, 0, true))
+    if (!botAI->IsAssistTankOfIndex(bot, 0, true) && 
+        !botAI->IsAssistTankOfIndex(bot, 1, true))
+        return false;
+
+    // Exclude second assist tank also, unless first assist tank has Doom
+    Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
+    if (firstAssistTank && !firstAssistTank->HasAura(SPELL_DOOM) && 
+        botAI->IsAssistTankOfIndex(bot, 1, true))
         return false;
 
     return AI_VALUE2(Unit*, "find target", "lesser doomguard") ||
