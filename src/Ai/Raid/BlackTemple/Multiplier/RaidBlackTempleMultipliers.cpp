@@ -520,13 +520,15 @@ float IllidanStormrageDisableDefaultTargetingMultiplier::GetValue(Action* action
 
         if (dynamic_cast<DpsAssistAction*>(action))
             return 0.0f;
-
-        constexpr float searchRadius = 15.0f;
-        Unit* shadowfiend = bot->FindNearestCreature(NPC_PARASITIC_SHADOWFIEND, searchRadius);
-        if (shadowfiend && bot->GetVictim() == shadowfiend &&
-            dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
-            return 0.0f;
     }
+    
+    constexpr float searchRadius = 40.0f;
+    Unit* shadowDemon = bot->FindNearestCreature(NPC_SHADOW_DEMON, searchRadius);
+    Unit* shadowfiend = bot->FindNearestCreature(NPC_PARASITIC_SHADOWFIEND, searchRadius);
+    if (((shadowDemon && bot->GetTarget == shadowDemon->GetGUID()) || 
+         (shadowfiend && bot->GetTarget() == shadowfiend->GetGUID())) &&
+        dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
+        return 0.0f;
 
     return 1.0f;
 }

@@ -1941,8 +1941,8 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*ev
     {
         if (eastFlame && westFlame)
         {
-            MarkTargetWithCircle(bot, eastFlame);
-            SetRtiTarget(botAI, "circle", eastFlame);
+            /* MarkTargetWithCircle(bot, eastFlame);
+            SetRtiTarget(botAI, "circle", eastFlame); */
 
             if (bot->GetVictim() != eastFlame)
                 return Attack(eastFlame);
@@ -1961,8 +1961,10 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*ev
         }
         else if (!eastFlame && !westFlame)
         {
+            // Default: go to glaive waiting position
+            // If both flames are dead and the glaive waiting position is too close to hazards, move to a grate position
             std::list<Creature*> demonFires;
-            constexpr float searchRadius = 50.0f;
+            constexpr float searchRadius = 40.0f;
             bot->GetCreatureListWithEntryInGrid(demonFires, NPC_DEMON_FIRE, searchRadius);
 
             const Position& pos = demonFires.empty() ? ILLIDAN_E_GLAIVE_WAITING_POSITION : ILLIDAN_S_GRATE_POSITION;
@@ -1989,8 +1991,8 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*ev
     {
         if (westFlame)
         {
-            MarkTargetWithStar(bot, westFlame);
-            SetRtiTarget(botAI, "star", westFlame);
+            /* MarkTargetWithStar(bot, westFlame);
+            SetRtiTarget(botAI, "star", westFlame); */
 
             if (bot->GetVictim() != westFlame)
                 return Attack(westFlame);
@@ -2008,8 +2010,10 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*ev
         }
         else
         {
+            // Default: go to glaive waiting position
+            // If both flames are dead and the glaive waiting position is too close to hazards, move to a grate position
             std::list<Creature*> demonFires;
-            constexpr float searchRadius = 50.0f;
+            constexpr float searchRadius = 40.0f;
             bot->GetCreatureListWithEntryInGrid(demonFires, NPC_DEMON_FIRE, searchRadius);
 
             const Position& pos = demonFires.empty() ? ILLIDAN_W_GLAIVE_WAITING_POSITION : ILLIDAN_N_GRATE_POSITION;
@@ -2349,7 +2353,7 @@ bool IllidanStormrageDisperseRangedAction::SpreadInCircleInDemonPhase(
     Player* warlockTank = GetIllidanWarlockTank(bot);
     if (!warlockTank)
     {
-        constexpr float safeDistFromBoss = 23.0f;
+        constexpr float safeDistFromBoss = 25.0f;
         if (bot->GetExactDist2d(illidan) < safeDistFromBoss)
         {
             constexpr uint32 minInterval = 0;
@@ -2429,15 +2433,19 @@ bool IllidanStormrageMeleeGoSomewhereToNotDieAction::Execute(Event /*event*/)
         return false;
 
     // start logic to let melee attack shadowfiends in P4
-    constexpr float safeDistFromBoss = 35.0f;
-    Unit* shadowfiend = bot->FindNearestCreature(NPC_PARASITIC_SHADOWFIEND, 15.0f);
-    if (shadowfiend && shadowfiend->IsAlive() && shadowfiend->GetHealthPct() < 50.0f &&
-        shadowfiend->GetExactDist2d(illidan) < safeDistFromBoss)
+    if (Unit* shadowDemon = bot->FindNearestCreature(NPC_SHADOW_DEMON, 25.0f, true);
+        shadowDemon && shadowDemon->GetDistance2d(illidan) > 15.0f)
+    {
+        return false;
+    }
+    else if (Unit* shadowfiend = bot->FindNearestCreature(NPC_PARASITIC_SHADOWFIEND, 15.0f, true);
+             shadowfiend && shadowfiend->GetDistance2d(illidan) > 15.0f && shadowfiend->GetHealthPct() < 50.0f)
     {
         return false;
     }
     // end logic to let melee attack shadowfiends in P4
 
+    constexpr float safeDistFromBoss = 30.0f // move to 35 if not having melee attack anything
     float currentDistFromBoss = bot->GetExactDist2d(illidan);
     if (currentDistFromBoss < safeDistFromBoss)
         MoveAway(illidan, safeDistFromBoss - currentDistFromBoss);
@@ -2477,9 +2485,9 @@ bool IllidanStormrageWarlockTankHandleDemonBossAction::Execute(Event /*event*/)
 
 bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
 {
-    // Unit* shadowDemon = bot->FindNearestCreature(NPC_SHADOW_DEMON, 40.0f);
-    Unit* shadowfiend = bot->FindNearestCreature(NPC_PARASITIC_SHADOWFIEND, 35.0f);
-    Unit* illidan = bot->FindNearestCreature(NPC_ILLIDAN_STORMRAGE, 40.0f);
+    Unit* shadowDemon = bot->FindNearestCreature(NPC_SHADOW_DEMON, 35.0f, true);
+    Unit* shadowfiend = bot->FindNearestCreature(NPC_PARASITIC_SHADOWFIEND, 35.0f, true);
+    Unit* illidan = bot->FindNearestCreature(NPC_ILLIDAN_STORMRAGE, 50.0f, true);
 
     auto [eastFlame, westFlame] = GetFlamesOfAzzinoth(botAI, bot);
 
@@ -2487,9 +2495,9 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
     std::vector<Unit*> targets;
 
     int phase = GetIllidanPhase(illidan);
-    if (botAI->IsRanged(bot) && (phase == 1 || phase == 3 || phase == 5))
+    if ((phase == 1 || phase == 3 || phase == 5) && botAI->IsRanged(bot))
     {
-        if (shadowfiend && shadowfiend->IsAlive() && bot->GetDistance2d(shadowfiend) > 10.0f)
+        if (shadowfiend && bot->GetDistance2d(shadowfiend) > 5.0f)
             targets = { shadowfiend, illidan };
         else
             targets = { illidan };
@@ -2498,20 +2506,21 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
     {
         if (GetIllidanWarlockTank(bot) == bot)
         {
-            targets = { illidan };
+            targets = { shadowDemon, illidan };
         }
-        else if (botAI->IsRanged(bot) && shadowfiend && shadowfiend->IsAlive() &&
-                 bot->GetDistance2d(shadowfiend) > 10.0f)
+        else if (botAI->IsRanged(bot))
         {
-            targets = { /*shadowDemon,*/ shadowfiend, illidan };
+            if (shadowDemon)
+                targets = { shadowDemon };
+            else if (shadowfiend && bot->GetDistance2d(shadowfiend) > 5.0f)
+                targets = { shadowfiend };
+            else
+                targets = { illidan };
         }
-        else if (botAI->IsMelee(bot) && shadowfiend && shadowfiend->IsAlive() &&
-                 shadowfiend->GetHealthPct() < 50.0f && shadowfiend->GetExactDist2d(illidan) > 25.0f)
+        else if (botAI->IsMelee(bot))
         {
-            targets = { shadowfiend };
+            targets = { shadowDemon, shadowfiend };
         }
-        else
-            targets = { illidan }; // melee isn't allowed to move to illidan anyway so this is fine
     }
     else if (phase == 2 && botAI->IsRanged(bot)) // Melee should just use dps assist
     {
@@ -2643,8 +2652,23 @@ bool IllidanStormrageDestroyHazardsCheatAction::Execute(Event /*event*/)
     {
         if (creature && creature->IsAlive())
         {
-            creature->Kill(bot, creature);
-            destroyed = true;
+            if (creature->GetEntry() != NPC_SHADOW DEMON)
+            {
+                creature->Kill(bot, creature);
+                destroyed = true;
+            }
+            // Try taking Shadow Demons down to 50%
+            else if (creature->GetHealthPct() > 50.0f)
+            {
+                uint32 desiredDamage = 0;
+                uint32 halfHealth = creature->GetMaxHealth() / 2;
+                if (creature->GetHealth() > halfHealth)
+                    desiredDamage = creature->GetHealth() - halfHealth;
+                
+                Unit::DealDamage(bot, creature, desiredDamage, nullptr, DIRECT_DAMAGE, 
+                                 SPELL_SCHOOL_MASK_NORMAL, nullptr, false, false, nullptr);
+                return true;
+            }
         }
     }
 

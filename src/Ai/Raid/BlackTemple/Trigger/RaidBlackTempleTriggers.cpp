@@ -623,15 +623,24 @@ bool IllidanStormrageBossTransformsIntoDemonTrigger::IsActive()
 
 bool IllidanStormrageBossSpawnsAddsTrigger::IsActive()
 {
-    if (/* !botAI->IsRangedDps(bot) */ !botAI->IsDps(bot))
+    if (botAI->IsHeal(bot))
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    return illidan && illidan->GetHealth() > 1;
+    if (!illidan || illidan->GetHealth() == 1)
+        return false;
+
+    if (botAI->IsTank(bot) && GetIllidanPhase(illidan) != 4)
+        return false;
+
+    return true;
 }
 
 bool IllidanStormrageNeedToManageDpsTimerTrigger::IsActive()
 {
+    if (!botAI->IsDps(bot))
+        return false;
+
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     if (!illidan || illidan->GetHealth() == 1)
         return false;
