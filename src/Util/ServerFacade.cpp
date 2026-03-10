@@ -64,14 +64,10 @@ Unit* ServerFacade::GetChaseTarget(Unit* target)
     {
         if (target->IsPlayer())
         {
-            ChaseMovementGenerator<Player> const* chaseGen = static_cast<ChaseMovementGenerator<Player> const*>(movementGen);
-            if (!chaseGen->IsTargetValid()) return nullptr;
-            return chaseGen->GetTarget();
+            return static_cast<ChaseMovementGenerator<Player> const*>(movementGen)->GetTarget();
         }
 
-        ChaseMovementGenerator<Creature> const* chaseGen = static_cast<ChaseMovementGenerator<Creature> const*>(movementGen);
-        if (!chaseGen->IsTargetValid()) return nullptr;
-        return chaseGen->GetTarget();
+        return static_cast<ChaseMovementGenerator<Creature> const*>(movementGen)->GetTarget();
     }
 
     return nullptr;
