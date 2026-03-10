@@ -505,13 +505,6 @@ bool TeronGorefiendTanksPositionBossAction::Execute(Event /*event*/)
 // Assume positions in arc at the edge of the balcony (farthest from Constructs)
 bool TeronGorefiendPositionRangedOnBalconyAction::Execute(Event /*event*/)
 {
-    if (!botAI->IsRanged(bot))
-        return false;
-
-    Unit* gorefiend = AI_VALUE2(Unit*, "find target", "teron gorefiend");
-    if (!gorefiend)
-        return false;
-
     Group* group = bot->GetGroup();
     if (!group)
         return false;
@@ -545,16 +538,9 @@ bool TeronGorefiendPositionRangedOnBalconyAction::Execute(Event /*event*/)
     float targetX = GOREFIEND_TANK_POSITION.GetPositionX() + radius * std::cos(angle);
     float targetY = GOREFIEND_TANK_POSITION.GetPositionY() + radius * std::sin(angle);
 
-    float distToPosition = bot->GetExactDist2d(targetX, targetY);
-    if (distToPosition > 2.0f)
+    if (bot->GetExactDist2d(targetX, targetY) > 1.0f)
     {
-        float dX = targetX - bot->GetPositionX();
-        float dY = targetY - bot->GetPositionY();
-        float moveDist = std::min(10.0f, distToPosition);
-        float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
-        float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
-
-        return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY, bot->GetPositionZ(), false,
+        return MoveTo(BLACK_TEMPLE_MAP_ID, targetX, targetY, bot->GetPositionZ(), false,
                       false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
