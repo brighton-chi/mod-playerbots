@@ -315,7 +315,7 @@ private:
     {
         return new CastBlessingOfProtectionProtectAction(botAI);
     }
-    static Action* sense_undead(PlayerbotAI* botAI) { return new SenseUndeadAction(botAI); }
+    static Action* sense_undead(PlayerbotAI* botAI) { return new CastSenseUndeadAction(botAI); }
     static Action* turn_undead(PlayerbotAI* botAI) { return new CastTurnUndeadAction(botAI); }
     static Action* divine_favor(PlayerbotAI* botAI) { return new CastDivineFavorAction(botAI); }
     static Action* righteous_fury(PlayerbotAI* botAI) { return new CastRighteousFuryAction(botAI); }
