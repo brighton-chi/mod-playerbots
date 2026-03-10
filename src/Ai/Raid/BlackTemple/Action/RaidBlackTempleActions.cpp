@@ -2524,7 +2524,7 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
     {
         if (botAI->IsRanged(bot))
             targets = { shadowfiend, illidan };
-        else if (bot->GetExactDist2d(shadowfiend) < 10.0f)
+        else if (shadowfiend && bot->GetExactDist2d(shadowfiend) < 10.0f)
             targets = { shadowfiend, illidan };
         else
             targets = { illidan };
@@ -2535,7 +2535,7 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
             targets = { illidan };
         else if (botAI->IsRanged(bot))
             targets = { /*shadowDemon,*/ shadowfiend, illidan };
-        else if (bot->GetExactDist2d(shadowfiend) < 10.0f)
+        else if (shadowfiend && bot->GetExactDist2d(shadowfiend) < 10.0f)
             targets = { shadowfiend };
         else
             targets = { nullptr };
