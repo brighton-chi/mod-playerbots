@@ -12,6 +12,7 @@
 #include "DruidBearActions.h"
 #include "HunterActions.h"
 #include "PaladinActions.h"
+#include "RaidBossHelpers.h"
 #include "ReachTargetActions.h"
 #include "ShamanActions.h"
 #include "WarriorActions.h"
@@ -191,13 +192,13 @@ float AzgalorDisableTankActionsMultiplier::GetValue(Action* action)
         dynamic_cast<TankAssistAction*>(action))
         return 0.0f;
 
-    if (!botAI->IsAssistTankOfIndex(bot, 0, true) && 
+    if (!botAI->IsAssistTankOfIndex(bot, 0, true) &&
         !botAI->IsAssistTankOfIndex(bot, 1, true))
         return 1.0f;
 
     // Exclude second assist tank also, unless first assist tank has Doom
     Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
-    if (firstAssistTank && !firstAssistTank->HasAura(SPELL_DOOM) && 
+    if (firstAssistTank && !firstAssistTank->HasAura(SPELL_DOOM) &&
         botAI->IsAssistTankOfIndex(bot, 1, true))
         return 1.0f;
 

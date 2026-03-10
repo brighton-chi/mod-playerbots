@@ -2445,7 +2445,7 @@ bool IllidanStormrageMeleeGoSomewhereToNotDieAction::Execute(Event /*event*/)
     }
     // end logic to let melee attack shadowfiends in P4
 
-    constexpr float safeDistFromBoss = 30.0f // move to 35 if not having melee attack anything
+    constexpr float safeDistFromBoss = 30.0f; // move to 35 if not having melee attack anything
     float currentDistFromBoss = bot->GetExactDist2d(illidan);
     if (currentDistFromBoss < safeDistFromBoss)
         MoveAway(illidan, safeDistFromBoss - currentDistFromBoss);
@@ -2652,7 +2652,7 @@ bool IllidanStormrageDestroyHazardsCheatAction::Execute(Event /*event*/)
     {
         if (creature && creature->IsAlive())
         {
-            if (creature->GetEntry() != NPC_SHADOW DEMON)
+            if (creature->GetEntry() != NPC_SHADOW_DEMON)
             {
                 creature->Kill(bot, creature);
                 destroyed = true;
@@ -2664,8 +2664,8 @@ bool IllidanStormrageDestroyHazardsCheatAction::Execute(Event /*event*/)
                 uint32 halfHealth = creature->GetMaxHealth() / 2;
                 if (creature->GetHealth() > halfHealth)
                     desiredDamage = creature->GetHealth() - halfHealth;
-                
-                Unit::DealDamage(bot, creature, desiredDamage, nullptr, DIRECT_DAMAGE, 
+
+                Unit::DealDamage(bot, creature, desiredDamage, nullptr, DIRECT_DAMAGE,
                                  SPELL_SCHOOL_MASK_NORMAL, nullptr, false, false, nullptr);
                 return true;
             }

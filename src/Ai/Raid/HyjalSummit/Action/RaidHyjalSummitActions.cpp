@@ -529,7 +529,7 @@ bool KazrogalAssistTanksMoveInFrontOfBossAction::Execute(Event /*event*/)
     return false;
 }
 
-// If position at base entrance, can do small arc with MoveFromGroup, 
+// If position at base entrance, can do small arc with MoveFromGroup,
 // or maybe stack with FleePosition (could then still do emergency fallback with MoveFromGroup)
 // Right now this is actually a circle
 bool KazrogalSpreadRangedInArcAction::Execute(Event /*event*/)
@@ -774,6 +774,8 @@ bool AzgalorMeleeWaitAtSafePositionAction::Execute(Event /*event*/)
                       position.GetPositionZ(), false, false, false, false,
                       MovementPriority::MOVEMENT_FORCED, true, false);
     }
+
+    return false;
 }
 
 bool AzgalorMoveToDoomguardTankAction::Execute(Event /*event*/)
