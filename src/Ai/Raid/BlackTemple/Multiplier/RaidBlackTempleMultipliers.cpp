@@ -505,34 +505,28 @@ float IllidanStormrageDisableDefaultTargetingMultiplier::GetValue(Action* action
     if (!illidan || illidan->GetHealth() == 1)
         return 1.0f;
 
-    if (dynamic_cast<TankAssistAction*>(action) /* || dynamic_cast<DpsAssistAction*>(action)*/)
+    if (dynamic_cast<TankAssistAction*>(action))
         return 0.0f;
 
-    /* Unit* shadowfiend = AI_VALUE2(Unit*, "find target", "parasitic shadowfiend");
-    if (shadowfiend && bot->GetVictim() == shadowfiend &&
-        dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
+    int phase = GetIllidanPhase(illidan);
+
+    if (phase = 4 && dynamic_cast<DpsAssistAction*>(action))
         return 0.0f;
 
     if (botAI->IsRangedDps(bot))
     {
-        if (GetIllidanPhase(illidan) != 2)
+        if (phase != 2)
             context->GetValue<bool>("neglect threat")->Set(true);
 
         if (dynamic_cast<DpsAssistAction*>(action))
             return 0.0f;
-    } */
 
-    Unit* shadowfiend = AI_VALUE2(Unit*, "find target", "parasitic shadowfiend");
-    if (shadowfiend && bot->GetVictim() == shadowfiend)
-    {
-        context->GetValue<bool>("neglect threat")->Set(true);
-
-        if (dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
+        constexpr float searchRadius = 15.0f;
+        Unit* shadowfiend = bot->FindNearestCreature(NPC_PARASITIC_SHADOWFIEND, searchRadius);
+        if (shadowfiend && bot->GetVictim() == shadowfiend &&
+            dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
             return 0.0f;
     }
-
-    if (botAI->IsDps(bot) && dynamic_cast<DpsAssistAction*>(action))
-        return 0.0f;
 
     return 1.0f;
 }
@@ -560,7 +554,9 @@ float IllidanStormrageControlNonTankMovementMultiplier::GetValue(Action* action)
 
     if (phase == 2 &&
         (dynamic_cast<CastKillingSpreeAction*>(action) ||
-         dynamic_cast<ReachTargetAction*>(action)))
+         dynamic_cast<ReachTargetAction*>(action) ||
+         dynamic_cast<CastReachTargetSpellAction*>(action) ||
+         dynamic_cast<AvoidAoeAction*>(action)))
         return 0.0f;
 
     return 1.0f;
