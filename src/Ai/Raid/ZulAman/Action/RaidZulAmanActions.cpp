@@ -555,7 +555,7 @@ bool HexLordMalacrassCastersStopAttackingAction::Execute(Event event)
     if (!malacrass || !malacrass->HasAura(SPELL_HEX_LORD_SPELL_REFLECTION))
         return false;
 
-    if (bot->GetVictim() == malacrass)
+    if (bot->GetTarget() == malacrass->GetGUID())
     {
         bot->AttackStop();
         bot->InterruptNonMeleeSpells(true);
