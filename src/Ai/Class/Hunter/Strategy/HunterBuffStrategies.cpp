@@ -46,8 +46,4 @@ void HunterBuffSpeedStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
                                        { NextAction("aspect of the pack", 20.0f) }));
 }
 
-void HunterBuffManaStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
-{
-    triggers.push_back(new TriggerNode("aspect of the viper",
-                                       { NextAction("aspect of the viper", 20.0f) }));
-}
+
