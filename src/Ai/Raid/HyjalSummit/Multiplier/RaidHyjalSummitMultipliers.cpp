@@ -24,29 +24,31 @@ float HyjalSummitTimeBloodlustAndHeroismMultiplier::GetValue(Action* action)
     if (bot->getClass() != CLASS_SHAMAN)
         return 1.0f;
 
-    Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
-    if (archimonde && archimonde->GetHealthPct() < 98.0f)
-        return 1.0f;
-
-    Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
-    if (azgalor && azgalor->GetHealthPct() < 90.0f)
-        return 1.0f;
-
-    Unit* kazrogal = AI_VALUE2(Unit*, "find target", "kaz'rogal");
-    if (kazrogal && kazrogal->GetHealthPct() < 90.0f)
-        return 1.0f;
-
-    Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
-    if (anetheron && anetheron->GetHealthPct() < 85.0f)
-        return 1.0f;
-
-    Unit* winterchill = AI_VALUE2(Unit*, "find target", "rage winterchill");
-    if (winterchill && winterchill->GetHealthPct() < 90.0f)
-        return 1.0f;
-
     if (dynamic_cast<CastBloodlustAction*>(action) ||
         dynamic_cast<CastHeroismAction*>(action))
+    {
+        Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
+        if (archimonde && archimonde->GetHealthPct() < 98.0f)
+            return 1.0f;
+
+        Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
+        if (azgalor && azgalor->GetHealthPct() < 90.0f)
+            return 1.0f;
+
+        Unit* kazrogal = AI_VALUE2(Unit*, "find target", "kaz'rogal");
+        if (kazrogal && kazrogal->GetHealthPct() < 90.0f)
+            return 1.0f;
+
+        Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
+        if (anetheron && anetheron->GetHealthPct() < 85.0f)
+            return 1.0f;
+
+        Unit* winterchill = AI_VALUE2(Unit*, "find target", "rage winterchill");
+        if (winterchill && winterchill->GetHealthPct() < 90.0f)
+            return 1.0f;
+
         return 0.0f;
+    }
 
     return 1.0f;
 }
@@ -173,6 +175,9 @@ float KazrogalControlMovementMultiplier::GetValue(Action* action)
         return 0.0f;
 
     if (dynamic_cast<FleeAction*>(action))
+        return 0.0f;
+
+    if (botAI->IsRanged(bot) && dynamic_cast<ReachTargetAction*>(action))
         return 0.0f;
 
     return 1.0f;
