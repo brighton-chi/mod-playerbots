@@ -164,14 +164,6 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class IllidariCouncilManageInterruptsMultiplier : public Multiplier
-{
-public:
-    IllidariCouncilManageInterruptsMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "illidari council manage interrupts multiplier") {}
-    virtual float GetValue(Action* action);
-};
-
 class IllidariCouncilWaitForDpsMultiplier : public Multiplier
 {
 public:

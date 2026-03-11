@@ -71,7 +71,8 @@ namespace BlackTempleHelpers
         SPELL_DEMON_FORM                = 40506,
         SPELL_DARK_BARRAGE              = 40585,
         SPELL_SHADOW_PRISON             = 40647,
-        SPELL_PARASITIC_SHADOWFIEND     = 41917,
+        SPELL_PARASITIC_SHADOWFIEND_1   = 41917, // cast by Illidan (primary infection)
+        SPELL_PARASITIC_SHADOWFIEND_2   = 41914, // cast by shadowfiend on contact (secondary infection)
 
         // Hunter
         SPELL_MISDIRECTION              = 35079,
@@ -86,7 +87,7 @@ namespace BlackTempleHelpers
         NPC_SHADOWY_CONSTRUCT     = 23111,
 
         // Illidan Stormrage <The Betrayer>
-        NPC_ILLIDAN_STORMRAGE     = 22917,
+        // NPC_ILLIDAN_STORMRAGE  = 22917,
         NPC_FLAME_OF_AZZINOTH     = 22997,
         NPC_DEMON_FIRE            = 23069,
         NPC_ILLIDAN_DB_TARGET     = 23070,
@@ -142,7 +143,7 @@ namespace BlackTempleHelpers
     extern std::unordered_map<ObjectGuid, uint8> shahrazTankStep;
 
     // Illidari Council
-    constexpr float COUNCIL_FLOOR_Z_THRESHOLD = 271.000f;
+    constexpr float COUNCIL_FLOOR_Z_THRESHOLD = 270.000f;
     extern const Position GATHIOS_TANK_POSITION_1;
     extern const Position GATHIOS_TANK_POSITION_2;
     extern const Position GATHIOS_TANK_POSITION_3;

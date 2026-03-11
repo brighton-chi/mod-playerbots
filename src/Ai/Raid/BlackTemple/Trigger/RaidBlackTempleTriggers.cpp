@@ -527,7 +527,8 @@ bool IllidanStormrageBotHasParasiticShadowfiendTrigger::IsActive()
     if (botAI->IsMelee(bot))
         return false;
 
-    if (!bot->HasAura(SPELL_PARASITIC_SHADOWFIEND))
+    if (!bot->HasAura(SPELL_PARASITIC_SHADOWFIEND_1) &&
+        !bot->HasAura(SPELL_PARASITIC_SHADOWFIEND_2))
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");

@@ -314,14 +314,6 @@ namespace BlackTempleHelpers
             }
         }
 
-        LOG_DEBUG("playerbots", "[BT] Bot {} identifies eastFlame={}, which is attacking {}; westFlame={}, which is attacking {}",
-            bot->GetName(),
-            eastFlame ? eastFlame->GetGUID().ToString() : "NONE",
-            (eastFlame && eastFlame->GetVictim()) ? eastFlame->GetVictim()->GetName() : "NONE",
-            westFlame ? westFlame->GetGUID().ToString() : "NONE",
-            (westFlame && westFlame->GetVictim()) ? westFlame->GetVictim()->GetName() : "NONE"
-        );
-
         return { eastFlame, westFlame };
     }
 
