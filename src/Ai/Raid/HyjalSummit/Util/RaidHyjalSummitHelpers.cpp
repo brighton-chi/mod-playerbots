@@ -48,7 +48,6 @@ namespace HyjalSummitHelpers
 
     // Kaz'rogal
 
-    // const Position KAZROGAL_TANK_POSITION = { 5495.551f, -2719.367f, 1483.154f };
     const Position KAZROGAL_TANK_TRANSITION_POSITION = { 5528.792f, -2636.486f, 1481.293f };
     const Position KAZROGAL_TANK_FINAL_POSITION = { 5511.514f, -2662.466f, 1480.288f };
     std::unordered_map<ObjectGuid, uint8> kazrogalTankStep;
