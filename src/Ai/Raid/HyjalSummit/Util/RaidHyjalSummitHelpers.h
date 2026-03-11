@@ -54,21 +54,23 @@ namespace HyjalSummitHelpers
     extern std::unordered_map<ObjectGuid, bool> hasReachedWinterchillPosition;
 
     // Anetheron
-    extern const Position ANETHERON_MAIN_TANK_POSITION;
-    extern const Position ANETHERON_E_INFERNAL_TANK_POSITION;
-    extern const Position ANETHERON_W_INFERNAL_TANK_POSITION;
+    extern const Position ANETHERON_TANK_POSITION;
+    extern const Position ANETHERON_E_INFERNAL_POSITION;
+    extern const Position ANETHERON_W_INFERNAL_POSITION;
     extern std::unordered_map<ObjectGuid, bool> hasReachedAnetheronPosition;
     Player* GetInfernoTarget(Unit* anetheron);
     const Position& GetClosestInfernalTankPosition(Player* bot);
 
     // Kaz'rogal
-    extern const Position KAZROGAL_TANK_POSITION;
+    extern const Position KAZROGAL_TANK_TRANSITION_POSITION;
+    extern const Position KAZROGAL_TANK_FINAL_POSITION;
+    extern std::unordered_map<ObjectGuid, uint8> kazrogalTankStep;
     extern std::unordered_map<ObjectGuid, bool> isBelowManaThreshold;
 
     // Azgalor
-    extern const Position AZGALOR_MAIN_TANK_TRANSITION_POSITION;
-    extern const Position AZGALOR_MAIN_TANK_FINAL_POSITION;
-    extern const Position AZGALOR_DOOMGUARD_TANK_POSITION;
+    extern const Position AZGALOR_TANK_TRANSITION_POSITION;
+    extern const Position AZGALOR_TANK_FINAL_POSITION;
+    extern const Position AZGALOR_DOOMGUARD_POSITION;
     extern const Position AZGALOR_WAITING_POSITION;
     extern std::unordered_map<ObjectGuid, uint8> azgalorTankStep;
     int GetAzgalorTankStep(PlayerbotAI* botAI, Player* bot);

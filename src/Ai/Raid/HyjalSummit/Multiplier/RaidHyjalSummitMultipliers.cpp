@@ -12,6 +12,7 @@
 #include "DruidBearActions.h"
 #include "HunterActions.h"
 #include "PaladinActions.h"
+#include "RaidBossHelpers.h"
 #include "ReachTargetActions.h"
 #include "ShamanActions.h"
 #include "WarriorActions.h"
@@ -23,29 +24,31 @@ float HyjalSummitTimeBloodlustAndHeroismMultiplier::GetValue(Action* action)
     if (bot->getClass() != CLASS_SHAMAN)
         return 1.0f;
 
-    Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
-    if (archimonde && archimonde->GetHealthPct() < 98.0f)
-        return 1.0f;
-
-    Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
-    if (azgalor && azgalor->GetHealthPct() < 90.0f)
-        return 1.0f;
-
-    Unit* kazrogal = AI_VALUE2(Unit*, "find target", "kaz'rogal");
-    if (kazrogal && kazrogal->GetHealthPct() < 90.0f)
-        return 1.0f;
-
-    Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
-    if (anetheron && anetheron->GetHealthPct() < 85.0f)
-        return 1.0f;
-
-    Unit* winterchill = AI_VALUE2(Unit*, "find target", "rage winterchill");
-    if (winterchill && winterchill->GetHealthPct() < 90.0f)
-        return 1.0f;
-
     if (dynamic_cast<CastBloodlustAction*>(action) ||
         dynamic_cast<CastHeroismAction*>(action))
+    {
+        Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
+        if (archimonde && archimonde->GetHealthPct() < 98.0f)
+            return 1.0f;
+
+        Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
+        if (azgalor && azgalor->GetHealthPct() < 90.0f)
+            return 1.0f;
+
+        Unit* kazrogal = AI_VALUE2(Unit*, "find target", "kaz'rogal");
+        if (kazrogal && kazrogal->GetHealthPct() < 90.0f)
+            return 1.0f;
+
+        Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
+        if (anetheron && anetheron->GetHealthPct() < 85.0f)
+            return 1.0f;
+
+        Unit* winterchill = AI_VALUE2(Unit*, "find target", "rage winterchill");
+        if (winterchill && winterchill->GetHealthPct() < 90.0f)
+            return 1.0f;
+
         return 0.0f;
+    }
 
     return 1.0f;
 }
@@ -174,6 +177,9 @@ float KazrogalControlMovementMultiplier::GetValue(Action* action)
     if (dynamic_cast<FleeAction*>(action))
         return 0.0f;
 
+    if (botAI->IsRanged(bot) && dynamic_cast<ReachTargetAction*>(action))
+        return 0.0f;
+
     return 1.0f;
 }
 
@@ -191,7 +197,14 @@ float AzgalorDisableTankActionsMultiplier::GetValue(Action* action)
         dynamic_cast<TankAssistAction*>(action))
         return 0.0f;
 
-    if (!botAI->IsAssistTankOfIndex(bot, 0, true))
+    if (!botAI->IsAssistTankOfIndex(bot, 0, true) &&
+        !botAI->IsAssistTankOfIndex(bot, 1, true))
+        return 1.0f;
+
+    // Exclude second assist tank also, unless first assist tank has Doom
+    Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
+    if (firstAssistTank && !firstAssistTank->HasAura(SPELL_DOOM) &&
+        botAI->IsAssistTankOfIndex(bot, 1, true))
         return 1.0f;
 
     // Only move to Doomguard position if a player has Doom

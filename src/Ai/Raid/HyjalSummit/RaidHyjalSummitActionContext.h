@@ -159,8 +159,8 @@ private:
     static Action* azgalor_main_tank_position_boss(
         PlayerbotAI* botAI) { return new AzgalorMainTankPositionBossAction(botAI); }
 
-    static Action* azgalor_melee_wait_at_safe_position(
-        PlayerbotAI* botAI) { return new AzgalorMeleeWaitAtSafePositionAction(botAI); }
+    static Action* azgalor_wait_at_safe_position(
+        PlayerbotAI* botAI) { return new AzgalorWaitAtSafePositionAction(botAI); }
 
     static Action* azgalor_disperse_ranged(
         PlayerbotAI* botAI) { return new AzgalorDisperseRangedAction(botAI); }

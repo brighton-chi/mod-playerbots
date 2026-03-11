@@ -17,9 +17,9 @@ namespace HyjalSummitHelpers
 
     // Anetheron
 
-    const Position ANETHERON_MAIN_TANK_POSITION =       { 5033.177f, -1765.996f, 1324.195f };
-    const Position ANETHERON_E_INFERNAL_TANK_POSITION = { 5022.587f, -1802.805f, 1322.026f };
-    const Position ANETHERON_W_INFERNAL_TANK_POSITION = { 5048.911f, -1722.164f, 1321.408f };
+    const Position ANETHERON_TANK_POSITION =       { 5033.177f, -1765.996f, 1324.195f };
+    const Position ANETHERON_E_INFERNAL_POSITION = { 5022.587f, -1802.805f, 1322.026f };
+    const Position ANETHERON_W_INFERNAL_POSITION = { 5048.911f, -1722.164f, 1321.408f };
     std::unordered_map<ObjectGuid, bool> hasReachedAnetheronPosition;
 
     Player* GetInfernoTarget(Unit* anetheron)
@@ -40,27 +40,24 @@ namespace HyjalSummitHelpers
 
     const Position& GetClosestInfernalTankPosition(Player* bot)
     {
-        const Position& east = ANETHERON_E_INFERNAL_TANK_POSITION;
-        const Position& west = ANETHERON_W_INFERNAL_TANK_POSITION;
+        const Position& east = ANETHERON_E_INFERNAL_POSITION;
+        const Position& west = ANETHERON_W_INFERNAL_POSITION;
         return (bot->GetExactDist2d(east.GetPositionX(), east.GetPositionY()) <=
                 bot->GetExactDist2d(west.GetPositionX(), west.GetPositionY())) ? east : west;
     }
 
     // Kaz'rogal
 
-    // const Position KAZROGAL_TANK_POSITION = { 5505.633f, -2723.774f, 1483.848f };
-    const Position KAZROGAL_TANK_POSITION = { 5495.551f, -2719.367f, 1483.154f };
+    const Position KAZROGAL_TANK_TRANSITION_POSITION = { 5528.792f, -2636.486f, 1481.293f };
+    const Position KAZROGAL_TANK_FINAL_POSITION = { 5511.514f, -2662.466f, 1480.288f };
+    std::unordered_map<ObjectGuid, uint8> kazrogalTankStep;
     std::unordered_map<ObjectGuid, bool> isBelowManaThreshold;
 
     // Azgalor
 
-    // const Position AZGALOR_MAIN_TANK_TRANSITION_POSITION = { 5496.044f, -2688.533f, 1480.367f };
-    const Position AZGALOR_MAIN_TANK_TRANSITION_POSITION = { 5486.787f, -2696.215f, 1482.007f };
-    // const Position AZGALOR_MAIN_TANK_FINAL_POSITION = { 5498.800f, -2663.021f, 1480.806f };
-    const Position AZGALOR_MAIN_TANK_FINAL_POSITION = { 5496.379f, -2675.265f, 1481.053f };
-    // const Position AZGALOR_DOOMGUARD_TANK_POSITION = { 5513.604f, -2722.173f, 1483.091f };
-    const Position AZGALOR_DOOMGUARD_TANK_POSITION = { 5453.381f, -2725.236f, 1485.468f }; // Thrall position test
-    // const Position AZGALOR_WAITING_POSITION = { 5484.535f, -2723.090f, 1483.676f };
+    const Position AZGALOR_TANK_TRANSITION_POSITION = { 5486.787f, -2696.215f, 1482.007f };
+    const Position AZGALOR_TANK_FINAL_POSITION = { 5496.379f, -2675.265f, 1481.053f };
+    const Position AZGALOR_DOOMGUARD_POSITION = { 5453.381f, -2725.236f, 1485.468f };
     const Position AZGALOR_WAITING_POSITION = { 5470.972f, -2723.412f, 1483.250f };
     std::unordered_map<ObjectGuid, uint8> azgalorTankStep;
 
