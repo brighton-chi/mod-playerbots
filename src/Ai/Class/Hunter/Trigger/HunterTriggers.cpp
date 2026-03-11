@@ -73,9 +73,14 @@ bool HunterPetNotHappy::IsActive()
 
 bool HunterAspectOfTheViperTrigger::IsActive()
 {
+    if (botAI->HasStrategy("rnature", BotState::BOT_STATE_COMBAT) ||
+        botAI->HasStrategy("rnature", BotState::BOT_STATE_NON_COMBAT) ||
+        botAI->HasStrategy("bspeed", BotState::BOT_STATE_COMBAT) ||
+        botAI->HasStrategy("bspeed", BotState::BOT_STATE_NON_COMBAT))
+        return false;
+
     return SpellTrigger::IsActive() && !botAI->HasAura(spell, GetTarget()) &&
            AI_VALUE2(uint8, "mana", "self target") < (sPlayerbotAIConfig.lowMana / 2);
-    ;
 }
 
 bool HunterAspectOfThePackTrigger::IsActive()
