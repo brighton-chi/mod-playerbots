@@ -70,8 +70,8 @@ public:
         creators["azgalor main tank position boss"] =
             &RaidHyjalSummitActionContext::azgalor_main_tank_position_boss;
 
-        creators["azgalor melee wait at safe position"] =
-            &RaidHyjalSummitActionContext::azgalor_melee_wait_at_safe_position;
+        creators["azgalor wait at safe position"] =
+            &RaidHyjalSummitActionContext::azgalor_wait_at_safe_position;
 
         creators["azgalor disperse ranged"] =
             &RaidHyjalSummitActionContext::azgalor_disperse_ranged;
