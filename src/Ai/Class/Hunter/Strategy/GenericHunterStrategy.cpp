@@ -117,14 +117,12 @@ void GenericHunterStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("tranquilizing shot magic", { NextAction("tranquilizing shot", 61.0f) }));
 
     // Ranged-based Triggers
-    triggers.push_back(new TriggerNode("enemy within melee", {
-                                                         NextAction("explosive trap", 37.0f),
-                                                         NextAction("mongoose bite", 22.0f),
-                                                         NextAction("wing clip", 21.0f) }));
+    triggers.push_back(new TriggerNode("enemy within melee", {NextAction("explosive trap", 37.0f),
+                                                              NextAction("mongoose bite", 22.0f),
+                                                              NextAction("wing clip", 21.0f) }));
 
-    triggers.push_back(new TriggerNode("enemy too close for auto shot", {
-                                                                    NextAction("disengage", 35.0f),
-                                                                    NextAction("flee", 34.0f) }));
+    triggers.push_back(new TriggerNode("enemy too close for auto shot", {NextAction("disengage", 35.0f),
+                                                                         NextAction("flee", 34.0f) }));
 }
 
 // ===== AoE Strategy, 2/3+ enemies =====
