@@ -2057,81 +2057,6 @@ bool LadyVashjTeleportToTaintedElementalAction::Execute(Event /*event*/)
 }
 
 bool LadyVashjLootTaintedCoreAction::Execute(Event /*event*/)
-/*{
-    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    if (!vashj)
-        return false;
-
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    auto const& corpses = context->GetValue<GuidVector>("nearest corpses")->Get();
-    const float maxLootRange = sPlayerbotAIConfig.lootDistance;
-
-    for (auto const& guid : corpses)
-    {
-        LootObject loot(bot, guid);
-        if (!loot.IsLootPossible(bot))
-            continue;
-
-        WorldObject* object = loot.GetWorldObject(bot);
-        if (!object)
-            continue;
-
-        Creature* creature = object->ToCreature();
-        if (!creature || creature->GetEntry() != NPC_TAINTED_ELEMENTAL || creature->IsAlive())
-            continue;
-
-        context->GetValue<LootObject>("loot target")->Set(loot);
-
-        if (bot->GetDistance(object) > maxLootRange)
-            return MoveTo(object, 2.0f, MovementPriority::MOVEMENT_FORCED);
-
-        OpenLootAction open(botAI);
-        if (!open.Execute(Event()))
-            return false;
-
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (member && member->HasItemCount(ITEM_TAINTED_CORE, 1, false))
-                return true;
-        }
-
-        const ObjectGuid botGuid = bot->GetGUID();
-        const ObjectGuid corpseGuid = guid;
-        constexpr uint8 coreIndex = 0;
-
-        botAI->AddTimedEvent([botGuid, corpseGuid, coreIndex, vashj, group]()
-        {
-            Player* receiver = botGuid.IsEmpty() ? nullptr : ObjectAccessor::FindPlayer(botGuid);
-            if (!receiver)
-                return;
-
-            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-            {
-                Player* member = ref->GetSource();
-                if (member && member->HasItemCount(ITEM_TAINTED_CORE, 1, false))
-                    return;
-            }
-
-            receiver->SetLootGUID(corpseGuid);
-
-            WorldPacket* packet = new WorldPacket(CMSG_AUTOSTORE_LOOT_ITEM, 1);
-            *packet << coreIndex;
-            receiver->GetSession()->QueuePacket(packet);
-
-            const uint32 instanceId = vashj->GetMap()->GetInstanceId();
-            const time_t now = std::time(nullptr);
-            lastCoreInInventoryTime.insert_or_assign(botGuid, now);
-        }, 600);
-
-        return true;
-    }
-
-    return false;
-} */
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     if (!vashj)
@@ -2198,7 +2123,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
 
     Unit* closestTrigger = nullptr;
     if (Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
-        closestTrigger = GetNearestActiveShieldGeneratorTriggerByEntry(tainted))
+        (closestTrigger = GetNearestActiveShieldGeneratorTriggerByEntry(tainted)))
     {
         nearestTriggerGuid.try_emplace(instanceId, closestTrigger->GetGUID());
     }
