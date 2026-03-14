@@ -742,7 +742,7 @@ bool AzgalorDisperseRangedAction::Execute(Event /*event*/)
         doomguard && bot->GetExactDist2d(doomguard) < safeDistFromDoomguard)
         return FleePosition(doomguard->GetPosition(), safeDistFromDoomguard, minInterval);
 
-    constexpr float safeDistFromPlayer = 6.0f;
+    constexpr float safeDistFromPlayer = 5.0f;
     if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
         return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer, minInterval);
 
