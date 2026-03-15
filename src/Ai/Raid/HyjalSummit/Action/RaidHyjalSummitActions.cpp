@@ -639,9 +639,23 @@ bool KazrogalLowManaBotMoveFromGroupAction::Execute(Event /*event*/)
         }
 
         constexpr float safeDistance = 16.0f;
+
         Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
-        if (nearestPlayer && bot->GetDistance2d(nearestPlayer) < safeDistance)
-            return MoveFromGroup(safeDistance);
+        if (!nearestPlayer)
+            return false;
+
+        float currentDistance = bot->GetDistance2d(nearestPlayer);
+        if (currentDistance < safeDistance)
+        {
+            Unit* kazrogal = AI_VALUE2(Unit*, "find target", "kaz'rogal");
+            if (!kazrogal)
+                return false;
+
+            if (bot->GetExactDist2d(kazrogal) > 42.0f)
+                return MoveAway(nearestPlayer, safeDistance - currentDistance);
+            else
+                return MoveFromGroup(safeDistance);
+        }
     }
 
     return false;
