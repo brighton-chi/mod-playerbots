@@ -220,11 +220,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class ReliquaryOfSoulsAdjustDistanceFromEssenceOfSufferingAction : public MovementAction
+class ReliquaryOfSoulsAdjustDistanceFromSufferingAction : public MovementAction
 {
 public:
-    ReliquaryOfSoulsAdjustDistanceFromEssenceOfSufferingAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "reliquary of souls adjust distance from essence of suffering") {}
+    ReliquaryOfSoulsAdjustDistanceFromSufferingAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "reliquary of souls adjust distance from suffering") {}
     bool Execute(Event event) override;
 
 private:
@@ -233,11 +233,11 @@ private:
     bool RangedMoveAwayFromBoss(Unit* suffering);
 };
 
-class ReliquaryOfSoulsHealersDpsEssenceOfSufferingAction : public Action
+class ReliquaryOfSoulsHealersDpsSufferingAction : public Action
 {
 public:
-    ReliquaryOfSoulsHealersDpsEssenceOfSufferingAction(
-        PlayerbotAI* botAI) : Action(botAI, "reliquary of souls healers dps essence of suffering") {}
+    ReliquaryOfSoulsHealersDpsSufferingAction(
+        PlayerbotAI* botAI) : Action(botAI, "reliquary of souls healers dps suffering") {}
     bool Execute(Event event) override;
 };
 
@@ -297,6 +297,9 @@ public:
     MotherShahrazRunAwayToBreakFatalAttractionAction(
         PlayerbotAI* botAI) : MovementAction(botAI, "mother shahraz run away to break fatal attraction") {}
     bool Execute(Event event) override;
+
+private:
+    std::vector<Player*> GetAttractedPlayers();
 };
 
 // Illidari Council
@@ -403,14 +406,15 @@ private:
     bool TryMisdirectToWarlockTank(Unit* illidan);
 };
 
-class IllidanStormrageMainTankMoveAwayFromFlameCrashAction : public AttackAction
+class IllidanStormrageMainTankRepositionBossAction : public AttackAction
 {
 public:
-    IllidanStormrageMainTankMoveAwayFromFlameCrashAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "illidan stormrage main tank move away from flame crash") {}
+    IllidanStormrageMainTankRepositionBossAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "illidan stormrage main tank reposition boss") {}
     bool Execute(Event event) override;
 
 private:
+    GameObject* FindNearestTrap();
     Position GetPointBeyondTrap(
         GameObject* nearestTrap, float extraDistance = 5.0f);
     Position FindSafestNearbyPosition(

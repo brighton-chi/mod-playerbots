@@ -155,8 +155,8 @@ public:
         creators["illidan stormrage tank needs aggro"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_tank_needs_aggro;
 
-        creators["illidan stormrage boss casts flame crash"] =
-            &RaidBlackTempleTriggerContext::illidan_stormrage_boss_casts_flame_crash;
+        creators["illidan stormrage boss casts flame crash in front of main tank"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_boss_casts_flame_crash_in_front_of_main_tank;
 
         creators["illidan stormrage bot has parasitic shadowfiend"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_bot_has_parasitic_shadowfiend;
@@ -337,8 +337,8 @@ private:
     static Trigger* illidan_stormrage_tank_needs_aggro(
         PlayerbotAI* botAI) { return new IllidanStormrageTankNeedsAggroTrigger(botAI); }
 
-    static Trigger* illidan_stormrage_boss_casts_flame_crash(
-        PlayerbotAI* botAI) { return new IllidanStormrageBossCastsFlameCrashTrigger(botAI); }
+    static Trigger* illidan_stormrage_boss_casts_flame_crash_in_front_of_main_tank(
+        PlayerbotAI* botAI) { return new IllidanStormrageBossCastsFlameCrashInFrontOfMainTankTrigger(botAI); }
 
     static Trigger* illidan_stormrage_bot_has_parasitic_shadowfiend(
         PlayerbotAI* botAI) { return new IllidanStormrageBotHasParasiticShadowfiendTrigger(botAI); }

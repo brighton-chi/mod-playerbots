@@ -495,7 +495,8 @@ bool IllidariCouncilNeedToManageDpsTimerTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "gathios the shatterer"))
         return false;
 
-    return IsMechanicTrackerBot(botAI, bot, BLACK_TEMPLE_MAP_ID, GetZerevorMageTank(bot));
+    return IsMechanicTrackerBot(
+        botAI, bot, BLACK_TEMPLE_MAP_ID, GetZerevorMageTank(bot));
 }
 
 // Illidan Stormrage <The Betrayer>
@@ -509,7 +510,7 @@ bool IllidanStormrageTankNeedsAggroTrigger::IsActive()
     return illidan && illidan->GetHealth() > 1;
 }
 
-bool IllidanStormrageBossCastsFlameCrashTrigger::IsActive()
+bool IllidanStormrageBossCastsFlameCrashInFrontOfMainTankTrigger::IsActive()
 {
     if (!botAI->IsMainTank(bot))
         return false;

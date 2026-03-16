@@ -593,19 +593,6 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event /*eve
     Unit* priorityTarget = nullptr;
     uint32 highestHp = std::numeric_limits<uint32>::min();
 
-    /* for (auto guid : npcs)
-    {
-        Unit* unit = botAI->GetUnit(guid);
-        if (!unit || !unit->IsAlive() || unit->GetEntry() != NPC_SHADOWY_CONSTRUCT)
-            continue;
-
-        uint32 hp = unit->GetHealth();
-        if (hp > highestHp)
-        {
-            highestHp = hp;
-            priorityTarget = unit;
-        }
-    } */
     float closestToGorefiend = std::numeric_limits<float>::max();
 
     for (auto guid : npcs)
@@ -647,10 +634,11 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event /*eve
             return true;
         }
 
-        // Due to the charmed creature not observing GCDs, this sequence is intended
-        // to try to create an authentic rotation (having a sequence with just one of
-        // each ability results in Chains breaking immediately upon cast, even if
-        // Volley is scheduled to occur before Chains (maybe due to projectile travel time?)
+        // Adding cooldowns manually is needed due to the charmed creature not observing
+        // cooldowns, including the GCD
+        // The ordering, including repeating some spells, is the product of testing to try
+        // to keep the bot from breaking chains with volley, which tends to happen when volley
+        // is cast before chains (maybe due to projectile travel time?)
         if (!spirit->HasSpellCooldown(SPELL_SPIRIT_CHAINS) &&
             priorityTarget->GetHealthPct() == 100.0f)
         {
@@ -875,7 +863,66 @@ bool ReliquaryOfSoulsMisdirectBossToMainTankAction::Execute(Event /*event*/)
     return false;
 }
 
-bool ReliquaryOfSoulsHealersDpsEssenceOfSufferingAction::Execute(Event /*event*/)
+bool ReliquaryOfSoulsAdjustDistanceFromSufferingAction::Execute(Event /*event*/)
+{
+    Unit* suffering = AI_VALUE2(Unit*, "find target", "essence of suffering");
+    if (!suffering)
+        return false;
+
+    if (botAI->IsTank(bot) && bot->GetHealthPct() > 25.0f)
+        return TanksMoveToMinimumRange(suffering);
+    else if (botAI->IsMelee(bot) && bot->GetVictim() != suffering)
+        return MeleeDpsStayAtMaximumRange(suffering);
+    else if (botAI->IsRanged(bot))
+        return RangedMoveAwayFromBoss(suffering);
+
+    return false;
+}
+
+bool ReliquaryOfSoulsAdjustDistanceFromSufferingAction::TanksMoveToMinimumRange(Unit* suffering)
+{
+    float distanceToBoss = bot->GetExactDist2d(suffering);
+    if (distanceToBoss > 2.0f)
+    {
+        float dX = suffering->GetPositionX() - bot->GetPositionX();
+        float dY = suffering->GetPositionY() - bot->GetPositionY();
+        float targetX = bot->GetPositionX() + (dX / distanceToBoss);
+        float targetY = bot->GetPositionY() + (dY / distanceToBoss);
+
+        return MoveTo(BLACK_TEMPLE_MAP_ID, targetX, targetY, bot->GetPositionZ(), false,
+                      false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+    }
+
+    return false;
+}
+
+bool ReliquaryOfSoulsAdjustDistanceFromSufferingAction::MeleeDpsStayAtMaximumRange(Unit* suffering)
+{
+    float desiredDist = bot->GetMeleeRange(suffering);
+    float behindAngle = Position::NormalizeOrientation(suffering->GetOrientation() + M_PI);
+    float targetX = suffering->GetPositionX() + desiredDist * std::cos(behindAngle);
+    float targetY = suffering->GetPositionY() + desiredDist * std::sin(behindAngle);
+
+    if (bot->GetExactDist2d(targetX, targetY) > 0.25f)
+    {
+        return MoveTo(BLACK_TEMPLE_MAP_ID, targetX, targetY, bot->GetPositionZ(), false,
+                      false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+    }
+
+    return false;
+}
+
+bool ReliquaryOfSoulsAdjustDistanceFromSufferingAction::RangedMoveAwayFromBoss(Unit* suffering)
+{
+    constexpr float safeDistance = 15.0f;
+    constexpr uint32 minInterval = 1000;
+    if (bot->GetExactDist2d(suffering) < safeDistance)
+        return FleePosition(suffering->GetPosition(), safeDistance, minInterval);
+
+    return false;
+}
+
+bool ReliquaryOfSoulsHealersDpsSufferingAction::Execute(Event /*event*/)
 {
     if (AI_VALUE2(Unit*, "find target", "essence of suffering"))
     {
@@ -893,65 +940,6 @@ bool ReliquaryOfSoulsHealersDpsEssenceOfSufferingAction::Execute(Event /*event*/
             return true;
         }
     }
-
-    return false;
-}
-
-bool ReliquaryOfSoulsAdjustDistanceFromEssenceOfSufferingAction::Execute(Event /*event*/)
-{
-    Unit* suffering = AI_VALUE2(Unit*, "find target", "essence of suffering");
-    if (!suffering)
-        return false;
-
-    if (botAI->IsTank(bot) && bot->GetHealthPct() > 25.0f)
-        return TanksMoveToMinimumRange(suffering);
-    else if (botAI->IsMelee(bot) && bot->GetVictim() != suffering)
-        return MeleeDpsStayAtMaximumRange(suffering);
-    else if (botAI->IsRanged(bot))
-        return RangedMoveAwayFromBoss(suffering);
-
-    return false;
-}
-
-bool ReliquaryOfSoulsAdjustDistanceFromEssenceOfSufferingAction::TanksMoveToMinimumRange(Unit* suffering)
-{
-    float distanceToBoss = bot->GetExactDist2d(suffering);
-    if (distanceToBoss > 2.0f)
-    {
-        float dX = suffering->GetPositionX() - bot->GetPositionX();
-        float dY = suffering->GetPositionY() - bot->GetPositionY();
-        float targetX = bot->GetPositionX() + (dX / distanceToBoss);
-        float targetY = bot->GetPositionY() + (dY / distanceToBoss);
-
-        return MoveTo(BLACK_TEMPLE_MAP_ID, targetX, targetY, bot->GetPositionZ(), false,
-                      false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
-    }
-
-    return false;
-}
-
-bool ReliquaryOfSoulsAdjustDistanceFromEssenceOfSufferingAction::MeleeDpsStayAtMaximumRange(Unit* suffering)
-{
-    float desiredDist = bot->GetMeleeRange(suffering);
-    float behindAngle = Position::NormalizeOrientation(suffering->GetOrientation() + M_PI);
-    float targetX = suffering->GetPositionX() + desiredDist * std::cos(behindAngle);
-    float targetY = suffering->GetPositionY() + desiredDist * std::sin(behindAngle);
-
-    if (bot->GetExactDist2d(targetX, targetY) > 0.25f)
-    {
-        return MoveTo(BLACK_TEMPLE_MAP_ID, targetX, targetY, bot->GetPositionZ(), false,
-                      false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
-    }
-
-    return false;
-}
-
-bool ReliquaryOfSoulsAdjustDistanceFromEssenceOfSufferingAction::RangedMoveAwayFromBoss(Unit* suffering)
-{
-    constexpr float safeDistance = 15.0f;
-    constexpr uint32 minInterval = 1000;
-    if (bot->GetExactDist2d(suffering) < safeDistance)
-        return FleePosition(suffering->GetPosition(), safeDistance, minInterval);
 
     return false;
 }
@@ -1021,7 +1009,7 @@ bool MotherShahrazTanksPositionBossUnderPillarAction::Execute(Event /*event*/)
         const Position& position = positions[step];
         float distToPosition = bot->GetExactDist2d(position);
 
-        if ((distToPosition > maxDistance) && bot->IsWithinMeleeRange(shahraz))
+        if (distToPosition > maxDistance && bot->IsWithinMeleeRange(shahraz))
         {
             bool backwards = (shahraz->GetVictim() == bot);
             return MoveTo(BLACK_TEMPLE_MAP_ID, position.GetPositionX(), position.GetPositionY(),
@@ -1037,6 +1025,7 @@ bool MotherShahrazTanksPositionBossUnderPillarAction::Execute(Event /*event*/)
             float orientation = atan2(shahraz->GetPositionY() - bot->GetPositionY(),
                                       shahraz->GetPositionX() - bot->GetPositionX());
             bot->SetFacingTo(orientation);
+            shahrazTankStep[guid] = 2;
         }
     }
 
@@ -1050,16 +1039,31 @@ bool MotherShahrazMeleeDpsWaitAtSafePositionAction::Execute(Event /*event*/)
                   false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
-// This doesn't actually matter for bots since they don't take fall damage
-// But I still want to simulate actual player behavior
+// This doesn't actually matter for bots since they don't take fall damage, and it's actually
+// easier to tank her closer to her starting position, but I want to simulate a player strategy
 bool MotherShahrazPositionRangedUnderPillarAction::Execute(Event /*event*/)
 {
-    const Position& position = SHAHRAZ_RANGED_POSITION;
-    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY() > 1.0f))
+    // Testing having healer run with tanks on pull to keep tanks up
+    if (botAI->IsAssistHealOfIndex(bot, 0, false) && GetShahrazTankStep(botAI, bot) < 2)
     {
-        return MoveTo(BLACK_TEMPLE_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-                      bot->GetPositionZ(), false, false, false, false,
-                      MovementPriority::MOVEMENT_FORCED, true, false);
+        Unit* shahraz = AI_VALUE2(Unit*, "find target", "mother shahraz");
+        if (!shahraz)
+            return false;
+
+        constexpr uint32 minInterval = 0;
+        constexpr float safeDistFromBoss = 20.0f;
+        if (bot->GetExactDist2d(shahraz) < safeDistFromBoss)
+            return FleePosition(shahraz->GetPosition(), safeDistFromBoss, minInterval);
+    }
+    else
+    {
+        const Position& position = SHAHRAZ_RANGED_POSITION;
+        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
+        {
+            return MoveTo(BLACK_TEMPLE_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                        position.GetPositionZ(), false, false, false, false,
+                        MovementPriority::MOVEMENT_FORCED, true, false);
+        }
     }
 
     return false;
@@ -1067,18 +1071,7 @@ bool MotherShahrazPositionRangedUnderPillarAction::Execute(Event /*event*/)
 
 bool MotherShahrazRunAwayToBreakFatalAttractionAction::Execute(Event /*event*/)
 {
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    std::vector<Player*> attractedPlayers;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (member && member->HasAura(SPELL_FATAL_ATTRACTION))
-            attractedPlayers.push_back(member);
-    }
-
+    std::vector<Player*> attractedPlayers = GetAttractedPlayers();
     if (attractedPlayers.size() < 2)
         return false;
 
@@ -1090,9 +1083,6 @@ bool MotherShahrazRunAwayToBreakFatalAttractionAction::Execute(Event /*event*/)
     }
     centerX /= attractedPlayers.size();
     centerY /= attractedPlayers.size();
-
-    std::sort(attractedPlayers.begin(), attractedPlayers.end(),
-        [](Player* a, Player* b) { return a->GetGUID().GetCounter() < b->GetGUID().GetCounter(); });
 
     auto botIt = std::find(attractedPlayers.begin(), attractedPlayers.end(), bot);
     if (botIt == attractedPlayers.end())
@@ -1143,6 +1133,26 @@ bool MotherShahrazRunAwayToBreakFatalAttractionAction::Execute(Event /*event*/)
         return MoveTo(BLACK_TEMPLE_MAP_ID, randX, randY, randZ, false, false, false, false,
                     MovementPriority::MOVEMENT_FORCED, true, false);
     }
+}
+
+std::vector<Player*> MotherShahrazRunAwayToBreakFatalAttractionAction::GetAttractedPlayers()
+{
+    std::vector<Player*> attractedPlayers;
+    Group* group = bot->GetGroup();
+    if (!group)
+        return attractedPlayers;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && member->HasAura(SPELL_FATAL_ATTRACTION))
+            attractedPlayers.push_back(member);
+    }
+
+    std::sort(attractedPlayers.begin(), attractedPlayers.end(),
+        [](Player* a, Player* b) { return a->GetGUID().GetCounter() < b->GetGUID().GetCounter(); });
+
+    return attractedPlayers;
 }
 
 // Illidari Council
@@ -1233,8 +1243,6 @@ bool IllidariCouncilMisdirectBossesToTanksAction::Execute(Event /*event*/)
     return false;
 }
 
-// Rotation tends to stop after one full cycle because the MT switches target to Malande at that point
-// Why?? Can't tell any issues with the logic, and general playerbots log shows no actions relating to Malande by MT
 bool IllidariCouncilMainTankPositionGathiosAction::Execute(Event /*event*/)
 {
     Unit* gathios = AI_VALUE2(Unit*, "find target", "gathios the shatterer");
@@ -1251,6 +1259,10 @@ bool IllidariCouncilMainTankPositionGathiosAction::Execute(Event /*event*/)
     MarkTargetWithSquare(bot, gathios);
     SetRtiTarget(botAI, "square", gathios);
 
+    // The MT switches target to Lady Malande after arriving at the 4th and final position in the rotation
+    // This causes the rotation to stop since the bot is no longer targeting Gathios
+    // Why this happens is unclear since there are no actions related to Malande in the MT's log
+    // Hence, GetVictim() is used instead of GetTarget()
     if (bot->GetVictim() != gathios)
         return Attack(gathios);
 
@@ -1324,7 +1336,7 @@ bool IllidariCouncilFirstAssistTankPositionMalandeAction::Execute(Event /*event*
     MarkTargetWithStar(bot, malande);
     SetRtiTarget(botAI, "star", malande);
 
-    if (bot->GetTarget() != malande->GetGUID())
+    if (bot->GetVictim() != malande)
         return Attack(malande);
 
     if (malande->GetVictim() == bot)
@@ -1369,7 +1381,7 @@ bool IllidariCouncilSecondAssistTankPositionDarkshadowAction::Execute(Event /*ev
     MarkTargetWithCircle(bot, darkshadow);
     SetRtiTarget(botAI, "circle", darkshadow);
 
-    if (bot->GetTarget() != darkshadow->GetGUID())
+    if (bot->GetVictim() != darkshadow)
         return Attack(darkshadow);
 
     if (darkshadow->GetVictim() == bot)
@@ -1620,7 +1632,7 @@ bool IllidanStormrageMisdirectToTankAction::TryMisdirectToFlameTanks(Group* grou
     if (hunterIndex == -1)
         return false;
 
-    auto [eastFlame, westFlame] = GetFlamesOfAzzinoth(botAI, bot);
+    auto [eastFlame, westFlame] = GetFlamesOfAzzinoth(bot);
     // If only one flame, do nothing
     if (!eastFlame || !westFlame || eastFlame == westFlame)
         return false;
@@ -1689,7 +1701,7 @@ bool IllidanStormrageMisdirectToTankAction::TryMisdirectToWarlockTank(Unit* illi
     return false;
 }
 
-bool IllidanStormrageMainTankMoveAwayFromFlameCrashAction::Execute(Event /*event*/)
+bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     if (!illidan)
@@ -1700,48 +1712,12 @@ bool IllidanStormrageMainTankMoveAwayFromFlameCrashAction::Execute(Event /*event
 
     if (GetIllidanPhase(illidan) == 5)
     {
-        auto const& gos = AI_VALUE(GuidVector, "nearest game objects");
-
-        // Log details about all nearest game objects
-        std::ostringstream oss;
-        oss << "Nearest game objects for bot " << bot->GetName() << ":";
-        for (ObjectGuid const& guid : gos)
-        {
-            GameObject* go = botAI->GetGameObject(guid);
-            if (!go)
-            {
-                oss << "\n  [guid=" << guid.ToString() << "] (nullptr)";
-                continue;
-            }
-            oss << "\n  [guid=" << guid.ToString()
-                << ", entry=" << go->GetEntry()
-                << ", spawned=" << go->isSpawned()
-                << ", dist=" << bot->GetExactDist2d(go) << "]";
-        }
-        LOG_DEBUG("playerbots", "{}", oss.str());
-        // End logging
-
-        GameObject* nearestTrap = nullptr;
-        float maxDist = 25.0f; // Need to test what distance is worth it in terms of traps, 30 seems too far
-        for (ObjectGuid const& guid : gos)
-        {
-            GameObject* go = botAI->GetGameObject(guid);
-            if (!go || !go->isSpawned() || go->GetEntry() != GO_CAGE_TRAP)
-                continue;
-
-            float distToTrap = bot->GetExactDist2d(go);
-            if (distToTrap < maxDist)
-            {
-                maxDist = distToTrap;
-                nearestTrap = go;
-            }
-        }
-
+        GameObject* nearestTrap = FindNearestTrap();
         if (nearestTrap && illidan->GetVictim() == bot)
         {
             Position target = GetPointBeyondTrap(nearestTrap, 5.0f);
             return MoveTo(BLACK_TEMPLE_MAP_ID, target.GetPositionX(), target.GetPositionY(),
-                          target.GetPositionZ(), false, false, false, false,
+                          bot->GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_FORCED, true, true);
         }
     }
@@ -1774,7 +1750,45 @@ bool IllidanStormrageMainTankMoveAwayFromFlameCrashAction::Execute(Event /*event
     return false;
 }
 
-Position IllidanStormrageMainTankMoveAwayFromFlameCrashAction::GetPointBeyondTrap(
+GameObject* IllidanStormrageMainTankRepositionBossAction::FindNearestTrap()
+{
+    auto const& gos = AI_VALUE(GuidVector, "nearest game objects");
+
+    // Log details about all nearest game objects
+    std::ostringstream oss;
+    oss << "Nearest game objects for bot " << bot->GetName() << ":";
+    for (ObjectGuid const& guid : gos)
+    {
+        GameObject* go = botAI->GetGameObject(guid);
+        if (!go)
+        {
+            oss << "\n  [guid=" << guid.ToString() << "] (nullptr)";
+            continue;
+        }
+        oss << "\n  [guid=" << guid.ToString()
+            << ", entry=" << go->GetEntry()
+            << ", spawned=" << go->isSpawned()
+            << ", dist=" << bot->GetExactDist2d(go) << "]";
+    }
+    LOG_DEBUG("playerbots", "{}", oss.str());
+    // End logging
+
+    // Try with no distance limit right now for testing
+    GameObject* nearestTrap = nullptr;
+    for (ObjectGuid const& guid : gos)
+    {
+        GameObject* go = botAI->GetGameObject(guid);
+        if (go && go->isSpawned() && go->GetEntry() == GO_CAGE_TRAP)
+        {
+            nearestTrap = go;
+            break;
+        }
+    }
+
+    return nearestTrap;
+}
+
+Position IllidanStormrageMainTankRepositionBossAction::GetPointBeyondTrap(
     GameObject* nearestTrap, float extraDistance /*= 5.0f*/)
 {
     if (!nearestTrap)
@@ -1800,7 +1814,7 @@ Position IllidanStormrageMainTankMoveAwayFromFlameCrashAction::GetPointBeyondTra
     return Position(targetX, targetY, targetZ);
 }
 
-Position IllidanStormrageMainTankMoveAwayFromFlameCrashAction::FindSafestNearbyPosition(
+Position IllidanStormrageMainTankRepositionBossAction::FindSafestNearbyPosition(
     const std::vector<Unit*>& flameCrashes, float maxRadius, float hazardRadius)
 {
     constexpr float searchStep = M_PI / 16.0f;
@@ -1813,10 +1827,6 @@ Position IllidanStormrageMainTankMoveAwayFromFlameCrashAction::FindSafestNearbyP
     float bestAngleDiff = M_PI * 2.0f;
     float bestDistance = std::numeric_limits<float>::max();
     bool foundSafe = false;
-
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan)
-        return bestPos;
 
     for (float distance = minDistance; distance <= maxRadius; distance += distanceStep)
     {
@@ -1876,7 +1886,7 @@ Position IllidanStormrageMainTankMoveAwayFromFlameCrashAction::FindSafestNearbyP
     return bestPos;
 }
 
-bool IllidanStormrageMainTankMoveAwayFromFlameCrashAction::IsPathSafeFromFlameCrashes(
+bool IllidanStormrageMainTankRepositionBossAction::IsPathSafeFromFlameCrashes(
     const Position& start, const Position& end, const std::vector<Unit*>& flameCrashes,
     float hazardRadius)
 {
@@ -1924,7 +1934,7 @@ bool IllidanStormrageIsolateBotWithParasiteAction::Execute(Event /*event*/)
 
 bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*event*/)
 {
-    auto [eastFlame, westFlame] = GetFlamesOfAzzinoth(botAI, bot);
+    auto [eastFlame, westFlame] = GetFlamesOfAzzinoth(bot);
 
     // The second assist tank's flame is killed first; this is so that if the tank
     // for the second flame dies after the first flame is down, the dead flame's
@@ -1951,7 +1961,7 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*ev
         else if (!eastFlame && !westFlame)
         {
             // Default: go to glaive waiting position
-            // If both flames are dead and the glaive waiting position is too close to hazards, move to a grate position
+            // If both flames are dead and the waiting position is too close to hazards, move to a grate position
             std::list<Creature*> demonFires;
             constexpr float searchRadius = 40.0f;
             bot->GetCreatureListWithEntryInGrid(demonFires, NPC_DEMON_FIRE, searchRadius);
@@ -1997,7 +2007,7 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*ev
         else
         {
             // Default: go to glaive waiting position
-            // If both flames are dead and the glaive waiting position is too close to hazards, move to a grate position
+            // If both flames are dead and the waiting position is too close to hazards, move to a grate position
             std::list<Creature*> demonFires;
             constexpr float searchRadius = 40.0f;
             bot->GetCreatureListWithEntryInGrid(demonFires, NPC_DEMON_FIRE, searchRadius);
@@ -2016,7 +2026,7 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*ev
     if (!illidan)
         return false;
 
-    EyeBlastDangerArea dangerArea = GetEyeBlastDangerArea(botAI, bot, illidan);
+    EyeBlastDangerArea dangerArea = GetEyeBlastDangerArea(bot, illidan);
     if (dangerArea.width > 0.0f)
         return RepositionToAvoidEyeBlast(illidan, dangerArea);
     else
@@ -2520,7 +2530,7 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
         }
         else if (phase == 2)
         {
-            auto [eastFlame, westFlame] = GetFlamesOfAzzinoth(botAI, bot);
+            auto [eastFlame, westFlame] = GetFlamesOfAzzinoth(bot);
             targets = { eastFlame, westFlame };
         }
     }

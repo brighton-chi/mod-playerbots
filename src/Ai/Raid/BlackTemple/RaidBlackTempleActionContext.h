@@ -89,11 +89,11 @@ public:
         creators["reliquary of souls misdirect boss to main tank"] =
             &RaidBlackTempleActionContext::reliquary_of_souls_misdirect_boss_to_main_tank;
 
-        creators["reliquary of souls adjust distance from essence of suffering"] =
-            &RaidBlackTempleActionContext::reliquary_of_souls_adjust_distance_from_essence_of_suffering;
+        creators["reliquary of souls adjust distance from suffering"] =
+            &RaidBlackTempleActionContext::reliquary_of_souls_adjust_distance_from_suffering;
 
-        creators["reliquary of souls healers dps essence of suffering"] =
-            &RaidBlackTempleActionContext::reliquary_of_souls_healers_dps_essence_of_suffering;
+        creators["reliquary of souls healers dps suffering"] =
+            &RaidBlackTempleActionContext::reliquary_of_souls_healers_dps_suffering;
 
         creators["reliquary of souls spellsteal rune shield"] =
             &RaidBlackTempleActionContext::reliquary_of_souls_spellsteal_rune_shield;
@@ -155,8 +155,8 @@ public:
         creators["illidan stormrage misdirect to tank"] =
             &RaidBlackTempleActionContext::illidan_stormrage_misdirect_to_tank;
 
-        creators["illidan stormrage main tank move away from flame crash"] =
-            &RaidBlackTempleActionContext::illidan_stormrage_main_tank_move_away_from_flame_crash;
+        creators["illidan stormrage main tank reposition boss"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_main_tank_reposition_boss;
 
         creators["illidan stormrage isolate bot with parasite"] =
             &RaidBlackTempleActionContext::illidan_stormrage_isolate_bot_with_parasite;
@@ -271,11 +271,11 @@ private:
     static Action* reliquary_of_souls_misdirect_boss_to_main_tank(
         PlayerbotAI* botAI) { return new ReliquaryOfSoulsMisdirectBossToMainTankAction(botAI); }
 
-    static Action* reliquary_of_souls_adjust_distance_from_essence_of_suffering(
-        PlayerbotAI* botAI) { return new ReliquaryOfSoulsAdjustDistanceFromEssenceOfSufferingAction(botAI); }
+    static Action* reliquary_of_souls_adjust_distance_from_suffering(
+        PlayerbotAI* botAI) { return new ReliquaryOfSoulsAdjustDistanceFromSufferingAction(botAI); }
 
-    static Action* reliquary_of_souls_healers_dps_essence_of_suffering(
-        PlayerbotAI* botAI) { return new ReliquaryOfSoulsHealersDpsEssenceOfSufferingAction(botAI); }
+    static Action* reliquary_of_souls_healers_dps_suffering(
+        PlayerbotAI* botAI) { return new ReliquaryOfSoulsHealersDpsSufferingAction(botAI); }
 
     static Action* reliquary_of_souls_spellsteal_rune_shield(
         PlayerbotAI* botAI) { return new ReliquaryOfSoulsSpellstealRuneShieldAction(botAI); }
@@ -337,8 +337,8 @@ private:
     static Action* illidan_stormrage_misdirect_to_tank(
         PlayerbotAI* botAI) { return new IllidanStormrageMisdirectToTankAction(botAI); }
 
-    static Action* illidan_stormrage_main_tank_move_away_from_flame_crash(
-        PlayerbotAI* botAI) { return new IllidanStormrageMainTankMoveAwayFromFlameCrashAction(botAI); }
+    static Action* illidan_stormrage_main_tank_reposition_boss(
+        PlayerbotAI* botAI) { return new IllidanStormrageMainTankRepositionBossAction(botAI); }
 
     static Action* illidan_stormrage_isolate_bot_with_parasite(
         PlayerbotAI* botAI) { return new IllidanStormrageIsolateBotWithParasiteAction(botAI); }

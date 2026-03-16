@@ -378,11 +378,11 @@ public:
     bool IsActive() override;
 };
 
-class IllidanStormrageBossCastsFlameCrashTrigger : public Trigger
+class IllidanStormrageBossCastsFlameCrashInFrontOfMainTankTrigger : public Trigger
 {
 public:
-    IllidanStormrageBossCastsFlameCrashTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage boss casts flame crash") {}
+    IllidanStormrageBossCastsFlameCrashInFrontOfMainTankTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage boss casts flame crash in front of main tank") {}
     bool IsActive() override;
 };
 

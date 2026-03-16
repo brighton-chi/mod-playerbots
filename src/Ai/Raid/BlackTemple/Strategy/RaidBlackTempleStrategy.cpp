@@ -84,10 +84,10 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("reliquary of souls misdirect boss to main tank", ACTION_RAID + 3) }));
 
     triggers.push_back(new TriggerNode("reliquary of souls essence of suffering fixates on closest target", {
-        NextAction("reliquary of souls adjust distance from essence of suffering", ACTION_RAID + 2) }));
+        NextAction("reliquary of souls adjust distance from suffering", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("reliquary of souls essence of suffering disables healing", {
-        NextAction("reliquary of souls healers dps essence of suffering", ACTION_RAID + 1) }));
+        NextAction("reliquary of souls healers dps suffering", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("reliquary of souls essence of desire has rune shield", {
         NextAction("reliquary of souls spellsteal rune shield", ACTION_EMERGENCY + 6) }));
@@ -149,8 +149,8 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("illidan stormrage tank needs aggro", {
         NextAction("illidan stormrage misdirect to tank", ACTION_RAID + 2) }));
 
-    triggers.push_back(new TriggerNode("illidan stormrage boss casts flame crash", {
-        NextAction("illidan stormrage main tank move away from flame crash", ACTION_EMERGENCY + 1) }));
+    triggers.push_back(new TriggerNode("illidan stormrage boss casts flame crash in front of main tank", {
+        NextAction("illidan stormrage main tank reposition boss", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("illidan stormrage bot has parasitic shadowfiend", {
         NextAction("illidan stormrage isolate bot with parasite", ACTION_RAID + 2) }));

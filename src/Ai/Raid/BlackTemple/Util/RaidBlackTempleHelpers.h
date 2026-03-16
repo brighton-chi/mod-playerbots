@@ -141,6 +141,7 @@ namespace BlackTempleHelpers
     extern const Position SHAHRAZ_TRANSITION_POSITION;
     extern const Position SHAHRAZ_RANGED_POSITION;
     extern std::unordered_map<ObjectGuid, uint8> shahrazTankStep;
+    int GetShahrazTankStep(PlayerbotAI* botAI, Player* bot);
 
     // Illidari Council
     constexpr float COUNCIL_FLOOR_Z_THRESHOLD = 270.000f;
@@ -193,15 +194,17 @@ namespace BlackTempleHelpers
     extern std::unordered_map<uint32, ObjectGuid> westFlameGuid;
     int GetIllidanPhase(Unit* illidan);
     std::vector<Unit*> GetAllFlameCrashes(Player* bot);
-    std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(PlayerbotAI* botAI, Player* bot);
+    std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(Player* bot);
     Player* GetIllidanWarlockTank(Player* bot);
     struct EyeBlastDangerArea
     {
         Position start;
         Position end;
         float width;
+        // Untested: must be within 30 yards of the eye blast trigger's current position
+        Position triggerPos;
     };
-    EyeBlastDangerArea GetEyeBlastDangerArea(PlayerbotAI* botAI, Player* bot, Unit* illidan);
+    EyeBlastDangerArea GetEyeBlastDangerArea(Player* bot, Unit* illidan);
     bool IsPositionInEyeBlastDangerArea(const Position& pos, const EyeBlastDangerArea& area);
 }
 

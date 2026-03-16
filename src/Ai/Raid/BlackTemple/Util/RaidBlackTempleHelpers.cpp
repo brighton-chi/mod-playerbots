@@ -36,12 +36,12 @@ namespace BlackTempleHelpers
 
     // Teron Gorefiend
     const Position GOREFIEND_TANK_POSITION = { 597.653f, 402.284f, 187.090f };
-    const Position GOREFIEND_DIE_POSITION = { 525.709f, 377.177f, 193.203f };
+    const Position GOREFIEND_DIE_POSITION =  { 525.709f, 377.177f, 193.203f };
 
     // Gurtogg Bloodboil
-    const Position GURTOGG_TANK_POSITION = { 735.987f, 272.451f, 63.554f };
-    const Position GURTOGG_RANGED_POSITION = { 762.265f, 277.183f, 63.781f };
-    const Position GURTOGG_SOAKER_POSITION = { 769.348f, 280.116f, 63.780f };
+    const Position GURTOGG_TANK_POSITION =   { 735.987f, 272.451f, 063.554f };
+    const Position GURTOGG_RANGED_POSITION = { 762.265f, 277.183f, 063.781f };
+    const Position GURTOGG_SOAKER_POSITION = { 769.348f, 280.116f, 063.780f };
 
     std::unordered_map<uint32, time_t> gurtoggPhaseTimer;
 
@@ -99,6 +99,18 @@ namespace BlackTempleHelpers
     const Position SHAHRAZ_RANGED_POSITION = { 959.963f, 210.571f, 192.849f };
     std::unordered_map<ObjectGuid, uint8> shahrazTankStep;
 
+    int GetShahrazTankStep(PlayerbotAI* botAI, Player* bot)
+    {
+        Player* mainTank = GetGroupMainTank(botAI, bot);
+        if (!mainTank) return -1;
+
+        auto it = shahrazTankStep.find(mainTank->GetGUID());
+        if (it != shahrazTankStep.end())
+            return it->second;
+
+        return -1;
+    }
+
     // Illidari Council
     const Position GATHIOS_TANK_POSITION_1 = { 662.977f, 296.246f, 271.688f };
     const Position GATHIOS_TANK_POSITION_2 = { 636.238f, 283.719f, 271.629f };
@@ -111,7 +123,7 @@ namespace BlackTempleHelpers
         GATHIOS_TANK_POSITION_3,
         GATHIOS_TANK_POSITION_4
     };
-    const Position ZEREVOR_TANK_POSITION = { 686.219f, 377.644f, 271.689f };
+    const Position ZEREVOR_TANK_POSITION =     { 686.219f, 377.644f, 271.689f };
     const Position ZEREVOR_HEALER_POSITION_1 = { 661.385f, 351.219f, 271.690f };
     const Position ZEREVOR_HEALER_POSITION_2 = { 667.003f, 363.768f, 271.690f };
     const std::array<Position, 2> ZEREVOR_HEALER_POSITIONS =
@@ -121,7 +133,7 @@ namespace BlackTempleHelpers
     };
     // const Position MALANDE_TANK_POSITION = { 690.101f, 305.166f, 277.443f };
     const Position MALANDE_TANK_POSITION = { 701.059f, 287.306f, 277.443f };
-    const Position MALANDE_PULL_POSITION = {712.401f, 264.761f, 277.443f };
+    const Position MALANDE_PULL_POSITION = { 712.401f, 264.761f, 277.443f };
 
     std::unordered_map<uint32, time_t> councilDpsWaitTimer;
     std::unordered_map<ObjectGuid, uint8> gathiosTankStep;
@@ -289,7 +301,7 @@ namespace BlackTempleHelpers
         return flameCrashes;
     }
 
-    std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(PlayerbotAI* /*botAI*/, Player* bot)
+    std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(Player* bot)
     {
         Unit* eastFlame = nullptr;
         Unit* westFlame = nullptr;
@@ -343,7 +355,7 @@ namespace BlackTempleHelpers
         return fallbackWarlock;
     }
 
-    EyeBlastDangerArea GetEyeBlastDangerArea(PlayerbotAI* botAI, Player* bot, Unit* illidan)
+    EyeBlastDangerArea GetEyeBlastDangerArea(Player* bot, Unit* illidan)
     {
         boss_illidan_stormrage* illidanAI = dynamic_cast<boss_illidan_stormrage*>(illidan->GetAI());
         if (!illidanAI)
@@ -371,9 +383,12 @@ namespace BlackTempleHelpers
         Position startPos = Position(eyeBlastTrigger->GetPositionX(), eyeBlastTrigger->GetPositionY(),
                                      eyeBlastTrigger->GetPositionZ());
         Position endPos = eyeBeamPos[beamPosId + MAX_EYE_BEAM_POS];
+        // Untested: must be within 30 yards of the eye blast trigger's current position
+        Position triggerPos = Position(eyeBlastTrigger->GetPositionX(), eyeBlastTrigger->GetPositionY(),
+                                       eyeBlastTrigger->GetPositionZ());
 
         constexpr float eyeBlastWidth = 9.0f;
-        return { startPos, endPos, eyeBlastWidth };
+        return { startPos, endPos, eyeBlastWidth, triggerPos };
     }
 
     bool IsPositionInEyeBlastDangerArea(const Position& pos, const EyeBlastDangerArea& area)
@@ -390,6 +405,10 @@ namespace BlackTempleHelpers
         float closestY = area.start.GetPositionY() + projectionFactor * dy;
 
         float distToLine = pos.GetExactDist2d(closestX, closestY);
+
+        // Untested: must be within 30 yards of the eye blast trigger's current position
+        if (pos.GetExactDist2d(area.triggerPos) > 30.0f)
+            return false;
 
         return distToLine < area.width;
     }

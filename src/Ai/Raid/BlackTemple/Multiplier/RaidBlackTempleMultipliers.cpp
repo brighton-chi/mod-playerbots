@@ -470,7 +470,6 @@ float IllidanStormrageControlTankActionsMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-// RENAME TO TANK ASSIST IF DPS ASSIST DISABLE APPROACH NOT TAKEN
 float IllidanStormrageDisableDefaultTargetingMultiplier::GetValue(Action* action)
 {
     if (bot->GetVictim() == nullptr)
