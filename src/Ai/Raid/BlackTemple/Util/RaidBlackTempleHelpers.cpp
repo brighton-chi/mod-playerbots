@@ -7,6 +7,7 @@
 #include "RaidBlackTempleIllidanBossAI.h"
 #include "Group.h"
 #include "Playerbots.h"
+#include "RaidBossHelpers.h"
 
 namespace BlackTempleHelpers
 {
