@@ -27,7 +27,9 @@ namespace HyjalSummitHelpers
         SPELL_DOOM             = 31347,
 
         // Archimonde
-        SPELL_DOOMFIRE         = 31944,
+        SPELL_DOOMFIRE         = 31943, // dynamic object spell for doomfire
+        SPELL_DOOMFIRE_AURA    = 31944,
+        SPELL_ARCHIMONDE_FEAR  = 31970,
         SPELL_AIR_BURST        = 32014,
 
         // Hunter
@@ -44,6 +46,7 @@ namespace HyjalSummitHelpers
 
         // Archimonde
         NPC_DOOMFIRE           = 18095,
+        // NPC_DOOMFIRE_SPIRIT    = 18104,
     };
 
     // General
@@ -75,6 +78,15 @@ namespace HyjalSummitHelpers
     extern std::unordered_map<ObjectGuid, uint8> azgalorTankStep;
     int GetAzgalorTankStep(PlayerbotAI* botAI, Player* bot);
     bool AnyGroupMemberHasDoom(Player* bot);
+
+    // Archimonde
+    struct DoomfireTrailData
+    {
+        Position position;
+        uint32 recordTime;
+    };
+    extern std::unordered_map<uint32, std::vector<DoomfireTrailData>> doomfireTrails;
+    extern std::unordered_map<ObjectGuid, uint32> doomfireLastSampleTime;
 }
 
 #endif
