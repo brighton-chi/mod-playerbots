@@ -49,7 +49,7 @@ bool AkilzonTanksPositionBossAction::Execute(Event event)
     if (!akilzon)
         return false;
 
-    if (bot->GetTarget() != akilzon->GetGUID())
+    if (bot->GetVictim() != akilzon)
         return Attack(akilzon);
 
     if (akilzon->GetVictim() == bot)
@@ -136,7 +136,7 @@ bool NalorakkTanksPositionBossAction::MainTankPositionTrollForm(Unit* nalorakk)
 {
     if (!nalorakk->HasAura(SPELL_BEARFORM))
     {
-        if (bot->GetTarget() != nalorakk->GetGUID())
+        if (bot->GetVictim() != nalorakk)
             return Attack(nalorakk);
 
         if (nalorakk->GetVictim() != bot)
@@ -164,7 +164,7 @@ bool NalorakkTanksPositionBossAction::FirstAssistTankPositionBearForm(Unit* nalo
 {
     if (nalorakk->HasAura(SPELL_BEARFORM))
     {
-        if (bot->GetTarget() != nalorakk->GetGUID())
+        if (bot->GetVictim() != nalorakk)
             return Attack(nalorakk);
 
         if (nalorakk->GetVictim() != bot)
@@ -225,7 +225,7 @@ bool JanalaiTanksPositionBossAction::Execute(Event event)
     if (!janalai)
         return false;
 
-    if (bot->GetTarget() != janalai->GetGUID())
+    if (bot->GetVictim() != janalai)
         return Attack(janalai);
 
     if (janalai->GetVictim() == bot)
@@ -369,7 +369,7 @@ bool HalazziMainTankPositionBossAction::Execute(Event event)
     MarkTargetWithStar(bot, halazzi);
     SetRtiTarget(botAI, "star", halazzi);
 
-    if (bot->GetTarget() != halazzi->GetGUID())
+    if (bot->GetVictim() != halazzi)
         return Attack(halazzi);
 
     if (halazzi->GetVictim() == bot)
@@ -401,7 +401,7 @@ bool HalazziFirstAssistTankAttackSpiritLynxAction::Execute(Event event)
         MarkTargetWithCircle(bot, lynx);
         SetRtiTarget(botAI, "circle", lynx);
 
-        if (bot->GetTarget() != lynx->GetGUID())
+        if (bot->GetVictim() != lynx)
             return Attack(lynx);
 
         if (lynx->GetVictim() != bot)
@@ -413,7 +413,7 @@ bool HalazziFirstAssistTankAttackSpiritLynxAction::Execute(Event event)
     {
         SetRtiTarget(botAI, "star", halazzi);
 
-        if (bot->GetTarget() != halazzi->GetGUID())
+        if (bot->GetVictim() != halazzi)
             return Attack(halazzi);
 
         targetFound = true;
@@ -555,7 +555,7 @@ bool HexLordMalacrassCastersStopAttackingAction::Execute(Event event)
     if (!malacrass || !malacrass->HasAura(SPELL_HEX_LORD_SPELL_REFLECTION))
         return false;
 
-    if (bot->GetTarget() == malacrass->GetGUID())
+    if (bot->GetVictim() == malacrass)
     {
         bot->AttackStop();
         bot->InterruptNonMeleeSpells(true);
@@ -607,7 +607,7 @@ bool ZuljinTanksPositionBossAction::Execute(Event event)
     if (!zuljin)
         return false;
 
-    if (bot->GetTarget() != zuljin->GetGUID())
+    if (bot->GetVictim() != zuljin)
         return Attack(zuljin);
 
     if (zuljin->GetVictim() == bot)
