@@ -29,7 +29,7 @@ private:
         return new ActionNode(
             "envenom",
             /*P*/ {},
-            /*A*/ {},
+            /*A*/ { NextAction("eviscerate") },
             /*C*/ {}
         );
     }
@@ -108,8 +108,9 @@ void AssassinationRogueStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
 
     triggers.push_back(
         new TriggerNode(
-            "combo points 3 available",
+            "combo points 4 available",
             {
+                NextAction("cold blood", ACTION_HIGH + 6),
                 NextAction("envenom", ACTION_HIGH + 5)
             }
         )
@@ -120,15 +121,6 @@ void AssassinationRogueStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
             "target with combo points almost dead",
             {
                 NextAction("envenom", ACTION_HIGH + 4)
-            }
-        )
-    );
-
-    triggers.push_back(
-        new TriggerNode(
-            "combo points available",
-            {
-                NextAction("eviscerate", ACTION_HIGH + 3)
             }
         )
     );
