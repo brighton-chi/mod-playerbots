@@ -1233,7 +1233,8 @@ bool IllidariCouncilMisdirectBossesToTanksAction::Execute(Event /*event*/)
     return false;
 }
 
-// Rotation tends to stop after one full cycle--why??? I can't see anything wrong with the code
+// Rotation tends to stop after one full cycle because the MT switches target to Malande at that point
+// Why?? Can't tell any issues with the logic, and general playerbots log shows no actions relating to Malande by MT
 bool IllidariCouncilMainTankPositionGathiosAction::Execute(Event /*event*/)
 {
     Unit* gathios = AI_VALUE2(Unit*, "find target", "gathios the shatterer");
@@ -1243,17 +1244,14 @@ bool IllidariCouncilMainTankPositionGathiosAction::Execute(Event /*event*/)
     // Failsafe for if bot falls through the floor, which tends to happen upon the pull
     if (bot->GetPositionZ() < COUNCIL_FLOOR_Z_THRESHOLD)
     {
-        if (bot->TeleportTo(BLACK_TEMPLE_MAP_ID, gathios->GetPositionX(), gathios->GetPositionY(),
-                        gathios->GetPositionZ(), bot->GetOrientation()))
-        {
-            LOG_DEBUG("playerbots", "bot {} teleported to gathios's position", bot->GetName());
-        }
+        bot->TeleportTo(BLACK_TEMPLE_MAP_ID, gathios->GetPositionX(), gathios->GetPositionY(),
+                        gathios->GetPositionZ(), bot->GetOrientation());
     }
 
     MarkTargetWithSquare(bot, gathios);
     SetRtiTarget(botAI, "square", gathios);
 
-    if (bot->GetTarget() != gathios->GetGUID())
+    if (bot->GetVictim() != gathios)
         return Attack(gathios);
 
     const ObjectGuid guid = bot->GetGUID();
@@ -1319,11 +1317,8 @@ bool IllidariCouncilFirstAssistTankPositionMalandeAction::Execute(Event /*event*
     // Failsafe for if bot falls through the floor, which tends to happen upon the pull
     if (bot->GetPositionZ() < COUNCIL_FLOOR_Z_THRESHOLD)
     {
-        if (bot->TeleportTo(BLACK_TEMPLE_MAP_ID, malande->GetPositionX(), malande->GetPositionY(),
-                        malande->GetPositionZ(), bot->GetOrientation()))
-        {
-            LOG_DEBUG("playerbots", "bot {} teleported to malande's position", bot->GetName());
-        }
+        bot->TeleportTo(BLACK_TEMPLE_MAP_ID, malande->GetPositionX(), malande->GetPositionY(),
+                        malande->GetPositionZ(), bot->GetOrientation());
     }
 
     MarkTargetWithStar(bot, malande);
@@ -1367,12 +1362,8 @@ bool IllidariCouncilSecondAssistTankPositionDarkshadowAction::Execute(Event /*ev
     // Failsafe for if bot falls through the floor, which tends to happen upon the pull
     if (bot->GetPositionZ() < COUNCIL_FLOOR_Z_THRESHOLD)
     {
-        if (bot->TeleportTo(BLACK_TEMPLE_MAP_ID, darkshadow->GetPositionX(), darkshadow->GetPositionY(),
-                        darkshadow->GetPositionZ(), bot->GetOrientation()))
-        {
-            LOG_DEBUG("playerbots", "bot {} teleported to darkshadow's position", bot->GetName());
-        }
-        return true;
+        bot->TeleportTo(BLACK_TEMPLE_MAP_ID, darkshadow->GetPositionX(), darkshadow->GetPositionY(),
+                        darkshadow->GetPositionZ(), bot->GetOrientation());
     }
 
     MarkTargetWithCircle(bot, darkshadow);
