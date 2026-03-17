@@ -243,13 +243,13 @@ bool AzgalorBotIsDoomedTrigger::IsActive()
 
 bool AzgalorDoomguardsMustBeControlledTrigger::IsActive()
 {
-    if (!botAI->IsAssistTankOfIndex(bot, 0, true) && 
+    if (!botAI->IsAssistTankOfIndex(bot, 0, true) &&
         !botAI->IsAssistTankOfIndex(bot, 1, true))
         return false;
 
     // Exclude second assist tank also, unless first assist tank has Doom
     Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
-    if (firstAssistTank && !firstAssistTank->HasAura(SPELL_DOOM) && 
+    if (firstAssistTank && !firstAssistTank->HasAura(SPELL_DOOM) &&
         botAI->IsAssistTankOfIndex(bot, 1, true))
         return false;
 
@@ -300,7 +300,15 @@ bool ArchimondeBossCastsAirBurstTrigger::IsActive()
 bool ArchimondeBossSummonedDoomfireTrigger::IsActive()
 {
     Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
-    return archimonde && archimonde->GetHealthPct() > 10.0f;
+    if (!archimonde || archimonde->GetHealthPct() <= 10.0f)
+        return false;
+
+    if (bot->GetExactDist2d(archimonde) <= 0.0f)
+        return false;
+
+    // If I don't make an exception, bots can actually refuse to enter the
+    // Doomfire even when feared
+    return !bot->HasAura(SPELL_ARCHIMONDE_FEAR);
 }
 
 bool ArchimondeBotStoodInDoomfireTrigger::IsActive()
@@ -310,5 +318,5 @@ bool ArchimondeBotStoodInDoomfireTrigger::IsActive()
         bot->getClass() != CLASS_PALADIN)
         return false;
 
-    return bot->HasAura(SPELL_DOOMFIRE) && bot->GetHealthPct() < 40.0f;
+    return bot->HasAura(SPELL_DOOMFIRE_AURA) && bot->GetHealthPct() < 40.0f;
 }

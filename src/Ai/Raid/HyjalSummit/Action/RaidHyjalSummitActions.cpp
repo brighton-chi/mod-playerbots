@@ -7,6 +7,7 @@
 #include "RaidHyjalSummitHelpers.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
+#include "Timer.h"
 
 using namespace HyjalSummitHelpers;
 
@@ -40,6 +41,12 @@ bool HyjalSummitEraseTrackersAction::Execute(Event /*event*/)
 
     if (!AI_VALUE2(Unit*, "find target", "azgalor") &&
         azgalorTankStep.erase(guid) > 0)
+    {
+        erased = true;
+    }
+
+    if (!AI_VALUE2(Unit*, "find target", "archimonde") &&
+        doomfireTrails.erase(bot->GetMap()->GetInstanceId()) > 0)
     {
         erased = true;
     }
@@ -418,7 +425,7 @@ bool AnetheronAssignDpsPriorityAction::Execute(Event /*event*/)
 
         return false;
     }
-    else if (botAI->IsRanged(bot))
+    else
     {
         if (Unit* infernal = AI_VALUE2(Unit*, "find target", "towering infernal"))
         {
@@ -600,23 +607,19 @@ bool KazrogalSpreadRangedInArcAction::Execute(Event /*event*/)
 
 bool KazrogalLowManaBotMoveFromGroupAction::Execute(Event /*event*/)
 {
-    if (bot->getClass() == CLASS_HUNTER)
+    if (bot->getClass() == CLASS_HUNTER &&
+        !botAI->HasAura("aspect of the viper", bot) &&
+        botAI->CanCastSpell("aspect of the viper", bot))
     {
-        if (!botAI->HasAura("aspect of the viper", bot) &&
-            botAI->CanCastSpell("aspect of the viper", bot))
-        {
-            return botAI->CastSpell("aspect of the viper", bot);
-        }
+        return botAI->CastSpell("aspect of the viper", bot);
     }
     else
     {
-        if (bot->getClass() == CLASS_WARLOCK)
+        if (bot->getClass() == CLASS_WARLOCK &&
+            botAI->CanCastSpell("life tap", bot) &&
+            botAI->CastSpell("life tap", bot))
         {
-            if (botAI->CanCastSpell("life tap", bot) &&
-                botAI->CastSpell("life tap", bot))
-            {
-                return true;
-            }
+            return true;
         }
 
         if (bot->GetPower(POWER_MANA) <= 3000)
@@ -639,9 +642,23 @@ bool KazrogalLowManaBotMoveFromGroupAction::Execute(Event /*event*/)
         }
 
         constexpr float safeDistance = 16.0f;
+
         Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
-        if (nearestPlayer && bot->GetDistance2d(nearestPlayer) < safeDistance)
-            return MoveFromGroup(safeDistance);
+        if (!nearestPlayer)
+            return false;
+
+        float currentDistance = bot->GetDistance2d(nearestPlayer);
+        if (currentDistance < safeDistance)
+        {
+            Unit* kazrogal = AI_VALUE2(Unit*, "find target", "kaz'rogal");
+            if (!kazrogal)
+                return false;
+
+            if (bot->GetExactDist2d(kazrogal) > 42.0f)
+                return MoveAway(nearestPlayer, safeDistance - currentDistance);
+            else
+                return MoveFromGroup(safeDistance);
+        }
     }
 
     return false;
@@ -742,7 +759,7 @@ bool AzgalorDisperseRangedAction::Execute(Event /*event*/)
         doomguard && bot->GetExactDist2d(doomguard) < safeDistFromDoomguard)
         return FleePosition(doomguard->GetPosition(), safeDistFromDoomguard, minInterval);
 
-    constexpr float safeDistFromPlayer = 6.0f;
+    constexpr float safeDistFromPlayer = 5.0f;
     if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
         return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer, minInterval);
 
@@ -913,14 +930,14 @@ bool ArchimondeSpreadToAvoidAirBurstAction::Execute(Event /*event*/)
         }
     }
 
-    constexpr float safeDistFromVictim = 16.0f;
+    // constexpr float safeDistFromVictim = 16.0f;
     constexpr float safeDistFromPlayer = 8.0f;
-    constexpr uint32 minInterval = 1000;
+    constexpr uint32 minInterval = 2000;
 
-    Unit* victim = archimonde->GetVictim();
+    /* Unit* victim = archimonde->GetVictim();
     if (victim && victim != bot && bot->GetExactDist2d(victim) < safeDistFromVictim &&
         FleePosition(victim->GetPosition(), safeDistFromVictim, minInterval))
-        return true;
+        return true; */
 
     if (botAI->IsRanged(bot))
     {
@@ -935,134 +952,63 @@ bool ArchimondeSpreadToAvoidAirBurstAction::Execute(Event /*event*/)
 
 bool ArchimondeAvoidDoomfireAction::Execute(Event /*event*/)
 {
-    std::vector<DoomfireLine> hazardLines;
-    std::list<Creature*> doomfires;
-    constexpr float searchRadius = 40.0f;
+    constexpr float dangerDist = 9.0f;
+    constexpr uint32 TRAIL_DURATION = 18000;
 
-    bot->GetCreatureListWithEntryInGrid(doomfires, NPC_DOOMFIRE, searchRadius);
+    uint32 instanceId = bot->GetMap()->GetInstanceId();
+    uint32 now = getMSTime();
 
-    for (Creature* creature : doomfires)
-    {
-        if (creature)
-        {
-            Position start = creature->GetPosition();
-            float destX, destY, destZ;
-            if (creature->GetMotionMaster()->GetDestination(destX, destY, destZ))
-            {
-                Position end(destX, destY, destZ);
-                hazardLines.push_back({start, end});
-            }
-        }
-    }
-
-    if (hazardLines.empty())
+    auto it = doomfireTrails.find(instanceId);
+    if (it == doomfireTrails.end() || it->second.empty())
         return false;
 
-    constexpr float hazardWidth = 15.0f;
-    bool inDanger = false;
-    for (auto const& line : hazardLines)
-    {
-        float dist = DistanceToDoomfireLine(bot->GetPosition(), line.start, line.end);
-        if (dist < hazardWidth)
+    // Prune expired trail entries on read
+    it->second.erase(std::remove_if(it->second.begin(), it->second.end(),
+        [now](const DoomfireTrailData& d)
         {
-            inDanger = true;
-            break;
+            return getMSTimeDiff(d.recordTime, now) > TRAIL_DURATION;
+        }), it->second.end());
+
+    // Find the nearest trail point within danger range
+    const Position* nearest = nullptr;
+    float nearestDist = std::numeric_limits<float>::max();
+    for (auto const& data : it->second)
+    {
+        float d = bot->GetExactDist2d(data.position.GetPositionX(), data.position.GetPositionY());
+        if (d < dangerDist && d < nearestDist)
+        {
+            nearest = &data.position;
+            nearestDist = d;
         }
     }
 
-    if (!inDanger)
+    if (!nearest)
         return false;
 
-    Position safePos = FindSafePositionFromDoomfires(bot, hazardLines, hazardWidth);
+    constexpr uint32 minInterval = 0;
+    bot->AttackStop();
+    bot->InterruptNonMeleeSpells(true);
+    return FleePosition(nearest->GetPosition(), dangerDist, minInterval);
+    /* float dx = bot->GetPositionX() - nearest->GetPositionX();
+    float dy = bot->GetPositionY() - nearest->GetPositionY();
+    float moveX, moveY;
 
-    float distToSafePos = bot->GetExactDist2d(safePos.GetPositionX(), safePos.GetPositionY());
-    if (distToSafePos > 1.0f)
+    if (nearestDist == 0.0f)
     {
-        float dx = safePos.GetPositionX() - bot->GetPositionX();
-        float dy = safePos.GetPositionY() - bot->GetPositionY();
-        float moveDist = std::min(5.0f, distToSafePos);
-        float moveX = bot->GetPositionX() + (dx / distToSafePos) * moveDist;
-        float moveY = bot->GetPositionY() + (dy / distToSafePos) * moveDist;
-
-        Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
-        bool backwards = archimonde && archimonde->GetVictim() == bot;
-        // Healers need to be allowed to go through fire to reach healing targets so
-        // don't set movement priority to forced for them
-        MovementPriority movePriority = botAI->IsHeal(bot) ?
-            MovementPriority::MOVEMENT_COMBAT : MovementPriority::MOVEMENT_FORCED;
-
-        bot->AttackStop();
-        bot->InterruptNonMeleeSpells(true);
-        return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-                      false, false, movePriority, true, backwards);
+        float angle = frand(0.0f, static_cast<float>(M_PI * 2.0));
+        moveX = nearest->GetPositionX() + std::cos(angle) * dangerDist;
+        moveY = nearest->GetPositionY() + std::sin(angle) * dangerDist;
+    }
+    else
+    {
+        float invDist = 1.0f / nearestDist;
+        moveX = nearest->GetPositionX() + (dx * invDist) * dangerDist;
+        moveY = nearest->GetPositionY() + (dy * invDist) * dangerDist;
     }
 
-    return false;
-}
-
-float ArchimondeAvoidDoomfireAction::DistanceToDoomfireLine(
-    const Position& testPosition, const Position& lineStartPosition, const Position& lineEndPosition)
-{
-    float dx = lineEndPosition.GetPositionX() - lineStartPosition.GetPositionX();
-    float dy = lineEndPosition.GetPositionY() - lineStartPosition.GetPositionY();
-    float lengthSq = dx*dx + dy*dy;
-    if (lengthSq == 0.0f)
-        return testPosition.GetExactDist2d(lineStartPosition.GetPositionX(),
-                                           lineStartPosition.GetPositionY());
-
-    float projectionFactor =
-        ((testPosition.GetPositionX() - lineStartPosition.GetPositionX()) * dx +
-         (testPosition.GetPositionY() - lineStartPosition.GetPositionY()) * dy) / lengthSq;
-    projectionFactor = std::max(0.0f, std::min(1.0f, projectionFactor));
-    float projX = lineStartPosition.GetPositionX() + projectionFactor * dx;
-    float projY = lineStartPosition.GetPositionY() + projectionFactor * dy;
-
-    return testPosition.GetExactDist2d(projX, projY);
-}
-
-Position ArchimondeAvoidDoomfireAction::FindSafePositionFromDoomfires(
-    Player* bot, const std::vector<DoomfireLine>& lines, float hazardWidth)
-{
-    constexpr float searchStep = M_PI / 8.0f;
-    constexpr float minDistance = 2.0f;
-    constexpr float maxDistance = 40.0f;
-    constexpr float distanceStep = 1.0f;
-
-    Position bestPos = bot->GetPosition();
-    float minMoveDistance = std::numeric_limits<float>::max();
-
-    for (float distance = minDistance; distance <= maxDistance; distance += distanceStep)
-    {
-        for (float angle = 0.0f; angle < 2 * M_PI; angle += searchStep)
-        {
-            float x = bot->GetPositionX() + distance * std::sin(angle);
-            float y = bot->GetPositionY() + distance * std::cos(angle);
-            float z = bot->GetPositionZ();
-
-            bool isSafe = true;
-            for (auto const& line : lines)
-            {
-                if (DistanceToDoomfireLine(
-                    Position(x, y, z), line.start, line.end) < hazardWidth)
-                {
-                    isSafe = false;
-                    break;
-                }
-            }
-
-            if (!isSafe)
-                continue;
-
-            float moveDistance = bot->GetExactDist2d(x, y);
-            if (moveDistance < minMoveDistance)
-            {
-                bestPos = Position(x, y, z);
-                minMoveDistance = moveDistance;
-            }
-        }
-    }
-
-    return bestPos;
+    botAI->Reset();
+    return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
+                  false, false, MovementPriority::MOVEMENT_COMBAT, true, false); */
 }
 
 bool ArchimondeRemoveDoomfireDotAction::Execute(Event /*event*/)

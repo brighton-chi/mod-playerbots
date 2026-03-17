@@ -87,4 +87,9 @@ namespace HyjalSummitHelpers
 
         return false;
     }
+
+    // Archimonde
+
+    std::unordered_map<uint32, std::vector<DoomfireTrailData>> doomfireTrails;
+    std::unordered_map<ObjectGuid, uint32> doomfireLastSampleTime;
 }
