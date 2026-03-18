@@ -27,22 +27,28 @@ public:
     CastLightningShieldAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "lightning shield") {}
 };
 
-class CastEarthlivingWeaponAction : public CastEnchantItemAction
-{
-public:
-    CastEarthlivingWeaponAction(PlayerbotAI* botAI) : CastEnchantItemAction(botAI, "earthliving weapon") {}
-};
-
 class CastRockbiterWeaponAction : public CastEnchantItemAction
 {
 public:
     CastRockbiterWeaponAction(PlayerbotAI* botAI) : CastEnchantItemAction(botAI, "rockbiter weapon") {}
 };
 
-class CastFlametongueWeaponAction : public CastEnchantItemAction
+class CastFlametongueWeaponMainHandAction : public CastEnchantItemAction
 {
 public:
-    CastFlametongueWeaponAction(PlayerbotAI* botAI) : CastEnchantItemAction(botAI, "flametongue weapon") {}
+    CastFlametongueWeaponMainHandAction(PlayerbotAI* botAI)
+        : CastEnchantItemAction(botAI, "flametongue weapon") {}
+
+    bool isPossible() override;
+};
+
+class CastFlametongueWeaponOffHandAction : public CastEnchantItemAction
+{
+public:
+    CastFlametongueWeaponOffHandAction(PlayerbotAI* botAI)
+        : CastEnchantItemAction(botAI, "flametongue weapon") {}
+
+    bool isPossible() override;
 };
 
 class CastFrostbrandWeaponAction : public CastEnchantItemAction
@@ -51,10 +57,19 @@ public:
     CastFrostbrandWeaponAction(PlayerbotAI* botAI) : CastEnchantItemAction(botAI, "frostbrand weapon") {}
 };
 
-class CastWindfuryWeaponAction : public CastEnchantItemAction
+class CastEarthlivingWeaponAction : public CastEnchantItemAction
 {
 public:
-    CastWindfuryWeaponAction(PlayerbotAI* botAI) : CastEnchantItemAction(botAI, "windfury weapon") {}
+    CastEarthlivingWeaponAction(PlayerbotAI* botAI) : CastEnchantItemAction(botAI, "earthliving weapon") {}
+};
+
+class CastWindfuryWeaponMainHandAction : public CastEnchantItemAction
+{
+public:
+    CastWindfuryWeaponMainHandAction(PlayerbotAI* botAI)
+        : CastEnchantItemAction(botAI, "windfury weapon") {}
+
+    bool isPossible() override;
 };
 
 class CastAncestralSpiritAction : public ResurrectPartyMemberAction

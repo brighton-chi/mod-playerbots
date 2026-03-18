@@ -13,18 +13,19 @@ class ShamanNonCombatStrategyActionNodeFactory : public NamedObjectFactory<Actio
 public:
     ShamanNonCombatStrategyActionNodeFactory()
     {
-        creators["flametongue weapon"] = &flametongue_weapon;
+        creators["flametongue weapon main hand"] = &flametongue_weapon_main_hand;
+        creators["flametongue weapon off hand"] = &flametongue_weapon_off_hand;
         creators["frostbrand weapon"] = &frostbrand_weapon;
-        creators["windfury weapon"] = &windfury_weapon;
+        creators["windfury weapon main hand"] = &windfury_weapon_main_hand;
         creators["earthliving weapon"] = &earthliving_weapon;
         creators["wind shear"] = &wind_shear;
         creators["purge"] = &purge;
     }
 
 private:
-    static ActionNode* flametongue_weapon([[maybe_unused]] PlayerbotAI* botAI)
+    static ActionNode* flametongue_weapon_main_hand([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("flametongue weapon",
+        return new ActionNode("flametongue weapon main hand",
                               /*P*/ {},
                               /*A*/ { NextAction("rockbiter weapon") },
                               /*C*/ {});
@@ -33,23 +34,25 @@ private:
     {
         return new ActionNode("frostbrand weapon",
                               /*P*/ {},
-                              /*A*/ { NextAction("flametongue weapon") },
-                              /*C*/ {});
-    }
-    static ActionNode* windfury_weapon([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode("windfury weapon",
-                              /*P*/ {},
-                              /*A*/ { NextAction("flametongue weapon") },
+                              /*A*/ { NextAction("flametongue weapon main hand") },
                               /*C*/ {});
     }
     static ActionNode* earthliving_weapon([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("earthliving weapon",
                               /*P*/ {},
-                              /*A*/ { NextAction("flametongue weapon") },
+                              /*A*/ { NextAction("flametongue weapon main hand") },
                               /*C*/ {});
     }
+    static ActionNode* windfury_weapon_main_hand([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode("windfury weapon main hand",
+                              /*P*/ {},
+                              /*A*/ { NextAction("flametongue weapon main hand") },
+                              /*C*/ {});
+    }
+    static ActionNode* flametongue_weapon_off_hand([[maybe_unused]] PlayerbotAI* botAI) {
+        return new ActionNode("flametongue weapon off hand", {}, {}, {}); }
     static ActionNode* wind_shear(PlayerbotAI*) { return new ActionNode("wind shear", {}, {}, {}); }
     static ActionNode* purge(PlayerbotAI*) { return new ActionNode("purge", {}, {}, {}); }
 };
@@ -68,19 +71,15 @@ void ShamanNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     // Healing/Resurrect Triggers
     triggers.push_back(new TriggerNode("party member dead", { NextAction("ancestral spirit", ACTION_CRITICAL_HEAL + 10), }));
-    triggers.push_back(new TriggerNode("party member critical health", {
-                                                                   NextAction("riptide on party", 31.0f),
-                                                                   NextAction("healing wave on party", 30.0f) }));
-    triggers.push_back(new TriggerNode("party member low health",{
-                                                             NextAction("riptide on party", 29.0f),
-                                                             NextAction("healing wave on party", 28.0f) }));
-    triggers.push_back(new TriggerNode("party member medium health",{
-                                                                NextAction("riptide on party", 27.0f),
-                                                                NextAction("healing wave on party", 26.0f) }));
-    triggers.push_back(new TriggerNode("party member almost full health",{
-                                                                     NextAction("riptide on party", 25.0f),
-                                                                     NextAction("lesser healing wave on party", 24.0f) }));
-    triggers.push_back(new TriggerNode("group heal setting",{ NextAction("chain heal on party", 27.0f) }));
+    triggers.push_back(new TriggerNode("party member critical health", { NextAction("riptide on party", 31.0f),
+                                                                         NextAction("healing wave on party", 30.0f) }));
+    triggers.push_back(new TriggerNode("party member low health", { NextAction("riptide on party", 29.0f),
+                                                                    NextAction("healing wave on party", 28.0f) }));
+    triggers.push_back(new TriggerNode("party member medium health", { NextAction("riptide on party", 27.0f),
+                                                                       NextAction("healing wave on party", 26.0f) }));
+    triggers.push_back(new TriggerNode("party member almost full health", { NextAction("riptide on party", 25.0f),
+                                                                            NextAction("lesser healing wave on party", 24.0f) }));
+    triggers.push_back(new TriggerNode("group heal setting", { NextAction("chain heal on party", 27.0f) }));
 
     // Cure Triggers
     triggers.push_back(new TriggerNode("cure poison", { NextAction("cure poison", 21.0f), }));
@@ -92,20 +91,20 @@ void ShamanNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     Player* bot = botAI->GetBot();
     int tab = AiFactory::GetPlayerSpecTab(bot);
 
-    if (tab == 0)  // Elemental
+    if (tab == SHAMAN_TAB_ELEMENTAL)
     {
-        triggers.push_back(new TriggerNode("main hand weapon no imbue", { NextAction("flametongue weapon", 22.0f), }));
+        triggers.push_back(new TriggerNode("main hand weapon no imbue", { NextAction("flametongue weapon main hand", 22.0f), }));
         triggers.push_back(new TriggerNode("water shield", { NextAction("water shield", 21.0f), }));
     }
-    else if (tab == 1)  // Enhancement
+    else if (tab == SHAMAN_TAB_ENHANCEMENT)
     {
-        triggers.push_back(new TriggerNode("main hand weapon no imbue", { NextAction("windfury weapon", 22.0f), }));
-        triggers.push_back(new TriggerNode("off hand weapon no imbue", { NextAction("flametongue weapon", 21.0f), }));
+        triggers.push_back(new TriggerNode("main hand weapon no imbue", { NextAction("windfury weapon main hand", 22.0f), }));
+        triggers.push_back(new TriggerNode("off hand weapon no imbue", { NextAction("flametongue weapon off hand", 21.0f), }));
         triggers.push_back(new TriggerNode("lightning shield", { NextAction("lightning shield", 20.0f), }));
     }
-    else if (tab == 2)  // Restoration
+    else if (tab == SHAMAN_TAB_RESTORATION)
     {
-        triggers.push_back(new TriggerNode("main hand weapon no imbue",{ NextAction("earthliving weapon", 22.0f), }));
+        triggers.push_back(new TriggerNode("main hand weapon no imbue", { NextAction("earthliving weapon", 22.0f), }));
         triggers.push_back(new TriggerNode("water shield", { NextAction("water shield", 20.0f), }));
     }
 
