@@ -138,6 +138,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class KazrogalCastShadowProtectionSpellAction : public Action
+{
+public:
+    KazrogalCastShadowProtectionSpellAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "kaz'rogal cast shadow protection spell") {}
+    bool Execute(Event event) override;
+};
+
 // Azgalor
 
 class AzgalorMisdirectBossToMainTankAction : public AttackAction

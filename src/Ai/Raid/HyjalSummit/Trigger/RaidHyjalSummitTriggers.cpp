@@ -168,10 +168,28 @@ bool KazrogalBotIsLowOnManaTrigger::IsActive()
         return false;
 
     if (isBelowManaThreshold.count(bot->GetGUID()) ||
-        bot->GetPower(POWER_MANA) <= 3000)
+        bot->GetPower(POWER_MANA) <= 3200)
         return true;
 
     return false;
+}
+
+bool KazrogalMarkDealsShadowDamageTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_PALADIN &&
+        bot->getClass() != CLASS_WARLOCK)
+        return false;
+
+    if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
+        return false;
+
+    if (bot->getClass() == CLASS_PALADIN &&
+        (botAI->HasAura("shadow resistance aura", bot) ||
+         botAI->HasAura("prayer of shadow protection", bot) ||
+         botAI->HasAura("shadow protection", bot)))
+        return false;
+
+    return bot->HasAura(SPELL_MARK_OF_KAZROGAL);
 }
 
 // Azgalor

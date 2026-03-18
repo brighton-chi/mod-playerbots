@@ -63,6 +63,9 @@ public:
         creators["kaz'rogal low mana bot move from group"] =
             &RaidHyjalSummitActionContext::kazrogal_low_mana_bot_move_from_group;
 
+        creators["kaz'rogal cast shadow protection spell"] =
+            &RaidHyjalSummitActionContext::kazrogal_cast_shadow_protection_spell;
+
         // Azgalor
         creators["azgalor misdirect boss to main tank"] =
             &RaidHyjalSummitActionContext::azgalor_misdirect_boss_to_main_tank;
@@ -151,6 +154,9 @@ private:
 
     static Action* kazrogal_low_mana_bot_move_from_group(
         PlayerbotAI* botAI) { return new KazrogalLowManaBotMoveFromGroupAction(botAI); }
+
+    static Action* kazrogal_cast_shadow_protection_spell(
+        PlayerbotAI* botAI) { return new KazrogalCastShadowProtectionSpellAction(botAI); }
 
     // Azgalor
     static Action* azgalor_misdirect_boss_to_main_tank(

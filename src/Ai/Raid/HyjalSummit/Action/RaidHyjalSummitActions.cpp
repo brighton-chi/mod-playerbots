@@ -622,7 +622,7 @@ bool KazrogalLowManaBotMoveFromGroupAction::Execute(Event /*event*/)
             return true;
         }
 
-        if (bot->GetPower(POWER_MANA) <= 3000)
+        if (bot->GetPower(POWER_MANA) <= 3200)
             isBelowManaThreshold.try_emplace(bot->GetGUID(), true);
 
         if (bot->HasAura(SPELL_MARK_OF_KAZROGAL) && bot->GetPower(POWER_MANA) <= 1200)
@@ -660,6 +660,19 @@ bool KazrogalLowManaBotMoveFromGroupAction::Execute(Event /*event*/)
                 return MoveFromGroup(safeDistance);
         }
     }
+
+    return false;
+}
+
+bool KazrogalCastShadowProtectionSpellAction::Execute(Event /*event*/)
+{
+    if (bot->getClass() == CLASS_WARLOCK &&
+        botAI->CanCastSpell("shadow ward", bot))
+        return botAI->CastSpell("shadow ward", bot);
+
+    if (bot->getClass() == CLASS_PALADIN &&
+        botAI->CanCastSpell("shadow resistance aura", bot))
+        return botAI->CastSpell("shadow resistance aura", bot);
 
     return false;
 }

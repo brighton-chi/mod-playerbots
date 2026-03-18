@@ -57,6 +57,9 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kaz'rogal bot is low on mana", {
         NextAction("kaz'rogal low mana bot move from group", ACTION_EMERGENCY + 1) }));
 
+    triggers.push_back(new TriggerNode("kaz'rogal mark deals shadow damage", {
+        NextAction("kaz'rogal cast shadow protection spell", ACTION_EMERGENCY + 6) }));
+
     // Azgalor
     triggers.push_back(new TriggerNode("azgalor pulling boss", {
         NextAction("azgalor misdirect boss to main tank", ACTION_RAID + 3) }));
