@@ -216,6 +216,9 @@ bool AzgalorMainTankIsPositioningBossTrigger::IsActive()
         azgalor->GetVictim() == bot)
         return false;
 
+    if (bot->HasAura(SPELL_RAIN_OF_FIRE))
+        return false;
+
     if (botAI->IsMainTank(bot))
         return false;
 

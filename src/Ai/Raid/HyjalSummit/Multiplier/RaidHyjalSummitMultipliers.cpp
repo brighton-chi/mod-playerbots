@@ -28,7 +28,7 @@ float HyjalSummitTimeBloodlustAndHeroismMultiplier::GetValue(Action* action)
         dynamic_cast<CastHeroismAction*>(action))
     {
         Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
-        if (archimonde && archimonde->GetHealthPct() < 98.0f)
+        if (archimonde && archimonde->GetHealthPct() < 90.0f)
             return 1.0f;
 
         Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
@@ -248,7 +248,8 @@ float AzgalorMeleeJustStandInFireMultiplier::GetValue(Action* action)
 
 float ArchimondeDisableCombatFormationMoveMultiplier::GetValue(Action* action)
 {
-    if (!AI_VALUE2(Unit*, "find target", "archimonde"))
+    Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
+    if (!archimonde)
         return 1.0f;
 
     if (dynamic_cast<CombatFormationMoveAction*>(action) &&
