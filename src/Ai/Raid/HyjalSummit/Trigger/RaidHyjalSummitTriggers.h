@@ -136,6 +136,14 @@ public:
     bool IsActive() override;
 };
 
+class KazrogalMarkDealsShadowDamageTrigger : public Trigger
+{
+public:
+    KazrogalMarkDealsShadowDamageTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "kaz'rogal mark deals shadow damage") {}
+    bool IsActive() override;
+};
+
 // Azgalor
 
 class AzgalorPullingBossTrigger : public Trigger

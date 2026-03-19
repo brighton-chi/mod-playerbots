@@ -168,10 +168,28 @@ bool KazrogalBotIsLowOnManaTrigger::IsActive()
         return false;
 
     if (isBelowManaThreshold.count(bot->GetGUID()) ||
-        bot->GetPower(POWER_MANA) <= 3000)
+        bot->GetPower(POWER_MANA) <= 3200)
         return true;
 
     return false;
+}
+
+bool KazrogalMarkDealsShadowDamageTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_PALADIN &&
+        bot->getClass() != CLASS_WARLOCK)
+        return false;
+
+    if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
+        return false;
+
+    if (bot->getClass() == CLASS_PALADIN &&
+        (botAI->HasAura("shadow resistance aura", bot) ||
+         botAI->HasAura("prayer of shadow protection", bot) ||
+         botAI->HasAura("shadow protection", bot)))
+        return false;
+
+    return bot->HasAura(SPELL_MARK_OF_KAZROGAL);
 }
 
 // Azgalor
@@ -196,6 +214,9 @@ bool AzgalorMainTankIsPositioningBossTrigger::IsActive()
     Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
     if (!azgalor || azgalor->GetHealthPct() < 85.0f ||
         azgalor->GetVictim() == bot)
+        return false;
+
+    if (bot->HasAura(SPELL_RAIN_OF_FIRE))
         return false;
 
     if (botAI->IsMainTank(bot))
@@ -275,16 +296,12 @@ bool ArchimondePullingBossTrigger::IsActive()
 
 bool ArchimondeBossCastsFearTrigger::IsActive()
 {
-    if (bot->getClass() != CLASS_PRIEST)
+    if (bot->getClass() != CLASS_PRIEST &&
+        bot->getClass() != CLASS_SHAMAN)
         return false;
 
     Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
-    if (!archimonde || archimonde->GetHealthPct() <= 10.0f)
-        return false;
-
-    Player* mainTank = GetGroupMainTank(botAI, bot);
-    return mainTank && !mainTank->HasAura(SPELL_FEAR_WARD) &&
-           botAI->CanCastSpell("fear ward", mainTank);
+    return archimonde && archimonde->GetHealthPct() > 10.0f;
 }
 
 bool ArchimondeBossCastsAirBurstTrigger::IsActive()
@@ -306,7 +323,7 @@ bool ArchimondeBossSummonedDoomfireTrigger::IsActive()
     if (bot->GetExactDist2d(archimonde) <= 0.0f)
         return false;
 
-    // If I don't make an exception, bots can actually refuse to enter the
+    // If I don't make an exception, bots actually refuse to enter the
     // Doomfire even when feared
     return !bot->HasAura(SPELL_ARCHIMONDE_FEAR);
 }

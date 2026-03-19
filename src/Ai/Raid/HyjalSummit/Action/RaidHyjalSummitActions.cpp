@@ -607,11 +607,14 @@ bool KazrogalSpreadRangedInArcAction::Execute(Event /*event*/)
 
 bool KazrogalLowManaBotMoveFromGroupAction::Execute(Event /*event*/)
 {
-    if (bot->getClass() == CLASS_HUNTER &&
-        !botAI->HasAura("aspect of the viper", bot) &&
-        botAI->CanCastSpell("aspect of the viper", bot))
+    if (bot->getClass() == CLASS_HUNTER)
     {
-        return botAI->CastSpell("aspect of the viper", bot);
+        if (!botAI->HasAura("aspect of the viper", bot) &&
+            botAI->CanCastSpell("aspect of the viper", bot))
+        {
+            return botAI->CastSpell("aspect of the viper", bot);
+        }
+        return false;
     }
     else
     {
@@ -622,7 +625,7 @@ bool KazrogalLowManaBotMoveFromGroupAction::Execute(Event /*event*/)
             return true;
         }
 
-        if (bot->GetPower(POWER_MANA) <= 3000)
+        if (bot->GetPower(POWER_MANA) <= 3200)
             isBelowManaThreshold.try_emplace(bot->GetGUID(), true);
 
         if (bot->HasAura(SPELL_MARK_OF_KAZROGAL) && bot->GetPower(POWER_MANA) <= 1200)
@@ -660,6 +663,19 @@ bool KazrogalLowManaBotMoveFromGroupAction::Execute(Event /*event*/)
                 return MoveFromGroup(safeDistance);
         }
     }
+
+    return false;
+}
+
+bool KazrogalCastShadowProtectionSpellAction::Execute(Event /*event*/)
+{
+    if (bot->getClass() == CLASS_WARLOCK &&
+        botAI->CanCastSpell("shadow ward", bot))
+        return botAI->CastSpell("shadow ward", bot);
+
+    if (bot->getClass() == CLASS_PALADIN &&
+        botAI->CanCastSpell("shadow resistance aura", bot))
+        return botAI->CastSpell("shadow resistance aura", bot);
 
     return false;
 }
@@ -896,11 +912,27 @@ bool ArchimondeMisdirectBossToMainTankAction::Execute(Event /*event*/)
     return false;
 }
 
-bool ArchimondeCastFearWardOnMainTankAction::Execute(Event /*event*/)
+bool ArchimondeCastFearImmunitySpellAction::Execute(Event /*event*/)
+{
+    if (bot->getClass() == CLASS_PRIEST)
+        return CastFearWardOnMainTank();
+    else
+        return UseTremorTotemStrategy();
+}
+
+bool ArchimondeCastFearImmunitySpellAction::CastFearWardOnMainTank()
 {
     Player* mainTank = GetGroupMainTank(botAI, bot);
     if (mainTank && botAI->CanCastSpell("fear ward", mainTank))
         return botAI->CastSpell("fear ward", mainTank);
+
+    return false;
+}
+
+bool ArchimondeCastFearImmunitySpellAction::UseTremorTotemStrategy()
+{
+    if (!botAI->HasStrategy("tremor", BOT_STATE_COMBAT))
+        return botAI->ChangeStrategy("+tremor", BOT_STATE_COMBAT);
 
     return false;
 }
@@ -930,14 +962,12 @@ bool ArchimondeSpreadToAvoidAirBurstAction::Execute(Event /*event*/)
         }
     }
 
-    // constexpr float safeDistFromVictim = 16.0f;
+    if (archimonde->GetHealthPct() < 90.0f)
+        return false;
+
+    constexpr float safeDistFromVictim = 16.0f;
     constexpr float safeDistFromPlayer = 8.0f;
     constexpr uint32 minInterval = 2000;
-
-    /* Unit* victim = archimonde->GetVictim();
-    if (victim && victim != bot && bot->GetExactDist2d(victim) < safeDistFromVictim &&
-        FleePosition(victim->GetPosition(), safeDistFromVictim, minInterval))
-        return true; */
 
     if (botAI->IsRanged(bot))
     {
@@ -953,7 +983,8 @@ bool ArchimondeSpreadToAvoidAirBurstAction::Execute(Event /*event*/)
 bool ArchimondeAvoidDoomfireAction::Execute(Event /*event*/)
 {
     constexpr float dangerDist = 9.0f;
-    constexpr uint32 TRAIL_DURATION = 18000;
+    // The doomfire spirit despawns after 27s, but the fire trail persist for 18s
+    constexpr uint32 TRAIL_DURATION = 19000;
 
     uint32 instanceId = bot->GetMap()->GetInstanceId();
     uint32 now = getMSTime();
@@ -962,14 +993,12 @@ bool ArchimondeAvoidDoomfireAction::Execute(Event /*event*/)
     if (it == doomfireTrails.end() || it->second.empty())
         return false;
 
-    // Prune expired trail entries on read
     it->second.erase(std::remove_if(it->second.begin(), it->second.end(),
         [now](const DoomfireTrailData& d)
         {
             return getMSTimeDiff(d.recordTime, now) > TRAIL_DURATION;
         }), it->second.end());
 
-    // Find the nearest trail point within danger range
     const Position* nearest = nullptr;
     float nearestDist = std::numeric_limits<float>::max();
     for (auto const& data : it->second)
@@ -985,11 +1014,7 @@ bool ArchimondeAvoidDoomfireAction::Execute(Event /*event*/)
     if (!nearest)
         return false;
 
-    constexpr uint32 minInterval = 0;
-    bot->AttackStop();
-    bot->InterruptNonMeleeSpells(true);
-    return FleePosition(nearest->GetPosition(), dangerDist, minInterval);
-    /* float dx = bot->GetPositionX() - nearest->GetPositionX();
+    float dx = bot->GetPositionX() - nearest->GetPositionX();
     float dy = bot->GetPositionY() - nearest->GetPositionY();
     float moveX, moveY;
 
@@ -1006,9 +1031,8 @@ bool ArchimondeAvoidDoomfireAction::Execute(Event /*event*/)
         moveY = nearest->GetPositionY() + (dy * invDist) * dangerDist;
     }
 
-    botAI->Reset();
     return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-                  false, false, MovementPriority::MOVEMENT_COMBAT, true, false); */
+                  false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 bool ArchimondeRemoveDoomfireDotAction::Execute(Event /*event*/)

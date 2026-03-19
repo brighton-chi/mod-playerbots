@@ -41,8 +41,7 @@ public:
         data.recordTime = now;
         trail.push_back(data);
 
-        // Prune entries older than the Doomfire DynamicObject lifetime
-        constexpr uint32 TRAIL_DURATION = 18000;
+        constexpr uint32 TRAIL_DURATION = 19000;
         trail.erase(std::remove_if(trail.begin(), trail.end(),
             [now](const DoomfireTrailData& d)
             {

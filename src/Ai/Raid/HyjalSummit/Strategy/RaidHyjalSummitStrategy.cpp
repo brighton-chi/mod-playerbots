@@ -57,6 +57,9 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kaz'rogal bot is low on mana", {
         NextAction("kaz'rogal low mana bot move from group", ACTION_EMERGENCY + 1) }));
 
+    triggers.push_back(new TriggerNode("kaz'rogal mark deals shadow damage", {
+        NextAction("kaz'rogal cast shadow protection spell", ACTION_EMERGENCY + 6) }));
+
     // Azgalor
     triggers.push_back(new TriggerNode("azgalor pulling boss", {
         NextAction("azgalor misdirect boss to main tank", ACTION_RAID + 3) }));
@@ -84,7 +87,7 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("archimonde misdirect boss to main tank", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("archimonde boss casts fear", {
-        NextAction("archimonde cast fear ward on main tank", ACTION_RAID + 2) }));
+        NextAction("archimonde cast fear immunity spell", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("archimonde boss casts air burst", {
         NextAction("archimonde spread to avoid air burst", ACTION_RAID + 1) }));

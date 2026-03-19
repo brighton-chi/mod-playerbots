@@ -63,6 +63,9 @@ public:
         creators["kaz'rogal low mana bot move from group"] =
             &RaidHyjalSummitActionContext::kazrogal_low_mana_bot_move_from_group;
 
+        creators["kaz'rogal cast shadow protection spell"] =
+            &RaidHyjalSummitActionContext::kazrogal_cast_shadow_protection_spell;
+
         // Azgalor
         creators["azgalor misdirect boss to main tank"] =
             &RaidHyjalSummitActionContext::azgalor_misdirect_boss_to_main_tank;
@@ -89,8 +92,8 @@ public:
         creators["archimonde misdirect boss to main tank"] =
             &RaidHyjalSummitActionContext::archimonde_misdirect_boss_to_main_tank;
 
-        creators["archimonde cast fear ward on main tank"] =
-            &RaidHyjalSummitActionContext::archimonde_cast_fear_ward_on_main_tank;
+        creators["archimonde cast fear immunity spell"] =
+            &RaidHyjalSummitActionContext::archimonde_cast_fear_immunity_spell;
 
         creators["archimonde spread to avoid air burst"] =
             &RaidHyjalSummitActionContext::archimonde_spread_to_avoid_air_burst;
@@ -152,6 +155,9 @@ private:
     static Action* kazrogal_low_mana_bot_move_from_group(
         PlayerbotAI* botAI) { return new KazrogalLowManaBotMoveFromGroupAction(botAI); }
 
+    static Action* kazrogal_cast_shadow_protection_spell(
+        PlayerbotAI* botAI) { return new KazrogalCastShadowProtectionSpellAction(botAI); }
+
     // Azgalor
     static Action* azgalor_misdirect_boss_to_main_tank(
         PlayerbotAI* botAI) { return new AzgalorMisdirectBossToMainTankAction(botAI); }
@@ -178,8 +184,8 @@ private:
     static Action* archimonde_misdirect_boss_to_main_tank(
         PlayerbotAI* botAI) { return new ArchimondeMisdirectBossToMainTankAction(botAI); }
 
-    static Action* archimonde_cast_fear_ward_on_main_tank(
-        PlayerbotAI* botAI) { return new ArchimondeCastFearWardOnMainTankAction(botAI); }
+    static Action* archimonde_cast_fear_immunity_spell(
+        PlayerbotAI* botAI) { return new ArchimondeCastFearImmunitySpellAction(botAI); }
 
     static Action* archimonde_spread_to_avoid_air_burst(
         PlayerbotAI* botAI) { return new ArchimondeSpreadToAvoidAirBurstAction(botAI); }
