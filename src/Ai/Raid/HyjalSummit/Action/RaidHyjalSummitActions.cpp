@@ -912,11 +912,27 @@ bool ArchimondeMisdirectBossToMainTankAction::Execute(Event /*event*/)
     return false;
 }
 
-bool ArchimondeCastFearWardOnMainTankAction::Execute(Event /*event*/)
+bool ArchimondeCastFearImmunitySpellAction::Execute(Event /*event*/)
+{
+    if (bot->getClass() == CLASS_PRIEST)
+        return CastFearWardOnMainTank();
+    else
+        return UseTremorTotemStrategy();
+}
+
+bool ArchimondeCastFearImmunitySpellAction::CastFearWardOnMainTank()
 {
     Player* mainTank = GetGroupMainTank(botAI, bot);
     if (mainTank && botAI->CanCastSpell("fear ward", mainTank))
         return botAI->CastSpell("fear ward", mainTank);
+
+    return false;
+}
+
+bool ArchimondeCastFearImmunitySpellAction::UseTremorTotemStrategy()
+{
+    if (!botAI->HasStrategy("tremor", BOT_STATE_COMBAT))
+        return botAI->ChangeStrategy("+tremor", BOT_STATE_COMBAT);
 
     return false;
 }
@@ -968,7 +984,7 @@ bool ArchimondeAvoidDoomfireAction::Execute(Event /*event*/)
 {
     constexpr float dangerDist = 9.0f;
     // The doomfire spirit despawns after 27s, but the fire trail persist for 18s
-    constexpr uint32 TRAIL_DURATION = 20000;
+    constexpr uint32 TRAIL_DURATION = 19000;
 
     uint32 instanceId = bot->GetMap()->GetInstanceId();
     uint32 now = getMSTime();

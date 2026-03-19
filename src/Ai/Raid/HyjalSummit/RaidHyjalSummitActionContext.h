@@ -92,8 +92,8 @@ public:
         creators["archimonde misdirect boss to main tank"] =
             &RaidHyjalSummitActionContext::archimonde_misdirect_boss_to_main_tank;
 
-        creators["archimonde cast fear ward on main tank"] =
-            &RaidHyjalSummitActionContext::archimonde_cast_fear_ward_on_main_tank;
+        creators["archimonde cast fear immunity spell"] =
+            &RaidHyjalSummitActionContext::archimonde_cast_fear_immunity_spell;
 
         creators["archimonde spread to avoid air burst"] =
             &RaidHyjalSummitActionContext::archimonde_spread_to_avoid_air_burst;
@@ -184,8 +184,8 @@ private:
     static Action* archimonde_misdirect_boss_to_main_tank(
         PlayerbotAI* botAI) { return new ArchimondeMisdirectBossToMainTankAction(botAI); }
 
-    static Action* archimonde_cast_fear_ward_on_main_tank(
-        PlayerbotAI* botAI) { return new ArchimondeCastFearWardOnMainTankAction(botAI); }
+    static Action* archimonde_cast_fear_immunity_spell(
+        PlayerbotAI* botAI) { return new ArchimondeCastFearImmunitySpellAction(botAI); }
 
     static Action* archimonde_spread_to_avoid_air_burst(
         PlayerbotAI* botAI) { return new ArchimondeSpreadToAvoidAirBurstAction(botAI); }

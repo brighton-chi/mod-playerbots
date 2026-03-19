@@ -296,16 +296,12 @@ bool ArchimondePullingBossTrigger::IsActive()
 
 bool ArchimondeBossCastsFearTrigger::IsActive()
 {
-    if (bot->getClass() != CLASS_PRIEST)
+    if (bot->getClass() != CLASS_PRIEST &&
+        bot->getClass() != CLASS_SHAMAN)
         return false;
 
     Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
-    if (!archimonde || archimonde->GetHealthPct() <= 10.0f)
-        return false;
-
-    Player* mainTank = GetGroupMainTank(botAI, bot);
-    return mainTank && !mainTank->HasAura(SPELL_FEAR_WARD) &&
-           botAI->CanCastSpell("fear ward", mainTank);
+    return archimonde && archimonde->GetHealthPct() > 10.0f;
 }
 
 bool ArchimondeBossCastsAirBurstTrigger::IsActive()
@@ -327,7 +323,7 @@ bool ArchimondeBossSummonedDoomfireTrigger::IsActive()
     if (bot->GetExactDist2d(archimonde) <= 0.0f)
         return false;
 
-    // If I don't make an exception, bots can actually refuse to enter the
+    // If I don't make an exception, bots actually refuse to enter the
     // Doomfire even when feared
     return !bot->HasAura(SPELL_ARCHIMONDE_FEAR);
 }
