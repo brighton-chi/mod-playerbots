@@ -172,9 +172,7 @@ class CastCleanseSpiritPoisonOnPartyAction : public CurePartyMemberAction
 {
 public:
     CastCleanseSpiritPoisonOnPartyAction(PlayerbotAI* botAI)
-        : CurePartyMemberAction(botAI, "cleanse spirit", DISPEL_POISON)
-    {
-    }
+        : CurePartyMemberAction(botAI, "cleanse spirit", DISPEL_POISON) {}
 
     std::string const getName() override { return "cleanse spirit poison on party"; }
 };
@@ -183,9 +181,7 @@ class CastCleanseSpiritCurseOnPartyAction : public CurePartyMemberAction
 {
 public:
     CastCleanseSpiritCurseOnPartyAction(PlayerbotAI* botAI)
-        : CurePartyMemberAction(botAI, "cleanse spirit", DISPEL_CURSE)
-    {
-    }
+        : CurePartyMemberAction(botAI, "cleanse spirit", DISPEL_CURSE) {}
 
     std::string const getName() override { return "cleanse spirit curse on party"; }
 };
@@ -194,41 +190,33 @@ class CastCleanseSpiritDiseaseOnPartyAction : public CurePartyMemberAction
 {
 public:
     CastCleanseSpiritDiseaseOnPartyAction(PlayerbotAI* botAI)
-        : CurePartyMemberAction(botAI, "cleanse spirit", DISPEL_DISEASE)
-    {
-    }
+        : CurePartyMemberAction(botAI, "cleanse spirit", DISPEL_DISEASE) {}
 
     std::string const getName() override { return "cleanse spirit disease on party"; }
 };
 
-class CastCurePoisonActionSham : public CastCureSpellAction
+class CastCureToxinsActionSham : public CastCureSpellAction
 {
 public:
-    CastCurePoisonActionSham(PlayerbotAI* botAI) : CastCureSpellAction(botAI, "cure poison") {}
+    CastCureToxinsActionSham(PlayerbotAI* botAI) : CastCureSpellAction(botAI, "cure toxins") {}
 };
 
-class CastCurePoisonOnPartyActionSham : public CurePartyMemberAction
+class CastCureToxinsPoisonOnPartyActionSham : public CurePartyMemberAction
 {
 public:
-    CastCurePoisonOnPartyActionSham(PlayerbotAI* botAI) : CurePartyMemberAction(botAI, "cure poison", DISPEL_POISON) {}
+    CastCureToxinsPoisonOnPartyActionSham(PlayerbotAI* botAI) :
+        CurePartyMemberAction(botAI, "cure toxins", DISPEL_POISON) {}
 
-    std::string const getName() override { return "cure poison on party"; }
+    std::string const getName() override { return "cure toxins poison on party"; }
 };
 
-class CastCureDiseaseActionSham : public CastCureSpellAction
+class CastCureToxinsDiseaseOnPartyActionSham : public CurePartyMemberAction
 {
 public:
-    CastCureDiseaseActionSham(PlayerbotAI* botAI) : CastCureSpellAction(botAI, "cure disease") {}
-};
+    CastCureToxinsDiseaseOnPartyActionSham(PlayerbotAI* botAI) :
+        CurePartyMemberAction(botAI, "cure toxins", DISPEL_DISEASE) {}
 
-class CastCureDiseaseOnPartyActionSham : public CurePartyMemberAction
-{
-public:
-    CastCureDiseaseOnPartyActionSham(PlayerbotAI* botAI) : CurePartyMemberAction(botAI, "cure disease", DISPEL_DISEASE)
-    {
-    }
-
-    std::string const getName() override { return "cure disease on party"; }
+    std::string const getName() override { return "cure toxins disease on party"; }
 };
 
 // Damage and Debuff Actions

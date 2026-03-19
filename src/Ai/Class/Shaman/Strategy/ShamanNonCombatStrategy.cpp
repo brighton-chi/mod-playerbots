@@ -14,12 +14,12 @@ public:
     ShamanNonCombatStrategyActionNodeFactory()
     {
         creators["flametongue weapon main hand"] = &flametongue_weapon_main_hand;
-        creators["flametongue weapon off hand"] = &flametongue_weapon_off_hand;
         creators["frostbrand weapon"] = &frostbrand_weapon;
         creators["windfury weapon main hand"] = &windfury_weapon_main_hand;
         creators["earthliving weapon"] = &earthliving_weapon;
-        creators["wind shear"] = &wind_shear;
-        creators["purge"] = &purge;
+        creators["cleanse spirit"] = &cleanse_spirit;
+        creators["cleanse spirit poison on party"] = &cleanse_spirit_poison_on_party;
+        creators["cleanse spirit disease on party"] = &cleanse_spirit_disease_on_party;
     }
 
 private:
@@ -51,10 +51,27 @@ private:
                               /*A*/ { NextAction("flametongue weapon main hand") },
                               /*C*/ {});
     }
-    static ActionNode* flametongue_weapon_off_hand([[maybe_unused]] PlayerbotAI* botAI) {
-        return new ActionNode("flametongue weapon off hand", {}, {}, {}); }
-    static ActionNode* wind_shear(PlayerbotAI*) { return new ActionNode("wind shear", {}, {}, {}); }
-    static ActionNode* purge(PlayerbotAI*) { return new ActionNode("purge", {}, {}, {}); }
+    static ActionNode* cleanse_spirit([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode("cleanse spirit",
+                              /*P*/ {},
+                              /*A*/ { NextAction("cure toxins") },
+                              /*C*/ {});
+    }
+    static ActionNode* cleanse_spirit_poison_on_party([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode("cleanse spirit poison on party",
+                              /*P*/ {},
+                              /*A*/ { NextAction("cure toxins poison on party") },
+                              /*C*/ {});
+    }
+    static ActionNode* cleanse_spirit_disease_on_party([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode("cleanse spirit disease on party",
+                              /*P*/ {},
+                              /*A*/ { NextAction("cure toxins disease on party") },
+                              /*C*/ {});
+    }
 };
 
 ShamanNonCombatStrategy::ShamanNonCombatStrategy(PlayerbotAI* botAI) : NonCombatStrategy(botAI)
@@ -82,10 +99,12 @@ void ShamanNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("group heal setting", { NextAction("chain heal on party", 27.0f) }));
 
     // Cure Triggers
-    triggers.push_back(new TriggerNode("cure poison", { NextAction("cure poison", 21.0f), }));
-    triggers.push_back(new TriggerNode("party member cure poison", { NextAction("cure poison on party", 21.0f), }));
-    triggers.push_back(new TriggerNode("cure disease", { NextAction("cure disease", 31.0f), }));
-    triggers.push_back(new TriggerNode("party member cure disease", { NextAction("cure disease on party", 30.0f), }));
+    triggers.push_back(new TriggerNode("cleanse spirit poison", { NextAction("cleanse spirit", 24.0f) }));
+    triggers.push_back(new TriggerNode("party member cleanse spirit poison", { NextAction("cleanse spirit poison on party", 23.0f) }));
+    triggers.push_back(new TriggerNode("cleanse spirit disease", { NextAction("cleanse spirit", 24.0f) }));
+    triggers.push_back(new TriggerNode("party member cleanse spirit disease", { NextAction("cleanse spirit disease on party", 23.0f) }));
+    triggers.push_back(new TriggerNode("cleanse spirit curse", { NextAction("cleanse spirit", 24.0f) }));
+    triggers.push_back(new TriggerNode("party member cleanse spirit curse", { NextAction("cleanse spirit curse on party", 23.0f) }));
 
     // Out of Combat Buff Triggers
     Player* bot = botAI->GetBot();

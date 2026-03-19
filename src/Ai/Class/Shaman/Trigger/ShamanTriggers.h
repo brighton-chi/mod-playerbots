@@ -165,9 +165,7 @@ class PartyMemberCleanseSpiritPoisonTrigger : public PartyMemberNeedCureTrigger
 {
 public:
     PartyMemberCleanseSpiritPoisonTrigger(PlayerbotAI* botAI)
-        : PartyMemberNeedCureTrigger(botAI, "cleanse spirit", DISPEL_POISON)
-    {
-    }
+        : PartyMemberNeedCureTrigger(botAI, "cleanse spirit", DISPEL_POISON) {}
 };
 
 class CleanseSpiritCurseTrigger : public NeedCureTrigger
@@ -180,9 +178,7 @@ class PartyMemberCleanseSpiritCurseTrigger : public PartyMemberNeedCureTrigger
 {
 public:
     PartyMemberCleanseSpiritCurseTrigger(PlayerbotAI* botAI)
-        : PartyMemberNeedCureTrigger(botAI, "cleanse spirit", DISPEL_CURSE)
-    {
-    }
+        : PartyMemberNeedCureTrigger(botAI, "cleanse spirit", DISPEL_CURSE) {}
 };
 
 class CleanseSpiritDiseaseTrigger : public NeedCureTrigger
@@ -195,34 +191,7 @@ class PartyMemberCleanseSpiritDiseaseTrigger : public PartyMemberNeedCureTrigger
 {
 public:
     PartyMemberCleanseSpiritDiseaseTrigger(PlayerbotAI* botAI)
-        : PartyMemberNeedCureTrigger(botAI, "cleanse spirit", DISPEL_DISEASE)
-    {
-    }
-};
-
-class CurePoisonTrigger : public NeedCureTrigger
-{
-public:
-    CurePoisonTrigger(PlayerbotAI* botAI) : NeedCureTrigger(botAI, "cure poison", DISPEL_POISON) {}
-};
-
-class PartyMemberCurePoisonTrigger : public PartyMemberNeedCureTrigger
-{
-public:
-    PartyMemberCurePoisonTrigger(PlayerbotAI* botAI) : PartyMemberNeedCureTrigger(botAI, "cure poison", DISPEL_POISON) {}
-};
-
-class CureDiseaseTrigger : public NeedCureTrigger
-{
-public:
-    CureDiseaseTrigger(PlayerbotAI* botAI) : NeedCureTrigger(botAI, "cure disease", DISPEL_DISEASE) {}
-};
-
-class PartyMemberCureDiseaseTrigger : public PartyMemberNeedCureTrigger
-{
-public:
-    PartyMemberCureDiseaseTrigger(PlayerbotAI* botAI)
-        : PartyMemberNeedCureTrigger(botAI, "cure disease", DISPEL_DISEASE) {}
+        : PartyMemberNeedCureTrigger(botAI, "cleanse spirit", DISPEL_DISEASE) {}
 };
 
 // Damage and Debuff Triggers

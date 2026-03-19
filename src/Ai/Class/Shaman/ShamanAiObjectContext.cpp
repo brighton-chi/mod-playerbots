@@ -158,10 +158,6 @@ public:
         creators["bloodlust"] = &ShamanATriggerFactoryInternal::bloodlust;
         creators["elemental mastery"] = &ShamanATriggerFactoryInternal::elemental_mastery;
         creators["wind shear on enemy healer"] = &ShamanATriggerFactoryInternal::wind_shear_on_enemy_healer;
-        creators["cure poison"] = &ShamanATriggerFactoryInternal::cure_poison;
-        creators["party member cure poison"] = &ShamanATriggerFactoryInternal::party_member_cure_poison;
-        creators["cure disease"] = &ShamanATriggerFactoryInternal::cure_disease;
-        creators["party member cure disease"] = &ShamanATriggerFactoryInternal::party_member_cure_disease;
         creators["earth shield on main tank"] = &ShamanATriggerFactoryInternal::earth_shield_on_main_tank;
         creators["maelstrom weapon 3"] = &ShamanATriggerFactoryInternal::maelstrom_weapon_3;
         creators["maelstrom weapon 4"] = &ShamanATriggerFactoryInternal::maelstrom_weapon_4;
@@ -225,10 +221,6 @@ private:
     static Trigger* shock(PlayerbotAI* botAI) { return new ShockTrigger(botAI); }
     static Trigger* frost_shock_snare(PlayerbotAI* botAI) { return new FrostShockSnareTrigger(botAI); }
     static Trigger* wind_shear_on_enemy_healer(PlayerbotAI* botAI) { return new WindShearInterruptEnemyHealerSpellTrigger(botAI); }
-    static Trigger* cure_poison(PlayerbotAI* botAI) { return new CurePoisonTrigger(botAI); }
-    static Trigger* party_member_cure_poison(PlayerbotAI* botAI) { return new PartyMemberCurePoisonTrigger(botAI); }
-    static Trigger* cure_disease(PlayerbotAI* botAI) { return new CureDiseaseTrigger(botAI); }
-    static Trigger* party_member_cure_disease(PlayerbotAI* botAI) { return new PartyMemberCureDiseaseTrigger(botAI); }
     static Trigger* earth_shield_on_main_tank(PlayerbotAI* ai) { return new EarthShieldOnMainTankTrigger(ai); }
     static Trigger* flame_shock(PlayerbotAI* ai) { return new FlameShockTrigger(ai); }
     static Trigger* fire_elemental_totem(PlayerbotAI* botAI) { return new FireElementalTotemTrigger(botAI); }
@@ -309,10 +301,9 @@ public:
         creators["heroism"] = &ShamanAiObjectContextInternal::heroism;
         creators["bloodlust"] = &ShamanAiObjectContextInternal::bloodlust;
         creators["elemental mastery"] = &ShamanAiObjectContextInternal::elemental_mastery;
-        creators["cure disease"] = &ShamanAiObjectContextInternal::cure_disease;
-        creators["cure disease on party"] = &ShamanAiObjectContextInternal::cure_disease_on_party;
-        creators["cure poison"] = &ShamanAiObjectContextInternal::cure_poison;
-        creators["cure poison on party"] = &ShamanAiObjectContextInternal::cure_poison_on_party;
+        creators["cure toxins"] = &ShamanAiObjectContextInternal::cure_toxins;
+        creators["cure toxins poison on party"] = &ShamanAiObjectContextInternal::cure_toxins_poison_on_party;
+        creators["cure toxins disease on party"] = &ShamanAiObjectContextInternal::cure_toxins_disease_on_party;
         creators["lava burst"] = &ShamanAiObjectContextInternal::lava_burst;
         creators["earth shield on main tank"] = &ShamanAiObjectContextInternal::earth_shield_on_main_tank;
         creators["shamanistic rage"] = &ShamanAiObjectContextInternal::shamanistic_rage;
@@ -369,10 +360,10 @@ private:
     static Action* frost_shock(PlayerbotAI* botAI) { return new CastFrostShockAction(botAI); }
     static Action* earth_shock(PlayerbotAI* botAI) { return new CastEarthShockAction(botAI); }
     static Action* flame_shock(PlayerbotAI* botAI) { return new CastFlameShockAction(botAI); }
+    static Action* cleanse_spirit(PlayerbotAI* botAI) { return new CastCleanseSpiritAction(botAI); }
     static Action* cleanse_spirit_poison_on_party(PlayerbotAI* botAI) { return new CastCleanseSpiritPoisonOnPartyAction(botAI); }
     static Action* cleanse_spirit_disease_on_party(PlayerbotAI* botAI) { return new CastCleanseSpiritDiseaseOnPartyAction(botAI); }
     static Action* cleanse_spirit_curse_on_party(PlayerbotAI* botAI) { return new CastCleanseSpiritCurseOnPartyAction(botAI); }
-    static Action* cleanse_spirit(PlayerbotAI* botAI) { return new CastCleanseSpiritAction(botAI); }
     static Action* water_walking(PlayerbotAI* botAI) { return new CastWaterWalkingAction(botAI); }
     static Action* water_breathing(PlayerbotAI* botAI) { return new CastWaterBreathingAction(botAI); }
     static Action* water_walking_on_party(PlayerbotAI* botAI) { return new CastWaterWalkingOnPartyAction(botAI); }
@@ -401,10 +392,9 @@ private:
     static Action* lava_lash(PlayerbotAI* botAI) { return new CastLavaLashAction(botAI); }
     static Action* ancestral_spirit(PlayerbotAI* botAI) { return new CastAncestralSpiritAction(botAI); }
     static Action* wind_shear_on_enemy_healer(PlayerbotAI* botAI) { return new CastWindShearOnEnemyHealerAction(botAI); }
-    static Action* cure_poison(PlayerbotAI* botAI) { return new CastCurePoisonActionSham(botAI); }
-    static Action* cure_poison_on_party(PlayerbotAI* botAI) { return new CastCurePoisonOnPartyActionSham(botAI); }
-    static Action* cure_disease(PlayerbotAI* botAI) { return new CastCureDiseaseActionSham(botAI); }
-    static Action* cure_disease_on_party(PlayerbotAI* botAI) { return new CastCureDiseaseOnPartyActionSham(botAI); }
+    static Action* cure_toxins(PlayerbotAI* botAI) { return new CastCureToxinsActionSham(botAI); }
+    static Action* cure_toxins_poison_on_party(PlayerbotAI* botAI) { return new CastCureToxinsPoisonOnPartyActionSham(botAI); }
+    static Action* cure_toxins_disease_on_party(PlayerbotAI* botAI) { return new CastCureToxinsDiseaseOnPartyActionSham(botAI); }
     static Action* lava_burst(PlayerbotAI* ai) { return new CastLavaBurstAction(ai); }
     static Action* earth_shield_on_main_tank(PlayerbotAI* ai) { return new CastEarthShieldOnMainTankAction(ai); }
     static Action* shamanistic_rage(PlayerbotAI* ai) { return new CastShamanisticRageAction(ai); }
