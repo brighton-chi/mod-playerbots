@@ -142,7 +142,7 @@ class KazrogalCastShadowProtectionSpellAction : public Action
 {
 public:
     KazrogalCastShadowProtectionSpellAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "kaz'rogal cast shadow protection spell") {}
+        PlayerbotAI* botAI) : Action(botAI, "kaz'rogal cast shadow protection spell") {}
     bool Execute(Event event) override;
 };
 
