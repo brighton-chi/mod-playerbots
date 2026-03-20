@@ -932,7 +932,10 @@ bool ArchimondeCastFearImmunitySpellAction::CastFearWardOnMainTank()
 bool ArchimondeCastFearImmunitySpellAction::UseTremorTotemStrategy()
 {
     if (!botAI->HasStrategy("tremor", BOT_STATE_COMBAT))
-        return botAI->ChangeStrategy("+tremor", BOT_STATE_COMBAT);
+    {
+        botAI->ChangeStrategy("+tremor", BOT_STATE_COMBAT);
+        return botAI->HasStrategy("tremor", BOT_STATE_COMBAT);
+    }
 
     return false;
 }
