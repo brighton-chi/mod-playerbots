@@ -762,7 +762,7 @@ void PlayerbotFactory::InitPetTalents()
         // pet_family->petTalentType);
         return;
     }
-    std::unordered_map<uint32, std::vector<TalentEntry const*>> spells;
+    std::map<uint32, std::vector<TalentEntry const*>> spells;
     bool diveTypePet = (1LL << ci->family) & diveMask;
 
     for (uint32 i = 0; i < sTalentStore.GetNumRows(); ++i)
@@ -2650,7 +2650,7 @@ void PlayerbotFactory::InitSpecialSpells()
 void PlayerbotFactory::InitTalents(uint32 specNo)
 {
     uint32 classMask = bot->getClassMask();
-    std::unordered_map<uint32, std::vector<TalentEntry const*>> spells;
+    std::map<uint32, std::vector<TalentEntry const*>> spells;
     for (uint32 i = 0; i < sTalentStore.GetNumRows(); ++i)
     {
         TalentEntry const* talentInfo = sTalentStore.LookupEntry(i);
@@ -3325,18 +3325,36 @@ void PlayerbotFactory::InitReagents()
                 items.push_back({44615, 40});  // Devout Candle
             break;
         case CLASS_SHAMAN:
-            if (level >= 4)
-                items.push_back({5175, 1});  // Earth Totem
-            if (level >= 10)
-                items.push_back({5176, 1});  // Flame Totem
-            if (level >= 20)
-                items.push_back({5177, 1});  // Water Totem
+        {
+            HasRelicBySubclassVisitor relicVisitor(ITEM_SUBCLASS_ARMOR_TOTEM);
+            IterateItems(&relicVisitor, (IterateItemsMask)(ITERATE_ITEMS_IN_BAGS | ITERATE_ITEMS_IN_EQUIP));
+            bool hasRelic = relicVisitor.found;
+
+            if (!hasRelic)
+            {
+                if (level >= 4)
+                    items.push_back({5175, 1});  // Earth Totem
+                if (level >= 10)
+                    items.push_back({5176, 1});  // Flame Totem
+                if (level >= 20)
+                    items.push_back({5177, 1});  // Water Totem
+            }
+            else
+            {
+                ItemIds totemIds = {5175, 5176, 5177, 5178};
+                FindItemByIdsVisitor totemVisitor(totemIds);
+                IterateItems(&totemVisitor, (IterateItemsMask)(ITERATE_ITEMS_IN_BAGS | ITERATE_ITEMS_IN_EQUIP | ITERATE_ITEMS_IN_BANK));
+                for (Item* item : totemVisitor.GetResult())
+                    bot->DestroyItem(item->GetBagSlot(), item->GetSlot(), true);
+            }
             if (level >= 30)
             {
-                items.push_back({5178, 1});  // Air Totem
+                if (!hasRelic)
+                    items.push_back({5178, 1});  // Air Totem
                 items.push_back({17030, 20});  // Ankh
             }
             break;
+        }
         case CLASS_WARLOCK:
             items.push_back({6265, 5});  // Soul Shard
             break;

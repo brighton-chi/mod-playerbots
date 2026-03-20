@@ -59,6 +59,7 @@ public:
         creators["party member almost full health"] = &TriggerContext::PartyMemberAlmostFullHealth;
 
         creators["generic boost"] = &TriggerContext::generic_boost;
+        creators["loss of control"] = &TriggerContext::loss_of_control;
 
         creators["protect party member"] = &TriggerContext::protect_party_member;
 
@@ -339,7 +340,7 @@ private:
     {
         return new PartyMemberToHealOutOfSpellRangeTrigger(botAI);
     }
-    static Trigger* ComboPoints5Available(PlayerbotAI* botAI) { return new ComboPointsAvailableTrigger(botAI); }
+    static Trigger* ComboPoints5Available(PlayerbotAI* botAI) { return new ComboPointsAvailableTrigger(botAI, 5); }
     static Trigger* ComboPoints4Available(PlayerbotAI* botAI) { return new ComboPointsAvailableTrigger(botAI, 4); }
     static Trigger* ComboPoints3Available(PlayerbotAI* botAI) { return new ComboPointsAvailableTrigger(botAI, 3); }
     static Trigger* target_with_combo_points_almost_dead(PlayerbotAI* ai)
@@ -363,6 +364,7 @@ private:
         return new PartyMemberAlmostFullHealthTrigger(botAI);
     }
     static Trigger* generic_boost(PlayerbotAI* botAI) { return new GenericBoostTrigger(botAI); }
+    static Trigger* loss_of_control(PlayerbotAI* botAI) { return new LossOfControlTrigger(botAI); }
     static Trigger* PartyMemberCriticalHealth(PlayerbotAI* botAI)
     {
         return new PartyMemberCriticalHealthTrigger(botAI);

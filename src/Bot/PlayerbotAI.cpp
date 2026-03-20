@@ -1146,6 +1146,9 @@ void PlayerbotAI::HandleBotOutgoingPacket(WorldPacket const& packet)
                 if (guid1.IsEmpty() || p.size() > p.DEFAULT_SIZE)
                     return;
 
+                if (lang == LANG_ADDON)
+                        return;
+
                 if (p.GetOpcode() == SMSG_GM_MESSAGECHAT)
                 {
                     p >> textLen;
@@ -1194,8 +1197,6 @@ void PlayerbotAI::HandleBotOutgoingPacket(WorldPacket const& packet)
                         return;
 
                     if (HasRealPlayerMaster() && guid1 != GetMaster()->GetGUID())
-                        return;
-                    if (lang == LANG_ADDON)
                         return;
 
                     if (message.starts_with(sPlayerbotAIConfig.toxicLinksPrefix) &&
@@ -1276,17 +1277,10 @@ void PlayerbotAI::HandleBotOutgoingPacket(WorldPacket const& packet)
 
             p >> guid.ReadAsPacked() >> counter >> vcos >> vsin >> horizontalSpeed >> verticalSpeed;
             if (horizontalSpeed <= 0.1f)
-            {
                 horizontalSpeed = 0.11f;
-            }
             verticalSpeed = -verticalSpeed;
-            // high vertical may result in stuck as bot can not handle gravity
-            /* if (verticalSpeed > 35.0f)
-                break;*/
-            // stop casting
-            InterruptSpell();
 
-            // stop movement
+            InterruptSpell();
             bot->StopMoving();
             bot->GetMotionMaster()->Clear();
 
@@ -6523,7 +6517,7 @@ ChatChannelSource PlayerbotAI::GetChatChannelSource(Player* bot, uint32 type, st
     return ChatChannelSource::SRC_UNDEFINED;
 }
 
-bool PlayerbotAI::CheckLocationDistanceByLevel(Player* player, const WorldLocation& loc, bool fromStartUp)
+bool PlayerbotAI::StarterLevelDistanceCheck(Player* player, const WorldLocation& loc, bool fromStartUp)
 {
     if (player->GetLevel() > 16)
         return true;
