@@ -132,9 +132,11 @@ namespace BlackTempleHelpers
         ZEREVOR_HEALER_POSITION_1,
         ZEREVOR_HEALER_POSITION_2
     };
-    // const Position MALANDE_TANK_POSITION = { 690.101f, 305.166f, 277.443f };
-    const Position MALANDE_TANK_POSITION = { 701.059f, 287.306f, 277.443f };
-    const Position MALANDE_PULL_POSITION = { 712.401f, 264.761f, 277.443f };
+    // const Position MALANDE_TANK_POSITION = { 690.101f, 305.166f, 277.443f }; // original before using a pull, keep?
+    const Position MALANDE_TANK_POSITION = { 690.590f, 299.790f, 277.443f };
+    // corner pull?
+    // const Position MALANDE_TANK_POSITION = { 690.489f, 291.862f, 277.443f };
+    // const Position MALANDE_PULL_POSITION = { 677.143f, 271.057f, 271.692f };
 
     std::unordered_map<uint32, time_t> councilDpsWaitTimer;
     std::unordered_map<ObjectGuid, uint8> gathiosTankStep;
@@ -354,6 +356,50 @@ namespace BlackTempleHelpers
         }
 
         return fallbackWarlock;
+    }
+
+    Player* GetIllidanTrapperHunter(Player* bot)
+    {
+         Group* group = bot->GetGroup();
+         if (!group)
+             return nullptr;
+
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || member->getClass() != CLASS_HUNTER ||
+                !GET_PLAYERBOT_AI(member))
+                continue;
+
+            if (!member->HasAura(SPELL_PARASITIC_SHADOWFIEND_1) &&
+                !member->HasAura(SPELL_PARASITIC_SHADOWFIEND_2))
+            {
+                return member;
+            }
+        }
+
+         return nullptr;
+    }
+
+    // If any bot has the initial infection
+    bool AnyBotHasParasiticShadowfiend(Player* bot)
+    {
+        Group* group = bot->GetGroup();
+        if (!group)
+            return false;
+
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (member && member->IsAlive() && GET_PLAYERBOT_AI(member) &&
+                (member->HasAura(SPELL_PARASITIC_SHADOWFIEND_1) ||
+                 member->HasAura(SPELL_PARASITIC_SHADOWFIEND_2)))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     EyeBlastDangerArea GetEyeBlastDangerArea(Player* bot, Unit* illidan)

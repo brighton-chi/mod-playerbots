@@ -164,6 +164,14 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class IllidariCouncilDisableIceBlockMultiplier : public Multiplier
+{
+public:
+    IllidariCouncilDisableIceBlockMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "illidari council disable ice block multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
 class IllidariCouncilWaitForDpsMultiplier : public Multiplier
 {
 public:

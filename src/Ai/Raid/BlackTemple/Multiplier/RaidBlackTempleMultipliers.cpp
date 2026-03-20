@@ -337,6 +337,21 @@ float IllidariCouncilControlMisdirectionMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+float IllidariCouncilDisableIceBlockMultiplier::GetValue(Action* action)
+{
+    if (bot->getClass() != CLASS_MAGE ||
+        !AI_VALUE2(Unit*, "find target", "high nethermancer zerevor"))
+        return 1.0f;
+
+    if (GetZerevorMageTank(bot) != bot)
+        return 1.0f;
+
+    if (dynamic_cast<CastIceBlockAction*>(action))
+        return 0.0f;
+
+    return 1.0f;
+}
+
 float IllidariCouncilDisableArcaneShotOnZerevorMultiplier::GetValue(Action* action)
 {
     Unit* zerevor = AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");

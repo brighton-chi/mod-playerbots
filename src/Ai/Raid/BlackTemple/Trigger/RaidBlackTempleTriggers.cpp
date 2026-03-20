@@ -525,15 +525,26 @@ bool IllidanStormrageBossCastsFlameCrashInFrontOfMainTankTrigger::IsActive()
 
 bool IllidanStormrageBotHasParasiticShadowfiendTrigger::IsActive()
 {
-    if (botAI->IsMelee(bot))
-        return false;
-
-    if (!bot->HasAura(SPELL_PARASITIC_SHADOWFIEND_1) &&
-        !bot->HasAura(SPELL_PARASITIC_SHADOWFIEND_2))
-        return false;
-
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    return illidan && GetIllidanPhase(illidan) == 1;
+    if (!illidan || illidan->GetHealth() == 1 || illidan->GetVictim() == bot)
+        return false;
+
+    int phase = GetIllidanPhase(illidan);
+    if (phase == 2 || phase == 4)
+        return false;
+
+    if (botAI->IsMainTank(bot))
+        return false;
+
+    if (bot->HasAura(SPELL_PARASITIC_SHADOWFIEND_1) ||
+        bot->HasAura(SPELL_PARASITIC_SHADOWFIEND_2))
+        return true;
+
+    if (bot->getClass() == CLASS_HUNTER && phase != 1 &&
+        AnyBotHasParasiticShadowfiend(bot))
+        return true;
+
+    return false;
 }
 
 bool IllidanStormrageBossSummonedFlamesOfAzzinothTrigger::IsActive()

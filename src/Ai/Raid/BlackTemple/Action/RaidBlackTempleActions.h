@@ -429,6 +429,10 @@ public:
     IllidanStormrageIsolateBotWithParasiteAction(
         PlayerbotAI* botAI) : MovementAction(botAI, "illidan stormrage isolate bot with parasite") {}
     bool Execute(Event event) override;
+
+private:
+    bool InfectedBotMoveFromGroup(Unit* illidan, const Position& targetPos);
+    bool FreezeTrapShadowfiend(Player* bot, Unit* illidan, const Position& targetPos);
 };
 
 class IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction : public AttackAction

@@ -1341,7 +1341,23 @@ bool IllidariCouncilFirstAssistTankPositionMalandeAction::Execute(Event /*event*
 
     if (malande->GetVictim() == bot)
     {
-        const Position& tankPosition = MALANDE_TANK_POSITION;
+        const Position& position = MALANDE_TANK_POSITION;
+        float distToPosition = bot->GetExactDist2d(position.GetPositionX(),
+                                                   position.GetPositionY());
+        if (distToPosition > 5.0f)
+        {
+            float dX = position.GetPositionX() - bot->GetPositionX();
+            float dY = position.GetPositionY() - bot->GetPositionY();
+            float moveDist = std::min(5.0f, distToPosition);
+            float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
+
+            return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY, position.GetPositionZ(),
+                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT,
+                          true, true);
+        }
+        // Olm v2: Just another janky approach needed to pull a caster who won't chase
+        /* const Position& tankPosition = MALANDE_TANK_POSITION;
         float distToTankPosition = malande->GetExactDist2d(tankPosition.GetPositionX(),
                                                            tankPosition.GetPositionY());
 
@@ -1359,7 +1375,7 @@ bool IllidariCouncilFirstAssistTankPositionMalandeAction::Execute(Event /*event*
             return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY, pullPosition.GetPositionZ(),
                           false, false, false, false, MovementPriority::MOVEMENT_COMBAT,
                           true, false);
-        }
+        } */
     }
 
     return false;
@@ -1633,7 +1649,6 @@ bool IllidanStormrageMisdirectToTankAction::TryMisdirectToFlameTanks(Group* grou
         return false;
 
     auto [eastFlame, westFlame] = GetFlamesOfAzzinoth(bot);
-    // If only one flame, do nothing
     if (!eastFlame || !westFlame || eastFlame == westFlame)
         return false;
 
@@ -1642,7 +1657,6 @@ bool IllidanStormrageMisdirectToTankAction::TryMisdirectToFlameTanks(Group* grou
     if (!firstAssistTank || !secondAssistTank)
         return false;
 
-    // If only one hunter, assign to second assist tank and east flame
     if (hunters.size() == 1)
     {
         if (eastFlame->GetHealthPct() < 90.0f)
@@ -1657,7 +1671,6 @@ bool IllidanStormrageMisdirectToTankAction::TryMisdirectToFlameTanks(Group* grou
         return false;
     }
 
-    // Standard case: two hunters, two tanks, two flames
     Player* tankTarget = nullptr;
     Unit* flame = nullptr;
 
@@ -1913,29 +1926,80 @@ bool IllidanStormrageMainTankRepositionBossAction::IsPathSafeFromFlameCrashes(
 
 bool IllidanStormrageIsolateBotWithParasiteAction::Execute(Event /*event*/)
 {
-    constexpr float safeDistance = 15.0f;
-    /* constexpr uint32 minInterval = 500;
-    if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
-    {
-        bot->AttackStop();
-        bot->InterruptNonMeleeSpells(true);
-        return FleePosition(nearestPlayer->GetPosition(), safeDistance, minInterval);
-    } */
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    if (!illidan)
+        return false;
 
-    if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
+    int phase = GetIllidanPhase(illidan);
+
+    if (phase == 1)
     {
-        float currentDistance = bot->GetExactDist2d(nearestPlayer);
-        if (currentDistance < safeDistance)
-            return MoveAway(nearestPlayer, safeDistance - currentDistance);
+        constexpr float safeDistance = 15.0f;
+        if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
+        {
+            float currentDistance = bot->GetExactDist2d(nearestPlayer);
+            if (currentDistance < safeDistance)
+                return MoveAway(nearestPlayer, safeDistance - currentDistance);
+        }
+    }
+    else
+    {
+        float angle = illidan->GetOrientation() + M_PI;
+        constexpr float distBehindIllidan = 35.0f;
+
+        float targetX = illidan->GetPositionX() + std::cos(angle) * distBehindIllidan;
+        float targetY = illidan->GetPositionY() + std::sin(angle) * distBehindIllidan;
+        Position targetPos(targetX, targetY, bot->GetPositionZ());
+
+        if (bot->HasAura(SPELL_PARASITIC_SHADOWFIEND_1) ||
+            bot->HasAura(SPELL_PARASITIC_SHADOWFIEND_2))
+        {
+            return InfectedBotMoveFromGroup(illidan, targetPos);
+        }
+        else if (GetIllidanTrapperHunter(bot) == bot)
+        {
+            return FreezeTrapShadowfiend(bot, illidan, targetPos);
+        }
     }
 
     return false;
 }
 
+bool IllidanStormrageIsolateBotWithParasiteAction::InfectedBotMoveFromGroup(
+    Unit* illidan, const Position& targetPos)
+{
+    if (bot->GetExactDist2d(targetPos) < 1.0f)
+        return false;
+
+    return MoveTo(BLACK_TEMPLE_MAP_ID, targetPos.GetPositionX(), targetPos.GetPositionY(),
+                  targetPos.GetPositionZ(), false, false, false, false,
+                  MovementPriority::MOVEMENT_FORCED, true, false);
+}
+
+bool IllidanStormrageIsolateBotWithParasiteAction::FreezeTrapShadowfiend(
+    Player* bot, Unit* illidan, const Position& targetPos)
+{
+    if (bot->HasSpellCooldown(SPELL_FROST_TRAP))
+        return false;
+
+    if (bot->GetExactDist2d(targetPos) > 5.0f)
+    {
+        return MoveTo(BLACK_TEMPLE_MAP_ID, targetPos.GetPositionX(), targetPos.GetPositionY(),
+                      targetPos.GetPositionZ(), false, false, false, false,
+                      MovementPriority::MOVEMENT_FORCED, true, false);
+    }
+    else if (botAI->CanCastSpell(SPELL_FROST_TRAP, bot))
+    {
+        return botAI->CastSpell(SPELL_FROST_TRAP, bot);
+    }
+
+    return false;
+
+}
+
 bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*event*/)
 {
     auto [eastFlame, westFlame] = GetFlamesOfAzzinoth(bot);
-
     // The second assist tank's flame is killed first; this is so that if the tank
     // for the second flame dies after the first flame is down, the dead flame's
     // tank will become the first assist tank and take over the remaining flame
@@ -2660,7 +2724,6 @@ bool IllidanStormrageDestroyHazardsCheatAction::Execute(Event /*event*/)
                 creature->Kill(bot, creature);
                 destroyed = true;
             }
-            // Try taking Shadow Demons down to 25%
             else if (creature->GetHealthPct() > 25.0f)
             {
                 uint32 desiredDamage = 0;
