@@ -28,7 +28,9 @@ namespace HyjalSummitHelpers
             return nullptr;
 
         Spell* spell = anetheron->GetCurrentSpell(CURRENT_GENERIC_SPELL);
-        if (spell && spell->m_spellInfo->Id == SPELL_INFERNO)
+        if (spell &&
+            spell->m_spellInfo->Id ==
+                static_cast<uint32>(HyjalSummitSpells::SPELL_INFERNO))
         {
             Unit* spellTarget = spell->m_targets.GetUnitTarget();
             if (spellTarget && spellTarget->GetTypeId() == TYPEID_PLAYER)
@@ -80,7 +82,8 @@ namespace HyjalSummitHelpers
             for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
             {
                 Player* member = ref->GetSource();
-                if (member && member->HasAura(SPELL_DOOM))
+                if (member &&
+                    member->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_DOOM)))
                     return true;
             }
         }

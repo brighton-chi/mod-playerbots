@@ -14,7 +14,7 @@
 
 namespace HyjalSummitHelpers
 {
-    enum HyjalSummitSpells
+    enum class HyjalSummitSpells : uint32
     {
         // Anetheron
         SPELL_INFERNO          = 31299,
@@ -39,7 +39,7 @@ namespace HyjalSummitHelpers
         SPELL_FEAR_WARD        =  6346,
     };
 
-    enum HyjalSummitNPCs
+    enum class HyjalSummitNPCs : uint32
     {
         // Anetheron
         NPC_TOWERING_INFERNAL  = 17818,

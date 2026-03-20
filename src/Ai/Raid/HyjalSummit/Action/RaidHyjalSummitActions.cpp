@@ -18,19 +18,16 @@ bool HyjalSummitEraseTrackersAction::Execute(Event /*event*/)
     const ObjectGuid guid = bot->GetGUID();
 
     bool erased = false;
-
     if (!AI_VALUE2(Unit*, "find target", "rage winterchill") &&
         hasReachedWinterchillPosition.erase(guid) > 0)
     {
         erased = true;
     }
-
     if (!AI_VALUE2(Unit*, "find target", "anetheron") &&
         hasReachedAnetheronPosition.erase(guid) > 0)
     {
         erased = true;
     }
-
     if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
     {
         if (isBelowManaThreshold.erase(guid) > 0)
@@ -38,13 +35,11 @@ bool HyjalSummitEraseTrackersAction::Execute(Event /*event*/)
         if (kazrogalTankStep.erase(guid) > 0)
             erased = true;
     }
-
     if (!AI_VALUE2(Unit*, "find target", "azgalor") &&
         azgalorTankStep.erase(guid) > 0)
     {
         erased = true;
     }
-
     if (!AI_VALUE2(Unit*, "find target", "archimonde") &&
         doomfireTrails.erase(bot->GetMap()->GetInstanceId()) > 0)
     {
@@ -69,7 +64,8 @@ bool RageWinterchillMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (botAI->CanCastSpell("misdirection", mainTank))
         return botAI->CastSpell("misdirection", mainTank);
 
-    if (bot->HasAura(SPELL_MISDIRECTION) && botAI->CanCastSpell("steady shot", winterchill))
+    if (bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_MISDIRECTION)) &&
+        botAI->CanCastSpell("steady shot", winterchill))
         return botAI->CastSpell("steady shot", winterchill);
 
     return false;
@@ -202,7 +198,8 @@ bool AnetheronMisdirectBossAndInfernalsToTanksAction::Execute(Event /*event*/)
         if (botAI->CanCastSpell("misdirection", mainTank))
             return botAI->CastSpell("misdirection", mainTank);
 
-        if (bot->HasAura(SPELL_MISDIRECTION) && botAI->CanCastSpell("steady shot", anetheron))
+        if (bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_MISDIRECTION)) &&
+            botAI->CanCastSpell("steady shot", anetheron))
             return botAI->CastSpell("steady shot", anetheron);
     }
 
@@ -216,7 +213,8 @@ bool AnetheronMisdirectBossAndInfernalsToTanksAction::Execute(Event /*event*/)
         if (botAI->CanCastSpell("misdirection", firstAssistTank))
             return botAI->CastSpell("misdirection", firstAssistTank);
 
-        if (bot->HasAura(SPELL_MISDIRECTION) && botAI->CanCastSpell("steady shot", infernal))
+        if (bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_MISDIRECTION)) &&
+            botAI->CanCastSpell("steady shot", infernal))
             return botAI->CastSpell("steady shot", infernal);
     }
 
@@ -628,7 +626,8 @@ bool KazrogalLowManaBotMoveFromGroupAction::Execute(Event /*event*/)
         if (bot->GetPower(POWER_MANA) <= 3200)
             isBelowManaThreshold.try_emplace(bot->GetGUID(), true);
 
-        if (bot->HasAura(SPELL_MARK_OF_KAZROGAL) && bot->GetPower(POWER_MANA) <= 1200)
+        if (bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_MARK_OF_KAZROGAL)) &&
+            bot->GetPower(POWER_MANA) <= 1200)
         {
             if (bot->getClass() == CLASS_MAGE &&
                 botAI->CanCastSpell("ice block", bot) &&
@@ -695,7 +694,8 @@ bool AzgalorMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (botAI->CanCastSpell("misdirection", mainTank))
         return botAI->CastSpell("misdirection", mainTank);
 
-    if (bot->HasAura(SPELL_MISDIRECTION) && botAI->CanCastSpell("steady shot", azgalor))
+    if (bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_MISDIRECTION)) &&
+        botAI->CanCastSpell("steady shot", azgalor))
         return botAI->CastSpell("steady shot", azgalor);
 
     return false;
@@ -906,7 +906,8 @@ bool ArchimondeMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (botAI->CanCastSpell("misdirection", mainTank))
         return botAI->CastSpell("misdirection", mainTank);
 
-    if (bot->HasAura(SPELL_MISDIRECTION) && botAI->CanCastSpell("steady shot", archimonde))
+    if (bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_MISDIRECTION)) &&
+        botAI->CanCastSpell("steady shot", archimonde))
         return botAI->CastSpell("steady shot", archimonde);
 
     return false;
@@ -949,7 +950,9 @@ bool ArchimondeSpreadToAvoidAirBurstAction::Execute(Event /*event*/)
     if (archimonde->HasUnitState(UNIT_STATE_CASTING))
     {
         Spell* spell = archimonde->GetCurrentSpell(CURRENT_GENERIC_SPELL);
-        if (spell && spell->m_spellInfo->Id == SPELL_AIR_BURST)
+        if (spell &&
+            spell->m_spellInfo->Id ==
+                static_cast<uint32>(HyjalSummitSpells::SPELL_AIR_BURST))
         {
             Player* mainTank = GetGroupMainTank(botAI, bot);
             if (mainTank && spell->m_targets.GetUnitTarget() == mainTank)
