@@ -474,7 +474,8 @@ bool KazrogalMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (botAI->CanCastSpell("misdirection", mainTank))
         return botAI->CastSpell("misdirection", mainTank);
 
-    if (bot->HasAura(SPELL_MISDIRECTION) && botAI->CanCastSpell("steady shot", kazrogal))
+    if (bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_MISDIRECTION)) &&
+        botAI->CanCastSpell("steady shot", kazrogal))
         return botAI->CastSpell("steady shot", kazrogal);
 
     return false;

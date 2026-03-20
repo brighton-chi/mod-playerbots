@@ -189,7 +189,8 @@ bool KazrogalMarkDealsShadowDamageTrigger::IsActive()
          botAI->HasAura("shadow protection", bot)))
         return false;
 
-    return bot->HasAura(SPELL_MARK_OF_KAZROGAL);
+    return bot->HasAura(
+        static_cast<uint32>(HyjalSummitSpells::SPELL_MARK_OF_KAZROGAL));
 }
 
 // Azgalor

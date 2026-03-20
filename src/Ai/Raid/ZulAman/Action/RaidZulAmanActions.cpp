@@ -15,12 +15,12 @@ using namespace ZulAmanHelpers;
 bool AmanishiMedicineManMarkWardAction::Execute(Event event)
 {
     if (Unit* protectiveWard = GetFirstAliveUnitByEntry(
-            static_cast<uint32>(ZulAmanNPCs::NPC_AMANI_PROTECTIVE_WARD)))
+            botAI, static_cast<uint32>(ZulAmanNPCs::NPC_AMANI_PROTECTIVE_WARD)))
     {
         MarkTargetWithSkull(bot, protectiveWard);
     }
     else if (Unit* healingWard = GetFirstAliveUnitByEntry(
-                static_cast<uint32>(ZulAmanNPCs::NPC_AMANI_HEALING_WARD)))
+                botAI, static_cast<uint32>(ZulAmanNPCs::NPC_AMANI_HEALING_WARD)))
     {
         MarkTargetWithSkull(bot, healingWard);
     }
@@ -593,7 +593,7 @@ bool HexLordMalacrassCastersStopAttackingAction::Execute(Event event)
 bool HexLordMalacrassMoveAwayFromFreezingTrapAction::Execute(Event event)
 {
     GameObject* trapGo = bot->FindNearestGameObject(
-        static_cast<uint32>(ZulAmanGameObjects::GO_FREEZING_TRAP), 20.0f, true);
+        static_cast<uint32>(ZulAmanObjects::GO_FREEZING_TRAP), 20.0f, true);
 
     if (!trapGo)
         return false;
