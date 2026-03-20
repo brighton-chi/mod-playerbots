@@ -75,7 +75,6 @@ namespace BlackTempleHelpers
         SPELL_PARASITIC_SHADOWFIEND_2   = 41914, // cast by shadowfiend on contact (secondary infection)
 
         // Hunter
-        SPELL_FREEZING_TRAP             =  1499,
         SPELL_FROST_TRAP                = 13809,
         SPELL_MISDIRECTION              = 35079,
     };
@@ -199,7 +198,7 @@ namespace BlackTempleHelpers
     std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(Player* bot);
     Player* GetIllidanWarlockTank(Player* bot);
     Player* GetIllidanTrapperHunter(Player* bot);
-    bool AnyBotHasParasiticShadowfiend(Player* bot);
+    Player* GetBotWithParasiticShadowfiend(Player* bot);
     struct EyeBlastDangerArea
     {
         Position start;

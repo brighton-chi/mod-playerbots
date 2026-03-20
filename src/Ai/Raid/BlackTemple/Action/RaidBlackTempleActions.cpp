@@ -1726,12 +1726,33 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
     if (GetIllidanPhase(illidan) == 5)
     {
         GameObject* nearestTrap = FindNearestTrap();
-        if (nearestTrap && illidan->GetVictim() == bot)
+        // Logging only
+        if (nearestTrap)
+        {
+            float trapDist = bot->GetExactDist2d(nearestTrap);
+            LOG_DEBUG("playerbots", "Nearest trap for bot {} is {} at distance {}", bot->GetName(),
+                      nearestTrap->GetGUID().ToString(), trapDist);
+        }
+        // End logging
+        if (nearestTrap && bot->GetExactDist2d(nearestTrap) < 25.0f &&
+            illidan->GetVictim() == bot)
         {
             Position target = GetPointBeyondTrap(nearestTrap, 5.0f);
-            return MoveTo(BLACK_TEMPLE_MAP_ID, target.GetPositionX(), target.GetPositionY(),
-                          bot->GetPositionZ(), false, false, false, false,
-                          MovementPriority::MOVEMENT_FORCED, true, true);
+            if (bot->GetExactDist2d(target) > 1.0f)
+            {
+                // Movement to trap can be weird, try with direct waypoint move
+                return MoveTo(BLACK_TEMPLE_MAP_ID, target.GetPositionX(), target.GetPositionY(),
+                              bot->GetPositionZ(), false, false, false, true,
+                              MovementPriority::MOVEMENT_FORCED, true, true);
+            }
+            // Doesn't work right now, need player to use trap
+            /* else if (nearestTrap->GetExactDist2d(bot) <= 4.0f)
+            {
+                nearestTrap->Use(bot);
+                LOG_DEBUG("playerbots", "Bot {} used trap {} to freeze Illidan", bot->GetName(),
+                          nearestTrap->GetGUID().ToString());
+                return true;
+            } */
         }
     }
 
@@ -1760,7 +1781,7 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
                   bot->GetPositionZ(), false, false, false, false,
                   MovementPriority::MOVEMENT_FORCED, true, true);
 
-    return false;
+    // return false;
 }
 
 GameObject* IllidanStormrageMainTankRepositionBossAction::FindNearestTrap()
@@ -1949,16 +1970,16 @@ bool IllidanStormrageIsolateBotWithParasiteAction::Execute(Event /*event*/)
 
         float targetX = illidan->GetPositionX() + std::cos(angle) * distBehindIllidan;
         float targetY = illidan->GetPositionY() + std::sin(angle) * distBehindIllidan;
-        Position targetPos(targetX, targetY, bot->GetPositionZ());
+        Position target(targetX, targetY, bot->GetPositionZ());
 
         if (bot->HasAura(SPELL_PARASITIC_SHADOWFIEND_1) ||
             bot->HasAura(SPELL_PARASITIC_SHADOWFIEND_2))
         {
-            return InfectedBotMoveFromGroup(illidan, targetPos);
+            return InfectedBotMoveFromGroup(illidan, target);
         }
         else if (GetIllidanTrapperHunter(bot) == bot)
         {
-            return FreezeTrapShadowfiend(bot, illidan, targetPos);
+            return FreezeTrapShadowfiend(bot, illidan, target);
         }
     }
 
@@ -1966,29 +1987,34 @@ bool IllidanStormrageIsolateBotWithParasiteAction::Execute(Event /*event*/)
 }
 
 bool IllidanStormrageIsolateBotWithParasiteAction::InfectedBotMoveFromGroup(
-    Unit* illidan, const Position& targetPos)
+    Unit* illidan, const Position& target)
 {
-    if (bot->GetExactDist2d(targetPos) < 1.0f)
+    if (bot->GetExactDist2d(target) < 1.0f)
         return false;
 
-    return MoveTo(BLACK_TEMPLE_MAP_ID, targetPos.GetPositionX(), targetPos.GetPositionY(),
-                  targetPos.GetPositionZ(), false, false, false, false,
+    return MoveTo(BLACK_TEMPLE_MAP_ID, target.GetPositionX(), target.GetPositionY(),
+                  target.GetPositionZ(), false, false, false, false,
                   MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 bool IllidanStormrageIsolateBotWithParasiteAction::FreezeTrapShadowfiend(
-    Player* bot, Unit* illidan, const Position& targetPos)
+    Player* bot, Unit* illidan, const Position& target)
 {
     if (bot->HasSpellCooldown(SPELL_FROST_TRAP))
         return false;
 
-    if (bot->GetExactDist2d(targetPos) > 5.0f)
+    Player* infected = GetBotWithParasiticShadowfiend(bot);
+    if (!infected)
+        return false;
+
+    if (bot->GetExactDist2d(target) > 2.0f)
     {
-        return MoveTo(BLACK_TEMPLE_MAP_ID, targetPos.GetPositionX(), targetPos.GetPositionY(),
-                      targetPos.GetPositionZ(), false, false, false, false,
+        return MoveTo(BLACK_TEMPLE_MAP_ID, target.GetPositionX(), target.GetPositionY(),
+                      target.GetPositionZ(), false, false, false, false,
                       MovementPriority::MOVEMENT_FORCED, true, false);
     }
-    else if (botAI->CanCastSpell(SPELL_FROST_TRAP, bot))
+    else if (bot->GetExactDist2d(infected) < 2.0f &&
+             botAI->CanCastSpell(SPELL_FROST_TRAP, bot))
     {
         return botAI->CastSpell(SPELL_FROST_TRAP, bot);
     }

@@ -536,12 +536,12 @@ bool IllidanStormrageBotHasParasiticShadowfiendTrigger::IsActive()
     if (botAI->IsMainTank(bot))
         return false;
 
-    if (bot->HasAura(SPELL_PARASITIC_SHADOWFIEND_1) ||
-        bot->HasAura(SPELL_PARASITIC_SHADOWFIEND_2))
-        return true;
+    Player* infected = GetBotWithParasiticShadowfiend(bot);
+    if (!infected)
+        return false;
 
-    if (bot->getClass() == CLASS_HUNTER && phase != 1 &&
-        AnyBotHasParasiticShadowfiend(bot))
+    if (infected == bot ||
+        (bot->getClass() == CLASS_HUNTER && phase != 1))
         return true;
 
     return false;

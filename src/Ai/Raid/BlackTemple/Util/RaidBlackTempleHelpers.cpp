@@ -382,11 +382,11 @@ namespace BlackTempleHelpers
     }
 
     // If any bot has the initial infection
-    bool AnyBotHasParasiticShadowfiend(Player* bot)
+    Player* GetBotWithParasiticShadowfiend(Player* bot)
     {
         Group* group = bot->GetGroup();
         if (!group)
-            return false;
+            return nullptr;
 
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
@@ -395,11 +395,11 @@ namespace BlackTempleHelpers
                 (member->HasAura(SPELL_PARASITIC_SHADOWFIEND_1) ||
                  member->HasAura(SPELL_PARASITIC_SHADOWFIEND_2)))
             {
-                return true;
+                return member;
             }
         }
 
-        return false;
+        return nullptr;
     }
 
     EyeBlastDangerArea GetEyeBlastDangerArea(Player* bot, Unit* illidan)
