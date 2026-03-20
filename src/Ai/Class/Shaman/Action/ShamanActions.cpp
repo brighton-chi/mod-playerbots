@@ -57,7 +57,8 @@ bool CastLavaBurstAction::isUseful()
     if (!target)
         return false;
 
-    static const uint32 FLAME_SHOCK_SPELL_IDS[] = {8050, 8052, 8053, 10447, 10448, 29228, 25457, 49232, 49233};
+    static const uint32 FLAME_SHOCK_SPELL_IDS[] =
+        {8050, 8052, 8053, 10447, 10448, 29228, 25457, 49232, 49233};
 
     ObjectGuid botGuid = bot->GetGUID();
     for (uint32 spellId : FLAME_SHOCK_SPELL_IDS)

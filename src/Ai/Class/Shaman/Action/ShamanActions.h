@@ -125,13 +125,13 @@ public:
 class CastShamanisticRageAction : public CastBuffSpellAction
 {
 public:
-    CastShamanisticRageAction(PlayerbotAI* ai) : CastBuffSpellAction(ai, "shamanistic rage") {}
+    CastShamanisticRageAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "shamanistic rage") {}
 };
 
 class CastFeralSpiritAction : public CastSpellAction
 {
 public:
-    CastFeralSpiritAction(PlayerbotAI* ai) : CastSpellAction(ai, "feral spirit") {}
+    CastFeralSpiritAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "feral spirit") {}
 };
 
 class CastSpiritWalkAction : public Action
@@ -285,7 +285,7 @@ public:
 class CastLavaBurstAction : public CastSpellAction
 {
 public:
-    CastLavaBurstAction(PlayerbotAI* ai) : CastSpellAction(ai, "lava burst") {}
+    CastLavaBurstAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "lava burst") {}
     bool isUseful() override;
 };
 
@@ -360,7 +360,7 @@ public:
 class CastEarthShieldOnMainTankAction : public BuffOnMainTankAction
 {
 public:
-    CastEarthShieldOnMainTankAction(PlayerbotAI* ai) : BuffOnMainTankAction(ai, "earth shield", false) {}
+    CastEarthShieldOnMainTankAction(PlayerbotAI* botAI) : BuffOnMainTankAction(botAI, "earth shield", false) {}
 };
 
 // Totem Spells
@@ -383,13 +383,13 @@ protected:
 class CastCallOfTheElementsAction : public CastSpellAction
 {
 public:
-    CastCallOfTheElementsAction(PlayerbotAI* ai) : CastSpellAction(ai, "call of the elements") {}
+    CastCallOfTheElementsAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "call of the elements") {}
 };
 
 class CastTotemicRecallAction : public CastSpellAction
 {
 public:
-    CastTotemicRecallAction(PlayerbotAI* ai) : CastSpellAction(ai, "totemic recall") {}
+    CastTotemicRecallAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "totemic recall") {}
 };
 
 class CastStrengthOfEarthTotemAction : public CastTotemAction
@@ -459,7 +459,7 @@ public:
 class CastFireElementalTotemAction : public CastTotemAction
 {
 public:
-    CastFireElementalTotemAction(PlayerbotAI* ai) : CastTotemAction(ai, "fire elemental totem", "") {}
+    CastFireElementalTotemAction(PlayerbotAI* botAI) : CastTotemAction(botAI, "fire elemental totem", "") {}
     virtual std::string const GetTargetName() override { return "self target"; }
     virtual bool isUseful() override { return CastTotemAction::isUseful(); }
 };
@@ -467,7 +467,7 @@ public:
 class CastFireElementalTotemMeleeAction : public CastTotemAction
 {
 public:
-    CastFireElementalTotemMeleeAction(PlayerbotAI* ai) : CastTotemAction(ai, "fire elemental totem", "") {}
+    CastFireElementalTotemMeleeAction(PlayerbotAI* botAI) : CastTotemAction(botAI, "fire elemental totem", "") {}
     virtual std::string const GetTargetName() override { return "self target"; }
     virtual bool isUseful() override
     {
@@ -513,7 +513,7 @@ public:
 class CastWrathOfAirTotemAction : public CastTotemAction
 {
 public:
-    CastWrathOfAirTotemAction(PlayerbotAI* ai) : CastTotemAction(ai, "wrath of air totem", "wrath of air totem") {}
+    CastWrathOfAirTotemAction(PlayerbotAI* botAI) : CastTotemAction(botAI, "wrath of air totem", "wrath of air totem") {}
 };
 
 class CastWindfuryTotemAction : public CastTotemAction
@@ -551,120 +551,120 @@ public:
 class SetStrengthOfEarthTotemAction : public SetTotemAction
 {
 public:
-    SetStrengthOfEarthTotemAction(PlayerbotAI* ai)
-        : SetTotemAction(ai, "strength of earth totem", STRENGTH_OF_EARTH_TOTEM, TOTEM_BAR_SLOT_EARTH) {}
+    SetStrengthOfEarthTotemAction(PlayerbotAI* botAI)
+        : SetTotemAction(botAI, "strength of earth totem", STRENGTH_OF_EARTH_TOTEM, TOTEM_BAR_SLOT_EARTH) {}
 };
 
 class SetStoneskinTotemAction : public SetTotemAction
 {
 public:
-    SetStoneskinTotemAction(PlayerbotAI* ai)
-        : SetTotemAction(ai, "stoneskin totem", STONESKIN_TOTEM, TOTEM_BAR_SLOT_EARTH) {}
+    SetStoneskinTotemAction(PlayerbotAI* botAI)
+        : SetTotemAction(botAI, "stoneskin totem", STONESKIN_TOTEM, TOTEM_BAR_SLOT_EARTH) {}
 };
 
 class SetTremorTotemAction : public SetTotemAction
 {
 public:
-    SetTremorTotemAction(PlayerbotAI* ai)
-        : SetTotemAction(ai, "tremor totem", TREMOR_TOTEM, TOTEM_BAR_SLOT_EARTH) {}
+    SetTremorTotemAction(PlayerbotAI* botAI)
+        : SetTotemAction(botAI, "tremor totem", TREMOR_TOTEM, TOTEM_BAR_SLOT_EARTH) {}
 };
 
 class SetEarthbindTotemAction : public SetTotemAction
 {
 public:
-    SetEarthbindTotemAction(PlayerbotAI* ai)
-        : SetTotemAction(ai, "earthbind totem", EARTHBIND_TOTEM, TOTEM_BAR_SLOT_EARTH) {}
+    SetEarthbindTotemAction(PlayerbotAI* botAI)
+        : SetTotemAction(botAI, "earthbind totem", EARTHBIND_TOTEM, TOTEM_BAR_SLOT_EARTH) {}
 };
 
 class SetSearingTotemAction : public SetTotemAction
 {
 public:
-    SetSearingTotemAction(PlayerbotAI* ai)
-        : SetTotemAction(ai, "searing totem", SEARING_TOTEM, TOTEM_BAR_SLOT_FIRE) {}
+    SetSearingTotemAction(PlayerbotAI* botAI)
+        : SetTotemAction(botAI, "searing totem", SEARING_TOTEM, TOTEM_BAR_SLOT_FIRE) {}
 };
 
 class SetMagmaTotemAction : public SetTotemAction
 {
 public:
-    SetMagmaTotemAction(PlayerbotAI* ai)
-        : SetTotemAction(ai, "magma totem", MAGMA_TOTEM, TOTEM_BAR_SLOT_FIRE) {}
+    SetMagmaTotemAction(PlayerbotAI* botAI)
+        : SetTotemAction(botAI, "magma totem", MAGMA_TOTEM, TOTEM_BAR_SLOT_FIRE) {}
 };
 
 class SetFlametongueTotemAction : public SetTotemAction
 {
 public:
-    SetFlametongueTotemAction(PlayerbotAI* ai)
-        : SetTotemAction(ai, "flametongue totem", FLAMETONGUE_TOTEM, TOTEM_BAR_SLOT_FIRE) {}
+    SetFlametongueTotemAction(PlayerbotAI* botAI)
+        : SetTotemAction(botAI, "flametongue totem", FLAMETONGUE_TOTEM, TOTEM_BAR_SLOT_FIRE) {}
 };
 
 class SetTotemOfWrathAction : public SetTotemAction
 {
 public:
-    SetTotemOfWrathAction(PlayerbotAI* ai)
-        : SetTotemAction(ai, "totem of wrath", TOTEM_OF_WRATH, TOTEM_BAR_SLOT_FIRE) {}
+    SetTotemOfWrathAction(PlayerbotAI* botAI)
+        : SetTotemAction(botAI, "totem of wrath", TOTEM_OF_WRATH, TOTEM_BAR_SLOT_FIRE) {}
 };
 
 class SetFrostResistanceTotemAction : public SetTotemAction
 {
 public:
-    SetFrostResistanceTotemAction(PlayerbotAI* ai)
-        : SetTotemAction(ai, "frost resistance totem", FROST_RESISTANCE_TOTEM, TOTEM_BAR_SLOT_FIRE) {}
+    SetFrostResistanceTotemAction(PlayerbotAI* botAI)
+        : SetTotemAction(botAI, "frost resistance totem", FROST_RESISTANCE_TOTEM, TOTEM_BAR_SLOT_FIRE) {}
 };
 
 class SetHealingStreamTotemAction : public SetTotemAction
 {
 public:
-    SetHealingStreamTotemAction(PlayerbotAI* ai)
-        : SetTotemAction(ai, "healing stream totem", HEALING_STREAM_TOTEM, TOTEM_BAR_SLOT_WATER) {}
+    SetHealingStreamTotemAction(PlayerbotAI* botAI)
+        : SetTotemAction(botAI, "healing stream totem", HEALING_STREAM_TOTEM, TOTEM_BAR_SLOT_WATER) {}
 };
 
 class SetManaSpringTotemAction : public SetTotemAction
 {
 public:
-    SetManaSpringTotemAction(PlayerbotAI* ai)
-        : SetTotemAction(ai, "mana spring totem", MANA_SPRING_TOTEM, TOTEM_BAR_SLOT_WATER) {}
+    SetManaSpringTotemAction(PlayerbotAI* botAI)
+        : SetTotemAction(botAI, "mana spring totem", MANA_SPRING_TOTEM, TOTEM_BAR_SLOT_WATER) {}
 };
 
 class SetCleansingTotemAction : public SetTotemAction
 {
 public:
-    SetCleansingTotemAction(PlayerbotAI* ai)
-        : SetTotemAction(ai, "cleansing totem", CLEANSING_TOTEM, TOTEM_BAR_SLOT_WATER) {}
+    SetCleansingTotemAction(PlayerbotAI* botAI)
+        : SetTotemAction(botAI, "cleansing totem", CLEANSING_TOTEM, TOTEM_BAR_SLOT_WATER) {}
 };
 
 class SetFireResistanceTotemAction : public SetTotemAction
 {
 public:
-    SetFireResistanceTotemAction(PlayerbotAI* ai)
-        : SetTotemAction(ai, "fire resistance totem", FIRE_RESISTANCE_TOTEM, TOTEM_BAR_SLOT_WATER) {}
+    SetFireResistanceTotemAction(PlayerbotAI* botAI)
+        : SetTotemAction(botAI, "fire resistance totem", FIRE_RESISTANCE_TOTEM, TOTEM_BAR_SLOT_WATER) {}
 };
 
 class SetWrathOfAirTotemAction : public SetTotemAction
 {
 public:
-    SetWrathOfAirTotemAction(PlayerbotAI* ai)
-        : SetTotemAction(ai, "wrath of air totem", WRATH_OF_AIR_TOTEM, TOTEM_BAR_SLOT_AIR) {}
+    SetWrathOfAirTotemAction(PlayerbotAI* botAI)
+        : SetTotemAction(botAI, "wrath of air totem", WRATH_OF_AIR_TOTEM, TOTEM_BAR_SLOT_AIR) {}
 };
 
 class SetWindfuryTotemAction : public SetTotemAction
 {
 public:
-    SetWindfuryTotemAction(PlayerbotAI* ai)
-        : SetTotemAction(ai, "windfury totem", WINDFURY_TOTEM, TOTEM_BAR_SLOT_AIR) {}
+    SetWindfuryTotemAction(PlayerbotAI* botAI)
+        : SetTotemAction(botAI, "windfury totem", WINDFURY_TOTEM, TOTEM_BAR_SLOT_AIR) {}
 };
 
 class SetNatureResistanceTotemAction : public SetTotemAction
 {
 public:
-    SetNatureResistanceTotemAction(PlayerbotAI* ai)
-        : SetTotemAction(ai, "nature resistance totem", NATURE_RESISTANCE_TOTEM, TOTEM_BAR_SLOT_AIR) {}
+    SetNatureResistanceTotemAction(PlayerbotAI* botAI)
+        : SetTotemAction(botAI, "nature resistance totem", NATURE_RESISTANCE_TOTEM, TOTEM_BAR_SLOT_AIR) {}
 };
 
 class SetGroundingTotemAction : public SetTotemAction
 {
 public:
-    SetGroundingTotemAction(PlayerbotAI* ai)
-        : SetTotemAction(ai, "grounding totem", GROUNDING_TOTEM, TOTEM_BAR_SLOT_AIR) {}
+    SetGroundingTotemAction(PlayerbotAI* botAI)
+        : SetTotemAction(botAI, "grounding totem", GROUNDING_TOTEM, TOTEM_BAR_SLOT_AIR) {}
 };
 
 #endif
