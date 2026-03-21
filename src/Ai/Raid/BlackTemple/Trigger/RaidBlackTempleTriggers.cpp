@@ -605,12 +605,12 @@ bool IllidanStormrageBossDealsSplashDamageTrigger::IsActive()
     if (!illidan)
         return false;
 
-    if (GetIllidanPhase(illidan) == 4 && GetIllidanWarlockTank(bot) == bot)
+    int phase = GetIllidanPhase(illidan);
+
+    if (phase == 4 && GetIllidanWarlockTank(bot) == bot)
         return false;
 
-    return GetIllidanPhase(illidan) == 3 ||
-           GetIllidanPhase(illidan) == 4 ||
-           GetIllidanPhase(illidan) == 5;
+    return phase == 3 || phase == 4 || phase == 5;
 }
 
 bool IllidanStormrageThisExpansionHatesMeleeTrigger::IsActive()

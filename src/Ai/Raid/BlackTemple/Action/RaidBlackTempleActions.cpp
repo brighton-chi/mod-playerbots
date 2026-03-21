@@ -570,6 +570,7 @@ bool TeronGorefiendMoveToCornerToDieAction::Execute(Event /*event*/)
     const Position& position = GOREFIEND_DIE_POSITION;
     if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
     {
+        botAI->Reset();
         return MoveTo(BLACK_TEMPLE_MAP_ID, position.GetPositionX(), position.GetPositionY(),
                       bot->GetPositionZ(), false, false, false, false,
                       MovementPriority::MOVEMENT_FORCED, true, false);
@@ -1557,12 +1558,18 @@ bool IllidariCouncilAssignDpsTargetsAction::Execute(Event /*event*/)
     bool shouldAttackMalande = false;
     Unit* zerevor = AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");
     if (zerevor && zerevor->GetExactDist2d(malande) < 15.0f)
+    {
         shouldAttackMalande = false;
+    }
     else if (bot->getClass() == CLASS_ROGUE ||
              (bot->getClass() == CLASS_WARRIOR && botAI->IsDps(bot)))
+    {
         shouldAttackMalande = !malande->HasAura(SPELL_BLESSING_OF_PROTECTION);
+    }
     else if (bot->getClass() == CLASS_SHAMAN && botAI->IsDps(bot))
+    {
         shouldAttackMalande = !malande->HasAura(SPELL_BLESSING_OF_SPELL_WARDING);
+    }
 
     if (shouldAttackMalande)
     {
@@ -2750,16 +2757,26 @@ bool IllidanStormrageDestroyHazardsCheatAction::Execute(Event /*event*/)
                 creature->Kill(bot, creature);
                 destroyed = true;
             }
-            else if (creature->GetHealthPct() > 25.0f)
+            else
             {
-                uint32 desiredDamage = 0;
-                uint32 quarterHealth = creature->GetMaxHealth() / 4;
-                if (creature->GetHealth() > quarterHealth)
-                    desiredDamage = creature->GetHealth() - quarterHealth;
+                // Probably a wipe if a Shadow Demon targets the Warlock tank
+                if (Player* warlockTank = GetIllidanWarlockTank(bot);
+                    warlockTank && creature->GetTarget() == warlockTank->GetGUID())
+                {
+                    creature->Kill(bot, creature);
+                    destroyed = true;
+                }
+                else if (creature->GetHealthPct() > 25.0f)
+                {
+                    uint32 desiredDamage = 0;
+                    uint32 quarterHealth = creature->GetMaxHealth() / 4;
+                    if (creature->GetHealth() > quarterHealth)
+                        desiredDamage = creature->GetHealth() - quarterHealth;
 
-                Unit::DealDamage(bot, creature, desiredDamage, nullptr, DIRECT_DAMAGE,
-                                 SPELL_SCHOOL_MASK_NORMAL, nullptr, false, false, nullptr);
-                return true;
+                    Unit::DealDamage(bot, creature, desiredDamage, nullptr, DIRECT_DAMAGE,
+                                     SPELL_SCHOOL_MASK_NORMAL, nullptr, false, false, nullptr);
+                    return true;
+                }
             }
         }
     }
