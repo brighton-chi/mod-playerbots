@@ -66,6 +66,7 @@ bool CastLavaBurstAction::isUseful()
         if (target->HasAura(spellId, botGuid))
             return true;
     }
+
     return false;
 }
 
@@ -78,15 +79,13 @@ bool CastSpiritWalkAction::Execute(Event /*event*/)
 
     for (Unit* unit : bot->m_Controlled)
     {
-        if (unit->GetEntry() == SPIRIT_WOLF)
+        if (unit->GetEntry() == SPIRIT_WOLF && unit->HasSpell(SPIRIT_WALK_SPELL))
         {
-            if (unit->HasSpell(SPIRIT_WALK_SPELL))
-            {
-                unit->CastSpell(unit, SPIRIT_WALK_SPELL, false);
-                return true;
-            }
+            unit->CastSpell(unit, SPIRIT_WALK_SPELL, false);
+            return true;
         }
     }
+
     return false;
 }
 
@@ -106,16 +105,13 @@ bool SetTotemAction::Execute(Event /*event*/)
     }
 
     if (!totemSpell)
+        return false;
+
+    if (const ActionButton* button = bot->GetActionButton(actionButtonId);
+        button && button->GetType() == ACTION_BUTTON_SPELL &&
+        button->GetAction() == totemSpell)
     {
         return false;
-    }
-
-    if (const ActionButton* button = bot->GetActionButton(actionButtonId))
-    {
-        if (button->GetType() == ACTION_BUTTON_SPELL && button->GetAction() == totemSpell)
-        {
-            return false;
-        }
     }
 
     bot->addActionButton(actionButtonId, totemSpell, ACTION_BUTTON_SPELL);

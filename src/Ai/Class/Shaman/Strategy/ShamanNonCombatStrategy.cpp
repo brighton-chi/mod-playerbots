@@ -84,40 +84,27 @@ void ShamanNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     NonCombatStrategy::InitTriggers(triggers);
 
     // Totemic Recall
-    triggers.push_back(new TriggerNode("totemic recall", {
-        NextAction("totemic recall", 60.0f) }));
+    triggers.push_back(new TriggerNode("totemic recall", { NextAction("totemic recall", 60.0f) }));
 
     // Healing/Resurrect Triggers
-    triggers.push_back(new TriggerNode("party member dead", {
-        NextAction("ancestral spirit", ACTION_CRITICAL_HEAL + 10) }));
-    triggers.push_back(new TriggerNode("party member critical health", {
-        NextAction("riptide on party", 31.0f),
-        NextAction("healing wave on party", 30.0f) }));
-    triggers.push_back(new TriggerNode("party member low health", {
-        NextAction("riptide on party", 29.0f),
-        NextAction("healing wave on party", 28.0f) }));
-    triggers.push_back(new TriggerNode("party member medium health", {
-        NextAction("riptide on party", 27.0f),
-        NextAction("healing wave on party", 26.0f) }));
-    triggers.push_back(new TriggerNode("party member almost full health", {
-        NextAction("riptide on party", 25.0f),
-        NextAction("lesser healing wave on party", 24.0f) }));
-    triggers.push_back(new TriggerNode("group heal setting", {
-        NextAction("chain heal on party", 27.0f) }));
+    triggers.push_back(new TriggerNode("party member dead", { NextAction("ancestral spirit", ACTION_CRITICAL_HEAL + 10) }));
+    triggers.push_back(new TriggerNode("party member critical health", { NextAction("riptide on party", 31.0f),
+                                                                         NextAction("healing wave on party", 30.0f) }));
+    triggers.push_back(new TriggerNode("party member low health", { NextAction("riptide on party", 29.0f),
+                                                                    NextAction("healing wave on party", 28.0f) }));
+    triggers.push_back(new TriggerNode("party member medium health", { NextAction("riptide on party", 27.0f),
+                                                                       NextAction("healing wave on party", 26.0f) }));
+    triggers.push_back(new TriggerNode("party member almost full health", { NextAction("riptide on party", 25.0f),
+                                                                            NextAction("lesser healing wave on party", 24.0f) }));
+    triggers.push_back(new TriggerNode("group heal setting", { NextAction("chain heal on party", 27.0f) }));
 
     // Cure Triggers
-    triggers.push_back(new TriggerNode("cleanse spirit poison", {
-        NextAction("cleanse spirit", 24.0f) }));
-    triggers.push_back(new TriggerNode("party member cleanse spirit poison", {
-        NextAction("cleanse spirit poison on party", 23.0f) }));
-    triggers.push_back(new TriggerNode("cleanse spirit disease", {
-        NextAction("cleanse spirit", 24.0f) }));
-    triggers.push_back(new TriggerNode("party member cleanse spirit disease", {
-        NextAction("cleanse spirit disease on party", 23.0f) }));
-    triggers.push_back(new TriggerNode("cleanse spirit curse", {
-        NextAction("cleanse spirit", 24.0f) }));
-    triggers.push_back(new TriggerNode("party member cleanse spirit curse", {
-        NextAction("cleanse spirit curse on party", 23.0f) }));
+    triggers.push_back(new TriggerNode("cleanse spirit poison", { NextAction("cleanse spirit", 24.0f) }));
+    triggers.push_back(new TriggerNode("party member cleanse spirit poison", { NextAction("cleanse spirit poison on party", 23.0f) }));
+    triggers.push_back(new TriggerNode("cleanse spirit disease", { NextAction("cleanse spirit", 24.0f) }));
+    triggers.push_back(new TriggerNode("party member cleanse spirit disease", { NextAction("cleanse spirit disease on party", 23.0f) }));
+    triggers.push_back(new TriggerNode("cleanse spirit curse", { NextAction("cleanse spirit", 24.0f) }));
+    triggers.push_back(new TriggerNode("party member cleanse spirit curse", { NextAction("cleanse spirit curse on party", 23.0f) }));
 
     // Out of Combat Buff Triggers
     Player* bot = botAI->GetBot();
@@ -125,43 +112,30 @@ void ShamanNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     if (tab == SHAMAN_TAB_ELEMENTAL)
     {
-        triggers.push_back(new TriggerNode("main hand weapon no imbue", {
-            NextAction("flametongue weapon main hand", 22.0f), }));
-        triggers.push_back(new TriggerNode("water shield", {
-            NextAction("water shield", 21.0f), }));
+        triggers.push_back(new TriggerNode("main hand weapon no imbue", { NextAction("flametongue weapon main hand", 22.0f), }));
+        triggers.push_back(new TriggerNode("water shield", { NextAction("water shield", 21.0f), }));
     }
     else if (tab == SHAMAN_TAB_ENHANCEMENT)
     {
-        triggers.push_back(new TriggerNode("main hand weapon no imbue", {
-            NextAction("windfury weapon main hand", 22.0f), }));
-        triggers.push_back(new TriggerNode("off hand weapon no imbue", {
-            NextAction("flametongue weapon off hand", 21.0f), }));
-        triggers.push_back(new TriggerNode("lightning shield", {
-            NextAction("lightning shield", 20.0f), }));
+        triggers.push_back(new TriggerNode("main hand weapon no imbue", { NextAction("windfury weapon main hand", 22.0f), }));
+        triggers.push_back(new TriggerNode("off hand weapon no imbue", { NextAction("flametongue weapon off hand", 21.0f), }));
+        triggers.push_back(new TriggerNode("lightning shield", { NextAction("lightning shield", 20.0f), }));
     }
     else if (tab == SHAMAN_TAB_RESTORATION)
     {
-        triggers.push_back(new TriggerNode("main hand weapon no imbue", {
-            NextAction("earthliving weapon", 22.0f), }));
-        triggers.push_back(new TriggerNode("water shield", {
-            NextAction("water shield", 20.0f), }));
+        triggers.push_back(new TriggerNode("main hand weapon no imbue", { NextAction("earthliving weapon", 22.0f), }));
+        triggers.push_back(new TriggerNode("water shield", { NextAction("water shield", 20.0f), }));
     }
 
     // Buff Triggers while swimming
-    triggers.push_back(new TriggerNode("water breathing", {
-        NextAction("water breathing", 12.0f), }));
-    triggers.push_back(new TriggerNode("water walking", {
-        NextAction("water walking", 12.0f), }));
-    triggers.push_back(new TriggerNode("water breathing on party", {
-        NextAction("water breathing on party", 11.0f), }));
-    triggers.push_back(new TriggerNode("water walking on party", {
-        NextAction("water walking on party", 11.0f), }));
+    triggers.push_back(new TriggerNode("water breathing", { NextAction("water breathing", 12.0f), }));
+    triggers.push_back(new TriggerNode("water walking", { NextAction("water walking", 12.0f), }));
+    triggers.push_back(new TriggerNode("water breathing on party", { NextAction("water breathing on party", 11.0f), }));
+    triggers.push_back(new TriggerNode("water walking on party", { NextAction("water walking on party", 11.0f), }));
 
     // Pet Triggers
-    triggers.push_back(new TriggerNode("has pet", {
-        NextAction("toggle pet spell", 60.0f), }));
-    triggers.push_back(new TriggerNode("new pet", {
-        NextAction("set pet stance", 65.0f), }));
+    triggers.push_back(new TriggerNode("has pet", { NextAction("toggle pet spell", 60.0f), }));
+    triggers.push_back(new TriggerNode("new pet", { NextAction("set pet stance", 65.0f), }));
 }
 
 void ShamanNonCombatStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)

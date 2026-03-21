@@ -115,26 +115,19 @@ void GenericShamanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     CombatStrategy::InitTriggers(triggers);
 
     triggers.push_back(new TriggerNode("wind shear", { NextAction("wind shear", 23.0f), }));
-    triggers.push_back(new TriggerNode("wind shear on enemy healer", {
-        NextAction("wind shear on enemy healer", 23.0f), }));
+    triggers.push_back(new TriggerNode("wind shear on enemy healer", { NextAction("wind shear on enemy healer", 23.0f), }));
     triggers.push_back(new TriggerNode("purge", { NextAction("purge", ACTION_DISPEL), }));
     triggers.push_back(new TriggerNode("new pet", { NextAction("set pet stance", 65.0f), }));
 }
 
 void ShamanCureStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("cleanse spirit poison", {
-        NextAction("cleanse spirit", 24.0f), }));
-    triggers.push_back(new TriggerNode("party member cleanse spirit poison", {
-        NextAction("cleanse spirit poison on party", 23.0f), }));
-    triggers.push_back(new TriggerNode("cleanse spirit disease", {
-        NextAction("cleanse spirit", 24.0f), }));
-    triggers.push_back(new TriggerNode("party member cleanse spirit disease", {
-        NextAction("cleanse spirit disease on party", 23.0f), }));
-    triggers.push_back(new TriggerNode("cleanse spirit curse", {
-        NextAction("cleanse spirit", 24.0f), }));
-    triggers.push_back(new TriggerNode("party member cleanse spirit curse", {
-        NextAction("cleanse spirit curse on party", 23.0f), }));
+    triggers.push_back(new TriggerNode("cleanse spirit poison", { NextAction("cleanse spirit", 24.0f), }));
+    triggers.push_back(new TriggerNode("party member cleanse spirit poison", { NextAction("cleanse spirit poison on party", 23.0f), }));
+    triggers.push_back(new TriggerNode("cleanse spirit disease", { NextAction("cleanse spirit", 24.0f), }));
+    triggers.push_back(new TriggerNode("party member cleanse spirit disease", { NextAction("cleanse spirit disease on party", 23.0f), }));
+    triggers.push_back(new TriggerNode("cleanse spirit curse", { NextAction("cleanse spirit", 24.0f), }));
+    triggers.push_back(new TriggerNode("party member cleanse spirit curse", { NextAction("cleanse spirit curse on party", 23.0f), }));
 }
 
 void ShamanBoostStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
@@ -147,13 +140,11 @@ void ShamanBoostStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     if (tab == SHAMAN_TAB_ELEMENTAL)
     {
-        triggers.push_back(new TriggerNode("fire elemental totem", {
-            NextAction("fire elemental totem", 23.0f), }));
+        triggers.push_back(new TriggerNode("fire elemental totem", { NextAction("fire elemental totem", 23.0f), }));
     }
     else if (tab == SHAMAN_TAB_ENHANCEMENT)
     {
-        triggers.push_back(new TriggerNode("fire elemental totem", {
-            NextAction("fire elemental totem melee", 24.0f), }));
+        triggers.push_back(new TriggerNode("fire elemental totem", { NextAction("fire elemental totem melee", 24.0f), }));
     }
 }
 
@@ -166,20 +157,16 @@ void ShamanAoeStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     if (tab == SHAMAN_TAB_ELEMENTAL)
     {
         triggers.push_back(new TriggerNode("medium aoe",{ NextAction("fire nova", 23.0f), }));
-        triggers.push_back(new TriggerNode("chain lightning no cd", {
-            NextAction("chain lightning", 5.6f), }));
+        triggers.push_back(new TriggerNode("chain lightning no cd", { NextAction("chain lightning", 5.6f), }));
     }
     else if (tab == SHAMAN_TAB_ENHANCEMENT)
     {
         triggers.push_back(new TriggerNode("medium aoe",{ NextAction("magma totem", 24.0f),
                                                           NextAction("fire nova", 23.0f), }));
 
-        triggers.push_back(new TriggerNode("maelstrom weapon 5 and medium aoe", {
-            NextAction("chain lightning", 22.0f), }));
-        triggers.push_back(new TriggerNode("maelstrom weapon 4 and medium aoe", {
-            NextAction("chain lightning", 21.0f), }));
-        triggers.push_back(new TriggerNode("enemy within melee", {
-            NextAction("fire nova", 5.1f), }));
+        triggers.push_back(new TriggerNode("maelstrom weapon 5 and medium aoe", { NextAction("chain lightning", 22.0f), }));
+        triggers.push_back(new TriggerNode("maelstrom weapon 4 and medium aoe", { NextAction("chain lightning", 21.0f), }));
+        triggers.push_back(new TriggerNode("enemy within melee", { NextAction("fire nova", 5.1f), }));
     }
     // Resto AoE handled by "Healer DPS" Strategy
 }
