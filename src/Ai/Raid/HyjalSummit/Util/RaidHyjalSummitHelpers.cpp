@@ -28,9 +28,8 @@ namespace HyjalSummitHelpers
             return nullptr;
 
         Spell* spell = anetheron->GetCurrentSpell(CURRENT_GENERIC_SPELL);
-        if (spell &&
-            spell->m_spellInfo->Id ==
-                static_cast<uint32>(HyjalSummitSpells::SPELL_INFERNO))
+        if (spell && spell->m_spellInfo->Id ==
+            static_cast<uint32>(HyjalSummitSpells::SPELL_INFERNO))
         {
             Unit* spellTarget = spell->m_targets.GetUnitTarget();
             if (spellTarget && spellTarget->GetTypeId() == TYPEID_PLAYER)

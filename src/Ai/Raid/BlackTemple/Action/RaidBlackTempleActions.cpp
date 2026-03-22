@@ -644,8 +644,7 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event /*eve
             float moveX = spirit->GetPositionX() + (dX / distToTarget) * moveDist;
             float moveY = spirit->GetPositionY() + (dY / distToTarget) * moveDist;
 
-            spirit->GetMotionMaster()->MovePoint(
-                0, moveX, moveY, spirit->GetPositionZ());
+            spirit->GetMotionMaster()->MovePoint(0, moveX, moveY, spirit->GetPositionZ());
             return true;
         }
 
@@ -1136,7 +1135,7 @@ bool MotherShahrazRunAwayToBreakFatalAttractionAction::Execute(Event /*event*/)
     }
     else
     {
-        // Failsafe: try a 5-yard random move if main MoveTo fails
+        // In case bots get stuck, try a 5-yard random move
         float angle = frand(0.0f, 2.0f * M_PI);
         constexpr float dist = 5.0f;
         float randX = bot->GetPositionX() + std::cos(angle) * dist;
@@ -1146,7 +1145,7 @@ bool MotherShahrazRunAwayToBreakFatalAttractionAction::Execute(Event /*event*/)
             bot, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), randX, randY, randZ);
 
         return MoveTo(BLACK_TEMPLE_MAP_ID, randX, randY, randZ, false, false, false, false,
-                    MovementPriority::MOVEMENT_FORCED, true, false);
+                      MovementPriority::MOVEMENT_FORCED, true, false);
     }
 }
 
@@ -1160,8 +1159,8 @@ std::vector<Player*> MotherShahrazRunAwayToBreakFatalAttractionAction::GetAttrac
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member &&
-            member->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_FATAL_ATTRACTION)))
+        if (member && member->HasAura(static_cast<uint32>(
+            BlackTempleSpells::SPELL_FATAL_ATTRACTION)))
         {
             attractedPlayers.push_back(member);
         }
@@ -1583,8 +1582,8 @@ bool IllidariCouncilAssignDpsTargetsAction::Execute(Event /*event*/)
             return Attack(malande);
     }
     else if (Unit* darkshadow = AI_VALUE2(Unit*, "find target", "veras darkshadow");
-             darkshadow &&
-             !darkshadow->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_VANISH)))
+             darkshadow && !darkshadow->HasAura(
+                static_cast<uint32>(BlackTempleSpells::SPELL_VANISH)))
     {
         SetRtiTarget(botAI, "circle", darkshadow);
 
@@ -1756,7 +1755,7 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
             Position target = GetPointBeyondTrap(nearestTrap, 5.0f);
             if (bot->GetExactDist2d(target) > 1.0f)
             {
-                // Movement to trap can be weird, try with direct waypoint move
+                // Movement to trap can be weird, test with direct waypoint move
                 return MoveTo(BLACK_TEMPLE_MAP_ID, target.GetPositionX(), target.GetPositionY(),
                               bot->GetPositionZ(), false, false, false, true,
                               MovementPriority::MOVEMENT_FORCED, true, true);
@@ -2085,7 +2084,7 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*ev
                               MovementPriority::MOVEMENT_COMBAT, true, false);
             }
         }
-        // After the first flame dies, its tank waits with all bots other than the second flame's tank
+        // After the first flame dies, its tank waits with other bots
         else if (!eastFlame && westFlame)
         {
             const Position& pos = ILLIDAN_S_GRATE_POSITION;
@@ -2768,24 +2767,21 @@ bool IllidanStormrageDestroyHazardsCheatAction::Execute(Event /*event*/)
 
     if (phase == 2)
     {
-        entries =
-        {
+        entries = {
             static_cast<uint32>(BlackTempleNPCs::NPC_PARASITIC_SHADOWFIEND),
             static_cast<uint32>(BlackTempleNPCs::NPC_FLAME_CRASH)
         };
     }
     else if (phase == 4)
     {
-        entries =
-        {
+        entries = {
             static_cast<uint32>(BlackTempleNPCs::NPC_SHADOW_DEMON),
             static_cast<uint32>(BlackTempleNPCs::NPC_FLAME_CRASH)
         };
     }
     else if (phase == 0)
     {
-        entries =
-        {
+        entries = {
             static_cast<uint32>(BlackTempleNPCs::NPC_DEMON_FIRE),
             static_cast<uint32>(BlackTempleNPCs::NPC_BLAZE)
         };
