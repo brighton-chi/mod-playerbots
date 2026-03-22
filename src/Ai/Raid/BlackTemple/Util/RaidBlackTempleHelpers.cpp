@@ -24,7 +24,8 @@ namespace BlackTempleHelpers
     {
         constexpr float searchRadius = 20.0f;
         std::list<Creature*> creatureList;
-        bot->GetCreatureListWithEntryInGrid(creatureList, NPC_SUPREMUS_VOLCANO, searchRadius);
+        bot->GetCreatureListWithEntryInGrid(
+            creatureList, static_cast<uint32>(BlackTempleNPCs::NPC_SUPREMUS_VOLCANO), searchRadius);
 
         for (Creature* creature : creatureList)
         {
@@ -55,7 +56,6 @@ namespace BlackTempleHelpers
         if (!group)
             return groups;
 
-        // Collect all alive ranged members
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
@@ -67,12 +67,11 @@ namespace BlackTempleHelpers
             }
         }
 
-        // Split into 3 groups of 5
         for (size_t i = 0; i < rangedMembers.size(); ++i)
         {
             groups[i / 5].push_back(rangedMembers[i]);
             if (groups[2].size() == 5)
-                break; // Only fill up to 15
+                break;
         }
 
         return groups;
@@ -132,11 +131,7 @@ namespace BlackTempleHelpers
         ZEREVOR_HEALER_POSITION_1,
         ZEREVOR_HEALER_POSITION_2
     };
-    // const Position MALANDE_TANK_POSITION = { 690.101f, 305.166f, 277.443f }; // original before using a pull, keep?
     const Position MALANDE_TANK_POSITION = { 690.590f, 299.790f, 277.443f };
-    // corner pull?
-    // const Position MALANDE_TANK_POSITION = { 690.489f, 291.862f, 277.443f };
-    // const Position MALANDE_PULL_POSITION = { 677.143f, 271.057f, 271.692f };
 
     std::unordered_map<uint32, time_t> councilDpsWaitTimer;
     std::unordered_map<ObjectGuid, uint8> gathiosTankStep;
@@ -172,7 +167,9 @@ namespace BlackTempleHelpers
     {
         static const std::array<uint32, 3> dangerousAuras =
         {
-            SPELL_CONSECRATION, SPELL_BLIZZARD, SPELL_FLAMESTRIKE
+            static_cast<uint32>(BlackTempleSpells::SPELL_CONSECRATION),
+            static_cast<uint32>(BlackTempleSpells::SPELL_BLIZZARD),
+            static_cast<uint32>(BlackTempleSpells::SPELL_FLAMESTRIKE)
         };
 
         for (uint32 aura : dangerousAuras)
@@ -252,7 +249,8 @@ namespace BlackTempleHelpers
 
     int GetIllidanPhase(Unit* illidan)
     {
-        if (!illidan || illidan->GetHealth() == 1 || illidan->HasAura(SPELL_SHADOW_PRISON))
+        if (!illidan || illidan->GetHealth() == 1 ||
+            illidan->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_SHADOW_PRISON)))
             return -1;
 
         // Transitioning from Phase 2 to Phase 3
@@ -273,8 +271,10 @@ namespace BlackTempleHelpers
             return 1;
 
         // Phase 4: Demon Form
-        if (illidan->HasAura(SPELL_DEMON_FORM) || illidan->HasAura(SPELL_DEMON_TRANSFORM_1) ||
-            illidan->HasAura(SPELL_DEMON_TRANSFORM_2) || illidan->HasAura(SPELL_DEMON_TRANSFORM_3))
+        if (illidan->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_DEMON_FORM)) ||
+            illidan->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_DEMON_TRANSFORM_1)) ||
+            illidan->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_DEMON_TRANSFORM_2)) ||
+            illidan->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_DEMON_TRANSFORM_3)))
             return 4;
 
         // Phase 3: Normal (ground, 65-30%, not demon)
@@ -293,7 +293,8 @@ namespace BlackTempleHelpers
         std::vector<Unit*> flameCrashes;
         std::list<Creature*> creatureList;
         constexpr float searchRadius = 30.0f;
-        bot->GetCreatureListWithEntryInGrid(creatureList, NPC_FLAME_CRASH, searchRadius);
+        bot->GetCreatureListWithEntryInGrid(
+            creatureList, static_cast<uint32>(BlackTempleNPCs::NPC_FLAME_CRASH), searchRadius);
 
         for (Creature* creature : creatureList)
         {
@@ -371,8 +372,8 @@ namespace BlackTempleHelpers
                 !GET_PLAYERBOT_AI(member))
                 continue;
 
-            if (!member->HasAura(SPELL_PARASITIC_SHADOWFIEND_1) &&
-                !member->HasAura(SPELL_PARASITIC_SHADOWFIEND_2))
+            if (!member->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_PARASITIC_SHADOWFIEND_1)) &&
+                !member->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_PARASITIC_SHADOWFIEND_2)))
             {
                 return member;
             }
@@ -392,8 +393,8 @@ namespace BlackTempleHelpers
         {
             Player* member = ref->GetSource();
             if (member && member->IsAlive() && GET_PLAYERBOT_AI(member) &&
-                (member->HasAura(SPELL_PARASITIC_SHADOWFIEND_1) ||
-                 member->HasAura(SPELL_PARASITIC_SHADOWFIEND_2)))
+                (member->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_PARASITIC_SHADOWFIEND_1)) ||
+                 member->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_PARASITIC_SHADOWFIEND_2))))
             {
                 return member;
             }
@@ -412,7 +413,8 @@ namespace BlackTempleHelpers
 
         constexpr float searchRadius = 100.0f;
         std::list<Creature*> creatureList;
-        bot->GetCreatureListWithEntryInGrid(creatureList, NPC_ILLIDAN_DB_TARGET, searchRadius);
+        bot->GetCreatureListWithEntryInGrid(
+            creatureList, static_cast<uint32>(BlackTempleNPCs::NPC_ILLIDAN_DB_TARGET), searchRadius);
 
         Creature* eyeBlastTrigger = nullptr;
         for (Creature* creature : creatureList)

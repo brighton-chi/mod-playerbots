@@ -62,7 +62,7 @@ bool HighWarlordNajentusPlayerIsImpaledTrigger::IsActive()
         if (!member || member == bot)
             continue;
 
-        if (member->HasAura(SPELL_IMPALING_SPINE))
+        if (member->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_IMPALING_SPINE)))
         {
             impaledPlayer = member;
             break;
@@ -96,10 +96,14 @@ bool HighWarlordNajentusPlayerIsImpaledTrigger::IsActive()
 bool HighWarlordNajentusBossHasTidalShieldTrigger::IsActive()
 {
     Unit* najentus = AI_VALUE2(Unit*, "find target", "high warlord naj'entus");
-    if (!najentus || !najentus->HasAura(SPELL_TIDAL_SHIELD))
+    if (!najentus ||
+        !najentus->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_TIDAL_SHIELD)))
+    {
         return false;
+    }
 
-    return botAI->HasItemInInventory(ITEM_NAJENTUS_SPINE);
+    return botAI->HasItemInInventory(
+        static_cast<uint32>(BlackTempleItems::ITEM_NAJENTUS_SPINE));
 }
 
 // Supremus
@@ -133,14 +137,15 @@ bool SupremusBossEngagedByRangedTrigger::IsActive()
         return false;
 
     Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
-    return supremus && !supremus->HasAura(SPELL_SNARE_SELF);
+    return supremus &&
+           !supremus->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_SNARE_SELF));
 }
 
 bool SupremusBossIsFixatedOnBotTrigger::IsActive()
 {
     Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
-    return supremus && supremus->HasAura(SPELL_SNARE_SELF) &&
-           supremus->GetVictim() == bot;
+    return supremus && supremus->GetVictim() == bot &&
+           supremus->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_SNARE_SELF));
 }
 
 bool SupremusVolcanoIsNearbyTrigger::IsActive()
@@ -179,7 +184,7 @@ bool TeronGorefiendBossEngagedByTanksTrigger::IsActive()
 
 bool TeronGorefiendBossEngagedByRangedTrigger::IsActive()
 {
-    return botAI->IsRanged(bot) /* && !bot->HasAura(SPELL_SPIRITUAL_VENGEANCE)*/ &&
+    return botAI->IsRanged(bot) &&
            AI_VALUE2(Unit*, "find target", "teron gorefiend");
 }
 
@@ -196,7 +201,9 @@ bool TeronGorefiendBossIsCastingShadowOfDeathTrigger::IsActive()
         return false;
 
     Spell* spell = gorefiend->GetCurrentSpell(CURRENT_GENERIC_SPELL);
-    if (!spell || spell->m_spellInfo->Id != SPELL_SHADOW_OF_DEATH)
+    if (!spell ||
+        spell->m_spellInfo->Id !=
+            static_cast<uint32>(BlackTempleSpells::SPELL_SHADOW_OF_DEATH))
         return false;
 
     Unit* target = spell->m_targets.GetUnitTarget();
@@ -205,13 +212,15 @@ bool TeronGorefiendBossIsCastingShadowOfDeathTrigger::IsActive()
 
 bool TeronGorefiendBotHasShadowOfDeathTrigger::IsActive()
 {
-    Aura* aura = bot->GetAura(SPELL_SHADOW_OF_DEATH);
+    Aura* aura = bot->GetAura(
+        static_cast<uint32>(BlackTempleSpells::SPELL_SHADOW_OF_DEATH));
     return aura && aura->GetDuration() < 12000;
 }
 
 bool TeronGorefiendBotTransformedIntoVengefulSpiritTrigger::IsActive()
 {
-    return bot->HasAura(SPELL_SPIRITUAL_VENGEANCE);
+    return bot->HasAura(
+        static_cast<uint32>(BlackTempleSpells::SPELL_SPIRITUAL_VENGEANCE));
 }
 
 // Gurtogg Bloodboil
@@ -239,7 +248,8 @@ bool GurtoggBloodboilBossEngagedByTanksTrigger::IsActive()
         return false;
 
     Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
-    return gurtogg && !gurtogg->HasAura(SPELL_BOSS_FEL_RAGE);
+    return gurtogg &&
+           !gurtogg->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_BOSS_FEL_RAGE));
 }
 
 bool GurtoggBloodboilBossCastsBloodboilTrigger::IsActive()
@@ -248,7 +258,8 @@ bool GurtoggBloodboilBossCastsBloodboilTrigger::IsActive()
         return false;
 
     Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
-    return gurtogg && !gurtogg->HasAura(SPELL_BOSS_FEL_RAGE);
+    return gurtogg &&
+           !gurtogg->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_BOSS_FEL_RAGE));
 }
 
 bool GurtoggBloodboilBotHasFelRageTrigger::IsActive()
@@ -257,16 +268,24 @@ bool GurtoggBloodboilBotHasFelRageTrigger::IsActive()
         return false;
 
     Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
-    if (!gurtogg || !gurtogg->HasAura(SPELL_BOSS_FEL_RAGE))
+    if (!gurtogg ||
+        !gurtogg->HasAura(static_cast<uint32>(
+            BlackTempleSpells::SPELL_BOSS_FEL_RAGE)))
+    {
         return false;
+    }
 
     if (Group* group = bot->GetGroup())
     {
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (member && member->HasAura(SPELL_PLAYER_FEL_RAGE))
+            if (member &&
+                member->HasAura(static_cast<uint32>(
+                    BlackTempleSpells::SPELL_PLAYER_FEL_RAGE)))
+            {
                 return true;
+            }
         }
     }
 
@@ -306,7 +325,8 @@ bool ReliquaryOfSoulsEssenceOfDesireHasRuneShieldTrigger::IsActive()
         return false;
 
     Unit* desire = AI_VALUE2(Unit*, "find target", "essence of desire");
-    return desire && desire->HasAura(SPELL_RUNE_SHIELD);
+    return desire &&
+           desire->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_RUNE_SHIELD));
 }
 
 bool ReliquaryOfSoulsEssenceOfDesireCastingDeadenTrigger::IsActive()
@@ -319,8 +339,11 @@ bool ReliquaryOfSoulsEssenceOfDesireCastingDeadenTrigger::IsActive()
         return false;
 
     Spell* spell = desire->GetCurrentSpell(CURRENT_GENERIC_SPELL);
-    if (!spell || spell->m_spellInfo->Id != SPELL_DEADEN)
+    if (!spell ||
+        spell->m_spellInfo->Id != static_cast<uint32>(BlackTempleSpells::SPELL_DEADEN))
+    {
         return false;
+    }
 
     Unit* target = spell->m_targets.GetUnitTarget();
     return target && target->GetGUID() == bot->GetGUID();
@@ -345,7 +368,7 @@ bool MotherShahrazBossEngagedByTanksTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "mother shahraz"))
         return false;
 
-    return !bot->HasAura(SPELL_FATAL_ATTRACTION);
+    return !bot->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_FATAL_ATTRACTION));
 }
 
 bool MotherShahrazTanksArePositioningBossTrigger::IsActive()
@@ -369,12 +392,12 @@ bool MotherShahrazSinisterBeamKnocksBackPlayersTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "mother shahraz"))
         return false;
 
-    return !bot->HasAura(SPELL_FATAL_ATTRACTION);
+    return !bot->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_FATAL_ATTRACTION));
 }
 
 bool MotherShahrazBotsAreLinkedByFatalAttractionTrigger::IsActive()
 {
-    return bot->HasAura(SPELL_FATAL_ATTRACTION);
+    return bot->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_FATAL_ATTRACTION));
 }
 
 // Illidari Council
@@ -400,13 +423,19 @@ bool IllidariCouncilGathiosCastingJudgementOfCommandTrigger::IsActive()
         return false;
 
     Unit* gathios = AI_VALUE2(Unit*, "find target", "gathios the shatterer");
-    if (!gathios || !gathios->HasAura(SPELL_SEAL_OF_COMMAND) ||
+    if (!gathios ||
+        !gathios->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_SEAL_OF_COMMAND)) ||
         !gathios->HasUnitState(UNIT_STATE_CASTING))
+    {
         return false;
+    }
 
     Spell* spell = gathios->GetCurrentSpell(CURRENT_GENERIC_SPELL);
-    if (!spell || spell->m_spellInfo->Id != SPELL_JUDGEMENT)
+    if (!spell ||
+        spell->m_spellInfo->Id != static_cast<uint32>(BlackTempleSpells::SPELL_JUDGEMENT))
+    {
         return false;
+    }
 
     Unit* target = spell->m_targets.GetUnitTarget();
     return target && target->GetGUID() == bot->GetGUID();
@@ -424,7 +453,8 @@ bool IllidariCouncilDarkshadowEngagedBySecondAssistTankTrigger::IsActive()
         return false;
 
     Unit* darkshadow = AI_VALUE2(Unit*, "find target", "veras darkshadow");
-    return darkshadow && !darkshadow->HasAura(SPELL_VANISH);
+    return darkshadow &&
+           !darkshadow->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_VANISH));
 }
 
 bool IllidariCouncilZerevorEngagedByMageTankTrigger::IsActive()
@@ -481,8 +511,11 @@ bool IllidariCouncilDeterminingDpsAssignmentsTrigger::IsActive()
 
     Unit* darkshadow = AI_VALUE2(Unit*, "find target", "veras darkshadow");
     if (botAI->IsTank(bot) && botAI->IsAssistTankOfIndex(bot, 1, false) &&
-        darkshadow && !darkshadow->HasAura(SPELL_VANISH))
+        darkshadow &&
+        !darkshadow->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_VANISH)))
+    {
         return false;
+    }
 
     return true;
 }
@@ -584,7 +617,7 @@ bool IllidanStormrageBotStruckByDarkBarrageTrigger::IsActive()
         bot->getClass() != CLASS_ROGUE)
         return false;
 
-    return bot->HasAura(SPELL_DARK_BARRAGE);
+    return bot->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_DARK_BARRAGE));
 }
 
 bool IllidanStormrageBossIsPreparingToLandTrigger::IsActive()

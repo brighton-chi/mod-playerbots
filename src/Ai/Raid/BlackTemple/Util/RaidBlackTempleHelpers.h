@@ -15,7 +15,7 @@
 
 namespace BlackTempleHelpers
 {
-    enum BlackTempleSpells
+    enum class BlackTempleSpells : uint32
     {
         // Shadowmoon Reaver
         SPELL_SPELL_ABSORPTION          = 41034,
@@ -79,7 +79,7 @@ namespace BlackTempleHelpers
         SPELL_MISDIRECTION              = 35079,
     };
 
-    enum BlackTempleNPCs
+    enum class BlackTempleNPCs : uint32
     {
         // Supremus
         NPC_SUPREMUS_VOLCANO      = 23085,
@@ -98,13 +98,13 @@ namespace BlackTempleHelpers
         NPC_PARASITIC_SHADOWFIEND = 23498,
     };
 
-    enum BlackTempleItems
+    enum class BlackTempleItems : uint32
     {
         // High Warlord Naj'entus
         ITEM_NAJENTUS_SPINE = 32408,
     };
 
-    enum BlackTempleObjects
+    enum class BlackTempleObjects : uint32
     {
         // High Warlord Naj'entus
         GO_NAJENTUS_SPINE = 185584,
@@ -152,7 +152,6 @@ namespace BlackTempleHelpers
     extern const Position GATHIOS_TANK_POSITION_4;
     extern const std::array<Position, 4> GATHIOS_TANK_POSITIONS;
     extern const Position MALANDE_TANK_POSITION;
-    extern const Position MALANDE_PULL_POSITION;
     extern const Position ZEREVOR_TANK_POSITION;
     extern const Position ZEREVOR_HEALER_POSITION_1;
     extern const Position ZEREVOR_HEALER_POSITION_2;

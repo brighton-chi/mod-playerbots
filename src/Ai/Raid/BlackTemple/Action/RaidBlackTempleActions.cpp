@@ -75,7 +75,8 @@ bool HighWarlordNajentusMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (botAI->CanCastSpell("misdirection", mainTank))
         return botAI->CastSpell("misdirection", mainTank);
 
-    if (bot->HasAura(SPELL_MISDIRECTION) && botAI->CanCastSpell("steady shot", najentus))
+    if (bot->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_MISDIRECTION)) &&
+        botAI->CanCastSpell("steady shot", najentus))
         return botAI->CastSpell("steady shot", najentus);
 
     return false;
@@ -145,7 +146,7 @@ bool HighWarlordNajentusRemoveImpalingSpineAction::Execute(Event /*event*/)
         if (!member || !member->IsAlive())
             continue;
 
-        if (member->HasAura(SPELL_IMPALING_SPINE))
+        if (member->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_IMPALING_SPINE)))
         {
             impaledPlayer = member;
             break;
@@ -155,22 +156,27 @@ bool HighWarlordNajentusRemoveImpalingSpineAction::Execute(Event /*event*/)
         return false;
 
     // 2. Find the Naj'entus Spine GameObject near the impaled player
-    GameObject* spineGo = bot->FindNearestGameObject(GO_NAJENTUS_SPINE, 30.0f, true);
+    GameObject* spineGo = bot->FindNearestGameObject(
+        static_cast<uint32>(BlackTempleObjects::GO_NAJENTUS_SPINE), 30.0f, true);
     if (!spineGo)
         return false;
 
     // 3. Move to the spine if not close enough
     if (bot->GetExactDist2d(spineGo) > 3.0f)
     {
-        uint32 delay = urand(2000, 3000); // 1 to 2 seconds
+        uint32 delay = urand(2000, 3000);
         ObjectGuid spineGuid = spineGo->GetGUID();
 
         botAI->AddTimedEvent(
-            [this, spineGuid]() {
+            [this, spineGuid]()
+            {
                 if (GameObject* targetSpine = botAI->GetGameObject(spineGuid))
-                    MoveTo(BLACK_TEMPLE_MAP_ID, targetSpine->GetPositionX(), targetSpine->GetPositionY(),
-                           bot->GetPositionZ(), false, false, false, false,
-                           MovementPriority::MOVEMENT_FORCED, true, false);
+                {
+                    MoveTo(BLACK_TEMPLE_MAP_ID, targetSpine->GetPositionX(),
+                           targetSpine->GetPositionY(), bot->GetPositionZ(),
+                           false, false, false, false, MovementPriority::MOVEMENT_FORCED,
+                           true, false);
+                }
             },
             delay);
 
@@ -180,11 +186,12 @@ bool HighWarlordNajentusRemoveImpalingSpineAction::Execute(Event /*event*/)
     else
     {
         // 4. Interact with the spine to remove it, with a random delay
-        uint32 delay = urand(1000, 2000); // 1 to 2 seconds
+        uint32 delay = urand(1000, 2000);
         ObjectGuid spineGuid = spineGo->GetGUID();
 
         botAI->AddTimedEvent(
-            [this, spineGuid]() {
+            [this, spineGuid]()
+            {
                 if (GameObject* targetSpine = botAI->GetGameObject(spineGuid))
                     targetSpine->Use(bot);
             },
@@ -211,17 +218,20 @@ bool HighWarlordNajentusThrowImpalingSpineAction::Execute(Event /*event*/)
         float targetY = najentus->GetPositionY() + 23.0f * std::sin(angle);
 
         return MoveTo(BLACK_TEMPLE_MAP_ID, targetX, targetY, bot->GetPositionZ(),
-                      false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+                      false, false, false, false, MovementPriority::MOVEMENT_FORCED,
+                      true, false);
     }
 
-    if (bot->GetItemByEntry(ITEM_NAJENTUS_SPINE))
+    if (bot->GetItemByEntry(static_cast<uint32>(BlackTempleItems::ITEM_NAJENTUS_SPINE)))
     {
-        uint32 delay = urand(1000, 2000); // 1 to 2 seconds
+        uint32 delay = urand(1000, 2000);
         ObjectGuid najentusGuid = najentus->GetGUID();
 
         botAI->AddTimedEvent(
-            [this, najentusGuid]() {
-                Item* targetSpine = bot->GetItemByEntry(ITEM_NAJENTUS_SPINE);
+            [this, najentusGuid]()
+            {
+                Item* targetSpine = bot->GetItemByEntry(
+                    static_cast<uint32>(BlackTempleItems::ITEM_NAJENTUS_SPINE));
                 Unit* targetNajentus = botAI->GetUnit(najentusGuid);
                 if (targetSpine && targetNajentus)
                     botAI->ImbueItem(targetSpine, targetNajentus);
@@ -276,7 +286,8 @@ bool SupremusMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (botAI->CanCastSpell("misdirection", misdirectTarget))
         return botAI->CastSpell("misdirection", misdirectTarget);
 
-    if (bot->HasAura(SPELL_MISDIRECTION) && botAI->CanCastSpell("steady shot", supremus))
+    if (bot->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_MISDIRECTION)) &&
+        botAI->CanCastSpell("steady shot", supremus))
         return botAI->CastSpell("steady shot", supremus);
 
     return false;
@@ -426,7 +437,8 @@ std::vector<Unit*> SupremusMoveAwayFromVolcanosAction::GetAllSupremusVolcanos()
     constexpr float searchRadius = 40.0f;
 
     std::list<Creature*> creatureList;
-    bot->GetCreatureListWithEntryInGrid(creatureList, NPC_SUPREMUS_VOLCANO, searchRadius);
+    bot->GetCreatureListWithEntryInGrid(creatureList, static_cast<uint32>(
+        BlackTempleNPCs::NPC_SUPREMUS_VOLCANO), searchRadius);
 
     for (Creature* creature : creatureList)
     {
@@ -464,7 +476,8 @@ bool TeronGorefiendMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (botAI->CanCastSpell("misdirection", mainTank))
         return botAI->CastSpell("misdirection", mainTank);
 
-    if (bot->HasAura(SPELL_MISDIRECTION) && botAI->CanCastSpell("steady shot", gorefiend))
+    if (bot->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_MISDIRECTION)) &&
+        botAI->CanCastSpell("steady shot", gorefiend))
         return botAI->CastSpell("steady shot", gorefiend);
 
     return false;
@@ -599,7 +612,8 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event /*eve
     for (auto guid : npcs)
     {
         Unit* unit = botAI->GetUnit(guid);
-        if (!unit || !unit->IsAlive() || unit->GetEntry() != NPC_SHADOWY_CONSTRUCT)
+        if (!unit || !unit->IsAlive() ||
+            unit->GetEntry() != static_cast<uint32>(BlackTempleNPCs::NPC_SHADOWY_CONSTRUCT))
             continue;
 
         uint32 hp = unit->GetHealth();
@@ -640,36 +654,36 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event /*eve
         // The ordering, including repeating some spells, is the product of testing to try
         // to keep the bot from breaking chains with volley, which tends to happen when volley
         // is cast before chains (maybe due to projectile travel time?)
-        if (!spirit->HasSpellCooldown(SPELL_SPIRIT_CHAINS) &&
+        if (!spirit->HasSpellCooldown(static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_CHAINS)) &&
             priorityTarget->GetHealthPct() == 100.0f)
         {
-            spirit->CastSpell(priorityTarget, SPELL_SPIRIT_CHAINS, true);
-            spirit->AddSpellCooldown(SPELL_SPIRIT_CHAINS, 0, 15000);
+            spirit->CastSpell(priorityTarget, static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_CHAINS), true);
+            spirit->AddSpellCooldown(static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_CHAINS), 0, 15000);
             return true;
         }
-        else if (!spirit->HasSpellCooldown(SPELL_SPIRIT_LANCE))
+        else if (!spirit->HasSpellCooldown(static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_LANCE)))
         {
-            spirit->CastSpell(priorityTarget, SPELL_SPIRIT_LANCE, true);
-            spirit->AddSpellCooldown(SPELL_SPIRIT_LANCE, 0, 1000);
+            spirit->CastSpell(priorityTarget, static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_LANCE), true);
+            spirit->AddSpellCooldown(static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_LANCE), 0, 1000);
             return true;
         }
-        else if (!spirit->HasSpellCooldown(SPELL_SPIRIT_CHAINS))
+        else if (!spirit->HasSpellCooldown(static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_CHAINS)))
         {
-            spirit->CastSpell(priorityTarget, SPELL_SPIRIT_CHAINS, true);
-            spirit->AddSpellCooldown(SPELL_SPIRIT_CHAINS, 0, 15000);
+            spirit->CastSpell(priorityTarget, static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_CHAINS), true);
+            spirit->AddSpellCooldown(static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_CHAINS), 0, 15000);
             return true;
         }
-        else if (!spirit->HasSpellCooldown(SPELL_SPIRIT_LANCE))
+        else if (!spirit->HasSpellCooldown(static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_LANCE)))
         {
-            spirit->CastSpell(priorityTarget, SPELL_SPIRIT_LANCE, true);
-            spirit->AddSpellCooldown(SPELL_SPIRIT_LANCE, 0, 1000);
+            spirit->CastSpell(priorityTarget, static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_LANCE), true);
+            spirit->AddSpellCooldown(static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_LANCE), 0, 1000);
             return true;
         }
-        else if (!spirit->HasSpellCooldown(SPELL_SPIRIT_VOLLEY) &&
-                 !priorityTarget->HasAura(SPELL_SPIRIT_CHAINS))
+        else if (!spirit->HasSpellCooldown(static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_VOLLEY)) &&
+                 !priorityTarget->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_CHAINS)))
         {
-            spirit->CastSpell(priorityTarget, SPELL_SPIRIT_VOLLEY, true);
-            spirit->AddSpellCooldown(SPELL_SPIRIT_VOLLEY, 0, 15000);
+            spirit->CastSpell(priorityTarget, static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_VOLLEY), true);
+            spirit->AddSpellCooldown(static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_VOLLEY), 0, 15000);
             return true;
         }
     }
@@ -688,10 +702,10 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event /*eve
             spirit->GetMotionMaster()->MovePoint(0, moveX, moveY, spirit->GetPositionZ());
             return true;
         }
-        else if (!spirit->HasSpellCooldown(SPELL_SPIRIT_STRIKE))
+        else if (!spirit->HasSpellCooldown(static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_STRIKE)))
         {
-            spirit->CastSpell(gorefiend, SPELL_SPIRIT_STRIKE, true);
-            spirit->AddSpellCooldown(SPELL_SPIRIT_STRIKE, 0, 1000);
+            spirit->CastSpell(gorefiend, static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_STRIKE), true);
+            spirit->AddSpellCooldown(static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_STRIKE), 0, 1000);
             return true;
         }
     }
@@ -718,7 +732,8 @@ bool GurtoggBloodboilMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (botAI->CanCastSpell("misdirection", mainTank))
         return botAI->CastSpell("misdirection", mainTank);
 
-    if (bot->HasAura(SPELL_MISDIRECTION) && botAI->CanCastSpell("steady shot", gurtogg))
+    if (bot->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_MISDIRECTION)) &&
+        botAI->CanCastSpell("steady shot", gurtogg))
         return botAI->CastSpell("steady shot", gurtogg);
 
     return false;
@@ -802,7 +817,8 @@ bool GurtoggBloodboilRangedMoveAwayFromEnragedPlayerAction::Execute(Event /*even
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member && member->HasAura(SPELL_PLAYER_FEL_RAGE))
+        if (member &&
+            member->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_PLAYER_FEL_RAGE)))
         {
             enragedPlayer = member;
             break;
@@ -826,7 +842,7 @@ bool GurtoggBloodboilManagePhaseTimerAction::Execute(Event /*event*/)
     const time_t now = std::time(nullptr);
     const uint32 instanceId = gurtogg->GetMap()->GetInstanceId();
 
-    if (gurtogg->HasAura(SPELL_BOSS_FEL_RAGE))
+    if (gurtogg->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_BOSS_FEL_RAGE)))
     {
         return gurtoggPhaseTimer.erase(instanceId) > 0;
     }
@@ -857,7 +873,8 @@ bool ReliquaryOfSoulsMisdirectBossToMainTankAction::Execute(Event /*event*/)
         if (botAI->CanCastSpell("misdirection", mainTank))
             return botAI->CastSpell("misdirection", mainTank);
 
-        if (bot->HasAura(SPELL_MISDIRECTION) && botAI->CanCastSpell("steady shot", target))
+        if (bot->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_MISDIRECTION)) &&
+            botAI->CanCastSpell("steady shot", target))
             return botAI->CastSpell("steady shot", target);
     }
 
@@ -925,21 +942,16 @@ bool ReliquaryOfSoulsAdjustDistanceFromSufferingAction::RangedMoveAwayFromBoss(U
 
 bool ReliquaryOfSoulsHealersDpsSufferingAction::Execute(Event /*event*/)
 {
-    if (AI_VALUE2(Unit*, "find target", "essence of suffering"))
+    if (AI_VALUE2(Unit*, "find target", "essence of suffering") &&
+        !botAI->HasStrategy("healer dps", BotState::BOT_STATE_COMBAT))
     {
-        if (!botAI->HasStrategy("healer dps", BotState::BOT_STATE_COMBAT))
-        {
-            botAI->ChangeStrategy("+healer dps", BotState::BOT_STATE_COMBAT);
-            return true;
-        }
+        botAI->ChangeStrategy("+healer dps", BotState::BOT_STATE_COMBAT);
+        return true;
     }
-    else
+    else if (botAI->HasStrategy("healer dps", BotState::BOT_STATE_COMBAT))
     {
-        if (botAI->HasStrategy("healer dps", BotState::BOT_STATE_COMBAT))
-        {
-            botAI->ChangeStrategy("-healer dps", BotState::BOT_STATE_COMBAT);
-            return true;
-        }
+        botAI->ChangeStrategy("-healer dps", BotState::BOT_STATE_COMBAT);
+        return true;
     }
 
     return false;
@@ -947,11 +959,9 @@ bool ReliquaryOfSoulsHealersDpsSufferingAction::Execute(Event /*event*/)
 
 bool ReliquaryOfSoulsSpellstealRuneShieldAction::Execute(Event /*event*/)
 {
-    if (Unit* desire = AI_VALUE2(Unit*, "find target", "essence of desire"))
-    {
-        if (botAI->CanCastSpell("spellsteal", desire))
-            return botAI->CastSpell("spellsteal", desire);
-    }
+    if (Unit* desire = AI_VALUE2(Unit*, "find target", "essence of desire");
+        desire && botAI->CanCastSpell("spellsteal", desire))
+        return botAI->CastSpell("spellsteal", desire);
 
     return false;
 }
@@ -979,7 +989,8 @@ bool MotherShahrazMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (botAI->CanCastSpell("misdirection", mainTank))
         return botAI->CastSpell("misdirection", mainTank);
 
-    if (bot->HasAura(SPELL_MISDIRECTION) && botAI->CanCastSpell("steady shot", shahraz))
+    if (bot->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_MISDIRECTION)) &&
+        botAI->CanCastSpell("steady shot", shahraz))
         return botAI->CastSpell("steady shot", shahraz);
 
     return false;
@@ -1062,8 +1073,8 @@ bool MotherShahrazPositionRangedUnderPillarAction::Execute(Event /*event*/)
         if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
         {
             return MoveTo(BLACK_TEMPLE_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-                        position.GetPositionZ(), false, false, false, false,
-                        MovementPriority::MOVEMENT_FORCED, true, false);
+                          position.GetPositionZ(), false, false, false, false,
+                          MovementPriority::MOVEMENT_FORCED, true, false);
         }
     }
 
@@ -1107,8 +1118,11 @@ bool MotherShahrazRunAwayToBreakFatalAttractionAction::Execute(Event /*event*/)
         float testZ = bot->GetPositionZ();
 
         if (!bot->GetMap()->CheckCollisionAndGetValidCoords(
-                bot, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), testX, testY, testZ))
+                bot, bot->GetPositionX(), bot->GetPositionY(),
+                bot->GetPositionZ(), testX, testY, testZ))
+        {
             break;
+        }
 
         lastValidX = testX;
         lastValidY = testY;
@@ -1146,12 +1160,17 @@ std::vector<Player*> MotherShahrazRunAwayToBreakFatalAttractionAction::GetAttrac
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member && member->HasAura(SPELL_FATAL_ATTRACTION))
+        if (member &&
+            member->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_FATAL_ATTRACTION)))
+        {
             attractedPlayers.push_back(member);
+        }
     }
 
     std::sort(attractedPlayers.begin(), attractedPlayers.end(),
-        [](Player* a, Player* b) { return a->GetGUID().GetCounter() < b->GetGUID().GetCounter(); });
+        [](Player* a, Player* b) {
+            return a->GetGUID().GetCounter() < b->GetGUID().GetCounter();
+        });
 
     return attractedPlayers;
 }
@@ -1238,7 +1257,8 @@ bool IllidariCouncilMisdirectBossesToTanksAction::Execute(Event /*event*/)
     if (botAI->CanCastSpell("misdirection", tankTarget))
         return botAI->CastSpell("misdirection", tankTarget);
 
-    if (bot->HasAura(SPELL_MISDIRECTION) && botAI->CanCastSpell("steady shot", councilTarget))
+    if (bot->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_MISDIRECTION)) &&
+        botAI->CanCastSpell("steady shot", councilTarget))
         return botAI->CastSpell("steady shot", councilTarget);
 
     return false;
@@ -1260,8 +1280,8 @@ bool IllidariCouncilMainTankPositionGathiosAction::Execute(Event /*event*/)
     MarkTargetWithSquare(bot, gathios);
     SetRtiTarget(botAI, "square", gathios);
 
-    // The MT switches target to Lady Malande after arriving at the 4th and final position in the rotation
-    // This causes the rotation to stop since the bot is no longer targeting Gathios
+    // The MT switches target to Lady Malande after arriving at the 4th and final position in the
+    // rotation, which causes the rotation to stop since the bot is no longer targeting Gathios
     // Why this happens is unclear since there are no actions related to Malande in the MT's log
     // Hence, GetVictim() is used instead of GetTarget()
     if (bot->GetVictim() != gathios)
@@ -1357,26 +1377,6 @@ bool IllidariCouncilFirstAssistTankPositionMalandeAction::Execute(Event /*event*
                           false, false, false, false, MovementPriority::MOVEMENT_COMBAT,
                           true, true);
         }
-        // Olm v2: Just another janky approach needed to pull a caster who won't chase
-        /* const Position& tankPosition = MALANDE_TANK_POSITION;
-        float distToTankPosition = malande->GetExactDist2d(tankPosition.GetPositionX(),
-                                                           tankPosition.GetPositionY());
-
-        const Position& pullPosition = MALANDE_PULL_POSITION;
-        float distToPullPosition = bot->GetExactDist2d(pullPosition.GetPositionX(),
-                                                       pullPosition.GetPositionY());
-        // Olm v2: Just another janky approach needed to pull a caster who won't chase
-        if (distToTankPosition > 5.0f)
-        {
-            float dX = pullPosition.GetPositionX() - bot->GetPositionX();
-            float dY = pullPosition.GetPositionY() - bot->GetPositionY();
-            float moveDist = std::min(5.0f, distToPullPosition);
-            float moveX = bot->GetPositionX() + (dX / distToPullPosition) * moveDist;
-            float moveY = bot->GetPositionY() + (dY / distToPullPosition) * moveDist;
-            return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY, pullPosition.GetPositionZ(),
-                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT,
-                          true, false);
-        } */
     }
 
     return false;
@@ -1432,7 +1432,8 @@ bool IllidariCouncilMageTankPositionZerevorAction::Execute(Event /*event*/)
     if (!zerevor)
         return false;
 
-    if (zerevor->HasAura(SPELL_DAMPEN_MAGIC) && botAI->CanCastSpell("spellsteal", zerevor))
+    if (zerevor->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_DAMPEN_MAGIC)) &&
+        botAI->CanCastSpell("spellsteal", zerevor))
         return botAI->CastSpell("spellsteal", zerevor);
 
     MarkTargetWithTriangle(bot, zerevor);
@@ -1489,8 +1490,9 @@ bool IllidariCouncilPositionMageTankHealerAction::Execute(Event /*event*/)
         float newDistToPosition = bot->GetExactDist2d(newPosition);
         if (newDistToPosition > maxDistance)
         {
-            return MoveTo(BLACK_TEMPLE_MAP_ID, newPosition.GetPositionX(), newPosition.GetPositionY(),
-                          bot->GetPositionZ(), false, false, false, false,
+            return MoveTo(BLACK_TEMPLE_MAP_ID, newPosition.GetPositionX(),
+                          newPosition.GetPositionY(), bot->GetPositionZ(),
+                          false, false, false, false,
                           MovementPriority::MOVEMENT_FORCED, true, false);
         }
     }
@@ -1564,11 +1566,13 @@ bool IllidariCouncilAssignDpsTargetsAction::Execute(Event /*event*/)
     else if (bot->getClass() == CLASS_ROGUE ||
              (bot->getClass() == CLASS_WARRIOR && botAI->IsDps(bot)))
     {
-        shouldAttackMalande = !malande->HasAura(SPELL_BLESSING_OF_PROTECTION);
+        shouldAttackMalande = !malande->HasAura(
+            static_cast<uint32>(BlackTempleSpells::SPELL_BLESSING_OF_PROTECTION));
     }
     else if (bot->getClass() == CLASS_SHAMAN && botAI->IsDps(bot))
     {
-        shouldAttackMalande = !malande->HasAura(SPELL_BLESSING_OF_SPELL_WARDING);
+        shouldAttackMalande = !malande->HasAura(
+            static_cast<uint32>(BlackTempleSpells::SPELL_BLESSING_OF_SPELL_WARDING));
     }
 
     if (shouldAttackMalande)
@@ -1579,7 +1583,8 @@ bool IllidariCouncilAssignDpsTargetsAction::Execute(Event /*event*/)
             return Attack(malande);
     }
     else if (Unit* darkshadow = AI_VALUE2(Unit*, "find target", "veras darkshadow");
-             darkshadow && !darkshadow->HasAura(SPELL_VANISH))
+             darkshadow &&
+             !darkshadow->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_VANISH)))
     {
         SetRtiTarget(botAI, "circle", darkshadow);
 
@@ -1621,6 +1626,7 @@ bool IllidanStormrageMisdirectToTankAction::Execute(Event /*event*/)
         return false;
 
     int phase = GetIllidanPhase(illidan);
+
     if (phase == 2 && TryMisdirectToFlameTanks(group))
         return true;
     else if (phase == 4 && TryMisdirectToWarlockTank(illidan))
@@ -1672,7 +1678,8 @@ bool IllidanStormrageMisdirectToTankAction::TryMisdirectToFlameTanks(Group* grou
         if (botAI->CanCastSpell("misdirection", secondAssistTank))
             return botAI->CastSpell("misdirection", secondAssistTank);
 
-        if (bot->HasAura(SPELL_MISDIRECTION) && botAI->CanCastSpell("steady shot", eastFlame))
+        if (bot->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_MISDIRECTION)) &&
+            botAI->CanCastSpell("steady shot", eastFlame))
             return botAI->CastSpell("steady shot", eastFlame);
 
         return false;
@@ -1700,7 +1707,8 @@ bool IllidanStormrageMisdirectToTankAction::TryMisdirectToFlameTanks(Group* grou
     if (botAI->CanCastSpell("misdirection", tankTarget))
         return botAI->CastSpell("misdirection", tankTarget);
 
-    if (bot->HasAura(SPELL_MISDIRECTION) && botAI->CanCastSpell("steady shot", flame))
+    if (bot->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_MISDIRECTION)) &&
+        botAI->CanCastSpell("steady shot", flame))
         return botAI->CastSpell("steady shot", flame);
 
     return false;
@@ -1715,7 +1723,8 @@ bool IllidanStormrageMisdirectToTankAction::TryMisdirectToWarlockTank(Unit* illi
     if (botAI->CanCastSpell("misdirection", warlockTank))
         return botAI->CastSpell("misdirection", warlockTank);
 
-    if (bot->HasAura(SPELL_MISDIRECTION) && botAI->CanCastSpell("steady shot", illidan))
+    if (bot->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_MISDIRECTION)) &&
+        botAI->CanCastSpell("steady shot", illidan))
         return botAI->CastSpell("steady shot", illidan);
 
     return false;
@@ -1819,7 +1828,8 @@ GameObject* IllidanStormrageMainTankRepositionBossAction::FindNearestTrap()
     for (ObjectGuid const& guid : gos)
     {
         GameObject* go = botAI->GetGameObject(guid);
-        if (go && go->isSpawned() && go->GetEntry() == GO_CAGE_TRAP)
+        if (go && go->isSpawned() &&
+            go->GetEntry() == static_cast<uint32>(BlackTempleObjects::GO_CAGE_TRAP))
         {
             nearestTrap = go;
             break;
@@ -1979,8 +1989,8 @@ bool IllidanStormrageIsolateBotWithParasiteAction::Execute(Event /*event*/)
         float targetY = illidan->GetPositionY() + std::sin(angle) * distBehindIllidan;
         Position target(targetX, targetY, bot->GetPositionZ());
 
-        if (bot->HasAura(SPELL_PARASITIC_SHADOWFIEND_1) ||
-            bot->HasAura(SPELL_PARASITIC_SHADOWFIEND_2))
+        if (bot->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_PARASITIC_SHADOWFIEND_1)) ||
+            bot->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_PARASITIC_SHADOWFIEND_2)))
         {
             return InfectedBotMoveFromGroup(illidan, target);
         }
@@ -2007,7 +2017,7 @@ bool IllidanStormrageIsolateBotWithParasiteAction::InfectedBotMoveFromGroup(
 bool IllidanStormrageIsolateBotWithParasiteAction::FreezeTrapShadowfiend(
     Player* bot, Unit* illidan, const Position& target)
 {
-    if (bot->HasSpellCooldown(SPELL_FROST_TRAP))
+    if (bot->HasSpellCooldown(static_cast<uint32>(BlackTempleSpells::SPELL_FROST_TRAP)))
         return false;
 
     Player* infected = GetBotWithParasiticShadowfiend(bot);
@@ -2021,9 +2031,9 @@ bool IllidanStormrageIsolateBotWithParasiteAction::FreezeTrapShadowfiend(
                       MovementPriority::MOVEMENT_FORCED, true, false);
     }
     else if (bot->GetExactDist2d(infected) < 2.0f &&
-             botAI->CanCastSpell(SPELL_FROST_TRAP, bot))
+             botAI->CanCastSpell(static_cast<uint32>(BlackTempleSpells::SPELL_FROST_TRAP), bot))
     {
-        return botAI->CastSpell(SPELL_FROST_TRAP, bot);
+        return botAI->CastSpell(static_cast<uint32>(BlackTempleSpells::SPELL_FROST_TRAP), bot);
     }
 
     return false;
@@ -2057,13 +2067,17 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*ev
         }
         else if (!eastFlame && !westFlame)
         {
-            // Default: go to glaive waiting position
-            // If both flames are dead and the waiting position is too close to hazards, move to a grate position
+            // (1) Before flames spawn, go to the waiting position
+            // (2) If both flames are dead and the waiting position is too close to hazards,
+            //     move to a grate position
             std::list<Creature*> demonFires;
             constexpr float searchRadius = 40.0f;
-            bot->GetCreatureListWithEntryInGrid(demonFires, NPC_DEMON_FIRE, searchRadius);
+            bot->GetCreatureListWithEntryInGrid(demonFires, static_cast<uint32>(
+                BlackTempleNPCs::NPC_DEMON_FIRE), searchRadius);
 
-            const Position& pos = demonFires.empty() ? ILLIDAN_E_GLAIVE_WAITING_POSITION : ILLIDAN_S_GRATE_POSITION;
+            const Position& pos = demonFires.empty() ?
+                ILLIDAN_E_GLAIVE_WAITING_POSITION : ILLIDAN_S_GRATE_POSITION;
+
             if (bot->GetExactDist2d(pos.GetPositionX(), pos.GetPositionY()) > 0.5f)
             {
                 return MoveTo(BLACK_TEMPLE_MAP_ID, pos.GetPositionX(), pos.GetPositionY(),
@@ -2094,8 +2108,9 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*ev
             {
                 if (!bot->IsWithinMeleeRange(westFlame))
                 {
-                    return MoveTo(BLACK_TEMPLE_MAP_ID, westFlame->GetPositionX(), westFlame->GetPositionY(),
-                                  westFlame->GetPositionZ(), false, false, false, false,
+                    return MoveTo(BLACK_TEMPLE_MAP_ID, westFlame->GetPositionX(),
+                                  westFlame->GetPositionY(), westFlame->GetPositionZ(),
+                                  false, false, false, false,
                                   MovementPriority::MOVEMENT_COMBAT, true, false);
                 }
                 return false;
@@ -2103,13 +2118,17 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*ev
         }
         else
         {
-            // Default: go to glaive waiting position
-            // If both flames are dead and the waiting position is too close to hazards, move to a grate position
+            // (1) Before flames spawn, go to the waiting position
+            // (2) If both flames are dead and the waiting position is too close to hazards,
+            //     move to a grate position
             std::list<Creature*> demonFires;
             constexpr float searchRadius = 40.0f;
-            bot->GetCreatureListWithEntryInGrid(demonFires, NPC_DEMON_FIRE, searchRadius);
+            bot->GetCreatureListWithEntryInGrid(demonFires, static_cast<uint32>(
+                BlackTempleNPCs::NPC_DEMON_FIRE), searchRadius);
 
-            const Position& pos = demonFires.empty() ? ILLIDAN_W_GLAIVE_WAITING_POSITION : ILLIDAN_N_GRATE_POSITION;
+            const Position& pos = demonFires.empty() ?
+                ILLIDAN_W_GLAIVE_WAITING_POSITION : ILLIDAN_N_GRATE_POSITION;
+
             if (bot->GetExactDist2d(pos.GetPositionX(), pos.GetPositionY()) > 0.5f)
             {
                 return MoveTo(BLACK_TEMPLE_MAP_ID, pos.GetPositionX(), pos.GetPositionY(),
@@ -2124,6 +2143,7 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*ev
         return false;
 
     EyeBlastDangerArea dangerArea = GetEyeBlastDangerArea(bot, illidan);
+
     if (dangerArea.width > 0.0f)
         return RepositionToAvoidEyeBlast(illidan, dangerArea);
     else
@@ -2210,13 +2230,14 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidB
     size_t& waypointIndex = flameTankWaypointIndex[bot->GetGUID()];
     const Position& target = (*waypoints)[waypointIndex];
 
-    // Check for nearby blaze and increment only if bot is at current waypoint
     auto const& npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("possible triggers")->Get();
     bool blazeNearby = false;
     for (auto const& guid : npcs)
     {
         Unit* unit = botAI->GetUnit(guid);
-        if (unit && unit->GetEntry() == NPC_BLAZE && bot->GetDistance2d(unit) <= 8.0f)
+        if (unit &&
+            unit->GetEntry() == static_cast<uint32>(BlackTempleNPCs::NPC_BLAZE) &&
+            bot->GetDistance2d(unit) <= 8.0f)
         {
             blazeNearby = true;
             break;
@@ -2224,12 +2245,12 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidB
     }
 
     float distToPosition = bot->GetExactDist2d(target.GetPositionX(), target.GetPositionY());
-    // Move to next waypoint if blaze is nearby and bot is at current waypoint
     if (blazeNearby && distToPosition <= 0.2f)
     {
         waypointIndex = (waypointIndex + 1) % numWaypoints;
         const Position& newTarget = (*waypoints)[waypointIndex];
-        float distToNewPosition = bot->GetExactDist2d(newTarget.GetPositionX(), newTarget.GetPositionY());
+        float distToNewPosition =
+            bot->GetExactDist2d(newTarget.GetPositionX(), newTarget.GetPositionY());
 
         if (distToNewPosition > 0.2f)
         {
@@ -2244,7 +2265,6 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidB
                           MovementPriority::MOVEMENT_COMBAT, true, true);
         }
     }
-    // Move to current waypoint if no blaze nearby
     else if (distToPosition > 0.2f)
     {
         float dX = target.GetPositionX() - bot->GetPositionX();
@@ -2370,6 +2390,7 @@ bool IllidanStormrageDisperseRangedAction::Execute(Event /*event*/)
         return false;
 
     int phase = GetIllidanPhase(illidan);
+
     if (phase == 3 || phase == 5)
         return FanOutBehindInHumanPhase(illidan, group);
     else if (phase == 4)
@@ -2482,8 +2503,8 @@ bool IllidanStormrageDisperseRangedAction::SpreadInCircleInDemonPhase(
     float dy = warlockTank->GetPositionY() - illidan->GetPositionY();
     float warlockAngle = std::atan2(dy, dx);
 
-    constexpr float forbiddenArc = (2.0f / 3.0f) * M_PI; // 120 degrees
-    constexpr float allowedArc = (4.0f / 3.0f) * M_PI;   // 240 degrees
+    constexpr float forbiddenArc = (2.0f / 3.0f) * M_PI;
+    constexpr float allowedArc = (4.0f / 3.0f) * M_PI;
 
     float arcStart = Position::NormalizeOrientation(warlockAngle + forbiddenArc / 2.0f);
     constexpr float radius = 25.0f;
@@ -2522,23 +2543,27 @@ bool IllidanStormrageMeleeGoSomewhereToNotDieAction::Execute(Event /*event*/)
         return false;
 
     Unit* illidanVictim = illidan->GetVictim();
-    // start logic to let melee attack shadowfiends in P4
-    if (Unit* shadowDemon = bot->FindNearestCreature(NPC_SHADOW_DEMON, 25.0f, true);
-        shadowDemon && shadowDemon->GetDistance2d(illidan) > 15.0f &&
+    // But they can attack Shadow Demons and Shadowfiends, if far enough from Illidan
+    Unit* shadowDemon = bot->FindNearestCreature(static_cast<uint32>(
+        BlackTempleNPCs::NPC_SHADOW_DEMON), 25.0f, true);
+    if (shadowDemon && shadowDemon->GetDistance2d(illidan) > 15.0f &&
         (!illidanVictim || shadowDemon->GetDistance2d(illidanVictim) > 24.0f))
     {
         return false;
     }
-    else if (Unit* shadowfiend = bot->FindNearestCreature(NPC_PARASITIC_SHADOWFIEND, 15.0f, true);
-             shadowfiend && shadowfiend->GetDistance2d(illidan) > 15.0f &&
-             shadowfiend->GetHealthPct() < 30.0f &&
-             (!illidanVictim || shadowfiend->GetDistance2d(illidanVictim) > 24.0f))
+    else
     {
-        return false;
+        Unit* shadowfiend = bot->FindNearestCreature(static_cast<uint32>(
+            BlackTempleNPCs::NPC_PARASITIC_SHADOWFIEND), 15.0f, true);
+        if (shadowfiend && shadowfiend->GetDistance2d(illidan) > 15.0f &&
+            shadowfiend->GetHealthPct() < 30.0f &&
+            (!illidanVictim || shadowfiend->GetDistance2d(illidanVictim) > 24.0f))
+        {
+            return false;
+        }
     }
-    // end logic to let melee attack shadowfiends in P4
 
-    constexpr float safeDistFromBoss = 30.0f; // move to 35 if not having melee attack anything
+    constexpr float safeDistFromBoss = 30.0f; // 30 is closer than ideal but needed to attack
     float currentDistFromBoss = bot->GetExactDist2d(illidan);
     if (currentDistFromBoss < safeDistFromBoss)
         MoveAway(illidan, safeDistFromBoss - currentDistFromBoss);
@@ -2570,7 +2595,8 @@ bool IllidanStormrageWarlockTankHandleDemonBossAction::Execute(Event /*event*/)
         MoveAway(illidan, safeDistance - currentDistance))
         return true;
 
-    if (bot->FindNearestCreature(NPC_SHADOW_DEMON, 35.0f, true))
+    if (bot->FindNearestCreature(static_cast<uint32>(
+        BlackTempleNPCs::NPC_SHADOW_DEMON), 35.0f, true))
         return false;
 
     if (botAI->CanCastSpell("searing pain", illidan))
@@ -2591,7 +2617,8 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
 
     if (phase == 4)
     {
-        Unit* shadowDemon = bot->FindNearestCreature(NPC_SHADOW_DEMON, 35.0f, true);
+        Unit* shadowDemon = bot->FindNearestCreature(static_cast<uint32>(
+            BlackTempleNPCs::NPC_SHADOW_DEMON), 35.0f, true);
 
         if (GetIllidanWarlockTank(bot) == bot)
         {
@@ -2599,7 +2626,8 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
         }
         else
         {
-            Unit* shadowfiend = bot->FindNearestCreature(NPC_PARASITIC_SHADOWFIEND, 35.0f, true);
+            Unit* shadowfiend = bot->FindNearestCreature(static_cast<uint32>(
+                BlackTempleNPCs::NPC_PARASITIC_SHADOWFIEND), 35.0f, true);
             if (botAI->IsRanged(bot))
             {
                 if (shadowDemon)
@@ -2619,7 +2647,8 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
     {
         if (phase == 1 || phase == 3 || phase == 5)
         {
-            Unit* shadowfiend = bot->FindNearestCreature(NPC_PARASITIC_SHADOWFIEND, 35.0f, true);
+            Unit* shadowfiend = bot->FindNearestCreature(static_cast<uint32>(
+                BlackTempleNPCs::NPC_PARASITIC_SHADOWFIEND), 35.0f, true);
             if (shadowfiend && bot->GetDistance2d(shadowfiend) > 10.0f)
                 targets = { shadowfiend };
             else
@@ -2685,7 +2714,8 @@ bool IllidanStormrageManageDpsTimerAction::Execute(Event /*event*/)
         {
             std::list<Creature*> creatureList;
             constexpr float searchRadius = 50.0f;
-            illidan->GetCreatureListWithEntryInGrid(creatureList, NPC_FLAME_OF_AZZINOTH, searchRadius);
+            illidan->GetCreatureListWithEntryInGrid(creatureList, static_cast<uint32>(
+                BlackTempleNPCs::NPC_FLAME_OF_AZZINOTH), searchRadius);
 
             std::vector<Creature*> flames;
             for (Creature* creature : creatureList)
@@ -2737,11 +2767,29 @@ bool IllidanStormrageDestroyHazardsCheatAction::Execute(Event /*event*/)
     std::vector<uint32> entries;
 
     if (phase == 2)
-        entries = { NPC_PARASITIC_SHADOWFIEND, NPC_FLAME_CRASH };
+    {
+        entries =
+        {
+            static_cast<uint32>(BlackTempleNPCs::NPC_PARASITIC_SHADOWFIEND),
+            static_cast<uint32>(BlackTempleNPCs::NPC_FLAME_CRASH)
+        };
+    }
     else if (phase == 4)
-        entries = { NPC_SHADOW_DEMON, NPC_FLAME_CRASH };
+    {
+        entries =
+        {
+            static_cast<uint32>(BlackTempleNPCs::NPC_SHADOW_DEMON),
+            static_cast<uint32>(BlackTempleNPCs::NPC_FLAME_CRASH)
+        };
+    }
     else if (phase == 0)
-        entries = { NPC_DEMON_FIRE, NPC_BLAZE };
+    {
+        entries =
+        {
+            static_cast<uint32>(BlackTempleNPCs::NPC_DEMON_FIRE),
+            static_cast<uint32>(BlackTempleNPCs::NPC_BLAZE)
+        };
+    }
 
     if (!entries.empty())
         bot->GetCreatureListWithEntryInGrid(hazards, entries, searchRadius);
@@ -2752,14 +2800,15 @@ bool IllidanStormrageDestroyHazardsCheatAction::Execute(Event /*event*/)
     {
         if (creature && creature->IsAlive())
         {
-            if (creature->GetEntry() != NPC_SHADOW_DEMON)
+            if (creature->GetEntry() !=
+                static_cast<uint32>(BlackTempleNPCs::NPC_SHADOW_DEMON))
             {
                 creature->Kill(bot, creature);
                 destroyed = true;
             }
             else
             {
-                // Probably a wipe if a Shadow Demon targets the Warlock tank
+                // Otherwise a wipe if a Shadow Demon targets the Warlock tank
                 if (Player* warlockTank = GetIllidanWarlockTank(bot);
                     warlockTank && creature->GetTarget() == warlockTank->GetGUID())
                 {

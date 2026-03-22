@@ -32,8 +32,11 @@ float ShadowmoonReaverDontBuildChaoticChargesMultiplier::GetValue(Action* action
         return 1.0f;
 
     Unit* reaver = AI_VALUE2(Unit*, "find target", "shadowmoon reaver");
-    if (!reaver || !reaver->HasAura(SPELL_SPELL_ABSORPTION))
+    if (!reaver ||
+        !reaver->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_SPELL_ABSORPTION)))
+    {
         return 1.0f;
+    }
 
     auto castSpellAction = dynamic_cast<CastSpellAction*>(action);
     if (!castSpellAction)
@@ -66,9 +69,11 @@ float HighWarlordNajentusDisableCombatFormationMoveMultiplier::GetValue(Action* 
 float SupremusFocusOnAvoidanceInPhase2Multiplier::GetValue(Action* action)
 {
     Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
-    if (!supremus || !supremus->HasAura(SPELL_SNARE_SELF) ||
-        supremus->GetVictim() != bot)
+    if (!supremus || supremus->GetVictim() != bot ||
+        !supremus->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_SNARE_SELF)))
+    {
         return 1.0f;
+    }
 
     if (dynamic_cast<MovementAction*>(action) &&
         !dynamic_cast<SupremusKiteBossAction*>(action) &&
@@ -114,7 +119,8 @@ float TeronGorefiendControlMovementMultiplier::GetValue(Action* action)
 
 float TeronGorefiendMarkedBotOnlyMoveToDieMultiplier::GetValue(Action* action)
 {
-    Aura* aura = bot->GetAura(SPELL_SHADOW_OF_DEATH);
+    Aura* aura =
+        bot->GetAura(static_cast<uint32>(BlackTempleSpells::SPELL_SHADOW_OF_DEATH));
     if (!aura || aura->GetDuration() >= 15000)
         return 1.0f;
 
@@ -128,7 +134,7 @@ float TeronGorefiendMarkedBotOnlyMoveToDieMultiplier::GetValue(Action* action)
 
 float TeronGorefiendSpiritsAttackOnlyShadowyConstructsMultiplier::GetValue(Action* action)
 {
-    if (!bot->HasAura(SPELL_SPIRITUAL_VENGEANCE))
+    if (!bot->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_SPIRITUAL_VENGEANCE)))
         return 1.0f;
 
     if (dynamic_cast<WipeAction*>(action))
@@ -175,7 +181,7 @@ float GurtoggBloodboilControlMovementMultiplier::GetValue(Action* action)
         dynamic_cast<CastBlinkBackAction*>(action))
         return 0.0f;
 
-    if (bot->HasAura(SPELL_PLAYER_FEL_RAGE) &&
+    if (bot->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_PLAYER_FEL_RAGE)) &&
         (dynamic_cast<MovementAction*>(action) &&
          !dynamic_cast<AttackAction*>(action)))
         return 0.0f;
@@ -225,7 +231,7 @@ float MotherShahrazControlMovementMultiplier::GetValue(Action* action)
 
 float MotherShahrazBotsWithFatalAttractionOnlyRunAwayMultiplier::GetValue(Action* action)
 {
-    if (!bot->HasAura(SPELL_FATAL_ATTRACTION))
+    if (!bot->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_FATAL_ATTRACTION)))
         return 1.0f;
 
     if (dynamic_cast<WipeAction*>(action))
@@ -512,8 +518,11 @@ float IllidanStormrageDisableDefaultTargetingMultiplier::GetValue(Action* action
     }
 
     constexpr float searchRadius = 40.0f;
-    Unit* shadowDemon = bot->FindNearestCreature(NPC_SHADOW_DEMON, searchRadius);
-    Unit* shadowfiend = bot->FindNearestCreature(NPC_PARASITIC_SHADOWFIEND, searchRadius);
+    Unit* shadowDemon = bot->FindNearestCreature(
+        static_cast<uint32>(BlackTempleNPCs::NPC_SHADOW_DEMON), searchRadius);
+    Unit* shadowfiend = bot->FindNearestCreature(
+        static_cast<uint32>(BlackTempleNPCs::NPC_PARASITIC_SHADOWFIEND), searchRadius);
+
     if (((shadowDemon && bot->GetTarget() == shadowDemon->GetGUID()) ||
          (shadowfiend && bot->GetTarget() == shadowfiend->GetGUID())) &&
         dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
@@ -578,10 +587,11 @@ float IllidanStormrageWaitForDpsMultiplier::GetValue(Action* action)
         constexpr uint8 humanoidPhaseDpsWaitSeconds = 3;
         auto it = illidanBossDpsWaitTimer.find(instanceId);
 
-        if ((it == illidanBossDpsWaitTimer.end() || (now - it->second) < humanoidPhaseDpsWaitSeconds) &&
-            (dynamic_cast<AttackAction*>(action) ||
-             (dynamic_cast<CastSpellAction*>(action) &&
-              !dynamic_cast<CastHealingSpellAction*>(action))))
+        if ((it == illidanBossDpsWaitTimer.end() ||
+             (now - it->second) < humanoidPhaseDpsWaitSeconds) &&
+              (dynamic_cast<AttackAction*>(action) ||
+               (dynamic_cast<CastSpellAction*>(action) &&
+                !dynamic_cast<CastHealingSpellAction*>(action))))
         {
             return 0.0f;
         }
@@ -592,10 +602,11 @@ float IllidanStormrageWaitForDpsMultiplier::GetValue(Action* action)
         constexpr uint8 demonPhaseDpsWaitSeconds = 8;
         auto it = illidanBossDpsWaitTimer.find(instanceId);
 
-        if ((it == illidanBossDpsWaitTimer.end() || (now - it->second) < demonPhaseDpsWaitSeconds) &&
-            (dynamic_cast<AttackAction*>(action) ||
-             (dynamic_cast<CastSpellAction*>(action) &&
-              !dynamic_cast<CastHealingSpellAction*>(action))))
+        if ((it == illidanBossDpsWaitTimer.end() ||
+             (now - it->second) < demonPhaseDpsWaitSeconds) &&
+              (dynamic_cast<AttackAction*>(action) ||
+               (dynamic_cast<CastSpellAction*>(action) &&
+                !dynamic_cast<CastHealingSpellAction*>(action))))
         {
             return 0.0f;
         }
@@ -608,10 +619,11 @@ float IllidanStormrageWaitForDpsMultiplier::GetValue(Action* action)
         constexpr uint8 flamePhaseDpsWaitSeconds = 7;
         auto it = illidanFlameDpsWaitTimer.find(instanceId);
 
-        if ((it == illidanFlameDpsWaitTimer.end() || (now - it->second) < flamePhaseDpsWaitSeconds) &&
-            (dynamic_cast<AttackAction*>(action) ||
-             (dynamic_cast<CastSpellAction*>(action) &&
-              !dynamic_cast<CastHealingSpellAction*>(action))))
+        if ((it == illidanFlameDpsWaitTimer.end() ||
+             (now - it->second) < flamePhaseDpsWaitSeconds) &&
+              (dynamic_cast<AttackAction*>(action) ||
+               (dynamic_cast<CastSpellAction*>(action) &&
+                !dynamic_cast<CastHealingSpellAction*>(action))))
         {
             return 0.0f;
         }
