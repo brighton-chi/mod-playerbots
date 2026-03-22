@@ -914,6 +914,37 @@ bool ArchimondeMisdirectBossToMainTankAction::Execute(Event /*event*/)
     return false;
 }
 
+bool ArchimondeMoveBossToInitialPositionAction::Execute(Event /*event*/)
+{
+    Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
+    if (!archimonde)
+        return false;
+
+    if (bot->GetVictim() != archimonde)
+        return Attack(archimonde);
+
+    if (archimonde->GetVictim() == bot && bot->IsWithinMeleeRange(archimonde))
+    {
+        const Position& position = ARCHIMONDE_INITIAL_POSITION;
+        float distToPosition =
+            bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+
+        if (distToPosition > 2.0f)
+        {
+            float dX = position.GetPositionX() - bot->GetPositionX();
+            float dY = position.GetPositionY() - bot->GetPositionY();
+            float moveDist = std::min(5.0f, distToPosition);
+            float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
+
+            return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
+                          false, false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
+        }
+    }
+
+    return false;
+}
+
 bool ArchimondeCastFearImmunitySpellAction::Execute(Event /*event*/)
 {
     if (bot->getClass() == CLASS_PRIEST)
@@ -989,8 +1020,7 @@ bool ArchimondeSpreadToAvoidAirBurstAction::Execute(Event /*event*/)
 
 bool ArchimondeAvoidDoomfireAction::Execute(Event /*event*/)
 {
-    constexpr float dangerDist = 9.0f;
-    // The doomfire spirit despawns after 27s, but the fire trail persist for 18s
+    constexpr float dangerDist = 9.0f; // Maximum move distance and danger zone
     constexpr uint32 TRAIL_DURATION = 19000;
 
     uint32 instanceId = bot->GetMap()->GetInstanceId();
@@ -1006,7 +1036,36 @@ bool ArchimondeAvoidDoomfireAction::Execute(Event /*event*/)
             return getMSTimeDiff(d.recordTime, now) > TRAIL_DURATION;
         }), it->second.end());
 
-    const Position* nearest = nullptr;
+    float totalDx = 0.0f, totalDy = 0.0f;
+    for (auto const& data : it->second)
+    {
+        float d = bot->GetExactDist2d(data.position.GetPositionX(), data.position.GetPositionY());
+        if (d < dangerDist && d > 0.0f)
+        {
+            float weight = (dangerDist - d) / dangerDist; // stronger when closer
+            totalDx += (bot->GetPositionX() - data.position.GetPositionX()) / d * weight;
+            totalDy += (bot->GetPositionY() - data.position.GetPositionY()) / d * weight;
+        }
+    }
+
+    if (totalDx != 0.0f || totalDy != 0.0f)
+    {
+        float norm = std::sqrt(totalDx * totalDx + totalDy * totalDy);
+        // Distance is proportional to the repulsion strength, capped at dangerDist
+        float moveDist = std::min(norm * dangerDist, dangerDist);
+        if (moveDist < 0.5f) // Don't move for very weak repulsion
+            return false;
+
+        float targetX = bot->GetPositionX() + (totalDx / norm) * moveDist;
+        float targetY = bot->GetPositionY() + (totalDy / norm) * moveDist;
+
+        return MoveTo(HYJAL_SUMMIT_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false,
+               false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+    }
+
+    return false;
+
+    /* const Position* nearest = nullptr;
     float nearestDist = std::numeric_limits<float>::max();
     for (auto const& data : it->second)
     {
@@ -1039,7 +1098,7 @@ bool ArchimondeAvoidDoomfireAction::Execute(Event /*event*/)
     }
 
     return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-                  false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+                  false, false, MovementPriority::MOVEMENT_FORCED, true, false); */
 }
 
 bool ArchimondeRemoveDoomfireDotAction::Execute(Event /*event*/)

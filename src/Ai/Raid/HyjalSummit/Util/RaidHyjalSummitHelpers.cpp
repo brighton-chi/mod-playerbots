@@ -93,6 +93,7 @@ namespace HyjalSummitHelpers
 
     // Archimonde
 
+    const Position ARCHIMONDE_INITIAL_POSITION = { 5648.791f, -3419.050f, 1588.426f };
     std::unordered_map<uint32, std::vector<DoomfireTrailData>> doomfireTrails;
     std::unordered_map<ObjectGuid, uint32> doomfireLastSampleTime;
 }

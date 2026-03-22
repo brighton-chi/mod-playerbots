@@ -217,9 +217,6 @@ bool AzgalorMainTankIsPositioningBossTrigger::IsActive()
         azgalor->GetVictim() == bot)
         return false;
 
-    if (bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_RAIN_OF_FIRE)))
-        return false;
-
     if (botAI->IsMainTank(bot))
         return false;
 
@@ -234,8 +231,14 @@ bool AzgalorMainTankIsPositioningBossTrigger::IsActive()
         else
             return false;
     }
-
-    return GetAzgalorTankStep(botAI, bot) < 2;
+    else if (botAI->IsMelee(bot))
+    {
+        return GetAzgalorTankStep(botAI, bot) < 2;
+    }
+    else
+    {
+        return GetAzgalorTankStep(botAI, bot) < 1;
+    }
 }
 
 // Spread to mitigate Rain of Fire, but GTFO if Rain of Fire is on the bot
@@ -297,6 +300,15 @@ bool ArchimondePullingBossTrigger::IsActive()
     return archimonde && archimonde->GetHealthPct() > 95.0f;
 }
 
+bool ArchimondeBossEngagedByMainTankTrigger::IsActive()
+{
+    if (!botAI->IsMainTank(bot))
+        return false;
+
+    Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
+    return archimonde && archimonde->GetHealthPct() > 90.0f;
+}
+
 bool ArchimondeBossCastsFearTrigger::IsActive()
 {
     if (bot->getClass() != CLASS_PRIEST &&
@@ -340,6 +352,6 @@ bool ArchimondeBotStoodInDoomfireTrigger::IsActive()
         return false;
 
     return bot->GetHealthPct() < 40.0f &&
-           bot->HasAura(
-               static_cast<uint32>(HyjalSummitSpells::SPELL_DOOMFIRE_AURA));
+           (bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_DOOMFIRE)) ||
+            bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_DOOMFIRE_DOT)));
 }
