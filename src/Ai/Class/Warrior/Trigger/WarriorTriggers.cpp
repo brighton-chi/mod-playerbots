@@ -95,7 +95,6 @@ bool BattleShoutTrigger::IsActive()
     if (!bsInfo)
         return true;
 
-    // Find Battle Shout's melee AP effect value
     int32 bsApValue = 0;
     for (uint8 eff = 0; eff < MAX_SPELL_EFFECTS; ++eff)
     {
@@ -121,7 +120,6 @@ bool BattleShoutTrigger::IsActive()
     }
     int32 effectiveBsAp = int32(bsApValue * (1.0f + cpBonus));
 
-    // Check if Blessing of Might (or Greater) provides equal or greater melee AP
     static const char* blessingNames[] = {
         "blessing of might", "greater blessing of might", nullptr
     };
