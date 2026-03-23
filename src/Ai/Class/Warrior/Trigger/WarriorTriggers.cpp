@@ -140,6 +140,7 @@ bool BattleShoutTrigger::IsActive()
             if (bomInfo->Effects[eff].ApplyAuraName == SPELL_AURA_MOD_ATTACK_POWER)
             {
                 int32 bomApValue = bomInfo->Effects[eff].BasePoints + 1;
+                LOG_DEBUG("playerbots", "Comparing Blessing of Might AP (bomApValue: {}) with Battle Shout AP (effectiveBsAp: {})", bomApValue, effectiveBsAp);
                 if (bomApValue >= effectiveBsAp)
                     return false;
                 break;
