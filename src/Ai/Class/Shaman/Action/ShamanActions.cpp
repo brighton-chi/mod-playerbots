@@ -138,6 +138,15 @@ bool CastFlametongueWeaponOffHandAction::isPossible()
             && item->GetTemplate()->Class == ITEM_CLASS_WEAPON;
 }
 
+bool CastEarthlivingWeaponMainHandAction::isPossible()
+{
+    Item* item = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+    if (!item || item->GetEnchantmentId(TEMP_ENCHANTMENT_SLOT))
+        return false;
+
+    return item->GetTemplate()->Class == ITEM_CLASS_WEAPON;
+}
+
 bool CastWindfuryWeaponMainHandAction::isPossible()
 {
     Item* item = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);

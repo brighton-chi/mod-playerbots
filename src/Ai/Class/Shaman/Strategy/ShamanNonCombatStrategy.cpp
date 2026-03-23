@@ -14,9 +14,9 @@ public:
     ShamanNonCombatStrategyActionNodeFactory()
     {
         creators["flametongue weapon main hand"] = &flametongue_weapon_main_hand;
-        creators["frostbrand weapon"] = &frostbrand_weapon;
+        // creators["frostbrand weapon"] = &frostbrand_weapon;
         creators["windfury weapon main hand"] = &windfury_weapon_main_hand;
-        creators["earthliving weapon"] = &earthliving_weapon;
+        creators["earthliving weapon main hand"] = &earthliving_weapon_main_hand;
         creators["cleanse spirit"] = &cleanse_spirit;
         creators["cleanse spirit poison on party"] = &cleanse_spirit_poison_on_party;
         creators["cleanse spirit disease on party"] = &cleanse_spirit_disease_on_party;
@@ -30,16 +30,16 @@ private:
                               /*A*/ { NextAction("rockbiter weapon") },
                               /*C*/ {});
     }
-    static ActionNode* frostbrand_weapon([[maybe_unused]] PlayerbotAI* botAI)
+    // static ActionNode* frostbrand_weapon([[maybe_unused]] PlayerbotAI* botAI)
+    // {
+    //     return new ActionNode("frostbrand weapon",
+    //                           /*P*/ {},
+    //                           /*A*/ { NextAction("flametongue weapon main hand") },
+    //                           /*C*/ {});
+    // }
+    static ActionNode* earthliving_weapon_main_hand([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("frostbrand weapon",
-                              /*P*/ {},
-                              /*A*/ { NextAction("flametongue weapon main hand") },
-                              /*C*/ {});
-    }
-    static ActionNode* earthliving_weapon([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode("earthliving weapon",
+        return new ActionNode("earthliving weapon main hand",
                               /*P*/ {},
                               /*A*/ { NextAction("flametongue weapon main hand") },
                               /*C*/ {});
@@ -123,7 +123,7 @@ void ShamanNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     }
     else if (tab == SHAMAN_TAB_RESTORATION)
     {
-        triggers.push_back(new TriggerNode("main hand weapon no imbue", { NextAction("earthliving weapon", 22.0f), }));
+        triggers.push_back(new TriggerNode("main hand weapon no imbue", { NextAction("earthliving weapon main hand", 22.0f), }));
         triggers.push_back(new TriggerNode("water shield", { NextAction("water shield", 20.0f), }));
     }
 

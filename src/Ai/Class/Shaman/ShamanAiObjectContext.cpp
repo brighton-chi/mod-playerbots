@@ -267,9 +267,9 @@ public:
         creators["rockbiter weapon"] = &ShamanAiObjectContextInternal::rockbiter_weapon;
         creators["flametongue weapon main hand"] = &ShamanAiObjectContextInternal::flametongue_weapon_main_hand;
         creators["flametongue weapon off hand"] = &ShamanAiObjectContextInternal::flametongue_weapon_off_hand;
-        creators["frostbrand weapon"] = &ShamanAiObjectContextInternal::frostbrand_weapon;
+        // creators["frostbrand weapon"] = &ShamanAiObjectContextInternal::frostbrand_weapon;
         creators["windfury weapon main hand"] = &ShamanAiObjectContextInternal::windfury_weapon_main_hand;
-        creators["earthliving weapon"] = &ShamanAiObjectContextInternal::earthliving_weapon;
+        creators["earthliving weapon main hand"] = &ShamanAiObjectContextInternal::earthliving_weapon_main_hand;
         creators["purge"] = &ShamanAiObjectContextInternal::purge;
         creators["healing wave"] = &ShamanAiObjectContextInternal::healing_wave;
         creators["lesser healing wave"] = &ShamanAiObjectContextInternal::lesser_healing_wave;
@@ -375,8 +375,8 @@ private:
     static Action* rockbiter_weapon(PlayerbotAI* botAI) { return new CastRockbiterWeaponAction(botAI); }
     static Action* flametongue_weapon_main_hand(PlayerbotAI* botAI) { return new CastFlametongueWeaponMainHandAction(botAI); }
     static Action* flametongue_weapon_off_hand(PlayerbotAI* botAI) { return new CastFlametongueWeaponOffHandAction(botAI); }
-    static Action* frostbrand_weapon(PlayerbotAI* botAI) { return new CastFrostbrandWeaponAction(botAI); }
-    static Action* earthliving_weapon(PlayerbotAI* botAI) { return new CastEarthlivingWeaponAction(botAI); }
+    // static Action* frostbrand_weapon(PlayerbotAI* botAI) { return new CastFrostbrandWeaponAction(botAI); }
+    static Action* earthliving_weapon_main_hand(PlayerbotAI* botAI) { return new CastEarthlivingWeaponMainHandAction(botAI); }
     static Action* windfury_weapon_main_hand(PlayerbotAI* botAI) { return new CastWindfuryWeaponMainHandAction(botAI); }
     static Action* purge(PlayerbotAI* botAI) { return new CastPurgeAction(botAI); }
     static Action* healing_wave(PlayerbotAI* botAI) { return new CastHealingWaveAction(botAI); }

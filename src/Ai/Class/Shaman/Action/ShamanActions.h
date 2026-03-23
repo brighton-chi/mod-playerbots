@@ -52,18 +52,19 @@ public:
     bool isPossible() override;
 };
 
-class CastFrostbrandWeaponAction : public CastEnchantItemAction
+/* class CastFrostbrandWeaponAction : public CastEnchantItemAction
 {
 public:
     CastFrostbrandWeaponAction(PlayerbotAI* botAI) :
         CastEnchantItemAction(botAI, "frostbrand weapon") {}
-};
+}; */
 
-class CastEarthlivingWeaponAction : public CastEnchantItemAction
+class CastEarthlivingWeaponMainHandAction : public CastEnchantItemAction
 {
 public:
-    CastEarthlivingWeaponAction(PlayerbotAI* botAI) :
+    CastEarthlivingWeaponMainHandAction(PlayerbotAI* botAI) :
         CastEnchantItemAction(botAI, "earthliving weapon") {}
+    bool isPossible() override;
 };
 
 class CastWindfuryWeaponMainHandAction : public CastEnchantItemAction
