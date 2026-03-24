@@ -55,7 +55,7 @@ bool HighWarlordNajentusPlayerIsImpaledTrigger::IsActive()
         return false;
 
     Player* impaledPlayer = nullptr;
-    // Find any player with Impaling Spine (other than bot itself, duh)
+
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
@@ -71,7 +71,7 @@ bool HighWarlordNajentusPlayerIsImpaledTrigger::IsActive()
 
     Player* closestBot = nullptr;
     float closestDist = std::numeric_limits<float>::max();
-    // Find the closest non-tank bot to the impaled player
+
     if (impaledPlayer)
     {
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
@@ -119,16 +119,13 @@ bool SupremusPullingBossOrChangingPhaseTrigger::IsActive()
 
     auto it = supremusPhaseTimer.find(supremus->GetMap()->GetInstanceId());
     if (it == supremusPhaseTimer.end())
-        return false; // Timer not started yet
+        return false;
 
     time_t now = time(nullptr);
     time_t elapsed = now - it->second;
 
-    // Fire during first 10 seconds, or during 60-70, 120-130, etc.
-    if ((elapsed < 10) || ((elapsed % 60) < 10 && elapsed >= 60))
-        return true;
-
-    return false;
+    // Active during first 10 seconds, or during 60-70, 120-130, etc.
+    return (elapsed < 10) || ((elapsed % 60) < 10 && elapsed >= 60);
 }
 
 bool SupremusBossEngagedByRangedTrigger::IsActive()
@@ -682,7 +679,7 @@ bool IllidanStormrageBossSpawnsAddsTrigger::IsActive()
     return true;
 }
 
-bool IllidanStormrageNeedToManageDpsTimerTrigger::IsActive()
+bool IllidanStormrageNeedToManageDpsTimerAndRtiTrigger::IsActive()
 {
     if (!botAI->IsDps(bot))
         return false;

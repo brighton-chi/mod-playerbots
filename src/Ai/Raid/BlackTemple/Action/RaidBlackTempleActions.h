@@ -515,11 +515,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class IllidanStormrageManageDpsTimerAction : public Action
+class IllidanStormrageManageDpsTimerAndRtiAction : public Action
 {
 public:
-    IllidanStormrageManageDpsTimerAction(
-        PlayerbotAI* botAI) : Action(botAI, "illidan stormrage manage dps timer") {}
+    IllidanStormrageManageDpsTimerAndRtiAction(
+        PlayerbotAI* botAI) : Action(botAI, "illidan stormrage manage dps timer and rti") {}
     bool Execute(Event event) override;
 };
 

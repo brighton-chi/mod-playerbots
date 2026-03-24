@@ -188,8 +188,8 @@ public:
         creators["illidan stormrage dps prioritize adds"] =
             &RaidBlackTempleActionContext::illidan_stormrage_dps_prioritize_adds;
 
-        creators["illidan stormrage manage dps timer"] =
-            &RaidBlackTempleActionContext::illidan_stormrage_manage_dps_timer;
+        creators["illidan stormrage manage dps timer and rti"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_manage_dps_timer_and_rti;
 
         creators["illidan stormrage destroy hazards cheat"] =
             &RaidBlackTempleActionContext::illidan_stormrage_destroy_hazards_cheat;
@@ -370,8 +370,8 @@ private:
     static Action* illidan_stormrage_dps_prioritize_adds(
         PlayerbotAI* botAI) { return new IllidanStormrageDpsPrioritizeAddsAction(botAI); }
 
-    static Action* illidan_stormrage_manage_dps_timer(
-        PlayerbotAI* botAI) { return new IllidanStormrageManageDpsTimerAction(botAI); }
+    static Action* illidan_stormrage_manage_dps_timer_and_rti(
+        PlayerbotAI* botAI) { return new IllidanStormrageManageDpsTimerAndRtiAction(botAI); }
 
     static Action* illidan_stormrage_destroy_hazards_cheat(
         PlayerbotAI* botAI) { return new IllidanStormrageDestroyHazardsCheatAction(botAI); }

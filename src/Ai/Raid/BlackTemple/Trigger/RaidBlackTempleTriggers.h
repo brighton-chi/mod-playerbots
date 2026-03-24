@@ -466,11 +466,11 @@ public:
     bool IsActive() override;
 };
 
-class IllidanStormrageNeedToManageDpsTimerTrigger : public Trigger
+class IllidanStormrageNeedToManageDpsTimerAndRtiTrigger : public Trigger
 {
 public:
-    IllidanStormrageNeedToManageDpsTimerTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage need to manage dps timer") {}
+    IllidanStormrageNeedToManageDpsTimerAndRtiTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage need to manage dps timer and rti") {}
     bool IsActive() override;
 };
 

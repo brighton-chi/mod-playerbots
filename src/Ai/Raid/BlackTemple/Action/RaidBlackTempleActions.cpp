@@ -134,7 +134,6 @@ bool HighWarlordNajentusDisperseRangedAction::Execute(Event /*event*/)
 
 bool HighWarlordNajentusRemoveImpalingSpineAction::Execute(Event /*event*/)
 {
-    // 1. Find the impaled player
     Group* group = bot->GetGroup();
     if (!group)
         return false;
@@ -155,13 +154,11 @@ bool HighWarlordNajentusRemoveImpalingSpineAction::Execute(Event /*event*/)
     if (!impaledPlayer)
         return false;
 
-    // 2. Find the Naj'entus Spine GameObject near the impaled player
     GameObject* spineGo = bot->FindNearestGameObject(
         static_cast<uint32>(BlackTempleObjects::GO_NAJENTUS_SPINE), 30.0f, true);
     if (!spineGo)
         return false;
 
-    // 3. Move to the spine if not close enough
     if (bot->GetExactDist2d(spineGo) > 3.0f)
     {
         uint32 delay = urand(2000, 3000);
@@ -180,12 +177,11 @@ bool HighWarlordNajentusRemoveImpalingSpineAction::Execute(Event /*event*/)
             },
             delay);
 
-        botAI->SetNextCheckDelay(delay + 50);
+        // botAI->SetNextCheckDelay(delay + 50);
         return true;
     }
     else
     {
-        // 4. Interact with the spine to remove it, with a random delay
         uint32 delay = urand(1000, 2000);
         ObjectGuid spineGuid = spineGo->GetGUID();
 
@@ -197,7 +193,7 @@ bool HighWarlordNajentusRemoveImpalingSpineAction::Execute(Event /*event*/)
             },
             delay);
 
-        botAI->SetNextCheckDelay(delay + 50);
+        // botAI->SetNextCheckDelay(delay + 50);
         return true;
     }
 
@@ -238,7 +234,7 @@ bool HighWarlordNajentusThrowImpalingSpineAction::Execute(Event /*event*/)
             },
             delay);
 
-        botAI->SetNextCheckDelay(delay + 50);
+        // botAI->SetNextCheckDelay(delay + 50);
         return true;
     }
 
@@ -1050,12 +1046,13 @@ bool MotherShahrazMeleeDpsWaitAtSafePositionAction::Execute(Event /*event*/)
                   false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
-// This doesn't actually matter for bots since they don't take fall damage, and it's actually
-// easier to tank her closer to her starting position, but I want to simulate a player strategy
+// This doesn't matter for bots since they don't take fall damage, and it's actually easier
+// to tank her closer to her starting position, but I want to simulate a player strategy
 bool MotherShahrazPositionRangedUnderPillarAction::Execute(Event /*event*/)
 {
-    // Testing having healer run with tanks on pull to keep tanks up
-    if (botAI->IsAssistHealOfIndex(bot, 0, false) && GetShahrazTankStep(botAI, bot) < 2)
+    if ((botAI->IsAssistHealOfIndex(bot, 0, false) ||
+         botAI->IsAssistHealOfIndex(bot, 1, false)) &&
+         GetShahrazTankStep(botAI, bot) < 2)
     {
         Unit* shahraz = AI_VALUE2(Unit*, "find target", "mother shahraz");
         if (!shahraz)
@@ -1749,8 +1746,7 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
                       nearestTrap->GetGUID().ToString(), trapDist);
         }
         // End logging
-        if (nearestTrap && bot->GetExactDist2d(nearestTrap) < 25.0f &&
-            illidan->GetVictim() == bot)
+        if (nearestTrap && illidan->GetVictim() == bot)
         {
             Position target = GetPointBeyondTrap(nearestTrap, 5.0f);
             if (bot->GetExactDist2d(target) > 1.0f)
@@ -1795,8 +1791,6 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
     return MoveTo(BLACK_TEMPLE_MAP_ID, safestPos.GetPositionX(), safestPos.GetPositionY(),
                   bot->GetPositionZ(), false, false, false, false,
                   MovementPriority::MOVEMENT_FORCED, true, true);
-
-    // return false;
 }
 
 GameObject* IllidanStormrageMainTankRepositionBossAction::FindNearestTrap()
@@ -1854,7 +1848,6 @@ Position IllidanStormrageMainTankRepositionBossAction::GetPointBeyondTrap(
     if (distToTrap == 0.0f)
         return Position(trapX, trapY, bot->GetPositionZ());
 
-    // Normalize and extend beyond trap
     float dx = trapX - botX;
     float dy = trapY - botY;
     float targetX = trapX + (dx / distToTrap) * extraDistance;
@@ -2562,7 +2555,8 @@ bool IllidanStormrageMeleeGoSomewhereToNotDieAction::Execute(Event /*event*/)
         }
     }
 
-    constexpr float safeDistFromBoss = 30.0f; // 30 is closer than ideal but needed to attack
+    // 30y is closer than ideal but is a compromise to allow melee to reach targets in time
+    constexpr float safeDistFromBoss = 30.0f;
     float currentDistFromBoss = bot->GetExactDist2d(illidan);
     if (currentDistFromBoss < safeDistFromBoss)
         MoveAway(illidan, safeDistFromBoss - currentDistFromBoss);
@@ -2674,8 +2668,7 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
     return false;
 }
 
-// also being used to mark flames so need to rename if kept this way
-bool IllidanStormrageManageDpsTimerAction::Execute(Event /*event*/)
+bool IllidanStormrageManageDpsTimerAndRtiAction::Execute(Event /*event*/)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     if (!illidan)

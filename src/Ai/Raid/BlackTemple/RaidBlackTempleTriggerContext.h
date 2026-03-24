@@ -188,8 +188,8 @@ public:
         creators["illidan stormrage boss spawns adds"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_boss_spawns_adds;
 
-        creators["illidan stormrage need to manage dps timer"] =
-            &RaidBlackTempleTriggerContext::illidan_stormrage_need_to_manage_dps_timer;
+        creators["illidan stormrage need to manage dps timer and rti"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_need_to_manage_dps_timer_and_rti;
 
         creators["illidan stormrage cheat"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_cheat;
@@ -370,8 +370,8 @@ private:
     static Trigger* illidan_stormrage_boss_spawns_adds(
         PlayerbotAI* botAI) { return new IllidanStormrageBossSpawnsAddsTrigger(botAI); }
 
-    static Trigger* illidan_stormrage_need_to_manage_dps_timer(
-        PlayerbotAI* botAI) { return new IllidanStormrageNeedToManageDpsTimerTrigger(botAI); }
+    static Trigger* illidan_stormrage_need_to_manage_dps_timer_and_rti(
+        PlayerbotAI* botAI) { return new IllidanStormrageNeedToManageDpsTimerAndRtiTrigger(botAI); }
 
     static Trigger* illidan_stormrage_cheat(
         PlayerbotAI* botAI) { return new IllidanStormrageCheatTrigger(botAI); }
