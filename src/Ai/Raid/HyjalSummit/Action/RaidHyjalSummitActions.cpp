@@ -669,7 +669,7 @@ bool KazrogalLowManaBotMoveFromGroupAction::Execute(Event /*event*/)
 
 bool KazrogalCastShadowProtectionSpellAction::Execute(Event /*event*/)
 {
-    if (bot->getClass() == CLASS_WARLOCK &&
+    if (bot->getClass() == CLASS_WARLOCK && bot->GetPower(POWER_MANA) <= 3000 &&
         botAI->CanCastSpell("shadow ward", bot))
         return botAI->CastSpell("shadow ward", bot);
 
