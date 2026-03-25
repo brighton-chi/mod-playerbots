@@ -995,24 +995,16 @@ void MovementAction::UpdateMovementState()
             bot->AddUnitMovementFlag(MOVEMENTFLAG_CAN_FLY);
             bot->AddUnitMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY);
             bot->AddUnitMovementFlag(MOVEMENTFLAG_FLYING);
-            movementFlagsUpdated = true;
+
+            // required for transition and state monitoring.
+            if (MotionMaster* mm = bot->GetMotionMaster())
+                mm->MoveTakeoff(0, {bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ() + 1.F}, 0.F, true);
         }
         else if ((!canFly && !isWaterWalking && isFlying) || (!isMasterFlying && isFlying && onGroundZ))
         {
             bot->RemoveUnitMovementFlag(MOVEMENTFLAG_CAN_FLY);
             bot->RemoveUnitMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY);
             bot->RemoveUnitMovementFlag(MOVEMENTFLAG_FLYING);
-            movementFlagsUpdated = true;
-        }
-        // Safety: Player::TeleportTo() resets movement flags via & MOVEMENTFLAG_MASK_HAS_PLAYER_STATUS_OPCODE,
-        // which strips FLYING but PRESERVES DISABLE_GRAVITY and CAN_FLY. If these orphaned flags remain
-        // after a teleport but the bot should not be flying, clear them here as a fallback.
-        else if (!isFlying && (!canFly || !isMasterFlying) &&
-                 (bot->HasUnitMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY) || bot->HasUnitMovementFlag(MOVEMENTFLAG_CAN_FLY)))
-        {
-            bot->RemoveUnitMovementFlag(MOVEMENTFLAG_FLYING);
-            bot->RemoveUnitMovementFlag(MOVEMENTFLAG_CAN_FLY);
-            bot->RemoveUnitMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY);
             movementFlagsUpdated = true;
         }
 

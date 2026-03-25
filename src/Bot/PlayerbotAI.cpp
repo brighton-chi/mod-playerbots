@@ -805,33 +805,6 @@ void PlayerbotAI::HandleTeleportAck()
             bot->StopMoving();
         }
 
-        // After a near-teleport the bot is at the destination. If the bot was flying when
-        // summoned, clean up the lingering fly-related movement flags.
-        //
-        // IMPORTANT: Player::TeleportTo() resets movement flags via:
-        //   SetUnitMovementFlags(GetUnitMovementFlags() & MOVEMENTFLAG_MASK_HAS_PLAYER_STATUS_OPCODE)
-        // MOVEMENTFLAG_MASK_HAS_PLAYER_STATUS_OPCODE includes DISABLE_GRAVITY and CAN_FLY but
-        // NOT FLYING. So after TeleportTo returns, FLYING is already cleared, but
-        // DISABLE_GRAVITY and CAN_FLY survive. A real client would send a corrective ACK
-        // packet with updated flags; bots send a dummy ACK with flags=0 that is ignored.
-        // We must clear DISABLE_GRAVITY (and CAN_FLY) explicitly here.
-        {
-            const bool canFly = bot->HasIncreaseMountedFlightSpeedAura() || bot->HasFlyAura();
-            const Player* master = GetMaster();
-            const bool isMasterFlying = master ? master->HasUnitMovementFlag(MOVEMENTFLAG_FLYING) : false;
-
-            // TeleportTo already stripped MOVEMENTFLAG_FLYING via MOVEMENTFLAG_MASK_HAS_PLAYER_STATUS_OPCODE,
-            // but DISABLE_GRAVITY and CAN_FLY survive that mask. Clear them if the bot should not be flying.
-            if ((bot->HasUnitMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY) || bot->HasUnitMovementFlag(MOVEMENTFLAG_CAN_FLY)) &&
-                (!canFly || !isMasterFlying))
-            {
-                bot->RemoveUnitMovementFlag(MOVEMENTFLAG_FLYING);
-                bot->RemoveUnitMovementFlag(MOVEMENTFLAG_CAN_FLY);
-                bot->RemoveUnitMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY);
-                bot->SendMovementFlagUpdate();
-            }
-        }
-
         // simulate near teleport latency
         SetNextCheckDelay(urand(1000, 2000));
         return;
