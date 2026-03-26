@@ -1751,19 +1751,45 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
             Position target = GetPointBeyondTrap(nearestTrap, 5.0f);
             if (bot->GetExactDist2d(target) > 1.0f)
             {
+                LOG_DEBUG("playerbots", "Bot {} moving towards point beyond trap at ({}, {})", bot->GetName(),
+                          target.GetPositionX(), target.GetPositionY());
                 // Movement to trap can be weird, test with direct waypoint move
                 return MoveTo(BLACK_TEMPLE_MAP_ID, target.GetPositionX(), target.GetPositionY(),
                               bot->GetPositionZ(), false, false, false, true,
                               MovementPriority::MOVEMENT_FORCED, true, true);
             }
-            // Doesn't work right now, need player to use trap
-            /* else if (nearestTrap->GetExactDist2d(bot) <= 4.0f)
+            else if (nearestTrap->GetExactDist2d(bot) <= 4.0f)
             {
-                nearestTrap->Use(bot);
-                LOG_DEBUG("playerbots", "Bot {} used trap {} to freeze Illidan", bot->GetName(),
+                LOG_DEBUG("playerbots", "Bot {} is within 4 yards of trap {}, attempting to trigger it", bot->GetName(),
                           nearestTrap->GetGUID().ToString());
+                // Immediate attempt to trigger the trap; no delays or Illidan-victim logging.
+                GameObject* trap = nearestTrap;
+                if (trap)
+                {
+                    LOG_DEBUG("playerbots", "Bot {} attempting GameObject::Use() on trap {}", bot->GetName(), trap->GetGUID().ToString());
+                    // Primary attempt: call Use() on the gameobject
+                    trap->Use(bot);
+
+                    LOG_DEBUG("playerbots", "Bot {} attempting CMSG_GAMEOBJ_USE for trap {}", bot->GetName(), trap->GetGUID().ToString());
+                    // Fallback 1: send CMSG_GAMEOBJ_USE
+                    WorldPacket usePacket(CMSG_GAMEOBJ_USE);
+                    usePacket << trap->GetGUID();
+                    bot->GetSession()->HandleGameObjectUseOpcode(usePacket);
+
+                    LOG_DEBUG("playerbots", "Bot {} attempting CMSG_GAMEOBJ_REPORT_USE for trap {}", bot->GetName(), trap->GetGUID().ToString());
+                    // Fallback 2: send report use packet
+                    WorldPacket reportPacket(CMSG_GAMEOBJ_REPORT_USE);
+                    reportPacket << trap->GetGUID();
+                    bot->GetSession()->HandleGameobjectReportUse(reportPacket);
+
+                    LOG_DEBUG("playerbots", "Bot {} attempted all methods to trigger trap {}", bot->GetName(), trap->GetGUID().ToString());
+                }
+                else
+                {
+                    LOG_DEBUG("playerbots", "Nearest trap pointer was null when attempting use for bot {}", bot->GetName());
+                }
                 return true;
-            } */
+            }
         }
     }
 

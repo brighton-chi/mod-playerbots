@@ -928,7 +928,7 @@ bool ArchimondeMoveBossToInitialPositionAction::Execute(Event /*event*/)
     {
         LOG_DEBUG("playerbots", "bot {} is {} yards above Archimonde",
             bot->GetName(), bot->GetPositionZ() - archimonde->GetPositionZ());
-        if (bot->CanCastSpell("charge", archimonde))
+        if (botAI->CanCastSpell("charge", archimonde))
         {
             LOG_DEBUG("playerbots", "bot {} is using charge to get to Archimonde", bot->GetName());
             return botAI->CastSpell("charge", archimonde);
