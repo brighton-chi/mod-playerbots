@@ -1756,7 +1756,7 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
                 // Movement to trap can be weird, test with direct waypoint move
                 return MoveTo(BLACK_TEMPLE_MAP_ID, target.GetPositionX(), target.GetPositionY(),
                               bot->GetPositionZ(), false, false, false, true,
-                              MovementPriority::MOVEMENT_FORCED, true, true);
+                              MovementPriority::MOVEMENT_COMBAT, true, true);
             }
             else if (nearestTrap->GetExactDist2d(bot) <= 4.0f)
             {
@@ -2162,10 +2162,17 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*ev
 
     EyeBlastDangerArea dangerArea = GetEyeBlastDangerArea(bot, illidan);
 
-    if (dangerArea.width > 0.0f)
+    // Only consider the eye blast if its trigger NPC is within 30 yards of the tank
+    constexpr float eyeBlastTriggerRadius = 30.0f;
+    if (dangerArea.width > 0.0f &&
+        bot->GetExactDist2d(dangerArea.start) <= eyeBlastTriggerRadius)
+    {
         return RepositionToAvoidEyeBlast(illidan, dangerArea);
+    }
     else
+    {
         return RepositionToAvoidBlaze(eastFlame, westFlame);
+    }
 
     return false;
 }

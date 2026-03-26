@@ -203,8 +203,6 @@ namespace BlackTempleHelpers
         Position start;
         Position end;
         float width;
-        // Untested: must be within 30 yards of the eye blast trigger's current position
-        Position triggerPos;
     };
     EyeBlastDangerArea GetEyeBlastDangerArea(Player* bot, Unit* illidan);
     bool IsPositionInEyeBlastDangerArea(const Position& pos, const EyeBlastDangerArea& area);

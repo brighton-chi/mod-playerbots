@@ -432,12 +432,8 @@ namespace BlackTempleHelpers
         Position startPos = Position(eyeBlastTrigger->GetPositionX(), eyeBlastTrigger->GetPositionY(),
                                      eyeBlastTrigger->GetPositionZ());
         Position endPos = eyeBeamPos[beamPosId + MAX_EYE_BEAM_POS];
-        // Untested: must be within 30 yards of the eye blast trigger's current position
-        Position triggerPos = Position(eyeBlastTrigger->GetPositionX(), eyeBlastTrigger->GetPositionY(),
-                                       eyeBlastTrigger->GetPositionZ());
-
         constexpr float eyeBlastWidth = 9.0f;
-        return { startPos, endPos, eyeBlastWidth, triggerPos };
+        return { startPos, endPos, eyeBlastWidth };
     }
 
     bool IsPositionInEyeBlastDangerArea(const Position& pos, const EyeBlastDangerArea& area)
@@ -454,10 +450,6 @@ namespace BlackTempleHelpers
         float closestY = area.start.GetPositionY() + projectionFactor * dy;
 
         float distToLine = pos.GetExactDist2d(closestX, closestY);
-
-        // Untested: must be within 30 yards of the eye blast trigger's current position
-        if (pos.GetExactDist2d(area.triggerPos) > 30.0f)
-            return false;
 
         return distToLine < area.width;
     }
