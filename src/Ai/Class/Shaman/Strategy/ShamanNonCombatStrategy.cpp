@@ -14,7 +14,7 @@ public:
     ShamanNonCombatStrategyActionNodeFactory()
     {
         creators["flametongue weapon main hand"] = &flametongue_weapon_main_hand;
-        // creators["frostbrand weapon"] = &frostbrand_weapon;
+        // creators["frostbrand weapon off hand"] = &frostbrand_weapon_off_hand;
         creators["windfury weapon main hand"] = &windfury_weapon_main_hand;
         creators["earthliving weapon main hand"] = &earthliving_weapon_main_hand;
         creators["cleanse spirit"] = &cleanse_spirit;
