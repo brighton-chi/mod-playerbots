@@ -1746,7 +1746,7 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
                       nearestTrap->GetGUID().ToString(), trapDist);
         }
         // End logging
-        if (nearestTrap && illidan->GetVictim() == bot && bot->GetHealthPct() > 50.0f)
+        if (nearestTrap && illidan->GetVictim() == bot)
         {
             float trapDist = bot->GetExactDist2d(nearestTrap);
             Position target = GetPointBeyondTrap(nearestTrap, 5.0f);
@@ -1806,9 +1806,8 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
                 }
                 return true;
             }
-
             // Otherwise, move to the point beyond the trap if we're not already there.
-            if (targetDist > 2.0f)
+            else if (targetDist > 2.0f && bot->GetHealthPct() > 50.0f)
             {
                 LOG_DEBUG("playerbots", "Bot {} moving towards point beyond trap at ({}, {})", bot->GetName(),
                           target.GetPositionX(), target.GetPositionY());
@@ -1855,25 +1854,6 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
 GameObject* IllidanStormrageMainTankRepositionBossAction::FindNearestTrap()
 {
     auto const& gos = AI_VALUE(GuidVector, "nearest game objects");
-
-    // Log details about all nearest game objects
-    std::ostringstream oss;
-    oss << "Nearest game objects for bot " << bot->GetName() << ":";
-    for (ObjectGuid const& guid : gos)
-    {
-        GameObject* go = botAI->GetGameObject(guid);
-        if (!go)
-        {
-            oss << "\n  [guid=" << guid.ToString() << "] (nullptr)";
-            continue;
-        }
-        oss << "\n  [guid=" << guid.ToString()
-            << ", entry=" << go->GetEntry()
-            << ", spawned=" << go->isSpawned()
-            << ", dist=" << bot->GetExactDist2d(go) << "]";
-    }
-    LOG_DEBUG("playerbots", "{}", oss.str());
-    // End logging
 
     // Try with no distance limit right now for testing
     GameObject* nearestTrap = nullptr;
@@ -2661,6 +2641,10 @@ bool IllidanStormrageWarlockTankHandleDemonBossAction::Execute(Event /*event*/)
     if (bot->FindNearestCreature(static_cast<uint32>(
         BlackTempleNPCs::NPC_SHADOW_DEMON), 35.0f, true))
         return false;
+
+    if (botAI->CanCastSpell("shadow ward", bot) &&
+        botAI->CastSpell("shadow ward", bot))
+        return true;
 
     if (botAI->CanCastSpell("searing pain", illidan))
         return botAI->CastSpell("searing pain", illidan);
