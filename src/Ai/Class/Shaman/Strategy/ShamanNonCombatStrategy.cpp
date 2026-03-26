@@ -27,14 +27,14 @@ private:
     {
         return new ActionNode("flametongue weapon main hand",
                               /*P*/ {},
-                              /*A*/ { NextAction("rockbiter weapon") },
+                              /*A*/ { NextAction("rockbiter weapon main hand") },
                               /*C*/ {});
     }
-    // static ActionNode* frostbrand_weapon([[maybe_unused]] PlayerbotAI* botAI)
+    // static ActionNode* frostbrand_weapon_off_hand([[maybe_unused]] PlayerbotAI* botAI)
     // {
-    //     return new ActionNode("frostbrand weapon",
+    //     return new ActionNode("frostbrand weapon off hand",
     //                           /*P*/ {},
-    //                           /*A*/ { NextAction("flametongue weapon main hand") },
+    //                           /*A*/ { NextAction("flametongue weapon off hand") },
     //                           /*C*/ {});
     // }
     static ActionNode* earthliving_weapon_main_hand([[maybe_unused]] PlayerbotAI* botAI)
