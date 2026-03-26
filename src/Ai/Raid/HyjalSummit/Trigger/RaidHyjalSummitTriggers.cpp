@@ -302,11 +302,7 @@ bool ArchimondePullingBossTrigger::IsActive()
 
 bool ArchimondeBossEngagedByMainTankTrigger::IsActive()
 {
-    if (!botAI->IsMainTank(bot))
-        return false;
-
-    Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
-    return archimonde && archimonde->GetHealthPct() > 90.0f;
+    return botAI->IsMainTank(bot) && AI_VALUE2(Unit*, "find target", "archimonde");
 }
 
 bool ArchimondeBossCastsFearTrigger::IsActive()

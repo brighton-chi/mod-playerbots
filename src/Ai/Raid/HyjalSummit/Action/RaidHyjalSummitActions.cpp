@@ -923,6 +923,21 @@ bool ArchimondeMoveBossToInitialPositionAction::Execute(Event /*event*/)
     if (bot->GetVictim() != archimonde)
         return Attack(archimonde);
 
+    if (bot->getClass() == CLASS_WARRIOR &&
+        bot->GetPositionZ() > archimonde->GetPositionZ() + 10.0f)
+    {
+        LOG_DEBUG("playerbots", "bot {} is {} yards above Archimonde",
+            bot->GetName(), bot->GetPositionZ() - archimonde->GetPositionZ());
+        if (bot->CanCastSpell("charge", archimonde))
+        {
+            LOG_DEBUG("playerbots", "bot {} is using charge to get to Archimonde", bot->GetName());
+            return botAI->CastSpell("charge", archimonde);
+        }
+    }
+
+    if (archimonde->GetHealthPct() < 90.0f)
+        return false;
+
     if (archimonde->GetVictim() == bot && bot->IsWithinMeleeRange(archimonde))
     {
         const Position& position = ARCHIMONDE_INITIAL_POSITION;
