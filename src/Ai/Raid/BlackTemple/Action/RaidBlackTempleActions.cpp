@@ -1746,23 +1746,19 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
                       nearestTrap->GetGUID().ToString(), trapDist);
         }
         // End logging
-        if (nearestTrap && illidan->GetVictim() == bot)
+        if (nearestTrap && illidan->GetVictim() == bot && bot->GetHealthPct() > 50.0f)
         {
+            float trapDist = bot->GetExactDist2d(nearestTrap);
             Position target = GetPointBeyondTrap(nearestTrap, 5.0f);
-            if (bot->GetExactDist2d(target) > 1.0f)
+            float targetDist = bot->GetExactDist2d(target);
+            LOG_DEBUG("playerbots", "Bot {} nearest trap {} dist={}, target beyond trap dist={}", bot->GetName(),
+                      nearestTrap->GetGUID().ToString(), trapDist, targetDist);
+
+            // If we're already close enough to the trap, try to trigger it immediately.
+            if (targetDist <= 2.0f)
             {
-                LOG_DEBUG("playerbots", "Bot {} moving towards point beyond trap at ({}, {})", bot->GetName(),
-                          target.GetPositionX(), target.GetPositionY());
-                // Movement to trap can be weird, test with direct waypoint move
-                return MoveTo(BLACK_TEMPLE_MAP_ID, target.GetPositionX(), target.GetPositionY(),
-                              bot->GetPositionZ(), false, false, false, true,
-                              MovementPriority::MOVEMENT_COMBAT, true, true);
-            }
-            else if (nearestTrap->GetExactDist2d(bot) <= 4.0f)
-            {
-                LOG_DEBUG("playerbots", "Bot {} is within 4 yards of trap {}, attempting to trigger it", bot->GetName(),
+                LOG_DEBUG("playerbots", "Bot {} is within 2 yards of target {}, attempting to trigger trap", bot->GetName(),
                           nearestTrap->GetGUID().ToString());
-                // Immediate attempt to trigger the trap; no delays or Illidan-victim logging.
                 GameObject* trap = nearestTrap;
                 if (trap)
                 {
@@ -1771,13 +1767,11 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
                     trap->Use(bot);
 
                     LOG_DEBUG("playerbots", "Bot {} attempting CMSG_GAMEOBJ_USE for trap {}", bot->GetName(), trap->GetGUID().ToString());
-                    // Fallback 1: send CMSG_GAMEOBJ_USE
                     WorldPacket usePacket(CMSG_GAMEOBJ_USE);
                     usePacket << trap->GetGUID();
                     bot->GetSession()->HandleGameObjectUseOpcode(usePacket);
 
                     LOG_DEBUG("playerbots", "Bot {} attempting CMSG_GAMEOBJ_REPORT_USE for trap {}", bot->GetName(), trap->GetGUID().ToString());
-                    // Fallback 2: send report use packet
                     WorldPacket reportPacket(CMSG_GAMEOBJ_REPORT_USE);
                     reportPacket << trap->GetGUID();
                     bot->GetSession()->HandleGameobjectReportUse(reportPacket);
@@ -1789,6 +1783,23 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
                     LOG_DEBUG("playerbots", "Nearest trap pointer was null when attempting use for bot {}", bot->GetName());
                 }
                 return true;
+            }
+
+            // Otherwise, move to the point beyond the trap if we're not already there.
+            if (targetDist > 2.0f)
+            {
+                LOG_DEBUG("playerbots", "Bot {} moving towards point beyond trap at ({}, {})", bot->GetName(),
+                          target.GetPositionX(), target.GetPositionY());
+
+                float dX = target.GetPositionX() - bot->GetPositionX();
+                float dY = target.GetPositionY() - bot->GetPositionY();
+                float moveDist = std::min(5.0f, targetDist);
+                float moveX = bot->GetPositionX() + (dX / targetDist) * moveDist;
+                float moveY = bot->GetPositionY() + (dY / targetDist) * moveDist;
+
+                return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY,
+                              bot->GetPositionZ(), false, false, false, true,
+                              MovementPriority::MOVEMENT_COMBAT, true, true);
             }
         }
     }
@@ -1859,7 +1870,7 @@ GameObject* IllidanStormrageMainTankRepositionBossAction::FindNearestTrap()
 }
 
 Position IllidanStormrageMainTankRepositionBossAction::GetPointBeyondTrap(
-    GameObject* nearestTrap, float extraDistance /*= 5.0f*/)
+    GameObject* nearestTrap, float extraDistance)
 {
     if (!nearestTrap)
         return Position();
@@ -2416,20 +2427,24 @@ bool IllidanStormrageDisperseRangedAction::Execute(Event /*event*/)
 
     int phase = GetIllidanPhase(illidan);
 
-    if (phase == 3 || phase == 5)
-        return FanOutBehindInHumanPhase(illidan, group);
-    else if (phase == 4)
+    if (phase == 4)
+    {
         return SpreadInCircleInDemonPhase(illidan, group);
-
-    return false;
+    }
+    else if (GetBotWithParasiticShadowfiend(bot) == bot ||
+             (GetIllidanTrapperHunter(bot) == bot && GetBotWithParasiticShadowfiend(bot)))
+    {
+        return false;
+    }
+    else
+    {
+        return FanOutBehindInHumanPhase(illidan, group);
+    }
 }
 
 bool IllidanStormrageDisperseRangedAction::FanOutBehindInHumanPhase(
     Unit* illidan, Group* group)
 {
-    if (illidan->GetPositionZ() > ILLIDAN_FLOOR_Z_THRESHOLD)
-        return false;
-
     auto const& flameCrashes = GetAllFlameCrashes(bot);
 
     std::vector<Player*> healers;
