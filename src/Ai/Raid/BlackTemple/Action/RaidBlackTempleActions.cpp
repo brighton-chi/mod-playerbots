@@ -1766,17 +1766,39 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
                     // Primary attempt: call Use() on the gameobject
                     trap->Use(bot);
 
+                    // If the gameobject is gone or not spawned anymore, the Use() succeeded.
+                    GameObject* afterUse = botAI->GetGameObject(trap->GetGUID());
+                    if (!afterUse || !afterUse->isSpawned())
+                    {
+                        LOG_DEBUG("playerbots", "GameObject::Use() succeeded for trap {} (bot {})", trap->GetGUID().ToString(), bot->GetName());
+                        return true;
+                    }
+
                     LOG_DEBUG("playerbots", "Bot {} attempting CMSG_GAMEOBJ_USE for trap {}", bot->GetName(), trap->GetGUID().ToString());
                     WorldPacket usePacket(CMSG_GAMEOBJ_USE);
                     usePacket << trap->GetGUID();
                     bot->GetSession()->HandleGameObjectUseOpcode(usePacket);
+
+                    GameObject* afterPacket = botAI->GetGameObject(trap->GetGUID());
+                    if (!afterPacket || !afterPacket->isSpawned())
+                    {
+                        LOG_DEBUG("playerbots", "CMSG_GAMEOBJ_USE succeeded for trap {} (bot {})", trap->GetGUID().ToString(), bot->GetName());
+                        return true;
+                    }
 
                     LOG_DEBUG("playerbots", "Bot {} attempting CMSG_GAMEOBJ_REPORT_USE for trap {}", bot->GetName(), trap->GetGUID().ToString());
                     WorldPacket reportPacket(CMSG_GAMEOBJ_REPORT_USE);
                     reportPacket << trap->GetGUID();
                     bot->GetSession()->HandleGameobjectReportUse(reportPacket);
 
-                    LOG_DEBUG("playerbots", "Bot {} attempted all methods to trigger trap {}", bot->GetName(), trap->GetGUID().ToString());
+                    GameObject* afterReport = botAI->GetGameObject(trap->GetGUID());
+                    if (!afterReport || !afterReport->isSpawned())
+                    {
+                        LOG_DEBUG("playerbots", "CMSG_GAMEOBJ_REPORT_USE succeeded for trap {} (bot {})", trap->GetGUID().ToString(), bot->GetName());
+                        return true;
+                    }
+
+                    LOG_DEBUG("playerbots", "Bot {} attempted all methods to trigger trap {} (none reported success)", bot->GetName(), trap->GetGUID().ToString());
                 }
                 else
                 {
