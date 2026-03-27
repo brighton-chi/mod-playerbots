@@ -212,6 +212,9 @@ bool AzgalorBossEngagedByMainTankTrigger::IsActive()
 
 bool AzgalorMainTankIsPositioningBossTrigger::IsActive()
 {
+    if (botAI->IsRanged(bot))
+        return false;
+
     Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
     if (!azgalor || azgalor->GetHealthPct() < 85.0f ||
         azgalor->GetVictim() == bot)
@@ -226,19 +229,13 @@ bool AzgalorMainTankIsPositioningBossTrigger::IsActive()
 
     if (!GET_PLAYERBOT_AI(mainTank))
     {
-        if (botAI->IsMelee(bot) && azgalor->GetHealthPct() > 95.0f)
+        if (azgalor->GetHealthPct() > 95.0f)
             return true;
         else
             return false;
     }
-    else if (botAI->IsMelee(bot))
-    {
-        return GetAzgalorTankStep(botAI, bot) < 2;
-    }
-    else
-    {
-        return GetAzgalorTankStep(botAI, bot) < 1;
-    }
+
+    return GetAzgalorTankStep(botAI, bot) < 2;
 }
 
 // Spread to mitigate Rain of Fire, but GTFO if Rain of Fire is on the bot
@@ -248,18 +245,11 @@ bool AzgalorBossCastsRainOfFireTrigger::IsActive()
         return false;
 
     Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
-    if (!azgalor ||
+    if (!azgalor || azgalor->GetVictim() == bot ||
         bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_DOOM)))
         return false;
 
-    if (azgalor->GetHealthPct() < 85.0f)
-        return true;
-
-    Player* mainTank = GetGroupMainTank(botAI, bot);
-    if (mainTank && GET_PLAYERBOT_AI(mainTank))
-        return GetAzgalorTankStep(botAI, bot) == 2;
-    else
-        return true;
+    return true;
 }
 
 bool AzgalorBotIsDoomedTrigger::IsActive()

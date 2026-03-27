@@ -170,9 +170,6 @@ public:
     AzgalorWaitAtSafePositionAction(
         PlayerbotAI* botAI) : MovementAction(botAI, "azgalor wait at safe position") {}
     bool Execute(Event event) override;
-
-private:
-    bool AvoidRainOfFire(Aura* aura);
 };
 
 class AzgalorDisperseRangedAction : public MovementAction

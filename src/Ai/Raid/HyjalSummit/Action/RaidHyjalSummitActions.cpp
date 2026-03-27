@@ -772,7 +772,7 @@ bool AzgalorDisperseRangedAction::Execute(Event /*event*/)
     if (!azgalor)
         return false;
 
-    constexpr uint32 minInterval = 1000;
+    constexpr uint32 minInterval = 0;
 
     // Azgalor's hitbox is 8.8 yards
     constexpr float safeDistFromBoss = 29.0f;
@@ -783,103 +783,22 @@ bool AzgalorDisperseRangedAction::Execute(Event /*event*/)
     constexpr float safeDistFromDoomguard = 14.0f;
     if (Unit* doomguard = AI_VALUE2(Unit*, "find target", "lesser doomguard");
         doomguard && bot->GetExactDist2d(doomguard) < safeDistFromDoomguard)
-        return FleePosition(doomguard->GetPosition(), safeDistFromDoomguard, minInterval);
+        return FleePosition(doomguard->GetPosition(), safeDistFromDoomguard);
 
     constexpr float safeDistFromPlayer = 5.0f;
     if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
-        return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer, minInterval);
+        return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer);
 
     return false;
 }
 
+// Wait a bit North of Thrall's starting location for the tank to position and turn Azgalor
 bool AzgalorWaitAtSafePositionAction::Execute(Event /*event*/)
 {
-    // Two healers run with the MT to keep MT up while Azgalor is getting positioned
-    if (botAI->IsAssistHealOfIndex(bot, 0, true) ||
-        botAI->IsAssistHealOfIndex(bot, 1, true))
-    {
-        Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
-        if (!azgalor)
-            return false;
-
-        constexpr uint32 minInterval = 0;
-        constexpr float safeDistFromBoss = 35.0f;
-        if (bot->GetExactDist2d(azgalor) < safeDistFromBoss)
-            return FleePosition(azgalor->GetPosition(), safeDistFromBoss, minInterval);
-
-        return false;
-    }
-    else if (Aura* aura = bot->GetAura(
-        static_cast<uint32>(HyjalSummitSpells::SPELL_RAIN_OF_FIRE)))
-    {
-        return AvoidRainOfFire(aura);
-    }
-    else
-    {
-        const Position& position = AZGALOR_WAITING_POSITION;
-        return MoveTo(HYJAL_SUMMIT_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-                      position.GetPositionZ(), false, false, false, false,
-                      MovementPriority::MOVEMENT_FORCED, true, false);
-    }
-}
-
-bool AzgalorWaitAtSafePositionAction::AvoidRainOfFire(Aura* aura)
-{
-    DynamicObject* dynObj = aura->GetDynobjOwner();
-    if (!dynObj)
-        return false;
-
-    float radius = dynObj->GetRadius();
-    const SpellInfo* sInfo = sSpellMgr->GetSpellInfo(dynObj->GetSpellId());
-    if (radius <= 0.0f && sInfo)
-    {
-        for (int e = 0; e < MAX_SPELL_EFFECTS; ++e)
-        {
-            auto const& eff = sInfo->Effects[e];
-            if (eff.Effect == SPELL_EFFECT_SCHOOL_DAMAGE ||
-                (eff.Effect == SPELL_EFFECT_APPLY_AURA &&
-                 eff.ApplyAuraName == SPELL_AURA_PERIODIC_DAMAGE))
-            {
-                radius = eff.CalcRadius();
-                break;
-            }
-        }
-    }
-
-    if (radius <= 0.0f)
-        return false;
-
-    constexpr float bufferDist = 3.0f;
-    constexpr float centerThreshold = 1.0f;
-
-    float dx = bot->GetPositionX() - dynObj->GetPositionX();
-    float dy = bot->GetPositionY() - dynObj->GetPositionY();
-
-    float distToObj = bot->GetExactDist2d(dynObj->GetPositionX(), dynObj->GetPositionY());
-    const float insideThresh = radius + centerThreshold;
-
-    if (distToObj > insideThresh)
-        return false;
-
-    float safeDist = radius + bufferDist;
-    float moveX, moveY;
-
-    if (distToObj == 0.0f)
-    {
-        float angle = frand(0.0f, static_cast<float>(M_PI * 2.0));
-        moveX = dynObj->GetPositionX() + std::cos(angle) * safeDist;
-        moveY = dynObj->GetPositionY() + std::sin(angle) * safeDist;
-    }
-    else
-    {
-        float invDist = 1.0f / distToObj;
-        moveX = dynObj->GetPositionX() + (dx * invDist) * safeDist;
-        moveY = dynObj->GetPositionY() + (dy * invDist) * safeDist;
-    }
-
-    botAI->Reset();
-    return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-                  false, true, MovementPriority::MOVEMENT_FORCED, true, false);
+    const Position& position = AZGALOR_WAITING_POSITION;
+    return MoveTo(HYJAL_SUMMIT_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                  position.GetPositionZ(), false, false, false, false,
+                  MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 // This spot is basically on top of Thrall's starting location
