@@ -766,6 +766,7 @@ bool AzgalorMainTankPositionBossAction::Execute(Event /*event*/)
     return false;
 }
 
+// Testing melee RoF avoidance here also
 bool AzgalorDisperseRangedAction::Execute(Event /*event*/)
 {
     Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
@@ -780,14 +781,14 @@ bool AzgalorDisperseRangedAction::Execute(Event /*event*/)
         constexpr uint32 minInterval = 0;
 
         if (bot->GetExactDist2d(azgalor) < safeDistFromBoss &&
-            FleePosition(azgalor->GetPosition(), safeDistFromBoss, minInterval));
+            FleePosition(azgalor->GetPosition(), safeDistFromBoss, minInterval))
             return true;
 
         // Lesser Doomguard's hitbox is 3.75 yards
         constexpr float safeDistFromDoomguard = 14.0f;
         if (Unit* doomguard = AI_VALUE2(Unit*, "find target", "lesser doomguard");
             doomguard && bot->GetExactDist2d(doomguard) < safeDistFromDoomguard &&
-            FleePosition(doomguard->GetPosition(), safeDistFromDoomguard));
+            FleePosition(doomguard->GetPosition(), safeDistFromDoomguard))
             return true;
 
         constexpr float safeDistFromPlayer = 5.0f;
@@ -796,63 +797,16 @@ bool AzgalorDisperseRangedAction::Execute(Event /*event*/)
     }
     else
     {
-        Aura* aura = bot->GetAura(static_cast<uint32>(HyjalSummitSpells::SPELL_RAIN_OF_FIRE));
-
-        DynamicObject* dynObj = aura->GetDynobjOwner();
-        if (!dynObj)
+        constexpr uint32 RAIN_OF_FIRE_DURATION = 10000;
+        auto it = rainOfFirePosition.find(bot->GetMap()->GetInstanceId());
+        if (it == rainOfFirePosition.end())
             return false;
 
-        float radius = dynObj->GetRadius();
-        const SpellInfo* sInfo = sSpellMgr->GetSpellInfo(dynObj->GetSpellId());
-        if (radius <= 0.0f && sInfo)
-        {
-            for (int e = 0; e < MAX_SPELL_EFFECTS; ++e)
-            {
-                auto const& eff = sInfo->Effects[e];
-                if (eff.Effect == SPELL_EFFECT_SCHOOL_DAMAGE ||
-                    (eff.Effect == SPELL_EFFECT_APPLY_AURA &&
-                     eff.ApplyAuraName == SPELL_AURA_PERIODIC_DAMAGE))
-                {
-                    radius = eff.CalcRadius();
-                    break;
-                }
-            }
-        }
-
-        if (radius <= 0.0f)
+        if (getMSTimeDiff(it->second.lastUpdateTime, getMSTime()) >= RAIN_OF_FIRE_DURATION)
             return false;
 
-        constexpr float bufferDist = 3.0f;
-        constexpr float centerThreshold = 1.0f;
-
-        float dx = bot->GetPositionX() - dynObj->GetPositionX();
-        float dy = bot->GetPositionY() - dynObj->GetPositionY();
-
-        float distToObj = bot->GetExactDist2d(dynObj->GetPositionX(), dynObj->GetPositionY());
-        const float insideThresh = radius + centerThreshold;
-
-        if (distToObj > insideThresh)
-            return false;
-
-        float safeDist = radius + bufferDist;
-        float moveX, moveY;
-
-        if (distToObj == 0.0f)
-        {
-            float angle = frand(0.0f, static_cast<float>(M_PI * 2.0));
-            moveX = dynObj->GetPositionX() + std::cos(angle) * safeDist;
-            moveY = dynObj->GetPositionY() + std::sin(angle) * safeDist;
-        }
-        else
-        {
-            float invDist = 1.0f / distToObj;
-            moveX = dynObj->GetPositionX() + (dx * invDist) * safeDist;
-            moveY = dynObj->GetPositionY() + (dy * invDist) * safeDist;
-        }
-
-        botAI->Reset();
-        return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-                      false, true, MovementPriority::MOVEMENT_FORCED, true, false);
+        if (bot->GetExactDist2d(it->second.position) < 10.0f)
+            return MoveAway(azgalor, 5.0f);
     }
 
     return false;

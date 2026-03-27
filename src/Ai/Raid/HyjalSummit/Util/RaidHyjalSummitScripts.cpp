@@ -5,6 +5,7 @@
 
 #include "RaidHyjalSummitHelpers.h"
 #include "AllCreatureScript.h"
+#include "DynamicObjectScript.h"
 #include "ScriptMgr.h"
 #include "Timer.h"
 
@@ -14,10 +15,10 @@ using namespace HyjalSummitHelpers;
 // can avoid the persistent fire trail it leaves behind. Each sample is tagged with a
 // timestamp and expires after TRAIL_DURATION ms, matching the lifetime of a Doomfire
 // DynamicObject (18 seconds)
-class DoomfireTrailScript : public AllCreatureScript
+class ArchimondeDoomfireTrailScript : public AllCreatureScript
 {
 public:
-    DoomfireTrailScript() : AllCreatureScript("DoomfireTrailScript") {}
+    ArchimondeDoomfireTrailScript() : AllCreatureScript("ArchimondeDoomfireTrailScript") {}
 
     void OnAllCreatureUpdate(Creature* creature, uint32 /*diff*/) override
     {
@@ -58,7 +59,23 @@ public:
     }
 };
 
+class AzgalorRainOfFireScript : public DynamicObjectScript
+{
+public:
+    AzgalorRainOfFireScript() : DynamicObjectScript("AzgalorRainOfFireScript") {}
+
+    void OnUpdate(DynamicObject* dynobj, uint32 /*diff*/) override
+    {
+        if (dynobj->GetSpellId() != static_cast<uint32>(HyjalSummitSpells::SPELL_RAIN_OF_FIRE))
+            return;
+
+        uint32 instanceId = dynobj->GetMap()->GetInstanceId();
+        rainOfFirePosition[instanceId] = { dynobj->GetPosition(), getMSTime() };
+    }
+};
+
 void AddSC_HyjalSummitBotScripts()
 {
-    new DoomfireTrailScript();
+    new ArchimondeDoomfireTrailScript();
+    new AzgalorRainOfFireScript();
 }

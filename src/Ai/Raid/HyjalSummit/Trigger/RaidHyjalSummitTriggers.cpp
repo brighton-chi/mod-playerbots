@@ -246,7 +246,23 @@ bool AzgalorBossCastsRainOfFireTrigger::IsActive()
         bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_DOOM)))
         return false;
 
-    return !botAI->IsTank(bot);
+    if (botAI->IsTank(bot))
+        return false;
+
+    if (botAI->IsRanged(bot))
+    {
+        return true;
+    }
+    else
+    {
+        constexpr uint32 RAIN_OF_FIRE_DURATION = 10000;
+
+        auto it = rainOfFirePosition.find(bot->GetMap()->GetInstanceId());
+        if (it == rainOfFirePosition.end())
+            return false;
+
+        return getMSTimeDiff(it->second.lastUpdateTime, getMSTime()) < RAIN_OF_FIRE_DURATION;
+    }
 }
 
 bool AzgalorBotIsDoomedTrigger::IsActive()

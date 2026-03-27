@@ -244,6 +244,18 @@ float AzgalorMeleeJustStandInFireMultiplier::GetValue(Action* action)
     if (dynamic_cast<AvoidAoeAction*>(action))
         return 0.0f;
 
+    constexpr uint32 RAIN_OF_FIRE_DURATION = 10000;
+    auto it = rainOfFirePosition.find(bot->GetMap()->GetInstanceId());
+    if (it == rainOfFirePosition.end())
+        return 1.0f;
+
+    if (getMSTimeDiff(it->second.lastUpdateTime, getMSTime()) >= RAIN_OF_FIRE_DURATION)
+        return 1.0f;
+
+    if (bot->GetExactDist2d(it->second.position) < 10.0f && dynamic_cast<MovementAction*>(action) &&
+        !dynamic_cast<AzgalorDisperseRangedAction*>(action))
+        return 0.0f;
+
     return 1.0f;
 }
 

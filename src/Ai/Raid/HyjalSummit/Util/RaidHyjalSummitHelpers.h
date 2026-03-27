@@ -44,6 +44,9 @@ namespace HyjalSummitHelpers
         // Anetheron
         NPC_TOWERING_INFERNAL  = 17818,
 
+        // Azgalor
+        NPC_AZGALOR             = 17842,
+
         // Archimonde
         NPC_DOOMFIRE           = 18095,
         // NPC_DOOMFIRE_SPIRIT    = 18104,
@@ -76,6 +79,12 @@ namespace HyjalSummitHelpers
     extern const Position AZGALOR_DOOMGUARD_POSITION;
     extern const Position AZGALOR_WAITING_POSITION;
     extern std::unordered_map<ObjectGuid, uint8> azgalorTankStep;
+    struct RainOfFireData
+    {
+        Position position;
+        uint32 lastUpdateTime;
+    };
+    extern std::unordered_map<uint32, RainOfFireData> rainOfFirePosition;
     int GetAzgalorTankStep(PlayerbotAI* botAI, Player* bot);
     bool AnyGroupMemberHasDoom(Player* bot);
 
