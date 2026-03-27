@@ -241,15 +241,12 @@ bool AzgalorMainTankIsPositioningBossTrigger::IsActive()
 // Spread to mitigate Rain of Fire, but GTFO if Rain of Fire is on the bot
 bool AzgalorBossCastsRainOfFireTrigger::IsActive()
 {
-    if (!botAI->IsRanged(bot))
-        return false;
-
     Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
     if (!azgalor || azgalor->GetVictim() == bot ||
         bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_DOOM)))
         return false;
 
-    return true;
+    return !botAI->IsTank(bot);
 }
 
 bool AzgalorBotIsDoomedTrigger::IsActive()
