@@ -13,7 +13,7 @@ using namespace HyjalSummitHelpers;
 // Records the position of each Doomfire NPC (18095) at regular intervals so that bots
 // can avoid the persistent fire trail it leaves behind. Each sample is tagged with a
 // timestamp and expires after TRAIL_DURATION ms, matching the lifetime of a Doomfire
-// DynamicObject (18 seconds).
+// DynamicObject (18 seconds)
 class DoomfireTrailScript : public AllCreatureScript
 {
 public:

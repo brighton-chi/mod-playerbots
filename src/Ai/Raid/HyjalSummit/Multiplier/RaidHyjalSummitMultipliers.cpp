@@ -19,6 +19,8 @@
 
 using namespace HyjalSummitHelpers;
 
+// I don't like having to run this checks on every boss, but otherwise
+// Bloodlust/Heroism will be blown on cooldown due to the trash wave composition
 float HyjalSummitTimeBloodlustAndHeroismMultiplier::GetValue(Action* action)
 {
     if (bot->getClass() != CLASS_SHAMAN)
@@ -249,8 +251,7 @@ float AzgalorMeleeJustStandInFireMultiplier::GetValue(Action* action)
 
 float ArchimondeDisableCombatFormationMoveMultiplier::GetValue(Action* action)
 {
-    Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
-    if (!archimonde)
+    if (!AI_VALUE2(Unit*, "find target", "archimonde"))
         return 1.0f;
 
     if (dynamic_cast<CombatFormationMoveAction*>(action) &&

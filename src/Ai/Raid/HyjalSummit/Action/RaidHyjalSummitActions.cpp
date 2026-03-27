@@ -71,6 +71,7 @@ bool RageWinterchillMisdirectBossToMainTankAction::Execute(Event /*event*/)
     return false;
 }
 
+// Position is back towards the center of the base to give some more room to manuever
 bool RageWinterchillMainTankPositionBossAction::Execute(Event /*event*/)
 {
     Unit* winterchill = AI_VALUE2(Unit*, "find target", "rage winterchill");
@@ -102,6 +103,7 @@ bool RageWinterchillMainTankPositionBossAction::Execute(Event /*event*/)
     return false;
 }
 
+// Spread ranged DPS in a circle initially--after the initial spread, movement is free
 bool RageWinterchillSpreadRangedInCircleAction::Execute(Event /*event*/)
 {
     Group* group = bot->GetGroup();
@@ -221,6 +223,7 @@ bool AnetheronMisdirectBossAndInfernalsToTanksAction::Execute(Event /*event*/)
     return false;
 }
 
+// Position is back towards the center of the base, near the crossroads
 bool AnetheronMainTankPositionBossAction::Execute(Event /*event*/)
 {
     Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
@@ -341,6 +344,7 @@ bool AnetheronSpreadRangedInArcAction::Execute(Event /*event*/)
     return false;
 }
 
+// Run to the nearest of two Infernal tanking spots, East and West of Anetheron
 bool AnetheronBringInfernalToInfernalTankAction::Execute(Event /*event*/)
 {
     const Position& position = GetClosestInfernalTankPosition(bot);
@@ -355,6 +359,7 @@ bool AnetheronBringInfernalToInfernalTankAction::Execute(Event /*event*/)
     return false;
 }
 
+// Pick up the Infernal and bring it to the closest Infernal tanking position
 bool AnetheronFirstAssistTankPickUpInfernalsAction::Execute(Event /*event*/)
 {
     Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
@@ -408,6 +413,7 @@ bool AnetheronFirstAssistTankPickUpInfernalsAction::Execute(Event /*event*/)
     return false;
 }
 
+// Only nearbyish ranged DPS should attack Infernals
 bool AnetheronAssignDpsPriorityAction::Execute(Event /*event*/)
 {
     Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
@@ -481,6 +487,7 @@ bool KazrogalMisdirectBossToMainTankAction::Execute(Event /*event*/)
     return false;
 }
 
+// Position is near the gate so the raid can get start on DPS ASAP
 bool KazrogalMainTankPositionBossAction::Execute(Event /*event*/)
 {
     Unit* kazrogal = AI_VALUE2(Unit*, "find target", "kaz'rogal");
@@ -702,6 +709,8 @@ bool AzgalorMisdirectBossToMainTankAction::Execute(Event /*event*/)
     return false;
 }
 
+// Two-step move: back up toward the base, then move back toward the base entrance
+// to turn Azgalor away from the raid
 bool AzgalorMainTankPositionBossAction::Execute(Event /*event*/)
 {
     Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
@@ -750,7 +759,7 @@ bool AzgalorMainTankPositionBossAction::Execute(Event /*event*/)
             float orientation = atan2(azgalor->GetPositionY() - bot->GetPositionY(),
                                       azgalor->GetPositionX() - bot->GetPositionX());
             bot->SetFacingTo(orientation);
-            azgalorTankStep[guid] = 2; // try setting a step 2 for dps/healers to engage
+            azgalorTankStep[guid] = 2;
         }
     }
 
@@ -786,7 +795,8 @@ bool AzgalorDisperseRangedAction::Execute(Event /*event*/)
 bool AzgalorWaitAtSafePositionAction::Execute(Event /*event*/)
 {
     // Two healers run with the MT to keep MT up while Azgalor is getting positioned
-    if (botAI->IsAssistHealOfIndex(bot, 0, true) || botAI->IsAssistHealOfIndex(bot, 1, true))
+    if (botAI->IsAssistHealOfIndex(bot, 0, true) ||
+        botAI->IsAssistHealOfIndex(bot, 1, true))
     {
         Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
         if (!azgalor)
@@ -796,6 +806,13 @@ bool AzgalorWaitAtSafePositionAction::Execute(Event /*event*/)
         constexpr float safeDistFromBoss = 35.0f;
         if (bot->GetExactDist2d(azgalor) < safeDistFromBoss)
             return FleePosition(azgalor->GetPosition(), safeDistFromBoss, minInterval);
+
+        return false;
+    }
+    else if (Aura* aura = bot->GetAura(
+        static_cast<uint32>(HyjalSummitSpells::SPELL_RAIN_OF_FIRE)))
+    {
+        return AvoidRainOfFire(aura);
     }
     else
     {
@@ -804,10 +821,68 @@ bool AzgalorWaitAtSafePositionAction::Execute(Event /*event*/)
                       position.GetPositionZ(), false, false, false, false,
                       MovementPriority::MOVEMENT_FORCED, true, false);
     }
-
-    return false;
 }
 
+bool AzgalorWaitAtSafePositionAction::AvoidRainOfFire(Aura* aura)
+{
+    DynamicObject* dynObj = aura->GetDynobjOwner();
+    if (!dynObj)
+        return false;
+
+    float radius = dynObj->GetRadius();
+    const SpellInfo* sInfo = sSpellMgr->GetSpellInfo(dynObj->GetSpellId());
+    if (radius <= 0.0f && sInfo)
+    {
+        for (int e = 0; e < MAX_SPELL_EFFECTS; ++e)
+        {
+            auto const& eff = sInfo->Effects[e];
+            if (eff.Effect == SPELL_EFFECT_SCHOOL_DAMAGE ||
+                (eff.Effect == SPELL_EFFECT_APPLY_AURA &&
+                 eff.ApplyAuraName == SPELL_AURA_PERIODIC_DAMAGE))
+            {
+                radius = eff.CalcRadius();
+                break;
+            }
+        }
+    }
+
+    if (radius <= 0.0f)
+        return false;
+
+    constexpr float bufferDist = 3.0f;
+    constexpr float centerThreshold = 1.0f;
+
+    float dx = bot->GetPositionX() - dynObj->GetPositionX();
+    float dy = bot->GetPositionY() - dynObj->GetPositionY();
+
+    float distToObj = bot->GetExactDist2d(dynObj->GetPositionX(), dynObj->GetPositionY());
+    const float insideThresh = radius + centerThreshold;
+
+    if (distToObj > insideThresh)
+        return false;
+
+    float safeDist = radius + bufferDist;
+    float moveX, moveY;
+
+    if (distToObj == 0.0f)
+    {
+        float angle = frand(0.0f, static_cast<float>(M_PI * 2.0));
+        moveX = dynObj->GetPositionX() + std::cos(angle) * safeDist;
+        moveY = dynObj->GetPositionY() + std::sin(angle) * safeDist;
+    }
+    else
+    {
+        float invDist = 1.0f / distToObj;
+        moveX = dynObj->GetPositionX() + (dx * invDist) * safeDist;
+        moveY = dynObj->GetPositionY() + (dy * invDist) * safeDist;
+    }
+
+    botAI->Reset();
+    return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
+                  false, true, MovementPriority::MOVEMENT_FORCED, true, false);
+}
+
+// This spot is basically on top of Thrall's starting location
 bool AzgalorMoveToDoomguardTankAction::Execute(Event /*event*/)
 {
     const Position& position = AZGALOR_DOOMGUARD_POSITION;
@@ -868,6 +943,7 @@ bool AzgalorFirstAssistTankPositionDoomguardAction::Execute(Event /*event*/)
     return false;
 }
 
+// Only nearbyish ranged DPS should attack Doomguards
 bool AzgalorAssignDpsPriorityAction::Execute(Event /*event*/)
 {
     if (botAI->IsRanged(bot))
@@ -914,6 +990,7 @@ bool ArchimondeMisdirectBossToMainTankAction::Execute(Event /*event*/)
     return false;
 }
 
+// Initially move Archimonde up the hill a bit to get space from the World Tree
 bool ArchimondeMoveBossToInitialPositionAction::Execute(Event /*event*/)
 {
     Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
@@ -923,28 +1000,14 @@ bool ArchimondeMoveBossToInitialPositionAction::Execute(Event /*event*/)
     if (bot->GetVictim() != archimonde)
         return Attack(archimonde);
 
-    if (bot->getClass() == CLASS_WARRIOR &&
-        bot->GetPositionZ() > archimonde->GetPositionZ() + 10.0f)
-    {
-        LOG_DEBUG("playerbots", "bot {} is {} yards above Archimonde",
-            bot->GetName(), bot->GetPositionZ() - archimonde->GetPositionZ());
-        if (botAI->CanCastSpell("charge", archimonde))
-        {
-            LOG_DEBUG("playerbots", "bot {} is using charge to get to Archimonde", bot->GetName());
-            return botAI->CastSpell("charge", archimonde);
-        }
-    }
-
-    if (archimonde->GetHealthPct() < 90.0f)
-        return false;
-
-    if (archimonde->GetVictim() == bot && bot->IsWithinMeleeRange(archimonde))
+    if (archimonde->GetVictim() == bot && bot->IsWithinMeleeRange(archimonde) &&
+        bot->GetHealthPct() > 50.0f)
     {
         const Position& position = ARCHIMONDE_INITIAL_POSITION;
         float distToPosition =
             bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
 
-        if (distToPosition > 2.0f)
+        if (distToPosition > 3.0f)
         {
             float dX = position.GetPositionX() - bot->GetPositionX();
             float dY = position.GetPositionY() - bot->GetPositionY();
@@ -988,6 +1051,8 @@ bool ArchimondeCastFearImmunitySpellAction::UseTremorTotemStrategy()
     return false;
 }
 
+// (1) Try to run away from the Air Burst target
+// (2) At the beginning of the fight, spread ranged in anticipation of Air Burst
 bool ArchimondeSpreadToAvoidAirBurstAction::Execute(Event /*event*/)
 {
     Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
@@ -1034,7 +1099,7 @@ bool ArchimondeSpreadToAvoidAirBurstAction::Execute(Event /*event*/)
 
 bool ArchimondeAvoidDoomfireAction::Execute(Event /*event*/)
 {
-    constexpr float dangerDist = 9.0f;
+    constexpr float dangerDist = 10.0f;
     constexpr uint32 TRAIL_DURATION = 19000;
 
     uint32 instanceId = bot->GetMap()->GetInstanceId();
@@ -1072,8 +1137,14 @@ bool ArchimondeAvoidDoomfireAction::Execute(Event /*event*/)
         float targetX = bot->GetPositionX() + (totalDx / norm) * moveDist;
         float targetY = bot->GetPositionY() + (totalDy / norm) * moveDist;
 
-        return MoveTo(HYJAL_SUMMIT_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false,
-               false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+        MovementPriority priority = botAI->IsHeal(bot) ?
+            MovementPriority::MOVEMENT_COMBAT : MovementPriority::MOVEMENT_FORCED;
+
+        bool backwards = botAI->IsMainTank(bot) ? true : false;
+
+        botAI->Reset();
+        return MoveTo(HYJAL_SUMMIT_MAP_ID, targetX, targetY, bot->GetPositionZ(),
+                      false, false, false, false, priority, true, backwards);
     }
 
     return false;
