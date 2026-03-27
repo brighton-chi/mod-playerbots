@@ -78,7 +78,7 @@ bool RageWinterchillMainTankPositionBossAction::Execute(Event /*event*/)
     if (!winterchill)
         return false;
 
-    if (bot->GetTarget() != winterchill->GetGUID())
+    if (bot->GetVictim() != winterchill)
         return Attack(winterchill);
 
     if (winterchill->GetVictim() == bot)
@@ -233,7 +233,7 @@ bool AnetheronMainTankPositionBossAction::Execute(Event /*event*/)
     MarkTargetWithSquare(bot, anetheron);
     SetRtiTarget(botAI, "square", anetheron);
 
-    if (bot->GetTarget() != anetheron->GetGUID())
+    if (bot->GetVictim() != anetheron)
         return Attack(anetheron);
 
     if (anetheron->GetVictim() == bot)
@@ -388,7 +388,7 @@ bool AnetheronFirstAssistTankPickUpInfernalsAction::Execute(Event /*event*/)
     MarkTargetWithDiamond(bot, infernal);
     SetRtiTarget(botAI, "diamond", infernal);
 
-    if (bot->GetTarget() != infernal->GetGUID())
+    if (bot->GetVictim() != infernal)
         return Attack(infernal);
 
     if (infernal->GetVictim() == bot && bot->IsWithinMeleeRange(infernal))
@@ -494,7 +494,7 @@ bool KazrogalMainTankPositionBossAction::Execute(Event /*event*/)
     if (!kazrogal)
         return false;
 
-    if (bot->GetTarget() != kazrogal->GetGUID())
+    if (bot->GetVictim() != kazrogal)
         return Attack(kazrogal);
 
     if (kazrogal->GetVictim() == bot && bot->IsWithinMeleeRange(kazrogal))
@@ -720,7 +720,7 @@ bool AzgalorMainTankPositionBossAction::Execute(Event /*event*/)
     MarkTargetWithStar(bot, azgalor);
     SetRtiTarget(botAI, "star", azgalor);
 
-    if (bot->GetTarget() != azgalor->GetGUID())
+    if (bot->GetVictim() != azgalor)
         return Attack(azgalor);
 
     if (azgalor->GetVictim() == bot && bot->IsWithinMeleeRange(azgalor))
@@ -772,10 +772,11 @@ bool AzgalorDisperseRangedAction::Execute(Event /*event*/)
     if (!azgalor)
         return false;
 
+    // Azgalor's hitbox is 8.8 yards
+    const float safeDistFromBoss =
+        GetAzgalorTankStep(botAI, bot) < 1 ? 38.0f : 29.0f;
     constexpr uint32 minInterval = 0;
 
-    // Azgalor's hitbox is 8.8 yards
-    constexpr float safeDistFromBoss = 29.0f;
     if (bot->GetExactDist2d(azgalor) < safeDistFromBoss)
         return FleePosition(azgalor->GetPosition(), safeDistFromBoss, minInterval);
 
@@ -830,7 +831,7 @@ bool AzgalorFirstAssistTankPositionDoomguardAction::Execute(Event /*event*/)
         MarkTargetWithCircle(bot, doomguard);
         SetRtiTarget(botAI, "circle", doomguard);
 
-        if (bot->GetTarget() != doomguard->GetGUID())
+        if (bot->GetVictim() != doomguard)
             return Attack(doomguard);
 
         if (doomguard->GetVictim() == bot && bot->IsWithinMeleeRange(doomguard) &&
