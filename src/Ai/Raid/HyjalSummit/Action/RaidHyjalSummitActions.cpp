@@ -1071,7 +1071,6 @@ bool ArchimondeSpreadToAvoidAirBurstAction::Execute(Event /*event*/)
     if (archimonde->GetHealthPct() < 90.0f)
         return false;
 
-    constexpr float safeDistFromVictim = 16.0f;
     constexpr float safeDistFromPlayer = 8.0f;
     constexpr uint32 minInterval = 2000;
 
