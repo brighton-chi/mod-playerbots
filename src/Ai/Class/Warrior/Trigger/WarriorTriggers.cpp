@@ -5,7 +5,6 @@
 
 #include "WarriorTriggers.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
 
 bool BloodrageBuffTrigger::IsActive()
 {
@@ -23,6 +22,9 @@ bool VigilanceTrigger::IsActive()
         return false;
 
     Player* currentVigilanceTarget = nullptr;
+    Player* mainTank = nullptr;
+    Player* assistTank1 = nullptr;
+    Player* assistTank2 = nullptr;
     Player* highestGearScorePlayer = nullptr;
     uint32 highestGearScore = 0;
 
@@ -35,6 +37,13 @@ bool VigilanceTrigger::IsActive()
         if (!currentVigilanceTarget && botAI->HasAura("vigilance", member, false, true))
             currentVigilanceTarget = member;
 
+        if (!mainTank && botAI->IsMainTank(member))
+            mainTank = member;
+        else if (!assistTank1 && botAI->IsAssistTankOfIndex(member, 0))
+            assistTank1 = member;
+        else if (!assistTank2 && botAI->IsAssistTankOfIndex(member, 1))
+            assistTank2 = member;
+
         uint32 gearScore = botAI->GetEquipGearScore(member);
         if (gearScore > highestGearScore)
         {
@@ -43,12 +52,7 @@ bool VigilanceTrigger::IsActive()
         }
     }
 
-    Player* mainTank = GetGroupMainTank(botAI, bot);
-    Player* assistTank1 = GetGroupAssistTank(botAI, bot, 0);
-    Player* assistTank2 = GetGroupAssistTank(botAI, bot, 1);
-
-    Player* highestPriorityTarget = mainTank ? mainTank :
-                                      (assistTank1 ? assistTank1 :
+    Player* highestPriorityTarget = mainTank ? mainTank : (assistTank1 ? assistTank1 :
                                       (assistTank2 ? assistTank2 : highestGearScorePlayer));
 
     if (!currentVigilanceTarget || currentVigilanceTarget != highestPriorityTarget)
@@ -107,8 +111,11 @@ bool BattleShoutTrigger::IsActive()
     if (!bsApValue)
         return true;
 
-    static const uint32 commandingPresenceSpells[] = { 12318, 12857, 12858, 12860, 12861 };
-    static const float commandingPresenceBonus[]   = { 0.05f, 0.10f, 0.15f, 0.20f, 0.25f };
+    static const uint32 commandingPresenceSpells[] = {
+        12318, 12857, 12858, 12860, 12861 };
+    static const float commandingPresenceBonus[]   = {
+        0.05f, 0.10f, 0.15f, 0.20f, 0.25f };
+
     float cpBonus = 0.0f;
     for (int rank = 4; rank >= 0; --rank)
     {
@@ -138,7 +145,6 @@ bool BattleShoutTrigger::IsActive()
             if (bomInfo->Effects[eff].ApplyAuraName == SPELL_AURA_MOD_ATTACK_POWER)
             {
                 int32 bomApValue = bomInfo->Effects[eff].BasePoints + 1;
-                LOG_DEBUG("playerbots", "Comparing Blessing of Might AP (bomApValue: {}) with Battle Shout AP (effectiveBsAp: {})", bomApValue, effectiveBsAp);
                 if (bomApValue >= effectiveBsAp)
                     return false;
                 break;
