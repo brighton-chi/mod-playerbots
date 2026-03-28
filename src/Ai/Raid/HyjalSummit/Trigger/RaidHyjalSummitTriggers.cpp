@@ -58,7 +58,7 @@ bool AnetheronBossEngagedByMainTankTrigger::IsActive()
 
 bool AnetheronBossCastsCarrionSwarmTrigger::IsActive()
 {
-    if (!botAI->IsRanged(bot))
+    if (botAI->IsMelee(bot))
         return false;
 
     Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
@@ -216,8 +216,7 @@ bool AzgalorMainTankIsPositioningBossTrigger::IsActive()
         return false;
 
     Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
-    if (!azgalor || azgalor->GetHealthPct() < 85.0f ||
-        azgalor->GetVictim() == bot)
+    if (!azgalor || azgalor->GetVictim() == bot)
         return false;
 
     if (botAI->IsMainTank(bot))
@@ -228,19 +227,14 @@ bool AzgalorMainTankIsPositioningBossTrigger::IsActive()
         return false;
 
     if (!GET_PLAYERBOT_AI(mainTank))
-    {
-        if (azgalor->GetHealthPct() > 95.0f)
-            return true;
-        else
-            return false;
-    }
+        return azgalor->GetHealthPct() > 95.0f;
 
-    return GetAzgalorTankStep(botAI, bot) < 2;
+    return GetAzgalorTankStep(botAI, bot) < 1;
 }
 
 bool AzgalorBossCastsRainOfFireOnRangedTrigger::IsActive()
 {
-    if (!botAI->IsRanged(bot))
+    if (botAI->IsMelee(bot))
         return false;
 
     Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
@@ -250,7 +244,7 @@ bool AzgalorBossCastsRainOfFireOnRangedTrigger::IsActive()
 
 bool AzgalorBossCastsRainOfFireOnMeleeTrigger::IsActive()
 {
-    if (!botAI->IsMelee(bot) || botAI->IsTank(bot))
+    if (botAI->IsRanged(bot) || botAI->IsTank(bot))
         return false;
 
     Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
@@ -268,7 +262,7 @@ bool AzgalorBossCastsRainOfFireOnMeleeTrigger::IsActive()
     auto& dynObjMap = instanceIt->second;
     for (auto it = dynObjMap.begin(); it != dynObjMap.end(); )
     {
-        if (getMSTimeDiff(it->second.lastUpdateTime, now) >= RAIN_OF_FIRE_DURATION)
+        if (getMSTimeDiff(it->second.spawnTime, now) >= RAIN_OF_FIRE_DURATION)
             it = dynObjMap.erase(it);
         else
             ++it;
@@ -279,10 +273,7 @@ bool AzgalorBossCastsRainOfFireOnMeleeTrigger::IsActive()
 
     for (auto const& [guid, data] : dynObjMap)
     {
-        float dist = bot->GetExactDist2d(data.position);
-        LOG_DEBUG("playerbots", "AzgalorBossCastsRainOfFireOnMeleeTrigger: [{}] melee checking RoF {} dist={:.1f} elapsed={}ms",
-            bot->GetName(), guid.ToString(), dist, getMSTimeDiff(data.lastUpdateTime, now));
-        if (dist < 16.0f)
+        if (bot->GetExactDist2d(data.position) < 16.0f)
             return true;
     }
 
@@ -370,9 +361,6 @@ bool ArchimondeBossSummonedDoomfireTrigger::IsActive()
 {
     Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
     if (!archimonde || archimonde->GetHealthPct() <= 10.0f)
-        return false;
-
-    if (bot->GetExactDist2d(archimonde) <= 0.0f)
         return false;
 
     // If I don't make an exception, bots actually refuse to enter the

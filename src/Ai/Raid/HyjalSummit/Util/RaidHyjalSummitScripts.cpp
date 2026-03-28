@@ -59,6 +59,9 @@ public:
     }
 };
 
+// Records the position of each Rain of Fire dynamic object at spawn so that melee bots
+// can avoid it by running away from Azgalor; the standard FleePosition() logic to
+// avoid aoe can take melee in front of Azgalor, resulting in them getting cleaved
 class AzgalorRainOfFireScript : public DynamicObjectScript
 {
 public:
@@ -74,13 +77,8 @@ public:
         auto& instanceMap = rainOfFirePosition[instanceId];
         ObjectGuid guid = dynobj->GetGUID();
 
-        bool isNew = instanceMap.find(guid) == instanceMap.end();
-        instanceMap[guid] = { dynobj->GetPosition(), now };
-
-        if (isNew)
-            LOG_DEBUG("playerbots", "AzgalorRainOfFireScript: New RoF DynObj {} instance={} pos=({:.1f},{:.1f},{:.1f})",
-                guid.ToString(), instanceId,
-                dynobj->GetPositionX(), dynobj->GetPositionY(), dynobj->GetPositionZ());
+        if (instanceMap.find(guid) == instanceMap.end())
+            instanceMap[guid] = { dynobj->GetPosition(), now };
     }
 };
 

@@ -212,28 +212,6 @@ float AzgalorDisableTankActionsMultiplier::GetValue(Action* action)
         }
     }
 
-    /* if (!botAI->IsAssistTankOfIndex(bot, 0, true) &&
-        !botAI->IsAssistTankOfIndex(bot, 1, true))
-        return 1.0f;
-
-    // Exclude second assist tank also, unless first assist tank has Doom
-    Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
-    if (firstAssistTank &&
-        !firstAssistTank->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_DOOM)) &&
-        botAI->IsAssistTankOfIndex(bot, 1, true))
-        return 1.0f;
-
-    // Only move to Doomguard position if a player has Doom
-    // Exception: if a prior Doomguard is still up
-    if (AI_VALUE2(Unit*, "find target", "lesser doomguard"))
-        return 1.0f;
-
-    if (AnyGroupMemberHasDoom(bot) &&
-        (dynamic_cast<ReachTargetAction*>(action) ||
-         dynamic_cast<CastReachTargetSpellAction*>(action) ||
-         dynamic_cast<CombatFormationMoveAction*>(action)))
-        return 0.0f; */
-
     return 1.0f;
 }
 
@@ -253,15 +231,11 @@ float AzgalorDoomedBotPrioritizePositioningMultiplier::GetValue(Action* action)
 
 float AzgalorMeleeControlAvoidanceMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsMelee(bot) || !AI_VALUE2(Unit*, "find target", "azgalor"))
+    if (botAI->IsRanged(bot) || !AI_VALUE2(Unit*, "find target", "azgalor"))
         return 1.0f;
 
     if (dynamic_cast<AvoidAoeAction*>(action))
-    {
-        LOG_DEBUG("playerbots", "AzgalorMeleeControlAvoidanceMultiplier: [{}] suppressing AvoidAoeAction",
-            bot->GetName());
         return 0.0f;
-    }
 
     if (!botAI->IsDps(bot))
         return 1.0f;
@@ -275,23 +249,16 @@ float AzgalorMeleeControlAvoidanceMultiplier::GetValue(Action* action)
 
     for (auto const& [guid, data] : instanceIt->second)
     {
-        if (getMSTimeDiff(data.lastUpdateTime, now) < RAIN_OF_FIRE_DURATION &&
+        if (getMSTimeDiff(data.spawnTime, now) < RAIN_OF_FIRE_DURATION &&
             bot->GetExactDist2d(data.position) < 23.0f)
         {
             if (dynamic_cast<MovementAction*>(action) &&
                 !dynamic_cast<AzgalorMeleeGetOutOfFireAction*>(action))
-            {
-                LOG_DEBUG("playerbots", "AzgalorMeleeControlAvoidanceMultiplier: [{}] RoF active, suppressing {}",
-                    bot->GetName(), action->getName());
                 return 0.0f;
-            }
 
             if (dynamic_cast<CastReachTargetSpellAction*>(action))
-            {
-                LOG_DEBUG("playerbots", "AzgalorMeleeControlAvoidanceMultiplier: [{}] RoF active, suppressing CastReachTargetSpellAction",
-                    bot->GetName());
                 return 0.0f;
-            }
+
             break;
         }
     }

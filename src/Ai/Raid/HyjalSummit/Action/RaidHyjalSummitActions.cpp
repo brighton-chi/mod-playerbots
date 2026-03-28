@@ -424,42 +424,40 @@ bool AnetheronAssignDpsPriorityAction::Execute(Event /*event*/)
     {
         SetRtiTarget(botAI, "square", anetheron);
 
-        if (bot->GetTarget() != anetheron->GetGUID())
+        if (bot->GetVictim() != anetheron)
             return Attack(anetheron);
 
         return false;
     }
-    else
+    if (Unit* infernal = AI_VALUE2(Unit*, "find target", "towering infernal"))
     {
-        if (Unit* infernal = AI_VALUE2(Unit*, "find target", "towering infernal"))
+        constexpr float safeDistFromInfernal = 10.0f;
+        constexpr uint32 minInterval = 0;
+        if (infernal->GetVictim() != bot &&
+            bot->GetDistance2d(infernal) < safeDistFromInfernal)
         {
-            constexpr float safeDistFromInfernal = 10.0f;
-            constexpr uint32 minInterval = 0;
-            if (infernal->GetVictim() != bot &&
-                bot->GetDistance2d(infernal) < safeDistFromInfernal)
-            {
-                return FleePosition(infernal->GetPosition(), safeDistFromInfernal, minInterval);
-            }
+            return FleePosition(infernal->GetPosition(), safeDistFromInfernal, minInterval);
+        }
 
-            if (botAI->IsRangedDps(bot) && bot->GetDistance2d(infernal) < 50.0f)
+        if (anetheron->GetHealthPct() > 10.0f && botAI->IsRangedDps(bot) &&
+            bot->GetDistance2d(infernal) < 50.0f)
+        {
+            if (Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
+                !firstAssistTank || infernal->GetVictim() == firstAssistTank)
             {
-                if (Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
-                    !firstAssistTank ||
-                    (firstAssistTank && infernal->GetVictim() == firstAssistTank))
-                {
-                    SetRtiTarget(botAI, "diamond", infernal);
+                SetRtiTarget(botAI, "diamond", infernal);
 
-                    if (bot->GetTarget() != infernal->GetGUID())
-                        return Attack(infernal);
-                }
+                if (bot->GetTarget() != infernal->GetGUID())
+                    return Attack(infernal);
             }
         }
-        else if (botAI->IsRangedDps(bot))
-        {
-            SetRtiTarget(botAI, "square", anetheron);
-            if (bot->GetTarget() != anetheron->GetGUID())
-                return Attack(anetheron);
-        }
+    }
+    else if (botAI->IsRangedDps(bot))
+    {
+        SetRtiTarget(botAI, "square", anetheron);
+
+        if (bot->GetTarget() != anetheron->GetGUID())
+            return Attack(anetheron);
     }
 
     return false;
@@ -519,7 +517,7 @@ bool KazrogalMainTankPositionBossAction::Execute(Event /*event*/)
             float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
             float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
-            return MoveTo(HYJAL_SUMMIT_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+            return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY,
                           position.GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, true);
         }
@@ -666,6 +664,9 @@ bool KazrogalLowManaBotMoveFromGroupAction::Execute(Event /*event*/)
 
             botAI->Reset();
 
+            // MoveFromGroup will make the bot run very far if there is another bot
+            // also running next to it, so we swap to MoveAway once there is sufficient
+            // distance from the group so the parallel bots break away from each other
             if (bot->GetExactDist2d(kazrogal) > 42.0f)
                 return MoveAway(nearestPlayer, safeDistance - currentDistance);
             else
@@ -676,6 +677,8 @@ bool KazrogalLowManaBotMoveFromGroupAction::Execute(Event /*event*/)
     return false;
 }
 
+// Warlocks: Use Shadow Ward if Mark is applied and mana is <= 3000
+// Paladins: Use Shadow Resistance Aura if Priest Shadow Protection is not up
 bool KazrogalCastShadowProtectionSpellAction::Execute(Event /*event*/)
 {
     if (bot->getClass() == CLASS_WARLOCK && bot->GetPower(POWER_MANA) <= 3000 &&
@@ -747,7 +750,7 @@ bool AzgalorMainTankPositionBossAction::Execute(Event /*event*/)
             float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
             float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
-            return MoveTo(HYJAL_SUMMIT_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+            return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY,
                           position.GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, true);
         }
@@ -792,7 +795,7 @@ bool AzgalorDisperseRangedAction::Execute(Event /*event*/)
     {
         return FleePosition(doomguard->GetPosition(), safeDistFromDoomguard);
     }
-    else if (!doomguard || doomguard && bot->GetTarget() != doomguard->GetGUID())
+    else if (!doomguard || bot->GetTarget() != doomguard->GetGUID())
     {
         Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer);
         if (nearestPlayer)
@@ -818,7 +821,7 @@ bool AzgalorMeleeGetOutOfFireAction::Execute(Event /*event*/)
     auto& dynObjMap = instanceIt->second;
     for (auto it = dynObjMap.begin(); it != dynObjMap.end(); )
     {
-        if (getMSTimeDiff(it->second.lastUpdateTime, now) >= RAIN_OF_FIRE_DURATION)
+        if (getMSTimeDiff(it->second.spawnTime, now) >= RAIN_OF_FIRE_DURATION)
             it = dynObjMap.erase(it);
         else
             ++it;
@@ -840,10 +843,7 @@ bool AzgalorMeleeGetOutOfFireAction::Execute(Event /*event*/)
     if (inAnyRoF)
     {
         botAI->Reset();
-        bool moved = MoveAway(azgalor, 5.0f);
-        LOG_DEBUG("playerbots", "AzgalorMeleeGetOutOfFireAction: [{}] melee in RoF MoveAway={}",
-            bot->GetName(), moved ? "true" : "false");
-        return moved;
+        return MoveAway(azgalor, 5.0f);
     }
 
     return true;
@@ -859,7 +859,7 @@ bool AzgalorWaitAtSafePositionAction::Execute(Event /*event*/)
                   MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
-// This spot is basically on top of Thrall's starting location
+// The spot is near Thrall's starting location
 bool AzgalorMoveToDoomguardTankAction::Execute(Event /*event*/)
 {
     const Position& position = AZGALOR_DOOMGUARD_POSITION;
@@ -908,7 +908,6 @@ bool AzgalorFirstAssistTankPositionDoomguardAction::Execute(Event /*event*/)
     }
     else
     {
-        // Already in position and no Doomguard to pick up - return true to hold position
         return true;
     }
 
@@ -929,7 +928,11 @@ bool AzgalorFirstAssistTankPositionDoomguardAction::Execute(Event /*event*/)
 // Only nearbyish ranged DPS should attack Doomguards
 bool AzgalorAssignDpsPriorityAction::Execute(Event /*event*/)
 {
-    if (botAI->IsRanged(bot))
+    Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
+    if (!azgalor)
+        return false;
+
+    if (azgalor->GetHealthPct() > 10.0f && botAI->IsRanged(bot))
     {
         if (Unit* doomguard = AI_VALUE2(Unit*, "find target", "lesser doomguard");
             doomguard && bot->GetDistance2d(doomguard) < 50.0f)
@@ -940,11 +943,11 @@ bool AzgalorAssignDpsPriorityAction::Execute(Event /*event*/)
                 return Attack(doomguard);
         }
     }
-    else if (Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor"))
+    else
     {
         SetRtiTarget(botAI, "star", azgalor);
 
-        if (bot->GetTarget() != azgalor->GetGUID())
+        if (bot->GetVictim() != azgalor)
             return Attack(azgalor);
     }
 
@@ -1123,7 +1126,7 @@ bool ArchimondeAvoidDoomfireAction::Execute(Event /*event*/)
         MovementPriority priority = botAI->IsHeal(bot) ?
             MovementPriority::MOVEMENT_COMBAT : MovementPriority::MOVEMENT_FORCED;
 
-        bool backwards = botAI->IsMainTank(bot) ? true : false;
+        bool backwards = botAI->IsMainTank(bot);
 
         botAI->Reset();
         return MoveTo(HYJAL_SUMMIT_MAP_ID, targetX, targetY, bot->GetPositionZ(),
