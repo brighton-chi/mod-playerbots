@@ -258,7 +258,7 @@ float AzgalorMeleeControlAvoidanceMultiplier::GetValue(Action* action)
 
     if (dynamic_cast<AvoidAoeAction*>(action))
     {
-        LOG_DEBUG("playerbots", "AzgalorMeleeJustStandInFireMultiplier: [{}] suppressing AvoidAoeAction",
+        LOG_DEBUG("playerbots", "AzgalorMeleeControlAvoidanceMultiplier: [{}] suppressing AvoidAoeAction",
             bot->GetName());
         return 0.0f;
     }
@@ -276,13 +276,20 @@ float AzgalorMeleeControlAvoidanceMultiplier::GetValue(Action* action)
     for (auto const& [guid, data] : instanceIt->second)
     {
         if (getMSTimeDiff(data.lastUpdateTime, now) < RAIN_OF_FIRE_DURATION &&
-            bot->GetExactDist2d(data.position) < 16.0f)
+            bot->GetExactDist2d(data.position) < 23.0f)
         {
             if (dynamic_cast<MovementAction*>(action) &&
                 !dynamic_cast<AzgalorMeleeGetOutOfFireAction*>(action))
             {
-                LOG_DEBUG("playerbots", "AzgalorMeleeJustStandInFireMultiplier: [{}] RoF active, suppressing {}",
+                LOG_DEBUG("playerbots", "AzgalorMeleeControlAvoidanceMultiplier: [{}] RoF active, suppressing {}",
                     bot->GetName(), action->getName());
+                return 0.0f;
+            }
+
+            if (dynamic_cast<CastReachTargetSpellAction*>(action))
+            {
+                LOG_DEBUG("playerbots", "AzgalorMeleeControlAvoidanceMultiplier: [{}] RoF active, suppressing CastReachTargetSpellAction",
+                    bot->GetName());
                 return 0.0f;
             }
             break;

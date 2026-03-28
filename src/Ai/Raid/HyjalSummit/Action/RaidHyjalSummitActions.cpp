@@ -788,15 +788,15 @@ bool AzgalorDisperseRangedAction::Execute(Event /*event*/)
     constexpr float safeDistFromDoomguard = 14.0f;
     constexpr float safeDistFromPlayer = 5.0f;
 
-    if (doomguard && bot->GetExactDist2d(doomguard) < safeDistFromDoomguard &&
-        FleePosition(doomguard->GetPosition(), safeDistFromDoomguard))
+    if (doomguard && bot->GetExactDist2d(doomguard) < safeDistFromDoomguard)
     {
-        return true;
+        return FleePosition(doomguard->GetPosition(), safeDistFromDoomguard);
     }
     else if (!doomguard || doomguard && bot->GetTarget() != doomguard->GetGUID())
     {
         Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer);
-        return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer);
+        if (nearestPlayer)
+            return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer);
     }
 
     return false;
@@ -830,7 +830,7 @@ bool AzgalorMeleeGetOutOfFireAction::Execute(Event /*event*/)
     bool inAnyRoF = false;
     for (auto const& [guid, data] : dynObjMap)
     {
-        if (bot->GetExactDist2d(data.position) < 16.0f)
+        if (bot->GetExactDist2d(data.position) < 17.0f)
         {
             inAnyRoF = true;
             break;
