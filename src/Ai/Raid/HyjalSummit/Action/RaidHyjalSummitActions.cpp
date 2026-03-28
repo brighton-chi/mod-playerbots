@@ -664,6 +664,8 @@ bool KazrogalLowManaBotMoveFromGroupAction::Execute(Event /*event*/)
             if (!kazrogal)
                 return false;
 
+            botAI->Reset();
+
             if (bot->GetExactDist2d(kazrogal) > 42.0f)
                 return MoveAway(nearestPlayer, safeDistance - currentDistance);
             else
@@ -777,7 +779,7 @@ bool AzgalorDisperseRangedAction::Execute(Event /*event*/)
     {
         // Azgalor's hitbox is 8.8 yards
         const float safeDistFromBoss =
-            GetAzgalorTankStep(botAI, bot) < 1 ? 38.0f : 29.0f;
+            GetAzgalorTankStep(botAI, bot) < 1 ? 35.0f : 29.0f;
         constexpr uint32 minInterval = 0;
 
         if (bot->GetExactDist2d(azgalor) < safeDistFromBoss &&
@@ -797,7 +799,7 @@ bool AzgalorDisperseRangedAction::Execute(Event /*event*/)
     }
     else
     {
-        constexpr uint32 RAIN_OF_FIRE_DURATION = 10000;
+        /* constexpr uint32 RAIN_OF_FIRE_DURATION = 10000;
         auto it = rainOfFirePosition.find(bot->GetMap()->GetInstanceId());
         if (it == rainOfFirePosition.end())
             return false;
@@ -806,7 +808,44 @@ bool AzgalorDisperseRangedAction::Execute(Event /*event*/)
             return false;
 
         if (bot->GetExactDist2d(it->second.position) < 10.0f)
-            return MoveAway(azgalor, 5.0f);
+            return MoveAway(azgalor, 5.0f); */
+        {
+            constexpr uint32 RAIN_OF_FIRE_DURATION = 10000;
+            auto it = rainOfFirePosition.find(bot->GetMap()->GetInstanceId());
+
+            if (it == rainOfFirePosition.end())
+            {
+                LOG_DEBUG("playerbots", "AzgalorDisperseRangedAction: [{}] melee no RoF data", bot->GetName());
+                return false;
+            }
+
+            uint32 elapsed = getMSTimeDiff(it->second.lastUpdateTime, getMSTime());
+            float distToRoF = bot->GetExactDist2d(it->second.position);
+
+            LOG_DEBUG("playerbots", "AzgalorDisperseRangedAction: [{}] melee elapsed={}ms distToRoF={:.1f}",
+                bot->GetName(), elapsed, distToRoF);
+
+            if (elapsed >= RAIN_OF_FIRE_DURATION)
+            {
+                LOG_DEBUG("playerbots", "AzgalorDisperseRangedAction: [{}] melee RoF expired", bot->GetName());
+                return false;
+            }
+
+            if (distToRoF <= 15.0f)
+            {
+                botAI->Reset();
+                bool moved = MoveAway(azgalor, 5.0f);
+                LOG_DEBUG("playerbots", "AzgalorDisperseRangedAction: [{}] melee in RoF MoveAway={}",
+                    bot->GetName(), moved ? "true" : "false");
+                return moved;
+            }
+
+            // Already clear of the RoF - return true to hold position and prevent
+            // other movement actions from pulling the bot back in
+            LOG_DEBUG("playerbots", "AzgalorDisperseRangedAction: [{}] melee clear of RoF, holding position",
+                bot->GetName());
+            return true;
+        }
     }
 
     return false;
@@ -816,6 +855,7 @@ bool AzgalorDisperseRangedAction::Execute(Event /*event*/)
 bool AzgalorWaitAtSafePositionAction::Execute(Event /*event*/)
 {
     const Position& position = AZGALOR_WAITING_POSITION;
+    botAI->Reset();
     return MoveTo(HYJAL_SUMMIT_MAP_ID, position.GetPositionX(), position.GetPositionY(),
                   position.GetPositionZ(), false, false, false, false,
                   MovementPriority::MOVEMENT_FORCED, true, false);
@@ -827,6 +867,7 @@ bool AzgalorMoveToDoomguardTankAction::Execute(Event /*event*/)
     const Position& position = AZGALOR_DOOMGUARD_POSITION;
     if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 5.0f)
     {
+        botAI->Reset();
         return MoveTo(HYJAL_SUMMIT_MAP_ID, position.GetPositionX(), position.GetPositionY(),
                       position.GetPositionZ(), false, false, false, false,
                       MovementPriority::MOVEMENT_FORCED, true, false);
@@ -866,6 +907,11 @@ bool AzgalorFirstAssistTankPositionDoomguardAction::Execute(Event /*event*/)
         moveDist = std::min(10.0f, distToPosition);
         shouldMove = true;
         moveBackwards = false;
+    }
+    else
+    {
+        // Already in position and no Doomguard to pick up - return true to hold position
+        return true;
     }
 
     if (shouldMove)

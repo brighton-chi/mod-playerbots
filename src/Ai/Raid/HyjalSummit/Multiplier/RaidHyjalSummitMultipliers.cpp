@@ -199,7 +199,7 @@ float AzgalorDisableTankActionsMultiplier::GetValue(Action* action)
         dynamic_cast<TankAssistAction*>(action))
         return 0.0f;
 
-    if (!botAI->IsAssistTankOfIndex(bot, 0, true) &&
+    /* if (!botAI->IsAssistTankOfIndex(bot, 0, true) &&
         !botAI->IsAssistTankOfIndex(bot, 1, true))
         return 1.0f;
 
@@ -212,11 +212,14 @@ float AzgalorDisableTankActionsMultiplier::GetValue(Action* action)
 
     // Only move to Doomguard position if a player has Doom
     // Exception: if a prior Doomguard is still up
+    if (AI_VALUE2(Unit*, "find target", "lesser doomguard"))
+        return 1.0f;
+
     if (AnyGroupMemberHasDoom(bot) &&
         (dynamic_cast<ReachTargetAction*>(action) ||
          dynamic_cast<CastReachTargetSpellAction*>(action) ||
          dynamic_cast<CombatFormationMoveAction*>(action)))
-        return 0.0f;
+        return 0.0f; */
 
     return 1.0f;
 }
@@ -242,7 +245,11 @@ float AzgalorMeleeJustStandInFireMultiplier::GetValue(Action* action)
         return 1.0f;
 
     if (dynamic_cast<AvoidAoeAction*>(action))
+    {
+        LOG_DEBUG("playerbots", "AzgalorMeleeJustStandInFireMultiplier: [{}] suppressing AvoidAoeAction",
+            bot->GetName());
         return 0.0f;
+    }
 
     constexpr uint32 RAIN_OF_FIRE_DURATION = 10000;
     auto it = rainOfFirePosition.find(bot->GetMap()->GetInstanceId());
@@ -252,9 +259,13 @@ float AzgalorMeleeJustStandInFireMultiplier::GetValue(Action* action)
     if (getMSTimeDiff(it->second.lastUpdateTime, getMSTime()) >= RAIN_OF_FIRE_DURATION)
         return 1.0f;
 
-    if (bot->GetExactDist2d(it->second.position) < 10.0f && dynamic_cast<MovementAction*>(action) &&
+    if (dynamic_cast<MovementAction*>(action) &&
         !dynamic_cast<AzgalorDisperseRangedAction*>(action))
+    {
+        LOG_DEBUG("playerbots", "AzgalorMeleeJustStandInFireMultiplier: [{}] RoF active, suppressing {}",
+            bot->GetName(), action->getName());
         return 0.0f;
+    }
 
     return 1.0f;
 }

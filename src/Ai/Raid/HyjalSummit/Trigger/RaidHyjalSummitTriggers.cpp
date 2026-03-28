@@ -258,10 +258,25 @@ bool AzgalorBossCastsRainOfFireTrigger::IsActive()
         constexpr uint32 RAIN_OF_FIRE_DURATION = 10000;
 
         auto it = rainOfFirePosition.find(bot->GetMap()->GetInstanceId());
-        if (it == rainOfFirePosition.end())
+        /* if (it == rainOfFirePosition.end())
             return false;
 
-        return getMSTimeDiff(it->second.lastUpdateTime, getMSTime()) < RAIN_OF_FIRE_DURATION;
+        return getMSTimeDiff(it->second.lastUpdateTime, getMSTime()) < RAIN_OF_FIRE_DURATION; */
+
+        if (it == rainOfFirePosition.end())
+        {
+            LOG_DEBUG("playerbots", "AzgalorBossCastsRainOfFireTrigger: [{}] melee, no RoF data", bot->GetName());
+            return false;
+        }
+
+        uint32 elapsed = getMSTimeDiff(it->second.lastUpdateTime, getMSTime());
+        float distToRoF = bot->GetExactDist2d(it->second.position);
+        bool active = elapsed < RAIN_OF_FIRE_DURATION;
+
+        LOG_DEBUG("playerbots", "AzgalorBossCastsRainOfFireTrigger: [{}] melee elapsed={}ms distToRoF={:.1f} active={}",
+            bot->GetName(), elapsed, distToRoF, active ? "true" : "false");
+
+        return active;
     }
 }
 
@@ -272,19 +287,29 @@ bool AzgalorBotIsDoomedTrigger::IsActive()
 
 bool AzgalorDoomguardsMustBeControlledTrigger::IsActive()
 {
-    if (!botAI->IsAssistTankOfIndex(bot, 0, true) &&
-        !botAI->IsAssistTankOfIndex(bot, 1, true))
+    if (!botAI->IsAssistTank(bot) ||
+        !AI_VALUE2(Unit*, "find target", "azgalor"))
         return false;
 
-    // Exclude second assist tank also, unless first assist tank has Doom
-    Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
-    if (firstAssistTank &&
-        !firstAssistTank->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_DOOM)) &&
-        botAI->IsAssistTankOfIndex(bot, 1, true))
-        return false;
+    if (botAI->IsAssistTankOfIndex(bot, 0, true))
+    {
+        return AI_VALUE2(Unit*, "find target", "lesser doomguard") ||
+               AnyGroupMemberHasDoom(bot);
+    }
 
-    return AI_VALUE2(Unit*, "find target", "lesser doomguard") ||
-           AnyGroupMemberHasDoom(bot);
+    if (botAI->IsAssistTankOfIndex(bot, 1, true))
+    {
+        // Trigger for second assist tank only if first assist tank has Doom
+        Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
+        if (firstAssistTank &&
+            !firstAssistTank->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_DOOM)))
+            return false;
+
+        return AI_VALUE2(Unit*, "find target", "lesser doomguard") ||
+               AnyGroupMemberHasDoom(bot);
+    }
+
+    return false;
 }
 
 bool AzgalorDoomguardsContinueToSpawnTrigger::IsActive()

@@ -64,13 +64,31 @@ class AzgalorRainOfFireScript : public DynamicObjectScript
 public:
     AzgalorRainOfFireScript() : DynamicObjectScript("AzgalorRainOfFireScript") {}
 
-    void OnUpdate(DynamicObject* dynobj, uint32 /*diff*/) override
-    {
+    // void OnUpdate(DynamicObject* dynobj, uint32 /*diff*/) override
+    /* {
         if (dynobj->GetSpellId() != static_cast<uint32>(HyjalSummitSpells::SPELL_RAIN_OF_FIRE))
             return;
 
         uint32 instanceId = dynobj->GetMap()->GetInstanceId();
         rainOfFirePosition[instanceId] = { dynobj->GetPosition(), getMSTime() };
+    } */
+    void OnUpdate(DynamicObject* dynobj, uint32 /*diff*/) override
+    {
+        if (dynobj->GetSpellId() != static_cast<uint32>(HyjalSummitSpells::SPELL_RAIN_OF_FIRE))
+        return;
+
+        uint32 instanceId = dynobj->GetMap()->GetInstanceId();
+        uint32 now = getMSTime();
+        auto& entry = rainOfFirePosition[instanceId];
+        uint32 prevTime = entry.lastUpdateTime;
+        entry = { dynobj->GetPosition(), now };
+
+        // Only log when the gap since last update is large enough to suggest a new cast
+        // (i.e. the previous DynObj expired and a new one started)
+        if (getMSTimeDiff(prevTime, now) > 5000)
+            LOG_DEBUG("playerbots", "AzgalorRainOfFireScript: RoF DynObj updated after {}ms gap instance={} pos=({:.1f},{:.1f},{:.1f})",
+                getMSTimeDiff(prevTime, now), instanceId,
+                dynobj->GetPositionX(), dynobj->GetPositionY(), dynobj->GetPositionZ());
     }
 };
 
