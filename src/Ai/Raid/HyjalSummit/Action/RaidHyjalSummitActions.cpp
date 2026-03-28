@@ -784,15 +784,20 @@ bool AzgalorDisperseRangedAction::Execute(Event /*event*/)
         return true;
 
     // Lesser Doomguard's hitbox is 3.75 yards
+    Unit* doomguard = AI_VALUE2(Unit*, "find target", "lesser doomguard");
     constexpr float safeDistFromDoomguard = 14.0f;
-    if (Unit* doomguard = AI_VALUE2(Unit*, "find target", "lesser doomguard");
-        doomguard && bot->GetExactDist2d(doomguard) < safeDistFromDoomguard &&
-        FleePosition(doomguard->GetPosition(), safeDistFromDoomguard))
-        return true;
-
     constexpr float safeDistFromPlayer = 5.0f;
-    if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
+
+    if (doomguard && bot->GetExactDist2d(doomguard) < safeDistFromDoomguard &&
+        FleePosition(doomguard->GetPosition(), safeDistFromDoomguard))
+    {
+        return true;
+    }
+    else if (!doomguard || doomguard && bot->GetTarget() != doomguard->GetGUID())
+    {
+        Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer);
         return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer);
+    }
 
     return false;
 }
