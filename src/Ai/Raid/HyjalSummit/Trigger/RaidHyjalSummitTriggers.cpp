@@ -238,46 +238,55 @@ bool AzgalorMainTankIsPositioningBossTrigger::IsActive()
     return GetAzgalorTankStep(botAI, bot) < 2;
 }
 
-// Spread to mitigate Rain of Fire, but GTFO if Rain of Fire is on the bot
-bool AzgalorBossCastsRainOfFireTrigger::IsActive()
+bool AzgalorBossCastsRainOfFireOnRangedTrigger::IsActive()
 {
+    if (!botAI->IsRanged(bot))
+        return false;
+
+    Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
+    return azgalor && azgalor->GetVictim() != bot &&
+           !bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_DOOM));
+}
+
+bool AzgalorBossCastsRainOfFireOnMeleeTrigger::IsActive()
+{
+    if (!botAI->IsMelee(bot) || botAI->IsTank(bot))
+        return false;
+
     Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
     if (!azgalor || azgalor->GetVictim() == bot ||
         bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_DOOM)))
         return false;
 
-    if (botAI->IsTank(bot))
+    constexpr uint32 RAIN_OF_FIRE_DURATION = 10000;
+    uint32 now = getMSTime();
+
+    auto instanceIt = rainOfFirePosition.find(bot->GetMap()->GetInstanceId());
+    if (instanceIt == rainOfFirePosition.end())
         return false;
 
-    if (botAI->IsRanged(bot))
+    auto& dynObjMap = instanceIt->second;
+    for (auto it = dynObjMap.begin(); it != dynObjMap.end(); )
     {
-        return true;
+        if (getMSTimeDiff(it->second.lastUpdateTime, now) >= RAIN_OF_FIRE_DURATION)
+            it = dynObjMap.erase(it);
+        else
+            ++it;
     }
-    else
+
+    if (dynObjMap.empty())
+        return false;
+
+    for (auto const& [guid, data] : dynObjMap)
     {
-        constexpr uint32 RAIN_OF_FIRE_DURATION = 10000;
-
-        auto it = rainOfFirePosition.find(bot->GetMap()->GetInstanceId());
-        /* if (it == rainOfFirePosition.end())
-            return false;
-
-        return getMSTimeDiff(it->second.lastUpdateTime, getMSTime()) < RAIN_OF_FIRE_DURATION; */
-
-        if (it == rainOfFirePosition.end())
-        {
-            LOG_DEBUG("playerbots", "AzgalorBossCastsRainOfFireTrigger: [{}] melee, no RoF data", bot->GetName());
-            return false;
-        }
-
-        uint32 elapsed = getMSTimeDiff(it->second.lastUpdateTime, getMSTime());
-        float distToRoF = bot->GetExactDist2d(it->second.position);
-        bool active = elapsed < RAIN_OF_FIRE_DURATION;
-
-        LOG_DEBUG("playerbots", "AzgalorBossCastsRainOfFireTrigger: [{}] melee elapsed={}ms distToRoF={:.1f} active={}",
-            bot->GetName(), elapsed, distToRoF, active ? "true" : "false");
-
-        return active;
+        float dist = bot->GetExactDist2d(data.position);
+        LOG_DEBUG("playerbots", "AzgalorBossCastsRainOfFireOnMeleeTrigger: [{}] melee checking RoF {} dist={:.1f} elapsed={}ms",
+            bot->GetName(), guid.ToString(), dist, getMSTimeDiff(data.lastUpdateTime, now));
+        if (dist < 16.0f)
+            return true;
     }
+
+    return false;
 }
 
 bool AzgalorBotIsDoomedTrigger::IsActive()

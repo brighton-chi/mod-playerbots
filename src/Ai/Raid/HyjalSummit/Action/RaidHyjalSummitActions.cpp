@@ -768,87 +768,80 @@ bool AzgalorMainTankPositionBossAction::Execute(Event /*event*/)
     return false;
 }
 
-// Testing melee RoF avoidance here also
 bool AzgalorDisperseRangedAction::Execute(Event /*event*/)
 {
     Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
     if (!azgalor)
         return false;
 
-    if (botAI->IsRanged(bot))
+    // Azgalor's hitbox is 8.8 yards
+    const float safeDistFromBoss =
+        GetAzgalorTankStep(botAI, bot) < 1 ? 35.0f : 29.0f;
+    constexpr uint32 minInterval = 0;
+
+    if (bot->GetExactDist2d(azgalor) < safeDistFromBoss &&
+        FleePosition(azgalor->GetPosition(), safeDistFromBoss, minInterval))
+        return true;
+
+    // Lesser Doomguard's hitbox is 3.75 yards
+    constexpr float safeDistFromDoomguard = 14.0f;
+    if (Unit* doomguard = AI_VALUE2(Unit*, "find target", "lesser doomguard");
+        doomguard && bot->GetExactDist2d(doomguard) < safeDistFromDoomguard &&
+        FleePosition(doomguard->GetPosition(), safeDistFromDoomguard))
+        return true;
+
+    constexpr float safeDistFromPlayer = 5.0f;
+    if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
+        return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer);
+
+    return false;
+}
+
+bool AzgalorMeleeGetOutOfFireAction::Execute(Event /*event*/)
+{
+    Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
+    if (!azgalor)
+        return false;
+
+    constexpr uint32 RAIN_OF_FIRE_DURATION = 10000;
+    uint32 now = getMSTime();
+
+    auto instanceIt = rainOfFirePosition.find(bot->GetMap()->GetInstanceId());
+    if (instanceIt == rainOfFirePosition.end())
+        return false;
+
+    auto& dynObjMap = instanceIt->second;
+    for (auto it = dynObjMap.begin(); it != dynObjMap.end(); )
     {
-        // Azgalor's hitbox is 8.8 yards
-        const float safeDistFromBoss =
-            GetAzgalorTankStep(botAI, bot) < 1 ? 35.0f : 29.0f;
-        constexpr uint32 minInterval = 0;
-
-        if (bot->GetExactDist2d(azgalor) < safeDistFromBoss &&
-            FleePosition(azgalor->GetPosition(), safeDistFromBoss, minInterval))
-            return true;
-
-        // Lesser Doomguard's hitbox is 3.75 yards
-        constexpr float safeDistFromDoomguard = 14.0f;
-        if (Unit* doomguard = AI_VALUE2(Unit*, "find target", "lesser doomguard");
-            doomguard && bot->GetExactDist2d(doomguard) < safeDistFromDoomguard &&
-            FleePosition(doomguard->GetPosition(), safeDistFromDoomguard))
-            return true;
-
-        constexpr float safeDistFromPlayer = 5.0f;
-        if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
-            return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer);
+        if (getMSTimeDiff(it->second.lastUpdateTime, now) >= RAIN_OF_FIRE_DURATION)
+            it = dynObjMap.erase(it);
+        else
+            ++it;
     }
-    else
+
+    if (dynObjMap.empty())
+        return false;
+
+    bool inAnyRoF = false;
+    for (auto const& [guid, data] : dynObjMap)
     {
-        /* constexpr uint32 RAIN_OF_FIRE_DURATION = 10000;
-        auto it = rainOfFirePosition.find(bot->GetMap()->GetInstanceId());
-        if (it == rainOfFirePosition.end())
-            return false;
-
-        if (getMSTimeDiff(it->second.lastUpdateTime, getMSTime()) >= RAIN_OF_FIRE_DURATION)
-            return false;
-
-        if (bot->GetExactDist2d(it->second.position) < 10.0f)
-            return MoveAway(azgalor, 5.0f); */
+        if (bot->GetExactDist2d(data.position) < 16.0f)
         {
-            constexpr uint32 RAIN_OF_FIRE_DURATION = 10000;
-            auto it = rainOfFirePosition.find(bot->GetMap()->GetInstanceId());
-
-            if (it == rainOfFirePosition.end())
-            {
-                LOG_DEBUG("playerbots", "AzgalorDisperseRangedAction: [{}] melee no RoF data", bot->GetName());
-                return false;
-            }
-
-            uint32 elapsed = getMSTimeDiff(it->second.lastUpdateTime, getMSTime());
-            float distToRoF = bot->GetExactDist2d(it->second.position);
-
-            LOG_DEBUG("playerbots", "AzgalorDisperseRangedAction: [{}] melee elapsed={}ms distToRoF={:.1f}",
-                bot->GetName(), elapsed, distToRoF);
-
-            if (elapsed >= RAIN_OF_FIRE_DURATION)
-            {
-                LOG_DEBUG("playerbots", "AzgalorDisperseRangedAction: [{}] melee RoF expired", bot->GetName());
-                return false;
-            }
-
-            if (distToRoF <= 15.0f)
-            {
-                botAI->Reset();
-                bool moved = MoveAway(azgalor, 5.0f);
-                LOG_DEBUG("playerbots", "AzgalorDisperseRangedAction: [{}] melee in RoF MoveAway={}",
-                    bot->GetName(), moved ? "true" : "false");
-                return moved;
-            }
-
-            // Already clear of the RoF - return true to hold position and prevent
-            // other movement actions from pulling the bot back in
-            LOG_DEBUG("playerbots", "AzgalorDisperseRangedAction: [{}] melee clear of RoF, holding position",
-                bot->GetName());
-            return true;
+            inAnyRoF = true;
+            break;
         }
     }
 
-    return false;
+    if (inAnyRoF)
+    {
+        botAI->Reset();
+        bool moved = MoveAway(azgalor, 5.0f);
+        LOG_DEBUG("playerbots", "AzgalorMeleeGetOutOfFireAction: [{}] melee in RoF MoveAway={}",
+            bot->GetName(), moved ? "true" : "false");
+        return moved;
+    }
+
+    return true;
 }
 
 // Wait a bit North of Thrall's starting location for the tank to position and turn Azgalor

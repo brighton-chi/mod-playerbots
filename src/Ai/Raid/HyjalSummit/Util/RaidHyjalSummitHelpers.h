@@ -84,7 +84,7 @@ namespace HyjalSummitHelpers
         Position position;
         uint32 lastUpdateTime;
     };
-    extern std::unordered_map<uint32, RainOfFireData> rainOfFirePosition;
+    extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, RainOfFireData>> rainOfFirePosition;
     int GetAzgalorTankStep(PlayerbotAI* botAI, Player* bot);
     bool AnyGroupMemberHasDoom(Player* bot);
 

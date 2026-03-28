@@ -195,9 +195,22 @@ float AzgalorDisableTankActionsMultiplier::GetValue(Action* action)
     if (!botAI->IsTank(bot) || !AI_VALUE2(Unit*, "find target", "azgalor"))
         return 1.0f;
 
-    if (dynamic_cast<TankFaceAction*>(action) ||
-        dynamic_cast<TankAssistAction*>(action))
+    if (dynamic_cast<TankFaceAction*>(action))
         return 0.0f;
+
+    if (dynamic_cast<TankAssistAction*>(action))
+    {
+        if (botAI->IsMainTank(bot))
+        {
+            return 0.0f;
+        }
+        else if (botAI->IsAssistTank(bot) &&
+                 (AnyGroupMemberHasDoom(bot) ||
+                  AI_VALUE2(Unit*, "find target", "lesser doomguard")))
+        {
+            return 0.0f;
+        }
+    }
 
     /* if (!botAI->IsAssistTankOfIndex(bot, 0, true) &&
         !botAI->IsAssistTankOfIndex(bot, 1, true))
@@ -238,8 +251,7 @@ float AzgalorDoomedBotPrioritizePositioningMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-// The alternative is running in front of Azgalor and getting cleaved
-float AzgalorMeleeJustStandInFireMultiplier::GetValue(Action* action)
+float AzgalorMeleeControlAvoidanceMultiplier::GetValue(Action* action)
 {
     if (!botAI->IsMelee(bot) || !AI_VALUE2(Unit*, "find target", "azgalor"))
         return 1.0f;
@@ -251,20 +263,30 @@ float AzgalorMeleeJustStandInFireMultiplier::GetValue(Action* action)
         return 0.0f;
     }
 
+    if (!botAI->IsDps(bot))
+        return 1.0f;
+
     constexpr uint32 RAIN_OF_FIRE_DURATION = 10000;
-    auto it = rainOfFirePosition.find(bot->GetMap()->GetInstanceId());
-    if (it == rainOfFirePosition.end())
+    uint32 now = getMSTime();
+
+    auto instanceIt = rainOfFirePosition.find(bot->GetMap()->GetInstanceId());
+    if (instanceIt == rainOfFirePosition.end())
         return 1.0f;
 
-    if (getMSTimeDiff(it->second.lastUpdateTime, getMSTime()) >= RAIN_OF_FIRE_DURATION)
-        return 1.0f;
-
-    if (dynamic_cast<MovementAction*>(action) &&
-        !dynamic_cast<AzgalorDisperseRangedAction*>(action))
+    for (auto const& [guid, data] : instanceIt->second)
     {
-        LOG_DEBUG("playerbots", "AzgalorMeleeJustStandInFireMultiplier: [{}] RoF active, suppressing {}",
-            bot->GetName(), action->getName());
-        return 0.0f;
+        if (getMSTimeDiff(data.lastUpdateTime, now) < RAIN_OF_FIRE_DURATION &&
+            bot->GetExactDist2d(data.position) < 16.0f)
+        {
+            if (dynamic_cast<MovementAction*>(action) &&
+                !dynamic_cast<AzgalorMeleeGetOutOfFireAction*>(action))
+            {
+                LOG_DEBUG("playerbots", "AzgalorMeleeJustStandInFireMultiplier: [{}] RoF active, suppressing {}",
+                    bot->GetName(), action->getName());
+                return 0.0f;
+            }
+            break;
+        }
     }
 
     return 1.0f;

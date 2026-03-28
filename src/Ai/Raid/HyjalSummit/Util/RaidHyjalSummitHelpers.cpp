@@ -62,7 +62,7 @@ namespace HyjalSummitHelpers
     const Position AZGALOR_DOOMGUARD_POSITION = { 5465.750f, -2717.944f, 1483.685f };
     const Position AZGALOR_WAITING_POSITION = { 5470.972f, -2723.412f, 1483.250f };
     std::unordered_map<ObjectGuid, uint8> azgalorTankStep;
-    std::unordered_map<uint32, RainOfFireData> rainOfFirePosition;
+    std::unordered_map<uint32, std::unordered_map<ObjectGuid, RainOfFireData>> rainOfFirePosition;
 
     int GetAzgalorTankStep(PlayerbotAI* botAI, Player* bot)
     {
