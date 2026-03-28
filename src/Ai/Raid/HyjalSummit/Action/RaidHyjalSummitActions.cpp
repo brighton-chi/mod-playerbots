@@ -849,17 +849,18 @@ bool AzgalorMeleeGetOutOfFireAction::Execute(Event /*event*/)
     return true;
 }
 
-// Wait a bit North of Thrall's starting location for the tank to position and turn Azgalor
+// Wait for the tank to get to the transition position (i.e., move in to attack as
+// Azgalor turns away from the raid)
 bool AzgalorWaitAtSafePositionAction::Execute(Event /*event*/)
 {
-    const Position& position = AZGALOR_WAITING_POSITION;
+    const Position& position = AZGALOR_DOOMGUARD_POSITION;
     botAI->Reset();
     return MoveTo(HYJAL_SUMMIT_MAP_ID, position.GetPositionX(), position.GetPositionY(),
                   position.GetPositionZ(), false, false, false, false,
                   MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
-// The spot is near Thrall's starting location
+// The spot is between the paths leading from Thrall's keep
 bool AzgalorMoveToDoomguardTankAction::Execute(Event /*event*/)
 {
     const Position& position = AZGALOR_DOOMGUARD_POSITION;
@@ -926,6 +927,8 @@ bool AzgalorFirstAssistTankPositionDoomguardAction::Execute(Event /*event*/)
 }
 
 // Only nearbyish ranged DPS should attack Doomguards
+// 65 yards should get to the side of Azgalor but not bring in any ranged
+// standing in front
 bool AzgalorAssignDpsPriorityAction::Execute(Event /*event*/)
 {
     Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
@@ -935,7 +938,7 @@ bool AzgalorAssignDpsPriorityAction::Execute(Event /*event*/)
     if (azgalor->GetHealthPct() > 10.0f && botAI->IsRanged(bot))
     {
         if (Unit* doomguard = AI_VALUE2(Unit*, "find target", "lesser doomguard");
-            doomguard && bot->GetDistance2d(doomguard) < 50.0f)
+            doomguard && bot->GetDistance2d(doomguard) < 65.0f)
         {
             SetRtiTarget(botAI, "circle", doomguard);
 

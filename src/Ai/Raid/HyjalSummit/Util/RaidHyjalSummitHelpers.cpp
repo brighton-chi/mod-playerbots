@@ -58,8 +58,7 @@ namespace HyjalSummitHelpers
 
     const Position AZGALOR_TANK_TRANSITION_POSITION = { 5486.787f, -2696.215f, 1482.007f };
     const Position AZGALOR_TANK_FINAL_POSITION =      { 5496.379f, -2675.265f, 1481.053f };
-    const Position AZGALOR_DOOMGUARD_POSITION =       { 5465.750f, -2717.944f, 1483.685f };
-    const Position AZGALOR_WAITING_POSITION =         { 5470.972f, -2723.412f, 1483.250f };
+    const Position AZGALOR_DOOMGUARD_POSITION =       { 5485.555f, -2731.659f, 1485.555f };
     std::unordered_map<ObjectGuid, uint8> azgalorTankStep;
     std::unordered_map<uint32, std::unordered_map<ObjectGuid, RainOfFireData>> rainOfFirePosition;
 

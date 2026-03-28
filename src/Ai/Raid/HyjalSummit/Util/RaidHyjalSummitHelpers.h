@@ -73,7 +73,6 @@ namespace HyjalSummitHelpers
     extern const Position AZGALOR_TANK_TRANSITION_POSITION;
     extern const Position AZGALOR_TANK_FINAL_POSITION;
     extern const Position AZGALOR_DOOMGUARD_POSITION;
-    extern const Position AZGALOR_WAITING_POSITION;
     extern std::unordered_map<ObjectGuid, uint8> azgalorTankStep;
     struct RainOfFireData
     {
