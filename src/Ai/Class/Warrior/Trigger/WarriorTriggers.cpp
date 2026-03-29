@@ -94,11 +94,11 @@ bool BattleShoutTrigger::IsActive()
 
     uint32 battleShoutSpellId = AI_VALUE2(uint32, "spell id", "battle shout");
     if (!battleShoutSpellId)
-        return true;
+        return false;
 
     SpellInfo const* bsInfo = sSpellMgr->GetSpellInfo(battleShoutSpellId);
     if (!bsInfo)
-        return true;
+        return false;
 
     int32 bsApValue = 0;
     for (uint8 eff = 0; eff < MAX_SPELL_EFFECTS; ++eff)
@@ -110,7 +110,7 @@ bool BattleShoutTrigger::IsActive()
         }
     }
     if (!bsApValue)
-        return true;
+        return false;
 
     static const uint32 commandingPresenceSpells[] = {
         12318, 12857, 12858, 12860, 12861 };
