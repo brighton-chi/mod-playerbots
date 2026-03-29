@@ -52,7 +52,8 @@ bool VigilanceTrigger::IsActive()
         }
     }
 
-    Player* highestPriorityTarget = mainTank ? mainTank : (assistTank1 ? assistTank1 :
+    Player* highestPriorityTarget = mainTank ? mainTank :
+                                      (assistTank1 ? assistTank1 :
                                       (assistTank2 ? assistTank2 : highestGearScorePlayer));
 
     if (!currentVigilanceTarget || currentVigilanceTarget != highestPriorityTarget)
