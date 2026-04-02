@@ -91,9 +91,6 @@ uint8 AiFactory::GetPlayerSpecTab(Player* bot)
             case CLASS_WARLOCK:
                 tab = WARLOCK_TAB_DEMONOLOGY;
                 break;
-            case CLASS_SHAMAN:
-                tab = SHAMAN_TAB_ELEMENTAL;
-                break;
         }
 
         return tab;
@@ -363,7 +360,7 @@ void AiFactory::AddDefaultCombatStrategies(Player* player, PlayerbotAI* const fa
             else
                 engine->addStrategiesNoInit("surv", nullptr);
 
-            engine->addStrategiesNoInit("cc", "dps assist", "aoe", nullptr);
+            engine->addStrategiesNoInit("cc", "dps assist", "aoe", "bdps", nullptr);
             break;
         case CLASS_ROGUE:
             if (tab == ROGUE_TAB_ASSASSINATION || tab == ROGUE_TAB_SUBTLETY)

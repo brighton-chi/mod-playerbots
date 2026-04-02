@@ -372,13 +372,14 @@ bool HighKingMaulgarBanishFelstalkerAction::Execute(Event /*event*/)
     if (!group)
         return false;
 
-    const GuidVector& npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
     std::vector<Unit*> felStalkers;
-    for (auto const& npc : npcs)
+    std::list<Creature*> creatureList;
+    constexpr float searchRadius = 100.0f;
+    bot->GetCreatureListWithEntryInGrid(creatureList, NPC_WILD_FEL_STALKER, searchRadius);
+    for (Creature* creature : creatureList)
     {
-        Unit* unit = botAI->GetUnit(npc);
-        if (unit && unit->GetEntry() == NPC_WILD_FEL_STALKER && unit->IsAlive())
-            felStalkers.push_back(unit);
+        if (creature && creature->IsAlive())
+            felStalkers.push_back(creature);
     }
 
     std::vector<Player*> warlocks;

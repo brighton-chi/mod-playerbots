@@ -253,20 +253,18 @@ namespace KarazhanHelpers
         return std::make_tuple(redBlocker, greenBlocker, blueBlocker);
     }
 
-    std::vector<Unit*> GetAllVoidZones(PlayerbotAI* botAI, Player* bot)
+    std::vector<Unit*> GetAllVoidZones(Player* bot)
     {
         std::vector<Unit*> voidZones;
-        const float radius = 30.0f;
-        const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
-        for (auto const& npcGuid : npcs)
-        {
-            Unit* unit = botAI->GetUnit(npcGuid);
-            if (!unit || unit->GetEntry() != NPC_VOID_ZONE)
-                continue;
+        std::list<Creature*> creatureList;
+        constexpr float searchRadius = 30.0f;
 
-            float dist = bot->GetExactDist2d(unit);
-            if (dist < radius)
-                voidZones.push_back(unit);
+        bot->GetCreatureListWithEntryInGrid(creatureList, NPC_VOID_ZONE, searchRadius);
+
+        for (Creature* creature : creatureList)
+        {
+            if (creature && creature->IsAlive())
+                voidZones.push_back(creature);
         }
 
         return voidZones;
@@ -284,15 +282,18 @@ namespace KarazhanHelpers
         return true;
     }
 
-    std::vector<Unit*> GetSpawnedInfernals(PlayerbotAI* botAI)
+    std::vector<Unit*> GetSpawnedInfernals(Player* bot)
     {
         std::vector<Unit*> infernals;
-        const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
-        for (auto const& npcGuid : npcs)
+        std::list<Creature*> creatureList;
+        constexpr float searchRadius = 100.0f;
+
+        bot->GetCreatureListWithEntryInGrid(creatureList, NPC_NETHERSPITE_INFERNAL, searchRadius);
+
+        for (Creature* creature : creatureList)
         {
-            Unit* unit = botAI->GetUnit(npcGuid);
-            if (unit && unit->GetEntry() == NPC_NETHERSPITE_INFERNAL)
-                infernals.push_back(unit);
+            if (creature && creature->IsAlive())
+                infernals.push_back(creature);
         }
 
         return infernals;

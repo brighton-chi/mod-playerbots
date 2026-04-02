@@ -8,37 +8,32 @@ using namespace GruulsLairHelpers;
 
 bool HighKingMaulgarIsMainTankTrigger::IsActive()
 {
-    Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
-
-    return botAI->IsMainTank(bot) && maulgar;
+    return botAI->IsTank(bot) && botAI->IsMainTank(bot) &&
+           AI_VALUE2(Unit*, "find target", "high king maulgar");
 }
 
 bool HighKingMaulgarIsFirstAssistTankTrigger::IsActive()
 {
-    Unit* olm = AI_VALUE2(Unit*, "find target", "olm the summoner");
-
-    return botAI->IsAssistTankOfIndex(bot, 0, false) && olm;
+    return botAI->IsTank(bot) && botAI->IsAssistTankOfIndex(bot, 0, false) &&
+           AI_VALUE2(Unit*, "find target", "olm the summoner");
 }
 
 bool HighKingMaulgarIsSecondAssistTankTrigger::IsActive()
 {
-    Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
-
-    return botAI->IsAssistTankOfIndex(bot, 1, false) && blindeye;
+    return botAI->IsTank(bot) && botAI->IsAssistTankOfIndex(bot, 1, false) &&
+           AI_VALUE2(Unit*, "find target", "blindeye the seer");
 }
 
 bool HighKingMaulgarIsMageTankTrigger::IsActive()
 {
-    Unit* krosh = AI_VALUE2(Unit*, "find target", "krosh firehand");
-
-    return IsKroshMageTank(botAI, bot) && krosh;
+    return bot->getClass() == CLASS_MAGE && IsKroshMageTank(botAI, bot) &&
+           AI_VALUE2(Unit*, "find target", "krosh firehand");
 }
 
 bool HighKingMaulgarIsMoonkinTankTrigger::IsActive()
 {
-    Unit* kiggler = AI_VALUE2(Unit*, "find target", "kiggler the crazed");
-
-    return IsKigglerMoonkinTank(botAI, bot) && kiggler;
+    return bot->getClass() == CLASS_DRUID && IsKigglerMoonkinTank(botAI, bot) &&
+           AI_VALUE2(Unit*, "find target", "kiggler the crazed");;
 }
 
 bool HighKingMaulgarDeterminingKillOrderTrigger::IsActive()
@@ -64,72 +59,31 @@ bool HighKingMaulgarHealerInDangerTrigger::IsActive()
 
 bool HighKingMaulgarBossChannelingWhirlwindTrigger::IsActive()
 {
-    Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
+    if (botAI->IsTank(bot) && botAI->IsMainTank(bot))
+        return false;
 
-    return maulgar && maulgar->HasAura(SPELL_WHIRLWIND) &&
-           !botAI->IsMainTank(bot);
+    Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
+    return maulgar && maulgar->HasAura(SPELL_WHIRLWIND);
 }
 
 bool HighKingMaulgarWildFelstalkerSpawnedTrigger::IsActive()
 {
-    Unit* felStalker = AI_VALUE2(Unit*, "find target", "wild fel stalker");
-
-    return felStalker && bot->getClass() == CLASS_WARLOCK;
+    return bot->getClass() == CLASS_WARLOCK &&
+           AI_VALUE2(Unit*, "find target", "wild fel stalker");
 }
 
 bool HighKingMaulgarPullingOlmAndBlindeyeTrigger::IsActive()
 {
-    Group* group = bot->GetGroup();
-    if (!group || bot->getClass() != CLASS_HUNTER)
-        return false;
-
-    std::vector<Player*> hunters;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (member && member->IsAlive() && member->getClass() == CLASS_HUNTER && GET_PLAYERBOT_AI(member))
-            hunters.push_back(member);
-    }
-
-    int hunterIndex = -1;
-    for (size_t i = 0; i < hunters.size(); ++i)
-    {
-        if (hunters[i] == bot)
-        {
-            hunterIndex = static_cast<int>(i);
-            break;
-        }
-    }
-    if (hunterIndex == -1 || hunterIndex > 1)
+    if (bot->getClass() != CLASS_HUNTER)
         return false;
 
     Unit* olm = AI_VALUE2(Unit*, "find target", "olm the summoner");
+    if (olm && olm->GetHealthPct() > 98.0f)
+        return true;
+
     Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
-    Player* olmTank = nullptr;
-    Player* blindeyeTank = nullptr;
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || !member->IsAlive())
-            continue;
-        else if (botAI->IsAssistTankOfIndex(member, 0)) olmTank = member;
-        else if (botAI->IsAssistTankOfIndex(member, 1)) blindeyeTank = member;
-    }
-
-    switch (hunterIndex)
-    {
-    case 0:
-        return olm && olm->GetHealthPct() > 98.0f &&
-               olmTank && botAI->CanCastSpell("misdirection", olmTank);
-
-    case 1:
-        return blindeye && blindeye->GetHealthPct() > 90.0f &&
-               blindeyeTank && botAI->CanCastSpell("misdirection", blindeyeTank);
-
-    default:
-        break;
-    }
+    if (blindeye && blindeye->GetHealthPct() > 90.0f)
+        return true;
 
     return false;
 }
@@ -138,22 +92,18 @@ bool HighKingMaulgarPullingOlmAndBlindeyeTrigger::IsActive()
 
 bool GruulTheDragonkillerBossEngagedByTanksTrigger::IsActive()
 {
-    Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
-
-    return gruul && botAI->IsTank(bot);
+    return botAI->IsTank(bot) &&
+           AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
 }
 
 bool GruulTheDragonkillerBossEngagedByRangedTrigger::IsActive()
 {
-    Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
-
-    return gruul && botAI->IsRanged(bot);
+    return botAI->IsRanged(bot) &&
+           AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
 }
 
 bool GruulTheDragonkillerIncomingShatterTrigger::IsActive()
 {
-    Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
-
-    return gruul && (bot->HasAura(SPELL_GROUND_SLAM_1) ||
-           bot->HasAura(SPELL_GROUND_SLAM_2));
+    return bot->HasAura(SPELL_GROUND_SLAM_1) ||
+           bot->HasAura(SPELL_GROUND_SLAM_2);
 }

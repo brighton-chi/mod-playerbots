@@ -6,6 +6,7 @@
 #pragma once
 
 #include "Action.h"
+#include "Common.h"
 
 class PlayerbotAI;
 class Unit;

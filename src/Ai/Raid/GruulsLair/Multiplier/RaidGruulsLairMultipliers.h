@@ -24,24 +24,24 @@ public:
     float GetValue(Action* action) override;
 };
 
-class HighKingMaulgarDisableMageTankAOEMultiplier : public Multiplier
+class HighKingMaulgarDisableMageTankAoeMultiplier : public Multiplier
 {
 public:
-    HighKingMaulgarDisableMageTankAOEMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "high king maulgar disable mage tank aoe multiplier") {}
+    HighKingMaulgarDisableMageTankAoeMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "high king maulgar disable mage tank aoe multiplier") {}
     float GetValue(Action* action) override;
 };
 
-class GruulTheDragonkillerMainTankMovementMultiplier : public Multiplier
+class GruulTheDragonkillerControlTankMovementMultiplier : public Multiplier
 {
 public:
-    GruulTheDragonkillerMainTankMovementMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "gruul the dragonkiller main tank movement multiplier") {}
+    GruulTheDragonkillerControlTankMovementMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "gruul the dragonkiller control tank movement multiplier") {}
     float GetValue(Action* action) override;
 };
 
-class GruulTheDragonkillerGroundSlamMultiplier : public Multiplier
+class GruulTheDragonkillerStaySpreadForShatterMultiplier : public Multiplier
 {
 public:
-    GruulTheDragonkillerGroundSlamMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "gruul the dragonkiller ground slam multiplier") {}
+    GruulTheDragonkillerStaySpreadForShatterMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "gruul the dragonkiller stay spread for shatter multiplier") {}
     float GetValue(Action* action) override;
 };
 

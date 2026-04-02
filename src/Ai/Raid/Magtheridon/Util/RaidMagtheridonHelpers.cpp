@@ -121,23 +121,25 @@ namespace MagtheridonHelpers
     bool IsSafeFromMagtheridonHazards(PlayerbotAI* botAI, Player* bot, float x, float y, float z)
     {
         // Debris
-        std::vector<Unit*> debrisHazards;
-        const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
-        for (auto const& npcGuid : npcs)
+        std::list<Creature*> debrisList;
+        constexpr float searchRadius = 40.0f;
+
+        constexpr float debrisHazardRadius = 9.0f;
+        bot->GetCreatureListWithEntryInGrid(debrisList, NPC_TARGET_TRIGGER, searchRadius);
+
+        for (Creature* creature : debrisList)
         {
-            Unit* unit = botAI->GetUnit(npcGuid);
-            if (!unit || unit->GetEntry() != NPC_TARGET_TRIGGER)
-                continue;
-            debrisHazards.push_back(unit);
-        }
-        for (Unit* hazard : debrisHazards)
-        {
-            float dist = hazard->GetDistance2d(x, y);
-            if (dist < 9.0f)
-                return false;
+            if (creature && creature->IsAlive())
+            {
+                float dx = x - creature->GetPositionX();
+                float dy = y - creature->GetPositionY();
+                if ((dx * dx + dy * dy) < (debrisHazardRadius * debrisHazardRadius))
+                    return false;
+            }
         }
 
         // Conflagration
+        constexpr float conflagrationHazardRadius = 5.0f;
         GuidVector gos = *botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest game objects");
         for (auto const& goGuid : gos)
         {
@@ -145,8 +147,9 @@ namespace MagtheridonHelpers
             if (!go || go->GetEntry() != GO_BLAZE)
                 continue;
 
-            float dist = go->GetDistance2d(x, y);
-            if (dist < 5.0f)
+            float dx = x - go->GetPositionX();
+            float dy = y - go->GetPositionY();
+            if ((dx * dx + dy * dy) < (conflagrationHazardRadius * conflagrationHazardRadius))
                 return false;
         }
 
