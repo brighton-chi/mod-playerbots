@@ -7,6 +7,9 @@
 
 #include "DpsPaladinStrategy.h"
 #include "GenericPaladinNonCombatStrategy.h"
+#include "PaladinGreaterBlessingAction.h"
+#include "PaladinGreaterBlessingStrategy.h"
+#include "PaladinGreaterBlessingTrigger.h"
 #include "HealPaladinStrategy.h"
 #include "NamedObjectContext.h"
 #include "OffhealRetPaladinStrategy.h"
@@ -15,6 +18,7 @@
 #include "PaladinTriggers.h"
 #include "Playerbots.h"
 #include "TankPaladinStrategy.h"
+#include "PaladinToggleGreaterBlessingAction.h"
 
 class PaladinStrategyFactoryInternal : public NamedObjectContext<Strategy>
 {
@@ -71,6 +75,7 @@ public:
         creators["bmana"] = &PaladinBuffStrategyFactoryInternal::bmana;
         creators["bdps"] = &PaladinBuffStrategyFactoryInternal::bdps;
         creators["bstats"] = &PaladinBuffStrategyFactoryInternal::bstats;
+        creators["gblessing"] = &PaladinBuffStrategyFactoryInternal::gblessing;
     }
 
 private:
@@ -78,6 +83,7 @@ private:
     static Strategy* bmana(PlayerbotAI* botAI) { return new PaladinBuffManaStrategy(botAI); }
     static Strategy* bdps(PlayerbotAI* botAI) { return new PaladinBuffDpsStrategy(botAI); }
     static Strategy* bstats(PlayerbotAI* botAI) { return new PaladinBuffStatsStrategy(botAI); }
+    static Strategy* gblessing(PlayerbotAI* botAI) { return new PaladinGreaterBlessingStrategy(botAI); }
 };
 
 class PaladinCombatStrategyFactoryInternal : public NamedObjectContext<Strategy>
@@ -149,6 +155,7 @@ public:
         creators["blessing of sanctuary on party"] = &PaladinTriggerFactoryInternal::blessing_of_sanctuary_on_party;
 
         creators["avenging wrath"] = &PaladinTriggerFactoryInternal::avenging_wrath;
+        creators["greater blessing needed"] = &PaladinTriggerFactoryInternal::greater_blessing_needed;
     }
 
 private:
@@ -220,6 +227,10 @@ private:
     }
 
     static Trigger* avenging_wrath(PlayerbotAI* botAI) { return new AvengingWrathTrigger(botAI); }
+    static Trigger* greater_blessing_needed(PlayerbotAI* botAI)
+    {
+        return new GreaterBlessingNeededTrigger(botAI);
+    }
 };
 
 class PaladinAiObjectContextInternal : public NamedObjectContext<Action>
@@ -308,6 +319,10 @@ public:
         creators["divine illumination"] = &PaladinAiObjectContextInternal::divine_illumination;
         creators["divine sacrifice"] = &PaladinAiObjectContextInternal::divine_sacrifice;
         creators["cancel divine sacrifice"] = &PaladinAiObjectContextInternal::cancel_divine_sacrifice;
+        creators["cast greater blessing assignment"] =
+            &PaladinAiObjectContextInternal::cast_greater_blessing_assignment;
+        creators["toggle greater blessing strategy"] =
+            &PaladinAiObjectContextInternal::toggle_greater_blessing_strategy;
     }
 
 private:
@@ -414,6 +429,14 @@ private:
     static Action* divine_illumination(PlayerbotAI* ai) { return new CastDivineIlluminationAction(ai); }
     static Action* divine_sacrifice(PlayerbotAI* ai) { return new CastDivineSacrificeAction(ai); }
     static Action* cancel_divine_sacrifice(PlayerbotAI* ai) { return new CastCancelDivineSacrificeAction(ai); }
+    static Action* cast_greater_blessing_assignment(PlayerbotAI* ai)
+    {
+        return new CastGreaterBlessingAssignmentAction(ai);
+    }
+    static Action* toggle_greater_blessing_strategy(PlayerbotAI* ai)
+    {
+        return new ToggleGreaterBlessingStrategyAction(ai);
+    }
 };
 
 SharedNamedObjectContextList<Strategy> PaladinAiObjectContext::sharedStrategyContexts;

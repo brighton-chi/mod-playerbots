@@ -165,9 +165,6 @@ bool CastBlessingOfMightAction::Execute(Event /*event*/)
         return false;
 
     std::string castName = GetActualBlessingOfMight(target);
-    auto RP = ai::chat::MakeGroupAnnouncer(bot);
-
-    castName = ai::buff::UpgradeToGroupIfAppropriate(bot, botAI, castName, /*announceOnMissing=*/true, RP);
     return botAI->CastSpell(castName, target);
 }
 
@@ -186,9 +183,6 @@ bool CastBlessingOfMightOnPartyAction::Execute(Event /*event*/)
         return false;
 
     std::string castName = GetActualBlessingOfMight(target);
-    auto RP = ai::chat::MakeGroupAnnouncer(bot);
-
-    castName = ai::buff::UpgradeToGroupIfAppropriate(bot, botAI, castName, /*announceOnMissing=*/true, RP);
     return botAI->CastSpell(castName, target);
 }
 
@@ -199,9 +193,6 @@ bool CastBlessingOfWisdomAction::Execute(Event /*event*/)
         return false;
 
     std::string castName = GetActualBlessingOfWisdom(target);
-    auto RP = ai::chat::MakeGroupAnnouncer(bot);
-
-    castName = ai::buff::UpgradeToGroupIfAppropriate(bot, botAI, castName, /*announceOnMissing=*/true, RP);
     return botAI->CastSpell(castName, target);
 }
 
@@ -236,8 +227,6 @@ bool CastBlessingOfWisdomOnPartyAction::Execute(Event /*event*/)
     if (castName.empty())
         return false;
 
-    auto RP = ai::chat::MakeGroupAnnouncer(bot);
-    castName = ai::buff::UpgradeToGroupIfAppropriate(bot, botAI, castName, /*announceOnMissing=*/true, RP);
     return botAI->CastSpell(castName, target);
 }
 
@@ -350,15 +339,8 @@ bool CastBlessingOfSanctuaryOnPartyAction::Execute(Event /*event*/)
         else
             return false;
     }
-    if (targetPlayer && !IsTankRole(targetPlayer))
-    {
-        auto RP = ai::chat::MakeGroupAnnouncer(bot);
-        castName = ai::buff::UpgradeToGroupIfAppropriate(bot, botAI, castName, /*announceOnMissing=*/true, RP);
-    }
-    else
-    {
-        castName = "blessing of sanctuary";
-    }
+    // Always use single-target Sanctuary (Greater handled by gblessing).
+    castName = "blessing of sanctuary";
 
     bool ok = botAI->CastSpell(castName, target);
     LOG_DEBUG("playerbots", "[Sanct] Cast {} on {} result={}", castName, target->GetName(), ok);
@@ -433,35 +415,8 @@ bool CastBlessingOfKingsOnPartyAction::Execute(Event /*event*/)
         }
     }
 
-    std::string castName = "blessing of kings";
-
-    bool allowGreater = true;
-
-    if (hasBmana)
-        allowGreater = false;
-
-    if (allowGreater && hasBstats && targetPlayer)
-    {
-        switch (targetPlayer->getClass())
-        {
-            case CLASS_WARRIOR:
-            case CLASS_PALADIN:
-            case CLASS_DRUID:
-            case CLASS_DEATH_KNIGHT:
-                allowGreater = false;
-                break;
-            default:
-                break;
-        }
-    }
-
-    if (allowGreater)
-    {
-        auto RP = ai::chat::MakeGroupAnnouncer(bot);
-        castName = ai::buff::UpgradeToGroupIfAppropriate(bot, botAI, castName, /*announceOnMissing=*/true, RP);
-    }
-
-    return botAI->CastSpell(castName, target);
+    // Always use single-target Kings (Greater handled by gblessing).
+    return botAI->CastSpell("blessing of kings", target);
 }
 
 bool CastSealSpellAction::isUseful() { return AI_VALUE2(bool, "combat", "self target"); }

@@ -30,4 +30,8 @@ void GenericPaladinNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& tr
         triggers.push_back(new TriggerNode("often", { NextAction("apply oil", ACTION_IDLE + 1.0f) }));
     if (specTab == PALADIN_TAB_RETRIBUTION)
         triggers.push_back(new TriggerNode("often", { NextAction("apply stone", ACTION_IDLE + 1.0f) }));
+
+    // Auto-toggle gblessing strategy on raid join/leave.
+    triggers.push_back(new TriggerNode("often",
+        { NextAction("toggle greater blessing strategy", 1.0f) }));
 }
