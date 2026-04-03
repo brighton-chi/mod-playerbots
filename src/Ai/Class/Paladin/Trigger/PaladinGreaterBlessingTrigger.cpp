@@ -6,10 +6,8 @@
 #include "PaladinGreaterBlessingTrigger.h"
 
 #include "AiFactory.h"
-#include "PaladinBlessingPriorityData.h"
 #include "GenericBuffUtils.h"
-#include "Group.h"
-#include "PlayerbotAI.h"
+#include "PaladinBlessingPriorityData.h"
 #include "Playerbots.h"
 
 using namespace ai::gbless;
@@ -149,6 +147,26 @@ bool GreaterBlessingNeededTrigger::IsActive()
 
         if (needsBlessing(cat, p))
             return true;
+    }
+
+    // Phase 7 in the action may reassign this bot to Sanctuary via
+    // talent-aware swapping, but the simplified check above only
+    // looks at the bot's default sorted slot.  If this bot knows
+    // Sanctuary, fire the trigger whenever any raid member still
+    // lacks a Sanctuary aura — the action will handle correctness.
+    if (KnowsSanctuary(bot))
+    {
+        for (GroupReference* ref = g->GetFirstMember(); ref;
+             ref = ref->next())
+        {
+            Player* p = ref->GetSource();
+            if (!p || !p->IsInWorld() || !p->IsAlive())
+                continue;
+            if (!botAI->HasAura("blessing of sanctuary", p) &&
+                !botAI->HasAura(
+                    "greater blessing of sanctuary", p))
+                return true;
+        }
     }
 
     return false;

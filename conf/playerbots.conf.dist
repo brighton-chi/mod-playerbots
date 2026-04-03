@@ -22,7 +22,6 @@
 #        THRESHOLDS
 #        QUESTS
 #        COMBAT
-#        GREATER BUFFS STRATEGIES
 #        CHEATS
 #        SPELLS
 #        FLIGHTPATH
@@ -487,24 +486,6 @@ AiPlayerbot.FleeingEnabled = 1
 ####################################################################################################
 
 ####################################################################################################
-# GREATER BUFFS STRATEGIES
-#
-#
-
-# Min group size to use Greater buffs (Paladin, Mage, Druid)
-# Default: 3
-AiPlayerbot.MinBotsForGreaterBuff = 3
-
-# Cooldown (seconds) between reagent-missing RP warnings, per bot & per buff
-# Default: 30
-AiPlayerbot.RPWarningCooldown = 30
-
-#
-#
-#
-####################################################################################################
-
-####################################################################################################
 # CHEATS
 #
 #
@@ -576,15 +557,15 @@ AiPlayerbot.AutoGearScoreLimit = 0
 # "mana" (bots have infinite mana)
 # "power" (bots have infinite energy, rage, and runic power)
 # "taxi" (bots may use all flight paths, though they will not actually learn them)
-# "raid" (bots use cheats implemented into raid strategies (applies to Lady Vashj, Illidan, and several Ulduar bosses)
+# "raid" (bots use cheats implemented into raid strategies (applies to Lady Vashj, Illidan, and several Ulduar bosses))
 # To use multiple cheats, separate them by commas below (e.g., to enable all, use "gold,health,mana,power,raid,taxi")
 # Default: food, taxi, and raid are enabled
 AiPlayerbot.BotCheats = "food,taxi,raid"
 
-# List of attunement quests (comma-separated list of quest IDs) that are automatically completed for all bots.  
+# List of attunement quests (comma-separated list of quest IDs) that are automatically completed for all bots.
 # While mod-playerbots does not restore removed attunement requirements, although other mods, such as mod-individual-progression, may do so.
 # This is meant to exclude bots from such requirements.
-# 
+#
 # Default:
 # Caverns of Time - Part 1
 # - 10279, To The Master's Lair

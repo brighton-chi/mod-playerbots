@@ -8,10 +8,8 @@
 
 #include "AiObject.h"
 #include "GenericSpellActions.h"
+#include "Playerbots.h"
 #include "SharedDefines.h"
-
-class PlayerbotAI;
-class Unit;
 
 // seals
 BUFF_ACTION(CastSealOfRighteousnessAction, "seal of righteousness");

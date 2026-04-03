@@ -7,15 +7,15 @@
 
 #include "AiFactory.h"
 #include "Event.h"
-#include "PlayerbotAI.h"
+#include "GenericBuffUtils.h"
+#include "ObjectAccessor.h"
+#include "PaladinBlessingPriorityData.h"
 #include "Playerbots.h"
 #include "SharedDefines.h"
-#include "../../../../../src/server/scripts/Spells/spell_generic.cpp"
-#include "Ai/Base/Util/GenericBuffUtils.h"
-#include "Group.h"
-#include "ObjectAccessor.h"
 
 using ai::buff::MakeAuraQualifierForBuff;
+using ai::gbless::SPELL_BLESSING_OF_SANCTUARY;
+using ai::gbless::SPELL_GREATER_BLESSING_OF_SANCTUARY;
 
 // Helper : detect tank role on the target (player bot or not) return true if spec is tank or if the bot have tank strategies (bear/tank/tank face).
 static inline bool IsTankRole(Player* p)
@@ -172,7 +172,8 @@ Value<Unit*>* CastBlessingOfMightOnPartyAction::GetTargetValue()
 {
     return context->GetValue<Unit*>(
     "party member without aura",
-    "blessing of might,greater blessing of might,blessing of wisdom,greater blessing of wisdom,blessing of sanctuary,greater blessing of sanctuary"
+    "blessing of might,greater blessing of might,blessing of wisdom,greater blessing of wisdom,"
+    "blessing of sanctuary,greater blessing of sanctuary"
     );
 }
 
@@ -200,7 +201,8 @@ Value<Unit*>* CastBlessingOfWisdomOnPartyAction::GetTargetValue()
 {
     return context->GetValue<Unit*>(
     "party member without aura",
-    "blessing of wisdom,greater blessing of wisdom,blessing of might,greater blessing of might,blessing of sanctuary,greater blessing of sanctuary"
+    "blessing of wisdom,greater blessing of wisdom,blessing of might,greater blessing of might,"
+    "blessing of sanctuary,greater blessing of sanctuary"
     );
 }
 

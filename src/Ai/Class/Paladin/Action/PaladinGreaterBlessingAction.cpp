@@ -6,11 +6,11 @@
 #include "PaladinGreaterBlessingAction.h"
 
 #include "AiFactory.h"
+#include "Chat.h"
 #include "Event.h"
 #include "GenericBuffUtils.h"
-#include "Group.h"
+#include "Language.h"
 #include "ObjectAccessor.h"
-#include "PlayerbotAI.h"
 #include "Playerbots.h"
 #include "SharedDefines.h"
 
@@ -57,9 +57,7 @@ static bool HasMyBlessingOfCategory(PlayerbotAI* botAI, Unit* target,
 
 CastGreaterBlessingAssignmentAction::CastGreaterBlessingAssignmentAction(
     PlayerbotAI* botAI)
-    : Action(botAI, "cast greater blessing assignment")
-{
-}
+    : Action(botAI, "cast greater blessing assignment") {}
 
 bool CastGreaterBlessingAssignmentAction::isUseful()
 {
@@ -101,11 +99,21 @@ bool CastGreaterBlessingAssignmentAction::Execute(Event /*event*/)
                 if (spellName.empty())
                     continue;
 
-                // Announce reagent shortage once.
-                auto RP = ai::chat::MakeGroupAnnouncer(bot);
-                RP("Missing reagents for " +
-                   BlessingSpellName(a.blessing) + ". Using " +
-                   spellName + ".");
+                // Announce reagent shortage.
+                if (Group* g = bot->GetGroup())
+                {
+                    std::string msg = "Missing reagents for " +
+                        BlessingSpellName(a.blessing) + ". Using " +
+                        spellName + ".";
+                    WorldPacket data;
+                    ChatMsg type = g->isRaidGroup()
+                        ? CHAT_MSG_RAID : CHAT_MSG_PARTY;
+                    ChatHandler::BuildChatPacket(
+                        data, type, LANG_UNIVERSAL, bot,
+                        nullptr, msg.c_str());
+                    g->BroadcastPacket(
+                        &data, true, -1, bot->GetGUID());
+                }
             }
         }
 
@@ -261,26 +269,27 @@ bool CastGreaterBlessingAssignmentAction::ComputeAssignments(
     // when all specs agree ("homogeneous"). When specs disagree
     // ("heterogeneous"), we fall back to per-player singles.
 
-    // MAX_CLASSES is typically 12 in WoW 3.3.5
     constexpr int MAX_SLOTS = 4;
-    constexpr int NUM_CLASSES = 12;
+    // CLASS_DRUID = 11 (ID 10 is unused), so arrays indexed by
+    // class ID need at least 12 elements.
+    constexpr int MAX_CLASS_ID = 12;
 
     struct SlotInfo
     {
         bool heterogeneous = false;
         BlessingType homogeneous = BLESSING_NONE;
     };
-    SlotInfo classSlots[NUM_CLASSES][MAX_SLOTS];
+    SlotInfo classSlots[MAX_CLASS_ID][MAX_SLOTS];
 
     // First pass: collect what each slot needs per class.
     // Track whether all specs of a class agree on the same base
     // blessing for each slot.
-    bool classPresent[NUM_CLASSES] = {};
+    bool classPresent[MAX_CLASS_ID] = {};
 
     for (auto const& ep : effective)
     {
         uint8 cls = ep.player->getClass();
-        if (cls >= NUM_CLASSES) continue;
+        if (cls >= MAX_CLASS_ID) continue;
         classPresent[cls] = true;
 
         for (int slot = 0; slot < MAX_SLOTS; ++slot)
@@ -330,14 +339,14 @@ bool CastGreaterBlessingAssignmentAction::ComputeAssignments(
     // gives the index into botPaladins that should handle that slot.
     // Default: slot i handled by paladin i.
 
-    int classSlotPaladin[NUM_CLASSES][MAX_SLOTS];
-    for (int c = 0; c < NUM_CLASSES; ++c)
+    int classSlotPaladin[MAX_CLASS_ID][MAX_SLOTS];
+    for (int c = 0; c < MAX_CLASS_ID; ++c)
         for (int s = 0; s < MAX_SLOTS; ++s)
             classSlotPaladin[c][s] = s;
 
     int numPals = static_cast<int>(botPaladins.size());
 
-    for (int c = 0; c < NUM_CLASSES; ++c)
+    for (int c = 0; c < MAX_CLASS_ID; ++c)
     {
         if (!classPresent[c]) continue;
 
@@ -391,11 +400,16 @@ bool CastGreaterBlessingAssignmentAction::ComputeAssignments(
                 }
 
                 // Score current assignment.
+                // Sanctuary uses score 2 because it is a hard
+                // requirement (only Prot can cast it at all), not a
+                // soft bonus like Improved Might/Wisdom.
                 auto talentMatchScore = [&](int palIdx,
                                             BaseBlessingCategory cat) -> int
                 {
                     if (palIdx >= numPals) return 0;
                     Player* pal = botPaladins[palIdx];
+                    if (cat == BASE_SANCTUARY && KnowsSanctuary(pal))
+                        return 2;
                     if (cat == BASE_MIGHT && HasImprovedMight(pal))
                         return 1;
                     if (cat == BASE_WISDOM && HasImprovedWisdom(pal))
@@ -429,7 +443,7 @@ bool CastGreaterBlessingAssignmentAction::ComputeAssignments(
         pa.blessing = BLESSING_NONE;
 
         uint8 cls = ep.player->getClass();
-        if (cls >= NUM_CLASSES)
+        if (cls >= MAX_CLASS_ID)
         {
             outAssignments.push_back(pa);
             continue;

@@ -7,7 +7,6 @@
 #define _PLAYERBOT_PALADINBLESSINGPRIORITYDATA_H
 
 #include "AiFactory.h"
-#include "PlayerbotAI.h"
 #include "Playerbots.h"
 #include "SharedDefines.h"
 
@@ -318,24 +317,25 @@ constexpr uint32 SPELL_IMPROVED_MIGHT_R2  = 20045;
 constexpr uint32 SPELL_IMPROVED_WISDOM_R1 = 20244;
 constexpr uint32 SPELL_IMPROVED_WISDOM_R2 = 20245;
 
-// Blessing of Sanctuary spell IDs (base spells for HasSpell check)
-constexpr uint32 SPELL_SANCTUARY_TALENT   = 20911;
+// Blessing of Sanctuary spell IDs
+constexpr uint32 SPELL_BLESSING_OF_SANCTUARY         = 20911;
+constexpr uint32 SPELL_GREATER_BLESSING_OF_SANCTUARY = 25899;
 
 inline bool HasImprovedMight(Player* p)
 {
-    return p && (p->HasSpell(SPELL_IMPROVED_MIGHT_R1) ||
-                 p->HasSpell(SPELL_IMPROVED_MIGHT_R2));
+    return p && (p->HasAura(SPELL_IMPROVED_MIGHT_R1) ||
+                 p->HasAura(SPELL_IMPROVED_MIGHT_R2));
 }
 
 inline bool HasImprovedWisdom(Player* p)
 {
-    return p && (p->HasSpell(SPELL_IMPROVED_WISDOM_R1) ||
-                 p->HasSpell(SPELL_IMPROVED_WISDOM_R2));
+    return p && (p->HasAura(SPELL_IMPROVED_WISDOM_R1) ||
+                 p->HasAura(SPELL_IMPROVED_WISDOM_R2));
 }
 
 inline bool KnowsSanctuary(Player* p)
 {
-    return p && p->HasSpell(SPELL_SANCTUARY_TALENT);
+    return p && p->HasSpell(SPELL_BLESSING_OF_SANCTUARY);
 }
 
 } // namespace ai::gbless

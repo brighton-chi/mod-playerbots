@@ -7,8 +7,6 @@
 
 #include "AiFactory.h"
 #include "Event.h"
-#include "Group.h"
-#include "PlayerbotAI.h"
 #include "Playerbots.h"
 
 ToggleGreaterBlessingStrategyAction::ToggleGreaterBlessingStrategyAction(

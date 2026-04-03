@@ -255,8 +255,6 @@ Value<Unit*>* CurePartyMemberAction::GetTargetValue()
     return context->GetValue<Unit*>("party member to dispel", dispelType);
 }
 
-// Make Bots Paladin, druid, mage use the greater buff rank spell
-// TODO Priest doen't verify il he have components
 Value<Unit*>* BuffOnPartyAction::GetTargetValue()
 {
     return context->GetValue<Unit*>("party member without aura", MakeAuraQualifierForBuff(spell));
@@ -264,14 +262,8 @@ Value<Unit*>* BuffOnPartyAction::GetTargetValue()
 
 bool BuffOnPartyAction::Execute(Event /*event*/)
 {
-    std::string castName = spell; // default = mono
-
-    auto SendGroupRP = ai::chat::MakeGroupAnnouncer(bot);
-    castName = ai::buff::UpgradeToGroupIfAppropriate(bot, botAI, castName, /*announceOnMissing=*/true, SendGroupRP);
-
-    return botAI->CastSpell(castName, GetTarget());
+    return botAI->CastSpell(spell, GetTarget());
 }
-// End greater buff fix
 
 CastShootAction::CastShootAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "shoot")
 {

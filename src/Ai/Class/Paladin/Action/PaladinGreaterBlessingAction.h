@@ -10,9 +10,7 @@
 #include <vector>
 
 #include "Action.h"
-#include "Group.h"
 #include "PaladinBlessingPriorityData.h"
-#include "Player.h"
 #include "Playerbots.h"
 
 // Casts one blessing per Execute() call based on the gblessing
