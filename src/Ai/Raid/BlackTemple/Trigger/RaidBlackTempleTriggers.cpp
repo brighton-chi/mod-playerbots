@@ -6,7 +6,6 @@
 #include "RaidBlackTempleTriggers.h"
 #include "RaidBlackTempleHelpers.h"
 #include "RaidBlackTempleActions.h"
-#include "AiFactory.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
 
@@ -377,8 +376,7 @@ bool MotherShahrazTanksArePositioningBossTrigger::IsActive()
     if (!shahraz || shahraz->GetHealthPct() < 90.0f)
         return false;
 
-    return shahraz->GetDistance2d(SHAHRAZ_TANK_POSITION.GetPositionX(),
-                                  SHAHRAZ_TANK_POSITION.GetPositionY()) > 10.0f;
+    return GetShahrazTankStep(botAI, bot) < 2;
 }
 
 bool MotherShahrazSinisterBeamKnocksBackPlayersTrigger::IsActive()
@@ -566,6 +564,10 @@ bool IllidanStormrageBotHasParasiticShadowfiendTrigger::IsActive()
     if (botAI->IsMainTank(bot))
         return false;
 
+    if (phase == 5 && botAI->IsAssistTankOfIndex(bot, 0, true) &&
+        FindNearestTrap(botAI, bot))
+        return false;
+
     Player* infected = GetBotWithParasiticShadowfiend(bot);
     if (!infected)
         return false;
@@ -677,6 +679,15 @@ bool IllidanStormrageBossSpawnsAddsTrigger::IsActive()
         return false;
 
     return true;
+}
+
+bool IllidanStormrageMaievPlacedShadowTrapTrigger::IsActive()
+{
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    if (!illidan || illidan->GetHealth() == 1)
+        return false;
+
+    return botAI->IsAssistTankOfIndex(bot, 0, true) && GetIllidanPhase(illidan) == 5;
 }
 
 bool IllidanStormrageNeedToManageDpsTimerAndRtiTrigger::IsActive()

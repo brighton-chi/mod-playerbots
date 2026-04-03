@@ -6,7 +6,6 @@
 #include "RaidBlackTempleActions.h"
 #include "RaidBlackTempleHelpers.h"
 #include "RaidBlackTempleIllidanBossAI.h"
-#include "AiFactory.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
 
@@ -19,45 +18,57 @@ bool BlackTempleEraseTimersAndTrackersAction::Execute(Event /*event*/)
     const ObjectGuid guid = bot->GetGUID();
     const uint32 instanceId = bot->GetMap()->GetInstanceId();
 
-    bool erased = false;
-    if (!AI_VALUE2(Unit*, "find target", "supremus") &&
-        supremusPhaseTimer.erase(instanceId) > 0)
+    if (botAI->IsTank(bot))
     {
-        erased = true;
-    }
-    if (!AI_VALUE2(Unit*, "find target", "gurtogg bloodboil") &&
-        gurtoggPhaseTimer.erase(instanceId) > 0)
-    {
-        erased = true;
-    }
-    if (!AI_VALUE2(Unit*, "find target", "mother shahraz") &&
-        shahrazTankStep.erase(guid) > 0)
-    {
-        erased = true;
-    }
-    if (!AI_VALUE2(Unit*, "find target", "gathios the shatterer"))
-    {
-        if (councilDpsWaitTimer.erase(instanceId) > 0)
+        bool erased = false;
+        if (!AI_VALUE2(Unit*, "find target", "illidan stormrage") &&
+            !AI_VALUE2(Unit*, "find target", "flame of azzinoth"))
+        {
+            if (illidanBossDpsWaitTimer.erase(instanceId) > 0)
+                erased = true;
+            if (flameTankWaypointIndex.erase(guid) > 0)
+                erased = true;
+            if (westFlameGuid.erase(instanceId) > 0)
+                erased = true;
+            if (eastFlameGuid.erase(instanceId) > 0)
+                erased = true;
+        }
+        if (!AI_VALUE2(Unit*, "find target", "gathios the shatterer"))
+        {
+            if (councilDpsWaitTimer.erase(instanceId) > 0)
+                erased = true;
+            if (gathiosTankStep.erase(guid) > 0)
+                erased = true;
+        }
+        if (!AI_VALUE2(Unit*, "find target", "mother shahraz") &&
+            shahrazTankStep.erase(guid) > 0)
+        {
             erased = true;
-        if (gathiosTankStep.erase(guid) > 0)
-            erased = true;
+        }
+        return erased;
+    }
+    else if (botAI->IsHeal(bot))
+    {
         if (zerevorHealStep.erase(guid) > 0)
-            erased = true;
+            return true;
+        else
+            return false;
     }
-    if (!AI_VALUE2(Unit*, "find target", "illidan stormrage") &&
-        !AI_VALUE2(Unit*, "find target", "flame of azzinoth"))
+    else
     {
-        if (illidanBossDpsWaitTimer.erase(instanceId) > 0)
+        bool erased = false;
+        if (!AI_VALUE2(Unit*, "find target", "supremus") &&
+            supremusPhaseTimer.erase(instanceId) > 0)
+        {
             erased = true;
-        if (westFlameGuid.erase(instanceId) > 0)
+        }
+        if (!AI_VALUE2(Unit*, "find target", "gurtogg bloodboil") &&
+            gurtoggPhaseTimer.erase(instanceId) > 0)
+        {
             erased = true;
-        if (eastFlameGuid.erase(instanceId) > 0)
-            erased = true;
-        if (flameTankWaypointIndex.erase(guid) > 0)
-            erased = true;
+        }
+        return erased;
     }
-
-    return erased;
 }
 
 // High Warlord Naj'entus
@@ -177,7 +188,6 @@ bool HighWarlordNajentusRemoveImpalingSpineAction::Execute(Event /*event*/)
             },
             delay);
 
-        // botAI->SetNextCheckDelay(delay + 50);
         return true;
     }
     else
@@ -193,7 +203,6 @@ bool HighWarlordNajentusRemoveImpalingSpineAction::Execute(Event /*event*/)
             },
             delay);
 
-        // botAI->SetNextCheckDelay(delay + 50);
         return true;
     }
 
@@ -220,7 +229,7 @@ bool HighWarlordNajentusThrowImpalingSpineAction::Execute(Event /*event*/)
 
     if (bot->GetItemByEntry(static_cast<uint32>(BlackTempleItems::ITEM_NAJENTUS_SPINE)))
     {
-        uint32 delay = urand(1000, 2000);
+        uint32 delay = urand(500, 1500);
         ObjectGuid najentusGuid = najentus->GetGUID();
 
         botAI->AddTimedEvent(
@@ -234,7 +243,6 @@ bool HighWarlordNajentusThrowImpalingSpineAction::Execute(Event /*event*/)
             },
             delay);
 
-        // botAI->SetNextCheckDelay(delay + 50);
         return true;
     }
 
@@ -644,11 +652,10 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event /*eve
             return true;
         }
 
-        // Adding cooldowns manually is needed due to the charmed creature not observing
-        // cooldowns, including the GCD
-        // The ordering, including repeating some spells, is the product of testing to try
-        // to keep the bot from breaking chains with volley, which tends to happen when volley
-        // is cast before chains (maybe due to projectile travel time?)
+        // Adding cooldowns manually is needed due to the charmed creature not observing cooldowns, including
+        // the GCD. The ordering, including repeating some spells, is the product of testing to try to keep
+        // the bot from breaking chains with volley, which tends to happen when volley is cast before chains
+        // (maybe due to projectile travel time?)
         if (!spirit->HasSpellCooldown(static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_CHAINS)) &&
             priorityTarget->GetHealthPct() == 100.0f)
         {
@@ -1050,28 +1057,12 @@ bool MotherShahrazMeleeDpsWaitAtSafePositionAction::Execute(Event /*event*/)
 // to tank her closer to her starting position, but I want to simulate a player strategy
 bool MotherShahrazPositionRangedUnderPillarAction::Execute(Event /*event*/)
 {
-    if ((botAI->IsAssistHealOfIndex(bot, 0, false) ||
-         botAI->IsAssistHealOfIndex(bot, 1, false)) &&
-         GetShahrazTankStep(botAI, bot) < 2)
+    const Position& position = SHAHRAZ_RANGED_POSITION;
+    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
     {
-        Unit* shahraz = AI_VALUE2(Unit*, "find target", "mother shahraz");
-        if (!shahraz)
-            return false;
-
-        constexpr uint32 minInterval = 0;
-        constexpr float safeDistFromBoss = 20.0f;
-        if (bot->GetExactDist2d(shahraz) < safeDistFromBoss)
-            return FleePosition(shahraz->GetPosition(), safeDistFromBoss, minInterval);
-    }
-    else
-    {
-        const Position& position = SHAHRAZ_RANGED_POSITION;
-        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
-        {
-            return MoveTo(BLACK_TEMPLE_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-                          position.GetPositionZ(), false, false, false, false,
-                          MovementPriority::MOVEMENT_FORCED, true, false);
-        }
+        return MoveTo(BLACK_TEMPLE_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                      position.GetPositionZ(), false, false, false, false,
+                      MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
     return false;
@@ -1737,77 +1728,24 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
 
     if (GetIllidanPhase(illidan) == 5)
     {
-        GameObject* nearestTrap = FindNearestTrap();
+        GameObject* trap = FindNearestTrap(botAI, bot);
         // Logging only
-        if (nearestTrap)
+        if (trap)
         {
-            float trapDist = bot->GetExactDist2d(nearestTrap);
+            float trapDist = bot->GetExactDist2d(trap);
             LOG_DEBUG("playerbots", "Nearest trap for bot {} is {} at distance {}", bot->GetName(),
-                      nearestTrap->GetGUID().ToString(), trapDist);
+                      trap->GetGUID().ToString(), trapDist);
         }
         // End logging
-        if (nearestTrap && illidan->GetVictim() == bot)
+        if (trap && bot->GetExactDist2d(trap) < 50.0f && illidan->GetVictim() == bot)
         {
-            float trapDist = bot->GetExactDist2d(nearestTrap);
-            Position target = GetPointBeyondTrap(nearestTrap, 5.0f);
+            float trapDist = bot->GetExactDist2d(trap);
+            Position target = GetPointBeyondTrap(trap, 5.0f);
             float targetDist = bot->GetExactDist2d(target);
             LOG_DEBUG("playerbots", "Bot {} nearest trap {} dist={}, target beyond trap dist={}", bot->GetName(),
-                      nearestTrap->GetGUID().ToString(), trapDist, targetDist);
+                      trap->GetGUID().ToString(), trapDist, targetDist);
 
-            // If we're already close enough to the trap, try to trigger it immediately.
-            if (targetDist <= 2.0f)
-            {
-                LOG_DEBUG("playerbots", "Bot {} is within 2 yards of target {}, attempting to trigger trap", bot->GetName(),
-                          nearestTrap->GetGUID().ToString());
-                GameObject* trap = nearestTrap;
-                if (trap)
-                {
-                    LOG_DEBUG("playerbots", "Bot {} attempting GameObject::Use() on trap {}", bot->GetName(), trap->GetGUID().ToString());
-                    // Primary attempt: call Use() on the gameobject
-                    trap->Use(bot);
-
-                    // If the gameobject is gone or not spawned anymore, the Use() succeeded.
-                    GameObject* afterUse = botAI->GetGameObject(trap->GetGUID());
-                    if (!afterUse || !afterUse->isSpawned())
-                    {
-                        LOG_DEBUG("playerbots", "GameObject::Use() succeeded for trap {} (bot {})", trap->GetGUID().ToString(), bot->GetName());
-                        return true;
-                    }
-
-                    LOG_DEBUG("playerbots", "Bot {} attempting CMSG_GAMEOBJ_USE for trap {}", bot->GetName(), trap->GetGUID().ToString());
-                    WorldPacket usePacket(CMSG_GAMEOBJ_USE);
-                    usePacket << trap->GetGUID();
-                    bot->GetSession()->HandleGameObjectUseOpcode(usePacket);
-
-                    GameObject* afterPacket = botAI->GetGameObject(trap->GetGUID());
-                    if (!afterPacket || !afterPacket->isSpawned())
-                    {
-                        LOG_DEBUG("playerbots", "CMSG_GAMEOBJ_USE succeeded for trap {} (bot {})", trap->GetGUID().ToString(), bot->GetName());
-                        return true;
-                    }
-
-                    LOG_DEBUG("playerbots", "Bot {} attempting CMSG_GAMEOBJ_REPORT_USE for trap {}", bot->GetName(), trap->GetGUID().ToString());
-                    WorldPacket reportPacket(CMSG_GAMEOBJ_REPORT_USE);
-                    reportPacket << trap->GetGUID();
-                    bot->GetSession()->HandleGameobjectReportUse(reportPacket);
-
-                    GameObject* afterReport = botAI->GetGameObject(trap->GetGUID());
-                    if (!afterReport || !afterReport->isSpawned())
-                    {
-                        LOG_DEBUG("playerbots", "CMSG_GAMEOBJ_REPORT_USE succeeded for trap {} (bot {})", trap->GetGUID().ToString(), bot->GetName());
-                        return true;
-                    }
-
-                    LOG_DEBUG("playerbots", "Bot {} attempted all methods to trigger trap {} (none reported success)", bot->GetName(), trap->GetGUID().ToString());
-                }
-                else
-                {
-                    LOG_DEBUG("playerbots", "Nearest trap pointer was null when attempting use for bot {}", bot->GetName());
-                }
-                return true;
-            }
-            // Otherwise, move to the point beyond the trap if we're not already there.
-            else if (targetDist > 2.0f && bot->GetHealthPct() > 50.0f)
+            if (targetDist > 2.0f && bot->GetHealthPct() > 50.0f)
             {
                 LOG_DEBUG("playerbots", "Bot {} moving towards point beyond trap at ({}, {})", bot->GetName(),
                           target.GetPositionX(), target.GetPositionY());
@@ -1851,38 +1789,18 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
                   MovementPriority::MOVEMENT_FORCED, true, true);
 }
 
-GameObject* IllidanStormrageMainTankRepositionBossAction::FindNearestTrap()
-{
-    auto const& gos = AI_VALUE(GuidVector, "nearest game objects");
-
-    // Try with no distance limit right now for testing
-    GameObject* nearestTrap = nullptr;
-    for (ObjectGuid const& guid : gos)
-    {
-        GameObject* go = botAI->GetGameObject(guid);
-        if (go && go->isSpawned() &&
-            go->GetEntry() == static_cast<uint32>(BlackTempleObjects::GO_CAGE_TRAP))
-        {
-            nearestTrap = go;
-            break;
-        }
-    }
-
-    return nearestTrap;
-}
-
 Position IllidanStormrageMainTankRepositionBossAction::GetPointBeyondTrap(
-    GameObject* nearestTrap, float extraDistance)
+    GameObject* trap, float extraDistance)
 {
-    if (!nearestTrap)
+    if (!trap)
         return Position();
 
     float botX = bot->GetPositionX();
     float botY = bot->GetPositionY();
-    float trapX = nearestTrap->GetPositionX();
-    float trapY = nearestTrap->GetPositionY();
+    float trapX = trap->GetPositionX();
+    float trapY = trap->GetPositionY();
 
-    float distToTrap = nearestTrap->GetExactDist2d(bot);
+    float distToTrap = trap->GetExactDist2d(bot);
 
     if (distToTrap == 0.0f)
         return Position(trapX, trapY, bot->GetPositionZ());
@@ -2717,6 +2635,48 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
 
             return false;
         }
+    }
+
+    return false;
+}
+
+bool IllidanStormrageUseShadowTrapAction::Execute(Event /*event*/)
+{
+    GameObject* trap = FindNearestTrap(botAI, bot);
+    if (!trap)
+    {
+        LOG_DEBUG("playerbots", "No trap found for bot {}", bot->GetName());
+        return false;
+    }
+
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    if (!illidan)
+        return false;
+
+    float illidanDistToTrap = illidan->GetExactDist2d(trap);
+    LOG_DEBUG("playerbots", "Illidan is at distance {} from trap {}",
+        illidanDistToTrap, trap->GetGUID().ToString());
+    if (illidanDistToTrap >= 4.0f)
+    {
+        LOG_DEBUG("playerbots", "Illidan is too far from trap {} to trigger it (distance {})",
+            trap->GetGUID().ToString(), illidanDistToTrap);
+        return false;
+    }
+
+    float botDistToTrap = bot->GetExactDist2d(trap);
+    LOG_DEBUG("playerbots", "Nearest trap for bot {} is {} at distance {}", bot->GetName(),
+        trap->GetGUID().ToString(), botDistToTrap);
+    if (botDistToTrap < 3.0f)
+    {
+        LOG_DEBUG("playerbots", "Bot {} triggering trap {}", bot->GetName(), trap->GetGUID().ToString());
+        trap->Use(bot);
+        return true;
+    }
+    else
+    {
+        return MoveTo(BLACK_TEMPLE_MAP_ID, trap->GetPositionX(), trap->GetPositionY(),
+                      trap->GetPositionZ(), false, false, false, false,
+                      MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
     return false;

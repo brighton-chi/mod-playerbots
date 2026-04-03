@@ -71,6 +71,7 @@ namespace BlackTempleHelpers
         SPELL_DEMON_FORM                = 40506,
         SPELL_DARK_BARRAGE              = 40585,
         SPELL_SHADOW_PRISON             = 40647,
+        SPELL_CAGED                     = 40695,
         SPELL_PARASITIC_SHADOWFIEND_1   = 41917, // cast by Illidan (primary infection)
         SPELL_PARASITIC_SHADOWFIEND_2   = 41914, // cast by shadowfiend on contact (secondary infection)
 
@@ -110,7 +111,7 @@ namespace BlackTempleHelpers
         GO_NAJENTUS_SPINE = 185584,
 
         // Illidan Stormrage <The Betrayer>
-        GO_CAGE_TRAP      = 185916,
+        GO_SHADOW_TRAP    = 185916,
     };
 
     // General
@@ -205,6 +206,7 @@ namespace BlackTempleHelpers
     };
     EyeBlastDangerArea GetEyeBlastDangerArea(Player* bot, Unit* illidan);
     bool IsPositionInEyeBlastDangerArea(const Position& pos, const EyeBlastDangerArea& area);
+    GameObject* FindNearestTrap(PlayerbotAI* botAI, Player* bot);
 }
 
 #endif

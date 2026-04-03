@@ -466,6 +466,14 @@ public:
     bool IsActive() override;
 };
 
+class IllidanStormrageMaievPlacedShadowTrapTrigger : public Trigger
+{
+public:
+    IllidanStormrageMaievPlacedShadowTrapTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage maiev placed shadow trap") {}
+    bool IsActive() override;
+};
+
 class IllidanStormrageNeedToManageDpsTimerAndRtiTrigger : public Trigger
 {
 public:

@@ -5,7 +5,6 @@
 
 #include "RaidBlackTempleHelpers.h"
 #include "RaidBlackTempleIllidanBossAI.h"
-#include "Group.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
 
@@ -271,10 +270,11 @@ namespace BlackTempleHelpers
             return 1;
 
         // Phase 4: Demon Form
-        if (illidan->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_DEMON_FORM)) ||
-            illidan->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_DEMON_TRANSFORM_1)) ||
-            illidan->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_DEMON_TRANSFORM_2)) ||
-            illidan->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_DEMON_TRANSFORM_3)))
+        if (!illidan->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_CAGED)) &&
+            (illidan->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_DEMON_FORM)) ||
+             illidan->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_DEMON_TRANSFORM_1)) ||
+             illidan->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_DEMON_TRANSFORM_2)) ||
+             illidan->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_DEMON_TRANSFORM_3))))
             return 4;
 
         // Phase 3: Normal (ground, 65-30%, not demon)
@@ -452,5 +452,25 @@ namespace BlackTempleHelpers
         float distToLine = pos.GetExactDist2d(closestX, closestY);
 
         return distToLine < area.width;
+    }
+
+    GameObject* FindNearestTrap(PlayerbotAI* botAI, Player* bot)
+    {
+        GuidVector const& gos =
+            botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest game objects")->Get();
+
+        GameObject* nearestTrap = nullptr;
+        for (ObjectGuid const& guid : gos)
+        {
+            GameObject* go = botAI->GetGameObject(guid);
+            if (go && go->isSpawned() &&
+                go->GetEntry() == static_cast<uint32>(BlackTempleObjects::GO_SHADOW_TRAP))
+            {
+                nearestTrap = go;
+                break;
+            }
+        }
+
+        return nearestTrap;
     }
 }

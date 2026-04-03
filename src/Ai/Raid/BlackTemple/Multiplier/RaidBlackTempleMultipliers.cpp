@@ -6,7 +6,6 @@
 #include "RaidBlackTempleMultipliers.h"
 #include "RaidBlackTempleActions.h"
 #include "RaidBlackTempleHelpers.h"
-#include "AiFactory.h"
 #include "ChooseTargetActions.h"
 #include "DKActions.h"
 #include "DruidActions.h"

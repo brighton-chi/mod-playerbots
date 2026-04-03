@@ -188,6 +188,9 @@ public:
         creators["illidan stormrage boss spawns adds"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_boss_spawns_adds;
 
+        creators["illidan stormrage maiev placed shadow trap"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_maiev_placed_shadow_trap;
+
         creators["illidan stormrage need to manage dps timer and rti"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_need_to_manage_dps_timer_and_rti;
 
@@ -369,6 +372,9 @@ private:
 
     static Trigger* illidan_stormrage_boss_spawns_adds(
         PlayerbotAI* botAI) { return new IllidanStormrageBossSpawnsAddsTrigger(botAI); }
+
+    static Trigger* illidan_stormrage_maiev_placed_shadow_trap(
+        PlayerbotAI* botAI) { return new IllidanStormrageMaievPlacedShadowTrapTrigger(botAI); }
 
     static Trigger* illidan_stormrage_need_to_manage_dps_timer_and_rti(
         PlayerbotAI* botAI) { return new IllidanStormrageNeedToManageDpsTimerAndRtiTrigger(botAI); }

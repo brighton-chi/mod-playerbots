@@ -414,7 +414,6 @@ public:
     bool Execute(Event event) override;
 
 private:
-    GameObject* FindNearestTrap();
     Position GetPointBeyondTrap(
         GameObject* nearestTrap, float extraDistance = 5.0f);
     Position FindSafestNearbyPosition(
@@ -512,6 +511,14 @@ class IllidanStormrageDpsPrioritizeAddsAction : public AttackAction
 public:
     IllidanStormrageDpsPrioritizeAddsAction(
         PlayerbotAI* botAI) : AttackAction(botAI, "illidan stormrage dps prioritize adds") {}
+    bool Execute(Event event) override;
+};
+
+class IllidanStormrageUseShadowTrapAction : public MovementAction
+{
+public:
+    IllidanStormrageUseShadowTrapAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "illidan stormrage use shadow trap") {}
     bool Execute(Event event) override;
 };
 

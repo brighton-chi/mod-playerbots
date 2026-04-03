@@ -188,6 +188,9 @@ public:
         creators["illidan stormrage dps prioritize adds"] =
             &RaidBlackTempleActionContext::illidan_stormrage_dps_prioritize_adds;
 
+        creators["illidan stormrage use shadow trap"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_use_shadow_trap;
+
         creators["illidan stormrage manage dps timer and rti"] =
             &RaidBlackTempleActionContext::illidan_stormrage_manage_dps_timer_and_rti;
 
@@ -369,6 +372,9 @@ private:
 
     static Action* illidan_stormrage_dps_prioritize_adds(
         PlayerbotAI* botAI) { return new IllidanStormrageDpsPrioritizeAddsAction(botAI); }
+
+    static Action* illidan_stormrage_use_shadow_trap(
+        PlayerbotAI* botAI) { return new IllidanStormrageUseShadowTrapAction(botAI); }
 
     static Action* illidan_stormrage_manage_dps_timer_and_rti(
         PlayerbotAI* botAI) { return new IllidanStormrageManageDpsTimerAndRtiAction(botAI); }
