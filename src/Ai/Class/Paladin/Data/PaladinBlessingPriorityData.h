@@ -63,9 +63,9 @@ enum BaseBlessingCategory : uint8
 
 // ── Classification helpers ───────────────────────────────────────
 
-inline constexpr BaseBlessingCategory BaseBlessingOf(BlessingType bt)
+inline constexpr BaseBlessingCategory BaseBlessingOf(BlessingType type)
 {
-    switch (bt)
+    switch (type)
     {
         case BLESSING_MIGHT_SINGLE:
         case BLESSING_MIGHT_GREATER:      return BASE_MIGHT;
@@ -79,21 +79,21 @@ inline constexpr BaseBlessingCategory BaseBlessingOf(BlessingType bt)
     }
 }
 
-inline constexpr bool IsSingleVariant(BlessingType bt)
+inline constexpr bool IsSingleVariant(BlessingType type)
 {
-    return bt == BLESSING_MIGHT_SINGLE  || bt == BLESSING_WISDOM_SINGLE ||
-           bt == BLESSING_KINGS_SINGLE  || bt == BLESSING_SANCTUARY_SINGLE;
+    return type == BLESSING_MIGHT_SINGLE  || type == BLESSING_WISDOM_SINGLE ||
+           type == BLESSING_KINGS_SINGLE  || type == BLESSING_SANCTUARY_SINGLE;
 }
 
-inline constexpr bool IsGreaterVariant(BlessingType bt)
+inline constexpr bool IsGreaterVariant(BlessingType type)
 {
-    return bt == BLESSING_MIGHT_GREATER  || bt == BLESSING_WISDOM_GREATER ||
-           bt == BLESSING_KINGS_GREATER  || bt == BLESSING_SANCTUARY_GREATER;
+    return type == BLESSING_MIGHT_GREATER  || type == BLESSING_WISDOM_GREATER ||
+           type == BLESSING_KINGS_GREATER  || type == BLESSING_SANCTUARY_GREATER;
 }
 
-inline constexpr BlessingType ToSingleVariant(BlessingType bt)
+inline constexpr BlessingType ToSingleVariant(BlessingType type)
 {
-    switch (BaseBlessingOf(bt))
+    switch (BaseBlessingOf(type))
     {
         case BASE_MIGHT:     return BLESSING_MIGHT_SINGLE;
         case BASE_WISDOM:    return BLESSING_WISDOM_SINGLE;
@@ -103,9 +103,9 @@ inline constexpr BlessingType ToSingleVariant(BlessingType bt)
     }
 }
 
-inline constexpr BlessingType ToGreaterVariant(BlessingType bt)
+inline constexpr BlessingType ToGreaterVariant(BlessingType type)
 {
-    switch (BaseBlessingOf(bt))
+    switch (BaseBlessingOf(type))
     {
         case BASE_MIGHT:     return BLESSING_MIGHT_GREATER;
         case BASE_WISDOM:    return BLESSING_WISDOM_GREATER;
@@ -117,9 +117,9 @@ inline constexpr BlessingType ToGreaterVariant(BlessingType bt)
 
 // ── Spell name lookup ────────────────────────────────────────────
 
-inline std::string BlessingSpellName(BlessingType bt)
+inline std::string BlessingSpellName(BlessingType type)
 {
-    switch (bt)
+    switch (type)
     {
         case BLESSING_MIGHT_SINGLE:      return "blessing of might";
         case BLESSING_MIGHT_GREATER:     return "greater blessing of might";
@@ -280,17 +280,16 @@ inline SpecProfile ResolveSpecProfile(Player* player)
         case CLASS_DRUID:
             if (tab == DRUID_TAB_FERAL)
             {
-                // Distinguish bear vs cat by tank role
                 if (player->HasTankSpec())
                     return SPEC_BEAR_DRUID;
-                if (PlayerbotAI* ai = GET_PLAYERBOT_AI(player))
+                if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(player))
                 {
-                    if (ai->HasStrategy("bear", BOT_STATE_NON_COMBAT) ||
-                        ai->HasStrategy("bear", BOT_STATE_COMBAT) ||
-                        ai->HasStrategy("tank", BOT_STATE_NON_COMBAT) ||
-                        ai->HasStrategy("tank", BOT_STATE_COMBAT) ||
-                        ai->HasStrategy("tank face", BOT_STATE_NON_COMBAT) ||
-                        ai->HasStrategy("tank face", BOT_STATE_COMBAT))
+                    if (botAI->HasStrategy("bear", BOT_STATE_NON_COMBAT) ||
+                        botAI->HasStrategy("bear", BOT_STATE_COMBAT) ||
+                        botAI->HasStrategy("tank", BOT_STATE_NON_COMBAT) ||
+                        botAI->HasStrategy("tank", BOT_STATE_COMBAT) ||
+                        botAI->HasStrategy("tank face", BOT_STATE_NON_COMBAT) ||
+                        botAI->HasStrategy("tank face", BOT_STATE_COMBAT))
                         return SPEC_BEAR_DRUID;
                 }
                 return SPEC_CAT_DRUID;
@@ -311,31 +310,28 @@ inline SpecProfile ResolveSpecProfile(Player* player)
     }
 }
 
-// ── Talent spell IDs for improved blessings ──────────────────────
-constexpr uint32 SPELL_IMPROVED_MIGHT_R1  = 20042;
-constexpr uint32 SPELL_IMPROVED_MIGHT_R2  = 20045;
-constexpr uint32 SPELL_IMPROVED_WISDOM_R1 = 20244;
-constexpr uint32 SPELL_IMPROVED_WISDOM_R2 = 20245;
-
-// Blessing of Sanctuary spell IDs
+constexpr uint32 SPELL_IMPROVED_MIGHT_R1             = 20042;
+constexpr uint32 SPELL_IMPROVED_MIGHT_R2             = 20045;
+constexpr uint32 SPELL_IMPROVED_WISDOM_R1            = 20244;
+constexpr uint32 SPELL_IMPROVED_WISDOM_R2            = 20245;
 constexpr uint32 SPELL_BLESSING_OF_SANCTUARY         = 20911;
 constexpr uint32 SPELL_GREATER_BLESSING_OF_SANCTUARY = 25899;
 
-inline bool HasImprovedMight(Player* p)
+inline bool HasImprovedMight(Player* player)
 {
-    return p && (p->HasAura(SPELL_IMPROVED_MIGHT_R1) ||
-                 p->HasAura(SPELL_IMPROVED_MIGHT_R2));
+    return player && (player->HasAura(SPELL_IMPROVED_MIGHT_R1) ||
+                      player->HasAura(SPELL_IMPROVED_MIGHT_R2));
 }
 
-inline bool HasImprovedWisdom(Player* p)
+inline bool HasImprovedWisdom(Player* player)
 {
-    return p && (p->HasAura(SPELL_IMPROVED_WISDOM_R1) ||
-                 p->HasAura(SPELL_IMPROVED_WISDOM_R2));
+    return player && (player->HasAura(SPELL_IMPROVED_WISDOM_R1) ||
+                      player->HasAura(SPELL_IMPROVED_WISDOM_R2));
 }
 
-inline bool KnowsSanctuary(Player* p)
+inline bool KnowsSanctuary(Player* player)
 {
-    return p && p->HasSpell(SPELL_BLESSING_OF_SANCTUARY);
+    return player && player->HasSpell(SPELL_BLESSING_OF_SANCTUARY);
 }
 
 } // namespace ai::gbless

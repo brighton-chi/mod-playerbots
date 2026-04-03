@@ -5,8 +5,12 @@
 
 #include "GenericBuffUtils.h"
 
+#include "AiObjectContext.h"
+#include "Group.h"
 #include "Player.h"
+#include "PlayerbotAI.h"
 #include "SpellMgr.h"
+#include "Value.h"
 
 namespace ai::buff
 {
@@ -23,8 +27,26 @@ namespace ai::buff
         if (name == "arcane intellect")         return "arcane intellect,arcane brilliance";
         // Priest
         if (name == "power word: fortitude")    return "power word: fortitude,prayer of fortitude";
+        if (name == "divine spirit")            return "divine spirit,prayer of spirit";
+        if (name == "shadow protection")        return "shadow protection,prayer of shadow protection";
 
         return name;
+    }
+
+    std::string GroupVariantFor(std::string const& name)
+    {
+        // Druid
+        if (name == "mark of the wild")         return "gift of the wild";
+        // Mage
+        if (name == "arcane intellect")         return "arcane brilliance";
+        // Priest
+        if (name == "power word: fortitude")    return "prayer of fortitude";
+        if (name == "divine spirit")            return "prayer of spirit";
+        if (name == "shadow protection")        return "prayer of shadow protection";
+
+        // Paladin blessings are NOT included here — they are
+        // coordinated by the gblessing strategy instead.
+        return std::string();
     }
 
     bool HasRequiredReagents(Player* bot, uint32 spellId)
@@ -44,10 +66,31 @@ namespace ai::buff
                         return false;
                 }
             }
-            // No reagent required
             return true;
         }
         return false;
+    }
+
+    std::string UpgradeToGroupIfAppropriate(
+        Player* bot,
+        PlayerbotAI* botAI,
+        std::string const& baseName)
+    {
+        Group* g = bot->GetGroup();
+        if (!g)
+            return baseName;
+
+        std::string const groupName = GroupVariantFor(baseName);
+        if (groupName.empty())
+            return baseName;
+
+        uint32 const groupSpellId = botAI->GetAiObjectContext()
+            ->GetValue<uint32>("spell id", groupName)->Get();
+
+        if (groupSpellId && HasRequiredReagents(bot, groupSpellId))
+            return groupName;
+
+        return baseName;
     }
 }
 

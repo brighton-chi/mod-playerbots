@@ -9,10 +9,9 @@
 #include "Action.h"
 #include "Playerbots.h"
 
-// Periodically checks raid membership and toggles the "gblessing"
-// strategy on/off accordingly. Replaces existing blessing strategies
-// (bmana, bdps, bstats, bhealth) when entering a raid, restores an
-// appropriate one when leaving.
+// Periodically checks raid membership and toggles the "gblessing" strategy on/off accordingly.
+// Replaces existing blessing strategies (bmana, bdps, bstats, bhealth) when entering a raid, restores
+// an appropriate one when leaving.
 class ToggleGreaterBlessingStrategyAction : public Action
 {
 public:

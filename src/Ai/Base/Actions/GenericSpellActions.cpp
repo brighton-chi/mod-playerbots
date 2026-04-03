@@ -262,7 +262,9 @@ Value<Unit*>* BuffOnPartyAction::GetTargetValue()
 
 bool BuffOnPartyAction::Execute(Event /*event*/)
 {
-    return botAI->CastSpell(spell, GetTarget());
+    std::string castName = ai::buff::UpgradeToGroupIfAppropriate(
+        bot, botAI, spell);
+    return botAI->CastSpell(castName, GetTarget());
 }
 
 CastShootAction::CastShootAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "shoot")
