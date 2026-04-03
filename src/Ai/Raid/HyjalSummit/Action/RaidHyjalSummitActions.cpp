@@ -478,6 +478,7 @@ bool KazrogalMainTankPositionBossAction::Execute(Event /*event*/)
     return false;
 }
 
+// To spread cleave damage
 bool KazrogalAssistTanksMoveInFrontOfBossAction::Execute(Event /*event*/)
 {
     Player* mainTank = GetGroupMainTank(botAI, bot);
@@ -522,7 +523,7 @@ bool KazrogalSpreadRangedInArcAction::Execute(Event /*event*/)
     size_t botIndex = (findIt != rangedMembers.end()) ?
         std::distance(rangedMembers.begin(), findIt) : 0;
 
-    constexpr float arcSpan = M_PI / 4.0f;
+    constexpr float arcSpan = M_PI / 3.0f; // Testing 60 degrees; 45 works
     constexpr float arcCenter = 4.225f;
     constexpr float arcStart = arcCenter - arcSpan / 2.0f;
 
@@ -550,7 +551,7 @@ bool KazrogalSpreadRangedInArcAction::Execute(Event /*event*/)
     return false;
 }
 
-bool KazrogalLowManaBotMoveFromGroupAction::Execute(Event /*event*/)
+bool KazrogalLowManaBotTakeDefensiveMeasuresAction::Execute(Event /*event*/)
 {
     if (bot->getClass() == CLASS_HUNTER)
     {
@@ -606,7 +607,7 @@ bool KazrogalLowManaBotMoveFromGroupAction::Execute(Event /*event*/)
             botAI->Reset();
 
             // MoveFromGroup will make the bot run very far if there is another bot
-            // also running next to it, so we swap to MoveAway once there is sufficient
+            // also running next to it; thus, we swap to MoveAway once there is sufficient
             // distance from the group so the parallel bots break away from each other
             if (bot->GetExactDist2d(kazrogal) > 42.0f)
                 return MoveAway(nearestPlayer, safeDistance - currentDistance);
