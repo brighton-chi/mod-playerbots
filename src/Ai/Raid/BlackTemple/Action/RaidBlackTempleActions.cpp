@@ -1659,7 +1659,7 @@ bool IllidanStormrageMisdirectToTankAction::TryMisdirectToFlameTanks(Group* grou
 
     if (hunters.size() == 1)
     {
-        if (eastFlame->GetHealthPct() < 90.0f)
+        if (eastFlame->GetHealthPct() < 99.0f)
             return false;
 
         if (botAI->CanCastSpell("misdirection", secondAssistTank))
@@ -1688,7 +1688,7 @@ bool IllidanStormrageMisdirectToTankAction::TryMisdirectToFlameTanks(Group* grou
     else
         return false;
 
-    if (!tankTarget || !tankTarget->IsAlive())
+    if (!tankTarget || !tankTarget->IsAlive() || flame->GetHealthPct() < 99.0f)
         return false;
 
     if (botAI->CanCastSpell("misdirection", tankTarget))
@@ -1729,27 +1729,13 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
     if (GetIllidanPhase(illidan) == 5)
     {
         GameObject* trap = FindNearestTrap(botAI, bot);
-        // Logging only
-        if (trap)
-        {
-            float trapDist = bot->GetExactDist2d(trap);
-            LOG_DEBUG("playerbots", "Nearest trap for bot {} is {} at distance {}", bot->GetName(),
-                      trap->GetGUID().ToString(), trapDist);
-        }
-        // End logging
         if (trap && bot->GetExactDist2d(trap) < 50.0f && illidan->GetVictim() == bot)
         {
-            float trapDist = bot->GetExactDist2d(trap);
             Position target = GetPointBeyondTrap(trap, 5.0f);
             float targetDist = bot->GetExactDist2d(target);
-            LOG_DEBUG("playerbots", "Bot {} nearest trap {} dist={}, target beyond trap dist={}", bot->GetName(),
-                      trap->GetGUID().ToString(), trapDist, targetDist);
 
             if (targetDist > 2.0f && bot->GetHealthPct() > 50.0f)
             {
-                LOG_DEBUG("playerbots", "Bot {} moving towards point beyond trap at ({}, {})", bot->GetName(),
-                          target.GetPositionX(), target.GetPositionY());
-
                 float dX = target.GetPositionX() - bot->GetPositionX();
                 float dY = target.GetPositionY() - bot->GetPositionY();
                 float moveDist = std::min(5.0f, targetDist);
@@ -2642,33 +2628,19 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
 
 bool IllidanStormrageUseShadowTrapAction::Execute(Event /*event*/)
 {
-    GameObject* trap = FindNearestTrap(botAI, bot);
-    if (!trap)
-    {
-        LOG_DEBUG("playerbots", "No trap found for bot {}", bot->GetName());
-        return false;
-    }
-
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     if (!illidan)
         return false;
 
-    float illidanDistToTrap = illidan->GetExactDist2d(trap);
-    LOG_DEBUG("playerbots", "Illidan is at distance {} from trap {}",
-        illidanDistToTrap, trap->GetGUID().ToString());
-    if (illidanDistToTrap >= 4.0f)
-    {
-        LOG_DEBUG("playerbots", "Illidan is too far from trap {} to trigger it (distance {})",
-            trap->GetGUID().ToString(), illidanDistToTrap);
+    GameObject* trap = FindNearestTrap(botAI, bot);
+    if (!trap)
         return false;
-    }
 
-    float botDistToTrap = bot->GetExactDist2d(trap);
-    LOG_DEBUG("playerbots", "Nearest trap for bot {} is {} at distance {}", bot->GetName(),
-        trap->GetGUID().ToString(), botDistToTrap);
-    if (botDistToTrap < 3.0f)
+    if (illidan->GetExactDist2d(trap) >= 4.0f)
+        return false;
+
+    if (bot->GetExactDist2d(trap) < 3.0f)
     {
-        LOG_DEBUG("playerbots", "Bot {} triggering trap {}", bot->GetName(), trap->GetGUID().ToString());
         trap->Use(bot);
         return true;
     }

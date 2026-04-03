@@ -634,7 +634,8 @@ bool IllidanStormrageBossDealsSplashDamageTrigger::IsActive()
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan)
+    if (!illidan ||
+        illidan->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_CAGED)))
         return false;
 
     int phase = GetIllidanPhase(illidan);

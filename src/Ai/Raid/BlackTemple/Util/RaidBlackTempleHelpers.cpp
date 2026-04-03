@@ -93,9 +93,9 @@ namespace BlackTempleHelpers
     }
 
     // Mother Shahraz
-    const Position SHAHRAZ_TANK_POSITION = { 960.438f, 178.989f, 192.826f };// { 928.553f, 219.060f, 192.846f };
-    const Position SHAHRAZ_TRANSITION_POSITION = { 951.327f, 179.550f, 192.550f };// { 941.899f, 184.689f, 192.328f };
-    const Position SHAHRAZ_RANGED_POSITION = { 935.267f, 175.459f, 192.821f };// { 959.963f, 210.571f, 192.849f };
+    const Position SHAHRAZ_TANK_POSITION = { 960.438f, 178.989f, 192.826f };
+    const Position SHAHRAZ_TRANSITION_POSITION = { 951.327f, 179.550f, 192.550f };
+    const Position SHAHRAZ_RANGED_POSITION = { 935.267f, 175.459f, 192.821f };
     std::unordered_map<ObjectGuid, uint8> shahrazTankStep;
 
     int GetShahrazTankStep(PlayerbotAI* botAI, Player* bot)
