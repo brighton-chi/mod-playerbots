@@ -7,6 +7,7 @@
 
 #include "AiFactory.h"
 #include "Event.h"
+#include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
 
 ToggleGreaterBlessingStrategyAction::ToggleGreaterBlessingStrategyAction(
@@ -15,6 +16,10 @@ ToggleGreaterBlessingStrategyAction::ToggleGreaterBlessingStrategyAction(
 
 bool ToggleGreaterBlessingStrategyAction::Execute(Event /*event*/)
 {
+    // If the config option is disabled, never auto-toggle.
+    if (!sPlayerbotAIConfig.autoGreaterBlessings)
+        return false;
+
     Group* g = bot->GetGroup();
     bool inRaid = g && g->isRaidGroup();
     bool hasGblessing =

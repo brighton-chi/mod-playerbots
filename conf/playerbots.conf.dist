@@ -477,6 +477,11 @@ AiPlayerbot.AutoSaveMana = 1
 # Default: 60 (60%)
 AiPlayerbot.SaveManaThreshold = 60
 
+# Enable the "gblessing" strategy for Paladins, which replaces standard blessing strategies in
+# raid groups and allows for buffing with greater blessings based on a priority list for each spec
+# Default: 1 (enabled)
+AiPlayerbot.AutoGreaterBlessings = 1
+
 # Bots can flee from enemies
 AiPlayerbot.FleeingEnabled = 1
 
