@@ -10,6 +10,7 @@
 #include "GenericBuffUtils.h"
 #include "ObjectAccessor.h"
 #include "PaladinBlessingPriorityData.h"
+#include "PaladinHelper.h"
 #include "Playerbots.h"
 #include "SharedDefines.h"
 
