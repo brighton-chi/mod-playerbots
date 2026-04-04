@@ -70,7 +70,7 @@ public:
     void OnUpdate(DynamicObject* dynobj, uint32 /*diff*/) override
     {
         if (dynobj->GetSpellId() != static_cast<uint32>(HyjalSummitSpells::SPELL_RAIN_OF_FIRE))
-        return;
+            return;
 
         uint32 instanceId = dynobj->GetMap()->GetInstanceId();
         uint32 now = getMSTime();
