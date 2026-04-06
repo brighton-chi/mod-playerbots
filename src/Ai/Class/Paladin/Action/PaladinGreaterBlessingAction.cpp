@@ -307,7 +307,9 @@ bool CastGreaterBlessingAssignmentAction::ComputeAssignments(
         }
     }
 
-    // Force Paladin class to always use Singles.
+    // Force Paladin class to always use Singles, then resolve heterogeneous
+    // slots via majority vote so that one Paladin consistently handles each
+    // base blessing across all Paladin targets.
     if (classPresent[CLASS_PALADIN])
     {
         for (int slot = 0; slot < MAX_SLOTS; ++slot)
@@ -315,6 +317,59 @@ bool CastGreaterBlessingAssignmentAction::ComputeAssignments(
             SlotInfo& slotInfo = classSlots[CLASS_PALADIN][slot];
             if (!slotInfo.heterogeneous && slotInfo.homogeneous != BLESSING_NONE)
                 slotInfo.homogeneous = ToSingleVariant(slotInfo.homogeneous);
+        }
+
+        // Track which base blessings are already claimed by homogeneous slots.
+        bool assignedBase[5] = {};
+        for (int slot = 0; slot < MAX_SLOTS; ++slot)
+        {
+            SlotInfo const& slotInfo = classSlots[CLASS_PALADIN][slot];
+            if (!slotInfo.heterogeneous && slotInfo.homogeneous != BLESSING_NONE)
+                assignedBase[BaseBlessingOf(slotInfo.homogeneous)] = true;
+        }
+
+        // Resolve heterogeneous Paladin slots: pick the most-wanted base
+        // blessing that isn't already assigned to another slot.
+        for (int slot = 0; slot < MAX_SLOTS; ++slot)
+        {
+            SlotInfo& slotInfo = classSlots[CLASS_PALADIN][slot];
+            if (!slotInfo.heterogeneous)
+                continue;
+
+            int counts[5] = {};
+            for (auto const& ep : effective)
+            {
+                if (ep.player->getClass() != CLASS_PALADIN)
+                    continue;
+                BaseBlessingCategory cat = BaseBlessingOf(ep.blessings[slot]);
+                if (cat > BASE_NONE && cat <= BASE_SANCTUARY && !assignedBase[cat])
+                    counts[cat]++;
+            }
+
+            BaseBlessingCategory best = BASE_NONE;
+            int bestCount = 0;
+            for (int i = 1; i <= 4; ++i)
+            {
+                if (counts[i] > bestCount)
+                {
+                    bestCount = counts[i];
+                    best = static_cast<BaseBlessingCategory>(i);
+                }
+            }
+
+            if (best != BASE_NONE)
+            {
+                slotInfo.heterogeneous = false;
+                switch (best)
+                {
+                    case BASE_MIGHT:     slotInfo.homogeneous = BLESSING_MIGHT_SINGLE;     break;
+                    case BASE_WISDOM:    slotInfo.homogeneous = BLESSING_WISDOM_SINGLE;    break;
+                    case BASE_KINGS:     slotInfo.homogeneous = BLESSING_KINGS_SINGLE;     break;
+                    case BASE_SANCTUARY: slotInfo.homogeneous = BLESSING_SANCTUARY_SINGLE; break;
+                    default:             slotInfo.homogeneous = BLESSING_NONE;             break;
+                }
+                assignedBase[best] = true;
+            }
         }
     }
 

@@ -128,7 +128,15 @@ bool GreaterBlessingNeededTrigger::IsActive()
         if (BaseBlessingOf(type) == BASE_SANCTUARY && !KnowsSanctuary(bot))
             continue;
 
-        if (!hasExact(type, player))
+        // For Paladin targets, the action forces Singles via Phase 6.
+        // Check both variants so we don't fire needlessly when the
+        // Single is already present but the raw table says Greater.
+        if (player->getClass() == CLASS_PALADIN && IsGreaterVariant(type))
+        {
+            if (!hasExact(type, player) && !hasExact(ToSingleVariant(type), player))
+                return true;
+        }
+        else if (!hasExact(type, player))
             return true;
     }
 
