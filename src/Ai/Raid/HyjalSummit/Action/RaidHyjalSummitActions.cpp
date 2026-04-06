@@ -293,7 +293,7 @@ bool AnetheronBringInfernalToInfernalTankAction::Execute(Event /*event*/)
     const Position& position = GetClosestInfernalTankPosition(bot);
     if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
     {
-        botAI->Reset();
+        // botAI->Reset();
         return MoveTo(HYJAL_SUMMIT_MAP_ID, position.GetPositionX(), position.GetPositionY(),
                       position.GetPositionZ(), false, false, false, false,
                       MovementPriority::MOVEMENT_FORCED, true, false);
@@ -315,8 +315,8 @@ bool AnetheronFirstAssistTankPickUpInfernalsAction::Execute(Event /*event*/)
         float distToInfernoTarget = bot->GetExactDist2d(infernoTarget);
         if (distToInfernoTarget > 5.0f)
         {
-            bot->AttackStop();
-            bot->InterruptNonMeleeSpells(true);
+            // bot->AttackStop();
+            // bot->InterruptNonMeleeSpells(true);
             return MoveTo(HYJAL_SUMMIT_MAP_ID, infernoTarget->GetPositionX(),
                           infernoTarget->GetPositionY(), infernoTarget->GetPositionZ(),
                           false, false, false, false, MovementPriority::MOVEMENT_FORCED,
@@ -531,7 +531,7 @@ bool KazrogalSpreadRangedInArcAction::Execute(Event /*event*/)
     constexpr float arcCenter = 4.225f;
     constexpr float arcStart = arcCenter - arcSpan / 2.0f;
 
-    constexpr float radius = 24.0f;
+    constexpr float radius = 20.0f; // Was using 24 (~9y combat reach for boss + 15y aoe)
     float angle = (count == 1) ? arcCenter :
         (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
 
@@ -609,7 +609,7 @@ bool KazrogalLowManaBotTakeDefensiveMeasuresAction::Execute(Event /*event*/)
             if (!kazrogal)
                 return false;
 
-            botAI->Reset();
+            // botAI->Reset();
 
             // MoveFromGroup will make the bot run very far if there is another bot
             // also running next to it; thus, we swap to MoveAway once there is sufficient
@@ -789,7 +789,7 @@ bool AzgalorMeleeGetOutOfFireAction::Execute(Event /*event*/)
 
     if (inAnyRoF)
     {
-        botAI->Reset();
+        // botAI->Reset();
         return MoveAway(azgalor, 5.0f);
     }
 
@@ -813,7 +813,7 @@ bool AzgalorMoveToDoomguardTankAction::Execute(Event /*event*/)
     const Position& position = AZGALOR_DOOMGUARD_POSITION;
     if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 5.0f)
     {
-        botAI->Reset();
+        // botAI->Reset();
         return MoveTo(HYJAL_SUMMIT_MAP_ID, position.GetPositionX(), position.GetPositionY(),
                       position.GetPositionZ(), false, false, false, false,
                       MovementPriority::MOVEMENT_FORCED, true, false);
@@ -1009,7 +1009,7 @@ bool ArchimondeSpreadToAvoidAirBurstAction::Execute(Event /*event*/)
                 constexpr float safeDistance = 14.0f;
                 if (currentDistance < safeDistance)
                 {
-                    botAI->Reset();
+                    // botAI->Reset();
                     return MoveAway(mainTank, safeDistance - currentDistance);
                 }
             }
@@ -1080,7 +1080,7 @@ bool ArchimondeAvoidDoomfireAction::Execute(Event /*event*/)
 
         bool backwards = botAI->IsMainTank(bot);
 
-        botAI->Reset();
+        // botAI->Reset();
         return MoveTo(HYJAL_SUMMIT_MAP_ID, targetX, targetY, bot->GetPositionZ(),
                       false, false, false, false, priority, true, backwards);
     }
