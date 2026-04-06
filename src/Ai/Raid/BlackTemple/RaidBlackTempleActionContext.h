@@ -161,6 +161,9 @@ public:
         creators["illidan stormrage isolate bot with parasite"] =
             &RaidBlackTempleActionContext::illidan_stormrage_isolate_bot_with_parasite;
 
+        creators["illidan stormrage set earthbind totem"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_set_earthbind_totem;
+
         creators["illidan stormrage assist tanks handle flames of azzinoth"] =
             &RaidBlackTempleActionContext::illidan_stormrage_assist_tanks_handle_flames_of_azzinoth;
 
@@ -345,6 +348,9 @@ private:
 
     static Action* illidan_stormrage_isolate_bot_with_parasite(
         PlayerbotAI* botAI) { return new IllidanStormrageIsolateBotWithParasiteAction(botAI); }
+
+    static Action* illidan_stormrage_set_earthbind_totem(
+        PlayerbotAI* botAI) { return new IllidanStormrageSetEarthbindTotemAction(botAI); }
 
     static Action* illidan_stormrage_assist_tanks_handle_flames_of_azzinoth(
         PlayerbotAI* botAI) { return new IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction(botAI); }

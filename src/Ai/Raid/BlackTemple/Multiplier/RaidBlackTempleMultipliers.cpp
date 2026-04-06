@@ -566,6 +566,22 @@ float IllidanStormrageControlNonTankMovementMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+float IllidanStormrageUseEarthbindTotemMultiplier::GetValue(Action* action)
+{
+    if (bot->getClass() != CLASS_SHAMAN)
+        return 1.0f;
+
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    if (!illidan || GetIllidanPhase(illidan) == 2)
+        return 1.0f;
+
+    if (dynamic_cast<CastStrengthOfEarthTotemAction*>(action) ||
+        dynamic_cast<CastStoneskinTotemAction*>(action) ||
+        dynamic_cast<CastStoneclawTotemAction*>(action) ||
+        dynamic_cast<CastTremorTotemAction*>(action))
+        return 0.0f;
+}
+
 float IllidanStormrageWaitForDpsMultiplier::GetValue(Action* action)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");

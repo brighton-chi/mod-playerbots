@@ -434,6 +434,14 @@ private:
     bool FreezeTrapShadowfiend(Player* bot, Unit* illidan, const Position& targetPos);
 };
 
+class IllidanStormrageSetEarthbindTotemAction : public Action
+{
+public:
+    IllidanStormrageSetEarthbindTotemAction(
+        PlayerbotAI* botAI) : Action(botAI, "illidan stormrage set earthbind totem") {}
+    bool Execute(Event event) override;
+};
+
 class IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction : public AttackAction
 {
 public:

@@ -78,6 +78,9 @@ namespace BlackTempleHelpers
         // Hunter
         SPELL_FROST_TRAP                = 13809,
         SPELL_MISDIRECTION              = 35079,
+
+        // Shaman
+        SPELL_EARTHBIND_TOTEM           = 2484,
     };
 
     enum class BlackTempleNPCs : uint32

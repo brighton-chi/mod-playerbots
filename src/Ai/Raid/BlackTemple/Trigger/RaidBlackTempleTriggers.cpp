@@ -8,6 +8,7 @@
 #include "RaidBlackTempleActions.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
+#include "SharedDefines.h"
 
 using namespace BlackTempleHelpers;
 
@@ -578,6 +579,26 @@ bool IllidanStormrageBotHasParasiticShadowfiendTrigger::IsActive()
 
     return false;
 }
+
+bool IllidanStormrageParasiticShadowfiendsRunWildTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_SHAMAN)
+        return false;
+
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    if (!illidan || illidan->GetHealth() == 1 || GetIllidanPhase(illidan) == 2)
+        return false;
+
+    ObjectGuid guid = bot->m_SummonSlot[SUMMON_SLOT_TOTEM_EARTH];
+    if (guid.IsEmpty())
+        return true;
+
+    Creature* totem = bot->GetMap()->GetCreature(guid);
+    return !totem || totem->GetDistance(bot) > 20.0f ||
+           totem->GetUInt32Value(UNIT_CREATED_BY_SPELL) !=
+               static_cast<uint32>(BlackTempleSpells::SPELL_EARTHBIND_TOTEM);
+}
+
 
 bool IllidanStormrageBossSummonedFlamesOfAzzinothTrigger::IsActive()
 {

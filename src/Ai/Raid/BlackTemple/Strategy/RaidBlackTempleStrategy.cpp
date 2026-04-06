@@ -147,19 +147,22 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     // Illidan Stormrage <The Betrayer>
     triggers.push_back(new TriggerNode("illidan stormrage tank needs aggro", {
-        NextAction("illidan stormrage misdirect to tank", ACTION_RAID + 2) }));
+        NextAction("illidan stormrage misdirect to tank", ACTION_RAID + 3) }));
 
     triggers.push_back(new TriggerNode("illidan stormrage boss casts flame crash in front of main tank", {
         NextAction("illidan stormrage main tank reposition boss", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("illidan stormrage bot has parasitic shadowfiend", {
-        NextAction("illidan stormrage isolate bot with parasite", ACTION_RAID + 2) }));
+        NextAction("illidan stormrage isolate bot with parasite", ACTION_RAID + 3) }));
+
+    triggers.push_back(new TriggerNode("illidan stormrage parasitic shadowfiends run wild", {
+        NextAction("illidan stormrage set earthbind totem", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("illidan stormrage boss summoned flames of azzinoth", {
         NextAction("illidan stormrage assist tanks handle flames of azzinoth", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("illidan stormrage pets die to fire", {
-        NextAction("illidan stormrage control pet aggression", ACTION_RAID + 3) }));
+        NextAction("illidan stormrage control pet aggression", ACTION_RAID + 4) }));
 
     triggers.push_back(new TriggerNode("illidan stormrage grate is safe from flames", {
         NextAction("illidan stormrage position above grate", ACTION_EMERGENCY + 2) }));
@@ -171,10 +174,10 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("illidan stormrage move away from landing point", ACTION_EMERGENCY + 3) }));
 
     triggers.push_back(new TriggerNode("illidan stormrage boss deals splash damage", {
-        NextAction("illidan stormrage disperse ranged", ACTION_RAID + 1) }));
+        NextAction("illidan stormrage disperse ranged", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("illidan stormrage this expansion hates melee", {
-        NextAction("illidan stormrage melee go somewhere to not die", ACTION_RAID + 1) }));
+        NextAction("illidan stormrage melee go somewhere to not die", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("illidan stormrage boss transforms into demon", {
         NextAction("illidan stormrage warlock tank handle demon boss", ACTION_EMERGENCY + 9) }));
@@ -235,5 +238,6 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new IllidanStormrageControlTankActionsMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageDisableDefaultTargetingMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageControlNonTankMovementMultiplier(botAI));
+    multipliers.push_back(new IllidanStormrageUseEarthbindTotemMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageWaitForDpsMultiplier(botAI));
 }

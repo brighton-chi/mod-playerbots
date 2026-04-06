@@ -1176,7 +1176,9 @@ bool IllidariCouncilMisdirectBossesToTanksAction::Execute(Event /*event*/)
         Player* member = ref->GetSource();
         if (member && member->IsAlive() && member->getClass() == CLASS_HUNTER &&
             GET_PLAYERBOT_AI(member))
+        {
             hunters.push_back(member);
+        }
 
         if (hunters.size() >= 4)
             break;
@@ -1630,7 +1632,9 @@ bool IllidanStormrageMisdirectToTankAction::TryMisdirectToFlameTanks(Group* grou
         Player* member = ref->GetSource();
         if (member && member->IsAlive() && member->getClass() == CLASS_HUNTER &&
             GET_PLAYERBOT_AI(member))
+        {
             hunters.push_back(member);
+        }
 
         if (hunters.size() >= 2)
             break;
@@ -1688,7 +1692,7 @@ bool IllidanStormrageMisdirectToTankAction::TryMisdirectToFlameTanks(Group* grou
     else
         return false;
 
-    if (!tankTarget || !tankTarget->IsAlive() || flame->GetHealthPct() < 99.0f)
+    if (!tankTarget || !tankTarget->IsAlive() || flame->GetHealthPct() < 90.0f)
         return false;
 
     if (botAI->CanCastSpell("misdirection", tankTarget))
@@ -1972,7 +1976,12 @@ bool IllidanStormrageIsolateBotWithParasiteAction::FreezeTrapShadowfiend(
     }
 
     return false;
+}
 
+bool IllidanStormrageSetEarthbindTotemAction::Execute(Event /*event*/)
+{
+    return botAI->CanCastSpell("earthbind totem", bot) &&
+           botAI->CastSpell("earthbind totem", bot);
 }
 
 bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*event*/)
@@ -2263,7 +2272,9 @@ bool IllidanStormragePositionAboveGrateAction::Execute(Event /*event*/)
         Player* member = ref->GetSource();
         if (member && !botAI->IsAssistTankOfIndex(member, 0, true) &&
             !botAI->IsAssistTankOfIndex(member, 1, true))
+        {
             bots.push_back(member);
+        }
     }
 
     if (bots.empty())

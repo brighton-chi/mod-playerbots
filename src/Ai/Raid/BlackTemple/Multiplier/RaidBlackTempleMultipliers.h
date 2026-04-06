@@ -214,6 +214,14 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class IllidanStormrageUseEarthbindTotemMultiplier : public Multiplier
+{
+public:
+    IllidanStormrageUseEarthbindTotemMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "illidan stormrage use earthbind totem multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
 class IllidanStormrageWaitForDpsMultiplier : public Multiplier
 {
 public:

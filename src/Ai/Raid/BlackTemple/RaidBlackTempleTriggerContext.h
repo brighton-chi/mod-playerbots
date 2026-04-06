@@ -161,6 +161,9 @@ public:
         creators["illidan stormrage bot has parasitic shadowfiend"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_bot_has_parasitic_shadowfiend;
 
+        creators["illidan stormrage parasitic shadowfiends run wild"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_parasitic_shadowfiends_run_wild;
+
         creators["illidan stormrage boss summoned flames of azzinoth"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_boss_summoned_flames_of_azzinoth;
 
@@ -345,6 +348,9 @@ private:
 
     static Trigger* illidan_stormrage_bot_has_parasitic_shadowfiend(
         PlayerbotAI* botAI) { return new IllidanStormrageBotHasParasiticShadowfiendTrigger(botAI); }
+
+    static Trigger* illidan_stormrage_parasitic_shadowfiends_run_wild(
+        PlayerbotAI* botAI) { return new IllidanStormrageParasiticShadowfiendsRunWildTrigger(botAI); }
 
     static Trigger* illidan_stormrage_boss_summoned_flames_of_azzinoth(
         PlayerbotAI* botAI) { return new IllidanStormrageBossSummonedFlamesOfAzzinothTrigger(botAI); }
