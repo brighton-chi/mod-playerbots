@@ -580,6 +580,8 @@ float IllidanStormrageUseEarthbindTotemMultiplier::GetValue(Action* action)
         dynamic_cast<CastStoneclawTotemAction*>(action) ||
         dynamic_cast<CastTremorTotemAction*>(action))
         return 0.0f;
+
+    return 1.0f;
 }
 
 float IllidanStormrageWaitForDpsMultiplier::GetValue(Action* action)

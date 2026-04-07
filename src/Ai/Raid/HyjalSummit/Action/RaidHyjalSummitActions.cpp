@@ -315,7 +315,7 @@ bool AnetheronFirstAssistTankPickUpInfernalsAction::Execute(Event /*event*/)
         float distToInfernoTarget = bot->GetExactDist2d(infernoTarget);
         if (distToInfernoTarget > 5.0f)
         {
-            // bot->AttackStop();
+            bot->AttackStop();
             // bot->InterruptNonMeleeSpells(true);
             return MoveTo(HYJAL_SUMMIT_MAP_ID, infernoTarget->GetPositionX(),
                           infernoTarget->GetPositionY(), infernoTarget->GetPositionZ(),
