@@ -1035,8 +1035,8 @@ bool ArchimondeSpreadToAvoidAirBurstAction::Execute(Event /*event*/)
 
 bool ArchimondeAvoidDoomfireAction::Execute(Event /*event*/)
 {
-    constexpr float dangerDist = 11.0f;
-    constexpr uint32 TRAIL_DURATION = 19000;
+    constexpr float dangerDist = 10.0f;
+    constexpr uint32 trailDuration = 18000;
 
     uint32 instanceId = bot->GetMap()->GetInstanceId();
     uint32 now = getMSTime();
@@ -1048,7 +1048,7 @@ bool ArchimondeAvoidDoomfireAction::Execute(Event /*event*/)
     it->second.erase(std::remove_if(it->second.begin(), it->second.end(),
         [now](const DoomfireTrailData& d)
         {
-            return getMSTimeDiff(d.recordTime, now) > TRAIL_DURATION;
+            return getMSTimeDiff(d.recordTime, now) > trailDuration;
         }), it->second.end());
 
     float totalDx = 0.0f, totalDy = 0.0f;

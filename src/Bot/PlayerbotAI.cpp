@@ -331,6 +331,17 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
                 ServerFacade::instance().SetFacingTo(bot, spellTarget);
             }
 
+            // Allow external scripts to interrupt a cast in progress
+            if (pendingCastInterrupt)
+            {
+                pendingCastInterrupt = false;
+                LOG_DEBUG("playerbots", "Cast interrupt: interrupting {} for bot {}",
+                    spellInfo->SpellName[0], bot->GetName());
+                InterruptSpell();
+                YieldThread(bot, GetReactDelay());
+                return;
+            }
+
             // Wait for spell cast
             YieldThread(bot, GetReactDelay());
             return;
