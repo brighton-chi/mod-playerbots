@@ -65,7 +65,7 @@ public:
             if (creature->GetDistance(player) > DOOMFIRE_DANGER_RANGE)
                 continue;
 
-            botAI->RequestCastInterrupt();
+            botAI->RequestSpellInterrupt();
         }
     }
 
