@@ -5,7 +5,7 @@
 
 #include "RaidBlackTempleActions.h"
 #include "RaidBlackTempleHelpers.h"
-#include "RaidBlackTempleIllidanBossAI.h"
+#include "CreatureAI.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
 
@@ -2086,7 +2086,7 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*ev
     if (!illidan)
         return false;
 
-    EyeBlastDangerArea dangerArea = GetEyeBlastDangerArea(bot, illidan);
+    EyeBlastDangerArea dangerArea = GetEyeBlastDangerArea(bot);
 
     // Only consider the eye blast if its trigger NPC is within 30 yards of the tank
     constexpr float eyeBlastTriggerRadius = 30.0f;

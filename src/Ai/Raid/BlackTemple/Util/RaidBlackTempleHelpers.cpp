@@ -4,7 +4,6 @@
  */
 
 #include "RaidBlackTempleHelpers.h"
-#include "RaidBlackTempleIllidanBossAI.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
 
@@ -228,18 +227,6 @@ namespace BlackTempleHelpers
         ILLIDAN_W_GLAIVE_TANK_POSITION_7,
     };
 
-    const std::array<Position, MAX_EYE_BEAM_POS * 2> eyeBeamPos =
-    {{
-        {639.97f, 301.63f, 354.0f, 0.0f},
-        {658.83f, 265.10f, 354.0f, 0.0f},
-        {656.86f, 344.07f, 354.0f, 0.0f},
-        {640.70f, 310.47f, 354.0f, 0.0f},
-        {706.22f, 273.26f, 354.0f, 0.0f},
-        {717.55f, 328.33f, 354.0f, 0.0f},
-        {718.06f, 286.08f, 354.0f, 0.0f},
-        {705.92f, 337.14f, 354.0f, 0.0f}
-    }};
-
     std::unordered_map<ObjectGuid, size_t> flameTankWaypointIndex;
     std::unordered_map<uint32, time_t> illidanBossDpsWaitTimer;
     std::unordered_map<uint32, time_t> illidanFlameDpsWaitTimer;
@@ -403,14 +390,8 @@ namespace BlackTempleHelpers
         return nullptr;
     }
 
-    EyeBlastDangerArea GetEyeBlastDangerArea(Player* bot, Unit* illidan)
+    EyeBlastDangerArea GetEyeBlastDangerArea(Player* bot)
     {
-        boss_illidan_stormrage* illidanAI = dynamic_cast<boss_illidan_stormrage*>(illidan->GetAI());
-        if (!illidanAI)
-            return {};
-
-        uint8 beamPosId = illidanAI->GetBeamPosId();
-
         constexpr float searchRadius = 100.0f;
         std::list<Creature*> creatureList;
         bot->GetCreatureListWithEntryInGrid(
@@ -431,7 +412,14 @@ namespace BlackTempleHelpers
 
         Position startPos = Position(eyeBlastTrigger->GetPositionX(), eyeBlastTrigger->GetPositionY(),
                                      eyeBlastTrigger->GetPositionZ());
-        Position endPos = eyeBeamPos[beamPosId + MAX_EYE_BEAM_POS];
+
+        float destX, destY, destZ;
+        eyeBlastTrigger->GetMotionMaster()->GetDestination(destX, destY, destZ);
+        Position endPos(destX, destY, destZ);
+
+        if (startPos.GetExactDist2d(endPos) < 0.1f)
+            return {};
+
         constexpr float eyeBlastWidth = 9.0f;
         return { startPos, endPos, eyeBlastWidth };
     }
@@ -441,6 +429,9 @@ namespace BlackTempleHelpers
         float dx = area.end.GetPositionX() - area.start.GetPositionX();
         float dy = area.end.GetPositionY() - area.start.GetPositionY();
         float length = area.start.GetExactDist2d(area.end.GetPositionX(), area.end.GetPositionY());
+
+        if (length < 0.1f)
+            return false;
 
         float projectionFactor = ((pos.GetPositionX() - area.start.GetPositionX()) * dx +
                                   (pos.GetPositionY() - area.start.GetPositionY()) * dy) / (length * length);

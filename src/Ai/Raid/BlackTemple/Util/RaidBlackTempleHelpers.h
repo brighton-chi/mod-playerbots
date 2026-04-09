@@ -8,7 +8,6 @@
 
 #include <unordered_map>
 
-#include "RaidBlackTempleIllidanBossAI.h"
 #include "AiObject.h"
 #include "Position.h"
 #include "Unit.h"
@@ -189,7 +188,6 @@ namespace BlackTempleHelpers
     extern const Position ILLIDAN_W_GLAIVE_TANK_POSITION_6;
     extern const Position ILLIDAN_W_GLAIVE_TANK_POSITION_7;
     extern const std::array<Position, 7> W_GLAIVE_TANK_POSITIONS;
-    extern const std::array<Position, MAX_EYE_BEAM_POS * 2> eyeBeamPos;
     extern std::unordered_map<ObjectGuid, size_t> flameTankWaypointIndex;
     extern std::unordered_map<uint32, time_t> illidanBossDpsWaitTimer;
     extern std::unordered_map<uint32, time_t> illidanFlameDpsWaitTimer;
@@ -207,7 +205,7 @@ namespace BlackTempleHelpers
         Position end;
         float width;
     };
-    EyeBlastDangerArea GetEyeBlastDangerArea(Player* bot, Unit* illidan);
+    EyeBlastDangerArea GetEyeBlastDangerArea(Player* bot);
     bool IsPositionInEyeBlastDangerArea(const Position& pos, const EyeBlastDangerArea& area);
     GameObject* FindNearestTrap(PlayerbotAI* botAI, Player* bot);
 }
