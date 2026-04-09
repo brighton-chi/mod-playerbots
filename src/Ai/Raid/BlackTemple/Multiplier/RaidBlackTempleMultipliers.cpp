@@ -27,7 +27,12 @@ using namespace BlackTempleHelpers;
 // Trash
 float ShadowmoonReaverDontBuildChaoticChargesMultiplier::GetValue(Action* action)
 {
-    if (bot->getClass() == CLASS_HUNTER || !botAI->IsRangedDps(bot))
+    if (botAI->IsTank(bot))
+        return 1.0f;
+
+    if (!botAI->IsCaster(bot) &&
+        bot->getClass() != CLASS_PALADIN &&
+        bot->getClass() != CLASS_SHAMAN)
         return 1.0f;
 
     Unit* reaver = AI_VALUE2(Unit*, "find target", "shadowmoon reaver");
@@ -37,16 +42,16 @@ float ShadowmoonReaverDontBuildChaoticChargesMultiplier::GetValue(Action* action
         return 1.0f;
     }
 
-    auto castSpellAction = dynamic_cast<CastSpellAction*>(action);
-    if (!castSpellAction)
+    if (action->getThreatType() == Action::ActionThreatType::Aoe)
+        return 0.0f;
+
+    Unit* actionTarget = action->GetTarget();
+    if (actionTarget != reaver)
         return 1.0f;
 
-    if (castSpellAction->getThreatType() == Action::ActionThreatType::Aoe ||
-        (bot->GetVictim() == reaver &&
-            castSpellAction->getThreatType() == Action::ActionThreatType::Single))
-    {
+    if (dynamic_cast<AttackAction*>(action) ||
+        dynamic_cast<CastSpellAction*>(action))
         return 0.0f;
-    }
 
     return 1.0f;
 }
@@ -248,7 +253,7 @@ float MotherShahrazDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
         return 1.0f;
 
     Unit* shahraz = AI_VALUE2(Unit*, "find target", "mother shahraz");
-    if (!shahraz || shahraz->GetHealthPct() < 85.0f)
+    if (!shahraz || shahraz->GetHealthPct() < 90.0f)
         return 1.0f;
 
     if (dynamic_cast<CastBloodlustAction*>(action) ||

@@ -168,8 +168,9 @@ namespace BlackTempleHelpers
     // Illidan Stormrage <The Betrayer>
     extern const Position ILLIDAN_LANDING_POSITION;
     extern const Position ILLIDAN_N_GRATE_POSITION;
-    extern const Position ILLIDAN_S_GRATE_POSITION;
-    extern const std::array<Position, 2> GRATE_POSITIONS;
+    extern const Position ILLIDAN_E_GRATE_POSITION;
+    extern const Position ILLIDAN_W_GRATE_POSITION;
+    extern const std::array<Position, 3> GRATE_POSITIONS;
     extern const Position ILLIDAN_E_GLAIVE_WAITING_POSITION;
     extern const Position ILLIDAN_E_GLAIVE_TANK_POSITION_1;
     extern const Position ILLIDAN_E_GLAIVE_TANK_POSITION_2;

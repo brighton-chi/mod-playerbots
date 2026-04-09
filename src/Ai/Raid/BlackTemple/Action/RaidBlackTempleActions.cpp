@@ -1733,7 +1733,7 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
     if (GetIllidanPhase(illidan) == 5)
     {
         GameObject* trap = FindNearestTrap(botAI, bot);
-        if (trap && bot->GetExactDist2d(trap) < 50.0f && illidan->GetVictim() == bot)
+        if (trap && bot->GetExactDist2d(trap) < 40.0f && illidan->GetVictim() == bot)
         {
             Position target = GetPointBeyondTrap(trap, 5.0f);
             float targetDist = bot->GetExactDist2d(target);
@@ -1747,7 +1747,7 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
                 float moveY = bot->GetPositionY() + (dY / targetDist) * moveDist;
 
                 return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY,
-                              bot->GetPositionZ(), false, false, false, true,
+                              bot->GetPositionZ(), false, false, false, false,
                               MovementPriority::MOVEMENT_COMBAT, true, true);
             }
         }
@@ -2020,7 +2020,7 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*ev
                 BlackTempleNPCs::NPC_DEMON_FIRE), searchRadius);
 
             const Position& pos = demonFires.empty() ?
-                ILLIDAN_E_GLAIVE_WAITING_POSITION : ILLIDAN_S_GRATE_POSITION;
+                ILLIDAN_E_GLAIVE_WAITING_POSITION : ILLIDAN_E_GRATE_POSITION;
 
             if (bot->GetExactDist2d(pos.GetPositionX(), pos.GetPositionY()) > 0.5f)
             {
@@ -2032,7 +2032,7 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*ev
         // After the first flame dies, its tank waits with other bots
         else if (!eastFlame && westFlame)
         {
-            const Position& pos = ILLIDAN_S_GRATE_POSITION;
+            const Position& pos = ILLIDAN_E_GRATE_POSITION;
             if (bot->GetExactDist2d(pos.GetPositionX(), pos.GetPositionY()) > 0.5f)
             {
                 return MoveTo(BLACK_TEMPLE_MAP_ID, pos.GetPositionX(), pos.GetPositionY(),
@@ -2071,7 +2071,7 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*ev
                 BlackTempleNPCs::NPC_DEMON_FIRE), searchRadius);
 
             const Position& pos = demonFires.empty() ?
-                ILLIDAN_W_GLAIVE_WAITING_POSITION : ILLIDAN_N_GRATE_POSITION;
+                ILLIDAN_W_GLAIVE_WAITING_POSITION : ILLIDAN_W_GRATE_POSITION;
 
             if (bot->GetExactDist2d(pos.GetPositionX(), pos.GetPositionY()) > 0.5f)
             {
@@ -2146,10 +2146,12 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidE
         constexpr float minGrateDistance = 10.0f;
         bool tooCloseToNorthGrate =
             Position(safeX, safeY, safeZ).GetExactDist2d(ILLIDAN_N_GRATE_POSITION) < minGrateDistance;
-        bool tooCloseToSouthGrate =
-            Position(safeX, safeY, safeZ).GetExactDist2d(ILLIDAN_S_GRATE_POSITION) < minGrateDistance;
+        bool tooCloseToEastGrate =
+            Position(safeX, safeY, safeZ).GetExactDist2d(ILLIDAN_E_GRATE_POSITION) < minGrateDistance;
+        bool tooCloseToWestGrate =
+            Position(safeX, safeY, safeZ).GetExactDist2d(ILLIDAN_W_GRATE_POSITION) < minGrateDistance;
 
-        if (tooCloseToNorthGrate || tooCloseToSouthGrate)
+        if (tooCloseToNorthGrate || tooCloseToEastGrate || tooCloseToWestGrate)
             return false;
 
         return MoveTo(BLACK_TEMPLE_MAP_ID, safeX, safeY, safeZ,
@@ -2261,7 +2263,7 @@ bool IllidanStormrageControlPetAggressionAction::Execute(Event /*event*/)
 
 bool IllidanStormragePositionAboveGrateAction::Execute(Event /*event*/)
 {
-    const std::array<Position, 2>& gratePositions = GRATE_POSITIONS;
+    const std::array<Position, 3>& gratePositions = GRATE_POSITIONS;
     Group* group = bot->GetGroup();
     if (!group)
         return false;
@@ -2288,14 +2290,14 @@ bool IllidanStormragePositionAboveGrateAction::Execute(Event /*event*/)
         return false;
 
     size_t botIndex = std::distance(bots.begin(), it);
-    uint8 index = botIndex % 2; // 0 = north, 1 = south
+    uint8 index = botIndex % gratePositions.size();
 
     const Position& position = gratePositions[index];
     if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 0.2f)
     {
         return MoveTo(BLACK_TEMPLE_MAP_ID, position.GetPositionX(), position.GetPositionY(),
                       position.GetPositionZ(), false, false, false, false,
-                      MovementPriority::MOVEMENT_COMBAT, true, false);
+                      MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
     return false;
