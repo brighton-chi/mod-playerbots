@@ -727,7 +727,7 @@ bool IllidanStormrageNeedToManageDpsTimerAndRtiTrigger::IsActive()
 
 bool IllidanStormrageCheatTrigger::IsActive()
 {
-    if (!botAI->HasCheat(BotCheatMask::raid) || !botAI->IsDps(bot))
+    if (!botAI->IsDps(bot))
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");

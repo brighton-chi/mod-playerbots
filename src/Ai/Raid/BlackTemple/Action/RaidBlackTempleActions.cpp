@@ -2620,8 +2620,17 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
         }
         else if (phase == 2)
         {
-            auto [eastFlame, westFlame] = GetFlamesOfAzzinoth(bot);
-            targets = { eastFlame, westFlame };
+            Unit* shadowfiend = bot->FindNearestCreature(static_cast<uint32>(
+                BlackTempleNPCs::NPC_PARASITIC_SHADOWFIEND), 20.0f, true);
+            if (shadowfiend && bot->GetDistance2d(shadowfiend) > 5.0f)
+            {
+                targets = { shadowfiend };
+            }
+            else
+            {
+                auto [eastFlame, westFlame] = GetFlamesOfAzzinoth(bot);
+                targets = { eastFlame, westFlame };
+            }
         }
     }
 
@@ -2760,7 +2769,7 @@ bool IllidanStormrageDestroyHazardsCheatAction::Execute(Event /*event*/)
     if (phase == 2)
     {
         entries = {
-            static_cast<uint32>(BlackTempleNPCs::NPC_PARASITIC_SHADOWFIEND),
+            // static_cast<uint32>(BlackTempleNPCs::NPC_PARASITIC_SHADOWFIEND),
             static_cast<uint32>(BlackTempleNPCs::NPC_FLAME_CRASH)
         };
     }
@@ -2789,16 +2798,26 @@ bool IllidanStormrageDestroyHazardsCheatAction::Execute(Event /*event*/)
         if (creature && creature->IsAlive())
         {
             if (creature->GetEntry() !=
-                static_cast<uint32>(BlackTempleNPCs::NPC_SHADOW_DEMON))
+                static_cast<uint32>(BlackTempleNPCs::NPC_SHADOW_DEMON) /*&&
+                creature->GetEntry() !=
+                static_cast<uint32>(BlackTempleNPCs::NPC_PARASITIC_SHADOWFIEND)*/)
             {
+                // Destroying hazards behind phases is not gated behind CheatMask
+                // The strategy simply cannot work without doing this
                 creature->Kill(bot, creature);
                 destroyed = true;
             }
-            else
+            else if (botAI->HasCheat(BotCheatMask::raid))
             {
+                /* if (creature->GetEntry() ==
+                    static_cast<uint32>(BlackTempleNPCs::NPC_PARASITIC_SHADOWFIEND))
+                {
+                    creature->Kill(bot, creature);
+                    destroyed = true;
+                }
                 // Otherwise a wipe if a Shadow Demon targets the Warlock tank
-                if (Player* warlockTank = GetIllidanWarlockTank(bot);
-                    warlockTank && creature->GetTarget() == warlockTank->GetGUID())
+                else */ if (Player* warlockTank = GetIllidanWarlockTank(bot);
+                         warlockTank && creature->GetTarget() == warlockTank->GetGUID())
                 {
                     creature->Kill(bot, creature);
                     destroyed = true;
