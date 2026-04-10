@@ -1,0 +1,87 @@
+/*
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
+ */
+
+#ifndef _PLAYERBOT_RAIDSUNWELLMULTIPLIERS_H
+#define _PLAYERBOT_RAIDSUNWELLMULTIPLIERS_H
+
+#include "Multiplier.h"
+
+// Kalecgos & Sathrovarr the Corruptor
+
+class KalecgosWaitToDecurseMultiplier : public Multiplier
+{
+public:
+    KalecgosWaitToDecurseMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "kalecgos wait to decurse") {}
+    virtual float GetValue(Action* action);
+};
+
+class KalecgosControlMovementMultiplier : public Multiplier
+{
+public:
+    KalecgosControlMovementMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "kalecgos control movement") {}
+    virtual float GetValue(Action* action);
+};
+
+class KalecgosSaveBloodlustAndHeroismForSathrovarrMultiplier : public Multiplier
+{
+public:
+    KalecgosSaveBloodlustAndHeroismForSathrovarrMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "kalecgos save bloodlust and heroism for sathrovarr") {}
+    virtual float GetValue(Action* action);
+};
+
+// Brutallus
+
+class BrutallusMultiplier : public Multiplier
+{
+public:
+    BrutallusMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "brutallus") {}
+    virtual float GetValue(Action* action);
+};
+
+// Felmyst
+
+class FelmystMultiplier : public Multiplier
+{
+public:
+    FelmystMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "felmyst") {}
+    virtual float GetValue(Action* action);
+};
+
+// Eredar Twins (Alythess & Sacrolash)
+
+class EredarTwinsMultiplier : public Multiplier
+{
+public:
+    EredarTwinsMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "eredar twins") {}
+    virtual float GetValue(Action* action);
+};
+
+// M'uru & Entropius
+
+class MuruMultiplier : public Multiplier
+{
+public:
+    MuruMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "m'uru") {}
+    virtual float GetValue(Action* action);
+};
+
+// Kil'jaeden <The Deceiver>
+
+class KiljaedenMultiplier : public Multiplier
+{
+public:
+    KiljaedenMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "kil'jaeden") {}
+    virtual float GetValue(Action* action);
+};
+
+#endif

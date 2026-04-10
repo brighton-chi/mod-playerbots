@@ -1,0 +1,100 @@
+/*
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
+ */
+
+#include "RaidSunwellTriggers.h"
+#include "RaidSunwellHelpers.h"
+#include "Playerbots.h"
+#include "RaidBossHelpers.h"
+
+using namespace SunwellHelpers;
+
+// Kalecgos & Sathrovarr the Corruptor
+
+bool KalecgosBossEngagedByTankTrigger::IsActive()
+{
+    if (!AI_VALUE2(Unit*, "find target", "kalecgos"))
+        return false;
+
+    return GetKalecgosCurrentTank(botAI, bot) == bot;
+}
+
+bool KalecgosSpectralRiftIsOpenTrigger::IsActive()
+{
+    if (!AI_VALUE2(Unit*, "find target", "kalecgos") &&
+        !AI_VALUE2(Unit*, "find target", "sathrovarr the corruptor"))
+        return false;
+
+    if (!ShouldEnterKalecgosSpectralRift(bot))
+        return false;
+
+    return bot->FindNearestGameObject(
+        static_cast<uint32>(SunwellObjects::GO_SPECTRAL_RIFT), 50.0f, true);
+}
+
+bool KalecgosBotsTakeSplashDamageTrigger::IsActive()
+{
+    if (!botAI->IsRanged(bot))
+        return false;
+
+    if (!AI_VALUE2(Unit*, "find target", "kalecgos") &&
+        !AI_VALUE2(Unit*, "find target", "sathrovarr the corruptor"))
+        return false;
+
+    return !ShouldEnterKalecgosSpectralRift(bot);
+}
+
+bool KalecgosBothBossesMustBeDefeatedTrigger::IsActive()
+{
+    if (botAI->IsHeal(bot))
+        return false;
+
+    if (bot->GetVictim())
+        return false;
+
+    if (!AI_VALUE2(Unit*, "find target", "kalecgos") &&
+        !AI_VALUE2(Unit*, "find target", "sathrovarr the corruptor"))
+        return false;
+
+    if (ShouldEnterKalecgosSpectralRift(bot))
+        return false;
+
+    return GetKalecgosCurrentTank(botAI, bot) != bot;
+}
+
+// Brutallus
+
+bool BrutallusTrigger::IsActive()
+{
+    return AI_VALUE2(Unit*, "find target", "brutallus");
+}
+
+// Felmyst
+
+bool FelmystTrigger::IsActive()
+{
+    return AI_VALUE2(Unit*, "find target", "felmyst");
+}
+
+// Eredar Twins (Alythess & Sacrolash)
+
+bool EredarTwinsTrigger::IsActive()
+{
+    return AI_VALUE2(Unit*, "find target", "alythess") ||
+           AI_VALUE2(Unit*, "find target", "sacrolash");
+}
+
+// M'uru & Entropius
+
+bool MuruTrigger::IsActive()
+{
+    return AI_VALUE2(Unit*, "find target", "m'uru");
+}
+
+// Kil'jaeden <The Deceiver>
+
+bool KiljaedenTrigger::IsActive()
+{
+    return AI_VALUE2(Unit*, "find target", "kil'jaeden");
+}

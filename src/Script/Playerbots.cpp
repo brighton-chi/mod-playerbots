@@ -527,6 +527,7 @@ void AddPlayerbotsSecureLoginScripts();
 
 void AddSC_TempestKeepBotScripts();
 void AddSC_HyjalSummitBotScripts();
+void AddSC_SunwellPlateauBotScripts();
 
 void AddPlayerbotsScripts()
 {
@@ -543,4 +544,5 @@ void AddPlayerbotsScripts()
     PlayerBotsGuildValidationScript();
     AddSC_TempestKeepBotScripts();
     AddSC_HyjalSummitBotScripts();
+    AddSC_SunwellPlateauBotScripts();
 }
