@@ -12,7 +12,7 @@
 
 using namespace ai::gbless;
 
-// Lightweight check: does any raid member need a blessing from this bot?
+// Lightweight check: does any group member need a blessing from this bot?
 // Uses the same algorithm as the action but exits early on first match.
 bool GreaterBlessingNeededTrigger::IsActive()
 {
@@ -21,7 +21,7 @@ bool GreaterBlessingNeededTrigger::IsActive()
         return false;
 
     Group* group = bot->GetGroup();
-    if (!group || !group->isRaidGroup())
+    if (!group)
         return false;
 
     // Collect bot Paladins regardless of alive/dead so tier stays
@@ -141,7 +141,7 @@ bool GreaterBlessingNeededTrigger::IsActive()
     }
 
     // Phase 7 in the action may reassign this bot to Sanctuary via talent-aware swapping.
-    // If this bot knows Sanctuary, fire the trigger whenever any alive raid member still
+    // If this bot knows Sanctuary, fire the trigger whenever any alive group member still
     // lacks a Sanctuary aura from this bot.
     if (KnowsSanctuary(bot))
     {

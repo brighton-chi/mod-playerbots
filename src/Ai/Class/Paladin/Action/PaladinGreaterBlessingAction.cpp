@@ -48,7 +48,7 @@ CastGreaterBlessingAssignmentAction::CastGreaterBlessingAssignmentAction(
 bool CastGreaterBlessingAssignmentAction::isUseful()
 {
     Group* group = bot->GetGroup();
-    return group && group->isRaidGroup();
+    return group;
 }
 
 bool CastGreaterBlessingAssignmentAction::Execute(Event /*event*/)
@@ -57,7 +57,7 @@ bool CastGreaterBlessingAssignmentAction::Execute(Event /*event*/)
     if (!ComputeAssignments(assignments))
         return false;
 
-    // Find the first raid member that needs a blessing from this bot.
+    // Find the first group member that needs a blessing from this bot.
     for (auto const& assigned : assignments)
     {
         if (assigned.blessing == BLESSING_NONE || !assigned.player)
@@ -124,12 +124,12 @@ bool CastGreaterBlessingAssignmentAction::ComputeAssignments(
     std::vector<PlayerAssignment>& outAssignments)
 {
     Group* group = bot->GetGroup();
-    if (!group || !group->isRaidGroup())
+    if (!group)
         return false;
 
-    // ── Phase 1: gather raid state ───────────────────────────────
+    // ── Phase 1: gather group state ──────────────────────────────
     // Bot Paladins are collected regardless of alive/dead so that the tier and slot
-    // assignments remain stable when a paladin dies. Only alive, non-paladin raid members
+    // assignments remain stable when a paladin dies. Only alive group members
     // are collected as buff targets.
     std::vector<Player*> botPaladins;
     struct RaidMember
@@ -194,7 +194,7 @@ bool CastGreaterBlessingAssignmentAction::ComputeAssignments(
         return false; // shouldn't happen
 
     // ── Phase 5: build effective priority lists ──────────────────
-    // For each raid member, copy their priority entry and apply Sanctuary fallback if needed.
+    // For each group member, copy their priority entry and apply Sanctuary fallback if needed.
     struct EffectivePriority
     {
         Player* player;

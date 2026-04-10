@@ -40,6 +40,13 @@ enum class HealingManaEfficiency : uint8
     SUPERIOR = 32
 };
 
+enum class AutoGreaterBlessingMode : uint8
+{
+    DISABLED = 0,
+    RAID_ONLY = 1,
+    GROUP_OR_RAID = 2
+};
+
 enum NewRpgStatus : int
 {
     //Initial Status
@@ -93,7 +100,7 @@ public:
     uint32 lowMana, mediumMana, highMana;
     bool autoSaveMana;
     uint32 saveManaThreshold;
-    bool autoGreaterBlessings;
+    AutoGreaterBlessingMode autoGreaterBlessings;
     bool autoAvoidAoe;
     float maxAoeAvoidRadius;
     std::set<uint32> aoeAvoidSpellWhitelist;

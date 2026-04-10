@@ -10,7 +10,7 @@
 #include "Playerbots.h"
 
 // Periodically checks raid membership and toggles the "gblessing" strategy on/off accordingly.
-// Replaces existing blessing strategies (bmana, bdps, bstats, bhealth) when entering a raid, restores
+// Replaces existing blessing strategies (bwisdom, bmight, bkings, bsanc) when entering a raid, restores
 // an appropriate one when leaving.
 class ToggleGreaterBlessingStrategyAction : public Action
 {
@@ -21,10 +21,14 @@ public:
     bool isUseful() override { return true; }
 
 private:
+    bool IsEligibleGroup(Group const* group) const;
+    std::string GetRestoreStrategy() const;
+    char const* GetScopeDescription() const;
+
     // Track whether the user explicitly disabled gblessing.
-    // Reset when the bot leaves a raid group.
-    bool userDisabled_ = false;
-    bool wasInRaid_    = false;
+    // Reset when the bot leaves the currently configured scope.
+    bool userDisabled_     = false;
+    bool wasEligibleGroup_ = false;
 };
 
 #endif

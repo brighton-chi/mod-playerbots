@@ -104,6 +104,7 @@ public:
     CastBlessingOfMightOnPartyAction(PlayerbotAI* botAI) : BuffOnPartyAction(botAI, "blessing of might") {}
 
     std::string const getName() override { return "blessing of might on party"; }
+    Unit* GetTarget() override;
     Value<Unit*>* GetTargetValue() override;
     bool Execute(Event event) override;
 };
@@ -122,6 +123,7 @@ public:
     CastBlessingOfWisdomOnPartyAction(PlayerbotAI* botAI) : BuffOnPartyAction(botAI, "blessing of wisdom") {}
 
     std::string const getName() override { return "blessing of wisdom on party"; }
+    Unit* GetTarget() override;
     Value<Unit*>* GetTargetValue() override;
     bool Execute(Event event) override;
 };
@@ -138,6 +140,7 @@ public:
     CastBlessingOfKingsOnPartyAction(PlayerbotAI* botAI) : CastBlessingOnPartyAction(botAI, "blessing of kings") {}
 
     std::string const getName() override { return "blessing of kings on party"; }
+    Unit* GetTarget() override;
     Value<Unit*>* GetTargetValue() override; // added for Sanctuary priority
     bool Execute(Event event) override;      // added for 2 paladins logic
 };
@@ -154,6 +157,7 @@ public:
     CastBlessingOfSanctuaryOnPartyAction(PlayerbotAI* botAI) : BuffOnPartyAction(botAI, "blessing of sanctuary") {}
 
     std::string const getName() override { return "blessing of sanctuary on party"; }
+    Unit* GetTarget() override;
     Value<Unit*>* GetTargetValue() override;
     bool Execute(Event event) override;
 };

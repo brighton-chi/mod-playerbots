@@ -14,76 +14,107 @@ ToggleGreaterBlessingStrategyAction::ToggleGreaterBlessingStrategyAction(
     PlayerbotAI* botAI)
     : Action(botAI, "toggle greater blessing strategy") {}
 
+bool ToggleGreaterBlessingStrategyAction::IsEligibleGroup(Group const* group) const
+{
+    if (!group)
+        return false;
+
+    switch (sPlayerbotAIConfig.autoGreaterBlessings)
+    {
+        case AutoGreaterBlessingMode::RAID_ONLY:
+            return group->isRaidGroup();
+        case AutoGreaterBlessingMode::GROUP_OR_RAID:
+            return true;
+        case AutoGreaterBlessingMode::DISABLED:
+        default:
+            return false;
+    }
+}
+
+std::string ToggleGreaterBlessingStrategyAction::GetRestoreStrategy() const
+{
+    switch (AiFactory::GetPlayerSpecTab(bot))
+    {
+        case PALADIN_TAB_HOLY:
+            return "+bwisdom";
+        case PALADIN_TAB_PROTECTION:
+            return "+bkings";
+        case PALADIN_TAB_RETRIBUTION:
+        default:
+            return "+bmight";
+    }
+}
+
+char const* ToggleGreaterBlessingStrategyAction::GetScopeDescription() const
+{
+    switch (sPlayerbotAIConfig.autoGreaterBlessings)
+    {
+        case AutoGreaterBlessingMode::RAID_ONLY:
+            return "raid";
+        case AutoGreaterBlessingMode::GROUP_OR_RAID:
+            return "group/raid";
+        case AutoGreaterBlessingMode::DISABLED:
+        default:
+            return "group";
+    }
+}
+
 bool ToggleGreaterBlessingStrategyAction::Execute(Event /*event*/)
 {
     // If the config option is disabled, never auto-toggle.
-    if (!sPlayerbotAIConfig.autoGreaterBlessings)
+    if (sPlayerbotAIConfig.autoGreaterBlessings == AutoGreaterBlessingMode::DISABLED)
         return false;
 
-    Group* g = bot->GetGroup();
-    bool inRaid = g && g->isRaidGroup();
     bool hasGblessing =
         botAI->HasStrategy("gblessing", BOT_STATE_NON_COMBAT);
 
-    // ── Leaving raid: deactivate gblessing ───────────────────────
-    if (!inRaid && wasInRaid_)
+    Group* group = bot->GetGroup();
+    // Remove gblessing immediately when the bot is no longer in the configured scope.
+    if (!IsEligibleGroup(group))
     {
-        wasInRaid_ = false;
-        userDisabled_ = false; // reset user-disabled flag on raid exit
+        if (wasEligibleGroup_)
+            userDisabled_ = false;
+
+        wasEligibleGroup_ = false;
 
         if (hasGblessing)
         {
             // Remove gblessing and restore an appropriate single-blessing
             // strategy based on this Paladin's spec.
-            int tab = AiFactory::GetPlayerSpecTab(bot);
-            std::string restore;
-            switch (tab)
-            {
-                case PALADIN_TAB_HOLY:
-                    restore = "+bmana";
-                    break;
-                case PALADIN_TAB_PROTECTION:
-                    restore = "+bstats";
-                    break;
-                case PALADIN_TAB_RETRIBUTION:
-                default:
-                    restore = "+bdps";
-                    break;
-            }
-
-            botAI->ChangeStrategy("-gblessing," + restore,
+            botAI->ChangeStrategy("-gblessing," + GetRestoreStrategy(),
                                   BOT_STATE_NON_COMBAT);
 
             LOG_DEBUG("playerbots",
-                      "[gblessing] {} left raid - restored single-blessing "
+                      "[gblessing] {} no longer in {} - restored single-blessing "
                       "strategy",
-                      bot->GetName());
-        }
+                      bot->GetName(),
+                      GetScopeDescription());
 
-        return true;
-    }
-
-    // ── Entering or staying in raid ──────────────────────────────
-    if (inRaid)
-    {
-        wasInRaid_ = true;
-
-        // If user manually removed gblessing, don't re-enable.
-        if (userDisabled_)
-            return false;
-
-        if (!hasGblessing)
-        {
-            // Activate gblessing and remove existing blessing strategies.
-            botAI->ChangeStrategy(
-                "+gblessing,-bmana,-bstats,-bdps,-bhealth",
-                BOT_STATE_NON_COMBAT);
-
-            LOG_DEBUG("playerbots",
-                      "[gblessing] {} entered raid - activated gblessing",
-                      bot->GetName());
             return true;
         }
+
+        return false;
+    }
+
+    // ── Entering or staying in the configured scope ──────────────
+    wasEligibleGroup_ = true;
+
+    // If user manually removed gblessing, don't re-enable.
+    if (userDisabled_)
+        return false;
+
+    if (!hasGblessing)
+    {
+        // Activate gblessing and remove existing blessing strategies.
+        botAI->ChangeStrategy(
+            "+gblessing,-bwisdom,-bkings,-bmight,-bsanc",
+            BOT_STATE_NON_COMBAT);
+
+        LOG_DEBUG("playerbots",
+                  "[gblessing] {} entered {} - activated gblessing",
+                  bot->GetName(),
+                  GetScopeDescription());
+        return true;
     }
 
     return false;

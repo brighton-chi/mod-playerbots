@@ -71,18 +71,18 @@ class PaladinBuffStrategyFactoryInternal : public NamedObjectContext<Strategy>
 public:
     PaladinBuffStrategyFactoryInternal() : NamedObjectContext<Strategy>(false, true)
     {
-        creators["bhealth"] = &PaladinBuffStrategyFactoryInternal::bhealth;
-        creators["bmana"] = &PaladinBuffStrategyFactoryInternal::bmana;
-        creators["bdps"] = &PaladinBuffStrategyFactoryInternal::bdps;
-        creators["bstats"] = &PaladinBuffStrategyFactoryInternal::bstats;
+        creators["bsanc"] = &PaladinBuffStrategyFactoryInternal::bsanc;
+        creators["bwisdom"] = &PaladinBuffStrategyFactoryInternal::bwisdom;
+        creators["bmight"] = &PaladinBuffStrategyFactoryInternal::bmight;
+        creators["bkings"] = &PaladinBuffStrategyFactoryInternal::bkings;
         creators["gblessing"] = &PaladinBuffStrategyFactoryInternal::gblessing;
     }
 
 private:
-    static Strategy* bhealth(PlayerbotAI* botAI) { return new PaladinBuffHealthStrategy(botAI); }
-    static Strategy* bmana(PlayerbotAI* botAI) { return new PaladinBuffManaStrategy(botAI); }
-    static Strategy* bdps(PlayerbotAI* botAI) { return new PaladinBuffDpsStrategy(botAI); }
-    static Strategy* bstats(PlayerbotAI* botAI) { return new PaladinBuffStatsStrategy(botAI); }
+    static Strategy* bsanc(PlayerbotAI* botAI) { return new PaladinBuffHealthStrategy(botAI); }
+    static Strategy* bwisdom(PlayerbotAI* botAI) { return new PaladinBuffManaStrategy(botAI); }
+    static Strategy* bmight(PlayerbotAI* botAI) { return new PaladinBuffDpsStrategy(botAI); }
+    static Strategy* bkings(PlayerbotAI* botAI) { return new PaladinBuffStatsStrategy(botAI); }
     static Strategy* gblessing(PlayerbotAI* botAI) { return new PaladinGreaterBlessingStrategy(botAI); }
 };
 
