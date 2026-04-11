@@ -71,9 +71,6 @@ public:
             case static_cast<uint32>(SunwellSpells::SPELL_TELEPORT_NORMAL_REALM):
                 RecordKalecgosNormalRealmEnter(player);
                 break;
-            case static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_EXHAUSTION):
-                RecordKalecgosSpectralExhaustion(player);
-                break;
             default:
                 break;
         }

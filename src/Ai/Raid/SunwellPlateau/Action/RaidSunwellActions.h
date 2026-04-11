@@ -10,6 +10,16 @@
 #include "AttackAction.h"
 #include "MovementActions.h"
 
+// General
+
+class SunwellPlateauEraseTrackersAction : public Action
+{
+public:
+    SunwellPlateauEraseTrackersAction(
+        PlayerbotAI* botAI, std::string const name = "sunwell plateau erase trackers") : Action(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 // Kalecgos & Sathrovarr the Corruptor
 
 class KalecgosTankPositionBossAction : public AttackAction

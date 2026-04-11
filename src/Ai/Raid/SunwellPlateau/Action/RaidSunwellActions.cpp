@@ -7,8 +7,49 @@
 #include "RaidSunwellHelpers.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
+#include "Timer.h"
 
 using namespace SunwellHelpers;
+
+// General
+
+bool SunwellPlateauEraseTrackersAction::Execute(Event /*event*/)
+{
+    Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos");
+    Unit* sathrovarr = AI_VALUE2(Unit*, "find target", "sathrovarr the corruptor");
+
+    bool erased = false;
+
+    if (!kalecgos && hasReachedKalecgosInitialRangedPosition.erase(bot->GetGUID()) > 0)
+        erased = true;
+
+    if (kalecgos || sathrovarr)
+        return false;
+
+    if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_REALM)))
+        return false;
+
+    auto realmStateItr = kalecgosRealmStates.find(bot->GetGUID());
+    if (realmStateItr != kalecgosRealmStates.end())
+    {
+        uint32 now = getMSTime();
+        if ((realmStateItr->second.lastEnterMs &&
+             getMSTimeDiff(realmStateItr->second.lastEnterMs, now) < KALECGOS_REALM_TRANSITION_GRACE_MS) ||
+            (realmStateItr->second.lastExitMs &&
+             getMSTimeDiff(realmStateItr->second.lastExitMs, now) < KALECGOS_REALM_TRANSITION_GRACE_MS))
+        {
+            return false;
+        }
+    }
+
+    if (kalecgosEncounterStates.erase(bot->GetInstanceId()) > 0)
+        erased = true;
+
+    if (kalecgosRealmStates.erase(bot->GetGUID()) > 0)
+        erased = true;
+
+    return erased;
+}
 
 // Kalecgos & Sathrovarr the Corruptor
 
@@ -70,6 +111,22 @@ bool KalecgosEnterSpectralRiftAction::Execute(Event /*event*/)
 // Kalecgos' Combat Reach is 10.5f
 bool KalecgosDisperseRangedAction::Execute(Event /*event*/)
 {
+    constexpr float arrivalDistance = 3.0f;
+    if (!HasReachedKalecgosInitialRangedPosition(bot))
+    {
+        const Position& initialPosition = KALECGOS_INITIAL_RANGED_POSITION;
+        float distanceToInitialPosition = bot->GetExactDist2d(initialPosition.GetPositionX(),
+                                                              initialPosition.GetPositionY());
+        if (distanceToInitialPosition > arrivalDistance)
+        {
+            return MoveTo(SUNWELL_MAP_ID, initialPosition.GetPositionX(), initialPosition.GetPositionY(),
+                          initialPosition.GetPositionZ(), false, false, false, false,
+                          MovementPriority::MOVEMENT_COMBAT, true, true);
+        }
+
+        SetKalecgosInitialRangedPositionReached(bot, true);
+    }
+
     constexpr float safeDistFromPlayer = 8.0f;
     if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
         return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer);

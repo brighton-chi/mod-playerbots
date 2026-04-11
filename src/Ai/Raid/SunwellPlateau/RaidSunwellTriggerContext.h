@@ -14,6 +14,10 @@ class RaidSunwellTriggerContext : public NamedObjectContext<Trigger>
 public:
     RaidSunwellTriggerContext()
     {
+        // General
+        creators["sunwell plateau bot is not in combat"] =
+            &RaidSunwellTriggerContext::sunwell_plateau_bot_is_not_in_combat;
+
         // Kalecgos & Sathrovarr
         creators["kalecgos boss engaged by tank"] =
             &RaidSunwellTriggerContext::kalecgos_boss_engaged_by_tank;
@@ -49,6 +53,10 @@ public:
     }
 
 private:
+    // General
+    static Trigger* sunwell_plateau_bot_is_not_in_combat(
+        PlayerbotAI* botAI) { return new SunwellPlateauBotIsNotInCombatTrigger(botAI); }
+
     // Kalecgos & Sathrovarr
     static Trigger* kalecgos_boss_engaged_by_tank(
         PlayerbotAI* botAI) { return new KalecgosBossEngagedByTankTrigger(botAI); }

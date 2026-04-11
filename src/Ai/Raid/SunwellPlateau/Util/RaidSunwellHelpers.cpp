@@ -18,10 +18,17 @@ namespace SunwellHelpers
     const Position KALECGOS_INITIAL_RANGED_POSITION = { 1704.634f, 938.080f, 53.076f };
 
     std::unordered_map<uint32, KalecgosEncounterState> kalecgosEncounterStates;
+    std::unordered_map<ObjectGuid, KalecgosRealmState> kalecgosRealmStates;
+    std::unordered_map<ObjectGuid, bool> hasReachedKalecgosInitialRangedPosition;
 
     KalecgosEncounterState& GetKalecgosEncounterState(uint32 instanceId)
     {
         return kalecgosEncounterStates[instanceId];
+    }
+
+    KalecgosRealmState& GetKalecgosRealmState(Player* bot)
+    {
+        return kalecgosRealmStates[bot->GetGUID()];
     }
 
     void ResetExpiredKalecgosRift(KalecgosEncounterState& state, uint32 now)
@@ -264,6 +271,26 @@ namespace SunwellHelpers
         return GetAssignedGroup(GetKalecgosEncounterState(bot->GetInstanceId()), bot->GetGUID());
     }
 
+    bool HasReachedKalecgosInitialRangedPosition(Player* bot)
+    {
+        if (bot->GetMapId() != SUNWELL_MAP_ID)
+            return false;
+
+        auto trackerItr = hasReachedKalecgosInitialRangedPosition.find(bot->GetGUID());
+        return trackerItr != hasReachedKalecgosInitialRangedPosition.end() && trackerItr->second;
+    }
+
+    void SetKalecgosInitialRangedPositionReached(Player* bot, bool reached)
+    {
+        if (bot->GetMapId() != SUNWELL_MAP_ID)
+            return;
+
+        if (reached)
+            hasReachedKalecgosInitialRangedPosition[bot->GetGUID()] = true;
+        else
+            hasReachedKalecgosInitialRangedPosition.erase(bot->GetGUID());
+    }
+
     bool IsKalecgosAssignedToActiveRift(PlayerbotAI* botAI, Player* bot, Player* candidate)
     {
         KalecgosEncounterState& state = GetKalecgosEncounterState(bot->GetInstanceId());
@@ -361,13 +388,11 @@ namespace SunwellHelpers
         if (bot->GetMapId() != SUNWELL_MAP_ID)
             return false;
 
-        auto stateItr = kalecgosEncounterStates.find(bot->GetInstanceId());
-        if (stateItr == kalecgosEncounterStates.end())
+        auto realmStateItr = kalecgosRealmStates.find(bot->GetGUID());
+        if (realmStateItr == kalecgosRealmStates.end())
             return false;
 
-        auto playerState = stateItr->second.playerStates.find(bot->GetGUID());
-        return playerState != stateItr->second.playerStates.end() &&
-               playerState->second.inSpectralRealm;
+        return realmStateItr->second.inSpectralRealm;
     }
 
     void RecordKalecgosSpectralBlastPortal(PlayerbotAI* botAI, Player* bot)
@@ -399,9 +424,10 @@ namespace SunwellHelpers
         ResetExpiredKalecgosRift(state, now);
         EnsureKalecgosGroupAssignments(botAI, bot);
 
-        KalecgosPlayerState& playerState = state.playerStates[bot->GetGUID()];
-        playerState.inSpectralRealm = true;
-        playerState.lastEnterMs = now;
+        KalecgosRealmState& realmState = GetKalecgosRealmState(bot);
+        realmState.inSpectralRealm = true;
+        realmState.lastEnterMs = now;
+        SetKalecgosInitialRangedPositionReached(bot, false);
 
         if (!state.activeRiftOpenedMs)
         {
@@ -423,18 +449,9 @@ namespace SunwellHelpers
         if (!bot || bot->GetMapId() != SUNWELL_MAP_ID)
             return;
 
-        KalecgosPlayerState& playerState = GetKalecgosEncounterState(
-            bot->GetInstanceId()).playerStates[bot->GetGUID()];
-        playerState.inSpectralRealm = false;
-        playerState.lastExitMs = getMSTime();
-    }
-
-    void RecordKalecgosSpectralExhaustion(Player* bot)
-    {
-        if (!bot || bot->GetMapId() != SUNWELL_MAP_ID)
-            return;
-
-        GetKalecgosEncounterState(bot->GetInstanceId()).playerStates[
-            bot->GetGUID()].lastExhaustionMs = getMSTime();
+        KalecgosRealmState& realmState = GetKalecgosRealmState(bot);
+        realmState.inSpectralRealm = false;
+        realmState.lastExitMs = getMSTime();
+        SetKalecgosInitialRangedPositionReached(bot, false);
     }
 }

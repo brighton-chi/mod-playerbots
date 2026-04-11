@@ -8,6 +8,16 @@
 
 #include "Trigger.h"
 
+// General
+
+class SunwellPlateauBotIsNotInCombatTrigger : public Trigger
+{
+public:
+    SunwellPlateauBotIsNotInCombatTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "sunwell plateau bot is not in combat") {}
+    bool IsActive() override;
+};
+
 // Kalecgos & Sathrovarr the Corruptor
 
 class KalecgosBossEngagedByTankTrigger : public Trigger

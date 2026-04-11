@@ -14,6 +14,10 @@ class RaidSunwellActionContext : public NamedObjectContext<Action>
 public:
     RaidSunwellActionContext()
     {
+        // General
+        creators["sunwell plateau erase trackers"] =
+            &RaidSunwellActionContext::sunwell_plateau_erase_trackers;
+
         // Kalecgos & Sathrovarr
         creators["kalecgos tank position boss"] =
             &RaidSunwellActionContext::kalecgos_tank_position_boss;
@@ -49,6 +53,10 @@ public:
     }
 
 private:
+    // General
+    static Action* sunwell_plateau_erase_trackers(
+        PlayerbotAI* botAI) { return new SunwellPlateauEraseTrackersAction(botAI); }
+
     // Kalecgos & Sathrovarr
     static Action* kalecgos_tank_position_boss(
         PlayerbotAI* botAI) { return new KalecgosTankPositionBossAction(botAI); }

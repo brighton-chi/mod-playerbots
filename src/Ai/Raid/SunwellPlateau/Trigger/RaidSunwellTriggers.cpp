@@ -10,6 +10,13 @@
 
 using namespace SunwellHelpers;
 
+// General
+
+bool SunwellPlateauBotIsNotInCombatTrigger::IsActive()
+{
+    return !bot->IsInCombat();
+}
+
 // Kalecgos & Sathrovarr the Corruptor
 
 bool KalecgosBossEngagedByTankTrigger::IsActive()

@@ -48,14 +48,11 @@ namespace SunwellHelpers
 
     constexpr uint8 KALECGOS_INVALID_GROUP = std::numeric_limits<uint8>::max();
     constexpr uint32 KALECGOS_RIFT_ENTRY_WINDOW_MS = 10000;
-    extern std::unordered_map<uint32, KalecgosEncounterState> kalecgosEncounterStates;
-    extern const Position KALECGOS_TANK_POSITION;
-    extern const Position KALECGOS_INITIAL_RANGED_POSITION;
-    struct KalecgosPlayerState
+    constexpr uint32 KALECGOS_REALM_TRANSITION_GRACE_MS = 3000;
+    struct KalecgosRealmState
     {
         uint32 lastEnterMs = 0;
         uint32 lastExitMs = 0;
-        uint32 lastExhaustionMs = 0;
         bool inSpectralRealm = false;
     };
     struct KalecgosEncounterState
@@ -66,21 +63,26 @@ namespace SunwellHelpers
         ObjectGuid blastedPlayerGuid = ObjectGuid::Empty;
         ObjectGuid firstEntrantGuid = ObjectGuid::Empty;
         std::unordered_map<ObjectGuid, uint8> playerToGroup;
-        std::unordered_map<ObjectGuid, KalecgosPlayerState> playerStates;
     };
+    extern std::unordered_map<uint32, KalecgosEncounterState> kalecgosEncounterStates;
+    extern std::unordered_map<ObjectGuid, KalecgosRealmState> kalecgosRealmStates;
+    extern std::unordered_map<ObjectGuid, bool> hasReachedKalecgosInitialRangedPosition;
+    extern const Position KALECGOS_TANK_POSITION;
+    extern const Position KALECGOS_INITIAL_RANGED_POSITION;
     bool IsKalecgosDecurser(PlayerbotAI* botAI, Player* bot);
     void EnsureKalecgosGroupAssignments(PlayerbotAI* botAI, Player* bot);
     uint8 GetKalecgosGroupAssignment(Player* bot);
     bool IsKalecgosAssignedToActiveRift(PlayerbotAI* botAI, Player* bot, Player* candidate);
     std::vector<Player*> GetKalecgosBotsAssignedToActiveRift(PlayerbotAI* botAI, Player* bot);
     Player* GetKalecgosCurrentTank(PlayerbotAI* botAI, Player* bot);
+    bool HasReachedKalecgosInitialRangedPosition(Player* bot);
+    void SetKalecgosInitialRangedPositionReached(Player* bot, bool reached);
     bool ShouldEnterKalecgosSpectralRift(PlayerbotAI* botAI, Player* bot, Player* candidate);
     bool ShouldEnterKalecgosSpectralRift(Player* bot);
     bool IsInKalecgosSpectralRealm(Player* bot);
     void RecordKalecgosSpectralBlastPortal(PlayerbotAI* botAI, Player* bot);
     void RecordKalecgosSpectralRealmEnter(PlayerbotAI* botAI, Player* bot);
     void RecordKalecgosNormalRealmEnter(Player* bot);
-    void RecordKalecgosSpectralExhaustion(Player* bot);
 }
 
 #endif

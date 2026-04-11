@@ -8,6 +8,10 @@
 
 void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
+    // General
+    triggers.push_back(new TriggerNode("sunwell plateau bot is not in combat", {
+        NextAction("sunwell plateau erase trackers", ACTION_EMERGENCY + 11) }));
+
     // Kalecgos & Sathrovarr the Corruptor
     triggers.push_back(new TriggerNode("kalecgos boss engaged by tank", {
         NextAction("kalecgos tank position boss", ACTION_RAID + 1) }));
