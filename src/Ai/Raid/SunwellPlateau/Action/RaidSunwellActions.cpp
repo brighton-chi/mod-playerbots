@@ -89,6 +89,18 @@ bool KalecgosTankPositionBossAction::Execute(Event event)
 
 bool KalecgosEnterSpectralRiftAction::Execute(Event /*event*/)
 {
+    if (Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos");
+        kalecgos && kalecgos->GetVictim() == bot)
+    {
+        Player* nextTank = GetKalecgosCurrentTank(botAI, bot);
+        if (!nextTank || nextTank == bot)
+            return false;
+
+        const Position& position = KALECGOS_TANK_POSITION;
+        if (nextTank->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 3.0f)
+            return false;
+    }
+
     GameObject* rift = bot->FindNearestGameObject(
         static_cast<uint32>(SunwellObjects::GO_SPECTRAL_RIFT), 50.0f, true);
     if (!rift)

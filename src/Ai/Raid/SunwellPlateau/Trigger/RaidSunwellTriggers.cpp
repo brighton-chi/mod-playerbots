@@ -33,7 +33,7 @@ bool KalecgosSpectralRiftIsOpenTrigger::IsActive()
         !AI_VALUE2(Unit*, "find target", "sathrovarr the corruptor"))
         return false;
 
-    if (!ShouldEnterKalecgosSpectralRift(bot))
+    if (!ShouldEnterKalecgosSpectralRift(botAI, bot))
         return false;
 
     return bot->FindNearestGameObject(
@@ -49,22 +49,19 @@ bool KalecgosBotsTakeSplashDamageTrigger::IsActive()
         !AI_VALUE2(Unit*, "find target", "sathrovarr the corruptor"))
         return false;
 
-    return !ShouldEnterKalecgosSpectralRift(bot);
+    return !ShouldEnterKalecgosSpectralRift(botAI, bot);
 }
 
 bool KalecgosBothBossesMustBeDefeatedTrigger::IsActive()
 {
-    if (botAI->IsHeal(bot))
-        return false;
-
-    if (bot->GetVictim())
+    if (botAI->IsHeal(bot) || bot->GetVictim())
         return false;
 
     if (!AI_VALUE2(Unit*, "find target", "kalecgos") &&
         !AI_VALUE2(Unit*, "find target", "sathrovarr the corruptor"))
         return false;
 
-    if (ShouldEnterKalecgosSpectralRift(bot))
+    if (ShouldEnterKalecgosSpectralRift(botAI, bot))
         return false;
 
     return GetKalecgosCurrentTank(botAI, bot) != bot;

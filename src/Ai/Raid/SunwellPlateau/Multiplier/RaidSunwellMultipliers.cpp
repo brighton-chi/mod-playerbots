@@ -69,7 +69,8 @@ float KalecgosControlMovementMultiplier::GetValue(Action* action)
 
 float KalecgosSaveBloodlustAndHeroismForSathrovarrMultiplier::GetValue(Action* action)
 {
-    if (!AI_VALUE2(Unit*, "find target", "kalecgos"))
+    Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos");
+    if (!kalecgos || kalecgos->GetHealthPct() < 40.0f)
         return 1.0f;
 
     if (dynamic_cast<CastHeroismAction*>(action) ||

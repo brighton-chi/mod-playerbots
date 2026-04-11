@@ -6,6 +6,7 @@
 #ifndef _PLAYERBOT_RAIDSUNWELLHELPERS_H
 #define _PLAYERBOT_RAIDSUNWELLHELPERS_H
 
+#include <array>
 #include <unordered_map>
 #include <vector>
 
@@ -46,6 +47,7 @@ namespace SunwellHelpers
 
     // Kalecgos & Sathrovarr the Corruptor
 
+    constexpr uint8 KALECGOS_GROUP_COUNT = 4;
     constexpr uint8 KALECGOS_INVALID_GROUP = std::numeric_limits<uint8>::max();
     constexpr uint32 KALECGOS_RIFT_ENTRY_WINDOW_MS = 10000;
     constexpr uint32 KALECGOS_REALM_TRANSITION_GRACE_MS = 3000;
@@ -62,6 +64,9 @@ namespace SunwellHelpers
         uint8 activeRiftGroup = KALECGOS_INVALID_GROUP;
         ObjectGuid blastedPlayerGuid = ObjectGuid::Empty;
         ObjectGuid firstEntrantGuid = ObjectGuid::Empty;
+        std::array<ObjectGuid, KALECGOS_GROUP_COUNT> groupTankGuids = {
+            ObjectGuid::Empty, ObjectGuid::Empty, ObjectGuid::Empty, ObjectGuid::Empty
+        };
         std::unordered_map<ObjectGuid, uint8> playerToGroup;
     };
     extern std::unordered_map<uint32, KalecgosEncounterState> kalecgosEncounterStates;
@@ -71,18 +76,18 @@ namespace SunwellHelpers
     extern const Position KALECGOS_INITIAL_RANGED_POSITION;
     bool IsKalecgosDecurser(PlayerbotAI* botAI, Player* bot);
     void EnsureKalecgosGroupAssignments(PlayerbotAI* botAI, Player* bot);
-    uint8 GetKalecgosGroupAssignment(Player* bot);
-    bool IsKalecgosAssignedToActiveRift(PlayerbotAI* botAI, Player* bot, Player* candidate);
-    std::vector<Player*> GetKalecgosBotsAssignedToActiveRift(PlayerbotAI* botAI, Player* bot);
     Player* GetKalecgosCurrentTank(PlayerbotAI* botAI, Player* bot);
     bool HasReachedKalecgosInitialRangedPosition(Player* bot);
     void SetKalecgosInitialRangedPositionReached(Player* bot, bool reached);
-    bool ShouldEnterKalecgosSpectralRift(PlayerbotAI* botAI, Player* bot, Player* candidate);
-    bool ShouldEnterKalecgosSpectralRift(Player* bot);
+    bool ShouldEnterKalecgosSpectralRift(PlayerbotAI* botAI, Player* bot);
     bool IsInKalecgosSpectralRealm(Player* bot);
     void RecordKalecgosSpectralBlastPortal(PlayerbotAI* botAI, Player* bot);
     void RecordKalecgosSpectralRealmEnter(PlayerbotAI* botAI, Player* bot);
     void RecordKalecgosNormalRealmEnter(Player* bot);
+
+    // Brutallus
+    extern const Position BRUTALLUS_MAIN_TANK_POSITION;
+    extern const Position BRUTALLUS_ASSIST_TANK_POSITION;
 }
 
 #endif
