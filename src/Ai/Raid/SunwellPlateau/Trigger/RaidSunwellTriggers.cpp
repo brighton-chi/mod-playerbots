@@ -69,9 +69,21 @@ bool KalecgosBothBossesMustBeDefeatedTrigger::IsActive()
 
 // Brutallus
 
-bool BrutallusTrigger::IsActive()
+bool BrutallusPullingBossTrigger::IsActive()
 {
-    return AI_VALUE2(Unit*, "find target", "brutallus");
+    if (bot->getClass() != CLASS_HUNTER)
+        return false;
+
+    Unit* brutallus = AI_VALUE2(Unit*, "find target", "brutallus");
+    return brutallus && brutallus->GetHealthPct() > 95.0f;
+}
+
+bool BrutallusEngagedByTanksTrigger::IsActive()
+{
+    if (!AI_VALUE2(Unit*, "find target", "brutallus"))
+        return false;
+
+    return botAI->IsMainTank(bot) || botAI->IsAssisTankOfIndex(bot, 0, true);
 }
 
 // Felmyst

@@ -181,8 +181,81 @@ bool KalecgosDetermineBossToAttackAction::Execute(Event /*event*/)
 
 // Brutallus
 
-bool BrutallusAction::Execute(Event /*event*/)
+bool BrutallusMisdirectBossToMainTankAction::Execute(Event /*event*/)
 {
+    Unit* brutallus = AI_VALUE2(Unit*, "find target", "brutallus");
+    if (!brutallus)
+        return false;
+
+    Player* mainTank = GetGroupMainTank(botAI, bot);
+    if (!mainTank)
+        return false;
+
+    if (botAI->CanCastSpell("misdirection", mainTank))
+        return botAI->CastSpell("misdirection", mainTank);
+
+    if (bot->HasAura(static_cast<uint32>(ZulAmanSpells::SPELL_MISDIRECTION)) &&
+        botAI->CanCastSpell("steady shot", brutallus))
+        return botAI->CastSpell("steady shot", brutallus);
+
+    return false;
+}
+
+bool BrutallusTanksHandleBossAction::Execute(Event /*event*/)
+{
+    Unit* brutallus = AI_VALUE2(Unit*, "find target", "brutallus");
+    if (!brutallus)
+        return false;
+
+    if (bot->GetVictim() != brutallus)
+        return Attack(brutallus);
+
+    Player* mainTank = GetGroupMainTank(botAI, bot);
+    Player* assistTank = GetGroupAssistTank(botAI, bot, 0);
+    Aura* mainTankAura = nullptr;
+    Aura* assistTankAura = nullptr;
+
+    if (mainTank && mainTank->IsAlive())
+    {
+        mainTankAura = mainTank->GetAura(
+            static_cast<uint32>(SunwellSpells::SPELL_METEOR_SLASH));
+    }
+
+    if (assistTank && assistTank->IsAlive())
+    {
+        assistTankAura = assistTank->GetAura(
+            static_cast<uint32>(SunwellSpells::SPELL_METEOR_SLASH));
+    }
+
+    bool isMainTank = botAI->IsMainTank(bot);
+    const Position* position = &BRUTALLUS_ASSIST_TANK_POSITION;
+    if (isMainTank)
+        position = &BRUTALLUS_MAIN_TANK_POSITION;
+
+    if (bot->GetExactDist2d(position->GetPositionX(), position->GetPositionY()) > 2.0f)
+    {
+        return MoveTo(SUNWELL_MAP_ID, position->GetPositionX(), position->GetPositionY(),
+                      position->GetPositionZ(), false, false, false, false,
+                      MovementPriority::MOVEMENT_COMBAT, true, false);
+    }
+
+    if (brutallus->GetVictim() == bot)
+        return false;
+
+    if (isMainTank &&
+        ((!assistTank || !assistTank->IsAlive()) ||
+         (assistTankAura && assistTankAura->GetStackAmount() > 3) ||
+         (assistTankAura && assistTankAura->GetStackAmount() == 0 &&
+          mainTankAura && mainTankAura->GetStackAmount() == 0)))
+    {
+        return botAI->DoSpecificAction("taunt spell", Event(), true);
+    }
+    else if ((!mainTank || !mainTank->IsAlive()) ||
+             (mainTankAura && mainTankAura->GetStackAmount() > 3))
+    {
+        return botAI->DoSpecificAction("taunt spell", Event(), true);
+    }
+
     return false;
 }
 

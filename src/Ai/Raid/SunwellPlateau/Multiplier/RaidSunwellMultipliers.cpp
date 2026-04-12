@@ -13,6 +13,7 @@
 #include "MageActions.h"
 #include "PaladinActions.h"
 #include "PartyMemberToDispel.h"
+#include "ReachTargetActions.h"
 #include "RogueActions.h"
 #include "ShamanActions.h"
 #include "WarlockActions.h"
@@ -20,6 +21,21 @@
 using namespace SunwellHelpers;
 
 // Kalecgos & Sathrovarr the Corruptor
+
+float KalecgosControlMisdirectionMultiplier::GetValue(Action* action)
+{
+    if (bot->getClass() != CLASS_HUNTER)
+        return 1.0f;
+
+    if (!AI_VALUE2(Unit*, "find target", "kalecgos") &&
+        !AI_VALUE2(Unit*, "find target", "sathrovarr the corruptor"))
+        return 1.0f;
+
+     if (dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
+         return 0.0f;
+
+    return 1.0f;
+}
 
 float KalecgosWaitToDecurseMultiplier::GetValue(Action* action)
 {
@@ -103,10 +119,32 @@ float KalecgosSaveBloodlustAndHeroismForSathrovarrMultiplier::GetValue(Action* a
 
 // Brutallus
 
-float BrutallusMultiplier::GetValue(Action* action)
+float BrutallusControlMisdirectionMultiplier::GetValue(Action* action)
+{
+    if (bot->getClass() != CLASS_HUNTER ||
+        !AI_VALUE2(Unit*, "find target", "brutallus"))
+        return 1.0f;
+
+     if (dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
+         return 0.0f;
+
+    return 1.0f;
+}
+
+float BrutallusControlMovementMultiplier::GetValue(Action* action)
 {
     if (!AI_VALUE2(Unit*, "find target", "brutallus"))
         return 1.0f;
+
+    if (dynamic_cast<MovementAction*>(action) &&
+        !dynamic_cast<AttackAction*>(action))
+        return 0.0f;
+
+    if (dynamic_cast<CastDisengageAction*>(action) ||
+        dynamic_cast<CastBlinkBackAction*>(action) ||
+        dynamic_cast<ReachTargetAction*>(action) ||
+        dynamic_cast<CastReachTargetSpellAction*>(action))
+        return 0.0f;
 
     return 1.0f;
 }

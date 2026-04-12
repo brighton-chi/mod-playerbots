@@ -10,6 +10,14 @@
 
 // Kalecgos & Sathrovarr the Corruptor
 
+class KalecgosControlMisdirectionMultiplier : public Multiplier
+{
+public:
+    KalecgosControlMisdirectionMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "kalecgos control misdirection") {}
+    virtual float GetValue(Action* action);
+};
+
 class KalecgosWaitToDecurseMultiplier : public Multiplier
 {
 public:
@@ -36,11 +44,19 @@ public:
 
 // Brutallus
 
-class BrutallusMultiplier : public Multiplier
+class BrutallusControlMisdirectionMultiplier : public Multiplier
 {
 public:
-    BrutallusMultiplier(PlayerbotAI* botAI) : Multiplier(
-        botAI, "brutallus") {}
+    BrutallusControlMisdirectionMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "brutallus control misdirection") {}
+    virtual float GetValue(Action* action);
+};
+
+class BrutallusControlMovementMultiplier : public Multiplier
+{
+public:
+    BrutallusControlMovementMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "brutallus control movement") {}
     virtual float GetValue(Action* action);
 };
 

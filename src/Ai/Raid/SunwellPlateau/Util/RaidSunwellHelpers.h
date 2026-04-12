@@ -27,6 +27,10 @@ namespace SunwellHelpers
         SPELL_TELEPORT_NORMAL_REALM   = 46020,
         SPELL_SPECTRAL_REALM          = 46021,
 
+        // Brutallus
+        SPELL_METEOR_SLASH                 = 45150,
+        SPELL_BURN_1                    = 45141,
+
         // Hunter
         SPELL_MISDIRECTION              = 35079,
     };

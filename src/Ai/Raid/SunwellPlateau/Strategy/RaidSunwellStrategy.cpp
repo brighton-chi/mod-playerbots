@@ -26,8 +26,11 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("kalecgos determine boss to attack", ACTION_RAID + 2) }));
 
     // Brutallus
-    triggers.push_back(new TriggerNode("brutallus", {
-        NextAction("brutallus", ACTION_RAID + 1) }));
+    triggers.push_back(new TriggerNode("brutallus pulling boss", {
+        NextAction("brutallus misdirect boss to main tank", ACTION_RAID + 2) }));
+
+    triggers.push_back(new TriggerNode("brutallus engaged by tanks", {
+        NextAction("brutallus tanks handle boss", ACTION_RAID + 1) }));
 
     // Felmyst
     triggers.push_back(new TriggerNode("felmyst", {
@@ -49,12 +52,14 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     // Kalecgos & Sathrovarr the Corruptor
+    multipliers.push_back(new KalecgosControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new KalecgosWaitToDecurseMultiplier(botAI));
     multipliers.push_back(new KalecgosControlMovementMultiplier(botAI));
     multipliers.push_back(new KalecgosSaveBloodlustAndHeroismForSathrovarrMultiplier(botAI));
 
     // Brutallus
-    multipliers.push_back(new BrutallusMultiplier(botAI));
+    multipliers.push_back(new BrutallusControlMisdirectionMultiplier(botAI));
+    multipliers.push_back(new BrutallusControlMovementMultiplier(botAI));
 
     // Felmyst
     multipliers.push_back(new FelmystMultiplier(botAI));

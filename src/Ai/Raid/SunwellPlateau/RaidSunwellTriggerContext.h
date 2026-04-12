@@ -32,8 +32,11 @@ public:
             &RaidSunwellTriggerContext::kalecgos_both_bosses_must_be_defeated;
 
         // Brutallus
-        creators["brutallus"] =
-            &RaidSunwellTriggerContext::brutallus;
+        creators["brutallus pulling boss"] =
+            &RaidSunwellTriggerContext::brutallus_pulling_boss;
+
+        creators["brutallus engaged by tanks"] =
+            &RaidSunwellTriggerContext::brutallus_engaged_by_tanks;
 
         // Felmyst
         creators["felmyst"] =
@@ -71,8 +74,11 @@ private:
         PlayerbotAI* botAI) { return new KalecgosBothBossesMustBeDefeatedTrigger(botAI); }
 
     // Brutallus
-    static Trigger* brutallus(
-        PlayerbotAI* botAI) { return new BrutallusTrigger(botAI); }
+    static Trigger* brutallus_pulling_boss(
+        PlayerbotAI* botAI) { return new BrutallusPullingBossTrigger(botAI); }
+
+    static Trigger* brutallus_engaged_by_tanks(
+        PlayerbotAI* botAI) { return new BrutallusEngagedByTanksTrigger(botAI); }
 
     // Felmyst
     static Trigger* felmyst(

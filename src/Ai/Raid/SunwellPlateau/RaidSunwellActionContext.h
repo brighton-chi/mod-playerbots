@@ -32,8 +32,11 @@ public:
             &RaidSunwellActionContext::kalecgos_determine_boss_to_attack;
 
         // Brutallus
-        creators["brutallus"] =
-            &RaidSunwellActionContext::brutallus;
+        creators["brutallus misdirect boss to main tank"] =
+            &RaidSunwellActionContext::brutallus_misdirect_boss_to_main_tank;
+
+        creators["brutallus tanks handle boss"] =
+            &RaidSunwellActionContext::brutallus_tanks_handle_boss;
 
         // Felmyst
         creators["felmyst"] =
@@ -71,8 +74,11 @@ private:
         PlayerbotAI* botAI) { return new KalecgosDetermineBossToAttackAction(botAI); }
 
     // Brutallus
-    static Action* brutallus(
-        PlayerbotAI* botAI) { return new BrutallusAction(botAI); }
+    static Action* brutallus_misdirect_boss_to_main_tank(
+        PlayerbotAI* botAI) { return new BrutallusMisdirectBossToMainTankAction(botAI); }
+
+    static Action* brutallus_tanks_handle_boss(
+        PlayerbotAI* botAI) { return new BrutallusTanksHandleBossAction(botAI); }
 
     // Felmyst
     static Action* felmyst(

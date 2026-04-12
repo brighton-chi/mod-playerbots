@@ -56,11 +56,19 @@ public:
 
 // Brutallus
 
-class BrutallusAction : public MovementAction
+class BrutallusMisdirectBossToMainTankAction : public AttackAction
 {
 public:
-    BrutallusAction(
-        PlayerbotAI* botAI, std::string const name = "brutallus") : MovementAction(botAI, name) {}
+    BrutallusMisdirectBossToMainTankAction(
+        PlayerbotAI* botAI, std::string const name = "brutallus misdirect boss to main tank") : AttackAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class BrutallusTanksHandleBossAction : public AttackAction
+{
+public:
+    BrutallusTanksHandleBossAction(
+        PlayerbotAI* botAI, std::string const name = "brutallus tanks handle boss") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 

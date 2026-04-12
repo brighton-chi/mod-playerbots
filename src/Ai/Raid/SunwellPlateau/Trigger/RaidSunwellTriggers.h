@@ -54,11 +54,19 @@ public:
 
 // Brutallus
 
-class BrutallusTrigger : public Trigger
+class BrutallusPullingBossTrigger : public Trigger
 {
 public:
-    BrutallusTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "brutallus") {}
+    BrutallusPullingBossTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "brutallus pulling boss") {}
+    bool IsActive() override;
+};
+
+class BrutallusEngagedByTanksTrigger : public Trigger
+{
+public:
+    BrutallusEngagedByTanksTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "brutallus engaged by tanks") {}
     bool IsActive() override;
 };
 
