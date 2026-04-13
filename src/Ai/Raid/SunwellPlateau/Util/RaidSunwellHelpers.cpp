@@ -17,9 +17,7 @@ namespace SunwellHelpers
     {
         bool isMainTankGroup = false;
         bool isInnerArc = false;
-        bool isPositiveSide = false;
         uint8 arcPositionIndex = 0;
-        uint8 sideSlotIndex = 0;
     };
 
     float GetCenteredArcSlotAngleOffset(uint8 slotIndex, uint8 slotCount, float arcWidth)
@@ -61,8 +59,6 @@ namespace SunwellHelpers
         slotInfo.isInnerArc = groupPositionIndex < BRUTALLUS_RANGED_POSITIONS_PER_ARC;
         slotInfo.arcPositionIndex = slotInfo.isInnerArc ? groupPositionIndex :
             groupPositionIndex - BRUTALLUS_RANGED_POSITIONS_PER_ARC;
-        slotInfo.isPositiveSide = slotInfo.arcPositionIndex % 2 == 0;
-        slotInfo.sideSlotIndex = slotInfo.arcPositionIndex / 2;
         return true;
     }
 
@@ -716,9 +712,9 @@ namespace SunwellHelpers
 
         float burnAngleStep = 2.0f * std::asin(BRUTALLUS_BURN_SPACING / (2.0f * burnRadius));
         float burnAngleOffset = BRUTALLUS_METEOR_SLASH_HALF_ANGLE +
-            (static_cast<float>(slotInfo.sideSlotIndex) + 0.5f) * burnAngleStep;
+            (static_cast<float>(slotInfo.arcPositionIndex) + 0.5f) * burnAngleStep;
 
-        if (!slotInfo.isPositiveSide)
+        if (slotInfo.isMainTankGroup)
             burnAngleOffset = -burnAngleOffset;
 
         position = GetBrutallusPositionAtAngle(brutallus,

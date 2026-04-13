@@ -29,9 +29,7 @@ namespace SunwellHelpers
 
         // Brutallus
         SPELL_METEOR_SLASH                 = 45150,
-        SPELL_BURN_CAST                 = 45141,
-        SPELL_BURN_DAMAGE               = 46394,
-        SPELL_BURN_SPREAD               = 45151,
+        SPELL_BURN               = 46394,
 
         // Hunter
         SPELL_MISDIRECTION              = 35079,
@@ -101,7 +99,7 @@ namespace SunwellHelpers
     void RecordKalecgosNormalRealmEnter(Player* bot);
 
     // Brutallus
-    constexpr float BRUTALLUS_TANK_RADIUS = 20.25f;
+    constexpr float BRUTALLUS_TANK_RADIUS = 20.0f;
     constexpr float BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET = 2.0f * M_PI / 3.0f;
     constexpr float BRUTALLUS_MELEE_ARC_ANGLE = 2.0f * M_PI / 3.0f;
     constexpr float BRUTALLUS_MELEE_ARC_CENTER_ANGLE_OFFSET = 4.0f * M_PI / 3.0f;

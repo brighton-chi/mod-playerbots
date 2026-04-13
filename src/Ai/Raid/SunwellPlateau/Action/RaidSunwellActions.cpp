@@ -271,8 +271,9 @@ bool BrutallusTanksHandleBossAction::Execute(Event event)
     {
         return botAI->DoSpecificAction("taunt spell", event, true);
     }
-    else if ((!mainTank || !mainTank->IsAlive()) ||
-             (mainTankAura && mainTankAura->GetStackAmount() >= 3))
+    else if (!isMainTank &&
+             ((!mainTank || !mainTank->IsAlive()) ||
+              (mainTankAura && mainTankAura->GetStackAmount() >= 3)))
     {
         return botAI->DoSpecificAction("taunt spell", event, true);
     }
@@ -296,13 +297,11 @@ bool BrutallusPositionMeleeAction::Execute(Event /*event*/)
     if (!TryGetBrutallusPositionIndex(botAI, bot, false, meleeIndex))
         return false;
 
-    constexpr float positionTolerance = 2.0f;
-
     Position position;
     if (!TryGetBrutallusMeleePosition(brutallus, meleeIndex, bot->GetPositionZ(), position))
         return false;
 
-    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > positionTolerance)
+    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
     {
         return MoveTo(SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
                       position.GetPositionZ(), false, false, false, false,
@@ -335,12 +334,11 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
 
     hasReachedBrutallusRangedBurnStepPosition.erase(bot->GetGUID());
 
-    constexpr float positionTolerance = 2.0f;
     Position position;
     if (!TryGetBrutallusRangedPosition(brutallus, rangedIndex, bot->GetPositionZ(), position))
         return false;
 
-    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > positionTolerance)
+    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
     {
         return MoveTo(SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
                       position.GetPositionZ(), false, false, false, false,
@@ -362,7 +360,7 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
     if (botAI->IsMelee(bot))
         return false;
 
-    if (!bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_BURN_DAMAGE)))
+    if (!bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_BURN)))
     {
         hasReachedBrutallusRangedBurnStepPosition.erase(bot->GetGUID());
         return false;
@@ -372,7 +370,6 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
     if (!TryGetBrutallusPositionIndex(botAI, bot, true, rangedIndex))
         return false;
 
-    constexpr float positionTolerance = 2.0f;
     bool hasReachedBurnStep = hasReachedBrutallusRangedBurnStepPosition[bot->GetGUID()];
     if (!hasReachedBurnStep)
     {
@@ -380,7 +377,7 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
         if (!TryGetBrutallusRangedBurnStepPosition(brutallus, rangedIndex, bot->GetPositionZ(), stepPosition))
             return false;
 
-        if (bot->GetExactDist2d(stepPosition.GetPositionX(), stepPosition.GetPositionY()) > positionTolerance)
+        if (bot->GetExactDist2d(stepPosition.GetPositionX(), stepPosition.GetPositionY()) > 2.0f)
         {
             return MoveTo(SUNWELL_MAP_ID, stepPosition.GetPositionX(), stepPosition.GetPositionY(),
                           stepPosition.GetPositionZ(), false, false, false, false,
@@ -395,7 +392,7 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
     if (!TryGetBrutallusRangedBurnPosition(brutallus, rangedIndex, bot->GetPositionZ(), position))
         return false;
 
-    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > positionTolerance)
+    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
     {
         return MoveTo(SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
                       position.GetPositionZ(), false, false, false, false,

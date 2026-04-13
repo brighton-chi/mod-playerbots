@@ -6,6 +6,7 @@
 #include "RaidSunwellMultipliers.h"
 #include "RaidSunwellActions.h"
 #include "RaidSunwellHelpers.h"
+#include "ChooseTargetActions.h"
 #include "DKActions.h"
 #include "DruidActions.h"
 #include "DruidBearActions.h"
@@ -158,14 +159,13 @@ float BrutallusNoTankingWithTooManyMeteorStacksMultiplier::GetValue(Action* acti
     if (!AI_VALUE2(Unit*, "find target", "brutallus"))
         return 1.0f;
 
-    Aura* aura = bot->GetAura(static_cast<uint32>(SunwellSpells::SPELL_METEOR_SLASH));
-    if (aura && aura->GetStackAmount() == 0)
-        return 1.0f;
-
     if (dynamic_cast<CastTauntAction*>(action) ||
         dynamic_cast<CastGrowlAction*>(action) ||
         dynamic_cast<CastHandOfReckoningAction*>(action) ||
         dynamic_cast<CastDarkCommandAction*>(action))
+        return 0.0f;
+
+    if (bot->GetVictim() != nullptr && dynamic_cast<TankAssistAction*>(action))
         return 0.0f;
 
     return 1.0f;
