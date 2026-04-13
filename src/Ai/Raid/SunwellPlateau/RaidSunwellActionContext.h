@@ -15,8 +15,8 @@ public:
     RaidSunwellActionContext()
     {
         // General
-        creators["sunwell plateau erase trackers"] =
-            &RaidSunwellActionContext::sunwell_plateau_erase_trackers;
+        creators["sunwell plateau erase timers and trackers"] =
+            &RaidSunwellActionContext::sunwell_plateau_erase_timers_and_trackers;
 
         // Kalecgos & Sathrovarr
         creators["kalecgos tank position boss"] =
@@ -38,6 +38,15 @@ public:
         creators["brutallus tanks handle boss"] =
             &RaidSunwellActionContext::brutallus_tanks_handle_boss;
 
+        creators["brutallus position melee"] =
+            &RaidSunwellActionContext::brutallus_position_melee;
+
+        creators["brutallus position ranged"] =
+            &RaidSunwellActionContext::brutallus_position_ranged;
+
+        creators["brutallus handle burn"] =
+            &RaidSunwellActionContext::brutallus_handle_burn;
+
         // Felmyst
         creators["felmyst"] =
             &RaidSunwellActionContext::felmyst;
@@ -57,8 +66,8 @@ public:
 
 private:
     // General
-    static Action* sunwell_plateau_erase_trackers(
-        PlayerbotAI* botAI) { return new SunwellPlateauEraseTrackersAction(botAI); }
+    static Action* sunwell_plateau_erase_timers_and_trackers(
+        PlayerbotAI* botAI) { return new SunwellPlateauEraseTimersAndTrackersAction(botAI); }
 
     // Kalecgos & Sathrovarr
     static Action* kalecgos_tank_position_boss(
@@ -79,6 +88,15 @@ private:
 
     static Action* brutallus_tanks_handle_boss(
         PlayerbotAI* botAI) { return new BrutallusTanksHandleBossAction(botAI); }
+
+    static Action* brutallus_position_melee(
+        PlayerbotAI* botAI) { return new BrutallusPositionMeleeAction(botAI); }
+
+    static Action* brutallus_position_ranged(
+        PlayerbotAI* botAI) { return new BrutallusPositionRangedAction(botAI); }
+
+    static Action* brutallus_handle_burn(
+        PlayerbotAI* botAI) { return new BrutallusHandleBurnAction(botAI); }
 
     // Felmyst
     static Action* felmyst(

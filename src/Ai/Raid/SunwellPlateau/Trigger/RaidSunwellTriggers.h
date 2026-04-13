@@ -62,11 +62,35 @@ public:
     bool IsActive() override;
 };
 
-class BrutallusEngagedByTanksTrigger : public Trigger
+class BrutallusBossEngagedByTanksTrigger : public Trigger
 {
 public:
-    BrutallusEngagedByTanksTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "brutallus engaged by tanks") {}
+    BrutallusBossEngagedByTanksTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "brutallus boss engaged by tanks") {}
+    bool IsActive() override;
+};
+
+class BrutallusBossEngagedByMeleeTrigger : public Trigger
+{
+public:
+    BrutallusBossEngagedByMeleeTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "brutallus boss engaged by melee") {}
+    bool IsActive() override;
+};
+
+class BrutallusBossEngagedByRangedTrigger : public Trigger
+{
+public:
+    BrutallusBossEngagedByRangedTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "brutallus boss engaged by ranged") {}
+    bool IsActive() override;
+};
+
+class BrutallusBotIsBurningTrigger : public Trigger
+{
+public:
+    BrutallusBotIsBurningTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "brutallus bot is burning") {}
     bool IsActive() override;
 };
 

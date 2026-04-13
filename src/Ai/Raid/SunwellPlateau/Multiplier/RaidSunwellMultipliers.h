@@ -60,6 +60,14 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class BrutallusNoTankingWithTooManyMeteorStacksMultiplier : public Multiplier
+{
+public:
+    BrutallusNoTankingWithTooManyMeteorStacksMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "brutallus no tanking with too many meteor stacks") {}
+    virtual float GetValue(Action* action);
+};
+
 // Felmyst
 
 class FelmystMultiplier : public Multiplier

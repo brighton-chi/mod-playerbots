@@ -10,7 +10,7 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // General
     triggers.push_back(new TriggerNode("sunwell plateau bot is not in combat", {
-        NextAction("sunwell plateau erase trackers", ACTION_EMERGENCY + 11) }));
+        NextAction("sunwell plateau erase timers and trackers", ACTION_EMERGENCY + 11) }));
 
     // Kalecgos & Sathrovarr the Corruptor
     triggers.push_back(new TriggerNode("kalecgos boss engaged by tank", {
@@ -29,8 +29,17 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("brutallus pulling boss", {
         NextAction("brutallus misdirect boss to main tank", ACTION_RAID + 2) }));
 
-    triggers.push_back(new TriggerNode("brutallus engaged by tanks", {
+    triggers.push_back(new TriggerNode("brutallus boss engaged by tanks", {
         NextAction("brutallus tanks handle boss", ACTION_RAID + 1) }));
+
+    triggers.push_back(new TriggerNode("brutallus boss engaged by melee", {
+        NextAction("brutallus position melee", ACTION_RAID + 1) }));
+
+    triggers.push_back(new TriggerNode("brutallus boss engaged by ranged", {
+        NextAction("brutallus position ranged", ACTION_RAID + 1) }));
+
+    triggers.push_back(new TriggerNode("brutallus bot is burning", {
+        NextAction("brutallus handle burn", ACTION_EMERGENCY + 1) }));
 
     // Felmyst
     triggers.push_back(new TriggerNode("felmyst", {
@@ -60,6 +69,7 @@ void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     // Brutallus
     multipliers.push_back(new BrutallusControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new BrutallusControlMovementMultiplier(botAI));
+    multipliers.push_back(new BrutallusNoTankingWithTooManyMeteorStacksMultiplier(botAI));
 
     // Felmyst
     multipliers.push_back(new FelmystMultiplier(botAI));

@@ -12,11 +12,11 @@
 
 // General
 
-class SunwellPlateauEraseTrackersAction : public Action
+class SunwellPlateauEraseTimersAndTrackersAction : public Action
 {
 public:
-    SunwellPlateauEraseTrackersAction(
-        PlayerbotAI* botAI, std::string const name = "sunwell plateau erase trackers") : Action(botAI, name) {}
+    SunwellPlateauEraseTimersAndTrackersAction(
+        PlayerbotAI* botAI, std::string const name = "sunwell plateau erase timers and trackers") : Action(botAI, name) {}
     bool Execute(Event event) override;
 };
 
@@ -70,6 +70,33 @@ public:
     BrutallusTanksHandleBossAction(
         PlayerbotAI* botAI, std::string const name = "brutallus tanks handle boss") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
+};
+
+class BrutallusPositionMeleeAction : public MovementAction
+{
+public:
+    BrutallusPositionMeleeAction(
+        PlayerbotAI* botAI, std::string const name = "brutallus position melee") : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class BrutallusPositionRangedAction : public MovementAction
+{
+public:
+    BrutallusPositionRangedAction(
+        PlayerbotAI* botAI, std::string const name = "brutallus position ranged") : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class BrutallusHandleBurnAction : public MovementAction
+{
+public:
+    BrutallusHandleBurnAction(
+        PlayerbotAI* botAI, std::string const name = "brutallus handle burn") : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+
+private:
+    bool RemoveBurnWithCooldown(Player* bot);
 };
 
 // Felmyst

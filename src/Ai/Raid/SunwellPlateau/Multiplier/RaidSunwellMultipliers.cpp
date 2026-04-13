@@ -8,6 +8,7 @@
 #include "RaidSunwellHelpers.h"
 #include "DKActions.h"
 #include "DruidActions.h"
+#include "DruidBearActions.h"
 #include "FollowActions.h"
 #include "HunterActions.h"
 #include "MageActions.h"
@@ -17,6 +18,7 @@
 #include "RogueActions.h"
 #include "ShamanActions.h"
 #include "WarlockActions.h"
+#include "WarriorActions.h"
 
 using namespace SunwellHelpers;
 
@@ -136,14 +138,34 @@ float BrutallusControlMovementMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "brutallus"))
         return 1.0f;
 
-    if (dynamic_cast<MovementAction*>(action) &&
-        !dynamic_cast<AttackAction*>(action))
-        return 0.0f;
-
     if (dynamic_cast<CastDisengageAction*>(action) ||
         dynamic_cast<CastBlinkBackAction*>(action) ||
         dynamic_cast<ReachTargetAction*>(action) ||
-        dynamic_cast<CastReachTargetSpellAction*>(action))
+        dynamic_cast<CastReachTargetSpellAction*>(action) ||
+        dynamic_cast<CombatFormationMoveAction*>(action) ||
+        dynamic_cast<FollowAction*>(action) ||
+        dynamic_cast<FleeAction*>(action))
+        return 0.0f;
+
+    return 1.0f;
+}
+
+float BrutallusNoTankingWithTooManyMeteorStacksMultiplier::GetValue(Action* action)
+{
+    if (!botAI->IsTank(bot))
+        return 1.0f;
+
+    if (!AI_VALUE2(Unit*, "find target", "brutallus"))
+        return 1.0f;
+
+    Aura* aura = bot->GetAura(static_cast<uint32>(SunwellSpells::SPELL_METEOR_SLASH));
+    if (aura && aura->GetStackAmount() == 0)
+        return 1.0f;
+
+    if (dynamic_cast<CastTauntAction*>(action) ||
+        dynamic_cast<CastGrowlAction*>(action) ||
+        dynamic_cast<CastHandOfReckoningAction*>(action) ||
+        dynamic_cast<CastDarkCommandAction*>(action))
         return 0.0f;
 
     return 1.0f;

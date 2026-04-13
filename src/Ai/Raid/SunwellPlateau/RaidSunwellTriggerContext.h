@@ -35,8 +35,17 @@ public:
         creators["brutallus pulling boss"] =
             &RaidSunwellTriggerContext::brutallus_pulling_boss;
 
-        creators["brutallus engaged by tanks"] =
-            &RaidSunwellTriggerContext::brutallus_engaged_by_tanks;
+        creators["brutallus boss engaged by tanks"] =
+            &RaidSunwellTriggerContext::brutallus_boss_engaged_by_tanks;
+
+        creators["brutallus boss engaged by melee"] =
+            &RaidSunwellTriggerContext::brutallus_boss_engaged_by_melee;
+
+        creators["brutallus boss engaged by ranged"] =
+            &RaidSunwellTriggerContext::brutallus_boss_engaged_by_ranged;
+
+        creators["brutallus bot is burning"] =
+            &RaidSunwellTriggerContext::brutallus_bot_is_burning;
 
         // Felmyst
         creators["felmyst"] =
@@ -77,8 +86,17 @@ private:
     static Trigger* brutallus_pulling_boss(
         PlayerbotAI* botAI) { return new BrutallusPullingBossTrigger(botAI); }
 
-    static Trigger* brutallus_engaged_by_tanks(
-        PlayerbotAI* botAI) { return new BrutallusEngagedByTanksTrigger(botAI); }
+    static Trigger* brutallus_boss_engaged_by_tanks(
+        PlayerbotAI* botAI) { return new BrutallusBossEngagedByTanksTrigger(botAI); }
+
+    static Trigger* brutallus_boss_engaged_by_melee(
+        PlayerbotAI* botAI) { return new BrutallusBossEngagedByMeleeTrigger(botAI); }
+
+    static Trigger* brutallus_boss_engaged_by_ranged(
+        PlayerbotAI* botAI) { return new BrutallusBossEngagedByRangedTrigger(botAI); }
+
+    static Trigger* brutallus_bot_is_burning(
+        PlayerbotAI* botAI) { return new BrutallusBotIsBurningTrigger(botAI); }
 
     // Felmyst
     static Trigger* felmyst(

@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cmath>
 
 #include "RaidSunwellHelpers.h"
 #include "RaidBossHelpers.h"
@@ -12,6 +13,59 @@
 
 namespace SunwellHelpers
 {
+    struct BrutallusRangedSlotInfo
+    {
+        bool isMainTankGroup = false;
+        bool isInnerArc = false;
+        bool isPositiveSide = false;
+        uint8 arcPositionIndex = 0;
+        uint8 sideSlotIndex = 0;
+    };
+
+    float GetCenteredArcSlotAngleOffset(uint8 slotIndex, uint8 slotCount, float arcWidth)
+    {
+        if (slotCount <= 1)
+            return 0.0f;
+
+        float angleStep = arcWidth / static_cast<float>(slotCount - 1);
+        if (slotCount % 2 == 1)
+        {
+            if (slotIndex == 0)
+                return 0.0f;
+
+            uint8 stepIndex = (slotIndex + 1) / 2;
+            float angleOffset = angleStep * stepIndex;
+            if (slotIndex % 2 == 0)
+                angleOffset = -angleOffset;
+
+            return angleOffset;
+        }
+
+        float halfStep = angleStep / 2.0f;
+        uint8 pairIndex = slotIndex / 2;
+        float angleOffset = halfStep + angleStep * pairIndex;
+        if (slotIndex % 2 == 1)
+            angleOffset = -angleOffset;
+
+        return angleOffset;
+    }
+
+    bool TryGetBrutallusRangedSlotInfo(uint8 rangedIndex, BrutallusRangedSlotInfo& slotInfo)
+    {
+        if (rangedIndex >= BRUTALLUS_TOTAL_RANGED_POSITIONS)
+            return false;
+
+        slotInfo.isMainTankGroup = rangedIndex % 2 == 0;
+
+        uint8 groupPositionIndex = rangedIndex / 2;
+        slotInfo.isInnerArc = groupPositionIndex < BRUTALLUS_RANGED_POSITIONS_PER_ARC;
+        slotInfo.arcPositionIndex = slotInfo.isInnerArc ? groupPositionIndex :
+            groupPositionIndex - BRUTALLUS_RANGED_POSITIONS_PER_ARC;
+        slotInfo.isPositiveSide = slotInfo.arcPositionIndex % 2 == 0;
+        slotInfo.sideSlotIndex = slotInfo.arcPositionIndex / 2;
+        return true;
+    }
+
     // Kalecgos & Sathrovarr the Corruptor
 
     const Position KALECGOS_TANK_POSITION = { 1703.584f, 895.626f, 53.076f };
@@ -543,6 +597,167 @@ namespace SunwellHelpers
 
     // Brutallus
 
-    const Position BRUTALLUS_MAIN_TANK_POSITION =   { 1479.624f, 639.070f, 21.508f };
-    const Position BRUTALLUS_ASSIST_TANK_POSITION = { 1488.341f, 605.651f, 24.499f };
+    const Position BRUTALLUS_MAIN_TANK_POSITION =   { 1486.914f, 583.266f, 23.416f };
+    std::unordered_map<ObjectGuid, bool> hasReachedBrutallusRangedBurnStepPosition;
+
+    float GetBrutallusMainTankAngle(Unit* brutallus)
+    {
+        return brutallus->GetAngle(BRUTALLUS_MAIN_TANK_POSITION.GetPositionX(),
+                                   BRUTALLUS_MAIN_TANK_POSITION.GetPositionY());
+    }
+
+    Position GetBrutallusPositionAtAngle(Unit* brutallus, float angle, float radius, float z)
+    {
+        float x = brutallus->GetPositionX() + std::cos(angle) * radius;
+        float y = brutallus->GetPositionY() + std::sin(angle) * radius;
+
+        Position position = BRUTALLUS_MAIN_TANK_POSITION;
+        position.Relocate(x, y, z);
+        return position;
+    }
+
+    Position GetBrutallusTankPosition(Unit* brutallus, bool isMainTank, float z)
+    {
+        if (isMainTank)
+            return BRUTALLUS_MAIN_TANK_POSITION;
+
+        float angle = Position::NormalizeOrientation(
+            GetBrutallusMainTankAngle(brutallus) + BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET);
+        return GetBrutallusPositionAtAngle(brutallus, angle, BRUTALLUS_TANK_RADIUS, z);
+    }
+
+    bool TryGetBrutallusMeleePosition(Unit* brutallus, uint8 meleeIndex, float z, Position& position)
+    {
+        float meleeAngleStep = 2.0f * std::asin(BRUTALLUS_MELEE_SPACING / (2.0f * BRUTALLUS_TANK_RADIUS));
+        uint8 maxSideSlots = static_cast<uint8>(std::floor((BRUTALLUS_MELEE_ARC_ANGLE / 2.0f) / meleeAngleStep));
+        uint8 maxMeleeSlots = 1 + 2 * maxSideSlots;
+        if (meleeIndex >= maxMeleeSlots)
+            return false;
+
+        float baseAngle = Position::NormalizeOrientation(
+            GetBrutallusMainTankAngle(brutallus) + BRUTALLUS_MELEE_ARC_CENTER_ANGLE_OFFSET);
+        float arcWidth = maxSideSlots * 2.0f * meleeAngleStep;
+        float angleOffset = GetCenteredArcSlotAngleOffset(meleeIndex, maxMeleeSlots, arcWidth);
+
+        position = GetBrutallusPositionAtAngle(brutallus,
+                                               Position::NormalizeOrientation(baseAngle + angleOffset),
+                                               BRUTALLUS_TANK_RADIUS, z);
+        return true;
+    }
+
+    bool TryGetBrutallusRangedPosition(Unit* brutallus, uint8 rangedIndex, float z, Position& position)
+    {
+        BrutallusRangedSlotInfo slotInfo;
+        if (!TryGetBrutallusRangedSlotInfo(rangedIndex, slotInfo))
+            return false;
+
+        float arcCenterAngle = GetBrutallusMainTankAngle(brutallus);
+        if (!slotInfo.isMainTankGroup)
+            arcCenterAngle = Position::NormalizeOrientation(arcCenterAngle + BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET);
+
+        float arcRadius = BRUTALLUS_RANGED_INNER_RADIUS;
+        float arcWidth = BRUTALLUS_RANGED_INNER_ARC_WIDTH;
+        if (!slotInfo.isInnerArc)
+        {
+            arcRadius = BRUTALLUS_RANGED_OUTER_RADIUS;
+            arcWidth = BRUTALLUS_RANGED_OUTER_ARC_WIDTH;
+        }
+
+        float angleOffset = GetCenteredArcSlotAngleOffset(slotInfo.arcPositionIndex,
+                                                          BRUTALLUS_RANGED_POSITIONS_PER_ARC,
+                                                          arcWidth);
+        position = GetBrutallusPositionAtAngle(brutallus,
+                                               Position::NormalizeOrientation(arcCenterAngle + angleOffset),
+                                               arcRadius, z);
+        return true;
+    }
+
+    bool TryGetBrutallusRangedBurnStepPosition(Unit* brutallus, uint8 rangedIndex, float z, Position& position)
+    {
+        BrutallusRangedSlotInfo slotInfo;
+        if (!TryGetBrutallusRangedSlotInfo(rangedIndex, slotInfo))
+            return false;
+
+        float arcCenterAngle = GetBrutallusMainTankAngle(brutallus);
+        if (!slotInfo.isMainTankGroup)
+            arcCenterAngle = Position::NormalizeOrientation(arcCenterAngle + BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET);
+
+        float arcWidth = BRUTALLUS_RANGED_INNER_ARC_WIDTH;
+        if (!slotInfo.isInnerArc)
+            arcWidth = BRUTALLUS_RANGED_OUTER_ARC_WIDTH;
+
+        float angleOffset = GetCenteredArcSlotAngleOffset(slotInfo.arcPositionIndex,
+                                                          BRUTALLUS_RANGED_POSITIONS_PER_ARC,
+                                                          arcWidth);
+
+        float burnRadius = BRUTALLUS_RANGED_INNER_RADIUS - BRUTALLUS_BURN_FORWARD_DISTANCE;
+        if (!slotInfo.isInnerArc)
+            burnRadius = BRUTALLUS_RANGED_OUTER_RADIUS - BRUTALLUS_BURN_FORWARD_DISTANCE;
+
+        position = GetBrutallusPositionAtAngle(brutallus,
+                                               Position::NormalizeOrientation(arcCenterAngle + angleOffset),
+                                               burnRadius, z);
+        return true;
+    }
+
+    bool TryGetBrutallusRangedBurnPosition(Unit* brutallus, uint8 rangedIndex, float z, Position& position)
+    {
+        BrutallusRangedSlotInfo slotInfo;
+        if (!TryGetBrutallusRangedSlotInfo(rangedIndex, slotInfo))
+            return false;
+
+        float coneCenterAngle = GetBrutallusMainTankAngle(brutallus);
+        if (!slotInfo.isMainTankGroup)
+            coneCenterAngle = Position::NormalizeOrientation(coneCenterAngle + BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET);
+
+        float burnRadius = BRUTALLUS_RANGED_INNER_RADIUS - BRUTALLUS_BURN_FORWARD_DISTANCE;
+        if (!slotInfo.isInnerArc)
+            burnRadius = BRUTALLUS_RANGED_OUTER_RADIUS - BRUTALLUS_BURN_FORWARD_DISTANCE;
+
+        float burnAngleStep = 2.0f * std::asin(BRUTALLUS_BURN_SPACING / (2.0f * burnRadius));
+        float burnAngleOffset = BRUTALLUS_METEOR_SLASH_HALF_ANGLE +
+            (static_cast<float>(slotInfo.sideSlotIndex) + 0.5f) * burnAngleStep;
+
+        if (!slotInfo.isPositiveSide)
+            burnAngleOffset = -burnAngleOffset;
+
+        position = GetBrutallusPositionAtAngle(brutallus,
+                                               Position::NormalizeOrientation(coneCenterAngle + burnAngleOffset),
+                                               burnRadius, z);
+        return true;
+    }
+
+    bool TryGetBrutallusPositionIndex(PlayerbotAI* botAI, Player* bot, bool wantRanged,
+                                      uint8& positionIndex)
+    {
+        Group* group = bot->GetGroup();
+        if (!group)
+            return false;
+
+        positionIndex = 0;
+
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsInWorld() || member->GetMapId() != SUNWELL_MAP_ID ||
+                member->GetInstanceId() != bot->GetInstanceId())
+            {
+                continue;
+            }
+
+            bool isMelee = botAI->IsMelee(member);
+            if ((wantRanged && isMelee) || (!wantRanged && !isMelee) ||
+                botAI->IsMainTank(member) || botAI->IsAssistTankOfIndex(member, 0, true))
+            {
+                continue;
+            }
+
+            if (member == bot)
+                return true;
+
+            ++positionIndex;
+        }
+
+        return false;
+    }
 }

@@ -78,12 +78,49 @@ bool BrutallusPullingBossTrigger::IsActive()
     return brutallus && brutallus->GetHealthPct() > 95.0f;
 }
 
-bool BrutallusEngagedByTanksTrigger::IsActive()
+bool BrutallusBossEngagedByTanksTrigger::IsActive()
 {
     if (!AI_VALUE2(Unit*, "find target", "brutallus"))
         return false;
 
-    return botAI->IsMainTank(bot) || botAI->IsAssisTankOfIndex(bot, 0, true);
+    return botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0, true);
+}
+
+bool BrutallusBossEngagedByMeleeTrigger::IsActive()
+{
+    if (!AI_VALUE2(Unit*, "find target", "brutallus"))
+        return false;
+
+    return botAI->IsMelee(bot) && !botAI->IsMainTank(bot) &&
+           !botAI->IsAssistTankOfIndex(bot, 0, true);
+}
+
+bool BrutallusBossEngagedByRangedTrigger::IsActive()
+{
+    if (!AI_VALUE2(Unit*, "find target", "brutallus"))
+        return false;
+
+    if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_BURN_DAMAGE)))
+        return false;
+
+    return !botAI->IsMelee(bot);
+}
+
+bool BrutallusBotIsBurningTrigger::IsActive()
+{
+    if (!AI_VALUE2(Unit*, "find target", "brutallus"))
+        return false;
+
+    if (botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0, true))
+        return false;
+
+    if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_BURN_DAMAGE)))
+    {
+        LOG_DEBUG("playerbots", "bot {} has burn", bot->GetName());
+        return true;
+    }
+
+    return false;
 }
 
 // Felmyst
