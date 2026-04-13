@@ -23,6 +23,32 @@
 
 using namespace SunwellHelpers;
 
+static bool IsDpsCooldownAction(Action* action)
+{
+    return dynamic_cast<CastHeroismAction*>(action) ||
+           dynamic_cast<CastBloodlustAction*>(action) ||
+           dynamic_cast<CastMetamorphosisAction*>(action) ||
+           dynamic_cast<CastAdrenalineRushAction*>(action) ||
+           dynamic_cast<CastBladeFlurryAction*>(action) ||
+           dynamic_cast<CastIcyVeinsAction*>(action) ||
+           dynamic_cast<CastColdSnapAction*>(action) ||
+           dynamic_cast<CastArcanePowerAction*>(action) ||
+           dynamic_cast<CastPresenceOfMindAction*>(action) ||
+           dynamic_cast<CastCombustionAction*>(action) ||
+           dynamic_cast<CastRapidFireAction*>(action) ||
+           dynamic_cast<CastReadinessAction*>(action) ||
+           dynamic_cast<CastAvengingWrathAction*>(action) ||
+           dynamic_cast<CastElementalMasteryAction*>(action) ||
+           dynamic_cast<CastFeralSpiritAction*>(action) ||
+           dynamic_cast<CastFireElementalTotemAction*>(action) ||
+           dynamic_cast<CastFireElementalTotemMeleeAction*>(action) ||
+           dynamic_cast<CastForceOfNatureAction*>(action) ||
+           dynamic_cast<CastArmyOfTheDeadAction*>(action) ||
+           dynamic_cast<CastSummonGargoyleAction*>(action) ||
+           dynamic_cast<CastBerserkingAction*>(action) ||
+           dynamic_cast<CastBloodFuryAction*>(action);
+}
+
 // Kalecgos & Sathrovarr the Corruptor
 
 float KalecgosControlMisdirectionMultiplier::GetValue(Action* action)
@@ -86,35 +112,16 @@ float KalecgosControlMovementMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float KalecgosSaveBloodlustAndHeroismForSathrovarrMultiplier::GetValue(Action* action)
+float KalecgosDelayCooldownsForSathrovarrMultiplier::GetValue(Action* action)
 {
     Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos");
     if (!kalecgos || kalecgos->GetHealthPct() < 40.0f)
         return 1.0f;
 
-    if (dynamic_cast<CastHeroismAction*>(action) ||
-        dynamic_cast<CastBloodlustAction*>(action) ||
-        dynamic_cast<CastMetamorphosisAction*>(action) ||
-        dynamic_cast<CastAdrenalineRushAction*>(action) ||
-        dynamic_cast<CastBladeFlurryAction*>(action) ||
-        dynamic_cast<CastIcyVeinsAction*>(action) ||
-        dynamic_cast<CastColdSnapAction*>(action) ||
-        dynamic_cast<CastArcanePowerAction*>(action) ||
-        dynamic_cast<CastPresenceOfMindAction*>(action) ||
-        dynamic_cast<CastCombustionAction*>(action) ||
-        dynamic_cast<CastRapidFireAction*>(action) ||
-        dynamic_cast<CastReadinessAction*>(action) ||
-        dynamic_cast<CastAvengingWrathAction*>(action) ||
-        dynamic_cast<CastElementalMasteryAction*>(action) ||
-        dynamic_cast<CastFeralSpiritAction*>(action) ||
-        dynamic_cast<CastFireElementalTotemAction*>(action) ||
-        dynamic_cast<CastFireElementalTotemMeleeAction*>(action) ||
-        dynamic_cast<CastForceOfNatureAction*>(action) ||
-        dynamic_cast<CastArmyOfTheDeadAction*>(action) ||
-        dynamic_cast<CastSummonGargoyleAction*>(action) ||
-        dynamic_cast<CastBerserkingAction*>(action) ||
-        dynamic_cast<CastBloodFuryAction*>(action) ||
-        dynamic_cast<UseTrinketAction*>(action))
+    if (IsDpsCooldownAction(action))
+        return 0.0f;
+
+    if (botAI->IsDps(bot) && dynamic_cast<UseTrinketAction*>(action))
         return 0.0f;
 
     return 1.0f;
@@ -153,10 +160,7 @@ float BrutallusControlMovementMultiplier::GetValue(Action* action)
 
 float BrutallusNoTankingWithTooManyMeteorStacksMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsTank(bot))
-        return 1.0f;
-
-    if (!AI_VALUE2(Unit*, "find target", "brutallus"))
+    if (!botAI->IsTank(bot) || !AI_VALUE2(Unit*, "find target", "brutallus"))
         return 1.0f;
 
     if (dynamic_cast<CastTauntAction*>(action) ||
@@ -171,9 +175,24 @@ float BrutallusNoTankingWithTooManyMeteorStacksMultiplier::GetValue(Action* acti
     return 1.0f;
 }
 
+float BrutallusDelayCooldownsMultiplier::GetValue(Action* action)
+{
+    Unit* brutallus = AI_VALUE2(Unit*, "find target", "brutallus");
+    if (!brutallus || brutallus->GetHealthPct() < 95.0f)
+        return 1.0f;
+
+    if (IsDpsCooldownAction(action))
+        return 0.0f;
+
+    if (botAI->IsDps(bot) && dynamic_cast<UseTrinketAction*>(action))
+        return 0.0f;
+
+    return 1.0f;
+}
+
 // Felmyst
 
-float FelmystMultiplier::GetValue(Action* action)
+float FelmystMultiplier::GetValue(Action*)
 {
     if (!AI_VALUE2(Unit*, "find target", "felmyst"))
         return 1.0f;
@@ -183,7 +202,7 @@ float FelmystMultiplier::GetValue(Action* action)
 
 // Eredar Twins (Alythess & Sacrolash)
 
-float EredarTwinsMultiplier::GetValue(Action* action)
+float EredarTwinsMultiplier::GetValue(Action*)
 {
     if (!AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
         return 1.0f;
@@ -196,7 +215,7 @@ float EredarTwinsMultiplier::GetValue(Action* action)
 
 // M'uru & Entropius
 
-float MuruMultiplier::GetValue(Action* action)
+float MuruMultiplier::GetValue(Action*)
 {
     if (!AI_VALUE2(Unit*, "find target", "m'uru"))
         return 1.0f;
@@ -206,7 +225,7 @@ float MuruMultiplier::GetValue(Action* action)
 
 // Kil'jaeden <The Deceiver>
 
-float KiljaedenMultiplier::GetValue(Action* action)
+float KiljaedenMultiplier::GetValue(Action*)
 {
     if (!AI_VALUE2(Unit*, "find target", "kil'jaeden"))
         return 1.0f;

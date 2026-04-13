@@ -66,7 +66,13 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
     Unit* brutallus = AI_VALUE2(Unit*, "find target", "brutallus");
 
     if (!brutallus && botAI->IsRanged(bot) &&
-        hasReachedBrutallusRangedBurnStepPosition.erase(guid) > 0)
+        brutallusRangedBurnStates.erase(guid) > 0)
+    {
+        erased = true;
+    }
+
+    if (!brutallus && IsMechanicTrackerBot(botAI, bot, SUNWELL_MAP_ID) &&
+        brutallusRangedAssignments.erase(bot->GetInstanceId()) > 0)
     {
         erased = true;
     }
@@ -146,13 +152,12 @@ bool KalecgosEnterSpectralRiftAction::Execute(Event /*event*/)
 // Kalecgos' Combat Reach is 10.5f
 bool KalecgosDisperseRangedAction::Execute(Event /*event*/)
 {
-    constexpr float arrivalDistance = 3.0f;
     if (!HasReachedKalecgosInitialRangedPosition(bot))
     {
         const Position& initialPosition = KALECGOS_INITIAL_RANGED_POSITION;
         float distanceToInitialPosition = bot->GetExactDist2d(initialPosition.GetPositionX(),
                                                               initialPosition.GetPositionY());
-        if (distanceToInitialPosition > arrivalDistance)
+        if (distanceToInitialPosition > 1.0f)
         {
             return MoveTo(SUNWELL_MAP_ID, initialPosition.GetPositionX(), initialPosition.GetPositionY(),
                           initialPosition.GetPositionZ(), false, false, false, false,
@@ -227,17 +232,21 @@ bool BrutallusMisdirectBossToMainTankAction::Execute(Event /*event*/)
 
 bool BrutallusTanksHandleBossAction::Execute(Event event)
 {
-    Unit* brutallus = AI_VALUE2(Unit*, "find target", "brutallus");
+    Unit* brutallus = nullptr;
+    Player* mainTank = nullptr;
+    Player* assistTank = nullptr;
+    Aura* mainTankAura = nullptr;
+    Aura* assistTankAura = nullptr;
+
+    brutallus = AI_VALUE2(Unit*, "find target", "brutallus");
     if (!brutallus)
         return false;
 
     if (bot->GetVictim() != brutallus)
         return Attack(brutallus);
 
-    Player* mainTank = GetGroupMainTank(botAI, bot);
-    Player* assistTank = GetGroupAssistTank(botAI, bot, 0);
-    Aura* mainTankAura = nullptr;
-    Aura* assistTankAura = nullptr;
+    mainTank = GetGroupMainTank(botAI, bot);
+    assistTank = GetGroupAssistTank(botAI, bot, 0);
 
     if (mainTank && mainTank->IsAlive())
     {
@@ -252,28 +261,48 @@ bool BrutallusTanksHandleBossAction::Execute(Event event)
     }
 
     bool isMainTank = botAI->IsMainTank(bot);
-    Position position = GetBrutallusTankPosition(brutallus, isMainTank, bot->GetPositionZ());
 
-    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
+    if (!isMainTank)
+    {
+        bool shouldTaunt = (!mainTank || !mainTank->IsAlive()) ||
+                           (mainTankAura && mainTankAura->GetStackAmount() >= 3);
+
+        if (brutallus->GetVictim() == bot)
+            return false;
+
+        if (shouldTaunt)
+            return botAI->DoSpecificAction("taunt spell", event, true);
+
+        Position position = GetBrutallusTankPosition(brutallus, false, bot->GetPositionZ());
+        float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+
+        if (distToPosition > 3.0f)
+        {
+            return MoveTo(SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                          position.GetPositionZ(), false, false, false, false,
+                          MovementPriority::MOVEMENT_COMBAT, true, true);
+        }
+
+        return false;
+    }
+
+    Position position = GetBrutallusTankPosition(brutallus, isMainTank, bot->GetPositionZ());
+    float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+
+    if (brutallus->GetVictim() == bot && distToPosition <= 3.0f)
+        return false;
+
+    if (distToPosition > 3.0f)
     {
         return MoveTo(SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
                       position.GetPositionZ(), false, false, false, false,
-                      MovementPriority::MOVEMENT_COMBAT, true, false);
+                      MovementPriority::MOVEMENT_COMBAT, true, true);
     }
-
-    if (brutallus->GetVictim() == bot)
-        return false;
 
     if (isMainTank &&
         ((!assistTank || !assistTank->IsAlive()) ||
          (assistTankAura && assistTankAura->GetStackAmount() >= 3) ||
          (!assistTankAura && !mainTankAura)))
-    {
-        return botAI->DoSpecificAction("taunt spell", event, true);
-    }
-    else if (!isMainTank &&
-             ((!mainTank || !mainTank->IsAlive()) ||
-              (mainTankAura && mainTankAura->GetStackAmount() >= 3)))
     {
         return botAI->DoSpecificAction("taunt spell", event, true);
     }
@@ -301,10 +330,10 @@ bool BrutallusPositionMeleeAction::Execute(Event /*event*/)
     if (!TryGetBrutallusMeleePosition(brutallus, meleeIndex, bot->GetPositionZ(), position))
         return false;
 
-    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
+    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
     {
         return MoveTo(SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-                      position.GetPositionZ(), false, false, false, false,
+                      position.GetPositionZ(), false, false, false, true,
                       MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
@@ -328,20 +357,102 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
     if (!brutallus)
         return false;
 
+    const ObjectGuid guid = bot->GetGUID();
     uint8 rangedIndex = 0;
     if (!TryGetBrutallusPositionIndex(botAI, bot, true, rangedIndex))
         return false;
 
-    hasReachedBrutallusRangedBurnStepPosition.erase(bot->GetGUID());
+    auto burnStateItr = brutallusRangedBurnStates.find(guid);
+    BrutallusRangedBurnState burnState = BrutallusRangedBurnState::None;
+    if (burnStateItr != brutallusRangedBurnStates.end())
+        burnState = burnStateItr->second;
+
+    if (burnState == BrutallusRangedBurnState::MovingToFrontStep)
+    {
+        burnState = BrutallusRangedBurnState::ReturningToNormal;
+        brutallusRangedBurnStates[guid] = burnState;
+    }
+    else if (burnState == BrutallusRangedBurnState::MovingToMirrorStep)
+    {
+        burnState = BrutallusRangedBurnState::ReturningToFrontStep;
+        brutallusRangedBurnStates[guid] = burnState;
+    }
+    else if (burnState == BrutallusRangedBurnState::MovingToRearFinal ||
+             burnState == BrutallusRangedBurnState::AtRearFinal)
+    {
+        burnState = BrutallusRangedBurnState::ReturningToMirrorStep;
+        brutallusRangedBurnStates[guid] = burnState;
+    }
+
+    if (burnState == BrutallusRangedBurnState::ReturningToMirrorStep)
+    {
+        Position position;
+        if (!TryGetBrutallusRangedBurnMirrorStepPosition(brutallus, rangedIndex, bot->GetPositionZ(), position))
+            return false;
+
+        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
+        {
+            return MoveTo(SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                          position.GetPositionZ(), false, false, false, true,
+                          MovementPriority::MOVEMENT_COMBAT, true, false);
+        }
+
+        brutallusRangedBurnStates[guid] = BrutallusRangedBurnState::ReturningToFrontStep;
+        return false;
+    }
+
+    if (burnState == BrutallusRangedBurnState::ReturningToFrontStep)
+    {
+        Position position;
+        if (!TryGetBrutallusRangedBurnArcPosition(
+            brutallus, rangedIndex, false, bot->GetPositionX(), bot->GetPositionY(),
+                bot->GetPositionZ(), position))
+        {
+            return false;
+        }
+
+        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
+        {
+            return MoveTo(SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                          position.GetPositionZ(), false, false, false, true,
+                          MovementPriority::MOVEMENT_COMBAT, true, false);
+        }
+
+        Position frontStepPosition;
+        if (!TryGetBrutallusRangedBurnStepPosition(brutallus, rangedIndex, bot->GetPositionZ(), frontStepPosition))
+            return false;
+
+        if (bot->GetExactDist2d(frontStepPosition.GetPositionX(), frontStepPosition.GetPositionY()) <= 1.0f)
+            brutallusRangedBurnStates[guid] = BrutallusRangedBurnState::ReturningToNormal;
+
+        return false;
+    }
+
+    if (burnState == BrutallusRangedBurnState::ReturningToNormal)
+    {
+        Position position;
+        if (!TryGetBrutallusRangedPosition(brutallus, rangedIndex, bot->GetPositionZ(), position))
+            return false;
+
+        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
+        {
+            return MoveTo(SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                          position.GetPositionZ(), false, false, false, true,
+                          MovementPriority::MOVEMENT_COMBAT, true, false);
+        }
+
+        brutallusRangedBurnStates.erase(guid);
+        return false;
+    }
 
     Position position;
     if (!TryGetBrutallusRangedPosition(brutallus, rangedIndex, bot->GetPositionZ(), position))
         return false;
 
-    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
+    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
     {
         return MoveTo(SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-                      position.GetPositionZ(), false, false, false, false,
+                      position.GetPositionZ(), false, false, false, true,
                       MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
@@ -360,31 +471,82 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
     if (botAI->IsMelee(bot))
         return false;
 
-    if (!bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_BURN)))
-    {
-        hasReachedBrutallusRangedBurnStepPosition.erase(bot->GetGUID());
+    if (!ShouldMoveForBrutallusBurn(bot))
         return false;
-    }
 
+    const ObjectGuid guid = bot->GetGUID();
     uint8 rangedIndex = 0;
     if (!TryGetBrutallusPositionIndex(botAI, bot, true, rangedIndex))
         return false;
 
-    bool hasReachedBurnStep = hasReachedBrutallusRangedBurnStepPosition[bot->GetGUID()];
-    if (!hasReachedBurnStep)
+    auto burnStateItr = brutallusRangedBurnStates.find(guid);
+    BrutallusRangedBurnState burnState = BrutallusRangedBurnState::None;
+    if (burnStateItr != brutallusRangedBurnStates.end())
+        burnState = burnStateItr->second;
+
+    if (burnState == BrutallusRangedBurnState::ReturningToNormal)
+    {
+        burnState = BrutallusRangedBurnState::MovingToFrontStep;
+        brutallusRangedBurnStates[guid] = burnState;
+    }
+    else if (burnState == BrutallusRangedBurnState::ReturningToFrontStep)
+    {
+        burnState = BrutallusRangedBurnState::MovingToMirrorStep;
+        brutallusRangedBurnStates[guid] = burnState;
+    }
+    else if (burnState == BrutallusRangedBurnState::ReturningToMirrorStep)
+    {
+        burnState = BrutallusRangedBurnState::MovingToRearFinal;
+        brutallusRangedBurnStates[guid] = burnState;
+    }
+
+    if (burnState == BrutallusRangedBurnState::None)
+    {
+        burnState = BrutallusRangedBurnState::MovingToFrontStep;
+        brutallusRangedBurnStates[guid] = burnState;
+    }
+
+    if (burnState == BrutallusRangedBurnState::MovingToFrontStep)
     {
         Position stepPosition;
         if (!TryGetBrutallusRangedBurnStepPosition(brutallus, rangedIndex, bot->GetPositionZ(), stepPosition))
             return false;
 
-        if (bot->GetExactDist2d(stepPosition.GetPositionX(), stepPosition.GetPositionY()) > 2.0f)
+        if (bot->GetExactDist2d(stepPosition.GetPositionX(), stepPosition.GetPositionY()) > 1.0f)
         {
             return MoveTo(SUNWELL_MAP_ID, stepPosition.GetPositionX(), stepPosition.GetPositionY(),
-                          stepPosition.GetPositionZ(), false, false, false, false,
+                          stepPosition.GetPositionZ(), false, false, false, true,
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
 
-        hasReachedBrutallusRangedBurnStepPosition[bot->GetGUID()] = true;
+        brutallusRangedBurnStates[guid] = BrutallusRangedBurnState::MovingToMirrorStep;
+        return false;
+    }
+
+    if (burnState == BrutallusRangedBurnState::MovingToMirrorStep)
+    {
+        Position position;
+        if (!TryGetBrutallusRangedBurnArcPosition(
+            brutallus, rangedIndex, true, bot->GetPositionX(), bot->GetPositionY(),
+                bot->GetPositionZ(), position))
+        {
+            return false;
+        }
+
+        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
+        {
+            return MoveTo(SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                          position.GetPositionZ(), false, false, false, true,
+                          MovementPriority::MOVEMENT_COMBAT, true, false);
+        }
+
+        Position mirrorStepPosition;
+        if (!TryGetBrutallusRangedBurnMirrorStepPosition(brutallus, rangedIndex, bot->GetPositionZ(), mirrorStepPosition))
+            return false;
+
+        if (bot->GetExactDist2d(mirrorStepPosition.GetPositionX(), mirrorStepPosition.GetPositionY()) <= 1.0f)
+            brutallusRangedBurnStates[guid] = BrutallusRangedBurnState::MovingToRearFinal;
+
         return false;
     }
 
@@ -392,12 +554,14 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
     if (!TryGetBrutallusRangedBurnPosition(brutallus, rangedIndex, bot->GetPositionZ(), position))
         return false;
 
-    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
+    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
     {
         return MoveTo(SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-                      position.GetPositionZ(), false, false, false, false,
+                      position.GetPositionZ(), false, false, false, true,
                       MovementPriority::MOVEMENT_COMBAT, true, false);
     }
+
+    brutallusRangedBurnStates[guid] = BrutallusRangedBurnState::AtRearFinal;
 
     return false;
 }

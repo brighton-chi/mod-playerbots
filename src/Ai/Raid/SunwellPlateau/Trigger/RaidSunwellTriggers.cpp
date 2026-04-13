@@ -100,7 +100,7 @@ bool BrutallusBossEngagedByRangedTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "brutallus"))
         return false;
 
-    if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_BURN)))
+    if (ShouldMoveForBrutallusBurn(bot))
         return false;
 
     return !botAI->IsMelee(bot);
@@ -114,7 +114,7 @@ bool BrutallusBotIsBurningTrigger::IsActive()
     if (botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0, true))
         return false;
 
-    if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_BURN)))
+    if (ShouldMoveForBrutallusBurn(bot))
         return true;
 
     return false;

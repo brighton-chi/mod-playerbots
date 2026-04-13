@@ -34,11 +34,11 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class KalecgosSaveBloodlustAndHeroismForSathrovarrMultiplier : public Multiplier
+class KalecgosDelayCooldownsForSathrovarrMultiplier : public Multiplier
 {
 public:
-    KalecgosSaveBloodlustAndHeroismForSathrovarrMultiplier(PlayerbotAI* botAI) : Multiplier(
-        botAI, "kalecgos save bloodlust and heroism for sathrovarr") {}
+    KalecgosDelayCooldownsForSathrovarrMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "kalecgos delay cooldowns for sathrovarr") {}
     virtual float GetValue(Action* action);
 };
 
@@ -68,6 +68,14 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class BrutallusDelayCooldownsMultiplier : public Multiplier
+{
+public:
+    BrutallusDelayCooldownsMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "brutallus delay cooldowns") {}
+    virtual float GetValue(Action* action);
+};
+
 // Felmyst
 
 class FelmystMultiplier : public Multiplier
@@ -75,7 +83,7 @@ class FelmystMultiplier : public Multiplier
 public:
     FelmystMultiplier(PlayerbotAI* botAI) : Multiplier(
         botAI, "felmyst") {}
-    virtual float GetValue(Action* action);
+    virtual float GetValue(Action*);
 };
 
 // Eredar Twins (Alythess & Sacrolash)
@@ -85,7 +93,7 @@ class EredarTwinsMultiplier : public Multiplier
 public:
     EredarTwinsMultiplier(PlayerbotAI* botAI) : Multiplier(
         botAI, "eredar twins") {}
-    virtual float GetValue(Action* action);
+    virtual float GetValue(Action*);
 };
 
 // M'uru & Entropius
@@ -95,7 +103,7 @@ class MuruMultiplier : public Multiplier
 public:
     MuruMultiplier(PlayerbotAI* botAI) : Multiplier(
         botAI, "m'uru") {}
-    virtual float GetValue(Action* action);
+    virtual float GetValue(Action*);
 };
 
 // Kil'jaeden <The Deceiver>
@@ -105,7 +113,7 @@ class KiljaedenMultiplier : public Multiplier
 public:
     KiljaedenMultiplier(PlayerbotAI* botAI) : Multiplier(
         botAI, "kil'jaeden") {}
-    virtual float GetValue(Action* action);
+    virtual float GetValue(Action*);
 };
 
 #endif

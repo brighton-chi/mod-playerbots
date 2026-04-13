@@ -64,12 +64,13 @@ void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new KalecgosControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new KalecgosWaitToDecurseMultiplier(botAI));
     multipliers.push_back(new KalecgosControlMovementMultiplier(botAI));
-    multipliers.push_back(new KalecgosSaveBloodlustAndHeroismForSathrovarrMultiplier(botAI));
+    multipliers.push_back(new KalecgosDelayCooldownsForSathrovarrMultiplier(botAI));
 
     // Brutallus
     multipliers.push_back(new BrutallusControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new BrutallusControlMovementMultiplier(botAI));
     multipliers.push_back(new BrutallusNoTankingWithTooManyMeteorStacksMultiplier(botAI));
+    multipliers.push_back(new BrutallusDelayCooldownsMultiplier(botAI));
 
     // Felmyst
     multipliers.push_back(new FelmystMultiplier(botAI));
