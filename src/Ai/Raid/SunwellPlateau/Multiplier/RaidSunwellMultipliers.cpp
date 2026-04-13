@@ -192,7 +192,7 @@ float BrutallusDelayCooldownsMultiplier::GetValue(Action* action)
 
 // Felmyst
 
-float FelmystMultiplier::GetValue(Action*)
+float FelmystMultiplier::GetValue(Action* action)
 {
     if (!AI_VALUE2(Unit*, "find target", "felmyst"))
         return 1.0f;
@@ -202,7 +202,7 @@ float FelmystMultiplier::GetValue(Action*)
 
 // Eredar Twins (Alythess & Sacrolash)
 
-float EredarTwinsMultiplier::GetValue(Action*)
+float EredarTwinsMultiplier::GetValue(Action* action)
 {
     if (!AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
         return 1.0f;
@@ -215,7 +215,7 @@ float EredarTwinsMultiplier::GetValue(Action*)
 
 // M'uru & Entropius
 
-float MuruMultiplier::GetValue(Action*)
+float MuruMultiplier::GetValue(Action* action)
 {
     if (!AI_VALUE2(Unit*, "find target", "m'uru"))
         return 1.0f;
@@ -225,7 +225,7 @@ float MuruMultiplier::GetValue(Action*)
 
 // Kil'jaeden <The Deceiver>
 
-float KiljaedenMultiplier::GetValue(Action*)
+float KiljaedenMultiplier::GetValue(Action* action)
 {
     if (!AI_VALUE2(Unit*, "find target", "kil'jaeden"))
         return 1.0f;

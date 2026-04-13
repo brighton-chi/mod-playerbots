@@ -83,7 +83,7 @@ class FelmystMultiplier : public Multiplier
 public:
     FelmystMultiplier(PlayerbotAI* botAI) : Multiplier(
         botAI, "felmyst") {}
-    virtual float GetValue(Action*);
+    virtual float GetValue(Action* action);
 };
 
 // Eredar Twins (Alythess & Sacrolash)
@@ -93,7 +93,7 @@ class EredarTwinsMultiplier : public Multiplier
 public:
     EredarTwinsMultiplier(PlayerbotAI* botAI) : Multiplier(
         botAI, "eredar twins") {}
-    virtual float GetValue(Action*);
+    virtual float GetValue(Action* action);
 };
 
 // M'uru & Entropius
@@ -103,7 +103,7 @@ class MuruMultiplier : public Multiplier
 public:
     MuruMultiplier(PlayerbotAI* botAI) : Multiplier(
         botAI, "m'uru") {}
-    virtual float GetValue(Action*);
+    virtual float GetValue(Action* action);
 };
 
 // Kil'jaeden <The Deceiver>
@@ -113,7 +113,7 @@ class KiljaedenMultiplier : public Multiplier
 public:
     KiljaedenMultiplier(PlayerbotAI* botAI) : Multiplier(
         botAI, "kil'jaeden") {}
-    virtual float GetValue(Action*);
+    virtual float GetValue(Action* action);
 };
 
 #endif
