@@ -48,8 +48,8 @@ public:
             &RaidSunwellTriggerContext::brutallus_bot_is_burning;
 
         // Felmyst
-        creators["felmyst"] =
-            &RaidSunwellTriggerContext::felmyst;
+        creators["felmyst boss engaged by main tank on ground"] =
+            &RaidSunwellTriggerContext::felmyst_boss_engaged_by_main_tank_on_ground;
 
         // Eredar Twins (Alythess & Sacrolash)
         creators["eredar twins"] =
@@ -99,8 +99,8 @@ private:
         PlayerbotAI* botAI) { return new BrutallusBotIsBurningTrigger(botAI); }
 
     // Felmyst
-    static Trigger* felmyst(
-        PlayerbotAI* botAI) { return new FelmystTrigger(botAI); }
+    static Trigger* felmyst_boss_engaged_by_main_tank_on_ground(
+        PlayerbotAI* botAI) { return new FelmystBossEngagedByMainTankOnGroundTrigger(botAI); }
 
     // Eredar Twins (Alythess & Sacrolash)
     static Trigger* eredar_twins(

@@ -96,11 +96,11 @@ public:
 
 // Felmyst
 
-class FelmystTrigger : public Trigger
+class FelmystBossEngagedByMainTankOnGroundTrigger : public Trigger
 {
 public:
-    FelmystTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "felmyst") {}
+    FelmystBossEngagedByMainTankOnGroundTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "felmyst boss engaged by main tank on ground") {}
     bool IsActive() override;
 };
 

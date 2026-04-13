@@ -31,6 +31,9 @@ namespace SunwellHelpers
         SPELL_METEOR_SLASH                 = 45150,
         SPELL_BURN               = 46394,
 
+        // Felmyst
+        SPELL_ENCAPSULATE = 45662,
+
         // Hunter
         SPELL_MISDIRECTION              = 35079,
 
@@ -99,6 +102,7 @@ namespace SunwellHelpers
     void RecordKalecgosNormalRealmEnter(Player* bot);
 
     // Brutallus
+    extern const Position BRUTALLUS_MAIN_TANK_POSITION;
     constexpr float BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET = -M_PI_2;
     constexpr float BRUTALLUS_TANK_POSITION_RADIUS = 20.25f;
     constexpr float BRUTALLUS_MELEE_RADIUS = 18.0f;
@@ -139,6 +143,9 @@ namespace SunwellHelpers
     bool TryGetBrutallusRangedBurnPosition(Unit* brutallus, uint8 rangedIndex, float z, Position& position);
     bool TryGetBrutallusPositionIndex(PlayerbotAI* botAI, Player* bot, bool wantRanged,
         uint8& positionIndex);
+
+    // Felmyst
+    extern const Position FELMYST_TANK_POSITION;
 }
 
 #endif

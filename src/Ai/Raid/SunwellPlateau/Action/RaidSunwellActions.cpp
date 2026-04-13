@@ -592,8 +592,34 @@ bool BrutallusHandleBurnAction::RemoveBurnWithCooldown(Player* bot)
 
 // Felmyst
 
-bool FelmystAction::Execute(Event /*event*/)
+bool FelmystMainTankPositionBossOnGroundAction::Execute(Event /*event*/)
 {
+    Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
+    if (!felmyst)
+        return false;
+
+    if (bot->GetVictim() != felmyst)
+        return Attack(felmyst);
+
+    if (felmyst->GetVictim() == bot)
+    {
+        const Position& position = FELMYST_TANK_POSITION;
+        float distToPosition =
+            bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+
+        if (distToPosition > 2.0f)
+        {
+            float dX = position.GetPositionX() - bot->GetPositionX();
+            float dY = position.GetPositionY() - bot->GetPositionY();
+            float moveDist = std::min(5.0f, distToPosition);
+            float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
+
+            return MoveTo(SUNWELL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
+                          false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
+        }
+    }
+
     return false;
 }
 

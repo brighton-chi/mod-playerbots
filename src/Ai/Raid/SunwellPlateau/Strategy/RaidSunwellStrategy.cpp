@@ -42,8 +42,8 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("brutallus handle burn", ACTION_EMERGENCY + 1) }));
 
     // Felmyst
-    triggers.push_back(new TriggerNode("felmyst", {
-        NextAction("felmyst", ACTION_RAID + 1) }));
+    triggers.push_back(new TriggerNode("felmyst boss engaged by main tank on ground", {
+        NextAction("felmyst main tank position boss on ground", ACTION_RAID + 1) }));
 
     // Eredar Twins (Alythess & Sacrolash)
     triggers.push_back(new TriggerNode("eredar twins", {

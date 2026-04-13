@@ -122,9 +122,13 @@ bool BrutallusBotIsBurningTrigger::IsActive()
 
 // Felmyst
 
-bool FelmystTrigger::IsActive()
+bool FelmystBossEngagedByMainTankOnGroundTrigger::IsActive()
 {
-    return AI_VALUE2(Unit*, "find target", "felmyst");
+    Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
+    if (!felmyst || felmyst->IsFlying())
+        return false;
+
+    return botAI->IsMainTank(bot);
 }
 
 // Eredar Twins (Alythess & Sacrolash)

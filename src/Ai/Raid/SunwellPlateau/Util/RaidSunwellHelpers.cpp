@@ -545,6 +545,8 @@ namespace SunwellHelpers
 
     // Brutallus
 
+    const Position BRUTALLUS_MAIN_TANK_POSITION = { 1484.779f, 582.691f, 23.460f };
+
     struct BrutallusRangedSlotInfo
     {
         bool isMainTankGroup = false;
@@ -563,7 +565,6 @@ namespace SunwellHelpers
     bool IsEligibleBrutallusRangedMember(PlayerbotAI* botAI, Player* bot, Player* member);
     void EnsureBrutallusRangedAssignments(PlayerbotAI* botAI, Player* bot);
 
-    const Position BRUTALLUS_MAIN_TANK_POSITION = { 1484.779f, 582.691f, 23.460f };
     std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> brutallusRangedAssignments;
     std::unordered_map<ObjectGuid, BrutallusRangedBurnState> brutallusRangedBurnStates;
 
@@ -952,4 +953,8 @@ namespace SunwellHelpers
                 return;
         }
     }
+
+    // Felmyst
+
+    const Position FELMYST_TANK_POSITION = { 0f, 0f, 0f };
 }

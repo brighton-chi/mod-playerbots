@@ -48,8 +48,8 @@ public:
             &RaidSunwellActionContext::brutallus_handle_burn;
 
         // Felmyst
-        creators["felmyst"] =
-            &RaidSunwellActionContext::felmyst;
+        creators["felmyst main tank position boss on ground"] =
+            &RaidSunwellActionContext::felmyst_main_tank_position_boss_on_ground;
 
         // Eredar Twins (Alythess & Sacrolash)
         creators["eredar twins"] =
@@ -99,8 +99,8 @@ private:
         PlayerbotAI* botAI) { return new BrutallusHandleBurnAction(botAI); }
 
     // Felmyst
-    static Action* felmyst(
-        PlayerbotAI* botAI) { return new FelmystAction(botAI); }
+    static Action* felmyst_main_tank_position_boss_on_ground(
+        PlayerbotAI* botAI) { return new FelmystMainTankPositionBossOnGroundAction(botAI); }
 
     // Eredar Twins (Alythess & Sacrolash)
     static Action* eredar_twins(
