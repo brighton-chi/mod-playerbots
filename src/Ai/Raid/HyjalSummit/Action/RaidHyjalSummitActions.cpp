@@ -293,7 +293,6 @@ bool AnetheronBringInfernalToInfernalTankAction::Execute(Event /*event*/)
     const Position& position = GetClosestInfernalTankPosition(bot);
     if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
     {
-        // botAI->Reset();
         return MoveTo(HYJAL_SUMMIT_MAP_ID, position.GetPositionX(), position.GetPositionY(),
                       position.GetPositionZ(), false, false, false, false,
                       MovementPriority::MOVEMENT_FORCED, true, false);
