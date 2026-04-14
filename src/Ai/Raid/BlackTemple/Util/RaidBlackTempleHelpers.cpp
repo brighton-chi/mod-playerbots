@@ -95,18 +95,19 @@ namespace BlackTempleHelpers
     const Position SHAHRAZ_TANK_POSITION = { 960.438f, 178.989f, 192.826f };
     const Position SHAHRAZ_TRANSITION_POSITION = { 951.327f, 179.550f, 192.550f };
     const Position SHAHRAZ_RANGED_POSITION = { 935.267f, 175.459f, 192.821f };
-    std::unordered_map<ObjectGuid, uint8> shahrazTankStep;
+    std::unordered_map<ObjectGuid, TankPositionState> shahrazTankStep;
 
-    int GetShahrazTankStep(PlayerbotAI* botAI, Player* bot)
+    TankPositionState GetShahrazTankPositionState(PlayerbotAI* botAI, Player* bot)
     {
         Player* mainTank = GetGroupMainTank(botAI, bot);
-        if (!mainTank) return -1;
+        if (!mainTank)
+            return TankPositionState::Unknown;
 
         auto it = shahrazTankStep.find(mainTank->GetGUID());
         if (it != shahrazTankStep.end())
             return it->second;
 
-        return -1;
+        return TankPositionState::Unknown;
     }
 
     // Illidari Council
@@ -248,7 +249,7 @@ namespace BlackTempleHelpers
         if ((dest.GetExactDist2d(ILLIDAN_LANDING_POSITION) < 0.2f ||
              illidan->GetExactDist2d(ILLIDAN_LANDING_POSITION) < 0.2f) &&
              illidan->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE))
-             return 0;
+            return 0;
 
         // Phase 2: Flying
         if (illidan->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE))

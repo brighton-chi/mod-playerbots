@@ -316,7 +316,6 @@ bool AnetheronFirstAssistTankPickUpInfernalsAction::Execute(Event /*event*/)
         if (distToInfernoTarget > 5.0f)
         {
             bot->AttackStop();
-            // bot->InterruptNonMeleeSpells(true);
             return MoveTo(HYJAL_SUMMIT_MAP_ID, infernoTarget->GetPositionX(),
                           infernoTarget->GetPositionY(), infernoTarget->GetPositionZ(),
                           false, false, false, false, MovementPriority::MOVEMENT_FORCED,
@@ -442,15 +441,12 @@ bool KazrogalMainTankPositionBossAction::Execute(Event /*event*/)
     if (kazrogal->GetVictim() == bot && bot->IsWithinMeleeRange(kazrogal))
     {
         const ObjectGuid guid = bot->GetGUID();
-        uint8 step = kazrogalTankStep.count(guid) ? kazrogalTankStep[guid] : 0;
+        TankPositionState state = kazrogalTankStep.count(guid) ?
+            kazrogalTankStep[guid] : TankPositionState::MovingToTransition;
 
-        const Position positions[2] =
-        {
-            KAZROGAL_TANK_TRANSITION_POSITION,
-            KAZROGAL_TANK_FINAL_POSITION
-        };
         constexpr float maxDistance = 2.0f;
-        const Position& position = positions[step];
+        const Position& position = state == TankPositionState::MovingToTransition ?
+            KAZROGAL_TANK_TRANSITION_POSITION : KAZROGAL_TANK_FINAL_POSITION;
         float distToPosition = bot->GetExactDist2d(position);
 
         if (distToPosition > maxDistance)
@@ -466,15 +462,17 @@ bool KazrogalMainTankPositionBossAction::Execute(Event /*event*/)
                           MovementPriority::MOVEMENT_COMBAT, true, true);
         }
 
-        if (step == 0 && distToPosition <= maxDistance)
+        if (state == TankPositionState::MovingToTransition && distToPosition <= maxDistance)
         {
-            kazrogalTankStep[guid] = 1;
+            kazrogalTankStep[guid] = TankPositionState::MovingToFinal;
         }
-        else if (step == 1 && distToPosition <= maxDistance)
+        else if (state != TankPositionState::MovingToTransition &&
+                 distToPosition <= maxDistance)
         {
             float orientation = atan2(kazrogal->GetPositionY() - bot->GetPositionY(),
                                       kazrogal->GetPositionX() - bot->GetPositionX());
             bot->SetFacingTo(orientation);
+            kazrogalTankStep[guid] = TankPositionState::Positioned;
         }
     }
 
@@ -527,11 +525,11 @@ bool KazrogalSpreadRangedInArcAction::Execute(Event /*event*/)
     size_t botIndex = (findIt != rangedMembers.end()) ?
         std::distance(rangedMembers.begin(), findIt) : 0;
 
-    constexpr float arcSpan = M_PI / 3.0f; // Testing 60 degrees; 45 works
+    constexpr float arcSpan = M_PI / 3.0f;
     constexpr float arcCenter = 4.225f;
     constexpr float arcStart = arcCenter - arcSpan / 2.0f;
 
-    constexpr float radius = 20.0f; // Was using 24 (~9y combat reach for boss + 15y aoe)
+    constexpr float radius = 20.0f;
     float angle = (count == 1) ? arcCenter :
         (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
 
@@ -609,8 +607,6 @@ bool KazrogalLowManaBotTakeDefensiveMeasuresAction::Execute(Event /*event*/)
             if (!kazrogal)
                 return false;
 
-            // botAI->Reset();
-
             // MoveFromGroup will make the bot run very far if there is another bot
             // also running next to it; thus, we swap to MoveAway once there is sufficient
             // distance from the group so the parallel bots break away from each other
@@ -678,15 +674,13 @@ bool AzgalorMainTankPositionBossAction::Execute(Event /*event*/)
     if (azgalor->GetVictim() == bot && bot->IsWithinMeleeRange(azgalor))
     {
         const ObjectGuid guid = bot->GetGUID();
-        uint8 step = azgalorTankStep.count(guid) ? azgalorTankStep[guid] : 0;
+        auto it = azgalorTankStep.try_emplace(
+            guid, TankPositionState::MovingToTransition).first;
+        TankPositionState state = it->second;
 
-        const Position positions[2] =
-        {
-            AZGALOR_TANK_TRANSITION_POSITION,
-            AZGALOR_TANK_FINAL_POSITION
-        };
         constexpr float maxDistance = 2.0f;
-        const Position& position = positions[step];
+        const Position& position = state == TankPositionState::MovingToTransition ?
+            AZGALOR_TANK_TRANSITION_POSITION : AZGALOR_TANK_FINAL_POSITION;
         float distToPosition = bot->GetExactDist2d(position);
 
         if (distToPosition > maxDistance)
@@ -702,16 +696,17 @@ bool AzgalorMainTankPositionBossAction::Execute(Event /*event*/)
                           MovementPriority::MOVEMENT_COMBAT, true, true);
         }
 
-        if (step == 0 && distToPosition <= maxDistance)
+        if (state == TankPositionState::MovingToTransition && distToPosition <= maxDistance)
         {
-            azgalorTankStep[guid] = 1;
+            azgalorTankStep[guid] = TankPositionState::MovingToFinal;
         }
-        else if (step == 1 && distToPosition <= maxDistance)
+        else if (state != TankPositionState::MovingToTransition &&
+                 distToPosition <= maxDistance)
         {
             float orientation = atan2(azgalor->GetPositionY() - bot->GetPositionY(),
                                       azgalor->GetPositionX() - bot->GetPositionX());
             bot->SetFacingTo(orientation);
-            azgalorTankStep[guid] = 2;
+            azgalorTankStep[guid] = TankPositionState::Positioned;
         }
     }
 
@@ -725,8 +720,9 @@ bool AzgalorDisperseRangedAction::Execute(Event /*event*/)
         return false;
 
     // Azgalor's hitbox is 8.8 yards
+    TankPositionState tankState = GetAzgalorTankPositionState(botAI, bot);
     const float safeDistFromBoss =
-        GetAzgalorTankStep(botAI, bot) < 1 ? 35.0f : 29.0f;
+        (tankState == TankPositionState::MovingToTransition ? 35.0f : 29.0f);
     constexpr uint32 minInterval = 0;
 
     if (bot->GetExactDist2d(azgalor) < safeDistFromBoss &&
@@ -788,10 +784,7 @@ bool AzgalorMeleeGetOutOfFireAction::Execute(Event /*event*/)
     }
 
     if (inAnyRoF)
-    {
-        // botAI->Reset();
         return MoveAway(azgalor, 5.0f);
-    }
 
     return true;
 }
@@ -813,7 +806,6 @@ bool AzgalorMoveToDoomguardTankAction::Execute(Event /*event*/)
     const Position& position = AZGALOR_DOOMGUARD_POSITION;
     if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 5.0f)
     {
-        // botAI->Reset();
         return MoveTo(HYJAL_SUMMIT_MAP_ID, position.GetPositionX(), position.GetPositionY(),
                       position.GetPositionZ(), false, false, false, false,
                       MovementPriority::MOVEMENT_FORCED, true, false);
@@ -1008,10 +1000,7 @@ bool ArchimondeSpreadToAvoidAirBurstAction::Execute(Event /*event*/)
                 float currentDistance = bot->GetDistance2d(mainTank);
                 constexpr float safeDistance = 14.0f;
                 if (currentDistance < safeDistance)
-                {
-                    // botAI->Reset();
                     return MoveAway(mainTank, safeDistance - currentDistance);
-                }
             }
         }
     }
@@ -1080,7 +1069,6 @@ bool ArchimondeAvoidDoomfireAction::Execute(Event /*event*/)
 
         bool backwards = botAI->IsMainTank(bot);
 
-        // botAI->Reset();
         return MoveTo(HYJAL_SUMMIT_MAP_ID, targetX, targetY, bot->GetPositionZ(),
                       false, false, false, false, priority, true, backwards);
     }

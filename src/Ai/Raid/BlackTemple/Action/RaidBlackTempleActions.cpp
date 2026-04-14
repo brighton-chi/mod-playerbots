@@ -1012,15 +1012,13 @@ bool MotherShahrazTanksPositionBossUnderPillarAction::Execute(Event /*event*/)
     if (playerVictim && botAI->IsTank(playerVictim))
     {
         const ObjectGuid guid = bot->GetGUID();
-        uint8 step = shahrazTankStep.count(guid) ? shahrazTankStep[guid] : 0;
+        auto it = shahrazTankStep.try_emplace(
+            guid, TankPositionState::MovingToTransition).first;
+        TankPositionState state = it->second;
 
-        const Position positions[2] =
-        {
-            SHAHRAZ_TRANSITION_POSITION,
-            SHAHRAZ_TANK_POSITION
-        };
         constexpr float maxDistance = 0.5f;
-        const Position& position = positions[step];
+        const Position& position = state == TankPositionState::MovingToTransition ?
+            SHAHRAZ_TRANSITION_POSITION : SHAHRAZ_TANK_POSITION;
         float distToPosition = bot->GetExactDist2d(position);
 
         if (distToPosition > maxDistance && bot->IsWithinMeleeRange(shahraz))
@@ -1031,15 +1029,15 @@ bool MotherShahrazTanksPositionBossUnderPillarAction::Execute(Event /*event*/)
                           MovementPriority::MOVEMENT_COMBAT, true, backwards);
         }
 
-        if (step == 0 && distToPosition <= maxDistance)
-            shahrazTankStep[guid] = 1;
+        if (state == TankPositionState::MovingToTransition && distToPosition <= maxDistance)
+            shahrazTankStep[guid] = TankPositionState::MovingToFinal;
 
-        if (step == 1 && distToPosition <= maxDistance)
+        if (state != TankPositionState::MovingToTransition && distToPosition <= maxDistance)
         {
             float orientation = atan2(shahraz->GetPositionY() - bot->GetPositionY(),
                                       shahraz->GetPositionX() - bot->GetPositionX());
             bot->SetFacingTo(orientation);
-            shahrazTankStep[guid] = 2;
+            shahrazTankStep[guid] = TankPositionState::Positioned;
         }
     }
 

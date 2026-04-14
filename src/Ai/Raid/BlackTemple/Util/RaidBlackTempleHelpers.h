@@ -116,6 +116,14 @@ namespace BlackTempleHelpers
         GO_SHADOW_TRAP    = 185916,
     };
 
+    enum class TankPositionState : uint8
+    {
+        MovingToTransition = 0,
+        MovingToFinal      = 1,
+        Positioned         = 2,
+        Unknown            = 255,
+    };
+
     // General
     constexpr uint32 BLACK_TEMPLE_MAP_ID = 564;
 
@@ -144,8 +152,8 @@ namespace BlackTempleHelpers
     extern const Position SHAHRAZ_TANK_POSITION;
     extern const Position SHAHRAZ_TRANSITION_POSITION;
     extern const Position SHAHRAZ_RANGED_POSITION;
-    extern std::unordered_map<ObjectGuid, uint8> shahrazTankStep;
-    int GetShahrazTankStep(PlayerbotAI* botAI, Player* bot);
+    extern std::unordered_map<ObjectGuid, TankPositionState> shahrazTankStep;
+    TankPositionState GetShahrazTankPositionState(PlayerbotAI* botAI, Player* bot);
 
     // Illidari Council
     constexpr float COUNCIL_FLOOR_Z_THRESHOLD = 270.000f;
