@@ -12,7 +12,6 @@
 #include "AiFactory.h"
 #include "Playerbots.h"
 #include "SharedDefines.h"
-#include "../../../../src/server/scripts/Spells/spell_dk.cpp"
 
 namespace ai::gbless
 {
@@ -246,6 +245,14 @@ inline constexpr BlessingPriorityEntry BLESSING_PRIORITIES[SPEC_PROFILE_COUNT][4
 // Maps a player to their SpecProfile based on class, talent tree,
 // and tank role.
 
+constexpr uint32 SPELL_IMPROVED_MIGHT_R1             = 20042;
+constexpr uint32 SPELL_IMPROVED_MIGHT_R2             = 20045;
+constexpr uint32 SPELL_IMPROVED_WISDOM_R1            = 20244;
+constexpr uint32 SPELL_IMPROVED_WISDOM_R2            = 20245;
+constexpr uint32 SPELL_BLESSING_OF_SANCTUARY         = 20911;
+constexpr uint32 SPELL_GREATER_BLESSING_OF_SANCTUARY = 25899;
+constexpr uint32 SPELL_DK_FROST_PRESENCE             = 48263;
+
 inline SpecProfile ResolveSpecProfile(Player* player)
 {
     if (!player)
@@ -310,13 +317,6 @@ inline SpecProfile ResolveSpecProfile(Player* player)
             return SPEC_CASTER_CLOTH;
     }
 }
-
-constexpr uint32 SPELL_IMPROVED_MIGHT_R1             = 20042;
-constexpr uint32 SPELL_IMPROVED_MIGHT_R2             = 20045;
-constexpr uint32 SPELL_IMPROVED_WISDOM_R1            = 20244;
-constexpr uint32 SPELL_IMPROVED_WISDOM_R2            = 20245;
-constexpr uint32 SPELL_BLESSING_OF_SANCTUARY         = 20911;
-constexpr uint32 SPELL_GREATER_BLESSING_OF_SANCTUARY = 25899;
 
 inline bool HasImprovedMight(Player* player)
 {

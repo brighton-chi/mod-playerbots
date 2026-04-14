@@ -101,11 +101,11 @@ private:
 
 // Felmyst
 
-class FelmystAction : public MovementAction
+class FelmystMainTankPositionBossOnGroundAction : public AttackAction
 {
 public:
-    FelmystAction(
-        PlayerbotAI* botAI, std::string const name = "felmyst") : MovementAction(botAI, name) {}
+    FelmystMainTankPositionBossOnGroundAction(
+        PlayerbotAI* botAI, std::string const name = "felmyst main tank position boss on ground") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 

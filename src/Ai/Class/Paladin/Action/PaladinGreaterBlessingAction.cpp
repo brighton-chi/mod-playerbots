@@ -42,7 +42,8 @@ CastGreaterBlessingAssignmentAction::CastGreaterBlessingAssignmentAction(
 
 bool CastGreaterBlessingAssignmentAction::isUseful()
 {
-    return Group* group = bot->GetGroup();
+    Group* group = bot->GetGroup();
+    return group;
 }
 
 bool CastGreaterBlessingAssignmentAction::Execute(Event /*event*/)

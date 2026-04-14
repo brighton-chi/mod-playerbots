@@ -956,5 +956,5 @@ namespace SunwellHelpers
 
     // Felmyst
 
-    const Position FELMYST_TANK_POSITION = { 0f, 0f, 0f };
+    const Position FELMYST_TANK_POSITION = { 0.0f, 0.0f, 0.0f };
 }
