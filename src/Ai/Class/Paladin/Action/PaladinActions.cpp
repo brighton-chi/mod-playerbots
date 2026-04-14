@@ -27,10 +27,12 @@ static bool IsBlessingTargetCandidate(Player* bot, Player* player)
         return false;
 
     return bot->GetDistance(player) < sPlayerbotAIConfig.spellDistance * 2 &&
-           bot->IsWithinLOS(player->GetPositionX(), player->GetPositionY(), player->GetPositionZ());
+           bot->IsWithinLOS(player->GetPositionX(), player->GetPositionY(),
+                            player->GetPositionZ());
 }
 
-static bool HasBlessingAura(PlayerbotAI* botAI, Unit* target, std::initializer_list<char const*> auraNames)
+static bool HasBlessingAura(
+    PlayerbotAI* botAI, Unit* target, std::initializer_list<char const*> auraNames)
 {
     for (char const* auraName : auraNames)
     {
@@ -42,7 +44,8 @@ static bool HasBlessingAura(PlayerbotAI* botAI, Unit* target, std::initializer_l
 }
 
 template <typename Predicate>
-static Unit* FindBlessingTarget(Player* bot, PlayerbotAI* botAI, Predicate&& predicate)
+static Unit* FindBlessingTarget(
+    Player* bot, PlayerbotAI* botAI, Predicate&& predicate)
 {
     std::vector<Player*> masters;
     std::vector<Player*> healers;
@@ -75,7 +78,8 @@ static Unit* FindBlessingTarget(Player* bot, PlayerbotAI* botAI, Predicate&& pre
         addPlayer(bot);
     }
 
-    std::vector<std::vector<Player*>*> orderedLists = { &masters, &healers, &tanks, &others };
+    std::vector<std::vector<Player*>*> orderedLists = {
+        &masters, &healers, &tanks, &others };
     for (std::vector<Player*>* players : orderedLists)
     {
         for (Player* player : *players)
@@ -202,7 +206,8 @@ inline std::string const GetActualBlessingOfSanctuary(Unit* target, Player* bot)
 
     if (auto* botAI = GET_PLAYERBOT_AI(bot))
     {
-        if (Unit* mainTank = botAI->GetAiObjectContext()->GetValue<Unit*>("main tank")->Get())
+        if (Unit* mainTank =
+            botAI->GetAiObjectContext()->GetValue<Unit*>("main tank")->Get())
         {
             if (mainTank == target)
                 return "blessing of sanctuary";
@@ -217,8 +222,8 @@ inline std::string const GetActualBlessingOfSanctuary(Unit* target, Player* bot)
 
 Value<Unit*>* CastBlessingOnPartyAction::GetTargetValue()
 {
-
-    return context->GetValue<Unit*>("party member without aura", MakeAuraQualifierForBuff(spell));
+    return context->GetValue<Unit*>(
+        "party member without aura", MakeAuraQualifierForBuff(spell));
 }
 
 Unit* CastBlessingOfMightOnPartyAction::GetTarget()
@@ -246,8 +251,9 @@ Value<Unit*>* CastBlessingOfMightOnPartyAction::GetTargetValue()
 {
     return context->GetValue<Unit*>(
     "party member without aura",
-    "blessing of might,greater blessing of might,blessing of wisdom,greater blessing of wisdom,"
-    "blessing of sanctuary,greater blessing of sanctuary"
+    "blessing of might,greater blessing of might,blessing of wisdom,"
+    "greater blessing of wisdom,blessing of sanctuary,"
+    "greater blessing of sanctuary"
     );
 }
 
@@ -337,10 +343,12 @@ bool CastBlessingOfSanctuaryOnPartyAction::Execute(Event /*event*/)
     Player* targetPlayer = target ? target->ToPlayer() : nullptr;
 
     const auto HasKingsAura = [&](Unit* unit) -> bool {
-        return botAI->HasAura("blessing of kings", unit) || botAI->HasAura("greater blessing of kings", unit);
+        return botAI->HasAura("blessing of kings", unit) ||
+               botAI->HasAura("greater blessing of kings", unit);
     };
     const auto HasSanctAura = [&](Unit* unit) -> bool {
-        return botAI->HasAura("blessing of sanctuary", unit) || botAI->HasAura("greater blessing of sanctuary", unit);
+        return botAI->HasAura("blessing of sanctuary", unit) ||
+               botAI->HasAura("greater blessing of sanctuary", unit);
     };
 
     if (Group* group = bot->GetGroup())
@@ -435,7 +443,8 @@ Value<Unit*>* CastBlessingOfKingsOnPartyAction::GetTargetValue()
 {
     return context->GetValue<Unit*>(
         "party member without aura",
-        "blessing of kings,greater blessing of kings,blessing of sanctuary,greater blessing of sanctuary"
+        "blessing of kings,greater blessing of kings,"
+        "blessing of sanctuary,greater blessing of sanctuary"
     );
 }
 
@@ -481,7 +490,8 @@ bool CastBlessingOfKingsOnPartyAction::Execute(Event /*event*/)
     if (!group)
         return false;
 
-    if (botAI->HasStrategy("bkings", BOT_STATE_NON_COMBAT) && IsOnlyPaladinInGroup(bot))
+    if (botAI->HasStrategy("bkings", BOT_STATE_NON_COMBAT) &&
+        IsOnlyPaladinInGroup(bot))
     {
         if (target->GetGUID() == bot->GetGUID())
             return false;
@@ -517,14 +527,21 @@ bool CastBlessingOfKingsOnPartyAction::Execute(Event /*event*/)
     return botAI->CastSpell("blessing of kings", target);
 }
 
-bool CastSealSpellAction::isUseful() { return AI_VALUE2(bool, "combat", "self target"); }
+bool CastSealSpellAction::isUseful()
+{
+    return AI_VALUE2(bool, "combat", "self target");
+}
 
-Value<Unit*>* CastTurnUndeadAction::GetTargetValue() { return context->GetValue<Unit*>("cc target", getName()); }
+Value<Unit*>* CastTurnUndeadAction::GetTargetValue()
+{
+    return context->GetValue<Unit*>("cc target", getName());
+}
 
 Unit* CastHandOfFreedomOnPartyAction::GetTarget()
 {
     bool const selfImpaired = botAI->IsMovementImpaired(bot);
-    bool const hasSelfHand = selfImpaired && ai::paladin::HasAnyPaladinHandFromCaster(bot, bot);
+    bool const hasSelfHand =
+        selfImpaired && ai::paladin::HasAnyPaladinHandFromCaster(bot, bot);
 
     if (!bot->GetGroup())
     {
@@ -551,7 +568,8 @@ bool CastHandOfFreedomOnPartyAction::isUseful()
     if (!target)
         return false;
 
-    return CastBuffSpellAction::isUseful() && !ai::paladin::HasAnyPaladinHandFromCaster(target, bot);
+    return CastBuffSpellAction::isUseful() &&
+           !ai::paladin::HasAnyPaladinHandFromCaster(target, bot);
 }
 
 Unit* CastRighteousDefenseAction::GetTarget()

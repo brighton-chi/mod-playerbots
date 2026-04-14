@@ -11,8 +11,7 @@
 #include "Playerbots.h"
 
 ToggleGreaterBlessingStrategyAction::ToggleGreaterBlessingStrategyAction(
-    PlayerbotAI* botAI)
-    : Action(botAI, "toggle greater blessing strategy") {}
+    PlayerbotAI* botAI) : Action(botAI, "toggle greater blessing strategy") {}
 
 bool ToggleGreaterBlessingStrategyAction::IsEligibleGroup(Group const* group) const
 {
@@ -61,7 +60,6 @@ char const* ToggleGreaterBlessingStrategyAction::GetScopeDescription() const
 
 bool ToggleGreaterBlessingStrategyAction::Execute(Event /*event*/)
 {
-    // If the config option is disabled, never auto-toggle.
     if (sPlayerbotAIConfig.autoGreaterBlessings == AutoGreaterBlessingMode::DISABLED)
         return false;
 
@@ -69,7 +67,6 @@ bool ToggleGreaterBlessingStrategyAction::Execute(Event /*event*/)
         botAI->HasStrategy("gblessing", BOT_STATE_NON_COMBAT);
 
     Group* group = bot->GetGroup();
-    // Remove gblessing immediately when the bot is no longer in the configured scope.
     if (!IsEligibleGroup(group))
     {
         if (wasEligibleGroup_)
@@ -79,16 +76,8 @@ bool ToggleGreaterBlessingStrategyAction::Execute(Event /*event*/)
 
         if (hasGblessing)
         {
-            // Remove gblessing and restore an appropriate single-blessing
-            // strategy based on this Paladin's spec.
-            botAI->ChangeStrategy("-gblessing," + GetRestoreStrategy(),
-                                  BOT_STATE_NON_COMBAT);
-
-            LOG_DEBUG("playerbots",
-                      "[gblessing] {} no longer in {} - restored single-blessing "
-                      "strategy",
-                      bot->GetName(),
-                      GetScopeDescription());
+            botAI->ChangeStrategy(
+                "-gblessing," + GetRestoreStrategy(), BOT_STATE_NON_COMBAT);
 
             return true;
         }
@@ -96,24 +85,16 @@ bool ToggleGreaterBlessingStrategyAction::Execute(Event /*event*/)
         return false;
     }
 
-    // ── Entering or staying in the configured scope ──────────────
     wasEligibleGroup_ = true;
 
-    // If user manually removed gblessing, don't re-enable.
     if (userDisabled_)
         return false;
 
     if (!hasGblessing)
     {
-        // Activate gblessing and remove existing blessing strategies.
         botAI->ChangeStrategy(
-            "+gblessing,-bwisdom,-bkings,-bmight,-bsanc",
-            BOT_STATE_NON_COMBAT);
+            "+gblessing,-bwisdom,-bkings,-bmight,-bsanc", BOT_STATE_NON_COMBAT);
 
-        LOG_DEBUG("playerbots",
-                  "[gblessing] {} entered {} - activated gblessing",
-                  bot->GetName(),
-                  GetScopeDescription());
         return true;
     }
 

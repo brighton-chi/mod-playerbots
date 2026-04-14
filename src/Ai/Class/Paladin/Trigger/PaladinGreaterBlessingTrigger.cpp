@@ -12,8 +12,6 @@
 
 using namespace ai::gbless;
 
-// Lightweight check: does any group member need a blessing from this bot?
-// Uses the same algorithm as the action but exits early on first match.
 bool GreaterBlessingNeededTrigger::IsActive()
 {
     Player* bot = this->bot;
@@ -24,8 +22,6 @@ bool GreaterBlessingNeededTrigger::IsActive()
     if (!group)
         return false;
 
-    // Collect bot Paladins regardless of alive/dead so tier stays
-    // stable when a paladin dies.
     std::vector<Player*> botPaladins;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
@@ -39,10 +35,9 @@ bool GreaterBlessingNeededTrigger::IsActive()
     if (botPaladins.empty())
         return false;
 
-    uint8 tierIndex = static_cast<uint8>(
+    uint8 paladinCountIndex = static_cast<uint8>(
         std::min<size_t>(botPaladins.size(), 4u) - 1u);
 
-    // Check Sanctuary availability.
     bool anySanctuaryAvailable = false;
     for (Player* paladin : botPaladins)
     {
@@ -53,7 +48,6 @@ bool GreaterBlessingNeededTrigger::IsActive()
         }
     }
 
-    // Sort Paladins deterministically.
     std::sort(botPaladins.begin(), botPaladins.end(), [](Player* a, Player* b)
     {
         int sa = 0, sb = 0;
@@ -77,8 +71,6 @@ bool GreaterBlessingNeededTrigger::IsActive()
     if (mySlot < 0)
         return false;
 
-    // Check whether this bot has the EXACT assigned blessing on the target.
-    // Distinguishes single vs greater so stale singles trigger an upgrade.
     auto hasExact = [&](BlessingType bt, Unit* target) -> bool
     {
         std::string name = BlessingSpellName(bt);
@@ -98,13 +90,12 @@ bool GreaterBlessingNeededTrigger::IsActive()
             continue;
 
         SpecProfile spec = ResolveSpecProfile(player);
-        auto const& entry = BLESSING_PRIORITIES[spec][tierIndex];
+        auto const& entry = BLESSING_PRIORITIES[spec][paladinCountIndex];
 
         BlessingType type = entry.blessings[mySlot];
         if (type == BLESSING_NONE)
             continue;
 
-        // Apply Sanctuary fallback.
         if (!anySanctuaryAvailable && BaseBlessingOf(type) == BASE_SANCTUARY)
         {
             bool kingsExists = false;
@@ -124,13 +115,9 @@ bool GreaterBlessingNeededTrigger::IsActive()
                                          : BLESSING_KINGS_GREATER;
         }
 
-        // Verify this bot can cast it.
         if (BaseBlessingOf(type) == BASE_SANCTUARY && !KnowsSanctuary(bot))
             continue;
 
-        // For Paladin targets, the action forces Singles via Phase 6.
-        // Check both variants so we don't fire needlessly when the
-        // Single is already present but the raw table says Greater.
         if (player->getClass() == CLASS_PALADIN && IsGreaterVariant(type))
         {
             if (!hasExact(type, player) && !hasExact(ToSingleVariant(type), player))
@@ -140,9 +127,6 @@ bool GreaterBlessingNeededTrigger::IsActive()
             return true;
     }
 
-    // Phase 7 in the action may reassign this bot to Sanctuary via talent-aware swapping.
-    // If this bot knows Sanctuary, fire the trigger whenever any alive group member still
-    // lacks a Sanctuary aura from this bot.
     if (KnowsSanctuary(bot))
     {
         for (GroupReference* ref = group->GetFirstMember(); ref;

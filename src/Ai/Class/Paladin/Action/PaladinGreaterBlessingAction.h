@@ -13,9 +13,6 @@
 #include "PaladinBlessingPriorityData.h"
 #include "Playerbots.h"
 
-// Casts one blessing per Execute() call based on the gblessing
-// raid-coordination algorithm. Returns true on successful cast,
-// false if nothing to do.
 class CastGreaterBlessingAssignmentAction : public Action
 {
 public:
@@ -25,14 +22,12 @@ public:
     bool isUseful() override;
 
 private:
-    // Per-player assignment: what blessing THIS bot should cast on them.
     struct PlayerAssignment
     {
         Player* player = nullptr;
         ai::gbless::BlessingType blessing = ai::gbless::BLESSING_NONE;
     };
 
-    // Build the full assignment table and find the first unbuffed target.
     bool ComputeAssignments(std::vector<PlayerAssignment>& outAssignments);
 };
 

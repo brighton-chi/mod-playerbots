@@ -9,8 +9,6 @@
 #include "GenericTriggers.h"
 #include "Playerbots.h"
 
-// Fires when ANY raid member needs a blessing assignment from this bot
-// that they don't currently have.
 class GreaterBlessingNeededTrigger : public Trigger
 {
 public:

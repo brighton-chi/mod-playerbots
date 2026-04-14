@@ -6,12 +6,13 @@
 #ifndef _PLAYERBOT_PALADINBLESSINGPRIORITYDATA_H
 #define _PLAYERBOT_PALADINBLESSINGPRIORITYDATA_H
 
+#include <array>
+#include <string>
+
 #include "AiFactory.h"
 #include "Playerbots.h"
 #include "SharedDefines.h"
-
-#include <array>
-#include <string>
+#include "../../../../src/server/scripts/Spells/spell_dk.cpp"
 
 namespace ai::gbless
 {
@@ -20,7 +21,7 @@ namespace ai::gbless
 // Each value identifies a unique row in the blessing priority table.
 enum SpecProfile : uint8
 {
-    SPEC_PROT_WARRIOR_BLOOD_DK = 0,
+    SPEC_PROT_WARRIOR_TANK_DK = 0,
     SPEC_DPS_WARRIOR_DPS_DK    = 1,
     SPEC_CASTER_SHAMAN         = 2,
     SPEC_ENHANCE_SHAMAN        = 3,
@@ -141,13 +142,13 @@ struct BlessingPriorityEntry
     BlessingType blessings[4];
 };
 
-// Indexed by [SpecProfile][tierIndex] where tierIndex:
+// Indexed by [SpecProfile][paladinCountIndex] where paladinCountIndex:
 //   0 = 1 paladin, 1 = 2 paladins, 2 = 3 paladins, 3 = 4+ paladins
 //
 // clang-format off
 inline constexpr BlessingPriorityEntry BLESSING_PRIORITIES[SPEC_PROFILE_COUNT][4] =
 {
-    // SPEC_PROT_WARRIOR_BLOOD_DK
+    // SPEC_PROT_WARRIOR_TANK_DK
     {
         {{ BLESSING_SANCTUARY_SINGLE,  BLESSING_NONE,           BLESSING_NONE,           BLESSING_NONE           }},
         {{ BLESSING_SANCTUARY_SINGLE,  BLESSING_MIGHT_GREATER,  BLESSING_NONE,           BLESSING_NONE           }},
@@ -257,12 +258,12 @@ inline SpecProfile ResolveSpecProfile(Player* player)
     {
         case CLASS_WARRIOR:
             if (tab == WARRIOR_TAB_PROTECTION)
-                return SPEC_PROT_WARRIOR_BLOOD_DK;
+                return SPEC_PROT_WARRIOR_TANK_DK;
             return SPEC_DPS_WARRIOR_DPS_DK;
 
         case CLASS_DEATH_KNIGHT:
-            if (tab == DEATH_KNIGHT_TAB_BLOOD)
-                return SPEC_PROT_WARRIOR_BLOOD_DK;
+            if (tab == DEATH_KNIGHT_TAB_BLOOD || player->HasAura(SPELL_DK_FROST_PRESENCE))
+                return SPEC_PROT_WARRIOR_TANK_DK;
             return SPEC_DPS_WARRIOR_DPS_DK;
 
         case CLASS_SHAMAN:
@@ -334,6 +335,6 @@ inline bool KnowsSanctuary(Player* player)
     return player && player->HasSpell(SPELL_BLESSING_OF_SANCTUARY);
 }
 
-} // namespace ai::gbless
+}
 
 #endif
