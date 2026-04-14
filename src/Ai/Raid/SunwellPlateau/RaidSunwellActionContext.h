@@ -48,8 +48,32 @@ public:
             &RaidSunwellActionContext::brutallus_handle_burn;
 
         // Felmyst
+        creators["felmyst misdirect boss to main tank"] =
+            &RaidSunwellActionContext::felmyst_misdirect_boss_to_main_tank;
+
         creators["felmyst main tank position boss on ground"] =
             &RaidSunwellActionContext::felmyst_main_tank_position_boss_on_ground;
+
+        creators["felmyst position ranged on ground"] =
+            &RaidSunwellActionContext::felmyst_position_ranged_on_ground;
+
+        creators["felmyst remove encapsulate"] =
+            &RaidSunwellActionContext::felmyst_remove_encapsulate;
+
+        creators["felmyst run away from encapsulated player"] =
+            &RaidSunwellActionContext::felmyst_run_away_from_encapsulated_player;
+
+        creators["felmyst cast mass dispel on gas nova"] =
+            &RaidSunwellActionContext::felmyst_cast_mass_dispel_on_gas_nova;
+
+        creators["felmyst avoid demonic vapor"] =
+            &RaidSunwellActionContext::felmyst_avoid_demonic_vapor;
+
+        creators["felmyst avoid fog of corruption"] =
+            &RaidSunwellActionContext::felmyst_avoid_fog_of_corruption;
+
+        creators["felmyst assign target priority"] =
+            &RaidSunwellActionContext::felmyst_assign_target_priority;
 
         // Eredar Twins (Alythess & Sacrolash)
         creators["eredar twins"] =
@@ -99,8 +123,32 @@ private:
         PlayerbotAI* botAI) { return new BrutallusHandleBurnAction(botAI); }
 
     // Felmyst
+    static Action* felmyst_misdirect_boss_to_main_tank(
+        PlayerbotAI* botAI) { return new FelmystMisdirectBossToMainTankAction(botAI); }
+
     static Action* felmyst_main_tank_position_boss_on_ground(
         PlayerbotAI* botAI) { return new FelmystMainTankPositionBossOnGroundAction(botAI); }
+
+    static Action* felmyst_position_ranged_on_ground(
+        PlayerbotAI* botAI) { return new FelmystPositionRangedOnGroundAction(botAI); }
+
+    static Action* felmyst_remove_encapsulate(
+        PlayerbotAI* botAI) { return new FelmystRemoveEncapsulateAction(botAI); }
+
+    static Action* felmyst_run_away_from_encapsulated_player(
+        PlayerbotAI* botAI) { return new FelmystRunAwayFromEncapsulatedPlayerAction(botAI); }
+
+    static Action* felmyst_cast_mass_dispel_on_gas_nova(
+        PlayerbotAI* botAI) { return new FelmystCastMassDispelOnGasNovaAction(botAI); }
+
+    static Action* felmyst_avoid_demonic_vapor(
+        PlayerbotAI* botAI) { return new FelmystAvoidDemonicVaporAction(botAI); }
+
+    static Action* felmyst_avoid_fog_of_corruption(
+        PlayerbotAI* botAI) { return new FelmystAvoidFogOfCorruptionAction(botAI); }
+
+    static Action* felmyst_assign_target_priority(
+        PlayerbotAI* botAI) { return new FelmystAssignTargetPriorityAction(botAI); }
 
     // Eredar Twins (Alythess & Sacrolash)
     static Action* eredar_twins(

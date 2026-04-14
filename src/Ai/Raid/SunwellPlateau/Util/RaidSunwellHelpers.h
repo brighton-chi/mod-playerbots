@@ -17,6 +17,31 @@
 
 namespace SunwellHelpers
 {
+    enum class FelmystFogLane : uint8
+    {
+        None = std::numeric_limits<uint8>::max(),
+        Top = 0,
+        Middle = 1,
+        Bottom = 2,
+    };
+
+    enum class FelmystFogPhase : uint8
+    {
+        None,
+        Windup,
+        Sweep,
+        Recovery,
+    };
+
+    struct FelmystFogOfCorruptionState
+    {
+        FelmystFogLane lane = FelmystFogLane::None;
+        FelmystFogPhase phase = FelmystFogPhase::None;
+        uint32 firstObservedMs = 0;
+        uint32 lastObservedMs = 0;
+        uint32 expireMs = 0;
+    };
+
     enum class SunwellSpells : uint32
     {
         // Kalecgos & Sathrovarr the Corruptor
@@ -33,6 +58,9 @@ namespace SunwellHelpers
 
         // Felmyst
         SPELL_ENCAPSULATE = 45662,
+        SPELL_GAS_NOVA = 45855,
+        SPELL_FELMYST_SPEED_BURST = 45495,
+        SPELL_FOG_OF_CORRUPTION_CHARM = 45717,
 
         // Hunter
         SPELL_MISDIRECTION              = 35079,
@@ -49,7 +77,11 @@ namespace SunwellHelpers
 
     enum class SunwellNPCs : uint32
     {
-        // Kalecgos
+        // Felmyst
+        NPC_FELMYST = 25038,
+        NPC_DEMONIC_VAPOR = 25265,
+        NPC_DEMONIC_VAPOR_TRAIL = 25267,
+        NPC_UNYIELDING_DEAD = 25268,
     };
 
     enum class SunwellObjects : uint32
@@ -146,6 +178,31 @@ namespace SunwellHelpers
 
     // Felmyst
     extern const Position FELMYST_TANK_POSITION;
+    constexpr float FELMYST_RANGED_SIDE_DISTANCE = 20.0f;
+    constexpr float FELMYST_RANGED_GROUP_RADIUS = 3.0f;
+    constexpr float FELMYST_ENCAPSULATE_SAFE_DISTANCE = 21.0f;
+    constexpr float FELMYST_DEMONIC_VAPOR_SAFE_DISTANCE = 8.0f;
+    constexpr float FELMYST_FOG_LANE_POINT_TOLERANCE = 12.0f;
+    constexpr float FELMYST_FOG_LANE_SEGMENT_TOLERANCE = 12.0f;
+    constexpr float FELMYST_FOG_SAFE_LANE_BUFFER = 2.0f;
+    constexpr float FELMYST_FOG_SHIFT_MIN_STEP = 3.0f;
+    constexpr float FELMYST_FOG_SHIFT_MAX_STEP = 8.0f;
+    constexpr uint32 FELMYST_FOG_WINDUP_GRACE_MS = 7000;
+    constexpr uint32 FELMYST_FOG_RECOVERY_GRACE_MS = 2500;
+    extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> felmystRangedAssignments;
+    extern std::unordered_map<uint32, FelmystFogOfCorruptionState> felmystFogOfCorruptionStates;
+    void EnsureFelmystRangedAssignments(PlayerbotAI* botAI, Player* bot);
+    float GetFelmystFrontAngle(PlayerbotAI* botAI, Player* bot, Unit* felmyst);
+    bool TryGetFelmystFogLaneFromAirPosition(Unit* felmyst, FelmystFogLane& lane);
+    bool GetActiveFelmystFogOfCorruptionState(
+        Player* bot, Unit* felmyst, FelmystFogOfCorruptionState& state);
+    bool TryGetFelmystFogSidewaysShiftDestination(
+        Player* bot, FelmystFogLane dangerLane, Position& destination);
+    Unit* GetNearestFelmystFogOfCorruptionCharmedTarget(Player* bot);
+    Unit* GetNearestFelmystDemonicVaporHazard(Player* bot, float searchRadius);
+    Player* GetFelmystEncapsulateTarget(Player* bot);
+    bool TryGetFelmystRangedPosition(PlayerbotAI* botAI, Player* bot, Unit* felmyst, Position& position);
+    Player* GetFelmystGasNovaDispelTarget(Player* bot);
 }
 
 #endif

@@ -192,10 +192,51 @@ float BrutallusDelayCooldownsMultiplier::GetValue(Action* action)
 
 // Felmyst
 
-float FelmystMultiplier::GetValue(Action* action)
+float FelmystDisableDefaultTargetingMultiplier::GetValue(Action* action)
 {
     if (!AI_VALUE2(Unit*, "find target", "felmyst"))
         return 1.0f;
+
+    if (dynamic_cast<DpsAssistAction*>(action) ||
+        dynamic_cast<TankAssistAction*>(action))
+        return 0.0f;
+
+    return 1.0f;
+}
+
+float FelmystControlMovementMultiplier::GetValue(Action* action)
+{
+    if (!AI_VALUE2(Unit*, "find target", "felmyst"))
+        return 1.0f;
+
+    if (dynamic_cast<CombatFormationMoveAction*>(action) &&
+        !dynamic_cast<SetBehindTargetAction*>(action))
+        return 0.0f;
+
+    if (dynamic_cast<CastDisengageAction*>(action) ||
+        dynamic_cast<CastBlinkBackAction*>(action) ||
+        dynamic_cast<FleeAction*>(action))
+        return 0.0f;
+
+    return 1.0f;
+}
+
+float FelmystPrioritizeFogAvoidanceMultiplier::GetValue(Action* action)
+{
+    Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
+    if (!felmyst || !felmyst->IsFlying())
+        return 1.0f;
+
+    FelmystFogOfCorruptionState fogState;
+    if (!GetActiveFelmystFogOfCorruptionState(bot, felmyst, fogState))
+        return 1.0f;
+
+    if (dynamic_cast<MovementAction*>(action) &&
+        !dynamic_cast<AttackAction*>(action) &&
+        !dynamic_cast<FelmystAvoidFogOfCorruptionAction*>(action))
+    {
+        return 0.0f;
+    }
 
     return 1.0f;
 }

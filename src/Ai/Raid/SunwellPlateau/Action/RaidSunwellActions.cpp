@@ -77,6 +77,22 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
         erased = true;
     }
 
+    // Felmyst
+
+    Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
+
+    if (!felmyst && IsMechanicTrackerBot(botAI, bot, SUNWELL_MAP_ID) &&
+        felmystRangedAssignments.erase(bot->GetInstanceId()) > 0)
+    {
+        erased = true;
+    }
+
+    if (!felmyst && IsMechanicTrackerBot(botAI, bot, SUNWELL_MAP_ID) &&
+        felmystFogOfCorruptionStates.erase(bot->GetInstanceId()) > 0)
+    {
+        erased = true;
+    }
+
     return erased;
 }
 
@@ -592,6 +608,28 @@ bool BrutallusHandleBurnAction::RemoveBurnWithCooldown(Player* bot)
 
 // Felmyst
 
+bool FelmystMisdirectBossToMainTankAction::Execute(Event /*event*/)
+{
+    Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
+    if (!felmyst || felmyst->IsFlying())
+        return false;
+
+    Player* mainTank = GetGroupMainTank(botAI, bot);
+    if (!mainTank)
+        return false;
+
+    if (botAI->CanCastSpell("misdirection", mainTank))
+        return botAI->CastSpell("misdirection", mainTank);
+
+    if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_MISDIRECTION)) &&
+        botAI->CanCastSpell("steady shot", felmyst))
+    {
+        return botAI->CastSpell("steady shot", felmyst);
+    }
+
+    return false;
+}
+
 bool FelmystMainTankPositionBossOnGroundAction::Execute(Event /*event*/)
 {
     Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
@@ -619,6 +657,176 @@ bool FelmystMainTankPositionBossOnGroundAction::Execute(Event /*event*/)
                           false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
         }
     }
+
+    return false;
+}
+
+bool FelmystPositionRangedOnGroundAction::Execute(Event /*event*/)
+{
+    if (bot->getClass() == CLASS_PALADIN &&
+        bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_DIVINE_SHIELD)))
+    {
+        bot->RemoveAura(static_cast<uint32>(SunwellSpells::SPELL_DIVINE_SHIELD));
+    }
+    else if (bot->getClass() == CLASS_MAGE &&
+             bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_ICE_BLOCK)))
+    {
+        bot->RemoveAura(static_cast<uint32>(SunwellSpells::SPELL_ICE_BLOCK));
+    }
+
+    Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
+    if (!felmyst || felmyst->IsFlying())
+        return false;
+
+    if (botAI->IsTank(bot) || botAI->IsMelee(bot))
+        return false;
+
+    Position position;
+    if (!TryGetFelmystRangedPosition(botAI, bot, felmyst, position))
+        return false;
+
+    return MoveInside(SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                      position.GetPositionZ(), FELMYST_RANGED_GROUP_RADIUS,
+                      MovementPriority::MOVEMENT_COMBAT);
+}
+
+bool FelmystRemoveEncapsulateAction::Execute(Event /*event*/)
+{
+    if (bot->getClass() == CLASS_ROGUE &&
+        botAI->CanCastSpell(static_cast<uint32>(SunwellSpells::SPELL_CLOAK_OF_SHADOWS), bot) &&
+        botAI->CastSpell(static_cast<uint32>(SunwellSpells::SPELL_CLOAK_OF_SHADOWS), bot))
+    {
+        return true;
+    }
+    else if (bot->getClass() == CLASS_MAGE &&
+             botAI->CanCastSpell(static_cast<uint32>(SunwellSpells::SPELL_ICE_BLOCK), bot) &&
+             botAI->CastSpell(static_cast<uint32>(SunwellSpells::SPELL_ICE_BLOCK), bot))
+    {
+        return true;
+    }
+    else if (bot->getClass() == CLASS_PALADIN &&
+             botAI->CanCastSpell(static_cast<uint32>(SunwellSpells::SPELL_DIVINE_SHIELD), bot) &&
+             botAI->CastSpell(static_cast<uint32>(SunwellSpells::SPELL_DIVINE_SHIELD), bot))
+    {
+        return true;
+    }
+
+    return false;
+}
+
+bool FelmystRunAwayFromEncapsulatedPlayerAction::Execute(Event /*event*/)
+{
+    Player* encapsulateTarget = GetFelmystEncapsulateTarget(bot);
+    if (!encapsulateTarget || encapsulateTarget == bot)
+        return false;
+
+    float distToEncapsulated = bot->GetDistance2d(encapsulateTarget);
+
+    if (distToEncapsulated > FELMYST_ENCAPSULATE_SAFE_DISTANCE)
+        return false;
+
+    return MoveAway(encapsulateTarget, FELMYST_ENCAPSULATE_SAFE_DISTANCE - distToEncapsulated);
+}
+
+bool FelmystCastMassDispelOnGasNovaAction::Execute(Event /*event*/)
+{
+    Player* gasNovaTarget = GetFelmystGasNovaDispelTarget(bot);
+    if (!gasNovaTarget)
+        return false;
+
+    if (botAI->CanCastSpell("mass dispel", gasNovaTarget))
+        return botAI->CastSpell("mass dispel", gasNovaTarget);
+
+    return false;
+}
+
+// NEED TO ADD A GENERAL SMALL SPREAD (E.G., 4 YARDS) DURING MIDAIR PHASE WHEN NO VAPOR
+bool FelmystAvoidDemonicVaporAction::Execute(Event /*event*/)
+{
+    Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
+    if (!felmyst || !felmyst->IsFlying())
+        return false;
+
+    Unit* hazard = GetNearestFelmystDemonicVaporHazard(
+        bot, FELMYST_DEMONIC_VAPOR_SAFE_DISTANCE);
+    if (!hazard)
+        return false;
+
+    float currentDistance = bot->GetDistance2d(hazard);
+    if (currentDistance >= FELMYST_DEMONIC_VAPOR_SAFE_DISTANCE)
+        return false;
+
+    return MoveAway(hazard, FELMYST_DEMONIC_VAPOR_SAFE_DISTANCE - currentDistance);
+}
+
+bool FelmystAvoidFogOfCorruptionAction::Execute(Event /*event*/)
+{
+    Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
+    if (!felmyst || !felmyst->IsFlying())
+        return false;
+
+    FelmystFogOfCorruptionState fogState;
+    if (!GetActiveFelmystFogOfCorruptionState(bot, felmyst, fogState))
+        return false;
+
+    Position destination;
+    if (!TryGetFelmystFogSidewaysShiftDestination(bot, fogState.lane, destination))
+        return false;
+
+    return MoveTo(SUNWELL_MAP_ID, destination.GetPositionX(), destination.GetPositionY(),
+        destination.GetPositionZ(), false, false, true, false,
+        MovementPriority::MOVEMENT_COMBAT, true);
+}
+
+bool FelmystAssignTargetPriorityAction::Execute(Event /*event*/)
+{
+    Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
+    if (!felmyst)
+        return false;
+
+    Unit* fogCharmedTarget = GetNearestFelmystFogOfCorruptionCharmedTarget(bot);
+    Unit* unyieldingDead = GetFirstAliveUnitByEntry(
+        botAI, static_cast<uint32>(SunwellNPCs::NPC_UNYIELDING_DEAD));
+    Unit* target = nullptr;
+
+    if (fogCharmedTarget)
+    {
+        target = fogCharmedTarget;
+    }
+    else if (!felmyst->IsFlying())
+    {
+        target = felmyst;
+    }
+    else if (botAI->IsMelee(bot))
+    {
+        target = unyieldingDead;
+    }
+    else
+    {
+        constexpr float felmystAirPriorityDistance = 35.0f;
+        if (bot->GetDistance(felmyst) <= felmystAirPriorityDistance)
+            target = felmyst;
+        else if (unyieldingDead)
+            target = unyieldingDead;
+        else
+            target = felmyst;
+    }
+
+    Unit* currentTarget = context->GetValue<Unit*>("current target")->Get();
+    if (felmyst->IsFlying() && botAI->IsMelee(bot) &&
+        currentTarget && currentTarget->GetEntry() == static_cast<uint32>(SunwellNPCs::NPC_FELMYST))
+    {
+        bot->AttackStop();
+        context->GetValue<Unit*>("current target")->Set(nullptr);
+        bot->SetTarget(ObjectGuid::Empty);
+        bot->SetSelection(ObjectGuid());
+    }
+
+    if (!target)
+        return false;
+
+    if (currentTarget != target && bot->GetTarget() != target->GetGUID())
+        return Attack(target);
 
     return false;
 }

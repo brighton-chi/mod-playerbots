@@ -101,11 +101,75 @@ private:
 
 // Felmyst
 
+class FelmystMisdirectBossToMainTankAction : public AttackAction
+{
+public:
+    FelmystMisdirectBossToMainTankAction(
+        PlayerbotAI* botAI, std::string const name = "felmyst misdirect boss to main tank") : AttackAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 class FelmystMainTankPositionBossOnGroundAction : public AttackAction
 {
 public:
     FelmystMainTankPositionBossOnGroundAction(
         PlayerbotAI* botAI, std::string const name = "felmyst main tank position boss on ground") : AttackAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class FelmystPositionRangedOnGroundAction : public MovementAction
+{
+public:
+    FelmystPositionRangedOnGroundAction(
+        PlayerbotAI* botAI, std::string const name = "felmyst position ranged on ground") : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class FelmystRemoveEncapsulateAction : public Action
+{
+public:
+    FelmystRemoveEncapsulateAction(
+        PlayerbotAI* botAI, std::string const name = "felmyst remove encapsulate") : Action(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class FelmystRunAwayFromEncapsulatedPlayerAction : public MovementAction
+{
+public:
+    FelmystRunAwayFromEncapsulatedPlayerAction(
+        PlayerbotAI* botAI, std::string const name = "felmyst run away from encapsulated player") : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class FelmystCastMassDispelOnGasNovaAction : public Action
+{
+public:
+    FelmystCastMassDispelOnGasNovaAction(
+        PlayerbotAI* botAI, std::string const name = "felmyst cast mass dispel on gas nova") : Action(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class FelmystAvoidDemonicVaporAction : public MovementAction
+{
+public:
+    FelmystAvoidDemonicVaporAction(
+        PlayerbotAI* botAI, std::string const name = "felmyst avoid demonic vapor") : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class FelmystAvoidFogOfCorruptionAction : public MovementAction
+{
+public:
+    FelmystAvoidFogOfCorruptionAction(
+        PlayerbotAI* botAI, std::string const name = "felmyst avoid fog of corruption") : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class FelmystAssignTargetPriorityAction : public AttackAction
+{
+public:
+    FelmystAssignTargetPriorityAction(
+        PlayerbotAI* botAI, std::string const name = "felmyst assign target priority") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 

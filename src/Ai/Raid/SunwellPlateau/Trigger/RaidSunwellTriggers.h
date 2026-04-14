@@ -96,11 +96,75 @@ public:
 
 // Felmyst
 
+class FelmystPullingBossTrigger : public Trigger
+{
+public:
+    FelmystPullingBossTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "felmyst pulling boss") {}
+    bool IsActive() override;
+};
+
 class FelmystBossEngagedByMainTankOnGroundTrigger : public Trigger
 {
 public:
     FelmystBossEngagedByMainTankOnGroundTrigger(
         PlayerbotAI* botAI) : Trigger(botAI, "felmyst boss engaged by main tank on ground") {}
+    bool IsActive() override;
+};
+
+class FelmystBossEngagedByRangedOnGroundTrigger : public Trigger
+{
+public:
+    FelmystBossEngagedByRangedOnGroundTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "felmyst boss engaged by ranged on ground") {}
+    bool IsActive() override;
+};
+
+class FelmystBotIsEncapsulatedTrigger : public Trigger
+{
+public:
+    FelmystBotIsEncapsulatedTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "felmyst bot is encapsulated") {}
+    bool IsActive() override;
+};
+
+class FelmystBotNearEncapsulatedPlayerTrigger : public Trigger
+{
+public:
+    FelmystBotNearEncapsulatedPlayerTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "felmyst bot near encapsulated player") {}
+    bool IsActive() override;
+};
+
+class FelmystPlayerHasGasNovaTrigger : public Trigger
+{
+public:
+    FelmystPlayerHasGasNovaTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "felmyst player has gas nova") {}
+    bool IsActive() override;
+};
+
+class FelmystDemonicVaporIsSummonedTrigger : public Trigger
+{
+public:
+    FelmystDemonicVaporIsSummonedTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "felmyst demonic vapor is summoned") {}
+    bool IsActive() override;
+};
+
+class FelmystFogOfCorruptionIsActiveTrigger : public Trigger
+{
+public:
+    FelmystFogOfCorruptionIsActiveTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "felmyst fog of corruption is active") {}
+    bool IsActive() override;
+};
+
+class FelmystManualTargetingIsRequiredTrigger : public Trigger
+{
+public:
+    FelmystManualTargetingIsRequiredTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "felmyst manual targeting is required") {}
     bool IsActive() override;
 };
 
