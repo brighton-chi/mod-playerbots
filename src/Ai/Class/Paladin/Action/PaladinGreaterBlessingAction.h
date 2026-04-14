@@ -20,6 +20,7 @@ public:
 
     bool Execute(Event event) override;
     bool isUseful() override;
+    bool HasPendingAssignment();
 
 private:
     struct PlayerAssignment
@@ -29,6 +30,9 @@ private:
     };
 
     bool ComputeAssignments(std::vector<PlayerAssignment>& outAssignments);
+    bool FindPendingAssignment(PlayerAssignment& outAssignment,
+                               ai::gbless::BlessingType& outCastType,
+                               std::string& outSpellName);
 };
 
 #endif

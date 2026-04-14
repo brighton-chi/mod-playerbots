@@ -212,14 +212,15 @@ DEBUFF_TRIGGER(AvengerShieldTrigger, "avenger's shield");
 class BeaconOfLightOnMainTankTrigger : public BuffOnMainTankTrigger
 {
 public:
-    BeaconOfLightOnMainTankTrigger(PlayerbotAI* ai)
-        : BuffOnMainTankTrigger(ai, "beacon of light", true) {}
+    BeaconOfLightOnMainTankTrigger(PlayerbotAI* botAI)
+        : BuffOnMainTankTrigger(botAI, "beacon of light", true) {}
 };
 
 class SacredShieldOnMainTankTrigger : public BuffOnMainTankTrigger
 {
 public:
-    SacredShieldOnMainTankTrigger(PlayerbotAI* ai) : BuffOnMainTankTrigger(ai, "sacred shield", false) {}
+    SacredShieldOnMainTankTrigger(PlayerbotAI* botAI)
+        : BuffOnMainTankTrigger(botAI, "sacred shield", false) {}
 };
 
 class BlessingOfKingsOnPartyTrigger : public BuffOnPartyTrigger
@@ -264,6 +265,15 @@ class AvengingWrathTrigger : public BoostTrigger
 {
 public:
     AvengingWrathTrigger(PlayerbotAI* botAI) : BoostTrigger(botAI, "avenging wrath") {}
+};
+
+class GreaterBlessingNeededTrigger : public Trigger
+{
+public:
+    GreaterBlessingNeededTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "greater blessing needed", 4) {}
+
+    bool IsActive() override;
 };
 
 #endif

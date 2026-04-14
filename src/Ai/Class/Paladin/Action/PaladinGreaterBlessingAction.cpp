@@ -42,11 +42,57 @@ CastGreaterBlessingAssignmentAction::CastGreaterBlessingAssignmentAction(
 
 bool CastGreaterBlessingAssignmentAction::isUseful()
 {
-    Group* group = bot->GetGroup();
-    return group;
+    return bot->GetGroup();
+}
+
+bool CastGreaterBlessingAssignmentAction::HasPendingAssignment()
+{
+    PlayerAssignment assignment;
+    BlessingType castType = BLESSING_NONE;
+    std::string spellName;
+
+    return FindPendingAssignment(assignment, castType, spellName);
 }
 
 bool CastGreaterBlessingAssignmentAction::Execute(Event /*event*/)
+{
+    PlayerAssignment assignment;
+    BlessingType castType = BLESSING_NONE;
+    std::string spellName;
+    if (!FindPendingAssignment(assignment, castType, spellName))
+        return false;
+
+    if (IsGreaterVariant(assignment.blessing) && castType != assignment.blessing)
+    {
+        if (Group* group = bot->GetGroup())
+        {
+            std::map<std::string, std::string> placeholders =
+            {
+                {"%assigned_blessing", BlessingSpellName(assignment.blessing)},
+                {"%fallback_blessing", spellName}
+            };
+            std::string msg = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                "paladin_gblessing_missing_reagents",
+                "Missing reagents for %assigned_blessing. Using %fallback_blessing.",
+                placeholders);
+            WorldPacket data;
+            ChatMsg type = group->isRaidGroup() ? CHAT_MSG_RAID : CHAT_MSG_PARTY;
+            ChatHandler::BuildChatPacket(
+                data, type, LANG_UNIVERSAL, bot, nullptr, msg.c_str());
+            group->BroadcastPacket(
+                &data, true, -1, bot->GetGUID());
+        }
+    }
+
+    uint32 finalId = AI_VALUE2(uint32, "spell id", spellName);
+    if (!finalId)
+        return false;
+
+    return botAI->CastSpell(spellName, assignment.player);
+}
+
+bool CastGreaterBlessingAssignmentAction::FindPendingAssignment(
+    PlayerAssignment& outAssignment, BlessingType& outCastType, std::string& outSpellName)
 {
     std::vector<PlayerAssignment> assignments;
     if (!ComputeAssignments(assignments))
@@ -77,33 +123,13 @@ bool CastGreaterBlessingAssignmentAction::Execute(Event /*event*/)
 
                 if (HasMyExactBlessing(botAI, assigned.player, castType))
                     continue;
-
-                if (Group* group = bot->GetGroup())
-                {
-                    std::map<std::string, std::string> placeholders =
-                    {
-                        {"%assigned_blessing", BlessingSpellName(assigned.blessing)},
-                        {"%fallback_blessing", spellName}
-                    };
-                    std::string msg = PlayerbotTextMgr::instance().GetBotTextOrDefault(
-                        "paladin_gblessing_missing_reagents",
-                        "Missing reagents for %assigned_blessing. Using %fallback_blessing.",
-                        placeholders);
-                    WorldPacket data;
-                    ChatMsg type = group->isRaidGroup() ? CHAT_MSG_RAID : CHAT_MSG_PARTY;
-                    ChatHandler::BuildChatPacket(
-                        data, type, LANG_UNIVERSAL, bot, nullptr, msg.c_str());
-                    group->BroadcastPacket(
-                        &data, true, -1, bot->GetGUID());
-                }
             }
         }
 
-        uint32 finalId = AI_VALUE2(uint32, "spell id", spellName);
-        if (!finalId)
-            continue;
-
-        return botAI->CastSpell(spellName, assigned.player);
+        outAssignment = assigned;
+        outCastType = castType;
+        outSpellName = spellName;
+        return true;
     }
 
     return false;
@@ -495,6 +521,23 @@ bool CastGreaterBlessingAssignmentAction::ComputeAssignments(
         if (slotInfo.heterogeneous)
         {
             BlessingType type = priority.blessings[myClassSlot];
+
+            for (int otherSlot = 0; otherSlot < numPals && otherSlot < MAX_SLOTS; ++otherSlot)
+            {
+                if (otherSlot == myClassSlot)
+                    continue;
+
+                SlotInfo const& otherSlotInfo = classSlots[cls][otherSlot];
+                if (otherSlotInfo.heterogeneous || otherSlotInfo.homogeneous == BLESSING_NONE)
+                    continue;
+
+                if (BaseBlessingOf(otherSlotInfo.homogeneous) == BaseBlessingOf(type))
+                {
+                    type = BLESSING_NONE;
+                    break;
+                }
+            }
+
             assigned.blessing = IsSingleVariant(type) ? type : ToSingleVariant(type);
         }
         else

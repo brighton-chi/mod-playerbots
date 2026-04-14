@@ -5,6 +5,7 @@
 
 #include "PaladinTriggers.h"
 
+#include "PaladinGreaterBlessingAction.h"
 #include "PaladinActions.h"
 #include "PaladinHelper.h"
 #include "Playerbots.h"
@@ -27,8 +28,9 @@ bool CrusaderAuraTrigger::IsActive()
 bool BlessingTrigger::IsActive()
 {
     Unit* target = GetTarget();
-    return SpellTrigger::IsActive() && !botAI->HasAnyAuraOf(target, "blessing of might", "blessing of wisdom",
-                                                            "blessing of kings", "blessing of sanctuary", nullptr);
+    return SpellTrigger::IsActive() &&
+           !botAI->HasAnyAuraOf(target, "blessing of might", "blessing of wisdom",
+                                "blessing of kings", "blessing of sanctuary", nullptr);
 }
 
 bool DivineShieldLowHealthTrigger::IsActive()
@@ -61,7 +63,8 @@ bool HandOfFreedomOnPartyTrigger::IsActive()
     if (!target)
         return false;
 
-    if (target != bot && bot->GetExactDist2dSq(target->GetPositionX(), target->GetPositionY()) > 30.0f * 30.0f)
+    if (target != bot &&
+        bot->GetExactDist2dSq(target->GetPositionX(), target->GetPositionY()) > 30.0f * 30.0f)
         return false;
 
     if (!botAI->CanCastSpell("hand of freedom", target))
@@ -73,4 +76,10 @@ bool HandOfFreedomOnPartyTrigger::IsActive()
 bool NotSensingUndeadTrigger::IsActive()
 {
     return !botAI->HasAura("sense undead", bot);
+}
+
+bool GreaterBlessingNeededTrigger::IsActive()
+{
+    CastGreaterBlessingAssignmentAction action(botAI);
+    return action.HasPendingAssignment();
 }

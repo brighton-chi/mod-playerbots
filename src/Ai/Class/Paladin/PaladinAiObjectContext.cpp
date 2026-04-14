@@ -9,7 +9,6 @@
 #include "GenericPaladinNonCombatStrategy.h"
 #include "PaladinGreaterBlessingAction.h"
 #include "PaladinGreaterBlessingStrategy.h"
-#include "PaladinGreaterBlessingTrigger.h"
 #include "HealPaladinStrategy.h"
 #include "NamedObjectContext.h"
 #include "OffhealRetPaladinStrategy.h"
