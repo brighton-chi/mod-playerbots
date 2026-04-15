@@ -17,35 +17,19 @@
 
 namespace SunwellHelpers
 {
-    enum class FelmystFogLane : uint8
-    {
-        None = std::numeric_limits<uint8>::max(),
-        Top = 0,
-        Middle = 1,
-        Bottom = 2,
-    };
-
-    enum class FelmystFogPhase : uint8
-    {
-        None,
-        Windup,
-        Sweep,
-        Recovery,
-    };
-
     enum class SunwellSpells : uint32
     {
         // Kalecgos & Sathrovarr the Corruptor
-        SPELL_SPECTRAL_EXHAUSTION     = 44867,
-        SPELL_SPECTRAL_BLAST_PORTAL   = 44866,
+        SPELL_SPECTRAL_EXHAUSTION      = 44867,
+        SPELL_SPECTRAL_BLAST_PORTAL    = 44866,
         SPELL_CURSE_OF_BOUNDLESS_AGONY = 45032,
-        SPELL_TELEPORT_SPECTRAL       = 46019,
-        SPELL_TELEPORT_NORMAL_REALM   = 46020,
-        SPELL_SPECTRAL_REALM          = 46021,
+        SPELL_TELEPORT_SPECTRAL        = 46019,
+        SPELL_TELEPORT_NORMAL_REALM    = 46020,
+        SPELL_SPECTRAL_REALM           = 46021,
 
         // Brutallus
-        SPELL_METEOR_SLASH                 = 45150,
-        SPELL_BURN               = 46394,
+        SPELL_METEOR_SLASH             = 45150,
+        SPELL_BURN                     = 46394,
 
         // Felmyst
         SPELL_SUMMON_DEMONIC_VAPOR = 45391,
@@ -59,27 +43,27 @@ namespace SunwellHelpers
         SPELL_MISDIRECTION              = 35079,
 
         // Mage
-        SPELL_ICE_BLOCK                    = 11958,
+        SPELL_ICE_BLOCK                 = 11958,
 
         // Paladin
-        SPELL_DIVINE_SHIELD                 = 642,
+        SPELL_DIVINE_SHIELD             = 642,
 
         // Rogue
-        SPELL_CLOAK_OF_SHADOWS              = 31224,
+        SPELL_CLOAK_OF_SHADOWS          = 31224,
     };
 
     enum class SunwellNPCs : uint32
     {
         // Felmyst
-        NPC_FELMYST = 25038,
-        NPC_DEMONIC_VAPOR = 25265,
+        NPC_FELMYST             = 25038,
+        NPC_DEMONIC_VAPOR       = 25265,
         NPC_DEMONIC_VAPOR_TRAIL = 25267,
-        NPC_UNYIELDING_DEAD = 25268,
+        // NPC_UNYIELDING_DEAD  = 25268,
     };
 
     enum class SunwellObjects : uint32
     {
-        GO_SPECTRAL_RIFT                = 187055,
+        GO_SPECTRAL_RIFT = 187055,
     };
 
     // General
@@ -125,6 +109,7 @@ namespace SunwellHelpers
     void RecordKalecgosNormalRealmEnter(Player* bot);
 
     // Brutallus
+
     extern const Position BRUTALLUS_MAIN_TANK_POSITION;
     constexpr float BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET = -M_PI_2;
     constexpr float BRUTALLUS_TANK_POSITION_RADIUS = 20.25f;
@@ -161,14 +146,45 @@ namespace SunwellHelpers
         uint8& positionIndex);
 
     // Felmyst
+
+    enum class FelmystFogLane : uint8
+    {
+        None = std::numeric_limits<uint8>::max(),
+        Top = 0,
+        Middle = 1,
+        Bottom = 2,
+    };
+
+    enum class FelmystFogPhase : uint8
+    {
+        None,
+        Windup,
+        Sweep,
+        Recovery,
+    };
+
+    enum class FelmystFogLocation : uint8
+    {
+        None,
+        LeftSide,
+        RightSide,
+        LeftTop,
+        LeftMiddle,
+        LeftBottom,
+        RightTop,
+        RightMiddle,
+        RightBottom,
+    };
+
     extern const Position FELMYST_TANK_POSITION;
     constexpr float FELMYST_ENCAPSULATE_SAFE_DISTANCE = 21.0f;
+    constexpr float FELMYST_FOG_SAFE_SPOT_ARRIVAL_DISTANCE = 8.0f;
+    constexpr float FELMYST_FOG_CURRENT_POINT_MATCH_DISTANCE = 3.0f;
+    constexpr float FELMYST_FOG_DESTINATION_MATCH_DISTANCE = 1.0f;
     struct FelmystFogOfCorruptionState
     {
         FelmystFogLane lane = FelmystFogLane::None;
         FelmystFogPhase phase = FelmystFogPhase::None;
-        uint32 firstObservedMs = 0;
-        uint32 lastObservedMs = 0;
         uint32 expireMs = 0;
     };
     extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> felmystRangedAssignments;
@@ -178,17 +194,15 @@ namespace SunwellHelpers
     void EnsureFelmystRangedAssignments(PlayerbotAI* botAI, Player* bot);
     float GetFelmystFrontAngle(PlayerbotAI* botAI, Player* bot, Unit* felmyst);
     Creature* GetDemonicVaporSummonedByBot(Player* carrier);
+    void ClearFelmystDemonicVaporKiteState(Player* bot);
     bool TryGetFelmystDemonicVaporKiteDestination(Player* bot, Position& destination);
-    bool TryGetFelmystFogLaneFromAirPosition(Unit* felmyst, FelmystFogLane& lane);
     bool TryGetFelmystFogSafeDestinations(
         Player* bot, FelmystFogLane dangerLane, std::array<Position, 3>& destinations,
         uint8& destinationCount);
     bool GetFelmystFogOfCorruptionStageState(
-        Player* bot, Unit* felmyst, FelmystFogOfCorruptionState& state);
+        Unit* felmyst, FelmystFogOfCorruptionState& state);
     bool GetActiveFelmystFogOfCorruptionState(
         Player* bot, Unit* felmyst, FelmystFogOfCorruptionState& state);
-    bool TryGetFelmystFogSidewaysShiftDestination(
-        Player* bot, FelmystFogLane dangerLane, Position& destination);
     Unit* GetNearestFelmystFogOfCorruptionCharmedTarget(Player* bot);
     Unit* GetNearestFelmystDemonicVaporHazard(Player* bot);
     Player* GetFelmystEncapsulateTarget(Player* bot);

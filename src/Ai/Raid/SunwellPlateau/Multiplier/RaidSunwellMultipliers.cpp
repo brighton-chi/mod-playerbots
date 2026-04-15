@@ -11,6 +11,7 @@
 #include "DruidActions.h"
 #include "DruidBearActions.h"
 #include "FollowActions.h"
+#include "GenericSpellActions.h"
 #include "HunterActions.h"
 #include "MageActions.h"
 #include "PaladinActions.h"
@@ -226,14 +227,23 @@ float FelmystPrioritizeFogAvoidanceMultiplier::GetValue(Action* action)
         return 1.0f;
 
     FelmystFogOfCorruptionState fogState;
-    if (!GetFelmystFogOfCorruptionStageState(bot, felmyst, fogState))
+    if (!GetFelmystFogOfCorruptionStageState(felmyst, fogState))
         return 1.0f;
+
+    FelmystFogOfCorruptionState activeFogState;
+    bool isActiveFog = GetActiveFelmystFogOfCorruptionState(bot, felmyst, activeFogState);
 
     if (dynamic_cast<CastReachTargetSpellAction*>(action))
         return 0.0f;
 
-    Position destination;
-    bool needsShift = TryGetFelmystFogSidewaysShiftDestination(bot, fogState.lane, destination);
+    std::array<Position, 3> destinations;
+    uint8 destinationCount = 0;
+    bool needsShift = TryGetFelmystFogSafeDestinations(
+        bot, fogState.lane, destinations, destinationCount);
+
+    if (isActiveFog && needsShift && dynamic_cast<CastSpellAction*>(action) &&
+        !dynamic_cast<CastHealingSpellAction*>(action))
+        return 0.0f;
 
     if (dynamic_cast<MovementAction*>(action) &&
         !dynamic_cast<AttackAction*>(action))
@@ -303,6 +313,9 @@ float EredarTwinsMultiplier::GetValue(Action* action)
 float MuruMultiplier::GetValue(Action* action)
 {
     if (!AI_VALUE2(Unit*, "find target", "m'uru"))
+        return 1.0f;
+
+    if (!AI_VALUE2(Unit*, "find target", "entropius"))
         return 1.0f;
 
     return 1.0f;

@@ -200,7 +200,8 @@ bool FelmystBotNearEncapsulatedPlayerTrigger::IsActive()
     if (!encapsulateTarget || encapsulateTarget == bot)
         return false;
 
-    return bot->GetDistance2d(encapsulateTarget) <= FELMYST_ENCAPSULATE_SAFE_DISTANCE;
+    return bot->GetDistance2d(
+        encapsulateTarget) <= FELMYST_ENCAPSULATE_SAFE_DISTANCE;
 }
 
 bool FelmystPlayerHasGasNovaTrigger::IsActive()
@@ -255,15 +256,16 @@ bool FelmystFogOfCorruptionIsActiveTrigger::IsActive()
 
 bool EredarTwinsTrigger::IsActive()
 {
-    return AI_VALUE2(Unit*, "find target", "alythess") ||
-           AI_VALUE2(Unit*, "find target", "sacrolash");
+    return AI_VALUE2(Unit*, "find target", "grand warlock alythess") ||
+           AI_VALUE2(Unit*, "find target", "lady sacrolash");
 }
 
 // M'uru & Entropius
 
 bool MuruTrigger::IsActive()
 {
-    return AI_VALUE2(Unit*, "find target", "m'uru");
+    return AI_VALUE2(Unit*, "find target", "m'uru") ||
+           AI_VALUE2(Unit*, "find target", "entropius");
 }
 
 // Kil'jaeden <The Deceiver>

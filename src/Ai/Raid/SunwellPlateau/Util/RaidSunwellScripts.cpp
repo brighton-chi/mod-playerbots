@@ -20,6 +20,9 @@ namespace
     constexpr uint32 SPELL_FELMYST_STRAFE_TOP = 45585;
     constexpr uint32 SPELL_FELMYST_STRAFE_MIDDLE = 45633;
     constexpr uint32 SPELL_FELMYST_STRAFE_BOTTOM = 45635;
+    constexpr uint32 FELMYST_FOG_INTERRUPT_SCAN_INTERVAL_MS = 500;
+
+    std::unordered_map<ObjectGuid, uint32> felmystFogInterruptLastScanTime;
 
     char const* GetFelmystFogLaneName(FelmystFogLane lane)
     {
@@ -148,8 +151,9 @@ namespace
 
             ++activeFogCount;
 
-            Position destination;
-            if (!TryGetFelmystFogSidewaysShiftDestination(player, fogState.lane, destination))
+            std::array<Position, 3> destinations;
+            uint8 destinationCount = 0;
+            if (!TryGetFelmystFogSafeDestinations(player, fogState.lane, destinations, destinationCount))
             {
                 ++noDestinationCount;
                 continue;
@@ -158,7 +162,7 @@ namespace
             LOG_DEBUG("playerbots",
                 "[FelmystFog] {} interrupt requested lane={} destination={}",
                 player->GetName(), GetFelmystFogLaneName(fogState.lane),
-                FormatFelmystFogPoint(destination));
+                FormatFelmystFogPoint(destinations[0]));
             botAI->RequestSpellInterrupt();
             ++requestedCount;
         }
@@ -170,6 +174,41 @@ namespace
             missingFelmystCount, noDestinationCount);
     }
 }
+
+class FelmystFogInterruptFallbackScript : public AllCreatureScript
+{
+public:
+    FelmystFogInterruptFallbackScript() : AllCreatureScript("FelmystFogInterruptFallbackScript") { }
+
+    void OnAllCreatureUpdate(Creature* creature, uint32 /*diff*/) override
+    {
+        if (!creature || creature->GetEntry() != static_cast<uint32>(SunwellNPCs::NPC_FELMYST) ||
+            creature->GetMapId() != SUNWELL_MAP_ID || !creature->IsFlying())
+        {
+            return;
+        }
+
+        FelmystFogOfCorruptionState fogState;
+        if (!GetFelmystFogOfCorruptionStageState(creature, fogState))
+            return;
+
+        uint32 now = getMSTime();
+        uint32& lastScanTime = felmystFogInterruptLastScanTime[creature->GetGUID()];
+        if (getMSTimeDiff(lastScanTime, now) < FELMYST_FOG_INTERRUPT_SCAN_INTERVAL_MS)
+            return;
+
+        lastScanTime = now;
+        RequestInterruptForBotsNeedingFelmystFogMovement(creature, nullptr);
+    }
+
+    void OnCreatureRemoveWorld(Creature* creature) override
+    {
+        if (!creature || creature->GetEntry() != static_cast<uint32>(SunwellNPCs::NPC_FELMYST))
+            return;
+
+        felmystFogInterruptLastScanTime.erase(creature->GetGUID());
+    }
+};
 
 class KalecgosSpellListenerScript : public AllSpellScript
 {
@@ -243,9 +282,6 @@ public:
             return;
         }
 
-        if (caster->GetEntry() != static_cast<uint32>(SunwellNPCs::NPC_FELMYST))
-            return;
-
         Player* target = GetFirstPlayerSpellTarget(spell, caster);
         if (!target)
             return;
@@ -267,6 +303,7 @@ public:
 
 void AddSC_SunwellPlateauBotScripts()
 {
+    new FelmystFogInterruptFallbackScript();
     new KalecgosSpellListenerScript();
     new FelmystSpellListenerScript();
 }
