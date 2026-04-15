@@ -3,6 +3,9 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include <iomanip>
+#include <sstream>
+
 #include "RaidSunwellHelpers.h"
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
@@ -14,6 +17,35 @@ using namespace SunwellHelpers;
 
 namespace
 {
+    constexpr uint32 SPELL_FELMYST_STRAFE_TOP = 45585;
+    constexpr uint32 SPELL_FELMYST_STRAFE_MIDDLE = 45633;
+    constexpr uint32 SPELL_FELMYST_STRAFE_BOTTOM = 45635;
+
+    char const* GetFelmystFogLaneName(FelmystFogLane lane)
+    {
+        switch (lane)
+        {
+            case FelmystFogLane::Top:
+                return "top";
+            case FelmystFogLane::Middle:
+                return "middle";
+            case FelmystFogLane::Bottom:
+                return "bottom";
+            default:
+                return "none";
+        }
+    }
+
+    std::string FormatFelmystFogPoint(Position const& position)
+    {
+        std::ostringstream out;
+        out << std::fixed << std::setprecision(2)
+            << '(' << position.GetPositionX() << ", "
+            << position.GetPositionY() << ", "
+            << position.GetPositionZ() << ')';
+        return out.str();
+    }
+
     PlayerbotAI* GetKalecgosReferenceBotAI(Player* player)
     {
         if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(player))
@@ -75,18 +107,19 @@ namespace
         }
     }
 
-    void RequestInterruptForBotsNeedingFelmystFogMovement(Player* referencePlayer)
+    void RequestInterruptForBotsNeedingFelmystFogMovement(Unit* contextUnit, Player* groupReference)
     {
-        if (!referencePlayer)
+        if (!contextUnit)
             return;
 
-        Creature* felmyst = referencePlayer->FindNearestCreature(
-            static_cast<uint32>(SunwellNPCs::NPC_FELMYST), 250.0f, true);
-        if (!felmyst || !felmyst->IsFlying())
-            return;
+        Group* group = groupReference ? groupReference->GetGroup() : nullptr;
+        Map::PlayerList const& players = contextUnit->GetMap()->GetPlayers();
+        uint32 botCount = 0;
+        uint32 activeFogCount = 0;
+        uint32 requestedCount = 0;
+        uint32 missingFelmystCount = 0;
+        uint32 noDestinationCount = 0;
 
-        Group* group = referencePlayer->GetGroup();
-        Map::PlayerList const& players = referencePlayer->GetMap()->GetPlayers();
         for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
         {
             Player* player = it->GetSource();
@@ -100,16 +133,41 @@ namespace
             if (!botAI)
                 continue;
 
+            ++botCount;
+
+            Unit* felmyst = PAI_VALUE2(Unit*, "find target", "felmyst");
+            if (!felmyst || !felmyst->IsFlying())
+            {
+                ++missingFelmystCount;
+                continue;
+            }
+
             FelmystFogOfCorruptionState fogState;
             if (!GetActiveFelmystFogOfCorruptionState(player, felmyst, fogState))
                 continue;
 
+            ++activeFogCount;
+
             Position destination;
             if (!TryGetFelmystFogSidewaysShiftDestination(player, fogState.lane, destination))
+            {
+                ++noDestinationCount;
                 continue;
+            }
 
+            LOG_DEBUG("playerbots",
+                "[FelmystFog] {} interrupt requested lane={} destination={}",
+                player->GetName(), GetFelmystFogLaneName(fogState.lane),
+                FormatFelmystFogPoint(destination));
             botAI->RequestSpellInterrupt();
+            ++requestedCount;
         }
+
+        LOG_DEBUG("playerbots",
+            "[FelmystFog] interrupt scan casterEntry={} groupReference={} bots={} active={} requested={} missingFelmyst={} noDestination={}",
+            contextUnit->GetEntry(), groupReference ? groupReference->GetName() : "none",
+            botCount, activeFogCount, requestedCount,
+            missingFelmystCount, noDestinationCount);
     }
 }
 
@@ -160,10 +218,27 @@ public:
         if (!spell || !caster || !spellInfo || caster->GetMapId() != SUNWELL_MAP_ID)
             return;
 
-        if (spellInfo->Id == static_cast<uint32>(SunwellSpells::SPELL_FOG_OF_CORRUPTION))
+        if (spellInfo->Id == static_cast<uint32>(SunwellSpells::SPELL_FOG_OF_CORRUPTION) ||
+            spellInfo->Id == SPELL_FELMYST_STRAFE_TOP ||
+            spellInfo->Id == SPELL_FELMYST_STRAFE_MIDDLE ||
+            spellInfo->Id == SPELL_FELMYST_STRAFE_BOTTOM)
         {
-            if (Player* target = caster->ToPlayer())
-                RequestInterruptForBotsNeedingFelmystFogMovement(target);
+            Player* targetPlayer = GetFirstPlayerSpellTarget(spell, caster);
+            Player* groupReference = caster->ToPlayer() ? caster->ToPlayer() : targetPlayer;
+            if (targetPlayer)
+            {
+                LOG_DEBUG("playerbots",
+                    "[FelmystFog] spell seen id={} casterEntry={} target={}",
+                    spellInfo->Id, caster->GetEntry(), targetPlayer->GetName());
+            }
+            else
+            {
+                LOG_DEBUG("playerbots",
+                    "[FelmystFog] spell seen id={} casterEntry={} target=none",
+                    spellInfo->Id, caster->GetEntry());
+            }
+
+            RequestInterruptForBotsNeedingFelmystFogMovement(caster, groupReference);
 
             return;
         }

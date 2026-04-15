@@ -180,6 +180,9 @@ namespace SunwellHelpers
     Creature* GetDemonicVaporSummonedByBot(Player* carrier);
     bool TryGetFelmystDemonicVaporKiteDestination(Player* bot, Position& destination);
     bool TryGetFelmystFogLaneFromAirPosition(Unit* felmyst, FelmystFogLane& lane);
+    bool TryGetFelmystFogSafeDestinations(
+        Player* bot, FelmystFogLane dangerLane, std::array<Position, 3>& destinations,
+        uint8& destinationCount);
     bool GetFelmystFogOfCorruptionStageState(
         Player* bot, Unit* felmyst, FelmystFogOfCorruptionState& state);
     bool GetActiveFelmystFogOfCorruptionState(

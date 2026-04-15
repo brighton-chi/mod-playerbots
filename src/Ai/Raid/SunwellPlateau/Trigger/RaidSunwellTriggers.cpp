@@ -251,14 +251,6 @@ bool FelmystFogOfCorruptionIsActiveTrigger::IsActive()
     return GetActiveFelmystFogOfCorruptionState(bot, felmyst, fogState);
 }
 
-// Right now this is just marking with Moon during air phase
-bool FelmystManualTargetingIsRequiredForAirPhaseTrigger::IsActive()
-{
-    Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
-    return felmyst && felmyst->IsFlying() && felmyst->GetHealthPct() < 90.0f &&
-           felmyst->GetDistance(bot) > 35.0f;
-}
-
 // Eredar Twins (Alythess & Sacrolash)
 
 bool EredarTwinsTrigger::IsActive()

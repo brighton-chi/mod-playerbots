@@ -805,11 +805,12 @@ bool FelmystSpreadAndAvoidDemonicVaporAction::Execute(Event /*event*/)
         float currentDistance = bot->GetDistance2d(hazard);
         if (currentDistance < safeDistFromVapor)
         {
-            return FleePosition(
-                hazard->GetPosition(), safeDistFromVapor, minInterval);
+            // return FleePosition(
+            //     hazard->GetPosition(), safeDistFromVapor, minInterval);
+            return MoveAway(hazard, safeDistFromVapor - currentDistance);
         }
     }
-    else if (!botAI->IsTank(bot))
+    /* else if (!botAI->IsTank(bot))
     {
         constexpr float safeDistFromPlayer = 5.0f;
         constexpr uint32 minInterval = 1000;
@@ -818,7 +819,7 @@ bool FelmystSpreadAndAvoidDemonicVaporAction::Execute(Event /*event*/)
             return FleePosition(
                 nearestPlayer->GetPosition(), safeDistFromPlayer, minInterval);
         }
-    }
+    } */
 
     return false;
 }
@@ -844,13 +845,24 @@ bool FelmystAvoidFogOfCorruptionAction::Execute(Event /*event*/)
     if (!GetActiveFelmystFogOfCorruptionState(bot, felmyst, fogState))
         return false;
 
-    Position destination;
-    if (!TryGetFelmystFogSidewaysShiftDestination(bot, fogState.lane, destination))
+    std::array<Position, 3> destinations;
+    uint8 destinationCount = 0;
+    if (!TryGetFelmystFogSafeDestinations(bot, fogState.lane, destinations, destinationCount))
         return false;
 
-    return MoveTo(SUNWELL_MAP_ID, destination.GetPositionX(), destination.GetPositionY(),
-                  destination.GetPositionZ(), false, false, false, false,
-                  MovementPriority::MOVEMENT_FORCED, true, false);
+    for (uint8 index = 0; index < destinationCount; ++index)
+    {
+        bot->AttackStop();
+        Position const& destination = destinations[index];
+        if (MoveTo(SUNWELL_MAP_ID, destination.GetPositionX(), destination.GetPositionY(),
+                   destination.GetPositionZ(), false, false, false, false,
+                   MovementPriority::MOVEMENT_FORCED, true, false))
+        {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 // Eredar Twins (Alythess & Sacrolash)
