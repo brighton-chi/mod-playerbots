@@ -51,6 +51,9 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("felmyst boss engaged by ranged on ground", {
         NextAction("felmyst position ranged on ground", ACTION_RAID + 1) }));
 
+    triggers.push_back(new TriggerNode("felmyst boss engaged by melee on ground", {
+        NextAction("felmyst position melee on ground", ACTION_RAID + 1) }));
+
     triggers.push_back(new TriggerNode("felmyst bot is encapsulated", {
         NextAction("felmyst remove encapsulate", ACTION_EMERGENCY + 9) }));
 
@@ -60,14 +63,17 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("felmyst player has gas nova", {
         NextAction("felmyst cast mass dispel on gas nova", ACTION_EMERGENCY + 7) }));
 
+    triggers.push_back(new TriggerNode("felmyst bot is demonic vapor target", {
+        NextAction("felmyst kite demonic vapor", ACTION_EMERGENCY + 2) }));
+
+    triggers.push_back(new TriggerNode("felmyst boss summons demonic vapor", {
+        NextAction("felmyst spread and avoid demonic vapor", ACTION_EMERGENCY + 1) }));
+
     triggers.push_back(new TriggerNode("felmyst fog of corruption is active", {
         NextAction("felmyst avoid fog of corruption", ACTION_EMERGENCY + 9) }));
 
-    triggers.push_back(new TriggerNode("felmyst demonic vapor is summoned", {
-        NextAction("felmyst avoid demonic vapor", ACTION_EMERGENCY + 1) }));
-
-    triggers.push_back(new TriggerNode("felmyst manual targeting is required", {
-        NextAction("felmyst assign target priority", ACTION_RAID + 2) }));
+    triggers.push_back(new TriggerNode("felmyst manual targeting is required for air phase", {
+        NextAction("felmyst assign air phase target priority", ACTION_RAID + 1) }));
 
     // Eredar Twins (Alythess & Sacrolash)
     triggers.push_back(new TriggerNode("eredar twins", {
@@ -97,8 +103,9 @@ void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new BrutallusDelayCooldownsMultiplier(botAI));
 
     // Felmyst
-    multipliers.push_back(new FelmystDisableDefaultTargetingMultiplier(botAI));
+    multipliers.push_back(new FelmystDisableAirPhaseDefaultTargetingMultiplier(botAI));
     multipliers.push_back(new FelmystControlMovementMultiplier(botAI));
+    multipliers.push_back(new FelmystPrioritizeDemonicVaporKiteMultiplier(botAI));
     multipliers.push_back(new FelmystPrioritizeFogAvoidanceMultiplier(botAI));
 
     // Eredar Twins (Alythess & Sacrolash)

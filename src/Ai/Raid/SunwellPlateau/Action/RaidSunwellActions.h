@@ -125,6 +125,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class FelmystPositionMeleeOnGroundAction : public MovementAction
+{
+public:
+    FelmystPositionMeleeOnGroundAction(
+        PlayerbotAI* botAI, std::string const name = "felmyst position melee on ground") : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 class FelmystRemoveEncapsulateAction : public Action
 {
 public:
@@ -149,11 +157,19 @@ public:
     bool Execute(Event event) override;
 };
 
-class FelmystAvoidDemonicVaporAction : public MovementAction
+class FelmystSpreadAndAvoidDemonicVaporAction : public MovementAction
 {
 public:
-    FelmystAvoidDemonicVaporAction(
-        PlayerbotAI* botAI, std::string const name = "felmyst avoid demonic vapor") : MovementAction(botAI, name) {}
+    FelmystSpreadAndAvoidDemonicVaporAction(
+        PlayerbotAI* botAI, std::string const name = "felmyst spread and avoid demonic vapor") : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class FelmystKiteDemonicVaporAction : public MovementAction
+{
+public:
+    FelmystKiteDemonicVaporAction(
+        PlayerbotAI* botAI, std::string const name = "felmyst kite demonic vapor") : MovementAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 
@@ -165,11 +181,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class FelmystAssignTargetPriorityAction : public AttackAction
+class FelmystAssignAirPhaseTargetPriorityAction : public AttackAction
 {
 public:
-    FelmystAssignTargetPriorityAction(
-        PlayerbotAI* botAI, std::string const name = "felmyst assign target priority") : AttackAction(botAI, name) {}
+    FelmystAssignAirPhaseTargetPriorityAction(
+        PlayerbotAI* botAI, std::string const name = "felmyst assign air phase target priority") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 

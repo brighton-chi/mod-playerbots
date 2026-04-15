@@ -4,6 +4,8 @@
  */
 
 #include "RaidSunwellHelpers.h"
+#include "ObjectAccessor.h"
+#include "Playerbots.h"
 #include "Player.h"
 #include "ScriptMgr.h"
 #include "Spell.h"
@@ -35,6 +37,42 @@ namespace
         }
 
         return nullptr;
+    }
+
+    Player* GetFirstPlayerSpellTarget(Spell* spell, Unit* caster)
+    {
+        if (!spell || !caster)
+            return nullptr;
+
+        std::list<TargetInfo> const& targets = *spell->GetUniqueTargetInfo();
+        if (targets.empty())
+            return nullptr;
+
+        return ObjectAccessor::GetPlayer(*caster, targets.front().targetGUID);
+    }
+
+    void RequestInterruptForBotsNear(Unit* center, float radius)
+    {
+        if (!center)
+            return;
+
+        Group* group = center->ToPlayer() ? center->ToPlayer()->GetGroup() : nullptr;
+        Map::PlayerList const& players = center->GetMap()->GetPlayers();
+        for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
+        {
+            Player* player = it->GetSource();
+            if (!player || !player->IsAlive())
+                continue;
+
+            if (group && player->GetGroup() != group)
+                continue;
+
+            if (center->GetExactDist2d(player) > radius)
+                continue;
+
+            if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(player))
+                botAI->RequestSpellInterrupt();
+        }
     }
 }
 
@@ -77,7 +115,41 @@ public:
     }
 };
 
+class FelmystSpellListenerScript : public AllSpellScript
+{
+public:
+    FelmystSpellListenerScript() : AllSpellScript("FelmystSpellListenerScript") { }
+
+    void OnSpellCast(Spell* spell, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
+    {
+        if (!spell || !caster || !spellInfo || caster->GetMapId() != SUNWELL_MAP_ID ||
+            caster->GetEntry() != static_cast<uint32>(SunwellNPCs::NPC_FELMYST))
+        {
+            return;
+        }
+
+        Player* target = GetFirstPlayerSpellTarget(spell, caster);
+        if (!target)
+            return;
+
+        switch (spellInfo->Id)
+        {
+            case static_cast<uint32>(SunwellSpells::SPELL_ENCAPSULATE_CHANNEL):
+                RequestInterruptForBotsNear(target, FELMYST_ENCAPSULATE_SAFE_DISTANCE);
+                break;
+            case static_cast<uint32>(SunwellSpells::SPELL_SUMMON_DEMONIC_VAPOR):
+                if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(target))
+                    botAI->RequestSpellInterrupt();
+
+                break;
+            default:
+                break;
+        }
+    }
+};
+
 void AddSC_SunwellPlateauBotScripts()
 {
     new KalecgosSpellListenerScript();
+    new FelmystSpellListenerScript();
 }

@@ -120,6 +120,14 @@ public:
     bool IsActive() override;
 };
 
+class FelmystBossEngagedByMeleeOnGroundTrigger : public Trigger
+{
+public:
+    FelmystBossEngagedByMeleeOnGroundTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "felmyst boss engaged by melee on ground") {}
+    bool IsActive() override;
+};
+
 class FelmystBotIsEncapsulatedTrigger : public Trigger
 {
 public:
@@ -144,11 +152,19 @@ public:
     bool IsActive() override;
 };
 
-class FelmystDemonicVaporIsSummonedTrigger : public Trigger
+class FelmystBossSummonsDemonicVaporTrigger : public Trigger
 {
 public:
-    FelmystDemonicVaporIsSummonedTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "felmyst demonic vapor is summoned") {}
+    FelmystBossSummonsDemonicVaporTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "felmyst boss summons demonic vapor") {}
+    bool IsActive() override;
+};
+
+class FelmystBotIsDemonicVaporTargetTrigger : public Trigger
+{
+public:
+    FelmystBotIsDemonicVaporTargetTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "felmyst bot is demonic vapor target") {}
     bool IsActive() override;
 };
 
@@ -160,11 +176,11 @@ public:
     bool IsActive() override;
 };
 
-class FelmystManualTargetingIsRequiredTrigger : public Trigger
+class FelmystManualTargetingIsRequiredForAirPhaseTrigger : public Trigger
 {
 public:
-    FelmystManualTargetingIsRequiredTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "felmyst manual targeting is required") {}
+    FelmystManualTargetingIsRequiredForAirPhaseTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "felmyst manual targeting is required for air phase") {}
     bool IsActive() override;
 };
 

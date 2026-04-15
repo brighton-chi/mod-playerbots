@@ -57,6 +57,9 @@ public:
         creators["felmyst boss engaged by ranged on ground"] =
             &RaidSunwellTriggerContext::felmyst_boss_engaged_by_ranged_on_ground;
 
+        creators["felmyst boss engaged by melee on ground"] =
+            &RaidSunwellTriggerContext::felmyst_boss_engaged_by_melee_on_ground;
+
         creators["felmyst bot is encapsulated"] =
             &RaidSunwellTriggerContext::felmyst_bot_is_encapsulated;
 
@@ -66,14 +69,17 @@ public:
         creators["felmyst player has gas nova"] =
             &RaidSunwellTriggerContext::felmyst_player_has_gas_nova;
 
-        creators["felmyst demonic vapor is summoned"] =
-            &RaidSunwellTriggerContext::felmyst_demonic_vapor_is_summoned;
+        creators["felmyst boss summons demonic vapor"] =
+            &RaidSunwellTriggerContext::felmyst_boss_summons_demonic_vapor;
+
+        creators["felmyst bot is demonic vapor target"] =
+            &RaidSunwellTriggerContext::felmyst_bot_is_demonic_vapor_target;
 
         creators["felmyst fog of corruption is active"] =
             &RaidSunwellTriggerContext::felmyst_fog_of_corruption_is_active;
 
-        creators["felmyst manual targeting is required"] =
-            &RaidSunwellTriggerContext::felmyst_manual_targeting_is_required;
+        creators["felmyst manual targeting is required for air phase"] =
+            &RaidSunwellTriggerContext::felmyst_manual_targeting_is_required_for_air_phase;
 
         // Eredar Twins (Alythess & Sacrolash)
         creators["eredar twins"] =
@@ -132,6 +138,9 @@ private:
     static Trigger* felmyst_boss_engaged_by_ranged_on_ground(
         PlayerbotAI* botAI) { return new FelmystBossEngagedByRangedOnGroundTrigger(botAI); }
 
+    static Trigger* felmyst_boss_engaged_by_melee_on_ground(
+        PlayerbotAI* botAI) { return new FelmystBossEngagedByMeleeOnGroundTrigger(botAI); }
+
     static Trigger* felmyst_bot_is_encapsulated(
         PlayerbotAI* botAI) { return new FelmystBotIsEncapsulatedTrigger(botAI); }
 
@@ -141,14 +150,17 @@ private:
     static Trigger* felmyst_player_has_gas_nova(
         PlayerbotAI* botAI) { return new FelmystPlayerHasGasNovaTrigger(botAI); }
 
-    static Trigger* felmyst_demonic_vapor_is_summoned(
-        PlayerbotAI* botAI) { return new FelmystDemonicVaporIsSummonedTrigger(botAI); }
+    static Trigger* felmyst_boss_summons_demonic_vapor(
+        PlayerbotAI* botAI) { return new FelmystBossSummonsDemonicVaporTrigger(botAI); }
+
+    static Trigger* felmyst_bot_is_demonic_vapor_target(
+        PlayerbotAI* botAI) { return new FelmystBotIsDemonicVaporTargetTrigger(botAI); }
 
     static Trigger* felmyst_fog_of_corruption_is_active(
         PlayerbotAI* botAI) { return new FelmystFogOfCorruptionIsActiveTrigger(botAI); }
 
-    static Trigger* felmyst_manual_targeting_is_required(
-        PlayerbotAI* botAI) { return new FelmystManualTargetingIsRequiredTrigger(botAI); }
+    static Trigger* felmyst_manual_targeting_is_required_for_air_phase(
+        PlayerbotAI* botAI) { return new FelmystManualTargetingIsRequiredForAirPhaseTrigger(botAI); }
 
     // Eredar Twins (Alythess & Sacrolash)
     static Trigger* eredar_twins(

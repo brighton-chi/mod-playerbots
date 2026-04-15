@@ -142,29 +142,42 @@ bool FelmystBossEngagedByMainTankOnGroundTrigger::IsActive()
 
 bool FelmystBossEngagedByRangedOnGroundTrigger::IsActive()
 {
+    if (!botAI->IsRanged(bot))
+        return false;
+
     Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
     if (!felmyst || felmyst->IsFlying())
         return false;
 
-    if (GetFelmystEncapsulateTarget(bot))
+    return !GetFelmystEncapsulateTarget(bot);
+}
+
+bool FelmystBossEngagedByMeleeOnGroundTrigger::IsActive()
+{
+    if (!botAI->IsMelee(bot))
         return false;
 
-    return botAI->IsRanged(bot);
+    Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
+    if (!felmyst || felmyst->IsFlying())
+        return false;
+
+    if (botAI->IsMainTank(bot))
+        return false;
+
+    return !GetFelmystEncapsulateTarget(bot);
 }
 
 bool FelmystBotIsEncapsulatedTrigger::IsActive()
 {
     if (bot->getClass() != CLASS_ROGUE && bot->getClass() != CLASS_MAGE &&
         bot->getClass() != CLASS_PALADIN)
-    {
         return false;
-    }
 
     Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
     if (!felmyst || felmyst->IsFlying())
         return false;
 
-    return bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_ENCAPSULATE));
+    return bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_ENCAPSULATE_CHANNEL));
 }
 
 bool FelmystBotNearEncapsulatedPlayerTrigger::IsActive()
@@ -192,14 +205,30 @@ bool FelmystPlayerHasGasNovaTrigger::IsActive()
     return GetFelmystGasNovaDispelTarget(bot) != nullptr;
 }
 
-bool FelmystDemonicVaporIsSummonedTrigger::IsActive()
+bool FelmystBossSummonsDemonicVaporTrigger::IsActive()
 {
     Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
     if (!felmyst || !felmyst->IsFlying())
         return false;
 
-    return GetNearestFelmystDemonicVaporHazard(
-        bot, FELMYST_DEMONIC_VAPOR_SAFE_DISTANCE);
+    if (GetDemonicVaporSummonedByBot(botAI, bot))
+        return false;
+
+    FelmystFogOfCorruptionState fogState;
+    return !GetActiveFelmystFogOfCorruptionState(bot, felmyst, fogState);
+}
+
+bool FelmystBotIsDemonicVaporTargetTrigger::IsActive()
+{
+    Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
+    if (!felmyst || !felmyst->IsFlying())
+        return false;
+
+    FelmystFogOfCorruptionState fogState;
+    if (GetActiveFelmystFogOfCorruptionState(bot, felmyst, fogState))
+        return false;
+
+    return GetDemonicVaporSummonedByBot(botAI, bot);
 }
 
 bool FelmystFogOfCorruptionIsActiveTrigger::IsActive()
@@ -212,9 +241,10 @@ bool FelmystFogOfCorruptionIsActiveTrigger::IsActive()
     return GetActiveFelmystFogOfCorruptionState(bot, felmyst, fogState);
 }
 
-bool FelmystManualTargetingIsRequiredTrigger::IsActive()
+bool FelmystManualTargetingIsRequiredForAirPhaseTrigger::IsActive()
 {
-    return (AI_VALUE2(Unit*, "find target", "felmyst"));
+    Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
+    return felmyst && felmyst->IsFlying();
 }
 
 // Eredar Twins (Alythess & Sacrolash)

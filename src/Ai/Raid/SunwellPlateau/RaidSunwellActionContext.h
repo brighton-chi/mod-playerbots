@@ -66,14 +66,17 @@ public:
         creators["felmyst cast mass dispel on gas nova"] =
             &RaidSunwellActionContext::felmyst_cast_mass_dispel_on_gas_nova;
 
-        creators["felmyst avoid demonic vapor"] =
-            &RaidSunwellActionContext::felmyst_avoid_demonic_vapor;
+        creators["felmyst spread and avoid demonic vapor"] =
+            &RaidSunwellActionContext::felmyst_spread_and_avoid_demonic_vapor;
+
+        creators["felmyst kite demonic vapor"] =
+            &RaidSunwellActionContext::felmyst_kite_demonic_vapor;
 
         creators["felmyst avoid fog of corruption"] =
             &RaidSunwellActionContext::felmyst_avoid_fog_of_corruption;
 
-        creators["felmyst assign target priority"] =
-            &RaidSunwellActionContext::felmyst_assign_target_priority;
+        creators["felmyst assign air phase target priority"] =
+            &RaidSunwellActionContext::felmyst_assign_air_phase_target_priority;
 
         // Eredar Twins (Alythess & Sacrolash)
         creators["eredar twins"] =
@@ -141,14 +144,17 @@ private:
     static Action* felmyst_cast_mass_dispel_on_gas_nova(
         PlayerbotAI* botAI) { return new FelmystCastMassDispelOnGasNovaAction(botAI); }
 
-    static Action* felmyst_avoid_demonic_vapor(
-        PlayerbotAI* botAI) { return new FelmystAvoidDemonicVaporAction(botAI); }
+    static Action* felmyst_spread_and_avoid_demonic_vapor(
+        PlayerbotAI* botAI) { return new FelmystSpreadAndAvoidDemonicVaporAction(botAI); }
+
+    static Action* felmyst_kite_demonic_vapor(
+        PlayerbotAI* botAI) { return new FelmystKiteDemonicVaporAction(botAI); }
 
     static Action* felmyst_avoid_fog_of_corruption(
         PlayerbotAI* botAI) { return new FelmystAvoidFogOfCorruptionAction(botAI); }
 
-    static Action* felmyst_assign_target_priority(
-        PlayerbotAI* botAI) { return new FelmystAssignTargetPriorityAction(botAI); }
+    static Action* felmyst_assign_air_phase_target_priority(
+        PlayerbotAI* botAI) { return new FelmystAssignAirPhaseTargetPriorityAction(botAI); }
 
     // Eredar Twins (Alythess & Sacrolash)
     static Action* eredar_twins(

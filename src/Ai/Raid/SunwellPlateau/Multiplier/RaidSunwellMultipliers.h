@@ -78,11 +78,11 @@ public:
 
 // Felmyst
 
-class FelmystDisableDefaultTargetingMultiplier : public Multiplier
+class FelmystDisableAirPhaseDefaultTargetingMultiplier : public Multiplier
 {
 public:
-    FelmystDisableDefaultTargetingMultiplier(PlayerbotAI* botAI) : Multiplier(
-        botAI, "felmyst disable default targeting") {}
+    FelmystDisableAirPhaseDefaultTargetingMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "felmyst disable air phase default targeting") {}
     virtual float GetValue(Action* action);
 };
 
@@ -99,6 +99,14 @@ class FelmystPrioritizeFogAvoidanceMultiplier : public Multiplier
 public:
     FelmystPrioritizeFogAvoidanceMultiplier(PlayerbotAI* botAI) : Multiplier(
         botAI, "felmyst prioritize fog avoidance") {}
+    virtual float GetValue(Action* action);
+};
+
+class FelmystPrioritizeDemonicVaporKiteMultiplier : public Multiplier
+{
+public:
+    FelmystPrioritizeDemonicVaporKiteMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "felmyst prioritize demonic vapor kite") {}
     virtual float GetValue(Action* action);
 };
 
