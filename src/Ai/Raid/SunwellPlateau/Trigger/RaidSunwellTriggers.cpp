@@ -128,7 +128,17 @@ bool FelmystPullingBossTrigger::IsActive()
         return false;
 
     Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
-    return felmyst && felmyst->GetHealthPct() > 95.0f;
+    if (!felmyst || felmyst->IsFlying())
+        return false;
+
+    if (felmyst->GetHealthPct() > 95.0f)
+        return true;
+
+    Player* mainTank = GetGroupMainTank(botAI, bot);
+    if (mainTank && felmyst->GetVictim() != mainTank)
+        return true;
+
+    return false;
 }
 
 bool FelmystBossEngagedByMainTankOnGroundTrigger::IsActive()
@@ -177,7 +187,7 @@ bool FelmystBotIsEncapsulatedTrigger::IsActive()
     if (!felmyst || felmyst->IsFlying())
         return false;
 
-    return bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_ENCAPSULATE_CHANNEL));
+    return bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_ENCAPSULATE));
 }
 
 bool FelmystBotNearEncapsulatedPlayerTrigger::IsActive()
@@ -244,7 +254,8 @@ bool FelmystFogOfCorruptionIsActiveTrigger::IsActive()
 bool FelmystManualTargetingIsRequiredForAirPhaseTrigger::IsActive()
 {
     Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
-    return felmyst && felmyst->IsFlying();
+    return felmyst && felmyst->IsFlying() && felmyst->GetHealthPct() < 90.0f &&
+           felmyst->GetDistance(bot) > 35.0f;
 }
 
 // Eredar Twins (Alythess & Sacrolash)

@@ -49,8 +49,7 @@ namespace SunwellHelpers
 
         // Felmyst
         SPELL_SUMMON_DEMONIC_VAPOR = 45391,
-        SPELL_ENCAPSULATE_CHANNEL = 45661,
-        SPELL_ENCAPSULATE = 45662,
+        SPELL_ENCAPSULATE = 45661,
         SPELL_GAS_NOVA = 45855,
         SPELL_FELMYST_SPEED_BURST = 45495,
         SPELL_FOG_OF_CORRUPTION_CHARM = 45717,
@@ -178,7 +177,6 @@ namespace SunwellHelpers
     constexpr float FELMYST_DEMONIC_VAPOR_WAYPOINT_REACHED_DISTANCE = 4.0f;
     constexpr float FELMYST_FOG_BOUNDARY_MARGIN = 10.0f;
     constexpr float FELMYST_FOG_SHIFT_MIN_STEP = 3.0f;
-    constexpr float FELMYST_FOG_SHIFT_MAX_STEP = 8.0f;
     constexpr uint32 FELMYST_FOG_WINDUP_GRACE_MS = 7000;
     constexpr uint32 FELMYST_FOG_RECOVERY_GRACE_MS = 2500;
     struct FelmystFogOfCorruptionState

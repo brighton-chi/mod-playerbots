@@ -21,7 +21,15 @@ namespace SunwellHelpers
 
     namespace
     {
-        std::unordered_map<ObjectGuid, std::string> felmystFogDebugMessages;
+        struct FelmystDebugMessageState
+        {
+            std::string message;
+            uint32 timestampMs = 0;
+        };
+
+        constexpr uint32 FELMYST_DEBUG_MESSAGE_REPEAT_WINDOW_MS = 1000;
+
+        std::unordered_map<ObjectGuid, FelmystDebugMessageState> felmystFogDebugMessages;
 
         char const* GetFelmystFogLaneName(FelmystFogLane lane)
         {
@@ -53,12 +61,14 @@ namespace SunwellHelpers
             }
         }
 
-        bool ShouldLogFelmystFogDebug(Player* bot)
+        bool ShouldTellFelmystFogDebug(Player* bot)
         {
             if (PlayerbotAI* botAI = bot ? GET_PLAYERBOT_AI(bot) : nullptr)
             {
                 return botAI->HasStrategy("debug", BOT_STATE_NON_COMBAT) ||
-                    botAI->HasStrategy("debug move", BOT_STATE_NON_COMBAT);
+                    botAI->HasStrategy("debug move", BOT_STATE_NON_COMBAT) ||
+                    botAI->HasStrategy("debug", BOT_STATE_COMBAT) ||
+                    botAI->HasStrategy("debug move", BOT_STATE_COMBAT);
             }
 
             return false;
@@ -76,17 +86,25 @@ namespace SunwellHelpers
 
         void LogFelmystFogDebug(Player* bot, std::string const& message)
         {
-            if (!ShouldLogFelmystFogDebug(bot))
+            if (!bot)
                 return;
 
-            std::string& lastMessage = felmystFogDebugMessages[bot->GetGUID()];
-            if (lastMessage == message)
+            uint32 now = getMSTime();
+            FelmystDebugMessageState& lastMessage = felmystFogDebugMessages[bot->GetGUID()];
+            if (lastMessage.message == message &&
+                getMSTimeDiff(lastMessage.timestampMs, now) < FELMYST_DEBUG_MESSAGE_REPEAT_WINDOW_MS)
+            {
                 return;
+            }
 
-            lastMessage = message;
+            lastMessage.message = message;
+            lastMessage.timestampMs = now;
 
-            if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot))
-                botAI->TellMasterNoFacing("[felmyst fog] " + message);
+            if (ShouldTellFelmystFogDebug(bot))
+            {
+                if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot))
+                    botAI->TellMasterNoFacing("[felmyst fog] " + message);
+            }
 
             LOG_DEBUG("playerbots", "[FelmystFog] {} {}", bot->GetName(), message);
         }
@@ -1296,19 +1314,18 @@ namespace SunwellHelpers
         return std::atan2(frontY - felmyst->GetPositionY(), frontX - felmyst->GetPositionX());
     }
 
-    Creature* GetDemonicVaporSummonedByBot(PlayerbotAI* botAI, Player* carrier)
+    Creature* GetDemonicVaporSummonedByBot(PlayerbotAI* /*botAI*/, Player* carrier)
     {
         if (!carrier)
             return nullptr;
 
-        auto const& potentialTargets =
-            botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
-        for (ObjectGuid const& targetGuid : potentialTargets)
+        constexpr float searchRadius = 80.0f;
+        std::list<Creature*> vapors;
+        carrier->GetCreatureListWithEntryInGrid(
+            vapors, static_cast<uint32>(SunwellNPCs::NPC_DEMONIC_VAPOR), searchRadius);
+        for (Creature* creature : vapors)
         {
-            Unit* unit = botAI->GetUnit(targetGuid);
-            Creature* creature = unit ? unit->ToCreature() : nullptr;
-            if (!creature || !creature->IsAlive() ||
-                creature->GetEntry() != static_cast<uint32>(SunwellNPCs::NPC_DEMONIC_VAPOR))
+            if (!creature || !creature->IsAlive())
             {
                 continue;
             }
@@ -1405,6 +1422,31 @@ namespace SunwellHelpers
         return bestIndex;
     }
 
+    uint8 GetNearestFelmystDemonicVaporSegmentEndWaypointIndex(Player* bot, uint8 pathIndex)
+    {
+        if (pathIndex >= FELMYST_DEMONIC_VAPOR_KITE_PATHS.size())
+            return 0;
+
+        auto const& path = FELMYST_DEMONIC_VAPOR_KITE_PATHS[pathIndex];
+        uint8 bestSegmentIndex = 0;
+        float bestDistance = std::numeric_limits<float>::max();
+
+        for (uint8 waypointIndex = 0; waypointIndex < path.size(); ++waypointIndex)
+        {
+            Position const& start = path[waypointIndex];
+            Position const& end = path[(waypointIndex + 1) % path.size()];
+            float distance = GetDistanceToSegment2d(
+                bot->GetPositionX(), bot->GetPositionY(), start, end);
+            if (distance < bestDistance)
+            {
+                bestDistance = distance;
+                bestSegmentIndex = waypointIndex;
+            }
+        }
+
+        return (bestSegmentIndex + 1) % path.size();
+    }
+
     uint8 GetNextFelmystDemonicVaporWaypointIndex(Player* bot, uint8 pathIndex, uint8 currentWaypointIndex)
     {
         auto const& path = FELMYST_DEMONIC_VAPOR_KITE_PATHS[pathIndex];
@@ -1418,16 +1460,16 @@ namespace SunwellHelpers
             return nextWaypointIndex;
         }
 
-        uint8 nearestWaypointIndex = GetNearestFelmystDemonicVaporWaypointIndex(bot, pathIndex);
-        if (nearestWaypointIndex == nextWaypointIndex)
+        uint8 segmentWaypointIndex = GetNearestFelmystDemonicVaporSegmentEndWaypointIndex(bot, pathIndex);
+        if (segmentWaypointIndex != waypointIndex)
         {
-            Position const& nextWaypoint = path[nextWaypointIndex];
             float currentDistance = bot->GetExactDist2d(
                 currentWaypoint.GetPositionX(), currentWaypoint.GetPositionY());
-            float nextDistance = bot->GetExactDist2d(
-                nextWaypoint.GetPositionX(), nextWaypoint.GetPositionY());
-            if (nextDistance + 1.0f < currentDistance)
-                return nextWaypointIndex;
+            Position const& segmentWaypoint = path[segmentWaypointIndex];
+            float segmentDistance = bot->GetExactDist2d(
+                segmentWaypoint.GetPositionX(), segmentWaypoint.GetPositionY());
+            if (segmentWaypointIndex == nextWaypointIndex || segmentDistance + 1.0f < currentDistance)
+                return segmentWaypointIndex;
         }
 
         return waypointIndex;
@@ -1603,7 +1645,7 @@ namespace SunwellHelpers
         auto const& path = FELMYST_DEMONIC_VAPOR_KITE_PATHS[pathIndex];
         if (waypointItr == waypointIndices.end())
         {
-            waypointIndex = GetNearestFelmystDemonicVaporWaypointIndex(bot, pathIndex);
+            waypointIndex = GetNearestFelmystDemonicVaporSegmentEndWaypointIndex(bot, pathIndex);
             waypointIndices[guid] = waypointIndex;
         }
         else
@@ -1782,8 +1824,7 @@ namespace SunwellHelpers
             return false;
         }
 
-        float desiredDistance = std::clamp(
-            requiredDistance, FELMYST_FOG_SHIFT_MIN_STEP, FELMYST_FOG_SHIFT_MAX_STEP);
+        float desiredDistance = std::max(requiredDistance, FELMYST_FOG_SHIFT_MIN_STEP);
         float lastValidX = bot->GetPositionX();
         float lastValidY = bot->GetPositionY();
         float lastValidZ = bot->GetPositionZ();
@@ -1874,12 +1915,12 @@ namespace SunwellHelpers
         bool isSweeping = felmyst->HasAura(static_cast<uint32>(SunwellSpells::SPELL_FELMYST_SPEED_BURST));
         bool nearLaneSegment = false;
 
-        if (!nearLanePoint && (isSweeping || hasTracker))
+        if (!nearLanePoint && isSweeping)
             nearLaneSegment = TryGetFelmystFogLaneFromLaneSegments(felmyst, observedLane);
 
         if (nearLanePoint)
         {
-            if (tracker.lane != observedLane)
+            if (!hasTracker || tracker.lane != observedLane || tracker.expireMs <= now)
                 tracker.firstObservedMs = now;
 
             tracker.lane = observedLane;
@@ -1897,13 +1938,22 @@ namespace SunwellHelpers
             return true;
         }
 
-        if (isSweeping || nearLaneSegment)
+        if (isSweeping)
         {
             if (tracker.lane != observedLane && observedLane != FelmystFogLane::None)
                 tracker.firstObservedMs = now;
 
             if (observedLane != FelmystFogLane::None)
                 tracker.lane = observedLane;
+
+            if (tracker.lane == FelmystFogLane::None || tracker.expireMs <= now)
+            {
+                LogFelmystFogDebug(bot,
+                    std::string("state pending phase=sweep source=") +
+                    (nearLaneSegment ? "lane-segment" : "speed-burst") +
+                    " lane=none");
+                return false;
+            }
 
             tracker.phase = FelmystFogPhase::Sweep;
             tracker.lastObservedMs = now;
@@ -1921,6 +1971,19 @@ namespace SunwellHelpers
 
         if (hasTracker && tracker.expireMs > now && tracker.lane != FelmystFogLane::None)
         {
+            FelmystFogLane currentLane = FelmystFogLane::None;
+            bool botInLane = TryGetFelmystFogLaneFromPosition(
+                bot->GetPositionX(), bot->GetPositionY(), currentLane);
+            if (botInLane && currentLane != tracker.lane)
+            {
+                felmystFogOfCorruptionStates.erase(bot->GetInstanceId());
+                LogFelmystFogDebug(bot,
+                    std::string("state cleared current=") + GetFelmystFogLaneName(currentLane) +
+                    " danger=" + GetFelmystFogLaneName(tracker.lane) +
+                    " source=already-safe");
+                return false;
+            }
+
             tracker.phase = FelmystFogPhase::Recovery;
             state = tracker;
             LogFelmystFogDebug(bot,
@@ -1946,6 +2009,13 @@ namespace SunwellHelpers
                 bot->GetPositionX(), bot->GetPositionY(), currentLane) &&
             currentLane != dangerLane)
         {
+            float requiredDistance = 0.0f;
+            if (TryGetFelmystFogShiftDestinationForLane(
+                    bot, dangerLane, currentLane, destination, requiredDistance))
+            {
+                return true;
+            }
+
             LogFelmystFogDebug(bot,
                 std::string("no shift current=") + GetFelmystFogLaneName(currentLane) +
                 " danger=" + GetFelmystFogLaneName(dangerLane));
@@ -2054,7 +2124,7 @@ namespace SunwellHelpers
         {
             Player* member = ref->GetSource();
             if (!member || !member->IsAlive() ||
-                !member->HasAura(static_cast<uint32>(SunwellSpells::SPELL_ENCAPSULATE_CHANNEL)))
+                !member->HasAura(static_cast<uint32>(SunwellSpells::SPELL_ENCAPSULATE)))
             {
                 continue;
             }

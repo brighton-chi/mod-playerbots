@@ -29,7 +29,7 @@ namespace
             if (!member || !member->IsInWorld() || !member->IsAlive())
                 continue;
 
-            if (member->GetMapId() != player->GetMapId() || member->GetInstanceId() != player->GetInstanceId())
+            if (member->GetMapId() != player->GetMapId())
                 continue;
 
             if (PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member))
@@ -97,13 +97,11 @@ public:
             case static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_BLAST_PORTAL):
                 if (!botAI)
                     return;
-
                 RecordKalecgosSpectralBlastPortal(botAI, player);
                 break;
             case static_cast<uint32>(SunwellSpells::SPELL_TELEPORT_SPECTRAL):
                 if (!botAI)
                     return;
-
                 RecordKalecgosSpectralRealmEnter(botAI, player);
                 break;
             case static_cast<uint32>(SunwellSpells::SPELL_TELEPORT_NORMAL_REALM):
@@ -134,13 +132,12 @@ public:
 
         switch (spellInfo->Id)
         {
-            case static_cast<uint32>(SunwellSpells::SPELL_ENCAPSULATE_CHANNEL):
+            case static_cast<uint32>(SunwellSpells::SPELL_ENCAPSULATE):
                 RequestInterruptForBotsNear(target, FELMYST_ENCAPSULATE_SAFE_DISTANCE);
                 break;
             case static_cast<uint32>(SunwellSpells::SPELL_SUMMON_DEMONIC_VAPOR):
                 if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(target))
                     botAI->RequestSpellInterrupt();
-
                 break;
             default:
                 break;

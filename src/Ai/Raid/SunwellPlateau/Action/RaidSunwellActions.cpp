@@ -122,6 +122,8 @@ bool KalecgosTankPositionBossAction::Execute(Event event)
     if (!kalecgos)
         return false;
 
+    MarkTargetWithSkull(bot, kalecgos);
+
     if (bot->GetVictim() != kalecgos)
         return Attack(kalecgos);
 
@@ -841,7 +843,7 @@ bool FelmystAvoidFogOfCorruptionAction::Execute(Event /*event*/)
         return false;
 
     return MoveTo(SUNWELL_MAP_ID, destination.GetPositionX(), destination.GetPositionY(),
-                  destination.GetPositionZ(), false, false, false, true,
+                  destination.GetPositionZ(), false, false, false, false,
                   MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
@@ -851,7 +853,9 @@ bool FelmystAssignAirPhaseTargetPriorityAction::Execute(Event /*event*/)
     if (!felmyst)
         return false;
 
-    Unit* fogCharmedTarget = GetNearestFelmystFogOfCorruptionCharmedTarget(bot);
+    MarkTargetWithMoon(bot, felmyst);
+
+    /* Unit* fogCharmedTarget = GetNearestFelmystFogOfCorruptionCharmedTarget(bot);
     Unit* unyieldingDead = GetFirstAliveUnitByEntry(
         botAI, static_cast<uint32>(SunwellNPCs::NPC_UNYIELDING_DEAD));
     Unit* target = nullptr;
@@ -889,7 +893,7 @@ bool FelmystAssignAirPhaseTargetPriorityAction::Execute(Event /*event*/)
         return false;
 
     if (currentTarget != target && bot->GetTarget() != target->GetGUID())
-        return Attack(target);
+        return Attack(target); */
 
     return false;
 }
