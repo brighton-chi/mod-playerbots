@@ -319,10 +319,51 @@ bool CastGreaterBlessingAssignmentAction::ComputeAssignments(
         }
     }
 
-    // Paladins as blessing recipients are the only class that is heterogenous all
-    // the way until there are 4+ Paladins so they have to be forced to single blessings
-    // until then.
-    if (classPresent[CLASS_PALADIN])
+    if (botPaladins.size() >= MAX_SLOTS)
+    {
+        BlessingType const fullCoverageOrder[MAX_SLOTS] = {
+            BLESSING_SANCTUARY_GREATER,
+            BLESSING_MIGHT_GREATER,
+            BLESSING_KINGS_GREATER,
+            BLESSING_WISDOM_GREATER
+        };
+
+        for (uint8 classId = 0; classId < MAX_CLASS_ID; ++classId)
+        {
+            if (!classPresent[classId])
+                continue;
+
+            bool classHasBlessing[5] = {};
+            for (auto const& priority : effective)
+            {
+                if (priority.player->getClass() != classId)
+                    continue;
+
+                for (int slot = 0; slot < MAX_SLOTS; ++slot)
+                {
+                    BaseBlessingCategory category = BaseBlessingOf(priority.blessings[slot]);
+                    if (category > BASE_NONE && category <= BASE_SANCTUARY)
+                        classHasBlessing[category] = true;
+                }
+            }
+
+            if (!classHasBlessing[BASE_MIGHT] || !classHasBlessing[BASE_WISDOM] ||
+                !classHasBlessing[BASE_KINGS] || !classHasBlessing[BASE_SANCTUARY])
+            {
+                continue;
+            }
+
+            for (int slot = 0; slot < MAX_SLOTS; ++slot)
+            {
+                classSlots[classId][slot].heterogeneous = false;
+                classSlots[classId][slot].homogeneous = fullCoverageOrder[slot];
+            }
+        }
+    }
+
+    // Paladins remain the special case below 4 paladins: their specs disagree enough
+    // that singles are still needed until every blessing base can be covered by greater blessings.
+    if (classPresent[CLASS_PALADIN] && botPaladins.size() < MAX_SLOTS)
     {
         for (int slot = 0; slot < MAX_SLOTS; ++slot)
         {
