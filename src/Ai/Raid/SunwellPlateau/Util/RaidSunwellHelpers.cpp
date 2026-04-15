@@ -1087,9 +1087,9 @@ namespace SunwellHelpers
             { 1470.1079f, 578.58923f, 22.032967f },
         }},
         {{
-            { 1444.848f, 626.548f, 17.924f },
-            { 1444.272f, 605.987f, 19.331f },
-            { 1447.528f, 590.302f, 20.143f },
+            { 1496.9928f, 632.85876f, 24.155468f },
+            { 1496.8801f, 617.5145f, 25.587395f },
+            { 1497.4723f, 599.5065f, 25.60551f },
         }},
         {{
             { 1479.5696f, 603.14514f, 23.73047f },
@@ -2023,6 +2023,14 @@ namespace SunwellHelpers
     {
         if (!GetFelmystFogOfCorruptionStageState(bot, felmyst, state))
             return false;
+
+        if (state.phase == FelmystFogPhase::Recovery)
+        {
+            LogFelmystFogDebug(bot,
+                std::string("state safe danger=") + GetFelmystFogLaneName(state.lane) +
+                " source=recovery-phase");
+            return false;
+        }
 
         float safeSpotDistance = std::numeric_limits<float>::max();
         if (IsNearFelmystFogSafeSpot(bot, state.lane, safeSpotDistance))
