@@ -152,7 +152,8 @@ namespace SunwellHelpers
         if (!state.activeRiftOpenedMs)
             return;
 
-        if (getMSTimeDiff(state.activeRiftOpenedMs, now) <= KALECGOS_RIFT_ENTRY_WINDOW_MS)
+        constexpr uint32 riftEntryWindowMs = 10000;
+        if (getMSTimeDiff(state.activeRiftOpenedMs, now) <= riftEntryWindowMs)
             return;
 
         state.activeRiftOpenedMs = 0;
@@ -178,8 +179,7 @@ namespace SunwellHelpers
             if (!member || member->GetGUID() != playerGuid)
                 continue;
 
-            if (!member->IsInWorld() || member->GetMapId() != SUNWELL_MAP_ID ||
-                member->GetInstanceId() != instanceId)
+            if (!member->IsInWorld() || member->GetMapId() != SUNWELL_MAP_ID)
             {
                 return nullptr;
             }
@@ -434,8 +434,7 @@ namespace SunwellHelpers
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (!member || !member->IsInWorld() || member->GetMapId() != SUNWELL_MAP_ID ||
-                member->GetInstanceId() != instanceId)
+            if (!member || !member->IsInWorld() || member->GetMapId() != SUNWELL_MAP_ID)
             {
                 continue;
             }
@@ -676,7 +675,6 @@ namespace SunwellHelpers
     float GetBrutallusRangedSlotAngleStep(float radius);
     float GetBrutallusRangedSlotAngle(Unit* brutallus, BrutallusRangedSlotInfo const& slotInfo);
     float GetBrutallusMirroredRangedAngle(float normalAngle, BrutallusRangedSlotInfo const& slotInfo);
-    bool IsEligibleBrutallusRangedMember(PlayerbotAI* botAI, Player* bot, Player* member);
     void EnsureBrutallusRangedAssignments(PlayerbotAI* botAI, Player* bot);
 
     std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> brutallusRangedAssignments;
@@ -706,23 +704,25 @@ namespace SunwellHelpers
         return GetBrutallusPositionAtAngle(brutallus, angle, BRUTALLUS_TANK_POSITION_RADIUS, z);
     }
 
-    // I was using a hardcoded radius to calculate distance for melee; trying GetMeleeRange, need to test
     bool TryGetBrutallusMeleePosition(
         Player* bot, Unit* brutallus, uint8 meleeIndex, float z, Position& position)
     {
         if (!brutallus)
             return false;
 
-        float meleeRadius = std::max(1.0f, bot->GetMeleeRange(brutallus) - 2.0f);
+        constexpr float meleeSpacing = 5.0f;
+        constexpr float arcAngle = 2.0f * M_PI / 3.0f;
 
-        float meleeAngleStep = 2.0f * std::asin(BRUTALLUS_MELEE_SPACING / (2.0f * BRUTALLUS_MELEE_RADIUS));
-        uint8 maxSideSlots = static_cast<uint8>(std::floor((BRUTALLUS_MELEE_ARC_ANGLE / 2.0f) / meleeAngleStep));
+        float meleeRadius = std::max(1.0f, bot->GetMeleeRange(brutallus) - 2.0f); // Tested with hardcoded 18.0f
+        float meleeAngleStep = 2.0f * std::asin(meleeSpacing / (2.0f * meleeRadius));
+        uint8 maxSideSlots = static_cast<uint8>(std::floor((arcAngle / 2.0f) / meleeAngleStep));
         uint8 maxMeleeSlots = 1 + 2 * maxSideSlots;
         if (meleeIndex >= maxMeleeSlots)
             return false;
 
+        float arcCenterOffset = M_PI + BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET / 2.0f;
         float baseAngle = Position::NormalizeOrientation(
-            GetBrutallusMainTankAngle(brutallus) + BRUTALLUS_MELEE_ARC_CENTER_ANGLE_OFFSET);
+            GetBrutallusMainTankAngle(brutallus) + arcCenterOffset);
         float arcWidth = maxSideSlots * 2.0f * meleeAngleStep;
         float angleOffset = GetCenteredArcSlotAngleOffset(meleeIndex, maxMeleeSlots, arcWidth);
 
@@ -797,7 +797,9 @@ namespace SunwellHelpers
         float currentAngle = Position::NormalizeOrientation(
             std::atan2(currentY - center.GetPositionY(), currentX - center.GetPositionX()));
         float remainingAngle = NormalizeSignedAngle(targetAngle - currentAngle);
-        float stepAngle = 2.0f * std::asin(BRUTALLUS_BURN_ARC_STEP_DISTANCE / (2.0f * burnRadius));
+
+        constexpr float stepDistance = 3.0f;
+        float stepAngle = 2.0f * std::asin(stepDistance / (2.0f * burnRadius));
         float nextAngle = targetAngle;
 
         if (std::fabs(remainingAngle) > stepAngle)
@@ -852,8 +854,8 @@ namespace SunwellHelpers
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (!member || !member->IsInWorld() || member->GetMapId() != SUNWELL_MAP_ID ||
-                member->GetInstanceId() != bot->GetInstanceId())
+            if (!member || !member->IsInWorld() ||
+                member->GetMapId() != SUNWELL_MAP_ID)
             {
                 continue;
             }
@@ -951,15 +953,17 @@ namespace SunwellHelpers
     float GetBrutallusRangedRadius(bool isBurnMovement)
     {
         float radius = BRUTALLUS_TANK_POSITION_RADIUS + BRUTALLUS_RANGED_TANK_OFFSET;
+        constexpr float burnForwardMoveDist = 5.0f;
         if (isBurnMovement)
-            radius -= BRUTALLUS_BURN_FORWARD_DISTANCE;
+            radius -= burnForwardMoveDist;
 
         return radius;
     }
 
     float GetBrutallusRangedSlotAngleStep(float radius)
     {
-        float stepRatio = BRUTALLUS_RANGED_SPACING / (2.0f * radius);
+        constexpr float rangedSpacing = 6.0f;
+        float stepRatio = rangedSpacing / (2.0f * radius);
         stepRatio = std::clamp(stepRatio, 0.0f, 1.0f);
         return 2.0f * std::asin(stepRatio);
     }
@@ -984,28 +988,11 @@ namespace SunwellHelpers
 
     float GetBrutallusMirroredRangedAngle(float normalAngle, BrutallusRangedSlotInfo const& slotInfo)
     {
-        float mirrorAngleOffset = BRUTALLUS_BURN_MIRROR_ANGLE_OFFSET;
+        float mirrorAngleOffset = M_PI_2;
         if (!slotInfo.isMainTankGroup)
             mirrorAngleOffset = -mirrorAngleOffset;
 
         return Position::NormalizeOrientation(normalAngle + mirrorAngleOffset);
-    }
-
-    bool IsEligibleBrutallusRangedMember(PlayerbotAI* botAI, Player* bot, Player* member)
-    {
-        if (!member || !member->IsInWorld() || member->GetMapId() != SUNWELL_MAP_ID ||
-            member->GetInstanceId() != bot->GetInstanceId())
-        {
-            return false;
-        }
-
-        if (botAI->IsMelee(member) || botAI->IsMainTank(member) ||
-            botAI->IsAssistTankOfIndex(member, 0, true))
-        {
-            return false;
-        }
-
-        return true;
     }
 
     void EnsureBrutallusRangedAssignments(PlayerbotAI* botAI, Player* bot)
@@ -1047,8 +1034,11 @@ namespace SunwellHelpers
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (!IsEligibleBrutallusRangedMember(botAI, bot, member))
+            if (!member || !member->IsInWorld() || member->GetMapId() != SUNWELL_MAP_ID ||
+                !botAI->IsRanged(member))
+            {
                 continue;
+            }
 
             if (assignments.find(member->GetGUID()) != assignments.end())
                 continue;
@@ -1074,7 +1064,8 @@ namespace SunwellHelpers
 
     // Felmyst
 
-    const Position FELMYST_TANK_POSITION = { 1476.624f, 620.888f, 22.490f };
+    const Position FELMYST_TANK_POSITION = { 1476.813f, 604.818f, 23.708f };
+
     const std::array<Position, 3> FELMYST_FOG_LEFT_LANES = {{
         { 1494.745f, 704.0001f, 50.084652f, 4.7472f },
         { 1469.923f, 703.23914f, 50.08592f, 4.7472f },
@@ -1178,22 +1169,18 @@ namespace SunwellHelpers
         return bestSpacing == std::numeric_limits<float>::max() ? 0.0f : bestSpacing * 0.5f;
     }
 
-    const std::array<std::array<Position, 6>, 2> FELMYST_DEMONIC_VAPOR_KITE_PATHS = {{
+    const std::array<std::array<Position, 4>, 2> FELMYST_DEMONIC_VAPOR_KITE_PATHS = {{
         {{
-            { 1457.426f, 617.279f, 20.350f },
-            { 1451.897f, 597.726f, 20.697f },
-            { 1459.353f, 574.804f, 21.972f },
-            { 1484.936f, 572.094f, 23.407f },
-            { 1499.060f, 588.701f, 24.920f },
-            { 1495.719f, 607.127f, 25.607f },
+            { 1484.994f, 598.407f, 23.859f },
+            { 1491.537f, 580.538f, 23.356f },
+            { 1475.972f, 565.603f, 22.783f },
+            { 1460.613f, 584.879f, 21.259f },
         }},
         {{
-            { 1496.546f, 624.383f, 25.052f },
-            { 1495.697f, 642.868f, 23.572f },
-            { 1485.558f, 661.212f, 21.159f },
-            { 1465.801f, 657.336f, 19.982f },
-            { 1449.653f, 639.291f, 17.918f },
-            { 1458.564f, 615.200f, 20.582f },
+            { 1483.642f, 635.021f, 22.168f },
+            { 1495.737f, 650.552f, 23.033f },
+            { 1478.664f, 667.921f, 20.475f },
+            { 1464.981f, 649.027f, 19.835f },
         }}
     }};
 
@@ -1299,8 +1286,7 @@ namespace SunwellHelpers
 
         Player* mainTank = GetGroupMainTank(botAI, bot);
         if (mainTank && mainTank->IsAlive() &&
-            mainTank->GetMapId() == felmyst->GetMapId() &&
-            mainTank->GetInstanceId() == felmyst->GetInstanceId())
+            mainTank->GetMapId() == felmyst->GetMapId() )
         {
             frontX = mainTank->GetPositionX();
             frontY = mainTank->GetPositionY();
@@ -1314,7 +1300,7 @@ namespace SunwellHelpers
         return std::atan2(frontY - felmyst->GetPositionY(), frontX - felmyst->GetPositionX());
     }
 
-    Creature* GetDemonicVaporSummonedByBot(PlayerbotAI* /*botAI*/, Player* carrier)
+    Creature* GetDemonicVaporSummonedByBot(Player* carrier)
     {
         if (!carrier)
             return nullptr;
@@ -1325,19 +1311,11 @@ namespace SunwellHelpers
             vapors, static_cast<uint32>(SunwellNPCs::NPC_DEMONIC_VAPOR), searchRadius);
         for (Creature* creature : vapors)
         {
-            if (!creature || !creature->IsAlive())
+            if (creature && creature->IsAlive() &&
+                creature->GetSummonerGUID() == carrier->GetGUID())
             {
-                continue;
-            }
-
-            if (creature->GetMapId() != carrier->GetMapId() ||
-                creature->GetInstanceId() != carrier->GetInstanceId())
-            {
-                continue;
-            }
-
-            if (creature->GetSummonerGUID() == carrier->GetGUID())
                 return creature;
+            }
         }
 
         return nullptr;
@@ -1422,55 +1400,27 @@ namespace SunwellHelpers
         return bestIndex;
     }
 
-    uint8 GetNearestFelmystDemonicVaporSegmentEndWaypointIndex(Player* bot, uint8 pathIndex)
-    {
-        if (pathIndex >= FELMYST_DEMONIC_VAPOR_KITE_PATHS.size())
-            return 0;
-
-        auto const& path = FELMYST_DEMONIC_VAPOR_KITE_PATHS[pathIndex];
-        uint8 bestSegmentIndex = 0;
-        float bestDistance = std::numeric_limits<float>::max();
-
-        for (uint8 waypointIndex = 0; waypointIndex < path.size(); ++waypointIndex)
-        {
-            Position const& start = path[waypointIndex];
-            Position const& end = path[(waypointIndex + 1) % path.size()];
-            float distance = GetDistanceToSegment2d(
-                bot->GetPositionX(), bot->GetPositionY(), start, end);
-            if (distance < bestDistance)
-            {
-                bestDistance = distance;
-                bestSegmentIndex = waypointIndex;
-            }
-        }
-
-        return (bestSegmentIndex + 1) % path.size();
-    }
-
     uint8 GetNextFelmystDemonicVaporWaypointIndex(Player* bot, uint8 pathIndex, uint8 currentWaypointIndex)
     {
         auto const& path = FELMYST_DEMONIC_VAPOR_KITE_PATHS[pathIndex];
         uint8 waypointIndex = currentWaypointIndex % path.size();
         uint8 nextWaypointIndex = (waypointIndex + 1) % path.size();
 
+        constexpr float waypointReachedDistance = 4.0f;
         Position const& currentWaypoint = path[waypointIndex];
         if (bot->GetExactDist2d(currentWaypoint.GetPositionX(), currentWaypoint.GetPositionY()) <=
-            FELMYST_DEMONIC_VAPOR_WAYPOINT_REACHED_DISTANCE)
+            waypointReachedDistance)
         {
             return nextWaypointIndex;
         }
 
-        uint8 segmentWaypointIndex = GetNearestFelmystDemonicVaporSegmentEndWaypointIndex(bot, pathIndex);
-        if (segmentWaypointIndex != waypointIndex)
-        {
-            float currentDistance = bot->GetExactDist2d(
-                currentWaypoint.GetPositionX(), currentWaypoint.GetPositionY());
-            Position const& segmentWaypoint = path[segmentWaypointIndex];
-            float segmentDistance = bot->GetExactDist2d(
-                segmentWaypoint.GetPositionX(), segmentWaypoint.GetPositionY());
-            if (segmentWaypointIndex == nextWaypointIndex || segmentDistance + 1.0f < currentDistance)
-                return segmentWaypointIndex;
-        }
+        float currentDistance = bot->GetExactDist2d(
+            currentWaypoint.GetPositionX(), currentWaypoint.GetPositionY());
+        Position const& nextWaypoint = path[nextWaypointIndex];
+        float nextDistance = bot->GetExactDist2d(
+            nextWaypoint.GetPositionX(), nextWaypoint.GetPositionY());
+        if (nextDistance + 1.0f < currentDistance)
+            return nextWaypointIndex;
 
         return waypointIndex;
     }
@@ -1509,7 +1459,7 @@ namespace SunwellHelpers
         return true;
     }
 
-    std::array<uint32, 2> GetFelmystDemonicVaporPathOccupancyCounts(PlayerbotAI* botAI, Player* bot)
+    std::array<uint32, 2> GetFelmystDemonicVaporPathOccupancyCounts(Player* bot)
     {
         std::array<uint32, 2> occupancyCounts = { 0, 0 };
         uint32 instanceId = bot->GetInstanceId();
@@ -1532,7 +1482,7 @@ namespace SunwellHelpers
                     if (memberPathItr == pathInstanceItr->second.end())
                         continue;
 
-                    if (!GetDemonicVaporSummonedByBot(botAI, member))
+                    if (!GetDemonicVaporSummonedByBot(member))
                         continue;
 
                     if (memberPathItr->second < occupancyCounts.size())
@@ -1575,9 +1525,9 @@ namespace SunwellHelpers
         return occupancyCounts;
     }
 
-    uint8 SelectFelmystDemonicVaporPath(PlayerbotAI* botAI, Player* bot)
+    uint8 SelectFelmystDemonicVaporPath(Player* bot)
     {
-        std::array<uint32, 2> occupancyCounts = GetFelmystDemonicVaporPathOccupancyCounts(botAI, bot);
+        std::array<uint32, 2> occupancyCounts = GetFelmystDemonicVaporPathOccupancyCounts(bot);
         uint8 bestPathIndex = 0;
         uint32 bestOccupancy = std::numeric_limits<uint32>::max();
         float bestDistance = std::numeric_limits<float>::max();
@@ -1598,13 +1548,12 @@ namespace SunwellHelpers
         return bestPathIndex;
     }
 
-    bool TryGetFelmystDemonicVaporKiteDestination(
-        PlayerbotAI* botAI, Player* bot, Position& destination)
+    bool TryGetFelmystDemonicVaporKiteDestination(Player* bot, Position& destination)
     {
         uint32 instanceId = bot->GetInstanceId();
         ObjectGuid guid = bot->GetGUID();
 
-        if (!GetDemonicVaporSummonedByBot(botAI, bot))
+        if (!GetDemonicVaporSummonedByBot(bot))
         {
             auto pathInstanceItr = felmystDemonicVaporPathIndices.find(instanceId);
             if (pathInstanceItr != felmystDemonicVaporPathIndices.end())
@@ -1634,7 +1583,7 @@ namespace SunwellHelpers
 
         if (pathItr == pathIndices.end())
         {
-            pathIndex = SelectFelmystDemonicVaporPath(botAI, bot);
+            pathIndex = SelectFelmystDemonicVaporPath(bot);
             pathIndices[guid] = pathIndex;
         }
         else
@@ -1645,7 +1594,7 @@ namespace SunwellHelpers
         auto const& path = FELMYST_DEMONIC_VAPOR_KITE_PATHS[pathIndex];
         if (waypointItr == waypointIndices.end())
         {
-            waypointIndex = GetNearestFelmystDemonicVaporSegmentEndWaypointIndex(bot, pathIndex);
+            waypointIndex = 0;
             waypointIndices[guid] = waypointIndex;
         }
         else
@@ -1809,7 +1758,13 @@ namespace SunwellHelpers
             (bot->GetPositionX() - dangerPoint.GetPositionX()) * unitX +
             (bot->GetPositionY() - dangerPoint.GetPositionY()) * unitY;
         float boundaryOffset = laneSpacing * 0.5f;
-        float targetOffset = boundaryOffset + FELMYST_FOG_BOUNDARY_MARGIN;
+        float targetOffset = laneSpacing;
+        if (dangerLane == FelmystFogLane::Middle)
+        {
+            constexpr float outerHalfFactor = 0.5f;
+            float safeLaneHalfWidth = GetFelmystFogLaneHalfWidth(safeLane, projection);
+            targetOffset += safeLaneHalfWidth * outerHalfFactor;
+        }
         requiredDistance = targetOffset - currentOffset;
         if (requiredDistance <= 0.0f)
         {
@@ -1824,7 +1779,8 @@ namespace SunwellHelpers
             return false;
         }
 
-        float desiredDistance = std::max(requiredDistance, FELMYST_FOG_SHIFT_MIN_STEP);
+        constexpr float minStep = 3.0f;
+        float desiredDistance = std::max(requiredDistance, minStep);
         float lastValidX = bot->GetPositionX();
         float lastValidY = bot->GetPositionY();
         float lastValidZ = bot->GetPositionZ();
@@ -1892,7 +1848,7 @@ namespace SunwellHelpers
         return TryGetFelmystFogLaneFromLaneSegments(felmyst, lane);
     }
 
-    bool GetActiveFelmystFogOfCorruptionState(
+    bool GetFelmystFogOfCorruptionStageState(
         Player* bot, Unit* felmyst, FelmystFogOfCorruptionState& state)
     {
         state = FelmystFogOfCorruptionState();
@@ -1923,10 +1879,11 @@ namespace SunwellHelpers
             if (!hasTracker || tracker.lane != observedLane || tracker.expireMs <= now)
                 tracker.firstObservedMs = now;
 
+            constexpr uint32 fogWindupGraceMs = 7000;
             tracker.lane = observedLane;
             tracker.phase = FelmystFogPhase::Windup;
             tracker.lastObservedMs = now;
-            tracker.expireMs = now + FELMYST_FOG_WINDUP_GRACE_MS;
+            tracker.expireMs = now + fogWindupGraceMs;
             if (!tracker.firstObservedMs)
                 tracker.firstObservedMs = now;
 
@@ -1957,7 +1914,8 @@ namespace SunwellHelpers
 
             tracker.phase = FelmystFogPhase::Sweep;
             tracker.lastObservedMs = now;
-            tracker.expireMs = now + FELMYST_FOG_RECOVERY_GRACE_MS;
+            constexpr uint32 fogRecoveryGraceMs = 2500;
+            tracker.expireMs = now + fogRecoveryGraceMs;
             if (!tracker.firstObservedMs)
                 tracker.firstObservedMs = now;
 
@@ -1971,19 +1929,6 @@ namespace SunwellHelpers
 
         if (hasTracker && tracker.expireMs > now && tracker.lane != FelmystFogLane::None)
         {
-            FelmystFogLane currentLane = FelmystFogLane::None;
-            bool botInLane = TryGetFelmystFogLaneFromPosition(
-                bot->GetPositionX(), bot->GetPositionY(), currentLane);
-            if (botInLane && currentLane != tracker.lane)
-            {
-                felmystFogOfCorruptionStates.erase(bot->GetInstanceId());
-                LogFelmystFogDebug(bot,
-                    std::string("state cleared current=") + GetFelmystFogLaneName(currentLane) +
-                    " danger=" + GetFelmystFogLaneName(tracker.lane) +
-                    " source=already-safe");
-                return false;
-            }
-
             tracker.phase = FelmystFogPhase::Recovery;
             state = tracker;
             LogFelmystFogDebug(bot,
@@ -1998,11 +1943,38 @@ namespace SunwellHelpers
         return false;
     }
 
+    bool GetActiveFelmystFogOfCorruptionState(
+        Player* bot, Unit* felmyst, FelmystFogOfCorruptionState& state)
+    {
+        if (!GetFelmystFogOfCorruptionStageState(bot, felmyst, state))
+            return false;
+
+        FelmystFogLane currentLane = FelmystFogLane::None;
+        if (TryGetFelmystFogLaneFromPosition(
+                bot->GetPositionX(), bot->GetPositionY(), currentLane) &&
+            currentLane != state.lane)
+        {
+            LogFelmystFogDebug(bot,
+                std::string("state safe current=") + GetFelmystFogLaneName(currentLane) +
+                " danger=" + GetFelmystFogLaneName(state.lane) +
+                " source=already-safe");
+            return false;
+        }
+
+        return state.lane != FelmystFogLane::None;
+    }
+
     bool TryGetFelmystFogSidewaysShiftDestination(
         Player* bot, FelmystFogLane dangerLane, Position& destination)
     {
         if (dangerLane == FelmystFogLane::None)
             return false;
+
+        FelmystFogLane preferredSafeLane = FelmystFogLane::None;
+        if (dangerLane == FelmystFogLane::Top)
+            preferredSafeLane = FelmystFogLane::Bottom;
+        else if (dangerLane == FelmystFogLane::Bottom)
+            preferredSafeLane = FelmystFogLane::Top;
 
         FelmystFogLane currentLane = FelmystFogLane::None;
         if (TryGetFelmystFogLaneFromPosition(
@@ -2010,30 +1982,28 @@ namespace SunwellHelpers
             currentLane != dangerLane)
         {
             float requiredDistance = 0.0f;
+            FelmystFogLane targetLane = currentLane;
+            if (preferredSafeLane != FelmystFogLane::None)
+                targetLane = preferredSafeLane;
+
             if (TryGetFelmystFogShiftDestinationForLane(
-                    bot, dangerLane, currentLane, destination, requiredDistance))
+                    bot, dangerLane, targetLane, destination, requiredDistance))
             {
                 return true;
             }
 
             LogFelmystFogDebug(bot,
                 std::string("no shift current=") + GetFelmystFogLaneName(currentLane) +
+                " target=" + GetFelmystFogLaneName(targetLane) +
                 " danger=" + GetFelmystFogLaneName(dangerLane));
             return false;
         }
 
-        if (dangerLane == FelmystFogLane::Top)
+        if (preferredSafeLane != FelmystFogLane::None)
         {
             float requiredDistance = 0.0f;
             return TryGetFelmystFogShiftDestinationForLane(
-                bot, dangerLane, FelmystFogLane::Middle, destination, requiredDistance);
-        }
-
-        if (dangerLane == FelmystFogLane::Bottom)
-        {
-            float requiredDistance = 0.0f;
-            return TryGetFelmystFogShiftDestinationForLane(
-                bot, dangerLane, FelmystFogLane::Middle, destination, requiredDistance);
+                bot, dangerLane, preferredSafeLane, destination, requiredDistance);
         }
 
         Position topDestination;
@@ -2105,9 +2075,10 @@ namespace SunwellHelpers
         if (assignmentItr == instanceItr->second.end())
             return false;
 
+        constexpr float sideDistance = 20.0f;
         float frontAngle = GetFelmystFrontAngle(botAI, bot, felmyst);
         float sideAngle = frontAngle + (assignmentItr->second == 0 ? M_PI_2 : -M_PI_2);
-        position = GetFelmystPositionAtAngle(felmyst, bot, sideAngle, FELMYST_RANGED_SIDE_DISTANCE);
+        position = GetFelmystPositionAtAngle(felmyst, bot, sideAngle, sideDistance);
         return true;
     }
 
@@ -2152,11 +2123,7 @@ namespace SunwellHelpers
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member))
-                continue;
-
-            if (member->GetMapId() != bot->GetMapId() ||
-                member->GetInstanceId() != bot->GetInstanceId() ||
+            if (!member ||
                 !member->HasAura(static_cast<uint32>(SunwellSpells::SPELL_GAS_NOVA)))
             {
                 continue;
@@ -2202,8 +2169,9 @@ namespace SunwellHelpers
         return closestTarget;
     }
 
-    Unit* GetNearestFelmystDemonicVaporHazard(Player* bot, float searchRadius)
+    Unit* GetNearestFelmystDemonicVaporHazard(Player* bot)
     {
+        constexpr float searchRadius = 20.0f;
         Unit* nearestTrail = bot->FindNearestCreature(
             static_cast<uint32>(SunwellNPCs::NPC_DEMONIC_VAPOR_TRAIL), searchRadius, true);
         Unit* nearestVapor = bot->FindNearestCreature(

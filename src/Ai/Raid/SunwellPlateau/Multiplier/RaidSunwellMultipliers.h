@@ -110,6 +110,14 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class FelmystDelayCooldownsMultiplier : public Multiplier
+{
+public:
+    FelmystDelayCooldownsMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "felmyst delay cooldowns") {}
+    virtual float GetValue(Action* action);
+};
+
 // Eredar Twins (Alythess & Sacrolash)
 
 class EredarTwinsMultiplier : public Multiplier

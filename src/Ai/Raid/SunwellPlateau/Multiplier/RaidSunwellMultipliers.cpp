@@ -226,17 +226,23 @@ float FelmystPrioritizeFogAvoidanceMultiplier::GetValue(Action* action)
         return 1.0f;
 
     FelmystFogOfCorruptionState fogState;
-    if (!GetActiveFelmystFogOfCorruptionState(bot, felmyst, fogState))
+    if (!GetFelmystFogOfCorruptionStageState(bot, felmyst, fogState))
         return 1.0f;
+
+    if (dynamic_cast<CastReachTargetSpellAction*>(action))
+        return 0.0f;
 
     Position destination;
-    if (!TryGetFelmystFogSidewaysShiftDestination(bot, fogState.lane, destination))
-        return 1.0f;
+    bool needsShift = TryGetFelmystFogSidewaysShiftDestination(bot, fogState.lane, destination);
 
     if (dynamic_cast<MovementAction*>(action) &&
-        !dynamic_cast<AttackAction*>(action) &&
-        !dynamic_cast<FelmystAvoidFogOfCorruptionAction*>(action))
+        !dynamic_cast<AttackAction*>(action))
+    {
+        if (dynamic_cast<FelmystAvoidFogOfCorruptionAction*>(action))
+            return needsShift ? 1.0f : 0.0f;
+
         return 0.0f;
+    }
 
     return 1.0f;
 }
@@ -251,11 +257,29 @@ float FelmystPrioritizeDemonicVaporKiteMultiplier::GetValue(Action* action)
     if (GetActiveFelmystFogOfCorruptionState(bot, felmyst, fogState))
         return 1.0f;
 
-    if (!GetDemonicVaporSummonedByBot(botAI, bot))
+    if (!GetDemonicVaporSummonedByBot(bot))
         return 1.0f;
+
+    if (dynamic_cast<CastReachTargetSpellAction*>(action))
+        return 0.0f;
 
     if (dynamic_cast<MovementAction*>(action) &&
         !dynamic_cast<FelmystKiteDemonicVaporAction*>(action))
+        return 0.0f;
+
+    return 1.0f;
+}
+
+float FelmystDelayCooldownsMultiplier::GetValue(Action* action)
+{
+    Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
+    if (!felmyst || felmyst->GetHealthPct() < 95.0f)
+        return 1.0f;
+
+    if (IsDpsCooldownAction(action))
+        return 0.0f;
+
+    if (botAI->IsDps(bot) && dynamic_cast<UseTrinketAction*>(action))
         return 0.0f;
 
     return 1.0f;

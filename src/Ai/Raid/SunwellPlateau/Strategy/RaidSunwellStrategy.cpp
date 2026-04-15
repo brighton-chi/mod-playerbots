@@ -72,9 +72,6 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("felmyst fog of corruption is active", {
         NextAction("felmyst avoid fog of corruption", ACTION_EMERGENCY + 9) }));
 
-    // triggers.push_back(new TriggerNode("felmyst manual targeting is required for air phase", {
-    //     NextAction("felmyst assign air phase target priority", ACTION_RAID + 1) }));
-
     // Eredar Twins (Alythess & Sacrolash)
     triggers.push_back(new TriggerNode("eredar twins", {
         NextAction("eredar twins", ACTION_RAID + 1) }));
@@ -107,6 +104,7 @@ void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new FelmystControlMovementMultiplier(botAI));
     multipliers.push_back(new FelmystPrioritizeDemonicVaporKiteMultiplier(botAI));
     multipliers.push_back(new FelmystPrioritizeFogAvoidanceMultiplier(botAI));
+    multipliers.push_back(new FelmystDelayCooldownsMultiplier(botAI));
 
     // Eredar Twins (Alythess & Sacrolash)
     multipliers.push_back(new EredarTwinsMultiplier(botAI));

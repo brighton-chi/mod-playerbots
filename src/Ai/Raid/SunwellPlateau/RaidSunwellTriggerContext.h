@@ -78,9 +78,6 @@ public:
         creators["felmyst fog of corruption is active"] =
             &RaidSunwellTriggerContext::felmyst_fog_of_corruption_is_active;
 
-        creators["felmyst manual targeting is required for air phase"] =
-            &RaidSunwellTriggerContext::felmyst_manual_targeting_is_required_for_air_phase;
-
         // Eredar Twins (Alythess & Sacrolash)
         creators["eredar twins"] =
             &RaidSunwellTriggerContext::eredar_twins;
@@ -158,9 +155,6 @@ private:
 
     static Trigger* felmyst_fog_of_corruption_is_active(
         PlayerbotAI* botAI) { return new FelmystFogOfCorruptionIsActiveTrigger(botAI); }
-
-    static Trigger* felmyst_manual_targeting_is_required_for_air_phase(
-        PlayerbotAI* botAI) { return new FelmystManualTargetingIsRequiredForAirPhaseTrigger(botAI); }
 
     // Eredar Twins (Alythess & Sacrolash)
     static Trigger* eredar_twins(

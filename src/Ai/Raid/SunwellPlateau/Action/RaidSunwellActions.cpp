@@ -39,10 +39,11 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
             if (realmStateItr != kalecgosRealmStates.end())
             {
                 uint32 now = getMSTime();
+                constexpr uint32 realmTransitionGraceMs = 2000; // Tested with 3000
                 if ((realmStateItr->second.lastEnterMs &&
-                     getMSTimeDiff(realmStateItr->second.lastEnterMs, now) < KALECGOS_REALM_TRANSITION_GRACE_MS) ||
+                     getMSTimeDiff(realmStateItr->second.lastEnterMs, now) < realmTransitionGraceMs) ||
                     (realmStateItr->second.lastExitMs &&
-                     getMSTimeDiff(realmStateItr->second.lastExitMs, now) < KALECGOS_REALM_TRANSITION_GRACE_MS))
+                     getMSTimeDiff(realmStateItr->second.lastExitMs, now) < realmTransitionGraceMs))
                 {
                     isInKalecgosRealmTransitionGrace = true;
                 }
@@ -656,7 +657,7 @@ bool FelmystMainTankPositionBossOnGroundAction::Execute(Event /*event*/)
     if (bot->GetVictim() != felmyst)
         return Attack(felmyst);
 
-    if (felmyst->GetVictim() == bot)
+    if (felmyst->GetVictim() == bot && bot->GetHealthPct() > 50.0f)
     {
         const Position& position = FELMYST_TANK_POSITION;
         float distToPosition =
@@ -796,22 +797,27 @@ bool FelmystCastMassDispelOnGasNovaAction::Execute(Event /*event*/)
 
 bool FelmystSpreadAndAvoidDemonicVaporAction::Execute(Event /*event*/)
 {
-    Unit* hazard = GetNearestFelmystDemonicVaporHazard(
-        bot, FELMYST_DEMONIC_VAPOR_SAFE_DISTANCE);
+    Unit* hazard = GetNearestFelmystDemonicVaporHazard(bot);
     if (hazard)
     {
+        constexpr float safeDistFromVapor = 10.0f;
+        constexpr uint32 minInterval = 0;
         float currentDistance = bot->GetDistance2d(hazard);
-        if (currentDistance >= FELMYST_DEMONIC_VAPOR_SAFE_DISTANCE)
-            return false;
-
-        return MoveAway(hazard, FELMYST_DEMONIC_VAPOR_SAFE_DISTANCE - currentDistance);
+        if (currentDistance < safeDistFromVapor)
+        {
+            return FleePosition(
+                hazard->GetPosition(), safeDistFromVapor, minInterval);
+        }
     }
     else if (!botAI->IsTank(bot))
     {
-        constexpr float safeDistance = 5.0f;
+        constexpr float safeDistFromPlayer = 5.0f;
         constexpr uint32 minInterval = 1000;
-        if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
-            return FleePosition(nearestPlayer->GetPosition(), safeDistance, minInterval);
+        if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
+        {
+            return FleePosition(
+                nearestPlayer->GetPosition(), safeDistFromPlayer, minInterval);
+        }
     }
 
     return false;
@@ -820,7 +826,7 @@ bool FelmystSpreadAndAvoidDemonicVaporAction::Execute(Event /*event*/)
 bool FelmystKiteDemonicVaporAction::Execute(Event /*event*/)
 {
     Position destination;
-    if (!TryGetFelmystDemonicVaporKiteDestination(botAI, bot, destination))
+    if (!TryGetFelmystDemonicVaporKiteDestination(bot, destination))
         return false;
 
     return MoveTo(SUNWELL_MAP_ID, destination.GetPositionX(), destination.GetPositionY(),
@@ -845,57 +851,6 @@ bool FelmystAvoidFogOfCorruptionAction::Execute(Event /*event*/)
     return MoveTo(SUNWELL_MAP_ID, destination.GetPositionX(), destination.GetPositionY(),
                   destination.GetPositionZ(), false, false, false, false,
                   MovementPriority::MOVEMENT_FORCED, true, false);
-}
-
-bool FelmystAssignAirPhaseTargetPriorityAction::Execute(Event /*event*/)
-{
-    Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
-    if (!felmyst)
-        return false;
-
-    MarkTargetWithMoon(bot, felmyst);
-
-    /* Unit* fogCharmedTarget = GetNearestFelmystFogOfCorruptionCharmedTarget(bot);
-    Unit* unyieldingDead = GetFirstAliveUnitByEntry(
-        botAI, static_cast<uint32>(SunwellNPCs::NPC_UNYIELDING_DEAD));
-    Unit* target = nullptr;
-
-    if (fogCharmedTarget)
-    {
-        target = fogCharmedTarget;
-    }
-    else if (botAI->IsMelee(bot))
-    {
-        target = unyieldingDead;
-    }
-    else
-    {
-        constexpr float felmystAirPriorityDistance = 35.0f;
-        if (bot->GetDistance(felmyst) <= felmystAirPriorityDistance)
-            target = felmyst;
-        else if (unyieldingDead)
-            target = unyieldingDead;
-        else
-            target = felmyst;
-    }
-
-    Unit* currentTarget = context->GetValue<Unit*>("current target")->Get();
-    if (botAI->IsMelee(bot) && currentTarget &&
-        currentTarget->GetEntry() == static_cast<uint32>(SunwellNPCs::NPC_FELMYST))
-    {
-        bot->AttackStop();
-        context->GetValue<Unit*>("current target")->Set(nullptr);
-        bot->SetTarget(ObjectGuid::Empty);
-        bot->SetSelection(ObjectGuid());
-    }
-
-    if (!target)
-        return false;
-
-    if (currentTarget != target && bot->GetTarget() != target->GetGUID())
-        return Attack(target); */
-
-    return false;
 }
 
 // Eredar Twins (Alythess & Sacrolash)

@@ -74,6 +74,43 @@ namespace
                 botAI->RequestSpellInterrupt();
         }
     }
+
+    void RequestInterruptForBotsNeedingFelmystFogMovement(Player* referencePlayer)
+    {
+        if (!referencePlayer)
+            return;
+
+        Creature* felmyst = referencePlayer->FindNearestCreature(
+            static_cast<uint32>(SunwellNPCs::NPC_FELMYST), 250.0f, true);
+        if (!felmyst || !felmyst->IsFlying())
+            return;
+
+        Group* group = referencePlayer->GetGroup();
+        Map::PlayerList const& players = referencePlayer->GetMap()->GetPlayers();
+        for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
+        {
+            Player* player = it->GetSource();
+            if (!player || !player->IsAlive())
+                continue;
+
+            if (group && player->GetGroup() != group)
+                continue;
+
+            PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
+            if (!botAI)
+                continue;
+
+            FelmystFogOfCorruptionState fogState;
+            if (!GetActiveFelmystFogOfCorruptionState(player, felmyst, fogState))
+                continue;
+
+            Position destination;
+            if (!TryGetFelmystFogSidewaysShiftDestination(player, fogState.lane, destination))
+                continue;
+
+            botAI->RequestSpellInterrupt();
+        }
+    }
 }
 
 class KalecgosSpellListenerScript : public AllSpellScript
@@ -120,11 +157,19 @@ public:
 
     void OnSpellCast(Spell* spell, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
     {
-        if (!spell || !caster || !spellInfo || caster->GetMapId() != SUNWELL_MAP_ID ||
-            caster->GetEntry() != static_cast<uint32>(SunwellNPCs::NPC_FELMYST))
+        if (!spell || !caster || !spellInfo || caster->GetMapId() != SUNWELL_MAP_ID)
+            return;
+
+        if (spellInfo->Id == static_cast<uint32>(SunwellSpells::SPELL_FOG_OF_CORRUPTION))
         {
+            if (Player* target = caster->ToPlayer())
+                RequestInterruptForBotsNeedingFelmystFogMovement(target);
+
             return;
         }
+
+        if (caster->GetEntry() != static_cast<uint32>(SunwellNPCs::NPC_FELMYST))
+            return;
 
         Player* target = GetFirstPlayerSpellTarget(spell, caster);
         if (!target)

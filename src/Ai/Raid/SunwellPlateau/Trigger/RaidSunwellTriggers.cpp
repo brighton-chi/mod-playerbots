@@ -221,7 +221,7 @@ bool FelmystBossSummonsDemonicVaporTrigger::IsActive()
     if (!felmyst || !felmyst->IsFlying())
         return false;
 
-    if (GetDemonicVaporSummonedByBot(botAI, bot))
+    if (GetDemonicVaporSummonedByBot(bot))
         return false;
 
     FelmystFogOfCorruptionState fogState;
@@ -238,7 +238,7 @@ bool FelmystBotIsDemonicVaporTargetTrigger::IsActive()
     if (GetActiveFelmystFogOfCorruptionState(bot, felmyst, fogState))
         return false;
 
-    return GetDemonicVaporSummonedByBot(botAI, bot);
+    return GetDemonicVaporSummonedByBot(bot);
 }
 
 bool FelmystFogOfCorruptionIsActiveTrigger::IsActive()
@@ -251,6 +251,7 @@ bool FelmystFogOfCorruptionIsActiveTrigger::IsActive()
     return GetActiveFelmystFogOfCorruptionState(bot, felmyst, fogState);
 }
 
+// Right now this is just marking with Moon during air phase
 bool FelmystManualTargetingIsRequiredForAirPhaseTrigger::IsActive()
 {
     Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");

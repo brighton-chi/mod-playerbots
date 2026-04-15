@@ -75,9 +75,6 @@ public:
         creators["felmyst avoid fog of corruption"] =
             &RaidSunwellActionContext::felmyst_avoid_fog_of_corruption;
 
-        creators["felmyst assign air phase target priority"] =
-            &RaidSunwellActionContext::felmyst_assign_air_phase_target_priority;
-
         // Eredar Twins (Alythess & Sacrolash)
         creators["eredar twins"] =
             &RaidSunwellActionContext::eredar_twins;
@@ -152,9 +149,6 @@ private:
 
     static Action* felmyst_avoid_fog_of_corruption(
         PlayerbotAI* botAI) { return new FelmystAvoidFogOfCorruptionAction(botAI); }
-
-    static Action* felmyst_assign_air_phase_target_priority(
-        PlayerbotAI* botAI) { return new FelmystAssignAirPhaseTargetPriorityAction(botAI); }
 
     // Eredar Twins (Alythess & Sacrolash)
     static Action* eredar_twins(

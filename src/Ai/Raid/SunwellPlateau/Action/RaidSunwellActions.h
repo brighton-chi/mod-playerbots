@@ -181,14 +181,6 @@ public:
     bool Execute(Event event) override;
 };
 
-class FelmystAssignAirPhaseTargetPriorityAction : public AttackAction
-{
-public:
-    FelmystAssignAirPhaseTargetPriorityAction(
-        PlayerbotAI* botAI, std::string const name = "felmyst assign air phase target priority") : AttackAction(botAI, name) {}
-    bool Execute(Event event) override;
-};
-
 // Eredar Twins (Alythess & Sacrolash)
 
 class EredarTwinsAction : public MovementAction

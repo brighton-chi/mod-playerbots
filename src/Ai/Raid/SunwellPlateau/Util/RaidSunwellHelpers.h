@@ -52,6 +52,7 @@ namespace SunwellHelpers
         SPELL_ENCAPSULATE = 45661,
         SPELL_GAS_NOVA = 45855,
         SPELL_FELMYST_SPEED_BURST = 45495,
+        SPELL_FOG_OF_CORRUPTION = 45582,
         SPELL_FOG_OF_CORRUPTION_CHARM = 45717,
 
         // Hunter
@@ -89,8 +90,6 @@ namespace SunwellHelpers
 
     constexpr uint8 KALECGOS_GROUP_COUNT = 4;
     constexpr uint8 KALECGOS_INVALID_GROUP = std::numeric_limits<uint8>::max();
-    constexpr uint32 KALECGOS_RIFT_ENTRY_WINDOW_MS = 10000;
-    constexpr uint32 KALECGOS_REALM_TRANSITION_GRACE_MS = 3000;
     struct KalecgosRealmState
     {
         uint32 lastEnterMs = 0;
@@ -129,15 +128,7 @@ namespace SunwellHelpers
     extern const Position BRUTALLUS_MAIN_TANK_POSITION;
     constexpr float BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET = -M_PI_2;
     constexpr float BRUTALLUS_TANK_POSITION_RADIUS = 20.25f;
-    constexpr float BRUTALLUS_MELEE_RADIUS = 18.0f;
-    constexpr float BRUTALLUS_MELEE_ARC_ANGLE = 2.0f * M_PI / 3.0f;
-    constexpr float BRUTALLUS_MELEE_ARC_CENTER_ANGLE_OFFSET = M_PI + BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET / 2.0f;
-    constexpr float BRUTALLUS_MELEE_SPACING = 5.0f;
     constexpr float BRUTALLUS_RANGED_TANK_OFFSET = 10.0f;
-    constexpr float BRUTALLUS_RANGED_SPACING = 6.0f;
-    constexpr float BRUTALLUS_BURN_FORWARD_DISTANCE = 5.0f;
-    constexpr float BRUTALLUS_BURN_MIRROR_ANGLE_OFFSET = M_PI_2;
-    constexpr float BRUTALLUS_BURN_ARC_STEP_DISTANCE = 3.0f;
     constexpr uint8 BRUTALLUS_RANGED_POSITIONS_PER_GROUP = 10;
     constexpr uint8 BRUTALLUS_TOTAL_RANGED_POSITIONS = BRUTALLUS_RANGED_POSITIONS_PER_GROUP * 2;
 
@@ -171,14 +162,7 @@ namespace SunwellHelpers
 
     // Felmyst
     extern const Position FELMYST_TANK_POSITION;
-    constexpr float FELMYST_RANGED_SIDE_DISTANCE = 20.0f;
     constexpr float FELMYST_ENCAPSULATE_SAFE_DISTANCE = 21.0f;
-    constexpr float FELMYST_DEMONIC_VAPOR_SAFE_DISTANCE = 8.0f;
-    constexpr float FELMYST_DEMONIC_VAPOR_WAYPOINT_REACHED_DISTANCE = 4.0f;
-    constexpr float FELMYST_FOG_BOUNDARY_MARGIN = 10.0f;
-    constexpr float FELMYST_FOG_SHIFT_MIN_STEP = 3.0f;
-    constexpr uint32 FELMYST_FOG_WINDUP_GRACE_MS = 7000;
-    constexpr uint32 FELMYST_FOG_RECOVERY_GRACE_MS = 2500;
     struct FelmystFogOfCorruptionState
     {
         FelmystFogLane lane = FelmystFogLane::None;
@@ -193,16 +177,17 @@ namespace SunwellHelpers
     extern std::unordered_map<uint32, FelmystFogOfCorruptionState> felmystFogOfCorruptionStates;
     void EnsureFelmystRangedAssignments(PlayerbotAI* botAI, Player* bot);
     float GetFelmystFrontAngle(PlayerbotAI* botAI, Player* bot, Unit* felmyst);
-    Creature* GetDemonicVaporSummonedByBot(PlayerbotAI* botAI, Player* carrier);
-    bool TryGetFelmystDemonicVaporKiteDestination(
-        PlayerbotAI* botAI, Player* bot, Position& destination);
+    Creature* GetDemonicVaporSummonedByBot(Player* carrier);
+    bool TryGetFelmystDemonicVaporKiteDestination(Player* bot, Position& destination);
     bool TryGetFelmystFogLaneFromAirPosition(Unit* felmyst, FelmystFogLane& lane);
+    bool GetFelmystFogOfCorruptionStageState(
+        Player* bot, Unit* felmyst, FelmystFogOfCorruptionState& state);
     bool GetActiveFelmystFogOfCorruptionState(
         Player* bot, Unit* felmyst, FelmystFogOfCorruptionState& state);
     bool TryGetFelmystFogSidewaysShiftDestination(
         Player* bot, FelmystFogLane dangerLane, Position& destination);
     Unit* GetNearestFelmystFogOfCorruptionCharmedTarget(Player* bot);
-    Unit* GetNearestFelmystDemonicVaporHazard(Player* bot, float searchRadius);
+    Unit* GetNearestFelmystDemonicVaporHazard(Player* bot);
     Player* GetFelmystEncapsulateTarget(Player* bot);
     bool TryGetFelmystRangedPosition(PlayerbotAI* botAI, Player* bot, Unit* felmyst, Position& position);
     Player* GetFelmystGasNovaDispelTarget(Player* bot);
