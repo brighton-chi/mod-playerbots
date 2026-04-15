@@ -66,8 +66,8 @@ public:
         creators["felmyst cast mass dispel on gas nova"] =
             &RaidSunwellActionContext::felmyst_cast_mass_dispel_on_gas_nova;
 
-        creators["felmyst spread and avoid demonic vapor"] =
-            &RaidSunwellActionContext::felmyst_spread_and_avoid_demonic_vapor;
+        creators["felmyst avoid demonic vapor"] =
+            &RaidSunwellActionContext::felmyst_avoid_demonic_vapor;
 
         creators["felmyst kite demonic vapor"] =
             &RaidSunwellActionContext::felmyst_kite_demonic_vapor;
@@ -141,8 +141,8 @@ private:
     static Action* felmyst_cast_mass_dispel_on_gas_nova(
         PlayerbotAI* botAI) { return new FelmystCastMassDispelOnGasNovaAction(botAI); }
 
-    static Action* felmyst_spread_and_avoid_demonic_vapor(
-        PlayerbotAI* botAI) { return new FelmystSpreadAndAvoidDemonicVaporAction(botAI); }
+    static Action* felmyst_avoid_demonic_vapor(
+        PlayerbotAI* botAI) { return new FelmystAvoidDemonicVaporAction(botAI); }
 
     static Action* felmyst_kite_demonic_vapor(
         PlayerbotAI* botAI) { return new FelmystKiteDemonicVaporAction(botAI); }

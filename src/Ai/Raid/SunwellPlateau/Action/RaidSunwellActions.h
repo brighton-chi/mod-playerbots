@@ -157,11 +157,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class FelmystSpreadAndAvoidDemonicVaporAction : public MovementAction
+class FelmystAvoidDemonicVaporAction : public MovementAction
 {
 public:
-    FelmystSpreadAndAvoidDemonicVaporAction(
-        PlayerbotAI* botAI, std::string const name = "felmyst spread and avoid demonic vapor") : MovementAction(botAI, name) {}
+    FelmystAvoidDemonicVaporAction(
+        PlayerbotAI* botAI, std::string const name = "felmyst avoid demonic vapor") : MovementAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 

@@ -3,9 +3,6 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#include <iomanip>
-#include <sstream>
-
 #include "RaidSunwellHelpers.h"
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
@@ -23,31 +20,6 @@ namespace
     constexpr uint32 FELMYST_FOG_INTERRUPT_SCAN_INTERVAL_MS = 500;
 
     std::unordered_map<ObjectGuid, uint32> felmystFogInterruptLastScanTime;
-
-    char const* GetFelmystFogLaneName(FelmystFogLane lane)
-    {
-        switch (lane)
-        {
-            case FelmystFogLane::Top:
-                return "top";
-            case FelmystFogLane::Middle:
-                return "middle";
-            case FelmystFogLane::Bottom:
-                return "bottom";
-            default:
-                return "none";
-        }
-    }
-
-    std::string FormatFelmystFogPoint(Position const& position)
-    {
-        std::ostringstream out;
-        out << std::fixed << std::setprecision(2)
-            << '(' << position.GetPositionX() << ", "
-            << position.GetPositionY() << ", "
-            << position.GetPositionZ() << ')';
-        return out.str();
-    }
 
     PlayerbotAI* GetKalecgosReferenceBotAI(Player* player)
     {
@@ -117,11 +89,6 @@ namespace
 
         Group* group = groupReference ? groupReference->GetGroup() : nullptr;
         Map::PlayerList const& players = contextUnit->GetMap()->GetPlayers();
-        uint32 botCount = 0;
-        uint32 activeFogCount = 0;
-        uint32 requestedCount = 0;
-        uint32 missingFelmystCount = 0;
-        uint32 noDestinationCount = 0;
 
         for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
         {
@@ -136,42 +103,21 @@ namespace
             if (!botAI)
                 continue;
 
-            ++botCount;
-
             Unit* felmyst = PAI_VALUE2(Unit*, "find target", "felmyst");
             if (!felmyst || !felmyst->IsFlying())
-            {
-                ++missingFelmystCount;
                 continue;
-            }
 
             FelmystFogOfCorruptionState fogState;
-            if (!GetActiveFelmystFogOfCorruptionState(player, felmyst, fogState))
+            if (!TryGetActiveFelmystFogOfCorruptionState(player, felmyst, fogState))
                 continue;
-
-            ++activeFogCount;
 
             std::array<Position, 3> destinations;
             uint8 destinationCount = 0;
             if (!TryGetFelmystFogSafeDestinations(player, fogState.lane, destinations, destinationCount))
-            {
-                ++noDestinationCount;
                 continue;
-            }
 
-            LOG_DEBUG("playerbots",
-                "[FelmystFog] {} interrupt requested lane={} destination={}",
-                player->GetName(), GetFelmystFogLaneName(fogState.lane),
-                FormatFelmystFogPoint(destinations[0]));
             botAI->RequestSpellInterrupt();
-            ++requestedCount;
         }
-
-        LOG_DEBUG("playerbots",
-            "[FelmystFog] interrupt scan casterEntry={} groupReference={} bots={} active={} requested={} missingFelmyst={} noDestination={}",
-            contextUnit->GetEntry(), groupReference ? groupReference->GetName() : "none",
-            botCount, activeFogCount, requestedCount,
-            missingFelmystCount, noDestinationCount);
     }
 }
 
@@ -183,13 +129,14 @@ public:
     void OnAllCreatureUpdate(Creature* creature, uint32 /*diff*/) override
     {
         if (!creature || creature->GetEntry() != static_cast<uint32>(SunwellNPCs::NPC_FELMYST) ||
-            creature->GetMapId() != SUNWELL_MAP_ID || !creature->IsFlying())
+            !creature->IsFlying())
         {
             return;
         }
 
         FelmystFogOfCorruptionState fogState;
-        if (!GetFelmystFogOfCorruptionStageState(creature, fogState))
+        if (!TryGetFelmystFogOfCorruptionStageState(creature, fogState) ||
+            fogState.lane == FelmystFogLane::None)
             return;
 
         uint32 now = getMSTime();
@@ -231,7 +178,7 @@ public:
             case static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_BLAST_PORTAL):
                 if (!botAI)
                     return;
-                RecordKalecgosSpectralBlastPortal(botAI, player);
+                RecordKalecgosSpectralBlastTarget(botAI, player);
                 break;
             case static_cast<uint32>(SunwellSpells::SPELL_TELEPORT_SPECTRAL):
                 if (!botAI)
@@ -264,19 +211,6 @@ public:
         {
             Player* targetPlayer = GetFirstPlayerSpellTarget(spell, caster);
             Player* groupReference = caster->ToPlayer() ? caster->ToPlayer() : targetPlayer;
-            if (targetPlayer)
-            {
-                LOG_DEBUG("playerbots",
-                    "[FelmystFog] spell seen id={} casterEntry={} target={}",
-                    spellInfo->Id, caster->GetEntry(), targetPlayer->GetName());
-            }
-            else
-            {
-                LOG_DEBUG("playerbots",
-                    "[FelmystFog] spell seen id={} casterEntry={} target=none",
-                    spellInfo->Id, caster->GetEntry());
-            }
-
             RequestInterruptForBotsNeedingFelmystFogMovement(caster, groupReference);
 
             return;

@@ -4,12 +4,8 @@
  */
 
 #include <algorithm>
-#include <array>
 #include <cmath>
-#include <iomanip>
 #include <list>
-#include <sstream>
-#include <vector>
 
 #include "RaidSunwellHelpers.h"
 #include "RaidBossHelpers.h"
@@ -26,17 +22,7 @@ namespace SunwellHelpers
     std::unordered_map<ObjectGuid, KalecgosRealmState> kalecgosRealmStates;
     std::unordered_map<ObjectGuid, bool> hasReachedKalecgosInitialRangedPosition;
 
-    KalecgosEncounterState& GetKalecgosEncounterState(uint32 instanceId)
-    {
-        return kalecgosEncounterStates[instanceId];
-    }
-
-    KalecgosRealmState& GetKalecgosRealmState(Player* bot)
-    {
-        return kalecgosRealmStates[bot->GetGUID()];
-    }
-
-    void ResetExpiredKalecgosRift(KalecgosEncounterState& state, uint32 now)
+    void ClearExpiredKalecgosActiveRift(KalecgosEncounterState& state, uint32 now)
     {
         if (!state.activeRiftOpenedMs)
             return;
@@ -51,13 +37,13 @@ namespace SunwellHelpers
         state.firstEntrantGuid = ObjectGuid::Empty;
     }
 
-    uint8 GetAssignedGroup(const KalecgosEncounterState& state, ObjectGuid playerGuid)
+    uint8 GetKalecgosAssignedGroup(const KalecgosEncounterState& state, ObjectGuid playerGuid)
     {
         auto assignment = state.playerToGroup.find(playerGuid);
         return assignment != state.playerToGroup.end() ? assignment->second : KALECGOS_INVALID_GROUP;
     }
 
-    Player* FindKalecgosGroupMember(Group* group, uint32 instanceId, ObjectGuid playerGuid)
+    Player* FindKalecgosGroupMember(Group* group, ObjectGuid playerGuid)
     {
         if (playerGuid == ObjectGuid::Empty || !group)
             return nullptr;
@@ -69,9 +55,7 @@ namespace SunwellHelpers
                 continue;
 
             if (!member->IsInWorld() || member->GetMapId() != SUNWELL_MAP_ID)
-            {
                 return nullptr;
-            }
 
             return member;
         }
@@ -79,10 +63,10 @@ namespace SunwellHelpers
         return nullptr;
     }
 
-    KalecgosEncounterState& PrepareKalecgosEncounterState(PlayerbotAI* botAI, Player* bot)
+    KalecgosEncounterState& GetPreparedKalecgosEncounterState(PlayerbotAI* botAI, Player* bot)
     {
-        KalecgosEncounterState& state = GetKalecgosEncounterState(bot->GetInstanceId());
-        ResetExpiredKalecgosRift(state, getMSTime());
+        KalecgosEncounterState& state = kalecgosEncounterStates[bot->GetInstanceId()];
+        ClearExpiredKalecgosActiveRift(state, getMSTime());
         EnsureKalecgosGroupAssignments(botAI, bot);
         return state;
     }
@@ -98,7 +82,7 @@ namespace SunwellHelpers
         if (state.blastedPlayerGuid == candidate->GetGUID())
             return true;
 
-        return GetAssignedGroup(state, candidate->GetGUID()) == state.activeRiftGroup;
+        return GetKalecgosAssignedGroup(state, candidate->GetGUID()) == state.activeRiftGroup;
     }
 
     bool IsKalecgosPortalEligibleCandidate(Player* candidate)
@@ -140,13 +124,13 @@ namespace SunwellHelpers
     }
 
     std::array<Player*, KALECGOS_GROUP_COUNT> GetKalecgosAssignedTankOrder(
-        Group* group, uint32 instanceId, KalecgosEncounterState const& state)
+        Group* group, KalecgosEncounterState const& state)
     {
         std::array<Player*, KALECGOS_GROUP_COUNT> tanks = { nullptr, nullptr, nullptr, nullptr };
 
         for (uint8 groupIndex = 0; groupIndex < KALECGOS_GROUP_COUNT; ++groupIndex)
             tanks[groupIndex] =
-                FindKalecgosGroupMember(group, instanceId, state.groupTankGuids[groupIndex]);
+                FindKalecgosGroupMember(group, state.groupTankGuids[groupIndex]);
 
         return tanks;
     }
@@ -161,9 +145,9 @@ namespace SunwellHelpers
     }
 
     bool HasAnotherKalecgosAssignedSurfaceTank(
-        Group* group, uint32 instanceId, KalecgosEncounterState const& state, Player* currentTank)
+        Group* group, KalecgosEncounterState const& state, Player* currentTank)
     {
-        for (Player* tank : GetKalecgosAssignedTankOrder(group, instanceId, state))
+        for (Player* tank : GetKalecgosAssignedTankOrder(group, state))
         {
             if (!tank || tank == currentTank)
                 continue;
@@ -181,14 +165,14 @@ namespace SunwellHelpers
     }
 
     bool ShouldKalecgosTankStayOnSurface(
-        Group* group, uint32 instanceId, KalecgosEncounterState const& state, Player* tank)
+        Group* group, KalecgosEncounterState const& state, Player* tank)
     {
         return IsKalecgosAssignedTank(state, tank) &&
-               !HasAnotherKalecgosAssignedSurfaceTank(group, instanceId, state, tank);
+               !HasAnotherKalecgosAssignedSurfaceTank(group, state, tank);
     }
 
     bool CanKalecgosBotEnterRift(
-        Group* group, uint32 instanceId, Player* candidate, KalecgosEncounterState const& state)
+        Group* group, Player* candidate, KalecgosEncounterState const& state)
     {
         if (!IsKalecgosPortalEligibleCandidate(candidate))
             return false;
@@ -196,11 +180,11 @@ namespace SunwellHelpers
         if (state.blastedPlayerGuid == candidate->GetGUID())
             return false;
 
-        return !ShouldKalecgosTankStayOnSurface(group, instanceId, state, candidate);
+        return !ShouldKalecgosTankStayOnSurface(group, state, candidate);
     }
 
     uint8 GetNextAvailableKalecgosGroup(
-        Group* group, uint32 instanceId, KalecgosEncounterState const& state)
+        Group* group, KalecgosEncounterState const& state)
     {
         if (!group)
             return KALECGOS_INVALID_GROUP;
@@ -213,10 +197,10 @@ namespace SunwellHelpers
                 if (!member)
                     continue;
 
-                if (GetAssignedGroup(state, member->GetGUID()) != groupIndex)
+                if (GetKalecgosAssignedGroup(state, member->GetGUID()) != groupIndex)
                     continue;
 
-                if (CanKalecgosBotEnterRift(group, instanceId, member, state))
+                if (CanKalecgosBotEnterRift(group, member, state))
                     return groupIndex;
             }
         }
@@ -225,24 +209,24 @@ namespace SunwellHelpers
     }
 
     uint8 ResolveKalecgosActiveRiftGroup(
-        Group* group, uint32 instanceId, KalecgosEncounterState const& state)
+        Group* group, KalecgosEncounterState const& state)
     {
         if (state.blastedPlayerGuid != ObjectGuid::Empty)
         {
-            uint8 blastedGroup = GetAssignedGroup(state, state.blastedPlayerGuid);
+            uint8 blastedGroup = GetKalecgosAssignedGroup(state, state.blastedPlayerGuid);
             if (blastedGroup != KALECGOS_INVALID_GROUP)
                 return blastedGroup;
 
-            return GetNextAvailableKalecgosGroup(group, instanceId, state);
+            return GetNextAvailableKalecgosGroup(group, state);
         }
 
         if (state.firstEntrantGuid != ObjectGuid::Empty)
         {
-            uint8 entrantGroup = GetAssignedGroup(state, state.firstEntrantGuid);
+            uint8 entrantGroup = GetKalecgosAssignedGroup(state, state.firstEntrantGuid);
             if (entrantGroup != KALECGOS_INVALID_GROUP)
                 return entrantGroup;
 
-            return GetNextAvailableKalecgosGroup(group, instanceId, state);
+            return GetNextAvailableKalecgosGroup(group, state);
         }
 
         return KALECGOS_INVALID_GROUP;
@@ -315,7 +299,7 @@ namespace SunwellHelpers
 
         Group* group = bot->GetGroup();
         uint32 instanceId = bot->GetInstanceId();
-        KalecgosEncounterState& state = GetKalecgosEncounterState(instanceId);
+        KalecgosEncounterState& state = kalecgosEncounterStates[instanceId];
         std::vector<Player*> botMembers;
         std::array<ObjectGuid, KALECGOS_GROUP_COUNT> expectedTankGuids =
             GetExpectedKalecgosTankGuids(botAI, bot);
@@ -362,7 +346,7 @@ namespace SunwellHelpers
         for (uint8 groupIndex = 0; groupIndex < KALECGOS_GROUP_COUNT; ++groupIndex)
         {
             Player* tank = FindKalecgosGroupMember(
-                group, instanceId, state.groupTankGuids[groupIndex]);
+                group, state.groupTankGuids[groupIndex]);
             if (!tank)
                 continue;
 
@@ -418,8 +402,7 @@ namespace SunwellHelpers
 
         if (state.activeRiftGroup == KALECGOS_INVALID_GROUP)
         {
-            state.activeRiftGroup =
-                ResolveKalecgosActiveRiftGroup(group, instanceId, state);
+            state.activeRiftGroup = ResolveKalecgosActiveRiftGroup(group, state);
         }
     }
 
@@ -449,10 +432,9 @@ namespace SunwellHelpers
     Player* GetKalecgosCurrentTank(PlayerbotAI* botAI, Player* bot)
     {
         Group* group = bot->GetGroup();
-        uint32 instanceId = bot->GetInstanceId();
-        KalecgosEncounterState& state = PrepareKalecgosEncounterState(botAI, bot);
+        KalecgosEncounterState& state = GetPreparedKalecgosEncounterState(botAI, bot);
 
-        for (Player* tank : GetKalecgosAssignedTankOrder(group, instanceId, state))
+        for (Player* tank : GetKalecgosAssignedTankOrder(group, state))
         {
             if (!tank || !tank->IsAlive() || tank->GetMapId() != SUNWELL_MAP_ID)
                 continue;
@@ -461,7 +443,7 @@ namespace SunwellHelpers
                 continue;
 
             if (state.activeRiftOpenedMs && IsKalecgosActiveRiftCandidate(tank, state) &&
-                !ShouldKalecgosTankStayOnSurface(group, instanceId, state, tank))
+                !ShouldKalecgosTankStayOnSurface(group, state, tank))
             {
                 continue;
             }
@@ -475,15 +457,14 @@ namespace SunwellHelpers
     bool ShouldEnterKalecgosSpectralRift(PlayerbotAI* botAI, Player* bot)
     {
         Group* group = bot->GetGroup();
-        uint32 instanceId = bot->GetInstanceId();
-        KalecgosEncounterState& state = PrepareKalecgosEncounterState(botAI, bot);
+        KalecgosEncounterState& state = GetPreparedKalecgosEncounterState(botAI, bot);
         if (!state.activeRiftOpenedMs)
             return false;
 
         if (!IsKalecgosActiveRiftCandidate(bot, state))
             return false;
 
-        return CanKalecgosBotEnterRift(group, instanceId, bot, state);
+        return CanKalecgosBotEnterRift(group, bot, state);
     }
 
     bool IsInKalecgosSpectralRealm(Player* bot)
@@ -498,21 +479,20 @@ namespace SunwellHelpers
         return realmStateItr->second.inSpectralRealm;
     }
 
-    void RecordKalecgosSpectralBlastPortal(PlayerbotAI* botAI, Player* bot)
+    void RecordKalecgosSpectralBlastTarget(PlayerbotAI* botAI, Player* bot)
     {
         if (bot->GetMapId() != SUNWELL_MAP_ID)
             return;
 
         Group* group = bot->GetGroup();
-        uint32 instanceId = bot->GetInstanceId();
-        KalecgosEncounterState& state = PrepareKalecgosEncounterState(botAI, bot);
+        KalecgosEncounterState& state = GetPreparedKalecgosEncounterState(botAI, bot);
         uint32 now = getMSTime();
 
         state.activeRiftOpenedMs = now;
         state.activeRiftSequence++;
         state.blastedPlayerGuid = bot->GetGUID();
         state.firstEntrantGuid = ObjectGuid::Empty;
-        state.activeRiftGroup = ResolveKalecgosActiveRiftGroup(group, instanceId, state);
+        state.activeRiftGroup = ResolveKalecgosActiveRiftGroup(group, state);
     }
 
     void RecordKalecgosSpectralRealmEnter(PlayerbotAI* botAI, Player* bot)
@@ -521,11 +501,10 @@ namespace SunwellHelpers
             return;
 
         Group* group = bot->GetGroup();
-        uint32 instanceId = bot->GetInstanceId();
-        KalecgosEncounterState& state = PrepareKalecgosEncounterState(botAI, bot);
+        KalecgosEncounterState& state = GetPreparedKalecgosEncounterState(botAI, bot);
         uint32 now = getMSTime();
 
-        KalecgosRealmState& realmState = GetKalecgosRealmState(bot);
+        KalecgosRealmState& realmState = kalecgosRealmStates[bot->GetGUID()];
         realmState.inSpectralRealm = true;
         realmState.lastEnterMs = now;
         SetKalecgosInitialRangedPositionReached(bot, false);
@@ -542,7 +521,7 @@ namespace SunwellHelpers
             state.firstEntrantGuid = bot->GetGUID();
 
         if (state.activeRiftGroup == KALECGOS_INVALID_GROUP)
-            state.activeRiftGroup = ResolveKalecgosActiveRiftGroup(group, instanceId, state);
+            state.activeRiftGroup = ResolveKalecgosActiveRiftGroup(group, state);
     }
 
     void RecordKalecgosNormalRealmEnter(Player* bot)
@@ -550,7 +529,7 @@ namespace SunwellHelpers
         if (bot->GetMapId() != SUNWELL_MAP_ID)
             return;
 
-        KalecgosRealmState& realmState = GetKalecgosRealmState(bot);
+        KalecgosRealmState& realmState = kalecgosRealmStates[bot->GetGUID()];
         realmState.inSpectralRealm = false;
         realmState.lastExitMs = getMSTime();
         SetKalecgosInitialRangedPositionReached(bot, false);
@@ -742,7 +721,7 @@ namespace SunwellHelpers
         return true;
     }
 
-    bool TryGetBrutallusPositionIndex(
+    bool TryGetBrutallusAssignedPositionIndex(
         PlayerbotAI* botAI, Player* bot, bool wantRanged, uint8& positionIndex)
     {
         Group* group = bot->GetGroup();
@@ -1142,7 +1121,7 @@ namespace SunwellHelpers
         return bestLocation;
     }
 
-    bool TryGetFelmystFogDestination(Unit* felmyst, Position& destination)
+    bool TryGetFelmystMovementDestination(Unit* felmyst, Position& destination)
     {
         if (!felmyst)
             return false;
@@ -1169,7 +1148,7 @@ namespace SunwellHelpers
     FelmystFogLocation GetFelmystDestinationFogLocation(Unit* felmyst)
     {
         Position destination;
-        if (!TryGetFelmystFogDestination(felmyst, destination))
+        if (!TryGetFelmystMovementDestination(felmyst, destination))
             return FelmystFogLocation::None;
 
         return GetFelmystFogLocationFromPosition(
@@ -1307,7 +1286,7 @@ namespace SunwellHelpers
         return std::atan2(frontY - felmyst->GetPositionY(), frontX - felmyst->GetPositionX());
     }
 
-    Creature* GetDemonicVaporSummonedByBot(Player* carrier)
+    Creature* GetFelmystDemonicVaporSummonedByBot(Player* carrier)
     {
         if (!carrier)
             return nullptr;
@@ -1480,7 +1459,7 @@ namespace SunwellHelpers
                     if (memberPathItr == pathInstanceItr->second.end())
                         continue;
 
-                    if (!GetDemonicVaporSummonedByBot(member))
+                    if (!GetFelmystDemonicVaporSummonedByBot(member))
                         continue;
 
                     if (memberPathItr->second < occupancyCounts.size())
@@ -1551,7 +1530,7 @@ namespace SunwellHelpers
         uint32 instanceId = bot->GetInstanceId();
         ObjectGuid guid = bot->GetGUID();
 
-        if (!GetDemonicVaporSummonedByBot(bot))
+        if (!GetFelmystDemonicVaporSummonedByBot(bot))
         {
             ClearFelmystDemonicVaporKiteState(bot);
 
@@ -1593,7 +1572,7 @@ namespace SunwellHelpers
         return true;
     }
 
-    bool GetFelmystFogOfCorruptionStageState(
+    bool TryGetFelmystFogOfCorruptionStageState(
         Unit* felmyst, FelmystFogOfCorruptionState& state)
     {
         state = FelmystFogOfCorruptionState();
@@ -1660,10 +1639,10 @@ namespace SunwellHelpers
         return false;
     }
 
-    bool GetActiveFelmystFogOfCorruptionState(
+    bool TryGetActiveFelmystFogOfCorruptionState(
         Player* bot, Unit* felmyst, FelmystFogOfCorruptionState& state)
     {
-        if (!GetFelmystFogOfCorruptionStageState(felmyst, state))
+        if (!TryGetFelmystFogOfCorruptionStageState(felmyst, state))
             return false;
 
         if (state.phase == FelmystFogPhase::Recovery)

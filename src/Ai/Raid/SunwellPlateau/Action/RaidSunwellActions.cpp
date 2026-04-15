@@ -311,7 +311,8 @@ bool BrutallusTanksHandleBossAction::Execute(Event event)
             return botAI->DoSpecificAction("taunt spell", event, true);
 
         Position position = GetBrutallusTankPosition(brutallus, false, bot->GetPositionZ());
-        float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+        float distToPosition =
+            bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
 
         if (distToPosition > 3.0f)
         {
@@ -360,7 +361,7 @@ bool BrutallusPositionMeleeAction::Execute(Event /*event*/)
         return false;
 
     uint8 meleeIndex = 0;
-    if (!TryGetBrutallusPositionIndex(botAI, bot, false, meleeIndex))
+    if (!TryGetBrutallusAssignedPositionIndex(botAI, bot, false, meleeIndex))
         return false;
 
     Position position;
@@ -396,7 +397,7 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
 
     const ObjectGuid guid = bot->GetGUID();
     uint8 rangedIndex = 0;
-    if (!TryGetBrutallusPositionIndex(botAI, bot, true, rangedIndex))
+    if (!TryGetBrutallusAssignedPositionIndex(botAI, bot, true, rangedIndex))
         return false;
 
     auto burnStateItr = brutallusRangedBurnStates.find(guid);
@@ -510,7 +511,7 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
 
     const ObjectGuid guid = bot->GetGUID();
     uint8 rangedIndex = 0;
-    if (!TryGetBrutallusPositionIndex(botAI, bot, true, rangedIndex))
+    if (!TryGetBrutallusAssignedPositionIndex(botAI, bot, true, rangedIndex))
         return false;
 
     auto burnStateItr = brutallusRangedBurnStates.find(guid);
@@ -838,7 +839,7 @@ bool FelmystCastMassDispelOnGasNovaAction::Execute(Event /*event*/)
     return false;
 }
 
-bool FelmystSpreadAndAvoidDemonicVaporAction::Execute(Event /*event*/)
+bool FelmystAvoidDemonicVaporAction::Execute(Event /*event*/)
 {
     Unit* hazard = GetNearestFelmystDemonicVaporHazard(bot);
     if (hazard)
@@ -853,16 +854,6 @@ bool FelmystSpreadAndAvoidDemonicVaporAction::Execute(Event /*event*/)
             return MoveAway(hazard, safeDistFromVapor - currentDistance);
         }
     }
-    /* else if (!botAI->IsTank(bot))
-    {
-        constexpr float safeDistFromPlayer = 5.0f;
-        constexpr uint32 minInterval = 1000;
-        if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
-        {
-            return FleePosition(
-                nearestPlayer->GetPosition(), safeDistFromPlayer, minInterval);
-        }
-    } */
 
     return false;
 }
@@ -885,7 +876,7 @@ bool FelmystAvoidFogOfCorruptionAction::Execute(Event /*event*/)
         return false;
 
     FelmystFogOfCorruptionState fogState;
-    if (!GetActiveFelmystFogOfCorruptionState(bot, felmyst, fogState))
+    if (!TryGetActiveFelmystFogOfCorruptionState(bot, felmyst, fogState))
         return false;
 
     std::array<Position, 3> destinations;

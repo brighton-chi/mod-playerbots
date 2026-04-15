@@ -43,7 +43,7 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     // Felmyst
     triggers.push_back(new TriggerNode("felmyst pulling boss", {
-        NextAction("felmyst misdirect boss to main tank", ACTION_RAID + 3) }));
+        NextAction("felmyst misdirect boss to main tank", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("felmyst boss engaged by main tank on ground", {
         NextAction("felmyst main tank position boss on ground", ACTION_RAID + 1) }));
@@ -63,11 +63,11 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("felmyst player has gas nova", {
         NextAction("felmyst cast mass dispel on gas nova", ACTION_EMERGENCY + 7) }));
 
+    triggers.push_back(new TriggerNode("felmyst boss summons demonic vapor", {
+        NextAction("felmyst avoid demonic vapor", ACTION_EMERGENCY + 1) }));
+
     triggers.push_back(new TriggerNode("felmyst bot is demonic vapor target", {
         NextAction("felmyst kite demonic vapor", ACTION_EMERGENCY + 2) }));
-
-    triggers.push_back(new TriggerNode("felmyst boss summons demonic vapor", {
-        NextAction("felmyst spread and avoid demonic vapor", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("felmyst fog of corruption is active", {
         NextAction("felmyst avoid fog of corruption", ACTION_EMERGENCY + 9) }));

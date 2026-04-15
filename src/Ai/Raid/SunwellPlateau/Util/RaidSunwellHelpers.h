@@ -104,7 +104,7 @@ namespace SunwellHelpers
     void SetKalecgosInitialRangedPositionReached(Player* bot, bool reached);
     bool ShouldEnterKalecgosSpectralRift(PlayerbotAI* botAI, Player* bot);
     bool IsInKalecgosSpectralRealm(Player* bot);
-    void RecordKalecgosSpectralBlastPortal(PlayerbotAI* botAI, Player* bot);
+    void RecordKalecgosSpectralBlastTarget(PlayerbotAI* botAI, Player* bot);
     void RecordKalecgosSpectralRealmEnter(PlayerbotAI* botAI, Player* bot);
     void RecordKalecgosNormalRealmEnter(Player* bot);
 
@@ -142,7 +142,7 @@ namespace SunwellHelpers
         Unit* brutallus, uint8 rangedIndex, bool moveTowardMirror,
         float currentX, float currentY, float z, Position& position);
     bool TryGetBrutallusRangedBurnPosition(Unit* brutallus, uint8 rangedIndex, float z, Position& position);
-    bool TryGetBrutallusPositionIndex(PlayerbotAI* botAI, Player* bot, bool wantRanged,
+    bool TryGetBrutallusAssignedPositionIndex(PlayerbotAI* botAI, Player* bot, bool wantRanged,
         uint8& positionIndex);
 
     // Felmyst
@@ -193,15 +193,15 @@ namespace SunwellHelpers
     extern std::unordered_map<uint32, FelmystFogOfCorruptionState> felmystFogOfCorruptionStates;
     void EnsureFelmystRangedAssignments(PlayerbotAI* botAI, Player* bot);
     float GetFelmystFrontAngle(PlayerbotAI* botAI, Player* bot, Unit* felmyst);
-    Creature* GetDemonicVaporSummonedByBot(Player* carrier);
+    Creature* GetFelmystDemonicVaporSummonedByBot(Player* carrier);
     void ClearFelmystDemonicVaporKiteState(Player* bot);
     bool TryGetFelmystDemonicVaporKiteDestination(Player* bot, Position& destination);
     bool TryGetFelmystFogSafeDestinations(
         Player* bot, FelmystFogLane dangerLane, std::array<Position, 3>& destinations,
         uint8& destinationCount);
-    bool GetFelmystFogOfCorruptionStageState(
+    bool TryGetFelmystFogOfCorruptionStageState(
         Unit* felmyst, FelmystFogOfCorruptionState& state);
-    bool GetActiveFelmystFogOfCorruptionState(
+    bool TryGetActiveFelmystFogOfCorruptionState(
         Player* bot, Unit* felmyst, FelmystFogOfCorruptionState& state);
     Unit* GetNearestFelmystFogOfCorruptionCharmedTarget(Player* bot);
     Unit* GetNearestFelmystDemonicVaporHazard(Player* bot);

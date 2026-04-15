@@ -222,11 +222,11 @@ bool FelmystBossSummonsDemonicVaporTrigger::IsActive()
     if (!felmyst || !felmyst->IsFlying())
         return false;
 
-    if (GetDemonicVaporSummonedByBot(bot))
+    if (GetFelmystDemonicVaporSummonedByBot(bot))
         return false;
 
     FelmystFogOfCorruptionState fogState;
-    return !GetActiveFelmystFogOfCorruptionState(bot, felmyst, fogState);
+    return !TryGetActiveFelmystFogOfCorruptionState(bot, felmyst, fogState);
 }
 
 bool FelmystBotIsDemonicVaporTargetTrigger::IsActive()
@@ -236,10 +236,10 @@ bool FelmystBotIsDemonicVaporTargetTrigger::IsActive()
         return false;
 
     FelmystFogOfCorruptionState fogState;
-    if (GetActiveFelmystFogOfCorruptionState(bot, felmyst, fogState))
+    if (TryGetActiveFelmystFogOfCorruptionState(bot, felmyst, fogState))
         return false;
 
-    return GetDemonicVaporSummonedByBot(bot);
+    return GetFelmystDemonicVaporSummonedByBot(bot);
 }
 
 bool FelmystFogOfCorruptionIsActiveTrigger::IsActive()
@@ -249,7 +249,7 @@ bool FelmystFogOfCorruptionIsActiveTrigger::IsActive()
         return false;
 
     FelmystFogOfCorruptionState fogState;
-    return GetActiveFelmystFogOfCorruptionState(bot, felmyst, fogState);
+    return TryGetActiveFelmystFogOfCorruptionState(bot, felmyst, fogState);
 }
 
 // Eredar Twins (Alythess & Sacrolash)
