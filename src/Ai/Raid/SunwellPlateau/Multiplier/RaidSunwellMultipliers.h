@@ -78,14 +78,6 @@ public:
 
 // Felmyst
 
-class FelmystDisableAirPhaseDefaultTargetingMultiplier : public Multiplier
-{
-public:
-    FelmystDisableAirPhaseDefaultTargetingMultiplier(PlayerbotAI* botAI) : Multiplier(
-        botAI, "felmyst disable air phase default targeting") {}
-    virtual float GetValue(Action* action);
-};
-
 class FelmystControlMovementMultiplier : public Multiplier
 {
 public:
@@ -120,11 +112,43 @@ public:
 
 // Eredar Twins (Alythess & Sacrolash)
 
-class EredarTwinsMultiplier : public Multiplier
+class EredarTwinsJumpDownFromBalconyMultiplier : public Multiplier
 {
 public:
-    EredarTwinsMultiplier(PlayerbotAI* botAI) : Multiplier(
-        botAI, "eredar twins") {}
+    EredarTwinsJumpDownFromBalconyMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "eredar twins melee jump down from balcony") {}
+    virtual float GetValue(Action* action);
+};
+
+class EredarTwinsControlMisdirectionMultiplier : public Multiplier
+{
+public:
+    EredarTwinsControlMisdirectionMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "eredar twins misdirect bosses to tanks") {}
+    virtual float GetValue(Action* action);
+};
+
+class EredarTwinsDisableTankAssistMultiplier : public Multiplier
+{
+public:
+    EredarTwinsDisableTankAssistMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "eredar twins disable tank assist") {}
+    virtual float GetValue(Action* action);
+};
+
+class EredarTwinsControlMovementMultiplier : public Multiplier
+{
+public:
+    EredarTwinsControlMovementMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "eredar twins control movement") {}
+    virtual float GetValue(Action* action);
+};
+
+class EredarTwinsDelayCooldownsMultiplier : public Multiplier
+{
+public:
+    EredarTwinsDelayCooldownsMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "eredar twins delay cooldowns") {}
     virtual float GetValue(Action* action);
 };
 

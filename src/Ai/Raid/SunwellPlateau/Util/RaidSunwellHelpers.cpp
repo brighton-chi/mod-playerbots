@@ -10,6 +10,7 @@
 #include "RaidSunwellHelpers.h"
 #include "RaidBossHelpers.h"
 #include "Playerbots.h"
+#include "Spell.h"
 
 namespace SunwellHelpers
 {
@@ -1831,5 +1832,84 @@ namespace SunwellHelpers
 
         return bot->GetDistance2d(nearestTrail) <= bot->GetDistance2d(nearestVapor) ?
             nearestTrail : nearestVapor;
+    }
+
+    // Eredar Twins (Grand Warlock Alythess and Lady Sacrolash)
+
+    const Position SACROLASH_TANK_POSITION  = { 1804.846f, 642.516f, 33.404f };
+    const Position ALYTHESS_TANK_POSITION_1 = { 1820.871f, 620.679f, 33.404f };
+    const Position ALYTHESS_TANK_POSITION_2 = { 1822.419f, 629.536f, 33.404f };
+    const Position ALYTHESS_TANK_POSITION_3 = { 1829.312f, 628.336f, 33.404f };
+    const Position ALYTHESS_TANK_POSITION_4 = { 1827.764f, 619.469f, 33.404f };
+    const std::array<Position, 4> ALYTHESS_TANK_POSITIONS =
+    {
+        ALYTHESS_TANK_POSITION_1,
+        ALYTHESS_TANK_POSITION_2,
+        ALYTHESS_TANK_POSITION_3,
+        ALYTHESS_TANK_POSITION_4
+    };
+    const Position EREDAR_TWINS_P1_RANGED_POSITION = { 1808.076f, 603.460f, 51.684f };
+    const Position EREDAR_TWINS_P2_RANGED_POSITION = { 1814.4188f, 626.3712f, 33.404f }; // room center
+    const Position EREDAR_TWINS_RANGED_CONFLAG_POSITION = { 1801.133f, 584.456f, 50.696f };
+    const Position EREDAR_TWINS_MELEE_CONFLAG_POSITION = { 1810.614f, 610.041f, 33.404f };
+
+    std::unordered_map<ObjectGuid, uint8> alythessTankStep;
+
+    bool IsSacrolashTank(PlayerbotAI* botAI, Player* bot)
+    {
+        // If the 2nd assist tank dies, further tanks can fill in
+        return botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 1, true);
+    }
+
+    bool IsAlythessTank(PlayerbotAI* botAI, Player* bot)
+    {
+        // The 1st assist tank is pinned to this role and cannot be replaced
+        return botAI->IsAssistTankOfIndex(bot, 0, false);
+    }
+
+    bool ShouldJumpDownFromEredarTwinsBalcony(
+        PlayerbotAI* botAI, Player* bot, Unit* alythess, Unit* sacrolash)
+    {
+        if (bot->GetPositionZ() < EREDAR_TWINS_BALCONY_Z)
+            return false;
+
+        bool isPhaseOne = alythess && sacrolash;
+        if (isPhaseOne)
+            return botAI->IsMelee(bot);
+
+        bool isPhaseTwo = (alythess && !sacrolash) || (!alythess && sacrolash);
+        if (isPhaseTwo)
+            return true;
+
+        return false;
+    }
+
+    bool ShouldAdvanceAlythessTankPosition(Unit* alythess, Player* bot)
+    {
+        if (!alythess)
+            return false;
+
+        Spell* currentSpell = alythess->GetCurrentSpell(CURRENT_GENERIC_SPELL);
+        if (currentSpell && currentSpell->m_spellInfo &&
+            currentSpell->m_spellInfo->Id == static_cast<uint32>(SunwellSpells::SPELL_BLAZE) &&
+            currentSpell->m_targets.GetUnitTarget() == bot)
+        {
+            return true;
+        }
+
+        constexpr float blazeHazardRadius = 5.0f;
+        return bot->FindNearestGameObject(
+            static_cast<uint32>(SunwellObjects::GO_BLAZE), blazeHazardRadius, true);
+    }
+
+    bool IsEredarTwinsConflagrationTarget(Unit* alythess, Player* bot)
+    {
+        if (!alythess)
+            return false;
+
+        Spell* currentSpell = alythess->GetCurrentSpell(CURRENT_GENERIC_SPELL);
+        return currentSpell && currentSpell->m_spellInfo &&
+               currentSpell->m_spellInfo->Id == static_cast<uint32>(SunwellSpells::SPELL_CONFLAGRATION) &&
+               currentSpell->m_targets.GetUnitTarget() == bot;
     }
 }

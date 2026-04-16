@@ -76,8 +76,23 @@ public:
             &RaidSunwellActionContext::felmyst_avoid_fog_of_corruption;
 
         // Eredar Twins (Alythess & Sacrolash)
-        creators["eredar twins"] =
-            &RaidSunwellActionContext::eredar_twins;
+        creators["eredar twins jump down from balcony"] =
+            &RaidSunwellActionContext::eredar_twins_jump_down_from_balcony;
+
+        creators["eredar twins misdirect bosses to tanks"] =
+            &RaidSunwellActionContext::eredar_twins_misdirect_bosses_to_tanks;
+
+        creators["eredar twins main and second assist tanks position sacrolash"] =
+            &RaidSunwellActionContext::eredar_twins_main_and_second_assist_tanks_position_sacrolash;
+
+        creators["eredar twins first assist tank move out of blaze"] =
+            &RaidSunwellActionContext::eredar_twins_first_assist_tank_move_out_of_blaze;
+
+        creators["eredar twins dps prioritize lady sacrolash"] =
+            &RaidSunwellActionContext::eredar_twins_dps_prioritize_lady_sacrolash;
+
+        creators["eredar twins conflagrated bot move from group"] =
+            &RaidSunwellActionContext::eredar_twins_conflagrated_bot_move_from_group;
 
         // M'uru & Entropius
         creators["m'uru"] =
@@ -151,8 +166,23 @@ private:
         PlayerbotAI* botAI) { return new FelmystAvoidFogOfCorruptionAction(botAI); }
 
     // Eredar Twins (Alythess & Sacrolash)
-    static Action* eredar_twins(
-        PlayerbotAI* botAI) { return new EredarTwinsAction(botAI); }
+    static Action* eredar_twins_jump_down_from_balcony(
+        PlayerbotAI* botAI) { return new EredarTwinsJumpDownFromBalconyAction(botAI); }
+
+    static Action* eredar_twins_misdirect_bosses_to_tanks(
+        PlayerbotAI* botAI) { return new EredarTwinsMisdirectBossesToTanksAction(botAI); }
+
+    static Action* eredar_twins_main_and_second_assist_tanks_position_sacrolash(
+        PlayerbotAI* botAI) { return new EredarTwinsMainAndSecondAssistTanksPositionSacrolashAction(botAI); }
+
+    static Action* eredar_twins_first_assist_tank_move_out_of_blaze(
+        PlayerbotAI* botAI) { return new EredarTwinsFirstAssistTankMoveOutOfBlazeAction(botAI); }
+
+    static Action* eredar_twins_dps_prioritize_lady_sacrolash(
+        PlayerbotAI* botAI) { return new EredarTwinsDpsPrioritizeLadySacrolashAction(botAI); }
+
+    static Action* eredar_twins_conflagrated_bot_move_from_group(
+        PlayerbotAI* botAI) { return new EredarTwinsConflagratedBotMoveFromGroupAction(botAI); }
 
     // M'uru & Entropius
     static Action* muru(

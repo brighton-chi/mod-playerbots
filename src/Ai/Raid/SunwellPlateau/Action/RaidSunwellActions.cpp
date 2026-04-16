@@ -83,9 +83,7 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
 
     // Felmyst
 
-    Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
-
-    if (!felmyst)
+    if (!AI_VALUE2(Unit*, "find target", "felmyst"))
     {
         if (IsMechanicTrackerBot(botAI, bot, SUNWELL_MAP_ID) &&
             felmystRangedAssignments.erase(instanceId) > 0)
@@ -110,6 +108,13 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
         {
             erased = true;
         }
+    }
+
+    // Eredar Twins
+    if (!AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
+    {
+        if (botAI->IsTank(bot) && alythessTankStep.erase(guid) > 0)
+            erased = true;
     }
 
     return erased;
@@ -886,7 +891,6 @@ bool FelmystAvoidFogOfCorruptionAction::Execute(Event /*event*/)
 
     for (uint8 index = 0; index < destinationCount; ++index)
     {
-        bot->AttackStop();
         Position const& destination = destinations[index];
         if (MoveTo(SUNWELL_MAP_ID, destination.GetPositionX(), destination.GetPositionY(),
                    destination.GetPositionZ(), false, false, false, false,
@@ -901,8 +905,221 @@ bool FelmystAvoidFogOfCorruptionAction::Execute(Event /*event*/)
 
 // Eredar Twins (Alythess & Sacrolash)
 
-bool EredarTwinsAction::Execute(Event /*event*/)
+bool EredarTwinsJumpDownFromBalconyAction::Execute(Event /*event*/)
 {
+    Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
+    Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
+    if (!ShouldJumpDownFromEredarTwinsBalcony(botAI, bot, alythess, sacrolash))
+        return false;
+
+    constexpr float arrivalDistance = 1.0f;
+    float distanceToJumpPoint = bot->GetExactDist2d(
+        EREDAR_TWINS_P1_RANGED_POSITION.GetPositionX(),
+        EREDAR_TWINS_P1_RANGED_POSITION.GetPositionY());
+
+    if (distanceToJumpPoint > arrivalDistance)
+    {
+        return MoveTo(SUNWELL_MAP_ID, EREDAR_TWINS_P1_RANGED_POSITION.GetPositionX(),
+                      EREDAR_TWINS_P1_RANGED_POSITION.GetPositionY(),
+                      EREDAR_TWINS_P1_RANGED_POSITION.GetPositionZ(), false, false, false,
+                      false, MovementPriority::MOVEMENT_FORCED, true, false);
+    }
+
+    bot->AttackStop();
+    bot->InterruptNonMeleeSpells(true);
+    return JumpTo(SUNWELL_MAP_ID, EREDAR_TWINS_P2_RANGED_POSITION.GetPositionX(),
+                  EREDAR_TWINS_P2_RANGED_POSITION.GetPositionY(),
+                  EREDAR_TWINS_P2_RANGED_POSITION.GetPositionZ(),
+                  MovementPriority::MOVEMENT_FORCED);
+}
+
+bool EredarTwinsMisdirectBossesToTanksAction::Execute(Event /*event*/)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    std::vector<Player*> hunters;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && member->IsAlive() && member->getClass() == CLASS_HUNTER &&
+            GET_PLAYERBOT_AI(member))
+        {
+            hunters.push_back(member);
+        }
+
+        if (hunters.size() >= 3)
+            break;
+    }
+
+    int8 hunterIndex = -1;
+    for (size_t i = 0; i < hunters.size(); ++i)
+    {
+        if (hunters[i] == bot)
+        {
+            hunterIndex = static_cast<int8>(i);
+            break;
+        }
+    }
+    if (hunterIndex == -1)
+        return false;
+
+    Unit* bossTarget = nullptr;
+    Player* tankTarget = nullptr;
+    if (hunterIndex == 0)
+    {
+        bossTarget = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
+        tankTarget = GetGroupAssistTank(botAI, bot, 0);
+    }
+    else if (hunterIndex == 1)
+    {
+        bossTarget = AI_VALUE2(Unit*, "find target", "lady sacrolash");
+        tankTarget = GetGroupMainTank(botAI, bot);
+    }
+    else if (hunterIndex == 2)
+    {
+        bossTarget = AI_VALUE2(Unit*, "find target", "lady sacrolash");
+        tankTarget = GetGroupAssistTank(botAI, bot, 1);
+    }
+
+    if (!tankTarget || !tankTarget->IsAlive())
+        return false;
+
+    if (botAI->CanCastSpell("misdirection", tankTarget))
+        return botAI->CastSpell("misdirection", tankTarget);
+
+    if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_MISDIRECTION)) &&
+        botAI->CanCastSpell("steady shot", bossTarget))
+        return botAI->CastSpell("steady shot", bossTarget);
+
+    return false;
+}
+
+bool EredarTwinsMainAndSecondAssistTanksPositionSacrolashAction::Execute(Event /*event*/)
+{
+    Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
+    if (!sacrolash)
+        return false;
+
+    MarkTargetWithStar(bot, sacrolash);
+    SetRtiTarget(botAI, "star", sacrolash);
+
+    if (bot->GetVictim() != sacrolash)
+        return Attack(sacrolash);
+
+    if (sacrolash->GetVictim() == bot && bot->IsWithinMeleeRange(sacrolash))
+    {
+        const Position& position = SACROLASH_TANK_POSITION;
+        float distToPosition = bot->GetExactDist2d(position.GetPositionX(),
+                                                   position.GetPositionY());
+        if (distToPosition > 2.0f)
+        {
+            float dX = position.GetPositionX() - bot->GetPositionX();
+            float dY = position.GetPositionY() - bot->GetPositionY();
+            float moveDist = std::min(5.0f, distToPosition);
+            float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
+
+            return MoveTo(SUNWELL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false,
+                          false, false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
+        }
+    }
+
+    return false;
+}
+
+bool EredarTwinsFirstAssistTankMoveOutOfBlazeAction::Execute(Event /*event*/)
+{
+    Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
+    if (!alythess)
+        return false;
+
+    MarkTargetWithCircle(bot, alythess);
+    SetRtiTarget(botAI, "circle", alythess);
+
+    if (bot->GetVictim() != alythess)
+        return Attack(alythess);
+
+    const ObjectGuid guid = bot->GetGUID();
+    uint8 index = alythessTankStep.count(guid) ? alythessTankStep[guid] : 0;
+
+    const Position& position = ALYTHESS_TANK_POSITIONS[index];
+
+    constexpr float maxDistance = 1.0f;
+    float distToPosition = bot->GetExactDist2d(position);
+
+    if (alythess->GetVictim() == bot)
+    {
+        if (distToPosition <= maxDistance &&
+            ShouldAdvanceAlythessTankPosition(alythess, bot))
+        {
+            index = (index + 1) % 4;
+            alythessTankStep[guid] = index;
+            const Position& newPosition = ALYTHESS_TANK_POSITIONS[index];
+            float newDistToPosition = bot->GetExactDist2d(newPosition);
+            if (newDistToPosition > maxDistance)
+            {
+                float dX = newPosition.GetPositionX() - bot->GetPositionX();
+                float dY = newPosition.GetPositionY() - bot->GetPositionY();
+                float moveDist = std::min(5.0f, newDistToPosition);
+                float moveX = bot->GetPositionX() + (dX / newDistToPosition) * moveDist;
+                float moveY = bot->GetPositionY() + (dY / newDistToPosition) * moveDist;
+
+                return MoveTo(SUNWELL_MAP_ID, moveX, moveY, bot->GetPositionZ(),
+                              false, false, false, false, MovementPriority::MOVEMENT_COMBAT,
+                              true, false);
+            }
+        }
+        else if (distToPosition > maxDistance)
+        {
+            float dX = position.GetPositionX() - bot->GetPositionX();
+            float dY = position.GetPositionY() - bot->GetPositionY();
+            float moveDist = std::min(5.0f, distToPosition);
+            float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
+
+            return MoveTo(SUNWELL_MAP_ID, moveX, moveY, bot->GetPositionZ(),
+                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT,
+                          true, false);
+        }
+    }
+
+    return false;
+}
+
+bool EredarTwinsDpsPrioritizeLadySacrolashAction::Execute(Event /*event*/)
+{
+    if (Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash"))
+    {
+        SetRtiTarget(botAI, "star", sacrolash);
+
+        if (bot->GetTarget() != sacrolash->GetGUID())
+            return Attack(sacrolash);
+    }
+    else if (Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
+    {
+        SetRtiTarget(botAI, "circle", alythess);
+
+        if (bot->GetTarget() != alythess->GetGUID())
+            return Attack(alythess);
+    }
+
+    return false;
+}
+
+bool EredarTwinsConflagratedBotMoveFromGroupAction::Execute(Event /*event*/)
+{
+    Position const& position = botAI->IsRanged(bot) ?
+        EREDAR_TWINS_RANGED_CONFLAG_POSITION : EREDAR_TWINS_MELEE_CONFLAG_POSITION;
+
+    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
+    {
+        return MoveTo(SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                      position.GetPositionZ(), false, false, false, false,
+                      MovementPriority::MOVEMENT_FORCED, true, false);
+    }
+
     return false;
 }
 

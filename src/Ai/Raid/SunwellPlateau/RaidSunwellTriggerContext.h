@@ -79,8 +79,23 @@ public:
             &RaidSunwellTriggerContext::felmyst_fog_of_corruption_is_active;
 
         // Eredar Twins (Alythess & Sacrolash)
-        creators["eredar twins"] =
-            &RaidSunwellTriggerContext::eredar_twins;
+        creators["eredar twins bot is on balcony"] =
+            &RaidSunwellTriggerContext::eredar_twins_bot_is_on_balcony;
+
+        creators["eredar twins pulling bosses"] =
+            &RaidSunwellTriggerContext::eredar_twins_pulling_bosses;
+
+        creators["eredar twins sacrolash engaged by two tanks"] =
+            &RaidSunwellTriggerContext::eredar_twins_sacrolash_engaged_by_two_tanks;
+
+        creators["eredar twins alythess engaged by first assist tank"] =
+            &RaidSunwellTriggerContext::eredar_twins_alythess_engaged_by_first_assist_tank;
+
+        creators["eredar twins determining dps priority"] =
+            &RaidSunwellTriggerContext::eredar_twins_determining_dps_priority;
+
+        creators["eredar twins bot has conflagration"] =
+            &RaidSunwellTriggerContext::eredar_twins_bot_has_conflagration;
 
         // M'uru & Entropius
         creators["m'uru"] =
@@ -157,8 +172,23 @@ private:
         PlayerbotAI* botAI) { return new FelmystFogOfCorruptionIsActiveTrigger(botAI); }
 
     // Eredar Twins (Alythess & Sacrolash)
-    static Trigger* eredar_twins(
-        PlayerbotAI* botAI) { return new EredarTwinsTrigger(botAI); }
+    static Trigger* eredar_twins_pulling_bosses(
+        PlayerbotAI* botAI) { return new EredarTwinsPullingBossesTrigger(botAI); }
+
+    static Trigger* eredar_twins_bot_is_on_balcony(
+        PlayerbotAI* botAI) { return new EredarTwinsBotIsOnBalconyTrigger(botAI); }
+
+    static Trigger* eredar_twins_sacrolash_engaged_by_two_tanks(
+        PlayerbotAI* botAI) { return new EredarTwinsSacrolashEngagedByTwoTanksTrigger(botAI); }
+
+    static Trigger* eredar_twins_alythess_engaged_by_first_assist_tank(
+        PlayerbotAI* botAI) { return new EredarTwinsAlythessEngagedByFirstAssistTankTrigger(botAI); }
+
+    static Trigger* eredar_twins_determining_dps_priority(
+        PlayerbotAI* botAI) { return new EredarTwinsDeterminingDpsPriorityTrigger(botAI); }
+
+    static Trigger* eredar_twins_bot_has_conflagration(
+        PlayerbotAI* botAI) { return new EredarTwinsBotHasConflagrationTrigger(botAI); }
 
     // M'uru & Entropius
     static Trigger* muru(

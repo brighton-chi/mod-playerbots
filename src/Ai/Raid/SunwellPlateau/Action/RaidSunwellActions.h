@@ -183,11 +183,51 @@ public:
 
 // Eredar Twins (Alythess & Sacrolash)
 
-class EredarTwinsAction : public MovementAction
+class EredarTwinsJumpDownFromBalconyAction : public MovementAction
 {
 public:
-    EredarTwinsAction(
-        PlayerbotAI* botAI, std::string const name = "eredar twins") : MovementAction(botAI, name) {}
+    EredarTwinsJumpDownFromBalconyAction(
+        PlayerbotAI* botAI, std::string const name = "eredar twins jump down from balcony") : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class EredarTwinsMisdirectBossesToTanksAction : public AttackAction
+{
+public:
+    EredarTwinsMisdirectBossesToTanksAction(
+        PlayerbotAI* botAI, std::string const name = "eredar twins misdirect bosses to tanks") : AttackAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class EredarTwinsMainAndSecondAssistTanksPositionSacrolashAction : public AttackAction
+{
+public:
+    EredarTwinsMainAndSecondAssistTanksPositionSacrolashAction(
+        PlayerbotAI* botAI, std::string const name = "eredar twins main and second assist tanks position sacrolash") : AttackAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class EredarTwinsFirstAssistTankMoveOutOfBlazeAction : public AttackAction
+{
+public:
+    EredarTwinsFirstAssistTankMoveOutOfBlazeAction(
+        PlayerbotAI* botAI, std::string const name = "eredar twins first assist tank move out of blaze") : AttackAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class EredarTwinsDpsPrioritizeLadySacrolashAction : public AttackAction
+{
+public:
+    EredarTwinsDpsPrioritizeLadySacrolashAction(
+        PlayerbotAI* botAI, std::string const name = "eredar twins dps prioritize lady sacrolash") : AttackAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class EredarTwinsConflagratedBotMoveFromGroupAction : public MovementAction
+{
+public:
+    EredarTwinsConflagratedBotMoveFromGroupAction(
+        PlayerbotAI* botAI, std::string const name = "eredar twins conflagrated bot move from group") : MovementAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 

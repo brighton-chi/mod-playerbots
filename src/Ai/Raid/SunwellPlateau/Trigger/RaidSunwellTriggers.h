@@ -186,11 +186,51 @@ public:
 
 // Eredar Twins (Alythess & Sacrolash)
 
-class EredarTwinsTrigger : public Trigger
+class EredarTwinsPullingBossesTrigger : public Trigger
 {
 public:
-    EredarTwinsTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "eredar twins") {}
+    EredarTwinsPullingBossesTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "eredar twins pulling bosses") {}
+    bool IsActive() override;
+};
+
+class EredarTwinsBotIsOnBalconyTrigger : public Trigger
+{
+public:
+    EredarTwinsBotIsOnBalconyTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "eredar twins bot is on balcony") {}
+    bool IsActive() override;
+};
+
+class EredarTwinsSacrolashEngagedByTwoTanksTrigger : public Trigger
+{
+public:
+    EredarTwinsSacrolashEngagedByTwoTanksTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "eredar twins sacrolash engaged by two tanks") {}
+    bool IsActive() override;
+};
+
+class EredarTwinsAlythessEngagedByFirstAssistTankTrigger : public Trigger
+{
+public:
+    EredarTwinsAlythessEngagedByFirstAssistTankTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "eredar twins alythess engaged by first assist tank") {}
+    bool IsActive() override;
+};
+
+class EredarTwinsDeterminingDpsPriorityTrigger : public Trigger
+{
+public:
+    EredarTwinsDeterminingDpsPriorityTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "eredar twins determining dps priority") {}
+    bool IsActive() override;
+};
+
+class EredarTwinsBotHasConflagrationTrigger : public Trigger
+{
+public:
+    EredarTwinsBotHasConflagrationTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "eredar twins bot has conflagration") {}
     bool IsActive() override;
 };
 

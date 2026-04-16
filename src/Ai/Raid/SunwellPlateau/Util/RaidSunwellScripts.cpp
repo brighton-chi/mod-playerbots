@@ -58,6 +58,16 @@ namespace
         return ObjectAccessor::GetPlayer(*caster, targets.front().targetGUID);
     }
 
+    void RequestInterruptForBotSpellTarget(Spell* spell, Unit* caster)
+    {
+        Player* target = GetFirstPlayerSpellTarget(spell, caster);
+        if (!target)
+            return;
+
+        if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(target))
+            botAI->RequestSpellInterrupt();
+    }
+
     void RequestInterruptForBotsNear(Unit* center, float radius)
     {
         if (!center)
@@ -164,9 +174,6 @@ public:
 
     void OnSpellCast(Spell* /*spell*/, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
     {
-        if (!caster || !spellInfo || caster->GetMapId() != SUNWELL_MAP_ID)
-            return;
-
         Player* player = caster->ToPlayer();
         if (!player)
             return;
@@ -201,9 +208,6 @@ public:
 
     void OnSpellCast(Spell* spell, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
     {
-        if (!spell || !caster || !spellInfo || caster->GetMapId() != SUNWELL_MAP_ID)
-            return;
-
         if (spellInfo->Id == static_cast<uint32>(SunwellSpells::SPELL_FOG_OF_CORRUPTION) ||
             spellInfo->Id == SPELL_FELMYST_STRAFE_TOP ||
             spellInfo->Id == SPELL_FELMYST_STRAFE_MIDDLE ||
@@ -235,9 +239,27 @@ public:
     }
 };
 
+class EredarTwinsSpellListenerScript : public AllSpellScript
+{
+public:
+    EredarTwinsSpellListenerScript() : AllSpellScript("EredarTwinsSpellListenerScript") { }
+
+    void OnSpellCast(Spell* spell, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
+    {
+        if (caster->GetEntry() != static_cast<uint32>(SunwellNPCs::NPC_GRAND_WARLOCK_ALYTHESS) ||
+            spellInfo->Id != static_cast<uint32>(SunwellSpells::SPELL_CONFLAGRATION))
+        {
+            return;
+        }
+
+        RequestInterruptForBotSpellTarget(spell, caster);
+    }
+};
+
 void AddSC_SunwellPlateauBotScripts()
 {
     new FelmystFogInterruptFallbackScript();
     new KalecgosSpellListenerScript();
     new FelmystSpellListenerScript();
+    new EredarTwinsSpellListenerScript();
 }

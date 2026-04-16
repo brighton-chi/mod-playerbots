@@ -39,6 +39,10 @@ namespace SunwellHelpers
         SPELL_FOG_OF_CORRUPTION = 45582,
         SPELL_FOG_OF_CORRUPTION_CHARM = 45717,
 
+        // Eredar Twins (Grand Warlock Alythess and Lady Sacrolash)
+        SPELL_BLAZE                 = 45235,
+        SPELL_CONFLAGRATION         = 45342,
+
         // Hunter
         SPELL_MISDIRECTION              = 35079,
 
@@ -59,11 +63,15 @@ namespace SunwellHelpers
         NPC_DEMONIC_VAPOR       = 25265,
         NPC_DEMONIC_VAPOR_TRAIL = 25267,
         // NPC_UNYIELDING_DEAD  = 25268,
+
+        // Eredar Twins
+        NPC_GRAND_WARLOCK_ALYTHESS = 25166,
     };
 
     enum class SunwellObjects : uint32
     {
         GO_SPECTRAL_RIFT = 187055,
+        GO_BLAZE         = 187366,
     };
 
     // General
@@ -208,6 +216,26 @@ namespace SunwellHelpers
     Player* GetFelmystEncapsulateTarget(Player* bot);
     bool TryGetFelmystRangedPosition(PlayerbotAI* botAI, Player* bot, Unit* felmyst, Position& position);
     Player* GetFelmystGasNovaDispelTarget(Player* bot);
+
+    // Eredar Twins (Grand Warlock Alythess and Lady Sacrolash)
+    constexpr float EREDAR_TWINS_BALCONY_Z = 50.0f;
+    extern const Position SACROLASH_TANK_POSITION;
+    extern const Position ALYTHESS_TANK_POSITION_1;
+    extern const Position ALYTHESS_TANK_POSITION_2;
+    extern const Position ALYTHESS_TANK_POSITION_3;
+    extern const Position ALYTHESS_TANK_POSITION_4;
+    extern const std::array<Position, 4> ALYTHESS_TANK_POSITIONS;
+    extern const Position EREDAR_TWINS_P1_RANGED_POSITION;
+    extern const Position EREDAR_TWINS_P2_RANGED_POSITION;
+    extern const Position EREDAR_TWINS_RANGED_CONFLAG_POSITION;
+    extern const Position EREDAR_TWINS_MELEE_CONFLAG_POSITION;
+    extern std::unordered_map<ObjectGuid, uint8> alythessTankStep;
+    bool IsSacrolashTank(PlayerbotAI* botAI, Player* bot);
+    bool IsAlythessTank(PlayerbotAI* botAI, Player* bot);
+    bool ShouldJumpDownFromEredarTwinsBalcony(
+        PlayerbotAI* botAI, Player* bot, Unit* alythess, Unit* sacrolash);
+    bool ShouldAdvanceAlythessTankPosition(Unit* alythess, Player* bot);
+    bool IsEredarTwinsConflagrationTarget(Unit* alythess, Player* bot);
 }
 
 #endif

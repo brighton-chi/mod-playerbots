@@ -73,8 +73,23 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("felmyst avoid fog of corruption", ACTION_EMERGENCY + 9) }));
 
     // Eredar Twins (Alythess & Sacrolash)
-    triggers.push_back(new TriggerNode("eredar twins", {
-        NextAction("eredar twins", ACTION_RAID + 1) }));
+    triggers.push_back(new TriggerNode("eredar twins pulling bosses", {
+        NextAction("eredar twins misdirect bosses to tanks", ACTION_RAID + 2) }));
+
+    triggers.push_back(new TriggerNode("eredar twins bot is on balcony", {
+        NextAction("eredar twins jump down from balcony", ACTION_EMERGENCY + 1) }));
+
+    triggers.push_back(new TriggerNode("eredar twins sacrolash engaged by two tanks", {
+        NextAction("eredar twins main and second assist tanks position sacrolash", ACTION_RAID + 1) }));
+
+    triggers.push_back(new TriggerNode("eredar twins alythess engaged by first assist tank", {
+        NextAction("eredar twins first assist tank move out of blaze", ACTION_RAID + 1) }));
+
+    triggers.push_back(new TriggerNode("eredar twins determining dps priority", {
+        NextAction("eredar twins dps prioritize lady sacrolash", ACTION_RAID + 1) }));
+
+    triggers.push_back(new TriggerNode("eredar twins bot has conflagration", {
+        NextAction("eredar twins conflagrated bot move from group", ACTION_EMERGENCY + 7) }));
 
     // M'uru & Entropius
     triggers.push_back(new TriggerNode("m'uru", {
@@ -100,14 +115,17 @@ void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new BrutallusDelayCooldownsMultiplier(botAI));
 
     // Felmyst
-    // multipliers.push_back(new FelmystDisableAirPhaseDefaultTargetingMultiplier(botAI));
     multipliers.push_back(new FelmystControlMovementMultiplier(botAI));
     multipliers.push_back(new FelmystPrioritizeDemonicVaporKiteMultiplier(botAI));
     multipliers.push_back(new FelmystPrioritizeFogAvoidanceMultiplier(botAI));
     multipliers.push_back(new FelmystDelayCooldownsMultiplier(botAI));
 
     // Eredar Twins (Alythess & Sacrolash)
-    multipliers.push_back(new EredarTwinsMultiplier(botAI));
+    multipliers.push_back(new EredarTwinsJumpDownFromBalconyMultiplier(botAI));
+    multipliers.push_back(new EredarTwinsControlMisdirectionMultiplier(botAI));
+    multipliers.push_back(new EredarTwinsDisableTankAssistMultiplier(botAI));
+    multipliers.push_back(new EredarTwinsControlMovementMultiplier(botAI));
+    multipliers.push_back(new EredarTwinsDelayCooldownsMultiplier(botAI));
 
     // M'uru & Entropius
     multipliers.push_back(new MuruMultiplier(botAI));
