@@ -344,8 +344,6 @@ bool SupremusMoveAwayFromVolcanosAction::Execute(Event /*event*/)
     constexpr float maxRadius = 40.0f;
     Position safestPos = FindSafestNearbyPosition(volcanos, maxRadius, hazardRadius);
 
-    bot->AttackStop();
-    bot->InterruptNonMeleeSpells(true);
     return MoveTo(BLACK_TEMPLE_MAP_ID, safestPos.GetPositionX(), safestPos.GetPositionY(),
                   bot->GetPositionZ(), false, false, false, false,
                   MovementPriority::MOVEMENT_FORCED, true, false);
