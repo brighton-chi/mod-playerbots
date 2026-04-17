@@ -54,9 +54,9 @@
 #include "Unit.h"
 #include "UpdateTime.h"
 #include "Vehicle.h"
-#include "../../../../src/server/scripts/Spells/spell_dk.cpp"
 
-const int SPELL_TITAN_GRIP = 49152;
+constexpr uint32 SPELL_TITAN_GRIP = 49152;
+constexpr uint32 SPELL_DK_FROST_PRESENCE = 48263;
 
 std::vector<std::string> PlayerbotAI::dispel_whitelist = {
     "mutating injection",
@@ -787,6 +787,12 @@ void PlayerbotAI::HandleTeleportAck()
 
         // reset AI state after teleport
         Reset(true);
+
+        if (bot->getClass() == CLASS_PALADIN &&
+            sPlayerbotAIConfig.autoGreaterBlessings != AutoPartyBuffMode::DISABLED)
+        {
+            DoSpecificAction("toggle greater blessing strategy", Event(), true);
+        }
 
         // clear movement only AFTER teleport is finalized and bot is in world
         if (bot->IsInWorld() && bot->GetMotionMaster())
