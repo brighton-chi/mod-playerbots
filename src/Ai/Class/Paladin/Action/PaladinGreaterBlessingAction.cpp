@@ -62,28 +62,6 @@ bool CastGreaterBlessingAssignmentAction::Execute(Event /*event*/)
     if (!FindPendingAssignment(assignment, castType, spellName))
         return false;
 
-    if (IsGreaterVariant(assignment.blessing) && castType != assignment.blessing)
-    {
-        if (Group* group = bot->GetGroup())
-        {
-            std::map<std::string, std::string> placeholders =
-            {
-                {"%assigned_blessing", BlessingSpellName(assignment.blessing)},
-                {"%fallback_blessing", spellName}
-            };
-            std::string msg = PlayerbotTextMgr::instance().GetBotTextOrDefault(
-                "paladin_gblessing_missing_reagents",
-                "Missing reagents for %assigned_blessing. Using %fallback_blessing.",
-                placeholders);
-            WorldPacket data;
-            ChatMsg type = group->isRaidGroup() ? CHAT_MSG_RAID : CHAT_MSG_PARTY;
-            ChatHandler::BuildChatPacket(
-                data, type, LANG_UNIVERSAL, bot, nullptr, msg.c_str());
-            group->BroadcastPacket(
-                &data, true, -1, bot->GetGUID());
-        }
-    }
-
     uint32 finalId = AI_VALUE2(uint32, "spell id", spellName);
     if (!finalId)
         return false;
