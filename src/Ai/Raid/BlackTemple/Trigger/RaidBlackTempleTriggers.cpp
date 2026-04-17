@@ -726,7 +726,9 @@ bool IllidanStormrageNeedToManageDpsTimerAndRtiTrigger::IsActive()
         botAI, bot, BLACK_TEMPLE_MAP_ID, GetIllidanWarlockTank(bot));
 }
 
-bool IllidanStormrageCheatTrigger::IsActive()
+// Destroying hazards behind phases is not gated behind CheatMask
+// The strategy simply cannot work without doing this
+bool IllidanStormrageNeedToClearHazardsBetweenPhasesTrigger::IsActive()
 {
     if (!botAI->IsDps(bot))
         return false;
@@ -737,6 +739,19 @@ bool IllidanStormrageCheatTrigger::IsActive()
 
     int phase = GetIllidanPhase(illidan);
     if (phase != 0 && phase != 2 && phase != 4)
+        return false;
+
+    return IsMechanicTrackerBot(
+        botAI, bot, BLACK_TEMPLE_MAP_ID, GetIllidanWarlockTank(bot));
+}
+
+bool IllidanStormrageShadowDemonCheatTrigger::IsActive()
+{
+    if (!botAI->HasCheat(BotCheatMask::raid) || !botAI->IsDps(bot))
+        return false;
+
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    if (!illidan || GetIllidanPhase(illidan) != 4)
         return false;
 
     return IsMechanicTrackerBot(

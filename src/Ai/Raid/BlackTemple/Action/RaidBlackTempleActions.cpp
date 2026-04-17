@@ -116,7 +116,7 @@ bool HighWarlordNajentusTanksPositionBossAction::Execute(Event /*event*/)
             float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
             return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-                   false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
+                          false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
         }
     }
 
@@ -165,8 +165,9 @@ bool HighWarlordNajentusRemoveImpalingSpineAction::Execute(Event /*event*/)
     if (!impaledPlayer)
         return false;
 
+    constexpr float searchRadius = 30.0f;
     GameObject* spineGo = bot->FindNearestGameObject(
-        static_cast<uint32>(BlackTempleObjects::GO_NAJENTUS_SPINE), 30.0f, true);
+        static_cast<uint32>(BlackTempleObjects::GO_NAJENTUS_SPINE), searchRadius, true);
     if (!spineGo)
         return false;
 
@@ -2497,10 +2498,13 @@ bool IllidanStormrageMeleeGoSomewhereToNotDieAction::Execute(Event /*event*/)
     if (!illidan)
         return false;
 
+    constexpr float demonSearchRadius = 25.0f;
+    constexpr float shadowfiendSearchRadius = 15.0f;
+
     Unit* illidanVictim = illidan->GetVictim();
     // But they can attack Shadow Demons and Shadowfiends, if far enough from Illidan
     Unit* shadowDemon = bot->FindNearestCreature(static_cast<uint32>(
-        BlackTempleNPCs::NPC_SHADOW_DEMON), 25.0f, true);
+        BlackTempleNPCs::NPC_SHADOW_DEMON), demonSearchRadius, true);
     if (shadowDemon && shadowDemon->GetDistance2d(illidan) > 15.0f &&
         (!illidanVictim || shadowDemon->GetDistance2d(illidanVictim) > 24.0f))
     {
@@ -2509,7 +2513,7 @@ bool IllidanStormrageMeleeGoSomewhereToNotDieAction::Execute(Event /*event*/)
     else
     {
         Unit* shadowfiend = bot->FindNearestCreature(static_cast<uint32>(
-            BlackTempleNPCs::NPC_PARASITIC_SHADOWFIEND), 15.0f, true);
+            BlackTempleNPCs::NPC_PARASITIC_SHADOWFIEND), shadowfiendSearchRadius, true);
         if (shadowfiend && shadowfiend->GetDistance2d(illidan) > 15.0f &&
             shadowfiend->GetHealthPct() < 30.0f &&
             (!illidanVictim || shadowfiend->GetDistance2d(illidanVictim) > 24.0f))
@@ -2551,10 +2555,6 @@ bool IllidanStormrageWarlockTankHandleDemonBossAction::Execute(Event /*event*/)
         MoveAway(illidan, safeDistance - currentDistance))
         return true;
 
-    if (bot->FindNearestCreature(static_cast<uint32>(
-        BlackTempleNPCs::NPC_SHADOW_DEMON), 35.0f, true))
-        return false;
-
     if (botAI->CanCastSpell("shadow ward", bot) &&
         botAI->CastSpell("shadow ward", bot))
         return true;
@@ -2577,8 +2577,10 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
 
     if (phase == 4)
     {
+        constexpr float searchRadius = 35.0f;
+
         Unit* shadowDemon = bot->FindNearestCreature(static_cast<uint32>(
-            BlackTempleNPCs::NPC_SHADOW_DEMON), 35.0f, true);
+            BlackTempleNPCs::NPC_SHADOW_DEMON), searchRadius, true);
 
         if (GetIllidanWarlockTank(bot) == bot)
         {
@@ -2587,7 +2589,7 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
         else
         {
             Unit* shadowfiend = bot->FindNearestCreature(static_cast<uint32>(
-                BlackTempleNPCs::NPC_PARASITIC_SHADOWFIEND), 35.0f, true);
+                BlackTempleNPCs::NPC_PARASITIC_SHADOWFIEND), searchRadius, true);
             if (botAI->IsRanged(bot))
             {
                 if (shadowDemon)
@@ -2607,8 +2609,9 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
     {
         if (phase == 1 || phase == 3 || phase == 5)
         {
+            constexpr float searchRadius = 35.0f;
             Unit* shadowfiend = bot->FindNearestCreature(static_cast<uint32>(
-                BlackTempleNPCs::NPC_PARASITIC_SHADOWFIEND), 35.0f, true);
+                BlackTempleNPCs::NPC_PARASITIC_SHADOWFIEND), searchRadius, true);
             if (shadowfiend && bot->GetDistance2d(shadowfiend) > 10.0f)
                 targets = { shadowfiend };
             else
@@ -2616,8 +2619,9 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
         }
         else if (phase == 2)
         {
+            constexpr float searchRadius = 20.0f;
             Unit* shadowfiend = bot->FindNearestCreature(static_cast<uint32>(
-                BlackTempleNPCs::NPC_PARASITIC_SHADOWFIEND), 20.0f, true);
+                BlackTempleNPCs::NPC_PARASITIC_SHADOWFIEND), searchRadius, true);
             if (shadowfiend && bot->GetDistance2d(shadowfiend) > 5.0f)
             {
                 targets = { shadowfiend };
@@ -2751,7 +2755,7 @@ bool IllidanStormrageManageDpsTimerAndRtiAction::Execute(Event /*event*/)
     return updated;
 }
 
-bool IllidanStormrageDestroyHazardsCheatAction::Execute(Event /*event*/)
+bool IllidanStormrageDestroyHazardsAction::Execute(Event /*event*/)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     if (!illidan)
@@ -2765,14 +2769,12 @@ bool IllidanStormrageDestroyHazardsCheatAction::Execute(Event /*event*/)
     if (phase == 2)
     {
         entries = {
-            // static_cast<uint32>(BlackTempleNPCs::NPC_PARASITIC_SHADOWFIEND),
             static_cast<uint32>(BlackTempleNPCs::NPC_FLAME_CRASH)
         };
     }
     else if (phase == 4)
     {
         entries = {
-            static_cast<uint32>(BlackTempleNPCs::NPC_SHADOW_DEMON),
             static_cast<uint32>(BlackTempleNPCs::NPC_FLAME_CRASH)
         };
     }
@@ -2787,51 +2789,36 @@ bool IllidanStormrageDestroyHazardsCheatAction::Execute(Event /*event*/)
     if (!entries.empty())
         bot->GetCreatureListWithEntryInGrid(hazards, entries, searchRadius);
 
-    bool destroyed = false;
-
     for (Creature* creature : hazards)
     {
         if (creature && creature->IsAlive())
         {
-            if (creature->GetEntry() !=
-                static_cast<uint32>(BlackTempleNPCs::NPC_SHADOW_DEMON) /*&&
-                creature->GetEntry() !=
-                static_cast<uint32>(BlackTempleNPCs::NPC_PARASITIC_SHADOWFIEND)*/)
-            {
-                // Destroying hazards behind phases is not gated behind CheatMask
-                // The strategy simply cannot work without doing this
-                creature->Kill(bot, creature);
-                destroyed = true;
-            }
-            else if (botAI->HasCheat(BotCheatMask::raid))
-            {
-                /* if (creature->GetEntry() ==
-                    static_cast<uint32>(BlackTempleNPCs::NPC_PARASITIC_SHADOWFIEND))
-                {
-                    creature->Kill(bot, creature);
-                    destroyed = true;
-                }
-                // Otherwise a wipe if a Shadow Demon targets the Warlock tank
-                else */ if (Player* warlockTank = GetIllidanWarlockTank(bot);
-                         warlockTank && creature->GetTarget() == warlockTank->GetGUID())
-                {
-                    creature->Kill(bot, creature);
-                    destroyed = true;
-                }
-                else if (creature->GetHealthPct() > 25.0f)
-                {
-                    uint32 desiredDamage = 0;
-                    uint32 quarterHealth = creature->GetMaxHealth() / 4;
-                    if (creature->GetHealth() > quarterHealth)
-                        desiredDamage = creature->GetHealth() - quarterHealth;
-
-                    Unit::DealDamage(bot, creature, desiredDamage, nullptr, DIRECT_DAMAGE,
-                                     SPELL_SCHOOL_MASK_NORMAL, nullptr, false, false, nullptr);
-                    return true;
-                }
-            }
+            creature->Kill(bot, creature);
+            return true;
         }
     }
 
-    return destroyed;
+    return false;
+}
+
+// Reduce Shadow Demon to 25% health
+bool IllidanStormrageNerfShadowDemonCheatAction::Execute(Event /*event*/)
+{
+    constexpr float searchRadius = 75.0f;
+    Unit* shadowDemon = bot->FindNearestCreature(static_cast<uint32>(
+        BlackTempleNPCs::NPC_SHADOW_DEMON), searchRadius, true);
+
+    if (shadowDemon && shadowDemon->GetHealthPct() > 25.0f)
+    {
+        uint32 desiredDamage = 0;
+        uint32 quarterHealth = shadowDemon->GetMaxHealth() / 4;
+        if (shadowDemon->GetHealth() > quarterHealth)
+            desiredDamage = shadowDemon->GetHealth() - quarterHealth;
+
+        Unit::DealDamage(bot, shadowDemon, desiredDamage, nullptr, DIRECT_DAMAGE,
+                         SPELL_SCHOOL_MASK_NORMAL, nullptr, false, false, nullptr);
+        return true;
+    }
+
+    return false;
 }

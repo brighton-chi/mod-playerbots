@@ -191,8 +191,11 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("illidan stormrage need to manage dps timer and rti", {
         NextAction("illidan stormrage manage dps timer and rti", ACTION_EMERGENCY + 11) }));
 
-    triggers.push_back(new TriggerNode("illidan stormrage cheat", {
-        NextAction("illidan stormrage destroy hazards cheat", ACTION_EMERGENCY + 10) }));
+    triggers.push_back(new TriggerNode("illidan stormrage need to clear hazards between phases", {
+        NextAction("illidan stormrage destroy hazards", ACTION_EMERGENCY + 10) }));
+
+    triggers.push_back(new TriggerNode("illidan stormrage shadow demon cheat", {
+        NextAction("illidan stormrage nerf shadow demon", ACTION_EMERGENCY + 10) }));
 }
 
 void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)

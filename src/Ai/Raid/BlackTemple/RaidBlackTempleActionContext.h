@@ -197,8 +197,11 @@ public:
         creators["illidan stormrage manage dps timer and rti"] =
             &RaidBlackTempleActionContext::illidan_stormrage_manage_dps_timer_and_rti;
 
-        creators["illidan stormrage destroy hazards cheat"] =
-            &RaidBlackTempleActionContext::illidan_stormrage_destroy_hazards_cheat;
+        creators["illidan stormrage destroy hazards"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_destroy_hazards;
+
+        creators["illidan stormrage nerf shadow demon"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_nerf_shadow_demon;
     }
 
 private:
@@ -385,8 +388,11 @@ private:
     static Action* illidan_stormrage_manage_dps_timer_and_rti(
         PlayerbotAI* botAI) { return new IllidanStormrageManageDpsTimerAndRtiAction(botAI); }
 
-    static Action* illidan_stormrage_destroy_hazards_cheat(
-        PlayerbotAI* botAI) { return new IllidanStormrageDestroyHazardsCheatAction(botAI); }
+    static Action* illidan_stormrage_destroy_hazards(
+        PlayerbotAI* botAI) { return new IllidanStormrageDestroyHazardsAction(botAI); }
+
+    static Action* illidan_stormrage_nerf_shadow_demon(
+        PlayerbotAI* botAI) { return new IllidanStormrageNerfShadowDemonCheatAction(botAI); }
 };
 
 #endif

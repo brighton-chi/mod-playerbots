@@ -538,11 +538,19 @@ public:
     bool Execute(Event event) override;
 };
 
-class IllidanStormrageDestroyHazardsCheatAction : public Action
+class IllidanStormrageDestroyHazardsAction : public Action
 {
 public:
-    IllidanStormrageDestroyHazardsCheatAction(
-        PlayerbotAI* botAI) : Action(botAI, "illidan stormrage destroy hazards cheat") {}
+    IllidanStormrageDestroyHazardsAction(
+        PlayerbotAI* botAI) : Action(botAI, "illidan stormrage destroy hazards") {}
+    bool Execute(Event event) override;
+};
+
+class IllidanStormrageNerfShadowDemonCheatAction : public Action
+{
+public:
+    IllidanStormrageNerfShadowDemonCheatAction(
+        PlayerbotAI* botAI) : Action(botAI, "illidan stormrage nerf shadow demon") {}
     bool Execute(Event event) override;
 };
 

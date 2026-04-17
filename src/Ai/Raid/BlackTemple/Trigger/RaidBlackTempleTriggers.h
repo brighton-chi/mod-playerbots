@@ -490,11 +490,19 @@ public:
     bool IsActive() override;
 };
 
-class IllidanStormrageCheatTrigger : public Trigger
+class IllidanStormrageNeedToClearHazardsBetweenPhasesTrigger : public Trigger
 {
 public:
-    IllidanStormrageCheatTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage cheat") {}
+    IllidanStormrageNeedToClearHazardsBetweenPhasesTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage need to clear hazards between phases") {}
+    bool IsActive() override;
+};
+
+class IllidanStormrageShadowDemonCheatTrigger : public Trigger
+{
+public:
+    IllidanStormrageShadowDemonCheatTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage shadow demon cheat") {}
     bool IsActive() override;
 };
 
