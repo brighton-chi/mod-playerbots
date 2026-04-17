@@ -73,11 +73,14 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("felmyst avoid fog of corruption", ACTION_EMERGENCY + 9) }));
 
     // Eredar Twins (Alythess & Sacrolash)
+    triggers.push_back(new TriggerNode("eredar twins encounter just started", {
+        NextAction("eredar twins melee jump down from balcony", ACTION_EMERGENCY + 1) }));
+
     triggers.push_back(new TriggerNode("eredar twins pulling bosses", {
         NextAction("eredar twins misdirect bosses to tanks", ACTION_RAID + 2) }));
 
-    triggers.push_back(new TriggerNode("eredar twins bot is on balcony", {
-        NextAction("eredar twins jump down from balcony", ACTION_EMERGENCY + 1) }));
+    triggers.push_back(new TriggerNode("eredar twins bosses engaged by ranged", {
+        NextAction("eredar twins position ranged", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("eredar twins sacrolash engaged by two tanks", {
         NextAction("eredar twins main and second assist tanks position sacrolash", ACTION_RAID + 1) }));
@@ -87,6 +90,9 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("eredar twins determining dps priority", {
         NextAction("eredar twins dps prioritize lady sacrolash", ACTION_RAID + 1) }));
+
+    triggers.push_back(new TriggerNode("eredar twins only one boss remains", {
+        NextAction("eredar twins stack in room center", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("eredar twins bot has conflagration", {
         NextAction("eredar twins conflagrated bot move from group", ACTION_EMERGENCY + 7) }));
@@ -121,7 +127,7 @@ void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new FelmystDelayCooldownsMultiplier(botAI));
 
     // Eredar Twins (Alythess & Sacrolash)
-    multipliers.push_back(new EredarTwinsJumpDownFromBalconyMultiplier(botAI));
+    multipliers.push_back(new EredarTwinsMeleeJumpDownFromBalconyMultiplier(botAI));
     multipliers.push_back(new EredarTwinsControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new EredarTwinsDisableTankAssistMultiplier(botAI));
     multipliers.push_back(new EredarTwinsControlMovementMultiplier(botAI));

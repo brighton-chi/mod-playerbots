@@ -112,10 +112,10 @@ public:
 
 // Eredar Twins (Alythess & Sacrolash)
 
-class EredarTwinsJumpDownFromBalconyMultiplier : public Multiplier
+class EredarTwinsMeleeJumpDownFromBalconyMultiplier : public Multiplier
 {
 public:
-    EredarTwinsJumpDownFromBalconyMultiplier(PlayerbotAI* botAI) : Multiplier(
+    EredarTwinsMeleeJumpDownFromBalconyMultiplier(PlayerbotAI* botAI) : Multiplier(
         botAI, "eredar twins melee jump down from balcony") {}
     virtual float GetValue(Action* action);
 };

@@ -114,7 +114,9 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
     if (!AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
     {
         if (botAI->IsTank(bot) && alythessTankStep.erase(guid) > 0)
+        {
             erased = true;
+        }
     }
 
     return erased;
@@ -905,32 +907,69 @@ bool FelmystAvoidFogOfCorruptionAction::Execute(Event /*event*/)
 
 // Eredar Twins (Alythess & Sacrolash)
 
-bool EredarTwinsJumpDownFromBalconyAction::Execute(Event /*event*/)
+bool EredarTwinsMeleeJumpDownFromBalconyAction::Execute(Event /*event*/)
+{
+    const Position& jumpPos = EREDAR_TWINS_P1_RANGED_POSITION;
+    const Position& landingPos = EREDAR_TWINS_P2_STACK_POSITION;
+
+    constexpr float arrivalDistance = 2.0f;
+    float distanceToJumpPos =
+        bot->GetExactDist2d(jumpPos.GetPositionX(), jumpPos.GetPositionY());
+
+    if (distanceToJumpPos > arrivalDistance)
+    {
+        return MoveTo(SUNWELL_MAP_ID, jumpPos.GetPositionX(), jumpPos.GetPositionY(),
+                      jumpPos.GetPositionZ(), false, false, false, false,
+                      MovementPriority::MOVEMENT_FORCED, true, false);
+    }
+    else
+    {
+        return JumpTo(SUNWELL_MAP_ID, landingPos.GetPositionX(),
+                      landingPos.GetPositionY(), landingPos.GetPositionZ(),
+                      MovementPriority::MOVEMENT_FORCED);
+    }
+}
+
+bool EredarTwinsPositionRangedAction::Execute(Event /*event*/)
 {
     Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
-    Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
-    if (!ShouldJumpDownFromEredarTwinsBalcony(botAI, bot, alythess, sacrolash))
-        return false;
-
-    constexpr float arrivalDistance = 1.0f;
-    float distanceToJumpPoint = bot->GetExactDist2d(
-        EREDAR_TWINS_P1_RANGED_POSITION.GetPositionX(),
-        EREDAR_TWINS_P1_RANGED_POSITION.GetPositionY());
-
-    if (distanceToJumpPoint > arrivalDistance)
+    if (alythess)
     {
-        return MoveTo(SUNWELL_MAP_ID, EREDAR_TWINS_P1_RANGED_POSITION.GetPositionX(),
-                      EREDAR_TWINS_P1_RANGED_POSITION.GetPositionY(),
-                      EREDAR_TWINS_P1_RANGED_POSITION.GetPositionZ(), false, false, false,
-                      false, MovementPriority::MOVEMENT_FORCED, true, false);
+        const Position& position = EREDAR_TWINS_P1_RANGED_POSITION;
+
+        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
+        {
+            return MoveTo(SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                          position.GetPositionZ(), false, false, false, false,
+                          MovementPriority::MOVEMENT_FORCED, true, false);
+        }
+
+        return false;
+    }
+    else if (bot->GetPositionZ() > EREDAR_TWINS_BALCONY_Z)
+    {
+        const Position& jumpPos = EREDAR_TWINS_P1_RANGED_POSITION;
+        const Position& landingPos = EREDAR_TWINS_P2_STACK_POSITION;
+
+        constexpr float arrivalDistance = 2.0f;
+        float distanceToJumpPos =
+            bot->GetExactDist2d(jumpPos.GetPositionX(), jumpPos.GetPositionY());
+
+        if (distanceToJumpPos > arrivalDistance)
+        {
+            return MoveTo(SUNWELL_MAP_ID, jumpPos.GetPositionX(), jumpPos.GetPositionY(),
+                          jumpPos.GetPositionZ(), false, false, false, false,
+                          MovementPriority::MOVEMENT_FORCED, true, false);
+        }
+        else
+        {
+            return JumpTo(SUNWELL_MAP_ID, landingPos.GetPositionX(),
+                          landingPos.GetPositionY(), landingPos.GetPositionZ(),
+                          MovementPriority::MOVEMENT_FORCED);
+        }
     }
 
-    bot->AttackStop();
-    bot->InterruptNonMeleeSpells(true);
-    return JumpTo(SUNWELL_MAP_ID, EREDAR_TWINS_P2_RANGED_POSITION.GetPositionX(),
-                  EREDAR_TWINS_P2_RANGED_POSITION.GetPositionY(),
-                  EREDAR_TWINS_P2_RANGED_POSITION.GetPositionZ(),
-                  MovementPriority::MOVEMENT_FORCED);
+    return false;
 }
 
 bool EredarTwinsMisdirectBossesToTanksAction::Execute(Event /*event*/)
@@ -1088,6 +1127,22 @@ bool EredarTwinsFirstAssistTankMoveOutOfBlazeAction::Execute(Event /*event*/)
     return false;
 }
 
+bool EredarTwinsStackInRoomCenterAction::Execute(Event /*event*/)
+{
+    const Position& position = EREDAR_TWINS_P2_STACK_POSITION;
+    float distToPosition =
+        bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+
+    if (distToPosition > 1.0f)
+    {
+        return MoveTo(SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                      position.GetPositionZ(), false, false, false, false,
+                      MovementPriority::MOVEMENT_FORCED, true, false);
+    }
+
+    return false;
+}
+
 bool EredarTwinsDpsPrioritizeLadySacrolashAction::Execute(Event /*event*/)
 {
     if (Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash"))
@@ -1110,7 +1165,7 @@ bool EredarTwinsDpsPrioritizeLadySacrolashAction::Execute(Event /*event*/)
 
 bool EredarTwinsConflagratedBotMoveFromGroupAction::Execute(Event /*event*/)
 {
-    Position const& position = botAI->IsRanged(bot) ?
+    const Position& position = botAI->IsRanged(bot) ?
         EREDAR_TWINS_RANGED_CONFLAG_POSITION : EREDAR_TWINS_MELEE_CONFLAG_POSITION;
 
     if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)

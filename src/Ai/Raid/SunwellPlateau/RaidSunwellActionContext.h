@@ -76,8 +76,8 @@ public:
             &RaidSunwellActionContext::felmyst_avoid_fog_of_corruption;
 
         // Eredar Twins (Alythess & Sacrolash)
-        creators["eredar twins jump down from balcony"] =
-            &RaidSunwellActionContext::eredar_twins_jump_down_from_balcony;
+        creators["eredar twins melee jump down from balcony"] =
+            &RaidSunwellActionContext::eredar_twins_melee_jump_down_from_balcony;
 
         creators["eredar twins misdirect bosses to tanks"] =
             &RaidSunwellActionContext::eredar_twins_misdirect_bosses_to_tanks;
@@ -87,6 +87,12 @@ public:
 
         creators["eredar twins first assist tank move out of blaze"] =
             &RaidSunwellActionContext::eredar_twins_first_assist_tank_move_out_of_blaze;
+
+        creators["eredar twins position ranged"] =
+            &RaidSunwellActionContext::eredar_twins_position_ranged;
+
+        creators["eredar twins stack in room center"] =
+            &RaidSunwellActionContext::eredar_twins_stack_in_room_center;
 
         creators["eredar twins dps prioritize lady sacrolash"] =
             &RaidSunwellActionContext::eredar_twins_dps_prioritize_lady_sacrolash;
@@ -166,8 +172,8 @@ private:
         PlayerbotAI* botAI) { return new FelmystAvoidFogOfCorruptionAction(botAI); }
 
     // Eredar Twins (Alythess & Sacrolash)
-    static Action* eredar_twins_jump_down_from_balcony(
-        PlayerbotAI* botAI) { return new EredarTwinsJumpDownFromBalconyAction(botAI); }
+    static Action* eredar_twins_melee_jump_down_from_balcony(
+        PlayerbotAI* botAI) { return new EredarTwinsMeleeJumpDownFromBalconyAction(botAI); }
 
     static Action* eredar_twins_misdirect_bosses_to_tanks(
         PlayerbotAI* botAI) { return new EredarTwinsMisdirectBossesToTanksAction(botAI); }
@@ -177,6 +183,12 @@ private:
 
     static Action* eredar_twins_first_assist_tank_move_out_of_blaze(
         PlayerbotAI* botAI) { return new EredarTwinsFirstAssistTankMoveOutOfBlazeAction(botAI); }
+
+    static Action* eredar_twins_position_ranged(
+        PlayerbotAI* botAI) { return new EredarTwinsPositionRangedAction(botAI); }
+
+    static Action* eredar_twins_stack_in_room_center(
+        PlayerbotAI* botAI) { return new EredarTwinsStackInRoomCenterAction(botAI); }
 
     static Action* eredar_twins_dps_prioritize_lady_sacrolash(
         PlayerbotAI* botAI) { return new EredarTwinsDpsPrioritizeLadySacrolashAction(botAI); }

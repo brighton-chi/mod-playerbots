@@ -183,11 +183,11 @@ public:
 
 // Eredar Twins (Alythess & Sacrolash)
 
-class EredarTwinsJumpDownFromBalconyAction : public MovementAction
+class EredarTwinsMeleeJumpDownFromBalconyAction : public MovementAction
 {
 public:
-    EredarTwinsJumpDownFromBalconyAction(
-        PlayerbotAI* botAI, std::string const name = "eredar twins jump down from balcony") : MovementAction(botAI, name) {}
+    EredarTwinsMeleeJumpDownFromBalconyAction(
+        PlayerbotAI* botAI, std::string const name = "eredar twins melee jump down from balcony") : MovementAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 
@@ -212,6 +212,22 @@ class EredarTwinsFirstAssistTankMoveOutOfBlazeAction : public AttackAction
 public:
     EredarTwinsFirstAssistTankMoveOutOfBlazeAction(
         PlayerbotAI* botAI, std::string const name = "eredar twins first assist tank move out of blaze") : AttackAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class EredarTwinsPositionRangedAction : public MovementAction
+{
+public:
+    EredarTwinsPositionRangedAction(
+        PlayerbotAI* botAI, std::string const name = "eredar twins position ranged") : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class EredarTwinsStackInRoomCenterAction : public MovementAction
+{
+public:
+    EredarTwinsStackInRoomCenterAction(
+        PlayerbotAI* botAI, std::string const name = "eredar twins stack in room center") : MovementAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 

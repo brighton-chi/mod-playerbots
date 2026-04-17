@@ -62,6 +62,7 @@ namespace SunwellHelpers
         NPC_FELMYST             = 25038,
         NPC_DEMONIC_VAPOR       = 25265,
         NPC_DEMONIC_VAPOR_TRAIL = 25267,
+        NPC_WORLD_INVISIBLE_TRIGGER = 12999,
         // NPC_UNYIELDING_DEAD  = 25268,
 
         // Eredar Twins
@@ -226,14 +227,12 @@ namespace SunwellHelpers
     extern const Position ALYTHESS_TANK_POSITION_4;
     extern const std::array<Position, 4> ALYTHESS_TANK_POSITIONS;
     extern const Position EREDAR_TWINS_P1_RANGED_POSITION;
-    extern const Position EREDAR_TWINS_P2_RANGED_POSITION;
+    extern const Position EREDAR_TWINS_P2_STACK_POSITION;
     extern const Position EREDAR_TWINS_RANGED_CONFLAG_POSITION;
     extern const Position EREDAR_TWINS_MELEE_CONFLAG_POSITION;
     extern std::unordered_map<ObjectGuid, uint8> alythessTankStep;
     bool IsSacrolashTank(PlayerbotAI* botAI, Player* bot);
     bool IsAlythessTank(PlayerbotAI* botAI, Player* bot);
-    bool ShouldJumpDownFromEredarTwinsBalcony(
-        PlayerbotAI* botAI, Player* bot, Unit* alythess, Unit* sacrolash);
     bool ShouldAdvanceAlythessTankPosition(Unit* alythess, Player* bot);
     bool IsEredarTwinsConflagrationTarget(Unit* alythess, Player* bot);
 }

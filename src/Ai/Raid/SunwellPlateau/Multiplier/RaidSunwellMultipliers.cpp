@@ -293,15 +293,16 @@ float EredarTwinsDisableTankAssistMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float EredarTwinsJumpDownFromBalconyMultiplier::GetValue(Action* action)
+float EredarTwinsMeleeJumpDownFromBalconyMultiplier::GetValue(Action* action)
 {
-    Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
-    Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
-    if (!ShouldJumpDownFromEredarTwinsBalcony(botAI, bot, alythess, sacrolash))
+    if (!botAI->IsMelee(bot) || bot->GetPositionZ() < EREDAR_TWINS_BALCONY_Z)
+        return 1.0f;
+
+    if (!AI_VALUE2(Unit*, "find target", "lady sacrolash"))
         return 1.0f;
 
     if (dynamic_cast<MovementAction*>(action) &&
-        !dynamic_cast<EredarTwinsJumpDownFromBalconyAction*>(action))
+        !dynamic_cast<EredarTwinsMeleeJumpDownFromBalconyAction*>(action))
         return 0.0f;
 
     return 1.0f;
@@ -328,7 +329,8 @@ float EredarTwinsControlMovementMultiplier::GetValue(Action* action)
     if (dynamic_cast<CombatFormationMoveAction*>(action) ||
         dynamic_cast<CastDisengageAction*>(action) ||
         dynamic_cast<CastBlinkBackAction*>(action) ||
-        dynamic_cast<FleeAction*>(action))
+        dynamic_cast<FleeAction*>(action) ||
+        dynamic_cast<AvoidAoeAction*>(action))
         return 0.0f;
 
     if (IsEredarTwinsConflagrationTarget(alythess, bot) &&
@@ -338,7 +340,7 @@ float EredarTwinsControlMovementMultiplier::GetValue(Action* action)
         return 0.0f;
     }
 
-    if (IsAlythessTank(botAI, bot) &&
+    if ((botAI->IsRanged(bot) || IsAlythessTank(botAI, bot)) &&
         (dynamic_cast<CastReachTargetSpellAction*>(action) ||
          dynamic_cast<ReachTargetAction*>(action)))
     {
@@ -352,8 +354,8 @@ float EredarTwinsDelayCooldownsMultiplier::GetValue(Action* action)
 {
     Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
     Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
-    if (!alythess || alythess->GetHealthPct() < 90.0f ||
-        !sacrolash || sacrolash->GetHealthPct() < 90.0f)
+    if (!alythess || alythess->GetHealthPct() < 80.0f ||
+        !sacrolash || sacrolash->GetHealthPct() < 80.0f)
         return 1.0f;
 
     if (IsDpsCooldownAction(action))

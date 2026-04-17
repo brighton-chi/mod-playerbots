@@ -186,19 +186,19 @@ public:
 
 // Eredar Twins (Alythess & Sacrolash)
 
+class EredarTwinsEncounterJustStartedTrigger : public Trigger
+{
+public:
+    EredarTwinsEncounterJustStartedTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "eredar twins encounter just started") {}
+    bool IsActive() override;
+};
+
 class EredarTwinsPullingBossesTrigger : public Trigger
 {
 public:
     EredarTwinsPullingBossesTrigger(
         PlayerbotAI* botAI) : Trigger(botAI, "eredar twins pulling bosses") {}
-    bool IsActive() override;
-};
-
-class EredarTwinsBotIsOnBalconyTrigger : public Trigger
-{
-public:
-    EredarTwinsBotIsOnBalconyTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "eredar twins bot is on balcony") {}
     bool IsActive() override;
 };
 
@@ -215,6 +215,22 @@ class EredarTwinsAlythessEngagedByFirstAssistTankTrigger : public Trigger
 public:
     EredarTwinsAlythessEngagedByFirstAssistTankTrigger(
         PlayerbotAI* botAI) : Trigger(botAI, "eredar twins alythess engaged by first assist tank") {}
+    bool IsActive() override;
+};
+
+class EredarTwinsBossesEngagedByRangedTrigger : public Trigger
+{
+public:
+    EredarTwinsBossesEngagedByRangedTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "eredar twins bosses engaged by ranged") {}
+    bool IsActive() override;
+};
+
+class EredarTwinsOnlyOneBossRemainsTrigger : public Trigger
+{
+public:
+    EredarTwinsOnlyOneBossRemainsTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "eredar twins only one boss remains") {}
     bool IsActive() override;
 };
 

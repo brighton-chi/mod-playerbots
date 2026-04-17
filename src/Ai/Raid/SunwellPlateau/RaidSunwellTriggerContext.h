@@ -79,8 +79,8 @@ public:
             &RaidSunwellTriggerContext::felmyst_fog_of_corruption_is_active;
 
         // Eredar Twins (Alythess & Sacrolash)
-        creators["eredar twins bot is on balcony"] =
-            &RaidSunwellTriggerContext::eredar_twins_bot_is_on_balcony;
+        creators["eredar twins encounter just started"] =
+            &RaidSunwellTriggerContext::eredar_twins_encounter_just_started;
 
         creators["eredar twins pulling bosses"] =
             &RaidSunwellTriggerContext::eredar_twins_pulling_bosses;
@@ -90,6 +90,12 @@ public:
 
         creators["eredar twins alythess engaged by first assist tank"] =
             &RaidSunwellTriggerContext::eredar_twins_alythess_engaged_by_first_assist_tank;
+
+        creators["eredar twins bosses engaged by ranged"] =
+            &RaidSunwellTriggerContext::eredar_twins_bosses_engaged_by_ranged;
+
+        creators["eredar twins only one boss remains"] =
+            &RaidSunwellTriggerContext::eredar_twins_only_one_boss_remains;
 
         creators["eredar twins determining dps priority"] =
             &RaidSunwellTriggerContext::eredar_twins_determining_dps_priority;
@@ -172,17 +178,23 @@ private:
         PlayerbotAI* botAI) { return new FelmystFogOfCorruptionIsActiveTrigger(botAI); }
 
     // Eredar Twins (Alythess & Sacrolash)
+    static Trigger* eredar_twins_encounter_just_started(
+        PlayerbotAI* botAI) { return new EredarTwinsEncounterJustStartedTrigger(botAI); }
+
     static Trigger* eredar_twins_pulling_bosses(
         PlayerbotAI* botAI) { return new EredarTwinsPullingBossesTrigger(botAI); }
-
-    static Trigger* eredar_twins_bot_is_on_balcony(
-        PlayerbotAI* botAI) { return new EredarTwinsBotIsOnBalconyTrigger(botAI); }
 
     static Trigger* eredar_twins_sacrolash_engaged_by_two_tanks(
         PlayerbotAI* botAI) { return new EredarTwinsSacrolashEngagedByTwoTanksTrigger(botAI); }
 
     static Trigger* eredar_twins_alythess_engaged_by_first_assist_tank(
         PlayerbotAI* botAI) { return new EredarTwinsAlythessEngagedByFirstAssistTankTrigger(botAI); }
+
+    static Trigger* eredar_twins_bosses_engaged_by_ranged(
+        PlayerbotAI* botAI) { return new EredarTwinsBossesEngagedByRangedTrigger(botAI); }
+
+    static Trigger* eredar_twins_only_one_boss_remains(
+        PlayerbotAI* botAI) { return new EredarTwinsOnlyOneBossRemainsTrigger(botAI); }
 
     static Trigger* eredar_twins_determining_dps_priority(
         PlayerbotAI* botAI) { return new EredarTwinsDeterminingDpsPriorityTrigger(botAI); }
