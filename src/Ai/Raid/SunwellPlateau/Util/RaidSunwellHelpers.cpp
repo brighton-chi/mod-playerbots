@@ -7,10 +7,15 @@
 #include <cmath>
 #include <list>
 
+#include "CellImpl.h"
+#include "GridNotifiers.h"
+#include "GridNotifiersImpl.h"
+#include "NearestGameObjects.h"
 #include "RaidSunwellHelpers.h"
 #include "RaidBossHelpers.h"
 #include "Playerbots.h"
 #include "Spell.h"
+#include "ThreatManager.h"
 
 namespace SunwellHelpers
 {
@@ -1837,16 +1842,18 @@ namespace SunwellHelpers
     // Eredar Twins (Grand Warlock Alythess and Lady Sacrolash)
 
     const Position SACROLASH_TANK_POSITION  = { 1804.846f, 642.516f, 33.404f };
-    const Position ALYTHESS_TANK_POSITION_1 = { 1820.871f, 620.679f, 33.404f };
-    const Position ALYTHESS_TANK_POSITION_2 = { 1822.419f, 629.536f, 33.404f };
-    const Position ALYTHESS_TANK_POSITION_3 = { 1831.282f, 627.992f, 33.404f };
-    const Position ALYTHESS_TANK_POSITION_4 = { 1829.734f, 619.125f, 33.404f };
-    const std::array<Position, 4> ALYTHESS_TANK_POSITIONS =
+    const Position ALYTHESS_TANK_POSITION_1 = { 1819.520f, 625.835f, 33.404f };
+    const Position ALYTHESS_TANK_POSITION_2 = { 1824.940f, 629.645f, 33.404f };
+    const Position ALYTHESS_TANK_POSITION_3 = { 1831.394f, 628.071f, 33.404f };
+    const Position ALYTHESS_TANK_POSITION_4 = { 1830.690f, 621.465f, 33.404f };
+    const Position ALYTHESS_TANK_POSITION_5 = { 1825.271f, 617.655f, 33.404f };
+    const std::array<Position, 5> ALYTHESS_TANK_POSITIONS =
     {
-        ALYTHESS_TANK_POSITION_1,
         ALYTHESS_TANK_POSITION_2,
         ALYTHESS_TANK_POSITION_3,
-        ALYTHESS_TANK_POSITION_4
+        ALYTHESS_TANK_POSITION_4,
+        ALYTHESS_TANK_POSITION_5,
+        ALYTHESS_TANK_POSITION_1
     };
     const Position EREDAR_TWINS_P1_RANGED_POSITION = { 1808.076f, 603.460f, 51.684f };
     const Position EREDAR_TWINS_P2_STACK_POSITION = { 1814.4188f, 626.3712f, 33.404f }; // room center
@@ -1854,6 +1861,7 @@ namespace SunwellHelpers
     const Position EREDAR_TWINS_MELEE_CONFLAG_POSITION = { 1810.614f, 610.041f, 33.404f };
 
     std::unordered_map<ObjectGuid, uint8> alythessTankStep;
+    std::unordered_map<ObjectGuid, ObjectGuid> alythessTankLastBlazeGuid;
 
     bool IsSacrolashTank(PlayerbotAI* botAI, Player* bot)
     {
@@ -1867,17 +1875,81 @@ namespace SunwellHelpers
         return botAI->IsAssistTankOfIndex(bot, 0, false);
     }
 
-    bool ShouldAdvanceAlythessTankPosition(Unit* alythess, Player* bot)
+    bool ShouldHoldSacrolashThreat(PlayerbotAI* botAI, Player* bot, Unit* alythess, Unit* sacrolash)
     {
-        if (!alythess)
+        if (!alythess || !sacrolash || IsSacrolashTank(botAI, bot) || IsAlythessTank(botAI, bot))
             return false;
 
-        constexpr float blazeTriggerRadius = 5.0f;
-        Creature* blazeTrigger = bot->FindNearestCreature(
-            static_cast<uint32>(SunwellNPCs::NPC_WORLD_INVISIBLE_TRIGGER),
-            blazeTriggerRadius, true);
+        uint8 playerThreatEntries = 0;
 
-        return blazeTrigger;
+        auto const threatList = sacrolash->GetThreatMgr().GetSortedThreatList();
+        for (auto itr = threatList.begin(); itr != threatList.end() && playerThreatEntries < 2; ++itr)
+        {
+            ThreatReference const* threatRef = *itr;
+            if (!threatRef || !threatRef->IsAvailable())
+                continue;
+
+            Player* threatPlayer = threatRef->GetVictim()->ToPlayer();
+            if (!threatPlayer || !threatPlayer->IsAlive())
+                continue;
+
+            ++playerThreatEntries;
+            if (threatPlayer == bot)
+                return true;
+        }
+
+        return false;
+    }
+
+    bool IsAlythessTankPositionSafe(Player* bot, Position const& position)
+    {
+        if (!bot)
+            return false;
+
+        constexpr float blazeDangerRadius = 5.0f;
+        constexpr float blazeSearchRadius = 30.0f;
+
+        std::list<GameObject*> targets;
+        AnyGameObjectInObjectRangeCheck u_check(bot, blazeSearchRadius);
+        Acore::GameObjectListSearcher<AnyGameObjectInObjectRangeCheck> searcher(bot, targets, u_check);
+        Cell::VisitObjects(bot, searcher, blazeSearchRadius);
+
+        for (GameObject* go : targets)
+        {
+            if (!go || go->GetEntry() != static_cast<uint32>(SunwellObjects::GO_BLAZE))
+                continue;
+
+            if (go->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) <= blazeDangerRadius)
+                return false;
+        }
+
+        return true;
+    }
+
+    bool ShouldAdvanceAlythessTankPosition(Unit* alythess, Player* bot)
+    {
+        if (!alythess || !bot)
+            return false;
+
+        ObjectGuid const botGuid = bot->GetGUID();
+        constexpr float blazeObjectRadius = 5.0f;
+        GameObject* blazeObject = bot->FindNearestGameObject(
+            static_cast<uint32>(SunwellObjects::GO_BLAZE),
+            blazeObjectRadius);
+
+        if (!blazeObject)
+        {
+            alythessTankLastBlazeGuid.erase(botGuid);
+            return false;
+        }
+
+        ObjectGuid const blazeGuid = blazeObject->GetGUID();
+        auto lastBlaze = alythessTankLastBlazeGuid.find(botGuid);
+        if (lastBlaze != alythessTankLastBlazeGuid.end() && lastBlaze->second == blazeGuid)
+            return false;
+
+        alythessTankLastBlazeGuid[botGuid] = blazeGuid;
+        return true;
     }
 
     bool IsEredarTwinsConflagrationTarget(Unit* alythess, Player* bot)

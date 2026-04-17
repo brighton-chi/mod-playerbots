@@ -1082,6 +1082,34 @@ bool EredarTwinsFirstAssistTankMoveOutOfBlazeAction::Execute(Event /*event*/)
 
     const ObjectGuid guid = bot->GetGUID();
     uint8 index = alythessTankStep.count(guid) ? alythessTankStep[guid] : 0;
+    if (index >= ALYTHESS_TANK_POSITIONS.size())
+        index = 0;
+
+    auto findSafeAlythessTankIndex = [&](uint8 startIndex, bool includeStart, uint8& safeIndex)
+    {
+        size_t const offsetStart = includeStart ? 0 : 1;
+        for (size_t offset = offsetStart; offset < ALYTHESS_TANK_POSITIONS.size(); ++offset)
+        {
+            uint8 candidateIndex = static_cast<uint8>((startIndex + offset) % ALYTHESS_TANK_POSITIONS.size());
+            if (IsAlythessTankPositionSafe(bot, ALYTHESS_TANK_POSITIONS[candidateIndex]))
+            {
+                safeIndex = candidateIndex;
+                return true;
+            }
+        }
+
+        return false;
+    };
+
+    if (!IsAlythessTankPositionSafe(bot, ALYTHESS_TANK_POSITIONS[index]))
+    {
+        uint8 safeIndex = index;
+        if (!findSafeAlythessTankIndex(index, false, safeIndex))
+            return false;
+
+        index = safeIndex;
+        alythessTankStep[guid] = index;
+    }
 
     const Position& position = ALYTHESS_TANK_POSITIONS[index];
 
@@ -1093,7 +1121,11 @@ bool EredarTwinsFirstAssistTankMoveOutOfBlazeAction::Execute(Event /*event*/)
         if (distToPosition <= maxDistance &&
             ShouldAdvanceAlythessTankPosition(alythess, bot))
         {
-            index = (index + 1) % 4;
+            uint8 safeIndex = index;
+            if (!findSafeAlythessTankIndex(index, false, safeIndex))
+                return false;
+
+            index = safeIndex;
             alythessTankStep[guid] = index;
             const Position& newPosition = ALYTHESS_TANK_POSITIONS[index];
             float newDistToPosition = bot->GetExactDist2d(newPosition);
@@ -1145,19 +1177,37 @@ bool EredarTwinsStackInRoomCenterAction::Execute(Event /*event*/)
 
 bool EredarTwinsDpsPrioritizeLadySacrolashAction::Execute(Event /*event*/)
 {
-    if (Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash"))
-    {
-        SetRtiTarget(botAI, "star", sacrolash);
+    Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
+    Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
 
-        if (bot->GetTarget() != sacrolash->GetGUID())
-            return Attack(sacrolash);
-    }
-    else if (Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
+    if (sacrolash && ShouldHoldSacrolashThreat(botAI, bot, alythess, sacrolash) && alythess)
     {
         SetRtiTarget(botAI, "circle", alythess);
 
         if (bot->GetTarget() != alythess->GetGUID())
             return Attack(alythess);
+
+        return false;
+    }
+
+    if (sacrolash)
+    {
+        SetRtiTarget(botAI, "star", sacrolash);
+
+        if (bot->GetTarget() != sacrolash->GetGUID())
+            return Attack(sacrolash);
+
+        return false;
+    }
+
+    if (alythess)
+    {
+        SetRtiTarget(botAI, "circle", alythess);
+
+        if (bot->GetTarget() != alythess->GetGUID())
+            return Attack(alythess);
+
+        return false;
     }
 
     return false;

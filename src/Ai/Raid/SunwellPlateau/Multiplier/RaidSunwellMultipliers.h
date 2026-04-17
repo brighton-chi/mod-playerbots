@@ -128,11 +128,19 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class EredarTwinsDisableTankAssistMultiplier : public Multiplier
+class EredarTwinsControlThreatMultiplier : public Multiplier
 {
 public:
-    EredarTwinsDisableTankAssistMultiplier(PlayerbotAI* botAI) : Multiplier(
-        botAI, "eredar twins disable tank assist") {}
+    EredarTwinsControlThreatMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "eredar twins control threat") {}
+    virtual float GetValue(Action* action);
+};
+
+class EredarTwinsDisableTankActionsMultiplier : public Multiplier
+{
+public:
+    EredarTwinsDisableTankActionsMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "eredar twins disable tank actions") {}
     virtual float GetValue(Action* action);
 };
 

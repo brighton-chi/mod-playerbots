@@ -225,7 +225,8 @@ namespace SunwellHelpers
     extern const Position ALYTHESS_TANK_POSITION_2;
     extern const Position ALYTHESS_TANK_POSITION_3;
     extern const Position ALYTHESS_TANK_POSITION_4;
-    extern const std::array<Position, 4> ALYTHESS_TANK_POSITIONS;
+    extern const Position ALYTHESS_TANK_POSITION_5;
+    extern const std::array<Position, 5> ALYTHESS_TANK_POSITIONS;
     extern const Position EREDAR_TWINS_P1_RANGED_POSITION;
     extern const Position EREDAR_TWINS_P2_STACK_POSITION;
     extern const Position EREDAR_TWINS_RANGED_CONFLAG_POSITION;
@@ -233,6 +234,8 @@ namespace SunwellHelpers
     extern std::unordered_map<ObjectGuid, uint8> alythessTankStep;
     bool IsSacrolashTank(PlayerbotAI* botAI, Player* bot);
     bool IsAlythessTank(PlayerbotAI* botAI, Player* bot);
+    bool ShouldHoldSacrolashThreat(PlayerbotAI* botAI, Player* bot, Unit* alythess, Unit* sacrolash);
+    bool IsAlythessTankPositionSafe(Player* bot, Position const& position);
     bool ShouldAdvanceAlythessTankPosition(Unit* alythess, Player* bot);
     bool IsEredarTwinsConflagrationTarget(Unit* alythess, Player* bot);
 }

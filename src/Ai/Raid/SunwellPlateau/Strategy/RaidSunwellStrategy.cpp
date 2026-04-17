@@ -129,7 +129,8 @@ void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     // Eredar Twins (Alythess & Sacrolash)
     multipliers.push_back(new EredarTwinsMeleeJumpDownFromBalconyMultiplier(botAI));
     multipliers.push_back(new EredarTwinsControlMisdirectionMultiplier(botAI));
-    multipliers.push_back(new EredarTwinsDisableTankAssistMultiplier(botAI));
+    multipliers.push_back(new EredarTwinsControlThreatMultiplier(botAI));
+    multipliers.push_back(new EredarTwinsDisableTankActionsMultiplier(botAI));
     multipliers.push_back(new EredarTwinsControlMovementMultiplier(botAI));
     multipliers.push_back(new EredarTwinsDelayCooldownsMultiplier(botAI));
 

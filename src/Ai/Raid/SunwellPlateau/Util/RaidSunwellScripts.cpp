@@ -51,15 +51,27 @@ namespace
         if (!spell || !caster)
             return nullptr;
 
+        if (Unit* unitTarget = spell->m_targets.GetUnitTarget())
+            return unitTarget->ToPlayer();
+
         std::list<TargetInfo> const& targets = *spell->GetUniqueTargetInfo();
         if (targets.empty())
             return nullptr;
 
-        return ObjectAccessor::GetPlayer(*caster, targets.front().targetGUID);
+        for (TargetInfo const& targetInfo : targets)
+        {
+            if (Player* target = ObjectAccessor::GetPlayer(*caster, targetInfo.targetGUID))
+                return target;
+        }
+
+        return nullptr;
     }
 
     void RequestInterruptForBotSpellTarget(Spell* spell, Unit* caster)
     {
+        if (!spell || !caster)
+            return;
+
         Player* target = GetFirstPlayerSpellTarget(spell, caster);
         if (!target)
             return;
@@ -246,6 +258,9 @@ public:
 
     void OnSpellCast(Spell* spell, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
     {
+        if (!spell || !caster || !spellInfo)
+            return;
+
         if (caster->GetEntry() != static_cast<uint32>(SunwellNPCs::NPC_GRAND_WARLOCK_ALYTHESS) ||
             spellInfo->Id != static_cast<uint32>(SunwellSpells::SPELL_CONFLAGRATION))
         {
