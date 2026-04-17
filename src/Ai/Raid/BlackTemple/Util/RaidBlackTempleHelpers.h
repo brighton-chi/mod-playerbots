@@ -157,15 +157,9 @@ namespace BlackTempleHelpers
 
     // Illidari Council
     constexpr float COUNCIL_FLOOR_Z_THRESHOLD = 270.000f;
-    extern const Position GATHIOS_TANK_POSITION_1;
-    extern const Position GATHIOS_TANK_POSITION_2;
-    extern const Position GATHIOS_TANK_POSITION_3;
-    extern const Position GATHIOS_TANK_POSITION_4;
     extern const std::array<Position, 4> GATHIOS_TANK_POSITIONS;
     extern const Position MALANDE_TANK_POSITION;
     extern const Position ZEREVOR_TANK_POSITION;
-    extern const Position ZEREVOR_HEALER_POSITION_1;
-    extern const Position ZEREVOR_HEALER_POSITION_2;
     extern const std::array<Position, 2> ZEREVOR_HEALER_POSITIONS;
     extern std::unordered_map<uint32, time_t> councilDpsWaitTimer;
     extern std::unordered_map<ObjectGuid, uint8> gathiosTankStep;
@@ -180,22 +174,8 @@ namespace BlackTempleHelpers
     extern const Position ILLIDAN_W_GRATE_POSITION;
     extern const std::array<Position, 3> GRATE_POSITIONS;
     extern const Position ILLIDAN_E_GLAIVE_WAITING_POSITION;
-    extern const Position ILLIDAN_E_GLAIVE_TANK_POSITION_1;
-    extern const Position ILLIDAN_E_GLAIVE_TANK_POSITION_2;
-    extern const Position ILLIDAN_E_GLAIVE_TANK_POSITION_3;
-    extern const Position ILLIDAN_E_GLAIVE_TANK_POSITION_4;
-    extern const Position ILLIDAN_E_GLAIVE_TANK_POSITION_5;
-    extern const Position ILLIDAN_E_GLAIVE_TANK_POSITION_6;
-    extern const Position ILLIDAN_E_GLAIVE_TANK_POSITION_7;
     extern const std::array<Position, 7> E_GLAIVE_TANK_POSITIONS;
     extern const Position ILLIDAN_W_GLAIVE_WAITING_POSITION;
-    extern const Position ILLIDAN_W_GLAIVE_TANK_POSITION_1;
-    extern const Position ILLIDAN_W_GLAIVE_TANK_POSITION_2;
-    extern const Position ILLIDAN_W_GLAIVE_TANK_POSITION_3;
-    extern const Position ILLIDAN_W_GLAIVE_TANK_POSITION_4;
-    extern const Position ILLIDAN_W_GLAIVE_TANK_POSITION_5;
-    extern const Position ILLIDAN_W_GLAIVE_TANK_POSITION_6;
-    extern const Position ILLIDAN_W_GLAIVE_TANK_POSITION_7;
     extern const std::array<Position, 7> W_GLAIVE_TANK_POSITIONS;
     extern std::unordered_map<ObjectGuid, size_t> flameTankWaypointIndex;
     extern std::unordered_map<uint32, time_t> illidanBossDpsWaitTimer;

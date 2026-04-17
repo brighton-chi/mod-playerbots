@@ -111,25 +111,17 @@ namespace BlackTempleHelpers
     }
 
     // Illidari Council
-    const Position GATHIOS_TANK_POSITION_1 = { 662.977f, 296.246f, 271.688f };
-    const Position GATHIOS_TANK_POSITION_2 = { 636.238f, 283.719f, 271.629f };
-    const Position GATHIOS_TANK_POSITION_3 = { 655.571f, 261.377f, 271.687f };
-    const Position GATHIOS_TANK_POSITION_4 = { 673.789f, 274.139f, 271.689f };
-    const std::array<Position, 4> GATHIOS_TANK_POSITIONS =
-    {
-        GATHIOS_TANK_POSITION_1,
-        GATHIOS_TANK_POSITION_2,
-        GATHIOS_TANK_POSITION_3,
-        GATHIOS_TANK_POSITION_4
-    };
+    const std::array<Position, 4> GATHIOS_TANK_POSITIONS = {{
+        { 662.977f, 296.246f, 271.688f },
+        { 636.238f, 283.719f, 271.629f },
+        { 655.571f, 261.377f, 271.687f },
+        { 673.789f, 274.139f, 271.689f }
+    }};
     const Position ZEREVOR_TANK_POSITION =     { 686.219f, 377.644f, 271.689f };
-    const Position ZEREVOR_HEALER_POSITION_1 = { 661.385f, 351.219f, 271.690f };
-    const Position ZEREVOR_HEALER_POSITION_2 = { 667.003f, 363.768f, 271.690f };
-    const std::array<Position, 2> ZEREVOR_HEALER_POSITIONS =
-    {
-        ZEREVOR_HEALER_POSITION_1,
-        ZEREVOR_HEALER_POSITION_2
-    };
+    const std::array<Position, 2> ZEREVOR_HEALER_POSITIONS = {{
+        { 661.385f, 351.219f, 271.690f },
+        { 667.003f, 363.768f, 271.690f }
+    }};
     const Position MALANDE_TANK_POSITION = { 690.590f, 299.790f, 277.443f };
 
     std::unordered_map<uint32, time_t> councilDpsWaitTimer;
@@ -185,50 +177,33 @@ namespace BlackTempleHelpers
     const Position ILLIDAN_N_GRATE_POSITION = { 682.100f, 306.000f, 353.192f };
     const Position ILLIDAN_E_GRATE_POSITION = { 673.500f, 298.500f, 353.192f };
     const Position ILLIDAN_W_GRATE_POSITION = { 672.400f, 312.500f, 353.192f };
-    const std::array<Position, 3> GRATE_POSITIONS =
-    {
+    const std::array<Position, 3> GRATE_POSITIONS = {{
         ILLIDAN_N_GRATE_POSITION,
         ILLIDAN_E_GRATE_POSITION,
         ILLIDAN_W_GRATE_POSITION
-    };
+    }};
 
     const Position ILLIDAN_E_GLAIVE_WAITING_POSITION = { 677.656f, 294.066f, 353.192f };
-    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_1 =  { 683.000f, 295.000f, 354.000f };
-    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_2 =  { 696.969f, 300.982f, 354.302f };
-    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_3 =  { 691.112f, 287.461f, 354.363f };
-    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_4 =  { 676.674f, 280.797f, 354.268f };
-    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_5 =  { 664.414f, 284.834f, 354.271f };
-    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_6 =  { 656.826f, 295.113f, 354.165f };
-    const Position ILLIDAN_E_GLAIVE_TANK_POSITION_7 =  { 665.000f, 304.000f, 354.000f };
-    const std::array<Position, 7> E_GLAIVE_TANK_POSITIONS =
-    {
-        ILLIDAN_E_GLAIVE_TANK_POSITION_1,
-        ILLIDAN_E_GLAIVE_TANK_POSITION_2,
-        ILLIDAN_E_GLAIVE_TANK_POSITION_3,
-        ILLIDAN_E_GLAIVE_TANK_POSITION_4,
-        ILLIDAN_E_GLAIVE_TANK_POSITION_5,
-        ILLIDAN_E_GLAIVE_TANK_POSITION_6,
-        ILLIDAN_E_GLAIVE_TANK_POSITION_7,
-    };
+    const std::array<Position, 7> E_GLAIVE_TANK_POSITIONS = {{
+        { 683.000f, 295.000f, 354.000f },
+        { 696.969f, 300.982f, 354.302f },
+        { 691.112f, 287.461f, 354.363f },
+        { 676.674f, 280.797f, 354.268f },
+        { 664.414f, 284.834f, 354.271f },
+        { 656.826f, 295.113f, 354.165f },
+        { 665.000f, 304.000f, 354.000f }
+    }};
 
     const Position ILLIDAN_W_GLAIVE_WAITING_POSITION = { 676.102f, 316.305f, 353.192f };
-    const Position ILLIDAN_W_GLAIVE_TANK_POSITION_1 =  { 697.208f, 313.475f, 354.234f };
-    const Position ILLIDAN_W_GLAIVE_TANK_POSITION_2 =  { 681.000f, 318.000f, 354.000f };
-    const Position ILLIDAN_W_GLAIVE_TANK_POSITION_3 =  { 664.000f, 307.000f, 354.000f };
-    const Position ILLIDAN_W_GLAIVE_TANK_POSITION_4 =  { 656.161f, 314.132f, 354.092f };
-    const Position ILLIDAN_W_GLAIVE_TANK_POSITION_5 =  { 665.080f, 326.905f, 354.128f };
-    const Position ILLIDAN_W_GLAIVE_TANK_POSITION_6 =  { 678.809f, 329.968f, 354.387f };
-    const Position ILLIDAN_W_GLAIVE_TANK_POSITION_7 =  { 690.889f, 324.277f, 354.204f };
-    const std::array<Position, 7> W_GLAIVE_TANK_POSITIONS =
-    {
-        ILLIDAN_W_GLAIVE_TANK_POSITION_1,
-        ILLIDAN_W_GLAIVE_TANK_POSITION_2,
-        ILLIDAN_W_GLAIVE_TANK_POSITION_3,
-        ILLIDAN_W_GLAIVE_TANK_POSITION_4,
-        ILLIDAN_W_GLAIVE_TANK_POSITION_5,
-        ILLIDAN_W_GLAIVE_TANK_POSITION_6,
-        ILLIDAN_W_GLAIVE_TANK_POSITION_7,
-    };
+    const std::array<Position, 7> W_GLAIVE_TANK_POSITIONS = {{
+        { 697.208f, 313.475f, 354.234f },
+        { 681.000f, 318.000f, 354.000f },
+        { 664.000f, 307.000f, 354.000f },
+        { 656.161f, 314.132f, 354.092f },
+        { 665.080f, 326.905f, 354.128f },
+        { 678.809f, 329.968f, 354.387f },
+        { 690.889f, 324.277f, 354.204f }
+    }};
 
     std::unordered_map<ObjectGuid, size_t> flameTankWaypointIndex;
     std::unordered_map<uint32, time_t> illidanBossDpsWaitTimer;
