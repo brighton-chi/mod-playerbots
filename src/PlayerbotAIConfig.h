@@ -154,6 +154,7 @@ public:
 
     // Professions
     bool enableFishingWithMaster;
+    uint32 classMatchingProfessionChance;
     float fishingDistanceFromMaster, fishingDistance, endFishingWithMaster;
 
     // chat

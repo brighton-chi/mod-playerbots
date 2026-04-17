@@ -267,7 +267,7 @@ bool BuffOnPartyAction::Execute(Event /*event*/)
     return botAI->CastSpell(castName, GetTarget());
 }
 
-CastShootAction::CastShootAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "shoot")
+CastShootAction::CastShootAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "shoot"), shootSpellId(0)
 {
     if (Item* const pItem = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_RANGED))
     {
@@ -277,15 +277,38 @@ CastShootAction::CastShootAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "s
         {
             case ITEM_SUBCLASS_WEAPON_GUN:
                 spell += " gun";
+                shootSpellId = 3018;
                 break;
             case ITEM_SUBCLASS_WEAPON_BOW:
                 spell += " bow";
+                shootSpellId = 3018;
                 break;
             case ITEM_SUBCLASS_WEAPON_CROSSBOW:
                 spell += " crossbow";
+                shootSpellId = 3018;
+                break;
+            case ITEM_SUBCLASS_WEAPON_THROWN:
+                spell = "throw";
+                shootSpellId = 2764;
                 break;
         }
     }
+}
+
+bool CastShootAction::isPossible()
+{
+    if (shootSpellId)
+        return botAI->CanCastSpell(shootSpellId, GetTarget(), false);
+
+    return CastSpellAction::isPossible();
+}
+
+bool CastShootAction::Execute(Event /*event*/)
+{
+    if (shootSpellId)
+        return botAI->CastSpell(shootSpellId, GetTarget());
+
+    return botAI->CastSpell(spell, GetTarget());
 }
 
 Value<Unit*>* CastDebuffSpellOnAttackerAction::GetTargetValue()

@@ -2,10 +2,9 @@
 #include "AuchenaiCryptsActions.h"
 #include "AuchenaiCryptsTriggers.h"
 #include "MovementActions.h"
-#include "AttackAction.h"
 #include "ReachTargetActions.h"
 #include "FollowActions.h"
-#include "AIObjectContext.h"
+#include "AiObjectContext.h"
 #include "Playerbots.h"
 
 // Shirrak the Dead Watcher
@@ -17,7 +16,7 @@ float ShirrakFleeFocusFireMultiplier::GetValue(Action* action)
         return 1.0f;
 
         std::list<Creature*> creatureList;
-        bot->GetCreatureListWithEntryInGrid(creatureList, static_cast<uint32>(AuchenaiCryptsIDs::NPC_FOCUS_FIRE), 20.0f);
+            bot->GetCreatureListWithEntryInGrid(creatureList, static_cast<uint32>(AuchenaiCryptsIDs::NPC_FOCUS_FIRE), 20.0f);
 
     for (Creature* flare : creatureList)
     {

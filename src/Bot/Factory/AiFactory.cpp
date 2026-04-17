@@ -312,7 +312,7 @@ void AiFactory::AddDefaultCombatStrategies(Player* player, PlayerbotAI* const fa
             break;
         case CLASS_WARRIOR:
             if (tab == WARRIOR_TAB_PROTECTION)
-                engine->addStrategiesNoInit("tank", "tank assist", "aoe", nullptr);
+                engine->addStrategiesNoInit("tank", "tank assist", "pull", "pull back", "aoe", nullptr);
             else if (tab == WARRIOR_TAB_ARMS || !player->HasSpell(1680)) // Whirlwind
                 engine->addStrategiesNoInit("arms", "aoe", "dps assist", nullptr);
             else
@@ -330,7 +330,7 @@ void AiFactory::AddDefaultCombatStrategies(Player* player, PlayerbotAI* const fa
             break;
         case CLASS_PALADIN:
             if (tab == PALADIN_TAB_PROTECTION)
-                engine->addStrategiesNoInit("tank", "tank assist", "bthreat", "barmor", "cure", nullptr);
+                engine->addStrategiesNoInit("tank", "tank assist", "pull", "pull back", "bthreat", "barmor", "cure", nullptr);
             else if (tab == PALADIN_TAB_HOLY)
                 engine->addStrategiesNoInit("heal", "dps assist", "cure", "bcast", nullptr);
             else
@@ -349,7 +349,7 @@ void AiFactory::AddDefaultCombatStrategies(Player* player, PlayerbotAI* const fa
                 if (player->HasSpell(768) /*cat form*/ && !player->HasAura(16931) /*thick hide*/)
                     engine->addStrategiesNoInit("cat", "dps assist", nullptr);
                 else
-                    engine->addStrategiesNoInit("bear", "tank assist", nullptr);
+                    engine->addStrategiesNoInit("bear", "tank assist", "pull", "pull back", nullptr);
             }
             break;
         case CLASS_HUNTER:
@@ -380,7 +380,7 @@ void AiFactory::AddDefaultCombatStrategies(Player* player, PlayerbotAI* const fa
             break;
         case CLASS_DEATH_KNIGHT:
             if (tab == DEATH_KNIGHT_TAB_BLOOD)
-                engine->addStrategiesNoInit("blood", "tank assist", nullptr);
+                engine->addStrategiesNoInit("blood", "tank assist", "pull", "pull back", nullptr);
             else if (tab == DEATH_KNIGHT_TAB_FROST)
                 engine->addStrategiesNoInit("frost", "frost aoe", "dps assist", nullptr);
             else
@@ -507,7 +507,7 @@ void AiFactory::AddDefaultNonCombatStrategies(Player* player, PlayerbotAI* const
         case CLASS_PALADIN:
             if (tab == PALADIN_TAB_PROTECTION)
             {
-                nonCombatEngine->addStrategiesNoInit("bthreat", "tank assist", "barmor", nullptr);
+                nonCombatEngine->addStrategiesNoInit("bthreat", "tank assist", "pull", "barmor", nullptr);
                 if (player->GetLevel() >= 20)
                     nonCombatEngine->addStrategy("bsanc", false);
                 else
@@ -545,14 +545,14 @@ void AiFactory::AddDefaultNonCombatStrategies(Player* player, PlayerbotAI* const
                 if (player->GetLevel() >= 20 && !player->HasAura(16931) /*thick hide*/)
                     nonCombatEngine->addStrategy("dps assist", false);
                 else
-                    nonCombatEngine->addStrategy("tank assist", false);
+                    nonCombatEngine->addStrategiesNoInit("tank assist", "pull", nullptr);
             }
             else
                 nonCombatEngine->addStrategiesNoInit("dps assist", "cure", nullptr);
             break;
         case CLASS_WARRIOR:
             if (tab == WARRIOR_TAB_PROTECTION)
-                nonCombatEngine->addStrategy("tank assist", false);
+                nonCombatEngine->addStrategiesNoInit("tank assist", "pull", nullptr);
             else
                 nonCombatEngine->addStrategy("dps assist", false);
             break;
@@ -568,7 +568,7 @@ void AiFactory::AddDefaultNonCombatStrategies(Player* player, PlayerbotAI* const
             break;
         case CLASS_DEATH_KNIGHT:
             if (tab == DEATH_KNIGHT_TAB_BLOOD)
-                nonCombatEngine->addStrategy("tank assist", false);
+                nonCombatEngine->addStrategiesNoInit("tank assist", "pull", nullptr);
             else
                 nonCombatEngine->addStrategy("dps assist", false);
             break;

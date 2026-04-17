@@ -243,9 +243,21 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
         nextAICheckDelay = 0;
 
     // Early return if bot is in invalid state
-    if (!bot || !bot->GetSession() || !bot->IsInWorld() || bot->IsBeingTeleported() ||
-        bot->GetSession()->isLogingOut() || bot->IsDuringRemoveFromWorld())
+    if (!bot || !bot->GetSession() || !bot->IsInWorld() || bot->IsBeingTeleported() || bot->IsDuringRemoveFromWorld())
         return;
+
+    // During timed logout countdown, cancel if bot enters combat (this cancellation is handled client-side for real players).
+    if (bot->GetSession()->isLogingOut())
+    {
+        bool canLogoutInCombat = bot->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING);
+        if (bot->IsInCombat() && !canLogoutInCombat)
+        {
+            WorldPackets::Character::LogoutCancel cancelData = WorldPacket(CMSG_LOGOUT_CANCEL);
+            bot->GetSession()->HandleLogoutCancelOpcode(cancelData);
+        }
+        else
+            return;
+    }
 
     // Handle cheat options (set bot health and power if cheats are enabled)
     if (bot->IsAlive() &&
@@ -275,11 +287,10 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
     {
         if (currentSpell->getState() == SPELL_STATE_PREPARING)
         {
+            // Allow external scripts to interrupt a cast in progress
             if (spellInterruptRequested)
             {
                 spellInterruptRequested = false;
-                LOG_DEBUG("playerbots", "Cast interrupt: interrupting current pending cast for bot {}",
-                    bot->GetName());
                 InterruptSpell();
                 YieldThread(bot, GetReactDelay());
                 return;
@@ -355,12 +366,10 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
     if (spellInterruptRequested)
     {
         // At this point the preparing-cast branch above did not consume the request.
-        // Interrupt a current channel if one still exists; otherwise clear the stale request.
+        // Interrupt a current channel if one still exists; otherwise, clear the stale request.
         if (bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
         {
             spellInterruptRequested = false;
-            LOG_DEBUG("playerbots", "Cast interrupt: interrupting current channel for bot {}",
-                bot->GetName());
             InterruptSpell();
             YieldThread(bot, GetReactDelay());
             return;
@@ -718,30 +727,9 @@ void PlayerbotAI::HandleCommand(uint32 type, const std::string& text, Player& fr
         Reset(true);
     }
 
-    // TODO: missing implementation to port
-    /*else if (filtered == "logout")
-    {
-        if (!(bot->IsStunnedByLogout() || bot->GetSession()->isLogingOut()))
-        {
-            if (type == CHAT_MSG_WHISPER)
-                TellPlayer(&fromPlayer, BOT_TEXT("logout_start"));
-
-            if (master && master->GetPlayerbotMgr())
-                SetShouldLogOut(true);
-        }
-    }
-    else if (filtered == "logout cancel")
-    {
-        if (bot->IsStunnedByLogout() || bot->GetSession()->isLogingOut())
-        {
-            if (type == CHAT_MSG_WHISPER)
-                TellPlayer(&fromPlayer, BOT_TEXT("logout_cancel"));
-
-            WorldPacket p;
-            bot->GetSession()->HandleLogoutCancelOpcode(p);
-            SetShouldLogOut(false);
-        }
-    }
+    // Commented-out logout commands blocks removed from here and implemented in HandleCommand.
+    // Remaining is a commented-out action delay command block.
+    /*
     else if ((filtered.size() > 5) && (filtered.substr(0, 5) == "wait ") && (filtered.find("wait for attack") ==
     std::string::npos))
     {
@@ -1093,7 +1081,7 @@ void PlayerbotAI::HandleCommand(uint32 type, std::string const text, Player* fro
             TellMaster(message);
         }
     }
-    else if (filtered == "logout cancel")
+    else if (filtered == "cancel logout" || filtered == "logout cancel")
     {
         if (!bot->GetSession()->isLogingOut())
             return;
@@ -1109,9 +1097,7 @@ void PlayerbotAI::HandleCommand(uint32 type, std::string const text, Player* fro
         bot->GetSession()->HandleLogoutCancelOpcode(data);
     }
     else
-    {
         chatCommands.push_back(ChatCommandHolder(filtered, fromPlayer, type));
-    }
 }
 
 void PlayerbotAI::HandleBotOutgoingPacket(WorldPacket const& packet)
@@ -1824,6 +1810,11 @@ bool PlayerbotAI::ContainsStrategy(StrategyType type)
 }
 
 bool PlayerbotAI::HasStrategy(std::string const name, BotState type) { return engines[type]->HasStrategy(name); }
+
+Strategy* PlayerbotAI::GetStrategy(std::string const name, BotState type)
+{
+    return engines[type] ? engines[type]->GetStrategy(name) : nullptr;
+}
 
 void PlayerbotAI::ResetStrategies(bool load)
 {
@@ -4249,6 +4240,19 @@ void PlayerbotAI::RemoveAura(std::string const name)
     uint32 spellid = aiObjectContext->GetValue<uint32>("spell id", name)->Get();
     if (spellid && HasAura(spellid, bot))
         bot->RemoveAurasDueToSpell(spellid);
+}
+
+void PlayerbotAI::RequestSpellInterrupt()
+{
+    Spell* currentSpell = bot->GetCurrentSpell(CURRENT_GENERIC_SPELL);
+    if (currentSpell && currentSpell->getState() == SPELL_STATE_PREPARING)
+    {
+        spellInterruptRequested = true;
+        return;
+    }
+
+    if (bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
+        spellInterruptRequested = true;
 }
 
 bool PlayerbotAI::IsInterruptableSpellCasting(Unit* target, std::string const spell)
