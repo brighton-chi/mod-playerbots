@@ -930,48 +930,6 @@ bool EredarTwinsMeleeJumpDownFromBalconyAction::Execute(Event /*event*/)
     }
 }
 
-bool EredarTwinsPositionRangedAction::Execute(Event /*event*/)
-{
-    Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
-    if (sacrolash)
-    {
-        const Position& position = EREDAR_TWINS_P1_RANGED_POSITION;
-
-        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
-        {
-            return MoveTo(SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-                          position.GetPositionZ(), false, false, false, false,
-                          MovementPriority::MOVEMENT_FORCED, true, false);
-        }
-
-        return false;
-    }
-    else if (bot->GetPositionZ() > EREDAR_TWINS_BALCONY_Z)
-    {
-        const Position& jumpPos = EREDAR_TWINS_P1_RANGED_POSITION;
-        const Position& landingPos = EREDAR_TWINS_P2_STACK_POSITION;
-
-        constexpr float arrivalDistance = 2.0f;
-        float distanceToJumpPos =
-            bot->GetExactDist2d(jumpPos.GetPositionX(), jumpPos.GetPositionY());
-
-        if (distanceToJumpPos > arrivalDistance)
-        {
-            return MoveTo(SUNWELL_MAP_ID, jumpPos.GetPositionX(), jumpPos.GetPositionY(),
-                          jumpPos.GetPositionZ(), false, false, false, false,
-                          MovementPriority::MOVEMENT_FORCED, true, false);
-        }
-        else
-        {
-            return JumpTo(SUNWELL_MAP_ID, landingPos.GetPositionX(),
-                          landingPos.GetPositionY(), landingPos.GetPositionZ(),
-                          MovementPriority::MOVEMENT_FORCED);
-        }
-    }
-
-    return false;
-}
-
 bool EredarTwinsMisdirectBossesToTanksAction::Execute(Event /*event*/)
 {
     Group* group = bot->GetGroup();
@@ -1159,6 +1117,59 @@ bool EredarTwinsFirstAssistTankMoveOutOfBlazeAction::Execute(Event /*event*/)
     return false;
 }
 
+bool EredarTwinsPositionRangedAction::Execute(Event /*event*/)
+{
+    if (bot->getClass() == CLASS_PALADIN &&
+    bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_DIVINE_SHIELD)))
+    {
+        bot->RemoveAura(static_cast<uint32>(SunwellSpells::SPELL_DIVINE_SHIELD));
+    }
+    else if (bot->getClass() == CLASS_MAGE &&
+            bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_ICE_BLOCK)))
+    {
+        bot->RemoveAura(static_cast<uint32>(SunwellSpells::SPELL_ICE_BLOCK));
+    }
+
+    Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
+    if (sacrolash)
+    {
+        const Position& position = EREDAR_TWINS_P1_RANGED_POSITION;
+
+        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
+        {
+            return MoveTo(SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                          position.GetPositionZ(), false, false, false, false,
+                          MovementPriority::MOVEMENT_FORCED, true, false);
+        }
+
+        return false;
+    }
+    else if (bot->GetPositionZ() > EREDAR_TWINS_BALCONY_Z)
+    {
+        const Position& jumpPos = EREDAR_TWINS_P1_RANGED_POSITION;
+        const Position& landingPos = EREDAR_TWINS_P2_STACK_POSITION;
+
+        constexpr float arrivalDistance = 2.0f;
+        float distanceToJumpPos =
+            bot->GetExactDist2d(jumpPos.GetPositionX(), jumpPos.GetPositionY());
+
+        if (distanceToJumpPos > arrivalDistance)
+        {
+            return MoveTo(SUNWELL_MAP_ID, jumpPos.GetPositionX(), jumpPos.GetPositionY(),
+                          jumpPos.GetPositionZ(), false, false, false, false,
+                          MovementPriority::MOVEMENT_FORCED, true, false);
+        }
+        else
+        {
+            return JumpTo(SUNWELL_MAP_ID, landingPos.GetPositionX(),
+                          landingPos.GetPositionY(), landingPos.GetPositionZ(),
+                          MovementPriority::MOVEMENT_FORCED);
+        }
+    }
+
+    return false;
+}
+
 bool EredarTwinsStackInRoomCenterAction::Execute(Event /*event*/)
 {
     const Position& position = EREDAR_TWINS_P2_STACK_POSITION;
@@ -1175,8 +1186,38 @@ bool EredarTwinsStackInRoomCenterAction::Execute(Event /*event*/)
     return false;
 }
 
+bool EredarTwinsRemoveFlameSearAction::Execute(Event /*event*/)
+{
+    if (bot->getClass() == CLASS_ROGUE &&
+        botAI->CanCastSpell(static_cast<uint32>(SunwellSpells::SPELL_CLOAK_OF_SHADOWS), bot) &&
+        botAI->CastSpell(static_cast<uint32>(SunwellSpells::SPELL_CLOAK_OF_SHADOWS), bot))
+    {
+        return true;
+    }
+    else if (bot->getClass() == CLASS_MAGE &&
+             botAI->CanCastSpell(static_cast<uint32>(SunwellSpells::SPELL_ICE_BLOCK), bot) &&
+             botAI->CastSpell(static_cast<uint32>(SunwellSpells::SPELL_ICE_BLOCK), bot))
+    {
+        return true;
+    }
+    else if (bot->getClass() == CLASS_PALADIN &&
+             botAI->CanCastSpell(static_cast<uint32>(SunwellSpells::SPELL_DIVINE_SHIELD), bot) &&
+             botAI->CastSpell(static_cast<uint32>(SunwellSpells::SPELL_DIVINE_SHIELD), bot))
+    {
+        return true;
+    }
+
+    return false;
+}
+
 bool EredarTwinsDpsPrioritizeLadySacrolashAction::Execute(Event /*event*/)
 {
+    if (bot->getClass() == CLASS_PALADIN &&
+    bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_DIVINE_SHIELD)))
+    {
+        bot->RemoveAura(static_cast<uint32>(SunwellSpells::SPELL_DIVINE_SHIELD));
+    }
+
     Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
     Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
 

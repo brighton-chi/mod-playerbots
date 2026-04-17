@@ -310,11 +310,30 @@ bool EredarTwinsOnlyOneBossRemainsTrigger::IsActive()
     if (bot->GetPositionZ() > EREDAR_TWINS_BALCONY_Z)
         return false;
 
-    if (!AI_VALUE2(Unit*, "find target", "lady sacrolash") ||
-         AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
+    if (AI_VALUE2(Unit*, "find target", "lady sacrolash") ||
+        !AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
         return false;
 
     return !IsAlythessTank(botAI, bot);
+}
+
+bool EredarTwinsBotHasTooManyFlameTouchedStacksTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_ROGUE && bot->getClass() != CLASS_MAGE &&
+        bot->getClass() != CLASS_PALADIN)
+        return false;
+
+    if (!AI_VALUE2(Unit*, "find target", "lady sacrolash"))
+        return false;
+
+    Aura* flameSear =
+        bot->GetAura(static_cast<uint32>(SunwellSpells::SPELL_FLAME_SEAR));
+    if (!flameSear || flameSear->GetDuration() > 2000)
+        return false;
+
+    Aura* flameTouched =
+        bot->GetAura(static_cast<uint32>(SunwellSpells::SPELL_FLAME_TOUCHED));
+    return flameTouched && flameTouched->GetStackAmount() >= 5;
 }
 
 bool EredarTwinsDeterminingDpsPriorityTrigger::IsActive()

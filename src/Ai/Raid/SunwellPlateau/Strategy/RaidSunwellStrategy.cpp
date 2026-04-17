@@ -79,17 +79,20 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("eredar twins pulling bosses", {
         NextAction("eredar twins misdirect bosses to tanks", ACTION_RAID + 2) }));
 
-    triggers.push_back(new TriggerNode("eredar twins bosses engaged by ranged", {
-        NextAction("eredar twins position ranged", ACTION_RAID + 1) }));
-
     triggers.push_back(new TriggerNode("eredar twins sacrolash engaged by two tanks", {
         NextAction("eredar twins main and second assist tanks position sacrolash", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("eredar twins alythess engaged by first assist tank", {
         NextAction("eredar twins first assist tank move out of blaze", ACTION_RAID + 1) }));
 
+    triggers.push_back(new TriggerNode("eredar twins bosses engaged by ranged", {
+        NextAction("eredar twins position ranged", ACTION_RAID + 1) }));
+
     triggers.push_back(new TriggerNode("eredar twins determining dps priority", {
         NextAction("eredar twins dps prioritize lady sacrolash", ACTION_RAID + 1) }));
+
+    triggers.push_back(new TriggerNode("eredar twins bot has too many flame touched stacks", {
+        NextAction("eredar twins remove flame sear", ACTION_RAID + 3) }));
 
     triggers.push_back(new TriggerNode("eredar twins only one boss remains", {
         NextAction("eredar twins stack in room center", ACTION_RAID + 2) }));

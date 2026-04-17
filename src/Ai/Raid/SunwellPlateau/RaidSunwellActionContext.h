@@ -94,6 +94,9 @@ public:
         creators["eredar twins stack in room center"] =
             &RaidSunwellActionContext::eredar_twins_stack_in_room_center;
 
+        creators["eredar twins remove flame sear"] =
+            &RaidSunwellActionContext::eredar_twins_remove_flame_sear;
+
         creators["eredar twins dps prioritize lady sacrolash"] =
             &RaidSunwellActionContext::eredar_twins_dps_prioritize_lady_sacrolash;
 
@@ -189,6 +192,9 @@ private:
 
     static Action* eredar_twins_stack_in_room_center(
         PlayerbotAI* botAI) { return new EredarTwinsStackInRoomCenterAction(botAI); }
+
+    static Action* eredar_twins_remove_flame_sear(
+        PlayerbotAI* botAI) { return new EredarTwinsRemoveFlameSearAction(botAI); }
 
     static Action* eredar_twins_dps_prioritize_lady_sacrolash(
         PlayerbotAI* botAI) { return new EredarTwinsDpsPrioritizeLadySacrolashAction(botAI); }

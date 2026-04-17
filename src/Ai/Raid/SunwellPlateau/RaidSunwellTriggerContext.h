@@ -97,6 +97,9 @@ public:
         creators["eredar twins only one boss remains"] =
             &RaidSunwellTriggerContext::eredar_twins_only_one_boss_remains;
 
+        creators["eredar twins bot has too many flame touched stacks"] =
+            &RaidSunwellTriggerContext::eredar_twins_bot_has_too_many_flame_touched_stacks;
+
         creators["eredar twins determining dps priority"] =
             &RaidSunwellTriggerContext::eredar_twins_determining_dps_priority;
 
@@ -195,6 +198,9 @@ private:
 
     static Trigger* eredar_twins_only_one_boss_remains(
         PlayerbotAI* botAI) { return new EredarTwinsOnlyOneBossRemainsTrigger(botAI); }
+
+    static Trigger* eredar_twins_bot_has_too_many_flame_touched_stacks(
+        PlayerbotAI* botAI) { return new EredarTwinsBotHasTooManyFlameTouchedStacksTrigger(botAI); }
 
     static Trigger* eredar_twins_determining_dps_priority(
         PlayerbotAI* botAI) { return new EredarTwinsDeterminingDpsPriorityTrigger(botAI); }

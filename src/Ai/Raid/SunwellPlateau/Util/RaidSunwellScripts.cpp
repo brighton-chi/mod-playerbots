@@ -14,9 +14,9 @@ using namespace SunwellHelpers;
 
 namespace
 {
-    constexpr uint32 SPELL_FELMYST_STRAFE_TOP = 45585;
-    constexpr uint32 SPELL_FELMYST_STRAFE_MIDDLE = 45633;
-    constexpr uint32 SPELL_FELMYST_STRAFE_BOTTOM = 45635;
+    constexpr uint32 SPELL_FELMYST_STRAFE_TOP               = 45585;
+    constexpr uint32 SPELL_FELMYST_STRAFE_MIDDLE            = 45633;
+    constexpr uint32 SPELL_FELMYST_STRAFE_BOTTOM            = 45635;
     constexpr uint32 FELMYST_FOG_INTERRUPT_SCAN_INTERVAL_MS = 500;
 
     std::unordered_map<ObjectGuid, uint32> felmystFogInterruptLastScanTime;

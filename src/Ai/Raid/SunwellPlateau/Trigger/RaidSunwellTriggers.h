@@ -234,6 +234,14 @@ public:
     bool IsActive() override;
 };
 
+class EredarTwinsBotHasTooManyFlameTouchedStacksTrigger : public Trigger
+{
+public:
+    EredarTwinsBotHasTooManyFlameTouchedStacksTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "eredar twins bot has too many flame touched stacks") {}
+    bool IsActive() override;
+};
+
 class EredarTwinsDeterminingDpsPriorityTrigger : public Trigger
 {
 public:

@@ -231,6 +231,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class EredarTwinsRemoveFlameSearAction : public Action
+{
+public:
+    EredarTwinsRemoveFlameSearAction(
+        PlayerbotAI* botAI, std::string const name = "eredar twins remove flame sear") : Action(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 class EredarTwinsDpsPrioritizeLadySacrolashAction : public AttackAction
 {
 public:

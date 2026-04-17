@@ -32,28 +32,30 @@ namespace SunwellHelpers
         SPELL_BURN                     = 46394,
 
         // Felmyst
-        SPELL_SUMMON_DEMONIC_VAPOR = 45391,
-        SPELL_ENCAPSULATE = 45661,
-        SPELL_GAS_NOVA = 45855,
-        SPELL_FELMYST_SPEED_BURST = 45495,
-        SPELL_FOG_OF_CORRUPTION = 45582,
-        SPELL_FOG_OF_CORRUPTION_CHARM = 45717,
+        SPELL_SUMMON_DEMONIC_VAPOR     = 45391,
+        SPELL_ENCAPSULATE              = 45661,
+        SPELL_GAS_NOVA                 = 45855,
+        SPELL_FELMYST_SPEED_BURST      = 45495,
+        SPELL_FOG_OF_CORRUPTION        = 45582,
+        SPELL_FOG_OF_CORRUPTION_CHARM  = 45717,
 
         // Eredar Twins (Grand Warlock Alythess and Lady Sacrolash)
-        SPELL_BLAZE                 = 45235,
-        SPELL_CONFLAGRATION         = 45342,
+        SPELL_BLAZE                    = 45235,
+        SPELL_CONFLAGRATION            = 45342,
+        SPELL_FLAME_TOUCHED            = 45348,
+        SPELL_FLAME_SEAR               = 46771,
 
         // Hunter
-        SPELL_MISDIRECTION              = 35079,
+        SPELL_MISDIRECTION             = 35079,
 
         // Mage
-        SPELL_ICE_BLOCK                 = 11958,
+        SPELL_ICE_BLOCK                = 11958,
 
         // Paladin
-        SPELL_DIVINE_SHIELD             = 642,
+        SPELL_DIVINE_SHIELD            = 642,
 
         // Rogue
-        SPELL_CLOAK_OF_SHADOWS          = 31224,
+        SPELL_CLOAK_OF_SHADOWS         = 31224,
     };
 
     enum class SunwellNPCs : uint32

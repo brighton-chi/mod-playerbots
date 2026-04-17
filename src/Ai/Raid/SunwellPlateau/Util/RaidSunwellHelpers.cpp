@@ -1845,7 +1845,7 @@ namespace SunwellHelpers
     const std::array<Position, 5> ALYTHESS_TANK_POSITIONS = {{
         { 1816.830f, 620.792f, 33.404f },
         { 1824.211f, 625.169f, 33.404f },
-        { 1818.701f, 631.196f, /*1819.014f, 630.665f,*/ 33.404f },
+        { 1818.701f, 631.196f, 33.404f },
         { 1829.375f, 631.110f, 33.404f },
         { 1830.007f, 620.924f, 33.404f }
     }};
@@ -1869,15 +1869,18 @@ namespace SunwellHelpers
         return botAI->IsAssistTankOfIndex(bot, 0, false);
     }
 
-    bool ShouldHoldSacrolashThreat(PlayerbotAI* botAI, Player* bot, Unit* alythess, Unit* sacrolash)
+    bool ShouldHoldSacrolashThreat(
+        PlayerbotAI* botAI, Player* bot, Unit* alythess, Unit* sacrolash)
     {
-        if (!alythess || !sacrolash || IsSacrolashTank(botAI, bot) || IsAlythessTank(botAI, bot))
+        if (!alythess || !sacrolash || IsSacrolashTank(botAI, bot) ||
+            IsAlythessTank(botAI, bot))
             return false;
 
         uint8 playerThreatEntries = 0;
 
         auto const threatList = sacrolash->GetThreatMgr().GetSortedThreatList();
-        for (auto itr = threatList.begin(); itr != threatList.end() && playerThreatEntries < 2; ++itr)
+        for (auto itr = threatList.begin();
+             itr != threatList.end() && playerThreatEntries < 2; ++itr)
         {
             ThreatReference const* threatRef = *itr;
             if (!threatRef || !threatRef->IsAvailable())
