@@ -225,7 +225,8 @@ namespace SunwellHelpers
     extern const Position SACROLASH_TANK_POSITION;
     extern const std::array<Position, 5> ALYTHESS_TANK_POSITIONS;
     extern const Position EREDAR_TWINS_P1_RANGED_POSITION;
-    extern const Position EREDAR_TWINS_P2_STACK_POSITION;
+    extern const Position EREDAR_TWINS_P2_MELEE_STACK_POSITION;
+    extern const Position EREDAR_TWINS_P2_RANGED_STACK_POSITION;
     extern const Position EREDAR_TWINS_RANGED_CONFLAG_POSITION;
     extern const Position EREDAR_TWINS_MELEE_CONFLAG_POSITION;
     extern std::unordered_map<ObjectGuid, uint8> alythessTankStep;

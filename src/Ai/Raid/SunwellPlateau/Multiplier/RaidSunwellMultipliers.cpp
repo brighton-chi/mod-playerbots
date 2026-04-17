@@ -6,7 +6,6 @@
 #include "RaidSunwellMultipliers.h"
 #include "RaidSunwellActions.h"
 #include "RaidSunwellHelpers.h"
-#include "Log.h"
 #include "ChooseTargetActions.h"
 #include "DKActions.h"
 #include "DruidActions.h"
@@ -24,9 +23,6 @@
 #include "WarriorActions.h"
 
 using namespace SunwellHelpers;
-
-static std::unordered_map<ObjectGuid, bool> eredarTwinsThreatSuppressionActive;
-static std::unordered_map<ObjectGuid, bool> eredarTwinsThreatSuppressionBlockedLogged;
 
 static bool IsDpsCooldownAction(Action* action)
 {
@@ -317,61 +313,22 @@ float EredarTwinsControlMisdirectionMultiplier::GetValue(Action* action)
 
 float EredarTwinsControlThreatMultiplier::GetValue(Action* action)
 {
-    ObjectGuid const botGuid = bot->GetGUID();
     Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
     Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
     bool shouldSuppressThreat = sacrolash &&
          ShouldHoldSacrolashThreat(botAI, bot, alythess, sacrolash);
 
     if (!shouldSuppressThreat)
-    {
-        if (eredarTwinsThreatSuppressionActive[botGuid])
-        {
-            LOG_INFO("playerbots",
-                "Sunwell: Eredar Twins threat suppression ended for bot {}",
-                bot->GetName().c_str());
-            eredarTwinsThreatSuppressionActive[botGuid] = false;
-            eredarTwinsThreatSuppressionBlockedLogged[botGuid] = false;
-        }
-
         return 1.0f;
-    }
-
-    if (!eredarTwinsThreatSuppressionActive[botGuid])
-    {
-        LOG_INFO("playerbots",
-            "Sunwell: Eredar Twins threat suppression began for bot {} on Sacrolash",
-            bot->GetName().c_str());
-        eredarTwinsThreatSuppressionActive[botGuid] = true;
-        eredarTwinsThreatSuppressionBlockedLogged[botGuid] = false;
-    }
 
     Unit* actionTarget = action->GetTarget();
     if (dynamic_cast<AttackAction*>(action) &&
         !dynamic_cast<EredarTwinsDpsPrioritizeLadySacrolashAction*>(action) &&
         (actionTarget == sacrolash || bot->GetVictim() == sacrolash))
-    {
-        if (!eredarTwinsThreatSuppressionBlockedLogged[botGuid])
-        {
-            LOG_INFO("playerbots",
-                "Sunwell: Eredar Twins threat suppression blocked action '{}' for bot {}",
-                action->getName().c_str(), bot->GetName().c_str());
-            eredarTwinsThreatSuppressionBlockedLogged[botGuid] = true;
-        }
         return 0.0f;
-    }
 
     if (dynamic_cast<CastSpellAction*>(action) && actionTarget == sacrolash)
-    {
-        if (!eredarTwinsThreatSuppressionBlockedLogged[botGuid])
-        {
-            LOG_INFO("playerbots",
-                "Sunwell: Eredar Twins threat suppression blocked action '{}' for bot {}",
-                action->getName().c_str(), bot->GetName().c_str());
-            eredarTwinsThreatSuppressionBlockedLogged[botGuid] = true;
-        }
         return 0.0f;
-    }
 
     return 1.0f;
 }

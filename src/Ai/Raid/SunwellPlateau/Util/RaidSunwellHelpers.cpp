@@ -1849,10 +1849,11 @@ namespace SunwellHelpers
         { 1829.375f, 631.110f, 33.404f },
         { 1830.007f, 620.924f, 33.404f }
     }};
-    const Position EREDAR_TWINS_P1_RANGED_POSITION =      { 1808.076f, 603.460f, 51.684f };
-    const Position EREDAR_TWINS_P2_STACK_POSITION =       { 1814.327f, 625.645f, 33.404f };
-    const Position EREDAR_TWINS_RANGED_CONFLAG_POSITION = { 1801.133f, 584.456f, 50.696f };
-    const Position EREDAR_TWINS_MELEE_CONFLAG_POSITION =  { 1814.654f, 612.291f, 33.404f };
+    const Position EREDAR_TWINS_P1_RANGED_POSITION =       { 1808.076f, 603.460f, 51.684f };
+    const Position EREDAR_TWINS_P2_MELEE_STACK_POSITION =  { 1814.327f, 625.645f, 33.404f };
+    const Position EREDAR_TWINS_P2_RANGED_STACK_POSITION = { 1805.587f, 625.653f, 33.404f };
+    const Position EREDAR_TWINS_RANGED_CONFLAG_POSITION =  { 1801.133f, 584.456f, 50.696f };
+    const Position EREDAR_TWINS_MELEE_CONFLAG_POSITION =   { 1814.654f, 612.291f, 33.404f };
 
     std::unordered_map<ObjectGuid, uint8> alythessTankStep;
     std::unordered_map<ObjectGuid, ObjectGuid> alythessTankLastBlazeGuid;

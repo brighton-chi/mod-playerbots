@@ -910,7 +910,7 @@ bool FelmystAvoidFogOfCorruptionAction::Execute(Event /*event*/)
 bool EredarTwinsMeleeJumpDownFromBalconyAction::Execute(Event /*event*/)
 {
     const Position& jumpPos = EREDAR_TWINS_P1_RANGED_POSITION;
-    const Position& landingPos = EREDAR_TWINS_P2_STACK_POSITION;
+    const Position& landingPos = EREDAR_TWINS_P2_MELEE_STACK_POSITION;
 
     constexpr float arrivalDistance = 2.0f;
     float distanceToJumpPos =
@@ -1147,7 +1147,7 @@ bool EredarTwinsPositionRangedAction::Execute(Event /*event*/)
     else if (bot->GetPositionZ() > EREDAR_TWINS_BALCONY_Z)
     {
         const Position& jumpPos = EREDAR_TWINS_P1_RANGED_POSITION;
-        const Position& landingPos = EREDAR_TWINS_P2_STACK_POSITION;
+        const Position& landingPos = EREDAR_TWINS_P2_RANGED_STACK_POSITION;
 
         constexpr float arrivalDistance = 2.0f;
         float distanceToJumpPos =
@@ -1172,11 +1172,13 @@ bool EredarTwinsPositionRangedAction::Execute(Event /*event*/)
 
 bool EredarTwinsStackInRoomCenterAction::Execute(Event /*event*/)
 {
-    const Position& position = EREDAR_TWINS_P2_STACK_POSITION;
+    const Position& position = botAI->IsRanged(bot) ?
+        EREDAR_TWINS_P2_RANGED_STACK_POSITION : EREDAR_TWINS_P2_MELEE_STACK_POSITION;
+
     float distToPosition =
         bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
 
-    if (distToPosition > 1.0f)
+    if (distToPosition > 0.5f)
     {
         return MoveTo(SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
                       position.GetPositionZ(), false, false, false, false,
