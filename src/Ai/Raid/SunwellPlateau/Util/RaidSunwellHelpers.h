@@ -221,11 +221,6 @@ namespace SunwellHelpers
     // Eredar Twins (Grand Warlock Alythess and Lady Sacrolash)
     constexpr float EREDAR_TWINS_BALCONY_Z = 50.0f;
     extern const Position SACROLASH_TANK_POSITION;
-    extern const Position ALYTHESS_TANK_POSITION_1;
-    extern const Position ALYTHESS_TANK_POSITION_2;
-    extern const Position ALYTHESS_TANK_POSITION_3;
-    extern const Position ALYTHESS_TANK_POSITION_4;
-    extern const Position ALYTHESS_TANK_POSITION_5;
     extern const std::array<Position, 5> ALYTHESS_TANK_POSITIONS;
     extern const Position EREDAR_TWINS_P1_RANGED_POSITION;
     extern const Position EREDAR_TWINS_P2_STACK_POSITION;

@@ -932,8 +932,8 @@ bool EredarTwinsMeleeJumpDownFromBalconyAction::Execute(Event /*event*/)
 
 bool EredarTwinsPositionRangedAction::Execute(Event /*event*/)
 {
-    Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
-    if (alythess)
+    Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
+    if (sacrolash)
     {
         const Position& position = EREDAR_TWINS_P1_RANGED_POSITION;
 
@@ -1180,20 +1180,25 @@ bool EredarTwinsDpsPrioritizeLadySacrolashAction::Execute(Event /*event*/)
     Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
     Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
 
-    if (sacrolash && ShouldHoldSacrolashThreat(botAI, bot, alythess, sacrolash) && alythess)
-    {
-        SetRtiTarget(botAI, "circle", alythess);
+    if (sacrolash)
+        SetRtiTarget(botAI, "star", sacrolash);
 
-        if (bot->GetTarget() != alythess->GetGUID())
-            return Attack(alythess);
+    if (sacrolash && ShouldHoldSacrolashThreat(botAI, bot, alythess, sacrolash))
+    {
+        if (bot->GetVictim() == sacrolash || bot->GetTarget() == sacrolash->GetGUID())
+        {
+            bot->AttackStop();
+            bot->InterruptNonMeleeSpells(true);
+            bot->SetTarget(ObjectGuid::Empty);
+            bot->SetSelection(ObjectGuid());
+            return true;
+        }
 
         return false;
     }
 
     if (sacrolash)
     {
-        SetRtiTarget(botAI, "star", sacrolash);
-
         if (bot->GetTarget() != sacrolash->GetGUID())
             return Attack(sacrolash);
 

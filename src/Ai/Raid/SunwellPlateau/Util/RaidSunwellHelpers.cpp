@@ -1841,24 +1841,18 @@ namespace SunwellHelpers
 
     // Eredar Twins (Grand Warlock Alythess and Lady Sacrolash)
 
-    const Position SACROLASH_TANK_POSITION  = { 1804.846f, 642.516f, 33.404f };
-    const Position ALYTHESS_TANK_POSITION_1 = { 1819.520f, 625.835f, 33.404f };
-    const Position ALYTHESS_TANK_POSITION_2 = { 1824.940f, 629.645f, 33.404f };
-    const Position ALYTHESS_TANK_POSITION_3 = { 1831.394f, 628.071f, 33.404f };
-    const Position ALYTHESS_TANK_POSITION_4 = { 1830.690f, 621.465f, 33.404f };
-    const Position ALYTHESS_TANK_POSITION_5 = { 1825.271f, 617.655f, 33.404f };
-    const std::array<Position, 5> ALYTHESS_TANK_POSITIONS =
-    {
-        ALYTHESS_TANK_POSITION_2,
-        ALYTHESS_TANK_POSITION_3,
-        ALYTHESS_TANK_POSITION_4,
-        ALYTHESS_TANK_POSITION_5,
-        ALYTHESS_TANK_POSITION_1
-    };
-    const Position EREDAR_TWINS_P1_RANGED_POSITION = { 1808.076f, 603.460f, 51.684f };
-    const Position EREDAR_TWINS_P2_STACK_POSITION = { 1814.4188f, 626.3712f, 33.404f }; // room center
+    const Position SACROLASH_TANK_POSITION  = { 1804.255f, 630.193f, 33.404f };
+    const std::array<Position, 5> ALYTHESS_TANK_POSITIONS = {{
+        { 1816.830f, 620.792f, 33.404f },
+        { 1824.211f, 625.169f, 33.404f },
+        { 1818.701f, 631.196f, /*1819.014f, 630.665f,*/ 33.404f },
+        { 1829.375f, 631.110f, 33.404f },
+        { 1830.007f, 620.924f, 33.404f }
+    }};
+    const Position EREDAR_TWINS_P1_RANGED_POSITION =      { 1808.076f, 603.460f, 51.684f };
+    const Position EREDAR_TWINS_P2_STACK_POSITION =       { 1814.327f, 625.645f, 33.404f };
     const Position EREDAR_TWINS_RANGED_CONFLAG_POSITION = { 1801.133f, 584.456f, 50.696f };
-    const Position EREDAR_TWINS_MELEE_CONFLAG_POSITION = { 1810.614f, 610.041f, 33.404f };
+    const Position EREDAR_TWINS_MELEE_CONFLAG_POSITION =  { 1814.654f, 612.291f, 33.404f };
 
     std::unordered_map<ObjectGuid, uint8> alythessTankStep;
     std::unordered_map<ObjectGuid, ObjectGuid> alythessTankLastBlazeGuid;
@@ -1906,7 +1900,7 @@ namespace SunwellHelpers
         if (!bot)
             return false;
 
-        constexpr float blazeDangerRadius = 5.0f;
+        constexpr float blazeDangerRadius = 4.5f;
         constexpr float blazeSearchRadius = 30.0f;
 
         std::list<GameObject*> targets;
