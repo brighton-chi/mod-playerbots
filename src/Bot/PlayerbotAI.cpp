@@ -4222,19 +4222,6 @@ void PlayerbotAI::InterruptSpell()
     }
 }
 
-void PlayerbotAI::RequestSpellInterrupt()
-{
-    Spell* currentSpell = bot->GetCurrentSpell(CURRENT_GENERIC_SPELL);
-    if (currentSpell && currentSpell->getState() == SPELL_STATE_PREPARING)
-    {
-        spellInterruptRequested = true;
-        return;
-    }
-
-    if (bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
-        spellInterruptRequested = true;
-}
-
 void PlayerbotAI::RemoveAura(std::string const name)
 {
     uint32 spellid = aiObjectContext->GetValue<uint32>("spell id", name)->Get();
