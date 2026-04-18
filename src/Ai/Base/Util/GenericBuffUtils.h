@@ -27,7 +27,7 @@ std::string GroupVariantFor(std::string const& name);
 // Returns false if the spellId is invalid.
 bool HasRequiredReagents(Player* bot, uint32 spellId);
 
-// If the bot is in a group and knows the group variant of baseName,
+// If the bot is in an eligible group and knows the group variant of baseName,
 // returns the group spell name (provided reagents are available).
 // Otherwise returns baseName unchanged.
 std::string UpgradeToGroupIfAppropriate(

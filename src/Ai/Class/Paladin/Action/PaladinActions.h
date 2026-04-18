@@ -90,12 +90,9 @@ class CastBlessingOnPartyAction : public BuffOnPartyAction
 {
 public:
     CastBlessingOnPartyAction(PlayerbotAI* botAI, std::string const name)
-        : BuffOnPartyAction(botAI, name), name(name) {}
+        : BuffOnPartyAction(botAI, name) {}
 
     Value<Unit*>* GetTargetValue() override;
-
-private:
-    std::string name;
 };
 
 class CastBlessingOfMightOnPartyAction : public BuffOnPartyAction

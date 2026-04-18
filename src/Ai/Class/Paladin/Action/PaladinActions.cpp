@@ -422,28 +422,20 @@ bool CastBlessingOfSanctuaryOnPartyAction::Execute(Event /*event*/)
         }
     }
 
-    {
-        bool hasKings = HasKingsAura(target);
-        bool hasSanct = HasSanctAura(target);
-        bool knowSanct = bot->HasSpell(SPELL_BLESSING_OF_SANCTUARY);
-    }
-
-    std::string castName = GetActualBlessingOfSanctuary(target, bot);
-    if (castName.empty())
+    if (GetActualBlessingOfSanctuary(target, bot).empty())
     {
         if (targetPlayer)
         {
             if (IsTankRole(targetPlayer))
-                castName = "blessing of sanctuary";
+                return botAI->CastSpell("blessing of sanctuary", target);
             else
                 return false;
         }
         else
             return false;
     }
-    castName = "blessing of sanctuary";
 
-    return botAI->CastSpell(castName, target);
+    return botAI->CastSpell("blessing of sanctuary", target);
 }
 
 Unit* CastBlessingOfSanctuaryOnPartyAction::GetTarget()

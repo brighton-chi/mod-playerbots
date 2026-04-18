@@ -40,7 +40,7 @@ enum class HealingManaEfficiency : uint8
     SUPERIOR = 32
 };
 
-enum class AutoGreaterBlessingMode : uint8
+enum class AutoPartyBuffMode : uint8
 {
     DISABLED = 0,
     RAID_ONLY = 1,
@@ -101,7 +101,8 @@ public:
     uint32 lowMana, mediumMana, highMana;
     bool autoSaveMana;
     uint32 saveManaThreshold;
-    AutoGreaterBlessingMode autoGreaterBlessings;
+    AutoPartyBuffMode autoGreaterBlessings;
+    AutoPartyBuffMode autoPartyBuffs;
     bool autoAvoidAoe;
     float maxAoeAvoidRadius;
     std::set<uint32> aoeAvoidSpellWhitelist;

@@ -20,11 +20,11 @@ bool ToggleGreaterBlessingStrategyAction::IsEligibleGroup(Group const* group) co
 
     switch (sPlayerbotAIConfig.autoGreaterBlessings)
     {
-        case AutoGreaterBlessingMode::RAID_ONLY:
+        case AutoPartyBuffMode::RAID_ONLY:
             return group->isRaidGroup();
-        case AutoGreaterBlessingMode::GROUP_OR_RAID:
+        case AutoPartyBuffMode::GROUP_OR_RAID:
             return true;
-        case AutoGreaterBlessingMode::DISABLED:
+        case AutoPartyBuffMode::DISABLED:
         default:
             return false;
     }
@@ -37,30 +37,16 @@ std::string ToggleGreaterBlessingStrategyAction::GetRestoreStrategy() const
         case PALADIN_TAB_HOLY:
             return "+bwisdom";
         case PALADIN_TAB_PROTECTION:
-            return "+bkings";
+            return "+bsanc";
         case PALADIN_TAB_RETRIBUTION:
         default:
             return "+bmight";
     }
 }
 
-char const* ToggleGreaterBlessingStrategyAction::GetScopeDescription() const
-{
-    switch (sPlayerbotAIConfig.autoGreaterBlessings)
-    {
-        case AutoGreaterBlessingMode::RAID_ONLY:
-            return "raid";
-        case AutoGreaterBlessingMode::GROUP_OR_RAID:
-            return "group/raid";
-        case AutoGreaterBlessingMode::DISABLED:
-        default:
-            return "group";
-    }
-}
-
 bool ToggleGreaterBlessingStrategyAction::Execute(Event /*event*/)
 {
-    if (sPlayerbotAIConfig.autoGreaterBlessings == AutoGreaterBlessingMode::DISABLED)
+    if (sPlayerbotAIConfig.autoGreaterBlessings == AutoPartyBuffMode::DISABLED)
         return false;
 
     bool hasGblessing =
@@ -69,11 +55,6 @@ bool ToggleGreaterBlessingStrategyAction::Execute(Event /*event*/)
     Group* group = bot->GetGroup();
     if (!IsEligibleGroup(group))
     {
-        if (wasEligibleGroup_)
-            userDisabled_ = false;
-
-        wasEligibleGroup_ = false;
-
         if (hasGblessing)
         {
             botAI->ChangeStrategy(
@@ -84,11 +65,6 @@ bool ToggleGreaterBlessingStrategyAction::Execute(Event /*event*/)
 
         return false;
     }
-
-    wasEligibleGroup_ = true;
-
-    if (userDisabled_)
-        return false;
 
     if (!hasGblessing)
     {

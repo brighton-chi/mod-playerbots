@@ -789,7 +789,7 @@ void PlayerbotAI::HandleTeleportAck()
         Reset(true);
 
         if (bot->getClass() == CLASS_PALADIN &&
-            sPlayerbotAIConfig.autoGreaterBlessings != AutoGreaterBlessingMode::DISABLED)
+            sPlayerbotAIConfig.autoGreaterBlessings != AutoPartyBuffMode::DISABLED)
         {
             DoSpecificAction("toggle greater blessing strategy", Event(), true);
         }

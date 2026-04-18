@@ -20,10 +20,6 @@ public:
 private:
     bool IsEligibleGroup(Group const* group) const;
     std::string GetRestoreStrategy() const;
-    char const* GetScopeDescription() const;
-
-    bool userDisabled_     = false;
-    bool wasEligibleGroup_ = false;
 };
 
 #endif

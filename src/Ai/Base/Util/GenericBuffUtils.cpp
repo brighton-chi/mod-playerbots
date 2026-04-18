@@ -9,11 +9,29 @@
 #include "Group.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
+#include "PlayerbotAIConfig.h"
 #include "SpellMgr.h"
 #include "Value.h"
 
 namespace ai::buff
 {
+    static bool IsEligibleGroupForPartyBuffs(Group const* group)
+    {
+        if (!group)
+            return false;
+
+        switch (sPlayerbotAIConfig.autoPartyBuffs)
+        {
+            case AutoPartyBuffMode::RAID_ONLY:
+                return group->isRaidGroup();
+            case AutoPartyBuffMode::GROUP_OR_RAID:
+                return true;
+            case AutoPartyBuffMode::DISABLED:
+            default:
+                return false;
+        }
+    }
+
     std::string MakeAuraQualifierForBuff(std::string const& name)
     {
         // Paladin
@@ -76,8 +94,8 @@ namespace ai::buff
         PlayerbotAI* botAI,
         std::string const& baseName)
     {
-        Group* g = bot->GetGroup();
-        if (!g)
+        Group* group = bot->GetGroup();
+        if (!IsEligibleGroupForPartyBuffs(group))
             return baseName;
 
         std::string const groupName = GroupVariantFor(baseName);
