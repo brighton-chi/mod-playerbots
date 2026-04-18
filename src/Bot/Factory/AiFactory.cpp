@@ -502,7 +502,7 @@ void AiFactory::AddDefaultNonCombatStrategies(Player* player, PlayerbotAI* const
     switch (player->getClass())
     {
         case CLASS_PRIEST:
-            nonCombatEngine->addStrategiesNoInit("dps assist", "cure", nullptr);
+            nonCombatEngine->addStrategiesNoInit("dps assist", "cure", "rshadow", nullptr);
             break;
         case CLASS_PALADIN:
             if (tab == PALADIN_TAB_PROTECTION)
