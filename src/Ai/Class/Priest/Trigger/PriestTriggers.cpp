@@ -8,6 +8,16 @@
 #include "Player.h"
 #include "Playerbots.h"
 
+bool ShadowProtectionOnPartyTrigger::IsActive()
+{
+    return BuffOnPartyTrigger::IsActive() && !botAI->HasAura("prayer of shadow protection", GetTarget());
+}
+
+bool ShadowProtectionTrigger::IsActive()
+{
+    return BuffTrigger::IsActive() && !botAI->HasAura("prayer of shadow protection", GetTarget());
+}
+
 bool PowerWordFortitudeOnPartyTrigger::IsActive()
 {
     return BuffOnPartyTrigger::IsActive() && !botAI->HasAura("power word : fortitude", GetTarget()) &&

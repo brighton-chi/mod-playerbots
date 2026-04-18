@@ -27,8 +27,6 @@ BUFF_TRIGGER_A(InnerFireTrigger, "inner fire");
 BUFF_TRIGGER_A(ShadowformTrigger, "shadowform");
 BOOST_TRIGGER(PowerInfusionTrigger, "power infusion");
 BUFF_TRIGGER(InnerFocusTrigger, "inner focus");
-BUFF_TRIGGER(ShadowProtectionTrigger, "shadow protection");
-BUFF_PARTY_TRIGGER(ShadowProtectionOnPartyTrigger, "shadow protection");
 CC_TRIGGER(ShackleUndeadTrigger, "shackle undead");
 INTERRUPT_TRIGGER(SilenceTrigger, "silence");
 INTERRUPT_HEALER_TRIGGER(SilenceEnemyHealerTrigger, "silence");
@@ -43,6 +41,22 @@ DEFLECT_TRIGGER(FeedbackTrigger, "feedback");
 SNARE_TRIGGER(ChastiseTrigger, "chastise");
 
 BOOST_TRIGGER_A(ShadowfiendTrigger, "shadowfiend");
+
+class ShadowProtectionTrigger : public BuffTrigger
+{
+public:
+    ShadowProtectionTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "shadow protection", 2 * 2000) {}
+
+    bool IsActive() override;
+};
+
+class ShadowProtectionOnPartyTrigger : public BuffOnPartyTrigger
+{
+public:
+    ShadowProtectionOnPartyTrigger(PlayerbotAI* botAI) : BuffOnPartyTrigger(botAI, "shadow protection", 2 * 2000) {}
+
+    bool IsActive() override;
+};
 
 class PowerWordFortitudeOnPartyTrigger : public BuffOnPartyTrigger
 {
