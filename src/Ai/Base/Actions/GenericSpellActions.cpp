@@ -17,7 +17,7 @@
 #include "WorldPacket.h"
 #include "Group.h"
 #include "Chat.h"
-#include "Ai/Base/Util/GenericBuffUtils.h"
+#include "GenericBuffUtils.h"
 #include "PlayerbotAI.h"
 
 using ai::buff::MakeAuraQualifierForBuff;

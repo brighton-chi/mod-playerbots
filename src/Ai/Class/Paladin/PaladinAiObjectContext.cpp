@@ -17,7 +17,6 @@
 #include "PaladinTriggers.h"
 #include "Playerbots.h"
 #include "TankPaladinStrategy.h"
-#include "PaladinToggleGreaterBlessingAction.h"
 
 class PaladinStrategyFactoryInternal : public NamedObjectContext<Strategy>
 {
