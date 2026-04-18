@@ -35,4 +35,10 @@ private:
                                std::string& outSpellName);
 };
 
+namespace ai::gbless
+{
+    bool IsEligibleGroupForAutoBlessings(Group const* group);
+    bool IsAutoGreaterBlessingActive(Player const* bot);
+}
+
 #endif

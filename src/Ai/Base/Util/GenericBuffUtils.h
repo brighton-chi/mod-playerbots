@@ -19,7 +19,7 @@ std::string MakeAuraQualifierForBuff(std::string const& name);
 
 // Returns the group spell name for a given single-target buff.
 // Only covers non-Paladin buffs (Druid, Mage, Priest).
-// Paladin blessings are handled by the gblessing strategy.
+// Paladin blessings are handled by auto greater blessing assignment.
 // Returns "" if no group equivalent exists.
 std::string GroupVariantFor(std::string const& name);
 

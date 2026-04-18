@@ -80,6 +80,9 @@ bool NotSensingUndeadTrigger::IsActive()
 
 bool GreaterBlessingNeededTrigger::IsActive()
 {
+    if (!ai::gbless::IsAutoGreaterBlessingActive(bot))
+        return false;
+
     CastGreaterBlessingAssignmentAction action(botAI);
     return action.HasPendingAssignment();
 }

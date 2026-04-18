@@ -17,6 +17,28 @@
 
 using namespace ai::gbless;
 
+bool ai::gbless::IsEligibleGroupForAutoBlessings(Group const* group)
+{
+    if (!group)
+        return false;
+
+    switch (sPlayerbotAIConfig.autoGreaterBlessings)
+    {
+        case AutoPartyBuffMode::RAID_ONLY:
+            return group->isRaidGroup();
+        case AutoPartyBuffMode::GROUP_OR_RAID:
+            return true;
+        case AutoPartyBuffMode::DISABLED:
+        default:
+            return false;
+    }
+}
+
+bool ai::gbless::IsAutoGreaterBlessingActive(Player const* bot)
+{
+    return bot && IsEligibleGroupForAutoBlessings(bot->GetGroup());
+}
+
 static int TalentScore(Player* player)
 {
     int score = 0;
@@ -42,7 +64,7 @@ CastGreaterBlessingAssignmentAction::CastGreaterBlessingAssignmentAction(
 
 bool CastGreaterBlessingAssignmentAction::isUseful()
 {
-    return bot->GetGroup();
+    return IsAutoGreaterBlessingActive(bot);
 }
 
 bool CastGreaterBlessingAssignmentAction::HasPendingAssignment()
@@ -113,14 +135,14 @@ bool CastGreaterBlessingAssignmentAction::FindPendingAssignment(
     return false;
 }
 
-// CastGreaterBlessingAssignmentAction is the heart of the gblessing strategy.
-// It computes blessing assignments for the raid composition and casts one buff per call.
+// CastGreaterBlessingAssignmentAction computes blessing assignments for the group
+// composition and casts one buff per call when auto greater blessings are active.
 
 bool CastGreaterBlessingAssignmentAction::ComputeAssignments(
     std::vector<PlayerAssignment>& outAssignments)
 {
     Group* group = bot->GetGroup();
-    if (!group)
+    if (!IsEligibleGroupForAutoBlessings(group))
         return false;
 
     // Step 1: Gather Raid Composition

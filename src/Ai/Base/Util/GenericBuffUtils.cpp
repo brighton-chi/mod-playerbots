@@ -63,7 +63,7 @@ namespace ai::buff
         if (name == "shadow protection")        return "prayer of shadow protection";
 
         // Paladin blessings are NOT included here — they are
-        // coordinated by the gblessing strategy instead.
+        // coordinated by the auto greater blessing system instead.
         return std::string();
     }
 

@@ -8,7 +8,6 @@
 #include "DpsPaladinStrategy.h"
 #include "GenericPaladinNonCombatStrategy.h"
 #include "PaladinGreaterBlessingAction.h"
-#include "PaladinGreaterBlessingStrategy.h"
 #include "HealPaladinStrategy.h"
 #include "NamedObjectContext.h"
 #include "OffhealRetPaladinStrategy.h"
@@ -77,7 +76,6 @@ public:
         creators["bwisdom"] = &PaladinBuffStrategyFactoryInternal::bwisdom;
         creators["bmight"] = &PaladinBuffStrategyFactoryInternal::bmight;
         creators["bkings"] = &PaladinBuffStrategyFactoryInternal::bkings;
-        creators["gblessing"] = &PaladinBuffStrategyFactoryInternal::gblessing;
     }
 
 private:
@@ -85,7 +83,6 @@ private:
     static Strategy* bwisdom(PlayerbotAI* botAI) { return new PaladinBuffManaStrategy(botAI); }
     static Strategy* bmight(PlayerbotAI* botAI) { return new PaladinBuffDpsStrategy(botAI); }
     static Strategy* bkings(PlayerbotAI* botAI) { return new PaladinBuffStatsStrategy(botAI); }
-    static Strategy* gblessing(PlayerbotAI* botAI) { return new PaladinGreaterBlessingStrategy(botAI); }
 };
 
 class PaladinCombatStrategyFactoryInternal : public NamedObjectContext<Strategy>
@@ -328,8 +325,6 @@ public:
         creators["hand of freedom on party"] = &PaladinAiObjectContextInternal::hand_of_freedom_on_party;
         creators["cast greater blessing assignment"] =
             &PaladinAiObjectContextInternal::cast_greater_blessing_assignment;
-        creators["toggle greater blessing strategy"] =
-            &PaladinAiObjectContextInternal::toggle_greater_blessing_strategy;
     }
 
 private:
@@ -440,10 +435,6 @@ private:
     static Action* cast_greater_blessing_assignment(PlayerbotAI* botAI)
     {
         return new CastGreaterBlessingAssignmentAction(botAI);
-    }
-    static Action* toggle_greater_blessing_strategy(PlayerbotAI* botAI)
-    {
-        return new ToggleGreaterBlessingStrategyAction(botAI);
     }
 };
 

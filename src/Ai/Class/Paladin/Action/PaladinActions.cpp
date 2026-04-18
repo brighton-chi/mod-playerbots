@@ -9,6 +9,7 @@
 #include "Event.h"
 #include "GenericBuffUtils.h"
 #include "ObjectAccessor.h"
+#include "PaladinGreaterBlessingAction.h"
 #include "PaladinBlessingPriorityData.h"
 #include "PaladinHelper.h"
 #include "Playerbots.h"
@@ -43,9 +44,9 @@ static bool HasBlessingAura(
     return false;
 }
 
-static bool IsGreaterBlessingStrategyActive(PlayerbotAI* botAI)
+static bool IsGreaterBlessingMode(Player* bot)
 {
-    return botAI && botAI->HasStrategy("gblessing", BOT_STATE_NON_COMBAT);
+    return ai::gbless::IsAutoGreaterBlessingActive(bot);
 }
 
 template <typename Predicate>
@@ -233,7 +234,7 @@ Value<Unit*>* CastBlessingOnPartyAction::GetTargetValue()
 
 Unit* CastBlessingOfMightOnPartyAction::GetTarget()
 {
-    if (IsGreaterBlessingStrategyActive(botAI))
+    if (IsGreaterBlessingMode(bot))
         return nullptr;
 
     return FindBlessingTarget(bot, botAI, [&](Player* player)
@@ -267,7 +268,7 @@ Value<Unit*>* CastBlessingOfMightOnPartyAction::GetTargetValue()
 
 bool CastBlessingOfMightOnPartyAction::Execute(Event /*event*/)
 {
-    if (IsGreaterBlessingStrategyActive(botAI))
+    if (IsGreaterBlessingMode(bot))
         return false;
 
     Unit* target = GetTarget();
@@ -290,7 +291,7 @@ bool CastBlessingOfWisdomAction::Execute(Event /*event*/)
 
 Unit* CastBlessingOfWisdomOnPartyAction::GetTarget()
 {
-    if (IsGreaterBlessingStrategyActive(botAI))
+    if (IsGreaterBlessingMode(bot))
         return nullptr;
 
     return FindBlessingTarget(bot, botAI, [&](Player* player)
@@ -316,7 +317,7 @@ Value<Unit*>* CastBlessingOfWisdomOnPartyAction::GetTargetValue()
 
 bool CastBlessingOfWisdomOnPartyAction::Execute(Event /*event*/)
 {
-    if (IsGreaterBlessingStrategyActive(botAI))
+    if (IsGreaterBlessingMode(bot))
         return false;
 
     Unit* target = GetTarget();
@@ -350,7 +351,7 @@ Value<Unit*>* CastBlessingOfSanctuaryOnPartyAction::GetTargetValue()
 
 bool CastBlessingOfSanctuaryOnPartyAction::Execute(Event /*event*/)
 {
-    if (IsGreaterBlessingStrategyActive(botAI))
+    if (IsGreaterBlessingMode(bot))
         return false;
 
     if (!bot->HasSpell(SPELL_BLESSING_OF_SANCTUARY))
@@ -440,7 +441,7 @@ bool CastBlessingOfSanctuaryOnPartyAction::Execute(Event /*event*/)
 
 Unit* CastBlessingOfSanctuaryOnPartyAction::GetTarget()
 {
-    if (IsGreaterBlessingStrategyActive(botAI))
+    if (IsGreaterBlessingMode(bot))
         return nullptr;
 
     if (!bot->HasSpell(SPELL_BLESSING_OF_SANCTUARY))
@@ -465,7 +466,7 @@ Value<Unit*>* CastBlessingOfKingsOnPartyAction::GetTargetValue()
 
 Unit* CastBlessingOfKingsOnPartyAction::GetTarget()
 {
-    if (IsGreaterBlessingStrategyActive(botAI))
+    if (IsGreaterBlessingMode(bot))
         return nullptr;
 
     const bool hasBwisdom = botAI->HasStrategy("bwisdom", BOT_STATE_NON_COMBAT);
@@ -500,7 +501,7 @@ Unit* CastBlessingOfKingsOnPartyAction::GetTarget()
 
 bool CastBlessingOfKingsOnPartyAction::Execute(Event /*event*/)
 {
-    if (IsGreaterBlessingStrategyActive(botAI))
+    if (IsGreaterBlessingMode(bot))
         return false;
 
     Unit* target = GetTarget();
