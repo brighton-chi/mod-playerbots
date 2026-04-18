@@ -432,7 +432,9 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
     if (burnState == BrutallusRangedBurnState::ReturningToMirrorStep)
     {
         Position position;
-        if (!TryGetBrutallusRangedBurnMirrorStepPosition(brutallus, rangedIndex, bot->GetPositionZ(), position))
+        if (!TryGetBrutallusRangedStepPosition(
+            brutallus, rangedIndex, true, GetBrutallusReturnRangedRadius(),
+            bot->GetPositionZ(), position))
             return false;
 
         if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
@@ -449,8 +451,9 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
     if (burnState == BrutallusRangedBurnState::ReturningToFrontStep)
     {
         Position position;
-        if (!TryGetBrutallusRangedBurnArcPosition(
-            brutallus, rangedIndex, false, bot->GetPositionX(), bot->GetPositionY(),
+        if (!TryGetBrutallusRangedArcPosition(
+            brutallus, rangedIndex, GetBrutallusReturnRangedRadius(), false,
+            bot->GetPositionX(), bot->GetPositionY(),
                 bot->GetPositionZ(), position))
         {
             return false;
@@ -463,11 +466,13 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
 
-        Position frontStepPosition;
-        if (!TryGetBrutallusRangedBurnStepPosition(brutallus, rangedIndex, bot->GetPositionZ(), frontStepPosition))
+        Position returnStepPosition;
+        if (!TryGetBrutallusRangedStepPosition(
+            brutallus, rangedIndex, false, GetBrutallusReturnRangedRadius(),
+            bot->GetPositionZ(), returnStepPosition))
             return false;
 
-        if (bot->GetExactDist2d(frontStepPosition.GetPositionX(), frontStepPosition.GetPositionY()) <= 1.0f)
+        if (bot->GetExactDist2d(returnStepPosition.GetPositionX(), returnStepPosition.GetPositionY()) <= 1.0f)
             brutallusRangedBurnStates[guid] = BrutallusRangedBurnState::ReturningToNormal;
 
         return false;
@@ -476,7 +481,9 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
     if (burnState == BrutallusRangedBurnState::ReturningToNormal)
     {
         Position position;
-        if (!TryGetBrutallusRangedPosition(brutallus, rangedIndex, bot->GetPositionZ(), position))
+        if (!TryGetBrutallusRangedStepPosition(
+                brutallus, rangedIndex, false, GetBrutallusNormalRangedRadius(),
+                bot->GetPositionZ(), position))
             return false;
 
         if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
@@ -491,7 +498,9 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
     }
 
     Position position;
-    if (!TryGetBrutallusRangedPosition(brutallus, rangedIndex, bot->GetPositionZ(), position))
+    if (!TryGetBrutallusRangedStepPosition(
+            brutallus, rangedIndex, false, GetBrutallusNormalRangedRadius(),
+            bot->GetPositionZ(), position))
         return false;
 
     if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
@@ -551,7 +560,9 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
     if (burnState == BrutallusRangedBurnState::MovingToFrontStep)
     {
         Position stepPosition;
-        if (!TryGetBrutallusRangedBurnStepPosition(brutallus, rangedIndex, bot->GetPositionZ(), stepPosition))
+        if (!TryGetBrutallusRangedStepPosition(
+                brutallus, rangedIndex, false, GetBrutallusBurnRangedRadius(),
+                bot->GetPositionZ(), stepPosition))
             return false;
 
         if (bot->GetExactDist2d(stepPosition.GetPositionX(), stepPosition.GetPositionY()) > 1.0f)
@@ -568,8 +579,9 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
     if (burnState == BrutallusRangedBurnState::MovingToMirrorStep)
     {
         Position position;
-        if (!TryGetBrutallusRangedBurnArcPosition(
-                brutallus, rangedIndex, true, bot->GetPositionX(), bot->GetPositionY(),
+        if (!TryGetBrutallusRangedArcPosition(
+            brutallus, rangedIndex, GetBrutallusBurnRangedRadius(), true,
+            bot->GetPositionX(), bot->GetPositionY(),
                 bot->GetPositionZ(), position))
         {
             return false;
@@ -583,7 +595,9 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
         }
 
         Position mirrorStepPosition;
-        if (!TryGetBrutallusRangedBurnMirrorStepPosition(brutallus, rangedIndex, bot->GetPositionZ(), mirrorStepPosition))
+        if (!TryGetBrutallusRangedStepPosition(
+            brutallus, rangedIndex, true, GetBrutallusBurnRangedRadius(),
+            bot->GetPositionZ(), mirrorStepPosition))
             return false;
 
         if (bot->GetExactDist2d(mirrorStepPosition.GetPositionX(), mirrorStepPosition.GetPositionY()) <= 1.0f)
@@ -593,7 +607,9 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
     }
 
     Position position;
-    if (!TryGetBrutallusRangedBurnPosition(brutallus, rangedIndex, bot->GetPositionZ(), position))
+    if (!TryGetBrutallusRangedStepPosition(
+            brutallus, rangedIndex, true, GetBrutallusBurnRangedRadius(),
+            bot->GetPositionZ(), position))
         return false;
 
     if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)

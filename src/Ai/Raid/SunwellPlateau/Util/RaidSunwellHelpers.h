@@ -146,13 +146,15 @@ namespace SunwellHelpers
     Position GetBrutallusTankPosition(Unit* brutallus, bool isMainTank, float z);
     bool TryGetBrutallusMeleePosition(
         Player* bot, Unit* brutallus, uint8 meleeIndex, float z, Position& position);
-    bool TryGetBrutallusRangedPosition(Unit* brutallus, uint8 rangedIndex, float z, Position& position);
-    bool TryGetBrutallusRangedBurnStepPosition(Unit* brutallus, uint8 rangedIndex, float z, Position& position);
-    bool TryGetBrutallusRangedBurnMirrorStepPosition(Unit* brutallus, uint8 rangedIndex, float z, Position& position);
-    bool TryGetBrutallusRangedBurnArcPosition(
-        Unit* brutallus, uint8 rangedIndex, bool moveTowardMirror,
+    float GetBrutallusNormalRangedRadius();
+    float GetBrutallusBurnRangedRadius();
+    float GetBrutallusReturnRangedRadius();
+    bool TryGetBrutallusRangedStepPosition(
+        Unit* brutallus, uint8 rangedIndex, bool useMirrorAngle,
+        float radius, float z, Position& position);
+    bool TryGetBrutallusRangedArcPosition(
+        Unit* brutallus, uint8 rangedIndex, float radius, bool moveTowardMirror,
         float currentX, float currentY, float z, Position& position);
-    bool TryGetBrutallusRangedBurnPosition(Unit* brutallus, uint8 rangedIndex, float z, Position& position);
     bool TryGetBrutallusAssignedPositionIndex(PlayerbotAI* botAI, Player* bot, bool wantRanged,
         uint8& positionIndex);
 
