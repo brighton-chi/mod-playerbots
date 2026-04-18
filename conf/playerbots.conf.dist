@@ -477,15 +477,15 @@ AiPlayerbot.AutoSaveMana = 1
 # Default: 60 (60%)
 AiPlayerbot.SaveManaThreshold = 60
 
-# Auto-enabled the "gblessing" strategy for Paladins, which replaces standard blessing strategies and
-# allows buffing with greater blessings based on a priority list for each spec.
+# Auto-enable the "gblessing" strategy for Paladin bots, which replaces standard blessing
+# strategies and allows buffing with greater blessings based on a priority list for each spec.
 # 0 = disabled
 # 1 = auto-enable in raid groups only
 # 2 = auto-enable in any group, including raids
 # Default: 1 (raid only)
 AiPlayerbot.AutoGreaterBlessings = 1
 
-# Controls non-Paladin party-wide reagent buffs such as Gift of the Wild, Arcane Brilliance,
+# Enable bots to use non-Paladin party-wide reagent buffs: Gift of the Wild, Arcane Brilliance,
 # Prayer of Fortitude, Prayer of Spirit, and Prayer of Shadow Protection.
 # 0 = disabled
 # 1 = use in raid groups only
