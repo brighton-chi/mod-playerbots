@@ -162,6 +162,16 @@ bool SupremusNeedToManagePhaseTimerTrigger::IsActive()
     return IsMechanicTrackerBot(botAI, bot, BLACK_TEMPLE_MAP_ID);
 }
 
+// Shade of Akama
+
+bool ShadeOfAkamaKillingChannelersStartsPhase2Trigger::IsActive()
+{
+    if (!botAI->IsDps(bot) && !botAI->IsMelee(bot))
+        return false;
+
+    return AI_VALUE2(Unit*, "find target", "ashtongue channeler");
+}
+
 // Teron Gorefiend
 
 bool TeronGorefiendPullingBossTrigger::IsActive()

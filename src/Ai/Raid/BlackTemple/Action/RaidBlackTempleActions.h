@@ -117,9 +117,17 @@ public:
 };
 
 // Shade of Akama
-// N/A
+
+class ShadeOfAkamaMeleeDpsPrioritizeChannelersAction : public AttackAction
+{
+public:
+    ShadeOfAkamaMeleeDpsPrioritizeChannelersAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "shade of akama melee dps prioritize channelers") {}
+    bool Execute(Event event) override;
+};
 
 // Teron Gorefiend
+
 class TeronGorefiendMisdirectBossToMainTankAction : public AttackAction
 {
 public:

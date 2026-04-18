@@ -44,6 +44,10 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("supremus need to manage phase timer", {
         NextAction("supremus manage phase timer", ACTION_EMERGENCY + 10) }));
 
+    // Shade of Akama
+    triggers.push_back(new TriggerNode("shade of akama killing channelers starts phase 2", {
+        NextAction("shade of akama melee dps prioritize channelers", ACTION_RAID + 1) }));
+
     // Teron Gorefiend
     triggers.push_back(new TriggerNode("teron gorefiend pulling boss", {
         NextAction("teron gorefiend misdirect boss to main tank", ACTION_RAID + 2) }));

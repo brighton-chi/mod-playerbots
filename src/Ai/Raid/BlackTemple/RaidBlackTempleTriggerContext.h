@@ -50,6 +50,10 @@ public:
         creators["supremus need to manage phase timer"] =
             &RaidBlackTempleTriggerContext::supremus_need_to_manage_phase_timer;
 
+        // Shade of Akama
+        creators["shade of akama killing channelers starts phase 2"] =
+            &RaidBlackTempleTriggerContext::shade_of_akama_killing_channelers_starts_phase_2;
+
         // Teron Gorefiend
         creators["teron gorefiend pulling boss"] =
             &RaidBlackTempleTriggerContext::teron_gorefiend_pulling_boss;
@@ -240,6 +244,10 @@ private:
 
     static Trigger* supremus_need_to_manage_phase_timer(
         PlayerbotAI* botAI) { return new SupremusNeedToManagePhaseTimerTrigger(botAI); }
+
+    // Shade of Akama
+    static Trigger* shade_of_akama_killing_channelers_starts_phase_2(
+        PlayerbotAI* botAI) { return new ShadeOfAkamaKillingChannelersStartsPhase2Trigger(botAI); }
 
     // Teron Gorefiend
     static Trigger* teron_gorefiend_pulling_boss(

@@ -102,6 +102,16 @@ public:
     bool IsActive() override;
 };
 
+// Shade of Akama
+
+class ShadeOfAkamaKillingChannelersStartsPhase2Trigger : public Trigger
+{
+public:
+    ShadeOfAkamaKillingChannelersStartsPhase2Trigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "shade of akama killing channelers starts phase 2") {}
+    bool IsActive() override;
+};
+
 // Teron Gorefiend
 class TeronGorefiendPullingBossTrigger : public Trigger
 {

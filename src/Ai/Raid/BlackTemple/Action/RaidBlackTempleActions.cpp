@@ -464,6 +464,43 @@ bool SupremusManagePhaseTimerAction::Execute(Event /*event*/)
     return false;
 }
 
+// Shade of Akama
+
+bool ShadeOfAkamaMeleeDpsPrioritizeChannelersAction::Execute(Event /*event*/)
+{
+    Unit* channeler = GetFirstAliveUnitByEntry(
+        botAI, static_cast<uint32>(BlackTempleNPCs::NPC_ASHTONGUE_CHANNELER));
+    if (!channeler)
+        return false;
+
+    bool isFirstMeleeDpsBot = false;
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || !botAI->IsDps(member) ||
+                !botAI->IsMelee(member) || !GET_PLAYERBOT_AI(member))
+            {
+                continue;
+            }
+
+            isFirstMeleeDpsBot = member == bot;
+            break;
+        }
+    }
+
+    if (isFirstMeleeDpsBot)
+        MarkTargetWithDiamond(bot, channeler);
+
+    SetRtiTarget(botAI, "diamond", channeler);
+
+    if (bot->GetVictim() != channeler)
+        return Attack(channeler);
+
+    return false;
+}
+
 // Teron Gorefiend
 
 bool TeronGorefiendMisdirectBossToMainTankAction::Execute(Event /*event*/)

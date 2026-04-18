@@ -50,6 +50,10 @@ public:
         creators["supremus manage phase timer"] =
             &RaidBlackTempleActionContext::supremus_manage_phase_timer;
 
+        // Shade of Akama
+        creators["shade of akama melee dps prioritize channelers"] =
+            &RaidBlackTempleActionContext::shade_of_akama_melee_dps_prioritize_channelers;
+
         // Teron Gorefiend
         creators["teron gorefiend misdirect boss to main tank"] =
             &RaidBlackTempleActionContext::teron_gorefiend_misdirect_boss_to_main_tank;
@@ -240,6 +244,10 @@ private:
 
     static Action* supremus_manage_phase_timer(
         PlayerbotAI* botAI) { return new SupremusManagePhaseTimerAction(botAI); }
+
+    // Shade of Akama
+    static Action* shade_of_akama_melee_dps_prioritize_channelers(
+        PlayerbotAI* botAI) { return new ShadeOfAkamaMeleeDpsPrioritizeChannelersAction(botAI); }
 
     // Teron Gorefiend
     static Action* teron_gorefiend_misdirect_boss_to_main_tank(
