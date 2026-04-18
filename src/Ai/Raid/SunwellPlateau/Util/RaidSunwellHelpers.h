@@ -8,6 +8,7 @@
 
 #include <array>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "AiObject.h"
@@ -93,7 +94,6 @@ namespace SunwellHelpers
     };
     struct KalecgosEncounterState
     {
-        uint32 activeRiftSequence = 0;
         uint32 activeRiftOpenedMs = 0;
         uint8 activeRiftGroup = KALECGOS_INVALID_GROUP;
         ObjectGuid blastedPlayerGuid = ObjectGuid::Empty;
@@ -105,7 +105,7 @@ namespace SunwellHelpers
     };
     extern std::unordered_map<uint32, KalecgosEncounterState> kalecgosEncounterStates;
     extern std::unordered_map<ObjectGuid, KalecgosRealmState> kalecgosRealmStates;
-    extern std::unordered_map<ObjectGuid, bool> hasReachedKalecgosInitialRangedPosition;
+    extern std::unordered_set<ObjectGuid> hasReachedKalecgosInitialRangedPosition;
     extern const Position KALECGOS_TANK_POSITION;
     extern const Position KALECGOS_INITIAL_RANGED_POSITION;
     bool IsKalecgosDecurser(PlayerbotAI* botAI, Player* bot);

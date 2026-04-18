@@ -26,7 +26,7 @@ namespace SunwellHelpers
 
     std::unordered_map<uint32, KalecgosEncounterState> kalecgosEncounterStates;
     std::unordered_map<ObjectGuid, KalecgosRealmState> kalecgosRealmStates;
-    std::unordered_map<ObjectGuid, bool> hasReachedKalecgosInitialRangedPosition;
+    std::unordered_set<ObjectGuid> hasReachedKalecgosInitialRangedPosition;
 
     void ClearExpiredKalecgosActiveRift(KalecgosEncounterState& state, uint32 now)
     {
@@ -417,11 +417,8 @@ namespace SunwellHelpers
         if (bot->GetMapId() != SUNWELL_MAP_ID)
             return false;
 
-        auto trackerItr =
-            hasReachedKalecgosInitialRangedPosition.find(bot->GetGUID());
-
-        return trackerItr !=
-            hasReachedKalecgosInitialRangedPosition.end() && trackerItr->second;
+        return hasReachedKalecgosInitialRangedPosition.find(bot->GetGUID()) !=
+               hasReachedKalecgosInitialRangedPosition.end();
     }
 
     void SetKalecgosInitialRangedPositionReached(Player* bot, bool reached)
@@ -430,7 +427,7 @@ namespace SunwellHelpers
             return;
 
         if (reached)
-            hasReachedKalecgosInitialRangedPosition[bot->GetGUID()] = true;
+            hasReachedKalecgosInitialRangedPosition.insert(bot->GetGUID());
         else
             hasReachedKalecgosInitialRangedPosition.erase(bot->GetGUID());
     }
@@ -485,6 +482,18 @@ namespace SunwellHelpers
         return realmStateItr->second.inSpectralRealm;
     }
 
+    void UpdateKalecgosRealmState(Player* bot, bool inSpectralRealm, uint32 timestamp)
+    {
+        KalecgosRealmState& realmState = kalecgosRealmStates[bot->GetGUID()];
+        realmState.inSpectralRealm = inSpectralRealm;
+        if (inSpectralRealm)
+            realmState.lastEnterMs = timestamp;
+        else
+            realmState.lastExitMs = timestamp;
+
+        SetKalecgosInitialRangedPositionReached(bot, false);
+    }
+
     void RecordKalecgosSpectralBlastTarget(PlayerbotAI* botAI, Player* bot)
     {
         if (bot->GetMapId() != SUNWELL_MAP_ID)
@@ -495,7 +504,6 @@ namespace SunwellHelpers
         uint32 now = getMSTime();
 
         state.activeRiftOpenedMs = now;
-        state.activeRiftSequence++;
         state.blastedPlayerGuid = bot->GetGUID();
         state.firstEntrantGuid = ObjectGuid::Empty;
         state.activeRiftGroup = ResolveKalecgosActiveRiftGroup(group, state);
@@ -510,15 +518,11 @@ namespace SunwellHelpers
         KalecgosEncounterState& state = GetPreparedKalecgosEncounterState(botAI, bot);
         uint32 now = getMSTime();
 
-        KalecgosRealmState& realmState = kalecgosRealmStates[bot->GetGUID()];
-        realmState.inSpectralRealm = true;
-        realmState.lastEnterMs = now;
-        SetKalecgosInitialRangedPositionReached(bot, false);
+        UpdateKalecgosRealmState(bot, true, now);
 
         if (!state.activeRiftOpenedMs)
         {
             state.activeRiftOpenedMs = now;
-            state.activeRiftSequence++;
             state.blastedPlayerGuid = bot->GetGUID();
             state.firstEntrantGuid = ObjectGuid::Empty;
         }
@@ -535,10 +539,7 @@ namespace SunwellHelpers
         if (bot->GetMapId() != SUNWELL_MAP_ID)
             return;
 
-        KalecgosRealmState& realmState = kalecgosRealmStates[bot->GetGUID()];
-        realmState.inSpectralRealm = false;
-        realmState.lastExitMs = getMSTime();
-        SetKalecgosInitialRangedPositionReached(bot, false);
+        UpdateKalecgosRealmState(bot, false, getMSTime());
     }
 
     // Brutallus
