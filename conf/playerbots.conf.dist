@@ -491,8 +491,8 @@ AiPlayerbot.AutoGreaterBlessings = 1
 # 0 = disabled
 # 1 = enabled in raid groups only
 # 2 = enabled in all groups
-# Default: 1 (raid only)
-AiPlayerbot.AutoPartyBuffs = 1
+# Default: 2 (all groups)
+AiPlayerbot.AutoPartyBuffs = 2
 
 # Bots can flee from enemies
 AiPlayerbot.FleeingEnabled = 1

@@ -126,17 +126,17 @@ bool PlayerbotAIConfig::Initialize()
             autoGreaterBlessings = AutoPartyBuffMode::RAID_ONLY;
             break;
     }
-    switch (sConfigMgr->GetOption<uint32>("AiPlayerbot.AutoPartyBuffs", 1))
+    switch (sConfigMgr->GetOption<uint32>("AiPlayerbot.AutoPartyBuffs", 2))
     {
         case 0:
             autoPartyBuffs = AutoPartyBuffMode::DISABLED;
             break;
-        case 2:
-            autoPartyBuffs = AutoPartyBuffMode::GROUP_OR_RAID;
-            break;
         case 1:
-        default:
             autoPartyBuffs = AutoPartyBuffMode::RAID_ONLY;
+            break;
+        case 2:
+        default:
+            autoPartyBuffs = AutoPartyBuffMode::GROUP_OR_RAID;
             break;
     }
     autoAvoidAoe = sConfigMgr->GetOption<bool>("AiPlayerbot.AutoAvoidAoe", true);

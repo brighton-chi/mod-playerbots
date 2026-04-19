@@ -27,9 +27,10 @@ namespace ai::buff
             case AutoPartyBuffMode::GROUP_OR_RAID:
                 return true;
             case AutoPartyBuffMode::DISABLED:
-            default:
                 return false;
         }
+
+        return false;
     }
 
     std::string MakeAuraQualifierForBuff(std::string const& name)
