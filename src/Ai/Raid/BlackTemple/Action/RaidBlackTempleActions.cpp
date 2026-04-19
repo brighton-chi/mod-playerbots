@@ -441,7 +441,7 @@ std::vector<Unit*> SupremusMoveAwayFromVolcanosAction::GetAllSupremusVolcanos()
 
     std::list<Creature*> creatureList;
     bot->GetCreatureListWithEntryInGrid(creatureList, static_cast<uint32>(
-        BlackTempleNPCs::NPC_SUPREMUS_VOLCANO), searchRadius);
+        BlackTempleNpcs::NPC_SUPREMUS_VOLCANO), searchRadius);
 
     for (Creature* creature : creatureList)
     {
@@ -469,7 +469,7 @@ bool SupremusManagePhaseTimerAction::Execute(Event /*event*/)
 bool ShadeOfAkamaMeleeDpsPrioritizeChannelersAction::Execute(Event /*event*/)
 {
     Unit* channeler = GetFirstAliveUnitByEntry(
-        botAI, static_cast<uint32>(BlackTempleNPCs::NPC_ASHTONGUE_CHANNELER));
+        botAI, static_cast<uint32>(BlackTempleNpcs::NPC_ASHTONGUE_CHANNELER));
     if (!channeler)
         return false;
 
@@ -653,7 +653,7 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event /*eve
     {
         Unit* unit = botAI->GetUnit(guid);
         if (!unit || !unit->IsAlive() ||
-            unit->GetEntry() != static_cast<uint32>(BlackTempleNPCs::NPC_SHADOWY_CONSTRUCT))
+            unit->GetEntry() != static_cast<uint32>(BlackTempleNpcs::NPC_SHADOWY_CONSTRUCT))
             continue;
 
         uint32 hp = unit->GetHealth();
@@ -2051,7 +2051,7 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*ev
             std::list<Creature*> demonFires;
             constexpr float searchRadius = 40.0f;
             bot->GetCreatureListWithEntryInGrid(demonFires, static_cast<uint32>(
-                BlackTempleNPCs::NPC_DEMON_FIRE), searchRadius);
+                BlackTempleNpcs::NPC_DEMON_FIRE), searchRadius);
 
             const Position& pos = demonFires.empty() ?
                 ILLIDAN_E_GLAIVE_WAITING_POSITION : ILLIDAN_E_GRATE_POSITION;
@@ -2102,7 +2102,7 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*ev
             std::list<Creature*> demonFires;
             constexpr float searchRadius = 40.0f;
             bot->GetCreatureListWithEntryInGrid(demonFires, static_cast<uint32>(
-                BlackTempleNPCs::NPC_DEMON_FIRE), searchRadius);
+                BlackTempleNpcs::NPC_DEMON_FIRE), searchRadius);
 
             const Position& pos = demonFires.empty() ?
                 ILLIDAN_W_GLAIVE_WAITING_POSITION : ILLIDAN_W_GRATE_POSITION;
@@ -2223,7 +2223,7 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidB
     {
         Unit* unit = botAI->GetUnit(guid);
         if (unit &&
-            unit->GetEntry() == static_cast<uint32>(BlackTempleNPCs::NPC_BLAZE) &&
+            unit->GetEntry() == static_cast<uint32>(BlackTempleNpcs::NPC_BLAZE) &&
             bot->GetDistance2d(unit) <= 8.0f)
         {
             blazeNearby = true;
@@ -2541,7 +2541,7 @@ bool IllidanStormrageMeleeGoSomewhereToNotDieAction::Execute(Event /*event*/)
     Unit* illidanVictim = illidan->GetVictim();
     // But they can attack Shadow Demons and Shadowfiends, if far enough from Illidan
     Unit* shadowDemon = bot->FindNearestCreature(static_cast<uint32>(
-        BlackTempleNPCs::NPC_SHADOW_DEMON), demonSearchRadius, true);
+        BlackTempleNpcs::NPC_SHADOW_DEMON), demonSearchRadius, true);
     if (shadowDemon && shadowDemon->GetDistance2d(illidan) > 15.0f &&
         (!illidanVictim || shadowDemon->GetDistance2d(illidanVictim) > 24.0f))
     {
@@ -2550,7 +2550,7 @@ bool IllidanStormrageMeleeGoSomewhereToNotDieAction::Execute(Event /*event*/)
     else
     {
         Unit* shadowfiend = bot->FindNearestCreature(static_cast<uint32>(
-            BlackTempleNPCs::NPC_PARASITIC_SHADOWFIEND), shadowfiendSearchRadius, true);
+            BlackTempleNpcs::NPC_PARASITIC_SHADOWFIEND), shadowfiendSearchRadius, true);
         if (shadowfiend && shadowfiend->GetDistance2d(illidan) > 15.0f &&
             shadowfiend->GetHealthPct() < 30.0f &&
             (!illidanVictim || shadowfiend->GetDistance2d(illidanVictim) > 24.0f))
@@ -2617,7 +2617,7 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
         constexpr float searchRadius = 35.0f;
 
         Unit* shadowDemon = bot->FindNearestCreature(static_cast<uint32>(
-            BlackTempleNPCs::NPC_SHADOW_DEMON), searchRadius, true);
+            BlackTempleNpcs::NPC_SHADOW_DEMON), searchRadius, true);
 
         if (GetIllidanWarlockTank(bot) == bot)
         {
@@ -2626,7 +2626,7 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
         else
         {
             Unit* shadowfiend = bot->FindNearestCreature(static_cast<uint32>(
-                BlackTempleNPCs::NPC_PARASITIC_SHADOWFIEND), searchRadius, true);
+                BlackTempleNpcs::NPC_PARASITIC_SHADOWFIEND), searchRadius, true);
             if (botAI->IsRanged(bot))
             {
                 if (shadowDemon)
@@ -2648,7 +2648,7 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
         {
             constexpr float searchRadius = 35.0f;
             Unit* shadowfiend = bot->FindNearestCreature(static_cast<uint32>(
-                BlackTempleNPCs::NPC_PARASITIC_SHADOWFIEND), searchRadius, true);
+                BlackTempleNpcs::NPC_PARASITIC_SHADOWFIEND), searchRadius, true);
             if (shadowfiend && bot->GetDistance2d(shadowfiend) > 10.0f)
                 targets = { shadowfiend };
             else
@@ -2658,7 +2658,7 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
         {
             constexpr float searchRadius = 20.0f;
             Unit* shadowfiend = bot->FindNearestCreature(static_cast<uint32>(
-                BlackTempleNPCs::NPC_PARASITIC_SHADOWFIEND), searchRadius, true);
+                BlackTempleNpcs::NPC_PARASITIC_SHADOWFIEND), searchRadius, true);
             if (shadowfiend && bot->GetDistance2d(shadowfiend) > 5.0f)
             {
                 targets = { shadowfiend };
@@ -2752,7 +2752,7 @@ bool IllidanStormrageManageDpsTimerAndRtiAction::Execute(Event /*event*/)
             std::list<Creature*> creatureList;
             constexpr float searchRadius = 50.0f;
             illidan->GetCreatureListWithEntryInGrid(creatureList, static_cast<uint32>(
-                BlackTempleNPCs::NPC_FLAME_OF_AZZINOTH), searchRadius);
+                BlackTempleNpcs::NPC_FLAME_OF_AZZINOTH), searchRadius);
 
             std::vector<Creature*> flames;
             for (Creature* creature : creatureList)
@@ -2806,20 +2806,20 @@ bool IllidanStormrageDestroyHazardsAction::Execute(Event /*event*/)
     if (phase == 2)
     {
         entries = {
-            static_cast<uint32>(BlackTempleNPCs::NPC_FLAME_CRASH)
+            static_cast<uint32>(BlackTempleNpcs::NPC_FLAME_CRASH)
         };
     }
     else if (phase == 4)
     {
         entries = {
-            static_cast<uint32>(BlackTempleNPCs::NPC_FLAME_CRASH)
+            static_cast<uint32>(BlackTempleNpcs::NPC_FLAME_CRASH)
         };
     }
     else if (phase == 0)
     {
         entries = {
-            static_cast<uint32>(BlackTempleNPCs::NPC_DEMON_FIRE),
-            static_cast<uint32>(BlackTempleNPCs::NPC_BLAZE)
+            static_cast<uint32>(BlackTempleNpcs::NPC_DEMON_FIRE),
+            static_cast<uint32>(BlackTempleNpcs::NPC_BLAZE)
         };
     }
 
@@ -2843,7 +2843,7 @@ bool IllidanStormrageNerfShadowDemonCheatAction::Execute(Event /*event*/)
 {
     constexpr float searchRadius = 75.0f;
     Unit* shadowDemon = bot->FindNearestCreature(static_cast<uint32>(
-        BlackTempleNPCs::NPC_SHADOW_DEMON), searchRadius, true);
+        BlackTempleNpcs::NPC_SHADOW_DEMON), searchRadius, true);
 
     if (shadowDemon && shadowDemon->GetHealthPct() > 25.0f)
     {

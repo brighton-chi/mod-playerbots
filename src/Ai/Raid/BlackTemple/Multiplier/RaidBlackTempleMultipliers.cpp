@@ -523,9 +523,9 @@ float IllidanStormrageDisableDefaultTargetingMultiplier::GetValue(Action* action
 
     constexpr float searchRadius = 40.0f;
     Unit* shadowDemon = bot->FindNearestCreature(
-        static_cast<uint32>(BlackTempleNPCs::NPC_SHADOW_DEMON), searchRadius);
+        static_cast<uint32>(BlackTempleNpcs::NPC_SHADOW_DEMON), searchRadius);
     Unit* shadowfiend = bot->FindNearestCreature(
-        static_cast<uint32>(BlackTempleNPCs::NPC_PARASITIC_SHADOWFIEND), searchRadius);
+        static_cast<uint32>(BlackTempleNpcs::NPC_PARASITIC_SHADOWFIEND), searchRadius);
 
     if (((shadowDemon && bot->GetTarget() == shadowDemon->GetGUID()) ||
          (shadowfiend && bot->GetTarget() == shadowfiend->GetGUID())) &&

@@ -82,7 +82,7 @@ namespace BlackTempleHelpers
         SPELL_EARTHBIND_TOTEM           = 2484,
     };
 
-    enum class BlackTempleNPCs : uint32
+    enum class BlackTempleNpcs : uint32
     {
         // Supremus
         NPC_SUPREMUS_VOLCANO      = 23085,

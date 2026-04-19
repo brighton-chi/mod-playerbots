@@ -23,7 +23,7 @@ namespace BlackTempleHelpers
         constexpr float searchRadius = 20.0f;
         std::list<Creature*> creatureList;
         bot->GetCreatureListWithEntryInGrid(
-            creatureList, static_cast<uint32>(BlackTempleNPCs::NPC_SUPREMUS_VOLCANO), searchRadius);
+            creatureList, static_cast<uint32>(BlackTempleNpcs::NPC_SUPREMUS_VOLCANO), searchRadius);
 
         for (Creature* creature : creatureList)
         {
@@ -259,7 +259,7 @@ namespace BlackTempleHelpers
         std::list<Creature*> creatureList;
         constexpr float searchRadius = 30.0f;
         bot->GetCreatureListWithEntryInGrid(
-            creatureList, static_cast<uint32>(BlackTempleNPCs::NPC_FLAME_CRASH), searchRadius);
+            creatureList, static_cast<uint32>(BlackTempleNpcs::NPC_FLAME_CRASH), searchRadius);
 
         for (Creature* creature : creatureList)
         {
@@ -373,7 +373,7 @@ namespace BlackTempleHelpers
         constexpr float searchRadius = 100.0f;
         std::list<Creature*> creatureList;
         bot->GetCreatureListWithEntryInGrid(
-            creatureList, static_cast<uint32>(BlackTempleNPCs::NPC_ILLIDAN_DB_TARGET), searchRadius);
+            creatureList, static_cast<uint32>(BlackTempleNpcs::NPC_ILLIDAN_DB_TARGET), searchRadius);
 
         Creature* eyeBlastTrigger = nullptr;
         for (Creature* creature : creatureList)
