@@ -52,6 +52,14 @@ public:
     bool IsActive() override;
 };
 
+class KalecgosBotsHaveTroubleWithWorldTransitionTrigger : public Trigger
+{
+public:
+    KalecgosBotsHaveTroubleWithWorldTransitionTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "kalecgos bots have trouble with world transition") {}
+    bool IsActive() override;
+};
+
 // Brutallus
 
 class BrutallusPullingBossTrigger : public Trigger

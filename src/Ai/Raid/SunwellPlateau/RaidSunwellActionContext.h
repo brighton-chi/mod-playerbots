@@ -31,6 +31,9 @@ public:
         creators["kalecgos determine boss to attack"] =
             &RaidSunwellActionContext::kalecgos_determine_boss_to_attack;
 
+        creators["kalecgos return to spectral realm ground"] =
+            &RaidSunwellActionContext::kalecgos_return_to_spectral_realm_ground;
+
         // Brutallus
         creators["brutallus misdirect boss to main tank"] =
             &RaidSunwellActionContext::brutallus_misdirect_boss_to_main_tank;
@@ -141,6 +144,9 @@ private:
 
     static Action* kalecgos_determine_boss_to_attack(
         PlayerbotAI* botAI) { return new KalecgosDetermineBossToAttackAction(botAI); }
+
+    static Action* kalecgos_return_to_spectral_realm_ground(
+        PlayerbotAI* botAI) { return new KalecgosReturnToSpectralRealmGroundAction(botAI); }
 
     // Brutallus
     static Action* brutallus_misdirect_boss_to_main_tank(

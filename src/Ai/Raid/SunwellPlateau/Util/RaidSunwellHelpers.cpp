@@ -91,7 +91,8 @@ namespace SunwellHelpers
 
     bool IsKalecgosActiveRiftCandidate(Player* candidate, KalecgosEncounterState const& state)
     {
-        if (!candidate || !candidate->IsAlive() || candidate->GetMapId() != SUNWELL_MAP_ID)
+        if (!candidate || !candidate->IsAlive() || !candidate->IsInWorld() ||
+            candidate->GetMapId() != SUNWELL_MAP_ID)
             return false;
 
         if (!state.activeRiftOpenedMs || state.activeRiftGroup == KALECGOS_INVALID_GROUP)
@@ -105,10 +106,8 @@ namespace SunwellHelpers
 
     bool IsKalecgosPortalEligibleCandidate(Player* candidate)
     {
-        if (!candidate || !GET_PLAYERBOT_AI(candidate))
-            return false;
-
-        if (!candidate->IsAlive() || candidate->GetMapId() != SUNWELL_MAP_ID)
+        if (!candidate || !GET_PLAYERBOT_AI(candidate) || !candidate->IsAlive() ||
+            !candidate->IsInWorld() || candidate->GetMapId() != SUNWELL_MAP_ID)
             return false;
 
         if (candidate->HasAura(static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_EXHAUSTION)))
@@ -170,7 +169,7 @@ namespace SunwellHelpers
             if (!tank || tank == currentTank)
                 continue;
 
-            if (!tank->IsAlive() || tank->GetMapId() != SUNWELL_MAP_ID)
+            if (!tank->IsAlive() || !tank->IsInWorld() || tank->GetMapId() != SUNWELL_MAP_ID)
                 continue;
 
             if (IsInKalecgosSpectralRealm(tank))
@@ -326,9 +325,7 @@ namespace SunwellHelpers
         {
             Player* member = ref->GetSource();
             if (!member || !member->IsInWorld() || member->GetMapId() != SUNWELL_MAP_ID)
-            {
                 continue;
-            }
 
             if (GET_PLAYERBOT_AI(member))
                 botMembers.push_back(member);
@@ -451,7 +448,7 @@ namespace SunwellHelpers
 
         for (Player* tank : GetKalecgosAssignedTankOrder(group, state))
         {
-            if (!tank || !tank->IsAlive() || tank->GetMapId() != SUNWELL_MAP_ID)
+            if (!tank || !tank->IsAlive() || !tank->IsInWorld() || tank->GetMapId() != SUNWELL_MAP_ID)
                 continue;
 
             if (IsInKalecgosSpectralRealm(tank))
@@ -666,8 +663,7 @@ namespace SunwellHelpers
 
             bool isMelee = botAI->IsMelee(member);
             if ((wantRanged && isMelee) || (!wantRanged && !isMelee) ||
-                botAI->IsMainTank(member) ||
-                botAI->IsAssistTankOfIndex(member, 0, true))
+                botAI->IsMainTank(member) || botAI->IsAssistTankOfIndex(member, 0, true))
             {
                 continue;
             }
@@ -797,8 +793,7 @@ namespace SunwellHelpers
                 tankAngle + BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET);
         }
 
-        float angleTowardCenter = NormalizeSignedAngle(
-            frontCenterAngle - tankAngle);
+        float angleTowardCenter = NormalizeSignedAngle(frontCenterAngle - tankAngle);
         float towardCenterSign = angleTowardCenter < 0.0f ? -1.0f : 1.0f;
         float angleStep = GetBrutallusRangedSlotAngleStep(
             GetBrutallusNormalRangedRadius());
@@ -883,7 +878,7 @@ namespace SunwellHelpers
     void EnsureBrutallusRangedAssignments(PlayerbotAI* botAI, Player* bot)
     {
         Group* group = bot->GetGroup();
-        if (!group || bot->GetMapId() != SUNWELL_MAP_ID)
+        if (!group)
             return;
 
         auto& assignments = brutallusRangedAssignments[bot->GetInstanceId()];
@@ -920,8 +915,7 @@ namespace SunwellHelpers
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (!member || !member->IsInWorld() ||
-                member->GetMapId() != SUNWELL_MAP_ID ||
+            if (!member || !member->IsInWorld() || member->GetMapId() != SUNWELL_MAP_ID ||
                 !botAI->IsRanged(member))
             {
                 continue;
@@ -1280,9 +1274,6 @@ namespace SunwellHelpers
 
     void ClearFelmystDemonicVaporKiteState(Player* bot)
     {
-        if (!bot)
-            return;
-
         uint32 instanceId = bot->GetInstanceId();
         ObjectGuid guid = bot->GetGUID();
 
@@ -1303,7 +1294,8 @@ namespace SunwellHelpers
         }
     }
 
-    float GetDistanceToSegment2d(float pointX, float pointY, Position const& start, Position const& end)
+    float GetDistanceToSegment2d(
+        float pointX, float pointY, Position const& start, Position const& end)
     {
         float startX = start.GetPositionX();
         float startY = start.GetPositionY();
@@ -1382,7 +1374,8 @@ namespace SunwellHelpers
         return bestIndex;
     }
 
-    uint8 GetNextFelmystDemonicVaporWaypointIndex(Player* bot, uint8 pathIndex, uint8 currentWaypointIndex)
+    uint8 GetNextFelmystDemonicVaporWaypointIndex(
+        Player* bot, uint8 pathIndex, uint8 currentWaypointIndex)
     {
         auto const& path = FELMYST_DEMONIC_VAPOR_KITE_PATHS[pathIndex];
         uint8 waypointIndex = currentWaypointIndex % path.size();
@@ -1422,9 +1415,7 @@ namespace SunwellHelpers
                 {
                     Player* member = ref->GetSource();
                     if (!member || member == bot)
-                    {
                         continue;
-                    }
 
                     auto memberPathItr = pathInstanceItr->second.find(member->GetGUID());
                     if (memberPathItr == pathInstanceItr->second.end())
@@ -1448,9 +1439,7 @@ namespace SunwellHelpers
             for (Creature* creature : creatures)
             {
                 if (!creature || !creature->IsAlive())
-                {
                     continue;
-                }
 
                 if (entry == static_cast<uint32>(SunwellNpcs::NPC_DEMONIC_VAPOR) &&
                     creature->GetSummonerGUID() == bot->GetGUID())
@@ -1480,7 +1469,8 @@ namespace SunwellHelpers
         uint32 bestOccupancy = std::numeric_limits<uint32>::max();
         float bestDistance = std::numeric_limits<float>::max();
 
-        for (uint8 pathIndex = 0; pathIndex < FELMYST_DEMONIC_VAPOR_KITE_PATHS.size(); ++pathIndex)
+        for (uint8 pathIndex = 0;
+             pathIndex < FELMYST_DEMONIC_VAPOR_KITE_PATHS.size(); ++pathIndex)
         {
             float pathDistance = GetDistanceToFelmystDemonicVaporPath(
                 bot->GetPositionX(), bot->GetPositionY(), pathIndex);
@@ -1538,8 +1528,8 @@ namespace SunwellHelpers
         }
 
         Position const& waypoint = path[waypointIndex % path.size()];
-        destination.Relocate(
-            waypoint.GetPositionX(), waypoint.GetPositionY(), waypoint.GetPositionZ(), bot->GetOrientation());
+        destination.Relocate(waypoint.GetPositionX(), waypoint.GetPositionY(),
+                             waypoint.GetPositionZ(), bot->GetOrientation());
         return true;
     }
 
@@ -1557,12 +1547,10 @@ namespace SunwellHelpers
         }
 
         FelmystFogOfCorruptionState& tracker = felmystFogOfCorruptionStates[felmyst->GetInstanceId()];
-        bool hasTracker = tracker.phase != FelmystFogPhase::None;
         FelmystFogLocation currentLocation = GetFelmystCurrentFogLocation(felmyst);
         FelmystFogLocation destinationLocation = GetFelmystDestinationFogLocation(felmyst);
         FelmystFogLane currentLane = GetFelmystFogLaneFromLocation(currentLocation);
         FelmystFogLane destinationLane = GetFelmystFogLaneFromLocation(destinationLocation);
-        bool isSweeping = felmyst->HasAura(static_cast<uint32>(SunwellSpells::SPELL_FELMYST_SPEED_BURST));
 
         if (currentLane != FelmystFogLane::None)
         {
@@ -1573,6 +1561,9 @@ namespace SunwellHelpers
             state = tracker;
             return true;
         }
+
+        bool isSweeping =
+            felmyst->HasAura(static_cast<uint32>(SunwellSpells::SPELL_FELMYST_SPEED_BURST));
 
         if (isSweeping)
         {
@@ -1587,6 +1578,8 @@ namespace SunwellHelpers
             state = tracker;
             return true;
         }
+
+        bool hasTracker = tracker.phase != FelmystFogPhase::None;
 
         if (hasTracker && tracker.expireMs > now && tracker.lane != FelmystFogLane::None &&
             tracker.phase == FelmystFogPhase::Windup &&
@@ -1677,7 +1670,8 @@ namespace SunwellHelpers
         return position;
     }
 
-    bool TryGetFelmystRangedPosition(PlayerbotAI* botAI, Player* bot, Unit* felmyst, Position& position)
+    bool TryGetFelmystRangedPosition(
+        PlayerbotAI* botAI, Player* bot, Unit* felmyst, Position& position)
     {
         if (!felmyst)
             return false;
@@ -1757,88 +1751,6 @@ namespace SunwellHelpers
         return closestTarget;
     }
 
-    // M'uru & Entropius
-
-    bool IsMuruCastingDarkness(Unit* muru)
-    {
-        return muru && muru->HasUnitState(UNIT_STATE_CASTING) &&
-               muru->FindCurrentSpellBySpellId(static_cast<uint32>(SunwellSpells::SPELL_DARKNESS));
-    }
-
-    Creature* GetMuruDarknessCreature(Player* bot, Unit* muru)
-    {
-        if (!bot || !muru)
-            return nullptr;
-
-        constexpr float searchRadius = 40.0f;
-        constexpr float maxDistanceFromMuru = 20.0f;
-
-        Creature* closestDarkness = nullptr;
-        float closestDistance = std::numeric_limits<float>::max();
-        std::list<Creature*> darknessCreatures;
-        bot->GetCreatureListWithEntryInGrid(
-            darknessCreatures, static_cast<uint32>(SunwellNpcs::NPC_DARKNESS), searchRadius);
-
-        for (Creature* creature : darknessCreatures)
-        {
-            if (!creature || !creature->IsAlive())
-                continue;
-
-            float distanceFromMuru = creature->GetExactDist2d(muru);
-            if (distanceFromMuru > maxDistanceFromMuru || distanceFromMuru >= closestDistance)
-                continue;
-
-            closestDarkness = creature;
-            closestDistance = distanceFromMuru;
-        }
-
-        return closestDarkness;
-    }
-
-    bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru, Position& center)
-    {
-        center.Relocate(0.0f, 0.0f, 0.0f, 0.0f);
-
-        if (!bot || !muru || !muru->IsAlive())
-        {
-            if (bot)
-                muruDarknessStates.erase(bot->GetInstanceId());
-            return false;
-        }
-
-        uint32 const instanceId = bot->GetInstanceId();
-        uint32 const now = getMSTime();
-        MuruDarknessState& state = muruDarknessStates[instanceId];
-
-        if (Creature* darkness = GetMuruDarknessCreature(bot, muru))
-        {
-            center.Relocate(darkness->GetPositionX(), darkness->GetPositionY(), darkness->GetPositionZ(),
-                            darkness->GetOrientation());
-            constexpr uint32 darknessRefreshMs = 1000;
-            state.expireMs = now + darknessRefreshMs;
-            return true;
-        }
-
-        if (IsMuruCastingDarkness(muru))
-        {
-            center.Relocate(muru->GetPositionX(), muru->GetPositionY(), muru->GetPositionZ(),
-                            muru->GetOrientation());
-            constexpr uint32 darknessCastMs = 2000;
-            constexpr uint32 darknessDurationMs = 20000;
-            state.expireMs = now + darknessCastMs + darknessDurationMs;
-            return true;
-        }
-
-        if (state.expireMs > now)
-        {
-            center.Relocate(muru->GetPositionX(), muru->GetPositionY(), muru->GetPositionZ(),
-                            muru->GetOrientation());
-            return true;
-        }
-
-        muruDarknessStates.erase(instanceId);
-        return false;
-    }
 
     Unit* GetNearestFelmystFogOfCorruptionCharmedTarget(Player* bot)
     {
@@ -2007,6 +1919,89 @@ namespace SunwellHelpers
         return currentSpell && currentSpell->m_spellInfo &&
                currentSpell->m_spellInfo->Id == static_cast<uint32>(SunwellSpells::SPELL_CONFLAGRATION) &&
                currentSpell->m_targets.GetUnitTarget() == bot;
+    }
+
+    // M'uru & Entropius
+
+    bool IsMuruCastingDarkness(Unit* muru)
+    {
+        return muru && muru->HasUnitState(UNIT_STATE_CASTING) &&
+               muru->FindCurrentSpellBySpellId(static_cast<uint32>(SunwellSpells::SPELL_DARKNESS));
+    }
+
+    Creature* GetMuruDarknessCreature(Player* bot, Unit* muru)
+    {
+        if (!bot || !muru)
+            return nullptr;
+
+        constexpr float searchRadius = 40.0f;
+        constexpr float maxDistanceFromMuru = 20.0f;
+
+        Creature* closestDarkness = nullptr;
+        float closestDistance = std::numeric_limits<float>::max();
+        std::list<Creature*> darknessCreatures;
+        bot->GetCreatureListWithEntryInGrid(
+            darknessCreatures, static_cast<uint32>(SunwellNpcs::NPC_DARKNESS), searchRadius);
+
+        for (Creature* creature : darknessCreatures)
+        {
+            if (!creature || !creature->IsAlive())
+                continue;
+
+            float distanceFromMuru = creature->GetExactDist2d(muru);
+            if (distanceFromMuru > maxDistanceFromMuru || distanceFromMuru >= closestDistance)
+                continue;
+
+            closestDarkness = creature;
+            closestDistance = distanceFromMuru;
+        }
+
+        return closestDarkness;
+    }
+
+    bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru, Position& center)
+    {
+        center.Relocate(0.0f, 0.0f, 0.0f, 0.0f);
+
+        if (!bot || !muru || !muru->IsAlive())
+        {
+            if (bot)
+                muruDarknessStates.erase(bot->GetInstanceId());
+            return false;
+        }
+
+        uint32 const instanceId = bot->GetInstanceId();
+        uint32 const now = getMSTime();
+        MuruDarknessState& state = muruDarknessStates[instanceId];
+
+        if (Creature* darkness = GetMuruDarknessCreature(bot, muru))
+        {
+            center.Relocate(darkness->GetPositionX(), darkness->GetPositionY(),
+                            darkness->GetPositionZ(), darkness->GetOrientation());
+            constexpr uint32 darknessRefreshMs = 1000;
+            state.expireMs = now + darknessRefreshMs;
+            return true;
+        }
+
+        if (IsMuruCastingDarkness(muru))
+        {
+            center.Relocate(muru->GetPositionX(), muru->GetPositionY(), muru->GetPositionZ(),
+                            muru->GetOrientation());
+            constexpr uint32 darknessCastMs = 2000;
+            constexpr uint32 darknessDurationMs = 20000;
+            state.expireMs = now + darknessCastMs + darknessDurationMs;
+            return true;
+        }
+
+        if (state.expireMs > now)
+        {
+            center.Relocate(muru->GetPositionX(), muru->GetPositionY(), muru->GetPositionZ(),
+                            muru->GetOrientation());
+            return true;
+        }
+
+        muruDarknessStates.erase(instanceId);
+        return false;
     }
 
     void GatherMuruEncounterTargets(

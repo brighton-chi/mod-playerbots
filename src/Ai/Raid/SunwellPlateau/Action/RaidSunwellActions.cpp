@@ -130,7 +130,8 @@ bool KalecgosTankPositionBossAction::Execute(Event event)
     if (!kalecgos)
         return false;
 
-    MarkTargetWithSkull(bot, kalecgos);
+    MarkTargetWithDiamond(bot, kalecgos);
+    SetRtiTarget(botAI, "diamond", kalecgos);
 
     if (bot->GetVictim() != kalecgos)
         return Attack(kalecgos);
@@ -230,11 +231,14 @@ bool KalecgosDisperseRangedAction::Execute(Event /*event*/)
 bool KalecgosDetermineBossToAttackAction::Execute(Event /*event*/)
 {
     Unit* target = nullptr;
-    if (Unit* sathrovarr = AI_VALUE2(Unit*, "find target", "sathrovarr the corruptor"))
+    if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_REALM)))
     {
-        target = sathrovarr;
-        MarkTargetWithStar(bot, sathrovarr);
-        SetRtiTarget(botAI, "star", sathrovarr);
+        if (Unit* sathrovarr = AI_VALUE2(Unit*, "find target", "sathrovarr the corruptor"))
+        {
+            target = sathrovarr;
+            MarkTargetWithStar(bot, sathrovarr);
+            SetRtiTarget(botAI, "star", sathrovarr);
+        }
     }
     else if (Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos"))
     {
@@ -242,11 +246,18 @@ bool KalecgosDetermineBossToAttackAction::Execute(Event /*event*/)
         MarkTargetWithDiamond(bot, kalecgos);
         SetRtiTarget(botAI, "diamond", kalecgos);
     }
-    else
-        return false;
 
-    if (bot->GetTarget() != target->GetGUID())
+    if (target && bot->GetTarget() != target->GetGUID())
         return Attack(target);
+
+    return false;
+}
+
+bool KalecgosReturnToSpectralRealmGroundAction::Execute(Event /*event*/)
+{
+    if (bot->TeleportTo(SUNWELL_MAP_ID, bot->GetPositionX(), bot->GetPositionY(),
+                        SPECTRAL_REALM_FLOOR_Z, bot->GetOrientation()))
+        return true;
 
     return false;
 }

@@ -29,8 +29,7 @@ bool KalecgosBossEngagedByTankTrigger::IsActive()
 
 bool KalecgosSpectralRiftIsOpenTrigger::IsActive()
 {
-    if (!AI_VALUE2(Unit*, "find target", "kalecgos") &&
-        !AI_VALUE2(Unit*, "find target", "sathrovarr the corruptor"))
+    if (!AI_VALUE2(Unit*, "find target", "kalecgos"))
         return false;
 
     if (!ShouldEnterKalecgosSpectralRift(botAI, bot))
@@ -65,6 +64,12 @@ bool KalecgosBothBossesMustBeDefeatedTrigger::IsActive()
         return false;
 
     return GetKalecgosCurrentTank(botAI, bot) != bot;
+}
+
+bool KalecgosBotsHaveTroubleWithWorldTransitionTrigger::IsActive()
+{
+    return bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_REALM)) &&
+           bot->GetPositionZ() > SPECTRAL_REALM_FLOOR_Z + 2.0f;
 }
 
 // Brutallus

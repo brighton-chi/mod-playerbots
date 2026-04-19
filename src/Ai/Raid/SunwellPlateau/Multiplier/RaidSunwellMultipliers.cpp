@@ -115,6 +115,9 @@ float KalecgosControlMovementMultiplier::GetValue(Action* action)
 
 float KalecgosDelayCooldownsForSathrovarrMultiplier::GetValue(Action* action)
 {
+    if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_REALM)))
+        return 1.0f;
+
     Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos");
     if (!kalecgos || kalecgos->GetHealthPct() < 40.0f)
         return 1.0f;

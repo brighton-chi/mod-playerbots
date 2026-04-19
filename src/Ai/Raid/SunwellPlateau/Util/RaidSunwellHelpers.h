@@ -100,6 +100,7 @@ namespace SunwellHelpers
 
     constexpr uint8 KALECGOS_GROUP_COUNT = 4;
     constexpr uint8 KALECGOS_INVALID_GROUP = std::numeric_limits<uint8>::max();
+    constexpr float SPECTRAL_REALM_FLOOR_Z = -73.9f;
     struct KalecgosRealmState
     {
         uint32 lastEnterMs = 0;

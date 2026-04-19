@@ -31,6 +31,9 @@ public:
         creators["kalecgos both bosses must be defeated"] =
             &RaidSunwellTriggerContext::kalecgos_both_bosses_must_be_defeated;
 
+        creators["kalecgos bots have trouble with world transition"] =
+            &RaidSunwellTriggerContext::kalecgos_bots_have_trouble_with_world_transition;
+
         // Brutallus
         creators["brutallus pulling boss"] =
             &RaidSunwellTriggerContext::brutallus_pulling_boss;
@@ -144,6 +147,9 @@ private:
 
     static Trigger* kalecgos_both_bosses_must_be_defeated(
         PlayerbotAI* botAI) { return new KalecgosBothBossesMustBeDefeatedTrigger(botAI); }
+
+    static Trigger* kalecgos_bots_have_trouble_with_world_transition(
+        PlayerbotAI* botAI) { return new KalecgosBotsHaveTroubleWithWorldTransitionTrigger(botAI); }
 
     // Brutallus
     static Trigger* brutallus_pulling_boss(

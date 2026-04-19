@@ -25,6 +25,9 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kalecgos both bosses must be defeated", {
         NextAction("kalecgos determine boss to attack", ACTION_RAID + 2) }));
 
+    triggers.push_back(new TriggerNode("kalecgos bots have trouble with world transition", {
+        NextAction("kalecgos return to spectral realm ground", ACTION_EMERGENCY + 10) }));
+
     // Brutallus
     triggers.push_back(new TriggerNode("brutallus pulling boss", {
         NextAction("brutallus misdirect boss to main tank", ACTION_RAID + 2) }));
