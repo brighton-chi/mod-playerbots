@@ -8,6 +8,8 @@
 #include <list>
 
 #include "CellImpl.h"
+#include "CharmInfo.h"
+#include "CreatureAI.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
 #include "NearestGameObjects.h"
@@ -19,6 +21,16 @@
 
 namespace SunwellHelpers
 {
+    namespace
+    {
+        struct MuruDarknessState
+        {
+            uint32 expireMs = 0;
+        };
+
+        std::unordered_map<uint32, MuruDarknessState> muruDarknessStates;
+    }
+
     // Kalecgos & Sathrovarr the Corruptor
 
     const Position KALECGOS_TANK_POSITION =           { 1703.584f, 895.626f, 53.076f };
@@ -1253,7 +1265,7 @@ namespace SunwellHelpers
         constexpr float searchRadius = 80.0f;
         std::list<Creature*> vapors;
         carrier->GetCreatureListWithEntryInGrid(
-            vapors, static_cast<uint32>(SunwellNPCs::NPC_DEMONIC_VAPOR), searchRadius);
+            vapors, static_cast<uint32>(SunwellNpcs::NPC_DEMONIC_VAPOR), searchRadius);
         for (Creature* creature : vapors)
         {
             if (creature && creature->IsAlive() &&
@@ -1440,7 +1452,7 @@ namespace SunwellHelpers
                     continue;
                 }
 
-                if (entry == static_cast<uint32>(SunwellNPCs::NPC_DEMONIC_VAPOR) &&
+                if (entry == static_cast<uint32>(SunwellNpcs::NPC_DEMONIC_VAPOR) &&
                     creature->GetSummonerGUID() == bot->GetGUID())
                 {
                     continue;
@@ -1455,8 +1467,8 @@ namespace SunwellHelpers
             }
         };
 
-        addHazardsOnPath(static_cast<uint32>(SunwellNPCs::NPC_DEMONIC_VAPOR));
-        addHazardsOnPath(static_cast<uint32>(SunwellNPCs::NPC_DEMONIC_VAPOR_TRAIL));
+        addHazardsOnPath(static_cast<uint32>(SunwellNpcs::NPC_DEMONIC_VAPOR));
+        addHazardsOnPath(static_cast<uint32>(SunwellNpcs::NPC_DEMONIC_VAPOR_TRAIL));
 
         return occupancyCounts;
     }
@@ -1745,6 +1757,89 @@ namespace SunwellHelpers
         return closestTarget;
     }
 
+    // M'uru & Entropius
+
+    bool IsMuruCastingDarkness(Unit* muru)
+    {
+        return muru && muru->HasUnitState(UNIT_STATE_CASTING) &&
+               muru->FindCurrentSpellBySpellId(static_cast<uint32>(SunwellSpells::SPELL_DARKNESS));
+    }
+
+    Creature* GetMuruDarknessCreature(Player* bot, Unit* muru)
+    {
+        if (!bot || !muru)
+            return nullptr;
+
+        constexpr float searchRadius = 40.0f;
+        constexpr float maxDistanceFromMuru = 20.0f;
+
+        Creature* closestDarkness = nullptr;
+        float closestDistance = std::numeric_limits<float>::max();
+        std::list<Creature*> darknessCreatures;
+        bot->GetCreatureListWithEntryInGrid(
+            darknessCreatures, static_cast<uint32>(SunwellNpcs::NPC_DARKNESS), searchRadius);
+
+        for (Creature* creature : darknessCreatures)
+        {
+            if (!creature || !creature->IsAlive())
+                continue;
+
+            float distanceFromMuru = creature->GetExactDist2d(muru);
+            if (distanceFromMuru > maxDistanceFromMuru || distanceFromMuru >= closestDistance)
+                continue;
+
+            closestDarkness = creature;
+            closestDistance = distanceFromMuru;
+        }
+
+        return closestDarkness;
+    }
+
+    bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru, Position& center)
+    {
+        center.Relocate(0.0f, 0.0f, 0.0f, 0.0f);
+
+        if (!bot || !muru || !muru->IsAlive())
+        {
+            if (bot)
+                muruDarknessStates.erase(bot->GetInstanceId());
+            return false;
+        }
+
+        uint32 const instanceId = bot->GetInstanceId();
+        uint32 const now = getMSTime();
+        MuruDarknessState& state = muruDarknessStates[instanceId];
+
+        if (Creature* darkness = GetMuruDarknessCreature(bot, muru))
+        {
+            center.Relocate(darkness->GetPositionX(), darkness->GetPositionY(), darkness->GetPositionZ(),
+                            darkness->GetOrientation());
+            constexpr uint32 darknessRefreshMs = 1000;
+            state.expireMs = now + darknessRefreshMs;
+            return true;
+        }
+
+        if (IsMuruCastingDarkness(muru))
+        {
+            center.Relocate(muru->GetPositionX(), muru->GetPositionY(), muru->GetPositionZ(),
+                            muru->GetOrientation());
+            constexpr uint32 darknessCastMs = 2000;
+            constexpr uint32 darknessDurationMs = 20000;
+            state.expireMs = now + darknessCastMs + darknessDurationMs;
+            return true;
+        }
+
+        if (state.expireMs > now)
+        {
+            center.Relocate(muru->GetPositionX(), muru->GetPositionY(), muru->GetPositionZ(),
+                            muru->GetOrientation());
+            return true;
+        }
+
+        muruDarknessStates.erase(instanceId);
+        return false;
+    }
+
     Unit* GetNearestFelmystFogOfCorruptionCharmedTarget(Player* bot)
     {
         Group* group = bot->GetGroup();
@@ -1778,9 +1873,9 @@ namespace SunwellHelpers
     {
         constexpr float searchRadius = 20.0f;
         Unit* nearestTrail = bot->FindNearestCreature(
-            static_cast<uint32>(SunwellNPCs::NPC_DEMONIC_VAPOR_TRAIL), searchRadius, true);
+            static_cast<uint32>(SunwellNpcs::NPC_DEMONIC_VAPOR_TRAIL), searchRadius, true);
         Unit* nearestVapor = bot->FindNearestCreature(
-            static_cast<uint32>(SunwellNPCs::NPC_DEMONIC_VAPOR), searchRadius, true);
+            static_cast<uint32>(SunwellNpcs::NPC_DEMONIC_VAPOR), searchRadius, true);
 
         if (!nearestTrail)
             return nearestVapor;
@@ -1912,5 +2007,162 @@ namespace SunwellHelpers
         return currentSpell && currentSpell->m_spellInfo &&
                currentSpell->m_spellInfo->Id == static_cast<uint32>(SunwellSpells::SPELL_CONFLAGRATION) &&
                currentSpell->m_targets.GetUnitTarget() == bot;
+    }
+
+    void GatherMuruEncounterTargets(
+        PlayerbotAI* botAI, Player* bot, MuruEncounterTargets& targets, float maxSearchRange)
+    {
+        if (!botAI || !bot)
+            return;
+
+        Unit* encounterCenter = targets.muru ? targets.muru : targets.entropius;
+        auto const& units =
+            botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
+
+        for (ObjectGuid const& guid : units)
+        {
+            Unit* unit = botAI->GetUnit(guid);
+            if (!unit || !unit->IsAlive())
+                continue;
+
+            if (encounterCenter && unit->GetExactDist2d(encounterCenter) > maxSearchRange)
+                continue;
+
+            auto chooseLowestHealthTarget = [](Unit*& current, Unit* candidate)
+            {
+                if (!candidate)
+                    return;
+
+                if (!current || candidate->GetHealthPct() < current->GetHealthPct())
+                    current = candidate;
+            };
+
+            switch (unit->GetEntry())
+            {
+                case static_cast<uint32>(SunwellNpcs::NPC_MURU):
+                    targets.muru = unit;
+                    break;
+
+                case static_cast<uint32>(SunwellNpcs::NPC_ENTROPIUS):
+                    targets.entropius = unit;
+                    break;
+
+                case static_cast<uint32>(SunwellNpcs::NPC_VOID_SENTINEL):
+                    chooseLowestHealthTarget(targets.voidSentinel, unit);
+                    break;
+
+                case static_cast<uint32>(SunwellNpcs::NPC_VOID_SPAWN):
+                    chooseLowestHealthTarget(targets.voidSpawn, unit);
+                    break;
+
+                case static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_FURY_MAGE):
+                    chooseLowestHealthTarget(targets.furyMage, unit);
+                    break;
+
+                case static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_BERSERKER):
+                    chooseLowestHealthTarget(targets.berserker, unit);
+                    break;
+
+                default:
+                    break;
+            }
+        }
+    }
+
+    Creature* FindAvailableVoidSpawnForEnslave(
+        PlayerbotAI* botAI, Player* bot, Unit* muru, Unit* entropius)
+    {
+        if (!botAI || !bot || (!muru && !entropius))
+            return nullptr;
+
+        Creature* bestSpawn = nullptr;
+        float closestDistance = std::numeric_limits<float>::max();
+        auto const& units =
+            botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
+        Unit* encounterCenter = muru ? muru : entropius;
+
+        for (ObjectGuid const& guid : units)
+        {
+            Unit* unit = botAI->GetUnit(guid);
+            if (!unit || !unit->IsAlive() ||
+                unit->GetEntry() != static_cast<uint32>(SunwellNpcs::NPC_VOID_SPAWN) ||
+                unit->IsCharmed() || unit->GetCharmer())
+            {
+                continue;
+            }
+
+            if (encounterCenter && unit->GetExactDist2d(encounterCenter) > MURU_RANGED_TARGET_SEARCH_RANGE)
+                continue;
+
+            float distance = bot->GetExactDist2d(unit);
+            if (distance >= closestDistance)
+                continue;
+
+            Creature* creature = unit->ToCreature();
+            if (!creature)
+                continue;
+
+            bestSpawn = creature;
+            closestDistance = distance;
+        }
+
+        return bestSpawn;
+    }
+
+    Unit* GetVoidSpawnVolleyPriorityTarget(
+        PlayerbotAI* botAI, Player* bot, Unit* muru, Unit* entropius)
+    {
+        if (!botAI || !bot)
+            return nullptr;
+
+        MuruEncounterTargets targets;
+        targets.muru = muru;
+        targets.entropius = entropius;
+        GatherMuruEncounterTargets(botAI, bot, targets);
+
+        std::array<Unit*, 5> priorities = {
+            targets.furyMage,
+            targets.berserker,
+            targets.voidSentinel,
+            targets.muru,
+            targets.entropius
+        };
+
+        for (Unit* target : priorities)
+        {
+            if (target && target->IsAlive())
+                return target;
+        }
+
+        return nullptr;
+    }
+
+    bool CommandControlledCreatureToAttack(Unit* controlled, Unit* target)
+    {
+        if (!controlled || !target || !controlled->IsAlive() || !target->IsAlive())
+            return false;
+
+        if (controlled->GetVictim() == target)
+            return false;
+
+        controlled->ClearUnitState(UNIT_STATE_FOLLOW);
+        controlled->AttackStop();
+        controlled->SetTarget(target->GetGUID());
+
+        if (CharmInfo* charmInfo = controlled->GetCharmInfo())
+        {
+            charmInfo->SetIsCommandAttack(true);
+            charmInfo->SetIsAtStay(false);
+            charmInfo->SetIsFollowing(false);
+            charmInfo->SetIsCommandFollow(false);
+            charmInfo->SetIsReturning(false);
+        }
+
+        if (!controlled->IsPlayer() && controlled->IsCreature() && controlled->ToCreature()->IsAIEnabled)
+            controlled->ToCreature()->AI()->AttackStart(target);
+        else
+            controlled->Attack(target, true);
+
+        return true;
     }
 }

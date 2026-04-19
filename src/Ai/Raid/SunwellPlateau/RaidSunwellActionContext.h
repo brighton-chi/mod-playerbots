@@ -104,8 +104,20 @@ public:
             &RaidSunwellActionContext::eredar_twins_conflagrated_bot_move_from_group;
 
         // M'uru & Entropius
-        creators["m'uru"] =
-            &RaidSunwellActionContext::muru;
+        creators["m'uru set dps priority"] =
+            &RaidSunwellActionContext::muru_set_dps_priority;
+
+        creators["m'uru kill dark fiends with dispel"] =
+            &RaidSunwellActionContext::muru_kill_dark_fiends_with_dispel;
+
+        creators["m'uru avoid darkness"] =
+            &RaidSunwellActionContext::muru_avoid_darkness;
+
+        creators["m'uru warlock enslave void spawn"] =
+            &RaidSunwellActionContext::muru_warlock_enslave_void_spawn;
+
+        creators["m'uru enslaved void spawn cast shadow bolt volley"] =
+            &RaidSunwellActionContext::muru_enslaved_void_spawn_cast_shadow_bolt_volley;
 
         // Kil'jaeden <The Deceiver>
         creators["kil'jaeden"] =
@@ -203,8 +215,20 @@ private:
         PlayerbotAI* botAI) { return new EredarTwinsConflagratedBotMoveFromGroupAction(botAI); }
 
     // M'uru & Entropius
-    static Action* muru(
-        PlayerbotAI* botAI) { return new MuruAction(botAI); }
+    static Action* muru_set_dps_priority(
+        PlayerbotAI* botAI) { return new MuruSetDpsPriorityAction(botAI); }
+
+    static Action* muru_kill_dark_fiends_with_dispel(
+        PlayerbotAI* botAI) { return new MuruKillDarkFiendsWithDispelAction(botAI); }
+
+    static Action* muru_avoid_darkness(
+        PlayerbotAI* botAI) { return new MuruAvoidDarknessAction(botAI); }
+
+    static Action* muru_warlock_enslave_void_spawn(
+        PlayerbotAI* botAI) { return new MuruWarlockEnslaveVoidSpawnAction(botAI); }
+
+    static Action* muru_enslaved_void_spawn_cast_shadow_bolt_volley(
+        PlayerbotAI* botAI) { return new MuruEnslavedVoidSpawnCastShadowBoltVolleyAction(botAI); }
 
     // Kil'jaeden <The Deceiver>
     static Action* kiljaeden(

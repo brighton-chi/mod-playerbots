@@ -257,11 +257,43 @@ public:
 
 // M'uru & Entropius
 
-class MuruAction : public MovementAction
+class MuruKillDarkFiendsWithDispelAction : public Action
 {
 public:
-    MuruAction(
-        PlayerbotAI* botAI, std::string const name = "m'uru") : MovementAction(botAI, name) {}
+    MuruKillDarkFiendsWithDispelAction(
+        PlayerbotAI* botAI, std::string const name = "m'uru kill dark fiends with dispel") : Action(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class MuruAvoidDarknessAction : public MovementAction
+{
+public:
+    MuruAvoidDarknessAction(
+        PlayerbotAI* botAI, std::string const name = "m'uru avoid darkness") : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class MuruWarlockEnslaveVoidSpawnAction : public MovementAction
+{
+public:
+    MuruWarlockEnslaveVoidSpawnAction(
+        PlayerbotAI* botAI, std::string const name = "m'uru warlock enslave void spawn") : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class MuruEnslavedVoidSpawnCastShadowBoltVolleyAction : public Action
+{
+public:
+    MuruEnslavedVoidSpawnCastShadowBoltVolleyAction(
+        PlayerbotAI* botAI, std::string const name = "m'uru enslaved void spawn cast shadow bolt volley") : Action(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class MuruSetDpsPriorityAction : public AttackAction
+{
+public:
+    MuruSetDpsPriorityAction(
+        PlayerbotAI* botAI, std::string const name = "m'uru set dps priority") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 

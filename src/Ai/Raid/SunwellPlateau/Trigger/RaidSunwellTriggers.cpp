@@ -359,8 +359,93 @@ bool EredarTwinsBotHasConflagrationTrigger::IsActive()
 
 // M'uru & Entropius
 
-bool MuruTrigger::IsActive()
+bool MuruDeterminingDpsPriorityTrigger::IsActive()
 {
+    if (!botAI->IsDps(bot))
+        return false;
+
+    if (bot->getClass() == CLASS_WARLOCK)
+    {
+        Unit* charm = bot->GetCharm();
+        if (charm && charm->IsAlive() &&
+            charm->GetEntry() == static_cast<uint32>(SunwellNpcs::NPC_VOID_SPAWN))
+        {
+            return false;
+        }
+    }
+
+    return AI_VALUE2(Unit*, "find target", "m'uru") ||
+           AI_VALUE2(Unit*, "find target", "entropius");
+}
+
+bool MuruDarkFiendsSpawnedTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_PRIEST &&
+        bot->getClass() != CLASS_SHAMAN)
+        return false;
+
+    return AI_VALUE2(Unit*, "find target", "dark fiend");
+}
+
+bool MuruBotNearDarknessTrigger::IsActive()
+{
+    Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
+    if (!muru)
+        muru = AI_VALUE2(Unit*, "find target", "muru");
+
+    Position darknessCenter;
+    if (!TryGetMuruDarknessActiveState(bot, muru, darknessCenter))
+        return false;
+
+    return bot->GetDistance2d(darknessCenter.GetPositionX(), darknessCenter.GetPositionY()) < 15.0f;
+}
+
+bool MuruVoidSpawnAvailableForEnslaveTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_WARLOCK || bot->GetCharm())
+        return false;
+
+    Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
+    if (!muru)
+        muru = AI_VALUE2(Unit*, "find target", "muru");
+
+    Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius");
+    if (!muru && !entropius)
+        return false;
+
+    Unit* encounterCenter = muru ? muru : entropius;
+    auto const& units =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
+
+    for (ObjectGuid const& guid : units)
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        if (!unit || !unit->IsAlive() ||
+            unit->GetEntry() != static_cast<uint32>(SunwellNpcs::NPC_VOID_SPAWN) ||
+            unit->IsCharmed() || unit->GetCharmer())
+        {
+            continue;
+        }
+
+        if (!encounterCenter || unit->GetExactDist2d(encounterCenter) <= 60.0f)
+            return true;
+    }
+
+    return false;
+}
+
+bool MuruWarlockHasEnslavedVoidSpawnTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_WARLOCK)
+        return false;
+
+    Unit* charm = bot->GetCharm();
+    if (!charm || !charm->IsAlive() ||
+        charm->GetEntry() != static_cast<uint32>(SunwellNpcs::NPC_VOID_SPAWN))
+    {
+        return false;
+    }
+
     return AI_VALUE2(Unit*, "find target", "m'uru") ||
            AI_VALUE2(Unit*, "find target", "entropius");
 }

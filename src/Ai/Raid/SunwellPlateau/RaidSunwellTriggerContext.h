@@ -107,8 +107,20 @@ public:
             &RaidSunwellTriggerContext::eredar_twins_bot_has_conflagration;
 
         // M'uru & Entropius
-        creators["m'uru"] =
-            &RaidSunwellTriggerContext::muru;
+        creators["m'uru determining dps priority"] =
+            &RaidSunwellTriggerContext::muru_determining_dps_priority;
+
+        creators["m'uru dark fiends spawned"] =
+            &RaidSunwellTriggerContext::muru_dark_fiends_spawned;
+
+        creators["m'uru bot near darkness"] =
+            &RaidSunwellTriggerContext::muru_bot_near_darkness;
+
+        creators["m'uru void spawn available for enslave"] =
+            &RaidSunwellTriggerContext::muru_void_spawn_available_for_enslave;
+
+        creators["m'uru warlock has enslaved void spawn"] =
+            &RaidSunwellTriggerContext::muru_warlock_has_enslaved_void_spawn;
 
         // Kil'jaeden <The Deceiver>
         creators["kil'jaeden"] =
@@ -209,8 +221,20 @@ private:
         PlayerbotAI* botAI) { return new EredarTwinsBotHasConflagrationTrigger(botAI); }
 
     // M'uru & Entropius
-    static Trigger* muru(
-        PlayerbotAI* botAI) { return new MuruTrigger(botAI); }
+    static Trigger* muru_determining_dps_priority(
+        PlayerbotAI* botAI) { return new MuruDeterminingDpsPriorityTrigger(botAI); }
+
+    static Trigger* muru_dark_fiends_spawned(
+        PlayerbotAI* botAI) { return new MuruDarkFiendsSpawnedTrigger(botAI); }
+
+    static Trigger* muru_bot_near_darkness(
+        PlayerbotAI* botAI) { return new MuruBotNearDarknessTrigger(botAI); }
+
+    static Trigger* muru_void_spawn_available_for_enslave(
+        PlayerbotAI* botAI) { return new MuruVoidSpawnAvailableForEnslaveTrigger(botAI); }
+
+    static Trigger* muru_warlock_has_enslaved_void_spawn(
+        PlayerbotAI* botAI) { return new MuruWarlockHasEnslavedVoidSpawnTrigger(botAI); }
 
     // Kil'jaeden <The Deceiver>
     static Trigger* kiljaeden(

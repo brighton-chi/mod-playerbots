@@ -150,7 +150,7 @@ public:
 
     void OnAllCreatureUpdate(Creature* creature, uint32 /*diff*/) override
     {
-        if (!creature || creature->GetEntry() != static_cast<uint32>(SunwellNPCs::NPC_FELMYST) ||
+        if (!creature || creature->GetEntry() != static_cast<uint32>(SunwellNpcs::NPC_FELMYST) ||
             !creature->IsFlying())
         {
             return;
@@ -172,7 +172,7 @@ public:
 
     void OnCreatureRemoveWorld(Creature* creature) override
     {
-        if (!creature || creature->GetEntry() != static_cast<uint32>(SunwellNPCs::NPC_FELMYST))
+        if (!creature || creature->GetEntry() != static_cast<uint32>(SunwellNpcs::NPC_FELMYST))
             return;
 
         felmystFogInterruptLastScanTime.erase(creature->GetGUID());
@@ -261,7 +261,7 @@ public:
         if (!spell || !caster || !spellInfo)
             return;
 
-        if (caster->GetEntry() != static_cast<uint32>(SunwellNPCs::NPC_GRAND_WARLOCK_ALYTHESS) ||
+        if (caster->GetEntry() != static_cast<uint32>(SunwellNpcs::NPC_GRAND_WARLOCK_ALYTHESS) ||
             spellInfo->Id != static_cast<uint32>(SunwellSpells::SPELL_CONFLAGRATION))
         {
             return;

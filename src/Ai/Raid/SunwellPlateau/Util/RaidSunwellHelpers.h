@@ -46,6 +46,10 @@ namespace SunwellHelpers
         SPELL_FLAME_TOUCHED            = 45348,
         SPELL_FLAME_SEAR               = 46771,
 
+        // M'uru & Entropius
+        SPELL_DARKNESS = 45996,
+        SPELL_SHADOW_BOLT_VOLLEY = 46082,
+
         // Hunter
         SPELL_MISDIRECTION             = 35079,
 
@@ -59,7 +63,7 @@ namespace SunwellHelpers
         SPELL_CLOAK_OF_SHADOWS         = 31224,
     };
 
-    enum class SunwellNPCs : uint32
+    enum class SunwellNpcs : uint32
     {
         // Felmyst
         NPC_FELMYST             = 25038,
@@ -70,6 +74,16 @@ namespace SunwellHelpers
 
         // Eredar Twins
         NPC_GRAND_WARLOCK_ALYTHESS = 25166,
+
+        // M'uru & Entropius
+        NPC_MURU                = 25741,
+        NPC_VOID_SENTINEL = 25772,
+        NPC_DARK_FIEND = 25744,
+        NPC_DARKNESS = 25879,
+        NPC_SHADOWSWORD_BERSERKER = 25798,
+        NPC_SHADOWSWORD_FURY_MAGE = 25799,
+        NPC_VOID_SPAWN = 25824,
+        NPC_ENTROPIUS           = 25840,
     };
 
     enum class SunwellObjects : uint32
@@ -221,6 +235,32 @@ namespace SunwellHelpers
     Player* GetFelmystEncapsulateTarget(Player* bot);
     bool TryGetFelmystRangedPosition(PlayerbotAI* botAI, Player* bot, Unit* felmyst, Position& position);
     Player* GetFelmystGasNovaDispelTarget(Player* bot);
+
+    // M'uru & Entropius
+    constexpr float MURU_RANGED_TARGET_SEARCH_RANGE = 60.0f;
+    constexpr float MURU_MELEE_TARGET_SEARCH_RANGE = 45.0f;
+    constexpr float MURU_DARKNESS_SAFE_DISTANCE = 15.0f;
+    constexpr uint32 MURU_ENSLAVED_VOID_SPAWN_GCD_MS = 1000;
+    struct MuruEncounterTargets
+    {
+        Unit* muru = nullptr;
+        Unit* entropius = nullptr;
+        Unit* voidSentinel = nullptr;
+        Unit* voidSpawn = nullptr;
+        Unit* furyMage = nullptr;
+        Unit* berserker = nullptr;
+    };
+    Creature* GetMuruDarknessCreature(Player* bot, Unit* muru);
+    bool IsMuruCastingDarkness(Unit* muru);
+    bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru, Position& center);
+    void GatherMuruEncounterTargets(
+        PlayerbotAI* botAI, Player* bot, MuruEncounterTargets& targets,
+        float maxSearchRange = MURU_RANGED_TARGET_SEARCH_RANGE);
+    Creature* FindAvailableVoidSpawnForEnslave(
+        PlayerbotAI* botAI, Player* bot, Unit* muru, Unit* entropius);
+    Unit* GetVoidSpawnVolleyPriorityTarget(
+        PlayerbotAI* botAI, Player* bot, Unit* muru, Unit* entropius);
+    bool CommandControlledCreatureToAttack(Unit* controlled, Unit* target);
 
     // Eredar Twins (Grand Warlock Alythess and Lady Sacrolash)
     constexpr float EREDAR_TWINS_BALCONY_Z = 50.0f;

@@ -260,11 +260,43 @@ public:
 
 // M'uru & Entropius
 
-class MuruTrigger : public Trigger
+class MuruDeterminingDpsPriorityTrigger : public Trigger
 {
 public:
-    MuruTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "m'uru") {}
+    MuruDeterminingDpsPriorityTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "m'uru determining dps priority") {}
+    bool IsActive() override;
+};
+
+class MuruDarkFiendsSpawnedTrigger : public Trigger
+{
+public:
+    MuruDarkFiendsSpawnedTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "m'uru dark fiends spawned") {}
+    bool IsActive() override;
+};
+
+class MuruBotNearDarknessTrigger : public Trigger
+{
+public:
+    MuruBotNearDarknessTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "m'uru bot near darkness") {}
+    bool IsActive() override;
+};
+
+class MuruVoidSpawnAvailableForEnslaveTrigger : public Trigger
+{
+public:
+    MuruVoidSpawnAvailableForEnslaveTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "m'uru void spawn available for enslave") {}
+    bool IsActive() override;
+};
+
+class MuruWarlockHasEnslavedVoidSpawnTrigger : public Trigger
+{
+public:
+    MuruWarlockHasEnslavedVoidSpawnTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "m'uru warlock has enslaved void spawn") {}
     bool IsActive() override;
 };
 

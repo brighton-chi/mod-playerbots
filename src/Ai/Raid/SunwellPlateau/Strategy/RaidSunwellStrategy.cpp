@@ -101,10 +101,22 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("eredar twins conflagrated bot move from group", ACTION_EMERGENCY + 7) }));
 
     // M'uru & Entropius
-    triggers.push_back(new TriggerNode("m'uru", {
-        NextAction("m'uru", ACTION_RAID + 1) }));
+    triggers.push_back(new TriggerNode("m'uru determining dps priority", {
+        NextAction("m'uru set dps priority", ACTION_RAID + 1) }));
 
-    // Kiljaeden <The Deceiver>
+    triggers.push_back(new TriggerNode("m'uru dark fiends spawned", {
+        NextAction("m'uru kill dark fiends with dispel", ACTION_EMERGENCY + 7) }));
+
+    triggers.push_back(new TriggerNode("m'uru bot near darkness", {
+        NextAction("m'uru avoid darkness", ACTION_EMERGENCY + 8) }));
+
+    triggers.push_back(new TriggerNode("m'uru void spawn available for enslave", {
+        NextAction("m'uru warlock enslave void spawn", ACTION_RAID + 3) }));
+
+    triggers.push_back(new TriggerNode("m'uru warlock has enslaved void spawn", {
+        NextAction("m'uru enslaved void spawn cast shadow bolt volley", ACTION_RAID + 2) }));
+
+    // Kil'jaeden <The Deceiver>
     triggers.push_back(new TriggerNode("kil'jaeden", {
         NextAction("kil'jaeden", ACTION_RAID + 1) }));
 }
@@ -138,7 +150,10 @@ void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new EredarTwinsDelayCooldownsMultiplier(botAI));
 
     // M'uru & Entropius
-    multipliers.push_back(new MuruMultiplier(botAI));
+    multipliers.push_back(new MuruDisableDefaultTargetingMultiplier(botAI));
+    multipliers.push_back(new MuruControlTankActionsMultiplier(botAI));
+    multipliers.push_back(new MuruControlMovementMultiplier(botAI));
+    multipliers.push_back(new MuruDelayCooldownsMultiplier(botAI));
 
     // Kil'jaeden <The Deceiver>
     multipliers.push_back(new KiljaedenMultiplier(botAI));

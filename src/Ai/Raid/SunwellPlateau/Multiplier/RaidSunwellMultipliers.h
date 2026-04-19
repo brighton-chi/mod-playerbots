@@ -162,11 +162,35 @@ public:
 
 // M'uru & Entropius
 
-class MuruMultiplier : public Multiplier
+class MuruDisableDefaultTargetingMultiplier : public Multiplier
 {
 public:
-    MuruMultiplier(PlayerbotAI* botAI) : Multiplier(
-        botAI, "m'uru") {}
+    MuruDisableDefaultTargetingMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "m'uru disable default targeting") {}
+    virtual float GetValue(Action* action);
+};
+
+class MuruControlTankActionsMultiplier : public Multiplier
+{
+public:
+    MuruControlTankActionsMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "m'uru control tank actions") {}
+    virtual float GetValue(Action* action);
+};
+
+class MuruControlMovementMultiplier : public Multiplier
+{
+public:
+    MuruControlMovementMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "m'uru control movement") {}
+    virtual float GetValue(Action* action);
+};
+
+class MuruDelayCooldownsMultiplier : public Multiplier
+{
+public:
+    MuruDelayCooldownsMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "m'uru delay cooldowns") {}
     virtual float GetValue(Action* action);
 };
 
