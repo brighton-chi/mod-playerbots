@@ -68,6 +68,9 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
     Unit* brutallus = AI_VALUE2(Unit*, "find target", "brutallus");
     if (!brutallus)
     {
+        if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_BURN)))
+            bot->RemoveAura(static_cast<uint32>(SunwellSpells::SPELL_BURN));
+
         if (botAI->IsRanged(bot) &&
             brutallusRangedBurnStates.erase(guid) > 0)
         {
@@ -113,10 +116,11 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
     // Eredar Twins
     if (!AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
     {
+        if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_FLAME_TOUCHED)))
+            bot->RemoveAura(static_cast<uint32>(SunwellSpells::SPELL_FLAME_TOUCHED));
+
         if (botAI->IsTank(bot) && alythessTankStep.erase(guid) > 0)
-        {
             erased = true;
-        }
     }
 
     // M'uru & Entropius
