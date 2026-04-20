@@ -54,14 +54,6 @@ public:
     bool Execute(Event event) override;
 };
 
-class KalecgosReturnToSpectralRealmGroundAction : public MovementAction
-{
-public:
-    KalecgosReturnToSpectralRealmGroundAction(
-        PlayerbotAI* botAI, std::string const name = "kalecgos return to spectral realm ground") : MovementAction(botAI, name) {}
-    bool Execute(Event event) override;
-};
-
 // Brutallus
 
 class BrutallusMisdirectBossToMainTankAction : public AttackAction
@@ -265,6 +257,14 @@ public:
 
 // M'uru & Entropius
 
+class MuruPositionRangedAction : public MovementAction
+{
+public:
+    MuruPositionRangedAction(
+        PlayerbotAI* botAI, std::string const name = "m'uru position ranged") : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 class MuruKillDarkFiendsWithDispelAction : public Action
 {
 public:
@@ -273,11 +273,27 @@ public:
     bool Execute(Event event) override;
 };
 
+class MuruMainTankHandleVoidSentinelAction : public AttackAction
+{
+public:
+    MuruMainTankHandleVoidSentinelAction(
+        PlayerbotAI* botAI, std::string const name = "m'uru main tank handle void sentinel") : AttackAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 class MuruAvoidDarknessAction : public MovementAction
 {
 public:
     MuruAvoidDarknessAction(
         PlayerbotAI* botAI, std::string const name = "m'uru avoid darkness") : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class MuruCastSpellStealOnSpellFuryAction : public Action
+{
+public:
+    MuruCastSpellStealOnSpellFuryAction(
+        PlayerbotAI* botAI, std::string const name = "m'uru cast spellsteal on spell fury") : Action(botAI, name) {}
     bool Execute(Event event) override;
 };
 

@@ -31,9 +31,6 @@ public:
         creators["kalecgos determine boss to attack"] =
             &RaidSunwellActionContext::kalecgos_determine_boss_to_attack;
 
-        creators["kalecgos return to spectral realm ground"] =
-            &RaidSunwellActionContext::kalecgos_return_to_spectral_realm_ground;
-
         // Brutallus
         creators["brutallus misdirect boss to main tank"] =
             &RaidSunwellActionContext::brutallus_misdirect_boss_to_main_tank;
@@ -107,14 +104,23 @@ public:
             &RaidSunwellActionContext::eredar_twins_conflagrated_bot_move_from_group;
 
         // M'uru & Entropius
+        creators["m'uru position ranged"] =
+            &RaidSunwellActionContext::muru_position_ranged;
+
         creators["m'uru set dps priority"] =
             &RaidSunwellActionContext::muru_set_dps_priority;
 
         creators["m'uru kill dark fiends with dispel"] =
             &RaidSunwellActionContext::muru_kill_dark_fiends_with_dispel;
 
+        creators["m'uru main tank handle void sentinel"] =
+            &RaidSunwellActionContext::muru_main_tank_handle_void_sentinel;
+
         creators["m'uru avoid darkness"] =
             &RaidSunwellActionContext::muru_avoid_darkness;
+
+        creators["m'uru cast spellsteal on spell fury"] =
+            &RaidSunwellActionContext::muru_cast_spellsteal_on_spell_fury;
 
         creators["m'uru warlock enslave void spawn"] =
             &RaidSunwellActionContext::muru_warlock_enslave_void_spawn;
@@ -144,9 +150,6 @@ private:
 
     static Action* kalecgos_determine_boss_to_attack(
         PlayerbotAI* botAI) { return new KalecgosDetermineBossToAttackAction(botAI); }
-
-    static Action* kalecgos_return_to_spectral_realm_ground(
-        PlayerbotAI* botAI) { return new KalecgosReturnToSpectralRealmGroundAction(botAI); }
 
     // Brutallus
     static Action* brutallus_misdirect_boss_to_main_tank(
@@ -221,14 +224,23 @@ private:
         PlayerbotAI* botAI) { return new EredarTwinsConflagratedBotMoveFromGroupAction(botAI); }
 
     // M'uru & Entropius
+    static Action* muru_position_ranged(
+        PlayerbotAI* botAI) { return new MuruPositionRangedAction(botAI); }
+
     static Action* muru_set_dps_priority(
         PlayerbotAI* botAI) { return new MuruSetDpsPriorityAction(botAI); }
 
     static Action* muru_kill_dark_fiends_with_dispel(
         PlayerbotAI* botAI) { return new MuruKillDarkFiendsWithDispelAction(botAI); }
 
+    static Action* muru_main_tank_handle_void_sentinel(
+        PlayerbotAI* botAI) { return new MuruMainTankHandleVoidSentinelAction(botAI); }
+
     static Action* muru_avoid_darkness(
         PlayerbotAI* botAI) { return new MuruAvoidDarknessAction(botAI); }
+
+    static Action* muru_cast_spellsteal_on_spell_fury(
+        PlayerbotAI* botAI) { return new MuruCastSpellStealOnSpellFuryAction(botAI); }
 
     static Action* muru_warlock_enslave_void_spawn(
         PlayerbotAI* botAI) { return new MuruWarlockEnslaveVoidSpawnAction(botAI); }

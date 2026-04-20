@@ -31,9 +31,6 @@ public:
         creators["kalecgos both bosses must be defeated"] =
             &RaidSunwellTriggerContext::kalecgos_both_bosses_must_be_defeated;
 
-        creators["kalecgos bots have trouble with world transition"] =
-            &RaidSunwellTriggerContext::kalecgos_bots_have_trouble_with_world_transition;
-
         // Brutallus
         creators["brutallus pulling boss"] =
             &RaidSunwellTriggerContext::brutallus_pulling_boss;
@@ -110,14 +107,23 @@ public:
             &RaidSunwellTriggerContext::eredar_twins_bot_has_conflagration;
 
         // M'uru & Entropius
+        creators["m'uru bosses engaged by ranged"] =
+            &RaidSunwellTriggerContext::muru_bosses_engaged_by_ranged;
+
         creators["m'uru determining dps priority"] =
             &RaidSunwellTriggerContext::muru_determining_dps_priority;
+
+        creators["m'uru void sentinel needs tank"] =
+            &RaidSunwellTriggerContext::muru_void_sentinel_needs_tank;
 
         creators["m'uru dark fiends spawned"] =
             &RaidSunwellTriggerContext::muru_dark_fiends_spawned;
 
-        creators["m'uru bot near darkness"] =
-            &RaidSunwellTriggerContext::muru_bot_near_darkness;
+        creators["m'uru darkness is coming"] =
+            &RaidSunwellTriggerContext::muru_darkness_is_coming;
+
+        creators["m'uru fury mage buffed with spell fury"] =
+            &RaidSunwellTriggerContext::muru_fury_mage_buffed_with_spell_fury;
 
         creators["m'uru void spawn available for enslave"] =
             &RaidSunwellTriggerContext::muru_void_spawn_available_for_enslave;
@@ -147,9 +153,6 @@ private:
 
     static Trigger* kalecgos_both_bosses_must_be_defeated(
         PlayerbotAI* botAI) { return new KalecgosBothBossesMustBeDefeatedTrigger(botAI); }
-
-    static Trigger* kalecgos_bots_have_trouble_with_world_transition(
-        PlayerbotAI* botAI) { return new KalecgosBotsHaveTroubleWithWorldTransitionTrigger(botAI); }
 
     // Brutallus
     static Trigger* brutallus_pulling_boss(
@@ -227,14 +230,23 @@ private:
         PlayerbotAI* botAI) { return new EredarTwinsBotHasConflagrationTrigger(botAI); }
 
     // M'uru & Entropius
+    static Trigger* muru_bosses_engaged_by_ranged(
+        PlayerbotAI* botAI) { return new MuruBossesEngagedByRangedTrigger(botAI); }
+
     static Trigger* muru_determining_dps_priority(
         PlayerbotAI* botAI) { return new MuruDeterminingDpsPriorityTrigger(botAI); }
+
+    static Trigger* muru_void_sentinel_needs_tank(
+        PlayerbotAI* botAI) { return new MuruVoidSentinelNeedsTankTrigger(botAI); }
 
     static Trigger* muru_dark_fiends_spawned(
         PlayerbotAI* botAI) { return new MuruDarkFiendsSpawnedTrigger(botAI); }
 
-    static Trigger* muru_bot_near_darkness(
-        PlayerbotAI* botAI) { return new MuruBotNearDarknessTrigger(botAI); }
+    static Trigger* muru_darkness_is_coming(
+        PlayerbotAI* botAI) { return new MuruDarknessIsComingTrigger(botAI); }
+
+    static Trigger* muru_fury_mage_buffed_with_spell_fury(
+        PlayerbotAI* botAI) { return new MuruFuryMageBuffedWithSpellFuryTrigger(botAI); }
 
     static Trigger* muru_void_spawn_available_for_enslave(
         PlayerbotAI* botAI) { return new MuruVoidSpawnAvailableForEnslaveTrigger(botAI); }

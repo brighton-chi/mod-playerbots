@@ -29,7 +29,8 @@ bool KalecgosBossEngagedByTankTrigger::IsActive()
 
 bool KalecgosSpectralRiftIsOpenTrigger::IsActive()
 {
-    if (!AI_VALUE2(Unit*, "find target", "kalecgos"))
+    if (!AI_VALUE2(Unit*, "find target", "kalecgos") &&
+        !AI_VALUE2(Unit*, "find target", "sathrovarr the corruptor"))
         return false;
 
     if (!ShouldEnterKalecgosSpectralRift(botAI, bot))
@@ -64,12 +65,6 @@ bool KalecgosBothBossesMustBeDefeatedTrigger::IsActive()
         return false;
 
     return GetKalecgosCurrentTank(botAI, bot) != bot;
-}
-
-bool KalecgosBotsHaveTroubleWithWorldTransitionTrigger::IsActive()
-{
-    return bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_REALM)) &&
-           bot->GetPositionZ() > SPECTRAL_REALM_FLOOR_Z + 2.0f;
 }
 
 // Brutallus
@@ -364,23 +359,30 @@ bool EredarTwinsBotHasConflagrationTrigger::IsActive()
 
 // M'uru & Entropius
 
+bool MuruBossesEngagedByRangedTrigger::IsActive()
+{
+    if (!botAI->IsRanged(bot))
+        return false;
+
+    return AI_VALUE2(Unit*, "find target", "m'uru") ||
+           AI_VALUE2(Unit*, "find target", "entropius");
+}
+
 bool MuruDeterminingDpsPriorityTrigger::IsActive()
 {
     if (!botAI->IsDps(bot))
         return false;
 
-    if (bot->getClass() == CLASS_WARLOCK)
-    {
-        Unit* charm = bot->GetCharm();
-        if (charm && charm->IsAlive() &&
-            charm->GetEntry() == static_cast<uint32>(SunwellNpcs::NPC_VOID_SPAWN))
-        {
-            return false;
-        }
-    }
-
     return AI_VALUE2(Unit*, "find target", "m'uru") ||
            AI_VALUE2(Unit*, "find target", "entropius");
+}
+
+bool MuruVoidSentinelNeedsTankTrigger::IsActive()
+{
+    if (!botAI->IsMainTank(bot))
+        return false;
+
+    return AI_VALUE2(Unit*, "find target", "void sentinel");
 }
 
 bool MuruDarkFiendsSpawnedTrigger::IsActive()
@@ -392,17 +394,26 @@ bool MuruDarkFiendsSpawnedTrigger::IsActive()
     return AI_VALUE2(Unit*, "find target", "dark fiend");
 }
 
-bool MuruBotNearDarknessTrigger::IsActive()
+bool MuruDarknessIsComingTrigger::IsActive()
 {
-    Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
-    if (!muru)
-        muru = AI_VALUE2(Unit*, "find target", "muru");
-
-    Position darknessCenter;
-    if (!TryGetMuruDarknessActiveState(bot, muru, darknessCenter))
+    if (!botAI->IsMelee(bot))
         return false;
 
-    return bot->GetDistance2d(darknessCenter.GetPositionX(), darknessCenter.GetPositionY()) < 15.0f;
+    Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
+    if (!muru)
+        return false;
+
+    return TryGetMuruDarknessActiveState(bot, muru);
+}
+
+bool MuruFuryMageBuffedWithSpellFuryTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_MAGE)
+        return false;
+
+    Unit* furyMage = AI_VALUE2(Unit*, "find target", "shadowsword fury mage");
+    return furyMage &&
+           furyMage->HasAura(static_cast<uint32>(SunwellSpells::SPELL_SPELL_FURY));
 }
 
 bool MuruVoidSpawnAvailableForEnslaveTrigger::IsActive()
@@ -411,32 +422,8 @@ bool MuruVoidSpawnAvailableForEnslaveTrigger::IsActive()
         return false;
 
     Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
-    if (!muru)
-        muru = AI_VALUE2(Unit*, "find target", "muru");
-
     Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius");
-    if (!muru && !entropius)
-        return false;
-
-    Unit* encounterCenter = muru ? muru : entropius;
-    auto const& units =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
-
-    for (ObjectGuid const& guid : units)
-    {
-        Unit* unit = botAI->GetUnit(guid);
-        if (!unit || !unit->IsAlive() ||
-            unit->GetEntry() != static_cast<uint32>(SunwellNpcs::NPC_VOID_SPAWN) ||
-            unit->IsCharmed() || unit->GetCharmer())
-        {
-            continue;
-        }
-
-        if (!encounterCenter || unit->GetExactDist2d(encounterCenter) <= 60.0f)
-            return true;
-    }
-
-    return false;
+    return FindAvailableVoidSpawnForEnslave(botAI, bot, muru, entropius) != nullptr;
 }
 
 bool MuruWarlockHasEnslavedVoidSpawnTrigger::IsActive()

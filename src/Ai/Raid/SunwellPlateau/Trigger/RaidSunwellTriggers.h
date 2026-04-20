@@ -52,14 +52,6 @@ public:
     bool IsActive() override;
 };
 
-class KalecgosBotsHaveTroubleWithWorldTransitionTrigger : public Trigger
-{
-public:
-    KalecgosBotsHaveTroubleWithWorldTransitionTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kalecgos bots have trouble with world transition") {}
-    bool IsActive() override;
-};
-
 // Brutallus
 
 class BrutallusPullingBossTrigger : public Trigger
@@ -268,11 +260,27 @@ public:
 
 // M'uru & Entropius
 
+class MuruBossesEngagedByRangedTrigger : public Trigger
+{
+public:
+    MuruBossesEngagedByRangedTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "m'uru bosses engaged by ranged") {}
+    bool IsActive() override;
+};
+
 class MuruDeterminingDpsPriorityTrigger : public Trigger
 {
 public:
     MuruDeterminingDpsPriorityTrigger(
         PlayerbotAI* botAI) : Trigger(botAI, "m'uru determining dps priority") {}
+    bool IsActive() override;
+};
+
+class MuruVoidSentinelNeedsTankTrigger : public Trigger
+{
+public:
+    MuruVoidSentinelNeedsTankTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "m'uru void sentinel needs tank") {}
     bool IsActive() override;
 };
 
@@ -284,11 +292,19 @@ public:
     bool IsActive() override;
 };
 
-class MuruBotNearDarknessTrigger : public Trigger
+class MuruDarknessIsComingTrigger : public Trigger
 {
 public:
-    MuruBotNearDarknessTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "m'uru bot near darkness") {}
+    MuruDarknessIsComingTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "m'uru darkness is coming") {}
+    bool IsActive() override;
+};
+
+class MuruFuryMageBuffedWithSpellFuryTrigger : public Trigger
+{
+public:
+    MuruFuryMageBuffedWithSpellFuryTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "m'uru fury mage buffed with spell fury") {}
     bool IsActive() override;
 };
 

@@ -25,9 +25,6 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kalecgos both bosses must be defeated", {
         NextAction("kalecgos determine boss to attack", ACTION_RAID + 2) }));
 
-    triggers.push_back(new TriggerNode("kalecgos bots have trouble with world transition", {
-        NextAction("kalecgos return to spectral realm ground", ACTION_EMERGENCY + 10) }));
-
     // Brutallus
     triggers.push_back(new TriggerNode("brutallus pulling boss", {
         NextAction("brutallus misdirect boss to main tank", ACTION_RAID + 2) }));
@@ -104,20 +101,29 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("eredar twins conflagrated bot move from group", ACTION_EMERGENCY + 7) }));
 
     // M'uru & Entropius
+    triggers.push_back(new TriggerNode("m'uru bosses engaged by ranged", {
+        NextAction("m'uru position ranged", ACTION_RAID + 2) }));
+
+    triggers.push_back(new TriggerNode("m'uru void sentinel needs tank", {
+        NextAction("m'uru main tank handle void sentinel", ACTION_RAID + 3) }));
+
     triggers.push_back(new TriggerNode("m'uru determining dps priority", {
         NextAction("m'uru set dps priority", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("m'uru dark fiends spawned", {
         NextAction("m'uru kill dark fiends with dispel", ACTION_EMERGENCY + 7) }));
 
-    triggers.push_back(new TriggerNode("m'uru bot near darkness", {
-        NextAction("m'uru avoid darkness", ACTION_EMERGENCY + 8) }));
+    triggers.push_back(new TriggerNode("m'uru darkness is coming", {
+        NextAction("m'uru avoid darkness", ACTION_EMERGENCY + 9) }));
+
+    triggers.push_back(new TriggerNode("m'uru fury mage buffed with spell fury", {
+        NextAction("m'uru cast spellsteal on spell fury", ACTION_EMERGENCY + 8) }));
 
     triggers.push_back(new TriggerNode("m'uru void spawn available for enslave", {
-        NextAction("m'uru warlock enslave void spawn", ACTION_RAID + 3) }));
+        NextAction("m'uru warlock enslave void spawn", ACTION_RAID + 4) }));
 
     triggers.push_back(new TriggerNode("m'uru warlock has enslaved void spawn", {
-        NextAction("m'uru enslaved void spawn cast shadow bolt volley", ACTION_RAID + 2) }));
+        NextAction("m'uru enslaved void spawn cast shadow bolt volley", ACTION_RAID + 3) }));
 
     // Kil'jaeden <The Deceiver>
     triggers.push_back(new TriggerNode("kil'jaeden", {
