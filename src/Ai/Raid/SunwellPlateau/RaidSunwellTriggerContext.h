@@ -107,6 +107,9 @@ public:
             &RaidSunwellTriggerContext::eredar_twins_bot_has_conflagration;
 
         // M'uru & Entropius
+        creators["m'uru void sentinel or entropius has appeared"] =
+            &RaidSunwellTriggerContext::muru_void_sentinel_or_entropius_has_appeared;
+
         creators["m'uru bosses engaged by ranged"] =
             &RaidSunwellTriggerContext::muru_bosses_engaged_by_ranged;
 
@@ -116,14 +119,23 @@ public:
         creators["m'uru void sentinel needs tank"] =
             &RaidSunwellTriggerContext::muru_void_sentinel_needs_tank;
 
+        creators["m'uru void sentinel casts void blast on tank"] =
+            &RaidSunwellTriggerContext::muru_void_sentinel_casts_void_blast_on_tank;
+
         creators["m'uru dark fiends spawned"] =
             &RaidSunwellTriggerContext::muru_dark_fiends_spawned;
 
         creators["m'uru darkness is coming"] =
             &RaidSunwellTriggerContext::muru_darkness_is_coming;
 
-        creators["m'uru fury mage buffed with spell fury"] =
-            &RaidSunwellTriggerContext::muru_fury_mage_buffed_with_spell_fury;
+        creators["m'uru berserker is buffed with flurry"] =
+            &RaidSunwellTriggerContext::muru_berserker_is_buffed_with_flurry;
+
+        creators["m'uru fury mage casting fel fireball"] =
+            &RaidSunwellTriggerContext::muru_fury_mage_casting_fel_fireball;
+
+        creators["m'uru fury mage is buffed with spell fury"] =
+            &RaidSunwellTriggerContext::muru_fury_mage_is_buffed_with_spell_fury;
 
         creators["m'uru void spawn available for enslave"] =
             &RaidSunwellTriggerContext::muru_void_spawn_available_for_enslave;
@@ -230,6 +242,9 @@ private:
         PlayerbotAI* botAI) { return new EredarTwinsBotHasConflagrationTrigger(botAI); }
 
     // M'uru & Entropius
+    static Trigger* muru_void_sentinel_or_entropius_has_appeared(
+        PlayerbotAI* botAI) { return new MuruVoidSentinelOrEntropiusHasAppearedTrigger(botAI); }
+
     static Trigger* muru_bosses_engaged_by_ranged(
         PlayerbotAI* botAI) { return new MuruBossesEngagedByRangedTrigger(botAI); }
 
@@ -239,14 +254,23 @@ private:
     static Trigger* muru_void_sentinel_needs_tank(
         PlayerbotAI* botAI) { return new MuruVoidSentinelNeedsTankTrigger(botAI); }
 
+    static Trigger* muru_void_sentinel_casts_void_blast_on_tank(
+        PlayerbotAI* botAI) { return new MuruVoidSentinelCastsVoidBlastOnTankTrigger(botAI); }
+
     static Trigger* muru_dark_fiends_spawned(
         PlayerbotAI* botAI) { return new MuruDarkFiendsSpawnedTrigger(botAI); }
 
     static Trigger* muru_darkness_is_coming(
         PlayerbotAI* botAI) { return new MuruDarknessIsComingTrigger(botAI); }
 
-    static Trigger* muru_fury_mage_buffed_with_spell_fury(
-        PlayerbotAI* botAI) { return new MuruFuryMageBuffedWithSpellFuryTrigger(botAI); }
+    static Trigger* muru_berserker_is_buffed_with_flurry(
+        PlayerbotAI* botAI) { return new MuruBerserkerIsBuffedWithFlurryTrigger(botAI); }
+
+    static Trigger* muru_fury_mage_casting_fel_fireball(
+        PlayerbotAI* botAI) { return new MuruFuryMageCastingFelFireballTrigger(botAI); }
+
+    static Trigger* muru_fury_mage_is_buffed_with_spell_fury(
+        PlayerbotAI* botAI) { return new MuruFuryMageIsBuffedWithSpellFuryTrigger(botAI); }
 
     static Trigger* muru_void_spawn_available_for_enslave(
         PlayerbotAI* botAI) { return new MuruVoidSpawnAvailableForEnslaveTrigger(botAI); }

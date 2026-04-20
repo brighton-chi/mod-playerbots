@@ -257,6 +257,14 @@ public:
 
 // M'uru & Entropius
 
+class MuruMisdirectEnemiesToTanksAction : public AttackAction
+{
+public:
+    MuruMisdirectEnemiesToTanksAction(
+        PlayerbotAI* botAI, std::string const name = "m'uru misdirect enemies to tanks") : AttackAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 class MuruPositionRangedAction : public MovementAction
 {
 public:
@@ -273,11 +281,19 @@ public:
     bool Execute(Event event) override;
 };
 
-class MuruMainTankHandleVoidSentinelAction : public AttackAction
+class MuruFirstAssistTankHandleVoidSentinelAction : public AttackAction
 {
 public:
-    MuruMainTankHandleVoidSentinelAction(
-        PlayerbotAI* botAI, std::string const name = "m'uru main tank handle void sentinel") : AttackAction(botAI, name) {}
+    MuruFirstAssistTankHandleVoidSentinelAction(
+        PlayerbotAI* botAI, std::string const name = "m'uru first assist tank tank handle void sentinel") : AttackAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class MuruSetGroundingTotemInFirstAssistTankGroupAction : public Action
+{
+public:
+    MuruSetGroundingTotemInFirstAssistTankGroupAction(
+        PlayerbotAI* botAI, std::string const name = "m'uru set grounding totem in first assist tank group") : Action(botAI, name) {}
     bool Execute(Event event) override;
 };
 
@@ -286,6 +302,22 @@ class MuruAvoidDarknessAction : public MovementAction
 public:
     MuruAvoidDarknessAction(
         PlayerbotAI* botAI, std::string const name = "m'uru avoid darkness") : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class MuruCastStunOnShadowswordBerserkerAction : public Action
+{
+public:
+    MuruCastStunOnShadowswordBerserkerAction(
+        PlayerbotAI* botAI, std::string const name = "m'uru cast stun on shadowsword berserker") : Action(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class MuruInterruptFelFireballAction : public Action
+{
+public:
+    MuruInterruptFelFireballAction(
+        PlayerbotAI* botAI, std::string const name = "m'uru interrupt fel fireball") : Action(botAI, name) {}
     bool Execute(Event event) override;
 };
 

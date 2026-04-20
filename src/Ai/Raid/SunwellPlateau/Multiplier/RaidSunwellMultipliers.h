@@ -178,11 +178,27 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class MuruControlMisdirectionMultiplier : public Multiplier
+{
+public:
+    MuruControlMisdirectionMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "m'uru control misdirection") {}
+    virtual float GetValue(Action* action);
+};
+
 class MuruControlMovementMultiplier : public Multiplier
 {
 public:
     MuruControlMovementMultiplier(PlayerbotAI* botAI) : Multiplier(
         botAI, "m'uru control movement") {}
+    virtual float GetValue(Action* action);
+};
+
+class MuruUseOnlyGroundingTotemMultiplier : public Multiplier
+{
+public:
+    MuruUseOnlyGroundingTotemMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "m'uru use only grounding totem") {}
     virtual float GetValue(Action* action);
 };
 

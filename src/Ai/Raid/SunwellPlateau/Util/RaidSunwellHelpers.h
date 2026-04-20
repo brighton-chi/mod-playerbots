@@ -50,7 +50,9 @@ namespace SunwellHelpers
         SPELL_DARKNESS = 45996,
         SPELL_DARKNESS_PRE_EFFECT = 45999,
         SPELL_SHADOW_BOLT_VOLLEY = 46082,
+        SPELL_FEL_FIREBALL = 46101,
         SPELL_SPELL_FURY = 46102,
+        SPELL_FLURRY = 46160,
 
         // Hunter
         SPELL_MISDIRECTION             = 35079,
@@ -63,6 +65,9 @@ namespace SunwellHelpers
 
         // Rogue
         SPELL_CLOAK_OF_SHADOWS         = 31224,
+
+        // Shaman
+        SPELL_GROUNDING_TOTEM_EFFECT = 8178,
     };
 
     enum class SunwellNpcs : uint32
@@ -237,30 +242,6 @@ namespace SunwellHelpers
     bool TryGetFelmystRangedPosition(PlayerbotAI* botAI, Player* bot, Unit* felmyst, Position& position);
     Player* GetFelmystGasNovaDispelTarget(Player* bot);
 
-    // M'uru & Entropius
-    extern const Position MURU_STACK_POSITION;
-    struct MuruEncounterTargets
-    {
-        Unit* muru = nullptr;
-        Unit* entropius = nullptr;
-        Unit* voidSentinel = nullptr;
-        Unit* voidSpawn = nullptr;
-        Unit* furyMage = nullptr;
-        Unit* berserker = nullptr;
-    };
-    struct MuruDarknessState
-    {
-        uint32 expireMs = 0;
-    };
-    extern std::unordered_map<uint32, MuruDarknessState> muruDarknessStates;
-    bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru);
-    void GatherMuruEncounterTargets(PlayerbotAI* botAI, Player* bot, MuruEncounterTargets& targets);
-    Creature* FindAvailableVoidSpawnForEnslave(
-        PlayerbotAI* botAI, Player* bot, Unit* muru, Unit* entropius);
-    Unit* GetVoidSpawnVolleyPriorityTarget(
-        PlayerbotAI* botAI, Player* bot, Unit* muru, Unit* entropius);
-    bool CommandControlledCreatureToAttack(Unit* controlled, Unit* target);
-
     // Eredar Twins (Grand Warlock Alythess and Lady Sacrolash)
     constexpr float EREDAR_TWINS_BALCONY_Z = 50.0f;
     extern const Position SACROLASH_TANK_POSITION;
@@ -277,6 +258,34 @@ namespace SunwellHelpers
     bool IsAlythessTankPositionSafe(Player* bot, Position const& position);
     bool ShouldAdvanceAlythessTankPosition(Unit* alythess, Player* bot);
     bool IsEredarTwinsConflagrationTarget(Unit* alythess, Player* bot);
+
+    // M'uru & Entropius
+    struct MuruEncounterTargets
+    {
+        Unit* muru = nullptr;
+        Unit* entropius = nullptr;
+        Unit* voidSentinel = nullptr;
+        Unit* voidSpawn = nullptr;
+        Unit* furyMage = nullptr;
+        Unit* berserker = nullptr;
+    };
+    struct MuruDarknessState
+    {
+        uint32 expireMs = 0;
+    };
+    extern const Position MURU_STACK_POSITION;
+    extern const Position MURU_VOID_SENTINEL_N_TANK_POSITION;
+    extern const Position MURU_VOID_SENTINEL_E_TANK_POSITION;
+    extern std::unordered_map<uint32, MuruDarknessState> muruDarknessStates;
+    const Position& GetClosestVoidSentinelTankPosition(Player* bot);
+    bool IsFirstAssistTankInSameGroup(PlayerbotAI* botAI, Player* bot);
+    bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru);
+    void GatherMuruEncounterTargets(PlayerbotAI* botAI, Player* bot, MuruEncounterTargets& targets);
+    Creature* FindAvailableVoidSpawnForEnslave(
+        PlayerbotAI* botAI, Player* bot, Unit* muru, Unit* entropius);
+    Unit* GetVoidSpawnVolleyPriorityTarget(
+        PlayerbotAI* botAI, Player* bot, Unit* muru, Unit* entropius);
+    bool CommandControlledCreatureToAttack(Unit* controlled, Unit* target);
 }
 
 #endif

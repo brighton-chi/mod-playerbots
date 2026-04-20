@@ -1921,6 +1921,34 @@ namespace SunwellHelpers
     // M'uru & Entropius
 
     const Position MURU_STACK_POSITION = { 1836.738f, 608.646f, 71.222f };
+    const Position MURU_VOID_SENTINEL_N_TANK_POSITION = { 0.0f, 0.0f, 0.0f };
+    const Position MURU_VOID_SENTINEL_E_TANK_POSITION = { 0.0f, 0.0f, 0.0f };
+
+    const Position& GetClosestVoidSentinelTankPosition(Player* bot)
+    {
+        const Position& north = MURU_VOID_SENTINEL_N_TANK_POSITION;
+        const Position& east = MURU_VOID_SENTINEL_E_TANK_POSITION;
+        return (bot->GetExactDist2d(north.GetPositionX(), north.GetPositionY()) <=
+                bot->GetExactDist2d(east.GetPositionX(), east.GetPositionY())) ? north : east;
+    }
+
+    bool IsFirstAssistTankInSameGroup(PlayerbotAI* botAI, Player* bot)
+    {
+        Group* group = bot->GetGroup();
+        if (!group)
+            return false;
+
+        uint8 shamanGroup = group->GetMemberGroup(bot->GetGUID());
+
+        Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
+        if (firstAssistTank &&
+            group->GetMemberGroup(firstAssistTank->GetGUID()) == shamanGroup)
+        {
+            return true;
+        }
+
+        return false;
+    }
 
     bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru)
     {

@@ -101,11 +101,17 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("eredar twins conflagrated bot move from group", ACTION_EMERGENCY + 7) }));
 
     // M'uru & Entropius
+    triggers.push_back(new TriggerNode("m'uru void sentinel or entropius has appeared", {
+        NextAction("m'uru misdirect enemies to tanks", ACTION_RAID + 3) }));
+
     triggers.push_back(new TriggerNode("m'uru bosses engaged by ranged", {
         NextAction("m'uru position ranged", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("m'uru void sentinel needs tank", {
-        NextAction("m'uru main tank handle void sentinel", ACTION_RAID + 3) }));
+        NextAction("m'uru first assist tank handle void sentinel", ACTION_RAID + 3) }));
+
+    triggers.push_back(new TriggerNode("m'uru void sentinel casts void blast on tank", {
+        NextAction("m'uru set grounding totem in first assist tank group", ACTION_RAID + 3) }));
 
     triggers.push_back(new TriggerNode("m'uru determining dps priority", {
         NextAction("m'uru set dps priority", ACTION_RAID + 1) }));
@@ -116,14 +122,20 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("m'uru darkness is coming", {
         NextAction("m'uru avoid darkness", ACTION_EMERGENCY + 9) }));
 
-    triggers.push_back(new TriggerNode("m'uru fury mage buffed with spell fury", {
-        NextAction("m'uru cast spellsteal on spell fury", ACTION_EMERGENCY + 8) }));
+    triggers.push_back(new TriggerNode("m'uru berserker is buffed with flurry", {
+        NextAction("m'uru cast stun on shadowsword berserker", ACTION_RAID + 4) }));
+
+    triggers.push_back(new TriggerNode("m'uru fury mage casting fel fireball", {
+        NextAction("m'uru interrupt fel fireball", ACTION_EMERGENCY + 1) }));
+
+    triggers.push_back(new TriggerNode("m'uru fury mage is buffed with spell fury", {
+        NextAction("m'uru cast spellsteal on spell fury", ACTION_EMERGENCY + 7) }));
 
     triggers.push_back(new TriggerNode("m'uru void spawn available for enslave", {
-        NextAction("m'uru warlock enslave void spawn", ACTION_RAID + 4) }));
+        NextAction("m'uru warlock enslave void spawn", ACTION_RAID + 6) }));
 
     triggers.push_back(new TriggerNode("m'uru warlock has enslaved void spawn", {
-        NextAction("m'uru enslaved void spawn cast shadow bolt volley", ACTION_RAID + 3) }));
+        NextAction("m'uru enslaved void spawn cast shadow bolt volley", ACTION_RAID + 5) }));
 
     // Kil'jaeden <The Deceiver>
     triggers.push_back(new TriggerNode("kil'jaeden", {
@@ -162,6 +174,8 @@ void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new MuruDisableDefaultTargetingMultiplier(botAI));
     multipliers.push_back(new MuruControlTankActionsMultiplier(botAI));
     multipliers.push_back(new MuruControlMovementMultiplier(botAI));
+    multipliers.push_back(new MuruControlMisdirectionMultiplier(botAI));
+    multipliers.push_back(new MuruUseOnlyGroundingTotemMultiplier(botAI));
     multipliers.push_back(new MuruDelayCooldownsMultiplier(botAI));
 
     // Kil'jaeden <The Deceiver>

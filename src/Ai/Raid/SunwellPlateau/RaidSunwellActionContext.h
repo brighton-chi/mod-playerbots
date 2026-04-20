@@ -104,6 +104,9 @@ public:
             &RaidSunwellActionContext::eredar_twins_conflagrated_bot_move_from_group;
 
         // M'uru & Entropius
+        creators["m'uru misdirect enemies to tanks"] =
+            &RaidSunwellActionContext::muru_misdirect_enemies_to_tanks;
+
         creators["m'uru position ranged"] =
             &RaidSunwellActionContext::muru_position_ranged;
 
@@ -113,11 +116,20 @@ public:
         creators["m'uru kill dark fiends with dispel"] =
             &RaidSunwellActionContext::muru_kill_dark_fiends_with_dispel;
 
-        creators["m'uru main tank handle void sentinel"] =
-            &RaidSunwellActionContext::muru_main_tank_handle_void_sentinel;
+        creators["m'uru first assist tank handle void sentinel"] =
+            &RaidSunwellActionContext::muru_first_assist_tank_handle_void_sentinel;
+
+        creators["m'uru set grounding totem in first assist tank group"] =
+            &RaidSunwellActionContext::muru_set_grounding_totem_in_first_assist_tank_group;
 
         creators["m'uru avoid darkness"] =
             &RaidSunwellActionContext::muru_avoid_darkness;
+
+        creators["m'uru cast stun on shadowsword berseker"] =
+            &RaidSunwellActionContext::muru_cast_stun_on_shadowsword_berserker;
+
+        creators["m'uru interrupt fel fireball"] =
+            &RaidSunwellActionContext::muru_interrupt_fel_fireball;
 
         creators["m'uru cast spellsteal on spell fury"] =
             &RaidSunwellActionContext::muru_cast_spellsteal_on_spell_fury;
@@ -224,6 +236,9 @@ private:
         PlayerbotAI* botAI) { return new EredarTwinsConflagratedBotMoveFromGroupAction(botAI); }
 
     // M'uru & Entropius
+    static Action* muru_misdirect_enemies_to_tanks(
+        PlayerbotAI* botAI) { return new MuruMisdirectEnemiesToTanksAction(botAI); }
+
     static Action* muru_position_ranged(
         PlayerbotAI* botAI) { return new MuruPositionRangedAction(botAI); }
 
@@ -233,11 +248,20 @@ private:
     static Action* muru_kill_dark_fiends_with_dispel(
         PlayerbotAI* botAI) { return new MuruKillDarkFiendsWithDispelAction(botAI); }
 
-    static Action* muru_main_tank_handle_void_sentinel(
-        PlayerbotAI* botAI) { return new MuruMainTankHandleVoidSentinelAction(botAI); }
+    static Action* muru_first_assist_tank_handle_void_sentinel(
+        PlayerbotAI* botAI) { return new MuruFirstAssistTankHandleVoidSentinelAction(botAI); }
+
+    static Action* muru_set_grounding_totem_in_first_assist_tank_group(
+        PlayerbotAI* botAI) { return new MuruSetGroundingTotemInFirstAssistTankGroupAction(botAI); }
 
     static Action* muru_avoid_darkness(
         PlayerbotAI* botAI) { return new MuruAvoidDarknessAction(botAI); }
+
+    static Action* muru_cast_stun_on_shadowsword_berserker(
+        PlayerbotAI* botAI) { return new MuruCastStunOnShadowswordBerserkerAction(botAI); }
+
+    static Action* muru_interrupt_fel_fireball(
+        PlayerbotAI* botAI) { return new MuruInterruptFelFireballAction(botAI); }
 
     static Action* muru_cast_spellsteal_on_spell_fury(
         PlayerbotAI* botAI) { return new MuruCastSpellStealOnSpellFuryAction(botAI); }

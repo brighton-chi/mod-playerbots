@@ -442,6 +442,21 @@ float MuruControlTankActionsMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+float MuruControlMisdirectionMultiplier::GetValue(Action* action)
+{
+    if (bot->getClass() != CLASS_HUNTER)
+        return 1.0f;
+
+    if (!AI_VALUE2(Unit*, "find target", "m'uru") &&
+        !AI_VALUE2(Unit*, "find target", "void sentinel"))
+        return 1.0f;
+
+     if (dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
+         return 0.0f;
+
+    return 1.0f;
+}
+
 float MuruControlMovementMultiplier::GetValue(Action* action)
 {
     if (!AI_VALUE2(Unit*, "find target", "mu'ru"))
@@ -458,7 +473,25 @@ float MuruControlMovementMultiplier::GetValue(Action* action)
         !dynamic_cast<SetBehindTargetAction*>(action))
         return 0.0f;
 
-     return 1.0f;
+    return 1.0f;
+}
+
+float MuruUseOnlyGroundingTotemMultiplier::GetValue(Action* action)
+{
+    if (bot->getClass() != CLASS_SHAMAN ||
+        !AI_VALUE2(Unit*, "find target", "void sentinel") ||
+        !IsFirstAssistTankInSameGroup(botAI, bot))
+    {
+        return 1.0f;
+    }
+
+    if (dynamic_cast<CastWindfuryTotemAction*>(action) ||
+        dynamic_cast<SetWindfuryTotemAction*>(action) ||
+        dynamic_cast<CastWrathOfAirTotemAction*>(action) ||
+        dynamic_cast<SetWrathOfAirTotemAction*>(action) ||
+        dynamic_cast<CastNatureResistanceTotemAction*>(action) ||
+        dynamic_cast<SetNatureResistanceTotemAction*>(action))
+        return 0.0f;
 
     return 1.0f;
 }
@@ -466,13 +499,19 @@ float MuruControlMovementMultiplier::GetValue(Action* action)
 float MuruDelayCooldownsMultiplier::GetValue(Action* action)
 {
     Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
-    if (!muru || muru->GetHealthPct() < 95.0f)
+    if (!muru)
         return 1.0f;
 
-    if (IsDpsCooldownAction(action))
+    if (bot->getClass() == CLASS_SHAMAN &&
+        (dynamic_cast<CastHeroismAction*>(action) ||
+         dynamic_cast<CastBloodlustAction*>(action)))
         return 0.0f;
 
-    if (botAI->IsDps(bot) && dynamic_cast<UseTrinketAction*>(action))
+    if (muru->GetHealthPct() < 95.0f)
+        return 1.0f;
+
+    if (IsDpsCooldownAction(action) ||
+        (botAI->IsDps(bot) && dynamic_cast<UseTrinketAction*>(action)))
         return 0.0f;
 
     return 1.0f;

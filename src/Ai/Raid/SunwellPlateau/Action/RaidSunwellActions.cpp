@@ -1303,6 +1303,38 @@ bool EredarTwinsConflagratedBotMoveFromGroupAction::Execute(Event /*event*/)
 
 // M'uru & Entropius
 
+bool MuruMisdirectEnemiesToTanksAction::Execute(Event /*event*/)
+{
+    Unit* targetEnemy = nullptr;
+    Unit* targetTank = nullptr;
+    if (Unit* voidSentinel = AI_VALUE2(Unit*, "find target", "void sentinel"))
+    {
+        targetEnemy = voidSentinel;
+        if (Player* mainTank = GetGroupMainTank(botAI, bot))
+            targetTank = mainTank;
+    }
+    else if (Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius"))
+    {
+        targetEnemy = entropius;
+        if (Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0))
+            targetTank = firstAssistTank;
+    }
+
+    if (!targetEnemy || !targetTank)
+        return false;
+
+    if (botAI->CanCastSpell("misdirection", targetTank))
+        return botAI->CastSpell("misdirection", targetTank);
+
+    if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_MISDIRECTION)) &&
+        botAI->CanCastSpell("steady shot", targetEnemy))
+    {
+        return botAI->CastSpell("steady shot", targetEnemy);
+    }
+
+    return false;
+}
+
 bool MuruPositionRangedAction::Execute(Event /*event*/)
 {
     if (AI_VALUE2(Unit*, "find target", "m'uru"))
@@ -1319,6 +1351,8 @@ bool MuruPositionRangedAction::Execute(Event /*event*/)
         if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
             return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer);
     }
+
+    return false;
 }
 
 bool MuruKillDarkFiendsWithDispelAction::Execute(Event /*event*/)
@@ -1385,7 +1419,7 @@ bool MuruKillDarkFiendsWithDispelAction::Execute(Event /*event*/)
     return false;
 }
 
-bool MuruMainTankHandleVoidSentinelAction::Execute(Event /*event*/)
+bool MuruFirstAssistTankHandleVoidSentinelAction::Execute(Event /*event*/)
 {
     Unit* voidSentinel = AI_VALUE2(Unit*, "find target", "void sentinel");
     if (!voidSentinel)
@@ -1394,14 +1428,37 @@ bool MuruMainTankHandleVoidSentinelAction::Execute(Event /*event*/)
     if (bot->GetVictim() != voidSentinel)
         return Attack(voidSentinel);
 
-    constexpr float safeDistance = 12.0f;
+    /* constexpr float safeDistance = 12.0f;
     if (voidSentinel->GetVictim() == bot &&
         GetNearestPlayerInRadius(bot, safeDistance))
     {
         return MoveFromGroup(safeDistance);
+    } */
+    if (voidSentinel->GetVictim() == bot && bot->IsWithinMeleeRange(voidSentinel))
+    {
+        const Position& position = GetClosestVoidSentinelTankPosition(bot);
+        float distToPosition = bot->GetExactDist2d(position.GetPositionX(),
+                                                   position.GetPositionY());
+        if (distToPosition > 3.0f)
+        {
+            float dX = position.GetPositionX() - bot->GetPositionX();
+            float dY = position.GetPositionY() - bot->GetPositionY();
+            float moveDist = std::min(5.0f, distToPosition);
+            float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
+
+            return MoveTo(SUNWELL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
+                          false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
+        }
     }
 
     return false;
+}
+
+bool MuruSetGroundingTotemInFirstAssistTankGroupAction::Execute(Event /*event*/)
+{
+    return botAI->CanCastSpell("grounding totem", bot) &&
+           botAI->CastSpell("grounding totem", bot);
 }
 
 bool MuruAvoidDarknessAction::Execute(Event /*event*/)
@@ -1410,6 +1467,61 @@ bool MuruAvoidDarknessAction::Execute(Event /*event*/)
     return MoveInside(SUNWELL_MAP_ID, MURU_STACK_POSITION.GetPositionX(),
                       MURU_STACK_POSITION.GetPositionY(), MURU_STACK_POSITION.GetPositionZ(),
                       stackArrivalDistance, MovementPriority::MOVEMENT_COMBAT);
+}
+
+bool MuruCastStunOnShadowswordBerserkerAction::Execute(Event /*event*/)
+{
+    Unit* berserker = AI_VALUE2(Unit*, "find target", "shadowsword berserker");
+    if (!berserker)
+        return false;
+
+    static const std::array<const char*, 8> spells =
+    {
+        "bash",
+        "concussion blow",
+        "hammer of justice",
+        "kidney shot",
+        "maim",
+        "revenge stun",
+        "shadowfury",
+        "shockwave"
+    };
+
+    for (const char* spell : spells)
+    {
+        if (botAI->CanCastSpell(spell, berserker) &&
+            botAI->CastSpell(spell, berserker))
+            return true;
+    }
+
+    return false;
+}
+
+bool MuruInterruptFelFireballAction::Execute(Event /*event*/)
+{
+    Unit* furyMage = AI_VALUE2(Unit*, "find target", "shadowsword fury mage");
+    if (!furyMage)
+        return false;
+
+    static const std::array<const char*, 8> spells =
+    {
+        "bash",
+        "counterspell",
+        "kick",
+        "mind freeze",
+        "pummel",
+        "shield bash",
+        "silencing shot",
+        "wind shear",
+    };
+    for (const char* spell : spells)
+    {
+        if (botAI->CanCastSpell(spell, furyMage) &&
+            botAI->CastSpell(spell, furyMage))
+            return true;
+    }
+
+    return false;
 }
 
 bool MuruCastSpellStealOnSpellFuryAction::Execute(Event /*event*/)

@@ -359,6 +359,19 @@ bool EredarTwinsBotHasConflagrationTrigger::IsActive()
 
 // M'uru & Entropius
 
+bool MuruVoidSentinelOrEntropiusHasAppearedTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_HUNTER)
+        return false;
+
+    Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius");
+    if (entropius && entropius->GetHealthPct() > 80.0f)
+        return true;
+
+    Unit* voidSentinel = AI_VALUE2(Unit*, "find target", "void sentinel");
+    return voidSentinel && voidSentinel->GetHealthPct() > 80.0f;
+}
+
 bool MuruBossesEngagedByRangedTrigger::IsActive()
 {
     if (!botAI->IsRanged(bot))
@@ -379,10 +392,27 @@ bool MuruDeterminingDpsPriorityTrigger::IsActive()
 
 bool MuruVoidSentinelNeedsTankTrigger::IsActive()
 {
-    if (!botAI->IsMainTank(bot))
+    if (!botAI->IsAssistTankOfIndex(bot, 0, true))
         return false;
 
     return AI_VALUE2(Unit*, "find target", "void sentinel");
+}
+
+bool MuruVoidSentinelCastsVoidBlastOnTankTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_SHAMAN)
+        return false;
+
+    if (!AI_VALUE2(Unit*, "find target", "void sentinel"))
+        return false;
+
+    if (bot->HasAura(static_cast<uint32>(
+        SunwellSpells::SPELL_GROUNDING_TOTEM_EFFECT)))
+    {
+        return false;
+    }
+
+    return IsFirstAssistTankInSameGroup(botAI, bot);
 }
 
 bool MuruDarkFiendsSpawnedTrigger::IsActive()
@@ -403,10 +433,37 @@ bool MuruDarknessIsComingTrigger::IsActive()
     if (!muru)
         return false;
 
+    if (botAI->IsAssistTankOfIndex(bot, 0, true))
+        return false;
+
     return TryGetMuruDarknessActiveState(bot, muru);
 }
 
-bool MuruFuryMageBuffedWithSpellFuryTrigger::IsActive()
+bool MuruBerserkerIsBuffedWithFlurryTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_DRUID && bot->getClass() != CLASS_PALADIN &&
+        bot->getClass() != CLASS_ROGUE && bot->getClass() != CLASS_WARLOCK &&
+        bot->getClass() != CLASS_WARRIOR)
+        return false;
+
+    Unit* berserker = AI_VALUE2(Unit*, "find target", "shadowsword berserker");
+    return berserker &&
+           berserker->HasAura(static_cast<uint32>(SunwellSpells::SPELL_FLURRY));
+}
+
+bool MuruFuryMageCastingFelFireballTrigger::IsActive()
+{
+    if (bot->getClass() == CLASS_DRUID || bot->getClass() == CLASS_PALADIN ||
+        bot->getClass() == CLASS_PRIEST || bot->getClass() == CLASS_WARLOCK)
+        return false;
+
+    Unit* furyMage = AI_VALUE2(Unit*, "find target", "shadowsword fury mage");
+    return furyMage && furyMage->HasUnitState(UNIT_STATE_CASTING) &&
+           furyMage->FindCurrentSpellBySpellId(
+               static_cast<uint32>(SunwellSpells::SPELL_FEL_FIREBALL));
+}
+
+bool MuruFuryMageIsBuffedWithSpellFuryTrigger::IsActive()
 {
     if (bot->getClass() != CLASS_MAGE)
         return false;

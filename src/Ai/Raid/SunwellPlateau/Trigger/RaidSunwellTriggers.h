@@ -260,6 +260,14 @@ public:
 
 // M'uru & Entropius
 
+class MuruVoidSentinelOrEntropiusHasAppearedTrigger : public Trigger
+{
+public:
+    MuruVoidSentinelOrEntropiusHasAppearedTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "m'uru void sentinel or entropius has appeared") {}
+    bool IsActive() override;
+};
+
 class MuruBossesEngagedByRangedTrigger : public Trigger
 {
 public:
@@ -284,6 +292,14 @@ public:
     bool IsActive() override;
 };
 
+class MuruVoidSentinelCastsVoidBlastOnTankTrigger : public Trigger
+{
+public:
+    MuruVoidSentinelCastsVoidBlastOnTankTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "m'uru void sentinel casts void blast on tank") {}
+    bool IsActive() override;
+};
+
 class MuruDarkFiendsSpawnedTrigger : public Trigger
 {
 public:
@@ -300,11 +316,27 @@ public:
     bool IsActive() override;
 };
 
-class MuruFuryMageBuffedWithSpellFuryTrigger : public Trigger
+class MuruBerserkerIsBuffedWithFlurryTrigger : public Trigger
 {
 public:
-    MuruFuryMageBuffedWithSpellFuryTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "m'uru fury mage buffed with spell fury") {}
+    MuruBerserkerIsBuffedWithFlurryTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "m'uru berserker is buffed with flurry") {}
+    bool IsActive() override;
+};
+
+class MuruFuryMageCastingFelFireballTrigger : public Trigger
+{
+public:
+    MuruFuryMageCastingFelFireballTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "m'uru fury mage casting fel fireball") {}
+    bool IsActive() override;
+};
+
+class MuruFuryMageIsBuffedWithSpellFuryTrigger : public Trigger
+{
+public:
+    MuruFuryMageIsBuffedWithSpellFuryTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "m'uru fury mage is buffed with spell fury") {}
     bool IsActive() override;
 };
 
