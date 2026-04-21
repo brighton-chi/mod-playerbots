@@ -3,10 +3,10 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#include "RaidHyjalSummitHelpers.h"
 #include "AllCreatureScript.h"
 #include "DynamicObjectScript.h"
 #include "Playerbots.h"
+#include "RaidHyjalSummitHelpers.h"
 #include "ScriptMgr.h"
 #include "Timer.h"
 
@@ -44,11 +44,9 @@ public:
         trail.push_back(data);
 
         constexpr uint32 TRAIL_DURATION = 18000;
-        trail.erase(std::remove_if(trail.begin(), trail.end(),
-            [now](const DoomfireTrailData& d)
-            {
-                return getMSTimeDiff(d.recordTime, now) > TRAIL_DURATION;
-            }), trail.end());
+        trail.erase(std::remove_if(trail.begin(), trail.end(), [now](const DoomfireTrailData& d)
+                                   { return getMSTimeDiff(d.recordTime, now) > TRAIL_DURATION; }),
+                    trail.end());
 
         constexpr float DOOMFIRE_DANGER_RANGE = 10.0f;
         Map::PlayerList const& players = creature->GetMap()->GetPlayers();
@@ -96,7 +94,24 @@ public:
         auto& instanceMap = rainOfFirePosition[instanceId];
         ObjectGuid guid = dynobj->GetGUID();
 
-        instanceMap.try_emplace(guid, RainOfFireData{ dynobj->GetPosition(), now });
+        instanceMap.try_emplace(guid, RainOfFireData{dynobj->GetPosition(), now});
+    }
+};
+
+// Records the active Death and Decay dynamic object so bots can step away from
+// Winterchill using encounter-specific movement instead of generic aoe avoidance
+class RageWinterchillDeathAndDecayScript : public DynamicObjectScript
+{
+public:
+    RageWinterchillDeathAndDecayScript() : DynamicObjectScript("RageWinterchillDeathAndDecayScript") {}
+
+    void OnUpdate(DynamicObject* dynobj, uint32 /*diff*/) override
+    {
+        if (dynobj->GetSpellId() != static_cast<uint32>(HyjalSummitSpells::SPELL_DEATH_AND_DECAY))
+            return;
+
+        deathAndDecayPosition[dynobj->GetMap()->GetInstanceId()] =
+            DeathAndDecayData{dynobj->GetPosition(), getMSTime()};
     }
 };
 
@@ -104,4 +119,5 @@ void AddSC_HyjalSummitBotScripts()
 {
     new ArchimondeDoomfireTrailScript();
     new AzgalorRainOfFireScript();
+    new RageWinterchillDeathAndDecayScript();
 }
