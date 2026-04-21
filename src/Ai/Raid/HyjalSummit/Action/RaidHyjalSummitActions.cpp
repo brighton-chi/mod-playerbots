@@ -985,15 +985,12 @@ bool ArchimondeSpreadToAvoidAirBurstAction::Execute(Event /*event*/)
             static_cast<uint32>(HyjalSummitSpells::SPELL_AIR_BURST))
         {
             Player* mainTank = GetGroupMainTank(botAI, bot);
-            if (mainTank && spell->m_targets.GetUnitTarget() == bot)
+            if (mainTank && spell->m_targets.GetUnitTarget() == mainTank)
             {
                 float currentDistance = bot->GetDistance2d(mainTank);
                 constexpr float safeDistance = 14.0f;
                 if (currentDistance < safeDistance)
-                {
-                    botAI->RequestSpellInterrupt();
                     return MoveAway(mainTank, safeDistance - currentDistance);
-                }
             }
         }
     }
