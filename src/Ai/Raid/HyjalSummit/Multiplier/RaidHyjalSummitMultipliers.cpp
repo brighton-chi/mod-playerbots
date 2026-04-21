@@ -240,27 +240,14 @@ float AzgalorMeleeControlAvoidanceMultiplier::GetValue(Action* action)
     if (!botAI->IsDps(bot))
         return 1.0f;
 
-    constexpr uint32 RAIN_OF_FIRE_DURATION = 10000;
-    uint32 now = getMSTime();
-
-    auto instanceIt = rainOfFirePosition.find(bot->GetMap()->GetInstanceId());
-    if (instanceIt == rainOfFirePosition.end())
-        return 1.0f;
-
-    for (auto const& [guid, data] : instanceIt->second)
+    if (IsBotInsideActiveAzgalorRainOfFire(bot, 23.0f))
     {
-        if (getMSTimeDiff(data.spawnTime, now) < RAIN_OF_FIRE_DURATION &&
-            bot->GetExactDist2d(data.position) < 23.0f)
-        {
-            if (dynamic_cast<MovementAction*>(action) &&
-                !dynamic_cast<AzgalorMeleeGetOutOfFireAction*>(action))
-                return 0.0f;
+        if (dynamic_cast<MovementAction*>(action) &&
+            !dynamic_cast<AzgalorMeleeGetOutOfFireAction*>(action))
+            return 0.0f;
 
-            if (dynamic_cast<CastReachTargetSpellAction*>(action))
-                return 0.0f;
-
-            break;
-        }
+        if (dynamic_cast<CastReachTargetSpellAction*>(action))
+            return 0.0f;
     }
 
     return 1.0f;

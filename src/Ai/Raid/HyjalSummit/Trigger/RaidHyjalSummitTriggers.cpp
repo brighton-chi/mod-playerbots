@@ -253,32 +253,7 @@ bool AzgalorBossCastsRainOfFireOnMeleeTrigger::IsActive()
         bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_DOOM)))
         return false;
 
-    constexpr uint32 RAIN_OF_FIRE_DURATION = 10000;
-    uint32 now = getMSTime();
-
-    auto instanceIt = rainOfFirePosition.find(bot->GetMap()->GetInstanceId());
-    if (instanceIt == rainOfFirePosition.end())
-        return false;
-
-    auto& dynObjMap = instanceIt->second;
-    for (auto it = dynObjMap.begin(); it != dynObjMap.end(); )
-    {
-        if (getMSTimeDiff(it->second.spawnTime, now) >= RAIN_OF_FIRE_DURATION)
-            it = dynObjMap.erase(it);
-        else
-            ++it;
-    }
-
-    if (dynObjMap.empty())
-        return false;
-
-    for (auto const& [guid, data] : dynObjMap)
-    {
-        if (bot->GetExactDist2d(data.position) < 16.0f)
-            return true;
-    }
-
-    return false;
+    return IsBotInsideActiveAzgalorRainOfFire(bot, 16.0f);
 }
 
 bool AzgalorBotIsDoomedTrigger::IsActive()
@@ -315,7 +290,10 @@ bool AzgalorDoomguardsMustBeControlledTrigger::IsActive()
 
 bool AzgalorDoomguardsContinueToSpawnTrigger::IsActive()
 {
-    return botAI->IsDps(bot) && AI_VALUE2(Unit*, "find target", "azgalor");
+    if (!botAI->IsDps(bot) || !AI_VALUE2(Unit*, "find target", "azgalor"))
+        return false;
+
+    return !botAI->IsMelee(bot) || !IsBotInsideActiveAzgalorRainOfFire(bot, 16.0f);
 }
 
 // Archimonde

@@ -747,42 +747,18 @@ bool AzgalorDisperseRangedAction::Execute(Event /*event*/)
 bool AzgalorMeleeGetOutOfFireAction::Execute(Event /*event*/)
 {
     Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
-    if (!azgalor)
+    if (!azgalor || !IsBotInsideActiveAzgalorRainOfFire(bot, 17.0f))
         return false;
 
-    constexpr uint32 RAIN_OF_FIRE_DURATION = 10000;
-    uint32 now = getMSTime();
-
-    auto instanceIt = rainOfFirePosition.find(bot->GetMap()->GetInstanceId());
-    if (instanceIt == rainOfFirePosition.end())
-        return false;
-
-    auto& dynObjMap = instanceIt->second;
-    for (auto it = dynObjMap.begin(); it != dynObjMap.end(); )
+    if (Unit* doomguard = AI_VALUE2(Unit*, "find target", "lesser doomguard"))
     {
-        if (getMSTimeDiff(it->second.spawnTime, now) >= RAIN_OF_FIRE_DURATION)
-            it = dynObjMap.erase(it);
-        else
-            ++it;
+        if (bot->GetVictim() != doomguard)
+            return Attack(doomguard);
+
+        return true;
     }
 
-    if (dynObjMap.empty())
-        return false;
-
-    bool inAnyRoF = false;
-    for (auto const& [guid, data] : dynObjMap)
-    {
-        if (bot->GetExactDist2d(data.position) < 17.0f)
-        {
-            inAnyRoF = true;
-            break;
-        }
-    }
-
-    if (inAnyRoF)
-        return MoveAway(azgalor, 5.0f);
-
-    return true;
+    return MoveAway(azgalor, 5.0f);
 }
 
 // Wait for the tank to get to the transition position (i.e., move in to attack as

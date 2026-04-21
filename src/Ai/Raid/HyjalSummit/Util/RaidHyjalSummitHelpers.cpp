@@ -9,9 +9,40 @@
 
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
+#include "Timer.h"
 
 namespace HyjalSummitHelpers
 {
+    namespace
+    {
+        constexpr uint32 AZGALOR_RAIN_OF_FIRE_DURATION = 10000;
+
+        std::unordered_map<ObjectGuid, RainOfFireData>* GetActiveAzgalorRainOfFire(uint32 instanceId)
+        {
+            auto instanceIt = rainOfFirePosition.find(instanceId);
+            if (instanceIt == rainOfFirePosition.end())
+                return nullptr;
+
+            uint32 now = getMSTime();
+            auto& dynObjMap = instanceIt->second;
+            for (auto it = dynObjMap.begin(); it != dynObjMap.end(); )
+            {
+                if (getMSTimeDiff(it->second.spawnTime, now) >= AZGALOR_RAIN_OF_FIRE_DURATION)
+                    it = dynObjMap.erase(it);
+                else
+                    ++it;
+            }
+
+            if (dynObjMap.empty())
+            {
+                rainOfFirePosition.erase(instanceIt);
+                return nullptr;
+            }
+
+            return &dynObjMap;
+        }
+    }
+
     // General
 
     RangedGroups GetRangedGroups(PlayerbotAI* botAI, Player* bot)
@@ -122,6 +153,25 @@ namespace HyjalSummitHelpers
             return it->second;
 
         return TankPositionState::Unknown;
+    }
+
+    bool IsBotInsideActiveAzgalorRainOfFire(Player* bot, float radius)
+    {
+        if (!bot || !bot->GetMap())
+            return false;
+
+        std::unordered_map<ObjectGuid, RainOfFireData>* dynObjMap =
+            GetActiveAzgalorRainOfFire(bot->GetMap()->GetInstanceId());
+        if (!dynObjMap)
+            return false;
+
+        for (auto const& entry : *dynObjMap)
+        {
+            if (bot->GetExactDist2d(entry.second.position) < radius)
+                return true;
+        }
+
+        return false;
     }
 
     bool AnyGroupMemberHasDoom(Player* bot)
