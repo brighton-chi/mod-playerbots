@@ -51,6 +51,7 @@
 #include "SpellAuraEffects.h"
 #include "SpellInfo.h"
 #include "Transport.h"
+#include "TargetValue.h"
 #include "Unit.h"
 #include "UpdateTime.h"
 #include "Vehicle.h"
@@ -101,6 +102,88 @@ void PacketHandlingHelper::AddPacket(WorldPacket const& packet)
     // assert(packet.GetOpcode());
     if (handlers.find(packet.GetOpcode()) != handlers.end())
         queue.push(WorldPacket(packet));
+}
+
+static char const* GetTargetValueExclusionName(TargetValueExclusionType type)
+{
+    switch (type)
+    {
+        case TargetValueExclusionType::Tank:
+            return "ignore tank targets";
+        case TargetValueExclusionType::Dps:
+            return "ignore dps targets";
+        default:
+            return nullptr;
+    }
+}
+
+bool PlayerbotAI::IsTargetValueExcluded(TargetValueExclusionType type, ObjectGuid const& guid)
+{
+    char const* exclusionName = GetTargetValueExclusionName(type);
+    if (!guid || !aiObjectContext || !exclusionName)
+        return false;
+
+    Value<GuidSet&>* excludedTargetsValue = aiObjectContext->GetValue<GuidSet&>(exclusionName);
+    if (!excludedTargetsValue)
+        return false;
+
+    GuidSet const& excludedTargets = excludedTargetsValue->Get();
+    return excludedTargets.find(guid) != excludedTargets.end();
+}
+
+bool PlayerbotAI::AddTargetValueExclusion(TargetValueExclusionType type, ObjectGuid const& guid)
+{
+    char const* exclusionName = GetTargetValueExclusionName(type);
+    if (!guid || !aiObjectContext || !exclusionName)
+        return false;
+
+    Value<GuidSet&>* excludedTargetsValue = aiObjectContext->GetValue<GuidSet&>(exclusionName);
+    if (!excludedTargetsValue)
+        return false;
+
+    GuidSet& excludedTargets = excludedTargetsValue->Get();
+    bool inserted = excludedTargets.insert(guid).second;
+    if (inserted)
+        excludedTargetsValue->Set(excludedTargets);
+
+    return inserted;
+}
+
+bool PlayerbotAI::RemoveTargetValueExclusion(TargetValueExclusionType type, ObjectGuid const& guid)
+{
+    char const* exclusionName = GetTargetValueExclusionName(type);
+    if (!guid || !aiObjectContext || !exclusionName)
+        return false;
+
+    Value<GuidSet&>* excludedTargetsValue = aiObjectContext->GetValue<GuidSet&>(exclusionName);
+    if (!excludedTargetsValue)
+        return false;
+
+    GuidSet& excludedTargets = excludedTargetsValue->Get();
+    bool removed = excludedTargets.erase(guid) > 0;
+    if (removed)
+        excludedTargetsValue->Set(excludedTargets);
+
+    return removed;
+}
+
+void PlayerbotAI::ResetTargetValueExclusion(TargetValueExclusionType type)
+{
+    char const* exclusionName = GetTargetValueExclusionName(type);
+    if (!aiObjectContext || !exclusionName)
+        return;
+
+    Value<GuidSet&>* excludedTargetsValue = aiObjectContext->GetValue<GuidSet&>(exclusionName);
+    if (!excludedTargetsValue)
+        return;
+
+    excludedTargetsValue->Reset();
+}
+
+void PlayerbotAI::ResetTargetValueExclusions()
+{
+    ResetTargetValueExclusion(TargetValueExclusionType::Tank);
+    ResetTargetValueExclusion(TargetValueExclusionType::Dps);
 }
 
 PlayerbotAI::PlayerbotAI()
@@ -886,6 +969,7 @@ void PlayerbotAI::Reset(bool full)
     }
 
     aiObjectContext->GetValue<GuidSet&>("ignore rpg target")->Get().clear();
+    ResetTargetValueExclusions();
 
     bot->GetMotionMaster()->Clear();
 

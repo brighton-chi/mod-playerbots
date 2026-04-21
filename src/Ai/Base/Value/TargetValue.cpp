@@ -21,7 +21,7 @@ Unit* TargetValue::FindTarget(FindTargetStrategy* strategy)
     for (ObjectGuid const guid : attackers)
     {
         Unit* unit = botAI->GetUnit(guid);
-        if (!unit)
+        if (!unit || botAI->IsTargetValueExcluded(strategy->GetExclusionType(), unit->GetGUID()))
             continue;
 
         ThreatManager& threatMgr = unit->GetThreatMgr();

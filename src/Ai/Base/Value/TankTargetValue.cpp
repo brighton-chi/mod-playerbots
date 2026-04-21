@@ -49,6 +49,8 @@ class FindTankTargetSmartStrategy : public FindTargetStrategy
 public:
     FindTankTargetSmartStrategy(PlayerbotAI* botAI) : FindTargetStrategy(botAI) {}
 
+    TargetValueExclusionType GetExclusionType() const override { return TargetValueExclusionType::Tank; }
+
     void CheckAttacker(Unit* attacker, ThreatManager* threatMgr) override
     {
         if (Group* group = botAI->GetBot()->GetGroup())
@@ -57,6 +59,7 @@ public:
             if (guid && attacker->GetGUID() == guid)
                 return;
         }
+
         if (!attacker->IsAlive())
             return;
 
