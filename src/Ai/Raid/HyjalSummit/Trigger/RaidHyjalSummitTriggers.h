@@ -44,6 +44,14 @@ public:
     bool IsActive() override;
 };
 
+class RageWinterchillBotIsStandingInDeathAndDecayTrigger : public Trigger
+{
+public:
+    RageWinterchillBotIsStandingInDeathAndDecayTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "rage winterchill bot is standing in death and decay") {}
+    bool IsActive() override;
+};
+
 // Anetheron
 
 class AnetheronPullingBossOrInfernalTrigger : public Trigger

@@ -28,6 +28,9 @@ public:
         creators["rage winterchill boss casts death and decay"] =
             &RaidHyjalSummitTriggerContext::rage_winterchill_boss_casts_death_and_decay;
 
+        creators["rage winterchill bot is standing in death and decay"] =
+            &RaidHyjalSummitTriggerContext::rage_winterchill_bot_is_standing_in_death_and_decay;
+
         // Anetheron
         creators["anetheron pulling boss or infernal"] =
             &RaidHyjalSummitTriggerContext::anetheron_pulling_boss_or_infernal;
@@ -125,6 +128,9 @@ private:
 
     static Trigger* rage_winterchill_boss_casts_death_and_decay(
         PlayerbotAI* botAI) { return new RageWinterchillBossCastsDeathAndDecayTrigger(botAI); }
+
+    static Trigger* rage_winterchill_bot_is_standing_in_death_and_decay(
+        PlayerbotAI* botAI) { return new RageWinterchillBotIsStandingInDeathAndDecayTrigger(botAI); }
 
     // Anetheron
     static Trigger* anetheron_pulling_boss_or_infernal(

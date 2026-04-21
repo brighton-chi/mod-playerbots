@@ -28,6 +28,9 @@ public:
         creators["rage winterchill spread ranged in circle"] =
             &RaidHyjalSummitActionContext::rage_winterchill_spread_ranged_in_circle;
 
+        creators["rage winterchill move away from death and decay"] =
+            &RaidHyjalSummitActionContext::rage_winterchill_move_away_from_death_and_decay;
+
         // Anetheron
         creators["anetheron misdirect boss and infernals to tanks"] =
             &RaidHyjalSummitActionContext::anetheron_misdirect_boss_and_infernals_to_tanks;
@@ -125,6 +128,9 @@ private:
 
     static Action* rage_winterchill_spread_ranged_in_circle(
         PlayerbotAI* botAI) { return new RageWinterchillSpreadRangedInCircleAction(botAI); }
+
+    static Action* rage_winterchill_move_away_from_death_and_decay(
+        PlayerbotAI* botAI) { return new RageWinterchillMoveAwayFromDeathAndDecayAction(botAI); }
 
     // Anetheron
     static Action* anetheron_misdirect_boss_and_infernals_to_tanks(

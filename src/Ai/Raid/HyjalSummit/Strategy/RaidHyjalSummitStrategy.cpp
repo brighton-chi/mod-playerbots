@@ -22,6 +22,9 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("rage winterchill boss casts death and decay", {
         NextAction("rage winterchill spread ranged in circle", ACTION_RAID + 1) }));
 
+    triggers.push_back(new TriggerNode("rage winterchill bot is standing in death and decay", {
+        NextAction("rage winterchill move away from death and decay", ACTION_EMERGENCY + 2) }));
+
     // Anetheron
     triggers.push_back(new TriggerNode("anetheron pulling boss or infernal", {
         NextAction("anetheron misdirect boss and infernals to tanks", ACTION_RAID + 3) }));
@@ -113,6 +116,7 @@ void RaidHyjalSummitStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     // Rage Winterchill
     multipliers.push_back(new RageWinterchillDisableMainTankAvoidAoeMultiplier(botAI));
     multipliers.push_back(new RageWinterchillDisableCombatFormationMoveMultiplier(botAI));
+    multipliers.push_back(new RageWinterchillControlDeathAndDecayAvoidanceMultiplier(botAI));
 
     // Anetheron
     multipliers.push_back(new AnetheronDisableTankActionsMultiplier(botAI));

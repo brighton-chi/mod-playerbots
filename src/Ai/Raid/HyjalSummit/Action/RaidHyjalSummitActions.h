@@ -49,6 +49,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class RageWinterchillMoveAwayFromDeathAndDecayAction : public HyjalSummitAttackAction
+{
+public:
+    RageWinterchillMoveAwayFromDeathAndDecayAction(
+        PlayerbotAI* botAI) : HyjalSummitAttackAction(botAI, "rage winterchill move away from death and decay") {}
+    bool Execute(Event event) override;
+};
+
 // Anetheron
 
 class AnetheronMisdirectBossAndInfernalsToTanksAction : public HyjalSummitAttackAction

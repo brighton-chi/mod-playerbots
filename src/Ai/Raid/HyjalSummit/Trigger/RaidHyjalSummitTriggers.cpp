@@ -42,6 +42,17 @@ bool RageWinterchillBossCastsDeathAndDecayTrigger::IsActive()
            AI_VALUE2(Unit*, "find target", "rage winterchill");
 }
 
+bool RageWinterchillBotIsStandingInDeathAndDecayTrigger::IsActive()
+{
+    if (botAI->IsTank(bot))
+        return false;
+
+    if (!AI_VALUE2(Unit*, "find target", "rage winterchill"))
+        return false;
+
+    return IsBotInsideActiveWinterchillDeathAndDecay(bot, WINTERCHILL_DEATH_AND_DECAY_TRIGGER_RADIUS);
+}
+
 // Anetheron
 
 bool AnetheronPullingBossOrInfernalTrigger::IsActive()

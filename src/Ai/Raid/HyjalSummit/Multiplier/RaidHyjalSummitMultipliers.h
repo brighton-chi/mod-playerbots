@@ -34,6 +34,14 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class RageWinterchillControlDeathAndDecayAvoidanceMultiplier : public Multiplier
+{
+public:
+    RageWinterchillControlDeathAndDecayAvoidanceMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "rage winterchill control death and decay avoidance multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
 // Anetheron
 
 class AnetheronDisableTankActionsMultiplier : public Multiplier

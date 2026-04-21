@@ -81,6 +81,27 @@ float RageWinterchillDisableCombatFormationMoveMultiplier::GetValue(Action* acti
     return 1.0f;
 }
 
+float RageWinterchillControlDeathAndDecayAvoidanceMultiplier::GetValue(Action* action)
+{
+    if (botAI->IsTank(bot) || !AI_VALUE2(Unit*, "find target", "rage winterchill"))
+        return 1.0f;
+
+    if (IsBotInsideActiveWinterchillDeathAndDecay(bot, WINTERCHILL_DEATH_AND_DECAY_CONTROL_RADIUS))
+    {
+        if (dynamic_cast<AvoidAoeAction*>(action))
+            return 0.0f;
+
+        if (dynamic_cast<MovementAction*>(action) &&
+            !dynamic_cast<RageWinterchillMoveAwayFromDeathAndDecayAction*>(action))
+            return 0.0f;
+
+        if (dynamic_cast<CastReachTargetSpellAction*>(action))
+            return 0.0f;
+    }
+
+    return 1.0f;
+}
+
 // Anetheron
 
 float AnetheronDisableTankActionsMultiplier::GetValue(Action* action)

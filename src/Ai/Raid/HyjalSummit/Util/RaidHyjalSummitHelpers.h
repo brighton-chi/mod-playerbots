@@ -18,6 +18,9 @@ namespace HyjalSummitHelpers
 {
     enum class HyjalSummitSpells : uint32
     {
+        // Rage Winterchill
+        SPELL_DEATH_AND_DECAY   = 31258,
+
         // Anetheron
         SPELL_INFERNO          = 31299,
 
@@ -69,6 +72,20 @@ namespace HyjalSummitHelpers
     // Rage Winterchill
     extern const Position WINTERCHILL_TANK_POSITION;
     extern std::unordered_map<ObjectGuid, bool> hasReachedWinterchillPosition;
+    constexpr uint32 WINTERCHILL_DEATH_AND_DECAY_DURATION = 20000;
+    // Match Azgalor-style escape thresholds: detect inside the effect, keep moving
+    // until slightly clear, and hold competing movement a bit longer to avoid churn.
+    constexpr float WINTERCHILL_DEATH_AND_DECAY_TRIGGER_RADIUS = 16.0f;
+    constexpr float WINTERCHILL_DEATH_AND_DECAY_ACTION_RADIUS = 17.0f;
+    constexpr float WINTERCHILL_DEATH_AND_DECAY_CONTROL_RADIUS = 23.0f;
+    struct DeathAndDecayData
+    {
+        Position position;
+        uint32 spawnTime;
+    };
+    extern std::unordered_map<uint32, DeathAndDecayData> deathAndDecayPosition;
+    DeathAndDecayData* GetActiveWinterchillDeathAndDecay(uint32 instanceId);
+    bool IsBotInsideActiveWinterchillDeathAndDecay(Player* bot, float radius);
 
     // Anetheron
     extern const Position ANETHERON_TANK_POSITION;

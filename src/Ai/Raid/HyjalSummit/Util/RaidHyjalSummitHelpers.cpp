@@ -13,6 +13,22 @@
 
 namespace HyjalSummitHelpers
 {
+    DeathAndDecayData* GetActiveWinterchillDeathAndDecay(uint32 instanceId)
+    {
+        auto instanceIt = deathAndDecayPosition.find(instanceId);
+        if (instanceIt == deathAndDecayPosition.end())
+            return nullptr;
+
+        uint32 now = getMSTime();
+        if (getMSTimeDiff(instanceIt->second.spawnTime, now) >= WINTERCHILL_DEATH_AND_DECAY_DURATION)
+        {
+            deathAndDecayPosition.erase(instanceIt);
+            return nullptr;
+        }
+
+        return &instanceIt->second;
+    }
+
     std::unordered_map<ObjectGuid, RainOfFireData>* GetActiveAzgalorRainOfFire(uint32 instanceId)
     {
         auto instanceIt = rainOfFirePosition.find(instanceId);
@@ -76,6 +92,19 @@ namespace HyjalSummitHelpers
 
     const Position WINTERCHILL_TANK_POSITION = { 5031.061f, -1784.521f, 1321.626f };
     std::unordered_map<ObjectGuid, bool> hasReachedWinterchillPosition;
+    std::unordered_map<uint32, DeathAndDecayData> deathAndDecayPosition;
+
+    bool IsBotInsideActiveWinterchillDeathAndDecay(Player* bot, float radius)
+    {
+        if (!bot || !bot->GetMap())
+            return false;
+
+        DeathAndDecayData* data = GetActiveWinterchillDeathAndDecay(bot->GetMap()->GetInstanceId());
+        if (!data)
+            return false;
+
+        return bot->GetExactDist2d(data->position) < radius;
+    }
 
     // Anetheron
 

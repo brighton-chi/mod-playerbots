@@ -100,8 +100,26 @@ public:
     }
 };
 
+// Records the active Death and Decay dynamic object so bots can step away from
+// Winterchill using encounter-specific movement instead of generic aoe avoidance
+class RageWinterchillDeathAndDecayScript : public DynamicObjectScript
+{
+public:
+    RageWinterchillDeathAndDecayScript() : DynamicObjectScript("RageWinterchillDeathAndDecayScript") {}
+
+    void OnUpdate(DynamicObject* dynobj, uint32 /*diff*/) override
+    {
+        if (dynobj->GetSpellId() != static_cast<uint32>(HyjalSummitSpells::SPELL_DEATH_AND_DECAY))
+            return;
+
+        deathAndDecayPosition[dynobj->GetMap()->GetInstanceId()] =
+            DeathAndDecayData{ dynobj->GetPosition(), getMSTime() };
+    }
+};
+
 void AddSC_HyjalSummitBotScripts()
 {
     new ArchimondeDoomfireTrailScript();
     new AzgalorRainOfFireScript();
+    new RageWinterchillDeathAndDecayScript();
 }
