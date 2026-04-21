@@ -97,6 +97,7 @@ namespace HyjalSummitHelpers
     };
     extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, RainOfFireData>> rainOfFirePosition;
     TankPositionState GetAzgalorTankPositionState(PlayerbotAI* botAI, Player* bot);
+    bool IsBotInsideActiveAzgalorRainOfFire(Player* bot, float radius);
     bool AnyGroupMemberHasDoom(Player* bot);
 
     // Archimonde

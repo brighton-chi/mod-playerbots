@@ -183,11 +183,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class AzgalorMeleeGetOutOfFireAction : public HyjalSummitMovementAction
+class AzgalorMeleeGetOutOfFireAction : public HyjalSummitAttackAction
 {
 public:
     AzgalorMeleeGetOutOfFireAction(
-        PlayerbotAI* botAI) : HyjalSummitMovementAction(botAI, "azgalor melee get out of fire") {}
+        PlayerbotAI* botAI) : HyjalSummitAttackAction(botAI, "azgalor melee get out of fire") {}
     bool Execute(Event event) override;
 };
 
