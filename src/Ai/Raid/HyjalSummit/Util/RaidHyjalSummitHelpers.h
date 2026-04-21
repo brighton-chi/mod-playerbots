@@ -90,6 +90,7 @@ namespace HyjalSummitHelpers
     extern const Position AZGALOR_TANK_FINAL_POSITION;
     extern const Position AZGALOR_DOOMGUARD_POSITION;
     extern std::unordered_map<ObjectGuid, TankPositionState> azgalorTankStep;
+    constexpr uint32 AZGALOR_RAIN_OF_FIRE_DURATION = 10000;
     struct RainOfFireData
     {
         Position position;
@@ -97,6 +98,7 @@ namespace HyjalSummitHelpers
     };
     extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, RainOfFireData>> rainOfFirePosition;
     TankPositionState GetAzgalorTankPositionState(PlayerbotAI* botAI, Player* bot);
+    std::unordered_map<ObjectGuid, RainOfFireData>* GetActiveAzgalorRainOfFire(uint32 instanceId);
     bool IsBotInsideActiveAzgalorRainOfFire(Player* bot, float radius);
     bool AnyGroupMemberHasDoom(Player* bot);
 

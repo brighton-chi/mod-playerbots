@@ -13,34 +13,29 @@
 
 namespace HyjalSummitHelpers
 {
-    namespace
+    std::unordered_map<ObjectGuid, RainOfFireData>* GetActiveAzgalorRainOfFire(uint32 instanceId)
     {
-        constexpr uint32 AZGALOR_RAIN_OF_FIRE_DURATION = 10000;
+        auto instanceIt = rainOfFirePosition.find(instanceId);
+        if (instanceIt == rainOfFirePosition.end())
+            return nullptr;
 
-        std::unordered_map<ObjectGuid, RainOfFireData>* GetActiveAzgalorRainOfFire(uint32 instanceId)
+        uint32 now = getMSTime();
+        auto& dynObjMap = instanceIt->second;
+        for (auto it = dynObjMap.begin(); it != dynObjMap.end(); )
         {
-            auto instanceIt = rainOfFirePosition.find(instanceId);
-            if (instanceIt == rainOfFirePosition.end())
-                return nullptr;
-
-            uint32 now = getMSTime();
-            auto& dynObjMap = instanceIt->second;
-            for (auto it = dynObjMap.begin(); it != dynObjMap.end(); )
-            {
-                if (getMSTimeDiff(it->second.spawnTime, now) >= AZGALOR_RAIN_OF_FIRE_DURATION)
-                    it = dynObjMap.erase(it);
-                else
-                    ++it;
-            }
-
-            if (dynObjMap.empty())
-            {
-                rainOfFirePosition.erase(instanceIt);
-                return nullptr;
-            }
-
-            return &dynObjMap;
+            if (getMSTimeDiff(it->second.spawnTime, now) >= AZGALOR_RAIN_OF_FIRE_DURATION)
+                it = dynObjMap.erase(it);
+            else
+                ++it;
         }
+
+        if (dynObjMap.empty())
+        {
+            rainOfFirePosition.erase(instanceIt);
+            return nullptr;
+        }
+
+        return &dynObjMap;
     }
 
     // General
