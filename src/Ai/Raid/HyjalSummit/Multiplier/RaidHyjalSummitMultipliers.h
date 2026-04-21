@@ -11,10 +11,8 @@
 class HyjalSummitTimeBloodlustAndHeroismMultiplier : public Multiplier
 {
 public:
-    HyjalSummitTimeBloodlustAndHeroismMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "hyjal summit time bloodlust and heroism multiplier")
-    {
-    }
+    HyjalSummitTimeBloodlustAndHeroismMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "hyjal summit time bloodlust and heroism multiplier") {}
     virtual float GetValue(Action* action);
 };
 
@@ -23,30 +21,24 @@ public:
 class RageWinterchillDisableMainTankAvoidAoeMultiplier : public Multiplier
 {
 public:
-    RageWinterchillDisableMainTankAvoidAoeMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "rage winterchill disable main tank avoid aoe multiplier")
-    {
-    }
+    RageWinterchillDisableMainTankAvoidAoeMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "rage winterchill disable main tank avoid aoe multiplier") {}
     virtual float GetValue(Action* action);
 };
 
 class RageWinterchillDisableCombatFormationMoveMultiplier : public Multiplier
 {
 public:
-    RageWinterchillDisableCombatFormationMoveMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "rage winterchill disable combat formation move multiplier")
-    {
-    }
+    RageWinterchillDisableCombatFormationMoveMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "rage winterchill disable combat formation move multiplier") {}
     virtual float GetValue(Action* action);
 };
 
 class RageWinterchillControlDeathAndDecayAvoidanceMultiplier : public Multiplier
 {
 public:
-    RageWinterchillControlDeathAndDecayAvoidanceMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "rage winterchill control death and decay avoidance multiplier")
-    {
-    }
+    RageWinterchillControlDeathAndDecayAvoidanceMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "rage winterchill control death and decay avoidance multiplier") {}
     virtual float GetValue(Action* action);
 };
 
@@ -55,30 +47,24 @@ public:
 class AnetheronDisableTankActionsMultiplier : public Multiplier
 {
 public:
-    AnetheronDisableTankActionsMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "anetheron disable tank actions multiplier")
-    {
-    }
+    AnetheronDisableTankActionsMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "anetheron disable tank actions multiplier") {}
     virtual float GetValue(Action* action);
 };
 
 class AnetheronDisableCombatFormationMoveMultiplier : public Multiplier
 {
 public:
-    AnetheronDisableCombatFormationMoveMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "anetheron disable combat formation move multiplier")
-    {
-    }
+    AnetheronDisableCombatFormationMoveMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "anetheron disable combat formation move multiplier") {}
     virtual float GetValue(Action* action);
 };
 
 class AnetheronControlMisdirectionMultiplier : public Multiplier
 {
 public:
-    AnetheronControlMisdirectionMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "anetheron control misdirection multiplier")
-    {
-    }
+    AnetheronControlMisdirectionMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "anetheron control misdirection multiplier") {}
     virtual float GetValue(Action* action);
 };
 
@@ -87,29 +73,24 @@ public:
 class KazrogalLowManaBotStayAwayFromGroupMultiplier : public Multiplier
 {
 public:
-    KazrogalLowManaBotStayAwayFromGroupMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "kaz'rogal low mana bot stay away from group multiplier")
-    {
-    }
+    KazrogalLowManaBotStayAwayFromGroupMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "kaz'rogal low mana bot stay away from group multiplier") {}
     virtual float GetValue(Action* action);
 };
 
 class KazrogalKeepAspectOfTheViperActiveMultiplier : public Multiplier
 {
 public:
-    KazrogalKeepAspectOfTheViperActiveMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "kaz'rogal keep aspect of the viper active multiplier")
-    {
-    }
+    KazrogalKeepAspectOfTheViperActiveMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "kaz'rogal keep aspect of the viper active multiplier") {}
     virtual float GetValue(Action* action);
 };
 
 class KazrogalControlMovementMultiplier : public Multiplier
 {
 public:
-    KazrogalControlMovementMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "kaz'rogal control movement multiplier")
-    {
-    }
+    KazrogalControlMovementMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "kaz'rogal control movement multiplier") {}
     virtual float GetValue(Action* action);
 };
 
@@ -118,30 +99,24 @@ public:
 class AzgalorDisableTankActionsMultiplier : public Multiplier
 {
 public:
-    AzgalorDisableTankActionsMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "azgalor disable tank actions multiplier")
-    {
-    }
+    AzgalorDisableTankActionsMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "azgalor disable tank actions multiplier") {}
     virtual float GetValue(Action* action);
 };
 
 class AzgalorDoomedBotPrioritizePositioningMultiplier : public Multiplier
 {
 public:
-    AzgalorDoomedBotPrioritizePositioningMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "azgalor doomed bot prioritize positioning multiplier")
-    {
-    }
+    AzgalorDoomedBotPrioritizePositioningMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "azgalor doomed bot prioritize positioning multiplier") {}
     virtual float GetValue(Action* action);
 };
 
 class AzgalorMeleeControlAvoidanceMultiplier : public Multiplier
 {
 public:
-    AzgalorMeleeControlAvoidanceMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "azgalor melee control avoidance multiplier")
-    {
-    }
+    AzgalorMeleeControlAvoidanceMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "azgalor melee control avoidance multiplier") {}
     virtual float GetValue(Action* action);
 };
 
@@ -150,10 +125,8 @@ public:
 class ArchimondeDisableCombatFormationMoveMultiplier : public Multiplier
 {
 public:
-    ArchimondeDisableCombatFormationMoveMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "archimonde disable combat formation move multiplier")
-    {
-    }
+    ArchimondeDisableCombatFormationMoveMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "archimonde disable combat formation move multiplier") {}
     virtual float GetValue(Action* action);
 };
 

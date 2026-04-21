@@ -3,10 +3,10 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "RaidHyjalSummitHelpers.h"
 #include "AllCreatureScript.h"
 #include "DynamicObjectScript.h"
 #include "Playerbots.h"
-#include "RaidHyjalSummitHelpers.h"
 #include "ScriptMgr.h"
 #include "Timer.h"
 
@@ -44,9 +44,11 @@ public:
         trail.push_back(data);
 
         constexpr uint32 TRAIL_DURATION = 18000;
-        trail.erase(std::remove_if(trail.begin(), trail.end(), [now](const DoomfireTrailData& d)
-                                   { return getMSTimeDiff(d.recordTime, now) > TRAIL_DURATION; }),
-                    trail.end());
+        trail.erase(std::remove_if(trail.begin(), trail.end(),
+            [now](const DoomfireTrailData& d)
+            {
+                return getMSTimeDiff(d.recordTime, now) > TRAIL_DURATION;
+            }), trail.end());
 
         constexpr float DOOMFIRE_DANGER_RANGE = 10.0f;
         Map::PlayerList const& players = creature->GetMap()->GetPlayers();
@@ -94,7 +96,7 @@ public:
         auto& instanceMap = rainOfFirePosition[instanceId];
         ObjectGuid guid = dynobj->GetGUID();
 
-        instanceMap.try_emplace(guid, RainOfFireData{dynobj->GetPosition(), now});
+        instanceMap.try_emplace(guid, RainOfFireData{ dynobj->GetPosition(), now });
     }
 };
 
@@ -111,7 +113,7 @@ public:
             return;
 
         deathAndDecayPosition[dynobj->GetMap()->GetInstanceId()] =
-            DeathAndDecayData{dynobj->GetPosition(), getMSTime()};
+            DeathAndDecayData{ dynobj->GetPosition(), getMSTime() };
     }
 };
 
