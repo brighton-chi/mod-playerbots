@@ -1922,15 +1922,18 @@ namespace SunwellHelpers
     // M'uru & Entropius
 
     const Position MURU_STACK_POSITION = { 1836.738f, 608.646f, 71.222f };
-    const Position MURU_VOID_SENTINEL_N_TANK_POSITION = { 0.0f, 0.0f, 0.0f };
-    const Position MURU_VOID_SENTINEL_E_TANK_POSITION = { 0.0f, 0.0f, 0.0f };
+    const Position MURU_VOID_SENTINEL_N_TANK_POSITION = { 1840.448f, 630.605f, 70.567f };
+    const Position MURU_VOID_SENTINEL_E_TANK_POSITION = { 1814.960f, 601.646f, 70.547f };
 
-    const Position& GetClosestVoidSentinelTankPosition(Player* bot)
+    const Position* GetClosestVoidSentinelTankPosition(Unit* voidSentinel, Player* bot)
     {
+        if (!voidSentinel)
+            return nullptr;
+
         const Position& north = MURU_VOID_SENTINEL_N_TANK_POSITION;
         const Position& east = MURU_VOID_SENTINEL_E_TANK_POSITION;
-        return (bot->GetExactDist2d(north.GetPositionX(), north.GetPositionY()) <=
-                bot->GetExactDist2d(east.GetPositionX(), east.GetPositionY())) ? north : east;
+        return (voidSentinel->GetExactDist2d(north.GetPositionX(), north.GetPositionY()) <=
+                voidSentinel->GetExactDist2d(east.GetPositionX(), east.GetPositionY())) ? &north : &east;
     }
 
     bool IsFirstAssistTankInSameGroup(PlayerbotAI* botAI, Player* bot)
@@ -1987,6 +1990,15 @@ namespace SunwellHelpers
 
         muruDarknessStates.erase(instanceId);
         return false;
+    }
+
+    bool DoesMuruUnitHaveTankAggro(PlayerbotAI* botAI, Unit* unit)
+    {
+        if (!botAI || !unit || !unit->IsAlive())
+            return false;
+
+        Player* victim = unit->GetVictim() ? unit->GetVictim()->ToPlayer() : nullptr;
+        return victim && botAI->IsTank(victim);
     }
 
     void GatherMuruEncounterTargets(PlayerbotAI* botAI, Player* bot, MuruEncounterTargets& targets)

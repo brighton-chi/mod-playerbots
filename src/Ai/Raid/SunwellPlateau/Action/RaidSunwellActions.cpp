@@ -1440,13 +1440,16 @@ bool MuruFirstAssistTankHandleVoidSentinelAction::Execute(Event /*event*/)
     } */
     if (voidSentinel->GetVictim() == bot && bot->IsWithinMeleeRange(voidSentinel))
     {
-        const Position& position = GetClosestVoidSentinelTankPosition(bot);
-        float distToPosition = bot->GetExactDist2d(position.GetPositionX(),
-                                                   position.GetPositionY());
+        const Position* position = GetClosestVoidSentinelTankPosition(voidSentinel, bot);
+        if (!position)
+            return true;
+
+        float distToPosition = bot->GetExactDist2d(position->GetPositionX(),
+                                                   position->GetPositionY());
         if (distToPosition > 3.0f)
         {
-            float dX = position.GetPositionX() - bot->GetPositionX();
-            float dY = position.GetPositionY() - bot->GetPositionY();
+            float dX = position->GetPositionX() - bot->GetPositionX();
+            float dY = position->GetPositionY() - bot->GetPositionY();
             float moveDist = std::min(5.0f, distToPosition);
             float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
             float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
@@ -1479,26 +1482,33 @@ bool MuruCastStunOnShadowswordBerserkerAction::Execute(Event /*event*/)
     if (!berserker)
         return false;
 
-    static const std::array<const char*, 8> spells =
+    auto castStop = [&](const char* spell)
     {
-        "bash",
-        "concussion blow",
-        "hammer of justice",
-        "kidney shot",
-        "maim",
-        "revenge stun",
-        "shadowfury",
-        "shockwave"
+        return botAI->CanCastSpell(spell, berserker) &&
+               botAI->CastSpell(spell, berserker);
     };
 
-    for (const char* spell : spells)
+    switch (bot->getClass())
     {
-        if (botAI->CanCastSpell(spell, berserker) &&
-            botAI->CastSpell(spell, berserker))
-            return true;
-    }
+        case CLASS_DRUID:
+            return castStop("bash") || castStop("maim");
 
-    return false;
+        case CLASS_PALADIN:
+            return castStop("hammer of justice");
+
+        case CLASS_ROGUE:
+            return castStop("kidney shot");
+
+        case CLASS_WARLOCK:
+            return castStop("shadowfury");
+
+        case CLASS_WARRIOR:
+            return castStop("concussion blow") || castStop("revenge stun") ||
+                   castStop("shockwave");
+
+        default:
+            return bot->getRace() == RACE_TAUREN && castStop("war stomp");
+    }
 }
 
 bool MuruInterruptFelFireballAction::Execute(Event /*event*/)
@@ -1507,25 +1517,35 @@ bool MuruInterruptFelFireballAction::Execute(Event /*event*/)
     if (!furyMage)
         return false;
 
-    static const std::array<const char*, 8> spells =
+    auto castStop = [&](const char* spell)
     {
-        "bash",
-        "counterspell",
-        "kick",
-        "mind freeze",
-        "pummel",
-        "shield bash",
-        "silencing shot",
-        "wind shear",
+        return botAI->CanCastSpell(spell, furyMage) &&
+               botAI->CastSpell(spell, furyMage);
     };
-    for (const char* spell : spells)
-    {
-        if (botAI->CanCastSpell(spell, furyMage) &&
-            botAI->CastSpell(spell, furyMage))
-            return true;
-    }
 
-    return false;
+    switch (bot->getClass())
+    {
+        case CLASS_DEATH_KNIGHT:
+            return castStop("mind freeze") || castStop("strangulate");
+
+        case CLASS_HUNTER:
+            return castStop("silencing shot");
+
+        case CLASS_MAGE:
+            return castStop("counterspell");
+
+        case CLASS_ROGUE:
+            return castStop("kick");
+
+        case CLASS_SHAMAN:
+            return castStop("wind shear");
+
+        case CLASS_WARRIOR:
+            return castStop("pummel") || castStop("shield bash");
+
+        default:
+            return bot->getRace() == RACE_BLOODELF && castStop("arcane torrent");
+    }
 }
 
 bool MuruCastSpellStealOnSpellFuryAction::Execute(Event /*event*/)
@@ -1610,17 +1630,19 @@ bool MuruSetDpsPriorityAction::Execute(Event /*event*/)
     GatherMuruEncounterTargets(botAI, bot, targets);
     muru = targets.muru;
     entropius = targets.entropius;
+    bool voidSentinelHasTankAggro = DoesMuruUnitHaveTankAggro(botAI, targets.voidSentinel);
 
     std::vector<Unit*> priorityTargets;
     if (isShadowPriest)
     {
         priorityTargets = {
-            targets.voidSentinel, muru, entropius };
+            voidSentinelHasTankAggro ? targets.voidSentinel : nullptr, muru, entropius };
     }
     else if (isOtherRanged)
     {
         priorityTargets = {
-            targets.voidSentinel, targets.voidSpawn, targets.furyMage, targets.berserker, muru, entropius };
+            voidSentinelHasTankAggro ? targets.voidSentinel : nullptr,
+            targets.voidSpawn, targets.furyMage, targets.berserker, muru, entropius };
     }
     else
     {
@@ -1643,6 +1665,8 @@ bool MuruSetDpsPriorityAction::Execute(Event /*event*/)
                 return true;
 
             case static_cast<uint32>(SunwellNpcs::NPC_VOID_SENTINEL):
+                return (isShadowPriest || isOtherRanged) && voidSentinelHasTankAggro;
+
             case static_cast<uint32>(SunwellNpcs::NPC_VOID_SPAWN):
                 return isOtherRanged;
 

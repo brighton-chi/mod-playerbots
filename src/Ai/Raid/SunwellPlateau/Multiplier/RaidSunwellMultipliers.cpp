@@ -289,10 +289,8 @@ float FelmystDelayCooldownsMultiplier::GetValue(Action* action)
 
 float EredarTwinsMeleeJumpDownFromBalconyMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsMelee(bot) || bot->GetPositionZ() < EREDAR_TWINS_BALCONY_Z)
-        return 1.0f;
-
-    if (!AI_VALUE2(Unit*, "find target", "lady sacrolash"))
+    if (!botAI->IsMelee(bot) || bot->GetPositionZ() < EREDAR_TWINS_BALCONY_Z ||
+        !AI_VALUE2(Unit*, "find target", "lady sacrolash"))
         return 1.0f;
 
     if (dynamic_cast<MovementAction*>(action) &&
@@ -338,10 +336,8 @@ float EredarTwinsControlThreatMultiplier::GetValue(Action* action)
 
 float EredarTwinsDisableTankActionsMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsTank(bot))
-        return 1.0f;
-
-    if (!AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
+    if (!botAI->IsTank(bot) ||
+        !AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
         return 1.0f;
 
     if (dynamic_cast<TankAssistAction*>(action) ||
@@ -431,14 +427,19 @@ float MuruDisableDefaultTargetingMultiplier::GetValue(Action* action)
 
 float MuruControlTankActionsMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsTank(bot))
-        return 1.0f;
-
-    if (!AI_VALUE2(Unit*, "find target", "entropius"))
+    if (!botAI->IsTank(bot) ||
+        !AI_VALUE2(Unit*, "find target", "entropius"))
         return 1.0f;
 
     if (dynamic_cast<CombatFormationMoveAction*>(action))
         return 0.0f;
+
+    if (botAI->IsAssistTankOfIndex(bot, 0, true) &&
+        AI_VALUE2(Unit*, "find target", "void sentinel") &&
+        dynamic_cast<TankAssistAction*>(action))
+    {
+        return 0.0f;
+    }
 
     return 1.0f;
 }
@@ -460,8 +461,15 @@ float MuruControlMisdirectionMultiplier::GetValue(Action* action)
 
 float MuruControlMovementMultiplier::GetValue(Action* action)
 {
-    if (!AI_VALUE2(Unit*, "find target", "mu'ru"))
+    Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
+    if (!muru)
         return 1.0f;
+
+    if (TryGetMuruDarknessActiveState(bot, muru) &&
+        dynamic_cast<CastReachTargetSpellAction*>(action))
+    {
+        return 0.0f;
+    }
 
     if (dynamic_cast<CastDisengageAction*>(action) ||
         dynamic_cast<CastBlinkBackAction*>(action) ||

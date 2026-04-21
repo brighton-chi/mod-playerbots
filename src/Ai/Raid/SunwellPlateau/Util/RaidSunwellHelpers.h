@@ -277,9 +277,10 @@ namespace SunwellHelpers
     extern const Position MURU_VOID_SENTINEL_N_TANK_POSITION;
     extern const Position MURU_VOID_SENTINEL_E_TANK_POSITION;
     extern std::unordered_map<uint32, MuruDarknessState> muruDarknessStates;
-    const Position& GetClosestVoidSentinelTankPosition(Player* bot);
+    const Position* GetClosestVoidSentinelTankPosition(Unit* voidSentinel, Player* bot);
     bool IsFirstAssistTankInSameGroup(PlayerbotAI* botAI, Player* bot);
     bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru);
+    bool DoesMuruUnitHaveTankAggro(PlayerbotAI* botAI, Unit* unit);
     void GatherMuruEncounterTargets(PlayerbotAI* botAI, Player* bot, MuruEncounterTargets& targets);
     Creature* FindAvailableVoidSpawnForEnslave(
         PlayerbotAI* botAI, Player* bot, Unit* muru, Unit* entropius);
