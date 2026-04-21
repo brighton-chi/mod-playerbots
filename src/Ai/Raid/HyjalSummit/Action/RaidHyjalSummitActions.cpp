@@ -750,13 +750,20 @@ bool AzgalorMeleeGetOutOfFireAction::Execute(Event /*event*/)
     if (!azgalor || !IsBotInsideActiveAzgalorRainOfFire(bot, 17.0f))
         return false;
 
-    if (Unit* doomguard = AI_VALUE2(Unit*, "find target", "lesser doomguard"))
+    Unit* doomguard = AI_VALUE2(Unit*, "find target", "lesser doomguard");
+    bool isTargetingDoomguard =
+        doomguard && (bot->GetVictim() == doomguard || bot->GetTarget() == doomguard->GetGUID());
+    if (isTargetingDoomguard)
     {
-        if (bot->GetVictim() != doomguard)
-            return Attack(doomguard);
+        if (bot->GetVictim() != azgalor || bot->GetTarget() != azgalor->GetGUID())
+            return Attack(azgalor);
 
-        return true;
+        return false;
     }
+
+    if (doomguard &&
+        (bot->GetVictim() != doomguard || bot->GetTarget() != doomguard->GetGUID()))
+        return Attack(doomguard);
 
     return MoveAway(azgalor, 5.0f);
 }
