@@ -128,6 +128,9 @@ public:
         creators["m'uru darkness is coming"] =
             &RaidSunwellTriggerContext::muru_darkness_is_coming;
 
+        creators["m'uru the singularity is near"] =
+            &RaidSunwellTriggerContext::muru_singularity_is_too_close;
+
         creators["m'uru berserker is buffed with flurry"] =
             &RaidSunwellTriggerContext::muru_berserker_is_buffed_with_flurry;
 
@@ -262,6 +265,9 @@ private:
 
     static Trigger* muru_darkness_is_coming(
         PlayerbotAI* botAI) { return new MuruDarknessIsComingTrigger(botAI); }
+
+    static Trigger* muru_singularity_is_too_close(
+        PlayerbotAI* botAI) { return new MuruTheSingularityIsNearTrigger(botAI); }
 
     static Trigger* muru_berserker_is_buffed_with_flurry(
         PlayerbotAI* botAI) { return new MuruBerserkerIsBuffedWithFlurryTrigger(botAI); }

@@ -122,6 +122,9 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("m'uru darkness is coming", {
         NextAction("m'uru avoid darkness", ACTION_EMERGENCY + 9) }));
 
+    triggers.push_back(new TriggerNode("m'uru the singularity is near", {
+        NextAction("m'uru avoid singularity", ACTION_EMERGENCY + 8) }));
+
     triggers.push_back(new TriggerNode("m'uru berserker is buffed with flurry", {
         NextAction("m'uru cast stun on shadowsword berserker", ACTION_RAID + 4) }));
 
@@ -172,6 +175,7 @@ void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 
     // M'uru & Entropius
     multipliers.push_back(new MuruDisableDefaultTargetingMultiplier(botAI));
+    multipliers.push_back(new MuruExcludeMuruFromTankTargetValueMultiplier(botAI));
     multipliers.push_back(new MuruControlTankActionsMultiplier(botAI));
     multipliers.push_back(new MuruControlMovementMultiplier(botAI));
     multipliers.push_back(new MuruControlMisdirectionMultiplier(botAI));

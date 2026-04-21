@@ -316,6 +316,14 @@ public:
     bool IsActive() override;
 };
 
+class MuruTheSingularityIsNearTrigger : public Trigger
+{
+public:
+    MuruTheSingularityIsNearTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "m'uru the singularity is near") {}
+    bool IsActive() override;
+};
+
 class MuruBerserkerIsBuffedWithFlurryTrigger : public Trigger
 {
 public:

@@ -90,6 +90,7 @@ namespace SunwellHelpers
         NPC_SHADOWSWORD_FURY_MAGE = 25799,
         NPC_VOID_SPAWN = 25824,
         NPC_ENTROPIUS           = 25840,
+        NPC_SINGULARITY         = 25855,
     };
 
     enum class SunwellObjects : uint32
@@ -277,7 +278,9 @@ namespace SunwellHelpers
     extern const Position MURU_VOID_SENTINEL_N_TANK_POSITION;
     extern const Position MURU_VOID_SENTINEL_E_TANK_POSITION;
     extern std::unordered_map<uint32, MuruDarknessState> muruDarknessStates;
+    Unit* GetNearestNonTankPlayerInRadius(PlayerbotAI* botAI, Player* bot, float radius);
     const Position* GetClosestVoidSentinelTankPosition(Unit* voidSentinel, Player* bot);
+    Creature* GetNearestMuruSingularity(Player* bot, float searchRadius = 30.0f);
     bool IsFirstAssistTankInSameGroup(PlayerbotAI* botAI, Player* bot);
     bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru);
     bool DoesMuruUnitHaveTankAggro(PlayerbotAI* botAI, Unit* unit);

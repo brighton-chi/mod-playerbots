@@ -7,6 +7,7 @@
 #define _PLAYERBOT_RAIDSUNWELLMULTIPLIERS_H
 
 #include "Multiplier.h"
+#include "ObjectGuid.h"
 
 // Kalecgos & Sathrovarr the Corruptor
 
@@ -168,6 +169,17 @@ public:
     MuruDisableDefaultTargetingMultiplier(PlayerbotAI* botAI) : Multiplier(
         botAI, "m'uru disable default targeting") {}
     virtual float GetValue(Action* action);
+};
+
+class MuruExcludeMuruFromTankTargetValueMultiplier : public Multiplier
+{
+public:
+    MuruExcludeMuruFromTankTargetValueMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "m'uru exclude m'uru from tank target value") {}
+    virtual float GetValue(Action* action);
+
+private:
+    ObjectGuid ignoredMuruGuid = ObjectGuid::Empty;
 };
 
 class MuruControlTankActionsMultiplier : public Multiplier

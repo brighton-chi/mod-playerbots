@@ -8,6 +8,7 @@
 #include "RaidSunwellHelpers.h"
 #include "ChooseTargetActions.h"
 #include "DKActions.h"
+#include "TargetValue.h"
 #include "DruidActions.h"
 #include "DruidBearActions.h"
 #include "FollowActions.h"
@@ -419,7 +420,7 @@ float MuruDisableDefaultTargetingMultiplier::GetValue(Action* action)
         dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
         return 0.0f;
 
-    if (bot->GetTarget() == muru->GetGUID())
+    if (muru && bot->GetTarget() == muru->GetGUID())
         context->GetValue<bool>("neglect threat")->Set(true);
 
     return 1.0f;
@@ -428,8 +429,10 @@ float MuruDisableDefaultTargetingMultiplier::GetValue(Action* action)
 float MuruControlTankActionsMultiplier::GetValue(Action* action)
 {
     if (!botAI->IsTank(bot) ||
-        !AI_VALUE2(Unit*, "find target", "entropius"))
+        (!AI_VALUE2(Unit*, "find target", "m'uru") && !AI_VALUE2(Unit*, "find target", "entropius")))
+    {
         return 1.0f;
+    }
 
     if (dynamic_cast<CombatFormationMoveAction*>(action))
         return 0.0f;
@@ -441,6 +444,44 @@ float MuruControlTankActionsMultiplier::GetValue(Action* action)
         return 0.0f;
     }
 
+    return 1.0f;
+}
+
+float MuruExcludeMuruFromTankTargetValueMultiplier::GetValue(Action* action)
+{
+    if (!botAI->IsTank(bot))
+    {
+        if (ignoredMuruGuid)
+        {
+            botAI->RemoveTargetValueExclusion(TargetValueExclusionType::Tank, ignoredMuruGuid);
+            ignoredMuruGuid = ObjectGuid::Empty;
+        }
+
+        return 1.0f;
+    }
+
+    Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
+    ObjectGuid desiredGuid = muru ? muru->GetGUID() : ObjectGuid::Empty;
+
+    if (!desiredGuid)
+    {
+        if (ignoredMuruGuid)
+        {
+            botAI->RemoveTargetValueExclusion(TargetValueExclusionType::Tank, ignoredMuruGuid);
+            ignoredMuruGuid = ObjectGuid::Empty;
+        }
+
+        return 1.0f;
+    }
+
+    if (ignoredMuruGuid && ignoredMuruGuid != desiredGuid)
+    {
+        botAI->RemoveTargetValueExclusion(TargetValueExclusionType::Tank, ignoredMuruGuid);
+        ignoredMuruGuid = ObjectGuid::Empty;
+    }
+
+    botAI->AddTargetValueExclusion(TargetValueExclusionType::Tank, desiredGuid);
+    ignoredMuruGuid = desiredGuid;
     return 1.0f;
 }
 
@@ -462,7 +503,7 @@ float MuruControlMisdirectionMultiplier::GetValue(Action* action)
 float MuruControlMovementMultiplier::GetValue(Action* action)
 {
     Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
-    if (!muru)
+    if (!muru || muru->GetHealth() == 1)
         return 1.0f;
 
     if (TryGetMuruDarknessActiveState(bot, muru) &&
@@ -508,7 +549,7 @@ float MuruUseOnlyGroundingTotemMultiplier::GetValue(Action* action)
 float MuruDelayCooldownsMultiplier::GetValue(Action* action)
 {
     Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
-    if (!muru)
+    if (!muru || muru->GetHealth() == 1)
         return 1.0f;
 
     if (bot->getClass() == CLASS_SHAMAN &&
@@ -516,7 +557,7 @@ float MuruDelayCooldownsMultiplier::GetValue(Action* action)
          dynamic_cast<CastBloodlustAction*>(action)))
         return 0.0f;
 
-    if (muru->GetHealthPct() < 95.0f)
+    if (muru->GetHealthPct() < 98.0f)
         return 1.0f;
 
     if (IsDpsCooldownAction(action) ||

@@ -305,6 +305,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class MuruAvoidSingularityAction : public MovementAction
+{
+public:
+    MuruAvoidSingularityAction(
+        PlayerbotAI* botAI, std::string const name = "m'uru avoid singularity") : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 class MuruCastStunOnShadowswordBerserkerAction : public Action
 {
 public:

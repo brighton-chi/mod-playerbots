@@ -398,7 +398,7 @@ bool MuruDeterminingDpsPriorityTrigger::IsActive()
 
 bool MuruVoidSentinelNeedsTankTrigger::IsActive()
 {
-    if (!botAI->IsAssistTankOfIndex(bot, 0, true))
+    if (!botAI->IsTank(bot))
         return false;
 
     return AI_VALUE2(Unit*, "find target", "void sentinel");
@@ -436,13 +436,27 @@ bool MuruDarknessIsComingTrigger::IsActive()
         return false;
 
     Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
-    if (!muru)
+    if (!muru || muru->GetHealth() == 1)
         return false;
 
-    if (botAI->IsAssistTankOfIndex(bot, 0, true))
-        return false;
+    /* if (botAI->IsAssistTankOfIndex(bot, 0, true))
+        return false; */
 
     return TryGetMuruDarknessActiveState(bot, muru);
+}
+
+bool MuruTheSingularityIsNearTrigger::IsActive()
+{
+    Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius");
+    if (!entropius)
+        return false;
+
+    Creature* singularity = GetNearestMuruSingularity(bot);
+    if (!singularity)
+        return false;
+
+    float safeDistance = entropius->GetVictim() == bot ? 15.0f : 10.0f;
+    return bot->GetExactDist2d(singularity) < safeDistance;
 }
 
 bool MuruBerserkerIsBuffedWithFlurryTrigger::IsActive()
@@ -486,7 +500,7 @@ bool MuruVoidSpawnAvailableForEnslaveTrigger::IsActive()
 
     Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
     Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius");
-    return FindAvailableVoidSpawnForEnslave(botAI, bot, muru, entropius) != nullptr;
+    return FindAvailableVoidSpawnForEnslave(botAI, bot, muru, entropius);
 }
 
 bool MuruWarlockHasEnslavedVoidSpawnTrigger::IsActive()

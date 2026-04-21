@@ -125,6 +125,9 @@ public:
         creators["m'uru avoid darkness"] =
             &RaidSunwellActionContext::muru_avoid_darkness;
 
+        creators["m'uru avoid singularity"] =
+            &RaidSunwellActionContext::muru_avoid_singularity;
+
         creators["m'uru cast stun on shadowsword berseker"] =
             &RaidSunwellActionContext::muru_cast_stun_on_shadowsword_berserker;
 
@@ -256,6 +259,9 @@ private:
 
     static Action* muru_avoid_darkness(
         PlayerbotAI* botAI) { return new MuruAvoidDarknessAction(botAI); }
+
+    static Action* muru_avoid_singularity(
+        PlayerbotAI* botAI) { return new MuruAvoidSingularityAction(botAI); }
 
     static Action* muru_cast_stun_on_shadowsword_berserker(
         PlayerbotAI* botAI) { return new MuruCastStunOnShadowswordBerserkerAction(botAI); }

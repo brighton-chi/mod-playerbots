@@ -1925,6 +1925,32 @@ namespace SunwellHelpers
     const Position MURU_VOID_SENTINEL_N_TANK_POSITION = { 1840.448f, 630.605f, 70.567f };
     const Position MURU_VOID_SENTINEL_E_TANK_POSITION = { 1814.960f, 601.646f, 70.547f };
 
+    Unit* GetNearestNonTankPlayerInRadius(PlayerbotAI* botAI, Player* bot, float radius)
+    {
+        Unit* nearestPlayer = nullptr;
+        float nearestDistance = radius;
+
+        Group* group = bot->GetGroup();
+        if (!group)
+            return nullptr;
+
+        for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || member == bot || botAI->IsTank(member))
+                continue;
+
+            float distance = bot->GetExactDist2d(member);
+            if (distance < nearestDistance)
+            {
+                nearestDistance = distance;
+                nearestPlayer = member;
+            }
+        }
+
+        return nearestPlayer;
+    }
+
     const Position* GetClosestVoidSentinelTankPosition(Unit* voidSentinel, Player* bot)
     {
         if (!voidSentinel)
@@ -1934,6 +1960,30 @@ namespace SunwellHelpers
         const Position& east = MURU_VOID_SENTINEL_E_TANK_POSITION;
         return (voidSentinel->GetExactDist2d(north.GetPositionX(), north.GetPositionY()) <=
                 voidSentinel->GetExactDist2d(east.GetPositionX(), east.GetPositionY())) ? &north : &east;
+    }
+
+    Creature* GetNearestMuruSingularity(Player* bot, float searchRadius)
+    {
+        Creature* nearestSingularity = nullptr;
+        float nearestDistance = std::numeric_limits<float>::max();
+        std::list<Creature*> singularities;
+        bot->GetCreatureListWithEntryInGrid(
+            singularities, static_cast<uint32>(SunwellNpcs::NPC_SINGULARITY), searchRadius);
+
+        for (Creature* singularity : singularities)
+        {
+            if (!singularity || !singularity->IsAlive())
+                continue;
+
+            float distance = bot->GetExactDist2d(singularity);
+            if (distance < nearestDistance)
+            {
+                nearestDistance = distance;
+                nearestSingularity = singularity;
+            }
+        }
+
+        return nearestSingularity;
     }
 
     bool IsFirstAssistTankInSameGroup(PlayerbotAI* botAI, Player* bot)
@@ -1994,7 +2044,7 @@ namespace SunwellHelpers
 
     bool DoesMuruUnitHaveTankAggro(PlayerbotAI* botAI, Unit* unit)
     {
-        if (!botAI || !unit || !unit->IsAlive())
+        if (!unit || !unit->IsAlive())
             return false;
 
         Player* victim = unit->GetVictim() ? unit->GetVictim()->ToPlayer() : nullptr;
@@ -2005,26 +2055,37 @@ namespace SunwellHelpers
     {
         auto const& units =
             botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
-
-        for (ObjectGuid const& guid : units)
+        constexpr float targetSwitchDistance = 10.0f;
+        auto chooseNearestTarget = [&](Unit*& current, Unit* candidate)
         {
-            Unit* unit = botAI->GetUnit(guid);
-            if (!unit || !unit->IsAlive())
-                continue;
+            if (!candidate)
+                return;
 
-            auto chooseNearestTarget = [&](Unit*& current, Unit* candidate)
+            if (!current)
             {
-                if (!candidate)
-                    return;
+                current = candidate;
+                return;
+            }
 
-                if (!current || bot->GetExactDist2d(candidate) < bot->GetExactDist2d(current))
-                    current = candidate;
-            };
+            if (current == candidate)
+                return;
+
+            float currentDistance = bot->GetExactDist2d(current);
+            float candidateDistance = bot->GetExactDist2d(candidate);
+            if (candidateDistance + targetSwitchDistance < currentDistance)
+                current = candidate;
+        };
+
+        auto considerTarget = [&](Unit* unit)
+        {
+            if (!unit || !unit->IsAlive())
+                return;
 
             switch (unit->GetEntry())
             {
                 case static_cast<uint32>(SunwellNpcs::NPC_MURU):
-                    targets.muru = unit;
+                    if (unit->GetHealth() > 1)
+                        targets.muru = unit;
                     break;
 
                 case static_cast<uint32>(SunwellNpcs::NPC_ENTROPIUS):
@@ -2050,6 +2111,18 @@ namespace SunwellHelpers
                 default:
                     break;
             }
+        };
+
+        Unit* currentTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
+        considerTarget(currentTarget);
+
+        for (ObjectGuid const& guid : units)
+        {
+            Unit* unit = botAI->GetUnit(guid);
+            if (unit == currentTarget)
+                continue;
+
+            considerTarget(unit);
         }
     }
 
