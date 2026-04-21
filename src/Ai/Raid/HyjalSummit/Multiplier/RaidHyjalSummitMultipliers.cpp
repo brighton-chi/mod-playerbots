@@ -57,18 +57,6 @@ float HyjalSummitTimeBloodlustAndHeroismMultiplier::GetValue(Action* action)
 
 // Rage Winterchill
 
-float RageWinterchillDisableMainTankAvoidAoeMultiplier::GetValue(Action* action)
-{
-    if (!botAI->IsMainTank(bot) ||
-        !AI_VALUE2(Unit*, "find target", "rage winterchill"))
-        return 1.0f;
-
-    if (dynamic_cast<AvoidAoeAction*>(action))
-        return 0.0f;
-
-    return 1.0f;
-}
-
 float RageWinterchillDisableCombatFormationMoveMultiplier::GetValue(Action* action)
 {
     if (!AI_VALUE2(Unit*, "find target", "rage winterchill"))
@@ -81,18 +69,26 @@ float RageWinterchillDisableCombatFormationMoveMultiplier::GetValue(Action* acti
     return 1.0f;
 }
 
-float RageWinterchillControlDeathAndDecayAvoidanceMultiplier::GetValue(Action* action)
+float RageWinterchillMeleeControlAvoidanceMultiplier::GetValue(Action* action)
 {
-    if (botAI->IsTank(bot) || !AI_VALUE2(Unit*, "find target", "rage winterchill"))
+    if (botAI->IsRanged(bot))
         return 1.0f;
 
-    if (IsBotInsideActiveWinterchillDeathAndDecay(bot, WINTERCHILL_DEATH_AND_DECAY_CONTROL_RADIUS))
+    Unit* winterchill = AI_VALUE2(Unit*, "find target", "rage winterchill");
+    if (!winterchill)
+        return 1.0f;
+
+    constexpr float singleTickMoveAwayDist = 6.0f;
+    if (IsInDeathAndDecay(bot, DEATH_AND_DECAY_RADIUS + singleTickMoveAwayDist))
     {
         if (dynamic_cast<AvoidAoeAction*>(action))
             return 0.0f;
 
+        if (botAI->IsMainTank(bot) || winterchill->GetVictim() == bot)
+            return 1.0f;
+
         if (dynamic_cast<MovementAction*>(action) &&
-            !dynamic_cast<RageWinterchillMoveAwayFromDeathAndDecayAction*>(action))
+            !dynamic_cast<RageWinterchillMeleeGetOutOfDeathAndDecayAction*>(action))
             return 0.0f;
 
         if (dynamic_cast<CastReachTargetSpellAction*>(action))
@@ -252,19 +248,24 @@ float AzgalorDoomedBotPrioritizePositioningMultiplier::GetValue(Action* action)
 
 float AzgalorMeleeControlAvoidanceMultiplier::GetValue(Action* action)
 {
-    if (botAI->IsRanged(bot) || !AI_VALUE2(Unit*, "find target", "azgalor"))
+    if (botAI->IsRanged(bot))
         return 1.0f;
 
-    if (dynamic_cast<AvoidAoeAction*>(action))
-        return 0.0f;
+    Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
+    if (!azgalor)
+        return 1.0f;
 
     if (!botAI->IsDps(bot))
         return 1.0f;
 
-    if (IsBotInsideActiveAzgalorRainOfFire(bot, 23.0f))
+    constexpr float singleTickMoveAwayDist = 6.0f;
+    if (IsInRainOfFire(bot, RAIN_OF_FIRE_RADIUS + singleTickMoveAwayDist))
     {
+        if (dynamic_cast<AvoidAoeAction*>(action))
+            return 0.0f;
+
         if (dynamic_cast<MovementAction*>(action) &&
-            !dynamic_cast<AzgalorMeleeGetOutOfFireAction*>(action))
+            !dynamic_cast<AzgalorMeleeGetOutOfFireAndSwapTargetsAction*>(action))
             return 0.0f;
 
         if (dynamic_cast<CastReachTargetSpellAction*>(action))

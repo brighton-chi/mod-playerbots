@@ -36,19 +36,19 @@ public:
     bool IsActive() override;
 };
 
-class RageWinterchillBossCastsDeathAndDecayTrigger : public Trigger
+class RageWinterchillBossCastsDeathAndDecayOnRangedTrigger : public Trigger
 {
 public:
-    RageWinterchillBossCastsDeathAndDecayTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "rage winterchill boss casts death and decay") {}
+    RageWinterchillBossCastsDeathAndDecayOnRangedTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "rage winterchill boss casts death and decay on ranged") {}
     bool IsActive() override;
 };
 
-class RageWinterchillBotIsStandingInDeathAndDecayTrigger : public Trigger
+class RageWinterchillMeleeIsStandingInDeathAndDecayTrigger : public Trigger
 {
 public:
-    RageWinterchillBotIsStandingInDeathAndDecayTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "rage winterchill bot is standing in death and decay") {}
+    RageWinterchillMeleeIsStandingInDeathAndDecayTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "rage winterchill melee is standing in death and decay") {}
     bool IsActive() override;
 };
 
@@ -210,11 +210,11 @@ public:
     bool IsActive() override;
 };
 
-class AzgalorDoomguardsContinueToSpawnTrigger : public Trigger
+class AzgalorDoomguardsMustDieTrigger : public Trigger
 {
 public:
-    AzgalorDoomguardsContinueToSpawnTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "azgalor doomguards continue to spawn") {}
+    AzgalorDoomguardsMustDieTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "azgalor doomguards must die") {}
     bool IsActive() override;
 };
 

@@ -65,6 +65,9 @@ namespace HyjalSummitHelpers
         std::vector<Player*> healers;
         std::vector<Player*> rangedDps;
     };
+    bool GetGroundedStepPosition(
+        Player* bot, float destinationX, float destinationY, float moveDist,
+        float& stepX, float& stepY, float& stepZ);
     RangedGroups GetRangedGroups(PlayerbotAI* botAI, Player* bot);
     std::pair<size_t, size_t> GetBotCircleIndexAndCount(PlayerbotAI* botAI, Player* bot,
                                                         const RangedGroups& groups);
@@ -72,12 +75,8 @@ namespace HyjalSummitHelpers
     // Rage Winterchill
     extern const Position WINTERCHILL_TANK_POSITION;
     extern std::unordered_map<ObjectGuid, bool> hasReachedWinterchillPosition;
-    constexpr uint32 WINTERCHILL_DEATH_AND_DECAY_DURATION = 20000;
-    // Match Azgalor-style escape thresholds: detect inside the effect, keep moving
-    // until slightly clear, and hold competing movement a bit longer to avoid churn.
-    constexpr float WINTERCHILL_DEATH_AND_DECAY_TRIGGER_RADIUS = 16.0f;
-    constexpr float WINTERCHILL_DEATH_AND_DECAY_ACTION_RADIUS = 17.0f;
-    constexpr float WINTERCHILL_DEATH_AND_DECAY_CONTROL_RADIUS = 23.0f;
+    constexpr uint32 DEATH_AND_DECAY_DURATION = 20000;
+    constexpr float DEATH_AND_DECAY_RADIUS = 17.0f;
     struct DeathAndDecayData
     {
         Position position;
@@ -85,7 +84,7 @@ namespace HyjalSummitHelpers
     };
     extern std::unordered_map<uint32, DeathAndDecayData> deathAndDecayPosition;
     DeathAndDecayData* GetActiveWinterchillDeathAndDecay(uint32 instanceId);
-    bool IsBotInsideActiveWinterchillDeathAndDecay(Player* bot, float radius);
+    bool IsInDeathAndDecay(Player* bot, float radius);
 
     // Anetheron
     extern const Position ANETHERON_TANK_POSITION;
@@ -107,16 +106,17 @@ namespace HyjalSummitHelpers
     extern const Position AZGALOR_TANK_FINAL_POSITION;
     extern const Position AZGALOR_DOOMGUARD_POSITION;
     extern std::unordered_map<ObjectGuid, TankPositionState> azgalorTankStep;
-    constexpr uint32 AZGALOR_RAIN_OF_FIRE_DURATION = 10000;
+    constexpr uint32 RAIN_OF_FIRE_DURATION = 10000;
+    constexpr float RAIN_OF_FIRE_RADIUS = 17.0f;
     struct RainOfFireData
     {
         Position position;
         uint32 spawnTime;
     };
-    extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, RainOfFireData>> rainOfFirePosition;
+    extern std::unordered_map<uint32, RainOfFireData> rainOfFirePosition;
     TankPositionState GetAzgalorTankPositionState(PlayerbotAI* botAI, Player* bot);
-    std::unordered_map<ObjectGuid, RainOfFireData>* GetActiveAzgalorRainOfFire(uint32 instanceId);
-    bool IsBotInsideActiveAzgalorRainOfFire(Player* bot, float radius);
+    RainOfFireData* GetActiveAzgalorRainOfFire(uint32 instanceId);
+    bool IsInRainOfFire(Player* bot, float radius);
     bool AnyGroupMemberHasDoom(Player* bot);
 
     // Archimonde

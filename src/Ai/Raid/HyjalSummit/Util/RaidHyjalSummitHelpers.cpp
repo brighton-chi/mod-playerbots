@@ -13,45 +13,28 @@
 
 namespace HyjalSummitHelpers
 {
-    DeathAndDecayData* GetActiveWinterchillDeathAndDecay(uint32 instanceId)
+    bool GetGroundedStepPosition(
+        Player* bot, float destinationX, float destinationY, float moveDist,
+        float& stepX, float& stepY, float& stepZ)
     {
-        auto instanceIt = deathAndDecayPosition.find(instanceId);
-        if (instanceIt == deathAndDecayPosition.end())
-            return nullptr;
+        float distance = bot->GetExactDist2d(destinationX, destinationY);
+        if (distance <= 0.0f)
+            return false;
 
-        uint32 now = getMSTime();
-        if (getMSTimeDiff(instanceIt->second.spawnTime, now) >= WINTERCHILL_DEATH_AND_DECAY_DURATION)
-        {
-            deathAndDecayPosition.erase(instanceIt);
-            return nullptr;
-        }
+        float stepDistance = std::min(moveDist, distance);
+        float deltaX = destinationX - bot->GetPositionX();
+        float deltaY = destinationY - bot->GetPositionY();
+        stepX = bot->GetPositionX() + (deltaX / distance) * stepDistance;
+        stepY = bot->GetPositionY() + (deltaY / distance) * stepDistance;
+        stepZ = bot->GetMapWaterOrGroundLevel(stepX, stepY, bot->GetPositionZ());
+        if (stepZ <= INVALID_HEIGHT)
+            stepZ = bot->GetPositionZ();
 
-        return &instanceIt->second;
-    }
+        bot->GetMap()->CheckCollisionAndGetValidCoords(
+            bot, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(),
+            stepX, stepY, stepZ, false);
 
-    std::unordered_map<ObjectGuid, RainOfFireData>* GetActiveAzgalorRainOfFire(uint32 instanceId)
-    {
-        auto instanceIt = rainOfFirePosition.find(instanceId);
-        if (instanceIt == rainOfFirePosition.end())
-            return nullptr;
-
-        uint32 now = getMSTime();
-        auto& dynObjMap = instanceIt->second;
-        for (auto it = dynObjMap.begin(); it != dynObjMap.end(); )
-        {
-            if (getMSTimeDiff(it->second.spawnTime, now) >= AZGALOR_RAIN_OF_FIRE_DURATION)
-                it = dynObjMap.erase(it);
-            else
-                ++it;
-        }
-
-        if (dynObjMap.empty())
-        {
-            rainOfFirePosition.erase(instanceIt);
-            return nullptr;
-        }
-
-        return &dynObjMap;
+        return true;
     }
 
     // General
@@ -94,7 +77,23 @@ namespace HyjalSummitHelpers
     std::unordered_map<ObjectGuid, bool> hasReachedWinterchillPosition;
     std::unordered_map<uint32, DeathAndDecayData> deathAndDecayPosition;
 
-    bool IsBotInsideActiveWinterchillDeathAndDecay(Player* bot, float radius)
+    DeathAndDecayData* GetActiveWinterchillDeathAndDecay(uint32 instanceId)
+    {
+        auto instanceIt = deathAndDecayPosition.find(instanceId);
+        if (instanceIt == deathAndDecayPosition.end())
+            return nullptr;
+
+        uint32 now = getMSTime();
+        if (getMSTimeDiff(instanceIt->second.spawnTime, now) >= DEATH_AND_DECAY_DURATION)
+        {
+            deathAndDecayPosition.erase(instanceIt);
+            return nullptr;
+        }
+
+        return &instanceIt->second;
+    }
+
+    bool IsInDeathAndDecay(Player* bot, float radius)
     {
         if (!bot || !bot->GetMap())
             return false;
@@ -164,7 +163,23 @@ namespace HyjalSummitHelpers
     const Position AZGALOR_TANK_FINAL_POSITION =      { 5496.379f, -2675.265f, 1481.053f };
     const Position AZGALOR_DOOMGUARD_POSITION =       { 5485.555f, -2731.659f, 1485.555f };
     std::unordered_map<ObjectGuid, TankPositionState> azgalorTankStep;
-    std::unordered_map<uint32, std::unordered_map<ObjectGuid, RainOfFireData>> rainOfFirePosition;
+    std::unordered_map<uint32, RainOfFireData> rainOfFirePosition;
+
+    RainOfFireData* GetActiveAzgalorRainOfFire(uint32 instanceId)
+    {
+        auto instanceIt = rainOfFirePosition.find(instanceId);
+        if (instanceIt == rainOfFirePosition.end())
+            return nullptr;
+
+        uint32 now = getMSTime();
+        if (getMSTimeDiff(instanceIt->second.spawnTime, now) >= RAIN_OF_FIRE_DURATION)
+        {
+            rainOfFirePosition.erase(instanceIt);
+            return nullptr;
+        }
+
+        return &instanceIt->second;
+    }
 
     TankPositionState GetAzgalorTankPositionState(PlayerbotAI* botAI, Player* bot)
     {
@@ -179,23 +194,16 @@ namespace HyjalSummitHelpers
         return TankPositionState::Unknown;
     }
 
-    bool IsBotInsideActiveAzgalorRainOfFire(Player* bot, float radius)
+    bool IsInRainOfFire(Player* bot, float radius)
     {
         if (!bot || !bot->GetMap())
             return false;
 
-        std::unordered_map<ObjectGuid, RainOfFireData>* dynObjMap =
-            GetActiveAzgalorRainOfFire(bot->GetMap()->GetInstanceId());
-        if (!dynObjMap)
+        RainOfFireData* data = GetActiveAzgalorRainOfFire(bot->GetMap()->GetInstanceId());
+        if (!data)
             return false;
 
-        for (auto const& entry : *dynObjMap)
-        {
-            if (bot->GetExactDist2d(entry.second.position) < radius)
-                return true;
-        }
-
-        return false;
+        return bot->GetExactDist2d(data->position) < radius;
     }
 
     bool AnyGroupMemberHasDoom(Player* bot)

@@ -12,6 +12,42 @@
 
 using namespace HyjalSummitHelpers;
 
+// Records the active Death and Decay dynamic object so melee bots can avoid it by running away
+// from Winterchill; the standard FleePosition() logic to avoid aoe doesn't really work because
+// it tries to keep melee in melee distance, and Death and Decay can surround the boss
+class RageWinterchillDeathAndDecayScript : public DynamicObjectScript
+{
+public:
+    RageWinterchillDeathAndDecayScript() : DynamicObjectScript("RageWinterchillDeathAndDecayScript") {}
+
+    void OnUpdate(DynamicObject* dynobj, uint32 /*diff*/) override
+    {
+        if (dynobj->GetSpellId() != static_cast<uint32>(HyjalSummitSpells::SPELL_DEATH_AND_DECAY))
+            return;
+
+        deathAndDecayPosition[dynobj->GetMap()->GetInstanceId()] =
+            DeathAndDecayData{ dynobj->GetPosition(), getMSTime() };
+    }
+};
+
+// Records the active Rain of Fire dynamic object so that melee bots can avoid it by running
+// away from Azgalor or swap to a Doomguard; the standard FleePosition() logic to avoid aoe
+// can take melee in front of Azgalor, resulting in them getting cleaved
+class AzgalorRainOfFireScript : public DynamicObjectScript
+{
+public:
+    AzgalorRainOfFireScript() : DynamicObjectScript("AzgalorRainOfFireScript") {}
+
+    void OnUpdate(DynamicObject* dynobj, uint32 /*diff*/) override
+    {
+        if (dynobj->GetSpellId() != static_cast<uint32>(HyjalSummitSpells::SPELL_RAIN_OF_FIRE))
+            return;
+
+        rainOfFirePosition[dynobj->GetMap()->GetInstanceId()] =
+            RainOfFireData{ dynobj->GetPosition(), getMSTime() };
+    }
+};
+
 // Records the position of each Doomfire NPC (18095) at regular intervals so that bots
 // can avoid the persistent fire trail it leaves behind. Each sample is tagged with a
 // timestamp and expires after TRAIL_DURATION ms, matching the lifetime of a Doomfire
@@ -78,48 +114,9 @@ public:
     }
 };
 
-// Records the position of each active Rain of Fire dynamic object so that melee bots
-// can avoid it by running away from Azgalor; the standard FleePosition() logic to
-// avoid aoe can take melee in front of Azgalor, resulting in them getting cleaved
-class AzgalorRainOfFireScript : public DynamicObjectScript
-{
-public:
-    AzgalorRainOfFireScript() : DynamicObjectScript("AzgalorRainOfFireScript") {}
-
-    void OnUpdate(DynamicObject* dynobj, uint32 /*diff*/) override
-    {
-        if (dynobj->GetSpellId() != static_cast<uint32>(HyjalSummitSpells::SPELL_RAIN_OF_FIRE))
-            return;
-
-        uint32 instanceId = dynobj->GetMap()->GetInstanceId();
-        uint32 now = getMSTime();
-        auto& instanceMap = rainOfFirePosition[instanceId];
-        ObjectGuid guid = dynobj->GetGUID();
-
-        instanceMap.try_emplace(guid, RainOfFireData{ dynobj->GetPosition(), now });
-    }
-};
-
-// Records the active Death and Decay dynamic object so bots can step away from
-// Winterchill using encounter-specific movement instead of generic aoe avoidance
-class RageWinterchillDeathAndDecayScript : public DynamicObjectScript
-{
-public:
-    RageWinterchillDeathAndDecayScript() : DynamicObjectScript("RageWinterchillDeathAndDecayScript") {}
-
-    void OnUpdate(DynamicObject* dynobj, uint32 /*diff*/) override
-    {
-        if (dynobj->GetSpellId() != static_cast<uint32>(HyjalSummitSpells::SPELL_DEATH_AND_DECAY))
-            return;
-
-        deathAndDecayPosition[dynobj->GetMap()->GetInstanceId()] =
-            DeathAndDecayData{ dynobj->GetPosition(), getMSTime() };
-    }
-};
-
 void AddSC_HyjalSummitBotScripts()
 {
-    new ArchimondeDoomfireTrailScript();
-    new AzgalorRainOfFireScript();
     new RageWinterchillDeathAndDecayScript();
+    new AzgalorRainOfFireScript();
+    new ArchimondeDoomfireTrailScript();
 }

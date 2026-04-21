@@ -49,11 +49,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class RageWinterchillMoveAwayFromDeathAndDecayAction : public HyjalSummitAttackAction
+class RageWinterchillMeleeGetOutOfDeathAndDecayAction : public HyjalSummitAttackAction
 {
 public:
-    RageWinterchillMoveAwayFromDeathAndDecayAction(
-        PlayerbotAI* botAI) : HyjalSummitAttackAction(botAI, "rage winterchill move away from death and decay") {}
+    RageWinterchillMeleeGetOutOfDeathAndDecayAction(
+        PlayerbotAI* botAI) : HyjalSummitAttackAction(botAI, "rage winterchill melee get out of death and decay") {}
     bool Execute(Event event) override;
 };
 
@@ -191,11 +191,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class AzgalorMeleeGetOutOfFireAction : public HyjalSummitAttackAction
+class AzgalorMeleeGetOutOfFireAndSwapTargetsAction : public HyjalSummitAttackAction
 {
 public:
-    AzgalorMeleeGetOutOfFireAction(
-        PlayerbotAI* botAI) : HyjalSummitAttackAction(botAI, "azgalor melee get out of fire") {}
+    AzgalorMeleeGetOutOfFireAndSwapTargetsAction(
+        PlayerbotAI* botAI) : HyjalSummitAttackAction(botAI, "azgalor melee get out of fire and swap targets") {}
     bool Execute(Event event) override;
 };
 
@@ -215,11 +215,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class AzgalorAssignDpsPriorityAction : public HyjalSummitAttackAction
+class AzgalorRangedDpsPrioritizeDoomguardsAction : public HyjalSummitAttackAction
 {
 public:
-    AzgalorAssignDpsPriorityAction(
-        PlayerbotAI* botAI) : HyjalSummitAttackAction(botAI, "azgalor assign dps priority") {}
+    AzgalorRangedDpsPrioritizeDoomguardsAction(
+        PlayerbotAI* botAI) : HyjalSummitAttackAction(botAI, "azgalor ranged dps prioritize doomguards") {}
     bool Execute(Event event) override;
 };
 

@@ -36,21 +36,25 @@ bool RageWinterchillBossEngagedByMainTankTrigger::IsActive()
            AI_VALUE2(Unit*, "find target", "rage winterchill");
 }
 
-bool RageWinterchillBossCastsDeathAndDecayTrigger::IsActive()
+bool RageWinterchillBossCastsDeathAndDecayOnRangedTrigger::IsActive()
 {
     return botAI->IsRanged(bot) &&
            AI_VALUE2(Unit*, "find target", "rage winterchill");
 }
 
-bool RageWinterchillBotIsStandingInDeathAndDecayTrigger::IsActive()
+bool RageWinterchillMeleeIsStandingInDeathAndDecayTrigger::IsActive()
 {
-    if (botAI->IsTank(bot))
+    if (botAI->IsRanged(bot))
         return false;
 
-    if (!AI_VALUE2(Unit*, "find target", "rage winterchill"))
+    Unit* winterchill = AI_VALUE2(Unit*, "find target", "rage winterchill");
+    if (!winterchill || winterchill->GetVictim() == bot)
         return false;
 
-    return IsBotInsideActiveWinterchillDeathAndDecay(bot, WINTERCHILL_DEATH_AND_DECAY_TRIGGER_RADIUS);
+    if (botAI->IsMainTank(bot))
+        return false;
+
+    return IsInDeathAndDecay(bot, DEATH_AND_DECAY_RADIUS);
 }
 
 // Anetheron
@@ -264,7 +268,7 @@ bool AzgalorBossCastsRainOfFireOnMeleeTrigger::IsActive()
         bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_DOOM)))
         return false;
 
-    return IsBotInsideActiveAzgalorRainOfFire(bot, 16.0f);
+    return IsInRainOfFire(bot, RAIN_OF_FIRE_RADIUS);
 }
 
 bool AzgalorBotIsDoomedTrigger::IsActive()
@@ -299,12 +303,10 @@ bool AzgalorDoomguardsMustBeControlledTrigger::IsActive()
     return false;
 }
 
-bool AzgalorDoomguardsContinueToSpawnTrigger::IsActive()
+bool AzgalorDoomguardsMustDieTrigger::IsActive()
 {
-    if (!botAI->IsDps(bot) || !AI_VALUE2(Unit*, "find target", "azgalor"))
-        return false;
-
-    return !botAI->IsMelee(bot) || !IsBotInsideActiveAzgalorRainOfFire(bot, 16.0f);
+    return botAI->IsRangedDps(bot) &&
+           AI_VALUE2(Unit*, "find target", "azgalor");
 }
 
 // Archimonde
