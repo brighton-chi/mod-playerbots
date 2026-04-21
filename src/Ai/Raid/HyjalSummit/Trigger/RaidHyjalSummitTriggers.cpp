@@ -50,7 +50,7 @@ bool RageWinterchillBotIsStandingInDeathAndDecayTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "rage winterchill"))
         return false;
 
-    return IsBotInsideActiveWinterchillDeathAndDecay(bot, 16.0f);
+    return IsBotInsideActiveWinterchillDeathAndDecay(bot, WINTERCHILL_DEATH_AND_DECAY_TRIGGER_RADIUS);
 }
 
 // Anetheron

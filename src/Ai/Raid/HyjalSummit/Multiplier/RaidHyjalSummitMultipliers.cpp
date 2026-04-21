@@ -86,7 +86,7 @@ float RageWinterchillControlDeathAndDecayAvoidanceMultiplier::GetValue(Action* a
     if (botAI->IsTank(bot) || !AI_VALUE2(Unit*, "find target", "rage winterchill"))
         return 1.0f;
 
-    if (IsBotInsideActiveWinterchillDeathAndDecay(bot, 23.0f))
+    if (IsBotInsideActiveWinterchillDeathAndDecay(bot, WINTERCHILL_DEATH_AND_DECAY_CONTROL_RADIUS))
     {
         if (dynamic_cast<AvoidAoeAction*>(action))
             return 0.0f;

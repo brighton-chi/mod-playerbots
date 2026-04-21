@@ -73,6 +73,11 @@ namespace HyjalSummitHelpers
     extern const Position WINTERCHILL_TANK_POSITION;
     extern std::unordered_map<ObjectGuid, bool> hasReachedWinterchillPosition;
     constexpr uint32 WINTERCHILL_DEATH_AND_DECAY_DURATION = 20000;
+    // Match Azgalor-style escape thresholds: detect inside the effect, keep moving
+    // until slightly clear, and hold competing movement a bit longer to avoid churn.
+    constexpr float WINTERCHILL_DEATH_AND_DECAY_TRIGGER_RADIUS = 16.0f;
+    constexpr float WINTERCHILL_DEATH_AND_DECAY_ACTION_RADIUS = 17.0f;
+    constexpr float WINTERCHILL_DEATH_AND_DECAY_CONTROL_RADIUS = 23.0f;
     struct DeathAndDecayData
     {
         Position position;

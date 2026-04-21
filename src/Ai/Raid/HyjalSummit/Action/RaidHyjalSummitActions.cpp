@@ -174,7 +174,8 @@ bool RageWinterchillSpreadRangedInCircleAction::Execute(Event /*event*/)
 bool RageWinterchillMoveAwayFromDeathAndDecayAction::Execute(Event /*event*/)
 {
     Unit* winterchill = AI_VALUE2(Unit*, "find target", "rage winterchill");
-    if (!winterchill || !IsBotInsideActiveWinterchillDeathAndDecay(bot, 17.0f))
+    if (!winterchill ||
+        !IsBotInsideActiveWinterchillDeathAndDecay(bot, WINTERCHILL_DEATH_AND_DECAY_ACTION_RADIUS))
         return false;
 
     return MoveAway(winterchill, 5.0f);
