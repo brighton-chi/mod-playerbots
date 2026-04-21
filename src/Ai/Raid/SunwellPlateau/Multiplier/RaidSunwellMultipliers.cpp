@@ -25,6 +25,57 @@
 
 using namespace SunwellHelpers;
 
+namespace
+{
+    std::vector<ObjectGuid> GetActiveDarkFiendGuids(PlayerbotAI* botAI)
+    {
+        std::vector<ObjectGuid> darkFiendGuids;
+        auto const& units =
+            botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
+
+        for (ObjectGuid const& guid : units)
+        {
+            Unit* unit = botAI->GetUnit(guid);
+            if (!unit || !unit->IsAlive() ||
+                unit->GetEntry() != static_cast<uint32>(SunwellNpcs::NPC_DARK_FIEND))
+            {
+                continue;
+            }
+
+            darkFiendGuids.push_back(unit->GetGUID());
+        }
+
+        return darkFiendGuids;
+    }
+
+    void SyncTargetValueExclusions(
+        PlayerbotAI* botAI, TargetValueExclusionType exclusionType,
+        std::vector<ObjectGuid>& trackedGuids, std::vector<ObjectGuid> const& desiredGuids)
+    {
+        for (auto itr = trackedGuids.begin(); itr != trackedGuids.end();)
+        {
+            if (std::find(desiredGuids.begin(), desiredGuids.end(), *itr) == desiredGuids.end())
+            {
+                botAI->RemoveTargetValueExclusion(exclusionType, *itr);
+                itr = trackedGuids.erase(itr);
+            }
+            else
+            {
+                ++itr;
+            }
+        }
+
+        for (ObjectGuid const& guid : desiredGuids)
+        {
+            if (std::find(trackedGuids.begin(), trackedGuids.end(), guid) != trackedGuids.end())
+                continue;
+
+            botAI->AddTargetValueExclusion(exclusionType, guid);
+            trackedGuids.push_back(guid);
+        }
+    }
+}
+
 static bool IsDpsCooldownAction(Action* action)
 {
     return dynamic_cast<CastHeroismAction*>(action) ||
@@ -404,8 +455,8 @@ float MuruDisableDefaultTargetingMultiplier::GetValue(Action* action)
     if (!muru && !entropius)
         return 1.0f;
 
-    /* if (dynamic_cast<DpsAssistAction*>(action))
-        return 0.0f; */
+    if (dynamic_cast<DpsAssistAction*>(action))
+        return 0.0f;
 
     constexpr float searchRadius = 40.0f;
     Unit* darkFiend = bot->FindNearestCreature(
@@ -457,10 +508,14 @@ float MuruExcludeMuruFromTankTargetValueMultiplier::GetValue(Action* action)
             ignoredMuruGuid = ObjectGuid::Empty;
         }
 
+        SyncTargetValueExclusions(
+            botAI, TargetValueExclusionType::Tank, ignoredDarkFiendGuids, {});
+
         return 1.0f;
     }
 
     Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
+    std::vector<ObjectGuid> darkFiendGuids = GetActiveDarkFiendGuids(botAI);
     ObjectGuid desiredGuid = muru ? muru->GetGUID() : ObjectGuid::Empty;
 
     if (!desiredGuid)
@@ -470,6 +525,9 @@ float MuruExcludeMuruFromTankTargetValueMultiplier::GetValue(Action* action)
             botAI->RemoveTargetValueExclusion(TargetValueExclusionType::Tank, ignoredMuruGuid);
             ignoredMuruGuid = ObjectGuid::Empty;
         }
+
+        SyncTargetValueExclusions(
+            botAI, TargetValueExclusionType::Tank, ignoredDarkFiendGuids, darkFiendGuids);
 
         return 1.0f;
     }
@@ -482,6 +540,57 @@ float MuruExcludeMuruFromTankTargetValueMultiplier::GetValue(Action* action)
 
     botAI->AddTargetValueExclusion(TargetValueExclusionType::Tank, desiredGuid);
     ignoredMuruGuid = desiredGuid;
+    SyncTargetValueExclusions(
+        botAI, TargetValueExclusionType::Tank, ignoredDarkFiendGuids, darkFiendGuids);
+    return 1.0f;
+}
+
+float MuruExcludeMuruFromDpsTargetValueMultiplier::GetValue(Action* action)
+{
+    if (!botAI->IsDps(bot) || !botAI->IsMelee(bot))
+    {
+        if (ignoredMuruGuid)
+        {
+            botAI->RemoveTargetValueExclusion(TargetValueExclusionType::Dps, ignoredMuruGuid);
+            ignoredMuruGuid = ObjectGuid::Empty;
+        }
+
+        SyncTargetValueExclusions(
+            botAI, TargetValueExclusionType::Dps, ignoredDarkFiendGuids, {});
+
+        return 1.0f;
+    }
+
+    Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
+    std::vector<ObjectGuid> darkFiendGuids = GetActiveDarkFiendGuids(botAI);
+    ObjectGuid desiredGuid = ObjectGuid::Empty;
+    if (muru && muru->GetHealth() > 1 && TryGetMuruDarknessActiveState(bot, muru))
+        desiredGuid = muru->GetGUID();
+
+    if (!desiredGuid)
+    {
+        if (ignoredMuruGuid)
+        {
+            botAI->RemoveTargetValueExclusion(TargetValueExclusionType::Dps, ignoredMuruGuid);
+            ignoredMuruGuid = ObjectGuid::Empty;
+        }
+
+        SyncTargetValueExclusions(
+            botAI, TargetValueExclusionType::Dps, ignoredDarkFiendGuids, darkFiendGuids);
+
+        return 1.0f;
+    }
+
+    if (ignoredMuruGuid && ignoredMuruGuid != desiredGuid)
+    {
+        botAI->RemoveTargetValueExclusion(TargetValueExclusionType::Dps, ignoredMuruGuid);
+        ignoredMuruGuid = ObjectGuid::Empty;
+    }
+
+    botAI->AddTargetValueExclusion(TargetValueExclusionType::Dps, desiredGuid);
+    ignoredMuruGuid = desiredGuid;
+    SyncTargetValueExclusions(
+        botAI, TargetValueExclusionType::Dps, ignoredDarkFiendGuids, darkFiendGuids);
     return 1.0f;
 }
 

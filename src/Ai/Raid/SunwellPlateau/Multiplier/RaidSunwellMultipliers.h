@@ -6,6 +6,8 @@
 #ifndef _PLAYERBOT_RAIDSUNWELLMULTIPLIERS_H
 #define _PLAYERBOT_RAIDSUNWELLMULTIPLIERS_H
 
+#include <vector>
+
 #include "Multiplier.h"
 #include "ObjectGuid.h"
 
@@ -180,6 +182,19 @@ public:
 
 private:
     ObjectGuid ignoredMuruGuid = ObjectGuid::Empty;
+    std::vector<ObjectGuid> ignoredDarkFiendGuids;
+};
+
+class MuruExcludeMuruFromDpsTargetValueMultiplier : public Multiplier
+{
+public:
+    MuruExcludeMuruFromDpsTargetValueMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "m'uru exclude m'uru from dps target value during darkness") {}
+    virtual float GetValue(Action* action);
+
+private:
+    ObjectGuid ignoredMuruGuid = ObjectGuid::Empty;
+    std::vector<ObjectGuid> ignoredDarkFiendGuids;
 };
 
 class MuruControlTankActionsMultiplier : public Multiplier

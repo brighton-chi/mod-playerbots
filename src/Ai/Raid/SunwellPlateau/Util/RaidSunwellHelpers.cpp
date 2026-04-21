@@ -2014,7 +2014,7 @@ namespace SunwellHelpers
         MuruDarknessState& state = muruDarknessStates[instanceId];
         constexpr uint32 darknessPreEffectMs = 3000;
         constexpr uint32 darknessCastMs = 2000;
-        constexpr uint32 darknessDurationMs = 20000;
+        constexpr uint32 darknessPostCastDangerMs = 20000;
 
         if (Aura* darknessPreEffect = muru->GetAura(static_cast<uint32>(SunwellSpells::SPELL_DARKNESS_PRE_EFFECT)))
         {
@@ -2024,14 +2024,14 @@ namespace SunwellHelpers
 
             state.expireMs = std::max(state.expireMs,
                                       now + static_cast<uint32>(remainingPreEffectMs) +
-                                      darknessCastMs + darknessDurationMs);
+                                      darknessCastMs + darknessPostCastDangerMs);
             return true;
         }
 
         if (muru->HasUnitState(UNIT_STATE_CASTING) &&
             muru->FindCurrentSpellBySpellId(static_cast<uint32>(SunwellSpells::SPELL_DARKNESS)))
         {
-            state.expireMs = std::max(state.expireMs, now + darknessCastMs + darknessDurationMs);
+            state.expireMs = std::max(state.expireMs, now + darknessCastMs + darknessPostCastDangerMs);
             return true;
         }
 
@@ -2051,30 +2051,10 @@ namespace SunwellHelpers
         return victim && botAI->IsTank(victim);
     }
 
-    void GatherMuruEncounterTargets(PlayerbotAI* botAI, Player* bot, MuruEncounterTargets& targets)
+    void GatherMuruEncounterTargets(PlayerbotAI* botAI, MuruEncounterTargets& targets)
     {
         auto const& units =
             botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
-        constexpr float targetSwitchDistance = 10.0f;
-        auto chooseNearestTarget = [&](Unit*& current, Unit* candidate)
-        {
-            if (!candidate)
-                return;
-
-            if (!current)
-            {
-                current = candidate;
-                return;
-            }
-
-            if (current == candidate)
-                return;
-
-            float currentDistance = bot->GetExactDist2d(current);
-            float candidateDistance = bot->GetExactDist2d(candidate);
-            if (candidateDistance + targetSwitchDistance < currentDistance)
-                current = candidate;
-        };
 
         auto considerTarget = [&](Unit* unit)
         {
@@ -2084,8 +2064,7 @@ namespace SunwellHelpers
             switch (unit->GetEntry())
             {
                 case static_cast<uint32>(SunwellNpcs::NPC_MURU):
-                    if (unit->GetHealth() > 1)
-                        targets.muru = unit;
+                    targets.muru = unit;
                     break;
 
                 case static_cast<uint32>(SunwellNpcs::NPC_ENTROPIUS):
@@ -2093,19 +2072,19 @@ namespace SunwellHelpers
                     break;
 
                 case static_cast<uint32>(SunwellNpcs::NPC_VOID_SENTINEL):
-                    chooseNearestTarget(targets.voidSentinel, unit);
+                    targets.voidSentinels.push_back(unit);
                     break;
 
                 case static_cast<uint32>(SunwellNpcs::NPC_VOID_SPAWN):
-                    chooseNearestTarget(targets.voidSpawn, unit);
+                    targets.voidSpawns.push_back(unit);
                     break;
 
                 case static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_FURY_MAGE):
-                    chooseNearestTarget(targets.furyMage, unit);
+                    targets.furyMages.push_back(unit);
                     break;
 
                 case static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_BERSERKER):
-                    chooseNearestTarget(targets.berserker, unit);
+                    targets.berserkers.push_back(unit);
                     break;
 
                 default:
@@ -2113,15 +2092,9 @@ namespace SunwellHelpers
             }
         };
 
-        Unit* currentTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
-        considerTarget(currentTarget);
-
         for (ObjectGuid const& guid : units)
         {
             Unit* unit = botAI->GetUnit(guid);
-            if (unit == currentTarget)
-                continue;
-
             considerTarget(unit);
         }
     }
@@ -2168,13 +2141,61 @@ namespace SunwellHelpers
         MuruEncounterTargets targets;
         targets.muru = muru;
         targets.entropius = entropius;
-        GatherMuruEncounterTargets(botAI, bot, targets);
+        GatherMuruEncounterTargets(botAI, targets);
+
+        Unit* currentTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
+        constexpr float targetSwitchDistance = 10.0f;
+        auto chooseNearestTarget = [&](Unit*& current, Unit* candidate)
+        {
+            if (!candidate)
+                return;
+
+            if (!current)
+            {
+                current = candidate;
+                return;
+            }
+
+            if (current == candidate)
+                return;
+
+            float currentDistance = bot->GetExactDist2d(current);
+            float candidateDistance = bot->GetExactDist2d(candidate);
+            if (candidateDistance + targetSwitchDistance < currentDistance)
+                current = candidate;
+        };
+
+        auto selectEncounterTarget = [&](uint32 entry, std::vector<Unit*> const& candidates)
+        {
+            Unit* selected = nullptr;
+            if (currentTarget && currentTarget->IsAlive() && currentTarget->GetEntry() == entry)
+                selected = currentTarget;
+
+            for (Unit* candidate : candidates)
+                chooseNearestTarget(selected, candidate);
+
+            return selected;
+        };
+
+        Unit* furyMage = selectEncounterTarget(
+            static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_FURY_MAGE), targets.furyMages);
+        Unit* berserker = selectEncounterTarget(
+            static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_BERSERKER), targets.berserkers);
+        Unit* voidSentinel = selectEncounterTarget(
+            static_cast<uint32>(SunwellNpcs::NPC_VOID_SENTINEL), targets.voidSentinels);
+
+        Unit* validMuru = targets.muru;
+        if (!validMuru || validMuru->GetHealth() <= 1 ||
+            TryGetMuruDarknessActiveState(bot, validMuru))
+        {
+            validMuru = nullptr;
+        }
 
         std::array<Unit*, 5> priorities = {
-            targets.furyMage,
-            targets.berserker,
-            targets.voidSentinel,
-            targets.muru,
+            furyMage,
+            berserker,
+            voidSentinel,
+            validMuru,
             targets.entropius
         };
 

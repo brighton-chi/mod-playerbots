@@ -265,10 +265,10 @@ namespace SunwellHelpers
     {
         Unit* muru = nullptr;
         Unit* entropius = nullptr;
-        Unit* voidSentinel = nullptr;
-        Unit* voidSpawn = nullptr;
-        Unit* furyMage = nullptr;
-        Unit* berserker = nullptr;
+        std::vector<Unit*> voidSentinels;
+        std::vector<Unit*> voidSpawns;
+        std::vector<Unit*> furyMages;
+        std::vector<Unit*> berserkers;
     };
     struct MuruDarknessState
     {
@@ -284,7 +284,7 @@ namespace SunwellHelpers
     bool IsFirstAssistTankInSameGroup(PlayerbotAI* botAI, Player* bot);
     bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru);
     bool DoesMuruUnitHaveTankAggro(PlayerbotAI* botAI, Unit* unit);
-    void GatherMuruEncounterTargets(PlayerbotAI* botAI, Player* bot, MuruEncounterTargets& targets);
+    void GatherMuruEncounterTargets(PlayerbotAI* botAI, MuruEncounterTargets& targets);
     Creature* FindAvailableVoidSpawnForEnslave(
         PlayerbotAI* botAI, Player* bot, Unit* muru, Unit* entropius);
     Unit* GetVoidSpawnVolleyPriorityTarget(

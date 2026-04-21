@@ -7,6 +7,7 @@
 #include "RaidSunwellHelpers.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
+#include "TargetValue.h"
 #include "Timer.h"
 
 using namespace SunwellHelpers;
@@ -1352,7 +1353,7 @@ bool MuruPositionRangedAction::Execute(Event /*event*/)
     }
     else
     {
-        constexpr float safeDistFromPlayer = 5.0f;
+        constexpr float safeDistFromPlayer = 4.0f;
         if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
             return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer);
     }
@@ -1574,13 +1575,10 @@ bool MuruWarlockEnslaveVoidSpawnAction::Execute(Event /*event*/)
     if (!voidSpawn)
         return false;
 
-    if (bot->GetDistance2d(voidSpawn) > sPlayerbotAIConfig.spellDistance)
-        return MoveNear(voidSpawn, sPlayerbotAIConfig.spellDistance, MovementPriority::MOVEMENT_COMBAT);
+    if (botAI->CanCastSpell("enslave demon", voidSpawn))
+        return botAI->CastSpell("enslave demon", voidSpawn);
 
-    if (!botAI->CanCastSpell("enslave demon", voidSpawn))
-        return false;
-
-    return botAI->CastSpell("enslave demon", voidSpawn);
+    return false;
 }
 
 bool MuruEnslavedVoidSpawnCastShadowBoltVolleyAction::Execute(Event /*event*/)
@@ -1624,41 +1622,103 @@ bool MuruSetDpsPriorityAction::Execute(Event /*event*/)
     if (!muru && !entropius)
         return false;
 
-    bool darknessActive = muru && TryGetMuruDarknessActiveState(bot, muru);
     Unit* target = nullptr;
 
     const bool isShadowPriest =
         bot->getClass() == CLASS_PRIEST && botAI->HasStrategy("shadow", BOT_STATE_COMBAT);
     const bool isOtherRanged = botAI->IsRanged(bot) && !isShadowPriest;
+    const bool isMeleeDps = botAI->IsMelee(bot) && !isShadowPriest && !isOtherRanged;
+    Unit* currentTarget = context->GetValue<Unit*>("current target")->Get();
+    Unit* currentVictim = bot->GetVictim();
 
     MuruEncounterTargets targets;
     targets.muru = muru;
     targets.entropius = entropius;
-    GatherMuruEncounterTargets(botAI, bot, targets);
+    GatherMuruEncounterTargets(botAI, targets);
     muru = targets.muru;
     entropius = targets.entropius;
-    bool voidSentinelHasTankAggro = DoesMuruUnitHaveTankAggro(botAI, targets.voidSentinel);
 
-    std::vector<Unit*> priorityTargets;
+    constexpr float targetSwitchDistance = 10.0f;
+    auto chooseNearestTarget = [&](Unit*& current, Unit* candidate)
+    {
+        if (!candidate)
+            return;
+
+        if (!current)
+        {
+            current = candidate;
+            return;
+        }
+
+        if (current == candidate)
+            return;
+
+        float currentDistance = bot->GetExactDist2d(current);
+        float candidateDistance = bot->GetExactDist2d(candidate);
+        if (candidateDistance + targetSwitchDistance < currentDistance)
+            current = candidate;
+    };
+
+    auto selectEncounterTarget = [&](uint32 entry, std::vector<Unit*> const& candidates)
+    {
+        Unit* selected = nullptr;
+        if (isMeleeDps && currentVictim && currentVictim->IsAlive() && currentVictim->GetEntry() == entry)
+            selected = currentVictim;
+        else if (currentTarget && currentTarget->IsAlive() && currentTarget->GetEntry() == entry)
+            selected = currentTarget;
+
+        for (Unit* candidate : candidates)
+            chooseNearestTarget(selected, candidate);
+
+        return selected;
+    };
+
+    Unit* voidSentinel = selectEncounterTarget(
+        static_cast<uint32>(SunwellNpcs::NPC_VOID_SENTINEL), targets.voidSentinels);
+    Unit* voidSpawn = selectEncounterTarget(
+        static_cast<uint32>(SunwellNpcs::NPC_VOID_SPAWN), targets.voidSpawns);
+    Unit* furyMage = selectEncounterTarget(
+        static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_FURY_MAGE), targets.furyMages);
+    Unit* berserker = selectEncounterTarget(
+        static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_BERSERKER), targets.berserkers);
+    bool voidSentinelHasTankAggro = DoesMuruUnitHaveTankAggro(botAI, voidSentinel);
+
+    struct PriorityTarget
+    {
+        uint32 entry;
+        Unit* unit;
+    };
+
+    std::vector<PriorityTarget> priorityTargets;
     if (isShadowPriest)
     {
         priorityTargets = {
-            muru, entropius };
+            { static_cast<uint32>(SunwellNpcs::NPC_MURU), muru },
+            { static_cast<uint32>(SunwellNpcs::NPC_ENTROPIUS), entropius }
+        };
     }
     else if (isOtherRanged)
     {
         priorityTargets = {
-            voidSentinelHasTankAggro ? targets.voidSentinel : nullptr,
-            targets.voidSpawn, targets.furyMage, targets.berserker, muru, entropius };
+            { static_cast<uint32>(SunwellNpcs::NPC_VOID_SENTINEL), voidSentinel },
+            { static_cast<uint32>(SunwellNpcs::NPC_VOID_SPAWN), voidSpawn },
+            { static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_FURY_MAGE), furyMage },
+            { static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_BERSERKER), berserker },
+            { static_cast<uint32>(SunwellNpcs::NPC_MURU), muru },
+            { static_cast<uint32>(SunwellNpcs::NPC_ENTROPIUS), entropius }
+        };
     }
     else
     {
         priorityTargets = {
-            targets.furyMage, targets.berserker, darknessActive ? nullptr : muru, entropius
+            { static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_FURY_MAGE), furyMage },
+            { static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_BERSERKER), berserker },
+            { static_cast<uint32>(SunwellNpcs::NPC_MURU), muru },
+            { static_cast<uint32>(SunwellNpcs::NPC_ENTROPIUS), entropius }
         };
     }
 
-    auto isAllowedPriorityTarget = [&](Unit* unit)
+    auto isAllowedPriorityTarget = [&](Unit* unit) -> bool
     {
         if (!unit || !unit->IsAlive())
             return false;
@@ -1666,7 +1726,8 @@ bool MuruSetDpsPriorityAction::Execute(Event /*event*/)
         switch (unit->GetEntry())
         {
             case static_cast<uint32>(SunwellNpcs::NPC_MURU):
-                return isShadowPriest || isOtherRanged || !darknessActive;
+                return unit->GetHealth() > 1 &&
+                       !botAI->IsTargetValueExcluded(TargetValueExclusionType::Dps, unit->GetGUID());
 
             case static_cast<uint32>(SunwellNpcs::NPC_ENTROPIUS):
                 return true;
@@ -1686,16 +1747,20 @@ bool MuruSetDpsPriorityAction::Execute(Event /*event*/)
         }
     };
 
-    for (Unit* candidate : priorityTargets)
+    auto getPriorityIndex = [&](Unit* unit) -> size_t
     {
-        if (candidate)
-        {
-            target = candidate;
-            break;
-        }
-    }
+        if (!isAllowedPriorityTarget(unit))
+            return priorityTargets.size();
 
-    Unit* currentTarget = context->GetValue<Unit*>("current target")->Get();
+        for (size_t index = 0; index < priorityTargets.size(); ++index)
+        {
+            if (priorityTargets[index].entry == unit->GetEntry())
+                return index;
+        }
+
+        return priorityTargets.size();
+    };
+
     if (currentTarget && !isAllowedPriorityTarget(currentTarget))
     {
         bot->AttackStop();
@@ -1704,6 +1769,27 @@ bool MuruSetDpsPriorityAction::Execute(Event /*event*/)
         bot->SetTarget(ObjectGuid::Empty);
         bot->SetSelection(ObjectGuid());
         currentTarget = nullptr;
+    }
+
+    for (PriorityTarget const& candidate : priorityTargets)
+    {
+        if (isAllowedPriorityTarget(candidate.unit))
+        {
+            target = candidate.unit;
+            break;
+        }
+    }
+
+    Unit* stickyTarget = currentTarget;
+    if (isMeleeDps && currentVictim && isAllowedPriorityTarget(currentVictim))
+        stickyTarget = currentVictim;
+
+    if (stickyTarget)
+    {
+        size_t currentPriority = getPriorityIndex(stickyTarget);
+        size_t desiredPriority = getPriorityIndex(target);
+        if (currentPriority <= desiredPriority)
+            target = stickyTarget;
     }
 
     if (target && target->GetEntry() == static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_BERSERKER))
@@ -1721,8 +1807,17 @@ bool MuruSetDpsPriorityAction::Execute(Event /*event*/)
         }
     }
 
-    if (target && currentTarget != target && bot->GetTarget() != target->GetGUID())
-        return Attack(target);
+    if (target)
+    {
+        bool needsAttack = false;
+        if (isMeleeDps)
+            needsAttack = bot->GetVictim() != target;
+        else
+            needsAttack = currentTarget != target && bot->GetTarget() != target->GetGUID();
+
+        if (needsAttack)
+            return Attack(target);
+    }
 
     return false;
 }
