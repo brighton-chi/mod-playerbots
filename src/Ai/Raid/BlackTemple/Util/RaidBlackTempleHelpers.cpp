@@ -86,7 +86,7 @@ namespace BlackTempleHelpers
 
         time_t now = std::time(nullptr);
         time_t elapsed = now - it->second;
-        int groupIndex = (elapsed % 30) / 10; // 0 for 0-9s, 1 for 10-19s, 2 for 20-29s
+        int groupIndex = (elapsed % 30) / 10; // 3 groups, swapping every 10 seconds
 
         return groupIndex;
     }
@@ -117,7 +117,7 @@ namespace BlackTempleHelpers
         { 655.571f, 261.377f, 271.687f },
         { 673.789f, 274.139f, 271.689f }
     }};
-    const Position ZEREVOR_TANK_POSITION =     { 686.219f, 377.644f, 271.689f };
+    const Position ZEREVOR_TANK_POSITION = { 686.219f, 377.644f, 271.689f };
     const std::array<Position, 2> ZEREVOR_HEALER_POSITIONS = {{
         { 661.385f, 351.219f, 271.690f },
         { 667.003f, 363.768f, 271.690f }
@@ -213,9 +213,11 @@ namespace BlackTempleHelpers
 
     int GetIllidanPhase(Unit* illidan)
     {
-        if (!illidan || illidan->GetHealth() == 1 ||
-            illidan->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_SHADOW_PRISON)))
+        if (!illidan || illidan->GetHealth() == 1 || illidan->HasAura(
+                static_cast<uint32>(BlackTempleSpells::SPELL_SHADOW_PRISON)))
+        {
             return -1;
+        }
 
         // Transitioning from Phase 2 to Phase 3
         float x, y, z;
@@ -224,7 +226,9 @@ namespace BlackTempleHelpers
         if ((dest.GetExactDist2d(ILLIDAN_LANDING_POSITION) < 0.2f ||
              illidan->GetExactDist2d(ILLIDAN_LANDING_POSITION) < 0.2f) &&
              illidan->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE))
+        {
             return 0;
+        }
 
         // Phase 2: Flying
         if (illidan->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE))
@@ -240,7 +244,9 @@ namespace BlackTempleHelpers
              illidan->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_DEMON_TRANSFORM_1)) ||
              illidan->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_DEMON_TRANSFORM_2)) ||
              illidan->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_DEMON_TRANSFORM_3))))
+        {
             return 4;
+        }
 
         // Phase 3: Normal (ground, 65-30%, not demon)
         if (illidan->GetHealthPct() > 30.0f)
@@ -335,7 +341,9 @@ namespace BlackTempleHelpers
             Player* member = ref->GetSource();
             if (!member || !member->IsAlive() || member->getClass() != CLASS_HUNTER ||
                 !GET_PLAYERBOT_AI(member))
+            {
                 continue;
+            }
 
             if (!member->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_PARASITIC_SHADOWFIEND_1)) &&
                 !member->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_PARASITIC_SHADOWFIEND_2)))

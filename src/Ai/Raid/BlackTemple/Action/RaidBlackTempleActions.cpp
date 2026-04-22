@@ -88,7 +88,9 @@ bool HighWarlordNajentusMisdirectBossToMainTankAction::Execute(Event /*event*/)
 
     if (bot->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_MISDIRECTION)) &&
         botAI->CanCastSpell("steady shot", najentus))
+    {
         return botAI->CastSpell("steady shot", najentus);
+    }
 
     return false;
 }
@@ -134,7 +136,9 @@ bool HighWarlordNajentusDisperseRangedAction::Execute(Event /*event*/)
     constexpr float safeDistFromBoss = 10.0f;
     if (bot->GetExactDist2d(najentus) < safeDistFromBoss &&
         FleePosition(najentus->GetPosition(), safeDistFromBoss, minInterval))
+    {
         return true;
+    }
 
     constexpr float safeDistFromPlayer = 7.0f;
     if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
@@ -293,7 +297,9 @@ bool SupremusMisdirectBossToMainTankAction::Execute(Event /*event*/)
 
     if (bot->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_MISDIRECTION)) &&
         botAI->CanCastSpell("steady shot", supremus))
+    {
         return botAI->CastSpell("steady shot", supremus);
+    }
 
     return false;
 }
@@ -518,7 +524,9 @@ bool TeronGorefiendMisdirectBossToMainTankAction::Execute(Event /*event*/)
 
     if (bot->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_MISDIRECTION)) &&
         botAI->CanCastSpell("steady shot", gorefiend))
+    {
         return botAI->CastSpell("steady shot", gorefiend);
+    }
 
     return false;
 }
@@ -695,33 +703,43 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event /*eve
         if (!spirit->HasSpellCooldown(static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_CHAINS)) &&
             priorityTarget->GetHealthPct() == 100.0f)
         {
-            spirit->CastSpell(priorityTarget, static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_CHAINS), true);
-            spirit->AddSpellCooldown(static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_CHAINS), 0, 15000);
+            spirit->CastSpell(
+                priorityTarget, static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_CHAINS), true);
+            spirit->AddSpellCooldown(
+                static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_CHAINS), 0, 15000);
             return true;
         }
         else if (!spirit->HasSpellCooldown(static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_LANCE)))
         {
-            spirit->CastSpell(priorityTarget, static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_LANCE), true);
-            spirit->AddSpellCooldown(static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_LANCE), 0, 1000);
+            spirit->CastSpell(
+                priorityTarget, static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_LANCE), true);
+            spirit->AddSpellCooldown(
+                static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_LANCE), 0, 1000);
             return true;
         }
         else if (!spirit->HasSpellCooldown(static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_CHAINS)))
         {
-            spirit->CastSpell(priorityTarget, static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_CHAINS), true);
-            spirit->AddSpellCooldown(static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_CHAINS), 0, 15000);
+            spirit->CastSpell(
+                priorityTarget, static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_CHAINS), true);
+            spirit->AddSpellCooldown(
+                static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_CHAINS), 0, 15000);
             return true;
         }
         else if (!spirit->HasSpellCooldown(static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_LANCE)))
         {
-            spirit->CastSpell(priorityTarget, static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_LANCE), true);
-            spirit->AddSpellCooldown(static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_LANCE), 0, 1000);
+            spirit->CastSpell
+                (priorityTarget, static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_LANCE), true);
+            spirit->AddSpellCooldown(
+                static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_LANCE), 0, 1000);
             return true;
         }
         else if (!spirit->HasSpellCooldown(static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_VOLLEY)) &&
                  !priorityTarget->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_CHAINS)))
         {
-            spirit->CastSpell(priorityTarget, static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_VOLLEY), true);
-            spirit->AddSpellCooldown(static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_VOLLEY), 0, 15000);
+            spirit->CastSpell
+                (priorityTarget, static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_VOLLEY), true);
+            spirit->AddSpellCooldown(
+                static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_VOLLEY), 0, 15000);
             return true;
         }
     }
@@ -742,8 +760,10 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event /*eve
         }
         else if (!spirit->HasSpellCooldown(static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_STRIKE)))
         {
-            spirit->CastSpell(gorefiend, static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_STRIKE), true);
-            spirit->AddSpellCooldown(static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_STRIKE), 0, 1000);
+            spirit->CastSpell(
+                gorefiend, static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_STRIKE), true);
+            spirit->AddSpellCooldown(
+                static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_STRIKE), 0, 1000);
             return true;
         }
     }
@@ -772,7 +792,9 @@ bool GurtoggBloodboilMisdirectBossToMainTankAction::Execute(Event /*event*/)
 
     if (bot->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_MISDIRECTION)) &&
         botAI->CanCastSpell("steady shot", gurtogg))
+    {
         return botAI->CastSpell("steady shot", gurtogg);
+    }
 
     return false;
 }
@@ -855,8 +877,8 @@ bool GurtoggBloodboilRangedMoveAwayFromEnragedPlayerAction::Execute(Event /*even
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member &&
-            member->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_PLAYER_FEL_RAGE)))
+        if (member && member->HasAura(
+                static_cast<uint32>(BlackTempleSpells::SPELL_PLAYER_FEL_RAGE)))
         {
             enragedPlayer = member;
             break;
@@ -897,6 +919,7 @@ bool ReliquaryOfSoulsMisdirectBossToMainTankAction::Execute(Event /*event*/)
 {
     Unit* desire = AI_VALUE2(Unit*, "find target", "essence of desire");
     Unit* anger = AI_VALUE2(Unit*, "find target", "essence of anger");
+
     if (!desire && !anger)
         return false;
 
@@ -913,7 +936,9 @@ bool ReliquaryOfSoulsMisdirectBossToMainTankAction::Execute(Event /*event*/)
 
         if (bot->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_MISDIRECTION)) &&
             botAI->CanCastSpell("steady shot", target))
+        {
             return botAI->CastSpell("steady shot", target);
+        }
     }
 
     return false;
@@ -999,7 +1024,9 @@ bool ReliquaryOfSoulsSpellstealRuneShieldAction::Execute(Event /*event*/)
 {
     if (Unit* desire = AI_VALUE2(Unit*, "find target", "essence of desire");
         desire && botAI->CanCastSpell("spellsteal", desire))
+    {
         return botAI->CastSpell("spellsteal", desire);
+    }
 
     return false;
 }
@@ -1029,7 +1056,9 @@ bool MotherShahrazMisdirectBossToMainTankAction::Execute(Event /*event*/)
 
     if (bot->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_MISDIRECTION)) &&
         botAI->CanCastSpell("steady shot", shahraz))
+    {
         return botAI->CastSpell("steady shot", shahraz);
+    }
 
     return false;
 }
@@ -1282,7 +1311,9 @@ bool IllidariCouncilMisdirectBossesToTanksAction::Execute(Event /*event*/)
 
     if (bot->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_MISDIRECTION)) &&
         botAI->CanCastSpell("steady shot", councilTarget))
+    {
         return botAI->CastSpell("steady shot", councilTarget);
+    }
 
     return false;
 }
@@ -1457,7 +1488,9 @@ bool IllidariCouncilMageTankPositionZerevorAction::Execute(Event /*event*/)
 
     if (zerevor->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_DAMPEN_MAGIC)) &&
         botAI->CanCastSpell("spellsteal", zerevor))
+    {
         return botAI->CastSpell("spellsteal", zerevor);
+    }
 
     MarkTargetWithTriangle(bot, zerevor);
     SetRtiTarget(botAI, "triangle", zerevor);
@@ -1705,7 +1738,9 @@ bool IllidanStormrageMisdirectToTankAction::TryMisdirectToFlameTanks(Group* grou
 
         if (bot->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_MISDIRECTION)) &&
             botAI->CanCastSpell("steady shot", eastFlame))
+        {
             return botAI->CastSpell("steady shot", eastFlame);
+        }
 
         return false;
     }
@@ -1734,7 +1769,9 @@ bool IllidanStormrageMisdirectToTankAction::TryMisdirectToFlameTanks(Group* grou
 
     if (bot->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_MISDIRECTION)) &&
         botAI->CanCastSpell("steady shot", flame))
+    {
         return botAI->CastSpell("steady shot", flame);
+    }
 
     return false;
 }
@@ -1750,7 +1787,9 @@ bool IllidanStormrageMisdirectToTankAction::TryMisdirectToWarlockTank(Unit* illi
 
     if (bot->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_MISDIRECTION)) &&
         botAI->CanCastSpell("steady shot", illidan))
+    {
         return botAI->CastSpell("steady shot", illidan);
+    }
 
     return false;
 }
@@ -2050,8 +2089,8 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*ev
             //     move to a grate position
             std::list<Creature*> demonFires;
             constexpr float searchRadius = 40.0f;
-            bot->GetCreatureListWithEntryInGrid(demonFires, static_cast<uint32>(
-                BlackTempleNpcs::NPC_DEMON_FIRE), searchRadius);
+            bot->GetCreatureListWithEntryInGrid(
+                demonFires, static_cast<uint32>(BlackTempleNpcs::NPC_DEMON_FIRE), searchRadius);
 
             const Position& pos = demonFires.empty() ?
                 ILLIDAN_E_GLAIVE_WAITING_POSITION : ILLIDAN_E_GRATE_POSITION;
@@ -2101,8 +2140,8 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*ev
             //     move to a grate position
             std::list<Creature*> demonFires;
             constexpr float searchRadius = 40.0f;
-            bot->GetCreatureListWithEntryInGrid(demonFires, static_cast<uint32>(
-                BlackTempleNpcs::NPC_DEMON_FIRE), searchRadius);
+            bot->GetCreatureListWithEntryInGrid(
+                demonFires, static_cast<uint32>(BlackTempleNpcs::NPC_DEMON_FIRE), searchRadius);
 
             const Position& pos = demonFires.empty() ?
                 ILLIDAN_W_GLAIVE_WAITING_POSITION : ILLIDAN_W_GRATE_POSITION;
@@ -2178,18 +2217,19 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidE
         float safeZ = bot->GetPositionZ();
 
         constexpr float minGrateDistance = 10.0f;
-        bool tooCloseToNorthGrate =
-            Position(safeX, safeY, safeZ).GetExactDist2d(ILLIDAN_N_GRATE_POSITION) < minGrateDistance;
-        bool tooCloseToEastGrate =
-            Position(safeX, safeY, safeZ).GetExactDist2d(ILLIDAN_E_GRATE_POSITION) < minGrateDistance;
-        bool tooCloseToWestGrate =
-            Position(safeX, safeY, safeZ).GetExactDist2d(ILLIDAN_W_GRATE_POSITION) < minGrateDistance;
+        bool tooCloseToNorthGrate = Position(safeX, safeY, safeZ).GetExactDist2d(
+            ILLIDAN_N_GRATE_POSITION) < minGrateDistance;
+        bool tooCloseToEastGrate = Position(safeX, safeY, safeZ).GetExactDist2d(
+            ILLIDAN_E_GRATE_POSITION) < minGrateDistance;
+        bool tooCloseToWestGrate = Position(safeX, safeY, safeZ).GetExactDist2d(
+            ILLIDAN_W_GRATE_POSITION) < minGrateDistance;
 
         if (tooCloseToNorthGrate || tooCloseToEastGrate || tooCloseToWestGrate)
             return false;
 
         return MoveTo(BLACK_TEMPLE_MAP_ID, safeX, safeY, safeZ,
-                      false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+                      false, false, false, false, MovementPriority::MOVEMENT_FORCED, 
+                      true, false);
     }
 
     return false;
@@ -2203,27 +2243,34 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidB
 
     if (botAI->IsAssistTankOfIndex(bot, 1, true))
     {
-        if (!eastFlame || eastFlame->GetVictim() != bot || !bot->IsWithinMeleeRange(eastFlame))
+        if (!eastFlame || eastFlame->GetVictim() != bot ||
+            !bot->IsWithinMeleeRange(eastFlame))
+        {
             return false;
+        }
         waypoints = &E_GLAIVE_TANK_POSITIONS;
     }
     else if (botAI->IsAssistTankOfIndex(bot, 0, true))
     {
-        if (!westFlame || westFlame->GetVictim() != bot || !bot->IsWithinMeleeRange(westFlame))
+        if (!westFlame || westFlame->GetVictim() != bot ||
+            !bot->IsWithinMeleeRange(westFlame))
+        {
             return false;
+        }
         waypoints = &W_GLAIVE_TANK_POSITIONS;
     }
 
     size_t& waypointIndex = flameTankWaypointIndex[bot->GetGUID()];
     const Position& target = (*waypoints)[waypointIndex];
 
-    auto const& npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("possible triggers")->Get();
+    auto const& npcs = 
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("possible triggers")->Get();
+
     bool blazeNearby = false;
     for (auto const& guid : npcs)
     {
         Unit* unit = botAI->GetUnit(guid);
-        if (unit &&
-            unit->GetEntry() == static_cast<uint32>(BlackTempleNpcs::NPC_BLAZE) &&
+        if (unit && unit->GetEntry() == static_cast<uint32>(BlackTempleNpcs::NPC_BLAZE) &&
             bot->GetDistance2d(unit) <= 8.0f)
         {
             blazeNearby = true;
@@ -2231,7 +2278,8 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidB
         }
     }
 
-    float distToPosition = bot->GetExactDist2d(target.GetPositionX(), target.GetPositionY());
+    float distToPosition = 
+        bot->GetExactDist2d(target.GetPositionX(), target.GetPositionY());
     if (blazeNearby && distToPosition <= 0.2f)
     {
         waypointIndex = (waypointIndex + 1) % numWaypoints;
@@ -2339,18 +2387,23 @@ bool IllidanStormragePositionAboveGrateAction::Execute(Event /*event*/)
 
 bool IllidanStormrageRemoveDarkBarrageAction::Execute(Event /*event*/)
 {
-    static const std::array<const char*, 3> abilities =
+    switch (bot->getClass())
     {
-        "divine shield", "ice block", "cloak of shadows"
-    };
+        case CLASS_MAGE:
+            return botAI->CanCastSpell("ice block", bot) &&
+                   botAI->CastSpell("ice block", bot);
 
-    for (const char* spellName : abilities)
-    {
-        if (botAI->CanCastSpell(spellName, bot))
-            return botAI->CastSpell(spellName, bot);
+        case CLASS_PALADIN:
+            return botAI->CanCastSpell("divine shield", bot) &&
+                   botAI->CastSpell("divine shield", bot);
+
+        case CLASS_ROGUE:
+            return botAI->CanCastSpell("cloak of shadows", bot) &&
+                   botAI->CastSpell("cloak of shadows", bot);
+
+        default:
+            return false;
     }
-
-    return false;
 }
 
 bool IllidanStormrageMoveAwayFromLandingPointAction::Execute(Event /*event*/)
@@ -2385,7 +2438,8 @@ bool IllidanStormrageDisperseRangedAction::Execute(Event /*event*/)
         return SpreadInCircleInDemonPhase(illidan, group);
     }
     else if (GetBotWithParasiticShadowfiend(bot) == bot ||
-             (GetIllidanTrapperHunter(bot) == bot && GetBotWithParasiticShadowfiend(bot)))
+             (GetIllidanTrapperHunter(bot) == bot && 
+              GetBotWithParasiticShadowfiend(bot)))
     {
         return false;
     }
@@ -2422,10 +2476,12 @@ bool IllidanStormrageDisperseRangedAction::FanOutBehindInHumanPhase(
     auto& bots = botAI->IsHeal(bot) ? healers : rangedDps;
     size_t count = bots.size();
     auto findIt = std::find(bots.begin(), bots.end(), bot);
-    size_t botIndex = (findIt != bots.end()) ? std::distance(bots.begin(), findIt) : 0;
+    size_t botIndex = (findIt != bots.end()) ? 
+        std::distance(bots.begin(), findIt) : 0;
 
     float angle = (count == 1) ? arcCenter :
-        (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
+        (arcStart + arcSpan * static_cast<float>(botIndex) / 
+         static_cast<float>(count - 1));
 
     float targetX = illidan->GetPositionX() + radius * std::cos(angle);
     float targetY = illidan->GetPositionY() + radius * std::sin(angle);
@@ -2490,7 +2546,8 @@ bool IllidanStormrageDisperseRangedAction::SpreadInCircleInDemonPhase(
 
     size_t count = rangedBots.size();
     auto findIt = std::find(rangedBots.begin(), rangedBots.end(), bot);
-    size_t botIndex = (findIt != rangedBots.end()) ? std::distance(rangedBots.begin(), findIt) : 0;
+    size_t botIndex = (findIt != rangedBots.end()) ? 
+        std::distance(rangedBots.begin(), findIt) : 0;
 
     float dx = warlockTank->GetPositionX() - illidan->GetPositionX();
     float dy = warlockTank->GetPositionY() - illidan->GetPositionY();
@@ -2504,7 +2561,8 @@ bool IllidanStormrageDisperseRangedAction::SpreadInCircleInDemonPhase(
 
     float angle = (count == 1) ? Position::NormalizeOrientation(arcStart + allowedArc / 2.0f) :
         Position::NormalizeOrientation(
-            arcStart + allowedArc * static_cast<float>(botIndex) / static_cast<float>(count - 1));
+        arcStart + allowedArc * static_cast<float>(botIndex) /
+        static_cast<float>(count - 1));
 
     float targetX = illidan->GetPositionX() + radius * std::cos(angle);
     float targetY = illidan->GetPositionY() + radius * std::sin(angle);
@@ -2540,8 +2598,9 @@ bool IllidanStormrageMeleeGoSomewhereToNotDieAction::Execute(Event /*event*/)
 
     Unit* illidanVictim = illidan->GetVictim();
     // But they can attack Shadow Demons and Shadowfiends, if far enough from Illidan
-    Unit* shadowDemon = bot->FindNearestCreature(static_cast<uint32>(
-        BlackTempleNpcs::NPC_SHADOW_DEMON), demonSearchRadius, true);
+    Unit* shadowDemon = bot->FindNearestCreature(
+        static_cast<uint32>(BlackTempleNpcs::NPC_SHADOW_DEMON), demonSearchRadius, true);
+
     if (shadowDemon && shadowDemon->GetDistance2d(illidan) > 15.0f &&
         (!illidanVictim || shadowDemon->GetDistance2d(illidanVictim) > 24.0f))
     {
@@ -2549,8 +2608,10 @@ bool IllidanStormrageMeleeGoSomewhereToNotDieAction::Execute(Event /*event*/)
     }
     else
     {
-        Unit* shadowfiend = bot->FindNearestCreature(static_cast<uint32>(
-            BlackTempleNpcs::NPC_PARASITIC_SHADOWFIEND), shadowfiendSearchRadius, true);
+        Unit* shadowfiend = bot->FindNearestCreature(
+            static_cast<uint32>(BlackTempleNpcs::NPC_PARASITIC_SHADOWFIEND), 
+            shadowfiendSearchRadius, true);
+    
         if (shadowfiend && shadowfiend->GetDistance2d(illidan) > 15.0f &&
             shadowfiend->GetHealthPct() < 30.0f &&
             (!illidanVictim || shadowfiend->GetDistance2d(illidanVictim) > 24.0f))
@@ -2590,11 +2651,15 @@ bool IllidanStormrageWarlockTankHandleDemonBossAction::Execute(Event /*event*/)
     float currentDistance = bot->GetExactDist2d(illidan);
     if (currentDistance < safeDistance &&
         MoveAway(illidan, safeDistance - currentDistance))
+    {
         return true;
+    }
 
     if (botAI->CanCastSpell("shadow ward", bot) &&
         botAI->CastSpell("shadow ward", bot))
+    {
         return true;
+    }
 
     if (botAI->CanCastSpell("searing pain", illidan))
         return botAI->CastSpell("searing pain", illidan);
@@ -2616,8 +2681,8 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
     {
         constexpr float searchRadius = 35.0f;
 
-        Unit* shadowDemon = bot->FindNearestCreature(static_cast<uint32>(
-            BlackTempleNpcs::NPC_SHADOW_DEMON), searchRadius, true);
+        Unit* shadowDemon = bot->FindNearestCreature(
+            static_cast<uint32>(BlackTempleNpcs::NPC_SHADOW_DEMON), searchRadius, true);
 
         if (GetIllidanWarlockTank(bot) == bot)
         {
@@ -2625,8 +2690,10 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
         }
         else
         {
-            Unit* shadowfiend = bot->FindNearestCreature(static_cast<uint32>(
-                BlackTempleNpcs::NPC_PARASITIC_SHADOWFIEND), searchRadius, true);
+            Unit* shadowfiend = bot->FindNearestCreature(
+                static_cast<uint32>(BlackTempleNpcs::NPC_PARASITIC_SHADOWFIEND), 
+                searchRadius, true);
+    
             if (botAI->IsRanged(bot))
             {
                 if (shadowDemon)
@@ -2647,8 +2714,10 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
         if (phase == 1 || phase == 3 || phase == 5)
         {
             constexpr float searchRadius = 35.0f;
-            Unit* shadowfiend = bot->FindNearestCreature(static_cast<uint32>(
-                BlackTempleNpcs::NPC_PARASITIC_SHADOWFIEND), searchRadius, true);
+            Unit* shadowfiend = bot->FindNearestCreature(
+                static_cast<uint32>(BlackTempleNpcs::NPC_PARASITIC_SHADOWFIEND), 
+                searchRadius, true);
+
             if (shadowfiend && bot->GetDistance2d(shadowfiend) > 10.0f)
                 targets = { shadowfiend };
             else
@@ -2657,8 +2726,10 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
         else if (phase == 2)
         {
             constexpr float searchRadius = 20.0f;
-            Unit* shadowfiend = bot->FindNearestCreature(static_cast<uint32>(
-                BlackTempleNpcs::NPC_PARASITIC_SHADOWFIEND), searchRadius, true);
+            Unit* shadowfiend = bot->FindNearestCreature(
+                static_cast<uint32>(BlackTempleNpcs::NPC_PARASITIC_SHADOWFIEND), 
+                searchRadius, true);
+
             if (shadowfiend && bot->GetDistance2d(shadowfiend) > 5.0f)
             {
                 targets = { shadowfiend };
@@ -2763,8 +2834,10 @@ bool IllidanStormrageManageDpsTimerAndRtiAction::Execute(Event /*event*/)
 
             if (flames.size() == 2)
             {
-                float eastDist0 = flames[0]->GetExactDist2d(ILLIDAN_E_GLAIVE_WAITING_POSITION);
-                float eastDist1 = flames[1]->GetExactDist2d(ILLIDAN_E_GLAIVE_WAITING_POSITION);
+                float eastDist0 =
+                    flames[0]->GetExactDist2d(ILLIDAN_E_GLAIVE_WAITING_POSITION);
+                float eastDist1 =
+                    flames[1]->GetExactDist2d(ILLIDAN_E_GLAIVE_WAITING_POSITION);
 
                 if (eastDist0 < eastDist1)
                 {
@@ -2842,8 +2915,8 @@ bool IllidanStormrageDestroyHazardsAction::Execute(Event /*event*/)
 bool IllidanStormrageNerfShadowDemonCheatAction::Execute(Event /*event*/)
 {
     constexpr float searchRadius = 75.0f;
-    Unit* shadowDemon = bot->FindNearestCreature(static_cast<uint32>(
-        BlackTempleNpcs::NPC_SHADOW_DEMON), searchRadius, true);
+    Unit* shadowDemon = bot->FindNearestCreature(
+        static_cast<uint32>(BlackTempleNpcs::NPC_SHADOW_DEMON), searchRadius, true);
 
     if (shadowDemon && shadowDemon->GetHealthPct() > 25.0f)
     {
