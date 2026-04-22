@@ -78,8 +78,7 @@ float RageWinterchillMeleeControlAvoidanceMultiplier::GetValue(Action* action)
     if (!winterchill)
         return 1.0f;
 
-    constexpr float singleTickMoveAwayDist = 6.0f;
-    if (IsInDeathAndDecay(bot, DEATH_AND_DECAY_RADIUS + singleTickMoveAwayDist))
+    if (IsInDeathAndDecay(bot, DEATH_AND_DECAY_SAFE_RADIUS + 2.0f))
     {
         if (dynamic_cast<AvoidAoeAction*>(action))
             return 0.0f;
@@ -215,7 +214,7 @@ float AzgalorDisableTankActionsMultiplier::GetValue(Action* action)
     if (dynamic_cast<TankFaceAction*>(action))
         return 0.0f;
 
-    if (dynamic_cast<TankAssistAction*>(action))
+    if (dynamic_cast<TankAssistAction*>(action) || dynamic_cast<AvoidAoeAction*>(action))
     {
         if (botAI->IsMainTank(bot))
         {

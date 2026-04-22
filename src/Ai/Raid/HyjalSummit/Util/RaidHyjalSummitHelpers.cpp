@@ -13,6 +13,8 @@
 
 namespace HyjalSummitHelpers
 {
+    // General
+
     bool GetGroundedStepPosition(
         Player* bot, float destinationX, float destinationY, float moveDist,
         float& stepX, float& stepY, float& stepZ)
@@ -36,8 +38,6 @@ namespace HyjalSummitHelpers
 
         return true;
     }
-
-    // General
 
     RangedGroups GetRangedGroups(PlayerbotAI* botAI, Player* bot)
     {
@@ -84,11 +84,15 @@ namespace HyjalSummitHelpers
             return nullptr;
 
         uint32 now = getMSTime();
-        if (getMSTimeDiff(instanceIt->second.spawnTime, now) >= DEATH_AND_DECAY_DURATION)
+        uint32 elapsed = getMSTimeDiff(instanceIt->second.spawnTime, now);
+        if (elapsed >= DEATH_AND_DECAY_REACQUIRE_DELAY)
         {
             deathAndDecayPosition.erase(instanceIt);
             return nullptr;
         }
+
+        if (elapsed >= DEATH_AND_DECAY_DURATION)
+            return nullptr;
 
         return &instanceIt->second;
     }
@@ -98,7 +102,25 @@ namespace HyjalSummitHelpers
         if (!bot || !bot->GetMap())
             return false;
 
-        DeathAndDecayData* data = GetActiveWinterchillDeathAndDecay(bot->GetMap()->GetInstanceId());
+        uint32 instanceId = bot->GetMap()->GetInstanceId();
+        Aura* aura = bot->GetAura(static_cast<uint32>(HyjalSummitSpells::SPELL_DEATH_AND_DECAY));
+        if (aura)
+        {
+            DynamicObject* dynObj = aura->GetDynobjOwner();
+            if (dynObj && dynObj->IsInWorld())
+            {
+                uint32 now = getMSTime();
+                auto instanceIt = deathAndDecayPosition.find(instanceId);
+                if (instanceIt == deathAndDecayPosition.end() ||
+                    getMSTimeDiff(instanceIt->second.spawnTime, now) >= DEATH_AND_DECAY_REACQUIRE_DELAY)
+                {
+                    deathAndDecayPosition[instanceId] =
+                        DeathAndDecayData{ dynObj->GetPosition(), now };
+                }
+            }
+        }
+
+        DeathAndDecayData* data = GetActiveWinterchillDeathAndDecay(instanceId);
         if (!data)
             return false;
 
@@ -225,6 +247,24 @@ namespace HyjalSummitHelpers
     // Archimonde
 
     const Position ARCHIMONDE_INITIAL_POSITION = { 5640.502f, -3421.238f, 1587.453f };
+    std::unordered_map<uint32, AirBurstData> archimondeAirBurstTargets;
     std::unordered_map<uint32, std::vector<DoomfireTrailData>> doomfireTrails;
     std::unordered_map<ObjectGuid, uint32> doomfireLastSampleTime;
+
+    AirBurstData* GetRecentArchimondeAirBurst(uint32 instanceId)
+    {
+        auto instanceIt = archimondeAirBurstTargets.find(instanceId);
+        if (instanceIt == archimondeAirBurstTargets.end())
+            return nullptr;
+
+        constexpr uint32 airBurstReactionWindow = 2000;
+        uint32 now = getMSTime();
+        if (getMSTimeDiff(instanceIt->second.castTime, now) >= airBurstReactionWindow)
+        {
+            archimondeAirBurstTargets.erase(instanceIt);
+            return nullptr;
+        }
+
+        return &instanceIt->second;
+    }
 }

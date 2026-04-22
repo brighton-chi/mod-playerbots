@@ -19,7 +19,7 @@ namespace HyjalSummitHelpers
     enum class HyjalSummitSpells : uint32
     {
         // Rage Winterchill
-        SPELL_DEATH_AND_DECAY   = 31258,
+        SPELL_DEATH_AND_DECAY  = 31258,
 
         // Anetheron
         SPELL_INFERNO          = 31299,
@@ -75,8 +75,9 @@ namespace HyjalSummitHelpers
     // Rage Winterchill
     extern const Position WINTERCHILL_TANK_POSITION;
     extern std::unordered_map<ObjectGuid, bool> hasReachedWinterchillPosition;
-    constexpr uint32 DEATH_AND_DECAY_DURATION = 20000;
-    constexpr float DEATH_AND_DECAY_RADIUS = 17.0f;
+    constexpr uint32 DEATH_AND_DECAY_DURATION = 15000;
+    constexpr uint32 DEATH_AND_DECAY_REACQUIRE_DELAY = 20000;
+    constexpr float DEATH_AND_DECAY_SAFE_RADIUS = 22.0f; // 20y radius + 1.5y player hitbox + 0.5y buffer
     struct DeathAndDecayData
     {
         Position position;
@@ -107,7 +108,7 @@ namespace HyjalSummitHelpers
     extern const Position AZGALOR_DOOMGUARD_POSITION;
     extern std::unordered_map<ObjectGuid, TankPositionState> azgalorTankStep;
     constexpr uint32 RAIN_OF_FIRE_DURATION = 10000;
-    constexpr float RAIN_OF_FIRE_RADIUS = 17.0f;
+    constexpr float RAIN_OF_FIRE_RADIUS = 17.0f; // 15y radius + 1.5y player hitbox + 0.5y buffer
     struct RainOfFireData
     {
         Position position;
@@ -120,14 +121,22 @@ namespace HyjalSummitHelpers
     bool AnyGroupMemberHasDoom(Player* bot);
 
     // Archimonde
+    constexpr float AIR_BURST_SAFE_DISTANCE = 15.0f;
+    struct AirBurstData
+    {
+        ObjectGuid targetGuid;
+        uint32 castTime;
+    };
     struct DoomfireTrailData
     {
         Position position;
         uint32 recordTime;
     };
     extern const Position ARCHIMONDE_INITIAL_POSITION;
+    extern std::unordered_map<uint32, AirBurstData> archimondeAirBurstTargets;
     extern std::unordered_map<uint32, std::vector<DoomfireTrailData>> doomfireTrails;
     extern std::unordered_map<ObjectGuid, uint32> doomfireLastSampleTime;
+    AirBurstData* GetRecentArchimondeAirBurst(uint32 instanceId);
 }
 
 #endif

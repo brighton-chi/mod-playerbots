@@ -54,7 +54,7 @@ bool RageWinterchillMeleeIsStandingInDeathAndDecayTrigger::IsActive()
     if (botAI->IsMainTank(bot))
         return false;
 
-    return IsInDeathAndDecay(bot, DEATH_AND_DECAY_RADIUS);
+    return IsInDeathAndDecay(bot, DEATH_AND_DECAY_SAFE_RADIUS);
 }
 
 // Anetheron

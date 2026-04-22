@@ -16,13 +16,19 @@ using namespace HyjalSummitHelpers;
 bool HyjalSummitEraseTrackersAction::Execute(Event /*event*/)
 {
     const ObjectGuid guid = bot->GetGUID();
+    const uint32 instanceId = bot->GetMap()->GetInstanceId();
 
     bool erased = false;
     if (botAI->IsTank(bot))
     {
-        if (!AI_VALUE2(Unit*, "find target", "kaz'rogal") &&
-            kazrogalTankStep.erase(guid) > 0)
-            erased = true;
+        if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
+        {
+            if (kazrogalTankStep.erase(guid) > 0)
+                erased = true;
+
+            if (isBelowManaThreshold.erase(guid) > 0)
+                erased = true;
+        }
 
         if (!AI_VALUE2(Unit*, "find target", "azgalor") &&
             azgalorTankStep.erase(guid) > 0)
@@ -32,9 +38,14 @@ bool HyjalSummitEraseTrackersAction::Execute(Event /*event*/)
     }
     else
     {
-        if (!AI_VALUE2(Unit*, "find target", "rage winterchill") &&
-            hasReachedWinterchillPosition.erase(guid) > 0)
-            erased = true;
+        if (!AI_VALUE2(Unit*, "find target", "rage winterchill"))
+        {
+            if (hasReachedWinterchillPosition.erase(guid) > 0)
+                erased = true;
+
+            if (deathAndDecayPosition.erase(instanceId) > 0)
+                erased = true;
+        }
 
         if (!AI_VALUE2(Unit*, "find target", "anetheron") &&
             hasReachedAnetheronPosition.erase(guid) > 0)
@@ -45,7 +56,7 @@ bool HyjalSummitEraseTrackersAction::Execute(Event /*event*/)
             erased = true;
 
         if (!AI_VALUE2(Unit*, "find target", "archimonde") &&
-            doomfireTrails.erase(bot->GetMap()->GetInstanceId()) > 0)
+            doomfireTrails.erase(instanceId) > 0)
             erased = true;
 
         return erased;
@@ -97,8 +108,8 @@ bool RageWinterchillMainTankPositionBossAction::Execute(Event /*event*/)
             if (GetGroundedStepPosition(bot, position.GetPositionX(), position.GetPositionY(),
                                         moveDist, moveX, moveY, moveZ))
             {
-                return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, moveZ, false, false,
-                              false, false, MovementPriority::MOVEMENT_COMBAT, true);
+                return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, moveZ, false, false, false,
+                              false, MovementPriority::MOVEMENT_COMBAT, true, true);
             }
         }
     }
@@ -140,8 +151,8 @@ bool RageWinterchillSpreadRangedInCircleAction::Execute(Event /*event*/)
             if (GetGroundedStepPosition(bot, targetX, targetY, moveDist,
                                         moveX, moveY, moveZ))
             {
-                return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, moveZ, false, false,
-                              false, false, MovementPriority::MOVEMENT_COMBAT, true);
+                return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, moveZ, false, false, false,
+                              false, MovementPriority::MOVEMENT_COMBAT, true, false);
             }
         }
         else
@@ -159,8 +170,42 @@ bool RageWinterchillMeleeGetOutOfDeathAndDecayAction::Execute(Event /*event*/)
     if (!winterchill)
         return false;
 
-    constexpr float moveDistance = 6.0f;
-    return MoveAway(winterchill, moveDistance);
+    DeathAndDecayData* data = GetActiveWinterchillDeathAndDecay(bot->GetMap()->GetInstanceId());
+    if (!data)
+        return false;
+
+    constexpr float moveDist = 10.0f;
+
+    float centerX = data->position.GetPositionX();
+    float centerY = data->position.GetPositionY();
+    float currentDistance = bot->GetExactDist2d(centerX, centerY);
+    float escapeAngle = std::atan2(bot->GetPositionY() - centerY, bot->GetPositionX() - centerX);
+
+    if (currentDistance <= 0.1f)
+    {
+        escapeAngle = std::atan2(centerY - winterchill->GetPositionY(),
+                                 centerX - winterchill->GetPositionX());
+    }
+
+    for (float delta = 0.0f; delta <= M_PI; delta += M_PI / 8.0f)
+    {
+        for (float angle : { escapeAngle + delta, escapeAngle - delta })
+        {
+            if (delta == 0.0f && angle != escapeAngle)
+                continue;
+
+            float targetX = centerX + std::cos(angle) * DEATH_AND_DECAY_SAFE_RADIUS;
+            float targetY = centerY + std::sin(angle) * DEATH_AND_DECAY_SAFE_RADIUS;
+            float moveX, moveY, moveZ;
+            if (GetGroundedStepPosition(bot, targetX, targetY, moveDist, moveX, moveY, moveZ))
+            {
+                return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, moveZ, false, false, false,
+                              false, MovementPriority::MOVEMENT_COMBAT, true, false);
+            }
+        }
+    }
+
+    return false;
 }
 
 // Anetheron
@@ -229,8 +274,8 @@ bool AnetheronMainTankPositionBossAction::Execute(Event /*event*/)
             if (GetGroundedStepPosition(bot, position.GetPositionX(), position.GetPositionY(),
                                         moveDist, moveX, moveY, moveZ))
             {
-                return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, moveZ, false, false,
-                              false, false, MovementPriority::MOVEMENT_COMBAT, true);
+                return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, moveZ, false, false, false,
+                              false, MovementPriority::MOVEMENT_COMBAT, true, true);
             }
         }
     }
@@ -272,8 +317,8 @@ bool AnetheronSpreadRangedInCircleAction::Execute(Event /*event*/)
             if (GetGroundedStepPosition(bot, targetX, targetY, moveDist,
                                         moveX, moveY, moveZ))
             {
-                return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, moveZ, false, false,
-                              false, false, MovementPriority::MOVEMENT_COMBAT, true);
+                return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, moveZ, false, false, false,
+                              false, MovementPriority::MOVEMENT_COMBAT, true, false);
             }
         }
         else
@@ -303,8 +348,8 @@ bool AnetheronBringInfernalToInfernalTankAction::Execute(Event /*event*/)
         if (GetGroundedStepPosition(bot, position.GetPositionX(), position.GetPositionY(),
                                     moveDist, moveX, moveY, moveZ))
         {
-            return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, moveZ, false, false,
-                          false, false, MovementPriority::MOVEMENT_FORCED, true);
+            return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, moveZ, false, false, false,
+                          false, MovementPriority::MOVEMENT_FORCED, true, false);
         }
     }
 
@@ -330,8 +375,8 @@ bool AnetheronFirstAssistTankPickUpInfernalsAction::Execute(Event /*event*/)
                                         infernoTarget->GetPositionY(), moveDist,
                                         moveX, moveY, moveZ))
             {
-                return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, moveZ, false, false,
-                              false, false, MovementPriority::MOVEMENT_FORCED, true);
+                return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, moveZ, false, false, false,
+                              false, MovementPriority::MOVEMENT_FORCED, true, false);
             }
         }
     }
@@ -505,8 +550,8 @@ bool KazrogalAssistTanksMoveInFrontOfBossAction::Execute(Event /*event*/)
         if (GetGroundedStepPosition(bot, mainTank->GetPositionX(), mainTank->GetPositionY(),
                                     moveDist, moveX, moveY, moveZ))
         {
-            return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, moveZ, false, false,
-                          false, false, MovementPriority::MOVEMENT_COMBAT, true);
+            return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, moveZ, false, false, false,
+                          false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
 
@@ -559,8 +604,8 @@ bool KazrogalSpreadRangedInArcAction::Execute(Event /*event*/)
         if (GetGroundedStepPosition(bot, targetX, targetY, moveDist,
                                     moveX, moveY, moveZ))
         {
-            return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, moveZ, false, false,
-                          false, false, MovementPriority::MOVEMENT_COMBAT, true);
+            return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, moveZ, false, false, false,
+                          false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
 
@@ -569,65 +614,71 @@ bool KazrogalSpreadRangedInArcAction::Execute(Event /*event*/)
 
 bool KazrogalLowManaBotTakeDefensiveMeasuresAction::Execute(Event /*event*/)
 {
-    if (bot->getClass() == CLASS_HUNTER)
+    switch (bot->getClass())
     {
-        if (!botAI->HasAura("aspect of the viper", bot) &&
-            botAI->CanCastSpell("aspect of the viper", bot))
-        {
-            return botAI->CastSpell("aspect of the viper", bot);
-        }
-        return false;
-    }
-    else
-    {
-        if (bot->getClass() == CLASS_WARLOCK &&
-            botAI->CanCastSpell("life tap", bot) &&
-            botAI->CastSpell("life tap", bot))
-        {
-            return true;
-        }
+        case CLASS_HUNTER:
+            if (!botAI->HasAura("aspect of the viper", bot) &&
+                botAI->CanCastSpell("aspect of the viper", bot))
+            {
+                return botAI->CastSpell("aspect of the viper", bot);
+            }
+            return false;
 
-        if (bot->GetPower(POWER_MANA) <= 3200)
-            isBelowManaThreshold.try_emplace(bot->GetGUID(), true);
+        case CLASS_WARLOCK:
+            if (botAI->CanCastSpell("life tap", bot) &&
+                botAI->CastSpell("life tap", bot))
+            {
+                return true;
+            }
+            break;
 
-        if (bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_MARK_OF_KAZROGAL)) &&
-            bot->GetPower(POWER_MANA) <= 1200)
-        {
-            if (bot->getClass() == CLASS_MAGE &&
+        case CLASS_MAGE:
+            if (bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_MARK_OF_KAZROGAL)) &&
+                bot->GetPower(POWER_MANA) <= 1200 &&
                 botAI->CanCastSpell("ice block", bot) &&
                 botAI->CastSpell("ice block", bot))
             {
                 return true;
             }
-            else if (bot->getClass() == CLASS_PALADIN &&
-                     botAI->CanCastSpell("divine shield", bot) &&
-                     botAI->CastSpell("divine shield", bot))
+            break;
+
+        case CLASS_PALADIN:
+            if (bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_MARK_OF_KAZROGAL)) &&
+                bot->GetPower(POWER_MANA) <= 1200 &&
+                botAI->CanCastSpell("divine shield", bot) &&
+                botAI->CastSpell("divine shield", bot))
             {
                 return true;
             }
-        }
+            break;
 
-        constexpr float safeDistance = 16.0f;
+        default:
+            break;
+    }
 
-        Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
-        if (!nearestPlayer)
+    if (bot->GetPower(POWER_MANA) <= 3200)
+        isBelowManaThreshold.try_emplace(bot->GetGUID(), true);
+
+    constexpr float safeDistance = 16.0f;
+
+    Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
+    if (!nearestPlayer)
+        return false;
+
+    float currentDistance = bot->GetDistance2d(nearestPlayer);
+    if (currentDistance < safeDistance)
+    {
+        Unit* kazrogal = AI_VALUE2(Unit*, "find target", "kaz'rogal");
+        if (!kazrogal)
             return false;
 
-        float currentDistance = bot->GetDistance2d(nearestPlayer);
-        if (currentDistance < safeDistance)
-        {
-            Unit* kazrogal = AI_VALUE2(Unit*, "find target", "kaz'rogal");
-            if (!kazrogal)
-                return false;
-
-            // MoveFromGroup will make the bot run very far if there is another bot
-            // also running next to it; thus, we swap to MoveAway once there is sufficient
-            // distance from the group so the parallel bots break away from each other
-            if (bot->GetExactDist2d(kazrogal) > 36.0f)
-                return MoveAway(nearestPlayer, safeDistance - currentDistance);
-            else
-                return MoveFromGroup(safeDistance);
-        }
+        // MoveFromGroup will make the bot run very far if there is another bot
+        // also running next to it; thus, we swap to MoveAway once there is sufficient
+        // distance from the group so the parallel bots break away from each other
+        if (bot->GetExactDist2d(kazrogal) > 36.0f)
+            return MoveAway(nearestPlayer, safeDistance - currentDistance);
+        else
+            return MoveFromGroup(safeDistance);
     }
 
     return false;
@@ -814,8 +865,8 @@ bool AzgalorWaitAtSafePositionAction::Execute(Event /*event*/)
                                 moveDist, moveX, moveY, moveZ))
     {
         botAI->Reset();
-        return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, moveZ, false, false,
-                      false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+        return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, moveZ, false, false, false,
+                      false, MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
     return false;
@@ -832,8 +883,8 @@ bool AzgalorMoveToDoomguardTankAction::Execute(Event /*event*/)
         if (GetGroundedStepPosition(bot, position.GetPositionX(), position.GetPositionY(),
                                     moveDist, moveX, moveY, moveZ))
         {
-            return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, moveZ, false, false,
-                          false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+            return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, moveZ, false, false, false,
+                          false, MovementPriority::MOVEMENT_FORCED, true, false);
         }
     }
 
@@ -883,9 +934,8 @@ bool AzgalorFirstAssistTankPositionDoomguardAction::Execute(Event /*event*/)
         if (GetGroundedStepPosition(bot, position.GetPositionX(), position.GetPositionY(),
                                     moveDist, moveX, moveY, moveZ))
         {
-            return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, moveZ, false, false,
-                          false, false, MovementPriority::MOVEMENT_COMBAT, true,
-                          moveBackwards);
+            return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, moveZ, false, false, false,
+                          false, MovementPriority::MOVEMENT_COMBAT, true, moveBackwards);
         }
     }
 
@@ -1013,21 +1063,41 @@ bool ArchimondeSpreadToAvoidAirBurstAction::Execute(Event /*event*/)
     if (!archimonde)
         return false;
 
-    if (archimonde->HasUnitState(UNIT_STATE_CASTING))
+    Player* mainTank = GetGroupMainTank(botAI, bot);
+    if (mainTank && bot != mainTank)
     {
-        Spell* spell = archimonde->GetCurrentSpell(CURRENT_GENERIC_SPELL);
-        if (spell && spell->m_spellInfo->Id ==
-            static_cast<uint32>(HyjalSummitSpells::SPELL_AIR_BURST))
+        bool shouldMoveFromMainTank = false;
+        if (AirBurstData* data = GetRecentArchimondeAirBurst(bot->GetMap()->GetInstanceId()))
         {
-            Player* mainTank = GetGroupMainTank(botAI, bot);
-            if (mainTank && spell->m_targets.GetUnitTarget() == mainTank)
+            if (data->targetGuid == mainTank->GetGUID())
             {
-                float currentDistance = bot->GetDistance2d(mainTank);
-                constexpr float safeDistance = 15.0f;
-                if (currentDistance < safeDistance)
-                    return MoveAway(mainTank, safeDistance - currentDistance);
+                shouldMoveFromMainTank =
+                    bot->GetDistance2d(mainTank) < AIR_BURST_SAFE_DISTANCE;
+            }
+            else if (data->targetGuid == bot->GetGUID())
+            {
+                shouldMoveFromMainTank =
+                    bot->GetDistance2d(mainTank) < AIR_BURST_SAFE_DISTANCE;
             }
         }
+
+        if (!shouldMoveFromMainTank && archimonde->HasUnitState(UNIT_STATE_CASTING))
+        {
+            Spell* spell = archimonde->GetCurrentSpell(CURRENT_GENERIC_SPELL);
+            if (spell && spell->m_spellInfo->Id ==
+                static_cast<uint32>(HyjalSummitSpells::SPELL_AIR_BURST))
+            {
+                Unit* spellTarget = spell->m_targets.GetUnitTarget();
+                if ((spellTarget == mainTank || spellTarget == bot) &&
+                    bot->GetDistance2d(mainTank) < AIR_BURST_SAFE_DISTANCE)
+                {
+                    shouldMoveFromMainTank = true;
+                }
+            }
+        }
+
+        if (shouldMoveFromMainTank)
+            return MoveAway(mainTank, AIR_BURST_SAFE_DISTANCE - bot->GetDistance2d(mainTank));
     }
 
     if (archimonde->GetHealthPct() < 90.0f)
@@ -1049,6 +1119,10 @@ bool ArchimondeSpreadToAvoidAirBurstAction::Execute(Event /*event*/)
 
 bool ArchimondeAvoidDoomfireAction::Execute(Event /*event*/)
 {
+    Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
+    if (!archimonde)
+        return false;
+
     constexpr float dangerDist = 10.0f;
     constexpr uint32 trailDuration = 18000;
 
@@ -1092,7 +1166,7 @@ bool ArchimondeAvoidDoomfireAction::Execute(Event /*event*/)
         MovementPriority priority = botAI->IsHeal(bot) ?
             MovementPriority::MOVEMENT_COMBAT : MovementPriority::MOVEMENT_FORCED;
 
-        bool backwards = botAI->IsMainTank(bot);
+        bool backwards = archimonde->GetVictim() == bot;
 
         return MoveTo(HYJAL_SUMMIT_MAP_ID, targetX, targetY, bot->GetPositionZ(),
                       false, false, false, false, priority, true, backwards);
@@ -1103,12 +1177,21 @@ bool ArchimondeAvoidDoomfireAction::Execute(Event /*event*/)
 
 bool ArchimondeRemoveDoomfireDotAction::Execute(Event /*event*/)
 {
-    if (botAI->CanCastSpell("ice block", bot))
-        return botAI->CastSpell("ice block", bot);
-    else if (botAI->CanCastSpell("cloak of shadows", bot))
-        return botAI->CastSpell("cloak of shadows", bot);
-    else if (botAI->CanCastSpell("divine shield", bot))
-        return botAI->CastSpell("divine shield", bot);
+    switch (bot->getClass())
+    {
+        case CLASS_MAGE:
+            return botAI->CanCastSpell("ice block", bot) &&
+                   botAI->CastSpell("ice block", bot);
 
-    return false;
+        case CLASS_PALADIN:
+            return botAI->CanCastSpell("divine shield", bot) &&
+                   botAI->CastSpell("divine shield", bot);
+
+        case CLASS_ROGUE:
+            return botAI->CanCastSpell("cloak of shadows", bot) &&
+                   botAI->CastSpell("cloak of shadows", bot);
+
+        default:
+            return false;
+    }
 }

@@ -12,134 +12,131 @@
 
 using namespace SunwellHelpers;
 
-namespace
+static constexpr uint32 SPELL_FELMYST_STRAFE_TOP               = 45585;
+static constexpr uint32 SPELL_FELMYST_STRAFE_MIDDLE            = 45633;
+static constexpr uint32 SPELL_FELMYST_STRAFE_BOTTOM            = 45635;
+static constexpr uint32 FELMYST_FOG_INTERRUPT_SCAN_INTERVAL_MS = 500;
+
+static std::unordered_map<ObjectGuid, uint32> felmystFogInterruptLastScanTime;
+
+static PlayerbotAI* GetKalecgosReferenceBotAI(Player* player)
 {
-    constexpr uint32 SPELL_FELMYST_STRAFE_TOP               = 45585;
-    constexpr uint32 SPELL_FELMYST_STRAFE_MIDDLE            = 45633;
-    constexpr uint32 SPELL_FELMYST_STRAFE_BOTTOM            = 45635;
-    constexpr uint32 FELMYST_FOG_INTERRUPT_SCAN_INTERVAL_MS = 500;
+    if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(player))
+        return botAI;
 
-    std::unordered_map<ObjectGuid, uint32> felmystFogInterruptLastScanTime;
+    Group* group = player->GetGroup();
+    if (!group)
+        return nullptr;
 
-    PlayerbotAI* GetKalecgosReferenceBotAI(Player* player)
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
+        Player* member = ref->GetSource();
+        if (!member || !member->IsInWorld() || !member->IsAlive())
+            continue;
+
+        if (member->GetMapId() != player->GetMapId())
+            continue;
+
+        if (PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member))
+            return memberAI;
+    }
+
+    return nullptr;
+}
+
+static Player* GetFirstPlayerSpellTarget(Spell* spell, Unit* caster)
+{
+    if (!spell || !caster)
+        return nullptr;
+
+    if (Unit* unitTarget = spell->m_targets.GetUnitTarget())
+        return unitTarget->ToPlayer();
+
+    std::list<TargetInfo> const& targets = *spell->GetUniqueTargetInfo();
+    if (targets.empty())
+        return nullptr;
+
+    for (TargetInfo const& targetInfo : targets)
+    {
+        if (Player* target = ObjectAccessor::GetPlayer(*caster, targetInfo.targetGUID))
+            return target;
+    }
+
+    return nullptr;
+}
+
+static void RequestInterruptForBotSpellTarget(Spell* spell, Unit* caster)
+{
+    if (!spell || !caster)
+        return;
+
+    Player* target = GetFirstPlayerSpellTarget(spell, caster);
+    if (!target)
+        return;
+
+    if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(target))
+        botAI->RequestSpellInterrupt();
+}
+
+static void RequestInterruptForBotsNear(Unit* center, float radius)
+{
+    if (!center)
+        return;
+
+    Group* group = center->ToPlayer() ? center->ToPlayer()->GetGroup() : nullptr;
+    Map::PlayerList const& players = center->GetMap()->GetPlayers();
+    for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
+    {
+        Player* player = it->GetSource();
+        if (!player || !player->IsAlive())
+            continue;
+
+        if (group && player->GetGroup() != group)
+            continue;
+
+        if (center->GetExactDist2d(player) > radius)
+            continue;
+
         if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(player))
-            return botAI;
-
-        Group* group = player->GetGroup();
-        if (!group)
-            return nullptr;
-
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || !member->IsInWorld() || !member->IsAlive())
-                continue;
-
-            if (member->GetMapId() != player->GetMapId())
-                continue;
-
-            if (PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member))
-                return memberAI;
-        }
-
-        return nullptr;
-    }
-
-    Player* GetFirstPlayerSpellTarget(Spell* spell, Unit* caster)
-    {
-        if (!spell || !caster)
-            return nullptr;
-
-        if (Unit* unitTarget = spell->m_targets.GetUnitTarget())
-            return unitTarget->ToPlayer();
-
-        std::list<TargetInfo> const& targets = *spell->GetUniqueTargetInfo();
-        if (targets.empty())
-            return nullptr;
-
-        for (TargetInfo const& targetInfo : targets)
-        {
-            if (Player* target = ObjectAccessor::GetPlayer(*caster, targetInfo.targetGUID))
-                return target;
-        }
-
-        return nullptr;
-    }
-
-    void RequestInterruptForBotSpellTarget(Spell* spell, Unit* caster)
-    {
-        if (!spell || !caster)
-            return;
-
-        Player* target = GetFirstPlayerSpellTarget(spell, caster);
-        if (!target)
-            return;
-
-        if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(target))
             botAI->RequestSpellInterrupt();
     }
+}
 
-    void RequestInterruptForBotsNear(Unit* center, float radius)
+static void RequestInterruptForBotsNeedingFelmystFogMovement(Unit* contextUnit, Player* groupReference)
+{
+    if (!contextUnit)
+        return;
+
+    Group* group = groupReference ? groupReference->GetGroup() : nullptr;
+    Map::PlayerList const& players = contextUnit->GetMap()->GetPlayers();
+
+    for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
     {
-        if (!center)
-            return;
+        Player* player = it->GetSource();
+        if (!player || !player->IsAlive())
+            continue;
 
-        Group* group = center->ToPlayer() ? center->ToPlayer()->GetGroup() : nullptr;
-        Map::PlayerList const& players = center->GetMap()->GetPlayers();
-        for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
-        {
-            Player* player = it->GetSource();
-            if (!player || !player->IsAlive())
-                continue;
+        if (group && player->GetGroup() != group)
+            continue;
 
-            if (group && player->GetGroup() != group)
-                continue;
+        PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
+        if (!botAI)
+            continue;
 
-            if (center->GetExactDist2d(player) > radius)
-                continue;
+        Unit* felmyst = PAI_VALUE2(Unit*, "find target", "felmyst");
+        if (!felmyst || !felmyst->IsFlying())
+            continue;
 
-            if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(player))
-                botAI->RequestSpellInterrupt();
-        }
-    }
+        FelmystFogOfCorruptionState fogState;
+        if (!TryGetActiveFelmystFogOfCorruptionState(player, felmyst, fogState))
+            continue;
 
-    void RequestInterruptForBotsNeedingFelmystFogMovement(Unit* contextUnit, Player* groupReference)
-    {
-        if (!contextUnit)
-            return;
+        std::array<Position, 3> destinations;
+        uint8 destinationCount = 0;
+        if (!TryGetFelmystFogSafeDestinations(player, fogState.lane, destinations, destinationCount))
+            continue;
 
-        Group* group = groupReference ? groupReference->GetGroup() : nullptr;
-        Map::PlayerList const& players = contextUnit->GetMap()->GetPlayers();
-
-        for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
-        {
-            Player* player = it->GetSource();
-            if (!player || !player->IsAlive())
-                continue;
-
-            if (group && player->GetGroup() != group)
-                continue;
-
-            PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
-            if (!botAI)
-                continue;
-
-            Unit* felmyst = PAI_VALUE2(Unit*, "find target", "felmyst");
-            if (!felmyst || !felmyst->IsFlying())
-                continue;
-
-            FelmystFogOfCorruptionState fogState;
-            if (!TryGetActiveFelmystFogOfCorruptionState(player, felmyst, fogState))
-                continue;
-
-            std::array<Position, 3> destinations;
-            uint8 destinationCount = 0;
-            if (!TryGetFelmystFogSafeDestinations(player, fogState.lane, destinations, destinationCount))
-                continue;
-
-            botAI->RequestSpellInterrupt();
-        }
+        botAI->RequestSpellInterrupt();
     }
 }
 
