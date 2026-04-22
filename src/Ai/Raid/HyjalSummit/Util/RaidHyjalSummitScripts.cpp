@@ -65,8 +65,19 @@ public:
         if (dynobj->GetSpellId() != static_cast<uint32>(HyjalSummitSpells::SPELL_RAIN_OF_FIRE))
             return;
 
-        rainOfFirePosition[dynobj->GetMap()->GetInstanceId()] =
-            RainOfFireData{ dynobj->GetPosition(), getMSTime() };
+        uint32 instanceId = dynobj->GetMap()->GetInstanceId();
+        if (GetActiveAzgalorRainOfFire(instanceId))
+            return;
+
+        uint32 now = getMSTime();
+        auto instanceIt = rainOfFirePosition.find(instanceId);
+        if (instanceIt != rainOfFirePosition.end() &&
+            getMSTimeDiff(instanceIt->second.spawnTime, now) < RAIN_OF_FIRE_REACQUIRE_DELAY)
+        {
+            return;
+        }
+
+        rainOfFirePosition[instanceId] = RainOfFireData{ dynobj->GetPosition(), now };
     }
 };
 

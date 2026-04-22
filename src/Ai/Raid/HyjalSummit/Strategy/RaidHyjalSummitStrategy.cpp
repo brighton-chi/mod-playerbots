@@ -130,7 +130,7 @@ void RaidHyjalSummitStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     // Azgalor
     multipliers.push_back(new AzgalorDisableTankActionsMultiplier(botAI));
     multipliers.push_back(new AzgalorDoomedBotPrioritizePositioningMultiplier(botAI));
-    multipliers.push_back(new AzgalorMeleeControlAvoidanceMultiplier(botAI));
+    multipliers.push_back(new AzgalorMeleeDpsControlAvoidanceMultiplier(botAI));
 
     // Archimonde
     multipliers.push_back(new ArchimondeDisableCombatFormationMoveMultiplier(botAI));

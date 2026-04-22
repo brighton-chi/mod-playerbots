@@ -30,9 +30,14 @@ bool HyjalSummitEraseTrackersAction::Execute(Event /*event*/)
                 erased = true;
         }
 
-        if (!AI_VALUE2(Unit*, "find target", "azgalor") &&
-            azgalorTankStep.erase(guid) > 0)
-            erased = true;
+        if (!AI_VALUE2(Unit*, "find target", "azgalor"))
+        {
+            if (azgalorTankStep.erase(guid) > 0)
+                erased = true;
+
+            if (rainOfFirePosition.erase(instanceId) > 0)
+                erased = true;
+        }
 
         return erased;
     }
@@ -817,23 +822,23 @@ bool AzgalorMeleeGetOutOfFireAndSwapTargetsAction::Execute(Event /*event*/)
     if (!azgalor)
         return false;
 
+    constexpr float singleTickMoveAwayDist = 6.0f;
+    if (!IsInRainOfFire(bot, RAIN_OF_FIRE_RADIUS + singleTickMoveAwayDist))
+    {
+        SetRtiTarget(botAI, "star", azgalor);
+        return false;
+    }
+
     Unit* doomguard = AI_VALUE2(Unit*, "find target", "lesser doomguard");
-    Unit* desiredTarget = nullptr;
-    if (doomguard &&
-        (bot->GetVictim() == doomguard || bot->GetTarget() == doomguard->GetGUID()))
-    {
-        desiredTarget = azgalor;
-    }
-    else if (doomguard)
-    {
-        desiredTarget = doomguard;
-    }
+    Unit* desiredTarget = doomguard;
 
     if (!desiredTarget)
+    {
+        SetRtiTarget(botAI, "star", azgalor);
         return MoveAway(azgalor, 5.0f);
+    }
 
-    if (bot->GetTarget() != desiredTarget->GetGUID())
-        return Attack(desiredTarget);
+    SetRtiTarget(botAI, "circle", desiredTarget);
 
     if (!bot->IsWithinMeleeRange(desiredTarget))
     {
@@ -848,7 +853,7 @@ bool AzgalorMeleeGetOutOfFireAndSwapTargetsAction::Execute(Event /*event*/)
         }
     }
 
-    if (bot->GetVictim() != desiredTarget)
+    if (bot->GetVictim() != desiredTarget || bot->GetTarget() != desiredTarget->GetGUID())
         return Attack(desiredTarget);
 
     return false;
@@ -858,6 +863,12 @@ bool AzgalorMeleeGetOutOfFireAndSwapTargetsAction::Execute(Event /*event*/)
 // Azgalor turns away from the raid)
 bool AzgalorWaitAtSafePositionAction::Execute(Event /*event*/)
 {
+    Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
+    if (!azgalor)
+        return false;
+
+    SetRtiTarget(botAI, "star", azgalor);
+
     const Position& position = AZGALOR_DOOMGUARD_POSITION;
     constexpr float moveDist = 10.0f;
     float moveX, moveY, moveZ;

@@ -245,17 +245,23 @@ float AzgalorDoomedBotPrioritizePositioningMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float AzgalorMeleeControlAvoidanceMultiplier::GetValue(Action* action)
+float AzgalorMeleeDpsControlAvoidanceMultiplier::GetValue(Action* action)
 {
-    if (botAI->IsRanged(bot))
+    if (botAI->IsRanged(bot) || botAI->IsTank(bot))
         return 1.0f;
 
     Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
     if (!azgalor)
         return 1.0f;
 
-    if (!botAI->IsDps(bot))
-        return 1.0f;
+    TankPositionState tankState = GetAzgalorTankPositionState(botAI, bot);
+    if ((tankState == TankPositionState::Unknown ||
+         tankState == TankPositionState::MovingToTransition) &&
+         dynamic_cast<MovementAction*>(action) &&
+         !dynamic_cast<AzgalorWaitAtSafePositionAction*>(action))
+    {
+        return 0.0f;
+    }
 
     constexpr float singleTickMoveAwayDist = 6.0f;
     if (IsInRainOfFire(bot, RAIN_OF_FIRE_RADIUS + singleTickMoveAwayDist))

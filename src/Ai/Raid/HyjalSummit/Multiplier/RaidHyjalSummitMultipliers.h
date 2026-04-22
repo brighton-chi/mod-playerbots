@@ -104,11 +104,11 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class AzgalorMeleeControlAvoidanceMultiplier : public Multiplier
+class AzgalorMeleeDpsControlAvoidanceMultiplier : public Multiplier
 {
 public:
-    AzgalorMeleeControlAvoidanceMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "azgalor melee control avoidance multiplier") {}
+    AzgalorMeleeDpsControlAvoidanceMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "azgalor melee dps control avoidance multiplier") {}
     virtual float GetValue(Action* action);
 };
 

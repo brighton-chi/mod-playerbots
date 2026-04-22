@@ -108,6 +108,7 @@ namespace HyjalSummitHelpers
     extern const Position AZGALOR_DOOMGUARD_POSITION;
     extern std::unordered_map<ObjectGuid, TankPositionState> azgalorTankStep;
     constexpr uint32 RAIN_OF_FIRE_DURATION = 10000;
+    constexpr uint32 RAIN_OF_FIRE_REACQUIRE_DELAY = 15000;
     constexpr float RAIN_OF_FIRE_RADIUS = 17.0f; // 15y radius + 1.5y player hitbox + 0.5y buffer
     struct RainOfFireData
     {

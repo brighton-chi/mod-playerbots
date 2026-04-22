@@ -194,11 +194,15 @@ namespace HyjalSummitHelpers
             return nullptr;
 
         uint32 now = getMSTime();
-        if (getMSTimeDiff(instanceIt->second.spawnTime, now) >= RAIN_OF_FIRE_DURATION)
+        uint32 elapsed = getMSTimeDiff(instanceIt->second.spawnTime, now);
+        if (elapsed >= RAIN_OF_FIRE_REACQUIRE_DELAY)
         {
             rainOfFirePosition.erase(instanceIt);
             return nullptr;
         }
+
+        if (elapsed >= RAIN_OF_FIRE_DURATION)
+            return nullptr;
 
         return &instanceIt->second;
     }
