@@ -53,7 +53,7 @@ static bool ShouldInterruptForArchimondeAirBurst(PlayerbotAI* botAI, Player* bot
 }
 
 // Records the active Rain of Fire dynamic object so that melee bots can avoid it by running
-// away from Azgalor or swap to a Doomguard; the standard FleePosition() logic to avoid aoe
+// away from Azgalor or swapping to a Doomguard; the standard FleePosition() logic to avoid aoe
 // can take melee in front of Azgalor, resulting in them getting cleaved
 class AzgalorRainOfFireScript : public DynamicObjectScript
 {
@@ -81,10 +81,9 @@ public:
     }
 };
 
-// Records the position of each Doomfire NPC (18095) at regular intervals so that bots
-// can avoid the persistent fire trail it leaves behind. Each sample is tagged with a
-// timestamp and expires after TRAIL_DURATION ms, matching the lifetime of a Doomfire
-// DynamicObject (18 seconds)
+// Records the position of each Doomfire NPC at regular intervals so that bots can avoid
+// the persistent fire trail it leaves behind. Each sample is tagged with a timestamp and
+// expires after TRAIL_DURATION ms, matching the lifetime of a Doomfire DynamicObject (18s)
 class ArchimondeDoomfireTrailScript : public AllCreatureScript
 {
 public:
@@ -128,10 +127,7 @@ public:
                 continue;
 
             PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
-            if (!botAI)
-                continue;
-
-            if (creature->GetDistance(player) > DOOMFIRE_DANGER_RANGE)
+            if (!botAI || creature->GetDistance(player) > DOOMFIRE_DANGER_RANGE)
                 continue;
 
             botAI->RequestSpellInterrupt();
@@ -150,9 +146,11 @@ public:
 class ArchimondeAirBurstSpellListenerScript : public AllSpellScript
 {
 public:
-    ArchimondeAirBurstSpellListenerScript() : AllSpellScript("ArchimondeAirBurstSpellListenerScript") {}
+    ArchimondeAirBurstSpellListenerScript() :
+        AllSpellScript("ArchimondeAirBurstSpellListenerScript") {}
 
-    void OnSpellCast(Spell* spell, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
+    void OnSpellCast(
+        Spell* spell, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
     {
         if (!spell || !caster || !spellInfo)
             return;

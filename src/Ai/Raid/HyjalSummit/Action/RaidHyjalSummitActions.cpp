@@ -109,7 +109,7 @@ bool RageWinterchillMainTankPositionBossAction::Execute(Event /*event*/)
         if (distToPosition > 4.0f)
         {
             float moveX, moveY, moveZ;
-            constexpr float moveDist = 10.0f;
+            constexpr float moveDist = 5.0f;
             if (GetGroundedStepPosition(bot, position.GetPositionX(), position.GetPositionY(),
                                         moveDist, moveX, moveY, moveZ))
             {
@@ -275,7 +275,7 @@ bool AnetheronMainTankPositionBossAction::Execute(Event /*event*/)
         if (distToPosition > 4.0f)
         {
             float moveX, moveY, moveZ;
-            constexpr float moveDist = 10.0f;
+            constexpr float moveDist = 5.0f;
             if (GetGroundedStepPosition(bot, position.GetPositionX(), position.GetPositionY(),
                                         moveDist, moveX, moveY, moveZ))
             {
@@ -639,8 +639,7 @@ bool KazrogalLowManaBotTakeDefensiveMeasuresAction::Execute(Event /*event*/)
 
         case CLASS_MAGE:
             if (bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_MARK_OF_KAZROGAL)) &&
-                bot->GetPower(POWER_MANA) <= 1200 &&
-                botAI->CanCastSpell("ice block", bot) &&
+                bot->GetPower(POWER_MANA) <= 1200 && botAI->CanCastSpell("ice block", bot) &&
                 botAI->CastSpell("ice block", bot))
             {
                 return true;
@@ -649,8 +648,7 @@ bool KazrogalLowManaBotTakeDefensiveMeasuresAction::Execute(Event /*event*/)
 
         case CLASS_PALADIN:
             if (bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_MARK_OF_KAZROGAL)) &&
-                bot->GetPower(POWER_MANA) <= 1200 &&
-                botAI->CanCastSpell("divine shield", bot) &&
+                bot->GetPower(POWER_MANA) <= 1200 && botAI->CanCastSpell("divine shield", bot) &&
                 botAI->CastSpell("divine shield", bot))
             {
                 return true;
@@ -787,7 +785,6 @@ bool AzgalorDisperseRangedAction::Execute(Event /*event*/)
     if (!azgalor)
         return false;
 
-    // Azgalor's hitbox is 8.8 yards
     TankPositionState tankState = GetAzgalorTankPositionState(botAI, bot);
     const float safeDistFromBoss =
         (tankState == TankPositionState::MovingToTransition ? 35.0f : 29.0f);
@@ -797,7 +794,6 @@ bool AzgalorDisperseRangedAction::Execute(Event /*event*/)
         FleePosition(azgalor->GetPosition(), safeDistFromBoss, minInterval))
         return true;
 
-    // Lesser Doomguard's hitbox is 3.75 yards
     Unit* doomguard = AI_VALUE2(Unit*, "find target", "lesser doomguard");
     constexpr float safeDistFromDoomguard = 14.0f;
     constexpr float safeDistFromPlayer = 5.0f;

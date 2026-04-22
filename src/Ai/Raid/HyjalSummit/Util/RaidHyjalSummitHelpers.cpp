@@ -99,9 +99,6 @@ namespace HyjalSummitHelpers
 
     bool IsInDeathAndDecay(Player* bot, float radius)
     {
-        if (!bot || !bot->GetMap())
-            return false;
-
         uint32 instanceId = bot->GetMap()->GetInstanceId();
         Aura* aura = bot->GetAura(static_cast<uint32>(HyjalSummitSpells::SPELL_DEATH_AND_DECAY));
         if (aura)
@@ -222,9 +219,6 @@ namespace HyjalSummitHelpers
 
     bool IsInRainOfFire(Player* bot, float radius)
     {
-        if (!bot || !bot->GetMap())
-            return false;
-
         RainOfFireData* data = GetActiveAzgalorRainOfFire(bot->GetMap()->GetInstanceId());
         if (!data)
             return false;
