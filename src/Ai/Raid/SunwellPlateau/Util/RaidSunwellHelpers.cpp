@@ -22,8 +22,6 @@
 
 namespace SunwellHelpers
 {
-    std::unordered_map<uint32, MuruDarknessState> muruDarknessStates;
-
     // Kalecgos & Sathrovarr the Corruptor
 
     const Position KALECGOS_TANK_POSITION =           { 1703.584f, 895.626f, 53.076f };
@@ -65,7 +63,7 @@ namespace SunwellHelpers
             if (!member || member->GetGUID() != playerGuid)
                 continue;
 
-            if (!member->IsInWorld() || member->GetMapId() != SUNWELL_MAP_ID)
+            if (member->GetMapId() != SUNWELL_MAP_ID)
                 return nullptr;
 
             return member;
@@ -98,14 +96,15 @@ namespace SunwellHelpers
 
     bool IsKalecgosPortalEligibleCandidate(Player* candidate)
     {
-        if (!candidate || !GET_PLAYERBOT_AI(candidate))
+        if (!candidate || !candidate->IsAlive() || !GET_PLAYERBOT_AI(candidate) ||
+            candidate->GetMapId() != SUNWELL_MAP_ID)
             return false;
 
-        if (!candidate->IsAlive() || candidate->GetMapId() != SUNWELL_MAP_ID)
+        if (candidate->HasAura(
+                static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_EXHAUSTION)))
+        {
             return false;
-
-        if (candidate->HasAura(static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_EXHAUSTION)))
-            return false;
+        }
 
         return !IsInKalecgosSpectralRealm(candidate);
     }
@@ -305,10 +304,10 @@ namespace SunwellHelpers
 
     void EnsureKalecgosGroupAssignments(PlayerbotAI* botAI, Player* bot)
     {
-        if (!bot->GetGroup() || bot->GetMapId() != SUNWELL_MAP_ID)
+        Group* group = bot->GetGroup();
+        if (!group || bot->GetMapId() != SUNWELL_MAP_ID)
             return;
 
-        Group* group = bot->GetGroup();
         uint32 instanceId = bot->GetInstanceId();
         KalecgosEncounterState& state = kalecgosEncounterStates[instanceId];
         std::vector<Player*> botMembers;
@@ -318,10 +317,8 @@ namespace SunwellHelpers
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (!member || !member->IsInWorld() || member->GetMapId() != SUNWELL_MAP_ID)
-            {
+            if (!member || member->GetMapId() != SUNWELL_MAP_ID)
                 continue;
-            }
 
             if (GET_PLAYERBOT_AI(member))
                 botMembers.push_back(member);
@@ -465,6 +462,9 @@ namespace SunwellHelpers
     bool ShouldEnterKalecgosSpectralRift(PlayerbotAI* botAI, Player* bot)
     {
         Group* group = bot->GetGroup();
+        if (!group)
+            return false;
+
         KalecgosEncounterState& state = GetPreparedKalecgosEncounterState(botAI, bot);
         if (!state.activeRiftOpenedMs)
             return false;
@@ -491,6 +491,7 @@ namespace SunwellHelpers
     {
         KalecgosRealmState& realmState = kalecgosRealmStates[bot->GetGUID()];
         realmState.inSpectralRealm = inSpectralRealm;
+
         if (inSpectralRealm)
             realmState.lastEnterMs = timestamp;
         else
@@ -501,10 +502,10 @@ namespace SunwellHelpers
 
     void RecordKalecgosSpectralBlastTarget(PlayerbotAI* botAI, Player* bot)
     {
-        if (bot->GetMapId() != SUNWELL_MAP_ID)
+        Group* group = bot->GetGroup();
+        if !group || bot->GetMapId() != SUNWELL_MAP_ID)
             return;
 
-        Group* group = bot->GetGroup();
         KalecgosEncounterState& state = GetPreparedKalecgosEncounterState(botAI, bot);
         uint32 now = getMSTime();
 
@@ -516,10 +517,10 @@ namespace SunwellHelpers
 
     void RecordKalecgosSpectralRealmEnter(PlayerbotAI* botAI, Player* bot)
     {
-        if (bot->GetMapId() != SUNWELL_MAP_ID)
+        Group* group = bot->GetGroup();
+        if !group || bot->GetMapId() != SUNWELL_MAP_ID)
             return;
 
-        Group* group = bot->GetGroup();
         KalecgosEncounterState& state = GetPreparedKalecgosEncounterState(botAI, bot);
         uint32 now = getMSTime();
 
@@ -651,11 +652,8 @@ namespace SunwellHelpers
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (!member || !member->IsInWorld() ||
-                member->GetMapId() != SUNWELL_MAP_ID)
-            {
+            if (!member || member->GetMapId() != SUNWELL_MAP_ID)
                 continue;
-            }
 
             bool isMelee = botAI->IsMelee(member);
             if ((wantRanged && isMelee) || (!wantRanged && !isMelee) ||
@@ -913,8 +911,7 @@ namespace SunwellHelpers
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (!member || !member->IsInWorld() ||
-                member->GetMapId() != SUNWELL_MAP_ID ||
+            if (!member || member->GetMapId() != SUNWELL_MAP_ID ||
                 !botAI->IsRanged(member))
             {
                 continue;
@@ -1273,9 +1270,6 @@ namespace SunwellHelpers
 
     void ClearFelmystDemonicVaporKiteState(Player* bot)
     {
-        if (!bot)
-            return;
-
         uint32 instanceId = bot->GetInstanceId();
         ObjectGuid guid = bot->GetGUID();
 
@@ -1441,9 +1435,7 @@ namespace SunwellHelpers
             for (Creature* creature : creatures)
             {
                 if (!creature || !creature->IsAlive())
-                {
                     continue;
-                }
 
                 if (entry == static_cast<uint32>(SunwellNpcs::NPC_DEMONIC_VAPOR) &&
                     creature->GetSummonerGUID() == bot->GetGUID())
@@ -1497,7 +1489,6 @@ namespace SunwellHelpers
         if (!GetFelmystDemonicVaporSummonedByBot(bot))
         {
             ClearFelmystDemonicVaporKiteState(bot);
-
             return false;
         }
 
@@ -1591,8 +1582,10 @@ namespace SunwellHelpers
         }
 
         if (hasTracker && tracker.expireMs > now && tracker.lane != FelmystFogLane::None &&
-            (tracker.phase == FelmystFogPhase::Sweep || tracker.phase == FelmystFogPhase::Recovery ||
-                IsFelmystFogSideLocation(currentLocation) || IsFelmystFogSideLocation(destinationLocation)))
+            (tracker.phase == FelmystFogPhase::Sweep || 
+             tracker.phase == FelmystFogPhase::Recovery ||
+             IsFelmystFogSideLocation(currentLocation) || 
+             IsFelmystFogSideLocation(destinationLocation)))
         {
             tracker.phase = FelmystFogPhase::Recovery;
             state = tracker;
@@ -1860,9 +1853,6 @@ namespace SunwellHelpers
 
     bool IsAlythessTankPositionSafe(Player* bot, Position const& position)
     {
-        if (!bot)
-            return false;
-
         constexpr float blazeDangerRadius = 4.5f;
         constexpr float blazeSearchRadius = 30.0f;
 
@@ -1885,7 +1875,7 @@ namespace SunwellHelpers
 
     bool ShouldAdvanceAlythessTankPosition(Unit* alythess, Player* bot)
     {
-        if (!alythess || !bot)
+        if (!alythess)
             return false;
 
         ObjectGuid const botGuid = bot->GetGUID();
@@ -1925,6 +1915,8 @@ namespace SunwellHelpers
     const Position MURU_STACK_POSITION = { 1836.738f, 608.646f, 71.222f };
     const Position MURU_VOID_SENTINEL_N_TANK_POSITION = { 1840.448f, 630.605f, 70.567f };
     const Position MURU_VOID_SENTINEL_E_TANK_POSITION = { 1814.960f, 601.646f, 70.547f };
+
+    std::unordered_map<uint32, MuruDarknessState> muruDarknessStates;
 
     Unit* GetNearestNonTankPlayerInRadius(PlayerbotAI* botAI, Player* bot, float radius)
     {
@@ -2211,11 +2203,12 @@ namespace SunwellHelpers
 
     bool CommandControlledCreatureToAttack(Unit* controlled, Unit* target)
     {
-        if (!controlled || !target || !controlled->IsAlive() || !target->IsAlive())
+        if (!controlled || !controlled->IsAlive() || 
+            !target || !target->IsAlive() ||
+            controlled->GetVictim() == target)
+        {
             return false;
-
-        if (controlled->GetVictim() == target)
-            return false;
+        }
 
         controlled->ClearUnitState(UNIT_STATE_FOLLOW);
         controlled->AttackStop();
@@ -2230,10 +2223,15 @@ namespace SunwellHelpers
             charmInfo->SetIsReturning(false);
         }
 
-        if (!controlled->IsPlayer() && controlled->IsCreature() && controlled->ToCreature()->IsAIEnabled)
+        if (!controlled->IsPlayer() && controlled->IsCreature() &&
+            controlled->ToCreature()->IsAIEnabled)
+        {
             controlled->ToCreature()->AI()->AttackStart(target);
+        }
         else
+        {
             controlled->Attack(target, true);
+        }
 
         return true;
     }
@@ -2296,16 +2294,8 @@ namespace SunwellHelpers
         return instanceItr != kiljaedenHazards.end() && !instanceItr->second.empty();
     }
 
-    bool HasActiveKiljaedenHazard(Player* bot)
-    {
-        return bot && HasActiveKiljaedenHazard(bot->GetInstanceId());
-    }
-
     bool TryGetKiljaedenNearestHazard(Player* bot, KiljaedenHazard& hazard)
     {
-        if (!bot)
-            return false;
-
         PruneExpiredKiljaedenHazards(bot->GetInstanceId());
         auto instanceItr = kiljaedenHazards.find(bot->GetInstanceId());
         if (instanceItr == kiljaedenHazards.end())
@@ -2357,7 +2347,7 @@ namespace SunwellHelpers
                 if (!member || member->GetGUID() != assignment.first)
                     continue;
 
-                found = member->IsInWorld() && member->GetMapId() == SUNWELL_MAP_ID &&
+                found = member->GetMapId() == SUNWELL_MAP_ID &&
                         GET_PLAYERBOT_AI(member) && botAI->IsRanged(member);
                 break;
             }
@@ -2395,7 +2385,7 @@ namespace SunwellHelpers
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (!member || !member->IsInWorld() || member->GetMapId() != SUNWELL_MAP_ID ||
+            if (!member || member->GetMapId() != SUNWELL_MAP_ID ||
                 !GET_PLAYERBOT_AI(member) || !botAI->IsRanged(member))
             {
                 continue;

@@ -61,15 +61,6 @@ namespace SunwellHelpers
         // Hunter
         SPELL_MISDIRECTION             = 35079,
 
-        // Mage
-        SPELL_ICE_BLOCK                = 11958,
-
-        // Paladin
-        SPELL_DIVINE_SHIELD            = 642,
-
-        // Rogue
-        SPELL_CLOAK_OF_SHADOWS         = 31224,
-
         // Shaman
         SPELL_GROUNDING_TOTEM_EFFECT = 8178,
     };
@@ -322,7 +313,6 @@ namespace SunwellHelpers
         uint32 instanceId, Position const& destination, uint32 durationMs, float safeDistance);
     void PruneExpiredKiljaedenHazards(uint32 instanceId);
     bool HasActiveKiljaedenHazard(uint32 instanceId);
-    bool HasActiveKiljaedenHazard(Player* bot);
     bool TryGetKiljaedenNearestHazard(Player* bot, KiljaedenHazard& hazard);
     bool IsKiljaedenCastingDarknessOfAThousandSouls(Unit* kiljaeden);
     bool TryGetKiljaedenRangedPosition(PlayerbotAI* botAI, Player* bot, Position& position);

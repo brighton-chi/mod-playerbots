@@ -40,7 +40,7 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
             if (realmStateItr != kalecgosRealmStates.end())
             {
                 uint32 now = getMSTime();
-                constexpr uint32 realmTransitionGraceMs = 2000; // Tested with 3000
+                constexpr uint32 realmTransitionGraceMs = 2000;
                 if ((realmStateItr->second.lastEnterMs &&
                      getMSTimeDiff(realmStateItr->second.lastEnterMs, now) < realmTransitionGraceMs) ||
                     (realmStateItr->second.lastExitMs &&
@@ -135,7 +135,7 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
 
     // Kil'jaeden <The Deceiver>
     if (!AI_VALUE2(Unit*, "find target", "kil'jaeden") &&
-        !GetFirstAliveUnitByEntry(botAI, static_cast<uint32>(SunwellNpcs::NPC_HAND_OF_THE_DECEIVER)))
+        !AI_VALUE2(Unit*, "find target", "hand of the deceiver"))
     {
         if (IsMechanicTrackerBot(botAI, bot, SUNWELL_MAP_ID) &&
             kiljaedenHazards.erase(instanceId) > 0)
@@ -195,8 +195,11 @@ bool KalecgosEnterSpectralRiftAction::Execute(Event /*event*/)
             return false;
 
         const Position& position = KALECGOS_TANK_POSITION;
-        if (nextTank->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 3.0f)
+        if (nextTank->GetExactDist2d(position.GetPositionX(), 
+            position.GetPositionY()) > 3.0f)
+        {
             return false;
+        }
     }
 
     GameObject* rift = bot->FindNearestGameObject(
@@ -224,12 +227,12 @@ bool KalecgosDisperseRangedAction::Execute(Event /*event*/)
     if (!HasReachedKalecgosInitialRangedPosition(bot))
     {
         const Position& initialPosition = KALECGOS_INITIAL_RANGED_POSITION;
-        float distanceToInitialPosition = bot->GetExactDist2d(initialPosition.GetPositionX(),
-                                                              initialPosition.GetPositionY());
-        if (distanceToInitialPosition > 1.0f)
+        float distToInitialPosition = bot->GetExactDist2d(initialPos.GetPositionX(),
+                                                          initialPos.GetPositionY());
+        if (distToInitialPosition > 1.0f)
         {
-            return MoveTo(SUNWELL_MAP_ID, initialPosition.GetPositionX(), initialPosition.GetPositionY(),
-                          initialPosition.GetPositionZ(), false, false, false, false,
+            return MoveTo(SUNWELL_MAP_ID, initialPos.GetPositionX(), initialPos.GetPositionY(),
+                          initialPos.GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, true);
         }
 
@@ -242,11 +245,11 @@ bool KalecgosDisperseRangedAction::Execute(Event /*event*/)
 
     if (Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos"))
     {
-        const float safeDistFromKalecgos = 20.0f;
+        const float safeDistFromBoss = 20.0f;
         constexpr uint32 minInterval = 0;
 
-        if (bot->GetExactDist2d(kalecgos) < safeDistFromKalecgos)
-            return FleePosition(kalecgos->GetPosition(), safeDistFromKalecgos, minInterval);
+        if (bot->GetExactDist2d(kalecgos) < safeDistFromBoss)
+            return FleePosition(kalecgos->GetPosition(), safeDistFromBoss, minInterval);
     }
 
     return false;
@@ -294,7 +297,9 @@ bool BrutallusMisdirectBossToMainTankAction::Execute(Event /*event*/)
 
     if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_MISDIRECTION)) &&
         botAI->CanCastSpell("steady shot", brutallus))
+    {
         return botAI->CastSpell("steady shot", brutallus);
+    }
 
     return false;
 }
@@ -356,8 +361,10 @@ bool BrutallusTanksHandleBossAction::Execute(Event event)
         return false;
     }
 
-    Position position = GetBrutallusTankPosition(brutallus, isMainTank, bot->GetPositionZ());
-    float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+    Position position =
+        GetBrutallusTankPosition(brutallus, isMainTank, bot->GetPositionZ());
+    float distToPosition =
+        bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
 
     if (brutallus->GetVictim() == bot && distToPosition <= 3.0f)
         return false;
@@ -382,11 +389,8 @@ bool BrutallusTanksHandleBossAction::Execute(Event event)
 
 bool BrutallusPositionMeleeAction::Execute(Event /*event*/)
 {
-    if (bot->getClass() == CLASS_PALADIN &&
-        bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_DIVINE_SHIELD)))
-    {
-        bot->RemoveAura(static_cast<uint32>(SunwellSpells::SPELL_DIVINE_SHIELD));
-    }
+    if (bot->getClass() == CLASS_PALADIN && botAI->HasAura("divine shield", bot))
+        botAI->RemoveAura("divine shield");
 
     Unit* brutallus = AI_VALUE2(Unit*, "find target", "brutallus");
     if (!brutallus)
@@ -397,8 +401,11 @@ bool BrutallusPositionMeleeAction::Execute(Event /*event*/)
         return false;
 
     Position position;
-    if (!TryGetBrutallusMeleePosition(bot, brutallus, meleeIndex, bot->GetPositionZ(), position))
+    if (!TryGetBrutallusMeleePosition(
+            bot, brutallus, meleeIndex, bot->GetPositionZ(), position))
+    {
         return false;
+    }
 
     if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
     {
@@ -412,16 +419,10 @@ bool BrutallusPositionMeleeAction::Execute(Event /*event*/)
 
 bool BrutallusPositionRangedAction::Execute(Event /*event*/)
 {
-    if (bot->getClass() == CLASS_PALADIN &&
-        bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_DIVINE_SHIELD)))
-    {
-        bot->RemoveAura(static_cast<uint32>(SunwellSpells::SPELL_DIVINE_SHIELD));
-    }
-    else if (bot->getClass() == CLASS_MAGE &&
-             bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_ICE_BLOCK)))
-    {
-        bot->RemoveAura(static_cast<uint32>(SunwellSpells::SPELL_ICE_BLOCK));
-    }
+    if (bot->getClass() == CLASS_PALADIN && botAI->HasAura("divine shield", bot))
+        botAI->RemoveAura("divine shield");
+    else if (bot->getClass() == CLASS_MAGE && botAI->HasAura("ice block", bot))
+             botAI->RemoveAura("ice block");
 
     Unit* brutallus = AI_VALUE2(Unit*, "find target", "brutallus");
     if (!brutallus)
@@ -458,9 +459,11 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
     {
         Position position;
         if (!TryGetBrutallusRangedStepPosition(
-            brutallus, rangedIndex, true, GetBrutallusReturnRangedRadius(),
-            bot->GetPositionZ(), position))
+                brutallus, rangedIndex, true, GetBrutallusReturnRangedRadius(),
+                bot->GetPositionZ(), position))
+        {
             return false;
+        }
 
         if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
         {
@@ -477,9 +480,8 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
     {
         Position position;
         if (!TryGetBrutallusRangedArcPosition(
-            brutallus, rangedIndex, GetBrutallusReturnRangedRadius(), false,
-            bot->GetPositionX(), bot->GetPositionY(),
-                bot->GetPositionZ(), position))
+                brutallus, rangedIndex, GetBrutallusReturnRangedRadius(), false, 
+                bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), position))
         {
             return false;
         }
@@ -497,8 +499,11 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
             bot->GetPositionZ(), returnStepPosition))
             return false;
 
-        if (bot->GetExactDist2d(returnStepPosition.GetPositionX(), returnStepPosition.GetPositionY()) <= 1.0f)
+        if (bot->GetExactDist2d(returnStepPosition.GetPositionX(), 
+                                returnStepPosition.GetPositionY()) <= 1.0f)
+        {
             brutallusRangedBurnStates[guid] = BrutallusRangedBurnState::ReturningToNormal;
+        }
 
         return false;
     }
@@ -509,7 +514,9 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
         if (!TryGetBrutallusRangedStepPosition(
                 brutallus, rangedIndex, false, GetBrutallusNormalRangedRadius(),
                 bot->GetPositionZ(), position))
+        {
             return false;
+        }
 
         if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
         {
@@ -526,7 +533,9 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
     if (!TryGetBrutallusRangedStepPosition(
             brutallus, rangedIndex, false, GetBrutallusNormalRangedRadius(),
             bot->GetPositionZ(), position))
+    {
         return false;
+    }
 
     if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
     {
@@ -621,12 +630,17 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
 
         Position mirrorStepPosition;
         if (!TryGetBrutallusRangedStepPosition(
-            brutallus, rangedIndex, true, GetBrutallusBurnRangedRadius(),
-            bot->GetPositionZ(), mirrorStepPosition))
+                brutallus, rangedIndex, true, GetBrutallusBurnRangedRadius(),
+                bot->GetPositionZ(), mirrorStepPosition))
+        {
             return false;
+        }
 
-        if (bot->GetExactDist2d(mirrorStepPosition.GetPositionX(), mirrorStepPosition.GetPositionY()) <= 1.0f)
+        if (bot->GetExactDist2d(mirrorStepPosition.GetPositionX(), 
+                                mirrorStepPosition.GetPositionY()) <= 1.0f)
+        {
             brutallusRangedBurnStates[guid] = BrutallusRangedBurnState::MovingToRearFinal;
+        }
 
         return false;
     }
@@ -635,7 +649,9 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
     if (!TryGetBrutallusRangedStepPosition(
             brutallus, rangedIndex, true, GetBrutallusBurnRangedRadius(),
             bot->GetPositionZ(), position))
+    {
         return false;
+    }
 
     if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
     {
@@ -651,26 +667,23 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
 
 bool BrutallusHandleBurnAction::RemoveBurnWithCooldown(Player* bot)
 {
-    if (bot->getClass() == CLASS_ROGUE &&
-        botAI->CanCastSpell(static_cast<uint32>(SunwellSpells::SPELL_CLOAK_OF_SHADOWS), bot) &&
-        botAI->CastSpell(static_cast<uint32>(SunwellSpells::SPELL_CLOAK_OF_SHADOWS), bot))
+    switch (bot->getClass())
     {
-        return true;
-    }
-    else if (bot->getClass() == CLASS_MAGE &&
-             botAI->CanCastSpell(static_cast<uint32>(SunwellSpells::SPELL_ICE_BLOCK), bot) &&
-             botAI->CastSpell(static_cast<uint32>(SunwellSpells::SPELL_ICE_BLOCK), bot))
-    {
-        return true;
-    }
-    else if (bot->getClass() == CLASS_PALADIN &&
-             botAI->CanCastSpell(static_cast<uint32>(SunwellSpells::SPELL_DIVINE_SHIELD), bot) &&
-             botAI->CastSpell(static_cast<uint32>(SunwellSpells::SPELL_DIVINE_SHIELD), bot))
-    {
-        return true;
-    }
+        case CLASS_MAGE:
+            return botAI->CanCastSpell("ice block", bot) &&
+                   botAI->CastSpell("ice block", bot);
 
-    return false;
+        case CLASS_PALADIN:
+            return botAI->CanCastSpell("divine shield", bot) &&
+                   botAI->CastSpell("divine shield", bot);
+
+        case CLASS_ROGUE:
+            return botAI->CanCastSpell("cloak of shadows", bot) &&
+                   botAI->CastSpell("cloak of shadows", bot);
+
+        default:
+            return false;
+    }
 }
 
 // Felmyst
@@ -734,16 +747,10 @@ bool FelmystPositionRangedOnGroundAction::Execute(Event /*event*/)
 {
     ClearFelmystDemonicVaporKiteState(bot);
 
-    if (bot->getClass() == CLASS_PALADIN &&
-        bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_DIVINE_SHIELD)))
-    {
-        bot->RemoveAura(static_cast<uint32>(SunwellSpells::SPELL_DIVINE_SHIELD));
-    }
-    else if (bot->getClass() == CLASS_MAGE &&
-             bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_ICE_BLOCK)))
-    {
-        bot->RemoveAura(static_cast<uint32>(SunwellSpells::SPELL_ICE_BLOCK));
-    }
+    if (bot->getClass() == CLASS_PALADIN && botAI->HasAura("divine shield", bot))
+        botAI->RemoveAura("divine shield");
+    else if (bot->getClass() == CLASS_MAGE && botAI->HasAura("ice block", bot))
+             botAI->RemoveAura("ice block");
 
     Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
     if (!felmyst)
@@ -763,11 +770,8 @@ bool FelmystPositionMeleeOnGroundAction::Execute(Event /*event*/)
 {
     ClearFelmystDemonicVaporKiteState(bot);
 
-    if (bot->getClass() == CLASS_PALADIN &&
-        bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_DIVINE_SHIELD)))
-    {
-        bot->RemoveAura(static_cast<uint32>(SunwellSpells::SPELL_DIVINE_SHIELD));
-    }
+    if (bot->getClass() == CLASS_PALADIN && botAI->HasAura("divine shield", bot))
+        botAI->RemoveAura("divine shield");
 
     Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
     if (!felmyst)
@@ -789,26 +793,23 @@ bool FelmystPositionMeleeOnGroundAction::Execute(Event /*event*/)
 
 bool FelmystRemoveEncapsulateAction::Execute(Event /*event*/)
 {
-    if (bot->getClass() == CLASS_ROGUE &&
-        botAI->CanCastSpell(static_cast<uint32>(SunwellSpells::SPELL_CLOAK_OF_SHADOWS), bot) &&
-        botAI->CastSpell(static_cast<uint32>(SunwellSpells::SPELL_CLOAK_OF_SHADOWS), bot))
+    switch (bot->getClass())
     {
-        return true;
-    }
-    else if (bot->getClass() == CLASS_MAGE &&
-             botAI->CanCastSpell(static_cast<uint32>(SunwellSpells::SPELL_ICE_BLOCK), bot) &&
-             botAI->CastSpell(static_cast<uint32>(SunwellSpells::SPELL_ICE_BLOCK), bot))
-    {
-        return true;
-    }
-    else if (bot->getClass() == CLASS_PALADIN &&
-             botAI->CanCastSpell(static_cast<uint32>(SunwellSpells::SPELL_DIVINE_SHIELD), bot) &&
-             botAI->CastSpell(static_cast<uint32>(SunwellSpells::SPELL_DIVINE_SHIELD), bot))
-    {
-        return true;
-    }
+        case CLASS_MAGE:
+            return botAI->CanCastSpell("ice block", bot) &&
+                   botAI->CastSpell("ice block", bot);
 
-    return false;
+        case CLASS_PALADIN:
+            return botAI->CanCastSpell("divine shield", bot) &&
+                   botAI->CastSpell("divine shield", bot);
+
+        case CLASS_ROGUE:
+            return botAI->CanCastSpell("cloak of shadows", bot) &&
+                   botAI->CastSpell("cloak of shadows", bot);
+
+        default:
+            return false;
+    }
 }
 
 bool FelmystRunAwayFromEncapsulatedPlayerAction::Execute(Event /*event*/)
@@ -832,8 +833,8 @@ bool FelmystRunAwayFromEncapsulatedPlayerAction::Execute(Event /*event*/)
     auto instanceItr = felmystRangedAssignments.find(bot->GetInstanceId());
     if (instanceItr != felmystRangedAssignments.end())
     {
-        isEncapsulateTargetInRangedGroup =
-            instanceItr->second.find(encapsulateTarget->GetGUID()) != instanceItr->second.end();
+        isEncapsulateTargetInRangedGroup = instanceItr->second.find(
+            encapsulateTarget->GetGUID()) != instanceItr->second.end();
     }
 
     float targetX = 0.0f;
@@ -864,9 +865,12 @@ bool FelmystRunAwayFromEncapsulatedPlayerAction::Execute(Event /*event*/)
             felmyst->GetPositionY() + std::sin(rightAngle) * sideDistance,
             bot->GetPositionZ());
 
-        float leftDistance = bot->GetExactDist2d(leftPosition.GetPositionX(), leftPosition.GetPositionY());
-        float rightDistance = bot->GetExactDist2d(rightPosition.GetPositionX(), rightPosition.GetPositionY());
+        float leftDistance = bot->GetExactDist2d(
+            leftPosition.GetPositionX(), leftPosition.GetPositionY());
+        float rightDistance = bot->GetExactDist2d(
+            rightPosition.GetPositionX(), rightPosition.GetPositionY());
         Position const& destination = leftDistance <= rightDistance ? leftPosition : rightPosition;
+
         targetX = destination.GetPositionX();
         targetY = destination.GetPositionY();
     }
@@ -1089,7 +1093,8 @@ bool EredarTwinsFirstAssistTankMoveOutOfBlazeAction::Execute(Event /*event*/)
         size_t const offsetStart = includeStart ? 0 : 1;
         for (size_t offset = offsetStart; offset < ALYTHESS_TANK_POSITIONS.size(); ++offset)
         {
-            uint8 candidateIndex = static_cast<uint8>((startIndex + offset) % ALYTHESS_TANK_POSITIONS.size());
+            uint8 candidateIndex = s
+                tatic_cast<uint8>((startIndex + offset) % ALYTHESS_TANK_POSITIONS.size());
             if (IsAlythessTankPositionSafe(bot, ALYTHESS_TANK_POSITIONS[candidateIndex]))
             {
                 safeIndex = candidateIndex;
@@ -1160,16 +1165,10 @@ bool EredarTwinsFirstAssistTankMoveOutOfBlazeAction::Execute(Event /*event*/)
 
 bool EredarTwinsPositionRangedAction::Execute(Event /*event*/)
 {
-    if (bot->getClass() == CLASS_PALADIN &&
-    bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_DIVINE_SHIELD)))
-    {
-        bot->RemoveAura(static_cast<uint32>(SunwellSpells::SPELL_DIVINE_SHIELD));
-    }
-    else if (bot->getClass() == CLASS_MAGE &&
-            bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_ICE_BLOCK)))
-    {
-        bot->RemoveAura(static_cast<uint32>(SunwellSpells::SPELL_ICE_BLOCK));
-    }
+    if (bot->getClass() == CLASS_PALADIN && botAI->HasAura("divine shield", bot))
+        botAI->RemoveAura("divine shield");
+    else if (bot->getClass() == CLASS_MAGE && botAI->HasAura("ice block", bot))
+             botAI->RemoveAura("ice block");
 
     Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
     if (sacrolash)
@@ -1231,35 +1230,29 @@ bool EredarTwinsStackInRoomCenterAction::Execute(Event /*event*/)
 
 bool EredarTwinsRemoveFlameSearAction::Execute(Event /*event*/)
 {
-    if (bot->getClass() == CLASS_ROGUE &&
-        botAI->CanCastSpell(static_cast<uint32>(SunwellSpells::SPELL_CLOAK_OF_SHADOWS), bot) &&
-        botAI->CastSpell(static_cast<uint32>(SunwellSpells::SPELL_CLOAK_OF_SHADOWS), bot))
+    switch (bot->getClass())
     {
-        return true;
-    }
-    else if (bot->getClass() == CLASS_MAGE &&
-             botAI->CanCastSpell(static_cast<uint32>(SunwellSpells::SPELL_ICE_BLOCK), bot) &&
-             botAI->CastSpell(static_cast<uint32>(SunwellSpells::SPELL_ICE_BLOCK), bot))
-    {
-        return true;
-    }
-    else if (bot->getClass() == CLASS_PALADIN &&
-             botAI->CanCastSpell(static_cast<uint32>(SunwellSpells::SPELL_DIVINE_SHIELD), bot) &&
-             botAI->CastSpell(static_cast<uint32>(SunwellSpells::SPELL_DIVINE_SHIELD), bot))
-    {
-        return true;
-    }
+        case CLASS_MAGE:
+            return botAI->CanCastSpell("ice block", bot) &&
+                   botAI->CastSpell("ice block", bot);
 
-    return false;
+        case CLASS_PALADIN:
+            return botAI->CanCastSpell("divine shield", bot) &&
+                   botAI->CastSpell("divine shield", bot);
+
+        case CLASS_ROGUE:
+            return botAI->CanCastSpell("cloak of shadows", bot) &&
+                   botAI->CastSpell("cloak of shadows", bot);
+
+        default:
+            return false;
+    }
 }
 
 bool EredarTwinsDpsPrioritizeLadySacrolashAction::Execute(Event /*event*/)
 {
-    if (bot->getClass() == CLASS_PALADIN &&
-    bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_DIVINE_SHIELD)))
-    {
-        bot->RemoveAura(static_cast<uint32>(SunwellSpells::SPELL_DIVINE_SHIELD));
-    }
+    if (bot->getClass() == CLASS_PALADIN && botAI->HasAura("divine shield", bot))
+        botAI->RemoveAura("divine shield");
 
     Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
     Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
@@ -1616,13 +1609,18 @@ bool MuruEnslavedVoidSpawnCastShadowBoltVolleyAction::Execute(Event /*event*/)
     if (voidSpawn->GetExactDist2d(target) > sPlayerbotAIConfig.spellDistance)
         return commandedAttack;
 
-    if (voidSpawn->HasSpellCooldown(static_cast<uint32>(SunwellSpells::SPELL_SHADOW_BOLT_VOLLEY)))
+    if (voidSpawn->HasSpellCooldown(
+            static_cast<uint32>(SunwellSpells::SPELL_SHADOW_BOLT_VOLLEY)))
+    {
         return commandedAttack;
+    }
 
     constexpr uint32 globalCooldown = 1000;
-    voidSpawn->CastSpell(target, static_cast<uint32>(SunwellSpells::SPELL_SHADOW_BOLT_VOLLEY), true);
+    voidSpawn->CastSpell(
+        target, static_cast<uint32>(SunwellSpells::SPELL_SHADOW_BOLT_VOLLEY), true);
     voidSpawn->AddSpellCooldown(
         static_cast<uint32>(SunwellSpells::SPELL_SHADOW_BOLT_VOLLEY), 0, globalCooldown);
+
     return true;
 }
 
@@ -1803,7 +1801,8 @@ bool MuruSetDpsPriorityAction::Execute(Event /*event*/)
             target = stickyTarget;
     }
 
-    if (target && target->GetEntry() == static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_BERSERKER))
+    if (target && target->GetEntry() == 
+            static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_BERSERKER))
     {
         if (bot->getClass() == CLASS_ROGUE && !botAI->GetAura("dismantle", target) &&
             botAI->CanCastSpell("dismantle", target))
@@ -1837,45 +1836,27 @@ bool MuruSetDpsPriorityAction::Execute(Event /*event*/)
 
 bool KiljaedenAvoidHazardsAction::Execute(Event /*event*/)
 {
-    Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
-    if (!kiljaeden || IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
-        return false;
-
-    Player* mainTank = GetGroupMainTank(botAI, bot);
-    if (bot == mainTank)
-        return false;
-
     KiljaedenHazard hazard;
     if (!TryGetKiljaedenNearestHazard(bot, hazard))
         return false;
 
     constexpr uint32 minInterval = 0;
     bot->AttackStop();
-    bot->InterruptNonMeleeSpells(true);
+    botAI->InterruptSpell();
+
     return FleePosition(hazard.destination, hazard.safeDistance, minInterval);
 }
 
 bool KiljaedenStackOnMainTankAction::Execute(Event /*event*/)
 {
-    Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
-    if (!kiljaeden || !IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
-        return false;
-
-    Player* mainTank = GetGroupMainTank(botAI, bot);
-    if (bot == mainTank)
-        return false;
-
-    Position targetPosition = KILJAEDEN_TANK_POSITION;
-    if (mainTank && mainTank->IsInWorld() && mainTank->GetMapId() == SUNWELL_MAP_ID)
-        targetPosition.Relocate(mainTank);
-
-    if (bot->GetExactDist2d(targetPosition.GetPositionX(), targetPosition.GetPositionY()) > 2.0f)
+    const Position& position = KILJAEDEN_TANK_POSITION;
+    if (bot->GetExactDist2d(position.GetPositionX(), 
+                            position.GetPositionY()) > 2.0f)
     {
         botAI->InterruptSpell();
-        return MoveTo(SUNWELL_MAP_ID, targetPosition.GetPositionX(),
-                    targetPosition.GetPositionY(), targetPosition.GetPositionZ(),
-                    false, false, false, false, MovementPriority::MOVEMENT_FORCED,
-                    true, true);
+        return MoveTo(SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                      position.GetPositionZ(), false, false, false, false, 
+                      MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
     return false;
@@ -1884,15 +1865,7 @@ bool KiljaedenStackOnMainTankAction::Execute(Event /*event*/)
 bool KiljaedenPositionMeleeAction::Execute(Event /*event*/)
 {
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
-    if (!kiljaeden || !botAI->IsMelee(bot))
-        return false;
-
-    Player* mainTank = GetGroupMainTank(botAI, bot);
-    if (bot == mainTank || IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
-        return false;
-
-    KiljaedenHazard hazard;
-    if (TryGetKiljaedenNearestHazard(bot, hazard))
+    if (!kiljaeden)
         return false;
 
     if (botAI->IsTank(bot))
@@ -1952,17 +1925,6 @@ bool KiljaedenPositionMeleeAction::Execute(Event /*event*/)
 
 bool KiljaedenPositionRangedAction::Execute(Event /*event*/)
 {
-    Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
-    if (!kiljaeden || !botAI->IsRanged(bot) ||
-        IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
-    {
-        return false;
-    }
-
-    KiljaedenHazard hazard;
-    if (TryGetKiljaedenNearestHazard(bot, hazard))
-        return false;
-
     Position targetPosition = KILJAEDEN_TANK_POSITION;
     if (!TryGetKiljaedenRangedPosition(botAI, bot, targetPosition))
         return false;

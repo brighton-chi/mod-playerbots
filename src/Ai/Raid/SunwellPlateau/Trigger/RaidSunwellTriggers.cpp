@@ -524,11 +524,11 @@ bool MuruWarlockHasEnslavedVoidSpawnTrigger::IsActive()
 bool KiljaedenItsRainingSpikesAndRocksTrigger::IsActive()
 {
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
-    if (!kiljaeden || bot == GetGroupMainTank(botAI, bot) ||
-        IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
-    {
+    if (!kiljaeden || IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
         return false;
-    }
+
+    if (botAI->IsMainTank(bot))
+        return false;
 
     KiljaedenHazard hazard;
     return TryGetKiljaedenNearestHazard(bot, hazard);
@@ -537,7 +537,7 @@ bool KiljaedenItsRainingSpikesAndRocksTrigger::IsActive()
 bool KiljaedenSaysChaosDestructionOblivionTrigger::IsActive()
 {
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
-    if (!kiljaeden || bot == GetGroupMainTank(botAI, bot))
+    if (!kiljaeden)
         return false;
 
     return IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden);
@@ -545,12 +545,15 @@ bool KiljaedenSaysChaosDestructionOblivionTrigger::IsActive()
 
 bool KiljaedenMeleePositionTrigger::IsActive()
 {
-    Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
-    if (!kiljaeden || bot == GetGroupMainTank(botAI, bot) || !botAI->IsMelee(bot) ||
-        IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
-    {
+    if (!botAI->IsMelee(bot))
         return false;
-    }
+
+    Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
+    if (!kiljaeden || IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
+        return false;
+
+    if (botAI->IsMainTank(bot))
+        return false;
 
     KiljaedenHazard hazard;
     return !TryGetKiljaedenNearestHazard(bot, hazard);
@@ -558,12 +561,12 @@ bool KiljaedenMeleePositionTrigger::IsActive()
 
 bool KiljaedenRangedPositionTrigger::IsActive()
 {
+    if (!botAI->IsRanged(bot))
+        return false
+
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
-    if (!kiljaeden || !botAI->IsRanged(bot) ||
-        IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
-    {
+    if (!kiljaeden || IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
         return false;
-    }
 
     KiljaedenHazard hazard;
     return !TryGetKiljaedenNearestHazard(bot, hazard);
