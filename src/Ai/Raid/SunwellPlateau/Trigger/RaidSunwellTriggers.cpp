@@ -521,7 +521,68 @@ bool MuruWarlockHasEnslavedVoidSpawnTrigger::IsActive()
 
 // Kil'jaeden <The Deceiver>
 
+bool KiljaedenItsRainingSpikesAndRocksTrigger::IsActive()
+{
+    Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
+    if (!kiljaeden || bot == GetGroupMainTank(botAI, bot) ||
+        IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
+    {
+        return false;
+    }
+
+    KiljaedenHazard hazard;
+    return TryGetKiljaedenNearestHazard(bot, hazard);
+}
+
+bool KiljaedenSaysChaosDestructionOblivionTrigger::IsActive()
+{
+    Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
+    if (!kiljaeden || bot == GetGroupMainTank(botAI, bot))
+        return false;
+
+    return IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden);
+}
+
+bool KiljaedenMeleePositionTrigger::IsActive()
+{
+    Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
+    if (!kiljaeden || bot == GetGroupMainTank(botAI, bot) || !botAI->IsMelee(bot) ||
+        IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
+    {
+        return false;
+    }
+
+    KiljaedenHazard hazard;
+    return !TryGetKiljaedenNearestHazard(bot, hazard);
+}
+
+bool KiljaedenRangedPositionTrigger::IsActive()
+{
+    Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
+    if (!kiljaeden || !botAI->IsRanged(bot) ||
+        IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
+    {
+        return false;
+    }
+
+    KiljaedenHazard hazard;
+    return !TryGetKiljaedenNearestHazard(bot, hazard);
+}
+
 bool KiljaedenTrigger::IsActive()
 {
-    return AI_VALUE2(Unit*, "find target", "kil'jaeden");
+    if (GetFirstAliveUnitByEntry(
+            botAI, static_cast<uint32>(SunwellNpcs::NPC_HAND_OF_THE_DECEIVER)))
+    {
+        return botAI->IsMainTank(bot) ||
+               botAI->IsAssistTankOfIndex(bot, 0, true) ||
+               botAI->IsAssistTankOfIndex(bot, 1, true);
+    }
+
+    Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
+    if (!kiljaeden)
+        return false;
+
+    Player* mainTank = GetGroupMainTank(botAI, bot);
+    return bot == mainTank || (botAI->IsMelee(bot) && bot != mainTank) || botAI->IsRanged(bot);
 }

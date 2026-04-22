@@ -3,6 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include <unordered_set>
+
 #include "RaidSunwellHelpers.h"
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
@@ -18,6 +20,7 @@ static constexpr uint32 SPELL_FELMYST_STRAFE_BOTTOM            = 45635;
 static constexpr uint32 FELMYST_FOG_INTERRUPT_SCAN_INTERVAL_MS = 500;
 
 static std::unordered_map<ObjectGuid, uint32> felmystFogInterruptLastScanTime;
+static std::unordered_set<ObjectGuid> kiljaedenTrackedArmageddonTargets;
 
 static PlayerbotAI* GetKalecgosReferenceBotAI(Player* player)
 {
@@ -268,10 +271,70 @@ public:
     }
 };
 
+class KiljaedenArmageddonTargetTrackerScript : public AllCreatureScript
+{
+public:
+    KiljaedenArmageddonTargetTrackerScript() : AllCreatureScript("KiljaedenArmageddonTargetTrackerScript") { }
+
+    void OnAllCreatureUpdate(Creature* creature, uint32 /*diff*/) override
+    {
+        if (!creature ||
+            creature->GetEntry() != static_cast<uint32>(SunwellNpcs::NPC_ARMAGEDDON_TARGET))
+        {
+            return;
+        }
+
+        if (!kiljaedenTrackedArmageddonTargets.insert(creature->GetGUID()).second)
+            return;
+
+        AddKiljaedenHazard(
+            creature->GetInstanceId(), creature->GetPosition(),
+            KILJAEDEN_ARMAGEDDON_HAZARD_DURATION_MS, KILJAEDEN_ARMAGEDDON_SAFE_DISTANCE);
+        RequestInterruptForBotsNear(creature, KILJAEDEN_ARMAGEDDON_SAFE_DISTANCE);
+    }
+
+    void OnCreatureRemoveWorld(Creature* creature) override
+    {
+        if (!creature ||
+            creature->GetEntry() != static_cast<uint32>(SunwellNpcs::NPC_ARMAGEDDON_TARGET))
+        {
+            return;
+        }
+
+        kiljaedenTrackedArmageddonTargets.erase(creature->GetGUID());
+    }
+};
+
+class KiljaedenSpellListenerScript : public AllSpellScript
+{
+public:
+    KiljaedenSpellListenerScript() : AllSpellScript("KiljaedenSpellListenerScript") { }
+
+    void OnSpellCast(Spell* spell, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
+    {
+        if (!spell || !caster || !spellInfo ||
+            spellInfo->Id != static_cast<uint32>(SunwellSpells::SPELL_SHADOW_SPIKE))
+        {
+            return;
+        }
+
+        Player* target = GetFirstPlayerSpellTarget(spell, caster);
+        if (!target)
+            return;
+
+        AddKiljaedenHazard(
+            caster->GetMap()->GetInstanceId(), target->GetPosition(),
+            KILJAEDEN_SHADOW_SPIKE_HAZARD_DURATION_MS, KILJAEDEN_SHADOW_SPIKE_SAFE_DISTANCE);
+        RequestInterruptForBotsNear(target, KILJAEDEN_SHADOW_SPIKE_SAFE_DISTANCE);
+    }
+};
+
 void AddSC_SunwellPlateauBotScripts()
 {
     new FelmystFogInterruptFallbackScript();
     new KalecgosSpellListenerScript();
     new FelmystSpellListenerScript();
     new EredarTwinsSpellListenerScript();
+    new KiljaedenArmageddonTargetTrackerScript();
+    new KiljaedenSpellListenerScript();
 }

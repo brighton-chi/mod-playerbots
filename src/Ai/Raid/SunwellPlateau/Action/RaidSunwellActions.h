@@ -363,11 +363,43 @@ public:
 
 // Kil'jaeden <The Deceiver>
 
-class KiljaedenAction : public MovementAction
+class KiljaedenAvoidHazardsAction : public MovementAction
+{
+public:
+    KiljaedenAvoidHazardsAction(
+        PlayerbotAI* botAI, std::string const name = "kil'jaeden avoid hazards") : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class KiljaedenStackOnMainTankAction : public MovementAction
+{
+public:
+    KiljaedenStackOnMainTankAction(
+        PlayerbotAI* botAI, std::string const name = "kil'jaeden stack on main tank") : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class KiljaedenPositionMeleeAction : public MovementAction
+{
+public:
+    KiljaedenPositionMeleeAction(
+        PlayerbotAI* botAI, std::string const name = "kil'jaeden position melee") : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class KiljaedenPositionRangedAction : public MovementAction
+{
+public:
+    KiljaedenPositionRangedAction(
+        PlayerbotAI* botAI, std::string const name = "kil'jaeden position ranged") : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class KiljaedenAction : public AttackAction
 {
 public:
     KiljaedenAction(
-        PlayerbotAI* botAI, std::string const name = "kil'jaeden") : MovementAction(botAI, name) {}
+        PlayerbotAI* botAI, std::string const name = "kil'jaeden") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 

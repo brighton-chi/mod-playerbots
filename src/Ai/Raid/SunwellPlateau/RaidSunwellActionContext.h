@@ -144,6 +144,18 @@ public:
             &RaidSunwellActionContext::muru_enslaved_void_spawn_cast_shadow_bolt_volley;
 
         // Kil'jaeden <The Deceiver>
+        creators["kil'jaeden avoid hazards"] =
+            &RaidSunwellActionContext::kiljaeden_avoid_hazards;
+
+        creators["kil'jaeden stack on main tank"] =
+            &RaidSunwellActionContext::kiljaeden_stack_on_main_tank;
+
+        creators["kil'jaeden position melee"] =
+            &RaidSunwellActionContext::kiljaeden_position_melee;
+
+        creators["kil'jaeden position ranged"] =
+            &RaidSunwellActionContext::kiljaeden_position_ranged;
+
         creators["kil'jaeden"] =
             &RaidSunwellActionContext::kiljaeden;
     }
@@ -279,6 +291,18 @@ private:
         PlayerbotAI* botAI) { return new MuruEnslavedVoidSpawnCastShadowBoltVolleyAction(botAI); }
 
     // Kil'jaeden <The Deceiver>
+    static Action* kiljaeden_avoid_hazards(
+        PlayerbotAI* botAI) { return new KiljaedenAvoidHazardsAction(botAI); }
+
+    static Action* kiljaeden_stack_on_main_tank(
+        PlayerbotAI* botAI) { return new KiljaedenStackOnMainTankAction(botAI); }
+
+    static Action* kiljaeden_position_melee(
+        PlayerbotAI* botAI) { return new KiljaedenPositionMeleeAction(botAI); }
+
+    static Action* kiljaeden_position_ranged(
+        PlayerbotAI* botAI) { return new KiljaedenPositionRangedAction(botAI); }
+
     static Action* kiljaeden(
         PlayerbotAI* botAI) { return new KiljaedenAction(botAI); }
 };

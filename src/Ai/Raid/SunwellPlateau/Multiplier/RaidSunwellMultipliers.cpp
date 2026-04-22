@@ -678,10 +678,57 @@ float MuruDelayCooldownsMultiplier::GetValue(Action* action)
 
 // Kil'jaeden <The Deceiver>
 
-float KiljaedenMultiplier::GetValue(Action* action)
+float KiljaedenDelayCooldownsMultiplier::GetValue(Action* action)
+{
+    if (!AI_VALUE2(Unit*, "find target", "hand of the deceiver"))
+        return 1.0f;
+
+    if (bot->getClass() == CLASS_SHAMAN &&
+        (dynamic_cast<CastHeroismAction*>(action) ||
+         dynamic_cast<CastBloodlustAction*>(action)))
+        return 0.0f;
+
+    if (IsDpsCooldownAction(action) ||
+        (botAI->IsDps(bot) && dynamic_cast<UseTrinketAction*>(action)))
+        return 0.0f;
+
+    return 1.0f;
+}
+
+float KiljaedenControlMovementAndTargetingMultiplier::GetValue(Action* action)
 {
     if (!AI_VALUE2(Unit*, "find target", "kil'jaeden"))
         return 1.0f;
+
+    if (dynamic_cast<DpsAssistAction*>(action) ||
+        dynamic_cast<CastDisengageAction*>(action) ||
+        dynamic_cast<CastBlinkBackAction*>(action) ||
+        dynamic_cast<FleeAction*>(action) ||
+        dynamic_cast<CombatFormationMoveAction*>(action))
+        return 0.0f;
+
+    return 1.0f;
+}
+
+float KiljaedenPrioritizeHazardAvoidanceMultiplier::GetValue(Action* action)
+{
+    if (!AI_VALUE2(Unit*, "find target", "kil'jaeden"))
+        return 1.0f;
+
+    if (IsKiljaedenCastingDarknessOfAThousandSouls &&
+        dynamic_cast<MovementAction*>(action) &&
+        !dynamic_cast<AttackAction*>(action) &&
+        !dynamic_cast<KiljaedenStackOnMainTankAction*>(action))
+    {
+        return 0.0f;
+    }
+
+    if (HasActiveKiljaedenHazard(bot) &&
+        (dynamic_cast<KiljaedenPositionMeleeAction*>(action) ||
+         dynamic_cast<KiljaedenPositionRangedAction*>(action)))
+    {
+        return 0.0f;
+    }
 
     return 1.0f;
 }

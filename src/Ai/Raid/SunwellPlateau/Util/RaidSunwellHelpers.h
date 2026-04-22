@@ -54,6 +54,10 @@ namespace SunwellHelpers
         SPELL_SPELL_FURY = 46102,
         SPELL_FLURRY = 46160,
 
+        // Kil'jaeden <The Deceiver>
+        SPELL_SHADOW_SPIKE = 46589,
+        SPELL_DARKNESS_OF_A_THOUSAND_SOULS = 46605,
+
         // Hunter
         SPELL_MISDIRECTION             = 35079,
 
@@ -91,6 +95,13 @@ namespace SunwellHelpers
         NPC_VOID_SPAWN = 25824,
         NPC_ENTROPIUS           = 25840,
         NPC_SINGULARITY         = 25855,
+
+        // Kil'jaeden <The Deceiver>
+        NPC_SHIELD_ORB = 25502,
+        NPC_HAND_OF_THE_DECEIVER = 25588,
+        NPC_VOLATILE_FELFIRE_FIEND = 25598,
+        NPC_SINISTER_REFLECTION = 25708,
+        NPC_ARMAGEDDON_TARGET = 25735,
     };
 
     enum class SunwellObjects : uint32
@@ -290,6 +301,32 @@ namespace SunwellHelpers
     Unit* GetVoidSpawnVolleyPriorityTarget(
         PlayerbotAI* botAI, Player* bot, Unit* muru, Unit* entropius);
     bool CommandControlledCreatureToAttack(Unit* controlled, Unit* target);
+
+    // Kil'jaeden <The Deceiver>
+    constexpr uint32 KILJAEDEN_SHADOW_SPIKE_HAZARD_DURATION_MS = 3000;
+    constexpr float KILJAEDEN_SHADOW_SPIKE_SAFE_DISTANCE = 10.0f;
+    constexpr uint32 KILJAEDEN_ARMAGEDDON_HAZARD_DURATION_MS = 10000;
+    constexpr float KILJAEDEN_ARMAGEDDON_SAFE_DISTANCE = 15.0f;
+    struct KiljaedenHazard
+    {
+        Position destination;
+        uint32 expireMs = 0;
+        float safeDistance = 0.0f;
+    };
+    extern const Position KILJAEDEN_CENTER_POSITION;
+    extern const Position KILJAEDEN_TANK_POSITION;
+    extern const Position KILJAEDEN_S_MELEE_POSITION;
+    extern const Position KILJAEDEN_E_MELEE_POSITION;
+    extern std::unordered_map<uint32, std::vector<KiljaedenHazard>> kiljaedenHazards;
+    void AddKiljaedenHazard(
+        uint32 instanceId, Position const& destination, uint32 durationMs, float safeDistance);
+    void PruneExpiredKiljaedenHazards(uint32 instanceId);
+    bool HasActiveKiljaedenHazard(uint32 instanceId);
+    bool HasActiveKiljaedenHazard(Player* bot);
+    bool TryGetKiljaedenNearestHazard(Player* bot, KiljaedenHazard& hazard);
+    bool IsKiljaedenCastingDarknessOfAThousandSouls(Unit* kiljaeden);
+    bool TryGetKiljaedenRangedPosition(PlayerbotAI* botAI, Player* bot, Position& position);
+    int GetKiljaedenPhase(Unit* kiljaeden);
 }
 
 #endif

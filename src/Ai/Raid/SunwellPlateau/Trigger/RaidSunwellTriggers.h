@@ -366,6 +366,38 @@ public:
 
 // Kil'jaeden <The Deceiver>
 
+class KiljaedenItsRainingSpikesAndRocksTrigger : public Trigger
+{
+public:
+    KiljaedenItsRainingSpikesAndRocksTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "kil'jaeden it's raining spikes and rocks") {}
+    bool IsActive() override;
+};
+
+class KiljaedenSaysChaosDestructionOblivionTrigger : public Trigger
+{
+public:
+    KiljaedenSaysChaosDestructionOblivionTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "kil'jaeden says: Chaos! Destruction! Oblivion!") {}
+    bool IsActive() override;
+};
+
+class KiljaedenMeleePositionTrigger : public Trigger
+{
+public:
+    KiljaedenMeleePositionTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "kil'jaeden melee should position") {}
+    bool IsActive() override;
+};
+
+class KiljaedenRangedPositionTrigger : public Trigger
+{
+public:
+    KiljaedenRangedPositionTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "kil'jaeden ranged should position") {}
+    bool IsActive() override;
+};
+
 class KiljaedenTrigger : public Trigger
 {
 public:

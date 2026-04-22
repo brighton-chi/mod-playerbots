@@ -147,6 +147,18 @@ public:
             &RaidSunwellTriggerContext::muru_warlock_has_enslaved_void_spawn;
 
         // Kil'jaeden <The Deceiver>
+        creators["kil'jaeden it's raining spikes and rocks"] =
+            &RaidSunwellTriggerContext::kiljaeden_its_raining_spikes_and_rocks;
+
+        creators["kil'jaeden says: Chaos! Destruction! Oblivion!"] =
+            &RaidSunwellTriggerContext::kiljaeden_says_chaos_destruction_oblivion;
+
+        creators["kil'jaeden melee should position"] =
+            &RaidSunwellTriggerContext::kiljaeden_melee_should_position;
+
+        creators["kil'jaeden ranged should position"] =
+            &RaidSunwellTriggerContext::kiljaeden_ranged_should_position;
+
         creators["kil'jaeden"] =
             &RaidSunwellTriggerContext::kiljaeden;
     }
@@ -285,6 +297,18 @@ private:
         PlayerbotAI* botAI) { return new MuruWarlockHasEnslavedVoidSpawnTrigger(botAI); }
 
     // Kil'jaeden <The Deceiver>
+    static Trigger* kiljaeden_its_raining_spikes_and_rocks(
+        PlayerbotAI* botAI) { return new KiljaedenItsRainingSpikesAndRocksTrigger(botAI); }
+
+    static Trigger* kiljaeden_says_chaos_destruction_oblivion(
+        PlayerbotAI* botAI) { return new KiljaedenSaysChaosDestructionOblivionTrigger(botAI); }
+
+    static Trigger* kiljaeden_melee_should_position(
+        PlayerbotAI* botAI) { return new KiljaedenMeleePositionTrigger(botAI); }
+
+    static Trigger* kiljaeden_ranged_should_position(
+        PlayerbotAI* botAI) { return new KiljaedenRangedPositionTrigger(botAI); }
+
     static Trigger* kiljaeden(
         PlayerbotAI* botAI) { return new KiljaedenTrigger(botAI); }
 };
