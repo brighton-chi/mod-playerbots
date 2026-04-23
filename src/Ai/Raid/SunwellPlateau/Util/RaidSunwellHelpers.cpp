@@ -919,16 +919,13 @@ namespace SunwellHelpers
         }},
         {{
             { 1500.258f, 613.369f, 26.310f },
-            { 1499.529f, 598.985f, 25.925f },
+            { 1500.335f, 596.584f, 25.872f },
             { 1501.360f, 630.656f, 25.482f },
         }},
         {{
-            // { 1479.570f, 603.145f, 23.730f },
-            // { 1479.880f, 583.812f, 23.263f },
-            // { 1477.025f, 616.525f, 23.248f },
             { 1485.415f, 602.346f, 24.075f },
             { 1486.311f, 585.250f, 23.376f },
-            { 1481.450f, 618.430f, 23.405f },
+            { 1488.347f, 619.364f, 24.587f },
         }}
     }};
 
@@ -1629,9 +1626,17 @@ namespace SunwellHelpers
         constexpr float sideDistance = 22.0f;
         float frontAngle = GetFelmystFrontAngle(botAI, bot, felmyst);
         float sideAngle = frontAngle + (assignmentItr->second == 0 ? M_PI_2 : -M_PI_2);
-    position = Position{ felmyst->GetPositionX() + std::cos(sideAngle) * sideDistance,
-                 felmyst->GetPositionY() + std::sin(sideAngle) * sideDistance,
-                 bot->GetPositionZ() };
+        float destinationX = felmyst->GetPositionX() + std::cos(sideAngle) * sideDistance;
+        float destinationY = felmyst->GetPositionY() + std::sin(sideAngle) * sideDistance;
+        float destinationZ = bot->GetMapWaterOrGroundLevel(destinationX, destinationY, bot->GetPositionZ());
+        if (destinationZ <= INVALID_HEIGHT)
+            destinationZ = bot->GetPositionZ();
+
+        bot->GetMap()->CheckCollisionAndGetValidCoords(
+            bot, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(),
+            destinationX, destinationY, destinationZ, false);
+
+        position = Position{ destinationX, destinationY, destinationZ };
         return true;
     }
 

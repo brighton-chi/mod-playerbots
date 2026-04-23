@@ -800,10 +800,17 @@ bool FelmystPositionMeleeOnGroundAction::Execute(Event /*event*/)
     float behindAngle = Position::NormalizeOrientation(felmyst->GetOrientation() + M_PI);
     float targetX = felmyst->GetPositionX() + desiredDist * std::cos(behindAngle);
     float targetY = felmyst->GetPositionY() + desiredDist * std::sin(behindAngle);
+    float targetZ = bot->GetMapWaterOrGroundLevel(targetX, targetY, bot->GetPositionZ());
+    if (targetZ <= INVALID_HEIGHT)
+        targetZ = bot->GetPositionZ();
+
+    bot->GetMap()->CheckCollisionAndGetValidCoords(
+        bot, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(),
+        targetX, targetY, targetZ, false);
 
     if (bot->GetExactDist2d(targetX, targetY) > 0.25f)
     {
-        return MoveTo(SUNWELL_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false,
+        return MoveTo(SUNWELL_MAP_ID, targetX, targetY, targetZ, false, false,
                       false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
