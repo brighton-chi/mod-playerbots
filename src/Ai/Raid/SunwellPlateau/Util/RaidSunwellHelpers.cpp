@@ -1892,7 +1892,7 @@ namespace SunwellHelpers
 
     // M'uru
 
-    const Position MURU_STACK_POSITION = { 1836.738f, 608.646f, 71.222f };
+    const Position MURU_STACK_POSITION = { 1832.941f, 611.158f, 70.513f };
     const Position MURU_VOID_SENTINEL_N_TANK_POSITION = { 1840.448f, 630.605f, 70.567f };
     const Position MURU_VOID_SENTINEL_E_TANK_POSITION = { 1814.960f, 601.646f, 70.547f };
     const Position MURU_CENTER_POSITION = { 1816.250f, 625.484f, 69.604f };

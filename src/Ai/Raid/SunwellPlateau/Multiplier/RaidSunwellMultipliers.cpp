@@ -486,8 +486,7 @@ float EredarTwinsDelayCooldownsMultiplier::GetValue(Action* action)
 float MuruDisableDefaultTargetingMultiplier::GetValue(Action* action)
 {
     Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
-    Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius");
-    if (!muru && !entropius)
+    if (!muru && !AI_VALUE2(Unit*, "find target", "entropius"))
         return 1.0f;
 
     if (dynamic_cast<DpsAssistAction*>(action))
@@ -496,29 +495,18 @@ float MuruDisableDefaultTargetingMultiplier::GetValue(Action* action)
     constexpr float searchRadius = 40.0f;
     Unit* voidSpawn = bot->FindNearestCreature(
         static_cast<uint32>(SunwellNpcs::NPC_VOID_SPAWN), searchRadius);
-    if (voidSpawn && bot->GetTarget() == voidSpawn->GetGUID() &&
+    if (voidSpawn &&
+        (bot->GetTarget() == voidSpawn->GetGUID() || bot->GetVictim() == voidSpawn) &&
         dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
     {
         return 0.0f;
     }
 
-    if (muru && bot->GetTarget() == muru->GetGUID())
-        context->GetValue<bool>("neglect threat")->Set(true);
-
-    return 1.0f;
-}
-
-float MuruControlTankActionsMultiplier::GetValue(Action* action)
-{
-    if (!botAI->IsTank(bot) ||
-        (!AI_VALUE2(Unit*, "find target", "m'uru") &&
-         !AI_VALUE2(Unit*, "find target", "entropius")))
+    if (muru &&
+        (bot->GetTarget() == muru->GetGUID() || bot->GetVictim() == muru))
     {
-        return 1.0f;
+        context->GetValue<bool>("neglect threat")->Set(true);
     }
-
-    if (dynamic_cast<CombatFormationMoveAction*>(action))
-        return 0.0f;
 
     if (botAI->IsAssistTankOfIndex(bot, 0, true) &&
         AI_VALUE2(Unit*, "find target", "void sentinel") &&
@@ -580,7 +568,7 @@ float MuruExcludeEnemiesFromTankTargetValueMultiplier::GetValue(Action* action)
 
 float MuruExcludeEnemiesFromDpsTargetValueMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsDps(bot) || !botAI->IsMelee(bot))
+    if (!botAI->IsDps(bot))
     {
         if (ignoredMuruGuid)
         {
@@ -597,7 +585,7 @@ float MuruExcludeEnemiesFromDpsTargetValueMultiplier::GetValue(Action* action)
     Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
     std::vector<ObjectGuid> darkFiendGuids = GetActiveDarkFiendGuids(botAI);
     ObjectGuid desiredGuid = ObjectGuid::Empty;
-    if (muru && muru->GetHealth() > 1 && TryGetMuruDarknessActiveState(bot, muru))
+    if (botAI->IsMelee(bot) && muru && TryGetMuruDarknessActiveState(bot, muru))
         desiredGuid = muru->GetGUID();
 
     if (!desiredGuid)
@@ -645,14 +633,8 @@ float MuruControlMisdirectionMultiplier::GetValue(Action* action)
 float MuruControlMovementMultiplier::GetValue(Action* action)
 {
     Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
-    if (!muru || muru->GetHealth() == 1)
+    if (!muru && !AI_VALUE2(Unit*, "find target", "entropius"))
         return 1.0f;
-
-    if (TryGetMuruDarknessActiveState(bot, muru) &&
-        dynamic_cast<CastReachTargetSpellAction*>(action))
-    {
-        return 0.0f;
-    }
 
     if (dynamic_cast<CastDisengageAction*>(action) ||
         dynamic_cast<CastBlinkBackAction*>(action) ||
@@ -663,8 +645,17 @@ float MuruControlMovementMultiplier::GetValue(Action* action)
     }
 
     if (dynamic_cast<CombatFormationMoveAction*>(action) &&
-        !dynamic_cast<TankFaceAction*>(action) &&
         !dynamic_cast<SetBehindTargetAction*>(action))
+    {
+        return 0.0f;
+    }
+
+    if (botAI->IsTank(bot))
+        return 1.0f;
+
+    if (muru && TryGetMuruDarknessActiveState(bot, muru) &&
+        (dynamic_cast<CastReachTargetSpellAction*>(action) ||
+         dynamic_cast<ReachTargetAction*>(action)))
     {
         return 0.0f;
     }

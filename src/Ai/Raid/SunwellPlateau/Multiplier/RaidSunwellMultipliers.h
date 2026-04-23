@@ -197,14 +197,6 @@ private:
     std::vector<ObjectGuid> ignoredDarkFiendGuids;
 };
 
-class MuruControlTankActionsMultiplier : public Multiplier
-{
-public:
-    MuruControlTankActionsMultiplier(PlayerbotAI* botAI) : Multiplier(
-        botAI, "m'uru control tank actions") {}
-    virtual float GetValue(Action* action);
-};
-
 class MuruControlMisdirectionMultiplier : public Multiplier
 {
 public:

@@ -402,12 +402,6 @@ bool MuruDeterminingDpsPriorityTrigger::IsActive()
     if (!botAI->IsDps(bot) /* && !botAI->IsTank(bot) */)
         return false;
 
-    /* if (botAI->IsAssistTankOfIndex(bot, 0, true) &&
-        AI_VALUE2(Unit*, "find target", "void sentinel"))
-    {
-        return false;
-    } */
-
     return AI_VALUE2(Unit*, "find target", "m'uru") ||
            AI_VALUE2(Unit*, "find target", "entropius");
 }

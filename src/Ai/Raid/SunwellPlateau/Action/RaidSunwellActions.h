@@ -289,6 +289,21 @@ private:
     bool TryGetEntropiusInitialRangedPosition(Position& position) const;
 };
 
+class MuruSetDpsPriorityAction : public AttackAction
+{
+public:
+    MuruSetDpsPriorityAction(
+        PlayerbotAI* botAI, std::string const name = "m'uru set dps priority") : AttackAction(botAI, name) {}
+    bool Execute(Event event) override;
+
+private:
+    Unit* ResolveMuruDpsTarget(
+        Unit* muru, Unit* entropius, Unit*& currentTarget, Unit* currentVictim, bool& isMeleeDps);
+    Unit* SelectMuruEncounterTarget(
+        Unit* currentTarget, Unit* currentVictim, bool isMeleeDps,
+        uint32 entry, std::vector<Unit*> const& candidates) const;
+};
+
 class MuruKillDarkFiendsWithDispelAction : public Action
 {
 public:
@@ -381,21 +396,6 @@ public:
 
 private:
     Unit* GetVoidSpawnVolleyPriorityTarget(Unit* muru, Unit* entropius) const;
-};
-
-class MuruSetDpsPriorityAction : public AttackAction
-{
-public:
-    MuruSetDpsPriorityAction(
-        PlayerbotAI* botAI, std::string const name = "m'uru set dps priority") : AttackAction(botAI, name) {}
-    bool Execute(Event event) override;
-
-private:
-    Unit* ResolveMuruDpsTarget(
-        Unit* muru, Unit* entropius, Unit*& currentTarget, Unit* currentVictim, bool& isMeleeDps);
-    Unit* SelectMuruEncounterTarget(
-        Unit* currentTarget, Unit* currentVictim, bool isMeleeDps,
-        uint32 entry, std::vector<Unit*> const& candidates) const;
 };
 
 // Kil'jaeden <The Deceiver>
