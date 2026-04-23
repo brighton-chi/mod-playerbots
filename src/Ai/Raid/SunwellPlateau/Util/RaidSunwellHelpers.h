@@ -70,6 +70,9 @@ namespace SunwellHelpers
 
     enum class SunwellNpcs : uint32
     {
+        // Trash
+        NPC_APOCALYPSE_GUARD        = 25593,
+
         // Felmyst
         NPC_FELMYST                 = 25038,
         NPC_DEMONIC_VAPOR           = 25265,
@@ -106,6 +109,10 @@ namespace SunwellHelpers
     // General
 
     constexpr uint32 SUNWELL_MAP_ID = 580;
+
+    // Trash
+
+    Creature* GetInfernalDefenseApocalypseGuard(Player* bot);
 
     // Kalecgos
 

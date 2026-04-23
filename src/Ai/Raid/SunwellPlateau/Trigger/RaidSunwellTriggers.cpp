@@ -24,9 +24,7 @@ bool ApocalypseGuardProtectedByInfernalDefenseTrigger::IsActive()
     if (bot->getClass() != CLASS_PRIEST)
         return false;
 
-    Unit* apocalypseGuard = AI_VALUE2(Unit*, "find target", "apocalypse guard");
-    return apocalypseGuard && apocalypseGuard->HasAura(
-        static_cast<uint32>(SunwellSpells::SPELL_INFERNAL_DEFENSE));
+    return GetInfernalDefenseApocalypseGuard(bot) != nullptr;
 }
 
 // Kalecgos

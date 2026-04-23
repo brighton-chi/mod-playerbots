@@ -5,8 +5,10 @@
 
 #include "RaidSunwellActions.h"
 #include "RaidSunwellHelpers.h"
+#include "CharmInfo.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
+#include "SpellMgr.h"
 #include "TargetValue.h"
 #include "Timer.h"
 
@@ -159,23 +161,7 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
 
 bool ApocalypseGuardAttackWithHolyMagicAction::Execute(Event /*event*/)
 {
-    Unit* target = nullptr;
-    constexpr float searchRadius = 40.0f;
-    std::list<Creature*> apocalypseGuards;
-    bot->GetCreatureListWithEntryInGrid(
-        apocalypseGuards, static_cast<uint32>(SunwellNpcs::NPC_APOCALYPSE_GUARD), searchRadius);
-
-    for (Creature* apocalypseGuard : apocalypseGuards)
-    {
-        if (!apocalypseGuard || !apocalypseGuard->IsAlive() ||
-            !apocalypseGuard->HasAura(static_cast<uint32>(SunwellSpells::SPELL_INFERNAL_DEFENSE)))
-        {
-            continue;
-        }
-
-        if (!target || apocalypseGuard->GetGUID() < target->GetGUID())
-            target = apocalypseGuard;
-    }
+    Unit* target = GetInfernalDefenseApocalypseGuard(bot);
 
     if (botAI->HasAura("shadowform", bot))
         botAI->RemoveAura("shadowform");
@@ -1744,12 +1730,16 @@ bool MuruEnslavedVoidSpawnCastShadowBoltVolleyAction::Execute(Event /*event*/)
     Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
     Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius");
 
-    Unit* voidSpawn = bot->GetCharm();
+    Creature* voidSpawn = bot->GetCharm() ? bot->GetCharm()->ToCreature() : nullptr;
     if (!voidSpawn || !voidSpawn->IsAlive() ||
         voidSpawn->GetEntry() != static_cast<uint32>(SunwellNpcs::NPC_VOID_SPAWN))
     {
         return false;
     }
+
+    CharmInfo* charmInfo = voidSpawn->GetCharmInfo();
+    if (!charmInfo)
+        return false;
 
     Unit* target = GetVoidSpawnVolleyPriorityTarget(botAI, bot, muru, entropius);
     if (!target)
@@ -1757,22 +1747,29 @@ bool MuruEnslavedVoidSpawnCastShadowBoltVolleyAction::Execute(Event /*event*/)
 
     bool commandedAttack = CommandControlledCreatureToAttack(voidSpawn, target);
 
-    if (voidSpawn->GetExactDist2d(target) > sPlayerbotAIConfig.spellDistance)
-        return commandedAttack;
-
-    if (voidSpawn->HasSpellCooldown(
-            static_cast<uint32>(SunwellSpells::SPELL_SHADOW_BOLT_VOLLEY)))
+    constexpr uint32 volleySpellId = static_cast<uint32>(SunwellSpells::SPELL_SHADOW_BOLT_VOLLEY);
+    bool isAutocastEnabled = false;
+    for (uint8 position = 0; position < voidSpawn->GetPetAutoSpellSize(); ++position)
     {
-        return commandedAttack;
+        if (voidSpawn->GetPetAutoSpellOnPos(position) == volleySpellId)
+        {
+            isAutocastEnabled = true;
+            break;
+        }
     }
 
-    constexpr uint32 globalCooldown = 1000;
-    voidSpawn->CastSpell(
-        target, static_cast<uint32>(SunwellSpells::SPELL_SHADOW_BOLT_VOLLEY), true);
-    voidSpawn->AddSpellCooldown(
-        static_cast<uint32>(SunwellSpells::SPELL_SHADOW_BOLT_VOLLEY), 0, globalCooldown);
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(volleySpellId);
+    if (!spellInfo || !spellInfo->IsAutocastable())
+        return commandedAttack;
 
-    return true;
+    if (!isAutocastEnabled)
+    {
+        charmInfo->ToggleCreatureAutocast(spellInfo, true);
+        charmInfo->SetSpellAutocast(spellInfo, true);
+        return true;
+    }
+
+    return commandedAttack;
 }
 
 bool MuruSetDpsPriorityAction::Execute(Event /*event*/)
