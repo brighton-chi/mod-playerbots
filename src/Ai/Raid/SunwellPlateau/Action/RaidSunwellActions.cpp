@@ -1455,14 +1455,27 @@ bool MuruPositionRangedAction::Execute(Event /*event*/)
     targets.entropius = entropius;
     GatherMuruEncounterTargets(botAI, targets);
 
+    bool hasActiveNonControlledVoidSpawns = false;
+    for (Unit* voidSpawn : targets.voidSpawns)
+    {
+        if (voidSpawn && !voidSpawn->IsCharmed() && !voidSpawn->GetCharmer())
+        {
+            hasActiveNonControlledVoidSpawns = true;
+            break;
+        }
+    }
+
     bool hasActiveAdds = !targets.voidSentinels.empty() ||
-                         !targets.voidSpawns.empty() ||
+                         hasActiveNonControlledVoidSpawns ||
                          !targets.furyMages.empty() ||
                          !targets.berserkers.empty();
     auto reachedPositionsItr = muruEntropiusInitialRangedPositionsReached.find(bot->GetInstanceId());
     bool hasReachedInitialPosition =
         reachedPositionsItr != muruEntropiusInitialRangedPositionsReached.end() &&
         reachedPositionsItr->second.find(bot->GetGUID()) != reachedPositionsItr->second.end();
+
+    if (!hasReachedInitialPosition && TryGetMuruDarknessActiveState(bot, muru))
+        return false;
 
     if (!hasActiveAdds && !hasReachedInitialPosition)
     {
