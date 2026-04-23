@@ -55,7 +55,6 @@ namespace SunwellHelpers
         SPELL_FLURRY = 46160,
 
         // Kil'jaeden <The Deceiver>
-        SPELL_SHADOW_SPIKE = 46589,
         SPELL_DARKNESS_OF_A_THOUSAND_SOULS = 46605,
 
         // Hunter
@@ -311,8 +310,6 @@ namespace SunwellHelpers
     bool CommandControlledCreatureToAttack(Unit* controlled, Unit* target);
 
     // Kil'jaeden <The Deceiver>
-    constexpr uint32 KILJAEDEN_SHADOW_SPIKE_HAZARD_DURATION_MS = 3000;
-    constexpr float KILJAEDEN_SHADOW_SPIKE_SAFE_DISTANCE = 10.0f; // Radius of hazard is 8 yards
     constexpr uint32 KILJAEDEN_ARMAGEDDON_HAZARD_DURATION_MS = 10000;
     constexpr float KILJAEDEN_ARMAGEDDON_SAFE_DISTANCE = 11.0f; // Radius of hazard is 9 yards
     constexpr float KILJAEDEN_RANGED_ARC_ORIENTATION = 0.8f;
@@ -322,7 +319,7 @@ namespace SunwellHelpers
     constexpr uint8 KILJAEDEN_OUTER_RANGED_SLOT_COUNT = 11;
     constexpr uint8 KILJAEDEN_TOTAL_RANGED_SLOT_COUNT =
         KILJAEDEN_INNER_RANGED_SLOT_COUNT + KILJAEDEN_OUTER_RANGED_SLOT_COUNT;
-    struct KiljaedenHazard
+    struct KiljaedenArmageddon
     {
         Position destination;
         uint32 expireMs = 0;
@@ -333,12 +330,12 @@ namespace SunwellHelpers
     extern const Position KILJAEDEN_S_MELEE_POSITION;
     extern const Position KILJAEDEN_E_MELEE_POSITION;
     extern const Position KILJAEDEN_STACK_POSITION;
-    extern std::unordered_map<uint32, std::vector<KiljaedenHazard>> kiljaedenHazards;
-    void AddKiljaedenHazard(
+    extern std::unordered_map<uint32, std::vector<KiljaedenArmageddon>> kiljaedenArmageddons;
+    void AddKiljaedenArmageddon(
         uint32 instanceId, Position const& destination, uint32 durationMs, float safeDistance);
-    void PruneExpiredKiljaedenHazards(uint32 instanceId);
-    bool HasActiveKiljaedenHazard(uint32 instanceId);
-    bool TryGetKiljaedenNearestHazard(Player* bot, KiljaedenHazard& hazard);
+    void PruneExpiredKiljaedenArmageddons(uint32 instanceId);
+    bool HasActiveKiljaedenArmageddon(uint32 instanceId);
+    bool TryGetKiljaedenNearestArmageddon(Player* bot, KiljaedenArmageddon& armageddon);
     bool IsKiljaedenCastingDarknessOfAThousandSouls(Unit* kiljaeden);
     bool TryGetKiljaedenRangedPosition(PlayerbotAI* botAI, Player* bot, Position& position);
 }

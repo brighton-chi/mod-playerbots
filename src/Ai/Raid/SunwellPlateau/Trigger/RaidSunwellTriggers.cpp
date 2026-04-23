@@ -529,7 +529,7 @@ bool KiljaedenHandsOfTheDeceiverAreActiveTrigger::IsActive()
     return AI_VALUE2(Unit*, "find target", "hand of the deceiver");
 }
 
-bool KiljaedenItsRainingSpikesAndRocksTrigger::IsActive()
+bool KiljaedenItsRainingMeteorsTrigger::IsActive()
 {
     if (botAI->IsTank(bot))
         return false;
@@ -538,8 +538,8 @@ bool KiljaedenItsRainingSpikesAndRocksTrigger::IsActive()
     if (!kiljaeden || IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
         return false;
 
-    KiljaedenHazard hazard;
-    return TryGetKiljaedenNearestHazard(bot, hazard);
+    KiljaedenArmageddon armageddon;
+    return TryGetKiljaedenNearestArmageddon(bot, armageddon);
 }
 
 bool KiljaedenSaysChaosDestructionOblivionTrigger::IsActive()
@@ -578,7 +578,7 @@ bool KiljaedenBossEngagedByMeleeTrigger::IsActive()
     if (!kiljaeden || IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
         return false;
 
-    return !HasActiveKiljaedenHazard(bot->GetInstanceId());
+    return !HasActiveKiljaedenArmageddon(bot->GetInstanceId());
 }
 
 bool KiljaedenBossEngagedByRangedTrigger::IsActive()
@@ -590,7 +590,7 @@ bool KiljaedenBossEngagedByRangedTrigger::IsActive()
     if (!kiljaeden || IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
         return false;
 
-    return !HasActiveKiljaedenHazard(bot->GetInstanceId());
+    return !HasActiveKiljaedenArmageddon(bot->GetInstanceId());
 }
 
 /* bool KiljaedenDeterminingDpsPriorityTrigger::IsActive()

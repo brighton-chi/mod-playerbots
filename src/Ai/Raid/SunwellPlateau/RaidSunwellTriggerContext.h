@@ -150,8 +150,8 @@ public:
         creators["kil'jaeden hands of the deceiver are active"] =
             &RaidSunwellTriggerContext::kiljaeden_hands_of_the_deceiver_are_active;
 
-        creators["kil'jaeden it's raining spikes and rocks"] =
-            &RaidSunwellTriggerContext::kiljaeden_its_raining_spikes_and_rocks;
+        creators["kil'jaeden it's raining meteors"] =
+            &RaidSunwellTriggerContext::kiljaeden_its_raining_meteors;
 
         creators["kil'jaeden says: Chaos! Destruction! Oblivion!"] =
             &RaidSunwellTriggerContext::kiljaeden_says_chaos_destruction_oblivion;
@@ -306,8 +306,8 @@ private:
     static Trigger* kiljaeden_hands_of_the_deceiver_are_active(
         PlayerbotAI* botAI) { return new KiljaedenHandsOfTheDeceiverAreActiveTrigger(botAI); }
 
-    static Trigger* kiljaeden_its_raining_spikes_and_rocks(
-        PlayerbotAI* botAI) { return new KiljaedenItsRainingSpikesAndRocksTrigger(botAI); }
+    static Trigger* kiljaeden_its_raining_meteors(
+        PlayerbotAI* botAI) { return new KiljaedenItsRainingMeteorsTrigger(botAI); }
 
     static Trigger* kiljaeden_says_chaos_destruction_oblivion(
         PlayerbotAI* botAI) { return new KiljaedenSaysChaosDestructionOblivionTrigger(botAI); }

@@ -147,8 +147,8 @@ public:
         creators["kil'jaeden tanks handle hands of the deceiver"] =
             &RaidSunwellActionContext::kiljaeden_tanks_handle_hands_of_the_deceiver;
 
-        creators["kil'jaeden avoid hazards"] =
-            &RaidSunwellActionContext::kiljaeden_avoid_hazards;
+        creators["kil'jaeden avoid armageddons"] =
+            &RaidSunwellActionContext::kiljaeden_avoid_armageddons;
 
         creators["kil'jaeden stack for shield of the blue"] =
             &RaidSunwellActionContext::kiljaeden_stack_for_shield_of_the_blue;
@@ -300,8 +300,8 @@ private:
     static Action* kiljaeden_tanks_handle_hands_of_the_deceiver(
         PlayerbotAI* botAI) { return new KiljaedenTanksHandleHandsOfTheDeceiverAction(botAI); }
 
-    static Action* kiljaeden_avoid_hazards(
-        PlayerbotAI* botAI) { return new KiljaedenAvoidHazardsAction(botAI); }
+    static Action* kiljaeden_avoid_armageddons(
+        PlayerbotAI* botAI) { return new KiljaedenAvoidArmageddonsAction(botAI); }
 
     static Action* kiljaeden_position_tanks(
         PlayerbotAI* botAI) { return new KiljaedenPositionTanksAction(botAI); }

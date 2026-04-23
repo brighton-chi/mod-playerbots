@@ -374,11 +374,11 @@ public:
     bool IsActive() override;
 };
 
-class KiljaedenItsRainingSpikesAndRocksTrigger : public Trigger
+class KiljaedenItsRainingMeteorsTrigger : public Trigger
 {
 public:
-    KiljaedenItsRainingSpikesAndRocksTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kil'jaeden it's raining spikes and rocks") {}
+    KiljaedenItsRainingMeteorsTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "kil'jaeden its raining meteors") {}
     bool IsActive() override;
 };
 

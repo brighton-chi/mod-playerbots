@@ -310,7 +310,7 @@ public:
         if (!kiljaedenTrackedArmageddonTargets.insert(creature->GetGUID()).second)
             return;
 
-        AddKiljaedenHazard(
+        AddKiljaedenArmageddon(
             creature->GetInstanceId(), creature->GetPosition(),
             KILJAEDEN_ARMAGEDDON_HAZARD_DURATION_MS, KILJAEDEN_ARMAGEDDON_SAFE_DISTANCE);
         RequestInterruptForBotsNear(creature, KILJAEDEN_ARMAGEDDON_SAFE_DISTANCE);
@@ -333,9 +333,9 @@ class KiljaedenSpellListenerScript : public AllSpellScript
 public:
     KiljaedenSpellListenerScript() : AllSpellScript("KiljaedenSpellListenerScript") { }
 
-    void OnSpellCast(Spell* spell, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
+    void OnSpellCast(Spell* /*spell*/, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
     {
-        if (!spell || !caster || !spellInfo)
+        if (!caster || !spellInfo)
         {
             return;
         }
@@ -345,12 +345,6 @@ public:
             RequestInterruptForKiljaedenBots(caster);
             return;
         }
-
-        // Temporarily ignore Shadow Spike hazard handling so bots only avoid Armageddon.
-        if (spellInfo->Id != static_cast<uint32>(SunwellSpells::SPELL_SHADOW_SPIKE))
-            return;
-
-        return;
     }
 };
 

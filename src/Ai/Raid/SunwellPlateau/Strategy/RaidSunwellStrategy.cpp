@@ -144,8 +144,8 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kil'jaeden hands of the deceiver are active", {
         NextAction("kil'jaeden tanks handle hands of the deceiver", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("kil'jaeden it's raining spikes and rocks", {
-        NextAction("kil'jaeden avoid hazards", ACTION_EMERGENCY + 1) }));
+    triggers.push_back(new TriggerNode("kil'jaeden it's raining meteors", {
+        NextAction("kil'jaeden avoid armageddons", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("kil'jaeden says: Chaos! Destruction! Oblivion!", {
         NextAction("kil'jaeden stack for shield of the blue", ACTION_EMERGENCY + 10) }));
@@ -204,6 +204,6 @@ void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     // Kil'jaeden <The Deceiver>
     multipliers.push_back(new KiljaedenExcludeShieldOrbsFromTankTargetValueMultiplier(botAI));
     multipliers.push_back(new KiljaedenControlMovementAndTargetingMultiplier(botAI));
-    multipliers.push_back(new KiljaedenPrioritizeHazardAvoidanceMultiplier(botAI));
+    multipliers.push_back(new KiljaedenPrioritizeArmageddonAvoidanceMultiplier(botAI));
     multipliers.push_back(new KiljaedenDelayCooldownsMultiplier(botAI));
 }

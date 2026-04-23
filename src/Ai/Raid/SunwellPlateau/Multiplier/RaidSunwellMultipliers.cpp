@@ -811,7 +811,7 @@ float KiljaedenControlMovementAndTargetingMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float KiljaedenPrioritizeHazardAvoidanceMultiplier::GetValue(Action* action)
+float KiljaedenPrioritizeArmageddonAvoidanceMultiplier::GetValue(Action* action)
 {
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
     if (!kiljaeden)
@@ -825,7 +825,7 @@ float KiljaedenPrioritizeHazardAvoidanceMultiplier::GetValue(Action* action)
         return 0.0f;
     }
 
-    if (HasActiveKiljaedenHazard(bot->GetInstanceId()) &&
+    if (HasActiveKiljaedenArmageddon(bot->GetInstanceId()) &&
         (dynamic_cast<KiljaedenPositionMeleeAction*>(action) ||
          dynamic_cast<KiljaedenPositionRangedAction*>(action)))
     {

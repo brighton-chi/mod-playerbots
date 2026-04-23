@@ -2199,74 +2199,74 @@ namespace SunwellHelpers
     const Position KILJAEDEN_STACK_POSITION = { 1709.768f, 642.241f, 27.706f };
 
     std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> kiljaedenRangedAssignments;
-    std::unordered_map<uint32, std::vector<KiljaedenHazard>> kiljaedenHazards;
+    std::unordered_map<uint32, std::vector<KiljaedenArmageddon>> kiljaedenArmageddons;
 
-    void PruneExpiredKiljaedenHazards(uint32 instanceId)
+    void PruneExpiredKiljaedenArmageddons(uint32 instanceId)
     {
-        auto instanceItr = kiljaedenHazards.find(instanceId);
-        if (instanceItr == kiljaedenHazards.end())
+        auto instanceItr = kiljaedenArmageddons.find(instanceId);
+        if (instanceItr == kiljaedenArmageddons.end())
             return;
 
         uint32 now = getMSTime();
-        std::vector<KiljaedenHazard>& hazards = instanceItr->second;
-        hazards.erase(std::remove_if(hazards.begin(), hazards.end(),
-            [now](KiljaedenHazard const& hazard) {
-                return !hazard.expireMs || hazard.expireMs <= now;
-            }), hazards.end());
+        std::vector<KiljaedenArmageddon>& armageddons = instanceItr->second;
+        armageddons.erase(std::remove_if(armageddons.begin(), armageddons.end(),
+            [now](KiljaedenArmageddon const& armageddon) {
+                return !armageddon.expireMs || armageddon.expireMs <= now;
+            }), armageddons.end());
 
-        if (hazards.empty())
-            kiljaedenHazards.erase(instanceItr);
+        if (armageddons.empty())
+            kiljaedenArmageddons.erase(instanceItr);
     }
 
-    void AddKiljaedenHazard(
+    void AddKiljaedenArmageddon(
         uint32 instanceId, Position const& destination, uint32 durationMs, float safeDistance)
     {
         if (!durationMs || safeDistance <= 0.0f)
             return;
 
         uint32 now = getMSTime();
-        PruneExpiredKiljaedenHazards(instanceId);
+        PruneExpiredKiljaedenArmageddons(instanceId);
 
-        KiljaedenHazard hazard;
-        hazard.destination = destination;
-        hazard.expireMs = now + durationMs;
-        hazard.safeDistance = safeDistance;
-        kiljaedenHazards[instanceId].push_back(hazard);
+        KiljaedenArmageddon armageddon;
+        armageddon.destination = destination;
+        armageddon.expireMs = now + durationMs;
+        armageddon.safeDistance = safeDistance;
+        kiljaedenArmageddons[instanceId].push_back(armageddon);
     }
 
-    bool HasActiveKiljaedenHazard(uint32 instanceId)
+    bool HasActiveKiljaedenArmageddon(uint32 instanceId)
     {
-        PruneExpiredKiljaedenHazards(instanceId);
-        auto instanceItr = kiljaedenHazards.find(instanceId);
-        return instanceItr != kiljaedenHazards.end() && !instanceItr->second.empty();
+        PruneExpiredKiljaedenArmageddons(instanceId);
+        auto instanceItr = kiljaedenArmageddons.find(instanceId);
+        return instanceItr != kiljaedenArmageddons.end() && !instanceItr->second.empty();
     }
 
-    bool TryGetKiljaedenNearestHazard(Player* bot, KiljaedenHazard& hazard)
+    bool TryGetKiljaedenNearestArmageddon(Player* bot, KiljaedenArmageddon& armageddon)
     {
-        PruneExpiredKiljaedenHazards(bot->GetInstanceId());
-        auto instanceItr = kiljaedenHazards.find(bot->GetInstanceId());
-        if (instanceItr == kiljaedenHazards.end())
+        PruneExpiredKiljaedenArmageddons(bot->GetInstanceId());
+        auto instanceItr = kiljaedenArmageddons.find(bot->GetInstanceId());
+        if (instanceItr == kiljaedenArmageddons.end())
             return false;
 
-        bool foundHazard = false;
+        bool foundArmageddon = false;
         float bestDistance = 0.0f;
 
-        for (KiljaedenHazard const& candidate : instanceItr->second)
+        for (KiljaedenArmageddon const& candidate : instanceItr->second)
         {
             float distance = bot->GetExactDist2d(
                 candidate.destination.GetPositionX(), candidate.destination.GetPositionY());
             if (distance >= candidate.safeDistance)
                 continue;
 
-            if (!foundHazard || distance < bestDistance)
+            if (!foundArmageddon || distance < bestDistance)
             {
-                hazard = candidate;
+                armageddon = candidate;
                 bestDistance = distance;
-                foundHazard = true;
+                foundArmageddon = true;
             }
         }
 
-        return foundHazard;
+        return foundArmageddon;
     }
 
     bool IsKiljaedenCastingDarknessOfAThousandSouls(Unit* kiljaeden)

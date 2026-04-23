@@ -138,7 +138,7 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
         !AI_VALUE2(Unit*, "find target", "hand of the deceiver"))
     {
         if (IsMechanicTrackerBot(botAI, bot, SUNWELL_MAP_ID) &&
-            kiljaedenHazards.erase(instanceId) > 0)
+            kiljaedenArmageddons.erase(instanceId) > 0)
         {
             erased = true;
         }
@@ -1905,16 +1905,16 @@ bool KiljaedenTanksHandleHandsOfTheDeceiverAction::Execute(Event /*event*/)
     return false;
 }
 
-bool KiljaedenAvoidHazardsAction::Execute(Event /*event*/)
+bool KiljaedenAvoidArmageddonsAction::Execute(Event /*event*/)
 {
-    KiljaedenHazard hazard;
-    if (!TryGetKiljaedenNearestHazard(bot, hazard))
+    KiljaedenArmageddon armageddon;
+    if (!TryGetKiljaedenNearestArmageddon(bot, armageddon))
         return false;
 
     constexpr uint32 minInterval = 0;
     // botAI->InterruptSpell();
 
-    if (FleePosition(hazard.destination, hazard.safeDistance, minInterval))
+    if (FleePosition(armageddon.destination, armageddon.safeDistance, minInterval))
         return true;
 
     constexpr float minDistance = 5.0f;

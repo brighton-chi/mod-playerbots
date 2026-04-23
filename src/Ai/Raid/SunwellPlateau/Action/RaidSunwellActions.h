@@ -371,11 +371,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class KiljaedenAvoidHazardsAction : public MovementAction
+class KiljaedenAvoidArmageddonsAction : public MovementAction
 {
 public:
-    KiljaedenAvoidHazardsAction(
-        PlayerbotAI* botAI, std::string const name = "kil'jaeden avoid hazards") : MovementAction(botAI, name) {}
+    KiljaedenAvoidArmageddonsAction(
+        PlayerbotAI* botAI, std::string const name = "kil'jaeden avoid armageddons") : MovementAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 
