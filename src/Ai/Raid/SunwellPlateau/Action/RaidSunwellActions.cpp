@@ -858,91 +858,82 @@ bool FelmystRunAwayFromEncapsulatedPlayerAction::Execute(Event /*event*/)
 
     float meleeDistance = bot->GetMeleeRange(felmyst);
     float behindAngle = Position::NormalizeOrientation(felmyst->GetOrientation() + M_PI);
-
-    Position meleePosition;
-    meleePosition.Relocate(
-        felmyst->GetPositionX() + meleeDistance * std::cos(behindAngle),
-        felmyst->GetPositionY() + meleeDistance * std::sin(behindAngle),
-        bot->GetPositionZ());
+    float meleeX = felmyst->GetPositionX() + meleeDistance * std::cos(behindAngle);
+    float meleeY = felmyst->GetPositionY() + meleeDistance * std::sin(behindAngle);
 
     constexpr float sideDistance = 22.0f;
     float frontAngle = GetFelmystFrontAngle(botAI, bot, felmyst);
     float leftAngle = frontAngle + M_PI_2;
     float rightAngle = frontAngle - M_PI_2;
+    float leftX = felmyst->GetPositionX() + std::cos(leftAngle) * sideDistance;
+    float leftY = felmyst->GetPositionY() + std::sin(leftAngle) * sideDistance;
+    float rightX = felmyst->GetPositionX() + std::cos(rightAngle) * sideDistance;
+    float rightY = felmyst->GetPositionY() + std::sin(rightAngle) * sideDistance;
 
-    Position leftPosition;
-    leftPosition.Relocate(
-        felmyst->GetPositionX() + std::cos(leftAngle) * sideDistance,
-        felmyst->GetPositionY() + std::sin(leftAngle) * sideDistance,
-        bot->GetPositionZ());
+    float leftDistance = bot->GetExactDist2d(leftX, leftY);
+    float rightDistance = bot->GetExactDist2d(rightX, rightY);
 
-    Position rightPosition;
-    rightPosition.Relocate(
-        felmyst->GetPositionX() + std::cos(rightAngle) * sideDistance,
-        felmyst->GetPositionY() + std::sin(rightAngle) * sideDistance,
-        bot->GetPositionZ());
-
-    float leftDistance = bot->GetExactDist2d(
-        leftPosition.GetPositionX(), leftPosition.GetPositionY());
-    float rightDistance = bot->GetExactDist2d(
-        rightPosition.GetPositionX(), rightPosition.GetPositionY());
-
-    std::array<Position, 3> destinations;
-    uint8 destinationCount = 0;
-    auto tryAddDestination = [&](Position const& destination)
+    constexpr float stackArrivalDistance = 3.0f;
+    auto tryMoveToStack = [&](float x, float y)
     {
-        for (uint8 index = 0; index < destinationCount; ++index)
-        {
-            Position const& existing = destinations[index];
-            if (existing.GetExactDist2d(destination.GetPositionX(), destination.GetPositionY()) <= 0.5f)
-                return;
-        }
-
-        destinations[destinationCount++] = destination;
+        return MoveInside(SUNWELL_MAP_ID, x, y, bot->GetPositionZ(), stackArrivalDistance,
+                          MovementPriority::MOVEMENT_FORCED);
     };
 
     if (isEncapsulateTargetInRangedGroup)
     {
-        tryAddDestination(meleePosition);
+        if (tryMoveToStack(meleeX, meleeY))
+            return true;
 
-        float leftTargetDistance = encapsulateTarget->GetExactDist2d(
-            leftPosition.GetPositionX(), leftPosition.GetPositionY());
-        float rightTargetDistance = encapsulateTarget->GetExactDist2d(
-            rightPosition.GetPositionX(), rightPosition.GetPositionY());
+        float leftTargetDistance = encapsulateTarget->GetExactDist2d(leftX, leftY);
+        float rightTargetDistance = encapsulateTarget->GetExactDist2d(rightX, rightY);
 
         if (leftTargetDistance >= rightTargetDistance)
         {
-            if (leftTargetDistance > FELMYST_ENCAPSULATE_SAFE_DISTANCE)
-                tryAddDestination(leftPosition);
-            if (rightTargetDistance > FELMYST_ENCAPSULATE_SAFE_DISTANCE)
-                tryAddDestination(rightPosition);
+            if (leftTargetDistance > FELMYST_ENCAPSULATE_SAFE_DISTANCE &&
+                tryMoveToStack(leftX, leftY))
+            {
+                return true;
+            }
+
+            if (rightTargetDistance > FELMYST_ENCAPSULATE_SAFE_DISTANCE &&
+                tryMoveToStack(rightX, rightY))
+            {
+                return true;
+            }
         }
         else
         {
-            if (rightTargetDistance > FELMYST_ENCAPSULATE_SAFE_DISTANCE)
-                tryAddDestination(rightPosition);
-            if (leftTargetDistance > FELMYST_ENCAPSULATE_SAFE_DISTANCE)
-                tryAddDestination(leftPosition);
+            if (rightTargetDistance > FELMYST_ENCAPSULATE_SAFE_DISTANCE &&
+                tryMoveToStack(rightX, rightY))
+            {
+                return true;
+            }
+
+            if (leftTargetDistance > FELMYST_ENCAPSULATE_SAFE_DISTANCE &&
+                tryMoveToStack(leftX, leftY))
+            {
+                return true;
+            }
         }
     }
     else
     {
-        Position const& nearerRangedPosition = leftDistance <= rightDistance ? leftPosition : rightPosition;
-        Position const& fartherRangedPosition = leftDistance <= rightDistance ? rightPosition : leftPosition;
-
-        tryAddDestination(nearerRangedPosition);
-        tryAddDestination(fartherRangedPosition);
-    }
-
-    constexpr float stackArrivalDistance = 3.0f;
-    for (uint8 index = 0; index < destinationCount; ++index)
-    {
-        Position const& destination = destinations[index];
-        if (MoveInside(SUNWELL_MAP_ID, destination.GetPositionX(), destination.GetPositionY(),
-                       destination.GetPositionZ(), stackArrivalDistance,
-                       MovementPriority::MOVEMENT_FORCED))
+        if (leftDistance <= rightDistance)
         {
-            return true;
+            if (tryMoveToStack(leftX, leftY))
+                return true;
+
+            if (tryMoveToStack(rightX, rightY))
+                return true;
+        }
+        else
+        {
+            if (tryMoveToStack(rightX, rightY))
+                return true;
+
+            if (tryMoveToStack(leftX, leftY))
+                return true;
         }
     }
 

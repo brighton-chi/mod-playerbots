@@ -589,11 +589,8 @@ namespace SunwellHelpers
     Position GetBrutallusTankPosition(Unit* brutallus, bool isMainTank, float z)
     {
         if (isMainTank)
-        {
-            Position position = BRUTALLUS_MAIN_TANK_POSITION;
-            position.Relocate(position.GetPositionX(), position.GetPositionY(), z);
-            return position;
-        }
+            return { BRUTALLUS_MAIN_TANK_POSITION.GetPositionX(),
+                     BRUTALLUS_MAIN_TANK_POSITION.GetPositionY(), z };
 
         float angle = GetBrutallusMainTankAngle(brutallus);
         angle = Position::NormalizeOrientation(angle + BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET);
@@ -689,19 +686,11 @@ namespace SunwellHelpers
     Position GetBrutallusPositionAtAngle(
         Unit* brutallus, float angle, float radius, float z)
     {
-        Position center = BRUTALLUS_MAIN_TANK_POSITION;
-        if (brutallus)
-        {
-            center.Relocate(brutallus->GetPositionX(), brutallus->GetPositionY(),
-                            brutallus->GetPositionZ());
-        }
-
-        float x = center.GetPositionX() + std::cos(angle) * radius;
-        float y = center.GetPositionY() + std::sin(angle) * radius;
-
-        Position position = BRUTALLUS_MAIN_TANK_POSITION;
-        position.Relocate(x, y, z);
-        return position;
+        float centerX = brutallus ? brutallus->GetPositionX() : BRUTALLUS_MAIN_TANK_POSITION.GetPositionX();
+        float centerY = brutallus ? brutallus->GetPositionY() : BRUTALLUS_MAIN_TANK_POSITION.GetPositionY();
+        float x = centerX + std::cos(angle) * radius;
+        float y = centerY + std::sin(angle) * radius;
+        return { x, y, z };
     }
 
     float GetCenteredArcSlotAngleOffset(
@@ -818,12 +807,8 @@ namespace SunwellHelpers
             targetAngle = Position::NormalizeOrientation(
                 normalAngle + (slotInfo.isMainTankGroup ? M_PI_2 : -M_PI_2));
 
-        Position center = BRUTALLUS_MAIN_TANK_POSITION;
-        center.Relocate(
-            brutallus->GetPositionX(), brutallus->GetPositionY(), brutallus->GetPositionZ());
-
         float currentAngle = Position::NormalizeOrientation(
-            std::atan2(currentY - center.GetPositionY(), currentX - center.GetPositionX()));
+            std::atan2(currentY - brutallus->GetPositionY(), currentX - brutallus->GetPositionX()));
         float remainingAngle = NormalizeSignedAngle(targetAngle - currentAngle);
 
         constexpr float stepDistance = 3.0f;
@@ -1067,7 +1052,7 @@ namespace SunwellHelpers
         if (!felmyst->GetMotionMaster()->GetDestination(destinationX, destinationY, destinationZ))
             return false;
 
-        destination.Relocate(destinationX, destinationY, destinationZ);
+        destination = Position{ destinationX, destinationY, destinationZ };
         return true;
     }
 
@@ -1496,8 +1481,8 @@ namespace SunwellHelpers
         }
 
         Position const& waypoint = path[waypointIndex % path.size()];
-        destination.Relocate(
-            waypoint.GetPositionX(), waypoint.GetPositionY(), waypoint.GetPositionZ(), bot->GetOrientation());
+        destination = Position{ waypoint.GetPositionX(), waypoint.GetPositionY(),
+                                waypoint.GetPositionZ(), bot->GetOrientation() };
         return true;
     }
 
@@ -1620,21 +1605,10 @@ namespace SunwellHelpers
                     destinationX, destinationY, destinationZ, false))
                 continue;
 
-            Position destination;
-            destination.Relocate(destinationX, destinationY, destinationZ);
-            destinations[destinationCount++] = destination;
+            destinations[destinationCount++] = Position{ destinationX, destinationY, destinationZ };
         }
 
         return destinationCount > 0;
-    }
-
-    Position GetFelmystPositionAtAngle(Unit* felmyst, Player* bot, float angle, float radius)
-    {
-        Position position;
-        position.Relocate(felmyst->GetPositionX() + std::cos(angle) * radius,
-                          felmyst->GetPositionY() + std::sin(angle) * radius,
-                          bot->GetPositionZ());
-        return position;
     }
 
     bool TryGetFelmystRangedPosition(PlayerbotAI* botAI, Player* bot, Unit* felmyst, Position& position)
@@ -1655,7 +1629,9 @@ namespace SunwellHelpers
         constexpr float sideDistance = 22.0f;
         float frontAngle = GetFelmystFrontAngle(botAI, bot, felmyst);
         float sideAngle = frontAngle + (assignmentItr->second == 0 ? M_PI_2 : -M_PI_2);
-        position = GetFelmystPositionAtAngle(felmyst, bot, sideAngle, sideDistance);
+    position = Position{ felmyst->GetPositionX() + std::cos(sideAngle) * sideDistance,
+                 felmyst->GetPositionY() + std::sin(sideAngle) * sideDistance,
+                 bot->GetPositionZ() };
         return true;
     }
 
@@ -2336,7 +2312,7 @@ namespace SunwellHelpers
         float positionX = KILJAEDEN_CENTER_POSITION.GetPositionX() + std::cos(angle) * radius;
         float positionY = KILJAEDEN_CENTER_POSITION.GetPositionY() + std::sin(angle) * radius;
 
-        position.Relocate(positionX, positionY, KILJAEDEN_CENTER_POSITION.GetPositionZ());
+        position = Position{ positionX, positionY, KILJAEDEN_CENTER_POSITION.GetPositionZ() };
         return true;
     }
 
