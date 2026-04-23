@@ -169,7 +169,21 @@ bool BuffTrigger::IsActive()
 
 Value<Unit*>* BuffOnPartyTrigger::GetTargetValue()
 {
-    return context->GetValue<Unit*>("party member without aura", ai::buff::MakeAuraQualifierForBuff(spell));
+    return context->GetValue<Unit*>(
+        "party member without aura", ai::buff::MakeAuraQualifierForBuff(spell));
+}
+
+bool BuffOnPartyTrigger::IsActive()
+{
+    Unit* target = GetTarget();
+    if (!target)
+        return false;
+
+    std::string const groupVariant = ai::buff::GroupVariantFor(spell);
+    if (!groupVariant.empty() && botAI->HasAura(groupVariant, target, false, checkIsOwner, -1, checkDuration))
+        return false;
+
+    return BuffTrigger::IsActive();
 }
 
 bool ProtectPartyMemberTrigger::IsActive() { return AI_VALUE(Unit*, "party member to protect"); }
