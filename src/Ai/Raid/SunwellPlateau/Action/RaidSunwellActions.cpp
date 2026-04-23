@@ -159,6 +159,25 @@ bool KalecgosTankPositionBossAction::Execute(Event event)
 
     MarkTargetWithSkull(bot, kalecgos);
 
+    const Position& position = KALECGOS_TANK_POSITION;
+    float distToPosition = bot->GetExactDist2d(position.GetPositionX(),
+                                               position.GetPositionY());
+
+    if (kalecgos->GetVictim() && kalecgos->GetVictim() != bot)
+    {
+        if (distToPosition > 3.0f)
+        {
+            float dX = position.GetPositionX() - bot->GetPositionX();
+            float dY = position.GetPositionY() - bot->GetPositionY();
+            float moveDist = std::min(5.0f, distToPosition);
+            float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
+
+            return MoveTo(SUNWELL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
+                          false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
+        }
+    }
+
     if (bot->GetVictim() != kalecgos)
         return Attack(kalecgos);
 
@@ -168,9 +187,6 @@ bool KalecgosTankPositionBossAction::Execute(Event event)
     }
     else if (kalecgos->GetVictim() == bot && bot->IsWithinMeleeRange(kalecgos))
     {
-        const Position& position = KALECGOS_TANK_POSITION;
-        float distToPosition = bot->GetExactDist2d(position.GetPositionX(),
-                                                   position.GetPositionY());
         if (distToPosition > 3.0f)
         {
             float dX = position.GetPositionX() - bot->GetPositionX();
@@ -198,7 +214,7 @@ bool KalecgosEnterSpectralRiftAction::Execute(Event /*event*/)
 
         const Position& position = KALECGOS_TANK_POSITION;
         if (nextTank->GetExactDist2d(position.GetPositionX(),
-            position.GetPositionY()) > 3.0f)
+            position.GetPositionY()) > 3.0f || kalecgos->GetVictim() != nextTank)
         {
             return false;
         }
@@ -229,14 +245,18 @@ bool KalecgosDisperseRangedAction::Execute(Event /*event*/)
     if (!HasReachedKalecgosInitialRangedPosition(bot))
     {
         const Position& initialPos = KALECGOS_INITIAL_RANGED_POSITION;
-        float distToInitialPosition = bot->GetExactDist2d(initialPos.GetPositionX(),
+        /* float distToInitialPosition = bot->GetExactDist2d(initialPos.GetPositionX(),
                                                           initialPos.GetPositionY());
         if (distToInitialPosition > 1.0f)
         {
             return MoveTo(SUNWELL_MAP_ID, initialPos.GetPositionX(), initialPos.GetPositionY(),
                           initialPos.GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, true);
-        }
+        } */
+        constexpr float initialRangedRadius = 10.0f;
+        return MoveInside(SUNWELL_MAP_ID, initialPos.GetPositionX(), initialPos.GetPositionY(),
+                          initialPos.GetPositionZ(), initialRangedRadius,
+                          MovementPriority::MOVEMENT_COMBAT);
 
         SetKalecgosInitialRangedPositionReached(bot, true);
     }
