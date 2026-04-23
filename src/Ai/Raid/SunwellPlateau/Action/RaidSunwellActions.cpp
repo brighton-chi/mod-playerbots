@@ -1797,7 +1797,9 @@ bool MuruSetDpsPriorityAction::Execute(Event /*event*/)
     const bool isShadowPriest =
         bot->getClass() == CLASS_PRIEST && botAI->HasStrategy("shadow", BOT_STATE_COMBAT);
     const bool isOtherRanged = botAI->IsRanged(bot) && !isShadowPriest;
+    const bool isRangedDps = isShadowPriest || isOtherRanged;
     const bool isMeleeDps = botAI->IsMelee(bot) && !isShadowPriest && !isOtherRanged;
+    const bool isInitialMuruPhase = muru && muru->GetHealth() > 1;
     Unit* currentTarget = context->GetValue<Unit*>("current target")->Get();
     Unit* currentVictim = bot->GetVictim();
 
@@ -1893,6 +1895,13 @@ bool MuruSetDpsPriorityAction::Execute(Event /*event*/)
         if (!unit || !unit->IsAlive())
             return false;
 
+        constexpr float rangedInitialPhaseTargetDistance = 30.0f;
+        if (isRangedDps && isInitialMuruPhase &&
+            bot->GetExactDist2d(unit) > rangedInitialPhaseTargetDistance)
+        {
+            return false;
+        }
+
         switch (unit->GetEntry())
         {
             case static_cast<uint32>(SunwellNpcs::NPC_MURU):
@@ -1903,7 +1912,7 @@ bool MuruSetDpsPriorityAction::Execute(Event /*event*/)
                 return true;
 
             case static_cast<uint32>(SunwellNpcs::NPC_VOID_SENTINEL):
-                return (isShadowPriest || isOtherRanged) && voidSentinelHasTankAggro;
+                return isOtherRanged && voidSentinelHasTankAggro;
 
             case static_cast<uint32>(SunwellNpcs::NPC_VOID_SPAWN):
                 return isOtherRanged;
