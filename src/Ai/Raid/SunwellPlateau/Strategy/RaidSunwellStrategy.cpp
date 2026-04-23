@@ -203,8 +203,8 @@ void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 
     // M'uru
     multipliers.push_back(new MuruDisableDefaultTargetingMultiplier(botAI));
-    multipliers.push_back(new MuruExcludeMuruFromTankTargetValueMultiplier(botAI));
-    multipliers.push_back(new MuruExcludeMuruFromDpsTargetValueMultiplier(botAI));
+    multipliers.push_back(new MuruExcludeEnemiesFromTankTargetValueMultiplier(botAI));
+    multipliers.push_back(new MuruExcludeEnemiesFromDpsTargetValueMultiplier(botAI));
     multipliers.push_back(new MuruControlTankActionsMultiplier(botAI));
     multipliers.push_back(new MuruControlMovementMultiplier(botAI));
     multipliers.push_back(new MuruControlMisdirectionMultiplier(botAI));

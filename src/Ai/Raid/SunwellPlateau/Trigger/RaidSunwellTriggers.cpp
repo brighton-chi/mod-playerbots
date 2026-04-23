@@ -443,7 +443,7 @@ bool MuruAddsSpawnAtEntranceTrigger::IsActive()
     if (!muru || muru->GetHealth() == 1)
         return false;
 
-    if (!botAI->IsAssistTankOfIndex(bot, 0, true))
+    if (!botAI->IsAssistTankOfIndex(bot, 1, true))
         return false;
 
     Unit* voidSentinel = AI_VALUE2(Unit*, "find target", "void sentinel");

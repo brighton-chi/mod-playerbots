@@ -173,11 +173,11 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class MuruExcludeMuruFromTankTargetValueMultiplier : public Multiplier
+class MuruExcludeEnemiesFromTankTargetValueMultiplier : public Multiplier
 {
 public:
-    MuruExcludeMuruFromTankTargetValueMultiplier(PlayerbotAI* botAI) : Multiplier(
-        botAI, "m'uru exclude m'uru from tank target value") {}
+    MuruExcludeEnemiesFromTankTargetValueMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "m'uru exclude enemies from tank target value") {}
     virtual float GetValue(Action* action);
 
 private:
@@ -185,11 +185,11 @@ private:
     std::vector<ObjectGuid> ignoredDarkFiendGuids;
 };
 
-class MuruExcludeMuruFromDpsTargetValueMultiplier : public Multiplier
+class MuruExcludeEnemiesFromDpsTargetValueMultiplier : public Multiplier
 {
 public:
-    MuruExcludeMuruFromDpsTargetValueMultiplier(PlayerbotAI* botAI) : Multiplier(
-        botAI, "m'uru exclude m'uru from dps target value during darkness") {}
+    MuruExcludeEnemiesFromDpsTargetValueMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "m'uru exclude enemies from dps target value during darkness") {}
     virtual float GetValue(Action* action);
 
 private:

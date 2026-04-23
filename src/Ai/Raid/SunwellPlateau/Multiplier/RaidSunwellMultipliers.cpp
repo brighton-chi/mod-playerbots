@@ -493,15 +493,6 @@ float MuruDisableDefaultTargetingMultiplier::GetValue(Action* action)
     if (dynamic_cast<DpsAssistAction*>(action))
         return 0.0f;
 
-    constexpr float searchRadius = 40.0f;
-    Unit* darkFiend = bot->FindNearestCreature(
-        static_cast<uint32>(SunwellNpcs::NPC_DARK_FIEND), searchRadius);
-    if (darkFiend && bot->GetTarget() == darkFiend->GetGUID() &&
-        dynamic_cast<AttackAction*>(action))
-    {
-        return 0.0f;
-    }
-
     Unit* voidSpawn = bot->FindNearestCreature(
         static_cast<uint32>(SunwellNpcs::NPC_VOID_SPAWN), searchRadius);
     if (voidSpawn && bot->GetTarget() == voidSpawn->GetGUID() &&
@@ -538,7 +529,7 @@ float MuruControlTankActionsMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float MuruExcludeMuruFromTankTargetValueMultiplier::GetValue(Action* action)
+float MuruExcludeEnemiesFromTankTargetValueMultiplier::GetValue(Action* action)
 {
     if (!botAI->IsTank(bot))
     {
@@ -586,7 +577,7 @@ float MuruExcludeMuruFromTankTargetValueMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float MuruExcludeMuruFromDpsTargetValueMultiplier::GetValue(Action* action)
+float MuruExcludeEnemiesFromDpsTargetValueMultiplier::GetValue(Action* action)
 {
     if (!botAI->IsDps(bot) || !botAI->IsMelee(bot))
     {
