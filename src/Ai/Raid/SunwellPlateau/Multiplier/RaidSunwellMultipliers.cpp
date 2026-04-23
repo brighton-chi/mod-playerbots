@@ -493,6 +493,7 @@ float MuruDisableDefaultTargetingMultiplier::GetValue(Action* action)
     if (dynamic_cast<DpsAssistAction*>(action))
         return 0.0f;
 
+    constexpr float searchRadius = 40.0f;
     Unit* voidSpawn = bot->FindNearestCreature(
         static_cast<uint32>(SunwellNpcs::NPC_VOID_SPAWN), searchRadius);
     if (voidSpawn && bot->GetTarget() == voidSpawn->GetGUID() &&
