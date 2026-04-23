@@ -144,11 +144,17 @@ public:
             &RaidSunwellActionContext::muru_enslaved_void_spawn_cast_shadow_bolt_volley;
 
         // Kil'jaeden <The Deceiver>
+        creators["kil'jaeden tanks handle hands of the deceiver"] =
+            &RaidSunwellActionContext::kiljaeden_tanks_handle_hands_of_the_deceiver;
+
         creators["kil'jaeden avoid hazards"] =
             &RaidSunwellActionContext::kiljaeden_avoid_hazards;
 
-        creators["kil'jaeden stack on main tank"] =
-            &RaidSunwellActionContext::kiljaeden_stack_on_main_tank;
+        creators["kil'jaeden stack for shield of the blue"] =
+            &RaidSunwellActionContext::kiljaeden_stack_for_shield_of_the_blue;
+
+        creators["kil'jaeden position main tank"] =
+            &RaidSunwellActionContext::kiljaeden_position_main_tank;
 
         creators["kil'jaeden position melee"] =
             &RaidSunwellActionContext::kiljaeden_position_melee;
@@ -156,8 +162,8 @@ public:
         creators["kil'jaeden position ranged"] =
             &RaidSunwellActionContext::kiljaeden_position_ranged;
 
-        creators["kil'jaeden"] =
-            &RaidSunwellActionContext::kiljaeden;
+        creators["kil'jaeden set dps priority"] =
+            &RaidSunwellActionContext::kiljaeden_set_dps_priority;
     }
 
 private:
@@ -291,11 +297,17 @@ private:
         PlayerbotAI* botAI) { return new MuruEnslavedVoidSpawnCastShadowBoltVolleyAction(botAI); }
 
     // Kil'jaeden <The Deceiver>
+    static Action* kiljaeden_tanks_handle_hands_of_the_deceiver(
+        PlayerbotAI* botAI) { return new KiljaedenTanksHandleHandsOfTheDeceiverAction(botAI); }
+
     static Action* kiljaeden_avoid_hazards(
         PlayerbotAI* botAI) { return new KiljaedenAvoidHazardsAction(botAI); }
 
-    static Action* kiljaeden_stack_on_main_tank(
-        PlayerbotAI* botAI) { return new KiljaedenStackOnMainTankAction(botAI); }
+    static Action* kiljaeden_position_main_tank(
+        PlayerbotAI* botAI) { return new KiljaedenPositionMainTankAction(botAI); }
+
+    static Action* kiljaeden_stack_for_shield_of_the_blue(
+        PlayerbotAI* botAI) { return new KiljaedenStackForShieldOfTheBlueAction(botAI); }
 
     static Action* kiljaeden_position_melee(
         PlayerbotAI* botAI) { return new KiljaedenPositionMeleeAction(botAI); }
@@ -303,8 +315,8 @@ private:
     static Action* kiljaeden_position_ranged(
         PlayerbotAI* botAI) { return new KiljaedenPositionRangedAction(botAI); }
 
-    static Action* kiljaeden(
-        PlayerbotAI* botAI) { return new KiljaedenAction(botAI); }
+    static Action* kiljaeden_set_dps_priority(
+        PlayerbotAI* botAI) { return new KiljaedenSetDpsPriorityAction(botAI); }
 };
 
 #endif

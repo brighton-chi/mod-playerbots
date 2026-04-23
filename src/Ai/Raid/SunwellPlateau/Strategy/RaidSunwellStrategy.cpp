@@ -141,20 +141,26 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("m'uru enslaved void spawn cast shadow bolt volley", ACTION_RAID + 5) }));
 
     // Kil'jaeden <The Deceiver>
+    triggers.push_back(new TriggerNode("kil'jaeden hands of the deceiver are active", {
+        NextAction("kil'jaeden tanks handle hands of the deceiver", ACTION_RAID + 1) }));
+
     triggers.push_back(new TriggerNode("kil'jaeden it's raining spikes and rocks", {
         NextAction("kil'jaeden avoid hazards", ACTION_EMERGENCY + 9) }));
 
     triggers.push_back(new TriggerNode("kil'jaeden says: Chaos! Destruction! Oblivion!", {
-        NextAction("kil'jaeden stack on main tank", ACTION_EMERGENCY + 10) }));
+        NextAction("kil'jaeden stack for shield of the blue", ACTION_EMERGENCY + 10) }));
 
-    triggers.push_back(new TriggerNode("kil'jaeden melee should position", {
+    triggers.push_back(new TriggerNode("kil'jaeden boss engaged by main tank", {
+        NextAction("kil'jaeden position main tank", ACTION_RAID + 1) }));
+
+    triggers.push_back(new TriggerNode("kil'jaeden boss engaged by melee", {
         NextAction("kil'jaeden position melee", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("kil'jaeden ranged should position", {
+    triggers.push_back(new TriggerNode("kil'jaeden boss engaged by ranged", {
         NextAction("kil'jaeden position ranged", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("kil'jaeden", {
-        NextAction("kil'jaeden", ACTION_RAID + 2) }));
+    triggers.push_back(new TriggerNode("kil'jaeden determining dps priority", {
+        NextAction("kil'jaeden set dps priority", ACTION_RAID + 2) }));
 }
 
 void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
@@ -196,6 +202,7 @@ void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new MuruDelayCooldownsMultiplier(botAI));
 
     // Kil'jaeden <The Deceiver>
+    multipliers.push_back(new KiljaedenExcludeShieldOrbsFromTankTargetValueMultiplier(botAI));
     multipliers.push_back(new KiljaedenControlMovementAndTargetingMultiplier(botAI));
     multipliers.push_back(new KiljaedenPrioritizeHazardAvoidanceMultiplier(botAI));
     multipliers.push_back(new KiljaedenDelayCooldownsMultiplier(botAI));

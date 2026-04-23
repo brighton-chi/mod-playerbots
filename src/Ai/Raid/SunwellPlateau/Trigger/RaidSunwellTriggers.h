@@ -366,11 +366,27 @@ public:
 
 // Kil'jaeden <The Deceiver>
 
+class KiljaedenHandsOfTheDeceiverAreActiveTrigger : public Trigger
+{
+public:
+    KiljaedenHandsOfTheDeceiverAreActiveTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "kil'jaeden hands of the deceiver are active") {}
+    bool IsActive() override;
+};
+
 class KiljaedenItsRainingSpikesAndRocksTrigger : public Trigger
 {
 public:
     KiljaedenItsRainingSpikesAndRocksTrigger(
         PlayerbotAI* botAI) : Trigger(botAI, "kil'jaeden it's raining spikes and rocks") {}
+    bool IsActive() override;
+};
+
+class KiljaedenBossEngagedByMainTankTrigger : public Trigger
+{
+public:
+    KiljaedenBossEngagedByMainTankTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "kil'jaeden boss engaged by main tank") {}
     bool IsActive() override;
 };
 
@@ -382,27 +398,27 @@ public:
     bool IsActive() override;
 };
 
-class KiljaedenMeleePositionTrigger : public Trigger
+class KiljaedenBossEngagedByMeleeTrigger : public Trigger
 {
 public:
-    KiljaedenMeleePositionTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kil'jaeden melee should position") {}
+    KiljaedenBossEngagedByMeleeTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "kil'jaeden boss engaged by melee") {}
     bool IsActive() override;
 };
 
-class KiljaedenRangedPositionTrigger : public Trigger
+class KiljaedenBossEngagedByRangedTrigger : public Trigger
 {
 public:
-    KiljaedenRangedPositionTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kil'jaeden ranged should position") {}
+    KiljaedenBossEngagedByRangedTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "kil'jaeden boss engaged by ranged") {}
     bool IsActive() override;
 };
 
-class KiljaedenTrigger : public Trigger
+class KiljaedenDeterminingDpsPriorityTrigger : public Trigger
 {
 public:
-    KiljaedenTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kil'jaeden") {}
+    KiljaedenDeterminingDpsPriorityTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "kil'jaeden determining dps priority") {}
     bool IsActive() override;
 };
 

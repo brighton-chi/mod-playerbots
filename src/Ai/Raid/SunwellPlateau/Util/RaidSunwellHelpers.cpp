@@ -503,7 +503,7 @@ namespace SunwellHelpers
     void RecordKalecgosSpectralBlastTarget(PlayerbotAI* botAI, Player* bot)
     {
         Group* group = bot->GetGroup();
-        if !group || bot->GetMapId() != SUNWELL_MAP_ID)
+        if (!group || bot->GetMapId() != SUNWELL_MAP_ID)
             return;
 
         KalecgosEncounterState& state = GetPreparedKalecgosEncounterState(botAI, bot);
@@ -518,7 +518,7 @@ namespace SunwellHelpers
     void RecordKalecgosSpectralRealmEnter(PlayerbotAI* botAI, Player* bot)
     {
         Group* group = bot->GetGroup();
-        if !group || bot->GetMapId() != SUNWELL_MAP_ID)
+        if (!group || bot->GetMapId() != SUNWELL_MAP_ID)
             return;
 
         KalecgosEncounterState& state = GetPreparedKalecgosEncounterState(botAI, bot);
@@ -1582,9 +1582,9 @@ namespace SunwellHelpers
         }
 
         if (hasTracker && tracker.expireMs > now && tracker.lane != FelmystFogLane::None &&
-            (tracker.phase == FelmystFogPhase::Sweep || 
+            (tracker.phase == FelmystFogPhase::Sweep ||
              tracker.phase == FelmystFogPhase::Recovery ||
-             IsFelmystFogSideLocation(currentLocation) || 
+             IsFelmystFogSideLocation(currentLocation) ||
              IsFelmystFogSideLocation(destinationLocation)))
         {
             tracker.phase = FelmystFogPhase::Recovery;
@@ -2203,7 +2203,7 @@ namespace SunwellHelpers
 
     bool CommandControlledCreatureToAttack(Unit* controlled, Unit* target)
     {
-        if (!controlled || !controlled->IsAlive() || 
+        if (!controlled || !controlled->IsAlive() ||
             !target || !target->IsAlive() ||
             controlled->GetVictim() == target)
         {
@@ -2243,13 +2243,6 @@ namespace SunwellHelpers
     const Position KILJAEDEN_TANK_POSITION = { 1709.474f, 641.598f, 27.582f };
     const Position KILJAEDEN_S_MELEE_POSITION = { 1681.527f, 628.600f, 27.610f };
     const Position KILJAEDEN_E_MELEE_POSITION = { 1702.280f, 611.716f, 27.553f };
-    constexpr float KILJAEDEN_RANGED_ARC_ORIENTATION = 0.8f;
-    constexpr float KILJAEDEN_INNER_RANGED_RADIUS = 25.0f;
-    constexpr float KILJAEDEN_OUTER_RANGED_RADIUS = 41.0f;
-    constexpr uint8 KILJAEDEN_INNER_RANGED_SLOT_COUNT = 7;
-    constexpr uint8 KILJAEDEN_OUTER_RANGED_SLOT_COUNT = 11;
-    constexpr uint8 KILJAEDEN_TOTAL_RANGED_SLOT_COUNT =
-        KILJAEDEN_INNER_RANGED_SLOT_COUNT + KILJAEDEN_OUTER_RANGED_SLOT_COUNT;
 
     std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> kiljaedenRangedAssignments;
     std::unordered_map<uint32, std::vector<KiljaedenHazard>> kiljaedenHazards;

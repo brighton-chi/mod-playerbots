@@ -195,7 +195,7 @@ bool KalecgosEnterSpectralRiftAction::Execute(Event /*event*/)
             return false;
 
         const Position& position = KALECGOS_TANK_POSITION;
-        if (nextTank->GetExactDist2d(position.GetPositionX(), 
+        if (nextTank->GetExactDist2d(position.GetPositionX(),
             position.GetPositionY()) > 3.0f)
         {
             return false;
@@ -226,7 +226,7 @@ bool KalecgosDisperseRangedAction::Execute(Event /*event*/)
 {
     if (!HasReachedKalecgosInitialRangedPosition(bot))
     {
-        const Position& initialPosition = KALECGOS_INITIAL_RANGED_POSITION;
+        const Position& initialPos = KALECGOS_INITIAL_RANGED_POSITION;
         float distToInitialPosition = bot->GetExactDist2d(initialPos.GetPositionX(),
                                                           initialPos.GetPositionY());
         if (distToInitialPosition > 1.0f)
@@ -480,7 +480,7 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
     {
         Position position;
         if (!TryGetBrutallusRangedArcPosition(
-                brutallus, rangedIndex, GetBrutallusReturnRangedRadius(), false, 
+                brutallus, rangedIndex, GetBrutallusReturnRangedRadius(), false,
                 bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), position))
         {
             return false;
@@ -499,7 +499,7 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
             bot->GetPositionZ(), returnStepPosition))
             return false;
 
-        if (bot->GetExactDist2d(returnStepPosition.GetPositionX(), 
+        if (bot->GetExactDist2d(returnStepPosition.GetPositionX(),
                                 returnStepPosition.GetPositionY()) <= 1.0f)
         {
             brutallusRangedBurnStates[guid] = BrutallusRangedBurnState::ReturningToNormal;
@@ -636,7 +636,7 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
             return false;
         }
 
-        if (bot->GetExactDist2d(mirrorStepPosition.GetPositionX(), 
+        if (bot->GetExactDist2d(mirrorStepPosition.GetPositionX(),
                                 mirrorStepPosition.GetPositionY()) <= 1.0f)
         {
             brutallusRangedBurnStates[guid] = BrutallusRangedBurnState::MovingToRearFinal;
@@ -1093,8 +1093,8 @@ bool EredarTwinsFirstAssistTankMoveOutOfBlazeAction::Execute(Event /*event*/)
         size_t const offsetStart = includeStart ? 0 : 1;
         for (size_t offset = offsetStart; offset < ALYTHESS_TANK_POSITIONS.size(); ++offset)
         {
-            uint8 candidateIndex = s
-                tatic_cast<uint8>((startIndex + offset) % ALYTHESS_TANK_POSITIONS.size());
+            uint8 candidateIndex =
+                static_cast<uint8>((startIndex + offset) % ALYTHESS_TANK_POSITIONS.size());
             if (IsAlythessTankPositionSafe(bot, ALYTHESS_TANK_POSITIONS[candidateIndex]))
             {
                 safeIndex = candidateIndex;
@@ -1801,7 +1801,7 @@ bool MuruSetDpsPriorityAction::Execute(Event /*event*/)
             target = stickyTarget;
     }
 
-    if (target && target->GetEntry() == 
+    if (target && target->GetEntry() ==
             static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_BERSERKER))
     {
         if (bot->getClass() == CLASS_ROGUE && !botAI->GetAura("dismantle", target) &&
@@ -1834,6 +1834,77 @@ bool MuruSetDpsPriorityAction::Execute(Event /*event*/)
 
 // Kil'jaeden <The Deceiver>
 
+bool KiljaedenTanksHandleHandsOfTheDeceiverAction::Execute(Event /*event*/)
+{
+    Player* mainTank = GetGroupMainTank(botAI, bot);
+    Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
+    Player* secondAssistTank = GetGroupAssistTank(botAI, bot, 1);
+    if (!mainTank || !firstAssistTank || !secondAssistTank)
+        return false;
+
+    std::vector<Unit*> hands;
+    Unit* volatileFelfireFiend = nullptr;
+    auto const& attackers =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
+
+    for (ObjectGuid const& guid : attackers)
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        if (!unit || !unit->IsAlive())
+            continue;
+
+        if (unit->GetEntry() == static_cast<uint32>(SunwellNpcs::NPC_HAND_OF_THE_DECEIVER))
+        {
+            hands.push_back(unit);
+            continue;
+        }
+
+        if (!volatileFelfireFiend &&
+            unit->GetEntry() == static_cast<uint32>(SunwellNpcs::NPC_VOLATILE_FELFIRE_FIEND))
+        {
+            volatileFelfireFiend = unit;
+        }
+    }
+
+    if (hands.empty())
+        return false;
+
+    if (volatileFelfireFiend)
+        MarkTargetWithSkull(bot, volatileFelfireFiend);
+
+    std::array<Player*, 3> tanks = { mainTank, firstAssistTank, secondAssistTank };
+    size_t assignedCount = hands.size() < tanks.size() ? hands.size() : tanks.size();
+
+    for (size_t index = 0; index < assignedCount; ++index)
+    {
+        if (bot != tanks[index])
+            continue;
+
+        Unit* hand = hands[index];
+        switch (index)
+        {
+            case 0:
+                MarkTargetWithStar(bot, hand);
+                break;
+            case 1:
+                MarkTargetWithCircle(bot, hand);
+                break;
+            case 2:
+                MarkTargetWithDiamond(bot, hand);
+                break;
+            default:
+                break;
+        }
+
+        if (bot->GetVictim() != hand)
+            return Attack(hand);
+
+        return false;
+    }
+
+    return false;
+}
+
 bool KiljaedenAvoidHazardsAction::Execute(Event /*event*/)
 {
     KiljaedenHazard hazard;
@@ -1841,22 +1912,42 @@ bool KiljaedenAvoidHazardsAction::Execute(Event /*event*/)
         return false;
 
     constexpr uint32 minInterval = 0;
-    bot->AttackStop();
     botAI->InterruptSpell();
 
     return FleePosition(hazard.destination, hazard.safeDistance, minInterval);
 }
 
-bool KiljaedenStackOnMainTankAction::Execute(Event /*event*/)
+bool KiljaedenStackForShieldOfTheBlueAction::Execute(Event /*event*/)
 {
     const Position& position = KILJAEDEN_TANK_POSITION;
-    if (bot->GetExactDist2d(position.GetPositionX(), 
+    if (bot->GetExactDist2d(position.GetPositionX(),
                             position.GetPositionY()) > 2.0f)
     {
         botAI->InterruptSpell();
         return MoveTo(SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-                      position.GetPositionZ(), false, false, false, false, 
+                      position.GetPositionZ(), false, false, false, false,
                       MovementPriority::MOVEMENT_FORCED, true, false);
+    }
+
+    return false;
+}
+
+bool KiljaedenPositionMainTankAction::Execute(Event /*event*/)
+{
+    Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
+    if (!kiljaeden)
+        return false;
+
+    if (bot->GetVictim() != kiljaeden)
+        return Attack(kiljaeden);
+
+    const Position& position = KILJAEDEN_TANK_POSITION;
+    if (bot->GetExactDist2d(position.GetPositionX(),
+                            position.GetPositionY()) > 2.0f)
+    {
+        return MoveTo(SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                      position.GetPositionZ(), false, false, false, false,
+                      MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
     return false;
@@ -1864,25 +1955,6 @@ bool KiljaedenStackOnMainTankAction::Execute(Event /*event*/)
 
 bool KiljaedenPositionMeleeAction::Execute(Event /*event*/)
 {
-    Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
-    if (!kiljaeden)
-        return false;
-
-    if (botAI->IsTank(bot))
-    {
-        auto const& attackers =
-            botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
-        for (ObjectGuid const& guid : attackers)
-        {
-            Unit* unit = botAI->GetUnit(guid);
-            if (!unit || !unit->IsAlive())
-                continue;
-
-            if (unit->GetEntry() == static_cast<uint32>(SunwellNpcs::NPC_SINISTER_REFLECTION))
-                return false;
-        }
-    }
-
     Group* group = bot->GetGroup();
     if (!group)
         return false;
@@ -1893,8 +1965,8 @@ bool KiljaedenPositionMeleeAction::Execute(Event /*event*/)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member == mainTank || member->GetMapId() != SUNWELL_MAP_ID ||
-            !GET_PLAYERBOT_AI(member) || !botAI->IsMelee(member))
+        if (!member || !botAI->IsMelee(member) || member->GetMapId() != SUNWELL_MAP_ID ||
+            !GET_PLAYERBOT_AI(member) || botAI->IsMainTank(member))
         {
             continue;
         }
@@ -1920,7 +1992,7 @@ bool KiljaedenPositionMeleeAction::Execute(Event /*event*/)
     return MoveTo(SUNWELL_MAP_ID, targetPosition.GetPositionX(),
                   targetPosition.GetPositionY(), targetPosition.GetPositionZ(),
                   false, false, false, false, MovementPriority::MOVEMENT_COMBAT,
-                  true, true);
+                  true, false);
 }
 
 bool KiljaedenPositionRangedAction::Execute(Event /*event*/)
@@ -1935,23 +2007,24 @@ bool KiljaedenPositionRangedAction::Execute(Event /*event*/)
     return MoveTo(SUNWELL_MAP_ID, targetPosition.GetPositionX(),
                   targetPosition.GetPositionY(), targetPosition.GetPositionZ(),
                   false, false, false, false, MovementPriority::MOVEMENT_COMBAT,
-                  true, true);
+                  true, false);
 }
 
-bool KiljaedenAction::Execute(Event /*event*/)
+bool KiljaedenSetDpsPriorityAction::Execute(Event /*event*/)
 {
-    Player* mainTank = GetGroupMainTank(botAI, bot);
-    Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
-    Player* secondAssistTank = GetGroupAssistTank(botAI, bot, 1);
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
-    int kiljaedenPhase = kiljaeden ? GetKiljaedenPhase(kiljaeden) : 0;
-    bool canHaveSinisterReflections = kiljaedenPhase >= 3;
-    std::vector<Unit*> hands;
-    Unit* volatileFelfireFiend = nullptr;
+    if (!kiljaeden)
+        return false;
+
+    bool isMeleeDps = botAI->IsMelee(bot) && botAI->IsDps(bot);
+    bool isRangedDps = botAI->IsRangedDps(bot);
+    if (!isMeleeDps && !isRangedDps)
+        return false;
+
+    bool canHaveSinisterReflections = GetKiljaedenPhase(kiljaeden) >= 3;
     Unit* closestShieldOrbInRange = nullptr;
     Unit* closestRangedReflectionInRange = nullptr;
     Unit* closestMeleeReflectionInRange = nullptr;
-    Unit* closestTankReflection = nullptr;
     auto const& attackers =
         botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
 
@@ -1979,19 +2052,6 @@ bool KiljaedenAction::Execute(Event /*event*/)
         if (!unit || !unit->IsAlive())
             continue;
 
-        if (unit->GetEntry() == static_cast<uint32>(SunwellNpcs::NPC_HAND_OF_THE_DECEIVER))
-        {
-            hands.push_back(unit);
-            continue;
-        }
-
-        if (!volatileFelfireFiend &&
-            unit->GetEntry() == static_cast<uint32>(SunwellNpcs::NPC_VOLATILE_FELFIRE_FIEND))
-        {
-            volatileFelfireFiend = unit;
-            continue;
-        }
-
         if (unit->GetEntry() == static_cast<uint32>(SunwellNpcs::NPC_SHIELD_ORB))
         {
             if (botAI->IsRanged(bot) && botAI->IsDps(bot) && bot->GetExactDist2d(unit) <= 30.0f)
@@ -2011,64 +2071,8 @@ bool KiljaedenAction::Execute(Event /*event*/)
             {
                 chooseNearestTarget(closestMeleeReflectionInRange, unit);
             }
-
-            if (botAI->IsTank(bot) && bot != mainTank)
-                chooseNearestTarget(closestTankReflection, unit);
         }
     }
-
-    if (hands.empty())
-    {
-        hands.clear();
-    }
-    else
-    {
-        if (!mainTank || !firstAssistTank || !secondAssistTank)
-            return false;
-
-        if (volatileFelfireFiend)
-            MarkTargetWithSkull(bot, volatileFelfireFiend);
-
-        std::array<Player*, 3> tanks = { mainTank, firstAssistTank, secondAssistTank };
-        size_t assignedCount = hands.size() < tanks.size() ? hands.size() : tanks.size();
-
-        for (size_t index = 0; index < assignedCount; ++index)
-        {
-            if (bot != tanks[index])
-                continue;
-
-            Unit* hand = hands[index];
-            switch (index)
-            {
-                case 0:
-                    MarkTargetWithStar(bot, hand);
-                    break;
-                case 1:
-                    MarkTargetWithCircle(bot, hand);
-                    break;
-                case 2:
-                    MarkTargetWithDiamond(bot, hand);
-                    break;
-                default:
-                    break;
-            }
-
-            if (bot->GetVictim() != hand)
-                return Attack(hand);
-
-            return false;
-        }
-
-        return false;
-    }
-
-    if (!kiljaeden)
-        return false;
-
-    bool isDarkness = IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden);
-    bool isOtherTank = botAI->IsTank(bot) && bot != mainTank;
-    bool isMeleeDps = botAI->IsMelee(bot) && botAI->IsDps(bot) && !botAI->IsTank(bot);
-    bool isRangedDps = botAI->IsRanged(bot) && botAI->IsDps(bot);
     Unit* priorityTarget = kiljaeden;
 
     if (isRangedDps)
@@ -2077,48 +2081,19 @@ bool KiljaedenAction::Execute(Event /*event*/)
             priorityTarget = closestShieldOrbInRange;
         else if (closestRangedReflectionInRange)
             priorityTarget = closestRangedReflectionInRange;
+
+        if (bot->GetTarget() != priorityTarget->GetGUID())
+            return Attack(priorityTarget);
     }
     else if (isMeleeDps)
     {
         if (closestMeleeReflectionInRange)
             priorityTarget = closestMeleeReflectionInRange;
-    }
-    else if (isOtherTank && !isDarkness && closestTankReflection)
-    {
-        priorityTarget = closestTankReflection;
-    }
 
-    if (bot == mainTank)
-    {
-        if (bot->GetVictim() != kiljaeden)
-            return Attack(kiljaeden);
-
-        float distToPosition = bot->GetExactDist2d(
-            KILJAEDEN_TANK_POSITION.GetPositionX(), KILJAEDEN_TANK_POSITION.GetPositionY());
-        if (distToPosition > 2.0f)
-        {
-            return MoveTo(SUNWELL_MAP_ID, KILJAEDEN_TANK_POSITION.GetPositionX(),
-                          KILJAEDEN_TANK_POSITION.GetPositionY(),
-                          KILJAEDEN_TANK_POSITION.GetPositionZ(), false, false, false,
-                          false, MovementPriority::MOVEMENT_COMBAT, true, true);
-        }
-
-        return false;
-    }
-
-    if (botAI->IsMelee(bot))
-    {
         if (bot->GetVictim() != priorityTarget)
             return Attack(priorityTarget);
-
-        return false;
     }
 
-    if (!botAI->IsRanged(bot))
-        return false;
-
-    if (isRangedDps && bot->GetVictim() != priorityTarget)
-        return Attack(priorityTarget);
 
     return false;
 }

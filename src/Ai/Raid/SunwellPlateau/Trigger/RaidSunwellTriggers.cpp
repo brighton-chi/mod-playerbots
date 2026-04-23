@@ -521,6 +521,14 @@ bool MuruWarlockHasEnslavedVoidSpawnTrigger::IsActive()
 
 // Kil'jaeden <The Deceiver>
 
+bool KiljaedenHandsOfTheDeceiverAreActiveTrigger::IsActive()
+{
+    if (!botAI->IsTank(bot))
+        return false;
+
+    return AI_VALUE2(Unit*, "find target", "hand of the deceiver");
+}
+
 bool KiljaedenItsRainingSpikesAndRocksTrigger::IsActive()
 {
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
@@ -543,26 +551,50 @@ bool KiljaedenSaysChaosDestructionOblivionTrigger::IsActive()
     return IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden);
 }
 
-bool KiljaedenMeleePositionTrigger::IsActive()
+bool KiljaedenBossEngagedByMainTankTrigger::IsActive()
 {
-    if (!botAI->IsMelee(bot))
+    Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
+    if (!kiljaeden || IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
+        return false;
+
+    return botAI->IsMainTank(bot);
+}
+
+bool KiljaedenBossEngagedByMeleeTrigger::IsActive()
+{
+    if (botAI->IsRanged(bot) || botAI->IsMainTank(bot))
         return false;
 
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
     if (!kiljaeden || IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
         return false;
 
-    if (botAI->IsMainTank(bot))
+    if (botAI->IsAssistTank(bot) && AI_VALUE2(Unit*, "find target", "sinister reflection"))
         return false;
+
+    /* if (botAI->IsAssistTank(bot))
+    {
+        auto const& attackers =
+            botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
+        for (ObjectGuid const& guid : attackers)
+        {
+            Unit* unit = botAI->GetUnit(guid);
+            if (!unit || !unit->IsAlive())
+                continue;
+
+            if (unit->GetEntry() == static_cast<uint32>(SunwellNpcs::NPC_SINISTER_REFLECTION))
+                return false;
+        }
+    } */
 
     KiljaedenHazard hazard;
     return !TryGetKiljaedenNearestHazard(bot, hazard);
 }
 
-bool KiljaedenRangedPositionTrigger::IsActive()
+bool KiljaedenBossEngagedByRangedTrigger::IsActive()
 {
     if (!botAI->IsRanged(bot))
-        return false
+        return false;
 
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
     if (!kiljaeden || IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
@@ -572,20 +604,13 @@ bool KiljaedenRangedPositionTrigger::IsActive()
     return !TryGetKiljaedenNearestHazard(bot, hazard);
 }
 
-bool KiljaedenTrigger::IsActive()
+bool KiljaedenDeterminingDpsPriorityTrigger::IsActive()
 {
-    if (GetFirstAliveUnitByEntry(
-            botAI, static_cast<uint32>(SunwellNpcs::NPC_HAND_OF_THE_DECEIVER)))
-    {
-        return botAI->IsMainTank(bot) ||
-               botAI->IsAssistTankOfIndex(bot, 0, true) ||
-               botAI->IsAssistTankOfIndex(bot, 1, true);
-    }
-
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
     if (!kiljaeden)
         return false;
 
     Player* mainTank = GetGroupMainTank(botAI, bot);
-    return bot == mainTank || (botAI->IsMelee(bot) && bot != mainTank) || botAI->IsRanged(bot);
+    return botAI->IsDps(bot) &&
+           (botAI->IsRanged(bot) || (botAI->IsMelee(bot) && bot != mainTank));
 }

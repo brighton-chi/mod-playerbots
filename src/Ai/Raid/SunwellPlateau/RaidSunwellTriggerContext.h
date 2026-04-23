@@ -147,20 +147,26 @@ public:
             &RaidSunwellTriggerContext::muru_warlock_has_enslaved_void_spawn;
 
         // Kil'jaeden <The Deceiver>
+        creators["kil'jaeden hands of the deceiver are active"] =
+            &RaidSunwellTriggerContext::kiljaeden_hands_of_the_deceiver_are_active;
+
         creators["kil'jaeden it's raining spikes and rocks"] =
             &RaidSunwellTriggerContext::kiljaeden_its_raining_spikes_and_rocks;
 
         creators["kil'jaeden says: Chaos! Destruction! Oblivion!"] =
             &RaidSunwellTriggerContext::kiljaeden_says_chaos_destruction_oblivion;
 
-        creators["kil'jaeden melee should position"] =
-            &RaidSunwellTriggerContext::kiljaeden_melee_should_position;
+        creators["kil'jaeden boss engaged by main tank"] =
+            &RaidSunwellTriggerContext::kiljaeden_boss_engaged_by_main_tank;
 
-        creators["kil'jaeden ranged should position"] =
-            &RaidSunwellTriggerContext::kiljaeden_ranged_should_position;
+        creators["kil'jaeden boss engaged by melee"] =
+            &RaidSunwellTriggerContext::kiljaeden_boss_engaged_by_melee;
 
-        creators["kil'jaeden"] =
-            &RaidSunwellTriggerContext::kiljaeden;
+        creators["kil'jaeden boss engaged by ranged"] =
+            &RaidSunwellTriggerContext::kiljaeden_boss_engaged_by_ranged;
+
+        creators["kil'jaeden determining dps priority"] =
+            &RaidSunwellTriggerContext::kiljaeden_determining_dps_priority;
     }
 
 private:
@@ -297,20 +303,26 @@ private:
         PlayerbotAI* botAI) { return new MuruWarlockHasEnslavedVoidSpawnTrigger(botAI); }
 
     // Kil'jaeden <The Deceiver>
+    static Trigger* kiljaeden_hands_of_the_deceiver_are_active(
+        PlayerbotAI* botAI) { return new KiljaedenHandsOfTheDeceiverAreActiveTrigger(botAI); }
+
     static Trigger* kiljaeden_its_raining_spikes_and_rocks(
         PlayerbotAI* botAI) { return new KiljaedenItsRainingSpikesAndRocksTrigger(botAI); }
 
     static Trigger* kiljaeden_says_chaos_destruction_oblivion(
         PlayerbotAI* botAI) { return new KiljaedenSaysChaosDestructionOblivionTrigger(botAI); }
 
-    static Trigger* kiljaeden_melee_should_position(
-        PlayerbotAI* botAI) { return new KiljaedenMeleePositionTrigger(botAI); }
+    static Trigger* kiljaeden_boss_engaged_by_main_tank(
+        PlayerbotAI* botAI) { return new KiljaedenBossEngagedByMainTankTrigger(botAI); }
 
-    static Trigger* kiljaeden_ranged_should_position(
-        PlayerbotAI* botAI) { return new KiljaedenRangedPositionTrigger(botAI); }
+    static Trigger* kiljaeden_boss_engaged_by_melee(
+        PlayerbotAI* botAI) { return new KiljaedenBossEngagedByMeleeTrigger(botAI); }
 
-    static Trigger* kiljaeden(
-        PlayerbotAI* botAI) { return new KiljaedenTrigger(botAI); }
+    static Trigger* kiljaeden_boss_engaged_by_ranged(
+        PlayerbotAI* botAI) { return new KiljaedenBossEngagedByRangedTrigger(botAI); }
+
+    static Trigger* kiljaeden_determining_dps_priority(
+        PlayerbotAI* botAI) { return new KiljaedenDeterminingDpsPriorityTrigger(botAI); }
 };
 
 #endif

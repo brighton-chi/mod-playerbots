@@ -183,7 +183,7 @@ bool TeronGorefiendPullingBossTrigger::IsActive()
     if (bot->getClass() != CLASS_HUNTER)
         return false;
 
-    Unit* gorefiend = 
+    Unit* gorefiend =
         AI_VALUE2(Unit*, "find target", "teron gorefiend");
 
     return gorefiend && gorefiend->GetHealthPct() > 95.0f;
@@ -308,7 +308,7 @@ bool GurtoggBloodboilBotHasFelRageTrigger::IsActive()
 
 bool GurtoggBloodboilNeedToManagePhaseTimerTrigger::IsActive()
 {
-    return AI_VALUE2(Unit*, "find target", "gurtogg bloodboil") && 
+    return AI_VALUE2(Unit*, "find target", "gurtogg bloodboil") &&
            IsMechanicTrackerBot(botAI, bot, BLACK_TEMPLE_MAP_ID);
 }
 
@@ -353,7 +353,7 @@ bool ReliquaryOfSoulsEssenceOfDesireCastingDeadenTrigger::IsActive()
         return false;
 
     Spell* spell = desire->GetCurrentSpell(CURRENT_GENERIC_SPELL);
-    if (!spell || spell->m_spellInfo->Id != 
+    if (!spell || spell->m_spellInfo->Id !=
             static_cast<uint32>(BlackTempleSpells::SPELL_DEADEN))
     {
         return false;
@@ -574,7 +574,7 @@ bool IllidanStormrageBossCastsFlameCrashInFrontOfMainTankTrigger::IsActive()
 bool IllidanStormrageBotHasParasiticShadowfiendTrigger::IsActive()
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan || illidan->GetHealth() == 1 || 
+    if (!illidan || illidan->GetHealth() == 1 ||
         illidan->GetVictim() == bot)
     {
         return false;
@@ -594,8 +594,8 @@ bool IllidanStormrageBotHasParasiticShadowfiendTrigger::IsActive()
     if (!infected)
         return false;
 
-    if (infected == bot || (phase != 1 &&
-        bot->getClass() == CLASS_HUNTER)
+    if (infected == bot ||
+        (phase != 1 && bot->getClass() == CLASS_HUNTER))
     {
         return true;
     }
@@ -621,7 +621,6 @@ bool IllidanStormrageParasiticShadowfiendsRunWildTrigger::IsActive()
            totem->GetUInt32Value(UNIT_CREATED_BY_SPELL) !=
                static_cast<uint32>(BlackTempleSpells::SPELL_EARTHBIND_TOTEM);
 }
-
 
 bool IllidanStormrageBossSummonedFlamesOfAzzinothTrigger::IsActive()
 {
@@ -738,7 +737,7 @@ bool IllidanStormrageBossSpawnsAddsTrigger::IsActive()
 bool IllidanStormrageMaievPlacedShadowTrapTrigger::IsActive()
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan || illidan->GetHealth() == 1 || 
+    if (!illidan || illidan->GetHealth() == 1 ||
         GetIllidanPhase(illidan) != 5)
     {
         return false;
@@ -746,6 +745,10 @@ bool IllidanStormrageMaievPlacedShadowTrapTrigger::IsActive()
 
     GameObject* trap = FindNearestTrap(botAI, bot);
     if (!trap)
+        return false;
+
+    Group* group = bot->GetGroup();
+    if (!group)
         return false;
 
     Player* closestBot = nullptr;

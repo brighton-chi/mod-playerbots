@@ -295,9 +295,16 @@ namespace SunwellHelpers
 
     // Kil'jaeden <The Deceiver>
     constexpr uint32 KILJAEDEN_SHADOW_SPIKE_HAZARD_DURATION_MS = 3000;
-    constexpr float KILJAEDEN_SHADOW_SPIKE_SAFE_DISTANCE = 10.0f;
+    constexpr float KILJAEDEN_SHADOW_SPIKE_SAFE_DISTANCE = 10.0f; // Radius of hazard is 8 yards
     constexpr uint32 KILJAEDEN_ARMAGEDDON_HAZARD_DURATION_MS = 10000;
-    constexpr float KILJAEDEN_ARMAGEDDON_SAFE_DISTANCE = 15.0f;
+    constexpr float KILJAEDEN_ARMAGEDDON_SAFE_DISTANCE = 12.0f; // Radius of hazard is 9 yards
+    constexpr float KILJAEDEN_RANGED_ARC_ORIENTATION = 0.8f;
+    constexpr float KILJAEDEN_INNER_RANGED_RADIUS = 27.0f;
+    constexpr float KILJAEDEN_OUTER_RANGED_RADIUS = 40.0f; // Think can be as much as 42
+    constexpr uint8 KILJAEDEN_INNER_RANGED_SLOT_COUNT = 7;
+    constexpr uint8 KILJAEDEN_OUTER_RANGED_SLOT_COUNT = 11;
+    constexpr uint8 KILJAEDEN_TOTAL_RANGED_SLOT_COUNT =
+        KILJAEDEN_INNER_RANGED_SLOT_COUNT + KILJAEDEN_OUTER_RANGED_SLOT_COUNT;
     struct KiljaedenHazard
     {
         Position destination;

@@ -239,7 +239,18 @@ public:
 
 // Kil'jaeden <The Deceiver>
 
-class KiljaedenControlMovementAndTargetingMultiplier : Multiplier
+class KiljaedenExcludeShieldOrbsFromTankTargetValueMultiplier : public Multiplier
+{
+public:
+    KiljaedenExcludeShieldOrbsFromTankTargetValueMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "kil'jaeden exclude shield orbs from tank target value") {}
+    virtual float GetValue(Action* action);
+
+private:
+    std::vector<ObjectGuid> ignoredShieldOrbGuids;
+};
+
+class KiljaedenControlMovementAndTargetingMultiplier : public Multiplier
 {
 public:
     KiljaedenControlMovementAndTargetingMultiplier(PlayerbotAI* botAI) : Multiplier(

@@ -363,6 +363,14 @@ public:
 
 // Kil'jaeden <The Deceiver>
 
+class KiljaedenTanksHandleHandsOfTheDeceiverAction : public AttackAction
+{
+public:
+    KiljaedenTanksHandleHandsOfTheDeceiverAction(
+        PlayerbotAI* botAI, std::string const name = "kil'jaeden tanks handle hands of the deceiver") : AttackAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 class KiljaedenAvoidHazardsAction : public MovementAction
 {
 public:
@@ -371,11 +379,19 @@ public:
     bool Execute(Event event) override;
 };
 
-class KiljaedenStackOnMainTankAction : public MovementAction
+class KiljaedenStackForShieldOfTheBlueAction : public MovementAction
 {
 public:
-    KiljaedenStackOnMainTankAction(
-        PlayerbotAI* botAI, std::string const name = "kil'jaeden stack on main tank") : MovementAction(botAI, name) {}
+    KiljaedenStackForShieldOfTheBlueAction(
+        PlayerbotAI* botAI, std::string const name = "kil'jaeden stack for shield of the blue") : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class KiljaedenPositionMainTankAction : public AttackAction
+{
+public:
+    KiljaedenPositionMainTankAction(
+        PlayerbotAI* botAI, std::string const name = "kil'jaeden position main tank") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 
@@ -395,11 +411,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class KiljaedenAction : public AttackAction
+class KiljaedenSetDpsPriorityAction : public AttackAction
 {
 public:
-    KiljaedenAction(
-        PlayerbotAI* botAI, std::string const name = "kil'jaeden") : AttackAction(botAI, name) {}
+    KiljaedenSetDpsPriorityAction(
+        PlayerbotAI* botAI, std::string const name = "kil'jaeden set dps priority") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 

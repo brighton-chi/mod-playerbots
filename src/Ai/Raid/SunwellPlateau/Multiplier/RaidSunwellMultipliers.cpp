@@ -727,6 +727,37 @@ float MuruDelayCooldownsMultiplier::GetValue(Action* action)
 
 // Kil'jaeden <The Deceiver>
 
+float KiljaedenExcludeShieldOrbsFromTankTargetValueMultiplier::GetValue(Action* action)
+{
+    if (!botAI->IsTank(bot) || !AI_VALUE2(Unit*, "find target", "kil'jaeden"))
+    {
+        SyncTargetValueExclusions(
+            botAI, TargetValueExclusionType::Tank, ignoredShieldOrbGuids, {});
+        return 1.0f;
+    }
+
+    std::vector<ObjectGuid> shieldOrbGuids;
+    auto const& units =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
+
+    for (ObjectGuid const& guid : units)
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        if (!unit || !unit->IsAlive() ||
+            unit->GetEntry() != static_cast<uint32>(SunwellNpcs::NPC_SHIELD_ORB))
+        {
+            continue;
+        }
+
+        shieldOrbGuids.push_back(unit->GetGUID());
+    }
+
+    SyncTargetValueExclusions(
+        botAI, TargetValueExclusionType::Tank, ignoredShieldOrbGuids, shieldOrbGuids);
+
+    return 1.0f;
+}
+
 float KiljaedenDelayCooldownsMultiplier::GetValue(Action* action)
 {
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
@@ -769,13 +800,14 @@ float KiljaedenControlMovementAndTargetingMultiplier::GetValue(Action* action)
 
 float KiljaedenPrioritizeHazardAvoidanceMultiplier::GetValue(Action* action)
 {
-    if (!AI_VALUE2(Unit*, "find target", "kil'jaeden"))
+    Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
+    if (!kiljaeden)
         return 1.0f;
 
     if (IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden) &&
         dynamic_cast<MovementAction*>(action) &&
         !dynamic_cast<AttackAction*>(action) &&
-        !dynamic_cast<KiljaedenStackOnMainTankAction*>(action))
+        !dynamic_cast<KiljaedenStackForShieldOfTheBlueAction*>(action))
     {
         return 0.0f;
     }
