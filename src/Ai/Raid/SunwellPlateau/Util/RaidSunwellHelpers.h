@@ -63,6 +63,9 @@ namespace SunwellHelpers
 
         // Shaman
         SPELL_GROUNDING_TOTEM_EFFECT       = 8178,
+
+        // Apocalypse Guard
+        SPELL_INFERNAL_DEFENSE             = 46287,
     };
 
     enum class SunwellNpcs : uint32

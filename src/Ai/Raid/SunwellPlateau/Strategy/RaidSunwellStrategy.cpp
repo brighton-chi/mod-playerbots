@@ -12,6 +12,10 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("sunwell plateau bot is not in combat", {
         NextAction("sunwell plateau erase timers and trackers", ACTION_EMERGENCY + 11) }));
 
+    // Trash
+    triggers.push_back(new TriggerNode("apocalypse guard protected by infernal defense", {
+        NextAction("apocalypse guard attack with holy magic", ACTION_RAID + 1) }));
+
     // Kalecgos
     triggers.push_back(new TriggerNode("kalecgos boss engaged by tank", {
         NextAction("kalecgos tank position boss", ACTION_RAID + 1) }));
@@ -112,6 +116,9 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("m'uru void sentinel casts void blast on tank", {
         NextAction("m'uru set grounding totem in first assist tank group", ACTION_RAID + 3) }));
+
+    triggers.push_back(new TriggerNode("m'uru adds spawn at entrance", {
+        NextAction("m'uru second assist tank guard ranged", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("m'uru determining dps priority", {
         NextAction("m'uru set dps priority", ACTION_RAID + 1) }));

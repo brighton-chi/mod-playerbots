@@ -18,7 +18,11 @@ public:
         creators["sunwell plateau bot is not in combat"] =
             &RaidSunwellTriggerContext::sunwell_plateau_bot_is_not_in_combat;
 
-        // Kalecgos & Sathrovarr
+        // Trash
+        creators["apocalypse guard protected by infernal defense"] =
+            &RaidSunwellTriggerContext::apocalypse_guard_protected_by_infernal_defense;
+
+        // Kalecgos
         creators["kalecgos boss engaged by tank"] =
             &RaidSunwellTriggerContext::kalecgos_boss_engaged_by_tank;
 
@@ -122,6 +126,9 @@ public:
         creators["m'uru void sentinel casts void blast on tank"] =
             &RaidSunwellTriggerContext::muru_void_sentinel_casts_void_blast_on_tank;
 
+        creators["m'uru adds spawn at entrance"] =
+            &RaidSunwellTriggerContext::muru_adds_spawn_at_entrance;
+
         creators["m'uru dark fiends spawned"] =
             &RaidSunwellTriggerContext::muru_dark_fiends_spawned;
 
@@ -177,7 +184,11 @@ private:
     static Trigger* sunwell_plateau_bot_is_not_in_combat(
         PlayerbotAI* botAI) { return new SunwellPlateauBotIsNotInCombatTrigger(botAI); }
 
-    // Kalecgos & Sathrovarr
+    // Trash
+    static Trigger* apocalypse_guard_protected_by_infernal_defense(
+        PlayerbotAI* botAI) { return new ApocalypseGuardProtectedByInfernalDefenseTrigger(botAI); }
+
+    // Kalecgos
     static Trigger* kalecgos_boss_engaged_by_tank(
         PlayerbotAI* botAI) { return new KalecgosBossEngagedByTankTrigger(botAI); }
 
@@ -280,6 +291,9 @@ private:
 
     static Trigger* muru_void_sentinel_casts_void_blast_on_tank(
         PlayerbotAI* botAI) { return new MuruVoidSentinelCastsVoidBlastOnTankTrigger(botAI); }
+
+    static Trigger* muru_adds_spawn_at_entrance(
+        PlayerbotAI* botAI) { return new MuruAddsSpawnAtEntranceTrigger(botAI); }
 
     static Trigger* muru_dark_fiends_spawned(
         PlayerbotAI* botAI) { return new MuruDarkFiendsSpawnedTrigger(botAI); }

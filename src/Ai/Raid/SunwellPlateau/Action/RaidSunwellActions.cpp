@@ -149,6 +149,37 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
     return erased;
 }
 
+// Trash
+
+bool ApocalypseGuardAttackWithHolyMagicAction::Execute(Event /*event*/)
+{
+    Unit* target = nullptr;
+    constexpr float searchRadius = 40.0f;
+    std::list<Creature*> apocalypseGuards;
+    bot->GetCreatureListWithEntryInGrid(
+        apocalypseGuards, static_cast<uint32>(SunwellNpcs::NPC_APOCALYPSE_GUARD), searchRadius);
+
+    for (Creature* apocalypseGuard : apocalypseGuards)
+    {
+        if (!apocalypseGuard || !apocalypseGuard->IsAlive() ||
+            !apocalypseGuard->HasAura(static_cast<uint32>(SunwellSpells::SPELL_INFERNAL_DEFENSE)))
+        {
+            continue;
+        }
+
+        if (!target || apocalypseGuard->GetGUID() < target->GetGUID())
+            target = apocalypseGuard;
+    }
+
+    if (botAI->HasAura("shadowform", bot))
+        botAI->RemoveAura("shadowform");
+
+    if (botAI->CanCastSpell("smite", target))
+        return botAI->CastSpell("smite", target);
+
+    return false;
+}
+
 // Kalecgos
 
 bool KalecgosTankPositionBossAction::Execute(Event event)
@@ -1387,14 +1418,14 @@ bool MuruMisdirectEnemiesToTanksAction::Execute(Event /*event*/)
     if (Unit* voidSentinel = AI_VALUE2(Unit*, "find target", "void sentinel"))
     {
         targetEnemy = voidSentinel;
-        if (Player* mainTank = GetGroupMainTank(botAI, bot))
-            targetTank = mainTank;
+        if (Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0))
+            targetTank = firstAssistTank;
     }
     else if (Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius"))
     {
         targetEnemy = entropius;
-        if (Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0))
-            targetTank = firstAssistTank;
+        if (Player* mainTank = GetGroupMainTank(botAI, bot))
+            targetTank = mainTank;
     }
 
     if (!targetEnemy || !targetTank)
@@ -1528,6 +1559,19 @@ bool MuruSetGroundingTotemInFirstAssistTankGroupAction::Execute(Event /*event*/)
 {
     return botAI->CanCastSpell("grounding totem", bot) &&
            botAI->CastSpell("grounding totem", bot);
+}
+
+bool MuruSecondAssistTankGuardRangedAction::Execute(Event /*event*/)
+{
+    const Position& position = MURU_TANK_IDLE_POSITION;
+    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
+    {
+        return MoveTo(SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                      position.GetPositionZ(), false, false, false, false,
+                      MovementPriority::MOVEMENT_COMBAT, true, false);
+    }
+
+    return false;
 }
 
 bool MuruAvoidDarknessAction::Execute(Event /*event*/)

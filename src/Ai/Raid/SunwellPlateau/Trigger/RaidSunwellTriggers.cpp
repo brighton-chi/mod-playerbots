@@ -17,6 +17,18 @@ bool SunwellPlateauBotIsNotInCombatTrigger::IsActive()
     return !bot->IsInCombat();
 }
 
+// Trash
+
+bool ApocalypseGuardProtectedByInfernalDefenseTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_PRIEST)
+        return false;
+
+    Unit* apocalypseGuard = AI_VALUE2(Unit*, "find target", "apocalypse guard");
+    return apocalypseGuard && apocalypseGuard->HasAura(
+        static_cast<uint32>(SunwellSpells::SPELL_INFERNAL_DEFENSE));
+}
+
 // Kalecgos
 
 bool KalecgosBossEngagedByTankTrigger::IsActive()
@@ -425,6 +437,23 @@ bool MuruVoidSentinelCastsVoidBlastOnTankTrigger::IsActive()
     }
 
     return IsFirstAssistTankInSameGroup(botAI, bot);
+}
+
+bool MuruAddsSpawnAtEntranceTrigger::IsActive()
+{
+    Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
+    if (!muru || muru->GetHealth() == 1)
+        return false;
+
+    if (!botAI->IsAssistTankOfIndex(bot, 0, true))
+        return false;
+
+    Unit* voidSentinel = AI_VALUE2(Unit*, "find target", "void sentinel");
+    if (voidSentinel && voidSentinel->GetVictim() == bot)
+        return false;
+
+    return !AI_VALUE2(Unit*, "find target", "shadowsword fury mage") &&
+           !AI_VALUE2(Unit*, "find target", "shadowsword berserker");
 }
 
 bool MuruDarkFiendsSpawnedTrigger::IsActive()

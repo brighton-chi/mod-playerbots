@@ -18,7 +18,11 @@ public:
         creators["sunwell plateau erase timers and trackers"] =
             &RaidSunwellActionContext::sunwell_plateau_erase_timers_and_trackers;
 
-        // Kalecgos & Sathrovarr
+        // Trash
+        creators["apocalypse guard attack with holy magic"] =
+            &RaidSunwellActionContext::apocalypse_guard_attack_with_holy_magic;
+
+        // Kalecgos
         creators["kalecgos tank position boss"] =
             &RaidSunwellActionContext::kalecgos_tank_position_boss;
 
@@ -122,6 +126,9 @@ public:
         creators["m'uru set grounding totem in first assist tank group"] =
             &RaidSunwellActionContext::muru_set_grounding_totem_in_first_assist_tank_group;
 
+        creators["m'uru second assist tank guard ranged"] =
+            &RaidSunwellActionContext::muru_second_assist_tank_guard_ranged;
+
         creators["m'uru avoid darkness"] =
             &RaidSunwellActionContext::muru_avoid_darkness;
 
@@ -174,7 +181,11 @@ private:
     static Action* sunwell_plateau_erase_timers_and_trackers(
         PlayerbotAI* botAI) { return new SunwellPlateauEraseTimersAndTrackersAction(botAI); }
 
-    // Kalecgos & Sathrovarr
+    // Trash
+    static Action* apocalypse_guard_attack_with_holy_magic(
+        PlayerbotAI* botAI) { return new ApocalypseGuardAttackWithHolyMagicAction(botAI); }
+
+    // Kalecgos
     static Action* kalecgos_tank_position_boss(
         PlayerbotAI* botAI) { return new KalecgosTankPositionBossAction(botAI); }
 
@@ -277,6 +288,9 @@ private:
 
     static Action* muru_set_grounding_totem_in_first_assist_tank_group(
         PlayerbotAI* botAI) { return new MuruSetGroundingTotemInFirstAssistTankGroupAction(botAI); }
+
+    static Action* muru_second_assist_tank_guard_ranged(
+        PlayerbotAI* botAI) { return new MuruSecondAssistTankGuardRangedAction(botAI); }
 
     static Action* muru_avoid_darkness(
         PlayerbotAI* botAI) { return new MuruAvoidDarknessAction(botAI); }

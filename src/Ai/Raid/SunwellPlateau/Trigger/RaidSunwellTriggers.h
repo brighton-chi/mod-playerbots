@@ -18,6 +18,16 @@ public:
     bool IsActive() override;
 };
 
+// Trash
+
+class ApocalypseGuardProtectedByInfernalDefenseTrigger : public Trigger
+{
+public:
+    ApocalypseGuardProtectedByInfernalDefenseTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "apocalypse guard protected by infernal defense") {}
+    bool IsActive() override;
+};
+
 // Kalecgos
 
 class KalecgosBossEngagedByTankTrigger : public Trigger
@@ -297,6 +307,14 @@ class MuruVoidSentinelCastsVoidBlastOnTankTrigger : public Trigger
 public:
     MuruVoidSentinelCastsVoidBlastOnTankTrigger(
         PlayerbotAI* botAI) : Trigger(botAI, "m'uru void sentinel casts void blast on tank") {}
+    bool IsActive() override;
+};
+
+class MuruAddsSpawnAtEntranceTrigger : public Trigger
+{
+public:
+    MuruAddsSpawnAtEntranceTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "m'uru adds spawn at entrance") {}
     bool IsActive() override;
 };
 

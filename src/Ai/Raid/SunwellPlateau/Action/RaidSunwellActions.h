@@ -20,6 +20,16 @@ public:
     bool Execute(Event event) override;
 };
 
+// Trash
+
+class ApocalypseGuardAttackWithHolyMagicAction : public Action
+{
+public:
+    ApocalypseGuardAttackWithHolyMagicAction(
+        PlayerbotAI* botAI, std::string const name = "apocalypse guard attack with holy magic") : Action(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 // Kalecgos
 
 class KalecgosTankPositionBossAction : public AttackAction
@@ -294,6 +304,14 @@ class MuruSetGroundingTotemInFirstAssistTankGroupAction : public Action
 public:
     MuruSetGroundingTotemInFirstAssistTankGroupAction(
         PlayerbotAI* botAI, std::string const name = "m'uru set grounding totem in first assist tank group") : Action(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class MuruSecondAssistTankGuardRangedAction : public MovementAction
+{
+public:
+    MuruSecondAssistTankGuardRangedAction(
+        PlayerbotAI* botAI, std::string const name = "m'uru second assist tank guard ranged") : MovementAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 
