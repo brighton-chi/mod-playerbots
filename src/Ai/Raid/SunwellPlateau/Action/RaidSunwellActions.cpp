@@ -459,7 +459,7 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
     {
         Position position;
         if (!TryGetBrutallusRangedStepPosition(
-                brutallus, rangedIndex, true, GetBrutallusReturnRangedRadius(),
+            brutallus, rangedIndex, true, BRUTALLUS_RETURN_RANGED_RADIUS,
                 bot->GetPositionZ(), position))
         {
             return false;
@@ -480,7 +480,7 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
     {
         Position position;
         if (!TryGetBrutallusRangedArcPosition(
-                brutallus, rangedIndex, GetBrutallusReturnRangedRadius(), false,
+            brutallus, rangedIndex, BRUTALLUS_RETURN_RANGED_RADIUS, false,
                 bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), position))
         {
             return false;
@@ -495,7 +495,7 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
 
         Position returnStepPosition;
         if (!TryGetBrutallusRangedStepPosition(
-            brutallus, rangedIndex, false, GetBrutallusReturnRangedRadius(),
+            brutallus, rangedIndex, false, BRUTALLUS_RETURN_RANGED_RADIUS,
             bot->GetPositionZ(), returnStepPosition))
             return false;
 
@@ -512,7 +512,7 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
     {
         Position position;
         if (!TryGetBrutallusRangedStepPosition(
-                brutallus, rangedIndex, false, GetBrutallusNormalRangedRadius(),
+            brutallus, rangedIndex, false, BRUTALLUS_NORMAL_RANGED_RADIUS,
                 bot->GetPositionZ(), position))
         {
             return false;
@@ -531,7 +531,7 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
 
     Position position;
     if (!TryGetBrutallusRangedStepPosition(
-            brutallus, rangedIndex, false, GetBrutallusNormalRangedRadius(),
+            brutallus, rangedIndex, false, BRUTALLUS_NORMAL_RANGED_RADIUS,
             bot->GetPositionZ(), position))
     {
         return false;
@@ -595,7 +595,7 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
     {
         Position stepPosition;
         if (!TryGetBrutallusRangedStepPosition(
-                brutallus, rangedIndex, false, GetBrutallusBurnRangedRadius(),
+            brutallus, rangedIndex, false, BRUTALLUS_BURN_RANGED_RADIUS,
                 bot->GetPositionZ(), stepPosition))
             return false;
 
@@ -614,7 +614,7 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
     {
         Position position;
         if (!TryGetBrutallusRangedArcPosition(
-            brutallus, rangedIndex, GetBrutallusBurnRangedRadius(), true,
+            brutallus, rangedIndex, BRUTALLUS_BURN_RANGED_RADIUS, true,
             bot->GetPositionX(), bot->GetPositionY(),
                 bot->GetPositionZ(), position))
         {
@@ -630,7 +630,7 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
 
         Position mirrorStepPosition;
         if (!TryGetBrutallusRangedStepPosition(
-                brutallus, rangedIndex, true, GetBrutallusBurnRangedRadius(),
+            brutallus, rangedIndex, true, BRUTALLUS_BURN_RANGED_RADIUS,
                 bot->GetPositionZ(), mirrorStepPosition))
         {
             return false;
@@ -647,7 +647,7 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
 
     Position position;
     if (!TryGetBrutallusRangedStepPosition(
-            brutallus, rangedIndex, true, GetBrutallusBurnRangedRadius(),
+            brutallus, rangedIndex, true, BRUTALLUS_BURN_RANGED_RADIUS,
             bot->GetPositionZ(), position))
     {
         return false;

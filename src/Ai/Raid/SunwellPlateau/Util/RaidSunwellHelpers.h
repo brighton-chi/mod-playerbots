@@ -148,8 +148,21 @@ namespace SunwellHelpers
     constexpr float BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET = -M_PI_2;
     constexpr float BRUTALLUS_TANK_POSITION_RADIUS = 20.25f;
     constexpr float BRUTALLUS_RANGED_TANK_OFFSET = 10.0f;
+    constexpr float BRUTALLUS_RANGED_LANE_OFFSET = 5.0f;
+    constexpr float BRUTALLUS_NORMAL_RANGED_RADIUS =
+        BRUTALLUS_TANK_POSITION_RADIUS + BRUTALLUS_RANGED_TANK_OFFSET;
+    constexpr float BRUTALLUS_BURN_RANGED_RADIUS =
+        BRUTALLUS_NORMAL_RANGED_RADIUS - BRUTALLUS_RANGED_LANE_OFFSET;
+    constexpr float BRUTALLUS_RETURN_RANGED_RADIUS =
+        BRUTALLUS_NORMAL_RANGED_RADIUS + BRUTALLUS_RANGED_LANE_OFFSET;
     constexpr uint8 BRUTALLUS_RANGED_POSITIONS_PER_GROUP = 10;
     constexpr uint8 BRUTALLUS_TOTAL_RANGED_POSITIONS = BRUTALLUS_RANGED_POSITIONS_PER_GROUP * 2;
+
+    struct BrutallusRangedSlotInfo
+    {
+        bool isMainTankGroup = false;
+        uint8 arcPositionIndex = 0;
+    };
 
     enum class BrutallusRangedBurnState : uint8
     {
@@ -166,18 +179,22 @@ namespace SunwellHelpers
     extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> brutallusRangedAssignments;
     extern std::unordered_map<ObjectGuid, BrutallusRangedBurnState> brutallusRangedBurnStates;
     bool ShouldMoveForBrutallusBurn(Player* bot);
+    float GetBrutallusMainTankAngle(Unit* brutallus);
+    Position GetBrutallusPositionAtAngle(Unit* brutallus, float angle, float radius, float z);
+    float GetCenteredArcSlotAngleOffset(uint8 slotIndex, uint8 slotCount, float arcWidth);
+    float NormalizeSignedAngle(float angle);
     Position GetBrutallusTankPosition(Unit* brutallus, bool isMainTank, float z);
     bool TryGetBrutallusMeleePosition(
         Player* bot, Unit* brutallus, uint8 meleeIndex, float z, Position& position);
-    float GetBrutallusNormalRangedRadius();
-    float GetBrutallusBurnRangedRadius();
-    float GetBrutallusReturnRangedRadius();
+    float GetBrutallusRangedSlotAngle(
+        Unit* brutallus, BrutallusRangedSlotInfo const& slotInfo);
     bool TryGetBrutallusRangedStepPosition(
         Unit* brutallus, uint8 rangedIndex, bool useMirrorAngle,
         float radius, float z, Position& position);
     bool TryGetBrutallusRangedArcPosition(
         Unit* brutallus, uint8 rangedIndex, float radius, bool moveTowardMirror,
         float currentX, float currentY, float z, Position& position);
+    void EnsureBrutallusRangedAssignments(PlayerbotAI* botAI, Player* bot);
     bool TryGetBrutallusAssignedPositionIndex(PlayerbotAI* botAI, Player* bot, bool wantRanged,
         uint8& positionIndex);
 

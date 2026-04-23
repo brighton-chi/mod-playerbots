@@ -552,24 +552,6 @@ namespace SunwellHelpers
 
     const Position BRUTALLUS_MAIN_TANK_POSITION = { 1484.779f, 582.691f, 23.460f };
 
-    struct BrutallusRangedSlotInfo
-    {
-        bool isMainTankGroup = false;
-        uint8 arcPositionIndex = 0;
-    };
-
-    constexpr float BRUTALLUS_RANGED_LANE_OFFSET = 5.0f;
-
-    float GetBrutallusMainTankAngle(Unit* brutallus);
-    Position GetBrutallusPositionAtAngle(Unit* brutallus, float angle, float radius, float z);
-    float GetCenteredArcSlotAngleOffset(uint8 slotIndex, uint8 slotCount, float arcWidth);
-    bool TryGetBrutallusRangedSlotInfo(uint8 rangedIndex, BrutallusRangedSlotInfo& slotInfo);
-    float NormalizeSignedAngle(float angle);
-    float GetBrutallusRangedSlotAngleStep(float radius);
-    float GetBrutallusRangedSlotAngle(Unit* brutallus, BrutallusRangedSlotInfo const& slotInfo);
-    float GetBrutallusMirroredRangedAngle(float normalAngle, BrutallusRangedSlotInfo const& slotInfo);
-    void EnsureBrutallusRangedAssignments(PlayerbotAI* botAI, Player* bot);
-
     std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> brutallusRangedAssignments;
     std::unordered_map<ObjectGuid, BrutallusRangedBurnState> brutallusRangedBurnStates;
 
@@ -579,7 +561,8 @@ namespace SunwellHelpers
         if (!burnAura)
             return false;
 
-        return burnAura->GetDuration() < 45000;
+        constexpr int32 burnMoveLeadTimeMs = 45000;
+        return burnAura->GetDuration() < burnMoveLeadTimeMs;
     }
 
     Position GetBrutallusTankPosition(Unit* brutallus, bool isMainTank, float z)
@@ -729,19 +712,6 @@ namespace SunwellHelpers
         return angleOffset;
     }
 
-    bool TryGetBrutallusRangedSlotInfo
-    (uint8 rangedIndex, BrutallusRangedSlotInfo& slotInfo)
-    {
-        if (rangedIndex >= BRUTALLUS_TOTAL_RANGED_POSITIONS)
-            return false;
-
-        slotInfo.isMainTankGroup = rangedIndex % 2 == 0;
-        slotInfo.arcPositionIndex =
-            (rangedIndex / 2) % BRUTALLUS_RANGED_POSITIONS_PER_GROUP;
-
-        return true;
-    }
-
     float NormalizeSignedAngle(float angle)
     {
         angle = Position::NormalizeOrientation(angle);
@@ -751,32 +721,11 @@ namespace SunwellHelpers
         return angle;
     }
 
-    float GetBrutallusNormalRangedRadius()
-    {
-        return BRUTALLUS_TANK_POSITION_RADIUS + BRUTALLUS_RANGED_TANK_OFFSET;
-    }
-
-    float GetBrutallusBurnRangedRadius()
-    {
-        return GetBrutallusNormalRangedRadius() - BRUTALLUS_RANGED_LANE_OFFSET;
-    }
-
-    float GetBrutallusReturnRangedRadius()
-    {
-        return GetBrutallusNormalRangedRadius() + BRUTALLUS_RANGED_LANE_OFFSET;
-    }
-
-    float GetBrutallusRangedSlotAngleStep(float radius)
-    {
-        constexpr float rangedSpacing = 6.0f;
-        float stepRatio = rangedSpacing / (2.0f * radius);
-        stepRatio = std::clamp(stepRatio, 0.0f, 1.0f);
-        return 2.0f * std::asin(stepRatio);
-    }
-
     float GetBrutallusRangedSlotAngle(
         Unit* brutallus, BrutallusRangedSlotInfo const& slotInfo)
     {
+        constexpr float rangedSpacing = 6.0f;
+
         float frontCenterAngle = Position::NormalizeOrientation(
             GetBrutallusMainTankAngle(brutallus) +
             BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET / 2.0f);
@@ -791,8 +740,9 @@ namespace SunwellHelpers
         float angleTowardCenter = NormalizeSignedAngle(
             frontCenterAngle - tankAngle);
         float towardCenterSign = angleTowardCenter < 0.0f ? -1.0f : 1.0f;
-        float angleStep = GetBrutallusRangedSlotAngleStep(
-            GetBrutallusNormalRangedRadius());
+        float stepRatio = rangedSpacing / (2.0f * BRUTALLUS_NORMAL_RANGED_RADIUS);
+        stepRatio = std::clamp(stepRatio, 0.0f, 1.0f);
+        float angleStep = 2.0f * std::asin(stepRatio);
         float arcHalfWidth = angleStep * static_cast<float>(
             BRUTALLUS_RANGED_POSITIONS_PER_GROUP - 1) / 2.0f;
         float outerEdgeAngle = Position::NormalizeOrientation(
@@ -802,16 +752,6 @@ namespace SunwellHelpers
             outerEdgeAngle + towardCenterSign * angleStep * slotInfo.arcPositionIndex);
     }
 
-    float GetBrutallusMirroredRangedAngle(
-        float normalAngle, BrutallusRangedSlotInfo const& slotInfo)
-    {
-        float mirrorAngleOffset = M_PI_2;
-        if (!slotInfo.isMainTankGroup)
-            mirrorAngleOffset = -mirrorAngleOffset;
-
-        return Position::NormalizeOrientation(normalAngle + mirrorAngleOffset);
-    }
-
     bool TryGetBrutallusRangedStepPosition(
         Unit* brutallus, uint8 rangedIndex, bool useMirrorAngle,
         float radius, float z, Position& position)
@@ -819,13 +759,18 @@ namespace SunwellHelpers
         if (!brutallus)
             return false;
 
-        BrutallusRangedSlotInfo slotInfo;
-        if (!TryGetBrutallusRangedSlotInfo(rangedIndex, slotInfo))
+        if (rangedIndex >= BRUTALLUS_TOTAL_RANGED_POSITIONS)
             return false;
+
+        BrutallusRangedSlotInfo slotInfo = {
+            rangedIndex % 2 == 0,
+            static_cast<uint8>((rangedIndex / 2) % BRUTALLUS_RANGED_POSITIONS_PER_GROUP)
+        };
 
         float angle = GetBrutallusRangedSlotAngle(brutallus, slotInfo);
         if (useMirrorAngle)
-            angle = GetBrutallusMirroredRangedAngle(angle, slotInfo);
+            angle = Position::NormalizeOrientation(
+                angle + (slotInfo.isMainTankGroup ? M_PI_2 : -M_PI_2));
 
         position = GetBrutallusPositionAtAngle(brutallus, angle, radius, z);
         return true;
@@ -838,14 +783,19 @@ namespace SunwellHelpers
         if (!brutallus)
             return false;
 
-        BrutallusRangedSlotInfo slotInfo;
-        if (!TryGetBrutallusRangedSlotInfo(rangedIndex, slotInfo))
+        if (rangedIndex >= BRUTALLUS_TOTAL_RANGED_POSITIONS)
             return false;
+
+        BrutallusRangedSlotInfo slotInfo = {
+            rangedIndex % 2 == 0,
+            static_cast<uint8>((rangedIndex / 2) % BRUTALLUS_RANGED_POSITIONS_PER_GROUP)
+        };
 
         float normalAngle = GetBrutallusRangedSlotAngle(brutallus, slotInfo);
         float targetAngle = normalAngle;
         if (moveTowardMirror)
-            targetAngle = GetBrutallusMirroredRangedAngle(normalAngle, slotInfo);
+            targetAngle = Position::NormalizeOrientation(
+                normalAngle + (slotInfo.isMainTankGroup ? M_PI_2 : -M_PI_2));
 
         Position center = BRUTALLUS_MAIN_TANK_POSITION;
         center.Relocate(
