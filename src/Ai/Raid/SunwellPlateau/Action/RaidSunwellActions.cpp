@@ -142,6 +142,8 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
         {
             erased = true;
         }
+
+        ClearKiljaedenRangedArmageddonAssignments(instanceId);
     }
 
     return erased;
@@ -1907,6 +1909,9 @@ bool KiljaedenTanksHandleHandsOfTheDeceiverAction::Execute(Event /*event*/)
 
 bool KiljaedenAvoidArmageddonsAction::Execute(Event /*event*/)
 {
+    if (botAI->IsRanged(bot))
+        return false;
+
     KiljaedenArmageddon armageddon;
     if (!TryGetKiljaedenNearestArmageddon(bot, armageddon))
         return false;
@@ -1983,14 +1988,48 @@ bool KiljaedenPositionMeleeAction::Execute(Event /*event*/)
     if (!foundAssignment)
         return false;
 
-    Position const& targetPosition =
+    Position const& assignedPosition =
         meleeIndex % 2 == 0 ? KILJAEDEN_S_MELEE_POSITION : KILJAEDEN_E_MELEE_POSITION;
+    Position const& swapPosition =
+        meleeIndex % 2 == 0 ? KILJAEDEN_E_MELEE_POSITION : KILJAEDEN_S_MELEE_POSITION;
 
-    if (bot->GetExactDist2d(targetPosition.GetPositionX(), targetPosition.GetPositionY()) <= 2.0f)
+    Position const* targetPosition = &assignedPosition;
+
+    PruneExpiredKiljaedenArmageddons(bot->GetInstanceId());
+    auto armageddonItr = kiljaedenArmageddons.find(bot->GetInstanceId());
+    if (armageddonItr != kiljaedenArmageddons.end() && !armageddonItr->second.empty())
+    {
+        auto isSafePosition = [&](Position const& position)
+        {
+            for (KiljaedenArmageddon const& armageddon : armageddonItr->second)
+            {
+                if (position.GetExactDist2d(armageddon.destination.GetPositionX(),
+                                            armageddon.destination.GetPositionY()) <
+                    armageddon.safeDistance)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        };
+
+        bool assignedSafe = isSafePosition(assignedPosition);
+        bool swapSafe = isSafePosition(swapPosition);
+        if (!assignedSafe)
+        {
+            if (swapSafe)
+                targetPosition = &swapPosition;
+            else
+                return false;
+        }
+    }
+
+    if (bot->GetExactDist2d(targetPosition->GetPositionX(), targetPosition->GetPositionY()) <= 2.0f)
         return false;
 
-    return MoveTo(SUNWELL_MAP_ID, targetPosition.GetPositionX(),
-                  targetPosition.GetPositionY(), targetPosition.GetPositionZ(),
+    return MoveTo(SUNWELL_MAP_ID, targetPosition->GetPositionX(),
+                  targetPosition->GetPositionY(), targetPosition->GetPositionZ(),
                   false, false, false, false, MovementPriority::MOVEMENT_COMBAT,
                   true, false);
 }

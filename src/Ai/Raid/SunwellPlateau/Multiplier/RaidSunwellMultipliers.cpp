@@ -825,12 +825,5 @@ float KiljaedenPrioritizeArmageddonAvoidanceMultiplier::GetValue(Action* action)
         return 0.0f;
     }
 
-    if (HasActiveKiljaedenArmageddon(bot->GetInstanceId()) &&
-        (dynamic_cast<KiljaedenPositionMeleeAction*>(action) ||
-         dynamic_cast<KiljaedenPositionRangedAction*>(action)))
-    {
-        return 0.0f;
-    }
-
     return 1.0f;
 }

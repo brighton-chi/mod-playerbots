@@ -531,11 +531,34 @@ bool KiljaedenHandsOfTheDeceiverAreActiveTrigger::IsActive()
 
 bool KiljaedenItsRainingMeteorsTrigger::IsActive()
 {
-    if (botAI->IsTank(bot))
+    if (botAI->IsTank(bot) || botAI->IsRanged(bot))
         return false;
 
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
     if (!kiljaeden || IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
+        return false;
+
+    PruneExpiredKiljaedenArmageddons(bot->GetInstanceId());
+    auto armageddonItr = kiljaedenArmageddons.find(bot->GetInstanceId());
+    if (armageddonItr == kiljaedenArmageddons.end() || armageddonItr->second.empty())
+        return false;
+
+    auto isSafePosition = [&](Position const& position)
+    {
+        for (KiljaedenArmageddon const& armageddon : armageddonItr->second)
+        {
+            if (position.GetExactDist2d(armageddon.destination.GetPositionX(),
+                                        armageddon.destination.GetPositionY()) <
+                armageddon.safeDistance)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    };
+
+    if (isSafePosition(KILJAEDEN_S_MELEE_POSITION) || isSafePosition(KILJAEDEN_E_MELEE_POSITION))
         return false;
 
     KiljaedenArmageddon armageddon;
@@ -578,7 +601,7 @@ bool KiljaedenBossEngagedByMeleeTrigger::IsActive()
     if (!kiljaeden || IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
         return false;
 
-    return !HasActiveKiljaedenArmageddon(bot->GetInstanceId());
+    return true;
 }
 
 bool KiljaedenBossEngagedByRangedTrigger::IsActive()
@@ -590,7 +613,7 @@ bool KiljaedenBossEngagedByRangedTrigger::IsActive()
     if (!kiljaeden || IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
         return false;
 
-    return !HasActiveKiljaedenArmageddon(bot->GetInstanceId());
+    return true;
 }
 
 /* bool KiljaedenDeterminingDpsPriorityTrigger::IsActive()

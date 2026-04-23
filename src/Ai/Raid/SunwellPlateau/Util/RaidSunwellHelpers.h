@@ -334,6 +334,7 @@ namespace SunwellHelpers
     void AddKiljaedenArmageddon(
         uint32 instanceId, Position const& destination, uint32 durationMs, float safeDistance);
     void PruneExpiredKiljaedenArmageddons(uint32 instanceId);
+    void ClearKiljaedenRangedArmageddonAssignments(uint32 instanceId);
     bool HasActiveKiljaedenArmageddon(uint32 instanceId);
     bool TryGetKiljaedenNearestArmageddon(Player* bot, KiljaedenArmageddon& armageddon);
     bool IsKiljaedenCastingDarknessOfAThousandSouls(Unit* kiljaeden);
