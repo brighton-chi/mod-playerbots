@@ -1874,6 +1874,86 @@ namespace SunwellHelpers
     const Position MURU_TANK_IDLE_POSITION = { 1842.606f, 603.372f, 71.271f };
 
     std::unordered_map<uint32, MuruDarknessState> muruDarknessStates;
+    std::unordered_map<uint32, std::unordered_set<ObjectGuid>> muruEntropiusInitialRangedPositionsReached;
+
+    void SetMuruEntropiusInitialRangedPositionReached(Player* bot, bool reached)
+    {
+        ObjectGuid guid = bot->GetGUID();
+        uint32 instanceId = bot->GetInstanceId();
+        if (reached)
+        {
+            muruEntropiusInitialRangedPositionsReached[instanceId].insert(guid);
+            return;
+        }
+
+        auto instanceItr = muruEntropiusInitialRangedPositionsReached.find(instanceId);
+        if (instanceItr == muruEntropiusInitialRangedPositionsReached.end())
+            return;
+
+        instanceItr->second.erase(guid);
+        if (instanceItr->second.empty())
+            muruEntropiusInitialRangedPositionsReached.erase(instanceItr);
+    }
+
+    bool TryGetMuruEntropiusInitialRangedPosition(PlayerbotAI* botAI, Player* bot, Position& position)
+    {
+        Group* group = bot->GetGroup();
+        if (!group || !botAI->IsRanged(bot))
+            return false;
+
+        std::vector<Player*> rangedMembers;
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || member->GetMapId() != SUNWELL_MAP_ID ||
+                !botAI->IsRanged(member))
+            {
+                continue;
+            }
+
+            rangedMembers.push_back(member);
+        }
+
+        if (rangedMembers.empty())
+            return false;
+
+        std::sort(rangedMembers.begin(), rangedMembers.end(),
+            [](Player* left, Player* right) { return left->GetGUID() < right->GetGUID(); });
+
+        size_t slotIndex = rangedMembers.size();
+        for (size_t index = 0; index < rangedMembers.size(); ++index)
+        {
+            if (rangedMembers[index] == bot)
+            {
+                slotIndex = index;
+                break;
+            }
+        }
+
+        if (slotIndex >= rangedMembers.size())
+            return false;
+
+        constexpr float spreadRadius = 25.0f;
+        float anchorAngle = std::atan2(
+            MURU_STACK_POSITION.GetPositionY() - MURU_CENTER_POSITION.GetPositionY(),
+            MURU_STACK_POSITION.GetPositionX() - MURU_CENTER_POSITION.GetPositionX());
+        float angleStep = 2.0f * static_cast<float>(M_PI) / static_cast<float>(rangedMembers.size());
+        float angle = Position::NormalizeOrientation(anchorAngle + angleStep * slotIndex);
+        float destinationX = MURU_CENTER_POSITION.GetPositionX() + std::cos(angle) * spreadRadius;
+        float destinationY = MURU_CENTER_POSITION.GetPositionY() + std::sin(angle) * spreadRadius;
+
+        float destinationZ = bot->GetMapWaterOrGroundLevel(
+            destinationX, destinationY, MURU_CENTER_POSITION.GetPositionZ());
+        if (destinationZ <= INVALID_HEIGHT)
+            destinationZ = MURU_CENTER_POSITION.GetPositionZ();
+
+        bot->GetMap()->CheckCollisionAndGetValidCoords(
+            bot, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(),
+            destinationX, destinationY, destinationZ, false);
+
+        position = Position{ destinationX, destinationY, destinationZ };
+        return true;
+    }
 
     Unit* GetNearestNonTankPlayerInRadius(PlayerbotAI* botAI, Player* bot, float radius)
     {

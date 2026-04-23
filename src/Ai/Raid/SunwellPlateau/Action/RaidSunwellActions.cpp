@@ -20,6 +20,7 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
     uint32 instanceId = bot->GetInstanceId();
     Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos");
     Unit* sathrovarr = AI_VALUE2(Unit*, "find target", "sathrovarr the corruptor");
+    Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius");
 
     bool erased = false;
 
@@ -125,9 +126,14 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
     }
 
     // M'uru
-    if (!AI_VALUE2(Unit*, "find target", "m'uru"))
+    if (!AI_VALUE2(Unit*, "find target", "m'uru") && !entropius)
     {
         if (muruDarknessStates.erase(instanceId) > 0)
+        {
+            erased = true;
+        }
+
+        if (muruEntropiusInitialRangedPositionsReached.erase(instanceId) > 0)
         {
             erased = true;
         }
@@ -1446,20 +1452,53 @@ bool MuruMisdirectEnemiesToTanksAction::Execute(Event /*event*/)
 bool MuruPositionRangedAction::Execute(Event /*event*/)
 {
     Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
+    Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius");
     if (muru && muru->GetHealth() > 1)
     {
+        SetMuruEntropiusInitialRangedPositionReached(bot, false);
+
         const Position& position = MURU_STACK_POSITION;
         constexpr float rangedGroupRadius = 3.0f;
         return MoveInside(SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
                           position.GetPositionZ(), rangedGroupRadius,
                           MovementPriority::MOVEMENT_COMBAT);
     }
-    else
+
+    MuruEncounterTargets targets;
+    targets.muru = muru;
+    targets.entropius = entropius;
+    GatherMuruEncounterTargets(botAI, targets);
+
+    bool hasActiveAdds = !targets.voidSentinels.empty() ||
+                         !targets.voidSpawns.empty() ||
+                         !targets.furyMages.empty() ||
+                         !targets.berserkers.empty();
+    auto reachedPositionsItr = muruEntropiusInitialRangedPositionsReached.find(bot->GetInstanceId());
+    bool hasReachedInitialPosition =
+        reachedPositionsItr != muruEntropiusInitialRangedPositionsReached.end() &&
+        reachedPositionsItr->second.find(bot->GetGUID()) != reachedPositionsItr->second.end();
+
+    if (!hasActiveAdds && !hasReachedInitialPosition)
     {
-        constexpr float safeDistFromPlayer = 4.0f;
-        if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
-            return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer);
+        Position position;
+        if (!TryGetMuruEntropiusInitialRangedPosition(botAI, bot, position))
+            return false;
+
+        constexpr float arrivalDistance = 2.0f;
+        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) <= arrivalDistance)
+        {
+            SetMuruEntropiusInitialRangedPositionReached(bot, true);
+            return false;
+        }
+
+        return MoveInside(SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                          position.GetPositionZ(), arrivalDistance,
+                          MovementPriority::MOVEMENT_COMBAT);
     }
+
+    constexpr float safeDistFromPlayer = 4.0f;
+    if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
+        return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer);
 
     return false;
 }
