@@ -6,6 +6,8 @@
 #ifndef _PLAYERBOT_RAIDSUNWELLACTIONS_H
 #define _PLAYERBOT_RAIDSUNWELLACTIONS_H
 
+#include <vector>
+
 #include "Action.h"
 #include "AttackAction.h"
 #include "MovementActions.h"
@@ -377,6 +379,13 @@ public:
     MuruSetDpsPriorityAction(
         PlayerbotAI* botAI, std::string const name = "m'uru set dps priority") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
+
+private:
+    Unit* ResolveMuruDpsTarget(
+        Unit* muru, Unit* entropius, Unit*& currentTarget, Unit* currentVictim, bool& isMeleeDps);
+    Unit* SelectMuruEncounterTarget(
+        Unit* currentTarget, Unit* currentVictim, bool isMeleeDps,
+        uint32 entry, std::vector<Unit*> const& candidates) const;
 };
 
 // Kil'jaeden <The Deceiver>
