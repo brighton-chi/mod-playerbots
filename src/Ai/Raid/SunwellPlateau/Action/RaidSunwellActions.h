@@ -283,6 +283,10 @@ public:
     MuruPositionRangedAction(
         PlayerbotAI* botAI, std::string const name = "m'uru position ranged") : MovementAction(botAI, name) {}
     bool Execute(Event event) override;
+
+private:
+    void SetEntropiusInitialRangedPositionReached(bool reached);
+    bool TryGetEntropiusInitialRangedPosition(Position& position) const;
 };
 
 class MuruKillDarkFiendsWithDispelAction : public Action
@@ -299,6 +303,9 @@ public:
     MuruFirstAssistTankHandleVoidSentinelAction(
         PlayerbotAI* botAI, std::string const name = "m'uru first assist tank tank handle void sentinel") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
+
+private:
+    const Position* GetClosestVoidSentinelTankPosition(Unit* voidSentinel) const;
 };
 
 class MuruSetGroundingTotemInFirstAssistTankGroupAction : public Action
@@ -371,6 +378,9 @@ public:
     MuruEnslavedVoidSpawnCastShadowBoltVolleyAction(
         PlayerbotAI* botAI, std::string const name = "m'uru enslaved void spawn cast shadow bolt volley") : Action(botAI, name) {}
     bool Execute(Event event) override;
+
+private:
+    Unit* GetVoidSpawnVolleyPriorityTarget(Unit* muru, Unit* entropius) const;
 };
 
 class MuruSetDpsPriorityAction : public AttackAction
@@ -436,6 +446,9 @@ public:
     KiljaedenPositionRangedAction(
         PlayerbotAI* botAI, std::string const name = "kil'jaeden position ranged") : MovementAction(botAI, name) {}
     bool Execute(Event event) override;
+
+private:
+    bool TryGetRangedPosition(Position& position) const;
 };
 
 class KiljaedenRemoveFireBloomWithCooldownAction : public Action

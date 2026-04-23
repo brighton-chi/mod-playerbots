@@ -309,18 +309,11 @@ namespace SunwellHelpers
     extern const Position MURU_TANK_IDLE_POSITION;
     extern std::unordered_map<uint32, MuruDarknessState> muruDarknessStates;
     extern std::unordered_map<uint32, std::unordered_set<ObjectGuid>> muruEntropiusInitialRangedPositionsReached;
-    void SetMuruEntropiusInitialRangedPositionReached(Player* bot, bool reached);
-    bool TryGetMuruEntropiusInitialRangedPosition(PlayerbotAI* botAI, Player* bot, Position& position);
-    Unit* GetNearestNonTankPlayerInRadius(PlayerbotAI* botAI, Player* bot, float radius);
-    const Position* GetClosestVoidSentinelTankPosition(Unit* voidSentinel, Player* bot);
     Creature* GetNearestMuruSingularity(Player* bot, float searchRadius = 30.0f);
     bool IsFirstAssistTankInSameGroup(PlayerbotAI* botAI, Player* bot);
     bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru);
-    bool DoesMuruUnitHaveTankAggro(PlayerbotAI* botAI, Unit* unit);
     void GatherMuruEncounterTargets(PlayerbotAI* botAI, MuruEncounterTargets& targets);
     Creature* FindAvailableVoidSpawnForEnslave(
-        PlayerbotAI* botAI, Player* bot, Unit* muru, Unit* entropius);
-    Unit* GetVoidSpawnVolleyPriorityTarget(
         PlayerbotAI* botAI, Player* bot, Unit* muru, Unit* entropius);
     bool CommandControlledCreatureToAttack(Unit* controlled, Unit* target);
 
@@ -349,11 +342,9 @@ namespace SunwellHelpers
     void AddKiljaedenArmageddon(
         uint32 instanceId, Position const& destination, uint32 durationMs, float safeDistance);
     void PruneExpiredKiljaedenArmageddons(uint32 instanceId);
-    void ClearKiljaedenRangedArmageddonAssignments(uint32 instanceId);
     bool HasActiveKiljaedenArmageddon(uint32 instanceId);
     bool TryGetKiljaedenNearestArmageddon(Player* bot, KiljaedenArmageddon& armageddon);
     bool IsKiljaedenCastingDarknessOfAThousandSouls(Unit* kiljaeden);
-    bool TryGetKiljaedenRangedPosition(PlayerbotAI* botAI, Player* bot, Position& position);
 }
 
 #endif

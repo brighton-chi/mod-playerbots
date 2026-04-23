@@ -3,6 +3,10 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include <array>
+#include <limits>
+#include <unordered_map>
+
 #include "RaidSunwellActions.h"
 #include "RaidSunwellHelpers.h"
 #include "CharmInfo.h"
@@ -13,6 +17,349 @@
 #include "Timer.h"
 
 using namespace SunwellHelpers;
+
+namespace
+{
+    std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> kiljaedenRangedAssignments;
+    std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> kiljaedenRangedArmageddonAssignments;
+
+    bool IsKiljaedenInnerRangedSlot(uint8 slotIndex)
+    {
+        return slotIndex < KILJAEDEN_INNER_RANGED_SLOT_COUNT;
+    }
+
+    bool TryGetKiljaedenRangedSlotPosition(uint8 slotIndex, Position& position)
+    {
+        if (slotIndex >= KILJAEDEN_TOTAL_RANGED_SLOT_COUNT)
+            return false;
+
+        float radius = KILJAEDEN_OUTER_RANGED_RADIUS;
+        uint8 localSlotIndex = slotIndex;
+        uint8 slotCount = KILJAEDEN_OUTER_RANGED_SLOT_COUNT;
+
+        if (IsKiljaedenInnerRangedSlot(slotIndex))
+        {
+            radius = KILJAEDEN_INNER_RANGED_RADIUS;
+            slotCount = KILJAEDEN_INNER_RANGED_SLOT_COUNT;
+        }
+        else
+        {
+            localSlotIndex -= KILJAEDEN_INNER_RANGED_SLOT_COUNT;
+        }
+
+        float angleOffset = GetCenteredArcSlotAngleOffset(localSlotIndex, slotCount, M_PI);
+        float angle = Position::NormalizeOrientation(
+            KILJAEDEN_RANGED_ARC_ORIENTATION + angleOffset);
+        float positionX = KILJAEDEN_CENTER_POSITION.GetPositionX() + std::cos(angle) * radius;
+        float positionY = KILJAEDEN_CENTER_POSITION.GetPositionY() + std::sin(angle) * radius;
+
+        position = Position{ positionX, positionY, KILJAEDEN_CENTER_POSITION.GetPositionZ() };
+        return true;
+    }
+
+    float GetKiljaedenRangedSlotAngle(uint8 slotIndex)
+    {
+        Position position;
+        if (!TryGetKiljaedenRangedSlotPosition(slotIndex, position))
+            return 0.0f;
+
+        return Position::NormalizeOrientation(
+            std::atan2(position.GetPositionY() - KILJAEDEN_CENTER_POSITION.GetPositionY(),
+                       position.GetPositionX() - KILJAEDEN_CENTER_POSITION.GetPositionX()));
+    }
+
+    bool IsKiljaedenRangedSlotSafe(
+        Position const& position, std::vector<KiljaedenArmageddon> const& armageddons)
+    {
+        for (KiljaedenArmageddon const& armageddon : armageddons)
+        {
+            float deltaX = position.GetPositionX() - armageddon.destination.GetPositionX();
+            float deltaY = position.GetPositionY() - armageddon.destination.GetPositionY();
+            if (std::sqrt(deltaX * deltaX + deltaY * deltaY) < armageddon.safeDistance)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    float GetKiljaedenNearestArmageddonDistance(
+        Position const& position, std::vector<KiljaedenArmageddon> const& armageddons)
+    {
+        float nearestDistance = std::numeric_limits<float>::max();
+
+        for (KiljaedenArmageddon const& armageddon : armageddons)
+        {
+            float deltaX = position.GetPositionX() - armageddon.destination.GetPositionX();
+            float deltaY = position.GetPositionY() - armageddon.destination.GetPositionY();
+            nearestDistance = std::min(
+                nearestDistance, std::sqrt(deltaX * deltaX + deltaY * deltaY));
+        }
+
+        return nearestDistance;
+    }
+
+    void EnsureKiljaedenRangedAssignments(PlayerbotAI* botAI, Player* bot)
+    {
+        Group* group = bot->GetGroup();
+        if (!group || bot->GetMapId() != SUNWELL_MAP_ID)
+            return;
+
+        auto& assignments = kiljaedenRangedAssignments[bot->GetInstanceId()];
+
+        std::vector<ObjectGuid> invalidAssignments;
+        for (auto const& assignment : assignments)
+        {
+            bool found = false;
+            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+            {
+                Player* member = ref->GetSource();
+                if (!member || member->GetGUID() != assignment.first)
+                    continue;
+
+                found = member->GetMapId() == SUNWELL_MAP_ID &&
+                        GET_PLAYERBOT_AI(member) && botAI->IsRanged(member);
+                break;
+            }
+
+            if (!found)
+                invalidAssignments.push_back(assignment.first);
+        }
+
+        for (ObjectGuid const& guid : invalidAssignments)
+            assignments.erase(guid);
+
+        std::array<bool, KILJAEDEN_TOTAL_RANGED_SLOT_COUNT> usedSlots = {};
+        for (auto const& assignment : assignments)
+        {
+            if (assignment.second < KILJAEDEN_TOTAL_RANGED_SLOT_COUNT)
+                usedSlots[assignment.second] = true;
+        }
+
+        auto assignNextOpenSlot = [&](Player* member)
+        {
+            for (uint8 slotIndex = 0; slotIndex < KILJAEDEN_TOTAL_RANGED_SLOT_COUNT; ++slotIndex)
+            {
+                if (usedSlots[slotIndex])
+                    continue;
+
+                assignments[member->GetGUID()] = slotIndex;
+                usedSlots[slotIndex] = true;
+                return;
+            }
+        };
+
+        std::vector<Player*> healers;
+        std::vector<Player*> rangedDamage;
+
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || member->GetMapId() != SUNWELL_MAP_ID ||
+                !GET_PLAYERBOT_AI(member) || !botAI->IsRanged(member))
+            {
+                continue;
+            }
+
+            if (assignments.find(member->GetGUID()) != assignments.end())
+                continue;
+
+            if (botAI->IsHeal(member))
+                healers.push_back(member);
+            else
+                rangedDamage.push_back(member);
+        }
+
+        auto sortByGuid = [](std::vector<Player*>& members)
+        {
+            std::sort(members.begin(), members.end(),
+                [](Player* left, Player* right) { return left->GetGUID() < right->GetGUID(); });
+        };
+
+        sortByGuid(healers);
+        sortByGuid(rangedDamage);
+
+        for (Player* member : healers)
+            assignNextOpenSlot(member);
+
+        for (Player* member : rangedDamage)
+            assignNextOpenSlot(member);
+    }
+
+    void EnsureKiljaedenRangedArmageddonAssignments(PlayerbotAI* botAI, Player* bot)
+    {
+        uint32 instanceId = bot->GetInstanceId();
+        PruneExpiredKiljaedenArmageddons(instanceId);
+
+        auto armageddonItr = kiljaedenArmageddons.find(instanceId);
+        if (armageddonItr == kiljaedenArmageddons.end() || armageddonItr->second.empty())
+        {
+            kiljaedenRangedArmageddonAssignments.erase(instanceId);
+            return;
+        }
+
+        Group* group = bot->GetGroup();
+        if (!group || !botAI->IsRanged(bot))
+        {
+            kiljaedenRangedArmageddonAssignments.erase(instanceId);
+            return;
+        }
+
+        EnsureKiljaedenRangedAssignments(botAI, bot);
+        auto canonicalItr = kiljaedenRangedAssignments.find(instanceId);
+        if (canonicalItr == kiljaedenRangedAssignments.end())
+        {
+            kiljaedenRangedArmageddonAssignments.erase(instanceId);
+            return;
+        }
+
+        struct RangedBotAssignment
+        {
+            ObjectGuid guid;
+            uint8 slotIndex = 0;
+        };
+
+        std::vector<RangedBotAssignment> rangedBots;
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || member->GetMapId() != SUNWELL_MAP_ID ||
+                !GET_PLAYERBOT_AI(member) || !botAI->IsRanged(member))
+            {
+                continue;
+            }
+
+            auto assignmentItr = canonicalItr->second.find(member->GetGUID());
+            if (assignmentItr == canonicalItr->second.end() ||
+                assignmentItr->second >= KILJAEDEN_TOTAL_RANGED_SLOT_COUNT)
+            {
+                continue;
+            }
+
+            rangedBots.push_back({ member->GetGUID(), assignmentItr->second });
+        }
+
+        std::sort(rangedBots.begin(), rangedBots.end(),
+            [](RangedBotAssignment const& left, RangedBotAssignment const& right)
+            {
+                if (left.slotIndex != right.slotIndex)
+                    return left.slotIndex < right.slotIndex;
+
+                return left.guid < right.guid;
+            });
+
+        std::array<bool, KILJAEDEN_TOTAL_RANGED_SLOT_COUNT> safeSlots = {};
+        std::array<float, KILJAEDEN_TOTAL_RANGED_SLOT_COUNT> slotAngles = {};
+        std::array<float, KILJAEDEN_TOTAL_RANGED_SLOT_COUNT> nearestArmageddonDistances = {};
+
+        for (uint8 slotIndex = 0; slotIndex < KILJAEDEN_TOTAL_RANGED_SLOT_COUNT; ++slotIndex)
+        {
+            Position slotPosition;
+            if (!TryGetKiljaedenRangedSlotPosition(slotIndex, slotPosition))
+                continue;
+
+            safeSlots[slotIndex] = IsKiljaedenRangedSlotSafe(slotPosition, armageddonItr->second);
+            slotAngles[slotIndex] = GetKiljaedenRangedSlotAngle(slotIndex);
+            nearestArmageddonDistances[slotIndex] =
+                GetKiljaedenNearestArmageddonDistance(slotPosition, armageddonItr->second);
+        }
+
+        std::array<uint8, KILJAEDEN_TOTAL_RANGED_SLOT_COUNT> plannedOccupancy = {};
+        auto& tempAssignments = kiljaedenRangedArmageddonAssignments[instanceId];
+        tempAssignments.clear();
+
+        std::vector<RangedBotAssignment> displacedBots;
+        for (RangedBotAssignment const& rangedBot : rangedBots)
+        {
+            if (!safeSlots[rangedBot.slotIndex])
+            {
+                displacedBots.push_back(rangedBot);
+                continue;
+            }
+
+            tempAssignments[rangedBot.guid] = rangedBot.slotIndex;
+            ++plannedOccupancy[rangedBot.slotIndex];
+        }
+
+        constexpr float distanceEpsilon = 0.001f;
+        for (RangedBotAssignment const& rangedBot : displacedBots)
+        {
+            bool bestFound = false;
+            uint8 bestSlotIndex = rangedBot.slotIndex;
+            bool bestSameRow = false;
+            float bestAngleDistance = 0.0f;
+            uint8 bestOccupancy = 0;
+            float bestArmageddonDistance = 0.0f;
+
+            for (uint8 candidateSlotIndex = 0;
+                 candidateSlotIndex < KILJAEDEN_TOTAL_RANGED_SLOT_COUNT; ++candidateSlotIndex)
+            {
+                if (!safeSlots[candidateSlotIndex] || plannedOccupancy[candidateSlotIndex] >= 2)
+                    continue;
+
+                bool candidateSameRow =
+                    IsKiljaedenInnerRangedSlot(candidateSlotIndex) ==
+                    IsKiljaedenInnerRangedSlot(rangedBot.slotIndex);
+                float candidateAngleDistance = std::fabs(NormalizeSignedAngle(
+                    slotAngles[candidateSlotIndex] - slotAngles[rangedBot.slotIndex]));
+                uint8 candidateOccupancy = plannedOccupancy[candidateSlotIndex];
+                float candidateArmageddonDistance = nearestArmageddonDistances[candidateSlotIndex];
+
+                bool takeCandidate = false;
+                if (!bestFound)
+                {
+                    takeCandidate = true;
+                }
+                else if (candidateSameRow != bestSameRow)
+                {
+                    takeCandidate = candidateSameRow;
+                }
+                else if (candidateAngleDistance + distanceEpsilon < bestAngleDistance)
+                {
+                    takeCandidate = true;
+                }
+                else if (std::fabs(candidateAngleDistance - bestAngleDistance) <= distanceEpsilon)
+                {
+                    if (candidateOccupancy < bestOccupancy)
+                    {
+                        takeCandidate = true;
+                    }
+                    else if (candidateOccupancy == bestOccupancy)
+                    {
+                        if (candidateArmageddonDistance > bestArmageddonDistance + distanceEpsilon)
+                        {
+                            takeCandidate = true;
+                        }
+                        else if (std::fabs(candidateArmageddonDistance - bestArmageddonDistance) <=
+                                     distanceEpsilon &&
+                                 candidateSlotIndex < bestSlotIndex)
+                        {
+                            takeCandidate = true;
+                        }
+                    }
+                }
+
+                if (!takeCandidate)
+                    continue;
+
+                bestFound = true;
+                bestSlotIndex = candidateSlotIndex;
+                bestSameRow = candidateSameRow;
+                bestAngleDistance = candidateAngleDistance;
+                bestOccupancy = candidateOccupancy;
+                bestArmageddonDistance = candidateArmageddonDistance;
+            }
+
+            tempAssignments[rangedBot.guid] = bestSlotIndex;
+            if (bestFound)
+                ++plannedOccupancy[bestSlotIndex];
+        }
+
+        if (tempAssignments.empty())
+            kiljaedenRangedArmageddonAssignments.erase(instanceId);
+    }
+}
 
 // General
 
@@ -151,7 +498,7 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
             erased = true;
         }
 
-        ClearKiljaedenRangedArmageddonAssignments(instanceId);
+        kiljaedenRangedArmageddonAssignments.erase(instanceId);
     }
 
     return erased;
@@ -1441,7 +1788,7 @@ bool MuruPositionRangedAction::Execute(Event /*event*/)
     Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius");
     if (muru && muru->GetHealth() > 1)
     {
-        SetMuruEntropiusInitialRangedPositionReached(bot, false);
+        SetEntropiusInitialRangedPositionReached(false);
 
         const Position& position = MURU_STACK_POSITION;
         constexpr float rangedGroupRadius = 3.0f;
@@ -1480,13 +1827,13 @@ bool MuruPositionRangedAction::Execute(Event /*event*/)
     if (!hasActiveAdds && !hasReachedInitialPosition)
     {
         Position position;
-        if (!TryGetMuruEntropiusInitialRangedPosition(botAI, bot, position))
+        if (!TryGetEntropiusInitialRangedPosition(position))
             return false;
 
         constexpr float arrivalDistance = 2.0f;
         if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) <= arrivalDistance)
         {
-            SetMuruEntropiusInitialRangedPositionReached(bot, true);
+            SetEntropiusInitialRangedPositionReached(true);
             return false;
         }
 
@@ -1500,6 +1847,83 @@ bool MuruPositionRangedAction::Execute(Event /*event*/)
         return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer);
 
     return false;
+}
+
+void MuruPositionRangedAction::SetEntropiusInitialRangedPositionReached(bool reached)
+{
+    ObjectGuid guid = bot->GetGUID();
+    uint32 instanceId = bot->GetInstanceId();
+    if (reached)
+    {
+        muruEntropiusInitialRangedPositionsReached[instanceId].insert(guid);
+        return;
+    }
+
+    auto instanceItr = muruEntropiusInitialRangedPositionsReached.find(instanceId);
+    if (instanceItr == muruEntropiusInitialRangedPositionsReached.end())
+        return;
+
+    instanceItr->second.erase(guid);
+    if (instanceItr->second.empty())
+        muruEntropiusInitialRangedPositionsReached.erase(instanceItr);
+}
+
+bool MuruPositionRangedAction::TryGetEntropiusInitialRangedPosition(Position& position) const
+{
+    Group* group = bot->GetGroup();
+    if (!group || !botAI->IsRanged(bot))
+        return false;
+
+    std::vector<Player*> rangedMembers;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || member->GetMapId() != SUNWELL_MAP_ID || !botAI->IsRanged(member))
+            continue;
+
+        rangedMembers.push_back(member);
+    }
+
+    if (rangedMembers.empty())
+        return false;
+
+    std::sort(rangedMembers.begin(), rangedMembers.end(),
+        [](Player* left, Player* right) { return left->GetGUID() < right->GetGUID(); });
+
+    size_t slotIndex = rangedMembers.size();
+    for (size_t index = 0; index < rangedMembers.size(); ++index)
+    {
+        if (rangedMembers[index] == bot)
+        {
+            slotIndex = index;
+            break;
+        }
+    }
+
+    if (slotIndex >= rangedMembers.size())
+        return false;
+
+    constexpr float spreadRadius = 25.0f;
+    float anchorAngle = std::atan2(
+        MURU_STACK_POSITION.GetPositionY() - MURU_CENTER_POSITION.GetPositionY(),
+        MURU_STACK_POSITION.GetPositionX() - MURU_CENTER_POSITION.GetPositionX());
+    float angleStep =
+        2.0f * static_cast<float>(M_PI) / static_cast<float>(rangedMembers.size());
+    float angle = Position::NormalizeOrientation(anchorAngle + angleStep * slotIndex);
+    float destinationX = MURU_CENTER_POSITION.GetPositionX() + std::cos(angle) * spreadRadius;
+    float destinationY = MURU_CENTER_POSITION.GetPositionY() + std::sin(angle) * spreadRadius;
+
+    float destinationZ = bot->GetMapWaterOrGroundLevel(
+        destinationX, destinationY, MURU_CENTER_POSITION.GetPositionZ());
+    if (destinationZ <= INVALID_HEIGHT)
+        destinationZ = MURU_CENTER_POSITION.GetPositionZ();
+
+    bot->GetMap()->CheckCollisionAndGetValidCoords(
+        bot, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(),
+        destinationX, destinationY, destinationZ, false);
+
+    position = Position{ destinationX, destinationY, destinationZ };
+    return true;
 }
 
 bool MuruKillDarkFiendsWithDispelAction::Execute(Event /*event*/)
@@ -1576,7 +2000,7 @@ bool MuruFirstAssistTankHandleVoidSentinelAction::Execute(Event /*event*/)
 
     if (voidSentinel->GetVictim() == bot && bot->IsWithinMeleeRange(voidSentinel))
     {
-        const Position* position = GetClosestVoidSentinelTankPosition(voidSentinel, bot);
+        const Position* position = GetClosestVoidSentinelTankPosition(voidSentinel);
         if (!position)
             return false;
 
@@ -1591,6 +2015,19 @@ bool MuruFirstAssistTankHandleVoidSentinelAction::Execute(Event /*event*/)
     }
 
     return false;
+}
+
+const Position* MuruFirstAssistTankHandleVoidSentinelAction::GetClosestVoidSentinelTankPosition(
+    Unit* voidSentinel) const
+{
+    if (!voidSentinel)
+        return nullptr;
+
+    const Position& north = MURU_VOID_SENTINEL_N_TANK_POSITION;
+    const Position& east = MURU_VOID_SENTINEL_E_TANK_POSITION;
+    return (voidSentinel->GetExactDist2d(north.GetPositionX(), north.GetPositionY()) <=
+            voidSentinel->GetExactDist2d(east.GetPositionX(), east.GetPositionY())) ?
+        &north : &east;
 }
 
 bool MuruSetGroundingTotemInFirstAssistTankGroupAction::Execute(Event /*event*/)
@@ -1754,7 +2191,7 @@ bool MuruEnslavedVoidSpawnCastShadowBoltVolleyAction::Execute(Event /*event*/)
     if (!charmInfo)
         return false;
 
-    Unit* target = GetVoidSpawnVolleyPriorityTarget(botAI, bot, muru, entropius);
+    Unit* target = GetVoidSpawnVolleyPriorityTarget(muru, entropius);
     if (!target)
         return false;
 
@@ -1783,6 +2220,78 @@ bool MuruEnslavedVoidSpawnCastShadowBoltVolleyAction::Execute(Event /*event*/)
     }
 
     return commandedAttack;
+}
+
+Unit* MuruEnslavedVoidSpawnCastShadowBoltVolleyAction::GetVoidSpawnVolleyPriorityTarget(
+    Unit* muru, Unit* entropius) const
+{
+    MuruEncounterTargets targets;
+    targets.muru = muru;
+    targets.entropius = entropius;
+    GatherMuruEncounterTargets(botAI, targets);
+
+    Unit* currentTarget = context->GetValue<Unit*>("current target")->Get();
+    constexpr float targetSwitchDistance = 10.0f;
+    auto chooseNearestTarget = [&](Unit*& current, Unit* candidate)
+    {
+        if (!candidate)
+            return;
+
+        if (!current)
+        {
+            current = candidate;
+            return;
+        }
+
+        if (current == candidate)
+            return;
+
+        float currentDistance = bot->GetExactDist2d(current);
+        float candidateDistance = bot->GetExactDist2d(candidate);
+        if (candidateDistance + targetSwitchDistance < currentDistance)
+            current = candidate;
+    };
+
+    auto selectEncounterTarget = [&](uint32 entry, std::vector<Unit*> const& candidates)
+    {
+        Unit* selected = nullptr;
+        if (currentTarget && currentTarget->IsAlive() && currentTarget->GetEntry() == entry)
+            selected = currentTarget;
+
+        for (Unit* candidate : candidates)
+            chooseNearestTarget(selected, candidate);
+
+        return selected;
+    };
+
+    Unit* furyMage = selectEncounterTarget(
+        static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_FURY_MAGE), targets.furyMages);
+    Unit* berserker = selectEncounterTarget(
+        static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_BERSERKER), targets.berserkers);
+    Unit* voidSentinel = selectEncounterTarget(
+        static_cast<uint32>(SunwellNpcs::NPC_VOID_SENTINEL), targets.voidSentinels);
+
+    Unit* validMuru = targets.muru;
+    if (!validMuru || validMuru->GetHealth() <= 1 || TryGetMuruDarknessActiveState(bot, validMuru))
+    {
+        validMuru = nullptr;
+    }
+
+    std::array<Unit*, 5> priorities = {
+        furyMage,
+        berserker,
+        voidSentinel,
+        validMuru,
+        targets.entropius
+    };
+
+    for (Unit* target : priorities)
+    {
+        if (target && target->IsAlive())
+            return target;
+    }
+
+    return nullptr;
 }
 
 bool MuruSetDpsPriorityAction::Execute(Event /*event*/)
@@ -1860,7 +2369,9 @@ Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(
     Unit* berserker = SelectMuruEncounterTarget(
         currentTarget, currentVictim, isMeleeDps,
         static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_BERSERKER), targets.berserkers);
-    bool voidSentinelHasTankAggro = DoesMuruUnitHaveTankAggro(botAI, voidSentinel);
+    Player* voidSentinelVictim = voidSentinel && voidSentinel->IsAlive() ?
+        (voidSentinel->GetVictim() ? voidSentinel->GetVictim()->ToPlayer() : nullptr) : nullptr;
+    bool voidSentinelHasTankAggro = voidSentinelVictim && botAI->IsTank(voidSentinelVictim);
 
     auto isAllowedPriorityTarget = [&](Unit* unit) -> bool
     {
@@ -2222,7 +2733,7 @@ bool KiljaedenPositionRangedAction::Execute(Event /*event*/)
             botAI->RemoveAura("ice block");
 
     Position targetPosition = KILJAEDEN_TANK_POSITION;
-    if (!TryGetKiljaedenRangedPosition(botAI, bot, targetPosition))
+    if (!TryGetRangedPosition(targetPosition))
         return false;
 
     if (bot->GetExactDist2d(targetPosition.GetPositionX(), targetPosition.GetPositionY()) <= 2.0f)
@@ -2232,6 +2743,37 @@ bool KiljaedenPositionRangedAction::Execute(Event /*event*/)
                   targetPosition.GetPositionY(), targetPosition.GetPositionZ(),
                   false, false, false, false, MovementPriority::MOVEMENT_COMBAT,
                   true, false);
+}
+
+bool KiljaedenPositionRangedAction::TryGetRangedPosition(Position& position) const
+{
+    Group* group = bot->GetGroup();
+    if (!group || !botAI->IsRanged(bot))
+        return false;
+
+    EnsureKiljaedenRangedAssignments(botAI, bot);
+
+    auto instanceItr = kiljaedenRangedAssignments.find(bot->GetInstanceId());
+    if (instanceItr == kiljaedenRangedAssignments.end())
+        return false;
+
+    auto assignmentItr = instanceItr->second.find(bot->GetGUID());
+    if (assignmentItr == instanceItr->second.end())
+        return false;
+
+    uint8 slotIndex = assignmentItr->second;
+
+    EnsureKiljaedenRangedArmageddonAssignments(botAI, bot);
+    auto armageddonAssignmentItr =
+        kiljaedenRangedArmageddonAssignments.find(bot->GetInstanceId());
+    if (armageddonAssignmentItr != kiljaedenRangedArmageddonAssignments.end())
+    {
+        auto tempAssignmentItr = armageddonAssignmentItr->second.find(bot->GetGUID());
+        if (tempAssignmentItr != armageddonAssignmentItr->second.end())
+            slotIndex = tempAssignmentItr->second;
+    }
+
+    return TryGetKiljaedenRangedSlotPosition(slotIndex, position);
 }
 
 bool KiljaedenRemoveFireBloomWithCooldownAction::Execute(Event /*event*/)
