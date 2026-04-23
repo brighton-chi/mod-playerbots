@@ -1926,9 +1926,6 @@ bool KiljaedenTanksHandleHandsOfTheDeceiverAction::Execute(Event /*event*/)
 
 bool KiljaedenAvoidArmageddonsAction::Execute(Event /*event*/)
 {
-    if (botAI->IsRanged(bot))
-        return false;
-
     KiljaedenArmageddon armageddon;
     if (!TryGetKiljaedenNearestArmageddon(bot, armageddon))
         return false;
@@ -1977,6 +1974,9 @@ bool KiljaedenPositionTanksAction::Execute(Event /*event*/)
 
 bool KiljaedenPositionMeleeAction::Execute(Event /*event*/)
 {
+    if (bot->getClass() == CLASS_PALADIN && botAI->HasAura("divine shield", bot))
+        botAI->RemoveAura("divine shield");
+
     Group* group = bot->GetGroup();
     if (!group)
         return false;
@@ -2053,6 +2053,11 @@ bool KiljaedenPositionMeleeAction::Execute(Event /*event*/)
 
 bool KiljaedenPositionRangedAction::Execute(Event /*event*/)
 {
+    if (bot->getClass() == CLASS_PALADIN && botAI->HasAura("divine shield", bot))
+        botAI->RemoveAura("divine shield");
+    else if (bot->getClass() == CLASS_MAGE && botAI->HasAura("ice block", bot))
+            botAI->RemoveAura("ice block");
+
     Position targetPosition = KILJAEDEN_TANK_POSITION;
     if (!TryGetKiljaedenRangedPosition(botAI, bot, targetPosition))
         return false;
@@ -2064,6 +2069,27 @@ bool KiljaedenPositionRangedAction::Execute(Event /*event*/)
                   targetPosition.GetPositionY(), targetPosition.GetPositionZ(),
                   false, false, false, false, MovementPriority::MOVEMENT_COMBAT,
                   true, false);
+}
+
+bool KiljaedenRemoveFireBloomWithCooldownAction::Execute(Event /*event*/)
+{
+    switch (bot->getClass())
+    {
+        case CLASS_MAGE:
+            return botAI->CanCastSpell("ice block", bot) &&
+                   botAI->CastSpell("ice block", bot);
+
+        case CLASS_PALADIN:
+            return botAI->CanCastSpell("divine shield", bot) &&
+                   botAI->CastSpell("divine shield", bot);
+
+        case CLASS_ROGUE:
+            return botAI->CanCastSpell("cloak of shadows", bot) &&
+                   botAI->CastSpell("cloak of shadows", bot);
+
+        default:
+            return false;
+    }
 }
 
 /* bool KiljaedenSetDpsPriorityAction::Execute(Event /*event)

@@ -55,6 +55,7 @@ namespace SunwellHelpers
         SPELL_FLURRY                       = 46160,
 
         // Kil'jaeden <The Deceiver>
+        SPELL_FIRE_BLOOM                   = 45641,
         SPELL_DARKNESS_OF_A_THOUSAND_SOULS = 46605,
 
         // Hunter

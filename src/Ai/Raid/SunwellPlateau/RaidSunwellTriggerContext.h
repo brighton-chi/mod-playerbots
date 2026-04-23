@@ -165,6 +165,9 @@ public:
         creators["kil'jaeden boss engaged by ranged"] =
             &RaidSunwellTriggerContext::kiljaeden_boss_engaged_by_ranged;
 
+        creators["kil'jaeden bot has fire bloom"] =
+            &RaidSunwellTriggerContext::kiljaeden_bot_has_fire_bloom;
+
         // creators["kil'jaeden determining dps priority"] =
         //     &RaidSunwellTriggerContext::kiljaeden_determining_dps_priority;
     }
@@ -320,6 +323,9 @@ private:
 
     static Trigger* kiljaeden_boss_engaged_by_ranged(
         PlayerbotAI* botAI) { return new KiljaedenBossEngagedByRangedTrigger(botAI); }
+
+    static Trigger* kiljaeden_bot_has_fire_bloom(
+        PlayerbotAI* botAI) { return new KiljaedenBotHasFireBloomTrigger(botAI); }
 
     // static Trigger* kiljaeden_determining_dps_priority(
     //     PlayerbotAI* botAI) { return new KiljaedenDeterminingDpsPriorityTrigger(botAI); }

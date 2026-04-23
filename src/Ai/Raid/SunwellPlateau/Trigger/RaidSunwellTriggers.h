@@ -406,6 +406,14 @@ public:
     bool IsActive() override;
 };
 
+class KiljaedenBotHasFireBloomTrigger : public Trigger
+{
+public:
+    KiljaedenBotHasFireBloomTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "kil'jaeden bot has fire bloom") {}
+    bool IsActive() override;
+};
+
 class KiljaedenBossEngagedByRangedTrigger : public Trigger
 {
 public:

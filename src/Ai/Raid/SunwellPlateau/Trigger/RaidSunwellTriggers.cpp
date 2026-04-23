@@ -184,7 +184,7 @@ bool FelmystBotIsEncapsulatedTrigger::IsActive()
         return false;
 
     Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
-    if (!felmyst || felmyst->IsFlying())
+    if (!felmyst || felmyst->IsFlying() || botAI->IsMainTank(bot))
         return false;
 
     return bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_ENCAPSULATE));
@@ -323,8 +323,14 @@ bool EredarTwinsBotHasTooManyFlameTouchedStacksTrigger::IsActive()
         bot->getClass() != CLASS_PALADIN)
         return false;
 
-    if (!AI_VALUE2(Unit*, "find target", "lady sacrolash"))
+    if (botAI->IsTank(bot))
         return false;
+
+    if (!AI_VALUE2(Unit*, "find target", "lady sacrolash") &&
+        !AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
+    {
+        return false;
+    }
 
     Aura* flameSear =
         bot->GetAura(static_cast<uint32>(SunwellSpells::SPELL_FLAME_SEAR));
@@ -602,6 +608,19 @@ bool KiljaedenBossEngagedByMeleeTrigger::IsActive()
         return false;
 
     return true;
+}
+
+bool KiljaedenBotHasFireBloomTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_ROGUE && bot->getClass() != CLASS_MAGE &&
+        bot->getClass() != CLASS_PALADIN)
+        return false;
+
+    Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
+    if (!kiljaeden || kiljaeden->GetHealthPct() > 55.0f || botAI->IsMainTank(bot))
+        return false;
+
+    return bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_FIRE_BLOOM));
 }
 
 bool KiljaedenBossEngagedByRangedTrigger::IsActive()

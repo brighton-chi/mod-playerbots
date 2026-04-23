@@ -411,6 +411,15 @@ public:
     bool Execute(Event event) override;
 };
 
+class KiljaedenRemoveFireBloomWithCooldownAction : public Action
+{
+public:
+    KiljaedenRemoveFireBloomWithCooldownAction(
+        PlayerbotAI* botAI, std::string const name = "kil'jaeden remove fire bloom with cooldown") : Action(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+
 /* class KiljaedenSetDpsPriorityAction : public AttackAction
 {
 public:

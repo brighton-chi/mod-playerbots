@@ -159,6 +159,9 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kil'jaeden boss engaged by ranged", {
         NextAction("kil'jaeden position ranged", ACTION_RAID + 1) }));
 
+    triggers.push_back(new TriggerNode("kil'jaeden bot has fire bloom", {
+        NextAction("kil'jaeden remove fire bloom with cooldown", ACTION_EMERGENCY + 1) }));
+
     // triggers.push_back(new TriggerNode("kil'jaeden determining dps priority", {
     //    NextAction("kil'jaeden set dps priority", ACTION_RAID + 2) }));
 }

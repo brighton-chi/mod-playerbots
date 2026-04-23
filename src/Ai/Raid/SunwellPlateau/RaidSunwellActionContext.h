@@ -162,6 +162,9 @@ public:
         creators["kil'jaeden position ranged"] =
             &RaidSunwellActionContext::kiljaeden_position_ranged;
 
+        creators["kil'jaeden remove fire bloom with cooldown"] =
+            &RaidSunwellActionContext::kiljaeden_remove_fire_bloom_with_cooldown;
+
         // creators["kil'jaeden set dps priority"] =
         //     &RaidSunwellActionContext::kiljaeden_set_dps_priority;
     }
@@ -314,6 +317,9 @@ private:
 
     static Action* kiljaeden_position_ranged(
         PlayerbotAI* botAI) { return new KiljaedenPositionRangedAction(botAI); }
+
+    static Action* kiljaeden_remove_fire_bloom_with_cooldown(
+        PlayerbotAI* botAI) { return new KiljaedenRemoveFireBloomWithCooldownAction(botAI); }
 
     // static Action* kiljaeden_set_dps_priority(
     //     PlayerbotAI* botAI) { return new KiljaedenSetDpsPriorityAction(botAI); }
