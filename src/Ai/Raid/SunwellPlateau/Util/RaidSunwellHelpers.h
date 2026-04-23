@@ -119,7 +119,7 @@ namespace SunwellHelpers
         uint8 activeRiftGroup = KALECGOS_INVALID_GROUP;
         ObjectGuid blastedPlayerGuid = ObjectGuid::Empty;
         ObjectGuid firstEntrantGuid = ObjectGuid::Empty;
-        std::array<ObjectGuid, KALECGOS_GROUP_COUNT> groupTankGuids = {
+        std::array<ObjectGuid, KALECGOS_GROUP_COUNT> tankRotationGuids = {
             ObjectGuid::Empty, ObjectGuid::Empty, ObjectGuid::Empty, ObjectGuid::Empty
         };
         std::unordered_map<ObjectGuid, uint8> playerToGroup;
