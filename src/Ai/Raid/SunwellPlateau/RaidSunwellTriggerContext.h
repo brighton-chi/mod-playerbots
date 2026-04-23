@@ -78,7 +78,7 @@ public:
         creators["felmyst fog of corruption is active"] =
             &RaidSunwellTriggerContext::felmyst_fog_of_corruption_is_active;
 
-        // Eredar Twins (Alythess & Sacrolash)
+        // Eredar Twins
         creators["eredar twins encounter just started"] =
             &RaidSunwellTriggerContext::eredar_twins_encounter_just_started;
 
@@ -106,7 +106,7 @@ public:
         creators["eredar twins bot has conflagration"] =
             &RaidSunwellTriggerContext::eredar_twins_bot_has_conflagration;
 
-        // M'uru & Entropius
+        // M'uru
         creators["m'uru void sentinel or entropius has appeared"] =
             &RaidSunwellTriggerContext::muru_void_sentinel_or_entropius_has_appeared;
 
@@ -234,7 +234,7 @@ private:
     static Trigger* felmyst_fog_of_corruption_is_active(
         PlayerbotAI* botAI) { return new FelmystFogOfCorruptionIsActiveTrigger(botAI); }
 
-    // Eredar Twins (Alythess & Sacrolash)
+    // Eredar Twins
     static Trigger* eredar_twins_encounter_just_started(
         PlayerbotAI* botAI) { return new EredarTwinsEncounterJustStartedTrigger(botAI); }
 
@@ -262,7 +262,7 @@ private:
     static Trigger* eredar_twins_bot_has_conflagration(
         PlayerbotAI* botAI) { return new EredarTwinsBotHasConflagrationTrigger(botAI); }
 
-    // M'uru & Entropius
+    // M'uru
     static Trigger* muru_void_sentinel_or_entropius_has_appeared(
         PlayerbotAI* botAI) { return new MuruVoidSentinelOrEntropiusHasAppearedTrigger(botAI); }
 

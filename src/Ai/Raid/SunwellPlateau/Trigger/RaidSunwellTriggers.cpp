@@ -17,7 +17,7 @@ bool SunwellPlateauBotIsNotInCombatTrigger::IsActive()
     return !bot->IsInCombat();
 }
 
-// Kalecgos & Sathrovarr the Corruptor
+// Kalecgos
 
 bool KalecgosBossEngagedByTankTrigger::IsActive()
 {
@@ -252,7 +252,7 @@ bool FelmystFogOfCorruptionIsActiveTrigger::IsActive()
     return TryGetActiveFelmystFogOfCorruptionState(bot, felmyst, fogState);
 }
 
-// Eredar Twins (Alythess & Sacrolash)
+// Eredar Twins
 
 bool EredarTwinsEncounterJustStartedTrigger::IsActive()
 {
@@ -357,7 +357,7 @@ bool EredarTwinsBotHasConflagrationTrigger::IsActive()
     return IsEredarTwinsConflagrationTarget(alythess, bot);
 }
 
-// M'uru & Entropius
+// M'uru
 
 bool MuruVoidSentinelOrEntropiusHasAppearedTrigger::IsActive()
 {

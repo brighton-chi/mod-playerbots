@@ -20,78 +20,77 @@ namespace SunwellHelpers
 {
     enum class SunwellSpells : uint32
     {
-        // Kalecgos & Sathrovarr the Corruptor
-        SPELL_SPECTRAL_EXHAUSTION      = 44867,
-        SPELL_SPECTRAL_BLAST_PORTAL    = 44866,
-        SPELL_CURSE_OF_BOUNDLESS_AGONY = 45032,
-        SPELL_TELEPORT_SPECTRAL        = 46019,
-        SPELL_TELEPORT_NORMAL_REALM    = 46020,
-        SPELL_SPECTRAL_REALM           = 46021,
+        // Kalecgos
+        SPELL_SPECTRAL_EXHAUSTION          = 44867,
+        SPELL_SPECTRAL_BLAST_PORTAL        = 44866,
+        SPELL_CURSE_OF_BOUNDLESS_AGONY     = 45032,
+        SPELL_TELEPORT_SPECTRAL            = 46019,
+        SPELL_TELEPORT_NORMAL_REALM        = 46020,
+        SPELL_SPECTRAL_REALM               = 46021,
 
         // Brutallus
-        SPELL_METEOR_SLASH             = 45150,
-        SPELL_BURN                     = 46394,
+        SPELL_METEOR_SLASH                 = 45150,
+        SPELL_BURN                         = 46394,
 
         // Felmyst
-        SPELL_SUMMON_DEMONIC_VAPOR     = 45391,
-        SPELL_ENCAPSULATE              = 45661,
-        SPELL_GAS_NOVA                 = 45855,
-        SPELL_FELMYST_SPEED_BURST      = 45495,
-        SPELL_FOG_OF_CORRUPTION        = 45582,
-        SPELL_FOG_OF_CORRUPTION_CHARM  = 45717,
+        SPELL_SUMMON_DEMONIC_VAPOR         = 45391,
+        SPELL_ENCAPSULATE                  = 45661,
+        SPELL_GAS_NOVA                     = 45855,
+        SPELL_FELMYST_SPEED_BURST          = 45495,
+        SPELL_FOG_OF_CORRUPTION            = 45582,
+        SPELL_FOG_OF_CORRUPTION_CHARM      = 45717,
 
-        // Eredar Twins (Grand Warlock Alythess and Lady Sacrolash)
-        SPELL_BLAZE                    = 45235,
-        SPELL_CONFLAGRATION            = 45342,
-        SPELL_FLAME_TOUCHED            = 45348,
-        SPELL_FLAME_SEAR               = 46771,
+        // Eredar Twins
+        SPELL_BLAZE                        = 45235,
+        SPELL_CONFLAGRATION                = 45342,
+        SPELL_FLAME_TOUCHED                = 45348,
+        SPELL_FLAME_SEAR                   = 46771,
 
-        // M'uru & Entropius
-        SPELL_DARKNESS = 45996,
-        SPELL_DARKNESS_PRE_EFFECT = 45999,
-        SPELL_SHADOW_BOLT_VOLLEY = 46082,
-        SPELL_FEL_FIREBALL = 46101,
-        SPELL_SPELL_FURY = 46102,
-        SPELL_FLURRY = 46160,
+        // M'uru
+        SPELL_DARKNESS                     = 45996,
+        SPELL_DARKNESS_PRE_EFFECT          = 45999,
+        SPELL_SHADOW_BOLT_VOLLEY           = 46082,
+        SPELL_FEL_FIREBALL                 = 46101,
+        SPELL_SPELL_FURY                   = 46102,
+        SPELL_FLURRY                       = 46160,
 
         // Kil'jaeden <The Deceiver>
         SPELL_DARKNESS_OF_A_THOUSAND_SOULS = 46605,
 
         // Hunter
-        SPELL_MISDIRECTION             = 35079,
+        SPELL_MISDIRECTION                 = 35079,
 
         // Shaman
-        SPELL_GROUNDING_TOTEM_EFFECT = 8178,
+        SPELL_GROUNDING_TOTEM_EFFECT       = 8178,
     };
 
     enum class SunwellNpcs : uint32
     {
         // Felmyst
-        NPC_FELMYST             = 25038,
-        NPC_DEMONIC_VAPOR       = 25265,
-        NPC_DEMONIC_VAPOR_TRAIL = 25267,
-        NPC_WORLD_INVISIBLE_TRIGGER = 12999,
-        // NPC_UNYIELDING_DEAD  = 25268,
+        NPC_FELMYST                 = 25038,
+        NPC_DEMONIC_VAPOR           = 25265,
+        NPC_DEMONIC_VAPOR_TRAIL     = 25267,
+        // NPC_UNYIELDING_DEAD      = 25268,
 
         // Eredar Twins
-        NPC_GRAND_WARLOCK_ALYTHESS = 25166,
+        NPC_GRAND_WARLOCK_ALYTHESS  = 25166,
 
-        // M'uru & Entropius
-        NPC_MURU                = 25741,
-        NPC_VOID_SENTINEL = 25772,
-        NPC_DARK_FIEND = 25744,
-        NPC_SHADOWSWORD_BERSERKER = 25798,
-        NPC_SHADOWSWORD_FURY_MAGE = 25799,
-        NPC_VOID_SPAWN = 25824,
-        NPC_ENTROPIUS           = 25840,
-        NPC_SINGULARITY         = 25855,
+        // M'uru
+        NPC_MURU                    = 25741,
+        NPC_VOID_SENTINEL           = 25772,
+        NPC_DARK_FIEND              = 25744,
+        NPC_SHADOWSWORD_BERSERKER   = 25798,
+        NPC_SHADOWSWORD_FURY_MAGE   = 25799,
+        NPC_VOID_SPAWN              = 25824,
+        NPC_ENTROPIUS               = 25840,
+        NPC_SINGULARITY             = 25855,
 
         // Kil'jaeden <The Deceiver>
-        NPC_SHIELD_ORB = 25502,
-        NPC_HAND_OF_THE_DECEIVER = 25588,
-        NPC_VOLATILE_FELFIRE_FIEND = 25598,
-        // NPC_SINISTER_REFLECTION = 25708,
-        NPC_ARMAGEDDON_TARGET = 25735,
+        NPC_SHIELD_ORB              = 25502,
+        NPC_HAND_OF_THE_DECEIVER    = 25588,
+        NPC_VOLATILE_FELFIRE_FIEND  = 25598,
+        // NPC_SINISTER_REFLECTION  = 25708,
+        NPC_ARMAGEDDON_TARGET       = 25735,
     };
 
     enum class SunwellObjects : uint32
@@ -104,7 +103,7 @@ namespace SunwellHelpers
 
     constexpr uint32 SUNWELL_MAP_ID = 580;
 
-    // Kalecgos & Sathrovarr the Corruptor
+    // Kalecgos
 
     constexpr uint8 KALECGOS_GROUP_COUNT = 4;
     constexpr uint8 KALECGOS_INVALID_GROUP = std::numeric_limits<uint8>::max();
@@ -261,7 +260,7 @@ namespace SunwellHelpers
     bool TryGetFelmystRangedPosition(PlayerbotAI* botAI, Player* bot, Unit* felmyst, Position& position);
     Player* GetFelmystGasNovaDispelTarget(Player* bot);
 
-    // Eredar Twins (Grand Warlock Alythess and Lady Sacrolash)
+    // Eredar Twins
     constexpr float EREDAR_TWINS_BALCONY_Z = 50.0f;
     extern const Position SACROLASH_TANK_POSITION;
     extern const std::array<Position, 5> ALYTHESS_TANK_POSITIONS;
@@ -278,7 +277,7 @@ namespace SunwellHelpers
     bool ShouldAdvanceAlythessTankPosition(Unit* alythess, Player* bot);
     bool IsEredarTwinsConflagrationTarget(Unit* alythess, Player* bot);
 
-    // M'uru & Entropius
+    // M'uru
     struct MuruEncounterTargets
     {
         Unit* muru = nullptr;

@@ -18,7 +18,7 @@ public:
     bool IsActive() override;
 };
 
-// Kalecgos & Sathrovarr the Corruptor
+// Kalecgos
 
 class KalecgosBossEngagedByTankTrigger : public Trigger
 {
@@ -184,7 +184,7 @@ public:
     bool IsActive() override;
 };
 
-// Eredar Twins (Alythess & Sacrolash)
+// Eredar Twins
 
 class EredarTwinsEncounterJustStartedTrigger : public Trigger
 {
@@ -258,7 +258,7 @@ public:
     bool IsActive() override;
 };
 
-// M'uru & Entropius
+// M'uru
 
 class MuruVoidSentinelOrEntropiusHasAppearedTrigger : public Trigger
 {

@@ -75,7 +75,7 @@ public:
         creators["felmyst avoid fog of corruption"] =
             &RaidSunwellActionContext::felmyst_avoid_fog_of_corruption;
 
-        // Eredar Twins (Alythess & Sacrolash)
+        // Eredar Twins
         creators["eredar twins melee jump down from balcony"] =
             &RaidSunwellActionContext::eredar_twins_melee_jump_down_from_balcony;
 
@@ -103,7 +103,7 @@ public:
         creators["eredar twins conflagrated bot move from group"] =
             &RaidSunwellActionContext::eredar_twins_conflagrated_bot_move_from_group;
 
-        // M'uru & Entropius
+        // M'uru
         creators["m'uru misdirect enemies to tanks"] =
             &RaidSunwellActionContext::muru_misdirect_enemies_to_tanks;
 
@@ -228,7 +228,7 @@ private:
     static Action* felmyst_avoid_fog_of_corruption(
         PlayerbotAI* botAI) { return new FelmystAvoidFogOfCorruptionAction(botAI); }
 
-    // Eredar Twins (Alythess & Sacrolash)
+    // Eredar Twins
     static Action* eredar_twins_melee_jump_down_from_balcony(
         PlayerbotAI* botAI) { return new EredarTwinsMeleeJumpDownFromBalconyAction(botAI); }
 
@@ -256,7 +256,7 @@ private:
     static Action* eredar_twins_conflagrated_bot_move_from_group(
         PlayerbotAI* botAI) { return new EredarTwinsConflagratedBotMoveFromGroupAction(botAI); }
 
-    // M'uru & Entropius
+    // M'uru
     static Action* muru_misdirect_enemies_to_tanks(
         PlayerbotAI* botAI) { return new MuruMisdirectEnemiesToTanksAction(botAI); }
 

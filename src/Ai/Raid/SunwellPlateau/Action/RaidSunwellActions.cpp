@@ -23,7 +23,7 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
 
     bool erased = false;
 
-    // Kalecgos & Sathrovarr the Corruptor
+    // Kalecgos
 
     if (!kalecgos && botAI->IsRanged(bot) &&
         hasReachedKalecgosInitialRangedPosition.erase(guid) > 0)
@@ -124,7 +124,7 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
             erased = true;
     }
 
-    // M'uru & Entropius
+    // M'uru
     if (!AI_VALUE2(Unit*, "find target", "m'uru"))
     {
         if (muruDarknessStates.erase(instanceId) > 0)
@@ -149,7 +149,7 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
     return erased;
 }
 
-// Kalecgos & Sathrovarr the Corruptor
+// Kalecgos
 
 bool KalecgosTankPositionBossAction::Execute(Event event)
 {
@@ -972,7 +972,7 @@ bool FelmystAvoidFogOfCorruptionAction::Execute(Event /*event*/)
     return false;
 }
 
-// Eredar Twins (Alythess & Sacrolash)
+// Eredar Twins
 
 bool EredarTwinsMeleeJumpDownFromBalconyAction::Execute(Event /*event*/)
 {
@@ -1332,7 +1332,7 @@ bool EredarTwinsConflagratedBotMoveFromGroupAction::Execute(Event /*event*/)
     return false;
 }
 
-// M'uru & Entropius
+// M'uru
 
 bool MuruMisdirectEnemiesToTanksAction::Execute(Event /*event*/)
 {

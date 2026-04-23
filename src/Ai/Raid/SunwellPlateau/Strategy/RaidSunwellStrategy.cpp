@@ -12,7 +12,7 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("sunwell plateau bot is not in combat", {
         NextAction("sunwell plateau erase timers and trackers", ACTION_EMERGENCY + 11) }));
 
-    // Kalecgos & Sathrovarr the Corruptor
+    // Kalecgos
     triggers.push_back(new TriggerNode("kalecgos boss engaged by tank", {
         NextAction("kalecgos tank position boss", ACTION_RAID + 1) }));
 
@@ -72,7 +72,7 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("felmyst fog of corruption is active", {
         NextAction("felmyst avoid fog of corruption", ACTION_EMERGENCY + 9) }));
 
-    // Eredar Twins (Alythess & Sacrolash)
+    // Eredar Twins
     triggers.push_back(new TriggerNode("eredar twins encounter just started", {
         NextAction("eredar twins melee jump down from balcony", ACTION_EMERGENCY + 1) }));
 
@@ -100,7 +100,7 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("eredar twins bot has conflagration", {
         NextAction("eredar twins conflagrated bot move from group", ACTION_EMERGENCY + 7) }));
 
-    // M'uru & Entropius
+    // M'uru
     triggers.push_back(new TriggerNode("m'uru void sentinel or entropius has appeared", {
         NextAction("m'uru misdirect enemies to tanks", ACTION_RAID + 3) }));
 
@@ -145,7 +145,7 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("kil'jaeden tanks handle hands of the deceiver", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("kil'jaeden it's raining meteors", {
-        NextAction("kil'jaeden avoid armageddons", ACTION_EMERGENCY + 1) }));
+        NextAction("kil'jaeden avoid armageddons", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("kil'jaeden says: Chaos! Destruction! Oblivion!", {
         NextAction("kil'jaeden stack for shield of the blue", ACTION_EMERGENCY + 10) }));
@@ -154,7 +154,7 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("kil'jaeden position tanks", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("kil'jaeden boss engaged by melee", {
-        NextAction("kil'jaeden position melee", ACTION_RAID + 1) }));
+        NextAction("kil'jaeden position melee", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("kil'jaeden boss engaged by ranged", {
         NextAction("kil'jaeden position ranged", ACTION_RAID + 1) }));
@@ -165,7 +165,7 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
 void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
-    // Kalecgos & Sathrovarr the Corruptor
+    // Kalecgos
     multipliers.push_back(new KalecgosControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new KalecgosWaitToDecurseMultiplier(botAI));
     multipliers.push_back(new KalecgosControlMovementMultiplier(botAI));
@@ -183,7 +183,7 @@ void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new FelmystPrioritizeFogAvoidanceMultiplier(botAI));
     multipliers.push_back(new FelmystDelayCooldownsMultiplier(botAI));
 
-    // Eredar Twins (Alythess & Sacrolash)
+    // Eredar Twins
     multipliers.push_back(new EredarTwinsMeleeJumpDownFromBalconyMultiplier(botAI));
     multipliers.push_back(new EredarTwinsControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new EredarTwinsControlThreatMultiplier(botAI));
@@ -191,7 +191,7 @@ void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new EredarTwinsControlMovementMultiplier(botAI));
     multipliers.push_back(new EredarTwinsDelayCooldownsMultiplier(botAI));
 
-    // M'uru & Entropius
+    // M'uru
     multipliers.push_back(new MuruDisableDefaultTargetingMultiplier(botAI));
     multipliers.push_back(new MuruExcludeMuruFromTankTargetValueMultiplier(botAI));
     multipliers.push_back(new MuruExcludeMuruFromDpsTargetValueMultiplier(botAI));

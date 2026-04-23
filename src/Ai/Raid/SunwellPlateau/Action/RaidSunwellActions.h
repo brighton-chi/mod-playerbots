@@ -20,7 +20,7 @@ public:
     bool Execute(Event event) override;
 };
 
-// Kalecgos & Sathrovarr the Corruptor
+// Kalecgos
 
 class KalecgosTankPositionBossAction : public AttackAction
 {
@@ -181,7 +181,7 @@ public:
     bool Execute(Event event) override;
 };
 
-// Eredar Twins (Alythess & Sacrolash)
+// Eredar Twins
 
 class EredarTwinsMeleeJumpDownFromBalconyAction : public MovementAction
 {
@@ -255,7 +255,7 @@ public:
     bool Execute(Event event) override;
 };
 
-// M'uru & Entropius
+// M'uru
 
 class MuruMisdirectEnemiesToTanksAction : public AttackAction
 {

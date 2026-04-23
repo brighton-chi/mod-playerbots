@@ -11,7 +11,7 @@
 #include "Multiplier.h"
 #include "ObjectGuid.h"
 
-// Kalecgos & Sathrovarr the Corruptor
+// Kalecgos
 
 class KalecgosControlMisdirectionMultiplier : public Multiplier
 {
@@ -113,7 +113,7 @@ public:
     virtual float GetValue(Action* action);
 };
 
-// Eredar Twins (Alythess & Sacrolash)
+// Eredar Twins
 
 class EredarTwinsMeleeJumpDownFromBalconyMultiplier : public Multiplier
 {
@@ -163,7 +163,7 @@ public:
     virtual float GetValue(Action* action);
 };
 
-// M'uru & Entropius
+// M'uru
 
 class MuruDisableDefaultTargetingMultiplier : public Multiplier
 {

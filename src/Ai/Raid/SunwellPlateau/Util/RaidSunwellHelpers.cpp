@@ -22,7 +22,7 @@
 
 namespace SunwellHelpers
 {
-    // Kalecgos & Sathrovarr the Corruptor
+    // Kalecgos
 
     const Position KALECGOS_TANK_POSITION =           { 1703.584f, 895.626f, 53.076f };
     const Position KALECGOS_INITIAL_RANGED_POSITION = { 1704.634f, 938.080f, 53.076f };
@@ -1740,7 +1740,7 @@ namespace SunwellHelpers
             nearestTrail : nearestVapor;
     }
 
-    // Eredar Twins (Grand Warlock Alythess and Lady Sacrolash)
+    // Eredar Twins
 
     const Position SACROLASH_TANK_POSITION  = { 1804.255f, 630.193f, 33.404f };
     const std::array<Position, 5> ALYTHESS_TANK_POSITIONS = {{
@@ -1860,7 +1860,7 @@ namespace SunwellHelpers
                currentSpell->m_targets.GetUnitTarget() == bot;
     }
 
-    // M'uru & Entropius
+    // M'uru
 
     const Position MURU_STACK_POSITION = { 1836.738f, 608.646f, 71.222f };
     const Position MURU_VOID_SENTINEL_N_TANK_POSITION = { 1840.448f, 630.605f, 70.567f };

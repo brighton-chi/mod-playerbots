@@ -102,7 +102,7 @@ static bool IsDpsCooldownAction(Action* action)
            dynamic_cast<CastBloodFuryAction*>(action);
 }
 
-// Kalecgos & Sathrovarr the Corruptor
+// Kalecgos
 
 float KalecgosControlMisdirectionMultiplier::GetValue(Action* action)
 {
@@ -356,7 +356,7 @@ float FelmystDelayCooldownsMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-// Eredar Twins (Alythess & Sacrolash)
+// Eredar Twins
 
 float EredarTwinsMeleeJumpDownFromBalconyMultiplier::GetValue(Action* action)
 {
@@ -481,7 +481,7 @@ float EredarTwinsDelayCooldownsMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-// M'uru & Entropius
+// M'uru
 
 float MuruDisableDefaultTargetingMultiplier::GetValue(Action* action)
 {
