@@ -6025,10 +6025,10 @@ uint32 PlayerbotAI::GetBuffedCount(Player* player, std::string const spellname)
             if (!member || !member->IsInWorld())
                 continue;
 
-            if (!member->IsInSameRaidWith(player))
+            if (!member->IsInSameGroupWith(player))
                 continue;
 
-            if (HasAura(spellname, member, true))
+            if (HasAura(spellname, member))
                 bcount++;
         }
     }
