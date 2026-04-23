@@ -2240,9 +2240,13 @@ namespace SunwellHelpers
 
     // Combat reach is 15 yards
     const Position KILJAEDEN_CENTER_POSITION = { 1698.450f, 628.030f, 28.199f }; // Starting position for KJ
-    const Position KILJAEDEN_TANK_POSITION = { 1709.474f, 641.598f, 27.582f };
-    const Position KILJAEDEN_S_MELEE_POSITION = { 1681.527f, 628.600f, 27.610f };
-    const Position KILJAEDEN_E_MELEE_POSITION = { 1702.280f, 611.716f, 27.553f };
+    // const Position KILJAEDEN_TANK_POSITION = { 1709.474f, 641.598f, 27.582f };
+    const Position KILJAEDEN_TANK_POSITION = { 1704.729f, 634.891f, 27.787f };
+    // const Position KILJAEDEN_S_MELEE_POSITION = { 1681.527f, 628.600f, 27.610f };
+    const Position KILJAEDEN_S_MELEE_POSITION = { 1689.487f, 632.119f, 27.823f };
+    // const Position KILJAEDEN_E_MELEE_POSITION = { 1702.280f, 611.716f, 27.553f };
+    const Position KILJAEDEN_E_MELEE_POSITION = { 1700.542f, 619.589f, 27.786f };
+    const Position KILJAEDEN_STACK_POSITION = { 1709.768f, 642.241f, 27.706f };
 
     std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> kiljaedenRangedAssignments;
     std::unordered_map<uint32, std::vector<KiljaedenHazard>> kiljaedenHazards;
@@ -2257,7 +2261,7 @@ namespace SunwellHelpers
         std::vector<KiljaedenHazard>& hazards = instanceItr->second;
         hazards.erase(std::remove_if(hazards.begin(), hazards.end(),
             [now](KiljaedenHazard const& hazard) {
-                return !hazard.expireMs || getMSTimeDiff(hazard.expireMs, now) > 0;
+                return !hazard.expireMs || hazard.expireMs <= now;
             }), hazards.end());
 
         if (hazards.empty())
@@ -2448,25 +2452,5 @@ namespace SunwellHelpers
 
         position.Relocate(positionX, positionY, KILJAEDEN_CENTER_POSITION.GetPositionZ());
         return true;
-    }
-
-    int GetKiljaedenPhase(Unit* kiljaeden)
-    {
-        if (!kiljaeden) // Phase 1 is the Hands of the Deceiver phase
-            return 0;
-
-        if (kiljaeden->GetHealthPct() > 85.0f)
-            return 2;
-
-        if (kiljaeden->GetHealthPct() <= 85.0f && kiljaeden->GetHealthPct() > 55.0f)
-            return 3;
-
-        if (kiljaeden->GetHealthPct() <= 55.0f && kiljaeden->GetHealthPct() > 25.0f)
-            return 4;
-
-        if (kiljaeden->GetHealthPct() <= 25.0f)
-            return 5;
-
-        return 0;
     }
 }

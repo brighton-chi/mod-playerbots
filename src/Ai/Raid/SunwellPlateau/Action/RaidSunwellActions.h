@@ -387,11 +387,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class KiljaedenPositionMainTankAction : public AttackAction
+class KiljaedenPositionTanksAction : public AttackAction
 {
 public:
-    KiljaedenPositionMainTankAction(
-        PlayerbotAI* botAI, std::string const name = "kil'jaeden position main tank") : AttackAction(botAI, name) {}
+    KiljaedenPositionTanksAction(
+        PlayerbotAI* botAI, std::string const name = "kil'jaeden position tanks") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 
@@ -411,12 +411,12 @@ public:
     bool Execute(Event event) override;
 };
 
-class KiljaedenSetDpsPriorityAction : public AttackAction
+/* class KiljaedenSetDpsPriorityAction : public AttackAction
 {
 public:
     KiljaedenSetDpsPriorityAction(
         PlayerbotAI* botAI, std::string const name = "kil'jaeden set dps priority") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
-};
+}; */
 
 #endif

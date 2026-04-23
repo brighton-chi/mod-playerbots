@@ -1912,18 +1912,25 @@ bool KiljaedenAvoidHazardsAction::Execute(Event /*event*/)
         return false;
 
     constexpr uint32 minInterval = 0;
-    botAI->InterruptSpell();
+    // botAI->InterruptSpell();
 
-    return FleePosition(hazard.destination, hazard.safeDistance, minInterval);
+    if (FleePosition(hazard.destination, hazard.safeDistance, minInterval))
+        return true;
+
+    constexpr float minDistance = 5.0f;
+    Unit* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance);
+    if (nearestPlayer)
+        return FleePosition(nearestPlayer->GetPosition(), minDistance);
+
+    return false;
 }
 
 bool KiljaedenStackForShieldOfTheBlueAction::Execute(Event /*event*/)
 {
-    const Position& position = KILJAEDEN_TANK_POSITION;
+    const Position& position = KILJAEDEN_STACK_POSITION;
     if (bot->GetExactDist2d(position.GetPositionX(),
                             position.GetPositionY()) > 2.0f)
     {
-        botAI->InterruptSpell();
         return MoveTo(SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
                       position.GetPositionZ(), false, false, false, false,
                       MovementPriority::MOVEMENT_FORCED, true, false);
@@ -1932,15 +1939,8 @@ bool KiljaedenStackForShieldOfTheBlueAction::Execute(Event /*event*/)
     return false;
 }
 
-bool KiljaedenPositionMainTankAction::Execute(Event /*event*/)
+bool KiljaedenPositionTanksAction::Execute(Event /*event*/)
 {
-    Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
-    if (!kiljaeden)
-        return false;
-
-    if (bot->GetVictim() != kiljaeden)
-        return Attack(kiljaeden);
-
     const Position& position = KILJAEDEN_TANK_POSITION;
     if (bot->GetExactDist2d(position.GetPositionX(),
                             position.GetPositionY()) > 2.0f)
@@ -1966,7 +1966,7 @@ bool KiljaedenPositionMeleeAction::Execute(Event /*event*/)
     {
         Player* member = ref->GetSource();
         if (!member || !botAI->IsMelee(member) || member->GetMapId() != SUNWELL_MAP_ID ||
-            !GET_PLAYERBOT_AI(member) || botAI->IsMainTank(member))
+            !GET_PLAYERBOT_AI(member) || botAI->IsTank(member))
         {
             continue;
         }
@@ -2010,7 +2010,7 @@ bool KiljaedenPositionRangedAction::Execute(Event /*event*/)
                   true, false);
 }
 
-bool KiljaedenSetDpsPriorityAction::Execute(Event /*event*/)
+/* bool KiljaedenSetDpsPriorityAction::Execute(Event /*event)
 {
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
     if (!kiljaeden)
@@ -2021,7 +2021,7 @@ bool KiljaedenSetDpsPriorityAction::Execute(Event /*event*/)
     if (!isMeleeDps && !isRangedDps)
         return false;
 
-    bool canHaveSinisterReflections = GetKiljaedenPhase(kiljaeden) >= 3;
+    bool canHaveSinisterReflections = kiljaeden->GetHealthPct() < 55.0f;
     Unit* closestShieldOrbInRange = nullptr;
     Unit* closestRangedReflectionInRange = nullptr;
     Unit* closestMeleeReflectionInRange = nullptr;
@@ -2096,4 +2096,4 @@ bool KiljaedenSetDpsPriorityAction::Execute(Event /*event*/)
 
 
     return false;
-}
+} */

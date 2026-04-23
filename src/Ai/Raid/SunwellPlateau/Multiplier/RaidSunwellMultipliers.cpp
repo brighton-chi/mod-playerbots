@@ -183,11 +183,11 @@ float KalecgosDelayCooldownsForSathrovarrMultiplier::GetValue(Action* action)
     if (!kalecgos || kalecgos->GetHealthPct() < 40.0f)
         return 1.0f;
 
-    if (IsDpsCooldownAction(action))
+    if (IsDpsCooldownAction(action) ||
+        (botAI->IsDps(bot) && dynamic_cast<UseTrinketAction*>(action)))
+    {
         return 0.0f;
-
-    if (botAI->IsDps(bot) && dynamic_cast<UseTrinketAction*>(action))
-        return 0.0f;
+    }
 
     return 1.0f;
 }
@@ -252,11 +252,11 @@ float BrutallusDelayCooldownsMultiplier::GetValue(Action* action)
     if (!brutallus || brutallus->GetHealthPct() < 95.0f)
         return 1.0f;
 
-    if (IsDpsCooldownAction(action))
+    if (IsDpsCooldownAction(action) ||
+        (botAI->IsDps(bot) && dynamic_cast<UseTrinketAction*>(action)))
+    {
         return 0.0f;
-
-    if (botAI->IsDps(bot) && dynamic_cast<UseTrinketAction*>(action))
-        return 0.0f;
+    }
 
     return 1.0f;
 }
@@ -347,11 +347,11 @@ float FelmystDelayCooldownsMultiplier::GetValue(Action* action)
     if (!felmyst || felmyst->GetHealthPct() < 95.0f)
         return 1.0f;
 
-    if (IsDpsCooldownAction(action))
+    if (IsDpsCooldownAction(action) ||
+        (botAI->IsDps(bot) && dynamic_cast<UseTrinketAction*>(action)))
+    {
         return 0.0f;
-
-    if (botAI->IsDps(bot) && dynamic_cast<UseTrinketAction*>(action))
-        return 0.0f;
+    }
 
     return 1.0f;
 }
@@ -472,11 +472,11 @@ float EredarTwinsDelayCooldownsMultiplier::GetValue(Action* action)
         return 1.0f;
     }
 
-    if (IsDpsCooldownAction(action))
+    if (IsDpsCooldownAction(action) ||
+        (botAI->IsDps(bot) && dynamic_cast<UseTrinketAction*>(action)))
+    {
         return 0.0f;
-
-    if (botAI->IsDps(bot) && dynamic_cast<UseTrinketAction*>(action))
-        return 0.0f;
+    }
 
     return 1.0f;
 }
@@ -720,7 +720,9 @@ float MuruDelayCooldownsMultiplier::GetValue(Action* action)
 
     if (IsDpsCooldownAction(action) ||
         (botAI->IsDps(bot) && dynamic_cast<UseTrinketAction*>(action)))
+    {
         return 0.0f;
+    }
 
     return 1.0f;
 }
@@ -761,8 +763,11 @@ float KiljaedenExcludeShieldOrbsFromTankTargetValueMultiplier::GetValue(Action* 
 float KiljaedenDelayCooldownsMultiplier::GetValue(Action* action)
 {
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
-    if (!kiljaeden || kiljaeden->GetHealthPct() < 50.0f)
+    if ((!kiljaeden && !AI_VALUE2(Unit*, "find target", "hand of the deceiver")) ||
+        (kiljaeden && kiljaeden->GetHealthPct() < 25.0f)) // Phase 5
+    {
         return 1.0f;
+    }
 
     if (bot->getClass() == CLASS_SHAMAN &&
         (dynamic_cast<CastHeroismAction*>(action) ||
@@ -771,12 +776,14 @@ float KiljaedenDelayCooldownsMultiplier::GetValue(Action* action)
         return 0.0f;
     }
 
-    if (kiljaeden->GetHealthPct() < 98.0f)
+    if (kiljaeden && kiljaeden->GetHealthPct() < 85.0f) // Phase 3
         return 1.0f;
 
     if (IsDpsCooldownAction(action) ||
         (botAI->IsDps(bot) && dynamic_cast<UseTrinketAction*>(action)))
+    {
         return 0.0f;
+    }
 
     return 1.0f;
 }
@@ -786,11 +793,17 @@ float KiljaedenControlMovementAndTargetingMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "kil'jaeden"))
         return 1.0f;
 
-    if (dynamic_cast<DpsAssistAction*>(action) ||
+    if (/* dynamic_cast<DpsAssistAction*>(action) || */
         dynamic_cast<CastDisengageAction*>(action) ||
         dynamic_cast<CastBlinkBackAction*>(action) ||
         dynamic_cast<FleeAction*>(action) ||
         dynamic_cast<CombatFormationMoveAction*>(action))
+    {
+        return 0.0f;
+    }
+
+    if (botAI->IsMainTank(bot) && bot->GetVictim() != nullptr &&
+        dynamic_cast<TankAssistAction*>(action))
     {
         return 0.0f;
     }

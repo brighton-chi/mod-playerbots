@@ -153,8 +153,8 @@ public:
         creators["kil'jaeden stack for shield of the blue"] =
             &RaidSunwellActionContext::kiljaeden_stack_for_shield_of_the_blue;
 
-        creators["kil'jaeden position main tank"] =
-            &RaidSunwellActionContext::kiljaeden_position_main_tank;
+        creators["kil'jaeden position tanks"] =
+            &RaidSunwellActionContext::kiljaeden_position_tanks;
 
         creators["kil'jaeden position melee"] =
             &RaidSunwellActionContext::kiljaeden_position_melee;
@@ -162,8 +162,8 @@ public:
         creators["kil'jaeden position ranged"] =
             &RaidSunwellActionContext::kiljaeden_position_ranged;
 
-        creators["kil'jaeden set dps priority"] =
-            &RaidSunwellActionContext::kiljaeden_set_dps_priority;
+        // creators["kil'jaeden set dps priority"] =
+        //     &RaidSunwellActionContext::kiljaeden_set_dps_priority;
     }
 
 private:
@@ -303,8 +303,8 @@ private:
     static Action* kiljaeden_avoid_hazards(
         PlayerbotAI* botAI) { return new KiljaedenAvoidHazardsAction(botAI); }
 
-    static Action* kiljaeden_position_main_tank(
-        PlayerbotAI* botAI) { return new KiljaedenPositionMainTankAction(botAI); }
+    static Action* kiljaeden_position_tanks(
+        PlayerbotAI* botAI) { return new KiljaedenPositionTanksAction(botAI); }
 
     static Action* kiljaeden_stack_for_shield_of_the_blue(
         PlayerbotAI* botAI) { return new KiljaedenStackForShieldOfTheBlueAction(botAI); }
@@ -315,8 +315,8 @@ private:
     static Action* kiljaeden_position_ranged(
         PlayerbotAI* botAI) { return new KiljaedenPositionRangedAction(botAI); }
 
-    static Action* kiljaeden_set_dps_priority(
-        PlayerbotAI* botAI) { return new KiljaedenSetDpsPriorityAction(botAI); }
+    // static Action* kiljaeden_set_dps_priority(
+    //     PlayerbotAI* botAI) { return new KiljaedenSetDpsPriorityAction(botAI); }
 };
 
 #endif

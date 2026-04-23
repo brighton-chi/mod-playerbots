@@ -156,8 +156,8 @@ public:
         creators["kil'jaeden says: Chaos! Destruction! Oblivion!"] =
             &RaidSunwellTriggerContext::kiljaeden_says_chaos_destruction_oblivion;
 
-        creators["kil'jaeden boss engaged by main tank"] =
-            &RaidSunwellTriggerContext::kiljaeden_boss_engaged_by_main_tank;
+        creators["kil'jaeden boss engaged by tanks"] =
+            &RaidSunwellTriggerContext::kiljaeden_boss_engaged_by_tanks;
 
         creators["kil'jaeden boss engaged by melee"] =
             &RaidSunwellTriggerContext::kiljaeden_boss_engaged_by_melee;
@@ -165,8 +165,8 @@ public:
         creators["kil'jaeden boss engaged by ranged"] =
             &RaidSunwellTriggerContext::kiljaeden_boss_engaged_by_ranged;
 
-        creators["kil'jaeden determining dps priority"] =
-            &RaidSunwellTriggerContext::kiljaeden_determining_dps_priority;
+        // creators["kil'jaeden determining dps priority"] =
+        //     &RaidSunwellTriggerContext::kiljaeden_determining_dps_priority;
     }
 
 private:
@@ -312,8 +312,8 @@ private:
     static Trigger* kiljaeden_says_chaos_destruction_oblivion(
         PlayerbotAI* botAI) { return new KiljaedenSaysChaosDestructionOblivionTrigger(botAI); }
 
-    static Trigger* kiljaeden_boss_engaged_by_main_tank(
-        PlayerbotAI* botAI) { return new KiljaedenBossEngagedByMainTankTrigger(botAI); }
+    static Trigger* kiljaeden_boss_engaged_by_tanks(
+        PlayerbotAI* botAI) { return new KiljaedenBossEngagedByTanksTrigger(botAI); }
 
     static Trigger* kiljaeden_boss_engaged_by_melee(
         PlayerbotAI* botAI) { return new KiljaedenBossEngagedByMeleeTrigger(botAI); }
@@ -321,8 +321,8 @@ private:
     static Trigger* kiljaeden_boss_engaged_by_ranged(
         PlayerbotAI* botAI) { return new KiljaedenBossEngagedByRangedTrigger(botAI); }
 
-    static Trigger* kiljaeden_determining_dps_priority(
-        PlayerbotAI* botAI) { return new KiljaedenDeterminingDpsPriorityTrigger(botAI); }
+    // static Trigger* kiljaeden_determining_dps_priority(
+    //     PlayerbotAI* botAI) { return new KiljaedenDeterminingDpsPriorityTrigger(botAI); }
 };
 
 #endif

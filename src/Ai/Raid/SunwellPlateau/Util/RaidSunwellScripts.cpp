@@ -105,6 +105,29 @@ static void RequestInterruptForBotsNear(Unit* center, float radius)
     }
 }
 
+static void RequestInterruptForKiljaedenBots(Unit* kiljaeden)
+{
+    if (!kiljaeden)
+        return;
+
+    Map::PlayerList const& players = kiljaeden->GetMap()->GetPlayers();
+    for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
+    {
+        Player* player = it->GetSource();
+        if (!player || !player->IsAlive())
+            continue;
+
+        PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
+        if (!botAI)
+            continue;
+
+        if (PAI_VALUE2(Unit*, "find target", "kil'jaeden") != kiljaeden)
+            continue;
+
+        botAI->RequestSpellInterrupt();
+    }
+}
+
 static void RequestInterruptForBotsNeedingFelmystFogMovement(Unit* contextUnit, Player* groupReference)
 {
     if (!contextUnit)
@@ -312,20 +335,22 @@ public:
 
     void OnSpellCast(Spell* spell, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
     {
-        if (!spell || !caster || !spellInfo ||
-            spellInfo->Id != static_cast<uint32>(SunwellSpells::SPELL_SHADOW_SPIKE))
+        if (!spell || !caster || !spellInfo)
         {
             return;
         }
 
-        Player* target = GetFirstPlayerSpellTarget(spell, caster);
-        if (!target)
+        if (spellInfo->Id == static_cast<uint32>(SunwellSpells::SPELL_DARKNESS_OF_A_THOUSAND_SOULS))
+        {
+            RequestInterruptForKiljaedenBots(caster);
+            return;
+        }
+
+        // Temporarily ignore Shadow Spike hazard handling so bots only avoid Armageddon.
+        if (spellInfo->Id != static_cast<uint32>(SunwellSpells::SPELL_SHADOW_SPIKE))
             return;
 
-        AddKiljaedenHazard(
-            caster->GetMap()->GetInstanceId(), target->GetPosition(),
-            KILJAEDEN_SHADOW_SPIKE_HAZARD_DURATION_MS, KILJAEDEN_SHADOW_SPIKE_SAFE_DISTANCE);
-        RequestInterruptForBotsNear(target, KILJAEDEN_SHADOW_SPIKE_SAFE_DISTANCE);
+        return;
     }
 };
 

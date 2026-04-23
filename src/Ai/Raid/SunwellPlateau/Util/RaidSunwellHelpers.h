@@ -91,7 +91,7 @@ namespace SunwellHelpers
         NPC_SHIELD_ORB = 25502,
         NPC_HAND_OF_THE_DECEIVER = 25588,
         NPC_VOLATILE_FELFIRE_FIEND = 25598,
-        NPC_SINISTER_REFLECTION = 25708,
+        // NPC_SINISTER_REFLECTION = 25708,
         NPC_ARMAGEDDON_TARGET = 25735,
     };
 
@@ -297,10 +297,10 @@ namespace SunwellHelpers
     constexpr uint32 KILJAEDEN_SHADOW_SPIKE_HAZARD_DURATION_MS = 3000;
     constexpr float KILJAEDEN_SHADOW_SPIKE_SAFE_DISTANCE = 10.0f; // Radius of hazard is 8 yards
     constexpr uint32 KILJAEDEN_ARMAGEDDON_HAZARD_DURATION_MS = 10000;
-    constexpr float KILJAEDEN_ARMAGEDDON_SAFE_DISTANCE = 12.0f; // Radius of hazard is 9 yards
+    constexpr float KILJAEDEN_ARMAGEDDON_SAFE_DISTANCE = 11.0f; // Radius of hazard is 9 yards
     constexpr float KILJAEDEN_RANGED_ARC_ORIENTATION = 0.8f;
-    constexpr float KILJAEDEN_INNER_RANGED_RADIUS = 27.0f;
-    constexpr float KILJAEDEN_OUTER_RANGED_RADIUS = 40.0f; // Think can be as much as 42
+    constexpr float KILJAEDEN_INNER_RANGED_RADIUS = 23.0f;
+    constexpr float KILJAEDEN_OUTER_RANGED_RADIUS = 36.0f;
     constexpr uint8 KILJAEDEN_INNER_RANGED_SLOT_COUNT = 7;
     constexpr uint8 KILJAEDEN_OUTER_RANGED_SLOT_COUNT = 11;
     constexpr uint8 KILJAEDEN_TOTAL_RANGED_SLOT_COUNT =
@@ -315,6 +315,7 @@ namespace SunwellHelpers
     extern const Position KILJAEDEN_TANK_POSITION;
     extern const Position KILJAEDEN_S_MELEE_POSITION;
     extern const Position KILJAEDEN_E_MELEE_POSITION;
+    extern const Position KILJAEDEN_STACK_POSITION;
     extern std::unordered_map<uint32, std::vector<KiljaedenHazard>> kiljaedenHazards;
     void AddKiljaedenHazard(
         uint32 instanceId, Position const& destination, uint32 durationMs, float safeDistance);
@@ -323,7 +324,6 @@ namespace SunwellHelpers
     bool TryGetKiljaedenNearestHazard(Player* bot, KiljaedenHazard& hazard);
     bool IsKiljaedenCastingDarknessOfAThousandSouls(Unit* kiljaeden);
     bool TryGetKiljaedenRangedPosition(PlayerbotAI* botAI, Player* bot, Position& position);
-    int GetKiljaedenPhase(Unit* kiljaeden);
 }
 
 #endif

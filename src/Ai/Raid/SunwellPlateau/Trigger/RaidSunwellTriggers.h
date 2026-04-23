@@ -382,11 +382,11 @@ public:
     bool IsActive() override;
 };
 
-class KiljaedenBossEngagedByMainTankTrigger : public Trigger
+class KiljaedenBossEngagedByTanksTrigger : public Trigger
 {
 public:
-    KiljaedenBossEngagedByMainTankTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kil'jaeden boss engaged by main tank") {}
+    KiljaedenBossEngagedByTanksTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "kil'jaeden boss engaged by tanks") {}
     bool IsActive() override;
 };
 
@@ -414,12 +414,12 @@ public:
     bool IsActive() override;
 };
 
-class KiljaedenDeterminingDpsPriorityTrigger : public Trigger
+/* class KiljaedenDeterminingDpsPriorityTrigger : public Trigger
 {
 public:
     KiljaedenDeterminingDpsPriorityTrigger(
         PlayerbotAI* botAI) : Trigger(botAI, "kil'jaeden determining dps priority") {}
     bool IsActive() override;
-};
+}; */
 
 #endif
