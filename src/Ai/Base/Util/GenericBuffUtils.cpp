@@ -95,6 +95,11 @@ namespace ai::buff
         PlayerbotAI* botAI,
         std::string const& baseName)
     {
+        // Priest fortitude/spirit use dedicated prayer triggers to decide when
+        // upgrading the party cast to the subgroup-wide prayer is worthwhile.
+        if (baseName == "power word: fortitude" || baseName == "divine spirit")
+            return baseName;
+
         Group* group = bot->GetGroup();
         if (!IsEligibleGroupForPartyBuffs(group))
             return baseName;
