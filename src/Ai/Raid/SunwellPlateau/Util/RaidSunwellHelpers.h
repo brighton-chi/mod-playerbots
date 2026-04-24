@@ -315,7 +315,6 @@ namespace SunwellHelpers
     void GatherMuruEncounterTargets(PlayerbotAI* botAI, MuruEncounterTargets& targets);
     Creature* FindAvailableVoidSpawnForEnslave(
         PlayerbotAI* botAI, Player* bot, Unit* muru, Unit* entropius);
-    bool CommandControlledCreatureToAttack(Unit* controlled, Unit* target);
 
     // Kil'jaeden <The Deceiver>
     constexpr uint32 KILJAEDEN_ARMAGEDDON_HAZARD_DURATION_MS = 10000;

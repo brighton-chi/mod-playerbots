@@ -387,15 +387,24 @@ public:
     bool Execute(Event event) override;
 };
 
-class MuruEnslavedVoidSpawnCastShadowBoltVolleyAction : public Action
+class MuruEnslavedVoidSpawnAttackAction : public Action
+{
+public:
+    MuruEnslavedVoidSpawnAttackAction(
+        PlayerbotAI* botAI, std::string const name) : Action(botAI, name) {}
+
+protected:
+    Unit* GetControlledVoidSpawn() const;
+    bool CommandControlledCreatureToAttack(Unit* controlled, Unit* target) const;
+    Unit* GetVoidSpawnVolleyPriorityTarget(Unit* muru, Unit* entropius) const;
+};
+
+class MuruEnslavedVoidSpawnCastShadowBoltVolleyAction : public MuruEnslavedVoidSpawnAttackAction
 {
 public:
     MuruEnslavedVoidSpawnCastShadowBoltVolleyAction(
-        PlayerbotAI* botAI, std::string const name = "m'uru enslaved void spawn cast shadow bolt volley") : Action(botAI, name) {}
+        PlayerbotAI* botAI, std::string const name = "m'uru enslaved void spawn cast shadow bolt volley") : MuruEnslavedVoidSpawnAttackAction(botAI, name) {}
     bool Execute(Event event) override;
-
-private:
-    Unit* GetVoidSpawnVolleyPriorityTarget(Unit* muru, Unit* entropius) const;
 };
 
 // Kil'jaeden <The Deceiver>

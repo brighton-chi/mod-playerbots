@@ -7,12 +7,12 @@
 #include <limits>
 #include <unordered_map>
 
+#include "CharmInfo.h"
+#include "CreatureAI.h"
 #include "RaidSunwellActions.h"
 #include "RaidSunwellHelpers.h"
-#include "CharmInfo.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
-#include "SpellMgr.h"
 #include "TargetValue.h"
 #include "Timer.h"
 
@@ -1989,6 +1989,8 @@ Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(
         return nullptr;
 
     const bool isInitialMuruPhase = muru && muru->GetHealth() > 1;
+    const bool darknessActive =
+        isInitialMuruPhase && TryGetMuruDarknessActiveState(bot, muru);
     Unit* voidSentinel = SelectMuruEncounterTarget(
         currentTarget, currentVictim, isMeleeDps,
         static_cast<uint32>(SunwellNpcs::NPC_VOID_SENTINEL), targets.voidSentinels);
@@ -2034,7 +2036,13 @@ Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(
 
             case static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_FURY_MAGE):
             case static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_BERSERKER):
-                return !isShadowPriest;
+                if (isShadowPriest)
+                    return false;
+
+                if (!isMeleeDps)
+                    return true;
+
+                return darknessActive || !isInitialMuruPhase;
 
             default:
                 return false;
@@ -2062,12 +2070,23 @@ Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(
     }
     else
     {
-        priorityTargets = {
-            { static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_FURY_MAGE), furyMage },
-            { static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_BERSERKER), berserker },
-            { static_cast<uint32>(SunwellNpcs::NPC_MURU), muru },
-            { static_cast<uint32>(SunwellNpcs::NPC_ENTROPIUS), entropius }
-        };
+        if (isInitialMuruPhase)
+        {
+            priorityTargets = {
+                { static_cast<uint32>(SunwellNpcs::NPC_MURU), muru },
+                { static_cast<uint32>(SunwellNpcs::NPC_ENTROPIUS), entropius },
+                { static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_FURY_MAGE), furyMage },
+                { static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_BERSERKER), berserker }
+            };
+        }
+        else
+        {
+            priorityTargets = {
+                { static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_FURY_MAGE), furyMage },
+                { static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_BERSERKER), berserker },
+                { static_cast<uint32>(SunwellNpcs::NPC_ENTROPIUS), entropius }
+            };
+        }
     }
 
     Unit* target = nullptr;
@@ -2416,6 +2435,54 @@ bool MuruWarlockEnslaveVoidSpawnAction::Execute(Event /*event*/)
     return false;
 }
 
+Unit* MuruEnslavedVoidSpawnAttackAction::GetControlledVoidSpawn() const
+{
+    Unit* voidSpawn = bot->GetCharm();
+    if (!voidSpawn || !voidSpawn->IsAlive() ||
+        voidSpawn->GetEntry() != static_cast<uint32>(SunwellNpcs::NPC_VOID_SPAWN))
+    {
+        return nullptr;
+    }
+
+    return voidSpawn;
+}
+
+bool MuruEnslavedVoidSpawnAttackAction::CommandControlledCreatureToAttack(
+    Unit* controlled, Unit* target) const
+{
+    if (!controlled || !controlled->IsAlive() ||
+        !target || !target->IsAlive() ||
+        controlled->GetVictim() == target)
+    {
+        return false;
+    }
+
+    controlled->ClearUnitState(UNIT_STATE_FOLLOW);
+    controlled->AttackStop();
+    controlled->SetTarget(target->GetGUID());
+
+    if (CharmInfo* charmInfo = controlled->GetCharmInfo())
+    {
+        charmInfo->SetIsCommandAttack(true);
+        charmInfo->SetIsAtStay(false);
+        charmInfo->SetIsFollowing(false);
+        charmInfo->SetIsCommandFollow(false);
+        charmInfo->SetIsReturning(false);
+    }
+
+    if (!controlled->IsPlayer() && controlled->IsCreature() &&
+        controlled->ToCreature()->IsAIEnabled)
+    {
+        controlled->ToCreature()->AI()->AttackStart(target);
+    }
+    else
+    {
+        controlled->Attack(target, true);
+    }
+
+    return true;
+}
+
 bool MuruEnslavedVoidSpawnCastShadowBoltVolleyAction::Execute(Event /*event*/)
 {
     if (bot->getClass() != CLASS_WARLOCK)
@@ -2424,14 +2491,8 @@ bool MuruEnslavedVoidSpawnCastShadowBoltVolleyAction::Execute(Event /*event*/)
     Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
     Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius");
 
-    Creature* voidSpawn = bot->GetCharm() ? bot->GetCharm()->ToCreature() : nullptr;
-    if (!voidSpawn || !voidSpawn->IsAlive() ||
-        voidSpawn->GetEntry() != static_cast<uint32>(SunwellNpcs::NPC_VOID_SPAWN))
-    {
-        return false;
-    }
-
-    if (!voidSpawn->GetCharmInfo())
+    Unit* voidSpawn = GetControlledVoidSpawn();
+    if (!voidSpawn)
         return false;
 
     Unit* target = GetVoidSpawnVolleyPriorityTarget(muru, entropius);
@@ -2440,26 +2501,20 @@ bool MuruEnslavedVoidSpawnCastShadowBoltVolleyAction::Execute(Event /*event*/)
 
     bool commandedAttack = CommandControlledCreatureToAttack(voidSpawn, target);
 
-    constexpr uint32 volleySpellId = static_cast<uint32>(SunwellSpells::SPELL_SHADOW_BOLT_VOLLEY);
-    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(volleySpellId);
-    if (!spellInfo)
+    if (voidSpawn->GetExactDist2d(target) > sPlayerbotAIConfig.spellDistance)
         return commandedAttack;
 
-    if (!voidSpawn->HasUnitState(UNIT_STATE_CASTING) &&
-        !voidSpawn->HasSpellCooldown(volleySpellId) &&
-        !voidSpawn->GetCharmInfo()->GetGlobalCooldownMgr().HasGlobalCooldown(spellInfo) &&
-        voidSpawn->CastSpell(target, spellInfo, TRIGGERED_NONE) == SPELL_CAST_OK)
-    {
-        if (uint32 recoveryTime = spellInfo->GetRecoveryTime())
-            voidSpawn->AddSpellCooldown(volleySpellId, 0, recoveryTime);
+    constexpr uint32 volleySpellId = static_cast<uint32>(SunwellSpells::SPELL_SHADOW_BOLT_VOLLEY);
+    if (voidSpawn->HasSpellCooldown(volleySpellId))
+        return commandedAttack;
 
-        return true;
-    }
-
-    return commandedAttack;
+    constexpr uint32 globalCooldown = 1000;
+    voidSpawn->CastSpell(target, volleySpellId, true);
+    voidSpawn->AddSpellCooldown(volleySpellId, 0, globalCooldown);
+    return true;
 }
 
-Unit* MuruEnslavedVoidSpawnCastShadowBoltVolleyAction::GetVoidSpawnVolleyPriorityTarget(
+Unit* MuruEnslavedVoidSpawnAttackAction::GetVoidSpawnVolleyPriorityTarget(
     Unit* muru, Unit* entropius) const
 {
     MuruEncounterTargets targets;
