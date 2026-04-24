@@ -1956,6 +1956,8 @@ namespace SunwellHelpers
         constexpr uint32 darknessPreEffectMs = 3000;
         constexpr uint32 darknessCastMs = 2000;
         constexpr uint32 darknessPostCastDangerMs = 20000;
+        constexpr uint32 darknessTotalMs =
+            darknessPreEffectMs + darknessCastMs + darknessPostCastDangerMs;
 
         if (Aura* darknessPreEffect = muru->GetAura(static_cast<uint32>(SunwellSpells::SPELL_DARKNESS_PRE_EFFECT)))
         {
@@ -1963,15 +1965,26 @@ namespace SunwellHelpers
             if (remainingPreEffectMs < 0)
                 remainingPreEffectMs = darknessPreEffectMs;
 
+            uint32 const remainingPreEffect = static_cast<uint32>(remainingPreEffectMs);
+            uint32 const elapsedPreEffectMs = remainingPreEffect < darknessPreEffectMs ?
+                darknessPreEffectMs - remainingPreEffect : 0;
+            uint32 const startMs = now > elapsedPreEffectMs ? now - elapsedPreEffectMs : 0;
+
+            if (!state.startMs || state.expireMs <= now || startMs < state.startMs)
+                state.startMs = startMs;
+
             state.expireMs = std::max(state.expireMs,
-                                      now + static_cast<uint32>(remainingPreEffectMs) +
-                                      darknessCastMs + darknessPostCastDangerMs);
+                                      startMs + darknessTotalMs);
             return true;
         }
 
         if (muru->HasUnitState(UNIT_STATE_CASTING) &&
             muru->FindCurrentSpellBySpellId(static_cast<uint32>(SunwellSpells::SPELL_DARKNESS)))
         {
+            uint32 const startMs = now > darknessPreEffectMs ? now - darknessPreEffectMs : 0;
+            if (!state.startMs || state.expireMs <= now || startMs < state.startMs)
+                state.startMs = startMs;
+
             state.expireMs = std::max(state.expireMs, now + darknessCastMs + darknessPostCastDangerMs);
             return true;
         }
@@ -1981,6 +1994,20 @@ namespace SunwellHelpers
 
         muruDarknessStates.erase(instanceId);
         return false;
+    }
+
+    bool TryGetMuruDarknessEarlyState(Player* bot, Unit* muru, uint32 earlyWindowMs)
+    {
+        if (!TryGetMuruDarknessActiveState(bot, muru))
+            return false;
+
+        auto stateItr = muruDarknessStates.find(bot->GetInstanceId());
+        if (stateItr == muruDarknessStates.end())
+            return false;
+
+        uint32 const now = getMSTime();
+        return stateItr->second.startMs < now &&
+               now - stateItr->second.startMs < earlyWindowMs;
     }
 
     void GatherMuruEncounterTargets(PlayerbotAI* botAI, MuruEncounterTargets& targets)

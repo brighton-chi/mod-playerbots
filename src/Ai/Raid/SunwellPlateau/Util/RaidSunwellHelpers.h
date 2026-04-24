@@ -86,6 +86,7 @@ namespace SunwellHelpers
         NPC_MURU                    = 25741,
         NPC_VOID_SENTINEL           = 25772,
         NPC_DARK_FIEND              = 25744,
+        NPC_DARKNESS                = 25879,
         NPC_SHADOWSWORD_BERSERKER   = 25798,
         NPC_SHADOWSWORD_FURY_MAGE   = 25799,
         NPC_VOID_SPAWN              = 25824,
@@ -118,12 +119,14 @@ namespace SunwellHelpers
 
     constexpr uint8 KALECGOS_GROUP_COUNT = 4;
     constexpr uint8 KALECGOS_INVALID_GROUP = std::numeric_limits<uint8>::max();
+
     struct KalecgosRealmState
     {
         uint32 lastEnterMs = 0;
         uint32 lastExitMs = 0;
         bool inSpectralRealm = false;
     };
+
     struct KalecgosEncounterState
     {
         uint32 activeRiftOpenedMs = 0;
@@ -135,11 +138,14 @@ namespace SunwellHelpers
         };
         std::unordered_map<ObjectGuid, uint8> playerToGroup;
     };
+
+    extern const Position KALECGOS_TANK_POSITION;
+    extern const Position KALECGOS_INITIAL_RANGED_POSITION;
+
     extern std::unordered_map<uint32, KalecgosEncounterState> kalecgosEncounterStates;
     extern std::unordered_map<ObjectGuid, KalecgosRealmState> kalecgosRealmStates;
     extern std::unordered_set<ObjectGuid> hasReachedKalecgosInitialRangedPosition;
-    extern const Position KALECGOS_TANK_POSITION;
-    extern const Position KALECGOS_INITIAL_RANGED_POSITION;
+
     bool IsKalecgosDecurser(PlayerbotAI* botAI, Player* bot);
     void EnsureKalecgosGroupAssignments(PlayerbotAI* botAI, Player* bot);
     Player* GetKalecgosCurrentTank(PlayerbotAI* botAI, Player* bot);
@@ -152,20 +158,6 @@ namespace SunwellHelpers
     void RecordKalecgosNormalRealmEnter(Player* bot);
 
     // Brutallus
-
-    extern const Position BRUTALLUS_MAIN_TANK_POSITION;
-    constexpr float BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET = -M_PI_2;
-    constexpr float BRUTALLUS_TANK_POSITION_RADIUS = 20.25f;
-    constexpr float BRUTALLUS_RANGED_TANK_OFFSET = 10.0f;
-    constexpr float BRUTALLUS_RANGED_LANE_OFFSET = 5.0f;
-    constexpr float BRUTALLUS_NORMAL_RANGED_RADIUS =
-        BRUTALLUS_TANK_POSITION_RADIUS + BRUTALLUS_RANGED_TANK_OFFSET;
-    constexpr float BRUTALLUS_BURN_RANGED_RADIUS =
-        BRUTALLUS_NORMAL_RANGED_RADIUS - BRUTALLUS_RANGED_LANE_OFFSET;
-    constexpr float BRUTALLUS_RETURN_RANGED_RADIUS =
-        BRUTALLUS_NORMAL_RANGED_RADIUS + BRUTALLUS_RANGED_LANE_OFFSET;
-    constexpr uint8 BRUTALLUS_RANGED_POSITIONS_PER_GROUP = 10;
-    constexpr uint8 BRUTALLUS_TOTAL_RANGED_POSITIONS = BRUTALLUS_RANGED_POSITIONS_PER_GROUP * 2;
 
     struct BrutallusRangedSlotInfo
     {
@@ -185,8 +177,23 @@ namespace SunwellHelpers
         ReturningToNormal
     };
 
+    extern const Position BRUTALLUS_MAIN_TANK_POSITION;
+    constexpr float BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET = -M_PI_2;
+    constexpr float BRUTALLUS_TANK_POSITION_RADIUS = 20.25f;
+    constexpr float BRUTALLUS_RANGED_TANK_OFFSET = 10.0f;
+    constexpr float BRUTALLUS_RANGED_LANE_OFFSET = 5.0f;
+    constexpr float BRUTALLUS_NORMAL_RANGED_RADIUS =
+        BRUTALLUS_TANK_POSITION_RADIUS + BRUTALLUS_RANGED_TANK_OFFSET;
+    constexpr float BRUTALLUS_BURN_RANGED_RADIUS =
+        BRUTALLUS_NORMAL_RANGED_RADIUS - BRUTALLUS_RANGED_LANE_OFFSET;
+    constexpr float BRUTALLUS_RETURN_RANGED_RADIUS =
+        BRUTALLUS_NORMAL_RANGED_RADIUS + BRUTALLUS_RANGED_LANE_OFFSET;
+    constexpr uint8 BRUTALLUS_RANGED_POSITIONS_PER_GROUP = 10;
+    constexpr uint8 BRUTALLUS_TOTAL_RANGED_POSITIONS = BRUTALLUS_RANGED_POSITIONS_PER_GROUP * 2;
+
     extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> brutallusRangedAssignments;
     extern std::unordered_map<ObjectGuid, BrutallusRangedBurnState> brutallusRangedBurnStates;
+
     bool ShouldMoveForBrutallusBurn(Player* bot);
     float GetBrutallusMainTankAngle(Unit* brutallus);
     Position GetBrutallusPositionAtAngle(Unit* brutallus, float angle, float radius, float z);
@@ -238,17 +245,20 @@ namespace SunwellHelpers
         RightBottom,
     };
 
-    extern const Position FELMYST_TANK_POSITION;
-    constexpr float FELMYST_ENCAPSULATE_SAFE_DISTANCE = 21.0f;
-    constexpr float FELMYST_FOG_SAFE_SPOT_ARRIVAL_DISTANCE = 8.0f;
-    constexpr float FELMYST_FOG_CURRENT_POINT_MATCH_DISTANCE = 3.0f;
-    constexpr float FELMYST_FOG_DESTINATION_MATCH_DISTANCE = 1.0f;
     struct FelmystFogOfCorruptionState
     {
         FelmystFogLane lane = FelmystFogLane::None;
         FelmystFogPhase phase = FelmystFogPhase::None;
         uint32 expireMs = 0;
     };
+
+    constexpr float FELMYST_ENCAPSULATE_SAFE_DISTANCE = 21.0f;
+    constexpr float FELMYST_FOG_SAFE_SPOT_ARRIVAL_DISTANCE = 8.0f;
+    constexpr float FELMYST_FOG_CURRENT_POINT_MATCH_DISTANCE = 3.0f;
+    constexpr float FELMYST_FOG_DESTINATION_MATCH_DISTANCE = 1.0f;
+
+    extern const Position FELMYST_TANK_POSITION;
+
     extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> felmystRangedAssignments;
     extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> felmystDemonicVaporPathIndices;
     extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> felmystDemonicVaporWaypointIndices;
@@ -272,7 +282,9 @@ namespace SunwellHelpers
     Player* GetFelmystGasNovaDispelTarget(Player* bot);
 
     // Eredar Twins
+
     constexpr float EREDAR_TWINS_BALCONY_Z = 50.0f;
+
     extern const Position SACROLASH_TANK_POSITION;
     extern const std::array<Position, 5> ALYTHESS_TANK_POSITIONS;
     extern const Position EREDAR_TWINS_P1_RANGED_POSITION;
@@ -280,7 +292,9 @@ namespace SunwellHelpers
     extern const Position EREDAR_TWINS_P2_RANGED_STACK_POSITION;
     extern const Position EREDAR_TWINS_RANGED_CONFLAG_POSITION;
     extern const Position EREDAR_TWINS_MELEE_CONFLAG_POSITION;
+
     extern std::unordered_map<ObjectGuid, uint8> alythessTankStep;
+
     bool IsSacrolashTank(PlayerbotAI* botAI, Player* bot);
     bool IsAlythessTank(PlayerbotAI* botAI, Player* bot);
     bool ShouldHoldSacrolashThreat(PlayerbotAI* botAI, Player* bot, Unit* alythess, Unit* sacrolash);
@@ -289,6 +303,7 @@ namespace SunwellHelpers
     bool IsEredarTwinsConflagrationTarget(Unit* alythess, Player* bot);
 
     // M'uru
+
     struct MuruEncounterTargets
     {
         Unit* muru = nullptr;
@@ -300,23 +315,36 @@ namespace SunwellHelpers
     };
     struct MuruDarknessState
     {
+        uint32 startMs = 0;
         uint32 expireMs = 0;
     };
+
     extern const Position MURU_STACK_POSITION;
     extern const Position MURU_VOID_SENTINEL_N_TANK_POSITION;
     extern const Position MURU_VOID_SENTINEL_E_TANK_POSITION;
     extern const Position MURU_CENTER_POSITION;
     extern const Position MURU_ENTRANCE_POSITION;
+
     extern std::unordered_map<uint32, MuruDarknessState> muruDarknessStates;
     extern std::unordered_map<uint32, std::unordered_set<ObjectGuid>> muruEntropiusInitialRangedPositionsReached;
+
     Creature* GetNearestMuruSingularity(Player* bot, float searchRadius = 30.0f);
     bool IsFirstAssistTankInSameGroup(PlayerbotAI* botAI, Player* bot);
     bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru);
+    bool TryGetMuruDarknessEarlyState(Player* bot, Unit* muru, uint32 earlyWindowMs = 10000);
     void GatherMuruEncounterTargets(PlayerbotAI* botAI, MuruEncounterTargets& targets);
     Creature* FindAvailableVoidSpawnForEnslave(
         PlayerbotAI* botAI, Player* bot, Unit* muru, Unit* entropius);
 
     // Kil'jaeden <The Deceiver>
+
+    struct KiljaedenArmageddon
+    {
+        Position destination;
+        uint32 expireMs = 0;
+        float safeDistance = 0.0f;
+    };
+
     constexpr uint32 KILJAEDEN_ARMAGEDDON_HAZARD_DURATION_MS = 10000;
     constexpr float KILJAEDEN_ARMAGEDDON_SAFE_DISTANCE = 11.0f; // Radius of hazard is 9 yards
     constexpr float KILJAEDEN_RANGED_ARC_ORIENTATION = 0.8f;
@@ -326,18 +354,15 @@ namespace SunwellHelpers
     constexpr uint8 KILJAEDEN_OUTER_RANGED_SLOT_COUNT = 11;
     constexpr uint8 KILJAEDEN_TOTAL_RANGED_SLOT_COUNT =
         KILJAEDEN_INNER_RANGED_SLOT_COUNT + KILJAEDEN_OUTER_RANGED_SLOT_COUNT;
-    struct KiljaedenArmageddon
-    {
-        Position destination;
-        uint32 expireMs = 0;
-        float safeDistance = 0.0f;
-    };
+
     extern const Position KILJAEDEN_CENTER_POSITION;
     extern const Position KILJAEDEN_TANK_POSITION;
     extern const Position KILJAEDEN_S_MELEE_POSITION;
     extern const Position KILJAEDEN_E_MELEE_POSITION;
     extern const Position KILJAEDEN_STACK_POSITION;
+
     extern std::unordered_map<uint32, std::vector<KiljaedenArmageddon>> kiljaedenArmageddons;
+
     void AddKiljaedenArmageddon(
         uint32 instanceId, Position const& destination, uint32 durationMs, float safeDistance);
     void PruneExpiredKiljaedenArmageddons(uint32 instanceId);

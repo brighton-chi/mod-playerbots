@@ -650,8 +650,17 @@ float MuruControlMovementMultiplier::GetValue(Action* action)
         return 0.0f;
     }
 
-    if (botAI->IsTank(bot))
+    if (botAI->IsTank(bot) && !botAI->IsAssistTankOfIndex(bot, 0, true))
+    {
+        if (muru && TryGetMuruDarknessEarlyState(bot, muru) &&
+            (dynamic_cast<CastReachTargetSpellAction*>(action) ||
+             dynamic_cast<ReachTargetAction*>(action)))
+        {
+            return 0.0f;
+        }
+
         return 1.0f;
+    }
 
     if (muru && TryGetMuruDarknessActiveState(bot, muru) &&
         (dynamic_cast<CastReachTargetSpellAction*>(action) ||

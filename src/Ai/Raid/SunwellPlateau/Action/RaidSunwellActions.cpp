@@ -2241,15 +2241,16 @@ bool MuruKillDarkFiendsWithDispelAction::Execute(Event /*event*/)
 bool MuruDontTouchTheDarkFiendAction::Execute(Event /*event*/)
 {
     constexpr float searchDistance = 15.0f;
-    Creature* darkFiend = bot->FindNearestCreature(
-        static_cast<uint32>(SunwellNpcs::NPC_DARK_FIEND), searchDistance, true);
-    if (!darkFiend)
+    Creature* darkness = bot->FindNearestCreature(
+        static_cast<uint32>(SunwellNpcs::NPC_DARKNESS), searchDistance, true);
+
+    if (!darkness)
         return false;
 
     constexpr float safeDistance = 10.0f;
-    float currentDistance = bot->GetDistance2d(darkFiend);
+    float currentDistance = bot->GetDistance2d(darkness);
     if (currentDistance < safeDistance &&
-        MoveAway(darkFiend, safeDistance - currentDistance))
+        MoveAway(darkness, safeDistance - currentDistance))
     {
         return true;
     }
@@ -2342,18 +2343,31 @@ bool MuruFleeTheNightAction::Execute(Event /*event*/)
 
     if (botAI->IsTank(bot))
     {
+        if (!botAI->IsAssistTankOfIndex(bot, 0, true) &&
+            TryGetMuruDarknessEarlyState(bot, muru))
+        {
+            Position const& holdingPosition = botAI->IsAssistTankOfIndex(bot, 1, true) ?
+                MURU_ENTRANCE_POSITION : MURU_STACK_POSITION;
+            constexpr float arrivalDistance = 1.0f;
+            return MoveInside(SUNWELL_MAP_ID, holdingPosition.GetPositionX(),
+                              holdingPosition.GetPositionY(), holdingPosition.GetPositionZ(),
+                              arrivalDistance, MovementPriority::MOVEMENT_FORCED);
+        }
+
         constexpr float safeDistanceFromMuru = 20.0f;
         constexpr uint32 minInterval = 0;
-        if (bot->GetExactDist2d(muru) >= safeDistanceFromMuru)
+        if (bot->GetExactDist2d(muru) > safeDistanceFromMuru)
             return false;
 
         return FleePosition(muru->GetPosition(), safeDistanceFromMuru, minInterval);
     }
-
-    constexpr float stackArrivalDistance = 3.0f;
-    return MoveInside(SUNWELL_MAP_ID, MURU_STACK_POSITION.GetPositionX(),
-                      MURU_STACK_POSITION.GetPositionY(), MURU_STACK_POSITION.GetPositionZ(),
-                      stackArrivalDistance, MovementPriority::MOVEMENT_COMBAT);
+    else
+    {
+        constexpr float stackArrivalDistance = 3.0f;
+        return MoveInside(SUNWELL_MAP_ID, MURU_STACK_POSITION.GetPositionX(),
+                          MURU_STACK_POSITION.GetPositionY(), MURU_STACK_POSITION.GetPositionZ(),
+                          stackArrivalDistance, MovementPriority::MOVEMENT_FORCED);
+    }
 }
 
 bool MuruMooresLawIsDeadAction::Execute(Event /*event*/)

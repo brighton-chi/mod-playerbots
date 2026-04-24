@@ -471,7 +471,7 @@ bool MuruEntropiusTurnedOutTheLightsTrigger::IsActive()
 
     constexpr float searchDistance = 15.0f;
     return bot->FindNearestCreature(
-        static_cast<uint32>(SunwellNpcs::NPC_DARK_FIEND), searchDistance, true);
+        static_cast<uint32>(SunwellNpcs::NPC_DARKNESS), searchDistance, true);
 }
 
 bool MuruDarknessIsComingTrigger::IsActive()
