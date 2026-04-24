@@ -13,21 +13,8 @@
 #include "SpellMgr.h"
 #include "Value.h"
 
-#include <ctime>
-
 namespace ai::buff
 {
-    static std::string BaseVariantFor(std::string const& name)
-    {
-        if (name == "gift of the wild")                return "mark of the wild";
-        if (name == "arcane brilliance")              return "arcane intellect";
-        if (name == "prayer of fortitude")            return "power word: fortitude";
-        if (name == "prayer of spirit")               return "divine spirit";
-        if (name == "prayer of shadow protection")    return "shadow protection";
-
-        return std::string();
-    }
-
     static bool IsEligibleGroupForPartyBuffs(Group const* group)
     {
         if (!group)
@@ -44,17 +31,6 @@ namespace ai::buff
         }
 
         return false;
-    }
-
-    bool IsGroupVariantEnabled(Player* bot, std::string const& name)
-    {
-        if (!bot)
-            return false;
-
-        if (!IsEligibleGroupForPartyBuffs(bot->GetGroup()))
-            return false;
-
-        return !GroupVariantFor(name).empty();
     }
 
     std::string MakeAuraQualifierForBuff(std::string const& name)
@@ -114,50 +90,18 @@ namespace ai::buff
         return false;
     }
 
-    std::string GetGroupVariantThrottleKey(Player* bot, std::string const& spellName, Unit* target)
-    {
-        if (!bot || !target || BaseVariantFor(spellName).empty())
-            return std::string();
-
-        Group* group = bot->GetGroup();
-        if (!group || !group->isRaidGroup() || !target->IsPlayer())
-            return spellName;
-
-        Player* playerTarget = target->ToPlayer();
-        if (!playerTarget || !bot->IsInSameGroupWith(playerTarget))
-            return spellName;
-
-        return spellName + ":" + std::to_string(group->GetMemberGroup(playerTarget->GetGUID()));
-    }
-
-    bool IsGroupVariantRecentlyCast(
-        Player* bot,
-        PlayerbotAI* botAI,
-        std::string const& baseName,
-        Unit* target,
-        uint32 throttleSeconds)
-    {
-        if (!bot || !botAI || !IsGroupVariantEnabled(bot, baseName))
-            return false;
-
-        std::string const groupName = GroupVariantFor(baseName);
-        if (groupName.empty())
-            return false;
-
-        std::string const throttleKey = GetGroupVariantThrottleKey(bot, groupName, target);
-        if (throttleKey.empty())
-            return false;
-
-        time_t const lastCast = botAI->GetAiObjectContext()->GetValue<time_t>("last spell cast time", throttleKey)->Get();
-        return lastCast && time(nullptr) - lastCast < throttleSeconds;
-    }
-
     std::string UpgradeToGroupIfAppropriate(
         Player* bot,
         PlayerbotAI* botAI,
         std::string const& baseName)
     {
-        if (!IsGroupVariantEnabled(bot, baseName))
+        // Priest fortitude/spirit use dedicated prayer triggers to decide when
+        // upgrading the party cast to the subgroup-wide prayer is worthwhile.
+        if (baseName == "power word: fortitude" || baseName == "divine spirit")
+            return baseName;
+
+        Group* group = bot->GetGroup();
+        if (!IsEligibleGroupForPartyBuffs(group))
             return baseName;
 
         std::string const groupName = GroupVariantFor(baseName);

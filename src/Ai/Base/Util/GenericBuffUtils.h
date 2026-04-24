@@ -14,10 +14,6 @@ class PlayerbotAI;
 namespace ai::buff
 {
 
-// Returns true when config says this buff family should prefer the group
-// variant for the bot's current group type.
-bool IsGroupVariantEnabled(Player* bot, std::string const& name);
-
 // Build an aura qualifier "single + greater" to avoid double-buffing
 std::string MakeAuraQualifierForBuff(std::string const& name);
 
@@ -30,20 +26,6 @@ std::string GroupVariantFor(std::string const& name);
 // Checks if the bot has the required reagents to cast a spell (by its spellId).
 // Returns false if the spellId is invalid.
 bool HasRequiredReagents(Player* bot, uint32 spellId);
-
-// Returns the throttle key for a group-variant spell cast. In raids this is
-// subgroup-aware, otherwise it is the spell name itself. Returns an empty
-// string for non-group-variant spells.
-std::string GetGroupVariantThrottleKey(Player* bot, std::string const& spellName, Unit* target);
-
-// Returns true if the group variant was cast by this bot recently enough to
-// suppress immediate recasts of the same buff family.
-bool IsGroupVariantRecentlyCast(
-    Player* bot,
-    PlayerbotAI* botAI,
-    std::string const& baseName,
-    Unit* target,
-    uint32 throttleSeconds = 10);
 
 // If the bot is in an eligible group and knows the group variant of baseName,
 // returns the group spell name (provided reagents are available).

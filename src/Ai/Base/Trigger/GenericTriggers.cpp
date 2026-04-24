@@ -160,16 +160,6 @@ bool BuffTrigger::IsActive()
     if (!target || !SpellTrigger::IsActive())
         return false;
 
-    if (ai::buff::IsGroupVariantEnabled(bot, spell))
-    {
-        std::string const groupVariant = ai::buff::GroupVariantFor(spell);
-        if (!groupVariant.empty() && botAI->HasAura(groupVariant, target, false, checkIsOwner, -1, checkDuration))
-            return false;
-
-        if (ai::buff::IsGroupVariantRecentlyCast(bot, botAI, spell, target))
-            return false;
-    }
-
     Aura* aura = botAI->GetAura(spell, target, checkIsOwner, checkDuration);
     if (!aura || (beforeDuration && aura->GetDuration() < beforeDuration))
         return true;
@@ -185,6 +175,14 @@ Value<Unit*>* BuffOnPartyTrigger::GetTargetValue()
 
 bool BuffOnPartyTrigger::IsActive()
 {
+    Unit* target = GetTarget();
+    if (!target)
+        return false;
+
+    std::string const groupVariant = ai::buff::GroupVariantFor(spell);
+    if (!groupVariant.empty() && botAI->HasAura(groupVariant, target, false, checkIsOwner, -1, checkDuration))
+        return false;
+
     return BuffTrigger::IsActive();
 }
 
