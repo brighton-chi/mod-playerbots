@@ -2323,7 +2323,7 @@ bool MuruSetGroundingTotemInFirstAssistTankGroupAction::Execute(Event /*event*/)
 
 bool MuruSecondAssistTankGuardRangedAction::Execute(Event /*event*/)
 {
-    const Position& position = MURU_TANK_IDLE_POSITION;
+    const Position& position = MURU_ENTRANCE_POSITION;
     if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
     {
         return MoveTo(SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),

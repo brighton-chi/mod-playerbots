@@ -306,7 +306,7 @@ namespace SunwellHelpers
     extern const Position MURU_VOID_SENTINEL_N_TANK_POSITION;
     extern const Position MURU_VOID_SENTINEL_E_TANK_POSITION;
     extern const Position MURU_CENTER_POSITION;
-    extern const Position MURU_TANK_IDLE_POSITION;
+    extern const Position MURU_ENTRANCE_POSITION;
     extern std::unordered_map<uint32, MuruDarknessState> muruDarknessStates;
     extern std::unordered_map<uint32, std::unordered_set<ObjectGuid>> muruEntropiusInitialRangedPositionsReached;
     Creature* GetNearestMuruSingularity(Player* bot, float searchRadius = 30.0f);
