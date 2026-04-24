@@ -14,7 +14,7 @@ using namespace SunwellHelpers;
 
 bool SunwellPlateauBotIsNotInCombatTrigger::IsActive()
 {
-    return !bot->IsInCombat();
+    return !bot->IsInCombat() && bot->GetMapId() == SUNWELL_MAP_ID;
 }
 
 // Trash

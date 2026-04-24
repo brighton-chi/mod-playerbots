@@ -16,7 +16,7 @@ using namespace BlackTempleHelpers;
 
 bool BlackTempleBotIsNotInCombatTrigger::IsActive()
 {
-    return !bot->IsInCombat();
+    return !bot->IsInCombat() && bot->GetMapId() == BLACK_TEMPLE_MAP_ID;
 }
 
 // High Warlord Naj'entus
