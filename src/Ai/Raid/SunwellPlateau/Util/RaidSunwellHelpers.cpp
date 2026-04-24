@@ -632,7 +632,7 @@ namespace SunwellHelpers
         constexpr float meleeSpacing = 5.0f;
         constexpr float arcAngle = 2.0f * M_PI / 3.0f;
 
-        float meleeRadius = std::max(1.0f, bot->GetMeleeRange(brutallus) - 2.0f); // Tested with hardcoded 18.0f
+        float meleeRadius = std::max(1.0f, bot->GetMeleeRange(brutallus) - 2.0f);
         float meleeAngleStep = 2.0f * std::asin(meleeSpacing / (2.0f * meleeRadius));
         uint8 maxSideSlots = static_cast<uint8>(std::floor((arcAngle / 2.0f) / meleeAngleStep));
         uint8 maxMeleeSlots = 1 + 2 * maxSideSlots;
@@ -711,8 +711,10 @@ namespace SunwellHelpers
     Position GetBrutallusPositionAtAngle(
         Unit* brutallus, float angle, float radius, float z)
     {
-        float centerX = brutallus ? brutallus->GetPositionX() : BRUTALLUS_MAIN_TANK_POSITION.GetPositionX();
-        float centerY = brutallus ? brutallus->GetPositionY() : BRUTALLUS_MAIN_TANK_POSITION.GetPositionY();
+        float centerX = brutallus ? brutallus->GetPositionX() :
+            BRUTALLUS_MAIN_TANK_POSITION.GetPositionX();
+        float centerY = brutallus ? brutallus->GetPositionY() :
+            BRUTALLUS_MAIN_TANK_POSITION.GetPositionY();
         float x = centerX + std::cos(angle) * radius;
         float y = centerY + std::sin(angle) * radius;
         return { x, y, z };
@@ -1892,11 +1894,11 @@ namespace SunwellHelpers
 
     // M'uru
 
-    const Position MURU_STACK_POSITION = { 1832.941f, 611.158f, 70.513f };
+    const Position MURU_STACK_POSITION =                { 1832.941f, 611.158f, 70.513f };
     const Position MURU_VOID_SENTINEL_N_TANK_POSITION = { 1840.448f, 630.605f, 70.567f };
     const Position MURU_VOID_SENTINEL_E_TANK_POSITION = { 1814.960f, 601.646f, 70.547f };
-    const Position MURU_CENTER_POSITION = { 1816.250f, 625.484f, 69.604f };
-    const Position MURU_TANK_IDLE_POSITION = { 1842.606f, 603.372f, 71.271f };
+    const Position MURU_CENTER_POSITION =               { 1816.250f, 625.484f, 69.604f };
+    const Position MURU_TANK_IDLE_POSITION =            { 1839.378f, 606.020f, 71.242f };
 
     std::unordered_map<uint32, MuruDarknessState> muruDarknessStates;
     std::unordered_map<uint32, std::unordered_set<ObjectGuid>> muruEntropiusInitialRangedPositionsReached;
@@ -2067,14 +2069,11 @@ namespace SunwellHelpers
     // Kil'jaeden <The Deceiver>
 
     // Combat reach is 15 yards
-    const Position KILJAEDEN_CENTER_POSITION = { 1698.450f, 628.030f, 28.199f }; // Starting position for KJ
-    // const Position KILJAEDEN_TANK_POSITION = { 1709.474f, 641.598f, 27.582f };
-    const Position KILJAEDEN_TANK_POSITION = { 1704.729f, 634.891f, 27.787f };
-    // const Position KILJAEDEN_S_MELEE_POSITION = { 1681.527f, 628.600f, 27.610f };
+    const Position KILJAEDEN_CENTER_POSITION =  { 1698.450f, 628.030f, 28.199f }; // Starting position for KJ
+    const Position KILJAEDEN_TANK_POSITION =    { 1704.729f, 634.891f, 27.787f };
     const Position KILJAEDEN_S_MELEE_POSITION = { 1689.487f, 632.119f, 27.823f };
-    // const Position KILJAEDEN_E_MELEE_POSITION = { 1702.280f, 611.716f, 27.553f };
     const Position KILJAEDEN_E_MELEE_POSITION = { 1700.542f, 619.589f, 27.786f };
-    const Position KILJAEDEN_STACK_POSITION = { 1709.768f, 642.241f, 27.706f };
+    const Position KILJAEDEN_STACK_POSITION =   { 1709.768f, 642.241f, 27.706f };
 
     std::unordered_map<uint32, std::vector<KiljaedenArmageddon>> kiljaedenArmageddons;
 

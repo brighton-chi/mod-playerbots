@@ -120,8 +120,8 @@ public:
         creators["m'uru determining dps priority"] =
             &RaidSunwellTriggerContext::muru_determining_dps_priority;
 
-        creators["m'uru void sentinel needs tank"] =
-            &RaidSunwellTriggerContext::muru_void_sentinel_needs_tank;
+        creators["m'uru void sentinel pulses shadow"] =
+            &RaidSunwellTriggerContext::muru_void_sentinel_pulses_shadow;
 
         creators["m'uru void sentinel casts void blast on tank"] =
             &RaidSunwellTriggerContext::muru_void_sentinel_casts_void_blast_on_tank;
@@ -131,6 +131,9 @@ public:
 
         creators["m'uru dark fiends spawned"] =
             &RaidSunwellTriggerContext::muru_dark_fiends_spawned;
+
+        creators["m'uru entropius turned out the lights"] =
+            &RaidSunwellTriggerContext::muru_entropius_turned_out_the_lights;
 
         creators["m'uru darkness is coming"] =
             &RaidSunwellTriggerContext::muru_darkness_is_coming;
@@ -286,8 +289,8 @@ private:
     static Trigger* muru_determining_dps_priority(
         PlayerbotAI* botAI) { return new MuruDeterminingDpsPriorityTrigger(botAI); }
 
-    static Trigger* muru_void_sentinel_needs_tank(
-        PlayerbotAI* botAI) { return new MuruVoidSentinelNeedsTankTrigger(botAI); }
+    static Trigger* muru_void_sentinel_pulses_shadow(
+        PlayerbotAI* botAI) { return new MuruVoidSentinelPulsesShadowTrigger(botAI); }
 
     static Trigger* muru_void_sentinel_casts_void_blast_on_tank(
         PlayerbotAI* botAI) { return new MuruVoidSentinelCastsVoidBlastOnTankTrigger(botAI); }
@@ -297,6 +300,9 @@ private:
 
     static Trigger* muru_dark_fiends_spawned(
         PlayerbotAI* botAI) { return new MuruDarkFiendsSpawnedTrigger(botAI); }
+
+    static Trigger* muru_entropius_turned_out_the_lights(
+        PlayerbotAI* botAI) { return new MuruEntropiusTurnedOutTheLightsTrigger(botAI); }
 
     static Trigger* muru_darkness_is_coming(
         PlayerbotAI* botAI) { return new MuruDarknessIsComingTrigger(botAI); }

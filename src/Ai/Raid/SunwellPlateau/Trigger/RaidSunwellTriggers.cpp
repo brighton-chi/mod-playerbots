@@ -406,12 +406,19 @@ bool MuruDeterminingDpsPriorityTrigger::IsActive()
            AI_VALUE2(Unit*, "find target", "entropius");
 }
 
-bool MuruVoidSentinelNeedsTankTrigger::IsActive()
+bool MuruVoidSentinelPulsesShadowTrigger::IsActive()
 {
     if (!botAI->IsTank(bot))
         return false;
 
-    return AI_VALUE2(Unit*, "find target", "void sentinel");
+    if (AI_VALUE2(Unit*, "find target", "void sentinel"))
+        return true;
+
+    if (!botAI->IsAssistTankOfIndex(bot, 0, true))
+        return false;
+
+    Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
+    return muru && muru->GetHealth() > 1;
 }
 
 bool MuruVoidSentinelCastsVoidBlastOnTankTrigger::IsActive()
@@ -455,6 +462,16 @@ bool MuruDarkFiendsSpawnedTrigger::IsActive()
         return false;
 
     return AI_VALUE2(Unit*, "find target", "dark fiend");
+}
+
+bool MuruEntropiusTurnedOutTheLightsTrigger::IsActive()
+{
+    if (!AI_VALUE2(Unit*, "find target", "entropius"))
+        return false;
+
+    constexpr float searchDistance = 15.0f;
+    return bot->FindNearestCreature(
+        static_cast<uint32>(SunwellNpcs::NPC_DARK_FIEND), searchDistance, true);
 }
 
 bool MuruDarknessIsComingTrigger::IsActive()

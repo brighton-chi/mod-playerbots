@@ -294,11 +294,11 @@ public:
     bool IsActive() override;
 };
 
-class MuruVoidSentinelNeedsTankTrigger : public Trigger
+class MuruVoidSentinelPulsesShadowTrigger : public Trigger
 {
 public:
-    MuruVoidSentinelNeedsTankTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "m'uru void sentinel needs tank") {}
+    MuruVoidSentinelPulsesShadowTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "m'uru void sentinel pulses shadow") {}
     bool IsActive() override;
 };
 
@@ -323,6 +323,14 @@ class MuruDarkFiendsSpawnedTrigger : public Trigger
 public:
     MuruDarkFiendsSpawnedTrigger(
         PlayerbotAI* botAI) : Trigger(botAI, "m'uru dark fiends spawned") {}
+    bool IsActive() override;
+};
+
+class MuruEntropiusTurnedOutTheLightsTrigger : public Trigger
+{
+public:
+    MuruEntropiusTurnedOutTheLightsTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "m'uru entropius turned out the lights") {}
     bool IsActive() override;
 };
 

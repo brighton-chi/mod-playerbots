@@ -2238,35 +2238,71 @@ bool MuruKillDarkFiendsWithDispelAction::Execute(Event /*event*/)
     return false;
 }
 
-bool MuruFirstAssistTankHandleVoidSentinelAction::Execute(Event /*event*/)
+bool MuruDontTouchTheDarkFiendAction::Execute(Event /*event*/)
+{
+    constexpr float searchDistance = 15.0f;
+    Creature* darkFiend = bot->FindNearestCreature(
+        static_cast<uint32>(SunwellNpcs::NPC_DARK_FIEND), searchDistance, true);
+    if (!darkFiend)
+        return false;
+
+    constexpr float safeDistance = 10.0f;
+    float currentDistance = bot->GetDistance2d(darkFiend);
+    if (currentDistance < safeDistance &&
+        MoveAway(darkFiend, safeDistance - currentDistance))
+    {
+        return true;
+    }
+
+    float randomAngle = static_cast<float>(urand(0, 7)) * ANGLE_45_DEG;
+    return Move(randomAngle, safeDistance - currentDistance);
+}
+
+// All tanks move the Sentinel to a tank position if they have aggro, but only the first
+// assist tank tries to grab aggro and waits for Sentinels to spawn
+bool MuruTanksGetThatSentinelOutOfHereAction::Execute(Event /*event*/)
 {
     Unit* voidSentinel = AI_VALUE2(Unit*, "find target", "void sentinel");
+    const Position& waitPosition = MURU_STACK_POSITION;
+    if (!voidSentinel &&
+        bot->GetExactDist2d(waitPosition.GetPositionX(), waitPosition.GetPositionY()) > 3.0f)
+    {
+        return MoveTo(SUNWELL_MAP_ID, waitPosition.GetPositionX(), waitPosition.GetPositionY(),
+                      waitPosition.GetPositionZ(), false, false, false, false,
+                      MovementPriority::MOVEMENT_COMBAT, true, false);
+    }
+
     if (!voidSentinel)
         return false;
+
+    if (voidSentinel->GetVictim() == bot)
+    {
+        const Position* tankPosition = GetClosestVoidSentinelTankPosition(voidSentinel);
+        if (!tankPosition)
+            return false;
+
+        float distToPosition = bot->GetExactDist2d(tankPosition->GetPositionX(),
+                                                   tankPosition->GetPositionY());
+        if (distToPosition > 3.0f)
+        {
+            float dX = tankPosition->GetPositionX() - bot->GetPositionX();
+            float dY = tankPosition->GetPositionY() - bot->GetPositionY();
+            float moveDist = std::min(5.0f, distToPosition);
+            float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
+
+            return MoveTo(SUNWELL_MAP_ID, moveX, moveY, tankPosition->GetPositionZ(), false, false,
+                          false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
+        }
+    }
 
     if (botAI->IsAssistTankOfIndex(bot, 0, true) && bot->GetVictim() != voidSentinel)
         return Attack(voidSentinel);
 
-    if (voidSentinel->GetVictim() == bot && bot->IsWithinMeleeRange(voidSentinel))
-    {
-        const Position* position = GetClosestVoidSentinelTankPosition(voidSentinel);
-        if (!position)
-            return false;
-
-        float distToPosition = bot->GetExactDist2d(position->GetPositionX(),
-                                                   position->GetPositionY());
-        if (distToPosition > 3.0f)
-        {
-            return MoveTo(SUNWELL_MAP_ID, position->GetPositionX(), position->GetPositionY(),
-                          position->GetPositionZ(), false, false, false, false,
-                          MovementPriority::MOVEMENT_FORCED, true, true);
-        }
-    }
-
     return false;
 }
 
-const Position* MuruFirstAssistTankHandleVoidSentinelAction::GetClosestVoidSentinelTankPosition(
+const Position* MuruTanksGetThatSentinelOutOfHereAction::GetClosestVoidSentinelTankPosition(
     Unit* voidSentinel) const
 {
     if (!voidSentinel)
@@ -2298,7 +2334,7 @@ bool MuruSecondAssistTankGuardRangedAction::Execute(Event /*event*/)
     return false;
 }
 
-bool MuruAvoidDarknessAction::Execute(Event /*event*/)
+bool MuruFleeTheNightAction::Execute(Event /*event*/)
 {
     Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
     if (!muru)
@@ -2320,7 +2356,7 @@ bool MuruAvoidDarknessAction::Execute(Event /*event*/)
                       stackArrivalDistance, MovementPriority::MOVEMENT_COMBAT);
 }
 
-bool MuruAvoidSingularityAction::Execute(Event /*event*/)
+bool MuruMooresLawIsDeadAction::Execute(Event /*event*/)
 {
     Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius");
     if (!entropius)
