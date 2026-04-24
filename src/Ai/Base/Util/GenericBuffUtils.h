@@ -14,6 +14,10 @@ class PlayerbotAI;
 namespace ai::buff
 {
 
+// Returns true when config says this buff family should prefer the group
+// variant for the bot's current group type.
+bool IsGroupVariantEnabled(Player* bot, std::string const& name);
+
 // Build an aura qualifier "single + greater" to avoid double-buffing
 std::string MakeAuraQualifierForBuff(std::string const& name);
 

@@ -6,6 +6,7 @@
 #include "GenericBuffUtils.h"
 
 #include "AiObjectContext.h"
+
 #include "Group.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
@@ -15,6 +16,40 @@
 
 namespace ai::buff
 {
+    static bool HasEnoughSameMapBuffedPlayersForGroupVariant(
+        Player* bot,
+        PlayerbotAI* botAI,
+        std::string const& baseName,
+        std::string const& groupName,
+        uint32 requiredCount = 3)
+    {
+        if (!bot || !botAI)
+            return false;
+
+        Group* group = bot->GetGroup();
+        if (!group)
+            return false;
+
+        uint32 buffedCount = 0;
+        for (GroupReference* gref = group->GetFirstMember(); gref; gref = gref->next())
+        {
+            Player* member = gref->GetSource();
+            if (!member || !member->IsInWorld())
+                continue;
+
+            if (member->GetMap() != bot->GetMap())
+                continue;
+
+            if (!botAI->HasAura(baseName, member) && !botAI->HasAura(groupName, member))
+                continue;
+
+            if (++buffedCount >= requiredCount)
+                return true;
+        }
+
+        return false;
+    }
+
     static bool IsEligibleGroupForPartyBuffs(Group const* group)
     {
         if (!group)
@@ -31,6 +66,17 @@ namespace ai::buff
         }
 
         return false;
+    }
+
+    bool IsGroupVariantEnabled(Player* bot, std::string const& name)
+    {
+        if (!bot)
+            return false;
+
+        if (!IsEligibleGroupForPartyBuffs(bot->GetGroup()))
+            return false;
+
+        return !GroupVariantFor(name).empty();
     }
 
     std::string MakeAuraQualifierForBuff(std::string const& name)
@@ -95,17 +141,16 @@ namespace ai::buff
         PlayerbotAI* botAI,
         std::string const& baseName)
     {
-        // Priest fortitude/spirit use dedicated prayer triggers to decide when
-        // upgrading the party cast to the subgroup-wide prayer is worthwhile.
-        if (baseName == "power word: fortitude" || baseName == "divine spirit")
-            return baseName;
-
-        Group* group = bot->GetGroup();
-        if (!IsEligibleGroupForPartyBuffs(group))
+        if (!IsGroupVariantEnabled(bot, baseName))
             return baseName;
 
         std::string const groupName = GroupVariantFor(baseName);
         if (groupName.empty())
+            return baseName;
+
+        // During sparse wipe recovery, stay on singles until enough same-map
+        // members already carry this buff family to justify a raidwide recast.
+        if (!HasEnoughSameMapBuffedPlayersForGroupVariant(bot, botAI, baseName, groupName))
             return baseName;
 
         uint32 const groupSpellId = botAI->GetAiObjectContext()
