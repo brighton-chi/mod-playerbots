@@ -119,6 +119,8 @@ public:
     CastBuffSpellAction(PlayerbotAI* botAI, std::string const spell, bool checkIsOwner = false, uint32 beforeDuration = 0);
 
     std::string const GetTargetName() override { return "self target"; }
+    bool isUseful() override;
+    bool Execute(Event event) override;
 };
 
 class CastEnchantItemAction : public CastSpellAction

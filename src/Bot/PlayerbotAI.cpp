@@ -23,6 +23,7 @@
 #include "ExternalEventHelper.h"
 #include "GameObjectData.h"
 #include "GameTime.h"
+#include "GenericBuffUtils.h"
 #include "GuildMgr.h"
 #include "LFGMgr.h"
 #include "LastMovementValue.h"
@@ -3581,7 +3582,12 @@ bool PlayerbotAI::CastSpell(std::string const name, Unit* target, Item* itemTarg
     bool result = CastSpell(aiObjectContext->GetValue<uint32>("spell id", name)->Get(), target, itemTarget);
     if (result)
     {
-        aiObjectContext->GetValue<time_t>("last spell cast time", name)->Set(time(nullptr));
+        time_t const castTime = time(nullptr);
+        aiObjectContext->GetValue<time_t>("last spell cast time", name)->Set(castTime);
+
+        std::string const groupThrottleKey = ai::buff::GetGroupVariantThrottleKey(bot, name, target);
+        if (!groupThrottleKey.empty() && groupThrottleKey != name)
+            aiObjectContext->GetValue<time_t>("last spell cast time", groupThrottleKey)->Set(castTime);
     }
 
     return result;

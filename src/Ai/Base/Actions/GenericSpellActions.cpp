@@ -182,6 +182,36 @@ bool CastAuraSpellAction::isUseful()
     return false;
 }
 
+bool CastBuffSpellAction::isUseful()
+{
+    Unit* target = GetTarget();
+    if (!target || !CastSpellAction::isUseful())
+        return false;
+
+    if (ai::buff::IsGroupVariantEnabled(bot, spell))
+    {
+        std::string const groupVariant = ai::buff::GroupVariantFor(spell);
+        if (!groupVariant.empty() && botAI->HasAura(groupVariant, target, false, isOwner, -1, checkDuration))
+            return false;
+
+        if (ai::buff::IsGroupVariantRecentlyCast(bot, botAI, spell, target))
+            return false;
+    }
+
+    Aura* aura = botAI->GetAura(spell, target, isOwner, checkDuration);
+    if (!aura)
+        return true;
+    if (beforeDuration && aura->GetDuration() < beforeDuration)
+        return true;
+    return false;
+}
+
+bool CastBuffSpellAction::Execute(Event /*event*/)
+{
+    std::string const castName = ai::buff::UpgradeToGroupIfAppropriate(bot, botAI, spell);
+    return botAI->CastSpell(castName, GetTarget());
+}
+
 CastEnchantItemAction::CastEnchantItemAction(PlayerbotAI* botAI, std::string const spell)
     : CastSpellAction(botAI, spell)
 {
@@ -262,9 +292,7 @@ Value<Unit*>* BuffOnPartyAction::GetTargetValue()
 
 bool BuffOnPartyAction::Execute(Event /*event*/)
 {
-    std::string castName = ai::buff::UpgradeToGroupIfAppropriate(
-        bot, botAI, spell);
-    return botAI->CastSpell(castName, GetTarget());
+    return CastBuffSpellAction::Execute(Event());
 }
 
 CastShootAction::CastShootAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "shoot"), shootSpellId(0)
