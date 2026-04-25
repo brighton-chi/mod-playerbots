@@ -270,7 +270,7 @@ namespace KarazhanHelpers
         return voidZones;
     }
 
-    bool IsSafePosition(float x, float y, float z, const std::vector<Unit*>& hazards, float hazardRadius)
+    bool IsSafePosition(float x, float y, const std::vector<Unit*>& hazards, float hazardRadius)
     {
         for (Unit* hazard : hazards)
         {
@@ -352,7 +352,7 @@ namespace KarazhanHelpers
                                                                     destX, destY, destZ, true))
                     continue;
 
-                if (!IsSafePosition(destX, destY, destZ, hazards, safeDistance))
+                if (!IsSafePosition(destX, destY, hazards, safeDistance))
                     continue;
 
                 if (requireSafePath)

@@ -420,7 +420,7 @@ bool MagtheridonUseManticronCubeAction::Execute(Event /*event*/)
         return false;
 
     // Release cubes after Blast Nova is interrupted
-    if (HandleCubeRelease(magtheridon, cube))
+    if (HandleCubeRelease(magtheridon))
         return true;
 
     // Check if cube logic should be active (49+ second rule)
@@ -441,7 +441,7 @@ bool MagtheridonUseManticronCubeAction::Execute(Event /*event*/)
     return false;
 }
 
-bool MagtheridonUseManticronCubeAction::HandleCubeRelease(Unit* magtheridon, GameObject* cube)
+bool MagtheridonUseManticronCubeAction::HandleCubeRelease(Unit* magtheridon)
 {
     if (bot->HasAura(SPELL_SHADOW_GRASP) &&
         !(magtheridon->HasUnitState(UNIT_STATE_CASTING) &&

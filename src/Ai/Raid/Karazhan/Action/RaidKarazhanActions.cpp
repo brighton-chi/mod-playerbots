@@ -729,7 +729,7 @@ bool NetherspiteBlockBlueBeamAction::Execute(Event /*event*/)
             float candidateX = bx + dx * dist;
             float candidateY = by + dy * dist;
             float candidateZ = bz;
-            if (!IsSafePosition(candidateX, candidateY, candidateZ, voidZones, 4.0f))
+            if (!IsSafePosition(candidateX, candidateY, voidZones, 4.0f))
                 continue;
 
             float distToIdeal = fabs(dist - idealDistance);
@@ -821,7 +821,7 @@ bool NetherspiteBlockGreenBeamAction::Execute(Event /*event*/)
             float candidateX = bx + dx * dist;
             float candidateY = by + dy * dist;
             float candidateZ = bz;
-            if (!IsSafePosition(candidateX, candidateY, candidateZ, voidZones, 4.0f))
+            if (!IsSafePosition(candidateX, candidateY, voidZones, 4.0f))
                 continue;
 
             float distToIdeal = fabs(dist - 18.0f);
@@ -858,7 +858,7 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event /*event*/)
     std::vector<Unit*> voidZones = GetAllVoidZones(bot);
 
     bool nearVoidZone = !IsSafePosition(bot->GetPositionX(), bot->GetPositionY(),
-                                        bot->GetPositionZ(), voidZones, 4.0f);
+                                        voidZones, 4.0f);
 
     std::vector<BeamAvoid> beams;
     Unit* redPortal = bot->FindNearestCreature(NPC_RED_PORTAL, 150.0f);
@@ -907,7 +907,7 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event /*event*/)
             float cy = botY + std::sin(angle) * dist;
             float cz = netherspite->GetPositionZ();
 
-            if (!IsSafePosition(cx, cy, cz, voidZones, 4.0f) ||
+            if (!IsSafePosition(cx, cy, voidZones, 4.0f) ||
                 !IsAwayFromBeams(cx, cy, beams, netherspite))
                 continue;
 

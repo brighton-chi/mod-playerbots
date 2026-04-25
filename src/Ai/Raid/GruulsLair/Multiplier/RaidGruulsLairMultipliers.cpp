@@ -57,13 +57,10 @@ float HighKingMaulgarDisableArcaneShotOnKroshMultiplier::GetValue(Action* action
 
 float HighKingMaulgarDisableMageTankAoeMultiplier::GetValue(Action* action)
 {
-    if (bot->getClass() != CLASS_MAGE ||
-        !IsKroshMageTank(botAI, bot))
-        return 1.0f;
-
-    auto castSpellAction = dynamic_cast<CastSpellAction*>(action);
-    if (castSpellAction &&
-        castSpellAction->getThreatType() == Action::ActionThreatType::Aoe)
+    if (IsKroshMageTank(bot) &&
+        (dynamic_cast<CastFrostNovaAction*>(action) || dynamic_cast<CastBlizzardAction*>(action) ||
+        dynamic_cast<CastConeOfColdAction*>(action) || dynamic_cast<CastFlamestrikeAction*>(action) ||
+        dynamic_cast<CastDragonsBreathAction*>(action) || dynamic_cast<CastBlastWaveAction*>(action)))
         return 0.0f;
 
     return 1.0f;

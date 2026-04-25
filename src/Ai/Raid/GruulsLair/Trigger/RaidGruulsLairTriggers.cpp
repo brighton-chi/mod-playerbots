@@ -26,13 +26,13 @@ bool HighKingMaulgarIsSecondAssistTankTrigger::IsActive()
 
 bool HighKingMaulgarIsMageTankTrigger::IsActive()
 {
-    return bot->getClass() == CLASS_MAGE && IsKroshMageTank(botAI, bot) &&
+    return bot->getClass() == CLASS_MAGE && IsKroshMageTank(botAI) &&
            AI_VALUE2(Unit*, "find target", "krosh firehand");
 }
 
 bool HighKingMaulgarIsMoonkinTankTrigger::IsActive()
 {
-    return bot->getClass() == CLASS_DRUID && IsKigglerMoonkinTank(botAI, bot) &&
+    return bot->getClass() == CLASS_DRUID && IsKigglerMoonkinTank(botAI) &&
            AI_VALUE2(Unit*, "find target", "kiggler the crazed");;
 }
 
@@ -48,8 +48,8 @@ bool HighKingMaulgarDeterminingKillOrderTrigger::IsActive()
            !(botAI->IsMainTank(bot) && maulgar) &&
            !(botAI->IsAssistTankOfIndex(bot, 0, false) && olm) &&
            !(botAI->IsAssistTankOfIndex(bot, 1, false) && blindeye) &&
-           !(IsKroshMageTank(botAI, bot) && krosh) &&
-           !(IsKigglerMoonkinTank(botAI, bot) && kiggler);
+           !(IsKroshMageTank(bot) && krosh) &&
+           !(IsKigglerMoonkinTank(bot) && kiggler);
 }
 
 bool HighKingMaulgarHealerInDangerTrigger::IsActive()
