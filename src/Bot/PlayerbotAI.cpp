@@ -1710,7 +1710,7 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
             strategyName = "naxx";  // Naxxramas
             break;
         case 534:
-            strategyName = "hyjal";  // The Battle for Mount Hyjal
+            strategyName = "hyjal";  // The Battle for Mount Hyjal (Hyjal Summit)
             break;
         case 544:
             strategyName = "magtheridon";  // Magtheridon's Lair

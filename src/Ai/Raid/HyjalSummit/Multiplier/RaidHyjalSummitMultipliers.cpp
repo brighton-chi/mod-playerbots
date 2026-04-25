@@ -19,8 +19,8 @@
 
 using namespace HyjalSummitHelpers;
 
-// I don't like having to run this checks on every boss, but otherwise
-// Bloodlust/Heroism will be blown on cooldown due to the trash wave composition
+// Without this multiplier, Bloodlust/Heroism will not be available for
+// bosses because it will be used on cooldown during trash waves
 float HyjalSummitTimeBloodlustAndHeroismMultiplier::GetValue(Action* action)
 {
     if (bot->getClass() != CLASS_SHAMAN)
@@ -254,15 +254,6 @@ float AzgalorMeleeDpsControlAvoidanceMultiplier::GetValue(Action* action)
     if (!azgalor)
         return 1.0f;
 
-    TankPositionState tankState = GetAzgalorTankPositionState(botAI, bot);
-    if ((tankState == TankPositionState::Unknown ||
-         tankState == TankPositionState::MovingToTransition) &&
-         dynamic_cast<MovementAction*>(action) &&
-         !dynamic_cast<AzgalorWaitAtSafePositionAction*>(action))
-    {
-        return 0.0f;
-    }
-
     constexpr float singleTickMoveAwayDist = 6.0f;
     if (IsInRainOfFire(bot, RAIN_OF_FIRE_RADIUS + singleTickMoveAwayDist))
     {
@@ -275,6 +266,18 @@ float AzgalorMeleeDpsControlAvoidanceMultiplier::GetValue(Action* action)
 
         if (dynamic_cast<CastReachTargetSpellAction*>(action))
             return 0.0f;
+    }
+
+    if (!GetGroupMainTank(botAI, bot))
+        return 1.0f;
+
+    TankPositionState tankState = GetAzgalorTankPositionState(botAI, bot);
+    if ((tankState == TankPositionState::Unknown ||
+         tankState == TankPositionState::MovingToTransition) &&
+         dynamic_cast<MovementAction*>(action) &&
+         !dynamic_cast<AzgalorWaitAtSafePositionAction*>(action))
+    {
+        return 0.0f;
     }
 
     return 1.0f;
