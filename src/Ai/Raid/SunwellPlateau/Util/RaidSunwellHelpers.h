@@ -117,6 +117,7 @@ namespace SunwellHelpers
 
     // Kalecgos
 
+    constexpr uint8 KALECGOS_TANK_COUNT = 3;
     constexpr uint8 KALECGOS_GROUP_COUNT = 4;
     constexpr uint8 KALECGOS_INVALID_GROUP = std::numeric_limits<uint8>::max();
 
@@ -133,8 +134,13 @@ namespace SunwellHelpers
         uint8 activeRiftGroup = KALECGOS_INVALID_GROUP;
         ObjectGuid blastedPlayerGuid = ObjectGuid::Empty;
         ObjectGuid firstEntrantGuid = ObjectGuid::Empty;
-        std::array<ObjectGuid, KALECGOS_GROUP_COUNT> tankRotationGuids = {
-            ObjectGuid::Empty, ObjectGuid::Empty, ObjectGuid::Empty, ObjectGuid::Empty
+        ObjectGuid currentTankGuid = ObjectGuid::Empty;
+        ObjectGuid activeRiftOutgoingTankGuid = ObjectGuid::Empty;
+        std::array<ObjectGuid, KALECGOS_TANK_COUNT> tankAssignmentGuids = {
+            ObjectGuid::Empty, ObjectGuid::Empty, ObjectGuid::Empty
+        };
+        std::array<ObjectGuid, KALECGOS_TANK_COUNT> tankPortalRotationGuids = {
+            ObjectGuid::Empty, ObjectGuid::Empty, ObjectGuid::Empty
         };
         std::unordered_map<ObjectGuid, uint8> playerToGroup;
     };
