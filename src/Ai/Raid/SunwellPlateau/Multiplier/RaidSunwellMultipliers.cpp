@@ -180,7 +180,17 @@ float KalecgosDelayCooldownsForSathrovarrMultiplier::GetValue(Action* action)
         return 1.0f;
 
     Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos");
-    if (!kalecgos || kalecgos->GetHealthPct() < 40.0f)
+    if (!kalecgos)
+        return 1.0f;
+
+    if (bot->getClass() == CLASS_SHAMAN &&
+        (dynamic_cast<CastHeroismAction*>(action) ||
+         dynamic_cast<CastBloodlustAction*>(action)))
+    {
+        return 0.0f;
+    }
+
+    if (kalecgos->GetHealthPct() < 40.0f)
         return 1.0f;
 
     if (IsDpsCooldownAction(action) ||
