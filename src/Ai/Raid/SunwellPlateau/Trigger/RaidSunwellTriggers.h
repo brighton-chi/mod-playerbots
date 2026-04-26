@@ -62,6 +62,14 @@ public:
     bool IsActive() override;
 };
 
+class KalecgosBotsDontObserveGravityTrigger : public Trigger
+{
+public:
+    KalecgosBotsDontObserveGravityTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "kalecgos bots don't observe gravity") {}
+    bool IsActive() override;
+};
+
 // Brutallus
 
 class BrutallusPullingBossTrigger : public Trigger

@@ -66,6 +66,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class KalecgosReturnToSpectralRealmGroundAction : public MovementAction
+{
+public:
+    KalecgosReturnToSpectralRealmGroundAction(
+        PlayerbotAI* botAI, std::string const name = "kalecgos return to spectral realm ground") : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 // Brutallus
 
 class BrutallusMisdirectBossToMainTankAction : public AttackAction

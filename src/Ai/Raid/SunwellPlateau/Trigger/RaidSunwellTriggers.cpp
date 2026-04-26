@@ -77,6 +77,13 @@ bool KalecgosBothBossesMustBeDefeatedTrigger::IsActive()
     return GetKalecgosCurrentTank(botAI, bot) != bot;
 }
 
+bool KalecgosBotsDontObserveGravityTrigger::IsActive()
+{
+    return bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_REALM)) &&
+           bot->GetPositionZ() > KALECGOS_SPECTRAL_REALM_Z + 3.0f &&
+           bot->GetMapId() == SUNWELL_MAP_ID;
+}
+
 // Brutallus
 
 bool BrutallusPullingBossTrigger::IsActive()

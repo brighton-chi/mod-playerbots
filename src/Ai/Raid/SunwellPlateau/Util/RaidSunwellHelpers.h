@@ -120,6 +120,7 @@ namespace SunwellHelpers
     constexpr uint8 KALECGOS_TANK_COUNT = 3;
     constexpr uint8 KALECGOS_GROUP_COUNT = 4;
     constexpr uint8 KALECGOS_INVALID_GROUP = std::numeric_limits<uint8>::max();
+    constexpr float KALECGOS_SPECTRAL_REALM_Z = -74.5f;
 
     struct KalecgosRealmState
     {
@@ -344,6 +345,11 @@ namespace SunwellHelpers
 
     // Kil'jaeden <The Deceiver>
 
+    struct KiljaedenRangedBotAssignment
+    {
+        ObjectGuid guid;
+        uint8 slotIndex = 0;
+    };
     struct KiljaedenArmageddon
     {
         Position destination;
@@ -368,6 +374,8 @@ namespace SunwellHelpers
     extern const Position KILJAEDEN_STACK_POSITION;
 
     extern std::unordered_map<uint32, std::vector<KiljaedenArmageddon>> kiljaedenArmageddons;
+    extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> kiljaedenRangedAssignments;
+    extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> kiljaedenRangedArmageddonAssignments;
 
     void AddKiljaedenArmageddon(
         uint32 instanceId, Position const& destination, uint32 durationMs, float safeDistance);
@@ -375,6 +383,14 @@ namespace SunwellHelpers
     bool HasActiveKiljaedenArmageddon(uint32 instanceId);
     bool TryGetKiljaedenNearestArmageddon(Player* bot, KiljaedenArmageddon& armageddon);
     bool IsKiljaedenCastingDarknessOfAThousandSouls(Unit* kiljaeden);
+    bool TryGetKiljaedenRangedSlotPosition(uint8 slotIndex, Position& position);
+    float GetKiljaedenRangedSlotAngle(uint8 slotIndex);
+    bool IsKiljaedenRangedSlotSafe(
+        Position const& position, std::vector<KiljaedenArmageddon> const& armageddons);
+    float GetKiljaedenNearestArmageddonDistance(
+        Position const& position, std::vector<KiljaedenArmageddon> const& armageddons);
+    void EnsureKiljaedenRangedAssignments(PlayerbotAI* botAI, Player* bot);
+    void EnsureKiljaedenRangedArmageddonAssignments(PlayerbotAI* botAI, Player* bot);
 }
 
 #endif

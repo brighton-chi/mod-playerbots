@@ -35,6 +35,9 @@ public:
         creators["kalecgos both bosses must be defeated"] =
             &RaidSunwellTriggerContext::kalecgos_both_bosses_must_be_defeated;
 
+        creators["kalecgos bots don't observe gravity"] =
+            &RaidSunwellTriggerContext::kalecgos_bots_dont_observe_gravity;
+
         // Brutallus
         creators["brutallus pulling boss"] =
             &RaidSunwellTriggerContext::brutallus_pulling_boss;
@@ -203,6 +206,9 @@ private:
 
     static Trigger* kalecgos_both_bosses_must_be_defeated(
         PlayerbotAI* botAI) { return new KalecgosBothBossesMustBeDefeatedTrigger(botAI); }
+
+    static Trigger* kalecgos_bots_dont_observe_gravity(
+        PlayerbotAI* botAI) { return new KalecgosBotsDontObserveGravityTrigger(botAI); }
 
     // Brutallus
     static Trigger* brutallus_pulling_boss(
