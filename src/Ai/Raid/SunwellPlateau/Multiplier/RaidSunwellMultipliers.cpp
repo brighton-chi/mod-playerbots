@@ -183,7 +183,7 @@ float KalecgosDelayCooldownsForSathrovarrMultiplier::GetValue(Action* action)
     if (!kalecgos)
         return 1.0f;
 
-    if (bot->getClass() == CLASS_SHAMAN &&
+    /* if (bot->getClass() == CLASS_SHAMAN &&
         (dynamic_cast<CastHeroismAction*>(action) ||
          dynamic_cast<CastBloodlustAction*>(action)))
     {
@@ -191,7 +191,7 @@ float KalecgosDelayCooldownsForSathrovarrMultiplier::GetValue(Action* action)
     }
 
     if (kalecgos->GetHealthPct() < 40.0f)
-        return 1.0f;
+        return 1.0f; */
 
     if (IsDpsCooldownAction(action) ||
         (botAI->IsDps(bot) && dynamic_cast<UseTrinketAction*>(action)))
