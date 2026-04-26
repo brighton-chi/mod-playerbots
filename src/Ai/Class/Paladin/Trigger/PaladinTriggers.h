@@ -62,15 +62,6 @@ public:
     bool IsActive() override;
 };
 
-class PartyBlessingTrigger : public BuffOnPartyTrigger
-{
-public:
-    PartyBlessingTrigger(PlayerbotAI* botAI, std::string const& spell)
-        : BuffOnPartyTrigger(botAI, spell, 2 * 2000) {}
-
-    bool IsActive() override;
-};
-
 class HammerOfJusticeInterruptSpellTrigger : public InterruptSpellTrigger
 {
 public:
@@ -206,32 +197,32 @@ public:
         : BuffOnMainTankTrigger(botAI, "sacred shield", false) {}
 };
 
-class BlessingOfKingsOnPartyTrigger : public PartyBlessingTrigger
+class BlessingOfKingsOnPartyTrigger : public BuffOnPartyTrigger
 {
 public:
     BlessingOfKingsOnPartyTrigger(PlayerbotAI* botAI)
-    : PartyBlessingTrigger(botAI, "blessing of kings") {}
+        : BuffOnPartyTrigger(botAI, "blessing of kings", 2 * 2000) {}
 };
 
-class BlessingOfWisdomOnPartyTrigger : public PartyBlessingTrigger
+class BlessingOfWisdomOnPartyTrigger : public BuffOnPartyTrigger
 {
 public:
     BlessingOfWisdomOnPartyTrigger(PlayerbotAI* botAI)
-    : PartyBlessingTrigger(botAI, "blessing of might,blessing of wisdom") {}
+        : BuffOnPartyTrigger(botAI, "blessing of might,blessing of wisdom", 2 * 2000) {}
 };
 
-class BlessingOfMightOnPartyTrigger : public PartyBlessingTrigger
+class BlessingOfMightOnPartyTrigger : public BuffOnPartyTrigger
 {
 public:
     BlessingOfMightOnPartyTrigger(PlayerbotAI* botAI)
-    : PartyBlessingTrigger(botAI, "blessing of might,blessing of wisdom") {}
+        : BuffOnPartyTrigger(botAI, "blessing of might,blessing of wisdom", 2 * 2000) {}
 };
 
-class BlessingOfSanctuaryOnPartyTrigger : public PartyBlessingTrigger
+class BlessingOfSanctuaryOnPartyTrigger : public BuffOnPartyTrigger
 {
 public:
     BlessingOfSanctuaryOnPartyTrigger(PlayerbotAI* botAI)
-    : PartyBlessingTrigger(botAI, "blessing of sanctuary") {}
+        : BuffOnPartyTrigger(botAI, "blessing of sanctuary", 2 * 2000) {}
 };
 
 class HandOfFreedomOnPartyTrigger : public Trigger
