@@ -6,7 +6,6 @@
 #ifndef _PLAYERBOT_PALADINGREATERBLESSINGACTION_H
 #define _PLAYERBOT_PALADINGREATERBLESSINGACTION_H
 
-#include <map>
 #include <vector>
 
 #include "Action.h"
@@ -29,7 +28,7 @@ private:
         ai::gbless::BlessingType blessing = ai::gbless::BLESSING_NONE;
     };
 
-    bool ComputeAssignments(std::vector<PlayerAssignment>& outAssignments);
+    bool GetAssignments(std::vector<PlayerAssignment>& outAssignments);
     bool FindPendingAssignment(PlayerAssignment& outAssignment,
                                ai::gbless::BlessingType& outCastType,
                                std::string& outSpellName);

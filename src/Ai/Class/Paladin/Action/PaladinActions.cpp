@@ -8,7 +8,6 @@
 #include "AiFactory.h"
 #include "Event.h"
 #include "GenericBuffUtils.h"
-#include "ObjectAccessor.h"
 #include "PaladinGreaterBlessingAction.h"
 #include "PaladinBlessingPriorityData.h"
 #include "PaladinHelper.h"
@@ -18,6 +17,18 @@
 using ai::buff::MakeAuraQualifierForBuff;
 using ai::gbless::SPELL_BLESSING_OF_SANCTUARY;
 using ai::gbless::SPELL_GREATER_BLESSING_OF_SANCTUARY;
+
+namespace
+{
+    constexpr char const* BLESSING_MIGHT_WISDOM_SANCTUARY_QUALIFIER =
+        "blessing of might,greater blessing of might,blessing of wisdom,"
+        "greater blessing of wisdom,blessing of sanctuary,"
+        "greater blessing of sanctuary";
+
+    constexpr char const* BLESSING_KINGS_SANCTUARY_QUALIFIER =
+        "blessing of kings,greater blessing of kings,"
+        "blessing of sanctuary,greater blessing of sanctuary";
+}
 
 static bool IsBlessingTargetCandidate(Player* bot, Player* player)
 {
@@ -42,6 +53,27 @@ static bool HasBlessingAura(
     }
 
     return false;
+}
+
+static bool HasAnyMightWisdomOrSanctuaryBlessing(PlayerbotAI* botAI, Unit* target)
+{
+    return HasBlessingAura(botAI, target,
+        { "blessing of might", "greater blessing of might",
+          "blessing of wisdom", "greater blessing of wisdom",
+          "blessing of sanctuary", "greater blessing of sanctuary" });
+}
+
+static bool HasAnyKingsOrSanctuaryBlessing(PlayerbotAI* botAI, Unit* target)
+{
+    return HasBlessingAura(botAI, target,
+        { "blessing of kings", "greater blessing of kings",
+          "blessing of sanctuary", "greater blessing of sanctuary" });
+}
+
+static bool HasAnySanctuaryBlessing(PlayerbotAI* botAI, Unit* target)
+{
+    return HasBlessingAura(botAI, target,
+        { "blessing of sanctuary", "greater blessing of sanctuary" });
 }
 
 static bool IsGreaterBlessingMode(Player* bot)
@@ -239,10 +271,7 @@ Unit* CastBlessingOfMightOnPartyAction::GetTarget()
 
     return FindBlessingTarget(bot, botAI, [&](Player* player)
     {
-        return !HasBlessingAura(botAI, player,
-            { "blessing of might", "greater blessing of might",
-              "blessing of wisdom", "greater blessing of wisdom",
-              "blessing of sanctuary", "greater blessing of sanctuary" });
+        return !HasAnyMightWisdomOrSanctuaryBlessing(botAI, player);
     });
 }
 
@@ -259,11 +288,8 @@ bool CastBlessingOfMightAction::Execute(Event /*event*/)
 Value<Unit*>* CastBlessingOfMightOnPartyAction::GetTargetValue()
 {
     return context->GetValue<Unit*>(
-    "party member without aura",
-    "blessing of might,greater blessing of might,blessing of wisdom,"
-    "greater blessing of wisdom,blessing of sanctuary,"
-    "greater blessing of sanctuary"
-    );
+        "party member without aura",
+        BLESSING_MIGHT_WISDOM_SANCTUARY_QUALIFIER);
 }
 
 bool CastBlessingOfMightOnPartyAction::Execute(Event /*event*/)
@@ -299,20 +325,15 @@ Unit* CastBlessingOfWisdomOnPartyAction::GetTarget()
         if (botAI->HasStrategy("bwisdom", BOT_STATE_NON_COMBAT) && IsTankRole(player))
             return false;
 
-        return !HasBlessingAura(botAI, player,
-            { "blessing of might", "greater blessing of might",
-              "blessing of wisdom", "greater blessing of wisdom",
-              "blessing of sanctuary", "greater blessing of sanctuary" });
+        return !HasAnyMightWisdomOrSanctuaryBlessing(botAI, player);
     });
 }
 
 Value<Unit*>* CastBlessingOfWisdomOnPartyAction::GetTargetValue()
 {
     return context->GetValue<Unit*>(
-    "party member without aura",
-    "blessing of wisdom,greater blessing of wisdom,blessing of might,greater blessing of might,"
-    "blessing of sanctuary,greater blessing of sanctuary"
-    );
+        "party member without aura",
+        BLESSING_MIGHT_WISDOM_SANCTUARY_QUALIFIER);
 }
 
 bool CastBlessingOfWisdomOnPartyAction::Execute(Event /*event*/)
@@ -363,13 +384,8 @@ bool CastBlessingOfSanctuaryOnPartyAction::Execute(Event /*event*/)
 
     Player* targetPlayer = target ? target->ToPlayer() : nullptr;
 
-    const auto HasKingsAura = [&](Unit* unit) -> bool {
-        return botAI->HasAura("blessing of kings", unit) ||
-               botAI->HasAura("greater blessing of kings", unit);
-    };
     const auto HasSanctAura = [&](Unit* unit) -> bool {
-        return botAI->HasAura("blessing of sanctuary", unit) ||
-               botAI->HasAura("greater blessing of sanctuary", unit);
+        return HasAnySanctuaryBlessing(botAI, unit);
     };
 
     if (Group* group = bot->GetGroup())
@@ -450,8 +466,7 @@ Unit* CastBlessingOfSanctuaryOnPartyAction::GetTarget()
     return FindBlessingTarget(bot, botAI, [&](Player* player)
     {
         return IsTankRole(player) &&
-               !HasBlessingAura(botAI, player,
-                   { "blessing of sanctuary", "greater blessing of sanctuary" });
+               !HasAnySanctuaryBlessing(botAI, player);
     });
 }
 
@@ -459,9 +474,7 @@ Value<Unit*>* CastBlessingOfKingsOnPartyAction::GetTargetValue()
 {
     return context->GetValue<Unit*>(
         "party member without aura",
-        "blessing of kings,greater blessing of kings,"
-        "blessing of sanctuary,greater blessing of sanctuary"
-    );
+        BLESSING_KINGS_SANCTUARY_QUALIFIER);
 }
 
 Unit* CastBlessingOfKingsOnPartyAction::GetTarget()
@@ -476,9 +489,7 @@ Unit* CastBlessingOfKingsOnPartyAction::GetTarget()
     return FindBlessingTarget(bot, botAI, [&](Player* player)
     {
         const bool isTank = IsTankRole(player);
-        const bool hasKingsOrSanct = HasBlessingAura(botAI, player,
-            { "blessing of kings", "greater blessing of kings",
-              "blessing of sanctuary", "greater blessing of sanctuary" });
+        const bool hasKingsOrSanct = HasAnyKingsOrSanctuaryBlessing(botAI, player);
 
         if (hasKingsOrSanct)
             return false;
@@ -535,9 +546,7 @@ bool CastBlessingOfKingsOnPartyAction::Execute(Event /*event*/)
         const bool hasSanctFromMe =
             target->HasAura(SPELL_BLESSING_OF_SANCTUARY, bot->GetGUID()) ||
             target->HasAura(SPELL_GREATER_BLESSING_OF_SANCTUARY, bot->GetGUID());
-        const bool hasSanctAny =
-            botAI->HasAura("blessing of sanctuary", target) ||
-            botAI->HasAura("greater blessing of sanctuary", target);
+        const bool hasSanctAny = HasAnySanctuaryBlessing(botAI, target);
 
         if (isTank && hasSanctFromMe)
             return false;

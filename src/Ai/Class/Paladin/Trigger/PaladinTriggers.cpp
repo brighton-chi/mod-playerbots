@@ -33,6 +33,11 @@ bool BlessingTrigger::IsActive()
                                 "blessing of kings", "blessing of sanctuary", nullptr);
 }
 
+bool PartyBlessingTrigger::IsActive()
+{
+    return !ai::gbless::IsAutoGreaterBlessingActive(bot) && BuffOnPartyTrigger::IsActive();
+}
+
 bool DivineShieldLowHealthTrigger::IsActive()
 {
     return botAI->HasAura("divine shield", bot) && AI_VALUE2(uint8, "health", "self target") < 80;
