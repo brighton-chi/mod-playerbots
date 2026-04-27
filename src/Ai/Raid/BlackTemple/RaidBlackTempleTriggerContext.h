@@ -18,6 +18,10 @@ public:
         creators["black temple bot is not in combat"] =
             &RaidBlackTempleTriggerContext::black_temple_bot_is_not_in_combat;
 
+        // Trash
+        creators["sister of pain has shell of pain"] =
+            &RaidBlackTempleTriggerContext::sister_of_pain_has_shell_of_pain;
+
         // High Warlord Naj'entus
         creators["high warlord naj'entus pulling boss"] =
             &RaidBlackTempleTriggerContext::high_warlord_najentus_pulling_boss;
@@ -212,6 +216,10 @@ private:
     // General
     static Trigger* black_temple_bot_is_not_in_combat(
         PlayerbotAI* botAI) { return new BlackTempleBotIsNotInCombatTrigger(botAI); }
+
+    // Trash
+    static Trigger* sister_of_pain_has_shell_of_pain(
+        PlayerbotAI* botAI) { return new SisterOfPainHasShellOfPainTrigger(botAI); }
 
     // High Warlord Naj'entus
     static Trigger* high_warlord_najentus_pulling_boss(

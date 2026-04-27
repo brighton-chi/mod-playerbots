@@ -18,6 +18,16 @@ public:
     bool IsActive() override;
 };
 
+// Trash
+
+class SisterOfPainHasShellOfPainTrigger : public Trigger
+{
+public:
+    SisterOfPainHasShellOfPainTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "sister of pain has shell of pain") {}
+    bool IsActive() override;
+};
+
 // High Warlord Naj'entus
 
 class HighWarlordNajentusPullingBossTrigger : public Trigger

@@ -17,11 +17,22 @@ namespace BlackTempleHelpers
 }
 
 // General
+
 class BlackTempleEraseTimersAndTrackersAction : public Action
 {
 public:
     BlackTempleEraseTimersAndTrackersAction(
         PlayerbotAI* botAI) : Action(botAI, "black temple erase timers and trackers") {}
+    bool Execute(Event event) override;
+};
+
+// Trash
+
+class SisterOfPainSwitchTargetAction : public AttackAction
+{
+public:
+    SisterOfPainSwitchTargetAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "sister of pain switch target") {}
     bool Execute(Event event) override;
 };
 

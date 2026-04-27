@@ -19,6 +19,18 @@ bool BlackTempleBotIsNotInCombatTrigger::IsActive()
     return !bot->IsInCombat() && bot->GetMapId() == BLACK_TEMPLE_MAP_ID;
 }
 
+// Trash
+
+bool SisterOfPainHasShellOfPainTrigger::IsActive()
+{
+    if (!botAI->IsDps(bot))
+        return false;
+
+    Unit* sisterOfPain = AI_VALUE2(Unit*, "find target", "sister of pain");
+    return sisterOfPain && sisterOfPain->HasAura(
+        static_cast<uint32>(BlackTempleSpells::SPELL_SHELL_OF_PAIN));
+}
+
 // High Warlord Naj'entus
 
 bool HighWarlordNajentusPullingBossTrigger::IsActive()

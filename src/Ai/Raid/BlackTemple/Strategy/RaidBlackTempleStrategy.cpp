@@ -12,6 +12,10 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("black temple bot is not in combat", {
         NextAction("black temple erase timers and trackers", ACTION_EMERGENCY + 11) }));
 
+    // Trash
+    triggers.push_back(new TriggerNode("sister of pain has shell of pain", {
+        NextAction("sister of pain switch target", ACTION_RAID + 1) }));
+
     // High Warlord Naj'entus
     triggers.push_back(new TriggerNode("high warlord naj'entus pulling boss", {
         NextAction("high warlord naj'entus misdirect boss to main tank", ACTION_RAID + 2) }));

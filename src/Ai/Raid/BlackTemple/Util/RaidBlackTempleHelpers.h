@@ -19,6 +19,9 @@ namespace BlackTempleHelpers
         // Shadowmoon Reaver
         SPELL_SPELL_ABSORPTION          = 41034,
 
+        // Sister of Pain
+        SPELL_SHELL_OF_PAIN             = 41371,
+
         // High Warlord Naj'entus
         SPELL_IMPALING_SPINE            = 39837,
         SPELL_TIDAL_SHIELD              = 39872,
@@ -84,6 +87,9 @@ namespace BlackTempleHelpers
 
     enum class BlackTempleNpcs : uint32
     {
+        // Trash
+        NPC_SISTER_OF_PLEASURE    = 22964,
+
         // Supremus
         NPC_SUPREMUS_VOLCANO      = 23085,
 

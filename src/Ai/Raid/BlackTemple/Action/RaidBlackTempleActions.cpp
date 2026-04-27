@@ -71,6 +71,31 @@ bool BlackTempleEraseTimersAndTrackersAction::Execute(Event /*event*/)
     }
 }
 
+// Trash
+
+bool SisterOfPainSwitchTargetAction::Execute(Event /*event*/)
+{
+    Unit* sisterOfPain = AI_VALUE2(Unit*, "find target", "sister of pain");
+    if (!sisterOfPain)
+        return false;
+
+    if (bot->GetVictim() == sisterOfPain)
+        bot->AttackStop();
+
+    Unit* sisterOfPleasure = GetFirstAliveUnitByEntry(
+        bot, static_cast<uint32>(BlackTempleNpcs::NPC_SISTER_OF_PLEASURE));
+    if (!sisterOfPleasure)
+        return false;
+
+    if (IsMechanicTrackerBot(botAI, bot, BLACK_TEMPLE_MAP_ID))
+        MarkTargetWithSkull(bot, sisterOfPleasure);
+
+    if (bot->GetTarget() != sisterOfPleasure->GetGUID())
+        return Attack(sisterOfPleasure);
+
+    return false;
+}
+
 // High Warlord Naj'entus
 
 bool HighWarlordNajentusMisdirectBossToMainTankAction::Execute(Event /*event*/)
@@ -2228,7 +2253,7 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidE
             return false;
 
         return MoveTo(BLACK_TEMPLE_MAP_ID, safeX, safeY, safeZ,
-                      false, false, false, false, MovementPriority::MOVEMENT_FORCED, 
+                      false, false, false, false, MovementPriority::MOVEMENT_FORCED,
                       true, false);
     }
 
@@ -2263,7 +2288,7 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidB
     size_t& waypointIndex = flameTankWaypointIndex[bot->GetGUID()];
     const Position& target = (*waypoints)[waypointIndex];
 
-    auto const& npcs = 
+    auto const& npcs =
         botAI->GetAiObjectContext()->GetValue<GuidVector>("possible triggers")->Get();
 
     bool blazeNearby = false;
@@ -2278,7 +2303,7 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidB
         }
     }
 
-    float distToPosition = 
+    float distToPosition =
         bot->GetExactDist2d(target.GetPositionX(), target.GetPositionY());
     if (blazeNearby && distToPosition <= 0.2f)
     {
@@ -2438,7 +2463,7 @@ bool IllidanStormrageDisperseRangedAction::Execute(Event /*event*/)
         return SpreadInCircleInDemonPhase(illidan, group);
     }
     else if (GetBotWithParasiticShadowfiend(bot) == bot ||
-             (GetIllidanTrapperHunter(bot) == bot && 
+             (GetIllidanTrapperHunter(bot) == bot &&
               GetBotWithParasiticShadowfiend(bot)))
     {
         return false;
@@ -2476,11 +2501,11 @@ bool IllidanStormrageDisperseRangedAction::FanOutBehindInHumanPhase(
     auto& bots = botAI->IsHeal(bot) ? healers : rangedDps;
     size_t count = bots.size();
     auto findIt = std::find(bots.begin(), bots.end(), bot);
-    size_t botIndex = (findIt != bots.end()) ? 
+    size_t botIndex = (findIt != bots.end()) ?
         std::distance(bots.begin(), findIt) : 0;
 
     float angle = (count == 1) ? arcCenter :
-        (arcStart + arcSpan * static_cast<float>(botIndex) / 
+        (arcStart + arcSpan * static_cast<float>(botIndex) /
          static_cast<float>(count - 1));
 
     float targetX = illidan->GetPositionX() + radius * std::cos(angle);
@@ -2546,7 +2571,7 @@ bool IllidanStormrageDisperseRangedAction::SpreadInCircleInDemonPhase(
 
     size_t count = rangedBots.size();
     auto findIt = std::find(rangedBots.begin(), rangedBots.end(), bot);
-    size_t botIndex = (findIt != rangedBots.end()) ? 
+    size_t botIndex = (findIt != rangedBots.end()) ?
         std::distance(rangedBots.begin(), findIt) : 0;
 
     float dx = warlockTank->GetPositionX() - illidan->GetPositionX();
@@ -2609,9 +2634,9 @@ bool IllidanStormrageMeleeGoSomewhereToNotDieAction::Execute(Event /*event*/)
     else
     {
         Unit* shadowfiend = bot->FindNearestCreature(
-            static_cast<uint32>(BlackTempleNpcs::NPC_PARASITIC_SHADOWFIEND), 
+            static_cast<uint32>(BlackTempleNpcs::NPC_PARASITIC_SHADOWFIEND),
             shadowfiendSearchRadius, true);
-    
+
         if (shadowfiend && shadowfiend->GetDistance2d(illidan) > 15.0f &&
             shadowfiend->GetHealthPct() < 30.0f &&
             (!illidanVictim || shadowfiend->GetDistance2d(illidanVictim) > 24.0f))
@@ -2691,9 +2716,9 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
         else
         {
             Unit* shadowfiend = bot->FindNearestCreature(
-                static_cast<uint32>(BlackTempleNpcs::NPC_PARASITIC_SHADOWFIEND), 
+                static_cast<uint32>(BlackTempleNpcs::NPC_PARASITIC_SHADOWFIEND),
                 searchRadius, true);
-    
+
             if (botAI->IsRanged(bot))
             {
                 if (shadowDemon)
@@ -2715,7 +2740,7 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
         {
             constexpr float searchRadius = 35.0f;
             Unit* shadowfiend = bot->FindNearestCreature(
-                static_cast<uint32>(BlackTempleNpcs::NPC_PARASITIC_SHADOWFIEND), 
+                static_cast<uint32>(BlackTempleNpcs::NPC_PARASITIC_SHADOWFIEND),
                 searchRadius, true);
 
             if (shadowfiend && bot->GetDistance2d(shadowfiend) > 10.0f)
@@ -2727,7 +2752,7 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
         {
             constexpr float searchRadius = 20.0f;
             Unit* shadowfiend = bot->FindNearestCreature(
-                static_cast<uint32>(BlackTempleNpcs::NPC_PARASITIC_SHADOWFIEND), 
+                static_cast<uint32>(BlackTempleNpcs::NPC_PARASITIC_SHADOWFIEND),
                 searchRadius, true);
 
             if (shadowfiend && bot->GetDistance2d(shadowfiend) > 5.0f)
