@@ -182,6 +182,10 @@ Value<Unit*>* BuffOnPartyTrigger::GetTargetValue()
 
 bool BuffOnPartyTrigger::IsActive()
 {
+    Unit* target = GetTarget();
+    if (ai::buff::ShouldDeferPartyBuffEvaluationForRecentLogin(bot, target, spell))
+        return false;
+
     return BuffTrigger::IsActive();
 }
 

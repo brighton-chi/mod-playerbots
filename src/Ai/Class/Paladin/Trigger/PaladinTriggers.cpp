@@ -5,6 +5,7 @@
 
 #include "PaladinTriggers.h"
 
+#include "GenericBuffUtils.h"
 #include "PaladinGreaterBlessingAction.h"
 #include "PaladinActions.h"
 #include "PaladinHelper.h"
@@ -81,6 +82,9 @@ bool NotSensingUndeadTrigger::IsActive()
 bool GreaterBlessingNeededTrigger::IsActive()
 {
     if (!ai::gbless::IsAutoGreaterBlessingActive(bot))
+        return false;
+
+    if (ai::buff::ShouldDeferGreaterBlessingEvaluationForRecentLogin(bot))
         return false;
 
     CastGreaterBlessingAssignmentAction action(botAI);

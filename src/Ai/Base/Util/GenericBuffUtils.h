@@ -10,6 +10,7 @@
 
 class Player;
 class PlayerbotAI;
+class Unit;
 
 namespace ai::buff
 {
@@ -26,6 +27,21 @@ std::string MakeAuraQualifierForBuff(std::string const& name);
 // Paladin blessings are handled by auto greater blessing assignment.
 // Returns "" if no group equivalent exists.
 std::string GroupVariantFor(std::string const& name);
+
+// Returns true when this buff family is sensitive to login-time aura races
+// and should briefly defer evaluation after bot or target login.
+bool NeedsPostLoginBuffGrace(std::string const& name);
+
+// Returns true when party buff evaluation should be deferred because the bot
+// or player target logged in very recently.
+bool ShouldDeferPartyBuffEvaluationForRecentLogin(
+    Player* bot,
+    Unit* target,
+    std::string const& spell);
+
+// Returns true when greater blessing evaluation should be deferred because the
+// paladin or one of its current group members logged in very recently.
+bool ShouldDeferGreaterBlessingEvaluationForRecentLogin(Player* bot);
 
 // Checks if the bot has the required reagents to cast a spell (by its spellId).
 // Returns false if the spellId is invalid.

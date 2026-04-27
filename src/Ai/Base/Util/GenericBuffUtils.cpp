@@ -12,10 +12,23 @@
 #include "PlayerbotAI.h"
 #include "PlayerbotAIConfig.h"
 #include "SpellMgr.h"
+#include "Unit.h"
 #include "Value.h"
+
+#include <ctime>
 
 namespace ai::buff
 {
+    namespace
+    {
+        constexpr time_t POST_LOGIN_BUFF_GRACE_SECONDS = 5;
+
+        bool IsWithinPostLoginBuffGrace(Player* player)
+        {
+            return player && (time(nullptr) - player->GetInGameTime()) < POST_LOGIN_BUFF_GRACE_SECONDS;
+        }
+    }
+
     static bool HasEnoughSameMapBuffedPlayersForGroupVariant(
         Player* bot,
         PlayerbotAI* botAI,
@@ -112,6 +125,69 @@ namespace ai::buff
         // Paladin blessings are NOT included here — they are
         // coordinated by the auto greater blessing system instead.
         return std::string();
+    }
+
+    bool NeedsPostLoginBuffGrace(std::string const& name)
+    {
+        static char const* const trackedBuffs[] = {
+            "mark of the wild",
+            "arcane intellect",
+            "power word: fortitude",
+            "divine spirit",
+            "shadow protection",
+            "blessing of kings",
+            "blessing of might",
+            "blessing of wisdom",
+            "blessing of sanctuary"
+        };
+
+        for (char const* trackedBuff : trackedBuffs)
+        {
+            if (name.find(trackedBuff) != std::string::npos)
+                return true;
+        }
+
+        return false;
+    }
+
+    bool ShouldDeferPartyBuffEvaluationForRecentLogin(
+        Player* bot,
+        Unit* target,
+        std::string const& spell)
+    {
+        if (!NeedsPostLoginBuffGrace(spell))
+            return false;
+
+        if (IsWithinPostLoginBuffGrace(bot))
+            return true;
+
+        Player* playerTarget = target ? target->ToPlayer() : nullptr;
+        return IsWithinPostLoginBuffGrace(playerTarget);
+    }
+
+    bool ShouldDeferGreaterBlessingEvaluationForRecentLogin(Player* bot)
+    {
+        if (!bot)
+            return false;
+
+        if (IsWithinPostLoginBuffGrace(bot))
+            return true;
+
+        Group* group = bot->GetGroup();
+        if (!group)
+            return false;
+
+        for (GroupReference* gref = group->GetFirstMember(); gref; gref = gref->next())
+        {
+            Player* member = gref->GetSource();
+            if (!member || !member->IsInWorld())
+                continue;
+
+            if (IsWithinPostLoginBuffGrace(member))
+                return true;
+        }
+
+        return false;
     }
 
     bool HasRequiredReagents(Player* bot, uint32 spellId)
