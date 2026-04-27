@@ -345,7 +345,8 @@ public:
 
 void AddSC_SunwellPlateauBotScripts()
 {
-    new FelmystFogInterruptFallbackScript();
+    // Disabled for testing: rely on the spell-listener path for initial fog interrupts.
+    // new FelmystFogInterruptFallbackScript();
     new KalecgosSpellListenerScript();
     new FelmystSpellListenerScript();
     new EredarTwinsSpellListenerScript();
