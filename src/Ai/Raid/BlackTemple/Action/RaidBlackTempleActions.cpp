@@ -83,7 +83,7 @@ bool SisterOfPainSwitchTargetAction::Execute(Event /*event*/)
         bot->AttackStop();
 
     Unit* sisterOfPleasure = GetFirstAliveUnitByEntry(
-        bot, static_cast<uint32>(BlackTempleNpcs::NPC_SISTER_OF_PLEASURE));
+        botAI, static_cast<uint32>(BlackTempleNpcs::NPC_SISTER_OF_PLEASURE));
     if (!sisterOfPleasure)
         return false;
 
@@ -1832,23 +1832,7 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
     {
         GameObject* trap = FindNearestTrap(botAI, bot);
         if (trap && bot->GetExactDist2d(trap) < 40.0f && illidan->GetVictim() == bot)
-        {
-            Position target = GetPointBeyondTrap(trap, 5.0f);
-            float targetDist = bot->GetExactDist2d(target);
-
-            if (targetDist > 2.0f && bot->GetHealthPct() > 50.0f)
-            {
-                float dX = target.GetPositionX() - bot->GetPositionX();
-                float dY = target.GetPositionY() - bot->GetPositionY();
-                float moveDist = std::min(5.0f, targetDist);
-                float moveX = bot->GetPositionX() + (dX / targetDist) * moveDist;
-                float moveY = bot->GetPositionY() + (dY / targetDist) * moveDist;
-
-                return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY,
-                              bot->GetPositionZ(), false, false, false, false,
-                              MovementPriority::MOVEMENT_COMBAT, true, true);
-            }
-        }
+            return MoveToShadowTrap(trap);
     }
 
     auto const& flameCrashes = GetAllFlameCrashes(bot);
@@ -1877,29 +1861,40 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
                   MovementPriority::MOVEMENT_FORCED, true, true);
 }
 
-Position IllidanStormrageMainTankRepositionBossAction::GetPointBeyondTrap(
-    GameObject* trap, float extraDistance)
+bool IllidanStormrageMainTankRepositionBossAction::MoveToShadowTrap(GameObject* trap)
 {
     if (!trap)
-        return Position();
+        return false;
 
-    float botX = bot->GetPositionX();
-    float botY = bot->GetPositionY();
     float trapX = trap->GetPositionX();
     float trapY = trap->GetPositionY();
 
     float distToTrap = trap->GetExactDist2d(bot);
+    constexpr float distBeyondTrap = 6.0f;
 
-    if (distToTrap == 0.0f)
-        return Position(trapX, trapY, bot->GetPositionZ());
+    float dx = trapX - bot->GetPositionX();
+    float dy = trapY - bot->GetPositionY();
+    float targetX = trapX + (dx / distToTrap) * distBeyondTrap;
+    float targetY = trapY + (dy / distToTrap) * distBeyondTrap;
 
-    float dx = trapX - botX;
-    float dy = trapY - botY;
-    float targetX = trapX + (dx / distToTrap) * extraDistance;
-    float targetY = trapY + (dy / distToTrap) * extraDistance;
-    float targetZ = bot->GetPositionZ();
+    Position target(targetX, targetY, trap->GetPositionZ());
 
-    return Position(targetX, targetY, targetZ);
+    float targetDist = bot->GetExactDist2d(target);
+
+    if (targetDist > 2.0f && bot->GetHealthPct() > 50.0f)
+    {
+        float dX = target.GetPositionX() - bot->GetPositionX();
+        float dY = target.GetPositionY() - bot->GetPositionY();
+        float moveDist = std::min(5.0f, targetDist);
+        float moveX = bot->GetPositionX() + (dX / targetDist) * moveDist;
+        float moveY = bot->GetPositionY() + (dY / targetDist) * moveDist;
+
+        return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY, trap->GetPositionZ(),
+                      false, false, false, false,
+                      MovementPriority::MOVEMENT_COMBAT, true, true);
+    }
+
+    return false;
 }
 
 Position IllidanStormrageMainTankRepositionBossAction::FindSafestNearbyPosition(

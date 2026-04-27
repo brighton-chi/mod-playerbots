@@ -433,8 +433,7 @@ public:
     bool Execute(Event event) override;
 
 private:
-    Position GetPointBeyondTrap(
-        GameObject* nearestTrap, float extraDistance = 5.0f);
+    bool MoveToShadowTrap(GameObject* trap);
     Position FindSafestNearbyPosition(
         const std::vector<Unit*>& flameCrashes, float maxRadius, float hazardRadius);
     bool IsPathSafeFromFlameCrashes(const Position& start,

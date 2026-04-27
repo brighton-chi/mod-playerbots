@@ -219,7 +219,7 @@ private:
 
     // Trash
     static Action* sister_of_pain_switch_target(
-        PlayerAI* botAI) { return new SisterOfPainSwitchTargetAction(botAI); }
+        PlayerbotAI* botAI) { return new SisterOfPainSwitchTargetAction(botAI); }
 
     // High Warlord Naj'entus
     static Action* high_warlord_najentus_misdirect_boss_to_main_tank(
