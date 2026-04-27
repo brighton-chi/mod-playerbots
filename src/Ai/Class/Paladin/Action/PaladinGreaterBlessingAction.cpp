@@ -21,54 +21,6 @@ namespace
 {
     constexpr uint32 GREATER_BLESSING_ASSIGNMENT_CACHE_MS = 4 * 1000;
 
-    char const* SpecProfileName(SpecProfile spec)
-    {
-        switch (spec)
-        {
-            case SPEC_PROT_WARRIOR:   return "prot-warrior";
-            case SPEC_TANK_DK:        return "tank-dk";
-            case SPEC_DPS_WARRIOR:    return "dps-warrior";
-            case SPEC_DPS_DK:         return "dps-dk";
-            case SPEC_CASTER_SHAMAN:  return "caster-shaman";
-            case SPEC_ENHANCE_SHAMAN: return "enhance-shaman";
-            case SPEC_RET_PALADIN:    return "ret-paladin";
-            case SPEC_HOLY_PALADIN:   return "holy-paladin";
-            case SPEC_PROT_PALADIN:   return "prot-paladin";
-            case SPEC_BEAR_DRUID:     return "bear-druid";
-            case SPEC_CAT_DRUID:      return "cat-druid";
-            case SPEC_CASTER_DRUID:   return "caster-druid";
-            case SPEC_ROGUE:          return "rogue";
-            case SPEC_HUNTER:         return "hunter";
-            case SPEC_MAGE:           return "mage";
-            case SPEC_WARLOCK:        return "warlock";
-            case SPEC_PRIEST:         return "priest";
-            default:                  return "unknown";
-        }
-    }
-
-    char const* BlessingTypeName(BlessingType type)
-    {
-        switch (type)
-        {
-            case BLESSING_MIGHT_SINGLE:      return "might";
-            case BLESSING_MIGHT_GREATER:     return "greater-might";
-            case BLESSING_WISDOM_SINGLE:     return "wisdom";
-            case BLESSING_WISDOM_GREATER:    return "greater-wisdom";
-            case BLESSING_KINGS_SINGLE:      return "kings";
-            case BLESSING_KINGS_GREATER:     return "greater-kings";
-            case BLESSING_SANCTUARY_SINGLE:  return "sanctuary";
-            case BLESSING_SANCTUARY_GREATER: return "greater-sanctuary";
-            default:                         return "none";
-        }
-    }
-
-    struct BlessingBucketSearchStats
-    {
-        uint32 matchingMembers = 0;
-        uint32 alreadyBlessed = 0;
-        uint32 cannotCast = 0;
-    };
-
     constexpr uint8 MAX_BLESSING_SLOTS = 4;
     constexpr uint8 MAX_CLASS_ID = 12;
 
@@ -477,15 +429,6 @@ namespace
             cached.valid = true;
             cached.assignments = std::move(assignments);
 
-            LOG_INFO("playerbots", "gbless cache: paladin={} buckets={}", bot->GetName(), cached.assignments.size());
-            for (CachedBlessingBucketAssignment const& assignment : cached.assignments)
-            {
-                char const* bucketName = assignment.bySpec ? SpecProfileName(assignment.spec) : "class";
-                LOG_INFO("playerbots", "gbless cache: paladin={} class={} bySpec={} spec={} blessing={}",
-                         bot->GetName(), assignment.classId, assignment.bySpec,
-                         bucketName, BlessingTypeName(assignment.blessing));
-            }
-
             return cached;
         }
     };
@@ -538,8 +481,7 @@ static bool MatchesBucket(Player* player, CachedBlessingBucketAssignment const& 
 static Player* FindMissingBlessingTarget(PlayerbotAI* botAI,
                                          CachedBlessingBucketAssignment const& assignment,
                                          BlessingType castType,
-                                         std::string const& spellName,
-                                         BlessingBucketSearchStats* stats = nullptr)
+                                         std::string const& spellName)
 {
     Player* bot = botAI->GetBot();
     Group* group = bot ? bot->GetGroup() : nullptr;
@@ -558,22 +500,11 @@ static Player* FindMissingBlessingTarget(PlayerbotAI* botAI,
         if (!MatchesBucket(player, assignment))
             continue;
 
-        if (stats)
-            ++stats->matchingMembers;
-
         if (HasMyExactBlessing(botAI, player, castType))
-        {
-            if (stats)
-                ++stats->alreadyBlessed;
             continue;
-        }
 
         if (!botAI->CanCastSpell(spellName, player))
-        {
-            if (stats)
-                ++stats->cannotCast;
             continue;
-        }
 
         return player;
     }
@@ -635,10 +566,6 @@ bool CastGreaterBlessingAssignmentAction::FindPendingAssignment(
             uint32 spellId = AI_VALUE2(uint32, "spell id", spellName);
             if (!spellId || !ai::buff::HasRequiredReagents(bot, spellId))
             {
-                LOG_INFO("playerbots", "gbless downgrade: paladin={} class={} bySpec={} spec={} from={} reason={}",
-                         bot->GetName(), assigned.classId, assigned.bySpec,
-                         SpecProfileName(assigned.spec), BlessingTypeName(castType),
-                         spellId ? "missing-reagents" : "missing-spellid");
                 castType = ToSingleVariant(castType);
                 spellName = BlessingSpellName(castType);
                 if (spellName.empty())
@@ -646,21 +573,9 @@ bool CastGreaterBlessingAssignmentAction::FindPendingAssignment(
             }
         }
 
-        BlessingBucketSearchStats stats;
-        Player* target = FindMissingBlessingTarget(botAI, assigned, castType, spellName, &stats);
+        Player* target = FindMissingBlessingTarget(botAI, assigned, castType, spellName);
         if (!target)
-        {
-            LOG_INFO("playerbots", "gbless no-target: paladin={} class={} bySpec={} spec={} blessing={} matching={} already={} cantcast={}",
-                     bot->GetName(), assigned.classId, assigned.bySpec,
-                     SpecProfileName(assigned.spec), BlessingTypeName(castType),
-                     stats.matchingMembers, stats.alreadyBlessed, stats.cannotCast);
             continue;
-        }
-
-        LOG_INFO("playerbots", "gbless select: paladin={} class={} bySpec={} spec={} assigned={} cast={} target={}",
-                 bot->GetName(), assigned.classId, assigned.bySpec,
-                 SpecProfileName(assigned.spec), BlessingTypeName(assigned.blessing),
-                 BlessingTypeName(castType), target->GetName());
 
         outAssignment = {target, assigned.blessing};
         outCastType = castType;
