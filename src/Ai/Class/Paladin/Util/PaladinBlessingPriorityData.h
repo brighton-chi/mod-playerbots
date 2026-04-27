@@ -20,21 +20,25 @@ namespace ai::gbless
 // Each value identifies a unique row in the blessing priority table.
 enum SpecProfile : uint8
 {
-    SPEC_PROT_WARRIOR_TANK_DK  = 0,
-    SPEC_DPS_WARRIOR_DPS_DK    = 1,
-    SPEC_CASTER_SHAMAN         = 2,
-    SPEC_ENHANCE_SHAMAN        = 3,
-    SPEC_RET_PALADIN           = 4,
-    SPEC_HOLY_PALADIN          = 5,
-    SPEC_PROT_PALADIN          = 6,
-    SPEC_BEAR_DRUID            = 7,
-    SPEC_CAT_DRUID             = 8,
-    SPEC_CASTER_DRUID          = 9,
-    SPEC_ROGUE                 = 10,
-    SPEC_HUNTER                = 11,
-    SPEC_CASTER_CLOTH          = 12,
+    SPEC_PROT_WARRIOR          = 0,
+    SPEC_TANK_DK               = 1,
+    SPEC_DPS_WARRIOR           = 2,
+    SPEC_DPS_DK                = 3,
+    SPEC_CASTER_SHAMAN         = 4,
+    SPEC_ENHANCE_SHAMAN        = 5,
+    SPEC_RET_PALADIN           = 6,
+    SPEC_HOLY_PALADIN          = 7,
+    SPEC_PROT_PALADIN          = 8,
+    SPEC_BEAR_DRUID            = 9,
+    SPEC_CAT_DRUID             = 10,
+    SPEC_CASTER_DRUID          = 11,
+    SPEC_ROGUE                 = 12,
+    SPEC_HUNTER                = 13,
+    SPEC_MAGE                  = 14,
+    SPEC_WARLOCK               = 15,
+    SPEC_PRIEST                = 16,
 
-    SPEC_PROFILE_COUNT         = 13
+    SPEC_PROFILE_COUNT         = 17
 };
 
 // ── Blessing types ───────────────────────────────────────────────
@@ -91,9 +95,9 @@ inline constexpr bool IsGreaterVariant(BlessingType type)
            type == BLESSING_KINGS_GREATER || type == BLESSING_SANCTUARY_GREATER;
 }
 
-inline constexpr BlessingType ToSingleVariant(BlessingType type)
+inline constexpr BlessingType ToSingleVariant(BaseBlessingCategory category)
 {
-    switch (BaseBlessingOf(type))
+    switch (category)
     {
         case BASE_MIGHT:     return BLESSING_MIGHT_SINGLE;
         case BASE_WISDOM:    return BLESSING_WISDOM_SINGLE;
@@ -103,9 +107,14 @@ inline constexpr BlessingType ToSingleVariant(BlessingType type)
     }
 }
 
-inline constexpr BlessingType ToGreaterVariant(BlessingType type)
+inline constexpr BlessingType ToSingleVariant(BlessingType type)
 {
-    switch (BaseBlessingOf(type))
+    return ToSingleVariant(BaseBlessingOf(type));
+}
+
+inline constexpr BlessingType ToGreaterVariant(BaseBlessingCategory category)
+{
+    switch (category)
     {
         case BASE_MIGHT:     return BLESSING_MIGHT_GREATER;
         case BASE_WISDOM:    return BLESSING_WISDOM_GREATER;
@@ -113,6 +122,11 @@ inline constexpr BlessingType ToGreaterVariant(BlessingType type)
         case BASE_SANCTUARY: return BLESSING_SANCTUARY_GREATER;
         default:             return BLESSING_NONE;
     }
+}
+
+inline constexpr BlessingType ToGreaterVariant(BlessingType type)
+{
+    return ToGreaterVariant(BaseBlessingOf(type));
 }
 
 // ── Spell name lookup ────────────────────────────────────────────
@@ -133,110 +147,52 @@ inline std::string BlessingSpellName(BlessingType type)
     }
 }
 
-// ── Priority table entry ─────────────────────────────────────────
+// ── Base priority list entry ─────────────────────────────────────
 
-struct BlessingPriorityEntry
+struct BaseBlessingPriorityEntry
 {
-    BlessingType blessings[4];
+    BaseBlessingCategory priorities[4];
 };
 
-// Indexed by [SpecProfile][paladinCountIndex] where paladinCountIndex:
-//   0 = 1 paladin, 1 = 2 paladins, 2 = 3 paladins, 3 = 4+ paladins
+// Ordered from highest to lowest priority for each bucket.
 //
 // clang-format off
-inline constexpr BlessingPriorityEntry BLESSING_PRIORITIES[SPEC_PROFILE_COUNT][4] =
+inline constexpr BaseBlessingPriorityEntry BASE_BLESSING_PRIORITIES[SPEC_PROFILE_COUNT] =
 {
-    // SPEC_PROT_WARRIOR_TANK_DK
-    {
-        {{ BLESSING_KINGS_SINGLE,      BLESSING_NONE,           BLESSING_NONE,              BLESSING_NONE              }},
-        {{ BLESSING_KINGS_GREATER,     BLESSING_MIGHT_GREATER,  BLESSING_NONE,              BLESSING_NONE              }},
-        {{ BLESSING_KINGS_GREATER,     BLESSING_MIGHT_GREATER,  BLESSING_SANCTUARY_GREATER, BLESSING_NONE              }},
-        {{ BLESSING_KINGS_GREATER,     BLESSING_MIGHT_GREATER,  BLESSING_SANCTUARY_GREATER, BLESSING_NONE              }},
-    },
-    // SPEC_DPS_WARRIOR_DPS_DK
-    {
-        {{ BLESSING_MIGHT_SINGLE,      BLESSING_NONE,           BLESSING_NONE,              BLESSING_NONE              }},
-        {{ BLESSING_MIGHT_GREATER,     BLESSING_KINGS_GREATER,  BLESSING_NONE,              BLESSING_NONE              }},
-        {{ BLESSING_MIGHT_GREATER,     BLESSING_KINGS_GREATER,  BLESSING_SANCTUARY_GREATER, BLESSING_NONE              }},
-        {{ BLESSING_MIGHT_GREATER,     BLESSING_KINGS_GREATER,  BLESSING_SANCTUARY_GREATER, BLESSING_NONE              }},
-    },
+    // SPEC_PROT_WARRIOR
+    {{ BASE_KINGS,     BASE_MIGHT,  BASE_SANCTUARY, BASE_NONE      }},
+    // SPEC_TANK_DK
+    {{ BASE_KINGS,     BASE_MIGHT,  BASE_SANCTUARY, BASE_NONE      }},
+    // SPEC_DPS_WARRIOR
+    {{ BASE_MIGHT,     BASE_KINGS,  BASE_SANCTUARY, BASE_NONE      }},
+    // SPEC_DPS_DK
+    {{ BASE_MIGHT,     BASE_KINGS,  BASE_SANCTUARY, BASE_NONE      }},
     // SPEC_CASTER_SHAMAN
-    {
-        {{ BLESSING_KINGS_SINGLE,      BLESSING_NONE,           BLESSING_NONE,              BLESSING_NONE              }},
-        {{ BLESSING_KINGS_GREATER,     BLESSING_WISDOM_SINGLE,  BLESSING_NONE,              BLESSING_NONE              }},
-        {{ BLESSING_KINGS_GREATER,     BLESSING_WISDOM_GREATER, BLESSING_SANCTUARY_SINGLE,  BLESSING_NONE              }},
-        {{ BLESSING_KINGS_GREATER,     BLESSING_WISDOM_GREATER, BLESSING_SANCTUARY_GREATER, BLESSING_MIGHT_GREATER     }},
-    },
+    {{ BASE_KINGS,     BASE_WISDOM, BASE_SANCTUARY, BASE_MIGHT     }},
     // SPEC_ENHANCE_SHAMAN
-    {
-        {{ BLESSING_MIGHT_SINGLE,      BLESSING_NONE,           BLESSING_NONE,              BLESSING_NONE              }},
-        {{ BLESSING_MIGHT_SINGLE,      BLESSING_KINGS_GREATER,  BLESSING_NONE,              BLESSING_NONE              }},
-        {{ BLESSING_MIGHT_SINGLE,      BLESSING_KINGS_GREATER,  BLESSING_WISDOM_GREATER,    BLESSING_NONE              }},
-        {{ BLESSING_MIGHT_GREATER,     BLESSING_KINGS_GREATER,  BLESSING_WISDOM_GREATER,    BLESSING_SANCTUARY_GREATER }},
-    },
+    {{ BASE_MIGHT,     BASE_KINGS,  BASE_WISDOM,    BASE_SANCTUARY }},
     // SPEC_RET_PALADIN
-    {
-        {{ BLESSING_MIGHT_SINGLE,      BLESSING_NONE,           BLESSING_NONE,              BLESSING_NONE              }},
-        {{ BLESSING_MIGHT_SINGLE,      BLESSING_KINGS_SINGLE,   BLESSING_NONE,              BLESSING_NONE              }},
-        {{ BLESSING_MIGHT_SINGLE,      BLESSING_KINGS_SINGLE,   BLESSING_WISDOM_GREATER,    BLESSING_NONE              }},
-        {{ BLESSING_MIGHT_GREATER,     BLESSING_KINGS_GREATER,  BLESSING_WISDOM_GREATER,    BLESSING_SANCTUARY_GREATER }},
-    },
+    {{ BASE_MIGHT,     BASE_KINGS,  BASE_WISDOM,    BASE_SANCTUARY }},
     // SPEC_HOLY_PALADIN
-    {
-        {{ BLESSING_KINGS_SINGLE,      BLESSING_NONE,           BLESSING_NONE,              BLESSING_NONE              }},
-        {{ BLESSING_KINGS_SINGLE,      BLESSING_WISDOM_SINGLE,  BLESSING_NONE,              BLESSING_NONE              }},
-        {{ BLESSING_KINGS_SINGLE,      BLESSING_WISDOM_GREATER, BLESSING_SANCTUARY_SINGLE,  BLESSING_NONE              }},
-        {{ BLESSING_KINGS_SINGLE,      BLESSING_WISDOM_GREATER, BLESSING_SANCTUARY_SINGLE,  BLESSING_MIGHT_GREATER     }},
-    },
+    {{ BASE_KINGS,     BASE_WISDOM, BASE_SANCTUARY, BASE_MIGHT     }},
     // SPEC_PROT_PALADIN
-    {
-        {{ BLESSING_SANCTUARY_SINGLE,  BLESSING_NONE,           BLESSING_NONE,              BLESSING_NONE              }},
-        {{ BLESSING_SANCTUARY_SINGLE,  BLESSING_MIGHT_SINGLE,   BLESSING_NONE,              BLESSING_NONE              }},
-        {{ BLESSING_SANCTUARY_SINGLE,  BLESSING_MIGHT_SINGLE,   BLESSING_WISDOM_GREATER,    BLESSING_NONE              }},
-        {{ BLESSING_SANCTUARY_GREATER, BLESSING_MIGHT_GREATER,  BLESSING_WISDOM_GREATER,    BLESSING_KINGS_GREATER,    }},
-    },
+    {{ BASE_SANCTUARY, BASE_MIGHT,  BASE_WISDOM,    BASE_KINGS     }},
     // SPEC_BEAR_DRUID
-    {
-        {{ BLESSING_KINGS_SINGLE,      BLESSING_NONE,           BLESSING_NONE,              BLESSING_NONE              }},
-        {{ BLESSING_KINGS_GREATER,     BLESSING_MIGHT_SINGLE,   BLESSING_NONE,              BLESSING_NONE              }},
-        {{ BLESSING_KINGS_GREATER,     BLESSING_MIGHT_GREATER,  BLESSING_WISDOM_GREATER,    BLESSING_NONE              }},
-        {{ BLESSING_KINGS_GREATER,     BLESSING_MIGHT_GREATER,  BLESSING_WISDOM_GREATER,    BLESSING_SANCTUARY_GREATER }},
-    },
+    {{ BASE_KINGS,     BASE_MIGHT,  BASE_WISDOM,    BASE_SANCTUARY }},
     // SPEC_CAT_DRUID
-    {
-        {{ BLESSING_MIGHT_SINGLE,      BLESSING_NONE,           BLESSING_NONE,              BLESSING_NONE              }},
-        {{ BLESSING_MIGHT_SINGLE,      BLESSING_KINGS_GREATER,  BLESSING_NONE,              BLESSING_NONE              }},
-        {{ BLESSING_MIGHT_SINGLE,      BLESSING_KINGS_GREATER,  BLESSING_WISDOM_GREATER,    BLESSING_NONE              }},
-        {{ BLESSING_MIGHT_SINGLE,      BLESSING_KINGS_GREATER,  BLESSING_WISDOM_GREATER,    BLESSING_SANCTUARY_GREATER }},
-    },
+    {{ BASE_MIGHT,     BASE_KINGS,  BASE_WISDOM,    BASE_SANCTUARY }},
     // SPEC_CASTER_DRUID
-    {
-        {{ BLESSING_KINGS_SINGLE,      BLESSING_NONE,           BLESSING_NONE,              BLESSING_NONE              }},
-        {{ BLESSING_KINGS_GREATER,     BLESSING_WISDOM_SINGLE,  BLESSING_NONE,              BLESSING_NONE              }},
-        {{ BLESSING_KINGS_GREATER,     BLESSING_WISDOM_GREATER, BLESSING_SANCTUARY_SINGLE,  BLESSING_NONE              }},
-        {{ BLESSING_KINGS_GREATER,     BLESSING_WISDOM_GREATER, BLESSING_SANCTUARY_GREATER, BLESSING_MIGHT_GREATER     }},
-    },
+    {{ BASE_KINGS,     BASE_WISDOM, BASE_SANCTUARY, BASE_MIGHT     }},
     // SPEC_ROGUE
-    {
-        {{ BLESSING_MIGHT_GREATER,     BLESSING_NONE,           BLESSING_NONE,              BLESSING_NONE              }},
-        {{ BLESSING_MIGHT_GREATER,     BLESSING_KINGS_GREATER,  BLESSING_NONE,              BLESSING_NONE              }},
-        {{ BLESSING_MIGHT_GREATER,     BLESSING_KINGS_GREATER,  BLESSING_SANCTUARY_GREATER, BLESSING_NONE              }},
-        {{ BLESSING_MIGHT_GREATER,     BLESSING_KINGS_GREATER,  BLESSING_SANCTUARY_GREATER, BLESSING_NONE              }},
-    },
+    {{ BASE_MIGHT,     BASE_KINGS,  BASE_SANCTUARY, BASE_NONE      }},
     // SPEC_HUNTER
-    {
-        {{ BLESSING_MIGHT_GREATER,     BLESSING_NONE,           BLESSING_NONE,              BLESSING_NONE              }},
-        {{ BLESSING_MIGHT_GREATER,     BLESSING_KINGS_GREATER,  BLESSING_NONE,              BLESSING_NONE              }},
-        {{ BLESSING_MIGHT_GREATER,     BLESSING_KINGS_GREATER,  BLESSING_WISDOM_GREATER,    BLESSING_NONE              }},
-        {{ BLESSING_MIGHT_GREATER,     BLESSING_KINGS_GREATER,  BLESSING_WISDOM_GREATER,    BLESSING_SANCTUARY_GREATER }},
-    },
-    // SPEC_CASTER_CLOTH (Mage, Warlock, Priest)
-    {
-        {{ BLESSING_KINGS_GREATER,     BLESSING_NONE,           BLESSING_NONE,              BLESSING_NONE              }},
-        {{ BLESSING_KINGS_GREATER,     BLESSING_WISDOM_GREATER, BLESSING_NONE,              BLESSING_NONE              }},
-        {{ BLESSING_KINGS_GREATER,     BLESSING_WISDOM_GREATER, BLESSING_SANCTUARY_GREATER, BLESSING_NONE              }},
-        {{ BLESSING_KINGS_GREATER,     BLESSING_WISDOM_GREATER, BLESSING_SANCTUARY_GREATER, BLESSING_NONE              }},
-    },
+    {{ BASE_MIGHT,     BASE_KINGS,  BASE_WISDOM,    BASE_SANCTUARY }},
+    // SPEC_MAGE
+    {{ BASE_KINGS,     BASE_WISDOM, BASE_SANCTUARY, BASE_NONE      }},
+    // SPEC_WARLOCK
+    {{ BASE_KINGS,     BASE_WISDOM, BASE_SANCTUARY, BASE_NONE      }},
+    // SPEC_PRIEST
+    {{ BASE_KINGS,     BASE_WISDOM, BASE_SANCTUARY, BASE_NONE      }},
 };
 
 // ── Spec profile resolution ──────────────────────────────────────
@@ -253,7 +209,7 @@ constexpr uint32 SPELL_DK_FROST_PRESENCE             = 48263;
 inline SpecProfile ResolveSpecProfile(Player* player)
 {
     if (!player)
-        return SPEC_CASTER_CLOTH;
+        return SPEC_PRIEST;
 
     uint8 cls = player->getClass();
     int tab = AiFactory::GetPlayerSpecTab(player);
@@ -262,13 +218,13 @@ inline SpecProfile ResolveSpecProfile(Player* player)
     {
         case CLASS_WARRIOR:
             if (tab == WARRIOR_TAB_PROTECTION)
-                return SPEC_PROT_WARRIOR_TANK_DK;
-            return SPEC_DPS_WARRIOR_DPS_DK;
+                return SPEC_PROT_WARRIOR;
+            return SPEC_DPS_WARRIOR;
 
         case CLASS_DEATH_KNIGHT:
             if (tab == DEATH_KNIGHT_TAB_BLOOD || player->HasAura(SPELL_DK_FROST_PRESENCE))
-                return SPEC_PROT_WARRIOR_TANK_DK;
-            return SPEC_DPS_WARRIOR_DPS_DK;
+                return SPEC_TANK_DK;
+            return SPEC_DPS_DK;
 
         case CLASS_SHAMAN:
             if (tab == SHAMAN_TAB_ENHANCEMENT)
@@ -308,10 +264,16 @@ inline SpecProfile ResolveSpecProfile(Player* player)
             return SPEC_HUNTER;
 
         case CLASS_MAGE:
+            return SPEC_MAGE;
+
         case CLASS_WARLOCK:
+            return SPEC_WARLOCK;
+
         case CLASS_PRIEST:
+            return SPEC_PRIEST;
+
         default:
-            return SPEC_CASTER_CLOTH;
+            return SPEC_PRIEST;
     }
 }
 

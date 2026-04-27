@@ -22,9 +22,11 @@ namespace ai::gbless
         BlessingType blessing = BLESSING_NONE;
     };
 
-    struct CachedBlessingAssignment
+    struct CachedBlessingBucketAssignment
     {
-        ObjectGuid playerGuid;
+        uint8 classId = 0;
+        SpecProfile spec = SPEC_PRIEST;
+        bool bySpec = false;
         BlessingType blessing = BLESSING_NONE;
     };
 
@@ -32,7 +34,7 @@ namespace ai::gbless
     {
         uint32 groupKey = 0;
         bool valid = false;
-        std::vector<CachedBlessingAssignment> assignments;
+        std::vector<CachedBlessingBucketAssignment> assignments;
     };
 
     UntypedValue* greater_blessing_assignments_value(PlayerbotAI* botAI);
@@ -50,8 +52,7 @@ public:
     bool HasPendingAssignment();
 
 private:
-    bool GetAssignments(std::vector<ai::gbless::GreaterBlessingPlayerAssignment>& outAssignments);
-    bool ComputeAssignments(std::vector<ai::gbless::GreaterBlessingPlayerAssignment>& outAssignments);
+    bool GetAssignments(std::vector<ai::gbless::CachedBlessingBucketAssignment>& outAssignments);
     bool FindPendingAssignment(ai::gbless::GreaterBlessingPlayerAssignment& outAssignment,
                                ai::gbless::BlessingType& outCastType,
                                std::string& outSpellName);

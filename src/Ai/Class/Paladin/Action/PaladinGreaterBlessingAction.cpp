@@ -8,19 +8,91 @@
 #include "AiFactory.h"
 #include "Event.h"
 #include "GenericBuffUtils.h"
-#include "Language.h"
-#include "ObjectAccessor.h"
 #include "Playerbots.h"
 #include "SharedDefines.h"
 #include "Value.h"
 
 #include <algorithm>
+#include <limits>
 
 using namespace ai::gbless;
 
 namespace
 {
     constexpr uint32 GREATER_BLESSING_ASSIGNMENT_CACHE_MS = 4 * 1000;
+
+    char const* SpecProfileName(SpecProfile spec)
+    {
+        switch (spec)
+        {
+            case SPEC_PROT_WARRIOR:   return "prot-warrior";
+            case SPEC_TANK_DK:        return "tank-dk";
+            case SPEC_DPS_WARRIOR:    return "dps-warrior";
+            case SPEC_DPS_DK:         return "dps-dk";
+            case SPEC_CASTER_SHAMAN:  return "caster-shaman";
+            case SPEC_ENHANCE_SHAMAN: return "enhance-shaman";
+            case SPEC_RET_PALADIN:    return "ret-paladin";
+            case SPEC_HOLY_PALADIN:   return "holy-paladin";
+            case SPEC_PROT_PALADIN:   return "prot-paladin";
+            case SPEC_BEAR_DRUID:     return "bear-druid";
+            case SPEC_CAT_DRUID:      return "cat-druid";
+            case SPEC_CASTER_DRUID:   return "caster-druid";
+            case SPEC_ROGUE:          return "rogue";
+            case SPEC_HUNTER:         return "hunter";
+            case SPEC_MAGE:           return "mage";
+            case SPEC_WARLOCK:        return "warlock";
+            case SPEC_PRIEST:         return "priest";
+            default:                  return "unknown";
+        }
+    }
+
+    char const* BlessingTypeName(BlessingType type)
+    {
+        switch (type)
+        {
+            case BLESSING_MIGHT_SINGLE:      return "might";
+            case BLESSING_MIGHT_GREATER:     return "greater-might";
+            case BLESSING_WISDOM_SINGLE:     return "wisdom";
+            case BLESSING_WISDOM_GREATER:    return "greater-wisdom";
+            case BLESSING_KINGS_SINGLE:      return "kings";
+            case BLESSING_KINGS_GREATER:     return "greater-kings";
+            case BLESSING_SANCTUARY_SINGLE:  return "sanctuary";
+            case BLESSING_SANCTUARY_GREATER: return "greater-sanctuary";
+            default:                         return "none";
+        }
+    }
+
+    struct BlessingBucketSearchStats
+    {
+        uint32 matchingMembers = 0;
+        uint32 alreadyBlessed = 0;
+        uint32 cannotCast = 0;
+    };
+
+    constexpr uint8 MAX_BLESSING_SLOTS = 4;
+    constexpr uint8 MAX_CLASS_ID = 12;
+
+    bool UsesSpecBucket(uint8 classId)
+    {
+        switch (classId)
+        {
+            case CLASS_ROGUE:
+            case CLASS_HUNTER:
+            case CLASS_MAGE:
+            case CLASS_WARLOCK:
+            case CLASS_PRIEST:
+                return false;
+            default:
+                return true;
+        }
+    }
+
+    bool IsSameBucket(CachedBlessingBucketAssignment const& left, CachedBlessingBucketAssignment const& right)
+    {
+        return left.classId == right.classId &&
+               left.bySpec == right.bySpec &&
+               (!left.bySpec || left.spec == right.spec);
+    }
 
     int TalentScore(Player* player)
     {
@@ -33,8 +105,163 @@ namespace
         return score;
     }
 
+    int TalentMatchScore(Player* player, BaseBlessingCategory category)
+    {
+        if (!player)
+            return std::numeric_limits<int>::min() / 4;
+
+        if (category == BASE_SANCTUARY)
+        {
+            if (!KnowsSanctuary(player))
+                return std::numeric_limits<int>::min() / 4;
+
+            return 2;
+        }
+
+        if (category == BASE_MIGHT && HasImprovedMight(player))
+            return 1;
+        if (category == BASE_WISDOM && HasImprovedWisdom(player))
+            return 1;
+
+        return 0;
+    }
+
+    struct DesiredBlessingSet
+    {
+        std::array<BaseBlessingCategory, MAX_BLESSING_SLOTS> ordered = {};
+        std::array<bool, BASE_SANCTUARY + 1> wants = {};
+        uint8 count = 0;
+    };
+
+    struct PresentBucket
+    {
+        uint8 classId = 0;
+        SpecProfile spec = SPEC_PRIEST;
+        bool bySpec = false;
+        DesiredBlessingSet desired;
+    };
+
+    DesiredBlessingSet BuildDesiredBlessingSet(SpecProfile spec, uint8 paladinCount, bool anySanctuaryAvailable)
+    {
+        DesiredBlessingSet desired;
+
+        auto const& priority = BASE_BLESSING_PRIORITIES[spec];
+        uint8 requestedCount = std::min<uint8>(paladinCount, MAX_BLESSING_SLOTS);
+
+        for (uint8 index = 0; index < requestedCount; ++index)
+        {
+            BaseBlessingCategory category = priority.priorities[index];
+            if (category == BASE_NONE)
+                continue;
+
+            if (category == BASE_SANCTUARY && !anySanctuaryAvailable)
+                category = BASE_KINGS;
+
+            if (category == BASE_NONE || desired.wants[category])
+                continue;
+
+            desired.ordered[desired.count++] = category;
+            desired.wants[category] = true;
+        }
+
+        return desired;
+    }
+
+    std::vector<BaseBlessingCategory> OrderedCommonBases(std::vector<PresentBucket const*> const& classBuckets,
+                                                         std::array<bool, BASE_SANCTUARY + 1> const& commonBases)
+    {
+        std::vector<BaseBlessingCategory> ordered;
+
+        for (PresentBucket const* bucket : classBuckets)
+        {
+            for (uint8 index = 0; index < bucket->desired.count; ++index)
+            {
+                BaseBlessingCategory category = bucket->desired.ordered[index];
+                if (!commonBases[category])
+                    continue;
+
+                if (std::find(ordered.begin(), ordered.end(), category) == ordered.end())
+                    ordered.push_back(category);
+            }
+        }
+
+        return ordered;
+    }
+
+    bool ComputeBestOwners(std::vector<BaseBlessingCategory> const& categories,
+                           std::vector<Player*> const& botPaladins,
+                           std::vector<int> const& candidatePaladins,
+                           std::vector<int>& outOwners)
+    {
+        outOwners.clear();
+        if (categories.empty())
+            return true;
+
+        std::vector<int> currentOwners(categories.size(), -1);
+        std::vector<int> bestOwners(categories.size(), -1);
+        std::vector<bool> used(candidatePaladins.size(), false);
+        int bestScore = std::numeric_limits<int>::min();
+        bool found = false;
+
+        auto search = [&](auto&& self, size_t position, int score) -> void
+        {
+            if (position >= categories.size())
+            {
+                if (!found || score > bestScore ||
+                    (score == bestScore &&
+                     std::lexicographical_compare(currentOwners.begin(), currentOwners.end(),
+                                                  bestOwners.begin(), bestOwners.end())))
+                {
+                    found = true;
+                    bestScore = score;
+                    bestOwners = currentOwners;
+                }
+                return;
+            }
+
+            for (size_t candidateIndex = 0; candidateIndex < candidatePaladins.size(); ++candidateIndex)
+            {
+                if (used[candidateIndex])
+                    continue;
+
+                int paladinIndex = candidatePaladins[candidateIndex];
+                int matchScore = TalentMatchScore(botPaladins[paladinIndex], categories[position]);
+                if (matchScore <= std::numeric_limits<int>::min() / 8)
+                    continue;
+
+                used[candidateIndex] = true;
+                currentOwners[position] = paladinIndex;
+                self(self, position + 1, score + matchScore);
+                currentOwners[position] = -1;
+                used[candidateIndex] = false;
+            }
+        };
+
+        search(search, 0, 0);
+
+        if (!found)
+            return false;
+
+        outOwners = std::move(bestOwners);
+        return true;
+    }
+
+    void AddUniqueAssignment(std::vector<CachedBlessingBucketAssignment>& assignments,
+                             CachedBlessingBucketAssignment const& assignment)
+    {
+        auto existing = std::find_if(assignments.begin(), assignments.end(),
+                                     [&](CachedBlessingBucketAssignment const& cachedAssignment)
+                                     {
+                                         return cachedAssignment.blessing == assignment.blessing &&
+                                                IsSameBucket(cachedAssignment, assignment);
+                                     });
+
+        if (existing == assignments.end())
+            assignments.push_back(assignment);
+    }
+
     bool ComputeGreaterBlessingAssignments(PlayerbotAI* botAI,
-                                          std::vector<GreaterBlessingPlayerAssignment>& outAssignments)
+                                          std::vector<CachedBlessingBucketAssignment>& outAssignments)
     {
         Player* bot = botAI->GetBot();
         Group* group = bot ? bot->GetGroup() : nullptr;
@@ -58,14 +285,13 @@ namespace
             if (player->getClass() == CLASS_PALADIN && GET_PLAYERBOT_AI(player))
                 botPaladins.push_back(player);
 
-            if (player->IsAlive())
-                raidMembers.push_back({player, ResolveSpecProfile(player)});
+            // Keep dead members in the assignment model so revive does not
+            // temporarily delete an entire blessing bucket from the cache.
+            raidMembers.push_back({player, ResolveSpecProfile(player)});
         }
 
         if (botPaladins.empty())
             return false;
-
-        uint8 paladinCountIndex = static_cast<uint8>(std::min<size_t>(botPaladins.size(), 4u) - 1u);
 
         bool anySanctuaryAvailable = false;
         for (Player* paladin : botPaladins)
@@ -87,6 +313,8 @@ namespace
                       return a->GetGUID() < b->GetGUID();
                   });
 
+        uint8 activePaladinCount = std::min<uint8>(static_cast<uint8>(botPaladins.size()), MAX_BLESSING_SLOTS);
+
         int mySlot = -1;
         for (size_t i = 0; i < botPaladins.size(); ++i)
         {
@@ -96,377 +324,129 @@ namespace
                 break;
             }
         }
-        if (mySlot < 0)
+        if (mySlot < 0 || mySlot >= activePaladinCount)
             return false;
 
-        struct EffectivePriority
-        {
-            Player* player;
-            SpecProfile spec;
-            BlessingType blessings[4];
-        };
-        std::vector<EffectivePriority> effective;
-        effective.reserve(raidMembers.size());
+        std::vector<PresentBucket> buckets;
+        buckets.reserve(raidMembers.size());
 
         for (auto const& member : raidMembers)
         {
-            EffectivePriority priority;
-            priority.player = member.player;
-            priority.spec = member.spec;
-
-            auto const& entry = BLESSING_PRIORITIES[member.spec][paladinCountIndex];
-            for (int i = 0; i < 4; ++i)
-                priority.blessings[i] = entry.blessings[i];
-
-            if (!anySanctuaryAvailable)
-            {
-                for (int i = 0; i < 4; ++i)
-                {
-                    if (BaseBlessingOf(priority.blessings[i]) != BASE_SANCTUARY)
-                        continue;
-
-                    bool kingsExists = false;
-                    for (int j = 0; j < 4; ++j)
-                    {
-                        if (j == i)
-                            continue;
-
-                        if (BaseBlessingOf(priority.blessings[j]) == BASE_KINGS)
-                        {
-                            kingsExists = true;
-                            break;
-                        }
-                    }
-
-                    if (kingsExists)
-                    {
-                        priority.blessings[i] = BLESSING_NONE;
-                    }
-                    else
-                    {
-                        priority.blessings[i] = IsSingleVariant(priority.blessings[i]) ? BLESSING_KINGS_SINGLE
-                                                                                         : BLESSING_KINGS_GREATER;
-                    }
-                }
-            }
-
-            effective.push_back(priority);
-        }
-
-        constexpr uint8 MAX_SLOTS = 4;
-        constexpr uint8 MAX_CLASS_ID = 12;
-
-        struct SlotInfo
-        {
-            bool heterogeneous = false;
-            BlessingType homogeneous = BLESSING_NONE;
-        };
-        SlotInfo classSlots[MAX_CLASS_ID][MAX_SLOTS];
-
-        bool classPresent[MAX_CLASS_ID] = {};
-
-        for (auto const& priority : effective)
-        {
-            uint8 cls = priority.player->getClass();
-            if (cls >= MAX_CLASS_ID)
-                continue;
-            classPresent[cls] = true;
-
-            for (int slot = 0; slot < MAX_SLOTS; ++slot)
-            {
-                BlessingType type = priority.blessings[slot];
-                SlotInfo& slotInfo = classSlots[cls][slot];
-
-                if (slotInfo.homogeneous == BLESSING_NONE && !slotInfo.heterogeneous)
-                {
-                    slotInfo.homogeneous = type;
-                }
-                else if (!slotInfo.heterogeneous)
-                {
-                    if (BaseBlessingOf(slotInfo.homogeneous) != BaseBlessingOf(type))
-                    {
-                        slotInfo.heterogeneous = true;
-                        slotInfo.homogeneous = BLESSING_NONE;
-                    }
-                    else if (IsSingleVariant(slotInfo.homogeneous) || IsSingleVariant(type))
-                    {
-                        slotInfo.homogeneous = ToSingleVariant(slotInfo.homogeneous);
-                    }
-                }
-            }
-        }
-
-        if (botPaladins.size() >= MAX_SLOTS)
-        {
-            BlessingType const fullCoverageOrder[MAX_SLOTS] = {
-                BLESSING_SANCTUARY_GREATER,
-                BLESSING_MIGHT_GREATER,
-                BLESSING_KINGS_GREATER,
-                BLESSING_WISDOM_GREATER};
-
-            for (uint8 classId = 0; classId < MAX_CLASS_ID; ++classId)
-            {
-                if (!classPresent[classId])
-                    continue;
-
-                bool classHasBlessing[5] = {};
-                for (auto const& priority : effective)
-                {
-                    if (priority.player->getClass() != classId)
-                        continue;
-
-                    for (int slot = 0; slot < MAX_SLOTS; ++slot)
-                    {
-                        BaseBlessingCategory category = BaseBlessingOf(priority.blessings[slot]);
-                        if (category > BASE_NONE && category <= BASE_SANCTUARY)
-                            classHasBlessing[category] = true;
-                    }
-                }
-
-                if (!classHasBlessing[BASE_MIGHT] || !classHasBlessing[BASE_WISDOM] ||
-                    !classHasBlessing[BASE_KINGS] || !classHasBlessing[BASE_SANCTUARY])
-                {
-                    continue;
-                }
-
-                for (int slot = 0; slot < MAX_SLOTS; ++slot)
-                {
-                    classSlots[classId][slot].heterogeneous = false;
-                    classSlots[classId][slot].homogeneous = fullCoverageOrder[slot];
-                }
-            }
-        }
-
-        if (classPresent[CLASS_PALADIN] && botPaladins.size() < MAX_SLOTS)
-        {
-            for (int slot = 0; slot < MAX_SLOTS; ++slot)
-            {
-                SlotInfo& slotInfo = classSlots[CLASS_PALADIN][slot];
-                if (!slotInfo.heterogeneous && slotInfo.homogeneous != BLESSING_NONE)
-                    slotInfo.homogeneous = ToSingleVariant(slotInfo.homogeneous);
-            }
-
-            bool assignedBase[5] = {};
-            for (int slot = 0; slot < MAX_SLOTS; ++slot)
-            {
-                SlotInfo const& slotInfo = classSlots[CLASS_PALADIN][slot];
-                if (!slotInfo.heterogeneous && slotInfo.homogeneous != BLESSING_NONE)
-                    assignedBase[BaseBlessingOf(slotInfo.homogeneous)] = true;
-            }
-
-            for (int slot = 0; slot < MAX_SLOTS; ++slot)
-            {
-                SlotInfo& slotInfo = classSlots[CLASS_PALADIN][slot];
-                if (!slotInfo.heterogeneous)
-                    continue;
-
-                int counts[5] = {};
-                for (auto const& ep : effective)
-                {
-                    if (ep.player->getClass() != CLASS_PALADIN)
-                        continue;
-                    BaseBlessingCategory cat = BaseBlessingOf(ep.blessings[slot]);
-                    if (cat > BASE_NONE && cat <= BASE_SANCTUARY && !assignedBase[cat])
-                        counts[cat]++;
-                }
-
-                BaseBlessingCategory best = BASE_NONE;
-                int bestCount = 0;
-                for (int i = 1; i <= 4; ++i)
-                {
-                    if (counts[i] > bestCount)
-                    {
-                        bestCount = counts[i];
-                        best = static_cast<BaseBlessingCategory>(i);
-                    }
-                }
-
-                if (best != BASE_NONE)
-                {
-                    slotInfo.heterogeneous = false;
-                    switch (best)
-                    {
-                        case BASE_MIGHT:
-                            slotInfo.homogeneous = BLESSING_MIGHT_SINGLE;
-                            break;
-                        case BASE_WISDOM:
-                            slotInfo.homogeneous = BLESSING_WISDOM_SINGLE;
-                            break;
-                        case BASE_KINGS:
-                            slotInfo.homogeneous = BLESSING_KINGS_SINGLE;
-                            break;
-                        case BASE_SANCTUARY:
-                            slotInfo.homogeneous = BLESSING_SANCTUARY_SINGLE;
-                            break;
-                        default:
-                            slotInfo.homogeneous = BLESSING_NONE;
-                            break;
-                    }
-                    assignedBase[best] = true;
-                }
-            }
-        }
-
-        int classSlotPaladin[MAX_CLASS_ID][MAX_SLOTS];
-        for (int classId = 0; classId < MAX_CLASS_ID; ++classId)
-        {
-            for (int slot = 0; slot < MAX_SLOTS; ++slot)
-                classSlotPaladin[classId][slot] = slot;
-        }
-
-        int numPals = static_cast<int>(botPaladins.size());
-
-        for (int classId = 0; classId < MAX_CLASS_ID; ++classId)
-        {
-            if (!classPresent[classId])
+            uint8 classId = member.player->getClass();
+            if (classId >= MAX_CLASS_ID)
                 continue;
 
-            for (int slot1 = 0; slot1 < numPals && slot1 < MAX_SLOTS; ++slot1)
-            {
-                for (int slot2 = slot1 + 1; slot2 < numPals && slot2 < MAX_SLOTS; ++slot2)
-                {
-                    int p1 = classSlotPaladin[classId][slot1];
-                    int p2 = classSlotPaladin[classId][slot2];
+            PresentBucket bucket;
+            bucket.classId = classId;
+            bucket.spec = member.spec;
+            bucket.bySpec = UsesSpecBucket(classId);
+            bucket.desired = BuildDesiredBlessingSet(member.spec, activePaladinCount, anySanctuaryAvailable);
 
-                    BaseBlessingCategory category1 = classSlots[classId][slot1].heterogeneous
-                        ? BASE_NONE : BaseBlessingOf(classSlots[classId][slot1].homogeneous);
-                    BaseBlessingCategory category2 = classSlots[classId][slot2].heterogeneous
-                        ? BASE_NONE : BaseBlessingOf(classSlots[classId][slot2].homogeneous);
+            if (!bucket.bySpec)
+                bucket.spec = SPEC_PRIEST;
 
-                    if (classSlots[classId][slot1].heterogeneous)
-                    {
-                        int counts[5] = {};
-                        for (auto const& priority : effective)
-                        {
-                            if (priority.player->getClass() != classId)
-                                continue;
-                            BaseBlessingCategory category = BaseBlessingOf(priority.blessings[slot1]);
-                            if (category < 5)
-                                counts[category]++;
-                        }
-                        int best = 0;
-                        for (int i = 1; i < 5; ++i)
-                        {
-                            if (counts[i] > counts[best])
-                                best = i;
-                        }
-                        category1 = static_cast<BaseBlessingCategory>(best);
-                    }
-                    if (classSlots[classId][slot2].heterogeneous)
-                    {
-                        int counts[5] = {};
-                        for (auto const& priority : effective)
-                        {
-                            if (priority.player->getClass() != classId)
-                                continue;
-                            BaseBlessingCategory category = BaseBlessingOf(priority.blessings[slot2]);
-                            if (category < 5)
-                                counts[category]++;
-                        }
-                        int best = 0;
-                        for (int i = 1; i < 5; ++i)
-                        {
-                            if (counts[i] > counts[best])
-                                best = i;
-                        }
-                        category2 = static_cast<BaseBlessingCategory>(best);
-                    }
+            if (!bucket.desired.count)
+                continue;
 
-                    auto talentMatchScore = [&](int palIdx, BaseBlessingCategory category) -> int
-                    {
-                        if (palIdx >= numPals)
-                            return 0;
+            auto existing = std::find_if(buckets.begin(), buckets.end(),
+                                         [&](PresentBucket const& other)
+                                         {
+                                             return other.classId == bucket.classId &&
+                                                    other.bySpec == bucket.bySpec &&
+                                                    (!bucket.bySpec || other.spec == bucket.spec);
+                                         });
 
-                        Player* paladin = botPaladins[palIdx];
-                        if (category == BASE_SANCTUARY && KnowsSanctuary(paladin))
-                            return 2;
-                        if (category == BASE_MIGHT && HasImprovedMight(paladin))
-                            return 1;
-                        if (category == BASE_WISDOM && HasImprovedWisdom(paladin))
-                            return 1;
-
-                        return 0;
-                    };
-
-                    int currentScore = talentMatchScore(p1, category1) +
-                                       talentMatchScore(p2, category2);
-                    int swappedScore = talentMatchScore(p1, category2) +
-                                       talentMatchScore(p2, category1);
-
-                    if (swappedScore > currentScore)
-                    {
-                        classSlotPaladin[classId][slot1] = p2;
-                        classSlotPaladin[classId][slot2] = p1;
-                    }
-                }
-            }
+            if (existing == buckets.end())
+                buckets.push_back(bucket);
         }
+
+        if (buckets.empty())
+            return false;
+
+        std::vector<int> allPaladins;
+        allPaladins.reserve(activePaladinCount);
+        for (uint8 paladinIndex = 0; paladinIndex < activePaladinCount; ++paladinIndex)
+            allPaladins.push_back(paladinIndex);
 
         outAssignments.clear();
-        outAssignments.reserve(effective.size());
 
-        for (auto const& priority : effective)
+        for (uint8 classId = 0; classId < MAX_CLASS_ID; ++classId)
         {
-            GreaterBlessingPlayerAssignment assigned;
-            assigned.player = priority.player;
-            assigned.blessing = BLESSING_NONE;
-
-            uint8 cls = priority.player->getClass();
-            if (cls >= MAX_CLASS_ID)
+            std::vector<PresentBucket const*> classBuckets;
+            for (PresentBucket const& bucket : buckets)
             {
-                outAssignments.push_back(assigned);
-                continue;
+                if (bucket.classId == classId)
+                    classBuckets.push_back(&bucket);
             }
 
-            int myClassSlot = -1;
-            for (int s = 0; s < numPals && s < MAX_SLOTS; ++s)
+            if (classBuckets.empty())
+                continue;
+
+            std::array<bool, BASE_SANCTUARY + 1> commonBases = {};
+            for (uint8 baseValue = BASE_MIGHT; baseValue <= BASE_SANCTUARY; ++baseValue)
             {
-                if (classSlotPaladin[cls][s] == mySlot)
+                BaseBlessingCategory category = static_cast<BaseBlessingCategory>(baseValue);
+                commonBases[category] = std::all_of(classBuckets.begin(), classBuckets.end(),
+                                                    [&](PresentBucket const* bucket)
+                                                    {
+                                                        return bucket->desired.wants[category];
+                                                    });
+            }
+
+            std::vector<BaseBlessingCategory> classWideBases = OrderedCommonBases(classBuckets, commonBases);
+            std::vector<int> classWideOwners;
+            if (!ComputeBestOwners(classWideBases, botPaladins, allPaladins, classWideOwners))
+                return false;
+
+            for (size_t index = 0; index < classWideBases.size(); ++index)
+            {
+                if (classWideOwners[index] != mySlot)
+                    continue;
+
+                CachedBlessingBucketAssignment assignment;
+                assignment.classId = classId;
+                assignment.spec = classBuckets.front()->spec;
+                assignment.bySpec = false;
+                assignment.blessing = ToGreaterVariant(classWideBases[index]);
+                AddUniqueAssignment(outAssignments, assignment);
+            }
+
+            for (PresentBucket const* bucket : classBuckets)
+            {
+                std::vector<BaseBlessingCategory> exclusiveBases;
+                for (uint8 index = 0; index < bucket->desired.count; ++index)
                 {
-                    myClassSlot = s;
-                    break;
+                    BaseBlessingCategory category = bucket->desired.ordered[index];
+                    if (!commonBases[category])
+                        exclusiveBases.push_back(category);
                 }
-            }
 
-            if (myClassSlot < 0 || myClassSlot >= MAX_SLOTS)
-            {
-                outAssignments.push_back(assigned);
-                continue;
-            }
-
-            SlotInfo const& slotInfo = classSlots[cls][myClassSlot];
-
-            if (slotInfo.heterogeneous)
-            {
-                BlessingType type = priority.blessings[myClassSlot];
-
-                for (int otherSlot = 0; otherSlot < numPals && otherSlot < MAX_SLOTS; ++otherSlot)
+                std::vector<int> availablePaladins;
+                availablePaladins.reserve(allPaladins.size());
+                for (int paladinIndex : allPaladins)
                 {
-                    if (otherSlot == myClassSlot)
+                    bool usedByClassWide = std::find(classWideOwners.begin(), classWideOwners.end(), paladinIndex) != classWideOwners.end();
+                    if (!usedByClassWide)
+                        availablePaladins.push_back(paladinIndex);
+                }
+
+                std::vector<int> exclusiveOwners;
+                if (!ComputeBestOwners(exclusiveBases, botPaladins, availablePaladins, exclusiveOwners))
+                    return false;
+
+                for (size_t index = 0; index < exclusiveBases.size(); ++index)
+                {
+                    if (exclusiveOwners[index] != mySlot)
                         continue;
 
-                    SlotInfo const& otherSlotInfo = classSlots[cls][otherSlot];
-                    if (otherSlotInfo.heterogeneous || otherSlotInfo.homogeneous == BLESSING_NONE)
-                        continue;
-
-                    if (BaseBlessingOf(otherSlotInfo.homogeneous) == BaseBlessingOf(type))
-                    {
-                        type = BLESSING_NONE;
-                        break;
-                    }
+                    CachedBlessingBucketAssignment assignment;
+                    assignment.classId = bucket->classId;
+                    assignment.spec = bucket->spec;
+                    assignment.bySpec = true;
+                    assignment.blessing = ToSingleVariant(exclusiveBases[index]);
+                    AddUniqueAssignment(outAssignments, assignment);
                 }
-
-                assigned.blessing = IsSingleVariant(type) ? type : ToSingleVariant(type);
             }
-            else
-            {
-                assigned.blessing = slotInfo.homogeneous;
-            }
-
-            if (BaseBlessingOf(assigned.blessing) == BASE_SANCTUARY && !KnowsSanctuary(bot))
-                assigned.blessing = BLESSING_NONE;
-
-            outAssignments.push_back(assigned);
         }
 
         return !outAssignments.empty();
@@ -490,19 +470,20 @@ namespace
             Group* group = bot ? bot->GetGroup() : nullptr;
             cached.groupKey = group ? group->GetLeaderGUID().GetCounter() : 0;
 
-            std::vector<GreaterBlessingPlayerAssignment> assignments;
+            std::vector<CachedBlessingBucketAssignment> assignments;
             if (!ComputeGreaterBlessingAssignments(botAI, assignments))
                 return cached;
 
             cached.valid = true;
-            cached.assignments.reserve(assignments.size());
+            cached.assignments = std::move(assignments);
 
-            for (GreaterBlessingPlayerAssignment const& assignment : assignments)
+            LOG_INFO("playerbots", "gbless cache: paladin={} buckets={}", bot->GetName(), cached.assignments.size());
+            for (CachedBlessingBucketAssignment const& assignment : cached.assignments)
             {
-                if (!assignment.player)
-                    continue;
-
-                cached.assignments.push_back({assignment.player->GetGUID(), assignment.blessing});
+                char const* bucketName = assignment.bySpec ? SpecProfileName(assignment.spec) : "class";
+                LOG_INFO("playerbots", "gbless cache: paladin={} class={} bySpec={} spec={} blessing={}",
+                         bot->GetName(), assignment.classId, assignment.bySpec,
+                         bucketName, BlessingTypeName(assignment.blessing));
             }
 
             return cached;
@@ -546,6 +527,60 @@ static bool HasMyExactBlessing(PlayerbotAI* botAI, Unit* target, BlessingType ty
     return botAI->HasAura(name.c_str(), target, false, true);
 }
 
+static bool MatchesBucket(Player* player, CachedBlessingBucketAssignment const& assignment)
+{
+    if (!player || player->getClass() != assignment.classId)
+        return false;
+
+    return !assignment.bySpec || ResolveSpecProfile(player) == assignment.spec;
+}
+
+static Player* FindMissingBlessingTarget(PlayerbotAI* botAI,
+                                         CachedBlessingBucketAssignment const& assignment,
+                                         BlessingType castType,
+                                         std::string const& spellName,
+                                         BlessingBucketSearchStats* stats = nullptr)
+{
+    Player* bot = botAI->GetBot();
+    Group* group = bot ? bot->GetGroup() : nullptr;
+    if (!bot || !group)
+        return nullptr;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* player = ref->GetSource();
+        if (!player || !player->IsInWorld() || !player->IsAlive())
+            continue;
+
+        if (!(player->IsInSameGroupWith(bot) || player->IsInSameRaidWith(bot)))
+            continue;
+
+        if (!MatchesBucket(player, assignment))
+            continue;
+
+        if (stats)
+            ++stats->matchingMembers;
+
+        if (HasMyExactBlessing(botAI, player, castType))
+        {
+            if (stats)
+                ++stats->alreadyBlessed;
+            continue;
+        }
+
+        if (!botAI->CanCastSpell(spellName, player))
+        {
+            if (stats)
+                ++stats->cannotCast;
+            continue;
+        }
+
+        return player;
+    }
+
+    return nullptr;
+}
+
 CastGreaterBlessingAssignmentAction::CastGreaterBlessingAssignmentAction(
     PlayerbotAI* botAI) : Action(botAI, "cast greater blessing assignment") {}
 
@@ -581,16 +616,13 @@ bool CastGreaterBlessingAssignmentAction::Execute(Event /*event*/)
 bool CastGreaterBlessingAssignmentAction::FindPendingAssignment(
     GreaterBlessingPlayerAssignment& outAssignment, BlessingType& outCastType, std::string& outSpellName)
 {
-    std::vector<GreaterBlessingPlayerAssignment> assignments;
+    std::vector<CachedBlessingBucketAssignment> assignments;
     if (!GetAssignments(assignments))
         return false;
 
     for (auto const& assigned : assignments)
     {
-        if (assigned.blessing == BLESSING_NONE || !assigned.player)
-            continue;
-
-        if (HasMyExactBlessing(botAI, assigned.player, assigned.blessing))
+        if (assigned.blessing == BLESSING_NONE)
             continue;
 
         BlessingType castType = assigned.blessing;
@@ -603,17 +635,34 @@ bool CastGreaterBlessingAssignmentAction::FindPendingAssignment(
             uint32 spellId = AI_VALUE2(uint32, "spell id", spellName);
             if (!spellId || !ai::buff::HasRequiredReagents(bot, spellId))
             {
+                LOG_INFO("playerbots", "gbless downgrade: paladin={} class={} bySpec={} spec={} from={} reason={}",
+                         bot->GetName(), assigned.classId, assigned.bySpec,
+                         SpecProfileName(assigned.spec), BlessingTypeName(castType),
+                         spellId ? "missing-reagents" : "missing-spellid");
                 castType = ToSingleVariant(castType);
                 spellName = BlessingSpellName(castType);
                 if (spellName.empty())
                     continue;
-
-                if (HasMyExactBlessing(botAI, assigned.player, castType))
-                    continue;
             }
         }
 
-        outAssignment = assigned;
+        BlessingBucketSearchStats stats;
+        Player* target = FindMissingBlessingTarget(botAI, assigned, castType, spellName, &stats);
+        if (!target)
+        {
+            LOG_INFO("playerbots", "gbless no-target: paladin={} class={} bySpec={} spec={} blessing={} matching={} already={} cantcast={}",
+                     bot->GetName(), assigned.classId, assigned.bySpec,
+                     SpecProfileName(assigned.spec), BlessingTypeName(castType),
+                     stats.matchingMembers, stats.alreadyBlessed, stats.cannotCast);
+            continue;
+        }
+
+        LOG_INFO("playerbots", "gbless select: paladin={} class={} bySpec={} spec={} assigned={} cast={} target={}",
+                 bot->GetName(), assigned.classId, assigned.bySpec,
+                 SpecProfileName(assigned.spec), BlessingTypeName(assigned.blessing),
+                 BlessingTypeName(castType), target->GetName());
+
+        outAssignment = {target, assigned.blessing};
         outCastType = castType;
         outSpellName = spellName;
         return true;
@@ -626,7 +675,7 @@ bool CastGreaterBlessingAssignmentAction::FindPendingAssignment(
 // composition and casts one buff per call when auto greater blessings are active.
 
 bool CastGreaterBlessingAssignmentAction::GetAssignments(
-    std::vector<GreaterBlessingPlayerAssignment>& outAssignments)
+    std::vector<CachedBlessingBucketAssignment>& outAssignments)
 {
     Group* group = bot->GetGroup();
     uint32 const groupKey = group ? group->GetLeaderGUID().GetCounter() : 0;
@@ -645,21 +694,8 @@ bool CastGreaterBlessingAssignmentAction::GetAssignments(
     if (!cachedAssignments.valid || cachedAssignments.groupKey != groupKey)
         return false;
 
-    outAssignments.reserve(cachedAssignments.assignments.size());
-    for (CachedBlessingAssignment const& cachedAssignment : cachedAssignments.assignments)
-    {
-        Player* player = ObjectAccessor::FindPlayer(cachedAssignment.playerGuid);
-        if (!player || !player->IsInWorld() || !player->IsAlive() || !bot->IsInSameGroupWith(player))
-            continue;
-
-        outAssignments.push_back({player, cachedAssignment.blessing});
-    }
+    outAssignments = cachedAssignments.assignments;
 
     return true;
 }
 
-bool CastGreaterBlessingAssignmentAction::ComputeAssignments(
-    std::vector<GreaterBlessingPlayerAssignment>& outAssignments)
-{
-    return ComputeGreaterBlessingAssignments(botAI, outAssignments);
-}
