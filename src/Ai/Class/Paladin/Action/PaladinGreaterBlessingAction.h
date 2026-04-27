@@ -29,6 +29,7 @@ private:
         ai::gbless::BlessingType blessing = ai::gbless::BLESSING_NONE;
     };
 
+    bool GetAssignments(std::vector<PlayerAssignment>& outAssignments);
     bool ComputeAssignments(std::vector<PlayerAssignment>& outAssignments);
     bool FindPendingAssignment(PlayerAssignment& outAssignment,
                                ai::gbless::BlessingType& outCastType,

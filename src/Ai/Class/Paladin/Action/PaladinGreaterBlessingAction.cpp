@@ -6,16 +6,36 @@
 #include "PaladinGreaterBlessingAction.h"
 
 #include "AiFactory.h"
-#include "Chat.h"
 #include "Event.h"
 #include "GenericBuffUtils.h"
 #include "Language.h"
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
-#include "PlayerbotTextMgr.h"
 #include "SharedDefines.h"
 
+#include <map>
+
 using namespace ai::gbless;
+
+namespace
+{
+    constexpr uint32 GREATER_BLESSING_ASSIGNMENT_CACHE_MS = 4 * 1000;
+
+    struct CachedBotAssignment
+    {
+        ObjectGuid playerGuid;
+        BlessingType blessing = BLESSING_NONE;
+    };
+
+    struct CachedBotAssignments
+    {
+        uint32 groupKey = 0;
+        uint32 expiresAtMs = 0;
+        std::vector<CachedBotAssignment> assignments;
+    };
+
+    std::map<uint32, CachedBotAssignments> s_cachedBotAssignments;
+}
 
 bool ai::gbless::IsEligibleGroupForAutoBlessings(Group const* group)
 {
@@ -95,7 +115,7 @@ bool CastGreaterBlessingAssignmentAction::FindPendingAssignment(
     PlayerAssignment& outAssignment, BlessingType& outCastType, std::string& outSpellName)
 {
     std::vector<PlayerAssignment> assignments;
-    if (!ComputeAssignments(assignments))
+    if (!GetAssignments(assignments))
         return false;
 
     for (auto const& assigned : assignments)
@@ -137,6 +157,54 @@ bool CastGreaterBlessingAssignmentAction::FindPendingAssignment(
 
 // CastGreaterBlessingAssignmentAction computes blessing assignments for the group
 // composition and casts one buff per call when auto greater blessings are active.
+
+bool CastGreaterBlessingAssignmentAction::GetAssignments(
+    std::vector<PlayerAssignment>& outAssignments)
+{
+    Group* group = bot->GetGroup();
+    uint32 const botKey = bot->GetGUID().GetCounter();
+    uint32 const groupKey = group ? group->GetLeaderGUID().GetCounter() : 0;
+    uint32 const now = getMSTime();
+
+    auto cached = s_cachedBotAssignments.find(botKey);
+    if (cached != s_cachedBotAssignments.end() && cached->second.groupKey == groupKey &&
+        now < cached->second.expiresAtMs)
+    {
+        outAssignments.reserve(cached->second.assignments.size());
+        for (CachedBotAssignment const& cachedAssignment : cached->second.assignments)
+        {
+            Player* player = ObjectAccessor::FindPlayer(cachedAssignment.playerGuid);
+            if (!player || !player->IsInWorld() || !player->IsAlive() || !bot->IsInSameGroupWith(player))
+                continue;
+
+            outAssignments.push_back({player, cachedAssignment.blessing});
+        }
+
+        return true;
+    }
+
+    if (!ComputeAssignments(outAssignments))
+    {
+        s_cachedBotAssignments.erase(botKey);
+        return false;
+    }
+
+    CachedBotAssignments& entry = s_cachedBotAssignments[botKey];
+    entry.groupKey = groupKey;
+    entry.expiresAtMs = now + GREATER_BLESSING_ASSIGNMENT_CACHE_MS;
+    entry.assignments.clear();
+    entry.assignments.reserve(outAssignments.size());
+
+    for (PlayerAssignment const& assignment : outAssignments)
+    {
+        if (!assignment.player)
+            continue;
+
+        entry.assignments.push_back({assignment.player->GetGUID(), assignment.blessing});
+    }
+
+    return true;
+}
 
 bool CastGreaterBlessingAssignmentAction::ComputeAssignments(
     std::vector<PlayerAssignment>& outAssignments)
@@ -434,8 +502,10 @@ bool CastGreaterBlessingAssignmentAction::ComputeAssignments(
 
     int classSlotPaladin[MAX_CLASS_ID][MAX_SLOTS];
     for (int classId = 0; classId < MAX_CLASS_ID; ++classId)
+    {
         for (int slot = 0; slot < MAX_SLOTS; ++slot)
             classSlotPaladin[classId][slot] = slot;
+    }
 
     int numPals = static_cast<int>(botPaladins.size());
 
