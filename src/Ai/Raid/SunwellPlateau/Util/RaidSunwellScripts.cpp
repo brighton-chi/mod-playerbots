@@ -22,31 +22,6 @@ static constexpr uint32 FELMYST_FOG_INTERRUPT_SCAN_INTERVAL_MS = 500;
 static std::unordered_map<ObjectGuid, uint32> felmystFogInterruptLastScanTime;
 static std::unordered_set<ObjectGuid> kiljaedenTrackedArmageddonTargets;
 
-static PlayerbotAI* GetKalecgosReferenceBotAI(Player* player)
-{
-    if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(player))
-        return botAI;
-
-    Group* group = player->GetGroup();
-    if (!group)
-        return nullptr;
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || !member->IsInWorld() || !member->IsAlive())
-            continue;
-
-        if (member->GetMapId() != player->GetMapId())
-            continue;
-
-        if (PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member))
-            return memberAI;
-    }
-
-    return nullptr;
-}
-
 static Player* GetFirstPlayerSpellTarget(Spell* spell, Unit* caster)
 {
     if (!spell || !caster)
@@ -68,25 +43,15 @@ static Player* GetFirstPlayerSpellTarget(Spell* spell, Unit* caster)
     return nullptr;
 }
 
-static void RequestInterruptForBotSpellTarget(Spell* spell, Unit* caster)
-{
-    if (!spell || !caster)
-        return;
-
-    Player* target = GetFirstPlayerSpellTarget(spell, caster);
-    if (!target)
-        return;
-
-    if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(target))
-        botAI->RequestSpellInterrupt();
-}
-
 static void RequestInterruptForBotsNear(Unit* center, float radius)
 {
     if (!center)
         return;
 
-    Group* group = center->ToPlayer() ? center->ToPlayer()->GetGroup() : nullptr;
+    Group* group = nullptr;
+    if (Player* centerPlayer = center->ToPlayer())
+        group = centerPlayer->GetGroup();
+
     Map::PlayerList const& players = center->GetMap()->GetPlayers();
     for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
     {
@@ -100,31 +65,11 @@ static void RequestInterruptForBotsNear(Unit* center, float radius)
         if (center->GetExactDist2d(player) > radius)
             continue;
 
-        if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(player))
+        if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
+            botAI && botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
+        {
             botAI->RequestSpellInterrupt();
-    }
-}
-
-static void RequestInterruptForKiljaedenBots(Unit* kiljaeden)
-{
-    if (!kiljaeden)
-        return;
-
-    Map::PlayerList const& players = kiljaeden->GetMap()->GetPlayers();
-    for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
-    {
-        Player* player = it->GetSource();
-        if (!player || !player->IsAlive())
-            continue;
-
-        PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
-        if (!botAI)
-            continue;
-
-        if (PAI_VALUE2(Unit*, "find target", "kil'jaeden") != kiljaeden)
-            continue;
-
-        botAI->RequestSpellInterrupt();
+        }
     }
 }
 
@@ -133,7 +78,10 @@ static void RequestInterruptForBotsNeedingFelmystFogMovement(Unit* contextUnit, 
     if (!contextUnit)
         return;
 
-    Group* group = groupReference ? groupReference->GetGroup() : nullptr;
+    Group* group = nullptr;
+    if (groupReference)
+        group = groupReference->GetGroup();
+
     Map::PlayerList const& players = contextUnit->GetMap()->GetPlayers();
 
     for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
@@ -146,7 +94,7 @@ static void RequestInterruptForBotsNeedingFelmystFogMovement(Unit* contextUnit, 
             continue;
 
         PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
-        if (!botAI)
+        if (!botAI || !botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
             continue;
 
         Unit* felmyst = PAI_VALUE2(Unit*, "find target", "felmyst");
@@ -213,7 +161,26 @@ public:
         if (!player)
             return;
 
-        PlayerbotAI* botAI = GetKalecgosReferenceBotAI(player);
+        PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
+        if (!botAI)
+        {
+            Group* group = player->GetGroup();
+            if (!group)
+                return;
+
+            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+            {
+                Player* member = ref->GetSource();
+                if (!member || !member->IsInWorld() || !member->IsAlive())
+                    continue;
+
+                if (member->GetMapId() != player->GetMapId())
+                    continue;
+
+                if ((botAI = GET_PLAYERBOT_AI(member)))
+                    break;
+            }
+        }
 
         switch (spellInfo->Id)
         {
@@ -249,7 +216,10 @@ public:
             spellInfo->Id == SPELL_FELMYST_STRAFE_BOTTOM)
         {
             Player* targetPlayer = GetFirstPlayerSpellTarget(spell, caster);
-            Player* groupReference = caster->ToPlayer() ? caster->ToPlayer() : targetPlayer;
+            Player* groupReference = targetPlayer;
+            if (Player* casterPlayer = caster->ToPlayer())
+                groupReference = casterPlayer;
+
             RequestInterruptForBotsNeedingFelmystFogMovement(caster, groupReference);
 
             return;
@@ -265,8 +235,11 @@ public:
                 RequestInterruptForBotsNear(target, FELMYST_ENCAPSULATE_SAFE_DISTANCE);
                 break;
             case static_cast<uint32>(SunwellSpells::SPELL_SUMMON_DEMONIC_VAPOR):
-                if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(target))
+                if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(target);
+                    botAI && botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
+                {
                     botAI->RequestSpellInterrupt();
+                }
                 break;
             default:
                 break;
@@ -290,7 +263,15 @@ public:
             return;
         }
 
-        RequestInterruptForBotSpellTarget(spell, caster);
+        Player* target = GetFirstPlayerSpellTarget(spell, caster);
+        if (!target)
+            return;
+
+        if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(target);
+            botAI && botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
+        {
+            botAI->RequestSpellInterrupt();
+        }
     }
 };
 
@@ -336,13 +317,27 @@ public:
     void OnSpellCast(Spell* /*spell*/, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
     {
         if (!caster || !spellInfo)
-        {
             return;
-        }
 
         if (spellInfo->Id == static_cast<uint32>(SunwellSpells::SPELL_DARKNESS_OF_A_THOUSAND_SOULS))
         {
-            RequestInterruptForKiljaedenBots(caster);
+            Map::PlayerList const& players = caster->GetMap()->GetPlayers();
+            for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
+            {
+                Player* player = it->GetSource();
+                if (!player || !player->IsAlive())
+                    continue;
+
+                PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
+                if (!botAI || !botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
+                    continue;
+
+                if (PAI_VALUE2(Unit*, "find target", "kil'jaeden") != caster)
+                    continue;
+
+                botAI->RequestSpellInterrupt();
+            }
+
             return;
         }
     }
