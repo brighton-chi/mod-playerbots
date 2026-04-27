@@ -6,12 +6,39 @@
 #ifndef _PLAYERBOT_PALADINGREATERBLESSINGACTION_H
 #define _PLAYERBOT_PALADINGREATERBLESSINGACTION_H
 
-#include <map>
 #include <vector>
 
 #include "Action.h"
 #include "PaladinBlessingPriorityData.h"
 #include "Playerbots.h"
+
+class UntypedValue;
+
+namespace ai::gbless
+{
+    struct GreaterBlessingPlayerAssignment
+    {
+        Player* player = nullptr;
+        BlessingType blessing = BLESSING_NONE;
+    };
+
+    struct CachedBlessingAssignment
+    {
+        ObjectGuid playerGuid;
+        BlessingType blessing = BLESSING_NONE;
+    };
+
+    struct CachedBlessingAssignments
+    {
+        uint32 groupKey = 0;
+        bool valid = false;
+        std::vector<CachedBlessingAssignment> assignments;
+    };
+
+    UntypedValue* greater_blessing_assignments_value(PlayerbotAI* botAI);
+    bool IsEligibleGroupForAutoBlessings(Group const* group);
+    bool IsAutoGreaterBlessingActive(Player const* bot);
+}
 
 class CastGreaterBlessingAssignmentAction : public Action
 {
@@ -23,23 +50,11 @@ public:
     bool HasPendingAssignment();
 
 private:
-    struct PlayerAssignment
-    {
-        Player* player = nullptr;
-        ai::gbless::BlessingType blessing = ai::gbless::BLESSING_NONE;
-    };
-
-    bool GetAssignments(std::vector<PlayerAssignment>& outAssignments);
-    bool ComputeAssignments(std::vector<PlayerAssignment>& outAssignments);
-    bool FindPendingAssignment(PlayerAssignment& outAssignment,
+    bool GetAssignments(std::vector<ai::gbless::GreaterBlessingPlayerAssignment>& outAssignments);
+    bool ComputeAssignments(std::vector<ai::gbless::GreaterBlessingPlayerAssignment>& outAssignments);
+    bool FindPendingAssignment(ai::gbless::GreaterBlessingPlayerAssignment& outAssignment,
                                ai::gbless::BlessingType& outCastType,
                                std::string& outSpellName);
 };
-
-namespace ai::gbless
-{
-    bool IsEligibleGroupForAutoBlessings(Group const* group);
-    bool IsAutoGreaterBlessingActive(Player const* bot);
-}
 
 #endif

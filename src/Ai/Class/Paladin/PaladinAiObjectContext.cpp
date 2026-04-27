@@ -437,6 +437,21 @@ private:
     }
 };
 
+class PaladinValueContextInternal : public NamedObjectContext<UntypedValue>
+{
+public:
+    PaladinValueContextInternal()
+    {
+        creators["greater blessing assignments"] = &PaladinValueContextInternal::greater_blessing_assignments;
+    }
+
+private:
+    static UntypedValue* greater_blessing_assignments(PlayerbotAI* botAI)
+    {
+        return ai::gbless::greater_blessing_assignments_value(botAI);
+    }
+};
+
 SharedNamedObjectContextList<Strategy> PaladinAiObjectContext::sharedStrategyContexts;
 SharedNamedObjectContextList<Action> PaladinAiObjectContext::sharedActionContexts;
 SharedNamedObjectContextList<Trigger> PaladinAiObjectContext::sharedTriggerContexts;
@@ -479,4 +494,5 @@ void PaladinAiObjectContext::BuildSharedTriggerContexts(SharedNamedObjectContext
 void PaladinAiObjectContext::BuildSharedValueContexts(SharedNamedObjectContextList<UntypedValue>& valueContexts)
 {
     AiObjectContext::BuildSharedValueContexts(valueContexts);
+    valueContexts.Add(new PaladinValueContextInternal());
 }
