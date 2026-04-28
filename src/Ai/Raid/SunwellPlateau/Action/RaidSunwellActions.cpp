@@ -290,11 +290,6 @@ bool KalecgosDisperseRangedAction::Execute(Event /*event*/)
                           MovementPriority::MOVEMENT_COMBAT);
     }
 
-    if (bot->getClass() == CLASS_PALADIN && botAI->HasAura("divine shield", bot))
-        botAI->RemoveAura("divine shield");
-    else if (bot->getClass() == CLASS_MAGE && botAI->HasAura("ice block", bot))
-             botAI->RemoveAura("ice block");
-
     constexpr float safeDistFromPlayer = 6.0f;
     if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
         return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer);
@@ -334,11 +329,6 @@ bool KalecgosRemoveArcaneBuffetAction::Execute(Event /*event*/)
 
 bool KalecgosDetermineBossToAttackAction::Execute(Event /*event*/)
 {
-    if (bot->getClass() == CLASS_PALADIN && botAI->HasAura("divine shield", bot))
-        botAI->RemoveAura("divine shield");
-    else if (bot->getClass() == CLASS_MAGE && botAI->HasAura("ice block", bot))
-             botAI->RemoveAura("ice block");
-
     Unit* target = nullptr;
     if (Unit* sathrovarr = AI_VALUE2(Unit*, "find target", "sathrovarr the corruptor"))
     {
@@ -510,11 +500,6 @@ bool BrutallusPositionMeleeAction::Execute(Event /*event*/)
 
 bool BrutallusPositionRangedAction::Execute(Event /*event*/)
 {
-    if (bot->getClass() == CLASS_PALADIN && botAI->HasAura("divine shield", bot))
-        botAI->RemoveAura("divine shield");
-    else if (bot->getClass() == CLASS_MAGE && botAI->HasAura("ice block", bot))
-             botAI->RemoveAura("ice block");
-
     Unit* brutallus = AI_VALUE2(Unit*, "find target", "brutallus");
     if (!brutallus)
         return false;
@@ -837,11 +822,6 @@ bool FelmystMainTankPositionBossOnGroundAction::Execute(Event /*event*/)
 bool FelmystPositionRangedOnGroundAction::Execute(Event /*event*/)
 {
     ClearFelmystDemonicVaporKiteState(bot);
-
-    if (bot->getClass() == CLASS_PALADIN && botAI->HasAura("divine shield", bot))
-        botAI->RemoveAura("divine shield");
-    else if (bot->getClass() == CLASS_MAGE && botAI->HasAura("ice block", bot))
-             botAI->RemoveAura("ice block");
 
     Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
     if (!felmyst)
@@ -1305,11 +1285,6 @@ bool EredarTwinsFirstAssistTankMoveOutOfBlazeAction::Execute(Event /*event*/)
 
 bool EredarTwinsPositionRangedAction::Execute(Event /*event*/)
 {
-    if (bot->getClass() == CLASS_PALADIN && botAI->HasAura("divine shield", bot))
-        botAI->RemoveAura("divine shield");
-    else if (bot->getClass() == CLASS_MAGE && botAI->HasAura("ice block", bot))
-             botAI->RemoveAura("ice block");
-
     Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
     if (sacrolash)
     {
@@ -2540,11 +2515,6 @@ bool KiljaedenPositionMeleeAction::Execute(Event /*event*/)
 
 bool KiljaedenPositionRangedAction::Execute(Event /*event*/)
 {
-    if (bot->getClass() == CLASS_PALADIN && botAI->HasAura("divine shield", bot))
-        botAI->RemoveAura("divine shield");
-    else if (bot->getClass() == CLASS_MAGE && botAI->HasAura("ice block", bot))
-            botAI->RemoveAura("ice block");
-
     Position targetPosition = KILJAEDEN_TANK_POSITION;
     if (!TryGetRangedPosition(targetPosition))
         return false;

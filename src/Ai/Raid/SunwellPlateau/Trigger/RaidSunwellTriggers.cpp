@@ -66,13 +66,26 @@ bool KalecgosBotHasTooManyArcaneBuffetStacksTrigger::IsActive()
 {
     if (bot->getClass() != CLASS_ROGUE && bot->getClass() != CLASS_MAGE &&
         bot->getClass() != CLASS_PALADIN)
+    {
         return false;
+    }
 
     if (botAI->IsTank(bot))
         return false;
 
     if (!AI_VALUE2(Unit*, "find target", "kalecgos"))
         return false;
+
+    if (botAI->HasAura("ice block", bot))
+    {
+        botAI->RemoveAura("ice block");
+        return true;
+    }
+    else if (!botAI->IsHeal(bot) && botAI->HasAura("divine shield", bot))
+    {
+        botAI->RemoveAura("divine shield");
+        return true;
+    }
 
     Aura* arcaneBuffet =
         bot->GetAura(static_cast<uint32>(SunwellSpells::SPELL_ARCANE_BUFFET));
@@ -148,6 +161,17 @@ bool BrutallusBotIsBurningTrigger::IsActive()
     if (botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0, true))
         return false;
 
+    if (botAI->HasAura("ice block", bot))
+    {
+        botAI->RemoveAura("ice block");
+        return true;
+    }
+    else if (!botAI->IsHeal(bot) && botAI->HasAura("divine shield", bot))
+    {
+        botAI->RemoveAura("divine shield");
+        return true;
+    }
+
     if (ShouldMoveForBrutallusBurn(bot))
         return true;
 
@@ -215,11 +239,24 @@ bool FelmystBotIsEncapsulatedTrigger::IsActive()
 {
     if (bot->getClass() != CLASS_ROGUE && bot->getClass() != CLASS_MAGE &&
         bot->getClass() != CLASS_PALADIN)
+    {
         return false;
+    }
 
     Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
     if (!felmyst || felmyst->IsFlying() || botAI->IsMainTank(bot))
         return false;
+
+    if (botAI->HasAura("ice block", bot))
+    {
+        botAI->RemoveAura("ice block");
+        return true;
+    }
+    else if (!botAI->IsHeal(bot) && botAI->HasAura("divine shield", bot))
+    {
+        botAI->RemoveAura("divine shield");
+        return true;
+    }
 
     return bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_ENCAPSULATE));
 }
@@ -364,6 +401,17 @@ bool EredarTwinsBotHasTooManyFlameTouchedStacksTrigger::IsActive()
         !AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
     {
         return false;
+    }
+
+    if (botAI->HasAura("ice block", bot))
+    {
+        botAI->RemoveAura("ice block");
+        return true;
+    }
+    else if (!botAI->IsHeal(bot) && botAI->HasAura("divine shield", bot))
+    {
+        botAI->RemoveAura("divine shield");
+        return true;
     }
 
     Aura* flameSear =
@@ -681,6 +729,17 @@ bool KiljaedenBotHasFireBloomTrigger::IsActive()
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
     if (!kiljaeden || kiljaeden->GetHealthPct() > 55.0f || botAI->IsMainTank(bot))
         return false;
+
+    if (botAI->HasAura("ice block", bot))
+    {
+        botAI->RemoveAura("ice block");
+        return true;
+    }
+    else if (!botAI->IsHeal(bot) && botAI->HasAura("divine shield", bot))
+    {
+        botAI->RemoveAura("divine shield");
+        return true;
+    }
 
     return bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_FIRE_BLOOM));
 }
