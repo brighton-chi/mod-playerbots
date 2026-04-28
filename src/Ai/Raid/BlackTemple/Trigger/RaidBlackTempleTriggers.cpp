@@ -224,7 +224,26 @@ bool TeronGorefiendBossIsCastingShadowOfDeathTrigger::IsActive()
     }
 
     Unit* gorefiend = AI_VALUE2(Unit*, "find target", "teron gorefiend");
-    if (!gorefiend || !gorefiend->HasUnitState(UNIT_STATE_CASTING))
+    if (!gorefiend)
+        return false;
+
+    if (botAI->HasAura("feign death", bot))
+    {
+        botAI->RemoveAura("feign death");
+        return true;
+    }
+    else if (botAI->HasAura("ice block", bot))
+    {
+        botAI->RemoveAura("ice block");
+        return true;
+    }
+    else if (!botAI->IsHeal(bot) && botAI->HasAura("divine shield", bot))
+    {
+        botAI->RemoveAura("divine shield");
+        return true;
+    }
+
+    if (!gorefiend->HasUnitState(UNIT_STATE_CASTING))
         return false;
 
     Spell* spell = gorefiend->GetCurrentSpell(CURRENT_GENERIC_SPELL);
@@ -675,6 +694,20 @@ bool IllidanStormrageBotStruckByDarkBarrageTrigger::IsActive()
         bot->getClass() != CLASS_ROGUE)
     {
         return false;
+    }
+
+    if (!AI_VALUE2(Unit*, "find target", "illidan stormrage"))
+        return false;
+
+    if (botAI->HasAura("ice block", bot))
+    {
+        botAI->RemoveAura("ice block");
+        return true;
+    }
+    else if (!botAI->IsHeal(bot) && botAI->HasAura("divine shield", bot))
+    {
+        botAI->RemoveAura("divine shield");
+        return true;
     }
 
     return bot->HasAura(

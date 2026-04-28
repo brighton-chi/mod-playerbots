@@ -635,20 +635,27 @@ bool TeronGorefiendPositionRangedOnBalconyAction::Execute(Event /*event*/)
 
 bool TeronGorefiendAvoidShadowOfDeathAction::Execute(Event /*event*/)
 {
-    botAI->Reset();
-
-    static const std::array<const char*, 4> abilities =
+    switch (bot->getClass())
     {
-        "divine shield", "feign death", "ice block", "vanish"
-    };
+        case CLASS_HUNTER:
+        return botAI->CanCastSpell("feign death", bot) &&
+               botAI->CastSpell("feign death", bot);
 
-    for (const char* spellName : abilities)
-    {
-        if (botAI->CanCastSpell(spellName, bot))
-            return botAI->CastSpell(spellName, bot);
+        case CLASS_MAGE:
+            return botAI->CanCastSpell("ice block", bot) &&
+                   botAI->CastSpell("ice block", bot);
+
+        case CLASS_PALADIN:
+            return botAI->CanCastSpell("divine shield", bot) &&
+                   botAI->CastSpell("divine shield", bot);
+
+        case CLASS_ROGUE:
+            return botAI->CanCastSpell("vanish", bot) &&
+                   botAI->CastSpell("vanish", bot);
+
+        default:
+            return false;
     }
-
-    return false;
 }
 
 bool TeronGorefiendMoveToCornerToDieAction::Execute(Event /*event*/)
