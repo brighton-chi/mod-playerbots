@@ -16,29 +16,18 @@
 namespace ai::gbless
 {
 
-// ── Spec profiles ────────────────────────────────────────────────
+// ── Blessing recipient roles ─────────────────────────────────────
 // Each value identifies a unique row in the blessing priority table.
-enum SpecProfile : uint8
+enum RoleProfile : uint8
 {
-    SPEC_PROT_WARRIOR          = 0,
-    SPEC_TANK_DK               = 1,
-    SPEC_DPS_WARRIOR           = 2,
-    SPEC_DPS_DK                = 3,
-    SPEC_CASTER_SHAMAN         = 4,
-    SPEC_ENHANCE_SHAMAN        = 5,
-    SPEC_RET_PALADIN           = 6,
-    SPEC_HOLY_PALADIN          = 7,
-    SPEC_PROT_PALADIN          = 8,
-    SPEC_BEAR_DRUID            = 9,
-    SPEC_CAT_DRUID             = 10,
-    SPEC_CASTER_DRUID          = 11,
-    SPEC_ROGUE                 = 12,
-    SPEC_HUNTER                = 13,
-    SPEC_MAGE                  = 14,
-    SPEC_WARLOCK               = 15,
-    SPEC_PRIEST                = 16,
+    ROLE_CASTER                = 0,
+    ROLE_PHYSICAL_DPS          = 1,
+    ROLE_HYBRID_DPS            = 2,
+    ROLE_DRUID_TANK            = 3,
+    ROLE_WARRIOR_DK_TANK       = 4,
+    ROLE_PALADIN_TANK          = 5,
 
-    SPEC_PROFILE_COUNT         = 17
+    ROLE_PROFILE_COUNT         = 6
 };
 
 // ── Blessing types ───────────────────────────────────────────────
@@ -155,48 +144,24 @@ struct BaseBlessingPriorityEntry
 };
 
 // Ordered from highest to lowest priority for each bucket.
-//
-// clang-format off
-inline constexpr BaseBlessingPriorityEntry BASE_BLESSING_PRIORITIES[SPEC_PROFILE_COUNT] =
+inline constexpr BaseBlessingPriorityEntry BASE_BLESSING_PRIORITIES[ROLE_PROFILE_COUNT] =
 {
-    // SPEC_PROT_WARRIOR
-    {{ BASE_KINGS,     BASE_MIGHT,  BASE_SANCTUARY, BASE_NONE      }},
-    // SPEC_TANK_DK
-    {{ BASE_KINGS,     BASE_MIGHT,  BASE_SANCTUARY, BASE_NONE      }},
-    // SPEC_DPS_WARRIOR
-    {{ BASE_MIGHT,     BASE_KINGS,  BASE_SANCTUARY, BASE_NONE      }},
-    // SPEC_DPS_DK
-    {{ BASE_MIGHT,     BASE_KINGS,  BASE_SANCTUARY, BASE_NONE      }},
-    // SPEC_CASTER_SHAMAN
+    // ROLE_CASTER
     {{ BASE_KINGS,     BASE_WISDOM, BASE_SANCTUARY, BASE_MIGHT     }},
-    // SPEC_ENHANCE_SHAMAN
+    // ROLE_PHYSICAL_DPS
+    {{ BASE_MIGHT,     BASE_KINGS,  BASE_SANCTUARY, BASE_NONE      }},
+    // ROLE_HYBRID_DPS
     {{ BASE_MIGHT,     BASE_KINGS,  BASE_WISDOM,    BASE_SANCTUARY }},
-    // SPEC_RET_PALADIN
-    {{ BASE_MIGHT,     BASE_KINGS,  BASE_WISDOM,    BASE_SANCTUARY }},
-    // SPEC_HOLY_PALADIN
-    {{ BASE_KINGS,     BASE_WISDOM, BASE_SANCTUARY, BASE_MIGHT     }},
-    // SPEC_PROT_PALADIN
-    {{ BASE_SANCTUARY, BASE_MIGHT,  BASE_WISDOM,    BASE_KINGS     }},
-    // SPEC_BEAR_DRUID
+    // ROLE_DRUID_TANK
     {{ BASE_KINGS,     BASE_MIGHT,  BASE_WISDOM,    BASE_SANCTUARY }},
-    // SPEC_CAT_DRUID
-    {{ BASE_MIGHT,     BASE_KINGS,  BASE_WISDOM,    BASE_SANCTUARY }},
-    // SPEC_CASTER_DRUID
-    {{ BASE_KINGS,     BASE_WISDOM, BASE_SANCTUARY, BASE_MIGHT     }},
-    // SPEC_ROGUE
-    {{ BASE_MIGHT,     BASE_KINGS,  BASE_SANCTUARY, BASE_NONE      }},
-    // SPEC_HUNTER
-    {{ BASE_MIGHT,     BASE_KINGS,  BASE_WISDOM,    BASE_SANCTUARY }},
-    // SPEC_MAGE
-    {{ BASE_KINGS,     BASE_WISDOM, BASE_SANCTUARY, BASE_NONE      }},
-    // SPEC_WARLOCK
-    {{ BASE_KINGS,     BASE_WISDOM, BASE_SANCTUARY, BASE_NONE      }},
-    // SPEC_PRIEST
-    {{ BASE_KINGS,     BASE_WISDOM, BASE_SANCTUARY, BASE_NONE      }},
+    // ROLE_WARRIOR_DK_TANK
+    {{ BASE_KINGS,     BASE_MIGHT,  BASE_SANCTUARY, BASE_NONE      }},
+    // ROLE_PALADIN_TANK
+    {{ BASE_SANCTUARY, BASE_MIGHT,  BASE_WISDOM,    BASE_KINGS     }},
 };
 
-// ── Spec profile resolution ──────────────────────────────────────
-// Maps a player to their SpecProfile based on class, talent tree, and tank role.
+// ── Role profile resolution ──────────────────────────────────────
+// Maps a player to their blessing profile based on class and role.
 
 constexpr uint32 SPELL_IMPROVED_MIGHT_R1             = 20042;
 constexpr uint32 SPELL_IMPROVED_MIGHT_R2             = 20045;
@@ -204,94 +169,63 @@ constexpr uint32 SPELL_IMPROVED_WISDOM_R1            = 20244;
 constexpr uint32 SPELL_IMPROVED_WISDOM_R2            = 20245;
 constexpr uint32 SPELL_BLESSING_OF_SANCTUARY         = 20911;
 constexpr uint32 SPELL_GREATER_BLESSING_OF_SANCTUARY = 25899;
-constexpr uint32 SPELL_DK_FROST_PRESENCE             = 48263;
 
-inline SpecProfile ResolveSpecProfile(Player* player)
+inline RoleProfile ResolveRoleProfile(Player* player)
 {
     if (!player)
-        return SPEC_PRIEST;
+        return ROLE_CASTER;
 
     uint8 cls = player->getClass();
     int tab = AiFactory::GetPlayerSpecTab(player);
+    bool isTank = PlayerbotAI::IsTank(player);
 
     switch (cls)
     {
         case CLASS_WARRIOR:
-            if (tab == WARRIOR_TAB_PROTECTION)
-                return SPEC_PROT_WARRIOR;
-            return SPEC_DPS_WARRIOR;
+            if (isTank)
+                return ROLE_WARRIOR_DK_TANK;
+            return ROLE_PHYSICAL_DPS;
 
         case CLASS_DEATH_KNIGHT:
-            if (tab == DEATH_KNIGHT_TAB_BLOOD || player->HasAura(SPELL_DK_FROST_PRESENCE))
-                return SPEC_TANK_DK;
-            return SPEC_DPS_DK;
+            if (isTank)
+                return ROLE_WARRIOR_DK_TANK;
+            return ROLE_PHYSICAL_DPS;
 
         case CLASS_SHAMAN:
             if (tab == SHAMAN_TAB_ENHANCEMENT)
-                return SPEC_ENHANCE_SHAMAN;
-            return SPEC_CASTER_SHAMAN;
+                return ROLE_HYBRID_DPS;
+            return ROLE_CASTER;
 
         case CLASS_PALADIN:
+            if (isTank)
+                return ROLE_PALADIN_TANK;
             if (tab == PALADIN_TAB_HOLY)
-                return SPEC_HOLY_PALADIN;
-            if (tab == PALADIN_TAB_PROTECTION)
-                return SPEC_PROT_PALADIN;
-            return SPEC_RET_PALADIN;
+                return ROLE_CASTER;
+            return ROLE_HYBRID_DPS;
 
         case CLASS_DRUID:
             if (tab == DRUID_TAB_FERAL)
-            {
-                if (player->HasTankSpec())
-                    return SPEC_BEAR_DRUID;
-                if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(player))
-                {
-                    if (botAI->HasStrategy("bear", BOT_STATE_NON_COMBAT) ||
-                        botAI->HasStrategy("bear", BOT_STATE_COMBAT) ||
-                        botAI->HasStrategy("tank", BOT_STATE_NON_COMBAT) ||
-                        botAI->HasStrategy("tank", BOT_STATE_COMBAT) ||
-                        botAI->HasStrategy("tank face", BOT_STATE_NON_COMBAT) ||
-                        botAI->HasStrategy("tank face", BOT_STATE_COMBAT))
-                        return SPEC_BEAR_DRUID;
-                }
-                return SPEC_CAT_DRUID;
-            }
-            return SPEC_CASTER_DRUID;
+                return isTank ? ROLE_DRUID_TANK : ROLE_HYBRID_DPS;
+            return ROLE_CASTER;
 
         case CLASS_ROGUE:
-            return SPEC_ROGUE;
+            return ROLE_PHYSICAL_DPS;
 
         case CLASS_HUNTER:
-            return SPEC_HUNTER;
+            return ROLE_HYBRID_DPS;
 
         case CLASS_MAGE:
-            return SPEC_MAGE;
+            return ROLE_CASTER;
 
         case CLASS_WARLOCK:
-            return SPEC_WARLOCK;
+            return ROLE_CASTER;
 
         case CLASS_PRIEST:
-            return SPEC_PRIEST;
+            return ROLE_CASTER;
 
         default:
-            return SPEC_PRIEST;
+            return ROLE_CASTER;
     }
-}
-
-inline bool HasImprovedMight(Player* player)
-{
-    return player && (player->HasAura(SPELL_IMPROVED_MIGHT_R1) ||
-                      player->HasAura(SPELL_IMPROVED_MIGHT_R2));
-}
-
-inline bool HasImprovedWisdom(Player* player)
-{
-    return player && (player->HasAura(SPELL_IMPROVED_WISDOM_R1) ||
-                      player->HasAura(SPELL_IMPROVED_WISDOM_R2));
-}
-
-inline bool KnowsSanctuary(Player* player)
-{
-    return player && player->HasSpell(SPELL_BLESSING_OF_SANCTUARY);
 }
 
 }

@@ -25,8 +25,8 @@ namespace ai::gbless
     struct CachedBlessingBucketAssignment
     {
         uint8 classId = 0;
-        SpecProfile spec = SPEC_PRIEST;
-        bool bySpec = false;
+        RoleProfile role = ROLE_CASTER;
+        bool byRole = false;
         BlessingType blessing = BLESSING_NONE;
     };
 
@@ -52,10 +52,11 @@ public:
     bool HasPendingAssignment();
 
 private:
-    bool GetAssignments(std::vector<ai::gbless::CachedBlessingBucketAssignment>& outAssignments);
-    bool FindPendingAssignment(ai::gbless::GreaterBlessingPlayerAssignment& outAssignment,
-                               ai::gbless::BlessingType& outCastType,
-                               std::string& outSpellName);
+    bool GetAssignments(
+        std::vector<ai::gbless::CachedBlessingBucketAssignment>& outAssignments);
+    bool FindPendingAssignment(
+        ai::gbless::GreaterBlessingPlayerAssignment& outAssignment,
+        ai::gbless::BlessingType& outCastType, std::string& outSpellName);
 };
 
 #endif
