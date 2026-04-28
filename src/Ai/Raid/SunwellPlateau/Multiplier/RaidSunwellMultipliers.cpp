@@ -174,6 +174,32 @@ float KalecgosControlMovementMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+float KalecgosRestrictTauntMultiplier::GetValue(Action* action)
+{
+    if (!botAI->IsTank(bot))
+        return 1.0f;
+
+    if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_REALM)) ||
+        !AI_VALUE2(Unit*, "find target", "kalecgos"))
+    {
+        return 1.0f;
+    }
+
+    if (GetKalecgosCurrentTank(botAI, bot) == bot)
+        return 1.0f;
+
+    if (dynamic_cast<CastTauntAction*>(action) ||
+        dynamic_cast<CastGrowlAction*>(action) ||
+        dynamic_cast<CastHandOfReckoningAction*>(action) ||
+        dynamic_cast<CastRighteousDefenseAction*>(action) ||
+        dynamic_cast<CastDarkCommandAction*>(action))
+    {
+        return 0.0f;
+    }
+
+    return 1.0f;
+}
+
 float KalecgosDelayCooldownsForSathrovarrMultiplier::GetValue(Action* action)
 {
     if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_REALM)))
@@ -182,16 +208,6 @@ float KalecgosDelayCooldownsForSathrovarrMultiplier::GetValue(Action* action)
     Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos");
     if (!kalecgos)
         return 1.0f;
-
-    /* if (bot->getClass() == CLASS_SHAMAN &&
-        (dynamic_cast<CastHeroismAction*>(action) ||
-         dynamic_cast<CastBloodlustAction*>(action)))
-    {
-        return 0.0f;
-    }
-
-    if (kalecgos->GetHealthPct() < 40.0f)
-        return 1.0f; */
 
     if (IsDpsCooldownAction(action) ||
         (botAI->IsDps(bot) && dynamic_cast<UseTrinketAction*>(action)))
@@ -245,6 +261,7 @@ float BrutallusNoTankingWithTooManyMeteorStacksMultiplier::GetValue(Action* acti
     if (dynamic_cast<CastTauntAction*>(action) ||
         dynamic_cast<CastGrowlAction*>(action) ||
         dynamic_cast<CastHandOfReckoningAction*>(action) ||
+        dynamic_cast<CastRighteousDefenseAction*>(action) ||
         dynamic_cast<CastDarkCommandAction*>(action))
     {
         return 0.0f;

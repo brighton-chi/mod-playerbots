@@ -37,6 +37,14 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class KalecgosRestrictTauntMultiplier : public Multiplier
+{
+public:
+    KalecgosRestrictTauntMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "kalecgos restrict taunt") {}
+    virtual float GetValue(Action* action);
+};
+
 class KalecgosDelayCooldownsForSathrovarrMultiplier : public Multiplier
 {
 public:

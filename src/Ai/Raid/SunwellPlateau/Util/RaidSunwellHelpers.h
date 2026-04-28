@@ -23,6 +23,7 @@ namespace SunwellHelpers
         // Kalecgos
         SPELL_SPECTRAL_EXHAUSTION          = 44867,
         SPELL_SPECTRAL_BLAST_PORTAL        = 44866,
+        SPELL_ARCANE_BUFFET                = 45018,
         SPELL_CURSE_OF_BOUNDLESS_AGONY     = 45032,
         SPELL_TELEPORT_SPECTRAL            = 46019,
         SPELL_TELEPORT_NORMAL_REALM        = 46020,
@@ -106,8 +107,6 @@ namespace SunwellHelpers
         GO_SPECTRAL_RIFT = 187055,
         GO_BLAZE         = 187366,
     };
-
-    // General
 
     constexpr uint32 SUNWELL_MAP_ID = 580;
 
@@ -196,7 +195,8 @@ namespace SunwellHelpers
     constexpr float BRUTALLUS_RETURN_RANGED_RADIUS =
         BRUTALLUS_NORMAL_RANGED_RADIUS + BRUTALLUS_RANGED_LANE_OFFSET;
     constexpr uint8 BRUTALLUS_RANGED_POSITIONS_PER_GROUP = 10;
-    constexpr uint8 BRUTALLUS_TOTAL_RANGED_POSITIONS = BRUTALLUS_RANGED_POSITIONS_PER_GROUP * 2;
+    constexpr uint8 BRUTALLUS_TOTAL_RANGED_POSITIONS =
+        BRUTALLUS_RANGED_POSITIONS_PER_GROUP * 2;
 
     extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> brutallusRangedAssignments;
     extern std::unordered_map<ObjectGuid, BrutallusRangedBurnState> brutallusRangedBurnStates;
@@ -270,6 +270,7 @@ namespace SunwellHelpers
     extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> felmystDemonicVaporPathIndices;
     extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> felmystDemonicVaporWaypointIndices;
     extern std::unordered_map<uint32, FelmystFogOfCorruptionState> felmystFogOfCorruptionStates;
+
     void EnsureFelmystRangedAssignments(PlayerbotAI* botAI, Player* bot);
     float GetFelmystFrontAngle(PlayerbotAI* botAI, Player* bot, Unit* felmyst);
     Creature* GetFelmystDemonicVaporSummonedByBot(Player* carrier);
@@ -285,7 +286,8 @@ namespace SunwellHelpers
     Unit* GetNearestFelmystFogOfCorruptionCharmedTarget(Player* bot);
     Unit* GetNearestFelmystDemonicVaporHazard(Player* bot);
     Player* GetFelmystEncapsulateTarget(Player* bot);
-    bool TryGetFelmystRangedPosition(PlayerbotAI* botAI, Player* bot, Unit* felmyst, Position& position);
+    bool TryGetFelmystRangedPosition(
+        PlayerbotAI* botAI, Player* bot, Unit* felmyst, Position& position);
     Player* GetFelmystGasNovaDispelTarget(Player* bot);
 
     // Eredar Twins

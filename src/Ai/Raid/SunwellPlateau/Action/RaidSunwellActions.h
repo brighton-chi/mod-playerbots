@@ -58,6 +58,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class KalecgosRemoveArcaneBuffetAction : public Action
+{
+public:
+    KalecgosRemoveArcaneBuffetAction(
+        PlayerbotAI* botAI, std::string const name = "kalecgos remove arcane buffet") : Action(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 class KalecgosDetermineBossToAttackAction : public AttackAction
 {
 public:
@@ -476,21 +484,12 @@ private:
     bool TryGetRangedPosition(Position& position) const;
 };
 
-class KiljaedenRemoveFireBloomWithCooldownAction : public Action
+class KiljaedenRemoveFireBloomAction : public Action
 {
 public:
-    KiljaedenRemoveFireBloomWithCooldownAction(
-        PlayerbotAI* botAI, std::string const name = "kil'jaeden remove fire bloom with cooldown") : Action(botAI, name) {}
+    KiljaedenRemoveFireBloomAction(
+        PlayerbotAI* botAI, std::string const name = "kil'jaeden remove fire bloom") : Action(botAI, name) {}
     bool Execute(Event event) override;
 };
-
-
-/* class KiljaedenSetDpsPriorityAction : public AttackAction
-{
-public:
-    KiljaedenSetDpsPriorityAction(
-        PlayerbotAI* botAI, std::string const name = "kil'jaeden set dps priority") : AttackAction(botAI, name) {}
-    bool Execute(Event event) override;
-}; */
 
 #endif

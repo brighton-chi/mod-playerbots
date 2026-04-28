@@ -62,6 +62,23 @@ bool KalecgosBotsTakeSplashDamageTrigger::IsActive()
     return !ShouldEnterKalecgosSpectralRift(botAI, bot);
 }
 
+bool KalecgosBotHasTooManyArcaneBuffetStacksTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_ROGUE && bot->getClass() != CLASS_MAGE &&
+        bot->getClass() != CLASS_PALADIN)
+        return false;
+
+    if (botAI->IsTank(bot))
+        return false;
+
+    if (!AI_VALUE2(Unit*, "find target", "kalecgos"))
+        return false;
+
+    Aura* arcaneBuffet =
+        bot->GetAura(static_cast<uint32>(SunwellSpells::SPELL_ARCANE_BUFFET));
+    return arcaneBuffet && arcaneBuffet->GetStackAmount() >= 10;
+}
+
 bool KalecgosBothBossesMustBeDefeatedTrigger::IsActive()
 {
     if (botAI->IsHeal(bot) || bot->GetVictim())
@@ -679,11 +696,3 @@ bool KiljaedenBossEngagedByRangedTrigger::IsActive()
 
     return true;
 }
-
-/* bool KiljaedenDeterminingDpsPriorityTrigger::IsActive()
-{
-    if (!botAI->IsDps(bot))
-        return false;
-
-    return AI_VALUE2(Unit*, "find target", "kil'jaeden");
-} */

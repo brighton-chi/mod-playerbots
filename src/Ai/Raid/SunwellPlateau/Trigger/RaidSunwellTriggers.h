@@ -54,6 +54,14 @@ public:
     bool IsActive() override;
 };
 
+class KalecgosBotHasTooManyArcaneBuffetStacksTrigger : public Trigger
+{
+public:
+    KalecgosBotHasTooManyArcaneBuffetStacksTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "kalecgos bot has too many arcane buffet stacks") {}
+    bool IsActive() override;
+};
+
 class KalecgosBothBossesMustBeDefeatedTrigger : public Trigger
 {
 public:
@@ -455,13 +463,5 @@ public:
         PlayerbotAI* botAI) : Trigger(botAI, "kil'jaeden boss engaged by ranged") {}
     bool IsActive() override;
 };
-
-/* class KiljaedenDeterminingDpsPriorityTrigger : public Trigger
-{
-public:
-    KiljaedenDeterminingDpsPriorityTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kil'jaeden determining dps priority") {}
-    bool IsActive() override;
-}; */
 
 #endif

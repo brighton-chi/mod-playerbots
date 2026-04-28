@@ -26,6 +26,9 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kalecgos bots take splash damage", {
         NextAction("kalecgos disperse ranged", ACTION_RAID + 1) }));
 
+    triggers.push_back(new TriggerNode("kalecgos bot has too many arcane buffet stacks", {
+        NextAction("kalecgos remove arcane buffet", ACTION_RAID + 3) }));
+
     triggers.push_back(new TriggerNode("kalecgos both bosses must be defeated", {
         NextAction("kalecgos determine boss to attack", ACTION_RAID + 2) }));
 
@@ -173,10 +176,7 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("kil'jaeden position ranged", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("kil'jaeden bot has fire bloom", {
-        NextAction("kil'jaeden remove fire bloom with cooldown", ACTION_EMERGENCY + 1) }));
-
-    // triggers.push_back(new TriggerNode("kil'jaeden determining dps priority", {
-    //    NextAction("kil'jaeden set dps priority", ACTION_RAID + 2) }));
+        NextAction("kil'jaeden remove fire bloom", ACTION_EMERGENCY + 1) }));
 }
 
 void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
@@ -185,6 +185,7 @@ void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new KalecgosControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new KalecgosWaitToDecurseMultiplier(botAI));
     multipliers.push_back(new KalecgosControlMovementMultiplier(botAI));
+    multipliers.push_back(new KalecgosRestrictTauntMultiplier(botAI));
     multipliers.push_back(new KalecgosDelayCooldownsForSathrovarrMultiplier(botAI));
 
     // Brutallus

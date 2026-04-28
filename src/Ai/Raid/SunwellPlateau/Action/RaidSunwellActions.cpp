@@ -278,14 +278,24 @@ bool KalecgosDisperseRangedAction::Execute(Event /*event*/)
                           MovementPriority::MOVEMENT_COMBAT, true, true);
         } */
         constexpr float initialRangedRadius = 10.0f;
+        if (bot->GetExactDist2d(initialPos.GetPositionX(), initialPos.GetPositionY()) <=
+            initialRangedRadius)
+        {
+            SetKalecgosInitialRangedPositionReached(bot, true);
+            return false;
+        }
+
         return MoveInside(SUNWELL_MAP_ID, initialPos.GetPositionX(), initialPos.GetPositionY(),
                           initialPos.GetPositionZ(), initialRangedRadius,
                           MovementPriority::MOVEMENT_COMBAT);
-
-        SetKalecgosInitialRangedPositionReached(bot, true);
     }
 
-    constexpr float safeDistFromPlayer = 8.0f;
+    if (bot->getClass() == CLASS_PALADIN && botAI->HasAura("divine shield", bot))
+        botAI->RemoveAura("divine shield");
+    else if (bot->getClass() == CLASS_MAGE && botAI->HasAura("ice block", bot))
+             botAI->RemoveAura("ice block");
+
+    constexpr float safeDistFromPlayer = 6.0f;
     if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
         return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer);
 
@@ -301,8 +311,34 @@ bool KalecgosDisperseRangedAction::Execute(Event /*event*/)
     return false;
 }
 
+bool KalecgosRemoveArcaneBuffetAction::Execute(Event /*event*/)
+{
+    switch (bot->getClass())
+    {
+        case CLASS_MAGE:
+            return botAI->CanCastSpell("ice block", bot) &&
+                   botAI->CastSpell("ice block", bot);
+
+        case CLASS_PALADIN:
+            return botAI->CanCastSpell("divine shield", bot) &&
+                   botAI->CastSpell("divine shield", bot);
+
+        case CLASS_ROGUE:
+            return botAI->CanCastSpell("cloak of shadows", bot) &&
+                   botAI->CastSpell("cloak of shadows", bot);
+
+        default:
+            return false;
+    }
+}
+
 bool KalecgosDetermineBossToAttackAction::Execute(Event /*event*/)
 {
+    if (bot->getClass() == CLASS_PALADIN && botAI->HasAura("divine shield", bot))
+        botAI->RemoveAura("divine shield");
+    else if (bot->getClass() == CLASS_MAGE && botAI->HasAura("ice block", bot))
+             botAI->RemoveAura("ice block");
+
     Unit* target = nullptr;
     if (Unit* sathrovarr = AI_VALUE2(Unit*, "find target", "sathrovarr the corruptor"))
     {
@@ -2553,7 +2589,7 @@ bool KiljaedenPositionRangedAction::TryGetRangedPosition(Position& position) con
     return TryGetKiljaedenRangedSlotPosition(slotIndex, position);
 }
 
-bool KiljaedenRemoveFireBloomWithCooldownAction::Execute(Event /*event*/)
+bool KiljaedenRemoveFireBloomAction::Execute(Event /*event*/)
 {
     switch (bot->getClass())
     {
@@ -2573,91 +2609,3 @@ bool KiljaedenRemoveFireBloomWithCooldownAction::Execute(Event /*event*/)
             return false;
     }
 }
-
-/* bool KiljaedenSetDpsPriorityAction::Execute(Event /*event)
-{
-    Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
-    if (!kiljaeden)
-        return false;
-
-    bool isMeleeDps = botAI->IsMelee(bot) && botAI->IsDps(bot);
-    bool isRangedDps = botAI->IsRangedDps(bot);
-    if (!isMeleeDps && !isRangedDps)
-        return false;
-
-    bool canHaveSinisterReflections = kiljaeden->GetHealthPct() < 55.0f;
-    Unit* closestShieldOrbInRange = nullptr;
-    Unit* closestRangedReflectionInRange = nullptr;
-    Unit* closestMeleeReflectionInRange = nullptr;
-    auto const& attackers =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
-
-    auto chooseNearestTarget = [&](Unit*& current, Unit* candidate)
-    {
-        if (!candidate)
-            return;
-
-        if (!current)
-        {
-            current = candidate;
-            return;
-        }
-
-        float currentDistance = bot->GetExactDist2d(current);
-        float candidateDistance = bot->GetExactDist2d(candidate);
-        constexpr float targetSwitchDistance = 5.0f;
-        if (candidateDistance + targetSwitchDistance < currentDistance)
-            current = candidate;
-    };
-
-    for (auto guid : attackers)
-    {
-        Unit* unit = botAI->GetUnit(guid);
-        if (!unit || !unit->IsAlive())
-            continue;
-
-        if (unit->GetEntry() == static_cast<uint32>(SunwellNpcs::NPC_SHIELD_ORB))
-        {
-            if (botAI->IsRanged(bot) && botAI->IsDps(bot) && bot->GetExactDist2d(unit) <= 30.0f)
-                chooseNearestTarget(closestShieldOrbInRange, unit);
-
-            continue;
-        }
-
-        if (canHaveSinisterReflections &&
-            unit->GetEntry() == static_cast<uint32>(SunwellNpcs::NPC_SINISTER_REFLECTION))
-        {
-            if (botAI->IsRanged(bot) && botAI->IsDps(bot) && bot->GetExactDist2d(unit) <= 30.0f)
-                chooseNearestTarget(closestRangedReflectionInRange, unit);
-
-            if (botAI->IsMelee(bot) && botAI->IsDps(bot) && !botAI->IsTank(bot) &&
-                bot->IsWithinMeleeRange(unit))
-            {
-                chooseNearestTarget(closestMeleeReflectionInRange, unit);
-            }
-        }
-    }
-    Unit* priorityTarget = kiljaeden;
-
-    if (isRangedDps)
-    {
-        if (closestShieldOrbInRange)
-            priorityTarget = closestShieldOrbInRange;
-        else if (closestRangedReflectionInRange)
-            priorityTarget = closestRangedReflectionInRange;
-
-        if (bot->GetTarget() != priorityTarget->GetGUID())
-            return Attack(priorityTarget);
-    }
-    else if (isMeleeDps)
-    {
-        if (closestMeleeReflectionInRange)
-            priorityTarget = closestMeleeReflectionInRange;
-
-        if (bot->GetVictim() != priorityTarget)
-            return Attack(priorityTarget);
-    }
-
-
-    return false;
-} */

@@ -32,6 +32,9 @@ public:
         creators["kalecgos bots take splash damage"] =
             &RaidSunwellTriggerContext::kalecgos_bots_take_splash_damage;
 
+        creators["kalecgos bot has too many arcane buffet stacks"] =
+            &RaidSunwellTriggerContext::kalecgos_bot_has_too_many_arcane_buffet_stacks;
+
         creators["kalecgos both bosses must be defeated"] =
             &RaidSunwellTriggerContext::kalecgos_both_bosses_must_be_defeated;
 
@@ -180,9 +183,6 @@ public:
 
         creators["kil'jaeden bot has fire bloom"] =
             &RaidSunwellTriggerContext::kiljaeden_bot_has_fire_bloom;
-
-        // creators["kil'jaeden determining dps priority"] =
-        //     &RaidSunwellTriggerContext::kiljaeden_determining_dps_priority;
     }
 
 private:
@@ -206,6 +206,9 @@ private:
 
     static Trigger* kalecgos_both_bosses_must_be_defeated(
         PlayerbotAI* botAI) { return new KalecgosBothBossesMustBeDefeatedTrigger(botAI); }
+
+    static Trigger* kalecgos_bot_has_too_many_arcane_buffet_stacks(
+        PlayerbotAI* botAI) { return new KalecgosBotHasTooManyArcaneBuffetStacksTrigger(botAI); }
 
     static Trigger* kalecgos_bots_dont_observe_gravity(
         PlayerbotAI* botAI) { return new KalecgosBotsDontObserveGravityTrigger(botAI); }
@@ -352,9 +355,6 @@ private:
 
     static Trigger* kiljaeden_bot_has_fire_bloom(
         PlayerbotAI* botAI) { return new KiljaedenBotHasFireBloomTrigger(botAI); }
-
-    // static Trigger* kiljaeden_determining_dps_priority(
-    //     PlayerbotAI* botAI) { return new KiljaedenDeterminingDpsPriorityTrigger(botAI); }
 };
 
 #endif

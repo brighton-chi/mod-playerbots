@@ -32,6 +32,9 @@ public:
         creators["kalecgos disperse ranged"] =
             &RaidSunwellActionContext::kalecgos_disperse_ranged;
 
+        creators["kalecgos remove arcane buffet"] =
+            &RaidSunwellActionContext::kalecgos_remove_arcane_buffet;
+
         creators["kalecgos determine boss to attack"] =
             &RaidSunwellActionContext::kalecgos_determine_boss_to_attack;
 
@@ -175,11 +178,8 @@ public:
         creators["kil'jaeden position ranged"] =
             &RaidSunwellActionContext::kiljaeden_position_ranged;
 
-        creators["kil'jaeden remove fire bloom with cooldown"] =
-            &RaidSunwellActionContext::kiljaeden_remove_fire_bloom_with_cooldown;
-
-        // creators["kil'jaeden set dps priority"] =
-        //     &RaidSunwellActionContext::kiljaeden_set_dps_priority;
+        creators["kil'jaeden remove fire bloom"] =
+            &RaidSunwellActionContext::kiljaeden_remove_fire_bloom;
     }
 
 private:
@@ -200,6 +200,9 @@ private:
 
     static Action* kalecgos_disperse_ranged(
         PlayerbotAI* botAI) { return new KalecgosDisperseRangedAction(botAI); }
+
+    static Action* kalecgos_remove_arcane_buffet(
+        PlayerbotAI* botAI) { return new KalecgosRemoveArcaneBuffetAction(botAI); }
 
     static Action* kalecgos_determine_boss_to_attack(
         PlayerbotAI* botAI) { return new KalecgosDetermineBossToAttackAction(botAI); }
@@ -344,11 +347,8 @@ private:
     static Action* kiljaeden_position_ranged(
         PlayerbotAI* botAI) { return new KiljaedenPositionRangedAction(botAI); }
 
-    static Action* kiljaeden_remove_fire_bloom_with_cooldown(
-        PlayerbotAI* botAI) { return new KiljaedenRemoveFireBloomWithCooldownAction(botAI); }
-
-    // static Action* kiljaeden_set_dps_priority(
-    //     PlayerbotAI* botAI) { return new KiljaedenSetDpsPriorityAction(botAI); }
+    static Action* kiljaeden_remove_fire_bloom(
+        PlayerbotAI* botAI) { return new KiljaedenRemoveFireBloomAction(botAI); }
 };
 
 #endif

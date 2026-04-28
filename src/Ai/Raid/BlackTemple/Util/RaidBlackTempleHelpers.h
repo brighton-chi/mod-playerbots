@@ -132,7 +132,6 @@ namespace BlackTempleHelpers
         Unknown            = 255,
     };
 
-    // General
     constexpr uint32 BLACK_TEMPLE_MAP_ID = 564;
 
     // High Warlord Naj'entus
