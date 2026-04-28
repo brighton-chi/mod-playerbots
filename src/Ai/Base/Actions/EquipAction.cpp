@@ -67,10 +67,6 @@ void EquipAction::EquipItem(Item* item)
     uint8 bagIndex = item->GetBagSlot();
     uint8 slot = item->GetSlot();
     const ItemTemplate* itemProto = item->GetTemplate();
-
-    if (itemProto->Class == ITEM_CLASS_WEAPON && itemProto->SubClass == ITEM_SUBCLASS_WEAPON_MISC)
-        return;
-
     uint32 itemId = itemProto->ItemId;
     uint8 invType = itemProto->InventoryType;
 
@@ -350,8 +346,7 @@ ItemIds EquipAction::SelectInventoryItemsToEquip()
 
         //TODO Expand to Glyphs and Gems, that can be placed in equipment
         //Pre-filter non-equipable items
-        if (itemTemplate->InventoryType == INVTYPE_NON_EQUIP ||
-            (itemTemplate->Class == ITEM_CLASS_WEAPON && itemTemplate->SubClass == ITEM_SUBCLASS_WEAPON_MISC))
+        if (itemTemplate->InventoryType == INVTYPE_NON_EQUIP)
             continue;
 
         int32 randomProperty = item->GetItemRandomPropertyId();

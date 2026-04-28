@@ -228,9 +228,6 @@ ItemUsage ItemUsageValue::QueryItemUsageForEquip(ItemTemplate const* itemProto, 
         return ITEM_USAGE_EQUIP;
     }
 
-    if (itemProto->Class == ITEM_CLASS_WEAPON && itemProto->SubClass == ITEM_SUBCLASS_WEAPON_MISC)
-        return ITEM_USAGE_NONE;
-
     bool shouldEquip = false;
     // uint32 statWeight = sRandomItemMgr.GetLiveStatWeight(bot, itemProto->ItemId);
     StatsWeightCalculator calculator(bot);
