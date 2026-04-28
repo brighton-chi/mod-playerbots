@@ -163,7 +163,7 @@ float TeronGorefiendDisableAttackingConstructsMultiplier::GetValue(Action* actio
     if (!AI_VALUE2(Unit*, "find target", "teron gorefiend"))
         return 1.0f;
 
-    if (bot->GetVictim() != nullptr && 
+    if (bot->GetVictim() != nullptr &&
         dynamic_cast<TankAssistAction*>(action))
     {
         return 0.0f;
@@ -327,6 +327,7 @@ float IllidariCouncilDisableTankActionsMultiplier::GetValue(Action* action)
         dynamic_cast<CastGrowlAction*>(action) ||
         dynamic_cast<CastSwipeAction*>(action) ||
         dynamic_cast<CastHandOfReckoningAction*>(action) ||
+        dynamic_cast<CastRighteousDefenseAction*>(action) ||
         dynamic_cast<CastDarkCommandAction*>(action) ||
         dynamic_cast<CastDeathAndDecayAction*>(action) ||
         dynamic_cast<CastBloodBoilAction*>(action))
