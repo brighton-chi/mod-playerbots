@@ -740,18 +740,14 @@ namespace SunwellHelpers
 
         UpdateKalecgosRealmState(bot, true, now);
 
-        if (!state.activeRiftOpenedMs)
+        if (state.activeRiftOpenedMs)
         {
-            state.activeRiftOpenedMs = now;
-            state.blastedPlayerGuid = bot->GetGUID();
-            state.firstEntrantGuid = ObjectGuid::Empty;
+            if (state.firstEntrantGuid == ObjectGuid::Empty)
+                state.firstEntrantGuid = bot->GetGUID();
+
+            if (state.activeRiftGroup == KALECGOS_INVALID_GROUP)
+                state.activeRiftGroup = ResolveKalecgosActiveRiftGroup(group, state);
         }
-
-        if (state.firstEntrantGuid == ObjectGuid::Empty)
-            state.firstEntrantGuid = bot->GetGUID();
-
-        if (state.activeRiftGroup == KALECGOS_INVALID_GROUP)
-            state.activeRiftGroup = ResolveKalecgosActiveRiftGroup(group, state);
 
         if (IsKalecgosAssignedTank(state, bot))
         {
