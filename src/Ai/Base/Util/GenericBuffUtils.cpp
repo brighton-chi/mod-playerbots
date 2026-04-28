@@ -31,7 +31,7 @@ namespace ai::buff
         }
     }
 
-    static bool HasEnoughSameMapBuffedPlayersForGroupVariant(
+    static bool HasEnoughSameMapMissingPlayersForGroupVariant(
         Player* bot,
         PlayerbotAI* botAI,
         std::string const& baseName,
@@ -45,7 +45,7 @@ namespace ai::buff
         if (!group)
             return false;
 
-        uint32 buffedCount = 0;
+        uint32 missingCount = 0;
         for (GroupReference* gref = group->GetFirstMember(); gref; gref = gref->next())
         {
             Player* member = gref->GetSource();
@@ -55,10 +55,10 @@ namespace ai::buff
             if (member->GetMap() != bot->GetMap())
                 continue;
 
-            if (!botAI->HasAura(baseName, member) && !botAI->HasAura(groupName, member))
+            if (botAI->HasAura(baseName, member) || botAI->HasAura(groupName, member))
                 continue;
 
-            if (++buffedCount >= requiredCount)
+            if (++missingCount >= requiredCount)
                 return true;
         }
 
@@ -229,9 +229,9 @@ namespace ai::buff
         if (groupName.empty())
             return baseName;
 
-        // During sparse wipe recovery, stay on singles until enough same-map
-        // members already carry this buff family to justify a raidwide recast.
-        if (!HasEnoughSameMapBuffedPlayersForGroupVariant(bot, botAI, baseName, groupName))
+        // Prefer singles when only one or two same-map members are missing this
+        // buff family; use the group spell once enough nearby members still need it.
+        if (!HasEnoughSameMapMissingPlayersForGroupVariant(bot, botAI, baseName, groupName))
             return baseName;
 
         uint32 const groupSpellId = botAI->GetAiObjectContext()
