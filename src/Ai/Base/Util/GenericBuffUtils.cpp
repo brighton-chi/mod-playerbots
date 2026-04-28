@@ -7,6 +7,7 @@
 
 #include "AiObjectContext.h"
 
+#include "GameTime.h"
 #include "Group.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
@@ -15,17 +16,18 @@
 #include "Unit.h"
 #include "Value.h"
 
-#include <ctime>
-
 namespace ai::buff
 {
     namespace
     {
-        constexpr time_t POST_LOGIN_BUFF_GRACE_SECONDS = 5;
+        constexpr uint32 POST_LOGIN_BUFF_GRACE_MS = 5 * IN_MILLISECONDS;
 
         bool IsWithinPostLoginBuffGrace(Player* player)
         {
-            return player && (time(nullptr) - player->GetInGameTime()) < POST_LOGIN_BUFF_GRACE_SECONDS;
+            if (!player)
+                return false;
+
+            return getMSTimeDiff(player->GetInGameTime(), GameTime::GetGameTimeMS().count()) < POST_LOGIN_BUFF_GRACE_MS;
         }
     }
 
@@ -133,8 +135,11 @@ namespace ai::buff
             "mark of the wild",
             "arcane intellect",
             "power word: fortitude",
+            "prayer of fortitude",
             "divine spirit",
+            "prayer of spirit",
             "shadow protection",
+            "prayer of shadow protection",
             "blessing of kings",
             "blessing of might",
             "blessing of wisdom",
