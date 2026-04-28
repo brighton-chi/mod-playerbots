@@ -765,6 +765,9 @@ bool RandomItemMgr::CanEquipArmor(uint8 clazz, uint32 level, ItemTemplate const*
 
 bool RandomItemMgr::CanEquipWeapon(uint8 clazz, ItemTemplate const* proto)
 {
+    if (proto->SubClass == ITEM_SUBCLASS_WEAPON_MISC)
+        return false;
+
     switch (clazz)
     {
         case CLASS_PRIEST:
