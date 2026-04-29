@@ -20,6 +20,7 @@ namespace ai::buff
 {
     namespace
     {
+        // Prevents bots from immediately casting already-present buffs upon logging in
         constexpr uint32 POST_LOGIN_BUFF_GRACE_MS = 5 * IN_MILLISECONDS;
 
         bool IsWithinPostLoginBuffGrace(Player* player)
@@ -27,7 +28,8 @@ namespace ai::buff
             if (!player)
                 return false;
 
-            return getMSTimeDiff(player->GetInGameTime(), GameTime::GetGameTimeMS().count()) < POST_LOGIN_BUFF_GRACE_MS;
+            return getMSTimeDiff(
+                player->GetInGameTime(), GameTime::GetGameTimeMS().count()) < POST_LOGIN_BUFF_GRACE_MS;
         }
     }
 
@@ -38,9 +40,6 @@ namespace ai::buff
         std::string const& groupName,
         uint32 requiredCount = 3)
     {
-        if (!bot || !botAI)
-            return false;
-
         Group* group = bot->GetGroup();
         if (!group)
             return false;
@@ -49,10 +48,7 @@ namespace ai::buff
         for (GroupReference* gref = group->GetFirstMember(); gref; gref = gref->next())
         {
             Player* member = gref->GetSource();
-            if (!member || !member->IsInWorld())
-                continue;
-
-            if (member->GetMap() != bot->GetMap())
+            if (!member || !member->IsInWorld() || member->GetMap() != bot->GetMap())
                 continue;
 
             if (botAI->HasAura(baseName, member) || botAI->HasAura(groupName, member))
@@ -85,9 +81,6 @@ namespace ai::buff
 
     bool IsGroupVariantEnabled(Player* bot, std::string const& name)
     {
-        if (!bot)
-            return false;
-
         if (!IsEligibleGroupForPartyBuffs(bot->GetGroup()))
             return false;
 
@@ -124,7 +117,7 @@ namespace ai::buff
         if (name == "divine spirit")            return "prayer of spirit";
         if (name == "shadow protection")        return "prayer of shadow protection";
 
-        // Paladin blessings are NOT included here — they are
+        // Paladin blessings are intentionally not included here because they are
         // coordinated by the auto greater blessing system instead.
         return std::string();
     }
@@ -172,9 +165,6 @@ namespace ai::buff
 
     bool ShouldDeferGreaterBlessingEvaluationForRecentLogin(Player* bot)
     {
-        if (!bot)
-            return false;
-
         if (IsWithinPostLoginBuffGrace(bot))
             return true;
 
@@ -229,8 +219,8 @@ namespace ai::buff
         if (groupName.empty())
             return baseName;
 
-        // Prefer singles when only one or two same-map members are missing this
-        // buff family; use the group spell once enough nearby members still need it.
+        // Prefer singles when no more than two same-map members are missing this buff family;
+        // use the group spell once enough nearby members still need it.
         if (!HasEnoughSameMapMissingPlayersForGroupVariant(bot, botAI, baseName, groupName))
             return baseName;
 

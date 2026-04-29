@@ -10,14 +10,11 @@
 #include "GenericBuffUtils.h"
 #include "ObjectAccessor.h"
 #include "PaladinGreaterBlessingAction.h"
-#include "PaladinBlessingPriorityData.h"
 #include "PaladinHelper.h"
 #include "Playerbots.h"
 #include "SharedDefines.h"
 
 using ai::buff::MakeAuraQualifierForBuff;
-using ai::gbless::SPELL_BLESSING_OF_SANCTUARY;
-using ai::gbless::SPELL_GREATER_BLESSING_OF_SANCTUARY;
 
 static bool IsBlessingTargetCandidate(Player* bot, Player* player)
 {
@@ -203,7 +200,7 @@ inline std::string const GetActualBlessingOfWisdom(Unit* target)
 
 inline std::string const GetActualBlessingOfSanctuary(Unit* target, Player* bot)
 {
-    if (!bot->HasSpell(SPELL_BLESSING_OF_SANCTUARY))
+    if (!bot->HasSpell(ai::paladin::SPELL_BLESSING_OF_SANCTUARY))
         return "";
 
     Player* targetPlayer = target->ToPlayer();
@@ -354,7 +351,7 @@ bool CastBlessingOfSanctuaryOnPartyAction::Execute(Event /*event*/)
     if (IsGreaterBlessingMode(bot))
         return false;
 
-    if (!bot->HasSpell(SPELL_BLESSING_OF_SANCTUARY))
+    if (!bot->HasSpell(ai::paladin::SPELL_BLESSING_OF_SANCTUARY))
         return false;
 
     Unit* target = GetTarget();
@@ -444,7 +441,7 @@ Unit* CastBlessingOfSanctuaryOnPartyAction::GetTarget()
     if (IsGreaterBlessingMode(bot))
         return nullptr;
 
-    if (!bot->HasSpell(SPELL_BLESSING_OF_SANCTUARY))
+    if (!bot->HasSpell(ai::paladin::SPELL_BLESSING_OF_SANCTUARY))
         return nullptr;
 
     return FindBlessingTarget(bot, botAI, [&](Player* player)
@@ -533,8 +530,8 @@ bool CastBlessingOfKingsOnPartyAction::Execute(Event /*event*/)
     {
         const bool isTank = IsTankRole(targetPlayer);
         const bool hasSanctFromMe =
-            target->HasAura(SPELL_BLESSING_OF_SANCTUARY, bot->GetGUID()) ||
-            target->HasAura(SPELL_GREATER_BLESSING_OF_SANCTUARY, bot->GetGUID());
+            target->HasAura(ai::paladin::SPELL_BLESSING_OF_SANCTUARY, bot->GetGUID()) ||
+            target->HasAura(ai::paladin::SPELL_GREATER_BLESSING_OF_SANCTUARY, bot->GetGUID());
         const bool hasSanctAny =
             botAI->HasAura("blessing of sanctuary", target) ||
             botAI->HasAura("greater blessing of sanctuary", target);

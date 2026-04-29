@@ -8,6 +8,7 @@
 #include "AiFactory.h"
 #include "Event.h"
 #include "GenericBuffUtils.h"
+#include "PaladinHelper.h"
 #include "Playerbots.h"
 #include "SharedDefines.h"
 #include "Value.h"
@@ -20,7 +21,6 @@ using namespace ai::gbless;
 namespace
 {
     constexpr uint32 GREATER_BLESSING_ASSIGNMENT_CACHE_MS = 4 * 1000;
-
     constexpr uint8 MAX_BLESSING_SLOTS = 4;
     constexpr uint8 MAX_CLASS_ID = 12;
 
@@ -75,7 +75,7 @@ namespace
 
         if (category == BASE_SANCTUARY)
         {
-            if (!player->HasSpell(SPELL_BLESSING_OF_SANCTUARY))
+            if (!player->HasSpell(ai::paladin::SPELL_BLESSING_OF_SANCTUARY))
                 return std::numeric_limits<int>::min() / 4;
 
             return 2;
@@ -240,8 +240,8 @@ namespace
         PlayerbotAI* botAI, std::vector<CachedBlessingBucketAssignment>& outAssignments)
     {
         Player* bot = botAI->GetBot();
-        Group* group = bot ? bot->GetGroup() : nullptr;
-        if (!bot || !IsEligibleGroupForAutoBlessings(group))
+        Group* group = bot->GetGroup();
+        if (!IsEligibleGroupForAutoBlessings(group))
             return false;
 
         std::vector<Player*> botPaladins;
@@ -261,8 +261,8 @@ namespace
             if (player->getClass() == CLASS_PALADIN && GET_PLAYERBOT_AI(player))
                 botPaladins.push_back(player);
 
-            // Keep dead members in the assignment model so revive does not
-            // temporarily delete an entire blessing bucket from the cache.
+            // Important: keep dead members in the assignment model so revive does
+            // not temporarily delete an entire blessing bucket from the cache.
             raidMembers.push_back({player, ResolveRoleProfile(player)});
         }
 
@@ -272,7 +272,7 @@ namespace
         bool anySanctuaryAvailable = false;
         for (Player* paladin : botPaladins)
         {
-            if (paladin && paladin->HasSpell(SPELL_BLESSING_OF_SANCTUARY))
+            if (paladin && paladin->HasSpell(ai::paladin::SPELL_BLESSING_OF_SANCTUARY))
             {
                 anySanctuaryAvailable = true;
                 break;
@@ -330,8 +330,8 @@ namespace
                                          [&](PresentBucket const& other)
                                          {
                                              return other.classId == bucket.classId &&
-                                                   other.byRole == bucket.byRole &&
-                                                   (!bucket.byRole || other.role == bucket.role);
+                                                    other.byRole == bucket.byRole &&
+                                                    (!bucket.byRole || other.role == bucket.role);
                                          });
 
             if (existing == buckets.end())
@@ -506,14 +506,13 @@ static bool MatchesBucket(Player* player, CachedBlessingBucketAssignment const& 
     return !assignment.byRole || ResolveRoleProfile(player) == assignment.role;
 }
 
-static Player* FindMissingBlessingTarget(PlayerbotAI* botAI,
-                                         CachedBlessingBucketAssignment const& assignment,
-                                         BlessingType castType,
-                                         std::string const& spellName)
+static Player* FindMissingBlessingTarget(
+    PlayerbotAI* botAI, CachedBlessingBucketAssignment const& assignment,
+    BlessingType castType, std::string const& spellName)
 {
     Player* bot = botAI->GetBot();
-    Group* group = bot ? bot->GetGroup() : nullptr;
-    if (!bot || !group)
+    Group* group = bot->GetGroup();
+    if (!group)
         return nullptr;
 
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
@@ -525,14 +524,12 @@ static Player* FindMissingBlessingTarget(PlayerbotAI* botAI,
         if (!(player->IsInSameGroupWith(bot) || player->IsInSameRaidWith(bot)))
             continue;
 
-        if (!MatchesBucket(player, assignment))
+        if (!MatchesBucket(player, assignment) ||
+            HasMyExactBlessing(botAI, player, castType) ||
+            !botAI->CanCastSpell(spellName, player))
+        {
             continue;
-
-        if (HasMyExactBlessing(botAI, player, castType))
-            continue;
-
-        if (!botAI->CanCastSpell(spellName, player))
-            continue;
+        }
 
         return player;
     }
@@ -614,9 +611,6 @@ bool CastGreaterBlessingAssignmentAction::FindPendingAssignment(
 
     return false;
 }
-
-// CastGreaterBlessingAssignmentAction computes blessing assignments for the group
-// composition and casts one buff per call when auto greater blessings are active.
 
 bool CastGreaterBlessingAssignmentAction::GetAssignments(
     std::vector<CachedBlessingBucketAssignment>& outAssignments)
