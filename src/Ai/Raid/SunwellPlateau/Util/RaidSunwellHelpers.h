@@ -160,6 +160,7 @@ bool HasReachedKalecgosInitialRangedPosition(Player* bot);
 void SetKalecgosInitialRangedPositionReached(Player* bot, bool reached);
 bool ShouldEnterKalecgosSpectralRift(PlayerbotAI* botAI, Player* bot);
 bool IsInKalecgosSpectralRealm(Player* bot);
+bool IsKalecgosRealmTransitionGraceActive(Player* bot);
 void RecordKalecgosSpectralBlastTarget(PlayerbotAI* botAI, Player* bot);
 void RecordKalecgosSpectralRealmEnter(PlayerbotAI* botAI, Player* bot);
 void RecordKalecgosNormalRealmEnter(Player* bot);

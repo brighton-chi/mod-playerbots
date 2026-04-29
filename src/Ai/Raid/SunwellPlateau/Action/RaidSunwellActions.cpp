@@ -40,25 +40,7 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
 
     if (!kalecgos && !AI_VALUE2(Unit*, "find target", "sathrovarr the corruptor"))
     {
-        bool isInKalecgosRealmTransitionGrace = false;
-        if (!bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_REALM)))
-        {
-            auto realmStateItr = kalecgosRealmStates.find(guid);
-            if (realmStateItr != kalecgosRealmStates.end())
-            {
-                uint32 now = getMSTime();
-                constexpr uint32 realmTransitionGraceMs = 2000;
-                if ((realmStateItr->second.lastEnterMs &&
-                     getMSTimeDiff(realmStateItr->second.lastEnterMs, now) < realmTransitionGraceMs) ||
-                    (realmStateItr->second.lastExitMs &&
-                     getMSTimeDiff(realmStateItr->second.lastExitMs, now) < realmTransitionGraceMs))
-                {
-                    isInKalecgosRealmTransitionGrace = true;
-                }
-            }
-        }
-
-        if (!isInKalecgosRealmTransitionGrace)
+        if (!IsKalecgosRealmTransitionGraceActive(bot))
         {
             if (isMechanicTracker &&
                 kalecgosEncounterStates.erase(instanceId) > 0)
