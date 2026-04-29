@@ -6,11 +6,18 @@
 #ifndef _PLAYERBOT_RAIDBLACKTEMPLEHELPERS_H_
 #define _PLAYERBOT_RAIDBLACKTEMPLEHELPERS_H_
 
+#include <array>
 #include <unordered_map>
+#include <utility>
+#include <vector>
 
-#include "AiObject.h"
+#include "Common.h"
 #include "Position.h"
-#include "Unit.h"
+
+class GameObject;
+class Player;
+class PlayerbotAI;
+class Unit;
 
 namespace BlackTempleHelpers
 {

@@ -7,7 +7,6 @@
 #define _PLAYERBOT_RAIDBLACKTEMPLESTRATEGY_H_
 
 #include "Strategy.h"
-#include "Multiplier.h"
 
 class RaidBlackTempleStrategy : public Strategy
 {
