@@ -7,7 +7,7 @@
 #define _PLAYERBOT_RAIDSUNWELLTRIGGERCONTEXT_H
 
 #include "RaidSunwellTriggers.h"
-#include "AiObjectContext.h"
+#include "NamedObjectContext.h"
 
 class RaidSunwellTriggerContext : public NamedObjectContext<Trigger>
 {

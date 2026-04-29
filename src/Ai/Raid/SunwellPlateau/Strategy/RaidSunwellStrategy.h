@@ -7,7 +7,6 @@
 #define _PLAYERBOT_RAIDSUNWELLSTRATEGY_H
 
 #include "Strategy.h"
-#include "Multiplier.h"
 
 class RaidSunwellStrategy : public Strategy
 {
