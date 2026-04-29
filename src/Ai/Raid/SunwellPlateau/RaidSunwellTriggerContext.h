@@ -19,6 +19,9 @@ public:
             &RaidSunwellTriggerContext::sunwell_plateau_bot_is_not_in_combat;
 
         // Trash
+        creators["volatile fiend self destructs when near"] =
+            &RaidSunwellTriggerContext::volatile_fiend_self_destructs_when_near;
+
         creators["apocalypse guard protected by infernal defense"] =
             &RaidSunwellTriggerContext::apocalypse_guard_protected_by_infernal_defense;
 
@@ -191,6 +194,9 @@ private:
         PlayerbotAI* botAI) { return new SunwellPlateauBotIsNotInCombatTrigger(botAI); }
 
     // Trash
+    static Trigger* volatile_fiend_self_destructs_when_near(
+        PlayerbotAI* botAI) { return new VolatileFiendSelfDestructsWhenNearTrigger(botAI); }
+
     static Trigger* apocalypse_guard_protected_by_infernal_defense(
         PlayerbotAI* botAI) { return new ApocalypseGuardProtectedByInfernalDefenseTrigger(botAI); }
 

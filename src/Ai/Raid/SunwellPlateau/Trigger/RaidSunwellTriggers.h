@@ -20,6 +20,14 @@ public:
 
 // Trash
 
+class VolatileFiendSelfDestructsWhenNearTrigger : public Trigger
+{
+public:
+    VolatileFiendSelfDestructsWhenNearTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "volatile fiend self destructs when near") {}
+    bool IsActive() override;
+};
+
 class ApocalypseGuardProtectedByInfernalDefenseTrigger : public Trigger
 {
 public:

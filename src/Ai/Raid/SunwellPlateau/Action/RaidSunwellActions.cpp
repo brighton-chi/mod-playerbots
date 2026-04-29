@@ -127,6 +127,28 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
 
 // Trash
 
+bool VolatileFiendKeepEnemyAwayFromGroupAction::Execute(Event /*event*/)
+{
+    Unit* volatileFiend =
+        GetFirstAliveUnitByEntry(botAI, static_cast<uint32>(SunwellNpcs::NPC_VOLATILE_FIEND));
+    if (!volatileFiend)
+        return false;
+
+    if (botAI->IsMainTank(bot) && bot->GetVictim() != volatileFiend)
+    {
+        return Attack(volatileFiend);
+    }
+    else if (!botAI->IsTank(bot))
+    {
+        constexpr float safeDistance = 15.0f;
+        float currentDistance = bot->GetDistance2d(volatileFiend);
+        if (currentDistance < safeDistance)
+            return MoveAway(volatileFiend, safeDistance - currrentDistance);
+    }
+
+    return false;
+}
+
 bool ApocalypseGuardAttackWithHolyMagicAction::Execute(Event /*event*/)
 {
     Unit* target = GetInfernalDefenseApocalypseGuard(bot);

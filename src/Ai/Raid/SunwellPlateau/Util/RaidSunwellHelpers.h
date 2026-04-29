@@ -79,6 +79,7 @@ enum class SunwellNpcs : uint32
 {
     // Trash
     NPC_APOCALYPSE_GUARD        = 25593,
+    NPC_VOLATILE_FIEND          = 25851,
 
     // Felmyst
     NPC_FELMYST                 = 25038,

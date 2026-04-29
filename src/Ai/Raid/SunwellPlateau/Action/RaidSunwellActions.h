@@ -24,6 +24,14 @@ public:
 
 // Trash
 
+class VolatileFiendKeepEnemyAwayFromGroupAction : public AttackAction
+{
+public:
+    VolatileFiendKeepEnemyAwayFromGroupAction(
+        PlayerbotAI* botAI, std::string const name = "volatile fiend keep enemy away from group") : AttackAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 class ApocalypseGuardAttackWithHolyMagicAction : public Action
 {
 public:

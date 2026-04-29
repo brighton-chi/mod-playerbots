@@ -13,6 +13,9 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("sunwell plateau erase timers and trackers", ACTION_EMERGENCY + 11) }));
 
     // Trash
+    triggers.push_back(new TriggerNode("volatile fiend self destructs when near", {
+        NextAction("volatile fiend keep enemy away from group", ACTION_EMERGENCY + 1) }));
+
     triggers.push_back(new TriggerNode("apocalypse guard protected by infernal defense", {
         NextAction("apocalypse guard attack with holy magic", ACTION_RAID + 1) }));
 

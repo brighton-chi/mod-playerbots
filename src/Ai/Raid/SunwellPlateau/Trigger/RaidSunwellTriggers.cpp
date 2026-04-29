@@ -19,6 +19,11 @@ bool SunwellPlateauBotIsNotInCombatTrigger::IsActive()
 
 // Trash
 
+bool VolatileFiendSelfDestructsWhenNearTrigger::IsActive()
+{
+    return AI_VALUE2(Unit*, "find target", "volatile fiend");
+}
+
 bool ApocalypseGuardProtectedByInfernalDefenseTrigger::IsActive()
 {
     if (bot->getClass() != CLASS_PRIEST)

@@ -19,6 +19,9 @@ public:
             &RaidSunwellActionContext::sunwell_plateau_erase_timers_and_trackers;
 
         // Trash
+        creators["volatile fiend keep enemy away from group"] =
+            &RaidSunwellActionContext::volatile_fiend_keep_enemy_away_from_group;
+
         creators["apocalypse guard attack with holy magic"] =
             &RaidSunwellActionContext::apocalypse_guard_attack_with_holy_magic;
 
@@ -188,6 +191,9 @@ private:
         PlayerbotAI* botAI) { return new SunwellPlateauEraseTimersAndTrackersAction(botAI); }
 
     // Trash
+    static Action* volatile_fiend_keep_enemy_away_from_group(
+        PlayerbotAI* botAI) { return new VolatileFiendKeepEnemyAwayFromGroupAction(botAI); }
+
     static Action* apocalypse_guard_attack_with_holy_magic(
         PlayerbotAI* botAI) { return new ApocalypseGuardAttackWithHolyMagicAction(botAI); }
 
