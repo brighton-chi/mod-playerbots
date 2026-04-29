@@ -25,6 +25,7 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
     const ObjectGuid guid = bot->GetGUID();
     uint32 instanceId = bot->GetInstanceId();
     const bool isMechanicTracker = IsMechanicTrackerBot(botAI, bot, SUNWELL_MAP_ID);
+    const bool isRanged = botAI->IsRanged(bot);
 
     bool erased = false;
 
@@ -32,7 +33,7 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
 
     Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos");
 
-    if (!kalecgos && botAI->IsRanged(bot) &&
+    if (!kalecgos && isRanged &&
         hasReachedKalecgosInitialRangedPosition.erase(guid) > 0)
     {
         erased = true;
@@ -42,11 +43,8 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
     {
         if (!IsKalecgosRealmTransitionGraceActive(bot))
         {
-            if (isMechanicTracker &&
-                kalecgosEncounterStates.erase(instanceId) > 0)
-            {
+            if (isMechanicTracker && kalecgosEncounterStates.erase(instanceId) > 0)
                 erased = true;
-            }
 
             if (kalecgosRealmStates.erase(guid) > 0)
                 erased = true;
@@ -60,17 +58,11 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
         if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_BURN)))
             bot->RemoveAura(static_cast<uint32>(SunwellSpells::SPELL_BURN));
 
-        if (botAI->IsRanged(bot) &&
-            brutallusRangedBurnStates.erase(guid) > 0)
-        {
+        if (isRanged && brutallusRangedBurnStates.erase(guid) > 0)
             erased = true;
-        }
 
-        if (isMechanicTracker &&
-            brutallusRangedAssignments.erase(instanceId) > 0)
-        {
+        if (isMechanicTracker && brutallusRangedAssignments.erase(instanceId) > 0)
             erased = true;
-        }
     }
 
     // Felmyst
@@ -120,11 +112,8 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
         if (kiljaedenArmageddons.erase(instanceId) > 0)
             erased = true;
 
-        if (botAI->IsRanged(bot) &&
-            kiljaedenRangedArmageddonAssignments.erase(instanceId) > 0)
-        {
+        if (isRanged && kiljaedenRangedArmageddonAssignments.erase(instanceId) > 0)
             erased = true;
-        }
     }
 
     return erased;
