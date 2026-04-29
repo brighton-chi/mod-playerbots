@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "Common.h"
+#include "ObjectGuid.h"
 #include "Position.h"
 
 class GameObject;

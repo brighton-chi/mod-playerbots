@@ -251,11 +251,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class EredarTwinsStackInRoomCenterAction : public MovementAction
+class EredarTwinsStackInRoomCenterAction : public AttackAction
 {
 public:
     EredarTwinsStackInRoomCenterAction(
-        PlayerbotAI* botAI, std::string const name = "eredar twins stack in room center") : MovementAction(botAI, name) {}
+        PlayerbotAI* botAI, std::string const name = "eredar twins stack in room center") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 

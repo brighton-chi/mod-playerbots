@@ -158,7 +158,8 @@ bool KalecgosTankPositionBossAction::Execute(Event event)
     };
 
     Player* currentVictimPlayer = kalecgos->GetVictim() ? kalecgos->GetVictim()->ToPlayer() : nullptr;
-    bool otherTankHasAggro = currentVictimPlayer && currentVictimPlayer != bot && botAI->IsTank(currentVictimPlayer);
+    bool otherTankHasAggro = currentVictimPlayer && currentVictimPlayer != bot &&
+         botAI->IsTank(currentVictimPlayer);
 
     if (otherTankHasAggro)
     {
@@ -954,7 +955,8 @@ bool FelmystRunAwayFromEncapsulatedPlayerAction::Execute(Event /*event*/)
         }
     }
 
-    return MoveAway(encapsulateTarget, FELMYST_ENCAPSULATE_SAFE_DISTANCE - distToEncapsulated + 2.0f);
+    return MoveAway(
+        encapsulateTarget, FELMYST_ENCAPSULATE_SAFE_DISTANCE - distToEncapsulated + 2.0f);
 }
 
 bool FelmystCastMassDispelOnGasNovaAction::Execute(Event /*event*/)
@@ -1458,7 +1460,8 @@ bool MuruPositionRangedAction::Execute(Event /*event*/)
                          hasActiveNonControlledVoidSpawns ||
                          !targets.furyMages.empty() ||
                          !targets.berserkers.empty();
-    auto reachedPositionsItr = muruEntropiusInitialRangedPositionsReached.find(bot->GetInstanceId());
+    auto reachedPositionsItr =
+        muruEntropiusInitialRangedPositionsReached.find(bot->GetInstanceId());
     bool hasReachedInitialPosition =
         reachedPositionsItr != muruEntropiusInitialRangedPositionsReached.end() &&
         reachedPositionsItr->second.find(bot->GetGUID()) != reachedPositionsItr->second.end();
@@ -2256,7 +2259,8 @@ Unit* MuruEnslavedVoidSpawnAttackAction::GetVoidSpawnVolleyPriorityTarget(
         static_cast<uint32>(SunwellNpcs::NPC_VOID_SENTINEL), targets.voidSentinels);
 
     Unit* validMuru = targets.muru;
-    if (!validMuru || validMuru->GetHealth() <= 1 || TryGetMuruDarknessActiveState(bot, validMuru))
+    if (!validMuru || validMuru->GetHealth() <= 1 ||
+        TryGetMuruDarknessActiveState(bot, validMuru))
     {
         validMuru = nullptr;
     }
