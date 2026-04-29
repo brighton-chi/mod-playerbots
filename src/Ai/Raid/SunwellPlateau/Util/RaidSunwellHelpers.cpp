@@ -1789,6 +1789,40 @@ namespace SunwellHelpers
 
         auto const& safeSpots = FELMYST_FOG_SAFE_SPOTS[laneIndex];
         std::array<uint8, 3> candidateOrder = { 0, 1, 2 };
+        std::list<Creature*> vaporHazards;
+        auto addVaporHazards = [&](uint32 entry)
+        {
+            constexpr float searchRadius = 150.0f;
+            std::list<Creature*> creatures;
+            bot->GetCreatureListWithEntryInGrid(creatures, entry, searchRadius);
+            for (Creature* creature : creatures)
+            {
+                if (creature && creature->IsAlive())
+                    vaporHazards.push_back(creature);
+            }
+        };
+
+        addVaporHazards(static_cast<uint32>(SunwellNpcs::NPC_DEMONIC_VAPOR));
+        addVaporHazards(static_cast<uint32>(SunwellNpcs::NPC_DEMONIC_VAPOR_TRAIL));
+
+        auto isSafeSpotBlockedByVapor = [&](Position const& safeSpot)
+        {
+            constexpr float safeDistanceFromVapor = 10.0f;
+            for (Creature* hazard : vaporHazards)
+            {
+                if (!hazard)
+                    continue;
+
+                if (hazard->GetExactDist2d(
+                        safeSpot.GetPositionX(), safeSpot.GetPositionY()) < safeDistanceFromVapor)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        };
+
         std::sort(candidateOrder.begin(), candidateOrder.end(),
             [&](uint8 leftIndex, uint8 rightIndex)
             {
@@ -1801,6 +1835,9 @@ namespace SunwellHelpers
         for (uint8 candidateIndex : candidateOrder)
         {
             Position const& safeSpot = safeSpots[candidateIndex];
+            if (isSafeSpotBlockedByVapor(safeSpot))
+                continue;
+
             float destinationX = safeSpot.GetPositionX();
             float destinationY = safeSpot.GetPositionY();
             float destinationZ = safeSpot.GetPositionZ();

@@ -24,13 +24,13 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
 {
     const ObjectGuid guid = bot->GetGUID();
     uint32 instanceId = bot->GetInstanceId();
-    Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos");
-    Unit* sathrovarr = AI_VALUE2(Unit*, "find target", "sathrovarr the corruptor");
-    Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius");
+    const bool isMechanicTracker = IsMechanicTrackerBot(botAI, bot, SUNWELL_MAP_ID);
 
     bool erased = false;
 
     // Kalecgos
+
+    Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos");
 
     if (!kalecgos && botAI->IsRanged(bot) &&
         hasReachedKalecgosInitialRangedPosition.erase(guid) > 0)
@@ -38,7 +38,7 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
         erased = true;
     }
 
-    if (!kalecgos && !sathrovarr)
+    if (!kalecgos && !AI_VALUE2(Unit*, "find target", "sathrovarr the corruptor"))
     {
         bool isInKalecgosRealmTransitionGrace = false;
         if (!bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_REALM)))
@@ -60,7 +60,7 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
 
         if (!isInKalecgosRealmTransitionGrace)
         {
-            if (IsMechanicTrackerBot(botAI, bot, SUNWELL_MAP_ID) &&
+            if (isMechanicTracker &&
                 kalecgosEncounterStates.erase(instanceId) > 0)
             {
                 erased = true;
@@ -73,8 +73,7 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
 
     // Brutallus
 
-    Unit* brutallus = AI_VALUE2(Unit*, "find target", "brutallus");
-    if (!brutallus)
+    if (!AI_VALUE2(Unit*, "find target", "brutallus"))
     {
         if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_BURN)))
             bot->RemoveAura(static_cast<uint32>(SunwellSpells::SPELL_BURN));
@@ -85,7 +84,7 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
             erased = true;
         }
 
-        if (IsMechanicTrackerBot(botAI, bot, SUNWELL_MAP_ID) &&
+        if (isMechanicTracker &&
             brutallusRangedAssignments.erase(instanceId) > 0)
         {
             erased = true;
@@ -94,31 +93,19 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
 
     // Felmyst
 
-    if (!AI_VALUE2(Unit*, "find target", "felmyst"))
+    if (!AI_VALUE2(Unit*, "find target", "felmyst") && isMechanicTracker)
     {
-        if (IsMechanicTrackerBot(botAI, bot, SUNWELL_MAP_ID) &&
-            felmystRangedAssignments.erase(instanceId) > 0)
-        {
+        if (felmystRangedAssignments.erase(instanceId) > 0)
             erased = true;
-        }
 
-        if (IsMechanicTrackerBot(botAI, bot, SUNWELL_MAP_ID) &&
-            felmystFogOfCorruptionStates.erase(instanceId) > 0)
-        {
+        if (felmystFogOfCorruptionStates.erase(instanceId) > 0)
             erased = true;
-        }
 
-        if (IsMechanicTrackerBot(botAI, bot, SUNWELL_MAP_ID) &&
-            felmystDemonicVaporPathIndices.erase(instanceId) > 0)
-        {
+        if (felmystDemonicVaporPathIndices.erase(instanceId) > 0)
             erased = true;
-        }
 
-        if (IsMechanicTrackerBot(botAI, bot, SUNWELL_MAP_ID) &&
-            felmystDemonicVaporWaypointIndices.erase(instanceId) > 0)
-        {
+        if (felmystDemonicVaporWaypointIndices.erase(instanceId) > 0)
             erased = true;
-        }
     }
 
     // Eredar Twins
@@ -132,30 +119,30 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
     }
 
     // M'uru
-    if (!AI_VALUE2(Unit*, "find target", "m'uru") && !entropius)
+    if (!AI_VALUE2(Unit*, "find target", "m'uru") &&
+        !AI_VALUE2(Unit*, "find target", "entropius") &&
+        isMechanicTracker)
     {
         if (muruDarknessStates.erase(instanceId) > 0)
-        {
             erased = true;
-        }
 
         if (muruEntropiusInitialRangedPositionsReached.erase(instanceId) > 0)
-        {
             erased = true;
-        }
     }
 
     // Kil'jaeden <The Deceiver>
     if (!AI_VALUE2(Unit*, "find target", "kil'jaeden") &&
-        !AI_VALUE2(Unit*, "find target", "hand of the deceiver"))
+        !AI_VALUE2(Unit*, "find target", "hand of the deceiver") &&
+        isMechanicTracker)
     {
-        if (IsMechanicTrackerBot(botAI, bot, SUNWELL_MAP_ID) &&
-            kiljaedenArmageddons.erase(instanceId) > 0)
+        if (kiljaedenArmageddons.erase(instanceId) > 0)
+            erased = true;
+
+        if (botAI->IsRanged(bot) &&
+            kiljaedenRangedArmageddonAssignments.erase(instanceId) > 0)
         {
             erased = true;
         }
-
-        kiljaedenRangedArmageddonAssignments.erase(instanceId);
     }
 
     return erased;
