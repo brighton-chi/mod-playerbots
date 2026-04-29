@@ -344,7 +344,7 @@ public:
     bool Execute(Event event) override;
 
 private:
-    const Position* GetClosestVoidSentinelTankPosition(Unit* voidSentinel) const;
+    const Position* GetAssignedVoidSentinelTankPosition(Unit* voidSentinel) const;
 };
 
 class MuruSetGroundingTotemInFirstAssistTankGroupAction : public Action

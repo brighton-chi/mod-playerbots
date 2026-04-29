@@ -100,6 +100,9 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
         if (muruDarknessStates.erase(instanceId) > 0)
             erased = true;
 
+        if (muruVoidSentinelTankAssignments.erase(instanceId) > 0)
+            erased = true;
+
         if (muruEntropiusInitialRangedPositionsReached.erase(instanceId) > 0)
             erased = true;
     }
@@ -1921,12 +1924,12 @@ bool MuruTanksGetThatSentinelOutOfHereAction::Execute(Event /*event*/)
     if (!voidSentinel)
         return false;
 
+    const Position* tankPosition = GetAssignedVoidSentinelTankPosition(voidSentinel);
+    if (!tankPosition)
+        return false;
+
     if (voidSentinel->GetVictim() == bot)
     {
-        const Position* tankPosition = GetClosestVoidSentinelTankPosition(voidSentinel);
-        if (!tankPosition)
-            return false;
-
         float distToPosition = bot->GetExactDist2d(tankPosition->GetPositionX(),
                                                    tankPosition->GetPositionY());
         if (distToPosition > 3.0f)
@@ -1948,17 +1951,29 @@ bool MuruTanksGetThatSentinelOutOfHereAction::Execute(Event /*event*/)
     return false;
 }
 
-const Position* MuruTanksGetThatSentinelOutOfHereAction::GetClosestVoidSentinelTankPosition(
+const Position* MuruTanksGetThatSentinelOutOfHereAction::GetAssignedVoidSentinelTankPosition(
     Unit* voidSentinel) const
 {
     if (!voidSentinel)
         return nullptr;
 
+    auto& assignments = muruVoidSentinelTankAssignments[voidSentinel->GetInstanceId()];
+    auto assignmentItr = assignments.find(voidSentinel->GetGUID());
+    if (assignmentItr == assignments.end())
+    {
+        float northDistance = voidSentinel->GetExactDist2d(
+            MURU_VOID_SENTINEL_N_TANK_POSITION.GetPositionX(),
+            MURU_VOID_SENTINEL_N_TANK_POSITION.GetPositionY());
+        float eastDistance = voidSentinel->GetExactDist2d(
+            MURU_VOID_SENTINEL_E_TANK_POSITION.GetPositionX(),
+            MURU_VOID_SENTINEL_E_TANK_POSITION.GetPositionY());
+        uint8 assignedIndex = northDistance <= eastDistance ? 0 : 1;
+        assignmentItr = assignments.emplace(voidSentinel->GetGUID(), assignedIndex).first;
+    }
+
     const Position& north = MURU_VOID_SENTINEL_N_TANK_POSITION;
     const Position& east = MURU_VOID_SENTINEL_E_TANK_POSITION;
-    return (voidSentinel->GetExactDist2d(north.GetPositionX(), north.GetPositionY()) <=
-            voidSentinel->GetExactDist2d(east.GetPositionX(), east.GetPositionY())) ?
-        &north : &east;
+    return assignmentItr->second == 0 ? &north : &east;
 }
 
 bool MuruSetGroundingTotemInFirstAssistTankGroupAction::Execute(Event /*event*/)
