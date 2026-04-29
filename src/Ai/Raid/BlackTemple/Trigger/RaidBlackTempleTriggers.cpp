@@ -136,8 +136,8 @@ bool SupremusPullingBossOrChangingPhaseTrigger::IsActive()
     if (it == supremusPhaseTimer.end())
         return false;
 
-    time_t now = time(nullptr);
-    time_t elapsed = now - it->second;
+    const time_t now = time(nullptr);
+    const time_t elapsed = now - it->second;
 
     // Active during first 10 seconds, or during 60-70, 120-130, etc.
     return (elapsed < 10) || ((elapsed % 60) < 10 && elapsed >= 60);
@@ -215,10 +215,8 @@ bool TeronGorefiendBossEngagedByRangedTrigger::IsActive()
 
 bool TeronGorefiendBossIsCastingShadowOfDeathTrigger::IsActive()
 {
-    if (bot->getClass() != CLASS_HUNTER &&
-        bot->getClass() != CLASS_MAGE &&
-        bot->getClass() != CLASS_PALADIN &&
-        bot->getClass() != CLASS_ROGUE)
+    if (bot->getClass() != CLASS_HUNTER && bot->getClass() != CLASS_MAGE &&
+        bot->getClass() != CLASS_PALADIN && bot->getClass() != CLASS_ROGUE)
     {
         return false;
     }
@@ -285,7 +283,7 @@ bool GurtoggBloodboilPullingBossTrigger::IsActive()
     if (it == gurtoggPhaseTimer.end())
         return false;
 
-    time_t elapsed = std::time(nullptr) - it->second;
+    const time_t elapsed = std::time(nullptr) - it->second;
     return elapsed < 10;
 }
 
@@ -549,11 +547,11 @@ bool IllidariCouncilDeterminingDpsAssignmentsTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "gathios the shatterer"))
         return false;
 
-    if (botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0, false))
+    if (botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0, false) ||
+        GetZerevorMageTank(bot) == bot)
+    {
         return false;
-
-    if (GetZerevorMageTank(bot) == bot)
-        return false;
+    }
 
     Unit* darkshadow = AI_VALUE2(Unit*, "find target", "veras darkshadow");
     if (botAI->IsTank(bot) && botAI->IsAssistTankOfIndex(bot, 1, false) &&
@@ -689,8 +687,7 @@ bool IllidanStormrageGrateIsSafeFromFlamesTrigger::IsActive()
 
 bool IllidanStormrageBotStruckByDarkBarrageTrigger::IsActive()
 {
-    if (bot->getClass() != CLASS_MAGE &&
-        bot->getClass() != CLASS_PALADIN &&
+    if (bot->getClass() != CLASS_MAGE && bot->getClass() != CLASS_PALADIN &&
         bot->getClass() != CLASS_ROGUE)
     {
         return false;
@@ -816,7 +813,7 @@ bool IllidanStormrageMaievPlacedShadowTrapTrigger::IsActive()
         }
     }
 
-    return closestBot = bot;
+    return closestBot == bot;
 }
 
 bool IllidanStormrageNeedToManageDpsTimerAndRtiTrigger::IsActive()

@@ -23,7 +23,7 @@ using namespace SunwellHelpers;
 bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
 {
     const ObjectGuid guid = bot->GetGUID();
-    uint32 instanceId = bot->GetInstanceId();
+    const uint32 instanceId = bot->GetInstanceId();
     const bool isMechanicTracker = IsMechanicTrackerBot(botAI, bot, SUNWELL_MAP_ID);
     const bool isRanged = botAI->IsRanged(bot);
 
@@ -141,9 +141,9 @@ bool VolatileFiendKeepEnemyAwayFromGroupAction::Execute(Event /*event*/)
     else if (!botAI->IsTank(bot))
     {
         constexpr float safeDistance = 15.0f;
-        float currentDistance = bot->GetDistance2d(volatileFiend);
+        const float currentDistance = bot->GetDistance2d(volatileFiend);
         if (currentDistance < safeDistance)
-            return MoveAway(volatileFiend, safeDistance - currrentDistance);
+            return MoveAway(volatileFiend, safeDistance - currentDistance);
     }
 
     return false;
@@ -283,9 +283,8 @@ bool KalecgosDisperseRangedAction::Execute(Event /*event*/)
 
     if (Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos"))
     {
-        const float safeDistFromBoss = 20.0f;
+        constexpr float safeDistFromBoss = 20.0f;
         constexpr uint32 minInterval = 0;
-
         if (bot->GetExactDist2d(kalecgos) < safeDistFromBoss)
             return FleePosition(kalecgos->GetPosition(), safeDistFromBoss, minInterval);
     }
@@ -415,8 +414,8 @@ bool BrutallusTanksHandleBossAction::Execute(Event event)
         if (shouldTaunt)
             return botAI->DoSpecificAction("taunt spell", event, true);
 
-        Position position = GetBrutallusTankPosition(brutallus, false, bot->GetPositionZ());
-        float distToPosition =
+        const Position position = GetBrutallusTankPosition(brutallus, false, bot->GetPositionZ());
+        const float distToPosition =
             bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
 
         if (distToPosition > 3.0f)
@@ -429,9 +428,9 @@ bool BrutallusTanksHandleBossAction::Execute(Event event)
         return false;
     }
 
-    Position position =
+    const Position position =
         GetBrutallusTankPosition(brutallus, isMainTank, bot->GetPositionZ());
-    float distToPosition =
+    const float distToPosition =
         bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
 
     if (brutallus->GetVictim() == bot && distToPosition <= 3.0f)
@@ -457,9 +456,6 @@ bool BrutallusTanksHandleBossAction::Execute(Event event)
 
 bool BrutallusPositionMeleeAction::Execute(Event /*event*/)
 {
-    if (bot->getClass() == CLASS_PALADIN && botAI->HasAura("divine shield", bot))
-        botAI->RemoveAura("divine shield");
-
     Unit* brutallus = AI_VALUE2(Unit*, "find target", "brutallus");
     if (!brutallus)
         return false;
@@ -501,12 +497,8 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
     if (burnStateItr != brutallusRangedBurnStates.end())
         burnState = burnStateItr->second;
 
-    if (burnState == BrutallusRangedBurnState::MovingToFrontStep)
-    {
-        brutallusRangedBurnStates.erase(guid);
-        burnState = BrutallusRangedBurnState::None;
-    }
-    else if (burnState == BrutallusRangedBurnState::MovingToMirrorStep)
+    if (burnState == BrutallusRangedBurnState::MovingToFrontStep ||
+        burnState == BrutallusRangedBurnState::MovingToMirrorStep)
     {
         brutallusRangedBurnStates.erase(guid);
         burnState = BrutallusRangedBurnState::None;
@@ -706,8 +698,8 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
     {
         Position position;
         if (!TryGetBrutallusRangedArcPosition(
-            brutallus, rangedIndex, BRUTALLUS_BURN_TRAVEL_RADIUS, true,
-            bot->GetPositionX(), bot->GetPositionY(),
+                brutallus, rangedIndex, BRUTALLUS_BURN_TRAVEL_RADIUS, true,
+                bot->GetPositionX(), bot->GetPositionY(),
                 bot->GetPositionZ(), position))
         {
             return false;
@@ -722,7 +714,7 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
 
         Position mirrorStepPosition;
         if (!TryGetBrutallusRangedStepPosition(
-            brutallus, rangedIndex, true, BRUTALLUS_BURN_TRAVEL_RADIUS,
+                brutallus, rangedIndex, true, BRUTALLUS_BURN_TRAVEL_RADIUS,
                 bot->GetPositionZ(), mirrorStepPosition))
         {
             return false;
@@ -739,7 +731,7 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
 
     Position position;
     if (!TryGetBrutallusRangedStepPosition(
-        brutallus, rangedIndex, true, BRUTALLUS_NORMAL_RANGED_RADIUS,
+            brutallus, rangedIndex, true, BRUTALLUS_NORMAL_RANGED_RADIUS,
             bot->GetPositionZ(), position))
     {
         return false;
@@ -816,7 +808,7 @@ bool FelmystMainTankPositionBossOnGroundAction::Execute(Event /*event*/)
     if (felmyst->GetVictim() == bot && bot->GetHealthPct() > 50.0f)
     {
         const Position& position = FELMYST_TANK_POSITION;
-        float distToPosition =
+        const float distToPosition =
             bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
 
         if (distToPosition > 2.0f)
@@ -856,9 +848,6 @@ bool FelmystPositionRangedOnGroundAction::Execute(Event /*event*/)
 bool FelmystPositionMeleeOnGroundAction::Execute(Event /*event*/)
 {
     ClearFelmystDemonicVaporKiteState(bot);
-
-    if (bot->getClass() == CLASS_PALADIN && botAI->HasAura("divine shield", bot))
-        botAI->RemoveAura("divine shield");
 
     Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
     if (!felmyst)
@@ -912,7 +901,7 @@ bool FelmystRunAwayFromEncapsulatedPlayerAction::Execute(Event /*event*/)
     if (!encapsulateTarget || encapsulateTarget == bot)
         return false;
 
-    float distToEncapsulated = bot->GetDistance2d(encapsulateTarget);
+    const float distToEncapsulated = bot->GetDistance2d(encapsulateTarget);
 
     if (distToEncapsulated > FELMYST_ENCAPSULATE_SAFE_DISTANCE)
         return false;
@@ -923,30 +912,23 @@ bool FelmystRunAwayFromEncapsulatedPlayerAction::Execute(Event /*event*/)
 
     EnsureFelmystRangedAssignments(botAI, bot);
 
-    bool isEncapsulateTargetInRangedGroup = false;
-    auto instanceItr = felmystRangedAssignments.find(bot->GetInstanceId());
-    if (instanceItr != felmystRangedAssignments.end())
-    {
-        isEncapsulateTargetInRangedGroup = instanceItr->second.find(
-            encapsulateTarget->GetGUID()) != instanceItr->second.end();
-    }
+    const auto instanceItr = felmystRangedAssignments.find(bot->GetInstanceId());
+    const bool isEncapsulateTargetInRangedGroup =
+        instanceItr != felmystRangedAssignments.end() &&
+        instanceItr->second.find(encapsulateTarget->GetGUID()) != instanceItr->second.end();
 
-    float meleeDistance = bot->GetMeleeRange(felmyst);
-    float behindAngle = Position::NormalizeOrientation(felmyst->GetOrientation() + M_PI);
-    float meleeX = felmyst->GetPositionX() + meleeDistance * std::cos(behindAngle);
-    float meleeY = felmyst->GetPositionY() + meleeDistance * std::sin(behindAngle);
+    const float meleeDistance = bot->GetMeleeRange(felmyst);
+    const float behindAngle = Position::NormalizeOrientation(felmyst->GetOrientation() + M_PI);
 
     constexpr float sideDistance = 22.0f;
-    float frontAngle = GetFelmystFrontAngle(botAI, bot, felmyst);
-    float leftAngle = frontAngle + M_PI_2;
-    float rightAngle = frontAngle - M_PI_2;
-    float leftX = felmyst->GetPositionX() + std::cos(leftAngle) * sideDistance;
-    float leftY = felmyst->GetPositionY() + std::sin(leftAngle) * sideDistance;
-    float rightX = felmyst->GetPositionX() + std::cos(rightAngle) * sideDistance;
-    float rightY = felmyst->GetPositionY() + std::sin(rightAngle) * sideDistance;
+    const float frontAngle = GetFelmystFrontAngle(botAI, bot, felmyst);
+    const float leftX = felmyst->GetPositionX() + std::cos(frontAngle + M_PI_2) * sideDistance;
+    const float leftY = felmyst->GetPositionY() + std::sin(frontAngle + M_PI_2) * sideDistance;
+    const float rightX = felmyst->GetPositionX() + std::cos(frontAngle - M_PI_2) * sideDistance;
+    const float rightY = felmyst->GetPositionY() + std::sin(frontAngle - M_PI_2) * sideDistance;
 
-    float leftDistance = bot->GetExactDist2d(leftX, leftY);
-    float rightDistance = bot->GetExactDist2d(rightX, rightY);
+    const float leftDistance = bot->GetExactDist2d(leftX, leftY);
+    const float rightDistance = bot->GetExactDist2d(rightX, rightY);
 
     constexpr float stackArrivalDistance = 3.0f;
     auto tryMoveToStack = [&](float x, float y)
@@ -957,11 +939,15 @@ bool FelmystRunAwayFromEncapsulatedPlayerAction::Execute(Event /*event*/)
 
     if (isEncapsulateTargetInRangedGroup)
     {
-        if (tryMoveToStack(meleeX, meleeY))
+        if (tryMoveToStack(
+                felmyst->GetPositionX() + meleeDistance * std::cos(behindAngle),
+                felmyst->GetPositionY() + meleeDistance * std::sin(behindAngle)))
+        {
             return true;
+        }
 
-        float leftTargetDistance = encapsulateTarget->GetExactDist2d(leftX, leftY);
-        float rightTargetDistance = encapsulateTarget->GetExactDist2d(rightX, rightY);
+        const float leftTargetDistance = encapsulateTarget->GetExactDist2d(leftX, leftY);
+        const float rightTargetDistance = encapsulateTarget->GetExactDist2d(rightX, rightY);
 
         if (leftTargetDistance >= rightTargetDistance)
         {
@@ -1034,14 +1020,9 @@ bool FelmystAvoidDemonicVaporAction::Execute(Event /*event*/)
     if (hazard)
     {
         constexpr float safeDistFromVapor = 10.0f;
-        constexpr uint32 minInterval = 0;
-        float currentDistance = bot->GetDistance2d(hazard);
+        const float currentDistance = bot->GetDistance2d(hazard);
         if (currentDistance < safeDistFromVapor)
-        {
-            // return FleePosition(
-            //     hazard->GetPosition(), safeDistFromVapor, minInterval);
             return MoveAway(hazard, safeDistFromVapor - currentDistance);
-        }
     }
 
     return false;
@@ -1095,7 +1076,7 @@ bool EredarTwinsMeleeJumpDownFromBalconyAction::Execute(Event /*event*/)
     const Position& landingPos = EREDAR_TWINS_P2_MELEE_STACK_POSITION;
 
     constexpr float arrivalDistance = 2.0f;
-    float distanceToJumpPos =
+    const float distanceToJumpPos =
         bot->GetExactDist2d(jumpPos.GetPositionX(), jumpPos.GetPositionY());
 
     if (distanceToJumpPos > arrivalDistance)
@@ -1190,18 +1171,18 @@ bool EredarTwinsMainAndSecondAssistTanksPositionSacrolashAction::Execute(Event /
     if (sacrolash->GetVictim() == bot && bot->IsWithinMeleeRange(sacrolash))
     {
         const Position& position = SACROLASH_TANK_POSITION;
-        float distToPosition = bot->GetExactDist2d(position.GetPositionX(),
-                                                   position.GetPositionY());
+        const float distToPosition = bot->GetExactDist2d(position.GetPositionX(),
+                                                         position.GetPositionY());
         if (distToPosition > 2.0f)
         {
-            float dX = position.GetPositionX() - bot->GetPositionX();
-            float dY = position.GetPositionY() - bot->GetPositionY();
-            float moveDist = std::min(5.0f, distToPosition);
-            float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
-            float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
+            const float dX = position.GetPositionX() - bot->GetPositionX();
+            const float dY = position.GetPositionY() - bot->GetPositionY();
+            const float moveDist = std::min(5.0f, distToPosition);
+            const float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+            const float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
-            return MoveTo(SUNWELL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false,
-                          false, false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
+            return MoveTo(SUNWELL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
+                          false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
         }
     }
 
@@ -1255,7 +1236,7 @@ bool EredarTwinsFirstAssistTankMoveOutOfBlazeAction::Execute(Event /*event*/)
     const Position& position = ALYTHESS_TANK_POSITIONS[index];
 
     constexpr float maxDistance = 1.0f;
-    float distToPosition = bot->GetExactDist2d(position);
+    const float distToPosition = bot->GetExactDist2d(position);
 
     if (alythess->GetVictim() == bot)
     {
@@ -1269,14 +1250,14 @@ bool EredarTwinsFirstAssistTankMoveOutOfBlazeAction::Execute(Event /*event*/)
             index = safeIndex;
             alythessTankStep[guid] = index;
             const Position& newPosition = ALYTHESS_TANK_POSITIONS[index];
-            float newDistToPosition = bot->GetExactDist2d(newPosition);
+            const float newDistToPosition = bot->GetExactDist2d(newPosition);
             if (newDistToPosition > maxDistance)
             {
-                float dX = newPosition.GetPositionX() - bot->GetPositionX();
-                float dY = newPosition.GetPositionY() - bot->GetPositionY();
-                float moveDist = std::min(5.0f, newDistToPosition);
-                float moveX = bot->GetPositionX() + (dX / newDistToPosition) * moveDist;
-                float moveY = bot->GetPositionY() + (dY / newDistToPosition) * moveDist;
+                const float dX = newPosition.GetPositionX() - bot->GetPositionX();
+                const float dY = newPosition.GetPositionY() - bot->GetPositionY();
+                const float moveDist = std::min(5.0f, newDistToPosition);
+                const float moveX = bot->GetPositionX() + (dX / newDistToPosition) * moveDist;
+                const float moveY = bot->GetPositionY() + (dY / newDistToPosition) * moveDist;
 
                 return MoveTo(SUNWELL_MAP_ID, moveX, moveY, bot->GetPositionZ(),
                               false, false, false, false, MovementPriority::MOVEMENT_COMBAT,
@@ -1285,15 +1266,14 @@ bool EredarTwinsFirstAssistTankMoveOutOfBlazeAction::Execute(Event /*event*/)
         }
         else if (distToPosition > maxDistance)
         {
-            float dX = position.GetPositionX() - bot->GetPositionX();
-            float dY = position.GetPositionY() - bot->GetPositionY();
-            float moveDist = std::min(5.0f, distToPosition);
-            float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
-            float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
+            const float dX = position.GetPositionX() - bot->GetPositionX();
+            const float dY = position.GetPositionY() - bot->GetPositionY();
+            const float moveDist = std::min(5.0f, distToPosition);
+            const float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+            const float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
-            return MoveTo(SUNWELL_MAP_ID, moveX, moveY, bot->GetPositionZ(),
-                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT,
-                          true, false);
+            return MoveTo(SUNWELL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
+                          false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
 
@@ -1322,7 +1302,7 @@ bool EredarTwinsPositionRangedAction::Execute(Event /*event*/)
         const Position& landingPos = EREDAR_TWINS_P2_RANGED_STACK_POSITION;
 
         constexpr float arrivalDistance = 2.0f;
-        float distanceToJumpPos =
+        const float distanceToJumpPos =
             bot->GetExactDist2d(jumpPos.GetPositionX(), jumpPos.GetPositionY());
 
         if (distanceToJumpPos > arrivalDistance)
@@ -1347,7 +1327,7 @@ bool EredarTwinsStackInRoomCenterAction::Execute(Event /*event*/)
     const Position& position = botAI->IsRanged(bot) ?
         EREDAR_TWINS_P2_RANGED_STACK_POSITION : EREDAR_TWINS_P2_MELEE_STACK_POSITION;
 
-    float distToPosition =
+    const float distToPosition =
         bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
 
     if (distToPosition > 0.5f)
@@ -1390,9 +1370,6 @@ bool EredarTwinsRemoveFlameSearAction::Execute(Event /*event*/)
 
 bool EredarTwinsDpsPrioritizeLadySacrolashAction::Execute(Event /*event*/)
 {
-    if (bot->getClass() == CLASS_PALADIN && botAI->HasAura("divine shield", bot))
-        botAI->RemoveAura("divine shield");
-
     Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
     Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
 
@@ -1553,8 +1530,8 @@ bool MuruPositionRangedAction::Execute(Event /*event*/)
 
 void MuruPositionRangedAction::SetEntropiusInitialRangedPositionReached(bool reached)
 {
-    ObjectGuid guid = bot->GetGUID();
-    uint32 instanceId = bot->GetInstanceId();
+    const ObjectGuid guid = bot->GetGUID();
+    const uint32 instanceId = bot->GetInstanceId();
     if (reached)
     {
         muruEntropiusInitialRangedPositionsReached[instanceId].insert(guid);
@@ -1606,12 +1583,12 @@ bool MuruPositionRangedAction::TryGetEntropiusInitialRangedPosition(Position& po
         return false;
 
     constexpr float spreadRadius = 25.0f;
-    float anchorAngle = std::atan2(
+    const float anchorAngle = std::atan2(
         MURU_STACK_POSITION.GetPositionY() - MURU_CENTER_POSITION.GetPositionY(),
         MURU_STACK_POSITION.GetPositionX() - MURU_CENTER_POSITION.GetPositionX());
-    float angleStep =
+    const float angleStep =
         2.0f * static_cast<float>(M_PI) / static_cast<float>(rangedMembers.size());
-    float angle = Position::NormalizeOrientation(anchorAngle + angleStep * slotIndex);
+    const float angle = Position::NormalizeOrientation(anchorAngle + angleStep * slotIndex);
     float destinationX = MURU_CENTER_POSITION.GetPositionX() + std::cos(angle) * spreadRadius;
     float destinationY = MURU_CENTER_POSITION.GetPositionY() + std::sin(angle) * spreadRadius;
 
@@ -1838,11 +1815,13 @@ Unit* MuruSetDpsPriorityAction::SelectMuruEncounterTarget(
     uint32 entry, std::vector<Unit*> const& candidates) const
 {
     Unit* selected = nullptr;
-    if (isMeleeDps && currentVictim && currentVictim->IsAlive() && currentVictim->GetEntry() == entry)
+    if (isMeleeDps && currentVictim && currentVictim->IsAlive() &&
+        currentVictim->GetEntry() == entry)
     {
         selected = currentVictim;
     }
-    else if (currentTarget && currentTarget->IsAlive() && currentTarget->GetEntry() == entry)
+    else if (currentTarget && currentTarget->IsAlive() &&
+        currentTarget->GetEntry() == entry)
     {
         selected = currentTarget;
     }
@@ -1950,14 +1929,14 @@ bool MuruDontTouchTheDarkFiendAction::Execute(Event /*event*/)
         return false;
 
     constexpr float safeDistance = 8.0f;
-    float currentDistance = bot->GetDistance2d(darkness);
+    const float currentDistance = bot->GetDistance2d(darkness);
     if (currentDistance < safeDistance &&
         MoveAway(darkness, safeDistance - currentDistance))
     {
         return true;
     }
 
-    float randomAngle = static_cast<float>(urand(0, 7)) * ANGLE_45_DEG;
+    const float randomAngle = static_cast<float>(urand(0, 7)) * ANGLE_45_DEG;
     return Move(randomAngle, safeDistance - currentDistance);
 }
 
@@ -1984,15 +1963,15 @@ bool MuruTanksGetThatSentinelOutOfHereAction::Execute(Event /*event*/)
 
     if (voidSentinel->GetVictim() == bot)
     {
-        float distToPosition = bot->GetExactDist2d(tankPosition->GetPositionX(),
-                                                   tankPosition->GetPositionY());
+        const float distToPosition = bot->GetExactDist2d(tankPosition->GetPositionX(),
+                                                         tankPosition->GetPositionY());
         if (distToPosition > 3.0f)
         {
-            float dX = tankPosition->GetPositionX() - bot->GetPositionX();
-            float dY = tankPosition->GetPositionY() - bot->GetPositionY();
-            float moveDist = std::min(5.0f, distToPosition);
-            float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
-            float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
+            const float dX = tankPosition->GetPositionX() - bot->GetPositionX();
+            const float dY = tankPosition->GetPositionY() - bot->GetPositionY();
+            const float moveDist = std::min(5.0f, distToPosition);
+            const float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+            const float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
             return MoveTo(SUNWELL_MAP_ID, moveX, moveY, tankPosition->GetPositionZ(), false, false,
                           false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
@@ -2015,13 +1994,13 @@ const Position* MuruTanksGetThatSentinelOutOfHereAction::GetAssignedVoidSentinel
     auto assignmentItr = assignments.find(voidSentinel->GetGUID());
     if (assignmentItr == assignments.end())
     {
-        float northDistance = voidSentinel->GetExactDist2d(
+        const float northDistance = voidSentinel->GetExactDist2d(
             MURU_VOID_SENTINEL_N_TANK_POSITION.GetPositionX(),
             MURU_VOID_SENTINEL_N_TANK_POSITION.GetPositionY());
-        float eastDistance = voidSentinel->GetExactDist2d(
+        const float eastDistance = voidSentinel->GetExactDist2d(
             MURU_VOID_SENTINEL_E_TANK_POSITION.GetPositionX(),
             MURU_VOID_SENTINEL_E_TANK_POSITION.GetPositionY());
-        uint8 assignedIndex = northDistance <= eastDistance ? 0 : 1;
+        const uint8 assignedIndex = northDistance <= eastDistance ? 0 : 1;
         assignmentItr = assignments.emplace(voidSentinel->GetGUID(), assignedIndex).first;
     }
 
@@ -2060,7 +2039,7 @@ bool MuruFleeTheNightAction::Execute(Event /*event*/)
         if (!botAI->IsAssistTankOfIndex(bot, 0, true) &&
             TryGetMuruDarknessEarlyState(bot, muru))
         {
-            Position const& holdingPosition = botAI->IsAssistTankOfIndex(bot, 1, true) ?
+            const Position& holdingPosition = botAI->IsAssistTankOfIndex(bot, 1, true) ?
                 MURU_ENTRANCE_POSITION : MURU_STACK_POSITION;
             constexpr float arrivalDistance = 1.0f;
             return MoveInside(SUNWELL_MAP_ID, holdingPosition.GetPositionX(),
@@ -2431,8 +2410,6 @@ bool KiljaedenAvoidArmageddonsAction::Execute(Event /*event*/)
         return false;
 
     constexpr uint32 minInterval = 0;
-    // botAI->InterruptSpell();
-
     if (FleePosition(armageddon.destination, armageddon.safeDistance, minInterval))
         return true;
 
@@ -2474,9 +2451,6 @@ bool KiljaedenPositionTanksAction::Execute(Event /*event*/)
 
 bool KiljaedenPositionMeleeAction::Execute(Event /*event*/)
 {
-    if (bot->getClass() == CLASS_PALADIN && botAI->HasAura("divine shield", bot))
-        botAI->RemoveAura("divine shield");
-
     Group* group = bot->GetGroup();
     if (!group)
         return false;
@@ -2542,8 +2516,11 @@ bool KiljaedenPositionMeleeAction::Execute(Event /*event*/)
         }
     }
 
-    if (bot->GetExactDist2d(targetPosition->GetPositionX(), targetPosition->GetPositionY()) <= 2.0f)
+    if (bot->GetExactDist2d(targetPosition->GetPositionX(),
+                            targetPosition->GetPositionY()) <= 2.0f)
+    {
         return false;
+    }
 
     return MoveTo(SUNWELL_MAP_ID, targetPosition->GetPositionX(),
                   targetPosition->GetPositionY(), targetPosition->GetPositionZ(),

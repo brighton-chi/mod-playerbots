@@ -84,9 +84,9 @@ namespace BlackTempleHelpers
         if (it == gurtoggPhaseTimer.end())
             return -1;
 
-        time_t now = std::time(nullptr);
-        time_t elapsed = now - it->second;
-        int groupIndex = (elapsed % 30) / 10; // 3 groups, swapping every 10 seconds
+        const time_t now = std::time(nullptr);
+        const time_t elapsed = now - it->second;
+        const int groupIndex = (elapsed % 30) / 10; // 3 groups, swapping every 10 seconds
 
         return groupIndex;
     }
@@ -332,8 +332,8 @@ namespace BlackTempleHelpers
 
     Player* GetIllidanTrapperHunter(Player* bot)
     {
-         Group* group = bot->GetGroup();
-         if (!group)
+        Group* group = bot->GetGroup();
+        if (!group)
              return nullptr;
 
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
@@ -412,21 +412,21 @@ namespace BlackTempleHelpers
 
     bool IsPositionInEyeBlastDangerArea(const Position& pos, const EyeBlastDangerArea& area)
     {
-        float dx = area.end.GetPositionX() - area.start.GetPositionX();
-        float dy = area.end.GetPositionY() - area.start.GetPositionY();
-        float length = area.start.GetExactDist2d(area.end.GetPositionX(), area.end.GetPositionY());
+        const float dx = area.end.GetPositionX() - area.start.GetPositionX();
+        const float dy = area.end.GetPositionY() - area.start.GetPositionY();
+        const float length = area.start.GetExactDist2d(area.end.GetPositionX(), area.end.GetPositionY());
 
         if (length < 0.1f)
             return false;
 
-        float projectionFactor = ((pos.GetPositionX() - area.start.GetPositionX()) * dx +
-                                  (pos.GetPositionY() - area.start.GetPositionY()) * dy) / (length * length);
-        projectionFactor = std::clamp(projectionFactor, 0.0f, 1.0f);
+        const float projectionFactor = ((pos.GetPositionX() - area.start.GetPositionX()) * dx +
+                                        (pos.GetPositionY() - area.start.GetPositionY()) * dy) / (length * length);
+        const float clampedProjectionFactor = std::clamp(projectionFactor, 0.0f, 1.0f);
 
-        float closestX = area.start.GetPositionX() + projectionFactor * dx;
-        float closestY = area.start.GetPositionY() + projectionFactor * dy;
+        const float closestX = area.start.GetPositionX() + clampedProjectionFactor * dx;
+        const float closestY = area.start.GetPositionY() + clampedProjectionFactor * dy;
 
-        float distToLine = pos.GetExactDist2d(closestX, closestY);
+        const float distToLine = pos.GetExactDist2d(closestX, closestY);
 
         return distToLine < area.width;
     }
