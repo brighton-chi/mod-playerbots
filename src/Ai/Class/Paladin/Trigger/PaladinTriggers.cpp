@@ -84,7 +84,7 @@ bool GreaterBlessingNeededTrigger::IsActive()
     if (!ai::gbless::IsAutoGreaterBlessingActive(bot))
         return false;
 
-    if (ai::buff::ShouldDeferGreaterBlessingEvaluationForRecentLogin(bot))
+    if (ai::buff::ShouldDeferGreaterBlessingAssignmentForRecentLogin(bot))
         return false;
 
     CastGreaterBlessingAssignmentAction action(botAI);

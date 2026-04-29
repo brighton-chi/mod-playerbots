@@ -163,7 +163,7 @@ namespace ai::buff
         return IsWithinPostLoginBuffGrace(playerTarget);
     }
 
-    bool ShouldDeferGreaterBlessingEvaluationForRecentLogin(Player* bot)
+    bool ShouldDeferGreaterBlessingAssignmentForRecentLogin(Player* bot)
     {
         if (IsWithinPostLoginBuffGrace(bot))
             return true;

@@ -537,18 +537,20 @@ static Player* FindMissingBlessingTarget(
     return nullptr;
 }
 
+}
+
 CastGreaterBlessingAssignmentAction::CastGreaterBlessingAssignmentAction(
     PlayerbotAI* botAI) : Action(botAI, "cast greater blessing assignment") {}
 
 bool CastGreaterBlessingAssignmentAction::isUseful()
 {
-    return IsAutoGreaterBlessingActive(bot);
+    return ai::gbless::IsAutoGreaterBlessingActive(bot);
 }
 
 bool CastGreaterBlessingAssignmentAction::HasPendingAssignment()
 {
-    GreaterBlessingPlayerAssignment assignment;
-    BlessingType castType = BLESSING_NONE;
+    ai::gbless::GreaterBlessingPlayerAssignment assignment;
+    ai::gbless::BlessingType castType = ai::gbless::BLESSING_NONE;
     std::string spellName;
 
     return FindPendingAssignment(assignment, castType, spellName);
@@ -556,8 +558,8 @@ bool CastGreaterBlessingAssignmentAction::HasPendingAssignment()
 
 bool CastGreaterBlessingAssignmentAction::Execute(Event /*event*/)
 {
-    GreaterBlessingPlayerAssignment assignment;
-    BlessingType castType = BLESSING_NONE;
+    ai::gbless::GreaterBlessingPlayerAssignment assignment;
+    ai::gbless::BlessingType castType = ai::gbless::BLESSING_NONE;
     std::string spellName;
     if (!FindPendingAssignment(assignment, castType, spellName))
         return false;
@@ -570,36 +572,38 @@ bool CastGreaterBlessingAssignmentAction::Execute(Event /*event*/)
 }
 
 bool CastGreaterBlessingAssignmentAction::FindPendingAssignment(
-    GreaterBlessingPlayerAssignment& outAssignment, BlessingType& outCastType,
+    ai::gbless::GreaterBlessingPlayerAssignment& outAssignment,
+    ai::gbless::BlessingType& outCastType,
     std::string& outSpellName)
 {
-    std::vector<CachedBlessingBucketAssignment> assignments;
+    std::vector<ai::gbless::CachedBlessingBucketAssignment> assignments;
     if (!GetAssignments(assignments))
         return false;
 
     for (auto const& assigned : assignments)
     {
-        if (assigned.blessing == BLESSING_NONE)
+        if (assigned.blessing == ai::gbless::BLESSING_NONE)
             continue;
 
-        BlessingType castType = assigned.blessing;
-        std::string spellName = BlessingSpellName(castType);
+        ai::gbless::BlessingType castType = assigned.blessing;
+        std::string spellName = ai::gbless::BlessingSpellName(castType);
         if (spellName.empty())
             continue;
 
-        if (IsGreaterVariant(castType))
+        if (ai::gbless::IsGreaterVariant(castType))
         {
             uint32 spellId = AI_VALUE2(uint32, "spell id", spellName);
             if (!spellId || !ai::buff::HasRequiredReagents(bot, spellId))
             {
-                castType = ToSingleVariant(castType);
-                spellName = BlessingSpellName(castType);
+                castType = ai::gbless::ToSingleVariant(castType);
+                spellName = ai::gbless::BlessingSpellName(castType);
                 if (spellName.empty())
                     continue;
             }
         }
 
-        Player* target = FindMissingBlessingTarget(botAI, assigned, castType, spellName);
+        Player* target = ai::gbless::FindMissingBlessingTarget(
+            botAI, assigned, castType, spellName);
         if (!target)
             continue;
 
@@ -613,17 +617,17 @@ bool CastGreaterBlessingAssignmentAction::FindPendingAssignment(
 }
 
 bool CastGreaterBlessingAssignmentAction::GetAssignments(
-    std::vector<CachedBlessingBucketAssignment>& outAssignments)
+    std::vector<ai::gbless::CachedBlessingBucketAssignment>& outAssignments)
 {
     Group* group = bot->GetGroup();
     uint32 const groupKey = group ? group->GetLeaderGUID().GetCounter() : 0;
 
-    Value<CachedBlessingAssignments>* cacheValue =
-        context->GetValue<CachedBlessingAssignments>("greater blessing assignments");
+    Value<ai::gbless::CachedBlessingAssignments>* cacheValue =
+        context->GetValue<ai::gbless::CachedBlessingAssignments>("greater blessing assignments");
     if (!cacheValue)
         return false;
 
-    CachedBlessingAssignments cachedAssignments = cacheValue->Get();
+    ai::gbless::CachedBlessingAssignments cachedAssignments = cacheValue->Get();
     if (cachedAssignments.groupKey != groupKey)
     {
         cacheValue->Reset();
@@ -636,6 +640,4 @@ bool CastGreaterBlessingAssignmentAction::GetAssignments(
     outAssignments = cachedAssignments.assignments;
 
     return true;
-}
-
 }
