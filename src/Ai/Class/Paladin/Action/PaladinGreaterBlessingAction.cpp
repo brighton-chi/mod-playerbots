@@ -16,8 +16,8 @@
 #include <algorithm>
 #include <limits>
 
-using namespace ai::gbless;
-
+namespace ai::gbless
+{
 namespace
 {
     constexpr uint32 GREATER_BLESSING_ASSIGNMENT_CACHE_MS = 4 * 1000;
@@ -462,12 +462,12 @@ namespace
     };
 }
 
-UntypedValue* ai::gbless::greater_blessing_assignments_value(PlayerbotAI* botAI)
+UntypedValue* greater_blessing_assignments_value(PlayerbotAI* botAI)
 {
     return new GreaterBlessingAssignmentsValue(botAI);
 }
 
-bool ai::gbless::IsEligibleGroupForAutoBlessings(Group const* group)
+bool IsEligibleGroupForAutoBlessings(Group const* group)
 {
     if (!group)
         return false;
@@ -484,7 +484,7 @@ bool ai::gbless::IsEligibleGroupForAutoBlessings(Group const* group)
     }
 }
 
-bool ai::gbless::IsAutoGreaterBlessingActive(Player const* bot)
+bool IsAutoGreaterBlessingActive(Player const* bot)
 {
     return bot && IsEligibleGroupForAutoBlessings(bot->GetGroup());
 }
@@ -638,3 +638,4 @@ bool CastGreaterBlessingAssignmentAction::GetAssignments(
     return true;
 }
 
+}
