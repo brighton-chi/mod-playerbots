@@ -1298,6 +1298,13 @@ bool EredarTwinsStackInRoomCenterAction::Execute(Event /*event*/)
                       MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
+    if (botAI->IsTank(bot))
+    {
+        Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
+        if (alythess && bot->GetVictim() != alythess)
+            return Attack(alythess);
+    }
+
     return false;
 }
 

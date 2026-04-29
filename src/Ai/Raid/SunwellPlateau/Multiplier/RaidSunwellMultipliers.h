@@ -155,6 +155,14 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class EredarTwinsRoguesStayStackedMultiplier : public Multiplier
+{
+public:
+    EredarTwinsRoguesStayStackedMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "eredar twins rogues stay stacked") {}
+    virtual float GetValue(Action* action);
+};
+
 class EredarTwinsControlMovementMultiplier : public Multiplier
 {
 public:

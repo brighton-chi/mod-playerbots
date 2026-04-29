@@ -457,6 +457,21 @@ float EredarTwinsDisableTankActionsMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+float EredarTwinsRoguesStayStackedMultiplier::GetValue(Action* action)
+{
+    if (bot->getClass() != CLASS_ROGUE ||
+        !AI_VALUE2(Unit*, "find target", "grand warlock alythess") ||
+        AI_VALUE2(Unit*, "find target", "lady sacrolash"))
+    {
+        return 1.0f;
+    }
+
+    if (dynamic_cast<CastKillingSpreeAction*>(action))
+        return 0.0f;
+
+    return 1.0f;
+}
+
 float EredarTwinsControlMovementMultiplier::GetValue(Action* action)
 {
     Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
