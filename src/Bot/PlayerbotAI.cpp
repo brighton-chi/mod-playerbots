@@ -880,12 +880,6 @@ void PlayerbotAI::HandleTeleportAck()
         // reset AI state after teleport
         Reset(true);
 
-        if (bot->getClass() == CLASS_PALADIN &&
-            sPlayerbotAIConfig.autoGreaterBlessings != AutoPartyBuffMode::DISABLED)
-        {
-            DoSpecificAction("toggle greater blessing strategy", Event(), true);
-        }
-
         // clear movement only AFTER teleport is finalized and bot is in world
         if (bot->IsInWorld() && bot->GetMotionMaster())
         {
