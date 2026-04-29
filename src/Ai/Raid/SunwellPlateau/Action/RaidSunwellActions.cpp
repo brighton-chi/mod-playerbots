@@ -253,17 +253,10 @@ bool KalecgosEnterSpectralRiftAction::Execute(Event /*event*/)
 // Kalecgos' Combat Reach is 10.5f
 bool KalecgosDisperseRangedAction::Execute(Event /*event*/)
 {
-    if (!HasReachedKalecgosInitialRangedPosition(bot))
+    if (hasReachedKalecgosInitialRangedPosition.find(bot->GetGUID()) ==
+        hasReachedKalecgosInitialRangedPosition.end())
     {
         const Position& initialPos = KALECGOS_INITIAL_RANGED_POSITION;
-        /* float distToInitialPosition = bot->GetExactDist2d(initialPos.GetPositionX(),
-                                                          initialPos.GetPositionY());
-        if (distToInitialPosition > 1.0f)
-        {
-            return MoveTo(SUNWELL_MAP_ID, initialPos.GetPositionX(), initialPos.GetPositionY(),
-                          initialPos.GetPositionZ(), false, false, false, false,
-                          MovementPriority::MOVEMENT_COMBAT, true, true);
-        } */
         constexpr float initialRangedRadius = 10.0f;
         if (bot->GetExactDist2d(initialPos.GetPositionX(), initialPos.GetPositionY()) <=
             initialRangedRadius)

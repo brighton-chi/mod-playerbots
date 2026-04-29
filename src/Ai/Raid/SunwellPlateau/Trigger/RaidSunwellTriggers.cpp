@@ -26,20 +26,16 @@ bool VolatileFiendSelfDestructsWhenNearTrigger::IsActive()
 
 bool ApocalypseGuardProtectedByInfernalDefenseTrigger::IsActive()
 {
-    if (bot->getClass() != CLASS_PRIEST)
-        return false;
-
-    return GetInfernalDefenseApocalypseGuard(bot) != nullptr;
+    return bot->getClass() == CLASS_PRIEST &&
+           GetInfernalDefenseApocalypseGuard(bot);
 }
 
 // Kalecgos
 
 bool KalecgosBossEngagedByTankTrigger::IsActive()
 {
-    if (!AI_VALUE2(Unit*, "find target", "kalecgos"))
-        return false;
-
-    return GetKalecgosCurrentTank(botAI, bot) == bot;
+    return AI_VALUE2(Unit*, "find target", "kalecgos") &&
+           GetKalecgosCurrentTank(botAI, bot) == bot;
 }
 
 bool KalecgosSpectralRiftIsOpenTrigger::IsActive()
@@ -132,10 +128,8 @@ bool BrutallusPullingBossTrigger::IsActive()
 
 bool BrutallusBossEngagedByTanksTrigger::IsActive()
 {
-    if (!AI_VALUE2(Unit*, "find target", "brutallus"))
-        return false;
-
-    return botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0, true);
+    return AI_VALUE2(Unit*, "find target", "brutallus") &&
+           (botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0, true));
 }
 
 bool BrutallusBossEngagedByMeleeTrigger::IsActive()
@@ -160,11 +154,11 @@ bool BrutallusBossEngagedByRangedTrigger::IsActive()
 
 bool BrutallusBotIsBurningTrigger::IsActive()
 {
-    if (!AI_VALUE2(Unit*, "find target", "brutallus"))
+    if (!AI_VALUE2(Unit*, "find target", "brutallus") ||
+        botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0, true))
+    {
         return false;
-
-    if (botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0, true))
-        return false;
+    }
 
     if (botAI->HasAura("ice block", bot))
     {
@@ -534,8 +528,7 @@ bool MuruAddsSpawnAtEntranceTrigger::IsActive()
 
 bool MuruDarkFiendsSpawnedTrigger::IsActive()
 {
-    if (bot->getClass() != CLASS_PRIEST &&
-        bot->getClass() != CLASS_SHAMAN)
+    if (bot->getClass() != CLASS_PRIEST && bot->getClass() != CLASS_SHAMAN)
         return false;
 
     return AI_VALUE2(Unit*, "find target", "dark fiend");
@@ -560,9 +553,6 @@ bool MuruDarknessIsComingTrigger::IsActive()
     if (!muru || muru->GetHealth() == 1)
         return false;
 
-    /* if (botAI->IsAssistTankOfIndex(bot, 0, true))
-        return false; */
-
     return TryGetMuruDarknessActiveState(bot, muru);
 }
 
@@ -585,7 +575,9 @@ bool MuruBerserkerIsBuffedWithFlurryTrigger::IsActive()
     if (bot->getClass() != CLASS_DRUID && bot->getClass() != CLASS_PALADIN &&
         bot->getClass() != CLASS_ROGUE && bot->getClass() != CLASS_WARLOCK &&
         bot->getClass() != CLASS_WARRIOR)
+    {
         return false;
+    }
 
     Unit* berserker = AI_VALUE2(Unit*, "find target", "shadowsword berserker");
     return berserker &&
@@ -596,7 +588,9 @@ bool MuruFuryMageCastingFelFireballTrigger::IsActive()
 {
     if (bot->getClass() == CLASS_DRUID || bot->getClass() == CLASS_PALADIN ||
         bot->getClass() == CLASS_PRIEST || bot->getClass() == CLASS_WARLOCK)
+    {
         return false;
+    }
 
     Unit* furyMage = AI_VALUE2(Unit*, "find target", "shadowsword fury mage");
     return furyMage && furyMage->HasUnitState(UNIT_STATE_CASTING) &&
@@ -644,10 +638,8 @@ bool MuruWarlockHasEnslavedVoidSpawnTrigger::IsActive()
 
 bool KiljaedenHandsOfTheDeceiverAreActiveTrigger::IsActive()
 {
-    if (!botAI->IsTank(bot))
-        return false;
-
-    return AI_VALUE2(Unit*, "find target", "hand of the deceiver");
+    return botAI->IsTank(bot) &&
+           AI_VALUE2(Unit*, "find target", "hand of the deceiver");
 }
 
 bool KiljaedenItsRainingMeteorsTrigger::IsActive()
@@ -679,8 +671,11 @@ bool KiljaedenItsRainingMeteorsTrigger::IsActive()
         return true;
     };
 
-    if (isSafePosition(KILJAEDEN_S_MELEE_POSITION) || isSafePosition(KILJAEDEN_E_MELEE_POSITION))
+    if (isSafePosition(KILJAEDEN_S_MELEE_POSITION) ||
+        isSafePosition(KILJAEDEN_E_MELEE_POSITION))
+    {
         return false;
+    }
 
     KiljaedenArmageddon armageddon;
     return TryGetKiljaedenNearestArmageddon(bot, armageddon);
@@ -729,7 +724,9 @@ bool KiljaedenBotHasFireBloomTrigger::IsActive()
 {
     if (bot->getClass() != CLASS_ROGUE && bot->getClass() != CLASS_MAGE &&
         bot->getClass() != CLASS_PALADIN)
+    {
         return false;
+    }
 
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
     if (!kiljaeden || kiljaeden->GetHealthPct() > 55.0f || botAI->IsMainTank(bot))

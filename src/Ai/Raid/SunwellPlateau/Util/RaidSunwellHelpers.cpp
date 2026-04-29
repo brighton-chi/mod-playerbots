@@ -125,7 +125,9 @@ bool IsKalecgosPortalEligibleCandidate(Player* candidate)
 {
     if (!candidate || !candidate->IsAlive() || !GET_PLAYERBOT_AI(candidate) ||
         candidate->GetMapId() != SUNWELL_MAP_ID)
+    {
         return false;
+    }
 
     if (candidate->HasAura(
             static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_EXHAUSTION)))
@@ -316,14 +318,12 @@ Player* GetKalecgosCurrentVictimTank(
 Player* SelectKalecgosOutgoingTankForRift(
     Group* group, KalecgosEncounterState const& state)
 {
-    if (!state.activeRiftOpenedMs)
+    if (!state.activeRiftOpenedMs ||
+        HasKalecgosTankAssignment(state.tankAssignmentGuids, state.blastedPlayerGuid) ||
+        CountKalecgosSurfaceAssignedTanks(group, state) <= 2)
+    {
         return nullptr;
-
-    if (HasKalecgosTankAssignment(state.tankAssignmentGuids, state.blastedPlayerGuid))
-        return nullptr;
-
-    if (CountKalecgosSurfaceAssignedTanks(group, state) <= 2)
-        return nullptr;
+    }
 
     for (ObjectGuid guid : state.tankPortalRotationGuids)
     {
@@ -391,16 +391,9 @@ Player* GetKalecgosOutgoingTank(
 bool CanKalecgosBotEnterRift(
     Group* group, Player* candidate, KalecgosEncounterState const& state)
 {
-    if (IsKalecgosAssignedTank(state, candidate))
-        return false;
-
-    if (!IsKalecgosPortalEligibleCandidate(candidate))
-        return false;
-
-    if (state.blastedPlayerGuid == candidate->GetGUID())
-        return false;
-
-    return true;
+    return !IsKalecgosAssignedTank(state, candidate) &&
+           IsKalecgosPortalEligibleCandidate(candidate) &&
+           state.blastedPlayerGuid != candidate->GetGUID();
 }
 
 uint8 GetNextAvailableKalecgosGroup(
@@ -518,8 +511,7 @@ void EnsureKalecgosGroupAssignments(PlayerbotAI* botAI, Player* bot)
     if (!group || bot->GetMapId() != SUNWELL_MAP_ID)
         return;
 
-    uint32 instanceId = bot->GetInstanceId();
-    KalecgosEncounterState& state = kalecgosEncounterStates[instanceId];
+    KalecgosEncounterState& state = kalecgosEncounterStates[bot->GetInstanceId()];
     std::vector<Player*> botMembers;
     std::array<ObjectGuid, KALECGOS_TANK_COUNT> expectedTankAssignmentGuids =
         GetExpectedKalecgosTankAssignmentGuids(botAI, bot);
@@ -626,15 +618,6 @@ void EnsureKalecgosGroupAssignments(PlayerbotAI* botAI, Player* bot)
     }
 }
 
-bool HasReachedKalecgosInitialRangedPosition(Player* bot)
-{
-    if (bot->GetMapId() != SUNWELL_MAP_ID)
-        return false;
-
-    return hasReachedKalecgosInitialRangedPosition.find(bot->GetGUID()) !=
-            hasReachedKalecgosInitialRangedPosition.end();
-}
-
 void SetKalecgosInitialRangedPositionReached(Player* bot, bool reached)
 {
     if (bot->GetMapId() != SUNWELL_MAP_ID)
@@ -680,8 +663,8 @@ bool ShouldEnterKalecgosSpectralRift(PlayerbotAI* botAI, Player* bot)
     if (IsKalecgosAssignedTank(state, bot))
     {
         return GetKalecgosOutgoingTank(group, state) == bot &&
-                state.blastedPlayerGuid != bot->GetGUID() &&
-                IsKalecgosPortalEligibleCandidate(bot);
+               state.blastedPlayerGuid != bot->GetGUID() &&
+               IsKalecgosPortalEligibleCandidate(bot);
     }
 
     if (!IsKalecgosActiveRiftCandidate(bot, state))
@@ -714,7 +697,7 @@ bool IsKalecgosRealmTransitionGraceActive(Player* bot)
     if (realmStateItr == kalecgosRealmStates.end())
         return false;
 
-    uint32 now = getMSTime();
+    const uint32 now = getMSTime();
     constexpr uint32 realmTransitionGraceMs = 2000;
     KalecgosRealmState const& realmState = realmStateItr->second;
     return (realmState.lastEnterMs &&
@@ -743,7 +726,7 @@ void RecordKalecgosSpectralBlastTarget(PlayerbotAI* botAI, Player* bot)
         return;
 
     KalecgosEncounterState& state = GetPreparedKalecgosEncounterState(botAI, bot);
-    uint32 now = getMSTime();
+    const uint32 now = getMSTime();
 
     state.activeRiftOpenedMs = now;
     state.blastedPlayerGuid = bot->GetGUID();
@@ -759,14 +742,15 @@ void RecordKalecgosSpectralRealmEnter(PlayerbotAI* botAI, Player* bot)
         return;
 
     KalecgosEncounterState& state = GetPreparedKalecgosEncounterState(botAI, bot);
-    uint32 now = getMSTime();
+    const ObjectGuid guid = bot->GetGUID();
+    const uint32 now = getMSTime();
 
     UpdateKalecgosRealmState(bot, true, now);
 
     if (state.activeRiftOpenedMs)
     {
         if (state.firstEntrantGuid == ObjectGuid::Empty)
-            state.firstEntrantGuid = bot->GetGUID();
+            state.firstEntrantGuid = guid;
 
         if (state.activeRiftGroup == KALECGOS_INVALID_GROUP)
             state.activeRiftGroup = ResolveKalecgosActiveRiftGroup(group, state);
@@ -774,14 +758,14 @@ void RecordKalecgosSpectralRealmEnter(PlayerbotAI* botAI, Player* bot)
 
     if (IsKalecgosAssignedTank(state, bot))
     {
-        AdvanceKalecgosTankPortalRotation(state, bot->GetGUID());
+        AdvanceKalecgosTankPortalRotation(state, guid);
 
-        if (state.activeRiftOutgoingTankGuid == bot->GetGUID())
+        if (state.activeRiftOutgoingTankGuid == guid)
             state.activeRiftOutgoingTankGuid = ObjectGuid::Empty;
 
-        if (state.currentTankGuid == bot->GetGUID())
+        if (state.currentTankGuid == guid)
         {
-            if (Player* nextTank = GetFirstKalecgosSurfaceAssignedTank(group, state, bot->GetGUID()))
+            if (Player* nextTank = GetFirstKalecgosSurfaceAssignedTank(group, state, guid))
                 state.currentTankGuid = nextTank->GetGUID();
             else
                 state.currentTankGuid = ObjectGuid::Empty;
@@ -818,7 +802,7 @@ Position GetBrutallusTankPosition(Unit* brutallus, bool isMainTank, float z)
 {
     if (isMainTank)
         return { BRUTALLUS_MAIN_TANK_POSITION.GetPositionX(),
-                    BRUTALLUS_MAIN_TANK_POSITION.GetPositionY(), z };
+                 BRUTALLUS_MAIN_TANK_POSITION.GetPositionY(), z };
 
     float angle = GetBrutallusMainTankAngle(brutallus);
     angle = Position::NormalizeOrientation(angle + BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET);
@@ -996,10 +980,7 @@ bool TryGetBrutallusRangedStepPosition(
     Unit* brutallus, uint8 rangedIndex, bool useMirrorAngle,
     float radius, float z, Position& position)
 {
-    if (!brutallus)
-        return false;
-
-    if (rangedIndex >= BRUTALLUS_TOTAL_RANGED_POSITIONS)
+    if (!brutallus || rangedIndex >= BRUTALLUS_TOTAL_RANGED_POSITIONS)
         return false;
 
     BrutallusRangedSlotInfo slotInfo = {
@@ -1009,8 +990,10 @@ bool TryGetBrutallusRangedStepPosition(
 
     float angle = GetBrutallusRangedSlotAngle(brutallus, slotInfo);
     if (useMirrorAngle)
+    {
         angle = Position::NormalizeOrientation(
             angle + (slotInfo.isMainTankGroup ? M_PI_2 : -M_PI_2));
+    }
 
     position = GetBrutallusPositionAtAngle(brutallus, angle, radius, z);
     return true;
@@ -1020,10 +1003,7 @@ bool TryGetBrutallusRangedArcPosition(
     Unit* brutallus, uint8 rangedIndex, float radius, bool moveTowardMirror,
     float currentX, float currentY, float z, Position& position)
 {
-    if (!brutallus)
-        return false;
-
-    if (rangedIndex >= BRUTALLUS_TOTAL_RANGED_POSITIONS)
+    if (!brutallus || rangedIndex >= BRUTALLUS_TOTAL_RANGED_POSITIONS)
         return false;
 
     BrutallusRangedSlotInfo slotInfo = {
@@ -1042,9 +1022,9 @@ bool TryGetBrutallusRangedArcPosition(
     float remainingAngle = NormalizeSignedAngle(targetAngle - currentAngle);
 
     constexpr float stepDistance = 3.0f;
-    float stepRatio = stepDistance / (2.0f * radius);
-    stepRatio = std::clamp(stepRatio, 0.0f, 1.0f);
-    float stepAngle = 2.0f * std::asin(stepRatio);
+    const float stepRatio = stepDistance / (2.0f * radius);
+    const float clampedStepRatio = std::clamp(stepRatio, 0.0f, 1.0f);
+    const float stepAngle = 2.0f * std::asin(clampedStepRatio);
     float nextAngle = targetAngle;
 
     if (std::fabs(remainingAngle) > stepAngle)
@@ -1492,6 +1472,7 @@ Creature* GetFelmystDemonicVaporSummonedByBot(Player* carrier)
     std::list<Creature*> vapors;
     carrier->GetCreatureListWithEntryInGrid(
         vapors, static_cast<uint32>(SunwellNpcs::NPC_DEMONIC_VAPOR), searchRadius);
+
     for (Creature* creature : vapors)
     {
         if (creature && creature->IsAlive() &&
@@ -1506,8 +1487,8 @@ Creature* GetFelmystDemonicVaporSummonedByBot(Player* carrier)
 
 void ClearFelmystDemonicVaporKiteState(Player* bot)
 {
-    uint32 instanceId = bot->GetInstanceId();
-    ObjectGuid guid = bot->GetGUID();
+    const uint32 instanceId = bot->GetInstanceId();
+    const ObjectGuid guid = bot->GetGUID();
 
     auto pathInstanceItr = felmystDemonicVaporPathIndices.find(instanceId);
     if (pathInstanceItr != felmystDemonicVaporPathIndices.end())
@@ -1635,9 +1616,7 @@ uint8 GetNextFelmystDemonicVaporWaypointIndex(
 std::array<uint32, 2> GetFelmystDemonicVaporPathOccupancyCounts(Player* bot)
 {
     std::array<uint32, 2> occupancyCounts = { 0, 0 };
-    uint32 instanceId = bot->GetInstanceId();
-
-    auto pathInstanceItr = felmystDemonicVaporPathIndices.find(instanceId);
+    auto pathInstanceItr = felmystDemonicVaporPathIndices.find(bot->GetInstanceId());
     if (pathInstanceItr != felmystDemonicVaporPathIndices.end())
     {
         Group* group = bot->GetGroup();
@@ -1647,9 +1626,7 @@ std::array<uint32, 2> GetFelmystDemonicVaporPathOccupancyCounts(Player* bot)
             {
                 Player* member = ref->GetSource();
                 if (!member || member == bot)
-                {
                     continue;
-                }
 
                 auto memberPathItr = pathInstanceItr->second.find(member->GetGUID());
                 if (memberPathItr == pathInstanceItr->second.end())
@@ -1721,8 +1698,8 @@ uint8 SelectFelmystDemonicVaporPath(Player* bot)
 
 bool TryGetFelmystDemonicVaporKiteDestination(Player* bot, Position& destination)
 {
-    uint32 instanceId = bot->GetInstanceId();
-    ObjectGuid guid = bot->GetGUID();
+    const uint32 instanceId = bot->GetInstanceId();
+    const ObjectGuid guid = bot->GetGUID();
 
     if (!GetFelmystDemonicVaporSummonedByBot(bot))
     {
@@ -1769,16 +1746,19 @@ bool TryGetFelmystFogOfCorruptionStageState(
     Unit* felmyst, FelmystFogOfCorruptionState& state)
 {
     state = FelmystFogOfCorruptionState();
-    uint32 now = getMSTime();
+    const uint32 now = getMSTime();
 
-    if (!felmyst || !felmyst->IsFlying())
+    if (!felmyst)
+        return false;
+
+    const uint32 instanceId = felmyst->GetInstanceId();
+    if (!felmyst->IsFlying())
     {
-        if (felmyst)
-            felmystFogOfCorruptionStates.erase(felmyst->GetInstanceId());
+        felmystFogOfCorruptionStates.erase(instanceId);
         return false;
     }
 
-    FelmystFogOfCorruptionState& tracker = felmystFogOfCorruptionStates[felmyst->GetInstanceId()];
+    FelmystFogOfCorruptionState& tracker = felmystFogOfCorruptionStates[instanceId];
     bool hasTracker = tracker.phase != FelmystFogPhase::None;
     FelmystFogLocation currentLocation = GetFelmystCurrentFogLocation(felmyst);
     FelmystFogLocation destinationLocation = GetFelmystDestinationFogLocation(felmyst);
@@ -1830,7 +1810,7 @@ bool TryGetFelmystFogOfCorruptionStageState(
         return true;
     }
 
-    felmystFogOfCorruptionStates.erase(felmyst->GetInstanceId());
+    felmystFogOfCorruptionStates.erase(instanceId);
     return false;
 }
 
@@ -1979,7 +1959,7 @@ Player* GetFelmystEncapsulateTarget(Player* bot)
     if (!group)
         return nullptr;
 
-    uint32 now = getMSTime();
+    const uint32 now = getMSTime();
     auto incomingItr = felmystIncomingEncapsulateStates.find(bot->GetInstanceId());
     if (incomingItr != felmystIncomingEncapsulateStates.end())
     {
@@ -2126,7 +2106,6 @@ const Position EREDAR_TWINS_P1_RANGED_POSITION =       { 1808.076f, 603.460f, 51
 const Position EREDAR_TWINS_P2_MELEE_STACK_POSITION =  { 1814.327f, 625.645f, 33.404f };
 const Position EREDAR_TWINS_P2_RANGED_STACK_POSITION = { 1805.587f, 625.653f, 33.404f };
 const Position EREDAR_TWINS_RANGED_CONFLAG_POSITION =  { 1801.133f, 584.456f, 50.696f };
-// const Position EREDAR_TWINS_MELEE_CONFLAG_POSITION =   { 1814.654f, 612.291f, 33.404f };
 const Position EREDAR_TWINS_MELEE_CONFLAG_POSITION =   { 1814.337f, 607.771f, 33.404f };
 
 std::unordered_map<ObjectGuid, uint8> alythessTankStep;
@@ -2149,7 +2128,9 @@ bool ShouldHoldSacrolashThreat(
 {
     if (!alythess || !sacrolash || IsSacrolashTank(botAI, bot) ||
         IsAlythessTank(botAI, bot))
+    {
         return false;
+    }
 
     uint8 playerThreatEntries = 0;
 
@@ -2200,8 +2181,9 @@ bool ShouldAdvanceAlythessTankPosition(Unit* alythess, Player* bot)
     if (!alythess)
         return false;
 
-    ObjectGuid const botGuid = bot->GetGUID();
+    const ObjectGuid botGuid = bot->GetGUID();
     constexpr float blazeObjectRadius = 5.0f;
+
     GameObject* blazeObject = bot->FindNearestGameObject(
         static_cast<uint32>(SunwellObjects::GO_BLAZE),
         blazeObjectRadius);
@@ -2228,8 +2210,8 @@ bool IsEredarTwinsConflagrationTarget(Unit* alythess, Player* bot)
 
     Spell* currentSpell = alythess->GetCurrentSpell(CURRENT_GENERIC_SPELL);
     return currentSpell && currentSpell->m_spellInfo &&
-            currentSpell->m_spellInfo->Id == static_cast<uint32>(SunwellSpells::SPELL_CONFLAGRATION) &&
-            currentSpell->m_targets.GetUnitTarget() == bot;
+           currentSpell->m_spellInfo->Id == static_cast<uint32>(SunwellSpells::SPELL_CONFLAGRATION) &&
+           currentSpell->m_targets.GetUnitTarget() == bot;
 }
 
 // M'uru
@@ -2291,8 +2273,8 @@ bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru)
     if (!muru)
         return false;
 
-    uint32 const instanceId = bot->GetInstanceId();
-    uint32 const now = getMSTime();
+    const uint32 instanceId = bot->GetInstanceId();
+    const uint32 now = getMSTime();
     MuruDarknessState& state = muruDarknessStates[instanceId];
     constexpr uint32 darknessPreEffectMs = 3000;
     constexpr uint32 darknessCastMs = 2000;
@@ -2454,7 +2436,7 @@ void PruneExpiredKiljaedenArmageddons(uint32 instanceId)
     if (instanceItr == kiljaedenArmageddons.end())
         return;
 
-    uint32 now = getMSTime();
+    const uint32 now = getMSTime();
     std::vector<KiljaedenArmageddon>& armageddons = instanceItr->second;
     armageddons.erase(std::remove_if(armageddons.begin(), armageddons.end(),
         [now](KiljaedenArmageddon const& armageddon) {
@@ -2471,7 +2453,7 @@ void AddKiljaedenArmageddon(
     if (!durationMs || safeDistance <= 0.0f)
         return;
 
-    uint32 now = getMSTime();
+    const uint32 now = getMSTime();
     PruneExpiredKiljaedenArmageddons(instanceId);
 
     KiljaedenArmageddon armageddon;
@@ -2519,8 +2501,8 @@ bool TryGetKiljaedenNearestArmageddon(Player* bot, KiljaedenArmageddon& armagedd
 bool IsKiljaedenCastingDarknessOfAThousandSouls(Unit* kiljaeden)
 {
     return kiljaeden && kiljaeden->HasUnitState(UNIT_STATE_CASTING) &&
-            kiljaeden->FindCurrentSpellBySpellId(
-                static_cast<uint32>(SunwellSpells::SPELL_DARKNESS_OF_A_THOUSAND_SOULS));
+           kiljaeden->FindCurrentSpellBySpellId(
+               static_cast<uint32>(SunwellSpells::SPELL_DARKNESS_OF_A_THOUSAND_SOULS));
 }
 
 bool TryGetKiljaedenRangedSlotPosition(uint8 slotIndex, Position& position)
@@ -2560,7 +2542,7 @@ float GetKiljaedenRangedSlotAngle(uint8 slotIndex)
 
     return Position::NormalizeOrientation(
         std::atan2(position.GetPositionY() - KILJAEDEN_CENTER_POSITION.GetPositionY(),
-                    position.GetPositionX() - KILJAEDEN_CENTER_POSITION.GetPositionX()));
+                   position.GetPositionX() - KILJAEDEN_CENTER_POSITION.GetPositionX()));
 }
 
 bool IsKiljaedenRangedSlotSafe(
@@ -2568,9 +2550,9 @@ bool IsKiljaedenRangedSlotSafe(
 {
     for (KiljaedenArmageddon const& armageddon : armageddons)
     {
-        float deltaX = position.GetPositionX() - armageddon.destination.GetPositionX();
-        float deltaY = position.GetPositionY() - armageddon.destination.GetPositionY();
-        if (std::sqrt(deltaX * deltaX + deltaY * deltaY) < armageddon.safeDistance)
+        if (position.GetExactDist2d(
+                armageddon.destination.GetPositionX(),
+                armageddon.destination.GetPositionY()) < armageddon.safeDistance)
         {
             return false;
         }
@@ -2586,10 +2568,8 @@ float GetKiljaedenNearestArmageddonDistance(
 
     for (KiljaedenArmageddon const& armageddon : armageddons)
     {
-        float deltaX = position.GetPositionX() - armageddon.destination.GetPositionX();
-        float deltaY = position.GetPositionY() - armageddon.destination.GetPositionY();
-        nearestDistance = std::min(
-            nearestDistance, std::sqrt(deltaX * deltaX + deltaY * deltaY));
+        nearestDistance = std::min(nearestDistance, position.GetExactDist2d(
+            armageddon.destination.GetPositionX(), armageddon.destination.GetPositionY()));
     }
 
     return nearestDistance;
@@ -2684,7 +2664,7 @@ void EnsureKiljaedenRangedAssignments(PlayerbotAI* botAI, Player* bot)
 
 void EnsureKiljaedenRangedArmageddonAssignments(PlayerbotAI* botAI, Player* bot)
 {
-    uint32 instanceId = bot->GetInstanceId();
+    const uint32 instanceId = bot->GetInstanceId();
     PruneExpiredKiljaedenArmageddons(instanceId);
 
     auto armageddonItr = kiljaedenArmageddons.find(instanceId);
@@ -2771,7 +2751,6 @@ void EnsureKiljaedenRangedArmageddonAssignments(PlayerbotAI* botAI, Player* bot)
         ++plannedOccupancy[rangedBot.slotIndex];
     }
 
-    constexpr float distanceEpsilon = 0.001f;
     for (KiljaedenRangedBotAssignment const& rangedBot : displacedBots)
     {
         bool bestFound = false;
@@ -2804,11 +2783,11 @@ void EnsureKiljaedenRangedArmageddonAssignments(PlayerbotAI* botAI, Player* bot)
             {
                 takeCandidate = candidateSameRow;
             }
-            else if (candidateAngleDistance + distanceEpsilon < bestAngleDistance)
+            else if (candidateAngleDistance < bestAngleDistance)
             {
                 takeCandidate = true;
             }
-            else if (std::fabs(candidateAngleDistance - bestAngleDistance) <= distanceEpsilon)
+            else if (candidateAngleDistance == bestAngleDistance)
             {
                 if (candidateOccupancy < bestOccupancy)
                 {
@@ -2816,12 +2795,11 @@ void EnsureKiljaedenRangedArmageddonAssignments(PlayerbotAI* botAI, Player* bot)
                 }
                 else if (candidateOccupancy == bestOccupancy)
                 {
-                    if (candidateArmageddonDistance > bestArmageddonDistance + distanceEpsilon)
+                    if (candidateArmageddonDistance > bestArmageddonDistance)
                     {
                         takeCandidate = true;
                     }
-                    else if (std::fabs(candidateArmageddonDistance - bestArmageddonDistance) <=
-                                    distanceEpsilon &&
+                    else if (candidateArmageddonDistance == bestArmageddonDistance &&
                                 candidateSlotIndex < bestSlotIndex)
                     {
                         takeCandidate = true;

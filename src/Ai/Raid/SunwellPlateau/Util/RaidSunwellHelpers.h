@@ -162,7 +162,6 @@ extern std::unordered_set<ObjectGuid> hasReachedKalecgosInitialRangedPosition;
 bool IsKalecgosDecurser(PlayerbotAI* botAI, Player* bot);
 void EnsureKalecgosGroupAssignments(PlayerbotAI* botAI, Player* bot);
 Player* GetKalecgosCurrentTank(PlayerbotAI* botAI, Player* bot);
-bool HasReachedKalecgosInitialRangedPosition(Player* bot);
 void SetKalecgosInitialRangedPositionReached(Player* bot, bool reached);
 bool ShouldEnterKalecgosSpectralRift(PlayerbotAI* botAI, Player* bot);
 bool IsInKalecgosSpectralRealm(Player* bot);
