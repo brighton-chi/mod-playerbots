@@ -479,7 +479,6 @@ AiPlayerbot.SaveManaThreshold = 60
 
 # Enable Paladin bots to use greater blessings, with the blessing used being based on the
 # number of Paladins in the raid/group and the spec of the recipient.
-# on priority lists for each spec.
 # 0 = disabled
 # 1 = enabled in raid groups only
 # 2 = enabled in all groups

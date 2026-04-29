@@ -138,11 +138,17 @@ namespace ai::gbless
 
     inline constexpr BaseBlessingPriorityEntry BASE_BLESSING_PRIORITIES[ROLE_PROFILE_COUNT] =
     {
+        // All casters
         {{ BASE_KINGS,     BASE_WISDOM, BASE_SANCTUARY, BASE_MIGHT     }},
+        // Physical melee DPS
         {{ BASE_MIGHT,     BASE_KINGS,  BASE_SANCTUARY, BASE_NONE      }},
+        // Hybrid DPS and Hunters
         {{ BASE_MIGHT,     BASE_KINGS,  BASE_WISDOM,    BASE_SANCTUARY }},
-        {{ BASE_KINGS,     BASE_MIGHT,  BASE_WISDOM,    BASE_SANCTUARY }},
+        // Druid tanks
+        {{ BASE_KINGS,     BASE_MIGHT,  BASE_SANCTUARY, BASE_WISDOM,   }},
+        // Warrior and DK tanks
         {{ BASE_KINGS,     BASE_MIGHT,  BASE_SANCTUARY, BASE_NONE      }},
+        // Paladin tanks
         {{ BASE_SANCTUARY, BASE_MIGHT,  BASE_WISDOM,    BASE_KINGS     }},
     };
 
