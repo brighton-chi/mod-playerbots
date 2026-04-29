@@ -1370,6 +1370,7 @@ std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> felmystRangedA
 std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> felmystDemonicVaporPathIndices;
 std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> felmystDemonicVaporWaypointIndices;
 std::unordered_map<uint32, FelmystFogOfCorruptionState> felmystFogOfCorruptionStates;
+std::unordered_map<uint32, FelmystIncomingEncapsulateState> felmystIncomingEncapsulateStates;
 
 void EnsureFelmystRangedAssignments(PlayerbotAI* botAI, Player* bot)
 {
@@ -1960,11 +1961,57 @@ bool TryGetFelmystRangedPosition(PlayerbotAI* botAI, Player* bot, Unit* felmyst,
     return true;
 }
 
+void RecordFelmystIncomingEncapsulateTarget(Player* target, uint32 durationMs)
+{
+    if (!target)
+        return;
+
+    FelmystIncomingEncapsulateState& state =
+        felmystIncomingEncapsulateStates[target->GetInstanceId()];
+    state.targetGuid = target->GetGUID();
+    state.expireMs = getMSTime() + durationMs;
+    state.auraObserved = false;
+}
+
 Player* GetFelmystEncapsulateTarget(Player* bot)
 {
     Group* group = bot->GetGroup();
     if (!group)
         return nullptr;
+
+    uint32 now = getMSTime();
+    auto incomingItr = felmystIncomingEncapsulateStates.find(bot->GetInstanceId());
+    if (incomingItr != felmystIncomingEncapsulateStates.end())
+    {
+        Player* incomingTarget = nullptr;
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || member->GetGUID() != incomingItr->second.targetGuid)
+                continue;
+
+            incomingTarget = member;
+            break;
+        }
+
+        if (!incomingTarget)
+        {
+            felmystIncomingEncapsulateStates.erase(incomingItr);
+        }
+        else if (incomingTarget->HasAura(static_cast<uint32>(SunwellSpells::SPELL_ENCAPSULATE)))
+        {
+            incomingItr->second.auraObserved = true;
+            return incomingTarget;
+        }
+        else if (incomingItr->second.auraObserved || incomingItr->second.expireMs <= now)
+        {
+            felmystIncomingEncapsulateStates.erase(incomingItr);
+        }
+        else
+        {
+            return incomingTarget;
+        }
+    }
 
     Player* closestTarget = nullptr;
     float closestDistance = 0.0f;

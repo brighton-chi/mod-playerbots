@@ -232,6 +232,7 @@ public:
         switch (spellInfo->Id)
         {
             case static_cast<uint32>(SunwellSpells::SPELL_ENCAPSULATE):
+                RecordFelmystIncomingEncapsulateTarget(target);
                 RequestInterruptForBotsNear(target, FELMYST_ENCAPSULATE_SAFE_DISTANCE);
                 break;
             case static_cast<uint32>(SunwellSpells::SPELL_SUMMON_DEMONIC_VAPOR):

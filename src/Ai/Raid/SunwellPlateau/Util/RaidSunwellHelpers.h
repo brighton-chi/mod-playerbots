@@ -270,6 +270,13 @@ struct FelmystFogOfCorruptionState
     uint32 expireMs = 0;
 };
 
+struct FelmystIncomingEncapsulateState
+{
+    ObjectGuid targetGuid = ObjectGuid::Empty;
+    uint32 expireMs = 0;
+    bool auraObserved = false;
+};
+
 constexpr float FELMYST_ENCAPSULATE_SAFE_DISTANCE = 21.0f;
 constexpr float FELMYST_FOG_SAFE_SPOT_ARRIVAL_DISTANCE = 8.0f;
 constexpr float FELMYST_FOG_CURRENT_POINT_MATCH_DISTANCE = 3.0f;
@@ -281,8 +288,10 @@ extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> felmyst
 extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> felmystDemonicVaporPathIndices;
 extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> felmystDemonicVaporWaypointIndices;
 extern std::unordered_map<uint32, FelmystFogOfCorruptionState> felmystFogOfCorruptionStates;
+extern std::unordered_map<uint32, FelmystIncomingEncapsulateState> felmystIncomingEncapsulateStates;
 
 void EnsureFelmystRangedAssignments(PlayerbotAI* botAI, Player* bot);
+void RecordFelmystIncomingEncapsulateTarget(Player* target, uint32 durationMs = 3000);
 float GetFelmystFrontAngle(PlayerbotAI* botAI, Player* bot, Unit* felmyst);
 Creature* GetFelmystDemonicVaporSummonedByBot(Player* carrier);
 void ClearFelmystDemonicVaporKiteState(Player* bot);
