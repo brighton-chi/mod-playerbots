@@ -810,8 +810,8 @@ bool ShouldMoveForBrutallusBurn(Player* bot)
     if (!burnAura)
         return false;
 
-    constexpr int32 burnMoveLeadTimeMs = 45000;
-    return burnAura->GetDuration() < burnMoveLeadTimeMs;
+    constexpr int32 burnMoveLeadTimeMs = 40000;
+    return burnAura->GetDuration() <= burnMoveLeadTimeMs;
 }
 
 Position GetBrutallusTankPosition(Unit* brutallus, bool isMainTank, float z)
@@ -1055,6 +1055,55 @@ bool TryGetBrutallusRangedArcPosition(
 
     position = GetBrutallusPositionAtAngle(brutallus, nextAngle, radius, z);
     return true;
+}
+
+bool ShouldUseBrutallusOuterReturnLane(
+    PlayerbotAI* botAI, Player* bot, Unit* brutallus, uint8 rangedIndex)
+{
+    if (!brutallus)
+        return false;
+
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    constexpr int32 burnBlockThresholdMs = 42000;
+    constexpr float normalSlotTolerance = 2.0f;
+    bool isMainTankSide = rangedIndex % 2 == 0;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || member->GetMapId() != SUNWELL_MAP_ID)
+            continue;
+
+        Aura* burnAura = member->GetAura(static_cast<uint32>(SunwellSpells::SPELL_BURN));
+        if (!burnAura || burnAura->GetDuration() <= burnBlockThresholdMs)
+            continue;
+
+        uint8 memberRangedIndex = 0;
+        if (!TryGetBrutallusAssignedPositionIndex(botAI, member, true, memberRangedIndex) ||
+            (memberRangedIndex % 2 == 0) != isMainTankSide)
+        {
+            continue;
+        }
+
+        Position normalPosition;
+        if (!TryGetBrutallusRangedStepPosition(
+                brutallus, memberRangedIndex, false, BRUTALLUS_NORMAL_RANGED_RADIUS,
+                member->GetPositionZ(), normalPosition))
+        {
+            continue;
+        }
+
+        if (member->GetExactDist2d(normalPosition.GetPositionX(), normalPosition.GetPositionY()) <=
+            normalSlotTolerance)
+        {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 void EnsureBrutallusRangedAssignments(PlayerbotAI* botAI, Player* bot)
