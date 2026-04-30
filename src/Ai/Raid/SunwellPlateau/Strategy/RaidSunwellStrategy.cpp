@@ -133,16 +133,16 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("m'uru set dps priority", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("m'uru dark fiends spawned", {
-        NextAction("m'uru kill dark fiends with dispel", ACTION_EMERGENCY + 7) }));
+        NextAction("m'uru kill dark fiends with dispel", ACTION_EMERGENCY + 10) }));
 
     triggers.push_back(new TriggerNode("m'uru entropius turned out the lights", {
         NextAction("m'uru don't touch the dark fiend", ACTION_EMERGENCY + 9) }));
 
     triggers.push_back(new TriggerNode("m'uru darkness is coming", {
-        NextAction("m'uru flee the night", ACTION_EMERGENCY + 10) }));
+        NextAction("m'uru flee the night", ACTION_EMERGENCY + 8) }));
 
     triggers.push_back(new TriggerNode("m'uru the singularity is near", {
-        NextAction("m'uru moore's law is dead", ACTION_EMERGENCY + 8) }));
+        NextAction("m'uru moore's law is dead", ACTION_EMERGENCY + 7) }));
 
     triggers.push_back(new TriggerNode("m'uru berserker is buffed with flurry", {
         NextAction("m'uru cast stun on shadowsword berserker", ACTION_RAID + 4) }));

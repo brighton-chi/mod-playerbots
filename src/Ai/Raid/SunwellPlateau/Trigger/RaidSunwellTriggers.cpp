@@ -26,6 +26,12 @@ bool SunwellPlateauBotIsNotInCombatTrigger::IsActive()
 
 bool VolatileFiendSelfDestructsWhenNearTrigger::IsActive()
 {
+    if (AI_VALUE2(Unit*, "find target", "kil'jaeden") ||
+        AI_VALUE2(Unit*, "find target", "hand of the deceiver"))
+    {
+        return false;
+    }
+
     constexpr float searchRadius = 30.0f;
     return bot->FindNearestCreature(
         static_cast<uint32>(SunwellNpcs::NPC_VOLATILE_FIEND), searchRadius, true);
