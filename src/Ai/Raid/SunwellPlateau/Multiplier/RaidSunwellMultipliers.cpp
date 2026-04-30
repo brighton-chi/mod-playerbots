@@ -5,7 +5,12 @@
 
 #include "RaidSunwellMultipliers.h"
 #include "RaidSunwellActions.h"
-#include "RaidSunwellHelpers.h"
+#include "RaidSunwellBrutallusEncounter.h"
+#include "RaidSunwellEredarTwinsEncounter.h"
+#include "RaidSunwellFelmystEncounter.h"
+#include "RaidSunwellKalecgosEncounter.h"
+#include "RaidSunwellKiljaedenEncounter.h"
+#include "RaidSunwellMuruEncounter.h"
 #include "ChooseTargetActions.h"
 #include "DKActions.h"
 #include "TargetValue.h"

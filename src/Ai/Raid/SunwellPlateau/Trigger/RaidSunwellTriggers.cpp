@@ -4,11 +4,44 @@
  */
 
 #include "RaidSunwellTriggers.h"
-#include "RaidSunwellHelpers.h"
+#include "RaidSunwellBrutallusEncounter.h"
+#include "RaidSunwellEredarTwinsEncounter.h"
+#include "RaidSunwellFelmystEncounter.h"
+#include "RaidSunwellKalecgosEncounter.h"
+#include "RaidSunwellKiljaedenEncounter.h"
+#include "RaidSunwellMuruEncounter.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
 
 using namespace SunwellHelpers;
+
+namespace
+{
+
+Creature* GetInfernalDefenseApocalypseGuard(Player* bot)
+{
+    Creature* target = nullptr;
+    constexpr float searchRadius = 40.0f;
+    std::list<Creature*> apocalypseGuards;
+    bot->GetCreatureListWithEntryInGrid(
+        apocalypseGuards, static_cast<uint32>(SunwellNpcs::NPC_APOCALYPSE_GUARD), searchRadius);
+
+    for (Creature* apocalypseGuard : apocalypseGuards)
+    {
+        if (!apocalypseGuard || !apocalypseGuard->IsAlive() ||
+            !apocalypseGuard->HasAura(static_cast<uint32>(SunwellSpells::SPELL_INFERNAL_DEFENSE)))
+        {
+            continue;
+        }
+
+        if (!target || apocalypseGuard->GetGUID() < target->GetGUID())
+            target = apocalypseGuard;
+    }
+
+    return target;
+}
+
+}
 
 // General
 
@@ -146,7 +179,7 @@ bool BrutallusBossEngagedByRangedTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "brutallus"))
         return false;
 
-    if (ShouldMoveForBrutallusBurn(bot))
+    if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_BURN)))
         return false;
 
     return !botAI->IsMelee(bot);
@@ -171,7 +204,7 @@ bool BrutallusBotIsBurningTrigger::IsActive()
         return true;
     }
 
-    if (ShouldMoveForBrutallusBurn(bot))
+    if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_BURN)))
         return true;
 
     return false;

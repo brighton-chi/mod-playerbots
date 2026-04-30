@@ -5,7 +5,12 @@
 
 #include <unordered_set>
 
-#include "RaidSunwellHelpers.h"
+#include "RaidSunwellBrutallusEncounter.h"
+#include "RaidSunwellEredarTwinsEncounter.h"
+#include "RaidSunwellFelmystEncounter.h"
+#include "RaidSunwellKalecgosEncounter.h"
+#include "RaidSunwellKiljaedenEncounter.h"
+#include "RaidSunwellMuruEncounter.h"
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
 #include "Player.h"
