@@ -23,7 +23,8 @@ namespace BlackTempleHelpers
         constexpr float searchRadius = 20.0f;
         std::list<Creature*> creatureList;
         bot->GetCreatureListWithEntryInGrid(
-            creatureList, static_cast<uint32>(BlackTempleNpcs::NPC_SUPREMUS_VOLCANO), searchRadius);
+            creatureList, static_cast<uint32>(
+                BlackTempleNpcs::NPC_SUPREMUS_VOLCANO), searchRadius);
 
         for (Creature* creature : creatureList)
         {
@@ -330,6 +331,7 @@ namespace BlackTempleHelpers
         return fallbackWarlock;
     }
 
+    // Get the first bot hunter that doesn't have Parasitic Shadowfiend
     Player* GetIllidanTrapperHunter(Player* bot)
     {
         Group* group = bot->GetGroup();
@@ -355,7 +357,6 @@ namespace BlackTempleHelpers
          return nullptr;
     }
 
-    // If any bot has the initial infection
     Player* GetBotWithParasiticShadowfiend(Player* bot)
     {
         Group* group = bot->GetGroup();
@@ -419,8 +420,10 @@ namespace BlackTempleHelpers
         if (length < 0.1f)
             return false;
 
-        const float projectionFactor = ((pos.GetPositionX() - area.start.GetPositionX()) * dx +
-                                        (pos.GetPositionY() - area.start.GetPositionY()) * dy) / (length * length);
+        const float projectionFactor = (
+            (pos.GetPositionX() - area.start.GetPositionX()) * dx + (
+                pos.GetPositionY() - area.start.GetPositionY()) * dy) / (length * length);
+
         const float clampedProjectionFactor = std::clamp(projectionFactor, 0.0f, 1.0f);
 
         const float closestX = area.start.GetPositionX() + clampedProjectionFactor * dx;

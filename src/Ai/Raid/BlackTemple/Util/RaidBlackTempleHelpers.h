@@ -84,7 +84,7 @@ enum class BlackTempleSpells : uint32
     SPELL_SHADOW_PRISON             = 40647,
     SPELL_CAGED                     = 40695,
     SPELL_PARASITIC_SHADOWFIEND_1   = 41917, // cast by Illidan (primary infection)
-    SPELL_PARASITIC_SHADOWFIEND_2   = 41914, // cast by shadowfiend on contact (secondary infection)
+    SPELL_PARASITIC_SHADOWFIEND_2   = 41914, // cast by Shadowfiend on contact (secondary infection)
 
     // Hunter
     SPELL_FROST_TRAP                = 13809,
