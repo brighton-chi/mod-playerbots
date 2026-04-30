@@ -213,6 +213,21 @@ class FelmystSpellListenerScript : public AllSpellScript
 public:
     FelmystSpellListenerScript() : AllSpellScript("FelmystSpellListenerScript") { }
 
+    void OnSpellPrepare(Spell* spell, Unit* caster, SpellInfo const* spellInfo) override
+    {
+        if (!spell || !caster || !spellInfo)
+            return;
+
+        if (spellInfo->Id != static_cast<uint32>(SunwellSpells::SPELL_ENCAPSULATE))
+            return;
+
+        if (Player* target = GetFirstPlayerSpellTarget(spell, caster))
+        {
+            RecordFelmystIncomingEncapsulateTarget(target);
+            RequestInterruptForBotsNear(target, FELMYST_ENCAPSULATE_SAFE_DISTANCE);
+        }
+    }
+
     void OnSpellCast(Spell* spell, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
     {
         if (spellInfo->Id == static_cast<uint32>(SunwellSpells::SPELL_FOG_OF_CORRUPTION) ||
