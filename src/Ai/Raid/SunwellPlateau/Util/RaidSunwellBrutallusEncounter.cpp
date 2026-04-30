@@ -13,13 +13,17 @@
 namespace SunwellHelpers
 {
 
-static float GetCenteredArcSlotAngleOffset(uint8 slotIndex, uint8 slotCount, float arcWidth);
+static float GetCenteredArcSlotAngleOffset(
+    uint8 slotIndex, uint8 slotCount, float arcWidth);
 static float NormalizeSignedAngle(float angle);
 
 const Position BRUTALLUS_MAIN_TANK_POSITION = { 1484.779f, 582.691f, 23.460f };
 
-std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> brutallusRangedAssignments;
-std::unordered_map<ObjectGuid, BrutallusRangedBurnState> brutallusRangedBurnStates;
+std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
+    brutallusRangedAssignments;
+
+std::unordered_map<ObjectGuid, BrutallusRangedBurnState>
+    brutallusRangedBurnStates;
 
 Position GetBrutallusTankPosition(Unit* brutallus, bool isMainTank, float z)
 {
@@ -32,7 +36,8 @@ Position GetBrutallusTankPosition(Unit* brutallus, bool isMainTank, float z)
     float angle = GetBrutallusMainTankAngle(brutallus);
     angle = Position::NormalizeOrientation(angle + BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET);
 
-    return GetBrutallusPositionAtAngle(brutallus, angle, BRUTALLUS_TANK_POSITION_RADIUS, z);
+    return GetBrutallusPositionAtAngle(
+        brutallus, angle, BRUTALLUS_TANK_POSITION_RADIUS, z);
 }
 
 bool TryGetBrutallusMeleePosition(
@@ -46,7 +51,8 @@ bool TryGetBrutallusMeleePosition(
 
     const float meleeRadius = std::max(1.0f, bot->GetMeleeRange(brutallus) - 2.0f);
     const float meleeAngleStep = 2.0f * std::asin(meleeSpacing / (2.0f * meleeRadius));
-    const uint8 maxSideSlots = static_cast<uint8>(std::floor((arcAngle / 2.0f) / meleeAngleStep));
+    const uint8 maxSideSlots =
+        static_cast<uint8>(std::floor((arcAngle / 2.0f) / meleeAngleStep));
     const uint8 maxMeleeSlots = 1 + 2 * maxSideSlots;
     if (meleeIndex >= maxMeleeSlots)
         return false;
@@ -55,7 +61,8 @@ bool TryGetBrutallusMeleePosition(
     const float baseAngle = Position::NormalizeOrientation(
         GetBrutallusMainTankAngle(brutallus) + arcCenterOffset);
     const float arcWidth = maxSideSlots * 2.0f * meleeAngleStep;
-    const float angleOffset = GetCenteredArcSlotAngleOffset(meleeIndex, maxMeleeSlots, arcWidth);
+    const float angleOffset =
+        GetCenteredArcSlotAngleOffset(meleeIndex, maxMeleeSlots, arcWidth);
 
     const float angle = Position::NormalizeOrientation(baseAngle + angleOffset);
     position = GetBrutallusPositionAtAngle(brutallus, angle, meleeRadius, z);

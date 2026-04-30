@@ -46,7 +46,7 @@ const std::array<std::array<Position, 3>, 3> FELMYST_FOG_SAFE_SPOTS = {{
     }}
 }};
 
-const Position FELMYST_FOG_LEFT_SIDE = { 1469.064f, 729.585f, 59.824f, 4.677f };
+const Position FELMYST_FOG_LEFT_SIDE =  { 1469.064f, 729.585f, 59.824f, 4.677f };
 const Position FELMYST_FOG_RIGHT_SIDE = { 1458.556f, 502.200f, 59.900f, 1.606f };
 
 const std::array<std::array<Position, 4>, 2> FELMYST_DEMONIC_VAPOR_KITE_PATHS = {{
@@ -64,22 +64,35 @@ const std::array<std::array<Position, 4>, 2> FELMYST_DEMONIC_VAPOR_KITE_PATHS = 
     }}
 }};
 
-std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> felmystRangedAssignments;
-std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> felmystDemonicVaporPathIndices;
-std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> felmystDemonicVaporWaypointIndices;
-std::unordered_map<uint32, FelmystFogOfCorruptionState> felmystFogOfCorruptionStates;
-std::unordered_map<uint32, FelmystIncomingEncapsulateState> felmystIncomingEncapsulateStates;
+std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
+    felmystRangedAssignments;
 
-FelmystFogLocation GetFelmystFogLocationFromLanePointIndex(uint8 laneIndex, bool useLeftPoint)
+std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
+    felmystDemonicVaporPathIndices;
+
+std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
+    felmystDemonicVaporWaypointIndices;
+
+std::unordered_map<uint32, FelmystFogOfCorruptionState>
+    felmystFogOfCorruptionStates;
+
+std::unordered_map<uint32, FelmystIncomingEncapsulateState>
+    felmystIncomingEncapsulateStates;
+
+FelmystFogLocation GetFelmystFogLocationFromLanePointIndex(
+    uint8 laneIndex, bool useLeftPoint)
 {
     switch (laneIndex)
     {
         case 0:
-            return useLeftPoint ? FelmystFogLocation::LeftTop : FelmystFogLocation::RightTop;
+            return useLeftPoint ?
+                FelmystFogLocation::LeftTop : FelmystFogLocation::RightTop;
         case 1:
-            return useLeftPoint ? FelmystFogLocation::LeftMiddle : FelmystFogLocation::RightMiddle;
+            return useLeftPoint ?
+                FelmystFogLocation::LeftMiddle : FelmystFogLocation::RightMiddle;
         case 2:
-            return useLeftPoint ? FelmystFogLocation::LeftBottom : FelmystFogLocation::RightBottom;
+            return useLeftPoint ?
+                FelmystFogLocation::LeftBottom : FelmystFogLocation::RightBottom;
         default:
             return FelmystFogLocation::None;
     }

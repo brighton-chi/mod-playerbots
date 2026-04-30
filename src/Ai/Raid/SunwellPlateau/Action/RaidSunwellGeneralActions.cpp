@@ -28,17 +28,13 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
 
     bool erased = false;
 
-    Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos");
-
-    if (!kalecgos && isRanged &&
-        hasReachedKalecgosInitialRangedPosition.erase(guid) > 0)
+    if (!AI_VALUE2(Unit*, "find target", "kalecgos"))
     {
-        erased = true;
-    }
+        if (isRanged && hasReachedKalecgosInitialRangedPosition.erase(guid) > 0)
+            erased = true;
 
-    if (!kalecgos && !AI_VALUE2(Unit*, "find target", "sathrovarr the corruptor"))
-    {
-        if (!IsKalecgosRealmTransitionGraceActive(bot))
+        if (!AI_VALUE2(Unit*, "find target", "sathrovarr the corruptor") &&
+            !IsKalecgosRealmTransitionGraceActive(bot))
         {
             if (isMechanicTracker && kalecgosEncounterStates.erase(instanceId) > 0)
                 erased = true;
@@ -63,7 +59,7 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
             erased = true;
     }
 
-    if (!AI_VALUE2(Unit*, "find target", "felmyst") && isMechanicTracker)
+    if (isMechanicTracker && !AI_VALUE2(Unit*, "find target", "felmyst"))
     {
         if (felmystRangedAssignments.erase(instanceId) > 0)
             erased = true;
@@ -91,11 +87,17 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
 
         if (botAI->IsTank(bot) && alythessTankStep.erase(guid) > 0)
             erased = true;
+
+        if (isMechanicTracker &&
+            eredarTwinsIncomingConflagrationStates.erase(instanceId) > 0)
+        {
+            erased = true;
+        }
     }
 
-    if (!AI_VALUE2(Unit*, "find target", "m'uru") &&
-        !AI_VALUE2(Unit*, "find target", "entropius") &&
-        isMechanicTracker)
+    if (isMechanicTracker &&
+        !AI_VALUE2(Unit*, "find target", "m'uru") &&
+        !AI_VALUE2(Unit*, "find target", "entropius"))
     {
         if (muruDarknessStates.erase(instanceId) > 0)
             erased = true;
@@ -107,9 +109,9 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
             erased = true;
     }
 
-    if (!AI_VALUE2(Unit*, "find target", "kil'jaeden") &&
-        !AI_VALUE2(Unit*, "find target", "hand of the deceiver") &&
-        isMechanicTracker)
+    if (isMechanicTracker &&
+        !AI_VALUE2(Unit*, "find target", "kil'jaeden") &&
+        !AI_VALUE2(Unit*, "find target", "hand of the deceiver"))
     {
         if (kiljaedenArmageddons.erase(instanceId) > 0)
             erased = true;

@@ -33,6 +33,8 @@ const Position EREDAR_TWINS_MELEE_CONFLAG_POSITION =   { 1814.337f, 607.771f, 33
 
 std::unordered_map<ObjectGuid, uint8> alythessTankStep;
 std::unordered_map<ObjectGuid, ObjectGuid> alythessTankLastBlazeGuid;
+std::unordered_map<uint32, EredarTwinsIncomingConflagrationState>
+    eredarTwinsIncomingConflagrationStates;
 
 bool IsSacrolashTank(PlayerbotAI* botAI, Player* bot)
 {
@@ -75,7 +77,7 @@ bool ShouldHoldSacrolashThreat(
     return false;
 }
 
-bool IsAlythessTankPositionSafe(Player* bot, Position const& position)
+bool IsAlythessTankPositionSafe(Player* bot, const Position& position)
 {
     constexpr float blazeDangerRadius = 4.5f;
     constexpr float blazeSearchRadius = 30.0f;
@@ -124,15 +126,56 @@ bool ShouldAdvanceAlythessTankPosition(Unit* alythess, Player* bot)
     return true;
 }
 
+void RecordEredarTwinsIncomingConflagrationTarget(Player* target, uint32 durationMs)
+{
+    if (!target || !durationMs)
+        return;
+
+    EredarTwinsIncomingConflagrationState& state =
+        eredarTwinsIncomingConflagrationStates[target->GetInstanceId()];
+    state.targetGuid = target->GetGUID();
+    state.expireMs = getMSTime() + durationMs;
+}
+
 bool IsEredarTwinsConflagrationTarget(Unit* alythess, Player* bot)
 {
-    if (!alythess)
+    if (!bot)
         return false;
 
-    Spell* currentSpell = alythess->GetCurrentSpell(CURRENT_GENERIC_SPELL);
-    return currentSpell && currentSpell->m_spellInfo &&
-           currentSpell->m_spellInfo->Id == static_cast<uint32>(SunwellSpells::SPELL_CONFLAGRATION) &&
-           currentSpell->m_targets.GetUnitTarget() == bot;
+    constexpr uint32 conflagrationSpellId = static_cast<uint32>(SunwellSpells::SPELL_CONFLAGRATION);
+    auto const incomingItr = eredarTwinsIncomingConflagrationStates.find(bot->GetInstanceId());
+
+    if (alythess)
+    {
+        Spell* currentSpell = alythess->GetCurrentSpell(CURRENT_GENERIC_SPELL);
+        if (currentSpell && currentSpell->m_spellInfo &&
+            currentSpell->m_spellInfo->Id == conflagrationSpellId &&
+            currentSpell->m_targets.GetUnitTarget() == bot)
+        {
+            return true;
+        }
+    }
+
+    if (incomingItr == eredarTwinsIncomingConflagrationStates.end())
+        return false;
+
+    EredarTwinsIncomingConflagrationState const& state = incomingItr->second;
+    const uint32 now = getMSTime();
+    if (state.targetGuid != bot->GetGUID())
+    {
+        if (state.expireMs <= now)
+            eredarTwinsIncomingConflagrationStates.erase(incomingItr);
+
+        return false;
+    }
+
+    if (state.expireMs <= now)
+    {
+        eredarTwinsIncomingConflagrationStates.erase(incomingItr);
+        return false;
+    }
+
+    return true;
 }
 
 }

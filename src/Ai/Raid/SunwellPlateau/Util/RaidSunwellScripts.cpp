@@ -19,13 +19,45 @@
 
 using namespace SunwellHelpers;
 
-static constexpr uint32 SPELL_FELMYST_STRAFE_TOP               = 45585;
-static constexpr uint32 SPELL_FELMYST_STRAFE_MIDDLE            = 45633;
-static constexpr uint32 SPELL_FELMYST_STRAFE_BOTTOM            = 45635;
-static constexpr uint32 FELMYST_FOG_INTERRUPT_SCAN_INTERVAL_MS = 500;
+static constexpr uint32 SPELL_FELMYST_STRAFE_TOP    = 45585;
+static constexpr uint32 SPELL_FELMYST_STRAFE_MIDDLE = 45633;
+static constexpr uint32 SPELL_FELMYST_STRAFE_BOTTOM = 45635;
 
-static std::unordered_map<ObjectGuid, uint32> felmystFogInterruptLastScanTime;
 static std::unordered_set<ObjectGuid> kiljaedenTrackedArmageddonTargets;
+
+static PlayerbotAI* FindFirstSunwellCombatBotInGroup(Player* referencePlayer)
+{
+    if (!referencePlayer)
+        return nullptr;
+
+    if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(referencePlayer);
+        botAI && botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
+    {
+        return botAI;
+    }
+
+    Group* group = referencePlayer->GetGroup();
+    if (!group)
+        return nullptr;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || member == referencePlayer ||
+            member->GetMapId() != referencePlayer->GetMapId())
+        {
+            continue;
+        }
+
+        if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(member);
+            botAI && botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
+        {
+            return botAI;
+        }
+    }
+
+    return nullptr;
+}
 
 static Player* GetFirstPlayerSpellTarget(Spell* spell, Unit* caster)
 {
@@ -119,42 +151,6 @@ static void RequestInterruptForBotsNeedingFelmystFogMovement(Unit* contextUnit, 
     }
 }
 
-class FelmystFogInterruptFallbackScript : public AllCreatureScript
-{
-public:
-    FelmystFogInterruptFallbackScript() : AllCreatureScript("FelmystFogInterruptFallbackScript") { }
-
-    void OnAllCreatureUpdate(Creature* creature, uint32 /*diff*/) override
-    {
-        if (!creature || creature->GetEntry() != static_cast<uint32>(SunwellNpcs::NPC_FELMYST) ||
-            !creature->IsFlying())
-        {
-            return;
-        }
-
-        FelmystFogOfCorruptionState fogState;
-        if (!TryGetFelmystFogOfCorruptionStageState(creature, fogState) ||
-            fogState.lane == FelmystFogLane::None)
-            return;
-
-        uint32 now = getMSTime();
-        uint32& lastScanTime = felmystFogInterruptLastScanTime[creature->GetGUID()];
-        if (getMSTimeDiff(lastScanTime, now) < FELMYST_FOG_INTERRUPT_SCAN_INTERVAL_MS)
-            return;
-
-        lastScanTime = now;
-        RequestInterruptForBotsNeedingFelmystFogMovement(creature, nullptr);
-    }
-
-    void OnCreatureRemoveWorld(Creature* creature) override
-    {
-        if (!creature || creature->GetEntry() != static_cast<uint32>(SunwellNpcs::NPC_FELMYST))
-            return;
-
-        felmystFogInterruptLastScanTime.erase(creature->GetGUID());
-    }
-};
-
 class KalecgosSpellListenerScript : public AllSpellScript
 {
 public:
@@ -162,41 +158,33 @@ public:
 
     void OnSpellCast(Spell* /*spell*/, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
     {
-        Player* player = caster->ToPlayer();
-        if (!player)
+        if (!spellInfo)
             return;
-
-        PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
-        if (!botAI)
-        {
-            Group* group = player->GetGroup();
-            if (!group)
-                return;
-
-            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-            {
-                Player* member = ref->GetSource();
-                if (!member || !member->IsInWorld() || !member->IsAlive())
-                    continue;
-
-                if (member->GetMapId() != player->GetMapId())
-                    continue;
-
-                if ((botAI = GET_PLAYERBOT_AI(member)))
-                    break;
-            }
-        }
 
         switch (spellInfo->Id)
         {
             case static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_BLAST_PORTAL):
-                if (!botAI)
-                    return;
+            case static_cast<uint32>(SunwellSpells::SPELL_TELEPORT_SPECTRAL):
+            case static_cast<uint32>(SunwellSpells::SPELL_TELEPORT_NORMAL_REALM):
+                break;
+            default:
+                return;
+        }
+
+        Player* player = caster->ToPlayer();
+        if (!player)
+            return;
+
+        PlayerbotAI* botAI = FindFirstSunwellCombatBotInGroup(player);
+        if (!botAI)
+            return;
+
+        switch (spellInfo->Id)
+        {
+            case static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_BLAST_PORTAL):
                 RecordKalecgosSpectralBlastTarget(botAI, player);
                 break;
             case static_cast<uint32>(SunwellSpells::SPELL_TELEPORT_SPECTRAL):
-                if (!botAI)
-                    return;
                 RecordKalecgosSpectralRealmEnter(botAI, player);
                 break;
             case static_cast<uint32>(SunwellSpells::SPELL_TELEPORT_NORMAL_REALM):
@@ -223,12 +211,16 @@ public:
 
         if (Player* target = GetFirstPlayerSpellTarget(spell, caster))
         {
+            if (!FindFirstSunwellCombatBotInGroup(target))
+                return;
+
             RecordFelmystIncomingEncapsulateTarget(target);
             RequestInterruptForBotsNear(target, FELMYST_ENCAPSULATE_SAFE_DISTANCE);
         }
     }
 
-    void OnSpellCast(Spell* spell, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
+    void OnSpellCast(
+        Spell* spell, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
     {
         if (spellInfo->Id == static_cast<uint32>(SunwellSpells::SPELL_FOG_OF_CORRUPTION) ||
             spellInfo->Id == SPELL_FELMYST_STRAFE_TOP ||
@@ -239,6 +231,30 @@ public:
             Player* groupReference = targetPlayer;
             if (Player* casterPlayer = caster->ToPlayer())
                 groupReference = casterPlayer;
+
+            if (groupReference)
+            {
+                if (!FindFirstSunwellCombatBotInGroup(groupReference))
+                    return;
+            }
+            else
+            {
+                bool hasSunwellStrategy = false;
+                Map::PlayerList const& players = caster->GetMap()->GetPlayers();
+                for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
+                {
+                    Player* player = it->GetSource();
+                    if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
+                        botAI && botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
+                    {
+                        hasSunwellStrategy = true;
+                        break;
+                    }
+                }
+
+                if (!hasSunwellStrategy)
+                    return;
+            }
 
             RequestInterruptForBotsNeedingFelmystFogMovement(caster, groupReference);
 
@@ -252,6 +268,9 @@ public:
         switch (spellInfo->Id)
         {
             case static_cast<uint32>(SunwellSpells::SPELL_ENCAPSULATE):
+                if (!FindFirstSunwellCombatBotInGroup(target))
+                    return;
+
                 RecordFelmystIncomingEncapsulateTarget(target);
                 RequestInterruptForBotsNear(target, FELMYST_ENCAPSULATE_SAFE_DISTANCE);
                 break;
@@ -273,7 +292,8 @@ class EredarTwinsSpellListenerScript : public AllSpellScript
 public:
     EredarTwinsSpellListenerScript() : AllSpellScript("EredarTwinsSpellListenerScript") { }
 
-    void OnSpellCast(Spell* spell, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
+    void OnSpellCast(
+        Spell* spell, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
     {
         if (!spell || !caster || !spellInfo)
             return;
@@ -288,6 +308,11 @@ public:
         if (!target)
             return;
 
+        if (!FindFirstSunwellCombatBotInGroup(target))
+            return;
+
+        RecordEredarTwinsIncomingConflagrationTarget(target);
+
         if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(target);
             botAI && botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
         {
@@ -299,7 +324,8 @@ public:
 class KiljaedenArmageddonTargetTrackerScript : public AllCreatureScript
 {
 public:
-    KiljaedenArmageddonTargetTrackerScript() : AllCreatureScript("KiljaedenArmageddonTargetTrackerScript") { }
+    KiljaedenArmageddonTargetTrackerScript()
+        : AllCreatureScript("KiljaedenArmageddonTargetTrackerScript") { }
 
     void OnAllCreatureUpdate(Creature* creature, uint32 /*diff*/) override
     {
@@ -309,12 +335,29 @@ public:
             return;
         }
 
+        bool hasSunwellStrategy = false;
+        Map::PlayerList const& players = creature->GetMap()->GetPlayers();
+        for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
+        {
+            Player* player = it->GetSource();
+            if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
+                botAI && botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
+            {
+                hasSunwellStrategy = true;
+                break;
+            }
+        }
+
+        if (!hasSunwellStrategy)
+            return;
+
         if (!kiljaedenTrackedArmageddonTargets.insert(creature->GetGUID()).second)
             return;
 
         AddKiljaedenArmageddon(
             creature->GetInstanceId(), creature->GetPosition(),
             KILJAEDEN_ARMAGEDDON_HAZARD_DURATION_MS, KILJAEDEN_ARMAGEDDON_SAFE_DISTANCE);
+
         RequestInterruptForBotsNear(creature, KILJAEDEN_ARMAGEDDON_SAFE_DISTANCE);
     }
 
@@ -335,7 +378,8 @@ class KiljaedenSpellListenerScript : public AllSpellScript
 public:
     KiljaedenSpellListenerScript() : AllSpellScript("KiljaedenSpellListenerScript") { }
 
-    void OnSpellCast(Spell* /*spell*/, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
+    void OnSpellCast(
+        Spell* /*spell*/, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
     {
         if (!caster || !spellInfo)
             return;
@@ -366,8 +410,6 @@ public:
 
 void AddSC_SunwellPlateauBotScripts()
 {
-    // Disabled for testing: rely on the spell-listener path for initial fog interrupts.
-    // new FelmystFogInterruptFallbackScript();
     new KalecgosSpellListenerScript();
     new FelmystSpellListenerScript();
     new EredarTwinsSpellListenerScript();

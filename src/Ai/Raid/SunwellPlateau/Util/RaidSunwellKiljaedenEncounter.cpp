@@ -15,7 +15,8 @@ namespace SunwellHelpers
 namespace
 {
 
-float GetCenteredArcSlotAngleOffset(uint8 slotIndex, uint8 slotCount, float arcWidth)
+float GetCenteredArcSlotAngleOffset(
+    uint8 slotIndex, uint8 slotCount, float arcWidth)
 {
     if (slotCount <= 1)
         return 0.0f;
@@ -60,9 +61,14 @@ const Position KILJAEDEN_E_MELEE_POSITION = { 1700.542f, 619.589f, 27.786f };
 const Position KILJAEDEN_STACK_POSITION =   { 1709.768f, 642.241f, 27.706f };
 const Position KILJAEDEN_CENTER_POSITION =  { 1680.181f, 638.246f, 27.256f };
 
-std::unordered_map<uint32, std::vector<KiljaedenArmageddon>> kiljaedenArmageddons;
-std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> kiljaedenRangedAssignments;
-std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> kiljaedenRangedArmageddonAssignments;
+std::unordered_map<uint32, std::vector<KiljaedenArmageddon>>
+    kiljaedenArmageddons;
+
+std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
+    kiljaedenRangedAssignments;
+
+std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
+    kiljaedenRangedArmageddonAssignments;
 
 void PruneExpiredKiljaedenArmageddons(uint32 instanceId)
 {
@@ -158,11 +164,14 @@ bool TryGetKiljaedenRangedSlotPosition(uint8 slotIndex, Position& position)
         localSlotIndex -= KILJAEDEN_INNER_RANGED_SLOT_COUNT;
     }
 
-    const float angleOffset = GetCenteredArcSlotAngleOffset(localSlotIndex, slotCount, M_PI);
+    const float angleOffset =
+        GetCenteredArcSlotAngleOffset(localSlotIndex, slotCount, M_PI);
     const float angle = Position::NormalizeOrientation(
         KILJAEDEN_RANGED_ARC_ORIENTATION + angleOffset);
-    const float positionX = KILJAEDEN_CENTER_POSITION.GetPositionX() + std::cos(angle) * radius;
-    const float positionY = KILJAEDEN_CENTER_POSITION.GetPositionY() + std::sin(angle) * radius;
+    const float positionX =
+        KILJAEDEN_CENTER_POSITION.GetPositionX() + std::cos(angle) * radius;
+    const float positionY =
+        KILJAEDEN_CENTER_POSITION.GetPositionY() + std::sin(angle) * radius;
 
     position = Position{ positionX, positionY, KILJAEDEN_CENTER_POSITION.GetPositionZ() };
     return true;
@@ -203,7 +212,8 @@ float GetKiljaedenNearestArmageddonDistance(
     for (KiljaedenArmageddon const& armageddon : armageddons)
     {
         nearestDistance = std::min(nearestDistance, position.GetExactDist2d(
-            armageddon.destination.GetPositionX(), armageddon.destination.GetPositionY()));
+            armageddon.destination.GetPositionX(),
+            armageddon.destination.GetPositionY()));
     }
 
     return nearestDistance;
@@ -248,7 +258,8 @@ void EnsureKiljaedenRangedAssignments(PlayerbotAI* botAI, Player* bot)
 
     auto const assignNextOpenSlot = [&](Player* member)
     {
-        for (uint8 slotIndex = 0; slotIndex < KILJAEDEN_TOTAL_RANGED_SLOT_COUNT; ++slotIndex)
+        for (uint8 slotIndex = 0; slotIndex < KILJAEDEN_TOTAL_RANGED_SLOT_COUNT;
+             ++slotIndex)
         {
             if (usedSlots[slotIndex])
                 continue;
@@ -298,6 +309,15 @@ void EnsureKiljaedenRangedAssignments(PlayerbotAI* botAI, Player* bot)
 
 void EnsureKiljaedenRangedArmageddonAssignments(PlayerbotAI* botAI, Player* bot)
 {
+    struct CandidateSlotScore
+    {
+        uint8 slotIndex = 0;
+        bool sameRow = false;
+        float angleDistance = 0.0f;
+        uint8 occupancy = 0;
+        float armageddonDistance = 0.0f;
+    };
+
     const uint32 instanceId = bot->GetInstanceId();
     PruneExpiredKiljaedenArmageddons(instanceId);
 
@@ -323,6 +343,9 @@ void EnsureKiljaedenRangedArmageddonAssignments(PlayerbotAI* botAI, Player* bot)
         return;
     }
 
+    auto const& armageddons = armageddonItr->second;
+    auto const& canonicalAssignments = canonicalItr->second;
+
     std::vector<KiljaedenRangedBotAssignment> rangedBots;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
@@ -333,8 +356,8 @@ void EnsureKiljaedenRangedArmageddonAssignments(PlayerbotAI* botAI, Player* bot)
             continue;
         }
 
-        auto const assignmentItr = canonicalItr->second.find(member->GetGUID());
-        if (assignmentItr == canonicalItr->second.end() ||
+        auto const assignmentItr = canonicalAssignments.find(member->GetGUID());
+        if (assignmentItr == canonicalAssignments.end() ||
             assignmentItr->second >= KILJAEDEN_TOTAL_RANGED_SLOT_COUNT)
         {
             continue;
@@ -362,15 +385,52 @@ void EnsureKiljaedenRangedArmageddonAssignments(PlayerbotAI* botAI, Player* bot)
         if (!TryGetKiljaedenRangedSlotPosition(slotIndex, slotPosition))
             continue;
 
-        safeSlots[slotIndex] = IsKiljaedenRangedSlotSafe(slotPosition, armageddonItr->second);
+        safeSlots[slotIndex] = IsKiljaedenRangedSlotSafe(slotPosition, armageddons);
         slotAngles[slotIndex] = GetKiljaedenRangedSlotAngle(slotIndex);
         nearestArmageddonDistances[slotIndex] =
-            GetKiljaedenNearestArmageddonDistance(slotPosition, armageddonItr->second);
+            GetKiljaedenNearestArmageddonDistance(slotPosition, armageddons);
     }
 
     std::array<uint8, KILJAEDEN_TOTAL_RANGED_SLOT_COUNT> plannedOccupancy = {};
     auto& tempAssignments = kiljaedenRangedArmageddonAssignments[instanceId];
     tempAssignments.clear();
+
+    auto const getCandidateScore = [&](KiljaedenRangedBotAssignment const& rangedBot,
+                                       uint8 candidateSlotIndex)
+    {
+        CandidateSlotScore score;
+        score.slotIndex = candidateSlotIndex;
+        score.sameRow =
+            (candidateSlotIndex < KILJAEDEN_INNER_RANGED_SLOT_COUNT) ==
+            (rangedBot.slotIndex < KILJAEDEN_INNER_RANGED_SLOT_COUNT);
+        score.angleDistance = std::fabs(NormalizeSignedAngle(
+            slotAngles[candidateSlotIndex] - slotAngles[rangedBot.slotIndex]));
+        score.occupancy = plannedOccupancy[candidateSlotIndex];
+        score.armageddonDistance = nearestArmageddonDistances[candidateSlotIndex];
+        return score;
+    };
+
+    auto const shouldTakeCandidate = [&](CandidateSlotScore const& candidate,
+                                         CandidateSlotScore const& best,
+                                         bool bestFound)
+    {
+        if (!bestFound)
+            return true;
+
+        if (candidate.sameRow != best.sameRow)
+            return candidate.sameRow;
+
+        if (candidate.angleDistance != best.angleDistance)
+            return candidate.angleDistance < best.angleDistance;
+
+        if (candidate.occupancy != best.occupancy)
+            return candidate.occupancy < best.occupancy;
+
+        if (candidate.armageddonDistance != best.armageddonDistance)
+            return candidate.armageddonDistance > best.armageddonDistance;
+
+        return candidate.slotIndex < best.slotIndex;
+    };
 
     std::vector<KiljaedenRangedBotAssignment> displacedBots;
     for (KiljaedenRangedBotAssignment const& rangedBot : rangedBots)
@@ -388,11 +448,8 @@ void EnsureKiljaedenRangedArmageddonAssignments(PlayerbotAI* botAI, Player* bot)
     for (KiljaedenRangedBotAssignment const& rangedBot : displacedBots)
     {
         bool bestFound = false;
-        uint8 bestSlotIndex = rangedBot.slotIndex;
-        bool bestSameRow = false;
-        float bestAngleDistance = 0.0f;
-        uint8 bestOccupancy = 0;
-        float bestArmageddonDistance = 0.0f;
+        CandidateSlotScore bestCandidate;
+        bestCandidate.slotIndex = rangedBot.slotIndex;
 
         for (uint8 candidateSlotIndex = 0;
                 candidateSlotIndex < KILJAEDEN_TOTAL_RANGED_SLOT_COUNT; ++candidateSlotIndex)
@@ -400,61 +457,18 @@ void EnsureKiljaedenRangedArmageddonAssignments(PlayerbotAI* botAI, Player* bot)
             if (!safeSlots[candidateSlotIndex] || plannedOccupancy[candidateSlotIndex] >= 2)
                 continue;
 
-            const bool candidateSameRow =
-                (candidateSlotIndex < KILJAEDEN_INNER_RANGED_SLOT_COUNT) ==
-                (rangedBot.slotIndex < KILJAEDEN_INNER_RANGED_SLOT_COUNT);
-                const float candidateAngleDistance = std::fabs(NormalizeSignedAngle(
-                slotAngles[candidateSlotIndex] - slotAngles[rangedBot.slotIndex]));
-                const uint8 candidateOccupancy = plannedOccupancy[candidateSlotIndex];
-                const float candidateArmageddonDistance = nearestArmageddonDistances[candidateSlotIndex];
-
-            bool takeCandidate = false;
-            if (!bestFound)
-            {
-                takeCandidate = true;
-            }
-            else if (candidateSameRow != bestSameRow)
-            {
-                takeCandidate = candidateSameRow;
-            }
-            else if (candidateAngleDistance < bestAngleDistance)
-            {
-                takeCandidate = true;
-            }
-            else if (candidateAngleDistance == bestAngleDistance)
-            {
-                if (candidateOccupancy < bestOccupancy)
-                {
-                    takeCandidate = true;
-                }
-                else if (candidateOccupancy == bestOccupancy)
-                {
-                    if (candidateArmageddonDistance > bestArmageddonDistance)
-                    {
-                        takeCandidate = true;
-                    }
-                    else if (candidateArmageddonDistance == bestArmageddonDistance &&
-                                candidateSlotIndex < bestSlotIndex)
-                    {
-                        takeCandidate = true;
-                    }
-                }
-            }
-
-            if (!takeCandidate)
+            const CandidateSlotScore candidate =
+                getCandidateScore(rangedBot, candidateSlotIndex);
+            if (!shouldTakeCandidate(candidate, bestCandidate, bestFound))
                 continue;
 
             bestFound = true;
-            bestSlotIndex = candidateSlotIndex;
-            bestSameRow = candidateSameRow;
-            bestAngleDistance = candidateAngleDistance;
-            bestOccupancy = candidateOccupancy;
-            bestArmageddonDistance = candidateArmageddonDistance;
+            bestCandidate = candidate;
         }
 
-        tempAssignments[rangedBot.guid] = bestSlotIndex;
+        tempAssignments[rangedBot.guid] = bestCandidate.slotIndex;
         if (bestFound)
-            ++plannedOccupancy[bestSlotIndex];
+            ++plannedOccupancy[bestCandidate.slotIndex];
     }
 
     if (tempAssignments.empty())
