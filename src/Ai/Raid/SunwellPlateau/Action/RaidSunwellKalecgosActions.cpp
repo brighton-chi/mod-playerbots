@@ -20,15 +20,15 @@ bool KalecgosTankPositionBossAction::Execute(Event event)
         return false;
 
     const Position& position = KALECGOS_TANK_POSITION;
-    float distToPosition = bot->GetExactDist2d(position.GetPositionX(),
-                                               position.GetPositionY());
+    const float distToPosition = bot->GetExactDist2d(position.GetPositionX(),
+                                                     position.GetPositionY());
     auto moveTowardTankPosition = [&]()
     {
-        float dX = position.GetPositionX() - bot->GetPositionX();
-        float dY = position.GetPositionY() - bot->GetPositionY();
-        float moveDist = std::min(5.0f, distToPosition);
-        float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
-        float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
+        const float dX = position.GetPositionX() - bot->GetPositionX();
+        const float dY = position.GetPositionY() - bot->GetPositionY();
+        const float moveDist = std::min(5.0f, distToPosition);
+        const float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+        const float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
         return MoveTo(SUNWELL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
                       false, false, MovementPriority::MOVEMENT_COMBAT, true, true);

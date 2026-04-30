@@ -44,20 +44,20 @@ bool TryGetBrutallusMeleePosition(
     constexpr float meleeSpacing = 5.0f;
     constexpr float arcAngle = 2.0f * M_PI / 3.0f;
 
-    float meleeRadius = std::max(1.0f, bot->GetMeleeRange(brutallus) - 2.0f);
-    float meleeAngleStep = 2.0f * std::asin(meleeSpacing / (2.0f * meleeRadius));
-    uint8 maxSideSlots = static_cast<uint8>(std::floor((arcAngle / 2.0f) / meleeAngleStep));
-    uint8 maxMeleeSlots = 1 + 2 * maxSideSlots;
+    const float meleeRadius = std::max(1.0f, bot->GetMeleeRange(brutallus) - 2.0f);
+    const float meleeAngleStep = 2.0f * std::asin(meleeSpacing / (2.0f * meleeRadius));
+    const uint8 maxSideSlots = static_cast<uint8>(std::floor((arcAngle / 2.0f) / meleeAngleStep));
+    const uint8 maxMeleeSlots = 1 + 2 * maxSideSlots;
     if (meleeIndex >= maxMeleeSlots)
         return false;
 
-    float arcCenterOffset = M_PI + BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET / 2.0f;
-    float baseAngle = Position::NormalizeOrientation(
+    const float arcCenterOffset = M_PI + BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET / 2.0f;
+    const float baseAngle = Position::NormalizeOrientation(
         GetBrutallusMainTankAngle(brutallus) + arcCenterOffset);
-    float arcWidth = maxSideSlots * 2.0f * meleeAngleStep;
-    float angleOffset = GetCenteredArcSlotAngleOffset(meleeIndex, maxMeleeSlots, arcWidth);
+    const float arcWidth = maxSideSlots * 2.0f * meleeAngleStep;
+    const float angleOffset = GetCenteredArcSlotAngleOffset(meleeIndex, maxMeleeSlots, arcWidth);
 
-    float angle = Position::NormalizeOrientation(baseAngle + angleOffset);
+    const float angle = Position::NormalizeOrientation(baseAngle + angleOffset);
     position = GetBrutallusPositionAtAngle(brutallus, angle, meleeRadius, z);
     return true;
 }
@@ -65,7 +65,7 @@ bool TryGetBrutallusMeleePosition(
 bool TryGetBrutallusAssignedPositionIndex(
     PlayerbotAI* botAI, Player* bot, bool wantRanged, uint8& positionIndex)
 {
-    Group* group = bot->GetGroup();
+    Group* const group = bot->GetGroup();
     if (!group)
         return false;
 
@@ -73,11 +73,11 @@ bool TryGetBrutallusAssignedPositionIndex(
     {
         EnsureBrutallusRangedAssignments(botAI, bot);
 
-        auto instanceItr = brutallusRangedAssignments.find(bot->GetInstanceId());
+        const auto instanceItr = brutallusRangedAssignments.find(bot->GetInstanceId());
         if (instanceItr == brutallusRangedAssignments.end())
             return false;
 
-        auto assignmentItr = instanceItr->second.find(bot->GetGUID());
+        const auto assignmentItr = instanceItr->second.find(bot->GetGUID());
         if (assignmentItr == instanceItr->second.end())
             return false;
 
@@ -93,7 +93,7 @@ bool TryGetBrutallusAssignedPositionIndex(
         if (!member || member->GetMapId() != SUNWELL_MAP_ID)
             continue;
 
-        bool isMelee = botAI->IsMelee(member);
+        const bool isMelee = botAI->IsMelee(member);
         if ((wantRanged && isMelee) || (!wantRanged && !isMelee) ||
             botAI->IsMainTank(member) ||
             botAI->IsAssistTankOfIndex(member, 0, true))
@@ -123,12 +123,12 @@ float GetBrutallusMainTankAngle(Unit* brutallus)
 Position GetBrutallusPositionAtAngle(
     Unit* brutallus, float angle, float radius, float z)
 {
-    float centerX = brutallus ? brutallus->GetPositionX() :
+    const float centerX = brutallus ? brutallus->GetPositionX() :
         BRUTALLUS_MAIN_TANK_POSITION.GetPositionX();
-    float centerY = brutallus ? brutallus->GetPositionY() :
+    const float centerY = brutallus ? brutallus->GetPositionY() :
         BRUTALLUS_MAIN_TANK_POSITION.GetPositionY();
-    float x = centerX + std::cos(angle) * radius;
-    float y = centerY + std::sin(angle) * radius;
+    const float x = centerX + std::cos(angle) * radius;
+    const float y = centerY + std::sin(angle) * radius;
     return { x, y, z };
 }
 
@@ -138,7 +138,7 @@ static float GetCenteredArcSlotAngleOffset(
     if (slotCount <= 1)
         return 0.0f;
 
-    float angleStep = arcWidth / static_cast<float>(slotCount - 1);
+    const float angleStep = arcWidth / static_cast<float>(slotCount - 1);
     if (slotCount % 2 == 1)
     {
         if (slotIndex == 0)
@@ -152,8 +152,8 @@ static float GetCenteredArcSlotAngleOffset(
         return angleOffset;
     }
 
-    float halfStep = angleStep / 2.0f;
-    uint8 pairIndex = slotIndex / 2;
+    const float halfStep = angleStep / 2.0f;
+    const uint8 pairIndex = slotIndex / 2;
     float angleOffset = halfStep + angleStep * pairIndex;
     if (slotIndex % 2 == 1)
         angleOffset = -angleOffset;
@@ -175,7 +175,7 @@ float GetBrutallusRangedSlotAngle(
 {
     constexpr float rangedSpacing = 6.0f;
 
-    float frontCenterAngle = Position::NormalizeOrientation(
+    const float frontCenterAngle = Position::NormalizeOrientation(
         GetBrutallusMainTankAngle(brutallus) +
         BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET / 2.0f);
 
@@ -186,15 +186,15 @@ float GetBrutallusRangedSlotAngle(
             tankAngle + BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET);
     }
 
-    float angleTowardCenter = NormalizeSignedAngle(
+    const float angleTowardCenter = NormalizeSignedAngle(
         frontCenterAngle - tankAngle);
-    float towardCenterSign = angleTowardCenter < 0.0f ? -1.0f : 1.0f;
-    float stepRatio = rangedSpacing / (2.0f * BRUTALLUS_NORMAL_RANGED_RADIUS);
-    stepRatio = std::clamp(stepRatio, 0.0f, 1.0f);
-    float angleStep = 2.0f * std::asin(stepRatio);
-    float arcHalfWidth = angleStep * static_cast<float>(
+    const float towardCenterSign = angleTowardCenter < 0.0f ? -1.0f : 1.0f;
+    const float stepRatio = std::clamp(
+        rangedSpacing / (2.0f * BRUTALLUS_NORMAL_RANGED_RADIUS), 0.0f, 1.0f);
+    const float angleStep = 2.0f * std::asin(stepRatio);
+    const float arcHalfWidth = angleStep * static_cast<float>(
         BRUTALLUS_RANGED_POSITIONS_PER_GROUP - 1) / 2.0f;
-    float outerEdgeAngle = Position::NormalizeOrientation(
+    const float outerEdgeAngle = Position::NormalizeOrientation(
         tankAngle - towardCenterSign * arcHalfWidth);
 
     return Position::NormalizeOrientation(
@@ -208,7 +208,7 @@ bool TryGetBrutallusRangedStepPosition(
     if (!brutallus || rangedIndex >= BRUTALLUS_TOTAL_RANGED_POSITIONS)
         return false;
 
-    BrutallusRangedSlotInfo slotInfo = {
+    const BrutallusRangedSlotInfo slotInfo = {
         rangedIndex % 2 == 0,
         static_cast<uint8>((rangedIndex / 2) % BRUTALLUS_RANGED_POSITIONS_PER_GROUP)
     };
@@ -231,12 +231,12 @@ bool TryGetBrutallusRangedArcPosition(
     if (!brutallus || rangedIndex >= BRUTALLUS_TOTAL_RANGED_POSITIONS)
         return false;
 
-    BrutallusRangedSlotInfo slotInfo = {
+    const BrutallusRangedSlotInfo slotInfo = {
         rangedIndex % 2 == 0,
         static_cast<uint8>((rangedIndex / 2) % BRUTALLUS_RANGED_POSITIONS_PER_GROUP)
     };
 
-    float normalAngle = GetBrutallusRangedSlotAngle(brutallus, slotInfo);
+    const float normalAngle = GetBrutallusRangedSlotAngle(brutallus, slotInfo);
     float targetAngle = normalAngle;
     if (moveTowardMirror)
     {
@@ -244,9 +244,9 @@ bool TryGetBrutallusRangedArcPosition(
             normalAngle + (slotInfo.isMainTankGroup ? M_PI_2 : -M_PI_2));
     }
 
-    float currentAngle = Position::NormalizeOrientation(
+    const float currentAngle = Position::NormalizeOrientation(
         std::atan2(currentY - brutallus->GetPositionY(), currentX - brutallus->GetPositionX()));
-    float remainingAngle = NormalizeSignedAngle(targetAngle - currentAngle);
+    const float remainingAngle = NormalizeSignedAngle(targetAngle - currentAngle);
 
     constexpr float stepDistance = 3.0f;
     const float stepRatio = stepDistance / (2.0f * radius);

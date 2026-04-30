@@ -37,40 +37,28 @@ bool BrutallusMisdirectBossToMainTankAction::Execute(Event /*event*/)
 
 bool BrutallusTanksHandleBossAction::Execute(Event event)
 {
-    Unit* brutallus = nullptr;
-    Player* mainTank = nullptr;
-    Player* assistTank = nullptr;
-    Aura* mainTankAura = nullptr;
-    Aura* assistTankAura = nullptr;
-
-    brutallus = AI_VALUE2(Unit*, "find target", "brutallus");
+    Unit* brutallus = AI_VALUE2(Unit*, "find target", "brutallus");
     if (!brutallus)
         return false;
 
     if (bot->GetVictim() != brutallus)
         return Attack(brutallus);
 
-    mainTank = GetGroupMainTank(botAI, bot);
-    assistTank = GetGroupAssistTank(botAI, bot, 0);
+    Player* mainTank = GetGroupMainTank(botAI, bot);
+    Player* assistTank = GetGroupAssistTank(botAI, bot, 0);
 
-    if (mainTank && mainTank->IsAlive())
-    {
-        mainTankAura = mainTank->GetAura(
-            static_cast<uint32>(SunwellSpells::SPELL_METEOR_SLASH));
-    }
+    Aura* mainTankAura = mainTank && mainTank->IsAlive() ?
+        mainTank->GetAura(static_cast<uint32>(SunwellSpells::SPELL_METEOR_SLASH)) : nullptr;
 
-    if (assistTank && assistTank->IsAlive())
-    {
-        assistTankAura = assistTank->GetAura(
-            static_cast<uint32>(SunwellSpells::SPELL_METEOR_SLASH));
-    }
+    Aura* assistTankAura = assistTank && assistTank->IsAlive() ?
+        assistTank->GetAura(static_cast<uint32>(SunwellSpells::SPELL_METEOR_SLASH)) : nullptr;
 
-    bool isMainTank = botAI->IsMainTank(bot);
+    const bool isMainTank = botAI->IsMainTank(bot);
 
     if (!isMainTank)
     {
-        bool shouldTaunt = (!mainTank || !mainTank->IsAlive()) ||
-                           (mainTankAura && mainTankAura->GetStackAmount() >= 3);
+        const bool shouldTaunt = (!mainTank || !mainTank->IsAlive()) ||
+                                 (mainTankAura && mainTankAura->GetStackAmount() >= 3);
 
         if (brutallus->GetVictim() == bot)
             return false;
@@ -156,7 +144,7 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
     if (!TryGetBrutallusAssignedPositionIndex(botAI, bot, true, rangedIndex))
         return false;
 
-    auto burnStateItr = brutallusRangedBurnStates.find(guid);
+    auto const burnStateItr = brutallusRangedBurnStates.find(guid);
     BrutallusRangedBurnState burnState = BrutallusRangedBurnState::None;
     if (burnStateItr != brutallusRangedBurnStates.end())
         burnState = burnStateItr->second;
@@ -241,7 +229,7 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
     if (!TryGetBrutallusAssignedPositionIndex(botAI, bot, true, rangedIndex))
         return false;
 
-    auto burnStateItr = brutallusRangedBurnStates.find(guid);
+    auto const burnStateItr = brutallusRangedBurnStates.find(guid);
     BrutallusRangedBurnState burnState = BrutallusRangedBurnState::None;
     if (burnStateItr != brutallusRangedBurnStates.end())
         burnState = burnStateItr->second;
