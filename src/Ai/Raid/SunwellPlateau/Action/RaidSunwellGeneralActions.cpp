@@ -19,34 +19,6 @@
 
 using namespace SunwellHelpers;
 
-namespace
-{
-
-Creature* GetInfernalDefenseApocalypseGuard(Player* bot)
-{
-    Creature* target = nullptr;
-    constexpr float searchRadius = 40.0f;
-    std::list<Creature*> apocalypseGuards;
-    bot->GetCreatureListWithEntryInGrid(
-        apocalypseGuards, static_cast<uint32>(SunwellNpcs::NPC_APOCALYPSE_GUARD), searchRadius);
-
-    for (Creature* apocalypseGuard : apocalypseGuards)
-    {
-        if (!apocalypseGuard || !apocalypseGuard->IsAlive() ||
-            !apocalypseGuard->HasAura(static_cast<uint32>(SunwellSpells::SPELL_INFERNAL_DEFENSE)))
-        {
-            continue;
-        }
-
-        if (!target || apocalypseGuard->GetGUID() < target->GetGUID())
-            target = apocalypseGuard;
-    }
-
-    return target;
-}
-
-}
-
 bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
 {
     const ObjectGuid guid = bot->GetGUID();
@@ -151,8 +123,9 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
 
 bool VolatileFiendKeepEnemyAwayFromGroupAction::Execute(Event /*event*/)
 {
-    Unit* volatileFiend =
-        GetFirstAliveUnitByEntry(botAI, static_cast<uint32>(SunwellNpcs::NPC_VOLATILE_FIEND));
+    constexpr float searchRadius = 30.0f;
+    Unit* volatileFiend = bot->FindNearestCreature(
+        static_cast<uint32>(SunwellNpcs::NPC_VOLATILE_FIEND), searchRadius, true);
     if (!volatileFiend)
         return false;
 
@@ -173,7 +146,23 @@ bool VolatileFiendKeepEnemyAwayFromGroupAction::Execute(Event /*event*/)
 
 bool ApocalypseGuardAttackWithHolyMagicAction::Execute(Event /*event*/)
 {
-    Unit* target = GetInfernalDefenseApocalypseGuard(bot);
+    Unit* target = nullptr;
+    constexpr float searchRadius = 40.0f;
+    std::list<Creature*> apocalypseGuards;
+    bot->GetCreatureListWithEntryInGrid(
+        apocalypseGuards, static_cast<uint32>(SunwellNpcs::NPC_APOCALYPSE_GUARD), searchRadius);
+
+    for (Creature* apocalypseGuard : apocalypseGuards)
+    {
+        if (!apocalypseGuard || !apocalypseGuard->IsAlive() ||
+            !apocalypseGuard->HasAura(static_cast<uint32>(SunwellSpells::SPELL_INFERNAL_DEFENSE)))
+        {
+            continue;
+        }
+
+        if (!target || apocalypseGuard->GetGUID() < target->GetGUID())
+            target = apocalypseGuard;
+    }
 
     if (botAI->HasAura("shadowform", bot))
         botAI->RemoveAura("shadowform");

@@ -15,34 +15,6 @@
 
 using namespace SunwellHelpers;
 
-namespace
-{
-
-Creature* GetInfernalDefenseApocalypseGuard(Player* bot)
-{
-    Creature* target = nullptr;
-    constexpr float searchRadius = 40.0f;
-    std::list<Creature*> apocalypseGuards;
-    bot->GetCreatureListWithEntryInGrid(
-        apocalypseGuards, static_cast<uint32>(SunwellNpcs::NPC_APOCALYPSE_GUARD), searchRadius);
-
-    for (Creature* apocalypseGuard : apocalypseGuards)
-    {
-        if (!apocalypseGuard || !apocalypseGuard->IsAlive() ||
-            !apocalypseGuard->HasAura(static_cast<uint32>(SunwellSpells::SPELL_INFERNAL_DEFENSE)))
-        {
-            continue;
-        }
-
-        if (!target || apocalypseGuard->GetGUID() < target->GetGUID())
-            target = apocalypseGuard;
-    }
-
-    return target;
-}
-
-}
-
 // General
 
 bool SunwellPlateauBotIsNotInCombatTrigger::IsActive()
@@ -54,13 +26,15 @@ bool SunwellPlateauBotIsNotInCombatTrigger::IsActive()
 
 bool VolatileFiendSelfDestructsWhenNearTrigger::IsActive()
 {
-    return AI_VALUE2(Unit*, "find target", "volatile fiend");
+    constexpr float searchRadius = 30.0f;
+    return bot->FindNearestCreature(
+        static_cast<uint32>(SunwellNpcs::NPC_VOLATILE_FIEND), searchRadius, true);
 }
 
 bool ApocalypseGuardProtectedByInfernalDefenseTrigger::IsActive()
 {
     return bot->getClass() == CLASS_PRIEST &&
-           GetInfernalDefenseApocalypseGuard(bot);
+           AI_VALUE2(Unit*, "find target", "apocalypse guard");
 }
 
 // Kalecgos
