@@ -155,7 +155,7 @@ bool FelmystRunAwayFromEncapsulatedPlayerAction::Execute(Event /*event*/)
 
     EnsureFelmystRangedAssignments(botAI, bot);
 
-    const auto instanceItr = felmystRangedAssignments.find(bot->GetInstanceId());
+    auto const instanceItr = felmystRangedAssignments.find(bot->GetInstanceId());
     const bool isEncapsulateTargetInRangedGroup =
         instanceItr != felmystRangedAssignments.end() &&
         instanceItr->second.find(encapsulateTarget->GetGUID()) != instanceItr->second.end();
@@ -174,7 +174,7 @@ bool FelmystRunAwayFromEncapsulatedPlayerAction::Execute(Event /*event*/)
     const float rightDistance = bot->GetExactDist2d(rightX, rightY);
 
     constexpr float stackArrivalDistance = 3.0f;
-    auto tryMoveToStack = [&](float x, float y)
+    auto const tryMoveToStack = [&](float x, float y)
     {
         return MoveInside(SUNWELL_MAP_ID, x, y, bot->GetPositionZ(), stackArrivalDistance,
                           MovementPriority::MOVEMENT_FORCED);

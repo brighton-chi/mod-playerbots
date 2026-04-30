@@ -83,13 +83,13 @@ bool MuruPositionRangedAction::Execute(Event /*event*/)
         }
     }
 
-    bool hasActiveAdds = !targets.voidSentinels.empty() ||
+    const bool hasActiveAdds = !targets.voidSentinels.empty() ||
                          hasActiveNonControlledVoidSpawns ||
                          !targets.furyMages.empty() ||
                          !targets.berserkers.empty();
-    auto reachedPositionsItr =
+    auto const reachedPositionsItr =
         muruEntropiusInitialRangedPositionsReached.find(bot->GetInstanceId());
-    bool hasReachedInitialPosition =
+    const bool hasReachedInitialPosition =
         reachedPositionsItr != muruEntropiusInitialRangedPositionsReached.end() &&
         reachedPositionsItr->second.find(bot->GetGUID()) != reachedPositionsItr->second.end();
 
@@ -131,7 +131,7 @@ void MuruPositionRangedAction::SetEntropiusInitialRangedPositionReached(bool rea
         return;
     }
 
-    auto instanceItr = muruEntropiusInitialRangedPositionsReached.find(instanceId);
+    auto const instanceItr = muruEntropiusInitialRangedPositionsReached.find(instanceId);
     if (instanceItr == muruEntropiusInitialRangedPositionsReached.end())
         return;
 
@@ -277,9 +277,9 @@ Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(
         static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_BERSERKER), targets.berserkers);
     Player* voidSentinelVictim = voidSentinel && voidSentinel->IsAlive() ?
         (voidSentinel->GetVictim() ? voidSentinel->GetVictim()->ToPlayer() : nullptr) : nullptr;
-    bool voidSentinelHasTankAggro = voidSentinelVictim && botAI->IsTank(voidSentinelVictim);
+    const bool voidSentinelHasTankAggro = voidSentinelVictim && botAI->IsTank(voidSentinelVictim);
 
-    auto isAllowedPriorityTarget = [&](Unit* unit) -> bool
+    auto const isAllowedPriorityTarget = [&](Unit* unit) -> bool
     {
         if (!unit || !unit->IsAlive())
             return false;
@@ -375,7 +375,7 @@ Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(
     if (isMeleeDps && currentVictim && isAllowedPriorityTarget(currentVictim))
         stickyTarget = currentVictim;
 
-    auto getPriorityIndex = [&](Unit* unit) -> size_t
+    auto const getPriorityIndex = [&](Unit* unit) -> size_t
     {
         if (!isAllowedPriorityTarget(unit))
             return priorityTargets.size();
@@ -391,8 +391,8 @@ Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(
 
     if (stickyTarget)
     {
-        size_t currentPriority = getPriorityIndex(stickyTarget);
-        size_t desiredPriority = getPriorityIndex(target);
+        const size_t currentPriority = getPriorityIndex(stickyTarget);
+        const size_t desiredPriority = getPriorityIndex(target);
         if (currentPriority <= desiredPriority)
             target = stickyTarget;
     }
@@ -420,7 +420,7 @@ Unit* MuruSetDpsPriorityAction::SelectMuruEncounterTarget(
     }
 
     constexpr float targetSwitchDistance = 10.0f;
-    auto getDistanceFromStack = [](Unit* unit)
+    auto const getDistanceFromStack = [](Unit* unit)
     {
         return unit->GetExactDist2d(
             MURU_STACK_POSITION.GetPositionX(), MURU_STACK_POSITION.GetPositionY());
@@ -440,8 +440,8 @@ Unit* MuruSetDpsPriorityAction::SelectMuruEncounterTarget(
         if (selected == candidate)
             continue;
 
-        float currentDistance = getDistanceFromStack(selected);
-        float candidateDistance = getDistanceFromStack(candidate);
+        const float currentDistance = getDistanceFromStack(selected);
+        const float candidateDistance = getDistanceFromStack(candidate);
         if (candidateDistance + targetSwitchDistance < currentDistance)
             selected = candidate;
     }
@@ -664,8 +664,8 @@ bool MuruMooresLawIsDeadAction::Execute(Event /*event*/)
     if (!singularity)
         return false;
 
-    float safeDistance = entropius->GetVictim() == bot ? 15.0f : 10.0f;
-    float currentDistance = bot->GetExactDist2d(singularity);
+    const float safeDistance = entropius->GetVictim() == bot ? 15.0f : 10.0f;
+    const float currentDistance = bot->GetExactDist2d(singularity);
     if (currentDistance >= safeDistance)
         return false;
 
@@ -678,7 +678,7 @@ bool MuruCastStunOnShadowswordBerserkerAction::Execute(Event /*event*/)
     if (!berserker)
         return false;
 
-    auto castStop = [&](const char* spell)
+    auto const castStop = [&](const char* spell)
     {
         return botAI->CanCastSpell(spell, berserker) &&
                botAI->CastSpell(spell, berserker);
@@ -713,7 +713,7 @@ bool MuruInterruptFelFireballAction::Execute(Event /*event*/)
     if (!furyMage)
         return false;
 
-    auto castStop = [&](const char* spell)
+    auto const castStop = [&](const char* spell)
     {
         return botAI->CanCastSpell(spell, furyMage) &&
                botAI->CastSpell(spell, furyMage);
@@ -833,7 +833,7 @@ bool MuruEnslavedVoidSpawnCastShadowBoltVolleyAction::Execute(Event /*event*/)
     if (!target)
         return false;
 
-    bool commandedAttack = CommandControlledCreatureToAttack(voidSpawn, target);
+    const bool commandedAttack = CommandControlledCreatureToAttack(voidSpawn, target);
 
     if (voidSpawn->GetExactDist2d(target) > sPlayerbotAIConfig.spellDistance)
         return commandedAttack;
@@ -858,7 +858,7 @@ Unit* MuruEnslavedVoidSpawnAttackAction::GetVoidSpawnVolleyPriorityTarget(
 
     Unit* currentTarget = context->GetValue<Unit*>("current target")->Get();
     constexpr float targetSwitchDistance = 10.0f;
-    auto chooseNearestTarget = [&](Unit*& current, Unit* candidate)
+    auto const chooseNearestTarget = [&](Unit*& current, Unit* candidate)
     {
         if (!candidate)
             return;
@@ -872,13 +872,13 @@ Unit* MuruEnslavedVoidSpawnAttackAction::GetVoidSpawnVolleyPriorityTarget(
         if (current == candidate)
             return;
 
-        float currentDistance = bot->GetExactDist2d(current);
-        float candidateDistance = bot->GetExactDist2d(candidate);
+        const float currentDistance = bot->GetExactDist2d(current);
+        const float candidateDistance = bot->GetExactDist2d(candidate);
         if (candidateDistance + targetSwitchDistance < currentDistance)
             current = candidate;
     };
 
-    auto selectEncounterTarget = [&](uint32 entry, std::vector<Unit*> const& candidates)
+    auto const selectEncounterTarget = [&](uint32 entry, std::vector<Unit*> const& candidates)
     {
         Unit* selected = nullptr;
         if (currentTarget && currentTarget->IsAlive() && currentTarget->GetEntry() == entry)

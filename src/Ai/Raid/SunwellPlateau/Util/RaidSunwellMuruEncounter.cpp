@@ -87,10 +87,10 @@ bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru)
         if (remainingPreEffectMs < 0)
             remainingPreEffectMs = darknessPreEffectMs;
 
-        uint32 const remainingPreEffect = static_cast<uint32>(remainingPreEffectMs);
-        uint32 const elapsedPreEffectMs = remainingPreEffect < darknessPreEffectMs ?
+        const uint32 remainingPreEffect = static_cast<uint32>(remainingPreEffectMs);
+        const uint32 elapsedPreEffectMs = remainingPreEffect < darknessPreEffectMs ?
             darknessPreEffectMs - remainingPreEffect : 0;
-        uint32 const startMs = now > elapsedPreEffectMs ? now - elapsedPreEffectMs : 0;
+        const uint32 startMs = now > elapsedPreEffectMs ? now - elapsedPreEffectMs : 0;
 
         if (!state.startMs || state.expireMs <= now || startMs < state.startMs)
             state.startMs = startMs;
@@ -103,7 +103,7 @@ bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru)
     if (muru->HasUnitState(UNIT_STATE_CASTING) &&
         muru->FindCurrentSpellBySpellId(static_cast<uint32>(SunwellSpells::SPELL_DARKNESS)))
     {
-        uint32 const startMs = now > darknessPreEffectMs ? now - darknessPreEffectMs : 0;
+        const uint32 startMs = now > darknessPreEffectMs ? now - darknessPreEffectMs : 0;
         if (!state.startMs || state.expireMs <= now || startMs < state.startMs)
             state.startMs = startMs;
 
@@ -123,11 +123,11 @@ bool TryGetMuruDarknessEarlyState(Player* bot, Unit* muru, uint32 earlyWindowMs)
     if (!TryGetMuruDarknessActiveState(bot, muru))
         return false;
 
-    auto stateItr = muruDarknessStates.find(bot->GetInstanceId());
+    auto const stateItr = muruDarknessStates.find(bot->GetInstanceId());
     if (stateItr == muruDarknessStates.end())
         return false;
 
-    uint32 const now = getMSTime();
+    const uint32 now = getMSTime();
     return stateItr->second.startMs < now &&
             now - stateItr->second.startMs < earlyWindowMs;
 }
@@ -137,7 +137,7 @@ void GatherMuruEncounterTargets(PlayerbotAI* botAI, MuruEncounterTargets& target
     auto const& units =
         botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
 
-    auto considerTarget = [&](Unit* unit)
+    auto const considerTarget = [&](Unit* unit)
     {
         if (!unit || !unit->IsAlive())
             return;
@@ -173,7 +173,7 @@ void GatherMuruEncounterTargets(PlayerbotAI* botAI, MuruEncounterTargets& target
         }
     };
 
-    for (ObjectGuid const& guid : units)
+    for (const ObjectGuid& guid : units)
     {
         Unit* unit = botAI->GetUnit(guid);
         considerTarget(unit);
@@ -191,7 +191,7 @@ Creature* FindAvailableVoidSpawnForEnslave(
     auto const& units =
         botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
 
-    for (ObjectGuid const& guid : units)
+    for (const ObjectGuid& guid : units)
     {
         Unit* unit = botAI->GetUnit(guid);
         if (!unit || !unit->IsAlive() ||

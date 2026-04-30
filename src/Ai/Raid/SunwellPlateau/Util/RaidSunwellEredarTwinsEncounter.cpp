@@ -115,8 +115,8 @@ bool ShouldAdvanceAlythessTankPosition(Unit* alythess, Player* bot)
         return false;
     }
 
-    ObjectGuid const blazeGuid = blazeObject->GetGUID();
-    auto lastBlaze = alythessTankLastBlazeGuid.find(botGuid);
+    const ObjectGuid blazeGuid = blazeObject->GetGUID();
+    auto const lastBlaze = alythessTankLastBlazeGuid.find(botGuid);
     if (lastBlaze != alythessTankLastBlazeGuid.end() && lastBlaze->second == blazeGuid)
         return false;
 

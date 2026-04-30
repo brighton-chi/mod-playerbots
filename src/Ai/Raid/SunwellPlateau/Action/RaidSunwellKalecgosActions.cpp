@@ -22,7 +22,7 @@ bool KalecgosTankPositionBossAction::Execute(Event event)
     const Position& position = KALECGOS_TANK_POSITION;
     const float distToPosition = bot->GetExactDist2d(position.GetPositionX(),
                                                      position.GetPositionY());
-    auto moveTowardTankPosition = [&]()
+    auto const moveTowardTankPosition = [&]()
     {
         const float dX = position.GetPositionX() - bot->GetPositionX();
         const float dY = position.GetPositionY() - bot->GetPositionY();
@@ -35,7 +35,7 @@ bool KalecgosTankPositionBossAction::Execute(Event event)
     };
 
     Player* currentVictimPlayer = kalecgos->GetVictim() ? kalecgos->GetVictim()->ToPlayer() : nullptr;
-    bool otherTankHasAggro = currentVictimPlayer && currentVictimPlayer != bot &&
+    const bool otherTankHasAggro = currentVictimPlayer && currentVictimPlayer != bot &&
          botAI->IsTank(currentVictimPlayer);
 
     if (otherTankHasAggro)

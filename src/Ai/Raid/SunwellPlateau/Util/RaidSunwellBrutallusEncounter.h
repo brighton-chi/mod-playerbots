@@ -57,7 +57,7 @@ Position GetBrutallusTankPosition(Unit* brutallus, bool isMainTank, float z);
 bool TryGetBrutallusMeleePosition(
     Player* bot, Unit* brutallus, uint8 meleeIndex, float z, Position& position);
 float GetBrutallusRangedSlotAngle(
-    Unit* brutallus, BrutallusRangedSlotInfo const& slotInfo);
+    Unit* brutallus, const BrutallusRangedSlotInfo& slotInfo);
 bool TryGetBrutallusRangedStepPosition(
     Unit* brutallus, uint8 rangedIndex, bool useMirrorAngle,
     float radius, float z, Position& position);

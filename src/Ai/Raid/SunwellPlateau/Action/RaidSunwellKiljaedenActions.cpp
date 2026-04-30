@@ -28,7 +28,7 @@ bool KiljaedenTanksHandleHandsOfTheDeceiverAction::Execute(Event /*event*/)
     auto const& attackers =
         botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
 
-    for (ObjectGuid const& guid : attackers)
+    for (const ObjectGuid& guid : attackers)
     {
         Unit* unit = botAI->GetUnit(guid);
         if (!unit || !unit->IsAlive())
@@ -54,7 +54,7 @@ bool KiljaedenTanksHandleHandsOfTheDeceiverAction::Execute(Event /*event*/)
         MarkTargetWithSkull(bot, volatileFelfireFiend);
 
     std::array<Player*, 3> tanks = { mainTank, firstAssistTank, secondAssistTank };
-    size_t assignedCount = hands.size() < tanks.size() ? hands.size() : tanks.size();
+    const size_t assignedCount = hands.size() < tanks.size() ? hands.size() : tanks.size();
 
     for (size_t index = 0; index < assignedCount; ++index)
     {
@@ -173,7 +173,7 @@ bool KiljaedenPositionMeleeAction::Execute(Event /*event*/)
     auto armageddonItr = kiljaedenArmageddons.find(bot->GetInstanceId());
     if (armageddonItr != kiljaedenArmageddons.end() && !armageddonItr->second.empty())
     {
-        auto isSafePosition = [&](Position const& position)
+        auto const isSafePosition = [&](Position const& position)
         {
             for (KiljaedenArmageddon const& armageddon : armageddonItr->second)
             {
@@ -188,8 +188,8 @@ bool KiljaedenPositionMeleeAction::Execute(Event /*event*/)
             return true;
         };
 
-        bool assignedSafe = isSafePosition(assignedPosition);
-        bool swapSafe = isSafePosition(swapPosition);
+        const bool assignedSafe = isSafePosition(assignedPosition);
+        const bool swapSafe = isSafePosition(swapPosition);
         if (!assignedSafe)
         {
             if (swapSafe)
@@ -234,22 +234,22 @@ bool KiljaedenPositionRangedAction::TryGetRangedPosition(Position& position) con
 
     EnsureKiljaedenRangedAssignments(botAI, bot);
 
-    auto instanceItr = kiljaedenRangedAssignments.find(bot->GetInstanceId());
+    auto const instanceItr = kiljaedenRangedAssignments.find(bot->GetInstanceId());
     if (instanceItr == kiljaedenRangedAssignments.end())
         return false;
 
-    auto assignmentItr = instanceItr->second.find(bot->GetGUID());
+    auto const assignmentItr = instanceItr->second.find(bot->GetGUID());
     if (assignmentItr == instanceItr->second.end())
         return false;
 
     uint8 slotIndex = assignmentItr->second;
 
     EnsureKiljaedenRangedArmageddonAssignments(botAI, bot);
-    auto armageddonAssignmentItr =
+    auto const armageddonAssignmentItr =
         kiljaedenRangedArmageddonAssignments.find(bot->GetInstanceId());
     if (armageddonAssignmentItr != kiljaedenRangedArmageddonAssignments.end())
     {
-        auto tempAssignmentItr = armageddonAssignmentItr->second.find(bot->GetGUID());
+        auto const tempAssignmentItr = armageddonAssignmentItr->second.find(bot->GetGUID());
         if (tempAssignmentItr != armageddonAssignmentItr->second.end())
             slotIndex = tempAssignmentItr->second;
     }

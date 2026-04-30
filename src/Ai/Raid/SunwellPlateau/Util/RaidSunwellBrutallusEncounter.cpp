@@ -65,7 +65,7 @@ bool TryGetBrutallusMeleePosition(
 bool TryGetBrutallusAssignedPositionIndex(
     PlayerbotAI* botAI, Player* bot, bool wantRanged, uint8& positionIndex)
 {
-    Group* const group = bot->GetGroup();
+    Group* group = bot->GetGroup();
     if (!group)
         return false;
 
@@ -73,11 +73,11 @@ bool TryGetBrutallusAssignedPositionIndex(
     {
         EnsureBrutallusRangedAssignments(botAI, bot);
 
-        const auto instanceItr = brutallusRangedAssignments.find(bot->GetInstanceId());
+        auto const instanceItr = brutallusRangedAssignments.find(bot->GetInstanceId());
         if (instanceItr == brutallusRangedAssignments.end())
             return false;
 
-        const auto assignmentItr = instanceItr->second.find(bot->GetGUID());
+        auto const assignmentItr = instanceItr->second.find(bot->GetGUID());
         if (assignmentItr == instanceItr->second.end())
             return false;
 
@@ -171,7 +171,7 @@ static float NormalizeSignedAngle(float angle)
 }
 
 float GetBrutallusRangedSlotAngle(
-    Unit* brutallus, BrutallusRangedSlotInfo const& slotInfo)
+    Unit* brutallus, const BrutallusRangedSlotInfo& slotInfo)
 {
     constexpr float rangedSpacing = 6.0f;
 
@@ -279,7 +279,7 @@ void EnsureBrutallusRangedAssignments(PlayerbotAI* botAI, Player* bot)
             usedPositions[assignment.second] = true;
     }
 
-    auto assignNextOpenSlot = [&](Player* member)
+    auto const assignNextOpenSlot = [&](Player* member)
     {
         for (uint8 slotIndex = 0;
                 slotIndex < BRUTALLUS_TOTAL_RANGED_POSITIONS; ++slotIndex)
