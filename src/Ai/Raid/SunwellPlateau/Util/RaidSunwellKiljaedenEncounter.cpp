@@ -59,7 +59,7 @@ const Position KILJAEDEN_TANK_POSITION =    { 1704.729f, 634.891f, 27.787f };
 const Position KILJAEDEN_S_MELEE_POSITION = { 1689.487f, 632.119f, 27.823f };
 const Position KILJAEDEN_E_MELEE_POSITION = { 1700.542f, 619.589f, 27.786f };
 const Position KILJAEDEN_STACK_POSITION =   { 1709.768f, 642.241f, 27.706f };
-const Position KILJAEDEN_CENTER_POSITION =  { 1680.181f, 638.246f, 27.256f };
+const Position KILJAEDEN_CENTER_POSITION =  { 1698.450f, 628.030f, 28.199f };
 
 std::unordered_map<uint32, std::vector<KiljaedenArmageddon>>
     kiljaedenArmageddons;
