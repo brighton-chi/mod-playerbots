@@ -255,6 +255,13 @@ float BrutallusControlMovementMultiplier::GetValue(Action* action)
         return 0.0f;
     }
 
+    if (bot->getClass() == CLASS_ROGUE &&
+        bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_BURN)) &&
+        dynamic_cast<CastKillingSpreeAction*>(action))
+    {
+        return 0.0f;
+    }
+
     return 1.0f;
 }
 

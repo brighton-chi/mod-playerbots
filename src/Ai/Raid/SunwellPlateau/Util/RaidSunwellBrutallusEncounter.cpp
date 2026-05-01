@@ -208,7 +208,7 @@ float GetBrutallusRangedSlotAngle(
         outerEdgeAngle + towardCenterSign * angleStep * slotInfo.arcPositionIndex);
 }
 
-bool TryGetBrutallusRangedStepPosition(
+bool TryGetBrutallusRangedLanePosition(
     Unit* brutallus, uint8 rangedIndex, bool useMirrorAngle,
     float radius, float z, Position& position)
 {
@@ -231,7 +231,7 @@ bool TryGetBrutallusRangedStepPosition(
     return true;
 }
 
-bool TryGetBrutallusRangedArcPosition(
+bool TryGetBrutallusRangedLaneTraversalPosition(
     Unit* brutallus, uint8 rangedIndex, float radius, bool moveTowardMirror,
     float currentX, float currentY, float z, Position& position)
 {
