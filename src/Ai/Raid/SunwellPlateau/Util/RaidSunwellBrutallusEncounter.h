@@ -7,6 +7,7 @@
 #define _PLAYERBOT_RAIDSUNWELLBRUTALLUSENCOUNTER_H
 
 #include <unordered_map>
+#include <unordered_set>
 
 #include "ObjectGuid.h"
 #include "Position.h"
@@ -57,6 +58,8 @@ extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
     brutallusRangedAssignments;
 extern std::unordered_map<ObjectGuid, BrutallusRangedBurnState>
     brutallusRangedBurnStates;
+extern std::unordered_set<ObjectGuid>
+    brutallusMainTankInitialPositionsReached;
 
 float GetBrutallusMainTankAngle(Unit* brutallus);
 Position GetBrutallusPositionAtAngle(

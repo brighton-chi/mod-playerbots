@@ -84,14 +84,12 @@ bool MuruPositionRangedAction::Execute(Event /*event*/)
     }
 
     const bool hasActiveAdds = !targets.voidSentinels.empty() ||
-                         hasActiveNonControlledVoidSpawns ||
-                         !targets.furyMages.empty() ||
-                         !targets.berserkers.empty();
-    auto const reachedPositionsItr =
-        muruEntropiusInitialRangedPositionsReached.find(bot->GetInstanceId());
+                               hasActiveNonControlledVoidSpawns ||
+                               !targets.furyMages.empty() ||
+                               !targets.berserkers.empty();
     const bool hasReachedInitialPosition =
-        reachedPositionsItr != muruEntropiusInitialRangedPositionsReached.end() &&
-        reachedPositionsItr->second.find(bot->GetGUID()) != reachedPositionsItr->second.end();
+        muruEntropiusInitialRangedPositionsReached.find(bot->GetGUID()) !=
+        muruEntropiusInitialRangedPositionsReached.end();
 
     if (!hasReachedInitialPosition && TryGetMuruDarknessActiveState(bot, muru))
         return false;
@@ -124,20 +122,13 @@ bool MuruPositionRangedAction::Execute(Event /*event*/)
 void MuruPositionRangedAction::SetEntropiusInitialRangedPositionReached(bool reached)
 {
     const ObjectGuid guid = bot->GetGUID();
-    const uint32 instanceId = bot->GetInstanceId();
     if (reached)
     {
-        muruEntropiusInitialRangedPositionsReached[instanceId].insert(guid);
+        muruEntropiusInitialRangedPositionsReached.insert(guid);
         return;
     }
 
-    auto const instanceItr = muruEntropiusInitialRangedPositionsReached.find(instanceId);
-    if (instanceItr == muruEntropiusInitialRangedPositionsReached.end())
-        return;
-
-    instanceItr->second.erase(guid);
-    if (instanceItr->second.empty())
-        muruEntropiusInitialRangedPositionsReached.erase(instanceItr);
+    muruEntropiusInitialRangedPositionsReached.erase(guid);
 }
 
 bool MuruPositionRangedAction::TryGetEntropiusInitialRangedPosition(Position& position) const
@@ -263,6 +254,7 @@ Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(
     const bool isInitialMuruPhase = muru && muru->GetHealth() > 1;
     const bool darknessActive =
         isInitialMuruPhase && TryGetMuruDarknessActiveState(bot, muru);
+
     Unit* voidSentinel = SelectMuruEncounterTarget(
         currentTarget, currentVictim, isMeleeDps,
         static_cast<uint32>(SunwellNpcs::NPC_VOID_SENTINEL), targets.voidSentinels);
@@ -275,9 +267,12 @@ Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(
     Unit* berserker = SelectMuruEncounterTarget(
         currentTarget, currentVictim, isMeleeDps,
         static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_BERSERKER), targets.berserkers);
+
     Player* voidSentinelVictim = voidSentinel && voidSentinel->IsAlive() ?
         (voidSentinel->GetVictim() ? voidSentinel->GetVictim()->ToPlayer() : nullptr) : nullptr;
-    const bool voidSentinelHasTankAggro = voidSentinelVictim && botAI->IsTank(voidSentinelVictim);
+
+    const bool voidSentinelHasTankAggro =
+        voidSentinelVictim && botAI->IsTank(voidSentinelVictim);
 
     auto const isAllowedPriorityTarget = [&](Unit* unit) -> bool
     {

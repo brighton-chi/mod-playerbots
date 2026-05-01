@@ -55,6 +55,9 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
         if (isRanged && brutallusRangedBurnStates.erase(guid) > 0)
             erased = true;
 
+        if (brutallusMainTankInitialPositionsReached.erase(guid) > 0)
+            erased = true;
+
         if (isMechanicTracker && brutallusRangedAssignments.erase(instanceId) > 0)
             erased = true;
     }
@@ -105,7 +108,7 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
         if (muruVoidSentinelTankAssignments.erase(instanceId) > 0)
             erased = true;
 
-        if (muruEntropiusInitialRangedPositionsReached.erase(instanceId) > 0)
+        if (muruEntropiusInitialRangedPositionsReached.erase(guid) > 0)
             erased = true;
     }
 

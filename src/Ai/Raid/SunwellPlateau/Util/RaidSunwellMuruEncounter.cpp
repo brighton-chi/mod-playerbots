@@ -22,7 +22,7 @@ const Position MURU_ENTRANCE_POSITION =             { 1840.567f, 605.769f, 71.25
 
 std::unordered_map<uint32, MuruDarknessState> muruDarknessStates;
 std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> muruVoidSentinelTankAssignments;
-std::unordered_map<uint32, std::unordered_set<ObjectGuid>> muruEntropiusInitialRangedPositionsReached;
+std::unordered_set<ObjectGuid> muruEntropiusInitialRangedPositionsReached;
 
 Creature* GetNearestMuruSingularity(Player* bot, float searchRadius)
 {
