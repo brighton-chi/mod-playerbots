@@ -66,14 +66,18 @@ Position GetBrutallusPositionAtAngle(
     Unit* brutallus, float angle, float radius, float z);
 Position GetBrutallusTankPosition(Unit* brutallus, bool isMainTank, float z);
 bool TryGetBrutallusMeleePosition(
-    Player* bot, Unit* brutallus, uint8 meleeIndex, float z, Position& position);
+    Player* bot, Unit* brutallus, Player* mainTank, Player* assistTank,
+    uint8 meleeIndex, float z, Position& position);
 float GetBrutallusRangedSlotAngle(
-    Unit* brutallus, const BrutallusRangedSlotInfo& slotInfo);
+    Unit* brutallus, Player* mainTank, Player* assistTank,
+    const BrutallusRangedSlotInfo& slotInfo);
 bool TryGetBrutallusRangedLanePosition(
-    Unit* brutallus, uint8 rangedIndex, bool useMirrorAngle,
+    Unit* brutallus, Player* mainTank, Player* assistTank,
+    uint8 rangedIndex, bool useMirrorAngle,
     float radius, float z, Position& position);
 bool TryGetBrutallusRangedLaneTraversalPosition(
-    Unit* brutallus, uint8 rangedIndex, float radius, bool moveTowardMirror,
+    Unit* brutallus, Player* mainTank, Player* assistTank,
+    uint8 rangedIndex, float radius, bool moveTowardMirror,
     float currentX, float currentY, float z, Position& position);
 void EnsureBrutallusRangedAssignments(PlayerbotAI* botAI, Player* bot);
 bool TryGetBrutallusAssignedPositionIndex(

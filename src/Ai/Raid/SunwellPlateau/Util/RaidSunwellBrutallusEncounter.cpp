@@ -15,6 +15,11 @@ namespace SunwellHelpers
 
 static float GetCenteredArcSlotAngleOffset(
     uint8 slotIndex, uint8 slotCount, float arcWidth);
+static float GetBrutallusAngleToPoint(Unit* brutallus, float x, float y);
+static float GetBrutallusMidpointAngle(
+    Unit* brutallus, Player* mainTank, Player* assistTank);
+static float GetBrutallusTankAngle(
+    Unit* brutallus, Player* tank, float fallbackAngle);
 static float NormalizeSignedAngle(float angle);
 
 const Position BRUTALLUS_MAIN_TANK_POSITION = { 1484.779f, 582.691f, 23.460f };
@@ -44,7 +49,8 @@ Position GetBrutallusTankPosition(Unit* brutallus, bool isMainTank, float z)
 }
 
 bool TryGetBrutallusMeleePosition(
-    Player* bot, Unit* brutallus, uint8 meleeIndex, float z, Position& position)
+    Player* bot, Unit* brutallus, Player* mainTank, Player* assistTank,
+    uint8 meleeIndex, float z, Position& position)
 {
     if (!brutallus)
         return false;
@@ -60,9 +66,8 @@ bool TryGetBrutallusMeleePosition(
     if (meleeIndex >= maxMeleeSlots)
         return false;
 
-    const float arcCenterOffset = M_PI + BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET / 2.0f;
-    const float baseAngle = Position::NormalizeOrientation(
-        GetBrutallusMainTankAngle(brutallus) + arcCenterOffset);
+    const float midpointAngle = GetBrutallusMidpointAngle(brutallus, mainTank, assistTank);
+    const float baseAngle = Position::NormalizeOrientation(midpointAngle + M_PI);
     const float arcWidth = maxSideSlots * 2.0f * meleeAngleStep;
     const float angleOffset =
         GetCenteredArcSlotAngleOffset(meleeIndex, maxMeleeSlots, arcWidth);
@@ -125,9 +130,9 @@ float GetBrutallusMainTankAngle(Unit* brutallus)
     if (!brutallus)
         return 0.0f;
 
-    return Position::NormalizeOrientation(
-        brutallus->GetAngle(BRUTALLUS_MAIN_TANK_POSITION.GetPositionX(),
-                            BRUTALLUS_MAIN_TANK_POSITION.GetPositionY()));
+    return GetBrutallusAngleToPoint(
+        brutallus, BRUTALLUS_MAIN_TANK_POSITION.GetPositionX(),
+        BRUTALLUS_MAIN_TANK_POSITION.GetPositionY());
 }
 
 Position GetBrutallusPositionAtAngle(
@@ -171,6 +176,54 @@ static float GetCenteredArcSlotAngleOffset(
     return angleOffset;
 }
 
+static float GetBrutallusAngleToPoint(Unit* brutallus, float x, float y)
+{
+    if (!brutallus)
+        return 0.0f;
+
+    return Position::NormalizeOrientation(
+        std::atan2(y - brutallus->GetPositionY(), x - brutallus->GetPositionX()));
+}
+
+static float GetBrutallusMidpointAngle(
+    Unit* brutallus, Player* mainTank, Player* assistTank)
+{
+    const float mainTankAngle =
+        GetBrutallusTankAngle(brutallus, mainTank, GetBrutallusMainTankAngle(brutallus));
+    const float assistTankAngle = GetBrutallusTankAngle(
+        brutallus, assistTank,
+        Position::NormalizeOrientation(mainTankAngle + BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET));
+
+    if (!brutallus || !mainTank || !assistTank || !mainTank->IsAlive() || !assistTank->IsAlive())
+    {
+        return Position::NormalizeOrientation(
+            mainTankAngle + BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET / 2.0f);
+    }
+
+    const float midpointX =
+        (mainTank->GetPositionX() + assistTank->GetPositionX()) / 2.0f;
+    const float midpointY =
+        (mainTank->GetPositionY() + assistTank->GetPositionY()) / 2.0f;
+
+    if (brutallus->GetExactDist2d(midpointX, midpointY) < 0.1f)
+    {
+        return Position::NormalizeOrientation(
+            mainTankAngle + NormalizeSignedAngle(assistTankAngle - mainTankAngle) / 2.0f);
+    }
+
+    return GetBrutallusAngleToPoint(brutallus, midpointX, midpointY);
+}
+
+static float GetBrutallusTankAngle(
+    Unit* brutallus, Player* tank, float fallbackAngle)
+{
+    if (!brutallus || !tank || !tank->IsAlive())
+        return Position::NormalizeOrientation(fallbackAngle);
+
+    return GetBrutallusAngleToPoint(
+        brutallus, tank->GetPositionX(), tank->GetPositionY());
+}
+
 static float NormalizeSignedAngle(float angle)
 {
     angle = Position::NormalizeOrientation(angle);
@@ -181,23 +234,22 @@ static float NormalizeSignedAngle(float angle)
 }
 
 float GetBrutallusRangedSlotAngle(
-    Unit* brutallus, const BrutallusRangedSlotInfo& slotInfo)
+    Unit* brutallus, Player* mainTank, Player* assistTank,
+    const BrutallusRangedSlotInfo& slotInfo)
 {
     constexpr float rangedSpacing = 6.0f;
 
-    const float frontCenterAngle = Position::NormalizeOrientation(
-        GetBrutallusMainTankAngle(brutallus) +
-        BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET / 2.0f);
+    const float mainTankAngle =
+        GetBrutallusTankAngle(brutallus, mainTank, GetBrutallusMainTankAngle(brutallus));
+    const float assistTankAngle = GetBrutallusTankAngle(
+        brutallus, assistTank,
+        Position::NormalizeOrientation(mainTankAngle + BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET));
+    const float midpointAngle = GetBrutallusMidpointAngle(brutallus, mainTank, assistTank);
 
-    float tankAngle = GetBrutallusMainTankAngle(brutallus);
-    if (!slotInfo.isMainTankGroup)
-    {
-        tankAngle = Position::NormalizeOrientation(
-            tankAngle + BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET);
-    }
+    const float tankAngle = slotInfo.isMainTankGroup ? mainTankAngle : assistTankAngle;
 
     const float angleTowardCenter = NormalizeSignedAngle(
-        frontCenterAngle - tankAngle);
+        midpointAngle - tankAngle);
     const float towardCenterSign = angleTowardCenter < 0.0f ? -1.0f : 1.0f;
     const float stepRatio = std::clamp(
         rangedSpacing / (2.0f * BRUTALLUS_NORMAL_RANGED_RADIUS), 0.0f, 1.0f);
@@ -212,7 +264,8 @@ float GetBrutallusRangedSlotAngle(
 }
 
 bool TryGetBrutallusRangedLanePosition(
-    Unit* brutallus, uint8 rangedIndex, bool useMirrorAngle,
+    Unit* brutallus, Player* mainTank, Player* assistTank,
+    uint8 rangedIndex, bool useMirrorAngle,
     float radius, float z, Position& position)
 {
     if (!brutallus || rangedIndex >= BRUTALLUS_TOTAL_RANGED_POSITIONS)
@@ -223,7 +276,7 @@ bool TryGetBrutallusRangedLanePosition(
         static_cast<uint8>((rangedIndex / 2) % BRUTALLUS_RANGED_POSITIONS_PER_GROUP)
     };
 
-    float angle = GetBrutallusRangedSlotAngle(brutallus, slotInfo);
+    float angle = GetBrutallusRangedSlotAngle(brutallus, mainTank, assistTank, slotInfo);
     if (useMirrorAngle)
     {
         angle = Position::NormalizeOrientation(
@@ -235,7 +288,8 @@ bool TryGetBrutallusRangedLanePosition(
 }
 
 bool TryGetBrutallusRangedLaneTraversalPosition(
-    Unit* brutallus, uint8 rangedIndex, float radius, bool moveTowardMirror,
+    Unit* brutallus, Player* mainTank, Player* assistTank,
+    uint8 rangedIndex, float radius, bool moveTowardMirror,
     float currentX, float currentY, float z, Position& position)
 {
     if (!brutallus || rangedIndex >= BRUTALLUS_TOTAL_RANGED_POSITIONS)
@@ -246,7 +300,8 @@ bool TryGetBrutallusRangedLaneTraversalPosition(
         static_cast<uint8>((rangedIndex / 2) % BRUTALLUS_RANGED_POSITIONS_PER_GROUP)
     };
 
-    const float normalAngle = GetBrutallusRangedSlotAngle(brutallus, slotInfo);
+    const float normalAngle =
+        GetBrutallusRangedSlotAngle(brutallus, mainTank, assistTank, slotInfo);
     float targetAngle = normalAngle;
     if (moveTowardMirror)
     {

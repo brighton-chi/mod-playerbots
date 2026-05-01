@@ -129,13 +129,16 @@ bool BrutallusPositionMeleeAction::Execute(Event /*event*/)
     if (!brutallus)
         return false;
 
+    Player* mainTank = GetGroupMainTank(botAI, bot);
+    Player* assistTank = GetGroupAssistTank(botAI, bot, 0);
+
     uint8 meleeIndex = 0;
     if (!TryGetBrutallusAssignedPositionIndex(botAI, bot, false, meleeIndex))
         return false;
 
     Position position;
     if (!TryGetBrutallusMeleePosition(
-            bot, brutallus, meleeIndex, bot->GetPositionZ(), position))
+            bot, brutallus, mainTank, assistTank, meleeIndex, bot->GetPositionZ(), position))
     {
         return false;
     }
@@ -155,6 +158,9 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
     Unit* brutallus = AI_VALUE2(Unit*, "find target", "brutallus");
     if (!brutallus)
         return false;
+
+    Player* mainTank = GetGroupMainTank(botAI, bot);
+    Player* assistTank = GetGroupAssistTank(botAI, bot, 0);
 
     const ObjectGuid guid = bot->GetGUID();
     uint8 rangedIndex = 0;
@@ -183,7 +189,7 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
     {
         Position position;
         if (!TryGetBrutallusRangedLanePosition(
-            brutallus, rangedIndex, true, BRUTALLUS_OUTER_LANE_RADIUS,
+            brutallus, mainTank, assistTank, rangedIndex, true, BRUTALLUS_OUTER_LANE_RADIUS,
                 bot->GetPositionZ(), position))
         {
             return false;
@@ -204,7 +210,7 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
     {
         Position position;
         if (!TryGetBrutallusRangedLaneTraversalPosition(
-            brutallus, rangedIndex, BRUTALLUS_OUTER_LANE_RADIUS, false,
+            brutallus, mainTank, assistTank, rangedIndex, BRUTALLUS_OUTER_LANE_RADIUS, false,
                 bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), position))
         {
             return false;
@@ -219,7 +225,7 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
 
         Position returnTargetPosition;
         if (!TryGetBrutallusRangedLanePosition(
-            brutallus, rangedIndex, false, BRUTALLUS_OUTER_LANE_RADIUS,
+            brutallus, mainTank, assistTank, rangedIndex, false, BRUTALLUS_OUTER_LANE_RADIUS,
                 bot->GetPositionZ(), returnTargetPosition))
         {
             return false;
@@ -238,7 +244,8 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
     {
         Position position;
         if (!TryGetBrutallusRangedLanePosition(
-                brutallus, rangedIndex, false, BRUTALLUS_NORMAL_RANGED_RADIUS,
+            brutallus, mainTank, assistTank, rangedIndex, false,
+            BRUTALLUS_NORMAL_RANGED_RADIUS,
                 bot->GetPositionZ(), position))
         {
             return false;
@@ -257,7 +264,8 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
 
     Position position;
     if (!TryGetBrutallusRangedLanePosition(
-            brutallus, rangedIndex, false, BRUTALLUS_NORMAL_RANGED_RADIUS,
+            brutallus, mainTank, assistTank, rangedIndex, false,
+            BRUTALLUS_NORMAL_RANGED_RADIUS,
             bot->GetPositionZ(), position))
     {
         return false;
@@ -286,6 +294,8 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
         return false;
 
     const ObjectGuid guid = bot->GetGUID();
+    Player* mainTank = GetGroupMainTank(botAI, bot);
+    Player* assistTank = GetGroupAssistTank(botAI, bot, 0);
     uint8 rangedIndex = 0;
     if (!TryGetBrutallusAssignedPositionIndex(botAI, bot, true, rangedIndex))
         return false;
@@ -313,7 +323,8 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
     {
         Position stepPosition;
         if (!TryGetBrutallusRangedLanePosition(
-            brutallus, rangedIndex, false, BRUTALLUS_INNER_LANE_RADIUS,
+            brutallus, mainTank, assistTank, rangedIndex, false,
+            BRUTALLUS_INNER_LANE_RADIUS,
                 bot->GetPositionZ(), stepPosition))
             return false;
 
@@ -332,7 +343,7 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
     {
         Position position;
         if (!TryGetBrutallusRangedLaneTraversalPosition(
-            brutallus, rangedIndex, BRUTALLUS_INNER_LANE_RADIUS, true,
+            brutallus, mainTank, assistTank, rangedIndex, BRUTALLUS_INNER_LANE_RADIUS, true,
                 bot->GetPositionX(), bot->GetPositionY(),
                 bot->GetPositionZ(), position))
         {
@@ -348,7 +359,8 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
 
         Position mirrorStepPosition;
         if (!TryGetBrutallusRangedLanePosition(
-            brutallus, rangedIndex, true, BRUTALLUS_INNER_LANE_RADIUS,
+            brutallus, mainTank, assistTank, rangedIndex, true,
+            BRUTALLUS_INNER_LANE_RADIUS,
                 bot->GetPositionZ(), mirrorStepPosition))
         {
             return false;
@@ -365,7 +377,8 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
 
     Position position;
     if (!TryGetBrutallusRangedLanePosition(
-            brutallus, rangedIndex, true, BRUTALLUS_NORMAL_RANGED_RADIUS,
+            brutallus, mainTank, assistTank, rangedIndex, true,
+            BRUTALLUS_NORMAL_RANGED_RADIUS,
             bot->GetPositionZ(), position))
     {
         return false;
