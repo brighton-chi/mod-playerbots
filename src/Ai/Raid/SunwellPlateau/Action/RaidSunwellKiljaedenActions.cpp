@@ -13,8 +13,6 @@
 
 using namespace SunwellHelpers;
 
-// Kil'jaeden <The Deceiver>
-
 bool KiljaedenTanksHandleHandsOfTheDeceiverAction::Execute(Event /*event*/)
 {
     Player* mainTank = GetGroupMainTank(botAI, bot);

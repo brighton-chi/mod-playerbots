@@ -12,8 +12,6 @@
 
 using namespace SunwellHelpers;
 
-// Eredar Twins
-
 bool EredarTwinsMeleeJumpDownFromBalconyAction::Execute(Event /*event*/)
 {
     const Position& jumpPos = EREDAR_TWINS_P1_RANGED_POSITION;

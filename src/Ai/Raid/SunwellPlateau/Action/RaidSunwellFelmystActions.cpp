@@ -13,8 +13,6 @@
 
 using namespace SunwellHelpers;
 
-// Felmyst
-
 bool FelmystMisdirectBossToMainTankAction::Execute(Event /*event*/)
 {
     Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
@@ -70,6 +68,7 @@ bool FelmystMainTankPositionBossOnGroundAction::Execute(Event /*event*/)
     return false;
 }
 
+// Bounding Radius and Combat Reach of 10.0f
 bool FelmystPositionRangedOnGroundAction::Execute(Event /*event*/)
 {
     ClearFelmystDemonicVaporKiteState(bot);

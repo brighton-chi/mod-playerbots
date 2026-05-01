@@ -19,8 +19,6 @@
 
 using namespace SunwellHelpers;
 
-// M'uru
-
 bool MuruMisdirectEnemiesToTanksAction::Execute(Event /*event*/)
 {
     Unit* targetEnemy = nullptr;
