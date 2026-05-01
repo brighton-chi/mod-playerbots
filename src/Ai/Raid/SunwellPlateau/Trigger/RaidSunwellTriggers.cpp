@@ -283,8 +283,12 @@ bool FelmystBotNearEncapsulatedPlayerTrigger::IsActive()
     if (!encapsulateTarget || encapsulateTarget == bot)
         return false;
 
-    return bot->GetDistance( // Try 3d check
-        encapsulateTarget) <= FELMYST_ENCAPSULATE_SAFE_DISTANCE;
+    const FelmystGroundStack botStack =
+        GetClosestFelmystGroundStack(botAI, bot, felmyst, bot);
+    const FelmystGroundStack targetStack =
+        GetClosestFelmystGroundStack(botAI, bot, felmyst, encapsulateTarget);
+
+    return botStack != FelmystGroundStack::None && botStack == targetStack;
 }
 
 bool FelmystPlayerHasGasNovaTrigger::IsActive()

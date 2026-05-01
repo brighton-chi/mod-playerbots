@@ -51,6 +51,14 @@ enum class FelmystFogLocation : uint8
     RightBottom,
 };
 
+enum class FelmystGroundStack : uint8
+{
+    None = std::numeric_limits<uint8>::max(),
+    Melee = 0,
+    Left = 1,
+    Right = 2,
+};
+
 struct FelmystFogOfCorruptionState
 {
     FelmystFogLane lane = FelmystFogLane::None;
@@ -72,10 +80,12 @@ constexpr float FELMYST_FOG_CURRENT_POINT_MATCH_DISTANCE = 3.0f;
 constexpr float FELMYST_FOG_DESTINATION_MATCH_DISTANCE = 1.0f;
 constexpr float FELMYST_MELEE_DISTANCE = 12.5f;
 constexpr float FELMYST_RANGED_GROUP_RADIUS = 0.5f;
-constexpr float FELMYST_RANGED_SIDE_DISTANCE = 19.0f;
+constexpr float FELMYST_RANGED_SIDE_DISTANCE = 25.0f;
 constexpr uint32 FELMYST_INCOMING_ENCAPSULATE_DELAY_MS = 1000;
 
-extern const Position FELMYST_TANK_POSITION;
+extern const Position FELMYST_W_TANK_POSITION;
+extern const Position FELMYST_M_TANK_POSITION;
+extern const Position FELMYST_E_TANK_POSITION;
 
 extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
     felmystRangedAssignments;
@@ -91,6 +101,12 @@ extern std::unordered_map<uint32, FelmystIncomingEncapsulateState>
 void EnsureFelmystRangedAssignments(PlayerbotAI* botAI, Player* bot);
 void RecordFelmystIncomingEncapsulateTarget(
     Player* target, uint32 durationMs = 3000);
+Position const& GetFelmystMainTankGroundPosition(Player* player);
+bool TryGetFelmystGroundStackPosition(
+    PlayerbotAI* botAI, Player* bot, Unit* felmyst, FelmystGroundStack stack,
+    Position& position);
+FelmystGroundStack GetClosestFelmystGroundStack(
+    PlayerbotAI* botAI, Player* bot, Unit* felmyst, Unit* unit);
 float GetFelmystFrontAngle(PlayerbotAI* botAI, Player* bot, Unit* felmyst);
 Creature* GetFelmystDemonicVaporSummonedByBot(Player* carrier);
 void ClearFelmystDemonicVaporKiteState(Player* bot);

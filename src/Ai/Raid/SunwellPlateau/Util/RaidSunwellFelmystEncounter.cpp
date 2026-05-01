@@ -14,7 +14,15 @@
 namespace SunwellHelpers
 {
 
-const Position FELMYST_TANK_POSITION = { 1470.891f, 601.720f, 23.227f };
+const Position FELMYST_W_TANK_POSITION = { 1490.731f, 632.530f, 23.271f };
+const Position FELMYST_M_TANK_POSITION = { 1470.923f, 598.100f, 22.878f };
+const Position FELMYST_E_TANK_POSITION = { 1489.453f, 580.012f, 23.425f };
+
+const std::array<Position const*, 3> FELMYST_TANK_POSITIONS = {{
+    &FELMYST_W_TANK_POSITION,
+    &FELMYST_M_TANK_POSITION,
+    &FELMYST_E_TANK_POSITION,
+}};
 
 const std::array<Position, 3> FELMYST_FOG_LEFT_LANES = {{
     { 1494.745f, 704.000f, 50.085f, 4.747f },
@@ -78,6 +86,44 @@ std::unordered_map<uint32, FelmystFogOfCorruptionState>
 
 std::unordered_map<uint32, FelmystIncomingEncapsulateState>
     felmystIncomingEncapsulateStates;
+
+bool TryGetFelmystGroundStackCenter(
+    PlayerbotAI* botAI, Player* bot, Unit* felmyst, FelmystGroundStack stack,
+    float& positionX, float& positionY)
+{
+    if (!felmyst)
+        return false;
+
+    switch (stack)
+    {
+        case FelmystGroundStack::Melee:
+        {
+            const float behindAngle = Position::NormalizeOrientation(
+                GetFelmystFrontAngle(botAI, bot, felmyst) + M_PI);
+            positionX = felmyst->GetPositionX() +
+                FELMYST_MELEE_DISTANCE * std::cos(behindAngle);
+            positionY = felmyst->GetPositionY() +
+                FELMYST_MELEE_DISTANCE * std::sin(behindAngle);
+            return true;
+        }
+
+        case FelmystGroundStack::Left:
+        case FelmystGroundStack::Right:
+        {
+            const float frontAngle = GetFelmystFrontAngle(botAI, bot, felmyst);
+            const float sideAngle = frontAngle +
+                (stack == FelmystGroundStack::Left ? M_PI_2 : -M_PI_2);
+            positionX = felmyst->GetPositionX() +
+                std::cos(sideAngle) * FELMYST_RANGED_SIDE_DISTANCE;
+            positionY = felmyst->GetPositionY() +
+                std::sin(sideAngle) * FELMYST_RANGED_SIDE_DISTANCE;
+            return true;
+        }
+
+        default:
+            return false;
+    }
+}
 
 FelmystFogLocation GetFelmystFogLocationFromLanePointIndex(
     uint8 laneIndex, bool useLeftPoint)
@@ -238,42 +284,10 @@ void EnsureFelmystRangedAssignments(PlayerbotAI* botAI, Player* bot)
         return;
 
     auto& assignments = felmystRangedAssignments[bot->GetInstanceId()];
-
-    std::vector<ObjectGuid> invalidAssignments;
-    for (auto const& assignment : assignments)
-    {
-        bool found = false;
-
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || member->GetGUID() != assignment.first)
-                continue;
-
-            found = botAI->IsRanged(member);
-            break;
-        }
-
-        if (!found)
-            invalidAssignments.push_back(assignment.first);
-    }
-
-    for (ObjectGuid const& guid : invalidAssignments)
-        assignments.erase(guid);
-
-    uint32 leftCount = 0;
-    uint32 rightCount = 0;
-    for (auto const& assignment : assignments)
-    {
-        if (assignment.second == 0)
-            ++leftCount;
-        else
-            ++rightCount;
-    }
-
-    std::vector<Player*> priests;
     std::vector<Player*> healers;
     std::vector<Player*> rangedDamage;
+
+    assignments.clear();
 
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
@@ -281,12 +295,7 @@ void EnsureFelmystRangedAssignments(PlayerbotAI* botAI, Player* bot)
         if (!member || !botAI->IsRanged(member))
             continue;
 
-        if (assignments.find(member->GetGUID()) != assignments.end())
-            continue;
-
-        if (member->getClass() == CLASS_PRIEST)
-            priests.push_back(member);
-        else if (botAI->IsHeal(member))
+        if (botAI->IsHeal(member))
             healers.push_back(member);
         else
             rangedDamage.push_back(member);
@@ -298,33 +307,108 @@ void EnsureFelmystRangedAssignments(PlayerbotAI* botAI, Player* bot)
             [](Player* left, Player* right) { return left->GetGUID() < right->GetGUID(); });
     };
 
-    sortByGuid(priests);
     sortByGuid(healers);
     sortByGuid(rangedDamage);
 
-    auto const assignMembers = [&](std::vector<Player*> const& members)
+    for (uint32 index = 0; index < healers.size(); ++index)
     {
-        for (Player* member : members)
+        const FelmystGroundStack stack =
+            static_cast<FelmystGroundStack>(index % 3);
+        assignments[healers[index]->GetGUID()] = static_cast<uint8>(stack);
+    }
+
+    for (uint32 index = 0; index < rangedDamage.size(); ++index)
+    {
+        const FelmystGroundStack stack =
+            index % 2 == 0 ? FelmystGroundStack::Left : FelmystGroundStack::Right;
+        assignments[rangedDamage[index]->GetGUID()] = static_cast<uint8>(stack);
+    }
+}
+
+Position const& GetFelmystMainTankGroundPosition(Player* player)
+{
+    Position const* bestPosition = &FELMYST_M_TANK_POSITION;
+    float bestDistance = std::numeric_limits<float>::max();
+
+    if (!player)
+        return *bestPosition;
+
+    for (Position const* position : FELMYST_TANK_POSITIONS)
+    {
+        const float distance = player->GetExactDist2d(
+            position->GetPositionX(), position->GetPositionY());
+        if (distance < bestDistance)
         {
-            const uint8 sideIndex = leftCount <= rightCount ? 0 : 1;
-            assignments[member->GetGUID()] = sideIndex;
-
-            if (sideIndex == 0)
-                ++leftCount;
-            else
-                ++rightCount;
+            bestDistance = distance;
+            bestPosition = position;
         }
-    };
+    }
 
-    assignMembers(priests);
-    assignMembers(healers);
-    assignMembers(rangedDamage);
+    return *bestPosition;
+}
+
+bool TryGetFelmystGroundStackPosition(
+    PlayerbotAI* botAI, Player* bot, Unit* felmyst, FelmystGroundStack stack,
+    Position& position)
+{
+    float destinationX = 0.0f;
+    float destinationY = 0.0f;
+    if (!TryGetFelmystGroundStackCenter(
+            botAI, bot, felmyst, stack, destinationX, destinationY))
+    {
+        return false;
+    }
+
+    float destinationZ =
+        bot->GetMapWaterOrGroundLevel(destinationX, destinationY, bot->GetPositionZ());
+
+    if (destinationZ <= INVALID_HEIGHT)
+        destinationZ = bot->GetPositionZ();
+
+    bot->GetMap()->CheckCollisionAndGetValidCoords(
+        bot, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(),
+        destinationX, destinationY, destinationZ, false);
+
+    position = Position{ destinationX, destinationY, destinationZ };
+    return true;
+}
+
+FelmystGroundStack GetClosestFelmystGroundStack(
+    PlayerbotAI* botAI, Player* bot, Unit* felmyst, Unit* unit)
+{
+    if (!unit || !felmyst)
+        return FelmystGroundStack::None;
+
+    FelmystGroundStack bestStack = FelmystGroundStack::None;
+    float bestDistance = std::numeric_limits<float>::max();
+    for (FelmystGroundStack stack : { FelmystGroundStack::Melee,
+                                      FelmystGroundStack::Left,
+                                      FelmystGroundStack::Right })
+    {
+        float stackX = 0.0f;
+        float stackY = 0.0f;
+        if (!TryGetFelmystGroundStackCenter(
+                botAI, bot, felmyst, stack, stackX, stackY))
+        {
+            continue;
+        }
+
+        const float stackDistance = unit->GetExactDist2d(stackX, stackY);
+        if (stackDistance < bestDistance)
+        {
+            bestDistance = stackDistance;
+            bestStack = stack;
+        }
+    }
+
+    return bestStack;
 }
 
 float GetFelmystFrontAngle(PlayerbotAI* botAI, Player* bot, Unit* felmyst)
 {
-    float frontX = FELMYST_TANK_POSITION.GetPositionX();
-    float frontY = FELMYST_TANK_POSITION.GetPositionY();
+    Position const& defaultTankPosition = GetFelmystMainTankGroundPosition(bot);
+    float frontX = defaultTankPosition.GetPositionX();
+    float frontY = defaultTankPosition.GetPositionY();
 
     Player* mainTank = GetGroupMainTank(botAI, bot);
     if (mainTank && mainTank->IsAlive() &&
@@ -822,25 +906,9 @@ bool TryGetFelmystRangedPosition(
     if (assignmentItr == instanceItr->second.end())
         return false;
 
-    const float frontAngle = GetFelmystFrontAngle(botAI, bot, felmyst);
-    const float sideAngle = frontAngle + (assignmentItr->second == 0 ? M_PI_2 : -M_PI_2);
-
-    float destinationX =
-        felmyst->GetPositionX() + std::cos(sideAngle) * FELMYST_RANGED_SIDE_DISTANCE;
-    float destinationY =
-        felmyst->GetPositionY() + std::sin(sideAngle) * FELMYST_RANGED_SIDE_DISTANCE;
-    float destinationZ =
-        bot->GetMapWaterOrGroundLevel(destinationX, destinationY, bot->GetPositionZ());
-
-    if (destinationZ <= INVALID_HEIGHT)
-        destinationZ = bot->GetPositionZ();
-
-    bot->GetMap()->CheckCollisionAndGetValidCoords(
-        bot, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(),
-        destinationX, destinationY, destinationZ, false);
-
-    position = Position{ destinationX, destinationY, destinationZ };
-    return true;
+    return TryGetFelmystGroundStackPosition(
+        botAI, bot, felmyst,
+        static_cast<FelmystGroundStack>(assignmentItr->second), position);
 }
 
 void RecordFelmystIncomingEncapsulateTarget(Player* target, uint32 durationMs)
