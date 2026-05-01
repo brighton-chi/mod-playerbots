@@ -118,10 +118,12 @@ FelmystFogLane GetFelmystFogLaneFromLocation(FelmystFogLocation location)
 
 bool IsFelmystFogSideLocation(FelmystFogLocation location)
 {
-    return location == FelmystFogLocation::LeftSide || location == FelmystFogLocation::RightSide;
+    return location == FelmystFogLocation::LeftSide ||
+           location == FelmystFogLocation::RightSide;
 }
 
-bool IsNearFelmystFogSafeSpot(Player* bot, FelmystFogLane dangerLane, float& closestDistance)
+bool IsNearFelmystFogSafeSpot(
+    Player* bot, FelmystFogLane dangerLane, float& closestDistance)
 {
     closestDistance = std::numeric_limits<float>::max();
     if (dangerLane == FelmystFogLane::None)
@@ -133,7 +135,8 @@ bool IsNearFelmystFogSafeSpot(Player* bot, FelmystFogLane dangerLane, float& clo
 
     for (Position const& safeSpot : FELMYST_FOG_SAFE_SPOTS[laneIndex])
     {
-        const float distance = bot->GetExactDist2d(safeSpot.GetPositionX(), safeSpot.GetPositionY());
+        const float distance =
+            bot->GetExactDist2d(safeSpot.GetPositionX(), safeSpot.GetPositionY());
         if (distance < closestDistance)
             closestDistance = distance;
     }
@@ -197,8 +200,11 @@ bool TryGetFelmystMovementDestination(Unit* felmyst, Position& destination)
     float destinationX = 0.0f;
     float destinationY = 0.0f;
     float destinationZ = 0.0f;
-    if (!felmyst->GetMotionMaster()->GetDestination(destinationX, destinationY, destinationZ))
+    if (!felmyst->GetMotionMaster()->GetDestination(
+            destinationX, destinationY, destinationZ))
+    {
         return false;
+    }
 
     destination = Position{ destinationX, destinationY, destinationZ };
     return true;
@@ -210,7 +216,8 @@ FelmystFogLocation GetFelmystCurrentFogLocation(Unit* felmyst)
         return FelmystFogLocation::None;
 
     return GetFelmystFogLocationFromPosition(
-        felmyst->GetPositionX(), felmyst->GetPositionY(), FELMYST_FOG_CURRENT_POINT_MATCH_DISTANCE);
+        felmyst->GetPositionX(), felmyst->GetPositionY(),
+        FELMYST_FOG_CURRENT_POINT_MATCH_DISTANCE);
 }
 
 FelmystFogLocation GetFelmystDestinationFogLocation(Unit* felmyst)
@@ -220,7 +227,8 @@ FelmystFogLocation GetFelmystDestinationFogLocation(Unit* felmyst)
         return FelmystFogLocation::None;
 
     return GetFelmystFogLocationFromPosition(
-        destination.GetPositionX(), destination.GetPositionY(), FELMYST_FOG_DESTINATION_MATCH_DISTANCE);
+        destination.GetPositionX(), destination.GetPositionY(),
+        FELMYST_FOG_DESTINATION_MATCH_DISTANCE);
 }
 
 void EnsureFelmystRangedAssignments(PlayerbotAI* botAI, Player* bot)
@@ -331,7 +339,8 @@ float GetFelmystFrontAngle(PlayerbotAI* botAI, Player* bot, Unit* felmyst)
         frontY = victim->GetPositionY();
     }
 
-    return std::atan2(frontY - felmyst->GetPositionY(), frontX - felmyst->GetPositionX());
+    return std::atan2(
+        frontY - felmyst->GetPositionY(), frontX - felmyst->GetPositionX());
 }
 
 Creature* GetFelmystDemonicVaporSummonedByBot(Player* carrier)
@@ -361,7 +370,8 @@ void ClearFelmystDemonicVaporKiteState(Player* bot)
     const uint32 instanceId = bot->GetInstanceId();
     const ObjectGuid guid = bot->GetGUID();
 
-    auto const pathInstanceItr = felmystDemonicVaporPathIndices.find(instanceId);
+    auto const pathInstanceItr =
+        felmystDemonicVaporPathIndices.find(instanceId);
     if (pathInstanceItr != felmystDemonicVaporPathIndices.end())
     {
         pathInstanceItr->second.erase(guid);
@@ -369,7 +379,8 @@ void ClearFelmystDemonicVaporKiteState(Player* bot)
             felmystDemonicVaporPathIndices.erase(pathInstanceItr);
     }
 
-    auto const waypointInstanceItr = felmystDemonicVaporWaypointIndices.find(instanceId);
+    auto const waypointInstanceItr =
+        felmystDemonicVaporWaypointIndices.find(instanceId);
     if (waypointInstanceItr != felmystDemonicVaporWaypointIndices.end())
     {
         waypointInstanceItr->second.erase(guid);
@@ -401,7 +412,8 @@ float GetDistanceToSegment2d(
     return std::hypot(pointX - closestX, pointY - closestY);
 }
 
-float GetDistanceToFelmystDemonicVaporPath(float pointX, float pointY, uint8 pathIndex)
+float GetDistanceToFelmystDemonicVaporPath(
+    float pointX, float pointY, uint8 pathIndex)
 {
     if (pathIndex >= FELMYST_DEMONIC_VAPOR_KITE_PATHS.size())
         return std::numeric_limits<float>::max();
@@ -412,7 +424,8 @@ float GetDistanceToFelmystDemonicVaporPath(float pointX, float pointY, uint8 pat
     {
         Position const& start = path[waypointIndex];
         Position const& end = path[(waypointIndex + 1) % path.size()];
-        const float segmentDistance = GetDistanceToSegment2d(pointX, pointY, start, end);
+        const float segmentDistance =
+            GetDistanceToSegment2d(pointX, pointY, start, end);
         if (segmentDistance < bestDistance)
             bestDistance = segmentDistance;
     }
@@ -425,9 +438,12 @@ uint8 GetNearestFelmystDemonicVaporPathIndex(float pointX, float pointY)
     uint8 bestPathIndex = 0;
     float bestDistance = std::numeric_limits<float>::max();
 
-    for (uint8 pathIndex = 0; pathIndex < FELMYST_DEMONIC_VAPOR_KITE_PATHS.size(); ++pathIndex)
+    for (uint8 pathIndex = 0;
+         pathIndex < FELMYST_DEMONIC_VAPOR_KITE_PATHS.size();
+         ++pathIndex)
     {
-        const float pathDistance = GetDistanceToFelmystDemonicVaporPath(pointX, pointY, pathIndex);
+        const float pathDistance =
+            GetDistanceToFelmystDemonicVaporPath(pointX, pointY, pathIndex);
         if (pathDistance < bestDistance)
         {
             bestDistance = pathDistance;
@@ -447,7 +463,8 @@ uint8 GetNearestFelmystDemonicVaporWaypointIndex(Player* bot, uint8 pathIndex)
     for (uint8 waypointIndex = 0; waypointIndex < path.size(); ++waypointIndex)
     {
         Position const& waypoint = path[waypointIndex];
-        const float distance = bot->GetExactDist2d(waypoint.GetPositionX(), waypoint.GetPositionY());
+        const float distance =
+            bot->GetExactDist2d(waypoint.GetPositionX(), waypoint.GetPositionY());
         if (distance < bestDistance)
         {
             bestDistance = distance;
@@ -467,8 +484,9 @@ uint8 GetNextFelmystDemonicVaporWaypointIndex(
 
     constexpr float waypointReachedDistance = 4.0f;
     Position const& currentWaypoint = path[waypointIndex];
-    if (bot->GetExactDist2d(currentWaypoint.GetPositionX(), currentWaypoint.GetPositionY()) <=
-        waypointReachedDistance)
+    if (bot->GetExactDist2d(
+            currentWaypoint.GetPositionX(), currentWaypoint.GetPositionY()) <=
+            waypointReachedDistance)
     {
         return nextWaypointIndex;
     }
@@ -487,7 +505,8 @@ uint8 GetNextFelmystDemonicVaporWaypointIndex(
 std::array<uint32, 2> GetFelmystDemonicVaporPathOccupancyCounts(Player* bot)
 {
     std::array<uint32, 2> occupancyCounts = { 0, 0 };
-    auto const pathInstanceItr = felmystDemonicVaporPathIndices.find(bot->GetInstanceId());
+    auto const pathInstanceItr =
+        felmystDemonicVaporPathIndices.find(bot->GetInstanceId());
     if (pathInstanceItr != felmystDemonicVaporPathIndices.end())
     {
         Group* group = bot->GetGroup();
@@ -499,7 +518,8 @@ std::array<uint32, 2> GetFelmystDemonicVaporPathOccupancyCounts(Player* bot)
                 if (!member || member == bot)
                     continue;
 
-                auto const memberPathItr = pathInstanceItr->second.find(member->GetGUID());
+                auto const memberPathItr =
+                    pathInstanceItr->second.find(member->GetGUID());
                 if (memberPathItr == pathInstanceItr->second.end())
                     continue;
 
@@ -546,12 +566,15 @@ std::array<uint32, 2> GetFelmystDemonicVaporPathOccupancyCounts(Player* bot)
 
 uint8 SelectFelmystDemonicVaporPath(Player* bot)
 {
-    std::array<uint32, 2> occupancyCounts = GetFelmystDemonicVaporPathOccupancyCounts(bot);
+    std::array<uint32, 2> occupancyCounts =
+        GetFelmystDemonicVaporPathOccupancyCounts(bot);
     uint8 bestPathIndex = 0;
     uint32 bestOccupancy = std::numeric_limits<uint32>::max();
     float bestDistance = std::numeric_limits<float>::max();
 
-    for (uint8 pathIndex = 0; pathIndex < FELMYST_DEMONIC_VAPOR_KITE_PATHS.size(); ++pathIndex)
+    for (uint8 pathIndex = 0;
+         pathIndex < FELMYST_DEMONIC_VAPOR_KITE_PATHS.size();
+         ++pathIndex)
     {
         const float pathDistance = GetDistanceToFelmystDemonicVaporPath(
             bot->GetPositionX(), bot->GetPositionY(), pathIndex);
@@ -603,7 +626,8 @@ bool TryGetFelmystDemonicVaporKiteDestination(Player* bot, Position& destination
     }
     else
     {
-        waypointIndex = GetNextFelmystDemonicVaporWaypointIndex(bot, pathIndex, waypointItr->second);
+        waypointIndex = GetNextFelmystDemonicVaporWaypointIndex(
+            bot, pathIndex, waypointItr->second);
         waypointIndices[guid] = waypointIndex;
     }
 
@@ -635,7 +659,8 @@ bool TryGetFelmystFogOfCorruptionStageState(
     const FelmystFogLocation destinationLocation = GetFelmystDestinationFogLocation(felmyst);
     const FelmystFogLane currentLane = GetFelmystFogLaneFromLocation(currentLocation);
     const FelmystFogLane destinationLane = GetFelmystFogLaneFromLocation(destinationLocation);
-    const bool isSweeping = felmyst->HasAura(static_cast<uint32>(SunwellSpells::SPELL_FELMYST_SPEED_BURST));
+    const bool isSweeping = felmyst->HasAura(
+        static_cast<uint32>(SunwellSpells::SPELL_FELMYST_SPEED_BURST));
 
     if (currentLane != FelmystFogLane::None)
     {
@@ -649,7 +674,8 @@ bool TryGetFelmystFogOfCorruptionStageState(
 
     if (isSweeping)
     {
-        FelmystFogLane selectedLane = currentLane != FelmystFogLane::None ? currentLane : tracker.lane;
+        FelmystFogLane selectedLane = currentLane !=
+            FelmystFogLane::None ? currentLane : tracker.lane;
         if (selectedLane == FelmystFogLane::None)
             return false;
 
@@ -672,9 +698,9 @@ bool TryGetFelmystFogOfCorruptionStageState(
 
     if (hasTracker && tracker.expireMs > now && tracker.lane != FelmystFogLane::None &&
         (tracker.phase == FelmystFogPhase::Sweep ||
-            tracker.phase == FelmystFogPhase::Recovery ||
-            IsFelmystFogSideLocation(currentLocation) ||
-            IsFelmystFogSideLocation(destinationLocation)))
+         tracker.phase == FelmystFogPhase::Recovery ||
+         IsFelmystFogSideLocation(currentLocation) ||
+         IsFelmystFogSideLocation(destinationLocation)))
     {
         tracker.phase = FelmystFogPhase::Recovery;
         state = tracker;
@@ -780,7 +806,8 @@ bool TryGetFelmystFogSafeDestinations(
     return destinationCount > 0;
 }
 
-bool TryGetFelmystRangedPosition(PlayerbotAI* botAI, Player* bot, Unit* felmyst, Position& position)
+bool TryGetFelmystRangedPosition(
+    PlayerbotAI* botAI, Player* bot, Unit* felmyst, Position& position)
 {
     if (!felmyst)
         return false;
@@ -795,12 +822,16 @@ bool TryGetFelmystRangedPosition(PlayerbotAI* botAI, Player* bot, Unit* felmyst,
     if (assignmentItr == instanceItr->second.end())
         return false;
 
-    constexpr float sideDistance = 22.0f;
     const float frontAngle = GetFelmystFrontAngle(botAI, bot, felmyst);
     const float sideAngle = frontAngle + (assignmentItr->second == 0 ? M_PI_2 : -M_PI_2);
-    float destinationX = felmyst->GetPositionX() + std::cos(sideAngle) * sideDistance;
-    float destinationY = felmyst->GetPositionY() + std::sin(sideAngle) * sideDistance;
-    float destinationZ = bot->GetMapWaterOrGroundLevel(destinationX, destinationY, bot->GetPositionZ());
+
+    float destinationX =
+        felmyst->GetPositionX() + std::cos(sideAngle) * FELMYST_RANGED_SIDE_DISTANCE;
+    float destinationY =
+        felmyst->GetPositionY() + std::sin(sideAngle) * FELMYST_RANGED_SIDE_DISTANCE;
+    float destinationZ =
+        bot->GetMapWaterOrGroundLevel(destinationX, destinationY, bot->GetPositionZ());
+
     if (destinationZ <= INVALID_HEIGHT)
         destinationZ = bot->GetPositionZ();
 
@@ -817,10 +848,15 @@ void RecordFelmystIncomingEncapsulateTarget(Player* target, uint32 durationMs)
     if (!target)
         return;
 
+    const uint32 now = getMSTime();
     FelmystIncomingEncapsulateState& state =
         felmystIncomingEncapsulateStates[target->GetInstanceId()];
+
+    if (state.targetGuid != target->GetGUID())
+        state.delayMs = now + FELMYST_INCOMING_ENCAPSULATE_DELAY_MS;
+
     state.targetGuid = target->GetGUID();
-    state.expireMs = getMSTime() + durationMs;
+    state.expireMs = now + durationMs;
     state.auraObserved = false;
 }
 
@@ -834,34 +870,29 @@ Player* GetFelmystEncapsulateTarget(Player* bot)
     auto const incomingItr = felmystIncomingEncapsulateStates.find(bot->GetInstanceId());
     if (incomingItr != felmystIncomingEncapsulateStates.end())
     {
+        auto& incomingState = incomingItr->second;
         Player* incomingTarget = nullptr;
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (!member || member->GetGUID() != incomingItr->second.targetGuid)
+            if (!member || member->GetGUID() != incomingState.targetGuid)
                 continue;
 
             incomingTarget = member;
             break;
         }
 
-        if (!incomingTarget)
+        if (incomingTarget &&
+            incomingTarget->HasAura(static_cast<uint32>(SunwellSpells::SPELL_ENCAPSULATE)))
         {
-            felmystIncomingEncapsulateStates.erase(incomingItr);
-        }
-        else if (incomingTarget->HasAura(static_cast<uint32>(SunwellSpells::SPELL_ENCAPSULATE)))
-        {
-            incomingItr->second.auraObserved = true;
+            incomingState.auraObserved = true;
             return incomingTarget;
         }
-        else if (incomingItr->second.auraObserved || incomingItr->second.expireMs <= now)
-        {
+
+        if (!incomingTarget || incomingState.auraObserved || incomingState.expireMs <= now)
             felmystIncomingEncapsulateStates.erase(incomingItr);
-        }
         else
-        {
-            return incomingTarget;
-        }
+            return incomingState.delayMs <= now ? incomingTarget : nullptr;
     }
 
     Player* closestTarget = nullptr;
@@ -928,8 +959,8 @@ Unit* GetNearestFelmystFogOfCorruptionCharmedTarget(Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member ||
-            !member->HasAura(static_cast<uint32>(SunwellSpells::SPELL_FOG_OF_CORRUPTION_CHARM)))
+        if (!member || !member->HasAura(
+                static_cast<uint32>(SunwellSpells::SPELL_FOG_OF_CORRUPTION_CHARM)))
         {
             continue;
         }

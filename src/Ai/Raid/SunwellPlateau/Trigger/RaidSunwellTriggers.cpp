@@ -283,7 +283,7 @@ bool FelmystBotNearEncapsulatedPlayerTrigger::IsActive()
     if (!encapsulateTarget || encapsulateTarget == bot)
         return false;
 
-    return bot->GetDistance2d(
+    return bot->GetDistance( // Try 3d check
         encapsulateTarget) <= FELMYST_ENCAPSULATE_SAFE_DISTANCE;
 }
 

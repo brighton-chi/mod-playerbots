@@ -61,25 +61,36 @@ struct FelmystFogOfCorruptionState
 struct FelmystIncomingEncapsulateState
 {
     ObjectGuid targetGuid = ObjectGuid::Empty;
+    uint32 delayMs = 0;
     uint32 expireMs = 0;
     bool auraObserved = false;
 };
 
-constexpr float FELMYST_ENCAPSULATE_SAFE_DISTANCE = 21.0f;
+constexpr float FELMYST_ENCAPSULATE_SAFE_DISTANCE = 20.0f;
 constexpr float FELMYST_FOG_SAFE_SPOT_ARRIVAL_DISTANCE = 8.0f;
 constexpr float FELMYST_FOG_CURRENT_POINT_MATCH_DISTANCE = 3.0f;
 constexpr float FELMYST_FOG_DESTINATION_MATCH_DISTANCE = 1.0f;
+constexpr float FELMYST_MELEE_DISTANCE = 12.5f;
+constexpr float FELMYST_RANGED_GROUP_RADIUS = 0.5f;
+constexpr float FELMYST_RANGED_SIDE_DISTANCE = 19.0f;
+constexpr uint32 FELMYST_INCOMING_ENCAPSULATE_DELAY_MS = 1000;
 
 extern const Position FELMYST_TANK_POSITION;
 
-extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> felmystRangedAssignments;
-extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> felmystDemonicVaporPathIndices;
-extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> felmystDemonicVaporWaypointIndices;
-extern std::unordered_map<uint32, FelmystFogOfCorruptionState> felmystFogOfCorruptionStates;
-extern std::unordered_map<uint32, FelmystIncomingEncapsulateState> felmystIncomingEncapsulateStates;
+extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
+    felmystRangedAssignments;
+extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
+    felmystDemonicVaporPathIndices;
+extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
+    felmystDemonicVaporWaypointIndices;
+extern std::unordered_map<uint32, FelmystFogOfCorruptionState>
+    felmystFogOfCorruptionStates;
+extern std::unordered_map<uint32, FelmystIncomingEncapsulateState>
+    felmystIncomingEncapsulateStates;
 
 void EnsureFelmystRangedAssignments(PlayerbotAI* botAI, Player* bot);
-void RecordFelmystIncomingEncapsulateTarget(Player* target, uint32 durationMs = 3000);
+void RecordFelmystIncomingEncapsulateTarget(
+    Player* target, uint32 durationMs = 3000);
 float GetFelmystFrontAngle(PlayerbotAI* botAI, Player* bot, Unit* felmyst);
 Creature* GetFelmystDemonicVaporSummonedByBot(Player* carrier);
 void ClearFelmystDemonicVaporKiteState(Player* bot);

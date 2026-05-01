@@ -329,7 +329,8 @@ float FelmystPrioritizeFogAvoidanceMultiplier::GetValue(Action* action)
         return 1.0f;
 
     FelmystFogOfCorruptionState activeFogState;
-    bool isActiveFog = TryGetActiveFelmystFogOfCorruptionState(bot, felmyst, activeFogState);
+    bool isActiveFog = TryGetActiveFelmystFogOfCorruptionState(
+        bot, felmyst, activeFogState);
 
     if (dynamic_cast<CastReachTargetSpellAction*>(action))
         return 0.0f;
@@ -337,7 +338,8 @@ float FelmystPrioritizeFogAvoidanceMultiplier::GetValue(Action* action)
     std::array<Position, 3> destinations;
     uint8 destinationCount = 0;
     bool needsShift = TryGetFelmystFogSafeDestinations(
-        bot, isActiveFog ? activeFogState.lane : fogState.lane, destinations, destinationCount);
+        bot, isActiveFog ? activeFogState.lane :
+        fogState.lane, destinations, destinationCount);
 
     if (isActiveFog && needsShift && dynamic_cast<CastSpellAction*>(action) &&
         !dynamic_cast<CastHealingSpellAction*>(action))

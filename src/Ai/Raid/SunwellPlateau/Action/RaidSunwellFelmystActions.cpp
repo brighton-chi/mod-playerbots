@@ -81,9 +81,8 @@ bool FelmystPositionRangedOnGroundAction::Execute(Event /*event*/)
     if (!TryGetFelmystRangedPosition(botAI, bot, felmyst, position))
         return false;
 
-    constexpr float rangedGroupRadius = 3.0f;
     return MoveInside(SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-                      position.GetPositionZ(), rangedGroupRadius,
+                      position.GetPositionZ(), FELMYST_RANGED_GROUP_RADIUS,
                       MovementPriority::MOVEMENT_COMBAT);
 }
 
@@ -95,11 +94,15 @@ bool FelmystPositionMeleeOnGroundAction::Execute(Event /*event*/)
     if (!felmyst)
         return false;
 
-    const float desiredDist = bot->GetMeleeRange(felmyst);
-    const float behindAngle = Position::NormalizeOrientation(felmyst->GetOrientation() + M_PI);
-    float targetX = felmyst->GetPositionX() + desiredDist * std::cos(behindAngle);
-    float targetY = felmyst->GetPositionY() + desiredDist * std::sin(behindAngle);
-    float targetZ = bot->GetMapWaterOrGroundLevel(targetX, targetY, bot->GetPositionZ());
+    const float behindAngle = Position::NormalizeOrientation(
+        GetFelmystFrontAngle(botAI, bot, felmyst) + M_PI);
+    float targetX = felmyst->GetPositionX() +
+        FELMYST_MELEE_DISTANCE * std::cos(behindAngle);
+    float targetY = felmyst->GetPositionY() +
+        FELMYST_MELEE_DISTANCE * std::sin(behindAngle);
+    float targetZ = bot->GetMapWaterOrGroundLevel(
+        targetX, targetY, bot->GetPositionZ());
+
     if (targetZ <= INVALID_HEIGHT)
         targetZ = bot->GetPositionZ();
 
@@ -109,8 +112,8 @@ bool FelmystPositionMeleeOnGroundAction::Execute(Event /*event*/)
 
     if (bot->GetExactDist2d(targetX, targetY) > 0.25f)
     {
-        return MoveTo(SUNWELL_MAP_ID, targetX, targetY, targetZ, false, false,
-                      false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+        return MoveTo(SUNWELL_MAP_ID, targetX, targetY, targetZ, false, false, false,
+                      false, MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
     return false;
@@ -159,37 +162,40 @@ bool FelmystRunAwayFromEncapsulatedPlayerAction::Execute(Event /*event*/)
         instanceItr != felmystRangedAssignments.end() &&
         instanceItr->second.find(encapsulateTarget->GetGUID()) != instanceItr->second.end();
 
-    const float meleeDistance = bot->GetMeleeRange(felmyst);
-    const float behindAngle = Position::NormalizeOrientation(felmyst->GetOrientation() + M_PI);
+    const float behindAngle = Position::NormalizeOrientation(
+        felmyst->GetOrientation() + M_PI);
 
-    constexpr float sideDistance = 22.0f;
+    const float meleeX = felmyst->GetPositionX() +
+        FELMYST_MELEE_DISTANCE * std::cos(behindAngle);
+    const float meleeY = felmyst->GetPositionY() +
+        FELMYST_MELEE_DISTANCE * std::sin(behindAngle);
+
     const float frontAngle = GetFelmystFrontAngle(botAI, bot, felmyst);
-    const float leftX = felmyst->GetPositionX() + std::cos(frontAngle + M_PI_2) * sideDistance;
-    const float leftY = felmyst->GetPositionY() + std::sin(frontAngle + M_PI_2) * sideDistance;
-    const float rightX = felmyst->GetPositionX() + std::cos(frontAngle - M_PI_2) * sideDistance;
-    const float rightY = felmyst->GetPositionY() + std::sin(frontAngle - M_PI_2) * sideDistance;
 
-    const float leftDistance = bot->GetExactDist2d(leftX, leftY);
-    const float rightDistance = bot->GetExactDist2d(rightX, rightY);
+    const float leftX = felmyst->GetPositionX() +
+        std::cos(frontAngle + M_PI_2) * FELMYST_RANGED_SIDE_DISTANCE;
+    const float leftY = felmyst->GetPositionY() +
+        std::sin(frontAngle + M_PI_2) * FELMYST_RANGED_SIDE_DISTANCE;
+    const float rightX = felmyst->GetPositionX() +
+        std::cos(frontAngle - M_PI_2) * FELMYST_RANGED_SIDE_DISTANCE;
+    const float rightY = felmyst->GetPositionY() +
+        std::sin(frontAngle - M_PI_2) * FELMYST_RANGED_SIDE_DISTANCE;
 
-    constexpr float stackArrivalDistance = 3.0f;
     auto const tryMoveToStack = [&](float x, float y)
     {
-        return MoveInside(SUNWELL_MAP_ID, x, y, bot->GetPositionZ(), stackArrivalDistance,
-                          MovementPriority::MOVEMENT_FORCED);
+        return MoveInside(SUNWELL_MAP_ID, x, y, bot->GetPositionZ(),
+                          FELMYST_RANGED_GROUP_RADIUS, MovementPriority::MOVEMENT_FORCED);
     };
 
     if (isEncapsulateTargetInRangedGroup)
     {
-        if (tryMoveToStack(
-                felmyst->GetPositionX() + meleeDistance * std::cos(behindAngle),
-                felmyst->GetPositionY() + meleeDistance * std::sin(behindAngle)))
-        {
+        if (tryMoveToStack(meleeX, meleeY))
             return true;
-        }
 
-        const float leftTargetDistance = encapsulateTarget->GetExactDist2d(leftX, leftY);
-        const float rightTargetDistance = encapsulateTarget->GetExactDist2d(rightX, rightY);
+        const float leftTargetDistance =
+            encapsulateTarget->GetExactDist2d(leftX, leftY);
+        const float rightTargetDistance =
+            encapsulateTarget->GetExactDist2d(rightX, rightY);
 
         if (leftTargetDistance >= rightTargetDistance)
         {
@@ -222,7 +228,7 @@ bool FelmystRunAwayFromEncapsulatedPlayerAction::Execute(Event /*event*/)
     }
     else
     {
-        if (leftDistance <= rightDistance)
+        if (bot->GetExactDist2d(leftX, leftY) <= bot->GetExactDist2d(rightX, rightY))
         {
             if (tryMoveToStack(leftX, leftY))
                 return true;
@@ -277,7 +283,7 @@ bool FelmystKiteDemonicVaporAction::Execute(Event /*event*/)
         return false;
 
     return MoveTo(SUNWELL_MAP_ID, destination.GetPositionX(), destination.GetPositionY(),
-                  destination.GetPositionZ(), false, false, false, true,
+                  destination.GetPositionZ(), false, false, false, false,
                   MovementPriority::MOVEMENT_FORCED, true, false);
 }
 

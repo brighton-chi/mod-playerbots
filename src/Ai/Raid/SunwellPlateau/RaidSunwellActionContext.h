@@ -70,6 +70,9 @@ public:
         creators["felmyst position ranged on ground"] =
             &RaidSunwellActionContext::felmyst_position_ranged_on_ground;
 
+        creators["felmyst position melee on ground"] =
+            &RaidSunwellActionContext::felmyst_position_melee_on_ground;
+
         creators["felmyst remove encapsulate"] =
             &RaidSunwellActionContext::felmyst_remove_encapsulate;
 
@@ -241,6 +244,9 @@ private:
 
     static Action* felmyst_position_ranged_on_ground(
         PlayerbotAI* botAI) { return new FelmystPositionRangedOnGroundAction(botAI); }
+
+    static Action* felmyst_position_melee_on_ground(
+        PlayerbotAI* botAI) { return new FelmystPositionMeleeOnGroundAction(botAI); }
 
     static Action* felmyst_remove_encapsulate(
         PlayerbotAI* botAI) { return new FelmystRemoveEncapsulateAction(botAI); }
