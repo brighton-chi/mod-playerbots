@@ -226,7 +226,7 @@ bool FelmystBossEngagedByRangedOnGroundTrigger::IsActive()
         return false;
 
     Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
-    if (!felmyst || felmyst->IsFlying())
+    if (!felmyst || felmyst->IsFlying() || felmyst->GetVictim() == bot)
         return false;
 
     return !GetFelmystEncapsulateTarget(bot);
@@ -238,7 +238,7 @@ bool FelmystBossEngagedByMeleeOnGroundTrigger::IsActive()
         return false;
 
     Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
-    if (!felmyst || felmyst->IsFlying())
+    if (!felmyst || felmyst->IsFlying() || felmyst->GetVictim() == bot)
         return false;
 
     if (botAI->IsMainTank(bot))

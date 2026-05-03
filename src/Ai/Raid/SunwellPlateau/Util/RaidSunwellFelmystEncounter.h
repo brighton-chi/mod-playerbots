@@ -80,11 +80,11 @@ constexpr float FELMYST_FOG_CURRENT_POINT_MATCH_DISTANCE = 3.0f;
 constexpr float FELMYST_FOG_DESTINATION_MATCH_DISTANCE = 1.0f;
 constexpr float FELMYST_MELEE_DISTANCE = 12.5f;
 constexpr float FELMYST_RANGED_GROUP_RADIUS = 0.5f;
-constexpr float FELMYST_RANGED_SIDE_DISTANCE = 25.0f;
+constexpr float FELMYST_RANGED_SIDE_DISTANCE = 24.0f;
 constexpr uint32 FELMYST_INCOMING_ENCAPSULATE_DELAY_MS = 1000;
 
-extern const Position FELMYST_W_TANK_POSITION;
 extern const Position FELMYST_M_TANK_POSITION;
+extern const Position FELMYST_W_TANK_POSITION;
 extern const Position FELMYST_E_TANK_POSITION;
 
 extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>

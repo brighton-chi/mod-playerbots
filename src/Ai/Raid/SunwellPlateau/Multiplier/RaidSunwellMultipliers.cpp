@@ -318,6 +318,24 @@ float FelmystControlMovementMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+float FelmystPrioritizeEncapsulateAvoidanceMultiplier::GetValue(Action* action)
+{
+    Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
+    if (!felmyst || felmyst->IsFlying())
+        return 1.0f;
+
+    if (!GetFelmystEncapsulateTarget(bot))
+        return 1.0f;
+
+    if (dynamic_cast<MovementAction*>(action) &&
+        !dynamic_cast<FelmystRunAwayFromEncapsulatedPlayerAction*>(action))
+    {
+        return 0.0f;
+    }
+
+    return 1.0f;
+}
+
 float FelmystPrioritizeFogAvoidanceMultiplier::GetValue(Action* action)
 {
     Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");

@@ -97,6 +97,14 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class FelmystPrioritizeEncapsulateAvoidanceMultiplier : public Multiplier
+{
+public:
+    FelmystPrioritizeEncapsulateAvoidanceMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "felmyst prioritize encapsulate avoidance") {}
+    virtual float GetValue(Action* action);
+};
+
 class FelmystPrioritizeFogAvoidanceMultiplier : public Multiplier
 {
 public:

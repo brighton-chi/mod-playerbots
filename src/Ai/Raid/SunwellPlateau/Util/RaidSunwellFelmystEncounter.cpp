@@ -14,13 +14,13 @@
 namespace SunwellHelpers
 {
 
-const Position FELMYST_W_TANK_POSITION = { 1490.731f, 632.530f, 23.271f };
-const Position FELMYST_M_TANK_POSITION = { 1470.923f, 598.100f, 22.878f };
-const Position FELMYST_E_TANK_POSITION = { 1489.453f, 580.012f, 23.425f };
+const Position FELMYST_M_TANK_POSITION = { 1460.145f, 598.290f, 21.869f };
+const Position FELMYST_W_TANK_POSITION = { 1477.889f, 625.836f, 22.270f };
+const Position FELMYST_E_TANK_POSITION = { 1477.223f, 598.616f, 23.140f };
 
 const std::array<Position const*, 3> FELMYST_TANK_POSITIONS = {{
-    &FELMYST_W_TANK_POSITION,
     &FELMYST_M_TANK_POSITION,
+    &FELMYST_W_TANK_POSITION,
     &FELMYST_E_TANK_POSITION,
 }};
 
@@ -40,7 +40,7 @@ const std::array<std::array<Position, 3>, 3> FELMYST_FOG_SAFE_SPOTS = {{
     {{
         { 1466.414f, 598.460f, 22.691f },
         { 1468.840f, 614.437f, 22.460f },
-        { 1469.725f, 628.240f, 21.588f },
+        { 1463.830f, 582.128f, 21.568f },
     }},
     {{
         { 1500.258f, 613.369f, 26.310f },
@@ -57,18 +57,42 @@ const std::array<std::array<Position, 3>, 3> FELMYST_FOG_SAFE_SPOTS = {{
 const Position FELMYST_FOG_LEFT_SIDE =  { 1469.064f, 729.585f, 59.824f, 4.677f };
 const Position FELMYST_FOG_RIGHT_SIDE = { 1458.556f, 502.200f, 59.900f, 1.606f };
 
-const std::array<std::array<Position, 4>, 2> FELMYST_DEMONIC_VAPOR_KITE_PATHS = {{
+const std::array<std::array<Position, 4>, 6> FELMYST_DEMONIC_VAPOR_KITE_PATHS = {{
     {{
-        { 1484.994f, 598.407f, 23.859f },
-        { 1491.537f, 580.538f, 23.356f },
-        { 1475.972f, 565.603f, 22.783f },
-        { 1458.482f, 584.163f, 21.248f },
+        { 1455.934f, 574.436f, 21.780f },
+        { 1467.349f, 554.885f, 22.382f },
+        { 1480.103f, 543.877f, 24.618f },
+        { 1498.149f, 540.188f, 26.389f },
     }},
     {{
-        { 1483.642f, 635.021f, 22.168f },
-        { 1495.737f, 650.552f, 23.033f },
-        { 1480.149f, 663.314f, 20.998f },
-        { 1459.241f, 650.507f, 19.350f },
+        { 1461.162f, 616.197f, 20.933f },
+        { 1451.118f, 634.023f, 18.315f },
+        { 1454.325f, 650.370f, 19.057f },
+        { 1467.698f, 662.949f, 20.130f },
+    }},
+    {{
+        { 1500.029f, 617.499f, 26.051f },
+        { 1505.687f, 633.003f, 26.433f },
+        { 1507.578f, 651.245f, 25.662f },
+        { 1491.963f, 664.064f, 21.711f },
+    }},
+    {{
+        { 1510.545f, 572.290f, 27.921f },
+        { 1516.525f, 558.095f, 30.412f },
+        { 1506.535f, 543.360f, 28.165f },
+        { 1489.127f, 540.331f, 24.828f },
+    }},
+    {{
+        { 1478.890f, 582.567f, 23.219f },
+        { 1487.515f, 569.480f, 23.466f },
+        { 1496.929f, 556.597f, 25.713f },
+        { 1506.426f, 544.969f, 28.188f },
+    }},
+    {{
+        { 1483.000f, 622.160f, 23.381f },
+        { 1485.531f, 638.599f, 21.906f },
+        { 1487.943f, 652.258f, 21.406f },
+        { 1496.358f, 666.713f, 22.449f },
     }}
 }};
 
@@ -325,28 +349,6 @@ void EnsureFelmystRangedAssignments(PlayerbotAI* botAI, Player* bot)
     }
 }
 
-Position const& GetFelmystMainTankGroundPosition(Player* player)
-{
-    Position const* bestPosition = &FELMYST_M_TANK_POSITION;
-    float bestDistance = std::numeric_limits<float>::max();
-
-    if (!player)
-        return *bestPosition;
-
-    for (Position const* position : FELMYST_TANK_POSITIONS)
-    {
-        const float distance = player->GetExactDist2d(
-            position->GetPositionX(), position->GetPositionY());
-        if (distance < bestDistance)
-        {
-            bestDistance = distance;
-            bestPosition = position;
-        }
-    }
-
-    return *bestPosition;
-}
-
 bool TryGetFelmystGroundStackPosition(
     PlayerbotAI* botAI, Player* bot, Unit* felmyst, FelmystGroundStack stack,
     Position& position)
@@ -496,6 +498,28 @@ float GetDistanceToSegment2d(
     return std::hypot(pointX - closestX, pointY - closestY);
 }
 
+Position const& GetFelmystMainTankGroundPosition(Player* player)
+{
+    Position const* bestPosition = &FELMYST_M_TANK_POSITION;
+    float bestDistance = std::numeric_limits<float>::max();
+
+    if (!player)
+        return *bestPosition;
+
+    for (Position const* position : FELMYST_TANK_POSITIONS)
+    {
+        const float distance = player->GetExactDist2d(
+            position->GetPositionX(), position->GetPositionY());
+        if (distance < bestDistance)
+        {
+            bestDistance = distance;
+            bestPosition = position;
+        }
+    }
+
+    return *bestPosition;
+}
+
 float GetDistanceToFelmystDemonicVaporPath(
     float pointX, float pointY, uint8 pathIndex)
 {
@@ -559,6 +583,15 @@ uint8 GetNearestFelmystDemonicVaporWaypointIndex(Player* bot, uint8 pathIndex)
     return bestIndex;
 }
 
+float GetDistanceToFelmystDemonicVaporPathStart(Player* bot, uint8 pathIndex)
+{
+    if (!bot || pathIndex >= FELMYST_DEMONIC_VAPOR_KITE_PATHS.size())
+        return std::numeric_limits<float>::max();
+
+    Position const& start = FELMYST_DEMONIC_VAPOR_KITE_PATHS[pathIndex][0];
+    return bot->GetExactDist2d(start.GetPositionX(), start.GetPositionY());
+}
+
 uint8 GetNextFelmystDemonicVaporWaypointIndex(
     Player* bot, uint8 pathIndex, uint8 currentWaypointIndex)
 {
@@ -586,9 +619,10 @@ uint8 GetNextFelmystDemonicVaporWaypointIndex(
     return waypointIndex;
 }
 
-std::array<uint32, 2> GetFelmystDemonicVaporPathOccupancyCounts(Player* bot)
+std::array<uint32, FELMYST_DEMONIC_VAPOR_KITE_PATHS.size()>
+GetFelmystDemonicVaporPathOccupancyCounts(Player* bot)
 {
-    std::array<uint32, 2> occupancyCounts = { 0, 0 };
+    std::array<uint32, FELMYST_DEMONIC_VAPOR_KITE_PATHS.size()> occupancyCounts = {};
     auto const pathInstanceItr =
         felmystDemonicVaporPathIndices.find(bot->GetInstanceId());
     if (pathInstanceItr != felmystDemonicVaporPathIndices.end())
@@ -650,24 +684,44 @@ std::array<uint32, 2> GetFelmystDemonicVaporPathOccupancyCounts(Player* bot)
 
 uint8 SelectFelmystDemonicVaporPath(Player* bot)
 {
-    std::array<uint32, 2> occupancyCounts =
+    std::array<uint32, FELMYST_DEMONIC_VAPOR_KITE_PATHS.size()> occupancyCounts =
         GetFelmystDemonicVaporPathOccupancyCounts(bot);
     uint8 bestPathIndex = 0;
     uint32 bestOccupancy = std::numeric_limits<uint32>::max();
-    float bestDistance = std::numeric_limits<float>::max();
+    float bestStartDistance = std::numeric_limits<float>::max();
 
     for (uint8 pathIndex = 0;
          pathIndex < FELMYST_DEMONIC_VAPOR_KITE_PATHS.size();
          ++pathIndex)
     {
-        const float pathDistance = GetDistanceToFelmystDemonicVaporPath(
-            bot->GetPositionX(), bot->GetPositionY(), pathIndex);
+        if (occupancyCounts[pathIndex] != 0)
+            continue;
+
+        const float startDistance =
+            GetDistanceToFelmystDemonicVaporPathStart(bot, pathIndex);
+        if (startDistance < bestStartDistance)
+        {
+            bestPathIndex = pathIndex;
+            bestStartDistance = startDistance;
+        }
+    }
+
+    if (bestStartDistance != std::numeric_limits<float>::max())
+        return bestPathIndex;
+
+    for (uint8 pathIndex = 0;
+         pathIndex < FELMYST_DEMONIC_VAPOR_KITE_PATHS.size();
+         ++pathIndex)
+    {
+        const float startDistance =
+            GetDistanceToFelmystDemonicVaporPathStart(bot, pathIndex);
         if (occupancyCounts[pathIndex] < bestOccupancy ||
-            (occupancyCounts[pathIndex] == bestOccupancy && pathDistance < bestDistance))
+            (occupancyCounts[pathIndex] == bestOccupancy &&
+             startDistance < bestStartDistance))
         {
             bestPathIndex = pathIndex;
             bestOccupancy = occupancyCounts[pathIndex];
-            bestDistance = pathDistance;
+            bestStartDistance = startDistance;
         }
     }
 
