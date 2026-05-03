@@ -182,9 +182,9 @@ ItemUsage ItemUsageValue::QueryItemUsageForEquip(ItemTemplate const* itemProto, 
     if (result != EQUIP_ERR_OK && result != EQUIP_ERR_CANT_CARRY_MORE_OF_THIS)
         return ITEM_USAGE_NONE;
 
-    // Check is unique items are equipped or not
+    // Check if unique items are equipped or not
     bool needToCheckUnique = result == EQUIP_ERR_CANT_CARRY_MORE_OF_THIS ||
-                             itemProto->HasFlag(ITEM_FLAG_UNIQUE_EQUIPPABLE);
+         itemProto->HasFlag(ITEM_FLAG_UNIQUE_EQUIPPABLE);
 
     if (needToCheckUnique)
     {
@@ -269,6 +269,7 @@ ItemUsage ItemUsageValue::QueryItemUsageForEquip(ItemTemplate const* itemProto, 
                            itemProto->SubClass == ITEM_SUBCLASS_WEAPON_SWORD2);
 
         // If the bot can Titan Grip, ignore any 2H weapon that isn't a 2H sword, mace, or axe.
+        // If this weapon is 2H but not one of the valid TG weapon types, do not equip it at all.
         if (bot->CanTitanGrip() && itemProto->InventoryType == INVTYPE_2HWEAPON && !isValidTGWeapon)
             return ITEM_USAGE_NONE;
 
