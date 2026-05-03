@@ -140,9 +140,9 @@ namespace ai::gbless
     {
         // All casters
         {{ BASE_KINGS,     BASE_WISDOM, BASE_SANCTUARY, BASE_MIGHT     }},
-        // Physical melee DPS
+        // Physical DPS (no mana)
         {{ BASE_MIGHT,     BASE_KINGS,  BASE_SANCTUARY, BASE_NONE      }},
-        // Hybrid DPS and Hunters
+        // Hybrid DPS
         {{ BASE_MIGHT,     BASE_KINGS,  BASE_WISDOM,    BASE_SANCTUARY }},
         // Druid tanks
         {{ BASE_KINGS,     BASE_MIGHT,  BASE_SANCTUARY, BASE_WISDOM,   }},
