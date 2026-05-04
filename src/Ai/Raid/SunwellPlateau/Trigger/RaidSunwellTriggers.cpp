@@ -401,6 +401,9 @@ bool EredarTwinsOnlyOneBossRemainsTrigger::IsActive()
         !AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
         return false;
 
+    if (IsEredarTwinsConflagrationTarget(alythess, bot))
+        return false;
+
     return !IsAlythessTank(botAI, bot);
 }
 

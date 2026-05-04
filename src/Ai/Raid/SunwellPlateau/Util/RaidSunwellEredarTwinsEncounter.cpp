@@ -144,9 +144,6 @@ void RecordEredarTwinsIncomingConflagrationTarget(Player* target, uint32 duratio
 
 bool IsEredarTwinsConflagrationTarget(Unit* alythess, Player* bot)
 {
-    if (!bot)
-        return false;
-
     constexpr uint32 conflagrationSpellId = static_cast<uint32>(SunwellSpells::SPELL_CONFLAGRATION);
     auto incomingItr = eredarTwinsIncomingConflagrationStates.find(bot->GetInstanceId());
     const uint32 now = getMSTime();

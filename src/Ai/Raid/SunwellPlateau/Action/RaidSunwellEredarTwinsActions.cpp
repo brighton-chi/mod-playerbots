@@ -355,14 +355,27 @@ bool EredarTwinsDpsPrioritizeLadySacrolashAction::Execute(Event /*event*/)
 
 bool EredarTwinsConflagratedBotMoveFromGroupAction::Execute(Event /*event*/)
 {
-    const Position& position = botAI->IsRanged(bot) ?
-        EREDAR_TWINS_RANGED_CONFLAG_POSITION : EREDAR_TWINS_MELEE_CONFLAG_POSITION;
-
-    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
+    if (AI_VALUE2(Unit*, "find target", "lady sacrolash"))
     {
-        return MoveTo(SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-                      position.GetPositionZ(), false, false, false, false,
-                      MovementPriority::MOVEMENT_FORCED, true, false);
+        const Position& position = botAI->IsRanged(bot) ?
+            EREDAR_TWINS_RANGED_CONFLAG_POSITION : EREDAR_TWINS_MELEE_CONFLAG_POSITION;
+
+        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
+        {
+            return MoveTo(SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                        position.GetPositionZ(), false, false, false, false,
+                        MovementPriority::MOVEMENT_FORCED, true, false);
+        }
+    }
+    else
+    {
+        constexpr float safeDistance = 10.0f;
+        if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
+        {
+            const float distanceToPlayer = bot->GetExactDist2d(nearestPlayer);
+            if (distanceToPlayer < safeDistance)
+                return MoveAway(nearestPlayer->GetPosition(), safeDistance - distanceToPlayer);
+        }
     }
 
     return false;
