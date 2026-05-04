@@ -131,10 +131,15 @@ void RecordEredarTwinsIncomingConflagrationTarget(Player* target, uint32 duratio
     if (!target || !durationMs)
         return;
 
+    const uint32 now = getMSTime();
     EredarTwinsIncomingConflagrationState& state =
         eredarTwinsIncomingConflagrationStates[target->GetInstanceId()];
+
+    if (state.targetGuid != target->GetGUID())
+        state.delayMs = now + EREDAR_TWINS_INCOMING_CONFLAGRATION_DELAY_MS;
+
     state.targetGuid = target->GetGUID();
-    state.expireMs = getMSTime() + durationMs;
+    state.expireMs = now + durationMs;
 }
 
 bool IsEredarTwinsConflagrationTarget(Unit* alythess, Player* bot)
@@ -144,6 +149,7 @@ bool IsEredarTwinsConflagrationTarget(Unit* alythess, Player* bot)
 
     constexpr uint32 conflagrationSpellId = static_cast<uint32>(SunwellSpells::SPELL_CONFLAGRATION);
     auto const incomingItr = eredarTwinsIncomingConflagrationStates.find(bot->GetInstanceId());
+    const uint32 now = getMSTime();
 
     if (alythess)
     {
@@ -152,7 +158,20 @@ bool IsEredarTwinsConflagrationTarget(Unit* alythess, Player* bot)
             currentSpell->m_spellInfo->Id == conflagrationSpellId &&
             currentSpell->m_targets.GetUnitTarget() == bot)
         {
-            return true;
+            if (incomingItr == eredarTwinsIncomingConflagrationStates.end())
+                return false;
+
+            EredarTwinsIncomingConflagrationState const& state = incomingItr->second;
+            if (state.targetGuid != bot->GetGUID())
+                return false;
+
+            if (state.expireMs <= now)
+            {
+                eredarTwinsIncomingConflagrationStates.erase(incomingItr);
+                return false;
+            }
+
+            return state.delayMs <= now;
         }
     }
 
@@ -160,7 +179,6 @@ bool IsEredarTwinsConflagrationTarget(Unit* alythess, Player* bot)
         return false;
 
     EredarTwinsIncomingConflagrationState const& state = incomingItr->second;
-    const uint32 now = getMSTime();
     if (state.targetGuid != bot->GetGUID())
     {
         if (state.expireMs <= now)
@@ -175,7 +193,7 @@ bool IsEredarTwinsConflagrationTarget(Unit* alythess, Player* bot)
         return false;
     }
 
-    return true;
+    return state.delayMs <= now;
 }
 
 }

@@ -21,10 +21,12 @@ namespace SunwellHelpers
 {
 
 constexpr float EREDAR_TWINS_BALCONY_Z = 50.0f;
+constexpr uint32 EREDAR_TWINS_INCOMING_CONFLAGRATION_DELAY_MS = 500;
 
 struct EredarTwinsIncomingConflagrationState
 {
 	ObjectGuid targetGuid = ObjectGuid::Empty;
+	uint32 delayMs = 0;
 	uint32 expireMs = 0;
 };
 
