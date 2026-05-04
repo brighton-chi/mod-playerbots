@@ -848,13 +848,17 @@ bool IllidanStormrageNeedToClearHazardsBetweenPhasesTrigger::IsActive()
         botAI, bot, BLACK_TEMPLE_MAP_ID, GetIllidanWarlockTank(bot));
 }
 
-bool IllidanStormrageShadowDemonCheatTrigger::IsActive()
+bool IllidanStormrageCheatTrigger::IsActive()
 {
     if (!botAI->HasCheat(BotCheatMask::raid) || !botAI->IsDps(bot))
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan || GetIllidanPhase(illidan) != 4)
+    if (!illidan)
+        return false;
+
+    int phase = GetIllidanPhase(illidan);
+    if (phase != 2 && phase != 4)
         return false;
 
     return IsMechanicTrackerBot(

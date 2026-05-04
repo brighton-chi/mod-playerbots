@@ -518,11 +518,11 @@ public:
     bool IsActive() override;
 };
 
-class IllidanStormrageShadowDemonCheatTrigger : public Trigger
+class IllidanStormrageCheatTrigger : public Trigger
 {
 public:
-    IllidanStormrageShadowDemonCheatTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage shadow demon cheat") {}
+    IllidanStormrageCheatTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage cheat") {}
     bool IsActive() override;
 };
 

@@ -208,8 +208,8 @@ public:
         creators["illidan stormrage destroy hazards"] =
             &RaidBlackTempleActionContext::illidan_stormrage_destroy_hazards;
 
-        creators["illidan stormrage nerf shadow demon"] =
-            &RaidBlackTempleActionContext::illidan_stormrage_nerf_shadow_demon;
+        creators["illidan stormrage handle adds cheat"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_handle_adds_cheat;
     }
 
 private:
@@ -407,8 +407,8 @@ private:
     static Action* illidan_stormrage_destroy_hazards(
         PlayerbotAI* botAI) { return new IllidanStormrageDestroyHazardsAction(botAI); }
 
-    static Action* illidan_stormrage_nerf_shadow_demon(
-        PlayerbotAI* botAI) { return new IllidanStormrageNerfShadowDemonCheatAction(botAI); }
+    static Action* illidan_stormrage_handle_adds_cheat(
+        PlayerbotAI* botAI) { return new IllidanStormrageHandleAddsCheatAction(botAI); }
 };
 
 #endif

@@ -208,8 +208,8 @@ public:
         creators["illidan stormrage need to clear hazards between phases"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_need_to_clear_hazards_between_phases;
 
-        creators["illidan stormrage shadow demon cheat"] =
-            &RaidBlackTempleTriggerContext::illidan_stormrage_shadow_demon_cheat;
+        creators["illidan stormrage cheat"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_cheat;
     }
 
 private:
@@ -407,8 +407,8 @@ private:
     static Trigger* illidan_stormrage_need_to_clear_hazards_between_phases(
         PlayerbotAI* botAI) { return new IllidanStormrageNeedToClearHazardsBetweenPhasesTrigger(botAI); }
 
-    static Trigger* illidan_stormrage_shadow_demon_cheat(
-        PlayerbotAI* botAI) { return new IllidanStormrageShadowDemonCheatTrigger(botAI); }
+    static Trigger* illidan_stormrage_cheat(
+        PlayerbotAI* botAI) { return new IllidanStormrageCheatTrigger(botAI); }
 };
 
 #endif

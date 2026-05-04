@@ -564,11 +564,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class IllidanStormrageNerfShadowDemonCheatAction : public Action
+class IllidanStormrageHandleAddsCheatAction : public Action
 {
 public:
-    IllidanStormrageNerfShadowDemonCheatAction(
-        PlayerbotAI* botAI) : Action(botAI, "illidan stormrage nerf shadow demon") {}
+    IllidanStormrageHandleAddsCheatAction(
+        PlayerbotAI* botAI) : Action(botAI, "illidan stormrage handle adds cheat") {}
     bool Execute(Event event) override;
 };
 

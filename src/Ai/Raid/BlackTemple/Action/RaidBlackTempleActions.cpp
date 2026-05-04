@@ -2926,23 +2926,41 @@ bool IllidanStormrageDestroyHazardsAction::Execute(Event /*event*/)
     return false;
 }
 
-// Reduce Shadow Demon to 25% health
-bool IllidanStormrageNerfShadowDemonCheatAction::Execute(Event /*event*/)
+// Reduce Shadow Demon to 25% health and kill residual Shadowfiends in Phase 2
+bool IllidanStormrageHandleAddsCheatAction::Execute(Event /*event*/)
 {
-    constexpr float searchRadius = 75.0f;
-    Unit* shadowDemon = bot->FindNearestCreature(
-        static_cast<uint32>(BlackTempleNpcs::NPC_SHADOW_DEMON), searchRadius, true);
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    if (!illidan)
+        return false;
 
-    if (shadowDemon && shadowDemon->GetHealthPct() > 25.0f)
+    if (GetIllidanPhase(illidan) == 2)
     {
-        uint32 desiredDamage = 0;
-        const uint32 quarterHealth = shadowDemon->GetMaxHealth() / 4;
-        if (shadowDemon->GetHealth() > quarterHealth)
-            desiredDamage = shadowDemon->GetHealth() - quarterHealth;
+        constexpr float searchRadius = 20.0f;
+        if (Unit* shadowfiend = bot->FindNearestCreature(
+                static_cast<uint32>(BlackTempleNpcs::NPC_PARASITIC_SHADOWFIEND),
+                searchRadius, true))
+        {
+            shadowfiend->Kill(bot, shadowfiend);
+            return true;
+        }
+    }
+    else
+    {
+        constexpr float searchRadius = 75.0f;
+        Unit* shadowDemon = bot->FindNearestCreature(
+            static_cast<uint32>(BlackTempleNpcs::NPC_SHADOW_DEMON), searchRadius, true);
 
-        Unit::DealDamage(bot, shadowDemon, desiredDamage, nullptr, DIRECT_DAMAGE,
-                         SPELL_SCHOOL_MASK_NORMAL, nullptr, false, false, nullptr);
-        return true;
+        if (shadowDemon && shadowDemon->GetHealthPct() > 25.0f)
+        {
+            uint32 desiredDamage = 0;
+            const uint32 quarterHealth = shadowDemon->GetMaxHealth() / 4;
+            if (shadowDemon->GetHealth() > quarterHealth)
+                desiredDamage = shadowDemon->GetHealth() - quarterHealth;
+
+            Unit::DealDamage(bot, shadowDemon, desiredDamage, nullptr, DIRECT_DAMAGE,
+                            SPELL_SCHOOL_MASK_NORMAL, nullptr, false, false, nullptr);
+            return true;
+        }
     }
 
     return false;
