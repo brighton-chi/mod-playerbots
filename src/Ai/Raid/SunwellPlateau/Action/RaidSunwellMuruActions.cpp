@@ -549,11 +549,11 @@ bool MuruTanksGetThatSentinelOutOfHereAction::Execute(Event /*event*/)
     {
         const float distToPosition = bot->GetExactDist2d(tankPosition->GetPositionX(),
                                                          tankPosition->GetPositionY());
-        if (distToPosition > 3.0f)
+        if (distToPosition > 2.0f)
         {
             const float dX = tankPosition->GetPositionX() - bot->GetPositionX();
             const float dY = tankPosition->GetPositionY() - bot->GetPositionY();
-            const float moveDist = std::min(5.0f, distToPosition);
+            const float moveDist = std::min(3.0f, distToPosition);
             const float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
             const float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 

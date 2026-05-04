@@ -41,16 +41,39 @@ namespace
         for (ObjectGuid const& guid : units)
         {
             Unit* unit = botAI->GetUnit(guid);
-            if (!unit || !unit->IsAlive() ||
-                unit->GetEntry() != static_cast<uint32>(SunwellNpcs::NPC_DARK_FIEND))
-            {
+            if (!unit || unit->GetEntry() != static_cast<uint32>(SunwellNpcs::NPC_DARK_FIEND))
                 continue;
-            }
 
             darkFiendGuids.push_back(unit->GetGUID());
         }
 
         return darkFiendGuids;
+    }
+
+    std::vector<ObjectGuid> GetFarFromMuruStackTargetGuids(PlayerbotAI* botAI)
+    {
+        std::vector<ObjectGuid> farTargetGuids;
+        auto const& units =
+            botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
+
+        constexpr float maxTankTargetDistanceFromStack = 25.0f;
+        for (ObjectGuid const& guid : units)
+        {
+            Unit* unit = botAI->GetUnit(guid);
+            if (!unit || unit->GetEntry() == static_cast<uint32>(SunwellNpcs::NPC_VOID_SENTINEL))
+                continue;
+
+            if (unit->GetExactDist2d(
+                    MURU_STACK_POSITION.GetPositionX(),
+                    MURU_STACK_POSITION.GetPositionY()) <= maxTankTargetDistanceFromStack)
+            {
+                continue;
+            }
+
+            farTargetGuids.push_back(unit->GetGUID());
+        }
+
+        return farTargetGuids;
     }
 
     void SyncTargetValueExclusions(
@@ -604,12 +627,16 @@ float MuruExcludeEnemiesFromTankTargetValueMultiplier::GetValue(Action* action)
 
         SyncTargetValueExclusions(
             botAI, TargetValueExclusionType::Tank, ignoredDarkFiendGuids, {});
+        SyncTargetValueExclusions(
+            botAI, TargetValueExclusionType::Tank, ignoredFarTargetGuids, {});
 
         return 1.0f;
     }
 
     Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
     std::vector<ObjectGuid> darkFiendGuids = GetActiveDarkFiendGuids(botAI);
+    std::vector<ObjectGuid> farTargetGuids = muru ? GetFarFromMuruStackTargetGuids(botAI) :
+        std::vector<ObjectGuid>{};
     ObjectGuid desiredGuid = muru ? muru->GetGUID() : ObjectGuid::Empty;
 
     if (!desiredGuid)
@@ -622,6 +649,8 @@ float MuruExcludeEnemiesFromTankTargetValueMultiplier::GetValue(Action* action)
 
         SyncTargetValueExclusions(
             botAI, TargetValueExclusionType::Tank, ignoredDarkFiendGuids, darkFiendGuids);
+        SyncTargetValueExclusions(
+            botAI, TargetValueExclusionType::Tank, ignoredFarTargetGuids, {});
 
         return 1.0f;
     }
@@ -636,6 +665,8 @@ float MuruExcludeEnemiesFromTankTargetValueMultiplier::GetValue(Action* action)
     ignoredMuruGuid = desiredGuid;
     SyncTargetValueExclusions(
         botAI, TargetValueExclusionType::Tank, ignoredDarkFiendGuids, darkFiendGuids);
+    SyncTargetValueExclusions(
+        botAI, TargetValueExclusionType::Tank, ignoredFarTargetGuids, farTargetGuids);
 
     return 1.0f;
 }

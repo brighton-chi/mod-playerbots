@@ -207,6 +207,7 @@ public:
 private:
     ObjectGuid ignoredMuruGuid = ObjectGuid::Empty;
     std::vector<ObjectGuid> ignoredDarkFiendGuids;
+    std::vector<ObjectGuid> ignoredFarTargetGuids;
 };
 
 class MuruExcludeEnemiesFromDpsTargetValueMultiplier : public Multiplier
