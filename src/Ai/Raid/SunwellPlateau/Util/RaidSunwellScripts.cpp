@@ -216,6 +216,29 @@ static void RequestInterruptForBotsWithDelayedEredarTwinsConflagration(Creature*
     }
 }
 
+static void TrackIncomingEredarTwinsConflagration(Creature* alythess)
+{
+    if (!alythess)
+        return;
+
+    Spell* currentSpell = alythess->GetCurrentSpell(CURRENT_GENERIC_SPELL);
+    if (!currentSpell || !currentSpell->m_spellInfo ||
+        currentSpell->m_spellInfo->Id != static_cast<uint32>(SunwellSpells::SPELL_CONFLAGRATION))
+    {
+        return;
+    }
+
+    Player* target = currentSpell->m_targets.GetUnitTarget() ?
+        currentSpell->m_targets.GetUnitTarget()->ToPlayer() : nullptr;
+    if (!target)
+        return;
+
+    if (!FindFirstSunwellCombatBotInGroup(target))
+        return;
+
+    RecordEredarTwinsIncomingConflagrationTarget(target);
+}
+
 class KalecgosSpellListenerScript : public AllSpellScript
 {
 public:
@@ -446,6 +469,7 @@ public:
                 RequestInterruptForBotsWithDelayedFelmystEncapsulate(creature);
                 break;
             case static_cast<uint32>(SunwellNpcs::NPC_GRAND_WARLOCK_ALYTHESS):
+                TrackIncomingEredarTwinsConflagration(creature);
                 RequestInterruptForBotsWithDelayedEredarTwinsConflagration(creature);
                 break;
             default:

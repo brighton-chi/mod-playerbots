@@ -25,8 +25,11 @@ constexpr float EREDAR_TWINS_BALCONY_Z = 50.0f;
 struct EredarTwinsIncomingConflagrationState
 {
 	ObjectGuid targetGuid = ObjectGuid::Empty;
+	uint32 delayMs = 0;
 	uint32 expireMs = 0;
 };
+
+constexpr uint32 EREDAR_TWINS_INCOMING_CONFLAGRATION_DELAY_MS = 500;
 
 extern const Position SACROLASH_TANK_POSITION;
 extern const std::array<Position, 5> ALYTHESS_TANK_POSITIONS;

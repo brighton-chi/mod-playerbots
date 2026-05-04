@@ -131,10 +131,15 @@ void RecordEredarTwinsIncomingConflagrationTarget(Player* target, uint32 duratio
     if (!target || !durationMs)
         return;
 
+    const uint32 now = getMSTime();
     EredarTwinsIncomingConflagrationState& state =
         eredarTwinsIncomingConflagrationStates[target->GetInstanceId()];
+
+    if (state.targetGuid != target->GetGUID())
+        state.delayMs = now + EREDAR_TWINS_INCOMING_CONFLAGRATION_DELAY_MS;
+
     state.targetGuid = target->GetGUID();
-    state.expireMs = getMSTime() + durationMs;
+    state.expireMs = now + durationMs;
 }
 
 bool IsEredarTwinsConflagrationTarget(Unit* alythess, Player* bot)
@@ -142,19 +147,7 @@ bool IsEredarTwinsConflagrationTarget(Unit* alythess, Player* bot)
     if (!bot)
         return false;
 
-    constexpr uint32 conflagrationSpellId = static_cast<uint32>(SunwellSpells::SPELL_CONFLAGRATION);
     auto const incomingItr = eredarTwinsIncomingConflagrationStates.find(bot->GetInstanceId());
-
-    if (alythess)
-    {
-        Spell* currentSpell = alythess->GetCurrentSpell(CURRENT_GENERIC_SPELL);
-        if (currentSpell && currentSpell->m_spellInfo &&
-            currentSpell->m_spellInfo->Id == conflagrationSpellId &&
-            currentSpell->m_targets.GetUnitTarget() == bot)
-        {
-            return true;
-        }
-    }
 
     if (incomingItr == eredarTwinsIncomingConflagrationStates.end())
         return false;
@@ -175,7 +168,7 @@ bool IsEredarTwinsConflagrationTarget(Unit* alythess, Player* bot)
         return false;
     }
 
-    return true;
+    return state.delayMs <= now;
 }
 
 }
