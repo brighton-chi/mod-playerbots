@@ -386,7 +386,7 @@ bool EredarTwinsBossesEngagedByRangedTrigger::IsActive()
     if (!alythess && !AI_VALUE2(Unit*, "find target", "lady sacrolash"))
         return false;
 
-    if (alythess && IsEredarTwinsConflagrationTarget(alythess, bot))
+    if (IsEredarTwinsConflagrationTarget(alythess, bot))
         return false;
 
     return true;
@@ -455,9 +455,6 @@ bool EredarTwinsDeterminingDpsPriorityTrigger::IsActive()
 bool EredarTwinsBotHasConflagrationTrigger::IsActive()
 {
     Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
-    if (!alythess)
-        return false;
-
     return IsEredarTwinsConflagrationTarget(alythess, bot);
 }
 

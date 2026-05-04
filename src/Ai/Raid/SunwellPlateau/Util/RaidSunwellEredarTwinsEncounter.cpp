@@ -169,7 +169,10 @@ bool IsEredarTwinsConflagrationTarget(Unit* alythess, Player* bot)
             }
 
             EredarTwinsIncomingConflagrationState const& state = incomingItr->second;
-            return state.delayMs <= now;
+            if (state.delayMs > now)
+                return false;
+
+            return true;
         }
     }
 

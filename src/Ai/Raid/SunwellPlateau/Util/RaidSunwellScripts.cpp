@@ -151,6 +151,71 @@ static void RequestInterruptForBotsNeedingFelmystFogMovement(Unit* contextUnit, 
     }
 }
 
+static void RequestInterruptForBotsWithDelayedFelmystEncapsulate(Creature* felmyst)
+{
+    if (!felmyst || felmyst->IsFlying())
+        return;
+
+    Map::PlayerList const& players = felmyst->GetMap()->GetPlayers();
+    for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
+    {
+        Player* player = it->GetSource();
+        if (!player || !player->IsAlive())
+            continue;
+
+        PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
+        if (!botAI || !botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
+            continue;
+
+        if (!player->GetCurrentSpell(CURRENT_GENERIC_SPELL) &&
+            !player->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
+        {
+            continue;
+        }
+
+        Player* encapsulateTarget = GetFelmystEncapsulateTarget(player);
+        if (!encapsulateTarget)
+            continue;
+
+        if (player != encapsulateTarget &&
+            player->GetExactDist2d(encapsulateTarget) > FELMYST_ENCAPSULATE_SAFE_DISTANCE)
+        {
+            continue;
+        }
+
+        botAI->RequestSpellInterrupt();
+    }
+}
+
+static void RequestInterruptForBotsWithDelayedEredarTwinsConflagration(Creature* alythess)
+{
+    if (!alythess)
+        return;
+
+    Map::PlayerList const& players = alythess->GetMap()->GetPlayers();
+    for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
+    {
+        Player* player = it->GetSource();
+        if (!player || !player->IsAlive())
+            continue;
+
+        PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
+        if (!botAI || !botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
+            continue;
+
+        if (!player->GetCurrentSpell(CURRENT_GENERIC_SPELL) &&
+            !player->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
+        {
+            continue;
+        }
+
+        if (!IsEredarTwinsConflagrationTarget(alythess, player))
+            continue;
+
+        botAI->RequestSpellInterrupt();
+    }
+}
+
 class KalecgosSpellListenerScript : public AllSpellScript
 {
 public:
@@ -215,7 +280,6 @@ public:
                 return;
 
             RecordFelmystIncomingEncapsulateTarget(target);
-            RequestInterruptForBotsNear(target, FELMYST_ENCAPSULATE_SAFE_DISTANCE);
         }
     }
 
@@ -272,7 +336,6 @@ public:
                     return;
 
                 RecordFelmystIncomingEncapsulateTarget(target);
-                RequestInterruptForBotsNear(target, FELMYST_ENCAPSULATE_SAFE_DISTANCE);
                 break;
             case static_cast<uint32>(SunwellSpells::SPELL_SUMMON_DEMONIC_VAPOR):
                 if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(target);
@@ -312,12 +375,6 @@ public:
             return;
 
         RecordEredarTwinsIncomingConflagrationTarget(target);
-
-        if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(target);
-            botAI && botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
-        {
-            botAI->RequestSpellInterrupt();
-        }
     }
 };
 
@@ -373,6 +430,30 @@ public:
     }
 };
 
+class SunwellDelayedInterruptScript : public AllCreatureScript
+{
+public:
+    SunwellDelayedInterruptScript() : AllCreatureScript("SunwellDelayedInterruptScript") { }
+
+    void OnAllCreatureUpdate(Creature* creature, uint32 /*diff*/) override
+    {
+        if (!creature)
+            return;
+
+        switch (creature->GetEntry())
+        {
+            case static_cast<uint32>(SunwellNpcs::NPC_FELMYST):
+                RequestInterruptForBotsWithDelayedFelmystEncapsulate(creature);
+                break;
+            case static_cast<uint32>(SunwellNpcs::NPC_GRAND_WARLOCK_ALYTHESS):
+                RequestInterruptForBotsWithDelayedEredarTwinsConflagration(creature);
+                break;
+            default:
+                break;
+        }
+    }
+};
+
 class KiljaedenSpellListenerScript : public AllSpellScript
 {
 public:
@@ -413,6 +494,7 @@ void AddSC_SunwellPlateauBotScripts()
     new KalecgosSpellListenerScript();
     new FelmystSpellListenerScript();
     new EredarTwinsSpellListenerScript();
+    new SunwellDelayedInterruptScript();
     new KiljaedenArmageddonTargetTrackerScript();
     new KiljaedenSpellListenerScript();
 }
