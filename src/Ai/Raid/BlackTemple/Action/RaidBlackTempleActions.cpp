@@ -345,8 +345,8 @@ bool SupremusKiteBossAction::Execute(Event /*event*/)
     if (!supremus)
         return false;
 
-    const float currentDistance = bot->GetDistance2d(supremus);
     constexpr float safeDistance = 25.0f;
+    const float currentDistance = bot->GetDistance2d(supremus);
     if (currentDistance < safeDistance)
         return MoveAway(supremus, safeDistance - currentDistance);
 
@@ -2011,7 +2011,7 @@ bool IllidanStormrageIsolateBotWithParasiteAction::Execute(Event /*event*/)
         constexpr float safeDistance = 15.0f;
         if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
         {
-            float currentDistance = bot->GetExactDist2d(nearestPlayer);
+            const float currentDistance = bot->GetExactDist2d(nearestPlayer);
             if (currentDistance < safeDistance)
                 return MoveAway(nearestPlayer, safeDistance - currentDistance);
         }
@@ -2430,8 +2430,8 @@ bool IllidanStormrageMoveAwayFromLandingPointAction::Execute(Event /*event*/)
     if (!illidan)
         return false;
 
-    const float currentDistance = bot->GetExactDist2d(illidan);
     constexpr float safeDistance = 20.0f;
+    const float currentDistance = bot->GetExactDist2d(illidan);
     if (currentDistance < safeDistance)
         return MoveAway(illidan, safeDistance - currentDistance);
 
@@ -2594,8 +2594,8 @@ bool IllidanStormrageDisperseRangedAction::SpreadInCircleInDemonPhase(
         }
         else
         {
-            float currentDistFromTank = bot->GetExactDist2d(warlockTank);
             constexpr float safeDistFromTank = 25.0f;
+            const float currentDistFromTank = bot->GetExactDist2d(warlockTank);
             if (currentDistFromTank < safeDistFromTank)
                 return MoveAway(warlockTank, safeDistFromTank - currentDistFromTank);
         }
@@ -2646,8 +2646,8 @@ bool IllidanStormrageMeleeGoSomewhereToNotDieAction::Execute(Event /*event*/)
 
     if (Player* warlockTank = GetIllidanWarlockTank(bot))
     {
-        const float currentDistFromTank = bot->GetExactDist2d(warlockTank);
         constexpr float safeDistFromTank = 25.0f;
+        const float currentDistFromTank = bot->GetExactDist2d(warlockTank);
         if (currentDistFromTank < safeDistFromTank)
             MoveAway(warlockTank, safeDistFromTank - currentDistFromTank);
     }
