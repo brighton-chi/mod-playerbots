@@ -363,8 +363,8 @@ bool EredarTwinsConflagratedBotMoveFromGroupAction::Execute(Event /*event*/)
         if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
         {
             return MoveTo(SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-                        position.GetPositionZ(), false, false, false, false,
-                        MovementPriority::MOVEMENT_FORCED, true, false);
+                          position.GetPositionZ(), false, false, false, false,
+                          MovementPriority::MOVEMENT_FORCED, true, false);
         }
     }
     else
@@ -374,7 +374,7 @@ bool EredarTwinsConflagratedBotMoveFromGroupAction::Execute(Event /*event*/)
         {
             const float distanceToPlayer = bot->GetExactDist2d(nearestPlayer);
             if (distanceToPlayer < safeDistance)
-                return MoveAway(nearestPlayer->GetPosition(), safeDistance - distanceToPlayer);
+                return MoveAway(nearestPlayer, safeDistance - distanceToPlayer);
         }
     }
 
