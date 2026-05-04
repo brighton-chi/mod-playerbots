@@ -148,7 +148,7 @@ bool IsEredarTwinsConflagrationTarget(Unit* alythess, Player* bot)
         return false;
 
     constexpr uint32 conflagrationSpellId = static_cast<uint32>(SunwellSpells::SPELL_CONFLAGRATION);
-    auto const incomingItr = eredarTwinsIncomingConflagrationStates.find(bot->GetInstanceId());
+    auto incomingItr = eredarTwinsIncomingConflagrationStates.find(bot->GetInstanceId());
     const uint32 now = getMSTime();
 
     if (alythess)
@@ -158,19 +158,17 @@ bool IsEredarTwinsConflagrationTarget(Unit* alythess, Player* bot)
             currentSpell->m_spellInfo->Id == conflagrationSpellId &&
             currentSpell->m_targets.GetUnitTarget() == bot)
         {
-            if (incomingItr == eredarTwinsIncomingConflagrationStates.end())
-                return false;
-
-            EredarTwinsIncomingConflagrationState const& state = incomingItr->second;
-            if (state.targetGuid != bot->GetGUID())
-                return false;
-
-            if (state.expireMs <= now)
+            if (incomingItr == eredarTwinsIncomingConflagrationStates.end() ||
+                incomingItr->second.targetGuid != bot->GetGUID() ||
+                incomingItr->second.expireMs <= now)
             {
-                eredarTwinsIncomingConflagrationStates.erase(incomingItr);
-                return false;
+                RecordEredarTwinsIncomingConflagrationTarget(bot);
+                incomingItr = eredarTwinsIncomingConflagrationStates.find(bot->GetInstanceId());
+                if (incomingItr == eredarTwinsIncomingConflagrationStates.end())
+                    return false;
             }
 
+            EredarTwinsIncomingConflagrationState const& state = incomingItr->second;
             return state.delayMs <= now;
         }
     }
