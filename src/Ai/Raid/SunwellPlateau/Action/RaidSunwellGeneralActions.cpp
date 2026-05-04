@@ -78,6 +78,9 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
 
         if (felmystDemonicVaporWaypointIndices.erase(instanceId) > 0)
             erased = true;
+
+        if (felmystDemonicVaporFirstPathIndices.erase(instanceId) > 0)
+            erased = true;
     }
 
     if (!AI_VALUE2(Unit*, "find target", "grand warlock alythess"))

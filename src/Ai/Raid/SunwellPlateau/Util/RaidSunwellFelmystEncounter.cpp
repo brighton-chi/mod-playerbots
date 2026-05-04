@@ -105,11 +105,57 @@ std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
 std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
     felmystDemonicVaporWaypointIndices;
 
+std::unordered_map<uint32, uint8>
+    felmystDemonicVaporFirstPathIndices;
+
 std::unordered_map<uint32, FelmystFogOfCorruptionState>
     felmystFogOfCorruptionStates;
 
 std::unordered_map<uint32, FelmystIncomingEncapsulateState>
     felmystIncomingEncapsulateStates;
+
+void ResetFelmystDemonicVaporFlightState(uint32 instanceId)
+{
+    felmystDemonicVaporPathIndices.erase(instanceId);
+    felmystDemonicVaporWaypointIndices.erase(instanceId);
+    felmystDemonicVaporFirstPathIndices.erase(instanceId);
+}
+
+Creature* GetTrackedFelmyst(Player* bot)
+{
+    if (!bot)
+        return nullptr;
+
+    constexpr float searchRadius = 250.0f;
+    std::list<Creature*> felmysts;
+    bot->GetCreatureListWithEntryInGrid(
+        felmysts, static_cast<uint32>(SunwellNpcs::NPC_FELMYST), searchRadius);
+
+    Creature* nearestFelmyst = nullptr;
+    float nearestDistance = std::numeric_limits<float>::max();
+
+    for (Creature* felmyst : felmysts)
+    {
+        if (!felmyst || !felmyst->IsAlive())
+            continue;
+
+        const float distance = bot->GetDistance2d(felmyst);
+        if (distance < nearestDistance)
+        {
+            nearestFelmyst = felmyst;
+            nearestDistance = distance;
+        }
+    }
+
+    return nearestFelmyst;
+}
+
+void ResetFelmystDemonicVaporFlightStateIfGrounded(Player* bot)
+{
+    Creature* felmyst = GetTrackedFelmyst(bot);
+    if (!felmyst || !felmyst->IsFlying())
+        ResetFelmystDemonicVaporFlightState(bot->GetInstanceId());
+}
 
 bool TryGetFelmystGroundStackCenter(
     PlayerbotAI* botAI, Player* bot, Unit* felmyst, FelmystGroundStack stack,
@@ -473,29 +519,8 @@ void ClearFelmystDemonicVaporKiteState(Player* bot)
         if (waypointInstanceItr->second.empty())
             felmystDemonicVaporWaypointIndices.erase(waypointInstanceItr);
     }
-}
 
-float GetDistanceToSegment2d(
-    float pointX, float pointY, Position const& start, Position const& end)
-{
-    const float startX = start.GetPositionX();
-    const float startY = start.GetPositionY();
-    const float endX = end.GetPositionX();
-    const float endY = end.GetPositionY();
-    const float deltaX = endX - startX;
-    const float deltaY = endY - startY;
-    const float segmentLengthSquared = deltaX * deltaX + deltaY * deltaY;
-
-    if (segmentLengthSquared <= 0.0f)
-        return std::hypot(pointX - startX, pointY - startY);
-
-    float projection = ((pointX - startX) * deltaX + (pointY - startY) * deltaY) /
-        segmentLengthSquared;
-    projection = std::clamp(projection, 0.0f, 1.0f);
-
-    const float closestX = startX + projection * deltaX;
-    const float closestY = startY + projection * deltaY;
-    return std::hypot(pointX - closestX, pointY - closestY);
+    ResetFelmystDemonicVaporFlightStateIfGrounded(bot);
 }
 
 Position const& GetFelmystMainTankGroundPosition(Player* player)
@@ -518,48 +543,6 @@ Position const& GetFelmystMainTankGroundPosition(Player* player)
     }
 
     return *bestPosition;
-}
-
-float GetDistanceToFelmystDemonicVaporPath(
-    float pointX, float pointY, uint8 pathIndex)
-{
-    if (pathIndex >= FELMYST_DEMONIC_VAPOR_KITE_PATHS.size())
-        return std::numeric_limits<float>::max();
-
-    float bestDistance = std::numeric_limits<float>::max();
-    auto const& path = FELMYST_DEMONIC_VAPOR_KITE_PATHS[pathIndex];
-    for (uint8 waypointIndex = 0; waypointIndex < path.size(); ++waypointIndex)
-    {
-        Position const& start = path[waypointIndex];
-        Position const& end = path[(waypointIndex + 1) % path.size()];
-        const float segmentDistance =
-            GetDistanceToSegment2d(pointX, pointY, start, end);
-        if (segmentDistance < bestDistance)
-            bestDistance = segmentDistance;
-    }
-
-    return bestDistance;
-}
-
-uint8 GetNearestFelmystDemonicVaporPathIndex(float pointX, float pointY)
-{
-    uint8 bestPathIndex = 0;
-    float bestDistance = std::numeric_limits<float>::max();
-
-    for (uint8 pathIndex = 0;
-         pathIndex < FELMYST_DEMONIC_VAPOR_KITE_PATHS.size();
-         ++pathIndex)
-    {
-        const float pathDistance =
-            GetDistanceToFelmystDemonicVaporPath(pointX, pointY, pathIndex);
-        if (pathDistance < bestDistance)
-        {
-            bestDistance = pathDistance;
-            bestPathIndex = pathIndex;
-        }
-    }
-
-    return bestPathIndex;
 }
 
 uint8 GetNearestFelmystDemonicVaporWaypointIndex(Player* bot, uint8 pathIndex)
@@ -619,82 +602,22 @@ uint8 GetNextFelmystDemonicVaporWaypointIndex(
     return waypointIndex;
 }
 
-std::array<uint32, FELMYST_DEMONIC_VAPOR_KITE_PATHS.size()>
-GetFelmystDemonicVaporPathOccupancyCounts(Player* bot)
-{
-    std::array<uint32, FELMYST_DEMONIC_VAPOR_KITE_PATHS.size()> occupancyCounts = {};
-    auto const pathInstanceItr =
-        felmystDemonicVaporPathIndices.find(bot->GetInstanceId());
-    if (pathInstanceItr != felmystDemonicVaporPathIndices.end())
-    {
-        Group* group = bot->GetGroup();
-        if (group)
-        {
-            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-            {
-                Player* member = ref->GetSource();
-                if (!member || member == bot)
-                    continue;
-
-                auto const memberPathItr =
-                    pathInstanceItr->second.find(member->GetGUID());
-                if (memberPathItr == pathInstanceItr->second.end())
-                    continue;
-
-                if (!GetFelmystDemonicVaporSummonedByBot(member))
-                    continue;
-
-                if (memberPathItr->second < occupancyCounts.size())
-                    ++occupancyCounts[memberPathItr->second];
-            }
-        }
-    }
-
-    auto const addHazardsOnPath = [&](uint32 entry)
-    {
-        constexpr float searchRadius = 150.0f;
-        constexpr float pathOccupationDistance = 18.0f;
-        std::list<Creature*> creatures;
-        bot->GetCreatureListWithEntryInGrid(creatures, entry, searchRadius);
-        for (Creature* creature : creatures)
-        {
-            if (!creature || !creature->IsAlive())
-                continue;
-
-            if (entry == static_cast<uint32>(SunwellNpcs::NPC_DEMONIC_VAPOR) &&
-                creature->GetSummonerGUID() == bot->GetGUID())
-            {
-                continue;
-            }
-
-            uint8 pathIndex = GetNearestFelmystDemonicVaporPathIndex(
-                creature->GetPositionX(), creature->GetPositionY());
-            const float pathDistance = GetDistanceToFelmystDemonicVaporPath(
-                creature->GetPositionX(), creature->GetPositionY(), pathIndex);
-            if (pathDistance <= pathOccupationDistance)
-                ++occupancyCounts[pathIndex];
-        }
-    };
-
-    addHazardsOnPath(static_cast<uint32>(SunwellNpcs::NPC_DEMONIC_VAPOR));
-    addHazardsOnPath(static_cast<uint32>(SunwellNpcs::NPC_DEMONIC_VAPOR_TRAIL));
-
-    return occupancyCounts;
-}
-
 uint8 SelectFelmystDemonicVaporPath(Player* bot)
 {
-    std::array<uint32, FELMYST_DEMONIC_VAPOR_KITE_PATHS.size()> occupancyCounts =
-        GetFelmystDemonicVaporPathOccupancyCounts(bot);
     uint8 bestPathIndex = 0;
-    uint32 bestOccupancy = std::numeric_limits<uint32>::max();
     float bestStartDistance = std::numeric_limits<float>::max();
+    auto const firstPathItr =
+        felmystDemonicVaporFirstPathIndices.find(bot->GetInstanceId());
+    const bool excludeFirstPath =
+        firstPathItr != felmystDemonicVaporFirstPathIndices.end();
+    const uint8 excludedPathIndex =
+        excludeFirstPath ? firstPathItr->second : std::numeric_limits<uint8>::max();
 
     for (uint8 pathIndex = 0;
          pathIndex < FELMYST_DEMONIC_VAPOR_KITE_PATHS.size();
          ++pathIndex)
     {
-        if (occupancyCounts[pathIndex] != 0)
+        if (excludeFirstPath && pathIndex == excludedPathIndex)
             continue;
 
         const float startDistance =
@@ -709,29 +632,15 @@ uint8 SelectFelmystDemonicVaporPath(Player* bot)
     if (bestStartDistance != std::numeric_limits<float>::max())
         return bestPathIndex;
 
-    for (uint8 pathIndex = 0;
-         pathIndex < FELMYST_DEMONIC_VAPOR_KITE_PATHS.size();
-         ++pathIndex)
-    {
-        const float startDistance =
-            GetDistanceToFelmystDemonicVaporPathStart(bot, pathIndex);
-        if (occupancyCounts[pathIndex] < bestOccupancy ||
-            (occupancyCounts[pathIndex] == bestOccupancy &&
-             startDistance < bestStartDistance))
-        {
-            bestPathIndex = pathIndex;
-            bestOccupancy = occupancyCounts[pathIndex];
-            bestStartDistance = startDistance;
-        }
-    }
-
-    return bestPathIndex;
+    return excludedPathIndex;
 }
 
 bool TryGetFelmystDemonicVaporKiteDestination(Player* bot, Position& destination)
 {
     const uint32 instanceId = bot->GetInstanceId();
     const ObjectGuid guid = bot->GetGUID();
+
+    ResetFelmystDemonicVaporFlightStateIfGrounded(bot);
 
     if (!GetFelmystDemonicVaporSummonedByBot(bot))
     {
@@ -750,6 +659,8 @@ bool TryGetFelmystDemonicVaporKiteDestination(Player* bot, Position& destination
     {
         pathIndex = SelectFelmystDemonicVaporPath(bot);
         pathIndices[guid] = pathIndex;
+
+        felmystDemonicVaporFirstPathIndices.try_emplace(instanceId, pathIndex);
     }
     else
     {
@@ -787,6 +698,7 @@ bool TryGetFelmystFogOfCorruptionStageState(
     const uint32 instanceId = felmyst->GetInstanceId();
     if (!felmyst->IsFlying())
     {
+        ResetFelmystDemonicVaporFlightState(instanceId);
         felmystFogOfCorruptionStates.erase(instanceId);
         return false;
     }
