@@ -197,31 +197,6 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class MuruExcludeEnemiesFromTankTargetValueMultiplier : public Multiplier
-{
-public:
-    MuruExcludeEnemiesFromTankTargetValueMultiplier(PlayerbotAI* botAI) : Multiplier(
-        botAI, "m'uru exclude enemies from tank target value") {}
-    virtual float GetValue(Action* action);
-
-private:
-    ObjectGuid ignoredMuruGuid = ObjectGuid::Empty;
-    std::vector<ObjectGuid> ignoredDarkFiendGuids;
-    std::vector<ObjectGuid> ignoredFarTargetGuids;
-};
-
-class MuruExcludeEnemiesFromDpsTargetValueMultiplier : public Multiplier
-{
-public:
-    MuruExcludeEnemiesFromDpsTargetValueMultiplier(PlayerbotAI* botAI) : Multiplier(
-        botAI, "m'uru exclude enemies from dps target value during darkness") {}
-    virtual float GetValue(Action* action);
-
-private:
-    ObjectGuid ignoredMuruGuid = ObjectGuid::Empty;
-    std::vector<ObjectGuid> ignoredDarkFiendGuids;
-};
-
 class MuruControlMisdirectionMultiplier : public Multiplier
 {
 public:
@@ -255,17 +230,6 @@ public:
 };
 
 // Kil'jaeden <The Deceiver>
-
-class KiljaedenExcludeShieldOrbsFromTankTargetValueMultiplier : public Multiplier
-{
-public:
-    KiljaedenExcludeShieldOrbsFromTankTargetValueMultiplier(PlayerbotAI* botAI) : Multiplier(
-        botAI, "kil'jaeden exclude shield orbs from tank target value") {}
-    virtual float GetValue(Action* action);
-
-private:
-    std::vector<ObjectGuid> ignoredShieldOrbGuids;
-};
 
 class KiljaedenControlMovementAndTargetingMultiplier : public Multiplier
 {

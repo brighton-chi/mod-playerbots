@@ -4,7 +4,116 @@
  */
 
 #include "RaidSunwellStrategy.h"
+
+#include "AiObjectContext.h"
+#include "PlayerbotAI.h"
+#include "RaidSunwellMuruEncounter.h"
 #include "RaidSunwellMultipliers.h"
+
+namespace
+{
+using namespace SunwellHelpers;
+
+void AppendSunwellDarkFiendExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
+{
+    for (ObjectGuid const guid : botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->Get())
+    {
+        Unit* attacker = botAI->GetUnit(guid);
+        if (!attacker)
+            continue;
+
+        if (attacker->GetEntry() == static_cast<uint32>(SunwellNpcs::NPC_DARK_FIEND))
+            exclusions.insert(guid);
+    }
+}
+
+void AppendMuruTankExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
+{
+    Unit* muru = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "m'uru")->Get();
+    if (!muru || muru->GetHealth() <= 1)
+        return;
+
+    constexpr float maxTankTargetDistanceFromStack = 25.0f;
+    const bool skipFarTargetExclusions =
+        botAI->IsAssistTankOfIndex(botAI->GetBot(), 0, true) &&
+        TryGetMuruDarknessActiveState(botAI->GetBot(), muru);
+
+    for (ObjectGuid const guid : botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->Get())
+    {
+        Unit* attacker = botAI->GetUnit(guid);
+        if (!attacker)
+            continue;
+
+        if (attacker->GetEntry() == static_cast<uint32>(SunwellNpcs::NPC_VOID_SENTINEL))
+            continue;
+
+        if (guid == muru->GetGUID())
+        {
+            exclusions.insert(guid);
+            continue;
+        }
+
+        if (skipFarTargetExclusions)
+            continue;
+
+        if (attacker->GetExactDist2d(MURU_STACK_POSITION.GetPositionX(), MURU_STACK_POSITION.GetPositionY()) >
+            maxTankTargetDistanceFromStack)
+        {
+            exclusions.insert(guid);
+        }
+    }
+}
+
+void AppendMuruDpsExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
+{
+    if (!botAI->IsMelee(botAI->GetBot()))
+        return;
+
+    Unit* muru = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "m'uru")->Get();
+    if (!muru || muru->GetHealth() <= 1)
+        return;
+
+    if (TryGetMuruDarknessActiveState(botAI->GetBot(), muru))
+        exclusions.insert(muru->GetGUID());
+}
+
+void AppendKiljaedenMeleeExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
+{
+    if (!botAI->IsMelee(botAI->GetBot()))
+        return;
+
+    if (!botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "kil'jaeden")->Get())
+        return;
+
+    for (ObjectGuid const guid : botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->Get())
+    {
+        Unit* attacker = botAI->GetUnit(guid);
+        if (!attacker)
+            continue;
+
+        if (attacker->GetEntry() == static_cast<uint32>(SunwellNpcs::NPC_SHIELD_ORB))
+            exclusions.insert(guid);
+    }
+}
+}
+
+void RaidSunwellStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExclusionType type) const
+{
+    AppendSunwellDarkFiendExclusions(botAI, exclusions);
+    AppendKiljaedenMeleeExclusions(botAI, exclusions);
+
+    switch (type)
+    {
+        case TargetValueExclusionType::Tank:
+            AppendMuruTankExclusions(botAI, exclusions);
+            break;
+        case TargetValueExclusionType::Dps:
+            AppendMuruDpsExclusions(botAI, exclusions);
+            break;
+        case TargetValueExclusionType::None:
+            break;
+    }
+}
 
 void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
@@ -215,15 +324,12 @@ void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 
     // M'uru
     multipliers.push_back(new MuruDisableDefaultTargetingMultiplier(botAI));
-    multipliers.push_back(new MuruExcludeEnemiesFromTankTargetValueMultiplier(botAI));
-    multipliers.push_back(new MuruExcludeEnemiesFromDpsTargetValueMultiplier(botAI));
     multipliers.push_back(new MuruControlMovementMultiplier(botAI));
     multipliers.push_back(new MuruControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new MuruUseOnlyGroundingTotemMultiplier(botAI));
     multipliers.push_back(new MuruDelayCooldownsMultiplier(botAI));
 
     // Kil'jaeden <The Deceiver>
-    multipliers.push_back(new KiljaedenExcludeShieldOrbsFromTankTargetValueMultiplier(botAI));
     multipliers.push_back(new KiljaedenControlMovementAndTargetingMultiplier(botAI));
     multipliers.push_back(new KiljaedenPrioritizeArmageddonAvoidanceMultiplier(botAI));
     multipliers.push_back(new KiljaedenDelayCooldownsMultiplier(botAI));

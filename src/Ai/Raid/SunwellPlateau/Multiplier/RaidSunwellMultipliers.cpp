@@ -30,80 +30,6 @@
 
 using namespace SunwellHelpers;
 
-namespace
-{
-    std::vector<ObjectGuid> GetActiveDarkFiendGuids(PlayerbotAI* botAI)
-    {
-        std::vector<ObjectGuid> darkFiendGuids;
-        auto const& units =
-            botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
-
-        for (ObjectGuid const& guid : units)
-        {
-            Unit* unit = botAI->GetUnit(guid);
-            if (!unit || unit->GetEntry() != static_cast<uint32>(SunwellNpcs::NPC_DARK_FIEND))
-                continue;
-
-            darkFiendGuids.push_back(unit->GetGUID());
-        }
-
-        return darkFiendGuids;
-    }
-
-    std::vector<ObjectGuid> GetFarFromMuruStackTargetGuids(PlayerbotAI* botAI)
-    {
-        std::vector<ObjectGuid> farTargetGuids;
-        auto const& units =
-            botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
-
-        constexpr float maxTankTargetDistanceFromStack = 25.0f;
-        for (ObjectGuid const& guid : units)
-        {
-            Unit* unit = botAI->GetUnit(guid);
-            if (!unit || unit->GetEntry() == static_cast<uint32>(SunwellNpcs::NPC_VOID_SENTINEL))
-                continue;
-
-            if (unit->GetExactDist2d(
-                    MURU_STACK_POSITION.GetPositionX(),
-                    MURU_STACK_POSITION.GetPositionY()) <= maxTankTargetDistanceFromStack)
-            {
-                continue;
-            }
-
-            farTargetGuids.push_back(unit->GetGUID());
-        }
-
-        return farTargetGuids;
-    }
-
-    void SyncTargetValueExclusions(
-        PlayerbotAI* botAI, TargetValueExclusionType exclusionType,
-        std::vector<ObjectGuid>& trackedGuids, std::vector<ObjectGuid> const& desiredGuids)
-    {
-        for (auto itr = trackedGuids.begin(); itr != trackedGuids.end();)
-        {
-            if (std::find(desiredGuids.begin(), desiredGuids.end(), *itr) == desiredGuids.end())
-            {
-                botAI->RemoveTargetValueExclusion(exclusionType, *itr);
-                itr = trackedGuids.erase(itr);
-            }
-            else
-            {
-                ++itr;
-            }
-        }
-
-        for (ObjectGuid const& guid : desiredGuids)
-        {
-            if (std::find(trackedGuids.begin(), trackedGuids.end(), guid) != trackedGuids.end())
-                continue;
-
-            botAI->AddTargetValueExclusion(exclusionType, guid);
-            trackedGuids.push_back(guid);
-        }
-    }
-}
-
 static bool IsDpsCooldownAction(Action* action)
 {
     return dynamic_cast<CastHeroismAction*>(action) ||
@@ -615,112 +541,6 @@ float MuruDisableDefaultTargetingMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float MuruExcludeEnemiesFromTankTargetValueMultiplier::GetValue(Action* action)
-{
-    if (!botAI->IsTank(bot))
-    {
-        if (ignoredMuruGuid)
-        {
-            botAI->RemoveTargetValueExclusion(TargetValueExclusionType::Tank, ignoredMuruGuid);
-            ignoredMuruGuid = ObjectGuid::Empty;
-        }
-
-        SyncTargetValueExclusions(
-            botAI, TargetValueExclusionType::Tank, ignoredDarkFiendGuids, {});
-        SyncTargetValueExclusions(
-            botAI, TargetValueExclusionType::Tank, ignoredFarTargetGuids, {});
-
-        return 1.0f;
-    }
-
-    Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
-    std::vector<ObjectGuid> darkFiendGuids = GetActiveDarkFiendGuids(botAI);
-    std::vector<ObjectGuid> farTargetGuids = muru ? GetFarFromMuruStackTargetGuids(botAI) :
-        std::vector<ObjectGuid>{};
-    ObjectGuid desiredGuid = muru ? muru->GetGUID() : ObjectGuid::Empty;
-
-    if (!desiredGuid)
-    {
-        if (ignoredMuruGuid)
-        {
-            botAI->RemoveTargetValueExclusion(TargetValueExclusionType::Tank, ignoredMuruGuid);
-            ignoredMuruGuid = ObjectGuid::Empty;
-        }
-
-        SyncTargetValueExclusions(
-            botAI, TargetValueExclusionType::Tank, ignoredDarkFiendGuids, darkFiendGuids);
-        SyncTargetValueExclusions(
-            botAI, TargetValueExclusionType::Tank, ignoredFarTargetGuids, {});
-
-        return 1.0f;
-    }
-
-    if (ignoredMuruGuid && ignoredMuruGuid != desiredGuid)
-    {
-        botAI->RemoveTargetValueExclusion(TargetValueExclusionType::Tank, ignoredMuruGuid);
-        ignoredMuruGuid = ObjectGuid::Empty;
-    }
-
-    botAI->AddTargetValueExclusion(TargetValueExclusionType::Tank, desiredGuid);
-    ignoredMuruGuid = desiredGuid;
-    SyncTargetValueExclusions(
-        botAI, TargetValueExclusionType::Tank, ignoredDarkFiendGuids, darkFiendGuids);
-    SyncTargetValueExclusions(
-        botAI, TargetValueExclusionType::Tank, ignoredFarTargetGuids, farTargetGuids);
-
-    return 1.0f;
-}
-
-float MuruExcludeEnemiesFromDpsTargetValueMultiplier::GetValue(Action* action)
-{
-    if (!botAI->IsDps(bot))
-    {
-        if (ignoredMuruGuid)
-        {
-            botAI->RemoveTargetValueExclusion(TargetValueExclusionType::Dps, ignoredMuruGuid);
-            ignoredMuruGuid = ObjectGuid::Empty;
-        }
-
-        SyncTargetValueExclusions(
-            botAI, TargetValueExclusionType::Dps, ignoredDarkFiendGuids, {});
-
-        return 1.0f;
-    }
-
-    Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
-    std::vector<ObjectGuid> darkFiendGuids = GetActiveDarkFiendGuids(botAI);
-    ObjectGuid desiredGuid = ObjectGuid::Empty;
-    if (botAI->IsMelee(bot) && muru && TryGetMuruDarknessActiveState(bot, muru))
-        desiredGuid = muru->GetGUID();
-
-    if (!desiredGuid)
-    {
-        if (ignoredMuruGuid)
-        {
-            botAI->RemoveTargetValueExclusion(TargetValueExclusionType::Dps, ignoredMuruGuid);
-            ignoredMuruGuid = ObjectGuid::Empty;
-        }
-
-        SyncTargetValueExclusions(
-            botAI, TargetValueExclusionType::Dps, ignoredDarkFiendGuids, darkFiendGuids);
-
-        return 1.0f;
-    }
-
-    if (ignoredMuruGuid && ignoredMuruGuid != desiredGuid)
-    {
-        botAI->RemoveTargetValueExclusion(TargetValueExclusionType::Dps, ignoredMuruGuid);
-        ignoredMuruGuid = ObjectGuid::Empty;
-    }
-
-    botAI->AddTargetValueExclusion(TargetValueExclusionType::Dps, desiredGuid);
-    ignoredMuruGuid = desiredGuid;
-    SyncTargetValueExclusions(
-        botAI, TargetValueExclusionType::Dps, ignoredDarkFiendGuids, darkFiendGuids);
-
-    return 1.0f;
-}
-
 float MuruControlMisdirectionMultiplier::GetValue(Action* action)
 {
     if (bot->getClass() != CLASS_HUNTER ||
@@ -826,37 +646,6 @@ float MuruDelayCooldownsMultiplier::GetValue(Action* action)
 
 // Kil'jaeden <The Deceiver>
 
-float KiljaedenExcludeShieldOrbsFromTankTargetValueMultiplier::GetValue(Action* action)
-{
-    if (!botAI->IsTank(bot) || !AI_VALUE2(Unit*, "find target", "kil'jaeden"))
-    {
-        SyncTargetValueExclusions(
-            botAI, TargetValueExclusionType::Tank, ignoredShieldOrbGuids, {});
-        return 1.0f;
-    }
-
-    std::vector<ObjectGuid> shieldOrbGuids;
-    auto const& units =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
-
-    for (ObjectGuid const& guid : units)
-    {
-        Unit* unit = botAI->GetUnit(guid);
-        if (!unit || !unit->IsAlive() ||
-            unit->GetEntry() != static_cast<uint32>(SunwellNpcs::NPC_SHIELD_ORB))
-        {
-            continue;
-        }
-
-        shieldOrbGuids.push_back(unit->GetGUID());
-    }
-
-    SyncTargetValueExclusions(
-        botAI, TargetValueExclusionType::Tank, ignoredShieldOrbGuids, shieldOrbGuids);
-
-    return 1.0f;
-}
-
 float KiljaedenDelayCooldownsMultiplier::GetValue(Action* action)
 {
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
@@ -890,8 +679,7 @@ float KiljaedenControlMovementAndTargetingMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "kil'jaeden"))
         return 1.0f;
 
-    if (/* dynamic_cast<DpsAssistAction*>(action) || */
-        dynamic_cast<CastDisengageAction*>(action) ||
+    if (dynamic_cast<CastDisengageAction*>(action) ||
         dynamic_cast<CastBlinkBackAction*>(action) ||
         dynamic_cast<FleeAction*>(action) ||
         dynamic_cast<CombatFormationMoveAction*>(action))

@@ -9,6 +9,7 @@
 #include "AttackersValue.h"
 #include "Group.h"
 #include "PlayerbotAI.h"
+#include "Strategy.h"
 
 class FindTargetForTankStrategy : public FindNonCcTargetStrategy
 {

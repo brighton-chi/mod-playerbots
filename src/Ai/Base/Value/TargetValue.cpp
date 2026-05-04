@@ -11,17 +11,47 @@
 #include "Playerbots.h"
 #include "RtiTargetValue.h"
 #include "ScriptedCreature.h"
+#include "Strategy.h"
 #include "ThreatManager.h"
 
+namespace
+{
+GuidSet GatherStrategyTargetExclusions(PlayerbotAI* botAI, TargetValueExclusionType type)
+{
+    GuidSet exclusions;
+    if (!botAI || type == TargetValueExclusionType::None)
+        return exclusions;
+
+    for (auto const& strategyName : botAI->GetStrategies(BOT_STATE_COMBAT))
+    {
+        Strategy* strategy = botAI->GetStrategy(strategyName, BOT_STATE_COMBAT);
+        if (!strategy)
+            continue;
+
+        strategy->AppendTargetExclusions(exclusions, type);
+    }
+
+    return exclusions;
+}
+}
+
 Unit* FindTargetStrategy::GetResult() { return result; }
+
+TargetValueExclusionType FindTargetStrategy::GetExclusionType() const { return TargetValueExclusionType::None; }
+
+bool FindTargetStrategy::IsExcluded(Unit* attacker) const
+{
+    return attacker && botAI->IsTargetValueExcluded(GetExclusionType(), attacker->GetGUID());
+}
 
 Unit* TargetValue::FindTarget(FindTargetStrategy* strategy)
 {
     GuidVector attackers = botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->Get();
+    GuidSet const dynamicExclusions = GatherStrategyTargetExclusions(botAI, strategy->GetExclusionType());
     for (ObjectGuid const guid : attackers)
     {
         Unit* unit = botAI->GetUnit(guid);
-        if (!unit || botAI->IsTargetValueExcluded(strategy->GetExclusionType(), unit->GetGUID()))
+        if (!unit || strategy->IsExcluded(unit) || dynamicExclusions.find(guid) != dynamicExclusions.end())
             continue;
 
         ThreatManager& threatMgr = unit->GetThreatMgr();

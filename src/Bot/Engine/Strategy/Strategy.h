@@ -9,8 +9,16 @@
 #include "Action.h"
 #include "Multiplier.h"
 #include "NamedObjectContext.h"
+#include "ObjectGuid.h"
 #include "PlayerbotAIAware.h"
 #include "Trigger.h"
+
+enum class TargetValueExclusionType : uint8
+{
+    None = 0,
+    Tank,
+    Dps
+};
 
 enum StrategyType : uint32
 {
@@ -63,6 +71,10 @@ public:
     virtual std::vector<NextAction> getDefaultActions() { return {}; }
     virtual void InitTriggers([[maybe_unused]] std::vector<TriggerNode*>& triggers) {}
     virtual void InitMultipliers([[maybe_unused]] std::vector<Multiplier*>& multipliers) {}
+    virtual void AppendTargetExclusions([[maybe_unused]] GuidSet& exclusions,
+                                        [[maybe_unused]] TargetValueExclusionType type) const
+    {
+    }
     virtual std::string const getName() = 0;
     virtual uint32 GetType() const { return STRATEGY_TYPE_GENERIC; }
     virtual ActionNode* GetAction(std::string const name);

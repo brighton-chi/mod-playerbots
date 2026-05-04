@@ -13,13 +13,7 @@
 class PlayerbotAI;
 class ThreatManager;
 class Unit;
-
-enum class TargetValueExclusionType : uint8
-{
-    None = 0,
-    Tank,
-    Dps
-};
+enum class TargetValueExclusionType : uint8;
 
 class FindTargetStrategy
 {
@@ -27,7 +21,8 @@ public:
     FindTargetStrategy(PlayerbotAI* botAI) : result(nullptr), botAI(botAI) {}
 
     Unit* GetResult();
-    virtual TargetValueExclusionType GetExclusionType() const { return TargetValueExclusionType::None; }
+    virtual TargetValueExclusionType GetExclusionType() const;
+    virtual bool IsExcluded(Unit* attacker) const;
     virtual void CheckAttacker(Unit* attacker, ThreatManager* threatMgr) = 0;
     void GetPlayerCount(Unit* creature, uint32* tankCount, uint32* dpsCount);
     bool IsHighPriority(Unit* attacker);

@@ -7,6 +7,7 @@
 
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
+#include "Strategy.h"
 
 class DpsFindTargetStrategy : public FindTargetStrategy
 {
