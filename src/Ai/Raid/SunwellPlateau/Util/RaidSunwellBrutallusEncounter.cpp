@@ -22,7 +22,9 @@ static float GetBrutallusTankAngle(
     Unit* brutallus, Player* tank, float fallbackAngle);
 static float NormalizeSignedAngle(float angle);
 
-const Position BRUTALLUS_MAIN_TANK_POSITION = { 1484.779f, 582.691f, 23.460f };
+// const Position BRUTALLUS_MAIN_TANK_POSITION = { 1484.779f, 582.691f, 23.460f };
+// the above is sort of behind the crate, not good
+const Position BRUTALLUS_MAIN_TANK_POSITION = { 1483.528f, 595.346f, 23.552f };
 
 std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
     brutallusRangedAssignments;
