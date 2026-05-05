@@ -90,11 +90,9 @@ extern const Position FELMYST_E_TANK_POSITION;
 extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
     felmystRangedAssignments;
 extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
-    felmystDemonicVaporPathIndices;
-extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
-    felmystDemonicVaporWaypointIndices;
+    felmystDemonicVaporRegionIndices;
 extern std::unordered_map<uint32, uint8>
-    felmystDemonicVaporFirstPathIndices;
+    felmystDemonicVaporFirstRegionIndices;
 extern std::unordered_map<uint32, FelmystFogOfCorruptionState>
     felmystFogOfCorruptionStates;
 extern std::unordered_map<uint32, FelmystIncomingEncapsulateState>
