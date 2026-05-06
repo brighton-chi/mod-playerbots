@@ -858,9 +858,5 @@ bool IllidanStormrageCheatTrigger::IsActive()
         return false;
 
     int phase = GetIllidanPhase(illidan);
-    if (phase != 2 && phase != 4)
-        return false;
-
-    return IsMechanicTrackerBot(
-        botAI, bot, BLACK_TEMPLE_MAP_ID, GetIllidanWarlockTank(bot));
+    return phase == 2 || phase == 4;
 }

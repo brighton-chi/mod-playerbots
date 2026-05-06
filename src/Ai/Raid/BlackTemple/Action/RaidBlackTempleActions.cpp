@@ -1425,6 +1425,7 @@ bool IllidariCouncilMainTankReflectJudgementOfCommandAction::Execute(Event /*eve
     return false;
 }
 
+// Rename to something like "focus" Malande if this works
 bool IllidariCouncilFirstAssistTankPositionMalandeAction::Execute(Event /*event*/)
 {
     Unit* malande = AI_VALUE2(Unit*, "find target", "lady malande");
@@ -1444,7 +1445,7 @@ bool IllidariCouncilFirstAssistTankPositionMalandeAction::Execute(Event /*event*
     if (bot->GetVictim() != malande)
         return Attack(malande);
 
-    if (malande->GetVictim() == bot)
+    /* if (malande->GetVictim() == bot)
     {
         const Position& position = MALANDE_TANK_POSITION;
         const float distToPosition = bot->GetExactDist2d(position.GetPositionX(),
@@ -1461,7 +1462,7 @@ bool IllidariCouncilFirstAssistTankPositionMalandeAction::Execute(Event /*event*
                           false, false, false, false, MovementPriority::MOVEMENT_COMBAT,
                           true, true);
         }
-    }
+    } */
 
     return false;
 }
@@ -2025,15 +2026,10 @@ bool IllidanStormrageIsolateBotWithParasiteAction::Execute(Event /*event*/)
         const float targetY = illidan->GetPositionY() + std::sin(angle) * distBehindIllidan;
         const Position target(targetX, targetY, bot->GetPositionZ());
 
-        if (bot->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_PARASITIC_SHADOWFIEND_1)) ||
-            bot->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_PARASITIC_SHADOWFIEND_2)))
-        {
+        if (HasParasiticShadowfiend(bot))
             return InfectedBotMoveFromGroup(illidan, target);
-        }
         else if (GetIllidanTrapperHunter(bot) == bot)
-        {
             return FreezeTrapShadowfiend(bot, illidan, target);
-        }
     }
 
     return false;

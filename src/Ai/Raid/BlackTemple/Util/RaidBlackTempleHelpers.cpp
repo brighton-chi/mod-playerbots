@@ -35,14 +35,17 @@ namespace BlackTempleHelpers
         return false;
     }
 
+    // Shade of Akama
+    const Position AKAMA_CHANNELER_POSITION = { 467.851f, 401.622f, 118.538f };
+
     // Teron Gorefiend
-    const Position GOREFIEND_TANK_POSITION = { 597.653f, 402.284f, 187.090f };
-    const Position GOREFIEND_DIE_POSITION =  { 525.709f, 377.177f, 193.203f };
+    const Position GOREFIEND_TANK_POSITION  = { 597.653f, 402.284f, 187.090f };
+    const Position GOREFIEND_DIE_POSITION   = { 525.709f, 377.177f, 193.203f };
 
     // Gurtogg Bloodboil
-    const Position GURTOGG_TANK_POSITION =   { 735.987f, 272.451f, 063.554f };
-    const Position GURTOGG_RANGED_POSITION = { 762.265f, 277.183f, 063.781f };
-    const Position GURTOGG_SOAKER_POSITION = { 769.348f, 280.116f, 063.780f };
+    const Position GURTOGG_TANK_POSITION    = { 735.987f, 272.451f, 063.554f };
+    const Position GURTOGG_RANGED_POSITION  = { 762.265f, 277.183f, 063.781f };
+    const Position GURTOGG_SOAKER_POSITION  = { 769.348f, 280.116f, 063.780f };
 
     std::unordered_map<uint32, time_t> gurtoggPhaseTimer;
 
@@ -93,9 +96,9 @@ namespace BlackTempleHelpers
     }
 
     // Mother Shahraz
-    const Position SHAHRAZ_TANK_POSITION =       { 960.438f, 178.989f, 192.826f };
+    const Position SHAHRAZ_TANK_POSITION       = { 960.438f, 178.989f, 192.826f };
     const Position SHAHRAZ_TRANSITION_POSITION = { 951.327f, 179.550f, 192.550f };
-    const Position SHAHRAZ_RANGED_POSITION =     { 935.267f, 175.459f, 192.821f };
+    const Position SHAHRAZ_RANGED_POSITION     = { 935.267f, 175.459f, 192.821f };
     std::unordered_map<ObjectGuid, TankPositionState> shahrazTankStep;
 
     TankPositionState GetShahrazTankPositionState(PlayerbotAI* botAI, Player* bot)
@@ -331,6 +334,19 @@ namespace BlackTempleHelpers
         return fallbackWarlock;
     }
 
+    bool HasParasiticShadowfiend(Player* member)
+    {
+        if (!member)
+            return false;
+
+        constexpr uint32 shadowfiendAura1 =
+            static_cast<uint32>(BlackTempleSpells::SPELL_PARASITIC_SHADOWFIEND_1);
+        constexpr uint32 shadowfiendAura2 =
+            static_cast<uint32>(BlackTempleSpells::SPELL_PARASITIC_SHADOWFIEND_2);
+
+        return member->HasAura(shadowfiendAura1) || member->HasAura(shadowfiendAura2);
+    }
+
     // Get the first bot hunter that doesn't have Parasitic Shadowfiend
     Player* GetIllidanTrapperHunter(Player* bot)
     {
@@ -341,14 +357,8 @@ namespace BlackTempleHelpers
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || member->getClass() != CLASS_HUNTER ||
-                !GET_PLAYERBOT_AI(member))
-            {
-                continue;
-            }
-
-            if (!member->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_PARASITIC_SHADOWFIEND_1)) &&
-                !member->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_PARASITIC_SHADOWFIEND_2)))
+            if (member && member->IsAlive() && member->getClass() == CLASS_HUNTER &&
+                GET_PLAYERBOT_AI(member) && !HasParasiticShadowfiend(member))
             {
                 return member;
             }
@@ -367,8 +377,7 @@ namespace BlackTempleHelpers
         {
             Player* member = ref->GetSource();
             if (member && member->IsAlive() && GET_PLAYERBOT_AI(member) &&
-                (member->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_PARASITIC_SHADOWFIEND_1)) ||
-                 member->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_PARASITIC_SHADOWFIEND_2))))
+                HasParasiticShadowfiend(member))
             {
                 return member;
             }

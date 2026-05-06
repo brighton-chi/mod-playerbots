@@ -152,6 +152,9 @@ extern std::unordered_map<ObjectGuid, Position> supremusRangedPositions;
 extern std::unordered_map<uint32, time_t> supremusPhaseTimer;
 bool HasSupremusVolcanoNearby(PlayerbotAI* botAI, Player* bot);
 
+// Shade of Akama
+extern const Position AKAMA_CHANNELER_POSITION;
+
 // Teron Gorefiend
 extern const Position GOREFIEND_TANK_POSITION;
 extern const Position GOREFIEND_DIE_POSITION;
@@ -202,6 +205,7 @@ int GetIllidanPhase(Unit* illidan);
 std::vector<Unit*> GetAllFlameCrashes(Player* bot);
 std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(Player* bot);
 Player* GetIllidanWarlockTank(Player* bot);
+bool HasParasiticShadowfiend(Player* member);
 Player* GetIllidanTrapperHunter(Player* bot);
 Player* GetBotWithParasiticShadowfiend(Player* bot);
 struct EyeBlastDangerArea

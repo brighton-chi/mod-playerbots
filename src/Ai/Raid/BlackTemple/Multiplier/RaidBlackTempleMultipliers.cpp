@@ -344,7 +344,8 @@ float IllidariCouncilControlMovementMultiplier::GetValue(Action* action)
         return 1.0f;
 
     if (dynamic_cast<CombatFormationMoveAction*>(action) &&
-        !dynamic_cast<SetBehindTargetAction*>(action))
+        !dynamic_cast<SetBehindTargetAction*>(action) &&
+        !dynamic_cast<TankFaceAction*>(action))
     {
         return 0.0f;
     }
@@ -360,6 +361,12 @@ float IllidariCouncilControlMovementMultiplier::GetValue(Action* action)
     if (botAI->IsAssistHealOfIndex(bot, 0, true) &&
         (dynamic_cast<MovementAction*>(action) &&
          !dynamic_cast<IllidariCouncilPositionMageTankHealerAction*>(action)))
+    {
+        return 0.0f;
+    }
+
+    if (!botAI->IsAssistTankOfIndex(bot, 0, false) &&
+        dynamic_cast<TankFaceAction*>(action))
     {
         return 0.0f;
     }
