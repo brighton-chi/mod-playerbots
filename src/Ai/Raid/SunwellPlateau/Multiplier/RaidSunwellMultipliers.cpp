@@ -627,7 +627,11 @@ float MuruUseOnlyGroundingTotemMultiplier::GetValue(Action* action)
 float MuruDelayCooldownsMultiplier::GetValue(Action* action)
 {
     Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
-    if (!muru || muru->GetHealth() == 1)
+    Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius");
+    if (!muru && !entropius)
+        return 1.0f;
+
+    if (entropius && entropius->GetHealthPct() < 95.0f)
         return 1.0f;
 
     if (bot->getClass() == CLASS_SHAMAN &&
@@ -637,7 +641,7 @@ float MuruDelayCooldownsMultiplier::GetValue(Action* action)
         return 0.0f;
     }
 
-    if (muru->GetHealthPct() < 98.0f)
+    if (muru && muru->GetHealthPct() < 97.0f)
         return 1.0f;
 
     if (IsDpsCooldownAction(action) ||

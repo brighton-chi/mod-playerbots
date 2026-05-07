@@ -76,7 +76,7 @@ bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru)
     MuruDarknessState& state = muruDarknessStates[instanceId];
     constexpr uint32 darknessPreEffectMs = 3000;
     constexpr uint32 darknessCastMs = 2000;
-    constexpr uint32 darknessPostCastDangerMs = 20000;
+    constexpr uint32 darknessPostCastDangerMs = 19000;
     constexpr uint32 darknessTotalMs =
         darknessPreEffectMs + darknessCastMs + darknessPostCastDangerMs;
 
@@ -129,7 +129,7 @@ bool TryGetMuruDarknessEarlyState(Player* bot, Unit* muru, uint32 earlyWindowMs)
 
     const uint32 now = getMSTime();
     return stateItr->second.startMs < now &&
-            now - stateItr->second.startMs < earlyWindowMs;
+           now - stateItr->second.startMs < earlyWindowMs;
 }
 
 void GatherMuruEncounterTargets(PlayerbotAI* botAI, MuruEncounterTargets& targets)

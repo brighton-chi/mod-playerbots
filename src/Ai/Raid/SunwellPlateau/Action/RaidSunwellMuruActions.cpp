@@ -81,10 +81,10 @@ bool MuruPositionRangedAction::Execute(Event /*event*/)
         }
     }
 
-    const bool hasActiveAdds = !targets.voidSentinels.empty() ||
-                               hasActiveNonControlledVoidSpawns ||
-                               !targets.furyMages.empty() ||
-                               !targets.berserkers.empty();
+    const bool hasActiveAdds =
+        !targets.voidSentinels.empty() || hasActiveNonControlledVoidSpawns ||
+        !targets.furyMages.empty() || !targets.berserkers.empty();
+
     const bool hasReachedInitialPosition =
         muruEntropiusInitialRangedPositionsReached.find(bot->GetGUID()) !=
         muruEntropiusInitialRangedPositionsReached.end();
@@ -129,7 +129,8 @@ void MuruPositionRangedAction::SetEntropiusInitialRangedPositionReached(bool rea
     muruEntropiusInitialRangedPositionsReached.erase(guid);
 }
 
-bool MuruPositionRangedAction::TryGetEntropiusInitialRangedPosition(Position& position) const
+bool MuruPositionRangedAction::TryGetEntropiusInitialRangedPosition(
+    Position& position) const
 {
     Group* group = bot->GetGroup();
     if (!group || !botAI->IsRanged(bot))
@@ -139,8 +140,11 @@ bool MuruPositionRangedAction::TryGetEntropiusInitialRangedPosition(Position& po
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != SUNWELL_MAP_ID || !botAI->IsRanged(member))
+        if (!member || member->GetMapId() != SUNWELL_MAP_ID ||
+            !botAI->IsRanged(member))
+        {
             continue;
+        }
 
         rangedMembers.push_back(member);
     }
@@ -287,8 +291,8 @@ Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(
         switch (unit->GetEntry())
         {
             case static_cast<uint32>(SunwellNpcs::NPC_MURU):
-                return unit->GetHealth() > 1 &&
-                       !botAI->IsTargetValueExcluded(TargetValueExclusionType::Dps, unit->GetGUID());
+                return unit->GetHealth() > 1 && !botAI->IsTargetValueExcluded(
+                    TargetValueExclusionType::Dps, unit->GetGUID());
 
             case static_cast<uint32>(SunwellNpcs::NPC_ENTROPIUS):
                 return true;
@@ -581,9 +585,11 @@ const Position* MuruTanksGetThatSentinelOutOfHereAction::GetAssignedVoidSentinel
         const float northDistance = voidSentinel->GetExactDist2d(
             MURU_VOID_SENTINEL_N_TANK_POSITION.GetPositionX(),
             MURU_VOID_SENTINEL_N_TANK_POSITION.GetPositionY());
+
         const float eastDistance = voidSentinel->GetExactDist2d(
             MURU_VOID_SENTINEL_E_TANK_POSITION.GetPositionX(),
             MURU_VOID_SENTINEL_E_TANK_POSITION.GetPositionY());
+
         const uint8 assignedIndex = northDistance <= eastDistance ? 0 : 1;
         assignmentItr = assignments.emplace(voidSentinel->GetGUID(), assignedIndex).first;
     }
@@ -618,9 +624,18 @@ bool MuruFleeTheNightAction::Execute(Event /*event*/)
     if (!muru)
         return false;
 
+    MuruEncounterTargets targets;
+    GatherMuruEncounterTargets(botAI, targets);
+    const bool isTankingVoidSentinel = std::any_of(
+        targets.voidSentinels.begin(), targets.voidSentinels.end(),
+        [this](Unit* voidSentinel)
+        {
+            return voidSentinel && voidSentinel->GetVictim() == bot;
+        });
+
     if (botAI->IsTank(bot))
     {
-        if (!botAI->IsAssistTankOfIndex(bot, 0, true) &&
+        if (!botAI->IsAssistTankOfIndex(bot, 0, true) && !isTankingVoidSentinel &&
             TryGetMuruDarknessEarlyState(bot, muru))
         {
             const Position& holdingPosition = botAI->IsAssistTankOfIndex(bot, 1, true) ?
@@ -671,7 +686,7 @@ bool MuruCastStunOnShadowswordBerserkerAction::Execute(Event /*event*/)
     if (!berserker)
         return false;
 
-    auto const castStop = [&](const char* spell)
+    auto const castStun = [&](const char* spell)
     {
         return botAI->CanCastSpell(spell, berserker) &&
                botAI->CastSpell(spell, berserker);
@@ -680,23 +695,23 @@ bool MuruCastStunOnShadowswordBerserkerAction::Execute(Event /*event*/)
     switch (bot->getClass())
     {
         case CLASS_DRUID:
-            return castStop("bash") || castStop("maim");
+            return castStun("bash") || castStun("maim");
 
         case CLASS_PALADIN:
-            return castStop("hammer of justice");
+            return castStun("hammer of justice");
 
         case CLASS_ROGUE:
-            return castStop("kidney shot");
+            return castStun("kidney shot");
 
         case CLASS_WARLOCK:
-            return castStop("shadowfury");
+            return castStun("shadowfury");
 
         case CLASS_WARRIOR:
-            return castStop("concussion blow") || castStop("revenge stun") ||
-                   castStop("shockwave");
+            return castStun("concussion blow") || castStun("revenge stun") ||
+                   castStun("shockwave");
 
         default:
-            return bot->getRace() == RACE_TAUREN && castStop("war stomp");
+            return bot->getRace() == RACE_TAUREN && castStun("war stomp");
     }
 }
 
@@ -706,7 +721,7 @@ bool MuruInterruptFelFireballAction::Execute(Event /*event*/)
     if (!furyMage)
         return false;
 
-    auto const castStop = [&](const char* spell)
+    auto const castInterrupt = [&](const char* spell)
     {
         return botAI->CanCastSpell(spell, furyMage) &&
                botAI->CastSpell(spell, furyMage);
@@ -715,25 +730,25 @@ bool MuruInterruptFelFireballAction::Execute(Event /*event*/)
     switch (bot->getClass())
     {
         case CLASS_DEATH_KNIGHT:
-            return castStop("mind freeze") || castStop("strangulate");
+            return castInterrupt("mind freeze") || castInterrupt("strangulate");
 
         case CLASS_HUNTER:
-            return castStop("silencing shot");
+            return castInterrupt("silencing shot");
 
         case CLASS_MAGE:
-            return castStop("counterspell");
+            return castInterrupt("counterspell");
 
         case CLASS_ROGUE:
-            return castStop("kick");
+            return castInterrupt("kick");
 
         case CLASS_SHAMAN:
-            return castStop("wind shear");
+            return castInterrupt("wind shear");
 
         case CLASS_WARRIOR:
-            return castStop("pummel") || castStop("shield bash");
+            return castInterrupt("pummel") || castInterrupt("shield bash");
 
         default:
-            return bot->getRace() == RACE_BLOODELF && castStop("arcane torrent");
+            return bot->getRace() == RACE_BLOODELF && castInterrupt("arcane torrent");
     }
 }
 
@@ -777,8 +792,7 @@ Unit* MuruEnslavedVoidSpawnAttackAction::GetControlledVoidSpawn() const
 bool MuruEnslavedVoidSpawnAttackAction::CommandControlledCreatureToAttack(
     Unit* controlled, Unit* target) const
 {
-    if (!controlled || !controlled->IsAlive() ||
-        !target || !target->IsAlive() ||
+    if (!controlled || !controlled->IsAlive() || !target ||
         controlled->GetVictim() == target)
     {
         return false;
@@ -831,7 +845,8 @@ bool MuruEnslavedVoidSpawnCastShadowBoltVolleyAction::Execute(Event /*event*/)
     if (voidSpawn->GetExactDist2d(target) > sPlayerbotAIConfig.spellDistance)
         return commandedAttack;
 
-    constexpr uint32 volleySpellId = static_cast<uint32>(SunwellSpells::SPELL_SHADOW_BOLT_VOLLEY);
+    constexpr uint32 volleySpellId =
+        static_cast<uint32>(SunwellSpells::SPELL_SHADOW_BOLT_VOLLEY);
     if (voidSpawn->HasSpellCooldown(volleySpellId))
         return commandedAttack;
 
