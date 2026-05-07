@@ -221,7 +221,8 @@ bool MuruSetDpsPriorityAction::Execute(Event /*event*/)
     {
         bool needsAttack = false;
         if (isMeleeDps)
-            needsAttack = bot->GetVictim() != target;
+            needsAttack = bot->GetVictim() != target ||
+                !bot->HasUnitState(UNIT_STATE_MELEE_ATTACKING);
         else
             needsAttack = currentTarget != target && bot->GetTarget() != target->GetGUID();
 
