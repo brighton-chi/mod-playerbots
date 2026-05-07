@@ -55,10 +55,9 @@ bool BrutallusTanksHandleBossAction::Execute(Event event)
     constexpr float tankPositionTolerance = 2.0f;
     const bool isMainTank = botAI->IsMainTank(bot);
     const bool assistTankMissing = !assistTank || !assistTank->IsAlive();
-    const bool hasReachedInitialMainTankPosition =
-        isMainTank &&
-        brutallusMainTankInitialPositionsReached.find(bot->GetGUID()) !=
-            brutallusMainTankInitialPositionsReached.end();
+    const bool hasReachedInitialMainTankPosition = isMainTank &&
+        brutallusMainTankInitialPositionReached.find(bot->GetGUID()) !=
+            brutallusMainTankInitialPositionReached.end();
 
     if (!isMainTank)
     {
@@ -95,7 +94,7 @@ bool BrutallusTanksHandleBossAction::Execute(Event event)
     if (!hasReachedInitialMainTankPosition &&
         distToPosition <= tankPositionTolerance)
     {
-        brutallusMainTankInitialPositionsReached.insert(bot->GetGUID());
+        brutallusMainTankInitialPositionReached.insert(bot->GetGUID());
     }
 
     if (brutallus->GetVictim() == bot &&

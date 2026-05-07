@@ -55,7 +55,7 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
         if (isRanged && brutallusRangedBurnStates.erase(guid) > 0)
             erased = true;
 
-        if (brutallusMainTankInitialPositionsReached.erase(guid) > 0)
+        if (brutallusMainTankInitialPositionReached.erase(guid) > 0)
             erased = true;
 
         if (isMechanicTracker && brutallusRangedAssignments.erase(instanceId) > 0)
