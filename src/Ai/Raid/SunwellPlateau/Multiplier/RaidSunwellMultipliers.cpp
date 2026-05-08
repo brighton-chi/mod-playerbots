@@ -352,7 +352,7 @@ float FelmystPrioritizeDemonicVaporKiteMultiplier::GetValue(Action* action)
 float FelmystDelayCooldownsMultiplier::GetValue(Action* action)
 {
     Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
-    if (!felmyst || felmyst->GetHealthPct() < 95.0f)
+    if (!felmyst || (!felmyst->IsFlying() && felmyst->GetHealthPct() < 95.0f))
         return 1.0f;
 
     if (IsDpsCooldownAction(action) ||
