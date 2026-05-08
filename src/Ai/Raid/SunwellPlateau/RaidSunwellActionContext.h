@@ -123,6 +123,9 @@ public:
         creators["m'uru misdirect enemies to tanks"] =
             &RaidSunwellActionContext::muru_misdirect_enemies_to_tanks;
 
+        creators["m'uru main tank pick up entropius"] =
+            &RaidSunwellActionContext::muru_main_tank_pick_up_entropius;
+
         creators["m'uru position ranged"] =
             &RaidSunwellActionContext::muru_position_ranged;
 
@@ -297,6 +300,9 @@ private:
     // M'uru
     static Action* muru_misdirect_enemies_to_tanks(
         PlayerbotAI* botAI) { return new MuruMisdirectEnemiesToTanksAction(botAI); }
+
+    static Action* muru_main_tank_pick_up_entropius(
+        PlayerbotAI* botAI) { return new MuruMainTankPickUpEntropiusAction(botAI); }
 
     static Action* muru_position_ranged(
         PlayerbotAI* botAI) { return new MuruPositionRangedAction(botAI); }

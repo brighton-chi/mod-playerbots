@@ -477,6 +477,11 @@ bool MuruVoidSentinelOrEntropiusHasAppearedTrigger::IsActive()
     return voidSentinel && voidSentinel->GetHealthPct() > 80.0f;
 }
 
+bool MuruEntropiusHasAppearedTrigger::IsActive()
+{
+    return AI_VALUE2(Unit*, "find target", "entropius") && botAI->IsMainTank(bot);
+}
+
 bool MuruBossesEngagedByRangedTrigger::IsActive()
 {
     if (!botAI->IsRanged(bot))

@@ -51,6 +51,15 @@ bool MuruMisdirectEnemiesToTanksAction::Execute(Event /*event*/)
     return false;
 }
 
+bool MuruMainTankPickUpEntropiusAction::Execute(Event /*event*/)
+{
+    Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius");
+    if (!entropius)
+        return false;
+
+    return bot->GetVictim() != entropius && Attack(entropius);
+}
+
 bool MuruPositionRangedAction::Execute(Event /*event*/)
 {
     Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
@@ -519,7 +528,7 @@ bool MuruDontTouchTheDarkFiendAction::Execute(Event /*event*/)
     if (!darkness)
         return false;
 
-    constexpr float safeDistance = 8.0f;
+    constexpr float safeDistance = 7.0f;
     const float currentDistance = bot->GetDistance2d(darkness);
     if (currentDistance < safeDistance &&
         MoveAway(darkness, safeDistance - currentDistance))
@@ -636,7 +645,10 @@ bool MuruFleeTheNightAction::Execute(Event /*event*/)
 
     if (botAI->IsTank(bot))
     {
-        if (!botAI->IsAssistTankOfIndex(bot, 0, true) && !isTankingVoidSentinel &&
+        if (isTankingVoidSentinel)
+            return false;
+
+        if (!botAI->IsAssistTankOfIndex(bot, 0, true) &&
             TryGetMuruDarknessEarlyState(bot, muru))
         {
             const Position& holdingPosition = botAI->IsAssistTankOfIndex(bot, 1, true) ?

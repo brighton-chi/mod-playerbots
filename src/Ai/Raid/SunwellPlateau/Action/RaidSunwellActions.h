@@ -301,6 +301,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class MuruMainTankPickUpEntropiusAction : public AttackAction
+{
+public:
+    MuruMainTankPickUpEntropiusAction(
+        PlayerbotAI* botAI, std::string const name = "m'uru main tank pick up entropius") : AttackAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 class MuruPositionRangedAction : public MovementAction
 {
 public:

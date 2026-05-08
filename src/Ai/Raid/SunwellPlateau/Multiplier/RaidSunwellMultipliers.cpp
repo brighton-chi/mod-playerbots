@@ -518,18 +518,14 @@ float MuruDisableDefaultTargetingMultiplier::GetValue(Action* action)
     constexpr float searchRadius = 40.0f;
     Unit* voidSpawn = bot->FindNearestCreature(
         static_cast<uint32>(SunwellNpcs::NPC_VOID_SPAWN), searchRadius);
-    if (voidSpawn &&
-        (bot->GetTarget() == voidSpawn->GetGUID() || bot->GetVictim() == voidSpawn) &&
+    if (voidSpawn && bot->GetVictim() == voidSpawn &&
         dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
     {
         return 0.0f;
     }
 
-    if (muru &&
-        (bot->GetTarget() == muru->GetGUID() || bot->GetVictim() == muru))
-    {
+    if (muru && bot->GetVictim() == muru)
         context->GetValue<bool>("neglect threat")->Set(true);
-    }
 
     if (botAI->IsAssistTankOfIndex(bot, 0, true) &&
         AI_VALUE2(Unit*, "find target", "void sentinel") &&

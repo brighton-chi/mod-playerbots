@@ -302,6 +302,14 @@ public:
     bool IsActive() override;
 };
 
+class MuruEntropiusHasAppearedTrigger : public Trigger
+{
+public:
+    MuruEntropiusHasAppearedTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "m'uru entropius has appeared") {}
+    bool IsActive() override;
+};
+
 class MuruBossesEngagedByRangedTrigger : public Trigger
 {
 public:
