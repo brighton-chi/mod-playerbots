@@ -466,6 +466,7 @@ public:
         switch (creature->GetEntry())
         {
             case static_cast<uint32>(SunwellNpcs::NPC_FELMYST):
+                RequestInterruptForBotsNeedingFelmystFogMovement(creature, nullptr);
                 RequestInterruptForBotsWithDelayedFelmystEncapsulate(creature);
                 break;
             case static_cast<uint32>(SunwellNpcs::NPC_GRAND_WARLOCK_ALYTHESS):
