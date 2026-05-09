@@ -62,6 +62,11 @@ bool BlackTempleEraseTimersAndTrackersAction::Execute(Event /*event*/)
         {
             erased = true;
         }
+        if (!AI_VALUE2(Unit*, "find target", "ashtongue channeler") &&
+            hasReachedAkamaChannelerPosition.erase(guid) > 0)
+        {
+            erased = true;
+        }
         if (!AI_VALUE2(Unit*, "find target", "gurtogg bloodboil") &&
             gurtoggPhaseTimer.erase(instanceId) > 0)
         {
@@ -499,6 +504,21 @@ bool SupremusManagePhaseTimerAction::Execute(Event /*event*/)
 
 bool ShadeOfAkamaMeleeDpsPrioritizeChannelersAction::Execute(Event /*event*/)
 {
+    if (!hasReachedAkamaChannelerPosition.count(bot->GetGUID()))
+    {
+        const Position &position = AKAMA_CHANNELER_POSITION;
+        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
+        {
+            return MoveTo(BLACK_TEMPLE_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                          bot->GetPositionZ(), false, false, false, false,
+                          MovementPriority::MOVEMENT_FORCED, true, false);
+        }
+        else
+        {
+            hasReachedAkamaChannelerPosition.insert(bot->GetGUID());
+        }
+    }
+
     Unit* channeler = GetFirstAliveUnitByEntry(
         botAI, static_cast<uint32>(BlackTempleNpcs::NPC_ASHTONGUE_CHANNELER));
     if (!channeler)

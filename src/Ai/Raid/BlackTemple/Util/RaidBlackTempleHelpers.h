@@ -8,6 +8,7 @@
 
 #include <array>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -154,6 +155,7 @@ bool HasSupremusVolcanoNearby(PlayerbotAI* botAI, Player* bot);
 
 // Shade of Akama
 extern const Position AKAMA_CHANNELER_POSITION;
+extern std::unordered_set<ObjectGuid> hasReachedAkamaChannelerPosition;
 
 // Teron Gorefiend
 extern const Position GOREFIEND_TANK_POSITION;

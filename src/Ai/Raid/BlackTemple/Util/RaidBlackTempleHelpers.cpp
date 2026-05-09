@@ -38,6 +38,8 @@ namespace BlackTempleHelpers
     // Shade of Akama
     const Position AKAMA_CHANNELER_POSITION = { 467.851f, 401.622f, 118.538f };
 
+    std::unordered_set<ObjectGuid> hasReachedAkamaChannelerPosition;
+
     // Teron Gorefiend
     const Position GOREFIEND_TANK_POSITION  = { 597.653f, 402.284f, 187.090f };
     const Position GOREFIEND_DIE_POSITION   = { 525.709f, 377.177f, 193.203f };
