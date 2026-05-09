@@ -114,22 +114,15 @@ bool FelmystPositionMeleeOnGroundAction::Execute(Event /*event*/)
 
 bool FelmystRemoveEncapsulateAction::Execute(Event /*event*/)
 {
-    switch (bot->getClass())
+    if (bot->getClass() == CLASS_MAGE)
     {
-        case CLASS_MAGE:
-            return botAI->CanCastSpell("ice block", bot) &&
-                   botAI->CastSpell("ice block", bot);
-
-        case CLASS_PALADIN:
-            return botAI->CanCastSpell("divine shield", bot) &&
-                   botAI->CastSpell("divine shield", bot);
-
-        case CLASS_ROGUE:
-            return botAI->CanCastSpell("cloak of shadows", bot) &&
-                   botAI->CastSpell("cloak of shadows", bot);
-
-        default:
-            return false;
+        return botAI->CanCastSpell("ice block", bot) &&
+               botAI->CastSpell("ice block", bot);
+    }
+    else
+    {
+        return botAI->CanCastSpell("divine shield", bot) &&
+               botAI->CastSpell("divine shield", bot);
     }
 }
 

@@ -50,6 +50,10 @@ enum class SunwellSpells : uint32
 
     // Kil'jaeden <The Deceiver>
     SPELL_FIRE_BLOOM                   = 45641,
+    SPELL_SHIELD_OF_THE_BLUE           = 45848,
+    SPELL_DRAGON_BREATH_HASTE          = 45856,
+    SPELL_DRAGON_BREATH_REVITALIZE     = 45860,
+    SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT = 45839,
     SPELL_DARKNESS_OF_A_THOUSAND_SOULS = 46605,
 
     // Hunter
@@ -98,7 +102,30 @@ enum class SunwellObjects : uint32
 {
     GO_SPECTRAL_RIFT = 187055,
     GO_BLAZE         = 187366,
+    GO_DRAGON_ORB_1  = 187869,
+    GO_DRAGON_ORB_2  = 188114,
+    GO_DRAGON_ORB_3  = 188115,
+    GO_DRAGON_ORB_4  = 188116,
 };
+
+constexpr uint32 KILJAEDEN_DRAGON_ORB_ENTRIES[] =
+{
+    static_cast<uint32>(SunwellObjects::GO_DRAGON_ORB_1),
+    static_cast<uint32>(SunwellObjects::GO_DRAGON_ORB_2),
+    static_cast<uint32>(SunwellObjects::GO_DRAGON_ORB_3),
+    static_cast<uint32>(SunwellObjects::GO_DRAGON_ORB_4)
+};
+
+inline bool IsKiljaedenDragonOrb(uint32 entry)
+{
+    for (const uint32 orbEntry : KILJAEDEN_DRAGON_ORB_ENTRIES)
+    {
+        if (entry == orbEntry)
+            return true;
+    }
+
+    return false;
+}
 
 constexpr uint32 SUNWELL_MAP_ID = 580;
 

@@ -480,4 +480,20 @@ public:
     bool IsActive() override;
 };
 
+class KiljaedenDragonOrbIsActiveTrigger : public Trigger
+{
+public:
+    KiljaedenDragonOrbIsActiveTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "kil'jaeden dragon orb is active") {}
+    bool IsActive() override;
+};
+
+class KiljaedenBotControlsDragonTrigger : public Trigger
+{
+public:
+    KiljaedenBotControlsDragonTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "kil'jaeden bot controls dragon") {}
+    bool IsActive() override;
+};
+
 #endif

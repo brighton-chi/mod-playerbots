@@ -275,3 +275,153 @@ bool KiljaedenRemoveFireBloomAction::Execute(Event /*event*/)
             return false;
     }
 }
+
+bool KiljaedenUseDragonOrbAction::Execute(Event /*event*/)
+{
+    GameObject* closestOrb = nullptr;
+    float closestDistance = 0.0f;
+
+    for (const uint32 orbEntry : KILJAEDEN_DRAGON_ORB_ENTRIES)
+    {
+        GameObject* orb = bot->FindNearestGameObject(orbEntry, 200.0f, true);
+        if (!orb || orb->HasGameObjectFlag(GO_FLAG_NOT_SELECTABLE))
+            continue;
+
+        const float distance = bot->GetExactDist2d(orb);
+        if (!closestOrb || distance < closestDistance)
+        {
+            closestOrb = orb;
+            closestDistance = distance;
+        }
+    }
+
+    if (!closestOrb)
+        return false;
+
+    if (closestDistance < 3.0f)
+    {
+        closestOrb->Use(bot);
+        return true;
+    }
+
+    return MoveTo(SUNWELL_MAP_ID, closestOrb->GetPositionX(), closestOrb->GetPositionY(),
+                  closestOrb->GetPositionZ(), false, false, false, false,
+                  MovementPriority::MOVEMENT_FORCED, true, false);
+}
+
+bool KiljaedenControlDragonAction::Execute(Event /*event*/)
+{
+    Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
+    if (!kiljaeden)
+        return false;
+
+    if (IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
+        return ExecuteDuringDarknessOfAThousandSouls(kiljaeden);
+
+    return ExecuteOutsideDarknessOfAThousandSouls(kiljaeden);
+}
+
+bool KiljaedenControlDragonAction::ExecuteDuringDarknessOfAThousandSouls(Unit* kiljaeden)
+{
+    Unit* dragon = GetKiljaedenControlledDragon(bot);
+    if (!dragon)
+        return false;
+
+    Spell* darknessSpell = kiljaeden->FindCurrentSpellBySpellId(
+        static_cast<uint32>(SunwellSpells::SPELL_DARKNESS_OF_A_THOUSAND_SOULS));
+    if (!darknessSpell)
+        return false;
+
+    constexpr float stopShortDistance = 3.0f;
+    constexpr float positionTolerance = 0.5f;
+    const Position& stackPosition = KILJAEDEN_STACK_POSITION;
+    const float distanceToStack =
+        dragon->GetExactDist2d(stackPosition.GetPositionX(), stackPosition.GetPositionY());
+    if (distanceToStack > stopShortDistance + positionTolerance)
+    {
+        const float deltaX = stackPosition.GetPositionX() - dragon->GetPositionX();
+        const float deltaY = stackPosition.GetPositionY() - dragon->GetPositionY();
+        const float moveRatio = (distanceToStack - stopShortDistance) / distanceToStack;
+        const float moveX = dragon->GetPositionX() + deltaX * moveRatio;
+        const float moveY = dragon->GetPositionY() + deltaY * moveRatio;
+
+        dragon->GetMotionMaster()->MovePoint(0, moveX, moveY, stackPosition.GetPositionZ());
+        return true;
+    }
+
+    if (dragon->GetCurrentSpell(CURRENT_GENERIC_SPELL) ||
+        dragon->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
+    {
+        return false;
+    }
+
+    const uint32 darknessCastTimeLeft = darknessSpell->GetCastTimeRemaining();
+    if (darknessCastTimeLeft > 3000)
+    {
+        if (CastKiljaedenDragonSpell(
+                dragon, static_cast<uint32>(SunwellSpells::SPELL_DRAGON_BREATH_HASTE)))
+        {
+            return true;
+        }
+
+        if (CastKiljaedenDragonSpell(
+                dragon, static_cast<uint32>(SunwellSpells::SPELL_DRAGON_BREATH_REVITALIZE)))
+        {
+            return true;
+        }
+    }
+
+    if (darknessCastTimeLeft < 5000)
+    {
+        return CastKiljaedenDragonSpell(
+            dragon, static_cast<uint32>(SunwellSpells::SPELL_SHIELD_OF_THE_BLUE));
+    }
+
+    return false;
+}
+
+bool KiljaedenControlDragonAction::ExecuteOutsideDarknessOfAThousandSouls(Unit* /*kiljaeden*/)
+{
+    Unit* dragon = GetKiljaedenControlledDragon(bot);
+    if (!dragon)
+        return false;
+
+    if (dragon->GetCurrentSpell(CURRENT_GENERIC_SPELL) ||
+        dragon->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
+    {
+        return false;
+    }
+
+    Player* target = FindBestKiljaedenDragonClusterTarget(botAI, bot, dragon);
+    if (!target)
+        target = FindClosestKiljaedenDragonTarget(bot, dragon);
+    if (!target)
+        return false;
+
+    constexpr float desiredDistance = 8.0f;
+    constexpr float distanceTolerance = 1.0f;
+    const float distanceToTarget = dragon->GetExactDist2d(target);
+    if (distanceToTarget > desiredDistance + distanceTolerance ||
+        (distanceToTarget > 0.1f && distanceToTarget < desiredDistance - distanceTolerance))
+    {
+        const float deltaX = target->GetPositionX() - dragon->GetPositionX();
+        const float deltaY = target->GetPositionY() - dragon->GetPositionY();
+        const float moveRatio = (distanceToTarget - desiredDistance) / distanceToTarget;
+        const float moveX = dragon->GetPositionX() + deltaX * moveRatio;
+        const float moveY = dragon->GetPositionY() + deltaY * moveRatio;
+
+        dragon->GetMotionMaster()->MovePoint(0, moveX, moveY, target->GetPositionZ());
+        return true;
+    }
+
+    dragon->SetFacingToObject(target);
+
+    if (CastKiljaedenDragonSpell(
+            dragon, static_cast<uint32>(SunwellSpells::SPELL_DRAGON_BREATH_HASTE)))
+    {
+        return true;
+    }
+
+    return CastKiljaedenDragonSpell(
+        dragon, static_cast<uint32>(SunwellSpells::SPELL_DRAGON_BREATH_REVITALIZE));
+}

@@ -508,4 +508,24 @@ public:
     bool Execute(Event event) override;
 };
 
+class KiljaedenUseDragonOrbAction : public MovementAction
+{
+public:
+    KiljaedenUseDragonOrbAction(
+        PlayerbotAI* botAI, std::string const name = "kil'jaeden use dragon orb") : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class KiljaedenControlDragonAction : public Action
+{
+public:
+    KiljaedenControlDragonAction(
+        PlayerbotAI* botAI, std::string const name = "kil'jaeden control dragon") : Action(botAI, name) {}
+    bool Execute(Event event) override;
+
+private:
+    bool ExecuteDuringDarknessOfAThousandSouls(Unit* kiljaeden);
+    bool ExecuteOutsideDarknessOfAThousandSouls(Unit* kiljaeden);
+};
+
 #endif

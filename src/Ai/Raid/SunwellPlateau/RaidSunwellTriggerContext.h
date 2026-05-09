@@ -189,6 +189,12 @@ public:
 
         creators["kil'jaeden bot has fire bloom"] =
             &RaidSunwellTriggerContext::kiljaeden_bot_has_fire_bloom;
+
+        creators["kil'jaeden dragon orb is active"] =
+            &RaidSunwellTriggerContext::kiljaeden_dragon_orb_is_active;
+
+        creators["kil'jaeden bot controls dragon"] =
+            &RaidSunwellTriggerContext::kiljaeden_bot_controls_dragon;
     }
 
 private:
@@ -367,6 +373,12 @@ private:
 
     static Trigger* kiljaeden_bot_has_fire_bloom(
         PlayerbotAI* botAI) { return new KiljaedenBotHasFireBloomTrigger(botAI); }
+
+    static Trigger* kiljaeden_dragon_orb_is_active(
+        PlayerbotAI* botAI) { return new KiljaedenDragonOrbIsActiveTrigger(botAI); }
+
+    static Trigger* kiljaeden_bot_controls_dragon(
+        PlayerbotAI* botAI) { return new KiljaedenBotControlsDragonTrigger(botAI); }
 };
 
 #endif

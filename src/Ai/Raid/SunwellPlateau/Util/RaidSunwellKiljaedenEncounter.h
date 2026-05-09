@@ -67,6 +67,11 @@ float GetKiljaedenNearestArmageddonDistance(
     Position const& position, std::vector<KiljaedenArmageddon> const& armageddons);
 void EnsureKiljaedenRangedAssignments(PlayerbotAI* botAI, Player* bot);
 void EnsureKiljaedenRangedArmageddonAssignments(PlayerbotAI* botAI, Player* bot);
+Player* GetKiljaedenDragonOrbUser(Player* bot);
+Unit* GetKiljaedenControlledDragon(Player* bot);
+bool CastKiljaedenDragonSpell(Unit* dragon, uint32 spellId);
+Player* FindBestKiljaedenDragonClusterTarget(PlayerbotAI* botAI, Player* bot, Unit* dragon);
+Player* FindClosestKiljaedenDragonTarget(Player* bot, Unit* dragon);
 
 }
 

@@ -53,6 +53,29 @@ float NormalizeSignedAngle(float angle)
     return angle;
 }
 
+uint32 GetKiljaedenDragonManualCooldown(uint32 spellId)
+{
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+    if (!spellInfo)
+        return 1000;
+
+    uint32 cooldownMs = spellInfo->GetRecoveryTime();
+    if (spellInfo->CategoryRecoveryTime > cooldownMs)
+        cooldownMs = spellInfo->CategoryRecoveryTime;
+    if (spellInfo->StartRecoveryTime > cooldownMs)
+        cooldownMs = spellInfo->StartRecoveryTime;
+
+    return cooldownMs ? cooldownMs : 1000;
+}
+
+bool IsKiljaedenDragonGroupTarget(PlayerbotAI* botAI, Player* bot, Player* member, bool excludeTanks)
+{
+    if (!member || !member->IsAlive() || member == bot || member->GetMapId() != bot->GetMapId())
+        return false;
+
+    return !excludeTanks || !botAI->IsTank(member);
+}
+
 }
 
 const Position KILJAEDEN_TANK_POSITION =    { 1704.729f, 634.891f, 27.787f };
@@ -473,6 +496,122 @@ void EnsureKiljaedenRangedArmageddonAssignments(PlayerbotAI* botAI, Player* bot)
 
     if (tempAssignments.empty())
         kiljaedenRangedArmageddonAssignments.erase(instanceId);
+}
+
+Player* GetKiljaedenDragonOrbUser(Player* bot)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return nullptr;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) ||
+            member->GetMapId() != SUNWELL_MAP_ID)
+        {
+            continue;
+        }
+
+        if (group->IsAssistant(member->GetGUID()))
+            return member;
+    }
+
+    return nullptr;
+}
+
+Unit* GetKiljaedenControlledDragon(Player* bot)
+{
+    if (!bot)
+        return nullptr;
+
+    Unit* dragon = bot->GetCharm();
+    if (!dragon || !dragon->IsAlive())
+        return nullptr;
+
+    return dragon;
+}
+
+bool CastKiljaedenDragonSpell(Unit* dragon, uint32 spellId)
+{
+    if (!dragon || dragon->HasSpellCooldown(spellId))
+        return false;
+
+    dragon->CastSpell(dragon, spellId, true);
+    dragon->AddSpellCooldown(spellId, 0, GetKiljaedenDragonManualCooldown(spellId));
+    return true;
+}
+
+Player* FindBestKiljaedenDragonClusterTarget(PlayerbotAI* botAI, Player* bot, Unit* dragon)
+{
+    Group* group = bot ? bot->GetGroup() : nullptr;
+    if (!group || !dragon)
+        return nullptr;
+
+    constexpr uint32 minClusterSize = 3;
+    constexpr float clusterRadius = 6.0f;
+
+    Player* bestTarget = nullptr;
+    uint32 bestClusterSize = 0;
+    float bestDistanceToDragon = 0.0f;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* candidate = ref->GetSource();
+        if (!IsKiljaedenDragonGroupTarget(botAI, bot, candidate, true))
+            continue;
+
+        uint32 clusterSize = 0;
+        for (GroupReference* otherRef = group->GetFirstMember(); otherRef; otherRef = otherRef->next())
+        {
+            Player* other = otherRef->GetSource();
+            if (!IsKiljaedenDragonGroupTarget(botAI, bot, other, true))
+                continue;
+
+            if (candidate->GetExactDist2d(other) <= clusterRadius)
+                ++clusterSize;
+        }
+
+        if (clusterSize < minClusterSize)
+            continue;
+
+        const float distanceToDragon = dragon->GetExactDist2d(candidate);
+        if (!bestTarget || clusterSize > bestClusterSize ||
+            (clusterSize == bestClusterSize && distanceToDragon < bestDistanceToDragon))
+        {
+            bestTarget = candidate;
+            bestClusterSize = clusterSize;
+            bestDistanceToDragon = distanceToDragon;
+        }
+    }
+
+    return bestTarget;
+}
+
+Player* FindClosestKiljaedenDragonTarget(Player* bot, Unit* dragon)
+{
+    Group* group = bot ? bot->GetGroup() : nullptr;
+    if (!group || !dragon)
+        return nullptr;
+
+    Player* closestTarget = nullptr;
+    float closestDistance = 0.0f;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive() || member == bot || member->GetMapId() != bot->GetMapId())
+            continue;
+
+        const float distance = dragon->GetExactDist2d(member);
+        if (!closestTarget || distance < closestDistance)
+        {
+            closestTarget = member;
+            closestDistance = distance;
+        }
+    }
+
+    return closestTarget;
 }
 
 }

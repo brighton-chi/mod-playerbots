@@ -249,11 +249,8 @@ bool FelmystBossEngagedByMeleeOnGroundTrigger::IsActive()
 
 bool FelmystBotIsEncapsulatedTrigger::IsActive()
 {
-    if (bot->getClass() != CLASS_ROGUE && bot->getClass() != CLASS_MAGE &&
-        bot->getClass() != CLASS_PALADIN)
-    {
+    if (bot->getClass() != CLASS_MAGE && bot->getClass() != CLASS_PALADIN)
         return false;
-    }
 
     Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
     if (!felmyst || felmyst->IsFlying() || botAI->IsMainTank(bot))
@@ -779,4 +776,25 @@ bool KiljaedenBossEngagedByRangedTrigger::IsActive()
         return false;
 
     return true;
+}
+
+bool KiljaedenDragonOrbIsActiveTrigger::IsActive()
+{
+    Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
+    if (!kiljaeden || kiljaeden->GetHealthPct() > 85.0f)
+        return false;
+
+    if (bot->HasAura(
+            static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
+    {
+        return false;
+    }
+
+    return GetKiljaedenDragonOrbUser(bot) == bot;
+}
+
+bool KiljaedenBotControlsDragonTrigger::IsActive()
+{
+    return bot->HasAura(
+        static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT));
 }

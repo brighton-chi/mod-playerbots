@@ -189,6 +189,12 @@ public:
 
         creators["kil'jaeden remove fire bloom"] =
             &RaidSunwellActionContext::kiljaeden_remove_fire_bloom;
+
+        creators["kil'jaeden use dragon orb"] =
+            &RaidSunwellActionContext::kiljaeden_use_dragon_orb;
+
+        creators["kil'jaeden control dragon"] =
+            &RaidSunwellActionContext::kiljaeden_control_dragon;
     }
 
 private:
@@ -367,6 +373,12 @@ private:
 
     static Action* kiljaeden_remove_fire_bloom(
         PlayerbotAI* botAI) { return new KiljaedenRemoveFireBloomAction(botAI); }
+
+    static Action* kiljaeden_use_dragon_orb(
+        PlayerbotAI* botAI) { return new KiljaedenUseDragonOrbAction(botAI); }
+
+    static Action* kiljaeden_control_dragon(
+        PlayerbotAI* botAI) { return new KiljaedenControlDragonAction(botAI); }
 };
 
 #endif
