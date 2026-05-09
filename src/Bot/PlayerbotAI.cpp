@@ -15,6 +15,7 @@
 #include "ChannelMgr.h"
 #include "CharacterPackets.h"
 #include "ChatHelper.h"
+#include "CheckMountStateAction.h"
 #include "Common.h"
 #include "CreatureData.h"
 #include "EmoteAction.h"
@@ -1449,6 +1450,17 @@ void PlayerbotAI::HandleBotOutgoingPacket(WorldPacket const& packet)
             // */
             return;
         }
+        case SMSG_DISMOUNT:
+        {
+            WorldPacket p(packet);
+            p.rpos(0);
+            ObjectGuid guid;
+            p >> guid.ReadAsPacked();
+            if (guid != bot->GetGUID())
+                return;
+            CheckMountStateAction::CompleteDismount(bot);
+            return;
+        }
         default:
             botOutgoingPacketHandlers.AddPacket(packet);
     }
@@ -1655,6 +1667,27 @@ void PlayerbotAI::ClearStrategies(BotState type)
         return;
 
     e->removeAllStrategies();
+}
+
+// Resets only the combat or non-combat engine: wipe strategies, repopulate with class/spec defaults,
+// re-apply current map's instance strategy (if any), and call Init() to rebuild trigger/action lists.
+void PlayerbotAI::SelectiveResetStrategies(BotState type)
+{
+    Engine* e = engines[type];
+    if (!e)
+        return;
+
+    e->removeAllStrategies();
+
+    if (type == BOT_STATE_COMBAT)
+        AiFactory::AddDefaultCombatStrategies(bot, this, e);
+    else if (type == BOT_STATE_NON_COMBAT)
+        AiFactory::AddDefaultNonCombatStrategies(bot, this, e);
+
+    if (sPlayerbotAIConfig.applyInstanceStrategies)
+        ApplyInstanceStrategies(bot->GetMapId());
+
+    e->Init();
 }
 
 std::vector<std::string> PlayerbotAI::GetStrategies(BotState type)
