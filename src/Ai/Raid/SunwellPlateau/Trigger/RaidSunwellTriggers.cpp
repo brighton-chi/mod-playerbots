@@ -671,6 +671,12 @@ bool KiljaedenItsRainingMeteorsTrigger::IsActive()
     if (!kiljaeden || IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
         return false;
 
+    if (bot->HasAura(
+            static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
+    {
+        return false;
+    }
+
     PruneExpiredKiljaedenArmageddons(bot->GetInstanceId());
     auto armageddonItr = kiljaedenArmageddons.find(bot->GetInstanceId());
     if (armageddonItr == kiljaedenArmageddons.end() || armageddonItr->second.empty())
@@ -707,6 +713,12 @@ bool KiljaedenSaysChaosDestructionOblivionTrigger::IsActive()
     if (!kiljaeden)
         return false;
 
+    if (bot->HasAura(
+            static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
+    {
+        return false;
+    }
+
     return IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden);
 }
 
@@ -718,6 +730,12 @@ bool KiljaedenBossEngagedByTanksTrigger::IsActive()
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
     if (!kiljaeden || IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
         return false;
+
+    if (bot->HasAura(
+            static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
+    {
+        return false;
+    }
 
     if (botAI->IsAssistTank(bot) &&
         AI_VALUE2(Unit*, "find target", "sinister reflection"))
@@ -736,6 +754,12 @@ bool KiljaedenBossEngagedByMeleeTrigger::IsActive()
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
     if (!kiljaeden || IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
         return false;
+
+    if (bot->HasAura(
+            static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
+    {
+        return false;
+    }
 
     return true;
 }
@@ -774,6 +798,12 @@ bool KiljaedenBossEngagedByRangedTrigger::IsActive()
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
     if (!kiljaeden || IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
         return false;
+
+    if (bot->HasAura(
+            static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
+    {
+        return false;
+    }
 
     return true;
 }

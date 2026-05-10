@@ -27,6 +27,7 @@
 #include "ShamanActions.h"
 #include "WarlockActions.h"
 #include "WarriorActions.h"
+#include "WipeAction.h"
 
 using namespace SunwellHelpers;
 
@@ -714,6 +715,26 @@ float KiljaedenPrioritizeArmageddonAvoidanceMultiplier::GetValue(Action* action)
     {
         return 0.0f;
     }
+
+    return 1.0f;
+}
+
+float KiljaedenControlDragonMultiplier::GetValue(Action* action)
+{
+    if (!AI_VALUE2(Unit*, "find target", "kil'jaeden"))
+        return 1.0f;
+
+    if (!bot->HasAura(
+            static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
+    {
+        return 1.0f;
+    }
+
+    if (dynamic_cast<WipeAction*>(action))
+        return 1.0f;
+
+    if (!dynamic_cast<KiljaedenControlDragonAction*>(action))
+        return 0.0f;
 
     return 1.0f;
 }

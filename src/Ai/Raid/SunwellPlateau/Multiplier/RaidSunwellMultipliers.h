@@ -255,4 +255,12 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class KiljaedenControlDragonMultiplier : public Multiplier
+{
+public:
+    KiljaedenControlDragonMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "kil'jaeden control dragon") {}
+    virtual float GetValue(Action* action);
+};
+
 #endif

@@ -342,4 +342,6 @@ void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new KiljaedenControlMovementAndTargetingMultiplier(botAI));
     multipliers.push_back(new KiljaedenPrioritizeArmageddonAvoidanceMultiplier(botAI));
     multipliers.push_back(new KiljaedenDelayCooldownsMultiplier(botAI));
+    multipliers.push_back(new KiljaedenControlDragonMultiplier(botAI));
+
 }
