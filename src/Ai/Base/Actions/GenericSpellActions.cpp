@@ -23,19 +23,44 @@
 using ai::buff::MakeAuraQualifierForBuff;
 using ai::spell::HasSpellOrCategoryCooldown;
 
-CastSpellAction::CastSpellAction(PlayerbotAI* botAI, std::string const spell)
-    : Action(botAI, spell), range(botAI->GetRange("spell")), spell(spell)
+namespace
 {
+    bool IsManaRestoreEffect(SpellEffectInfo const& effectInfo)
+    {
+        if (effectInfo.Effect == SPELL_EFFECT_ENERGIZE &&
+            effectInfo.MiscValue == POWER_MANA)
+        {
+            return true;
+        }
+
+        return effectInfo.Effect == SPELL_EFFECT_APPLY_AURA &&
+               effectInfo.ApplyAuraName == SPELL_AURA_PERIODIC_ENERGIZE &&
+               effectInfo.MiscValue == POWER_MANA;
+    }
+
+    bool IsManaRegenEffect(SpellEffectInfo const& effectInfo)
+    {
+        if (effectInfo.Effect != SPELL_EFFECT_APPLY_AURA)
+            return false;
+
+        if ((effectInfo.ApplyAuraName == SPELL_AURA_MOD_POWER_REGEN ||
+             effectInfo.ApplyAuraName == SPELL_AURA_MOD_POWER_REGEN_PERCENT) &&
+            effectInfo.MiscValue == POWER_MANA)
+        {
+            return true;
+        }
+
+        return effectInfo.ApplyAuraName == SPELL_AURA_MOD_MANA_REGEN_INTERRUPT;
+    }
 }
+
+CastSpellAction::CastSpellAction(PlayerbotAI* botAI, std::string const spell)
+    : Action(botAI, spell), range(botAI->GetRange("spell")), spell(spell) {}
 
 bool CastSpellAction::Execute(Event /*event*/)
 {
     if (spell == "conjure food" || spell == "conjure water")
     {
-        // uint32 id = AI_VALUE2(uint32, "spell id", spell);
-        // if (!id)
-        //     return false;
-
         uint32 castId = 0;
 
         for (PlayerSpellMap::iterator itr = bot->GetSpellMap().begin(); itr != bot->GetSpellMap().end(); ++itr)
@@ -53,18 +78,12 @@ bool CastSpellAction::Execute(Event /*event*/)
 
             wstrToLower(wnamepart);
 
-            if (!Utf8FitTo(spell, wnamepart))
-                continue;
-
-            if (spellInfo->Effects[0].Effect != SPELL_EFFECT_CREATE_ITEM)
+            if (!Utf8FitTo(spell, wnamepart) || spellInfo->Effects[0].Effect != SPELL_EFFECT_CREATE_ITEM)
                 continue;
 
             uint32 itemId = spellInfo->Effects[0].ItemType;
             ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
-            if (!proto)
-                continue;
-
-            if (bot->CanUseItem(proto) != EQUIP_ERR_OK)
+            if (!proto || bot->CanUseItem(proto) != EQUIP_ERR_OK)
                 continue;
 
             if (spellInfo->Id > castId)
@@ -92,18 +111,10 @@ bool CastSpellAction::isUseful()
     }
 
     Unit* spellTarget = GetTarget();
-    if (!spellTarget)
+    if (!spellTarget || !spellTarget->IsInWorld() || spellTarget->GetMapId() != bot->GetMapId())
         return false;
-
-    if (!spellTarget->IsInWorld() || spellTarget->GetMapId() != bot->GetMapId())
-        return false;
-
-    // float combatReach = bot->GetCombatReach() + target->GetCombatReach();
-    // if (!botAI->IsRanged(bot))
-    //     combatReach += 4.0f / 3.0f;
 
     return AI_VALUE2(bool, "spell cast useful", spell);
-           // && ServerFacade::instance().GetDistance2d(bot, target) <= (range + combatReach);
 }
 
 bool CastSpellAction::isPossible()
@@ -111,9 +122,8 @@ bool CastSpellAction::isPossible()
     if (botAI->IsInVehicle() && !botAI->IsInVehicle(false, false, true))
     {
         if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && botAI->HasRealPlayerMaster()))
-        {
             LOG_DEBUG("playerbots", "Can cast spell failed. Vehicle. - bot name: {}", bot->GetName());
-        }
+
         return false;
     }
 
@@ -123,14 +133,11 @@ bool CastSpellAction::isPossible()
     if (spell == "mount" && bot->IsInCombat())
     {
         if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && botAI->HasRealPlayerMaster()))
-        {
             LOG_DEBUG("playerbots", "Can cast spell failed. Mount. - bot name: {}", bot->GetName());
-        }
+
         bot->Dismount();
         return false;
     }
-
-    // Spell* currentSpell = bot->GetCurrentSpell(CURRENT_GENERIC_SPELL); //not used, line marked for removal.
     return botAI->CanCastSpell(spell, GetTarget());
 }
 
@@ -143,10 +150,7 @@ CastMeleeSpellAction::CastMeleeSpellAction(
 bool CastMeleeSpellAction::isUseful()
 {
     Unit* target = GetTarget();
-    if (!target)
-        return false;
-
-    if (!bot->IsWithinMeleeRange(target))
+    if (!target || !bot->IsWithinMeleeRange(target))
         return false;
 
     return CastSpellAction::isUseful();
@@ -162,10 +166,7 @@ CastMeleeDebuffSpellAction::CastMeleeDebuffSpellAction(
 bool CastMeleeDebuffSpellAction::isUseful()
 {
     Unit* target = GetTarget();
-    if (!target)
-        return false;
-
-    if (!bot->IsWithinMeleeRange(target))
+    if (!target || !bot->IsWithinMeleeRange(target))
         return false;
 
     return CastDebuffSpellAction::isUseful();
@@ -175,11 +176,11 @@ bool CastAuraSpellAction::isUseful()
 {
     if (!GetTarget() || !CastSpellAction::isUseful())
         return false;
+
     Aura* aura = botAI->GetAura(spell, GetTarget(), isOwner, checkDuration);
-    if (!aura)
+    if (!aura || (beforeDuration && aura->GetDuration() < beforeDuration))
         return true;
-    if (beforeDuration && aura->GetDuration() < beforeDuration)
-        return true;
+
     return false;
 }
 
@@ -197,10 +198,9 @@ bool CastBuffSpellAction::isUseful()
     }
 
     Aura* aura = botAI->GetAura(spell, target, isOwner, checkDuration);
-    if (!aura)
+    if (!aura || (beforeDuration && aura->GetDuration() < beforeDuration))
         return true;
-    if (beforeDuration && aura->GetDuration() < beforeDuration)
-        return true;
+
     return false;
 }
 
@@ -260,29 +260,15 @@ CastHealingSpellAction::CastHealingSpellAction(PlayerbotAI* botAI, std::string c
     range = botAI->GetRange("heal");
 }
 
-bool CastHealingSpellAction::isUseful() { return CastAuraSpellAction::isUseful(); }
-
-bool CastAoeHealSpellAction::isUseful() { return CastSpellAction::isUseful(); }
-
 CastCureSpellAction::CastCureSpellAction(
     PlayerbotAI* botAI, std::string const spell) : CastSpellAction(botAI, spell)
 {
     range = botAI->GetRange("heal");
 }
 
-Value<Unit*>* CurePartyMemberAction::GetTargetValue()
-{
-    return context->GetValue<Unit*>("party member to dispel", dispelType);
-}
-
 Value<Unit*>* BuffOnPartyAction::GetTargetValue()
 {
     return context->GetValue<Unit*>("party member without aura", MakeAuraQualifierForBuff(spell));
-}
-
-bool BuffOnPartyAction::Execute(Event /*event*/)
-{
-    return CastBuffSpellAction::Execute(Event());
 }
 
 CastShootAction::CastShootAction(
@@ -330,16 +316,6 @@ bool CastShootAction::Execute(Event /*event*/)
     return botAI->CastSpell(spell, GetTarget());
 }
 
-Value<Unit*>* CastDebuffSpellOnAttackerAction::GetTargetValue()
-{
-    return context->GetValue<Unit*>("attacker without aura", spell);
-}
-
-Value<Unit*>* CastDebuffSpellOnMeleeAttackerAction::GetTargetValue()
-{
-    return context->GetValue<Unit*>("melee attacker without aura", spell);
-}
-
 CastBuffSpellAction::CastBuffSpellAction(
     PlayerbotAI* botAI, std::string const spell, bool checkIsOwner, uint32 beforeDuration)
     : CastAuraSpellAction(botAI, spell, checkIsOwner, false, beforeDuration)
@@ -347,32 +323,11 @@ CastBuffSpellAction::CastBuffSpellAction(
     range = botAI->GetRange("spell");
 }
 
-Value<Unit*>* CastSpellOnEnemyHealerAction::GetTargetValue()
-{
-    return context->GetValue<Unit*>("enemy healer target", spell);
-}
-
-Value<Unit*>* CastSnareSpellAction::GetTargetValue() { return context->GetValue<Unit*>("snare target", spell); }
-
-Value<Unit*>* CastCrowdControlSpellAction::GetTargetValue() { return context->GetValue<Unit*>("cc target", getName()); }
-
-bool CastCrowdControlSpellAction::Execute(Event /*event*/) { return botAI->CastSpell(getName(), GetTarget()); }
-
-bool CastCrowdControlSpellAction::isPossible() { return botAI->CanCastSpell(getName(), GetTarget()); }
-
-bool CastCrowdControlSpellAction::isUseful() { return true; }
-
-std::string const CastProtectSpellAction::GetTargetName() { return "party member to protect"; }
-
-bool CastProtectSpellAction::isUseful() { return GetTarget() && !botAI->HasAura(spell, GetTarget()); }
-
 bool CastVehicleSpellAction::isPossible()
 {
     uint32 spellId = AI_VALUE2(uint32, "vehicle spell id", spell);
     return botAI->CanCastVehicleSpell(spellId, GetTarget());
 }
-
-bool CastVehicleSpellAction::isUseful() { return botAI->IsInVehicle(false, true); }
 
 bool CastVehicleSpellAction::Execute(Event /*event*/)
 {
@@ -383,13 +338,7 @@ bool CastVehicleSpellAction::Execute(Event /*event*/)
 bool CastEveryManForHimselfAction::isPossible()
 {
     uint32 spellId = AI_VALUE2(uint32, "spell id", spell);
-    if (!spellId)
-        return false;
-
-    if (!bot->HasSpell(spellId))
-        return false;
-
-    if (HasSpellOrCategoryCooldown(bot, spellId))
+    if (!spellId || !bot->HasSpell(spellId) || HasSpellOrCategoryCooldown(bot, spellId))
         return false;
 
     return true;
@@ -398,23 +347,17 @@ bool CastEveryManForHimselfAction::isPossible()
 bool CastEveryManForHimselfAction::isUseful()
 {
     return (bot->HasAuraType(SPELL_AURA_MOD_STUN) ||
-           bot->HasAuraType(SPELL_AURA_MOD_FEAR) ||
-           bot->HasAuraType(SPELL_AURA_MOD_ROOT) ||
-           bot->HasAuraType(SPELL_AURA_MOD_CONFUSE) ||
-           bot->HasAuraType(SPELL_AURA_MOD_CHARM))
-        && CastSpellAction::isUseful();
+            bot->HasAuraType(SPELL_AURA_MOD_FEAR) ||
+            bot->HasAuraType(SPELL_AURA_MOD_ROOT) ||
+            bot->HasAuraType(SPELL_AURA_MOD_CONFUSE) ||
+            bot->HasAuraType(SPELL_AURA_MOD_CHARM)) &&
+           CastSpellAction::isUseful();
 }
 
 bool CastWillOfTheForsakenAction::isPossible()
 {
     uint32 spellId = AI_VALUE2(uint32, "spell id", spell);
-    if (!spellId)
-        return false;
-
-    if (!bot->HasSpell(spellId))
-        return false;
-
-    if (HasSpellOrCategoryCooldown(bot, spellId))
+    if (!spellId || !bot->HasSpell(spellId) || HasSpellOrCategoryCooldown(bot, spellId))
         return false;
 
     return true;
@@ -423,10 +366,10 @@ bool CastWillOfTheForsakenAction::isPossible()
 bool CastWillOfTheForsakenAction::isUseful()
 {
     return (bot->HasAuraType(SPELL_AURA_MOD_FEAR) ||
-           bot->HasAuraType(SPELL_AURA_MOD_CHARM) ||
-           bot->HasAuraType(SPELL_AURA_AOE_CHARM) ||
-           bot->HasAuraWithMechanic(1 << MECHANIC_SLEEP))
-        && CastSpellAction::isUseful();
+            bot->HasAuraType(SPELL_AURA_MOD_CHARM) ||
+            bot->HasAuraType(SPELL_AURA_AOE_CHARM) ||
+            bot->HasAuraWithMechanic(1 << MECHANIC_SLEEP)) &&
+           CastSpellAction::isUseful();
 }
 
 bool UseTrinketAction::Execute(Event /*event*/)
@@ -445,15 +388,11 @@ bool UseTrinketAction::Execute(Event /*event*/)
 
 bool UseTrinketAction::UseTrinket(Item* item)
 {
-    if (bot->CanUseItem(item) != EQUIP_ERR_OK)
-        return false;
-
-    if (bot->IsNonMeleeSpellCast(true))
+    if (bot->CanUseItem(item) != EQUIP_ERR_OK || bot->IsNonMeleeSpellCast(true))
         return false;
 
     uint8 bagIndex = item->GetBagSlot();
     uint8 slot = item->GetSlot();
-    // uint8 spell_index = 0; //not used, line marked for removal.
     uint8 cast_count = 1;
     ObjectGuid item_guid = item->GetGUID();
     uint32 glyphIndex = 0;
@@ -472,18 +411,32 @@ bool UseTrinketAction::UseTrinket(Item* item)
                 return false;
 
             bool applyAura = false;
+            bool restoresMana = false;
+            bool improvesManaRegen = false;
             for (int i = 0; i < MAX_SPELL_EFFECTS; i++)
             {
                 const SpellEffectInfo& effectInfo = spellInfo->Effects[i];
                 if (effectInfo.Effect == SPELL_EFFECT_APPLY_AURA)
-                {
                     applyAura = true;
-                    break;
-                }
+
+                restoresMana = restoresMana || IsManaRestoreEffect(effectInfo);
+                improvesManaRegen = improvesManaRegen || IsManaRegenEffect(effectInfo);
             }
 
-            if (!applyAura)
+            if (!applyAura && !restoresMana)
                 return false;
+
+            if (restoresMana || improvesManaRegen)
+            {
+                if (!AI_VALUE2(bool, "has mana", "self target"))
+                    return false;
+
+                uint8 const manaPct = AI_VALUE2(uint8, "mana", "self target");
+                if (restoresMana && manaPct >= sPlayerbotAIConfig.mediumMana)
+                    return false;
+                else if (manaPct >= sPlayerbotAIConfig.highMana)
+                    return false;
+            }
 
             uint32 spellProcFlag = spellInfo->ProcFlags;
 
@@ -495,32 +448,30 @@ bool UseTrinketAction::UseTrinket(Item* item)
             if (spellProcFlag != 0) return false;
 
             if (!botAI->CanCastSpell(spellId, bot, false))
-            {
                 return false;
-            }
+
             break;
         }
     }
+
     if (!spellId)
         return false;
+
     WorldPacket packet(CMSG_USE_ITEM);
     packet << bagIndex << slot << cast_count << spellId << item_guid << glyphIndex << castFlags;
 
     targetFlag = TARGET_FLAG_NONE;
     packet << targetFlag << bot->GetPackGUID();
     bot->GetSession()->HandleUseItemOpcode(packet);
+
     return true;
 }
-
-Value<Unit*>* BuffOnMainTankAction::GetTargetValue() { return context->GetValue<Unit*>("main tank", spell); }
-
 bool CastDebuffSpellAction::isUseful()
 {
     Unit* target = GetTarget();
     if (!target || !target->IsAlive() || !target->IsInWorld())
-    {
         return false;
-    }
+
     return CastAuraSpellAction::isUseful() &&
            (target->GetHealth() / AI_VALUE(float, "estimated group dps")) >= needLifeTime;
 }
