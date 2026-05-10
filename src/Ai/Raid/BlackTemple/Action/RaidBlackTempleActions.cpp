@@ -78,26 +78,6 @@ bool BlackTempleEraseTimersAndTrackersAction::Execute(Event /*event*/)
     }
 }
 
-// Trash
-
-bool ShadowmoonReaverStopAttackingAction::Execute(Event /*event*/)
-{
-    Unit* reaver = AI_VALUE2(Unit*, "find target", "shadowmoon reaver");
-    if (!reaver)
-        return false;
-
-    if (bot->GetVictim() == reaver)
-    {
-        bot->AttackStop();
-
-        Unit* champion = AI_VALUE2(Unit*, "find target", "shadowmoon champion");
-        if (champion && !HasBlackTempleCombatTarget(botAI, bot, champion))
-            return Attack(champion);
-    }
-
-    return false;
-}
-
 // High Warlord Naj'entus
 
 bool HighWarlordNajentusMisdirectBossToMainTankAction::Execute(Event /*event*/)

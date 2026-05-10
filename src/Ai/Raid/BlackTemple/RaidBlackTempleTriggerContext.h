@@ -18,10 +18,6 @@ public:
         creators["black temple bot is not in combat"] =
             &RaidBlackTempleTriggerContext::black_temple_bot_is_not_in_combat;
 
-        // Trash
-        creators["shadowmoon reaver has spell absorption"] =
-            &RaidBlackTempleTriggerContext::shadowmoon_reaver_has_spell_absorption;
-
         // High Warlord Naj'entus
         creators["high warlord naj'entus pulling boss"] =
             &RaidBlackTempleTriggerContext::high_warlord_najentus_pulling_boss;
@@ -216,10 +212,6 @@ private:
     // General
     static Trigger* black_temple_bot_is_not_in_combat(
         PlayerbotAI* botAI) { return new BlackTempleBotIsNotInCombatTrigger(botAI); }
-
-    // Trash
-    static Trigger* shadowmoon_reaver_has_spell_absorption(
-        PlayerbotAI* botAI) { return new ShadowmoonReaverHasSpellAbsorptionTrigger(botAI); }
 
     // High Warlord Naj'entus
     static Trigger* high_warlord_najentus_pulling_boss(

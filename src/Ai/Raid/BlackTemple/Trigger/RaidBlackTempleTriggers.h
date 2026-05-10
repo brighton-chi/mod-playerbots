@@ -18,16 +18,6 @@ public:
     bool IsActive() override;
 };
 
-// Trash
-
-class ShadowmoonReaverHasSpellAbsorptionTrigger : public Trigger
-{
-public:
-    ShadowmoonReaverHasSpellAbsorptionTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "shadowmoon reaver has spell absorption") {}
-    bool IsActive() override;
-};
-
 // High Warlord Naj'entus
 
 class HighWarlordNajentusPullingBossTrigger : public Trigger

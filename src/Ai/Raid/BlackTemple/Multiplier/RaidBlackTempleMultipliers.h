@@ -8,15 +8,6 @@
 
 #include "Multiplier.h"
 
-// Trash
-class ShadowmoonReaverDontBuildChaoticChargesMultiplier : public Multiplier
-{
-public:
-    ShadowmoonReaverDontBuildChaoticChargesMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "shadowmoon reaver don't build chaotic charges multiplier") {}
-    virtual float GetValue(Action* action);
-};
-
 // High Warlord Naj'entus
 class HighWarlordNajentusDisableCombatFormationMoveMultiplier : public Multiplier
 {

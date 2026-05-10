@@ -26,16 +26,6 @@ public:
     bool Execute(Event event) override;
 };
 
-// Trash
-
-class ShadowmoonReaverStopAttackingAction : public AttackAction
-{
-public:
-    ShadowmoonReaverStopAttackingAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "shadowmoon reaver stop attacking") {}
-    bool Execute(Event event) override;
-};
-
 // High Warlord Naj'entus
 
 class HighWarlordNajentusMisdirectBossToMainTankAction : public AttackAction

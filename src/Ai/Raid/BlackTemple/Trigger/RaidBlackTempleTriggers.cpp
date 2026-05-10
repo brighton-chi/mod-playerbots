@@ -20,18 +20,6 @@ bool BlackTempleBotIsNotInCombatTrigger::IsActive()
     return !bot->IsInCombat() && bot->GetMapId() == BLACK_TEMPLE_MAP_ID;
 }
 
-// Trash
-
-bool ShadowmoonReaverHasSpellAbsorptionTrigger::IsActive()
-{
-    if (!botAI->IsDps(bot) || bot->getClass() == CLASS_WARRIOR)
-        return false;
-
-    Unit* reaver = AI_VALUE2(Unit*, "find target", "shadowmoon reaver");
-    return reaver && reaver->HasAura(
-        static_cast<uint32>(BlackTempleSpells::SPELL_SPELL_ABSORPTION));
-}
-
 // High Warlord Naj'entus
 
 bool HighWarlordNajentusPullingBossTrigger::IsActive()

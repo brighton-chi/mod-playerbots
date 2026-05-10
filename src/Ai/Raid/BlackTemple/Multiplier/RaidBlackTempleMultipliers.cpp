@@ -25,39 +25,6 @@
 
 using namespace BlackTempleHelpers;
 
-// Trash
-float ShadowmoonReaverDontBuildChaoticChargesMultiplier::GetValue(Action* action)
-{
-    Unit* reaver = AI_VALUE2(Unit*, "find target", "shadowmoon reaver");
-    if (!reaver || !reaver->HasAura(
-            static_cast<uint32>(BlackTempleSpells::SPELL_SPELL_ABSORPTION)))
-    {
-        return 1.0f;
-    }
-
-    if (!botAI->IsDps(bot) || bot->getClass() == CLASS_WARRIOR)
-        return 1.0f;
-
-    Unit* actionTarget = action->GetTarget();
-    if (actionTarget != reaver)
-        return 1.0f;
-
-    if (dynamic_cast<AttackAction*>(action) ||
-        dynamic_cast<CastSpellAction*>(action))
-        return 0.0f;
-
-    if (!botAI->IsCaster(bot) && bot->getClass() != CLASS_PALADIN &&
-        bot->getClass() != CLASS_SHAMAN)
-    {
-        return 1.0f;
-    }
-
-    if (action->getThreatType() == Action::ActionThreatType::Aoe)
-        return 0.0f;
-
-    return 1.0f;
-}
-
 // High Warlord Naj'entus
 float HighWarlordNajentusDisableCombatFormationMoveMultiplier::GetValue(Action* action)
 {

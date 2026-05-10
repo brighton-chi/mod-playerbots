@@ -18,10 +18,6 @@ public:
         creators["black temple erase timers and trackers"] =
             &RaidBlackTempleActionContext::black_temple_erase_timers_and_trackers;
 
-        // Trash
-        creators["shadowmoon reaver stop attacking"] =
-            &RaidBlackTempleActionContext::shadowmoon_reaver_stop_attacking;
-
         // High Warlord Naj'entus
         creators["high warlord naj'entus misdirect boss to main tank"] =
             &RaidBlackTempleActionContext::high_warlord_najentus_misdirect_boss_to_main_tank;
@@ -216,10 +212,6 @@ private:
     // General
     static Action* black_temple_erase_timers_and_trackers(
         PlayerbotAI* botAI) { return new BlackTempleEraseTimersAndTrackersAction(botAI); }
-
-    // Trash
-    static Action* shadowmoon_reaver_stop_attacking(
-        PlayerbotAI* botAI) { return new ShadowmoonReaverStopAttackingAction(botAI); }
 
     // High Warlord Naj'entus
     static Action* high_warlord_najentus_misdirect_boss_to_main_tank(

@@ -26,9 +26,6 @@ namespace BlackTempleHelpers
 
 enum class BlackTempleSpells : uint32
 {
-    // Shadowmoon Reaver
-    SPELL_SPELL_ABSORPTION          = 41034,
-
     // High Warlord Naj'entus
     SPELL_IMPALING_SPINE            = 39837,
     SPELL_TIDAL_SHIELD              = 39872,

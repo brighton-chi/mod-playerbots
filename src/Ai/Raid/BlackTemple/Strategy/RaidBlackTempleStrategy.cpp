@@ -12,10 +12,6 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("black temple bot is not in combat", {
         NextAction("black temple erase timers and trackers", ACTION_EMERGENCY + 11) }));
 
-    // Trash
-    triggers.push_back(new TriggerNode("shadowmoon reaver has spell absorption", {
-        NextAction("shadowmoon reaver stop attacking", ACTION_RAID + 1) }));
-
     // High Warlord Naj'entus
     triggers.push_back(new TriggerNode("high warlord naj'entus pulling boss", {
         NextAction("high warlord naj'entus misdirect boss to main tank", ACTION_RAID + 2) }));
@@ -208,9 +204,6 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
 void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
-    // Trash
-    multipliers.push_back(new ShadowmoonReaverDontBuildChaoticChargesMultiplier(botAI));
-
     // High Warlord Naj'entus
     multipliers.push_back(new HighWarlordNajentusDisableCombatFormationMoveMultiplier(botAI));
 
