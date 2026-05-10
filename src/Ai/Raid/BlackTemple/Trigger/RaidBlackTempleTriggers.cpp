@@ -32,16 +32,6 @@ bool ShadowmoonReaverHasSpellAbsorptionTrigger::IsActive()
         static_cast<uint32>(BlackTempleSpells::SPELL_SPELL_ABSORPTION));
 }
 
-bool SisterOfPainHasShellOfPainTrigger::IsActive()
-{
-    if (!botAI->IsDps(bot))
-        return false;
-
-    Unit* sisterOfPain = AI_VALUE2(Unit*, "find target", "sister of pain");
-    return sisterOfPain && sisterOfPain->HasAura(
-        static_cast<uint32>(BlackTempleSpells::SPELL_SHELL_OF_PAIN));
-}
-
 // High Warlord Naj'entus
 
 bool HighWarlordNajentusPullingBossTrigger::IsActive()

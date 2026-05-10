@@ -22,9 +22,6 @@ public:
         creators["shadowmoon reaver stop attacking"] =
             &RaidBlackTempleActionContext::shadowmoon_reaver_stop_attacking;
 
-        creators["sister of pain switch target"] =
-            &RaidBlackTempleActionContext::sister_of_pain_switch_target;
-
         // High Warlord Naj'entus
         creators["high warlord naj'entus misdirect boss to main tank"] =
             &RaidBlackTempleActionContext::high_warlord_najentus_misdirect_boss_to_main_tank;
@@ -223,9 +220,6 @@ private:
     // Trash
     static Action* shadowmoon_reaver_stop_attacking(
         PlayerbotAI* botAI) { return new ShadowmoonReaverStopAttackingAction(botAI); }
-
-    static Action* sister_of_pain_switch_target(
-        PlayerbotAI* botAI) { return new SisterOfPainSwitchTargetAction(botAI); }
 
     // High Warlord Naj'entus
     static Action* high_warlord_najentus_misdirect_boss_to_main_tank(

@@ -22,9 +22,6 @@ public:
         creators["shadowmoon reaver has spell absorption"] =
             &RaidBlackTempleTriggerContext::shadowmoon_reaver_has_spell_absorption;
 
-        creators["sister of pain has shell of pain"] =
-            &RaidBlackTempleTriggerContext::sister_of_pain_has_shell_of_pain;
-
         // High Warlord Naj'entus
         creators["high warlord naj'entus pulling boss"] =
             &RaidBlackTempleTriggerContext::high_warlord_najentus_pulling_boss;
@@ -223,9 +220,6 @@ private:
     // Trash
     static Trigger* shadowmoon_reaver_has_spell_absorption(
         PlayerbotAI* botAI) { return new ShadowmoonReaverHasSpellAbsorptionTrigger(botAI); }
-
-    static Trigger* sister_of_pain_has_shell_of_pain(
-        PlayerbotAI* botAI) { return new SisterOfPainHasShellOfPainTrigger(botAI); }
 
     // High Warlord Naj'entus
     static Trigger* high_warlord_najentus_pulling_boss(

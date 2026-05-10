@@ -26,6 +26,8 @@ bool BlackTempleEraseTimersAndTrackersAction::Execute(Event /*event*/)
         {
             if (illidanBossDpsWaitTimer.erase(instanceId) > 0)
                 erased = true;
+            if (illidanFlameDpsWaitTimer.erase(instanceId) > 0)
+                erased = true;
             if (flameTankWaypointIndex.erase(guid) > 0)
                 erased = true;
             if (westFlameGuid.erase(instanceId) > 0)
@@ -89,26 +91,8 @@ bool ShadowmoonReaverStopAttackingAction::Execute(Event /*event*/)
         bot->AttackStop();
 
         Unit* champion = AI_VALUE2(Unit*, "find target", "shadowmoon champion");
-        if (champion && AI_VALUE(Unit*, "current target") != champion)
+        if (champion && !HasBlackTempleCombatTarget(botAI, bot, champion))
             return Attack(champion);
-    }
-
-    return false;
-}
-
-bool SisterOfPainSwitchTargetAction::Execute(Event /*event*/)
-{
-    Unit* sisterOfPain = AI_VALUE2(Unit*, "find target", "sister of pain");
-    if (!sisterOfPain)
-        return false;
-
-    if (bot->GetVictim() == sisterOfPain)
-    {
-        bot->AttackStop();
-
-        Unit* sisterOfPleasure = AI_VALUE2(Unit*, "find target", "sister of pleasure");
-        if (sisterOfPleasure && AI_VALUE(Unit*, "current target") != sisterOfPleasure)
-            return Attack(sisterOfPleasure);
     }
 
     return false;
@@ -144,7 +128,7 @@ bool HighWarlordNajentusTanksPositionBossAction::Execute(Event /*event*/)
     if (!najentus)
         return false;
 
-    if (AI_VALUE(Unit*, "current target") != najentus)
+    if (!HasBlackTempleCombatTarget(botAI, bot, najentus))
         return Attack(najentus);
 
     if (najentus->GetVictim() == bot && bot->IsWithinMeleeRange(najentus))
@@ -539,7 +523,7 @@ bool ShadeOfAkamaMeleeDpsPrioritizeChannelersAction::Execute(Event /*event*/)
     if (!channeler)
         return false;
 
-    if (AI_VALUE(Unit*, "current target") != channeler)
+    if (!HasBlackTempleCombatTarget(botAI, bot, channeler))
         return Attack(channeler);
 
     return false;
@@ -577,7 +561,7 @@ bool TeronGorefiendTanksPositionBossAction::Execute(Event /*event*/)
 
     MarkTargetWithSkull(bot, gorefiend);
 
-    if (AI_VALUE(Unit*, "current target") != gorefiend)
+    if (!HasBlackTempleCombatTarget(botAI, bot, gorefiend))
         return Attack(gorefiend);
 
     if (gorefiend->GetVictim() == bot && bot->IsWithinMeleeRange(gorefiend))
@@ -849,7 +833,7 @@ bool GurtoggBloodboilTanksPositionBossAction::Execute(Event /*event*/)
     if (!gurtogg)
         return false;
 
-    if (AI_VALUE(Unit*, "current target") != gurtogg)
+    if (!HasBlackTempleCombatTarget(botAI, bot, gurtogg))
         return Attack(gurtogg);
 
     Unit* victim = gurtogg->GetVictim();
@@ -1176,7 +1160,7 @@ bool MotherShahrazTanksPositionBossUnderPillarAction::Execute(Event /*event*/)
     if (!shahraz)
         return false;
 
-    if (AI_VALUE(Unit*, "current target") != shahraz)
+    if (!HasBlackTempleCombatTarget(botAI, bot, shahraz))
         return Attack(shahraz);
 
     Unit* victim = shahraz->GetVictim();
@@ -1442,7 +1426,7 @@ bool IllidariCouncilMainTankPositionGathiosAction::Execute(Event /*event*/)
     MarkTargetWithSquare(bot, gathios);
     SetRtiTarget(botAI, "square", gathios);
 
-    if (AI_VALUE(Unit*, "current target") != gathios)
+    if (!HasBlackTempleCombatTarget(botAI, bot, gathios))
         return Attack(gathios);
 
     const ObjectGuid guid = bot->GetGUID();
@@ -1514,7 +1498,7 @@ bool IllidariCouncilFirstAssistTankPositionMalandeAction::Execute(Event /*event*
     MarkTargetWithStar(bot, malande);
     SetRtiTarget(botAI, "star", malande);
 
-    if (AI_VALUE(Unit*, "current target") != malande)
+    if (!HasBlackTempleCombatTarget(botAI, bot, malande))
         return Attack(malande);
 
     /* if (malande->GetVictim() == bot)
@@ -1555,7 +1539,7 @@ bool IllidariCouncilSecondAssistTankPositionDarkshadowAction::Execute(Event /*ev
     MarkTargetWithCircle(bot, darkshadow);
     SetRtiTarget(botAI, "circle", darkshadow);
 
-    if (AI_VALUE(Unit*, "current target") != darkshadow)
+    if (!HasBlackTempleCombatTarget(botAI, bot, darkshadow))
         return Attack(darkshadow);
 
     if (darkshadow->GetVictim() == bot)
@@ -1598,7 +1582,7 @@ bool IllidariCouncilMageTankPositionZerevorAction::Execute(Event /*event*/)
     MarkTargetWithTriangle(bot, zerevor);
     SetRtiTarget(botAI, "triangle", zerevor);
 
-    if (AI_VALUE(Unit*, "current target") != zerevor)
+    if (!HasBlackTempleCombatTarget(botAI, bot, zerevor))
         return Attack(zerevor);
 
     if (zerevor->GetVictim() == bot)
@@ -1736,7 +1720,7 @@ bool IllidariCouncilAssignDpsTargetsAction::Execute(Event /*event*/)
     {
         SetRtiTarget(botAI, "star", malande);
 
-        if (AI_VALUE(Unit*, "current target") != malande)
+        if (!HasBlackTempleCombatTarget(botAI, bot, malande))
             return Attack(malande);
     }
     else if (Unit* darkshadow = AI_VALUE2(Unit*, "find target", "veras darkshadow");
@@ -1745,14 +1729,14 @@ bool IllidariCouncilAssignDpsTargetsAction::Execute(Event /*event*/)
     {
         SetRtiTarget(botAI, "circle", darkshadow);
 
-        if (AI_VALUE(Unit*, "current target") != darkshadow)
+        if (!HasBlackTempleCombatTarget(botAI, bot, darkshadow))
             return Attack(darkshadow);
     }
     else if (Unit* gathios = AI_VALUE2(Unit*, "find target", "gathios the shatterer"))
     {
         SetRtiTarget(botAI, "square", gathios);
 
-        if (AI_VALUE(Unit*, "current target") != gathios)
+        if (!HasBlackTempleCombatTarget(botAI, bot, gathios))
             return Attack(gathios);
     }
 
@@ -1899,7 +1883,7 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
     if (!illidan)
         return false;
 
-    if (AI_VALUE(Unit*, "current target") != illidan)
+    if (!HasBlackTempleCombatTarget(botAI, bot, illidan))
         return Attack(illidan);
 
     if (GetIllidanPhase(illidan) == 5)
@@ -2156,7 +2140,7 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*ev
     {
         if (eastFlame && westFlame)
         {
-            if (AI_VALUE(Unit*, "current target") != eastFlame)
+            if (!HasBlackTempleCombatTarget(botAI, bot, eastFlame))
                 return Attack(eastFlame);
 
             if (eastFlame->GetVictim() != bot)
@@ -2207,7 +2191,7 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*ev
     {
         if (westFlame)
         {
-            if (AI_VALUE(Unit*, "current target") != westFlame)
+            if (!HasBlackTempleCombatTarget(botAI, bot, westFlame))
                 return Attack(westFlame);
 
             if (westFlame->GetVictim() != bot)
@@ -2830,7 +2814,7 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
     {
         if (candidate && candidate->IsAlive())
         {
-            if (AI_VALUE(Unit*, "current target") != candidate)
+            if (!HasBlackTempleCombatTarget(botAI, bot, candidate))
                 return Attack(candidate);
 
             return false;

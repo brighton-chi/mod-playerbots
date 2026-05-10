@@ -16,9 +16,6 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("shadowmoon reaver has spell absorption", {
         NextAction("shadowmoon reaver stop attacking", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("sister of pain has shell of pain", {
-        NextAction("sister of pain switch target", ACTION_RAID + 1) }));
-
     // High Warlord Naj'entus
     triggers.push_back(new TriggerNode("high warlord naj'entus pulling boss", {
         NextAction("high warlord naj'entus misdirect boss to main tank", ACTION_RAID + 2) }));

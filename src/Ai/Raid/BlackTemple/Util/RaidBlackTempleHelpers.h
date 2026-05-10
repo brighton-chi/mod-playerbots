@@ -29,9 +29,6 @@ enum class BlackTempleSpells : uint32
     // Shadowmoon Reaver
     SPELL_SPELL_ABSORPTION          = 41034,
 
-    // Sister of Pain
-    SPELL_SHELL_OF_PAIN             = 41371,
-
     // High Warlord Naj'entus
     SPELL_IMPALING_SPINE            = 39837,
     SPELL_TIDAL_SHIELD              = 39872,
@@ -140,6 +137,8 @@ enum class TankPositionState : uint8
 };
 
 constexpr uint32 BLACK_TEMPLE_MAP_ID = 564;
+
+bool HasBlackTempleCombatTarget(PlayerbotAI* botAI, Player* bot, Unit* target);
 
 // High Warlord Naj'entus
 extern const Position NAJENTUS_TANK_POSITION;

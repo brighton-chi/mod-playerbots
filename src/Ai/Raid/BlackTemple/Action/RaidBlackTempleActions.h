@@ -36,14 +36,6 @@ public:
     bool Execute(Event event) override;
 };
 
-class SisterOfPainSwitchTargetAction : public AttackAction
-{
-public:
-    SisterOfPainSwitchTargetAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "sister of pain switch target") {}
-    bool Execute(Event event) override;
-};
-
 // High Warlord Naj'entus
 
 class HighWarlordNajentusMisdirectBossToMainTankAction : public AttackAction
