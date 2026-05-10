@@ -19,6 +19,9 @@ public:
             &RaidBlackTempleTriggerContext::black_temple_bot_is_not_in_combat;
 
         // Trash
+        creators["shadowmoon reaver has spell absorption"] =
+            &RaidBlackTempleTriggerContext::shadowmoon_reaver_has_spell_absorption;
+
         creators["sister of pain has shell of pain"] =
             &RaidBlackTempleTriggerContext::sister_of_pain_has_shell_of_pain;
 
@@ -218,6 +221,9 @@ private:
         PlayerbotAI* botAI) { return new BlackTempleBotIsNotInCombatTrigger(botAI); }
 
     // Trash
+    static Trigger* shadowmoon_reaver_has_spell_absorption(
+        PlayerbotAI* botAI) { return new ShadowmoonReaverHasSpellAbsorptionTrigger(botAI); }
+
     static Trigger* sister_of_pain_has_shell_of_pain(
         PlayerbotAI* botAI) { return new SisterOfPainHasShellOfPainTrigger(botAI); }
 

@@ -20,6 +20,14 @@ public:
 
 // Trash
 
+class ShadowmoonReaverHasSpellAbsorptionTrigger : public Trigger
+{
+public:
+    ShadowmoonReaverHasSpellAbsorptionTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "shadowmoon reaver has spell absorption") {}
+    bool IsActive() override;
+};
+
 class SisterOfPainHasShellOfPainTrigger : public Trigger
 {
 public:

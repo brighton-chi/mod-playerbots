@@ -13,6 +13,9 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("black temple erase timers and trackers", ACTION_EMERGENCY + 11) }));
 
     // Trash
+    triggers.push_back(new TriggerNode("shadowmoon reaver has spell absorption", {
+        NextAction("shadowmoon reaver stop attacking", ACTION_RAID + 1) }));
+
     triggers.push_back(new TriggerNode("sister of pain has shell of pain", {
         NextAction("sister of pain switch target", ACTION_RAID + 1) }));
 

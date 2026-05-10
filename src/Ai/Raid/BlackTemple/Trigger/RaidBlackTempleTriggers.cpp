@@ -6,6 +6,7 @@
 #include "RaidBlackTempleTriggers.h"
 #include "RaidBlackTempleHelpers.h"
 #include "RaidBlackTempleActions.h"
+#include "AiFactory.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
 #include "SharedDefines.h"
@@ -20,6 +21,16 @@ bool BlackTempleBotIsNotInCombatTrigger::IsActive()
 }
 
 // Trash
+
+bool ShadowmoonReaverHasSpellAbsorptionTrigger::IsActive()
+{
+    if (!botAI->IsDps(bot) || bot->getClass() == CLASS_WARRIOR)
+        return false;
+
+    Unit* reaver = AI_VALUE2(Unit*, "find target", "shadowmoon reaver");
+    return reaver && reaver->HasAura(
+        static_cast<uint32>(BlackTempleSpells::SPELL_SPELL_ABSORPTION));
+}
 
 bool SisterOfPainHasShellOfPainTrigger::IsActive()
 {
@@ -182,10 +193,16 @@ bool SupremusNeedToManagePhaseTimerTrigger::IsActive()
 
 bool ShadeOfAkamaKillingChannelersStartsPhase2Trigger::IsActive()
 {
-    if (!botAI->IsDps(bot) && !botAI->IsMelee(bot))
+    if (!botAI->IsDps(bot) || !botAI->IsMelee(bot))
         return false;
 
-    return AI_VALUE2(Unit*, "find target", "ashtongue channeler");
+    constexpr float searchRadius = 30.0f;
+    Unit* channeler = bot->FindNearestCreature(
+        static_cast<uint32>(BlackTempleNpcs::NPC_ASHTONGUE_CHANNELER),
+        searchRadius, true);
+
+    return channeler && channeler->IsAlive() &&
+           !channeler->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE);
 }
 
 // Teron Gorefiend
@@ -356,10 +373,16 @@ bool ReliquaryOfSoulsEssenceOfSufferingFixatesOnClosestTargetTrigger::IsActive()
 
 bool ReliquaryOfSoulsEssenceOfSufferingDisablesHealingTrigger::IsActive()
 {
-    if (!botAI->IsHeal(bot) || bot->getClass() == CLASS_PRIEST)
+    if (!botAI->IsHeal(bot))
         return false;
 
-    return AI_VALUE2(Unit*, "find target", "reliquary of the lost");
+    if (bot->getClass() == CLASS_PRIEST &&
+        AiFactory::GetPlayerSpecTab(bot) == PRIEST_TAB_DISCIPLINE)
+    {
+        return false;
+    }
+
+    return AI_VALUE2(Unit*, "find target", "essence of suffering");
 }
 
 bool ReliquaryOfSoulsEssenceOfDesireHasRuneShieldTrigger::IsActive()

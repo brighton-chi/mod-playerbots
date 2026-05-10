@@ -19,6 +19,9 @@ public:
             &RaidBlackTempleActionContext::black_temple_erase_timers_and_trackers;
 
         // Trash
+        creators["shadowmoon reaver stop attacking"] =
+            &RaidBlackTempleActionContext::shadowmoon_reaver_stop_attacking;
+
         creators["sister of pain switch target"] =
             &RaidBlackTempleActionContext::sister_of_pain_switch_target;
 
@@ -218,6 +221,9 @@ private:
         PlayerbotAI* botAI) { return new BlackTempleEraseTimersAndTrackersAction(botAI); }
 
     // Trash
+    static Action* shadowmoon_reaver_stop_attacking(
+        PlayerbotAI* botAI) { return new ShadowmoonReaverStopAttackingAction(botAI); }
+
     static Action* sister_of_pain_switch_target(
         PlayerbotAI* botAI) { return new SisterOfPainSwitchTargetAction(botAI); }
 

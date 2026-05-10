@@ -10,6 +10,7 @@
 #include "DKActions.h"
 #include "DruidActions.h"
 #include "DruidBearActions.h"
+#include "DruidShapeshiftActions.h"
 #include "FollowActions.h"
 #include "HunterActions.h"
 #include "MageActions.h"
@@ -27,15 +28,6 @@ using namespace BlackTempleHelpers;
 // Trash
 float ShadowmoonReaverDontBuildChaoticChargesMultiplier::GetValue(Action* action)
 {
-    if (botAI->IsTank(bot))
-        return 1.0f;
-
-    if (!botAI->IsCaster(bot) && bot->getClass() != CLASS_PALADIN &&
-        bot->getClass() != CLASS_SHAMAN)
-    {
-        return 1.0f;
-    }
-
     Unit* reaver = AI_VALUE2(Unit*, "find target", "shadowmoon reaver");
     if (!reaver || !reaver->HasAura(
             static_cast<uint32>(BlackTempleSpells::SPELL_SPELL_ABSORPTION)))
@@ -43,8 +35,8 @@ float ShadowmoonReaverDontBuildChaoticChargesMultiplier::GetValue(Action* action
         return 1.0f;
     }
 
-    if (action->getThreatType() == Action::ActionThreatType::Aoe)
-        return 0.0f;
+    if (!botAI->IsDps(bot) || bot->getClass() == CLASS_WARRIOR)
+        return 1.0f;
 
     Unit* actionTarget = action->GetTarget();
     if (actionTarget != reaver)
@@ -52,6 +44,15 @@ float ShadowmoonReaverDontBuildChaoticChargesMultiplier::GetValue(Action* action
 
     if (dynamic_cast<AttackAction*>(action) ||
         dynamic_cast<CastSpellAction*>(action))
+        return 0.0f;
+
+    if (!botAI->IsCaster(bot) && bot->getClass() != CLASS_PALADIN &&
+        bot->getClass() != CLASS_SHAMAN)
+    {
+        return 1.0f;
+    }
+
+    if (action->getThreatType() == Action::ActionThreatType::Aoe)
         return 0.0f;
 
     return 1.0f;
@@ -65,7 +66,9 @@ float HighWarlordNajentusDisableCombatFormationMoveMultiplier::GetValue(Action* 
 
     if (dynamic_cast<CombatFormationMoveAction*>(action) &&
         !dynamic_cast<SetBehindTargetAction*>(action))
+    {
         return 0.0f;
+    }
 
     return 1.0f;
 }
@@ -147,12 +150,13 @@ float TeronGorefiendMarkedBotOnlyMoveToDieMultiplier::GetValue(Action* action)
 
 float TeronGorefiendSpiritsAttackOnlyShadowyConstructsMultiplier::GetValue(Action* action)
 {
-    if (!bot->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_SPIRITUAL_VENGEANCE)))
+    if (!bot->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_SPIRITUAL_VENGEANCE)) ||
+        dynamic_cast<WipeAction*>(action))
+    {
         return 1.0f;
+    }
 
-    if (dynamic_cast<WipeAction*>(action))
-        return 1.0f;
-    else if (!dynamic_cast<TeronGorefiendControlAndDestroyShadowyConstructsAction*>(action))
+    if (!dynamic_cast<TeronGorefiendControlAndDestroyShadowyConstructsAction*>(action))
         return 0.0f;
 
     return 1.0f;
@@ -227,8 +231,12 @@ float ReliquaryOfSoulsDontWasteHealingMultiplier::GetValue(Action* action)
     {
         return 1.0f;
     }
-    else if (dynamic_cast<CastHealingSpellAction*>(action))
+
+    if (dynamic_cast<CastTreeFormAction*>(action) ||
+        dynamic_cast<CastHealingSpellAction*>(action))
+    {
         return 0.0f;
+    }
 
     return 1.0f;
 }
@@ -259,12 +267,16 @@ float MotherShahrazControlMovementMultiplier::GetValue(Action* action)
 
 float MotherShahrazBotsWithFatalAttractionOnlyRunAwayMultiplier::GetValue(Action* action)
 {
-    if (!bot->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_FATAL_ATTRACTION)))
+    if (!AI_VALUE2(Unit*, "find target", "mother shahraz") ||
+        !bot->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_FATAL_ATTRACTION)))
+    {
         return 1.0f;
+    }
 
     if (dynamic_cast<WipeAction*>(action))
         return 1.0f;
-    else if (!dynamic_cast<MotherShahrazRunAwayToBreakFatalAttractionAction*>(action))
+
+    if (!dynamic_cast<MotherShahrazRunAwayToBreakFatalAttractionAction*>(action))
         return 0.0f;
 
     return 1.0f;

@@ -97,9 +97,6 @@ enum class BlackTempleSpells : uint32
 
 enum class BlackTempleNpcs : uint32
 {
-    // Trash
-    NPC_SISTER_OF_PLEASURE    = 22964,
-
     // Supremus
     NPC_SUPREMUS_VOLCANO      = 23085,
 

@@ -78,6 +78,24 @@ bool BlackTempleEraseTimersAndTrackersAction::Execute(Event /*event*/)
 
 // Trash
 
+bool ShadowmoonReaverStopAttackingAction::Execute(Event /*event*/)
+{
+    Unit* reaver = AI_VALUE2(Unit*, "find target", "shadowmoon reaver");
+    if (!reaver)
+        return false;
+
+    if (bot->GetVictim() == reaver)
+    {
+        bot->AttackStop();
+
+        Unit* champion = AI_VALUE2(Unit*, "find target", "shadowmoon champion");
+        if (champion && AI_VALUE(Unit*, "current target") != champion)
+            return Attack(champion);
+    }
+
+    return false;
+}
+
 bool SisterOfPainSwitchTargetAction::Execute(Event /*event*/)
 {
     Unit* sisterOfPain = AI_VALUE2(Unit*, "find target", "sister of pain");
@@ -85,18 +103,13 @@ bool SisterOfPainSwitchTargetAction::Execute(Event /*event*/)
         return false;
 
     if (bot->GetVictim() == sisterOfPain)
+    {
         bot->AttackStop();
 
-    Unit* sisterOfPleasure = GetFirstAliveUnitByEntry(
-        botAI, static_cast<uint32>(BlackTempleNpcs::NPC_SISTER_OF_PLEASURE));
-    if (!sisterOfPleasure)
-        return false;
-
-    if (IsMechanicTrackerBot(botAI, bot, BLACK_TEMPLE_MAP_ID))
-        MarkTargetWithSkull(bot, sisterOfPleasure);
-
-    if (bot->GetTarget() != sisterOfPleasure->GetGUID())
-        return Attack(sisterOfPleasure);
+        Unit* sisterOfPleasure = AI_VALUE2(Unit*, "find target", "sister of pleasure");
+        if (sisterOfPleasure && AI_VALUE(Unit*, "current target") != sisterOfPleasure)
+            return Attack(sisterOfPleasure);
+    }
 
     return false;
 }
@@ -131,7 +144,7 @@ bool HighWarlordNajentusTanksPositionBossAction::Execute(Event /*event*/)
     if (!najentus)
         return false;
 
-    if (bot->GetVictim() != najentus)
+    if (AI_VALUE(Unit*, "current target") != najentus)
         return Attack(najentus);
 
     if (najentus->GetVictim() == bot && bot->IsWithinMeleeRange(najentus))
@@ -519,34 +532,14 @@ bool ShadeOfAkamaMeleeDpsPrioritizeChannelersAction::Execute(Event /*event*/)
         }
     }
 
-    Unit* channeler = GetFirstAliveUnitByEntry(
-        botAI, static_cast<uint32>(BlackTempleNpcs::NPC_ASHTONGUE_CHANNELER));
+    constexpr float searchRadius = 20.0f;
+    Unit* channeler = bot->FindNearestCreature(
+        static_cast<uint32>(BlackTempleNpcs::NPC_ASHTONGUE_CHANNELER), searchRadius, true);
+
     if (!channeler)
         return false;
 
-    bool isFirstMeleeDpsBot = false;
-    if (Group* group = bot->GetGroup())
-    {
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || !botAI->IsDps(member) ||
-                !botAI->IsMelee(member) || !GET_PLAYERBOT_AI(member))
-            {
-                continue;
-            }
-
-            isFirstMeleeDpsBot = member == bot;
-            break;
-        }
-    }
-
-    if (isFirstMeleeDpsBot)
-        MarkTargetWithDiamond(bot, channeler);
-
-    SetRtiTarget(botAI, "diamond", channeler);
-
-    if (bot->GetVictim() != channeler)
+    if (AI_VALUE(Unit*, "current target") != channeler)
         return Attack(channeler);
 
     return false;
@@ -584,7 +577,7 @@ bool TeronGorefiendTanksPositionBossAction::Execute(Event /*event*/)
 
     MarkTargetWithSkull(bot, gorefiend);
 
-    if (bot->GetVictim() != gorefiend)
+    if (AI_VALUE(Unit*, "current target") != gorefiend)
         return Attack(gorefiend);
 
     if (gorefiend->GetVictim() == bot && bot->IsWithinMeleeRange(gorefiend))
@@ -600,8 +593,8 @@ bool TeronGorefiendTanksPositionBossAction::Execute(Event /*event*/)
             const float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
             const float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
-            return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY, bot->GetPositionZ(), false,
-                          false, false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
+            return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
+                          false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
         }
     }
 
@@ -646,8 +639,8 @@ bool TeronGorefiendPositionRangedOnBalconyAction::Execute(Event /*event*/)
 
     if (bot->GetExactDist2d(targetX, targetY) > 1.0f)
     {
-        return MoveTo(BLACK_TEMPLE_MAP_ID, targetX, targetY, bot->GetPositionZ(), false,
-                      false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+        return MoveTo(BLACK_TEMPLE_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false,
+                      false, false, MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
     return false;
@@ -747,10 +740,10 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event /*eve
             return true;
         }
 
-        // Adding cooldowns manually is needed due to the charmed creature not observing cooldowns, including
-        // the GCD. The ordering, including repeating some spells, is the product of testing to try to keep
-        // the bot from breaking chains with volley, which tends to happen when volley is cast before chains
-        // (maybe due to projectile travel time?)
+        // Adding cooldowns manually is needed due to the charmed creature not observing cooldowns,
+        // including the GCD. The ordering, including repeating some spells, is the product of testing
+        // to try to keep the bot from breaking chains with volley, which tends to happen when volley
+        // is cast before chains (maybe due to projectile travel time?)
         if (!spirit->HasSpellCooldown(static_cast<uint32>(BlackTempleSpells::SPELL_SPIRIT_CHAINS)) &&
             priorityTarget->GetHealthPct() == 100.0f)
         {
@@ -856,7 +849,7 @@ bool GurtoggBloodboilTanksPositionBossAction::Execute(Event /*event*/)
     if (!gurtogg)
         return false;
 
-    if (bot->GetVictim() != gurtogg)
+    if (AI_VALUE(Unit*, "current target") != gurtogg)
         return Attack(gurtogg);
 
     Unit* victim = gurtogg->GetVictim();
@@ -874,8 +867,8 @@ bool GurtoggBloodboilTanksPositionBossAction::Execute(Event /*event*/)
             const float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
             const float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
-            return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY, bot->GetPositionZ(), false,
-                          false, false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
+            return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
+                          false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
         }
     }
 
@@ -1021,8 +1014,8 @@ bool ReliquaryOfSoulsAdjustDistanceFromSufferingAction::TanksMoveToMinimumRange(
         const float targetX = bot->GetPositionX() + (dX / distanceToBoss);
         const float targetY = bot->GetPositionY() + (dY / distanceToBoss);
 
-        return MoveTo(BLACK_TEMPLE_MAP_ID, targetX, targetY, bot->GetPositionZ(), false,
-                      false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+        return MoveTo(BLACK_TEMPLE_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false,
+                      false, false, MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
     return false;
@@ -1037,8 +1030,8 @@ bool ReliquaryOfSoulsAdjustDistanceFromSufferingAction::MeleeDpsStayAtMaximumRan
 
     if (bot->GetExactDist2d(targetX, targetY) > 0.25f)
     {
-        return MoveTo(BLACK_TEMPLE_MAP_ID, targetX, targetY, bot->GetPositionZ(), false,
-                      false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+        return MoveTo(BLACK_TEMPLE_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false,
+                      false, false, MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
     return false;
@@ -1056,16 +1049,79 @@ bool ReliquaryOfSoulsAdjustDistanceFromSufferingAction::RangedMoveAwayFromBoss(U
 
 bool ReliquaryOfSoulsHealersDpsSufferingAction::Execute(Event /*event*/)
 {
-    if (AI_VALUE2(Unit*, "find target", "essence of suffering") &&
-        !botAI->HasStrategy("healer dps", BotState::BOT_STATE_COMBAT))
+    Unit* suffering = AI_VALUE2(Unit*, "find target", "essence of suffering");
+    if (!suffering)
+        return false;
+
+    if (bot->getClass() == CLASS_DRUID)
     {
-        botAI->ChangeStrategy("+healer dps", BotState::BOT_STATE_COMBAT);
-        return true;
+        if (botAI->HasAura("tree of life", bot))
+            botAI->RemoveAura("tree of life");
+
+        bool casted = false;
+
+        if (botAI->CanCastSpell("barkskin", bot) &&
+            botAI->CastSpell("barkskin", bot))
+            casted = true;
+
+        if (botAI->CanCastSpell("wrath", suffering) &&
+            botAI->CastSpell("wrath", suffering))
+            casted = true;
+
+        return casted;
     }
-    else if (botAI->HasStrategy("healer dps", BotState::BOT_STATE_COMBAT))
+    else if (bot->getClass() == CLASS_PALADIN)
     {
-        botAI->ChangeStrategy("-healer dps", BotState::BOT_STATE_COMBAT);
-        return true;
+        bool casted = false;
+
+        if (botAI->CanCastSpell("avenging wrath", bot) &&
+            botAI->CastSpell("avenging wrath", bot))
+            casted = true;
+
+        if (botAI->CanCastSpell("consecration", bot) &&
+            botAI->CastSpell("consecration", bot))
+            casted = true;
+
+        if (botAI->CanCastSpell("exorcism", suffering) &&
+            botAI->CastSpell("exorcism", suffering))
+            casted = true;
+
+        if (botAI->CanCastSpell("hammer of wrath", suffering) &&
+            botAI->CastSpell("hammer of wrath", suffering))
+            casted = true;
+
+        if (botAI->CanCastSpell("holy shock", suffering) &&
+            botAI->CastSpell("holy shock", suffering))
+            casted = true;
+
+        if (botAI->CanCastSpell("judgement of light", suffering) &&
+            botAI->CastSpell("judgement of light", suffering))
+            casted = true;
+
+        return casted;
+    }
+    else if (bot->getClass() == CLASS_PRIEST)
+    {
+        if (botAI->CanCastSpell("smite", suffering))
+            return botAI->CastSpell("smite", suffering);
+    }
+    else if (bot->getClass() == CLASS_SHAMAN)
+    {
+        bool casted = false;
+
+        if (botAI->CanCastSpell("earth shock", suffering) &&
+            botAI->CastSpell("earth shock", suffering))
+            casted = true;
+
+        if (botAI->CanCastSpell("chain lightning", suffering) &&
+            botAI->CastSpell("chain lightning", suffering))
+            casted = true;
+
+        if (botAI->CanCastSpell("lightning bolt", suffering) &&
+            botAI->CastSpell("lightning bolt", suffering))
+            casted = true;
+
+        return casted;
     }
 
     return false;
@@ -1120,7 +1176,7 @@ bool MotherShahrazTanksPositionBossUnderPillarAction::Execute(Event /*event*/)
     if (!shahraz)
         return false;
 
-    if (bot->GetVictim() != shahraz)
+    if (AI_VALUE(Unit*, "current target") != shahraz)
         return Attack(shahraz);
 
     Unit* victim = shahraz->GetVictim();
@@ -1201,8 +1257,8 @@ bool MotherShahrazRunAwayToBreakFatalAttractionAction::Execute(Event /*event*/)
     if (botIt == attractedPlayers.end())
         return false;
 
-    const float spreadAngle = 2.0f * M_PI * std::distance(attractedPlayers.begin(), botIt) /
-                              attractedPlayers.size();
+    const float spreadAngle =
+        2.0f * M_PI * std::distance(attractedPlayers.begin(), botIt) / attractedPlayers.size();
 
     constexpr float maxSpreadDistance = 35.0f;
     constexpr float distanceStep = 1.0f;
@@ -1220,7 +1276,7 @@ bool MotherShahrazRunAwayToBreakFatalAttractionAction::Execute(Event /*event*/)
 
         if (!bot->GetMap()->CheckCollisionAndGetValidCoords(
                 bot, bot->GetPositionX(), bot->GetPositionY(),
-            bot->GetPositionZ(), testX, testY, testZ))
+                bot->GetPositionZ(), testX, testY, testZ))
         {
             break;
         }
@@ -1386,11 +1442,7 @@ bool IllidariCouncilMainTankPositionGathiosAction::Execute(Event /*event*/)
     MarkTargetWithSquare(bot, gathios);
     SetRtiTarget(botAI, "square", gathios);
 
-    // The MT switches target to Lady Malande after arriving at the 4th and final position in the
-    // rotation, which causes the rotation to stop since the bot is no longer targeting Gathios
-    // Why this happens is unclear since there are no actions related to Malande in the MT's log
-    // Hence, GetVictim() is used instead of GetTarget()
-    if (bot->GetVictim() != gathios)
+    if (AI_VALUE(Unit*, "current target") != gathios)
         return Attack(gathios);
 
     const ObjectGuid guid = bot->GetGUID();
@@ -1462,7 +1514,7 @@ bool IllidariCouncilFirstAssistTankPositionMalandeAction::Execute(Event /*event*
     MarkTargetWithStar(bot, malande);
     SetRtiTarget(botAI, "star", malande);
 
-    if (bot->GetVictim() != malande)
+    if (AI_VALUE(Unit*, "current target") != malande)
         return Attack(malande);
 
     /* if (malande->GetVictim() == bot)
@@ -1503,7 +1555,7 @@ bool IllidariCouncilSecondAssistTankPositionDarkshadowAction::Execute(Event /*ev
     MarkTargetWithCircle(bot, darkshadow);
     SetRtiTarget(botAI, "circle", darkshadow);
 
-    if (bot->GetVictim() != darkshadow)
+    if (AI_VALUE(Unit*, "current target") != darkshadow)
         return Attack(darkshadow);
 
     if (darkshadow->GetVictim() == bot)
@@ -1546,7 +1598,7 @@ bool IllidariCouncilMageTankPositionZerevorAction::Execute(Event /*event*/)
     MarkTargetWithTriangle(bot, zerevor);
     SetRtiTarget(botAI, "triangle", zerevor);
 
-    if (bot->GetTarget() != zerevor->GetGUID())
+    if (AI_VALUE(Unit*, "current target") != zerevor)
         return Attack(zerevor);
 
     if (zerevor->GetVictim() == bot)
@@ -1562,9 +1614,8 @@ bool IllidariCouncilMageTankPositionZerevorAction::Execute(Event /*event*/)
             const float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
             const float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
-            return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY, bot->GetPositionZ(),
-                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT,
-                          true, false);
+            return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
+                          false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
 
@@ -1611,9 +1662,8 @@ bool IllidariCouncilPositionMageTankHealerAction::Execute(Event /*event*/)
         const float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
         const float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
-        return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY, bot->GetPositionZ(),
-                      false, false, false, false,
-                      MovementPriority::MOVEMENT_COMBAT, true, false);
+        return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
+                      false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
     return false;
@@ -1686,7 +1736,7 @@ bool IllidariCouncilAssignDpsTargetsAction::Execute(Event /*event*/)
     {
         SetRtiTarget(botAI, "star", malande);
 
-        if (bot->GetTarget() != malande->GetGUID())
+        if (AI_VALUE(Unit*, "current target") != malande)
             return Attack(malande);
     }
     else if (Unit* darkshadow = AI_VALUE2(Unit*, "find target", "veras darkshadow");
@@ -1695,14 +1745,14 @@ bool IllidariCouncilAssignDpsTargetsAction::Execute(Event /*event*/)
     {
         SetRtiTarget(botAI, "circle", darkshadow);
 
-        if (bot->GetTarget() != darkshadow->GetGUID())
+        if (AI_VALUE(Unit*, "current target") != darkshadow)
             return Attack(darkshadow);
     }
     else if (Unit* gathios = AI_VALUE2(Unit*, "find target", "gathios the shatterer"))
     {
         SetRtiTarget(botAI, "square", gathios);
 
-        if (bot->GetTarget() != gathios->GetGUID())
+        if (AI_VALUE(Unit*, "current target") != gathios)
             return Attack(gathios);
     }
 
@@ -1736,10 +1786,8 @@ bool IllidanStormrageMisdirectToTankAction::Execute(Event /*event*/)
 
     if (phase == 2 && TryMisdirectToFlameTanks(group))
         return true;
-    else if (phase == 4 && TryMisdirectToWarlockTank(illidan))
-        return true;
 
-    return false;
+    return phase == 4 && TryMisdirectToWarlockTank(illidan);
 }
 
 bool IllidanStormrageMisdirectToTankAction::TryMisdirectToFlameTanks(Group* group)
@@ -1851,7 +1899,7 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
     if (!illidan)
         return false;
 
-    if (bot->GetVictim() != illidan)
+    if (AI_VALUE(Unit*, "current target") != illidan)
         return Attack(illidan);
 
     if (GetIllidanPhase(illidan) == 5)
@@ -2048,7 +2096,8 @@ bool IllidanStormrageIsolateBotWithParasiteAction::Execute(Event /*event*/)
 
         if (HasParasiticShadowfiend(bot))
             return InfectedBotMoveFromGroup(illidan, target);
-        else if (GetIllidanTrapperHunter(bot) == bot)
+
+        if (GetIllidanTrapperHunter(bot) == bot)
             return FreezeTrapShadowfiend(bot, illidan, target);
     }
 
@@ -2107,7 +2156,7 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*ev
     {
         if (eastFlame && westFlame)
         {
-            if (bot->GetVictim() != eastFlame)
+            if (AI_VALUE(Unit*, "current target") != eastFlame)
                 return Attack(eastFlame);
 
             if (eastFlame->GetVictim() != bot)
@@ -2158,7 +2207,7 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*ev
     {
         if (westFlame)
         {
-            if (bot->GetVictim() != westFlame)
+            if (AI_VALUE(Unit*, "current target") != westFlame)
                 return Attack(westFlame);
 
             if (westFlame->GetVictim() != bot)
@@ -2263,9 +2312,8 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidE
     if (tooCloseToNorthGrate || tooCloseToEastGrate || tooCloseToWestGrate)
         return false;
 
-    return MoveTo(BLACK_TEMPLE_MAP_ID, safeX, safeY, safeZ,
-                  false, false, false, false, MovementPriority::MOVEMENT_FORCED,
-                  true, false);
+    return MoveTo(BLACK_TEMPLE_MAP_ID, safeX, safeY, safeZ, false, false, false,
+                  false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidBlaze(
@@ -2520,10 +2568,11 @@ bool IllidanStormrageDisperseRangedAction::FanOutBehindInHumanPhase(
     const float targetX = illidan->GetPositionX() + radius * std::cos(angle);
     const float targetY = illidan->GetPositionY() + radius * std::sin(angle);
 
+    constexpr float hazardRadius = 12.0f;
     bool safe = true;
     for (Unit* flameCrash : flameCrashes)
     {
-        if (flameCrash->GetDistance2d(targetX, targetY) < 12.0f)
+        if (flameCrash->GetDistance2d(targetX, targetY) < hazardRadius)
         {
             safe = false;
             break;
@@ -2593,10 +2642,11 @@ bool IllidanStormrageDisperseRangedAction::SpreadInCircleInDemonPhase(
     const float arcStart = Position::NormalizeOrientation(warlockAngle + forbiddenArc / 2.0f);
     constexpr float radius = 25.0f;
 
-    const float angle = (count == 1) ? Position::NormalizeOrientation(arcStart + allowedArc / 2.0f) :
-        Position::NormalizeOrientation(
-        arcStart + allowedArc * static_cast<float>(botIndex) /
-        static_cast<float>(count - 1));
+    const float angle = (count == 1) ?
+        Position::NormalizeOrientation(arcStart + allowedArc / 2.0f) :
+            Position::NormalizeOrientation(
+                arcStart + allowedArc * static_cast<float>(botIndex) /
+                static_cast<float>(count - 1));
 
     const float targetX = illidan->GetPositionX() + radius * std::cos(angle);
     const float targetY = illidan->GetPositionY() + radius * std::sin(angle);
@@ -2780,7 +2830,7 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
     {
         if (candidate && candidate->IsAlive())
         {
-            if (bot->GetTarget() != candidate->GetGUID())
+            if (AI_VALUE(Unit*, "current target") != candidate)
                 return Attack(candidate);
 
             return false;
@@ -2974,7 +3024,7 @@ bool IllidanStormrageHandleAddsCheatAction::Execute(Event /*event*/)
                 desiredDamage = shadowDemon->GetHealth() - quarterHealth;
 
             Unit::DealDamage(bot, shadowDemon, desiredDamage, nullptr, DIRECT_DAMAGE,
-                            SPELL_SCHOOL_MASK_NORMAL, nullptr, false, false, nullptr);
+                             SPELL_SCHOOL_MASK_NORMAL, nullptr, false, false, nullptr);
             return true;
         }
     }
