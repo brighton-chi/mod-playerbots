@@ -9,6 +9,15 @@
 #include "Multiplier.h"
 
 // High Warlord Naj'entus
+
+class HighWarlordNajentusDelayDpsCooldownsMultiplier : public Multiplier
+{
+public:
+    HighWarlordNajentusDelayDpsCooldownsMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "high warlord naj'entus delay dps cooldowns multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
 class HighWarlordNajentusDisableCombatFormationMoveMultiplier : public Multiplier
 {
 public:
@@ -18,6 +27,15 @@ public:
 };
 
 // Supremus
+
+class SupremusDelayDpsCooldownsMultiplier : public Multiplier
+{
+public:
+    SupremusDelayDpsCooldownsMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "supremus delay dps cooldowns multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
 class SupremusFocusOnAvoidanceInPhase2Multiplier : public Multiplier
 {
 public:
@@ -35,6 +53,15 @@ public:
 };
 
 // Teron Gorefiend
+
+class TeronGorefiendDelayDpsCooldownsMultiplier : public Multiplier
+{
+public:
+    TeronGorefiendDelayDpsCooldownsMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "teron gorefiend delay dps cooldowns multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
 class TeronGorefiendControlMovementMultiplier : public Multiplier
 {
 public:
@@ -69,6 +96,14 @@ public:
 
 // Gurtogg Bloodboil
 
+class GurtoggBloodboilDelayDpsCooldownsMultiplier : public Multiplier
+{
+public:
+    GurtoggBloodboilDelayDpsCooldownsMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "gurtogg bloodboil delay dps cooldowns multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
 class GurtoggBloodboilControlMovementMultiplier : public Multiplier
 {
 public:
@@ -79,6 +114,14 @@ public:
 
 // Reliquary of Souls
 
+class ReliquaryOfSoulsDelayDpsCooldownsMultiplier : public Multiplier
+{
+public:
+    ReliquaryOfSoulsDelayDpsCooldownsMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "reliquary of souls delay dps cooldowns multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
 class ReliquaryOfSoulsDontWasteHealingMultiplier : public Multiplier
 {
 public:
@@ -88,6 +131,14 @@ public:
 };
 
 // Mother Shahraz
+
+class MotherShahrazDelayDpsCooldownsMultiplier : public Multiplier
+{
+public:
+    MotherShahrazDelayDpsCooldownsMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "mother shahraz delay dps cooldowns multiplier") {}
+    virtual float GetValue(Action* action);
+};
 
 class MotherShahrazControlMovementMultiplier : public Multiplier
 {
@@ -105,21 +156,13 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class MotherShahrazDelayBloodlustAndHeroismMultiplier : public Multiplier
-{
-public:
-    MotherShahrazDelayBloodlustAndHeroismMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "mother shahraz delay bloodlust and heroism multiplier") {}
-    virtual float GetValue(Action* action);
-};
-
 // Illidari Council
 
-class IllidariCouncilDelayBloodlustAndHeroismMultiplier : public Multiplier
+class IllidariCouncilDelayDpsCooldownsMultiplier : public Multiplier
 {
 public:
-    IllidariCouncilDelayBloodlustAndHeroismMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "illidari council delay bloodlust and heroism multiplier") {}
+    IllidariCouncilDelayDpsCooldownsMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "illidari council delay dps cooldowns multiplier") {}
     virtual float GetValue(Action* action);
 };
 
@@ -173,11 +216,11 @@ public:
 
 // Illidan Stormrage <The Betrayer>
 
-class IllidanStormrageDelayCooldownsMultiplier : public Multiplier
+class IllidanStormrageDelayDpsCooldownsMultiplier : public Multiplier
 {
 public:
-    IllidanStormrageDelayCooldownsMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "illidan stormrage delay cooldowns multiplier") {}
+    IllidanStormrageDelayDpsCooldownsMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "illidan stormrage delay dps cooldowns multiplier") {}
     virtual float GetValue(Action* action);
 };
 

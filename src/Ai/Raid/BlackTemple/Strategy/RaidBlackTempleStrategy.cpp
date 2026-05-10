@@ -205,31 +205,35 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     // High Warlord Naj'entus
+    multipliers.push_back(new HighWarlordNajentusDelayDpsCooldownsMultiplier(botAI));
     multipliers.push_back(new HighWarlordNajentusDisableCombatFormationMoveMultiplier(botAI));
 
     // Supremus
+    multipliers.push_back(new SupremusDelayDpsCooldownsMultiplier(botAI));
     multipliers.push_back(new SupremusFocusOnAvoidanceInPhase2Multiplier(botAI));
     multipliers.push_back(new SupremusHitboxIsBuggedMultiplier(botAI));
 
     // Teron Gorefiend
+    multipliers.push_back(new TeronGorefiendDelayDpsCooldownsMultiplier(botAI));
     multipliers.push_back(new TeronGorefiendControlMovementMultiplier(botAI));
     multipliers.push_back(new TeronGorefiendMarkedBotOnlyMoveToDieMultiplier(botAI));
     multipliers.push_back(new TeronGorefiendSpiritsAttackOnlyShadowyConstructsMultiplier(botAI));
     multipliers.push_back(new TeronGorefiendDisableAttackingConstructsMultiplier(botAI));
 
     // Gurtogg Bloodboil
+    multipliers.push_back(new GurtoggBloodboilDelayDpsCooldownsMultiplier(botAI));
     multipliers.push_back(new GurtoggBloodboilControlMovementMultiplier(botAI));
 
     // Reliquary of Souls
     multipliers.push_back(new ReliquaryOfSoulsDontWasteHealingMultiplier(botAI));
 
     // Mother Shahraz
+    multipliers.push_back(new MotherShahrazDelayDpsCooldownsMultiplier(botAI));
     multipliers.push_back(new MotherShahrazControlMovementMultiplier(botAI));
     multipliers.push_back(new MotherShahrazBotsWithFatalAttractionOnlyRunAwayMultiplier(botAI));
-    multipliers.push_back(new MotherShahrazDelayBloodlustAndHeroismMultiplier(botAI));
 
     // Illidari Council
-    multipliers.push_back(new IllidariCouncilDelayBloodlustAndHeroismMultiplier(botAI));
+    multipliers.push_back(new IllidariCouncilDelayDpsCooldownsMultiplier(botAI));
     multipliers.push_back(new IllidariCouncilDisableTankActionsMultiplier(botAI));
     multipliers.push_back(new IllidariCouncilControlMovementMultiplier(botAI));
     multipliers.push_back(new IllidariCouncilControlMisdirectionMultiplier(botAI));
@@ -238,7 +242,7 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new IllidariCouncilWaitForDpsMultiplier(botAI));
 
     // Illidan Stormrage <The Betrayer>
-    multipliers.push_back(new IllidanStormrageDelayCooldownsMultiplier(botAI));
+    multipliers.push_back(new IllidanStormrageDelayDpsCooldownsMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageControlTankActionsMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageDisableDefaultTargetingMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageControlNonTankMovementMultiplier(botAI));
