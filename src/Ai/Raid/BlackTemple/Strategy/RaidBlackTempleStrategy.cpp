@@ -225,6 +225,7 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new GurtoggBloodboilControlMovementMultiplier(botAI));
 
     // Reliquary of Souls
+    multipliers.push_back(new ReliquaryOfSoulsDelayDpsCooldownsMultiplier(botAI));
     multipliers.push_back(new ReliquaryOfSoulsDontWasteHealingMultiplier(botAI));
 
     // Mother Shahraz

@@ -135,8 +135,6 @@ enum class TankPositionState : uint8
 
 constexpr uint32 BLACK_TEMPLE_MAP_ID = 564;
 
-bool HasBlackTempleCombatTarget(PlayerbotAI* botAI, Player* bot, Unit* target);
-
 // High Warlord Naj'entus
 extern const Position NAJENTUS_TANK_POSITION;
 

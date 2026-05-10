@@ -275,7 +275,7 @@ float GurtoggBloodboilControlMovementMultiplier::GetValue(Action* action)
 
 // Reliquary of Souls
 
-float ReliquaryOfSoulsDpsCooldownsMultiplier::GetValue(Action* action)
+float ReliquaryOfSoulsDelayDpsCooldownsMultiplier::GetValue(Action* action)
 {
     Unit* suffering = AI_VALUE2(Unit*, "find target", "essence of suffering");
     if (!suffering || suffering->GetHealthPct() < 95.0f)

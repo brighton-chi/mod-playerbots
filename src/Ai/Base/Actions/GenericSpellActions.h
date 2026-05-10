@@ -141,6 +141,7 @@ public:
                            bool isOwner = true);
 
     std::string const GetTargetName() override { return "self target"; }
+    bool isUseful() override { return CastAuraSpellAction::isUseful(); }
     ActionThreatType getThreatType() override { return ActionThreatType::Aoe; }
     HealingManaEfficiency manaEfficiency;
     uint8 estAmount;
@@ -222,6 +223,7 @@ public:
         : CastBuffSpellAction(botAI, spell), PartyMemberActionNameSupport(spell) { }
 
     Value<Unit*>* GetTargetValue() override;
+    bool Execute(Event event) override;
     std::string const getName() override { return PartyMemberActionNameSupport::getName(); }
 };
 
