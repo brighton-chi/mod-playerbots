@@ -702,10 +702,13 @@ float KiljaedenControlMovementAndTargetingMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float KiljaedenPrioritizeArmageddonAvoidanceMultiplier::GetValue(Action* action)
+float KiljaedenPrioritizeDarknessProtectionMultiplier::GetValue(Action* action)
 {
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
     if (!kiljaeden)
+        return 1.0f;
+
+    if (IsKiljaedenDragonController(bot))
         return 1.0f;
 
     if (IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden) &&
@@ -724,8 +727,7 @@ float KiljaedenControlDragonMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "kil'jaeden"))
         return 1.0f;
 
-    if (!bot->HasAura(
-            static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
+    if (!IsKiljaedenDragonController(bot))
     {
         return 1.0f;
     }

@@ -671,8 +671,7 @@ bool KiljaedenItsRainingMeteorsTrigger::IsActive()
     if (!kiljaeden || IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
         return false;
 
-    if (bot->HasAura(
-            static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
+    if (IsKiljaedenDragonController(bot))
     {
         return false;
     }
@@ -713,8 +712,22 @@ bool KiljaedenSaysChaosDestructionOblivionTrigger::IsActive()
     if (!kiljaeden)
         return false;
 
-    if (bot->HasAura(
-            static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
+    bool const hasVengeanceOfTheBlueFlight =
+        bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT));
+    bool const hasPossessDrakeImmunity =
+        bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_POSSESS_DRAKE_IMMUNITY));
+    bool const isDragonController = IsKiljaedenDragonController(bot);
+
+    if (IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
+    {
+        LOG_DEBUG(
+            "playerbots",
+            "Kiljaeden darkness trigger: bot={} orbUser={} aura45839={} aura45838={} controller={}",
+            bot->GetName(), GetKiljaedenDragonOrbUser(bot) == bot, hasVengeanceOfTheBlueFlight,
+            hasPossessDrakeImmunity, isDragonController);
+    }
+
+    if (isDragonController)
     {
         return false;
     }
@@ -731,8 +744,7 @@ bool KiljaedenBossEngagedByTanksTrigger::IsActive()
     if (!kiljaeden || IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
         return false;
 
-    if (bot->HasAura(
-            static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
+    if (IsKiljaedenDragonController(bot))
     {
         return false;
     }
@@ -755,8 +767,7 @@ bool KiljaedenBossEngagedByMeleeTrigger::IsActive()
     if (!kiljaeden || IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
         return false;
 
-    if (bot->HasAura(
-            static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
+    if (IsKiljaedenDragonController(bot))
     {
         return false;
     }
@@ -799,8 +810,7 @@ bool KiljaedenBossEngagedByRangedTrigger::IsActive()
     if (!kiljaeden || IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
         return false;
 
-    if (bot->HasAura(
-            static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
+    if (IsKiljaedenDragonController(bot))
     {
         return false;
     }
@@ -814,8 +824,7 @@ bool KiljaedenDragonOrbIsActiveTrigger::IsActive()
     if (!kiljaeden || kiljaeden->GetHealthPct() > 85.0f)
         return false;
 
-    if (bot->HasAura(
-            static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
+    if (IsKiljaedenDragonController(bot))
     {
         return false;
     }
@@ -825,6 +834,20 @@ bool KiljaedenDragonOrbIsActiveTrigger::IsActive()
 
 bool KiljaedenBotControlsDragonTrigger::IsActive()
 {
-    return bot->HasAura(
-        static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT));
+    bool const hasVengeanceOfTheBlueFlight =
+        bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT));
+    bool const hasPossessDrakeImmunity =
+        bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_POSSESS_DRAKE_IMMUNITY));
+    bool const isDragonController = IsKiljaedenDragonController(bot);
+
+    if (hasVengeanceOfTheBlueFlight || hasPossessDrakeImmunity)
+    {
+        LOG_DEBUG(
+            "playerbots",
+            "Kiljaeden control trigger: bot={} orbUser={} aura45839={} aura45838={} controller={}",
+            bot->GetName(), GetKiljaedenDragonOrbUser(bot) == bot, hasVengeanceOfTheBlueFlight,
+            hasPossessDrakeImmunity, isDragonController);
+    }
+
+    return isDragonController;
 }

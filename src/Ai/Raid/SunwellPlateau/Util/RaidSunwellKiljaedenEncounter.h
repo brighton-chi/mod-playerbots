@@ -68,10 +68,11 @@ float GetKiljaedenNearestArmageddonDistance(
 void EnsureKiljaedenRangedAssignments(PlayerbotAI* botAI, Player* bot);
 void EnsureKiljaedenRangedArmageddonAssignments(PlayerbotAI* botAI, Player* bot);
 Player* GetKiljaedenDragonOrbUser(Player* bot);
+bool IsKiljaedenDragonController(Player* bot);
 Unit* GetKiljaedenControlledDragon(Player* bot);
 bool CastKiljaedenDragonSpell(Unit* dragon, uint32 spellId);
-Player* FindBestKiljaedenDragonClusterTarget(PlayerbotAI* botAI, Player* bot, Unit* dragon);
-Player* FindClosestKiljaedenDragonTarget(Player* bot, Unit* dragon);
+Player* FindBestKiljaedenDragonClusterTarget(PlayerbotAI* botAI, Player* bot, Unit* dragon, uint32 spellId);
+Player* FindClosestKiljaedenDragonTarget(Player* bot, Unit* dragon, uint32 spellId = 0);
 
 }
 

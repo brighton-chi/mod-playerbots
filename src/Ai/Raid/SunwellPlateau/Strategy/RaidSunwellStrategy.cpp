@@ -340,7 +340,7 @@ void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 
     // Kil'jaeden <The Deceiver>
     multipliers.push_back(new KiljaedenControlMovementAndTargetingMultiplier(botAI));
-    multipliers.push_back(new KiljaedenPrioritizeArmageddonAvoidanceMultiplier(botAI));
+    multipliers.push_back(new KiljaedenPrioritizeDarknessProtectionMultiplier(botAI));
     multipliers.push_back(new KiljaedenDelayCooldownsMultiplier(botAI));
     multipliers.push_back(new KiljaedenControlDragonMultiplier(botAI));
 

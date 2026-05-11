@@ -247,11 +247,11 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class KiljaedenPrioritizeArmageddonAvoidanceMultiplier : public Multiplier
+class KiljaedenPrioritizeDarknessProtectionMultiplier : public Multiplier
 {
 public:
-    KiljaedenPrioritizeArmageddonAvoidanceMultiplier(PlayerbotAI* botAI) : Multiplier(
-        botAI, "kil'jaeden prioritize armageddon avoidance") {}
+    KiljaedenPrioritizeDarknessProtectionMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "kil'jaeden prioritize darkness protection") {}
     virtual float GetValue(Action* action);
 };
 
