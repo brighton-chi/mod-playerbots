@@ -4,6 +4,7 @@
  */
 
 #include "RaidBlackTempleHelpers.h"
+
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
 

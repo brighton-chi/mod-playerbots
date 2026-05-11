@@ -4,9 +4,12 @@
  */
 
 #include "RaidBlackTempleActions.h"
-#include "RaidBlackTempleHelpers.h"
+
+#include <vector>
+
 #include "CreatureAI.h"
 #include "Playerbots.h"
+#include "RaidBlackTempleHelpers.h"
 #include "RaidBossHelpers.h"
 
 using namespace BlackTempleHelpers;
@@ -496,12 +499,27 @@ bool ShadeOfAkamaMeleeDpsPrioritizeChannelersAction::Execute(Event /*event*/)
         }
     }
 
-    constexpr float searchRadius = 20.0f;
-    Unit* channeler = bot->FindNearestCreature(
-        static_cast<uint32>(BlackTempleNpcs::NPC_ASHTONGUE_CHANNELER), searchRadius, true);
+    constexpr float searchRadius = 30.0f;
+    std::list<Creature*> creatureList;
+    bot->GetCreatureListWithEntryInGrid(
+        creatureList, static_cast<uint32>(BlackTempleNpcs::NPC_ASHTONGUE_CHANNELER), searchRadius);
 
-    if (!channeler)
+    std::vector<Creature*> channelers;
+    for (Creature* creature : creatureList)
+    {
+        if (creature && creature->IsAlive())
+            channelers.push_back(creature);
+    }
+
+    if (channelers.empty())
         return false;
+
+    std::sort(channelers.begin(), channelers.end(),
+        [](Creature* first, Creature* second) { return first->GetGUID() < second->GetGUID(); });
+
+    Creature* const channeler = channelers.front();
+
+    MarkTargetWithSkull(bot, channeler);
 
     if (AI_VALUE(Unit*, "current target") != channeler)
         return Attack(channeler);

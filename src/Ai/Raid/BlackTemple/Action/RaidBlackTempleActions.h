@@ -6,10 +6,10 @@
 #ifndef _PLAYERBOT_RAIDBLACKTEMPLEACTIONS_H
 #define _PLAYERBOT_RAIDBLACKTEMPLEACTIONS_H
 
-#include "RaidBlackTempleHelpers.h"
 #include "Action.h"
 #include "AttackAction.h"
 #include "MovementActions.h"
+#include "RaidBlackTempleHelpers.h"
 
 namespace BlackTempleHelpers
 {

@@ -4,6 +4,7 @@
  */
 
 #include "RaidBlackTempleStrategy.h"
+
 #include "RaidBlackTempleMultipliers.h"
 
 void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)

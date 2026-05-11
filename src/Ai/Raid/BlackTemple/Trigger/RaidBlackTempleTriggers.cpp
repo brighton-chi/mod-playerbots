@@ -4,10 +4,11 @@
  */
 
 #include "RaidBlackTempleTriggers.h"
-#include "RaidBlackTempleHelpers.h"
-#include "RaidBlackTempleActions.h"
+
 #include "AiFactory.h"
 #include "Playerbots.h"
+#include "RaidBlackTempleActions.h"
+#include "RaidBlackTempleHelpers.h"
 #include "RaidBossHelpers.h"
 #include "SharedDefines.h"
 
@@ -179,8 +180,7 @@ bool ShadeOfAkamaKillingChannelersStartsPhase2Trigger::IsActive()
         static_cast<uint32>(BlackTempleNpcs::NPC_ASHTONGUE_CHANNELER),
         searchRadius, true);
 
-    return channeler && channeler->IsAlive() &&
-           !channeler->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE);
+    return channeler && !channeler->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE);
 }
 
 // Teron Gorefiend

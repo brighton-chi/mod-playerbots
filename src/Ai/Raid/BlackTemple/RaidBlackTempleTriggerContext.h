@@ -6,8 +6,8 @@
 #ifndef _PLAYERBOT_RAIDBLACKTEMPLETRIGGERCONTEXT_H
 #define _PLAYERBOT_RAIDBLACKTEMPLETRIGGERCONTEXT_H
 
-#include "RaidBlackTempleTriggers.h"
 #include "NamedObjectContext.h"
+#include "RaidBlackTempleTriggers.h"
 
 class RaidBlackTempleTriggerContext : public NamedObjectContext<Trigger>
 {

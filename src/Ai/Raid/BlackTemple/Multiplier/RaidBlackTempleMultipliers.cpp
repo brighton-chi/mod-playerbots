@@ -4,8 +4,7 @@
  */
 
 #include "RaidBlackTempleMultipliers.h"
-#include "RaidBlackTempleActions.h"
-#include "RaidBlackTempleHelpers.h"
+
 #include "ChooseTargetActions.h"
 #include "DKActions.h"
 #include "DruidActions.h"
@@ -16,6 +15,8 @@
 #include "MageActions.h"
 #include "PaladinActions.h"
 #include "PriestActions.h"
+#include "RaidBlackTempleActions.h"
+#include "RaidBlackTempleHelpers.h"
 #include "ReachTargetActions.h"
 #include "RogueActions.h"
 #include "ShamanActions.h"
