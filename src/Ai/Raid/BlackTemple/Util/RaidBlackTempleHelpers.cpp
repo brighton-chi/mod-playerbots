@@ -213,6 +213,9 @@ namespace BlackTempleHelpers
     }};
 
     std::unordered_map<ObjectGuid, size_t> flameTankWaypointIndex;
+    std::unordered_map<ObjectGuid, ObjectGuid> illidanShadowTrapGuid;
+    std::unordered_map<ObjectGuid, Position> illidanShadowTrapDestination;
+    std::unordered_map<uint32, int> illidanLastPhase;
     std::unordered_map<uint32, time_t> illidanBossDpsWaitTimer;
     std::unordered_map<uint32, time_t> illidanFlameDpsWaitTimer;
     std::unordered_map<uint32, ObjectGuid> eastFlameGuid;

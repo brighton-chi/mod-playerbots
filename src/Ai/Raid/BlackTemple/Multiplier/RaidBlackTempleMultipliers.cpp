@@ -733,7 +733,7 @@ float IllidanStormrageWaitForDpsMultiplier::GetValue(Action* action)
 
     int phase = GetIllidanPhase(illidan);
 
-    if ((phase == 1 || phase == 3) &&
+    if ((phase == 1 || phase == 3 || phase == 5) &&
         !botAI->IsMainTank(bot))
     {
         constexpr uint8 humanoidPhaseDpsWaitSeconds = 3;
@@ -768,7 +768,7 @@ float IllidanStormrageWaitForDpsMultiplier::GetValue(Action* action)
         !botAI->IsAssistTankOfIndex(bot, 0, true) &&
         !botAI->IsAssistTankOfIndex(bot, 1, true))
     {
-        constexpr uint8 flamePhaseDpsWaitSeconds = 7;
+        constexpr uint8 flamePhaseDpsWaitSeconds = 6;
         auto it = illidanFlameDpsWaitTimer.find(instanceId);
 
         if ((it == illidanFlameDpsWaitTimer.end() ||

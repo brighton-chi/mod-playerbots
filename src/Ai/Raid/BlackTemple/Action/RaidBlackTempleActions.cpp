@@ -31,6 +31,12 @@ bool BlackTempleEraseTimersAndTrackersAction::Execute(Event /*event*/)
                 erased = true;
             if (illidanFlameDpsWaitTimer.erase(instanceId) > 0)
                 erased = true;
+            if (illidanLastPhase.erase(instanceId) > 0)
+                erased = true;
+            if (illidanShadowTrapGuid.erase(guid) > 0)
+                erased = true;
+            if (illidanShadowTrapDestination.erase(guid) > 0)
+                erased = true;
             if (flameTankWaypointIndex.erase(guid) > 0)
                 erased = true;
             if (westFlameGuid.erase(instanceId) > 0)
@@ -869,7 +875,7 @@ bool GurtoggBloodboilRotateRangedGroupsAction::Execute(Event /*event*/)
     bool inActiveGroup = false;
     if (activeGroup >= 0 && activeGroup < groups.size())
     {
-        const auto& group = groups[activeGroup];
+        auto const& group = groups[activeGroup];
         inActiveGroup = std::find(group.begin(), group.end(), bot) != group.end();
     }
 
@@ -1890,6 +1896,18 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
         if (trap && bot->GetExactDist2d(trap) < 40.0f && illidan->GetVictim() == bot)
             return MoveToShadowTrap(trap);
     }
+    else
+    {
+        illidanShadowTrapGuid.erase(bot->GetGUID());
+        illidanShadowTrapDestination.erase(bot->GetGUID());
+    }
+
+    if (illidan->GetVictim() != bot)
+    {
+        illidanShadowTrapGuid.erase(bot->GetGUID());
+        illidanShadowTrapDestination.erase(bot->GetGUID());
+        return false;
+    }
 
     auto const& flameCrashes = GetAllFlameCrashes(bot);
     if (flameCrashes.empty())
@@ -1922,18 +1940,38 @@ bool IllidanStormrageMainTankRepositionBossAction::MoveToShadowTrap(GameObject* 
     if (!trap)
         return false;
 
-    const float trapX = trap->GetPositionX();
-    const float trapY = trap->GetPositionY();
+    ObjectGuid const botGuid = bot->GetGUID();
+    ObjectGuid const trapGuid = trap->GetGUID();
+    Position target;
 
-    const float distToTrap = trap->GetExactDist2d(bot);
-    constexpr float distBeyondTrap = 6.0f;
+    auto const cachedTrapIt = illidanShadowTrapGuid.find(botGuid);
+    auto const cachedDestinationIt = illidanShadowTrapDestination.find(botGuid);
+    if (cachedTrapIt != illidanShadowTrapGuid.end() &&
+        cachedDestinationIt != illidanShadowTrapDestination.end() &&
+        cachedTrapIt->second == trapGuid)
+    {
+        target = cachedDestinationIt->second;
+    }
+    else
+    {
+        const float trapX = trap->GetPositionX();
+        const float trapY = trap->GetPositionY();
 
-    const float dx = trapX - bot->GetPositionX();
-    const float dy = trapY - bot->GetPositionY();
-    const float targetX = trapX + (dx / distToTrap) * distBeyondTrap;
-    const float targetY = trapY + (dy / distToTrap) * distBeyondTrap;
+        const float distToTrap = trap->GetExactDist2d(bot);
+        if (distToTrap <= 0.0f)
+            return false;
 
-    Position target(targetX, targetY, trap->GetPositionZ());
+        constexpr float distBeyondTrap = 4.0f;
+
+        const float dx = trapX - bot->GetPositionX();
+        const float dy = trapY - bot->GetPositionY();
+        const float targetX = trapX + (dx / distToTrap) * distBeyondTrap;
+        const float targetY = trapY + (dy / distToTrap) * distBeyondTrap;
+
+        target = Position(targetX, targetY, trap->GetPositionZ());
+        illidanShadowTrapGuid[botGuid] = trapGuid;
+        illidanShadowTrapDestination[botGuid] = target;
+    }
 
     const float targetDist = bot->GetExactDist2d(target);
 
@@ -2857,24 +2895,27 @@ bool IllidanStormrageManageDpsTimerAndRtiAction::Execute(Event /*event*/)
     const uint32 instanceId = illidan->GetMap()->GetInstanceId();
 
     bool updated = false;
-    int phase = GetIllidanPhase(illidan);
+    const int phase = GetIllidanPhase(illidan);
+    int lastPhase = -1;
+    if (auto const it = illidanLastPhase.find(instanceId); it != illidanLastPhase.end())
+        lastPhase = it->second;
+    const bool phaseChanged = lastPhase != phase;
+    illidanLastPhase[instanceId] = phase;
 
-    if ((phase == 2 && AI_VALUE2(Unit*, "find target", "flame of azzinoth")) ||
-         phase == 5)
+    if (phaseChanged)
     {
-        if (illidanBossDpsWaitTimer.erase(instanceId) > 0)
+        if (phase == 1 || phase == 3 || phase == 4 || phase == 5)
+        {
+            illidanBossDpsWaitTimer[instanceId] = now;
             updated = true;
-    }
-    else if (phase == 1 || phase == 3 || phase == 4)
-    {
-        if (illidanBossDpsWaitTimer.try_emplace(instanceId, now).second)
-            updated = true;
-        if (illidanFlameDpsWaitTimer.erase(instanceId) > 0)
-            updated = true;
-    }
-    else if (phase == 2 && !AI_VALUE2(Unit*, "find target", "flame of azzinoth"))
-    {
-        if (illidanFlameDpsWaitTimer.insert_or_assign(instanceId, now).second)
+        }
+        else if (phase == 2)
+        {
+            if (illidanBossDpsWaitTimer.erase(instanceId) > 0)
+                updated = true;
+        }
+
+        if (phase != 2 && illidanFlameDpsWaitTimer.erase(instanceId) > 0)
             updated = true;
     }
 
@@ -2912,6 +2953,8 @@ bool IllidanStormrageManageDpsTimerAndRtiAction::Execute(Event /*event*/)
                     eastFlameGuid[instanceId] = flames[1]->GetGUID();
                     westFlameGuid[instanceId] = flames[0]->GetGUID();
                 }
+
+                illidanFlameDpsWaitTimer[instanceId] = now;
 
                 updated = true;
             }

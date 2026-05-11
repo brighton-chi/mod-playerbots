@@ -377,7 +377,6 @@ public:
     bool IsActive() override;
 };
 
-
 // Illidan Stormrage <The Betrayer>
 
 class IllidanStormrageTankNeedsAggroTrigger : public Trigger
