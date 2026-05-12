@@ -3,6 +3,9 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include <sstream>
+#include <unordered_map>
+
 #include "RaidSunwellTriggers.h"
 #include "RaidSunwellBrutallusEncounter.h"
 #include "RaidSunwellEredarTwinsEncounter.h"
@@ -814,27 +817,89 @@ bool KiljaedenBossEngagedByRangedTrigger::IsActive()
 
 bool KiljaedenDragonOrbIsActiveTrigger::IsActive()
 {
-    Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
-    if (!kiljaeden || kiljaeden->GetHealthPct() > 85.0f)
-        return false;
+    static std::unordered_map<ObjectGuid::LowType, uint32> lastLogTimes;
 
-    if (bot->HasAura(
-        static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
+    Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
+    Player* orbUser = GetKiljaedenDragonOrbUser(bot);
+    bool const isAssignedOrbUser = orbUser == bot;
+    bool const hasVengeance = bot->HasAura(
+        static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT));
+    bool result = false;
+    char const* reason = "kil'jaeden not found";
+    std::ostringstream orbStates;
+
+    auto const logState = [&]() {
+        if (!isAssignedOrbUser)
+            return;
+
+        uint32 const now = getMSTime();
+        uint32& lastLogTime = lastLogTimes[bot->GetGUID().GetCounter()];
+        if (now - lastLogTime < 2000)
+            return;
+
+        lastLogTime = now;
+
+        LOG_INFO(
+            "playerbots",
+            "KJ orb trigger bot={} result={} reason={} healthPct={} vengeance={} orbStates=[{}]",
+            bot->GetName(), result, reason,
+            kiljaeden ? kiljaeden->GetHealthPct() : 0.0f, hasVengeance,
+            orbStates.str());
+    };
+
+    if (!kiljaeden)
     {
+        logState();
         return false;
     }
 
-    if (GetKiljaedenDragonOrbUser(bot) != bot)
+    if (kiljaeden->GetHealthPct() > 85.0f)
+    {
+        reason = "phase before dragon orbs";
+        logState();
         return false;
+    }
+
+    if (hasVengeance)
+    {
+        reason = "bot has vengeance aura";
+        logState();
+        return false;
+    }
+
+    if (!isAssignedOrbUser)
+        return false;
+
+    reason = "no selectable orb found";
 
     for (const uint32 orbEntry : KILJAEDEN_DRAGON_ORB_ENTRIES)
     {
         GameObject* orb = bot->FindNearestGameObject(orbEntry, 200.0f, true);
+        if (!orbStates.str().empty())
+            orbStates << "; ";
+
+        orbStates << orbEntry << "=";
+        if (!orb)
+        {
+            orbStates << "missing";
+            continue;
+        }
+
+        bool const selectable = !orb->HasGameObjectFlag(GO_FLAG_NOT_SELECTABLE);
+        bool const inUse = orb->HasGameObjectFlag(GO_FLAG_IN_USE);
+        orbStates << "dist=" << bot->GetExactDist2d(orb)
+                  << ",selectable=" << selectable
+                  << ",inUse=" << inUse;
+
         if (orb && !orb->HasGameObjectFlag(GO_FLAG_NOT_SELECTABLE))
-            return true;
+        {
+            result = true;
+            reason = "selectable orb found";
+        }
     }
 
-    return false;
+    logState();
+    return result;
 }
 
 bool KiljaedenBotControlsDragonTrigger::IsActive()

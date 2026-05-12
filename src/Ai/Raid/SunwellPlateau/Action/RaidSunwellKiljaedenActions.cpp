@@ -284,8 +284,11 @@ bool KiljaedenUseDragonOrbAction::Execute(Event /*event*/)
     for (const uint32 orbEntry : KILJAEDEN_DRAGON_ORB_ENTRIES)
     {
         GameObject* orb = bot->FindNearestGameObject(orbEntry, 200.0f, true);
-        if (!orb || orb->HasGameObjectFlag(GO_FLAG_NOT_SELECTABLE))
+        if (!orb || orb->HasGameObjectFlag(GO_FLAG_NOT_SELECTABLE) ||
+            orb->HasGameObjectFlag(GO_FLAG_IN_USE))
+        {
             continue;
+        }
 
         const float distance = bot->GetExactDist2d(orb);
         if (!closestOrb || distance < closestDistance)
