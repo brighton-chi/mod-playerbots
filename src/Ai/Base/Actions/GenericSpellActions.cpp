@@ -25,6 +25,13 @@ using ai::spell::HasSpellOrCategoryCooldown;
 
 namespace
 {
+    bool IsArmorEffect(SpellEffectInfo const& effectInfo)
+    {
+        return effectInfo.Effect == SPELL_EFFECT_APPLY_AURA &&
+               effectInfo.ApplyAuraName == SPELL_AURA_MOD_RESISTANCE &&
+               (effectInfo.MiscValue & SPELL_SCHOOL_MASK_NORMAL);
+    }
+
     bool IsManaRestoreEffect(SpellEffectInfo const& effectInfo)
     {
         if (effectInfo.Effect == SPELL_EFFECT_ENERGIZE &&
@@ -51,6 +58,51 @@ namespace
         }
 
         return effectInfo.ApplyAuraName == SPELL_AURA_MOD_MANA_REGEN_INTERRUPT;
+    }
+
+    bool IsTankRatingEffect(SpellEffectInfo const& effectInfo)
+    {
+        if (effectInfo.Effect != SPELL_EFFECT_APPLY_AURA ||
+            effectInfo.ApplyAuraName != SPELL_AURA_MOD_RATING)
+        {
+            return false;
+        }
+
+        uint32 const tankRatingsMask =
+            (1u << CR_DEFENSE_SKILL) |
+            (1u << CR_DODGE) |
+            (1u << CR_PARRY) |
+            (1u << CR_BLOCK) |
+            (1u << CR_HIT_TAKEN_MELEE) |
+            (1u << CR_HIT_TAKEN_RANGED) |
+            (1u << CR_HIT_TAKEN_SPELL) |
+            (1u << CR_CRIT_TAKEN_MELEE) |
+            (1u << CR_CRIT_TAKEN_RANGED) |
+            (1u << CR_CRIT_TAKEN_SPELL);
+
+        return (effectInfo.MiscValue & tankRatingsMask) != 0;
+    }
+
+    bool IsDefensiveTankEffect(SpellEffectInfo const& effectInfo)
+    {
+        if (IsTankRatingEffect(effectInfo) || IsArmorEffect(effectInfo))
+            return true;
+
+        if (effectInfo.Effect != SPELL_EFFECT_APPLY_AURA)
+            return false;
+
+        switch (effectInfo.ApplyAuraName)
+        {
+            case SPELL_AURA_MOD_INCREASE_HEALTH:
+            case SPELL_AURA_MOD_INCREASE_HEALTH_PERCENT:
+            case SPELL_AURA_MOD_PARRY_PERCENT:
+            case SPELL_AURA_MOD_DODGE_PERCENT:
+            case SPELL_AURA_MOD_BLOCK_PERCENT:
+            case SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN:
+                return true;
+            default:
+                return false;
+        }
     }
 }
 
@@ -405,6 +457,10 @@ bool UseTrinketAction::UseTrinket(Item* item)
     uint8 castFlags = 0;
     uint32 targetFlag = TARGET_FLAG_NONE;
     uint32 spellId = 0;
+    uint8 healthPct = 0;
+    uint8 manaPct = 0;
+    bool logHealthPct = false;
+    bool logManaPct = false;
     for (uint8 i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
     {
         if (item->GetTemplate()->Spells[i].SpellId > 0 &&
@@ -419,6 +475,7 @@ bool UseTrinketAction::UseTrinket(Item* item)
             bool applyAura = false;
             bool restoresMana = false;
             bool improvesManaRegen = false;
+            bool defensiveTankEffect = false;
             for (int i = 0; i < MAX_SPELL_EFFECTS; i++)
             {
                 const SpellEffectInfo& effectInfo = spellInfo->Effects[i];
@@ -427,6 +484,7 @@ bool UseTrinketAction::UseTrinket(Item* item)
 
                 restoresMana = restoresMana || IsManaRestoreEffect(effectInfo);
                 improvesManaRegen = improvesManaRegen || IsManaRegenEffect(effectInfo);
+                defensiveTankEffect = defensiveTankEffect || IsDefensiveTankEffect(effectInfo);
             }
 
             if (!applyAura && !restoresMana)
@@ -437,10 +495,19 @@ bool UseTrinketAction::UseTrinket(Item* item)
                 if (!AI_VALUE2(bool, "has mana", "self target"))
                     return false;
 
-                uint8 const manaPct = AI_VALUE2(uint8, "mana", "self target");
+                manaPct = AI_VALUE2(uint8, "mana", "self target");
+                logManaPct = true;
                 if (restoresMana && manaPct >= sPlayerbotAIConfig.mediumMana)
                     return false;
                 else if (manaPct >= sPlayerbotAIConfig.highMana)
+                    return false;
+            }
+
+            if (defensiveTankEffect)
+            {
+                healthPct = AI_VALUE2(uint8, "health", "self target");
+                logHealthPct = true;
+                if (healthPct > sPlayerbotAIConfig.lowHealth)
                     return false;
             }
 
@@ -468,6 +535,23 @@ bool UseTrinketAction::UseTrinket(Item* item)
 
     targetFlag = TARGET_FLAG_NONE;
     packet << targetFlag << bot->GetPackGUID();
+
+    if (logHealthPct && logManaPct)
+    {
+        LOG_INFO("playerbots", "Bot {} used gated trinket {} (health: {}%, mana: {}%)",
+                 bot->GetName().c_str(), item->GetTemplate()->Name1.c_str(), healthPct, manaPct);
+    }
+    else if (logHealthPct)
+    {
+        LOG_INFO("playerbots", "Bot {} used gated trinket {} (health: {}%)",
+                 bot->GetName().c_str(), item->GetTemplate()->Name1.c_str(), healthPct);
+    }
+    else if (logManaPct)
+    {
+        LOG_INFO("playerbots", "Bot {} used gated trinket {} (mana: {}%)",
+                 bot->GetName().c_str(), item->GetTemplate()->Name1.c_str(), manaPct);
+    }
+
     bot->GetSession()->HandleUseItemOpcode(packet);
 
     return true;
