@@ -507,19 +507,7 @@ public:
                     continue;
 
                 if (GetKiljaedenDragonOrbUser(player) == player)
-                {
-                    Spell* currentGenericSpell = player->GetCurrentSpell(CURRENT_GENERIC_SPELL);
-                    Spell* currentChanneledSpell = player->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
-                    LOG_DEBUG(
-                        "playerbots",
-                        "Kiljaeden darkness listener: bot={} orbUser=true genericSpell={} genericState={} channeledSpell={}",
-                        player->GetName(),
-                        currentGenericSpell ? currentGenericSpell->GetSpellInfo()->Id : 0,
-                        currentGenericSpell ? currentGenericSpell->getState() : 0,
-                        currentChanneledSpell ? currentChanneledSpell->GetSpellInfo()->Id : 0);
-
                     continue;
-                }
 
                 botAI->RequestSpellInterrupt();
             }

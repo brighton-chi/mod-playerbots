@@ -708,7 +708,7 @@ float KiljaedenPrioritizeDarknessProtectionMultiplier::GetValue(Action* action)
     if (!kiljaeden)
         return 1.0f;
 
-    if (IsKiljaedenDragonController(bot, kiljaeden))
+    if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
         return 1.0f;
 
     if (IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden) &&
@@ -731,7 +731,7 @@ float KiljaedenControlDragonMultiplier::GetValue(Action* action)
     if (!kiljaeden)
         return 1.0f;
 
-    if (!IsKiljaedenDragonController(bot, kiljaeden))
+    if (!bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
     {
         return 1.0f;
     }

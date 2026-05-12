@@ -362,15 +362,6 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
             // Allow external scripts to interrupt a cast in progress
             if (spellInterruptRequested)
             {
-                if (HasStrategy("sunwell", BOT_STATE_COMBAT) &&
-                    aiObjectContext->GetValue<Unit*>("find target", "kil'jaeden")->Get())
-                {
-                    LOG_DEBUG(
-                        "playerbots",
-                        "PlayerbotAI consuming interrupt request: bot={} genericSpell={} state=preparing",
-                        bot->GetName(), currentSpell->GetSpellInfo() ? currentSpell->GetSpellInfo()->Id : 0);
-                }
-
                 spellInterruptRequested = false;
                 InterruptSpell();
                 YieldThread(bot, GetReactDelay());
@@ -450,18 +441,6 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
         // Interrupt a current channel if one still exists; otherwise, clear the stale request.
         if (bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
         {
-            if (HasStrategy("sunwell", BOT_STATE_COMBAT) &&
-                aiObjectContext->GetValue<Unit*>("find target", "kil'jaeden")->Get())
-            {
-                Spell* currentChanneledSpell = bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
-                LOG_DEBUG(
-                    "playerbots",
-                    "PlayerbotAI consuming interrupt request: bot={} channeledSpell={}",
-                    bot->GetName(),
-                    currentChanneledSpell && currentChanneledSpell->GetSpellInfo() ?
-                        currentChanneledSpell->GetSpellInfo()->Id : 0);
-            }
-
             spellInterruptRequested = false;
             InterruptSpell();
             YieldThread(bot, GetReactDelay());
@@ -4381,31 +4360,12 @@ void PlayerbotAI::RequestSpellInterrupt()
     if (currentSpell && currentSpell->getState() == SPELL_STATE_PREPARING)
     {
         spellInterruptRequested = true;
-
-        if (HasStrategy("sunwell", BOT_STATE_COMBAT) &&
-            aiObjectContext->GetValue<Unit*>("find target", "kil'jaeden")->Get())
-        {
-            LOG_DEBUG(
-                "playerbots",
-                "PlayerbotAI queued interrupt request: bot={} genericSpell={} state=preparing",
-                bot->GetName(), currentSpell->GetSpellInfo() ? currentSpell->GetSpellInfo()->Id : 0);
-        }
-
         return;
     }
 
     if (currentChanneledSpell)
     {
         spellInterruptRequested = true;
-        if (HasStrategy("sunwell", BOT_STATE_COMBAT) &&
-            aiObjectContext->GetValue<Unit*>("find target", "kil'jaeden")->Get())
-        {
-            LOG_DEBUG(
-                "playerbots",
-                "PlayerbotAI queued interrupt request: bot={} channeledSpell={}",
-                bot->GetName(),
-                currentChanneledSpell->GetSpellInfo() ? currentChanneledSpell->GetSpellInfo()->Id : 0);
-        }
         return;
     }
 
