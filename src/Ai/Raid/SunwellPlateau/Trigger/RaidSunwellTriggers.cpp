@@ -671,7 +671,8 @@ bool KiljaedenItsRainingMeteorsTrigger::IsActive()
     if (!kiljaeden || IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
         return false;
 
-    if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
+    if (bot->HasAura(
+            static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
     {
         return false;
     }
@@ -712,8 +713,11 @@ bool KiljaedenSaysChaosDestructionOblivionTrigger::IsActive()
     if (!kiljaeden)
         return false;
 
-    if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
+    if (bot->HasAura(
+            static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
+    {
         return false;
+    }
 
     return IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden);
 }
@@ -727,7 +731,8 @@ bool KiljaedenBossEngagedByTanksTrigger::IsActive()
     if (!kiljaeden || IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
         return false;
 
-    if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
+    if (bot->HasAura(
+            static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
     {
         return false;
     }
@@ -750,7 +755,8 @@ bool KiljaedenBossEngagedByMeleeTrigger::IsActive()
     if (!kiljaeden || IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
         return false;
 
-    if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
+    if (bot->HasAura(
+            static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
     {
         return false;
     }
@@ -793,7 +799,15 @@ bool KiljaedenBossEngagedByRangedTrigger::IsActive()
     if (!kiljaeden || IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
         return false;
 
-    if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
+    if (bot->HasAura(
+            static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
+    {
+        return false;
+    }
+
+    // Let the demo lock go AoE down the reflections
+    if (bot->HasAura(
+            static_cast<uint32>(SunwellSpells::SPELL_METAMORPHOSIS)))
     {
         return false;
     }
@@ -807,7 +821,8 @@ bool KiljaedenDragonOrbIsActiveTrigger::IsActive()
     if (!kiljaeden || kiljaeden->GetHealthPct() > 85.0f)
         return false;
 
-    if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
+    if (bot->HasAura(
+        static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
     {
         return false;
     }
@@ -827,5 +842,6 @@ bool KiljaedenDragonOrbIsActiveTrigger::IsActive()
 
 bool KiljaedenBotControlsDragonTrigger::IsActive()
 {
-    return bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT));
+    return bot->HasAura(
+        static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT));
 }

@@ -441,7 +441,7 @@ bool KiljaedenControlDragonAction::ExecuteOutsideDarknessOfAThousandSouls(Unit* 
     if (!spellId)
         return false;
 
-    constexpr float desiredDistance = 8.0f;
+    constexpr float desiredDistance = 6.0f;
     constexpr float distanceTolerance = 1.0f;
     const float distanceToTarget = dragon->GetExactDist2d(target);
     if (distanceToTarget > desiredDistance + distanceTolerance ||

@@ -42,6 +42,7 @@ constexpr uint8 KILJAEDEN_INNER_RANGED_SLOT_COUNT = 7;
 constexpr uint8 KILJAEDEN_OUTER_RANGED_SLOT_COUNT = 11;
 constexpr uint8 KILJAEDEN_TOTAL_RANGED_SLOT_COUNT =
     KILJAEDEN_INNER_RANGED_SLOT_COUNT + KILJAEDEN_OUTER_RANGED_SLOT_COUNT;
+extern uint32 const KILJAEDEN_DRAGON_ORB_ENTRIES[4];
 
 extern const Position KILJAEDEN_CENTER_POSITION;
 extern const Position KILJAEDEN_TANK_POSITION;
@@ -67,6 +68,7 @@ float GetKiljaedenNearestArmageddonDistance(
     Position const& position, std::vector<KiljaedenArmageddon> const& armageddons);
 void EnsureKiljaedenRangedAssignments(PlayerbotAI* botAI, Player* bot);
 void EnsureKiljaedenRangedArmageddonAssignments(PlayerbotAI* botAI, Player* bot);
+bool IsKiljaedenDragonOrb(uint32 entry);
 Player* GetKiljaedenDragonOrbUser(Player* bot);
 Unit* GetKiljaedenControlledDragon(Player* bot);
 bool CastKiljaedenDragonSpell(Unit* dragon, uint32 spellId);
