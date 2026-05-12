@@ -50,6 +50,7 @@ enum class SunwellSpells : uint32
 
     // Kil'jaeden <The Deceiver>
     SPELL_FIRE_BLOOM                   = 45641,
+    SPELL_POSSESS_DRAKE_IMMUNITY       = 45838,
     SPELL_SHIELD_OF_THE_BLUE           = 45848,
     SPELL_DRAGON_BREATH_HASTE          = 45856,
     SPELL_DRAGON_BREATH_REVITALIZE     = 45860,

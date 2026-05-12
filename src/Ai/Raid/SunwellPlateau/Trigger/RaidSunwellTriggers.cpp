@@ -13,7 +13,37 @@
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
 
+#include <sstream>
+
 using namespace SunwellHelpers;
+
+namespace
+{
+std::string FormatAuraDebugList(Unit* unit)
+{
+    if (!unit)
+        return "none";
+
+    std::ostringstream auraStream;
+    bool firstAura = true;
+
+    Unit::AuraApplicationMap const& auras = unit->GetAppliedAuras();
+    for (Unit::AuraApplicationMap::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
+    {
+        Aura* aura = itr->second->GetBase();
+        if (!aura)
+            continue;
+
+        if (!firstAura)
+            auraStream << ", ";
+
+        auraStream << aura->GetSpellInfo()->Id << ':' << aura->GetSpellInfo()->SpellName[0];
+        firstAura = false;
+    }
+
+    return firstAura ? "none" : auraStream.str();
+}
+}
 
 // General
 
@@ -671,7 +701,7 @@ bool KiljaedenItsRainingMeteorsTrigger::IsActive()
     if (!kiljaeden || IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
         return false;
 
-    if (IsKiljaedenDragonController(bot))
+    if (IsKiljaedenDragonController(bot, kiljaeden))
     {
         return false;
     }
@@ -712,19 +742,21 @@ bool KiljaedenSaysChaosDestructionOblivionTrigger::IsActive()
     if (!kiljaeden)
         return false;
 
+    Player* orbUser = GetKiljaedenDragonOrbUser(bot);
     bool const hasVengeanceOfTheBlueFlight =
         bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT));
     bool const hasPossessDrakeImmunity =
         bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_POSSESS_DRAKE_IMMUNITY));
-    bool const isDragonController = IsKiljaedenDragonController(bot);
+    bool const isDragonController = IsKiljaedenDragonController(bot, kiljaeden);
 
-    if (IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
+    if (orbUser == bot && IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
     {
+        Unit* controlledDragon = bot->GetCharm();
         LOG_DEBUG(
             "playerbots",
-            "Kiljaeden darkness trigger: bot={} orbUser={} aura45839={} aura45838={} controller={}",
-            bot->GetName(), GetKiljaedenDragonOrbUser(bot) == bot, hasVengeanceOfTheBlueFlight,
-            hasPossessDrakeImmunity, isDragonController);
+            "Kiljaeden darkness trigger: bot={} orbUser={} aura45839={} aura45838={} controller={} playerAuras=[{}] drakeAuras=[{}]",
+            bot->GetName(), true, hasVengeanceOfTheBlueFlight, hasPossessDrakeImmunity,
+            isDragonController, FormatAuraDebugList(bot), FormatAuraDebugList(controlledDragon));
     }
 
     if (isDragonController)
@@ -744,7 +776,7 @@ bool KiljaedenBossEngagedByTanksTrigger::IsActive()
     if (!kiljaeden || IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
         return false;
 
-    if (IsKiljaedenDragonController(bot))
+    if (IsKiljaedenDragonController(bot, kiljaeden))
     {
         return false;
     }
@@ -767,7 +799,7 @@ bool KiljaedenBossEngagedByMeleeTrigger::IsActive()
     if (!kiljaeden || IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
         return false;
 
-    if (IsKiljaedenDragonController(bot))
+    if (IsKiljaedenDragonController(bot, kiljaeden))
     {
         return false;
     }
@@ -810,7 +842,7 @@ bool KiljaedenBossEngagedByRangedTrigger::IsActive()
     if (!kiljaeden || IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
         return false;
 
-    if (IsKiljaedenDragonController(bot))
+    if (IsKiljaedenDragonController(bot, kiljaeden))
     {
         return false;
     }
@@ -824,7 +856,7 @@ bool KiljaedenDragonOrbIsActiveTrigger::IsActive()
     if (!kiljaeden || kiljaeden->GetHealthPct() > 85.0f)
         return false;
 
-    if (IsKiljaedenDragonController(bot))
+    if (IsKiljaedenDragonController(bot, kiljaeden))
     {
         return false;
     }
@@ -834,19 +866,22 @@ bool KiljaedenDragonOrbIsActiveTrigger::IsActive()
 
 bool KiljaedenBotControlsDragonTrigger::IsActive()
 {
+    Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
+    Player* orbUser = GetKiljaedenDragonOrbUser(bot);
     bool const hasVengeanceOfTheBlueFlight =
         bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT));
     bool const hasPossessDrakeImmunity =
         bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_POSSESS_DRAKE_IMMUNITY));
-    bool const isDragonController = IsKiljaedenDragonController(bot);
+    bool const isDragonController = IsKiljaedenDragonController(bot, kiljaeden);
 
-    if (hasVengeanceOfTheBlueFlight || hasPossessDrakeImmunity)
+    if (orbUser == bot)
     {
+        Unit* controlledDragon = bot->GetCharm();
         LOG_DEBUG(
             "playerbots",
-            "Kiljaeden control trigger: bot={} orbUser={} aura45839={} aura45838={} controller={}",
-            bot->GetName(), GetKiljaedenDragonOrbUser(bot) == bot, hasVengeanceOfTheBlueFlight,
-            hasPossessDrakeImmunity, isDragonController);
+            "Kiljaeden control trigger: bot={} orbUser={} aura45839={} aura45838={} controller={} playerAuras=[{}] drakeAuras=[{}]",
+            bot->GetName(), true, hasVengeanceOfTheBlueFlight, hasPossessDrakeImmunity,
+            isDragonController, FormatAuraDebugList(bot), FormatAuraDebugList(controlledDragon));
     }
 
     return isDragonController;

@@ -114,6 +114,9 @@ std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
 std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
     kiljaedenRangedArmageddonAssignments;
 
+std::unordered_map<ObjectGuid, uint32>
+    kiljaedenDragonControllerAuraSeenMs;
+
 void PruneExpiredKiljaedenArmageddons(uint32 instanceId)
 {
     auto const instanceItr = kiljaedenArmageddons.find(instanceId);
@@ -541,13 +544,38 @@ Player* GetKiljaedenDragonOrbUser(Player* bot)
     return nullptr;
 }
 
-bool IsKiljaedenDragonController(Player* bot)
+bool IsKiljaedenDragonController(Player* bot, Unit* kiljaeden)
 {
     if (!bot)
         return false;
 
-    return bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)) ||
-           bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_POSSESS_DRAKE_IMMUNITY));
+    bool const hasDragonControllerAura =
+        bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)) ||
+        bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_POSSESS_DRAKE_IMMUNITY));
+    if (hasDragonControllerAura)
+    {
+        kiljaedenDragonControllerAuraSeenMs[bot->GetGUID()] = getMSTime();
+        return true;
+    }
+
+    if (!kiljaeden || !IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden) ||
+        GetKiljaedenDragonOrbUser(bot) != bot)
+    {
+        return false;
+    }
+
+    constexpr uint32 dragonControllerLatchMs = 10000;
+    auto const lastSeenItr = kiljaedenDragonControllerAuraSeenMs.find(bot->GetGUID());
+    if (lastSeenItr == kiljaedenDragonControllerAuraSeenMs.end())
+        return false;
+
+    if (getMSTimeDiff(lastSeenItr->second, getMSTime()) > dragonControllerLatchMs)
+    {
+        kiljaedenDragonControllerAuraSeenMs.erase(lastSeenItr);
+        return false;
+    }
+
+    return true;
 }
 
 Unit* GetKiljaedenControlledDragon(Player* bot)

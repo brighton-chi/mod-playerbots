@@ -708,7 +708,7 @@ float KiljaedenPrioritizeDarknessProtectionMultiplier::GetValue(Action* action)
     if (!kiljaeden)
         return 1.0f;
 
-    if (IsKiljaedenDragonController(bot))
+    if (IsKiljaedenDragonController(bot, kiljaeden))
         return 1.0f;
 
     if (IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden) &&
@@ -727,7 +727,11 @@ float KiljaedenControlDragonMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "kil'jaeden"))
         return 1.0f;
 
-    if (!IsKiljaedenDragonController(bot))
+    Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
+    if (!kiljaeden)
+        return 1.0f;
+
+    if (!IsKiljaedenDragonController(bot, kiljaeden))
     {
         return 1.0f;
     }
