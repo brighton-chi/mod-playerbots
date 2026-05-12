@@ -812,7 +812,17 @@ bool KiljaedenDragonOrbIsActiveTrigger::IsActive()
         return false;
     }
 
-    return GetKiljaedenDragonOrbUser(bot) == bot;
+    if (GetKiljaedenDragonOrbUser(bot) != bot)
+        return false;
+
+    for (const uint32 orbEntry : KILJAEDEN_DRAGON_ORB_ENTRIES)
+    {
+        GameObject* orb = bot->FindNearestGameObject(orbEntry, 200.0f, true);
+        if (orb && !orb->HasGameObjectFlag(GO_FLAG_NOT_SELECTABLE))
+            return true;
+    }
+
+    return false;
 }
 
 bool KiljaedenBotControlsDragonTrigger::IsActive()
