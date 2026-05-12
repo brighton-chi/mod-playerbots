@@ -411,7 +411,7 @@ float EredarTwinsControlThreatMultiplier::GetValue(Action* action)
     Unit* actionTarget = action->GetTarget();
     if (dynamic_cast<AttackAction*>(action) &&
         !dynamic_cast<EredarTwinsDpsPrioritizeLadySacrolashAction*>(action) &&
-        (actionTarget == sacrolash || bot->GetVictim() == sacrolash))
+        (actionTarget == sacrolash || AI_VALUE(Unit*, "current target") == sacrolash))
     {
         return 0.0f;
     }
@@ -519,13 +519,13 @@ float MuruDisableDefaultTargetingMultiplier::GetValue(Action* action)
     constexpr float searchRadius = 40.0f;
     Unit* voidSpawn = bot->FindNearestCreature(
         static_cast<uint32>(SunwellNpcs::NPC_VOID_SPAWN), searchRadius);
-    if (voidSpawn && bot->GetVictim() == voidSpawn &&
+    if (voidSpawn && AI_VALUE(Unit*, "current target") == voidSpawn &&
         dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
     {
         return 0.0f;
     }
 
-    if (muru && bot->GetVictim() == muru)
+    if (muru && AI_VALUE(Unit*, "current target") == muru)
         context->GetValue<bool>("neglect threat")->Set(true);
 
     if (botAI->IsAssistTankOfIndex(bot, 0, true) &&

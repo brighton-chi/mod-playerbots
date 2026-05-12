@@ -43,7 +43,7 @@ bool FelmystMainTankPositionBossOnGroundAction::Execute(Event /*event*/)
     if (!felmyst)
         return false;
 
-    if (bot->GetVictim() != felmyst)
+    if (AI_VALUE(Unit*, "current target") != felmyst)
         return Attack(felmyst);
 
     if (felmyst->GetVictim() == bot && bot->GetHealthPct() > 50.0f)

@@ -108,7 +108,7 @@ bool KalecgosBotHasTooManyArcaneBuffetStacksTrigger::IsActive()
 
 bool KalecgosBothBossesMustBeDefeatedTrigger::IsActive()
 {
-    if (botAI->IsHeal(bot) || bot->GetVictim())
+    if (botAI->IsHeal(bot) || AI_VALUE(Unit*, "current target"))
         return false;
 
     if (!AI_VALUE2(Unit*, "find target", "kalecgos") &&
@@ -806,11 +806,8 @@ bool KiljaedenBossEngagedByRangedTrigger::IsActive()
     }
 
     // Let the demo lock go AoE down the reflections
-    if (bot->HasAura(
-            static_cast<uint32>(SunwellSpells::SPELL_METAMORPHOSIS)))
-    {
+    if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_METAMORPHOSIS)))
         return false;
-    }
 
     return true;
 }

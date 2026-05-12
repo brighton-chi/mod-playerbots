@@ -44,7 +44,7 @@ bool KalecgosTankPositionBossAction::Execute(Event event)
             return moveTowardTankPosition();
     }
 
-    if (bot->GetVictim() != kalecgos)
+    if (AI_VALUE(Unit*, "current target") != kalecgos)
         return Attack(kalecgos);
 
     if (kalecgos->GetVictim() != bot)
@@ -175,7 +175,7 @@ bool KalecgosDetermineBossToAttackAction::Execute(Event /*event*/)
         return false;
     }
 
-    if (bot->GetTarget() != target->GetGUID())
+    if (AI_VALUE(Unit*, "current target") != target)
         return Attack(target);
 
     return false;

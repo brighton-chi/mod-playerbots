@@ -107,7 +107,7 @@ bool EredarTwinsMainAndSecondAssistTanksPositionSacrolashAction::Execute(Event /
     MarkTargetWithStar(bot, sacrolash);
     SetRtiTarget(botAI, "star", sacrolash);
 
-    if (bot->GetVictim() != sacrolash)
+    if (AI_VALUE(Unit*, "current target") != sacrolash)
         return Attack(sacrolash);
 
     if (sacrolash->GetVictim() == bot && bot->IsWithinMeleeRange(sacrolash))
@@ -140,7 +140,7 @@ bool EredarTwinsFirstAssistTankMoveOutOfBlazeAction::Execute(Event /*event*/)
     MarkTargetWithCircle(bot, alythess);
     SetRtiTarget(botAI, "circle", alythess);
 
-    if (bot->GetVictim() != alythess)
+    if (AI_VALUE(Unit*, "current target") != alythess)
         return Attack(alythess);
 
     const ObjectGuid guid = bot->GetGUID();
@@ -282,7 +282,7 @@ bool EredarTwinsStackInRoomCenterAction::Execute(Event /*event*/)
     if (botAI->IsTank(bot))
     {
         Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
-        if (alythess && bot->GetVictim() != alythess)
+        if (alythess && AI_VALUE(Unit*, "current target") != alythess)
             return Attack(alythess);
     }
 
@@ -320,7 +320,7 @@ bool EredarTwinsDpsPrioritizeLadySacrolashAction::Execute(Event /*event*/)
 
     if (sacrolash && ShouldHoldSacrolashThreat(botAI, bot, alythess, sacrolash))
     {
-        if (bot->GetVictim() == sacrolash || bot->GetTarget() == sacrolash->GetGUID())
+        if (AI_VALUE(Unit*, "current target") == sacrolash)
         {
             bot->AttackStop();
             bot->InterruptNonMeleeSpells(true);
@@ -334,7 +334,7 @@ bool EredarTwinsDpsPrioritizeLadySacrolashAction::Execute(Event /*event*/)
 
     if (sacrolash)
     {
-        if (bot->GetTarget() != sacrolash->GetGUID())
+        if (AI_VALUE(Unit*, "current target") != sacrolash)
             return Attack(sacrolash);
 
         return false;
@@ -344,7 +344,7 @@ bool EredarTwinsDpsPrioritizeLadySacrolashAction::Execute(Event /*event*/)
     {
         SetRtiTarget(botAI, "circle", alythess);
 
-        if (bot->GetTarget() != alythess->GetGUID())
+        if (AI_VALUE(Unit*, "current target") != alythess)
             return Attack(alythess);
 
         return false;

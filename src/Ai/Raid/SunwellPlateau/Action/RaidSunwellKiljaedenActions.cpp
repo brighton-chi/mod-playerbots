@@ -75,7 +75,7 @@ bool KiljaedenTanksHandleHandsOfTheDeceiverAction::Execute(Event /*event*/)
                 break;
         }
 
-        if (bot->GetVictim() != hand)
+        if (AI_VALUE(Unit*, "current target") != hand)
             return Attack(hand);
 
         return false;

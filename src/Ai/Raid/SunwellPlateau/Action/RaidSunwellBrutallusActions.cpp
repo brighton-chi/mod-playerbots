@@ -40,7 +40,7 @@ bool BrutallusTanksHandleBossAction::Execute(Event event)
     if (!brutallus)
         return false;
 
-    if (bot->GetVictim() != brutallus)
+    if (AI_VALUE(Unit*, "current target") != brutallus)
         return Attack(brutallus);
 
     Player* mainTank = GetGroupMainTank(botAI, bot);

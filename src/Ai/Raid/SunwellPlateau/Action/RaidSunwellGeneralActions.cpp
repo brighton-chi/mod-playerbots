@@ -134,7 +134,7 @@ bool VolatileFiendKeepEnemyAwayFromGroupAction::Execute(Event /*event*/)
     if (!volatileFiend)
         return false;
 
-    if (botAI->IsMainTank(bot) && bot->GetVictim() != volatileFiend)
+    if (botAI->IsMainTank(bot) && AI_VALUE(Unit*, "current target") != volatileFiend)
     {
         return Attack(volatileFiend);
     }

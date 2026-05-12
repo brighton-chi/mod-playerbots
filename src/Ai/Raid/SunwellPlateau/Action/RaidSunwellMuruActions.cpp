@@ -57,7 +57,7 @@ bool MuruMainTankPickUpEntropiusAction::Execute(Event /*event*/)
     if (!entropius)
         return false;
 
-    return bot->GetVictim() != entropius && Attack(entropius);
+    return AI_VALUE(Unit*, "current target") != entropius && Attack(entropius);
 }
 
 bool MuruPositionRangedAction::Execute(Event /*event*/)
@@ -205,10 +205,9 @@ bool MuruSetDpsPriorityAction::Execute(Event /*event*/)
     Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
     Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius");
     Unit* currentTarget = context->GetValue<Unit*>("current target")->Get();
-    Unit* currentVictim = bot->GetVictim();
     bool isMeleeDps = false;
     Unit* target = ResolveMuruDpsTarget(
-        muru, entropius, currentTarget, currentVictim, isMeleeDps);
+        muru, entropius, currentTarget, isMeleeDps);
 
     if (target && target->GetEntry() ==
             static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_BERSERKER))
@@ -230,10 +229,10 @@ bool MuruSetDpsPriorityAction::Execute(Event /*event*/)
     {
         bool needsAttack = false;
         if (isMeleeDps)
-            needsAttack = bot->GetVictim() != target ||
+            needsAttack = currentTarget != target ||
                 !bot->HasUnitState(UNIT_STATE_MELEE_ATTACKING);
         else
-            needsAttack = currentTarget != target && bot->GetTarget() != target->GetGUID();
+            needsAttack = currentTarget != target;
 
         if (needsAttack)
             return Attack(target);
@@ -243,7 +242,7 @@ bool MuruSetDpsPriorityAction::Execute(Event /*event*/)
 }
 
 Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(
-    Unit* muru, Unit* entropius, Unit*& currentTarget, Unit* currentVictim, bool& isMeleeDps)
+    Unit* muru, Unit* entropius, Unit*& currentTarget, bool& isMeleeDps)
 {
     if (!muru && !entropius)
         return nullptr;
@@ -268,16 +267,16 @@ Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(
         isInitialMuruPhase && TryGetMuruDarknessActiveState(bot, muru);
 
     Unit* voidSentinel = SelectMuruEncounterTarget(
-        currentTarget, currentVictim, isMeleeDps,
+        currentTarget, isMeleeDps,
         static_cast<uint32>(SunwellNpcs::NPC_VOID_SENTINEL), targets.voidSentinels);
     Unit* voidSpawn = SelectMuruEncounterTarget(
-        currentTarget, currentVictim, isMeleeDps,
+        currentTarget, isMeleeDps,
         static_cast<uint32>(SunwellNpcs::NPC_VOID_SPAWN), targets.voidSpawns);
     Unit* furyMage = SelectMuruEncounterTarget(
-        currentTarget, currentVictim, isMeleeDps,
+        currentTarget, isMeleeDps,
         static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_FURY_MAGE), targets.furyMages);
     Unit* berserker = SelectMuruEncounterTarget(
-        currentTarget, currentVictim, isMeleeDps,
+        currentTarget, isMeleeDps,
         static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_BERSERKER), targets.berserkers);
 
     Player* voidSentinelVictim = voidSentinel && voidSentinel->IsAlive() ?
@@ -379,8 +378,6 @@ Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(
     }
 
     Unit* stickyTarget = currentTarget;
-    if (isMeleeDps && currentVictim && isAllowedPriorityTarget(currentVictim))
-        stickyTarget = currentVictim;
 
     auto const getPriorityIndex = [&](Unit* unit) -> size_t
     {
@@ -411,16 +408,11 @@ Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(
 }
 
 Unit* MuruSetDpsPriorityAction::SelectMuruEncounterTarget(
-    Unit* currentTarget, Unit* currentVictim, bool isMeleeDps,
-    uint32 entry, std::vector<Unit*> const& candidates) const
+    Unit* currentTarget, bool /*isMeleeDps*/, uint32 entry,
+    std::vector<Unit*> const& candidates) const
 {
     Unit* selected = nullptr;
-    if (isMeleeDps && currentVictim && currentVictim->IsAlive() &&
-        currentVictim->GetEntry() == entry)
-    {
-        selected = currentVictim;
-    }
-    else if (currentTarget && currentTarget->IsAlive() &&
+    if (currentTarget && currentTarget->IsAlive() &&
         currentTarget->GetEntry() == entry)
     {
         selected = currentTarget;
@@ -576,7 +568,7 @@ bool MuruTanksGetThatSentinelOutOfHereAction::Execute(Event /*event*/)
         }
     }
 
-    if (botAI->IsAssistTankOfIndex(bot, 0, true) && bot->GetVictim() != voidSentinel)
+    if (botAI->IsAssistTankOfIndex(bot, 0, true) && AI_VALUE(Unit*, "current target") != voidSentinel)
         return Attack(voidSentinel);
 
     return false;

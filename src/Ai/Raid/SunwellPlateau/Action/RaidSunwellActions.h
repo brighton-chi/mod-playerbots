@@ -330,10 +330,10 @@ public:
 
 private:
     Unit* ResolveMuruDpsTarget(
-        Unit* muru, Unit* entropius, Unit*& currentTarget, Unit* currentVictim, bool& isMeleeDps);
+        Unit* muru, Unit* entropius, Unit*& currentTarget, bool& isMeleeDps);
     Unit* SelectMuruEncounterTarget(
-        Unit* currentTarget, Unit* currentVictim, bool isMeleeDps,
-        uint32 entry, std::vector<Unit*> const& candidates) const;
+        Unit* currentTarget, bool isMeleeDps, uint32 entry,
+        std::vector<Unit*> const& candidates) const;
 };
 
 class MuruKillDarkFiendsWithDispelAction : public Action
