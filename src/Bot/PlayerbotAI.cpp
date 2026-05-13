@@ -2964,7 +2964,7 @@ bool PlayerbotAI::SayToParty(const std::string& msg)
 
 bool PlayerbotAI::SayToRaid(const std::string& msg)
 {
-    if (!bot->GetGroup() || bot->GetGroup()->isRaidGroup())
+    if (!bot->GetGroup() || !bot->GetGroup()->isRaidGroup())
         return false;
 
     WorldPacket data;
