@@ -6,12 +6,13 @@
 #include <algorithm>
 #include <cmath>
 #include <map>
-#include <unordered_set>
+#include <unordered_map>
 
 #include "PlayerbotAI.h"
 #include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 #include "RaidSunwellKiljaedenEncounter.h"
+#include "Timer.h"
 
 namespace SunwellHelpers
 {
@@ -19,7 +20,7 @@ namespace SunwellHelpers
 namespace
 {
 
-std::unordered_set<uint32> kiljaedenDragonOrbAnnouncementInstanceIds;
+std::unordered_map<uint32, uint32> kiljaedenDragonOrbAnnouncementTimes;
 
 float GetCenteredArcSlotAngleOffset(
     uint8 slotIndex, uint8 slotCount, float arcWidth)
@@ -567,8 +568,12 @@ Player* GetKiljaedenDragonOrbUser(Player* bot)
 bool TryAnnounceKiljaedenDragonOrbUser(PlayerbotAI* botAI, Player* bot)
 {
     auto const instanceId = bot->GetInstanceId();
-    if (!kiljaedenDragonOrbAnnouncementInstanceIds.insert(instanceId).second)
+    auto const announcementTime =
+        kiljaedenDragonOrbAnnouncementTimes.find(instanceId);
+    if (announcementTime != kiljaedenDragonOrbAnnouncementTimes.end())
         return false;
+
+    kiljaedenDragonOrbAnnouncementTimes[instanceId] = getMSTime();
 
     Player* orbUser = GetKiljaedenDragonOrbUser(bot);
     std::string text;
@@ -599,7 +604,18 @@ bool TryAnnounceKiljaedenDragonOrbUser(PlayerbotAI* botAI, Player* bot)
 
 void ResetKiljaedenDragonOrbUserAnnouncement(uint32 instanceId)
 {
-    kiljaedenDragonOrbAnnouncementInstanceIds.erase(instanceId);
+    auto const announcementTime = kiljaedenDragonOrbAnnouncementTimes.find(instanceId);
+    if (announcementTime == kiljaedenDragonOrbAnnouncementTimes.end())
+        return;
+
+    constexpr uint32 announcementResetDelayMs = 10000;
+    if (getMSTimeDiff(announcementTime->second, getMSTime()) <
+        announcementResetDelayMs)
+    {
+        return;
+    }
+
+    kiljaedenDragonOrbAnnouncementTimes.erase(announcementTime);
 }
 
 Unit* GetKiljaedenControlledDragon(Player* bot)

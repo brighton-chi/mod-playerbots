@@ -516,6 +516,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class KiljaedenReleaseStaleRootAction : public Action
+{
+public:
+    KiljaedenReleaseStaleRootAction(
+        PlayerbotAI* botAI, std::string const name = "kil'jaeden release stale root") : Action(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 class KiljaedenControlDragonAction : public Action
 {
 public:

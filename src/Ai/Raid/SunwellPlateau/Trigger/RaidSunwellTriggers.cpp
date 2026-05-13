@@ -899,6 +899,29 @@ bool KiljaedenDragonOrbIsActiveTrigger::IsActive()
     return result;
 }
 
+bool KiljaedenBotHasStaleRootAfterDragonTrigger::IsActive()
+{
+    Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
+    if (!kiljaeden || kiljaeden->GetHealthPct() > 85.0f)
+        return false;
+
+    if (GetKiljaedenDragonOrbUser(bot) != bot)
+        return false;
+
+    if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
+        return false;
+
+    if (GetKiljaedenControlledDragon(bot))
+        return false;
+
+    if (!bot->IsRooted() || bot->HasUnitState(UNIT_STATE_LOST_CONTROL))
+    {
+        return false;
+    }
+
+    return bot->GetMotionMaster()->GetMotionSlotType(MOTION_SLOT_CONTROLLED) == NULL_MOTION_TYPE;
+}
+
 bool KiljaedenBotControlsDragonTrigger::IsActive()
 {
     return bot->HasAura(

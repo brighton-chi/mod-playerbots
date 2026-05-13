@@ -296,6 +296,9 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kil'jaeden dragon orb is active", {
         NextAction("kil'jaeden use dragon orb", ACTION_RAID + 3) }));
 
+    triggers.push_back(new TriggerNode("kil'jaeden bot has stale root after dragon", {
+        NextAction("kil'jaeden release stale root", ACTION_EMERGENCY + 11) }));
+
     triggers.push_back(new TriggerNode("kil'jaeden bot controls dragon", {
         NextAction("kil'jaeden control dragon", ACTION_RAID + 4) }));
 }

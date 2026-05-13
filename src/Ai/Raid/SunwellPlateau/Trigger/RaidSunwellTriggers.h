@@ -488,6 +488,14 @@ public:
     bool IsActive() override;
 };
 
+class KiljaedenBotHasStaleRootAfterDragonTrigger : public Trigger
+{
+public:
+    KiljaedenBotHasStaleRootAfterDragonTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "kil'jaeden bot has stale root after dragon") {}
+    bool IsActive() override;
+};
+
 class KiljaedenBotControlsDragonTrigger : public Trigger
 {
 public:

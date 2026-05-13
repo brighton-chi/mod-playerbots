@@ -122,7 +122,7 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
             erased = true;
     }
 
-    if (isMechanicTracker &&
+    if (botAI->IsMainTank(bot) &&
         !AI_VALUE2(Unit*, "find target", "hand of the deceiver") &&
         !AI_VALUE2(Unit*, "find target", "kil'jaeden"))
     {

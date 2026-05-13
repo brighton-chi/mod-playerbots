@@ -193,6 +193,9 @@ public:
         creators["kil'jaeden use dragon orb"] =
             &RaidSunwellActionContext::kiljaeden_use_dragon_orb;
 
+        creators["kil'jaeden release stale root"] =
+            &RaidSunwellActionContext::kiljaeden_release_stale_root;
+
         creators["kil'jaeden control dragon"] =
             &RaidSunwellActionContext::kiljaeden_control_dragon;
     }
@@ -376,6 +379,9 @@ private:
 
     static Action* kiljaeden_use_dragon_orb(
         PlayerbotAI* botAI) { return new KiljaedenUseDragonOrbAction(botAI); }
+
+    static Action* kiljaeden_release_stale_root(
+        PlayerbotAI* botAI) { return new KiljaedenReleaseStaleRootAction(botAI); }
 
     static Action* kiljaeden_control_dragon(
         PlayerbotAI* botAI) { return new KiljaedenControlDragonAction(botAI); }

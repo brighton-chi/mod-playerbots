@@ -315,6 +315,16 @@ bool KiljaedenUseDragonOrbAction::Execute(Event /*event*/)
                   MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
+// There is an issue with the root packets that causes bots to get stuck with
+// the root movement flag after using a dragon orb; this action is a workaround
+// to remove the stale root flag in those cases
+bool KiljaedenReleaseStaleRootAction::Execute(Event /*event*/)
+{
+    bot->m_movementInfo.RemoveMovementFlag(MOVEMENTFLAG_ROOT);
+    bot->SendMovementFlagUpdate();
+    return true;
+}
+
 bool KiljaedenControlDragonAction::Execute(Event /*event*/)
 {
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
