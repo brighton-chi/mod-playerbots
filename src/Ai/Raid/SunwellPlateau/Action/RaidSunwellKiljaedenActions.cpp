@@ -4,6 +4,7 @@
  */
 
 #include <array>
+#include <unordered_map>
 #include <vector>
 
 #include "RaidSunwellActions.h"
@@ -12,6 +13,26 @@
 #include "RaidBossHelpers.h"
 
 using namespace SunwellHelpers;
+
+namespace
+{
+
+struct KiljaedenDarknessShieldState
+{
+    bool inDarkness = false;
+    bool shieldCastThisDarkness = false;
+    uint32 darknessStartMs = 0;
+    uint32 lastDarknessCastMsLeft = 0;
+};
+
+std::unordered_map<ObjectGuid::LowType, KiljaedenDarknessShieldState>&
+GetKiljaedenDarknessShieldStates()
+{
+    static std::unordered_map<ObjectGuid::LowType, KiljaedenDarknessShieldState> states;
+    return states;
+}
+
+}
 
 bool KiljaedenTanksHandleHandsOfTheDeceiverAction::Execute(Event /*event*/)
 {
@@ -281,19 +302,44 @@ bool KiljaedenRemoveFireBloomAction::Execute(Event /*event*/)
 
 bool KiljaedenUseDragonOrbAction::Execute(Event /*event*/)
 {
+    constexpr uint32 kiljaedenBlueDrakeEntry = 25653;
+    constexpr float orbRecoveryDragonSearchRadius = 30.0f;
+
     GameObject* closestOrb = nullptr;
+    GameObject* closestAnyOrb = nullptr;
     float closestDistance = 0.0f;
+    float closestAnyOrbDistance = 0.0f;
+    bool orbInUseNearby = false;
+    Creature* const nearbyUnclaimedDragon =
+        bot->FindNearestCreature(kiljaedenBlueDrakeEntry, orbRecoveryDragonSearchRadius, true);
+
+    constexpr float orbInUsePendingDistance = 15.0f;
 
     for (const uint32 orbEntry : KILJAEDEN_DRAGON_ORB_ENTRIES)
     {
         GameObject* orb = bot->FindNearestGameObject(orbEntry, 200.0f, true);
-        if (!orb || orb->HasGameObjectFlag(GO_FLAG_NOT_SELECTABLE) ||
+        if (!orb)
+            continue;
+
+        const float distance = bot->GetExactDist2d(orb);
+        if (!closestAnyOrb || distance < closestAnyOrbDistance)
+        {
+            closestAnyOrb = orb;
+            closestAnyOrbDistance = distance;
+        }
+
+        if (orb->HasGameObjectFlag(GO_FLAG_IN_USE) &&
+            bot->GetExactDist2d(orb) <= orbInUsePendingDistance)
+        {
+            orbInUseNearby = true;
+        }
+
+        if (orb->HasGameObjectFlag(GO_FLAG_NOT_SELECTABLE) ||
             orb->HasGameObjectFlag(GO_FLAG_IN_USE))
         {
             continue;
         }
 
-        const float distance = bot->GetExactDist2d(orb);
         if (!closestOrb || distance < closestDistance)
         {
             closestOrb = orb;
@@ -302,11 +348,29 @@ bool KiljaedenUseDragonOrbAction::Execute(Event /*event*/)
     }
 
     if (!closestOrb)
+    {
+        // Keep this action active briefly while the orb is in-use and control aura is pending.
+        if (orbInUseNearby)
+            return true;
+
+        if (nearbyUnclaimedDragon && closestAnyOrb)
+        {
+            if (closestAnyOrbDistance < 3.0f)
+                return true;
+
+            return MoveTo(SUNWELL_MAP_ID, closestAnyOrb->GetPositionX(),
+                          closestAnyOrb->GetPositionY(), closestAnyOrb->GetPositionZ(),
+                          false, false, false, false,
+                          MovementPriority::MOVEMENT_FORCED, true, false);
+        }
+
         return false;
+    }
 
     if (closestDistance < 3.0f)
     {
         closestOrb->Use(bot);
+        RecordKiljaedenDragonOrbUse(bot);
         return true;
     }
 
@@ -320,6 +384,14 @@ bool KiljaedenUseDragonOrbAction::Execute(Event /*event*/)
 // to remove the stale root flag in those cases
 bool KiljaedenReleaseStaleRootAction::Execute(Event /*event*/)
 {
+    LOG_INFO(
+        "playerbots",
+        "KJ stale root action bot={} rooted={} vengeance={} charm={} charmAlive={}",
+        bot->GetName(), bot->IsRooted(),
+        bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)),
+        bot->GetCharm() != nullptr,
+        bot->GetCharm() && bot->GetCharm()->IsAlive());
+
     bot->m_movementInfo.RemoveMovementFlag(MOVEMENTFLAG_ROOT);
     bot->SendMovementFlagUpdate();
     return true;
@@ -331,8 +403,25 @@ bool KiljaedenControlDragonAction::Execute(Event /*event*/)
     if (!kiljaeden)
         return false;
 
+    auto& darknessStates = GetKiljaedenDarknessShieldStates();
+    KiljaedenDarknessShieldState& darknessState = darknessStates[bot->GetGUID().GetCounter()];
+
     if (IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
+    {
+        if (!darknessState.inDarkness)
+        {
+            darknessState.inDarkness = true;
+            darknessState.shieldCastThisDarkness = false;
+            darknessState.darknessStartMs = getMSTime();
+        }
+
         return ExecuteDuringDarknessOfAThousandSouls(kiljaeden);
+    }
+
+    darknessState.inDarkness = false;
+    darknessState.shieldCastThisDarkness = false;
+    darknessState.darknessStartMs = 0;
+    darknessState.lastDarknessCastMsLeft = 0;
 
     return ExecuteOutsideDarknessOfAThousandSouls(kiljaeden);
 }
@@ -378,26 +467,59 @@ bool KiljaedenControlDragonAction::ExecuteDuringDarknessOfAThousandSouls(Unit* k
     }
 
     const uint32 darknessCastTimeLeft = darknessSpell->GetCastTimeRemaining();
+    auto& darknessStates = GetKiljaedenDarknessShieldStates();
+    KiljaedenDarknessShieldState& darknessState = darknessStates[bot->GetGUID().GetCounter()];
+    bool const darknessCastReset = darknessState.lastDarknessCastMsLeft > 0 &&
+        darknessCastTimeLeft > darknessState.lastDarknessCastMsLeft + 250;
+    if (!darknessState.inDarkness || darknessCastReset)
+    {
+        darknessState.inDarkness = true;
+        darknessState.shieldCastThisDarkness = false;
+        darknessState.darknessStartMs = getMSTime();
+    }
+
+    uint32 const darknessElapsedMs = getMSTimeDiff(darknessState.darknessStartMs, getMSTime());
     if (darknessCastTimeLeft > 3000)
     {
         if (CastKiljaedenDragonSpell(
                 dragon, static_cast<uint32>(SunwellSpells::SPELL_DRAGON_BREATH_HASTE)))
         {
+            darknessState.lastDarknessCastMsLeft = darknessCastTimeLeft;
             return true;
         }
 
         if (CastKiljaedenDragonSpell(
                 dragon, static_cast<uint32>(SunwellSpells::SPELL_DRAGON_BREATH_REVITALIZE)))
         {
+            darknessState.lastDarknessCastMsLeft = darknessCastTimeLeft;
             return true;
         }
     }
 
-    if (darknessCastTimeLeft < 5000)
+    constexpr uint32 minDarknessElapsedBeforeShieldMs = 3000;
+    if (!darknessState.shieldCastThisDarkness &&
+        darknessCastTimeLeft < 5000 &&
+        darknessElapsedMs >= minDarknessElapsedBeforeShieldMs)
     {
-        return CastKiljaedenDragonSpell(
+        float const healthPctBeforeShield = dragon->GetHealthPct();
+        bool const castedShield = CastKiljaedenDragonSpell(
             dragon, static_cast<uint32>(SunwellSpells::SPELL_SHIELD_OF_THE_BLUE));
+        if (castedShield)
+        {
+            darknessState.shieldCastThisDarkness = true;
+            LOG_INFO(
+                "playerbots",
+                "KJ dragon shield cast dragonGuid={} dragonHealthPctBefore={} dragonHealthPctAfter={} darknessCastMsLeft={} darknessElapsedMs={}",
+                dragon->GetGUID().ToString(), healthPctBeforeShield,
+                dragon->GetHealthPct(), darknessCastTimeLeft,
+                darknessElapsedMs);
+        }
+
+            darknessState.lastDarknessCastMsLeft = darknessCastTimeLeft;
+        return castedShield;
     }
+
+    darknessState.lastDarknessCastMsLeft = darknessCastTimeLeft;
 
     return false;
 }

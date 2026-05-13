@@ -98,6 +98,7 @@ enum class SunwellNpcs : uint32
     NPC_SHIELD_ORB              = 25502,
     NPC_HAND_OF_THE_DECEIVER    = 25588,
     NPC_VOLATILE_FELFIRE_FIEND  = 25598,
+    NPC_SINISTER_REFLECTION     = 25708,
     NPC_ARMAGEDDON_TARGET       = 25735,
 };
 

@@ -21,6 +21,7 @@ namespace
 {
 
 std::unordered_map<uint32, uint32> kiljaedenDragonOrbAnnouncementTimes;
+std::unordered_map<ObjectGuid::LowType, uint32> kiljaedenDragonOrbUseTimes;
 
 float GetCenteredArcSlotAngleOffset(
     uint8 slotIndex, uint8 slotCount, float arcWidth)
@@ -563,6 +564,26 @@ Player* GetKiljaedenDragonOrbUser(Player* bot)
     }
 
     return nullptr;
+}
+
+void RecordKiljaedenDragonOrbUse(Player* bot)
+{
+    if (!bot)
+        return;
+
+    kiljaedenDragonOrbUseTimes[bot->GetGUID().GetCounter()] = getMSTime();
+}
+
+bool HasRecentKiljaedenDragonOrbUse(Player* bot, uint32 recentMs)
+{
+    if (!bot)
+        return false;
+
+    auto const orbUseTime = kiljaedenDragonOrbUseTimes.find(bot->GetGUID().GetCounter());
+    if (orbUseTime == kiljaedenDragonOrbUseTimes.end())
+        return false;
+
+    return getMSTimeDiff(orbUseTime->second, getMSTime()) < recentMs;
 }
 
 bool TryAnnounceKiljaedenDragonOrbUser(PlayerbotAI* botAI, Player* bot)
