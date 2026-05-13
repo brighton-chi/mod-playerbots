@@ -35,6 +35,7 @@ struct KalecgosRealmState
 
 struct KalecgosEncounterState
 {
+    uint32 encounterStartMs = 0;
     uint32 activeRiftOpenedMs = 0;
     uint8 activeRiftGroup = KALECGOS_INVALID_GROUP;
     ObjectGuid blastedPlayerGuid = ObjectGuid::Empty;

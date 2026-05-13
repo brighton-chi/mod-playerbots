@@ -45,6 +45,14 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class KalecgosSuppressAssistTankPullThreatMultiplier : public Multiplier
+{
+public:
+    KalecgosSuppressAssistTankPullThreatMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "kalecgos suppress assist tank pull threat") {}
+    virtual float GetValue(Action* action);
+};
+
 class KalecgosDelayCooldownsForSathrovarrMultiplier : public Multiplier
 {
 public:

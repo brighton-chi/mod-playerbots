@@ -70,6 +70,8 @@ void EnsureKiljaedenRangedAssignments(PlayerbotAI* botAI, Player* bot);
 void EnsureKiljaedenRangedArmageddonAssignments(PlayerbotAI* botAI, Player* bot);
 bool IsKiljaedenDragonOrb(uint32 entry);
 Player* GetKiljaedenDragonOrbUser(Player* bot);
+bool TryAnnounceKiljaedenDragonOrbUser(PlayerbotAI* botAI, Player* bot);
+void ResetKiljaedenDragonOrbUserAnnouncement(uint32 instanceId);
 Unit* GetKiljaedenControlledDragon(Player* bot);
 bool CastKiljaedenDragonSpell(Unit* dragon, uint32 spellId);
 Player* FindBestKiljaedenDragonClusterTarget(PlayerbotAI* botAI, Player* bot, Unit* dragon, uint32 spellId);

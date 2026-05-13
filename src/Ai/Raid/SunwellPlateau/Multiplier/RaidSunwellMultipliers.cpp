@@ -11,6 +11,7 @@
 #include "RaidSunwellKalecgosEncounter.h"
 #include "RaidSunwellKiljaedenEncounter.h"
 #include "RaidSunwellMuruEncounter.h"
+#include "Timer.h"
 #include "ChooseTargetActions.h"
 #include "DKActions.h"
 #include "TargetValue.h"
@@ -148,6 +149,34 @@ float KalecgosRestrictTauntMultiplier::GetValue(Action* action)
         dynamic_cast<CastHandOfReckoningAction*>(action) ||
         dynamic_cast<CastRighteousDefenseAction*>(action) ||
         dynamic_cast<CastDarkCommandAction*>(action))
+    {
+        return 0.0f;
+    }
+
+    return 1.0f;
+}
+
+float KalecgosSuppressAssistTankPullThreatMultiplier::GetValue(Action* action)
+{
+    if (!botAI->IsAssistTank(bot) ||
+        !AI_VALUE2(Unit*, "find target", "kalecgos"))
+    {
+        return 1.0f;
+    }
+
+    KalecgosEncounterState& state = kalecgosEncounterStates[bot->GetInstanceId()];
+    if (!state.encounterStartMs)
+        state.encounterStartMs = getMSTime();
+
+    constexpr uint32 pullThreatSuppressionMs = 5000;
+    if (getMSTimeDiff(state.encounterStartMs, getMSTime()) >=
+        pullThreatSuppressionMs)
+    {
+        return 1.0f;
+    }
+
+    if (dynamic_cast<AttackAction*>(action) ||
+        dynamic_cast<CastSpellAction*>(action))
     {
         return 0.0f;
     }

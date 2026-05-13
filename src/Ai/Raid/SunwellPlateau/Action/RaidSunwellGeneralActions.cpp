@@ -113,14 +113,19 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
     }
 
     if (isMechanicTracker &&
-        !AI_VALUE2(Unit*, "find target", "kil'jaeden") &&
-        !AI_VALUE2(Unit*, "find target", "hand of the deceiver"))
+        !AI_VALUE2(Unit*, "find target", "kil'jaeden"))
     {
         if (kiljaedenArmageddons.erase(instanceId) > 0)
             erased = true;
 
         if (isRanged && kiljaedenRangedArmageddonAssignments.erase(instanceId) > 0)
             erased = true;
+    }
+
+    if (isMechanicTracker &&
+        !AI_VALUE2(Unit*, "find target", "hand of the deceiver"))
+    {
+        ResetKiljaedenDragonOrbUserAnnouncement(instanceId);
     }
 
     return erased;

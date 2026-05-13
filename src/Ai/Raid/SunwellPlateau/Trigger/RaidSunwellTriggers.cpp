@@ -820,12 +820,15 @@ bool KiljaedenDragonOrbIsActiveTrigger::IsActive()
     static std::unordered_map<ObjectGuid::LowType, uint32> lastLogTimes;
 
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
+    if (!kiljaeden)
+        return false;
+
     Player* orbUser = GetKiljaedenDragonOrbUser(bot);
     bool const isAssignedOrbUser = orbUser == bot;
     bool const hasVengeance = bot->HasAura(
         static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT));
     bool result = false;
-    char const* reason = "kil'jaeden not found";
+    char const* reason = "phase before dragon orbs";
     std::ostringstream orbStates;
 
     auto const logState = [&]() {
@@ -843,15 +846,9 @@ bool KiljaedenDragonOrbIsActiveTrigger::IsActive()
             "playerbots",
             "KJ orb trigger bot={} result={} reason={} healthPct={} vengeance={} orbStates=[{}]",
             bot->GetName(), result, reason,
-            kiljaeden ? kiljaeden->GetHealthPct() : 0.0f, hasVengeance,
+            kiljaeden->GetHealthPct(), hasVengeance,
             orbStates.str());
     };
-
-    if (!kiljaeden)
-    {
-        logState();
-        return false;
-    }
 
     if (kiljaeden->GetHealthPct() > 85.0f)
     {

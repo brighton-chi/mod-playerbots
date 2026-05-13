@@ -48,6 +48,8 @@ bool KiljaedenTanksHandleHandsOfTheDeceiverAction::Execute(Event /*event*/)
     if (hands.empty())
         return false;
 
+    TryAnnounceKiljaedenDragonOrbUser(botAI, bot);
+
     if (volatileFelfireFiend)
         MarkTargetWithSkull(bot, volatileFelfireFiend);
 
