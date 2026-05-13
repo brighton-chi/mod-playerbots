@@ -22,7 +22,7 @@ private:
     {
         return new ActionNode("molten armor",
                               /*P*/ {},
-                              /*A*/ { NextAction("mage armor") },
+                              /*A*/ {},
                               /*C*/ {});
     }
 
@@ -30,7 +30,7 @@ private:
     {
         return new ActionNode("mage armor",
                               /*P*/ {},
-                              /*A*/ { NextAction("ice armor") },
+                              /*A*/ {},
                               /*C*/ {});
     }
 
@@ -65,7 +65,7 @@ void MageBuffManaStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
 void MageBuffDpsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("mage armor", { NextAction("molten armor", 19.0f) }));
+    triggers.push_back(new TriggerNode("molten armor", { NextAction("molten armor", 19.0f) }));
 }
 
 void MageBuffStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
