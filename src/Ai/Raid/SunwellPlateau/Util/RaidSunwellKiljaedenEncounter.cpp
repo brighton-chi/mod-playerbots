@@ -103,6 +103,48 @@ bool HasKiljaedenDragonApplicableAura(Player* member, uint32 spellId)
     return auraSpellId && member && member->HasAura(auraSpellId);
 }
 
+float GetKiljaedenRangedSlotAngle(uint8 slotIndex)
+{
+    Position position;
+    if (!TryGetKiljaedenRangedSlotPosition(slotIndex, position))
+        return 0.0f;
+
+    return Position::NormalizeOrientation(
+        std::atan2(position.GetPositionY() - KILJAEDEN_CENTER_POSITION.GetPositionY(),
+                   position.GetPositionX() - KILJAEDEN_CENTER_POSITION.GetPositionX()));
+}
+
+bool IsKiljaedenRangedSlotSafe(
+    Position const& position, std::vector<KiljaedenArmageddon> const& armageddons)
+{
+    for (KiljaedenArmageddon const& armageddon : armageddons)
+    {
+        if (position.GetExactDist2d(
+                armageddon.destination.GetPositionX(),
+                armageddon.destination.GetPositionY()) < armageddon.safeDistance)
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+float GetKiljaedenNearestArmageddonDistance(
+    Position const& position, std::vector<KiljaedenArmageddon> const& armageddons)
+{
+    float nearestDistance = std::numeric_limits<float>::max();
+
+    for (KiljaedenArmageddon const& armageddon : armageddons)
+    {
+        nearestDistance = std::min(nearestDistance, position.GetExactDist2d(
+            armageddon.destination.GetPositionX(),
+            armageddon.destination.GetPositionY()));
+    }
+
+    return nearestDistance;
+}
+
 }
 
 const Position KILJAEDEN_TANK_POSITION =    { 1704.729f, 634.891f, 27.787f };
@@ -159,13 +201,6 @@ void AddKiljaedenArmageddon(
     armageddon.expireMs = now + durationMs;
     armageddon.safeDistance = safeDistance;
     kiljaedenArmageddons[instanceId].push_back(armageddon);
-}
-
-bool HasActiveKiljaedenArmageddon(uint32 instanceId)
-{
-    PruneExpiredKiljaedenArmageddons(instanceId);
-    auto const instanceItr = kiljaedenArmageddons.find(instanceId);
-    return instanceItr != kiljaedenArmageddons.end() && !instanceItr->second.empty();
 }
 
 bool TryGetKiljaedenNearestArmageddon(Player* bot, KiljaedenArmageddon& armageddon)
@@ -233,48 +268,6 @@ bool TryGetKiljaedenRangedSlotPosition(uint8 slotIndex, Position& position)
 
     position = Position{ positionX, positionY, KILJAEDEN_CENTER_POSITION.GetPositionZ() };
     return true;
-}
-
-float GetKiljaedenRangedSlotAngle(uint8 slotIndex)
-{
-    Position position;
-    if (!TryGetKiljaedenRangedSlotPosition(slotIndex, position))
-        return 0.0f;
-
-    return Position::NormalizeOrientation(
-        std::atan2(position.GetPositionY() - KILJAEDEN_CENTER_POSITION.GetPositionY(),
-                   position.GetPositionX() - KILJAEDEN_CENTER_POSITION.GetPositionX()));
-}
-
-bool IsKiljaedenRangedSlotSafe(
-    Position const& position, std::vector<KiljaedenArmageddon> const& armageddons)
-{
-    for (KiljaedenArmageddon const& armageddon : armageddons)
-    {
-        if (position.GetExactDist2d(
-                armageddon.destination.GetPositionX(),
-                armageddon.destination.GetPositionY()) < armageddon.safeDistance)
-        {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-float GetKiljaedenNearestArmageddonDistance(
-    Position const& position, std::vector<KiljaedenArmageddon> const& armageddons)
-{
-    float nearestDistance = std::numeric_limits<float>::max();
-
-    for (KiljaedenArmageddon const& armageddon : armageddons)
-    {
-        nearestDistance = std::min(nearestDistance, position.GetExactDist2d(
-            armageddon.destination.GetPositionX(),
-            armageddon.destination.GetPositionY()));
-    }
-
-    return nearestDistance;
 }
 
 void EnsureKiljaedenRangedAssignments(PlayerbotAI* botAI, Player* bot)
@@ -531,17 +524,6 @@ void EnsureKiljaedenRangedArmageddonAssignments(PlayerbotAI* botAI, Player* bot)
 
     if (tempAssignments.empty())
         kiljaedenRangedArmageddonAssignments.erase(instanceId);
-}
-
-bool IsKiljaedenDragonOrb(uint32 entry)
-{
-    for (const uint32 orbEntry : KILJAEDEN_DRAGON_ORB_ENTRIES)
-    {
-        if (entry == orbEntry)
-            return true;
-    }
-
-    return false;
 }
 
 Player* GetKiljaedenDragonOrbUser(Player* bot)

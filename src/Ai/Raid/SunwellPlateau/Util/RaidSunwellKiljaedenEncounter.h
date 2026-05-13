@@ -57,18 +57,11 @@ extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> kiljaed
 void AddKiljaedenArmageddon(
     uint32 instanceId, Position const& destination, uint32 durationMs, float safeDistance);
 void PruneExpiredKiljaedenArmageddons(uint32 instanceId);
-bool HasActiveKiljaedenArmageddon(uint32 instanceId);
 bool TryGetKiljaedenNearestArmageddon(Player* bot, KiljaedenArmageddon& armageddon);
 bool IsKiljaedenCastingDarknessOfAThousandSouls(Unit* kiljaeden);
 bool TryGetKiljaedenRangedSlotPosition(uint8 slotIndex, Position& position);
-float GetKiljaedenRangedSlotAngle(uint8 slotIndex);
-bool IsKiljaedenRangedSlotSafe(
-    Position const& position, std::vector<KiljaedenArmageddon> const& armageddons);
-float GetKiljaedenNearestArmageddonDistance(
-    Position const& position, std::vector<KiljaedenArmageddon> const& armageddons);
 void EnsureKiljaedenRangedAssignments(PlayerbotAI* botAI, Player* bot);
 void EnsureKiljaedenRangedArmageddonAssignments(PlayerbotAI* botAI, Player* bot);
-bool IsKiljaedenDragonOrb(uint32 entry);
 Player* GetKiljaedenDragonOrbUser(Player* bot);
 void RecordKiljaedenDragonOrbUse(Player* bot);
 bool HasRecentKiljaedenDragonOrbUse(Player* bot, uint32 recentMs);

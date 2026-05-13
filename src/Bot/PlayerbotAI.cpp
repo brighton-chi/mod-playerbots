@@ -931,30 +931,6 @@ void PlayerbotAI::Reset(bool full)
     if (bot->HasUnitState(UNIT_STATE_IN_FLIGHT))
         return;
 
-    uint32 const kiljaedenVengeanceSpellId = 45839;
-    uint32 const possessDrakeImmunitySpellId = 45838;
-    Unit* const charm = bot->GetCharm();
-    bool const trackKiljaedenReset =
-        (HasStrategy("sunwell", BOT_STATE_COMBAT) &&
-         aiObjectContext->GetValue<Unit*>("find target", "kil'jaeden")->Get()) ||
-        bot->HasAura(kiljaedenVengeanceSpellId) ||
-        bot->HasAura(possessDrakeImmunitySpellId) ||
-        (charm && charm->GetEntry() == 25653);
-
-    if (trackKiljaedenReset)
-    {
-        LOG_INFO(
-            "playerbots",
-            "KJ bot reset bot={} full={} state={} vengeance={} possessDrakeImmunity={} charm={} charmAlive={} botCharmGuid={} controlledCount={}",
-            bot->GetName(), full, currentState,
-            bot->HasAura(kiljaedenVengeanceSpellId),
-            bot->HasAura(possessDrakeImmunitySpellId),
-            charm != nullptr,
-            charm && charm->IsAlive(),
-            bot->GetCharmGUID().ToString(),
-            bot->m_Controlled.size());
-    }
-
     WorldSession* botWorldSessionPtr = bot->GetSession();
     bool logout = botWorldSessionPtr->ShouldLogOut(time(nullptr));
 
@@ -1394,29 +1370,6 @@ void PlayerbotAI::HandleBotOutgoingPacket(WorldPacket const& packet)
             // when rooted during lost client control (charm + root effects)
             // @see https://github.com/azerothcore/azerothcore-wotlk/pull/23147
             bool forceRoot = (packet.GetOpcode() == SMSG_FORCE_MOVE_ROOT);
-            uint32 const kiljaedenVengeanceSpellId = 45839;
-            uint32 const possessDrakeImmunitySpellId = 45838;
-            Unit* const charm = bot->GetCharm();
-            if (bot->HasAura(kiljaedenVengeanceSpellId) ||
-                bot->HasAura(possessDrakeImmunitySpellId) ||
-                (charm && charm->GetEntry() == 25653))
-            {
-                LOG_INFO(
-                    "playerbots",
-                    "KJ control packet bot={} opcode={} vengeance={} possessDrakeImmunity={} isCharmed={} rooted={} lostControl={} charm={} charmAlive={} charmGuid={} botCharmGuid={} controlledCount={} charmEntry={} charmHealthPct={}",
-                    bot->GetName(), forceRoot ? "SMSG_FORCE_MOVE_ROOT" : "SMSG_FORCE_MOVE_UNROOT",
-                    bot->HasAura(kiljaedenVengeanceSpellId),
-                    bot->HasAura(possessDrakeImmunitySpellId),
-                    bot->IsCharmed(), bot->IsRooted(),
-                    bot->HasUnitState(UNIT_STATE_LOST_CONTROL),
-                    charm != nullptr,
-                    charm && charm->IsAlive(),
-                    charm ? charm->GetGUID().ToString() : "none",
-                    bot->GetCharmGUID().ToString(),
-                    bot->m_Controlled.size(),
-                    charm ? charm->GetEntry() : 0,
-                    charm ? charm->GetHealthPct() : 0.0f);
-            }
 
             if (forceRoot)
             {

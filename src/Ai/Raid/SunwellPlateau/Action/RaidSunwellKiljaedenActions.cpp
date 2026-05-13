@@ -377,14 +377,6 @@ bool KiljaedenUseDragonOrbAction::Execute(Event /*event*/)
 // to remove the stale root flag in those cases
 bool KiljaedenReleaseStaleRootAction::Execute(Event /*event*/)
 {
-    LOG_INFO(
-        "playerbots",
-        "KJ stale root action bot={} rooted={} vengeance={} charm={} charmAlive={}",
-        bot->GetName(), bot->IsRooted(),
-        bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)),
-        bot->GetCharm() != nullptr,
-        bot->GetCharm() && bot->GetCharm()->IsAlive());
-
     bot->m_movementInfo.RemoveMovementFlag(MOVEMENTFLAG_ROOT);
     bot->SendMovementFlagUpdate();
     return true;
@@ -494,21 +486,12 @@ bool KiljaedenControlDragonAction::ExecuteDuringDarknessOfAThousandSouls(Unit* k
         darknessCastTimeLeft < 5000 &&
         darknessElapsedMs >= minDarknessElapsedBeforeShieldMs)
     {
-        float const healthPctBeforeShield = dragon->GetHealthPct();
         bool const castedShield = CastKiljaedenDragonSpell(
             dragon, static_cast<uint32>(SunwellSpells::SPELL_SHIELD_OF_THE_BLUE));
         if (castedShield)
-        {
             darknessState.shieldCastThisDarkness = true;
-            LOG_INFO(
-                "playerbots",
-                "KJ dragon shield cast dragonGuid={} dragonHealthPctBefore={} dragonHealthPctAfter={} darknessCastMsLeft={} darknessElapsedMs={}",
-                dragon->GetGUID().ToString(), healthPctBeforeShield,
-                dragon->GetHealthPct(), darknessCastTimeLeft,
-                darknessElapsedMs);
-        }
 
-            darknessState.lastDarknessCastMsLeft = darknessCastTimeLeft;
+        darknessState.lastDarknessCastMsLeft = darknessCastTimeLeft;
         return castedShield;
     }
 
