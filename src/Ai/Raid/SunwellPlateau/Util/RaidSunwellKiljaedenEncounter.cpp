@@ -642,7 +642,7 @@ void ResetKiljaedenDragonOrbUserAnnouncement(uint32 instanceId)
 Unit* GetKiljaedenControlledDragon(Player* bot)
 {
     Unit* dragon = bot->GetCharm();
-    if (!dragon || !dragon->IsAlive())
+    if (!dragon || !dragon->IsAlive() || dragon->GetCharmerGUID() != bot->GetGUID())
         return nullptr;
 
     return dragon;

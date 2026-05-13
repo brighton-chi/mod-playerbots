@@ -302,16 +302,11 @@ bool KiljaedenRemoveFireBloomAction::Execute(Event /*event*/)
 
 bool KiljaedenUseDragonOrbAction::Execute(Event /*event*/)
 {
-    constexpr uint32 kiljaedenBlueDrakeEntry = 25653;
-    constexpr float orbRecoveryDragonSearchRadius = 30.0f;
-
     GameObject* closestOrb = nullptr;
-    GameObject* closestAnyOrb = nullptr;
+    GameObject* closestInUseOrb = nullptr;
     float closestDistance = 0.0f;
-    float closestAnyOrbDistance = 0.0f;
-    bool orbInUseNearby = false;
-    Creature* const nearbyUnclaimedDragon =
-        bot->FindNearestCreature(kiljaedenBlueDrakeEntry, orbRecoveryDragonSearchRadius, true);
+    float closestInUseOrbDistance = 0.0f;
+    bool orbInUse = false;
 
     constexpr float orbInUsePendingDistance = 15.0f;
 
@@ -322,20 +317,19 @@ bool KiljaedenUseDragonOrbAction::Execute(Event /*event*/)
             continue;
 
         const float distance = bot->GetExactDist2d(orb);
-        if (!closestAnyOrb || distance < closestAnyOrbDistance)
+        if (orb->HasGameObjectFlag(GO_FLAG_IN_USE))
         {
-            closestAnyOrb = orb;
-            closestAnyOrbDistance = distance;
+            orbInUse = true;
+            if (!closestInUseOrb || distance < closestInUseOrbDistance)
+            {
+                closestInUseOrb = orb;
+                closestInUseOrbDistance = distance;
+            }
+
+            continue;
         }
 
-        if (orb->HasGameObjectFlag(GO_FLAG_IN_USE) &&
-            bot->GetExactDist2d(orb) <= orbInUsePendingDistance)
-        {
-            orbInUseNearby = true;
-        }
-
-        if (orb->HasGameObjectFlag(GO_FLAG_NOT_SELECTABLE) ||
-            orb->HasGameObjectFlag(GO_FLAG_IN_USE))
+        if (orb->HasGameObjectFlag(GO_FLAG_NOT_SELECTABLE))
         {
             continue;
         }
@@ -347,25 +341,24 @@ bool KiljaedenUseDragonOrbAction::Execute(Event /*event*/)
         }
     }
 
-    if (!closestOrb)
+    if (orbInUse)
     {
-        // Keep this action active briefly while the orb is in-use and control aura is pending.
-        if (orbInUseNearby)
-            return true;
-
-        if (nearbyUnclaimedDragon && closestAnyOrb)
+        if (closestInUseOrb)
         {
-            if (closestAnyOrbDistance < 3.0f)
+            if (closestInUseOrbDistance <= orbInUsePendingDistance)
                 return true;
 
-            return MoveTo(SUNWELL_MAP_ID, closestAnyOrb->GetPositionX(),
-                          closestAnyOrb->GetPositionY(), closestAnyOrb->GetPositionZ(),
+            return MoveTo(SUNWELL_MAP_ID, closestInUseOrb->GetPositionX(),
+                          closestInUseOrb->GetPositionY(), closestInUseOrb->GetPositionZ(),
                           false, false, false, false,
                           MovementPriority::MOVEMENT_FORCED, true, false);
         }
 
         return false;
     }
+
+    if (!closestOrb)
+        return false;
 
     if (closestDistance < 3.0f)
     {

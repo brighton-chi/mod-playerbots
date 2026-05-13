@@ -744,15 +744,12 @@ bool KiljaedenBossEngagedByTanksTrigger::IsActive()
     if (botAI->IsAssistTank(bot) && kiljaeden->GetHealthPct() <= 85.0f)
     {
         constexpr float searchRadius = 100.0f;
-        std::list<Creature*> reflections;
-        bot->GetCreatureListWithEntryInGrid(
-            reflections,
-            static_cast<uint32>(SunwellNpcs::NPC_SINISTER_REFLECTION),
-            searchRadius);
-
-        for (Creature* reflection : reflections)
-            if (reflection && reflection->IsAlive())
-                return false;
+        if (AI_VALUE2(Unit*, "find target", "sinister reflection") ||
+            bot->FindNearestCreature(
+                static_cast<uint32>(SunwellNpcs::NPC_SINISTER_REFLECTION), searchRadius, true))
+        {
+            return false;
+        }
     }
 
     return true;
@@ -771,6 +768,17 @@ bool KiljaedenBossEngagedByMeleeTrigger::IsActive()
             static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
     {
         return false;
+    }
+
+    if (kiljaeden->GetHealthPct() <= 85.0f)
+    {
+        constexpr float searchRadius = 50.0f;
+        if (AI_VALUE2(Unit*, "find target", "sinister reflection") ||
+            bot->FindNearestCreature(
+                static_cast<uint32>(SunwellNpcs::NPC_SINISTER_REFLECTION), searchRadius, true))
+        {
+            return false;
+        }
     }
 
     return true;
@@ -827,8 +835,6 @@ bool KiljaedenBossEngagedByRangedTrigger::IsActive()
 bool KiljaedenDragonOrbIsActiveTrigger::IsActive()
 {
     static std::unordered_map<ObjectGuid::LowType, uint32> lastLogTimes;
-    constexpr uint32 kiljaedenBlueDrakeEntry = 25653;
-    constexpr float orbRecoveryDragonSearchRadius = 30.0f;
 
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
     if (!kiljaeden)
@@ -840,14 +846,10 @@ bool KiljaedenDragonOrbIsActiveTrigger::IsActive()
         static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT));
     Unit* const controlledDragon = GetKiljaedenControlledDragon(bot);
     bool const hasLiveControlledDragon = controlledDragon && controlledDragon->IsAlive();
-    Creature* const nearbyUnclaimedDragon =
-        bot->FindNearestCreature(kiljaedenBlueDrakeEntry, orbRecoveryDragonSearchRadius, true);
     bool result = false;
     char const* reason = "phase before dragon orbs";
     std::ostringstream orbStates;
-    bool orbInUseNearby = false;
-
-    constexpr float orbInUsePendingDistance = 15.0f;
+    bool orbInUse = false;
 
     auto const logState = [&]() {
         if (!isAssignedOrbUser)
@@ -875,13 +877,6 @@ bool KiljaedenDragonOrbIsActiveTrigger::IsActive()
         return false;
     }
 
-    if (hasVengeance)
-    {
-        reason = "bot has vengeance aura";
-        logState();
-        return false;
-    }
-
     if (hasLiveControlledDragon)
     {
         reason = "bot still controls live dragon";
@@ -889,16 +884,11 @@ bool KiljaedenDragonOrbIsActiveTrigger::IsActive()
         return false;
     }
 
+    if (hasVengeance)
+        reason = "bot has vengeance aura without dragon control";
+
     if (!isAssignedOrbUser)
         return false;
-
-    if (nearbyUnclaimedDragon)
-    {
-        result = true;
-        reason = "nearby unclaimed dragon after orb use";
-        logState();
-        return true;
-    }
 
     reason = "no selectable orb found";
 
@@ -921,8 +911,8 @@ bool KiljaedenDragonOrbIsActiveTrigger::IsActive()
                   << ",selectable=" << selectable
                   << ",inUse=" << inUse;
 
-        if (inUse && bot->GetExactDist2d(orb) <= orbInUsePendingDistance)
-            orbInUseNearby = true;
+        if (inUse)
+            orbInUse = true;
 
         if (orb && !orb->HasGameObjectFlag(GO_FLAG_NOT_SELECTABLE))
         {
@@ -931,10 +921,10 @@ bool KiljaedenDragonOrbIsActiveTrigger::IsActive()
         }
     }
 
-    if (!result && orbInUseNearby)
+    if (orbInUse)
     {
         result = true;
-        reason = "orb in use nearby awaiting control";
+        reason = "orb already in use";
     }
 
     logState();
@@ -990,6 +980,7 @@ bool KiljaedenBotControlsDragonTrigger::IsActive()
     struct DragonControlState
     {
         bool hadVengeance = false;
+        bool hadPossessDrakeImmunity = false;
         bool hadCharm = false;
         bool charmWasAlive = false;
         bool charmHadShieldAura = false;
@@ -1007,6 +998,9 @@ bool KiljaedenBotControlsDragonTrigger::IsActive()
         static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT);
     Aura* const vengeanceAura = bot->GetAura(vengeanceSpellId);
     bool const hasVengeance = vengeanceAura != nullptr;
+    uint32 const possessDrakeImmunitySpellId = 45838;
+    bool const hasPossessDrakeImmunity =
+        bot->HasAura(possessDrakeImmunitySpellId);
     int32 const vengeanceDurationMs =
         vengeanceAura ? vengeanceAura->GetDuration() : 0;
     int32 const vengeanceMaxDurationMs =
@@ -1018,6 +1012,8 @@ bool KiljaedenBotControlsDragonTrigger::IsActive()
     Unit* const charm = bot->GetCharm();
     bool const hasCharm = charm != nullptr;
     bool const charmAlive = charm && charm->IsAlive();
+    ObjectGuid const botCharmGuid = bot->GetCharmGUID();
+    size_t const controlledCount = bot->m_Controlled.size();
     bool const controlsDragonByCharm = GetKiljaedenControlledDragon(bot) != nullptr;
     bool const charmHasShieldAura = charm && charm->HasAura(shieldSpellId);
     bool const charmChannelingShield =
@@ -1032,30 +1028,65 @@ bool KiljaedenBotControlsDragonTrigger::IsActive()
     if (GetKiljaedenDragonOrbUser(bot) == bot)
     {
         DragonControlState& lastState = lastStates[bot->GetGUID().GetCounter()];
+        Unit* previousCharmUnit = nullptr;
+        bool previousCharmStillExists = false;
+        bool previousCharmStillAlive = false;
+        bool previousCharmStillPossessed = false;
+        bool previousCharmStillControlledByPlayer = false;
+        ObjectGuid previousCharmCharmerGuid;
+        float previousCharmCurrentHealthPct = 0.0f;
+
+        if (lastState.hadCharm && !hasCharm && !lastState.charmGuid.IsEmpty())
+        {
+            previousCharmUnit = botAI->GetUnit(lastState.charmGuid);
+            previousCharmStillExists = previousCharmUnit != nullptr;
+            previousCharmStillAlive = previousCharmUnit && previousCharmUnit->IsAlive();
+            previousCharmStillPossessed = previousCharmUnit && previousCharmUnit->isPossessed();
+            previousCharmStillControlledByPlayer =
+                previousCharmUnit && previousCharmUnit->IsControlledByPlayer();
+            previousCharmCharmerGuid =
+                previousCharmUnit ? previousCharmUnit->GetCharmerGUID() : ObjectGuid();
+            previousCharmCurrentHealthPct =
+                previousCharmUnit ? previousCharmUnit->GetHealthPct() : 0.0f;
+        }
+
         if (lastState.hadVengeance != hasVengeance ||
+            lastState.hadPossessDrakeImmunity != hasPossessDrakeImmunity ||
             lastState.hadCharm != hasCharm ||
             lastState.charmWasAlive != charmAlive)
         {
             LOG_INFO(
                 "playerbots",
-                "KJ dragon control bot={} vengeance={} vengeanceDurationMs={} vengeanceMaxDurationMs={} charm={} charmAlive={} charmGuid={} charmEntry={} charmHealthPct={} charmShieldAura={} charmShieldChanneling={} darknessCasting={} darknessCastMsLeft={} prevVengeance={} prevVengeanceDurationMs={} prevVengeanceMaxDurationMs={} prevCharm={} prevCharmAlive={} prevCharmGuid={} prevCharmEntry={} prevCharmHealthPct={} prevCharmShieldAura={} prevCharmShieldChanneling={}",
+                "KJ dragon control bot={} vengeance={} possessDrakeImmunity={} vengeanceDurationMs={} vengeanceMaxDurationMs={} charm={} charmAlive={} charmGuid={} botCharmGuid={} controlledCount={} charmEntry={} charmHealthPct={} charmShieldAura={} charmShieldChanneling={} darknessCasting={} darknessCastMsLeft={} prevVengeance={} prevPossessDrakeImmunity={} prevVengeanceDurationMs={} prevVengeanceMaxDurationMs={} prevCharm={} prevCharmAlive={} prevCharmGuid={} prevCharmEntry={} prevCharmHealthPct={} prevCharmShieldAura={} prevCharmShieldChanneling={} prevCharmStillExists={} prevCharmStillAlive={} prevCharmStillPossessed={} prevCharmStillControlledByPlayer={} prevCharmCurrentCharmerGuid={} prevCharmCurrentHealthPct={}",
                 bot->GetName(), hasVengeance,
+                hasPossessDrakeImmunity,
                 vengeanceDurationMs, vengeanceMaxDurationMs,
                 hasCharm, charmAlive,
                 hasCharm ? charm->GetGUID().ToString() : "none",
+                botCharmGuid.ToString(),
+                controlledCount,
                 hasCharm ? charm->GetEntry() : 0,
                 hasCharm ? charm->GetHealthPct() : 0.0f,
                 charmHasShieldAura, charmChannelingShield,
                 darknessCasting, darknessCastMsLeft,
-                lastState.hadVengeance, lastState.vengeanceDurationMs,
+                lastState.hadVengeance,
+                lastState.hadPossessDrakeImmunity,
+                lastState.vengeanceDurationMs,
                 lastState.vengeanceMaxDurationMs, lastState.hadCharm,
                 lastState.charmWasAlive, lastState.charmGuid.ToString(),
                 lastState.charmEntry, lastState.charmHealthPct,
                 lastState.charmHadShieldAura,
-                lastState.charmWasChannelingShield);
+                lastState.charmWasChannelingShield,
+                previousCharmStillExists,
+                previousCharmStillAlive,
+                previousCharmStillPossessed,
+                previousCharmStillControlledByPlayer,
+                previousCharmCharmerGuid.ToString(),
+                previousCharmCurrentHealthPct);
         }
 
         lastState.hadVengeance = hasVengeance;
+        lastState.hadPossessDrakeImmunity = hasPossessDrakeImmunity;
         lastState.hadCharm = hasCharm;
         lastState.charmWasAlive = charmAlive;
         lastState.charmHadShieldAura = charmHasShieldAura;
@@ -1067,5 +1098,5 @@ bool KiljaedenBotControlsDragonTrigger::IsActive()
         lastState.charmHealthPct = hasCharm ? charm->GetHealthPct() : 0.0f;
     }
 
-    return hasVengeance || controlsDragonByCharm;
+    return controlsDragonByCharm;
 }
