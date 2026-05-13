@@ -123,7 +123,8 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
     }
 
     if (isMechanicTracker &&
-        !AI_VALUE2(Unit*, "find target", "hand of the deceiver"))
+        !AI_VALUE2(Unit*, "find target", "hand of the deceiver") &&
+        !AI_VALUE2(Unit*, "find target", "kil'jaeden"))
     {
         ResetKiljaedenDragonOrbUserAnnouncement(instanceId);
     }
