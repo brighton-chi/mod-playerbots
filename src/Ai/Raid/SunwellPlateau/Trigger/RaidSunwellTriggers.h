@@ -220,11 +220,11 @@ public:
 
 // Eredar Twins
 
-class EredarTwinsEncounterJustStartedTrigger : public Trigger
+class EredarTwinsMeleeIsAtBalconyTrigger : public Trigger
 {
 public:
-    EredarTwinsEncounterJustStartedTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "eredar twins encounter just started") {}
+    EredarTwinsMeleeIsAtBalconyTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "eredar twins melee is at balcony") {}
     bool IsActive() override;
 };
 

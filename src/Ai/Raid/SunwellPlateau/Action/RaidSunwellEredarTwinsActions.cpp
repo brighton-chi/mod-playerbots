@@ -225,7 +225,7 @@ bool EredarTwinsFirstAssistTankMoveOutOfBlazeAction::Execute(Event /*event*/)
 bool EredarTwinsPositionRangedAction::Execute(Event /*event*/)
 {
     Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
-    if (sacrolash)
+    if (sacrolash && sacrolash->GetVictim() != bot)
     {
         const Position& position = EREDAR_TWINS_P1_RANGED_POSITION;
 
@@ -238,6 +238,7 @@ bool EredarTwinsPositionRangedAction::Execute(Event /*event*/)
 
         return false;
     }
+    // Jump down during Phase 2 or if the bot pulls aggro on Sacrolash
     else if (bot->GetPositionZ() > EREDAR_TWINS_BALCONY_Z)
     {
         const Position& jumpPos = EREDAR_TWINS_P1_RANGED_POSITION;

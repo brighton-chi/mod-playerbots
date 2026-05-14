@@ -92,8 +92,8 @@ public:
             &RaidSunwellTriggerContext::felmyst_fog_of_corruption_is_active;
 
         // Eredar Twins
-        creators["eredar twins encounter just started"] =
-            &RaidSunwellTriggerContext::eredar_twins_encounter_just_started;
+        creators["eredar twins melee is at balcony"] =
+            &RaidSunwellTriggerContext::eredar_twins_melee_is_at_balcony;
 
         creators["eredar twins pulling bosses"] =
             &RaidSunwellTriggerContext::eredar_twins_pulling_bosses;
@@ -279,8 +279,8 @@ private:
         PlayerbotAI* botAI) { return new FelmystFogOfCorruptionIsActiveTrigger(botAI); }
 
     // Eredar Twins
-    static Trigger* eredar_twins_encounter_just_started(
-        PlayerbotAI* botAI) { return new EredarTwinsEncounterJustStartedTrigger(botAI); }
+    static Trigger* eredar_twins_melee_is_at_balcony(
+        PlayerbotAI* botAI) { return new EredarTwinsMeleeIsAtBalconyTrigger(botAI); }
 
     static Trigger* eredar_twins_pulling_bosses(
         PlayerbotAI* botAI) { return new EredarTwinsPullingBossesTrigger(botAI); }

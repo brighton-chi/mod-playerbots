@@ -122,9 +122,14 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
             erased = true;
     }
 
-    if (botAI->IsMainTank(bot) &&
+    /* if (botAI->IsMainTank(bot) &&
         !AI_VALUE2(Unit*, "find target", "hand of the deceiver") &&
         !AI_VALUE2(Unit*, "find target", "kil'jaeden"))
+    {
+        ResetKiljaedenDragonOrbUserAnnouncement(instanceId);
+    } */
+    if (isMechanicTracker &&
+        !AI_VALUE2(Unit*, "find target", "hand of the deceiver"))
     {
         ResetKiljaedenDragonOrbUserAnnouncement(instanceId);
     }
@@ -134,19 +139,20 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
 
 bool VolatileFiendKeepEnemyAwayFromGroupAction::Execute(Event /*event*/)
 {
-    constexpr float searchRadius = 30.0f;
+    constexpr float searchRadius = 25.0f;
     Unit* volatileFiend = bot->FindNearestCreature(
         static_cast<uint32>(SunwellNpcs::NPC_VOLATILE_FIEND), searchRadius, true);
     if (!volatileFiend)
         return false;
 
-    if (botAI->IsMainTank(bot) && AI_VALUE(Unit*, "current target") != volatileFiend)
+    if (botAI->IsTank(bot))
     {
-        return Attack(volatileFiend);
+        if (AI_VALUE(Unit*, "current target") != volatileFiend)
+            return Attack(volatileFiend);
     }
-    else if (!botAI->IsTank(bot))
+    else
     {
-        constexpr float safeDistance = 15.0f;
+        constexpr float safeDistance = 20.0f;
         const float currentDistance = bot->GetDistance2d(volatileFiend);
         if (currentDistance < safeDistance)
             return MoveAway(volatileFiend, safeDistance - currentDistance);

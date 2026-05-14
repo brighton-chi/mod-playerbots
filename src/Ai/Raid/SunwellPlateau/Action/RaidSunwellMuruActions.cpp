@@ -520,7 +520,7 @@ bool MuruDontTouchTheDarkFiendAction::Execute(Event /*event*/)
     if (!darkness)
         return false;
 
-    constexpr float safeDistance = 7.0f;
+    constexpr float safeDistance = 8.0f;
     const float currentDistance = bot->GetDistance2d(darkness);
     if (currentDistance < safeDistance &&
         MoveAway(darkness, safeDistance - currentDistance))

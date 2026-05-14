@@ -29,13 +29,7 @@ bool SunwellPlateauBotIsNotInCombatTrigger::IsActive()
 
 bool VolatileFiendSelfDestructsWhenNearTrigger::IsActive()
 {
-    if (AI_VALUE2(Unit*, "find target", "kil'jaeden") ||
-        AI_VALUE2(Unit*, "find target", "hand of the deceiver"))
-    {
-        return false;
-    }
-
-    constexpr float searchRadius = 30.0f;
+    constexpr float searchRadius = 25.0f;
     return bot->FindNearestCreature(
         static_cast<uint32>(SunwellNpcs::NPC_VOLATILE_FIEND), searchRadius, true);
 }
@@ -50,14 +44,13 @@ bool ApocalypseGuardProtectedByInfernalDefenseTrigger::IsActive()
 
 bool KalecgosBossEngagedByTankTrigger::IsActive()
 {
-    return AI_VALUE2(Unit*, "find target", "kalecgos") &&
+    return botAI->IsTank(bot) && AI_VALUE2(Unit*, "find target", "kalecgos") &&
            GetKalecgosCurrentTank(botAI, bot) == bot;
 }
 
 bool KalecgosSpectralRiftIsOpenTrigger::IsActive()
 {
-    if (!AI_VALUE2(Unit*, "find target", "kalecgos") &&
-        !AI_VALUE2(Unit*, "find target", "sathrovarr the corruptor"))
+    if (!AI_VALUE2(Unit*, "find target", "kalecgos"))
         return false;
 
     if (!ShouldEnterKalecgosSpectralRift(botAI, bot))
@@ -74,7 +67,9 @@ bool KalecgosBotsTakeSplashDamageTrigger::IsActive()
 
     if (!AI_VALUE2(Unit*, "find target", "kalecgos") &&
         !AI_VALUE2(Unit*, "find target", "sathrovarr the corruptor"))
+    {
         return false;
+    }
 
     return !ShouldEnterKalecgosSpectralRift(botAI, bot);
 }
@@ -116,7 +111,9 @@ bool KalecgosBothBossesMustBeDefeatedTrigger::IsActive()
 
     if (!AI_VALUE2(Unit*, "find target", "kalecgos") &&
         !AI_VALUE2(Unit*, "find target", "sathrovarr the corruptor"))
+    {
         return false;
+    }
 
     if (ShouldEnterKalecgosSpectralRift(botAI, bot))
         return false;
@@ -127,8 +124,7 @@ bool KalecgosBothBossesMustBeDefeatedTrigger::IsActive()
 bool KalecgosBotsDontObserveGravityTrigger::IsActive()
 {
     return bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_REALM)) &&
-           bot->GetPositionZ() > KALECGOS_SPECTRAL_REALM_Z + 3.0f &&
-           bot->GetMapId() == SUNWELL_MAP_ID;
+           bot->GetPositionZ() > KALECGOS_SPECTRAL_REALM_Z + 3.0f;
 }
 
 // Brutallus
@@ -159,13 +155,13 @@ bool BrutallusBossEngagedByMeleeTrigger::IsActive()
 
 bool BrutallusBossEngagedByRangedTrigger::IsActive()
 {
+    if (!botAI->IsRanged(bot))
+        return false;
+
     if (!AI_VALUE2(Unit*, "find target", "brutallus"))
         return false;
 
-    if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_BURN)))
-        return false;
-
-    return !botAI->IsMelee(bot);
+    return !bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_BURN));
 }
 
 bool BrutallusBotIsBurningTrigger::IsActive()
@@ -187,10 +183,7 @@ bool BrutallusBotIsBurningTrigger::IsActive()
         return true;
     }
 
-    if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_BURN)))
-        return true;
-
-    return false;
+    return bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_BURN));
 }
 
 // Felmyst
@@ -341,7 +334,7 @@ bool FelmystFogOfCorruptionIsActiveTrigger::IsActive()
 
 // Eredar Twins
 
-bool EredarTwinsEncounterJustStartedTrigger::IsActive()
+bool EredarTwinsMeleeIsAtBalconyTrigger::IsActive()
 {
     if (!botAI->IsMelee(bot) || bot->GetPositionZ() < EREDAR_TWINS_BALCONY_Z)
         return false;
@@ -397,11 +390,10 @@ bool EredarTwinsOnlyOneBossRemainsTrigger::IsActive()
     if (bot->GetPositionZ() > EREDAR_TWINS_BALCONY_Z)
         return false;
 
-    if (AI_VALUE2(Unit*, "find target", "lady sacrolash") ||
-        !AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
+    Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
+    if (!alythess || AI_VALUE2(Unit*, "find target", "lady sacrolash"))
         return false;
 
-    Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
     if (IsEredarTwinsConflagrationTarget(alythess, bot))
         return false;
 
@@ -451,7 +443,9 @@ bool EredarTwinsDeterminingDpsPriorityTrigger::IsActive()
 
     if (!AI_VALUE2(Unit*, "find target", "grand warlock alythess") &&
         !AI_VALUE2(Unit*, "find target", "lady sacrolash"))
+    {
         return false;
+    }
 
     return !IsSacrolashTank(botAI, bot) && !IsAlythessTank(botAI, bot);
 }
@@ -493,7 +487,7 @@ bool MuruBossesEngagedByRangedTrigger::IsActive()
 
 bool MuruDeterminingDpsPriorityTrigger::IsActive()
 {
-    if (!botAI->IsDps(bot) /* && !botAI->IsTank(bot) */)
+    if (!botAI->IsDps(bot))
         return false;
 
     return AI_VALUE2(Unit*, "find target", "m'uru") ||
@@ -834,7 +828,7 @@ bool KiljaedenBossEngagedByRangedTrigger::IsActive()
 bool KiljaedenDragonOrbIsActiveTrigger::IsActive()
 {
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
-    if (!kiljaeden)
+    if (!kiljaeden || kiljaeden->GetHealthPct() > 85.0f)
         return false;
 
     Player* orbUser = GetKiljaedenDragonOrbUser(bot);
@@ -846,13 +840,7 @@ bool KiljaedenDragonOrbIsActiveTrigger::IsActive()
     bool result = false;
     bool orbInUse = false;
 
-    if (kiljaeden->GetHealthPct() > 85.0f)
-        return false;
-
-    if (hasLiveControlledDragon)
-        return false;
-
-    if (!isAssignedOrbUser)
+    if (hasLiveControlledDragon || !isAssignedOrbUser)
         return false;
 
     for (const uint32 orbEntry : KILJAEDEN_DRAGON_ORB_ENTRIES)
@@ -877,8 +865,8 @@ bool KiljaedenDragonOrbIsActiveTrigger::IsActive()
 
 bool KiljaedenBotHasStaleRootAfterDragonTrigger::IsActive()
 {
-    constexpr uint32 kiljaedenBlueDrakeEntry = 25653;
-    constexpr float orbRecoveryDragonSearchRadius = 30.0f;
+    // constexpr uint32 kiljaedenBlueDrakeEntry = 25653;
+    // constexpr float orbRecoveryDragonSearchRadius = 30.0f;
     constexpr float orbInUsePendingDistance = 15.0f;
     constexpr uint32 orbUseGracePeriodMs = 5000;
 
@@ -898,8 +886,8 @@ bool KiljaedenBotHasStaleRootAfterDragonTrigger::IsActive()
     if (HasRecentKiljaedenDragonOrbUse(bot, orbUseGracePeriodMs))
         return false;
 
-    if (bot->FindNearestCreature(kiljaedenBlueDrakeEntry, orbRecoveryDragonSearchRadius, true))
-        return false;
+    // if (bot->FindNearestCreature(kiljaedenBlueDrakeEntry, orbRecoveryDragonSearchRadius, true))
+    //     return false;
 
     for (const uint32 orbEntry : KILJAEDEN_DRAGON_ORB_ENTRIES)
     {
@@ -912,16 +900,12 @@ bool KiljaedenBotHasStaleRootAfterDragonTrigger::IsActive()
     }
 
     if (!bot->IsRooted() || bot->HasUnitState(UNIT_STATE_LOST_CONTROL))
-    {
         return false;
-    }
 
     return bot->GetMotionMaster()->GetMotionSlotType(MOTION_SLOT_CONTROLLED) == NULL_MOTION_TYPE;
 }
 
 bool KiljaedenBotControlsDragonTrigger::IsActive()
 {
-    bool const controlsDragonByCharm = GetKiljaedenControlledDragon(bot) != nullptr;
-
-    return controlsDragonByCharm;
+    return GetKiljaedenControlledDragon(bot);
 }

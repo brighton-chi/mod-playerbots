@@ -195,7 +195,7 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("felmyst avoid fog of corruption", ACTION_EMERGENCY + 9) }));
 
     // Eredar Twins
-    triggers.push_back(new TriggerNode("eredar twins encounter just started", {
+    triggers.push_back(new TriggerNode("eredar twins melee is at balcony", {
         NextAction("eredar twins melee jump down from balcony", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("eredar twins pulling bosses", {

@@ -59,7 +59,7 @@ bool ShouldHoldSacrolashThreat(
 
     auto const threatList = sacrolash->GetThreatMgr().GetSortedThreatList();
     for (auto itr = threatList.begin();
-            itr != threatList.end() && playerThreatEntries < 2; ++itr)
+         itr != threatList.end() && playerThreatEntries < 2; ++itr)
     {
         ThreatReference const* threatRef = *itr;
         if (!threatRef || !threatRef->IsAvailable())
@@ -92,8 +92,11 @@ bool IsAlythessTankPositionSafe(Player* bot, const Position& position)
         if (!go || go->GetEntry() != static_cast<uint32>(SunwellObjects::GO_BLAZE))
             continue;
 
-        if (go->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) <= blazeDangerRadius)
+        if (go->GetExactDist2d(
+                position.GetPositionX(), position.GetPositionY()) <= blazeDangerRadius)
+        {
             return false;
+        }
     }
 
     return true;

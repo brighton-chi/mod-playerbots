@@ -147,11 +147,11 @@ float GetKiljaedenNearestArmageddonDistance(
 
 }
 
-const Position KILJAEDEN_TANK_POSITION =    { 1704.729f, 634.891f, 27.787f };
-const Position KILJAEDEN_S_MELEE_POSITION = { 1689.487f, 632.119f, 27.823f };
-const Position KILJAEDEN_E_MELEE_POSITION = { 1700.542f, 619.589f, 27.786f };
-const Position KILJAEDEN_STACK_POSITION =   { 1709.768f, 642.241f, 27.706f };
-const Position KILJAEDEN_CENTER_POSITION =  { 1698.450f, 628.030f, 28.199f };
+const Position KILJAEDEN_TANK_POSITION =     { 1704.729f, 634.891f, 27.787f };
+const Position KILJAEDEN_S_MELEE_POSITION =  { 1689.487f, 632.119f, 27.823f };
+const Position KILJAEDEN_E_MELEE_POSITION =  { 1700.542f, 619.589f, 27.786f };
+const Position KILJAEDEN_DARKNESS_POSITION = { 1709.768f, 642.241f, 27.706f };
+const Position KILJAEDEN_CENTER_POSITION =   { 1698.450f, 628.030f, 28.199f };
 
 uint32 const KILJAEDEN_DRAGON_ORB_ENTRIES[4] =
 {
@@ -550,17 +550,11 @@ Player* GetKiljaedenDragonOrbUser(Player* bot)
 
 void RecordKiljaedenDragonOrbUse(Player* bot)
 {
-    if (!bot)
-        return;
-
     kiljaedenDragonOrbUseTimes[bot->GetGUID().GetCounter()] = getMSTime();
 }
 
 bool HasRecentKiljaedenDragonOrbUse(Player* bot, uint32 recentMs)
 {
-    if (!bot)
-        return false;
-
     auto const orbUseTime = kiljaedenDragonOrbUseTimes.find(bot->GetGUID().GetCounter());
     if (orbUseTime == kiljaedenDragonOrbUseTimes.end())
         return false;
@@ -570,7 +564,7 @@ bool HasRecentKiljaedenDragonOrbUse(Player* bot, uint32 recentMs)
 
 bool TryAnnounceKiljaedenDragonOrbUser(PlayerbotAI* botAI, Player* bot)
 {
-    auto const instanceId = bot->GetInstanceId();
+    const uint32 instanceId = bot->GetInstanceId();
     auto const announcementTime =
         kiljaedenDragonOrbAnnouncementTimes.find(instanceId);
     if (announcementTime != kiljaedenDragonOrbAnnouncementTimes.end())
@@ -599,10 +593,7 @@ bool TryAnnounceKiljaedenDragonOrbUser(PlayerbotAI* botAI, Player* bot)
             {});
     }
 
-    if (!botAI->SayToRaid(text))
-        return botAI->SayToParty(text);
-
-    return true;
+    return botAI->SayToRaid(text);
 }
 
 void ResetKiljaedenDragonOrbUserAnnouncement(uint32 instanceId)
@@ -643,8 +634,11 @@ bool CastKiljaedenDragonSpell(Unit* dragon, uint32 spellId)
 Player* FindBestKiljaedenDragonClusterTarget(
     PlayerbotAI* botAI, Player* bot, Unit* dragon, uint32 spellId)
 {
+    if (!dragon)
+        return nullptr;
+
     Group* group = bot->GetGroup();
-    if (!group || !dragon)
+    if (!group)
         return nullptr;
 
     constexpr uint8 minClusterSize = 3;
@@ -703,8 +697,11 @@ Player* FindBestKiljaedenDragonClusterTarget(
 
 Player* FindClosestKiljaedenDragonTarget(Player* bot, Unit* dragon, uint32 spellId)
 {
-    Group* group = bot ? bot->GetGroup() : nullptr;
-    if (!group || !dragon)
+    if (!dragon)
+        return nullptr;
+
+    Group* group = bot->GetGroup();
+    if (!group)
         return nullptr;
 
     Player* closestTarget = nullptr;

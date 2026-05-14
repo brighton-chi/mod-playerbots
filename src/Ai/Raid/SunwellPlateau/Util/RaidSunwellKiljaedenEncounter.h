@@ -48,7 +48,7 @@ extern const Position KILJAEDEN_CENTER_POSITION;
 extern const Position KILJAEDEN_TANK_POSITION;
 extern const Position KILJAEDEN_S_MELEE_POSITION;
 extern const Position KILJAEDEN_E_MELEE_POSITION;
-extern const Position KILJAEDEN_STACK_POSITION;
+extern const Position KILJAEDEN_DARKNESS_POSITION;
 
 extern std::unordered_map<uint32, std::vector<KiljaedenArmageddon>> kiljaedenArmageddons;
 extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> kiljaedenRangedAssignments;

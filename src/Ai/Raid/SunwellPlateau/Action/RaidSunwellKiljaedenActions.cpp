@@ -128,7 +128,7 @@ bool KiljaedenAvoidArmageddonsAction::Execute(Event /*event*/)
 
 bool KiljaedenStackForShieldOfTheBlueAction::Execute(Event /*event*/)
 {
-    const Position& position = KILJAEDEN_STACK_POSITION;
+    const Position& position = KILJAEDEN_DARKNESS_POSITION;
     if (bot->GetExactDist2d(position.GetPositionX(),
                             position.GetPositionY()) > 2.0f)
     {
@@ -424,7 +424,7 @@ bool KiljaedenControlDragonAction::ExecuteDuringDarknessOfAThousandSouls(Unit* k
 
     constexpr float desiredDistanceFromStack = 2.0f;
     constexpr float castReadyDistanceFromStack = 3.0f;
-    const Position& stackPosition = KILJAEDEN_STACK_POSITION;
+    const Position& stackPosition = KILJAEDEN_DARKNESS_POSITION;
     const float distanceToStack =
         dragon->GetExactDist2d(stackPosition.GetPositionX(), stackPosition.GetPositionY());
     if (distanceToStack > castReadyDistanceFromStack)
