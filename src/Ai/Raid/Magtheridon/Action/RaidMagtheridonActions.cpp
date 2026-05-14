@@ -60,7 +60,7 @@ bool MagtheridonMainTankAttackFirstThreeChannelersAction::Execute(Event /*event*
 
     SetRtiTarget(botAI, rtiName, currentTarget);
 
-    if (currentTarget && bot->GetVictim() != currentTarget)
+    if (currentTarget && AI_VALUE(Unit*, "current target") != currentTarget)
         return Attack(currentTarget);
 
     return false;
@@ -75,7 +75,7 @@ bool MagtheridonFirstAssistTankAttackNWChannelerAction::Execute(Event /*event*/)
     MarkTargetWithDiamond(bot, channelerDiamond);
     SetRtiTarget(botAI, "diamond", channelerDiamond);
 
-    if (bot->GetVictim() != channelerDiamond)
+    if (AI_VALUE(Unit*, "current target") != channelerDiamond)
         return Attack(channelerDiamond);
 
     if (channelerDiamond->GetVictim() == bot)
@@ -108,7 +108,7 @@ bool MagtheridonSecondAssistTankAttackNEChannelerAction::Execute(Event /*event*/
     MarkTargetWithTriangle(bot, channelerTriangle);
     SetRtiTarget(botAI, "triangle", channelerTriangle);
 
-    if (bot->GetVictim() != channelerTriangle)
+    if (AI_VALUE(Unit*, "current target") != channelerTriangle)
         return Attack(channelerTriangle);
 
     if (channelerTriangle->GetVictim() == bot)
@@ -218,7 +218,7 @@ bool MagtheridonAssignDPSPriorityAction::Execute(Event /*event*/)
     {
         SetRtiTarget(botAI, "square", channelerSquare);
 
-        if (bot->GetTarget() != channelerSquare->GetGUID())
+        if (AI_VALUE(Unit*, "current target") != channelerSquare)
             return Attack(channelerSquare);
 
         return false;
@@ -229,7 +229,7 @@ bool MagtheridonAssignDPSPriorityAction::Execute(Event /*event*/)
     {
         SetRtiTarget(botAI, "star", channelerStar);
 
-        if (bot->GetTarget() != channelerStar->GetGUID())
+        if (AI_VALUE(Unit*, "current target") != channelerStar)
             return Attack(channelerStar);
 
         return false;
@@ -240,7 +240,7 @@ bool MagtheridonAssignDPSPriorityAction::Execute(Event /*event*/)
     {
         SetRtiTarget(botAI, "circle", channelerCircle);
 
-        if (bot->GetTarget() != channelerCircle->GetGUID())
+        if (AI_VALUE(Unit*, "current target") != channelerCircle)
             return Attack(channelerCircle);
 
         return false;
@@ -251,7 +251,7 @@ bool MagtheridonAssignDPSPriorityAction::Execute(Event /*event*/)
     {
         SetRtiTarget(botAI, "diamond", channelerDiamond);
 
-        if (bot->GetTarget() != channelerDiamond->GetGUID())
+        if (AI_VALUE(Unit*, "current target") != channelerDiamond)
             return Attack(channelerDiamond);
 
         return false;
@@ -262,7 +262,7 @@ bool MagtheridonAssignDPSPriorityAction::Execute(Event /*event*/)
     {
         SetRtiTarget(botAI, "triangle", channelerTriangle);
 
-        if (bot->GetTarget() != channelerTriangle->GetGUID())
+        if (AI_VALUE(Unit*, "current target") != channelerTriangle)
             return Attack(channelerTriangle);
 
         return false;
@@ -275,7 +275,7 @@ bool MagtheridonAssignDPSPriorityAction::Execute(Event /*event*/)
     {
         SetRtiTarget(botAI, "cross", magtheridon);
 
-        if (bot->GetTarget() != magtheridon->GetGUID())
+        if (AI_VALUE(Unit*, "current target") != magtheridon)
             return Attack(magtheridon);
     }
 
@@ -348,7 +348,7 @@ bool MagtheridonMainTankPositionBossAction::Execute(Event /*event*/)
     MarkTargetWithCross(bot, magtheridon);
     SetRtiTarget(botAI, "cross", magtheridon);
 
-    if (bot->GetVictim() != magtheridon)
+    if (AI_VALUE(Unit*, "current target") != magtheridon)
         return Attack(magtheridon);
 
     if (magtheridon->GetVictim() == bot)

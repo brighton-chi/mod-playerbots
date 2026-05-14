@@ -51,11 +51,9 @@ bool AttumenTheHuntsmanMarkTargetAction::Execute(Event /*event*/)
 
         SetRtiTarget(botAI, "star", attumenMounted);
 
-        if (bot->GetTarget() != attumenMounted->GetGUID())
-        {
-            bot->SetTarget(attumenMounted->GetGUID());
+        if (AI_VALUE(Unit*, "current target") != attumenMounted)
             return Attack(attumenMounted);
-        }
+
     }
     else if (Unit* midnight = AI_VALUE2(Unit*, "find target", "midnight"))
     {
@@ -66,11 +64,8 @@ bool AttumenTheHuntsmanMarkTargetAction::Execute(Event /*event*/)
         {
             SetRtiTarget(botAI, "star", midnight);
 
-            if (bot->GetTarget() != midnight->GetGUID())
-            {
-                bot->SetTarget(midnight->GetGUID());
+            if (AI_VALUE(Unit*, "current target") != midnight)
                 return Attack(midnight);
-            }
         }
     }
 
@@ -91,7 +86,7 @@ bool AttumenTheHuntsmanSplitBossesAction::Execute(Event /*event*/)
     MarkTargetWithSquare(bot, attumen);
     SetRtiTarget(botAI, "square", attumen);
 
-    if (bot->GetVictim() != attumen)
+    if (AI_VALUE(Unit*, "current target") != attumen)
         return Attack(attumen);
 
     if (attumen->GetVictim() == bot && midnight->GetVictim() != bot)
@@ -158,7 +153,7 @@ bool MoroesMainTankAttackBossAction::Execute(Event /*event*/)
     MarkTargetWithCircle(bot, moroes);
     SetRtiTarget(botAI, "circle", moroes);
 
-    if (bot->GetVictim() != moroes)
+    if (AI_VALUE(Unit*, "current target") != moroes)
         return Attack(moroes);
 
     return false;
@@ -195,7 +190,7 @@ bool MaidenOfVirtueMoveBossToHealerAction::Execute(Event /*event*/)
     if (!maiden)
         return false;
 
-    if (bot->GetVictim() != maiden)
+    if (AI_VALUE(Unit*, "current target") != maiden)
         return Attack(maiden);
 
     Unit* healer = nullptr;
@@ -289,7 +284,7 @@ bool BigBadWolfPositionBossAction::Execute(Event /*event*/)
     if (!wolf)
         return false;
 
-    if (bot->GetVictim() != wolf)
+    if (AI_VALUE(Unit*, "current target") != wolf)
         return Attack(wolf);
 
     if (wolf->GetVictim() == bot)
@@ -419,7 +414,7 @@ bool TheCuratorPositionBossAction::Execute(Event /*event*/)
     MarkTargetWithCircle(bot, curator);
     SetRtiTarget(botAI, "circle", curator);
 
-    if (bot->GetVictim() != curator)
+    if (AI_VALUE(Unit*, "current target") != curator)
         return Attack(curator);
 
     if (curator->GetVictim() == bot)
@@ -1179,7 +1174,7 @@ bool PrinceMalchezaarMainTankMovementAction::Execute(Event /*event*/)
     if (!malchezaar)
         return false;
 
-    if (bot->GetVictim() != malchezaar)
+    if (AI_VALUE(Unit*, "current target") != malchezaar)
         return Attack(malchezaar);
 
     std::vector<Unit*> infernals = GetSpawnedInfernals(bot);
@@ -1247,7 +1242,7 @@ bool NightbaneGroundPhasePositionBossAction::Execute(Event /*event*/)
 
     MarkTargetWithSkull(bot, nightbane);
 
-    if (bot->GetVictim() != nightbane)
+    if (AI_VALUE(Unit*, "current target") != nightbane)
         return Attack(nightbane);
 
     const ObjectGuid botGuid = bot->GetGUID();
@@ -1373,8 +1368,7 @@ bool NightbaneFlightPhaseMovementAction::Execute(Event /*event*/)
 
     MarkTargetWithMoon(bot, nightbane);
 
-    Unit* botTarget = botAI->GetUnit(bot->GetTarget());
-    if (botTarget && botTarget == nightbane)
+    if (AI_VALUE(Unit*, "current target") == nightbane)
     {
         bot->AttackStop();
         bot->InterruptNonMeleeSpells(true);
