@@ -12,28 +12,10 @@ class GenericMageNonCombatStrategyActionNodeFactory : public NamedObjectFactory<
 public:
     GenericMageNonCombatStrategyActionNodeFactory()
     {
-        creators["molten armor"] = &molten_armor;
-        creators["mage armor"] = &mage_armor;
         creators["ice armor"] = &ice_armor;
     }
 
 private:
-    static ActionNode* molten_armor([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode("molten armor",
-                              /*P*/ {},
-                              /*A*/ {},
-                              /*C*/ {});
-    }
-
-    static ActionNode* mage_armor([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode("mage armor",
-                              /*P*/ {},
-                              /*A*/ {},
-                              /*C*/ {});
-    }
-
     static ActionNode* ice_armor([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("ice armor",
