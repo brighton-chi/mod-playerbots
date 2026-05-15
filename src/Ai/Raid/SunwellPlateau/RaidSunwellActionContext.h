@@ -169,8 +169,8 @@ public:
             &RaidSunwellActionContext::muru_enslaved_void_spawn_cast_shadow_bolt_volley;
 
         // Kil'jaeden <The Deceiver>
-        creators["kil'jaeden tanks handle hands of the deceiver"] =
-            &RaidSunwellActionContext::kiljaeden_tanks_handle_hands_of_the_deceiver;
+        creators["kil'jaeden mark hands and announce orb user"] =
+            &RaidSunwellActionContext::kiljaeden_mark_hands_and_announce_orb_user;
 
         creators["kil'jaeden avoid armageddons"] =
             &RaidSunwellActionContext::kiljaeden_avoid_armageddons;
@@ -356,8 +356,8 @@ private:
         PlayerbotAI* botAI) { return new MuruEnslavedVoidSpawnCastShadowBoltVolleyAction(botAI); }
 
     // Kil'jaeden <The Deceiver>
-    static Action* kiljaeden_tanks_handle_hands_of_the_deceiver(
-        PlayerbotAI* botAI) { return new KiljaedenTanksHandleHandsOfTheDeceiverAction(botAI); }
+    static Action* kiljaeden_mark_hands_and_announce_orb_user(
+        PlayerbotAI* botAI) { return new KiljaedenMarkHandsAndAnnounceOrbUserAction(botAI); }
 
     static Action* kiljaeden_avoid_armageddons(
         PlayerbotAI* botAI) { return new KiljaedenAvoidArmageddonsAction(botAI); }

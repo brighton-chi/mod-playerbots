@@ -449,11 +449,11 @@ public:
 
 // Kil'jaeden <The Deceiver>
 
-class KiljaedenTanksHandleHandsOfTheDeceiverAction : public AttackAction
+class KiljaedenMarkHandsAndAnnounceOrbUserAction : public Action
 {
 public:
-    KiljaedenTanksHandleHandsOfTheDeceiverAction(
-        PlayerbotAI* botAI, std::string const name = "kil'jaeden tanks handle hands of the deceiver") : AttackAction(botAI, name) {}
+    KiljaedenMarkHandsAndAnnounceOrbUserAction(
+        PlayerbotAI* botAI, std::string const name = "kil'jaeden mark hands and announce orb user") : Action(botAI, name) {}
     bool Execute(Event event) override;
 };
 

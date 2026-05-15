@@ -4,9 +4,11 @@
  */
 
 #include <array>
+#include <map>
 #include <unordered_map>
 #include <vector>
 
+#include "PlayerbotTextMgr.h"
 #include "RaidSunwellActions.h"
 #include "RaidSunwellKiljaedenEncounter.h"
 #include "Playerbots.h"
@@ -34,75 +36,42 @@ GetKiljaedenDarknessShieldStates()
 
 }
 
-bool KiljaedenTanksHandleHandsOfTheDeceiverAction::Execute(Event /*event*/)
+bool KiljaedenMarkHandsAndAnnounceOrbUserAction::Execute(Event /*event*/)
 {
-    Player* mainTank = GetGroupMainTank(botAI, bot);
-    Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
-    Player* secondAssistTank = GetGroupAssistTank(botAI, bot, 1);
-    if (!mainTank || !firstAssistTank || !secondAssistTank)
+    Unit* handOfTheDeceiver = AI_VALUE2(Unit*, "find target", "hand of the deceiver");
+    if (!handOfTheDeceiver)
         return false;
 
-    std::vector<Unit*> hands;
-    Unit* volatileFelfireFiend = nullptr;
-    auto const& attackers =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
+    MarkTargetWithSkull(bot, handOfTheDeceiver);
 
-    for (const ObjectGuid& guid : attackers)
+    const uint32 instanceId = bot->GetInstanceId();
+    auto const announcementTime = kiljaedenDragonOrbAnnouncementTimes.find(instanceId);
+    if (announcementTime == kiljaedenDragonOrbAnnouncementTimes.end())
     {
-        Unit* unit = botAI->GetUnit(guid);
-        if (!unit || !unit->IsAlive())
-            continue;
+        kiljaedenDragonOrbAnnouncementTimes[instanceId] = getMSTime();
 
-        if (unit->GetEntry() == static_cast<uint32>(SunwellNpcs::NPC_HAND_OF_THE_DECEIVER))
+        Player* orbUser = GetKiljaedenDragonOrbUser(bot);
+        std::string text;
+
+        if (orbUser)
         {
-            hands.push_back(unit);
-            continue;
+            std::map<std::string, std::string> placeholders = {
+                { "%bot", orbUser->GetName() }
+            };
+            text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                "kiljaeden_designated_dragon_orb_user",
+                "%bot is the first assistant and the designated dragon orb user!",
+                placeholders);
+        }
+        else
+        {
+            text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                "kiljaeden_no_designated_dragon_orb_user",
+                "No bot has been assigned as the designated dragon orb user, and therefore a player must control the dragons. If you would like a bot to use the dragon orbs, please set the assistant flag for a bot.",
+                {});
         }
 
-        if (!volatileFelfireFiend &&
-            unit->GetEntry() == static_cast<uint32>(SunwellNpcs::NPC_VOLATILE_FELFIRE_FIEND))
-        {
-            volatileFelfireFiend = unit;
-        }
-    }
-
-    if (hands.empty())
-        return false;
-
-    if (bot == mainTank)
-        TryAnnounceKiljaedenDragonOrbUser(botAI, bot);
-
-    if (volatileFelfireFiend)
-        MarkTargetWithSkull(bot, volatileFelfireFiend);
-
-    std::array<Player*, 3> tanks = { mainTank, firstAssistTank, secondAssistTank };
-    const size_t assignedCount = hands.size() < tanks.size() ? hands.size() : tanks.size();
-
-    for (size_t index = 0; index < assignedCount; ++index)
-    {
-        if (bot != tanks[index])
-            continue;
-
-        Unit* hand = hands[index];
-        switch (index)
-        {
-            case 0:
-                MarkTargetWithStar(bot, hand);
-                break;
-            case 1:
-                MarkTargetWithCircle(bot, hand);
-                break;
-            case 2:
-                MarkTargetWithDiamond(bot, hand);
-                break;
-            default:
-                break;
-        }
-
-        if (AI_VALUE(Unit*, "current target") != hand)
-            return Attack(hand);
-
-        return false;
+        return botAI->SayToRaid(text);
     }
 
     return false;

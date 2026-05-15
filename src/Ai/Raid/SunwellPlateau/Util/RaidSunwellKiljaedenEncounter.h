@@ -51,6 +51,7 @@ extern const Position KILJAEDEN_E_MELEE_POSITION;
 extern const Position KILJAEDEN_DARKNESS_POSITION;
 
 extern std::unordered_map<uint32, std::vector<KiljaedenArmageddon>> kiljaedenArmageddons;
+extern std::unordered_map<uint32, uint32> kiljaedenDragonOrbAnnouncementTimes;
 extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> kiljaedenRangedAssignments;
 extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> kiljaedenRangedArmageddonAssignments;
 
@@ -65,7 +66,6 @@ void EnsureKiljaedenRangedArmageddonAssignments(PlayerbotAI* botAI, Player* bot)
 Player* GetKiljaedenDragonOrbUser(Player* bot);
 void RecordKiljaedenDragonOrbUse(Player* bot);
 bool HasRecentKiljaedenDragonOrbUse(Player* bot, uint32 recentMs);
-bool TryAnnounceKiljaedenDragonOrbUser(PlayerbotAI* botAI, Player* bot);
 void ResetKiljaedenDragonOrbUserAnnouncement(uint32 instanceId);
 Unit* GetKiljaedenControlledDragon(Player* bot);
 bool CastKiljaedenDragonSpell(Unit* dragon, uint32 spellId);

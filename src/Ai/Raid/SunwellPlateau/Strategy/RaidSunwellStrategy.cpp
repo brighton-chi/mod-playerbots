@@ -273,7 +273,7 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     // Kil'jaeden <The Deceiver>
     triggers.push_back(new TriggerNode("kil'jaeden hands of the deceiver are active", {
-        NextAction("kil'jaeden tanks handle hands of the deceiver", ACTION_RAID + 1) }));
+        NextAction("kil'jaeden mark hands and announce orb user", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("kil'jaeden it's raining meteors", {
         NextAction("kil'jaeden avoid armageddons", ACTION_RAID + 1) }));

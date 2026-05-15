@@ -655,8 +655,8 @@ bool MuruWarlockHasEnslavedVoidSpawnTrigger::IsActive()
 
 bool KiljaedenHandsOfTheDeceiverAreActiveTrigger::IsActive()
 {
-    return botAI->IsTank(bot) &&
-           AI_VALUE2(Unit*, "find target", "hand of the deceiver");
+    return AI_VALUE2(Unit*, "find target", "hand of the deceiver") &&
+           IsMechanicTrackerBot(botAI, bot, SUNWELL_MAP_ID);
 }
 
 bool KiljaedenItsRainingMeteorsTrigger::IsActive()

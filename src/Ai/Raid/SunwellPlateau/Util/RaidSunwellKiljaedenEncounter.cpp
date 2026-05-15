@@ -5,11 +5,9 @@
 
 #include <algorithm>
 #include <cmath>
-#include <map>
 #include <unordered_map>
 
 #include "PlayerbotAI.h"
-#include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 #include "RaidSunwellKiljaedenEncounter.h"
 #include "Timer.h"
@@ -20,7 +18,6 @@ namespace SunwellHelpers
 namespace
 {
 
-std::unordered_map<uint32, uint32> kiljaedenDragonOrbAnnouncementTimes;
 std::unordered_map<ObjectGuid::LowType, uint32> kiljaedenDragonOrbUseTimes;
 
 float GetCenteredArcSlotAngleOffset(
@@ -163,6 +160,9 @@ uint32 const KILJAEDEN_DRAGON_ORB_ENTRIES[4] =
 
 std::unordered_map<uint32, std::vector<KiljaedenArmageddon>>
     kiljaedenArmageddons;
+
+std::unordered_map<uint32, uint32>
+    kiljaedenDragonOrbAnnouncementTimes;
 
 std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
     kiljaedenRangedAssignments;
@@ -560,40 +560,6 @@ bool HasRecentKiljaedenDragonOrbUse(Player* bot, uint32 recentMs)
         return false;
 
     return getMSTimeDiff(orbUseTime->second, getMSTime()) < recentMs;
-}
-
-bool TryAnnounceKiljaedenDragonOrbUser(PlayerbotAI* botAI, Player* bot)
-{
-    const uint32 instanceId = bot->GetInstanceId();
-    auto const announcementTime =
-        kiljaedenDragonOrbAnnouncementTimes.find(instanceId);
-    if (announcementTime != kiljaedenDragonOrbAnnouncementTimes.end())
-        return false;
-
-    kiljaedenDragonOrbAnnouncementTimes[instanceId] = getMSTime();
-
-    Player* orbUser = GetKiljaedenDragonOrbUser(bot);
-    std::string text;
-
-    if (orbUser)
-    {
-        std::map<std::string, std::string> placeholders = {
-            { "%bot", orbUser->GetName() }
-        };
-        text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
-            "kiljaeden_designated_dragon_orb_user",
-            "%bot is the first assistant and the designated dragon orb user!",
-            placeholders);
-    }
-    else
-    {
-        text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
-            "kiljaeden_no_designated_dragon_orb_user",
-            "No bot has been assigned as the designated dragon orb user, and therefore a player must control the dragons. If you would like a bot to use the dragon orbs, please set the assistant flag for a bot.",
-            {});
-    }
-
-    return botAI->SayToRaid(text);
 }
 
 void ResetKiljaedenDragonOrbUserAnnouncement(uint32 instanceId)
