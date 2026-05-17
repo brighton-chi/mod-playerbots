@@ -336,11 +336,6 @@ CastCureSpellAction::CastCureSpellAction(
     range = botAI->GetRange("heal");
 }
 
-Value<Unit*>* CurePartyMemberAction::GetTargetValue()
-{
-    return context->GetValue<Unit*>("party member to dispel", dispelType);
-}
-
 Value<Unit*>* BuffOnPartyAction::GetTargetValue()
 {
     return context->GetValue<Unit*>("party member without aura", spell);
