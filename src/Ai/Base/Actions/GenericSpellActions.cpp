@@ -242,6 +242,24 @@ bool CastBuffSpellAction::isUseful()
     if (!target || !CastSpellAction::isUseful())
         return false;
 
+    Aura* aura = botAI->GetAura(spell, target, isOwner, checkDuration);
+    if (!aura || (beforeDuration && aura->GetDuration() < beforeDuration))
+        return true;
+
+    return false;
+}
+
+bool CastBuffSpellAction::Execute(Event /*event*/)
+{
+    return botAI->CastSpell(spell, GetTarget());
+}
+
+bool GroupBuffSpellAction::isUseful()
+{
+    Unit* target = GetTarget();
+    if (!target || !CastSpellAction::isUseful())
+        return false;
+
     if (ai::buff::IsGroupVariantEnabled(bot, spell))
     {
         std::string const groupVariant = ai::buff::GroupVariantFor(spell);
@@ -256,7 +274,7 @@ bool CastBuffSpellAction::isUseful()
     return false;
 }
 
-bool CastBuffSpellAction::Execute(Event /*event*/)
+bool GroupBuffSpellAction::Execute(Event /*event*/)
 {
     std::string const castName = ai::buff::UpgradeToGroupIfAppropriate(bot, botAI, spell);
     return botAI->CastSpell(castName, GetTarget());
@@ -318,15 +336,19 @@ CastCureSpellAction::CastCureSpellAction(
     range = botAI->GetRange("heal");
 }
 
-Value<Unit*>* BuffOnPartyAction::GetTargetValue()
+Value<Unit*>* CurePartyMemberAction::GetTargetValue()
 {
-    return context->GetValue<Unit*>("party member without aura", MakeAuraQualifierForBuff(spell));
+    return context->GetValue<Unit*>("party member to dispel", dispelType);
 }
 
-bool BuffOnPartyAction::Execute(Event /*event*/)
+Value<Unit*>* BuffOnPartyAction::GetTargetValue()
 {
-    std::string const castName = ai::buff::UpgradeToGroupIfAppropriate(bot, botAI, spell);
-    return botAI->CastSpell(castName, GetTarget());
+    return context->GetValue<Unit*>("party member without aura", spell);
+}
+
+Value<Unit*>* GroupBuffOnPartyAction::GetTargetValue()
+{
+    return context->GetValue<Unit*>("party member without aura", MakeAuraQualifierForBuff(spell));
 }
 
 CastShootAction::CastShootAction(

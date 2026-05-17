@@ -115,6 +115,17 @@ public:
     bool Execute(Event event) override;
 };
 
+class GroupBuffSpellAction : public CastBuffSpellAction
+{
+public:
+    GroupBuffSpellAction(PlayerbotAI* botAI, std::string const spell, bool checkIsOwner = false,
+                         uint32 beforeDuration = 0)
+        : CastBuffSpellAction(botAI, spell, checkIsOwner, beforeDuration) {}
+
+    bool isUseful() override;
+    bool Execute(Event event) override;
+};
+
 class CastEnchantItemMainHandAction : public CastSpellAction
 {
 public:
@@ -220,10 +231,19 @@ class BuffOnPartyAction : public CastBuffSpellAction, public PartyMemberActionNa
 {
 public:
     BuffOnPartyAction(PlayerbotAI* botAI, std::string const spell)
-        : CastBuffSpellAction(botAI, spell), PartyMemberActionNameSupport(spell) { }
+        : CastBuffSpellAction(botAI, spell), PartyMemberActionNameSupport(spell) {}
 
     Value<Unit*>* GetTargetValue() override;
-    bool Execute(Event event) override;
+    std::string const getName() override { return PartyMemberActionNameSupport::getName(); }
+};
+
+class GroupBuffOnPartyAction : public GroupBuffSpellAction, public PartyMemberActionNameSupport
+{
+public:
+    GroupBuffOnPartyAction(PlayerbotAI* botAI, std::string const spell)
+        : GroupBuffSpellAction(botAI, spell), PartyMemberActionNameSupport(spell) {}
+
+    Value<Unit*>* GetTargetValue() override;
     std::string const getName() override { return PartyMemberActionNameSupport::getName(); }
 };
 

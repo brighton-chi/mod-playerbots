@@ -95,12 +95,13 @@ void TankPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             }
         )
     );
-    triggers.push_back(new TriggerNode(
-        "light aoe",
-        {
-            NextAction("avenger's shield", ACTION_HIGH + 5)
-        }
-    )
+    triggers.push_back(
+        new TriggerNode(
+            "light aoe",
+            {
+                NextAction("avenger's shield", ACTION_HIGH + 5)
+            }
+        )
     );
     triggers.push_back(
         new TriggerNode(
@@ -122,17 +123,18 @@ void TankPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(
         new TriggerNode(
             "medium health",
-                { NextAction("holy shield", ACTION_HIGH + 4)
+            {
+                NextAction("holy shield", ACTION_HIGH + 4)
             }
         )
     );
     triggers.push_back(
         new TriggerNode(
-        "avenging wrath",
-        {
-            NextAction("avenging wrath", ACTION_HIGH + 2)
-        }
-    )
+            "avenging wrath",
+            {
+                NextAction("avenging wrath", ACTION_HIGH + 2)
+            }
+        )
     );
     triggers.push_back(
         new TriggerNode(

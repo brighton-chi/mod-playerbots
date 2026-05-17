@@ -478,7 +478,8 @@ AiPlayerbot.AutoSaveMana = 1
 AiPlayerbot.SaveManaThreshold = 60
 
 # Enable Paladin bots to use greater blessings, with the blessing used being based on the
-# number of Paladins in the raid/group and the spec of the recipient.
+# number of Paladins in the raid/group and the spec of the recipient. Priorities for each
+# spec are hardcoded in GreaterBlessingActions.h.
 # 0 = disabled
 # 1 = enabled in raid groups only
 # 2 = enabled in all groups
@@ -573,7 +574,7 @@ AiPlayerbot.AutoGearScoreLimit = 0
 # "mana" (bots have infinite mana)
 # "power" (bots have infinite energy, rage, and runic power)
 # "taxi" (bots may use all flight paths, though they will not actually learn them)
-# "raid" (bots use cheats implemented into raid strategies (applies to Lady Vashj, Illidan, and several Ulduar bosses))
+# "raid" (bots use cheats implemented into raid strategies (currently only for SSC and Ulduar))
 # To use multiple cheats, separate them by commas below (e.g., to enable all, use "gold,health,mana,power,raid,taxi")
 # Default: food, taxi, and raid are enabled
 AiPlayerbot.BotCheats = "food,taxi,raid"
