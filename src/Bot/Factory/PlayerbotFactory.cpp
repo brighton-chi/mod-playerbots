@@ -3076,7 +3076,7 @@ void PlayerbotFactory::InitSkills()
             break;
     }
 
-    InitTradeSkills();
+    // InitTradeSkills(); // Crow: Don't assign new professions or max existing profession skill values
     InitInventorySkill();
 
     // switch (bot->getClass())
@@ -3127,11 +3127,11 @@ void PlayerbotFactory::InitAvailableSpells()
             if (!trainer)
                 continue;
 
-            if (trainer->GetTrainerType() != Trainer::Type::Tradeskill &&
+            if (/* trainer->GetTrainerType() != Trainer::Type::Tradeskill && */ // Crow: Don't give profession spells from trainers
                 trainer->GetTrainerType() != Trainer::Type::Class)
                 continue;
 
-            if (trainer->GetTrainerType() == Trainer::Type::Class &&
+            if (/* trainer->GetTrainerType() == Trainer::Type::Class && */ // Crow: Don't give profession spells from trainers
                 !trainer->IsTrainerValidForPlayer(bot))
                 continue;
 
