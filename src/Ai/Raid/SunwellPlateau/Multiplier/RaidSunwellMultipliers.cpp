@@ -542,8 +542,11 @@ float MuruDisableDefaultTargetingMultiplier::GetValue(Action* action)
     if (!muru && !AI_VALUE2(Unit*, "find target", "entropius"))
         return 1.0f;
 
-    if (dynamic_cast<DpsAssistAction*>(action))
+    if (botAI->GetState() == BOT_STATE_COMBAT &&
+        dynamic_cast<DpsAssistAction*>(action))
+    {
         return 0.0f;
+    }
 
     constexpr float searchRadius = 40.0f;
     Unit* voidSpawn = bot->FindNearestCreature(
