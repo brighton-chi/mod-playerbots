@@ -233,7 +233,7 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("m'uru position ranged", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("m'uru void sentinel pulses shadow", {
-        NextAction("m'uru tanks get that sentinel out of here", ACTION_RAID + 3) }));
+        NextAction("m'uru tanks move sentinel to safe position", ACTION_RAID + 3) }));
 
     triggers.push_back(new TriggerNode("m'uru void sentinel casts void blast on tank", {
         NextAction("m'uru set grounding totem in first assist tank group", ACTION_RAID + 3) }));
@@ -251,10 +251,10 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("m'uru don't touch the dark fiend", ACTION_EMERGENCY + 9) }));
 
     triggers.push_back(new TriggerNode("m'uru darkness is coming", {
-        NextAction("m'uru flee the night", ACTION_EMERGENCY + 8) }));
+        NextAction("m'uru flee the darkness", ACTION_EMERGENCY + 8) }));
 
     triggers.push_back(new TriggerNode("m'uru the singularity is near", {
-        NextAction("m'uru moore's law is dead", ACTION_EMERGENCY + 7) }));
+        NextAction("m'uru flee from singularity", ACTION_EMERGENCY + 7) }));
 
     triggers.push_back(new TriggerNode("m'uru berserker is buffed with flurry", {
         NextAction("m'uru cast stun on shadowsword berserker", ACTION_RAID + 4) }));

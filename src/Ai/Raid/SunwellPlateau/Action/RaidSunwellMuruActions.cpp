@@ -532,7 +532,7 @@ bool MuruDontTouchTheDarkFiendAction::Execute(Event /*event*/)
     return Move(randomAngle, safeDistance - currentDistance);
 }
 
-bool MuruTanksGetThatSentinelOutOfHereAction::Execute(Event /*event*/)
+bool MuruTanksMoveSentinelToSafePositionAction::Execute(Event /*event*/)
 {
     Unit* voidSentinel = AI_VALUE2(Unit*, "find target", "void sentinel");
     const Position& waitPosition = MURU_STACK_POSITION;
@@ -574,7 +574,7 @@ bool MuruTanksGetThatSentinelOutOfHereAction::Execute(Event /*event*/)
     return false;
 }
 
-const Position* MuruTanksGetThatSentinelOutOfHereAction::GetAssignedVoidSentinelTankPosition(
+const Position* MuruTanksMoveSentinelToSafePositionAction::GetAssignedVoidSentinelTankPosition(
     Unit* voidSentinel) const
 {
     if (!voidSentinel)
@@ -620,7 +620,7 @@ bool MuruSecondAssistTankGuardRangedAction::Execute(Event /*event*/)
     return false;
 }
 
-bool MuruFleeTheNightAction::Execute(Event /*event*/)
+bool MuruFleeTheDarknessAction::Execute(Event /*event*/)
 {
     Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
     if (!muru)
@@ -667,7 +667,7 @@ bool MuruFleeTheNightAction::Execute(Event /*event*/)
     }
 }
 
-bool MuruMooresLawIsDeadAction::Execute(Event /*event*/)
+bool MuruFleeFromSingularityAction::Execute(Event /*event*/)
 {
     Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius");
     if (!entropius)

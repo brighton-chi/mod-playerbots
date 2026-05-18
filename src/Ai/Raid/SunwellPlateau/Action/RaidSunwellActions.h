@@ -352,11 +352,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class MuruTanksGetThatSentinelOutOfHereAction : public AttackAction
+class MuruTanksMoveSentinelToSafePositionAction : public AttackAction
 {
 public:
-    MuruTanksGetThatSentinelOutOfHereAction(
-        PlayerbotAI* botAI, std::string const name = "m'uru tanks get that sentinel out of here") : AttackAction(botAI, name) {}
+    MuruTanksMoveSentinelToSafePositionAction(
+        PlayerbotAI* botAI, std::string const name = "m'uru tanks move sentinel to safe position") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
 
 private:
@@ -379,19 +379,19 @@ public:
     bool Execute(Event event) override;
 };
 
-class MuruFleeTheNightAction : public MovementAction
+class MuruFleeTheDarknessAction : public MovementAction
 {
 public:
-    MuruFleeTheNightAction(
-        PlayerbotAI* botAI, std::string const name = "m'uru flee the night") : MovementAction(botAI, name) {}
+    MuruFleeTheDarknessAction(
+        PlayerbotAI* botAI, std::string const name = "m'uru flee the darkness") : MovementAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 
-class MuruMooresLawIsDeadAction : public MovementAction
+class MuruFleeFromSingularityAction : public MovementAction
 {
 public:
-    MuruMooresLawIsDeadAction(
-        PlayerbotAI* botAI, std::string const name = "m'uru moore's law is dead") : MovementAction(botAI, name) {}
+    MuruFleeFromSingularityAction(
+        PlayerbotAI* botAI, std::string const name = "m'uru flee from singularity") : MovementAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 

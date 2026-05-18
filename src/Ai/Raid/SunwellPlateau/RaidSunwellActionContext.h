@@ -138,8 +138,8 @@ public:
         creators["m'uru don't touch the dark fiend"] =
             &RaidSunwellActionContext::muru_dont_touch_the_dark_fiend;
 
-        creators["m'uru tanks get that sentinel out of here"] =
-            &RaidSunwellActionContext::muru_tanks_get_that_sentinel_out_of_here;
+        creators["m'uru tanks move sentinel to safe position"] =
+            &RaidSunwellActionContext::muru_tanks_move_sentinel_to_safe_position;
 
         creators["m'uru set grounding totem in first assist tank group"] =
             &RaidSunwellActionContext::muru_set_grounding_totem_in_first_assist_tank_group;
@@ -147,11 +147,11 @@ public:
         creators["m'uru second assist tank guard ranged"] =
             &RaidSunwellActionContext::muru_second_assist_tank_guard_ranged;
 
-        creators["m'uru flee the night"] =
-            &RaidSunwellActionContext::muru_flee_the_night;
+        creators["m'uru flee the darkness"] =
+            &RaidSunwellActionContext::muru_flee_the_darkness;
 
-        creators["m'uru moore's law is dead"] =
-            &RaidSunwellActionContext::muru_moores_law_is_dead;
+        creators["m'uru flee from singularity"] =
+            &RaidSunwellActionContext::muru_flee_from_singularity;
 
         creators["m'uru cast stun on shadowsword berseker"] =
             &RaidSunwellActionContext::muru_cast_stun_on_shadowsword_berserker;
@@ -325,8 +325,8 @@ private:
     static Action* muru_dont_touch_the_dark_fiend(
         PlayerbotAI* botAI) { return new MuruDontTouchTheDarkFiendAction(botAI); }
 
-    static Action* muru_tanks_get_that_sentinel_out_of_here(
-        PlayerbotAI* botAI) { return new MuruTanksGetThatSentinelOutOfHereAction(botAI); }
+    static Action* muru_tanks_move_sentinel_to_safe_position(
+        PlayerbotAI* botAI) { return new MuruTanksMoveSentinelToSafePositionAction(botAI); }
 
     static Action* muru_set_grounding_totem_in_first_assist_tank_group(
         PlayerbotAI* botAI) { return new MuruSetGroundingTotemInFirstAssistTankGroupAction(botAI); }
@@ -334,11 +334,11 @@ private:
     static Action* muru_second_assist_tank_guard_ranged(
         PlayerbotAI* botAI) { return new MuruSecondAssistTankGuardRangedAction(botAI); }
 
-    static Action* muru_flee_the_night(
-        PlayerbotAI* botAI) { return new MuruFleeTheNightAction(botAI); }
+    static Action* muru_flee_the_darkness(
+        PlayerbotAI* botAI) { return new MuruFleeTheDarknessAction(botAI); }
 
-    static Action* muru_moores_law_is_dead(
-        PlayerbotAI* botAI) { return new MuruMooresLawIsDeadAction(botAI); }
+    static Action* muru_flee_from_singularity(
+        PlayerbotAI* botAI) { return new MuruFleeFromSingularityAction(botAI); }
 
     static Action* muru_cast_stun_on_shadowsword_berserker(
         PlayerbotAI* botAI) { return new MuruCastStunOnShadowswordBerserkerAction(botAI); }
