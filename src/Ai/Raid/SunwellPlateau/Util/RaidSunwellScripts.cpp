@@ -4,6 +4,7 @@
  */
 
 #include <unordered_set>
+#include <vector>
 
 #include "RaidSunwellBrutallusEncounter.h"
 #include "RaidSunwellEredarTwinsEncounter.h"
@@ -78,36 +79,6 @@ static Player* GetFirstPlayerSpellTarget(Spell* spell, Unit* caster)
     }
 
     return nullptr;
-}
-
-static void RequestInterruptForBotsNear(Unit* center, float radius)
-{
-    if (!center)
-        return;
-
-    Group* group = nullptr;
-    if (Player* centerPlayer = center->ToPlayer())
-        group = centerPlayer->GetGroup();
-
-    Map::PlayerList const& players = center->GetMap()->GetPlayers();
-    for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
-    {
-        Player* player = it->GetSource();
-        if (!player || !player->IsAlive())
-            continue;
-
-        if (group && player->GetGroup() != group)
-            continue;
-
-        if (center->GetExactDist2d(player) > radius)
-            continue;
-
-        if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
-            botAI && botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
-        {
-            botAI->RequestSpellInterrupt();
-        }
-    }
 }
 
 static void RequestInterruptForBotsNeedingFelmystFogMovement(Unit* contextUnit, Player* groupReference)
@@ -242,7 +213,7 @@ static void TrackIncomingEredarTwinsConflagration(Creature* alythess)
 class KalecgosSpellListenerScript : public AllSpellScript
 {
 public:
-    KalecgosSpellListenerScript() : AllSpellScript("KalecgosSpellListenerScript") { }
+    KalecgosSpellListenerScript() : AllSpellScript("KalecgosSpellListenerScript") {}
 
     void OnSpellCast(Spell* /*spell*/, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
     {
@@ -287,7 +258,7 @@ public:
 class FelmystSpellListenerScript : public AllSpellScript
 {
 public:
-    FelmystSpellListenerScript() : AllSpellScript("FelmystSpellListenerScript") { }
+    FelmystSpellListenerScript() : AllSpellScript("FelmystSpellListenerScript") {}
 
     void OnSpellPrepare(Spell* spell, Unit* caster, SpellInfo const* spellInfo) override
     {
@@ -376,7 +347,7 @@ public:
 class EredarTwinsSpellListenerScript : public AllSpellScript
 {
 public:
-    EredarTwinsSpellListenerScript() : AllSpellScript("EredarTwinsSpellListenerScript") { }
+    EredarTwinsSpellListenerScript() : AllSpellScript("EredarTwinsSpellListenerScript") {}
 
     void OnSpellCast(
         Spell* spell, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
@@ -405,7 +376,7 @@ class KiljaedenArmageddonTargetTrackerScript : public AllCreatureScript
 {
 public:
     KiljaedenArmageddonTargetTrackerScript()
-        : AllCreatureScript("KiljaedenArmageddonTargetTrackerScript") { }
+        : AllCreatureScript("KiljaedenArmageddonTargetTrackerScript") {}
 
     void OnAllCreatureUpdate(Creature* creature, uint32 /*diff*/) override
     {
@@ -416,6 +387,7 @@ public:
         }
 
         bool hasSunwellStrategy = false;
+        std::vector<PlayerbotAI*> botsToInterrupt;
         Map::PlayerList const& players = creature->GetMap()->GetPlayers();
         for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
         {
@@ -424,21 +396,29 @@ public:
                 botAI && botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
             {
                 hasSunwellStrategy = true;
-                break;
+
+                if (!player->IsAlive() ||
+                    player->HasAura(static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
+                {
+                    continue;
+                }
+
+                if (creature->GetExactDist2d(player) > KILJAEDEN_ARMAGEDDON_SAFE_DISTANCE)
+                    continue;
+
+                botsToInterrupt.push_back(botAI);
             }
         }
 
-        if (!hasSunwellStrategy)
-            return;
-
-        if (!kiljaedenTrackedArmageddonTargets.insert(creature->GetGUID()).second)
+        if (!hasSunwellStrategy || !kiljaedenTrackedArmageddonTargets.insert(creature->GetGUID()).second)
             return;
 
         AddKiljaedenArmageddon(
             creature->GetInstanceId(), creature->GetPosition(),
             KILJAEDEN_ARMAGEDDON_HAZARD_DURATION_MS, KILJAEDEN_ARMAGEDDON_SAFE_DISTANCE);
 
-        RequestInterruptForBotsNear(creature, KILJAEDEN_ARMAGEDDON_SAFE_DISTANCE);
+        for (PlayerbotAI* botAI : botsToInterrupt)
+            botAI->RequestSpellInterrupt();
     }
 
     void OnCreatureRemoveWorld(Creature* creature) override
@@ -456,7 +436,7 @@ public:
 class SunwellDelayedInterruptScript : public AllCreatureScript
 {
 public:
-    SunwellDelayedInterruptScript() : AllCreatureScript("SunwellDelayedInterruptScript") { }
+    SunwellDelayedInterruptScript() : AllCreatureScript("SunwellDelayedInterruptScript") {}
 
     void OnAllCreatureUpdate(Creature* creature, uint32 /*diff*/) override
     {
@@ -482,7 +462,7 @@ public:
 class KiljaedenSpellListenerScript : public AllSpellScript
 {
 public:
-    KiljaedenSpellListenerScript() : AllSpellScript("KiljaedenSpellListenerScript") { }
+    KiljaedenSpellListenerScript() : AllSpellScript("KiljaedenSpellListenerScript") {}
 
     void OnSpellCast(
         Spell* /*spell*/, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
@@ -496,17 +476,17 @@ public:
             for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
             {
                 Player* player = it->GetSource();
-                if (!player || !player->IsAlive())
+                if (!player || !player->IsAlive() ||
+                    player->HasAura(static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
+                {
                     continue;
+                }
 
                 PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
                 if (!botAI || !botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
                     continue;
 
                 if (PAI_VALUE2(Unit*, "find target", "kil'jaeden") != caster)
-                    continue;
-
-                if (GetKiljaedenDragonOrbUser(player) == player)
                     continue;
 
                 botAI->RequestSpellInterrupt();
