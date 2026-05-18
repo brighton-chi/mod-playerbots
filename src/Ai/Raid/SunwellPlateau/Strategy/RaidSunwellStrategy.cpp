@@ -7,6 +7,7 @@
 
 #include "AiObjectContext.h"
 #include "PlayerbotAI.h"
+#include "RaidSunwellEredarTwinsEncounter.h"
 #include "RaidSunwellMuruEncounter.h"
 #include "RaidSunwellMultipliers.h"
 
@@ -14,8 +15,29 @@ namespace
 {
 using namespace SunwellHelpers;
 
-void AppendSunwellDarkFiendExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
+void AppendEredarTwinsAlythessExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 {
+    Unit* sacrolash = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "lady sacrolash")->Get();
+    if (!sacrolash)
+        return;
+
+    Unit* alythess = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "grand warlock alythess")->Get();
+    if (!alythess)
+        return;
+
+    Player* bot = botAI->GetBot();
+
+    if (!IsAlythessTank(botAI, bot))
+        exclusions.insert(alythess->GetGUID());
+}
+
+void AppendMuruDarkFiendExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
+{
+    Unit* muru = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "m'uru")->Get();
+    Unit* entropius = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "entropius")->Get();
+    if (!muru && !entropius)
+        return;
+
     for (ObjectGuid const guid : botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->Get())
     {
         Unit* attacker = botAI->GetUnit(guid);
@@ -34,9 +56,6 @@ void AppendMuruTankExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
         return;
 
     constexpr float maxTankTargetDistanceFromStack = 25.0f;
-    const bool skipFarTargetExclusions =
-        botAI->IsAssistTankOfIndex(botAI->GetBot(), 0, true) &&
-        TryGetMuruDarknessActiveState(botAI->GetBot(), muru);
 
     for (ObjectGuid const guid : botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->Get())
     {
@@ -53,7 +72,9 @@ void AppendMuruTankExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
             continue;
         }
 
-        if (skipFarTargetExclusions)
+        Player* bot = botAI->GetBot();
+
+        if (botAI->IsAssistTankOfIndex(bot, 0, true) && TryGetMuruDarknessActiveState(bot, muru))
             continue;
 
         if (attacker->GetExactDist2d(MURU_STACK_POSITION.GetPositionX(), MURU_STACK_POSITION.GetPositionY()) >
@@ -66,18 +87,20 @@ void AppendMuruTankExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 
 void AppendMuruDpsExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 {
-    if (!botAI->IsMelee(botAI->GetBot()))
+    Player* bot = botAI->GetBot();
+
+    if (!botAI->IsMelee(bot))
         return;
 
     Unit* muru = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "m'uru")->Get();
     if (!muru || muru->GetHealth() <= 1)
         return;
 
-    if (TryGetMuruDarknessActiveState(botAI->GetBot(), muru))
+    if (TryGetMuruDarknessActiveState(bot, muru))
         exclusions.insert(muru->GetGUID());
 }
 
-void AppendKiljaedenMeleeExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
+void AppendKiljaedenShieldOrbExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 {
     if (!botAI->IsMelee(botAI->GetBot()))
         return;
@@ -99,8 +122,9 @@ void AppendKiljaedenMeleeExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 
 void RaidSunwellStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExclusionType type) const
 {
-    AppendSunwellDarkFiendExclusions(botAI, exclusions);
-    AppendKiljaedenMeleeExclusions(botAI, exclusions);
+    AppendEredarTwinsAlythessExclusions(botAI, exclusions);
+    AppendMuruDarkFiendExclusions(botAI, exclusions);
+    AppendKiljaedenShieldOrbExclusions(botAI, exclusions);
 
     switch (type)
     {

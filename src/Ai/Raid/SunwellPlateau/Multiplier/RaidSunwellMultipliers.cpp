@@ -258,7 +258,7 @@ float BrutallusNoTankingWithTooManyMeteorStacksMultiplier::GetValue(Action* acti
         return 0.0f;
     }
 
-    if (bot->GetVictim() != nullptr && dynamic_cast<TankAssistAction*>(action))
+    if (bot->GetVictim() && dynamic_cast<TankAssistAction*>(action))
         return 0.0f;
 
     return 1.0f;
@@ -722,7 +722,7 @@ float KiljaedenControlMovementAndTargetingMultiplier::GetValue(Action* action)
         return 0.0f;
     }
 
-    if (botAI->IsMainTank(bot) && bot->GetVictim() != nullptr &&
+    if (botAI->IsMainTank(bot) && bot->GetVictim() &&
         dynamic_cast<TankAssistAction*>(action))
     {
         return 0.0f;

@@ -76,7 +76,7 @@ bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru)
     MuruDarknessState& state = muruDarknessStates[instanceId];
     constexpr uint32 darknessPreEffectMs = 3000;
     constexpr uint32 darknessCastMs = 2000;
-    constexpr uint32 darknessPostCastDangerMs = 19000;
+    constexpr uint32 darknessPostCastDangerMs = 18000;
     constexpr uint32 darknessTotalMs =
         darknessPreEffectMs + darknessCastMs + darknessPostCastDangerMs;
 
@@ -95,8 +95,7 @@ bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru)
         if (!state.startMs || state.expireMs <= now || startMs < state.startMs)
             state.startMs = startMs;
 
-        state.expireMs = std::max(state.expireMs,
-                                    startMs + darknessTotalMs);
+        state.expireMs = std::max(state.expireMs, startMs + darknessTotalMs);
         return true;
     }
 
