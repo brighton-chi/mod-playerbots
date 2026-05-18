@@ -739,9 +739,14 @@ float LadyVashjDisableAutomaticTargetingAndMovementModifier::GetValue(Action *ac
 
     if (IsLadyVashjInPhase2(botAI))
     {
-        if (dynamic_cast<DpsAssistAction*>(action) ||
-            dynamic_cast<TankAssistAction*>(action) ||
-            dynamic_cast<FleeAction*>(action))
+        if (botAI->GetState() == BOT_STATE_COMBAT &&
+            (dynamic_cast<DpsAssistAction*>(action) ||
+             dynamic_cast<TankAssistAction*>(action)))
+        {
+            return 0.0f;
+        }
+
+        if (dynamic_cast<FleeAction*>(action))
             return 0.0f;
 
         if (bot->GetExactDist2d(vashj) < 60.0f &&
@@ -759,9 +764,12 @@ float LadyVashjDisableAutomaticTargetingAndMovementModifier::GetValue(Action *ac
 
     if (IsLadyVashjInPhase3(botAI))
     {
-        if (dynamic_cast<DpsAssistAction*>(action) ||
-            dynamic_cast<TankAssistAction*>(action))
+        if (botAI->GetState() == BOT_STATE_COMBAT &&
+            (dynamic_cast<DpsAssistAction*>(action) ||
+             dynamic_cast<TankAssistAction*>(action)))
+        {
             return 0.0f;
+        }
 
         Unit* enchanted = AI_VALUE2(Unit*, "find target", "enchanted elemental");
         Unit* strider = AI_VALUE2(Unit*, "find target", "coilfang strider");
