@@ -14,10 +14,12 @@ public:
     {
         creators["survival instincts"] = &survival_instincts;
         creators["thorns"] = &thorns;
+        creators["omen of clarity"] = &omen_of_clarity;
         creators["cure poison"] = &cure_poison;
         creators["cure poison on party"] = &cure_poison_on_party;
         creators["abolish poison"] = &abolish_poison;
         creators["abolish poison on party"] = &abolish_poison_on_party;
+        creators["prowl"] = &prowl;
     }
 
 private:
@@ -32,6 +34,14 @@ private:
     static ActionNode* thorns([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("thorns",
+                              /*P*/ { NextAction("caster form") },
+                              /*A*/ {},
+                              /*C*/ {});
+    }
+
+    static ActionNode* omen_of_clarity([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode("omen of clarity",
                               /*P*/ { NextAction("caster form") },
                               /*A*/ {},
                               /*C*/ {});
@@ -69,6 +79,13 @@ private:
                               /*C*/ {});
     }
 
+    static ActionNode* prowl([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode("prowl",
+                              /*P*/ { NextAction("cat form") },
+                              /*A*/ {},
+                              /*C*/ {});
+    }
 };
 
 FeralDruidStrategy::FeralDruidStrategy(PlayerbotAI* botAI) : GenericDruidStrategy(botAI)
@@ -82,23 +99,15 @@ void FeralDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     GenericDruidStrategy::InitTriggers(triggers);
 
     triggers.push_back(new TriggerNode(
-        "enemy out of melee", { NextAction("reach melee", 21.0f) }));
+        "enemy out of melee", { NextAction("reach melee", ACTION_HIGH + 1) }));
     triggers.push_back(new TriggerNode(
-        "low health", { NextAction("survival instincts", 91.0f) }));
+        "critical health", { NextAction("survival instincts", ACTION_EMERGENCY + 1) }));
+    triggers.push_back(new TriggerNode(
+        "omen of clarity", { NextAction("omen of clarity", ACTION_HIGH + 9) }));
     triggers.push_back(new TriggerNode("player has flag",
-                                       { NextAction("dash", 92.0f) }));
+                                       { NextAction("dash", ACTION_EMERGENCY + 2) }));
     triggers.push_back(new TriggerNode("enemy flagcarrier near",
-                                       { NextAction("dash", 92.0f) }));
-}
-
-void FeralChargeDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
-{
-    Player* bot = botAI->GetBot();
-
-    if (bot->HasSpell(768) /*cat form*/ && !bot->HasAura(16931) /*thick hide*/)
-        triggers.push_back(new TriggerNode(
-            "enemy out of melee", { NextAction("feral charge - cat", 29.0f) }));
-    else
-        triggers.push_back(new TriggerNode(
-            "enemy out of melee", { NextAction("feral charge - bear", 18.0f) }));
+                                       { NextAction("dash", ACTION_EMERGENCY + 2) }));
+    triggers.push_back(
+        new TriggerNode("berserk", { NextAction("berserk", ACTION_HIGH + 6) }));
 }

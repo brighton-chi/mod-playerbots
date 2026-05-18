@@ -3,17 +3,17 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_BEARDRUIDSTRATEGY_H
-#define _PLAYERBOT_BEARDRUIDSTRATEGY_H
+#ifndef _PLAYERBOT_BEARTANKDRUIDSTRATEGY_H
+#define _PLAYERBOT_BEARTANKDRUIDSTRATEGY_H
 
 #include "FeralDruidStrategy.h"
 
 class PlayerbotAI;
 
-class BearDruidStrategy : public FeralDruidStrategy
+class BearTankDruidStrategy : public FeralDruidStrategy
 {
 public:
-    BearDruidStrategy(PlayerbotAI* botAI);
+    BearTankDruidStrategy(PlayerbotAI* botAI);
 
     void InitTriggers(std::vector<TriggerNode*>& triggers) override;
     std::string const getName() override { return "bear"; }
