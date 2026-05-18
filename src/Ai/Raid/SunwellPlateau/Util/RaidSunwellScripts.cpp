@@ -201,10 +201,7 @@ static void TrackIncomingEredarTwinsConflagration(Creature* alythess)
 
     Player* target = currentSpell->m_targets.GetUnitTarget() ?
         currentSpell->m_targets.GetUnitTarget()->ToPlayer() : nullptr;
-    if (!target)
-        return;
-
-    if (!FindFirstSunwellCombatBotInGroup(target))
+    if (!target || !FindFirstSunwellCombatBotInGroup(target))
         return;
 
     RecordEredarTwinsIncomingConflagrationTarget(target);
@@ -226,6 +223,7 @@ public:
             case static_cast<uint32>(SunwellSpells::SPELL_TELEPORT_SPECTRAL):
             case static_cast<uint32>(SunwellSpells::SPELL_TELEPORT_NORMAL_REALM):
                 break;
+
             default:
                 return;
         }
@@ -243,12 +241,15 @@ public:
             case static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_BLAST_PORTAL):
                 RecordKalecgosSpectralBlastTarget(botAI, player);
                 break;
+
             case static_cast<uint32>(SunwellSpells::SPELL_TELEPORT_SPECTRAL):
                 RecordKalecgosSpectralRealmEnter(botAI, player);
                 break;
+
             case static_cast<uint32>(SunwellSpells::SPELL_TELEPORT_NORMAL_REALM):
                 RecordKalecgosNormalRealmEnter(player);
                 break;
+
             default:
                 break;
         }
@@ -331,6 +332,7 @@ public:
 
                 RecordFelmystIncomingEncapsulateTarget(target);
                 break;
+
             case static_cast<uint32>(SunwellSpells::SPELL_SUMMON_DEMONIC_VAPOR):
                 if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(target);
                     botAI && botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
@@ -338,6 +340,7 @@ public:
                     botAI->RequestSpellInterrupt();
                 }
                 break;
+
             default:
                 break;
         }
@@ -362,10 +365,7 @@ public:
         }
 
         Player* target = GetFirstPlayerSpellTarget(spell, caster);
-        if (!target)
-            return;
-
-        if (!FindFirstSunwellCombatBotInGroup(target))
+        if (!target || !FindFirstSunwellCombatBotInGroup(target))
             return;
 
         RecordEredarTwinsIncomingConflagrationTarget(target);
@@ -449,10 +449,12 @@ public:
                 RequestInterruptForBotsNeedingFelmystFogMovement(creature, nullptr);
                 RequestInterruptForBotsWithDelayedFelmystEncapsulate(creature);
                 break;
+
             case static_cast<uint32>(SunwellNpcs::NPC_GRAND_WARLOCK_ALYTHESS):
                 TrackIncomingEredarTwinsConflagration(creature);
                 RequestInterruptForBotsWithDelayedEredarTwinsConflagration(creature);
                 break;
+
             default:
                 break;
         }
