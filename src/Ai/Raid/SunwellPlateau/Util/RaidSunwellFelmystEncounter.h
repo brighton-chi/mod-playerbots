@@ -92,6 +92,8 @@ extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
 extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
     felmystDemonicVaporRegionIndices;
 extern std::unordered_map<uint32, uint8>
+    felmystDemonicVaporUsedRegionMasks;
+extern std::unordered_map<uint32, uint8>
     felmystDemonicVaporFirstRegionIndices;
 extern std::unordered_map<uint32, FelmystFogOfCorruptionState>
     felmystFogOfCorruptionStates;

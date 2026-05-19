@@ -127,6 +127,9 @@ std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
     felmystDemonicVaporRegionIndices;
 
 std::unordered_map<uint32, uint8>
+    felmystDemonicVaporUsedRegionMasks;
+
+std::unordered_map<uint32, uint8>
     felmystDemonicVaporFirstRegionIndices;
 
 std::unordered_map<uint32, FelmystFogOfCorruptionState>
@@ -138,6 +141,7 @@ std::unordered_map<uint32, FelmystIncomingEncapsulateState>
 void ResetFelmystDemonicVaporFlightState(uint32 instanceId)
 {
     felmystDemonicVaporRegionIndices.erase(instanceId);
+    felmystDemonicVaporUsedRegionMasks.erase(instanceId);
     felmystDemonicVaporFirstRegionIndices.erase(instanceId);
 }
 
@@ -614,6 +618,14 @@ uint8 GetFelmystDemonicVaporAnchorSide(uint8 anchorIndex)
     return FELMYST_DEMONIC_VAPOR_KITE_ANCHORS[anchorIndex].sideMask;
 }
 
+uint8 GetFelmystDemonicVaporAnchorMask(uint8 anchorIndex)
+{
+    if (anchorIndex >= FELMYST_DEMONIC_VAPOR_KITE_ANCHORS.size())
+        return 0;
+
+    return static_cast<uint8>(1u << anchorIndex);
+}
+
 float GetDistanceToFelmystDemonicVaporAnchor(Player* bot, uint8 anchorIndex)
 {
     if (!bot || anchorIndex >= FELMYST_DEMONIC_VAPOR_KITE_ANCHORS.size())
@@ -850,6 +862,49 @@ bool TryGetFelmystDemonicVaporAnchorDestination(
     return true;
 }
 
+bool TryGetFelmystDemonicVaporStepDestination(
+    Player* bot, Position const& anchorDestination, Position& destination)
+{
+    if (!bot)
+        return false;
+
+    constexpr float stepDistance = 10.0f;
+    const float distanceToAnchor = bot->GetExactDist2d(
+        anchorDestination.GetPositionX(), anchorDestination.GetPositionY());
+    if (distanceToAnchor <= stepDistance)
+    {
+        destination = anchorDestination;
+        return true;
+    }
+
+    const float directionX =
+        (anchorDestination.GetPositionX() - bot->GetPositionX()) / distanceToAnchor;
+    const float directionY =
+        (anchorDestination.GetPositionY() - bot->GetPositionY()) / distanceToAnchor;
+
+    float destinationX = bot->GetPositionX() + directionX * stepDistance;
+    float destinationY = bot->GetPositionY() + directionY * stepDistance;
+    float destinationZ = bot->GetMapWaterOrGroundLevel(
+        destinationX, destinationY, anchorDestination.GetPositionZ());
+
+    if (destinationZ <= INVALID_HEIGHT)
+        destinationZ = bot->GetPositionZ();
+
+    if (!bot->GetMap()->CheckCollisionAndGetValidCoords(
+            bot, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(),
+            destinationX, destinationY, destinationZ, true))
+    {
+        return false;
+    }
+
+    if (bot->GetExactDist2d(destinationX, destinationY) <= 0.01f)
+        return false;
+
+    destination = Position(
+        destinationX, destinationY, destinationZ, bot->GetOrientation());
+    return true;
+}
+
 bool TryGetFelmystDemonicVaporKiteDestination(Player* bot, Position& destination)
 {
     const uint32 instanceId = bot->GetInstanceId();
@@ -864,6 +919,7 @@ bool TryGetFelmystDemonicVaporKiteDestination(Player* bot, Position& destination
     }
 
     auto& regionIndices = felmystDemonicVaporRegionIndices[instanceId];
+    uint8& usedRegionMask = felmystDemonicVaporUsedRegionMasks[instanceId];
     auto const regionItr = regionIndices.find(guid);
     std::vector<uint8> preferredAnchors;
 
@@ -909,14 +965,28 @@ bool TryGetFelmystDemonicVaporKiteDestination(Player* bot, Position& destination
     {
         for (uint8 anchorIndex : preferredAnchors)
         {
+            if (regionItr == regionIndices.end() &&
+                (usedRegionMask & GetFelmystDemonicVaporAnchorMask(anchorIndex)) != 0)
+            {
+                continue;
+            }
+
+            Position anchorDestination;
             if (!TryGetFelmystDemonicVaporAnchorDestination(
                     bot, anchorIndex, hazards,
-                    requireSafePath, requireSafeEndpoint, destination))
+                    requireSafePath, requireSafeEndpoint, anchorDestination))
+            {
+                continue;
+            }
+
+            if (!TryGetFelmystDemonicVaporStepDestination(
+                    bot, anchorDestination, destination))
             {
                 continue;
             }
 
             regionIndices[guid] = anchorIndex;
+            usedRegionMask |= GetFelmystDemonicVaporAnchorMask(anchorIndex);
             felmystDemonicVaporFirstRegionIndices.try_emplace(instanceId, anchorIndex);
             return true;
         }
