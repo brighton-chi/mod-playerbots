@@ -241,6 +241,7 @@ bool EredarTwinsPositionRangedAction::Execute(Event /*event*/)
     // Jump down during Phase 2 or if the bot pulls aggro on Sacrolash
     else if (bot->GetPositionZ() > EREDAR_TWINS_BALCONY_Z)
     {
+        // But don't jump down at the beginning of the fight
         if (sacrolash && sacrolash->GetHealthPct() > 95.0f)
             return false;
 
