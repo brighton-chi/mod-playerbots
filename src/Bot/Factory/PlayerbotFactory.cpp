@@ -58,7 +58,8 @@ std::list<uint32> PlayerbotFactory::classQuestIds;
 std::list<uint32> PlayerbotFactory::specialQuestIds;
 std::vector<uint32> PlayerbotFactory::enchantSpellIdCache;
 std::vector<uint32> PlayerbotFactory::enchantGemIdCache;
-std::unordered_map<uint32, std::vector<uint32>> PlayerbotFactory::trainerIdCache;
+std::unordered_map<uint32, std::vector<uint32>> PlayerbotFactory::classTrainerIdCache;
+std::unordered_map<uint32, std::vector<uint32>> PlayerbotFactory::tradeskillTrainerIdCache;
 std::vector<uint32> PlayerbotFactory::ccBreakTrinketCache;
 
 bool PlayerbotFactory::IsPrimaryTradeSkill(uint16 skillId)
@@ -850,36 +851,36 @@ void PlayerbotFactory::Refresh()
 
 void PlayerbotFactory::InitConsumables()
 {
-    int specTab = AiFactory::GetPlayerSpecTab(bot);
+    uint8 specTab = AiFactory::GetPlayerSpecTab(bot);
     std::vector<std::pair<uint32, uint32>> items;
 
     switch (bot->getClass())
     {
         case CLASS_PRIEST:
         {
-            // Discipline or Holy: Mana Oil
-            if (specTab == 0 || specTab == 1)
+            if (specTab == PRIEST_TAB_SHADOW)
             {
-                std::vector<uint32> mana_oils = {BRILLIANT_MANA_OIL, SUPERIOR_MANA_OIL, LESSER_MANA_OIL, MINOR_MANA_OIL};
-                for (uint32 itemId : mana_oils)
-                {
-                    ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
-                    if (proto->RequiredLevel > level || level > 75)
-                        continue;
-                    items.push_back({itemId, 4});
-                    break;
-                }
-            }
-            // Shadow: Wizard Oil
-            if (specTab == 2)
-            {
-                std::vector<uint32> wizard_oils = {BRILLIANT_WIZARD_OIL, SUPERIOR_WIZARD_OIL, WIZARD_OIL, LESSER_WIZARD_OIL, MINOR_WIZARD_OIL};
+                std::vector<uint32> wizard_oils = {
+                    BRILLIANT_WIZARD_OIL, SUPERIOR_WIZARD_OIL, WIZARD_OIL, LESSER_WIZARD_OIL, MINOR_WIZARD_OIL };
                 for (uint32 itemId : wizard_oils)
                 {
                     ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
                     if (proto->RequiredLevel > level || level > 75)
                         continue;
-                    items.push_back({itemId, 4});
+                    items.push_back({itemId, 2});
+                    break;
+                }
+            }
+            else
+            {
+                std::vector<uint32> mana_oils = {
+                    BRILLIANT_MANA_OIL, SUPERIOR_MANA_OIL, LESSER_MANA_OIL, MINOR_MANA_OIL };
+                for (uint32 itemId : mana_oils)
+                {
+                    ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
+                    if (proto->RequiredLevel > level || level > 75)
+                        continue;
+                    items.push_back({itemId, 2});
                     break;
                 }
             }
@@ -887,38 +888,41 @@ void PlayerbotFactory::InitConsumables()
         }
         case CLASS_MAGE:
         {
-            // Always Wizard Oil
-            std::vector<uint32> wizard_oils = {BRILLIANT_WIZARD_OIL, SUPERIOR_WIZARD_OIL, WIZARD_OIL, LESSER_WIZARD_OIL, MINOR_WIZARD_OIL};
+            std::vector<uint32> wizard_oils = {
+                BRILLIANT_WIZARD_OIL, SUPERIOR_WIZARD_OIL, WIZARD_OIL, LESSER_WIZARD_OIL, MINOR_WIZARD_OIL };
             for (uint32 itemId : wizard_oils)
             {
                 ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
                 if (proto->RequiredLevel > level || level > 75)
                     continue;
-                items.push_back({itemId, 4});
+                items.push_back({itemId, 2});
                 break;
             }
             break;
         }
         case CLASS_DRUID:
         {
-            // Balance: Wizard Oil
-            if (specTab == 0)
+            if (specTab == DRUID_TAB_BALANCE)
             {
-                std::vector<uint32> wizard_oils = {BRILLIANT_WIZARD_OIL, SUPERIOR_WIZARD_OIL, WIZARD_OIL, LESSER_WIZARD_OIL, MINOR_WIZARD_OIL};
+                std::vector<uint32> wizard_oils = {
+                    BRILLIANT_WIZARD_OIL, SUPERIOR_WIZARD_OIL, WIZARD_OIL, LESSER_WIZARD_OIL, MINOR_WIZARD_OIL };
                 for (uint32 itemId : wizard_oils)
                 {
                     ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
                     if (proto->RequiredLevel > level || level > 75)
                         continue;
-                    items.push_back({itemId, 4});
+                    items.push_back({itemId, 2});
                     break;
                 }
             }
-            // Feral: Sharpening Stones & Weightstones
-            else if (specTab == 1)
+            else if (specTab == DRUID_TAB_FERAL)
             {
-                std::vector<uint32> sharpening_stones = {ADAMANTITE_SHARPENING_STONE, FEL_SHARPENING_STONE, DENSE_SHARPENING_STONE, SOLID_SHARPENING_STONE, HEAVY_SHARPENING_STONE, COARSE_SHARPENING_STONE, ROUGH_SHARPENING_STONE};
-                std::vector<uint32> weightstones = {ADAMANTITE_WEIGHTSTONE, FEL_WEIGHTSTONE, DENSE_WEIGHTSTONE, SOLID_WEIGHTSTONE, HEAVY_WEIGHTSTONE, COARSE_WEIGHTSTONE, ROUGH_WEIGHTSTONE};
+                std::vector<uint32> sharpening_stones = {
+                    ADAMANTITE_SHARPENING_STONE, FEL_SHARPENING_STONE, DENSE_SHARPENING_STONE, SOLID_SHARPENING_STONE,
+                    HEAVY_SHARPENING_STONE, COARSE_SHARPENING_STONE, ROUGH_SHARPENING_STONE };
+                std::vector<uint32> weightstones = {
+                    ADAMANTITE_WEIGHTSTONE, FEL_WEIGHTSTONE, DENSE_WEIGHTSTONE, SOLID_WEIGHTSTONE,
+                    HEAVY_WEIGHTSTONE, COARSE_WEIGHTSTONE, ROUGH_WEIGHTSTONE };
                 for (uint32 itemId : sharpening_stones)
                 {
                     ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
@@ -936,16 +940,16 @@ void PlayerbotFactory::InitConsumables()
                     break;
                 }
             }
-            // Restoration: Mana Oil
-            else if (specTab == 2)
+            else
             {
-                std::vector<uint32> mana_oils = {BRILLIANT_MANA_OIL, SUPERIOR_MANA_OIL, LESSER_MANA_OIL, MINOR_MANA_OIL};
+                std::vector<uint32> mana_oils = {
+                    BRILLIANT_MANA_OIL, SUPERIOR_MANA_OIL, LESSER_MANA_OIL, MINOR_MANA_OIL };
                 for (uint32 itemId : mana_oils)
                 {
                     ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
                     if (proto->RequiredLevel > level || level > 75)
                         continue;
-                    items.push_back({itemId, 4});
+                    items.push_back({itemId, 2});
                     break;
                 }
             }
@@ -953,37 +957,27 @@ void PlayerbotFactory::InitConsumables()
         }
         case CLASS_PALADIN:
         {
-            // Holy: Mana Oil
-            if (specTab == 0)
+            if (specTab == PALADIN_TAB_HOLY)
             {
-                std::vector<uint32> mana_oils = {BRILLIANT_MANA_OIL, SUPERIOR_MANA_OIL, LESSER_MANA_OIL, MINOR_MANA_OIL};
+                std::vector<uint32> mana_oils = {
+                    BRILLIANT_MANA_OIL, SUPERIOR_MANA_OIL, LESSER_MANA_OIL, MINOR_MANA_OIL };
                 for (uint32 itemId : mana_oils)
                 {
                     ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
                     if (proto->RequiredLevel > level || level > 75)
                         continue;
-                    items.push_back({itemId, 4});
+                    items.push_back({itemId, 2});
                     break;
                 }
             }
-            // Protection: Wizard Oil (Protection prioritizes Superior over Brilliant)
-            else if (specTab == 1)
+            else
             {
-                std::vector<uint32> wizard_oils = {BRILLIANT_WIZARD_OIL, SUPERIOR_WIZARD_OIL, WIZARD_OIL, LESSER_WIZARD_OIL, MINOR_WIZARD_OIL};
-                for (uint32 itemId : wizard_oils)
-                {
-                    ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
-                    if (proto->RequiredLevel > level || level > 75)
-                        continue;
-                    items.push_back({itemId, 4});
-                    break;
-                }
-            }
-            // Retribution: Sharpening Stones & Weightstones
-            else if (specTab == 2)
-            {
-                std::vector<uint32> sharpening_stones = {ADAMANTITE_SHARPENING_STONE, FEL_SHARPENING_STONE, DENSE_SHARPENING_STONE, SOLID_SHARPENING_STONE, HEAVY_SHARPENING_STONE, COARSE_SHARPENING_STONE, ROUGH_SHARPENING_STONE};
-                std::vector<uint32> weightstones = {ADAMANTITE_WEIGHTSTONE, FEL_WEIGHTSTONE, DENSE_WEIGHTSTONE, SOLID_WEIGHTSTONE, HEAVY_WEIGHTSTONE, COARSE_WEIGHTSTONE, ROUGH_WEIGHTSTONE};
+                std::vector<uint32> sharpening_stones = {
+                    ADAMANTITE_SHARPENING_STONE, FEL_SHARPENING_STONE, DENSE_SHARPENING_STONE, SOLID_SHARPENING_STONE,
+                    HEAVY_SHARPENING_STONE, COARSE_SHARPENING_STONE, ROUGH_SHARPENING_STONE };
+                std::vector<uint32> weightstones = {
+                    ADAMANTITE_WEIGHTSTONE, FEL_WEIGHTSTONE, DENSE_WEIGHTSTONE, SOLID_WEIGHTSTONE,
+                    HEAVY_WEIGHTSTONE, COARSE_WEIGHTSTONE, ROUGH_WEIGHTSTONE };
                 for (uint32 itemId : sharpening_stones)
                 {
                     ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
@@ -1006,9 +1000,12 @@ void PlayerbotFactory::InitConsumables()
         case CLASS_WARRIOR:
         case CLASS_HUNTER:
         {
-            // Sharpening Stones & Weightstones
-            std::vector<uint32> sharpening_stones = {ADAMANTITE_SHARPENING_STONE, FEL_SHARPENING_STONE, DENSE_SHARPENING_STONE, SOLID_SHARPENING_STONE, HEAVY_SHARPENING_STONE, COARSE_SHARPENING_STONE, ROUGH_SHARPENING_STONE};
-            std::vector<uint32> weightstones = {ADAMANTITE_WEIGHTSTONE, FEL_WEIGHTSTONE, DENSE_WEIGHTSTONE, SOLID_WEIGHTSTONE, HEAVY_WEIGHTSTONE, COARSE_WEIGHTSTONE, ROUGH_WEIGHTSTONE};
+            std::vector<uint32> sharpening_stones = {
+                ADAMANTITE_SHARPENING_STONE, FEL_SHARPENING_STONE, DENSE_SHARPENING_STONE, SOLID_SHARPENING_STONE,
+                HEAVY_SHARPENING_STONE, COARSE_SHARPENING_STONE, ROUGH_SHARPENING_STONE };
+            std::vector<uint32> weightstones = {
+                ADAMANTITE_WEIGHTSTONE, FEL_WEIGHTSTONE, DENSE_WEIGHTSTONE, SOLID_WEIGHTSTONE,
+                HEAVY_WEIGHTSTONE, COARSE_WEIGHTSTONE, ROUGH_WEIGHTSTONE };
             for (uint32 itemId : sharpening_stones)
             {
                 ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
@@ -1029,9 +1026,12 @@ void PlayerbotFactory::InitConsumables()
         }
         case CLASS_ROGUE:
         {
-            // Poisons
-            std::vector<uint32> instant_poisons = {INSTANT_POISON_IX, INSTANT_POISON_VIII, INSTANT_POISON_VII, INSTANT_POISON_VI, INSTANT_POISON_V, INSTANT_POISON_IV, INSTANT_POISON_III, INSTANT_POISON_II, INSTANT_POISON};
-            std::vector<uint32> deadly_poisons = {DEADLY_POISON_IX, DEADLY_POISON_VIII, DEADLY_POISON_VII, DEADLY_POISON_VI, DEADLY_POISON_V, DEADLY_POISON_IV, DEADLY_POISON_III, DEADLY_POISON_II, DEADLY_POISON};
+            std::vector<uint32> instant_poisons = {
+                INSTANT_POISON_IX, INSTANT_POISON_VIII, INSTANT_POISON_VII, INSTANT_POISON_VI, INSTANT_POISON_V,
+                INSTANT_POISON_IV, INSTANT_POISON_III, INSTANT_POISON_II, INSTANT_POISON };
+            std::vector<uint32> deadly_poisons = {
+                DEADLY_POISON_IX, DEADLY_POISON_VIII, DEADLY_POISON_VII, DEADLY_POISON_VI, DEADLY_POISON_V,
+                DEADLY_POISON_IV, DEADLY_POISON_III, DEADLY_POISON_II, DEADLY_POISON };
             for (uint32 itemId : deadly_poisons)
             {
                 ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
@@ -3076,7 +3076,7 @@ void PlayerbotFactory::InitSkills()
             break;
     }
 
-    // InitTradeSkills(); // Crow: Don't assign new professions or max existing profession skill values
+    InitTradeSkills();
     InitInventorySkill();
 
     // switch (bot->getClass())
@@ -3116,7 +3116,12 @@ void PlayerbotFactory::SetRandomSkill(uint16 id)
 
 void PlayerbotFactory::InitAvailableSpells()
 {
-    if (trainerIdCache[bot->getClass()].empty())
+    bool const includeTradeskills = sRandomPlayerbotMgr.IsRandomBot(bot);
+    std::unordered_map<uint32, std::vector<uint32>>& trainerIdCache =
+        includeTradeskills ? tradeskillTrainerIdCache : classTrainerIdCache;
+    std::vector<uint32>& trainerIds = trainerIdCache[bot->getClass()];
+
+    if (trainerIds.empty())
     {
         CreatureTemplateContainer const* creatureTemplateContainer = sObjectMgr->GetCreatureTemplates();
         for (CreatureTemplateContainer::const_iterator i = creatureTemplateContainer->begin();
@@ -3127,18 +3132,19 @@ void PlayerbotFactory::InitAvailableSpells()
             if (!trainer)
                 continue;
 
-            if (/* trainer->GetTrainerType() != Trainer::Type::Tradeskill && */ // Crow: Don't give profession spells from trainers
-                trainer->GetTrainerType() != Trainer::Type::Class)
+            Trainer::Type const trainerType = trainer->GetTrainerType();
+            if (trainerType != Trainer::Type::Class &&
+                !(includeTradeskills && trainerType == Trainer::Type::Tradeskill))
                 continue;
 
-            if (/* trainer->GetTrainerType() == Trainer::Type::Class && */ // Crow: Don't give profession spells from trainers
-                !trainer->IsTrainerValidForPlayer(bot))
+            if (trainerType == Trainer::Type::Class && !trainer->IsTrainerValidForPlayer(bot))
                 continue;
 
-            trainerIdCache[bot->getClass()].push_back(i->first);
+            trainerIds.push_back(i->first);
         }
     }
-    for (uint32 trainerId : trainerIdCache[bot->getClass()])
+
+    for (uint32 trainerId : trainerIds)
     {
         Trainer::Trainer* trainer = sObjectMgr->GetTrainer(trainerId);
 
