@@ -58,7 +58,8 @@ std::list<uint32> PlayerbotFactory::classQuestIds;
 std::list<uint32> PlayerbotFactory::specialQuestIds;
 std::vector<uint32> PlayerbotFactory::enchantSpellIdCache;
 std::vector<uint32> PlayerbotFactory::enchantGemIdCache;
-std::unordered_map<uint32, std::vector<uint32>> PlayerbotFactory::trainerIdCache;
+std::unordered_map<uint32, std::vector<uint32>> PlayerbotFactory::classTrainerIdCache;
+std::unordered_map<uint32, std::vector<uint32>> PlayerbotFactory::tradeskillTrainerIdCache;
 std::vector<uint32> PlayerbotFactory::ccBreakTrinketCache;
 
 bool PlayerbotFactory::IsPrimaryTradeSkill(uint16 skillId)
@@ -606,7 +607,7 @@ void PlayerbotFactory::Randomize(bool incremental)
             pmo->finish();
     }
 
-    LOG_DEBUG("playerbots", "Initializing skills (step 1)...");
+    LOG_DEBUG("playerbots", "Initializing skills...");
     pmo = sPerfMonitor.start(PERF_MON_RNDBOT, "PlayerbotFactory_Skills1");
     bot->LearnDefaultSkills();
     InitSkills();
@@ -661,12 +662,6 @@ void PlayerbotFactory::Randomize(bool incremental)
     // bot->SaveToDB(false, false);
     if (pmo)
         pmo->finish();
-
-    // pmo = sPerfMonitor.start(PERF_MON_RNDBOT, "PlayerbotFactory_Skills2");
-    // LOG_INFO("playerbots", "Initializing skills (step 2)...");
-    // UpdateTradeSkills();
-    // if (pmo)
-    //     pmo->finish();
 
     pmo = sPerfMonitor.start(PERF_MON_RNDBOT, "PlayerbotFactory_Equip");
     LOG_DEBUG("playerbots", "Initializing equipmemt...");
@@ -2938,15 +2933,6 @@ bool PlayerbotFactory::InitBlacksmithingSpecialization()
     }
 }
 
-void PlayerbotFactory::UpdateTradeSkills()
-{
-    for (uint32 i = 0; i < sizeof(tradeSkills) / sizeof(uint32); ++i)
-    {
-        if (bot->GetSkillValue(tradeSkills[i]) == 1)
-            bot->SetSkill(tradeSkills[i], 0, 0, 0);
-    }
-}
-
 void PlayerbotFactory::InitSkills()
 {
     //uint32 maxValue = level * 5; //not used, line marked for removal.
@@ -3119,7 +3105,12 @@ void PlayerbotFactory::SetRandomSkill(uint16 id)
 
 void PlayerbotFactory::InitAvailableSpells()
 {
-    if (trainerIdCache[bot->getClass()].empty())
+    bool const includeTradeskills = sRandomPlayerbotMgr.IsRandomBot(bot);
+    std::unordered_map<uint32, std::vector<uint32>>& trainerIdCache =
+        includeTradeskills ? tradeskillTrainerIdCache : classTrainerIdCache;
+    std::vector<uint32>& trainerIds = trainerIdCache[bot->getClass()];
+
+    if (trainerIds.empty())
     {
         CreatureTemplateContainer const* creatureTemplateContainer = sObjectMgr->GetCreatureTemplates();
         for (CreatureTemplateContainer::const_iterator i = creatureTemplateContainer->begin();
@@ -3130,18 +3121,19 @@ void PlayerbotFactory::InitAvailableSpells()
             if (!trainer)
                 continue;
 
-            if (trainer->GetTrainerType() != Trainer::Type::Tradeskill &&
-                trainer->GetTrainerType() != Trainer::Type::Class)
+            Trainer::Type const trainerType = trainer->GetTrainerType();
+            if (trainerType != Trainer::Type::Class &&
+                !(includeTradeskills && trainerType == Trainer::Type::Tradeskill))
                 continue;
 
-            if (trainer->GetTrainerType() == Trainer::Type::Class &&
-                !trainer->IsTrainerValidForPlayer(bot))
+            if (trainerType == Trainer::Type::Class && !trainer->IsTrainerValidForPlayer(bot))
                 continue;
 
-            trainerIdCache[bot->getClass()].push_back(i->first);
+            trainerIds.push_back(i->first);
         }
     }
-    for (uint32 trainerId : trainerIdCache[bot->getClass()])
+
+    for (uint32 trainerId : trainerIds)
     {
         Trainer::Trainer* trainer = sObjectMgr->GetTrainer(trainerId);
 

@@ -176,7 +176,6 @@ private:
     bool InitLeatherworkingSpecialization();
     bool InitTailoringSpecialization();
     bool InitBlacksmithingSpecialization();
-    void UpdateTradeSkills();
     void SetRandomSkill(uint16 id);
     void ClearSpells();
     void ClearSkills();
@@ -219,7 +218,8 @@ private:
     uint32 itemQuality;
     uint32 gearScoreLimit;
     static std::list<uint32> specialQuestIds;
-    static std::unordered_map<uint32, std::vector<uint32>> trainerIdCache;
+    static std::unordered_map<uint32, std::vector<uint32>> classTrainerIdCache;
+    static std::unordered_map<uint32, std::vector<uint32>> tradeskillTrainerIdCache;
     static std::vector<uint32> enchantSpellIdCache;
     static std::vector<uint32> enchantGemIdCache;
     static std::vector<uint32> ccBreakTrinketCache;
