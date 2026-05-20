@@ -70,6 +70,14 @@ public:
     bool IsActive() override;
 };
 
+class KalecgosHumanoidFormTanksSathrovarrTrigger : public Trigger
+{
+public:
+    KalecgosHumanoidFormTanksSathrovarrTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "kalecgos humanoid form tanks sathrovarr") {}
+    bool IsActive() override;
+};
+
 class KalecgosBothBossesMustBeDefeatedTrigger : public Trigger
 {
 public:

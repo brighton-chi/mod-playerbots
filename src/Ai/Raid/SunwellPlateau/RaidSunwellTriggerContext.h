@@ -38,6 +38,9 @@ public:
         creators["kalecgos bot has too many arcane buffet stacks"] =
             &RaidSunwellTriggerContext::kalecgos_bot_has_too_many_arcane_buffet_stacks;
 
+        creators["kalecgos humanoid form tanks sathrovarr"] =
+            &RaidSunwellTriggerContext::kalecgos_humanoid_form_tanks_sathrovarr;
+
         creators["kalecgos both bosses must be defeated"] =
             &RaidSunwellTriggerContext::kalecgos_both_bosses_must_be_defeated;
 
@@ -221,6 +224,9 @@ private:
 
     static Trigger* kalecgos_bots_take_splash_damage(
         PlayerbotAI* botAI) { return new KalecgosBotsTakeSplashDamageTrigger(botAI); }
+
+    static Trigger* kalecgos_humanoid_form_tanks_sathrovarr(
+        PlayerbotAI* botAI) { return new KalecgosHumanoidFormTanksSathrovarrTrigger(botAI); }
 
     static Trigger* kalecgos_both_bosses_must_be_defeated(
         PlayerbotAI* botAI) { return new KalecgosBothBossesMustBeDefeatedTrigger(botAI); }

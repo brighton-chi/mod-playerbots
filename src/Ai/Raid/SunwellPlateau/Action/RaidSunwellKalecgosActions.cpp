@@ -155,6 +155,26 @@ bool KalecgosRemoveArcaneBuffetAction::Execute(Event /*event*/)
     }
 }
 
+bool KalecgosSathrovarrTankStandWithKalecAction::Execute(Event /*event*/)
+{
+    constexpr float searchRadius = 20.0f;
+    Unit* kalec = bot->FindNearestCreature(
+        static_cast<uint32>(SunwellNpcs::NPC_KALECGOS_HUMANOID), searchRadius);
+
+    if (!kalec)
+        return false;
+
+    const Position& position = kalec->GetPosition();
+    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 3.0f)
+    {
+        return MoveTo(SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                      position.GetPositionZ(), false, false, false, false,
+                      MovementPriority::MOVEMENT_COMBAT, true, false);
+    }
+
+    return false;
+}
+
 bool KalecgosDetermineBossToAttackAction::Execute(Event /*event*/)
 {
     Unit* target = nullptr;

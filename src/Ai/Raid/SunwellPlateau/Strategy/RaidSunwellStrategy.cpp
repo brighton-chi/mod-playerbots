@@ -29,6 +29,8 @@ void AppendFelmystVaporPhaseMeleeExclusions(PlayerbotAI* botAI, GuidSet& exclusi
 
     constexpr float searchRadius = 50.0f;
     if (bot->FindNearestCreature(
+            static_cast<uint32>(SunwellNpcs::NPC_DEMONIC_VAPOR_TRAIL), searchRadius, true) ||
+        bot->FindNearestCreature(
             static_cast<uint32>(SunwellNpcs::NPC_DEMONIC_VAPOR), searchRadius, true))
     {
         exclusions.insert(felmyst->GetGUID());
@@ -144,6 +146,7 @@ void AppendKiljaedenShieldOrbExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 
 void RaidSunwellStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExclusionType type) const
 {
+    AppendFelmystVaporPhaseMeleeExclusions(botAI, exclusions);
     AppendEredarTwinsAlythessExclusions(botAI, exclusions);
     AppendMuruDarkFiendExclusions(botAI, exclusions);
     AppendKiljaedenShieldOrbExclusions(botAI, exclusions);
@@ -186,6 +189,9 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("kalecgos bot has too many arcane buffet stacks", {
         NextAction("kalecgos remove arcane buffet", ACTION_RAID + 3) }));
+
+    triggers.push_back(new TriggerNode("kalecgos humanoid form tanks sathrovarr", {
+        NextAction("kalecgos sathrovarr tank stand with kalec", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("kalecgos both bosses must be defeated", {
         NextAction("kalecgos determine boss to attack", ACTION_RAID + 2) }));

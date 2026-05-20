@@ -38,6 +38,9 @@ public:
         creators["kalecgos remove arcane buffet"] =
             &RaidSunwellActionContext::kalecgos_remove_arcane_buffet;
 
+        creators["kalecgos sathrovarr tank stand with kalec"] =
+            &RaidSunwellActionContext::kalecgos_sathrovarr_tank_stand_with_kalec;
+
         creators["kalecgos determine boss to attack"] =
             &RaidSunwellActionContext::kalecgos_determine_boss_to_attack;
 
@@ -224,6 +227,9 @@ private:
 
     static Action* kalecgos_remove_arcane_buffet(
         PlayerbotAI* botAI) { return new KalecgosRemoveArcaneBuffetAction(botAI); }
+
+    static Action* kalecgos_sathrovarr_tank_stand_with_kalec(
+        PlayerbotAI* botAI) { return new KalecgosSathrovarrTankStandWithKalecAction(botAI); }
 
     static Action* kalecgos_determine_boss_to_attack(
         PlayerbotAI* botAI) { return new KalecgosDetermineBossToAttackAction(botAI); }

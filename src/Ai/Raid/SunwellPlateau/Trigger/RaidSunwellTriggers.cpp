@@ -104,6 +104,12 @@ bool KalecgosBotHasTooManyArcaneBuffetStacksTrigger::IsActive()
     return arcaneBuffet && arcaneBuffet->GetStackAmount() >= 10;
 }
 
+bool KalecgosHumanoidFormTanksSathrovarrTrigger::IsActive()
+{
+    return botAI->IsTank(bot) &&
+           AI_VALUE2(Unit*, "find target", "sathrovarr the corruptor");
+}
+
 bool KalecgosBothBossesMustBeDefeatedTrigger::IsActive()
 {
     if (botAI->IsHeal(bot) || AI_VALUE(Unit*, "current target"))

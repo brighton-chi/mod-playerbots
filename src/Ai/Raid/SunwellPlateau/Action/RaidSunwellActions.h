@@ -74,6 +74,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class KalecgosSathrovarrTankStandWithKalecAction : public MovementAction
+{
+public:
+    KalecgosSathrovarrTankStandWithKalecAction(
+        PlayerbotAI* botAI, std::string const name = "kalecgos sathrovarr tank stand with kalec") : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 class KalecgosDetermineBossToAttackAction : public AttackAction
 {
 public:
