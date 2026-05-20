@@ -319,7 +319,7 @@ bool FelmystBotIsDemonicVaporTargetTrigger::IsActive()
     if (TryGetActiveFelmystFogOfCorruptionState(bot, felmyst, fogState))
         return false;
 
-    return GetFelmystDemonicVaporSummonedByBot(bot);
+    return IsFelmystDemonicVaporHeadNearBot(bot);
 }
 
 bool FelmystFogOfCorruptionIsActiveTrigger::IsActive()

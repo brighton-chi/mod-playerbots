@@ -8,6 +8,7 @@
 #include "AiObjectContext.h"
 #include "PlayerbotAI.h"
 #include "RaidSunwellEredarTwinsEncounter.h"
+#include "RaidSunwellFelmystEncounter.h"
 #include "RaidSunwellMuruEncounter.h"
 #include "RaidSunwellMultipliers.h"
 
@@ -15,13 +16,34 @@ namespace
 {
 using namespace SunwellHelpers;
 
+void AppendFelmystVaporPhaseMeleeExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
+{
+    Player* bot = botAI->GetBot();
+
+    if (!botAI->IsMelee(bot))
+        return;
+
+    Unit* felmyst = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "felmyst")->Get();
+    if (!felmyst || !felmyst->IsFlying())
+        return;
+
+    constexpr float searchRadius = 50.0f;
+    if (bot->FindNearestCreature(
+            static_cast<uint32>(SunwellNpcs::NPC_DEMONIC_VAPOR), searchRadius, true))
+    {
+        exclusions.insert(felmyst->GetGUID());
+    }
+}
+
 void AppendEredarTwinsAlythessExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 {
-    Unit* sacrolash = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "lady sacrolash")->Get();
+    Unit* sacrolash =
+        botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "lady sacrolash")->Get();
     if (!sacrolash)
         return;
 
-    Unit* alythess = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "grand warlock alythess")->Get();
+    Unit* alythess =
+        botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "grand warlock alythess")->Get();
     if (!alythess)
         return;
 
@@ -85,7 +107,7 @@ void AppendMuruTankExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
     }
 }
 
-void AppendMuruDpsExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
+void AppendMuruMeleeDpsExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 {
     Player* bot = botAI->GetBot();
 
@@ -132,7 +154,7 @@ void RaidSunwellStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValu
             AppendMuruTankExclusions(botAI, exclusions);
             break;
         case TargetValueExclusionType::Dps:
-            AppendMuruDpsExclusions(botAI, exclusions);
+            AppendMuruMeleeDpsExclusions(botAI, exclusions);
             break;
         case TargetValueExclusionType::None:
             break;

@@ -111,6 +111,7 @@ FelmystGroundStack GetClosestFelmystGroundStack(
     PlayerbotAI* botAI, Player* bot, Unit* felmyst, Unit* unit);
 float GetFelmystFrontAngle(PlayerbotAI* botAI, Player* bot, Unit* felmyst);
 Creature* GetFelmystDemonicVaporSummonedByBot(Player* carrier);
+bool IsFelmystDemonicVaporHeadNearBot(Player* bot);
 void ClearFelmystDemonicVaporKiteState(Player* bot);
 bool TryGetFelmystDemonicVaporKiteDestination(Player* bot, Position& destination);
 bool TryGetFelmystFogSafeDestinations(

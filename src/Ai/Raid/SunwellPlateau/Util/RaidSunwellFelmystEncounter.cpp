@@ -16,7 +16,8 @@ namespace SunwellHelpers
 {
 
 const Position FELMYST_M_TANK_POSITION = { 1460.145f, 598.290f, 21.869f };
-const Position FELMYST_W_TANK_POSITION = { 1477.521f, 634.743f, 21.637f };
+// const Position FELMYST_W_TANK_POSITION = { 1480.557f, 635.729f, 21.788f };
+const Position FELMYST_W_TANK_POSITION = { 1480.587f, 636.805f, 21.713f };
 const Position FELMYST_E_TANK_POSITION = { 1479.524f, 584.069f, 23.231f };
 
 const std::array<Position const*, 3> FELMYST_TANK_POSITIONS = {{
@@ -518,6 +519,13 @@ Creature* GetFelmystDemonicVaporSummonedByBot(Player* carrier)
     return nullptr;
 }
 
+bool IsFelmystDemonicVaporHeadNearBot(Player* bot)
+{
+    constexpr float kiteDistanceThreshold = 15.0f;
+    Creature* vapor = GetFelmystDemonicVaporSummonedByBot(bot);
+    return vapor && bot->GetDistance2d(vapor) <= kiteDistanceThreshold;
+}
+
 void ClearFelmystDemonicVaporKiteState(Player* bot)
 {
     const uint32 instanceId = bot->GetInstanceId();
@@ -912,7 +920,7 @@ bool TryGetFelmystDemonicVaporKiteDestination(Player* bot, Position& destination
 
     ResetFelmystDemonicVaporFlightStateIfGrounded(bot);
 
-    if (!GetFelmystDemonicVaporSummonedByBot(bot))
+    if (!IsFelmystDemonicVaporHeadNearBot(bot))
     {
         ClearFelmystDemonicVaporKiteState(bot);
         return false;

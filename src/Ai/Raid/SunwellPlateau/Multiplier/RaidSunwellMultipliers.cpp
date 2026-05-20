@@ -21,6 +21,7 @@
 #include "GenericSpellActions.h"
 #include "HunterActions.h"
 #include "MageActions.h"
+#include "NonCombatActions.h"
 #include "PaladinActions.h"
 #include "PartyMemberToDispel.h"
 #include "ReachTargetActions.h"
@@ -306,6 +307,9 @@ float FelmystPrioritizeEncapsulateAvoidanceMultiplier::GetValue(Action* action)
     if (!GetFelmystEncapsulateTarget(bot))
         return 1.0f;
 
+    if (dynamic_cast<CastReachTargetSpellAction*>(action))
+        return 0.0f;
+
     if (dynamic_cast<MovementAction*>(action) &&
         !dynamic_cast<FelmystRunAwayFromEncapsulatedPlayerAction*>(action))
     {
@@ -321,35 +325,39 @@ float FelmystPrioritizeFogAvoidanceMultiplier::GetValue(Action* action)
     if (!felmyst || !felmyst->IsFlying())
         return 1.0f;
 
-    FelmystFogOfCorruptionState fogState;
+    FelmystFogOfCorruptionState fogState; // Fog phase active
     if (!TryGetFelmystFogOfCorruptionStageState(felmyst, fogState))
         return 1.0f;
 
-    FelmystFogOfCorruptionState activeFogState;
-    bool isActiveFog = TryGetActiveFelmystFogOfCorruptionState(
-        bot, felmyst, activeFogState);
-
-    if (dynamic_cast<CastReachTargetSpellAction*>(action))
+    if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
+        dynamic_cast<DrinkAction*>(action))
+    {
         return 0.0f;
+    }
+
+    FelmystFogOfCorruptionState dangerousFogState; // Fog phase active & bot in danger
+    bool needsFogAvoidance = TryGetActiveFelmystFogOfCorruptionState(
+        bot, felmyst, dangerousFogState);
 
     std::array<Position, 3> destinations;
     uint8 destinationCount = 0;
-    bool needsShift = TryGetFelmystFogSafeDestinations(
-        bot, isActiveFog ? activeFogState.lane :
+    bool canRelocate = TryGetFelmystFogSafeDestinations(
+        bot, needsFogAvoidance ? dangerousFogState.lane :
         fogState.lane, destinations, destinationCount);
 
-    if (isActiveFog && needsShift && dynamic_cast<CastSpellAction*>(action) &&
+    if (needsFogAvoidance && canRelocate &&
+        dynamic_cast<CastSpellAction*>(action) &&
         !dynamic_cast<CastHealingSpellAction*>(action))
     {
         return 0.0f;
     }
 
+    if (dynamic_cast<FelmystAvoidFogOfCorruptionAction*>(action))
+        return canRelocate ? 1.0f : 0.0f;
+
     if (dynamic_cast<MovementAction*>(action) &&
         !dynamic_cast<AttackAction*>(action))
     {
-        if (dynamic_cast<FelmystAvoidFogOfCorruptionAction*>(action))
-            return needsShift ? 1.0f : 0.0f;
-
         return 0.0f;
     }
 
@@ -366,7 +374,7 @@ float FelmystPrioritizeDemonicVaporKiteMultiplier::GetValue(Action* action)
     if (TryGetActiveFelmystFogOfCorruptionState(bot, felmyst, fogState))
         return 1.0f;
 
-    if (!GetFelmystDemonicVaporSummonedByBot(bot))
+    if (!IsFelmystDemonicVaporHeadNearBot(bot))
         return 1.0f;
 
     if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
