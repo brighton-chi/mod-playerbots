@@ -60,6 +60,44 @@ static PlayerbotAI* FindFirstSunwellCombatBotInGroup(Player* referencePlayer)
     return nullptr;
 }
 
+static PlayerbotAI* FindFirstSunwellSurfaceCombatBotInGroup(Player* referencePlayer)
+{
+    if (!referencePlayer)
+        return nullptr;
+
+    if (!IsInKalecgosSpectralRealm(referencePlayer))
+    {
+        if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(referencePlayer);
+            botAI && botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
+        {
+            return botAI;
+        }
+    }
+
+    Group* group = referencePlayer->GetGroup();
+    if (!group)
+        return nullptr;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || member == referencePlayer ||
+            member->GetMapId() != referencePlayer->GetMapId() ||
+            IsInKalecgosSpectralRealm(member))
+        {
+            continue;
+        }
+
+        if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(member);
+            botAI && botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
+        {
+            return botAI;
+        }
+    }
+
+    return nullptr;
+}
+
 static Player* GetFirstPlayerSpellTarget(Spell* spell, Unit* caster)
 {
     if (!spell || !caster)
@@ -232,18 +270,16 @@ public:
         if (!player)
             return;
 
-        PlayerbotAI* botAI = FindFirstSunwellCombatBotInGroup(player);
-        if (!botAI)
-            return;
-
         switch (spellInfo->Id)
         {
             case static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_BLAST_PORTAL):
-                RecordKalecgosSpectralBlastTarget(botAI, player);
+                if (PlayerbotAI* botAI = FindFirstSunwellSurfaceCombatBotInGroup(player))
+                    RecordKalecgosSpectralBlastTarget(botAI, player);
                 break;
 
             case static_cast<uint32>(SunwellSpells::SPELL_TELEPORT_SPECTRAL):
-                RecordKalecgosSpectralRealmEnter(botAI, player);
+                if (PlayerbotAI* botAI = FindFirstSunwellCombatBotInGroup(player))
+                    RecordKalecgosSpectralRealmEnter(botAI, player);
                 break;
 
             case static_cast<uint32>(SunwellSpells::SPELL_TELEPORT_NORMAL_REALM):
