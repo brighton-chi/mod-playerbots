@@ -481,6 +481,174 @@ namespace
         return true;
     }
 
+    static bool HasMyExactBlessing(PlayerbotAI* botAI, Unit* target, BlessingType type)
+    {
+        std::string name = BlessingSpellName(type);
+        if (name.empty())
+            return false;
+
+        return botAI->HasAura(name.c_str(), target, false, true);
+    }
+
+    static bool UsesBlessingStrengthGate(BaseBlessingCategory category)
+    {
+        return category == BASE_MIGHT || category == BASE_WISDOM;
+    }
+
+    static AuraType BlessingStrengthAuraType(BaseBlessingCategory category)
+    {
+        return category == BASE_MIGHT ? SPELL_AURA_MOD_ATTACK_POWER : SPELL_AURA_MOD_POWER_REGEN;
+    }
+
+    static int32 GetAuraStrength(Aura const* aura, AuraType auraType)
+    {
+        if (!aura)
+            return 0;
+
+        int32 amount = 0;
+        for (uint8 effect = 0; effect < MAX_SPELL_EFFECTS; ++effect)
+        {
+            AuraEffect* auraEffect = aura->GetEffect(effect);
+            if (!auraEffect || auraEffect->GetAuraType() != auraType)
+                continue;
+
+            amount = std::max(amount, auraEffect->GetAmount());
+        }
+
+        return amount;
+    }
+
+    static int32 GetExistingBlessingStrength(
+        PlayerbotAI* botAI, Unit* target, BaseBlessingCategory category)
+    {
+        if (!UsesBlessingStrengthGate(category))
+            return 0;
+
+        AuraType auraType = BlessingStrengthAuraType(category);
+        int32 strongestAmount = 0;
+
+        for (BlessingType type : {ToSingleVariant(category), ToGreaterVariant(category)})
+        {
+            Aura* aura = botAI->GetAura(BlessingSpellName(type), target);
+            strongestAmount = std::max(strongestAmount, GetAuraStrength(aura, auraType));
+        }
+
+        return strongestAmount;
+    }
+
+    static bool HasSameFamilyBlessing(
+        PlayerbotAI* botAI, Unit* target, BaseBlessingCategory category)
+    {
+        for (BlessingType type : {ToSingleVariant(category), ToGreaterVariant(category)})
+        {
+            if (botAI->HasAura(BlessingSpellName(type), target))
+                return true;
+        }
+
+        return false;
+    }
+
+    static int32 GetBlessingCastStrength(Player* caster, BlessingType type, uint32 spellId)
+    {
+        if (!caster || !spellId)
+            return 0;
+
+        BaseBlessingCategory category = BaseBlessingOf(type);
+        if (!UsesBlessingStrengthGate(category))
+            return 0;
+
+        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+        if (!spellInfo)
+            return 0;
+
+        AuraType auraType = BlessingStrengthAuraType(category);
+        int32 amount = 0;
+        for (uint8 effect = 0; effect < MAX_SPELL_EFFECTS; ++effect)
+        {
+            if (spellInfo->Effects[effect].ApplyAuraName != auraType)
+                continue;
+
+            amount = std::max(amount, spellInfo->Effects[effect].BasePoints + 1);
+        }
+
+        if (amount <= 0)
+            return 0;
+
+        switch (category)
+        {
+            case BASE_MIGHT:
+                if (caster->HasAura(SPELL_IMPROVED_MIGHT_R2))
+                    return amount * 125 / 100;
+                if (caster->HasAura(SPELL_IMPROVED_MIGHT_R1))
+                    return amount * 112 / 100;
+                break;
+            case BASE_WISDOM:
+                if (caster->HasAura(SPELL_IMPROVED_WISDOM_R2))
+                    return amount * 120 / 100;
+                if (caster->HasAura(SPELL_IMPROVED_WISDOM_R1))
+                    return amount * 110 / 100;
+                break;
+            default:
+                break;
+        }
+
+        return amount;
+    }
+
+    static bool HasEquivalentOrStrongerSameFamilyBlessing(
+        PlayerbotAI* botAI, Unit* target, BlessingType castType, uint32 spellId)
+    {
+        BaseBlessingCategory category = BaseBlessingOf(castType);
+        if (!UsesBlessingStrengthGate(category))
+            return HasSameFamilyBlessing(botAI, target, category);
+
+        int32 castStrength = GetBlessingCastStrength(botAI->GetBot(), castType, spellId);
+        if (castStrength <= 0)
+            return false;
+
+        return GetExistingBlessingStrength(botAI, target, category) >= castStrength;
+    }
+
+    static bool MatchesBucket(Player* player, CachedBlessingBucketAssignment const& assignment)
+    {
+        if (!player || player->getClass() != assignment.classId)
+            return false;
+
+        return !assignment.byRole || ResolveRoleProfile(player) == assignment.role;
+    }
+
+    static Player* FindMissingBlessingTarget(
+        PlayerbotAI* botAI, CachedBlessingBucketAssignment const& assignment,
+        BlessingType castType, uint32 spellId, std::string const& spellName)
+    {
+        Player* bot = botAI->GetBot();
+        Group* group = bot->GetGroup();
+        if (!group)
+            return nullptr;
+
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* player = ref->GetSource();
+            if (!player || !player->IsInWorld() || !player->IsAlive())
+                continue;
+
+            if (!(player->IsInSameGroupWith(bot) || player->IsInSameRaidWith(bot)))
+                continue;
+
+            if (!MatchesBucket(player, assignment) ||
+                HasMyExactBlessing(botAI, player, castType) ||
+                HasEquivalentOrStrongerSameFamilyBlessing(botAI, player, castType, spellId) ||
+                !botAI->CanCastSpell(spellName, player))
+            {
+                continue;
+            }
+
+            return player;
+        }
+
+        return nullptr;
+    }
+
     bool FindPendingAssignmentFromAssignments(
         PlayerbotAI* botAI,
         std::vector<CachedBlessingBucketAssignment> const& assignments,
@@ -501,7 +669,8 @@ namespace
 
             if (IsGreaterVariant(castType))
             {
-                uint32 spellId = AI_VALUE2(uint32, "spell id", spellName);
+                uint32 spellId =
+                    botAI->GetAiObjectContext()->GetValue<uint32>("spell id", spellName)->Get();
                 if (!spellId || !ai::buff::HasRequiredReagents(bot, spellId))
                 {
                     castType = ToSingleVariant(castType);
@@ -511,7 +680,8 @@ namespace
                 }
             }
 
-            uint32 spellId = AI_VALUE2(uint32, "spell id", spellName);
+            uint32 spellId =
+                botAI->GetAiObjectContext()->GetValue<uint32>("spell id", spellName)->Get();
             if (!spellId)
                 continue;
 
@@ -540,13 +710,14 @@ namespace
         CachedPendingBlessingAssignment Calculate() override
         {
             CachedPendingBlessingAssignment cached;
+            AiObjectContext* aiObjectContext = botAI->GetAiObjectContext();
 
             Player* bot = botAI->GetBot();
             Group* group = bot ? bot->GetGroup() : nullptr;
             cached.groupKey = group ? group->GetLeaderGUID().GetCounter() : 0;
 
             std::vector<CachedBlessingBucketAssignment> assignments;
-            if (!GetCachedAssignments(context, bot, assignments))
+            if (!GetCachedAssignments(aiObjectContext, bot, assignments))
                 return cached;
 
             if (!FindPendingAssignmentFromAssignments(
@@ -561,17 +732,17 @@ namespace
     };
 }
 
-UntypedValue* greater_blessing_assignments_value(PlayerbotAI* botAI)
+UntypedValue* ai::gbless::greater_blessing_assignments_value(PlayerbotAI* botAI)
 {
     return new GreaterBlessingAssignmentsValue(botAI);
 }
 
-UntypedValue* greater_blessing_pending_assignment_value(PlayerbotAI* botAI)
+UntypedValue* ai::gbless::greater_blessing_pending_assignment_value(PlayerbotAI* botAI)
 {
     return new GreaterBlessingPendingAssignmentValue(botAI);
 }
 
-bool IsEligibleGroupForAutoBlessings(Group const* group)
+bool ai::gbless::IsEligibleGroupForAutoBlessings(Group const* group)
 {
     if (!group)
         return false;
@@ -588,177 +759,9 @@ bool IsEligibleGroupForAutoBlessings(Group const* group)
     }
 }
 
-bool IsAutoGreaterBlessingActive(Player const* bot)
+bool ai::gbless::IsAutoGreaterBlessingActive(Player const* bot)
 {
     return bot && IsEligibleGroupForAutoBlessings(bot->GetGroup());
-}
-
-static bool HasMyExactBlessing(PlayerbotAI* botAI, Unit* target, BlessingType type)
-{
-    std::string name = BlessingSpellName(type);
-    if (name.empty())
-        return false;
-
-    return botAI->HasAura(name.c_str(), target, false, true);
-}
-
-static bool UsesBlessingStrengthGate(BaseBlessingCategory category)
-{
-    return category == BASE_MIGHT || category == BASE_WISDOM;
-}
-
-static AuraType BlessingStrengthAuraType(BaseBlessingCategory category)
-{
-    return category == BASE_MIGHT ? SPELL_AURA_MOD_ATTACK_POWER : SPELL_AURA_MOD_POWER_REGEN;
-}
-
-static int32 GetAuraStrength(Aura const* aura, AuraType auraType)
-{
-    if (!aura)
-        return 0;
-
-    int32 amount = 0;
-    for (uint8 effect = 0; effect < MAX_SPELL_EFFECTS; ++effect)
-    {
-        AuraEffect* auraEffect = aura->GetEffect(effect);
-        if (!auraEffect || auraEffect->GetAuraType() != auraType)
-            continue;
-
-        amount = std::max(amount, auraEffect->GetAmount());
-    }
-
-    return amount;
-}
-
-static int32 GetExistingBlessingStrength(
-    PlayerbotAI* botAI, Unit* target, BaseBlessingCategory category)
-{
-    if (!UsesBlessingStrengthGate(category))
-        return 0;
-
-    AuraType auraType = BlessingStrengthAuraType(category);
-    int32 strongestAmount = 0;
-
-    for (BlessingType type : {ToSingleVariant(category), ToGreaterVariant(category)})
-    {
-        Aura* aura = botAI->GetAura(BlessingSpellName(type), target);
-        strongestAmount = std::max(strongestAmount, GetAuraStrength(aura, auraType));
-    }
-
-    return strongestAmount;
-}
-
-static bool HasSameFamilyBlessing(
-    PlayerbotAI* botAI, Unit* target, BaseBlessingCategory category)
-{
-    for (BlessingType type : {ToSingleVariant(category), ToGreaterVariant(category)})
-    {
-        if (botAI->HasAura(BlessingSpellName(type), target))
-            return true;
-    }
-
-    return false;
-}
-
-static int32 GetBlessingCastStrength(Player* caster, BlessingType type, uint32 spellId)
-{
-    if (!caster || !spellId)
-        return 0;
-
-    BaseBlessingCategory category = BaseBlessingOf(type);
-    if (!UsesBlessingStrengthGate(category))
-        return 0;
-
-    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
-    if (!spellInfo)
-        return 0;
-
-    AuraType auraType = BlessingStrengthAuraType(category);
-    int32 amount = 0;
-    for (uint8 effect = 0; effect < MAX_SPELL_EFFECTS; ++effect)
-    {
-        if (spellInfo->Effects[effect].ApplyAuraName != auraType)
-            continue;
-
-        amount = std::max(amount, spellInfo->Effects[effect].BasePoints + 1);
-    }
-
-    if (amount <= 0)
-        return 0;
-
-    switch (category)
-    {
-        case BASE_MIGHT:
-            if (caster->HasAura(SPELL_IMPROVED_MIGHT_R2))
-                return amount * 125 / 100;
-            if (caster->HasAura(SPELL_IMPROVED_MIGHT_R1))
-                return amount * 112 / 100;
-            break;
-        case BASE_WISDOM:
-            if (caster->HasAura(SPELL_IMPROVED_WISDOM_R2))
-                return amount * 120 / 100;
-            if (caster->HasAura(SPELL_IMPROVED_WISDOM_R1))
-                return amount * 110 / 100;
-            break;
-        default:
-            break;
-    }
-
-    return amount;
-}
-
-static bool HasEquivalentOrStrongerSameFamilyBlessing(
-    PlayerbotAI* botAI, Unit* target, BlessingType castType, uint32 spellId)
-{
-    BaseBlessingCategory category = BaseBlessingOf(castType);
-    if (!UsesBlessingStrengthGate(category))
-        return HasSameFamilyBlessing(botAI, target, category);
-
-    int32 castStrength = GetBlessingCastStrength(botAI->GetBot(), castType, spellId);
-    if (castStrength <= 0)
-        return false;
-
-    return GetExistingBlessingStrength(botAI, target, category) >= castStrength;
-}
-
-static bool MatchesBucket(Player* player, CachedBlessingBucketAssignment const& assignment)
-{
-    if (!player || player->getClass() != assignment.classId)
-        return false;
-
-    return !assignment.byRole || ResolveRoleProfile(player) == assignment.role;
-}
-
-static Player* FindMissingBlessingTarget(
-    PlayerbotAI* botAI, CachedBlessingBucketAssignment const& assignment,
-    BlessingType castType, uint32 spellId, std::string const& spellName)
-{
-    Player* bot = botAI->GetBot();
-    Group* group = bot->GetGroup();
-    if (!group)
-        return nullptr;
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* player = ref->GetSource();
-        if (!player || !player->IsInWorld() || !player->IsAlive())
-            continue;
-
-        if (!(player->IsInSameGroupWith(bot) || player->IsInSameRaidWith(bot)))
-            continue;
-
-        if (!MatchesBucket(player, assignment) ||
-            HasMyExactBlessing(botAI, player, castType) ||
-            HasEquivalentOrStrongerSameFamilyBlessing(botAI, player, castType, spellId) ||
-            !botAI->CanCastSpell(spellName, player))
-        {
-            continue;
-        }
-
-        return player;
-    }
-
-    return nullptr;
 }
 
 }
