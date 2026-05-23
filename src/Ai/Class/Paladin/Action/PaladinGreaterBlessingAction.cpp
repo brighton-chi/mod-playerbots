@@ -170,29 +170,38 @@ namespace
         std::vector<BaseBlessingCategory> const& categories,
         std::vector<Player*> const& botPaladins,
         std::vector<int> const& candidatePaladins,
-        std::vector<int>& outOwners)
+        std::vector<int>& outOwners,
+        int* outScore = nullptr)
     {
         outOwners.clear();
         if (categories.empty())
+        {
+            if (outScore)
+                *outScore = 0;
             return true;
+        }
 
         std::vector<int> currentOwners(categories.size(), -1);
         std::vector<int> bestOwners(categories.size(), -1);
         std::vector<bool> used(candidatePaladins.size(), false);
         int bestScore = std::numeric_limits<int>::min();
+        int bestTalentCost = std::numeric_limits<int>::max();
         bool found = false;
 
-        auto search = [&](auto&& self, size_t position, int score) -> void
+        auto search = [&](auto&& self, size_t position, int score, int talentCost) -> void
         {
             if (position >= categories.size())
             {
                 if (!found || score > bestScore ||
+                    (score == bestScore && talentCost < bestTalentCost) ||
                     (score == bestScore &&
+                     talentCost == bestTalentCost &&
                      std::lexicographical_compare(currentOwners.begin(), currentOwners.end(),
                                                   bestOwners.begin(), bestOwners.end())))
                 {
                     found = true;
                     bestScore = score;
+                    bestTalentCost = talentCost;
                     bestOwners = currentOwners;
                 }
                 return;
@@ -211,18 +220,278 @@ namespace
 
                 used[candidateIndex] = true;
                 currentOwners[position] = paladinIndex;
-                self(self, position + 1, score + matchScore);
+                self(self, position + 1, score + matchScore,
+                     talentCost + TalentScore(botPaladins[paladinIndex]));
                 currentOwners[position] = -1;
                 used[candidateIndex] = false;
             }
         };
 
-        search(search, 0, 0);
+        search(search, 0, 0, 0);
 
         if (!found)
             return false;
 
         outOwners = std::move(bestOwners);
+        if (outScore)
+            *outScore = bestScore;
+        return true;
+    }
+
+    uint8 CategoryMask(BaseBlessingCategory category)
+    {
+        return static_cast<uint8>(1u << static_cast<uint8>(category));
+    }
+
+    uint8 CountSetBits(uint8 mask)
+    {
+        uint8 count = 0;
+        while (mask)
+        {
+            count += mask & 1u;
+            mask >>= 1;
+        }
+
+        return count;
+    }
+
+    int PriorityWeight(uint8 orderedIndex)
+    {
+        return 1 << (MAX_BLESSING_SLOTS - orderedIndex - 1);
+    }
+
+    bool ComputeOwnersForClassPlan(
+        std::vector<BaseBlessingCategory> const& classWideBases,
+        std::vector<std::vector<BaseBlessingCategory>> const& exclusiveBasesByBucket,
+        std::vector<Player*> const& botPaladins,
+        std::vector<int> const& allPaladins,
+        std::vector<int>& outClassWideOwners,
+        std::vector<std::vector<int>>& outExclusiveOwnersByBucket,
+        int& outOwnerScore,
+        int& outCommonTalentCost)
+    {
+        outClassWideOwners.clear();
+        outExclusiveOwnersByBucket.clear();
+        outOwnerScore = std::numeric_limits<int>::min();
+        outCommonTalentCost = std::numeric_limits<int>::max();
+
+        std::vector<int> currentClassWideOwners(classWideBases.size(), -1);
+        std::vector<int> bestClassWideOwners(classWideBases.size(), -1);
+        std::vector<bool> used(allPaladins.size(), false);
+        std::vector<std::vector<int>> bestExclusiveOwnersByBucket(exclusiveBasesByBucket.size());
+        bool found = false;
+
+        auto search = [&](auto&& self, size_t position, int commonScore, int commonTalentCost) -> void
+        {
+            if (position >= classWideBases.size())
+            {
+                std::vector<int> availablePaladins;
+                availablePaladins.reserve(allPaladins.size());
+                for (size_t candidateIndex = 0; candidateIndex < allPaladins.size(); ++candidateIndex)
+                {
+                    if (!used[candidateIndex])
+                        availablePaladins.push_back(allPaladins[candidateIndex]);
+                }
+
+                int totalOwnerScore = commonScore;
+                std::vector<std::vector<int>> exclusiveOwnersByBucket(exclusiveBasesByBucket.size());
+                for (size_t bucketIndex = 0; bucketIndex < exclusiveBasesByBucket.size(); ++bucketIndex)
+                {
+                    int exclusiveScore = 0;
+                    if (!ComputeBestOwners(
+                            exclusiveBasesByBucket[bucketIndex], botPaladins, availablePaladins,
+                            exclusiveOwnersByBucket[bucketIndex], &exclusiveScore))
+                    {
+                        return;
+                    }
+
+                    totalOwnerScore += exclusiveScore;
+                }
+
+                if (!found || totalOwnerScore > outOwnerScore ||
+                    (totalOwnerScore == outOwnerScore && commonTalentCost < outCommonTalentCost) ||
+                    (totalOwnerScore == outOwnerScore &&
+                     commonTalentCost == outCommonTalentCost &&
+                     std::lexicographical_compare(currentClassWideOwners.begin(), currentClassWideOwners.end(),
+                                                  bestClassWideOwners.begin(), bestClassWideOwners.end())))
+                {
+                    found = true;
+                    outOwnerScore = totalOwnerScore;
+                    outCommonTalentCost = commonTalentCost;
+                    bestClassWideOwners = currentClassWideOwners;
+                    bestExclusiveOwnersByBucket = std::move(exclusiveOwnersByBucket);
+                }
+
+                return;
+            }
+
+            for (size_t candidateIndex = 0; candidateIndex < allPaladins.size(); ++candidateIndex)
+            {
+                if (used[candidateIndex])
+                    continue;
+
+                int const paladinIndex = allPaladins[candidateIndex];
+                int const matchScore = TalentMatchScore(botPaladins[paladinIndex], classWideBases[position]);
+                if (matchScore <= std::numeric_limits<int>::min() / 8)
+                    continue;
+
+                used[candidateIndex] = true;
+                currentClassWideOwners[position] = paladinIndex;
+                self(self, position + 1, commonScore + matchScore,
+                     commonTalentCost + TalentScore(botPaladins[paladinIndex]));
+                currentClassWideOwners[position] = -1;
+                used[candidateIndex] = false;
+            }
+        };
+
+        search(search, 0, 0, 0);
+
+        if (!found)
+            return false;
+
+        outClassWideOwners = std::move(bestClassWideOwners);
+        outExclusiveOwnersByBucket = std::move(bestExclusiveOwnersByBucket);
+        return true;
+    }
+
+    bool ComputeBestClassAssignments(
+        std::vector<PresentBucket const*> const& classBuckets,
+        uint8 activePaladinCount,
+        std::vector<Player*> const& botPaladins,
+        std::vector<int> const& allPaladins,
+        std::vector<int>& outClassWideOwners,
+        std::vector<std::vector<int>>& outExclusiveOwnersByBucket,
+        std::vector<BaseBlessingCategory>& outClassWideBases,
+        std::vector<std::vector<BaseBlessingCategory>>& outExclusiveBasesByBucket)
+    {
+        outClassWideOwners.clear();
+        outExclusiveOwnersByBucket.clear();
+        outClassWideBases.clear();
+        outExclusiveBasesByBucket.clear();
+
+        uint8 unionMask = 0;
+        for (PresentBucket const* bucket : classBuckets)
+        {
+            for (uint8 index = 0; index < bucket->desired.count; ++index)
+                unionMask |= CategoryMask(bucket->desired.ordered[index]);
+        }
+
+        uint8 const selectedCount = std::min<uint8>(activePaladinCount, CountSetBits(unionMask));
+        if (!selectedCount)
+            return false;
+
+        int bestCoverageScore = std::numeric_limits<int>::min();
+        int bestOwnerScore = std::numeric_limits<int>::min();
+        int bestCommonTalentCost = std::numeric_limits<int>::max();
+        std::vector<int> bestClassWideOwners;
+        std::vector<std::vector<int>> bestExclusiveOwnersByBucket;
+        std::vector<BaseBlessingCategory> bestClassWideBases;
+        std::vector<std::vector<BaseBlessingCategory>> bestExclusiveBasesByBucket;
+        uint8 const categoryMaskLimit =
+            static_cast<uint8>(1u << (static_cast<uint8>(BASE_SANCTUARY) + 1u));
+        bool found = false;
+
+        for (uint8 selectedMask = 0; selectedMask < categoryMaskLimit; ++selectedMask)
+        {
+            if ((selectedMask & unionMask) != selectedMask || CountSetBits(selectedMask) != selectedCount)
+                continue;
+
+            int coverageScore = 0;
+            std::array<bool, BASE_SANCTUARY + 1> commonBases = {};
+            std::vector<std::vector<BaseBlessingCategory>> exclusiveBasesByBucket(classBuckets.size());
+            bool valid = true;
+
+            for (size_t bucketIndex = 0; bucketIndex < classBuckets.size(); ++bucketIndex)
+            {
+                PresentBucket const* bucket = classBuckets[bucketIndex];
+                bool bucketCovered = false;
+                for (uint8 index = 0; index < bucket->desired.count; ++index)
+                {
+                    BaseBlessingCategory category = bucket->desired.ordered[index];
+                    if (!(selectedMask & CategoryMask(category)))
+                        continue;
+
+                    bucketCovered = true;
+                    coverageScore += PriorityWeight(index);
+                    exclusiveBasesByBucket[bucketIndex].push_back(category);
+                }
+
+                if (!bucketCovered)
+                {
+                    valid = false;
+                    break;
+                }
+            }
+
+            if (!valid)
+                continue;
+
+            for (uint8 baseValue = BASE_MIGHT; baseValue <= BASE_SANCTUARY; ++baseValue)
+            {
+                BaseBlessingCategory category = static_cast<BaseBlessingCategory>(baseValue);
+                if (!(selectedMask & CategoryMask(category)))
+                    continue;
+
+                commonBases[category] = std::all_of(classBuckets.begin(), classBuckets.end(),
+                                                    [&](PresentBucket const* bucket)
+                                                    {
+                                                        return bucket->desired.wants[category];
+                                                    });
+            }
+
+            std::vector<BaseBlessingCategory> classWideBases =
+                OrderedCommonBases(classBuckets, commonBases);
+
+            for (size_t bucketIndex = 0; bucketIndex < classBuckets.size(); ++bucketIndex)
+            {
+                auto& exclusiveBases = exclusiveBasesByBucket[bucketIndex];
+                exclusiveBases.erase(
+                    std::remove_if(exclusiveBases.begin(), exclusiveBases.end(),
+                                   [&](BaseBlessingCategory category)
+                                   {
+                                       return commonBases[category];
+                                   }),
+                    exclusiveBases.end());
+            }
+
+            std::vector<int> classWideOwners;
+            std::vector<std::vector<int>> exclusiveOwnersByBucket;
+            int ownerScore = 0;
+            int commonTalentCost = 0;
+            if (!ComputeOwnersForClassPlan(
+                    classWideBases, exclusiveBasesByBucket, botPaladins, allPaladins,
+                    classWideOwners, exclusiveOwnersByBucket, ownerScore, commonTalentCost))
+            {
+                continue;
+            }
+
+            if (!found || coverageScore > bestCoverageScore ||
+                (coverageScore == bestCoverageScore && ownerScore > bestOwnerScore) ||
+                (coverageScore == bestCoverageScore && ownerScore == bestOwnerScore &&
+                 commonTalentCost < bestCommonTalentCost) ||
+                (coverageScore == bestCoverageScore && ownerScore == bestOwnerScore &&
+                 commonTalentCost == bestCommonTalentCost &&
+                 std::lexicographical_compare(classWideOwners.begin(), classWideOwners.end(),
+                                              bestClassWideOwners.begin(), bestClassWideOwners.end())))
+            {
+                found = true;
+                bestCoverageScore = coverageScore;
+                bestOwnerScore = ownerScore;
+                bestCommonTalentCost = commonTalentCost;
+                bestClassWideOwners = std::move(classWideOwners);
+                bestExclusiveOwnersByBucket = std::move(exclusiveOwnersByBucket);
+                bestClassWideBases = std::move(classWideBases);
+                bestExclusiveBasesByBucket = std::move(exclusiveBasesByBucket);
+            }
+        }
+
+        if (!found)
+            return false;
+
+        outClassWideOwners = std::move(bestClassWideOwners);
+        outExclusiveOwnersByBucket = std::move(bestExclusiveOwnersByBucket);
+        outClassWideBases = std::move(bestClassWideBases);
+        outExclusiveBasesByBucket = std::move(bestExclusiveBasesByBucket);
         return true;
     }
 
@@ -365,21 +634,14 @@ namespace
             if (classBuckets.empty())
                 continue;
 
-            std::array<bool, BASE_SANCTUARY + 1> commonBases = {};
-            for (uint8 baseValue = BASE_MIGHT; baseValue <= BASE_SANCTUARY; ++baseValue)
-            {
-                BaseBlessingCategory category = static_cast<BaseBlessingCategory>(baseValue);
-                commonBases[category] = std::all_of(classBuckets.begin(), classBuckets.end(),
-                                                    [&](PresentBucket const* bucket)
-                                                    {
-                                                        return bucket->desired.wants[category];
-                                                    });
-            }
-
-            std::vector<BaseBlessingCategory> classWideBases =
-                OrderedCommonBases(classBuckets, commonBases);
             std::vector<int> classWideOwners;
-            if (!ComputeBestOwners(classWideBases, botPaladins, allPaladins, classWideOwners))
+            std::vector<std::vector<int>> exclusiveOwnersByBucket;
+            std::vector<BaseBlessingCategory> classWideBases;
+                std::vector<std::vector<BaseBlessingCategory>> exclusiveBasesByBucket;
+            if (!ComputeBestClassAssignments(
+                    classBuckets, activePaladinCount, botPaladins, allPaladins,
+                    classWideOwners, exclusiveOwnersByBucket, classWideBases,
+                    exclusiveBasesByBucket))
                 return false;
 
             for (size_t index = 0; index < classWideBases.size(); ++index)
@@ -395,19 +657,11 @@ namespace
                 AddUniqueAssignment(outAssignments, assignment);
             }
 
-            for (PresentBucket const* bucket : classBuckets)
+            for (size_t bucketIndex = 0; bucketIndex < classBuckets.size(); ++bucketIndex)
             {
-                std::vector<BaseBlessingCategory> exclusiveBases;
-                for (uint8 index = 0; index < bucket->desired.count; ++index)
-                {
-                    BaseBlessingCategory category = bucket->desired.ordered[index];
-                    if (!commonBases[category])
-                        exclusiveBases.push_back(category);
-                }
-
-                std::vector<int> exclusiveOwners;
-                if (!ComputeBestOwners(exclusiveBases, botPaladins, allPaladins, exclusiveOwners))
-                    return false;
+                PresentBucket const* bucket = classBuckets[bucketIndex];
+                std::vector<BaseBlessingCategory> const& exclusiveBases = exclusiveBasesByBucket[bucketIndex];
+                std::vector<int> const& exclusiveOwners = exclusiveOwnersByBucket[bucketIndex];
 
                 for (size_t index = 0; index < exclusiveBases.size(); ++index)
                 {
@@ -487,7 +741,7 @@ namespace
         if (name.empty())
             return false;
 
-        return botAI->HasAura(name.c_str(), target, false, true);
+        return botAI->GetAura(name, target, true) != nullptr;
     }
 
     static bool UsesBlessingStrengthGate(BaseBlessingCategory category)
@@ -541,7 +795,7 @@ namespace
     {
         for (BlessingType type : {ToSingleVariant(category), ToGreaterVariant(category)})
         {
-            if (botAI->HasAura(BlessingSpellName(type), target))
+            if (botAI->GetAura(BlessingSpellName(type), target) != nullptr)
                 return true;
         }
 
@@ -732,17 +986,17 @@ namespace
     };
 }
 
-UntypedValue* ai::gbless::greater_blessing_assignments_value(PlayerbotAI* botAI)
+UntypedValue* greater_blessing_assignments_value(PlayerbotAI* botAI)
 {
     return new GreaterBlessingAssignmentsValue(botAI);
 }
 
-UntypedValue* ai::gbless::greater_blessing_pending_assignment_value(PlayerbotAI* botAI)
+UntypedValue* greater_blessing_pending_assignment_value(PlayerbotAI* botAI)
 {
     return new GreaterBlessingPendingAssignmentValue(botAI);
 }
 
-bool ai::gbless::IsEligibleGroupForAutoBlessings(Group const* group)
+bool IsEligibleGroupForAutoBlessings(Group const* group)
 {
     if (!group)
         return false;
@@ -759,7 +1013,7 @@ bool ai::gbless::IsEligibleGroupForAutoBlessings(Group const* group)
     }
 }
 
-bool ai::gbless::IsAutoGreaterBlessingActive(Player const* bot)
+bool IsAutoGreaterBlessingActive(Player const* bot)
 {
     return bot && IsEligibleGroupForAutoBlessings(bot->GetGroup());
 }
