@@ -5,6 +5,7 @@
 
 #include "PaladinGreaterBlessingAction.h"
 
+#include "AiObjectContext.h"
 #include "AiFactory.h"
 #include "Event.h"
 #include "GenericBuffUtils.h"
@@ -22,6 +23,7 @@ namespace ai::gbless
 namespace
 {
     constexpr uint32 GREATER_BLESSING_ASSIGNMENT_CACHE_MS = 4 * 1000;
+    constexpr uint32 GREATER_BLESSING_PENDING_ASSIGNMENT_CACHE_MS = 100;
     constexpr uint8 MAX_BLESSING_SLOTS = 4;
     constexpr uint8 MAX_CLASS_ID = 12;
 
@@ -451,11 +453,122 @@ namespace
             return cached;
         }
     };
+
+    bool GetCachedAssignments(
+        AiObjectContext* context,
+        Player* bot,
+        std::vector<CachedBlessingBucketAssignment>& outAssignments)
+    {
+        Group* group = bot ? bot->GetGroup() : nullptr;
+        uint32 const groupKey = group ? group->GetLeaderGUID().GetCounter() : 0;
+
+        Value<CachedBlessingAssignments>* cacheValue =
+            context->GetValue<CachedBlessingAssignments>("greater blessing assignments");
+        if (!cacheValue)
+            return false;
+
+        CachedBlessingAssignments cachedAssignments = cacheValue->Get();
+        if (cachedAssignments.groupKey != groupKey)
+        {
+            cacheValue->Reset();
+            cachedAssignments = cacheValue->Get();
+        }
+
+        if (!cachedAssignments.valid || cachedAssignments.groupKey != groupKey)
+            return false;
+
+        outAssignments = cachedAssignments.assignments;
+        return true;
+    }
+
+    bool FindPendingAssignmentFromAssignments(
+        PlayerbotAI* botAI,
+        std::vector<CachedBlessingBucketAssignment> const& assignments,
+        GreaterBlessingPlayerAssignment& outAssignment,
+        std::string& outSpellName)
+    {
+        Player* bot = botAI->GetBot();
+
+        for (auto const& assigned : assignments)
+        {
+            if (assigned.blessing == BLESSING_NONE)
+                continue;
+
+            BlessingType castType = assigned.blessing;
+            std::string spellName = BlessingSpellName(castType);
+            if (spellName.empty())
+                continue;
+
+            if (IsGreaterVariant(castType))
+            {
+                uint32 spellId = AI_VALUE2(uint32, "spell id", spellName);
+                if (!spellId || !ai::buff::HasRequiredReagents(bot, spellId))
+                {
+                    castType = ToSingleVariant(castType);
+                    spellName = BlessingSpellName(castType);
+                    if (spellName.empty())
+                        continue;
+                }
+            }
+
+            uint32 spellId = AI_VALUE2(uint32, "spell id", spellName);
+            if (!spellId)
+                continue;
+
+            Player* target = FindMissingBlessingTarget(
+                botAI, assigned, castType, spellId, spellName);
+            if (!target)
+                continue;
+
+            outAssignment = {target, assigned.blessing};
+            outSpellName = spellName;
+            return true;
+        }
+
+        return false;
+    }
+
+    class GreaterBlessingPendingAssignmentValue : public CalculatedValue<CachedPendingBlessingAssignment>
+    {
+    public:
+        GreaterBlessingPendingAssignmentValue(PlayerbotAI* botAI)
+            : CalculatedValue<CachedPendingBlessingAssignment>(
+                  botAI, "greater blessing pending assignment",
+                  GREATER_BLESSING_PENDING_ASSIGNMENT_CACHE_MS) {}
+
+    protected:
+        CachedPendingBlessingAssignment Calculate() override
+        {
+            CachedPendingBlessingAssignment cached;
+
+            Player* bot = botAI->GetBot();
+            Group* group = bot ? bot->GetGroup() : nullptr;
+            cached.groupKey = group ? group->GetLeaderGUID().GetCounter() : 0;
+
+            std::vector<CachedBlessingBucketAssignment> assignments;
+            if (!GetCachedAssignments(context, bot, assignments))
+                return cached;
+
+            if (!FindPendingAssignmentFromAssignments(
+                    botAI, assignments, cached.assignment, cached.spellName))
+            {
+                return cached;
+            }
+
+            cached.valid = true;
+            return cached;
+        }
+    };
 }
 
 UntypedValue* greater_blessing_assignments_value(PlayerbotAI* botAI)
 {
     return new GreaterBlessingAssignmentsValue(botAI);
+}
+
+UntypedValue* greater_blessing_pending_assignment_value(PlayerbotAI* botAI)
+{
+    return new GreaterBlessingPendingAssignmentValue(botAI);
 }
 
 bool IsEligibleGroupForAutoBlessings(Group const* group)
@@ -662,7 +775,6 @@ bool CastGreaterBlessingAssignmentAction::HasPendingAssignment()
 {
     ai::gbless::GreaterBlessingPlayerAssignment assignment;
     std::string spellName;
-
     return FindPendingAssignment(assignment, spellName);
 }
 
@@ -684,71 +796,31 @@ bool CastGreaterBlessingAssignmentAction::FindPendingAssignment(
     ai::gbless::GreaterBlessingPlayerAssignment& outAssignment,
     std::string& outSpellName)
 {
-    std::vector<ai::gbless::CachedBlessingBucketAssignment> assignments;
-    if (!GetAssignments(assignments))
+    Group* group = bot->GetGroup();
+    uint32 const groupKey = group ? group->GetLeaderGUID().GetCounter() : 0;
+
+    Value<ai::gbless::CachedPendingBlessingAssignment>* pendingValue =
+        context->GetValue<ai::gbless::CachedPendingBlessingAssignment>("greater blessing pending assignment");
+    if (!pendingValue)
         return false;
 
-    for (auto const& assigned : assignments)
+    ai::gbless::CachedPendingBlessingAssignment pendingAssignment = pendingValue->Get();
+    if (pendingAssignment.groupKey != groupKey)
     {
-        if (assigned.blessing == ai::gbless::BLESSING_NONE)
-            continue;
-
-        ai::gbless::BlessingType castType = assigned.blessing;
-        std::string spellName = ai::gbless::BlessingSpellName(castType);
-        if (spellName.empty())
-            continue;
-
-        if (ai::gbless::IsGreaterVariant(castType))
-        {
-            uint32 spellId = AI_VALUE2(uint32, "spell id", spellName);
-            if (!spellId || !ai::buff::HasRequiredReagents(bot, spellId))
-            {
-                castType = ai::gbless::ToSingleVariant(castType);
-                spellName = ai::gbless::BlessingSpellName(castType);
-                if (spellName.empty())
-                    continue;
-            }
-        }
-
-        uint32 spellId = AI_VALUE2(uint32, "spell id", spellName);
-        if (!spellId)
-            continue;
-
-        Player* target = ai::gbless::FindMissingBlessingTarget(
-            botAI, assigned, castType, spellId, spellName);
-        if (!target)
-            continue;
-
-        outAssignment = {target, assigned.blessing};
-        outSpellName = spellName;
-        return true;
+        pendingValue->Reset();
+        pendingAssignment = pendingValue->Get();
     }
 
-    return false;
+    if (!pendingAssignment.valid || pendingAssignment.groupKey != groupKey)
+        return false;
+
+    outAssignment = pendingAssignment.assignment;
+    outSpellName = pendingAssignment.spellName;
+    return true;
 }
 
 bool CastGreaterBlessingAssignmentAction::GetAssignments(
     std::vector<ai::gbless::CachedBlessingBucketAssignment>& outAssignments)
 {
-    Group* group = bot->GetGroup();
-    uint32 const groupKey = group ? group->GetLeaderGUID().GetCounter() : 0;
-
-    Value<ai::gbless::CachedBlessingAssignments>* cacheValue =
-        context->GetValue<ai::gbless::CachedBlessingAssignments>("greater blessing assignments");
-    if (!cacheValue)
-        return false;
-
-    ai::gbless::CachedBlessingAssignments cachedAssignments = cacheValue->Get();
-    if (cachedAssignments.groupKey != groupKey)
-    {
-        cacheValue->Reset();
-        cachedAssignments = cacheValue->Get();
-    }
-
-    if (!cachedAssignments.valid || cachedAssignments.groupKey != groupKey)
-        return false;
-
-    outAssignments = cachedAssignments.assignments;
-
-    return true;
+    return ai::gbless::GetCachedAssignments(context, bot, outAssignments);
 }
