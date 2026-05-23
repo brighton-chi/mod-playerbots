@@ -526,6 +526,7 @@ public:
 void AddPlayerbotsSecureLoginScripts();
 
 void AddSC_TempestKeepBotScripts();
+void AddSC_IcecrownBotScripts();
 void AddSC_HyjalSummitBotScripts();
 void AddSC_SunwellPlateauBotScripts();
 
@@ -543,6 +544,7 @@ void AddPlayerbotsScripts()
     AddPlayerbotsCommandscripts();
     PlayerBotsGuildValidationScript();
     AddSC_TempestKeepBotScripts();
+    AddSC_IcecrownBotScripts();
     AddSC_HyjalSummitBotScripts();
     AddSC_SunwellPlateauBotScripts();
 }
