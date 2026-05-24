@@ -413,10 +413,7 @@ bool CastVehicleSpellAction::Execute(Event /*event*/)
 bool CastEveryManForHimselfAction::isPossible()
 {
     uint32 spellId = AI_VALUE2(uint32, "spell id", spell);
-    if (!spellId || !bot->HasSpell(spellId) || HasSpellOrCategoryCooldown(bot, spellId))
-        return false;
-
-    return true;
+    return spellId && bot->HasSpell(spellId) && !HasSpellOrCategoryCooldown(bot, spellId);
 }
 
 bool CastEveryManForHimselfAction::isUseful()
@@ -432,10 +429,7 @@ bool CastEveryManForHimselfAction::isUseful()
 bool CastWillOfTheForsakenAction::isPossible()
 {
     uint32 spellId = AI_VALUE2(uint32, "spell id", spell);
-    if (!spellId || !bot->HasSpell(spellId) || HasSpellOrCategoryCooldown(bot, spellId))
-        return false;
-
-    return true;
+    return spellId && bot->HasSpell(spellId) && !HasSpellOrCategoryCooldown(bot, spellId);
 }
 
 bool CastWillOfTheForsakenAction::isUseful()
@@ -514,10 +508,11 @@ bool UseTrinketAction::UseTrinket(Item* item)
 
                 manaPct = AI_VALUE2(uint8, "mana", "self target");
                 logManaPct = true;
-                if (restoresMana && manaPct >= sPlayerbotAIConfig.mediumMana)
+                if ((restoresMana && manaPct >= sPlayerbotAIConfig.mediumMana) ||
+                    manaPct >= sPlayerbotAIConfig.highMana)
+                {
                     return false;
-                else if (manaPct >= sPlayerbotAIConfig.highMana)
-                    return false;
+                }
             }
 
             if (defensiveTankEffect)
