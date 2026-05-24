@@ -27,6 +27,13 @@ namespace
     constexpr uint8 MAX_BLESSING_SLOTS = 4;
     constexpr uint8 MAX_CLASS_ID = 12;
 
+    constexpr size_t BaseBlessingCategoryCount = MAX_BLESSING_SLOTS;
+
+    constexpr size_t BaseBlessingIndex(BaseBlessingCategory category)
+    {
+        return static_cast<size_t>(static_cast<uint8>(category) - static_cast<uint8>(BASE_MIGHT));
+    }
+
     bool UsesRoleBucket(uint8 classId)
     {
         switch (classId)
@@ -103,7 +110,7 @@ namespace
     struct DesiredBlessingSet
     {
         std::array<BaseBlessingCategory, MAX_BLESSING_SLOTS> ordered = {};
-        std::array<bool, BASE_SANCTUARY + 1> wants = {};
+        std::array<bool, BaseBlessingCategoryCount> wants = {};
         uint8 count = 0;
     };
 
@@ -135,11 +142,11 @@ namespace
             if (category == BASE_SANCTUARY && !anySanctuaryAvailable)
                 category = BASE_KINGS;
 
-            if (category == BASE_NONE || desired.wants[category])
+            if (category == BASE_NONE || desired.wants[BaseBlessingIndex(category)])
                 continue;
 
             desired.ordered[desired.count++] = category;
-            desired.wants[category] = true;
+            desired.wants[BaseBlessingIndex(category)] = true;
         }
 
         return desired;
@@ -147,7 +154,7 @@ namespace
 
     std::vector<BaseBlessingCategory> OrderedCommonBases(
         std::vector<PresentBucket const*> const& classBuckets,
-        std::array<bool, BASE_SANCTUARY + 1> const& commonBases)
+        std::array<bool, BaseBlessingCategoryCount> const& commonBases)
     {
         std::vector<BaseBlessingCategory> ordered;
 
@@ -156,7 +163,7 @@ namespace
             for (uint8 index = 0; index < bucket->desired.count; ++index)
             {
                 BaseBlessingCategory category = bucket->desired.ordered[index];
-                if (!commonBases[category])
+                if (!commonBases[BaseBlessingIndex(category)])
                     continue;
 
                 if (std::find(ordered.begin(), ordered.end(), category) == ordered.end())
@@ -239,23 +246,6 @@ namespace
         return true;
     }
 
-    uint8 CategoryMask(BaseBlessingCategory category)
-    {
-        return static_cast<uint8>(1u << static_cast<uint8>(category));
-    }
-
-    uint8 CountSetBits(uint8 mask)
-    {
-        uint8 count = 0;
-        while (mask)
-        {
-            count += mask & 1u;
-            mask >>= 1;
-        }
-
-        return count;
-    }
-
     struct ClassPlanPreference
     {
         std::array<int, MAX_BLESSING_SLOTS> slotCoverage = {};
@@ -277,17 +267,6 @@ namespace
         }
 
         return MAX_BLESSING_SLOTS;
-    }
-
-    bool PreferLexicographically(std::vector<int> const& left, std::vector<int> const& right)
-    {
-        if (std::lexicographical_compare(left.begin(), left.end(), right.begin(), right.end()))
-            return true;
-
-        if (std::lexicographical_compare(right.begin(), right.end(), left.begin(), left.end()))
-            return false;
-
-        return false;
     }
 
     bool IsBetterClassPlanPreference(
@@ -317,7 +296,10 @@ namespace
         if (candidate.commonTalentCost != best.commonTalentCost)
             return candidate.commonTalentCost < best.commonTalentCost;
 
-        if (PreferLexicographically(candidate.classWideOwners, best.classWideOwners))
+        if (std::lexicographical_compare(candidate.classWideOwners.begin(),
+                                         candidate.classWideOwners.end(),
+                                         best.classWideOwners.begin(),
+                                         best.classWideOwners.end()))
             return true;
 
         return candidate.selectedMask < best.selectedMask;
@@ -419,7 +401,6 @@ namespace
 
     bool ComputeBestClassAssignments(
         std::vector<PresentBucket const*> const& classBuckets,
-        uint8 activePaladinCount,
         std::vector<Player*> const& botPaladins,
         std::vector<int> const& allPaladins,
         std::vector<int>& outClassWideOwners,
@@ -435,7 +416,6 @@ namespace
         uint8 const categoryMaskLimit =
             static_cast<uint8>(1u << (static_cast<uint8>(BASE_SANCTUARY) + 1u));
         uint8 commonUnionMask = 0;
-        std::array<bool, BASE_SANCTUARY + 1> commonBases = {};
         ClassPlanPreference bestPreference;
         std::vector<int> bestClassWideOwners;
         std::vector<std::vector<int>> bestExclusiveOwnersByBucket;
@@ -445,14 +425,14 @@ namespace
         for (uint8 baseValue = BASE_MIGHT; baseValue <= BASE_SANCTUARY; ++baseValue)
         {
             BaseBlessingCategory category = static_cast<BaseBlessingCategory>(baseValue);
-            commonBases[category] = std::all_of(classBuckets.begin(), classBuckets.end(),
-                                                [&](PresentBucket const* bucket)
-                                                {
-                                                    return bucket->desired.wants[category];
-                                                });
-
-            if (commonBases[category])
-                commonUnionMask |= CategoryMask(category);
+            if (std::all_of(classBuckets.begin(), classBuckets.end(),
+                            [&](PresentBucket const* bucket)
+                            {
+                                return bucket->desired.wants[BaseBlessingIndex(category)];
+                            }))
+            {
+                commonUnionMask |= static_cast<uint8>(1u << static_cast<uint8>(category));
+            }
         }
 
         for (uint8 promotedMask = 0; promotedMask < categoryMaskLimit; ++promotedMask)
@@ -473,16 +453,17 @@ namespace
                     BaseBlessingCategory category = bucket->desired.ordered[index];
                     candidatePreference.slotCoverage[index] += bucket->memberCount;
 
-                    if (!(promotedMask & CategoryMask(category)))
+                    if (!(promotedMask & static_cast<uint8>(1u << static_cast<uint8>(category))))
                         exclusiveBasesByBucket[bucketIndex].push_back(category);
                 }
             }
 
-            std::array<bool, BASE_SANCTUARY + 1> promotedCommonBases = {};
+            std::array<bool, BaseBlessingCategoryCount> promotedCommonBases = {};
             for (uint8 baseValue = BASE_MIGHT; baseValue <= BASE_SANCTUARY; ++baseValue)
             {
                 BaseBlessingCategory category = static_cast<BaseBlessingCategory>(baseValue);
-                promotedCommonBases[category] = (promotedMask & CategoryMask(category)) != 0;
+                promotedCommonBases[BaseBlessingIndex(category)] =
+                    (promotedMask & static_cast<uint8>(1u << static_cast<uint8>(category))) != 0;
             }
 
             std::vector<BaseBlessingCategory> classWideBases =
@@ -711,7 +692,7 @@ namespace
             std::vector<BaseBlessingCategory> classWideBases;
             std::vector<std::vector<BaseBlessingCategory>> exclusiveBasesByBucket;
             if (!ComputeBestClassAssignments(
-                    classBuckets, activePaladinCount, botPaladins, allPaladins,
+                    classBuckets, botPaladins, allPaladins,
                     classWideOwners, exclusiveOwnersByBucket, classWideBases,
                     exclusiveBasesByBucket))
                 return false;
@@ -766,7 +747,7 @@ namespace
             CachedBlessingAssignments cached;
 
             Player* bot = botAI->GetBot();
-            Group* group = bot ? bot->GetGroup() : nullptr;
+            Group* group = bot->GetGroup();
             cached.groupKey = group ? group->GetLeaderGUID().GetCounter() : 0;
 
             std::vector<CachedBlessingBucketAssignment> assignments;
@@ -804,11 +785,6 @@ bool IsEligibleGroupForAutoBlessings(Group const* group)
     }
 }
 
-bool IsAutoGreaterBlessingActive(Player const* bot)
-{
-    return bot && IsEligibleGroupForAutoBlessings(bot->GetGroup());
-}
-
 static bool HasMyExactBlessing(PlayerbotAI* botAI, Unit* target, BlessingType type)
 {
     std::string name = BlessingSpellName(type);
@@ -816,16 +792,6 @@ static bool HasMyExactBlessing(PlayerbotAI* botAI, Unit* target, BlessingType ty
         return false;
 
     return botAI->HasAura(name.c_str(), target, false, true);
-}
-
-static bool UsesBlessingStrengthGate(BaseBlessingCategory category)
-{
-    return category == BASE_MIGHT || category == BASE_WISDOM;
-}
-
-static AuraType BlessingStrengthAuraType(BaseBlessingCategory category)
-{
-    return category == BASE_MIGHT ? SPELL_AURA_MOD_ATTACK_POWER : SPELL_AURA_MOD_POWER_REGEN;
 }
 
 static int32 GetAuraStrength(Aura const* aura, AuraType auraType)
@@ -849,10 +815,11 @@ static int32 GetAuraStrength(Aura const* aura, AuraType auraType)
 static int32 GetExistingBlessingStrength(
     PlayerbotAI* botAI, Unit* target, BaseBlessingCategory category)
 {
-    if (!UsesBlessingStrengthGate(category))
+    if (category != BASE_MIGHT && category != BASE_WISDOM)
         return 0;
 
-    AuraType auraType = BlessingStrengthAuraType(category);
+    AuraType auraType =
+        category == BASE_MIGHT ? SPELL_AURA_MOD_ATTACK_POWER : SPELL_AURA_MOD_POWER_REGEN;
     int32 strongestAmount = 0;
 
     for (BlessingType type : {ToSingleVariant(category), ToGreaterVariant(category)})
@@ -882,14 +849,15 @@ static int32 GetBlessingCastStrength(Player* caster, BlessingType type, uint32 s
         return 0;
 
     BaseBlessingCategory category = BaseBlessingOf(type);
-    if (!UsesBlessingStrengthGate(category))
+    if (category != BASE_MIGHT && category != BASE_WISDOM)
         return 0;
 
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
     if (!spellInfo)
         return 0;
 
-    AuraType auraType = BlessingStrengthAuraType(category);
+    AuraType auraType =
+        category == BASE_MIGHT ? SPELL_AURA_MOD_ATTACK_POWER : SPELL_AURA_MOD_POWER_REGEN;
     int32 amount = 0;
     for (uint8 effect = 0; effect < MAX_SPELL_EFFECTS; ++effect)
     {
@@ -927,7 +895,7 @@ static bool HasEquivalentOrStrongerSameFamilyBlessing(
     PlayerbotAI* botAI, Unit* target, BlessingType castType, uint32 spellId)
 {
     BaseBlessingCategory category = BaseBlessingOf(castType);
-    if (!UsesBlessingStrengthGate(category))
+    if (category != BASE_MIGHT && category != BASE_WISDOM)
         return HasSameFamilyBlessing(botAI, target, category);
 
     int32 castStrength = GetBlessingCastStrength(botAI->GetBot(), castType, spellId);
@@ -978,10 +946,9 @@ static Player* FindMissingBlessingTarget(
 }
 
 static bool GetCachedAssignments(
-    AiObjectContext* context, Player* bot,
+    AiObjectContext* context, Group* group,
     std::vector<CachedBlessingBucketAssignment>& outAssignments)
 {
-    Group* group = bot ? bot->GetGroup() : nullptr;
     uint32 const groupKey = group ? group->GetLeaderGUID().GetCounter() : 0;
 
     Value<CachedBlessingAssignments>* cacheValue =
@@ -1067,11 +1034,11 @@ protected:
         CachedPendingBlessingAssignment cached;
 
         Player* bot = botAI->GetBot();
-        Group* group = bot ? bot->GetGroup() : nullptr;
+        Group* group = bot->GetGroup();
         cached.groupKey = group ? group->GetLeaderGUID().GetCounter() : 0;
 
         std::vector<CachedBlessingBucketAssignment> assignments;
-        if (!GetCachedAssignments(this->context, bot, assignments))
+        if (!GetCachedAssignments(this->context, group, assignments))
             return cached;
 
         if (!FindPendingAssignmentFromAssignments(
@@ -1097,7 +1064,7 @@ CastGreaterBlessingAssignmentAction::CastGreaterBlessingAssignmentAction(
 
 bool CastGreaterBlessingAssignmentAction::isUseful()
 {
-    return ai::gbless::IsAutoGreaterBlessingActive(bot);
+    return ai::gbless::IsEligibleGroupForAutoBlessings(bot->GetGroup());
 }
 
 bool CastGreaterBlessingAssignmentAction::HasPendingAssignment()
@@ -1123,8 +1090,7 @@ bool CastGreaterBlessingAssignmentAction::Execute(Event /*event*/)
 }
 
 bool CastGreaterBlessingAssignmentAction::FindPendingAssignment(
-    ai::gbless::GreaterBlessingPlayerAssignment& outAssignment,
-    std::string& outSpellName)
+    ai::gbless::GreaterBlessingPlayerAssignment& outAssignment, std::string& outSpellName)
 {
     Group* group = bot->GetGroup();
     uint32 const groupKey = group ? group->GetLeaderGUID().GetCounter() : 0;
@@ -1146,31 +1112,5 @@ bool CastGreaterBlessingAssignmentAction::FindPendingAssignment(
 
     outAssignment = pendingAssignment.assignment;
     outSpellName = pendingAssignment.spellName;
-    return true;
-}
-
-bool CastGreaterBlessingAssignmentAction::GetAssignments(
-    std::vector<ai::gbless::CachedBlessingBucketAssignment>& outAssignments)
-{
-    Group* group = bot->GetGroup();
-    uint32 const groupKey = group ? group->GetLeaderGUID().GetCounter() : 0;
-
-    Value<ai::gbless::CachedBlessingAssignments>* cacheValue =
-        context->GetValue<ai::gbless::CachedBlessingAssignments>("greater blessing assignments");
-    if (!cacheValue)
-        return false;
-
-    ai::gbless::CachedBlessingAssignments cachedAssignments = cacheValue->Get();
-    if (cachedAssignments.groupKey != groupKey)
-    {
-        cacheValue->Reset();
-        cachedAssignments = cacheValue->Get();
-    }
-
-    if (!cachedAssignments.valid || cachedAssignments.groupKey != groupKey)
-        return false;
-
-    outAssignments = cachedAssignments.assignments;
-
     return true;
 }
