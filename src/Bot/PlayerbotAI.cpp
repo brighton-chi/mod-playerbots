@@ -4362,30 +4362,14 @@ void PlayerbotAI::RemoveAura(std::string const name)
 void PlayerbotAI::RequestSpellInterrupt()
 {
     Spell* currentSpell = bot->GetCurrentSpell(CURRENT_GENERIC_SPELL);
-    Spell* currentChanneledSpell = bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
     if (currentSpell && currentSpell->getState() == SPELL_STATE_PREPARING)
     {
         spellInterruptRequested = true;
         return;
     }
 
-    if (currentChanneledSpell)
-    {
+    if (bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
         spellInterruptRequested = true;
-        return;
-    }
-
-    if (HasStrategy("sunwell", BOT_STATE_COMBAT) &&
-        aiObjectContext->GetValue<Unit*>("find target", "kil'jaeden")->Get())
-    {
-        LOG_DEBUG(
-            "playerbots",
-            "PlayerbotAI interrupt request ignored: bot={} genericSpell={} genericState={} channeledSpell={}",
-            bot->GetName(), currentSpell && currentSpell->GetSpellInfo() ? currentSpell->GetSpellInfo()->Id : 0,
-            currentSpell ? currentSpell->getState() : 0,
-            currentChanneledSpell && currentChanneledSpell->GetSpellInfo() ?
-                currentChanneledSpell->GetSpellInfo()->Id : 0);
-    }
 }
 
 bool PlayerbotAI::IsInterruptableSpellCasting(Unit* target, std::string const spell)
