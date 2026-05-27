@@ -496,7 +496,6 @@ bool UseTrinketAction::UseTrinket(Item* item)
             bool restoresMana = false;
             bool improvesManaRegen = false;
             bool defensiveTankEffect = false;
-            bool procCarrierEffect = false;
             for (int i = 0; i < MAX_SPELL_EFFECTS; i++)
             {
                 const SpellEffectInfo& effectInfo = spellInfo->Effects[i];
@@ -506,10 +505,6 @@ bool UseTrinketAction::UseTrinket(Item* item)
                 restoresMana = restoresMana || IsManaRestoreEffect(effectInfo);
                 improvesManaRegen = improvesManaRegen || IsManaRegenEffect(effectInfo);
                 defensiveTankEffect = defensiveTankEffect || IsDefensiveTankEffect(effectInfo);
-                procCarrierEffect = procCarrierEffect ||
-                    (effectInfo.Effect == SPELL_EFFECT_APPLY_AURA &&
-                     (effectInfo.ApplyAuraName == SPELL_AURA_PROC_TRIGGER_SPELL ||
-                      effectInfo.ApplyAuraName == SPELL_AURA_PROC_TRIGGER_DAMAGE));
             }
 
             if (!applyAura && !restoresMana)
@@ -537,13 +532,11 @@ bool UseTrinketAction::UseTrinket(Item* item)
                     return false;
             }
 
-            // Avoid manually using passive proc-carrier spells that are supposed to be applied by
-            // equip/proc mechanics. Bad item trigger data can route those through the trinket boost
-            // action and cause repeated aura stacking, as seen with Oracle Talisman of Ablution.
-            if (spellInfo->IsPassive() || procCarrierEffect)
+            // These trinkets have malformed item-template trigger data that exposes an
+            // equip/proc spell through the on-use path, which causes repeated aura stacking.
+            // 44869: Frenzyheart Insignia of Fury; 44870: Oracle Talisman of Ablution
+            if (item->GetEntry() == 44869 || item->GetEntry() == 44870)
                 return false;
-
-            logPreviouslyExcludedProcUse = (spellProcFlag != 0);
 
             if (!botAI->CanCastSpell(spellId, bot, false, nullptr, item))
                 return false;
