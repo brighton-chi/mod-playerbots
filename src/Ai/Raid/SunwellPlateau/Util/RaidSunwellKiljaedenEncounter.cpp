@@ -561,14 +561,14 @@ void RecordKiljaedenDragonOrbUse(Player* bot)
     kiljaedenDragonOrbUseTimes[bot->GetGUID().GetCounter()] = getMSTime();
 }
 
-/* bool HasRecentKiljaedenDragonOrbUse(Player* bot, uint32 recentMs)
+bool HasRecentKiljaedenDragonOrbUse(Player* bot, uint32 recentMs)
 {
     auto const orbUseTime = kiljaedenDragonOrbUseTimes.find(bot->GetGUID().GetCounter());
     if (orbUseTime == kiljaedenDragonOrbUseTimes.end())
         return false;
 
     return getMSTimeDiff(orbUseTime->second, getMSTime()) < recentMs;
-} */
+}
 
 void ResetKiljaedenDragonOrbUserAnnouncement(uint32 instanceId)
 {

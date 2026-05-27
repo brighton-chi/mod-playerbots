@@ -835,17 +835,11 @@ bool KiljaedenDragonOrbIsActiveTrigger::IsActive()
     if (!kiljaeden || kiljaeden->GetHealthPct() > 85.0f)
         return false;
 
-    Player* orbUser = GetKiljaedenDragonOrbUser(bot);
-    bool const isAssignedOrbUser = orbUser == bot;
-    bool const hasVengeance = bot->HasAura(
-        static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT));
-    Unit* const controlledDragon = GetKiljaedenControlledDragon(bot);
-    bool const hasLiveControlledDragon = controlledDragon && controlledDragon->IsAlive();
-    bool result = false;
-    bool orbInUse = false;
-
-    if (hasLiveControlledDragon || !isAssignedOrbUser)
+    if (GetKiljaedenControlledDragon(bot) || GetKiljaedenDragonOrbUser(bot) != bot)
         return false;
+
+    bool orbInUse = false;
+    bool result = false;
 
     for (const uint32 orbEntry : KILJAEDEN_DRAGON_ORB_ENTRIES)
     {
@@ -870,7 +864,7 @@ bool KiljaedenDragonOrbIsActiveTrigger::IsActive()
 
 bool KiljaedenBotHasStaleRootAfterDragonTrigger::IsActive()
 {
-    constexpr float orbInUsePendingDistance = 15.0f;
+    // constexpr float orbInUsePendingDistance = 15.0f;
     constexpr uint32 orbUseGracePeriodMs = 5000;
 
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
@@ -881,8 +875,8 @@ bool KiljaedenBotHasStaleRootAfterDragonTrigger::IsActive()
         return false;
 
     if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)) ||
-        // GetKiljaedenControlledDragon(bot) ||
-        // HasRecentKiljaedenDragonOrbUse(bot, orbUseGracePeriodMs) ||
+        GetKiljaedenControlledDragon(bot) ||
+        HasRecentKiljaedenDragonOrbUse(bot, orbUseGracePeriodMs) ||
         !bot->IsRooted() || bot->HasUnitState(UNIT_STATE_LOST_CONTROL))
     {
         return false;
