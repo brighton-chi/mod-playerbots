@@ -472,6 +472,11 @@ bool UseTrinketAction::UseTrinket(Item* item)
     uint8 manaPct = 0;
     bool logHealthPct = false;
     bool logManaPct = false;
+    bool logPreviouslyExcludedProcUse = false;
+    uint32 spellProcFlag = 0;
+    int32 itemSpellCooldown = 0;
+    uint32 itemSpellCategory = 0;
+    int32 itemSpellCategoryCooldown = 0;
     for (uint8 i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
     {
         if (item->GetTemplate()->Spells[i].SpellId > 0 &&
@@ -479,6 +484,10 @@ bool UseTrinketAction::UseTrinket(Item* item)
         {
             spellId = item->GetTemplate()->Spells[i].SpellId;
             const SpellInfo* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+            spellProcFlag = spellInfo ? spellInfo->ProcFlags : 0;
+            itemSpellCooldown = item->GetTemplate()->Spells[i].SpellCooldown;
+            itemSpellCategory = item->GetTemplate()->Spells[i].SpellCategory;
+            itemSpellCategoryCooldown = item->GetTemplate()->Spells[i].SpellCategoryCooldown;
 
             if (!spellInfo || !spellInfo->IsPositive())
                 return false;
@@ -487,6 +496,7 @@ bool UseTrinketAction::UseTrinket(Item* item)
             bool restoresMana = false;
             bool improvesManaRegen = false;
             bool defensiveTankEffect = false;
+            bool procCarrierEffect = false;
             for (int i = 0; i < MAX_SPELL_EFFECTS; i++)
             {
                 const SpellEffectInfo& effectInfo = spellInfo->Effects[i];
@@ -496,6 +506,10 @@ bool UseTrinketAction::UseTrinket(Item* item)
                 restoresMana = restoresMana || IsManaRestoreEffect(effectInfo);
                 improvesManaRegen = improvesManaRegen || IsManaRegenEffect(effectInfo);
                 defensiveTankEffect = defensiveTankEffect || IsDefensiveTankEffect(effectInfo);
+                procCarrierEffect = procCarrierEffect ||
+                    (effectInfo.Effect == SPELL_EFFECT_APPLY_AURA &&
+                     (effectInfo.ApplyAuraName == SPELL_AURA_PROC_TRIGGER_SPELL ||
+                      effectInfo.ApplyAuraName == SPELL_AURA_PROC_TRIGGER_DAMAGE));
             }
 
             if (!applyAura && !restoresMana)
@@ -523,14 +537,13 @@ bool UseTrinketAction::UseTrinket(Item* item)
                     return false;
             }
 
-            uint32 spellProcFlag = spellInfo->ProcFlags;
+            // Avoid manually using passive proc-carrier spells that are supposed to be applied by
+            // equip/proc mechanics. Bad item trigger data can route those through the trinket boost
+            // action and cause repeated aura stacking, as seen with Oracle Talisman of Ablution.
+            if (spellInfo->IsPassive() || procCarrierEffect)
+                return false;
 
-            // Handle items with procflag "if you kill a target that grants honor or experience"
-            // Bots will "learn" the trinket proc, so CanCastSpell() will be true
-            // e.g. on Item https://www.wowhead.com/wotlk/item=44074/oracle-talisman-of-ablution leading to
-            // constant casting of the proc spell onto themselfes https://www.wowhead.com/wotlk/spell=59787/oracle-ablutions
-            // This will lead to multiple hundreds of entries in m_appliedAuras -> Once killing an enemy -> Big diff time spikes
-            if (spellProcFlag != 0) return false;
+            logPreviouslyExcludedProcUse = (spellProcFlag != 0);
 
             if (!botAI->CanCastSpell(spellId, bot, false))
                 return false;
@@ -562,6 +575,14 @@ bool UseTrinketAction::UseTrinket(Item* item)
     {
         LOG_INFO("playerbots", "Bot {} used gated trinket {} (mana: {}%)",
                  bot->GetName().c_str(), item->GetTemplate()->Name1.c_str(), manaPct);
+    }
+
+    if (logPreviouslyExcludedProcUse)
+    {
+        LOG_INFO("playerbots",
+                 "Bot {} used trinket {} (item {}, spell {}, procFlags {}, itemCooldown {}, itemCategory {}, itemCategoryCooldown {}) after narrowed proc gate",
+                 bot->GetName().c_str(), item->GetTemplate()->Name1.c_str(), item->GetEntry(), spellId, spellProcFlag,
+                 itemSpellCooldown, itemSpellCategory, itemSpellCategoryCooldown);
     }
 
     bot->GetSession()->HandleUseItemOpcode(packet);
