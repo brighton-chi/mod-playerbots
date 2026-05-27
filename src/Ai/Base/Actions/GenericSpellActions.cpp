@@ -6,6 +6,7 @@
 #include "GenericSpellActions.h"
 
 #include <ctime>
+#include <unordered_set>
 
 #include "Event.h"
 #include "ItemTemplate.h"
@@ -25,11 +26,56 @@ using ai::spell::HasSpellOrCategoryCooldown;
 
 namespace
 {
-    bool IsArmorEffect(SpellEffectInfo const& effectInfo)
+    std::unordered_set<uint32> const& GetMixedTriggerTrinketSpellIds()
     {
-        return effectInfo.Effect == SPELL_EFFECT_APPLY_AURA &&
-               effectInfo.ApplyAuraName == SPELL_AURA_MOD_RESISTANCE &&
-               (effectInfo.MiscValue & SPELL_SCHOOL_MASK_NORMAL);
+        static std::unordered_set<uint32> const mixedTriggerSpellIds = []()
+        {
+            std::unordered_set<uint32> onUseSpellIds;
+            std::unordered_set<uint32> onEquipSpellIds;
+            std::unordered_set<uint32> mixedSpellIds;
+
+            auto const* itemTemplates = sObjectMgr->GetItemTemplateStore();
+            if (!itemTemplates)
+                return mixedSpellIds;
+
+            auto const markSpellId = [&](int32 spellId, uint8 spellTrigger)
+            {
+                if (spellId <= 0)
+                    return;
+
+                if (spellTrigger == ITEM_SPELLTRIGGER_ON_USE)
+                {
+                    if (onEquipSpellIds.find(spellId) != onEquipSpellIds.end())
+                        mixedSpellIds.insert(spellId);
+
+                    onUseSpellIds.insert(spellId);
+                }
+                else if (spellTrigger == ITEM_SPELLTRIGGER_ON_EQUIP)
+                {
+                    if (onUseSpellIds.find(spellId) != onUseSpellIds.end())
+                        mixedSpellIds.insert(spellId);
+
+                    onEquipSpellIds.insert(spellId);
+                }
+            };
+
+            for (auto const& itr : *itemTemplates)
+            {
+                ItemTemplate const& proto = itr.second;
+                if (proto.InventoryType != INVTYPE_TRINKET)
+                    continue;
+
+                for (uint8 spellIndex = 0; spellIndex < MAX_ITEM_PROTO_SPELLS; ++spellIndex)
+                {
+                    auto const& spellData = proto.Spells[spellIndex];
+                    markSpellId(spellData.SpellId, spellData.SpellTrigger);
+                }
+            }
+
+            return mixedSpellIds;
+        }();
+
+        return mixedTriggerSpellIds;
     }
 
     bool IsManaRestoreEffect(SpellEffectInfo const& effectInfo)
@@ -45,7 +91,7 @@ namespace
                effectInfo.MiscValue == POWER_MANA;
     }
 
-    bool IsManaRegenEffect(SpellEffectInfo const& effectInfo)
+    bool IsManaEfficiencyEffect(SpellEffectInfo const& effectInfo)
     {
         if (effectInfo.Effect != SPELL_EFFECT_APPLY_AURA)
             return false;
@@ -57,16 +103,19 @@ namespace
             return true;
         }
 
+        if (effectInfo.ApplyAuraName == SPELL_AURA_MOD_POWER_COST_SCHOOL ||
+            effectInfo.ApplyAuraName == SPELL_AURA_MOD_POWER_COST_SCHOOL_PCT)
+        {
+            return true;
+        }
+
         return effectInfo.ApplyAuraName == SPELL_AURA_MOD_MANA_REGEN_INTERRUPT;
     }
 
-    bool IsTankRatingEffect(SpellEffectInfo const& effectInfo)
+    bool IsDefensiveTankEffect(SpellEffectInfo const& effectInfo)
     {
-        if (effectInfo.Effect != SPELL_EFFECT_APPLY_AURA ||
-            effectInfo.ApplyAuraName != SPELL_AURA_MOD_RATING)
-        {
+        if (effectInfo.Effect != SPELL_EFFECT_APPLY_AURA)
             return false;
-        }
 
         uint32 const tankRatingsMask =
             (1u << CR_DEFENSE_SKILL) |
@@ -80,19 +129,12 @@ namespace
             (1u << CR_CRIT_TAKEN_RANGED) |
             (1u << CR_CRIT_TAKEN_SPELL);
 
-        return (effectInfo.MiscValue & tankRatingsMask) != 0;
-    }
-
-    bool IsDefensiveTankEffect(SpellEffectInfo const& effectInfo)
-    {
-        if (IsTankRatingEffect(effectInfo) || IsArmorEffect(effectInfo))
-            return true;
-
-        if (effectInfo.Effect != SPELL_EFFECT_APPLY_AURA)
-            return false;
-
         switch (effectInfo.ApplyAuraName)
         {
+            case SPELL_AURA_MOD_RESISTANCE:
+                return (effectInfo.MiscValue & SPELL_SCHOOL_MASK_NORMAL) != 0;
+            case SPELL_AURA_MOD_RATING:
+                return (effectInfo.MiscValue & tankRatingsMask) != 0;
             case SPELL_AURA_MOD_INCREASE_HEALTH:
             case SPELL_AURA_MOD_INCREASE_HEALTH_PERCENT:
             case SPELL_AURA_MOD_PARRY_PERCENT:
@@ -494,7 +536,7 @@ bool UseTrinketAction::UseTrinket(Item* item)
 
             bool applyAura = false;
             bool restoresMana = false;
-            bool improvesManaRegen = false;
+            bool improvesManaEfficiency = false;
             bool defensiveTankEffect = false;
             for (int i = 0; i < MAX_SPELL_EFFECTS; i++)
             {
@@ -503,14 +545,14 @@ bool UseTrinketAction::UseTrinket(Item* item)
                     applyAura = true;
 
                 restoresMana = restoresMana || IsManaRestoreEffect(effectInfo);
-                improvesManaRegen = improvesManaRegen || IsManaRegenEffect(effectInfo);
+                improvesManaEfficiency = improvesManaEfficiency || IsManaEfficiencyEffect(effectInfo);
                 defensiveTankEffect = defensiveTankEffect || IsDefensiveTankEffect(effectInfo);
             }
 
             if (!applyAura && !restoresMana)
                 return false;
 
-            if (restoresMana || improvesManaRegen)
+            if (restoresMana || improvesManaEfficiency)
             {
                 if (!AI_VALUE2(bool, "has mana", "self target"))
                     return false;
@@ -532,10 +574,12 @@ bool UseTrinketAction::UseTrinket(Item* item)
                     return false;
             }
 
-            // These trinkets have malformed item-template trigger data that exposes an
-            // equip/proc spell through the on-use path, which causes repeated aura stacking.
-            // 44869: Frenzyheart Insignia of Fury; 44870: Oracle Talisman of Ablution
-            if (item->GetEntry() == 44869 || item->GetEntry() == 44870)
+            auto const& mixedTriggerTrinketSpellIds = GetMixedTriggerTrinketSpellIds();
+
+            // Exclude malformed trinket rows that expose the same spell as both ON_EQUIP and
+            // ON_USE across trinket item templates. Those are equip/proc effects leaking into
+            // the active-use path, as seen with Oracle Talisman of Ablution and Frenzyheart.
+            if (mixedTriggerTrinketSpellIds.find(spellId) != mixedTriggerTrinketSpellIds.end())
                 return false;
 
             if (!botAI->CanCastSpell(spellId, bot, false, nullptr, item))
