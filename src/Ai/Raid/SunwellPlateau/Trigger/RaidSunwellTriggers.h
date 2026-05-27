@@ -366,11 +366,11 @@ public:
     bool IsActive() override;
 };
 
-class MuruEntropiusTurnedOutTheLightsTrigger : public Trigger
+class MuruEntropiusMakesMiniDarknessTrigger : public Trigger
 {
 public:
-    MuruEntropiusTurnedOutTheLightsTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "m'uru entropius turned out the lights") {}
+    MuruEntropiusMakesMiniDarknessTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "m'uru entropius makes mini darkness") {}
     bool IsActive() override;
 };
 

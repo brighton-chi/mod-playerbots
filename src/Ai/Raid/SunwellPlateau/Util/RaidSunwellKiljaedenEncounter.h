@@ -33,6 +33,14 @@ struct KiljaedenArmageddon
     float safeDistance = 0.0f;
 };
 
+struct KiljaedenDarknessShieldState
+{
+    bool inDarkness = false;
+    bool shieldCastThisDarkness = false;
+    uint32 darknessStartMs = 0;
+    uint32 lastDarknessCastMsLeft = 0;
+};
+
 constexpr uint32 KILJAEDEN_ARMAGEDDON_HAZARD_DURATION_MS = 10000;
 constexpr float KILJAEDEN_ARMAGEDDON_SAFE_DISTANCE = 11.0f;
 constexpr float KILJAEDEN_RANGED_ARC_ORIENTATION = 0.8f;
@@ -60,12 +68,14 @@ void AddKiljaedenArmageddon(
 void PruneExpiredKiljaedenArmageddons(uint32 instanceId);
 bool TryGetKiljaedenNearestArmageddon(Player* bot, KiljaedenArmageddon& armageddon);
 bool IsKiljaedenCastingDarknessOfAThousandSouls(Unit* kiljaeden);
+std::unordered_map<ObjectGuid::LowType, KiljaedenDarknessShieldState>&
+GetKiljaedenDarknessShieldStates();
 bool TryGetKiljaedenRangedSlotPosition(uint8 slotIndex, Position& position);
 void EnsureKiljaedenRangedAssignments(PlayerbotAI* botAI, Player* bot);
 void EnsureKiljaedenRangedArmageddonAssignments(PlayerbotAI* botAI, Player* bot);
 Player* GetKiljaedenDragonOrbUser(Player* bot);
 void RecordKiljaedenDragonOrbUse(Player* bot);
-bool HasRecentKiljaedenDragonOrbUse(Player* bot, uint32 recentMs);
+// bool HasRecentKiljaedenDragonOrbUse(Player* bot, uint32 recentMs);
 void ResetKiljaedenDragonOrbUserAnnouncement(uint32 instanceId);
 Unit* GetKiljaedenControlledDragon(Player* bot);
 bool CastKiljaedenDragonSpell(Unit* dragon, uint32 spellId);

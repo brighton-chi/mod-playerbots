@@ -819,7 +819,7 @@ void RecordKalecgosSpectralBlastTarget(PlayerbotAI* botAI, Player* bot)
         AnnounceKalecgosTankTransition(
             botAI,
             "kalecgos_tank_sent_to_spectral_realm",
-            "Tank %tank has been sent to the Spectral Realm. The now-active Kalecgos tank is %current.",
+            "Tank %tank has been sent to the Spectral Realm. The active Kalecgos tank is %current.",
             {
                 {"%tank", bot->GetName()},
                 {"%current", currentTank->GetName()}
@@ -834,7 +834,7 @@ void RecordKalecgosSpectralBlastTarget(PlayerbotAI* botAI, Player* bot)
         AnnounceKalecgosTankTransition(
             botAI,
             "kalecgos_tank_should_enter_spectral_realm",
-            "Tank %tank should enter the Spectral Realm. The now-active Kalecgos tank is %current.",
+            "Tank %tank should enter the Spectral Realm. The active Kalecgos tank is %current.",
             {
                 {"%tank", outgoingTank->GetName()},
                 {"%current", currentTank->GetName()}

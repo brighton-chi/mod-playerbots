@@ -147,14 +147,14 @@ public:
         creators["m'uru dark fiends spawned"] =
             &RaidSunwellTriggerContext::muru_dark_fiends_spawned;
 
-        creators["m'uru entropius turned out the lights"] =
-            &RaidSunwellTriggerContext::muru_entropius_turned_out_the_lights;
+        creators["m'uru entropius makes mini darkness"] =
+            &RaidSunwellTriggerContext::muru_entropius_makes_mini_darkness;
 
         creators["m'uru darkness is coming"] =
             &RaidSunwellTriggerContext::muru_darkness_is_coming;
 
         creators["m'uru the singularity is near"] =
-            &RaidSunwellTriggerContext::muru_singularity_is_too_close;
+            &RaidSunwellTriggerContext::muru_the_singularity_is_near;
 
         creators["m'uru berserker is buffed with flurry"] =
             &RaidSunwellTriggerContext::muru_berserker_is_buffed_with_flurry;
@@ -337,13 +337,13 @@ private:
     static Trigger* muru_dark_fiends_spawned(
         PlayerbotAI* botAI) { return new MuruDarkFiendsSpawnedTrigger(botAI); }
 
-    static Trigger* muru_entropius_turned_out_the_lights(
-        PlayerbotAI* botAI) { return new MuruEntropiusTurnedOutTheLightsTrigger(botAI); }
+    static Trigger* muru_entropius_makes_mini_darkness(
+        PlayerbotAI* botAI) { return new MuruEntropiusMakesMiniDarknessTrigger(botAI); }
 
     static Trigger* muru_darkness_is_coming(
         PlayerbotAI* botAI) { return new MuruDarknessIsComingTrigger(botAI); }
 
-    static Trigger* muru_singularity_is_too_close(
+    static Trigger* muru_the_singularity_is_near(
         PlayerbotAI* botAI) { return new MuruTheSingularityIsNearTrigger(botAI); }
 
     static Trigger* muru_berserker_is_buffed_with_flurry(

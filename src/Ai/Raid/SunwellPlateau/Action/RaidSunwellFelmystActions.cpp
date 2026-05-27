@@ -101,8 +101,7 @@ bool FelmystPositionMeleeOnGroundAction::Execute(Event /*event*/)
         return false;
     }
 
-    if (bot->GetExactDist2d(
-            position.GetPositionX(), position.GetPositionY()) > 0.25f)
+    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 0.25f)
     {
         return MoveTo(SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
                       position.GetPositionZ(), false, false, false, false,
@@ -136,7 +135,6 @@ bool FelmystRunAwayFromEncapsulatedPlayerAction::Execute(Event /*event*/)
     if (!felmyst)
         return false;
 
-
     const FelmystGroundStack botStack =
         GetClosestFelmystGroundStack(botAI, bot, felmyst, bot);
     const FelmystGroundStack targetStack =
@@ -154,8 +152,8 @@ bool FelmystRunAwayFromEncapsulatedPlayerAction::Execute(Event /*event*/)
             return false;
 
         return MoveInside(SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-                          position.GetPositionZ(),
-                          FELMYST_RANGED_GROUP_RADIUS, MovementPriority::MOVEMENT_FORCED);
+                          position.GetPositionZ(), FELMYST_RANGED_GROUP_RADIUS,
+                          MovementPriority::MOVEMENT_FORCED);
     };
 
     if (targetStack == FelmystGroundStack::Left ||
@@ -196,20 +194,18 @@ bool FelmystRunAwayFromEncapsulatedPlayerAction::Execute(Event /*event*/)
 
 bool FelmystCastMassDispelOnGasNovaAction::Execute(Event /*event*/)
 {
-    Player* gasNovaTarget = GetFelmystGasNovaDispelTarget(bot);
-    if (!gasNovaTarget)
-        return false;
-
-    if (botAI->CanCastSpell("mass dispel", gasNovaTarget))
+    if (Player* gasNovaTarget = GetFelmystGasNovaDispelTarget(bot);
+        gasNovaTarget && botAI->CanCastSpell("mass dispel", gasNovaTarget))
+    {
         return botAI->CastSpell("mass dispel", gasNovaTarget);
+    }
 
     return false;
 }
 
 bool FelmystAvoidDemonicVaporAction::Execute(Event /*event*/)
 {
-    Unit* hazard = GetNearestFelmystDemonicVaporHazard(bot);
-    if (hazard)
+    if (Unit* hazard = GetNearestFelmystDemonicVaporHazard(bot))
     {
         constexpr float safeDistFromVapor = 10.0f;
         const float currentDistance = bot->GetDistance2d(hazard);
@@ -243,8 +239,11 @@ bool FelmystAvoidFogOfCorruptionAction::Execute(Event /*event*/)
 
     std::array<Position, 3> destinations;
     uint8 destinationCount = 0;
-    if (!TryGetFelmystFogSafeDestinations(bot, fogState.lane, destinations, destinationCount))
+    if (!TryGetFelmystFogSafeDestinations(
+            bot, fogState.lane, destinations, destinationCount))
+    {
         return false;
+    }
 
     for (uint8 index = 0; index < destinationCount; ++index)
     {

@@ -524,7 +524,7 @@ bool MuruVoidSentinelCastsVoidBlastOnTankTrigger::IsActive()
         return false;
 
     if (bot->HasAura(static_cast<uint32>(
-        SunwellSpells::SPELL_GROUNDING_TOTEM_EFFECT)))
+            SunwellSpells::SPELL_GROUNDING_TOTEM_EFFECT)))
     {
         return false;
     }
@@ -551,13 +551,11 @@ bool MuruAddsSpawnAtEntranceTrigger::IsActive()
 
 bool MuruDarkFiendsSpawnedTrigger::IsActive()
 {
-    if (bot->getClass() != CLASS_PRIEST && bot->getClass() != CLASS_SHAMAN)
-        return false;
-
-    return AI_VALUE2(Unit*, "find target", "dark fiend");
+    return (bot->getClass() == CLASS_PRIEST || bot->getClass() == CLASS_SHAMAN) &&
+           AI_VALUE2(Unit*, "find target", "dark fiend");
 }
 
-bool MuruEntropiusTurnedOutTheLightsTrigger::IsActive()
+bool MuruEntropiusMakesMiniDarknessTrigger::IsActive()
 {
     if (!AI_VALUE2(Unit*, "find target", "entropius"))
         return false;
@@ -866,13 +864,12 @@ bool KiljaedenDragonOrbIsActiveTrigger::IsActive()
 
     if (orbInUse)
         result = true;
+
     return result;
 }
 
 bool KiljaedenBotHasStaleRootAfterDragonTrigger::IsActive()
 {
-    // constexpr uint32 kiljaedenBlueDrakeEntry = 25653;
-    // constexpr float orbRecoveryDragonSearchRadius = 30.0f;
     constexpr float orbInUsePendingDistance = 15.0f;
     constexpr uint32 orbUseGracePeriodMs = 5000;
 
@@ -883,19 +880,15 @@ bool KiljaedenBotHasStaleRootAfterDragonTrigger::IsActive()
     if (GetKiljaedenDragonOrbUser(bot) != bot)
         return false;
 
-    if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
+    if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)) ||
+        // GetKiljaedenControlledDragon(bot) ||
+        // HasRecentKiljaedenDragonOrbUse(bot, orbUseGracePeriodMs) ||
+        !bot->IsRooted() || bot->HasUnitState(UNIT_STATE_LOST_CONTROL))
+    {
         return false;
+    }
 
-    if (GetKiljaedenControlledDragon(bot))
-        return false;
-
-    if (HasRecentKiljaedenDragonOrbUse(bot, orbUseGracePeriodMs))
-        return false;
-
-    // if (bot->FindNearestCreature(kiljaedenBlueDrakeEntry, orbRecoveryDragonSearchRadius, true))
-    //     return false;
-
-    for (const uint32 orbEntry : KILJAEDEN_DRAGON_ORB_ENTRIES)
+    /* for (const uint32 orbEntry : KILJAEDEN_DRAGON_ORB_ENTRIES)
     {
         GameObject* orb = bot->FindNearestGameObject(orbEntry, 200.0f, true);
         if (orb && orb->HasGameObjectFlag(GO_FLAG_IN_USE) &&
@@ -903,10 +896,7 @@ bool KiljaedenBotHasStaleRootAfterDragonTrigger::IsActive()
         {
             return false;
         }
-    }
-
-    if (!bot->IsRooted() || bot->HasUnitState(UNIT_STATE_LOST_CONTROL))
-        return false;
+    } */
 
     return bot->GetMotionMaster()->GetMotionSlotType(MOTION_SLOT_CONTROLLED) == NULL_MOTION_TYPE;
 }

@@ -299,7 +299,7 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("m'uru dark fiends spawned", {
         NextAction("m'uru kill dark fiends with dispel", ACTION_EMERGENCY + 10) }));
 
-    triggers.push_back(new TriggerNode("m'uru entropius turned out the lights", {
+    triggers.push_back(new TriggerNode("m'uru entropius makes mini darkness", {
         NextAction("m'uru don't touch the dark fiend", ACTION_EMERGENCY + 9) }));
 
     triggers.push_back(new TriggerNode("m'uru darkness is coming", {

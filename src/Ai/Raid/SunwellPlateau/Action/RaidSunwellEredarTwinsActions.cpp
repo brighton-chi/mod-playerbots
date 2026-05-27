@@ -93,7 +93,9 @@ bool EredarTwinsMisdirectBossesToTanksAction::Execute(Event /*event*/)
 
     if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_MISDIRECTION)) &&
         botAI->CanCastSpell("steady shot", bossTarget))
+    {
         return botAI->CastSpell("steady shot", bossTarget);
+    }
 
     return false;
 }
@@ -148,7 +150,8 @@ bool EredarTwinsFirstAssistTankMoveOutOfBlazeAction::Execute(Event /*event*/)
     if (index >= ALYTHESS_TANK_POSITIONS.size())
         index = 0;
 
-    auto const findSafeAlythessTankIndex = [&](uint8 startIndex, bool includeStart, uint8& safeIndex)
+    auto const findSafeAlythessTankIndex =
+        [&](uint8 startIndex, bool includeStart, uint8& safeIndex)
     {
         const size_t offsetStart = includeStart ? 0 : 1;
         for (size_t offset = offsetStart; offset < ALYTHESS_TANK_POSITIONS.size(); ++offset)
@@ -201,9 +204,8 @@ bool EredarTwinsFirstAssistTankMoveOutOfBlazeAction::Execute(Event /*event*/)
                 const float moveX = bot->GetPositionX() + (dX / newDistToPosition) * moveDist;
                 const float moveY = bot->GetPositionY() + (dY / newDistToPosition) * moveDist;
 
-                return MoveTo(SUNWELL_MAP_ID, moveX, moveY, bot->GetPositionZ(),
-                              false, false, false, false, MovementPriority::MOVEMENT_COMBAT,
-                              true, false);
+                return MoveTo(SUNWELL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
+                              false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
             }
         }
         else if (distToPosition > maxDistance)

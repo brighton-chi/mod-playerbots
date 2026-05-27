@@ -5,7 +5,6 @@
 
 #include <array>
 #include <map>
-#include <unordered_map>
 #include <vector>
 
 #include "PlayerbotTextMgr.h"
@@ -15,26 +14,6 @@
 #include "RaidBossHelpers.h"
 
 using namespace SunwellHelpers;
-
-namespace
-{
-
-struct KiljaedenDarknessShieldState
-{
-    bool inDarkness = false;
-    bool shieldCastThisDarkness = false;
-    uint32 darknessStartMs = 0;
-    uint32 lastDarknessCastMsLeft = 0;
-};
-
-std::unordered_map<ObjectGuid::LowType, KiljaedenDarknessShieldState>&
-GetKiljaedenDarknessShieldStates()
-{
-    static std::unordered_map<ObjectGuid::LowType, KiljaedenDarknessShieldState> states;
-    return states;
-}
-
-}
 
 bool KiljaedenMarkHandsAndAnnounceOrbUserAction::Execute(Event /*event*/)
 {

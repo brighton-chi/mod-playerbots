@@ -98,7 +98,7 @@ float KalecgosWaitToDecurseMultiplier::GetValue(Action* action)
 
     Aura* aura = target->GetAura(
         static_cast<uint32>(SunwellSpells::SPELL_CURSE_OF_BOUNDLESS_AGONY));
-    if (!aura || aura->GetDuration() < 10000)
+    if (!aura || aura->GetDuration() < 10000) // 10 seconds remaining
         return 1.0f;
 
     if (dynamic_cast<CastRemoveCurseAction*>(action) ||

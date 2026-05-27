@@ -35,8 +35,8 @@ bool KalecgosTankPositionBossAction::Execute(Event event)
     };
 
     Player* currentVictimPlayer = kalecgos->GetVictim() ? kalecgos->GetVictim()->ToPlayer() : nullptr;
-    const bool otherTankHasAggro = currentVictimPlayer && currentVictimPlayer != bot &&
-         botAI->IsTank(currentVictimPlayer);
+    const bool otherTankHasAggro =
+        currentVictimPlayer && currentVictimPlayer != bot && botAI->IsTank(currentVictimPlayer);
 
     if (otherTankHasAggro)
     {
@@ -205,7 +205,9 @@ bool KalecgosReturnToSpectralRealmGroundAction::Execute(Event /*event*/)
 {
     if (bot->TeleportTo(SUNWELL_MAP_ID, bot->GetPositionX(), bot->GetPositionY(),
                         KALECGOS_SPECTRAL_REALM_Z, bot->GetOrientation()))
+    {
         return true;
+    }
 
     return false;
 }
