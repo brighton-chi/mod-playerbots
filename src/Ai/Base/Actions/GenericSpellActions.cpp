@@ -545,7 +545,7 @@ bool UseTrinketAction::UseTrinket(Item* item)
 
             logPreviouslyExcludedProcUse = (spellProcFlag != 0);
 
-            if (!botAI->CanCastSpell(spellId, bot, false))
+            if (!botAI->CanCastSpell(spellId, bot, false, nullptr, item))
                 return false;
 
             break;
