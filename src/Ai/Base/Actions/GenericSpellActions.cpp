@@ -489,17 +489,6 @@ bool UseTrinketAction::UseTrinket(Item* item)
     if (bot->CanUseItem(item) != EQUIP_ERR_OK || bot->IsNonMeleeSpellCast(true))
         return false;
 
-    struct SkullCooldownProbeState
-    {
-        bool initialized = false;
-        bool hasSpellCooldown = false;
-        bool hasCooldownEntry = false;
-        uint32 cooldownItemId = 0;
-        uint32 cooldownCategory = 0;
-        bool lastCanCast = false;
-        uint32 lastUseMs = 0;
-    };
-
     uint8 bagIndex = item->GetBagSlot();
     uint8 slot = item->GetSlot();
     uint8 cast_count = 1;
@@ -508,100 +497,11 @@ bool UseTrinketAction::UseTrinket(Item* item)
     uint8 castFlags = 0;
     uint32 targetFlag = TARGET_FLAG_NONE;
     uint32 spellId = 0;
-    uint8 healthPct = 0;
-    uint8 manaPct = 0;
-    bool logHealthPct = false;
-    bool logManaPct = false;
-    bool logPreviouslyExcludedProcUse = false;
-    uint32 spellProcFlag = 0;
     int32 itemSpellCooldown = 0;
     uint32 itemSpellCategory = 0;
     int32 itemSpellCategoryCooldown = 0;
     static std::unordered_map<ObjectGuid::LowType, std::unordered_map<uint64, uint32>> trinketItemCooldownExpiries;
     static std::unordered_map<ObjectGuid::LowType, std::unordered_map<uint32, uint32>> trinketCategoryCooldownExpiries;
-    static std::unordered_map<ObjectGuid::LowType, SkullCooldownProbeState> skullProbeStates;
-    auto const logCooldownProbe = [&](char const* phase, bool includeCanCastResult = false, bool canCastResult = false)
-    {
-        if (item->GetEntry() != 32483 && spellId != 40396)
-            return;
-
-        SkullCooldownProbeState& state = skullProbeStates[bot->GetGUID().GetCounter()];
-
-        auto const& cooldownMap = bot->GetSpellCooldownMap();
-        auto const cooldownItr = cooldownMap.find(spellId);
-        bool const hasSpellCooldown = bot->HasSpellCooldown(spellId);
-        bool const hasCooldownEntry = cooldownItr != cooldownMap.end();
-        uint32 const cooldownItemId = hasCooldownEntry ? cooldownItr->second.itemid : 0;
-        uint32 const cooldownCategory = hasCooldownEntry ? cooldownItr->second.category : 0;
-        uint32 const cooldownDelay = bot->GetSpellCooldownDelay(spellId);
-        uint32 const now = getMSTime();
-        bool const cooldownClearedEarly = state.initialized && state.hasSpellCooldown && !hasSpellCooldown && state.lastUseMs &&
-            getMSTimeDiff(state.lastUseMs, now) + 1000u < static_cast<uint32>(itemSpellCooldown);
-        bool const stateChanged = !state.initialized ||
-            state.hasSpellCooldown != hasSpellCooldown ||
-            state.hasCooldownEntry != hasCooldownEntry ||
-            state.cooldownItemId != cooldownItemId ||
-            state.cooldownCategory != cooldownCategory ||
-            (includeCanCastResult && state.lastCanCast != canCastResult);
-
-        if (!stateChanged && !cooldownClearedEarly)
-            return;
-
-        if (includeCanCastResult)
-        {
-            LOG_INFO("playerbots",
-                     "Skull cooldown probe [{}]: bot {}, item {}, spell {}, canCast {}, hasSpellCooldown {}, cooldownDelay {}, cooldownEntry {}, cooldownItemId {}, cooldownCategory {}, itemCooldown {}, itemCategory {}, itemCategoryCooldown {}, cooldownClearedEarly {}",
-                     phase, bot->GetName().c_str(), item->GetEntry(), spellId, canCastResult, hasSpellCooldown,
-                     cooldownDelay, hasCooldownEntry, cooldownItemId, cooldownCategory, itemSpellCooldown,
-                     itemSpellCategory, itemSpellCategoryCooldown, cooldownClearedEarly);
-        }
-
-        if (!includeCanCastResult)
-        {
-            LOG_INFO("playerbots",
-                     "Skull cooldown probe [{}]: bot {}, item {}, spell {}, hasSpellCooldown {}, cooldownDelay {}, cooldownEntry {}, cooldownItemId {}, cooldownCategory {}, itemCooldown {}, itemCategory {}, itemCategoryCooldown {}, cooldownClearedEarly {}",
-                     phase, bot->GetName().c_str(), item->GetEntry(), spellId, hasSpellCooldown, cooldownDelay,
-                     hasCooldownEntry, cooldownItemId, cooldownCategory, itemSpellCooldown, itemSpellCategory,
-                     itemSpellCategoryCooldown, cooldownClearedEarly);
-        }
-
-        state.initialized = true;
-        state.hasSpellCooldown = hasSpellCooldown;
-        state.hasCooldownEntry = hasCooldownEntry;
-        state.cooldownItemId = cooldownItemId;
-        state.cooldownCategory = cooldownCategory;
-        if (includeCanCastResult)
-            state.lastCanCast = canCastResult;
-    };
-    auto const logSkullUseProbe = [&]()
-    {
-        if (item->GetEntry() != 32483 && spellId != 40396)
-            return;
-
-        SkullCooldownProbeState& state = skullProbeStates[bot->GetGUID().GetCounter()];
-        uint32 const now = getMSTime();
-        uint32 const elapsedSinceLastUse = state.lastUseMs ? getMSTimeDiff(state.lastUseMs, now) : 0;
-        bool const reusedEarly = state.lastUseMs && elapsedSinceLastUse + 1000u < static_cast<uint32>(itemSpellCooldown);
-
-        LOG_INFO("playerbots",
-                 "Skull use probe: bot {}, item {}, spell {}, elapsedSinceLastUse {}, itemCooldown {}, itemCategory {}, itemCategoryCooldown {}, reusedEarly {}",
-                 bot->GetName().c_str(), item->GetEntry(), spellId, elapsedSinceLastUse, itemSpellCooldown,
-                 itemSpellCategory, itemSpellCategoryCooldown, reusedEarly);
-
-        state.initialized = true;
-        state.lastUseMs = now;
-    };
-    auto const logOracleAuraProbe = [&](char const* phase)
-    {
-        Aura* const oracleAura = bot->GetAura(59787);
-        if (item->GetEntry() != 44870 && spellId != 59787 && !oracleAura)
-            return;
-
-        LOG_INFO("playerbots",
-                 "Oracle aura probe [{}]: bot {}, item {}, spell {}, auraPresent {}, auraStacks {}, auraDuration {}",
-                 phase, bot->GetName().c_str(), item->GetEntry(), spellId, oracleAura != nullptr,
-                 oracleAura ? oracleAura->GetStackAmount() : 0, oracleAura ? oracleAura->GetDuration() : 0);
-    };
 
     for (uint8 i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
     {
@@ -610,7 +510,6 @@ bool UseTrinketAction::UseTrinket(Item* item)
         {
             spellId = item->GetTemplate()->Spells[i].SpellId;
             const SpellInfo* spellInfo = sSpellMgr->GetSpellInfo(spellId);
-            spellProcFlag = spellInfo ? spellInfo->ProcFlags : 0;
             itemSpellCooldown = item->GetTemplate()->Spells[i].SpellCooldown;
             itemSpellCategory = item->GetTemplate()->Spells[i].SpellCategory;
             itemSpellCategoryCooldown = item->GetTemplate()->Spells[i].SpellCategoryCooldown;
@@ -641,8 +540,7 @@ bool UseTrinketAction::UseTrinket(Item* item)
                 if (!AI_VALUE2(bool, "has mana", "self target"))
                     return false;
 
-                manaPct = AI_VALUE2(uint8, "mana", "self target");
-                logManaPct = true;
+                uint8 const manaPct = AI_VALUE2(uint8, "mana", "self target");
                 if ((restoresMana && manaPct >= sPlayerbotAIConfig.mediumMana) ||
                     manaPct >= sPlayerbotAIConfig.highMana)
                 {
@@ -652,8 +550,7 @@ bool UseTrinketAction::UseTrinket(Item* item)
 
             if (defensiveTankEffect)
             {
-                healthPct = AI_VALUE2(uint8, "health", "self target");
-                logHealthPct = true;
+                uint8 const healthPct = AI_VALUE2(uint8, "health", "self target");
                 if (healthPct > sPlayerbotAIConfig.lowHealth)
                     return false;
             }
@@ -662,7 +559,8 @@ bool UseTrinketAction::UseTrinket(Item* item)
 
             // Exclude malformed trinket rows that expose the same spell as both ON_EQUIP and
             // ON_USE across trinket item templates. Those are equip/proc effects leaking into
-            // the active-use path, as seen with Oracle Talisman of Ablution and Frenzyheart.
+            // the active-use path, as seen with the error versions of Oracle Talisman of
+            // Ablution (44870) and Frenzyheart Insignia of Fury (44869).
             if (mixedTriggerTrinketSpellIds.find(spellId) != mixedTriggerTrinketSpellIds.end())
                 return false;
 
@@ -696,12 +594,7 @@ bool UseTrinketAction::UseTrinket(Item* item)
                 }
             }
 
-            logCooldownProbe("before CanCastSpell");
-            logOracleAuraProbe("before CanCastSpell");
-
             bool const canCast = botAI->CanCastSpell(spellId, bot, false, nullptr, item);
-            logCooldownProbe("after CanCastSpell", true, canCast);
-            logOracleAuraProbe("after CanCastSpell");
             if (!canCast)
                 return false;
 
@@ -718,36 +611,7 @@ bool UseTrinketAction::UseTrinket(Item* item)
     targetFlag = TARGET_FLAG_NONE;
     packet << targetFlag << bot->GetPackGUID();
 
-    if (logHealthPct && logManaPct)
-    {
-        LOG_INFO("playerbots", "Bot {} used gated trinket {} (health: {}%, mana: {}%)",
-                 bot->GetName().c_str(), item->GetTemplate()->Name1.c_str(), healthPct, manaPct);
-    }
-    else if (logHealthPct)
-    {
-        LOG_INFO("playerbots", "Bot {} used gated trinket {} (health: {}%)",
-                 bot->GetName().c_str(), item->GetTemplate()->Name1.c_str(), healthPct);
-    }
-    else if (logManaPct)
-    {
-        LOG_INFO("playerbots", "Bot {} used gated trinket {} (mana: {}%)",
-                 bot->GetName().c_str(), item->GetTemplate()->Name1.c_str(), manaPct);
-    }
-
-    if (logPreviouslyExcludedProcUse)
-    {
-        LOG_INFO("playerbots",
-                 "Bot {} used trinket {} (item {}, spell {}, procFlags {}, itemCooldown {}, itemCategory {}, itemCategoryCooldown {}) after narrowed proc gate",
-                 bot->GetName().c_str(), item->GetTemplate()->Name1.c_str(), item->GetEntry(), spellId, spellProcFlag,
-                 itemSpellCooldown, itemSpellCategory, itemSpellCategoryCooldown);
-    }
-
-    logCooldownProbe("before HandleUseItemOpcode");
-    logOracleAuraProbe("before HandleUseItemOpcode");
     bot->GetSession()->HandleUseItemOpcode(packet);
-    logCooldownProbe("after HandleUseItemOpcode");
-    logSkullUseProbe();
-    logOracleAuraProbe("after HandleUseItemOpcode");
 
     ObjectGuid::LowType const botGuid = bot->GetGUID().GetCounter();
     uint32 const now = getMSTime();
@@ -766,6 +630,7 @@ bool UseTrinketAction::UseTrinket(Item* item)
 
     return true;
 }
+
 bool CastDebuffSpellAction::isUseful()
 {
     Unit* target = GetTarget();
