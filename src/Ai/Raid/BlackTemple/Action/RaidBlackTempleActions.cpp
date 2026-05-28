@@ -2375,7 +2375,7 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidB
         {
             const float dX = newTarget.GetPositionX() - bot->GetPositionX();
             const float dY = newTarget.GetPositionY() - bot->GetPositionY();
-            const float moveDist = std::min(5.0f, distToNewPosition);
+            const float moveDist = std::min(2.0f, distToNewPosition);
             const float moveX = bot->GetPositionX() + (dX / distToNewPosition) * moveDist;
             const float moveY = bot->GetPositionY() + (dY / distToNewPosition) * moveDist;
 
@@ -2388,7 +2388,7 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidB
     {
         const float dX = target.GetPositionX() - bot->GetPositionX();
         const float dY = target.GetPositionY() - bot->GetPositionY();
-        const float moveDist = std::min(3.0f, distToPosition);
+        const float moveDist = std::min(2.0f, distToPosition);
         const float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
         const float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 

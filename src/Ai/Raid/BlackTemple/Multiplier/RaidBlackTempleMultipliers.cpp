@@ -577,8 +577,8 @@ float IllidanStormrageControlTankActionsMultiplier::GetValue(Action* action)
     if (!illidan || illidan->GetHealth() == 1)
         return 1.0f;
 
-    if (dynamic_cast<TankFaceAction*>(action))
-        return 0.0f;
+    // if (dynamic_cast<TankFaceAction*>(action))
+    //    return 0.0f;
 
     if (GetIllidanPhase(illidan) != 2)
         return 1.0f;
@@ -606,7 +606,8 @@ float IllidanStormrageControlTankActionsMultiplier::GetValue(Action* action)
             return 0.0f;
         }
 
-        if (dynamic_cast<CastHealingSpellAction*>(action))
+        if (dynamic_cast<TankFaceAction*>(action) ||
+            dynamic_cast<CastHealingSpellAction*>(action))
             return 0.0f;
     }
 
