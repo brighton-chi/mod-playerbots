@@ -6,6 +6,7 @@
 #include "GenericSpellActions.h"
 
 #include <ctime>
+#include <unordered_map>
 #include <unordered_set>
 
 #include "Event.h"
@@ -80,36 +81,22 @@ namespace
 
     bool IsManaRestoreEffect(SpellEffectInfo const& effectInfo)
     {
-        if (effectInfo.Effect == SPELL_EFFECT_ENERGIZE &&
-            effectInfo.MiscValue == POWER_MANA)
-        {
-            return true;
-        }
-
-        return effectInfo.Effect == SPELL_EFFECT_APPLY_AURA &&
-               effectInfo.ApplyAuraName == SPELL_AURA_PERIODIC_ENERGIZE &&
-               effectInfo.MiscValue == POWER_MANA;
+        return (effectInfo.Effect == SPELL_EFFECT_ENERGIZE &&
+                effectInfo.MiscValue == POWER_MANA) ||
+               (effectInfo.Effect == SPELL_EFFECT_APPLY_AURA &&
+                effectInfo.ApplyAuraName == SPELL_AURA_PERIODIC_ENERGIZE &&
+                effectInfo.MiscValue == POWER_MANA);
     }
 
     bool IsManaEfficiencyEffect(SpellEffectInfo const& effectInfo)
     {
-        if (effectInfo.Effect != SPELL_EFFECT_APPLY_AURA)
-            return false;
-
-        if ((effectInfo.ApplyAuraName == SPELL_AURA_MOD_POWER_REGEN ||
-             effectInfo.ApplyAuraName == SPELL_AURA_MOD_POWER_REGEN_PERCENT) &&
-            effectInfo.MiscValue == POWER_MANA)
-        {
-            return true;
-        }
-
-        if (effectInfo.ApplyAuraName == SPELL_AURA_MOD_POWER_COST_SCHOOL ||
-            effectInfo.ApplyAuraName == SPELL_AURA_MOD_POWER_COST_SCHOOL_PCT)
-        {
-            return true;
-        }
-
-        return effectInfo.ApplyAuraName == SPELL_AURA_MOD_MANA_REGEN_INTERRUPT;
+        return effectInfo.Effect == SPELL_EFFECT_APPLY_AURA &&
+               (((effectInfo.ApplyAuraName == SPELL_AURA_MOD_POWER_REGEN ||
+                  effectInfo.ApplyAuraName == SPELL_AURA_MOD_POWER_REGEN_PERCENT) &&
+                 effectInfo.MiscValue == POWER_MANA) ||
+                effectInfo.ApplyAuraName == SPELL_AURA_MOD_POWER_COST_SCHOOL ||
+                effectInfo.ApplyAuraName == SPELL_AURA_MOD_POWER_COST_SCHOOL_PCT ||
+                effectInfo.ApplyAuraName == SPELL_AURA_MOD_MANA_REGEN_INTERRUPT);
     }
 
     bool IsDefensiveTankEffect(SpellEffectInfo const& effectInfo)
@@ -502,6 +489,17 @@ bool UseTrinketAction::UseTrinket(Item* item)
     if (bot->CanUseItem(item) != EQUIP_ERR_OK || bot->IsNonMeleeSpellCast(true))
         return false;
 
+    struct SkullCooldownProbeState
+    {
+        bool initialized = false;
+        bool hasSpellCooldown = false;
+        bool hasCooldownEntry = false;
+        uint32 cooldownItemId = 0;
+        uint32 cooldownCategory = 0;
+        bool lastCanCast = false;
+        uint32 lastUseMs = 0;
+    };
+
     uint8 bagIndex = item->GetBagSlot();
     uint8 slot = item->GetSlot();
     uint8 cast_count = 1;
@@ -519,6 +517,92 @@ bool UseTrinketAction::UseTrinket(Item* item)
     int32 itemSpellCooldown = 0;
     uint32 itemSpellCategory = 0;
     int32 itemSpellCategoryCooldown = 0;
+    static std::unordered_map<ObjectGuid::LowType, std::unordered_map<uint64, uint32>> trinketItemCooldownExpiries;
+    static std::unordered_map<ObjectGuid::LowType, std::unordered_map<uint32, uint32>> trinketCategoryCooldownExpiries;
+    static std::unordered_map<ObjectGuid::LowType, SkullCooldownProbeState> skullProbeStates;
+    auto const logCooldownProbe = [&](char const* phase, bool includeCanCastResult = false, bool canCastResult = false)
+    {
+        if (item->GetEntry() != 32483 && spellId != 40396)
+            return;
+
+        SkullCooldownProbeState& state = skullProbeStates[bot->GetGUID().GetCounter()];
+
+        auto const& cooldownMap = bot->GetSpellCooldownMap();
+        auto const cooldownItr = cooldownMap.find(spellId);
+        bool const hasSpellCooldown = bot->HasSpellCooldown(spellId);
+        bool const hasCooldownEntry = cooldownItr != cooldownMap.end();
+        uint32 const cooldownItemId = hasCooldownEntry ? cooldownItr->second.itemid : 0;
+        uint32 const cooldownCategory = hasCooldownEntry ? cooldownItr->second.category : 0;
+        uint32 const cooldownDelay = bot->GetSpellCooldownDelay(spellId);
+        uint32 const now = getMSTime();
+        bool const cooldownClearedEarly = state.initialized && state.hasSpellCooldown && !hasSpellCooldown && state.lastUseMs &&
+            getMSTimeDiff(state.lastUseMs, now) + 1000u < static_cast<uint32>(itemSpellCooldown);
+        bool const stateChanged = !state.initialized ||
+            state.hasSpellCooldown != hasSpellCooldown ||
+            state.hasCooldownEntry != hasCooldownEntry ||
+            state.cooldownItemId != cooldownItemId ||
+            state.cooldownCategory != cooldownCategory ||
+            (includeCanCastResult && state.lastCanCast != canCastResult);
+
+        if (!stateChanged && !cooldownClearedEarly)
+            return;
+
+        if (includeCanCastResult)
+        {
+            LOG_INFO("playerbots",
+                     "Skull cooldown probe [{}]: bot {}, item {}, spell {}, canCast {}, hasSpellCooldown {}, cooldownDelay {}, cooldownEntry {}, cooldownItemId {}, cooldownCategory {}, itemCooldown {}, itemCategory {}, itemCategoryCooldown {}, cooldownClearedEarly {}",
+                     phase, bot->GetName().c_str(), item->GetEntry(), spellId, canCastResult, hasSpellCooldown,
+                     cooldownDelay, hasCooldownEntry, cooldownItemId, cooldownCategory, itemSpellCooldown,
+                     itemSpellCategory, itemSpellCategoryCooldown, cooldownClearedEarly);
+        }
+
+        if (!includeCanCastResult)
+        {
+            LOG_INFO("playerbots",
+                     "Skull cooldown probe [{}]: bot {}, item {}, spell {}, hasSpellCooldown {}, cooldownDelay {}, cooldownEntry {}, cooldownItemId {}, cooldownCategory {}, itemCooldown {}, itemCategory {}, itemCategoryCooldown {}, cooldownClearedEarly {}",
+                     phase, bot->GetName().c_str(), item->GetEntry(), spellId, hasSpellCooldown, cooldownDelay,
+                     hasCooldownEntry, cooldownItemId, cooldownCategory, itemSpellCooldown, itemSpellCategory,
+                     itemSpellCategoryCooldown, cooldownClearedEarly);
+        }
+
+        state.initialized = true;
+        state.hasSpellCooldown = hasSpellCooldown;
+        state.hasCooldownEntry = hasCooldownEntry;
+        state.cooldownItemId = cooldownItemId;
+        state.cooldownCategory = cooldownCategory;
+        if (includeCanCastResult)
+            state.lastCanCast = canCastResult;
+    };
+    auto const logSkullUseProbe = [&]()
+    {
+        if (item->GetEntry() != 32483 && spellId != 40396)
+            return;
+
+        SkullCooldownProbeState& state = skullProbeStates[bot->GetGUID().GetCounter()];
+        uint32 const now = getMSTime();
+        uint32 const elapsedSinceLastUse = state.lastUseMs ? getMSTimeDiff(state.lastUseMs, now) : 0;
+        bool const reusedEarly = state.lastUseMs && elapsedSinceLastUse + 1000u < static_cast<uint32>(itemSpellCooldown);
+
+        LOG_INFO("playerbots",
+                 "Skull use probe: bot {}, item {}, spell {}, elapsedSinceLastUse {}, itemCooldown {}, itemCategory {}, itemCategoryCooldown {}, reusedEarly {}",
+                 bot->GetName().c_str(), item->GetEntry(), spellId, elapsedSinceLastUse, itemSpellCooldown,
+                 itemSpellCategory, itemSpellCategoryCooldown, reusedEarly);
+
+        state.initialized = true;
+        state.lastUseMs = now;
+    };
+    auto const logOracleAuraProbe = [&](char const* phase)
+    {
+        Aura* const oracleAura = bot->GetAura(59787);
+        if (item->GetEntry() != 44870 && spellId != 59787 && !oracleAura)
+            return;
+
+        LOG_INFO("playerbots",
+                 "Oracle aura probe [{}]: bot {}, item {}, spell {}, auraPresent {}, auraStacks {}, auraDuration {}",
+                 phase, bot->GetName().c_str(), item->GetEntry(), spellId, oracleAura != nullptr,
+                 oracleAura ? oracleAura->GetStackAmount() : 0, oracleAura ? oracleAura->GetDuration() : 0);
+    };
+
     for (uint8 i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
     {
         if (item->GetTemplate()->Spells[i].SpellId > 0 &&
@@ -582,7 +666,43 @@ bool UseTrinketAction::UseTrinket(Item* item)
             if (mixedTriggerTrinketSpellIds.find(spellId) != mixedTriggerTrinketSpellIds.end())
                 return false;
 
-            if (!botAI->CanCastSpell(spellId, bot, false, nullptr, item))
+            ObjectGuid::LowType const botGuid = bot->GetGUID().GetCounter();
+            auto& itemCooldownExpiries = trinketItemCooldownExpiries[botGuid];
+            auto& categoryCooldownExpiries = trinketCategoryCooldownExpiries[botGuid];
+            uint64 const itemCooldownKey = (static_cast<uint64>(item->GetEntry()) << 32) | spellId;
+            uint32 const now = getMSTime();
+
+            if (itemSpellCooldown > 0)
+            {
+                auto const itemCooldownItr = itemCooldownExpiries.find(itemCooldownKey);
+                if (itemCooldownItr != itemCooldownExpiries.end())
+                {
+                    if (itemCooldownItr->second > now)
+                        return false;
+
+                    itemCooldownExpiries.erase(itemCooldownItr);
+                }
+            }
+
+            if (itemSpellCategory && itemSpellCategoryCooldown > 0)
+            {
+                auto const categoryCooldownItr = categoryCooldownExpiries.find(itemSpellCategory);
+                if (categoryCooldownItr != categoryCooldownExpiries.end())
+                {
+                    if (categoryCooldownItr->second > now)
+                        return false;
+
+                    categoryCooldownExpiries.erase(categoryCooldownItr);
+                }
+            }
+
+            logCooldownProbe("before CanCastSpell");
+            logOracleAuraProbe("before CanCastSpell");
+
+            bool const canCast = botAI->CanCastSpell(spellId, bot, false, nullptr, item);
+            logCooldownProbe("after CanCastSpell", true, canCast);
+            logOracleAuraProbe("after CanCastSpell");
+            if (!canCast)
                 return false;
 
             break;
@@ -622,7 +742,27 @@ bool UseTrinketAction::UseTrinket(Item* item)
                  itemSpellCooldown, itemSpellCategory, itemSpellCategoryCooldown);
     }
 
+    logCooldownProbe("before HandleUseItemOpcode");
+    logOracleAuraProbe("before HandleUseItemOpcode");
     bot->GetSession()->HandleUseItemOpcode(packet);
+    logCooldownProbe("after HandleUseItemOpcode");
+    logSkullUseProbe();
+    logOracleAuraProbe("after HandleUseItemOpcode");
+
+    ObjectGuid::LowType const botGuid = bot->GetGUID().GetCounter();
+    uint32 const now = getMSTime();
+    uint32 const cooldownDelay = bot->GetSpellCooldownDelay(spellId);
+    if (cooldownDelay > 0)
+    {
+        if (itemSpellCooldown > 0)
+        {
+            uint64 const itemCooldownKey = (static_cast<uint64>(item->GetEntry()) << 32) | spellId;
+            trinketItemCooldownExpiries[botGuid][itemCooldownKey] = now + static_cast<uint32>(itemSpellCooldown);
+        }
+
+        if (itemSpellCategory && itemSpellCategoryCooldown > 0)
+            trinketCategoryCooldownExpiries[botGuid][itemSpellCategory] = now + static_cast<uint32>(itemSpellCategoryCooldown);
+    }
 
     return true;
 }
