@@ -500,8 +500,10 @@ bool UseTrinketAction::UseTrinket(Item* item)
     int32 itemSpellCooldown = 0;
     uint32 itemSpellCategory = 0;
     int32 itemSpellCategoryCooldown = 0;
-    static std::unordered_map<ObjectGuid::LowType, std::unordered_map<uint64, uint32>> trinketItemCooldownExpiries;
-    static std::unordered_map<ObjectGuid::LowType, std::unordered_map<uint32, uint32>> trinketCategoryCooldownExpiries;
+    static std::unordered_map<ObjectGuid::LowType, std::unordered_map<uint64, uint32>>
+        trinketItemCooldownExpiries;
+    static std::unordered_map<ObjectGuid::LowType, std::unordered_map<uint32, uint32>>
+        trinketCategoryCooldownExpiries;
 
     for (uint8 i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
     {
@@ -509,11 +511,45 @@ bool UseTrinketAction::UseTrinket(Item* item)
             item->GetTemplate()->Spells[i].SpellTrigger == ITEM_SPELLTRIGGER_ON_USE)
         {
             spellId = item->GetTemplate()->Spells[i].SpellId;
-            const SpellInfo* spellInfo = sSpellMgr->GetSpellInfo(spellId);
             itemSpellCooldown = item->GetTemplate()->Spells[i].SpellCooldown;
             itemSpellCategory = item->GetTemplate()->Spells[i].SpellCategory;
             itemSpellCategoryCooldown = item->GetTemplate()->Spells[i].SpellCategoryCooldown;
+            ObjectGuid::LowType const botGuid = bot->GetGUID().GetCounter();
+            uint64 const itemCooldownKey = (static_cast<uint64>(item->GetEntry()) << 32) | spellId;
+            uint32 const now = getMSTime();
 
+            auto itemCooldownsItr = trinketItemCooldownExpiries.find(botGuid);
+            if (itemSpellCooldown > 0 && itemCooldownsItr != trinketItemCooldownExpiries.end())
+            {
+                auto const itemCooldownItr = itemCooldownsItr->second.find(itemCooldownKey);
+                if (itemCooldownItr != itemCooldownsItr->second.end())
+                {
+                    if (itemCooldownItr->second > now)
+                        return false;
+
+                    itemCooldownsItr->second.erase(itemCooldownItr);
+                    if (itemCooldownsItr->second.empty())
+                        trinketItemCooldownExpiries.erase(itemCooldownsItr);
+                }
+            }
+
+            auto categoryCooldownsItr = trinketCategoryCooldownExpiries.find(botGuid);
+            if (itemSpellCategory && itemSpellCategoryCooldown > 0 &&
+                categoryCooldownsItr != trinketCategoryCooldownExpiries.end())
+            {
+                auto const categoryCooldownItr = categoryCooldownsItr->second.find(itemSpellCategory);
+                if (categoryCooldownItr != categoryCooldownsItr->second.end())
+                {
+                    if (categoryCooldownItr->second > now)
+                        return false;
+
+                    categoryCooldownsItr->second.erase(categoryCooldownItr);
+                    if (categoryCooldownsItr->second.empty())
+                        trinketCategoryCooldownExpiries.erase(categoryCooldownsItr);
+                }
+            }
+
+            const SpellInfo* spellInfo = sSpellMgr->GetSpellInfo(spellId);
             if (!spellInfo || !spellInfo->IsPositive())
                 return false;
 
@@ -556,46 +592,14 @@ bool UseTrinketAction::UseTrinket(Item* item)
             }
 
             auto const& mixedTriggerTrinketSpellIds = GetMixedTriggerTrinketSpellIds();
-
-            // Exclude malformed trinket rows that expose the same spell as both ON_EQUIP and
-            // ON_USE across trinket item templates. Those are equip/proc effects leaking into
-            // the active-use path, as seen with the error versions of Oracle Talisman of
-            // Ablution (44870) and Frenzyheart Insignia of Fury (44869).
+            // Exclude trinkets that expose the same spell as both ON_EQUIP and ON_USE across
+            // item templates. Those are equip/proc effects leaking into the active-use path,
+            // as seen with the error versions of Oracle Talisman of Ablution (44870) and
+            // Frenzyheart Insignia of Fury (44869).
             if (mixedTriggerTrinketSpellIds.find(spellId) != mixedTriggerTrinketSpellIds.end())
                 return false;
 
-            ObjectGuid::LowType const botGuid = bot->GetGUID().GetCounter();
-            auto& itemCooldownExpiries = trinketItemCooldownExpiries[botGuid];
-            auto& categoryCooldownExpiries = trinketCategoryCooldownExpiries[botGuid];
-            uint64 const itemCooldownKey = (static_cast<uint64>(item->GetEntry()) << 32) | spellId;
-            uint32 const now = getMSTime();
-
-            if (itemSpellCooldown > 0)
-            {
-                auto const itemCooldownItr = itemCooldownExpiries.find(itemCooldownKey);
-                if (itemCooldownItr != itemCooldownExpiries.end())
-                {
-                    if (itemCooldownItr->second > now)
-                        return false;
-
-                    itemCooldownExpiries.erase(itemCooldownItr);
-                }
-            }
-
-            if (itemSpellCategory && itemSpellCategoryCooldown > 0)
-            {
-                auto const categoryCooldownItr = categoryCooldownExpiries.find(itemSpellCategory);
-                if (categoryCooldownItr != categoryCooldownExpiries.end())
-                {
-                    if (categoryCooldownItr->second > now)
-                        return false;
-
-                    categoryCooldownExpiries.erase(categoryCooldownItr);
-                }
-            }
-
-            bool const canCast = botAI->CanCastSpell(spellId, bot, false, nullptr, item);
-            if (!canCast)
+            if (!botAI->CanCastSpell(spellId, bot, false, nullptr, item))
                 return false;
 
             break;
@@ -625,7 +629,10 @@ bool UseTrinketAction::UseTrinket(Item* item)
         }
 
         if (itemSpellCategory && itemSpellCategoryCooldown > 0)
-            trinketCategoryCooldownExpiries[botGuid][itemSpellCategory] = now + static_cast<uint32>(itemSpellCategoryCooldown);
+        {
+            trinketCategoryCooldownExpiries[botGuid][itemSpellCategory] =
+                now + static_cast<uint32>(itemSpellCategoryCooldown);
+        }
     }
 
     return true;
