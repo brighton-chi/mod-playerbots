@@ -102,6 +102,7 @@ float KalecgosWaitToDecurseMultiplier::GetValue(Action* action)
         return 1.0f;
 
     if (dynamic_cast<CastRemoveCurseAction*>(action) ||
+        dynamic_cast<CastRemoveCurseOnPartyAction*>(action) ||
         dynamic_cast<CastCleanseSpiritAction*>(action) ||
         dynamic_cast<CastCleanseSpiritCurseOnPartyAction*>(action) ||
         dynamic_cast<CastDruidRemoveCurseOnPartyAction*>(action))
