@@ -562,7 +562,7 @@ void PlayerbotFactory::Randomize(bool incremental)
     LOG_DEBUG("playerbots", "Resetting player...");
     PerfMonitorOperation* pmo = sPerfMonitor.start(PERF_MON_RNDBOT, "PlayerbotFactory_Reset");
 
-    if (!sPlayerbotAIConfig.equipmentPersistence || level < sPlayerbotAIConfig.equipmentPersistenceLevel)
+    if (!sPlayerbotAIConfig.equipAndSpecPersistence || level < sPlayerbotAIConfig.equipAndSpecPersistenceLevel)
         bot->resetTalents(true);
 
     if (!incremental)
@@ -570,7 +570,7 @@ void PlayerbotFactory::Randomize(bool incremental)
         ClearSkills();
         ClearSpells();
         ResetQuests();
-        if (!sPlayerbotAIConfig.equipmentPersistence || level < sPlayerbotAIConfig.equipmentPersistenceLevel)
+        if (!sPlayerbotAIConfig.equipAndSpecPersistence || level < sPlayerbotAIConfig.equipAndSpecPersistenceLevel)
             ClearAllItems();
     }
     ClearInventory();
@@ -622,8 +622,8 @@ void PlayerbotFactory::Randomize(bool incremental)
 
     pmo = sPerfMonitor.start(PERF_MON_RNDBOT, "PlayerbotFactory_Talents");
     LOG_DEBUG("playerbots", "Initializing talents...");
-    if (!incremental || !sPlayerbotAIConfig.equipmentPersistence ||
-        bot->GetLevel() < sPlayerbotAIConfig.equipmentPersistenceLevel)
+    if (!incremental || !sPlayerbotAIConfig.equipAndSpecPersistence ||
+        bot->GetLevel() < sPlayerbotAIConfig.equipAndSpecPersistenceLevel)
     {
         uint32 specIndex = InitTalentsTree();
         sRandomPlayerbotMgr.SetValue(bot->GetGUID().GetCounter(), "specNo", specIndex + 1);
@@ -670,8 +670,8 @@ void PlayerbotFactory::Randomize(bool incremental)
 
     pmo = sPerfMonitor.start(PERF_MON_RNDBOT, "PlayerbotFactory_Equip");
     LOG_DEBUG("playerbots", "Initializing equipmemt...");
-    if (!incremental || !sPlayerbotAIConfig.equipmentPersistence ||
-        bot->GetLevel() < sPlayerbotAIConfig.equipmentPersistenceLevel)
+    if (!incremental || !sPlayerbotAIConfig.equipAndSpecPersistence ||
+        bot->GetLevel() < sPlayerbotAIConfig.equipAndSpecPersistenceLevel)
     {
         InitEquipment(incremental, incremental ? false : sPlayerbotAIConfig.twoRoundsGearInit);
     }
@@ -810,8 +810,8 @@ void PlayerbotFactory::Randomize(bool incremental)
 void PlayerbotFactory::Refresh()
 {
     // Prepare();
-    // if (!sPlayerbotAIConfig.equipmentPersistence ||
-    //     bot->GetLevel() < sPlayerbotAIConfig.equipmentPersistenceLevel)
+    // if (!sPlayerbotAIConfig.equipAndSpecPersistence ||
+    //     bot->GetLevel() < sPlayerbotAIConfig.equipAndSpecPersistenceLevel)
     // {
     //     InitEquipment(true);
     // }
@@ -831,8 +831,8 @@ void PlayerbotFactory::Refresh()
     InitSpecialSpells();
     InitMounts();
     InitKeyring();
-    if (!sPlayerbotAIConfig.equipmentPersistence ||
-        bot->GetLevel() < sPlayerbotAIConfig.equipmentPersistenceLevel)
+    if (!sPlayerbotAIConfig.equipAndSpecPersistence ||
+        bot->GetLevel() < sPlayerbotAIConfig.equipAndSpecPersistenceLevel)
     {
         InitTalentsTree(true, true, true);
     }

@@ -103,6 +103,8 @@ public:
     uint32 saveManaThreshold;
     AutoPartyBuffMode autoGreaterBlessings;
     AutoPartyBuffMode autoPartyBuffs;
+    bool tellWhenMissingBuffReagents;
+    uint32 missingBuffReagentMessageCooldown;
     bool autoAvoidAoe;
     float maxAoeAvoidRadius;
     std::set<uint32> aoeAvoidSpellWhitelist;
@@ -388,8 +390,8 @@ public:
 
     uint32 selfBotLevel;
     bool downgradeMaxLevelBot;
-    bool equipmentPersistence;
-    int32 equipmentPersistenceLevel;
+    bool equipAndSpecPersistence;
+    int32 equipAndSpecPersistenceLevel;
     int32 groupInvitationPermission;
     bool keepAltsInGroup = false;
     bool KeepAltsInGroup() const { return keepAltsInGroup; }
