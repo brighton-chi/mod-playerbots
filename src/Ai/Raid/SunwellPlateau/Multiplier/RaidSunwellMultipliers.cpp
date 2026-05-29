@@ -440,7 +440,7 @@ float EredarTwinsControlThreatMultiplier::GetValue(Action* action)
     Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
     Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
     bool shouldSuppressThreat = sacrolash &&
-         ShouldHoldSacrolashThreat(botAI, bot, alythess, sacrolash);
+        ShouldHoldSacrolashThreat(botAI, bot, alythess, sacrolash);
 
     if (!shouldSuppressThreat)
         return 1.0f;
