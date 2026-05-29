@@ -37,24 +37,6 @@ void AppendFelmystVaporPhaseMeleeExclusions(PlayerbotAI* botAI, GuidSet& exclusi
     }
 }
 
-void AppendEredarTwinsAlythessExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
-{
-    Unit* sacrolash =
-        botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "lady sacrolash")->Get();
-    if (!sacrolash)
-        return;
-
-    Unit* alythess =
-        botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "grand warlock alythess")->Get();
-    if (!alythess)
-        return;
-
-    Player* bot = botAI->GetBot();
-
-    if (!IsAlythessTank(botAI, bot))
-        exclusions.insert(alythess->GetGUID());
-}
-
 void AppendMuruDarkFiendExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 {
     Unit* muru = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "m'uru")->Get();
@@ -147,7 +129,6 @@ void AppendKiljaedenShieldOrbExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 void RaidSunwellStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExclusionType type) const
 {
     AppendFelmystVaporPhaseMeleeExclusions(botAI, exclusions);
-    AppendEredarTwinsAlythessExclusions(botAI, exclusions);
     AppendMuruDarkFiendExclusions(botAI, exclusions);
     AppendKiljaedenShieldOrbExclusions(botAI, exclusions);
 
@@ -385,6 +366,7 @@ void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new EredarTwinsMeleeJumpDownFromBalconyMultiplier(botAI));
     multipliers.push_back(new EredarTwinsControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new EredarTwinsControlThreatMultiplier(botAI));
+    multipliers.push_back(new EredarTwinsSuppressAlythessAttackerDebuffsMultiplier(botAI));
     multipliers.push_back(new EredarTwinsDisableTankActionsMultiplier(botAI));
     multipliers.push_back(new EredarTwinsRoguesStayStackedMultiplier(botAI));
     multipliers.push_back(new EredarTwinsControlMovementMultiplier(botAI));
