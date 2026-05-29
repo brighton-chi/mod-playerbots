@@ -55,6 +55,7 @@ enum class SunwellSpells : uint32
     SPELL_DRAGON_BREATH_REVITALIZE     = 45860,
     SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT = 45839,
     SPELL_DARKNESS_OF_A_THOUSAND_SOULS = 46605,
+    SPELL_SHADOW_SPIKE                 = 46680,
 
     // Hunter
     SPELL_MISDIRECTION                 = 35079,

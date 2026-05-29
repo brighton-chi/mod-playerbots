@@ -339,6 +339,26 @@ bool KiljaedenControlDragonAction::Execute(Event /*event*/)
     auto& darknessStates = GetKiljaedenDarknessShieldStates();
     KiljaedenDarknessShieldState& darknessState = darknessStates[bot->GetGUID().GetCounter()];
 
+    // Design choice: End drake control after phase changes
+    if (kiljaeden->HasUnitState(UNIT_STATE_CASTING) &&
+        kiljaeden->FindCurrentSpellBySpellId(
+            static_cast<uint32>(SunwellSpells::SPELL_SHADOW_SPIKE)))
+    {
+        darknessState.inDarkness = false;
+        darknessState.shieldCastThisDarkness = false;
+        darknessState.darknessStartMs = 0;
+        darknessState.lastDarknessCastMsLeft = 0;
+
+        if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
+        {
+            bot->RemoveAura(
+                static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT));
+            return true;
+        }
+
+        return false;
+    }
+
     if (IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
     {
         if (!darknessState.inDarkness)
