@@ -94,6 +94,9 @@ public:
         creators["felmyst fog of corruption is active"] =
             &RaidSunwellTriggerContext::felmyst_fog_of_corruption_is_active;
 
+        creators["felmyst melee cannot reach boss"] =
+            &RaidSunwellTriggerContext::felmyst_melee_cannot_reach_boss;
+
         // Eredar Twins
         creators["eredar twins melee is at balcony"] =
             &RaidSunwellTriggerContext::eredar_twins_melee_is_at_balcony;
@@ -283,6 +286,9 @@ private:
 
     static Trigger* felmyst_fog_of_corruption_is_active(
         PlayerbotAI* botAI) { return new FelmystFogOfCorruptionIsActiveTrigger(botAI); }
+
+    static Trigger* felmyst_melee_cannot_reach_boss(
+        PlayerbotAI* botAI) { return new FelmystMeleeCannotReachBossTrigger(botAI); }
 
     // Eredar Twins
     static Trigger* eredar_twins_melee_is_at_balcony(

@@ -246,6 +246,9 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("felmyst fog of corruption is active", {
         NextAction("felmyst avoid fog of corruption", ACTION_EMERGENCY + 9) }));
 
+    triggers.push_back(new TriggerNode("felmyst melee cannot reach boss", {
+        NextAction("felmyst melee clear target", ACTION_RAID + 2) }));
+
     // Eredar Twins
     triggers.push_back(new TriggerNode("eredar twins melee is at balcony", {
         NextAction("eredar twins melee jump down from balcony", ACTION_EMERGENCY + 1) }));

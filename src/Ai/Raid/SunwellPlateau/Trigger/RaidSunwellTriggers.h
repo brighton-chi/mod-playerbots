@@ -218,11 +218,11 @@ public:
     bool IsActive() override;
 };
 
-class FelmystManualTargetingIsRequiredForAirPhaseTrigger : public Trigger
+class FelmystMeleeCannotReachBossTrigger : public Trigger
 {
 public:
-    FelmystManualTargetingIsRequiredForAirPhaseTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "felmyst manual targeting is required for air phase") {}
+    FelmystMeleeCannotReachBossTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "felmyst melee cannot reach boss") {}
     bool IsActive() override;
 };
 

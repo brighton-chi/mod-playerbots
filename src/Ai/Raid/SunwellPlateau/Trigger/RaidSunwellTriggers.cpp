@@ -338,6 +338,18 @@ bool FelmystFogOfCorruptionIsActiveTrigger::IsActive()
     return TryGetActiveFelmystFogOfCorruptionState(bot, felmyst, fogState);
 }
 
+bool FelmystMeleeCannotReachBossTrigger::IsActive()
+{
+    if (!botAI->IsMelee(bot))
+        return false;
+
+    Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
+    if (!felmyst || AI_VALUE(Unit*, "current target") != felmyst)
+        return false;
+
+    return IsFelmystAirPhaseTargetSuppressed(felmyst);
+}
+
 // Eredar Twins
 
 bool EredarTwinsMeleeIsAtBalconyTrigger::IsActive()
@@ -864,15 +876,15 @@ bool KiljaedenDragonOrbIsActiveTrigger::IsActive()
 
 bool KiljaedenBotHasStaleRootAfterDragonTrigger::IsActive()
 {
-    // constexpr float orbInUsePendingDistance = 15.0f;
-    constexpr uint32 orbUseGracePeriodMs = 5000;
-
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
     if (!kiljaeden || kiljaeden->GetHealthPct() > 85.0f)
         return false;
 
     if (GetKiljaedenDragonOrbUser(bot) != bot)
         return false;
+
+    // constexpr float orbInUsePendingDistance = 15.0f;
+    constexpr uint32 orbUseGracePeriodMs = 2000;
 
     if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)) ||
         GetKiljaedenControlledDragon(bot) ||

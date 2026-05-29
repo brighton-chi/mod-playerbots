@@ -258,3 +258,11 @@ bool FelmystAvoidFogOfCorruptionAction::Execute(Event /*event*/)
 
     return false;
 }
+
+bool FelmystMeleeClearTargetAction::Execute(Event /*event*/)
+{
+    bot->AttackStop();
+    context->GetValue<Unit*>("current target")->Set(nullptr);
+    bot->SetSelection(ObjectGuid());
+    return true;
+}

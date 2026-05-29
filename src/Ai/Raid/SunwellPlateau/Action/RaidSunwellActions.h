@@ -225,6 +225,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class FelmystMeleeClearTargetAction : public Action
+{
+public:
+    FelmystMeleeClearTargetAction(
+        PlayerbotAI* botAI, std::string const name = "felmyst melee clear target") : Action(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 // Eredar Twins
 
 class EredarTwinsMeleeJumpDownFromBalconyAction : public MovementAction
