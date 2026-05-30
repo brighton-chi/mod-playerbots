@@ -103,8 +103,6 @@ public:
     uint32 saveManaThreshold;
     AutoPartyBuffMode autoGreaterBlessings;
     AutoPartyBuffMode autoPartyBuffs;
-    bool tellWhenMissingBuffReagents;
-    uint32 missingBuffReagentMessageCooldown;
     bool autoAvoidAoe;
     float maxAoeAvoidRadius;
     std::set<uint32> aoeAvoidSpellWhitelist;
@@ -294,6 +292,7 @@ public:
     float periodicOnlineOfflineRatio;
     bool gearscorecheck;
     bool randomBotPreQuests;
+    bool botSendMailEnabled;
 
     bool guildTaskEnabled;
     uint32 minGuildTaskChangeTime, maxGuildTaskChangeTime;
@@ -401,6 +400,7 @@ public:
     int reviveBotWhenSummoned;
     bool botRepairWhenSummon;
     bool autoInitOnly;
+    bool resetInstanceIdForAltBots;
     float autoInitEquipLevelLimitRatio;
     int32 maxAddedBots;
     int32 addClassCommand;

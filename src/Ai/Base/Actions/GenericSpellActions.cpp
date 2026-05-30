@@ -194,6 +194,10 @@ bool CastSpellAction::isUseful()
     if (!spellTarget || !spellTarget->IsInWorld() || spellTarget->GetMapId() != bot->GetMapId())
         return false;
 
+    // float combatReach = bot->GetCombatReach() + target->GetCombatReach();
+    // if (!botAI->IsRanged(bot))
+    //     combatReach += 4.0f / 3.0f;
+
     return AI_VALUE2(bool, "spell cast useful", spell);
 }
 
@@ -271,10 +275,7 @@ bool CastBuffSpellAction::isUseful()
         return false;
 
     Aura* aura = botAI->GetAura(spell, target, isOwner, checkDuration);
-    if (!aura || (beforeDuration && aura->GetDuration() < beforeDuration))
-        return true;
-
-    return false;
+    return !aura || (beforeDuration && aura->GetDuration() < beforeDuration);
 }
 
 bool CastBuffSpellAction::Execute(Event /*event*/)
@@ -450,8 +451,8 @@ bool CastEveryManForHimselfAction::isUseful()
             bot->HasAuraType(SPELL_AURA_MOD_FEAR) ||
             bot->HasAuraType(SPELL_AURA_MOD_ROOT) ||
             bot->HasAuraType(SPELL_AURA_MOD_CONFUSE) ||
-            bot->HasAuraType(SPELL_AURA_MOD_CHARM)) &&
-           CastSpellAction::isUseful();
+            bot->HasAuraType(SPELL_AURA_MOD_CHARM))
+           && CastSpellAction::isUseful();
 }
 
 bool CastWillOfTheForsakenAction::isPossible()
@@ -465,8 +466,8 @@ bool CastWillOfTheForsakenAction::isUseful()
     return (bot->HasAuraType(SPELL_AURA_MOD_FEAR) ||
             bot->HasAuraType(SPELL_AURA_MOD_CHARM) ||
             bot->HasAuraType(SPELL_AURA_AOE_CHARM) ||
-            bot->HasAuraWithMechanic(1 << MECHANIC_SLEEP)) &&
-           CastSpellAction::isUseful();
+            bot->HasAuraWithMechanic(1 << MECHANIC_SLEEP))
+           && CastSpellAction::isUseful();
 }
 
 bool UseTrinketAction::Execute(Event /*event*/)

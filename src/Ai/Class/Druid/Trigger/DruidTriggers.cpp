@@ -9,11 +9,6 @@
 #include "Playerbots.h"
 #include "ServerFacade.h"
 
-bool MarkOfTheWildOnPartyTrigger::IsActive()
-{
-    return BuffOnPartyTrigger::IsActive();
-}
-
 bool MarkOfTheWildTrigger::IsActive()
 {
     return BuffTrigger::IsActive() && !botAI->HasAura("gift of the wild", GetTarget());
