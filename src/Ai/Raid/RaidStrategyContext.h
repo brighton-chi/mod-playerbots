@@ -20,7 +20,7 @@
 #include "UldStrategy.h"
 #include "OnyStrategy.h"
 #include "ICCStrategy.h"
-#include "RaidSunwellStrategy.h"
+#include "SWPStrategy.h"
 
 class RaidStrategyContext : public NamedObjectContext<Strategy>
 {

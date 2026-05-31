@@ -20,7 +20,7 @@
 #include "UldTriggerContext.h"
 #include "OnyTriggerContext.h"
 #include "ICCTriggerContext.h"
-#include "RaidSunwellTriggerContext.h"
+#include "SWPTriggerContext.h"
 #include "Ai/Dungeon/TbcDungeonTriggerContext.h"
 #include "Ai/Dungeon/WotlkDungeonTriggerContext.h"
 

@@ -20,7 +20,7 @@
 #include "UldActionContext.h"
 #include "OnyActionContext.h"
 #include "ICCActionContext.h"
-#include "RaidSunwellActionContext.h"
+#include "SWPActionContext.h"
 #include "Ai/Dungeon/TbcDungeonActionContext.h"
 #include "Ai/Dungeon/WotlkDungeonActionContext.h"
 
