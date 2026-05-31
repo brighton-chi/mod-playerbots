@@ -104,7 +104,8 @@ bool LifeTapTrigger::IsActive()
 // Checks if the Life Tap Glyph buff is active
 bool LifeTapGlyphBuffTrigger::IsActive()
 {
-    if (!botAI->HasAura(63320, bot))
+    constexpr uint32 SPELL_GLYPH_OF_LIFE_TAP = 63320;
+    if (!bot->HasAura(SPELL_GLYPH_OF_LIFE_TAP))
         return false;
 
     return BuffTrigger::IsActive();
