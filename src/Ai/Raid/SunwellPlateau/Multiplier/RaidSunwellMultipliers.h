@@ -163,6 +163,14 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class EredarTwinsSuppressAlythessAttackerDebuffsMultiplier : public Multiplier
+{
+public:
+    EredarTwinsSuppressAlythessAttackerDebuffsMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "eredar twins suppress alythess attacker debuffs") {}
+    virtual float GetValue(Action* action);
+};
+
 class EredarTwinsDisableTankActionsMultiplier : public Multiplier
 {
 public:

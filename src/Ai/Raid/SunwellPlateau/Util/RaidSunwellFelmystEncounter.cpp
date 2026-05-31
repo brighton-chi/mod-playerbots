@@ -526,6 +526,28 @@ bool IsFelmystDemonicVaporHeadNearBot(Player* bot)
     return vapor && bot->GetDistance2d(vapor) <= kiteDistanceThreshold;
 }
 
+bool IsFelmystAirPhaseTargetSuppressed(Unit* felmyst)
+{
+    if (!felmyst || !felmyst->IsFlying())
+        return false;
+
+    // Preserve initial airborne pull targeting until Felmyst drops below the opener threshold.
+    if (felmyst->GetHealthPct() > 90.0f)
+        return false;
+
+    Position destination;
+    if (!TryGetFelmystMovementDestination(felmyst, destination))
+        return true;
+
+    constexpr float landingMatchDistance = 3.0f;
+    return destination.GetExactDist2d(
+               FELMYST_HIGH_Y_LANDING_POSITION.GetPositionX(),
+               FELMYST_HIGH_Y_LANDING_POSITION.GetPositionY()) > landingMatchDistance &&
+           destination.GetExactDist2d(
+               FELMYST_LOW_Y_LANDING_POSITION.GetPositionX(),
+               FELMYST_LOW_Y_LANDING_POSITION.GetPositionY()) > landingMatchDistance;
+}
+
 void ClearFelmystDemonicVaporKiteState(Player* bot)
 {
     const uint32 instanceId = bot->GetInstanceId();

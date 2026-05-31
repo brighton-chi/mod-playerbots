@@ -19,6 +19,8 @@ namespace
 {
 
 std::unordered_map<ObjectGuid::LowType, uint32> kiljaedenDragonOrbUseTimes;
+std::unordered_map<ObjectGuid::LowType, KiljaedenDarknessShieldState>
+    kiljaedenDarknessShieldStates;
 
 float GetCenteredArcSlotAngleOffset(
     uint8 slotIndex, uint8 slotCount, float arcWidth)
@@ -142,6 +144,12 @@ float GetKiljaedenNearestArmageddonDistance(
     return nearestDistance;
 }
 
+}
+
+std::unordered_map<ObjectGuid::LowType, KiljaedenDarknessShieldState>&
+GetKiljaedenDarknessShieldStates()
+{
+    return kiljaedenDarknessShieldStates;
 }
 
 const Position KILJAEDEN_TANK_POSITION =     { 1704.729f, 634.891f, 27.787f };

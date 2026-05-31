@@ -122,12 +122,6 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
             erased = true;
     }
 
-    /* if (botAI->IsMainTank(bot) &&
-        !AI_VALUE2(Unit*, "find target", "hand of the deceiver") &&
-        !AI_VALUE2(Unit*, "find target", "kil'jaeden"))
-    {
-        ResetKiljaedenDragonOrbUserAnnouncement(instanceId);
-    } */
     if (isMechanicTracker &&
         !AI_VALUE2(Unit*, "find target", "hand of the deceiver"))
     {

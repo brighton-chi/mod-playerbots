@@ -4,13 +4,10 @@
  */
 
 #include "DruidTriggers.h"
+#include "DynamicObject.h"
 #include "Player.h"
 #include "Playerbots.h"
-
-bool MarkOfTheWildOnPartyTrigger::IsActive()
-{
-    return BuffOnPartyTrigger::IsActive();
-}
+#include "ServerFacade.h"
 
 bool MarkOfTheWildTrigger::IsActive()
 {
@@ -31,9 +28,55 @@ bool ThornsTrigger::IsActive() { return BuffTrigger::IsActive() && !botAI->HasAu
 
 bool BearFormTrigger::IsActive() { return !botAI->HasAnyAuraOf(bot, "bear form", "dire bear form", nullptr); }
 
-bool TreeFormTrigger::IsActive() { return !botAI->HasAura(33891, bot); }
+bool TreeFormTrigger::IsActive()
+{
+    constexpr uint32 SPELL_TREE_OF_LIFE = 33891;
+    return !bot->HasAura(SPELL_TREE_OF_LIFE);
+}
 
 bool CatFormTrigger::IsActive() { return !botAI->HasAura("cat form", bot); }
+
+bool AquaticFormTrigger::IsActive()
+{
+    return !bot->IsInCombat() && !botAI->HasAura("aquatic form", bot) &&
+           bot->GetLiquidData().Status == LIQUID_MAP_UNDER_WATER;
+}
+
+bool ProwlTrigger::IsActive()
+{
+    if (botAI->HasAura("prowl", bot) || bot->IsInCombat())
+        return false;
+
+    if (!botAI->HasSpell("prowl"))
+        return false;
+
+    uint32 const prowlId = AI_VALUE2(uint32, "spell id", "prowl");
+    if (bot->HasSpellCooldown(prowlId))
+        return false;
+
+    float distance = 30.f;
+
+    Unit* target = AI_VALUE(Unit*, "enemy player target");
+    if (target && !target->IsInWorld())
+        return false;
+    if (!target)
+        target = AI_VALUE(Unit*, "grind target");
+    if (!target)
+        target = AI_VALUE(Unit*, "dps target");
+    if (!target)
+        return false;
+
+    if (target && target->GetVictim())
+        distance -= 10;
+    if (target->isMoving() && target->GetVictim())
+        distance -= 10;
+    if (bot->InBattleground())
+        distance += 15;
+    if (bot->InArena())
+        distance += 15;
+
+    return target && ServerFacade::instance().GetDistance2d(bot, target) < distance;
+}
 
 const std::set<uint32> HurricaneChannelCheckTrigger::HURRICANE_SPELL_IDS = {
     16914,  // Hurricane Rank 1
@@ -45,19 +88,38 @@ const std::set<uint32> HurricaneChannelCheckTrigger::HURRICANE_SPELL_IDS = {
 
 bool HurricaneChannelCheckTrigger::IsActive()
 {
-    Player* bot = botAI->GetBot();
-
-    // Check if the bot is channeling a spell
     if (Spell* spell = bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
     {
-        // Only trigger if the spell being channeled is Hurricane
-        if (HURRICANE_SPELL_IDS.count(spell->m_spellInfo->Id))
+        if (!HURRICANE_SPELL_IDS.count(spell->m_spellInfo->Id))
+            return false;
+
+        // Find this bot's own Hurricane DynamicObject
+        DynamicObject* dynObj = nullptr;
+        for (uint32 spellId : HURRICANE_SPELL_IDS)
         {
-            uint8 attackerCount = AI_VALUE(uint8, "attacker count");
-            return attackerCount < minEnemies;
+            dynObj = bot->GetDynObject(spellId);
+            if (dynObj)
+                break;
         }
+
+        if (!dynObj)
+            return false;
+
+        // Count attackers actually inside the Hurricane AoE
+        float radius = dynObj->GetRadius();
+        GuidVector attackers = AI_VALUE(GuidVector, "attackers");
+        uint32 count = 0;
+        for (ObjectGuid const& guid : attackers)
+        {
+            Unit* unit = botAI->GetUnit(guid);
+            if (!unit || !unit->IsAlive())
+                continue;
+            if (unit->GetDistance(dynObj->GetPosition()) <= radius)
+                count++;
+        }
+
+        return count < minEnemies;
     }
 
-    // Not channeling Hurricane
     return false;
 }

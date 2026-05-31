@@ -37,24 +37,6 @@ void AppendFelmystVaporPhaseMeleeExclusions(PlayerbotAI* botAI, GuidSet& exclusi
     }
 }
 
-void AppendEredarTwinsAlythessExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
-{
-    Unit* sacrolash =
-        botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "lady sacrolash")->Get();
-    if (!sacrolash)
-        return;
-
-    Unit* alythess =
-        botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "grand warlock alythess")->Get();
-    if (!alythess)
-        return;
-
-    Player* bot = botAI->GetBot();
-
-    if (!IsAlythessTank(botAI, bot))
-        exclusions.insert(alythess->GetGUID());
-}
-
 void AppendMuruDarkFiendExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 {
     Unit* muru = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "m'uru")->Get();
@@ -147,7 +129,6 @@ void AppendKiljaedenShieldOrbExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 void RaidSunwellStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExclusionType type) const
 {
     AppendFelmystVaporPhaseMeleeExclusions(botAI, exclusions);
-    AppendEredarTwinsAlythessExclusions(botAI, exclusions);
     AppendMuruDarkFiendExclusions(botAI, exclusions);
     AppendKiljaedenShieldOrbExclusions(botAI, exclusions);
 
@@ -246,6 +227,9 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("felmyst fog of corruption is active", {
         NextAction("felmyst avoid fog of corruption", ACTION_EMERGENCY + 9) }));
 
+    triggers.push_back(new TriggerNode("felmyst melee cannot reach boss", {
+        NextAction("felmyst melee clear target", ACTION_RAID + 2) }));
+
     // Eredar Twins
     triggers.push_back(new TriggerNode("eredar twins melee is at balcony", {
         NextAction("eredar twins melee jump down from balcony", ACTION_EMERGENCY + 1) }));
@@ -299,7 +283,7 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("m'uru dark fiends spawned", {
         NextAction("m'uru kill dark fiends with dispel", ACTION_EMERGENCY + 10) }));
 
-    triggers.push_back(new TriggerNode("m'uru entropius turned out the lights", {
+    triggers.push_back(new TriggerNode("m'uru entropius makes mini darkness", {
         NextAction("m'uru don't touch the dark fiend", ACTION_EMERGENCY + 9) }));
 
     triggers.push_back(new TriggerNode("m'uru darkness is coming", {
@@ -382,6 +366,7 @@ void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new EredarTwinsMeleeJumpDownFromBalconyMultiplier(botAI));
     multipliers.push_back(new EredarTwinsControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new EredarTwinsControlThreatMultiplier(botAI));
+    multipliers.push_back(new EredarTwinsSuppressAlythessAttackerDebuffsMultiplier(botAI));
     multipliers.push_back(new EredarTwinsDisableTankActionsMultiplier(botAI));
     multipliers.push_back(new EredarTwinsRoguesStayStackedMultiplier(botAI));
     multipliers.push_back(new EredarTwinsControlMovementMultiplier(botAI));

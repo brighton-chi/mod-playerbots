@@ -188,7 +188,7 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
     {
         Position position;
         if (!TryGetBrutallusRangedLanePosition(
-            brutallus, mainTank, assistTank, rangedIndex, true, BRUTALLUS_OUTER_LANE_RADIUS,
+                brutallus, mainTank, assistTank, rangedIndex, true, BRUTALLUS_OUTER_LANE_RADIUS,
                 bot->GetPositionZ(), position))
         {
             return false;
@@ -209,7 +209,7 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
     {
         Position position;
         if (!TryGetBrutallusRangedLaneTraversalPosition(
-            brutallus, mainTank, assistTank, rangedIndex, BRUTALLUS_OUTER_LANE_RADIUS, false,
+                brutallus, mainTank, assistTank, rangedIndex, BRUTALLUS_OUTER_LANE_RADIUS, false,
                 bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), position))
         {
             return false;
@@ -224,7 +224,7 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
 
         Position returnTargetPosition;
         if (!TryGetBrutallusRangedLanePosition(
-            brutallus, mainTank, assistTank, rangedIndex, false, BRUTALLUS_OUTER_LANE_RADIUS,
+                brutallus, mainTank, assistTank, rangedIndex, false, BRUTALLUS_OUTER_LANE_RADIUS,
                 bot->GetPositionZ(), returnTargetPosition))
         {
             return false;
@@ -243,9 +243,8 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
     {
         Position position;
         if (!TryGetBrutallusRangedLanePosition(
-            brutallus, mainTank, assistTank, rangedIndex, false,
-            BRUTALLUS_NORMAL_RANGED_RADIUS,
-                bot->GetPositionZ(), position))
+                brutallus, mainTank, assistTank, rangedIndex, false,
+                BRUTALLUS_NORMAL_RANGED_RADIUS, bot->GetPositionZ(), position))
         {
             return false;
         }
@@ -264,8 +263,7 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
     Position position;
     if (!TryGetBrutallusRangedLanePosition(
             brutallus, mainTank, assistTank, rangedIndex, false,
-            BRUTALLUS_NORMAL_RANGED_RADIUS,
-            bot->GetPositionZ(), position))
+            BRUTALLUS_NORMAL_RANGED_RADIUS, bot->GetPositionZ(), position))
     {
         return false;
     }
@@ -322,10 +320,11 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
     {
         Position stepPosition;
         if (!TryGetBrutallusRangedLanePosition(
-            brutallus, mainTank, assistTank, rangedIndex, false,
-            BRUTALLUS_INNER_LANE_RADIUS,
-                bot->GetPositionZ(), stepPosition))
+                brutallus, mainTank, assistTank, rangedIndex, false,
+                BRUTALLUS_INNER_LANE_RADIUS, bot->GetPositionZ(), stepPosition))
+        {
             return false;
+        }
 
         if (bot->GetExactDist2d(stepPosition.GetPositionX(), stepPosition.GetPositionY()) > 1.0f)
         {
@@ -342,9 +341,8 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
     {
         Position position;
         if (!TryGetBrutallusRangedLaneTraversalPosition(
-            brutallus, mainTank, assistTank, rangedIndex, BRUTALLUS_INNER_LANE_RADIUS, true,
-                bot->GetPositionX(), bot->GetPositionY(),
-                bot->GetPositionZ(), position))
+                brutallus, mainTank, assistTank, rangedIndex, BRUTALLUS_INNER_LANE_RADIUS, true,
+                bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), position))
         {
             return false;
         }
@@ -358,9 +356,8 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
 
         Position mirrorStepPosition;
         if (!TryGetBrutallusRangedLanePosition(
-            brutallus, mainTank, assistTank, rangedIndex, true,
-            BRUTALLUS_INNER_LANE_RADIUS,
-                bot->GetPositionZ(), mirrorStepPosition))
+                brutallus, mainTank, assistTank, rangedIndex, true,
+                BRUTALLUS_INNER_LANE_RADIUS, bot->GetPositionZ(), mirrorStepPosition))
         {
             return false;
         }
@@ -377,8 +374,7 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
     Position position;
     if (!TryGetBrutallusRangedLanePosition(
             brutallus, mainTank, assistTank, rangedIndex, true,
-            BRUTALLUS_NORMAL_RANGED_RADIUS,
-            bot->GetPositionZ(), position))
+            BRUTALLUS_NORMAL_RANGED_RADIUS, bot->GetPositionZ(), position))
     {
         return false;
     }

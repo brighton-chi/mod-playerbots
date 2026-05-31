@@ -27,6 +27,9 @@ bool CastDrainSoulAction::isUseful() { return AI_VALUE2(uint32, "item count", "s
 // Checks if the bot's health is above a certain threshold, and if so, allows casting Life Tap
 bool CastLifeTapAction::isUseful() { return AI_VALUE2(uint8, "health", "self target") > sPlayerbotAIConfig.lowHealth; }
 
+Value<Unit*>* CastBanishOnCcAction::GetTargetValue() { return context->GetValue<Unit*>("rti cc target"); }
+Value<Unit*>* CastFearOnCcAction::GetTargetValue() { return context->GetValue<Unit*>("rti cc target"); }
+
 // Checks if the target marked with the moon icon can be banished
 bool CastBanishOnCcAction::isPossible()
 {
@@ -76,8 +79,10 @@ bool CastRainOfFireAction::isUseful()
     Unit* target = GetTarget();
     if (!target)
         return false;
-    if (bot->HasSpell(27243) || bot->HasSpell(47835) || bot->HasSpell(47836)) // Seed of Corruption spell IDs
+
+    if (botAI->HasSpell("seed of corruption"))
         return false;
+
     return true;
 }
 

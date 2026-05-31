@@ -53,17 +53,15 @@ bool MuruMisdirectEnemiesToTanksAction::Execute(Event /*event*/)
 
 bool MuruMainTankPickUpEntropiusAction::Execute(Event /*event*/)
 {
-    Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius");
-    if (!entropius)
-        return false;
+    if (Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius"))
+        return AI_VALUE(Unit*, "current target") != entropius && Attack(entropius);
 
-    return AI_VALUE(Unit*, "current target") != entropius && Attack(entropius);
+    return false;
 }
 
 bool MuruPositionRangedAction::Execute(Event /*event*/)
 {
     Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
-    Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius");
     if (muru && muru->GetHealth() > 1)
     {
         SetEntropiusInitialRangedPositionReached(false);
@@ -75,6 +73,7 @@ bool MuruPositionRangedAction::Execute(Event /*event*/)
                           MovementPriority::MOVEMENT_COMBAT);
     }
 
+    Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius");
     MuruEncounterTargets targets;
     targets.muru = muru;
     targets.entropius = entropius;
@@ -184,6 +183,7 @@ bool MuruPositionRangedAction::TryGetEntropiusInitialRangedPosition(
     const float angleStep =
         2.0f * static_cast<float>(M_PI) / static_cast<float>(rangedMembers.size());
     const float angle = Position::NormalizeOrientation(anchorAngle + angleStep * slotIndex);
+
     float destinationX = MURU_CENTER_POSITION.GetPositionX() + std::cos(angle) * spreadRadius;
     float destinationY = MURU_CENTER_POSITION.GetPositionY() + std::sin(angle) * spreadRadius;
 
@@ -206,8 +206,7 @@ bool MuruSetDpsPriorityAction::Execute(Event /*event*/)
     Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius");
     Unit* currentTarget = context->GetValue<Unit*>("current target")->Get();
     bool isMeleeDps = false;
-    Unit* target = ResolveMuruDpsTarget(
-        muru, entropius, currentTarget, isMeleeDps);
+    Unit* target = ResolveMuruDpsTarget(muru, entropius, currentTarget, isMeleeDps);
 
     if (target && target->GetEntry() ==
             static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_BERSERKER))
@@ -229,10 +228,14 @@ bool MuruSetDpsPriorityAction::Execute(Event /*event*/)
     {
         bool needsAttack = false;
         if (isMeleeDps)
+        {
             needsAttack = currentTarget != target ||
                 !bot->HasUnitState(UNIT_STATE_MELEE_ATTACKING);
+        }
         else
+        {
             needsAttack = currentTarget != target;
+        }
 
         if (needsAttack)
             return Attack(target);
@@ -568,8 +571,11 @@ bool MuruTanksMoveSentinelToSafePositionAction::Execute(Event /*event*/)
         }
     }
 
-    if (botAI->IsAssistTankOfIndex(bot, 0, true) && AI_VALUE(Unit*, "current target") != voidSentinel)
+    if (botAI->IsAssistTankOfIndex(bot, 0, true) &&
+        AI_VALUE(Unit*, "current target") != voidSentinel)
+    {
         return Attack(voidSentinel);
+    }
 
     return false;
 }

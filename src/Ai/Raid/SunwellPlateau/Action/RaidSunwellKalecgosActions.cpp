@@ -35,8 +35,8 @@ bool KalecgosTankPositionBossAction::Execute(Event event)
     };
 
     Player* currentVictimPlayer = kalecgos->GetVictim() ? kalecgos->GetVictim()->ToPlayer() : nullptr;
-    const bool otherTankHasAggro = currentVictimPlayer && currentVictimPlayer != bot &&
-         botAI->IsTank(currentVictimPlayer);
+    const bool otherTankHasAggro =
+        currentVictimPlayer && currentVictimPlayer != bot && botAI->IsTank(currentVictimPlayer);
 
     if (otherTankHasAggro)
     {
@@ -68,13 +68,20 @@ bool KalecgosEnterSpectralRiftAction::Execute(Event /*event*/)
     if (Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos");
         kalecgos && botAI->IsTank(bot))
     {
-        Player* nextTank = GetKalecgosCurrentTank(botAI, bot);
-        if (!nextTank || nextTank == bot)
+        Player* surfaceTank = GetKalecgosCurrentTank(botAI, bot);
+        if (!surfaceTank)
             return false;
 
+        if (surfaceTank == bot)
+        {
+            surfaceTank = GetKalecgosReplacementTank(botAI, bot);
+            if (!surfaceTank)
+                return false;
+        }
+
         const Position& position = KALECGOS_TANK_POSITION;
-        if (nextTank->GetExactDist2d(position.GetPositionX(),
-            position.GetPositionY()) > 3.0f || kalecgos->GetVictim() != nextTank)
+        if (surfaceTank->GetExactDist2d(position.GetPositionX(),
+            position.GetPositionY()) > 3.0f || kalecgos->GetVictim() != surfaceTank)
         {
             return false;
         }
@@ -205,7 +212,9 @@ bool KalecgosReturnToSpectralRealmGroundAction::Execute(Event /*event*/)
 {
     if (bot->TeleportTo(SUNWELL_MAP_ID, bot->GetPositionX(), bot->GetPositionY(),
                         KALECGOS_SPECTRAL_REALM_Z, bot->GetOrientation()))
+    {
         return true;
+    }
 
     return false;
 }

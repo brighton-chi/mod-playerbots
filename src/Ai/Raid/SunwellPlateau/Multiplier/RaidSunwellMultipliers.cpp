@@ -24,6 +24,7 @@
 #include "NonCombatActions.h"
 #include "PaladinActions.h"
 #include "PartyMemberToDispel.h"
+#include "PriestActions.h"
 #include "ReachTargetActions.h"
 #include "RogueActions.h"
 #include "ShamanActions.h"
@@ -98,10 +99,11 @@ float KalecgosWaitToDecurseMultiplier::GetValue(Action* action)
 
     Aura* aura = target->GetAura(
         static_cast<uint32>(SunwellSpells::SPELL_CURSE_OF_BOUNDLESS_AGONY));
-    if (!aura || aura->GetDuration() < 10000)
+    if (!aura || aura->GetDuration() < 10000) // 10 seconds remaining
         return 1.0f;
 
     if (dynamic_cast<CastRemoveCurseAction*>(action) ||
+        dynamic_cast<CastRemoveCurseOnPartyAction*>(action) ||
         dynamic_cast<CastCleanseSpiritAction*>(action) ||
         dynamic_cast<CastCleanseSpiritCurseOnPartyAction*>(action) ||
         dynamic_cast<CastDruidRemoveCurseOnPartyAction*>(action))
@@ -440,7 +442,7 @@ float EredarTwinsControlThreatMultiplier::GetValue(Action* action)
     Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
     Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
     bool shouldSuppressThreat = sacrolash &&
-         ShouldHoldSacrolashThreat(botAI, bot, alythess, sacrolash);
+        ShouldHoldSacrolashThreat(botAI, bot, alythess, sacrolash);
 
     if (!shouldSuppressThreat)
         return 1.0f;
@@ -455,6 +457,32 @@ float EredarTwinsControlThreatMultiplier::GetValue(Action* action)
 
     if (dynamic_cast<CastSpellAction*>(action) && actionTarget == sacrolash)
         return 0.0f;
+
+    return 1.0f;
+}
+
+float EredarTwinsSuppressAlythessAttackerDebuffsMultiplier::GetValue(Action* action)
+{
+    if (!AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
+        return 1.0f;
+
+    if (dynamic_cast<CastPowerWordPainOnAttackerAction*>(action) ||
+        dynamic_cast<CastVampiricTouchOnAttackerAction*>(action) ||
+        dynamic_cast<CastCorruptionOnAttackerAction*>(action) ||
+        dynamic_cast<CastImmolateOnAttackerAction*>(action) ||
+        dynamic_cast<CastUnstableAfflictionOnAttackerAction*>(action) ||
+        dynamic_cast<CastCurseOfAgonyOnAttackerAction*>(action) ||
+        dynamic_cast<CastSeedOfCorruptionOnAttackerAction*>(action) ||
+        dynamic_cast<CastInsectSwarmOnAttackerAction*>(action) ||
+        dynamic_cast<CastMoonfireOnAttackerAction*>(action) ||
+        dynamic_cast<CastSerpentStingOnAttackerAction*>(action) ||
+        dynamic_cast<CastLivingBombOnAttackersAction*>(action) ||
+        dynamic_cast<CastIcyTouchOnAttackerAction*>(action) ||
+        dynamic_cast<CastPlagueStrikeOnAttackerAction*>(action) ||
+        dynamic_cast<CastRendOnAttackerAction*>(action))
+    {
+        return 0.0f;
+    }
 
     return 1.0f;
 }

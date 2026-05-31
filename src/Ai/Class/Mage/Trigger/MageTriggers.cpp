@@ -31,11 +31,6 @@ bool NoManaGemTrigger::IsActive()
     return true;
 }
 
-bool ArcaneIntellectOnPartyTrigger::IsActive()
-{
-    return BuffOnPartyTrigger::IsActive();
-}
-
 bool ArcaneIntellectTrigger::IsActive()
 {
     return BuffTrigger::IsActive() && !botAI->HasAura("arcane brilliance", GetTarget());
@@ -87,7 +82,8 @@ bool FrostbiteOnTargetTrigger::IsActive()
 
 bool NoFocusMagicTrigger::IsActive()
 {
-    if (!bot->HasSpell(54646)) // Focus Magic
+    constexpr uint32 SPELL_FOCUS_MAGIC = 54646;
+    if (!bot->HasSpell(SPELL_FOCUS_MAGIC))
         return false;
 
     Group* group = bot->GetGroup();
@@ -100,7 +96,7 @@ bool NoFocusMagicTrigger::IsActive()
         if (!member || member == bot || !member->IsAlive())
             continue;
 
-        if (member->HasAura(54646, bot->GetGUID()))
+        if (member->HasAura(SPELL_FOCUS_MAGIC, bot->GetGUID()))
             return false;
     }
     return true;
@@ -108,11 +104,9 @@ bool NoFocusMagicTrigger::IsActive()
 
 bool DeepFreezeCooldownTrigger::IsActive()
 {
-    // If the bot does NOT have Deep Freeze, treat as "on cooldown"
-    if (!bot->HasSpell(44572)) // Deep Freeze
-        return true;
-
-    return SpellCooldownTrigger::IsActive();
+    constexpr uint32 SPELL_DEEP_FREEZE = 44572;
+    return !bot->HasSpell(SPELL_DEEP_FREEZE) ||
+           SpellCooldownTrigger::IsActive();
 }
 
 const std::unordered_set<uint32> FlamestrikeNearbyTrigger::FLAMESTRIKE_SPELL_IDS = {

@@ -6,6 +6,7 @@
 #include "GenericSpellActions.h"
 
 #include <ctime>
+#include <unordered_set>
 
 #include "Event.h"
 #include "ItemTemplate.h"
@@ -25,48 +26,82 @@ using ai::spell::HasSpellOrCategoryCooldown;
 
 namespace
 {
-    bool IsArmorEffect(SpellEffectInfo const& effectInfo)
+    std::unordered_set<uint32> const& GetMixedTriggerTrinketSpellIds()
     {
-        return effectInfo.Effect == SPELL_EFFECT_APPLY_AURA &&
-               effectInfo.ApplyAuraName == SPELL_AURA_MOD_RESISTANCE &&
-               (effectInfo.MiscValue & SPELL_SCHOOL_MASK_NORMAL);
+        static std::unordered_set<uint32> const mixedTriggerSpellIds = []()
+        {
+            std::unordered_set<uint32> onUseSpellIds;
+            std::unordered_set<uint32> onEquipSpellIds;
+            std::unordered_set<uint32> mixedSpellIds;
+
+            auto const* itemTemplates = sObjectMgr->GetItemTemplateStore();
+            if (!itemTemplates)
+                return mixedSpellIds;
+
+            auto const markSpellId = [&](int32 spellId, uint8 spellTrigger)
+            {
+                if (spellId <= 0)
+                    return;
+
+                if (spellTrigger == ITEM_SPELLTRIGGER_ON_USE)
+                {
+                    if (onEquipSpellIds.find(spellId) != onEquipSpellIds.end())
+                        mixedSpellIds.insert(spellId);
+
+                    onUseSpellIds.insert(spellId);
+                }
+                else if (spellTrigger == ITEM_SPELLTRIGGER_ON_EQUIP)
+                {
+                    if (onUseSpellIds.find(spellId) != onUseSpellIds.end())
+                        mixedSpellIds.insert(spellId);
+
+                    onEquipSpellIds.insert(spellId);
+                }
+            };
+
+            for (auto const& itr : *itemTemplates)
+            {
+                ItemTemplate const& proto = itr.second;
+                if (proto.InventoryType != INVTYPE_TRINKET)
+                    continue;
+
+                for (uint8 spellIndex = 0; spellIndex < MAX_ITEM_PROTO_SPELLS; ++spellIndex)
+                {
+                    auto const& spellData = proto.Spells[spellIndex];
+                    markSpellId(spellData.SpellId, spellData.SpellTrigger);
+                }
+            }
+
+            return mixedSpellIds;
+        }();
+
+        return mixedTriggerSpellIds;
     }
 
     bool IsManaRestoreEffect(SpellEffectInfo const& effectInfo)
     {
-        if (effectInfo.Effect == SPELL_EFFECT_ENERGIZE &&
-            effectInfo.MiscValue == POWER_MANA)
-        {
-            return true;
-        }
-
-        return effectInfo.Effect == SPELL_EFFECT_APPLY_AURA &&
-               effectInfo.ApplyAuraName == SPELL_AURA_PERIODIC_ENERGIZE &&
-               effectInfo.MiscValue == POWER_MANA;
+        return (effectInfo.Effect == SPELL_EFFECT_ENERGIZE &&
+                effectInfo.MiscValue == POWER_MANA) ||
+               (effectInfo.Effect == SPELL_EFFECT_APPLY_AURA &&
+                effectInfo.ApplyAuraName == SPELL_AURA_PERIODIC_ENERGIZE &&
+                effectInfo.MiscValue == POWER_MANA);
     }
 
-    bool IsManaRegenEffect(SpellEffectInfo const& effectInfo)
+    bool IsManaEfficiencyEffect(SpellEffectInfo const& effectInfo)
+    {
+        return effectInfo.Effect == SPELL_EFFECT_APPLY_AURA &&
+               (((effectInfo.ApplyAuraName == SPELL_AURA_MOD_POWER_REGEN ||
+                  effectInfo.ApplyAuraName == SPELL_AURA_MOD_POWER_REGEN_PERCENT) &&
+                 effectInfo.MiscValue == POWER_MANA) ||
+                effectInfo.ApplyAuraName == SPELL_AURA_MOD_POWER_COST_SCHOOL ||
+                effectInfo.ApplyAuraName == SPELL_AURA_MOD_POWER_COST_SCHOOL_PCT ||
+                effectInfo.ApplyAuraName == SPELL_AURA_MOD_MANA_REGEN_INTERRUPT);
+    }
+
+    bool IsDefensiveTankEffect(SpellEffectInfo const& effectInfo)
     {
         if (effectInfo.Effect != SPELL_EFFECT_APPLY_AURA)
             return false;
-
-        if ((effectInfo.ApplyAuraName == SPELL_AURA_MOD_POWER_REGEN ||
-             effectInfo.ApplyAuraName == SPELL_AURA_MOD_POWER_REGEN_PERCENT) &&
-            effectInfo.MiscValue == POWER_MANA)
-        {
-            return true;
-        }
-
-        return effectInfo.ApplyAuraName == SPELL_AURA_MOD_MANA_REGEN_INTERRUPT;
-    }
-
-    bool IsTankRatingEffect(SpellEffectInfo const& effectInfo)
-    {
-        if (effectInfo.Effect != SPELL_EFFECT_APPLY_AURA ||
-            effectInfo.ApplyAuraName != SPELL_AURA_MOD_RATING)
-        {
-            return false;
-        }
 
         uint32 const tankRatingsMask =
             (1u << CR_DEFENSE_SKILL) |
@@ -80,19 +115,12 @@ namespace
             (1u << CR_CRIT_TAKEN_RANGED) |
             (1u << CR_CRIT_TAKEN_SPELL);
 
-        return (effectInfo.MiscValue & tankRatingsMask) != 0;
-    }
-
-    bool IsDefensiveTankEffect(SpellEffectInfo const& effectInfo)
-    {
-        if (IsTankRatingEffect(effectInfo) || IsArmorEffect(effectInfo))
-            return true;
-
-        if (effectInfo.Effect != SPELL_EFFECT_APPLY_AURA)
-            return false;
-
         switch (effectInfo.ApplyAuraName)
         {
+            case SPELL_AURA_MOD_RESISTANCE:
+                return (effectInfo.MiscValue & SPELL_SCHOOL_MASK_NORMAL) != 0;
+            case SPELL_AURA_MOD_RATING:
+                return (effectInfo.MiscValue & tankRatingsMask) != 0;
             case SPELL_AURA_MOD_INCREASE_HEALTH:
             case SPELL_AURA_MOD_INCREASE_HEALTH_PERCENT:
             case SPELL_AURA_MOD_PARRY_PERCENT:
@@ -165,6 +193,10 @@ bool CastSpellAction::isUseful()
     Unit* spellTarget = GetTarget();
     if (!spellTarget || !spellTarget->IsInWorld() || spellTarget->GetMapId() != bot->GetMapId())
         return false;
+
+    // float combatReach = bot->GetCombatReach() + target->GetCombatReach();
+    // if (!botAI->IsRanged(bot))
+    //     combatReach += 4.0f / 3.0f;
 
     return AI_VALUE2(bool, "spell cast useful", spell);
 }
@@ -243,10 +275,7 @@ bool CastBuffSpellAction::isUseful()
         return false;
 
     Aura* aura = botAI->GetAura(spell, target, isOwner, checkDuration);
-    if (!aura || (beforeDuration && aura->GetDuration() < beforeDuration))
-        return true;
-
-    return false;
+    return !aura || (beforeDuration && aura->GetDuration() < beforeDuration);
 }
 
 bool CastBuffSpellAction::Execute(Event /*event*/)
@@ -413,10 +442,7 @@ bool CastVehicleSpellAction::Execute(Event /*event*/)
 bool CastEveryManForHimselfAction::isPossible()
 {
     uint32 spellId = AI_VALUE2(uint32, "spell id", spell);
-    if (!spellId || !bot->HasSpell(spellId) || HasSpellOrCategoryCooldown(bot, spellId))
-        return false;
-
-    return true;
+    return spellId && bot->HasSpell(spellId) && !HasSpellOrCategoryCooldown(bot, spellId);
 }
 
 bool CastEveryManForHimselfAction::isUseful()
@@ -425,17 +451,14 @@ bool CastEveryManForHimselfAction::isUseful()
             bot->HasAuraType(SPELL_AURA_MOD_FEAR) ||
             bot->HasAuraType(SPELL_AURA_MOD_ROOT) ||
             bot->HasAuraType(SPELL_AURA_MOD_CONFUSE) ||
-            bot->HasAuraType(SPELL_AURA_MOD_CHARM)) &&
-           CastSpellAction::isUseful();
+            bot->HasAuraType(SPELL_AURA_MOD_CHARM))
+           && CastSpellAction::isUseful();
 }
 
 bool CastWillOfTheForsakenAction::isPossible()
 {
     uint32 spellId = AI_VALUE2(uint32, "spell id", spell);
-    if (!spellId || !bot->HasSpell(spellId) || HasSpellOrCategoryCooldown(bot, spellId))
-        return false;
-
-    return true;
+    return spellId && bot->HasSpell(spellId) && !HasSpellOrCategoryCooldown(bot, spellId);
 }
 
 bool CastWillOfTheForsakenAction::isUseful()
@@ -443,8 +466,8 @@ bool CastWillOfTheForsakenAction::isUseful()
     return (bot->HasAuraType(SPELL_AURA_MOD_FEAR) ||
             bot->HasAuraType(SPELL_AURA_MOD_CHARM) ||
             bot->HasAuraType(SPELL_AURA_AOE_CHARM) ||
-            bot->HasAuraWithMechanic(1 << MECHANIC_SLEEP)) &&
-           CastSpellAction::isUseful();
+            bot->HasAuraWithMechanic(1 << MECHANIC_SLEEP))
+           && CastSpellAction::isUseful();
 }
 
 bool UseTrinketAction::Execute(Event /*event*/)
@@ -474,24 +497,53 @@ bool UseTrinketAction::UseTrinket(Item* item)
     uint8 castFlags = 0;
     uint32 targetFlag = TARGET_FLAG_NONE;
     uint32 spellId = 0;
-    uint8 healthPct = 0;
-    uint8 manaPct = 0;
-    bool logHealthPct = false;
-    bool logManaPct = false;
+    int32 itemSpellCooldown = 0;
+    uint32 itemSpellCategory = 0;
+    int32 itemSpellCategoryCooldown = 0;
+
     for (uint8 i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
     {
         if (item->GetTemplate()->Spells[i].SpellId > 0 &&
             item->GetTemplate()->Spells[i].SpellTrigger == ITEM_SPELLTRIGGER_ON_USE)
         {
             spellId = item->GetTemplate()->Spells[i].SpellId;
-            const SpellInfo* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+            itemSpellCooldown = item->GetTemplate()->Spells[i].SpellCooldown;
+            itemSpellCategory = item->GetTemplate()->Spells[i].SpellCategory;
+            itemSpellCategoryCooldown = item->GetTemplate()->Spells[i].SpellCategoryCooldown;
+            uint64 const itemCooldownKey = (static_cast<uint64>(item->GetEntry()) << 32) | spellId;
+            uint32 const now = getMSTime();
 
+            if (itemSpellCooldown > 0)
+            {
+                auto const itemCooldownItr = trinketItemCooldownExpiries.find(itemCooldownKey);
+                if (itemCooldownItr != trinketItemCooldownExpiries.end())
+                {
+                    if (itemCooldownItr->second > now)
+                        return false;
+
+                    trinketItemCooldownExpiries.erase(itemCooldownItr);
+                }
+            }
+
+            if (itemSpellCategory && itemSpellCategoryCooldown > 0)
+            {
+                auto const categoryCooldownItr = trinketCategoryCooldownExpiries.find(itemSpellCategory);
+                if (categoryCooldownItr != trinketCategoryCooldownExpiries.end())
+                {
+                    if (categoryCooldownItr->second > now)
+                        return false;
+
+                    trinketCategoryCooldownExpiries.erase(categoryCooldownItr);
+                }
+            }
+
+            const SpellInfo* spellInfo = sSpellMgr->GetSpellInfo(spellId);
             if (!spellInfo || !spellInfo->IsPositive())
                 return false;
 
             bool applyAura = false;
             bool restoresMana = false;
-            bool improvesManaRegen = false;
+            bool improvesManaEfficiency = false;
             bool defensiveTankEffect = false;
             for (int i = 0; i < MAX_SPELL_EFFECTS; i++)
             {
@@ -500,44 +552,42 @@ bool UseTrinketAction::UseTrinket(Item* item)
                     applyAura = true;
 
                 restoresMana = restoresMana || IsManaRestoreEffect(effectInfo);
-                improvesManaRegen = improvesManaRegen || IsManaRegenEffect(effectInfo);
+                improvesManaEfficiency = improvesManaEfficiency || IsManaEfficiencyEffect(effectInfo);
                 defensiveTankEffect = defensiveTankEffect || IsDefensiveTankEffect(effectInfo);
             }
 
             if (!applyAura && !restoresMana)
                 return false;
 
-            if (restoresMana || improvesManaRegen)
+            if (restoresMana || improvesManaEfficiency)
             {
                 if (!AI_VALUE2(bool, "has mana", "self target"))
                     return false;
 
-                manaPct = AI_VALUE2(uint8, "mana", "self target");
-                logManaPct = true;
-                if (restoresMana && manaPct >= sPlayerbotAIConfig.mediumMana)
+                uint8 const manaPct = AI_VALUE2(uint8, "mana", "self target");
+                if ((restoresMana && manaPct >= sPlayerbotAIConfig.mediumMana) ||
+                    manaPct >= sPlayerbotAIConfig.highMana)
+                {
                     return false;
-                else if (manaPct >= sPlayerbotAIConfig.highMana)
-                    return false;
+                }
             }
 
             if (defensiveTankEffect)
             {
-                healthPct = AI_VALUE2(uint8, "health", "self target");
-                logHealthPct = true;
+                uint8 const healthPct = AI_VALUE2(uint8, "health", "self target");
                 if (healthPct > sPlayerbotAIConfig.lowHealth)
                     return false;
             }
 
-            uint32 spellProcFlag = spellInfo->ProcFlags;
+            auto const& mixedTriggerTrinketSpellIds = GetMixedTriggerTrinketSpellIds();
+            // Exclude trinkets that expose the same spell as both ON_EQUIP and ON_USE across
+            // item templates. Those are equip/proc effects leaking into the active-use path,
+            // as seen with the error versions of Oracle Talisman of Ablution (44870) and
+            // Frenzyheart Insignia of Fury (44869).
+            if (mixedTriggerTrinketSpellIds.find(spellId) != mixedTriggerTrinketSpellIds.end())
+                return false;
 
-            // Handle items with procflag "if you kill a target that grants honor or experience"
-            // Bots will "learn" the trinket proc, so CanCastSpell() will be true
-            // e.g. on Item https://www.wowhead.com/wotlk/item=44074/oracle-talisman-of-ablution leading to
-            // constant casting of the proc spell onto themselfes https://www.wowhead.com/wotlk/spell=59787/oracle-ablutions
-            // This will lead to multiple hundreds of entries in m_appliedAuras -> Once killing an enemy -> Big diff time spikes
-            if (spellProcFlag != 0) return false;
-
-            if (!botAI->CanCastSpell(spellId, bot, false))
+            if (!botAI->CanCastSpell(spellId, bot, false, nullptr, item))
                 return false;
 
             break;
@@ -553,26 +603,27 @@ bool UseTrinketAction::UseTrinket(Item* item)
     targetFlag = TARGET_FLAG_NONE;
     packet << targetFlag << bot->GetPackGUID();
 
-    if (logHealthPct && logManaPct)
-    {
-        LOG_INFO("playerbots", "Bot {} used gated trinket {} (health: {}%, mana: {}%)",
-                 bot->GetName().c_str(), item->GetTemplate()->Name1.c_str(), healthPct, manaPct);
-    }
-    else if (logHealthPct)
-    {
-        LOG_INFO("playerbots", "Bot {} used gated trinket {} (health: {}%)",
-                 bot->GetName().c_str(), item->GetTemplate()->Name1.c_str(), healthPct);
-    }
-    else if (logManaPct)
-    {
-        LOG_INFO("playerbots", "Bot {} used gated trinket {} (mana: {}%)",
-                 bot->GetName().c_str(), item->GetTemplate()->Name1.c_str(), manaPct);
-    }
-
     bot->GetSession()->HandleUseItemOpcode(packet);
+
+    uint32 const now = getMSTime();
+    uint32 const cooldownDelay = bot->GetSpellCooldownDelay(spellId);
+    if (cooldownDelay > 0)
+    {
+        if (itemSpellCooldown > 0)
+        {
+            uint64 const itemCooldownKey = (static_cast<uint64>(item->GetEntry()) << 32) | spellId;
+            trinketItemCooldownExpiries[itemCooldownKey] = now + static_cast<uint32>(itemSpellCooldown);
+        }
+
+        if (itemSpellCategory && itemSpellCategoryCooldown > 0)
+        {
+            trinketCategoryCooldownExpiries[itemSpellCategory] = now + static_cast<uint32>(itemSpellCategoryCooldown);
+        }
+    }
 
     return true;
 }
+
 bool CastDebuffSpellAction::isUseful()
 {
     Unit* target = GetTarget();

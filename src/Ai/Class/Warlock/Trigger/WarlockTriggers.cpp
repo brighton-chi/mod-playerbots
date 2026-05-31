@@ -50,22 +50,6 @@ bool TooManySoulShardsTrigger::IsActive() { return GetSoulShardCount(botAI->GetB
 
 bool OutOfSoulstoneTrigger::IsActive() { return GetSoulstoneCount(botAI->GetBot()) == 0; }
 
-// Checks if the target marked with the moon icon can be banished
-bool BanishTrigger::IsActive()
-{
-    Unit* ccTarget = context->GetValue<Unit*>("cc target", "banish")->Get();
-    Unit* moonTarget = context->GetValue<Unit*>("rti cc target")->Get();
-    return ccTarget && moonTarget && ccTarget == moonTarget && HasCcTargetTrigger::IsActive();
-}
-
-// Checks if the target marked with the moon icon can be feared
-bool FearTrigger::IsActive()
-{
-    Unit* ccTarget = context->GetValue<Unit*>("cc target", "fear")->Get();
-    Unit* moonTarget = context->GetValue<Unit*>("rti cc target")->Get();
-    return ccTarget && moonTarget && ccTarget == moonTarget && HasCcTargetTrigger::IsActive();
-}
-
 bool DemonArmorTrigger::IsActive()
 {
     Unit* target = GetTarget();
@@ -120,7 +104,8 @@ bool LifeTapTrigger::IsActive()
 // Checks if the Life Tap Glyph buff is active
 bool LifeTapGlyphBuffTrigger::IsActive()
 {
-    if (!botAI->HasAura(63320, bot))
+    constexpr uint32 SPELL_LIFE_TAP_GLYPH = 63320;
+    if (!bot->HasAura(SPELL_LIFE_TAP_GLYPH))
         return false;
 
     return BuffTrigger::IsActive();

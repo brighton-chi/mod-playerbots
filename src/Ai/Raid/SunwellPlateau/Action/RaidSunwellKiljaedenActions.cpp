@@ -5,7 +5,6 @@
 
 #include <array>
 #include <map>
-#include <unordered_map>
 #include <vector>
 
 #include "PlayerbotTextMgr.h"
@@ -15,26 +14,6 @@
 #include "RaidBossHelpers.h"
 
 using namespace SunwellHelpers;
-
-namespace
-{
-
-struct KiljaedenDarknessShieldState
-{
-    bool inDarkness = false;
-    bool shieldCastThisDarkness = false;
-    uint32 darknessStartMs = 0;
-    uint32 lastDarknessCastMsLeft = 0;
-};
-
-std::unordered_map<ObjectGuid::LowType, KiljaedenDarknessShieldState>&
-GetKiljaedenDarknessShieldStates()
-{
-    static std::unordered_map<ObjectGuid::LowType, KiljaedenDarknessShieldState> states;
-    return states;
-}
-
-}
 
 bool KiljaedenMarkHandsAndAnnounceOrbUserAction::Execute(Event /*event*/)
 {
@@ -359,6 +338,26 @@ bool KiljaedenControlDragonAction::Execute(Event /*event*/)
 
     auto& darknessStates = GetKiljaedenDarknessShieldStates();
     KiljaedenDarknessShieldState& darknessState = darknessStates[bot->GetGUID().GetCounter()];
+
+    // Design choice: End drake control after phase changes
+    if (kiljaeden->HasUnitState(UNIT_STATE_CASTING) &&
+        kiljaeden->FindCurrentSpellBySpellId(
+            static_cast<uint32>(SunwellSpells::SPELL_SHADOW_SPIKE)))
+    {
+        darknessState.inDarkness = false;
+        darknessState.shieldCastThisDarkness = false;
+        darknessState.darknessStartMs = 0;
+        darknessState.lastDarknessCastMsLeft = 0;
+
+        if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
+        {
+            bot->RemoveAura(
+                static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT));
+            return true;
+        }
+
+        return false;
+    }
 
     if (IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
     {

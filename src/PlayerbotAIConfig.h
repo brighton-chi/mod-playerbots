@@ -292,6 +292,7 @@ public:
     float periodicOnlineOfflineRatio;
     bool gearscorecheck;
     bool randomBotPreQuests;
+    bool botSendMailEnabled;
 
     bool guildTaskEnabled;
     uint32 minGuildTaskChangeTime, maxGuildTaskChangeTime;
@@ -388,8 +389,8 @@ public:
 
     uint32 selfBotLevel;
     bool downgradeMaxLevelBot;
-    bool equipmentPersistence;
-    int32 equipmentPersistenceLevel;
+    bool equipAndSpecPersistence;
+    int32 equipAndSpecPersistenceLevel;
     int32 groupInvitationPermission;
     bool keepAltsInGroup = false;
     bool KeepAltsInGroup() const { return keepAltsInGroup; }
@@ -399,6 +400,7 @@ public:
     int reviveBotWhenSummoned;
     bool botRepairWhenSummon;
     bool autoInitOnly;
+    bool resetInstanceIdForAltBots;
     float autoInitEquipLevelLimitRatio;
     int32 maxAddedBots;
     int32 addClassCommand;

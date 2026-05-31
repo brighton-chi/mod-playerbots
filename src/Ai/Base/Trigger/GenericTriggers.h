@@ -333,9 +333,7 @@ class BuffOnPartyTrigger : public BuffTrigger
 {
 public:
     BuffOnPartyTrigger(PlayerbotAI* botAI, std::string const spell, int32 checkInterval = 1)
-        : BuffTrigger(botAI, spell, checkInterval)
-    {
-    }
+        : BuffTrigger(botAI, spell, checkInterval) {}
 
     Value<Unit*>* GetTargetValue() override;
     bool IsActive() override;
@@ -529,6 +527,17 @@ public:
     MediumManaTrigger(PlayerbotAI* botAI) : Trigger(botAI, "medium mana") {}
 
     bool IsActive() override;
+};
+
+class LowEnergyTrigger : public Trigger
+{
+public:
+    LowEnergyTrigger(PlayerbotAI* botAI, uint8 threshold = 30) : Trigger(botAI, "low energy"), threshold(threshold) {}
+
+    bool IsActive() override;
+
+private:
+    uint8 threshold;
 };
 
 BEGIN_TRIGGER(PanicTrigger, Trigger) // cppcheck-suppress unknownMacro

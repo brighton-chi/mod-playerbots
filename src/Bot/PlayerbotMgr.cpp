@@ -22,11 +22,13 @@
 #include "GuildMgr.h"
 #include "ObjectAccessor.h"
 #include "ObjectGuid.h"
+#include "ObjectMgr.h"
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotRepository.h"
 #include "PlayerbotFactory.h"
 #include "PlayerbotOperations.h"
 #include "PlayerbotSecurity.h"
+#include "PlayerbotTextMgr.h"
 #include "PlayerbotWorldThreadProcessor.h"
 #include "Playerbots.h"
 #include "PlayerbotGuildMgr.h"
@@ -320,7 +322,8 @@ void PlayerbotMgr::CancelLogout()
         {
             WorldPackets::Character::LogoutCancel data = WorldPacket(CMSG_LOGOUT_CANCEL);
             bot->GetSession()->HandleLogoutCancelOpcode(data);
-            botAI->TellMaster("Logout cancelled!");
+            botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                "logout_cancel", "Logout cancelled!", {}));
         }
     }
 
@@ -411,7 +414,8 @@ void PlayerbotHolder::DisablePlayerBot(ObjectGuid guid)
         {
             return;
         }
-        botAI->TellMaster("Goodbye!");
+        botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "goodbye", "Goodbye!", {}));
         bot->StopMoving();
         bot->GetMotionMaster()->Clear();
 
@@ -478,12 +482,6 @@ void PlayerbotHolder::OnBotLogin(Player* const bot)
     }
 
     Player* master = botAI->GetMaster();
-    if (master)
-    {
-        ObjectGuid masterGuid = master->GetGUID();
-        if (master->GetGroup() && !master->GetGroup()->IsLeader(masterGuid))
-            master->GetGroup()->ChangeLeader(masterGuid);
-    }
 
     Group* group = bot->GetGroup();
     if (group)
@@ -544,7 +542,8 @@ void PlayerbotHolder::OnBotLogin(Player* const bot)
     // set delay on login
     botAI->SetNextCheckDelay(urand(2000, 4000));
 
-    botAI->TellMaster("Hello!", PLAYERBOT_SECURITY_TALK);
+    botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+        "hello", "Hello!", {}), PLAYERBOT_SECURITY_TALK);
 
     // Queue group operations for world thread
     if (master && master->GetGroup() && !group)
@@ -733,7 +732,10 @@ std::string const PlayerbotHolder::ProcessBotCommand(std::string const cmd, Obje
     bool addClassBot = sRandomPlayerbotMgr.IsAddclassBot(guid.GetCounter());
 
     if (!addClassBot)
-        return "ERROR: You can not use this command on non-addclass bot.";
+    {
+        if (!(cmd == "refresh=raid" && sPlayerbotAIConfig.resetInstanceIdForAltBots))
+            return "ERROR: You can only use this command on addclass bots.";
+    }
 
     if (!admin)
     {
@@ -1242,7 +1244,7 @@ std::vector<std::string> PlayerbotHolder::HandlePlayerbotCommand(char const* arg
     std::vector<std::string> chars = split(charnameStr, ',');
     for (std::vector<std::string>::iterator i = chars.begin(); i != chars.end(); i++)
     {
-        std::string const s = *i;
+        std::string s = *i;
 
         if (!strcmp(cmd, "addaccount"))
         {
@@ -1251,7 +1253,13 @@ std::vector<std::string> PlayerbotHolder::HandlePlayerbotCommand(char const* arg
             if (!accountId)
             {
                 // If not found, try to get account ID from character name
-                ObjectGuid charGuid = sCharacterCache->GetCharacterGuidByName(s);
+                std::string charName = s;
+                if (!normalizePlayerName(charName))
+                {
+                    messages.push_back("Neither account nor character '" + s + "' found");
+                    continue;
+                }
+                ObjectGuid charGuid = sCharacterCache->GetCharacterGuidByName(charName);
                 if (!charGuid)
                 {
                     messages.push_back("Neither account nor character '" + s + "' found");
@@ -1279,6 +1287,11 @@ std::vector<std::string> PlayerbotHolder::HandlePlayerbotCommand(char const* arg
         else
         {
             // For regular add command, only add the specific character
+            if (!normalizePlayerName(s))
+            {
+                messages.push_back("Character '" + *i + "' not found");
+                continue;
+            }
             ObjectGuid charGuid = sCharacterCache->GetCharacterGuidByName(s);
             if (!charGuid)
             {

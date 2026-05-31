@@ -969,8 +969,8 @@ bool KaelthasSunstriderKiteThaladredAction::Execute(Event /*event*/)
     if (!thaladred)
         return false;
 
-    float currentDistance = bot->GetExactDist2d(thaladred);
-    constexpr float safeDistance = 25.0f;
+    float currentDistance = bot->GetDistance2d(thaladred);
+    constexpr float safeDistance = 15.0f;
     if (currentDistance < safeDistance)
         return MoveAway(thaladred, safeDistance - currentDistance);
 
@@ -1172,7 +1172,7 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::RangedBotsDisperse(
         constexpr float arcCenter = 2.9f;
         float arcStart = arcCenter - arcSpan / 2.0f;
 
-        // Capernian's hitbox is 4.5 yards (GetDistance2d of 6.0f for non-Tauren)
+        // Capernian's hitbox is 4.5 yards (GetDistance2d of 6.0f)
         if (botAI->IsHeal(bot))
         {
             auto findIt = std::find(healers.begin(), healers.end(), bot);

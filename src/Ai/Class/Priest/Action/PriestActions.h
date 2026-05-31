@@ -139,7 +139,7 @@ public:
 
 // shadow talents
 SPELL_ACTION(CastMindFlayAction, "mind flay");
-DEBUFF_ACTION(CastVampiricEmbraceAction, "vampiric embrace");
+BUFF_ACTION(CastVampiricEmbraceAction, "vampiric embrace");
 BUFF_ACTION(CastShadowformAction, "shadowform");
 SPELL_ACTION(CastSilenceAction, "silence");
 ENEMY_HEALER_ACTION(CastSilenceOnEnemyHealerAction, "silence");
