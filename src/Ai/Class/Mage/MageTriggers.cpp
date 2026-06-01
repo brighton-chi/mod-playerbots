@@ -39,26 +39,16 @@ bool ArcaneIntellectTrigger::IsActive()
 bool MageArmorTrigger::IsActive()
 {
     Unit* target = GetTarget();
-    if (botAI->HasAura("mage armor", target))
-        return false;
-
-    if (AI_VALUE2(uint32, "spell id", "mage armor"))
-        return true;
-
-    return !botAI->HasAura("ice armor", target) && !botAI->HasAura("frost armor", target) &&
+    return botAI->HasSpell("mage armor") && !botAI->HasAura("mage armor", target) &&
+           !botAI->HasAura("ice armor", target) && !botAI->HasAura("frost armor", target) &&
            !botAI->HasAura("molten armor", target);
 }
 
 bool MoltenArmorTrigger::IsActive()
 {
     Unit* target = GetTarget();
-    if (botAI->HasAura("molten armor", target))
-        return false;
-
-    if (AI_VALUE2(uint32, "spell id", "molten armor"))
-        return true;
-
-    return !botAI->HasAura("ice armor", target) && !botAI->HasAura("frost armor", target) &&
+    return botAI->HasSpell("molten armor") && !botAI->HasAura("molten armor", target) &&
+           !botAI->HasAura("ice armor", target) && !botAI->HasAura("frost armor", target) &&
            !botAI->HasAura("mage armor", target);
 }
 
