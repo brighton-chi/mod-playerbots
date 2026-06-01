@@ -3,6 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include <cmath>
+
 #include "SWPActions.h"
 #include "SWPEncounter_Brut.h"
 #include "Playerbots.h"
@@ -171,28 +173,27 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
     if (burnStateItr != brutallusRangedBurnStates.end())
         burnState = burnStateItr->second;
 
-    if (burnState == BrutallusRangedBurnState::MovingToInnerArcStart ||
-        burnState == BrutallusRangedBurnState::TraversingInnerArc)
+    if (burnState == BrutallusRangedBurnState::MovingToInnerLane)
     {
+        ReleaseBrutallusBurnPad(bot);
         brutallusRangedBurnStates.erase(guid);
         burnState = BrutallusRangedBurnState::None;
     }
-    else if (burnState == BrutallusRangedBurnState::MovingToBurnPosition ||
+    else if (burnState == BrutallusRangedBurnState::TraversingInnerLane ||
+             burnState == BrutallusRangedBurnState::MovingToBurnPosition ||
              burnState == BrutallusRangedBurnState::AtBurnPosition)
     {
-        burnState = BrutallusRangedBurnState::MovingToOuterArcStart;
+        burnState = BrutallusRangedBurnState::MovingToOuterLane;
         brutallusRangedBurnStates[guid] = burnState;
     }
 
-    if (burnState == BrutallusRangedBurnState::MovingToOuterArcStart)
+    if (burnState == BrutallusRangedBurnState::MovingToOuterLane)
     {
-        Position position;
-        if (!TryGetBrutallusRangedLanePosition(
-                brutallus, mainTank, assistTank, rangedIndex, true, BRUTALLUS_OUTER_LANE_RADIUS,
-                bot->GetPositionZ(), position))
-        {
-            return false;
-        }
+        const float currentAngle = Position::NormalizeOrientation(
+            std::atan2(bot->GetPositionY() - brutallus->GetPositionY(),
+                       bot->GetPositionX() - brutallus->GetPositionX()));
+        const Position position = GetBrutallusPositionAtAngle(
+            brutallus, currentAngle, BRUTALLUS_OUTER_LANE_RADIUS, bot->GetPositionZ());
 
         if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
         {
@@ -201,15 +202,24 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
 
-        brutallusRangedBurnStates[guid] = BrutallusRangedBurnState::TraversingOuterArc;
+        brutallusRangedBurnStates[guid] = BrutallusRangedBurnState::TraversingOuterLane;
         return false;
     }
 
-    if (burnState == BrutallusRangedBurnState::TraversingOuterArc)
+    if (burnState == BrutallusRangedBurnState::TraversingOuterLane)
     {
+        Position returnTargetPosition;
+        if (!TryGetBrutallusRangedPosition(
+                brutallus, mainTank, assistTank, rangedIndex,
+                BRUTALLUS_OUTER_LANE_RADIUS, bot->GetPositionZ(), returnTargetPosition))
+        {
+            return false;
+        }
+
         Position position;
-        if (!TryGetBrutallusRangedLaneTraversalPosition(
-                brutallus, mainTank, assistTank, rangedIndex, BRUTALLUS_OUTER_LANE_RADIUS, false,
+        if (!TryGetBrutallusLaneTraversalPosition(
+                brutallus, returnTargetPosition.GetPositionX(),
+                returnTargetPosition.GetPositionY(), BRUTALLUS_OUTER_LANE_RADIUS,
                 bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), position))
         {
             return false;
@@ -220,14 +230,6 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
             return MoveTo(SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
                           position.GetPositionZ(), false, false, false, true,
                           MovementPriority::MOVEMENT_COMBAT, true, false);
-        }
-
-        Position returnTargetPosition;
-        if (!TryGetBrutallusRangedLanePosition(
-                brutallus, mainTank, assistTank, rangedIndex, false, BRUTALLUS_OUTER_LANE_RADIUS,
-                bot->GetPositionZ(), returnTargetPosition))
-        {
-            return false;
         }
 
         if (bot->GetExactDist2d(returnTargetPosition.GetPositionX(),
@@ -242,8 +244,8 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
     if (burnState == BrutallusRangedBurnState::ReturningToNormalPosition)
     {
         Position position;
-        if (!TryGetBrutallusRangedLanePosition(
-                brutallus, mainTank, assistTank, rangedIndex, false,
+        if (!TryGetBrutallusRangedPosition(
+            brutallus, mainTank, assistTank, rangedIndex,
                 BRUTALLUS_NORMAL_RANGED_RADIUS, bot->GetPositionZ(), position))
         {
             return false;
@@ -256,13 +258,14 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
 
+        ReleaseBrutallusBurnPad(bot);
         brutallusRangedBurnStates.erase(guid);
         return false;
     }
 
     Position position;
-    if (!TryGetBrutallusRangedLanePosition(
-            brutallus, mainTank, assistTank, rangedIndex, false,
+    if (!TryGetBrutallusRangedPosition(
+            brutallus, mainTank, assistTank, rangedIndex,
             BRUTALLUS_NORMAL_RANGED_RADIUS, bot->GetPositionZ(), position))
     {
         return false;
@@ -302,25 +305,25 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
     if (burnStateItr != brutallusRangedBurnStates.end())
         burnState = burnStateItr->second;
 
-    if (burnState == BrutallusRangedBurnState::MovingToOuterArcStart ||
-        burnState == BrutallusRangedBurnState::TraversingOuterArc ||
+    if (burnState == BrutallusRangedBurnState::MovingToOuterLane ||
+        burnState == BrutallusRangedBurnState::TraversingOuterLane ||
         burnState == BrutallusRangedBurnState::ReturningToNormalPosition)
     {
-        burnState = BrutallusRangedBurnState::MovingToBurnPosition;
+        burnState = BrutallusRangedBurnState::MovingToInnerLane;
         brutallusRangedBurnStates[guid] = burnState;
     }
 
     if (burnState == BrutallusRangedBurnState::None)
     {
-        burnState = BrutallusRangedBurnState::MovingToInnerArcStart;
+        burnState = BrutallusRangedBurnState::MovingToInnerLane;
         brutallusRangedBurnStates[guid] = burnState;
     }
 
-    if (burnState == BrutallusRangedBurnState::MovingToInnerArcStart)
+    if (burnState == BrutallusRangedBurnState::MovingToInnerLane)
     {
         Position stepPosition;
-        if (!TryGetBrutallusRangedLanePosition(
-                brutallus, mainTank, assistTank, rangedIndex, false,
+        if (!TryGetBrutallusRangedPosition(
+                brutallus, mainTank, assistTank, rangedIndex,
                 BRUTALLUS_INNER_LANE_RADIUS, bot->GetPositionZ(), stepPosition))
         {
             return false;
@@ -333,16 +336,25 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
 
-        brutallusRangedBurnStates[guid] = BrutallusRangedBurnState::TraversingInnerArc;
+        brutallusRangedBurnStates[guid] = BrutallusRangedBurnState::TraversingInnerLane;
         return false;
     }
 
-    if (burnState == BrutallusRangedBurnState::TraversingInnerArc)
+    if (burnState == BrutallusRangedBurnState::TraversingInnerLane)
     {
+        Position padIngressPosition;
+        if (!TryGetBrutallusBurnPadPosition(
+                bot, brutallus, mainTank, rangedIndex, BRUTALLUS_INNER_LANE_RADIUS,
+                bot->GetPositionZ(), padIngressPosition))
+        {
+            return false;
+        }
+
         Position position;
-        if (!TryGetBrutallusRangedLaneTraversalPosition(
-                brutallus, mainTank, assistTank, rangedIndex, BRUTALLUS_INNER_LANE_RADIUS, true,
-                bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), position))
+        if (!TryGetBrutallusLaneTraversalPosition(
+                brutallus, padIngressPosition.GetPositionX(), padIngressPosition.GetPositionY(),
+                BRUTALLUS_INNER_LANE_RADIUS, bot->GetPositionX(), bot->GetPositionY(),
+                bot->GetPositionZ(), position))
         {
             return false;
         }
@@ -354,16 +366,8 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
                           MovementPriority::MOVEMENT_COMBAT, true, false);
         }
 
-        Position mirrorStepPosition;
-        if (!TryGetBrutallusRangedLanePosition(
-                brutallus, mainTank, assistTank, rangedIndex, true,
-                BRUTALLUS_INNER_LANE_RADIUS, bot->GetPositionZ(), mirrorStepPosition))
-        {
-            return false;
-        }
-
-        if (bot->GetExactDist2d(mirrorStepPosition.GetPositionX(),
-                                mirrorStepPosition.GetPositionY()) <= 1.0f)
+        if (bot->GetExactDist2d(padIngressPosition.GetPositionX(),
+                                padIngressPosition.GetPositionY()) <= 1.0f)
         {
             brutallusRangedBurnStates[guid] = BrutallusRangedBurnState::MovingToBurnPosition;
         }
@@ -372,9 +376,9 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
     }
 
     Position position;
-    if (!TryGetBrutallusRangedLanePosition(
-            brutallus, mainTank, assistTank, rangedIndex, true,
-            BRUTALLUS_NORMAL_RANGED_RADIUS, bot->GetPositionZ(), position))
+    if (!TryGetBrutallusBurnPadPosition(
+            bot, brutallus, mainTank, rangedIndex, BRUTALLUS_BURN_PAD_RADIUS,
+            bot->GetPositionZ(), position))
     {
         return false;
     }

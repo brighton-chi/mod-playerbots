@@ -55,11 +55,20 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
         if (isRanged && brutallusRangedBurnStates.erase(guid) > 0)
             erased = true;
 
+        if (isRanged && ReleaseBrutallusBurnPad(bot))
+            erased = true;
+
         if (brutallusMainTankInitialPositionReached.erase(guid) > 0)
             erased = true;
 
         if (isMechanicTracker && brutallusRangedAssignments.erase(instanceId) > 0)
             erased = true;
+
+        if (isMechanicTracker &&
+            brutallusRangedBurnPadAssignments.erase(instanceId) > 0)
+        {
+            erased = true;
+        }
     }
 
     if (isMechanicTracker && !AI_VALUE2(Unit*, "find target", "felmyst"))

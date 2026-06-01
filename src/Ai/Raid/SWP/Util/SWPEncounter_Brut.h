@@ -29,33 +29,43 @@ struct BrutallusRangedSlotInfo
 enum class BrutallusRangedBurnState : uint8
 {
     None,
-    MovingToInnerArcStart,
-    TraversingInnerArc,
+    MovingToInnerLane,
+    TraversingInnerLane,
     MovingToBurnPosition,
     AtBurnPosition,
-    MovingToOuterArcStart,
-    TraversingOuterArc,
+    MovingToOuterLane,
+    TraversingOuterLane,
     ReturningToNormalPosition
 };
 
 extern const Position BRUTALLUS_MAIN_TANK_POSITION;
-constexpr float BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET = -M_PI_2;
-constexpr float BRUTALLUS_TANK_POSITION_RADIUS = 18.0f;
+constexpr float BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET =
+    -(2.0f * M_PI / 3.0f);
+constexpr float BRUTALLUS_TANK_POSITION_RADIUS = 15.0f;
 constexpr float BRUTALLUS_RANGED_TANK_OFFSET = 10.0f;
-constexpr float BRUTALLUS_INNER_LANE_OFFSET = 5.0f;
+constexpr float BRUTALLUS_LANE_OFFSET = 5.0f;
 constexpr float BRUTALLUS_NORMAL_RANGED_RADIUS =
     BRUTALLUS_TANK_POSITION_RADIUS + BRUTALLUS_RANGED_TANK_OFFSET;
 constexpr float BRUTALLUS_INNER_LANE_RADIUS =
-    BRUTALLUS_NORMAL_RANGED_RADIUS - BRUTALLUS_INNER_LANE_OFFSET;
-constexpr float BRUTALLUS_OUTER_LANE_OFFSET = 4.0f;
+    BRUTALLUS_NORMAL_RANGED_RADIUS - BRUTALLUS_LANE_OFFSET;
 constexpr float BRUTALLUS_OUTER_LANE_RADIUS =
-    BRUTALLUS_NORMAL_RANGED_RADIUS + BRUTALLUS_OUTER_LANE_OFFSET;
+    BRUTALLUS_NORMAL_RANGED_RADIUS + BRUTALLUS_LANE_OFFSET;
+constexpr float BRUTALLUS_BURN_PAD_RADIUS =
+    BRUTALLUS_NORMAL_RANGED_RADIUS;
+constexpr float BRUTALLUS_PRIMARY_MELEE_RADIUS = 15.0f;
+constexpr float BRUTALLUS_SECONDARY_MELEE_RADIUS = 10.0f;
+constexpr float BRUTALLUS_RANGED_GROUP_ARC_WIDTH = M_PI_2;
 constexpr uint8 BRUTALLUS_RANGED_POSITIONS_PER_GROUP = 10;
 constexpr uint8 BRUTALLUS_TOTAL_RANGED_POSITIONS =
     BRUTALLUS_RANGED_POSITIONS_PER_GROUP * 2;
+constexpr uint8 BRUTALLUS_BURN_PADS_PER_GROUP = 4;
+constexpr uint8 BRUTALLUS_TOTAL_BURN_PADS =
+    BRUTALLUS_BURN_PADS_PER_GROUP * 2;
 
 extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
     brutallusRangedAssignments;
+extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
+    brutallusRangedBurnPadAssignments;
 extern std::unordered_map<ObjectGuid, BrutallusRangedBurnState>
     brutallusRangedBurnStates;
 extern std::unordered_set<ObjectGuid>
@@ -71,17 +81,20 @@ bool TryGetBrutallusMeleePosition(
 float GetBrutallusRangedSlotAngle(
     Unit* brutallus, Player* mainTank, Player* assistTank,
     const BrutallusRangedSlotInfo& slotInfo);
-bool TryGetBrutallusRangedLanePosition(
+bool TryGetBrutallusRangedPosition(
     Unit* brutallus, Player* mainTank, Player* assistTank,
-    uint8 rangedIndex, bool useMirrorAngle,
+    uint8 rangedIndex,
     float radius, float z, Position& position);
-bool TryGetBrutallusRangedLaneTraversalPosition(
-    Unit* brutallus, Player* mainTank, Player* assistTank,
-    uint8 rangedIndex, float radius, bool moveTowardMirror,
+bool TryGetBrutallusBurnPadPosition(
+    Player* bot, Unit* brutallus, Player* mainTank,
+    uint8 rangedIndex, float radius, float z, Position& position);
+bool TryGetBrutallusLaneTraversalPosition(
+    Unit* brutallus, float targetX, float targetY, float radius,
     float currentX, float currentY, float z, Position& position);
 void EnsureBrutallusRangedAssignments(PlayerbotAI* botAI, Player* bot);
 bool TryGetBrutallusAssignedPositionIndex(
     PlayerbotAI* botAI, Player* bot, bool wantRanged, uint8& positionIndex);
+bool ReleaseBrutallusBurnPad(Player* bot);
 
 }
 
