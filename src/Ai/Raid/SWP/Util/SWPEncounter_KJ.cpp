@@ -50,16 +50,6 @@ float GetCenteredArcSlotAngleOffset(
 
     return angleOffset;
 }
-
-float NormalizeSignedAngle(float angle)
-{
-    angle = Position::NormalizeOrientation(angle);
-    if (angle > static_cast<float>(M_PI))
-        angle -= 2.0f * static_cast<float>(M_PI);
-
-    return angle;
-}
-
 uint32 GetKiljaedenDragonManualCooldown(uint32 spellId)
 {
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
@@ -462,8 +452,12 @@ void EnsureKiljaedenRangedArmageddonAssignments(PlayerbotAI* botAI, Player* bot)
         score.sameRow =
             (candidateSlotIndex < KILJAEDEN_INNER_RANGED_SLOT_COUNT) ==
             (rangedBot.slotIndex < KILJAEDEN_INNER_RANGED_SLOT_COUNT);
-        score.angleDistance = std::fabs(NormalizeSignedAngle(
-            slotAngles[candidateSlotIndex] - slotAngles[rangedBot.slotIndex]));
+        float angleDistance = Position::NormalizeOrientation(
+            slotAngles[candidateSlotIndex] - slotAngles[rangedBot.slotIndex]);
+        if (angleDistance > static_cast<float>(M_PI))
+            angleDistance -= 2.0f * static_cast<float>(M_PI);
+
+        score.angleDistance = std::fabs(angleDistance);
         score.occupancy = plannedOccupancy[candidateSlotIndex];
         score.armageddonDistance = nearestArmageddonDistances[candidateSlotIndex];
         return score;
