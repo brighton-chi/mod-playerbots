@@ -207,7 +207,7 @@ bool FelmystAvoidDemonicVaporAction::Execute(Event /*event*/)
 {
     if (Unit* hazard = GetNearestFelmystDemonicVaporHazard(bot))
     {
-        constexpr float safeDistFromVapor = 10.0f;
+        constexpr float safeDistFromVapor = 15.0f;
         const float currentDistance = bot->GetDistance2d(hazard);
         if (currentDistance < safeDistFromVapor)
             return MoveAway(hazard, safeDistFromVapor - currentDistance);
