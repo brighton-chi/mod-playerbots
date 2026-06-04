@@ -16,7 +16,6 @@ namespace SunwellHelpers
 {
 
 const Position FELMYST_M_TANK_POSITION = { 1460.145f, 598.290f, 21.869f };
-// const Position FELMYST_W_TANK_POSITION = { 1480.557f, 635.729f, 21.788f };
 const Position FELMYST_W_TANK_POSITION = { 1480.587f, 636.805f, 21.713f };
 const Position FELMYST_E_TANK_POSITION = { 1479.524f, 584.069f, 23.231f };
 
@@ -39,19 +38,19 @@ const std::array<Position, 3> FELMYST_FOG_RIGHT_LANES = {{
 }};
 
 const std::array<std::array<Position, 3>, 3> FELMYST_FOG_SAFE_SPOTS = {{
-    {{
-        { 1466.369f, 595.262f, 22.287f },
-        { 1466.768f, 609.660f, 22.321f },
+    {{ // Top lane safe spots
+        { 1466.836f, 581.792f, 21.791f },
+        { 1466.718f, 602.838f, 22.834f },
         { 1466.851f, 625.826f, 21.511f },
     }},
-    {{
-        { 1500.335f, 596.584f, 25.872f },
-        { 1500.258f, 613.369f, 26.310f },
+    {{ // Middle lane safe spots
+        { 1500.266f, 581.727f, 24.726f },
+        { 1500.372f, 602.543f, 26.305f },
         { 1500.385f, 629.982f, 25.265f },
     }},
-    {{
-        { 1484.971f, 595.998f, 23.727f },
-        { 1484.466f, 611.129f, 24.190f },
+    {{ // Bottom lane safe spots
+        { 1484.382f, 581.922f, 23.484f },
+        { 1484.491f, 602.682f, 24.015f },
         { 1484.852f, 629.148f, 23.125f },
     }}
 }};
