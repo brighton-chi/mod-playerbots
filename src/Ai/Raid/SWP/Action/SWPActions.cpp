@@ -156,7 +156,7 @@ bool VolatileFiendKeepEnemyAwayFromGroupAction::Execute(Event /*event*/)
     else
     {
         constexpr float safeDistance = 20.0f;
-        const float currentDistance = bot->GetDistance2d(volatileFiend);
+        const float currentDistance = bot->GetDistance(volatileFiend);
         if (currentDistance < safeDistance)
             return MoveAway(volatileFiend, safeDistance - currentDistance);
     }
