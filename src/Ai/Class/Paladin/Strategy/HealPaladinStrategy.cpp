@@ -72,7 +72,6 @@ void HealPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             "party member critical health",
             {
                 NextAction("holy shock on party", ACTION_CRITICAL_HEAL + 6),
-                NextAction("divine sacrifice", ACTION_CRITICAL_HEAL + 5),
                 NextAction("holy light on party", ACTION_CRITICAL_HEAL + 4)
             }
         )
@@ -90,35 +89,31 @@ void HealPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             "party member medium health",
             {
                 NextAction("holy light on party", ACTION_LIGHT_HEAL + 9),
-                NextAction("flash of light on party", ACTION_LIGHT_HEAL + 8)
             }
         )
     );
-
     triggers.push_back(
         new TriggerNode(
-        "party member almost full health",
-        {
-            NextAction("flash of light on party", ACTION_LIGHT_HEAL + 3)
-        }
-    )
-);
-
+            "party member almost full health",
+            {
+                NextAction("holy light on party", ACTION_LIGHT_HEAL + 4),
+            }
+        )
+    );
     triggers.push_back(
         new TriggerNode(
-        "beacon of light on main tank",
-        {
-            NextAction("beacon of light on main tank", ACTION_CRITICAL_HEAL + 7)
-        }
-    )
-);
-
+            "beacon of light on main tank",
+            {
+                NextAction("beacon of light on main tank", ACTION_CRITICAL_HEAL + 7)
+            }
+        )
+    );
     triggers.push_back(
         new TriggerNode(
-        "sacred shield on main tank",
-        {
-            NextAction("sacred shield on main tank", ACTION_CRITICAL_HEAL + 6)
-        }
-    )
-);
+            "sacred shield on main tank",
+            {
+                NextAction("sacred shield on main tank", ACTION_CRITICAL_HEAL + 6)
+            }
+        )
+    );
 }

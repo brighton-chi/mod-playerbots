@@ -31,8 +31,9 @@ public:
         creators["judgement"] = &judgement;
         creators["judgement of wisdom"] = &judgement_of_wisdom;
         creators["divine shield"] = &divine_shield;
-        creators["flash of light"] = &flash_of_light;
         creators["flash of light on party"] = &flash_of_light_on_party;
+        creators["holy light"] = &holy_light;
+        creators["holy light on party"] = &holy_light_on_party;
         creators["holy wrath"] = &holy_wrath;
         creators["lay on hands"] = &lay_on_hands;
         creators["lay on hands on party"] = &lay_on_hands_on_party;
@@ -181,9 +182,9 @@ private:
     static ActionNode* seal_of_wisdom(PlayerbotAI* /* ai */)
     {
         return new ActionNode ("seal of wisdom",
-            /*P*/ {},
-            /*A*/ { NextAction("seal of corruption") },
-            /*C*/ {});
+                               /*P*/ {},
+                               /*A*/ { NextAction("seal of corruption") },
+                               /*C*/ {});
     }
     static ActionNode* seal_of_justice(PlayerbotAI* /* ai */)
     {
@@ -241,18 +242,25 @@ private:
                               /*A*/ { NextAction("divine protection") },
                               /*C*/ {});
     }
-    static ActionNode* flash_of_light(PlayerbotAI* /* ai */)
-    {
-        return new ActionNode("flash of light",
-                              /*P*/ {},
-                              /*A*/ { NextAction("holy light") },
-                              /*C*/ {});
-    }
     static ActionNode* flash_of_light_on_party(PlayerbotAI* /* ai */)
     {
         return new ActionNode("flash of light on party",
                               /*P*/ {},
-                              /*A*/ { NextAction("holy light on party") },
+                              /*A*/ { NextAction("holy shock on party") },
+                              /*C*/ {});
+    }
+    static ActionNode* holy_light(PlayerbotAI* /* ai */)
+    {
+        return new ActionNode("holy light",
+                              /*P*/ {},
+                              /*A*/ { NextAction("flash of light") },
+                              /*C*/ {});
+    }
+    static ActionNode* holy_light_on_party(PlayerbotAI* /* ai */)
+    {
+        return new ActionNode("holy light on party",
+                              /*P*/ {},
+                              /*A*/ { NextAction("flash of light on party") },
                               /*C*/ {});
     }
     static ActionNode* holy_wrath(PlayerbotAI* /* ai */)

@@ -547,6 +547,22 @@ Value<Unit*>* CastTurnUndeadAction::GetTargetValue()
     return context->GetValue<Unit*>("cc target", getName());
 }
 
+Value<Unit*>* CastHandOfSacrificeOnPartyAction::GetTargetValue()
+{
+    return context->GetValue<Unit*>("party member to heal");
+}
+
+bool CastHandOfSacrificeOnPartyAction::isUseful()
+{
+    Unit* target = GetTarget();
+    if (!target || target == bot)
+        return false;
+
+    return bot->HasAura(ai::paladin::SPELL_DIVINE_SHIELD) &&
+           CastBuffSpellAction::isUseful() &&
+           !ai::paladin::HasAnyPaladinHandFromCaster(target, bot);
+}
+
 Unit* CastHandOfFreedomOnPartyAction::GetTarget()
 {
     bool const selfImpaired = botAI->IsMovementImpaired(bot);

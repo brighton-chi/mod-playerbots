@@ -158,14 +158,14 @@ class CastHolyShockOnPartyAction : public HealPartyMemberAction
 {
 public:
     CastHolyShockOnPartyAction(PlayerbotAI* botAI)
-        : HealPartyMemberAction(botAI, "holy shock", 25.0f, HealingManaEfficiency::LOW) {}
+        : HealPartyMemberAction(botAI, "holy shock", 25.0f, HealingManaEfficiency::MEDIUM) {}
 };
 
 class CastHolyLightOnPartyAction : public HealPartyMemberAction
 {
 public:
     CastHolyLightOnPartyAction(PlayerbotAI* botAI)
-        : HealPartyMemberAction(botAI, "holy light", 50.0f, HealingManaEfficiency::MEDIUM) {}
+        : HealPartyMemberAction(botAI, "holy light", 50.0f, HealingManaEfficiency::HIGH) {}
 };
 
 class CastFlashOfLightAction : public CastHealingSpellAction
@@ -178,7 +178,7 @@ class CastFlashOfLightOnPartyAction : public HealPartyMemberAction
 {
 public:
     CastFlashOfLightOnPartyAction(PlayerbotAI* botAI)
-        : HealPartyMemberAction(botAI, "flash of light", 15.0f, HealingManaEfficiency::HIGH) {}
+        : HealPartyMemberAction(botAI, "flash of light", 15.0f, HealingManaEfficiency::VERY_HIGH) {}
 };
 
 class CastLayOnHandsAction : public CastHealingSpellAction
@@ -357,6 +357,18 @@ public:
     CastTurnUndeadAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "turn undead") {}
 
     Value<Unit*>* GetTargetValue() override;
+};
+
+class CastHandOfSacrificeOnPartyAction : public CastBuffSpellAction, public PartyMemberActionNameSupport
+{
+public:
+    CastHandOfSacrificeOnPartyAction(PlayerbotAI* botAI)
+        : CastBuffSpellAction(botAI, "hand of sacrifice"), PartyMemberActionNameSupport("hand of sacrifice") {}
+
+    Value<Unit*>* GetTargetValue() override;
+    std::string const GetTargetName() override { return "party member to heal"; }
+    std::string const getName() override { return PartyMemberActionNameSupport::getName(); }
+    bool isUseful() override;
 };
 
 class CastHandOfFreedomOnPartyAction : public CastBuffSpellAction, public PartyMemberActionNameSupport

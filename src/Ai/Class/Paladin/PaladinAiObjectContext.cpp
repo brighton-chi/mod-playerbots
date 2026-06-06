@@ -285,6 +285,7 @@ public:
         creators["divine protection on party"] = &PaladinAiObjectContextInternal::divine_protection_on_party;
         creators["hammer of justice"] = &PaladinAiObjectContextInternal::hammer_of_justice;
         creators["flash of light on party"] = &PaladinAiObjectContextInternal::flash_of_light_on_party;
+        creators["hand of sacrifice on party"] = &PaladinAiObjectContextInternal::hand_of_sacrifice_on_party;
         creators["holy light"] = &PaladinAiObjectContextInternal::holy_light;
         creators["holy light on party"] = &PaladinAiObjectContextInternal::holy_light_on_party;
         creators["lay on hands"] = &PaladinAiObjectContextInternal::lay_on_hands;
@@ -430,6 +431,10 @@ private:
     static Action* divine_illumination(PlayerbotAI* botAI) { return new CastDivineIlluminationAction(botAI); }
     static Action* divine_sacrifice(PlayerbotAI* botAI) { return new CastDivineSacrificeAction(botAI); }
     static Action* cancel_divine_sacrifice(PlayerbotAI* botAI) { return new CastCancelDivineSacrificeAction(botAI); }
+    static Action* hand_of_sacrifice_on_party(PlayerbotAI* botAI)
+    {
+        return new CastHandOfSacrificeOnPartyAction(botAI);
+    }
     static Action* hand_of_freedom_on_party(PlayerbotAI* botAI) { return new CastHandOfFreedomOnPartyAction(botAI); }
     static Action* cast_greater_blessing_assignment(PlayerbotAI* botAI)
     {
