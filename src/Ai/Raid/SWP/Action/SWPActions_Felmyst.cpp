@@ -238,7 +238,18 @@ bool FelmystAvoidFogOfCorruptionAction::Execute(Event /*event*/)
     }
 
     FelmystFogOfCorruptionState fogState;
-    if (!TryGetActiveFelmystFogOfCorruptionState(bot, felmyst, fogState))
+    const bool hasActiveFog =
+        TryGetActiveFelmystFogOfCorruptionState(bot, felmyst, fogState);
+    Position landingDestination;
+    const bool shouldRepositionAfterThirdPass =
+        !hasActiveFog &&
+        TryGetFelmystFogOfCorruptionStageState(felmyst, fogState) &&
+        fogState.phase == FelmystFogPhase::Recovery &&
+        fogState.completedSweepCount >= 3 &&
+        fogState.atSide &&
+        !TryGetFelmystLandingDestination(felmyst, landingDestination);
+
+    if (!hasActiveFog && !shouldRepositionAfterThirdPass)
     {
         felmystFogCrateStuckStates.erase(bot->GetGUID());
         return false;
@@ -277,6 +288,28 @@ bool FelmystAvoidFogOfCorruptionAction::Execute(Event /*event*/)
 
     if (!trackedDestinationFound)
         felmystFogCrateStuckStates.erase(bot->GetGUID());
+
+    if (shouldRepositionAfterThirdPass)
+    {
+        uint8 bestIndex = 0;
+        float bestDistance = std::numeric_limits<float>::max();
+        for (uint8 index = 0; index < destinationCount; ++index)
+        {
+            Position const& destination = destinations[index];
+            const float distanceToFelmyst = felmyst->GetExactDist2d(
+                destination.GetPositionX(), destination.GetPositionY());
+            if (distanceToFelmyst < bestDistance)
+            {
+                bestDistance = distanceToFelmyst;
+                bestIndex = index;
+            }
+        }
+
+        Position const& destination = destinations[bestIndex];
+        return MoveTo(SUNWELL_MAP_ID, destination.GetPositionX(), destination.GetPositionY(),
+                      destination.GetPositionZ(), false, false, false, false,
+                      MovementPriority::MOVEMENT_FORCED, true, false);
+    }
 
     for (uint8 index = 0; index < destinationCount; ++index)
     {

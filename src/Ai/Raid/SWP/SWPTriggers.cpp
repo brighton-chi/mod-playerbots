@@ -335,7 +335,19 @@ bool FelmystFogOfCorruptionIsActiveTrigger::IsActive()
         return false;
 
     FelmystFogOfCorruptionState fogState;
-    return TryGetActiveFelmystFogOfCorruptionState(bot, felmyst, fogState);
+    if (TryGetActiveFelmystFogOfCorruptionState(bot, felmyst, fogState))
+        return true;
+
+    if (!TryGetFelmystFogOfCorruptionStageState(felmyst, fogState) ||
+        fogState.phase != FelmystFogPhase::Recovery ||
+        fogState.completedSweepCount < 3 ||
+        !fogState.atSide)
+    {
+        return false;
+    }
+
+    Position landingDestination;
+    return !TryGetFelmystLandingDestination(felmyst, landingDestination);
 }
 
 bool FelmystMeleeCannotReachBossTrigger::IsActive()

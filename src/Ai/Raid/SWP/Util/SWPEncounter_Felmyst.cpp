@@ -344,6 +344,20 @@ bool TryGetFelmystMovementDestination(Unit* felmyst, Position& destination)
     return true;
 }
 
+bool TryGetFelmystLandingDestination(Unit* felmyst, Position& destination)
+{
+    if (!TryGetFelmystMovementDestination(felmyst, destination))
+        return false;
+
+    constexpr float landingMatchDistance = 3.0f;
+    return destination.GetExactDist2d(
+               FELMYST_HIGH_Y_LANDING_POSITION.GetPositionX(),
+               FELMYST_HIGH_Y_LANDING_POSITION.GetPositionY()) <= landingMatchDistance ||
+           destination.GetExactDist2d(
+               FELMYST_LOW_Y_LANDING_POSITION.GetPositionX(),
+               FELMYST_LOW_Y_LANDING_POSITION.GetPositionY()) <= landingMatchDistance;
+}
+
 FelmystFogLocation GetFelmystCurrentFogLocation(Unit* felmyst)
 {
     if (!felmyst)
@@ -1035,6 +1049,8 @@ bool TryGetFelmystFogOfCorruptionStageState(
 {
     state = FelmystFogOfCorruptionState();
     const uint32 now = getMSTime();
+    constexpr uint32 fogRecoveryGraceMs = 2500;
+    constexpr uint32 fogThirdPassSidePauseGraceMs = 10000;
 
     if (!felmyst)
         return false;
@@ -1055,6 +1071,7 @@ bool TryGetFelmystFogOfCorruptionStageState(
     const FelmystFogLane destinationLane = GetFelmystFogLaneFromLocation(destinationLocation);
     const bool isSweeping = felmyst->HasAura(
         static_cast<uint32>(SunwellSpells::SPELL_FELMYST_SPEED_BURST));
+    tracker.atSide = IsFelmystFogSideLocation(currentLocation);
 
     if (currentLane != FelmystFogLane::None)
     {
@@ -1073,7 +1090,6 @@ bool TryGetFelmystFogOfCorruptionStageState(
         if (selectedLane == FelmystFogLane::None)
             return false;
 
-        constexpr uint32 fogRecoveryGraceMs = 2500;
         tracker.lane = selectedLane;
         tracker.phase = FelmystFogPhase::Sweep;
         tracker.expireMs = now + fogRecoveryGraceMs;
@@ -1096,6 +1112,14 @@ bool TryGetFelmystFogOfCorruptionStageState(
          IsFelmystFogSideLocation(currentLocation) ||
          IsFelmystFogSideLocation(destinationLocation)))
     {
+        if (tracker.phase == FelmystFogPhase::Sweep)
+        {
+            ++tracker.completedSweepCount;
+            tracker.expireMs = now +
+                (tracker.completedSweepCount >= 3 ?
+                     fogThirdPassSidePauseGraceMs : fogRecoveryGraceMs);
+        }
+
         tracker.phase = FelmystFogPhase::Recovery;
         state = tracker;
         return true;

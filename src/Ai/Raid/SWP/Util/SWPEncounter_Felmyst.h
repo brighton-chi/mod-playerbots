@@ -64,6 +64,8 @@ struct FelmystFogOfCorruptionState
     FelmystFogLane lane = FelmystFogLane::None;
     FelmystFogPhase phase = FelmystFogPhase::None;
     uint32 expireMs = 0;
+    uint8 completedSweepCount = 0;
+    bool atSide = false;
 };
 
 struct FelmystIncomingEncapsulateState
@@ -123,6 +125,7 @@ bool TryGetFelmystDemonicVaporKiteDestination(Player* bot, Position& destination
 bool TryGetFelmystFogSafeDestinations(
     Player* bot, FelmystFogLane dangerLane, std::array<Position, 3>& destinations,
     uint8& destinationCount);
+bool TryGetFelmystLandingDestination(Unit* felmyst, Position& destination);
 bool TryGetFelmystFogOfCorruptionStageState(
     Unit* felmyst, FelmystFogOfCorruptionState& state);
 bool TryGetActiveFelmystFogOfCorruptionState(
