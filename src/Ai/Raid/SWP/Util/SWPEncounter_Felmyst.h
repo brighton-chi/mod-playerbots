@@ -74,6 +74,13 @@ struct FelmystIncomingEncapsulateState
     bool auraObserved = false;
 };
 
+struct FelmystFogCrateStuckState
+{
+    Position destination;
+    float nearestDestinationDistance = std::numeric_limits<float>::max();
+    uint32 sampleMs = 0;
+};
+
 constexpr float FELMYST_ENCAPSULATE_SAFE_DISTANCE = 20.0f;
 constexpr float FELMYST_FOG_SAFE_SPOT_ARRIVAL_DISTANCE = 8.0f;
 constexpr float FELMYST_FOG_CURRENT_POINT_MATCH_DISTANCE = 3.0f;
@@ -82,10 +89,6 @@ constexpr float FELMYST_MELEE_DISTANCE = 12.5f;
 constexpr float FELMYST_RANGED_GROUP_RADIUS = 0.5f;
 constexpr float FELMYST_RANGED_SIDE_DISTANCE = 24.0f;
 constexpr uint32 FELMYST_INCOMING_ENCAPSULATE_DELAY_MS = 500;
-
-extern const Position FELMYST_M_TANK_POSITION;
-extern const Position FELMYST_W_TANK_POSITION;
-extern const Position FELMYST_E_TANK_POSITION;
 
 extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
     felmystRangedAssignments;
@@ -99,6 +102,8 @@ extern std::unordered_map<uint32, FelmystFogOfCorruptionState>
     felmystFogOfCorruptionStates;
 extern std::unordered_map<uint32, FelmystIncomingEncapsulateState>
     felmystIncomingEncapsulateStates;
+extern std::unordered_map<ObjectGuid, FelmystFogCrateStuckState>
+    felmystFogCrateStuckStates;
 
 void EnsureFelmystRangedAssignments(PlayerbotAI* botAI, Player* bot);
 void RecordFelmystIncomingEncapsulateTarget(

@@ -71,22 +71,28 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
         }
     }
 
-    if (isMechanicTracker && !AI_VALUE2(Unit*, "find target", "felmyst"))
+    if (!AI_VALUE2(Unit*, "find target", "felmyst"))
     {
-        if (felmystRangedAssignments.erase(instanceId) > 0)
+        if (felmystFogCrateStuckStates.erase(guid) > 0)
             erased = true;
 
-        if (felmystIncomingEncapsulateStates.erase(instanceId) > 0)
-            erased = true;
+        if (isMechanicTracker)
+        {
+            if (felmystRangedAssignments.erase(instanceId) > 0)
+                erased = true;
 
-        if (felmystFogOfCorruptionStates.erase(instanceId) > 0)
-            erased = true;
+            if (felmystIncomingEncapsulateStates.erase(instanceId) > 0)
+                erased = true;
 
-        if (felmystDemonicVaporRegionIndices.erase(instanceId) > 0)
-            erased = true;
+            if (felmystFogOfCorruptionStates.erase(instanceId) > 0)
+                erased = true;
 
-        if (felmystDemonicVaporFirstRegionIndices.erase(instanceId) > 0)
-            erased = true;
+            if (felmystDemonicVaporRegionIndices.erase(instanceId) > 0)
+                erased = true;
+
+            if (felmystDemonicVaporFirstRegionIndices.erase(instanceId) > 0)
+                erased = true;
+        }
     }
 
     if (!AI_VALUE2(Unit*, "find target", "grand warlock alythess"))

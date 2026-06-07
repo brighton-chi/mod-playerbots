@@ -15,14 +15,10 @@
 namespace SunwellHelpers
 {
 
-const Position FELMYST_M_TANK_POSITION = { 1460.145f, 598.290f, 21.869f };
-const Position FELMYST_W_TANK_POSITION = { 1480.587f, 636.805f, 21.713f };
-const Position FELMYST_E_TANK_POSITION = { 1479.524f, 584.069f, 23.231f };
-
-const std::array<Position const*, 3> FELMYST_TANK_POSITIONS = {{
-    &FELMYST_M_TANK_POSITION,
-    &FELMYST_W_TANK_POSITION,
-    &FELMYST_E_TANK_POSITION,
+const std::array<Position, 3> FELMYST_TANK_POSITIONS = {{
+    { 1460.145f, 598.290f, 21.869f },
+    { 1480.587f, 636.805f, 21.713f },
+    { 1479.524f, 584.069f, 23.231f },
 }};
 
 const std::array<Position, 3> FELMYST_FOG_LEFT_LANES = {{
@@ -60,9 +56,7 @@ const Position FELMYST_FOG_RIGHT_SIDE = { 1458.556f, 502.200f, 59.900f, 1.606f }
 
 const Position FELMYST_HIGH_Y_LANDING_POSITION = { 1476.77f, 665.094f, 20.6423f };
 const Position FELMYST_LOW_Y_LANDING_POSITION = { 1469.93f, 557.009f, 22.631699f };
-const Position FELMYST_CENTER_GROUND_REFERENCE = {
-    1473.35f, 611.0515f, 21.637f,
-};
+const Position FELMYST_CENTER_GROUND_REFERENCE = { 1473.35f, 611.0515f, 21.637f };
 
 struct FelmystDemonicVaporAnchor
 {
@@ -137,6 +131,9 @@ std::unordered_map<uint32, FelmystFogOfCorruptionState>
 
 std::unordered_map<uint32, FelmystIncomingEncapsulateState>
     felmystIncomingEncapsulateStates;
+
+std::unordered_map<ObjectGuid, FelmystFogCrateStuckState>
+    felmystFogCrateStuckStates;
 
 void ResetFelmystDemonicVaporFlightState(uint32 instanceId)
 {
@@ -566,20 +563,20 @@ void ClearFelmystDemonicVaporKiteState(Player* bot)
 
 Position const& GetFelmystMainTankGroundPosition(Player* player)
 {
-    Position const* bestPosition = &FELMYST_M_TANK_POSITION;
+    Position const* bestPosition = &FELMYST_TANK_POSITIONS[0];
     float bestDistance = std::numeric_limits<float>::max();
 
     if (!player)
         return *bestPosition;
 
-    for (Position const* position : FELMYST_TANK_POSITIONS)
+    for (Position const& position : FELMYST_TANK_POSITIONS)
     {
         const float distance = player->GetExactDist2d(
-            position->GetPositionX(), position->GetPositionY());
+            position.GetPositionX(), position.GetPositionY());
         if (distance < bestDistance)
         {
             bestDistance = distance;
-            bestPosition = position;
+            bestPosition = &position;
         }
     }
 

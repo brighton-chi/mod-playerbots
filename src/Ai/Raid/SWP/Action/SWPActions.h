@@ -223,6 +223,9 @@ public:
     FelmystAvoidFogOfCorruptionAction(
         PlayerbotAI* botAI, std::string const name = "felmyst avoid fog of corruption") : MovementAction(botAI, name) {}
     bool Execute(Event event) override;
+
+private:
+    bool TryTeleportStuckBotOntoCrate(Position const& destination);
 };
 
 class FelmystMeleeClearTargetAction : public Action
