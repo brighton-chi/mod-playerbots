@@ -30,8 +30,15 @@ bool SunwellPlateauBotIsNotInCombatTrigger::IsActive()
 bool VolatileFiendSelfDestructsWhenNearTrigger::IsActive()
 {
     constexpr float searchRadius = 25.0f;
-    return bot->FindNearestCreature(
+    Unit* volatileFiend = bot->FindNearestCreature(
         static_cast<uint32>(SunwellNpcs::NPC_VOLATILE_FIEND), searchRadius, true);
+
+    if (!volatileFiend)
+        return false;
+
+    // Z-position check is so bots will go up the ramp to M'uru without clearing
+    // the volatile fiends below
+    return std::abs(bot->GetPositionZ() - volatileFiend->GetPositionZ()) < 10.0f;
 }
 
 bool ApocalypseGuardProtectedByInfernalDefenseTrigger::IsActive()
@@ -335,7 +342,19 @@ bool FelmystFogOfCorruptionIsActiveTrigger::IsActive()
         return false;
 
     FelmystFogOfCorruptionState fogState;
-    return TryGetActiveFelmystFogOfCorruptionState(bot, felmyst, fogState);
+    if (TryGetActiveFelmystFogOfCorruptionState(bot, felmyst, fogState))
+        return true;
+
+    if (!TryGetFelmystFogOfCorruptionStageState(felmyst, fogState) ||
+        fogState.phase != FelmystFogPhase::Recovery ||
+        fogState.completedSweepCount < 3 ||
+        !fogState.atSide)
+    {
+        return false;
+    }
+
+    Position landingDestination;
+    return !TryGetFelmystLandingDestination(felmyst, landingDestination);
 }
 
 bool FelmystMeleeCannotReachBossTrigger::IsActive()

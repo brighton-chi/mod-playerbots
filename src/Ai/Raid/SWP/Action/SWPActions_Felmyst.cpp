@@ -10,6 +10,7 @@
 #include "SWPEncounter_Felmyst.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
+#include "Timer.h"
 
 using namespace SunwellHelpers;
 
@@ -207,7 +208,7 @@ bool FelmystAvoidDemonicVaporAction::Execute(Event /*event*/)
 {
     if (Unit* hazard = GetNearestFelmystDemonicVaporHazard(bot))
     {
-        constexpr float safeDistFromVapor = 10.0f;
+        constexpr float safeDistFromVapor = 15.0f;
         const float currentDistance = bot->GetDistance2d(hazard);
         if (currentDistance < safeDistFromVapor)
             return MoveAway(hazard, safeDistFromVapor - currentDistance);
@@ -231,18 +232,83 @@ bool FelmystAvoidFogOfCorruptionAction::Execute(Event /*event*/)
 {
     Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
     if (!felmyst)
+    {
+        felmystFogCrateStuckStates.erase(bot->GetGUID());
         return false;
+    }
 
     FelmystFogOfCorruptionState fogState;
-    if (!TryGetActiveFelmystFogOfCorruptionState(bot, felmyst, fogState))
+    const bool hasActiveFog =
+        TryGetActiveFelmystFogOfCorruptionState(bot, felmyst, fogState);
+    Position landingDestination;
+    const bool shouldRepositionAfterThirdPass =
+        !hasActiveFog &&
+        TryGetFelmystFogOfCorruptionStageState(felmyst, fogState) &&
+        fogState.phase == FelmystFogPhase::Recovery &&
+        fogState.completedSweepCount >= 3 &&
+        fogState.atSide &&
+        !TryGetFelmystLandingDestination(felmyst, landingDestination);
+
+    if (!hasActiveFog && !shouldRepositionAfterThirdPass)
+    {
+        felmystFogCrateStuckStates.erase(bot->GetGUID());
         return false;
+    }
 
     std::array<Position, 3> destinations;
     uint8 destinationCount = 0;
     if (!TryGetFelmystFogSafeDestinations(
             bot, fogState.lane, destinations, destinationCount))
     {
+        felmystFogCrateStuckStates.erase(bot->GetGUID());
         return false;
+    }
+
+    LastMovement const& lastMove = AI_VALUE(LastMovement&, "last movement");
+    bool trackedDestinationFound = false;
+    for (uint8 index = 0; index < destinationCount; ++index)
+    {
+        Position const& destination = destinations[index];
+        if (lastMove.priority != MovementPriority::MOVEMENT_FORCED ||
+            lastMove.lastMoveToMapId != SUNWELL_MAP_ID ||
+            Position(
+                lastMove.lastMoveToX, lastMove.lastMoveToY,
+                lastMove.lastMoveToZ).GetExactDist(destination) >
+                FELMYST_FOG_DESTINATION_MATCH_DISTANCE)
+        {
+            continue;
+        }
+
+        trackedDestinationFound = true;
+        if (TryTeleportStuckBotOntoCrate(destination))
+            return true;
+
+        break;
+    }
+
+    if (!trackedDestinationFound)
+        felmystFogCrateStuckStates.erase(bot->GetGUID());
+
+    if (shouldRepositionAfterThirdPass)
+    {
+        uint8 bestIndex = 0;
+        float bestDistance = std::numeric_limits<float>::max();
+        for (uint8 index = 0; index < destinationCount; ++index)
+        {
+            Position const& destination = destinations[index];
+            const float distanceToFelmyst = felmyst->GetExactDist2d(
+                destination.GetPositionX(), destination.GetPositionY());
+            if (distanceToFelmyst < bestDistance)
+            {
+                bestDistance = distanceToFelmyst;
+                bestIndex = index;
+            }
+        }
+
+        Position const& destination = destinations[bestIndex];
+        return MoveTo(SUNWELL_MAP_ID, destination.GetPositionX(), destination.GetPositionY(),
+                      destination.GetPositionZ(), false, false, false, false,
+                      MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
     for (uint8 index = 0; index < destinationCount; ++index)
@@ -257,6 +323,63 @@ bool FelmystAvoidFogOfCorruptionAction::Execute(Event /*event*/)
     }
 
     return false;
+}
+
+bool FelmystAvoidFogOfCorruptionAction::TryTeleportStuckBotOntoCrate(
+    Position const& destination)
+{
+    constexpr float crateCollisionCheckDistance = 2.0f;
+    constexpr float progressResetDistance = 1.0f;
+    constexpr uint32 stuckTimeoutMs = 1500;
+
+    const Position FELMYST_STUCK_CRATE_POSITION = { 1484.443f, 591.337f, 23.391f };
+    const Position FELMYST_ON_CRATE_POSITION = { 1482.181f, 591.253f, 24.545f };
+
+    if (bot->GetExactDist2d(
+            FELMYST_STUCK_CRATE_POSITION.GetPositionX(),
+            FELMYST_STUCK_CRATE_POSITION.GetPositionY()) >
+        crateCollisionCheckDistance)
+    {
+        felmystFogCrateStuckStates.erase(bot->GetGUID());
+        return false;
+    }
+
+    const uint32 now = getMSTime();
+    const float distanceToDestination = bot->GetExactDist(
+        destination.GetPositionX(), destination.GetPositionY(),
+        destination.GetPositionZ());
+
+    FelmystFogCrateStuckState& state =
+        felmystFogCrateStuckStates[bot->GetGUID()];
+
+    if (!state.sampleMs ||
+        state.destination.GetExactDist(destination) >
+            FELMYST_FOG_DESTINATION_MATCH_DISTANCE)
+    {
+        state.destination = destination;
+        state.nearestDestinationDistance = distanceToDestination;
+        state.sampleMs = now;
+        return false;
+    }
+
+    if (distanceToDestination + progressResetDistance <
+        state.nearestDestinationDistance)
+    {
+        state.nearestDestinationDistance = distanceToDestination;
+        state.sampleMs = now;
+        return false;
+    }
+
+    if (getMSTimeDiff(state.sampleMs, now) < stuckTimeoutMs)
+        return false;
+
+    felmystFogCrateStuckStates.erase(bot->GetGUID());
+    bot->RemoveAurasWithInterruptFlags(
+        AURA_INTERRUPT_FLAG_TELEPORTED | AURA_INTERRUPT_FLAG_CHANGE_MAP);
+    return bot->TeleportTo(
+        SUNWELL_MAP_ID, FELMYST_ON_CRATE_POSITION.GetPositionX(),
+        FELMYST_ON_CRATE_POSITION.GetPositionY(),
+        FELMYST_ON_CRATE_POSITION.GetPositionZ(), bot->GetOrientation());
 }
 
 bool FelmystMeleeClearTargetAction::Execute(Event /*event*/)

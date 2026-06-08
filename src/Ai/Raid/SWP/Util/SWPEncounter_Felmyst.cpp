@@ -15,15 +15,10 @@
 namespace SunwellHelpers
 {
 
-const Position FELMYST_M_TANK_POSITION = { 1460.145f, 598.290f, 21.869f };
-// const Position FELMYST_W_TANK_POSITION = { 1480.557f, 635.729f, 21.788f };
-const Position FELMYST_W_TANK_POSITION = { 1480.587f, 636.805f, 21.713f };
-const Position FELMYST_E_TANK_POSITION = { 1479.524f, 584.069f, 23.231f };
-
-const std::array<Position const*, 3> FELMYST_TANK_POSITIONS = {{
-    &FELMYST_M_TANK_POSITION,
-    &FELMYST_W_TANK_POSITION,
-    &FELMYST_E_TANK_POSITION,
+const std::array<Position, 3> FELMYST_TANK_POSITIONS = {{
+    { 1460.145f, 598.290f, 21.869f },
+    { 1480.587f, 636.805f, 21.713f },
+    { 1479.524f, 584.069f, 23.231f },
 }};
 
 const std::array<Position, 3> FELMYST_FOG_LEFT_LANES = {{
@@ -39,20 +34,20 @@ const std::array<Position, 3> FELMYST_FOG_RIGHT_LANES = {{
 }};
 
 const std::array<std::array<Position, 3>, 3> FELMYST_FOG_SAFE_SPOTS = {{
-    {{
-        { 1466.414f, 598.460f, 22.691f },
-        { 1468.840f, 614.437f, 22.460f },
-        { 1463.830f, 582.128f, 21.568f },
+    {{ // Top lane safe spots
+        { 1466.877f, 562.297f, 22.231f },
+        { 1466.718f, 602.838f, 22.834f },
+        { 1466.896f, 641.309f, 20.496f },
     }},
-    {{
-        { 1500.258f, 613.369f, 26.310f },
-        { 1500.335f, 596.584f, 25.872f },
-        { 1501.360f, 630.656f, 25.482f },
+    {{ // Middle lane safe spots
+        { 1500.352f, 570.684f, 24.830f },
+        { 1500.372f, 602.543f, 26.305f },
+        { 1500.275f, 639.854f, 24.744f },
     }},
-    {{
-        { 1485.415f, 602.346f, 24.075f },
-        { 1486.311f, 585.250f, 23.376f },
-        { 1488.347f, 619.364f, 24.587f },
+    {{ // Bottom lane safe spots
+        { 1484.481f, 568.884f, 23.328f },
+        { 1484.491f, 602.682f, 24.015f },
+        { 1484.395f, 635.028f, 22.242f },
     }}
 }};
 
@@ -61,9 +56,7 @@ const Position FELMYST_FOG_RIGHT_SIDE = { 1458.556f, 502.200f, 59.900f, 1.606f }
 
 const Position FELMYST_HIGH_Y_LANDING_POSITION = { 1476.77f, 665.094f, 20.6423f };
 const Position FELMYST_LOW_Y_LANDING_POSITION = { 1469.93f, 557.009f, 22.631699f };
-const Position FELMYST_CENTER_GROUND_REFERENCE = {
-    1473.35f, 611.0515f, 21.637f,
-};
+const Position FELMYST_CENTER_GROUND_REFERENCE = { 1473.35f, 611.0515f, 21.637f };
 
 struct FelmystDemonicVaporAnchor
 {
@@ -138,6 +131,9 @@ std::unordered_map<uint32, FelmystFogOfCorruptionState>
 
 std::unordered_map<uint32, FelmystIncomingEncapsulateState>
     felmystIncomingEncapsulateStates;
+
+std::unordered_map<ObjectGuid, FelmystFogCrateStuckState>
+    felmystFogCrateStuckStates;
 
 void ResetFelmystDemonicVaporFlightState(uint32 instanceId)
 {
@@ -346,6 +342,20 @@ bool TryGetFelmystMovementDestination(Unit* felmyst, Position& destination)
 
     destination = Position{ destinationX, destinationY, destinationZ };
     return true;
+}
+
+bool TryGetFelmystLandingDestination(Unit* felmyst, Position& destination)
+{
+    if (!TryGetFelmystMovementDestination(felmyst, destination))
+        return false;
+
+    constexpr float landingMatchDistance = 3.0f;
+    return destination.GetExactDist2d(
+               FELMYST_HIGH_Y_LANDING_POSITION.GetPositionX(),
+               FELMYST_HIGH_Y_LANDING_POSITION.GetPositionY()) <= landingMatchDistance ||
+           destination.GetExactDist2d(
+               FELMYST_LOW_Y_LANDING_POSITION.GetPositionX(),
+               FELMYST_LOW_Y_LANDING_POSITION.GetPositionY()) <= landingMatchDistance;
 }
 
 FelmystFogLocation GetFelmystCurrentFogLocation(Unit* felmyst)
@@ -567,20 +577,20 @@ void ClearFelmystDemonicVaporKiteState(Player* bot)
 
 Position const& GetFelmystMainTankGroundPosition(Player* player)
 {
-    Position const* bestPosition = &FELMYST_M_TANK_POSITION;
+    Position const* bestPosition = &FELMYST_TANK_POSITIONS[0];
     float bestDistance = std::numeric_limits<float>::max();
 
     if (!player)
         return *bestPosition;
 
-    for (Position const* position : FELMYST_TANK_POSITIONS)
+    for (Position const& position : FELMYST_TANK_POSITIONS)
     {
         const float distance = player->GetExactDist2d(
-            position->GetPositionX(), position->GetPositionY());
+            position.GetPositionX(), position.GetPositionY());
         if (distance < bestDistance)
         {
             bestDistance = distance;
-            bestPosition = position;
+            bestPosition = &position;
         }
     }
 
@@ -658,7 +668,7 @@ uint8 GetFelmystDemonicVaporAnchorMask(uint8 anchorIndex)
 
 float GetDistanceToFelmystDemonicVaporAnchor(Player* bot, uint8 anchorIndex)
 {
-    if (!bot || anchorIndex >= FELMYST_DEMONIC_VAPOR_KITE_ANCHORS.size())
+    if (anchorIndex >= FELMYST_DEMONIC_VAPOR_KITE_ANCHORS.size())
         return std::numeric_limits<float>::max();
 
     Position const& anchor = FELMYST_DEMONIC_VAPOR_KITE_ANCHORS[anchorIndex].position;
@@ -850,7 +860,7 @@ bool TryGetFelmystDemonicVaporAnchorDestination(
     Player* bot, uint8 anchorIndex, std::vector<Unit*> const& hazards,
     bool requireSafePath, bool requireSafeEndpoint, Position& destination)
 {
-    if (!bot || anchorIndex >= FELMYST_DEMONIC_VAPOR_KITE_ANCHORS.size())
+    if (anchorIndex >= FELMYST_DEMONIC_VAPOR_KITE_ANCHORS.size())
         return false;
 
     constexpr float minPlayerEndpointClearance = 8.0f;
@@ -895,9 +905,6 @@ bool TryGetFelmystDemonicVaporAnchorDestination(
 bool TryGetFelmystDemonicVaporStepDestination(
     Player* bot, Position const& anchorDestination, Position& destination)
 {
-    if (!bot)
-        return false;
-
     constexpr float stepDistance = 10.0f;
     const float distanceToAnchor = bot->GetExactDist2d(
         anchorDestination.GetPositionX(), anchorDestination.GetPositionY());
@@ -1039,6 +1046,8 @@ bool TryGetFelmystFogOfCorruptionStageState(
 {
     state = FelmystFogOfCorruptionState();
     const uint32 now = getMSTime();
+    constexpr uint32 fogRecoveryGraceMs = 2500;
+    constexpr uint32 fogThirdPassSidePauseGraceMs = 10000;
 
     if (!felmyst)
         return false;
@@ -1059,6 +1068,7 @@ bool TryGetFelmystFogOfCorruptionStageState(
     const FelmystFogLane destinationLane = GetFelmystFogLaneFromLocation(destinationLocation);
     const bool isSweeping = felmyst->HasAura(
         static_cast<uint32>(SunwellSpells::SPELL_FELMYST_SPEED_BURST));
+    tracker.atSide = IsFelmystFogSideLocation(currentLocation);
 
     if (currentLane != FelmystFogLane::None)
     {
@@ -1077,7 +1087,6 @@ bool TryGetFelmystFogOfCorruptionStageState(
         if (selectedLane == FelmystFogLane::None)
             return false;
 
-        constexpr uint32 fogRecoveryGraceMs = 2500;
         tracker.lane = selectedLane;
         tracker.phase = FelmystFogPhase::Sweep;
         tracker.expireMs = now + fogRecoveryGraceMs;
@@ -1100,12 +1109,23 @@ bool TryGetFelmystFogOfCorruptionStageState(
          IsFelmystFogSideLocation(currentLocation) ||
          IsFelmystFogSideLocation(destinationLocation)))
     {
+        if (tracker.phase == FelmystFogPhase::Sweep)
+        {
+            ++tracker.completedSweepCount;
+            tracker.expireMs = now +
+                (tracker.completedSweepCount >= 3 ?
+                     fogThirdPassSidePauseGraceMs : fogRecoveryGraceMs);
+        }
+
         tracker.phase = FelmystFogPhase::Recovery;
         state = tracker;
         return true;
     }
 
-    felmystFogOfCorruptionStates.erase(instanceId);
+    tracker.lane = FelmystFogLane::None;
+    tracker.phase = FelmystFogPhase::None;
+    tracker.expireMs = 0;
+    tracker.atSide = false;
     return false;
 }
 
