@@ -668,7 +668,7 @@ uint8 GetFelmystDemonicVaporAnchorMask(uint8 anchorIndex)
 
 float GetDistanceToFelmystDemonicVaporAnchor(Player* bot, uint8 anchorIndex)
 {
-    if (!bot || anchorIndex >= FELMYST_DEMONIC_VAPOR_KITE_ANCHORS.size())
+    if (anchorIndex >= FELMYST_DEMONIC_VAPOR_KITE_ANCHORS.size())
         return std::numeric_limits<float>::max();
 
     Position const& anchor = FELMYST_DEMONIC_VAPOR_KITE_ANCHORS[anchorIndex].position;
@@ -860,7 +860,7 @@ bool TryGetFelmystDemonicVaporAnchorDestination(
     Player* bot, uint8 anchorIndex, std::vector<Unit*> const& hazards,
     bool requireSafePath, bool requireSafeEndpoint, Position& destination)
 {
-    if (!bot || anchorIndex >= FELMYST_DEMONIC_VAPOR_KITE_ANCHORS.size())
+    if (anchorIndex >= FELMYST_DEMONIC_VAPOR_KITE_ANCHORS.size())
         return false;
 
     constexpr float minPlayerEndpointClearance = 8.0f;
@@ -905,9 +905,6 @@ bool TryGetFelmystDemonicVaporAnchorDestination(
 bool TryGetFelmystDemonicVaporStepDestination(
     Player* bot, Position const& anchorDestination, Position& destination)
 {
-    if (!bot)
-        return false;
-
     constexpr float stepDistance = 10.0f;
     const float distanceToAnchor = bot->GetExactDist2d(
         anchorDestination.GetPositionX(), anchorDestination.GetPositionY());

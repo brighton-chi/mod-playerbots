@@ -14,8 +14,9 @@ using namespace SunwellHelpers;
 
 bool EredarTwinsMeleeJumpDownFromBalconyAction::Execute(Event /*event*/)
 {
+    Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
     const Position& jumpPos = EREDAR_TWINS_P1_RANGED_POSITION;
-    const Position& landingPos = EREDAR_TWINS_P2_MELEE_STACK_POSITION;
+    const Position landingPos = GetEredarTwinsP2MeleeStackPosition(alythess);
 
     constexpr float arrivalDistance = 2.0f;
     const float distanceToJumpPos =
@@ -147,18 +148,19 @@ bool EredarTwinsFirstAssistTankMoveOutOfBlazeAction::Execute(Event /*event*/)
 
     const ObjectGuid guid = bot->GetGUID();
     uint8 index = alythessTankStep.count(guid) ? alythessTankStep[guid] : 0;
-    if (index >= ALYTHESS_TANK_POSITIONS.size())
+    if (index >= ALYTHESS_TANK_POSITION_COUNT)
         index = 0;
 
     auto const findSafeAlythessTankIndex =
         [&](uint8 startIndex, bool includeStart, uint8& safeIndex)
     {
         const size_t offsetStart = includeStart ? 0 : 1;
-        for (size_t offset = offsetStart; offset < ALYTHESS_TANK_POSITIONS.size(); ++offset)
+        for (size_t offset = offsetStart; offset < ALYTHESS_TANK_POSITION_COUNT; ++offset)
         {
             const uint8 candidateIndex =
-                static_cast<uint8>((startIndex + offset) % ALYTHESS_TANK_POSITIONS.size());
-            if (IsAlythessTankPositionSafe(bot, ALYTHESS_TANK_POSITIONS[candidateIndex]))
+                static_cast<uint8>((startIndex + offset) % ALYTHESS_TANK_POSITION_COUNT);
+            if (IsAlythessTankPositionSafe(
+                    bot, GetAlythessTankPosition(alythess, candidateIndex)))
             {
                 safeIndex = candidateIndex;
                 return true;
@@ -168,7 +170,7 @@ bool EredarTwinsFirstAssistTankMoveOutOfBlazeAction::Execute(Event /*event*/)
         return false;
     };
 
-    if (!IsAlythessTankPositionSafe(bot, ALYTHESS_TANK_POSITIONS[index]))
+    if (!IsAlythessTankPositionSafe(bot, GetAlythessTankPosition(alythess, index)))
     {
         uint8 safeIndex = index;
         if (!findSafeAlythessTankIndex(index, false, safeIndex))
@@ -178,7 +180,7 @@ bool EredarTwinsFirstAssistTankMoveOutOfBlazeAction::Execute(Event /*event*/)
         alythessTankStep[guid] = index;
     }
 
-    const Position& position = ALYTHESS_TANK_POSITIONS[index];
+    const Position position = GetAlythessTankPosition(alythess, index);
 
     constexpr float maxDistance = 1.0f;
     const float distToPosition = bot->GetExactDist2d(position);
@@ -194,7 +196,7 @@ bool EredarTwinsFirstAssistTankMoveOutOfBlazeAction::Execute(Event /*event*/)
 
             index = safeIndex;
             alythessTankStep[guid] = index;
-            const Position& newPosition = ALYTHESS_TANK_POSITIONS[index];
+            const Position newPosition = GetAlythessTankPosition(alythess, index);
             const float newDistToPosition = bot->GetExactDist2d(newPosition);
             if (newDistToPosition > maxDistance)
             {
@@ -243,12 +245,14 @@ bool EredarTwinsPositionRangedAction::Execute(Event /*event*/)
     // Jump down during Phase 2 or if the bot pulls aggro on Sacrolash
     else if (bot->GetPositionZ() > EREDAR_TWINS_BALCONY_Z)
     {
+        Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
+
         // But don't jump down at the beginning of the fight
         if (sacrolash && sacrolash->GetHealthPct() > 95.0f)
             return false;
 
         const Position& jumpPos = EREDAR_TWINS_P1_RANGED_POSITION;
-        const Position& landingPos = EREDAR_TWINS_P2_RANGED_STACK_POSITION;
+        const Position landingPos = GetEredarTwinsP2RangedStackPosition(alythess);
 
         constexpr float arrivalDistance = 2.0f;
         const float distanceToJumpPos =
@@ -273,8 +277,10 @@ bool EredarTwinsPositionRangedAction::Execute(Event /*event*/)
 
 bool EredarTwinsStackInRoomCenterAction::Execute(Event /*event*/)
 {
-    const Position& position = botAI->IsRanged(bot) ?
-        EREDAR_TWINS_P2_RANGED_STACK_POSITION : EREDAR_TWINS_P2_MELEE_STACK_POSITION;
+    Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
+    const Position position = botAI->IsRanged(bot) ?
+        GetEredarTwinsP2RangedStackPosition(alythess) :
+        GetEredarTwinsP2MeleeStackPosition(alythess);
 
     const float distToPosition =
         bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
