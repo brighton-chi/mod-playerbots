@@ -1125,7 +1125,10 @@ bool TryGetFelmystFogOfCorruptionStageState(
         return true;
     }
 
-    felmystFogOfCorruptionStates.erase(instanceId);
+    tracker.lane = FelmystFogLane::None;
+    tracker.phase = FelmystFogPhase::None;
+    tracker.expireMs = 0;
+    tracker.atSide = false;
     return false;
 }
 
