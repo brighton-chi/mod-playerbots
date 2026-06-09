@@ -34,7 +34,10 @@
 
 using namespace SunwellHelpers;
 
-static bool IsDpsCooldownAction(Action* action)
+namespace
+{
+
+bool IsDpsCooldownAction(Action* action)
 {
     return dynamic_cast<CastHeroismAction*>(action) ||
            dynamic_cast<CastBloodlustAction*>(action) ||
@@ -58,6 +61,8 @@ static bool IsDpsCooldownAction(Action* action)
            dynamic_cast<CastSummonGargoyleAction*>(action) ||
            dynamic_cast<CastBerserkingAction*>(action) ||
            dynamic_cast<CastBloodFuryAction*>(action);
+}
+
 }
 
 // Kalecgos
@@ -105,7 +110,7 @@ float KalecgosWaitToDecurseMultiplier::GetValue(Action* action)
             static_cast<uint32>(SunwellSpells::SPELL_CURSE_OF_BOUNDLESS_AGONY_SEC));
     }
 
-    if (!aura || aura->GetDuration() < 10000) // 10 seconds remaining
+    if (!aura || aura->GetDuration() < 15000) // 15 seconds remaining
         return 1.0f;
 
     if (dynamic_cast<CastRemoveCurseAction*>(action) ||
