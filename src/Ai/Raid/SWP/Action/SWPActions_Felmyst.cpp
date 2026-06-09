@@ -246,7 +246,6 @@ bool FelmystAvoidFogOfCorruptionAction::Execute(Event /*event*/)
         TryGetFelmystFogOfCorruptionStageState(felmyst, fogState) &&
         fogState.phase == FelmystFogPhase::Recovery &&
         fogState.completedSweepCount >= 3 &&
-        fogState.atSide &&
         !TryGetFelmystLandingDestination(felmyst, landingDestination);
 
     if (!hasActiveFog && !shouldRepositionAfterThirdPass)

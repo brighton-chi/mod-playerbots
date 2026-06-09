@@ -65,7 +65,6 @@ struct FelmystFogOfCorruptionState
     FelmystFogPhase phase = FelmystFogPhase::None;
     uint32 expireMs = 0;
     uint8 completedSweepCount = 0;
-    bool atSide = false;
 };
 
 struct FelmystIncomingEncapsulateState

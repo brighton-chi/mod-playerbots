@@ -1068,7 +1068,6 @@ bool TryGetFelmystFogOfCorruptionStageState(
     const FelmystFogLane destinationLane = GetFelmystFogLaneFromLocation(destinationLocation);
     const bool isSweeping = felmyst->HasAura(
         static_cast<uint32>(SunwellSpells::SPELL_FELMYST_SPEED_BURST));
-    tracker.atSide = IsFelmystFogSideLocation(currentLocation);
 
     if (currentLane != FelmystFogLane::None)
     {
@@ -1125,7 +1124,6 @@ bool TryGetFelmystFogOfCorruptionStageState(
     tracker.lane = FelmystFogLane::None;
     tracker.phase = FelmystFogPhase::None;
     tracker.expireMs = 0;
-    tracker.atSide = false;
     return false;
 }
 

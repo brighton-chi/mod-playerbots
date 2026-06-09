@@ -347,8 +347,7 @@ bool FelmystFogOfCorruptionIsActiveTrigger::IsActive()
 
     if (!TryGetFelmystFogOfCorruptionStageState(felmyst, fogState) ||
         fogState.phase != FelmystFogPhase::Recovery ||
-        fogState.completedSweepCount < 3 ||
-        !fogState.atSide)
+        fogState.completedSweepCount < 3)
     {
         return false;
     }
