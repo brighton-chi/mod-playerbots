@@ -129,8 +129,8 @@ public:
         creators["m'uru void sentinel or entropius has appeared"] =
             &RaidSunwellTriggerContext::muru_void_sentinel_or_entropius_has_appeared;
 
-        creators["m'uru entropius has appeared"] =
-            &RaidSunwellTriggerContext::muru_entropius_has_appeared;
+        creators["m'uru boss transformed into entropius"] =
+            &RaidSunwellTriggerContext::muru_boss_transformed_into_entropius;
 
         creators["m'uru bosses engaged by ranged"] =
             &RaidSunwellTriggerContext::muru_bosses_engaged_by_ranged;
@@ -322,8 +322,8 @@ private:
     static Trigger* muru_void_sentinel_or_entropius_has_appeared(
         PlayerbotAI* botAI) { return new MuruVoidSentinelOrEntropiusHasAppearedTrigger(botAI); }
 
-    static Trigger* muru_entropius_has_appeared(
-        PlayerbotAI* botAI) { return new MuruEntropiusHasAppearedTrigger(botAI); }
+    static Trigger* muru_boss_transformed_into_entropius(
+        PlayerbotAI* botAI) { return new MuruBossTransformedIntoEntropiusTrigger(botAI); }
 
     static Trigger* muru_bosses_engaged_by_ranged(
         PlayerbotAI* botAI) { return new MuruBossesEngagedByRangedTrigger(botAI); }

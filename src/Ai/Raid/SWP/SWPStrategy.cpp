@@ -262,7 +262,7 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("m'uru void sentinel or entropius has appeared", {
         NextAction("m'uru misdirect enemies to tanks", ACTION_RAID + 3) }));
 
-    triggers.push_back(new TriggerNode("m'uru entropius has appeared", {
+    triggers.push_back(new TriggerNode("m'uru boss transformed into entropius", {
         NextAction("m'uru main tank pick up entropius", ACTION_RAID + 4) }));
 
     triggers.push_back(new TriggerNode("m'uru bosses engaged by ranged", {
@@ -384,5 +384,4 @@ void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new KiljaedenPrioritizeDarknessProtectionMultiplier(botAI));
     multipliers.push_back(new KiljaedenDelayCooldownsMultiplier(botAI));
     multipliers.push_back(new KiljaedenControlDragonMultiplier(botAI));
-
 }
