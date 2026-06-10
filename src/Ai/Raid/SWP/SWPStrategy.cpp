@@ -174,8 +174,8 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kalecgos humanoid form tanks sathrovarr", {
         NextAction("kalecgos sathrovarr tank stand with kalec", ACTION_RAID + 2) }));
 
-    triggers.push_back(new TriggerNode("kalecgos both bosses must be defeated", {
-        NextAction("kalecgos determine boss to attack", ACTION_RAID + 2) }));
+    // triggers.push_back(new TriggerNode("kalecgos both bosses must be defeated", {
+    //     NextAction("kalecgos determine boss to attack", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("kalecgos bots don't observe gravity", {
         NextAction("kalecgos return to spectral realm ground", ACTION_EMERGENCY + 10) }));
@@ -271,8 +271,8 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("m'uru void sentinel pulses shadow", {
         NextAction("m'uru tanks move sentinel to safe position", ACTION_RAID + 3) }));
 
-    triggers.push_back(new TriggerNode("m'uru void sentinel casts void blast on tank", {
-        NextAction("m'uru set grounding totem in first assist tank group", ACTION_RAID + 3) }));
+    // triggers.push_back(new TriggerNode("m'uru void sentinel casts void blast on tank", {
+    //     NextAction("m'uru set grounding totem in first assist tank group", ACTION_RAID + 3) }));
 
     triggers.push_back(new TriggerNode("m'uru adds spawn at entrance", {
         NextAction("m'uru second assist tank guard ranged", ACTION_RAID + 1) }));
