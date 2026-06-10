@@ -1114,6 +1114,14 @@ bool TryGetFelmystFogOfCorruptionStageState(
             tracker.expireMs = now +
                 (tracker.completedSweepCount >= 3 ?
                      fogThirdPassSidePauseGraceMs : fogRecoveryGraceMs);
+
+            LOG_DEBUG(
+                "playerbots",
+                "Felmyst fog sweep completed: instance={}, count={}, lane={}, currentLocation={}, destinationLocation={}, expireMs={}",
+                instanceId, tracker.completedSweepCount,
+                static_cast<uint32>(tracker.lane),
+                static_cast<uint32>(currentLocation),
+                static_cast<uint32>(destinationLocation), tracker.expireMs);
         }
 
         tracker.phase = FelmystFogPhase::Recovery;

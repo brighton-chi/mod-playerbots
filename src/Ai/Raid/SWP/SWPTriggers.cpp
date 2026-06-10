@@ -353,7 +353,17 @@ bool FelmystFogOfCorruptionIsActiveTrigger::IsActive()
     }
 
     Position landingDestination;
-    return !TryGetFelmystLandingDestination(felmyst, landingDestination);
+    const bool isAlreadyLanding =
+        TryGetFelmystLandingDestination(felmyst, landingDestination);
+    LOG_DEBUG(
+        "playerbots",
+        "Felmyst post-third-pass trigger check: bot={}, instance={}, phase={}, count={}, lane={}, landingDetected={}, destination=({:.3f}, {:.3f}, {:.3f})",
+        bot->GetName().c_str(), bot->GetInstanceId(),
+        static_cast<uint32>(fogState.phase), fogState.completedSweepCount,
+        static_cast<uint32>(fogState.lane), isAlreadyLanding,
+        landingDestination.GetPositionX(), landingDestination.GetPositionY(),
+        landingDestination.GetPositionZ());
+    return !isAlreadyLanding;
 }
 
 bool FelmystMeleeCannotReachBossTrigger::IsActive()
