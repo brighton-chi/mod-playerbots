@@ -138,6 +138,7 @@ void RaidSunwellStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValu
             AppendMuruTankExclusions(botAI, exclusions);
             break;
         case TargetValueExclusionType::Dps:
+        case TargetValueExclusionType::Attacker:
             AppendMuruMeleeDpsExclusions(botAI, exclusions);
             break;
         case TargetValueExclusionType::None:
