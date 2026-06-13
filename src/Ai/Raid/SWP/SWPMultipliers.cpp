@@ -568,11 +568,11 @@ float EredarTwinsDisableTankActionsMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float EredarTwinsRoguesStayStackedMultiplier::GetValue(Action* action)
+float EredarTwinsDisableKillingSpreeMultiplier::GetValue(Action* action)
 {
+    // This hits Alythess during Phase 1 and puts bots in fire in Phase 2
     if (bot->getClass() != CLASS_ROGUE ||
-        !AI_VALUE2(Unit*, "find target", "grand warlock alythess") ||
-        AI_VALUE2(Unit*, "find target", "lady sacrolash"))
+        !AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
     {
         return 1.0f;
     }

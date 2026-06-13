@@ -179,11 +179,11 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class EredarTwinsRoguesStayStackedMultiplier : public Multiplier
+class EredarTwinsDisableKillingSpreeMultiplier : public Multiplier
 {
 public:
-    EredarTwinsRoguesStayStackedMultiplier(PlayerbotAI* botAI) : Multiplier(
-        botAI, "eredar twins rogues stay stacked") {}
+    EredarTwinsDisableKillingSpreeMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "eredar twins disable killing spree") {}
     virtual float GetValue(Action* action);
 };
 

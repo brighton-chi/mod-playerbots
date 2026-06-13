@@ -380,7 +380,7 @@ void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new EredarTwinsControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new EredarTwinsControlThreatMultiplier(botAI));
     multipliers.push_back(new EredarTwinsDisableTankActionsMultiplier(botAI));
-    multipliers.push_back(new EredarTwinsRoguesStayStackedMultiplier(botAI));
+    multipliers.push_back(new EredarTwinsDisableKillingSpreeMultiplier(botAI));
     multipliers.push_back(new EredarTwinsControlMovementMultiplier(botAI));
     multipliers.push_back(new EredarTwinsDelayCooldownsMultiplier(botAI));
 
