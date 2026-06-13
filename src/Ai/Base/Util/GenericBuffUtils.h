@@ -32,10 +32,16 @@ bool ShouldDeferGreaterBlessingAssignmentForRecentLogin(Player* bot);
 
 bool HasRequiredReagents(Player* bot, uint32 spellId);
 
+bool TryAnnounceMissingBuffReagents(
+    PlayerbotAI* botAI,
+    std::string const& baseName,
+    std::string const& groupName);
+
 std::string UpgradeToGroupIfAppropriate(
     Player* bot,
     PlayerbotAI* botAI,
-    std::string const& baseName);
+    std::string const& baseName,
+    std::string* outMissingReagentGroupName = nullptr);
 
 }
 
