@@ -339,8 +339,14 @@ float FelmystPrioritizeFogAvoidanceMultiplier::GetValue(Action* action)
         return 1.0f;
 
     FelmystFogOfCorruptionState fogState; // Fog phase active
-    if (!TryGetFelmystFogOfCorruptionStageState(felmyst, fogState))
+    FelmystFogLane thirdPassLane = FelmystFogLane::None;
+    const bool shouldRepositionAfterThirdPass =
+        TryGetFelmystPostThirdPassWindow(felmyst, thirdPassLane);
+    if (!TryGetFelmystFogOfCorruptionStageState(felmyst, fogState) &&
+        !shouldRepositionAfterThirdPass)
+    {
         return 1.0f;
+    }
 
     if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
         dynamic_cast<DrinkAction*>(action))
@@ -356,6 +362,7 @@ float FelmystPrioritizeFogAvoidanceMultiplier::GetValue(Action* action)
     uint8 destinationCount = 0;
     bool canRelocate = TryGetFelmystFogSafeDestinations(
         bot, needsFogAvoidance ? dangerousFogState.lane :
+        shouldRepositionAfterThirdPass ? thirdPassLane :
         fogState.lane, destinations, destinationCount);
 
     if (needsFogAvoidance && canRelocate &&

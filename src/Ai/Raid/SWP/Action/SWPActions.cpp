@@ -87,6 +87,9 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
             if (felmystFogOfCorruptionStates.erase(instanceId) > 0)
                 erased = true;
 
+            if (felmystFogPassStates.erase(instanceId) > 0)
+                erased = true;
+
             if (felmystDemonicVaporRegionIndices.erase(instanceId) > 0)
                 erased = true;
 

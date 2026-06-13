@@ -240,13 +240,9 @@ bool FelmystAvoidFogOfCorruptionAction::Execute(Event /*event*/)
     FelmystFogOfCorruptionState fogState;
     const bool hasActiveFog =
         TryGetActiveFelmystFogOfCorruptionState(bot, felmyst, fogState);
-    Position landingDestination;
+    FelmystFogLane thirdPassLane = FelmystFogLane::None;
     const bool shouldRepositionAfterThirdPass =
-        !hasActiveFog &&
-        TryGetFelmystFogOfCorruptionStageState(felmyst, fogState) &&
-        fogState.phase == FelmystFogPhase::Recovery &&
-        fogState.completedSweepCount >= 3 &&
-        !TryGetFelmystLandingDestination(felmyst, landingDestination);
+        !hasActiveFog && TryGetFelmystPostThirdPassWindow(felmyst, thirdPassLane);
 
     if (!hasActiveFog && !shouldRepositionAfterThirdPass)
     {
@@ -257,18 +253,9 @@ bool FelmystAvoidFogOfCorruptionAction::Execute(Event /*event*/)
     std::array<Position, 3> destinations;
     uint8 destinationCount = 0;
     if (!TryGetFelmystFogSafeDestinations(
-            bot, fogState.lane, destinations, destinationCount))
+            bot, shouldRepositionAfterThirdPass ? thirdPassLane : fogState.lane,
+            destinations, destinationCount))
     {
-        if (shouldRepositionAfterThirdPass)
-        {
-            LOG_DEBUG(
-                "playerbots",
-                "Felmyst post-third-pass action has no safe destinations: bot={}, instance={}, lane={}, phase={}, count={}",
-                bot->GetName().c_str(), bot->GetInstanceId(),
-                static_cast<uint32>(fogState.lane),
-                static_cast<uint32>(fogState.phase), fogState.completedSweepCount);
-        }
-
         felmystFogCrateStuckStates.erase(bot->GetGUID());
         return false;
     }
@@ -315,39 +302,9 @@ bool FelmystAvoidFogOfCorruptionAction::Execute(Event /*event*/)
         }
 
         Position const& destination = destinations[bestIndex];
-        const bool duplicateMove =
-            IsDuplicateMove(destination.GetPositionX(), destination.GetPositionY(),
-                            destination.GetPositionZ());
-        const bool waitingForLastMove =
-            IsWaitingForLastMove(MovementPriority::MOVEMENT_FORCED);
-        const bool movingAllowed = IsMovingAllowed();
-        LOG_DEBUG(
-            "playerbots",
-            "Felmyst post-third-pass move attempt: bot={}, instance={}, lane={}, count={}, chosenIndex={}, felmyst=({:.3f}, {:.3f}, {:.3f}), destination=({:.3f}, {:.3f}, {:.3f}), botDistance={:.3f}, duplicateMove={}, waitingForLastMove={}, movingAllowed={}",
-            bot->GetName().c_str(), bot->GetInstanceId(),
-            static_cast<uint32>(fogState.lane), fogState.completedSweepCount,
-            bestIndex, felmyst->GetPositionX(), felmyst->GetPositionY(),
-            felmyst->GetPositionZ(), destination.GetPositionX(),
-            destination.GetPositionY(), destination.GetPositionZ(),
-            bot->GetExactDist2d(destination.GetPositionX(), destination.GetPositionY()),
-            duplicateMove, waitingForLastMove, movingAllowed);
-
-        const bool moved = MoveTo(
-            SUNWELL_MAP_ID, destination.GetPositionX(), destination.GetPositionY(),
-            destination.GetPositionZ(), false, false, false, false,
-            MovementPriority::MOVEMENT_FORCED, true, false);
-        if (!moved)
-        {
-            LOG_DEBUG(
-                "playerbots",
-                "Felmyst post-third-pass move failed: bot={}, instance={}, lane={}, count={}, chosenIndex={}, destination=({:.3f}, {:.3f}, {:.3f})",
-                bot->GetName().c_str(), bot->GetInstanceId(),
-                static_cast<uint32>(fogState.lane), fogState.completedSweepCount,
-                bestIndex, destination.GetPositionX(), destination.GetPositionY(),
-                destination.GetPositionZ());
-        }
-
-        return moved;
+        return MoveTo(SUNWELL_MAP_ID, destination.GetPositionX(), destination.GetPositionY(),
+                      destination.GetPositionZ(), false, false, false, false,
+                      MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
     for (uint8 index = 0; index < destinationCount; ++index)
