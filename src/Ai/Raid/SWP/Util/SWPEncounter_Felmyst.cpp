@@ -132,6 +132,9 @@ std::unordered_map<uint32, FelmystFogOfCorruptionState>
 std::unordered_map<uint32, FelmystFogPassState>
     felmystFogPassStates;
 
+std::unordered_map<uint32, bool>
+    felmystEncapsulateOccurredThisGroundPhase;
+
 std::unordered_map<uint32, FelmystIncomingEncapsulateState>
     felmystIncomingEncapsulateStates;
 
@@ -1357,6 +1360,7 @@ Player* GetFelmystEncapsulateTarget(Player* bot)
             incomingTarget->HasAura(static_cast<uint32>(SunwellSpells::SPELL_ENCAPSULATE)))
         {
             incomingState.auraObserved = true;
+            felmystEncapsulateOccurredThisGroundPhase[bot->GetInstanceId()] = true;
             return incomingTarget;
         }
 
@@ -1378,6 +1382,8 @@ Player* GetFelmystEncapsulateTarget(Player* bot)
             continue;
         }
 
+        felmystEncapsulateOccurredThisGroundPhase[bot->GetInstanceId()] = true;
+
         float distance = bot->GetDistance2d(member);
         if (!closestTarget || distance < closestDistance)
         {
@@ -1387,6 +1393,12 @@ Player* GetFelmystEncapsulateTarget(Player* bot)
     }
 
     return closestTarget;
+}
+
+bool DidFelmystEncapsulateOccurThisGroundPhase(Player* bot)
+{
+    auto const itr = felmystEncapsulateOccurredThisGroundPhase.find(bot->GetInstanceId());
+    return itr != felmystEncapsulateOccurredThisGroundPhase.end() && itr->second;
 }
 
 Player* GetFelmystGasNovaDispelTarget(Player* bot)

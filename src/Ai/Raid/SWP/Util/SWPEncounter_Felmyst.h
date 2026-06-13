@@ -111,6 +111,8 @@ extern std::unordered_map<uint32, FelmystFogOfCorruptionState>
     felmystFogOfCorruptionStates;
 extern std::unordered_map<uint32, FelmystFogPassState>
     felmystFogPassStates;
+extern std::unordered_map<uint32, bool>
+    felmystEncapsulateOccurredThisGroundPhase;
 extern std::unordered_map<uint32, FelmystIncomingEncapsulateState>
     felmystIncomingEncapsulateStates;
 extern std::unordered_map<ObjectGuid, FelmystFogCrateStuckState>
@@ -143,6 +145,7 @@ bool TryGetActiveFelmystFogOfCorruptionState(
 Unit* GetNearestFelmystFogOfCorruptionCharmedTarget(Player* bot);
 Unit* GetNearestFelmystDemonicVaporHazard(Player* bot);
 Player* GetFelmystEncapsulateTarget(Player* bot);
+bool DidFelmystEncapsulateOccurThisGroundPhase(Player* bot);
 bool TryGetFelmystRangedPosition(
     PlayerbotAI* botAI, Player* bot, Unit* felmyst, Position& position);
 Player* GetFelmystGasNovaDispelTarget(Player* bot);
