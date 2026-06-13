@@ -353,6 +353,20 @@ bool EredarTwinsDpsPrioritizeLadySacrolashAction::Execute(Event /*event*/)
         return false;
     }
 
+    if (alythess && ShouldHoldAlythessThreat(botAI, bot, alythess))
+    {
+        if (AI_VALUE(Unit*, "current target") == alythess)
+        {
+            bot->AttackStop();
+            bot->InterruptNonMeleeSpells(true);
+            bot->SetTarget(ObjectGuid::Empty);
+            bot->SetSelection(ObjectGuid());
+            return true;
+        }
+
+        return false;
+    }
+
     if (alythess)
     {
         SetRtiTarget(botAI, "circle", alythess);

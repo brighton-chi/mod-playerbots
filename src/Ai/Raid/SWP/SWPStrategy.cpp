@@ -128,8 +128,9 @@ void AppendKiljaedenShieldOrbExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 void AppendEredarTwinsAttackerExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 {
     Unit* sacrolash = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "lady sacrolash")->Get();
-    if (sacrolash)
-        exclusions.insert(sacrolash->GetGUID());
+    Unit* alythess = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "grand warlock alythess")->Get();
+    if (sacrolash && alythess)
+        exclusions.insert(alythess->GetGUID());
 }
 }
 

@@ -5,6 +5,7 @@
 
 #include <list>
 
+#include "AiObjectContext.h"
 #include "CellImpl.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
@@ -133,12 +134,9 @@ bool ShouldHoldTwinThreat(
 bool ShouldHoldSacrolashThreat(
     PlayerbotAI* botAI, Player* bot, Unit* alythess, Unit* sacrolash)
 {
-    if (!alythess)
-        return false;
-
     constexpr float sacrolashThreatHoldRatio = 0.8f;
 
-    return ShouldHoldTwinThreat(
+    return alythess && ShouldHoldTwinThreat(
         botAI, bot, sacrolash, sacrolashThreatHoldRatio, IsSacrolashTank, true);
 }
 
