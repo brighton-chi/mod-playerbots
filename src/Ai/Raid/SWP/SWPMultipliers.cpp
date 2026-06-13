@@ -3,6 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include <ctime>
+
 #include "SWPMultipliers.h"
 #include "SWPActions.h"
 #include "SWPEncounter_Brut.h"
@@ -34,7 +36,13 @@
 
 using namespace SunwellHelpers;
 
-static bool IsDpsCooldownAction(Action* action)
+namespace
+{
+
+std::unordered_map<uint32, time_t> felmystLandingDpsWaitTimer;
+std::unordered_map<uint32, time_t> felmystLandingTouchdownTimer;
+
+bool IsDpsCooldownAction(Action* action)
 {
     return dynamic_cast<CastHeroismAction*>(action) ||
            dynamic_cast<CastBloodlustAction*>(action) ||
@@ -58,6 +66,8 @@ static bool IsDpsCooldownAction(Action* action)
            dynamic_cast<CastSummonGargoyleAction*>(action) ||
            dynamic_cast<CastBerserkingAction*>(action) ||
            dynamic_cast<CastBloodFuryAction*>(action);
+}
+
 }
 
 // Kalecgos
@@ -105,7 +115,7 @@ float KalecgosWaitToDecurseMultiplier::GetValue(Action* action)
             static_cast<uint32>(SunwellSpells::SPELL_CURSE_OF_BOUNDLESS_AGONY_SEC));
     }
 
-    if (!aura || aura->GetDuration() < 10000) // 10 seconds remaining
+    if (!aura || aura->GetDuration() < 15000) // 15 seconds remaining
         return 1.0f;
 
     if (dynamic_cast<CastRemoveCurseAction*>(action) ||
@@ -306,6 +316,62 @@ float FelmystControlMovementMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+float FelmystWaitForLandingDpsMultiplier::GetValue(Action* action)
+{
+    Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
+    const uint32 instanceId = bot->GetInstanceId();
+
+    if (!felmyst)
+    {
+        felmystLandingDpsWaitTimer.erase(instanceId);
+        felmystLandingTouchdownTimer.erase(instanceId);
+        return 1.0f;
+    }
+
+    Position landingDestination;
+    const bool isGoingToLand =
+        felmyst->IsFlying() && TryGetFelmystLandingDestination(felmyst, landingDestination);
+
+    if (isGoingToLand)
+    {
+        felmystLandingDpsWaitTimer.try_emplace(instanceId, std::time(nullptr));
+        felmystLandingTouchdownTimer.erase(instanceId);
+    }
+    else if (felmyst->IsFlying())
+    {
+        felmystLandingDpsWaitTimer.erase(instanceId);
+        felmystLandingTouchdownTimer.erase(instanceId);
+        return 1.0f;
+    }
+
+    const time_t now = std::time(nullptr);
+    constexpr uint8 groundedDpsWaitSeconds = 3;
+    auto it = felmystLandingDpsWaitTimer.find(instanceId);
+    if (it == felmystLandingDpsWaitTimer.end())
+        return 1.0f;
+
+    auto touchdownIt = felmystLandingTouchdownTimer.try_emplace(instanceId, now).first;
+
+    if (botAI->IsMainTank(bot) || dynamic_cast<FelmystMisdirectBossToMainTankAction*>(action))
+        return 1.0f;
+
+    if ((now - touchdownIt->second) >= groundedDpsWaitSeconds)
+    {
+        felmystLandingDpsWaitTimer.erase(it);
+        felmystLandingTouchdownTimer.erase(instanceId);
+        return 1.0f;
+    }
+
+    if (dynamic_cast<AttackAction*>(action) ||
+        (dynamic_cast<CastSpellAction*>(action) &&
+         !dynamic_cast<CastHealingSpellAction*>(action)))
+    {
+        return 0.0f;
+    }
+
+    return 1.0f;
+}
+
 float FelmystPrioritizeEncapsulateAvoidanceMultiplier::GetValue(Action* action)
 {
     Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
@@ -334,8 +400,14 @@ float FelmystPrioritizeFogAvoidanceMultiplier::GetValue(Action* action)
         return 1.0f;
 
     FelmystFogOfCorruptionState fogState; // Fog phase active
-    if (!TryGetFelmystFogOfCorruptionStageState(felmyst, fogState))
+    FelmystFogLane thirdPassLane = FelmystFogLane::None;
+    const bool shouldRepositionAfterThirdPass =
+        TryGetFelmystPostThirdPassWindow(felmyst, thirdPassLane);
+    if (!TryGetFelmystFogOfCorruptionStageState(felmyst, fogState) &&
+        !shouldRepositionAfterThirdPass)
+    {
         return 1.0f;
+    }
 
     if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
         dynamic_cast<DrinkAction*>(action))
@@ -351,6 +423,7 @@ float FelmystPrioritizeFogAvoidanceMultiplier::GetValue(Action* action)
     uint8 destinationCount = 0;
     bool canRelocate = TryGetFelmystFogSafeDestinations(
         bot, needsFogAvoidance ? dangerousFogState.lane :
+        shouldRepositionAfterThirdPass ? thirdPassLane :
         fogState.lane, destinations, destinationCount);
 
     if (needsFogAvoidance && canRelocate &&
@@ -447,45 +520,30 @@ float EredarTwinsControlThreatMultiplier::GetValue(Action* action)
 {
     Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
     Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
-    bool shouldSuppressThreat = sacrolash &&
+    bool const shouldHoldSacrolashThreat = sacrolash &&
         ShouldHoldSacrolashThreat(botAI, bot, alythess, sacrolash);
+    bool const shouldHoldAlythessThreat = alythess &&
+        ShouldHoldAlythessThreat(botAI, bot, alythess);
 
-    if (!shouldSuppressThreat)
+    if (!shouldHoldSacrolashThreat && !shouldHoldAlythessThreat)
         return 1.0f;
 
     Unit* actionTarget = action->GetTarget();
+    bool const suppressSacrolashAttack = shouldHoldSacrolashThreat &&
+        (actionTarget == sacrolash || AI_VALUE(Unit*, "current target") == sacrolash);
+    bool const suppressAlythessAttack = shouldHoldAlythessThreat &&
+        (actionTarget == alythess || AI_VALUE(Unit*, "current target") == alythess);
+
     if (dynamic_cast<AttackAction*>(action) &&
         !dynamic_cast<EredarTwinsDpsPrioritizeLadySacrolashAction*>(action) &&
-        (actionTarget == sacrolash || AI_VALUE(Unit*, "current target") == sacrolash))
+        (suppressSacrolashAttack || suppressAlythessAttack))
     {
         return 0.0f;
     }
 
-    if (dynamic_cast<CastSpellAction*>(action) && actionTarget == sacrolash)
-        return 0.0f;
-
-    return 1.0f;
-}
-
-float EredarTwinsSuppressAlythessAttackerDebuffsMultiplier::GetValue(Action* action)
-{
-    if (!AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
-        return 1.0f;
-
-    if (dynamic_cast<CastPowerWordPainOnAttackerAction*>(action) ||
-        dynamic_cast<CastVampiricTouchOnAttackerAction*>(action) ||
-        dynamic_cast<CastCorruptionOnAttackerAction*>(action) ||
-        dynamic_cast<CastImmolateOnAttackerAction*>(action) ||
-        dynamic_cast<CastUnstableAfflictionOnAttackerAction*>(action) ||
-        dynamic_cast<CastCurseOfAgonyOnAttackerAction*>(action) ||
-        dynamic_cast<CastSeedOfCorruptionOnAttackerAction*>(action) ||
-        dynamic_cast<CastInsectSwarmOnAttackerAction*>(action) ||
-        dynamic_cast<CastMoonfireOnAttackerAction*>(action) ||
-        dynamic_cast<CastSerpentStingOnAttackerAction*>(action) ||
-        dynamic_cast<CastLivingBombOnAttackersAction*>(action) ||
-        dynamic_cast<CastIcyTouchOnAttackerAction*>(action) ||
-        dynamic_cast<CastPlagueStrikeOnAttackerAction*>(action) ||
-        dynamic_cast<CastRendOnAttackerAction*>(action))
+    if (dynamic_cast<CastSpellAction*>(action) &&
+        ((shouldHoldSacrolashThreat && actionTarget == sacrolash) ||
+         (shouldHoldAlythessThreat && actionTarget == alythess)))
     {
         return 0.0f;
     }
@@ -510,11 +568,11 @@ float EredarTwinsDisableTankActionsMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float EredarTwinsRoguesStayStackedMultiplier::GetValue(Action* action)
+float EredarTwinsDisableKillingSpreeMultiplier::GetValue(Action* action)
 {
+    // This hits Alythess during Phase 1 and puts bots in fire in Phase 2
     if (bot->getClass() != CLASS_ROGUE ||
-        !AI_VALUE2(Unit*, "find target", "grand warlock alythess") ||
-        AI_VALUE2(Unit*, "find target", "lady sacrolash"))
+        !AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
     {
         return 1.0f;
     }

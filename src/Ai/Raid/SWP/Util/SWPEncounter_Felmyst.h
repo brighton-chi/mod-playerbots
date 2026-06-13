@@ -64,8 +64,15 @@ struct FelmystFogOfCorruptionState
     FelmystFogLane lane = FelmystFogLane::None;
     FelmystFogPhase phase = FelmystFogPhase::None;
     uint32 expireMs = 0;
-    uint8 completedSweepCount = 0;
-    bool atSide = false;
+};
+
+struct FelmystFogPassState
+{
+    FelmystFogLocation lastDestinationLocation = FelmystFogLocation::None;
+    FelmystFogLane lastCompletedLane = FelmystFogLane::None;
+    FelmystFogLane armedSweepLane = FelmystFogLane::None;
+    uint8 completedPassCount = 0;
+    uint32 thirdPassWindowExpireMs = 0;
 };
 
 struct FelmystIncomingEncapsulateState
@@ -102,6 +109,10 @@ extern std::unordered_map<uint32, uint8>
     felmystDemonicVaporFirstRegionIndices;
 extern std::unordered_map<uint32, FelmystFogOfCorruptionState>
     felmystFogOfCorruptionStates;
+extern std::unordered_map<uint32, FelmystFogPassState>
+    felmystFogPassStates;
+extern std::unordered_map<uint32, bool>
+    felmystEncapsulateOccurredThisGroundPhase;
 extern std::unordered_map<uint32, FelmystIncomingEncapsulateState>
     felmystIncomingEncapsulateStates;
 extern std::unordered_map<ObjectGuid, FelmystFogCrateStuckState>
@@ -126,6 +137,7 @@ bool TryGetFelmystFogSafeDestinations(
     Player* bot, FelmystFogLane dangerLane, std::array<Position, 3>& destinations,
     uint8& destinationCount);
 bool TryGetFelmystLandingDestination(Unit* felmyst, Position& destination);
+bool TryGetFelmystPostThirdPassWindow(Unit* felmyst, FelmystFogLane& lane);
 bool TryGetFelmystFogOfCorruptionStageState(
     Unit* felmyst, FelmystFogOfCorruptionState& state);
 bool TryGetActiveFelmystFogOfCorruptionState(
@@ -133,6 +145,7 @@ bool TryGetActiveFelmystFogOfCorruptionState(
 Unit* GetNearestFelmystFogOfCorruptionCharmedTarget(Player* bot);
 Unit* GetNearestFelmystDemonicVaporHazard(Player* bot);
 Player* GetFelmystEncapsulateTarget(Player* bot);
+bool DidFelmystEncapsulateOccurThisGroundPhase(Player* bot);
 bool TryGetFelmystRangedPosition(
     PlayerbotAI* botAI, Player* bot, Unit* felmyst, Position& position);
 Player* GetFelmystGasNovaDispelTarget(Player* bot);

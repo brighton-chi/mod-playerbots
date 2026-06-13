@@ -14,8 +14,6 @@
 #include "Strategy.h"
 #include "ThreatManager.h"
 
-namespace
-{
 GuidSet GatherStrategyTargetExclusions(PlayerbotAI* botAI, TargetValueExclusionType type)
 {
     GuidSet exclusions;
@@ -32,7 +30,6 @@ GuidSet GatherStrategyTargetExclusions(PlayerbotAI* botAI, TargetValueExclusionT
     }
 
     return exclusions;
-}
 }
 
 Unit* FindTargetStrategy::GetResult() { return result; }

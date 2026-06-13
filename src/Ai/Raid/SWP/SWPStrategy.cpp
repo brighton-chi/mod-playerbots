@@ -124,6 +124,14 @@ void AppendKiljaedenShieldOrbExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
             exclusions.insert(guid);
     }
 }
+
+void AppendEredarTwinsAttackerExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
+{
+    Unit* sacrolash = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "lady sacrolash")->Get();
+    Unit* alythess = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "grand warlock alythess")->Get();
+    if (sacrolash && alythess)
+        exclusions.insert(alythess->GetGUID());
+}
 }
 
 void RaidSunwellStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExclusionType type) const
@@ -138,6 +146,10 @@ void RaidSunwellStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValu
             AppendMuruTankExclusions(botAI, exclusions);
             break;
         case TargetValueExclusionType::Dps:
+            AppendMuruMeleeDpsExclusions(botAI, exclusions);
+            break;
+        case TargetValueExclusionType::Attacker:
+            AppendEredarTwinsAttackerExclusions(botAI, exclusions);
             AppendMuruMeleeDpsExclusions(botAI, exclusions);
             break;
         case TargetValueExclusionType::None:
@@ -174,8 +186,8 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kalecgos humanoid form tanks sathrovarr", {
         NextAction("kalecgos sathrovarr tank stand with kalec", ACTION_RAID + 2) }));
 
-    triggers.push_back(new TriggerNode("kalecgos both bosses must be defeated", {
-        NextAction("kalecgos determine boss to attack", ACTION_RAID + 2) }));
+    // triggers.push_back(new TriggerNode("kalecgos both bosses must be defeated", {
+    //     NextAction("kalecgos determine boss to attack", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("kalecgos bots don't observe gravity", {
         NextAction("kalecgos return to spectral realm ground", ACTION_EMERGENCY + 10) }));
@@ -262,7 +274,7 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("m'uru void sentinel or entropius has appeared", {
         NextAction("m'uru misdirect enemies to tanks", ACTION_RAID + 3) }));
 
-    triggers.push_back(new TriggerNode("m'uru entropius has appeared", {
+    triggers.push_back(new TriggerNode("m'uru boss transformed into entropius", {
         NextAction("m'uru main tank pick up entropius", ACTION_RAID + 4) }));
 
     triggers.push_back(new TriggerNode("m'uru bosses engaged by ranged", {
@@ -271,8 +283,8 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("m'uru void sentinel pulses shadow", {
         NextAction("m'uru tanks move sentinel to safe position", ACTION_RAID + 3) }));
 
-    triggers.push_back(new TriggerNode("m'uru void sentinel casts void blast on tank", {
-        NextAction("m'uru set grounding totem in first assist tank group", ACTION_RAID + 3) }));
+    // triggers.push_back(new TriggerNode("m'uru void sentinel casts void blast on tank", {
+    //     NextAction("m'uru set grounding totem in first assist tank group", ACTION_RAID + 3) }));
 
     triggers.push_back(new TriggerNode("m'uru adds spawn at entrance", {
         NextAction("m'uru second assist tank guard ranged", ACTION_RAID + 1) }));
@@ -357,6 +369,7 @@ void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 
     // Felmyst
     multipliers.push_back(new FelmystControlMovementMultiplier(botAI));
+    multipliers.push_back(new FelmystWaitForLandingDpsMultiplier(botAI));
     multipliers.push_back(new FelmystPrioritizeEncapsulateAvoidanceMultiplier(botAI));
     multipliers.push_back(new FelmystPrioritizeDemonicVaporKiteMultiplier(botAI));
     multipliers.push_back(new FelmystPrioritizeFogAvoidanceMultiplier(botAI));
@@ -366,9 +379,8 @@ void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new EredarTwinsMeleeJumpDownFromBalconyMultiplier(botAI));
     multipliers.push_back(new EredarTwinsControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new EredarTwinsControlThreatMultiplier(botAI));
-    multipliers.push_back(new EredarTwinsSuppressAlythessAttackerDebuffsMultiplier(botAI));
     multipliers.push_back(new EredarTwinsDisableTankActionsMultiplier(botAI));
-    multipliers.push_back(new EredarTwinsRoguesStayStackedMultiplier(botAI));
+    multipliers.push_back(new EredarTwinsDisableKillingSpreeMultiplier(botAI));
     multipliers.push_back(new EredarTwinsControlMovementMultiplier(botAI));
     multipliers.push_back(new EredarTwinsDelayCooldownsMultiplier(botAI));
 
@@ -384,5 +396,4 @@ void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new KiljaedenPrioritizeDarknessProtectionMultiplier(botAI));
     multipliers.push_back(new KiljaedenDelayCooldownsMultiplier(botAI));
     multipliers.push_back(new KiljaedenControlDragonMultiplier(botAI));
-
 }

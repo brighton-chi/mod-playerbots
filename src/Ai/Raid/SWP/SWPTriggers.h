@@ -310,11 +310,11 @@ public:
     bool IsActive() override;
 };
 
-class MuruEntropiusHasAppearedTrigger : public Trigger
+class MuruBossTransformedIntoEntropiusTrigger : public Trigger
 {
 public:
-    MuruEntropiusHasAppearedTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "m'uru entropius has appeared") {}
+    MuruBossTransformedIntoEntropiusTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "m'uru boss transformed into entropius") {}
     bool IsActive() override;
 };
 

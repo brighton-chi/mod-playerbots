@@ -500,8 +500,8 @@ bool PoisonDiseaseBleedTrigger::IsActive()
 
 bool MovementImpairedTrigger::IsActive()
 {
-    return botAI->IsMovementImpaired(unit) &&
-           !botAI->HasAnyAuraOf(unit, "stealth", "prowl", nullptr);
+    return botAI->IsMovementImpaired(bot) &&
+           !botAI->HasAnyAuraOf(bot, "stealth", "prowl", nullptr);
 }
 
 bool HasAuraStackTrigger::IsActive()

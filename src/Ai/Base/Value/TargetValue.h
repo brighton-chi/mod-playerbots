@@ -15,6 +15,8 @@ class ThreatManager;
 class Unit;
 enum class TargetValueExclusionType : uint8;
 
+GuidSet GatherStrategyTargetExclusions(PlayerbotAI* botAI, TargetValueExclusionType type);
+
 class FindTargetStrategy
 {
 public:
@@ -114,6 +116,16 @@ class IgnoreDpsTargetValue : public ManualSetValue<GuidSet&>
 {
 public:
     IgnoreDpsTargetValue(PlayerbotAI* botAI) : ManualSetValue<GuidSet&>(botAI, data, "ignore dps targets") {}
+
+private:
+    GuidSet data;
+};
+
+class IgnoreAttackerTargetValue : public ManualSetValue<GuidSet&>
+{
+public:
+    IgnoreAttackerTargetValue(PlayerbotAI* botAI)
+        : ManualSetValue<GuidSet&>(botAI, data, "ignore attacker targets") {}
 
 private:
     GuidSet data;

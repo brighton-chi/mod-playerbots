@@ -129,6 +129,12 @@ std::unordered_map<uint32, uint8>
 std::unordered_map<uint32, FelmystFogOfCorruptionState>
     felmystFogOfCorruptionStates;
 
+std::unordered_map<uint32, FelmystFogPassState>
+    felmystFogPassStates;
+
+std::unordered_map<uint32, bool>
+    felmystEncapsulateOccurredThisGroundPhase;
+
 std::unordered_map<uint32, FelmystIncomingEncapsulateState>
     felmystIncomingEncapsulateStates;
 
@@ -377,6 +383,81 @@ FelmystFogLocation GetFelmystDestinationFogLocation(Unit* felmyst)
     return GetFelmystFogLocationFromPosition(
         destination.GetPositionX(), destination.GetPositionY(),
         FELMYST_FOG_DESTINATION_MATCH_DISTANCE);
+}
+
+bool TryGetFelmystPostThirdPassWindow(Unit* felmyst, FelmystFogLane& lane)
+{
+    lane = FelmystFogLane::None;
+
+    if (!felmyst)
+        return false;
+
+    const uint32 instanceId = felmyst->GetInstanceId();
+    if (!felmyst->IsFlying())
+    {
+        felmystFogPassStates.erase(instanceId);
+        return false;
+    }
+
+    Position landingDestination;
+    if (TryGetFelmystLandingDestination(felmyst, landingDestination))
+    {
+        felmystFogPassStates.erase(instanceId);
+        return false;
+    }
+
+    FelmystFogPassState& tracker = felmystFogPassStates[instanceId];
+    const uint32 now = getMSTime();
+    constexpr uint32 thirdPassWindowMs = 10000;
+    const FelmystFogLocation currentLocation =
+        GetFelmystCurrentFogLocation(felmyst);
+    const FelmystFogLane currentLane =
+        GetFelmystFogLaneFromLocation(currentLocation);
+
+    const FelmystFogLocation destinationLocation =
+        GetFelmystDestinationFogLocation(felmyst);
+    const FelmystFogLane destinationLane =
+        GetFelmystFogLaneFromLocation(destinationLocation);
+    const FelmystFogLocation previousDestinationLocation =
+        tracker.lastDestinationLocation;
+    const FelmystFogLane previousDestinationLane =
+        GetFelmystFogLaneFromLocation(previousDestinationLocation);
+    const bool isSweeping = felmyst->HasAura(
+        static_cast<uint32>(SunwellSpells::SPELL_FELMYST_SPEED_BURST));
+
+    if (isSweeping)
+    {
+        const FelmystFogLane sweepLane =
+            destinationLane != FelmystFogLane::None ? destinationLane : currentLane;
+        if (sweepLane != FelmystFogLane::None)
+            tracker.armedSweepLane = sweepLane;
+    }
+
+    if (destinationLocation != FelmystFogLocation::None &&
+        destinationLocation != previousDestinationLocation)
+    {
+        if (tracker.armedSweepLane != FelmystFogLane::None &&
+            previousDestinationLane == tracker.armedSweepLane &&
+            IsFelmystFogSideLocation(destinationLocation))
+        {
+            ++tracker.completedPassCount;
+            tracker.lastCompletedLane = tracker.armedSweepLane;
+            tracker.armedSweepLane = FelmystFogLane::None;
+            if (tracker.completedPassCount >= 3)
+                tracker.thirdPassWindowExpireMs = now + thirdPassWindowMs;
+        }
+
+        tracker.lastDestinationLocation = destinationLocation;
+    }
+
+    if (tracker.completedPassCount >= 3 && tracker.thirdPassWindowExpireMs > now &&
+        tracker.lastCompletedLane != FelmystFogLane::None)
+    {
+        lane = tracker.lastCompletedLane;
+        return true;
+    }
+
+    return false;
 }
 
 void EnsureFelmystRangedAssignments(PlayerbotAI* botAI, Player* bot)
@@ -1047,7 +1128,6 @@ bool TryGetFelmystFogOfCorruptionStageState(
     state = FelmystFogOfCorruptionState();
     const uint32 now = getMSTime();
     constexpr uint32 fogRecoveryGraceMs = 2500;
-    constexpr uint32 fogThirdPassSidePauseGraceMs = 10000;
 
     if (!felmyst)
         return false;
@@ -1056,9 +1136,13 @@ bool TryGetFelmystFogOfCorruptionStageState(
     if (!felmyst->IsFlying())
     {
         ResetFelmystDemonicVaporFlightState(instanceId);
+        felmystFogPassStates.erase(instanceId);
         felmystFogOfCorruptionStates.erase(instanceId);
         return false;
     }
+
+    FelmystFogLane ignoredPostThirdPassLane = FelmystFogLane::None;
+    TryGetFelmystPostThirdPassWindow(felmyst, ignoredPostThirdPassLane);
 
     FelmystFogOfCorruptionState& tracker = felmystFogOfCorruptionStates[instanceId];
     const bool hasTracker = tracker.phase != FelmystFogPhase::None;
@@ -1068,7 +1152,6 @@ bool TryGetFelmystFogOfCorruptionStageState(
     const FelmystFogLane destinationLane = GetFelmystFogLaneFromLocation(destinationLocation);
     const bool isSweeping = felmyst->HasAura(
         static_cast<uint32>(SunwellSpells::SPELL_FELMYST_SPEED_BURST));
-    tracker.atSide = IsFelmystFogSideLocation(currentLocation);
 
     if (currentLane != FelmystFogLane::None)
     {
@@ -1109,23 +1192,12 @@ bool TryGetFelmystFogOfCorruptionStageState(
          IsFelmystFogSideLocation(currentLocation) ||
          IsFelmystFogSideLocation(destinationLocation)))
     {
-        if (tracker.phase == FelmystFogPhase::Sweep)
-        {
-            ++tracker.completedSweepCount;
-            tracker.expireMs = now +
-                (tracker.completedSweepCount >= 3 ?
-                     fogThirdPassSidePauseGraceMs : fogRecoveryGraceMs);
-        }
-
         tracker.phase = FelmystFogPhase::Recovery;
         state = tracker;
         return true;
     }
 
-    tracker.lane = FelmystFogLane::None;
-    tracker.phase = FelmystFogPhase::None;
-    tracker.expireMs = 0;
-    tracker.atSide = false;
+    felmystFogOfCorruptionStates.erase(instanceId);
     return false;
 }
 
@@ -1288,6 +1360,7 @@ Player* GetFelmystEncapsulateTarget(Player* bot)
             incomingTarget->HasAura(static_cast<uint32>(SunwellSpells::SPELL_ENCAPSULATE)))
         {
             incomingState.auraObserved = true;
+            felmystEncapsulateOccurredThisGroundPhase[bot->GetInstanceId()] = true;
             return incomingTarget;
         }
 
@@ -1309,6 +1382,8 @@ Player* GetFelmystEncapsulateTarget(Player* bot)
             continue;
         }
 
+        felmystEncapsulateOccurredThisGroundPhase[bot->GetInstanceId()] = true;
+
         float distance = bot->GetDistance2d(member);
         if (!closestTarget || distance < closestDistance)
         {
@@ -1318,6 +1393,12 @@ Player* GetFelmystEncapsulateTarget(Player* bot)
     }
 
     return closestTarget;
+}
+
+bool DidFelmystEncapsulateOccurThisGroundPhase(Player* bot)
+{
+    auto const itr = felmystEncapsulateOccurredThisGroundPhase.find(bot->GetInstanceId());
+    return itr != felmystEncapsulateOccurredThisGroundPhase.end() && itr->second;
 }
 
 Player* GetFelmystGasNovaDispelTarget(Player* bot)

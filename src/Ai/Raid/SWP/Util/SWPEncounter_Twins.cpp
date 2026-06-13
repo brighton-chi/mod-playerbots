@@ -5,6 +5,7 @@
 
 #include <list>
 
+#include "AiObjectContext.h"
 #include "CellImpl.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
@@ -85,20 +86,20 @@ bool IsAlythessTank(PlayerbotAI* botAI, Player* bot)
     return botAI->IsAssistTankOfIndex(bot, 0, false);
 }
 
-bool ShouldHoldSacrolashThreat(
-    PlayerbotAI* botAI, Player* bot, Unit* alythess, Unit* sacrolash)
+bool ShouldHoldTwinThreat(
+    PlayerbotAI* botAI, Player* bot, Unit* boss, float threatHoldRatio,
+    bool (*isTwinTank)(PlayerbotAI*, Player*), bool exemptAllTanks)
 {
-    if (!alythess || !sacrolash || IsSacrolashTank(botAI, bot) ||
-        IsAlythessTank(botAI, bot))
-    {
+    if (!boss || isTwinTank(botAI, bot) || (exemptAllTanks && botAI->IsTank(bot)))
         return false;
-    }
 
-    uint8 playerThreatEntries = 0;
+    float twinTankThreat = 0.0f;
+    float botThreat = 0.0f;
+    bool foundTwinTankThreat = false;
+    bool foundBotThreat = false;
 
-    auto const threatList = sacrolash->GetThreatMgr().GetSortedThreatList();
-    for (auto itr = threatList.begin();
-         itr != threatList.end() && playerThreatEntries < 2; ++itr)
+    auto const threatList = boss->GetThreatMgr().GetSortedThreatList();
+    for (auto itr = threatList.begin(); itr != threatList.end(); ++itr)
     {
         ThreatReference const* threatRef = *itr;
         if (!threatRef || !threatRef->IsAvailable())
@@ -108,12 +109,43 @@ bool ShouldHoldSacrolashThreat(
         if (!threatPlayer || !threatPlayer->IsAlive())
             continue;
 
-        ++playerThreatEntries;
+        float const threat = threatRef->GetThreat();
+
+        if (isTwinTank(botAI, threatPlayer) &&
+            (!foundTwinTankThreat || threat > twinTankThreat))
+        {
+            twinTankThreat = threat;
+            foundTwinTankThreat = true;
+        }
+
         if (threatPlayer == bot)
-            return true;
+        {
+            botThreat = threat;
+            foundBotThreat = true;
+        }
     }
 
-    return false;
+    if (!foundTwinTankThreat || !foundBotThreat || twinTankThreat <= 0.0f)
+        return false;
+
+    return botThreat >= twinTankThreat * threatHoldRatio;
+}
+
+bool ShouldHoldSacrolashThreat(
+    PlayerbotAI* botAI, Player* bot, Unit* alythess, Unit* sacrolash)
+{
+    constexpr float sacrolashThreatHoldRatio = 0.8f;
+
+    return alythess && ShouldHoldTwinThreat(
+        botAI, bot, sacrolash, sacrolashThreatHoldRatio, IsSacrolashTank, true);
+}
+
+bool ShouldHoldAlythessThreat(PlayerbotAI* botAI, Player* bot, Unit* alythess)
+{
+    constexpr float alythessThreatHoldRatio = 0.95f;
+
+    return ShouldHoldTwinThreat(
+        botAI, bot, alythess, alythessThreatHoldRatio, IsAlythessTank, false);
 }
 
 bool IsAlythessTankPositionSafe(Player* bot, const Position& position)

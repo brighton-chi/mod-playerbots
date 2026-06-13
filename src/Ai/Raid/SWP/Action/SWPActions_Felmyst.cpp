@@ -240,14 +240,9 @@ bool FelmystAvoidFogOfCorruptionAction::Execute(Event /*event*/)
     FelmystFogOfCorruptionState fogState;
     const bool hasActiveFog =
         TryGetActiveFelmystFogOfCorruptionState(bot, felmyst, fogState);
-    Position landingDestination;
+    FelmystFogLane thirdPassLane = FelmystFogLane::None;
     const bool shouldRepositionAfterThirdPass =
-        !hasActiveFog &&
-        TryGetFelmystFogOfCorruptionStageState(felmyst, fogState) &&
-        fogState.phase == FelmystFogPhase::Recovery &&
-        fogState.completedSweepCount >= 3 &&
-        fogState.atSide &&
-        !TryGetFelmystLandingDestination(felmyst, landingDestination);
+        !hasActiveFog && TryGetFelmystPostThirdPassWindow(felmyst, thirdPassLane);
 
     if (!hasActiveFog && !shouldRepositionAfterThirdPass)
     {
@@ -258,7 +253,8 @@ bool FelmystAvoidFogOfCorruptionAction::Execute(Event /*event*/)
     std::array<Position, 3> destinations;
     uint8 destinationCount = 0;
     if (!TryGetFelmystFogSafeDestinations(
-            bot, fogState.lane, destinations, destinationCount))
+            bot, shouldRepositionAfterThirdPass ? thirdPassLane : fogState.lane,
+            destinations, destinationCount))
     {
         felmystFogCrateStuckStates.erase(bot->GetGUID());
         return false;

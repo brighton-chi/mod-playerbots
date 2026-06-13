@@ -4,6 +4,7 @@
  */
 
 #include "RacialsStrategy.h"
+#include "Playerbots.h"
 
 namespace
 {
@@ -25,6 +26,8 @@ RacialsStrategy::RacialsStrategy(PlayerbotAI* botAI) : Strategy(botAI)
 
 void RacialsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
+    Player* bot = botAI->GetBot();
+
     if (bot->HasSpell(SPELL_ARCANE_TORRENT_MANA))
     {
         triggers.push_back(new TriggerNode(
@@ -41,7 +44,7 @@ void RacialsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     {
         // No low runic power trigger exists; this trigger should be modified if one is added
         triggers.push_back(new TriggerNode(
-            "boost", { NextAction("arcane torrent", ACTION_NORMAL + 5) }));
+            "generic boost", { NextAction("arcane torrent", ACTION_NORMAL + 5) }));
     }
 
     if (bot->HasSpell(SPELL_WAR_STOMP))
@@ -53,7 +56,7 @@ void RacialsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     if (bot->HasSpell(SPELL_BERSERKING))
     {
         triggers.push_back(new TriggerNode(
-            "boost", { NextAction("berserking", ACTION_NORMAL + 5) }));
+            "generic boost", { NextAction("berserking", ACTION_NORMAL + 5) }));
     }
 
     if (bot->HasSpell(SPELL_EVERY_MAN_FOR_HIMSELF))
@@ -83,7 +86,7 @@ void RacialsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     if (botAI->HasSpell("blood fury"))
     {
         triggers.push_back(new TriggerNode(
-            "boost", { NextAction("blood fury", ACTION_NORMAL + 5) }));
+            "generic boost", { NextAction("blood fury", ACTION_NORMAL + 5) }));
     }
 
     if (botAI->HasSpell("gift of the naaru"))

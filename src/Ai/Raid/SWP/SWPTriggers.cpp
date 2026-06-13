@@ -235,10 +235,20 @@ bool FelmystBossEngagedByRangedOnGroundTrigger::IsActive()
         return false;
 
     Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
-    if (!felmyst || felmyst->IsFlying() || felmyst->GetVictim() == bot)
+    if (!felmyst)
         return false;
 
-    return !GetFelmystEncapsulateTarget(bot);
+    if (felmyst->IsFlying())
+    {
+        felmystEncapsulateOccurredThisGroundPhase.erase(bot->GetInstanceId());
+        return false;
+    }
+
+    if (felmyst->GetVictim() == bot)
+        return false;
+
+    return !GetFelmystEncapsulateTarget(bot) &&
+           !DidFelmystEncapsulateOccurThisGroundPhase(bot);
 }
 
 bool FelmystBossEngagedByMeleeOnGroundTrigger::IsActive()
@@ -247,13 +257,23 @@ bool FelmystBossEngagedByMeleeOnGroundTrigger::IsActive()
         return false;
 
     Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
-    if (!felmyst || felmyst->IsFlying() || felmyst->GetVictim() == bot)
+    if (!felmyst)
+        return false;
+
+    if (felmyst->IsFlying())
+    {
+        felmystEncapsulateOccurredThisGroundPhase.erase(bot->GetInstanceId());
+        return false;
+    }
+
+    if (felmyst->GetVictim() == bot)
         return false;
 
     if (botAI->IsMainTank(bot))
         return false;
 
-    return !GetFelmystEncapsulateTarget(bot);
+    return !GetFelmystEncapsulateTarget(bot) &&
+           !DidFelmystEncapsulateOccurThisGroundPhase(bot);
 }
 
 bool FelmystBotIsEncapsulatedTrigger::IsActive()
@@ -345,16 +365,8 @@ bool FelmystFogOfCorruptionIsActiveTrigger::IsActive()
     if (TryGetActiveFelmystFogOfCorruptionState(bot, felmyst, fogState))
         return true;
 
-    if (!TryGetFelmystFogOfCorruptionStageState(felmyst, fogState) ||
-        fogState.phase != FelmystFogPhase::Recovery ||
-        fogState.completedSweepCount < 3 ||
-        !fogState.atSide)
-    {
-        return false;
-    }
-
-    Position landingDestination;
-    return !TryGetFelmystLandingDestination(felmyst, landingDestination);
+    FelmystFogLane thirdPassLane = FelmystFogLane::None;
+    return TryGetFelmystPostThirdPassWindow(felmyst, thirdPassLane);
 }
 
 bool FelmystMeleeCannotReachBossTrigger::IsActive()
@@ -508,7 +520,7 @@ bool MuruVoidSentinelOrEntropiusHasAppearedTrigger::IsActive()
     return voidSentinel && voidSentinel->GetHealthPct() > 80.0f;
 }
 
-bool MuruEntropiusHasAppearedTrigger::IsActive()
+bool MuruBossTransformedIntoEntropiusTrigger::IsActive()
 {
     return AI_VALUE2(Unit*, "find target", "entropius") && botAI->IsMainTank(bot);
 }

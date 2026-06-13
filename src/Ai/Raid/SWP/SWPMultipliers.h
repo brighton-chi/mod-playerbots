@@ -105,6 +105,14 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class FelmystWaitForLandingDpsMultiplier : public Multiplier
+{
+public:
+    FelmystWaitForLandingDpsMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "felmyst wait for landing dps") {}
+    virtual float GetValue(Action* action);
+};
+
 class FelmystPrioritizeEncapsulateAvoidanceMultiplier : public Multiplier
 {
 public:
@@ -163,14 +171,6 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class EredarTwinsSuppressAlythessAttackerDebuffsMultiplier : public Multiplier
-{
-public:
-    EredarTwinsSuppressAlythessAttackerDebuffsMultiplier(PlayerbotAI* botAI) : Multiplier(
-        botAI, "eredar twins suppress alythess attacker debuffs") {}
-    virtual float GetValue(Action* action);
-};
-
 class EredarTwinsDisableTankActionsMultiplier : public Multiplier
 {
 public:
@@ -179,11 +179,11 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class EredarTwinsRoguesStayStackedMultiplier : public Multiplier
+class EredarTwinsDisableKillingSpreeMultiplier : public Multiplier
 {
 public:
-    EredarTwinsRoguesStayStackedMultiplier(PlayerbotAI* botAI) : Multiplier(
-        botAI, "eredar twins rogues stay stacked") {}
+    EredarTwinsDisableKillingSpreeMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "eredar twins disable killing spree") {}
     virtual float GetValue(Action* action);
 };
 

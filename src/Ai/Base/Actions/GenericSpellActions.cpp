@@ -305,8 +305,17 @@ bool GroupBuffSpellAction::isUseful()
 
 bool GroupBuffSpellAction::Execute(Event /*event*/)
 {
-    std::string const castName = ai::buff::UpgradeToGroupIfAppropriate(bot, botAI, spell);
-    return botAI->CastSpell(castName, GetTarget());
+    std::string missingReagentGroupName;
+    std::string const castName = ai::buff::UpgradeToGroupIfAppropriate(
+        bot, botAI, spell, &missingReagentGroupName);
+
+    if (!botAI->CastSpell(castName, GetTarget()))
+        return false;
+
+    if (!missingReagentGroupName.empty())
+        ai::buff::TryAnnounceMissingBuffReagents(botAI, spell, missingReagentGroupName);
+
+    return true;
 }
 
 CastEnchantItemMainHandAction::CastEnchantItemMainHandAction(
@@ -442,15 +451,13 @@ bool CastVehicleSpellAction::Execute(Event /*event*/)
 bool CastEveryManForHimselfAction::isPossible()
 {
     uint32 spellId = AI_VALUE2(uint32, "spell id", spell);
-    return spellId && !HasSpellOrCategoryCooldown(bot, spellId) &&
-           CastSpellAction::isPossible();
+    return spellId && !HasSpellOrCategoryCooldown(bot, spellId);
 }
 
 bool CastWillOfTheForsakenAction::isPossible()
 {
     uint32 spellId = AI_VALUE2(uint32, "spell id", spell);
-    return spellId && !HasSpellOrCategoryCooldown(bot, spellId) &&
-           CastSpellAction::isPossible();
+    return spellId && !HasSpellOrCategoryCooldown(bot, spellId);
 }
 
 bool UseTrinketAction::Execute(Event /*event*/)
