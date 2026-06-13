@@ -520,22 +520,33 @@ float EredarTwinsControlThreatMultiplier::GetValue(Action* action)
 {
     Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
     Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
-    bool shouldSuppressThreat = sacrolash &&
+    bool const shouldHoldSacrolashThreat = sacrolash &&
         ShouldHoldSacrolashThreat(botAI, bot, alythess, sacrolash);
+    bool const shouldHoldAlythessThreat = alythess &&
+        ShouldHoldAlythessThreat(botAI, bot, alythess);
 
-    if (!shouldSuppressThreat)
+    if (!shouldHoldSacrolashThreat && !shouldHoldAlythessThreat)
         return 1.0f;
 
     Unit* actionTarget = action->GetTarget();
+    bool const suppressSacrolashAttack = shouldHoldSacrolashThreat &&
+        (actionTarget == sacrolash || AI_VALUE(Unit*, "current target") == sacrolash);
+    bool const suppressAlythessAttack = shouldHoldAlythessThreat &&
+        (actionTarget == alythess || AI_VALUE(Unit*, "current target") == alythess);
+
     if (dynamic_cast<AttackAction*>(action) &&
         !dynamic_cast<EredarTwinsDpsPrioritizeLadySacrolashAction*>(action) &&
-        (actionTarget == sacrolash || AI_VALUE(Unit*, "current target") == sacrolash))
+        (suppressSacrolashAttack || suppressAlythessAttack))
     {
         return 0.0f;
     }
 
-    if (dynamic_cast<CastSpellAction*>(action) && actionTarget == sacrolash)
+    if (dynamic_cast<CastSpellAction*>(action) &&
+        ((shouldHoldSacrolashThreat && actionTarget == sacrolash) ||
+         (shouldHoldAlythessThreat && actionTarget == alythess)))
+    {
         return 0.0f;
+    }
 
     return 1.0f;
 }
