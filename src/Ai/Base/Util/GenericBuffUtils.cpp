@@ -33,6 +33,26 @@ namespace ai::buff
             return getMSTimeDiff(
                 player->GetInGameTime(), GameTime::GetGameTimeMS().count()) < POST_LOGIN_BUFF_GRACE_MS;
         }
+
+        void PruneExpiredNoticeTimes(
+            std::map<std::pair<uint32, std::string>, uint32>& lastNoticeTimes,
+            uint32 cooldownMs,
+            uint32 now)
+        {
+            if (!cooldownMs)
+            {
+                lastNoticeTimes.clear();
+                return;
+            }
+
+            for (auto noticeIt = lastNoticeTimes.begin(); noticeIt != lastNoticeTimes.end();)
+            {
+                if (getMSTimeDiff(noticeIt->second, now) >= cooldownMs)
+                    noticeIt = lastNoticeTimes.erase(noticeIt);
+                else
+                    ++noticeIt;
+            }
+        }
     }
 
     static bool HasEnoughSameMapMissingPlayersForGroupVariant(
@@ -221,6 +241,8 @@ namespace ai::buff
         auto const cooldownMs = sPlayerbotAIConfig.missingBuffReagentMessageCooldown * IN_MILLISECONDS;
         auto const now = GameTime::GetGameTimeMS().count();
         auto const noticeKey = std::make_pair(bot->GetGUID().GetCounter(), groupName);
+
+        PruneExpiredNoticeTimes(lastNoticeTimes, cooldownMs, now);
 
         auto const noticeIt = lastNoticeTimes.find(noticeKey);
         if (cooldownMs && noticeIt != lastNoticeTimes.end() &&
