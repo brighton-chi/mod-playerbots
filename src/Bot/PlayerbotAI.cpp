@@ -115,6 +115,8 @@ static char const* GetTargetValueExclusionName(TargetValueExclusionType type)
             return "ignore tank targets";
         case TargetValueExclusionType::Dps:
             return "ignore dps targets";
+        case TargetValueExclusionType::Attacker:
+            return "ignore attacker targets";
         default:
             return nullptr;
     }
@@ -187,6 +189,7 @@ void PlayerbotAI::ResetTargetValueExclusions()
 {
     ResetTargetValueExclusion(TargetValueExclusionType::Tank);
     ResetTargetValueExclusion(TargetValueExclusionType::Dps);
+    ResetTargetValueExclusion(TargetValueExclusionType::Attacker);
 }
 
 PlayerbotAI::PlayerbotAI()

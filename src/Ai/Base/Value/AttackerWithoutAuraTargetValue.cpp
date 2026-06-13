@@ -6,17 +6,29 @@
 #include "AttackerWithoutAuraTargetValue.h"
 
 #include "Playerbots.h"
+#include "Strategy.h"
+#include "TargetValue.h"
+
+namespace
+{
+bool IsExcludedAttackerTarget(PlayerbotAI* botAI, GuidSet const& dynamicExclusions, ObjectGuid const& guid)
+{
+    return botAI->IsTargetValueExcluded(TargetValueExclusionType::Attacker, guid) ||
+        dynamicExclusions.find(guid) != dynamicExclusions.end();
+}
+}
 
 Unit* AttackerWithoutAuraTargetValue::Calculate()
 {
     GuidVector attackers = botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->Get();
+    GuidSet const dynamicExclusions = GatherStrategyTargetExclusions(botAI, TargetValueExclusionType::Attacker);
     // Unit* target = botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
     uint32 max_health = 0;
     Unit* result = nullptr;
     for (ObjectGuid const guid : attackers)
     {
         Unit* unit = botAI->GetUnit(guid);
-        if (!unit || !unit->IsAlive())
+        if (!unit || !unit->IsAlive() || IsExcludedAttackerTarget(botAI, dynamicExclusions, guid))
             continue;
 
         if (!bot->IsWithinCombatRange(unit, botAI->GetRange(range)))
@@ -40,13 +52,14 @@ Unit* AttackerWithoutAuraTargetValue::Calculate()
 Unit* MeleeAttackerWithoutAuraTargetValue::Calculate()
 {
     GuidVector attackers = botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->Get();
+    GuidSet const dynamicExclusions = GatherStrategyTargetExclusions(botAI, TargetValueExclusionType::Attacker);
     // Unit* target = botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
     uint32 max_health = 0;
     Unit* result = nullptr;
     for (ObjectGuid const guid : attackers)
     {
         Unit* unit = botAI->GetUnit(guid);
-        if (!unit || !unit->IsAlive())
+        if (!unit || !unit->IsAlive() || IsExcludedAttackerTarget(botAI, dynamicExclusions, guid))
             continue;
 
         if (!bot->IsWithinMeleeRange(unit))

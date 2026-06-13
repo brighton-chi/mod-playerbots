@@ -17,7 +17,8 @@ enum class TargetValueExclusionType : uint8
 {
     None = 0,
     Tank,
-    Dps
+    Dps,
+    Attacker
 };
 
 enum StrategyType : uint32
