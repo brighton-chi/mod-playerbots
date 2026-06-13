@@ -540,32 +540,6 @@ float EredarTwinsControlThreatMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float EredarTwinsSuppressAlythessAttackerDebuffsMultiplier::GetValue(Action* action)
-{
-    if (!AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
-        return 1.0f;
-
-    if (dynamic_cast<CastPowerWordPainOnAttackerAction*>(action) ||
-        dynamic_cast<CastVampiricTouchOnAttackerAction*>(action) ||
-        dynamic_cast<CastCorruptionOnAttackerAction*>(action) ||
-        dynamic_cast<CastImmolateOnAttackerAction*>(action) ||
-        dynamic_cast<CastUnstableAfflictionOnAttackerAction*>(action) ||
-        dynamic_cast<CastCurseOfAgonyOnAttackerAction*>(action) ||
-        dynamic_cast<CastSeedOfCorruptionOnAttackerAction*>(action) ||
-        dynamic_cast<CastInsectSwarmOnAttackerAction*>(action) ||
-        dynamic_cast<CastMoonfireOnAttackerAction*>(action) ||
-        dynamic_cast<CastSerpentStingOnAttackerAction*>(action) ||
-        dynamic_cast<CastLivingBombOnAttackersAction*>(action) ||
-        dynamic_cast<CastIcyTouchOnAttackerAction*>(action) ||
-        dynamic_cast<CastPlagueStrikeOnAttackerAction*>(action) ||
-        dynamic_cast<CastRendOnAttackerAction*>(action))
-    {
-        return 0.0f;
-    }
-
-    return 1.0f;
-}
-
 float EredarTwinsDisableTankActionsMultiplier::GetValue(Action* action)
 {
     if (!botAI->IsTank(bot) ||

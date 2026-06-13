@@ -124,6 +124,13 @@ void AppendKiljaedenShieldOrbExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
             exclusions.insert(guid);
     }
 }
+
+void AppendEredarTwinsAttackerExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
+{
+    Unit* sacrolash = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "lady sacrolash")->Get();
+    if (sacrolash)
+        exclusions.insert(sacrolash->GetGUID());
+}
 }
 
 void RaidSunwellStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExclusionType type) const
@@ -138,7 +145,10 @@ void RaidSunwellStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValu
             AppendMuruTankExclusions(botAI, exclusions);
             break;
         case TargetValueExclusionType::Dps:
+            AppendMuruMeleeDpsExclusions(botAI, exclusions);
+            break;
         case TargetValueExclusionType::Attacker:
+            AppendEredarTwinsAttackerExclusions(botAI, exclusions);
             AppendMuruMeleeDpsExclusions(botAI, exclusions);
             break;
         case TargetValueExclusionType::None:
@@ -368,7 +378,6 @@ void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new EredarTwinsMeleeJumpDownFromBalconyMultiplier(botAI));
     multipliers.push_back(new EredarTwinsControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new EredarTwinsControlThreatMultiplier(botAI));
-    multipliers.push_back(new EredarTwinsSuppressAlythessAttackerDebuffsMultiplier(botAI));
     multipliers.push_back(new EredarTwinsDisableTankActionsMultiplier(botAI));
     multipliers.push_back(new EredarTwinsRoguesStayStackedMultiplier(botAI));
     multipliers.push_back(new EredarTwinsControlMovementMultiplier(botAI));
