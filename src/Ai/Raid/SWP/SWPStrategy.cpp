@@ -357,6 +357,7 @@ void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 
     // Felmyst
     multipliers.push_back(new FelmystControlMovementMultiplier(botAI));
+    multipliers.push_back(new FelmystWaitForLandingDpsMultiplier(botAI));
     multipliers.push_back(new FelmystPrioritizeEncapsulateAvoidanceMultiplier(botAI));
     multipliers.push_back(new FelmystPrioritizeDemonicVaporKiteMultiplier(botAI));
     multipliers.push_back(new FelmystPrioritizeFogAvoidanceMultiplier(botAI));

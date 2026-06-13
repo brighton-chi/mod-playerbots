@@ -105,6 +105,14 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class FelmystWaitForLandingDpsMultiplier : public Multiplier
+{
+public:
+    FelmystWaitForLandingDpsMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "felmyst wait for landing dps") {}
+    virtual float GetValue(Action* action);
+};
+
 class FelmystPrioritizeEncapsulateAvoidanceMultiplier : public Multiplier
 {
 public:

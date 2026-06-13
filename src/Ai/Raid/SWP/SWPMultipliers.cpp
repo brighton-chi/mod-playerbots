@@ -3,6 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include <ctime>
+
 #include "SWPMultipliers.h"
 #include "SWPActions.h"
 #include "SWPEncounter_Brut.h"
@@ -36,6 +38,9 @@ using namespace SunwellHelpers;
 
 namespace
 {
+
+std::unordered_map<uint32, time_t> felmystLandingDpsWaitTimer;
+std::unordered_map<uint32, time_t> felmystLandingTouchdownTimer;
 
 bool IsDpsCooldownAction(Action* action)
 {
@@ -304,6 +309,62 @@ float FelmystControlMovementMultiplier::GetValue(Action* action)
         dynamic_cast<CastDisengageAction*>(action) ||
         dynamic_cast<CastBlinkBackAction*>(action) ||
         dynamic_cast<FleeAction*>(action))
+    {
+        return 0.0f;
+    }
+
+    return 1.0f;
+}
+
+float FelmystWaitForLandingDpsMultiplier::GetValue(Action* action)
+{
+    Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
+    const uint32 instanceId = bot->GetInstanceId();
+
+    if (!felmyst)
+    {
+        felmystLandingDpsWaitTimer.erase(instanceId);
+        felmystLandingTouchdownTimer.erase(instanceId);
+        return 1.0f;
+    }
+
+    Position landingDestination;
+    const bool isGoingToLand =
+        felmyst->IsFlying() && TryGetFelmystLandingDestination(felmyst, landingDestination);
+
+    if (isGoingToLand)
+    {
+        felmystLandingDpsWaitTimer.try_emplace(instanceId, std::time(nullptr));
+        felmystLandingTouchdownTimer.erase(instanceId);
+    }
+    else if (felmyst->IsFlying())
+    {
+        felmystLandingDpsWaitTimer.erase(instanceId);
+        felmystLandingTouchdownTimer.erase(instanceId);
+        return 1.0f;
+    }
+
+    const time_t now = std::time(nullptr);
+    constexpr uint8 groundedDpsWaitSeconds = 3;
+    auto it = felmystLandingDpsWaitTimer.find(instanceId);
+    if (it == felmystLandingDpsWaitTimer.end())
+        return 1.0f;
+
+    auto touchdownIt = felmystLandingTouchdownTimer.try_emplace(instanceId, now).first;
+
+    if (botAI->IsMainTank(bot) || dynamic_cast<FelmystMisdirectBossToMainTankAction*>(action))
+        return 1.0f;
+
+    if ((now - touchdownIt->second) >= groundedDpsWaitSeconds)
+    {
+        felmystLandingDpsWaitTimer.erase(it);
+        felmystLandingTouchdownTimer.erase(instanceId);
+        return 1.0f;
+    }
+
+    if (dynamic_cast<AttackAction*>(action) ||
+        (dynamic_cast<CastSpellAction*>(action) &&
+         !dynamic_cast<CastHealingSpellAction*>(action)))
     {
         return 0.0f;
     }
