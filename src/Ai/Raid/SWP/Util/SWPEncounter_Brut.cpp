@@ -63,42 +63,49 @@ bool TryGetBrutallusMeleePosition(
     if (!brutallus)
         return false;
 
-    constexpr float meleeSpacing = 5.0f;
-    constexpr float arcAngle = 2.0f * M_PI / 3.0f;
-
-    auto const getMeleeArcCapacity = [&](float meleeRadius)
+    struct BrutallusMeleeRingLayout
     {
-        const float meleeAngleStep = 2.0f * std::asin(meleeSpacing / (2.0f * meleeRadius));
-        const uint8 maxSideSlots =
-            static_cast<uint8>(std::floor((arcAngle / 2.0f) / meleeAngleStep));
-        return static_cast<uint8>(1 + 2 * maxSideSlots);
+        float radius;
+        uint8 slotCount;
     };
 
-    const uint8 primaryMeleeSlots =
-        getMeleeArcCapacity(BRUTALLUS_PRIMARY_MELEE_RADIUS);
-    const uint8 secondaryMeleeSlots =
-        getMeleeArcCapacity(BRUTALLUS_SECONDARY_MELEE_RADIUS);
-    const uint8 totalMeleeSlots = primaryMeleeSlots + secondaryMeleeSlots;
+    constexpr std::array<BrutallusMeleeRingLayout, 4> meleeRingLayouts = {{
+        { BRUTALLUS_INNERMOST_MELEE_RADIUS, BRUTALLUS_INNERMOST_MELEE_POSITIONS },
+        { BRUTALLUS_INNER_MELEE_RADIUS, BRUTALLUS_INNER_MELEE_POSITIONS },
+        { BRUTALLUS_OUTER_MELEE_RADIUS, BRUTALLUS_OUTER_MELEE_POSITIONS },
+        { BRUTALLUS_OUTERMOST_MELEE_RADIUS, BRUTALLUS_OUTERMOST_MELEE_POSITIONS }
+    }};
+
+    uint8 totalMeleeSlots = 0;
+    for (auto const& meleeRingLayout : meleeRingLayouts)
+        totalMeleeSlots += meleeRingLayout.slotCount;
+
     if (meleeIndex >= totalMeleeSlots)
         return false;
 
-    float meleeRadius = BRUTALLUS_PRIMARY_MELEE_RADIUS;
+    float meleeRadius = 0.0f;
     uint8 localMeleeIndex = meleeIndex;
-    uint8 maxMeleeSlots = primaryMeleeSlots;
-    if (meleeIndex >= primaryMeleeSlots)
+    uint8 maxMeleeSlots = 0;
+    for (auto const& meleeRingLayout : meleeRingLayouts)
     {
-        meleeRadius = BRUTALLUS_SECONDARY_MELEE_RADIUS;
-        localMeleeIndex = meleeIndex - primaryMeleeSlots;
-        maxMeleeSlots = secondaryMeleeSlots;
+        if (localMeleeIndex < meleeRingLayout.slotCount)
+        {
+            meleeRadius = meleeRingLayout.radius;
+            maxMeleeSlots = meleeRingLayout.slotCount;
+            break;
+        }
+
+        localMeleeIndex -= meleeRingLayout.slotCount;
     }
+
+    if (!maxMeleeSlots)
+        return false;
 
     const float midpointAngle = GetBrutallusMidpointAngle(brutallus, mainTank, assistTank);
     const float baseAngle = Position::NormalizeOrientation(midpointAngle + M_PI);
-    const float meleeAngleStep = 2.0f * std::asin(meleeSpacing / (2.0f * meleeRadius));
-    const uint8 maxSideSlots = static_cast<uint8>((maxMeleeSlots - 1) / 2);
-    const float arcWidth = maxSideSlots * 2.0f * meleeAngleStep;
     const float angleOffset =
-        GetCenteredArcSlotAngleOffset(localMeleeIndex, maxMeleeSlots, arcWidth);
+        GetCenteredArcSlotAngleOffset(
+            localMeleeIndex, maxMeleeSlots, BRUTALLUS_SHARED_SAFE_MELEE_ARC_WIDTH);
 
     const float angle = Position::NormalizeOrientation(baseAngle + angleOffset);
     position = GetBrutallusPositionAtAngle(brutallus, angle, meleeRadius, z);
