@@ -1,5 +1,10 @@
-#ifndef _PLAYERBOT_RAIDSTRATEGYCONTEXT_H_
-#define _PLAYERBOT_RAIDSTRATEGYCONTEXT_H_
+/*
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
+ */
+
+#ifndef _PLAYERBOT_RAIDSTRATEGYCONTEXT_H
+#define _PLAYERBOT_RAIDSTRATEGYCONTEXT_H
 
 #include "Strategy.h"
 #include "Aq20Strategy.h"

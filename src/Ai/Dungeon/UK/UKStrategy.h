@@ -1,5 +1,10 @@
-#ifndef _PLAYERBOT_WOTLKDUNGEONUKSTRATEGY_H
-#define _PLAYERBOT_WOTLKDUNGEONUKSTRATEGY_H
+/*
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
+ */
+
+#ifndef _PLAYERBOT_UKSTRATEGY_H
+#define _PLAYERBOT_UKSTRATEGY_H
 
 #include "Multiplier.h"
 #include "AiObjectContext.h"

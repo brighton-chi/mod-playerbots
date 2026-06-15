@@ -1,5 +1,10 @@
-#ifndef _PLAYERBOT_RAIDKARAZHANACTIONCONTEXT_H
-#define _PLAYERBOT_RAIDKARAZHANACTIONCONTEXT_H
+/*
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
+ */
+
+#ifndef _PLAYERBOT_KARAACTIONCONTEXT_H
+#define _PLAYERBOT_KARAACTIONCONTEXT_H
 
 #include "KaraActions.h"
 #include "NamedObjectContext.h"
