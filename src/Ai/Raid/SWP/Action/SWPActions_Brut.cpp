@@ -12,7 +12,7 @@
 
 using namespace SunwellHelpers;
 
-// Note: BoundingRadius of 6f, CombatReach of 18f
+// Note: Brutallus has a BoundingRadius of 6f and a CombatReach of 18f
 
 bool BrutallusMisdirectBossToMainTankAction::Execute(Event /*event*/)
 {

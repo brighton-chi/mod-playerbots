@@ -39,8 +39,7 @@ enum class BrutallusRangedBurnState : uint8
 };
 
 extern const Position BRUTALLUS_MAIN_TANK_POSITION;
-constexpr float BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET =
-    -(2.0f * M_PI / 3.0f);
+constexpr float BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET = -(2.0f * M_PI / 3.0f);
 constexpr float BRUTALLUS_TANK_POSITION_RADIUS = 15.0f;
 constexpr float BRUTALLUS_RANGED_TANK_OFFSET = 10.0f;
 constexpr float BRUTALLUS_LANE_OFFSET = 5.0f;
@@ -50,8 +49,7 @@ constexpr float BRUTALLUS_INNER_LANE_RADIUS =
     BRUTALLUS_NORMAL_RANGED_RADIUS - BRUTALLUS_LANE_OFFSET;
 constexpr float BRUTALLUS_OUTER_LANE_RADIUS =
     BRUTALLUS_NORMAL_RANGED_RADIUS + BRUTALLUS_LANE_OFFSET;
-constexpr float BRUTALLUS_BURN_PAD_RADIUS =
-    BRUTALLUS_NORMAL_RANGED_RADIUS;
+constexpr float BRUTALLUS_BURN_PAD_RADIUS = BRUTALLUS_NORMAL_RANGED_RADIUS;
 constexpr float BRUTALLUS_SHARED_SAFE_MELEE_ARC_WIDTH = M_PI / 3.0f;
 constexpr float BRUTALLUS_INNERMOST_MELEE_RADIUS = 4.0f;
 constexpr uint8 BRUTALLUS_INNERMOST_MELEE_POSITIONS = 2;
@@ -66,8 +64,7 @@ constexpr uint8 BRUTALLUS_RANGED_POSITIONS_PER_GROUP = 10;
 constexpr uint8 BRUTALLUS_TOTAL_RANGED_POSITIONS =
     BRUTALLUS_RANGED_POSITIONS_PER_GROUP * 2;
 constexpr uint8 BRUTALLUS_BURN_PADS_PER_GROUP = 4;
-constexpr uint8 BRUTALLUS_TOTAL_BURN_PADS =
-    BRUTALLUS_BURN_PADS_PER_GROUP * 2;
+constexpr uint8 BRUTALLUS_TOTAL_BURN_PADS = BRUTALLUS_BURN_PADS_PER_GROUP * 2;
 
 extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
     brutallusRangedAssignments;
@@ -89,8 +86,7 @@ float GetBrutallusRangedSlotAngle(
     const BrutallusRangedSlotInfo& slotInfo);
 bool TryGetBrutallusRangedPosition(
     Unit* brutallus, Player* mainTank, Player* assistTank,
-    uint8 rangedIndex,
-    float radius, float z, Position& position);
+    uint8 rangedIndex, float radius, float z, Position& position);
 bool TryGetBrutallusBurnPadPosition(
     Player* bot, Unit* brutallus, Player* mainTank,
     uint8 rangedIndex, float radius, float z, Position& position);
