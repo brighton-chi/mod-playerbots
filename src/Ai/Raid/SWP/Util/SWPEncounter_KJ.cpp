@@ -50,6 +50,7 @@ float GetCenteredArcSlotAngleOffset(
 
     return angleOffset;
 }
+
 uint32 GetKiljaedenDragonManualCooldown(uint32 spellId)
 {
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
@@ -137,7 +138,7 @@ float GetKiljaedenNearestArmageddonDistance(
 }
 
 std::unordered_map<ObjectGuid::LowType, KiljaedenDarknessShieldState>&
-GetKiljaedenDarknessShieldStates()
+    GetKiljaedenDarknessShieldStates()
 {
     return kiljaedenDarknessShieldStates;
 }

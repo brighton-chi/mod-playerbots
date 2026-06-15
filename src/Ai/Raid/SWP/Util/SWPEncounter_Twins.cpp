@@ -30,17 +30,7 @@ const std::array<Position, ALYTHESS_TANK_POSITION_COUNT> alythessTankPositions =
     { 1830.007f, 620.924f, 33.404f }
 }};
 
-}
-
-const Position SACROLASH_TANK_POSITION  =             { 1804.255f, 630.193f, 33.404f };
-const Position EREDAR_TWINS_P1_RANGED_POSITION =      { 1808.076f, 603.460f, 51.684f };
-const Position EREDAR_TWINS_RANGED_CONFLAG_POSITION = { 1801.133f, 584.456f, 50.696f };
-const Position EREDAR_TWINS_MELEE_CONFLAG_POSITION =  { 1814.337f, 607.771f, 33.404f };
-
-std::unordered_map<ObjectGuid, uint8> alythessTankStep;
 std::unordered_map<ObjectGuid, ObjectGuid> alythessTankLastBlazeGuid;
-std::unordered_map<uint32, EredarTwinsIncomingConflagrationState>
-    eredarTwinsIncomingConflagrationStates;
 
 // Adjusted positions are to address the occasional bug (?) where Alythess moves
 Position GetAlythessAdjustedPosition(Unit* alythess, const Position& basePosition)
@@ -54,36 +44,6 @@ Position GetAlythessAdjustedPosition(Unit* alythess, const Position& basePositio
 
     return { basePosition.GetPositionX() + offsetX, basePosition.GetPositionY() + offsetY,
              basePosition.GetPositionZ() + offsetZ };
-}
-
-Position GetAlythessTankPosition(Unit* alythess, uint8 index)
-{
-    if (index >= alythessTankPositions.size())
-        index = 0;
-
-    return GetAlythessAdjustedPosition(alythess, alythessTankPositions[index]);
-}
-
-Position GetEredarTwinsP2MeleeStackPosition(Unit* alythess)
-{
-    const Position basePosition = { 1814.327f, 625.645f, 33.404f };
-    return GetAlythessAdjustedPosition(alythess, basePosition);
-}
-
-Position GetEredarTwinsP2RangedStackPosition(Unit* alythess)
-{
-    const Position basePosition = { 1805.587f, 625.653f, 33.404f };
-    return GetAlythessAdjustedPosition(alythess, basePosition);
-}
-
-bool IsSacrolashTank(PlayerbotAI* botAI, Player* bot)
-{
-    return botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 1, true);
-}
-
-bool IsAlythessTank(PlayerbotAI* botAI, Player* bot)
-{
-    return botAI->IsAssistTankOfIndex(bot, 0, false);
 }
 
 bool ShouldHoldTwinThreat(
@@ -129,6 +89,47 @@ bool ShouldHoldTwinThreat(
         return false;
 
     return botThreat >= twinTankThreat * threatHoldRatio;
+}
+
+}
+
+const Position SACROLASH_TANK_POSITION  =             { 1804.255f, 630.193f, 33.404f };
+const Position EREDAR_TWINS_P1_RANGED_POSITION =      { 1808.076f, 603.460f, 51.684f };
+const Position EREDAR_TWINS_RANGED_CONFLAG_POSITION = { 1801.133f, 584.456f, 50.696f };
+const Position EREDAR_TWINS_MELEE_CONFLAG_POSITION =  { 1814.337f, 607.771f, 33.404f };
+
+std::unordered_map<ObjectGuid, uint8> alythessTankStep;
+std::unordered_map<uint32, EredarTwinsIncomingConflagrationState>
+    eredarTwinsIncomingConflagrationStates;
+
+Position GetAlythessTankPosition(Unit* alythess, uint8 index)
+{
+    if (index >= alythessTankPositions.size())
+        index = 0;
+
+    return GetAlythessAdjustedPosition(alythess, alythessTankPositions[index]);
+}
+
+Position GetEredarTwinsP2MeleeStackPosition(Unit* alythess)
+{
+    const Position basePosition = { 1814.327f, 625.645f, 33.404f };
+    return GetAlythessAdjustedPosition(alythess, basePosition);
+}
+
+Position GetEredarTwinsP2RangedStackPosition(Unit* alythess)
+{
+    const Position basePosition = { 1805.587f, 625.653f, 33.404f };
+    return GetAlythessAdjustedPosition(alythess, basePosition);
+}
+
+bool IsSacrolashTank(PlayerbotAI* botAI, Player* bot)
+{
+    return botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 1, true);
+}
+
+bool IsAlythessTank(PlayerbotAI* botAI, Player* bot)
+{
+    return botAI->IsAssistTankOfIndex(bot, 0, false);
 }
 
 bool ShouldHoldSacrolashThreat(

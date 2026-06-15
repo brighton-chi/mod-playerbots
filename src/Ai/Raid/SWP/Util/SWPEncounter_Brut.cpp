@@ -49,7 +49,10 @@ Position GetBrutallusPositionAtAngle(
     return { x, y, z };
 }
 
-static float GetCenteredArcSlotAngleOffset(
+namespace
+{
+
+float GetCenteredArcSlotAngleOffset(
     uint8 slotIndex, uint8 slotCount, float arcWidth)
 {
     if (slotCount <= 1)
@@ -78,7 +81,7 @@ static float GetCenteredArcSlotAngleOffset(
     return angleOffset;
 }
 
-static float GetBrutallusTankAngle(
+float GetBrutallusTankAngle(
     Unit* brutallus, Player* tank, float fallbackAngle)
 {
     if (!brutallus || !tank)
@@ -89,7 +92,7 @@ static float GetBrutallusTankAngle(
                    tank->GetPositionX() - brutallus->GetPositionX()));
 }
 
-static float GetBrutallusMidpointAngle(
+float GetBrutallusMidpointAngle(
     Unit* brutallus, Player* mainTank, Player* assistTank)
 {
     const float mainTankAngle =
@@ -125,25 +128,25 @@ static float GetBrutallusMidpointAngle(
                    midpointX - brutallus->GetPositionX()));
 }
 
-static bool IsBrutallusMainTankGroup(uint8 rangedIndex)
+bool IsBrutallusMainTankGroup(uint8 rangedIndex)
 {
     return rangedIndex % 2 == 0;
 }
 
-static uint8 GetBrutallusArcPositionIndex(uint8 rangedIndex)
+uint8 GetBrutallusArcPositionIndex(uint8 rangedIndex)
 {
     return static_cast<uint8>(
         (rangedIndex / 2) % BRUTALLUS_RANGED_POSITIONS_PER_GROUP);
 }
 
-static bool IsBrutallusBurnPadActive(ObjectGuid ownerGuid)
+bool IsBrutallusBurnPadActive(ObjectGuid ownerGuid)
 {
     auto const burnStateItr = brutallusRangedBurnStates.find(ownerGuid);
     return burnStateItr != brutallusRangedBurnStates.end() &&
            burnStateItr->second != BrutallusRangedBurnState::None;
 }
 
-static bool TryGetBrutallusBurnPadIndex(Player* bot, uint8 rangedIndex, uint8& padIndex)
+bool TryGetBrutallusBurnPadIndex(Player* bot, uint8 rangedIndex, uint8& padIndex)
 {
     auto& assignments = brutallusRangedBurnPadAssignments[bot->GetInstanceId()];
     for (auto itr = assignments.begin(); itr != assignments.end();)
@@ -200,6 +203,8 @@ static bool TryGetBrutallusBurnPadIndex(Player* bot, uint8 rangedIndex, uint8& p
         return assignFromOrder(mainGroupPriority) || assignFromOrder(mainGroupOverflow);
 
     return assignFromOrder(assistGroupPriority) || assignFromOrder(assistGroupOverflow);
+}
+
 }
 
 bool TryGetBrutallusMeleePosition(
