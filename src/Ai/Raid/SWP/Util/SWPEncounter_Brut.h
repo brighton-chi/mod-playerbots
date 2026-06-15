@@ -81,7 +81,6 @@ extern std::unordered_set<ObjectGuid>
 float GetBrutallusMainTankAngle(Unit* brutallus);
 Position GetBrutallusPositionAtAngle(
     Unit* brutallus, float angle, float radius, float z);
-Position GetBrutallusTankPosition(Unit* brutallus, bool isMainTank, float z);
 bool TryGetBrutallusMeleePosition(
     Player* bot, Unit* brutallus, Player* mainTank, Player* assistTank,
     uint8 meleeIndex, float z, Position& position);

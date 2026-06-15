@@ -24,8 +24,6 @@ static bool IsBrutallusMainTankGroup(uint8 rangedIndex);
 static uint8 GetBrutallusArcPositionIndex(uint8 rangedIndex);
 static bool IsBrutallusBurnPadActive(ObjectGuid ownerGuid);
 static bool TryGetBrutallusBurnPadIndex(Player* bot, uint8 rangedIndex, uint8& padIndex);
-static float GetBrutallusBurnPadAngle(
-    Unit* brutallus, Player* mainTank, uint8 padIndex);
 
 const Position BRUTALLUS_MAIN_TANK_POSITION = { 1483.528f, 595.346f, 23.552f };
 
@@ -40,21 +38,6 @@ std::unordered_map<ObjectGuid, BrutallusRangedBurnState>
 
 std::unordered_set<ObjectGuid>
     brutallusMainTankInitialPositionReached;
-
-Position GetBrutallusTankPosition(Unit* brutallus, bool isMainTank, float z)
-{
-    if (isMainTank)
-    {
-        return { BRUTALLUS_MAIN_TANK_POSITION.GetPositionX(),
-                 BRUTALLUS_MAIN_TANK_POSITION.GetPositionY(), z };
-    }
-
-    float angle = GetBrutallusMainTankAngle(brutallus);
-    angle = Position::NormalizeOrientation(angle + BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET);
-
-    return GetBrutallusPositionAtAngle(
-        brutallus, angle, BRUTALLUS_TANK_POSITION_RADIUS, z);
-}
 
 bool TryGetBrutallusMeleePosition(
     Player* bot, Unit* brutallus, Player* mainTank, Player* assistTank,
@@ -173,12 +156,11 @@ float GetBrutallusMainTankAngle(Unit* brutallus)
 Position GetBrutallusPositionAtAngle(
     Unit* brutallus, float angle, float radius, float z)
 {
-    const float centerX = brutallus ? brutallus->GetPositionX() :
-        BRUTALLUS_MAIN_TANK_POSITION.GetPositionX();
-    const float centerY = brutallus ? brutallus->GetPositionY() :
-        BRUTALLUS_MAIN_TANK_POSITION.GetPositionY();
-    const float x = centerX + std::cos(angle) * radius;
-    const float y = centerY + std::sin(angle) * radius;
+    if (!brutallus)
+        return { 0.0f, 0.0f, z };
+
+    const float x = brutallus->GetPositionX() + std::cos(angle) * radius;
+    const float y = brutallus->GetPositionY() + std::sin(angle) * radius;
     return { x, y, z };
 }
 
@@ -217,8 +199,7 @@ static float GetBrutallusMidpointAngle(
     const float mainTankAngle =
         GetBrutallusTankAngle(brutallus, mainTank, GetBrutallusMainTankAngle(brutallus));
 
-    if (!brutallus || !mainTank || !assistTank ||
-        !mainTank->IsAlive() || !assistTank->IsAlive())
+    if (!brutallus || !mainTank || !assistTank)
     {
         return Position::NormalizeOrientation(
             mainTankAngle + BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET / 2.0f);
@@ -235,12 +216,12 @@ static float GetBrutallusMidpointAngle(
 
     if (brutallus->GetExactDist2d(midpointX, midpointY) < 0.1f)
     {
-        float assistAngleDelta = Position::NormalizeOrientation(assistTankAngle - mainTankAngle);
+        float assistAngleDelta =
+            Position::NormalizeOrientation(assistTankAngle - mainTankAngle);
         if (assistAngleDelta > static_cast<float>(M_PI))
             assistAngleDelta -= 2.0f * static_cast<float>(M_PI);
 
-        return Position::NormalizeOrientation(
-            mainTankAngle + assistAngleDelta / 2.0f);
+        return Position::NormalizeOrientation(mainTankAngle + assistAngleDelta / 2.0f);
     }
 
     return Position::NormalizeOrientation(
@@ -251,7 +232,7 @@ static float GetBrutallusMidpointAngle(
 static float GetBrutallusTankAngle(
     Unit* brutallus, Player* tank, float fallbackAngle)
 {
-    if (!brutallus || !tank || !tank->IsAlive())
+    if (!brutallus || !tank)
         return Position::NormalizeOrientation(fallbackAngle);
 
     return Position::NormalizeOrientation(
@@ -278,8 +259,7 @@ float GetBrutallusRangedSlotAngle(
 
 bool TryGetBrutallusRangedPosition(
     Unit* brutallus, Player* mainTank, Player* assistTank,
-    uint8 rangedIndex,
-    float radius, float z, Position& position)
+    uint8 rangedIndex, float radius, float z, Position& position)
 {
     if (!brutallus || rangedIndex >= BRUTALLUS_TOTAL_RANGED_POSITIONS)
         return false;
@@ -291,6 +271,7 @@ bool TryGetBrutallusRangedPosition(
 
     const float angle =
         GetBrutallusRangedSlotAngle(brutallus, mainTank, assistTank, slotInfo);
+
     position = GetBrutallusPositionAtAngle(brutallus, angle, radius, z);
     return true;
 }
@@ -306,7 +287,24 @@ bool TryGetBrutallusBurnPadPosition(
     if (!TryGetBrutallusBurnPadIndex(bot, rangedIndex, padIndex))
         return false;
 
-    const float angle = GetBrutallusBurnPadAngle(brutallus, mainTank, padIndex);
+    static constexpr float degreeToRadian = M_PI / 180.0f;
+    static constexpr std::array<float, BRUTALLUS_TOTAL_BURN_PADS>
+        burnPadAngleOffsets = {
+            70.0f * degreeToRadian,
+            83.3f * degreeToRadian,
+            96.7f * degreeToRadian,
+            110.0f * degreeToRadian,
+            130.0f * degreeToRadian,
+            143.3f * degreeToRadian,
+            156.7f * degreeToRadian,
+            170.0f * degreeToRadian
+        };
+
+    const float mainTankAngle =
+        GetBrutallusTankAngle(brutallus, mainTank, GetBrutallusMainTankAngle(brutallus));
+    const float angle =
+        Position::NormalizeOrientation(mainTankAngle + burnPadAngleOffsets[padIndex]);
+
     position = GetBrutallusPositionAtAngle(brutallus, angle, radius, z);
     return true;
 }
@@ -321,8 +319,10 @@ bool TryGetBrutallusLaneTraversalPosition(
     const float targetAngle = Position::NormalizeOrientation(
         std::atan2(targetY - brutallus->GetPositionY(),
                    targetX - brutallus->GetPositionX()));
+
     const float currentAngle = Position::NormalizeOrientation(
         std::atan2(currentY - brutallus->GetPositionY(), currentX - brutallus->GetPositionX()));
+
     float remainingAngle = Position::NormalizeOrientation(targetAngle - currentAngle);
     if (remainingAngle > static_cast<float>(M_PI))
         remainingAngle -= 2.0f * static_cast<float>(M_PI);
@@ -499,27 +499,6 @@ static bool TryGetBrutallusBurnPadIndex(Player* bot, uint8 rangedIndex, uint8& p
         return assignFromOrder(mainGroupPriority) || assignFromOrder(mainGroupOverflow);
 
     return assignFromOrder(assistGroupPriority) || assignFromOrder(assistGroupOverflow);
-}
-
-static float GetBrutallusBurnPadAngle(
-    Unit* brutallus, Player* mainTank, uint8 padIndex)
-{
-    static constexpr float degreeToRadian = M_PI / 180.0f;
-    static constexpr std::array<float, BRUTALLUS_TOTAL_BURN_PADS>
-        burnPadAngleOffsets = {
-            70.0f * degreeToRadian,
-            83.3f * degreeToRadian,
-            96.7f * degreeToRadian,
-            110.0f * degreeToRadian,
-            130.0f * degreeToRadian,
-            143.3f * degreeToRadian,
-            156.7f * degreeToRadian,
-            170.0f * degreeToRadian
-        };
-
-    const float mainTankAngle =
-        GetBrutallusTankAngle(brutallus, mainTank, GetBrutallusMainTankAngle(brutallus));
-    return Position::NormalizeOrientation(mainTankAngle + burnPadAngleOffsets[padIndex]);
 }
 
 }
