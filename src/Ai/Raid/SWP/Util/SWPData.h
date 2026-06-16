@@ -34,6 +34,9 @@ enum class SunwellSpells : uint32
     SPELL_FELMYST_SPEED_BURST          = 45495,
     SPELL_FOG_OF_CORRUPTION            = 45582,
     SPELL_FOG_OF_CORRUPTION_CHARM      = 45717,
+    SPELL_FELMYST_STRAFE_TOP           = 45585,
+    SPELL_FELMYST_STRAFE_MIDDLE        = 45633,
+    SPELL_FELMYST_STRAFE_BOTTOM        = 45635,
 
     // Eredar Twins
     SPELL_BLAZE                        = 45235,
