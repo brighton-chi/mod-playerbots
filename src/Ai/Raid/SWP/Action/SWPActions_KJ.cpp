@@ -395,7 +395,7 @@ bool KiljaedenControlDragonAction::ExecuteDuringDarknessOfAThousandSouls(Unit* k
     if (distanceToStack > castReadyDistanceFromStack)
     {
         if (dragon->GetMotionMaster()->GetCurrentMovementGeneratorType() == POINT_MOTION_TYPE &&
-            dragon->isMoving();)
+            dragon->isMoving())
         {
             return true;
         }
@@ -524,7 +524,7 @@ bool KiljaedenControlDragonAction::ExecuteOutsideDarknessOfAThousandSouls(Unit* 
     constexpr float distanceTolerance = 1.0f;
     const float distanceToTarget = dragon->GetExactDist2d(target);
     if (distanceToTarget > desiredDistance + distanceTolerance ||
-        (distanceToTarget > std::numeric_limits<float>::min() && 
+        (distanceToTarget > std::numeric_limits<float>::min() &&
          distanceToTarget < desiredDistance - distanceTolerance))
     {
         const float deltaX = target->GetPositionX() - dragon->GetPositionX();

@@ -119,7 +119,7 @@ bool MuruPositionRangedAction::Execute(Event /*event*/)
     }
 
     constexpr float safeDistFromPlayer = 4.0f;
-    constexpr float uint32 minInterval = 1000;
+    constexpr uint32 minInterval = 1000;
     if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
         return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer, minInterval);
 
@@ -557,7 +557,7 @@ bool MuruTanksMoveSentinelToSafePositionAction::Execute(Event /*event*/)
 
     if (voidSentinel->GetVictim() == bot)
     {
-        const float distToPosition = 
+        const float distToPosition =
             bot->GetExactDist2d(tankPosition->GetPositionX(), tankPosition->GetPositionY());
         if (distToPosition > 2.0f)
         {

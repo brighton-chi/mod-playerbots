@@ -375,7 +375,8 @@ bool FelmystAvoidFogOfCorruptionAction::TryTeleportStuckBotOntoCrate(
     felmystFogCrateStuckStates.erase(bot->GetGUID());
     // bot->RemoveAurasWithInterruptFlags(
     //     AURA_INTERRUPT_FLAG_TELEPORTED | AURA_INTERRUPT_FLAG_CHANGE_MAP);
-    return botAI->InterruptSpell() && bot->TeleportTo(
+    botAI->InterruptSpell();
+    return bot->TeleportTo(
         SUNWELL_MAP_ID, FELMYST_ON_CRATE_POSITION.GetPositionX(),
         FELMYST_ON_CRATE_POSITION.GetPositionY(),
         FELMYST_ON_CRATE_POSITION.GetPositionZ(), bot->GetOrientation());

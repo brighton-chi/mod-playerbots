@@ -423,8 +423,8 @@ bool EredarTwinsMoveAwayFromStunnedConflagrationTargetAction::Execute(Event /*ev
     if (distanceToTarget < safeDistance)
     {
         botAI->InterruptSpell();
-        return MoveAway(target, safeDistance - distanceTarget);
+        return MoveAway(target, safeDistance - distanceToTarget);
     }
 
-    return false
+    return false;
 }
