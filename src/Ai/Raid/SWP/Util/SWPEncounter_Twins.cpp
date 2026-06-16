@@ -96,7 +96,8 @@ bool ShouldHoldTwinThreat(
 const Position SACROLASH_TANK_POSITION  =             { 1804.255f, 630.193f, 33.404f };
 const Position EREDAR_TWINS_P1_RANGED_POSITION =      { 1808.076f, 603.460f, 51.684f };
 const Position EREDAR_TWINS_RANGED_CONFLAG_POSITION = { 1801.133f, 584.456f, 50.696f };
-const Position EREDAR_TWINS_MELEE_CONFLAG_POSITION =  { 1814.337f, 607.771f, 33.404f };
+// const Position EREDAR_TWINS_MELEE_CONFLAG_POSITION =  { 1814.337f, 607.771f, 33.404f };
+const Position EREDAR_TWINS_MELEE_CONFLAG_POSITION =  { 1812.842f, 611.147f, 33.404f };
 
 std::unordered_map<ObjectGuid, uint8> alythessTankStep;
 std::unordered_map<uint32, EredarTwinsIncomingConflagrationState>
