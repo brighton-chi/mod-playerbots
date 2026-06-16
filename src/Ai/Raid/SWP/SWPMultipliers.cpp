@@ -253,11 +253,31 @@ float BrutallusControlMovementMultiplier::GetValue(Action* action)
         return 0.0f;
     }
 
-    if (bot->getClass() == CLASS_ROGUE &&
-        bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_BURN)) &&
-        dynamic_cast<CastKillingSpreeAction*>(action))
+    return 1.0f;
+}
+
+float BrutallusNoKillingSpreeWhenNearbyBurnMultiplier::GetValue(Action* action)
+{
+    if (bot->getClass() != CLASS_ROGUE ||
+        !AI_VALUE2(Unit*, "find target", "brutallus") ||
+        !dynamic_cast<CastKillingSpreeAction*>(action))
     {
-        return 0.0f;
+        return 1.0f;
+    }
+
+    Group* group = bot->GetGroup();
+    if (!group)
+        return 1.0f;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && member->HasAura(static_cast<uint32>(SunwellSpells::SPELL_BURN)) &&
+            botAI->IsMelee(member) && !botAI->IsMainTank(member) &&
+            !botAI->IsAssistTankOfIndex(member, 0, true))
+        {
+            return 0.0f;
+        }
     }
 
     return 1.0f;
