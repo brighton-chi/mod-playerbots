@@ -14,6 +14,7 @@
 
 namespace
 {
+
 using namespace SunwellHelpers;
 
 void AppendFelmystVaporPhaseMeleeExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
@@ -132,6 +133,7 @@ void AppendEredarTwinsAttackerExclusions(PlayerbotAI* botAI, GuidSet& exclusions
     if (sacrolash && alythess)
         exclusions.insert(alythess->GetGUID());
 }
+
 }
 
 void RaidSunwellStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExclusionType type) const
@@ -358,6 +360,7 @@ void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     // Brutallus
     multipliers.push_back(new BrutallusControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new BrutallusControlMovementMultiplier(botAI));
+    multipliers.push_back(new BrutallusNoKillingSpreeWhenNearbyBurnMultiplier(botAI));
     multipliers.push_back(new BrutallusNoTankingWithTooManyMeteorStacksMultiplier(botAI));
     multipliers.push_back(new BrutallusDelayCooldownsMultiplier(botAI));
 
