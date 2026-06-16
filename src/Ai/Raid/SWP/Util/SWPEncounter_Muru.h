@@ -49,7 +49,6 @@ extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> muruVoi
 extern std::unordered_set<ObjectGuid> muruEntropiusInitialRangedPositionsReached;
 
 Creature* GetNearestMuruSingularity(Player* bot, float searchRadius = 30.0f);
-bool IsFirstAssistTankInSameGroup(PlayerbotAI* botAI, Player* bot);
 bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru);
 bool TryGetMuruDarknessEarlyState(Player* bot, Unit* muru, uint32 earlyWindowMs = 10000);
 void GatherMuruEncounterTargets(PlayerbotAI* botAI, MuruEncounterTargets& targets);

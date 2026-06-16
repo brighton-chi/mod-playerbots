@@ -607,12 +607,6 @@ const Position* MuruTanksMoveSentinelToSafePositionAction::GetAssignedVoidSentin
     return assignmentItr->second == 0 ? &north : &east;
 }
 
-bool MuruSetGroundingTotemInFirstAssistTankGroupAction::Execute(Event /*event*/)
-{
-    return botAI->CanCastSpell("grounding totem", bot) &&
-           botAI->CastSpell("grounding totem", bot);
-}
-
 bool MuruSecondAssistTankGuardRangedAction::Execute(Event /*event*/)
 {
     const Position& position = MURU_ENTRANCE_POSITION;

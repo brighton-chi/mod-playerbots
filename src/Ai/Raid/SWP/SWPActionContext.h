@@ -41,9 +41,6 @@ public:
         creators["kalecgos sathrovarr tank stand with kalec"] =
             &RaidSunwellActionContext::kalecgos_sathrovarr_tank_stand_with_kalec;
 
-        creators["kalecgos determine boss to attack"] =
-            &RaidSunwellActionContext::kalecgos_determine_boss_to_attack;
-
         creators["kalecgos return to spectral realm ground"] =
             &RaidSunwellActionContext::kalecgos_return_to_spectral_realm_ground;
 
@@ -147,9 +144,6 @@ public:
         creators["m'uru tanks move sentinel to safe position"] =
             &RaidSunwellActionContext::muru_tanks_move_sentinel_to_safe_position;
 
-        creators["m'uru set grounding totem in first assist tank group"] =
-            &RaidSunwellActionContext::muru_set_grounding_totem_in_first_assist_tank_group;
-
         creators["m'uru second assist tank guard ranged"] =
             &RaidSunwellActionContext::muru_second_assist_tank_guard_ranged;
 
@@ -233,9 +227,6 @@ private:
 
     static Action* kalecgos_sathrovarr_tank_stand_with_kalec(
         PlayerbotAI* botAI) { return new KalecgosSathrovarrTankStandWithKalecAction(botAI); }
-
-    static Action* kalecgos_determine_boss_to_attack(
-        PlayerbotAI* botAI) { return new KalecgosDetermineBossToAttackAction(botAI); }
 
     static Action* kalecgos_return_to_spectral_realm_ground(
         PlayerbotAI* botAI) { return new KalecgosReturnToSpectralRealmGroundAction(botAI); }
@@ -339,9 +330,6 @@ private:
 
     static Action* muru_tanks_move_sentinel_to_safe_position(
         PlayerbotAI* botAI) { return new MuruTanksMoveSentinelToSafePositionAction(botAI); }
-
-    static Action* muru_set_grounding_totem_in_first_assist_tank_group(
-        PlayerbotAI* botAI) { return new MuruSetGroundingTotemInFirstAssistTankGroupAction(botAI); }
 
     static Action* muru_second_assist_tank_guard_ranged(
         PlayerbotAI* botAI) { return new MuruSecondAssistTankGuardRangedAction(botAI); }

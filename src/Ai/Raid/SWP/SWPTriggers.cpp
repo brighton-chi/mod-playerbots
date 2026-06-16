@@ -117,23 +117,6 @@ bool KalecgosHumanoidFormTanksSathrovarrTrigger::IsActive()
            AI_VALUE2(Unit*, "find target", "sathrovarr the corruptor");
 }
 
-bool KalecgosBothBossesMustBeDefeatedTrigger::IsActive()
-{
-    if (botAI->IsHeal(bot) || AI_VALUE(Unit*, "current target"))
-        return false;
-
-    if (!AI_VALUE2(Unit*, "find target", "kalecgos") &&
-        !AI_VALUE2(Unit*, "find target", "sathrovarr the corruptor"))
-    {
-        return false;
-    }
-
-    if (ShouldEnterKalecgosSpectralRift(botAI, bot))
-        return false;
-
-    return GetKalecgosCurrentTank(botAI, bot) != bot;
-}
-
 bool KalecgosBotsDontObserveGravityTrigger::IsActive()
 {
     return bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_REALM)) &&
@@ -556,23 +539,6 @@ bool MuruVoidSentinelPulsesShadowTrigger::IsActive()
 
     Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
     return muru && muru->GetHealth() > 1;
-}
-
-bool MuruVoidSentinelCastsVoidBlastOnTankTrigger::IsActive()
-{
-    if (bot->getClass() != CLASS_SHAMAN)
-        return false;
-
-    if (!AI_VALUE2(Unit*, "find target", "void sentinel"))
-        return false;
-
-    if (bot->HasAura(static_cast<uint32>(
-            SunwellSpells::SPELL_GROUNDING_TOTEM_EFFECT)))
-    {
-        return false;
-    }
-
-    return IsFirstAssistTankInSameGroup(botAI, bot);
 }
 
 bool MuruAddsSpawnAtEntranceTrigger::IsActive()

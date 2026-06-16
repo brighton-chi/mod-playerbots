@@ -78,14 +78,6 @@ public:
     bool IsActive() override;
 };
 
-class KalecgosBothBossesMustBeDefeatedTrigger : public Trigger
-{
-public:
-    KalecgosBothBossesMustBeDefeatedTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kalecgos both bosses must be defeated") {}
-    bool IsActive() override;
-};
-
 class KalecgosBotsDontObserveGravityTrigger : public Trigger
 {
 public:
@@ -339,14 +331,6 @@ class MuruVoidSentinelPulsesShadowTrigger : public Trigger
 public:
     MuruVoidSentinelPulsesShadowTrigger(
         PlayerbotAI* botAI) : Trigger(botAI, "m'uru void sentinel pulses shadow") {}
-    bool IsActive() override;
-};
-
-class MuruVoidSentinelCastsVoidBlastOnTankTrigger : public Trigger
-{
-public:
-    MuruVoidSentinelCastsVoidBlastOnTankTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "m'uru void sentinel casts void blast on tank") {}
     bool IsActive() override;
 };
 

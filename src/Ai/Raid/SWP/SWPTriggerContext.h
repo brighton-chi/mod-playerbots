@@ -41,9 +41,6 @@ public:
         creators["kalecgos humanoid form tanks sathrovarr"] =
             &RaidSunwellTriggerContext::kalecgos_humanoid_form_tanks_sathrovarr;
 
-        creators["kalecgos both bosses must be defeated"] =
-            &RaidSunwellTriggerContext::kalecgos_both_bosses_must_be_defeated;
-
         creators["kalecgos bots don't observe gravity"] =
             &RaidSunwellTriggerContext::kalecgos_bots_dont_observe_gravity;
 
@@ -141,9 +138,6 @@ public:
         creators["m'uru void sentinel pulses shadow"] =
             &RaidSunwellTriggerContext::muru_void_sentinel_pulses_shadow;
 
-        creators["m'uru void sentinel casts void blast on tank"] =
-            &RaidSunwellTriggerContext::muru_void_sentinel_casts_void_blast_on_tank;
-
         creators["m'uru adds spawn at entrance"] =
             &RaidSunwellTriggerContext::muru_adds_spawn_at_entrance;
 
@@ -230,9 +224,6 @@ private:
 
     static Trigger* kalecgos_humanoid_form_tanks_sathrovarr(
         PlayerbotAI* botAI) { return new KalecgosHumanoidFormTanksSathrovarrTrigger(botAI); }
-
-    static Trigger* kalecgos_both_bosses_must_be_defeated(
-        PlayerbotAI* botAI) { return new KalecgosBothBossesMustBeDefeatedTrigger(botAI); }
 
     static Trigger* kalecgos_bot_has_too_many_arcane_buffet_stacks(
         PlayerbotAI* botAI) { return new KalecgosBotHasTooManyArcaneBuffetStacksTrigger(botAI); }
@@ -333,9 +324,6 @@ private:
 
     static Trigger* muru_void_sentinel_pulses_shadow(
         PlayerbotAI* botAI) { return new MuruVoidSentinelPulsesShadowTrigger(botAI); }
-
-    static Trigger* muru_void_sentinel_casts_void_blast_on_tank(
-        PlayerbotAI* botAI) { return new MuruVoidSentinelCastsVoidBlastOnTankTrigger(botAI); }
 
     static Trigger* muru_adds_spawn_at_entrance(
         PlayerbotAI* botAI) { return new MuruAddsSpawnAtEntranceTrigger(botAI); }

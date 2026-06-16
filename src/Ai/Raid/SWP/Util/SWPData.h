@@ -61,9 +61,6 @@ enum class SunwellSpells : uint32
     // Hunter
     SPELL_MISDIRECTION                 = 35079,
 
-    // Shaman
-    SPELL_GROUNDING_TOTEM_EFFECT       = 8178,
-
     // Warlock
     SPELL_METAMORPHOSIS                = 47241,
 

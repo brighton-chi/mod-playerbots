@@ -182,32 +182,6 @@ bool KalecgosSathrovarrTankStandWithKalecAction::Execute(Event /*event*/)
     return false;
 }
 
-bool KalecgosDetermineBossToAttackAction::Execute(Event /*event*/)
-{
-    Unit* target = nullptr;
-    if (Unit* sathrovarr = AI_VALUE2(Unit*, "find target", "sathrovarr the corruptor"))
-    {
-        target = sathrovarr;
-        MarkTargetWithStar(bot, sathrovarr);
-        SetRtiTarget(botAI, "star", sathrovarr);
-    }
-    else if (Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos"))
-    {
-        target = kalecgos;
-        MarkTargetWithDiamond(bot, kalecgos);
-        SetRtiTarget(botAI, "diamond", kalecgos);
-    }
-    else
-    {
-        return false;
-    }
-
-    if (AI_VALUE(Unit*, "current target") != target)
-        return Attack(target);
-
-    return false;
-}
-
 bool KalecgosReturnToSpectralRealmGroundAction::Execute(Event /*event*/)
 {
     if (bot->TeleportTo(SUNWELL_MAP_ID, bot->GetPositionX(), bot->GetPositionY(),

@@ -731,28 +731,6 @@ float MuruControlMovementMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float MuruUseOnlyGroundingTotemMultiplier::GetValue(Action* action)
-{
-    if (bot->getClass() != CLASS_SHAMAN ||
-        !AI_VALUE2(Unit*, "find target", "void sentinel") ||
-        !IsFirstAssistTankInSameGroup(botAI, bot))
-    {
-        return 1.0f;
-    }
-
-    if (dynamic_cast<CastWindfuryTotemAction*>(action) ||
-        dynamic_cast<SetWindfuryTotemAction*>(action) ||
-        dynamic_cast<CastWrathOfAirTotemAction*>(action) ||
-        dynamic_cast<SetWrathOfAirTotemAction*>(action) ||
-        dynamic_cast<CastNatureResistanceTotemAction*>(action) ||
-        dynamic_cast<SetNatureResistanceTotemAction*>(action))
-    {
-        return 0.0f;
-    }
-
-    return 1.0f;
-}
-
 float MuruDelayCooldownsMultiplier::GetValue(Action* action)
 {
     Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");

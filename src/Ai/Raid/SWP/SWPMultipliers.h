@@ -229,14 +229,6 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class MuruUseOnlyGroundingTotemMultiplier : public Multiplier
-{
-public:
-    MuruUseOnlyGroundingTotemMultiplier(PlayerbotAI* botAI) : Multiplier(
-        botAI, "m'uru use only grounding totem") {}
-    virtual float GetValue(Action* action);
-};
-
 class MuruDelayCooldownsMultiplier : public Multiplier
 {
 public:
