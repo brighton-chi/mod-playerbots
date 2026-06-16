@@ -410,21 +410,3 @@ bool EredarTwinsConflagratedBotMoveFromGroupAction::Execute(Event /*event*/)
 
     return false;
 }
-
-bool EredarTwinsMoveAwayFromStunnedConflagrationTargetAction::Execute(Event /*event*/)
-{
-    Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
-    Player* target = GetEredarTwinsStunnedConflagrationTarget(alythess, bot);
-    if (!target)
-        return false;
-
-    constexpr float safeDistance = 10.0f;
-    const float distanceToTarget = bot->GetDistance(target);
-    if (distanceToTarget < safeDistance)
-    {
-        botAI->InterruptSpell();
-        return MoveAway(target, safeDistance - distanceToTarget);
-    }
-
-    return false;
-}

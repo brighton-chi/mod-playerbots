@@ -302,14 +302,6 @@ public:
     bool Execute(Event event) override;
 };
 
-class EredarTwinsMoveAwayFromStunnedConflagrationTargetAction : public MovementAction
-{
-public:
-    EredarTwinsMoveAwayFromStunnedConflagrationTargetAction(
-        PlayerbotAI* botAI, std::string const name = "eredar twins move away from stunned conflagration target") : MovementAction(botAI, name) {}
-    bool Execute(Event event) override;
-};
-
 // M'uru
 
 class MuruMisdirectEnemiesToTanksAction : public AttackAction

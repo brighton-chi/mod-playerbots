@@ -291,9 +291,6 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("eredar twins bot has conflagration", {
         NextAction("eredar twins conflagrated bot move from group", ACTION_EMERGENCY + 7) }));
 
-    triggers.push_back(new TriggerNode("eredar twins conflagration target is stunned", {
-        NextAction("eredar twins move away from stunned conflagration target", ACTION_EMERGENCY + 7) }));
-
     // M'uru
     triggers.push_back(new TriggerNode("m'uru void sentinel or entropius has appeared", {
         NextAction("m'uru misdirect enemies to tanks", ACTION_RAID + 3) }));
