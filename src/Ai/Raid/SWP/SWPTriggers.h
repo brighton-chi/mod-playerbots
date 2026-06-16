@@ -292,6 +292,14 @@ public:
     bool IsActive() override;
 };
 
+class EredarTwinsConflagrationTargetIsStunnedTrigger : public Trigger
+{
+public:
+    EredarTwinsConflagrationTargetIsStunnedTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "eredar twins conflagration target is stunned") {}
+    bool IsActive() override;
+};
+
 // M'uru
 
 class MuruVoidSentinelOrEntropiusHasAppearedTrigger : public Trigger

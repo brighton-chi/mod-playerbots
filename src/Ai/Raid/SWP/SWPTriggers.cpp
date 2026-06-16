@@ -488,6 +488,12 @@ bool EredarTwinsBotHasConflagrationTrigger::IsActive()
     return IsEredarTwinsConflagrationTarget(alythess, bot);
 }
 
+bool EredarTwinsConflagrationTargetIsStunnedTrigger::IsActive()
+{
+    Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
+    return GetEredarTwinsStunnedConflagrationTarget(alythess, bot);
+}
+
 // M'uru
 
 bool MuruVoidSentinelOrEntropiusHasAppearedTrigger::IsActive()

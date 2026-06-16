@@ -37,6 +37,7 @@ enum class SunwellSpells : uint32
 
     // Eredar Twins
     SPELL_BLAZE                        = 45235,
+    SPELL_SHADOWFURY                   = 45270,
     SPELL_CONFLAGRATION                = 45342,
     SPELL_FLAME_TOUCHED                = 45348,
     SPELL_FLAME_SEAR                   = 46771,

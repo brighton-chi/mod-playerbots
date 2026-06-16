@@ -245,4 +245,27 @@ bool IsEredarTwinsConflagrationTarget(Unit* alythess, Player* bot)
     return state.delayMs <= now;
 }
 
+Player* GetEredarTwinsStunnedConflagrationTarget(Unit* alythess, Player* bot)
+{
+    if (!alythess)
+        return nullptr;
+
+    Spell* currentSpell = alythess->GetCurrentSpell(CURRENT_GENERIC_SPELL);
+    if (!currentSpell || !currentSpell->m_spellInfo ||
+        currentSpell->m_spellInfo->Id != static_cast<uint32>(SunwellSpells::SPELL_CONFLAGRATION))
+    {
+        return nullptr;
+    }
+
+    Player* target = currentSpell->m_targets.GetUnitTarget() ?
+        currentSpell->m_targets.GetUnitTarget()->ToPlayer() : nullptr;
+    if (!target || target == bot ||
+        !target->HasAura(static_cast<uint32>(SunwellSpells::SPELL_SHADOWFURY)))
+    {
+        return nullptr;
+    }
+
+    return target;
+}
+
 }

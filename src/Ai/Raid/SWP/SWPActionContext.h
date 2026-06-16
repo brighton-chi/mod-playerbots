@@ -122,6 +122,9 @@ public:
         creators["eredar twins conflagrated bot move from group"] =
             &RaidSunwellActionContext::eredar_twins_conflagrated_bot_move_from_group;
 
+        creators["eredar twins move away from stunned conflagration target"] =
+            &RaidSunwellActionContext::eredar_twins_move_away_from_stunned_conflagration_target;
+
         // M'uru
         creators["m'uru misdirect enemies to tanks"] =
             &RaidSunwellActionContext::muru_misdirect_enemies_to_tanks;
@@ -308,6 +311,9 @@ private:
 
     static Action* eredar_twins_conflagrated_bot_move_from_group(
         PlayerbotAI* botAI) { return new EredarTwinsConflagratedBotMoveFromGroupAction(botAI); }
+
+    static Action* eredar_twins_move_away_from_stunned_conflagration_target(
+        PlayerbotAI* botAI) { return new EredarTwinsMoveAwayFromStunnedConflagrationTargetAction(botAI); }
 
     // M'uru
     static Action* muru_misdirect_enemies_to_tanks(

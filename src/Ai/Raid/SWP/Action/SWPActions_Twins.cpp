@@ -401,9 +401,30 @@ bool EredarTwinsConflagratedBotMoveFromGroupAction::Execute(Event /*event*/)
         {
             const float distanceToPlayer = bot->GetExactDist2d(nearestPlayer);
             if (distanceToPlayer < safeDistance)
+            {
+                botAI->InterruptSpell();
                 return MoveAway(nearestPlayer, safeDistance - distanceToPlayer);
+            }
         }
     }
 
     return false;
+}
+
+bool EredarTwinsMoveAwayFromStunnedConflagrationTargetAction::Execute(Event /*event*/)
+{
+    Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
+    Player* target = GetEredarTwinsStunnedConflagrationTarget(alythess, bot);
+    if (!target)
+        return false;
+
+    constexpr float safeDistance = 10.0f;
+    const float distanceToTarget = bot->GetDistance(target);
+    if (distanceToTarget < safeDistance)
+    {
+        botAI->InterruptSpell();
+        return MoveAway(target, safeDistance - distanceTarget);
+    }
+
+    return false
 }
