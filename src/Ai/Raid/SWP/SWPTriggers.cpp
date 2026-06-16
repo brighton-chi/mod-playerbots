@@ -249,10 +249,7 @@ bool FelmystBossEngagedByMeleeOnGroundTrigger::IsActive()
         return false;
     }
 
-    if (felmyst->GetVictim() == bot)
-        return false;
-
-    if (botAI->IsMainTank(bot))
+    if (felmyst->GetVictim() == bot || botAI->IsMainTank(bot))
         return false;
 
     return !GetFelmystEncapsulateTarget(bot) &&
@@ -389,8 +386,14 @@ bool EredarTwinsSacrolashEngagedByTwoTanksTrigger::IsActive()
     if (!botAI->IsTank(bot) || bot->GetPositionZ() > EREDAR_TWINS_BALCONY_Z)
         return false;
 
-    return AI_VALUE2(Unit*, "find target", "lady sacrolash") &&
-           IsSacrolashTank(botAI, bot);
+    if (!AI_VALUE2(Unit*, "find target", "lady sacrolash") ||
+        IsSacrolashTank(botAI, bot))
+    {
+        return false;
+    }
+
+    Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
+    return !GetEredarTwinsStunnedConflagrationTarget(alythess, bot);
 }
 
 bool EredarTwinsAlythessEngagedByFirstAssistTankTrigger::IsActive()
@@ -411,8 +414,11 @@ bool EredarTwinsBossesEngagedByRangedTrigger::IsActive()
     if (!alythess && !AI_VALUE2(Unit*, "find target", "lady sacrolash"))
         return false;
 
-    if (IsEredarTwinsConflagrationTarget(alythess, bot))
+    if (IsEredarTwinsConflagrationTarget(alythess, bot) ||
+        GetEredarTwinsStunnedConflagrationTarget(alythess, bot))
+    {
         return false;
+    }
 
     return true;
 }

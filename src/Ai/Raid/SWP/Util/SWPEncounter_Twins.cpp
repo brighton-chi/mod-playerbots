@@ -259,8 +259,8 @@ Player* GetEredarTwinsStunnedConflagrationTarget(Unit* alythess, Player* bot)
 
     Player* target = currentSpell->m_targets.GetUnitTarget() ?
         currentSpell->m_targets.GetUnitTarget()->ToPlayer() : nullptr;
-    if (!target || target == bot ||
-        !target->HasAura(static_cast<uint32>(SunwellSpells::SPELL_SHADOWFURY)))
+    if (!target || !target->HasAura(static_cast<uint32>(SunwellSpells::SPELL_SHADOWFURY)) ||
+        target == bot || target->GetDistance(bot) > 10.0f)
     {
         return nullptr;
     }

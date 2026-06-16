@@ -38,6 +38,14 @@ void AppendFelmystVaporPhaseMeleeExclusions(PlayerbotAI* botAI, GuidSet& exclusi
     }
 }
 
+void AppendEredarTwinsAttackerExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
+{
+    Unit* sacrolash = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "lady sacrolash")->Get();
+    Unit* alythess = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "grand warlock alythess")->Get();
+    if (sacrolash && alythess)
+        exclusions.insert(alythess->GetGUID());
+}
+
 void AppendMuruDarkFiendExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 {
     Unit* muru = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "m'uru")->Get();
@@ -126,12 +134,25 @@ void AppendKiljaedenShieldOrbExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
     }
 }
 
-void AppendEredarTwinsAttackerExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
+void AppendKiljaedenSinisterReflectionExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 {
-    Unit* sacrolash = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "lady sacrolash")->Get();
-    Unit* alythess = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "grand warlock alythess")->Get();
-    if (sacrolash && alythess)
-        exclusions.insert(alythess->GetGUID());
+    Unit* kiljaeden = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "kil'jaeden")->Get();
+    if (!kiljaeden)
+        return;
+
+    for (ObjectGuid const guid : botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->Get())
+    {
+        Unit* attacker = botAI->GetUnit(guid);
+        if (!attacker)
+            continue;
+
+        if (attacker->GetEntry() != static_cast<uint32>(SunwellNpcs::NPC_SINISTER_REFLECTION))
+            continue;
+
+        Unit* victim = attacker->GetVictim();
+        if (!victim || !victim->IsPlayer() || !botAI->IsTank(victim->ToPlayer()))
+            exclusions.insert(guid);
+    }
 }
 
 }
@@ -149,10 +170,12 @@ void RaidSunwellStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValu
             break;
         case TargetValueExclusionType::Dps:
             AppendMuruMeleeDpsExclusions(botAI, exclusions);
+            AppendKiljaedenSinisterReflectionExclusions(botAI, exclusions);
             break;
         case TargetValueExclusionType::Attacker:
             AppendEredarTwinsAttackerExclusions(botAI, exclusions);
             AppendMuruMeleeDpsExclusions(botAI, exclusions);
+            AppendKiljaedenSinisterReflectionExclusions(botAI, exclusions);
             break;
         case TargetValueExclusionType::None:
             break;
