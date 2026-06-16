@@ -119,8 +119,9 @@ bool MuruPositionRangedAction::Execute(Event /*event*/)
     }
 
     constexpr float safeDistFromPlayer = 4.0f;
+    constexpr float uint32 minInterval = 1000;
     if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
-        return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer);
+        return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer, minInterval);
 
     return false;
 }
@@ -265,9 +266,9 @@ Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(
     if (!muru && !entropius)
         return nullptr;
 
-    const bool isInitialMuruPhase = muru && muru->GetHealth() > 1;
+    const bool isMuruPhase = muru && muru->GetHealth() > 1;
     const bool darknessActive =
-        isInitialMuruPhase && TryGetMuruDarknessActiveState(bot, muru);
+        isMuruPhase && TryGetMuruDarknessActiveState(bot, muru);
 
     Unit* voidSentinel = SelectMuruEncounterTarget(
         currentTarget, isMeleeDps,
@@ -294,7 +295,7 @@ Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(
             return false;
 
         constexpr float rangedInitialPhaseTargetDistance = 30.0f;
-        if (isRangedDps && isInitialMuruPhase &&
+        if (isRangedDps && isMuruPhase &&
             bot->GetExactDist2d(unit) > rangedInitialPhaseTargetDistance)
         {
             return false;
@@ -323,7 +324,7 @@ Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(
                 if (!isMeleeDps)
                     return true;
 
-                return darknessActive || !isInitialMuruPhase;
+                return darknessActive || !isMuruPhase;
 
             default:
                 return false;
@@ -351,7 +352,7 @@ Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(
     }
     else
     {
-        if (isInitialMuruPhase)
+        if (isMuruPhase)
         {
             priorityTargets = {
                 { static_cast<uint32>(SunwellNpcs::NPC_MURU), muru },
@@ -523,7 +524,7 @@ bool MuruDontTouchTheDarkFiendAction::Execute(Event /*event*/)
     if (!darkness)
         return false;
 
-    constexpr float safeDistance = 8.0f;
+    constexpr float safeDistance = 10.0f;
     const float currentDistance = bot->GetDistance2d(darkness);
     if (currentDistance < safeDistance &&
         MoveAway(darkness, safeDistance - currentDistance))
@@ -556,8 +557,8 @@ bool MuruTanksMoveSentinelToSafePositionAction::Execute(Event /*event*/)
 
     if (voidSentinel->GetVictim() == bot)
     {
-        const float distToPosition = bot->GetExactDist2d(tankPosition->GetPositionX(),
-                                                         tankPosition->GetPositionY());
+        const float distToPosition = 
+            bot->GetExactDist2d(tankPosition->GetPositionX(), tankPosition->GetPositionY());
         if (distToPosition > 2.0f)
         {
             const float dX = tankPosition->GetPositionX() - bot->GetPositionX();
