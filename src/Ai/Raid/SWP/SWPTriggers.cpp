@@ -387,7 +387,7 @@ bool EredarTwinsSacrolashEngagedByTwoTanksTrigger::IsActive()
         return false;
 
     if (!AI_VALUE2(Unit*, "find target", "lady sacrolash") ||
-        IsSacrolashTank(botAI, bot))
+        !IsSacrolashTank(botAI, bot))
     {
         return false;
     }

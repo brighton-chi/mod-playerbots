@@ -136,8 +136,7 @@ void AppendKiljaedenShieldOrbExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 
 void AppendKiljaedenSinisterReflectionExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 {
-    Unit* kiljaeden = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "kil'jaeden")->Get();
-    if (!kiljaeden)
+    if (!botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "kil'jaeden")->Get())
         return;
 
     for (ObjectGuid const guid : botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->Get())
