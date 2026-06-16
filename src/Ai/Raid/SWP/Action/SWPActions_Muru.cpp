@@ -517,23 +517,29 @@ bool MuruKillDarkFiendsWithDispelAction::Execute(Event /*event*/)
 
 bool MuruDontTouchTheDarkFiendAction::Execute(Event /*event*/)
 {
+    Unit* hazard = nullptr;
+    Unit* darkFiend = AI_VALUE2(Unit*, "find target", "dark fiend");
     constexpr float searchDistance = 15.0f;
     Creature* darkness = bot->FindNearestCreature(
         static_cast<uint32>(SunwellNpcs::NPC_DARKNESS), searchDistance, true);
 
-    if (!darkness)
+    if (darkFiend)
+        hazard = darkFiend;
+    else if (darkness)
+        hazard = darkness;
+    else
         return false;
 
     constexpr float safeDistance = 10.0f;
-    const float currentDistance = bot->GetDistance2d(darkness);
-    if (currentDistance < safeDistance &&
-        MoveAway(darkness, safeDistance - currentDistance))
+    const float distFromHazard = bot->GetDistance2d(hazard);
+    if (distFromHazard < safeDistance &&
+        MoveAway(hazard, safeDistance - distFromHazard))
     {
         return true;
     }
 
     const float randomAngle = static_cast<float>(urand(0, 7)) * ANGLE_45_DEG;
-    return Move(randomAngle, safeDistance - currentDistance);
+    return Move(randomAngle, safeDistance - distFromHazard);
 }
 
 bool MuruTanksMoveSentinelToSafePositionAction::Execute(Event /*event*/)

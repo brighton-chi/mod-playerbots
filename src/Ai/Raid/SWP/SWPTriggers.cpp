@@ -575,6 +575,9 @@ bool MuruEntropiusMakesMiniDarknessTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "entropius"))
         return false;
 
+    if (AI_VALUE2(Unit*, "find target", "dark fiend"))
+        return true;
+
     constexpr float searchDistance = 15.0f;
     return bot->FindNearestCreature(
         static_cast<uint32>(SunwellNpcs::NPC_DARKNESS), searchDistance, true);
