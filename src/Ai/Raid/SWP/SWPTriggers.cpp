@@ -386,14 +386,8 @@ bool EredarTwinsSacrolashEngagedByTwoTanksTrigger::IsActive()
     if (!botAI->IsTank(bot) || bot->GetPositionZ() > EREDAR_TWINS_BALCONY_Z)
         return false;
 
-    if (!AI_VALUE2(Unit*, "find target", "lady sacrolash") ||
-        !IsSacrolashTank(botAI, bot))
-    {
-        return false;
-    }
-
-    Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
-    return !GetEredarTwinsStunnedConflagrationTarget(alythess, bot);
+    return AI_VALUE2(Unit*, "find target", "lady sacrolash") &&
+           IsSacrolashTank(botAI, bot);
 }
 
 bool EredarTwinsAlythessEngagedByFirstAssistTankTrigger::IsActive()
@@ -414,13 +408,7 @@ bool EredarTwinsBossesEngagedByRangedTrigger::IsActive()
     if (!alythess && !AI_VALUE2(Unit*, "find target", "lady sacrolash"))
         return false;
 
-    if (IsEredarTwinsConflagrationTarget(alythess, bot) ||
-        GetEredarTwinsStunnedConflagrationTarget(alythess, bot))
-    {
-        return false;
-    }
-
-    return true;
+    return !IsEredarTwinsConflagrationTarget(alythess, bot);
 }
 
 bool EredarTwinsOnlyOneBossRemainsTrigger::IsActive()
