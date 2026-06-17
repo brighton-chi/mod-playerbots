@@ -141,6 +141,9 @@ std::unordered_map<uint32, FelmystIncomingEncapsulateState>
 std::unordered_map<ObjectGuid, FelmystFogCrateStuckState>
     felmystFogCrateStuckStates;
 
+namespace
+{
+
 void ResetFelmystDemonicVaporFlightState(uint32 instanceId)
 {
     felmystDemonicVaporRegionIndices.erase(instanceId);
@@ -350,20 +353,6 @@ bool TryGetFelmystMovementDestination(Unit* felmyst, Position& destination)
     return true;
 }
 
-bool TryGetFelmystLandingDestination(Unit* felmyst, Position& destination)
-{
-    if (!TryGetFelmystMovementDestination(felmyst, destination))
-        return false;
-
-    constexpr float landingMatchDistance = 3.0f;
-    return destination.GetExactDist2d(
-               FELMYST_HIGH_Y_LANDING_POSITION.GetPositionX(),
-               FELMYST_HIGH_Y_LANDING_POSITION.GetPositionY()) <= landingMatchDistance ||
-           destination.GetExactDist2d(
-               FELMYST_LOW_Y_LANDING_POSITION.GetPositionX(),
-               FELMYST_LOW_Y_LANDING_POSITION.GetPositionY()) <= landingMatchDistance;
-}
-
 FelmystFogLocation GetFelmystCurrentFogLocation(Unit* felmyst)
 {
     if (!felmyst)
@@ -383,6 +372,22 @@ FelmystFogLocation GetFelmystDestinationFogLocation(Unit* felmyst)
     return GetFelmystFogLocationFromPosition(
         destination.GetPositionX(), destination.GetPositionY(),
         FELMYST_FOG_DESTINATION_MATCH_DISTANCE);
+}
+
+}
+
+bool TryGetFelmystLandingDestination(Unit* felmyst, Position& destination)
+{
+    if (!TryGetFelmystMovementDestination(felmyst, destination))
+        return false;
+
+    constexpr float landingMatchDistance = 3.0f;
+    return destination.GetExactDist2d(
+               FELMYST_HIGH_Y_LANDING_POSITION.GetPositionX(),
+               FELMYST_HIGH_Y_LANDING_POSITION.GetPositionY()) <= landingMatchDistance ||
+           destination.GetExactDist2d(
+               FELMYST_LOW_Y_LANDING_POSITION.GetPositionX(),
+               FELMYST_LOW_Y_LANDING_POSITION.GetPositionY()) <= landingMatchDistance;
 }
 
 bool TryGetFelmystPostThirdPassWindow(Unit* felmyst, FelmystFogLane& lane)

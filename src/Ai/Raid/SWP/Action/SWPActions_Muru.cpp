@@ -119,8 +119,9 @@ bool MuruPositionRangedAction::Execute(Event /*event*/)
     }
 
     constexpr float safeDistFromPlayer = 4.0f;
+    constexpr uint32 minInterval = 1000;
     if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
-        return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer);
+        return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer, minInterval);
 
     return false;
 }
@@ -265,9 +266,9 @@ Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(
     if (!muru && !entropius)
         return nullptr;
 
-    const bool isInitialMuruPhase = muru && muru->GetHealth() > 1;
+    const bool isMuruPhase = muru && muru->GetHealth() > 1;
     const bool darknessActive =
-        isInitialMuruPhase && TryGetMuruDarknessActiveState(bot, muru);
+        isMuruPhase && TryGetMuruDarknessActiveState(bot, muru);
 
     Unit* voidSentinel = SelectMuruEncounterTarget(
         currentTarget, isMeleeDps,
@@ -294,7 +295,7 @@ Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(
             return false;
 
         constexpr float rangedInitialPhaseTargetDistance = 30.0f;
-        if (isRangedDps && isInitialMuruPhase &&
+        if (isRangedDps && isMuruPhase &&
             bot->GetExactDist2d(unit) > rangedInitialPhaseTargetDistance)
         {
             return false;
@@ -323,7 +324,7 @@ Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(
                 if (!isMeleeDps)
                     return true;
 
-                return darknessActive || !isInitialMuruPhase;
+                return darknessActive || !isMuruPhase;
 
             default:
                 return false;
@@ -351,7 +352,7 @@ Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(
     }
     else
     {
-        if (isInitialMuruPhase)
+        if (isMuruPhase)
         {
             priorityTargets = {
                 { static_cast<uint32>(SunwellNpcs::NPC_MURU), muru },
@@ -516,23 +517,29 @@ bool MuruKillDarkFiendsWithDispelAction::Execute(Event /*event*/)
 
 bool MuruDontTouchTheDarkFiendAction::Execute(Event /*event*/)
 {
+    Unit* hazard = nullptr;
+    Unit* darkFiend = AI_VALUE2(Unit*, "find target", "dark fiend");
     constexpr float searchDistance = 15.0f;
     Creature* darkness = bot->FindNearestCreature(
         static_cast<uint32>(SunwellNpcs::NPC_DARKNESS), searchDistance, true);
 
-    if (!darkness)
+    if (darkFiend)
+        hazard = darkFiend;
+    else if (darkness)
+        hazard = darkness;
+    else
         return false;
 
-    constexpr float safeDistance = 8.0f;
-    const float currentDistance = bot->GetDistance2d(darkness);
-    if (currentDistance < safeDistance &&
-        MoveAway(darkness, safeDistance - currentDistance))
+    constexpr float safeDistance = 10.0f;
+    const float distFromHazard = bot->GetDistance2d(hazard);
+    if (distFromHazard < safeDistance &&
+        MoveAway(hazard, safeDistance - distFromHazard))
     {
         return true;
     }
 
     const float randomAngle = static_cast<float>(urand(0, 7)) * ANGLE_45_DEG;
-    return Move(randomAngle, safeDistance - currentDistance);
+    return Move(randomAngle, safeDistance - distFromHazard);
 }
 
 bool MuruTanksMoveSentinelToSafePositionAction::Execute(Event /*event*/)
@@ -556,8 +563,8 @@ bool MuruTanksMoveSentinelToSafePositionAction::Execute(Event /*event*/)
 
     if (voidSentinel->GetVictim() == bot)
     {
-        const float distToPosition = bot->GetExactDist2d(tankPosition->GetPositionX(),
-                                                         tankPosition->GetPositionY());
+        const float distToPosition =
+            bot->GetExactDist2d(tankPosition->GetPositionX(), tankPosition->GetPositionY());
         if (distToPosition > 2.0f)
         {
             const float dX = tankPosition->GetPositionX() - bot->GetPositionX();
@@ -605,12 +612,6 @@ const Position* MuruTanksMoveSentinelToSafePositionAction::GetAssignedVoidSentin
     const Position& north = MURU_VOID_SENTINEL_N_TANK_POSITION;
     const Position& east = MURU_VOID_SENTINEL_E_TANK_POSITION;
     return assignmentItr->second == 0 ? &north : &east;
-}
-
-bool MuruSetGroundingTotemInFirstAssistTankGroupAction::Execute(Event /*event*/)
-{
-    return botAI->CanCastSpell("grounding totem", bot) &&
-           botAI->CastSpell("grounding totem", bot);
 }
 
 bool MuruSecondAssistTankGuardRangedAction::Execute(Event /*event*/)

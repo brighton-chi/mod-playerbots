@@ -14,6 +14,7 @@
 
 namespace
 {
+
 using namespace SunwellHelpers;
 
 void AppendFelmystVaporPhaseMeleeExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
@@ -35,6 +36,14 @@ void AppendFelmystVaporPhaseMeleeExclusions(PlayerbotAI* botAI, GuidSet& exclusi
     {
         exclusions.insert(felmyst->GetGUID());
     }
+}
+
+void AppendEredarTwinsAttackerExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
+{
+    Unit* sacrolash = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "lady sacrolash")->Get();
+    Unit* alythess = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "grand warlock alythess")->Get();
+    if (sacrolash && alythess)
+        exclusions.insert(alythess->GetGUID());
 }
 
 void AppendMuruDarkFiendExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
@@ -125,13 +134,26 @@ void AppendKiljaedenShieldOrbExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
     }
 }
 
-void AppendEredarTwinsAttackerExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
+void AppendKiljaedenSinisterReflectionExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 {
-    Unit* sacrolash = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "lady sacrolash")->Get();
-    Unit* alythess = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "grand warlock alythess")->Get();
-    if (sacrolash && alythess)
-        exclusions.insert(alythess->GetGUID());
+    if (!botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "kil'jaeden")->Get())
+        return;
+
+    for (ObjectGuid const guid : botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->Get())
+    {
+        Unit* attacker = botAI->GetUnit(guid);
+        if (!attacker)
+            continue;
+
+        if (attacker->GetEntry() != static_cast<uint32>(SunwellNpcs::NPC_SINISTER_REFLECTION))
+            continue;
+
+        Unit* victim = attacker->GetVictim();
+        if (!victim || !victim->IsPlayer() || !botAI->IsTank(victim->ToPlayer()))
+            exclusions.insert(guid);
+    }
 }
+
 }
 
 void RaidSunwellStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExclusionType type) const
@@ -147,10 +169,12 @@ void RaidSunwellStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValu
             break;
         case TargetValueExclusionType::Dps:
             AppendMuruMeleeDpsExclusions(botAI, exclusions);
+            AppendKiljaedenSinisterReflectionExclusions(botAI, exclusions);
             break;
         case TargetValueExclusionType::Attacker:
             AppendEredarTwinsAttackerExclusions(botAI, exclusions);
             AppendMuruMeleeDpsExclusions(botAI, exclusions);
+            AppendKiljaedenSinisterReflectionExclusions(botAI, exclusions);
             break;
         case TargetValueExclusionType::None:
             break;
@@ -185,9 +209,6 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("kalecgos humanoid form tanks sathrovarr", {
         NextAction("kalecgos sathrovarr tank stand with kalec", ACTION_RAID + 2) }));
-
-    // triggers.push_back(new TriggerNode("kalecgos both bosses must be defeated", {
-    //     NextAction("kalecgos determine boss to attack", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("kalecgos bots don't observe gravity", {
         NextAction("kalecgos return to spectral realm ground", ACTION_EMERGENCY + 10) }));
@@ -283,9 +304,6 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("m'uru void sentinel pulses shadow", {
         NextAction("m'uru tanks move sentinel to safe position", ACTION_RAID + 3) }));
 
-    // triggers.push_back(new TriggerNode("m'uru void sentinel casts void blast on tank", {
-    //     NextAction("m'uru set grounding totem in first assist tank group", ACTION_RAID + 3) }));
-
     triggers.push_back(new TriggerNode("m'uru adds spawn at entrance", {
         NextAction("m'uru second assist tank guard ranged", ACTION_RAID + 1) }));
 
@@ -364,6 +382,7 @@ void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     // Brutallus
     multipliers.push_back(new BrutallusControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new BrutallusControlMovementMultiplier(botAI));
+    multipliers.push_back(new BrutallusNoKillingSpreeWhenNearbyBurnMultiplier(botAI));
     multipliers.push_back(new BrutallusNoTankingWithTooManyMeteorStacksMultiplier(botAI));
     multipliers.push_back(new BrutallusDelayCooldownsMultiplier(botAI));
 
@@ -388,7 +407,6 @@ void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new MuruDisableDefaultTargetingMultiplier(botAI));
     multipliers.push_back(new MuruControlMovementMultiplier(botAI));
     multipliers.push_back(new MuruControlMisdirectionMultiplier(botAI));
-    multipliers.push_back(new MuruUseOnlyGroundingTotemMultiplier(botAI));
     multipliers.push_back(new MuruDelayCooldownsMultiplier(botAI));
 
     // Kil'jaeden <The Deceiver>

@@ -29,6 +29,9 @@ std::unordered_map<ObjectGuid, KalecgosRealmState>
 std::unordered_set<ObjectGuid>
     hasReachedKalecgosInitialRangedPosition;
 
+namespace
+{
+
 void ClearExpiredKalecgosActiveRift(KalecgosEncounterState& state, uint32 now)
 {
     if (!state.activeRiftOpenedMs)
@@ -598,6 +601,8 @@ uint8 GetLeastFilledGroup(
     }
 
     return GetLeastFilledGroup(groupSizes);
+}
+
 }
 
 bool IsKalecgosDecurser(PlayerbotAI* botAI, Player* bot)

@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <unordered_set>
 #include <unordered_map>
 
 #include "PlayerbotAI.h"
@@ -50,6 +51,7 @@ float GetCenteredArcSlotAngleOffset(
 
     return angleOffset;
 }
+
 uint32 GetKiljaedenDragonManualCooldown(uint32 spellId)
 {
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
@@ -136,12 +138,6 @@ float GetKiljaedenNearestArmageddonDistance(
 
 }
 
-std::unordered_map<ObjectGuid::LowType, KiljaedenDarknessShieldState>&
-GetKiljaedenDarknessShieldStates()
-{
-    return kiljaedenDarknessShieldStates;
-}
-
 const Position KILJAEDEN_TANK_POSITION =     { 1704.729f, 634.891f, 27.787f };
 const Position KILJAEDEN_S_MELEE_POSITION =  { 1689.487f, 632.119f, 27.823f };
 const Position KILJAEDEN_E_MELEE_POSITION =  { 1700.542f, 619.589f, 27.786f };
@@ -156,6 +152,8 @@ uint32 const KILJAEDEN_DRAGON_ORB_ENTRIES[4] =
     static_cast<uint32>(SunwellObjects::GO_DRAGON_ORB_4)
 };
 
+std::unordered_set<ObjectGuid> kiljaedenTrackedArmageddonTargets;
+
 std::unordered_map<uint32, std::vector<KiljaedenArmageddon>>
     kiljaedenArmageddons;
 
@@ -167,6 +165,12 @@ std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
 
 std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
     kiljaedenRangedArmageddonAssignments;
+
+std::unordered_map<ObjectGuid::LowType, KiljaedenDarknessShieldState>&
+    GetKiljaedenDarknessShieldStates()
+{
+    return kiljaedenDarknessShieldStates;
+}
 
 void PruneExpiredKiljaedenArmageddons(uint32 instanceId)
 {

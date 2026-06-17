@@ -170,7 +170,10 @@ bool VolatileFiendKeepEnemyAwayFromGroupAction::Execute(Event /*event*/)
         constexpr float safeDistance = 20.0f;
         const float currentDistance = bot->GetDistance(volatileFiend);
         if (currentDistance < safeDistance)
+        {
+            botAI->InterruptSpell();
             return MoveAway(volatileFiend, safeDistance - currentDistance);
+        }
     }
 
     return false;

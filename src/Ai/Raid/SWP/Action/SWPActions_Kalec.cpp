@@ -19,46 +19,36 @@ bool KalecgosTankPositionBossAction::Execute(Event event)
     if (!kalecgos)
         return false;
 
-    const Position& position = KALECGOS_TANK_POSITION;
-    const float distToPosition = bot->GetExactDist2d(position.GetPositionX(),
-                                                     position.GetPositionY());
-    auto const moveTowardTankPosition = [&]()
-    {
-        const float dX = position.GetPositionX() - bot->GetPositionX();
-        const float dY = position.GetPositionY() - bot->GetPositionY();
-        const float moveDist = std::min(5.0f, distToPosition);
-        const float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
-        const float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
-
-        return MoveTo(SUNWELL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-                      false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
-    };
-
-    Player* currentVictimPlayer = kalecgos->GetVictim() ? kalecgos->GetVictim()->ToPlayer() : nullptr;
-    const bool otherTankHasAggro =
-        currentVictimPlayer && currentVictimPlayer != bot && botAI->IsTank(currentVictimPlayer);
-
-    if (otherTankHasAggro)
-    {
-        if (distToPosition > 3.0f)
-            return moveTowardTankPosition();
-    }
-
     if (AI_VALUE(Unit*, "current target") != kalecgos)
         return Attack(kalecgos);
 
-    if (kalecgos->GetVictim() != bot)
-    {
-        if (otherTankHasAggro && distToPosition > 3.0f)
-            return moveTowardTankPosition();
-
+    // If the fight just started, taunt (if needed) before moving
+    if (kalecgos->GetVictim() != bot && kalecgos->GetHealthPct() > 90.0f)
         return botAI->DoSpecificAction("taunt spell", event, true);
-    }
-    else if (kalecgos->GetVictim() == bot && bot->IsWithinMeleeRange(kalecgos))
+    
+    const Position& position = KALECGOS_TANK_POSITION;
+    const float distToPosition =
+        bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+
+    if (distToPosition > 3.0f)
     {
-        if (distToPosition > 3.0f)
-            return moveTowardTankPosition();
+        float maxMoveDist = kalecgos->GetVictim() == bot ? 5.0f : 10.0f;
+        const float moveDist = std::min(maxMoveDist, distToPosition);
+
+        const float dX = position.GetPositionX() - bot->GetPositionX();
+        const float dY = position.GetPositionY() - bot->GetPositionY();
+        const float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+        const float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
+
+        bool backwards = kalecgos->GetVictim() == bot;
+        return MoveTo(SUNWELL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
+                      false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
     }
+
+    // Once the fight is in progress, move to the tank position before taunting
+    // during tank swaps to avoid turning the boss
+    if (kalecgos->GetVictim() != bot)
+        return botAI->DoSpecificAction("taunt spell", event, true);
 
     return false;
 }
@@ -126,16 +116,19 @@ bool KalecgosDisperseRangedAction::Execute(Event /*event*/)
                           MovementPriority::MOVEMENT_COMBAT);
     }
 
-    constexpr float safeDistFromPlayer = 6.0f;
-    if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
-        return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer);
-
     if (Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos"))
     {
-        constexpr float safeDistFromBoss = 20.0f;
+        constexpr float safeDistFromDragon = 20.0f;
         constexpr uint32 minInterval = 0;
-        if (bot->GetExactDist2d(kalecgos) < safeDistFromBoss)
-            return FleePosition(kalecgos->GetPosition(), safeDistFromBoss, minInterval);
+        if (bot->GetExactDist2d(kalecgos) < safeDistFromDragon)
+            return FleePosition(kalecgos->GetPosition(), safeDistFromDragon, minInterval);
+    }
+
+    constexpr float safeDistFromPlayer = 6.0f;
+    if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
+    {
+        constexpr uint32 minInterval = 1000;
+        return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer, minInterval);
     }
 
     return false;
@@ -167,7 +160,6 @@ bool KalecgosSathrovarrTankStandWithKalecAction::Execute(Event /*event*/)
     constexpr float searchRadius = 20.0f;
     Unit* kalec = bot->FindNearestCreature(
         static_cast<uint32>(SunwellNpcs::NPC_KALECGOS_HUMANOID), searchRadius);
-
     if (!kalec)
         return false;
 
@@ -182,39 +174,8 @@ bool KalecgosSathrovarrTankStandWithKalecAction::Execute(Event /*event*/)
     return false;
 }
 
-bool KalecgosDetermineBossToAttackAction::Execute(Event /*event*/)
-{
-    Unit* target = nullptr;
-    if (Unit* sathrovarr = AI_VALUE2(Unit*, "find target", "sathrovarr the corruptor"))
-    {
-        target = sathrovarr;
-        MarkTargetWithStar(bot, sathrovarr);
-        SetRtiTarget(botAI, "star", sathrovarr);
-    }
-    else if (Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos"))
-    {
-        target = kalecgos;
-        MarkTargetWithDiamond(bot, kalecgos);
-        SetRtiTarget(botAI, "diamond", kalecgos);
-    }
-    else
-    {
-        return false;
-    }
-
-    if (AI_VALUE(Unit*, "current target") != target)
-        return Attack(target);
-
-    return false;
-}
-
 bool KalecgosReturnToSpectralRealmGroundAction::Execute(Event /*event*/)
 {
-    if (bot->TeleportTo(SUNWELL_MAP_ID, bot->GetPositionX(), bot->GetPositionY(),
-                        KALECGOS_SPECTRAL_REALM_Z, bot->GetOrientation()))
-    {
-        return true;
-    }
-
-    return false;
+    return bot->TeleportTo(SUNWELL_MAP_ID, bot->GetPositionX(), bot->GetPositionY(),
+                           KALECGOS_SPECTRAL_REALM_Z, bot->GetOrientation());
 }

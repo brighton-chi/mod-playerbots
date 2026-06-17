@@ -117,23 +117,6 @@ bool KalecgosHumanoidFormTanksSathrovarrTrigger::IsActive()
            AI_VALUE2(Unit*, "find target", "sathrovarr the corruptor");
 }
 
-bool KalecgosBothBossesMustBeDefeatedTrigger::IsActive()
-{
-    if (botAI->IsHeal(bot) || AI_VALUE(Unit*, "current target"))
-        return false;
-
-    if (!AI_VALUE2(Unit*, "find target", "kalecgos") &&
-        !AI_VALUE2(Unit*, "find target", "sathrovarr the corruptor"))
-    {
-        return false;
-    }
-
-    if (ShouldEnterKalecgosSpectralRift(botAI, bot))
-        return false;
-
-    return GetKalecgosCurrentTank(botAI, bot) != bot;
-}
-
 bool KalecgosBotsDontObserveGravityTrigger::IsActive()
 {
     return bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_REALM)) &&
@@ -266,10 +249,7 @@ bool FelmystBossEngagedByMeleeOnGroundTrigger::IsActive()
         return false;
     }
 
-    if (felmyst->GetVictim() == bot)
-        return false;
-
-    if (botAI->IsMainTank(bot))
+    if (felmyst->GetVictim() == bot || botAI->IsMainTank(bot))
         return false;
 
     return !GetFelmystEncapsulateTarget(bot) &&
@@ -428,10 +408,7 @@ bool EredarTwinsBossesEngagedByRangedTrigger::IsActive()
     if (!alythess && !AI_VALUE2(Unit*, "find target", "lady sacrolash"))
         return false;
 
-    if (IsEredarTwinsConflagrationTarget(alythess, bot))
-        return false;
-
-    return true;
+    return !IsEredarTwinsConflagrationTarget(alythess, bot);
 }
 
 bool EredarTwinsOnlyOneBossRemainsTrigger::IsActive()
@@ -558,23 +535,6 @@ bool MuruVoidSentinelPulsesShadowTrigger::IsActive()
     return muru && muru->GetHealth() > 1;
 }
 
-bool MuruVoidSentinelCastsVoidBlastOnTankTrigger::IsActive()
-{
-    if (bot->getClass() != CLASS_SHAMAN)
-        return false;
-
-    if (!AI_VALUE2(Unit*, "find target", "void sentinel"))
-        return false;
-
-    if (bot->HasAura(static_cast<uint32>(
-            SunwellSpells::SPELL_GROUNDING_TOTEM_EFFECT)))
-    {
-        return false;
-    }
-
-    return IsFirstAssistTankInSameGroup(botAI, bot);
-}
-
 bool MuruAddsSpawnAtEntranceTrigger::IsActive()
 {
     Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
@@ -602,6 +562,9 @@ bool MuruEntropiusMakesMiniDarknessTrigger::IsActive()
 {
     if (!AI_VALUE2(Unit*, "find target", "entropius"))
         return false;
+
+    if (AI_VALUE2(Unit*, "find target", "dark fiend"))
+        return true;
 
     constexpr float searchDistance = 15.0f;
     return bot->FindNearestCreature(

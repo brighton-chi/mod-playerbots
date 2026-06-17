@@ -6,6 +6,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include "SWPData.h"
 #include "SWPEncounter_Brut.h"
 #include "SWPEncounter_Twins.h"
 #include "SWPEncounter_Felmyst.h"
@@ -19,12 +20,6 @@
 #include "Spell.h"
 
 using namespace SunwellHelpers;
-
-static constexpr uint32 SPELL_FELMYST_STRAFE_TOP    = 45585;
-static constexpr uint32 SPELL_FELMYST_STRAFE_MIDDLE = 45633;
-static constexpr uint32 SPELL_FELMYST_STRAFE_BOTTOM = 45635;
-
-static std::unordered_set<ObjectGuid> kiljaedenTrackedArmageddonTargets;
 
 static PlayerbotAI* FindFirstSunwellCombatBotInGroup(Player* referencePlayer)
 {
@@ -318,9 +313,9 @@ public:
         Spell* spell, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
     {
         if (spellInfo->Id == static_cast<uint32>(SunwellSpells::SPELL_FOG_OF_CORRUPTION) ||
-            spellInfo->Id == SPELL_FELMYST_STRAFE_TOP ||
-            spellInfo->Id == SPELL_FELMYST_STRAFE_MIDDLE ||
-            spellInfo->Id == SPELL_FELMYST_STRAFE_BOTTOM)
+            spellInfo->Id == static_cast<uint32>(SunwellSpells::SPELL_FELMYST_STRAFE_TOP) ||
+            spellInfo->Id == static_cast<uint32>(SunwellSpells::SPELL_FELMYST_STRAFE_MIDDLE) ||
+            spellInfo->Id == static_cast<uint32>(SunwellSpells::SPELL_FELMYST_STRAFE_BOTTOM))
         {
             Player* targetPlayer = GetFirstPlayerSpellTarget(spell, caster);
             Player* groupReference = targetPlayer;

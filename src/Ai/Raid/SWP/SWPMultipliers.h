@@ -79,6 +79,14 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class BrutallusNoKillingSpreeWhenNearbyBurnMultiplier : public Multiplier
+{
+public:
+    BrutallusNoKillingSpreeWhenNearbyBurnMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "brutallus no killing spree when nearby burn") {}
+    virtual float GetValue(Action* action);
+};
+
 class BrutallusNoTankingWithTooManyMeteorStacksMultiplier : public Multiplier
 {
 public:
@@ -226,14 +234,6 @@ class MuruControlMovementMultiplier : public Multiplier
 public:
     MuruControlMovementMultiplier(PlayerbotAI* botAI) : Multiplier(
         botAI, "m'uru control movement") {}
-    virtual float GetValue(Action* action);
-};
-
-class MuruUseOnlyGroundingTotemMultiplier : public Multiplier
-{
-public:
-    MuruUseOnlyGroundingTotemMultiplier(PlayerbotAI* botAI) : Multiplier(
-        botAI, "m'uru use only grounding totem") {}
     virtual float GetValue(Action* action);
 };
 

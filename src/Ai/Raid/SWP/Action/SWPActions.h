@@ -82,14 +82,6 @@ public:
     bool Execute(Event event) override;
 };
 
-class KalecgosDetermineBossToAttackAction : public AttackAction
-{
-public:
-    KalecgosDetermineBossToAttackAction(
-        PlayerbotAI* botAI, std::string const name = "kalecgos determine boss to attack") : AttackAction(botAI, name) {}
-    bool Execute(Event event) override;
-};
-
 class KalecgosReturnToSpectralRealmGroundAction : public MovementAction
 {
 public:
@@ -380,14 +372,6 @@ public:
 
 private:
     const Position* GetAssignedVoidSentinelTankPosition(Unit* voidSentinel) const;
-};
-
-class MuruSetGroundingTotemInFirstAssistTankGroupAction : public Action
-{
-public:
-    MuruSetGroundingTotemInFirstAssistTankGroupAction(
-        PlayerbotAI* botAI, std::string const name = "m'uru set grounding totem in first assist tank group") : Action(botAI, name) {}
-    bool Execute(Event event) override;
 };
 
 class MuruSecondAssistTankGuardRangedAction : public MovementAction

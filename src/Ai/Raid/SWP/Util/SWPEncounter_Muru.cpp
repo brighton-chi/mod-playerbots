@@ -48,24 +48,6 @@ Creature* GetNearestMuruSingularity(Player* bot, float searchRadius)
     return nearestSingularity;
 }
 
-bool IsFirstAssistTankInSameGroup(PlayerbotAI* botAI, Player* bot)
-{
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    uint8 shamanGroup = group->GetMemberGroup(bot->GetGUID());
-
-    Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
-    if (firstAssistTank &&
-        group->GetMemberGroup(firstAssistTank->GetGUID()) == shamanGroup)
-    {
-        return true;
-    }
-
-    return false;
-}
-
 bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru)
 {
     if (!muru)

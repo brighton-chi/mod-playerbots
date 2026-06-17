@@ -58,18 +58,19 @@ extern const Position KILJAEDEN_S_MELEE_POSITION;
 extern const Position KILJAEDEN_E_MELEE_POSITION;
 extern const Position KILJAEDEN_DARKNESS_POSITION;
 
+extern std::unordered_set<ObjectGuid> kiljaedenTrackedArmageddonTargets;
 extern std::unordered_map<uint32, std::vector<KiljaedenArmageddon>> kiljaedenArmageddons;
 extern std::unordered_map<uint32, uint32> kiljaedenDragonOrbAnnouncementTimes;
 extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> kiljaedenRangedAssignments;
 extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> kiljaedenRangedArmageddonAssignments;
 
+std::unordered_map<ObjectGuid::LowType, KiljaedenDarknessShieldState>&
+    GetKiljaedenDarknessShieldStates();
 void AddKiljaedenArmageddon(
     uint32 instanceId, Position const& destination, uint32 durationMs, float safeDistance);
 void PruneExpiredKiljaedenArmageddons(uint32 instanceId);
 bool TryGetKiljaedenNearestArmageddon(Player* bot, KiljaedenArmageddon& armageddon);
 bool IsKiljaedenCastingDarknessOfAThousandSouls(Unit* kiljaeden);
-std::unordered_map<ObjectGuid::LowType, KiljaedenDarknessShieldState>&
-GetKiljaedenDarknessShieldStates();
 bool TryGetKiljaedenRangedSlotPosition(uint8 slotIndex, Position& position);
 void EnsureKiljaedenRangedAssignments(PlayerbotAI* botAI, Player* bot);
 void EnsureKiljaedenRangedArmageddonAssignments(PlayerbotAI* botAI, Player* bot);

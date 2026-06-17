@@ -46,7 +46,8 @@ bool KiljaedenMarkHandsAndAnnounceOrbUserAction::Execute(Event /*event*/)
         {
             text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
                 "kiljaeden_no_designated_dragon_orb_user",
-                "No bot has been assigned as the designated dragon orb user, and therefore a player must control the dragons. If you would like a bot to use the dragon orbs, please set the assistant flag for a bot.",
+                "No bot has been assigned as the designated dragon orb user, and therefore a player must control the dragons."
+                "If you would like a bot to use the dragon orbs, please set the assistant flag for a bot.",
                 {});
         }
 
@@ -66,10 +67,10 @@ bool KiljaedenAvoidArmageddonsAction::Execute(Event /*event*/)
     if (FleePosition(armageddon.destination, armageddon.safeDistance, minInterval))
         return true;
 
-    constexpr float minDistance = 5.0f;
+    /* constexpr float minDistance = 5.0f;
     Unit* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance);
     if (nearestPlayer)
-        return FleePosition(nearestPlayer->GetPosition(), minDistance);
+        return FleePosition(nearestPlayer->GetPosition(), minDistance); */
 
     return false;
 }
@@ -77,8 +78,7 @@ bool KiljaedenAvoidArmageddonsAction::Execute(Event /*event*/)
 bool KiljaedenStackForShieldOfTheBlueAction::Execute(Event /*event*/)
 {
     const Position& position = KILJAEDEN_DARKNESS_POSITION;
-    if (bot->GetExactDist2d(position.GetPositionX(),
-                            position.GetPositionY()) > 2.0f)
+    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
     {
         return MoveTo(SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
                       position.GetPositionZ(), false, false, false, false,
@@ -91,8 +91,7 @@ bool KiljaedenStackForShieldOfTheBlueAction::Execute(Event /*event*/)
 bool KiljaedenPositionTanksAction::Execute(Event /*event*/)
 {
     const Position& position = KILJAEDEN_TANK_POSITION;
-    if (bot->GetExactDist2d(position.GetPositionX(),
-                            position.GetPositionY()) > 2.0f)
+    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
     {
         return MoveTo(SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
                       position.GetPositionZ(), false, false, false, false,
@@ -183,17 +182,16 @@ bool KiljaedenPositionMeleeAction::Execute(Event /*event*/)
 
 bool KiljaedenPositionRangedAction::Execute(Event /*event*/)
 {
-    Position targetPosition = KILJAEDEN_TANK_POSITION;
-    if (!TryGetRangedPosition(targetPosition))
+    Position position = KILJAEDEN_TANK_POSITION;
+    if (!TryGetRangedPosition(position))
         return false;
 
-    if (bot->GetExactDist2d(targetPosition.GetPositionX(), targetPosition.GetPositionY()) <= 2.0f)
+    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) <= 2.0f)
         return false;
 
-    return MoveTo(SUNWELL_MAP_ID, targetPosition.GetPositionX(),
-                  targetPosition.GetPositionY(), targetPosition.GetPositionZ(),
-                  false, false, false, false, MovementPriority::MOVEMENT_COMBAT,
-                  true, false);
+    return MoveTo(SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                  position.GetPositionZ(), false, false, false, false,
+                  MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 bool KiljaedenPositionRangedAction::TryGetRangedPosition(Position& position) const
@@ -278,9 +276,7 @@ bool KiljaedenUseDragonOrbAction::Execute(Event /*event*/)
         }
 
         if (orb->HasGameObjectFlag(GO_FLAG_NOT_SELECTABLE))
-        {
             continue;
-        }
 
         if (!closestOrb || distance < closestDistance)
         {
@@ -349,7 +345,8 @@ bool KiljaedenControlDragonAction::Execute(Event /*event*/)
         darknessState.darknessStartMs = 0;
         darknessState.lastDarknessCastMsLeft = 0;
 
-        if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
+        if (bot->HasAura(
+                static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
         {
             bot->RemoveAura(
                 static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT));
@@ -397,11 +394,11 @@ bool KiljaedenControlDragonAction::ExecuteDuringDarknessOfAThousandSouls(Unit* k
         dragon->GetExactDist2d(stackPosition.GetPositionX(), stackPosition.GetPositionY());
     if (distanceToStack > castReadyDistanceFromStack)
     {
-        bool const pointMovementInProgress =
-            dragon->GetMotionMaster()->GetCurrentMovementGeneratorType() == POINT_MOTION_TYPE &&
-            dragon->isMoving();
-        if (pointMovementInProgress)
+        if (dragon->GetMotionMaster()->GetCurrentMovementGeneratorType() == POINT_MOTION_TYPE &&
+            dragon->isMoving())
+        {
             return true;
+        }
 
         const float deltaX = stackPosition.GetPositionX() - dragon->GetPositionX();
         const float deltaY = stackPosition.GetPositionY() - dragon->GetPositionY();
@@ -431,7 +428,7 @@ bool KiljaedenControlDragonAction::ExecuteDuringDarknessOfAThousandSouls(Unit* k
         darknessState.darknessStartMs = getMSTime();
     }
 
-    uint32 const darknessElapsedMs = getMSTimeDiff(darknessState.darknessStartMs, getMSTime());
+    // const uint32 darknessElapsedMs = getMSTimeDiff(darknessState.darknessStartMs, getMSTime());
     if (darknessCastTimeLeft > 3000)
     {
         if (CastKiljaedenDragonSpell(
@@ -449,10 +446,10 @@ bool KiljaedenControlDragonAction::ExecuteDuringDarknessOfAThousandSouls(Unit* k
         }
     }
 
-    constexpr uint32 minDarknessElapsedBeforeShieldMs = 3000;
+    // constexpr uint32 minDarknessElapsedBeforeShieldMs = 3000;
     if (!darknessState.shieldCastThisDarkness &&
-        darknessCastTimeLeft < 5000 &&
-        darknessElapsedMs >= minDarknessElapsedBeforeShieldMs)
+        darknessCastTimeLeft < 4500 /* &&
+        darknessElapsedMs >= minDarknessElapsedBeforeShieldMs */)
     {
         bool const castedShield = CastKiljaedenDragonSpell(
             dragon, static_cast<uint32>(SunwellSpells::SPELL_SHIELD_OF_THE_BLUE));
@@ -483,9 +480,9 @@ bool KiljaedenControlDragonAction::ExecuteOutsideDarknessOfAThousandSouls(Unit* 
     uint32 spellId = 0;
     Player* target = nullptr;
 
-    uint32 const hasteSpellId =
+    constexpr uint32 hasteSpellId =
         static_cast<uint32>(SunwellSpells::SPELL_DRAGON_BREATH_HASTE);
-    uint32 const revitalizeSpellId =
+    constexpr uint32 revitalizeSpellId =
         static_cast<uint32>(SunwellSpells::SPELL_DRAGON_BREATH_REVITALIZE);
 
     if (!dragon->HasSpellCooldown(hasteSpellId))
@@ -527,7 +524,8 @@ bool KiljaedenControlDragonAction::ExecuteOutsideDarknessOfAThousandSouls(Unit* 
     constexpr float distanceTolerance = 1.0f;
     const float distanceToTarget = dragon->GetExactDist2d(target);
     if (distanceToTarget > desiredDistance + distanceTolerance ||
-        (distanceToTarget > 0.1f && distanceToTarget < desiredDistance - distanceTolerance))
+        (distanceToTarget > std::numeric_limits<float>::min() &&
+         distanceToTarget < desiredDistance - distanceTolerance))
     {
         const float deltaX = target->GetPositionX() - dragon->GetPositionX();
         const float deltaY = target->GetPositionY() - dragon->GetPositionY();

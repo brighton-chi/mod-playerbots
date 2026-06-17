@@ -253,11 +253,31 @@ float BrutallusControlMovementMultiplier::GetValue(Action* action)
         return 0.0f;
     }
 
-    if (bot->getClass() == CLASS_ROGUE &&
-        bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_BURN)) &&
-        dynamic_cast<CastKillingSpreeAction*>(action))
+    return 1.0f;
+}
+
+float BrutallusNoKillingSpreeWhenNearbyBurnMultiplier::GetValue(Action* action)
+{
+    if (bot->getClass() != CLASS_ROGUE ||
+        !AI_VALUE2(Unit*, "find target", "brutallus") ||
+        !dynamic_cast<CastKillingSpreeAction*>(action))
     {
-        return 0.0f;
+        return 1.0f;
+    }
+
+    Group* group = bot->GetGroup();
+    if (!group)
+        return 1.0f;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && member->HasAura(static_cast<uint32>(SunwellSpells::SPELL_BURN)) &&
+            botAI->IsMelee(member) && !botAI->IsMainTank(member) &&
+            !botAI->IsAssistTankOfIndex(member, 0, true))
+        {
+            return 0.0f;
+        }
     }
 
     return 1.0f;
@@ -724,28 +744,6 @@ float MuruControlMovementMultiplier::GetValue(Action* action)
     else if (muru && TryGetMuruDarknessActiveState(bot, muru) &&
              (dynamic_cast<CastReachTargetSpellAction*>(action) ||
               dynamic_cast<ReachTargetAction*>(action)))
-    {
-        return 0.0f;
-    }
-
-    return 1.0f;
-}
-
-float MuruUseOnlyGroundingTotemMultiplier::GetValue(Action* action)
-{
-    if (bot->getClass() != CLASS_SHAMAN ||
-        !AI_VALUE2(Unit*, "find target", "void sentinel") ||
-        !IsFirstAssistTankInSameGroup(botAI, bot))
-    {
-        return 1.0f;
-    }
-
-    if (dynamic_cast<CastWindfuryTotemAction*>(action) ||
-        dynamic_cast<SetWindfuryTotemAction*>(action) ||
-        dynamic_cast<CastWrathOfAirTotemAction*>(action) ||
-        dynamic_cast<SetWrathOfAirTotemAction*>(action) ||
-        dynamic_cast<CastNatureResistanceTotemAction*>(action) ||
-        dynamic_cast<SetNatureResistanceTotemAction*>(action))
     {
         return 0.0f;
     }

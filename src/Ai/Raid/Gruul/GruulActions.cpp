@@ -1,8 +1,3 @@
-/*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
- */
-
 #include "GruulActions.h"
 #include "GruulHelpers.h"
 #include "CreatureAI.h"
@@ -190,7 +185,7 @@ bool HighKingMaulgarMoonkinTankAttackKigglerAction::Execute(Event /*event*/)
 
     if (kiggler->GetVictim() == bot)
     {
-        constexpr float safeDistance = 25.0f;
+        constexpr float safeDistance = 30.0f;
         const float currentDistance = bot->GetDistance2d(kiggler);
 
         if (currentDistance < safeDistance)

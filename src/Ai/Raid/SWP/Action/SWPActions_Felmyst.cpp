@@ -211,7 +211,10 @@ bool FelmystAvoidDemonicVaporAction::Execute(Event /*event*/)
         constexpr float safeDistFromVapor = 15.0f;
         const float currentDistance = bot->GetDistance2d(hazard);
         if (currentDistance < safeDistFromVapor)
+        {
+            botAI->InterruptSpell();
             return MoveAway(hazard, safeDistFromVapor - currentDistance);
+        }
     }
 
     return false;
@@ -370,8 +373,9 @@ bool FelmystAvoidFogOfCorruptionAction::TryTeleportStuckBotOntoCrate(
         return false;
 
     felmystFogCrateStuckStates.erase(bot->GetGUID());
-    bot->RemoveAurasWithInterruptFlags(
-        AURA_INTERRUPT_FLAG_TELEPORTED | AURA_INTERRUPT_FLAG_CHANGE_MAP);
+    // bot->RemoveAurasWithInterruptFlags(
+    //     AURA_INTERRUPT_FLAG_TELEPORTED | AURA_INTERRUPT_FLAG_CHANGE_MAP);
+    botAI->InterruptSpell();
     return bot->TeleportTo(
         SUNWELL_MAP_ID, FELMYST_ON_CRATE_POSITION.GetPositionX(),
         FELMYST_ON_CRATE_POSITION.GetPositionY(),
@@ -380,6 +384,7 @@ bool FelmystAvoidFogOfCorruptionAction::TryTeleportStuckBotOntoCrate(
 
 bool FelmystMeleeClearTargetAction::Execute(Event /*event*/)
 {
+    botAI->InterruptSpell();
     bot->AttackStop();
     context->GetValue<Unit*>("current target")->Set(nullptr);
     bot->SetSelection(ObjectGuid());
