@@ -19,6 +19,7 @@
 #include "PathGenerator.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
+#include "QuestPackets.h"
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
@@ -602,8 +603,8 @@ bool NewRpgBaseAction::OrganizeQuestLog()
             bot->GetQuestStatus(questId) == QUEST_STATUS_FAILED)
         {
             LOG_DEBUG("playerbots", "[New RPG] {} drop quest {}", bot->GetName(), questId);
-            WorldPacket packet(CMSG_QUESTLOG_REMOVE_QUEST);
-            packet << (uint8)i;
+            WorldPackets::Quest::QuestLogRemoveQuest packet{WorldPacket(CMSG_QUESTLOG_REMOVE_QUEST)};
+            packet.Slot = i;
             bot->GetSession()->HandleQuestLogRemoveQuest(packet);
             if (botAI->GetMaster())
                 botAI->TellMasterNoFacing(PlayerbotTextMgr::instance().GetBotTextOrDefault(
@@ -632,8 +633,8 @@ bool NewRpgBaseAction::OrganizeQuestLog()
         if (quest->GetZoneOrSort() < 0 || (quest->GetZoneOrSort() > 0 && quest->GetZoneOrSort() != botZoneId))
         {
             LOG_DEBUG("playerbots", "[New RPG] {} drop quest {}", bot->GetName(), questId);
-            WorldPacket packet(CMSG_QUESTLOG_REMOVE_QUEST);
-            packet << (uint8)i;
+            WorldPackets::Quest::QuestLogRemoveQuest packet{WorldPacket(CMSG_QUESTLOG_REMOVE_QUEST)};
+            packet.Slot = i;
             bot->GetSession()->HandleQuestLogRemoveQuest(packet);
             if (botAI->GetMaster())
                 botAI->TellMasterNoFacing(PlayerbotTextMgr::instance().GetBotTextOrDefault(
@@ -657,8 +658,8 @@ bool NewRpgBaseAction::OrganizeQuestLog()
 
         const Quest* quest = sObjectMgr->GetQuestTemplate(questId);
         LOG_DEBUG("playerbots", "[New RPG] {} drop quest {}", bot->GetName(), questId);
-        WorldPacket packet(CMSG_QUESTLOG_REMOVE_QUEST);
-        packet << (uint8)i;
+        WorldPackets::Quest::QuestLogRemoveQuest packet{WorldPacket(CMSG_QUESTLOG_REMOVE_QUEST)};
+        packet.Slot = i;
         bot->GetSession()->HandleQuestLogRemoveQuest(packet);
         if (botAI->GetMaster())
             botAI->TellMasterNoFacing(PlayerbotTextMgr::instance().GetBotTextOrDefault(
