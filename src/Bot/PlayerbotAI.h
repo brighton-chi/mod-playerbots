@@ -38,7 +38,7 @@ class SpellInfo;
 class Unit;
 class WorldObject;
 class WorldPosition;
-enum class TargetValueExclusionType : uint8;
+
 
 struct CreatureData;
 struct GameObjectData;
@@ -570,11 +570,6 @@ public:
 
     void SetMaster(Player* newMaster) { master = newMaster; }
     AiObjectContext* GetAiObjectContext() { return aiObjectContext; }
-    bool IsTargetValueExcluded(TargetValueExclusionType type, ObjectGuid const& guid);
-    bool AddTargetValueExclusion(TargetValueExclusionType type, ObjectGuid const& guid);
-    bool RemoveTargetValueExclusion(TargetValueExclusionType type, ObjectGuid const& guid);
-    void ResetTargetValueExclusion(TargetValueExclusionType type);
-    void ResetTargetValueExclusions();
     ChatHelper* GetChatHelper() { return &chatHelper; }
     bool IsOpposing(Player* player);
     static bool IsOpposing(uint8 race1, uint8 race2);

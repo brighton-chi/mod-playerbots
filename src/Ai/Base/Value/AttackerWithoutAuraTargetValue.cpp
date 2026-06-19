@@ -11,10 +11,9 @@
 
 namespace
 {
-bool IsExcludedAttackerTarget(PlayerbotAI* botAI, GuidSet const& dynamicExclusions, ObjectGuid const& guid)
+bool IsExcludedAttackerTarget(PlayerbotAI* /*botAI*/, GuidSet const& dynamicExclusions, ObjectGuid const& guid)
 {
-    return botAI->IsTargetValueExcluded(TargetValueExclusionType::Attacker, guid) ||
-        dynamicExclusions.find(guid) != dynamicExclusions.end();
+    return dynamicExclusions.find(guid) != dynamicExclusions.end();
 }
 }
 

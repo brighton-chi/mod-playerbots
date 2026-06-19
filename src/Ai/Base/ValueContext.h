@@ -239,9 +239,6 @@ public:
         creators["already seen players"] = &ValueContext::already_seen_players;
         creators["rpg target"] = &ValueContext::rpg_target;
         creators["ignore rpg target"] = &ValueContext::ignore_rpg_target;
-        creators["ignore tank targets"] = &ValueContext::ignore_tank_targets;
-        creators["ignore dps targets"] = &ValueContext::ignore_dps_targets;
-        creators["ignore attacker targets"] = &ValueContext::ignore_attacker_targets;
         creators["next rpg action"] = &ValueContext::next_rpg_action;
         creators["travel target"] = &ValueContext::travel_target;
         creators["talk target"] = &ValueContext::talk_target;
@@ -502,9 +499,6 @@ private:
     static UntypedValue* skip_spells_list_value(PlayerbotAI* botAI) { return new SkipSpellsListValue(botAI); }
     static UntypedValue* rpg_target(PlayerbotAI* botAI) { return new RpgTargetValue(botAI); }
     static UntypedValue* ignore_rpg_target(PlayerbotAI* botAI) { return new IgnoreRpgTargetValue(botAI); }
-    static UntypedValue* ignore_tank_targets(PlayerbotAI* botAI) { return new IgnoreTankTargetValue(botAI); }
-    static UntypedValue* ignore_dps_targets(PlayerbotAI* botAI) { return new IgnoreDpsTargetValue(botAI); }
-    static UntypedValue* ignore_attacker_targets(PlayerbotAI* botAI) { return new IgnoreAttackerTargetValue(botAI); }
     static UntypedValue* talk_target(PlayerbotAI* botAI) { return new TalkTargetValue(botAI); }
     static UntypedValue* next_rpg_action(PlayerbotAI* botAI) { return new NextRpgActionValue(botAI); }
     static UntypedValue* travel_target(PlayerbotAI* botAI) { return new TravelTargetValue(botAI); }

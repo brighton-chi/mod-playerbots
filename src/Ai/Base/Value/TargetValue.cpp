@@ -36,11 +36,6 @@ Unit* FindTargetStrategy::GetResult() { return result; }
 
 TargetValueExclusionType FindTargetStrategy::GetExclusionType() const { return TargetValueExclusionType::None; }
 
-bool FindTargetStrategy::IsExcluded(Unit* attacker) const
-{
-    return attacker && botAI->IsTargetValueExcluded(GetExclusionType(), attacker->GetGUID());
-}
-
 Unit* TargetValue::FindTarget(FindTargetStrategy* strategy)
 {
     GuidVector attackers = botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->Get();
@@ -48,7 +43,7 @@ Unit* TargetValue::FindTarget(FindTargetStrategy* strategy)
     for (ObjectGuid const guid : attackers)
     {
         Unit* unit = botAI->GetUnit(guid);
-        if (!unit || strategy->IsExcluded(unit) || dynamicExclusions.find(guid) != dynamicExclusions.end())
+        if (!unit || dynamicExclusions.find(guid) != dynamicExclusions.end())
             continue;
 
         ThreatManager& threatMgr = unit->GetThreatMgr();

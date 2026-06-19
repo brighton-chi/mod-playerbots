@@ -24,7 +24,6 @@ public:
 
     Unit* GetResult();
     virtual TargetValueExclusionType GetExclusionType() const;
-    virtual bool IsExcluded(Unit* attacker) const;
     virtual void CheckAttacker(Unit* attacker, ThreatManager* threatMgr) = 0;
     void GetPlayerCount(Unit* creature, uint32* tankCount, uint32* dpsCount);
     bool IsHighPriority(Unit* attacker);
@@ -98,34 +97,6 @@ class IgnoreRpgTargetValue : public ManualSetValue<GuidSet&>
 {
 public:
     IgnoreRpgTargetValue(PlayerbotAI* botAI) : ManualSetValue<GuidSet&>(botAI, data, "ignore rpg targets") {}
-
-private:
-    GuidSet data;
-};
-
-class IgnoreTankTargetValue : public ManualSetValue<GuidSet&>
-{
-public:
-    IgnoreTankTargetValue(PlayerbotAI* botAI) : ManualSetValue<GuidSet&>(botAI, data, "ignore tank targets") {}
-
-private:
-    GuidSet data;
-};
-
-class IgnoreDpsTargetValue : public ManualSetValue<GuidSet&>
-{
-public:
-    IgnoreDpsTargetValue(PlayerbotAI* botAI) : ManualSetValue<GuidSet&>(botAI, data, "ignore dps targets") {}
-
-private:
-    GuidSet data;
-};
-
-class IgnoreAttackerTargetValue : public ManualSetValue<GuidSet&>
-{
-public:
-    IgnoreAttackerTargetValue(PlayerbotAI* botAI)
-        : ManualSetValue<GuidSet&>(botAI, data, "ignore attacker targets") {}
 
 private:
     GuidSet data;
