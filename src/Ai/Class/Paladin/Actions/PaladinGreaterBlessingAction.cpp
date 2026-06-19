@@ -1057,7 +1057,11 @@ static bool FindPendingAssignmentFromAssignments(
         if (IsGreaterVariant(castType))
         {
             uint32 spellId = aiContext->GetValue<uint32>("spell id", spellName)->Get();
-            if (!spellId || !ai::buff::HasRequiredReagents(bot, spellId))
+            if (spellId && ai::buff::HasRequiredReagents(bot, spellId))
+            {
+                ai::buff::ClearMissingBuffReagentNotice(botAI, spellName);
+            }
+            else
             {
                 castType = ToSingleVariant(castType);
                 spellName = BlessingSpellName(castType);

@@ -3,10 +3,12 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_GENERICBUFFUTILS_H
-#define _PLAYERBOT_GENERICBUFFUTILS_H
+#ifndef PLAYERBOTS_GENERICBUFFUTILS_H
+#define PLAYERBOTS_GENERICBUFFUTILS_H
 
 #include <string>
+#include <unordered_map>
+
 #include "Common.h"
 
 class Player;
@@ -15,6 +17,8 @@ class Unit;
 
 namespace ai::buff
 {
+
+typedef std::unordered_map<std::string, uint32> MissingBuffReagentNoticeMap;
 
 bool IsGroupVariantEnabled(Player* bot, std::string const& name);
 
@@ -33,7 +37,7 @@ bool ShouldDeferGreaterBlessingAssignmentForRecentLogin(Player* bot);
 
 bool HasRequiredReagents(Player* bot, uint32 spellId);
 
-void ClearMissingBuffReagentNotice(Player* bot, std::string const& groupName);
+void ClearMissingBuffReagentNotice(PlayerbotAI* botAI, std::string const& groupName);
 
 bool TryAnnounceMissingBuffReagents(
     PlayerbotAI* botAI, std::string const& baseName, std::string const& groupName);
