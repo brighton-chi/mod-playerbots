@@ -100,21 +100,6 @@ void AppendMuruTankExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
     }
 }
 
-void AppendMuruMeleeDpsExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
-{
-    Player* bot = botAI->GetBot();
-
-    if (!botAI->IsMelee(bot))
-        return;
-
-    Unit* muru = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "m'uru")->Get();
-    if (!muru || muru->GetHealth() <= 1)
-        return;
-
-    if (TryGetMuruDarknessActiveState(bot, muru))
-        exclusions.insert(muru->GetGUID());
-}
-
 void AppendKiljaedenShieldOrbExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 {
     if (!botAI->IsMelee(botAI->GetBot()))
@@ -168,12 +153,10 @@ void RaidSunwellStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValu
             AppendMuruTankExclusions(botAI, exclusions);
             break;
         case TargetValueExclusionType::Dps:
-            AppendMuruMeleeDpsExclusions(botAI, exclusions);
             AppendKiljaedenSinisterReflectionExclusions(botAI, exclusions);
             break;
         case TargetValueExclusionType::Attacker:
             AppendEredarTwinsAttackerExclusions(botAI, exclusions);
-            AppendMuruMeleeDpsExclusions(botAI, exclusions);
             AppendKiljaedenSinisterReflectionExclusions(botAI, exclusions);
             break;
         case TargetValueExclusionType::None:
