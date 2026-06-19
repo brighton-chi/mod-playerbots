@@ -25,17 +25,8 @@ void AppendFelmystVaporPhaseMeleeExclusions(PlayerbotAI* botAI, GuidSet& exclusi
         return;
 
     Unit* felmyst = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "felmyst")->Get();
-    if (!felmyst || !felmyst->IsFlying())
-        return;
-
-    constexpr float searchRadius = 50.0f;
-    if (bot->FindNearestCreature(
-            static_cast<uint32>(SunwellNpcs::NPC_DEMONIC_VAPOR_TRAIL), searchRadius, true) ||
-        bot->FindNearestCreature(
-            static_cast<uint32>(SunwellNpcs::NPC_DEMONIC_VAPOR), searchRadius, true))
-    {
+    if (IsFelmystAirPhaseTargetSuppressed(felmyst))
         exclusions.insert(felmyst->GetGUID());
-    }
 }
 
 void AppendEredarTwinsAttackerExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
