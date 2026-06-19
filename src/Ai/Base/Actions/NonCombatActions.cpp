@@ -13,6 +13,24 @@ namespace
 constexpr uint32 BG_WS_SPELL_WARSONG_FLAG = 23333;
 constexpr uint32 BG_WS_SPELL_SILVERWING_FLAG = 23335;
 constexpr uint32 BG_EY_NETHERSTORM_FLAG_SPELL = 34976;
+
+bool IsDisallowedShapeshiftForm(Player* bot)
+{
+    if (bot->getClass() == CLASS_DRUID)
+    {
+        ShapeshiftForm form = bot->GetShapeshiftForm();
+        return form == FORM_TRAVEL || form == FORM_AQUA ||
+               form == FORM_FLIGHT || form == FORM_FLIGHT_EPIC ||
+               form == FORM_BEAR || form == FORM_DIREBEAR ||
+               form == FORM_CAT;
+    }
+    else if (bot->getClass() == CLASS_PRIEST)
+    {
+        return bot->GetShapeshiftForm() == FORM_SPIRITOFREDEMPTION;
+    }
+
+    return false;
+}
 }
 
 bool DrinkAction::Execute(Event event)
@@ -62,10 +80,7 @@ bool DrinkAction::isUseful()
 
 bool DrinkAction::isPossible()
 {
-    if (bot->IsInCombat() || bot->IsMounted())
-        return false;
-
-    if (bot->getClass() == CLASS_DRUID && bot->GetShapeshiftForm() != FORM_NONE)
+    if (bot->IsInCombat() || bot->IsMounted() || IsDisallowedShapeshiftForm(bot))
         return false;
 
     if (bot->HasAura(BG_WS_SPELL_WARSONG_FLAG) || bot->HasAura(BG_WS_SPELL_SILVERWING_FLAG) ||
@@ -120,10 +135,7 @@ bool EatAction::isUseful() { return UseItemAction::isUseful() && AI_VALUE2(uint8
 
 bool EatAction::isPossible()
 {
-    if (bot->IsInCombat() || bot->IsMounted())
-        return false;
-
-    if (bot->getClass() == CLASS_DRUID && bot->GetShapeshiftForm() != FORM_NONE)
+    if (bot->IsInCombat() || bot->IsMounted() || IsDisallowedShapeshiftForm(bot))
         return false;
 
     if (bot->HasAura(BG_WS_SPELL_WARSONG_FLAG) || bot->HasAura(BG_WS_SPELL_SILVERWING_FLAG) ||
