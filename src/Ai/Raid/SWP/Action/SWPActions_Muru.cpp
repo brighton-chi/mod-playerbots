@@ -206,8 +206,7 @@ bool MuruSetDpsPriorityAction::Execute(Event /*event*/)
     Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
     Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius");
     Unit* currentTarget = context->GetValue<Unit*>("current target")->Get();
-    bool isMeleeDps = false;
-    Unit* target = ResolveMuruDpsTarget(muru, entropius, currentTarget, isMeleeDps);
+    Unit* target = ResolveMuruDpsTarget(muru, entropius, currentTarget);
 
     if (target && target->GetEntry() ==
             static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_BERSERKER))
@@ -228,7 +227,7 @@ bool MuruSetDpsPriorityAction::Execute(Event /*event*/)
     if (target)
     {
         bool needsAttack = false;
-        if (isMeleeDps)
+        if (botAI->IsMelee(bot))
         {
             needsAttack = currentTarget != target ||
                 !bot->HasUnitState(UNIT_STATE_MELEE_ATTACKING);
@@ -246,16 +245,16 @@ bool MuruSetDpsPriorityAction::Execute(Event /*event*/)
 }
 
 Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(
-    Unit* muru, Unit* entropius, Unit*& currentTarget, bool& isMeleeDps)
+    Unit* muru, Unit* entropius, Unit*& currentTarget)
 {
     if (!muru && !entropius)
         return nullptr;
 
+    const bool isRanged = botAI->IsRanged(bot);
+    const bool isMelee = !isRanged;
     const bool isShadowPriest =
         bot->getClass() == CLASS_PRIEST && botAI->HasStrategy("shadow", BOT_STATE_COMBAT);
-    const bool isOtherRanged = botAI->IsRanged(bot) && !isShadowPriest;
-    const bool isRangedDps = isShadowPriest || isOtherRanged;
-    isMeleeDps = botAI->IsMelee(bot) && !isShadowPriest && !isOtherRanged;
+    const bool isOtherRanged = isRanged && !isShadowPriest;
 
     MuruEncounterTargets targets;
     targets.muru = muru;
@@ -271,16 +270,16 @@ Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(
         isMuruPhase && TryGetMuruDarknessActiveState(bot, muru);
 
     Unit* voidSentinel = SelectMuruEncounterTarget(
-        currentTarget, isMeleeDps,
+        currentTarget,
         static_cast<uint32>(SunwellNpcs::NPC_VOID_SENTINEL), targets.voidSentinels);
     Unit* voidSpawn = SelectMuruEncounterTarget(
-        currentTarget, isMeleeDps,
+        currentTarget,
         static_cast<uint32>(SunwellNpcs::NPC_VOID_SPAWN), targets.voidSpawns);
     Unit* furyMage = SelectMuruEncounterTarget(
-        currentTarget, isMeleeDps,
+        currentTarget,
         static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_FURY_MAGE), targets.furyMages);
     Unit* berserker = SelectMuruEncounterTarget(
-        currentTarget, isMeleeDps,
+        currentTarget,
         static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_BERSERKER), targets.berserkers);
 
     Player* voidSentinelVictim = voidSentinel && voidSentinel->IsAlive() ?
@@ -295,7 +294,7 @@ Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(
             return false;
 
         constexpr float rangedInitialPhaseTargetDistance = 30.0f;
-        if (isRangedDps && isMuruPhase &&
+        if (isRanged && isMuruPhase &&
             bot->GetExactDist2d(unit) > rangedInitialPhaseTargetDistance)
         {
             return false;
@@ -304,8 +303,7 @@ Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(
         switch (unit->GetEntry())
         {
             case static_cast<uint32>(SunwellNpcs::NPC_MURU):
-                return unit->GetHealth() > 1 && !botAI->IsTargetValueExcluded(
-                    TargetValueExclusionType::Dps, unit->GetGUID());
+                return unit->GetHealth() > 1;
 
             case static_cast<uint32>(SunwellNpcs::NPC_ENTROPIUS):
                 return true;
@@ -321,7 +319,7 @@ Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(
                 if (isShadowPriest)
                     return false;
 
-                if (!isMeleeDps)
+                if (!isMelee)
                     return true;
 
                 return darknessActive || !isMuruPhase;
@@ -412,8 +410,7 @@ Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(
 }
 
 Unit* MuruSetDpsPriorityAction::SelectMuruEncounterTarget(
-    Unit* currentTarget, bool /*isMeleeDps*/, uint32 entry,
-    std::vector<Unit*> const& candidates) const
+    Unit* currentTarget, uint32 entry, std::vector<Unit*> const& candidates) const
 {
     Unit* selected = nullptr;
     if (currentTarget && currentTarget->IsAlive() &&

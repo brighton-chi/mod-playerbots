@@ -341,9 +341,9 @@ public:
 
 private:
     Unit* ResolveMuruDpsTarget(
-        Unit* muru, Unit* entropius, Unit*& currentTarget, bool& isMeleeDps);
+        Unit* muru, Unit* entropius, Unit*& currentTarget);
     Unit* SelectMuruEncounterTarget(
-        Unit* currentTarget, bool isMeleeDps, uint32 entry,
+        Unit* currentTarget, uint32 entry,
         std::vector<Unit*> const& candidates) const;
 };
 
