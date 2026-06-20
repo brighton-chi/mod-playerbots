@@ -25,6 +25,7 @@
 #include "Playerbots.h"
 #include "Position.h"
 #include "QuestDef.h"
+#include "QuestPackets.h"
 #include "Random.h"
 #include "RandomPlayerbotMgr.h"
 #include "SharedDefines.h"
@@ -603,9 +604,11 @@ bool NewRpgBaseAction::OrganizeQuestLog()
             bot->GetQuestStatus(questId) == QUEST_STATUS_FAILED)
         {
             LOG_DEBUG("playerbots", "[New RPG] {} drop quest {}", bot->GetName(), questId);
-            WorldPackets::Quest::QuestLogRemoveQuest packet{WorldPacket(CMSG_QUESTLOG_REMOVE_QUEST)};
-            packet.Slot = i;
-            bot->GetSession()->HandleQuestLogRemoveQuest(packet);
+            WorldPacket packet(CMSG_QUESTLOG_REMOVE_QUEST);
+            packet << (uint8)i;
+            WorldPackets::Quest::QuestLogRemoveQuest removeQuest(std::move(packet));
+            removeQuest.Read();
+            bot->GetSession()->HandleQuestLogRemoveQuest(removeQuest);
             if (botAI->GetMaster())
                 botAI->TellMasterNoFacing(PlayerbotTextMgr::instance().GetBotTextOrDefault(
                     "new_rpg_quest_dropped",
@@ -633,9 +636,11 @@ bool NewRpgBaseAction::OrganizeQuestLog()
         if (quest->GetZoneOrSort() < 0 || (quest->GetZoneOrSort() > 0 && quest->GetZoneOrSort() != botZoneId))
         {
             LOG_DEBUG("playerbots", "[New RPG] {} drop quest {}", bot->GetName(), questId);
-            WorldPackets::Quest::QuestLogRemoveQuest packet{WorldPacket(CMSG_QUESTLOG_REMOVE_QUEST)};
-            packet.Slot = i;
-            bot->GetSession()->HandleQuestLogRemoveQuest(packet);
+            WorldPacket packet(CMSG_QUESTLOG_REMOVE_QUEST);
+            packet << (uint8)i;
+            WorldPackets::Quest::QuestLogRemoveQuest removeQuest(std::move(packet));
+            removeQuest.Read();
+            bot->GetSession()->HandleQuestLogRemoveQuest(removeQuest);
             if (botAI->GetMaster())
                 botAI->TellMasterNoFacing(PlayerbotTextMgr::instance().GetBotTextOrDefault(
                     "new_rpg_quest_dropped",
@@ -658,9 +663,11 @@ bool NewRpgBaseAction::OrganizeQuestLog()
 
         const Quest* quest = sObjectMgr->GetQuestTemplate(questId);
         LOG_DEBUG("playerbots", "[New RPG] {} drop quest {}", bot->GetName(), questId);
-        WorldPackets::Quest::QuestLogRemoveQuest packet{WorldPacket(CMSG_QUESTLOG_REMOVE_QUEST)};
-        packet.Slot = i;
-        bot->GetSession()->HandleQuestLogRemoveQuest(packet);
+        WorldPacket packet(CMSG_QUESTLOG_REMOVE_QUEST);
+        packet << (uint8)i;
+        WorldPackets::Quest::QuestLogRemoveQuest removeQuest(std::move(packet));
+        removeQuest.Read();
+        bot->GetSession()->HandleQuestLogRemoveQuest(removeQuest);
         if (botAI->GetMaster())
             botAI->TellMasterNoFacing(PlayerbotTextMgr::instance().GetBotTextOrDefault(
                 "new_rpg_quest_dropped",

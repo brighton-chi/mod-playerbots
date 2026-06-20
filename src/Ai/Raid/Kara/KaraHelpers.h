@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_KARAHELPERS_H
-#define _PLAYERBOT_KARAHELPERS_H
+#ifndef PLAYERBOTS_KARAHELPERS_H
+#define PLAYERBOTS_KARAHELPERS_H
 
 #include <ctime>
 #include <unordered_map>
@@ -115,9 +115,9 @@ namespace KarazhanHelpers
     std::vector<Player*> GetBlueBlockers(PlayerbotAI* botAI, Player* bot);
     std::vector<Player*> GetGreenBlockers(PlayerbotAI* botAI, Player* bot);
     std::tuple<Player*, Player*, Player*> GetCurrentBeamBlockers(PlayerbotAI* botAI, Player* bot);
-    std::vector<Unit*> GetAllVoidZones(Player* bot);
+    std::vector<Unit*> GetAllVoidZones(PlayerbotAI *botAI, Player* bot);
     bool IsSafePosition (float x, float y, const std::vector<Unit*>& hazards, float hazardRadius);
-    std::vector<Unit*> GetSpawnedInfernals(Player* bot);
+    std::vector<Unit*> GetSpawnedInfernals(PlayerbotAI* botAI);
     bool IsStraightPathSafe(
         const Position& start, const Position& target,
         const std::vector<Unit*>& hazards, float hazardRadius, float stepSize);

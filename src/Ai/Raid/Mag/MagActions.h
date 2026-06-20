@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_MAGACTIONS_H
-#define _PLAYERBOT_MAGACTIONS_H
+#ifndef PLAYERBOTS_MAGACTIONS_H
+#define PLAYERBOTS_MAGACTIONS_H
 
 #include "MagHelpers.h"
 #include "Action.h"
@@ -65,6 +65,9 @@ public:
 class MagtheridonSpreadRangedAction : public MovementAction
 {
 public:
+    static std::unordered_map<ObjectGuid, Position> initialPositions;
+    static std::unordered_map<ObjectGuid, bool> hasReachedInitialPosition;
+
     MagtheridonSpreadRangedAction(PlayerbotAI* botAI, std::string const name = "magtheridon spread ranged") : MovementAction(botAI, name) {};
 
     bool Execute(Event event) override;

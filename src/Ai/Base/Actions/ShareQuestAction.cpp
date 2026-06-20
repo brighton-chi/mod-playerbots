@@ -31,9 +31,11 @@ bool ShareQuestAction::Execute(Event event)
         uint32 logQuest = bot->GetQuestSlotQuestId(slot);
         if (logQuest == entry)
         {
-            WorldPackets::Quest::PushQuestToParty packet{WorldPacket(CMSG_PUSHQUESTTOPARTY)};
-            packet.QuestId = entry;
-            bot->GetSession()->HandlePushQuestToParty(packet);
+            WorldPacket p(CMSG_PUSHQUESTTOPARTY);
+            p << entry;
+            WorldPackets::Quest::PushQuestToParty pushQuest(std::move(p));
+            pushQuest.Read();
+            bot->GetSession()->HandlePushQuestToParty(pushQuest);
             botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(
                 "quest_shared", "Quest shared", {}));
             return true;
@@ -98,9 +100,11 @@ bool AutoShareQuestAction::Execute(Event /*event*/)
         if (!partyNeedsQuest)
             continue;
 
-        WorldPackets::Quest::PushQuestToParty packet{WorldPacket(CMSG_PUSHQUESTTOPARTY)};
-        packet.QuestId = logQuest;
-        bot->GetSession()->HandlePushQuestToParty(packet);
+        WorldPacket p(CMSG_PUSHQUESTTOPARTY);
+        p << logQuest;
+        WorldPackets::Quest::PushQuestToParty pushQuest(std::move(p));
+        pushQuest.Read();
+        bot->GetSession()->HandlePushQuestToParty(pushQuest);
         botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(
             "quest_shared", "Quest shared", {}));
         shared = true;

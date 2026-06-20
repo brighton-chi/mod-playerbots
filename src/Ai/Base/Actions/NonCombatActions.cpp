@@ -140,7 +140,9 @@ bool EatAction::isPossible()
 
     if (bot->HasAura(BG_WS_SPELL_WARSONG_FLAG) || bot->HasAura(BG_WS_SPELL_SILVERWING_FLAG) ||
         bot->HasAura(BG_EY_NETHERSTORM_FLAG_SPELL))
+    {
         return false;
+    }
 
     return botAI->HasCheat(BotCheatMask::food) || UseItemAction::isPossible();
 }

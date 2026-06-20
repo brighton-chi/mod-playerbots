@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_MAGMULTIPLIERS_H
-#define _PLAYERBOT_MAGMULTIPLIERS_H
+#ifndef PLAYERBOTS_MAGMULTIPLIERS_H
+#define PLAYERBOTS_MAGMULTIPLIERS_H
 
 #include "Multiplier.h"
 
@@ -21,13 +21,6 @@ class MagtheridonDisableOffTankAssistMultiplier : public Multiplier
 {
 public:
     MagtheridonDisableOffTankAssistMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "magtheridon disable off tank assist multiplier") {}
-    float GetValue(Action* action) override;
-};
-
-class MagtheridonDisableMainTankMovementMultiplier : public Multiplier
-{
-public:
-    MagtheridonDisableMainTankMovementMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "magtheridon disable main tank movement multiplier") {}
     float GetValue(Action* action) override;
 };
 
