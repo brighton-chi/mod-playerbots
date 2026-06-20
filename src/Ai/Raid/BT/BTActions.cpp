@@ -2379,7 +2379,7 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidB
             const float moveX = bot->GetPositionX() + (dX / distToNewPosition) * moveDist;
             const float moveY = bot->GetPositionY() + (dY / distToNewPosition) * moveDist;
 
-            return MoveTo(BLACK_TEMPLE_MAP_ID, newTarget.GetPositionX(), newTarget.GetPositionY(),
+            return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY,
                           bot->GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, true);
         }
@@ -2392,7 +2392,7 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidB
         const float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
         const float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
-        return MoveTo(BLACK_TEMPLE_MAP_ID, target.GetPositionX(), target.GetPositionY(),
+        return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY,
                       bot->GetPositionZ(), false, false, false, false,
                       MovementPriority::MOVEMENT_COMBAT, true, true);
     }
